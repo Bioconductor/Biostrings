@@ -17,7 +17,7 @@ RNAPatternAlphabet()
   In the table below, we provide the letters from the base DNA
   alphabet that are matched by the added letters in the DNA pattern
   alphabet. The corresponding table for RNA is identical except for the
-  substitution of \sQuote{U' for \sQuote{T'.
+  substitution of \sQuote{U} for \sQuote{T}.
 
   \tabular{ll}{
     \sQuote{N}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
