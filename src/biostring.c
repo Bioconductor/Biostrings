@@ -51,6 +51,24 @@ expandIndex(SEXP index, int ndone, int nleft)
     return lengthgets(index, n);
 }
 
+static int
+getBioStringLength(SEXP x, int** startvecptr, int** endvecptr)
+{
+    SEXP offsets, dim;
+    if (!isFromClass(x, "BioString"))
+        error("argument must be of class BioString");
+    offsets = GET_SLOT(x, install("offsets"));
+    dim = GET_DIM(offsets);
+    if (TYPEOF(offsets) != INTSXP || TYPEOF(dim) != INTSXP ||
+        LENGTH(dim) != 2 || INTEGER(dim)[1] != 2)
+        error("offsets slot of BioString must be integer matrix with two columns");
+    if (startvecptr)
+        *startvecptr = INTEGER(offsets);
+    if (endvecptr)
+        *endvecptr = INTEGER(offsets)+INTEGER(dim)[0];
+    return INTEGER(dim)[0];
+}
+
 SEXP
 BioStringValues(SEXP alphabet_length, SEXP string_length)
 {
@@ -1086,10 +1104,18 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
         pattern->start = xstart;
         patternptr = CHAR(x)+xstart-1;
 
+        /* calculation of the good suffix rule shift. */
+        /* first calculate L' */
+        Nvecs = reverseFundamentalPreprocessing(patternptr, n);
+        PROTECT(Nvecs);
+
         /* calculation of all occurance of each bit-pattern (used by
          * the bad character rule) */
         pattern->bad_char.letterIndex = allocVector(VECSXP, 256);
         PROTECT(pattern->bad_char.letterIndex);
+#ifdef NOT_YET
+        N = INTEGER(VECTOR_ELT(Nvecs, 1))-1;
+#endif
         for (i = 0; i < pattern->nletters; i++) {
             unsigned int pat = alphMappingptr[i];
             int j;
@@ -1101,6 +1127,17 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
             SET_VECTOR_ELT(pattern->bad_char.letterIndex, pat,
                            allocVector(INTSXP, n+1));
             indx = INTEGER(VECTOR_ELT(pattern->bad_char.letterIndex, pat));
+#ifdef NOT_YET
+            indx[n] = 0;
+            lastj = n+1;
+            for (j = n; j > 0; j--) {
+                /* does the j-th pattern contain pat? */
+                if ((patternptr[j] & pat) == pat) {
+                    for (; lastj > j; lastj--)
+                        indx[lastj] = j-lastj;
+                }
+            }
+#else
             for (j = n-1; j > 0; j--) {
                 /* does the j-th pattern contain pat? */
                 if ((patternptr[j] & pat) == pat) {
@@ -1108,6 +1145,7 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
                         indx[lastj] = lastj-j;
                 }
             }
+#endif
             for (; lastj >= 0; lastj--)
                 indx[lastj] = lastj;
 #ifdef DEBUG_BIOSTRINGS
@@ -1118,10 +1156,6 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
 #endif
         }
 
-        /* calculation of the good suffix rule shift. */
-        /* first calculate L' */
-        Nvecs = reverseFundamentalPreprocessing(patternptr, n);
-        PROTECT(Nvecs);
         N = INTEGER(VECTOR_ELT(Nvecs, 0))-1;
         memset(tmpptr, 0, (1+n)*sizeof(int));
         for (i = 1; i < n; i++) {
@@ -1398,4 +1432,80 @@ reverseComplementBioString(SEXP x)
     }
     UNPROTECT(1);
     return x;
+}
+
+typedef Rboolean (BioStringCall_t)(unsigned char* str, int slen,
+                                   int i, void* user_data);
+
+static void
+foreach_BioStringC(SEXP x, BioStringCall_t* f, void* user_data)
+{
+    SEXP xvec;
+    int i;
+    int* startvec;
+    int* endvec;
+    int len = getBioStringLength(x, &startvec, &endvec);
+    unsigned char* seq;
+
+    xvec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(xvec) != CHARSXP)
+        error("Only character storage is supported now");
+    seq = (unsigned char*) CHAR(xvec);
+
+    for (i = 0; i < len ; i++) {
+        int start = startvec[i];
+        int end = endvec[i];
+        if (!f(seq+start, end-start+1, i, user_data))
+            break;
+    }
+}
+
+typedef struct {
+    int* ans;
+    unsigned char c;
+} allSameLetter_t;
+
+static Rboolean
+allSameLetter_func(unsigned char* str, int slen,
+                   int j, allSameLetter_t* data)
+{
+    unsigned char c = data->c;
+    int i;
+    char savefirst = str[-1];
+    str[-1] = ~c;
+    for (i = slen-1; str[i] == c; i--) {
+    }
+    str[-1] = savefirst;
+    data->ans[j] = (i == -1);
+    return 1;
+}
+
+SEXP allSameLetter(SEXP x, SEXP pattern)
+{
+    int len = getBioStringLength(x, NULL, NULL);
+    SEXP alph = GET_SLOT(x, install("alphabet"));
+    SEXP mapping = GET_SLOT(alph, install("mapping"));
+    SEXP letters = GET_NAMES(mapping);
+    int nletters = LENGTH(letters);
+    int start, end;
+    SEXP ans;
+    allSameLetter_t data;
+
+    if (TYPEOF(mapping) != INTSXP || TYPEOF(letters) != STRSXP ||
+        nletters == 0)
+        error("invalid mapping");
+    getLengthOneBioStringRange(pattern, &start, &end);
+    if (start != end)
+        error("pattern is not a single letter");
+    pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
+    if (TYPEOF(pattern) != CHARSXP)
+        error("can only handle character storage");
+    data.c = ((unsigned char*)CHAR(pattern))[start];
+    ans = allocVector(LGLSXP, len);
+    PROTECT(ans);
+    data.ans = INTEGER(ans);
+    foreach_BioStringC(x, (BioStringCall_t*) allSameLetter_func,
+                       &data);
+    UNPROTECT(1);
+    return ans;
 }

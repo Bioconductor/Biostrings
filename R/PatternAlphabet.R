@@ -59,7 +59,6 @@ DNAPatternAlphabet <- function()
                          S="CG",
                          V="ACG",
                          W="AT",
-                         X="ACGT",
                          Y="CT"))
 
 RNAPatternAlphabet <- function()
@@ -74,5 +73,4 @@ RNAPatternAlphabet <- function()
                          S="CG",
                          V="ACG",
                          W="AU",
-                         X="ACGU",
                          Y="CU"))

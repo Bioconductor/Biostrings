@@ -80,7 +80,7 @@ setClass("AminoAcidAlphabet", # should also have the codons
 
 DNAAlphabet <- function()
     new("NucleotideAlphabet",
-        letters=c('A', 'G', 'C', 'T'))
+        letters=c('T', 'G', 'C', 'A'))
 RNAAlphabet <- function()
     new("NucleotideAlphabet",
-        letters=c('A', 'G', 'C', 'U'))
+        letters=c('U', 'G', 'C', 'A'))

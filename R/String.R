@@ -266,3 +266,29 @@ reverseComplement <-
         stop("argument must be a BioString")
     .Call("reverseComplementBioString", x)
 }
+
+if (!isGeneric("allSameLetter"))
+    setGeneric("allSameLetter",
+               function(x, letter)
+               standardGeneric("allSameLetter"))
+
+setMethod("allSameLetter",
+          signature(x="BioString", letter="character"),
+          function (x, letter)
+      {
+          callGeneric(x, NucleotideString(letter, alphabet=x@alphabet))
+      })
+
+setMethod("allSameLetter",
+          signature(x="character"),
+          function (x, letter)
+      {
+          callGeneric(DNAString(x), letter)
+      })
+
+setMethod("allSameLetter",
+          signature(x = "BioString", letter="BioString"),
+          function (x, letter)
+      {
+          .Call("allSameLetter", x, letter)
+      })
