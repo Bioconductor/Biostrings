@@ -34,6 +34,7 @@ matchDNAPattern(pattern, x, algorithm)
   details.
 }
 \author{ Saikat DebRoy }
+\references{Dan Gusfield - Algorithms on strings, trees, and sequences}
 \seealso{ \code{BioString-class} for the type of the return value. }
 \examples{
 x <- DNAString("AAGCGCGATATG")
