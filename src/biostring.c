@@ -1206,6 +1206,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         return LengthOne_exactMatch(origPattern, x);
     vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (pattern.usesChar) {
+        int* shiftTable[256];
         unsigned char* str;
         char* patternptr;
         char save_first;
@@ -1234,6 +1235,14 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         save_first = patternptr[0];
         patternptr[0] = 0; /* make the first (dummy)
                             * element 0 */
+        for (k = 0; k < 256; k++) {
+            SEXP tmp = VECTOR_ELT(pattern.bad_char.letterIndex, k);
+            if (tmp == R_NilValue)
+                shiftTable[k] = NULL;
+            else if (TYPEOF(tmp) != INTSXP || LENGTH(tmp) != patlen)
+                error("invalid letterIndex");
+            else shiftTable[k] = INTEGER(tmp);
+        }
         for (k = patlen; k <= m; ) {
             int i, h;
             for (i = patlen, h = k; 
@@ -1253,11 +1262,10 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                 index[nmatch++] = k;
                 k += pattern.good_suffix_shift[0];
             } else {
-                SEXP letterIndex =
-                    VECTOR_ELT(pattern.bad_char.letterIndex, str[h]);
+                int* letterIndex = shiftTable[str[h]];
                 int bad_character_shift;
-                R_assert(letterIndex != R_NilValue);
-                bad_character_shift = INTEGER(letterIndex)[i];
+                R_assert(letterIndex != NULL);
+                bad_character_shift = letterIndex[i];
 #if 0
                 if (i == patlen) {
                     /* good suffix rule gives 1 here - so we ignore it */
