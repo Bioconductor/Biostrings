@@ -20,17 +20,17 @@ RNAPatternAlphabet()
   substitution of \sQuote{U} for \sQuote{T}.
 
   \tabular{ll}{
-    \sQuote{N}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
-    \sQuote{B}\tabmatches \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
-    \sQuote{D}\tabmatches \sQuote{A}, \sQuote{G}, \sQuote{T}\cr
-    \sQuote{H}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{T}\cr
-    \sQuote{K}\tabmatches \sQuote{G}, \sQuote{T}\cr
-    \sQuote{M}\tabmatches \sQuote{A}, \sQuote{C}\cr
-    \sQuote{R}\tabmatches \sQuote{A}, \sQuote{G}\cr
-    \sQuote{S}\tabmatches \sQuote{C}, \sQuote{G}\cr
-    \sQuote{V}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{G}\cr
-    \sQuote{W}\tabmatches \sQuote{A}, \sQuote{T}\cr
-    \sQuote{Y}\tabmatches \sQuote{C}, \sQuote{T}\cr
+    \sQuote{N}\tab matches \sQuote{A}, \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
+    \sQuote{B}\tab matches \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
+    \sQuote{D}\tab matches \sQuote{A}, \sQuote{G}, \sQuote{T}\cr
+    \sQuote{H}\tab matches \sQuote{A}, \sQuote{C}, \sQuote{T}\cr
+    \sQuote{K}\tab matches \sQuote{G}, \sQuote{T}\cr
+    \sQuote{M}\tab matches \sQuote{A}, \sQuote{C}\cr
+    \sQuote{R}\tab matches \sQuote{A}, \sQuote{G}\cr
+    \sQuote{S}\tab matches \sQuote{C}, \sQuote{G}\cr
+    \sQuote{V}\tab matches \sQuote{A}, \sQuote{C}, \sQuote{G}\cr
+    \sQuote{W}\tab matches \sQuote{A}, \sQuote{T}\cr
+    \sQuote{Y}\tab matches \sQuote{C}, \sQuote{T}\cr
     \tab \cr
   }
 }
