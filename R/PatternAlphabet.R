@@ -33,6 +33,7 @@ setMethod("initialize",
           .Object@letters <- paste(baseAlphabet@letters,
                                    paste(letters, collapse=''),
                                    sep='')
+          .Object@gap <- baseAlphabet@gap
           .Object
       })
 

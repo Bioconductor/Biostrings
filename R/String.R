@@ -64,7 +64,7 @@ NucleotideString <- function(src,
                              srctype=c("character", "connection"),
                              alphabet=if (type == "DNA") DNAAlphabet()
                                       else RNAAlphabet(),
-                             gap='-')
+                             gap=alphabet@gap)
 {
     srctype <- match.arg(srctype)
     if (srctype != "character")
@@ -75,13 +75,21 @@ NucleotideString <- function(src,
     if (!is.character(gap) || length(gap) != 1 || nchar(gap) != 1)
         stop("gap must be a single character")
     ans <- new("BioString", alphabet)
-    gapindex <- match('-', names(ans@alphabet@mapping))
-    names(ans@alphabet@mapping)[gapindex] <- gap
-    substr(ans@alphabet@letters, gapindex, gapindex) <- gap
-    ans <- .Call("setBioString", ans, src)
-    ans@initialized <- TRUE
-    names(ans@alphabet@mapping)[gapindex] <- '-'
-    substr(ans@alphabet@letters, gapindex, gapindex) <- '-'
+    if (gap != alphabet@gap) {
+        alphgap <- alphabet@gap
+        gapindex <- match(alphgap, names(ans@alphabet@mapping))
+        names(ans@alphabet@mapping)[gapindex] <- gap
+        substr(ans@alphabet@letters, gapindex, gapindex) <- gap
+        ans@alphabet@gap <- gap
+        ans <- .Call("setBioString", ans, src)
+        ans@initialized <- TRUE
+        names(ans@alphabet@mapping)[gapindex] <- alphgap
+        substr(ans@alphabet@letters, gapindex, gapindex) <- alphgap
+        ans@alphabet@gap <- alphgap
+    } else {
+        ans <- .Call("setBioString", ans, src)
+        ans@initialized <- TRUE
+    }
     ans
 }
 
@@ -115,6 +123,33 @@ setMethod("as.character",
           function (x)
       {
           .Call("BioStringToRString", x)
+      })
+
+setMethod("nchar",
+          signature(x = "BioString"),
+          function (x)
+      {
+          ans <- x@end-x@start+1
+          if (ans < 0)
+              ans <- 0
+          ans
+      })
+
+setMethod("show",
+          signature(object = "BioString"),
+          function (object)
+      {
+          n <- nchar(object)
+          if (n == 0)
+              cat("    Empty biological sequence\n")
+          else {
+              cat("    Biological sequence ")
+              if (n > 50) {
+                  object <- substr(object, 1, 50)
+                  cat("begining ")
+              }
+              cat("with values\n ", as.character(object), '\n')
+          }
       })
 
 if (!isGeneric("matchDNAPattern"))

@@ -2,21 +2,28 @@ library("methods")
 
 setClass("BioAlphabet",
          representation(letters="character",
-                        mapping="integer"),
+                        mapping="integer",
+                        gap="character"),
          contains="VIRTUAL")
 
 setMethod("initialize",
           signature(.Object = "BioAlphabet"),
-          function (.Object, letters, ...)
+          function (.Object, letters, gap, ...)
       {
           if (!is.character(letters) ||
               any(nchar(letters) != 1))
               stop("invalid alphabet letters")
-          if (!any(letters == '-'))
-              letters <- c('-', letters)
+          if (missing(gap))
+              gap <- '-'
+          else if (!is.character(gap) || length(gap) != 1 ||
+                   nchar(gap) != 1)
+              stop("gap must be a single character")
+          if (!any(letters == gap))
+              letters <- c(gap, letters)
           .Object@letters <- paste(letters, collapse='')
           .Object@mapping <- sort(as.integer(2^(0:(length(letters)-1))))
           names(.Object@mapping) <- letters
+          .Object@gap <- gap
           .Object
       })
 
@@ -25,20 +32,26 @@ setClass("NucleotideAlphabet",
 
 setMethod("initialize",
           signature(.Object = "NucleotideAlphabet"),
-          function (.Object, letters, ...)
+          function (.Object, letters, gap, ...)
       {
           tmp <- sort(toupper(letters))
-          if (length(tmp) != 4 &&
-              (tmp[1] != '-' || length(tmp) != 5))
-              stop("Nucleotide alphabets have 4 letters other than gap")
+          if (missing(gap))
+              gap <- '-'
+          else if (is.character(gap) || length(gap) != 1 ||
+                   nchar(gap) != 1)
+              stop("gap must be a single character")
+          if ((length(tmp) != 4 &&
+               (tmp[1] != toupper(gap) || length(tmp) != 5)) ||
+              tmp != unique(tmp))
+              stop("Nucleotide alphabets have 4 distinct letters other than gap")
           if (length(tmp) == 5)
-              tmp <- tmp[-1]
+              tmp <- tmp[tmp != gap]
           if (tmp != c('A', 'C', 'G', 'T') &&
               tmp != c('A', 'C', 'G', 'U'))
               warning("given letters, (",
                       paste(letters, collapse=", "),
                       "), do not match usual RNA or DNA base encodings")
-          callNextMethod(.Object, letters=letters, ...)
+          callNextMethod(.Object, letters=letters, gap=gap, ...)
       })
 
 setClass("AminoAcidAlphabet", # should also have the codons
