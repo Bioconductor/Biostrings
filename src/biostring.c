@@ -1946,8 +1946,8 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     if (ksubst < 0 || kins < 0 || kdel < 0 || kerr < 0 ||
         (ksubst+kins+kdel < kerr))
         error("Invalid mismatch specification");
-    if (kerr > 0)
-        error("mismatch not implemented");
+    if (kerr > 0 && (kerr != ksubst || kerr != kins || kerr != kdel))
+        error("mismatch of specific types not implemented");
 
     getLengthOneBioStringRange(pattern, &pstart, &pend);
     PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
@@ -1988,7 +1988,6 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     nmatch = 0;
     if (TYPEOF(pattern) == CHARSXP) {
         ShiftOrWord_t U[256];
-        ShiftOrWord_t M_k;
         unsigned char* pptr = ((unsigned char*) CHAR(pattern))+pstart-1;
         unsigned char* xptr;
         int k;
@@ -2002,28 +2001,127 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
             }
             U[k] = word;
         }
-        xptr = (unsigned char*) CHAR(vec)+xstart-1;
-        M_k = U[xptr[1]];
-        for (k = 2; k < patlen; k++) {
-            M_k = (M_k << 1) | U[xptr[k]];
-        }
-        for (k = patlen; k <= m; k++) {
-            M_k = (M_k << 1) | U[xptr[k]];
-            if ((M_k & (1UL << (patlen-1))) == 0) {
-                if (nmatchIndex == nmatch) {
-                    matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
-                    REPROTECT(matchIndex, matchIndex_pi);
-                    nmatchIndex = LENGTH(matchIndex);
-                    index = INTEGER(matchIndex);
+        if (kerr == 0) {
+            ShiftOrWord_t M_k;
+            xptr = (unsigned char*) CHAR(vec)+xstart-1;
+            M_k = U[xptr[1]];
+            for (k = 2; k < patlen; k++) {
+                M_k = (M_k << 1) | U[xptr[k]];
+            }
+            for (k = patlen; k <= m; k++) {
+                M_k = (M_k << 1) | U[xptr[k]];
+                if ((M_k & (1UL << (patlen-1))) == 0) {
+                    if (nmatchIndex == nmatch) {
+                        matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                        REPROTECT(matchIndex, matchIndex_pi);
+                        nmatchIndex = LENGTH(matchIndex);
+                        index = INTEGER(matchIndex);
+                    }
+                    index[nmatch++] = k;
                 }
-                index[nmatch++] = k;
-            }
 #ifdef INTERRUPT_BIOSTRINGS
-            if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                R_CheckUserInterrupt();
-                interruptcheck = 0UL;
-            }
+                if (interruptcheck > INTERRUPTCHECK_AFTER) {
+                    R_CheckUserInterrupt();
+                    interruptcheck = 0UL;
+                }
 #endif
+            }
+        } else if (kerr <= 3) {
+            ShiftOrWord_t M_k[4];
+            int i;
+
+            xptr = (unsigned char*) CHAR(vec)+xstart-1;
+            M_k[0] = ~0UL;
+            for (i = 0; i < kerr; i++) {
+                M_k[i+1] = M_k[i] << 1;
+            }
+            switch (kerr) {
+            case 1:
+                for (k = 1; k <= m; k++) {
+                    ShiftOrWord_t tmp = M_k[0];
+
+                    M_k[0] = (tmp << 1) | U[xptr[k]];
+                    M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) &
+                        tmp & (tmp << 1) & (M_k[0] << 1);
+                    if (((M_k[0] & M_k[1]) & (1UL << (patlen-1))) == 0) {
+                        if (nmatchIndex == nmatch) {
+                            matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                            REPROTECT(matchIndex, matchIndex_pi);
+                            nmatchIndex = LENGTH(matchIndex);
+                            index = INTEGER(matchIndex);
+                        }
+                        index[nmatch++] = k;
+                    }
+#ifdef INTERRUPT_BIOSTRINGS
+                    if (interruptcheck > INTERRUPTCHECK_AFTER) {
+                        R_CheckUserInterrupt();
+                        interruptcheck = 0UL;
+                    }
+#endif
+                }
+                break;
+            case 2:
+                for (k = 1; k <= m; k++) {
+                    ShiftOrWord_t tmp0 = M_k[0];
+                    ShiftOrWord_t tmp1 = M_k[1];
+
+                    M_k[0] = (tmp0 << 1) | U[xptr[k]];
+                    M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) &
+                        tmp0 & (tmp0 << 1) & (M_k[0] << 1);
+                    M_k[2] = ((M_k[2] << 1) | U[xptr[k]]) &
+                        tmp1 & (tmp1 << 1) & (M_k[1] << 1);
+                    if (((M_k[0] & M_k[1] & M_k[2]) &
+                         (1UL << (patlen-1))) == 0) {
+                        if (nmatchIndex == nmatch) {
+                            matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                            REPROTECT(matchIndex, matchIndex_pi);
+                            nmatchIndex = LENGTH(matchIndex);
+                            index = INTEGER(matchIndex);
+                        }
+                        index[nmatch++] = k;
+                    }
+#ifdef INTERRUPT_BIOSTRINGS
+                    if (interruptcheck > INTERRUPTCHECK_AFTER) {
+                        R_CheckUserInterrupt();
+                        interruptcheck = 0UL;
+                    }
+#endif
+                }
+                break;
+            case 3:
+                for (k = 1; k <= m; k++) {
+                    ShiftOrWord_t tmp0 = M_k[0];
+                    ShiftOrWord_t tmp1 = M_k[1];
+                    ShiftOrWord_t tmp2 = M_k[2];
+
+                    M_k[0] = (tmp0 << 1) | U[xptr[k]];
+                    M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) &
+                        tmp0 & (tmp0 << 1) & (M_k[0] << 1);
+                    M_k[2] = ((M_k[2] << 1) | U[xptr[k]]) &
+                        tmp1 & (tmp1 << 1) & (M_k[1] << 1);
+                    M_k[3] = ((M_k[3] << 1) | U[xptr[k]]) &
+                        tmp2 & (tmp2 << 1) & (M_k[2] << 1);
+                    if (((M_k[0] & M_k[1] & M_k[2] & M_k[3]) &
+                         (1UL << (patlen-1))) == 0) {
+                        if (nmatchIndex == nmatch) {
+                            matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                            REPROTECT(matchIndex, matchIndex_pi);
+                            nmatchIndex = LENGTH(matchIndex);
+                            index = INTEGER(matchIndex);
+                        }
+                        index[nmatch++] = k;
+                    }
+#ifdef INTERRUPT_BIOSTRINGS
+                    if (interruptcheck > INTERRUPTCHECK_AFTER) {
+                        R_CheckUserInterrupt();
+                        interruptcheck = 0UL;
+                    }
+#endif
+                }
+                break;
+            default:
+                error("nerr too large");
+            }
         }
     } else {
 #if 0
