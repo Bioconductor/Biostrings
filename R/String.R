@@ -141,14 +141,17 @@ setMethod("show",
       {
           n <- nchar(object)
           if (n == 0)
-              cat("    Empty biological sequence\n")
+              cat("  Empty biological sequence with alphabet",
+                  object@alphabet@letters)
+          cat("\n")
           else {
-              cat("    Biological sequence of length", n)
+              cat("  Biological sequence of length", n, "with alphabet",
+                  object@alphabet@letters, "and\n")
               if (n > 50) {
                   object <- substr(object, 1, 50)
                   cat(" begining")
               }
-              cat(" with values\n", as.character(object), '\n')
+              cat(" with values", as.character(object), '\n')
           }
       })
 
