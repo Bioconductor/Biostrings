@@ -805,7 +805,6 @@ reverseComplementBioString(SEXP x)
             unsigned char G = 0;
             unsigned char T = 0;
             unsigned char gap = 0;
-            unsigned char revmap[256];
             int i;
 
             if (TYPEOF(mapping) != INTSXP ||
@@ -837,19 +836,24 @@ reverseComplementBioString(SEXP x)
             }
             if (!A || !G || !C || !T || !gap)
                 error("Could not find some of the nucleotide letters");
-            memset(revmap, 0, 256);
-            revmap[A] = T;
-            revmap[C] = G;
-            revmap[G] = C;
-            revmap[T] = A;
-            revmap[gap] = gap;
             ans = allocString(length(x));
             dest = (unsigned char*) CHAR(ans)+start-1;
             for (i = 0; i < n; i++) {
-                unsigned char pat = revmap[src[i]];
-                if (!pat)
+                unsigned char srcpat = src[i];
+                unsigned char destpat = 0;
+                if (srcpat & A)
+                    destpat |= T;
+                if (srcpat & C)
+                    destpat |= G;
+                if (srcpat & T)
+                    destpat |= A;
+                if (srcpat & G)
+                    destpat |= C;
+                if (srcpat & gap)
+                    destpat |= gap;
+                if (!destpat)
                     error("Unrecognized code in nucleotide sequence");
-                dest[n-i] = pat;
+                dest[n-i] = destpat;
             }
         }
     } else {
