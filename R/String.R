@@ -24,7 +24,8 @@ setMethod("BioStringNewValues",
               stop("incorrect nucleotide alphabet")
           if (length.string > .Machine$integer.max)
               stop("string too long")
-          .Call("BioStringValues", 5, length.string)
+          .Call("BioStringValues", 5, length.string,
+                PACKAGE="Biostrings")
       })
 
 setMethod("BioStringNewValues",
@@ -34,7 +35,8 @@ setMethod("BioStringNewValues",
       {
           if (length.string > .Machine$integer.max)
               stop("string too long")
-          .Call("BioStringValues", nchar(alphabet@letters), length.string)
+          .Call("BioStringValues", nchar(alphabet@letters),
+                length.string, PACKAGE="Biostrings")
       })
 
 setMethod("BioStringNewValues",
@@ -93,11 +95,13 @@ NucleotideString <- function(src,
         }
         alphgap <- alphabet@gap
         gapletter(alphabet) <- gap
-        ans <- .Call("setBioString", new("BioString", alphabet), src)
+        ans <- .Call("setBioString", new("BioString", alphabet), src,
+                     PACKAGE="Biostrings")
         ans@initialized <- TRUE
         ans@alphabet <- savealph
     } else {
-        ans <- .Call("setBioString", new("BioString", alphabet), src)
+        ans <- .Call("setBioString", new("BioString", alphabet), src,
+                     PACKAGE="Biostrings")
         ans@initialized <- TRUE
     }
     ans
@@ -144,21 +148,23 @@ setMethod("substr",
           signature(x = "BioString"),
           function (x, start, stop)
       {
-          .Call("BioString_substring", x, start, stop, FALSE)
+          .Call("BioString_substring", x, start, stop, FALSE,
+                PACKAGE="Biostrings")
       })
 
 setMethod("substring",
           signature(text = "BioString"),
           function (text, first, last)
       {
-          .Call("BioString_substring", text, first, last, TRUE)
+          .Call("BioString_substring", text, first, last, TRUE,
+                PACKAGE="Biostrings")
       })
 
 setMethod("as.character",
           signature(x = "BioString"),
           function (x)
       {
-          .Call("BioStringToRString", x)
+          .Call("BioStringToRString", x, PACKAGE="Biostrings")
       })
 
 setMethod("nchar",
@@ -254,8 +260,10 @@ setMethod("matchDNAPattern",
                              c("boyer-moore",
                                "forward-search"))
           switch(algorithm,
-                 "boyer-moore"=.Call("BoyerMoore_exactMatch", pattern, x),
-                 "forward-search"=.Call("ForwardSearch_exactMatch", pattern, x),
+                 "boyer-moore"=.Call("BoyerMoore_exactMatch", pattern,
+                                     x, PACKAGE="Biostrings"),
+                 "forward-search"=.Call("ForwardSearch_exactMatch",
+                                        pattern, x, PACKAGE="Biostrings"),
                  stop("Unknown algorithm"))
       })
 
@@ -264,7 +272,7 @@ reverseComplement <-
 {
     if (!is(x, "BioString"))
         stop("argument must be a BioString")
-    .Call("reverseComplementBioString", x)
+    .Call("reverseComplementBioString", x, PACKAGE="Biostrings")
 }
 
 if (!isGeneric("allSameLetter"))
@@ -290,5 +298,5 @@ setMethod("allSameLetter",
           signature(x = "BioString", letter="BioString"),
           function (x, letter)
       {
-          .Call("allSameLetter", x, letter)
+          .Call("allSameLetter", x, letter, PACKAGE="Biostrings")
       })

@@ -16,7 +16,7 @@
 
 #define R_assert(e) ((e) ? (void) 0 : error("assertion `%s' failed: file `%s', line %d\n", #e, __FILE__, __LINE__))
 
-SEXP
+static SEXP
 IntegerBitOr(SEXP x)
 {
     unsigned int ans = 0U;
@@ -69,7 +69,7 @@ getBioStringLength(SEXP x, int** startvecptr, int** endvecptr)
     return INTEGER(dim)[0];
 }
 
-SEXP
+static SEXP
 BioStringValues(SEXP alphabet_length, SEXP string_length)
 {
     int alphlen = asInteger(alphabet_length);
@@ -189,7 +189,7 @@ appendCharacterToBioString(SEXP alphMapping,
     return current_length+count;
 }
 
-SEXP
+static SEXP
 setBioString(SEXP biostring, SEXP src)
 {
     SEXP offsets;
@@ -364,7 +364,7 @@ invalid_element:
     return R_NilValue; /* -Wall */
 }
 
-SEXP
+static SEXP
 BioStringToRString(SEXP x)
 {
     SEXP alph, mapping, values, tmp, dim, ans, offsets;
@@ -414,7 +414,7 @@ BioStringToRString(SEXP x)
 	i3 = (++i3 == n3) ? 0 : i3,\
 	++i)
 
-SEXP
+static SEXP
 BioString_substring(SEXP x, SEXP start, SEXP stop, SEXP doSubstring)
 {
     int* startvec;
@@ -861,7 +861,7 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
     return x;
 }
 
-SEXP
+static SEXP
 ForwardSearch_exactMatch(SEXP pattern, SEXP x)
 {
     int pstart, pend, xstart, xend, patlen = 0;
@@ -983,7 +983,7 @@ finished_match:
     return matchIndexToBioString(x, matchIndex, nmatch, patlen);
 }
 
-SEXP
+static SEXP
 LengthOne_exactMatch(SEXP pattern, SEXP x)
 {
     int start, end;
@@ -1209,7 +1209,7 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
     }
 }
 
-SEXP
+static SEXP
 BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
 {
 #ifdef INTERRUPT_BIOSTRINGS
@@ -1323,7 +1323,7 @@ finished_match:
     return matchIndexToBioString(x, matchIndex, nmatch, patlen);
 }
 
-SEXP
+static SEXP
 reverseComplementBioString(SEXP x)
 {
     SEXP alph, mapping, letters, xvec;
@@ -1480,7 +1480,8 @@ allSameLetter_func(unsigned char* str, int slen,
     return 1;
 }
 
-SEXP allSameLetter(SEXP x, SEXP pattern)
+static SEXP
+allSameLetter(SEXP x, SEXP pattern)
 {
     int len = getBioStringLength(x, NULL, NULL);
     SEXP alph = GET_SLOT(x, install("alphabet"));
@@ -1508,4 +1509,26 @@ SEXP allSameLetter(SEXP x, SEXP pattern)
                        &data);
     UNPROTECT(1);
     return ans;
+}
+
+#include "common.h"
+#include <R.h>
+#include <R_ext/Rdynload.h>
+
+static const R_CallMethodDef R_CallDef  [] = {
+    CALL_DEF(IntegerBitOr, 1),
+    CALL_DEF(BioStringValues, 2),
+    CALL_DEF(setBioString, 2),
+    CALL_DEF(BioString_substring, 4),
+    CALL_DEF(BioStringToRString, 1),
+    CALL_DEF(BoyerMoore_exactMatch, 2),
+    CALL_DEF(ForwardSearch_exactMatch, 2),
+    CALL_DEF(reverseComplementBioString, 1),
+    CALL_DEF(allSameLetter, 2),
+    {NULL, NULL, 0},
+};
+
+void R_init_Biostrings(DllInfo *info)
+{
+    R_registerRoutines(info, NULL, R_CallDef, NULL, NULL);
 }

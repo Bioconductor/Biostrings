@@ -36,7 +36,9 @@ setMethod("initialize",
                                    if (!all(map %in%
                                             alphletters))
                                        stop("each pattern letter can only match letters in the original alphabet")
-                                   .Call("IntegerBitOr", baseAlphabet@mapping[map])
+                                   .Call("IntegerBitOr",
+                                         baseAlphabet@mapping[map],
+                                         PACKAGE="Biostrings")
                                }))
           names(mapping) <- letters
           .Object@mapping <- sort(c(baseAlphabet@mapping, mapping))
