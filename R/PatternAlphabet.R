@@ -50,13 +50,29 @@ setMethod("initialize",
 DNAPatternAlphabet <- function()
     new("BioPatternAlphabet",
         DNAAlphabet(), c(N="AGCT", # N matches everything but the gap character
-                         V="AGC",
+                         B="CGT",
+                         D="AGT",
+                         H="ACT",
+                         K="GT",
+                         M="AC",
                          R="AG",
+                         S="CG",
+                         V="ACG",
+                         W="AT",
+                         X="ACGT",
                          Y="CT"))
 
 RNAPatternAlphabet <- function()
     new("BioPatternAlphabet",
-        DNAAlphabet(), c(N="AGCU", # N matches everything but the gap character
-                         V="AGC",
+        RNAAlphabet(), c(N="AGCU", # N matches everything but the gap character
+                         B="CGU",
+                         D="AGU",
+                         H="ACU",
+                         K="GU",
+                         M="AC",
                          R="AG",
+                         S="CG",
+                         V="ACG",
+                         W="AU",
+                         X="ACGU",
                          Y="CU"))
