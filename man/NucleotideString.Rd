@@ -9,7 +9,7 @@
 
   The function \code{DNAString} expects a character string
   representing either a DNA sequence, and converts it to a
-  BioString object with the standrad DNA alphabet.
+  BioString object with the standard DNA alphabet.
 }
 \usage{
 NucleotideString(src, type = c("DNA", "RNA"),
@@ -39,7 +39,7 @@ DNAString(src, gap="-")
   value.
 
   \code{\link{DNAAlphabet}} and \code{\link{RNAAlphabet}} alphabet for
-  creating the standrad DNA and RNA alphabets.
+  creating the standard DNA and RNA alphabets.
 }
 \examples{
 NucleotideString("ACTGAACT")
