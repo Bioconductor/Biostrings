@@ -77,7 +77,7 @@ NucleotideString <- function(src,
     ans
 }
 
-DNAString <- fumction(src)
+DNAString <- function(src)
 {
     NucleotideString(src)
 }
