@@ -1113,12 +1113,12 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
             for (j = n-1; j > 0; j--) {
                 /* does the j-th pattern contain pat? */
                 if ((patternptr[j] & pat) == pat) {
-                    while (lastj > j)
-                        indx[lastj--] = j;
+                    for (; lastj > j; lastj--)
+                        indx[lastj] = lastj-j;
                 }
             }
-            while (lastj >= 0)
-                indx[lastj--] = 0;
+            for (; lastj >= 0; lastj--)
+                indx[lastj] = lastj;
 #ifdef DEBUG_BIOSTRINGS
             Rprintf("bad char index for pattern %d\n", pat);
             for (j = 1; j <= n; j++)
@@ -1257,7 +1257,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                     VECTOR_ELT(pattern.bad_char.letterIndex, str[h]);
                 int bad_character_shift;
                 R_assert(letterIndex != R_NilValue);
-                bad_character_shift = i-INTEGER(letterIndex)[i];
+                bad_character_shift = INTEGER(letterIndex)[i];
 #if 0
                 if (i == patlen) {
                     /* good suffix rule gives 1 here - so we ignore it */
