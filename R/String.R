@@ -362,7 +362,7 @@ sortDNAString <-
 DNASuffixArray <-
     function(x, prefixLength = max(nchar(x)))
 {
-    .Call('DNASuffixArray', x, prefixLength)
+    .Call('DNASuffixArray', x, prefixLength, PACKAGE="Biostrings")
 }
 
 setClass("LongestCommonPrefix",
