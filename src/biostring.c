@@ -1264,7 +1264,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
             } else {
                 int* letterIndex = shiftTable[str[h]];
                 int bad_character_shift;
-                R_assert(letterIndex != NULL);
+                R_assert(letterIndex == NULL);
 #if 0
                 bad_character_shift = letterIndex[i];
                 if (i == patlen) {
