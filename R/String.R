@@ -77,6 +77,11 @@ NucleotideString <- function(src,
     ans
 }
 
+DNAString <- fumction(src)
+{
+    NucleotideString(src)
+}
+
 setMethod("substr",
           signature(x="BioString"),
           function (x, start, stop)
