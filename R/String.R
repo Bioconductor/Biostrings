@@ -91,7 +91,9 @@ NucleotideString <- function(src,
             if (!is(alphabet, "BioPatternAlphabet") ||
                 gap %in% names(alphabet@baseAlphabet@mapping))
                 stop("gap character conflicts with other alphabet characters")
-            alphabet <- alphabet@baseAlphabet
+            gindex <- match(gap, names(alphabet@mapping))
+            names(alphabet@mapping)[gindex] <- '0'
+            substr(alphabet@letters, gindex, gindex) <- '0'
         }
         alphgap <- alphabet@gap
         gapletter(alphabet) <- gap
