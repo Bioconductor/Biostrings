@@ -16,7 +16,7 @@ NucleotideString(src, type = c("DNA", "RNA"),
                  srctype = c("character", "connection"),
                  alphabet = if (type == "DNA")
                             DNAAlphabet() else RNAAlphabet(),
-                 gap = "-")
+                 gap = alphabet@gap)
 DNAString(src, gap="-")
 }
 \arguments{
