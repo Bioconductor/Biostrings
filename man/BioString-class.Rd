@@ -2,9 +2,12 @@
 \docType{class}
 \alias{BioString-class}
 \alias{[,BioString-method}
+\alias{[,BioString,ANY,ANY,ANY-method}
 \alias{[[,BioString-method}
 \alias{allSameLetter,BioString,character-method}
 \alias{allSameLetter,BioString,BioString-method}
+\alias{anySameLetter,BioString,character-method}
+\alias{anySameLetter,BioString,BioString-method}
 \alias{as.character,BioString-method}
 \alias{as.matrix,BioString-method}
 \alias{initialize,BioString-method}
