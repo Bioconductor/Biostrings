@@ -7,12 +7,17 @@
 #undef MAX
 #endif
 
+#ifdef MIN
+#undef MIN
+#endif
+
 #define INTERRUPT_BIOSTRINGS
 #ifdef INTERRUPT_BIOSTRINGS
 #define INTERRUPTCHECK_AFTER (1U << 21)
 #endif
 
 #define MAX(i, j) ((i)>(j)?(i):(j))
+#define MIN(i, j) ((i)<(j)?(i):(j))
 
 #define R_assert(e) ((e) ? (void) 0 : error("assertion `%s' failed: file `%s', line %d\n", #e, __FILE__, __LINE__))
 
@@ -1340,6 +1345,15 @@ reverseComplementBioString(SEXP x)
     letters = GET_NAMES(mapping);
     x = duplicate(x);
     PROTECT(x);
+    xvec = R_ExternalPtrProtected(GET_SLOT(x, install("values")));
+    if (xvec != R_NilValue) {
+        SET_SLOT(x, install("values"),
+                 R_MakeExternalPtr(NULL, xvec,
+                                   R_ExternalPtrTag(GET_SLOT(x,
+                                                             install("values")))));
+        UNPROTECT(1);
+        return x;
+    }
     xvec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (TYPEOF(xvec) != CHARSXP)
         error("Only character storage is supported now");
@@ -1428,7 +1442,9 @@ reverseComplementBioString(SEXP x)
                 start[i] = n-tmp+1;
             }
         }
-        xptr = R_MakeExternalPtr(NULL, ansvec, R_NilValue);
+        R_SetExternalPtrProtected(GET_SLOT(x, install("values")),
+                                  ansvec);
+        xptr = R_MakeExternalPtr(NULL, ansvec, xvec);
         UNPROTECT(1);
         PROTECT(xptr);
         SET_SLOT(x, install("values"), xptr);
@@ -1529,12 +1545,10 @@ baseFrequency_func(unsigned char* str, int slen,
 static SEXP
 baseFrequency(SEXP x)
 {
-    int len = getBioStringLength(x, NULL, NULL);
     SEXP alph = GET_SLOT(x, install("alphabet"));
     SEXP mapping = GET_SLOT(alph, install("mapping"));
     SEXP letters = GET_NAMES(mapping);
     int nletters = LENGTH(letters);
-    int start, end;
     SEXP ans;
     int counts[256];
     int i;
@@ -1566,6 +1580,346 @@ baseFrequency(SEXP x)
     return ans;
 }
 
+static Rboolean
+suffixLess(unsigned char* start1, unsigned char* end1,
+           unsigned char* start2, unsigned char* end2,
+           int prefixLength)
+{
+    size_t len1 = end1-start1;
+    size_t len2 = end2-start2;
+    int cmplen = MIN(len1, len2);
+    int j;
+    if (cmplen >= prefixLength)
+        cmplen = prefixLength-1;
+    for (j = 0; j <= cmplen; j++) {
+        if (start1[j] != start2[j]) {
+            return start1[j] < start2[j];
+        }
+    }
+    return (len1 < prefixLength && len1 < len2);
+}
+
+/*
+ *  A simple insertion sort of suffix indexes. In each suffix, we only
+ *  use the cmpStart to cmpEnd bytes.
+ */
+static void
+insertionSortDNASuffixByPrefix(unsigned char* str, int len,
+                               int* suffixIndex, int* startvec,
+                               int* endvec, int prefixLength)
+{
+    int i;
+    unsigned long interruptcheck = 0UL;
+    for (i = len-1; i > 0; i--) {
+        int s_i = suffixIndex[i];
+        int s_im1 = suffixIndex[i-1];
+        if (suffixLess(str+startvec[s_i], str+endvec[s_i],
+                       str+startvec[s_im1], str+endvec[s_im1],
+                       prefixLength)) {
+            suffixIndex[i-1] = s_i;
+            suffixIndex[i] = s_im1;
+        }
+    }
+    for (i = 2; i < len; i++) {
+        int j;
+        int s_i = suffixIndex[i];
+        int s_jm1 = suffixIndex[i-1];
+        for (j = i;
+             suffixLess(str+startvec[s_i], str+endvec[s_i],
+                        str+startvec[s_jm1], str+endvec[s_jm1],
+                        prefixLength);
+             s_jm1 = suffixIndex[--j-1]) {
+            suffixIndex[j] = s_jm1;
+        }
+        if (j != i) {
+            suffixIndex[j] = s_i;
+        }
+#ifdef INTERRUPT_BIOSTRINGS
+        interruptcheck += i;
+        if (interruptcheck > (1UL << 10)) {
+            R_CheckUserInterrupt();
+            interruptcheck = 0UL;
+        }
+#endif
+    }
+}
+
+/*
+ *  Given a string of encoded patterns (str) of length len, return an
+ *  integer vector of length len with starting index (with 1 based
+ *  indexing) of suffixes of str which are sorted according to their
+ *  first prefixLength elements in increasing order. For the purpose
+ *  of sorting, any suffix with less than prefixLength is assumed to
+ *  be padded with patterns which have no bits set (ie. they are zero).
+ *
+ *  We assume that the encoding uses 5 least significant bits to do
+ *  the encoding and each byte has at least one of the five bits
+ *  set. We also assume that the rest of the bits are not set.
+ *  
+ */
+static void
+sortDNASuffixByPrefix(unsigned char* str, int len, int* suffixIndex,
+                      int* startvec, int* endvec, int prefixLength)
+{
+    int M, p, ncounts, i, K;
+    int* counts;
+    int* oldIndex;
+    int* newIndex;
+
+    if (len <= 0 || prefixLength <= 0)
+        return;
+
+    /*
+     *  We take a two step approach. In the first step, we do an LSD
+     *  sort on the most significant bytes. If the prefixLength is
+     *  too large, we then do an insertion sort to finish the
+     *  sorting.
+     *  
+     *  Knuth describes this type of sorting algorithm as LSD-first
+     *  sort on most significant digits. See the end of secion 5.2.5
+     *  of The Art of Compter Prgramming (volume 3, second edition)
+     *  for details.
+     */
+
+    /*
+     *  We use a simple formula that gives a close approximation to
+     *  the optimum number of words to be combined. This is based on
+     *  the table in Knuth's book in the previously mentioned section.
+     * 
+     *  We use at most two passes. The actual value of M=K/p and p are
+     *  chosen so that M*p is approximately prefixLength. If
+     *  prefixLength is too large, this is not possible and we settle
+     *  on an insertion sort to finish the sorting.
+     */
+
+    M = (.6*log((double) len)+.7)/log(32.0)+.5;
+    if (M <= 0)
+        M = 1;
+    if (M > 3)
+        M = 3;
+    if (M >= prefixLength) {
+        M = prefixLength;
+        p = 1;
+    } else {
+        p = 2.0*log((double)len)/(1.4*M)-12.0/M+0.5;
+        if (p <= 1)
+            p = 2;
+        if (p*M > prefixLength)
+            M = (prefixLength+p-1)/p;
+    }
+    K = p*M;
+
+    if (suffixIndex) {
+        PROTECT(R_NilValue);
+        oldIndex = suffixIndex;
+    } else {
+        oldIndex = INTEGER(PROTECT(allocVector(INTSXP, len)));
+        for (i = 0; i < len; i++)
+            oldIndex[i] = i;
+    }
+    newIndex = INTEGER(PROTECT(allocVector(INTSXP, len)));
+
+    ncounts = 1 << 5*M;
+    counts = INTEGER(PROTECT(allocVector(INTSXP, ncounts)));
+    for (p--; p >= 0; p--) {
+        int j;
+        int* tmp;
+
+        memset(counts, 0, ncounts*sizeof(int));
+        switch (M) {
+        case 1:
+            for (j = 0; j < len; j++) {
+                int oi_j = oldIndex[j];
+                int s_j = startvec[oi_j]+p;
+                if (endvec[oi_j] < s_j) {
+                    counts[0]++;
+                } else {
+                    counts[str[s_j]]++;
+                }
+            }
+            break;
+        case 2:
+            for (j = 0; j < len; j++) {
+                int oi_j = oldIndex[j];
+                int s_j = startvec[oi_j]+p;
+                int end = endvec[oi_j]-s_j;
+                if (end > 0) {
+                    counts[str[s_j+1]+(str[s_j] << 5)]++;
+                } else if (end == 0) {
+                    counts[str[s_j] << 5]++;
+                } else {
+                    counts[0]++;
+                }
+            }
+            break;
+        case 3:
+            for (j = 0; j < len; j++) {
+                int oi_j = oldIndex[j];
+                int s_j = startvec[oi_j]+p;
+                int end = endvec[oi_j]-s_j;
+                if (end > 1) {
+                    counts[str[s_j+2]+(str[s_j+1] << 5)+(str[s_j] << 10)]++;
+                } else {
+                    switch (end) {
+                    case 1:
+                        counts[(str[s_j+1] << 5)+(str[s_j] << 10)]++;
+                        break;
+                    case 0:
+                        counts[str[s_j] << 10]++;
+                        break;
+                    default:
+                        counts[0]++;
+                        break;
+                    }
+                }
+            }
+            break;
+        default:
+            error("invalid value for M %d", M);
+        }
+        for (j = 1; j < ncounts; j++)
+            counts[j] += counts[j-1];
+        switch (M) {
+        case 1:
+            for (j = len-1; j >= 0; j--) {
+                int oi_j = oldIndex[j];
+                int s_j = startvec[oi_j]+p;
+                if (endvec[oi_j] < s_j) {
+                    newIndex[--counts[0]] = oldIndex[j];
+                } else {
+                    newIndex[--counts[str[s_j]]] = oldIndex[j];
+                }
+            }
+            break;
+        case 2:
+            for (j = len-1; j >= 0; j--) {
+                int oi_j = oldIndex[j];
+                int s_j = startvec[oi_j]+p;
+                int end = endvec[oi_j]-s_j;
+                if (end > 0) {
+                    newIndex[--counts[str[s_j+1]+(str[s_j] << 5)]] =
+                        oldIndex[j];
+                } else if (end == 0) {
+                    newIndex[--counts[str[s_j] << 5]] = oldIndex[j];
+                } else {
+                    newIndex[--counts[0]] = oldIndex[j];
+                }
+            }
+            break;
+        case 3:
+            for (j = len-1; j >= 0; j--) {
+                int oi_j = oldIndex[j];
+                int s_j = startvec[oi_j]+p;
+                int end = endvec[oi_j]-s_j;
+                if (end > 1) {
+                    newIndex[--counts[str[s_j+2]+(str[s_j+1] << 5)+
+                                      (str[s_j] << 10)]]
+                        = oldIndex[j];
+                } else {
+                    switch (end) {
+                    case 1:
+                        newIndex[--counts[(str[s_j+1] << 5)+(str[s_j] << 10)]]
+                            = oldIndex[j];
+                        break;
+                    case 0:
+                        newIndex[--counts[str[s_j] << 10]] = oldIndex[j];
+                        break;
+                    default:
+                        newIndex[--counts[0]] = oldIndex[j];
+                        break;
+                    }
+                }
+            }
+            break;
+        default:
+            error("invalid value for M %d", M);
+        }
+        tmp = oldIndex;
+        oldIndex = newIndex;
+        newIndex = tmp;
+    }
+    if (prefixLength > K)
+        insertionSortDNASuffixByPrefix(str, len, oldIndex,
+                                       startvec, endvec, prefixLength);
+    if (suffixIndex == NULL) {
+        memcpy(newIndex, startvec, len*sizeof(int));
+        for (i = 0; i < len; i++)
+            startvec[i] = newIndex[oldIndex[i]];
+        memcpy(newIndex, endvec, len*sizeof(int));
+        for (i = 0; i < len; i++)
+            endvec[i] = newIndex[oldIndex[i]];
+    } else if (suffixIndex != oldIndex)
+        memcpy(suffixIndex, oldIndex, len*sizeof(int));
+    UNPROTECT(3);
+}
+
+static SEXP
+DNASuffixArray(SEXP x, SEXP prefixLength)
+{
+    int* startvec;
+    int* endvec;
+    int len;
+    int plen = asInteger(prefixLength);
+    SEXP vec;
+
+    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(vec) != CHARSXP)
+        error("values must be a CHARSXP");
+    x = duplicate(x);
+    PROTECT(x);
+    len = getBioStringLength(x, &startvec, &endvec);
+    if (len > 0) {
+        int* offsets;
+        int totlen = len;
+        int i, k;
+
+        for (i = 0; i < len; i++) {
+            totlen += endvec[i]-startvec[i];
+        }
+        SET_SLOT(x, install("offsets"), allocMatrix(INTSXP, totlen, 2));
+        offsets = INTEGER(GET_SLOT(x, install("offsets")));
+        for (i = 0, k = 0; i < len; i++) {
+            int j;
+            int start = startvec[i];
+            int end = endvec[i];
+            int len_i = end-start+1;
+            for (j = 0; j < len_i; j++, k++) {
+                offsets[k] = end-j;
+                offsets[k+totlen] = end;
+            }
+        }
+        sortDNASuffixByPrefix(CHAR(vec),
+                              totlen, NULL, offsets,
+                              offsets+totlen, plen);
+    }
+    UNPROTECT(1);
+    return x;
+}
+
+static SEXP
+SortDNAString(SEXP x, SEXP prefixLength)
+{
+    int* startvec;
+    int* endvec;
+    int len;
+    SEXP vec;
+    int plen = asInteger(prefixLength);
+
+    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(vec) != CHARSXP)
+        error("values must be a CHARSXP");
+    x = duplicate(x);
+    PROTECT(x);
+    len = getBioStringLength(x, &startvec, &endvec);
+    if (len > 0 && plen > 0) {
+        sortDNASuffixByPrefix(CHAR(vec),
+                              len, NULL, startvec,
+                              endvec, plen);
+    }
+    UNPROTECT(1);
+    return x;
+}
+
 #include "common.h"
 #include <R.h>
 #include <R_ext/Rdynload.h>
@@ -1581,6 +1935,8 @@ static const R_CallMethodDef R_CallDef  [] = {
     CALL_DEF(reverseComplementBioString, 1),
     CALL_DEF(allSameLetter, 2),
     CALL_DEF(baseFrequency, 1),
+    CALL_DEF(DNASuffixArray, 2),
+    CALL_DEF(SortDNAString, 2),
     {NULL, NULL, 0},
 };
 

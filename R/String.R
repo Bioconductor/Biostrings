@@ -313,3 +313,15 @@ alphabetFrequency <-
     }
     xtable
 }
+
+sortDNAString <-
+    function(x, prefixLength = max(nchar(x)))
+{
+    .Call('SortDNAString', x, prefixLength, PACKAGE="Biostrings")
+}
+
+DNASuffixArray <-
+    function(x, prefixLength = max(nchar(x)))
+{
+    .Call('DNASuffixArray', x, prefixLength)
+}
