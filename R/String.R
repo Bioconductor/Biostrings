@@ -249,12 +249,12 @@ setMethod("matchDNAPattern",
               stop("The pattern and the string are based on different alphabets")
           algorithm <-
               if (missing(algorithm))
-                  "boyre-moore"
+                  "boyer-moore"
               else match.arg(algorithm,
-                             c("boyre-moore",
+                             c("boyer-moore",
                                "forward-search"))
           switch(algorithm,
-                 "boyre-moore"=.Call("BoyerMoore_exactMatch", pattern, x),
+                 "boyer-moore"=.Call("BoyerMoore_exactMatch", pattern, x),
                  "forward-search"=.Call("ForwardSearch_exactMatch", pattern, x),
                  stop("Unknown algorithm"))
       })
