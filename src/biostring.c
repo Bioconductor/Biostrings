@@ -1920,6 +1920,49 @@ SortDNAString(SEXP x, SEXP prefixLength)
     return x;
 }
 
+static SEXP
+longestCommonPrefixSuffixArray(SEXP x)
+{
+    int* startvec;
+    int* endvec;
+    int len;
+    SEXP vec;
+    SEXP ans;
+
+    len = getBioStringLength(x, &startvec, &endvec);
+    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(vec) != CHARSXP)
+        error("values must be a CHARSXP");
+    ans = allocVector(INTSXP, len);
+    if (len > 0) {
+        int* lcp = INTEGER(ans);
+        unsigned char* str;
+        unsigned char* str_ip1;
+        int len_ip1;
+        int i;
+
+        PROTECT(ans);
+        lcp[len-1] = 0;
+        str = (unsigned char*) CHAR(vec);
+        str_ip1 = str+startvec[len-1];
+        len_ip1 = endvec[len-1]-startvec[len-1]+1;
+        for (i = len-2; i >= 0; i--) {
+            int j = 0;
+            unsigned char* str_i = str+startvec[i];
+            int len_i = endvec[i]-startvec[i]+1;
+            int minlen = MIN(len_ip1, len_i);
+
+            while (j < minlen && str_ip1[j] == str_i[j])
+                j++;
+            lcp[i] = j;
+            len_ip1 = len_i;
+            str_ip1 = str_i;
+        }
+        UNPROTECT(1);
+    }
+    return ans;
+}
+
 #include "common.h"
 #include <R.h>
 #include <R_ext/Rdynload.h>
@@ -1937,6 +1980,7 @@ static const R_CallMethodDef R_CallDef  [] = {
     CALL_DEF(baseFrequency, 1),
     CALL_DEF(DNASuffixArray, 2),
     CALL_DEF(SortDNAString, 2),
+    CALL_DEF(longestCommonPrefixSuffixArray, 1),
     {NULL, NULL, 0},
 };
 
