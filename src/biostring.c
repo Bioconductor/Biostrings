@@ -34,10 +34,11 @@ IntegerBitOr(SEXP x)
 static int
 isFromClass(SEXP x, const char* klass)
 {
+    SEXP Class = PROTECT(mkString((char *) klass));
     SEXP call = PROTECT(lang3(install("is"),
-                              x, mkString((char *) klass)));
+                              x, Class));
     SEXP ans = eval(call, R_GlobalEnv);
-    UNPROTECT(1);
+    UNPROTECT(2);
     return asLogical(ans);
 }
 
@@ -818,7 +819,6 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
 {
     int nmatchIndex = LENGTH(matchIndex);
     int* index = INTEGER(matchIndex);
-    PROTECT(matchIndex);
     x = duplicate(x);
     PROTECT(x);
 #ifdef DEBUG_BIOSTRINGS
@@ -857,7 +857,7 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
         SET_SLOT(x, install("offsets"), offsets);
         UNPROTECT(1);
     }
-    UNPROTECT(2);
+    UNPROTECT(1);
     return x;
 }
 
@@ -877,6 +877,7 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
     int m;
 
     getLengthOneBioStringRange(pattern, &pstart, &pend);
+    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
     if (pstart > pend)
         goto finished_match;
     getLengthOneBioStringRange(x, &xstart, &xend);
@@ -906,7 +907,7 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
     Rprintf("nmatchIndex: %d\n", nmatchIndex);
 #endif
     matchIndex = allocVector(INTSXP, nmatchIndex);
-    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
+    REPROTECT(matchIndex, matchIndex_pi);
     index = INTEGER(matchIndex);
 
     nmatch = 0;
@@ -978,9 +979,10 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
         }
         pptr[0] = save_first;
     }
-    UNPROTECT(1);
 finished_match:
-    return matchIndexToBioString(x, matchIndex, nmatch, patlen);
+    x = matchIndexToBioString(x, matchIndex, nmatch, patlen);
+    UNPROTECT(1);
+    return x;
 }
 
 static SEXP
@@ -1159,7 +1161,7 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
         N = INTEGER(VECTOR_ELT(Nvecs, 0))-1;
         memset(tmpptr, 0, (1+n)*sizeof(int));
         for (i = 1; i < n; i++) {
-            int j = n-N[i]+1;
+            int j = n-N[i];
             tmpptr[j] = i;
         }
         N = INTEGER(VECTOR_ELT(Nvecs, 1))-1;
@@ -1232,7 +1234,6 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         goto finished_match;
     if (patlen == 1)
         return LengthOne_exactMatch(origPattern, x);
-    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (pattern.usesChar) {
         int* shiftTable[256];
         unsigned char* str;
@@ -1240,11 +1241,12 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         char save_first;
         int m = xend-xstart+1;
         int nmatchIndex;
+        PROTECT(pattern.bad_char.letterIndex);
+        vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
         if (TYPEOF(vec) != CHARSXP)
             error("type mismatch between pattern and string");
 
         str = (unsigned char*) CHAR(vec)+xstart-1;
-        PROTECT(pattern.bad_char.letterIndex);
         nmatchIndex = 20;
         if (nmatchIndex > m-patlen+1)
             nmatchIndex = 2;
@@ -1352,7 +1354,7 @@ reverseComplementBioString(SEXP x)
         unsigned char G = 0;
         unsigned char T = 0;
         unsigned char gap = 0;
-        SEXP ansvec, offsets, dim;
+        SEXP ansvec, offsets, dim, xptr;
         int* start;
         int* end;
         int i, noffsets;
@@ -1426,8 +1428,10 @@ reverseComplementBioString(SEXP x)
                 start[i] = n-tmp+1;
             }
         }
-        SET_SLOT(x, install("values"), R_MakeExternalPtr(NULL, ansvec,
-                                                         R_NilValue));
+        xptr = R_MakeExternalPtr(NULL, ansvec, R_NilValue);
+        UNPROTECT(1);
+        PROTECT(xptr);
+        SET_SLOT(x, install("values"), xptr);
         UNPROTECT(1);
     }
     UNPROTECT(1);
