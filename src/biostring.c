@@ -1923,6 +1923,162 @@ longestCommonSubstringProportions(SEXP x)
     return ans;
 }
 
+typedef unsigned long ShiftOrWord_t; /* hopefully this will be 32-bit
+                                      * on 32-bit machines and 64-bit
+                                      * on 64-bit machines */
+
+static SEXP
+ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
+                      int kdel, int kerr)
+{
+    int pstart, pend, xstart, xend, patlen = 0;
+    SEXP alph, vec;
+    SEXP matchIndex = R_NilValue;
+    PROTECT_INDEX matchIndex_pi;
+    int* index = NULL;
+    int nmatchIndex, nletters;
+    int nmatch = 0;
+    int m;
+
+    if (ksubst < 0 || kins < 0 || kdel < 0 || kerr < 0 ||
+        (ksubst+kins+kdel < kerr))
+        error("Invalid mismatch specification");
+    if (kerr > 0)
+        error("mismatch not implemented");
+
+    getLengthOneBioStringRange(pattern, &pstart, &pend);
+    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
+    if (pstart > pend)
+        goto finished_match;
+    patlen = pend-pstart+1;
+    if (patlen > sizeof(ShiftOrWord_t)*CHAR_BIT)
+        error("pattern is too long");
+    getLengthOneBioStringRange(x, &xstart, &xend);
+    if (xstart > xend)
+        goto finished_match;
+    alph = GET_SLOT(x, install("alphabet"));
+    pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
+    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(vec) != TYPEOF(pattern))
+        error("pattern and text must be of same type");
+    while (isFromClass(alph, "BioPatternAlphabet"))
+        alph = GET_SLOT(alph, install("baseAlphabet"));
+    nletters = LENGTH(GET_SLOT(alph, install("mapping")));
+
+    m = xend-xstart+1;
+    nmatchIndex = (m-patlen+1)*exp(patlen*
+                                   log(-((double) nletters)));
+    if (nmatchIndex > 64)
+        nmatchIndex /= 4;
+    else if (nmatchIndex > 16)
+        nmatchIndex = 16;
+    else nmatchIndex = 4;
+    if (nmatchIndex > m-patlen+1)
+        nmatchIndex = m-patlen+1;
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("nmatchIndex: %d\n", nmatchIndex);
+#endif
+    matchIndex = allocVector(INTSXP, nmatchIndex);
+    REPROTECT(matchIndex, matchIndex_pi);
+    index = INTEGER(matchIndex);
+
+    nmatch = 0;
+    if (TYPEOF(pattern) == CHARSXP) {
+        ShiftOrWord_t U[256];
+        ShiftOrWord_t M_k;
+        unsigned char* pptr = ((unsigned char*) CHAR(pattern))+pstart-1;
+        unsigned char* xptr;
+        int k;
+
+        for (k = 0; k < 256; k++) {
+            int i;
+            ShiftOrWord_t word = 0LU;
+            for (i = 1; i <= patlen; i++) {
+                if ((pptr[i] & k) == 0)
+                    word |= 1UL << (i-1);
+            }
+            U[k] = word;
+        }
+        xptr = (unsigned char*) CHAR(vec)+xstart-1;
+        M_k = U[xptr[1]];
+        for (k = 2; k < patlen; k++) {
+            M_k = (M_k << 1) | U[xptr[k]];
+        }
+        for (k = patlen; k <= m; k++) {
+            M_k = (M_k << 1) | U[xptr[k]];
+            if ((M_k & (1UL << (patlen-1))) == 0) {
+                if (nmatchIndex == nmatch) {
+                    matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                    REPROTECT(matchIndex, matchIndex_pi);
+                    nmatchIndex = LENGTH(matchIndex);
+                    index = INTEGER(matchIndex);
+                }
+                index[nmatch++] = k;
+            }
+#ifdef INTERRUPT_BIOSTRINGS
+            if (k % INTERRUPTCHECK_AFTER) {
+                R_CheckUserInterrupt();
+            }
+#endif
+        }
+    } else {
+#if 0
+        unsigned int* pptr = ((unsigned int*) INTEGER(pattern))+pstart-1;
+        unsigned int* xptr = (unsigned int*) INTEGER(vec)+xstart-1;
+        int k;
+        unsigned int save_first = pptr[0];
+        pptr[0] = 0;
+        for (k = patlen; k <= m; k++) {
+            int i, j;
+            for (i = patlen, j = k; pptr[i] & xptr[j]; i--, j--) {
+            }
+            if (i == 0) {
+                if (nmatchIndex == nmatch) {
+                    pptr[0] = save_first;
+                    matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                    REPROTECT(matchIndex, matchIndex_pi);
+                    nmatchIndex = LENGTH(matchIndex);
+                    index = INTEGER(matchIndex);
+                    pptr[0] = 0;
+                }
+                index[nmatch++] = k;
+            }
+#ifdef INTERRUPT_BIOSTRINGS
+            interruptcheck += patlen-i;
+            if (interruptcheck > INTERRUPTCHECK_AFTER) {
+                pptr[0] = save_first;
+                R_CheckUserInterrupt();
+                interruptcheck = 0UL;
+                pptr[0] = 0;
+            }
+#endif
+        }
+        pptr[0] = save_first;
+#else
+        error("integer storage not supported");
+#endif
+    }
+finished_match:
+    x = matchIndexToBioString(x, matchIndex, nmatch, patlen);
+    UNPROTECT(1);
+    return x;
+}
+
+static SEXP
+ShiftOr_inexactMatch(SEXP pattern, SEXP x, SEXP nsubst, SEXP nins,
+                     SEXP ndel, SEXP nerr)
+{
+    return ShiftOr_matchInternal(pattern, x, asInteger(nsubst),
+                                 asInteger(nins), asInteger(ndel),
+                                 asInteger(nerr));
+}
+
+static SEXP
+ShiftOr_exactMatch(SEXP pattern, SEXP x)
+{
+    return ShiftOr_matchInternal(pattern, x, 0, 0, 0, 0);
+}
+
 #include "common.h"
 #include <R.h>
 #include <R_ext/Rdynload.h>
@@ -1942,6 +2098,8 @@ static const R_CallMethodDef R_CallDef  [] = {
     CALL_DEF(SortDNAString, 2),
     CALL_DEF(longestCommonPrefixSuffixArray, 1),
     CALL_DEF(longestCommonSubstringProportions, 1),
+    CALL_DEF(ShiftOr_exactMatch, 2),
+    CALL_DEF(ShiftOr_inexactMatch, 6),
     {NULL, NULL, 0},
 };
 
