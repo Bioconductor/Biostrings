@@ -1510,11 +1510,11 @@ foreach_BioStringC(SEXP x, BioStringCall_t* f, void* user_data)
 typedef struct {
     int* ans;
     unsigned char c;
-} allSameLetter_t;
+} allAnySameLetter_t;
 
 static Rboolean
 allSameLetter_func(unsigned char* str, int slen,
-                   int j, allSameLetter_t* data)
+                   int j, allAnySameLetter_t* data)
 {
     unsigned char c = data->c;
     int i;
@@ -1527,9 +1527,25 @@ allSameLetter_func(unsigned char* str, int slen,
     return 1;
 }
 
-static SEXP
-allSameLetter(SEXP x, SEXP pattern)
+static Rboolean
+anySameLetter_func(unsigned char* str, int slen,
+                   int j, allAnySameLetter_t* data)
 {
+    unsigned char c = data->c;
+    int i;
+    char savefirst = str[-1];
+    str[-1] = c;
+    for (i = slen-1; str[i] != c; i--) {
+    }
+    str[-1] = savefirst;
+    data->ans[j] = (i != -1);
+    return 1;
+}
+
+static SEXP
+allSameLetter(SEXP x, SEXP pattern, SEXP testAll)
+{
+    int useAll = asLogical(testAll);
     int len = getBioStringLength(x, NULL, NULL);
     SEXP alph = GET_SLOT(x, install("alphabet"));
     SEXP mapping = GET_SLOT(alph, install("mapping"));
@@ -1537,7 +1553,7 @@ allSameLetter(SEXP x, SEXP pattern)
     int nletters = LENGTH(letters);
     int start, end;
     SEXP ans;
-    allSameLetter_t data;
+    allAnySameLetter_t data;
 
     if (TYPEOF(mapping) != INTSXP || TYPEOF(letters) != STRSXP ||
         nletters == 0)
@@ -1552,7 +1568,9 @@ allSameLetter(SEXP x, SEXP pattern)
     ans = allocVector(LGLSXP, len);
     PROTECT(ans);
     data.ans = INTEGER(ans);
-    foreach_BioStringC(x, (BioStringCall_t*) allSameLetter_func,
+    foreach_BioStringC(x, useAll?
+                       (BioStringCall_t*) allSameLetter_func:
+                       (BioStringCall_t*) anySameLetter_func,
                        &data);
     UNPROTECT(1);
     return ans;
@@ -1990,6 +2008,136 @@ longestCommonPrefixSuffixArray(SEXP x)
     return ans;
 }
 
+/*
+ *  oldvalues is a sorted array of length n.
+ *  Return pos such that oldvalues[pos-1] < value <= oldvalues[pos]
+ *  where oldvalues[-1] is assumed to be -Inf and oldvalues[n] is
+ *  assumed to be +Inf.
+ */
+static int
+binarySearchPosition(int value, int* oldvalues, int n)
+{
+    int lower = -1;
+    int upper = n;
+    while (upper-lower > 1) {
+        /* invariant: oldvalues[lower] < value && value <= oldvalues[upper] */
+        int middle = (lower+upper)/2;
+        if (oldvalues[middle] < value)
+            lower = middle;
+        else upper = middle;
+    }
+    return upper;
+}
+
+static SEXP
+longestCommonSubstringProportions(SEXP x)
+{
+    int* startvec;
+    int* endvec;
+    int len, lenp1, maxlen;
+    SEXP vec;
+    SEXP ans;
+    double* lcsProp;
+    int* lcsLen;
+    int* work;
+    int* lastOfCover;
+    int i;
+    unsigned char* str;
+
+    len = getBioStringLength(x, &startvec, &endvec);
+    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(vec) != CHARSXP)
+        error("values must be a CHARSXP");
+    lenp1 = len+1;
+    str = (unsigned char*) CHAR(vec);
+    str--;
+
+    ans = allocMatrix(REALSXP, len, len);
+    PROTECT(ans);
+    lcsProp = REAL(ans);
+    lcsLen = INTEGER(PROTECT(allocVector(INTSXP, len)));
+    maxlen = 0;
+    for (i = 0; i < len; i++) {
+        int tmp = endvec[i]-startvec[i]+1;
+        lcsLen[i] = tmp;
+        if (tmp > maxlen)
+            maxlen = tmp;
+        lcsProp[i*lenp1] = 1.0;
+    }
+    work = INTEGER(PROTECT(allocVector(INTSXP, 2*maxlen)));
+    lastOfCover = work+maxlen;
+    
+    for (i = 1; i < len; i++) {
+        int len_i = lcsLen[i];
+
+        if (len_i <= 0) {
+            int j;
+            for (j = 0; j < i; j++)
+                lcsProp[i+j*len] = lcsProp[j+i*len] = 0;
+        } else {
+            unsigned char* str_i = str+startvec[i];
+            int counts[256];
+            int* charposition[256];
+            int j, totcount;
+
+            memset(counts, 0, 256*sizeof(int));
+            for (j = 0; j < len_i; j++) {
+                counts[str_i[j]]++;
+            }
+            totcount = 0;
+            for (j = 0; j < 256; j++) {
+                charposition[j] = work + totcount;
+                totcount += counts[j];
+                counts[j] = 0;
+            }
+            R_assert(totcount == len_i);
+            for (j = len_i-1; j >= 0; j--) {
+                charposition[str_i[j]][counts[str_i[j]]++] = j;
+            }
+
+            for (j = 0; j < i; j++) {
+                int len_j = lcsLen[j];
+
+#ifdef INTERRUPT_BIOSTRINGS
+                Rprintf("(%d, %d): ", i, j);
+                R_CheckUserInterrupt();
+#endif
+                if (len_j <= 0) {
+                    lcsProp[i+j*len] = lcsProp[j+i*len] = 0;
+                } else {
+                    unsigned char* str_j = str+startvec[j];
+                    int k;
+
+                    totcount = 0;
+                    for (k = 0; k < len_j; k++) {
+                        int counts_k = counts[str_j[k]];
+                        if (counts_k > 0) {
+                            int* charposition_k = charposition[str_j[k]];
+                            int kk;
+                            for (kk = 0; kk < counts_k; kk++) {
+                                int pos_kk =
+                                    binarySearchPosition(charposition_k[kk],
+                                                         lastOfCover,
+                                                         totcount);
+                                lastOfCover[pos_kk] = charposition_k[kk];
+                                if (pos_kk == totcount)
+                                    totcount++;
+                            }
+                        }
+                    }
+#ifdef INTERRUPT_BIOSTRINGS
+                    Rprintf("2 * %d/(%d+%d)\n", totcount, len_i, len_j);
+#endif
+                    lcsProp[i+j*len] = lcsProp[j+i*len] =
+                        2.0*totcount/(len_i+len_j);
+                }
+            }
+        }
+    }
+    UNPROTECT(3);
+    return ans;
+}
+
 #include "common.h"
 #include <R.h>
 #include <R_ext/Rdynload.h>
@@ -2003,11 +2151,12 @@ static const R_CallMethodDef R_CallDef  [] = {
     CALL_DEF(BoyerMoore_exactMatch, 2),
     CALL_DEF(ForwardSearch_exactMatch, 2),
     CALL_DEF(reverseComplementBioString, 1),
-    CALL_DEF(allSameLetter, 2),
+    CALL_DEF(allSameLetter, 3),
     CALL_DEF(baseFrequency, 1),
     CALL_DEF(DNASuffixArray, 2),
     CALL_DEF(SortDNAString, 2),
     CALL_DEF(longestCommonPrefixSuffixArray, 1),
+    CALL_DEF(longestCommonSubstringProportions, 1),
     {NULL, NULL, 0},
 };
 

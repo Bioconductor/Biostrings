@@ -298,7 +298,33 @@ setMethod("allSameLetter",
           signature(x = "BioString", letter="BioString"),
           function (x, letter)
       {
-          .Call("allSameLetter", x, letter, PACKAGE="Biostrings")
+          .Call("allSameLetter", x, letter, TRUE, PACKAGE="Biostrings")
+      })
+
+if (!isGeneric("anySameLetter"))
+    setGeneric("anySameLetter",
+               function(x, letter)
+               standardGeneric("anySameLetter"))
+
+setMethod("anySameLetter",
+          signature(x="BioString", letter="character"),
+          function (x, letter)
+      {
+          callGeneric(x, NucleotideString(letter, alphabet=x@alphabet))
+      })
+
+setMethod("anySameLetter",
+          signature(x="character"),
+          function (x, letter)
+      {
+          callGeneric(DNAString(x), letter)
+      })
+
+setMethod("anySameLetter",
+          signature(x = "BioString", letter="BioString"),
+          function (x, letter)
+      {
+          .Call("allSameLetter", x, letter, FALSE, PACKAGE="Biostrings")
       })
 
 alphabetFrequency <-
@@ -325,3 +351,37 @@ DNASuffixArray <-
 {
     .Call('DNASuffixArray', x, prefixLength)
 }
+
+setClass("LongestCommonPrefix",
+         representation(abovediag="integer"))
+
+LongestCommonPrefix <-
+    function(x)
+{
+    new("LongestCommonPrefix",
+        abovediag=.Call('longestCommonPrefixSuffixArray', x,
+        PACKAGE='Biostrings'))
+}
+
+setMethod("[",
+          signature(x = "LongestCommonPrefix", i = "matrix",
+                    j = "missing", drop = "missing"),
+          function (x, i, j, ..., drop)
+      {
+          if ((storage.mode(i) != "integer" && storage.mode(i) !=
+               "double") || ncol(i) != 2)
+              stop("invalid matrix index")
+          ans <- integer(nrow(i))
+          for (j in seq(along=ans)) {
+              starti <- i[j, 1]
+              endi <- i[j, 2]
+              if (starti != endi) {
+                  if (starti > endi) {
+                      starti <- endi
+                      endi <- i[j, 1]
+                  }
+                  ans[j] <- as.integer(min(x@abovediag[starti:(endi-1)]))
+              }
+          }
+          ans
+      })
