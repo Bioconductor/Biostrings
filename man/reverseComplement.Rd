@@ -19,6 +19,6 @@ reverseComplement(x)
 }
 \author{ Saikat DebRoy }
 \examples{
-reverseComplement("ATCG-AA")
+reverseComplement(DNAString("ATCG-AA"))
 }
 \keyword{manip}
