@@ -130,7 +130,7 @@ setMethod("[[",
           signature(x = "BioString"),
           function (x, i, j, ..., drop)
       {
-          if (nargs() != 2)
+          if (nargs() != 2 && (nargs() != 3 || !missing(j)))
               stop("incorrect number of subscripts")
           if (missing(i))
               stop("invalid subscript type")
