@@ -1,3 +1,4 @@
+#Copyright (C) 2003 by Saikat DebRoy
 setClass("BioString",
          representation(alphabet="BioAlphabet",
                         offsets="matrix",
@@ -250,9 +251,11 @@ setMethod("matchDNAPattern",
               if (missing(algorithm))
                   "boyre-moore"
               else match.arg(algorithm,
-                             c("boyre-moore"))
+                             c("boyre-moore",
+                               "forward-search"))
           switch(algorithm,
                  "boyre-moore"=.Call("BoyerMoore_exactMatch", pattern, x),
+                 "forward-search"=.Call("ForwardSearch_exactMatch", pattern, x),
                  stop("Unknown algorithm"))
       })
 

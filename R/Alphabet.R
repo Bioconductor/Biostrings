@@ -1,3 +1,4 @@
+#Copyright (C) 2003 by Saikat DebRoy
 library("methods")
 
 setClass("BioAlphabet",
