@@ -261,7 +261,7 @@ setMethod("matchDNAPattern",
               stop("The pattern and the string are based on different alphabets")
           algorithm <-
               if (missing(algorithm)) {
-                  if (mismatch == 0)
+                  if (mismatch == 0 && nchar(pattern) > .Machine$sizeof.long*8)
                       "boyer-moore"
                   else "shift-or"
               } else match.arg(algorithm,
