@@ -192,6 +192,7 @@ appendCharacterToBioString(SEXP alphMapping,
             destptr[j] = val;
         }
     }
+    R_SetExternalPtrProtected(values, R_NilValue);
     return current_length+count;
 }
 
@@ -1006,6 +1007,7 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     if (start <= 0 || end != start)
         error("not a length one pattern");
     getLengthOneBioStringRange(x, &start, &end);
+    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
     if (start > end)
         goto finished_match;
     alph = GET_SLOT(x, install("alphabet"));
@@ -1026,7 +1028,7 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     else if (4 <= m)
         nmatchIndex = 4;
     matchIndex = allocVector(INTSXP, nmatchIndex);
-    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
+    REPROTECT(matchIndex, matchIndex_pi);
 
     nmatch = 0;
     if (TYPEOF(pattern) == CHARSXP) {
@@ -1070,9 +1072,10 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
 #endif
         }
     }
-    UNPROTECT(1);
 finished_match:
-    return matchIndexToBioString(x, matchIndex, nmatch, 1);
+    x = matchIndexToBioString(x, matchIndex, nmatch, 1);
+    UNPROTECT(1);
+    return x;
 }
 
 static void
@@ -1120,13 +1123,14 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
          * the bad character rule) */
         pattern->bad_char.letterIndex = allocVector(VECSXP, 256);
         PROTECT(pattern->bad_char.letterIndex);
-#ifdef NOT_YET
-        N = INTEGER(VECTOR_ELT(Nvecs, 1))-1;
-#endif
         for (i = 0; i < pattern->nletters; i++) {
             unsigned int pat = alphMappingptr[i];
             int j;
+#ifndef OLD_CHARACTER_SHIFT
+            int lastj = 0;
+#else
             int lastj = n;
+#endif
             int* indx;
             if (pat >= (1U << CHAR_BIT))
                 error("invalid mapping with character storage");
@@ -1134,27 +1138,25 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
             SET_VECTOR_ELT(pattern->bad_char.letterIndex, pat,
                            allocVector(INTSXP, n+1));
             indx = INTEGER(VECTOR_ELT(pattern->bad_char.letterIndex, pat));
-#ifdef NOT_YET
-            indx[n] = 0;
-            lastj = n+1;
-            for (j = n; j > 0; j--) {
+#ifndef OLD_CHARACTER_SHIFT
+            for (j = 1; j <= n; j++) {
                 /* does the j-th pattern contain pat? */
-                if ((patternptr[j] & pat) == pat) {
-                    for (; lastj > j; lastj--)
-                        indx[lastj] = j-lastj;
-                }
+                if ((patternptr[j] & pat)) {
+                    lastj = j;
+                    indx[j] = 0;
+                } else indx[j] = j-lastj;
             }
 #else
             for (j = n-1; j > 0; j--) {
                 /* does the j-th pattern contain pat? */
-                if ((patternptr[j] & pat) == pat) {
+                if ((patternptr[j] & pat)) {
                     for (; lastj > j; lastj--)
                         indx[lastj] = lastj-j;
                 }
             }
-#endif
             for (; lastj >= 0; lastj--)
                 indx[lastj] = lastj;
+#endif
 #ifdef DEBUG_BIOSTRINGS
             Rprintf("bad char index for pattern %d\n", pat);
             for (j = 1; j <= n; j++)
@@ -1204,7 +1206,7 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
             else pattern->good_suffix_shift[i] = n-tmpptr[i];
         }
         /* used when a match occurs */
-        pattern->good_suffix_shift[0] = n-tmpptr[2];
+        pattern->good_suffix_shift[0] = 1;
 #ifdef DEBUG_BIOSTRINGS
         for (i = 0; i <= n; i++)
             Rprintf("%d, ", pattern->good_suffix_shift[i]);
@@ -1231,6 +1233,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
     int k, patlen = 0, nmatch = 0;
 
     getLengthOneBioStringRange(x, &xstart, &xend);
+    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
     if (xstart > xend)
         goto finished_match;
     BoyerMoore_preprocess(origPattern, &pattern);
@@ -1259,7 +1262,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         Rprintf("nmatchIndex: %d\n", nmatchIndex);
 #endif
         matchIndex = allocVector(INTSXP, nmatchIndex);
-        PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
+        REPROTECT(matchIndex, matchIndex_pi);
         index = INTEGER(matchIndex);
         nmatch = 0;
         patternptr = CHAR(pattern.pattern)+pattern.start-1;
@@ -1321,13 +1324,15 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
 #endif
         }
         patternptr[0] = save_first;
-        UNPROTECT(2);
+        UNPROTECT(1);
     } else {
         error("non-character patterns and strings unimplemented");
     }
     /* BoyerMoore_releasePattern(&pattern); */
 finished_match:
-    return matchIndexToBioString(x, matchIndex, nmatch, patlen);
+    x = matchIndexToBioString(x, matchIndex, nmatch, patlen);
+    UNPROTECT(1);
+    return x;
 }
 
 static SEXP
@@ -1347,17 +1352,39 @@ reverseComplementBioString(SEXP x)
     PROTECT(x);
     xvec = R_ExternalPtrProtected(GET_SLOT(x, install("values")));
     if (xvec != R_NilValue) {
+        SEXP offsets, dim;
+        int i, noffsets;
+        int* start;
+        int* end;
+
+        if (TYPEOF(xvec) != CHARSXP)
+            error("Only character storage is supported now");
+        n = LENGTH(xvec)-1;
         SET_SLOT(x, install("values"),
                  R_MakeExternalPtr(NULL, xvec,
                                    R_ExternalPtrTag(GET_SLOT(x,
                                                              install("values")))));
+        offsets = GET_SLOT(x, install("offsets"));
+        dim = GET_DIM(offsets);
+        if (TYPEOF(offsets) != INTSXP || TYPEOF(dim) != INTSXP ||
+            LENGTH(dim) != 2 || INTEGER(dim)[1] != 2)
+            error("offsets slot of BioString must be integer matrix with two columns");
+        noffsets = INTEGER(dim)[0];
+        start = INTEGER(offsets);
+        end = start+noffsets;
+        for (i = 0; i < noffsets; i++) {
+            int tmp = end[i];
+            if (tmp) {
+                end[i] = n-start[i]+1;
+                start[i] = n-tmp+1;
+            }
+        }
         UNPROTECT(1);
         return x;
     }
     xvec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (TYPEOF(xvec) != CHARSXP)
         error("Only character storage is supported now");
-
     n = LENGTH(xvec)-1;
     if (n > 0) {
         unsigned char revmap[256];
