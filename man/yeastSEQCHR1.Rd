@@ -14,7 +14,8 @@ Package built: Fri Nov 21 14:00:47 2003
 \url{http://www.yeastgenome.org/DownloadContents.shtml}
 }
 \examples{
-length(yeastSEQCHR1)
+data(yeastSEQCHR1)
+nchar(yeastSEQCHR1)
 }
 \keyword{datasets}
 
