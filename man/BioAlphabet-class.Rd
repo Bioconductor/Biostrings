@@ -5,7 +5,7 @@
 
 \title{Class "BioAlphabet" represents alphabets used in biology }
 \description{ Each object of class "BioAlphabet" represents a particular
-  alphabet used to represent some biological sequence. }
+  alphabet used to represent some biological sequence.}
 \section{Objects from the Class}{A virtual Class: No objects may be
   created from it.}
 \section{Slots}{
@@ -29,7 +29,7 @@
 }
 \author{ Saikat DebRoy }
 \seealso{
-  \code{\link{NuceotideAlphabet-class}} and
+  \code{\link{NucleotideAlphabet-class}} and
   \code{\link{AminoAcidAlphabet-class}}, for two subclasses of the
   \code{"BioAlphabet"} class.
 }
