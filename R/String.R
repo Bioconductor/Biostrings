@@ -149,9 +149,12 @@ setMethod("show",
                   object@alphabet@letters, "and\n")
               if (n > 50) {
                   object <- substr(object, 1, 50)
-                  cat(" begining")
+                  cat(" begining with: ")
+              } else {
+                  cat(" with value: ")
               }
-              cat(" with values", as.character(object), '\n')
+              cat(as.character(object))
+              cat('\n')
           }
       })
 
