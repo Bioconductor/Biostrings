@@ -1,5 +1,7 @@
 \name{matchDNAPattern}
 \alias{matchDNAPattern}
+\alias{matchDNAPattern,character,ANY-method}
+\alias{matchDNAPattern,ANY,character-method}
 \title{ Generic to find all matches of a pattern in a DNA string}
 \description{
   Generic that finds all matches of a pattern in a DNA string. Currently

@@ -3,6 +3,8 @@
 \alias{BioString-class}
 \alias{[,BioString-method}
 \alias{[[,BioString-method}
+\alias{allSameLetter,BioString,character-method}
+\alias{allSameLetter,BioString,BioString-method}
 \alias{as.character,BioString-method}
 \alias{as.matrix,BioString-method}
 \alias{initialize,BioString-method}
@@ -77,6 +79,9 @@
       can use the letters A,C,G,T,- (the last being the gap character)
       and also the wildcards N (matching A,C,G,T), V (matching A,G,C),
       R (matching A,G) and Y (matching C,T).}
+    \item{allSameLetter(x, letter)}{Return a logical vetor indicating
+      which of the elements of \code{x} are entirely made up of the
+      letter \code{letter}.}
   }
 }
 \author{Saikat DebRoy}
