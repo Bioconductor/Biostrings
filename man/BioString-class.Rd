@@ -12,7 +12,7 @@
 \alias{as.matrix,BioString-method}
 \alias{initialize,BioString-method}
 \alias{length,BioString-method}
-\alias{matchDNAPattern,BioString,BioString-method}
+\alias{matchDNAPattern,BioString,BioString,ANY-method}
 \alias{nchar,BioString-method}
 \alias{show,BioString-method}
 \alias{substr,BioString-method}
@@ -76,9 +76,8 @@
     \item{substring(text, first, last)}{Return another BioString object with
       value equivalent to
       \code{substring(as.character(text), first, last)}.}
-    \item{matchDNAPattern(pattern, x, algorithm)}{Match the DNA string
-      \code{x} against \code{pattern} using \code{algorithm}. Currently
-      only a modified Boyer-Moore algorithm is implemented. The pattern
+    \item{matchDNAPattern(pattern, x, algorithm, mismatch)}{Match the DNA string
+      \code{x} against \code{pattern} using \code{algorithm}. The pattern
       can use the letters A,C,G,T,- (the last being the gap character)
       and also the wildcards N (matching A,C,G,T), V (matching A,G,C),
       R (matching A,G) and Y (matching C,T).}
