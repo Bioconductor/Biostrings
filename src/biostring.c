@@ -179,8 +179,7 @@ setBioString(SEXP biostring, SEXP src)
     if (asLogical(GET_SLOT(biostring, install("initialized"))))
         error("can not modify initialized strings");
     n = length(src);
-    if (NAMED(biostring))
-        biostring = duplicate(biostring);
+    biostring = duplicate(biostring);
     PROTECT(biostring);
     offsets = allocMatrix(INTSXP, n, 2);
     PROTECT(offsets);
@@ -427,9 +426,7 @@ BioString_substring(SEXP x, SEXP start, SEXP stop, SEXP doSubstring)
     current_startvec = INTEGER(offsets);
     current_stopvec = INTEGER(offsets)+ncurrent;
 
-    if (NAMED(x))
-        ans = duplicate(x);
-    else ans = x;
+    ans = duplicate(x);
     PROTECT(ans);
     n = ncurrent;
     if (substring) {
@@ -799,8 +796,7 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
     int nmatchIndex = LENGTH(matchIndex);
     int* index = INTEGER(matchIndex);
     PROTECT(matchIndex);
-    if (NAMED(x))
-        x = duplicate(x);
+    x = duplicate(x);
     PROTECT(x);
 #ifdef DEBUG_BIOSTRINGS
     Rprintf("In matchIndexToBioString\nnmatch: %d\n", nmatch);
@@ -1308,14 +1304,13 @@ reverseComplementBioString(SEXP x)
         alph = GET_SLOT(alph, install("baseAlphabet"));
     mapping = GET_SLOT(alph, install("mapping"));
     letters = GET_NAMES(mapping);
+    x = duplicate(x);
+    PROTECT(x);
     xvec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (TYPEOF(xvec) != CHARSXP)
         error("Only character storage is supported now");
 
     n = LENGTH(xvec)-1;
-    if (NAMED(x))
-        x = duplicate(x);
-    PROTECT(x);
     if (n > 0) {
         unsigned char revmap[256];
         unsigned char* src = (unsigned char*) CHAR(xvec)+1;
@@ -1399,7 +1394,8 @@ reverseComplementBioString(SEXP x)
                 start[i] = n-tmp+1;
             }
         }
-        R_SetExternalPtrTag(GET_SLOT(x, install("values")), ansvec);
+        SET_SLOT(x, install("values"), R_MakeExternalPtr(NULL, ansvec,
+                                                         R_NilValue));
         UNPROTECT(1);
     }
     UNPROTECT(1);
