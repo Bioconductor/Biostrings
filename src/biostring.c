@@ -1511,6 +1511,57 @@ allSameLetter(SEXP x, SEXP pattern)
     return ans;
 }
 
+static Rboolean
+baseFrequency_func(unsigned char* str, int slen,
+                   int j, int* counts)
+{
+    int i;
+    for (i = 0; i < slen; i++) {
+        counts[str[i]]++;
+    }
+    return 1;
+}
+
+static SEXP
+baseFrequency(SEXP x)
+{
+    int len = getBioStringLength(x, NULL, NULL);
+    SEXP alph = GET_SLOT(x, install("alphabet"));
+    SEXP mapping = GET_SLOT(alph, install("mapping"));
+    SEXP letters = GET_NAMES(mapping);
+    int nletters = LENGTH(letters);
+    int start, end;
+    SEXP ans;
+    int counts[256];
+    int i;
+
+    if (TYPEOF(mapping) != INTSXP || TYPEOF(letters) != STRSXP ||
+        nletters == 0)
+        error("invalid mapping");
+
+    memset(counts, 0, 256*sizeof(int));
+    foreach_BioStringC(x, (BioStringCall_t*) baseFrequency_func,
+                       counts);
+
+    ans = allocVector(INTSXP, nletters);
+    PROTECT(ans);
+    SET_NAMES(ans, letters);
+    memset(INTEGER(ans), 0, nletters*sizeof(int));
+    for (i = 0; i < nletters; i++) {
+        unsigned int pat = ((unsigned int*)INTEGER(mapping))[i];
+        if (pat >= (1U << CHAR_BIT))
+            error("invalid mapping with character storage");
+        INTEGER(ans)[i] = counts[pat];
+        counts[pat] = 0;
+    }
+    for (i = 0; i < 256; i++) {
+        if (counts[i] > 0)
+            error("found pattern (%d) not in mapping", i);
+    }
+    UNPROTECT(1);
+    return ans;
+}
+
 #include "common.h"
 #include <R.h>
 #include <R_ext/Rdynload.h>
@@ -1525,6 +1576,7 @@ static const R_CallMethodDef R_CallDef  [] = {
     CALL_DEF(ForwardSearch_exactMatch, 2),
     CALL_DEF(reverseComplementBioString, 1),
     CALL_DEF(allSameLetter, 2),
+    CALL_DEF(baseFrequency, 1),
     {NULL, NULL, 0},
 };
 

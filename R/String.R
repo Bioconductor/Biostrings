@@ -300,3 +300,16 @@ setMethod("allSameLetter",
       {
           .Call("allSameLetter", x, letter, PACKAGE="Biostrings")
       })
+
+alphabetFrequency <-
+    function (x, baseOnly=TRUE)
+{
+    xtable <- .Call('baseFrequency', x, PACKAGE='Biostrings')
+    if (baseOnly && is(x@alphabet, "BioPatternAlphabet")) {
+        baseLetters <- sort(names(x@alphabet@baseAlphabet@mapping))
+        xtable <- c(xtable[baseLetters],
+                    sum(xtable)-sum(xtable[baseLetters]))
+        names(xtable) <- c(baseLetters, 'Other')
+    }
+    xtable
+}
