@@ -1027,7 +1027,7 @@ reverseComplementBioString(SEXP x)
     if (TYPEOF(xvec) != CHARSXP)
         error("Only character storage is supported now");
 
-    n = LENGTH(xvec);
+    n = LENGTH(xvec)-1;
     if (NAMED(x))
         x = duplicate(x);
     PROTECT(x);
@@ -1080,7 +1080,7 @@ reverseComplementBioString(SEXP x)
         if (TYPEOF(offsets) != INTSXP || TYPEOF(dim) != INTSXP ||
             LENGTH(dim) != 2 || INTEGER(dim)[1] != 2)
             error("offsets slot of BioString must be integer matrix with two columns");
-        noffsets = INTEGER(dim)[1];
+        noffsets = INTEGER(dim)[0];
 
         memset(revmap, 0, 256);
         for (i = 1; i < 32; i++) {
@@ -1095,18 +1095,13 @@ reverseComplementBioString(SEXP x)
             if (i & gap)
                 revmap[i] |= gap;
         }
-#ifdef DEBUG_BIOSTRINGS
-        Rprintf("Reverse map:\n");
-        for (i = 0; i < 32; i++)
-            Rprintf("%d,\n", revmap[i]);
-        Rprintf("\n");
-#endif
         ansvec = allocString(LENGTH(xvec));
+        PROTECT(ansvec);
         dest = (unsigned char*) CHAR(ansvec);
         for (i = 0; i < n; i++) {
             unsigned char v = revmap[src[i]];
             if (!v)
-                error("unrecognized code ", src[i]);
+                error("unrecognized code: %d", src[i]);
             dest[n-i] = v;
         }
         start = INTEGER(offsets);
@@ -1118,6 +1113,8 @@ reverseComplementBioString(SEXP x)
                 start[i] = n-tmp+1;
             }
         }
+        R_SetExternalPtrTag(GET_SLOT(x, install("values")), ansvec);
+        UNPROTECT(1);
     }
     UNPROTECT(1);
     return x;
