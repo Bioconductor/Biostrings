@@ -1,4 +1,4 @@
-#Copyright (C) 2003 by Saikat DebRoy
+#Copyright (C) 2003-2004 by Saikat DebRoy
 setClass("BioString",
          representation(alphabet="BioAlphabet",
                         offsets="matrix",
@@ -238,8 +238,7 @@ setMethod("matchDNAPattern",
           signature(x="character"),
           function (pattern, x, algorithm, mismatch)
       {
-          x <- NucleotideString(x,
-                                alphabet=DNAAlphabet())
+          x <- DNAString(x)
           callGeneric()
       })
 
@@ -251,6 +250,8 @@ setMethod("matchDNAPattern",
               mismatch <- 0
           else if (mismatch < 0)
               stop("mismatch must be a non-negative integer")
+          pattern <- NucleotideString(as.character(pattern),
+                                      alphabet=pattern@alphabet)
           patalph <- pattern@alphabet
           if (is(patalph, "BioPatternAlphabet"))
               patalph <- patalph@baseAlphabet

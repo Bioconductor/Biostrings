@@ -1,4 +1,4 @@
-#Copyright (C) 2003 by Saikat DebRoy
+#Copyright (C) 2003-2004 by Saikat DebRoy
 library("methods")
 
 setClass("BioAlphabet",
@@ -39,8 +39,9 @@ setMethod("initialize",
           else if (!is.character(gap) || length(gap) != 1 ||
                    nchar(gap) != 1)
               stop("gap must be a single character")
-          if (!any(letters == gap))
-              letters <- c(gap, letters)
+          if (any(letters == gap))
+              letters <- c(letters[letters == gap], letters[letters != gap])
+          else letters <- c(gap, letters)
           .Object@letters <- paste(letters, collapse='')
           .Object@mapping <- sort(as.integer(2^(0:(length(letters)-1))))
           names(.Object@mapping) <- letters
@@ -84,3 +85,31 @@ DNAAlphabet <- function()
 RNAAlphabet <- function()
     new("NucleotideAlphabet",
         letters=c('U', 'G', 'C', 'A'))
+
+StandardPeptideAlphabet <- function()
+    new("AminoAcidAlphabet",
+        letters= c('A', # alanine
+                   'B', # aspartatic acid or asparagine
+                   'C', # cysteine
+                   'D', # aspartic acid
+                   'E', # glutamic acid
+                   'F', # phenylalanine
+                   'G', # glycine
+                   'H', # histidine
+                   'I', # isoleucine
+                   'K', # lysine
+                   'L', # leucine
+                   'M', # methionine
+                   'N', # asparagine
+                   'P', # proline
+                   'Q', # glutamine
+                   'R', # arginine
+                   'S', # serine
+                   'T', # threonine
+                   'U', # selenocysteine
+                   'V', # valine
+                   'W', # tryptophan
+                   'Y', # tyrosine
+                   'Z', # glutamaic acid or glutamine
+                   '*'  # translation stop
+                   ))

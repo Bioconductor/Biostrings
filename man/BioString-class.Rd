@@ -12,7 +12,7 @@
 \alias{as.matrix,BioString-method}
 \alias{initialize,BioString-method}
 \alias{length,BioString-method}
-\alias{matchDNAPattern,BioString,BioString,ANY-method}
+\alias{matchDNAPattern,BioString,BioString-method}
 \alias{nchar,BioString-method}
 \alias{show,BioString-method}
 \alias{substr,BioString-method}

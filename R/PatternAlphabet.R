@@ -1,4 +1,4 @@
-#Copyright (C) 2003 by Saikat DebRoy
+#Copyright (C) 2003-2004 by Saikat DebRoy
 setClass("BioPatternAlphabet",
          representation(baseAlphabet="BioAlphabet"),
          contains="BioAlphabet")
@@ -76,3 +76,8 @@ RNAPatternAlphabet <- function()
                          V="ACG",
                          W="AU",
                          Y="CU"))
+
+StandardPeptidePatternAlphabet <- function()
+    new("BioPatternAlphabet",
+        StandardPeptideAlphabet(),
+        c(X="ABCDEFGHIKLMNPQRSTUVWYZ"))

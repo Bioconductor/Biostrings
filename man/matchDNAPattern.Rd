@@ -1,7 +1,7 @@
 \name{matchDNAPattern}
 \alias{matchDNAPattern}
-\alias{matchDNAPattern,character,ANY,ANY-method}
-\alias{matchDNAPattern,ANY,character,ANY-method}
+\alias{matchDNAPattern,character,ANY-method}
+\alias{matchDNAPattern,ANY,character-method}
 \title{ Generic to find all matches of a pattern in a DNA string}
 \description{
   Generic that finds all matches of a pattern in a DNA string. Currently
@@ -21,14 +21,15 @@ matchDNAPattern(pattern, x, algorithm, mismatch)
     \code{\link{DNAPatternAlphabet}} for all valid letters.}
   \item{x}{ An object representing a DNA string. }
   \item{algorithm}{ Currently the only valid values are
-    \code{"boyer-moore"} (which is the default), \code{"forward-search"}
+    \code{"boyer-moore"}, \code{"forward-search"}
     and \code{"shift-or"}. The forward search algorithm is often as
     fast as the more sphisticated Boyer-Moore algorithm when the
     patterns being matched are very simple. The shift-or algorithm is
     even faster. However, it can only be used for patterns of length at
     most 32 or 64 depending on the number of bits in a machine word. The
     shift-or algorithm can also do inexact matches for a given number of
-    mismatches.}
+    mismatches. The default is "shift-or" where valid and "boyer-moore"
+    otherwise}
   \item{mismatch}{ An integer, the number of mismatches allowed. The
     defualt is 0. If the default is non-zero an inexact match algorithm
     is used for matching. }
