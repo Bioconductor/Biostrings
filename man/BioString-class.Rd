@@ -1,7 +1,10 @@
 \name{BioString-class}
 \docType{class}
 \alias{BioString-class}
+\alias{as.character,BioString-method}
 \alias{initialize,BioString-method}
+\alias{matchDNAPattern,BioString,BioString-method}
+\alias{substr,BioString-method}
 
 \title{Class "BioString", represnts a bilogical sequence}
 \description{Class "BioString", contains an encoded string representing a
@@ -40,6 +43,20 @@
       values=BioStringNewValues(alphabet, end),
       initialized=!missing(values))}{Construct an object of class
       "BioString". Usually not called directly by users. }
+    \item{as.character(x)}{Convert a "BioString" object to a character
+      string using its native alphabet.}
+    \item{substr(x, start, stop)}{Return another BioString object which
+      is the substring of \code{x} starting at \code{start} and ending
+      at \code{stop}. If \code{start} is less than \code{0}, it is
+      increased to \code{1}. If \code{stop} is more than the length of
+      \code{x}, it is reduced to the length of \code{x}. If \code{start}
+      is more than \code{end}, an empty string is returned.}
+    \item{matchDNAPattern(pattern, x, algorithm)}{Match the DNA string
+      \code{x} against \code{pattern} using \code{algorithm}. Currently
+      only a modified Boyer-Moore algorithm is implemented. The pattern
+      can use the letters A,C,G,T,- and also the wildcards N (matching
+      A,C,G,T), V (matching A,G,C), R (matching A,G) and Y
+      (matching C,T).}
   }
 }
 \author{Saikat DebRoy}
@@ -64,6 +81,11 @@
   objects.
 }
 \examples{
-new("BioString", DNAString())
+new("BioString", DNAString()) # creats an empty DNA string
+x <- DNAString("AAGCTA")
+as.character(x)
+y <- substr(x, 2, 4)
+as.character(y)
+matchDNAPattern("GC", x)
 }
 \keyword{classes}
