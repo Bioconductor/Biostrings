@@ -82,20 +82,21 @@ NucleotideString <- function(src,
         stop("src must be a character string")
     if (!is.character(gap) || length(gap) != 1 || nchar(gap) != 1)
         stop("gap must be a single character")
-    ans <- new("BioString", alphabet)
     if (gap != alphabet@gap) {
+        savealph <- alphabet
+        if (gap %in% names(alphabet@mapping)) {
+            if (!is(alphabet, "BioPatternAlphabet") ||
+                gap %in% names(alphabet@baseAlphabet@mapping))
+                stop("gap character conflicts with other alphabet characters")
+            alphabet <- alphabet@baseAlphabet
+        }
         alphgap <- alphabet@gap
-        gapindex <- match(alphgap, names(ans@alphabet@mapping))
-        names(ans@alphabet@mapping)[gapindex] <- gap
-        substr(ans@alphabet@letters, gapindex, gapindex) <- gap
-        ans@alphabet@gap <- gap
-        ans <- .Call("setBioString", ans, src)
+        gapletter(alphabet) <- gap
+        ans <- .Call("setBioString", new("BioString", alphabet), src)
         ans@initialized <- TRUE
-        names(ans@alphabet@mapping)[gapindex] <- alphgap
-        substr(ans@alphabet@letters, gapindex, gapindex) <- alphgap
-        ans@alphabet@gap <- alphgap
+        ans@alphabet <- savealph
     } else {
-        ans <- .Call("setBioString", ans, src)
+        ans <- .Call("setBioString", new("BioString", alphabet), src)
         ans@initialized <- TRUE
     }
     ans

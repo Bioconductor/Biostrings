@@ -6,6 +6,26 @@ setClass("BioAlphabet",
                         gap="character"),
          contains="VIRTUAL")
 
+if (!isGeneric("gapletter<-"))
+    setGeneric("gapletter<-",
+               function(x, value)
+               standardGeneric("gapletter<-"))
+
+setReplaceMethod("gapletter",
+                 signature(x = "BioAlphabet", value = "character"),
+                 function (x, value)
+             {
+                 if (length(value) != 1 || nchar(value) != 1)
+                     stop("gap must be a single letter")
+                 gapindex <- match(x@gap, names(x@mapping))
+                 if (is.na(gapindex))
+                     stop("gap character not in mapping")
+                 names(x@mapping)[gapindex] <- value
+                 substr(x@letters, gapindex, gapindex) <- value
+                 x@gap <- value
+                 x
+             })
+
 setMethod("initialize",
           signature(.Object = "BioAlphabet"),
           function (.Object, letters, gap, ...)

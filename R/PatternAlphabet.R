@@ -2,6 +2,15 @@ setClass("BioPatternAlphabet",
          representation(baseAlphabet="BioAlphabet"),
          contains="BioAlphabet")
 
+setReplaceMethod("gapletter",
+                 signature(x = "BioPatternAlphabet",
+                           value = "character"),
+                 function (x, value)
+             {
+                 gapletter(x@baseAlphabet) <- value
+                 callNextMethod()
+             })
+
 setMethod("initialize",
           signature(.Object = "BioPatternAlphabet"),
           function (.Object, baseAlphabet, letters, ...)

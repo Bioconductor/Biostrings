@@ -140,7 +140,7 @@ appendCharacterToBioString(SEXP alphMapping,
             unsigned int val = mapping[srcptr[j]];
             if (!val)
                 error("invalid character `%c` in source at string %d, position %d",
-                      srcptr[j], srcindex, j);
+                      srcptr[j], srcindex+1, j+1);
             destptr[j] = (unsigned char) val;
         }
     } else {
