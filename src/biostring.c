@@ -7,6 +7,11 @@
 #undef MAX
 #endif
 
+#define INTERRUPT_BIOSTRINGS
+#ifdef INTERRUPT_BIOSTRINGS
+#define INTERRUPTCHECK_AFTER (1U << 21)
+#endif
+
 #define MAX(i, j) ((i)>(j)?(i):(j))
 
 #define R_assert(e) ((e) ? (void) 0 : error("assertion `%s' failed: file `%s', line %d\n", #e, __FILE__, __LINE__))
@@ -848,8 +853,8 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
     int* index = NULL;
     int nmatchIndex, nletters;
     int nmatch = 0;
-#ifdef PROGRESS_BIOSTRINGS
-    int twopercent, progresscheck;
+#ifdef INTERRUPT_BIOSTRINGS
+    unsigned long interruptcheck;
 #endif
     int m;
 
@@ -887,8 +892,8 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
     index = INTEGER(matchIndex);
 
     nmatch = 0;
-#ifdef PROGRESS_BIOSTRINGS
-    progresscheck = twopercent = (m-patlen+1)/50;
+#ifdef INTERRUPT_BIOSTRINGS
+    interruptcheck = 0UL;
 #endif
     if (TYPEOF(pattern) == CHARSXP) {
         unsigned char* pptr = ((unsigned char*) CHAR(pattern))+pstart-1;
@@ -909,17 +914,13 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
                 }
                 index[nmatch++] = k;
             }
-#ifdef PROGRESS_BIOSTRINGS
-            if (k > progresscheck) {
+#ifdef INTERRUPT_BIOSTRINGS
+            if (++interruptcheck > INTERRUPTCHECK_AFTER) {
                 R_CheckUserInterrupt();
-                Rprintf(".");
-                progresscheck += twopercent;
+                interruptcheck = 0UL;
             }
 #endif
         }
-#ifdef PROGRESS_BIOSTRINGS
-        Rprintf("\n");
-#endif
         pptr[0] = save_first;
     } else {
         unsigned int* pptr = ((unsigned int*) INTEGER(pattern))+pstart-1;
@@ -940,17 +941,14 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
                 }
                 index[nmatch++] = k;
             }
-#ifdef PROGRESS_BIOSTRINGS
-            if (k > progresscheck) {
+#ifdef INTERRUPT_BIOSTRINGS
+            interruptcheck += patlen-i;
+            if (interruptcheck > INTERRUPTCHECK_AFTER) {
                 R_CheckUserInterrupt();
-                Rprintf(".");
-                progresscheck += twopercent;
+                interruptcheck = 0UL;
             }
 #endif
         }
-#ifdef PROGRESS_BIOSTRINGS
-        Rprintf("\n");
-#endif
         pptr[0] = save_first;
     }
     UNPROTECT(1);
@@ -968,9 +966,6 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     int* index = NULL;
     int nmatchIndex, nletters;
     int nmatch = 0;
-#ifdef PROGRESS_BIOSTRINGS
-    int twopercent, progresscheck;
-#endif
     int m;
 
     getLengthOneBioStringRange(pattern, &start, &end);
@@ -1000,9 +995,6 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
 
     nmatch = 0;
-#ifdef PROGRESS_BIOSTRINGS
-    progresscheck = twopercent = m/50;
-#endif
     if (TYPEOF(pattern) == CHARSXP) {
         unsigned char pat = ((unsigned char*) CHAR(pattern))[start];
         unsigned char* xptr = (unsigned char*) CHAR(x);
@@ -1017,17 +1009,12 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
                 }
                 index[nmatch++] = i;
             }
-#ifdef PROGRESS_BIOSTRINGS
-            if (i > progresscheck) {
+#ifdef INTERRUPT_BIOSTRINGS
+            if (i % INTERRUPTCHECK_AFTER) {
                 R_CheckUserInterrupt();
-                Rprintf(".");
-                progresscheck += twopercent;
             }
 #endif
         }
-#ifdef PROGRESS_BIOSTRINGS
-        Rprintf("\n");
-#endif
     } else {
         unsigned int pat = ((unsigned int*) INTEGER(pattern))[start];
         unsigned int* xptr = (unsigned int*) INTEGER(x);
@@ -1042,17 +1029,12 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
                 }
                 index[nmatch++] = i;
             }
-#ifdef PROGRESS_BIOSTRINGS
-            if (i > progresscheck) {
+#ifdef INTERRUPT_BIOSTRINGS
+            if (i % INTERRUPTCHECK_AFTER) {
                 R_CheckUserInterrupt();
-                Rprintf(".");
-                progresscheck += twopercent;
             }
 #endif
         }
-#ifdef PROGRESS_BIOSTRINGS
-        Rprintf("\n");
-#endif
     }
     UNPROTECT(1);
 finished_match:
@@ -1187,6 +1169,9 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
 SEXP
 BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
 {
+#ifdef INTERRUPT_BIOSTRINGS
+    unsigned long interruptcheck = 0UL;
+#endif
     int xstart, xend;
     BoyerMoore_compiledPattern_t pattern;
     SEXP matchIndex = R_NilValue;
@@ -1212,10 +1197,6 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         char save_first;
         int m = xend-xstart+1;
         int nmatchIndex;
-#ifdef PROGRESS_BIOSTRINGS
-        int twopercent = (m-patlen+1)/50;
-        int progresscheck = twopercent;
-#endif
         if (TYPEOF(vec) != CHARSXP)
             error("type mismatch between pattern and string");
 
@@ -1279,17 +1260,14 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                 k += letterIndex[i];
 #endif
             }
-#ifdef PROGRESS_BIOSTRINGS
-            if (k > progresscheck) {
+#ifdef INTERRUPT_BIOSTRINGS
+            interruptcheck += patlen-i;
+            if (interruptcheck > INTERRUPTCHECK_AFTER) {
                 R_CheckUserInterrupt();
-                Rprintf(".");
-                progresscheck += twopercent;
+                interruptcheck = 0UL;
             }
 #endif
         }
-#ifdef PROGRESS_BIOSTRINGS
-        Rprintf("\n");
-#endif
         patternptr[0] = save_first;
         UNPROTECT(2);
     } else {
