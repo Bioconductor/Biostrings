@@ -1980,6 +1980,8 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     else nmatchIndex = 4;
     if (nmatchIndex > m-patlen+1)
         nmatchIndex = m-patlen+1;
+    if (nmatchIndex <= 0)
+        nmatchIndex = 1;
 #ifdef DEBUG_BIOSTRINGS
     Rprintf("nmatchIndex: %d\n", nmatchIndex);
 #endif
