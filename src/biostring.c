@@ -1959,6 +1959,9 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     getLengthOneBioStringRange(x, &xstart, &xend);
     if (xstart > xend)
         goto finished_match;
+    m = xend-xstart+1;
+    if (m < patlen-kerr)
+        goto finished_match;
     alph = GET_SLOT(x, install("alphabet"));
     pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
     vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
@@ -1968,7 +1971,6 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
         alph = GET_SLOT(alph, install("baseAlphabet"));
     nletters = LENGTH(GET_SLOT(alph, install("mapping")));
 
-    m = xend-xstart+1;
     nmatchIndex = (m-patlen+1)*exp(patlen*
                                    log(-((double) nletters)));
     if (nmatchIndex > 64)
