@@ -256,19 +256,23 @@ setMethod("matchDNAPattern",
           if (!identical(patalph, xalph))
               stop("The pattern and the string are based on different alphabets")
           algorithm <-
-              if (missing(algorithm))
-                  "boyer-moore"
-              else match.arg(algorithm,
+              if (missing(algorithm)) {
+                  if (mismatch == 0)
+                      "boyer-moore"
+                  else "shift-or"
+              } else match.arg(algorithm,
                              c("boyer-moore",
                                "forward-search",
                                "shift-or"))
+          if (mismatch > 0 && algorithm != "shift-or")
+              stop("only mismatch algorithm is shift-or")
           switch(algorithm,
                  "boyer-moore"=.Call("BoyerMoore_exactMatch", pattern,
                                      x, PACKAGE="Biostrings"),
                  "forward-search"=.Call("ForwardSearch_exactMatch",
                                         pattern, x, PACKAGE="Biostrings"),
-                 "shift-or"=.Call("ShiftOr_exactMatch",
-                                  pattern, x, PACKAGE="Biostrings"),
+                 "shift-or"=.Call('ShiftOr_inexactMatch', pattern, x,
+                 mismatch, mismatch, mismatch, mismatch, PACKAGE="Biostrings"),
                  stop("Unknown algorithm"))
       })
 
