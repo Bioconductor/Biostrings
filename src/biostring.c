@@ -119,11 +119,14 @@ appendCharacterToBioString(SEXP alphMapping,
     for (i = 0; i < nletters; i++) {
         SEXP c = STRING_ELT(letters, i);
         unsigned int tmpcode = ((unsigned int*) INTEGER(alphMapping))[i];
+        int cval;
         if (LENGTH(c) != 1)
             error("invalid names for mapping");
         if (tmpcode > maxcode)
             maxcode = tmpcode;
-        mapping[*((unsigned char*) CHAR(c))] = tmpcode;
+        cval = CHAR(c)[0];
+        mapping[(unsigned char)toupper(cval)] = tmpcode;
+        mapping[(unsigned char)tolower(cval)] = tmpcode;
     }
     if (maxcode < (1U << CHAR_BIT)) {
         /* skip one element in front */
@@ -160,27 +163,37 @@ appendCharacterToBioString(SEXP alphMapping,
 SEXP
 setBioString(SEXP biostring, SEXP src)
 {
-    int start;
-    int end = 0;
+    SEXP offsets;
+    int i, n, last;
+    int* start;
+    int* end;
+
     if (!isFromClass(biostring, "BioString"))
         error("first argument must be from BioString class");
     if (asLogical(GET_SLOT(biostring, install("initialized"))))
         error("can not modify initialized strings");
-    if (length(src) != 1)
-        error("can only set BioString value from single character string");
-    start = INTEGER(GET_SLOT(biostring, install("end")))[0];
-    end = appendCharacterToBioString(GET_SLOT(GET_SLOT(biostring,
-                                                       install("alphabet")),
-                                              install("mapping")),
-                                     GET_SLOT(biostring, install("values")),
-                                     asInteger(GET_SLOT(biostring,
-                                                        install("end"))),
-                                     src,
-                                     0);
-    if (start == 0)
-        start = 1;
-    INTEGER(GET_SLOT(biostring, install("start")))[0] = start;
-    INTEGER(GET_SLOT(biostring, install("end")))[0] = end;
+    n = length(src);
+    if (NAMED(biostring))
+        biostring = duplicate(biostring);
+    PROTECT(biostring);
+    offsets = allocMatrix(INTSXP, n, 2);
+    PROTECT(offsets);
+    SET_SLOT(biostring, install("offsets"), offsets);
+    UNPROTECT(1);
+    offsets = GET_SLOT(biostring, install("offsets"));
+    start = INTEGER(offsets);
+    end = start+n;
+    for (last = 0, i = 0; i < n; i++) {
+        start[i] = last+1;
+        last = appendCharacterToBioString(
+            GET_SLOT(GET_SLOT(biostring,
+                              install("alphabet")),
+                     install("mapping")),
+            GET_SLOT(biostring, install("values")),
+            last, src, i);
+        end[i] = last;
+    }
+    UNPROTECT(1);
     return biostring;
 }
 
@@ -217,10 +230,9 @@ BioStringToCharacter(int nletters_base,
     values = R_ExternalPtrTag(values);
 
     ndest = end-start+1;
-    ans = allocVector(STRSXP, 1);
+    ans = allocString(ndest);
     PROTECT(ans);
-    SET_STRING_ELT(ans, 0, allocString(ndest));
-    dest = CHAR(STRING_ELT(ans, 0));
+    dest = CHAR(ans);
 
     if (nletters_base <= CHAR_BIT) {
         unsigned char* src;
@@ -327,18 +339,153 @@ invalid_element:
 SEXP
 BioStringToRString(SEXP x)
 {
-    SEXP alph = GET_SLOT(x, install("alphabet"));
-    SEXP tmp = alph;
+    SEXP alph, mapping, values, tmp, dim, ans, offsets;
+    int nletters_base;
+    int* startvec;
+    int* endvec;
+    int i, n;
+
+    if (!isFromClass(x, "BioString"))
+        error("argument must be a BioString");
+    offsets = GET_SLOT(x, install("offsets"));
+    if (TYPEOF(offsets) != INTSXP)
+        error("offsets must be integer");
+    dim = GET_DIM(offsets);
+    if (TYPEOF(dim) != INTSXP || LENGTH(dim) != 2)
+        error("offsets must be a matrix");
+    if (INTEGER(dim)[1] != 2)
+        error("offsets must have two columns");
+    alph = GET_SLOT(x, install("alphabet"));
+    mapping = GET_SLOT(alph, install("mapping"));
+    values = GET_SLOT(x, install("values"));
+    tmp = alph;
+    n = INTEGER(dim)[0];
+    startvec = INTEGER(offsets);
+    endvec = INTEGER(offsets)+n;
+    
     while (isFromClass(tmp, "BioPatternAlphabet"))
         tmp = GET_SLOT(tmp, install("baseAlphabet"));
-    return BioStringToCharacter(LENGTH(GET_SLOT(tmp, install("mapping"))),
-                                GET_SLOT(alph, install("mapping")),
-                                GET_SLOT(x, install("values")),
-                                asInteger(GET_SLOT(x,
-                                                   install("start"))),
-                                asInteger(GET_SLOT(x,
-                                                   install("end"))));
+    nletters_base = LENGTH(GET_SLOT(tmp, install("mapping")));
+    ans = allocVector(STRSXP, n);
+    PROTECT(ans);
+    for (i = 0; i < n; i++) {
+        int start_i = startvec[i];
+        int end_i = endvec[i];
+        SET_STRING_ELT(ans, i,
+                       BioStringToCharacter(nletters_base,
+                                            mapping, values,
+                                            start_i, end_i));
+    }
+    UNPROTECT(1);
+    return ans;
 }
+
+#define mod_iterate(n,n1,n2,n3, i,i1,i2,i3) for (i=i1=i2=i3=0; i<n; \
+	i1 = (++i1 == n1) ? 0 : i1,\
+	i2 = (++i2 == n2) ? 0 : i2,\
+	i3 = (++i3 == n3) ? 0 : i3,\
+	++i)
+
+SEXP
+BioString_substring(SEXP x, SEXP start, SEXP stop, SEXP doSubstring)
+{
+    int* startvec;
+    int* stopvec;
+    int* current_startvec;
+    int* current_stopvec;
+    int* ans_startvec;
+    int* ans_stopvec;
+    int i, icurrent, istart, istop;
+    int n, ncurrent, nstart, nstop;
+    int substring = asLogical(doSubstring);
+    SEXP offsets, dim, ans;
+
+    if (!isFromClass(x, "BioString"))
+        error("invalid argument to substr for BioString");
+    offsets = GET_SLOT(x, install("offsets"));
+    dim = GET_DIM(offsets);
+    if (TYPEOF(offsets) != INTSXP || TYPEOF(dim) != INTSXP ||
+        LENGTH(dim) != 2 || INTEGER(dim)[1] != 2)
+        error("offsets slot of BioString must be integer matrix with two columns");
+
+    start = coerceVector(start, INTSXP);
+    PROTECT(start);
+    nstart = LENGTH(start);
+    startvec = INTEGER(start);
+    stop = coerceVector(stop, INTSXP);
+    PROTECT(stop);
+    nstop = LENGTH(stop);
+    stopvec = INTEGER(stop);
+
+    ncurrent = INTEGER(dim)[0];
+    current_startvec = INTEGER(offsets);
+    current_stopvec = INTEGER(offsets)+ncurrent;
+
+    if (NAMED(x))
+        ans = duplicate(x);
+    else ans = x;
+    PROTECT(ans);
+    n = ncurrent;
+    if (substring) {
+        n = (n>nstart)?n:nstart;
+        n = (n>nstop)?n:nstop;
+    }
+    if (n != ncurrent) {
+        SEXP dimnames = GET_DIMNAMES(offsets);
+        SEXP ans_offsets = allocVector(INTSXP, 2*n);
+        PROTECT(ans_offsets);
+        memcpy(INTEGER(ans_offsets), current_startvec,
+               sizeof(int)*ncurrent);
+        memset(INTEGER(ans_offsets)+ncurrent, 0,
+               sizeof(int)*(n-ncurrent));
+        memcpy(INTEGER(ans_offsets)+n, current_stopvec,
+               sizeof(int)*ncurrent);
+        memset(INTEGER(ans_offsets)+n+ncurrent, 0,
+               sizeof(int)*(n-ncurrent));
+        dim = allocVector(INTSXP, 2);
+        INTEGER(dim)[0] = n;
+        INTEGER(dim)[1] = 2;
+        PROTECT(dim);
+        SET_DIM(ans_offsets, dim);
+        if (TYPEOF(dimnames) == VECSXP && LENGTH(dimnames) == 2) {
+            SEXP tmp = allocVector(VECSXP, 2);
+            SET_VECTOR_ELT(tmp, 1, VECTOR_ELT(dimnames, 1));
+            SET_DIMNAMES(ans_offsets, tmp);
+        }
+        SET_SLOT(ans, install("offsets"), ans_offsets);
+        UNPROTECT(2);
+    }
+
+    offsets = GET_SLOT(ans, install("offsets"));
+    ans_startvec = INTEGER(offsets);
+    ans_stopvec = INTEGER(offsets)+n;
+
+    mod_iterate(n, ncurrent, nstart, nstop,
+                i, icurrent, istart, istop) {
+        int current_first = current_startvec[icurrent];
+        int current_last = current_stopvec[icurrent];
+        int slen = current_last-current_first+1;
+        if (slen > 0) {
+            int first = startvec[istart];
+            int last = stopvec[istop];
+            if (first <= 0)
+                first = 1;
+            if (first > last || first > slen) {
+                ans_startvec[i] = 1;
+                ans_stopvec[i] = 0;
+            } else {
+                if (last < slen)
+                    ans_stopvec[i] = current_first+last-1;
+                else ans_stopvec[i] = current_last;
+                ans_startvec[i] = current_first+first-1;
+            }
+        }
+    }
+    UNPROTECT(3);
+    return ans;
+}
+
+#undef mod_iterate
 
 /*
  * Warning: This uses 1-based indexing rather than 0-based indexing.
@@ -359,7 +506,6 @@ reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
     if (n > 1) {
         int i, l, r, k;
         unsigned char prev, next;
-        unsigned char mismatch;
         /* do an explicit calculation for n-1 */
         pattern[0] = (char)0xff;
         prev = pattern[n];
@@ -480,22 +626,188 @@ typedef struct {
 } BoyerMoore_compiledPattern_t;
 
 static void
-BoyerMoore_preprocess(SEXP x,
-                      BoyerMoore_compiledPattern_t* pattern)
+getLengthOneBioStringRange(SEXP x, int*start, int* end)
 {
-    int xstart = asInteger(GET_SLOT(x, install("start")));
-    int xend = asInteger(GET_SLOT(x, install("end")));
-    int i, n;
-    SEXP alph = GET_SLOT(x, install("alphabet"));
+    int xstart, xend;
+    SEXP offsets, dim;
+
+    if (!isFromClass(x, "BioString"))
+        error("x must be a BioString");
+    offsets = GET_SLOT(x, install("offsets"));
+    x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    dim = GET_DIM(offsets);
+    if (TYPEOF(offsets) != INTSXP || TYPEOF(dim) != INTSXP ||
+        LENGTH(dim) != 2 || INTEGER(dim)[1] != 2)
+        error("offsets slot of BioString must be integer matrix with two columns");
+    if (INTEGER(dim)[0] != 1)
+        error("not a single BioString");
+    xstart = INTEGER(offsets)[0];
+    xend = INTEGER(offsets)[1];
+    if (xstart <= 0)
+        xstart = 1;
+    if (xstart > xend || xstart > length(x)-1) {
+        *start = 1;
+        *end = 0;
+        return;
+    }
+    if (xend > length(x)-1)
+        xend = length(x)-1;
+    *start = xstart;
+    *end = xend;
+}
+
+/*
+ *  This may trash the matchIndex argument.
+ */
+static SEXP
+matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
+{
+    int nmatchIndex = LENGTH(matchIndex);
+    int* index = INTEGER(matchIndex);
+    PROTECT(matchIndex);
+    if (NAMED(x))
+        x = duplicate(x);
+    PROTECT(x);
+    if (nmatch == 0) {
+        int* offsets = INTEGER(GET_SLOT(x, install("offsets")));
+        offsets[0] = 1;
+        offsets[1] = 0;
+    } else if (nmatch == 1) {
+        int* offsets = INTEGER(GET_SLOT(x, install("offsets")));
+        offsets[1] = index[0];
+        offsets[0] = index[0]-patlen+1;
+    } else if (nmatchIndex == 2*nmatch) {
+        SEXP dim = GET_DIM(GET_SLOT(x, install("offsets")));
+        int i;
+
+        INTEGER(dim)[0] = nmatch;
+        INTEGER(dim)[1] = 2;
+        SET_DIM(matchIndex, dim);
+        memcpy(index+nmatch, index, sizeof(int)*nmatch);
+        for (i = 0; i < nmatch; i++)
+            index[i] -= patlen-1;
+        SET_SLOT(x, install("offsets"), matchIndex);
+    } else {
+        SEXP offsets = allocMatrix(INTSXP, nmatch, 2);
+        int* tmp = INTEGER(offsets);
+        int i;
+
+        PROTECT(offsets);
+        for (i = 0; i < nmatch; i++)
+            tmp[i] = index[i]-patlen+1;
+        tmp += nmatch;
+        memcpy(tmp, index, sizeof(int)*nmatch);
+        SET_SLOT(x, install("offsets"), offsets);
+        UNPROTECT(1);
+    }
+    UNPROTECT(2);
+    return x;
+}
+
+SEXP
+LengthOne_exactMatch(SEXP pattern, SEXP x)
+{
+    int start, end;
+    SEXP alph;
+    SEXP matchIndex = R_NilValue;
+    int* index = NULL;
+    int nmatchIndex, nletters;
+    int nmatch = 0;
+    int m;
+
+    getLengthOneBioStringRange(pattern, &start, &end);
+    if (start <= 0 || end != start)
+        error("not a length one pattern");
+    getLengthOneBioStringRange(x, &start, &end);
+    if (start > end)
+        goto finished_match;
+    alph = GET_SLOT(x, install("alphabet"));
+    pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
+    x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(x) != TYPEOF(pattern))
+        error("pattern and text must be of same type");
+    while (isFromClass(alph, "BioPatternAlphabet"))
+        alph = GET_SLOT(alph, install("baseAlphabet"));
+    nletters = LENGTH(GET_SLOT(alph, install("mapping")));
+
+    m = end-start+1;
+    nmatchIndex = m/((double) nletters);
+    if (nmatchIndex > 64)
+        nmatchIndex /= 4;
+    else if (nmatchIndex > 16)
+        nmatchIndex = 16;
+    else if (4 <= m)
+        nmatchIndex = 4;
+    matchIndex = allocVector(INTSXP, nmatchIndex);
+
+    nmatch = 0;
+    if (TYPEOF(pattern) == CHARSXP) {
+        unsigned char pat = ((unsigned char*) CHAR(pattern))[start];
+        unsigned char* xptr = (unsigned char*) CHAR(x);
+        int i;
+        for (i = start; i <= end; i++) {
+            if (pat & xptr[i]) {
+                if (nmatchIndex == nmatch) {
+                    double proportion = (nmatch+1)/(double)i;
+                    int estimate = proportion*(m-i);
+                    if (estimate == 0 && m > i)
+                        nmatchIndex += 2;
+                    else nmatchIndex += estimate+1;
+                    PROTECT(matchIndex);
+                    matchIndex = lengthgets(matchIndex, nmatchIndex);
+                    UNPROTECT(1);
+                    index = INTEGER(matchIndex);
+                }
+                index[nmatch++] = i;
+            }
+        }
+    } else {
+        unsigned int pat = ((unsigned int*) INTEGER(pattern))[start];
+        unsigned int* xptr = (unsigned int*) INTEGER(x);
+        int i;
+        for (i = start; i <= end; i++) {
+            if (pat & xptr[i]) {
+                if (nmatchIndex == nmatch) {
+                    double proportion = (nmatch+1)/(double)i;
+                    int estimate = proportion*(m-i);
+                    if (estimate == 0 && m > i)
+                        nmatchIndex += 2;
+                    else nmatchIndex += estimate+1;
+                    PROTECT(matchIndex);
+                    matchIndex = lengthgets(matchIndex, nmatchIndex);
+                    UNPROTECT(1);
+                    index = INTEGER(matchIndex);
+                }
+                index[nmatch++] = i;
+            }
+        }
+    }
+finished_match:
+    return matchIndexToBioString(x, matchIndex, nmatch, 1);
+}
+
+static void
+BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
+{
+    int i, n, xstart, xend;
+    SEXP alph;
     SEXP alphMapping, letters;
+
+    getLengthOneBioStringRange(x, &xstart, &xend);
+    if (xstart > xend) {
+        pattern->length = 0;
+        return;
+    }
+
+    alph = GET_SLOT(x, install("alphabet"));
     alphMapping = GET_SLOT(alph, install("mapping"));
     letters = GET_NAMES(alphMapping);
+
     x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
-    if (xstart <= 0 || xstart > xend || xend > length(x)-1)
-        error("BoyerMoore_preprocess: inconsistent BioString object");
     pattern->usesChar = TYPEOF(x) == CHARSXP;
     pattern->length = n = xend-xstart+1;
     pattern->nletters = LENGTH(alphMapping);
+
     if (pattern->usesChar) {
         SEXP tmp = PROTECT(allocVector(INTSXP,
                                        n+1));
@@ -593,27 +905,32 @@ BoyerMoore_preprocess(SEXP x,
 SEXP
 BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
 {
-    int xstart = asInteger(GET_SLOT(x, install("start")));
-    int xend = asInteger(GET_SLOT(x, install("end")));
+    int xstart, xend;
     BoyerMoore_compiledPattern_t pattern;
     SEXP matchIndex = R_NilValue;
+    SEXP vec;
     int* index = 0;
-    int k, patlen;
+    int k, patlen = 0, nmatch = 0;
 
-    x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
-    if (xstart <= 0 || xstart > xend || xend > length(x)-1)
-        error("BoyerMoore_exactMatch: inconsistent BioString object");
+    getLengthOneBioStringRange(x, &xstart, &xend);
+    if (xstart > xend)
+        goto finished_match;
     BoyerMoore_preprocess(origPattern, &pattern);
-    
     patlen = pattern.length;
+    if (patlen == 0)
+        goto finished_match;
+    if (patlen == 1)
+        return LengthOne_exactMatch(origPattern, x);
+    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (pattern.usesChar) {
-        unsigned char* str = (unsigned char*) CHAR(x)+xstart-1;
+        unsigned char* str;
         char* patternptr;
         int m = xend-xstart+1;
-        int nmatch, nmatchIndex;
-        if (TYPEOF(x) != CHARSXP)
+        int nmatchIndex;
+        if (TYPEOF(vec) != CHARSXP)
             error("type mismatch between pattern and string");
 
+        str = (unsigned char*) CHAR(vec)+xstart-1;
         PROTECT(pattern.bad_char.letterIndex);
         nmatchIndex = (m-patlen+1)*exp(patlen*
                                        log(-((double) pattern.nletters)));
@@ -657,7 +974,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                     PROTECT(matchIndex);
                     index = INTEGER(matchIndex);
                 }
-                index[nmatch++] = k-patlen+1;
+                index[nmatch++] = k;
                 k += pattern.good_suffix_shift[0];
             } else {
                 SEXP letterIndex =
@@ -684,184 +1001,118 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                 }
             }
         }
-        matchIndex = lengthgets(matchIndex, nmatch);
         UNPROTECT(2);
     } else {
         error("non-character patterns and strings unimplemented");
-        if (TYPEOF(x) != INTSXP)
-            error("type mismatch between pattern and string");
     }
     /* BoyerMoore_releasePattern(&pattern); */
-    return matchIndex;
-}
-
-SEXP
-LengthOne_exactMatch(SEXP pattern, SEXP x)
-{
-    int start = asInteger(GET_SLOT(pattern, install("start")));
-    int end = asInteger(GET_SLOT(pattern, install("end")));
-    SEXP alph = GET_SLOT(x, install("alphabet"));
-    SEXP matchIndex = R_NilValue;
-    int* index = NULL;
-    int nmatch, nmatchIndex, nletters;
-    int m;
-
-    pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
-    if (start <= 0 || end-start != 1 || end > length(pattern)-1)
-        error("LengthOne_exactMatch: invalid pattern");
-    start = asInteger(GET_SLOT(x, install("start")));
-    end = asInteger(GET_SLOT(x, install("end")));
-    x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
-    if (start <= 0 || start > end || end > length(x)-1)
-        error("LengthOne_exactMatch: inconsistent BioString object");
-    if (TYPEOF(x) != TYPEOF(pattern))
-        error("pattern and text must be of same type");
-    while (isFromClass(alph, "BioPatternAlphabet"))
-        alph = GET_SLOT(alph, install("baseAlphabet"));
-    nletters = LENGTH(GET_SLOT(alph, install("mapping")));
-
-    m = end-start+1;
-    nmatchIndex = m/((double) nletters);
-    if (nmatchIndex > 64)
-        nmatchIndex /= 4;
-    else if (nmatchIndex > 16)
-        nmatchIndex = 16;
-    else if (4 <= m)
-        nmatchIndex = 4;
-    matchIndex = allocVector(INTSXP, nmatchIndex);
-
-    nmatch = 0;
-    if (TYPEOF(pattern) == CHARSXP) {
-        unsigned char pat = ((unsigned char*) CHAR(pattern))[start];
-        unsigned char* xptr = (unsigned char*) CHAR(x);
-        int i;
-        for (i = start; i <= end; i++) {
-            if (pat & xptr[i]) {
-                if (nmatchIndex == nmatch) {
-                    double proportion = (nmatch+1)/(double)i;
-                    int estimate = proportion*(m-i);
-                    if (estimate == 0 && m > i)
-                        nmatchIndex += 2;
-                    else nmatchIndex += estimate+1;
-                    PROTECT(matchIndex);
-                    matchIndex = lengthgets(matchIndex, nmatchIndex);
-                    UNPROTECT(1);
-                    index = INTEGER(matchIndex);
-                }
-                index[nmatch++] = i;
-            }
-        }
-    } else {
-        unsigned int pat = ((unsigned int*) INTEGER(pattern))[start];
-        unsigned int* xptr = (unsigned int*) INTEGER(x);
-        int i;
-        for (i = start; i <= end; i++) {
-            if (pat & xptr[i]) {
-                if (nmatchIndex == nmatch) {
-                    double proportion = (nmatch+1)/(double)i;
-                    int estimate = proportion*(m-i);
-                    if (estimate == 0 && m > i)
-                        nmatchIndex += 2;
-                    else nmatchIndex += estimate+1;
-                    PROTECT(matchIndex);
-                    matchIndex = lengthgets(matchIndex, nmatchIndex);
-                    UNPROTECT(1);
-                    index = INTEGER(matchIndex);
-                }
-                index[nmatch++] = i;
-            }
-        }
-    }
-    matchIndex = lengthgets(matchIndex, nmatch);
-    return matchIndex;
+finished_match:
+    return matchIndexToBioString(x, matchIndex, nmatch, patlen);
 }
 
 SEXP
 reverseComplementBioString(SEXP x)
 {
-    int start = asInteger(GET_SLOT(x, install("start")));
-    int end = asInteger(GET_SLOT(x, install("end")));
-    SEXP alph = GET_SLOT(x, install("alphabet"));
-    SEXP mapping;
-    SEXP letters;
-    SEXP ans;
+    SEXP alph, mapping, letters, xvec;
+    int n;
 
+    if (!isFromClass(x, "BioString"))
+        error("argument must be of class BioString");
+    alph = GET_SLOT(x, install("alphabet"));
     while (isFromClass(alph, "BioPatternAlphabet"))
         alph = GET_SLOT(alph, install("baseAlphabet"));
     mapping = GET_SLOT(alph, install("mapping"));
     letters = GET_NAMES(mapping);
-    x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
-    if (TYPEOF(x) == CHARSXP) {
-        int n = end-start+1;
-        if (start <= 0 || n < 0 || end > length(x)-1)
-            error("LengthOne_exactMatch: invalid pattern");
-        if (n == 0) {
-            ans = allocString(LENGTH(x));
-        } else {
-            unsigned char* src = (unsigned char*) CHAR(x)+start;
-            unsigned char* dest;
-            unsigned char A = 0;
-            unsigned char C = 0;
-            unsigned char G = 0;
-            unsigned char T = 0;
-            unsigned char gap = 0;
-            int i;
+    xvec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(xvec) != CHARSXP)
+        error("Only character storage is supported now");
 
-            if (TYPEOF(mapping) != INTSXP ||
-                TYPEOF(letters) != STRSXP ||
-                LENGTH(mapping) != 5 ||
-                LENGTH(letters) != 5)
+    n = LENGTH(xvec);
+    if (NAMED(x))
+        x = duplicate(x);
+    PROTECT(x);
+    if (n > 0) {
+        unsigned char revmap[256];
+        unsigned char* src = (unsigned char*) CHAR(xvec)+1;
+        unsigned char* dest;
+        unsigned char A = 0;
+        unsigned char C = 0;
+        unsigned char G = 0;
+        unsigned char T = 0;
+        unsigned char gap = 0;
+        SEXP ansvec, offsets, dim;
+        int* start;
+        int* end;
+        int i, noffsets;
+
+        if (TYPEOF(mapping) != INTSXP ||
+            TYPEOF(letters) != STRSXP ||
+            LENGTH(mapping) != 5 ||
+            LENGTH(letters) != 5)
+            error("incorrect mapping");
+        for (i = 0; i < 5; i++) {
+            SEXP tmp = STRING_ELT(letters, i);
+            if (TYPEOF(tmp) != CHARSXP || LENGTH(tmp) != 1)
                 error("incorrect mapping");
-            for (i = 0; i < 5; i++) {
-                SEXP tmp = STRING_ELT(letters, i);
-                if (TYPEOF(tmp) != CHARSXP || LENGTH(tmp) != 1)
-                    error("incorrect mapping");
-                switch (CHAR(tmp)[0]) {
-                case 'a': case 'A':
-                    A = 1 << i;
-                    break;
-                case 'c': case 'C':
-                    C = 1 << i;
-                    break;
-                case 'g': case 'G':
-                    G = 1 << i;
-                    break;
-                case 't': case 'T': case 'u': case 'U':
-                    T = 1 << i;
-                    break;
-                default:
-                    gap = 1 << i;
-                    break;
+            switch (CHAR(tmp)[0]) {
+            case 'a': case 'A':
+                A = 1 << i;
+                break;
+            case 'c': case 'C':
+                C = 1 << i;
+                break;
+            case 'g': case 'G':
+                G = 1 << i;
+                break;
+            case 't': case 'T': case 'u': case 'U':
+                T = 1 << i;
+                break;
+            default:
+                gap = 1 << i;
+                break;
                 }
-            }
-            if (!A || !G || !C || !T || !gap)
-                error("Could not find some of the nucleotide letters");
-            ans = allocString(length(x));
-            dest = (unsigned char*) CHAR(ans)+start-1;
-            for (i = 0; i < n; i++) {
-                unsigned char srcpat = src[i];
-                unsigned char destpat = 0;
-                if (srcpat & A)
-                    destpat |= T;
-                if (srcpat & C)
-                    destpat |= G;
-                if (srcpat & T)
-                    destpat |= A;
-                if (srcpat & G)
-                    destpat |= C;
-                if (srcpat & gap)
-                    destpat |= gap;
-                if (!destpat)
-                    error("Unrecognized code in nucleotide sequence");
-                dest[n-i] = destpat;
+        }
+        if (!A || !G || !C || !T || !gap)
+            error("Could not find some of the nucleotide letters");
+
+        offsets = GET_SLOT(x, install("offsets"));
+        dim = GET_DIM(offsets);
+        if (TYPEOF(offsets) != INTSXP || TYPEOF(dim) != INTSXP ||
+            LENGTH(dim) != 2 || INTEGER(dim)[1] != 2)
+            error("offsets slot of BioString must be integer matrix with two columns");
+        noffsets = INTEGER(dim)[1];
+
+        memset(revmap, 0, 256);
+        for (i = 0; i < 31; i++) {
+            if (i & A)
+                revmap[i] |= T;
+            if (i & C)
+                revmap[i] |= G;
+            if (i & T)
+                revmap[i] |= A;
+            if (i & G)
+                revmap[i] |= C;
+            if (i & gap)
+                revmap[i] |= gap;
+        }
+        ansvec = allocString(LENGTH(xvec));
+        dest = (unsigned char*) CHAR(ansvec);
+        for (i = 0; i < n; i++) {
+            unsigned char v = revmap[src[i]];
+            if (!v)
+                error("unrecognized code");
+            dest[n-i] = v;
+        }
+        start = INTEGER(offsets);
+        end = start+noffsets;
+        for (i = 0; i < noffsets; i++) {
+            int tmp = end[i];
+            if (tmp) {
+                end[i] = n-start[i]+1;
+                start[i] = n-tmp+1;
             }
         }
-    } else {
-        error("Only character storage is supported now");
-        ans = R_NilValue; /* -Wall */
     }
-    PROTECT(ans);
-    ans = R_MakeExternalPtr(NULL, ans, R_NilValue);
     UNPROTECT(1);
-    return ans;
+    return x;
 }
