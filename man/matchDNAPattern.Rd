@@ -1,7 +1,7 @@
 \name{matchDNAPattern}
 \alias{matchDNAPattern}
-\alias{matchDNAPattern,character,ANY-method}
-\alias{matchDNAPattern,ANY,character-method}
+\alias{matchDNAPattern,character,ANY,ANY-method}
+\alias{matchDNAPattern,ANY,character,ANY-method}
 \title{ Generic to find all matches of a pattern in a DNA string}
 \description{
   Generic that finds all matches of a pattern in a DNA string. Currently
@@ -13,7 +13,7 @@
   the begining to end.
 }
 \usage{
-matchDNAPattern(pattern, x, algorithm)
+matchDNAPattern(pattern, x, algorithm, mismatch)
 }
 \arguments{
   \item{pattern}{ An object representing the pattern string. The string in
@@ -21,10 +21,17 @@ matchDNAPattern(pattern, x, algorithm)
     \code{\link{DNAPatternAlphabet}} for all valid letters.}
   \item{x}{ An object representing a DNA string. }
   \item{algorithm}{ Currently the only valid values are
-    \code{"boyer-moore"} (which is the default) and
-    \code{"forward-search"}. The forward search algorithm is often as
+    \code{"boyer-moore"} (which is the default), \code{"forward-search"}
+    and \code{"shift-or"}. The forward search algorithm is often as
     fast as the more sphisticated Boyer-Moore algorithm when the
-    patterns being matched are very simple.}
+    patterns being matched are very simple. The shift-or algorithm is
+    even faster. However, it can only be used for patterns of length at
+    most 32 or 64 depending on the number of bits in a machine word. The
+    shift-or algorithm can also do inexact matches for a given number of
+    mismatches.}
+  \item{mismatch}{ An integer, the number of mismatches allowed. The
+    defualt is 0. If the default is non-zero an inexact match algorithm
+    is used for matching. }
 }
 \value{
   An object of class "BioString" with the same length as the number of
@@ -46,10 +53,12 @@ m2
 as.matrix(m2)
 data('yeastSEQCHR1')
 yeast1 <- DNAString(yeastSEQCHR1)
-PpiI <- "GAACNNNNNCTC"
+PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
 match1.PpiI <- matchDNAPattern(PpiI, yeast1)
 match2.PpiI <- matchDNAPattern(PpiI, yeast1, algorithm="forward-search")
 match1.PpiI
 match2.PpiI
+match3.PpiI <- matchDNAPattern(PpiI, yeast1, mismatch=1)
+match3.PpiI
 }
 \keyword{classes}
