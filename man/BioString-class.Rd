@@ -6,7 +6,7 @@
 \alias{matchDNAPattern,BioString,BioString-method}
 \alias{substr,BioString-method}
 
-\title{Class "BioString", represnts a bilogical sequence}
+\title{Class "BioString", represnts a biological sequence}
 \description{Class "BioString", contains an encoded string representing a
   biological sequence for a particular alphabet (RNA, DNA or amino acid). }
 \section{Objects from the Class}{
