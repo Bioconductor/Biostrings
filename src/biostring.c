@@ -361,10 +361,13 @@ typedef struct {
 /* N[j] is the length of the longest suffix of the substring
  * pattern->value.charptr[1:j] that is also a suffix of
  * pattern->value.charptr */
-static void
-reverseFundamentalPreprocessing(BoyerMoore_compiledPattern_t* pattern,
-                                int* N)
+SEXP
+reverseFundamentalPreprocessing(SEXP x)
 {
+    if (TYPEOF(x) != CHARSXP) {
+        if (TYPEOF(x) != STRSXP || LENGTH(x) != 1)
+            error("invalid ");
+    }
     int n = pattern->length;
     N[n] = n;
     if (n > 1) {
@@ -620,13 +623,13 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
 {
     int start = asInteger(GET_SLOT(pattern, install("start")));
     int end = asInteger(GET_SLOT(pattern, install("end")));
-    pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
     SEXP alph = GET_SLOT(x, install("alphabet"));
     SEXP matchIndex = R_NilValue;
     int* index = NULL;
     int nmatch, nmatchIndex, nletters;
     int m;
 
+    pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
     if (start <= 0 || end-start != 1 || end > length(pattern)-1)
         error("LengthOne_exactMatch: invalid pattern");
     start = asInteger(GET_SLOT(x, install("start")));
