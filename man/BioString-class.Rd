@@ -86,7 +86,7 @@
   representing DNA or RNA sequences.
 }
 \examples{
-new("BioString", DNAString()) # creates an empty DNA string
+new("BioString", DNAAlphabet()) # creates an empty DNA string
 x <- DNAString("AAGCTANA", gap="N")
 as.character(x)
 y <- substr(x, 2, 4)

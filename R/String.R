@@ -85,9 +85,9 @@ NucleotideString <- function(src,
     ans
 }
 
-DNAString <- function(src, gap='-')
+DNAString <- function(src="", gap='-')
 {
-    NucleotideString(src)
+    NucleotideString(src=src, gap=gap)
 }
 
 setMethod("substr",
