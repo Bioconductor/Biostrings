@@ -6,3 +6,5 @@ Description: Basic class definitions and generics for biological sequences
 Depends: R (>= 1.8.0)
 Maintainer: Saikat DebRoy <saikat@stat.wisc.edu>
 License: LGPL
+ReleaseLevel: devel
+
