@@ -2,6 +2,7 @@
 \docType{class}
 \alias{BioAlphabet-class}
 \alias{initialize,BioAlphabet-method}
+\alias{gapletter<-,BioAlphabet,character-method}
 
 \title{Class "BioAlphabet" represents alphabets used in biology }
 \description{ Each object of class "BioAlphabet" represents a particular
@@ -27,6 +28,9 @@
       gap character \code{'-'}, then it is added as the first letter.
       An encoding also created which is stored in the \code{mapping}
       slot. }
+    \item{gapletter(x) <- value}{Change the letter representing gaps in
+      \code{x} of class "BioPatternAlphabet" to \code{value} which must
+      be a single letter not in the base alphabet of \code{x}.}
   }
 }
 \author{ Saikat DebRoy }

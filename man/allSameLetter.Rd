@@ -1,5 +1,6 @@
 \name{allSameLetter}
 \alias{allSameLetter}
+\alias{allSameLetter,character,ANY-method}
 \title{ Generic to find the strings which are repeats of a single letter}
 \description{
   This method finds all strings in a "BioString" object which consist of
