@@ -42,11 +42,8 @@ DNAString(src, gap="-")
   creating the standrad DNA and RNA alphabets.
 }
 \examples{
-x <- NucleotideString("ACTGAACT")
-as.character(x)
-x <- DNAString("ACTGAACT-GC")
-as.character(x)
-x <- DNAString("ACTGAACTNGC", gap="N")
-as.character(x)
+NucleotideString("ACTGAACT")
+DNAString("ACTGAACT-GC")
+DNAString("ACTGAACTNGC", gap="N")
 }
 \keyword{classes}

@@ -92,9 +92,10 @@
 \examples{
 new("BioString", DNAAlphabet()) # creates an empty DNA string
 x <- DNAString("AAGCTANA", gap="N")
+x
 as.character(x)
 y <- substr(x, 2, 4)
-as.character(y)
+y
 matchDNAPattern("GC", x)
 }
 \keyword{classes}
