@@ -6,12 +6,13 @@
 \alias{matchDNAPattern,BioString,BioString-method}
 \alias{substr,BioString-method}
 
-\title{Class "BioString", represnts a biological sequence}
+\title{Class "BioString", represents a biological sequence}
 \description{Class "BioString", contains an encoded string representing a
   biological sequence for a particular alphabet (RNA, DNA or amino acid). }
 \section{Objects from the Class}{
-  Objects can be created by calls of the form \code{new("BioString", alphabet, end, start, values, initialized, ...)}.
-  However, it is reccommended that users should not call this directly.
+  Objects can be created by calls of the form
+  \code{new("BioString", alphabet, end, start, values, initialized, ...)}.
+  However, it is recommended that users should not call this directly.
   For now, use the function \code{\link{NucleotideString}} to create
   objects of class "BioString" that uses a nucleotide alphabet (RNA or DNA).
 }
@@ -85,7 +86,7 @@
   representing DNA or RNA sequences.
 }
 \examples{
-new("BioString", DNAString()) # creats an empty DNA string
+new("BioString", DNAString()) # creates an empty DNA string
 x <- DNAString("AAGCTANA", gap="N")
 as.character(x)
 y <- substr(x, 2, 4)
