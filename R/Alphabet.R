@@ -86,30 +86,30 @@ RNAAlphabet <- function()
     new("NucleotideAlphabet",
         letters=c('U', 'G', 'C', 'A'))
 
-StandardPeptideAlphabet <- function()
-    new("AminoAcidAlphabet",
-        letters= c('A', # alanine
-                   'B', # aspartatic acid or asparagine
-                   'C', # cysteine
-                   'D', # aspartic acid
-                   'E', # glutamic acid
-                   'F', # phenylalanine
-                   'G', # glycine
-                   'H', # histidine
-                   'I', # isoleucine
-                   'K', # lysine
-                   'L', # leucine
-                   'M', # methionine
-                   'N', # asparagine
-                   'P', # proline
-                   'Q', # glutamine
-                   'R', # arginine
-                   'S', # serine
-                   'T', # threonine
-                   'U', # selenocysteine
-                   'V', # valine
-                   'W', # tryptophan
-                   'Y', # tyrosine
-                   'Z', # glutamaic acid or glutamine
-                   '*'  # translation stop
-                   ))
+# StandardPeptideAlphabet <- function()
+#     new("AminoAcidAlphabet",
+#         letters= c('A', # alanine
+#                    'B', # aspartatic acid or asparagine
+#                    'C', # cysteine
+#                    'D', # aspartic acid
+#                    'E', # glutamic acid
+#                    'F', # phenylalanine
+#                    'G', # glycine
+#                    'H', # histidine
+#                    'I', # isoleucine
+#                    'K', # lysine
+#                    'L', # leucine
+#                    'M', # methionine
+#                    'N', # asparagine
+#                    'P', # proline
+#                    'Q', # glutamine
+#                    'R', # arginine
+#                    'S', # serine
+#                    'T', # threonine
+#                    'U', # selenocysteine
+#                    'V', # valine
+#                    'W', # tryptophan
+#                    'Y', # tyrosine
+#                    'Z', # glutamaic acid or glutamine
+#                    '*'  # translation stop
+#                    ))

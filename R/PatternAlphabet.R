@@ -77,7 +77,7 @@ RNAPatternAlphabet <- function()
                          W="AU",
                          Y="CU"))
 
-StandardPeptidePatternAlphabet <- function()
-    new("BioPatternAlphabet",
-        StandardPeptideAlphabet(),
-        c(X="ABCDEFGHIKLMNPQRSTUVWYZ"))
+# StandardPeptidePatternAlphabet <- function()
+#     new("BioPatternAlphabet",
+#         StandardPeptideAlphabet(),
+#         c(X="ABCDEFGHIKLMNPQRSTUVWYZ"))
