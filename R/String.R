@@ -222,12 +222,12 @@ setMethod("show",
 
 if (!isGeneric("matchDNAPattern"))
     setGeneric("matchDNAPattern",
-               function(pattern, x, algorithm)
+               function(pattern, x, algorithm, mismatch)
                standardGeneric("matchDNAPattern"))
 
 setMethod("matchDNAPattern",
           signature(pattern="character"),
-          function (pattern, x, algorithm)
+          function (pattern, x, algorithm, mismatch)
       {
           pattern <- NucleotideString(pattern,
                                       alphabet=DNAPatternAlphabet())
@@ -236,7 +236,7 @@ setMethod("matchDNAPattern",
 
 setMethod("matchDNAPattern",
           signature(x="character"),
-          function (pattern, x, algorithm)
+          function (pattern, x, algorithm, mismatch)
       {
           x <- NucleotideString(x,
                                 alphabet=DNAAlphabet())
@@ -245,8 +245,12 @@ setMethod("matchDNAPattern",
 
 setMethod("matchDNAPattern",
           signature(pattern="BioString", x="BioString"),
-          function (pattern, x, algorithm)
+          function (pattern, x, algorithm, mismatch)
       {
+          if (missing(mismatch))
+              mismatch <- 0
+          else if (mismatch < 0)
+              stop("mismatch must be a non-negative integer")
           patalph <- pattern@alphabet
           if (is(patalph, "BioPatternAlphabet"))
               patalph <- patalph@baseAlphabet
