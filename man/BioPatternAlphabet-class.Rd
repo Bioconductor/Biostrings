@@ -49,7 +49,7 @@ Class \code{"BioAlphabet"}, directly.
       be a single letter not in the base alphabet of \code{x}.}
     \item{initialize(.Object, ...)}{Method to initialize an object of
       class "BioPatternAlphabet". Usually used indirectly via a call to
-      \code{\link{new}}}
+      \code{\link[methods]{new}}}
   }
 }
 \author{ Saikat DebRoy }
