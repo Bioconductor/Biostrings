@@ -13,7 +13,8 @@
 \alias{initialize,BioString-method}
 \alias{length,BioString-method}
 \alias{matchDNAPattern,BioString,BioString-method}
-\alias{nchar,BioString-method}
+\alias{nchar,BioString,character-method}
+\alias{nchar,BioString,missing-method}
 \alias{show,BioString-method}
 \alias{substr,BioString-method}
 \alias{substring,BioString-method}
@@ -62,8 +63,8 @@
       \code{i}.}
     \item{x[[i]]}{Return the substring in \code{x} corresponding to the
       index \code{i}. The index \code{i} must be of length \code{1}.}
-    \item{nchar(x)}{Return the number of characters in each substring
-      represented in \code{x}.}
+    \item{nchar(x, type)}{Return the number of characters in each substring
+      represented in \code{x}. \code{type} is not used for now.}
     \item{show(object)}{Display \code{object} of class "BioString".}
     \item{as.character(x)}{Convert a "BioString" object to a character
       vector using its native alphabet.}

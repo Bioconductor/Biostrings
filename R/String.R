@@ -169,9 +169,19 @@ setMethod("as.character",
           .Call("BioStringToRString", x, PACKAGE="Biostrings")
       })
 
+##FIXME: nchar now does more careful things with multibyte character
+##strings. I think we can ignore this here - but just in case...
 setMethod("nchar",
-          signature(x = "BioString"),
-          function (x)
+          signature(x = "BioString", type="character"),
+          function (x, type)
+      {
+          ans <- x@offsets[,2]-x@offsets[,1]+1
+          as.integer(ifelse(ans < 0, as.integer(0), ans))
+      })
+
+setMethod("nchar",
+          signature(x = "BioString", type="missing"),
+          function (x, type)
       {
           ans <- x@offsets[,2]-x@offsets[,1]+1
           as.integer(ifelse(ans < 0, as.integer(0), ans))
