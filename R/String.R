@@ -147,8 +147,8 @@ setMethod("show",
           } else {
               cat("  Biological sequence of length", n, "with alphabet",
                   object@alphabet@letters, "and\n")
-              if (n > 50) {
-                  object <- substr(object, 1, 50)
+              if (n > 40) {
+                  object <- substr(object, 1, 40)
                   cat(" begining with: ")
               } else {
                   cat(" with value: ")
@@ -213,3 +213,12 @@ setMethod("matchDNAPattern",
                     end=patstart+(pattern@end-pattern@start))
           }
       })
+
+reverseComplement <-
+    function(x)
+{
+    if (!is(x, "BioString"))
+        stop("argument must be a BioString")
+    new("BioString", x@alphabet, end=x@end, start=x@start,
+        values=.Call("reverseComplementBioString", x))
+}

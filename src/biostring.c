@@ -10,9 +10,6 @@
 
 #define R_assert(e) ((e) ? (void) 0 : error("assertion `%s' failed: file `%s', line %d\n", #e, __FILE__, __LINE__))
 
-#define DEBUG_PRINT Rprintf
-/* void DEBUG_PRINT (const char*x, ...) { } */
-
 SEXP
 IntegerBitOr(SEXP x)
 {
@@ -343,42 +340,41 @@ BioStringToRString(SEXP x)
                                                    install("end"))));
 }
 
-typedef struct {
-    int length;
-    union {
-        int* intptr;
-        char* charptr;
-    } value;
-    int* good_suffix_shift;
-    union {
-        int R[256];
-        SEXP letterIndex;
-    } bad_char;
-    int nletters;
-    int usesChar;
-} BoyerMoore_compiledPattern_t;
-
-/* N[j] is the length of the longest suffix of the substring
- * pattern->value.charptr[1:j] that is also a suffix of
- * pattern->value.charptr */
-static void
-reverseFundamentalPreprocessing(BoyerMoore_compiledPattern_t* pattern,
-                                int* N)
+/*
+ * Warning: This uses 1-based indexing rather than 0-based indexing.
+ * Warning: pattern is assumed to have an extra character in front (which
+ * will be overwritten by this function).
+ * */
+static SEXP
+reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
 {
-    int n = pattern->length;
+    SEXP ans;
+    int* N;
+
+    ans = allocVector(INTSXP, n);
+    /* Using one based indexing! */
+    N = INTEGER(ans)-1;
+
     N[n] = n;
     if (n > 1) {
         int i, l, r, k;
         unsigned char prev, next;
+        unsigned char mismatch;
         /* do an explicit calculation for n-1 */
-        pattern->value.charptr[0] = 0;
-        prev = pattern->value.charptr[n];
+        pattern[0] = (char)0xff;
+        prev = pattern[n];
         i = k = n-1;
-        next = pattern->value.charptr[i];
-        while (prev & next) {
-            prev = next;
-            i--;
-            next = pattern->value.charptr[i];
+        next = pattern[i];
+        if (anymatch) {
+            while ((prev & next)) {
+                prev = next;
+                next = pattern[--i];
+            }
+        } else {
+            while ((prev & next) == next) {
+                prev = next;
+                next = pattern[--i];
+            }
         }
         if (i == k) {
             N[k] = 0;
@@ -391,9 +387,16 @@ reverseFundamentalPreprocessing(BoyerMoore_compiledPattern_t* pattern,
         for (k = n-2; k > 0; k--) {
             if (k < l) {
                 int j;
-                for (j = n, i = k, prev = pattern->value.charptr[n];
-                     (prev & pattern->value.charptr[i]);
-                     i--, prev = pattern->value.charptr[--j]) {
+                if (anymatch) {
+                    for (j = n, i = k;
+                         (pattern[i] & pattern[j]);
+                         i--, --j) {
+                    }
+                } else {
+                    for (j = n, i = k;
+                         (pattern[i] & pattern[j]) == pattern[i];
+                         i--, --j) {
+                    }
                 }
                 if (i == k)
                     N[k] = 0;
@@ -412,9 +415,16 @@ reverseFundamentalPreprocessing(BoyerMoore_compiledPattern_t* pattern,
                     r = k;
                 } else {
                     int j;
-                    for (j = k_l, i = l-1, prev = pattern->value.charptr[k_l];
-                         (prev & pattern->value.charptr[i]);
-                         i--, prev = pattern->value.charptr[--j]) {
+                    if (anymatch) {
+                        for (j = k_l, i = l-1;
+                             (pattern[i] & pattern[j]);
+                             i--, j--) {
+                        }
+                    } else {
+                        for (j = k_l, i = l-1;
+                             (pattern[i] & pattern[j]) == pattern[i];
+                             i--, j--) {
+                        }
                     }
                     N[k] = k-i;
                     l = i+1;
@@ -422,11 +432,52 @@ reverseFundamentalPreprocessing(BoyerMoore_compiledPattern_t* pattern,
                 }
             }
         }
+#ifdef DEBUG_BIOSTRINGS
         for (i = 1; i <= n; i++)
-            DEBUG_PRINT("%d, ", N[i]);
-        DEBUG_PRINT("\n");
+            Rprintf("%d, ", N[i]);
+        Rprintf("\n");
+#endif
     }
+    return ans;
 }
+
+/*
+ * Return an integer vector N such that (with 1 based subsetting)
+ * N[j] is the length of the longest suffix of the substring
+ * substr(x, 1, j) that is also a suffix of x.
+ */
+SEXP
+do_reverseFundamentalPreprocessing(SEXP x, SEXP anymatch)
+{
+    SEXP ans;
+    int n;
+    char* pattern;
+    if (TYPEOF(x) != CHARSXP) {
+        if (TYPEOF(x) != STRSXP || LENGTH(x) != 1)
+            error("argument not a character string");
+        x = STRING_ELT(x, 0);
+    }
+    n = LENGTH(x);
+    pattern = CHAR(PROTECT(allocString(n)));
+    pattern[0] = 0;
+    memcpy(pattern+1, CHAR(x), n);
+    ans = reverseFundamentalPreprocessing(pattern, n, asLogical(anymatch));
+    UNPROTECT(1);
+    return ans;
+}
+
+typedef struct {
+    int length;
+    SEXP pattern;
+    int start;
+    int* good_suffix_shift;
+    union {
+        int R[256];
+        SEXP letterIndex;
+    } bad_char;
+    int nletters;
+    int usesChar;
+} BoyerMoore_compiledPattern_t;
 
 static void
 BoyerMoore_preprocess(SEXP x,
@@ -450,10 +501,15 @@ BoyerMoore_preprocess(SEXP x,
                                        n+1));
         int* tmpptr = INTEGER(tmp);
         unsigned int* alphMappingptr = (unsigned int*) INTEGER(alphMapping);
-        int* lprime;
+        int* N;
+        SEXP Nvec;
+        char* patternptr;
         int k;
 
-        pattern->value.charptr = CHAR(x)+xstart-1;
+        pattern->pattern = x;
+        pattern->start = xstart;
+        patternptr = CHAR(x)+xstart-1;
+
         /* calculation of all occurance of each bit-pattern (used by
          * the bad character rule) */
         pattern->bad_char.letterIndex = allocVector(VECSXP, 256);
@@ -471,51 +527,63 @@ BoyerMoore_preprocess(SEXP x,
             indx = INTEGER(VECTOR_ELT(pattern->bad_char.letterIndex, pat));
             for (j = n-1; j > 0; j--) {
                 /* does the j-th pattern contain pat? */
-                if ((pattern->value.charptr[j] & pat) == pat) {
+                if ((patternptr[j] & pat) == pat) {
                     while (lastj > j)
                         indx[lastj--] = j;
                 }
             }
             while (lastj >= 0)
                 indx[lastj--] = 0;
-            DEBUG_PRINT("bad char index for pattern %d\n", pat);
+#ifdef DEBUG_BIOSTRINGS
+            Rprintf("bad char index for pattern %d\n", pat);
             for (j = 1; j <= n; j++)
-                DEBUG_PRINT("%d,", indx[j]);
-            DEBUG_PRINT("\n");
+                Rprintf("%d,", indx[j]);
+            Rprintf("\n");
+#endif
         }
 
         /* calculation of the good suffix rule shift. */
-
-        reverseFundamentalPreprocessing(pattern, tmpptr);
+        /* first calculate L' */
+        Nvec = reverseFundamentalPreprocessing(patternptr, n, 0);
+        PROTECT(Nvec);
+        N = INTEGER(Nvec)-1;
         pattern->good_suffix_shift = (int*) R_alloc(n+1,
                                                     sizeof(int));
         memset(pattern->good_suffix_shift, 0, (1+n)*sizeof(int));
         for (i = 1; i < n; i++) {
-            int j = n-tmpptr[i]+1;
+            int j = n-N[i]+1;
             pattern->good_suffix_shift[j] = i;
         }
-        lprime = INTEGER(PROTECT(allocVector(INTSXP,
-                                             n+1)));
-        memset(lprime, 0, (1+n)*sizeof(int));
+        /* then calculate l' */
+        UNPROTECT(1);
+        Nvec = reverseFundamentalPreprocessing(patternptr, n, 1);
+        PROTECT(Nvec);
+        N = INTEGER(Nvec)-1;
+        memset(tmpptr, 0, (1+n)*sizeof(int));
         for (i = n, k=1; i > 0; i--) {
-            if (tmpptr[i] == i) {
+            if (N[i] == i) {
                 int last = n-i+1;
                 for (; k < last; k++) {
-                    lprime[k] = i;
+                    tmpptr[k] = i;
                 }
-                lprime[k++] = i;
+                tmpptr[k++] = i;
             }
         }
+        /* finally set shift[i] to n-L'[i] if L'[i] non-zero and to
+         * n-l'[i] otherwise */
         for (i = 1; i <= n; i++) {
             if (pattern->good_suffix_shift[i])
                 pattern->good_suffix_shift[i] =
                     n-pattern->good_suffix_shift[i];
-            else pattern->good_suffix_shift[i] = n-lprime[i];
+            else pattern->good_suffix_shift[i] = n-tmpptr[i];
         }
-        pattern->good_suffix_shift[0] = n-lprime[2];
+        /* used when a match occurs */
+        pattern->good_suffix_shift[0] = n-tmpptr[2];
+#ifdef DEBUG_BIOSTRINGS
         for (i = 0; i <= n; i++)
-            DEBUG_PRINT("%d, ", pattern->good_suffix_shift[i]);
-        DEBUG_PRINT("\n");
+            Rprintf("%d, ", pattern->good_suffix_shift[i]);
+        Rprintf("\n");
+#endif
         UNPROTECT(3);
     } else {
         error("non-character patterns and strings unimplemented");
@@ -540,6 +608,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
     patlen = pattern.length;
     if (pattern.usesChar) {
         unsigned char* str = (unsigned char*) CHAR(x)+xstart-1;
+        char* patternptr;
         int m = xend-xstart+1;
         int nmatch, nmatchIndex;
         if (TYPEOF(x) != CHARSXP)
@@ -555,19 +624,24 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         else nmatchIndex = 4;
         if (nmatchIndex > m-patlen+1)
             nmatchIndex = m-patlen+1;
-        DEBUG_PRINT("nmatchIndex: %d\n", nmatchIndex);
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("nmatchIndex: %d\n", nmatchIndex);
+#endif
         matchIndex = allocVector(INTSXP, nmatchIndex);
         PROTECT(matchIndex);
         index = INTEGER(matchIndex);
         nmatch = 0;
-        pattern.value.charptr[0] = 0; /* make the first (dummy)
-                                       * element 0 */
+        patternptr = CHAR(pattern.pattern)+pattern.start-1;
+        patternptr[0] = 0; /* make the first (dummy)
+                            * element 0 */
         for (k = patlen; k <= m; ) {
             int i, h;
-            DEBUG_PRINT("k: %d\n", k);
+#ifdef DEBUG_BIOSTRINGS
+            Rprintf("k: %d\n", k);
+#endif
             for (i = patlen, h = k; 
-                 pattern.value.charptr[i] & str[h]; /* this is 0 when
-                                                     * i == 0 */
+                 patternptr[i] & str[h]; /* this is 0 when
+                                          * i == 0 */
                  i--, h--) {
                 /* empty body */
             }
@@ -591,16 +665,22 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                 int bad_character_shift;
                 R_assert(letterIndex != R_NilValue);
                 bad_character_shift = i-INTEGER(letterIndex)[i];
-                DEBUG_PRINT("i:%d, h:%d, ch:%d\n", i, h, str[h]);
+#ifdef DEBUG_BIOSTRINGS
+                Rprintf("i:%d, h:%d, ch:%d\n", i, h, str[h]);
+#endif
                 if (i == patlen) {
                     /* good suffix rule gives 1 here - so we ignore it */
                     k += bad_character_shift;
-                    DEBUG_PRINT("char shift:%d\n", bad_character_shift);
+#ifdef DEBUG_BIOSTRINGS
+                    Rprintf("char shift:%d\n", bad_character_shift);
+#endif
                 } else {
                     int good_suffix_shift = pattern.good_suffix_shift[i+1];
                     k += MAX(good_suffix_shift, bad_character_shift);
-                    DEBUG_PRINT("char shift:%d\n", bad_character_shift);
-                    DEBUG_PRINT("suff shift:%d\n", good_suffix_shift);
+#ifdef DEBUG_BIOSTRINGS
+                    Rprintf("char shift:%d\n", bad_character_shift);
+                    Rprintf("suff shift:%d\n", good_suffix_shift);
+#endif
                 }
             }
         }
@@ -694,4 +774,90 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     }
     matchIndex = lengthgets(matchIndex, nmatch);
     return matchIndex;
+}
+
+SEXP
+reverseComplementBioString(SEXP x)
+{
+    int start = asInteger(GET_SLOT(x, install("start")));
+    int end = asInteger(GET_SLOT(x, install("end")));
+    SEXP alph = GET_SLOT(x, install("alphabet"));
+    SEXP mapping;
+    SEXP letters;
+    SEXP ans;
+
+    while (isFromClass(alph, "BioPatternAlphabet"))
+        alph = GET_SLOT(alph, install("baseAlphabet"));
+    mapping = GET_SLOT(alph, install("mapping"));
+    letters = GET_NAMES(mapping);
+    x = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(x) == CHARSXP) {
+        int n = end-start+1;
+        if (start <= 0 || n < 0 || end > length(x)-1)
+            error("LengthOne_exactMatch: invalid pattern");
+        if (n == 0) {
+            ans = allocString(LENGTH(x));
+        } else {
+            unsigned char* src = (unsigned char*) CHAR(x)+start;
+            unsigned char* dest;
+            unsigned char A = 0;
+            unsigned char C = 0;
+            unsigned char G = 0;
+            unsigned char T = 0;
+            unsigned char gap = 0;
+            unsigned char revmap[256];
+            int i;
+
+            if (TYPEOF(mapping) != INTSXP ||
+                TYPEOF(letters) != STRSXP ||
+                LENGTH(mapping) != 5 ||
+                LENGTH(letters) != 5)
+                error("incorrect mapping");
+            for (i = 0; i < 5; i++) {
+                SEXP tmp = STRING_ELT(letters, i);
+                if (TYPEOF(tmp) != CHARSXP || LENGTH(tmp) != 1)
+                    error("incorrect mapping");
+                switch (CHAR(tmp)[0]) {
+                case 'a': case 'A':
+                    A = 1 << i;
+                    break;
+                case 'c': case 'C':
+                    C = 1 << i;
+                    break;
+                case 'g': case 'G':
+                    G = 1 << i;
+                    break;
+                case 't': case 'T': case 'u': case 'U':
+                    T = 1 << i;
+                    break;
+                default:
+                    gap = 1 << i;
+                    break;
+                }
+            }
+            if (!A || !G || !C || !T || !gap)
+                error("Could not find some of the nucleotide letters");
+            memset(revmap, 0, 256);
+            revmap[A] = T;
+            revmap[C] = G;
+            revmap[G] = C;
+            revmap[T] = A;
+            revmap[gap] = gap;
+            ans = allocString(length(x));
+            dest = (unsigned char*) CHAR(ans)+start-1;
+            for (i = 0; i < n; i++) {
+                unsigned char pat = revmap[src[i]];
+                if (!pat)
+                    error("Unrecognized code in nucleotide sequence");
+                dest[n-i] = pat;
+            }
+        }
+    } else {
+        error("Only character storage is supported now");
+        ans = R_NilValue; /* -Wall */
+    }
+    PROTECT(ans);
+    ans = R_MakeExternalPtr(NULL, ans, R_NilValue);
+    UNPROTECT(1);
+    return ans;
 }
