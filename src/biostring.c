@@ -1931,6 +1931,9 @@ static SEXP
 ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
                       int kdel, int kerr)
 {
+#ifdef INTERRUPT_BIOSTRINGS
+    unsigned long interruptcheck = 0UL;
+#endif
     int pstart, pend, xstart, xend, patlen = 0;
     SEXP alph, vec;
     SEXP matchIndex = R_NilValue;
@@ -2016,8 +2019,9 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
                 index[nmatch++] = k;
             }
 #ifdef INTERRUPT_BIOSTRINGS
-            if (k % INTERRUPTCHECK_AFTER) {
+            if (interruptcheck > INTERRUPTCHECK_AFTER) {
                 R_CheckUserInterrupt();
+                interruptcheck = 0UL;
             }
 #endif
         }
