@@ -17,10 +17,8 @@ matchDNAPattern(pattern, x, algorithm)
 }
 \arguments{
   \item{pattern}{ An object representing the pattern string. The string in
-    \code{pattern} can use the letters A,C,G,T,- (the last being the gap
-    character) and also the wildcards N (matching A,C,G,T), V (matching
-    A,G,C), R (matching A,G) and Y (matching C,T).
-  }
+    \code{pattern} can use any of the standard DNA pattern letters. See
+    \code{\link{DNAPatternAlphabet}} for all valid letters.}
   \item{x}{ An object representing a DNA string. }
   \item{algorithm}{ Currently the only valid values are
     \code{"boyer-moore"} (which is the default) and

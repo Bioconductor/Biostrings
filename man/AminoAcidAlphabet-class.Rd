@@ -6,13 +6,13 @@
 \title{Class "NucleotideAlphabet" represents alphabets used in DNA or RNA}
 \description{ Each object of class "NucleotideAlphabet" represents an
   amino acid alphabet. This usually also contains the gap character
-  represented by '-'.}
+  represented by \sQuote{-}.}
 \section{Slots}{
   \describe{
     \item{\code{letters}:}{Object of class \code{"character"}
       representing the letters of the alphabet. Usually roman
       upper case letters are used. The one exception is the gap
-      character which is always \code{'-'}}
+      character which is always \sQuote{-}}
     \item{\code{mapping}:}{Object of class \code{"integer"} representing
       the encoding used to represent these objects internally. }
   }

@@ -17,20 +17,20 @@ RNAPatternAlphabet()
   In the table below, we provide the letters from the base DNA
   alphabet that are matched by the added letters in the DNA pattern
   alphabet. The corresponding table for RNA is identical except for the
-  substitution of 'U' for 'T'.
+  substitution of \sQuote{U' for \sQuote{T'.
 
   \tabular{ll}{
-    'N'\tabmatches 'A', 'C', 'G', 'T'\cr
-    'B'\tabmatches 'C', 'G', 'T'\cr
-    'D'\tabmatches 'A', 'G', 'T'\cr
-    'H'\tabmatches 'A', 'C', 'T'\cr
-    'K'\tabmatches 'G', 'T'\cr
-    'M'\tabmatches 'A', 'C'\cr
-    'R'\tabmatches 'A', 'G'\cr
-    'S'\tabmatches 'C', 'G'\cr
-    'V'\tabmatches 'A', 'C', 'G'\cr
-    'W'\tabmatches 'A', 'T'\cr
-    'Y'\tabmatches 'C', 'T'\cr
+    \sQuote{N}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
+    \sQuote{B}\tabmatches \sQuote{C}, \sQuote{G}, \sQuote{T}\cr
+    \sQuote{D}\tabmatches \sQuote{A}, \sQuote{G}, \sQuote{T}\cr
+    \sQuote{H}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{T}\cr
+    \sQuote{K}\tabmatches \sQuote{G}, \sQuote{T}\cr
+    \sQuote{M}\tabmatches \sQuote{A}, \sQuote{C}\cr
+    \sQuote{R}\tabmatches \sQuote{A}, \sQuote{G}\cr
+    \sQuote{S}\tabmatches \sQuote{C}, \sQuote{G}\cr
+    \sQuote{V}\tabmatches \sQuote{A}, \sQuote{C}, \sQuote{G}\cr
+    \sQuote{W}\tabmatches \sQuote{A}, \sQuote{T}\cr
+    \sQuote{Y}\tabmatches \sQuote{C}, \sQuote{T}\cr
     \tab \cr
   }
 }

@@ -4,10 +4,10 @@
 \title{ functions to create DNA and RNA alphabets }
 \description{
   The function \code{DNAAlphabet} returns an alphabet consisting of the
-  letters 'A', 'C', 'G', 'T' and '-' (the last representing a gap).
+  letters \sQuote{A}, \sQuote{C}, \sQuote{G}, \sQuote{T} and \sQuote{-} (the last representing a gap).
 
   The function \code{RNAAlphabet} returns an alphabet consisting of the
-  letters 'A', 'C', 'G', 'U' and '-' (the last representing a gap).
+  letters \sQuote{A}, \sQuote{C}, \sQuote{G}, \sQuote{U} and \sQuote{-} (the last representing a gap).
 }
 \usage{
 DNAAlphabet()

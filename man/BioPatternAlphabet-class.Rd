@@ -27,7 +27,7 @@
     \item{\code{letters}:}{Object of class \code{"character"}
       representing the letters of the alphabet. Usually roman
       upper case letters are used. The one exception is the gap
-      character which is always \code{'-'}}
+      character which is always \sQuote{-}.}
     \item{\code{mapping}:}{Object of class \code{"integer"} representing
       the encoding used to represent these objects internally. }
     \item{\code{gap}:}{Object of class \code{"character"}, the gap

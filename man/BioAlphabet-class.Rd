@@ -14,7 +14,7 @@
     \item{\code{letters}:}{Object of class \code{"character"}
       representing the letters of the alphabet. Usually roman
       upper case letters are used. The one exception is the gap
-      character which is always \code{'-'}}
+      character which is always \sQuote{-}}
     \item{\code{mapping}:}{Object of class \code{"integer"} representing
       the encoding used to represent these objects internally. }
     \item{\code{gap}:}{Object of class \code{"character"}, the gap
@@ -25,7 +25,7 @@
   \describe{
     \item{initialize(.Object, letters)}{Initialize an alphabet
       object. for the given letters. If one of the letters is not the
-      gap character \code{'-'}, then it is added as the first letter.
+      gap character \sQuote{-}, then it is added as the first letter.
       An encoding also created which is stored in the \code{mapping}
       slot. }
     \item{gapletter(x) <- value}{Change the letter representing gaps in
