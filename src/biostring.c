@@ -361,13 +361,10 @@ typedef struct {
 /* N[j] is the length of the longest suffix of the substring
  * pattern->value.charptr[1:j] that is also a suffix of
  * pattern->value.charptr */
-SEXP
-reverseFundamentalPreprocessing(SEXP x)
+static void
+reverseFundamentalPreprocessing(BoyerMoore_compiledPattern_t* pattern,
+                                int* N)
 {
-    if (TYPEOF(x) != CHARSXP) {
-        if (TYPEOF(x) != STRSXP || LENGTH(x) != 1)
-            error("invalid ");
-    }
     int n = pattern->length;
     N[n] = n;
     if (n > 1) {
