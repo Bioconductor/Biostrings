@@ -1,0 +1,51 @@
+setClass("BioPatternAlphabet",
+         representation(baseAlphabet="BioAlphabet"),
+         contains="BioAlphabet")
+
+setMethod("initialize",
+          signature(.Object = "BioPatternAlphabet"),
+          function (.Object, baseAlphabet, letters, ...)
+      {
+          .Object@baseAlphabet <- baseAlphabet
+          if (length(letters) == 0) {
+              .Object@mapping <- baseAlphabet@mapping
+              .Object@letters <- baseAlphabet@letters
+              return(.Object)
+          }
+          alphletters <- names(baseAlphabet@mapping)
+          mapping <- letters
+          letters <- names(letters)
+          if (!is.character(letters) || any(nchar(letters) != 1))
+              stop("pattern alphabet can only have single letters")
+          if (!all(match(letters, alphletters, nomatch = 0) == 0))
+              stop("must add new letters in pattern alphabet")
+          mapping <- unlist(lapply(mapping,
+                                   function(map)
+                               {
+                                   map <- strsplit(map, '')[[1]]
+                                   if (!all(map %in%
+                                            alphletters))
+                                       stop("each pattern letter can only match letters in the original alphabet")
+                                   .Call("IntegerBitOr", baseAlphabet@mapping[map])
+                               }))
+          names(mapping) <- letters
+          .Object@mapping <- sort(c(baseAlphabet@mapping, mapping))
+          .Object@letters <- paste(baseAlphabet@letters,
+                                   paste(letters, collapse=''),
+                                   sep='')
+          .Object
+      })
+
+DNAPatternAlphabet <- function()
+    new("BioPatternAlphabet",
+        DNAAlphabet(), c(N="AGCT", # N matches everything but the gap character
+                         V="AGC",
+                         R="AG",
+                         Y="CT"))
+
+RNAPatternAlphabet <- function()
+    new("BioPatternAlphabet",
+        DNAAlphabet(), c(N="AGCU", # N matches everything but the gap character
+                         V="AGC",
+                         R="AG",
+                         Y="CU"))
