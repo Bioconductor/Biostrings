@@ -1239,8 +1239,9 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
             SEXP tmp = VECTOR_ELT(pattern.bad_char.letterIndex, k);
             if (tmp == R_NilValue)
                 shiftTable[k] = NULL;
-            else if (TYPEOF(tmp) != INTSXP || LENGTH(tmp) != patlen)
-                error("invalid letterIndex");
+            else if (TYPEOF(tmp) != INTSXP || LENGTH(tmp) != patlen+1)
+                error("invalid letterIndex, %d, %d, %d", TYPEOF(tmp),
+                      LENGTH(tmp), patlen);
             else shiftTable[k] = INTEGER(tmp);
         }
         for (k = patlen; k <= m; ) {
@@ -1264,7 +1265,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
             } else {
                 int* letterIndex = shiftTable[str[h]];
                 int bad_character_shift;
-                R_assert(letterIndex == NULL);
+                R_assert(letterIndex != NULL);
 #if 0
                 bad_character_shift = letterIndex[i];
                 if (i == patlen) {
