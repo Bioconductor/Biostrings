@@ -35,6 +35,18 @@ isFromClass(SEXP x, const char* klass)
     return asLogical(ans);
 }
 
+static SEXP
+expandIndex(SEXP index, int ndone, int nleft)
+{
+    int n = LENGTH(index);
+    if (nleft) {
+        double proportion = (n+1)/(double)(ndone);
+        int estimate = proportion*nleft+1;
+        n = 2*(n+estimate);
+    }
+    return lengthgets(index, n);
+}
+
 SEXP
 BioStringValues(SEXP alphabet_length, SEXP string_length)
 {
@@ -219,12 +231,12 @@ BioStringToCharacter(int nletters_base,
     nletters = LENGTH(letters);
     if (LENGTH(alphMapping) != nletters)
         error("invalid names for mapping");
+    if (start <= 0)
+        start = 1;
     if (end > nvalues)
         end = nvalues;
     if (start > end)
-        return ScalarString(R_BlankString);
-    if (start <= 0)
-        start = 1;
+        return R_BlankString;
     if (nletters_base > sizeof(int)*CHAR_BIT)
         error("alphabet is too large");
     values = R_ExternalPtrTag(values);
@@ -506,9 +518,14 @@ reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
     if (n > 1) {
         int i, l, r, k;
         unsigned char prev, next;
-        /* do an explicit calculation for n-1 */
-        pattern[0] = (char)0xff;
+        char save_first = pattern[0];
+        /* set the first character */
+        if (anymatch)
+            pattern[0] = (char) 0;
+        else pattern[0] = (char) 0xff;
+
         prev = pattern[n];
+        /* do an explicit calculation for n-1 */
         i = k = n-1;
         next = pattern[i];
         if (anymatch) {
@@ -517,7 +534,7 @@ reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
                 next = pattern[--i];
             }
         } else {
-            while ((prev & next) == next) {
+            while (!(~prev & next)) {
                 prev = next;
                 next = pattern[--i];
             }
@@ -540,7 +557,7 @@ reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
                     }
                 } else {
                     for (j = n, i = k;
-                         (pattern[i] & pattern[j]) == pattern[i];
+                         !(pattern[i] & ~pattern[j]);
                          i--, --j) {
                     }
                 }
@@ -568,7 +585,7 @@ reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
                         }
                     } else {
                         for (j = k_l, i = l-1;
-                             (pattern[i] & pattern[j]) == pattern[i];
+                             (pattern[i] & ~pattern[j]);
                              i--, j--) {
                         }
                     }
@@ -578,6 +595,8 @@ reverseFundamentalPreprocessing(char* pattern, int n, int anymatch)
                 }
             }
         }
+        /* restore the first character */
+        pattern[0] = save_first;
 #ifdef DEBUG_BIOSTRINGS
         for (i = 1; i <= n; i++)
             Rprintf("%d, ", N[i]);
@@ -668,10 +687,14 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
     if (NAMED(x))
         x = duplicate(x);
     PROTECT(x);
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("In matchIndexToBioString\nnmatch: %d\n", nmatch);
+#endif
     if (nmatch == 0) {
-        int* offsets = INTEGER(GET_SLOT(x, install("offsets")));
-        offsets[0] = 1;
-        offsets[1] = 0;
+        SEXP offsets = allocMatrix(INTSXP, 0, 2);
+        PROTECT(offsets);
+        SET_SLOT(x, install("offsets"), offsets);
+        UNPROTECT(1);
     } else if (nmatch == 1) {
         int* offsets = INTEGER(GET_SLOT(x, install("offsets")));
         offsets[1] = index[0];
@@ -710,6 +733,7 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     int start, end;
     SEXP alph;
     SEXP matchIndex = R_NilValue;
+    PROTECT_INDEX matchIndex_pi;
     int* index = NULL;
     int nmatchIndex, nletters;
     int nmatch = 0;
@@ -739,6 +763,7 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
     else if (4 <= m)
         nmatchIndex = 4;
     matchIndex = allocVector(INTSXP, nmatchIndex);
+    PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
 
     nmatch = 0;
     if (TYPEOF(pattern) == CHARSXP) {
@@ -748,14 +773,8 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
         for (i = start; i <= end; i++) {
             if (pat & xptr[i]) {
                 if (nmatchIndex == nmatch) {
-                    double proportion = (nmatch+1)/(double)i;
-                    int estimate = proportion*(m-i);
-                    if (estimate == 0 && m > i)
-                        nmatchIndex += 2;
-                    else nmatchIndex += estimate+1;
-                    PROTECT(matchIndex);
-                    matchIndex = lengthgets(matchIndex, nmatchIndex);
-                    UNPROTECT(1);
+                    matchIndex = expandIndex(matchIndex, i, m-i);
+                    REPROTECT(matchIndex, matchIndex_pi);
                     index = INTEGER(matchIndex);
                 }
                 index[nmatch++] = i;
@@ -768,20 +787,15 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
         for (i = start; i <= end; i++) {
             if (pat & xptr[i]) {
                 if (nmatchIndex == nmatch) {
-                    double proportion = (nmatch+1)/(double)i;
-                    int estimate = proportion*(m-i);
-                    if (estimate == 0 && m > i)
-                        nmatchIndex += 2;
-                    else nmatchIndex += estimate+1;
-                    PROTECT(matchIndex);
-                    matchIndex = lengthgets(matchIndex, nmatchIndex);
-                    UNPROTECT(1);
+                    matchIndex = expandIndex(matchIndex, i, m-i);
+                    REPROTECT(matchIndex, matchIndex_pi);
                     index = INTEGER(matchIndex);
                 }
                 index[nmatch++] = i;
             }
         }
     }
+    UNPROTECT(1);
 finished_match:
     return matchIndexToBioString(x, matchIndex, nmatch, 1);
 }
@@ -908,6 +922,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
     int xstart, xend;
     BoyerMoore_compiledPattern_t pattern;
     SEXP matchIndex = R_NilValue;
+    PROTECT_INDEX matchIndex_pi;
     SEXP vec;
     int* index = 0;
     int k, patlen = 0, nmatch = 0;
@@ -925,6 +940,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
     if (pattern.usesChar) {
         unsigned char* str;
         char* patternptr;
+        char save_first;
         int m = xend-xstart+1;
         int nmatchIndex;
         if (TYPEOF(vec) != CHARSXP)
@@ -945,10 +961,11 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         Rprintf("nmatchIndex: %d\n", nmatchIndex);
 #endif
         matchIndex = allocVector(INTSXP, nmatchIndex);
-        PROTECT(matchIndex);
+        PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
         index = INTEGER(matchIndex);
         nmatch = 0;
         patternptr = CHAR(pattern.pattern)+pattern.start-1;
+        save_first = patternptr[0];
         patternptr[0] = 0; /* make the first (dummy)
                             * element 0 */
         for (k = patlen; k <= m; ) {
@@ -957,22 +974,17 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
             Rprintf("k: %d\n", k);
 #endif
             for (i = patlen, h = k; 
-                 patternptr[i] & str[h]; /* this is 0 when
-                                          * i == 0 */
+                 patternptr[i] & str[h]; /* this is 0 when i == 0 */
                  i--, h--) {
                 /* empty body */
             }
             if (i == 0) {
                 if (nmatchIndex == nmatch) {
-                    double proportion = (nmatch+1)/(double)(k-patlen+1);
-                    int estimate = proportion*(m-k);
-                    if (estimate == 0 && m > k)
-                        nmatchIndex += 2;
-                    else nmatchIndex += estimate+1;
-                    matchIndex = lengthgets(matchIndex, nmatchIndex);
-                    UNPROTECT(1);
-                    PROTECT(matchIndex);
+                    patternptr[0] = save_first;
+                    matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                    REPROTECT(matchIndex, matchIndex_pi);
                     index = INTEGER(matchIndex);
+                    patternptr[0] = 0;
                 }
                 index[nmatch++] = k;
                 k += pattern.good_suffix_shift[0];
@@ -1001,6 +1013,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                 }
             }
         }
+        patternptr[0] = save_first;
         UNPROTECT(2);
     } else {
         error("non-character patterns and strings unimplemented");
@@ -1102,6 +1115,7 @@ reverseComplementBioString(SEXP x)
             unsigned char v = revmap[src[i]];
             if (!v)
                 error("unrecognized code: %d", src[i]);
+            /* not dest[n-i+1] - skip one character in front */
             dest[n-i] = v;
         }
         start = INTEGER(offsets);
