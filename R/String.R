@@ -62,8 +62,8 @@ setMethod("initialize",
 NucleotideString <- function(src,
                              type=c("DNA", "RNA"),
                              srctype=c("character", "connection"),
-                             alphabet=if (type == "DNA") DNAAlphabet()
-                                      else RNAAlphabet(),
+                             alphabet=if (type == "DNA") DNAPatternAlphabet()
+                                      else RNAPatternAlphabet(),
                              gap=alphabet@gap)
 {
     srctype <- match.arg(srctype)
@@ -141,12 +141,17 @@ setMethod("show",
       {
           n <- nchar(object)
           if (n == 0) {
-              cat("  Empty biological sequence with alphabet",
+              cat("  Empty biological sequence with")
+              if (is(object@alphabet, "BioPatternAlphabet"))
+                  cat(" pattern ")
+              cat("alphabet",
                   object@alphabet@letters)
               cat("\n")
           } else {
-              cat("  Biological sequence of length", n, "with alphabet",
-                  object@alphabet@letters, "and\n")
+              cat("  Biological sequence of length", n, "with ")
+              if (is(object@alphabet, "BioPatternAlphabet"))
+                  cat("pattern ")
+              cat("alphabet ", object@alphabet@letters, "and\n")
               if (n > 40) {
                   object <- substr(object, 1, 40)
                   cat(" begining with: ")
@@ -185,12 +190,13 @@ setMethod("matchDNAPattern",
           signature(pattern="BioString", x="BioString"),
           function (pattern, x, algorithm)
       {
-          patternWithPatternAlphabet <-
-              is(pattern@alphabet, "BioPatternAlphabet")
-          if (!(patternWithPatternAlphabet &&
-                identical(pattern@alphabet@baseAlphabet, x@alphabet)) &&
-              !(!patternWithPatternAlphabet &&
-               identical(pattern@alphabet, x@alphabet)))
+          patalph <- pattern@alphabet
+          if (is(patalph, "BioPatternAlphabet"))
+              patalph <- patalph@baseAlphabet
+          xalph <- x@alphabet
+          if (is(xalph, "BioPatternAlphabet"))
+              xalph <- xalph@baseAlphabet
+          if (!identical(patalph, xalph))
               stop("The pattern and the string are based on different alphabets")
           if (pattern@start == pattern@end) {
               patstart <- .Call("LengthOne_exactMatch", pattern, x)
