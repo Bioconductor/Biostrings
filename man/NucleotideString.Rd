@@ -15,7 +15,7 @@
 NucleotideString(src, type = c("DNA", "RNA"),
                  srctype = c("character", "connection"),
                  alphabet = if (type == "DNA")
-                            DNAAlphabet() else RNAAlphabet(),
+                            DNAPatternAlphabet() else RNAPatternAlphabet(),
                  gap = alphabet@gap)
 DNAString(src, gap="-")
 }
