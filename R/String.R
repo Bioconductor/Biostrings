@@ -63,7 +63,8 @@ NucleotideString <- function(src,
                              type=c("DNA", "RNA"),
                              srctype=c("character", "connection"),
                              alphabet=if (type == "DNA") DNAAlphabet()
-                                      else RNAAlphabet())
+                                      else RNAAlphabet(),
+                             gap='-')
 {
     srctype <- match.arg(srctype)
     if (srctype != "character")
@@ -71,13 +72,20 @@ NucleotideString <- function(src,
     type <- match.arg(type)
     if (!is.character(src) || length(src) != 1)
         stop("src must be a character string")
+    if (!is.character(gap) || length(gap) != 1 || nchar(gap) != 1)
+        stop("gap must be a single character")
     ans <- new("BioString", alphabet)
+    gapindex <- match('-', names(ans@alphabet@mapping))
+    names(ans@alphabet@mapping)[gapindex] <- gap
+    substr(ans@alphabet@letters, gapindex, gapindex) <- gap
     ans <- .Call("setBioString", ans, src)
     ans@initialized <- TRUE
+    names(ans@alphabet@mapping)[gapindex] <- '-'
+    substr(ans@alphabet@letters, gapindex, gapindex) <- '-'
     ans
 }
 
-DNAString <- function(src)
+DNAString <- function(src, gap='-')
 {
     NucleotideString(src)
 }
