@@ -79,10 +79,14 @@
 \seealso{
   \code{\link{BioAlphabet-class}} and its subclasses for valid alphabet
   objects.
+  \code{\link{DNAString}} for creating objects of class "BioString"
+  representing DNA sequences.
+  \code{\link{NucleotideString}} for creating objects of class "BioString"
+  representing DNA or RNA sequences.
 }
 \examples{
 new("BioString", DNAString()) # creats an empty DNA string
-x <- DNAString("AAGCTA")
+x <- DNAString("AAGCTANA", gap="N")
 as.character(x)
 y <- substr(x, 2, 4)
 as.character(y)
