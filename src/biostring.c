@@ -1265,8 +1265,8 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                 int* letterIndex = shiftTable[str[h]];
                 int bad_character_shift;
                 R_assert(letterIndex != NULL);
-                bad_character_shift = letterIndex[i];
 #if 0
+                bad_character_shift = letterIndex[i];
                 if (i == patlen) {
                     /* good suffix rule gives 1 here - so we ignore it */
                     k += bad_character_shift;
@@ -1275,7 +1275,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
                     k += MAX(good_suffix_shift, bad_character_shift);
                 }
 #else
-                k += bad_character_shift;
+                k += letterIndex[i];
 #endif
             }
 #ifdef PROGRESS_BIOSTRINGS
