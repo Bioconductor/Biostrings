@@ -109,8 +109,13 @@ new("BioString", DNAAlphabet()) # creates an empty DNA string
 x <- DNAString("AAGCTANA", gap="N")
 x
 as.character(x)
-y <- substr(x, 2, 4)
-y
+substr(x, 2, 4)
+substring(x, 1, seq(length=nchar(x))) # all prefixes of x
+substring(x, seq(length=nchar(x)), nchar(x)) # all suffixes of x
 matchDNAPattern("GC", x)
+x <- substring(x, 1:3, 3:5)
+x[1:2]
+x[-3] # same as x[1:2]
+x[[3]]
 }
 \keyword{classes}

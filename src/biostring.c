@@ -1083,7 +1083,7 @@ reverseComplementBioString(SEXP x)
         noffsets = INTEGER(dim)[1];
 
         memset(revmap, 0, 256);
-        for (i = 0; i < 31; i++) {
+        for (i = 1; i < 32; i++) {
             if (i & A)
                 revmap[i] |= T;
             if (i & C)
@@ -1095,12 +1095,18 @@ reverseComplementBioString(SEXP x)
             if (i & gap)
                 revmap[i] |= gap;
         }
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("Reverse map:\n");
+        for (i = 0; i < 32; i++)
+            Rprintf("%d,\n", revmap[i]);
+        Rprintf("\n");
+#endif
         ansvec = allocString(LENGTH(xvec));
         dest = (unsigned char*) CHAR(ansvec);
         for (i = 0; i < n; i++) {
             unsigned char v = revmap[src[i]];
             if (!v)
-                error("unrecognized code");
+                error("unrecognized code ", src[i]);
             dest[n-i] = v;
         }
         start = INTEGER(offsets);
