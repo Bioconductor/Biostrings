@@ -143,12 +143,12 @@ setMethod("show",
           if (n == 0)
               cat("    Empty biological sequence\n")
           else {
-              cat("    Biological sequence of length ", n)
+              cat("    Biological sequence of length", n)
               if (n > 50) {
                   object <- substr(object, 1, 50)
                   cat(" begining")
               }
-              cat(" with values\n ", as.character(object), '\n')
+              cat(" with values\n", as.character(object), '\n')
           }
       })
 
