@@ -16,6 +16,8 @@
       character which is always \code{'-'}}
     \item{\code{mapping}:}{Object of class \code{"integer"} representing
       the encoding used to represent these objects internally. }
+    \item{\code{gap}:}{Object of class \code{"character"}, the gap
+      character in the alphabet. }
   }
 }
 \section{Methods}{

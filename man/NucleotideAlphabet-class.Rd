@@ -28,7 +28,7 @@ Class \code{"BioAlphabet"}, directly.
   \describe{
     \item{BioStringNewValues(alphabet, length.string)}{Given \code{alphabet}
       of class "NucleotideAlphabet" return a new uninitialized
-      BioString object for that alphabet with length
+      "BioString" object for that alphabet with length
       \code{length.string}. See \code{\link{BioString-class}} for more
       details.}
     \item{initialize(.Object, letters)}{Initialize an nucleotide alphabet
