@@ -4,6 +4,8 @@
 \alias{as.character,BioString-method}
 \alias{initialize,BioString-method}
 \alias{matchDNAPattern,BioString,BioString-method}
+\alias{nchar,BioString-method}
+\alias{show,BioString-method}
 \alias{substr,BioString-method}
 
 \title{Class "BioString", represents a biological sequence}
@@ -44,6 +46,8 @@
       values=BioStringNewValues(alphabet, end),
       initialized=!missing(values))}{Construct an object of class
       "BioString". Usually not called directly by users. }
+    \item{nchar(x)}{Return the number of characters in \code{x}.}
+    \item{show(object)}{Display \code{object} of class "BioString".}
     \item{as.character(x)}{Convert a "BioString" object to a character
       string using its native alphabet.}
     \item{substr(x, start, stop)}{Return another BioString object which
