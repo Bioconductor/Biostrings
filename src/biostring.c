@@ -1011,12 +1011,10 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
         for (i = start; i <= end; i++) {
             if (pat & xptr[i]) {
                 if (nmatchIndex == nmatch) {
-                    pptr[0] = save_first;
                     matchIndex = expandIndex(matchIndex, i, m-i);
                     REPROTECT(matchIndex, matchIndex_pi);
                     nmatchIndex = LENGTH(matchIndex);
                     index = INTEGER(matchIndex);
-                    pptr[0] = 0;
                 }
                 index[nmatch++] = i;
             }
@@ -1033,20 +1031,16 @@ LengthOne_exactMatch(SEXP pattern, SEXP x)
         for (i = start; i <= end; i++) {
             if (pat & xptr[i]) {
                 if (nmatchIndex == nmatch) {
-                    pptr[0] = save_first;
                     matchIndex = expandIndex(matchIndex, i, m-i);
                     REPROTECT(matchIndex, matchIndex_pi);
                     nmatchIndex = LENGTH(matchIndex);
                     index = INTEGER(matchIndex);
-                    pptr[0] = 0;
                 }
                 index[nmatch++] = i;
             }
 #ifdef INTERRUPT_BIOSTRINGS
             if (i % INTERRUPTCHECK_AFTER) {
-                pptr[0] = save_first;
                 R_CheckUserInterrupt();
-                pptr[0] = 0;
             }
 #endif
         }
@@ -1278,10 +1272,10 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
 #ifdef INTERRUPT_BIOSTRINGS
             interruptcheck += patlen-i;
             if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                pptr[0] = save_first;
+                patternptr[0] = save_first;
                 R_CheckUserInterrupt();
                 interruptcheck = 0UL;
-                pptr[0] = 0;
+                patternptr[0] = 0;
             }
 #endif
         }
