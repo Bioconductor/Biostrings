@@ -20,7 +20,7 @@ allSameLetter(x, letter)
 }
 \value{
   A logical vector of same length as \code{x} with elements \code{TRUE}
-  or \coode{FALSE} accordingly as the corresponding element of \code{x}
+  or \code{FALSE} accordingly as the corresponding element of \code{x}
   is a repeat of \code{letter} or not.
 }
 \author{ Saikat DebRoy }
