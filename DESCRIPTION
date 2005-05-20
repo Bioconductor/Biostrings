@@ -1,9 +1,10 @@
 Package: Biostrings
 Title: String objects reepresenting biological sequences
-Version: 1.1.1
+Version: 1.2.0
 Author: Saikat DebRoy
-Description: Class definitions and generics for biological sequences along
-             with pattern matching algorithms.
+Description: Class definitions and generics for biological sequences
+        along with pattern matching algorithms.
 Depends: R (>= 1.8.0)
 Maintainer: Saikat DebRoy <saikat@stat.wisc.edu>
 License: LGPL
+
