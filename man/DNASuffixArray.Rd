@@ -4,16 +4,16 @@
 \description{
   This function creates a suffix array for the given DNA strings. The
   sorting of the suffix array can be done based on a given number of
-  letters at the begining of each suffix.
+  letters at the beginning of each suffix.
 }
 \usage{
 DNASuffixArray(x, prefixLength = max(nchar(x)))
 }
 \arguments{
-  \item{x}{ an objecct of class "BioString" representing one or more DNA
+  \item{x}{ an object of class "BioString" representing one or more DNA
     strings. If its length is more than one, suffix arrays for each of
     the string are created and merged. }
-  \item{prefixLength}{ the number of letters at the begining of each
+  \item{prefixLength}{ the number of letters at the beginning of each
     suffix that are used in sorting the suffix array. }
 }
 \value{

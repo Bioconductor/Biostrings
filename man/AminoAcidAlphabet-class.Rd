@@ -10,7 +10,7 @@
 \section{Slots}{
   \describe{
     \item{\code{letters}:}{Object of class \code{"character"}
-      representing the letters of the alphabet. Usually roman
+      representing the letters of the alphabet. Usually Roman
       upper case letters are used. The one exception is the gap
       character which is always \sQuote{-}}
     \item{\code{mapping}:}{Object of class \code{"integer"} representing

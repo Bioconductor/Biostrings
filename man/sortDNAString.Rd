@@ -10,7 +10,7 @@
 sortDNAString(x, prefixLength = max(nchar(x)))
 }
 \arguments{
-  \item{x}{ an objecct of class "BioString" representing one or more DNA
+  \item{x}{ an object of class "BioString" representing one or more DNA
     strings. }
   \item{prefixLength}{ the number of letters at the begining of each
     string that are used in the sorting. }
