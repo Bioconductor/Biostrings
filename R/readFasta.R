@@ -1,7 +1,7 @@
  readFASTA = function(file, checkComments=TRUE) {
   if( is.character(file) )
    file=file(file)
-  s1 = scan(file=file, what="",
+  s1 = scan(file=file, what="", sep="\n",
           quote="", allowEscapes=FALSE);
   if( checkComments) {
     ##comments are supposedly lines beginning with semi-colons
