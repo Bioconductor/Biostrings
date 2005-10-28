@@ -5,6 +5,6 @@ Author: Saikat DebRoy
 Description: Class definitions and generics for biological sequences
         along with pattern matching algorithms.
 Depends: R (>= 1.8.0), methods
-Maintainer: Saikat DebRoy <saikat@stat.wisc.edu>
+Maintainer: R. Gentleman <rgentlem@fhcrc.org>
 License: LGPL
 SaveImage: yes
