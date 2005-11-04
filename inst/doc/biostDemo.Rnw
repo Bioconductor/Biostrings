@@ -1,0 +1,275 @@
+
+%\VignetteIndexEntry{Biostrings}
+%\VignetteDepends{Biostrings} 
+%\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
+%\VignettePackage{Biostrings}
+
+
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[12pt]{article}
+
+\usepackage{amsmath,pstricks}
+\usepackage[authoryear,round]{natbib}
+\usepackage{hyperref}
+
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+
+\bibliographystyle{plainnat} 
+ 
+\begin{document}
+%\setkeys{Gin}{width=0.55\textwidth}
+
+\title{Demonstrations of \Rpackage{Biostrings}}
+\author{VJC}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+In this document we illustrate some of the basic functionalities
+of the \Rpackage{Biostrings} package.
+
+\section{Data import}
+\label{fastaread}
+
+<<getl,results=hide,echo=FALSE>>=
+library(Biostrings)
+<<setshow,results=hide,echo=FALSE>>=
+setMethod("show", "BioPatternAlphabet", function(object) {
+cat("BioPatternAlphabet with base alphabet instance of", class(object@baseAlphabet),"\n")
+cat("Full letterset: ", object@letters,"\n")
+})
+setMethod("show", "NucleotideAlphabet", function(object) {
+cat("NucleotideAlphabet with gap specified by", object@gap,"\n")
+cat("Full letterset: ", object@letters,"\n")
+})
+@
+
+Suppose we have a file in FASTA format.  We can read it
+using the \Rfunction{readFASTA} function.  A test file
+is in the package.
+<<lkfa>>=
+library(Biostrings)
+f1 = system.file("Exfiles/fastaEx", package="Biostrings")
+ff = readFASTA(f1)
+ff
+@
+This just returns a list structure with character data:
+<<lkc>>=
+sapply(ff, sapply, class)
+@
+
+\section{Data conversions to efficient \Rclass{Biostrings} instances}
+
+The \Rfunction{DNAString} constructor function transforms
+from R character strings to an efficient internal representation.
+The string (unless it is very short) will be abbreviated when printed.
+For example:
+<<lkdna>>=
+st1 <- DNAString(ff[[1]]$seq)
+st1
+@
+
+The \Rpackage{Biostrings} package includes FASTA files
+encoding the DNA sequence for
+Yeast chromosome I, along with some ORFs.
+Here we will read these files and create the associated \Rclass{DNAString}
+instances.
+<<gety>>=
+c1 <- readFASTA(system.file("Exfiles/chr01.fsa", package="Biostrings"))
+sc1 <- DNAString(c1[[1]]$seq)
+sc1
+nchar(sc1)
+os <- readFASTA(system.file("Exfiles/someORF.fsa", package="Biostrings"))
+oss <- DNAString(sapply(os, function(x)x$seq))
+oss
+@
+Lengths of string objects are computed with \Rfunction{nchar}.
+Substrings can be computed using \Rfunction{substr}.
+
+To see the distribution of ORF lengths in this set, we
+cannot yet use apply-type programming.  Instead:
+<<lkl>>=
+for (i in 1:length(oss)) print(nchar(oss[i]))
+@
+
+
+Note that some of the ORF sequences are represented in reverse complement form:
+<<lkn>>=
+sapply(os, function(x)x$desc)
+@
+
+\section{Pattern matching}
+
+The \Rfunction{matchDNAPattern} function can be used to test for existence of
+(and to compute location of) matched or partially matched substrings in a sequence.
+To begin, we check chromosome I for the second ORF in \Robject{oss}:
+<<lkc1>>=
+mob <- matchDNAPattern( oss[2], sc1 )
+mob
+mob@offsets
+@
+
+We know that the first ORF is in reverse complement form; the match can
+be computed as follows:
+<<lkc1b>>=
+mob2 <- matchDNAPattern( reverseComplement(oss[1]), sc1 )
+mob2
+mob2@offsets
+@
+
+We can specify a number of mismatches to be permitted in the matching
+computation.
+<<lkmis>>=
+mdem <- matchDNAPattern( DNAString("CCACACCACACC"), sc1, mis=1 ) 
+mdem
+@
+This looks very wrong!?  
+
+In some examples
+it does appear that the offsets are correct, but
+the string rendering is wrong.  
+<<lkh>>=
+HincII <- DNAString("GTYRAC")
+mdem  <- matchDNAPattern(HincII, oss[2])
+mdem
+<<lkm>>=
+substr(oss[2], mdem@offsets[1,1], mdem@offsets[1,2] )
+substr(oss[2], mdem@offsets[2,1], mdem@offsets[2,2] )
+@
+So the show method is somehow printing irrelevant strings
+(or the Call yields bad data in the values slot)
+but the offsets are right.
+
+\section{Computing alignment consensus matrices}
+
+Here is some provisional code for computing
+a consensus matrix for a group of equal-length strings
+assumed to be aligned.
+<<conscod>>=
+consmat <- function(Lmers, freq=FALSE) {
+ lens <- nchar(Lmers)
+ if (!all(lens==lens[1])) stop("must have equal number of bases in each element")
+ str <- as.character(Lmers)
+ N <- length(Lmers)
+ pure <- unlist(lapply(str, function(x) strsplit(x,"")[[1]]))
+ pos <- as.numeric(t(col(matrix(0, nr=N,nc=lens[1])) ))
+ table(codes=pure,pos=pos)/ifelse(freq,N,1)
+}
+@
+To illustrate, the following application assumes the ORF data
+to be aligned for the first 10 positions (patently false):
+<<doal>>=
+consmat(substr(oss,1,10))
+@
+
+The information content as defined by Hertz and Stormo 1995
+is computed as follows:
+<<infco>>= 
+infContent <- function(Lmers) {
+ zlog <- function(x) ifelse(x==0,0,log(x))
+ co <- consmat(Lmers, freq=TRUE)
+ lets <- rownames(co)
+ fr <- alphabetFrequency(Lmers)[lets]
+ sum(co*zlog(co/fr))
+}
+infContent(substr(oss,1,10))
+@
+
+
+
+\section{Appendix: some technical details}
+
+\subsection{Representation}
+
+In the following, we convert the FASTA read from section \ref{fastaread} to a list
+where sequence information is in the efficient representation,
+retaining the FASTA comment information.
+
+<<doconv>>=
+ss <- lapply(ff, function(x) { x$seq <- DNAString(x$seq); x } )
+ss
+@
+Let's learn about the class of the representation of the sequence:
+<<lkcl>>=
+class(ss[[1]]$seq)
+getClass(class(ss[[1]]$seq))
+@
+We see that there is an alphabet
+class, with its own internal structure.  
+More on this later.
+
+The \Rclass{BioString} class can represent a collection of strings
+in one object.  The strings may have different lengths.
+<<mkvec>>=
+gg <- DNAString(c("CCTGAGG","ACTGACTG", "TGACTGAC"))
+@
+This object can be subsetted using vector element access idiom, and
+the class is closed under subsetting.
+<<dosub>>=
+gg[2]
+@
+% FIXME
+At present (Nov 2005), despite the fact that vector access idiom
+is supported, sapply/lapply do not work over the components
+of a DNAString object.
+
+\subsection{Sorting; alphabet structures}
+
+A sorting operation is provided:
+<<lksrt>>=
+sortDNAString(gg)
+@
+The sort order is defined in the alphabet specification:
+<<lkalp>>=
+gg@alphabet
+@
+The base alphabet for DNA strings is:
+<<lkda>>=
+DNAAlphabet()
+@
+The extended nucleotide alphabet is defined in XXX:FIXME.  Its
+interpretation is indicated by:
+<<lkext>>=
+dnaAlph <- new("BioPatternAlphabet",
+                    DNAAlphabet(), c(N="AGCT",
+                                     B="CGT",
+                                     D="AGT",
+                                     H="ACT",
+                                     K="GT",
+                                     M="AC",
+                                     R="AG",
+                                     S="CG",
+                                     V="ACG",
+                                     W="AT",
+                                     Y="CT"))
+@
+
+
+
+
+
+\end{document}
