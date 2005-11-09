@@ -10,8 +10,7 @@ setMethod("as.matrix",
           function (x)
           x@offsets)
 
-if (!isGeneric("BioStringNewValues"))
-    setGeneric("BioStringNewValues",
+setGeneric("BioStringNewValues",
                function(alphabet, length.string)
                standardGeneric("BioStringNewValues"))
 
@@ -230,8 +229,7 @@ setMethod("show",
           }
       })
 
-if (!isGeneric("matchDNAPattern"))
-    setGeneric("matchDNAPattern",
+setGeneric("matchDNAPattern",
                function(pattern, x, algorithm, mismatch)
                standardGeneric("matchDNAPattern"))
 
@@ -299,8 +297,7 @@ reverseComplement <-
     .Call("reverseComplementBioString", x, PACKAGE="Biostrings")
 }
 
-if (!isGeneric("allSameLetter"))
-    setGeneric("allSameLetter",
+setGeneric("allSameLetter",
                function(x, letter)
                standardGeneric("allSameLetter"))
 
@@ -325,8 +322,7 @@ setMethod("allSameLetter",
           .Call("allSameLetter", x, letter, TRUE, PACKAGE="Biostrings")
       })
 
-if (!isGeneric("anySameLetter"))
-    setGeneric("anySameLetter",
+setGeneric("anySameLetter",
                function(x, letter)
                standardGeneric("anySameLetter"))
 

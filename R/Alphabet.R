@@ -7,8 +7,7 @@ setClass("BioAlphabet",
                         gap="character"),
          contains="VIRTUAL")
 
-if (!isGeneric("gapletter<-"))
-    setGeneric("gapletter<-",
+setGeneric("gapletter<-",
                function(x, value)
                standardGeneric("gapletter<-"))
 
