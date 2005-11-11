@@ -37,7 +37,7 @@ elements are all zero.}
 \examples{
 data('yeastSEQCHR1')
 yeast1 <- DNAString(yeastSEQCHR1)
-x <- substring(yeast1, c(1, 30))
+x <- substring(yeast1, 1, 30) # very different from c(1,30)
 x
 suf <- DNASuffixArray(x)
 lcp <- LongestCommonPrefix(suf)

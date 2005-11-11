@@ -1,7 +1,16 @@
 useDynLib(Biostrings)
 
-exportClasses(AminoAcidAlphabet, BioAlphabet, BioPatternAlphabet, BioString, LongestCommonPrefix, NucleotideAlphabet)
+exportClasses(AminoAcidAlphabet, BioAlphabet, BioPatternAlphabet, 
+	BioString, LongestCommonPrefix, NucleotideAlphabet, simpleBioString)
 
-exportMethods(allSameLetter, anySameLetter, as.character, as.matrix, "[", "[[", BioStringNewValues, "gapletter<-", initialize, length, matchDNAPattern, nchar, show, substr, substring)
+exportMethods(allSameLetter, anySameLetter, as.character, as.matrix, 
+	"[", "[[", BioStringNewValues, "gapletter<-", initialize, length, 
+	matchDNAPattern, nchar, show, substr, substring, needwunsQS)
 
-export(alphabetFrequency, DNAAlphabet, DNAPatternAlphabet, DNAString, DNASuffixArray, LongestCommonPrefix, NucleotideString, readFASTA, reverseComplement, RNAAlphabet, RNAPatternAlphabet, sortDNAString)
+export(alphabetFrequency, DNAAlphabet, DNAPatternAlphabet, DNAString, 
+	DNASuffixArray, LongestCommonPrefix, NucleotideString, readFASTA, 
+	reverseComplement, RNAAlphabet, RNAPatternAlphabet, sortDNAString,
+	alignScore, StandardPeptideAlphabet, AAString, rpeptide)
+
+S3method(print, needwunsQS)
+S3method(alignScore, needwunsQS)

@@ -1,6 +1,5 @@
 
 %\VignetteIndexEntry{Biostrings}
-%\VignetteDepends{Biostrings} 
 %\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
 %\VignettePackage{Biostrings}
 
@@ -50,7 +49,9 @@
 \section{Introduction}
 
 In this document we illustrate some of the basic functionalities
-of the \Rpackage{Biostrings} package.
+of the \Rpackage{Biostrings} package.  Topics include import
+of FASTA files, pattern matching, simple alignments, and consensus
+matrix calculation.
 
 \section{Data import}
 \label{fastaread}
@@ -163,6 +164,33 @@ substr(oss[2], mdem@offsets[2,1], mdem@offsets[2,2] )
 So the show method is somehow printing irrelevant strings
 (or the Call yields bad data in the values slot)
 but the offsets are right.
+
+\section{Alignments}
+
+A very simple implementation of the Needleman-Wunsch global alignment
+algorithm is provided.  This takes space proportional to the square
+of the string length, uses a simple scalar gap penalty, and requires
+a substitution scoring matrix appropriate for the alphabets from which
+the strings to be aligned are constructed.  Pattern alphabet concepts
+are not currently used.
+
+The BLOSUM50 matrix is available in this package as a
+matrix:
+<<lkblo>>=
+data(blosum50)
+blosum50[1:4,1:4]
+@
+A canonical example from Durbin, Eddy et al:
+<<runnw>>=
+nwdemo <- needwunsQS( "PAWHEAE", "HEAGAWGHEE", blosum50 )
+nwdemo
+@
+The score (final element of dynamic programming
+score matrix) can be accessed:
+<<lksc>>=
+alignScore(nwdemo)
+@
+
 
 \section{Computing alignment consensus matrices}
 

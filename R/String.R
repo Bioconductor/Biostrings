@@ -1,8 +1,11 @@
 #Copyright (C) 2003-2004 by Saikat DebRoy
+
+setClassUnion("extOrChar", c("externalptr", "character")) # VJC
+
 setClass("BioString",
          representation(alphabet="BioAlphabet",
                         offsets="matrix",
-                        values="externalptr",
+                        values="extOrChar",  # for simpleBioString, VJC
                         initialized="logical"))
 
 setMethod("as.matrix",

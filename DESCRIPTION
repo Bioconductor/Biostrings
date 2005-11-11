@@ -1,6 +1,6 @@
 Package: Biostrings
 Title: String objects representing biological sequences, and matching algorithms
-Version: 1.5.1
+Version: 1.5.2
 Author: Saikat DebRoy
 Description: Class definitions and generics for biological sequences
         along with pattern matching algorithms.
