@@ -3,7 +3,7 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-/* #define DEBUG_BIOSTRINGS */
+/* #define DEBUG_BIOSTRINGS 1 */
 
 #ifdef MAX
 #undef MAX
@@ -69,7 +69,7 @@ expandIndex(SEXP index, int ndone, int nleft)
 
     n1 = 2*(n+estimate);
 #ifdef DEBUG_BIOSTRINGS
-    Rprintf("nindex: %d\n", n);
+    Rprintf("[DEBUG] nindex: %d\n", n);
 #endif
     temp = allocVector(INTSXP, n1);
     memcpy(INTEGER(temp), INTEGER(index), n*sizeof(int));
@@ -603,9 +603,11 @@ reverseFundamentalPreprocessing(unsigned char* pattern, int n,
         }
     }
 #ifdef DEBUG_BIOSTRINGS
+/*
     for (i = 1; i <= n; i++)
         Rprintf("%d,", N[i]);
     Rprintf("\n");
+*/
 #endif
     UNPROTECT(1);
     return ans;
@@ -664,22 +666,38 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
 {
     int nmatchIndex = LENGTH(matchIndex);
     int* index = INTEGER(matchIndex);
+
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Entering matchIndexToBioString() function\n");
+    Rprintf("[DEBUG] nmatch: %d\n", nmatch);
+#endif
     x = duplicate(x);
     PROTECT(x);
-#ifdef DEBUG_BIOSTRINGS
-    Rprintf("In matchIndexToBioString\nnmatch: %d\n", nmatch);
-#endif
     if (nmatch == 0) {
-        SEXP offsets = allocMatrix(INTSXP, 0, 2);
-        PROTECT(offsets);
-        SET_SLOT(x, install("offsets"), offsets);
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] CASE 'nmatch == 0'\n");
+#endif
+        SEXP x_offsets = allocMatrix(INTSXP, 0, 2);
+        PROTECT(x_offsets);
+        SET_SLOT(x, install("offsets"), x_offsets);
         UNPROTECT(1);
     } else if (nmatch == 1) {
-        int* offsets = INTEGER(GET_SLOT(x, install("offsets")));
-        offsets[1] = index[0];
-        offsets[0] = index[0]-patlen+1;
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] CASE 'nmatch == 1'\n");
+#endif
+        SEXP x_offsets = GET_SLOT(x, install("offsets"));
+        int adjust = INTEGER(x_offsets)[0] - 1;
+        int* x_offsets11 = INTEGER(x_offsets);
+
+        x_offsets11[1] = index[0] + adjust;
+        x_offsets11[0] = index[0]-patlen+1 + adjust;
     } else if (nmatchIndex == 2*nmatch) {
-        SEXP dim = GET_DIM(GET_SLOT(x, install("offsets")));
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] CASE 'nmatchIndex == 2*nmatch'\n");
+#endif
+        SEXP x_offsets = GET_SLOT(x, install("offsets"));
+        int adjust = INTEGER(x_offsets)[0] - 1;
+        SEXP dim = GET_DIM(x_offsets);
         int i;
 
         INTEGER(dim)[0] = nmatch;
@@ -688,21 +706,34 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
         memcpy(index+nmatch, index, sizeof(int)*nmatch);
         for (i = 0; i < nmatch; i++)
             index[i] -= patlen-1;
+        for (i = 0; i < 2*nmatch; i++)
+            index[i] += adjust;
         SET_SLOT(x, install("offsets"), matchIndex);
     } else {
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] DEFAULT CASE\n");
+#endif
+        SEXP x_offsets = GET_SLOT(x, install("offsets"));
+        int adjust = INTEGER(x_offsets)[0] - 1;
         SEXP offsets = allocMatrix(INTSXP, nmatch, 2);
-        int* tmp = INTEGER(offsets);
+        int* offsets11 = INTEGER(offsets);
+	int* offsets12;
         int i;
 
         PROTECT(offsets);
         for (i = 0; i < nmatch; i++)
-            tmp[i] = index[i]-patlen+1;
-        tmp += nmatch;
-        memcpy(tmp, index, sizeof(int)*nmatch);
+            offsets11[i] = index[i]-patlen+1;
+        offsets12 = offsets11 + nmatch;
+        memcpy(offsets12, index, sizeof(int)*nmatch);
+        for (i = 0; i < 2*nmatch; i++)
+            offsets11[i] += adjust;
         SET_SLOT(x, install("offsets"), offsets);
         UNPROTECT(1);
     }
     UNPROTECT(1);
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Leaving matchIndexToBioString() function\n");
+#endif
     return x;
 }
 
@@ -739,7 +770,7 @@ ForwardSearch_exactMatch(SEXP pattern, SEXP x)
     m = xend-xstart+1;
     nmatchIndex = estimateMatchNumber(m, patlen, nletters);
 #ifdef DEBUG_BIOSTRINGS
-    Rprintf("nmatchIndex: %d\n", nmatchIndex);
+    Rprintf("[DEBUG] nmatchIndex: %d\n", nmatchIndex);
 #endif
     matchIndex = allocVector(INTSXP, nmatchIndex);
     REPROTECT(matchIndex, matchIndex_pi);
@@ -1006,9 +1037,9 @@ BoyerMoore_preprocess(SEXP x, BoyerMoore_compiledPattern_t* pattern)
                 }
             }
 #ifdef DEBUG_BIOSTRINGS
-            Rprintf("bad char index for pattern %d\n", pat);
+            Rprintf("[DEBUG] bad char index for pattern %d\n[DEBUG]", pat);
             for (j = 1; j <= n; j++)
-                Rprintf("%d,", indx[j]);
+                Rprintf(" %d,", indx[j]);
             Rprintf("\n");
 #endif
         }
@@ -1031,6 +1062,9 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
     int* index = 0;
     int k, patlen = 0, nmatch = 0;
 
+#ifdef DEBUG_BIOSTRINGS
+            Rprintf("[DEBUG] Entering BoyerMoore_exactMatch() function\n");
+#endif
     getLengthOneBioStringRange(x, &xstart, &xend);
     PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
     if (xstart > xend)
@@ -1040,8 +1074,12 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
     patlen = pattern.length;
     if (patlen == 0)
         goto finished_match;
-    if (patlen == 1)
+    if (patlen == 1) {
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] Leaving BoyerMoore_exactMatch() function\n");
+#endif
         return LengthOne_exactMatch(origPattern, x);
+    }
     if (pattern.usesChar) {
         int* shiftTable[256];
         unsigned char* str;
@@ -1058,7 +1096,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         str = (unsigned char*) CHAR(vec)+xstart-1;
         nmatchIndex = estimateMatchNumber(m, patlen, pattern.nletters);
 #ifdef DEBUG_BIOSTRINGS
-        Rprintf("nmatchIndex: %d\n", nmatchIndex);
+        Rprintf("[DEBUG] nmatchIndex: %d\n", nmatchIndex);
 #endif
         matchIndex = allocVector(INTSXP, nmatchIndex);
         REPROTECT(matchIndex, matchIndex_pi);
@@ -1078,7 +1116,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
             else shiftTable[k] = INTEGER(tmp);
         }
 #ifdef DEBUG_BIOSTRINGS
-        Rprintf("position: %d\n", patlen);
+        Rprintf("[DEBUG] position: %d\n", patlen);
 #endif
         maxpatlen = 0;
         for (k = patlen; k != 0 &&
@@ -1089,7 +1127,7 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
         for (k = patlen; k <= m; ) {
             int i, h;
 #ifdef DEBUG_BIOSTRINGS
-            Rprintf("position: %d, nmatch: %d, nmatchIndex: %d\n", k, nmatch, nmatchIndex);
+            Rprintf("[DEBUG] position: %d, nmatch: %d, nmatchIndex: %d\n", k, nmatch, nmatchIndex);
 #endif
             if (maxpatlen == patlen) {
                 int kold = k;
@@ -1159,6 +1197,9 @@ BoyerMoore_exactMatch(SEXP origPattern, SEXP x)
 finished_match:
     x = matchIndexToBioString(x, matchIndex, nmatch, patlen);
     UNPROTECT(1);
+#ifdef DEBUG_BIOSTRINGS
+            Rprintf("[DEBUG] Leaving BoyerMoore_exactMatch() function\n");
+#endif
     return x;
 }
 
@@ -2005,7 +2046,7 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
 
     nmatchIndex = estimateMatchNumber(m, patlen, nletters);
 #ifdef DEBUG_BIOSTRINGS
-    Rprintf("nmatchIndex: %d\n", nmatchIndex);
+    Rprintf("[DEBUG] nmatchIndex: %d\n", nmatchIndex);
 #endif
     matchIndex = allocVector(INTSXP, nmatchIndex);
     REPROTECT(matchIndex, matchIndex_pi);
