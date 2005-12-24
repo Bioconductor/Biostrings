@@ -80,15 +80,45 @@ test_openbug3 <- function()
 {
     pattern <- DNAString("AAAA")
     subject <- DNAString("AAAAC")
+    expected_roffsets <- rbind(c(-2, 1),
+                               c(-1, 2),
+                               c( 0, 3),
+                               c( 1, 4),
+                               c( 2, 5),
+                               c( 3, 6),
+                               c( 4, 7))
     ## Provoques an error
     matches <- matchDNAPattern(pattern, subject, mis=3)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_openbug4 <- function()
+{
+    pattern <- DNAString("AAAA")
+    subject <- DNAString("AAAAC")
+    ## Here: mis >= nchar(pattern). So you get a match
+    ## whatever the relative position of the pattern is!
+    ## However, a reasonable expectation is to have
+    ## matchDNAPattern only return the following matches:
+    expected_roffsets <- rbind(c(-3, 0),
+                               c(-2, 1),
+                               c(-1, 2),
+                               c( 0, 3),
+                               c( 1, 4),
+                               c( 2, 5),
+                               c( 3, 6),
+                               c( 4, 7),
+                               c( 5, 8),
+                               c( 6, 9))
+    matches <- matchDNAPattern(pattern, subject, mis=4)
+    checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
 # TODO: Move this test to another file. Has nothing to do
 # with testing the matchDNAPattern() function...
 # Not sure this one is a bug. Are we supposed to always
 # be allowed to change a value in a matrix? What "says" R?
-test_openbug4 <- function()
+test_openbug5 <- function()
 {
     s <- DNAString("ACGT")
     s@offsets[1,1] <- 2

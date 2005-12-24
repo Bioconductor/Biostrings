@@ -193,20 +193,15 @@ setMethod("show",
           signature(object = "BioString"),
           function (object)
       {
+          cat("    Object of class BioString with\n")
+          if (is(object@alphabet, "BioPatternAlphabet"))
+              cat("Pattern alphabet: ")
+          else cat("Alphabet: ")
+          cat(object@alphabet@letters)
           nvec <- length(object)
           if (nvec == 0) {
-              cat("    Object of class BioString with\n")
-              if (is(object@alphabet, "BioPatternAlphabet"))
-                  cat("Pattern alphabet: ")
-              else cat("Alphabet: ")
-              cat(object@alphabet@letters)
               cat("\nLength: 0\n")
           } else {
-              cat("    Object of class BioString with\n")
-              if (is(object@alphabet, "BioPatternAlphabet"))
-                  cat("Pattern alphabet: ")
-              else cat("Alphabet: ")
-              cat(object@alphabet@letters)
               cat("\nValues:\n")
               printsome <- nvec > 30
               i <- 1

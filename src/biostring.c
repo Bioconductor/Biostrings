@@ -102,16 +102,15 @@ BioStringValues(SEXP alphabet_length, SEXP string_length)
     SEXP ans, storage;
 
     if (alphlen <= CHAR_BIT) {
-        storage = allocString(n);
+        PROTECT(storage = allocString(n));
         memset(CHAR(storage), 0, n+1);
     } else if (alphlen <= sizeof(int)) {
-        storage = allocVector(INTSXP, n);
+        PROTECT(storage = allocVector(INTSXP, n));
         memset(INTEGER(storage), 0, n*sizeof(int));
     } else {
         error("unable to create string for alphabet with %d letters", alphlen);
-        storage = R_NilValue; /* -Wall */
+        PROTECT(storage = R_NilValue); /* -Wall */
     }
-    PROTECT(storage);
     ans = R_MakeExternalPtr(NULL, storage, R_NilValue);
     UNPROTECT(1);
     return ans;
@@ -228,8 +227,7 @@ setBioString(SEXP biostring, SEXP src)
     if (asLogical(GET_SLOT(biostring, install("initialized"))))
         error("can not modify initialized strings");
     n = length(src);
-    biostring = duplicate(biostring);
-    PROTECT(biostring);
+    PROTECT(biostring = duplicate(biostring));
     offsets = allocMatrix(INTSXP, n, 2);
     PROTECT(offsets);
     SET_SLOT(biostring, install("offsets"), offsets);
@@ -475,8 +473,7 @@ BioString_substring(SEXP x, SEXP start, SEXP stop, SEXP doSubstring)
     current_startvec = INTEGER(offsets);
     current_stopvec = INTEGER(offsets)+ncurrent;
 
-    ans = duplicate(x);
-    PROTECT(ans);
+    PROTECT(ans = duplicate(x));
     n = ncurrent;
     if (substring) {
         n = (n>nstart)?n:nstart;
@@ -671,8 +668,10 @@ matchIndexToBioString(SEXP x, SEXP matchIndex, int nmatch, int patlen)
     Rprintf("[DEBUG] Entering matchIndexToBioString() function\n");
     Rprintf("[DEBUG] nmatch: %d\n", nmatch);
 #endif
-    x = duplicate(x);
-    PROTECT(x);
+    PROTECT(x = duplicate(x));
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] PROTECT(x = duplicate(x)) PASSED\n");
+#endif
     if (nmatch == 0) {
 #ifdef DEBUG_BIOSTRINGS
         Rprintf("[DEBUG] CASE 'nmatch == 0'\n");
@@ -1216,8 +1215,7 @@ reverseComplementBioString(SEXP x)
         alph = GET_SLOT(alph, install("baseAlphabet"));
     mapping = GET_SLOT(alph, install("mapping"));
     letters = GET_NAMES(mapping);
-    x = duplicate(x);
-    PROTECT(x);
+    PROTECT(x = duplicate(x));
     xvec = R_ExternalPtrProtected(GET_SLOT(x, install("values")));
     if (xvec != R_NilValue) {
         SEXP offsets, dim;
@@ -1776,8 +1774,7 @@ DNASuffixArray(SEXP x, SEXP prefixLength)
     vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (TYPEOF(vec) != CHARSXP)
         error("values must be a CHARSXP");
-    x = duplicate(x);
-    PROTECT(x);
+    PROTECT(x = duplicate(x));
     len = getBioStringLength(x, &startvec, &endvec);
     if (len > 0) {
         int* offsets;
@@ -1819,8 +1816,7 @@ SortDNAString(SEXP x, SEXP prefixLength)
     vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
     if (TYPEOF(vec) != CHARSXP)
         error("values must be a CHARSXP");
-    x = duplicate(x);
-    PROTECT(x);
+    PROTECT(x = duplicate(x));
     len = getBioStringLength(x, &startvec, &endvec);
     if (len > 0 && plen > 0) {
         sortDNASuffixByPrefix((unsigned char*) CHAR(vec),
@@ -1998,10 +1994,139 @@ longestCommonSubstringProportions(SEXP x)
     return ans;
 }
 
+
 typedef unsigned long ShiftOrWord_t; /* hopefully this will be 32-bit
                                       * on 32-bit machines and 64-bit
                                       * on 64-bit machines */
 
+static void debug_MoveBits(int M_k_len, ShiftOrWord_t *M_k, ShiftOrWord_t U_xptr_k)
+{
+    static ShiftOrWord_t tmpA, tmpB;
+    static int i;
+
+    tmpA = M_k[0];
+    M_k[0] = (tmpA << 1) | U_xptr_k;
+    for (i = 1; i < M_k_len; i++) {
+        tmpB = tmpA;
+        tmpA = M_k[i];
+        M_k[i] = ((tmpA << 1) | U_xptr_k) &
+                 tmpB & (tmpB << 1) & (M_k[i-1] << 1);
+    }
+    return;
+}
+                 
+static void debug_ShiftOr_matchInternal_for_kerr_2(
+           int m,
+           unsigned char *xptr,
+           ShiftOrWord_t *U,
+           int patlen,
+           int nmatchIndex,
+           int *p_nmatch,
+           SEXP *p_matchIndex,
+           PROTECT_INDEX matchIndex_pi,
+           unsigned long *p_interruptcheck
+       )
+{
+    int k;
+    int *index;
+    ShiftOrWord_t M_k[3], U_xptr_k;
+    int i;
+
+    M_k[0] = ~0UL;
+    for (i = 0; i < 2; i++) {
+        M_k[i+1] = M_k[i] << 1;
+    }
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Entering debug_ShiftOr_matchInternal_for_kerr_2() function\n");
+#endif
+    index = INTEGER(*p_matchIndex);
+    for (k = 1; k <= m; k++) {
+        U_xptr_k = U[xptr[k]];
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] xptr[%d] = %u ; U[xptr[%d]] = %uL\n", k, xptr[k], k, U_xptr_k);
+#endif
+        debug_MoveBits(3, M_k, U_xptr_k);
+        if (((M_k[0] & M_k[1] & M_k[2]) & (1UL << (patlen-1))) == 0) {
+            if (nmatchIndex == *p_nmatch) {
+                *p_matchIndex = expandIndex(*p_matchIndex, k-patlen+1, m-k);
+                REPROTECT(*p_matchIndex, matchIndex_pi);
+                nmatchIndex = LENGTH(*p_matchIndex);
+                index = INTEGER(*p_matchIndex);
+            }
+            index[(*p_nmatch)++] = k;
+        }
+        if (*p_interruptcheck > INTERRUPTCHECK_AFTER) {
+            R_CheckUserInterrupt();
+            *p_interruptcheck = 0UL;
+        }
+    }
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Leaving debug_ShiftOr_matchInternal_for_kerr_2() function\n");
+#endif
+    return;
+}
+
+static void debug_ShiftOr_matchInternal_for_kerr_3(
+           int m,
+           unsigned char *xptr,
+           ShiftOrWord_t *U,
+           int patlen,
+           int nmatchIndex,
+           int *p_nmatch,
+           SEXP *p_matchIndex,
+           PROTECT_INDEX matchIndex_pi,
+           unsigned long *p_interruptcheck
+       )
+{
+    int k;
+    int *index;
+    ShiftOrWord_t M_k[4];
+    int i;
+
+    M_k[0] = ~0UL;
+    for (i = 0; i < 3; i++) {
+        M_k[i+1] = M_k[i] << 1;
+    }
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Entering debug_ShiftOr_matchInternal_for_kerr_3() function\n");
+#endif
+    index = INTEGER(*p_matchIndex);
+
+    for (k = 1; k <= m; k++) {
+        debug_MoveBits(4, M_k, U[xptr[k]]);
+        if (((M_k[0] & M_k[1] & M_k[2] & M_k[3]) & (1UL << (patlen-1))) == 0) {
+            if (nmatchIndex == *p_nmatch) {
+                *p_matchIndex = expandIndex(*p_matchIndex, k-patlen+1, m-k);
+                REPROTECT(*p_matchIndex, matchIndex_pi);
+                nmatchIndex = LENGTH(*p_matchIndex);
+                index = INTEGER(*p_matchIndex);
+            }
+            index[*p_nmatch++] = k;
+        }
+        if (*p_interruptcheck > INTERRUPTCHECK_AFTER) {
+            R_CheckUserInterrupt();
+            *p_interruptcheck = 0UL;
+        }
+    }
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Leaving debug_ShiftOr_matchInternal_for_kerr_3() function\n");
+#endif
+    return;
+}
+
+
+/*
+ * Why loosing more time trying to debug this function?
+ * - It gives a wrong answer most of the time
+ * - It crashes R on Solaris and Mac OS X
+ * - It always returns an error with nb of allowed mismatches (kerr) equal 3
+ * - It does nothing if nb of allowed mismatches (kerr) >= 4
+ * - It doesn't work if nchar(pattern) > nb of bits in an unsigned long
+ * - It's not documented
+ * - It's written in an obfuscated way
+ * - The above comment about the expected sizeof(unsigned long) suggests that
+ *   it relies on a wrong assumption
+ */
 static SEXP
 ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
                       int kdel, int kerr)
@@ -2016,6 +2141,10 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     int nmatch = 0;
     int m;
 
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Entering ShiftOr_matchInternal() function\n");
+    Rprintf("[DEBUG] kerr: %d\n", kerr);
+#endif
     if (ksubst < 0 || kins < 0 || kdel < 0 || kerr < 0 ||
         (ksubst+kins+kdel < kerr))
         error("Invalid mismatch specification");
@@ -2033,7 +2162,9 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     if (xstart > xend)
         goto finished_match;
     m = xend-xstart+1;
-    if (m < patlen-kerr)
+    /* If patlen > m, then nb_err will always be >= patlen - m */
+    if (kerr < patlen-m)
+        /* No match */
         goto finished_match;
     alph = GET_SLOT(x, install("alphabet"));
     pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
@@ -2124,32 +2255,31 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
                 }
                 break;
             case 2:
-                for (k = 1; k <= m; k++) {
-                    ShiftOrWord_t tmp0 = M_k[0];
-                    ShiftOrWord_t tmp1 = M_k[1];
-
-                    M_k[0] = (tmp0 << 1) | U[xptr[k]];
-                    M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) &
-                        tmp0 & (tmp0 << 1) & (M_k[0] << 1);
-                    M_k[2] = ((M_k[2] << 1) | U[xptr[k]]) &
-                        tmp1 & (tmp1 << 1) & (M_k[1] << 1);
-                    if (((M_k[0] & M_k[1] & M_k[2]) &
-                         (1UL << (patlen-1))) == 0) {
-                        if (nmatchIndex == nmatch) {
-                            matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
-                            REPROTECT(matchIndex, matchIndex_pi);
-                            nmatchIndex = LENGTH(matchIndex);
-                            index = INTEGER(matchIndex);
-                        }
-                        index[nmatch++] = k;
-                    }
-                    if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                        R_CheckUserInterrupt();
-                        interruptcheck = 0UL;
-                    }
-                }
+                debug_ShiftOr_matchInternal_for_kerr_2(
+                    m,
+                    xptr,
+                    U,
+                    patlen,
+                    nmatchIndex,
+                    &nmatch,
+                    &matchIndex,
+                    matchIndex_pi,
+                    &interruptcheck
+                );
                 break;
             case 3:
+                debug_ShiftOr_matchInternal_for_kerr_3(
+                    m,
+                    xptr,
+                    U,
+                    patlen,
+                    nmatchIndex,
+                    &nmatch,
+                    &matchIndex,
+                    matchIndex_pi,
+                    &interruptcheck
+                );
+                /*
                 for (k = 1; k <= m; k++) {
                     ShiftOrWord_t tmp0 = M_k[0];
                     ShiftOrWord_t tmp1 = M_k[1];
@@ -2177,6 +2307,7 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
                         interruptcheck = 0UL;
                     }
                 }
+                */
                 break;
             default:
                 error("nerr too large");
@@ -2220,6 +2351,9 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
 finished_match:
     x = matchIndexToBioString(x, matchIndex, nmatch, patlen);
     UNPROTECT(1);
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Leaving ShiftOr_matchInternal() function\n");
+#endif
     return x;
 }
 
