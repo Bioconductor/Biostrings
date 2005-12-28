@@ -51,7 +51,7 @@ test_matchIndexToBioString <- function()
 }
 
 ## Checks the ShiftOr_matchInternal() C-function.
-test_ShiftOr_matchInternal_P1 <- function()
+test_ShiftOr_matchInternal_A1 <- function()
 {
     pattern <- DNAString("CAG")
     subject <- DNAString("CAGTTT")
@@ -60,29 +60,29 @@ test_ShiftOr_matchInternal_P1 <- function()
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
-test_ShiftOr_matchInternal_P2 <- function()
+test_ShiftOr_matchInternal_A2 <- function()
 {
     pattern <- DNAString("AKADAKA")
-    subject <- DNAString("ATATGAATAGACA")
+    subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(7, 13))
     matches <- matchDNAPattern(pattern, subject, mis=0)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
-test_ShiftOr_matchInternal_P3 <- function()
+test_ShiftOr_matchInternal_A3 <- function()
 {
     pattern <- DNAString("AKADAKA")
-    subject <- DNAString("ATATGAATAGACA")
+    subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(3, 9),
                                c(7, 13))
     matches <- matchDNAPattern(pattern, subject, mis=1)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
-test_ShiftOr_matchInternal_P4 <- function()
+test_ShiftOr_matchInternal_A4 <- function()
 {
     pattern <- DNAString("AKADAKA")
-    subject <- DNAString("ATATGAATAGACA")
+    subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(1,7),
                                c(3, 9),
                                c(7, 13))
