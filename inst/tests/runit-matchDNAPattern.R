@@ -50,11 +50,8 @@ test_matchIndexToBioString <- function()
     checkExactMatches("A", subject, c(3,4))
 }
 
-
-
-## =================== Tests that should FAIL (open bugs) ====================
-
-test_openbug1 <- function()
+## Checks the ShiftOr_matchInternal() C-function.
+test_ShiftOr_matchInternal_P1 <- function()
 {
     pattern <- DNAString("CAG")
     subject <- DNAString("CAGTTT")
@@ -63,7 +60,41 @@ test_openbug1 <- function()
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
-test_openbug2 <- function()
+test_ShiftOr_matchInternal_P2 <- function()
+{
+    pattern <- DNAString("AKADAKA")
+    subject <- DNAString("ATATGAATAGACA")
+    expected_roffsets <- rbind(c(7, 13))
+    matches <- matchDNAPattern(pattern, subject, mis=0)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_ShiftOr_matchInternal_P3 <- function()
+{
+    pattern <- DNAString("AKADAKA")
+    subject <- DNAString("ATATGAATAGACA")
+    expected_roffsets <- rbind(c(3, 9),
+                               c(7, 13))
+    matches <- matchDNAPattern(pattern, subject, mis=1)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_ShiftOr_matchInternal_P4 <- function()
+{
+    pattern <- DNAString("AKADAKA")
+    subject <- DNAString("ATATGAATAGACA")
+    expected_roffsets <- rbind(c(1,7),
+                               c(3, 9),
+                               c(7, 13))
+    matches <- matchDNAPattern(pattern, subject, mis=2)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+
+
+## =================== Tests that should FAIL (open bugs) ====================
+
+test_openbug2a <- function()
 {
     pattern <- DNAString("AAAA")
     subject <- DNAString("AAAAC")
@@ -72,6 +103,20 @@ test_openbug2 <- function()
                                c( 1, 4),
                                c( 2, 5),
                                c( 3, 6))
+    matches <- matchDNAPattern(pattern, subject, mis=2)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_openbug2b <- function()
+{
+    pattern <- DNAString("ATC")
+    subject <- DNAString("CATCACTCA")
+    expected_roffsets <- rbind(c(-1, 1),
+                               c( 2, 4),
+                               c( 4, 6),
+                               c( 5, 7),
+                               c( 6, 8),
+                               c( 9, 11))
     matches <- matchDNAPattern(pattern, subject, mis=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
@@ -100,16 +145,14 @@ test_openbug4 <- function()
     ## whatever the relative position of the pattern is!
     ## However, a reasonable expectation is to have
     ## matchDNAPattern only return the following matches:
-    expected_roffsets <- rbind(c(-3, 0),
-                               c(-2, 1),
+    expected_roffsets <- rbind(c(-2, 1),
                                c(-1, 2),
                                c( 0, 3),
                                c( 1, 4),
                                c( 2, 5),
                                c( 3, 6),
                                c( 4, 7),
-                               c( 5, 8),
-                               c( 6, 9))
+                               c( 5, 8))
     matches <- matchDNAPattern(pattern, subject, mis=4)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }

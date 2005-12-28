@@ -1,0 +1,4 @@
+
+- Update the biostDemo vignette.
+
+- Fix the show method for offsets "out of bound".

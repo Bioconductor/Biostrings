@@ -69,7 +69,8 @@ expandIndex(SEXP index, int ndone, int nleft)
 
     n1 = 2*(n+estimate);
 #ifdef DEBUG_BIOSTRINGS
-    Rprintf("[DEBUG] nindex: %d\n", n);
+    Rprintf("[DEBUG] In expandIndex(): ndone = %d, nleft = %d, n = %d ; n1 = %d\n",
+            ndone, nleft, n, n1);
 #endif
     temp = allocVector(INTSXP, n1);
     memcpy(INTEGER(temp), INTEGER(index), n*sizeof(int));
@@ -253,28 +254,32 @@ setBioString(SEXP biostring, SEXP src)
 static SEXP
 BioStringToCharacter(int nletters_base,
                      SEXP alphMapping,
-                     SEXP values,
-                     unsigned long start,
-                     unsigned long end)
+                     SEXP values, /* TYPEOF(values) is EXTPTRSXP (external pointer) */
+                     int start,
+                     int end)
 {
-    int nvalues = LENGTH(values)-1;
-    int nletters;
+    int nvalues = LENGTH(values)-1; /* ??? LENGTH(values) seems to be ALWAYS 0! */
+    int nletters, ndest, i, bad_index = 0;
     SEXP ans;
     char* dest;
-    unsigned long ndest, i;
     SEXP letters = GET_NAMES(alphMapping);
     unsigned int bad_element = 0;
-    unsigned long bad_index = 0;
 
     if (TYPEOF(alphMapping) != INTSXP || TYPEOF(letters) != STRSXP)
         error("invalid mapping");
     nletters = LENGTH(letters);
     if (LENGTH(alphMapping) != nletters)
         error("invalid names for mapping");
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] In BioStringToCharacter(): start = %d, end = %d, nvalues = %d\n",
+            start, end, nvalues);
+#endif
     if (start <= 0)
         start = 1;
+    /* since nvalues is ALWAYS -1, this test makes no sense
     if (end > nvalues)
         end = nvalues;
+    */
     if (start > end)
         return R_BlankString;
     if (nletters_base > sizeof(int)*CHAR_BIT)
@@ -282,6 +287,10 @@ BioStringToCharacter(int nletters_base,
     values = R_ExternalPtrTag(values);
 
     ndest = end-start+1;
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] In BioStringToCharacter(): start = %d, end = %d, ndest = %d\n",
+            start, end, ndest);
+#endif
     ans = allocString(ndest);
     PROTECT(ans);
     dest = CHAR(ans);
@@ -383,7 +392,7 @@ BioStringToCharacter(int nletters_base,
 
 invalid_element:
     UNPROTECT(1);
-    error("invalid %d-th element in values: %d",
+    error("invalid %d-th element in values: %u",
           bad_index+start, bad_element);
     return R_NilValue; /* -Wall */
 }
@@ -1995,151 +2004,216 @@ longestCommonSubstringProportions(SEXP x)
 }
 
 
+/****************************************************************************
+                           THE SHIFT-OR ALGORITHM
+                                   aka
+                            THE BITAP ALGORITHM
+ On Wikipedia:
+   http://en.wikipedia.org/wiki/Shift-or_algorithm
+ Other resources:
+   http://www-igm.univ-mlv.fr/~lecroq/string/node6.html
+ For all kind of string algorithms with animation in Java, see also:
+   http://www-igm.univ-mlv.fr/~lecroq/string/index.html
+ ****************************************************************************/
+
+#ifdef DEBUG_BIOSTRINGS
+
+#define CHAR_SIZE               (sizeof(char))
+#define LONG_SIZE               (sizeof(long))
+#define BITS_PER_CHAR           CHAR_BIT
+#define BITS_PER_SIZEOF_UNIT    (BITS_PER_CHAR / (int) CHAR_SIZE)
+#define BITS_PER_LONG           ((int) LONG_SIZE * BITS_PER_SIZEOF_UNIT)
+
+static void debug_printULBits(unsigned long bits)
+{
+    unsigned long current_bit = 1UL << (BITS_PER_LONG-1);
+    int i;
+
+    for (i = 0; i < BITS_PER_LONG; i++) {
+        printf("%d", (bits & current_bit) != 0UL);
+        if ((i % 8) == 7) {
+            printf(" ");
+        }
+        current_bit >>= 1;
+    }
+    printf("-> %lu\n", bits);
+    return;
+}
+
+#endif
+
 typedef unsigned long ShiftOrWord_t; /* hopefully this will be 32-bit
                                       * on 32-bit machines and 64-bit
                                       * on 64-bit machines */
 
-static void debug_MoveBits(int M_k_len, ShiftOrWord_t *M_k, ShiftOrWord_t U_xptr_k)
+static void _set_pmaskmap(
+                int pmaskmap_length,
+                ShiftOrWord_t *pmaskmap,
+                int pat_length,
+                unsigned char *pat
+            )
 {
-    static ShiftOrWord_t tmpA, tmpB;
-    static int i;
+    ShiftOrWord_t pmask;
+    int nncode, i;
 
-    tmpA = M_k[0];
-    M_k[0] = (tmpA << 1) | U_xptr_k;
-    for (i = 1; i < M_k_len; i++) {
-        tmpB = tmpA;
-        tmpA = M_k[i];
-        M_k[i] = ((tmpA << 1) | U_xptr_k) &
-                 tmpB & (tmpB << 1) & (M_k[i-1] << 1);
+    /* Why go to 255? Only pmaskmap[nncode] will be used,
+       where nncode is a numerical nucleotide code.
+       nncode can only have 16 possible values: 1, 2, 4, 6, ..., 30.
+       Not even all values <= 30 are used!
+     */
+    for (nncode = 0; nncode < pmaskmap_length; nncode++) {
+        pmask = 0LU;
+        for (i = 0; i < pat_length; i++) {
+            pmask <<= 1;
+            if ((pat[i] & nncode) == 0)
+                pmask |= 1UL;
+        }
+        pmaskmap[nncode] = pmask;
     }
     return;
 }
-                 
-static void debug_ShiftOr_matchInternal_for_kerr_2(
-           int m,
-           unsigned char *xptr,
-           ShiftOrWord_t *U,
-           int patlen,
-           int nmatchIndex,
-           int *p_nmatch,
-           SEXP *p_matchIndex,
-           PROTECT_INDEX matchIndex_pi,
-           unsigned long *p_interruptcheck
-       )
-{
-    int k;
-    int *index;
-    ShiftOrWord_t M_k[3], U_xptr_k;
-    int i;
 
-    M_k[0] = ~0UL;
-    for (i = 0; i < 2; i++) {
-        M_k[i+1] = M_k[i] << 1;
+static void _update_PMmasks(int PMmask_length, ShiftOrWord_t *PMmask, ShiftOrWord_t pmask)
+{
+    static ShiftOrWord_t PMmaskA, PMmaskB;
+    static int e;
+
+    PMmaskA = PMmask[0] >> 1;
+    PMmask[0] = PMmaskA | pmask;
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] PMmask[%d] = ", 0);
+    debug_printULBits(PMmask[0]);
+#endif
+    for (e = 1; e < PMmask_length; e++) {
+        PMmaskB = PMmaskA;
+        PMmaskA = PMmask[e] >> 1;
+        PMmask[e] = (PMmaskA | pmask) & PMmaskB & PMmask[e-1];
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] PMmask[%d] = ", e);
+        debug_printULBits(PMmask[e]);
+#endif
     }
-#ifdef DEBUG_BIOSTRINGS
-    Rprintf("[DEBUG] Entering debug_ShiftOr_matchInternal_for_kerr_2() function\n");
-#endif
-    index = INTEGER(*p_matchIndex);
-    for (k = 1; k <= m; k++) {
-        U_xptr_k = U[xptr[k]];
-#ifdef DEBUG_BIOSTRINGS
-        Rprintf("[DEBUG] xptr[%d] = %u ; U[xptr[%d]] = %uL\n", k, xptr[k], k, U_xptr_k);
-#endif
-        debug_MoveBits(3, M_k, U_xptr_k);
-        if (((M_k[0] & M_k[1] & M_k[2]) & (1UL << (patlen-1))) == 0) {
-            if (nmatchIndex == *p_nmatch) {
-                *p_matchIndex = expandIndex(*p_matchIndex, k-patlen+1, m-k);
-                REPROTECT(*p_matchIndex, matchIndex_pi);
-                nmatchIndex = LENGTH(*p_matchIndex);
-                index = INTEGER(*p_matchIndex);
-            }
-            index[(*p_nmatch)++] = k;
-        }
-        if (*p_interruptcheck > INTERRUPTCHECK_AFTER) {
-            R_CheckUserInterrupt();
-            *p_interruptcheck = 0UL;
-        }
-    }
-#ifdef DEBUG_BIOSTRINGS
-    Rprintf("[DEBUG] Leaving debug_ShiftOr_matchInternal_for_kerr_2() function\n");
-#endif
     return;
 }
-
-static void debug_ShiftOr_matchInternal_for_kerr_3(
-           int m,
-           unsigned char *xptr,
-           ShiftOrWord_t *U,
-           int patlen,
-           int nmatchIndex,
-           int *p_nmatch,
-           SEXP *p_matchIndex,
-           PROTECT_INDEX matchIndex_pi,
-           unsigned long *p_interruptcheck
-       )
-{
-    int k;
-    int *index;
-    ShiftOrWord_t M_k[4];
-    int i;
-
-    M_k[0] = ~0UL;
-    for (i = 0; i < 3; i++) {
-        M_k[i+1] = M_k[i] << 1;
-    }
-#ifdef DEBUG_BIOSTRINGS
-    Rprintf("[DEBUG] Entering debug_ShiftOr_matchInternal_for_kerr_3() function\n");
-#endif
-    index = INTEGER(*p_matchIndex);
-
-    for (k = 1; k <= m; k++) {
-        debug_MoveBits(4, M_k, U[xptr[k]]);
-        if (((M_k[0] & M_k[1] & M_k[2] & M_k[3]) & (1UL << (patlen-1))) == 0) {
-            if (nmatchIndex == *p_nmatch) {
-                *p_matchIndex = expandIndex(*p_matchIndex, k-patlen+1, m-k);
-                REPROTECT(*p_matchIndex, matchIndex_pi);
-                nmatchIndex = LENGTH(*p_matchIndex);
-                index = INTEGER(*p_matchIndex);
-            }
-            index[*p_nmatch++] = k;
-        }
-        if (*p_interruptcheck > INTERRUPTCHECK_AFTER) {
-            R_CheckUserInterrupt();
-            *p_interruptcheck = 0UL;
-        }
-    }
-#ifdef DEBUG_BIOSTRINGS
-    Rprintf("[DEBUG] Leaving debug_ShiftOr_matchInternal_for_kerr_3() function\n");
-#endif
-    return;
-}
-
 
 /*
- * Why loosing more time trying to debug this function?
- * - It gives a wrong answer most of the time
- * - It crashes R on Solaris and Mac OS X
- * - It always returns an error with nb of allowed mismatches (kerr) equal 3
- * - It does nothing if nb of allowed mismatches (kerr) >= 4
- * - It doesn't work if nchar(pattern) > nb of bits in an unsigned long
- * - It's not documented
- * - It's written in an obfuscated way
- * - The above comment about the expected sizeof(unsigned long) suggests that
- *   it relies on a wrong assumption
+ * Returns -1 if no match is found.
+ * Returns nb of mismatches (>= 0) if a fuzzy match is found.
  */
+static int _next_match(
+               int *Lpos,
+               int *Rpos,
+               int subj_length,
+               unsigned char *subj,
+               ShiftOrWord_t *pmaskmap,
+               int PMmask_length, /* PMmask_length = kerr+1 */
+               ShiftOrWord_t *PMmask
+       )
+{
+    static ShiftOrWord_t pmask;
+    static unsigned char nncode;
+    static int e;
+
+    while (*Lpos < subj_length) {
+        if (*Rpos < subj_length) {
+            nncode = subj[*Rpos];
+            pmask = pmaskmap[nncode];
+#ifdef DEBUG_BIOSTRINGS
+            Rprintf("[DEBUG] pmaskmap[%d] = ", nncode);
+            debug_printULBits(pmask);
+#endif
+        } else {
+            pmask = ~0UL;
+        }
+        _update_PMmasks(PMmask_length, PMmask, pmask);
+        (*Lpos)++;
+        (*Rpos)++;
+        for (e = 0; e < PMmask_length; e++) {
+            if ((PMmask[e] & 1UL) == 0UL) {
+                return e;
+            }
+        }
+    }
+    return -1;
+}
+
+static void _shiftor(
+               int PMmask_length,
+               int pat_length,
+               unsigned char *pat,
+               int subj_length,
+               unsigned char *subj,
+               int nmatchIndex,
+               int *p_nmatch,
+               SEXP *p_matchIndex,
+               PROTECT_INDEX matchIndex_pi,
+               unsigned long *p_interruptcheck
+       )
+{
+    ShiftOrWord_t *PMmask, pmaskmap[256];
+    int i, e, Lpos, Rpos, ret;
+    int *index;
+
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Entering _shiftor() function\n");
+#endif
+    _set_pmaskmap(256, pmaskmap, pat_length, pat);
+    /* No need to check PMmask, R_alloc() doing its own checking */
+    PMmask = (ShiftOrWord_t *) R_alloc(PMmask_length, sizeof(ShiftOrWord_t));
+    PMmask[0] = 1UL;
+    for (i = 1; i < pat_length; i++) {
+        PMmask[0] <<= 1;
+        PMmask[0] |= 1UL;
+    }
+    for (e = 1; e < PMmask_length; e++) {
+        PMmask[e] = PMmask[e-1] >> 1;
+    }
+    index = INTEGER(*p_matchIndex);
+    Lpos = 1 - pat_length;
+    Rpos = 0;
+    while (1) {
+        ret = _next_match(
+                &Lpos,
+                &Rpos,
+                subj_length,
+                subj,
+                pmaskmap,
+                PMmask_length,
+                PMmask);
+        if (ret == -1) {
+            break;
+        }
+#ifdef DEBUG_BIOSTRINGS
+        Rprintf("[DEBUG] match found for Lpos = %d ; Rpos = %d\n", Lpos-1, Rpos-1);
+#endif
+        if (nmatchIndex == *p_nmatch) {
+            *p_matchIndex = expandIndex(*p_matchIndex, Rpos, subj_length - Lpos);
+            REPROTECT(*p_matchIndex, matchIndex_pi);
+            nmatchIndex = LENGTH(*p_matchIndex);
+            index = INTEGER(*p_matchIndex);
+        }
+        index[(*p_nmatch)++] = Rpos;
+    }
+    /* No need to free PMmask, R does that for us */
+#ifdef DEBUG_BIOSTRINGS
+    Rprintf("[DEBUG] Leaving _shiftor() function\n");
+#endif
+    return;
+}  
+
 static SEXP
 ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
                       int kdel, int kerr)
 {
     unsigned long interruptcheck = 0UL;
-    int pstart, pend, xstart, xend, patlen = 0;
-    SEXP alph, vec;
+    int pstart, pend, xstart, xend, pat_length = 0;
+    SEXP alph, subject;
     SEXP matchIndex = R_NilValue;
     PROTECT_INDEX matchIndex_pi;
     int* index = NULL;
     int nmatchIndex, nletters;
     int nmatch = 0;
-    int m;
+    int subj_length;
 
 #ifdef DEBUG_BIOSTRINGS
     Rprintf("[DEBUG] Entering ShiftOr_matchInternal() function\n");
@@ -2155,27 +2229,27 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
     PROTECT_WITH_INDEX(matchIndex, &matchIndex_pi);
     if (pstart > pend)
         goto finished_match;
-    patlen = pend-pstart+1;
-    if (patlen > sizeof(ShiftOrWord_t)*CHAR_BIT)
+    pat_length = pend-pstart+1;
+    if (pat_length > sizeof(ShiftOrWord_t)*CHAR_BIT)
         error("pattern is too long");
     getLengthOneBioStringRange(x, &xstart, &xend);
     if (xstart > xend)
         goto finished_match;
-    m = xend-xstart+1;
-    /* If patlen > m, then nb_err will always be >= patlen - m */
-    if (kerr < patlen-m)
+    subj_length = xend-xstart+1;
+    /* If pat_length > subj_length, then nb_err will always be >= pat_length - subj_length */
+    if (kerr < pat_length-subj_length)
         /* No match */
         goto finished_match;
     alph = GET_SLOT(x, install("alphabet"));
     pattern = R_ExternalPtrTag(GET_SLOT(pattern, install("values")));
-    vec = R_ExternalPtrTag(GET_SLOT(x, install("values")));
-    if (TYPEOF(vec) != TYPEOF(pattern))
+    subject = R_ExternalPtrTag(GET_SLOT(x, install("values")));
+    if (TYPEOF(subject) != TYPEOF(pattern))
         error("pattern and text must be of same type");
     while (isFromClass(alph, "BioPatternAlphabet"))
         alph = GET_SLOT(alph, install("baseAlphabet"));
     nletters = LENGTH(GET_SLOT(alph, install("mapping")));
 
-    nmatchIndex = estimateMatchNumber(m, patlen, nletters);
+    nmatchIndex = estimateMatchNumber(subj_length, pat_length, nletters);
 #ifdef DEBUG_BIOSTRINGS
     Rprintf("[DEBUG] nmatchIndex: %d\n", nmatchIndex);
 #endif
@@ -2185,171 +2259,57 @@ ShiftOr_matchInternal(SEXP pattern, SEXP x, int ksubst, int kins,
 
     nmatch = 0;
     if (TYPEOF(pattern) == CHARSXP) {
-        ShiftOrWord_t U[256];
-        unsigned char* pptr = ((unsigned char*) CHAR(pattern))+pstart-1;
-        unsigned char* xptr;
-        int k;
-
-        for (k = 0; k < 256; k++) {
-            int i;
-            ShiftOrWord_t word = 0LU;
-            for (i = 1; i <= patlen; i++) {
-                if ((pptr[i] & k) == 0)
-                    word |= 1UL << (i-1);
-            }
-            U[k] = word;
-        }
-        if (kerr == 0) {
-            ShiftOrWord_t M_k;
-            xptr = (unsigned char*) CHAR(vec)+xstart-1;
-            M_k = U[xptr[1]];
-            for (k = 2; k < patlen; k++) {
-                M_k = (M_k << 1) | U[xptr[k]];
-            }
-            for (k = patlen; k <= m; k++) {
-                M_k = (M_k << 1) | U[xptr[k]];
-                if ((M_k & (1UL << (patlen-1))) == 0) {
-                    if (nmatchIndex == nmatch) {
-                        matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
-                        REPROTECT(matchIndex, matchIndex_pi);
-                        nmatchIndex = LENGTH(matchIndex);
-                        index = INTEGER(matchIndex);
-                    }
-                    index[nmatch++] = k;
-                }
-                if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                    R_CheckUserInterrupt();
-                    interruptcheck = 0UL;
-                }
-            }
-        } else if (kerr <= 3) {
-            ShiftOrWord_t M_k[4];
-            int i;
-
-            xptr = (unsigned char*) CHAR(vec)+xstart-1;
-            M_k[0] = ~0UL;
-            for (i = 0; i < kerr; i++) {
-                M_k[i+1] = M_k[i] << 1;
-            }
-            switch (kerr) {
-            case 1:
-                for (k = 1; k <= m; k++) {
-                    ShiftOrWord_t tmp = M_k[0];
-
-                    M_k[0] = (tmp << 1) | U[xptr[k]];
-                    M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) &
-                        tmp & (tmp << 1) & (M_k[0] << 1);
-                    if (((M_k[0] & M_k[1]) & (1UL << (patlen-1))) == 0) {
-                        if (nmatchIndex == nmatch) {
-                            matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
-                            REPROTECT(matchIndex, matchIndex_pi);
-                            nmatchIndex = LENGTH(matchIndex);
-                            index = INTEGER(matchIndex);
-                        }
-                        index[nmatch++] = k;
-                    }
-                    if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                        R_CheckUserInterrupt();
-                        interruptcheck = 0UL;
-                    }
-                }
-                break;
-            case 2:
-                debug_ShiftOr_matchInternal_for_kerr_2(
-                    m,
-                    xptr,
-                    U,
-                    patlen,
-                    nmatchIndex,
-                    &nmatch,
-                    &matchIndex,
-                    matchIndex_pi,
-                    &interruptcheck
-                );
-                break;
-            case 3:
-                debug_ShiftOr_matchInternal_for_kerr_3(
-                    m,
-                    xptr,
-                    U,
-                    patlen,
-                    nmatchIndex,
-                    &nmatch,
-                    &matchIndex,
-                    matchIndex_pi,
-                    &interruptcheck
-                );
-                /*
-                for (k = 1; k <= m; k++) {
-                    ShiftOrWord_t tmp0 = M_k[0];
-                    ShiftOrWord_t tmp1 = M_k[1];
-                    ShiftOrWord_t tmp2 = M_k[2];
-
-                    M_k[0] = (tmp0 << 1) | U[xptr[k]];
-                    M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) &
-                        tmp0 & (tmp0 << 1) & (M_k[0] << 1);
-                    M_k[2] = ((M_k[2] << 1) | U[xptr[k]]) &
-                        tmp1 & (tmp1 << 1) & (M_k[1] << 1);
-                    M_k[3] = ((M_k[3] << 1) | U[xptr[k]]) &
-                        tmp2 & (tmp2 << 1) & (M_k[2] << 1);
-                    if (((M_k[0] & M_k[1] & M_k[2] & M_k[3]) &
-                         (1UL << (patlen-1))) == 0) {
-                        if (nmatchIndex == nmatch) {
-                            matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
-                            REPROTECT(matchIndex, matchIndex_pi);
-                            nmatchIndex = LENGTH(matchIndex);
-                            index = INTEGER(matchIndex);
-                        }
-                        index[nmatch++] = k;
-                    }
-                    if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                        R_CheckUserInterrupt();
-                        interruptcheck = 0UL;
-                    }
-                }
-                */
-                break;
-            default:
-                error("nerr too large");
-            }
-        }
+        unsigned char* pat = ((unsigned char*) CHAR(pattern))+pstart;
+        unsigned char* subj = ((unsigned char*) CHAR(subject))+xstart;
+        _shiftor(
+                kerr+1,
+                pat_length,
+                pat,
+                subj_length,
+                subj,
+                nmatchIndex,
+                &nmatch,
+                &matchIndex,
+                matchIndex_pi,
+                &interruptcheck
+        );
     } else {
 #ifndef NOT_YET
-        unsigned int* pptr = ((unsigned int*) INTEGER(pattern))+pstart-1;
-        unsigned int* xptr = (unsigned int*) INTEGER(vec)+xstart-1;
+        unsigned int* pat = ((unsigned int*) INTEGER(pattern))+pstart-1;
+        unsigned int* subj = (unsigned int*) INTEGER(subject)+xstart-1;
         int k;
-        unsigned int save_first = pptr[0];
-        pptr[0] = 0;
-        for (k = patlen; k <= m; k++) {
+        unsigned int save_first = pat[0];
+        pat[0] = 0;
+        for (k = pat_length; k <= subj_length; k++) {
             int i, j;
-            for (i = patlen, j = k; pptr[i] & xptr[j]; i--, j--) {
+            for (i = pat_length, j = k; pat[i] & subj[j]; i--, j--) {
             }
             if (i == 0) {
                 if (nmatchIndex == nmatch) {
-                    pptr[0] = save_first;
-                    matchIndex = expandIndex(matchIndex, k-patlen+1, m-k);
+                    pat[0] = save_first;
+                    matchIndex = expandIndex(matchIndex, k-pat_length+1, subj_length-k);
                     REPROTECT(matchIndex, matchIndex_pi);
                     nmatchIndex = LENGTH(matchIndex);
                     index = INTEGER(matchIndex);
-                    pptr[0] = 0;
+                    pat[0] = 0;
                 }
                 index[nmatch++] = k;
             }
-            interruptcheck += patlen-i;
+            interruptcheck += pat_length-i;
             if (interruptcheck > INTERRUPTCHECK_AFTER) {
-                pptr[0] = save_first;
+                pat[0] = save_first;
                 R_CheckUserInterrupt();
                 interruptcheck = 0UL;
-                pptr[0] = 0;
+                pat[0] = 0;
             }
         }
-        pptr[0] = save_first;
+        pat[0] = save_first;
 #else
         error("integer storage not supported");
 #endif
     }
 finished_match:
-    x = matchIndexToBioString(x, matchIndex, nmatch, patlen);
+    x = matchIndexToBioString(x, matchIndex, nmatch, pat_length);
     UNPROTECT(1);
 #ifdef DEBUG_BIOSTRINGS
     Rprintf("[DEBUG] Leaving ShiftOr_matchInternal() function\n");
