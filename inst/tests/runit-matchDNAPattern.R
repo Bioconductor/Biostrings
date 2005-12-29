@@ -95,7 +95,8 @@ test_ShiftOr_matchInternal_A4 <- function()
 test_ShiftOr_matchInternal_B1 <- function()
 {
     f <- file(system.file("Exfiles/bigrandomTGCA.txt", package="Biostrings"))
-    subject <- DNAString(scan(file=f, what=""))
+    big <- scan(file=f, what="")
+    subject <- DNAString(big)
     
     ## Simple pattern, mis=5
     pattern <- DNAString("TTTTTTTTTTTTTTTTTTTTT")
@@ -111,7 +112,7 @@ test_ShiftOr_matchInternal_B1 <- function()
     checkBioStringMatches(subject, expected_roffsets, matches)
 
     ## With a 32 char long pattern, mis=10
-    pattern32 <- substr(subject, 1, 32)
+    pattern32 <- DNAString(substr(big, 1, 32))
     expected_roffsets <- rbind(c(1,32),
                                c(3807182, 3807213),
                                c(9926155, 9926186))
@@ -119,11 +120,11 @@ test_ShiftOr_matchInternal_B1 <- function()
     checkBioStringMatches(subject, expected_roffsets, matches)
 
     ## With a 64 char long pattern (works on 64-bit platforms only)
-    pattern64 <- substr(subject, 1, 64)
-    expected_roffsets <- rbind(c(1,64),
-                               c(1049302, 1049365))
-    matches <- matchDNAPattern(pattern64, subject, mis=24)
-    checkBioStringMatches(subject, expected_roffsets, matches)
+#     pattern64 <- substr(subject, 1, 64)
+#     expected_roffsets <- rbind(c(1,64),
+#                                c(1049302, 1049365))
+#     matches <- matchDNAPattern(pattern64, subject, mis=24)
+#     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
 
