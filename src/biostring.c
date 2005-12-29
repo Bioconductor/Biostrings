@@ -3,7 +3,7 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-/* #define DEBUG_BIOSTRINGS 1 */
+#define DEBUG_BIOSTRINGS 1
 
 #ifdef MAX
 #undef MAX
@@ -258,7 +258,7 @@ BioStringToCharacter(int nletters_base,
                      int start,
                      int end)
 {
-    int nvalues = LENGTH(values)-1; /* ??? LENGTH(values) seems to be ALWAYS 0! */
+    int nvalues;
     int nletters, ndest, i, bad_index = 0;
     SEXP ans;
     char* dest;
@@ -270,21 +270,20 @@ BioStringToCharacter(int nletters_base,
     nletters = LENGTH(letters);
     if (LENGTH(alphMapping) != nletters)
         error("invalid names for mapping");
+    values = R_ExternalPtrTag(values);
+    nvalues = LENGTH(values) - 1;
 #ifdef DEBUG_BIOSTRINGS
     Rprintf("[DEBUG] In BioStringToCharacter(): start = %d, end = %d, nvalues = %d\n",
             start, end, nvalues);
 #endif
     if (start <= 0)
         start = 1;
-    /* since nvalues is ALWAYS -1, this test makes no sense
     if (end > nvalues)
         end = nvalues;
-    */
     if (start > end)
         return R_BlankString;
     if (nletters_base > sizeof(int)*CHAR_BIT)
         error("alphabet is too large");
-    values = R_ExternalPtrTag(values);
 
     ndest = end-start+1;
 #ifdef DEBUG_BIOSTRINGS
@@ -2014,6 +2013,10 @@ longestCommonSubstringProportions(SEXP x)
    http://www-igm.univ-mlv.fr/~lecroq/string/node6.html
  For all kind of string algorithms with animation in Java, see also:
    http://www-igm.univ-mlv.fr/~lecroq/string/index.html
+   
+ The agrep homepage (DOS, Windows and OS/2 only):
+   http://www.tgries.de/agrep
+   
  ****************************************************************************/
 
 #ifdef DEBUG_BIOSTRINGS
