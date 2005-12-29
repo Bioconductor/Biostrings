@@ -13,14 +13,20 @@ CHANGES SINCE 1.4.0
 
       - The reason why fuzzy searching was almost always giving wrong results was
         because the core formula:
+        
           ShiftOrWord_t tmp = M_k[0];
           M_k[0] = (tmp << 1) | U[xptr[k]];
           M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) & tmp & (tmp << 1) & (M_k[0] << 1);
+          
         was wrong. The correct formula is:
+        
           M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) & (tmp << 1) & (M_k[0]);
+          
         Note that using formula given in D. Gusfield's book (Algorithms on strings,
         trees, and sequences), p. 73, would result in doing:
+        
           M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) & (tmp) & (M_k[0]);
+          
         which is wrong too.
 
       - The 'kerr' arg of ShiftOr_matchInternal() (nb of mismatches) is no
@@ -30,8 +36,8 @@ CHANGES SINCE 1.4.0
         fixed. Now ShiftOr_matchInternal() should find ALL matches, even
         those that are out of bounds (starting before the first character
         of the subject or ending after its last character).
-        But the show() method for BioString objects is buggy when it deals
-        with out of bounds offsets (NOT fixed yet).
+        But the show() method for BioString objects is still buggy when the
+        offsets of the object are out of bounds (NOT fixed yet).
 
       - The bus-error that occured on Solaris 2.9 and Mac OS X with:
           > pattern <- DNAString("AAAA")
@@ -43,12 +49,14 @@ CHANGES SINCE 1.4.0
         the ShiftOr_matchInternal() are primarily used to store bitmaks
         where only P bits are relevant (P being the number of characters
         in the pattern). In 1.4.0, the first position in the pattern
-        (the most left) was associated to the most right bit (the weak bit)
-        in the bitmask. This has been changed to something more intuitive:
-        now the last position in the pattern (the most right) is associated
-        to the most right bit in the bitmask.   
+        (the most left) was mapped to the most right bit (the weak bit)
+        of the bitmask. This has been changed to something more intuitive:
+        now it is the last position in the pattern (the most right) that is
+        mapped to the most right bit of the bitmask.   
 
-    o Added a test suite. Can be run by testBiostrings().
+    o Added a test suite. Can be run by testBiostrings(). Also added file
+      inst/Exfiles/bigrandomTGCA.txt containing a big random TGCA string
+      (10 millions of chars) in order to run tests on it.
     
     o Added NEWS and TODO files.
 
