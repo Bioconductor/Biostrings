@@ -90,9 +90,77 @@ test_ShiftOr_matchInternal_A4 <- function()
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
+test_ShiftOr_matchInternal_B1 <- function()
+{
+    pattern <- DNAString("AAAA")
+    subject <- DNAString("AAAAC")
+    expected_roffsets <- rbind(c(-1, 2),
+                               c( 0, 3),
+                               c( 1, 4),
+                               c( 2, 5),
+                               c( 3, 6))
+    matches <- matchDNAPattern(pattern, subject, mis=2)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_ShiftOr_matchInternal_B2 <- function()
+{
+    pattern <- DNAString("ATC")
+    subject <- DNAString("CATCACTCA")
+    expected_roffsets <- rbind(c(-1, 1),
+                               c( 2, 4),
+                               c( 4, 6),
+                               c( 5, 7),
+                               c( 6, 8),
+                               c( 9, 11))
+    matches <- matchDNAPattern(pattern, subject, mis=2)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_ShiftOr_matchInternal_B3 <- function()
+{
+    pattern <- DNAString("AAAA")
+    subject <- DNAString("AAAAC")
+    expected_roffsets <- rbind(c(-2, 1),
+                               c(-1, 2),
+                               c( 0, 3),
+                               c( 1, 4),
+                               c( 2, 5),
+                               c( 3, 6),
+                               c( 4, 7))
+    ## Provoques an error
+    matches <- matchDNAPattern(pattern, subject, mis=3)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+test_ShiftOr_matchInternal_B4 <- function()
+{
+    pattern <- DNAString("AAAA")
+    subject <- DNAString("AAAAC")
+    ## Here: mis >= nchar(pattern). So you get a match
+    ## whatever the relative position of the pattern is!
+    ## However, a reasonable expectation is to have
+    ## matchDNAPattern only return the following matches:
+    expected_roffsets <- rbind(c(-2, 1),
+                               c(-1, 2),
+                               c( 0, 3),
+                               c( 1, 4),
+                               c( 2, 5),
+                               c( 3, 6),
+                               c( 4, 7),
+                               c( 5, 8))
+    matches <- matchDNAPattern(pattern, subject, mis=4)
+    checkBioStringMatches(subject, expected_roffsets, matches)
+}
+
+
+
+## ========== Tests that should PASS on 64-bit platform (fixed bugs) =========
+## ================= and FAIL on 32-bit platform (not a bug) =================
+
 ## This test uses a big subject (10 millions of characters)
 ## in order to test the speed of the ShiftOr algorithm.
-test_ShiftOr_matchInternal_B1 <- function()
+test_ShiftOr_matchInternal_C1 <- function()
 {
     f <- file(system.file("Exfiles/bigrandomTGCA.txt", package="Biostrings"))
     big <- scan(file=f, what="")
@@ -128,77 +196,27 @@ test_ShiftOr_matchInternal_B1 <- function()
 }
 
 
-
 ## =================== Tests that should FAIL (open bugs) ====================
+## ===========================================================================
 
-test_openbug2a <- function()
+test_openbug1 <- function()
 {
-    pattern <- DNAString("AAAA")
-    subject <- DNAString("AAAAC")
-    expected_roffsets <- rbind(c(-1, 2),
-                               c( 0, 3),
-                               c( 1, 4),
-                               c( 2, 5),
-                               c( 3, 6))
+    pattern <- DNAString("CAG")
+    subject <- DNAString("GTTCA")
     matches <- matchDNAPattern(pattern, subject, mis=2)
-    checkBioStringMatches(subject, expected_roffsets, matches)
-}
 
-test_openbug2b <- function()
-{
-    pattern <- DNAString("ATC")
-    subject <- DNAString("CATCACTCA")
-    expected_roffsets <- rbind(c(-1, 1),
-                               c( 2, 4),
-                               c( 4, 6),
-                               c( 5, 7),
-                               c( 6, 8),
-                               c( 9, 11))
-    matches <- matchDNAPattern(pattern, subject, mis=2)
-    checkBioStringMatches(subject, expected_roffsets, matches)
-}
+    multi <- DNAString(c("TTT", "GTTCA", "TT"))
+    subject2 <- multi[2]
+    matches2 <- matchDNAPattern(pattern, subject2, mis=2)
 
-test_openbug3 <- function()
-{
-    pattern <- DNAString("AAAA")
-    subject <- DNAString("AAAAC")
-    expected_roffsets <- rbind(c(-2, 1),
-                               c(-1, 2),
-                               c( 0, 3),
-                               c( 1, 4),
-                               c( 2, 5),
-                               c( 3, 6),
-                               c( 4, 7))
-    ## Provoques an error
-    matches <- matchDNAPattern(pattern, subject, mis=3)
-    checkBioStringMatches(subject, expected_roffsets, matches)
+    checkEquals(as.character(matches), as.character(matches2))
 }
-
-test_openbug4 <- function()
-{
-    pattern <- DNAString("AAAA")
-    subject <- DNAString("AAAAC")
-    ## Here: mis >= nchar(pattern). So you get a match
-    ## whatever the relative position of the pattern is!
-    ## However, a reasonable expectation is to have
-    ## matchDNAPattern only return the following matches:
-    expected_roffsets <- rbind(c(-2, 1),
-                               c(-1, 2),
-                               c( 0, 3),
-                               c( 1, 4),
-                               c( 2, 5),
-                               c( 3, 6),
-                               c( 4, 7),
-                               c( 5, 8))
-    matches <- matchDNAPattern(pattern, subject, mis=4)
-    checkBioStringMatches(subject, expected_roffsets, matches)
-}
-
+   
 # TODO: Move this test to another file. Has nothing to do
 # with testing the matchDNAPattern() function...
 # Not sure this one is a bug. Are we supposed to always
 # be allowed to change a value in a matrix? What "says" R?
-test_openbug5 <- function()
+test_openbug2 <- function()
 {
     s <- DNAString("ACGT")
     s@offsets[1,1] <- 2

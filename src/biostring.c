@@ -3,7 +3,7 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-#define DEBUG_BIOSTRINGS 1
+/* #define DEBUG_BIOSTRINGS 1 */
 
 #ifdef MAX
 #undef MAX
