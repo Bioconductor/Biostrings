@@ -148,22 +148,16 @@ computation.
 mdem <- matchDNAPattern( DNAString("CCACACCACACC"), sc1, mis=1 ) 
 mdem
 @
-This looks very wrong!?  
 
-In some examples
-it does appear that the offsets are correct, but
-the string rendering is wrong.  
+Working with a vector of strings, one must use offsets with care.
 <<lkh>>=
 HincII <- DNAString("GTYRAC")
 mdem  <- matchDNAPattern(HincII, oss[2])
 mdem
 <<lkm>>=
-substr(oss[2], mdem@offsets[1,1], mdem@offsets[1,2] )
-substr(oss[2], mdem@offsets[2,1], mdem@offsets[2,2] )
+substr(oss[2], mdem@offsets[1,1]-oss[2]@offsets[1,1]+1, mdem@offsets[1,2]-oss[2]@offsets[1,1]+1 )
+substr(oss[2], mdem@offsets[2,1]-oss[2]@offsets[1,1]+1, mdem@offsets[2,2]-oss[2]@offsets[1,1]+1 )
 @
-So the show method is somehow printing irrelevant strings
-(or the Call yields bad data in the values slot)
-but the offsets are right.
 
 \section{Alignments}
 
