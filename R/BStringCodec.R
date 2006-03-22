@@ -65,19 +65,29 @@ setMethod("initialize", "BStringCodec",
     }
 )
 
+# IUPAC extended genetic alphabet
+#   R :== [GA]
+#   Y :== [TC]
+#   M :== [AC]
+#   K :== [GT]
+#   S :== [GC]
+#   W :== [AT]
+#   H :== [ACT]
+#   B :== [GTC]
+#   V :== [GCA]
+#   D :== [GAT]
+#   N :== [GATC]
 DNAcodec <- function()
 {
-        letters <- c("-TGCANBDHKMRSVWY")
-        codes <- c(1, 2, 4, 8, 16, 30, 14, 22, 26, 6, 24, 20, 12, 28, 18, 10)
+        letters <- c("ACGTMRSVWYHKDBN-")
+        codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
         new("BStringCodec", letters, as.integer(codes), 99, 199)
 }
 
-# The only difference with DNAcodec() is that letter "T" is replaced
-# by letter "U". That's all folks!
 RNAcodec <- function()
 {
-        letters <- c("-UGCANBDHKMRSVWY")
-        codes <- c(1, 2, 4, 8, 16, 30, 14, 22, 26, 6, 24, 20, 12, 28, 18, 10)
+        letters <- c("UGCAKYSBWRDMHVN-")
+        codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
         new("BStringCodec", letters, as.integer(codes), 99, 199)
 }
 
