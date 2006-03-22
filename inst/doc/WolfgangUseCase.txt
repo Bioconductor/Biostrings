@@ -1,0 +1,182 @@
+Return-Path: <huber@ebi.ac.uk>
+X-Original-To: rgentlem@jade.fhcrc.org
+Delivered-To: rgentlem@jade.fhcrc.org
+Received: from jarlite.fhcrc.org (JARLITE.FHCRC.ORG [140.107.42.11])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(No client certificate requested)
+	by jade.fhcrc.org (Postfix) with ESMTP id 6FF5AE572
+	for <rgentlem@jade.fhcrc.org>; Thu, 23 Feb 2006 02:00:17 -0800 (PST)
+Received: from tahiti.ebi.ac.uk (tahiti.ebi.ac.uk [193.62.196.39])
+	by jarlite.fhcrc.org (8.12.7/8.12.7/SuSE Linux 0.6) with ESMTP id k1NA0DpQ017722
+	for <rgentlem@fhcrc.org>; Thu, 23 Feb 2006 02:00:14 -0800
+Received: from [172.22.100.151] (boltzmann.ebi.ac.uk [172.22.100.151])
+	by tahiti.ebi.ac.uk (8.13.3+Sun/8.13.3) with ESMTP id k1NA0haJ029436
+	for <rgentlem@fhcrc.org>; Thu, 23 Feb 2006 10:00:43 GMT
+Message-ID: <43FD88F9.2000406@ebi.ac.uk>
+Date: Thu, 23 Feb 2006 10:05:45 +0000
+From: Wolfgang Huber <huber@ebi.ac.uk>
+User-Agent: Mozilla Thunderbird 1.0.7-1.1.fc4 (X11/20050929)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Robert Gentleman <rgentlem@fhcrc.org>
+Subject: Biostrings
+Content-Type: multipart/mixed;
+ boundary="------------070006080202030003060702"
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.2.0.0, Antispam-Data: 2006.02.23.004606
+X-FHCRC-SCANNED: Thu Feb 23 02:00:15 2006
+
+This is a multi-part message in MIME format.
+--------------070006080202030003060702
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hi Robert,
+
+I appreciate your criticism of my advocacy of overly naive software 
+(matchprobes), but then you must also bear my suggestions / comments 
+regarding the fiendishly clever and more advanced solutions you are 
+spearheading ;)
+
+A. Who is now maintaining Biostrings? Martin, or Herve? The package
+description says Saikat. Can you let me know, and/or forward this.
+
+B. I have two questions regarding the following example:
+
+library(hgu95av2probe)
+library(Biostrings)
+
+## complete number of sequences is 400000
+n  = c(1,2,5,10,20,30,40,50,70,100)*1e3
+tm = numeric(length(n))
+
+for (i in seq(along=n)) {
+   tm[i] = system.time({
+     z = DNAString(hgu95av2probe$sequence[1:n[i]])
+   })[1]
+}
+plot(n, tm, xlab="number of sequences", ylab="CPU time")
+
+
+1. Question
+ > z
+     Object of class BioString with
+Pattern alphabet: -TGCANBDHKMRSVWY
+
+wouldn't it be better if the default Alphabet were CGAT for an object 
+produced by "DNAString"?
+
+
+2. Question
+The plot of the timings looks quadratic to me (see attached - and I 
+invite you to rerun the example if you doubt my CPU time profiling).
+I would have thought that the processing of n independent sequences 
+should cost about linear time. Extrapolating this to 400,000 sequences 
+(number of probes on a hgu95 chip) would give a runtime of ~40min on my 
+computer just to construct the DNAString object. Not even thinking of 
+arrays with millions of probes. So there seems to be a scalability problem.
+
+3. Suggestion
+For Rafa's use case (as for mine), we have microarrays with millions of 
+oligomers, whose sequences we want to store in an appropriate object, 
+and then:
+
+3.1. align them against a genome (i.e. against a collection of ~20 
+chromosomes, each of which has length of 1-100 Mio Bases).
+
+3.2. Calculate pertinent probe properties such as nucleotide content, 
+nucleotide pair content, nucleotide triplet content, ..., length of 
+longest stretch of A nucleotides, and so on.
+
+As I understand, the DNAStrings class (or its methods) does not support 
+this well, - but I'd be happy to be told otherwise.
+
+
+Best regards
+   Wolfgang
+
+-------------------------------------
+Wolfgang Huber
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Phone: +44 1223 494642
+Fax:   +44 1223 494486
+Http:  www.ebi.ac.uk/huber
+-------------------------------------
+
+--------------070006080202030003060702
+Content-Type: application/pdf;
+ name="DNAString.pdf"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="DNAString.pdf"
+
+JVBERi0xLjEKJYHigeOBz4HTXHIKMSAwIG9iago8PAovQ3JlYXRpb25EYXRlIChEOjIwMDYw
+MjIzMDk0OTUwKQovTW9kRGF0ZSAoRDoyMDA2MDIyMzA5NDk1MCkKL1RpdGxlIChSIEdyYXBo
+aWNzIE91dHB1dCkKL1Byb2R1Y2VyIChSIDIuMy4wKQovQ3JlYXRvciAoUikKPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDMgMCBSCj4+CmVuZG9iago1IDAg
+b2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovTmFtZSAvRjEKL0Jhc2VGb250
+IC9aYXBmRGluZ2JhdHMKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVu
+dCAzIDAgUgovQ29udGVudHMgNyAwIFIKL1Jlc291cmNlcyA0IDAgUgo+PgplbmRvYmoKNyAw
+IG9iago8PAovTGVuZ3RoIDggMCBSCj4+CnN0cmVhbQ0KcQpRIHEgNTkuMDQgNzMuNDQgMzQy
+LjcyIDI5OS41MiByZSBXIG4KUSBxIDU5LjA0IDczLjQ0IDM0Mi43MiAyOTkuNTIgcmUgVyBu
+CjAuMDAwIDAuMDAwIDAuMDAwIFJHCjAuNzUgdwpbXSAwIGQKMSBKCjEgagoxMC4wMCBNCkJU
+Ci9GMSAxIFRmIDEgVHIgNy40OCAwIDAgNy40OCA2OC43NyA4MS45NCBUbSAobCkgVGogMCBU
+cgovRjEgMSBUZiAxIFRyIDcuNDggMCAwIDcuNDggNzEuOTggODEuOTggVG0gKGwpIFRqIDAg
+VHIKL0YxIDEgVGYgMSBUciA3LjQ4IDAgMCA3LjQ4IDgxLjU5IDgyLjM0IFRtIChsKSBUaiAw
+IFRyCi9GMSAxIFRmIDEgVHIgNy40OCAwIDAgNy40OCA5Ny42MiA4My45MSBUbSAobCkgVGog
+MCBUcgovRjEgMSBUZiAxIFRyIDcuNDggMCAwIDcuNDggMTI5LjY3IDg5LjkxIFRtIChsKSBU
+aiAwIFRyCi9GMSAxIFRmIDEgVHIgNy40OCAwIDAgNy40OCAxNjEuNzMgOTguMjEgVG0gKGwp
+IFRqIDAgVHIKL0YxIDEgVGYgMSBUciA3LjQ4IDAgMCA3LjQ4IDE5My43OCAxMTMuNDEgVG0g
+KGwpIFRqIDAgVHIKL0YxIDEgVGYgMSBUciA3LjQ4IDAgMCA3LjQ4IDIyNS44NCAxMzcuMDcg
+VG0gKGwpIFRqIDAgVHIKL0YxIDEgVGYgMSBUciA3LjQ4IDAgMCA3LjQ4IDI4OS45NCAyMDIu
+NTkgVG0gKGwpIFRqIDAgVHIKL0YxIDEgVGYgMSBUciA3LjQ4IDAgMCA3LjQ4IDM4Ni4xMCAz
+NTkuMjcgVG0gKGwpIFRqIDAgVHIKRVQKUSBxCjAuMDAwIDAuMDAwIDAuMDAwIFJHCjAuNzUg
+dwpbXSAwIGQKMSBKCjEgagoxMC4wMCBNCjY4LjUzIDczLjQ0IG0gMzg5LjA3IDczLjQ0IGwg
+Uwo2OC41MyA3My40NCBtIDY4LjUzIDY2LjI0IGwgUwoxMzIuNjQgNzMuNDQgbSAxMzIuNjQg
+NjYuMjQgbCBTCjE5Ni43NCA3My40NCBtIDE5Ni43NCA2Ni4yNCBsIFMKMjYwLjg1IDczLjQ0
+IG0gMjYwLjg1IDY2LjI0IGwgUwozMjQuOTYgNzMuNDQgbSAzMjQuOTYgNjYuMjQgbCBTCjM4
+OS4wNyA3My40NCBtIDM4OS4wNyA2Ni4yNCBsIFMKQlQKMC4wMDAgMC4wMDAgMC4wMDAgcmcK
+L0YyIDEgVGYgMTIuMDAgMC4wMCAtMC4wMCAxMi4wMCA1MS42OCA0Ny41MiBUbSAoMGUrMDAp
+IFRqCi9GMiAxIFRmIDEyLjAwIDAuMDAgLTAuMDAgMTIuMDAgMTE1Ljc5IDQ3LjUyIFRtICgy
+ZSswNCkgVGoKL0YyIDEgVGYgMTIuMDAgMC4wMCAtMC4wMCAxMi4wMCAxNzkuOTAgNDcuNTIg
+VG0gKDRlKzA0KSBUagovRjIgMSBUZiAxMi4wMCAwLjAwIC0wLjAwIDEyLjAwIDI0NC4wMCA0
+Ny41MiBUbSAoNmUrMDQpIFRqCi9GMiAxIFRmIDEyLjAwIDAuMDAgLTAuMDAgMTIuMDAgMzA4
+LjExIDQ3LjUyIFRtICg4ZSswNCkgVGoKL0YyIDEgVGYgMTIuMDAgMC4wMCAtMC4wMCAxMi4w
+MCAzNzIuMjIgNDcuNTIgVG0gKDFlKzA1KSBUagpFVAo1OS4wNCA4NC40OSBtIDU5LjA0IDM2
+OS4yOSBsIFMKNTkuMDQgODQuNDkgbSA1MS44NCA4NC40OSBsIFMKNTkuMDQgMTI1LjE4IG0g
+NTEuODQgMTI1LjE4IGwgUwo1OS4wNCAxNjUuODYgbSA1MS44NCAxNjUuODYgbCBTCjU5LjA0
+IDIwNi41NSBtIDUxLjg0IDIwNi41NSBsIFMKNTkuMDQgMjQ3LjI0IG0gNTEuODQgMjQ3LjI0
+IGwgUwo1OS4wNCAyODcuOTIgbSA1MS44NCAyODcuOTIgbCBTCjU5LjA0IDMyOC42MSBtIDUx
+Ljg0IDMyOC42MSBsIFMKNTkuMDQgMzY5LjI5IG0gNTEuODQgMzY5LjI5IGwgUwpCVAovRjIg
+MSBUZiAwLjAwIDEyLjAwIC0xMi4wMCAwLjAwIDQxLjc2IDgxLjE2IFRtICgwKSBUagovRjIg
+MSBUZiAwLjAwIDEyLjAwIC0xMi4wMCAwLjAwIDQxLjc2IDExOC41MSBUbSAoMjApIFRqCi9G
+MiAxIFRmIDAuMDAgMTIuMDAgLTEyLjAwIDAuMDAgNDEuNzYgMTU5LjE5IFRtICg0MCkgVGoK
+L0YyIDEgVGYgMC4wMCAxMi4wMCAtMTIuMDAgMC4wMCA0MS43NiAxOTkuODggVG0gKDYwKSBU
+agovRjIgMSBUZiAwLjAwIDEyLjAwIC0xMi4wMCAwLjAwIDQxLjc2IDI0MC41NiBUbSAoODAp
+IFRqCi9GMiAxIFRmIDAuMDAgMTIuMDAgLTEyLjAwIDAuMDAgNDEuNzYgMjc3LjkxIFRtICgx
+MDApIFRqCi9GMiAxIFRmIDAuMDAgMTIuMDAgLTEyLjAwIDAuMDAgNDEuNzYgMzE4LjYwIFRt
+ICgxMjApIFRqCi9GMiAxIFRmIDAuMDAgMTIuMDAgLTEyLjAwIDAuMDAgNDEuNzYgMzU5LjI4
+IFRtICgxNDApIFRqCkVUCjU5LjA0IDczLjQ0IG0KNDAxLjc2IDczLjQ0IGwKNDAxLjc2IDM3
+Mi45NiBsCjU5LjA0IDM3Mi45NiBsCjU5LjA0IDczLjQ0IGwKUwpRIHEKQlQKMC4wMDAgMC4w
+MDAgMC4wMDAgcmcKL0YyIDEgVGYgMTIuMDAgMC4wMCAtMC4wMCAxMi4wMCAxNzIuNzYgMTgu
+NzIgVG0gKG51bWJlciBvZiBzZXF1ZW5jZXMpIFRqCi9GMiAxIFRmIDAuMDAgMTIuMDAgLTEy
+LjAwIDAuMDAgMTIuOTYgMTk3LjUzIFRtIChDUFUgdGltZSkgVGoKRVQKUQplbmRzdHJlYW0K
+ZW5kb2JqCjggMCBvYmoKMjMzMwplbmRvYmoKMyAwIG9iago8PAovVHlwZSAvUGFnZXMKL0tp
+ZHMgWwo2IDAgUgpdCi9Db3VudCAxCi9NZWRpYUJveCBbMCAwIDQzMiA0MzJdCj4+CmVuZG9i
+ago0IDAgb2JqCjw8Ci9Qcm9jU2V0IFsvUERGIC9UZXh0XQovRm9udCA8PCAvRjEgNSAwIFIg
+L0YyIDEwIDAgUiA+PgovRXh0R1N0YXRlIDw8ID4+Cj4+CmVuZG9iago5IDAgb2JqCjw8Ci9U
+eXBlIC9FbmNvZGluZwovQmFzZUVuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKL0RpZmZlcmVu
+Y2VzIFsgNDUvbWludXMgOTYvcXVvdGVsZWZ0CjE0NC9kb3RsZXNzaSAvZ3JhdmUgL2FjdXRl
+IC9jaXJjdW1mbGV4IC90aWxkZSAvbWFjcm9uIC9icmV2ZSAvZG90YWNjZW50Ci9kaWVyZXNp
+cyAvLm5vdGRlZiAvcmluZyAvY2VkaWxsYSAvLm5vdGRlZiAvaHVuZ2FydW1sYXV0IC9vZ29u
+ZWsgL2Nhcm9uIC9zcGFjZV0KPj4KZW5kb2JqCjEwIDAgb2JqIDw8Ci9UeXBlIC9Gb250Ci9T
+dWJ0eXBlIC9UeXBlMQovTmFtZSAvRjIKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5n
+IDkgMCBSCj4+IGVuZG9iagp4cmVmCjAgMTEKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAw
+MDIxIDAwMDAwIG4gCjAwMDAwMDAxNjMgMDAwMDAgbiAKMDAwMDAwMjc4MSAwMDAwMCBuIAow
+MDAwMDAyODY0IDAwMDAwIG4gCjAwMDAwMDAyMTIgMDAwMDAgbiAKMDAwMDAwMDI5NSAwMDAw
+MCBuIAowMDAwMDAwMzc1IDAwMDAwIG4gCjAwMDAwMDI3NjEgMDAwMDAgbiAKMDAwMDAwMjk1
+NyAwMDAwMCBuIAowMDAwMDAzMjE0IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgMTEKL0lu
+Zm8gMSAwIFIKL1Jvb3QgMiAwIFIKPj4Kc3RhcnR4cmVmCjMzMTEKJSVFT0YK
+--------------070006080202030003060702--

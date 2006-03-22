@@ -1,0 +1,21 @@
+useDynLib(Biostrings)
+
+exportClasses(
+    "BString", "DNAString", "RNAString",
+    "BStringViews"
+)
+
+exportMethods(
+    ## Generics defined elsewhere
+    initialize, length, "[", "[[", show, "==", "!=", as.integer, toString,
+    ## New generics
+    matchPattern, countPattern, mismatch
+)
+
+export(
+    #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
+    BString, subBString, DNAString, RNAString,
+    BStringViews, subject, first, last, width, desc,
+    readFASTA, DNAStringViews, RNAStringViews,
+    debugShiftOr, matchDNAPattern
+)

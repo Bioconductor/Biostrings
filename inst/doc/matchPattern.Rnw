@@ -1,0 +1,139 @@
+%\VignetteIndexEntry{Biostrings}
+%\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
+%\VignettePackage{Biostrings}
+
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[11pt]{article}
+
+%\usepackage{pstricks}
+%\usepackage[authoryear,round]{natbib}
+%\usepackage{hyperref}
+
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+
+\bibliographystyle{plainnat} 
+ 
+\begin{document}
+%\setkeys{Gin}{width=0.55\textwidth}
+
+\title{Searching a \Rfunction{DNA} sequence using the
+\Rfunction{matchPattern} function (work in progress)}
+\author{Herv\'e Pag\`es}
+\maketitle
+
+\tableofcontents
+
+
+% ---------------------------------------------------------------------------
+
+\section{Load a genome}
+
+Load the {\it Caenorhabditis elegans} genome:
+<<a1>>=
+library(CelegansGenome)
+ls(2)
+ls(cel)
+comment(cel$chrI)
+@
+
+Display chromosome I:
+<<a2>>=
+cel$chrI
+@
+
+Note that \Robject{cel\$chrI} is a \Rclass{BStringViews} object with a
+single view (\Robject{length(cel\$chrI)} is 1).
+The number of letters in this sequence can be retrieved with:
+<<a3>>=
+cI <- cel$chrI[[1]]
+length(cI)
+@
+
+Try with an {\it upstream} object:
+<<a4>>=
+length(cel$upstream2000)
+length(cel$upstream2000[[1]])
+@
+
+
+% ---------------------------------------------------------------------------
+
+\section{Search it}
+
+Some basic stats (\Rpackage{Biostrings}~1 provides
+the \Rfunction{alphabetFrequency} function to achieve this
+in a more efficient way, however this function has not yet
+been ported to \Rpackage{Biostrings}~2):
+<<b1>>=
+na <- countPattern("A", cI)
+nc <- countPattern("C", cI)
+ng <- countPattern("G", cI)
+nt <- countPattern("T", cI)
+na + nc + ng + nt == length(cI)
+@
+
+<<b2>>=
+p <- DNAString("ACCCAGGGC")
+countPattern(p, cI)
+countPattern(p, cI, mismatch=1)
+@
+
+The matches can be stored in a \Rclass{BStringViews} object
+by using the \Rfunction{matchPattern} function:
+<<b3>>=
+m <- matchPattern(p, cI, mismatch=1)
+m[4:6]
+mismatch(p, m[4:6])
+@
+
+The \Rfunction{mismatch} function (new in \Rpackage{Biostrings}~2)
+returns the positions of the mismatching letters.
+
+Note: The \Rfunction{mismatch} function is in fact a particular case
+of a (vectorized) {\it alignment} function where only ``replacements''
+are allowed. Current implementation is slow but (but this will change).
+
+
+It may happen that a match is {\it out of limits} like here:
+<<b4>>=
+p2 <- DNAString("AAGCCTAAGCCTAAGCCTAA")
+m2 <- matchPattern(p2, cI, mismatch=2)
+m2[1:4]
+p2 == m2[1:4]
+mismatch(p2, m2[1:4])
+@
+
+The list of exact matches and the list of inexact matches
+can both be obtained with:
+<<b5,results=hide>>=
+m2[p2 == m2]
+m2[p2 != m2]
+@
+
+Note that the length of \Robject{m2[p2 == m2]} should be
+equal to \Robject{countPattern(p2, cI, mismatch=0)}.
+
+
+\end{document}

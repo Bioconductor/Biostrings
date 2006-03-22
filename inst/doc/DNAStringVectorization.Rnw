@@ -1,0 +1,177 @@
+%\VignetteIndexEntry{Biostrings}
+%\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
+%\VignettePackage{Biostrings}
+
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[11pt]{article}
+
+%\usepackage{pstricks}
+%\usepackage[authoryear,round]{natbib}
+%\usepackage{hyperref}
+
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+
+\bibliographystyle{plainnat} 
+ 
+\begin{document}
+%\setkeys{Gin}{width=0.55\textwidth}
+
+\title{Vectorizing the \Rfunction{DNAString} function (work in progress)}
+\author{Herv\'e Pag\`es}
+\maketitle
+
+\tableofcontents
+
+% ---------------------------------------------------------------------------
+
+\section{Introduction}
+
+This is a short tour on the \Rfunction{DNAString} function vectorization
+feature.
+
+Feel free to add your own comments.
+
+
+% ---------------------------------------------------------------------------
+
+\section{\Rfunction{DNAString} vs \Rfunction{DNAStringViews}}
+
+The {\tt Biostrings2Classes} vignette presents a proposal for 2 new classes
+(\Rclass{BString} and \Rclass{BStringViews}) as a replacement for the
+\Rclass{BioString} class currently defined in the \Rpackage{Biostrings}~1
+(\Rpackage{Biostrings} v~1.4.x) package.
+
+It also shows how to use the \Rfunction{DNAString} function to create
+a \Rclass{DNAString} object (a \Rclass{DNAString} object is just a
+particular case of a \Rclass{BString} object):
+<<a1>>=
+dna <- DNAString("TTGAAAA-CTC-N")
+@
+
+However this function is NOT vectorized: it always returns a
+\Rclass{DNAString} object (which can only represent a {\it single}
+string).
+
+In \Rpackage{Biostrings}~1, the \Rfunction{DNAString}
+function IS vectorized. Its vectorized form does the following:
+(1) concats the elements of its \Robject{src} argument into a
+    single big string,
+(2) stores the offsets of all these elements in the \Robject{offsets} slot.
+
+This behaviour is not immediatly obvious to the user,
+until he looks at the \Robject{offsets} slot.
+
+It always returns a \Rclass{BioString} object (with has as many values
+as the number of elements passed in the \Robject{src} argument).
+
+
+% ---------------------------------------------------------------------------
+
+\section{The \Rfunction{DNAStringViews} function}
+
+The feature described in the previous section (provided by the vectorized
+form of the \Rfunction{DNAString} function in \Rpackage{Biostrings}~1)
+is provided in \Rpackage{Biostrings}~2 via the
+\Rfunction{DNAStringViews} function:
+<<b1>>=
+dnav <- DNAStringViews(c("TTGAAAA-C", "TC-N"))
+dnav
+@
+
+
+% ---------------------------------------------------------------------------
+
+\section{Performance}
+
+The following example was provided by Wolfgang:
+%the hgu95av2probe package can be installed with
+%install.packages("matchprobes",
+%                 repos="http://bioconductor.org/packages/bioc/1.8",
+%                 dep=TRUE)
+%install.packages("hgu95av2probe",
+%                 repos="http://bioconductor.org/packages/data/annotation/1.8",
+%                 dep=TRUE)
+<<c1,results=hide>>=
+library(hgu95av2probe)
+@
+
+<<c2>>=
+system.time(z <- DNAStringViews(hgu95av2probe$sequence))
+z
+@
+
+With \Rpackage{Biostrings}~1, the call to
+\Robject{DNAString(hgu95av2probe\$sequence)} takes about 20 minutes...
+(the implementation of the vectorization feature is
+quadratic in time, as reported by Wolfgang).
+
+%<<c3>>=
+%alphabet <- strsplit("-TGCANBDHKMRSVWY", NULL)[[1]]
+%length <- 20000
+%src <- sapply(1:length,
+%              function(i) {
+%                paste(sample(alphabet, 250, replace=TRUE), collapse="")
+%              })
+%system.time(dna2v <- DNAStringViews(src))
+%dna2v
+%@
+%
+%With \Rpackage{Biostrings}~1, the call to
+%\Robject{DNAString(src)} takes more than a minute...
+
+
+% ---------------------------------------------------------------------------
+
+\section{Loading a FASTA file in a \Rclass{DNAStringViews} object}
+
+The \Rfunction{DNAStringViews} function can be used to load a FASTA file
+in a \Rclass{DNAStringViews} object:
+<<d1>>=
+f <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+orf <- DNAStringViews(file(f))
+orf
+desc(orf)
+@
+
+
+% ---------------------------------------------------------------------------
+
+\section{Switching between DNA and RNA views}
+
+The RNA counterpart of the \Rfunction{DNAStringViews} function is
+the \Rfunction{RNAStringViews} functions.
+Both can be used to switch between ``DNA'' and ``RNA'' views
+on the same string:
+<<e1>>=
+orf2 <- RNAStringViews(orf)
+@
+
+These conversions are very fast because no string data needs to be copied:
+<<e2>>=
+orf[[0]]@data
+orf2[[0]]@data
+@
+
+\end{document}

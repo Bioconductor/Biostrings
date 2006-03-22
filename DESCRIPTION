@@ -6,5 +6,9 @@ Description: Class definitions and generics for biological sequences
         along with pattern matching algorithms.
 Maintainer: H. Pages <hpages@fhcrc.org>
 Depends: R (>= 2.3.0), methods
+Suggests: hgu95av2probe, CelegansGenome
 License: LGPL
 SaveImage: yes
+Collate: bbuf.R ibuf.R BStringCodec.R BString.R
+        BStringViews.R readFASTA.R DNAStringViews.R
+        matchPattern.R zzz.R
