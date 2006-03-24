@@ -13,9 +13,10 @@ exportMethods(
 )
 
 export(
+    debug_utils, debug_bbuf, debug_shiftor,
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
     BString, subBString, DNAString, RNAString,
     BStringViews, subject, first, last, width, desc,
     readFASTA, DNAStringViews, RNAStringViews,
-    debugShiftOr, matchDNAPattern
+    matchDNAPattern
 )

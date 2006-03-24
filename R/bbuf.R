@@ -16,6 +16,17 @@
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+debug_utils <- function()
+{
+    invisible(.Call("utils_debug", PACKAGE="Biostrings"))
+}
+
+debug_bbuf <- function()
+{
+    invisible(.Call("bbuf_debug", PACKAGE="Biostrings"))
+}
+
+
 # Return the hexadecimal address of any R object in a string.
 address <- function(x)
 {

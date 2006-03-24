@@ -65,9 +65,9 @@ SEXP ibuf_memcmp(SEXP ib1_xp, SEXP first1,
 	n = INTEGER(width)[0];
 
 	PROTECT(ans = allocVector(INTSXP, 1));
-	INTEGER(ans)[0] = _memcmp((char *) INTEGER(tag1), i1,
-				  (char *) INTEGER(tag2), i2,
-				  n, sizeof(int));
+	INTEGER(ans)[0] = Biostrings_memcmp((char *) INTEGER(tag1), i1,
+					(char *) INTEGER(tag2), i2,
+					n, sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
@@ -88,7 +88,7 @@ SEXP ibuf_read_ints(SEXP ib_xp, SEXP imin, SEXP imax)
 	n = i2 - i1 + 1;
 
 	PROTECT(ans = allocVector(INTSXP, n));
-	_memcpy_from_range(i1, i2,
+	Biostrings_memcpy_from_range(i1, i2,
 			(char *) INTEGER(ans), LENGTH(ans),
 			(char *) INTEGER(tag), LENGTH(tag), sizeof(int));
 	Rprintf("Il est passe par ici\n");
@@ -106,7 +106,7 @@ SEXP ibuf_readii_ints(SEXP ib_xp, SEXP ii)
 	n = LENGTH(ii);
 
 	PROTECT(ans = allocVector(INTSXP, n));
-	_memcpy_from_subset(INTEGER(ii), n,
+	Biostrings_memcpy_from_subset(INTEGER(ii), n,
 			(char *) INTEGER(ans), n,
 			(char *) INTEGER(tag), LENGTH(tag), sizeof(int));
 	UNPROTECT(1);
@@ -124,7 +124,7 @@ SEXP ibuf_write_ints(SEXP ib_xp, SEXP imin, SEXP imax, SEXP val)
 	tag = R_ExternalPtrTag(ib_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	_memcpy_to_range(i1, i2,
+	Biostrings_memcpy_to_range(i1, i2,
 			(char *) INTEGER(tag), LENGTH(tag),
 			(char *) INTEGER(val), LENGTH(val), sizeof(int));
 	return ib_xp;
@@ -135,7 +135,7 @@ SEXP ibuf_writeii_ints(SEXP ib_xp, SEXP ii, SEXP val)
 	SEXP tag;
 
 	tag = R_ExternalPtrTag(ib_xp);
-	_memcpy_to_subset(INTEGER(ii), LENGTH(ii),
+	Biostrings_memcpy_to_subset(INTEGER(ii), LENGTH(ii),
 			(char *) INTEGER(tag), LENGTH(tag),
 			(char *) INTEGER(val), LENGTH(val), sizeof(int));
 	return ib_xp;

@@ -1,17 +1,37 @@
-/****************************************************************************
- Functions defined in this file are NOT .Call methods.
- DON'T REGISTER THEM IN init.c!
- ****************************************************************************/
 #include "Biostrings.h"
 
+
+static int debug = 0;
+                                                                                                                                            
+SEXP utils_debug()
+{
+#ifdef DEBUG_BIOSTRINGS
+	debug = !debug;
+	Rprintf("Debug mode turned %s in 'utils.c'\n", debug ? "on" : "off");
+#else
+	Rprintf("Debug mode not available in 'utils.c'\n");
+#endif
+	return R_NilValue;
+}
+
+
+/****************************************************************************
+ Functions defined below are NOT .Call methods.
+ DON'T REGISTER THEM IN init.c!
+ ****************************************************************************/
 
 /* ==========================================================================
  * Low-level memory operations.
  * --------------------------------------------------------------------------
  */
 
-int _memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
+int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
 {
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] Biostrings_memcmp(): a=%p ia=%d b=%p ib=%d n=%d size=%d\n", a, ia, b, ib, n, size);
+	}
+#endif
 	a += ia * size;
 	b += ib * size;
 	/* memcmp() doesn't try to be smart by checking if a == b */
@@ -25,7 +45,7 @@ int _memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
  * and comes back to it after it reaches its last byte.
  * IMPORTANT: Assumes that i1 <= i2.
  */
-void _memcpy_from_range(int i1, int i2,
+void Biostrings_memcpy_from_range(int i1, int i2,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size)
 {
@@ -63,7 +83,7 @@ void _memcpy_from_range(int i1, int i2,
  * Writes to a linear subset of 'dest' defined by 'i1', 'i2'.
  * IMPORTANT: Assumes that i1 <= i2.
  */
-void _memcpy_to_range(int i1, int i2,
+void Biostrings_memcpy_to_range(int i1, int i2,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size)
 {
@@ -100,7 +120,7 @@ void _memcpy_to_range(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its first byte
  * and comes back to it after it reaches its last byte.
  */
-void _memcpy_from_subset(int *subset, int n,
+void Biostrings_memcpy_from_subset(int *subset, int n,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size)
 {
@@ -135,7 +155,7 @@ void _memcpy_from_subset(int *subset, int n,
  * and comes back to it after it reaches its last byte.
  * Writes to the members of 'dest' that have the offsets passed in 'subset'.
  */
-void _memcpy_to_subset(int *subset, int n,
+void Biostrings_memcpy_to_subset(int *subset, int n,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size)
 {
@@ -163,3 +183,4 @@ void _memcpy_to_subset(int *subset, int n,
 			"of replacement length");
 	return;
 }
+

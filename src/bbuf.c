@@ -1,5 +1,19 @@
 #include "Biostrings.h"
 
+
+static int debug = 0;
+                                                                                                                                            
+SEXP bbuf_debug()
+{
+#ifdef DEBUG_BIOSTRINGS
+	debug = !debug;
+	Rprintf("Debug mode turned %s in 'bbuf.c'\n", debug ? "on" : "off");
+#else
+	Rprintf("Debug mode not available in 'bbuf.c'\n");
+#endif
+	return R_NilValue;
+}
+
 /*
  * From R:
  *   .Call("sexp_address", 6:4, PACKAGE="Biostrings")
@@ -166,16 +180,37 @@ SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
 	SEXP tag1, tag2, ans;
 	int i1, i2, n;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] bbuf_memcmp(): BEGIN\n");
+	}
+#endif
 	tag1 = R_ExternalPtrTag(bb1_xp);
 	i1 = INTEGER(first1)[0] - 1;
 	tag2 = R_ExternalPtrTag(bb2_xp);
 	i2 = INTEGER(first2)[0] - 1;
 	n = INTEGER(width)[0];
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] bbuf_memcmp(): CHAR(tag1)=%p i1=%d CHAR(tag2)=%p i2=%d n=%d\n",
+			CHAR(tag1), i1, CHAR(tag2), i2, n);
+	}
+#endif
 	PROTECT(ans = allocVector(INTSXP, 1));
-	INTEGER(ans)[0] = _memcmp(CHAR(tag1), i1,
-				  CHAR(tag2), i2,
-				  n, sizeof(char));
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] bbuf_memcmp(): ans successfully allocated\n");
+	}
+#endif
+	INTEGER(ans)[0] = Biostrings_memcmp(CHAR(tag1), i1,
+					CHAR(tag2), i2,
+					n, sizeof(char));
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] bbuf_memcmp(): END\n");
+	}
+#endif
 	UNPROTECT(1);
 	return ans;
 }
@@ -243,7 +278,7 @@ SEXP bbuf_copy(SEXP dest_xp, SEXP imin, SEXP imax, SEXP src_xp)
 	i2 = INTEGER(imax)[0] - 1;
 	src_tag = R_ExternalPtrTag(src_xp);
 
-	_memcpy_from_range(i1, i2,
+	Biostrings_memcpy_from_range(i1, i2,
 			CHAR(dest_tag), LENGTH(dest_tag),
 			CHAR(src_tag), LENGTH(src_tag), sizeof(char));
 	return dest_xp;
@@ -256,7 +291,7 @@ SEXP bbuf_copyii(SEXP dest_xp, SEXP ii, SEXP src_xp)
 	dest_tag = R_ExternalPtrTag(dest_xp);
 	src_tag = R_ExternalPtrTag(src_xp);
 
-	_memcpy_from_subset(INTEGER(ii), LENGTH(ii),
+	Biostrings_memcpy_from_subset(INTEGER(ii), LENGTH(ii),
 			CHAR(dest_tag), LENGTH(dest_tag),
 			CHAR(src_tag), LENGTH(src_tag), sizeof(char));
 	return dest_xp;
@@ -285,7 +320,7 @@ SEXP bbuf_read_chars(SEXP bb_xp, SEXP imin, SEXP imax)
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
 	PROTECT(string = allocString(n));
-	_memcpy_from_range(i1, i2,
+	Biostrings_memcpy_from_range(i1, i2,
 			CHAR(string), n,
 			CHAR(tag), LENGTH(tag), sizeof(char));
 	PROTECT(ans = allocVector(STRSXP, 1));
@@ -303,7 +338,7 @@ SEXP bbuf_readii_chars(SEXP bb_xp, SEXP ii)
 	n = LENGTH(ii);
 
 	PROTECT(string = allocString(n));
-	_memcpy_from_subset(INTEGER(ii), n,
+	Biostrings_memcpy_from_subset(INTEGER(ii), n,
 			CHAR(string), n,
 			CHAR(tag), LENGTH(tag), sizeof(char));
 	PROTECT(ans = allocVector(STRSXP, 1));
@@ -324,7 +359,7 @@ SEXP bbuf_write_chars(SEXP bb_xp, SEXP imin, SEXP imax, SEXP val)
 	string = STRING_ELT(val, 0);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	_memcpy_to_range(i1, i2,
+	Biostrings_memcpy_to_range(i1, i2,
 			CHAR(tag), LENGTH(tag),
 			CHAR(string), LENGTH(string), sizeof(char));
 	return bb_xp;
@@ -336,7 +371,7 @@ SEXP bbuf_writeii_chars(SEXP bb_xp, SEXP ii, SEXP val)
 
 	tag = R_ExternalPtrTag(bb_xp);
 	string = STRING_ELT(val, 0);
-	_memcpy_to_subset(INTEGER(ii), LENGTH(ii),
+	Biostrings_memcpy_to_subset(INTEGER(ii), LENGTH(ii),
 			CHAR(tag), LENGTH(tag),
 			CHAR(string), LENGTH(string), sizeof(char));
 	return bb_xp;

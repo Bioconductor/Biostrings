@@ -27,7 +27,7 @@ ForwardSearch <- function(pattern, x, fixed, count.only)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # shift-or
 
-debugShiftOr <- function()
+debug_shiftor <- function()
 {
     invisible(.Call("shiftor_debug", PACKAGE="Biostrings"))
 }

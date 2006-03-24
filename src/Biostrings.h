@@ -1,27 +1,30 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
+#include <string.h>
 
 #define DEBUG_BIOSTRINGS 1
 
 /* utils.c */
 
-int _memcmp(char *a, int ia, char *b, int ib, int n, size_t size);
-void _memcpy_from_range(int i1, int i2,
+SEXP utils_debug();
+int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size);
+void Biostrings_memcpy_from_range(int i1, int i2,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size);
-void _memcpy_to_range(int i1, int i2,
+void Biostrings_memcpy_to_range(int i1, int i2,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size);
-void _memcpy_from_subset(int *subset, int n,
+void Biostrings_memcpy_from_subset(int *subset, int n,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size);
-void _memcpy_to_subset(int *subset, int n,
+void Biostrings_memcpy_to_subset(int *subset, int n,
 	       char *dest, size_t dest_nmemb,
 	       char *src, size_t src_nmemb, size_t size);
 
 
 /* bbuf.c */
 
+SEXP bbuf_debug();
 SEXP sexp_address(SEXP s);
 SEXP xp_show(SEXP xp);
 SEXP xp_new();

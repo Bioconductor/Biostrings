@@ -55,9 +55,10 @@ easy and fast.
 It keeps the 3 following ideas from the \Rpackage{Biostrings}~1
 (\Rpackage{Biostrings} v~1.4.x) package:
 (1) use R external pointers to store the string data,
-(2) use bit patterns to encode them,
-(3) let the user store a set of views {\it on the same} big string
-    in a {\it single} object.
+(2) use bit patterns to encode the string data,
+(3) provide the user with a convenient class of container where he can store
+    a set of views {\it on the same} big string (these views being typically
+    the matches returned by a search algorithm).
 
 However, there is a flaw in the \Rclass{BioString} class design
 that prevents the search algorithms to return correct information
@@ -77,70 +78,83 @@ class by 2 new classes:
 A first \Rclass{BString} object:
 <<a1>>=
 library(Biostrings)
-bs <- new("BString", "I am a BString object")
-bs
-length(bs)
+b <- BString("I am a BString object")
+b
+length(b)
 @
 
 The \Rclass{DNAString} and \Rclass{RNAString} classes are direct extensions
 of the \Rclass{BString} class (no additional slot):
 <<a2>>=
-dna <- DNAString("TTGAAAA-CTC-N")
-dna
-length(dna)
+d <- DNAString("TTGAAAA-CTC-N")
+d
+length(d)
 @
+The difference with a \Rclass{BString} object is that only letters from the
+{\it IUPAC extended genetic alphabet} are allowed and that each letter in
+the argument passed to the \Rfunction{DNAString} function is encoded in a
+special way before it's stored in the \Rclass{DNAString} object.
 
 Access to the individual letters:
 <<a3>>=
-dna[1]
-dna[7:12]
-dna[12:7]
-bs[length(bs)]
-bs[length(bs):(length(bs)-5)]
+d[3]
+d[7:12]
+d[]
+b[length(b):1]
 @
+Only {\it in bounds} positive numeric subscripts are supported.
 
-All the above values are character vectors of length 1.
-To {\it dump} the whole \Robject{dna} as a character vector (of length 1):
+In fact the subsetting operator for \Rclass{BString} (or \Rclass{DNAString})
+objects is not efficient and the \Rfunction{subBString} should be used instead
+to extract a substring from a big object:
 <<a4>>=
-dna[]
-@
-or
-<<a5>>=
-toString(dna)
+dd <- subBString(d, 3, 9)
 @
 
-Note that \Robject{length(dna)} is equivalent to \Robject{nchar(toString(dna))}
+To {\it dump} a \Rclass{BString} (or \Rclass{DNAString}) object as a character
+vector (of length 1), use the \Rmethod{toString} method:
+<<a5>>=
+toString(dd)
+@
+
+Note that \Robject{length(dd)} is equivalent to \Robject{nchar(toString(dd))}
 but the latter would be very inefficient on a big \Rclass{DNAString} object.
+
+{\it [TODO: Make a generic of the substr() function to work with BString objects.
+It will be essentially doing toString(subBString()).]}
 
 
 % ---------------------------------------------------------------------------
 
 \section{The \Rmethod{==} binary operator for \Rclass{BString} objects}
 
-<<b1>>=
-new("BString", "ab") == "ab" # TRUE
-"TG" == DNAString("TG") # TRUE
-dna == DNAString("TG") # FALSE
+The 4 following expressions are \Robject{TRUE}:
+<<b1,results=hide>>=
+b == "ab"
+d != DNAString("TG")
+"TG" == DNAString("TG") 
+DNAString("TG") == BString("TG")
 @
 
-Note that this produces an error because the empty string can't be converted
-to a \Rclass{BString} object:
+When the 2 objects to compare don't belong to the same class then
+the object belonging to the ``lowest'' class is first converted
+to an object belonging to the ``highest'' class, where the class
+(pseudo-)order is \Rclass{character} < \Rclass{BString} < \Rclass{DNAString}.
+
+So in the case where both objects are \Rclass{BString} (or \Rclass{DNAString})
+the comparison is very fast because it only has to call the C standard
+function {\tt memcmp()}.
+
+The 2 following expressions provoke an error because the right member can't
+be ``upgraded'' (converted) to an object of the same class than the left member:
 <<b2,echo=FALSE>>=
-cat('> new("BString", "ab") == ""')
-cat(try(new("BString", "ab") == ""))
+cat('> b == ""')
+cat('> d == b')
 @
 
-You can't compare a \Rclass{DNAString} object with a \Rclass{BString}
-object:
-<<b3,echo=FALSE>>=
-cat('DNAString("AA") == new("BString", "AA")')
-cat(try(DNAString("AA") == new("BString", "AA")))
-@
-
-but you can compare it with a \Rclass{RNAString} object (and in this
-case, a {\tt T} will be considered the same as an {\tt U}:
+You can also compare a \Rclass{DNAString} object with a \Rclass{RNAString} object:
 <<b4>>=
-DNAString("TTTAG") == RNAString("UUUAG") # TRUE!!!
+DNAString("ACGT") == RNAString("UGCA") 
 @
 
 
@@ -155,14 +169,14 @@ the ``subject'' string.
 
 Here is a \Rclass{BStringViews} object with a single view:
 <<c1>>=
-v1 <- BStringViews(dna, 2, 7)
+v1 <- BStringViews(d, 2, 7)
 v1
 length(v1)
 @
 
 With 9 views:
 <<c2>>=
-v2 <- BStringViews(dna, 7:-1, 7:15)
+v2 <- BStringViews(d, 7:-1, 7:15)
 v2
 length(v2)
 @
@@ -213,21 +227,21 @@ v2[c(TRUE, FALSE)]
 v <- BStringViews(DNAString("TAATAATG"), -2:9, 0:11)
 @
 
-This is the same as doing \Robject{BStringViews(dna, 1, length(dna))}:
+This is the same as doing \Robject{BStringViews(d, 1, length(d))}:
 <<d2>>=
-BStringViews(dna)
+BStringViews(d)
 @
 
-Note that the following will always return the \Robject{dna} object itself:
+Note that the following will always return the \Robject{d} object itself:
 <<d3,results=hide>>=
-BStringViews(dna)[[1]]
+BStringViews(d)[[1]]
 @
 
 3 \Rclass{BStringViews} objects with no view:
 <<d4,results=hide>>=
 v[0]
 v[FALSE]
-BStringViews(dna, integer(0), integer(0))
+BStringViews(d, integer(0), integer(0))
 @
 
 

@@ -135,6 +135,8 @@ setMethod("initialize", "DNAString",
         }
         if (is.character(src) && length(src) != 1)
             stop("use DNAStringViews() when 'src' has more than one element")
+        if (class(src) == "BString")
+            src <- toString(src)
         callNextMethod(.Object, src)
     }
 )
@@ -153,6 +155,8 @@ setMethod("initialize", "RNAString",
         }
         if (is.character(src) && length(src) > 1)
             stop("use RNAStringViews() when 'src' has more than one element")
+        if (class(src) == "BString")
+            src <- toString(src)
         callNextMethod(.Object, src)
     }
 )
