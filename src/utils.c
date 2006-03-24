@@ -2,7 +2,7 @@
 
 
 static int debug = 0;
-                                                                                                                                            
+
 SEXP utils_debug()
 {
 #ifdef DEBUG_BIOSTRINGS
@@ -18,6 +18,9 @@ SEXP utils_debug()
 /****************************************************************************
  Functions defined below are NOT .Call methods.
  DON'T REGISTER THEM IN init.c!
+ They are all prefixed with "Biostrings_" to minimize the risk of clash with
+ symbols found in libc ("_memcmp" was clashing with "_memcmp" from libc on
+ churchill).
  ****************************************************************************/
 
 /* ==========================================================================
@@ -29,7 +32,9 @@ int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
 {
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] Biostrings_memcmp(): a=%p ia=%d b=%p ib=%d n=%d size=%d\n", a, ia, b, ib, n, size);
+		Rprintf("[DEBUG] Biostrings_memcmp(): ");
+		Rprintf("a=%p ia=%d b=%p ib=%d n=%d size=%d\n",
+			a, ia, b, ib, n, size);
 	}
 #endif
 	a += ia * size;
@@ -46,8 +51,8 @@ int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
  * IMPORTANT: Assumes that i1 <= i2.
  */
 void Biostrings_memcpy_from_range(int i1, int i2,
-	       char *dest, size_t dest_nmemb,
-	       char *src, size_t src_nmemb, size_t size)
+		char *dest, size_t dest_nmemb,
+		char *src, size_t src_nmemb, size_t size)
 {
 	register char *b;
 	register int i2next, i1max, q;
@@ -84,8 +89,8 @@ void Biostrings_memcpy_from_range(int i1, int i2,
  * IMPORTANT: Assumes that i1 <= i2.
  */
 void Biostrings_memcpy_to_range(int i1, int i2,
-	       char *dest, size_t dest_nmemb,
-	       char *src, size_t src_nmemb, size_t size)
+		char *dest, size_t dest_nmemb,
+		char *src, size_t src_nmemb, size_t size)
 {
 	register char *a;
 	register int i2next, i1max, q;
@@ -121,8 +126,8 @@ void Biostrings_memcpy_to_range(int i1, int i2,
  * and comes back to it after it reaches its last byte.
  */
 void Biostrings_memcpy_from_subset(int *subset, int n,
-	       char *dest, size_t dest_nmemb,
-	       char *src, size_t src_nmemb, size_t size)
+		char *dest, size_t dest_nmemb,
+		char *src, size_t src_nmemb, size_t size)
 {
 	register char *a, *b;
 	register int i, j, k, z;
@@ -156,8 +161,8 @@ void Biostrings_memcpy_from_subset(int *subset, int n,
  * Writes to the members of 'dest' that have the offsets passed in 'subset'.
  */
 void Biostrings_memcpy_to_subset(int *subset, int n,
-	       char *dest, size_t dest_nmemb,
-	       char *src, size_t src_nmemb, size_t size)
+		char *dest, size_t dest_nmemb,
+		char *src, size_t src_nmemb, size_t size)
 {
 	register char *a, *b;
 	register int i, j, k, z;
@@ -183,4 +188,3 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 			"of replacement length");
 	return;
 }
-

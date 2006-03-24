@@ -227,10 +227,10 @@ bsSubstr <- function(x, first, last)
 subBString <- function(x, first=1, last=length(x))
 {
     if (length(first) != 1 || length(last) != 1)
-        stop("'first' and 'last' must be single integers")
+        stop("'first' and 'last' must be single numerics")
     if (!is.numeric(first) || !is.numeric(last))
         stop("'first' and 'last' must be numerics")
-    if (first < 1 || first > last || last > length(x))
+    if (!isTRUE(1 <= first && first <= last && last <= length(x)))
         stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
     bsSubstr(x, as.integer(first), as.integer(last))
 }
@@ -371,31 +371,32 @@ bsViewSnippet <- function(x, first, last, snippetW)
 # and that first1 <= last1 and first2 <= last2.
 bsIdenticalViews <- function(x1, first1, last1, x2, first2, last2)
 {
-    w1 <- last1 - first1 + 1
-    w2 <- last2 - first2 + 1
+    one <- as.integer(1)
+    w1 <- last1 - first1 + one
+    w2 <- last2 - first2 + one
     if (w1 != w2)
         return(FALSE)
 
     lx1 <- length(x1)
-    isBlank1 <- last1 < 1 || first1 > lx1
+    isBlank1 <- last1 < one || first1 > lx1
     lx2 <- length(x2)
-    isBlank2 <- last2 < 1 || first2 > lx2
+    isBlank2 <- last2 < one || first2 > lx2
     if (isBlank1 && isBlank2)
         return(TRUE)
     if (isBlank1 || isBlank2)
         return(FALSE)
 
     # Left margin
-    LmarginSize1 <- first1 < 1
-    LmarginSize2 <- first2 < 1
+    LmarginSize1 <- first1 < one
+    LmarginSize2 <- first2 < one
     if (LmarginSize1 != LmarginSize2)
         return(FALSE)
     if (LmarginSize1) {
         # Both views have a left margin
         if (first1 != first2)
             return(FALSE)
-        first1 <- 1
-        first2 <- 1
+        first1 <- one
+        first2 <- one
     }
 
     # Right margin

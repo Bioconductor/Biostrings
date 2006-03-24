@@ -7,6 +7,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* bbuf.c */
 	{"bbuf_debug", (DL_FUNC) &bbuf_debug, 0},
+
 	{"sexp_address", (DL_FUNC) &sexp_address, 1},
 	{"xp_show", (DL_FUNC) &xp_show, 1},
 	{"xp_new", (DL_FUNC) &xp_new, 0},
@@ -48,6 +49,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* shiftor.c */
 	{"shiftor_debug", (DL_FUNC) &shiftor_debug, 0},
+
 	{"shiftor", (DL_FUNC) &shiftor, 9},
 
 	{NULL, NULL, 0}

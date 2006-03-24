@@ -2,7 +2,7 @@
 
 
 static int debug = 0;
-                                                                                                                                            
+
 SEXP bbuf_debug()
 {
 #ifdef DEBUG_BIOSTRINGS
@@ -193,16 +193,12 @@ SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] bbuf_memcmp(): CHAR(tag1)=%p i1=%d CHAR(tag2)=%p i2=%d n=%d\n",
+		Rprintf("[DEBUG] bbuf_memcmp(): ");
+		Rprintf("CHAR(tag1)=%p i1=%d CHAR(tag2)=%p i2=%d n=%d\n",
 			CHAR(tag1), i1, CHAR(tag2), i2, n);
 	}
 #endif
 	PROTECT(ans = allocVector(INTSXP, 1));
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] bbuf_memcmp(): ans successfully allocated\n");
-	}
-#endif
 	INTEGER(ans)[0] = Biostrings_memcmp(CHAR(tag1), i1,
 					CHAR(tag2), i2,
 					n, sizeof(char));
