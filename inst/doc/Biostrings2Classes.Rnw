@@ -178,16 +178,16 @@ A \Rclass{BStringViews} object contains a set of views {\it on the same}
 called the {\it subject} string.
 Here is a \Rclass{BStringViews} object with 4 views:
 <<c1>>=
-v5 <- BStringViews(dd2, 3:0, 5:8)
-v5
-length(v5)
+v4 <- BStringViews(dd2, 3:0, 5:8)
+v4
+length(v4)
 @
 
 Note that the 2 last views are {\it out of limits}.
 
 You can select a subset of views from a \Rclass{BStringViews} object:
 <<c3>>=
-v5[4:2]
+v4[4:2]
 @
 
 The returned object is still a \Rclass{BStringViews} object,
@@ -195,13 +195,13 @@ even if we select only one element.
 You need to use double-brackets to extract a given view
 as a \Rclass{BString} object:
 <<c4>>=
-v5[[2]]
+v4[[2]]
 @
 
 You can't extract a view that is {\it out of limits}:
 <<c6,echo=FALSE>>=
-cat('> v5[[3]]')
-cat(try(v5[[3]]))
+cat('> v4[[3]]')
+cat(try(v4[[3]]))
 @
 
 Note that, when \Robject{first} and \Robject{last} are numeric
@@ -209,19 +209,19 @@ vectors and \Robject{i} is a {\it single} integer,
 \Robject{BStringViews(b, first, last)[[i]]}
 is equivalent to \Robject{subBString(b, first[i], last[i])}.
 
-The following is the same as doing \Robject{subject(v5)}
+The following is the same as doing \Robject{subject(v4)}
 (provided as a convenience):
 <<c7>>=
-v5[[0]]
+v4[[0]]
 @
 
 Subsetting also works with negative or logical values with the expected
 semantic (the same as for R built-in vectors):
 <<c8>>=
-v5[-3]
-v5[c(TRUE, FALSE)]
+v4[-3]
+v4[c(TRUE, FALSE)]
 @
-Note that the logical vector is recycled to the length of \Robject{v5}.
+Note that the logical vector is recycled to the length of \Robject{v4}.
 
 
 % ---------------------------------------------------------------------------
@@ -289,20 +289,20 @@ v12[3] == BStringViews(RNAString("AU"), 0, 2)
 functions}
 
 <<f1>>=
-first(v5)
-last(v5)
-width(v5)
+first(v4)
+last(v4)
+width(v4)
 @
 
-Note that \Robject{first(v5)[i]} is equivalent to
-\Robject{first(v5[i])}, except that the former will not issue
+Note that \Robject{first(v4)[i]} is equivalent to
+\Robject{first(v4[i])}, except that the former will not issue
 an error if \Robject{i} is out of bounds
 (same for \Rfunction{last} and \Rfunction{width} functions).
 
 Also, when \Robject{i} is a {\it single} integer,
-\Robject{width(v5)[i]} is equivalent to \Robject{length(v5[[i]])}
+\Robject{width(v4)[i]} is equivalent to \Robject{length(v4[[i]])}
 except that the former will not issue an error
-if \Robject{i} is out of bounds or if view \Robject{v5[i]}
+if \Robject{i} is out of bounds or if view \Robject{v4[i]}
 is {\it out of limits}.
 
 
