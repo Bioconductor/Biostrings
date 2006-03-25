@@ -178,7 +178,7 @@ A \Rclass{BStringViews} object contains a set of views {\it on the same}
 called the {\it subject} string.
 Here is a \Rclass{BStringViews} object with 4 views:
 <<c1>>=
-v4 <- BStringViews(dd2, 3:0, 5:8)
+v4 <- views(dd2, 3:0, 5:8)
 v4
 length(v4)
 @
@@ -206,7 +206,7 @@ cat(try(v4[[3]]))
 
 Note that, when \Robject{first} and \Robject{last} are numeric
 vectors and \Robject{i} is a {\it single} integer,
-\Robject{BStringViews(b, first, last)[[i]]}
+\Robject{views(b, first, last)[[i]]}
 is equivalent to \Robject{subBString(b, first[i], last[i])}.
 
 The following is the same as doing \Robject{subject(v4)}
@@ -230,24 +230,24 @@ Note that the logical vector is recycled to the length of \Robject{v4}.
 
 12 views (all of the same width):
 <<d1>>=
-v12 <- BStringViews(DNAString("TAATAATG"), -2:9, 0:11)
+v12 <- views(DNAString("TAATAATG"), -2:9, 0:11)
 @
 
-This is the same as doing \Robject{BStringViews(d, 1, length(d))}:
+This is the same as doing \Robject{views(d, 1, length(d))}:
 <<d2,results=hide>>=
-BStringViews(d)
+views(d)
 @
 
 Hence the following will always return the \Robject{d} object itself:
 <<d3,results=hide>>=
-BStringViews(d)[[1]]
+views(d)[[1]]
 @
 
 3 \Rclass{BStringViews} objects with no view:
 <<d4,results=hide>>=
 v12[0]
 v12[FALSE]
-BStringViews(d, integer(0), integer(0))
+views(d, integer(0), integer(0))
 @
 
 
@@ -278,8 +278,8 @@ cat('> v12[3] == " TA"')
 @
 but these are \Robject{TRUE}:
 <<e5,results=hide>>=
-v12[3] == BStringViews(BString("TA"), 0, 2)
-v12[3] == BStringViews(RNAString("AU"), 0, 2)
+v12[3] == views(BString("TA"), 0, 2)
+v12[3] == views(RNAString("AU"), 0, 2)
 @
 
 

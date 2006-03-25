@@ -81,7 +81,7 @@ ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
     )
     if (count.only)
         return(ans)
-    BStringViews(x, ans + as.integer(1), ans + length(pattern))
+    new("BStringViews", x, ans + as.integer(1), ans + pattern@length)
 }
 
 setGeneric(

@@ -98,20 +98,29 @@ setMethod("toString", "BString",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initialization
 
-# 'src' must be a character vector of length 1 or a "bbuf" object.
+# Must work at least with 'src' being one of the following:
+#   - a character vector
+#   - a "bbuf" object
+#   - a "BString", "DNAString" or "RNAString" object
 setMethod("initialize", "BString",
     function(.Object, src)
     {
-        .Object@offset <- as.integer(0) # Must be set BEFORE writeChars()
-        if (is.character(src)) {
+        # class(.Object) can be "BString", "DNAString" or "RNAString"!
+        if (class(src) == class(.Object))
+            return(src)
+        .Object@offset <- as.integer(0) # Set me BEFORE calling writeChars()
+        if (class(src) == "bbuf") {
+            length <- length(src)
+            .Object@data <- src
+        } else {
+            if (!is.character(src))
+                src <- toString(src)
+            else if (length(src) != 1)
+                stop("use the 'adjacentViews' function when 'src' is a character vector of length != 1")
             length <- nchar(src)
             .Object@data <- bbuf(length)
             writeChars(.Object, 1, length, value=src)
-        } else if (class(src) == "bbuf") {
-            length <- length(src)
-            .Object@data <- src
-        } else
-            stop("'src' not a string or a \"bbuf\" object")
+        }
         .Object@length <- length
         .Object
     }
@@ -125,18 +134,12 @@ BString <- function(...)
 setMethod("initialize", "DNAString",
     function(.Object, src)
     {
-        if (class(src) == class(.Object))
-            return(src)
         if (class(src) == "RNAString") {
             .Object@data <- src@data
             .Object@offset <- src@offset
             .Object@length <- src@length
             return(.Object)
         }
-        if (is.character(src) && length(src) != 1)
-            stop("use DNAStringViews() when 'src' has more than one element")
-        if (class(src) == "BString")
-            src <- toString(src)
         callNextMethod(.Object, src)
     }
 )
@@ -145,18 +148,12 @@ setMethod("initialize", "DNAString",
 setMethod("initialize", "RNAString",
     function(.Object, src)
     {
-        if (class(src) == class(.Object))
-            return(src)
         if (class(src) == "DNAString") {
             .Object@data <- src@data
             .Object@offset <- src@offset
             .Object@length <- src@length
             return(.Object)
         }
-        if (is.character(src) && length(src) > 1)
-            stop("use RNAStringViews() when 'src' has more than one element")
-        if (class(src) == "BString")
-            src <- toString(src)
         callNextMethod(.Object, src)
     }
 )
@@ -170,7 +167,6 @@ DNAString <- function(...)
 {
     new("DNAString", ...)
 }
-
 RNAString <- function(...)
 {
     new("RNAString", ...)
@@ -191,13 +187,14 @@ setMethod("[", "BString",
             stop("subscript out of bounds")
         data <- bbuf(length(i))
         bbCopy(data, i + x@offset, src=x@data)
+        # class(x) can be "BString", "DNAString" or "RNAString"
         new(class(x), data)
     }
 )
 
 # The only reason for defining the replacement version of the "[" operator
 # is to let the user know that he can't use it:
-#   bs <- new("BString","AbnbIU")
+#   bs <- BString("AbnbIU")
 #   bs[2] <- "X" # provokes an error
 # If we don't define it, then the user can type the above and believe that
 # it actually did something but it didn't.
@@ -223,13 +220,26 @@ bsSubstr <- function(x, first, last)
     x
 }
 
-# The public (and safe) version of bsSubstr(). Not vectorized.
-subBString <- function(x, first=1, last=length(x))
+isLooseNumeric <- function(x)
 {
+    return(is.numeric(x) || (!is.null(x) && all(is.na(x))))
+}
+
+# The public (and safe) version of bsSubstr(). Not vectorized.
+# We deliberately choose the "NA trick" over defaulting 'first' and 'last'
+# to '1' and 'length(x)' because we want to be consistent with what the
+# views() function does.
+subBString <- function(x, first=NA, last=NA)
+{
+    if (!isLooseNumeric(first) || !isLooseNumeric(last))
+        stop("'first' and 'last' must be numerics")
     if (length(first) != 1 || length(last) != 1)
         stop("'first' and 'last' must be single numerics")
-    if (!is.numeric(first) || !is.numeric(last))
-        stop("'first' and 'last' must be numerics")
+    if (is.na(first))
+        first <- 1
+    if (is.na(last))
+        last <- x@length
+    # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
     if (!isTRUE(1 <= first && first <= last && last <= length(x)))
         stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
     bsSubstr(x, as.integer(first), as.integer(last))
@@ -273,8 +283,8 @@ setMethod("show", "BString",
 # Equality
 
 # We want:
-#   new("BString", "ab") == "ab" # TRUE
-#   new("BString", "ab") == "" # Error ("" can't be converted to a BString)
+#   BString("ab") == "ab" # TRUE
+#   BString("ab") == "" # Error ("" can't be converted to a BString)
 #   DNAString("TG") == "TG" # TRUE
 #   "TT" == DNAString("TG") # FALSE
 #   "TGG" == DNAString("TG") # FALSE
@@ -282,9 +292,9 @@ setMethod("show", "BString",
 #   library(HsapiensGenome)
 #   dna <- hsa$chr1[[1]]
 #   dna != hsa$chr1[[1]] # FALSE
-#   dnav <- BStringViews(dna, 1:7, 101:107)
+#   dnav <- views(dna, 1:7, 101:107)
 #   dnav[[1]] == dnav[[7]] # TRUE
-#   dnav <- BStringViews(dna, 1:7, (length(dna)-6):length(dna))
+#   dnav <- views(dna, 1:7, (length(dna)-6):length(dna))
 # This is fast:
 #   dnav[[1]] == dnav[[7]] # FALSE
 # But this would have killed your machine:

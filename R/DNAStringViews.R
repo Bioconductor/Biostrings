@@ -23,26 +23,6 @@
 # by Wolfgang)
 
 
-# 'width' is the vector of view widths.
-setLimitsForConsecutiveViews <- function(x, width)
-{
-    lw <- length(width)
-    first <- integer(lw)
-    last <- integer(lw)
-    one <- as.integer(1)
-    first[1] <- one
-    last[1] <- width[1]
-    if (lw >= 2) {
-        for (i in 2:lw) {
-            first[i] <- last[i-1] + one
-            last[i] <- first[i] + width[i] - one
-        }
-    }
-    x@first <- first
-    x@last <- last
-    x
-}
-
 # Works if 'src' is a FASTA file:
 #   src <- file('Genomes/Celegans/chrI.fa')
 #   chrI <- DNAStringViews(src)
@@ -56,14 +36,14 @@ DNAStringViews <- function(src)
     } else if (class(src) == "BStringViews") {
         if (class(subject(src)) != "RNAString")
             stop("subject of 'src' is not a \"RNAString\" object")
-        x <- src
-        x@subject <- DNAString(subject(src))
-        return(x)
+        ans <- src
+        ans@subject <- DNAString(subject(src))
+        return(ans)
     }
     big <- paste(src, collapse="")
-    x <- new("BStringViews", DNAString(big))
-    x@desc <- desc
-    setLimitsForConsecutiveViews(x, nchar(src))
+    ans <- new("BStringViews", DNAString(big))
+    ans@desc <- desc
+    setLimitsForAdjacentViews(ans, nchar(src))
 }
 
 RNAStringViews <- function(src)
@@ -71,11 +51,11 @@ RNAStringViews <- function(src)
     if (class(src) == "BStringViews") {
         if (class(subject(src)) != "DNAString")
             stop("subject of 'src' is not a \"DNAString\" object")
-        x <- src
-        x@subject <- RNAString(subject(src))
-        return(x)
+        ans <- src
+        ans@subject <- RNAString(subject(src))
+        return(ans)
     }
     big <- paste(src, collapse="")
-    x <- new("BStringViews", RNAString(big))
-    setLimitsForConsecutiveViews(x, nchar(src))
+    ans <- new("BStringViews", RNAString(big))
+    setLimitsForAdjacentViews(ans, nchar(src))
 }
