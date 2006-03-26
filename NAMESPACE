@@ -11,14 +11,15 @@ exportMethods(
     ## Generics defined elsewhere
     initialize, length, as.integer, toString, "[", "[[", show, "==", "!=",
     ## New generics
-    adjacentViews, matchPattern, countPattern, mismatch
+    BStringViews, matchPattern, countPattern, mismatch
 )
 
 export(
+    readFASTA,
     debug_utils, debug_bbuf, debug_shiftor,
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
     BString, subBString, DNAString, RNAString,
-    subject, first, last, width, desc, views,
-    readFASTA, DNAStringViews, RNAStringViews,
+    subject, first, last, width, desc,
+    views, adjacentViews,
     matchDNAPattern
 )

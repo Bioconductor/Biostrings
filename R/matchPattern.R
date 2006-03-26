@@ -116,8 +116,7 @@ setMethod("matchPattern", signature(x="RNAString"),
 
 matchDNAPattern <- function(...)
 {
-    cat("This function has been deprecated.\n")
-    cat("Please use matchPattern() instead.\n")
+    stop("matchDNAPattern() is DEPRECATED, please use matchPattern() instead")
 }
 
 

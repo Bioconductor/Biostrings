@@ -68,112 +68,22 @@ desc <- function(x)
 # Initialization
 
 # WARNING: This function is unsafe! (it doesn't check its arguments)
+# Only 2 valid ways to use it:
+#   new("BStringViews", subject)
+#   new("BStringViews", subject, first, last)
+# where 'subject' is a BString (or derived) object and 'first' and 'last' are
+# integer vectors of the same length such that 'first <= last'.
 setMethod("initialize", "BStringViews",
     function(.Object, subject, first, last)
     {
         .Object@subject <- subject
-        if (!missing(first))
+        if (!missing(first)) {
             .Object@first <- first
-        if (!missing(last))
             .Object@last <- last
+        }
         .Object
     }
 )
-
-# 'width' is the vector of view widths.
-setLimitsForAdjacentViews <- function(x, width)
-{
-    lw <- length(width)
-    first <- integer(lw)
-    last <- integer(lw)
-    one <- as.integer(1)
-    first[1] <- one
-    last[1] <- width[1]
-    if (lw >= 2) {
-        for (i in 2:lw) {
-            first[i] <- last[i-1] + one
-            last[i] <- first[i] + width[i] - one
-        }
-    }
-    x@first <- first
-    x@last <- last
-    x
-}
-
-# 'src' should typically be a character vector but the function will also
-# work for other kind of input like numeric or even logical vectors.
-# 'subjectClass' must be "BString", "DNAString" or "RNAString".
-adjacentViews <- function(src, subjectClass="BString")
-{
-    big <- paste(src, collapse="")
-    subject <- new(subjectClass, big)
-    ans <- new("BStringViews", subject)
-    setLimitsForAdjacentViews(ans, nchar(src))
-}
-
-setGeneric(
-    "adjacentViews",
-    function(src, subjectClass="") standardGeneric("adjacentViews")
-)
-
-# Will be called if 'class(src)' is "BString", "DNAString" or "RNAString"!
-# 'subjectClass' must be "", "BString", "DNAString" or "RNAString".
-setMethod("adjacentViews", "BString",
-    function(src, subjectClass)
-    {
-        if (subjectClass != "")
-            src <- new(subjectClass, src)
-        ans <- new("BStringViews", src)
-        ans@first <- as.integer(1)
-        ans@last <- src@length
-        ans
-    }
-)
-
-recycleVector <- function(x, length)
-{
-    y <- vector(storage.mode(x), length)
-    y[] <- x
-    y
-}
-
-# Typical use:
-#   dna <- DNAString("AA-CC-GG-TT")
-# Just one view:
-#   dnav1 <- views(dna, 2, 7)
-# 9 views, 3 are out of limits:
-#   dnav2 <- views(dna, 6:-2, 6:14)
-# 5 out of limits views, all have a width of 6:
-#   dnav3 <- views(dna, -5:-1, 0:4)
-# Same as doing views(dna, 1, length(dna)):
-#   dnav4 <- views(dna)
-# A BStringViews object with no view:
-#   dnav5 <- views(dna, integer(0), integer(0))
-views <- function(subject, first=NA, last=NA)
-{
-    # Integrity checking
-    if (!isLooseNumeric(first) || !isLooseNumeric(last))
-        stop("'first' and 'last' must be numerics")
-    #if (length(first) != length(last))
-    #    stop("'first' and 'last' must have the same length")
-    if (!is.integer(first))
-        first <- as.integer(first)
-    first[is.na(first)] <- as.integer(1)
-    if (!is.integer(last))
-        last <- as.integer(last)
-    last[is.na(last)] <- subject@length
-    if (length(first) < length(last))
-        first <- recycleVector(first, length(last))
-    else if (length(last) < length(first))
-        last <- recycleVector(last, length(first))
-    # The NA-proof version of 'if (any(last < first))'
-    if (!isTRUE(all(first <= last)))
-        stop("'first' and 'last' must verify 'first <= last'")
-    ans <- new("BStringViews", subject)
-    ans@first <- first
-    ans@last <- last
-    ans
-}
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -336,6 +246,164 @@ setMethod("show", "BStringViews",
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# The matchPattern-like functions.
+# The functions share the following properties:
+#   - They are exported (and safe).
+#   - First argument is 'subject'. It must be a BString (or derived) object.
+#   - Passing something else to 'subject' provokes an error.
+#   - They return a BStringViews object whose 'subject' slot is the object
+#     passed in the 'subject' argument.
+
+# Helper function (not exported).
+recycleVector <- function(x, length)
+{
+    y <- vector(storage.mode(x), length)
+    y[] <- x
+    y
+}
+
+# Typical use:
+#   dna <- DNAString("AA-CC-GG-TT")
+# Just one view:
+#   dnav1 <- views(dna, 2, 7)
+# 9 views, 3 are out of limits:
+#   dnav2 <- views(dna, 6:-2, 6:14)
+# 5 out of limits views, all have a width of 6:
+#   dnav3 <- views(dna, -5:-1, 0:4)
+# Same as doing views(dna, 1, length(dna)):
+#   dnav4 <- views(dna)
+# A BStringViews object with no view:
+#   dnav5 <- views(dna, integer(0), integer(0))
+views <- function(subject, first=NA, last=NA)
+{
+    ans <- new("BStringViews", subject)
+    # Integrity checking
+    if (!isLooseNumeric(first) || !isLooseNumeric(last))
+        stop("'first' and 'last' must be numerics")
+    #if (length(first) != length(last))
+    #    stop("'first' and 'last' must have the same length")
+    if (!is.integer(first))
+        first <- as.integer(first)
+    first[is.na(first)] <- as.integer(1)
+    if (!is.integer(last))
+        last <- as.integer(last)
+    last[is.na(last)] <- subject@length
+    if (length(first) < length(last))
+        first <- recycleVector(first, length(last))
+    else if (length(last) < length(first))
+        last <- recycleVector(last, length(first))
+    # The NA-proof version of 'if (any(last < first))'
+    if (!isTRUE(all(first <= last)))
+        stop("'first' and 'last' must verify 'first <= last'")
+    ans@first <- first
+    ans@last <- last
+    ans
+}
+
+# 'width' is the vector of view widths.
+adjacentViews <- function(subject, width)
+{
+    ans <- new("BStringViews", subject)
+    if (!is.numeric(width) || !isTRUE(all(width >= 1))) # NA-proof
+        stop("'width' must be numerics >= 1")
+    lw <- length(width)
+    if (lw == 0)
+        return(ans)
+    if (!is.integer(width))
+        width <- as.integer(width)
+    first <- integer(lw)
+    last <- integer(lw)
+    one <- as.integer(1)
+    first[1] <- one
+    last[1] <- width[1]
+    if (lw >= 2) {
+        for (i in 2:lw) {
+            first[i] <- last[i-1] + one
+            last[i] <- first[i] + width[i] - one
+        }
+    }
+    ans@first <- first
+    ans@last <- last
+    ans
+}
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# The BStringViews() generic function
+
+# 'src' should typically be a character vector but the function will also
+# work for other kind of input like numeric or even logical vectors.
+# 'subjectClass' must be "BString", "DNAString" or "RNAString".
+#
+# Benchmarks:
+#   alphabet <- strsplit("-TGCANBDHKMRSVWY", NULL)[[1]]
+#   n <- 40000
+#   src <- sapply(1:n, function(i) {paste(sample(alphabet, 250, replace=TRUE), collapse="")})
+#   v <- BStringViews(src, "DNAString")
+#
+# Comparing BStringViews() speed vs "old" vectorized DNAString() speed:
+#
+#       n  BStringViews  "old" DNAString
+#   -----  ------------  ---------------
+#    5000        0.26 s           4.15 s
+#   10000        0.51 s          16.29 s
+#   20000        0.99 s          64.85 s
+#   40000        1.69 s         488.43 s
+#
+# The quadratic behaviour of "old" DNAString() was first reported
+# by Wolfgang.
+BStringViews <- function(src, subjectClass)
+{
+    collapsed <- paste(src, collapse="")
+    subject <- new(subjectClass, collapsed)
+    adjacentViews(subject, nchar(src))
+}
+
+setGeneric(
+    "BStringViews",
+    function(src, subjectClass) standardGeneric("BStringViews")
+)
+
+# Only FASTA files are supported for now.
+# Typical use:
+#   f <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+#   v <- BStringViews(file(f), "DNAString")
+setMethod("BStringViews", "file",
+    function(src, subjectClass)
+    {
+        fasta <- readFASTA(src)
+        src <- sapply(fasta, function(rec) toupper(rec$seq))
+        desc <- sapply(fasta, function(rec) rec$desc)
+        ans <- BStringViews(src, subjectClass) # call the default method
+        ans@desc <- desc
+        ans
+    }
+)
+
+# Called when 'src' is a BString (or derived) object.
+# When not missing, 'subjectClass' must be "BString", "DNAString"
+# or "RNAString".
+setMethod("BStringViews", "BString",
+    function(src, subjectClass)
+    {
+        if (!missing(subjectClass) && subjectClass != class(src))
+            src <- new(subjectClass, src)
+        new("BStringViews", src, as.integer(1), src@length)
+    }
+)
+
+# Called when 'src' is a BStringViews object.
+# 'subjectClass' must be "BString", "DNAString" or "RNAString".
+setMethod("BStringViews", "BStringViews",
+    function(src, subjectClass)
+    {
+        src@subject <- new(subjectClass, src@subject)
+        src
+    }
+)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Equality
 
 # Typical use:
@@ -358,7 +426,7 @@ setMethod("show", "BStringViews",
 .equal <- function(x, y)
 {
     if (class(y) != "BStringViews")
-        y <- adjacentViews(y, class(x@subject))
+        y <- BStringViews(y, class(x@subject))
     if (length(x) < length(y)) {
         tmp <- x
         x <- y

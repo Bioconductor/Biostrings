@@ -116,7 +116,7 @@ setMethod("initialize", "BString",
             if (!is.character(src))
                 src <- toString(src)
             else if (length(src) != 1)
-                stop("use the 'adjacentViews' function when 'src' is a character vector of length != 1")
+                stop("use BStringViews() when 'src' is a character vector of length != 1")
             length <- nchar(src)
             .Object@data <- bbuf(length)
             writeChars(.Object, 1, length, value=src)
