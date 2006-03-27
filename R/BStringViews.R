@@ -18,10 +18,12 @@ setClass(
     )
 )
 
-subject <- function(x)
-{
-    x@subject
-}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Class-specific methods
+
+setGeneric("subject", function(x) standardGeneric("subject"))
+setMethod("subject", "BStringViews", function(x) x@subject)
 
 # Names for slots 'first' and 'last' are those of the arguments of the
 # substring() function.
@@ -29,15 +31,11 @@ subject <- function(x)
 # functions, using names 'start' and 'stop', like in the substr() function,
 # is a problem if we want to be able to name the following accessor
 # functions like the slot they access to.
-first <- function(x)
-{
-    x@first
-}
+setGeneric("first", function(x) standardGeneric("first"))
+setMethod("first", "BStringViews", function(x) x@first)
 
-last <- function(x)
-{
-    x@last
-}
+setGeneric("last", function(x) standardGeneric("last"))
+setMethod("last", "BStringViews", function(x) x@last)
 
 # We choose to call this method 'width' and not 'length' because
 # we want to define the length of a BStringViews object as the number
@@ -45,23 +43,11 @@ last <- function(x)
 # Another option was to call it 'nchar' but the width of a view is not
 # necesarily equal to the number of letters that it contains (this happens
 # when the view is out of limits).
-width <- function(x)
-{
-    x@last - x@first + 1
-}
+setGeneric("width", function(x) standardGeneric("width"))
+setMethod("width", "BStringViews", function(x) x@last - x@first + 1)
 
-# The length of a BStringViews object is its number of views.
-setMethod("length", "BStringViews",
-    function(x)
-    {
-        length(x@first)
-    }
-)
-
-desc <- function(x)
-{
-    x@desc
-}
+setGeneric("desc", function(x) standardGeneric("desc"))
+setMethod("desc", "BStringViews", function(x) x@desc)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,7 +73,14 @@ setMethod("initialize", "BStringViews",
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Subsetting
+# 'length' method and subsetting operators
+
+setMethod("length", "BStringViews",
+    function(x)
+    {
+        length(x@first)
+    }
+)
 
 setMethod("[", "BStringViews",
     function(x, i, j, ..., drop)

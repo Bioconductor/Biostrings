@@ -10,8 +10,9 @@ exportClasses(
 exportMethods(
     ## Generics defined elsewhere
     #as.integer,
-    initialize, length, toString, "[", "[[", show, "==", "!=",
+    initialize, length, "[", "[[", show, "==", "!=", toString,
     ## New generics
+    subject, first, last, width, desc,
     BStringViews, matchPattern, countPattern, mismatch
 )
 
@@ -20,7 +21,6 @@ export(
     debug_utils, debug_bbuf, debug_shiftor,
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
     BString, subBString, DNAString, RNAString,
-    subject, first, last, width, desc,
     views, adjacentViews,
     matchDNAPattern
 )
