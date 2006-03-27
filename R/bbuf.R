@@ -318,6 +318,12 @@ setMethod("==", signature(e1="bbuf", e2="bbuf"),
         address(e1@xp) == address(e2@xp)
     }
 )
+setMethod("!=", signature(e1="bbuf", e2="bbuf"),
+    function(e1, e2)
+    {
+        address(e1@xp) != address(e2@xp)
+    }
+)
 
 # A wrapper to the very fast memcmp() C-function.
 # Arguments MUST be the following or it will crash R:

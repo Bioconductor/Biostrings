@@ -9,7 +9,8 @@ exportClasses(
 
 exportMethods(
     ## Generics defined elsewhere
-    initialize, length, as.integer, toString, "[", "[[", show, "==", "!=",
+    #as.integer,
+    initialize, length, toString, "[", "[[", show, "==", "!=",
     ## New generics
     BStringViews, matchPattern, countPattern, mismatch
 )

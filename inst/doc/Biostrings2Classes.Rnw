@@ -140,12 +140,12 @@ dd2 != DNAString("TG")
 DNAString("AC") == BString("AC")
 @
 
-When the 2 objects to compare don't belong to the same class then
-the object belonging to the ``lowest'' class is first converted
-to an object belonging to the ``highest'' class, where the class
-(pseudo-)order is \Rclass{character} < \Rclass{BString} < \Rclass{DNAString}.
-In the case where both objects are \Rclass{BString} (or \Rclass{DNAString})
-the comparison is very fast because it only has to call the C standard
+When the 2 sides of \Rmethod{==} don't belong to the same class
+then the side belonging to the ``lowest'' class is first converted
+to an object belonging to the class of the other side (the ``highest'' class).
+The class (pseudo-)order is \Rclass{character} < \Rclass{BString} < \Rclass{DNAString}.
+When both sides are \Rclass{BString} (or \Rclass{DNAString}) objects
+then the comparison is very fast because it only has to call the C standard
 function {\tt memcmp()} and no memory allocation or string encoding
 is required.
 
@@ -159,13 +159,13 @@ cat('> d == bb')
 A \Rclass{DNAString} object and a \Rclass{RNAString} object are considered
 equals when they are complementary:
 <<b3>>=
-DNAString("ACGT") == RNAString("UGCA")
+dAlphabet <- DNAString("ACGT-MRSVWYHKDBN")
+rAlphabet <- RNAString("UGCA-KYSBWRDMHVN")
+dAlphabet == rAlphabet
 @
 Note that this behaviour is consistent with the fact that
-\Robject{RNAString(DNAString("ACGT"))} is equal
-to \Robject{RNAString("UGCA")} and
-\Robject{DNAString(RNAString("UGCA"))} is equal
-to \Robject{DNAString("ACGT")}.
+\Robject{RNAString(dAlphabet)} is equal to \Robject{rAlphabet} and
+\Robject{DNAString(rAlphabet)} is equal to \Robject{dAlphabet}.
 
 
 % ---------------------------------------------------------------------------
