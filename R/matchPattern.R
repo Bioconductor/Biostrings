@@ -68,9 +68,14 @@ ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
         stop("'mismatch' must be a non-negative integer")
     if (mismatch > 0 && algo != "shift-or")
         stop("only \"shift-or\" algorithm supports 'mismatch > 0'")
-    if (length(fixed) != 1)
+    if (!is.logical(fixed) || length(fixed) != 1)
         stop("'fixed' must be a single logical")
-    fixed <- as.logical(fixed)
+    if (is.na(fixed)) {
+        if (class(x) == "BString")
+            fixed <- TRUE
+        else
+            fixed <- FALSE
+    }
     if (length(count.only) != 1)
         stop("'count.only' must be a single logical")
     count.only <- as.logical(count.only)
@@ -86,7 +91,7 @@ ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
 
 setGeneric(
     "matchPattern",
-    function(pattern, x, algorithm="shift-or", mismatch=0, fixed=FALSE)
+    function(pattern, x, algorithm="shift-or", mismatch=0, fixed=NA)
         standardGeneric("matchPattern")
 )
 
@@ -96,20 +101,11 @@ setGeneric(
 # Edge cases:
 #   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
 #   matchPattern("---", DNAString("A"))
-setMethod("matchPattern", signature(x="DNAString"),
+setMethod("matchPattern", signature(x="BString"),
     function(pattern, x, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != "DNAString")
-            pattern <- DNAString(pattern)
-        .matchPattern(pattern, x, algorithm, mismatch, fixed)
-    }
-)
-
-setMethod("matchPattern", signature(x="RNAString"),
-    function(pattern, x, algorithm, mismatch, fixed)
-    {
-        if (class(pattern) != "RNAString")
-            pattern <- RNAString(pattern)
+        if (class(pattern) != class(x))
+            pattern <- new(class(x), pattern)
         .matchPattern(pattern, x, algorithm, mismatch, fixed)
     }
 )
@@ -125,7 +121,7 @@ matchDNAPattern <- function(...)
 
 setGeneric(
     "countPattern",
-    function(pattern, x, algorithm="shift-or", mismatch=0, fixed=FALSE)
+    function(pattern, x, algorithm="shift-or", mismatch=0, fixed=NA)
         standardGeneric("countPattern")
 )
 
@@ -135,20 +131,11 @@ setGeneric(
 # Edge cases:
 #   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
 #   countPattern("---", DNAString("A"))
-setMethod("countPattern", signature(x="DNAString"),
+setMethod("countPattern", signature(x="BString"),
     function(pattern, x, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != "DNAString")
-            pattern <- DNAString(pattern)
-        .matchPattern(pattern, x, algorithm, mismatch, fixed, TRUE)
-    }
-)
-
-setMethod("countPattern", signature(x="RNAString"),
-    function(pattern, x, algorithm, mismatch, fixed)
-    {
-        if (class(pattern) != "RNAString")
-            pattern <- RNAString(pattern)
+        if (class(pattern) != class(x))
+            pattern <- new(class(x), pattern)
         .matchPattern(pattern, x, algorithm, mismatch, fixed, TRUE)
     }
 )
@@ -181,8 +168,6 @@ bsMismatch <- function(pattern, x, first, fixed)
 
 .mismatch <- function(pattern, x, fixed)
 {
-    if (fixed)
-        stop("'fixed=TRUE' not supported yet")
     if (any(width(x) != length(pattern)))
         warning("views in 'x' don't have a width equal to pattern length")
     lapply(1:length(x),
@@ -191,7 +176,7 @@ bsMismatch <- function(pattern, x, first, fixed)
 
 setGeneric(
     "mismatch",
-    function(pattern, x, fixed=FALSE) standardGeneric("mismatch")
+    function(pattern, x, fixed=NA) standardGeneric("mismatch")
 )
 
 # Typical use:
