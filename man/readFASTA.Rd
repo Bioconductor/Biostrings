@@ -34,7 +34,7 @@ of the biological sequence.
 
 \seealso{\code{\link{read.table}}, \code{\link{scan}}}
 \examples{
-f1 = system.file("Exfiles/fastaEx", package="Biostrings")
+f1 = system.file("Exfiles/someORF.fsa", package="Biostrings")
 ff = readFASTA(f1)
 }
 \keyword{ manip}

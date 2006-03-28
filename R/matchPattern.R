@@ -7,7 +7,7 @@
 # Boyer-Moore
 
 # Must return an integer vector.
-BoyerMoore <- function(pattern, x, fixed, count.only)
+BoyerMoore <- function(pattern, subject, fixed, count.only)
 {
     stop("\"boyer-moore\" algorithm will be back soon...")
 
@@ -18,7 +18,7 @@ BoyerMoore <- function(pattern, x, fixed, count.only)
 # forward-search
 
 # Must return an integer vector.
-ForwardSearch <- function(pattern, x, fixed, count.only)
+ForwardSearch <- function(pattern, subject, fixed, count.only)
 {
     stop("\"forward-search\" algorithm will be back soon...")
 }
@@ -33,23 +33,23 @@ debug_shiftor <- function()
 }
 
 # Must return an integer vector.
-ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
+ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 {
     # We treat the edge-cases at the R level
     p <- length(pattern)
     if (p <= mismatch) {
         if (count.only)
-            return(length(x) + p - as.integer(1))
-        return((1-p):(length(x)-1))
+            return(length(subject) + p - as.integer(1))
+        return((1-p):(length(subject)-1))
     }
-    if (p > mismatch + length(x)) {
+    if (p > mismatch + length(subject)) {
         if (count.only)
             return(as.integer(0))
         return(integer(0))
     }
     .Call("shiftor",
           pattern@data@xp, pattern@offset, pattern@length,
-          x@data@xp, x@offset, x@length,
+          subject@data@xp, subject@offset, subject@length,
           mismatch, fixed, count.only,
           PACKAGE="Biostrings")
 }
@@ -58,7 +58,7 @@ ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Dispatch function & user interface
 
-.matchPattern <- function(pattern, x, algorithm, mismatch,
+.matchPattern <- function(pattern, subject, algorithm, mismatch,
                           fixed, count.only=FALSE)
 {
     algo <- match.arg(algorithm, c("boyer-moore", "forward-search", "shift-or"))
@@ -71,7 +71,7 @@ ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
     if (!is.logical(fixed) || length(fixed) != 1)
         stop("'fixed' must be a single logical")
     if (is.na(fixed)) {
-        if (class(x) == "BString")
+        if (class(subject) == "BString")
             fixed <- TRUE
         else
             fixed <- FALSE
@@ -80,18 +80,19 @@ ShiftOr <- function(pattern, x, mismatch, fixed, count.only)
         stop("'count.only' must be a single logical")
     count.only <- as.logical(count.only)
     ans <- switch(algo,
-        "boyer-moore"=BoyerMoore(pattern, x, fixed, count.only),
-        "forward-search"=ForwardSearch(pattern, x, fixed, count.only),
-        "shift-or"=ShiftOr(pattern, x, as.integer(mismatch), fixed, count.only)
+        "boyer-moore"=BoyerMoore(pattern, subject, fixed, count.only),
+        "forward-search"=ForwardSearch(pattern, subject, fixed, count.only),
+        "shift-or"=ShiftOr(pattern, subject, as.integer(mismatch),
+                           fixed, count.only)
     )
     if (count.only)
         return(ans)
-    new("BStringViews", x, ans + as.integer(1), ans + pattern@length)
+    new("BStringViews", subject, ans + as.integer(1), ans + pattern@length)
 }
 
 setGeneric(
     "matchPattern",
-    function(pattern, x, algorithm="shift-or", mismatch=0, fixed=NA)
+    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
         standardGeneric("matchPattern")
 )
 
@@ -101,12 +102,12 @@ setGeneric(
 # Edge cases:
 #   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
 #   matchPattern("---", DNAString("A"))
-setMethod("matchPattern", signature(x="BString"),
-    function(pattern, x, algorithm, mismatch, fixed)
+setMethod("matchPattern", signature(subject="BString"),
+    function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != class(x))
-            pattern <- new(class(x), pattern)
-        .matchPattern(pattern, x, algorithm, mismatch, fixed)
+        if (class(pattern) != class(subject))
+            pattern <- new(class(subject), pattern)
+        .matchPattern(pattern, subject, algorithm, mismatch, fixed)
     }
 )
 
@@ -121,7 +122,7 @@ matchDNAPattern <- function(...)
 
 setGeneric(
     "countPattern",
-    function(pattern, x, algorithm="shift-or", mismatch=0, fixed=NA)
+    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
         standardGeneric("countPattern")
 )
 
@@ -131,12 +132,12 @@ setGeneric(
 # Edge cases:
 #   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
 #   countPattern("---", DNAString("A"))
-setMethod("countPattern", signature(x="BString"),
-    function(pattern, x, algorithm, mismatch, fixed)
+setMethod("countPattern", signature(subject="BString"),
+    function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != class(x))
-            pattern <- new(class(x), pattern)
-        .matchPattern(pattern, x, algorithm, mismatch, fixed, TRUE)
+        if (class(pattern) != class(subject))
+            pattern <- new(class(subject), pattern)
+        .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
     }
 )
 
@@ -146,18 +147,18 @@ setMethod("countPattern", signature(x="BString"),
 
 # Helper function used by .mismatch()
 # Returns a vector of the positions of mismatches of 'pattern'
-# in a view on 'x' starting at 'first' and whose width is length(pattern).
-bsMismatch <- function(pattern, x, first, fixed)
+# in a view on 'subject' starting at 'first' and whose width is length(pattern).
+bsMismatch <- function(pattern, subject, first, fixed)
 {
     mm <- integer(0)
     j0 <- first - as.integer(1)
     for (i in 1:length(pattern)) {
         j <- j0 + i
-        if (j < 1 || j > length(x)) {
+        if (j < 1 || j > length(subject)) {
             mm <- c(mm, i)
         } else {
             l <- bsSubstr(pattern, i, i)
-            r <- bsSubstr(x, j, j)
+            r <- bsSubstr(subject, j, j)
             cp <- countPattern(l, r, algo="shift-or", mismatch=0, fixed)
             if (cp == 0)
                 mm <- c(mm, i)

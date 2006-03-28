@@ -18,8 +18,8 @@
 }
 
 \usage{
-  matchPattern(pattern, x, algorithm="shift-or", mismatch=0, fixed=NA)
-  countPattern(pattern, x, algorithm="shift-or", mismatch=0, fixed=NA)
+  matchPattern(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
+  countPattern(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
   mismatch(pattern, x, fixed=NA)
 }
 
@@ -27,7 +27,7 @@
   \item{pattern}{
     The pattern string.
   }
-  \item{x}{
+  \item{subject}{
     A \link{BString} (or \link{DNAString} or \link{RNAString}) object
     containing the subject string.
   }
@@ -41,6 +41,10 @@
   }
   \item{fixed}{
     A logical.  If \code{TRUE}, \code{pattern} is a string to be matched as is.
+  }
+  \item{x}{
+    A \link{BStringViews} object (typically, one returned
+    by code{matchPattern(pattern, subject)}).
   }
 }
 
