@@ -12,6 +12,7 @@ exportMethods(
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=", toString,
     ## New generics
+    subBString,
     subject, first, last, width, desc,
     BStringViews, matchPattern, countPattern, mismatch
 )
@@ -20,7 +21,7 @@ export(
     readFASTA,
     debug_utils, debug_bbuf, debug_shiftor,
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
-    BString, subBString, DNAString, RNAString,
+    BString, DNAString, RNAString,
     views, adjacentViews,
     matchDNAPattern
 )

@@ -5,7 +5,6 @@
 \alias{BStringViews-class}
 
 % Standard generic methods:
-\alias{initialize,BStringViews-method}
 \alias{length,BStringViews-method}
 \alias{[,BStringViews-method}
 \alias{[<-,BStringViews-method}
@@ -33,10 +32,16 @@
 \alias{width,BStringViews-method}
 \alias{desc}
 \alias{desc,BStringViews-method}
+
+% Constructor-like functions and generics:
+\alias{initialize,BStringViews-method}
+\alias{views}
+\alias{adjacentViews}
 \alias{BStringViews}
 \alias{BStringViews,file-method}
 \alias{BStringViews,BString-method}
 \alias{BStringViews,BStringViews-method}
+
 
 \title{The BStringViews class}
 
@@ -50,51 +55,100 @@
 }
 
 \section{Methods}{
+  In the code snippets below, \code{x}, \code{object}, \code{e1}
+  and \code{e2} are BStringViews objects,
+  and \code{i} can be a numeric or a logical vector.
+
   Standard generic methods:
   \describe{
-    \item{\code{initialize(BStringViews)}:}{
-      [TODO: Document me]
-    }
-    \item{\code{length(BStringViews)}:}{
+    \item{}{
+      \code{length(x)}:
       Used to get the length of a BStringViews, i.e., its number of views
     }
-    \item{\code{BStringViews[i]}:}{
+    \item{}{
+      \code{x[i]}:
       [TODO: Document me]
     }
-    \item{\code{BStringViews[i] <- "attempt to modify the value of a BStringViews"}:}{
+    \item{}{
+      \code{x[[i]]}:
       [TODO: Document me]
     }
-    \item{\code{BStringViews[[i]]}:}{
+    \item{}{
+      \code{toString(x)}:
       [TODO: Document me]
     }
-    \item{\code{BStringViews[[i]] <- "attempt to modify the value of a BStringViews"}:}{
+    \item{}{
+      \code{show(object)}:
       [TODO: Document me]
     }
-    \item{\code{show(BStringViews)}:}{
+    \item{}{
+      \code{e1 == e2}:
       [TODO: Document me]
     }
-    \item{\code{BStringViews1 == BStringViews2}:}{
-      [TODO: Document me]
-    }
-    \item{\code{BStringViews1 != BStringViews2}:}{
+    \item{}{
+      \code{e1 != e2}:
       [TODO: Document me]
     }
   }
+
   Class-specific methods:
   \describe{
-    \item{\code{subject(BStringViews)}:}{[TODO: Document me]}
-    \item{\code{first(BStringViews)}:}{[TODO: Document me]}
-    \item{\code{last(BStringViews)}:}{[TODO: Document me]}
-    \item{\code{width(BStringViews)}:}{[TODO: Document me]}
-    \item{\code{desc(BStringViews)}:}{[TODO: Document me]}
+    \item{}{
+      \code{subject(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{first(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{last(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{width(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{desc(x)}:
+      [TODO: Document me]
+    }
+  }
+}
+
+\section{Constructor-like functions and generics}{
+  In the code snippets below, \code{subject} is a \link{BString} (or
+  \link{DNAString} or \link{RNAString}) object,
+  \code{first}, \code{last} and \code{width} are numeric vectors,
+  and \code{src} can be a character vector, a connection object,
+  a \link{BString} (or \link{DNAString} or \link{RNAString}) object
+  or a BStringViews object.
+
+  Functions:
+  \describe{
+    \item{}{
+      \code{view(subject, first, last)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{adjacentViews(subject, width)}:
+      [TODO: Document me]
+    }
+  }
+
+  New generics:
+  \describe{
+    \item{}{
+      \code{BStringViews(src)}:
+      [TODO: Document me]
+    }
   }
 }
 
 \author{H. Pages}
 
 \seealso{
-  \link{BString}, \link{DNAString}, \link{RNAString},
-  \link{views}, \link{adjacentViews}}
+  \link{BString}, \link{DNAString}, \link{RNAString}
 }
 
 \examples{

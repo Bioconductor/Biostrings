@@ -54,3 +54,5 @@
 
 \author{H. Pages}
 
+\keyword{methods}
+\keyword{classes}

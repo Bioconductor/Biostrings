@@ -229,21 +229,26 @@ isLooseNumeric <- function(x)
 # We deliberately choose the "NA trick" over defaulting 'first' and 'last'
 # to '1' and 'length(x)' because we want to be consistent with what the
 # views() function does.
-subBString <- function(x, first=NA, last=NA)
-{
-    if (!isLooseNumeric(first) || !isLooseNumeric(last))
-        stop("'first' and 'last' must be numerics")
-    if (length(first) != 1 || length(last) != 1)
-        stop("'first' and 'last' must be single numerics")
-    if (is.na(first))
-        first <- 1
-    if (is.na(last))
-        last <- x@length
-    # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
-    if (!isTRUE(1 <= first && first <= last && last <= length(x)))
-        stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
-    bsSubstr(x, as.integer(first), as.integer(last))
-}
+setGeneric(
+    "subBString", function(x, first=NA, last=NA) standardGeneric("subBString")
+)
+setMethod("subBString", "BString",
+    function(x, first, last)
+    {
+        if (!isLooseNumeric(first) || !isLooseNumeric(last))
+            stop("'first' and 'last' must be numerics")
+        if (length(first) != 1 || length(last) != 1)
+            stop("'first' and 'last' must be single numerics")
+        if (is.na(first))
+            first <- 1
+        if (is.na(last))
+            last <- x@length
+        # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
+        if (!isTRUE(1 <= first && first <= last && last <= length(x)))
+            stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
+        bsSubstr(x, as.integer(first), as.integer(last))
+    }
+)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

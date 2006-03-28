@@ -5,7 +5,6 @@
 \alias{BString-class}
 
 % Standard generic methods:
-\alias{initialize,BString-method}
 \alias{length,BString-method}
 \alias{[,BString-method}
 \alias{[<-,BString-method}
@@ -16,21 +15,22 @@
 \alias{!=,BString,ANY-method}
 \alias{!=,ANY,BString-method}
 
+% Constructor-like functions and generics:
+\alias{initialize,BString-method}
 \alias{BString}
+\alias{subBString}
+\alias{subBString,BString-method}
 
+% BString derived classes and their constructor-like functions and generics:
 \alias{class:DNAString}
 \alias{DNAString-class}
-
 \alias{initialize,DNAString-method}
-
 \alias{DNAString}
-
 \alias{class:RNAString}
 \alias{RNAString-class}
-
 \alias{initialize,RNAString-method}
-
 \alias{RNAString}
+
 
 \title{The BString, DNAString and RNAString classes}
 
@@ -61,16 +61,67 @@
 }
 
 \section{Methods}{
+  In the code snippets below, \code{x}, \code{object}, \code{e1}
+  and \code{e2} are BString (or DNAString or RNAString) objects,
+  and \code{i} is a numeric vector.
+
   Standard generic methods:
   \describe{
-    \item{\code{initialize(BString)}:}{[TODO: Document me]}
-    \item{\code{length(BString)}:}{Used to get the length of a BString}
-    \item{\code{toString(BString)}:}{[TODO: Document me]}
-    \item{\code{show(BString)}:}{[TODO: Document me]}
-    \item{\code{BString[i]}:}{[TODO: Document me]}
-    \item{\code{BString[i] <- "attempt to modify the value of a BString"}:}{[TODO: Document me]}
-    \item{\code{BString1 == BString2}:}{[TODO: Document me]}
-    \item{\code{BString1 != BString2}:}{[TODO: Document me]}
+    \item{}{
+      \code{length(x)}:
+      Used to get the length of a BString, i.e., its number of letters
+    }
+    \item{}{
+      \code{x[i]}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{toString(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{show(object)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{e1 == e2}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{e1 != e2}:
+      [TODO: Document me]
+    }
+  }
+}
+
+\section{Constructor-like functions and generics}{
+  In the code snippets below, \code{src} can be a character vector
+  or a BString (or DNAString or RNAString) object,
+  \code{x} is a BString (or DNAString or RNAString) object,
+  and \code{first} and \code{last} are single numerics.
+
+  Functions:
+  \describe{
+    \item{}{
+      \code{BString(src)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{DNAString(src)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{RNAString(src)}:
+      [TODO: Document me]
+    }
+  }
+
+  New generics:
+  \describe{
+    \item{}{
+      \code{subBString(x, first, last)}:
+      [TODO: Document me]
+    }
   }
 }
 
