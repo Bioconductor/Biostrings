@@ -99,7 +99,7 @@ setMethod("toString", "BString",
 # Initialization
 
 # Must work at least with 'src' being one of the following:
-#   - a character vector
+#   - a single non-empty string (character vector of length 1)
 #   - a "bbuf" object
 #   - a "BString", "DNAString" or "RNAString" object
 setMethod("initialize", "BString",
@@ -113,10 +113,18 @@ setMethod("initialize", "BString",
             length <- length(src)
             .Object@data <- src
         } else {
-            if (!is.character(src))
+            if (is.character(src)) {
+                if (length(src) != 1)
+                    stop("use BStringViews() when 'src' is a character vector of length != 1")
+            } else {
+                if (class(src) == "BStringViews") {
+                    if (class(src@subject) == class(.Object))
+                        stop("use subject() if you want to extract the subject of 'src'")
+                    else
+                        stop("use BStringViews() when 'src' is a \"BStringViews\" object")
+                }
                 src <- toString(src)
-            else if (length(src) != 1)
-                stop("use BStringViews() when 'src' is a character vector of length != 1")
+            }
             length <- nchar(src)
             .Object@data <- bbuf(length)
             writeChars(.Object, 1, length, value=src)
