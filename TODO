@@ -1,0 +1,15 @@
+- merge the alignment stuff from Biostrings 1
+
+- improve the Rd files (a lot of TODO tags have to be replaced by real
+  documentation in there)
+
+- test Raphael use case on hgu95av2 package
+
+- fix pb with length(x) <- 2 screwing up x if it's a BString or BStringViews
+  object (prevent people of doing this by defining the replacement version
+  of the length method)
+
+- update the CHANGES file
+
+- merge SuffixTree package from Robert
+

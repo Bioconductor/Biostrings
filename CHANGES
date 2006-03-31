@@ -40,7 +40,6 @@ o The following bugs and design flaws found in Biostrings 1 have been
      'BStringViews(src, "DNAString")' which is much faster (linear in time).
 
 o Other bugs in Biostrings 1:
-
   - The Boyer-Moore algorithm was reported to be broken by Martin.
     Hence it has been temporarly removed from Biostrings 2 (will be back
     ASAP).
@@ -58,3 +57,9 @@ o New features:
   - subject(), first(), last(), width(), desc(), views(), adjacentViews(),
     countPattern(), mismatch()
   - matchPattern() has a 'fixed' argument
+
+o Features that have been temporarly lost (but that should be back ASAP):
+  - The Boyer-Moore and forward-search algorithms.
+
+o New documentation:
+  - Vignettes:
