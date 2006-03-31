@@ -1,4 +1,39 @@
-- merge the alignment stuff from Biostrings 1
+For 1.99.13
+
+- add matchPattern and countPattern for subject="character" and
+  subject="BStringViews" (only works if length(subject) == 1)
+
+- what the semantic of the alphabetFrequency() function in Biostrings 1
+  when @offsets overlap or don't cover the whole string? test.
+  Implement it in C.
+
+- For the needwunsQS generic, use a .needwunsQS backend function.
+  In the backend:
+    - remove test of s1 and s2 lengths (will be done in the front-end now)
+    - expl() is not needed anymore, s1 and s2 are assumed to be ALREADY
+      SUBSETTABLE (s1[i] is i-th letter), so we can replace es1 and es2
+      by s1 and s2 everywhere.
+  We want to support the following signatures:
+    - s1 and s2 character vectors: if length(s1) != 1 or length(s2) != 1
+      then stop else s1 and s2 are safeExploded before
+      they are passed to the backend,
+    - s1="BString" or s2="BString":
+      if s1 or s2 is character then if length(s1) != 1 or length(s2) != 1
+      then stop else convert the character-string to the class of the other
+      before to call the backend,
+      if class(s1) == class(s2) call the backend directly,
+      (now we are sure that both are at least a BString)
+      convert the derived BString to a BString (both can be derived BStrings,
+      e.g. s1 is DNAString and s2 is RNAString)
+    - No support of s1 or s2 = BStringViews.
+
+- compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
+  make sure not important feature has been lost 
+
+- update the CHANGES file
+
+
+Later
 
 - improve the Rd files (a lot of TODO tags have to be replaced by real
   documentation in there)
@@ -9,7 +44,9 @@
   object (prevent people of doing this by defining the replacement version
   of the length method)
 
-- update the CHANGES file
+- remove the Biostrings 1 subdir
+
+- implement .needwunsQS in C
 
 - merge SuffixTree package from Robert
 
