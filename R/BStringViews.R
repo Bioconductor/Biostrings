@@ -475,3 +475,14 @@ setMethod("!=", signature(e1="BStringViews"),
 setMethod("!=", signature(e2="BStringViews"),
     function(e1, e2) !.equal(e2, e1)
 )
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# as.matrix()
+
+setMethod("as.matrix", "BStringViews",
+    function(x)
+    {
+        cbind(x@first, x@last)
+    }
+)

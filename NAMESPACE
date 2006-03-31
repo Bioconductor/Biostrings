@@ -10,7 +10,7 @@ exportClasses(
 exportMethods(
     ## Generics defined elsewhere
     #as.integer,
-    initialize, length, "[", "[[", show, "==", "!=", toString,
+    initialize, length, "[", "[[", show, "==", "!=", toString, as.matrix,
     ## New generics
     subBString,
     subject, first, last, width, desc,

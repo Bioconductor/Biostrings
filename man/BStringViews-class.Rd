@@ -20,6 +20,7 @@
 \alias{!=,BString,BStringViews-method}
 \alias{!=,BStringViews,ANY-method}
 \alias{!=,ANY,BStringViews-method}
+\alias{as.matrix,BStringViews-method}
 
 % Class-specific methods:
 \alias{subject}
@@ -87,6 +88,10 @@
     }
     \item{}{
       \code{e1 != e2}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{as.matrix(x)}:
       [TODO: Document me]
     }
   }
