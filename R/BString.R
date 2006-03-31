@@ -18,12 +18,8 @@ setClass("RNAString", representation("BString"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("length", "BString",
-    function(x)
-    {
-        x@length
-    }
-)
+setMethod("length", "BString", function(x) x@length)
+setMethod("nchar", "BString", function(x, type) x@length)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,12 +83,8 @@ setMethod("writeChars", "RNAString",
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("toString", "BString",
-    function(x)
-    {
-        readChars(x, 1, x@length)
-    }
-)
+setMethod("as.character", "BString", function(x) readChars(x, 1, x@length))
+setMethod("toString", "BString", function(x) as.character(x))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

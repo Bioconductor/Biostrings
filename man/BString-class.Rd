@@ -8,12 +8,14 @@
 \alias{length,BString-method}
 \alias{[,BString-method}
 \alias{[<-,BString-method}
-\alias{toString,BString-method}
 \alias{show,BString-method}
 \alias{==,BString,ANY-method}
 \alias{==,ANY,BString-method}
 \alias{!=,BString,ANY-method}
 \alias{!=,ANY,BString-method}
+\alias{as.character,BString-method}
+\alias{toString,BString-method}
+\alias{nchar,BString-method}
 
 % Constructor-like functions and generics:
 \alias{initialize,BString-method}
@@ -68,15 +70,11 @@
   Standard generic methods:
   \describe{
     \item{}{
-      \code{length(x)}:
+      \code{length(x)} or \code{nchar(x)}:
       Used to get the length of a BString, i.e., its number of letters
     }
     \item{}{
       \code{x[i]}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{toString(x)}:
       [TODO: Document me]
     }
     \item{}{
@@ -89,6 +87,14 @@
     }
     \item{}{
       \code{e1 != e2}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{as.character(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{toString(x)}:
       [TODO: Document me]
     }
   }

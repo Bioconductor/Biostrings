@@ -1,0 +1,138 @@
+
+%\VignetteIndexEntry{Biostrings}
+%\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
+%\VignettePackage{Biostrings}
+
+
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[12pt]{article}
+
+\usepackage{amsmath,pstricks}
+\usepackage[authoryear,round]{natbib}
+\usepackage{hyperref}
+
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+
+\bibliographystyle{plainnat} 
+ 
+\begin{document}
+%\setkeys{Gin}{width=0.55\textwidth}
+
+\title{Alignements}
+\author{VJC}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+In this document we illustrate import of FASTA files, simple alignments,
+and consensus matrix calculation.
+
+\section{Data import}
+\label{fastaread}
+
+The \Rpackage{Biostrings} package includes FASTA files
+encoding the DNA sequence for
+Yeast chromosome I, along with some ORFs.
+Here we load the {\tt someORF.fsa} file into a \Rclass{BStringViews} object
+using the \Rmethod{BStringViews} method:
+<<gety>>=
+library(Biostrings)
+srcpath <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+f <- file(srcpath)
+orf <- BStringViews(f, "DNAString")
+close(f)
+orf
+desc(orf)
+@
+Note that some of the ORF sequences are represented in reverse complement form.
+
+
+\section{Alignments}
+
+A very simple implementation of the Needleman-Wunsch global alignment
+algorithm is provided.  This takes space proportional to the square
+of the string length, uses a simple scalar gap penalty, and requires
+a substitution scoring matrix appropriate for the alphabets from which
+the strings to be aligned are constructed.  Pattern alphabet concepts
+are not currently used.
+
+The BLOSUM50 matrix is available in this package as a
+matrix:
+<<lkblo>>=
+data(blosum50)
+blosum50[1:4,1:4]
+@
+A canonical example from Durbin, Eddy et al:
+<<runnw>>=
+nwdemo <- needwunsQS( "PAWHEAE", "HEAGAWGHEE", blosum50 )
+nwdemo
+@
+The score (final element of dynamic programming
+score matrix) can be accessed:
+<<lksc>>=
+alignScore(nwdemo)
+@
+
+
+\section{Computing alignment consensus matrices}
+
+Here is some provisional code for computing
+a consensus matrix for a group of equal-length strings
+assumed to be aligned.
+<<conscod>>=
+consmat <- function(Lmers, freq=FALSE) {
+ lens <- nchar(Lmers)
+ if (!all(lens==lens[1])) stop("must have equal number of bases in each element")
+ str <- as.character(Lmers)
+ N <- length(Lmers)
+ pure <- unlist(lapply(str, function(x) strsplit(x,"")[[1]]))
+ pos <- as.numeric(t(col(matrix(0, nr=N,nc=lens[1])) ))
+ table(codes=pure,pos=pos)/ifelse(freq,N,1)
+}
+@
+To illustrate, the following application assumes the ORF data
+to be aligned for the first 10 positions (patently false):
+<<doal>>=
+orf10 <- views(subject(orf), first(orf), first(orf)+9)
+consmat(orf10)
+@
+
+The information content as defined by Hertz and Stormo 1995
+is computed as follows:
+<<infco>>= 
+infContent <- function(Lmers) {
+ zlog <- function(x) ifelse(x==0,0,log(x))
+ co <- consmat(Lmers, freq=TRUE)
+ lets <- rownames(co)
+ fr <- alphabetFrequency(Lmers)[lets]
+ sum(co*zlog(co/fr))
+}
+infContent(orf10)
+@
+
+
+\end{document}

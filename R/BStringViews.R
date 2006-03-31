@@ -51,6 +51,16 @@ setMethod("desc", "BStringViews", function(x) x@desc)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+setMethod("nchar", "BStringViews",
+    function(x, type)
+    {
+        ls <- length(x@subject)
+        ifelse(x@last<=ls, x@last, ls) - ifelse(x@first>=1, x@first, 1) + 1
+    }
+)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initialization
 
 # WARNING: This function is unsafe! (it doesn't check its arguments)
@@ -108,15 +118,24 @@ setMethod("[", "BStringViews",
     }
 )
 
-setMethod("toString", "BStringViews",
+setMethod("as.character", "BStringViews",
     function(x)
     {
         lx <- length(x)
         ans <- character(lx)
-        for (i in 1:lx) {
-            ans[i] <- bsView(x@subject, x@first[i], x@last[i])
+        if (lx >= 1) {
+            for (i in 1:lx) {
+                ans[i] <- bsView(x@subject, x@first[i], x@last[i])
+            }
         }
-        toString(ans)
+        ans
+    }
+)
+
+setMethod("toString", "BStringViews",
+    function(x)
+    {
+        toString(as.character(x))
     }
 )
 

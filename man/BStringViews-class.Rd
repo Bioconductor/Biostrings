@@ -10,7 +10,6 @@
 \alias{[<-,BStringViews-method}
 \alias{[[,BStringViews-method}
 \alias{[[<-,BStringViews-method}
-\alias{toString,BStringViews-method}
 \alias{show,BStringViews-method}
 \alias{==,BStringViews,BString-method}
 \alias{==,BString,BStringViews-method}
@@ -20,6 +19,9 @@
 \alias{!=,BString,BStringViews-method}
 \alias{!=,BStringViews,ANY-method}
 \alias{!=,ANY,BStringViews-method}
+\alias{as.character,BStringViews-method}
+\alias{toString,BStringViews-method}
+\alias{nchar,BStringViews-method}
 \alias{as.matrix,BStringViews-method}
 
 % Class-specific methods:
@@ -75,10 +77,6 @@
       [TODO: Document me]
     }
     \item{}{
-      \code{toString(x)}:
-      [TODO: Document me]
-    }
-    \item{}{
       \code{show(object)}:
       [TODO: Document me]
     }
@@ -88,6 +86,18 @@
     }
     \item{}{
       \code{e1 != e2}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{as.character(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{toString(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{nchar(x)}:
       [TODO: Document me]
     }
     \item{}{

@@ -10,11 +10,15 @@ exportClasses(
 exportMethods(
     ## Generics defined elsewhere
     #as.integer,
-    initialize, length, "[", "[[", show, "==", "!=", toString, as.matrix,
+    initialize, length, "[", "[[", show, "==", "!=",
+    as.character, toString, nchar, as.matrix,
     ## New generics
     subBString,
-    subject, first, last, width, desc,
-    BStringViews, matchPattern, countPattern, mismatch
+    subject, first, last, width, desc, BStringViews,
+    matchPattern, countPattern, mismatch,
+    alphabetFrequency,
+    ## Copy/pasted from Biostrings 1 (untested)
+    needwunsQS
 )
 
 export(
@@ -23,5 +27,11 @@ export(
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
     BString, DNAString, RNAString,
     views, adjacentViews,
-    matchDNAPattern
+    matchDNAPattern,
+    ## Copy/pasted from Biostrings 1 (untested)
+    alignScore
 )
+
+## Copy/pasted from Biostrings 1 (untested)
+S3method(print, needwunsQS)
+S3method(alignScore, needwunsQS)
