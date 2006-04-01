@@ -1,8 +1,21 @@
 \name{BString, DNAString, RNAString}
 \docType{class}
 
+% Classes
 \alias{class:BString}
 \alias{BString-class}
+\alias{class:DNAString}
+\alias{DNAString-class}
+\alias{class:RNAString}
+\alias{RNAString-class}
+
+% Constructor-like functions and generics:
+\alias{initialize,BString-method}
+\alias{BString}
+\alias{initialize,DNAString-method}
+\alias{DNAString}
+\alias{initialize,RNAString-method}
+\alias{RNAString}
 
 % Standard generic methods:
 \alias{length,BString-method}
@@ -17,21 +30,10 @@
 \alias{toString,BString-method}
 \alias{nchar,BString-method}
 
-% Constructor-like functions and generics:
-\alias{initialize,BString-method}
-\alias{BString}
+% Other functions and generics:
+\alias{letter}
 \alias{subBString}
 \alias{subBString,BString-method}
-
-% BString derived classes and their constructor-like functions and generics:
-\alias{class:DNAString}
-\alias{DNAString-class}
-\alias{initialize,DNAString-method}
-\alias{DNAString}
-\alias{class:RNAString}
-\alias{RNAString-class}
-\alias{initialize,RNAString-method}
-\alias{RNAString}
 
 
 \title{The BString, DNAString and RNAString classes}
@@ -39,8 +41,8 @@
 \description{
   The BString, DNAString and RNAString classes are containers for big
   strings in general, and DNA or RNA sequences in particular.
-  BString is the base class designed to store a big string and to make
-  its manipulation easy and efficient.
+  BString is the base class designed to store a big string
+  and to make its manipulation easy and efficient.
   It's also the common parent of the DNAString and RNAString classes.
 }
 
@@ -51,8 +53,8 @@
   duplication and (2) a BString can only store a single string (see
   the \link{BStringViews} class for an efficient way to store a
   collection of big strings in a single object).
-  A BString object can be used to store any non-empty string
-  based on a single-byte character set.
+  A BString object can be used to store {\it as is} any non-empty
+  string based on a single-byte character set.
   The DNAString and RNAString classes derive directly from the BString
   class (they have no additional slot). However, these classes can only
   store strings based on a limited alphabet (the IUPAC extended genetic
@@ -60,14 +62,39 @@
   are stored in the object) in a way that optimizes fast search algorithms.
   This makes the DNAString and RNAString classes particularly well suited
   for storing big DNA or RNA sequences.
+  When the strings you want to work with are not DNA or RNA sequences,
+  then you can use the BString class.
+  All the methods that are defined for a BString object also work with a
+  DNAString or RNAString object.
 }
 
-\section{Methods}{
-  In the code snippets below, \code{x}, \code{object}, \code{e1}
-  and \code{e2} are BString (or DNAString or RNAString) objects,
+\section{Constructor-like functions and generics}{
+  In the code snippets below,
+  \code{src} can be a character vector
+  or a BString (or DNAString or RNAString) object.
+
+  \describe{
+    \item{}{
+      \code{BString(src)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{DNAString(src)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{RNAString(src)}:
+      [TODO: Document me]
+    }
+  }
+}
+
+\section{Standard generic methods}{
+  In the code snippets below,
+  \code{x}, \code{object}, \code{e1} and \code{e2}
+  are BString (or DNAString or RNAString) objects,
   and \code{i} is a numeric vector.
 
-  Standard generic methods:
   \describe{
     \item{}{
       \code{length(x)} or \code{nchar(x)}:
@@ -100,30 +127,17 @@
   }
 }
 
-\section{Constructor-like functions and generics}{
-  In the code snippets below, \code{src} can be a character vector
-  or a BString (or DNAString or RNAString) object,
+\section{Other functions and generics}{
+  In the code snippets below,
   \code{x} is a BString (or DNAString or RNAString) object,
+  \code{i} is a numeric vector,
   and \code{first} and \code{last} are single numerics.
 
-  Functions:
   \describe{
     \item{}{
-      \code{BString(src)}:
+      \code{letter(x, i)}:
       [TODO: Document me]
     }
-    \item{}{
-      \code{DNAString(src)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{RNAString(src)}:
-      [TODO: Document me]
-    }
-  }
-
-  New generics:
-  \describe{
     \item{}{
       \code{subBString(x, first, last)}:
       [TODO: Document me]

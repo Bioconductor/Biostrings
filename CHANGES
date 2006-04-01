@@ -45,21 +45,30 @@ o Other bugs in Biostrings 1:
     ASAP).
 
 o Changes in the API:
-  - no more BioString class: it has been replaced by the BString and
-    BStringViews classes,
-  - no more NucleotideString() method: use BString(), DNAString()
-    or RNAString() instead,
-  - matchDNAPattern() has been replaced by matchPattern(),
+  - No more BioString class: it has been replaced by the BString, DNAString,
+    RNAString and BStringViews classes.
+  - A BString object can be used to store a plain string and a DNAString
+    (or RNAString) object can be used to store a DNA (or RNA) sequence.
+  - No more NucleotideString() method: use the BString(), DNAString(),
+    or RNAString() functions instead.
+  - The BString() function is new.
+  - The BString(), DNAString() and RNAString() functions are not vectorized.
+    You need to use the new BStringViews() method when 'src' is a character
+    vector of length > 1.
+  - matchDNAPattern() has been replaced by matchPattern().
 
 o New features:
-  - [ and == for BString objects
-  - [, [[ and == for BStringViews objects
-  - subject(), first(), last(), width(), desc(), views(), adjacentViews(),
-    countPattern(), mismatch()
-  - matchPattern() has a 'fixed' argument
+  - A new format for displaying BString or BStringViews objects.
+  - [, == and != for BString objects.
+  - [[, == and != for BStringViews objects.
+  - letter(), subBString(), views(), adjacentViews(), BStringViews(),
+    subject(), first(), last(), width(), desc(), countPattern() and mismatch()
+  - matchPattern() has a 'fixed' argument.
 
-o Features that have been temporarly lost (but that should be back ASAP):
-  - The Boyer-Moore and forward-search algorithms.
+o Some features that have been temporarly removed (no listing provided).
 
-o New documentation:
-  - Vignettes:
+o Documentation:
+  - The biostDemo.Rnw vignette has been replaced by 2 vignettes:
+    matchPattern.Rnw and Alignements.Rnw
+  - 2 new vignettes (work in progress): Biostrings2Classes.Rnw and
+    DNAStringVectorization.Rnw.

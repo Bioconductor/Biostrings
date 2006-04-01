@@ -80,8 +80,7 @@ a substitution scoring matrix appropriate for the alphabets from which
 the strings to be aligned are constructed.  Pattern alphabet concepts
 are not currently used.
 
-The BLOSUM50 matrix is available in this package as a
-matrix:
+The BLOSUM50 matrix is available in this package as a matrix:
 <<lkblo>>=
 data(blosum50)
 blosum50[1:4,1:4]

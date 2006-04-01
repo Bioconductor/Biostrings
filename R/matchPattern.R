@@ -1,5 +1,5 @@
 # ===========================================================================
-# The matchPattern() generic
+# The matchPattern() generic & related functions
 # ---------------------------------------------------------------------------
 
 
@@ -61,6 +61,8 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 .matchPattern <- function(pattern, subject, algorithm, mismatch,
                           fixed, count.only=FALSE)
 {
+    if (class(pattern) != class(subject))
+        pattern <- new(class(subject), pattern)
     algo <- match.arg(algorithm, c("boyer-moore", "forward-search", "shift-or"))
     if (length(mismatch) != 1)
         stop("'mismatch' must be a single integer")
@@ -90,24 +92,36 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
     new("BStringViews", subject, ans + as.integer(1), ans + pattern@length)
 }
 
-setGeneric(
-    "matchPattern",
-    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
-        standardGeneric("matchPattern")
-)
-
 # Typical use:
 #   matchPattern("TG", DNAString("GTGACGTGCAT"))
 #   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
 # Edge cases:
 #   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
 #   matchPattern("---", DNAString("A"))
+setGeneric(
+    "matchPattern",
+    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
+        standardGeneric("matchPattern")
+)
+setMethod("matchPattern", signature(subject="character"),
+    function(pattern, subject, algorithm, mismatch, fixed)
+    {
+        subject <- BString(subject)
+        .matchPattern(pattern, subject, algorithm, mismatch, fixed)
+    }
+)
 setMethod("matchPattern", signature(subject="BString"),
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != class(subject))
-            pattern <- new(class(subject), pattern)
         .matchPattern(pattern, subject, algorithm, mismatch, fixed)
+    }
+)
+setMethod("matchPattern", signature(subject="BStringViews"),
+    function(pattern, subject, algorithm, mismatch, fixed)
+    {
+        if (length(subject) != 1)
+            stop("'subject' must have a single view")
+        .matchPattern(pattern, subject[[1]], algorithm, mismatch, fixed)
     }
 )
 
@@ -118,13 +132,7 @@ matchDNAPattern <- function(...)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# countPattern() is a fast equivalent to length(matchPattern())
-
-setGeneric(
-    "countPattern",
-    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
-        standardGeneric("countPattern")
-)
+# countPattern() is a slightly faster equivalent to length(matchPattern())
 
 # Typical use:
 #   countPattern("TG", DNAString("GTGACGTGCAT"))
@@ -132,12 +140,30 @@ setGeneric(
 # Edge cases:
 #   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
 #   countPattern("---", DNAString("A"))
+setGeneric(
+    "countPattern",
+    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
+        standardGeneric("countPattern")
+)
+setMethod("countPattern", signature(subject="character"),
+    function(pattern, subject, algorithm, mismatch, fixed)
+    {
+        subject <- BString(subject)
+        .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
+    }
+)
 setMethod("countPattern", signature(subject="BString"),
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != class(subject))
-            pattern <- new(class(subject), pattern)
         .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
+    }
+)
+setMethod("countPattern", signature(subject="BStringViews"),
+    function(pattern, subject, algorithm, mismatch, fixed)
+    {
+        if (length(subject) != 1)
+            stop("'subject' must have a single view")
+        .matchPattern(pattern, subject[[1]], algorithm, mismatch, fixed, TRUE)
     }
 )
 

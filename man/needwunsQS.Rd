@@ -1,10 +1,9 @@
 \name{needwunsQS}
 \alias{needwunsQS}
 
-\alias{needwunsQS,character,character,matrix,numeric-method}
-\alias{needwunsQS,character,character,matrix,missing-method}
-\alias{needwunsQS,BString,BString,matrix,missing-method}
-\alias{needwunsQS,BString,BString,matrix,numeric-method}
+\alias{needwunsQS,character,character-method}
+\alias{needwunsQS,character,BString-method}
+\alias{needwunsQS,BString,character-method}
 \alias{print.needwunsQS}
 \alias{alignScore.needwunsQS}
 \alias{alignScore}

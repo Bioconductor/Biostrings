@@ -25,13 +25,13 @@ export(
     readFASTA,
     debug_utils, debug_bbuf, debug_shiftor,
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
-    BString, DNAString, RNAString,
+    letter, BString, DNAString, RNAString,
     views, adjacentViews,
     matchDNAPattern,
-    ## Copy/pasted from Biostrings 1 (untested)
+    ## Copy/pasted from Biostrings 1
     alignScore
 )
 
-## Copy/pasted from Biostrings 1 (untested)
+## Copy/pasted from Biostrings 1
 S3method(print, needwunsQS)
 S3method(alignScore, needwunsQS)

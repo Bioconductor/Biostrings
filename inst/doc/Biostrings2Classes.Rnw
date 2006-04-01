@@ -106,8 +106,8 @@ b[length(b):1]
 Only {\it in bounds} positive numeric subscripts are supported.
 
 In fact the subsetting operator for \Rclass{BString} (or \Rclass{DNAString})
-objects is not efficient and one should always use the \Rfunction{subBString}
-function to extract a substring from a big object:
+objects is not efficient and one should always use the \Rmethod{subBString}
+method to extract a substring from a big object:
 <<a4>>=
 bb <- subBString(b, 3, 6)
 dd1 <- subBString(d, last=7)
@@ -124,8 +124,8 @@ Note that \Robject{length(dd2)} is equivalent to
 \Robject{nchar(toString(dd2))} but the latter would be very inefficient
 on a big \Rclass{DNAString} object.
 
-{\it [TODO: Make a generic of the substr() function to work with BString objects.
-It will be essentially doing toString(subBString()).]}
+{\it [TODO: Make a generic of the substr() function to work with
+BString objects. It will be essentially doing toString(subBString()).]}
 
 
 % ---------------------------------------------------------------------------
@@ -285,8 +285,8 @@ v12[3] == views(RNAString("AU"), 0, 2)
 
 % ---------------------------------------------------------------------------
 
-\section{The \Rfunction{first}, \Rfunction{last} and \Rfunction{width}
-functions}
+\section{The \Rmethod{first}, \Rmethod{last} and \Rmethod{width}
+methods}
 
 <<f1>>=
 first(v4)
@@ -297,7 +297,7 @@ width(v4)
 Note that \Robject{first(v4)[i]} is equivalent to
 \Robject{first(v4[i])}, except that the former will not issue
 an error if \Robject{i} is out of bounds
-(same for \Rfunction{last} and \Rfunction{width} functions).
+(same for \Rmethod{last} and \Rmethod{width} methods).
 
 Also, when \Robject{i} is a {\it single} integer,
 \Robject{width(v4)[i]} is equivalent to \Robject{length(v4[[i]])}

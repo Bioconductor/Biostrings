@@ -1,8 +1,18 @@
 \name{BStringViews}
 \docType{class}
 
+% Classes:
 \alias{class:BStringViews}
 \alias{BStringViews-class}
+
+% Constructor-like functions and generics:
+\alias{initialize,BStringViews-method}
+\alias{views}
+\alias{adjacentViews}
+\alias{BStringViews}
+\alias{BStringViews,file-method}
+\alias{BStringViews,BString-method}
+\alias{BStringViews,BStringViews-method}
 
 % Standard generic methods:
 \alias{length,BStringViews-method}
@@ -24,7 +34,7 @@
 \alias{nchar,BStringViews-method}
 \alias{as.matrix,BStringViews-method}
 
-% Class-specific methods:
+% Other functions and generics:
 \alias{subject}
 \alias{subject,BStringViews-method}
 \alias{first}
@@ -35,15 +45,6 @@
 \alias{width,BStringViews-method}
 \alias{desc}
 \alias{desc,BStringViews-method}
-
-% Constructor-like functions and generics:
-\alias{initialize,BStringViews-method}
-\alias{views}
-\alias{adjacentViews}
-\alias{BStringViews}
-\alias{BStringViews,file-method}
-\alias{BStringViews,BString-method}
-\alias{BStringViews,BStringViews-method}
 
 
 \title{The BStringViews class}
@@ -57,12 +58,36 @@
 
 }
 
-\section{Methods}{
-  In the code snippets below, \code{x}, \code{object}, \code{e1}
-  and \code{e2} are BStringViews objects,
+\section{Constructor-like functions and generics}{
+  In the code snippets below,
+  \code{subject} is a \link{BString} (or \link{DNAString}
+  or \link{RNAString}) object,
+  \code{first}, \code{last} and \code{width} are numeric vectors,
+  and \code{src} can be a character vector, a connection object,
+  a \link{BString} (or \link{DNAString} or \link{RNAString}) object
+  or a BStringViews object.
+
+  \describe{
+    \item{}{
+      \code{view(subject, first, last)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{adjacentViews(subject, width)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{BStringViews(src)}:
+      [TODO: Document me]
+    }
+  }
+}
+
+\section{Standard generic methods}{
+  In the code snippets below,
+  \code{x}, \code{object}, \code{e1} and \code{e2} are BStringViews objects,
   and \code{i} can be a numeric or a logical vector.
 
-  Standard generic methods:
   \describe{
     \item{}{
       \code{length(x)}:
@@ -105,8 +130,12 @@
       [TODO: Document me]
     }
   }
+}
 
-  Class-specific methods:
+\section{Other functions and generics}{
+  In the code snippets below,
+  \code{x} is a BStringViews objects.
+
   \describe{
     \item{}{
       \code{subject(x)}:
@@ -126,35 +155,6 @@
     }
     \item{}{
       \code{desc(x)}:
-      [TODO: Document me]
-    }
-  }
-}
-
-\section{Constructor-like functions and generics}{
-  In the code snippets below, \code{subject} is a \link{BString} (or
-  \link{DNAString} or \link{RNAString}) object,
-  \code{first}, \code{last} and \code{width} are numeric vectors,
-  and \code{src} can be a character vector, a connection object,
-  a \link{BString} (or \link{DNAString} or \link{RNAString}) object
-  or a BStringViews object.
-
-  Functions:
-  \describe{
-    \item{}{
-      \code{view(subject, first, last)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{adjacentViews(subject, width)}:
-      [TODO: Document me]
-    }
-  }
-
-  New generics:
-  \describe{
-    \item{}{
-      \code{BStringViews(src)}:
       [TODO: Document me]
     }
   }

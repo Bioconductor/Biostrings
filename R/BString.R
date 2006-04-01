@@ -86,6 +86,14 @@ setMethod("writeChars", "RNAString",
 setMethod("as.character", "BString", function(x) readChars(x, 1, x@length))
 setMethod("toString", "BString", function(x) as.character(x))
 
+# Returns a single character.
+letter <- function(x, i)
+{
+    if (!isTRUE(all(i >= 1)) || !isTRUE(all(i <= length(x)))) # NA-proof
+        stop("subscript out of bounds")
+    readChars(x, i)
+}
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initialization
@@ -106,8 +114,8 @@ setMethod("initialize", "BString",
             .Object@data <- src
         } else {
             if (is.character(src)) {
-                if (length(src) != 1)
-                    stop("use BStringViews() when 'src' is a character vector of length != 1")
+                if (length(src) > 1)
+                    stop("use BStringViews() when 'src' is a character vector of length > 1")
             } else {
                 if (class(src) == "BStringViews") {
                     if (class(src@subject) == class(.Object))

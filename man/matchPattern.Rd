@@ -1,9 +1,13 @@
 \name{matchPattern}
 
 \alias{matchPattern}
+\alias{matchPattern,ANY,character-method}
 \alias{matchPattern,ANY,BString-method}
+\alias{matchPattern,ANY,BStringViews-method}
 \alias{countPattern}
+\alias{countPattern,ANY,character-method}
 \alias{countPattern,ANY,BString-method}
+\alias{countPattern,ANY,BStringViews-method}
 \alias{mismatch}
 \alias{mismatch,ANY,BStringViews-method}
 
