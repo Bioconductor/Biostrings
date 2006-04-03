@@ -18,11 +18,6 @@ setClass("RNAString", representation("BString"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("length", "BString", function(x) x@length)
-setMethod("nchar", "BString", function(x, type) x@length)
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # The "readChars" and "writeChars" new generics
 
 setGeneric(
@@ -83,20 +78,22 @@ setMethod("writeChars", "RNAString",
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("as.character", "BString", function(x) readChars(x, 1, x@length))
-setMethod("toString", "BString", function(x) as.character(x))
+# Accessor methods
 
-# Returns a single character.
-letter <- function(x, i)
-{
-    if (!isTRUE(all(i >= 1)) || !isTRUE(all(i <= length(x)))) # NA-proof
-        stop("subscript out of bounds")
-    readChars(x, i)
-}
+# Returns a character-string
+setGeneric("letter", function(x, i) standardGeneric("letter"))
+setMethod("letter", "BString",
+    function(x, i)
+    {
+        if (!isTRUE(all(i >= 1)) || !isTRUE(all(i <= x@length))) # NA-proof
+            stop("subscript out of bounds")
+        readChars(x, i)
+    }
+)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Initialization
+# Constructor-like functions and generics
 
 # Must work at least with 'src' being one of the following:
 #   - a single non-empty string (character vector of length 1)
@@ -166,7 +163,7 @@ setMethod("initialize", "RNAString",
     }
 )
 
-# Some wrappers for compatibility with BStrings 1.4.x (BioC 1.7).
+# Some wrappers for compatibility with Biostrings 1.
 # To test the speed:
 #   big <- paste(sample(c('A','C','G','T'), 10^6, replace=TRUE), collapse="")
 #   system.time(d <- DNAString(big))
@@ -182,7 +179,43 @@ RNAString <- function(...)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Standard generic methods
+
+# Helper function used by the show() method
+bsSnippet <- function(x, snippetW)
+{
+    if (snippetW < 7)
+        snippetW <- 7
+    lx <- x@length
+    if (lx <= snippetW) {
+        toString(x)
+    } else {
+        w1 <- (snippetW - 2) %/% 2
+        w2 <- (snippetW - 3) %/% 2
+        paste(readChars(x, 1, w1),
+              "...",
+              readChars(x, lx - w2 + 1, lx),
+              sep="")
+    }
+}
+
+setMethod("show", "BString",
+    function(object)
+    {
+        lo <- object@length
+        cat("  ", lo, "-letter \"", class(object), "\" object", sep="")
+        #if (!is.null(object@codec))
+        #    cat(" with alphabet:", toString(object@codec@letters))
+        cat("\nValue:", bsSnippet(object, 72))
+        cat("\n")
+    }
+)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Subsetting (with decoding)
+
+setMethod("length", "BString", function(x) x@length)
 
 setMethod("[", "BString",
     function(x, i, j, ..., drop)
@@ -211,83 +244,6 @@ setReplaceMethod("[", "BString",
     {
         stop(paste("attempt to modify the value of a \"",
                    class(x), "\" object", sep=""))
-    }
-)
-
-# The "bsSubstr" function is very fast because it does not copy the string
-# data. Return a BString object (not vectorized).
-# 'first' and 'last' must be single integers verifying:
-#   1 <= first <= last <= length(x)
-# WARNING: This function is voluntarly unsafe (it doesn't check its
-# arguments) because we want it to be the fastest possible!
-bsSubstr <- function(x, first, last)
-{
-    one <- as.integer(1)
-    x@offset <- x@offset + first - one
-    x@length <- last - first + one
-    x
-}
-
-isLooseNumeric <- function(x)
-{
-    return(is.numeric(x) || (!is.null(x) && all(is.na(x))))
-}
-
-# The public (and safe) version of bsSubstr(). Not vectorized.
-# We deliberately choose the "NA trick" over defaulting 'first' and 'last'
-# to '1' and 'length(x)' because we want to be consistent with what the
-# views() function does.
-setGeneric(
-    "subBString", function(x, first=NA, last=NA) standardGeneric("subBString")
-)
-setMethod("subBString", "BString",
-    function(x, first, last)
-    {
-        if (!isLooseNumeric(first) || !isLooseNumeric(last))
-            stop("'first' and 'last' must be numerics")
-        if (length(first) != 1 || length(last) != 1)
-            stop("'first' and 'last' must be single numerics")
-        if (is.na(first))
-            first <- 1
-        if (is.na(last))
-            last <- x@length
-        # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
-        if (!isTRUE(1 <= first && first <= last && last <= length(x)))
-            stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
-        bsSubstr(x, as.integer(first), as.integer(last))
-    }
-)
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Display
-
-bsSnippet <- function(x, snippetW)
-{
-    if (snippetW < 7)
-        snippetW <- 7
-    l <- length(x)
-    if (l <= snippetW) {
-        toString(x)
-    } else {
-        w1 <- (snippetW - 2) %/% 2
-        w2 <- (snippetW - 3) %/% 2
-        paste(readChars(x, 1, w1),
-              "...",
-              readChars(x, l - w2 + 1, l),
-              sep="")
-    }
-}
-
-setMethod("show", "BString",
-    function(object)
-    {
-        l <- length(object)
-        cat("  ", l, "-letter \"", class(object), "\" object", sep="")
-        #if (!is.null(object@codec))
-        #    cat(" with alphabet:", toString(object@codec@letters))
-        cat("\nValue:", bsSnippet(object, 72))
-        cat("\n")
     }
 )
 
@@ -345,8 +301,59 @@ setMethod("!=", signature(e2="BString"),
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# These 2 functions convert a given view on a BString object into a
-# a single string (character vector of length 1).
+setMethod("as.character", "BString", function(x) readChars(x, 1, x@length))
+setMethod("toString", "BString", function(x) as.character(x))
+setMethod("nchar", "BString", function(x, type) x@length)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Other functions and generics
+
+# The "bsSubstr" function is very fast because it does not copy the string
+# data. Return a BString object (not vectorized).
+# 'first' and 'last' must be single integers verifying:
+#   1 <= first <= last <= length(x)
+# WARNING: This function is voluntarly unsafe (it doesn't check its
+# arguments) because we want it to be the fastest possible!
+bsSubstr <- function(x, first, last)
+{
+    one <- as.integer(1)
+    x@offset <- x@offset + first - one
+    x@length <- last - first + one
+    x
+}
+
+# The public (and safe) version of bsSubstr(). Not vectorized.
+# We deliberately choose the "NA trick" over defaulting 'first' and 'last'
+# to '1' and 'length(x)' because we want to be consistent with what the
+# views() function does.
+setGeneric(
+    "subBString", function(x, first=NA, last=NA) standardGeneric("subBString")
+)
+setMethod("subBString", "BString",
+    function(x, first, last)
+    {
+        if (!isLooseNumeric(first) || !isLooseNumeric(last))
+            stop("'first' and 'last' must be numerics")
+        if (length(first) != 1 || length(last) != 1)
+            stop("'first' and 'last' must be single numerics")
+        if (is.na(first))
+            first <- 1
+        if (is.na(last))
+            last <- x@length
+        # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
+        if (!isTRUE(1 <= first && first <= last && last <= length(x)))
+            stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
+        bsSubstr(x, as.integer(first), as.integer(last))
+    }
+)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Helper functions for view manipulation
+
+# The 2 functions below convert a given view on a BString object into a
+# a character-string.
 # They are used as helper functions to display a BStringViews object.
 # Both assume that 'first' <= 'last' (so they don't check it) and
 # padd the result with spaces to produce the "margin effect"
@@ -388,8 +395,6 @@ bsViewSnippet <- function(x, first, last, snippetW)
     }
 }
 
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Assume that 'first1', 'last1', 'first2', 'last2' are single integers
 # and that first1 <= last1 and first2 <= last2.
 bsIdenticalViews <- function(x1, first1, last1, x2, first2, last2)

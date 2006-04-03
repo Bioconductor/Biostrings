@@ -1,34 +1,96 @@
 
-For 1.99.14
+For 1.99.15
 
-- Before to have an alphabetFrequency method for BStringViews objects,
+- "normalized" BStringViews objects: 'v' is "normalized" means
+    (1) no "out of limits" views,
+    (2) views are sorted from left to right (first(v) is ascending),
+    (3) views don't overlap and can't even be adjacents
+  If length(v) >= 2, then the 3 above conditions are equivalent to: 
+    1 <= first(v)[i] <= last(v)[i] < first(v)[i+1]
+                     <= last(v)[i+1] <= nchar(subject(v))
+  for every 1 <= i < length(v).
+  If length(v) == 0, then 'v' is normalized.
+  If length(v) == 1, then 'v' is normalized <=> view is not "out of limits".
+
+  The normalize() function:
+  For any given BStringViews object v0, let's call S(v0) the subset of
+  integers defined by:
+    (union of all [first(v0)[i],last(v0)[i]]) inter [1,nchar(subject(v0))]
+  We can see that there is a unique "normalized" BStringViews object v
+  (with same subject as v0) such that S(v) = S(v0).
+  So we can define the normalize() function: v0 -> v = normalize(v0).
+  An interesting property of this function is that, for any v0,
+  v = normalize(v0) is the smallest BStringViews object (with same
+  subject than v0) such that S(v) = S(v0).
+  It can also been shown that length(v) <= (nchar(subject(v0)) + 1) / 2.
+
+- Once we have this notion of "normalized" BStringViews objects, we can
+  define the following operators on them (the results of these operations
+  are "normalized" too):
+    v2 <- !v: (unary operation) S(v2) =  [1:nchar(subject(v))] - S(v)
+    v3 <- v | w: s(v3) = (S(v) union S(w))
+    v4 <- v & w: s(v4) = (S(v) inter S(w))
+  So we end up having the equivalent of the fundamental set operations
+  (complementary, union, intersection).
+  No need to define an equivalent for the set difference (S(v) - S(w)),
+  or the set symetric difference ((S(v) -S(w)) union (S(w) - S(v)))
+  because they can be achieved by using the fundamental operations.
+
+  Note: The results of the above operations are undetermined if one of
+  the operand is not "normalized" or if the 2 operands don't have the same
+  subject! (no need to do any check of any sort, or to try to fail
+  gracefully, this will just result in slowing down the operators).
+  The result has always the same subject than the operands.
+
+- Given any BStringViews object v, !normalized(v) is the smallest
+  BStringViews object with a set of views that covers the parts of the
+  subject that are not covered by the original set of views.
+
+- Have the BStringViews() method for BString objects support the 'sep' arg.
+
+- Test Raphael use case with built-in string functions and compare speed
+  with Biostrings solution. Add the conclusions to the matchPattern.Rnw
+  vignette.
+
+- Before to have an alphabetFrequency() method for BStringViews objects,
   check what is the semantic of the alphabetFrequency() function in
   Biostrings 1 when @offsets overlap or don't cover the whole string? test.
 
-- Implement the alphabetFrequency method in C.
+- Implement the alphabetFrequency() method in C. The current implementation
+  calls the countPattern() function for each letter in the alphabet.
+  We want an implementation that does only ONE pass on the BString object.
+  Have it work for BString objects too (in addition to DNAString and
+  RNAString objects who have a predefined alphabet).
 
-- why doesn't sapply or lapply work for a BStringViews object (it didn't
+- Add the substr() method for BString objects (returns a character-string)
+  and for BStringViews objects (returns a character vector of same length
+  than its first arg).
+
+- Why doesn't sapply or lapply work for a BStringViews object (it didn't
   work either for BioString objects). Isn't it enough that these objects
   are subsettable?
 
-- compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
-  make sure no important feature has been lost 
+- Compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
+  make sure no important feature has been lost.
 
-- update the CHANGES file
+- Update the CHANGES file.
 
 
 Later
 
-- improve the Rd files (a lot of TODO tags have to be replaced by real
-  documentation there)
+- Still have to think about it (Robert suggestion): make [[ work on "out
+  of limits" views with a warning (we keep issuing an error only when the
+  view is all blank).
 
-- fix pb with length(x) <- 2 screwing up x if it's a BString or BStringViews
+- Improve the Rd files (a lot of TODO tags have to be replaced by real
+  documentation there).
+
+- Fix pb with length(x) <- 2 screwing up x if it's a BString or BStringViews
   object (prevent people of doing this by defining the replacement version
-  of the length method and issuing an error)
+  of the length method and issuing an error).
 
-- remove the Biostrings 1 subdir
+- Remove the Biostrings 1 subdir.
 
-- implement .needwunsQS in C
+- Implement .needwunsQS in C.
 
-- merge SuffixTree package from Robert
-
+- Merge SuffixTree package from Robert.

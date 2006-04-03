@@ -69,6 +69,6 @@ o Some features that have been temporarly removed (no listing provided).
 
 o Documentation:
   - The biostDemo.Rnw vignette has been replaced by 2 vignettes:
-    matchPattern.Rnw and Alignements.Rnw
+    matchPattern.Rnw and Alignments.Rnw
   - 2 new vignettes (work in progress): Biostrings2Classes.Rnw and
     DNAStringVectorization.Rnw.

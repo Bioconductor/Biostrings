@@ -138,13 +138,14 @@ equal to \Robject{countPattern(p2, cI, mismatch=0)}.
 
 \section{A note on performance}
 
-If needed, the \Rmethod{countPattern} method converts its first argument
-(the pattern) to an object of the same class than its second argument
-(the subject) before it passes it to the fast algorithm.
+If needed, the \Rmethod{matchPattern} and \Rmethod{countPattern} methods
+convert their first argument (the pattern) to an object of the same class
+than their second argument (the subject) before they pass it to the function
+that actually implements the fast search algorithm.
 
 So if you need to reuse the same pattern a high number of times,
 it's a good idea to convert it {\it before} to pass it to the
-\Rmethod{countPattern} method.
+\Rmethod{matchPattern} or \Rmethod{countPattern} method.
 This way the conversion is done only once:
 <<c1>>=
 library(hgu95av2probe)

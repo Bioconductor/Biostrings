@@ -49,11 +49,13 @@
 
 \section{Introduction}
 
-This document briefly presents a proposal for a new set of classes
-designed to make manipulation of big strings (like DNA or RNA sequences)
-easy and fast.
-It keeps the 3 following ideas from the \Rpackage{Biostrings}~1
-(\Rpackage{Biostrings} v~1.4.x) package:
+This document briefly presents the new set of classes implemented in the
+\Rpackage{Biostrings}~2 package.
+Like the \Rpackage{Biostrings}~1 classes (found in \Rpackage{Biostrings}
+v~1.4.x), they were designed to make manipulation of big strings (like DNA
+or RNA sequences) easy and fast.
+This is achieved by keeping the 3 following ideas from the
+\Rpackage{Biostrings}~1 package:
 (1) use R external pointers to store the string data,
 (2) use bit patterns to encode the string data,
 (3) provide the user with a convenient class of objects where each instance
@@ -63,8 +65,8 @@ It keeps the 3 following ideas from the \Rpackage{Biostrings}~1
 However, there is a flaw in the \Rclass{BioString} class design
 that prevents the search algorithms to return correct information
 about the matches (i.e. the views) that they found.
-This proposal addresses this issue by replacing the \Rclass{BioString}
-class by 2 new classes:
+The new classes address this issue by replacing the \Rclass{BioString}
+class (implemented in \Rpackage{Biostrings}~1) by 2 new classes:
 (1) the \Rclass{BString} class used to represent a {\it single} string, and
 (2) the \Rclass{BStringViews} class used to represent a set of views
     {\it on the same} \Rclass{BString} object, and by introducing new
@@ -107,7 +109,7 @@ Only {\it in bounds} positive numeric subscripts are supported.
 
 In fact the subsetting operator for \Rclass{BString} (or \Rclass{DNAString})
 objects is not efficient and one should always use the \Rmethod{subBString}
-method to extract a substring from a big object:
+method to extract a substring from a big string:
 <<a4>>=
 bb <- subBString(b, 3, 6)
 dd1 <- subBString(d, last=7)

@@ -9,6 +9,10 @@
 \alias{class:RNAString}
 \alias{RNAString-class}
 
+% Accesor methods:
+\alias{letter}
+\alias{letter,BString-method}
+
 % Constructor-like functions and generics:
 \alias{initialize,BString-method}
 \alias{BString}
@@ -18,10 +22,10 @@
 \alias{RNAString}
 
 % Standard generic methods:
+\alias{show,BString-method}
 \alias{length,BString-method}
 \alias{[,BString-method}
 \alias{[<-,BString-method}
-\alias{show,BString-method}
 \alias{==,BString,ANY-method}
 \alias{==,ANY,BString-method}
 \alias{!=,BString,ANY-method}
@@ -31,7 +35,6 @@
 \alias{nchar,BString-method}
 
 % Other functions and generics:
-\alias{letter}
 \alias{subBString}
 \alias{subBString,BString-method}
 
@@ -66,6 +69,19 @@
   then you can use the BString class.
   All the methods that are defined for a BString object also work with a
   DNAString or RNAString object.
+}
+
+\section{Accesor methods}{
+  In the code snippets below,
+  \code{x} is a BString (or DNAString or RNAString) object
+  and \code{i} is a numeric vector.
+
+  \describe{
+    \item{}{
+      \code{letter(x, i)}:
+      [TODO: Document me]
+    }
+  }
 }
 
 \section{Constructor-like functions and generics}{
@@ -105,10 +121,6 @@
       [TODO: Document me]
     }
     \item{}{
-      \code{show(object)}:
-      [TODO: Document me]
-    }
-    \item{}{
       \code{e1 == e2}:
       [TODO: Document me]
     }
@@ -129,15 +141,10 @@
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} is a BString (or DNAString or RNAString) object,
-  \code{i} is a numeric vector,
+  \code{x} is a BString (or DNAString or RNAString) object
   and \code{first} and \code{last} are single numerics.
 
   \describe{
-    \item{}{
-      \code{letter(x, i)}:
-      [TODO: Document me]
-    }
     \item{}{
       \code{subBString(x, first, last)}:
       [TODO: Document me]

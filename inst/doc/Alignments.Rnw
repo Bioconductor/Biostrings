@@ -40,7 +40,7 @@
 \begin{document}
 %\setkeys{Gin}{width=0.55\textwidth}
 
-\title{Alignements}
+\title{Alignments}
 \author{VJC}
 \maketitle
 
