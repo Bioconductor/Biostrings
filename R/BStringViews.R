@@ -57,8 +57,9 @@ setMethod("desc", "BStringViews", function(x) x@desc)
 # Only 2 valid ways to use it:
 #   new("BStringViews", subject)
 #   new("BStringViews", subject, first, last)
-# where 'subject' is a BString (or derived) object and 'first' and 'last' are
-# integer vectors of the same length such that 'first <= last'.
+# where 'subject' is a BString (or derived) object,
+# and 'first' and 'last' are integer vectors of the same length
+# such that 'first <= last'.
 setMethod("initialize", "BStringViews",
     function(.Object, subject, first, last)
     {
@@ -73,7 +74,8 @@ setMethod("initialize", "BStringViews",
 
 # The 2 functions above share the following properties:
 #   - They are exported (and safe).
-#   - First argument is 'subject'. It must be a BString (or derived) object.
+#   - First argument is 'subject'. It must be a character vector or a BString
+#     (or derived) object.
 #   - Passing something else to 'subject' provokes an error.
 #   - They return a BStringViews object whose 'subject' slot is the object
 #     passed in the 'subject' argument.
@@ -92,6 +94,8 @@ setMethod("initialize", "BStringViews",
 #   dnav5 <- views(dna, integer(0), integer(0))
 views <- function(subject, first=NA, last=NA)
 {
+    if (class(subject) == "character")
+        subject <- BString(subject)
     ans <- new("BStringViews", subject)
     # Integrity checking
     if (!isLooseNumeric(first) || !isLooseNumeric(last))
@@ -120,6 +124,8 @@ views <- function(subject, first=NA, last=NA)
 # 'gapwidth' is the vector of inter-view widths (recycled).
 adjacentViews <- function(subject, width, gapwidth=0)
 {
+    if (class(subject) == "character")
+        subject <- BString(subject)
     ans <- new("BStringViews", subject)
     if (!is.numeric(width) || !isTRUE(all(width >= 1))) # NA-proof
         stop("'width' must be numerics >= 1")

@@ -55,7 +55,7 @@
 }
 
 \details{
-
+    [TODO: Put some details here]
 }
 
 \section{Accesor methods}{
@@ -88,13 +88,13 @@
 
 \section{Constructor-like functions and generics}{
   In the code snippets below,
-  \code{subject} is a \link{BString} (or \link{DNAString}
-  or \link{RNAString}) object
+  \code{subject} is a character vector or a \link{BString}
+  (or \link{DNAString} or \link{RNAString}) object
   and \code{first}, \code{last} and \code{width} are numeric vectors.
 
   \describe{
     \item{}{
-      \code{view(subject, first, last)}:
+      \code{views(subject, first, last)}:
       [TODO: Document me]
     }
     \item{}{

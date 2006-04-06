@@ -1,5 +1,10 @@
 
 For 1.99.15
+- Add a BStringGenome class: wrapper to the naked environments
+  defined in the genome data packages and containing the complete
+  genome of the specie.
+
+For 1.99.16
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
