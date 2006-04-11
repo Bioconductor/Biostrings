@@ -1,10 +1,30 @@
 
-For 1.99.15
-- Add a BStringGenome class: wrapper to the naked environments
-  defined in the genome data packages and containing the complete
-  genome of the specie.
-
 For 1.99.16
+
+- Before to have an alphabetFrequency() method for BStringViews objects,
+  check what is the semantic of the alphabetFrequency() function in
+  Biostrings 1 when @offsets overlap or don't cover the whole string? test.
+
+- Implement the alphabetFrequency() method in C. The current implementation
+  calls the countPattern() function for each letter in the alphabet.
+  We want an implementation that does only ONE pass on the BString object.
+  Have it work for BString objects too (in addition to DNAString and
+  RNAString objects who have a predefined alphabet).
+
+- Implement .needwunsQS in C.
+
+- Boyer-Moore
+ 
+- Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
+  alignment algo) into Biostrings.
+
+- An old Robert request: "have a look at GeneR, and see if there are
+  any other packages that do sequence matching, and describe, in one page or
+  so, what the differences are between the packages (also some notion of speed
+  and size, how well do they work on different inputs)".
+
+
+For 1.99.17
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
@@ -57,16 +77,6 @@ For 1.99.16
   with Biostrings solution. Add the conclusions to the matchPattern.Rnw
   vignette.
 
-- Before to have an alphabetFrequency() method for BStringViews objects,
-  check what is the semantic of the alphabetFrequency() function in
-  Biostrings 1 when @offsets overlap or don't cover the whole string? test.
-
-- Implement the alphabetFrequency() method in C. The current implementation
-  calls the countPattern() function for each letter in the alphabet.
-  We want an implementation that does only ONE pass on the BString object.
-  Have it work for BString objects too (in addition to DNAString and
-  RNAString objects who have a predefined alphabet).
-
 - Add the substr() method for BString objects (returns a character-string)
   and for BStringViews objects (returns a character vector of same length
   than its first arg).
@@ -95,7 +105,5 @@ Later
   of the length method and issuing an error).
 
 - Remove the Biostrings 1 subdir.
-
-- Implement .needwunsQS in C.
 
 - Merge SuffixTree package from Robert.
