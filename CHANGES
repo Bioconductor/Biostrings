@@ -40,9 +40,20 @@ o The following bugs and design flaws found in Biostrings 1 have been
      'BStringViews(src, "DNAString")' which is much faster (linear in time).
 
 o Other bugs in Biostrings 1:
-  - The Boyer-Moore algorithm was reported to be broken by Martin.
-    Hence it has been temporarly removed from Biostrings 2 (will be back
-    ASAP).
+  - The Boyer-Moore algorithm was reported to be broken by Martin:
+      > d <- DNAString("GACTGGTAAAAGTCGGCCGAGGAC")
+      > matchDNAPattern("AA", d, algorithm="boyer-moore")
+          Object of class BioString with
+      Pattern alphabet: -TGCANBDHKMRSVWY
+      Values:
+      [1] AC
+      [2] TA
+      [3] AA
+      [4] AA
+      [5] AA
+      [6] AG
+      [7] GA
+    The algorithm has not yet been ported to Biostrings 2 (but will be ASAP).
 
 o Changes in the API:
   - No more BioString class: it has been replaced by the BString, DNAString,
