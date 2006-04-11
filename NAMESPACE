@@ -4,7 +4,7 @@ useDynLib(Biostrings)
 
 exportClasses(
     "BString", "DNAString", "RNAString",
-    "BStringViews", "BStringGenome"
+    "BStringViews"
 )
 
 exportMethods(
@@ -14,7 +14,7 @@ exportMethods(
     as.character, toString, nchar, as.matrix,
     ## New generics
     subBString,
-    subject, first, last, width, desc, BStringViews, unload,
+    subject, first, last, width, desc, BStringViews,
     matchPattern, countPattern, mismatch,
     alphabetFrequency,
     ## Copy/pasted from Biostrings 1
