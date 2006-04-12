@@ -1,5 +1,5 @@
 
-For 1.99.17
+For 1.99.18
 
 - Before to have an alphabetFrequency() method for BStringViews objects,
   check what is the semantic of the alphabetFrequency() function in
@@ -24,7 +24,7 @@ For 1.99.17
   and size, how well do they work on different inputs)".
 
 
-For 1.99.18
+For 1.99.19
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
