@@ -77,9 +77,7 @@ length(ce2$upstream2000)
 length(ce2$upstream2000[[1]])
 @
 
-Some basic stats (in \Rpackage{Biostrings}~1 the
-\Rmethod{alphabetFrequency} method is implemented in C,
-this still needs to be done in \Rpackage{Biostrings}~2):
+Some basic stats:
 <<a5>>=
 af <- alphabetFrequency(cI)
 af
@@ -189,9 +187,6 @@ someStats(tmpseq[1:10])
 %     )
 % }
 % someStats(tmpseq[1:10])
-%
-% and the someStats() call will be twice faster than with Biostrings 2
-% because the alphabetFrequency method has not yet been implemented in C.
 
 
 \end{document}

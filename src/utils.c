@@ -17,7 +17,7 @@ SEXP utils_debug()
 
 /****************************************************************************
  Functions defined below are NOT .Call methods.
- DON'T REGISTER THEM IN init.c!
+ DON'T REGISTER THEM IN R_init_Biostrings.c!
  They are all prefixed with "Biostrings_" to minimize the risk of clash with
  symbols found in libc ("_memcmp" was clashing with "_memcmp" from libc on
  churchill).

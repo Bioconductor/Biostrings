@@ -47,6 +47,9 @@ static const R_CallMethodDef callMethods[] = {
 	{"ibuf_write_ints", (DL_FUNC) &ibuf_write_ints, 4},
 	{"ibuf_writeii_ints", (DL_FUNC) &ibuf_writeii_ints, 3},
 
+/* alphabetFrequency.c */
+	{"alphabetFrequency", (DL_FUNC) &alphabetFrequency, 3},
+
 /* shiftor.c */
 	{"shiftor_debug", (DL_FUNC) &shiftor_debug, 0},
 

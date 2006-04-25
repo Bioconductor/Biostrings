@@ -1,42 +1,50 @@
+.alphabetFrequency <- function(x)
+{
+    .Call("alphabetFrequency",
+          x@data@xp, x@offset, x@length,
+          PACKAGE="Biostrings")
+}
+
+.DNAorRNA_alphabetFrequency <- function(x, baseOnly, codec)
+{
+    af <- .alphabetFrequency(x)
+    if (baseOnly)
+        i <- c(1:4,16)
+    else
+        i <- 1:length(codec@letters)
+    ans <- af[codec@codes[i] + 1]
+    names <- codec@letters[i]
+    if (baseOnly) {
+        names <- c(names, "other")
+        ans <- c(ans, nchar(x) - sum(ans))
+    }
+    names(ans) <- names
+    ans
+}
+
 setGeneric(
     "alphabetFrequency",
     function(x, baseOnly=TRUE) standardGeneric("alphabetFrequency")
 )
 
-# TODO: Implement a FAST alphabetFrequency() in C
-# TODO: Make a separate function that is called by the 2 methods below
-setMethod("alphabetFrequency", "DNAString",
+setMethod("alphabetFrequency", "BString",
     function(x, baseOnly)
     {
-        if (baseOnly)
-            letters <- DNA_STRING_CODEC@letters[c(1:4,16)]
-        else
-            letters <- DNA_STRING_CODEC@letters[]
-        ans <- sapply(letters, function(let) countPattern(let, x, fixed=TRUE))
-        if (baseOnly) {
-            letters <- c(letters, "other")
-            ans <- c(ans, nchar(x) - sum(ans))
-        }
-        names(ans) <- letters
-        ans
+        .alphabetFrequency(x)
     }
 )
 
-# TODO: Implement a FAST alphabetFrequency() in C
+setMethod("alphabetFrequency", "DNAString",
+    function(x, baseOnly)
+    {
+        .DNAorRNA_alphabetFrequency(x, baseOnly, DNA_STRING_CODEC)
+    }
+)
+
 setMethod("alphabetFrequency", "RNAString",
     function(x, baseOnly)
     {
-        if (baseOnly)
-            letters <- RNA_STRING_CODEC@letters[c(1:4,16)]
-        else
-            letters <- RNA_STRING_CODEC@letters[]
-        ans <- sapply(letters, function(let) countPattern(let, x, fixed=TRUE))
-        if (baseOnly) {
-            letters <- c(letters, "other")
-            ans <- c(ans, nchar(x) - sum(ans))
-        }
-        names(ans) <- letters
-        ans
+        .DNAorRNA_alphabetFrequency(x, baseOnly, RNA_STRING_CODEC)
     }
 )
 

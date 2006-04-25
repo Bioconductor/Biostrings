@@ -15,8 +15,8 @@ exportMethods(
     ## New generics
     subBString,
     subject, first, last, width, desc, BStringViews,
+    reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
-    alphabetFrequency,
     ## Copy/pasted from Biostrings 1
     needwunsQS
 )

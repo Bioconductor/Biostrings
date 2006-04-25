@@ -1,6 +1,7 @@
 \name{alphabetFrequency}
 
 \alias{alphabetFrequency}
+\alias{alphabetFrequency,BString-method}
 \alias{alphabetFrequency,DNAString-method}
 \alias{alphabetFrequency,RNAString-method}
 \alias{alphabetFrequency,BStringViews-method}

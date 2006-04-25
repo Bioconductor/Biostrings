@@ -6,8 +6,8 @@ o The following bugs and design flaws found in Biostrings 1 have been
   a) matchDNAPattern() was broken in many ways:
 
      - The "offset problem":
-         d <- DNAString("AA","TTT")
-         m <- matchDNAPattern("TT", d[2])
+         > d <- DNAString(c("AA","TTT"))
+         > m <- matchDNAPattern("TT", d[2])
        was returning wrong matches.
        This problem was in fact the consequence of a flaw in the design
        of the BioString class and was the first motivation for reworking
@@ -16,7 +16,7 @@ o The following bugs and design flaws found in Biostrings 1 have been
        classes).
 
      - The "negative offset problem":
-         matchDNAPattern("AAA", "ACT", mismatch=2)
+         > matchDNAPattern("AAA", "ACT", mismatch=2)
        was displaying a first empty match.
 
      - The "fuzzy searching" problems:
@@ -31,15 +31,16 @@ o The following bugs and design flaws found in Biostrings 1 have been
          not able to display them properly.
 
      - This was provoking a bus-error bug on Solaris 2.9 and Mac OS X:
-         pattern <- DNAString("AAAA")
-         subject <- DNAString("AAAAC")
-         matchDNAPattern(pattern, subject, mis=2)
+         > pattern <- DNAString("AAAA")
+         > subject <- DNAString("AAAAC")
+         > matchDNAPattern(pattern, subject, mis=2)
 
   b) Time of 'DNAString(src)' was quadratic in respect to 'length(src)' ('src'
      being a character vector). In Biostrings 2 this has been replaced by
      'BStringViews(src, "DNAString")' which is much faster (linear in time).
 
 o Other bugs in Biostrings 1:
+
   - The Boyer-Moore algorithm was reported to be broken by Martin:
       > d <- DNAString("GACTGGTAAAAGTCGGCCGAGGAC")
       > matchDNAPattern("AA", d, algorithm="boyer-moore")
@@ -54,6 +55,12 @@ o Other bugs in Biostrings 1:
       [6] AG
       [7] GA
     The algorithm has not yet been ported to Biostrings 2 (but will be ASAP).
+
+  - alphabetFrequency(x) was broken when x had "out of limits" offsets:
+      > m <- matchDNAPattern("AAA", "ACT", mismatch=2)
+      > alphabetFrequency(m)
+      Error in alphabetFrequency(m) : found pattern (0) not in mapping
+    (This still doesn't work in Biostrings 2, see TODO file.)
 
 o Changes in the API:
   - No more BioString class: it has been replaced by the BString, DNAString,

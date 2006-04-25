@@ -286,21 +286,23 @@ static void _shiftor(
 
 /*
  * Arguments:
- *   'p_xp': external pointer to the pattern string (externalptr)
- *   'p_pos': the pattern pos in the buffer (integer vector of length 1)
- *   'p_length': the pattern length (integer vector of length 1)
- *   's_xp': external pointer to the subject string (externalptr)
- *   's_pos': the subject pos in the buffer (integer vector of length 1)
- *   's_length': the subject length (integer vector of length 1)
+ *   'p_xp': pattern@data@xp
+ *   'p_offset': pattern@offset
+ *   'p_length': pattern@length
+ *   's_xp': subject@data@xp
+ *   's_offset': subject@offset
+ *   's_length': subject@length
  *   'mismatch': the number of mismatches (integer vector of length 1)
+ *   'fixed': single logical
+ *   'count_only': single logical
  * Return an integer vector containing the relative pos of the matches.
  * All matches have the length of the pattern.
  */
-SEXP shiftor(SEXP p_xp, SEXP p_pos, SEXP p_length,
-		SEXP s_xp, SEXP s_pos, SEXP s_length,
+SEXP shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP mismatch, SEXP fixed, SEXP count_only)
 {
-	int pat_pos, pat_length, subj_pos, subj_length,
+	int pat_offset, pat_length, subj_offset, subj_length,
 	    kerr, is_fixed, is_count_only, ans_length;
 	char *pat, *subj;
 	SEXP ans;
@@ -311,11 +313,11 @@ SEXP shiftor(SEXP p_xp, SEXP p_pos, SEXP p_length,
 	pat_length = INTEGER(p_length)[0];
 	if (pat_length > shiftor_maxbits)
 		error("pattern is too long");
-	pat_pos = INTEGER(p_pos)[0];
-	pat = CHAR(R_ExternalPtrTag(p_xp)) + pat_pos;
+	pat_offset = INTEGER(p_offset)[0];
+	pat = CHAR(R_ExternalPtrTag(p_xp)) + pat_offset;
 	subj_length = INTEGER(s_length)[0];
-	subj_pos = INTEGER(s_pos)[0];
-	subj = CHAR(R_ExternalPtrTag(s_xp)) + subj_pos;
+	subj_offset = INTEGER(s_offset)[0];
+	subj = CHAR(R_ExternalPtrTag(s_xp)) + subj_offset;
 	kerr = INTEGER(mismatch)[0];
 	is_fixed = LOGICAL(fixed)[0];
 	is_count_only = LOGICAL(count_only)[0];
@@ -323,10 +325,10 @@ SEXP shiftor(SEXP p_xp, SEXP p_pos, SEXP p_length,
 	if (debug) {
 		Rprintf("[DEBUG] shiftor(): BEGIN\n");
 		Rprintf("[DEBUG] shiftor(): ");
-		Rprintf("pat_pos=%d pat_length=%d pat[0]=%d\n",
-			pat_pos, pat_length, (unsigned char) pat[0]);
-		Rprintf("subj_pos=%d subj_length=%d subj[0]=%d\n",
-			subj_pos, subj_length, (unsigned char) subj[0]);
+		Rprintf("pat_offset=%d pat_length=%d pat[0]=%d\n",
+			pat_offset, pat_length, (unsigned char) pat[0]);
+		Rprintf("subj_offset=%d subj_length=%d subj[0]=%d\n",
+			subj_offset, subj_length, (unsigned char) subj[0]);
 		Rprintf("kerr=%d is_fixed=%d is_count_only=%d\n",
 			kerr, is_fixed, is_count_only);
 	}

@@ -1,20 +1,16 @@
 
-For 1.99.18
+For 2.0.1
 
-- Before to have an alphabetFrequency() method for BStringViews objects,
-  check what is the semantic of the alphabetFrequency() function in
-  Biostrings 1 when @offsets overlap or don't cover the whole string? test.
-
-- Implement the alphabetFrequency() method in C. The current implementation
-  calls the countPattern() function for each letter in the alphabet.
-  We want an implementation that does only ONE pass on the BString object.
-  Have it work for BString objects too (in addition to DNAString and
-  RNAString objects who have a predefined alphabet).
+- Check with Vince and others Biostringers that the new semantic of
+  reverseComplement() is OK (it differs from semantic in Biostrings 1).
+  Now if x is a DNAString then it returns a RNAString where A -> U.
+  If x is a RNAString then it returns a DNAString where A -> T.
+  If it's OK then add a note in CHANGES.
 
 - Implement .needwunsQS in C.
 
 - Boyer-Moore
- 
+
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
   alignment algo) into Biostrings.
 
@@ -24,7 +20,10 @@ For 1.99.18
   and size, how well do they work on different inputs)".
 
 
-For 1.99.19
+For 2.0.2
+
+- Make alphabetFrequency works with BStringViews objects with
+  "out of limits" views.
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
@@ -93,9 +92,7 @@ For 1.99.19
 
 Later
 
-- Still have to think about it (Robert suggestion): make [[ work on "out
-  of limits" views with a warning (we keep issuing an error only when the
-  view is all blank).
+- Restore the test units.
 
 - Improve the Rd files (a lot of TODO tags have to be replaced by real
   documentation there).
@@ -103,6 +100,10 @@ Later
 - Fix pb with length(x) <- 2 screwing up x if it's a BString or BStringViews
   object (prevent people of doing this by defining the replacement version
   of the length method and issuing an error).
+
+- Still have to think about it (Robert suggestion): make [[ work on "out
+  of limits" views with a warning (we keep issuing an error only when the
+  view is all blank).
 
 - Remove the Biostrings 1 subdir.
 

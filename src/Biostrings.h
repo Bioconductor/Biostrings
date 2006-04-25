@@ -4,6 +4,7 @@
 
 #define DEBUG_BIOSTRINGS 1
 
+
 /* utils.c */
 
 SEXP utils_debug();
@@ -36,7 +37,7 @@ SEXP bbuf_alloc(SEXP bb_xp, SEXP length);
 SEXP bbuf_show(SEXP bb_xp);
 SEXP bbuf_length(SEXP bb_xp);
 SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
-                 SEXP bb2_xp, SEXP first2, SEXP width);
+		SEXP bb2_xp, SEXP first2, SEXP width);
 
 SEXP bbuf_copy(SEXP dest_xp, SEXP imin, SEXP imax, SEXP src_xp);
 SEXP bbuf_copyii(SEXP dest_xp, SEXP ii, SEXP src_xp);
@@ -72,10 +73,16 @@ SEXP ibuf_write_ints(SEXP ib_xp, SEXP imin, SEXP imax, SEXP val);
 SEXP ibuf_writeii_ints(SEXP ib_xp, SEXP ii, SEXP val);
 
 
+/* alphabetFrequency.c */
+
+SEXP alphabetFrequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
+
+
 /* shiftor.c */
 
 SEXP shiftor_debug();
 
-SEXP shiftor(SEXP p_xp, SEXP p_pos, SEXP p_length,
-             SEXP s_xp, SEXP s_pos, SEXP s_length,
-             SEXP mismatch, SEXP fixed, SEXP count_only);
+SEXP shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
+		SEXP mismatch, SEXP fixed, SEXP count_only);
+
