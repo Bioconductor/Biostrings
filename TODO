@@ -1,15 +1,12 @@
 
-For 2.0.1
+For 2.0.2
 
-- Check with Vince and others Biostringers that the new semantic of
-  reverseComplement() is OK (it differs from semantic in Biostrings 1).
-  Now if x is a DNAString then it returns a RNAString where A -> U.
-  If x is a RNAString then it returns a DNAString where A -> T.
-  If it's OK then add a note in CHANGES.
+- Make alphabetFrequency works with BStringViews objects with
+  "out of limits" views.
 
 - Implement .needwunsQS in C.
 
-- Boyer-Moore
+- Restore Boyer-Moore
 
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
   alignment algo) into Biostrings.
@@ -20,10 +17,7 @@ For 2.0.1
   and size, how well do they work on different inputs)".
 
 
-For 2.0.2
-
-- Make alphabetFrequency works with BStringViews objects with
-  "out of limits" views.
+For 2.0.3
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
@@ -58,7 +52,7 @@ For 2.0.2
   (complementary, union, intersection).
   No need to define an equivalent for the set difference (S(v) - S(w)),
   or the set symetric difference ((S(v) -S(w)) union (S(w) - S(v)))
-  because they can be achieved by using the fundamental operations.
+  since they can be achieved by using the fundamental operations.
 
   Note: The results of the above operations are undetermined if one of
   the operand is not "normalized" or if the 2 operands don't have the same
@@ -66,9 +60,9 @@ For 2.0.2
   gracefully, this will just result in slowing down the operators).
   The result has always the same subject than the operands.
 
-- Given any BStringViews object v, !normalized(v) is the smallest
-  BStringViews object with a set of views that covers the parts of the
-  subject that are not covered by the original set of views.
+- One nice property: given any BStringViews object v, !normalized(v) is
+  the smallest BStringViews object with a set of views that covers the parts
+  of the subject that are not covered by the original set of views.
 
 - Have the BStringViews() method for BString objects support the 'sep' arg.
 

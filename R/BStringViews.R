@@ -202,7 +202,7 @@ setMethod("BStringViews", "file",
     function(src, subjectClass, sep)
     {
         fasta <- readFASTA(src)
-        src <- sapply(fasta, function(rec) toupper(rec$seq))
+        src <- sapply(fasta, function(rec) rec$seq)
         desc <- sapply(fasta, function(rec) rec$desc)
         ans <- BStringViews(src, subjectClass, sep) # call the default method
         ans@desc <- desc

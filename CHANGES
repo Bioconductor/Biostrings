@@ -69,24 +69,32 @@ o Changes in the API:
     (or RNAString) object can be used to store a DNA (or RNA) sequence.
   - No more NucleotideString() method: use the BString(), DNAString(),
     or RNAString() functions instead.
-  - The BString() function is new.
-  - The BString(), DNAString() and RNAString() functions are not vectorized.
-    You need to use the new BStringViews() method when 'src' is a character
-    vector of length > 1.
-  - matchDNAPattern() has been replaced by matchPattern().
+  - The DNAString() function is _not_ vectorized anymore. You need to use the
+    new BStringViews() method when 'src' is a character vector of length > 1.
+  - New constructors BString() and RNAString() follow the DNAString() new
+    behavior: they are _not_ vectorized.
+  - New generics: subBString(), subject(), first(), last(), width(), desc(),
+    BStringViews(), reverse(), complement(), countPattern() and mismatch().
+  - New functions: letter(), BString(), RNAString(), views(), adjacentViews().
+  - Renamed functions: matchDNAPattern() has been replaced by matchPattern().
+  - Deprecated functions: matchDNAPattern().
 
 o New features:
   - A new format for displaying BString or BStringViews objects.
-  - [, == and != for BString objects.
-  - [[, == and != for BStringViews objects.
-  - letter(), subBString(), views(), adjacentViews(), BStringViews(),
-    subject(), first(), last(), width(), desc(), countPattern() and mismatch()
+  - New [, == and != operators for BString objects.
+  - New [[, == and != operators for BStringViews objects.
+  - reverseComplement() has been splitted in 2 separate functions reverse()
+    and complement(). 'reverseComplement(x)' is now a shortcut for
+    'reverse(complement(x))'.
   - matchPattern() has a 'fixed' argument.
+  - See man pages for all new generics and functions listed in previous
+    section for all the details.
 
-o Some features that have been temporarly removed (no listing provided).
+o A few minor features have been temporarly removed (no listing provided).
 
 o Documentation:
   - The biostDemo.Rnw vignette has been replaced by 2 vignettes:
     matchPattern.Rnw and Alignments.Rnw
   - 2 new vignettes (work in progress): Biostrings2Classes.Rnw and
     DNAStringVectorization.Rnw.
+
