@@ -73,6 +73,8 @@ o Changes in the API:
     new BStringViews() method when 'src' is a character vector of length > 1.
   - New constructors BString() and RNAString() follow the DNAString() new
     behavior: they are _not_ vectorized.
+  - The as.list() method for BStringViews objects. This allows constructions
+    like 'for (b in as.list(v)) ...' and 'lapply(as.list(v), ...)'.
   - New generics: subBString(), subject(), first(), last(), width(), desc(),
     BStringViews(), reverse(), complement(), countPattern() and mismatch().
   - New functions: letter(), BString(), RNAString(), views(), adjacentViews().
@@ -83,6 +85,8 @@ o New features:
   - A new format for displaying BString or BStringViews objects.
   - New [, == and != operators for BString objects.
   - New [[, == and != operators for BStringViews objects.
+  - BStringViews() (the replacement for the vectorized DNAString() found in
+    Biostrings 1) has a 'sep' argument).
   - reverseComplement() has been splitted in 2 separate functions reverse()
     and complement(). 'reverseComplement(x)' is now a shortcut for
     'reverse(complement(x))'.

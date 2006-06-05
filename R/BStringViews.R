@@ -516,3 +516,16 @@ setMethod("as.matrix", "BStringViews",
         cbind(x@first, x@last)
     }
 )
+
+setMethod("as.list", "BStringViews",
+    function(x)
+    {
+        lx <- length(x)
+        ans <- vector("list", lx)
+        for (i in 1:lx) {
+            ans[[i]] <- x[[i]]
+        }
+        ans
+    }
+)
+

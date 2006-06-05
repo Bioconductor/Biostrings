@@ -10,6 +10,18 @@ setMethod("reverse", "BString",
     }
 )
 
+setMethod("reverse", "BStringViews",
+    function(x)
+    {
+        subject <- reverse(x@subject)
+        ls <- subject@length
+        lx <- length(x)
+        first <- ls - x@last[lx:1] + 1
+        last <- ls - x@first[lx:1] + 1
+        views(subject, first, last)
+    }
+)
+
 setGeneric(
     "complement",
     function(x) standardGeneric("complement")
@@ -24,15 +36,16 @@ setMethod("complement", "DNAString",
     }
 )
 
-setGeneric(
-    "reverseComplement",
-    function(x) standardGeneric("reverseComplement")
-)
-
-setMethod("reverseComplement", "DNAString",
+setMethod("complement", "BStringViews",
     function(x)
     {
-        reverse(complement(x))
+        subject <- complement(x@subject)
+        views(subject, x@first, x@last)
     }
 )
+
+reverseComplement <- function(x)
+{
+    reverse(complement(x))
+}
 

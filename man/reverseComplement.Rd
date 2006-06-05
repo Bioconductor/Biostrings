@@ -2,10 +2,11 @@
 
 \alias{reverse}
 \alias{reverse,BString-method}
+\alias{reverse,BStringViews-method}
 \alias{complement}
 \alias{complement,DNAString-method}
+\alias{complement,BStringViews-method}
 \alias{reverseComplement}
-\alias{reverseComplement,DNAString-method}
 
 
 \title{Sequence reversing and complementing}
@@ -24,9 +25,10 @@
 
 \arguments{
   \item{x}{
-    A \link{BString}, \link{DNAString} or \link{RNAString} object
-    for \code{reverse}.
-    A \link{DNAString} object only for \code{complement}
+    A \link{BString}, \link{DNAString}, \link{RNAString}
+    or \link{BStringViews} object for \code{reverse}.
+    A \link{DNAString} object (or a \link{BStringViews} object
+    with a \link{DNAString} subject) for \code{complement}
     and \code{reverseComplement}.
   }
 }

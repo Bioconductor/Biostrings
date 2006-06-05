@@ -45,6 +45,7 @@
 \alias{toString,BStringViews-method}
 \alias{nchar,BStringViews-method}
 \alias{as.matrix,BStringViews-method}
+\alias{as.list,BStringViews-method}
 
 
 \title{The BStringViews class}
@@ -159,6 +160,10 @@
     }
     \item{}{
       \code{as.matrix(x)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{as.list(x)}:
       [TODO: Document me]
     }
   }

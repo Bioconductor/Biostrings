@@ -11,11 +11,11 @@ exportMethods(
     ## Generics defined elsewhere
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
-    as.character, toString, nchar, as.matrix,
+    as.character, toString, nchar, as.matrix, as.list,
     ## New generics
     subBString,
     subject, first, last, width, desc, BStringViews,
-    reverse, complement, reverseComplement, alphabetFrequency,
+    reverse, complement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
     ## Copy/pasted from Biostrings 1
     needwunsQS
@@ -27,7 +27,7 @@ export(
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
     letter, BString, DNAString, RNAString,
     views, adjacentViews,
-    matchDNAPattern,
+    reverseComplement, matchDNAPattern,
     ## Copy/pasted from Biostrings 1
     alignScore
 )
@@ -35,3 +35,4 @@ export(
 ## Copy/pasted from Biostrings 1
 S3method(print, needwunsQS)
 S3method(alignScore, needwunsQS)
+
