@@ -117,9 +117,9 @@ bbReadInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("bbuf_read_ints", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("bbuf_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("bbuf_readii_ints", x@xp, i, PACKAGE="Biostrings")
+        .Call("bbuf_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
@@ -134,9 +134,9 @@ bbWriteInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("bbuf_write_ints", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("bbuf_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("bbuf_writeii_ints", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("bbuf_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
@@ -151,17 +151,17 @@ bbReadChars <- function(x, i, imax=integer(0), dec_hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(dec_hash))
-            .Call("bbuf_read_chars",
+            .Call("bbuf_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("bbuf_read_enc_chars",
+            .Call("bbuf_read_enc_chars_from_i1i2",
                   x@xp, i, imax, dec_hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(dec_hash))
-            .Call("bbuf_readii_chars",
+            .Call("bbuf_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
-            .Call("bbuf_readii_enc_chars",
+            .Call("bbuf_read_enc_chars_from_subset",
                   x@xp, i, dec_hash@xp, PACKAGE="Biostrings")
     }
 }
@@ -178,23 +178,23 @@ bbWriteChars <- function(x, i, imax=integer(0), value, enc_hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(enc_hash))
-            .Call("bbuf_write_chars",
+            .Call("bbuf_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
-            .Call("bbuf_write_enc_chars",
+            .Call("bbuf_write_enc_chars_to_i1i2",
                   x@xp, i, imax, value, enc_hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(enc_hash))
-            .Call("bbuf_writeii_chars",
+            .Call("bbuf_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
-            .Call("bbuf_writeii_enc_chars",
+            .Call("bbuf_write_enc_chars_to_subset",
                   x@xp, i, value, enc_hash@xp, PACKAGE="Biostrings")
     }
     x
 }
 
-bbCopy <- function(dest, i, imax=integer(0), src)
+bbCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
     if (class(src) != "bbuf")
         stop("'src' is not a byte buffer")
@@ -205,10 +205,35 @@ bbCopy <- function(dest, i, imax=integer(0), src)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("bbuf_copy", dest@xp, i, imax, src@xp, PACKAGE="Biostrings")
+        if (is.null(hash))
+            .Call("bbuf_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+        else
+            .Call("bbuf_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
     } else {
-        .Call("bbuf_copyii", dest@xp, i, src@xp, PACKAGE="Biostrings")
+        if (is.null(hash))
+            .Call("bbuf_copy_from_subset", dest@xp, src@xp, i, PACKAGE="Biostrings")
+        else
+            .Call("bbuf_translate_copy_from_subset", dest@xp, src@xp, i, hash@xp, PACKAGE="Biostrings")
     }
+    dest
+}
+
+bbReverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
+{
+    if (class(src) != "bbuf")
+        stop("'src' is not a byte buffer")
+    if (length(i) != 1)
+        stop("'i' must be a single integer")
+    if (!is.integer(i))
+        i <- as.integer(i)
+    if (length(imax) == 0)
+        imax <- i
+    else
+        imax <- as.integer(imax)
+    if (is.null(hash))
+        .Call("bbuf_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+    else
+        .Call("bbuf_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
     dest
 }
 

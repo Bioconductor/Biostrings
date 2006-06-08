@@ -77,38 +77,34 @@ SEXP ibuf_memcmp(SEXP ib1_xp, SEXP first1,
  * --------------------------------------------------------------------------
  */
 
-SEXP ibuf_read_ints(SEXP ib_xp, SEXP imin, SEXP imax)
+SEXP ibuf_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 {
-	SEXP tag, ans;
+	SEXP src, ans;
 	int i1, i2, n;
 
-	tag = R_ExternalPtrTag(ib_xp);
+	src = R_ExternalPtrTag(src_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-
 	PROTECT(ans = allocVector(INTSXP, n));
-	Biostrings_memcpy_from_range(i1, i2,
+	Biostrings_memcpy_from_i1i2(i1, i2,
 			(char *) INTEGER(ans), LENGTH(ans),
-			(char *) INTEGER(tag), LENGTH(tag), sizeof(int));
-	Rprintf("Il est passe par ici\n");
-	printf("Il repassera par la\n");
+			(char *) INTEGER(src), LENGTH(src), sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
 
-SEXP ibuf_readii_ints(SEXP ib_xp, SEXP ii)
+SEXP ibuf_read_ints_from_subset(SEXP src_xp, SEXP subset)
 {
-	SEXP tag, ans;	
+	SEXP src, ans;	
 	int n;
 
-	tag = R_ExternalPtrTag(ib_xp);
-	n = LENGTH(ii);
-
+	src = R_ExternalPtrTag(src_xp);
+	n = LENGTH(subset);
 	PROTECT(ans = allocVector(INTSXP, n));
-	Biostrings_memcpy_from_subset(INTEGER(ii), n,
+	Biostrings_memcpy_from_subset(INTEGER(subset), n,
 			(char *) INTEGER(ans), n,
-			(char *) INTEGER(tag), LENGTH(tag), sizeof(int));
+			(char *) INTEGER(src), LENGTH(src), sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
@@ -116,27 +112,27 @@ SEXP ibuf_readii_ints(SEXP ib_xp, SEXP ii)
 /*
  * 'val' must be an integer vector.
  */
-SEXP ibuf_write_ints(SEXP ib_xp, SEXP imin, SEXP imax, SEXP val)
+SEXP ibuf_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
 {
-	SEXP tag;
+	SEXP dest;
 	int i1, i2;
 
-	tag = R_ExternalPtrTag(ib_xp);
+	dest = R_ExternalPtrTag(dest_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	Biostrings_memcpy_to_range(i1, i2,
-			(char *) INTEGER(tag), LENGTH(tag),
+	Biostrings_memcpy_to_i1i2(i1, i2,
+			(char *) INTEGER(dest), LENGTH(dest),
 			(char *) INTEGER(val), LENGTH(val), sizeof(int));
-	return ib_xp;
+	return dest_xp;
 }
 
-SEXP ibuf_writeii_ints(SEXP ib_xp, SEXP ii, SEXP val)
+SEXP ibuf_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 {
-	SEXP tag;
+	SEXP dest;
 
-	tag = R_ExternalPtrTag(ib_xp);
-	Biostrings_memcpy_to_subset(INTEGER(ii), LENGTH(ii),
-			(char *) INTEGER(tag), LENGTH(tag),
+	dest = R_ExternalPtrTag(dest_xp);
+	Biostrings_memcpy_to_subset(INTEGER(subset), LENGTH(subset),
+			(char *) INTEGER(dest), LENGTH(dest),
 			(char *) INTEGER(val), LENGTH(val), sizeof(int));
-	return ib_xp;
+	return dest_xp;
 }

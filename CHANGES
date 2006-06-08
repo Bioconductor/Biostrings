@@ -94,6 +94,9 @@ o New features:
   - See man pages for all new generics and functions listed in previous
     section for all the details.
 
+o Changes in the semantic:
+  - reverse() and reverseComplement() don't reverse the order of the views.
+
 o A few minor features have been temporarly removed (no listing provided).
 
 o Documentation:

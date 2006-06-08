@@ -130,9 +130,12 @@ setMethod("initialize", "BString",
         .Object
     }
 )
+
 BString <- function(...)
 {
-    new("BString", ...)
+    ans <- try(new("BString", ...), silent=TRUE)
+    if (is(ans, "try-error")) stop(ans)
+    ans
 }
 
 # Uses global variable DNA_STRING_CODEC to encode source string.
@@ -170,11 +173,16 @@ setMethod("initialize", "RNAString",
 
 DNAString <- function(...)
 {
-    new("DNAString", ...)
+    ans <- try(new("DNAString", ...), silent=TRUE)
+    if (is(ans, "try-error")) stop(ans)
+    ans
 }
+
 RNAString <- function(...)
 {
-    new("RNAString", ...)
+    ans <- try(new("RNAString", ...), silent=TRUE)
+    if (is(ans, "try-error")) stop(ans)
+    ans
 }
 
 

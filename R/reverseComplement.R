@@ -1,3 +1,10 @@
+DNAComplementHash <- function()
+{
+    old <- DNAString(toString(DNA_STRING_CODEC@letters))
+    new <- DNAString(chartr("U", "T", toString(RNA_STRING_CODEC@letters)))
+    buildCodecHashTable(old@data[], new@data[], 0)
+}
+
 setGeneric(
     "reverse",
     function(x) standardGeneric("reverse")
@@ -6,7 +13,11 @@ setGeneric(
 setMethod("reverse", "BString",
     function(x)
     {
-        x[length(x):1]
+        lx <- length(x)
+        data <- bbuf(lx)
+        bbReverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
+        # class(x) can be "BString", "DNAString" or "RNAString"
+        new(class(x), data)
     }
 )
 
@@ -15,9 +26,8 @@ setMethod("reverse", "BStringViews",
     {
         subject <- reverse(x@subject)
         ls <- subject@length
-        lx <- length(x)
-        first <- ls - x@last[lx:1] + 1
-        last <- ls - x@first[lx:1] + 1
+        first <- ls - x@last + 1
+        last <- ls - x@first + 1
         views(subject, first, last)
     }
 )
@@ -30,9 +40,11 @@ setGeneric(
 setMethod("complement", "DNAString",
     function(x)
     {
-        old <- toString(DNA_STRING_CODEC@letters)
-        new <- chartr("U", "T", toString(RNA_STRING_CODEC@letters))
-        DNAString(chartr(old, new, toString(x)))
+        lx <- length(x)
+        data <- bbuf(lx)
+        hash <- DNAComplementHash()
+        bbCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
+        DNAString(data)
     }
 )
 
@@ -44,8 +56,30 @@ setMethod("complement", "BStringViews",
     }
 )
 
-reverseComplement <- function(x)
-{
-    reverse(complement(x))
-}
+setGeneric(
+    "reverseComplement",
+    function(x) standardGeneric("reverseComplement")
+)
+
+setMethod("reverseComplement", "DNAString",
+    function(x)
+    {
+        lx <- length(x)
+        data <- bbuf(lx)
+        hash <- DNAComplementHash()
+        bbReverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
+        DNAString(data)
+    }
+)
+
+setMethod("reverseComplement", "BStringViews",
+    function(x)
+    {
+        subject <- reverseComplement(x@subject)
+        ls <- subject@length
+        first <- ls - x@last + 1
+        last <- ls - x@first + 1
+        views(subject, first, last)
+    }
+)
 

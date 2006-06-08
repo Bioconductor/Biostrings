@@ -1,5 +1,5 @@
 
-For 2.0.3
+For 2.0.4
 
 - Vectorize matchPattern() (result will be a list of BStringViews
   objects).
@@ -20,7 +20,7 @@ For 2.0.3
   and size, how well do they work on different inputs)".
 
 
-For 2.0.4
+For 2.0.5
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,

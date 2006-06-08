@@ -91,22 +91,22 @@ setMethod("initialize", "BStringCodec",
 #   N :== [GATC]
 DNAcodec <- function()
 {
-        letters <- c("ACGTMRSVWYHKDBN-")
-        codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
-        extra_letters <- c("acgtmrsvwyhkdbn")
-        extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-        new("BStringCodec", letters, as.integer(codes), 99, 199,
-            extra_letters, as.integer(extra_codes))
+    letters <- c("ACGTMRSVWYHKDBN-")
+    codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
+    extra_letters <- c("acgtmrsvwyhkdbn")
+    extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+    new("BStringCodec", letters, as.integer(codes), 99, 199,
+        extra_letters, as.integer(extra_codes))
 }
 
 RNAcodec <- function()
 {
-        letters <- c("UGCAKYSBWRDMHVN-")
-        codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
-        extra_letters <- c("ugcakysbwrdmhvn")
-        extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-        new("BStringCodec", letters, as.integer(codes), 99, 199,
-            extra_letters, as.integer(extra_codes))
+    letters <- c("UGCAKYSBWRDMHVN-")
+    codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
+    extra_letters <- c("ugcakysbwrdmhvn")
+    extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+    new("BStringCodec", letters, as.integer(codes), 99, 199,
+        extra_letters, as.integer(extra_codes))
 }
 
 # More codecs to come below...

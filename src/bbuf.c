@@ -219,15 +219,15 @@ SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
  * "bbuf" object. The user can choose between 2 interfaces for each read
  * or write operation:
  *
- *   1. The "imin/imax" interface: the bytes to access are specified by 2
+ *   1. The "i1i2" interface: the bytes to access are specified by 2
  * integers: 'imin' (the position of the first byte to access, the first
  * byte in the buffer being at position 1) and 'imax' (the position of the
  * last byte to access).
  *
- *   2. The "ii" interface: the bytes to access are specified by an
+ *   2. The "subset" interface: the bytes to access are specified by an
  * integer vector containing their positions in the buffer.
  *
- * The "ii" interface is intended to be used by the subsetting
+ * The "subset" interface is intended to be used by the subsetting
  * operator [ defined at the R level for "bbuf" objects.
  * R subsetting operator [ can be used to read values from, or write values
  * to an object that contains a collection of values, like a character
@@ -246,16 +246,15 @@ SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
  *      the same type than x, then doing x[i] <- z; y <- x[i] guarantees that
  *      y is identical to z only when i contains no repeated value!
  *
- * Functions in this section that implement the "ii" interface
+ * Functions in this section that implement the "subset" interface
  * respect the above properties.
  *
  * Here are some arguments to these functions that must always be SEXP of the
  * following types:
- *   bb_xp: externalptr
+ *   bb_xp, src_xp, dest_xp: externalptr
  *   imin, imax: single integers
- *   ii: integer vector containing the subscripts (with no NAs)
- *   enc_xp: externalptr (hash table for encoding)
- *   dec_xp: externalptr (hash table for decoding)
+ *   subset: integer vector containing the subscripts (with no NAs)
+ *   hash_xp: externalptr (hash table for encoding/decoding)
  */
 
 
@@ -264,32 +263,30 @@ SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
  * --------------------------------------------------------------------------
  */
 
-SEXP bbuf_copy(SEXP dest_xp, SEXP imin, SEXP imax, SEXP src_xp)
+SEXP bbuf_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
-	SEXP dest_tag, src_tag;
+	SEXP dest, src;
 	int i1, i2;
 
-	dest_tag = R_ExternalPtrTag(dest_xp);
+	dest = R_ExternalPtrTag(dest_xp);
+	src = R_ExternalPtrTag(src_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	src_tag = R_ExternalPtrTag(src_xp);
-
-	Biostrings_memcpy_from_range(i1, i2,
-			CHAR(dest_tag), LENGTH(dest_tag),
-			CHAR(src_tag), LENGTH(src_tag), sizeof(char));
+	Biostrings_memcpy_from_i1i2(i1, i2,
+			CHAR(dest), LENGTH(dest),
+			CHAR(src), LENGTH(src), sizeof(char));
 	return dest_xp;
 }
 
-SEXP bbuf_copyii(SEXP dest_xp, SEXP ii, SEXP src_xp)
+SEXP bbuf_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset)
 {
-	SEXP dest_tag, src_tag;
+	SEXP dest, src;
 
-	dest_tag = R_ExternalPtrTag(dest_xp);
-	src_tag = R_ExternalPtrTag(src_xp);
-
-	Biostrings_memcpy_from_subset(INTEGER(ii), LENGTH(ii),
-			CHAR(dest_tag), LENGTH(dest_tag),
-			CHAR(src_tag), LENGTH(src_tag), sizeof(char));
+	dest = R_ExternalPtrTag(dest_xp);
+	src = R_ExternalPtrTag(src_xp);
+	Biostrings_memcpy_from_subset(INTEGER(subset), LENGTH(subset),
+			CHAR(dest), LENGTH(dest),
+			CHAR(src), LENGTH(src), sizeof(char));
 	return dest_xp;
 }
 
@@ -304,73 +301,72 @@ SEXP bbuf_copyii(SEXP dest_xp, SEXP ii, SEXP src_xp)
  * From R:
  *   bb <- bbuf(15)
  *   bb[] < "Hello"
- *   .Call("bbuf_read_chars", bb@xp, 2:2, 4:4, PACKAGE="Biostrings")
+ *   .Call("bbuf_read_chars_from_i1i2", bb@xp, 2:2, 4:4, PACKAGE="Biostrings")
  */
-SEXP bbuf_read_chars(SEXP bb_xp, SEXP imin, SEXP imax)
+SEXP bbuf_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 {
-	SEXP tag, string, ans;
+	SEXP src, dest, ans;
 	int i1, i2, n;
 
-	tag = R_ExternalPtrTag(bb_xp);
+	src = R_ExternalPtrTag(src_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	PROTECT(string = allocString(n));
-	Biostrings_memcpy_from_range(i1, i2,
-			CHAR(string), n,
-			CHAR(tag), LENGTH(tag), sizeof(char));
+	PROTECT(dest = allocString(n));
+	Biostrings_memcpy_from_i1i2(i1, i2,
+			CHAR(dest), n,
+			CHAR(src), LENGTH(src), sizeof(char));
 	PROTECT(ans = allocVector(STRSXP, 1));
-	SET_STRING_ELT(ans, 0, string);
+	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
 	return ans;
 }
 
-SEXP bbuf_readii_chars(SEXP bb_xp, SEXP ii)
+SEXP bbuf_read_chars_from_subset(SEXP src_xp, SEXP subset)
 {
-	SEXP tag, string, ans;
+	SEXP src, dest, ans;
 	int n;
 
-	tag = R_ExternalPtrTag(bb_xp);
-	n = LENGTH(ii);
-
-	PROTECT(string = allocString(n));
-	Biostrings_memcpy_from_subset(INTEGER(ii), n,
-			CHAR(string), n,
-			CHAR(tag), LENGTH(tag), sizeof(char));
+	src = R_ExternalPtrTag(src_xp);
+	n = LENGTH(subset);
+	PROTECT(dest = allocString(n));
+	Biostrings_memcpy_from_subset(INTEGER(subset), n,
+			CHAR(dest), n,
+			CHAR(src), LENGTH(src), sizeof(char));
 	PROTECT(ans = allocVector(STRSXP, 1));
-	SET_STRING_ELT(ans, 0, string);
+	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
 	return ans;
 }
 
 /*
- * 'val' must be a non-empty single string (character vector of length 1).
+ * 'string' must be a non-empty single string (character vector of length 1).
  */
-SEXP bbuf_write_chars(SEXP bb_xp, SEXP imin, SEXP imax, SEXP val)
+SEXP bbuf_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string)
 {
-	SEXP tag, string;
+	SEXP dest, src;
 	int i1, i2;
 
-	tag = R_ExternalPtrTag(bb_xp);
-	string = STRING_ELT(val, 0);
+	dest = R_ExternalPtrTag(dest_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	Biostrings_memcpy_to_range(i1, i2,
-			CHAR(tag), LENGTH(tag),
-			CHAR(string), LENGTH(string), sizeof(char));
-	return bb_xp;
+	src = STRING_ELT(string, 0);
+	Biostrings_memcpy_to_i1i2(i1, i2,
+			CHAR(dest), LENGTH(dest),
+			CHAR(src), LENGTH(src), sizeof(char));
+	return dest_xp;
 }
 
-SEXP bbuf_writeii_chars(SEXP bb_xp, SEXP ii, SEXP val)
+SEXP bbuf_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string)
 {
-	SEXP tag, string;
+	SEXP dest, src;
 
-	tag = R_ExternalPtrTag(bb_xp);
-	string = STRING_ELT(val, 0);
-	Biostrings_memcpy_to_subset(INTEGER(ii), LENGTH(ii),
-			CHAR(tag), LENGTH(tag),
-			CHAR(string), LENGTH(string), sizeof(char));
-	return bb_xp;
+	dest = R_ExternalPtrTag(dest_xp);
+	src = STRING_ELT(string, 0);
+	Biostrings_memcpy_to_subset(INTEGER(subset), LENGTH(subset),
+			CHAR(dest), LENGTH(dest),
+			CHAR(src), LENGTH(src), sizeof(char));
+	return dest_xp;
 }
 
 
@@ -383,50 +379,50 @@ SEXP bbuf_writeii_chars(SEXP bb_xp, SEXP ii, SEXP val)
  * Return an integer vector of length 'imax' - 'imin' + 1.
  * From R:
  *   bb <- bbuf(30)
- *   .Call("bbuf_read_ints", bb@xp, 20:20, 25:25, PACKAGE="Biostrings")
+ *   .Call("bbuf_read_ints_from_i1i2", bb@xp, 20:20, 25:25, PACKAGE="Biostrings")
  */
-SEXP bbuf_read_ints(SEXP bb_xp, SEXP imin, SEXP imax)
+SEXP bbuf_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 {
-	SEXP tag, ans;
+	SEXP src, ans;
 	int i1, i2, n, j;
 
-	tag = R_ExternalPtrTag(bb_xp);
+	src = R_ExternalPtrTag(src_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	if (i1 < 0 || i2 >= LENGTH(tag))
+	if (i1 < 0 || i2 >= LENGTH(src))
 		error("subscript out of bounds");
 	n = i2 - i1 + 1;
 
 	PROTECT(ans = allocVector(INTSXP, n));
 	for (j = 0; i1 <= i2; i1++, j++) {
-		INTEGER(ans)[j] = (unsigned char) CHAR(tag)[i1];
+		INTEGER(ans)[j] = (unsigned char) CHAR(src)[i1];
 	}
 	UNPROTECT(1);
 	return ans;
 }
 
 /*
- * Return an integer vector of same length than 'ii'.
+ * Return an integer vector of same length than 'subset'.
  * From R:
  *   bb <- bbuf(30)
- *   .Call("bbuf_readii_ints", bb, 25:20, PACKAGE="Biostrings")
+ *   .Call("bbuf_read_ints_from_subset", bb, 25:20, PACKAGE="Biostrings")
  */
-SEXP bbuf_readii_ints(SEXP bb_xp, SEXP ii)
+SEXP bbuf_read_ints_from_subset(SEXP src_xp, SEXP subset)
 {
-	SEXP tag, ans;
-	int tag_length;
+	SEXP src, ans;
+	int src_length;
 	int n, i, j;
 
-	tag = R_ExternalPtrTag(bb_xp);
-	tag_length = LENGTH(tag);
-	n = LENGTH(ii);
+	src = R_ExternalPtrTag(src_xp);
+	src_length = LENGTH(src);
+	n = LENGTH(subset);
 
 	PROTECT(ans = allocVector(INTSXP, n));
 	for (j = 0; j < n; j++) {
-		i = INTEGER(ii)[j] - 1;
-		if (i < 0 || i >= tag_length)
+		i = INTEGER(subset)[j] - 1;
+		if (i < 0 || i >= src_length)
 			error("subscript out of bounds");
-		INTEGER(ans)[j] = (unsigned char) CHAR(tag)[i];
+		INTEGER(ans)[j] = (unsigned char) CHAR(src)[i];
 	}
 	UNPROTECT(1);
 	return ans;
@@ -435,17 +431,17 @@ SEXP bbuf_readii_ints(SEXP bb_xp, SEXP ii)
 /*
  * 'val' must be an integer vector of length > 0.
  */
-SEXP bbuf_write_ints(SEXP bb_xp, SEXP imin, SEXP imax, SEXP val)
+SEXP bbuf_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
 {
-	SEXP tag;
+	SEXP dest;
 	int val_length;
 	int i1, i2, n, j;
 	int v;
 
-	tag = R_ExternalPtrTag(bb_xp);
+	dest = R_ExternalPtrTag(dest_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	if (i1 < 0 || i2 >= LENGTH(tag))
+	if (i1 < 0 || i2 >= LENGTH(dest))
 		error("subscript out of bounds");
 	n = i2 - i1 + 1;
 	val_length = LENGTH(val);
@@ -458,45 +454,45 @@ SEXP bbuf_write_ints(SEXP bb_xp, SEXP imin, SEXP imax, SEXP val)
 		v = INTEGER(val)[j];
 		if (v < 0 || v >= 256)
 			error("value out of range");
-		CHAR(tag)[i1] = (char) v;
+		CHAR(dest)[i1] = (char) v;
 	}
 	if (j != val_length) {
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	}
-	return bb_xp;
+	return dest_xp;
 }
 
-SEXP bbuf_writeii_ints(SEXP bb_xp, SEXP ii, SEXP val)
+SEXP bbuf_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 {
-	SEXP tag;
-	int tag_length, val_length;
+	SEXP dest;
+	int dest_length, val_length;
 	int n, i, j, z;
 	int v;
 
 	val_length = LENGTH(val);
-	n = LENGTH(ii);
+	n = LENGTH(subset);
 	if (val_length == 0 && n != 0)
 		error("no value provided");
-	tag = R_ExternalPtrTag(bb_xp);
-	tag_length = LENGTH(tag);
+	dest = R_ExternalPtrTag(dest_xp);
+	dest_length = LENGTH(dest);
 
 	for (j = z = 0; z < n; j++, z++) {
-		i = INTEGER(ii)[z] - 1;
-		if (i < 0 || i >= tag_length)
+		i = INTEGER(subset)[z] - 1;
+		if (i < 0 || i >= dest_length)
 			error("subscript out of bounds");
 		if (j >= val_length)
 			j = 0; /* recycle */
 		v = INTEGER(val)[j];
 		if (v < 0 || v >= 256)
 			error("value out of range");
-		CHAR(tag)[i] = (char) v;
+		CHAR(dest)[i] = (char) v;
 	}
 	if (j != val_length) {
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	}
-	return bb_xp;
+	return dest_xp;
 }
 
 
@@ -508,151 +504,89 @@ SEXP bbuf_writeii_ints(SEXP bb_xp, SEXP ii, SEXP val)
 /*
  * Return a single string (character vector of length 1).
  */
-SEXP bbuf_read_enc_chars(SEXP bb_xp, SEXP imin, SEXP imax, SEXP dec_xp)
+SEXP bbuf_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
 {
-	SEXP tag, dectag, string, ans;
-	int dectag_length;
-	int i1, i2, n, j, h, code;
-	char dec_hole, letter;
+	SEXP dest, src, hash, ans;
+	int i1, i2, n;
+	char hash_hole;
 
-	tag = R_ExternalPtrTag(bb_xp);
+	src = R_ExternalPtrTag(src_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	if (i1 < 0 || i2 >= LENGTH(tag))
-		error("subscript out of bounds");
 	n = i2 - i1 + 1;
-	dectag = R_ExternalPtrTag(dec_xp);
-	dectag_length = LENGTH(dectag);
-	dec_hole = CHAR(dectag)[0];
-
-	PROTECT(string = allocString(n));
-	for (j = 0; i1 <= i2; i1++, j++) {
-		code = (unsigned char) CHAR(tag)[i1];
-		h = code + 1;
-		if (h >= dectag_length
-		    || (letter = CHAR(dectag)[h]) == dec_hole)
-			error("unknown code %d in string to decode", code);
-		CHAR(string)[j] = letter;
-	}
+	hash = R_ExternalPtrTag(hash_xp);
+	hash_hole = CHAR(hash)[0];
+	PROTECT(dest = allocString(n));
+	Biostrings_translate_charcpy_from_i1i2(i1, i2,
+		CHAR(dest), n, CHAR(src), LENGTH(src),
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
 	PROTECT(ans = allocVector(STRSXP, 1));
-	SET_STRING_ELT(ans, 0, string);
+	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
 	return ans;
 }
 
-SEXP bbuf_readii_enc_chars(SEXP bb_xp, SEXP ii, SEXP dec_xp)
+SEXP bbuf_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp)
 {
-	SEXP tag, dectag, string, ans;
-	int tag_length, dectag_length;
-	int n, i, j, h, code;
-	char dec_hole, letter;
+	SEXP dest, src, hash, ans;
+	int n;
+	char hash_hole;
 
-	n = LENGTH(ii);
-	dectag = R_ExternalPtrTag(dec_xp);
-	dectag_length = LENGTH(dectag);
-	dec_hole = CHAR(dectag)[0];
-	tag = R_ExternalPtrTag(bb_xp);
-	tag_length = LENGTH(tag);
-
-	PROTECT(string = allocString(n));
-	for (j = 0; j < n; j++) {
-		i = INTEGER(ii)[j] - 1;
-		if (i < 0 || i >= tag_length)
-			error("subscript out of bounds");
-		code = (unsigned char) CHAR(tag)[i];
-		h = code + 1;
-		if (h >= dectag_length
-		    || (letter = CHAR(dectag)[h]) == dec_hole)
-			error("unknown code %d in string to decode", code);
-		CHAR(string)[j] = letter;
-	}
+	src = R_ExternalPtrTag(src_xp);
+	n = LENGTH(subset);
+	hash = R_ExternalPtrTag(hash_xp);
+	hash_hole = CHAR(hash)[0];
+	PROTECT(dest = allocString(n));
+	Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
+		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
 	PROTECT(ans = allocVector(STRSXP, 1));
-	SET_STRING_ELT(ans, 0, string);
+	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
 	return ans;
 }
 
 /*
- * The bbuf_write_enc_chars() function is used when initializing
+ * The bbuf_write_enc_chars_to_i1i2() function is used when initializing
  * a BString object to encode and store the source string in the @data
  * slot of the object.
- * 'val' must be a non-empty single string (character vector of length 1).
+ * 'string' must be a non-empty single string (character vector of length 1).
  */
-SEXP bbuf_write_enc_chars(SEXP bb_xp, SEXP imin, SEXP imax,
-		SEXP val, SEXP enc_xp)
+SEXP bbuf_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
+		SEXP string, SEXP hash_xp)
 {
-	SEXP tag, string, enctag;
-	int string_length, enctag_length;
-	int i1, i2, n, j, h;
-	char enc_hole, letter, code;
+	SEXP dest, src, hash;
+	int i1, i2, n;
+	char hash_hole;
 
-	tag = R_ExternalPtrTag(bb_xp);
+	dest = R_ExternalPtrTag(dest_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	if (i1 < 0 || i2 >= LENGTH(tag))
-		error("subscript out of bounds");
 	n = i2 - i1 + 1;
-	string = STRING_ELT(val, 0);
-	string_length = LENGTH(string);
-	if (string_length == 0 && n != 0)
-		error("no value provided");
-	enctag = R_ExternalPtrTag(enc_xp);
-	enctag_length = LENGTH(enctag);
-	enc_hole = CHAR(enctag)[0];
-
-	for (j = 0; i1 <= i2; i1++, j++) {
-		if (j >= string_length)
-			j = 0; /* recycle */
-		letter = CHAR(string)[j];
-		h = ((unsigned char) letter) + 1;
-		if (h >= enctag_length
-		    || (code = CHAR(enctag)[h]) == enc_hole)
-			error("unknown letter '%c' in string to encode",
-			      letter);
-		CHAR(tag)[i1] = code;
-	}
-	if (j != string_length) {
-		warning("number of items to replace is not a multiple "
-			"of replacement length");
-	}
-	return bb_xp;
+	src = STRING_ELT(string, 0);
+	hash = R_ExternalPtrTag(hash_xp);
+	hash_hole = CHAR(hash)[0];
+	Biostrings_translate_charcpy_to_i1i2(i1, i2,
+		CHAR(dest), n, CHAR(src), LENGTH(src),
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
+	return dest_xp;
 }
 
-SEXP bbuf_writeii_enc_chars(SEXP bb_xp, SEXP ii, SEXP val, SEXP enc_xp)
+SEXP bbuf_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
+		SEXP string, SEXP hash_xp)
 {
-	SEXP tag, string, enctag;
-	int tag_length, string_length, enctag_length;
-	int n, i, j, z, h;
-	char enc_hole, letter, code;
+	SEXP dest, src, hash;
+	int n;
+	char hash_hole;
 
-	string = STRING_ELT(val, 0);
-	string_length = LENGTH(string);
-	n = LENGTH(ii);
-	if (string_length == 0 && n != 0)
-		error("no value provided");
-	enctag = R_ExternalPtrTag(enc_xp);
-	enctag_length = LENGTH(enctag);
-	enc_hole = CHAR(enctag)[0];
-	tag = R_ExternalPtrTag(bb_xp);
-	tag_length = LENGTH(tag);
-
-	for (j = z = 0; z < n; j++, z++) {
-		i = INTEGER(ii)[z] - 1;
-		if (i < 0 || i >= tag_length)
-			error("subscript out of bounds");
-		if (j >= string_length)
-			j = 0; /* recycle */
-		letter = CHAR(string)[j];
-		h = ((unsigned char) letter) + 1;
-		if (h >= enctag_length
-		    || (code = CHAR(enctag)[h]) == enc_hole)
-			error("unknown letter '%c' in string to encode",
-			      letter);
-		CHAR(tag)[i] = code;
-	}
-	if (j != string_length) {
-		warning("number of items to replace is not a multiple "
-			"of replacement length");
-	}
-	return bb_xp;
+	dest = R_ExternalPtrTag(dest_xp);
+	n = LENGTH(subset);
+	src = STRING_ELT(string, 0);
+	hash = R_ExternalPtrTag(hash_xp);
+	hash_hole = CHAR(hash)[0];
+	Biostrings_translate_charcpy_to_subset(INTEGER(subset), n,
+		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
+	return dest_xp;
 }
+

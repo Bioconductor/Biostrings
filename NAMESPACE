@@ -15,7 +15,7 @@ exportMethods(
     ## New generics
     subBString,
     subject, first, last, width, desc, BStringViews,
-    reverse, complement, alphabetFrequency,
+    reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
     ## Copy/pasted from Biostrings 1
     needwunsQS
@@ -27,7 +27,7 @@ export(
     #bbuf, bbCopy, ibuf, ibReadInts, ibWriteInts,
     letter, BString, DNAString, RNAString,
     views, adjacentViews,
-    reverseComplement, matchDNAPattern,
+    matchDNAPattern,
     ## Copy/pasted from Biostrings 1
     alignScore
 )

@@ -80,9 +80,9 @@ ibReadInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("ibuf_read_ints", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("ibuf_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("ibuf_readii_ints", x@xp, i, PACKAGE="Biostrings")
+        .Call("ibuf_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
@@ -97,9 +97,9 @@ ibWriteInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("ibuf_write_ints", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("ibuf_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("ibuf_writeii_ints", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("ibuf_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }

@@ -18,23 +18,23 @@ static const R_CallMethodDef callMethods[] = {
 	{"bbuf_length", (DL_FUNC) &bbuf_length, 1},
 	{"bbuf_memcmp", (DL_FUNC) &bbuf_memcmp, 5},
 
-	{"bbuf_copy", (DL_FUNC) &bbuf_copy, 4},
-	{"bbuf_copyii", (DL_FUNC) &bbuf_copyii, 3},
+	{"bbuf_copy_from_i1i2", (DL_FUNC) &bbuf_copy_from_i1i2, 4},
+	{"bbuf_copy_from_subset", (DL_FUNC) &bbuf_copy_from_subset, 3},
 
-	{"bbuf_read_chars", (DL_FUNC) &bbuf_read_chars, 3},
-	{"bbuf_readii_chars", (DL_FUNC) &bbuf_readii_chars, 2},
-	{"bbuf_write_chars", (DL_FUNC) &bbuf_write_chars, 4},
-	{"bbuf_writeii_chars", (DL_FUNC) &bbuf_writeii_chars, 3},
+	{"bbuf_read_chars_from_i1i2", (DL_FUNC) &bbuf_read_chars_from_i1i2, 3},
+	{"bbuf_read_chars_from_subset", (DL_FUNC) &bbuf_read_chars_from_subset, 2},
+	{"bbuf_write_chars_to_i1i2", (DL_FUNC) &bbuf_write_chars_to_i1i2, 4},
+	{"bbuf_write_chars_to_subset", (DL_FUNC) &bbuf_write_chars_to_subset, 3},
 
-	{"bbuf_read_ints", (DL_FUNC) &bbuf_read_ints, 3},
-	{"bbuf_readii_ints", (DL_FUNC) &bbuf_readii_ints, 2},
-	{"bbuf_write_ints", (DL_FUNC) &bbuf_write_ints, 4},
-	{"bbuf_writeii_ints", (DL_FUNC) &bbuf_writeii_ints, 3},
+	{"bbuf_read_ints_from_i1i2", (DL_FUNC) &bbuf_read_ints_from_i1i2, 3},
+	{"bbuf_read_ints_from_subset", (DL_FUNC) &bbuf_read_ints_from_subset, 2},
+	{"bbuf_write_ints_to_i1i2", (DL_FUNC) &bbuf_write_ints_to_i1i2, 4},
+	{"bbuf_write_ints_to_subset", (DL_FUNC) &bbuf_write_ints_to_subset, 3},
 
-	{"bbuf_read_enc_chars", (DL_FUNC) &bbuf_read_enc_chars, 4},
-	{"bbuf_readii_enc_chars", (DL_FUNC) &bbuf_readii_enc_chars, 3},
-	{"bbuf_write_enc_chars", (DL_FUNC) &bbuf_write_enc_chars, 5},
-	{"bbuf_writeii_enc_chars", (DL_FUNC) &bbuf_writeii_enc_chars, 4},
+	{"bbuf_read_enc_chars_from_i1i2", (DL_FUNC) &bbuf_read_enc_chars_from_i1i2, 4},
+	{"bbuf_read_enc_chars_from_subset", (DL_FUNC) &bbuf_read_enc_chars_from_subset, 3},
+	{"bbuf_write_enc_chars_to_i1i2", (DL_FUNC) &bbuf_write_enc_chars_to_i1i2, 5},
+	{"bbuf_write_enc_chars_to_subset", (DL_FUNC) &bbuf_write_enc_chars_to_subset, 4},
 
 /* ibuf.c */
 	{"ibuf_alloc", (DL_FUNC) &ibuf_alloc, 2},
@@ -42,10 +42,16 @@ static const R_CallMethodDef callMethods[] = {
 	{"ibuf_length", (DL_FUNC) &ibuf_length, 1},
 	{"ibuf_memcmp", (DL_FUNC) &ibuf_memcmp, 5},
 
-	{"ibuf_read_ints", (DL_FUNC) &ibuf_read_ints, 3},
-	{"ibuf_readii_ints", (DL_FUNC) &ibuf_readii_ints, 2},
-	{"ibuf_write_ints", (DL_FUNC) &ibuf_write_ints, 4},
-	{"ibuf_writeii_ints", (DL_FUNC) &ibuf_writeii_ints, 3},
+	{"ibuf_read_ints_from_i1i2", (DL_FUNC) &ibuf_read_ints_from_i1i2, 3},
+	{"ibuf_read_ints_from_subset", (DL_FUNC) &ibuf_read_ints_from_subset, 2},
+	{"ibuf_write_ints_to_i1i2", (DL_FUNC) &ibuf_write_ints_to_i1i2, 4},
+	{"ibuf_write_ints_to_subset", (DL_FUNC) &ibuf_write_ints_to_subset, 3},
+
+/* reverseComplement.c */
+        {"bbuf_translate_copy_from_i1i2", (DL_FUNC) &bbuf_translate_copy_from_i1i2, 5},
+        {"bbuf_translate_copy_from_subset", (DL_FUNC) &bbuf_translate_copy_from_subset, 4},
+        {"bbuf_reverse_copy_from_i1i2", (DL_FUNC) &bbuf_reverse_copy_from_i1i2, 4},
+        {"bbuf_reverse_translate_copy_from_i1i2", (DL_FUNC) &bbuf_reverse_translate_copy_from_i1i2, 5},
 
 /* alphabetFrequency.c */
 	{"alphabetFrequency", (DL_FUNC) &alphabetFrequency, 3},
