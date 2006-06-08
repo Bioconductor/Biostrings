@@ -6,7 +6,7 @@ Version: 2.1.3
 Author: Saikat DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: Genetics
-Depends: R (>= 2.3.0), methods
+Depends: R (>= 2.4.0), methods
 Suggests: hgu95av2probe, CelegansGenome.ce2
 License: LGPL
 SaveImage: yes
@@ -14,4 +14,4 @@ Collate: readFASTA.R utils.R
         bbuf.R ibuf.R BStringCodec.R BString.R BStringViews.R
         reverseComplement.R alphabetFrequency.R matchPattern.R
         needwunsQS.R
-        test.R zzz.R
+        zzz.R
