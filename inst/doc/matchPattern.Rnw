@@ -52,7 +52,7 @@
 
 Load the {\it Caenorhabditis elegans} genome:
 <<a1>>=
-library(CelegansGenome.ce2)
+library(BSgenome.Celegans.UCSC.ce2)
 ls(2)
 ce2
 comment(ce2$chrI)
