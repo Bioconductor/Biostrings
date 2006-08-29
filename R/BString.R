@@ -267,8 +267,8 @@ setReplaceMethod("[", "BString",
 #   "TGG" == DNAString("TG") # FALSE
 #   DNAString("TG") == RNAString("UG") # TRUE!!!
 #   library(BSgenome.Hsapiens.UCSC.hg18)
-#   dna <- hg18$chr1[[1]]
-#   dna != hg18$chr1[[1]] # FALSE
+#   dna <- Hsapiens$chr1[[1]]
+#   dna != Hsapiens$chr1[[1]] # FALSE
 #   dnav <- views(dna, 1:7, 101:107)
 #   dnav[[1]] == dnav[[7]] # TRUE
 #   dnav <- views(dna, 1:7, (length(dna)-6):length(dna))

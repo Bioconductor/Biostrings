@@ -11,7 +11,8 @@ exportMethods(
     ## Generics defined elsewhere
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
-    as.character, toString, nchar, as.matrix, as.list,
+    as.character, toString, nchar, as.complex,
+    as.matrix, as.list,
     ## New generics
     subBString,
     subject, first, last, width, desc, BStringViews,

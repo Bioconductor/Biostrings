@@ -54,27 +54,27 @@ Load the {\it Caenorhabditis elegans} genome:
 <<a1>>=
 library(BSgenome.Celegans.UCSC.ce2)
 ls(2)
-ce2
-comment(ce2$chrI)
+Celegans
+comment(Celegans$chrI)
 @
 
 Display chromosome I:
 <<a2>>=
-ce2$chrI
+Celegans$chrI
 @
 
-Note that \Robject{ce2\$chrI} is a \Rclass{BStringViews} object with a
-single view (\Robject{length(ce2\$chrI)} is 1).
+Note that \Robject{Celegans\$chrI} is a \Rclass{BStringViews} object with a
+single view (\Robject{length(Celegans\$chrI)} is 1).
 The number of letters in this sequence can be retrieved with:
 <<a3>>=
-cI <- ce2$chrI[[1]]
+cI <- Celegans$chrI[[1]]
 length(cI)
 @
 
 Try with an {\it upstream} object:
 <<a4>>=
-length(ce2$upstream2000)
-length(ce2$upstream2000[[1]])
+length(Celegans$upstream2000)
+length(Celegans$upstream2000[[1]])
 @
 
 Some basic stats:
