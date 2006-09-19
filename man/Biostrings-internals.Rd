@@ -27,17 +27,17 @@
 \alias{show,cbuf-method}
 \alias{[,cbuf-method}
 
-\alias{class:ibuf}
-\alias{ibuf-class}
-\alias{ibuf}
+\alias{class:IntBuffer}
+\alias{IntBuffer-class}
+\alias{IntBuffer}
 
-\alias{length,ibuf-method}
-\alias{initialize,ibuf-method}
-\alias{show,ibuf-method}
-\alias{==,ibuf,ibuf-method}
-\alias{!=,ibuf,ibuf-method}
-\alias{[,ibuf-method}
-\alias{[<-,ibuf-method}
+\alias{length,IntBuffer-method}
+\alias{initialize,IntBuffer-method}
+\alias{show,IntBuffer-method}
+\alias{==,IntBuffer,IntBuffer-method}
+\alias{!=,IntBuffer,IntBuffer-method}
+\alias{[,IntBuffer-method}
+\alias{[<-,IntBuffer-method}
 
 \alias{class:BStringCodec}
 \alias{BStringCodec-class}

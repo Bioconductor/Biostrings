@@ -25,7 +25,7 @@ exportMethods(
 export(
     readFASTA,
     debug_utils, debug_ByteBuffer, debug_shiftor,
-    #ByteBuffer, bbCopy, ibuf, ibReadInts, ibWriteInts,
+    #ByteBuffer, ByteBuffer.copy, IntBuffer, IntBuffer.read, IntBuffer.write,
     letter, BString, DNAString, RNAString,
     views, adjacentViews,
     matchDNAPattern,

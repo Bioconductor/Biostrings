@@ -2,13 +2,13 @@
 
 
 /****************************************************************************
- * Memory allocation for a "ibuf" object
- * -------------------------------------
- * An "ibuf" object stores its data in an "external" integer vector
+ * Memory allocation for a "IntBuffer" object
+ * ------------------------------------------
+ * An "IntBuffer" object stores its data in an "external" integer vector
  * (INTSXP vector).
  */
 
-SEXP ibuf_alloc(SEXP ib_xp, SEXP length)
+SEXP IntBuffer_alloc(SEXP ib_xp, SEXP length)
 {
 	SEXP tag;
 	int tag_length;
@@ -21,7 +21,7 @@ SEXP ibuf_alloc(SEXP ib_xp, SEXP length)
 	return ib_xp;
 }
 
-SEXP ibuf_show(SEXP ib_xp)
+SEXP IntBuffer_show(SEXP ib_xp)
 {
 	SEXP tag;
 	int tag_length;
@@ -33,7 +33,7 @@ SEXP ibuf_show(SEXP ib_xp)
 	return R_NilValue;
 }
 
-SEXP ibuf_length(SEXP ib_xp)
+SEXP IntBuffer_length(SEXP ib_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
@@ -49,10 +49,10 @@ SEXP ibuf_length(SEXP ib_xp)
 
 /*
  * From R:
- *   ib <- ibuf(30)
- *   .Call("ibuf_memcmp", ib@xp, 1:1, ib@xp, 10:10, 21:21, PACKAGE="Biostrings")
+ *   ib <- IntBuffer(30)
+ *   .Call("IntBuffer_memcmp", ib@xp, 1:1, ib@xp, 10:10, 21:21, PACKAGE="Biostrings")
  */
-SEXP ibuf_memcmp(SEXP ib1_xp, SEXP first1,
+SEXP IntBuffer_memcmp(SEXP ib1_xp, SEXP first1,
 		 SEXP ib2_xp, SEXP first2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
@@ -73,11 +73,11 @@ SEXP ibuf_memcmp(SEXP ib1_xp, SEXP first1,
 }
 
 /* ==========================================================================
- * Read/write integers to a "ibuf" object
+ * Read/write integers to a "IntBuffer" object
  * --------------------------------------------------------------------------
  */
 
-SEXP ibuf_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
+SEXP IntBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP src, ans;
 	int i1, i2, n;
@@ -94,7 +94,7 @@ SEXP ibuf_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 	return ans;
 }
 
-SEXP ibuf_read_ints_from_subset(SEXP src_xp, SEXP subset)
+SEXP IntBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset)
 {
 	SEXP src, ans;	
 	int n;
@@ -112,7 +112,7 @@ SEXP ibuf_read_ints_from_subset(SEXP src_xp, SEXP subset)
 /*
  * 'val' must be an integer vector.
  */
-SEXP ibuf_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
+SEXP IntBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
 {
 	SEXP dest;
 	int i1, i2;
@@ -126,7 +126,7 @@ SEXP ibuf_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
 	return dest_xp;
 }
 
-SEXP ibuf_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
+SEXP IntBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 {
 	SEXP dest;
 

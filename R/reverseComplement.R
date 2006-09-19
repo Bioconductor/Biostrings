@@ -15,7 +15,7 @@ setMethod("reverse", "BString",
     {
         lx <- length(x)
         data <- ByteBuffer(lx)
-        bbReverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
+        ByteBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
         # class(x) can be "BString", "DNAString" or "RNAString"
         new(class(x), data)
     }
@@ -43,7 +43,7 @@ setMethod("complement", "DNAString",
         lx <- length(x)
         data <- ByteBuffer(lx)
         hash <- DNAComplementHash()
-        bbCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
+        ByteBuffer.copy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
         DNAString(data)
     }
 )
@@ -67,7 +67,7 @@ setMethod("reverseComplement", "DNAString",
         lx <- length(x)
         data <- ByteBuffer(lx)
         hash <- DNAComplementHash()
-        bbReverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
+        ByteBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
         DNAString(data)
     }
 )

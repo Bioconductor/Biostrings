@@ -105,10 +105,10 @@ setMethod("length", "ByteBuffer",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Read/write functions.
 # These are safe wrappers to unsafe C functions.
-# If length(i) == 0 then read functions return an empty vector and
-# write functions don't do anything.
+# If length(i) == 0 then the read functions return an empty vector
+# and the write functions don't do anything.
 
-bbReadInts <- function(x, i, imax=integer(0))
+ByteBuffer.readInts <- function(x, i, imax=integer(0))
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -123,7 +123,7 @@ bbReadInts <- function(x, i, imax=integer(0))
     }
 }
 
-bbWriteInts <- function(x, i, imax=integer(0), value)
+ByteBuffer.writeInts <- function(x, i, imax=integer(0), value)
 {
     if (!is.integer(value))
         stop("'value' is not an integer vector")
@@ -141,7 +141,7 @@ bbWriteInts <- function(x, i, imax=integer(0), value)
     x
 }
 
-bbReadChars <- function(x, i, imax=integer(0), dec_hash=NULL)
+ByteBuffer.read <- function(x, i, imax=integer(0), dec_hash=NULL)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -166,7 +166,7 @@ bbReadChars <- function(x, i, imax=integer(0), dec_hash=NULL)
     }
 }
 
-bbWriteChars <- function(x, i, imax=integer(0), value, enc_hash=NULL)
+ByteBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
 {
     if (!is.character(value))
         stop("'value' is not a character vector")
@@ -194,7 +194,7 @@ bbWriteChars <- function(x, i, imax=integer(0), value, enc_hash=NULL)
     x
 }
 
-bbCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
+ByteBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
     if (class(src) != "ByteBuffer")
         stop("'src' is not a byte buffer")
@@ -218,7 +218,7 @@ bbCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
     dest
 }
 
-bbReverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
+ByteBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
     if (class(src) != "ByteBuffer")
         stop("'src' is not a byte buffer")
@@ -244,7 +244,7 @@ bbReverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 setMethod("as.integer", "ByteBuffer",
     function(x)
     {
-        bbReadInts(x, 1, length(x))
+        ByteBuffer.readInts(x, 1, length(x))
     }
 )
 
@@ -261,7 +261,7 @@ setMethod("as.integer", "ByteBuffer",
 setMethod("toString", "ByteBuffer",
     function(x)
     {
-        bbReadChars(x, 1, length(x))
+        ByteBuffer.read(x, 1, length(x))
     }
 )
 
@@ -282,7 +282,7 @@ setMethod("[", "ByteBuffer",
             stop("invalid subsetting")
         if (missing(i))
             return(as.integer(x))
-        bbReadInts(x, i)
+        ByteBuffer.readInts(x, i)
     }
 )
 
@@ -306,8 +306,8 @@ setReplaceMethod("[", "ByteBuffer",
             if (length(value) >= 2)
                 stop("character vector 'value' has more than one string")
             if (missing(i))
-                return(bbWriteChars(x, 1, length(x), value=value))
-            return(bbWriteChars(x, i, value=value))
+                return(ByteBuffer.write(x, 1, length(x), value=value))
+            return(ByteBuffer.write(x, i, value=value))
         }
 
         # We want to allow this: bb[3] <- 4, even if storage.mode(value)
@@ -322,8 +322,8 @@ setReplaceMethod("[", "ByteBuffer",
         }
         # Now 'value' is an integer vector
         if (missing(i))
-            return(bbWriteInts(x, 1, length(x), value=value))
-        bbWriteInts(x, i, value=value)
+            return(ByteBuffer.writeInts(x, 1, length(x), value=value))
+        ByteBuffer.writeInts(x, i, value=value)
     }
 )
 
@@ -393,7 +393,7 @@ setMethod("[", "cbuf",
         if (missing(i))
             s <- toString(x)
         else
-            s <- bbReadChars(x, i)
+            s <- ByteBuffer.read(x, i)
         safeExplode(s)
     }
 )

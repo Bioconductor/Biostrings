@@ -36,16 +36,16 @@ static const R_CallMethodDef callMethods[] = {
 	{"ByteBuffer_write_enc_chars_to_i1i2", (DL_FUNC) &ByteBuffer_write_enc_chars_to_i1i2, 5},
 	{"ByteBuffer_write_enc_chars_to_subset", (DL_FUNC) &ByteBuffer_write_enc_chars_to_subset, 4},
 
-/* ibuf.c */
-	{"ibuf_alloc", (DL_FUNC) &ibuf_alloc, 2},
-	{"ibuf_show", (DL_FUNC) &ibuf_show, 1},
-	{"ibuf_length", (DL_FUNC) &ibuf_length, 1},
-	{"ibuf_memcmp", (DL_FUNC) &ibuf_memcmp, 5},
+/* IntBuffer.c */
+	{"IntBuffer_alloc", (DL_FUNC) &IntBuffer_alloc, 2},
+	{"IntBuffer_show", (DL_FUNC) &IntBuffer_show, 1},
+	{"IntBuffer_length", (DL_FUNC) &IntBuffer_length, 1},
+	{"IntBuffer_memcmp", (DL_FUNC) &IntBuffer_memcmp, 5},
 
-	{"ibuf_read_ints_from_i1i2", (DL_FUNC) &ibuf_read_ints_from_i1i2, 3},
-	{"ibuf_read_ints_from_subset", (DL_FUNC) &ibuf_read_ints_from_subset, 2},
-	{"ibuf_write_ints_to_i1i2", (DL_FUNC) &ibuf_write_ints_to_i1i2, 4},
-	{"ibuf_write_ints_to_subset", (DL_FUNC) &ibuf_write_ints_to_subset, 3},
+	{"IntBuffer_read_ints_from_i1i2", (DL_FUNC) &IntBuffer_read_ints_from_i1i2, 3},
+	{"IntBuffer_read_ints_from_subset", (DL_FUNC) &IntBuffer_read_ints_from_subset, 2},
+	{"IntBuffer_write_ints_to_i1i2", (DL_FUNC) &IntBuffer_write_ints_to_i1i2, 4},
+	{"IntBuffer_write_ints_to_subset", (DL_FUNC) &IntBuffer_write_ints_to_subset, 3},
 
 /* reverseComplement.c */
         {"ByteBuffer_translate_copy_from_i1i2", (DL_FUNC) &ByteBuffer_translate_copy_from_i1i2, 5},

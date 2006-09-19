@@ -88,18 +88,18 @@ SEXP ByteBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 		SEXP string, SEXP hash_xp);
 
 
-/* ibuf.c */
+/* IntBuffer.c */
 
-SEXP ibuf_alloc(SEXP ib_xp, SEXP length);
-SEXP ibuf_show(SEXP ib_xp);
-SEXP ibuf_length(SEXP ib_xp);
-SEXP ibuf_memcmp(SEXP ib1_xp, SEXP first1,
-                 SEXP ib2_xp, SEXP first2, SEXP width);
+SEXP IntBuffer_alloc(SEXP ib_xp, SEXP length);
+SEXP IntBuffer_show(SEXP ib_xp);
+SEXP IntBuffer_length(SEXP ib_xp);
+SEXP IntBuffer_memcmp(SEXP ib1_xp, SEXP first1,
+		SEXP ib2_xp, SEXP first2, SEXP width);
 
-SEXP ibuf_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
-SEXP ibuf_read_ints_from_subset(SEXP src_xp, SEXP subset);
-SEXP ibuf_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
-SEXP ibuf_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
+SEXP IntBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
+SEXP IntBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset);
+SEXP IntBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
+SEXP IntBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
 
 /* reverseComplement.c */

@@ -27,21 +27,21 @@ setGeneric(
 setMethod("readChars", "BString",
     function(x, i, imax)
     {
-        bbReadChars(x@data, i + x@offset, imax + x@offset)
+        ByteBuffer.read(x@data, i + x@offset, imax + x@offset)
     }
 )
 setMethod("readChars", "DNAString",
     function(x, i, imax)
     {
         dec_hash = DNA_STRING_CODEC@dec_hash
-        bbReadChars(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
+        ByteBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
     }
 )
 setMethod("readChars", "RNAString",
     function(x, i, imax)
     {
         dec_hash = RNA_STRING_CODEC@dec_hash
-        bbReadChars(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
+        ByteBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
     }
 )
 
@@ -53,7 +53,7 @@ setGeneric(
 setMethod("writeChars", "BString",
     function(x, i, imax, value)
     {
-        bbWriteChars(x@data, i + x@offset, imax + x@offset, value=value)
+        ByteBuffer.write(x@data, i + x@offset, imax + x@offset, value=value)
         x
     }
 )
@@ -61,8 +61,8 @@ setMethod("writeChars", "DNAString",
     function(x, i, imax, value)
     {
         enc_hash = DNA_STRING_CODEC@enc_hash
-        bbWriteChars(x@data, i + x@offset, imax + x@offset, value=value,
-                     enc=enc_hash)
+        ByteBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
+                         enc=enc_hash)
         x
     }
 )
@@ -70,8 +70,8 @@ setMethod("writeChars", "RNAString",
     function(x, i, imax, value)
     {
         enc_hash = RNA_STRING_CODEC@enc_hash
-        bbWriteChars(x@data, i + x@offset, imax + x@offset, value=value,
-                     enc=enc_hash)
+        ByteBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
+                         enc=enc_hash)
         x
     }
 )
@@ -235,7 +235,7 @@ setMethod("[", "BString",
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
         data <- ByteBuffer(length(i))
-        bbCopy(data, i + x@offset, src=x@data)
+        ByteBuffer.copy(data, i + x@offset, src=x@data)
         # class(x) can be "BString", "DNAString" or "RNAString"
         new(class(x), data)
     }

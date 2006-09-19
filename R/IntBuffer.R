@@ -2,32 +2,32 @@
 # INTEGER BUFFER objects
 # ---------------------------------------------------------------------------
 #
-# The "ibuf" class implements the concept of "ByteBuffer" objects but
+# The "IntBuffer" class implements the concept of "ByteBuffer" objects but
 # for integers instead of bytes.
-# Some differences between "integer" and "ibuf":
-#   1. an "ibuf" object can't be of length 0 (ibuf(0) produces an error)
-#   2. ibuf(10) does not initialize its values (integer(10) does)
-#   3. ibuf(10)[i] produces an error if i is out of bounds
-#   4. "ibuf"objects are fast:
+# Some differences between "integer" and "IntBuffer":
+#   1. an "IntBuffer" object can't be of length 0 (IntBuffer(0) produces an error)
+#   2. IntBuffer(10) does not initialize its values (integer(10) does)
+#   3. IntBuffer(10)[i] produces an error if i is out of bounds
+#   4. "IntBuffer" objects are fast:
 #        > a <- integer(100000000)
 #        > system.time(tmp <- a[])
 #        [1] 0.65 0.30 0.95 0.00 0.00
 #        > system.time(a[] <- 100:1)
 #        [1] 3.08 0.52 3.61 0.00 0.00
 #
-#        > ib <- ibuf(100000000)
+#        > ib <- IntBuffer(100000000)
 #        > system.time(tmp <- ib[])
 #        [1] 0.39 0.52 0.91 0.00 0.00
 #        > system.time(ib[] <- 100:1)
 #        [1] 0.56 0.00 0.56 0.00 0.00
 
-setClass("ibuf", representation(xp="externalptr"))
+setClass("IntBuffer", representation(xp="externalptr"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initialization
 
-setMethod("initialize", "ibuf",
+setMethod("initialize", "IntBuffer",
     function(.Object, length)
     {
         if (missing(length))
@@ -40,38 +40,38 @@ setMethod("initialize", "ibuf",
         if (length < 1)
             stop("buffer length must be >= 1")
         xp <- .Call("xp_new", PACKAGE="Biostrings")
-        .Call("ibuf_alloc", xp, length, PACKAGE="Biostrings")
+        .Call("IntBuffer_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         .Object
     }
 )
 
-ibuf <- function(...)
+IntBuffer <- function(...)
 {
-    new("ibuf", ...)
+    new("IntBuffer", ...)
 }
 
-setMethod("show", "ibuf",
+setMethod("show", "IntBuffer",
     function(object)
     {
-        .Call("ibuf_show", object@xp, PACKAGE="Biostrings")
+        .Call("IntBuffer_show", object@xp, PACKAGE="Biostrings")
     }
 )
 
-setMethod("length", "ibuf",
+setMethod("length", "IntBuffer",
     function(x)
     {
-        .Call("ibuf_length", x@xp, PACKAGE="Biostrings")
+        .Call("IntBuffer_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Read/write functions.
 # These are safe wrappers to unsafe C functions.
-# If length(i) then read functions return an empty vector and write functions
-# don't do anything.
+# If length(i) == 0 then the read functions return an empty vector
+# and the write functions don't do anything.
 
-ibReadInts <- function(x, i, imax=integer(0))
+IntBuffer.read <- function(x, i, imax=integer(0))
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -80,13 +80,13 @@ ibReadInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("ibuf_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("IntBuffer_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("ibuf_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
+        .Call("IntBuffer_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
-ibWriteInts <- function(x, i, imax=integer(0), value)
+IntBuffer.write <- function(x, i, imax=integer(0), value)
 {
     if (!is.integer(value))
         stop("'value' is not an integer vector")
@@ -97,9 +97,9 @@ ibWriteInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("ibuf_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("IntBuffer_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("ibuf_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("IntBuffer_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
@@ -108,10 +108,10 @@ ibWriteInts <- function(x, i, imax=integer(0), value)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # length(as.integer(bb)) is equivalent to length(bb)
 # but the latter is MUCH faster!
-setMethod("as.integer", "ibuf",
+setMethod("as.integer", "IntBuffer",
     function(x)
     {
-        ibReadInts(x, 1, length(x))
+        IntBuffer.read(x, 1, length(x))
     }
 )
 
@@ -119,18 +119,18 @@ setMethod("as.integer", "ibuf",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Subsetting
 
-setMethod("[", "ibuf",
+setMethod("[", "IntBuffer",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
         if (missing(i))
             return(as.integer(x))
-        ibReadInts(x, i)
+        IntBuffer.read(x, i)
     }
 )
 
-setReplaceMethod("[", "ibuf",
+setReplaceMethod("[", "IntBuffer",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -148,8 +148,8 @@ setReplaceMethod("[", "ibuf",
         }
         # Now 'value' is an integer vector
         if (missing(i))
-            return(ibWriteInts(x, 1, length(x), value=value))
-        ibWriteInts(x, i, value=value)
+            return(IntBuffer.write(x, 1, length(x), value=value))
+        IntBuffer.write(x, i, value=value)
     }
 )
 
@@ -157,13 +157,13 @@ setReplaceMethod("[", "ibuf",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Equality
 
-setMethod("==", signature(e1="ibuf", e2="ibuf"),
+setMethod("==", signature(e1="IntBuffer", e2="IntBuffer"),
     function(e1, e2)
     {
         address(e1@xp) == address(e2@xp)
     }
 )
-setMethod("!=", signature(e1="ibuf", e2="ibuf"),
+setMethod("!=", signature(e1="IntBuffer", e2="IntBuffer"),
     function(e1, e2)
     {
         address(e1@xp) != address(e2@xp)
@@ -172,7 +172,7 @@ setMethod("!=", signature(e1="ibuf", e2="ibuf"),
 
 # A wrapper to the very fast memcmp() C-function.
 # Arguments MUST be the following or it will crash R:
-#   x1, x2: "ibuf" objects
+#   x1, x2: "IntBuffer" objects
 #   first1, first2, width: single integers
 # In addition: 1 <= first1 <= first1+width-1 <= length(x1)
 #              1 <= first2 <= first2+width-1 <= length(x2)
@@ -180,5 +180,5 @@ setMethod("!=", signature(e1="ibuf", e2="ibuf"),
 # arguments) because we want it to be the fastest possible!
 ibCompare <- function(x1, first1, x2, first2, width)
 {
-    .Call("ibuf_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
+    .Call("IntBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
 }

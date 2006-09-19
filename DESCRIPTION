@@ -11,7 +11,7 @@ Suggests: hgu95av2probe, BSgenome.Celegans.UCSC.ce2
 License: LGPL
 SaveImage: yes
 Collate: readFASTA.R utils.R
-        ByteBuffer.R ibuf.R BStringCodec.R BString.R as.complex.R
+        ByteBuffer.R IntBuffer.R BStringCodec.R BString.R as.complex.R
         BStringViews.R
         reverseComplement.R alphabetFrequency.R matchPattern.R
         needwunsQS.R
