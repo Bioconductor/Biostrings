@@ -2,9 +2,9 @@
 
 
 /*
- * See bbuf_copy_from_i1i2() in bbuf.c for a description of the first 4 arguments.
+ * See ByteBuffer_copy_from_i1i2() in ByteBuffer.c for a description of the first 4 arguments.
  */
-SEXP bbuf_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
+SEXP ByteBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
 	int i1, i2;
@@ -24,9 +24,9 @@ SEXP bbuf_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP im
 }
 
 /*
- * See bbuf_copy_from_subset() in bbuf.c for a description of the first 3 arguments.
+ * See ByteBuffer_copy_from_subset() in ByteBuffer.c for a description of the first 3 arguments.
  */
-SEXP bbuf_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp)
+SEXP ByteBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
 	char hash_hole;
@@ -42,9 +42,9 @@ SEXP bbuf_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEX
 }
 
 /*
- * See bbuf_copy_from_i1i2() in bbuf.c for a description of the arguments.
+ * See ByteBuffer_copy_from_i1i2() in ByteBuffer.c for a description of the arguments.
  */
-SEXP bbuf_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
+SEXP ByteBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -60,9 +60,9 @@ SEXP bbuf_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax
 }
 
 /*
- * See bbuf_copy_from_i1i2() in bbuf.c for a description of the first 4 arguments.
+ * See ByteBuffer_copy_from_i1i2() in ByteBuffer.c for a description of the first 4 arguments.
  */
-SEXP bbuf_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
+SEXP ByteBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
 	int i1, i2;

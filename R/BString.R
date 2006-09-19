@@ -5,7 +5,7 @@
 setClass(
     "BString",
     representation(
-        data="bbuf",            # byte buffer (contains the string data)
+        data="ByteBuffer",            # byte buffer (contains the string data)
         offset="integer",       # a single integer
         length="integer"        # a single integer
     )
@@ -97,7 +97,7 @@ setMethod("letter", "BString",
 
 # Must work at least with 'src' being one of the following:
 #   - a single non-empty string (character vector of length 1)
-#   - a "bbuf" object
+#   - a "ByteBuffer" object
 #   - a "BString", "DNAString" or "RNAString" object
 setMethod("initialize", "BString",
     function(.Object, src)
@@ -106,7 +106,7 @@ setMethod("initialize", "BString",
         if (class(src) == class(.Object))
             return(src)
         .Object@offset <- as.integer(0) # Set me BEFORE calling writeChars()
-        if (class(src) == "bbuf") {
+        if (class(src) == "ByteBuffer") {
             length <- length(src)
             .Object@data <- src
         } else {
@@ -123,7 +123,7 @@ setMethod("initialize", "BString",
                 src <- toString(src)
             }
             length <- nchar(src)
-            .Object@data <- bbuf(length)
+            .Object@data <- ByteBuffer(length)
             writeChars(.Object, 1, length, value=src)
         }
         .Object@length <- length
@@ -234,7 +234,7 @@ setMethod("[", "BString",
             return(x)
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        data <- bbuf(length(i))
+        data <- ByteBuffer(length(i))
         bbCopy(data, i + x@offset, src=x@data)
         # class(x) can be "BString", "DNAString" or "RNAString"
         new(class(x), data)

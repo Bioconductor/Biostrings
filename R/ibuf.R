@@ -2,7 +2,7 @@
 # INTEGER BUFFER objects
 # ---------------------------------------------------------------------------
 #
-# The "ibuf" class implements the concept of "bbuf" objects but
+# The "ibuf" class implements the concept of "ByteBuffer" objects but
 # for integers instead of bytes.
 # Some differences between "integer" and "ibuf":
 #   1. an "ibuf" object can't be of length 0 (ibuf(0) produces an error)

@@ -2,7 +2,7 @@
 # BYTE BUFFER objects
 # ---------------------------------------------------------------------------
 #
-# The "bbuf" class describes "byte buffer" objects.
+# The "ByteBuffer" class describes "byte buffer" objects.
 # A "byte buffer" object is a chunk of memory that:
 #   a. Contains bytes (characters).
 #   b. Is readable and writable.
@@ -11,7 +11,7 @@
 #      both bb1 and bb2 point to the same place in memory.
 #      This is achieved by using R predefined type "externalptr".
 #   d. Is not 0-terminated (so it can contain zeros). This is achieved by
-#      having the length of the buffer stored in the "bbuf" object.
+#      having the length of the buffer stored in the "ByteBuffer" object.
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,9 +21,9 @@ debug_utils <- function()
     invisible(.Call("utils_debug", PACKAGE="Biostrings"))
 }
 
-debug_bbuf <- function()
+debug_ByteBuffer <- function()
 {
-    invisible(.Call("bbuf_debug", PACKAGE="Biostrings"))
+    invisible(.Call("ByteBuffer_debug", PACKAGE="Biostrings"))
 }
 
 
@@ -47,24 +47,24 @@ setMethod("show", "externalptr",
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # The "byte buffer" class.
-# Note: instead of defining the "bbuf" class with just one slot of type
+# Note: instead of defining the "ByteBuffer" class with just one slot of type
 # "externalptr" (it HAS an "externalptr", and nothing else), an alternative
 # would be to simply extend the "externalptr" type.
-# After all, a "bbuf" object IS an "externalptr" object.
+# After all, a "ByteBuffer" object IS an "externalptr" object.
 # However, I tried this but was not able to implement the "initialize" method
-# in such a way that it returns a new instance of the "bbuf" class (the
+# in such a way that it returns a new instance of the "ByteBuffer" class (the
 # returned object was ALWAYS the same instance everytime the method was
 # called, I found no workaround).
-setClass("bbuf", representation(xp="externalptr"))
+setClass("ByteBuffer", representation(xp="externalptr"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initialization
 
 # This:
-#   bb <- bbuf(30)
+#   bb <- ByteBuffer(30)
 # will call the "initialize" method.
-setMethod("initialize", "bbuf",
+setMethod("initialize", "ByteBuffer",
     function(.Object, length)
     {
         if (missing(length))
@@ -77,28 +77,28 @@ setMethod("initialize", "bbuf",
         if (length < 1)
             stop("buffer length must be >= 1")
         xp <- .Call("xp_new", PACKAGE="Biostrings")
-        .Call("bbuf_alloc", xp, length, PACKAGE="Biostrings")
+        .Call("ByteBuffer_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         .Object
     }
 )
 
-bbuf <- function(...)
+ByteBuffer <- function(...)
 {
-    new("bbuf", ...)
+    new("ByteBuffer", ...)
 }
 
-setMethod("show", "bbuf",
+setMethod("show", "ByteBuffer",
     function(object)
     {
-        .Call("bbuf_show", object@xp, PACKAGE="Biostrings")
+        .Call("ByteBuffer_show", object@xp, PACKAGE="Biostrings")
     }
 )
 
-setMethod("length", "bbuf",
+setMethod("length", "ByteBuffer",
     function(x)
     {
-        .Call("bbuf_length", x@xp, PACKAGE="Biostrings")
+        .Call("ByteBuffer_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
@@ -117,9 +117,9 @@ bbReadInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("bbuf_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("ByteBuffer_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("bbuf_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
+        .Call("ByteBuffer_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
@@ -134,9 +134,9 @@ bbWriteInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("bbuf_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("ByteBuffer_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("bbuf_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("ByteBuffer_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
@@ -151,17 +151,17 @@ bbReadChars <- function(x, i, imax=integer(0), dec_hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(dec_hash))
-            .Call("bbuf_read_chars_from_i1i2",
+            .Call("ByteBuffer_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("bbuf_read_enc_chars_from_i1i2",
+            .Call("ByteBuffer_read_enc_chars_from_i1i2",
                   x@xp, i, imax, dec_hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(dec_hash))
-            .Call("bbuf_read_chars_from_subset",
+            .Call("ByteBuffer_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
-            .Call("bbuf_read_enc_chars_from_subset",
+            .Call("ByteBuffer_read_enc_chars_from_subset",
                   x@xp, i, dec_hash@xp, PACKAGE="Biostrings")
     }
 }
@@ -178,17 +178,17 @@ bbWriteChars <- function(x, i, imax=integer(0), value, enc_hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(enc_hash))
-            .Call("bbuf_write_chars_to_i1i2",
+            .Call("ByteBuffer_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
-            .Call("bbuf_write_enc_chars_to_i1i2",
+            .Call("ByteBuffer_write_enc_chars_to_i1i2",
                   x@xp, i, imax, value, enc_hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(enc_hash))
-            .Call("bbuf_write_chars_to_subset",
+            .Call("ByteBuffer_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
-            .Call("bbuf_write_enc_chars_to_subset",
+            .Call("ByteBuffer_write_enc_chars_to_subset",
                   x@xp, i, value, enc_hash@xp, PACKAGE="Biostrings")
     }
     x
@@ -196,7 +196,7 @@ bbWriteChars <- function(x, i, imax=integer(0), value, enc_hash=NULL)
 
 bbCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
-    if (class(src) != "bbuf")
+    if (class(src) != "ByteBuffer")
         stop("'src' is not a byte buffer")
     if (!is.integer(i))
         i <- as.integer(i)
@@ -206,21 +206,21 @@ bbCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(hash))
-            .Call("bbuf_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+            .Call("ByteBuffer_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("bbuf_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
+            .Call("ByteBuffer_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(hash))
-            .Call("bbuf_copy_from_subset", dest@xp, src@xp, i, PACKAGE="Biostrings")
+            .Call("ByteBuffer_copy_from_subset", dest@xp, src@xp, i, PACKAGE="Biostrings")
         else
-            .Call("bbuf_translate_copy_from_subset", dest@xp, src@xp, i, hash@xp, PACKAGE="Biostrings")
+            .Call("ByteBuffer_translate_copy_from_subset", dest@xp, src@xp, i, hash@xp, PACKAGE="Biostrings")
     }
     dest
 }
 
 bbReverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
-    if (class(src) != "bbuf")
+    if (class(src) != "ByteBuffer")
         stop("'src' is not a byte buffer")
     if (length(i) != 1)
         stop("'i' must be a single integer")
@@ -231,9 +231,9 @@ bbReverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
     else
         imax <- as.integer(imax)
     if (is.null(hash))
-        .Call("bbuf_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+        .Call("ByteBuffer_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
     else
-        .Call("bbuf_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
+        .Call("ByteBuffer_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
     dest
 }
 
@@ -241,7 +241,7 @@ bbReverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # length(as.integer(bb)) is equivalent to length(bb)
 # but the latter is MUCH faster!
-setMethod("as.integer", "bbuf",
+setMethod("as.integer", "ByteBuffer",
     function(x)
     {
         bbReadInts(x, 1, length(x))
@@ -249,16 +249,16 @@ setMethod("as.integer", "bbuf",
 )
 
 # Typical use:
-#   bb <- bbuf(15)
+#   bb <- ByteBuffer(15)
 #   bb[] <- 65
 #   toString(bb)
 #   bb[] <- "Hello"
 #   toString(bb)
-# So this should always rewrite the content of a "bbuf" object
+# So this should always rewrite the content of a "ByteBuffer" object
 # to itself, without any modification:
 #   bb[] <- toString(bb)
 # whetever the content of bb is!
-setMethod("toString", "bbuf",
+setMethod("toString", "ByteBuffer",
     function(x)
     {
         bbReadChars(x, 1, length(x))
@@ -271,11 +271,11 @@ setMethod("toString", "bbuf",
 
 # Select bytes from a "byte buffer".
 # Typical use:
-#   bb <- bbuf(30)
+#   bb <- ByteBuffer(30)
 #   bb[25:20]
 #   bb[25:31] # subscript out of bounds
 # Note: bb[] can be used as a shortcut for as.integer(bb)
-setMethod("[", "bbuf",
+setMethod("[", "ByteBuffer",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -288,14 +288,14 @@ setMethod("[", "bbuf",
 
 # Replace bytes in a "byte buffer".
 # Typical use:
-#   bb <- bbuf(30)
+#   bb <- ByteBuffer(30)
 #   bb[] <- 12 # fill with 12
 #   bb[3:10] <- 1:-2
 #   bb[3:10] <- "Ab"
 #   bb[0] <- 4 # subscript out of bounds
 #   bb[31] <- 4 # subscript out of bounds
 #   bb[3] <- -12 # subscript out of bounds
-setReplaceMethod("[", "bbuf",
+setReplaceMethod("[", "ByteBuffer",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -332,18 +332,18 @@ setReplaceMethod("[", "bbuf",
 # Equality
 
 # Be careful to the semantic of the "==" operator:
-#   2 "bbuf" objects are equals if their @xp slot is the
+#   2 "ByteBuffer" objects are equals if their @xp slot is the
 #   same "externalptr" instance (then they obviously have
 #   the same length and contain the same data).
-# With this definition, bb1 and bb2 can be 2 different "bbuf" objects
+# With this definition, bb1 and bb2 can be 2 different "ByteBuffer" objects
 # (bb1 != bb2) and contain the same data.
-setMethod("==", signature(e1="bbuf", e2="bbuf"),
+setMethod("==", signature(e1="ByteBuffer", e2="ByteBuffer"),
     function(e1, e2)
     {
         address(e1@xp) == address(e2@xp)
     }
 )
-setMethod("!=", signature(e1="bbuf", e2="bbuf"),
+setMethod("!=", signature(e1="ByteBuffer", e2="ByteBuffer"),
     function(e1, e2)
     {
         address(e1@xp) != address(e2@xp)
@@ -352,7 +352,7 @@ setMethod("!=", signature(e1="bbuf", e2="bbuf"),
 
 # A wrapper to the very fast memcmp() C-function.
 # Arguments MUST be the following or it will crash R:
-#   x1, x2: "bbuf" objects
+#   x1, x2: "ByteBuffer" objects
 #   first1, first2, width: single integers
 # In addition: 1 <= first1 <= first1+width-1 <= length(x1)
 #              1 <= first2 <= first2+width-1 <= length(x2)
@@ -360,15 +360,15 @@ setMethod("!=", signature(e1="bbuf", e2="bbuf"),
 # arguments) because we want it to be the fastest possible!
 bbCompare <- function(x1, first1, x2, first2, width)
 {
-    .Call("bbuf_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
+    .Call("ByteBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
 }
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "cbuf" class is a simple extention of the "bbuf" class (no additional
+# The "cbuf" class is a simple extention of the "ByteBuffer" class (no additional
 # slots)
 
-setClass("cbuf", representation("bbuf"))
+setClass("cbuf", representation("ByteBuffer"))
 
 setMethod("show", "cbuf",
     function(object)

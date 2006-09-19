@@ -52,39 +52,39 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *hash, int hash_length, char hash_hole, int strict);
 
 
-/* bbuf.c */
+/* ByteBuffer.c */
 
-SEXP bbuf_debug();
+SEXP ByteBuffer_debug();
 
 SEXP sexp_address(SEXP s);
 SEXP xp_show(SEXP xp);
 SEXP xp_new();
 SEXP safe_explode(SEXP s);
 
-SEXP bbuf_alloc(SEXP bb_xp, SEXP length);
-SEXP bbuf_show(SEXP bb_xp);
-SEXP bbuf_length(SEXP bb_xp);
-SEXP bbuf_memcmp(SEXP bb1_xp, SEXP first1,
+SEXP ByteBuffer_alloc(SEXP bb_xp, SEXP length);
+SEXP ByteBuffer_show(SEXP bb_xp);
+SEXP ByteBuffer_length(SEXP bb_xp);
+SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
 		SEXP bb2_xp, SEXP first2, SEXP width);
 
-SEXP bbuf_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
-SEXP bbuf_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset);
+SEXP ByteBuffer_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
+SEXP ByteBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset);
 
-SEXP bbuf_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
-SEXP bbuf_read_chars_from_subset(SEXP src_xp, SEXP subset);
-SEXP bbuf_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string);
-SEXP bbuf_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string);
+SEXP ByteBuffer_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
+SEXP ByteBuffer_read_chars_from_subset(SEXP src_xp, SEXP subset);
+SEXP ByteBuffer_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string);
+SEXP ByteBuffer_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string);
 
-SEXP bbuf_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
-SEXP bbuf_read_ints_from_subset(SEXP src_xp, SEXP subset);
-SEXP bbuf_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
-SEXP bbuf_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
+SEXP ByteBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
+SEXP ByteBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset);
+SEXP ByteBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
+SEXP ByteBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
-SEXP bbuf_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
-SEXP bbuf_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp);
-SEXP bbuf_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
+SEXP ByteBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
+SEXP ByteBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp);
+SEXP ByteBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
 		SEXP string, SEXP hash_xp);
-SEXP bbuf_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
+SEXP ByteBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 		SEXP string, SEXP hash_xp);
 
 
@@ -104,10 +104,10 @@ SEXP ibuf_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
 /* reverseComplement.c */
 
-SEXP bbuf_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
-SEXP bbuf_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp);
-SEXP bbuf_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
-SEXP bbuf_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
+SEXP ByteBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
+SEXP ByteBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp);
+SEXP ByteBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
+SEXP ByteBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
 
 
 /* alphabetFrequency.c */
