@@ -5,7 +5,7 @@
 setClass(
     "BString",
     representation(
-        data="ByteBuffer",            # byte buffer (contains the string data)
+        data="CharBuffer",            # byte buffer (contains the string data)
         offset="integer",       # a single integer
         length="integer"        # a single integer
     )
@@ -27,21 +27,21 @@ setGeneric(
 setMethod("readChars", "BString",
     function(x, i, imax)
     {
-        ByteBuffer.read(x@data, i + x@offset, imax + x@offset)
+        CharBuffer.read(x@data, i + x@offset, imax + x@offset)
     }
 )
 setMethod("readChars", "DNAString",
     function(x, i, imax)
     {
         dec_hash = DNA_STRING_CODEC@dec_hash
-        ByteBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
+        CharBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
     }
 )
 setMethod("readChars", "RNAString",
     function(x, i, imax)
     {
         dec_hash = RNA_STRING_CODEC@dec_hash
-        ByteBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
+        CharBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
     }
 )
 
@@ -53,7 +53,7 @@ setGeneric(
 setMethod("writeChars", "BString",
     function(x, i, imax, value)
     {
-        ByteBuffer.write(x@data, i + x@offset, imax + x@offset, value=value)
+        CharBuffer.write(x@data, i + x@offset, imax + x@offset, value=value)
         x
     }
 )
@@ -61,7 +61,7 @@ setMethod("writeChars", "DNAString",
     function(x, i, imax, value)
     {
         enc_hash = DNA_STRING_CODEC@enc_hash
-        ByteBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
+        CharBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
                          enc=enc_hash)
         x
     }
@@ -70,7 +70,7 @@ setMethod("writeChars", "RNAString",
     function(x, i, imax, value)
     {
         enc_hash = RNA_STRING_CODEC@enc_hash
-        ByteBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
+        CharBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
                          enc=enc_hash)
         x
     }
@@ -97,7 +97,7 @@ setMethod("letter", "BString",
 
 # Must work at least with 'src' being one of the following:
 #   - a single non-empty string (character vector of length 1)
-#   - a "ByteBuffer" object
+#   - a "CharBuffer" object
 #   - a "BString" (or one of its derivations) object
 setMethod("initialize", "BString",
     function(.Object, src)
@@ -107,7 +107,7 @@ setMethod("initialize", "BString",
         if (class(src) == class(.Object))
             return(src)
         .Object@offset <- as.integer(0) # Set me BEFORE calling writeChars()
-        if (class(src) == "ByteBuffer") {
+        if (class(src) == "CharBuffer") {
             length <- length(src)
             .Object@data <- src
         } else {
@@ -124,7 +124,7 @@ setMethod("initialize", "BString",
                 src <- toString(src)
             }
             length <- nchar(src)
-            .Object@data <- ByteBuffer(length)
+            .Object@data <- CharBuffer(length)
             writeChars(.Object, 1, length, value=src)
         }
         .Object@length <- length
@@ -242,8 +242,8 @@ setMethod("[", "BString",
             return(x)
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        data <- ByteBuffer(length(i))
-        ByteBuffer.copy(data, i + x@offset, src=x@data)
+        data <- CharBuffer(length(i))
+        CharBuffer.copy(data, i + x@offset, src=x@data)
         # class(x) can be "BString" or one of its derivations ("DNAString",
         # "RNAString" or "AAString").
         new(class(x), data)

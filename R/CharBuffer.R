@@ -1,8 +1,8 @@
 # ===========================================================================
-# BYTE BUFFER objects
+# CHAR BUFFER objects
 # ---------------------------------------------------------------------------
 #
-# The "ByteBuffer" class describes "byte buffer" objects.
+# The "CharBuffer" class describes "byte buffer" objects.
 # A "byte buffer" object is a chunk of memory that:
 #   a. Contains bytes (characters).
 #   b. Is readable and writable.
@@ -11,7 +11,7 @@
 #      both bb1 and bb2 point to the same place in memory.
 #      This is achieved by using R predefined type "externalptr".
 #   d. Is not 0-terminated (so it can contain zeros). This is achieved by
-#      having the length of the buffer stored in the "ByteBuffer" object.
+#      having the length of the buffer stored in the "CharBuffer" object.
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,9 +21,9 @@ debug_utils <- function()
     invisible(.Call("utils_debug", PACKAGE="Biostrings"))
 }
 
-debug_ByteBuffer <- function()
+debug_CharBuffer <- function()
 {
-    invisible(.Call("ByteBuffer_debug", PACKAGE="Biostrings"))
+    invisible(.Call("CharBuffer_debug", PACKAGE="Biostrings"))
 }
 
 
@@ -47,24 +47,24 @@ setMethod("show", "externalptr",
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # The "byte buffer" class.
-# Note: instead of defining the "ByteBuffer" class with just one slot of type
+# Note: instead of defining the "CharBuffer" class with just one slot of type
 # "externalptr" (it HAS an "externalptr", and nothing else), an alternative
 # would be to simply extend the "externalptr" type.
-# After all, a "ByteBuffer" object IS an "externalptr" object.
+# After all, a "CharBuffer" object IS an "externalptr" object.
 # However, I tried this but was not able to implement the "initialize" method
-# in such a way that it returns a new instance of the "ByteBuffer" class (the
+# in such a way that it returns a new instance of the "CharBuffer" class (the
 # returned object was ALWAYS the same instance everytime the method was
 # called, I found no workaround).
-setClass("ByteBuffer", representation(xp="externalptr"))
+setClass("CharBuffer", representation(xp="externalptr"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initialization
 
 # This:
-#   bb <- ByteBuffer(30)
+#   bb <- CharBuffer(30)
 # will call the "initialize" method.
-setMethod("initialize", "ByteBuffer",
+setMethod("initialize", "CharBuffer",
     function(.Object, length)
     {
         if (missing(length))
@@ -77,28 +77,28 @@ setMethod("initialize", "ByteBuffer",
         if (length < 1)
             stop("buffer length must be >= 1")
         xp <- .Call("xp_new", PACKAGE="Biostrings")
-        .Call("ByteBuffer_alloc", xp, length, PACKAGE="Biostrings")
+        .Call("CharBuffer_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         .Object
     }
 )
 
-ByteBuffer <- function(...)
+CharBuffer <- function(...)
 {
-    new("ByteBuffer", ...)
+    new("CharBuffer", ...)
 }
 
-setMethod("show", "ByteBuffer",
+setMethod("show", "CharBuffer",
     function(object)
     {
-        .Call("ByteBuffer_show", object@xp, PACKAGE="Biostrings")
+        .Call("CharBuffer_show", object@xp, PACKAGE="Biostrings")
     }
 )
 
-setMethod("length", "ByteBuffer",
+setMethod("length", "CharBuffer",
     function(x)
     {
-        .Call("ByteBuffer_length", x@xp, PACKAGE="Biostrings")
+        .Call("CharBuffer_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
@@ -108,7 +108,7 @@ setMethod("length", "ByteBuffer",
 # If length(i) == 0 then the read functions return an empty vector
 # and the write functions don't do anything.
 
-ByteBuffer.readInts <- function(x, i, imax=integer(0))
+CharBuffer.readInts <- function(x, i, imax=integer(0))
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -117,13 +117,13 @@ ByteBuffer.readInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("ByteBuffer_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("CharBuffer_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("ByteBuffer_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
+        .Call("CharBuffer_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
-ByteBuffer.writeInts <- function(x, i, imax=integer(0), value)
+CharBuffer.writeInts <- function(x, i, imax=integer(0), value)
 {
     if (!is.integer(value))
         stop("'value' is not an integer vector")
@@ -134,14 +134,14 @@ ByteBuffer.writeInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("ByteBuffer_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("CharBuffer_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("ByteBuffer_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("CharBuffer_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
 
-ByteBuffer.read <- function(x, i, imax=integer(0), dec_hash=NULL)
+CharBuffer.read <- function(x, i, imax=integer(0), dec_hash=NULL)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -151,22 +151,22 @@ ByteBuffer.read <- function(x, i, imax=integer(0), dec_hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(dec_hash))
-            .Call("ByteBuffer_read_chars_from_i1i2",
+            .Call("CharBuffer_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("ByteBuffer_read_enc_chars_from_i1i2",
+            .Call("CharBuffer_read_enc_chars_from_i1i2",
                   x@xp, i, imax, dec_hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(dec_hash))
-            .Call("ByteBuffer_read_chars_from_subset",
+            .Call("CharBuffer_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
-            .Call("ByteBuffer_read_enc_chars_from_subset",
+            .Call("CharBuffer_read_enc_chars_from_subset",
                   x@xp, i, dec_hash@xp, PACKAGE="Biostrings")
     }
 }
 
-ByteBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
+CharBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
 {
     if (!is.character(value))
         stop("'value' is not a character vector")
@@ -178,25 +178,25 @@ ByteBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(enc_hash))
-            .Call("ByteBuffer_write_chars_to_i1i2",
+            .Call("CharBuffer_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
-            .Call("ByteBuffer_write_enc_chars_to_i1i2",
+            .Call("CharBuffer_write_enc_chars_to_i1i2",
                   x@xp, i, imax, value, enc_hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(enc_hash))
-            .Call("ByteBuffer_write_chars_to_subset",
+            .Call("CharBuffer_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
-            .Call("ByteBuffer_write_enc_chars_to_subset",
+            .Call("CharBuffer_write_enc_chars_to_subset",
                   x@xp, i, value, enc_hash@xp, PACKAGE="Biostrings")
     }
     x
 }
 
-ByteBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
+CharBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
-    if (class(src) != "ByteBuffer")
+    if (class(src) != "CharBuffer")
         stop("'src' is not a byte buffer")
     if (!is.integer(i))
         i <- as.integer(i)
@@ -206,21 +206,21 @@ ByteBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(hash))
-            .Call("ByteBuffer_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+            .Call("CharBuffer_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("ByteBuffer_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
+            .Call("CharBuffer_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(hash))
-            .Call("ByteBuffer_copy_from_subset", dest@xp, src@xp, i, PACKAGE="Biostrings")
+            .Call("CharBuffer_copy_from_subset", dest@xp, src@xp, i, PACKAGE="Biostrings")
         else
-            .Call("ByteBuffer_translate_copy_from_subset", dest@xp, src@xp, i, hash@xp, PACKAGE="Biostrings")
+            .Call("CharBuffer_translate_copy_from_subset", dest@xp, src@xp, i, hash@xp, PACKAGE="Biostrings")
     }
     dest
 }
 
-ByteBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
+CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
-    if (class(src) != "ByteBuffer")
+    if (class(src) != "CharBuffer")
         stop("'src' is not a byte buffer")
     if (length(i) != 1)
         stop("'i' must be a single integer")
@@ -231,9 +231,9 @@ ByteBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
     else
         imax <- as.integer(imax)
     if (is.null(hash))
-        .Call("ByteBuffer_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+        .Call("CharBuffer_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
     else
-        .Call("ByteBuffer_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
+        .Call("CharBuffer_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
     dest
 }
 
@@ -241,27 +241,27 @@ ByteBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # length(as.integer(bb)) is equivalent to length(bb)
 # but the latter is MUCH faster!
-setMethod("as.integer", "ByteBuffer",
+setMethod("as.integer", "CharBuffer",
     function(x)
     {
-        ByteBuffer.readInts(x, 1, length(x))
+        CharBuffer.readInts(x, 1, length(x))
     }
 )
 
 # Typical use:
-#   bb <- ByteBuffer(15)
+#   bb <- CharBuffer(15)
 #   bb[] <- 65
 #   toString(bb)
 #   bb[] <- "Hello"
 #   toString(bb)
-# So this should always rewrite the content of a "ByteBuffer" object
+# So this should always rewrite the content of a "CharBuffer" object
 # to itself, without any modification:
 #   bb[] <- toString(bb)
 # whetever the content of bb is!
-setMethod("toString", "ByteBuffer",
+setMethod("toString", "CharBuffer",
     function(x)
     {
-        ByteBuffer.read(x, 1, length(x))
+        CharBuffer.read(x, 1, length(x))
     }
 )
 
@@ -271,31 +271,31 @@ setMethod("toString", "ByteBuffer",
 
 # Select bytes from a "byte buffer".
 # Typical use:
-#   bb <- ByteBuffer(30)
+#   bb <- CharBuffer(30)
 #   bb[25:20]
 #   bb[25:31] # subscript out of bounds
 # Note: bb[] can be used as a shortcut for as.integer(bb)
-setMethod("[", "ByteBuffer",
+setMethod("[", "CharBuffer",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
         if (missing(i))
             return(as.integer(x))
-        ByteBuffer.readInts(x, i)
+        CharBuffer.readInts(x, i)
     }
 )
 
 # Replace bytes in a "byte buffer".
 # Typical use:
-#   bb <- ByteBuffer(30)
+#   bb <- CharBuffer(30)
 #   bb[] <- 12 # fill with 12
 #   bb[3:10] <- 1:-2
 #   bb[3:10] <- "Ab"
 #   bb[0] <- 4 # subscript out of bounds
 #   bb[31] <- 4 # subscript out of bounds
 #   bb[3] <- -12 # subscript out of bounds
-setReplaceMethod("[", "ByteBuffer",
+setReplaceMethod("[", "CharBuffer",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -306,8 +306,8 @@ setReplaceMethod("[", "ByteBuffer",
             if (length(value) >= 2)
                 stop("character vector 'value' has more than one string")
             if (missing(i))
-                return(ByteBuffer.write(x, 1, length(x), value=value))
-            return(ByteBuffer.write(x, i, value=value))
+                return(CharBuffer.write(x, 1, length(x), value=value))
+            return(CharBuffer.write(x, i, value=value))
         }
 
         # We want to allow this: bb[3] <- 4, even if storage.mode(value)
@@ -322,8 +322,8 @@ setReplaceMethod("[", "ByteBuffer",
         }
         # Now 'value' is an integer vector
         if (missing(i))
-            return(ByteBuffer.writeInts(x, 1, length(x), value=value))
-        ByteBuffer.writeInts(x, i, value=value)
+            return(CharBuffer.writeInts(x, 1, length(x), value=value))
+        CharBuffer.writeInts(x, i, value=value)
     }
 )
 
@@ -332,18 +332,18 @@ setReplaceMethod("[", "ByteBuffer",
 # Equality
 
 # Be careful to the semantic of the "==" operator:
-#   2 "ByteBuffer" objects are equals if their @xp slot is the
+#   2 "CharBuffer" objects are equals if their @xp slot is the
 #   same "externalptr" instance (then they obviously have
 #   the same length and contain the same data).
-# With this definition, bb1 and bb2 can be 2 different "ByteBuffer" objects
+# With this definition, bb1 and bb2 can be 2 different "CharBuffer" objects
 # (bb1 != bb2) and contain the same data.
-setMethod("==", signature(e1="ByteBuffer", e2="ByteBuffer"),
+setMethod("==", signature(e1="CharBuffer", e2="CharBuffer"),
     function(e1, e2)
     {
         address(e1@xp) == address(e2@xp)
     }
 )
-setMethod("!=", signature(e1="ByteBuffer", e2="ByteBuffer"),
+setMethod("!=", signature(e1="CharBuffer", e2="CharBuffer"),
     function(e1, e2)
     {
         address(e1@xp) != address(e2@xp)
@@ -352,7 +352,7 @@ setMethod("!=", signature(e1="ByteBuffer", e2="ByteBuffer"),
 
 # A wrapper to the very fast memcmp() C-function.
 # Arguments MUST be the following or it will crash R:
-#   x1, x2: "ByteBuffer" objects
+#   x1, x2: "CharBuffer" objects
 #   first1, first2, width: single integers
 # In addition: 1 <= first1 <= first1+width-1 <= length(x1)
 #              1 <= first2 <= first2+width-1 <= length(x2)
@@ -360,15 +360,15 @@ setMethod("!=", signature(e1="ByteBuffer", e2="ByteBuffer"),
 # arguments) because we want it to be the fastest possible!
 bbCompare <- function(x1, first1, x2, first2, width)
 {
-    .Call("ByteBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
+    .Call("CharBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
 }
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "cbuf" class is a simple extention of the "ByteBuffer" class (no additional
+# The "cbuf" class is a simple extention of the "CharBuffer" class (no additional
 # slots)
 
-setClass("cbuf", representation("ByteBuffer"))
+setClass("cbuf", representation("CharBuffer"))
 
 setMethod("show", "cbuf",
     function(object)
@@ -393,7 +393,7 @@ setMethod("[", "cbuf",
         if (missing(i))
             s <- toString(x)
         else
-            s <- ByteBuffer.read(x, i)
+            s <- CharBuffer.read(x, i)
         safeExplode(s)
     }
 )

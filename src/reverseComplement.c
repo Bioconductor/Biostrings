@@ -2,9 +2,9 @@
 
 
 /*
- * See ByteBuffer_copy_from_i1i2() in ByteBuffer.c for a description of the first 4 arguments.
+ * See CharBuffer_copy_from_i1i2() in CharBuffer.c for a description of the first 4 arguments.
  */
-SEXP ByteBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
+SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
 	int i1, i2;
@@ -24,9 +24,9 @@ SEXP ByteBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, S
 }
 
 /*
- * See ByteBuffer_copy_from_subset() in ByteBuffer.c for a description of the first 3 arguments.
+ * See CharBuffer_copy_from_subset() in CharBuffer.c for a description of the first 3 arguments.
  */
-SEXP ByteBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp)
+SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
 	char hash_hole;
@@ -42,9 +42,9 @@ SEXP ByteBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subse
 }
 
 /*
- * See ByteBuffer_copy_from_i1i2() in ByteBuffer.c for a description of the arguments.
+ * See CharBuffer_copy_from_i1i2() in CharBuffer.c for a description of the arguments.
  */
-SEXP ByteBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
+SEXP CharBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -60,9 +60,9 @@ SEXP ByteBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEX
 }
 
 /*
- * See ByteBuffer_copy_from_i1i2() in ByteBuffer.c for a description of the first 4 arguments.
+ * See CharBuffer_copy_from_i1i2() in CharBuffer.c for a description of the first 4 arguments.
  */
-SEXP ByteBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
+SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
 	int i1, i2;

@@ -5,15 +5,15 @@
 # A BStringCodec object is used to store a mapping between letters
 # and their codes.
 # The 'initialize' method checks that slots 'letters' and 'codes'
-# (both "ByteBuffer" objects) have the same length.
+# (both "CharBuffer" objects) have the same length.
 
 setClass(
     "BStringCodec",
     representation(
         letters="cbuf",
-        codes="ByteBuffer",
-        enc_hash="ByteBuffer",    # Hash table for encoding
-        dec_hash="ByteBuffer"     # Hash table for decoding
+        codes="CharBuffer",
+        enc_hash="CharBuffer",    # Hash table for encoding
+        dec_hash="CharBuffer"     # Hash table for decoding
     )
 )
 
@@ -29,7 +29,7 @@ buildCodecHashTable <- function(x, y, hole)
         stop("'x' and 'y' must be integer vectors") 
     if (length(x) != length(y))
         stop("lengths of 'x' and 'y' are different")
-    hash <- ByteBuffer(max(x) + 2)
+    hash <- CharBuffer(max(x) + 2)
     hash[] <- hole
     for (i in 1:length(x)) {
         if (y[i] == hole)
@@ -61,7 +61,7 @@ setMethod("initialize", "BStringCodec",
         checkCodecLettersAndCodes(letters, codes)
         .Object@letters <- new("cbuf", nchar(letters))
         .Object@letters[] <- letters
-        .Object@codes <- ByteBuffer(length(codes))
+        .Object@codes <- CharBuffer(length(codes))
         .Object@codes[] <- codes
         ord <- as.integer(.Object@letters)
         .Object@dec_hash <- buildCodecHashTable(codes, ord, dec_hole)

@@ -3,13 +3,13 @@
 
 static int debug = 0;
 
-SEXP ByteBuffer_debug()
+SEXP CharBuffer_debug()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'ByteBuffer.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'CharBuffer.c'\n", debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'ByteBuffer.c'\n");
+	Rprintf("Debug mode not available in 'CharBuffer.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -70,7 +70,7 @@ SEXP xp_new()
 /*
  * We can't rely on the strsplit() R function to split a string into single
  * characters when the string contains junk. For example:
- *   bb <- ByteBuffer(5)
+ *   bb <- CharBuffer(5)
  *   bb[] <- 255
  *   s <- toString(bb)
  *   strsplit(s, NULL)
@@ -100,9 +100,9 @@ SEXP safe_explode(SEXP s)
 
 
 /****************************************************************************
- * Memory allocation for a "ByteBuffer" object
+ * Memory allocation for a "CharBuffer" object
  * -------------------------------------------
- * A "ByteBuffer" object stores its data in an "external" R string (CHARSXP
+ * A "CharBuffer" object stores its data in an "external" R string (CHARSXP
  * vector). An R string itself stores its data in a char-array.
  * The "R types" of the argument passed to these functions must be:
  *   'bb_xp': externalptr
@@ -113,7 +113,7 @@ SEXP safe_explode(SEXP s)
  * Alloc an R string of length 'length' and point 'bb_xp' to it.
  * Does NOT initialize the allocated memory!
  */
-SEXP ByteBuffer_alloc(SEXP bb_xp, SEXP length)
+SEXP CharBuffer_alloc(SEXP bb_xp, SEXP length)
 {
 	SEXP tag;
 	int tag_length;
@@ -133,10 +133,10 @@ SEXP ByteBuffer_alloc(SEXP bb_xp, SEXP length)
 /*
  * Print some info about the R string pointed by 'bb_xp'.
  * From R:
- *   bb <- ByteBuffer(30)
- *   .Call("ByteBuffer_show", bb@xp, PACKAGE="Biostrings")
+ *   bb <- CharBuffer(30)
+ *   .Call("CharBuffer_show", bb@xp, PACKAGE="Biostrings")
  */
-SEXP ByteBuffer_show(SEXP bb_xp)
+SEXP CharBuffer_show(SEXP bb_xp)
 {
 	SEXP tag;
 	int tag_length;
@@ -151,11 +151,11 @@ SEXP ByteBuffer_show(SEXP bb_xp)
 /*
  * Return length of R string pointed by 'bb_xp'.
  * From R:
- *   bb <- ByteBuffer(30)
- *   .Call("ByteBuffer_length", bb@xp, PACKAGE="Biostrings")
- * Called by method length() for "ByteBuffer" objects.
+ *   bb <- CharBuffer(30)
+ *   .Call("CharBuffer_length", bb@xp, PACKAGE="Biostrings")
+ * Called by method length() for "CharBuffer" objects.
  */
-SEXP ByteBuffer_length(SEXP bb_xp)
+SEXP CharBuffer_length(SEXP bb_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
@@ -171,10 +171,10 @@ SEXP ByteBuffer_length(SEXP bb_xp)
 
 /*
  * From R:
- *   bb <- ByteBuffer(30)
- *   .Call("ByteBuffer_memcmp", bb@xp, 1:1, bb@xp, 10:10, 21:21, PACKAGE="Biostrings")
+ *   bb <- CharBuffer(30)
+ *   .Call("CharBuffer_memcmp", bb@xp, 1:1, bb@xp, 10:10, 21:21, PACKAGE="Biostrings")
  */
-SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
+SEXP CharBuffer_memcmp(SEXP bb1_xp, SEXP first1,
 		 SEXP bb2_xp, SEXP first2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
@@ -182,7 +182,7 @@ SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] ByteBuffer_memcmp(): BEGIN\n");
+		Rprintf("[DEBUG] CharBuffer_memcmp(): BEGIN\n");
 	}
 #endif
 	tag1 = R_ExternalPtrTag(bb1_xp);
@@ -193,7 +193,7 @@ SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] ByteBuffer_memcmp(): ");
+		Rprintf("[DEBUG] CharBuffer_memcmp(): ");
 		Rprintf("CHAR(tag1)=%p i1=%d CHAR(tag2)=%p i2=%d n=%d\n",
 			CHAR(tag1), i1, CHAR(tag2), i2, n);
 	}
@@ -204,7 +204,7 @@ SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
 					n, sizeof(char));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] ByteBuffer_memcmp(): END\n");
+		Rprintf("[DEBUG] CharBuffer_memcmp(): END\n");
 	}
 #endif
 	UNPROTECT(1);
@@ -216,7 +216,7 @@ SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
  * READ/WRITE functions
  * ====================
  * The functions in this section implement the read/write operations to a
- * "ByteBuffer" object. The user can choose between 2 interfaces for each
+ * "CharBuffer" object. The user can choose between 2 interfaces for each
  * read or write operation:
  *
  *   1. The "i1i2" interface: the bytes to access are specified by 2
@@ -228,7 +228,7 @@ SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
  * integer vector containing their positions in the buffer.
  *
  * The "subset" interface is intended to be used by the subsetting
- * operator [ defined at the R level for "ByteBuffer" objects.
+ * operator [ defined at the R level for "CharBuffer" objects.
  * R subsetting operator [ can be used to read values from, or write values
  * to an object that contains a collection of values, like a character
  * vector, an integer vector or a logical vector.
@@ -259,11 +259,11 @@ SEXP ByteBuffer_memcmp(SEXP bb1_xp, SEXP first1,
 
 
 /* ==========================================================================
- * Copy bytes from a "ByteBuffer" to another "ByteBuffer" object.
+ * Copy bytes from a "CharBuffer" to another "CharBuffer" object.
  * --------------------------------------------------------------------------
  */
 
-SEXP ByteBuffer_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
+SEXP CharBuffer_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -278,7 +278,7 @@ SEXP ByteBuffer_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 	return dest_xp;
 }
 
-SEXP ByteBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset)
+SEXP CharBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset)
 {
 	SEXP dest, src;
 
@@ -292,18 +292,18 @@ SEXP ByteBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset)
 
 
 /* ==========================================================================
- * Read/write chars to a "ByteBuffer" object
+ * Read/write chars to a "CharBuffer" object
  * --------------------------------------------------------------------------
  */
 
 /*
  * Return a single string (character vector of length 1).
  * From R:
- *   bb <- ByteBuffer(15)
+ *   bb <- CharBuffer(15)
  *   bb[] < "Hello"
- *   .Call("ByteBuffer_read_chars_from_i1i2", bb@xp, 2:2, 4:4, PACKAGE="Biostrings")
+ *   .Call("CharBuffer_read_chars_from_i1i2", bb@xp, 2:2, 4:4, PACKAGE="Biostrings")
  */
-SEXP ByteBuffer_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
+SEXP CharBuffer_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP src, dest, ans;
 	int i1, i2, n;
@@ -322,7 +322,7 @@ SEXP ByteBuffer_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 	return ans;
 }
 
-SEXP ByteBuffer_read_chars_from_subset(SEXP src_xp, SEXP subset)
+SEXP CharBuffer_read_chars_from_subset(SEXP src_xp, SEXP subset)
 {
 	SEXP src, dest, ans;
 	int n;
@@ -342,7 +342,7 @@ SEXP ByteBuffer_read_chars_from_subset(SEXP src_xp, SEXP subset)
 /*
  * 'string' must be a non-empty single string (character vector of length 1).
  */
-SEXP ByteBuffer_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string)
+SEXP CharBuffer_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -357,7 +357,7 @@ SEXP ByteBuffer_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP str
 	return dest_xp;
 }
 
-SEXP ByteBuffer_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string)
+SEXP CharBuffer_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string)
 {
 	SEXP dest, src;
 
@@ -371,17 +371,17 @@ SEXP ByteBuffer_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string)
 
 
 /* ==========================================================================
- * Read/write integers to a "ByteBuffer" object
+ * Read/write integers to a "CharBuffer" object
  * --------------------------------------------------------------------------
  */
 
 /*
  * Return an integer vector of length 'imax' - 'imin' + 1.
  * From R:
- *   bb <- ByteBuffer(30)
- *   .Call("ByteBuffer_read_ints_from_i1i2", bb@xp, 20:20, 25:25, PACKAGE="Biostrings")
+ *   bb <- CharBuffer(30)
+ *   .Call("CharBuffer_read_ints_from_i1i2", bb@xp, 20:20, 25:25, PACKAGE="Biostrings")
  */
-SEXP ByteBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
+SEXP CharBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP src, ans;
 	int i1, i2, n, j;
@@ -404,10 +404,10 @@ SEXP ByteBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax)
 /*
  * Return an integer vector of same length than 'subset'.
  * From R:
- *   bb <- ByteBuffer(30)
- *   .Call("ByteBuffer_read_ints_from_subset", bb, 25:20, PACKAGE="Biostrings")
+ *   bb <- CharBuffer(30)
+ *   .Call("CharBuffer_read_ints_from_subset", bb, 25:20, PACKAGE="Biostrings")
  */
-SEXP ByteBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset)
+SEXP CharBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset)
 {
 	SEXP src, ans;
 	int src_length;
@@ -431,7 +431,7 @@ SEXP ByteBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset)
 /*
  * 'val' must be an integer vector of length > 0.
  */
-SEXP ByteBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
+SEXP CharBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
 {
 	SEXP dest;
 	int val_length;
@@ -463,7 +463,7 @@ SEXP ByteBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val)
 	return dest_xp;
 }
 
-SEXP ByteBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
+SEXP CharBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 {
 	SEXP dest;
 	int dest_length, val_length;
@@ -497,14 +497,14 @@ SEXP ByteBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 
 
 /* ==========================================================================
- * Read/write encoded chars to a "ByteBuffer" object
+ * Read/write encoded chars to a "CharBuffer" object
  * --------------------------------------------------------------------------
  */
 
 /*
  * Return a single string (character vector of length 1).
  */
-SEXP ByteBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
+SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
 {
 	SEXP dest, src, hash, ans;
 	int i1, i2, n;
@@ -526,7 +526,7 @@ SEXP ByteBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP
 	return ans;
 }
 
-SEXP ByteBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp)
+SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp)
 {
 	SEXP dest, src, hash, ans;
 	int n;
@@ -547,12 +547,12 @@ SEXP ByteBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_x
 }
 
 /*
- * The ByteBuffer_write_enc_chars_to_i1i2() function is used when initializing
+ * The CharBuffer_write_enc_chars_to_i1i2() function is used when initializing
  * a BString object to encode and store the source string in the @data
  * slot of the object.
  * 'string' must be a non-empty single string (character vector of length 1).
  */
-SEXP ByteBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
+SEXP CharBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
 		SEXP string, SEXP hash_xp)
 {
 	SEXP dest, src, hash;
@@ -572,7 +572,7 @@ SEXP ByteBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
 	return dest_xp;
 }
 
-SEXP ByteBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
+SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 		SEXP string, SEXP hash_xp)
 {
 	SEXP dest, src, hash;

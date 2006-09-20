@@ -2,7 +2,7 @@
 # INTEGER BUFFER objects
 # ---------------------------------------------------------------------------
 #
-# The "IntBuffer" class implements the concept of "ByteBuffer" objects but
+# The "IntBuffer" class implements the concept of "CharBuffer" objects but
 # for integers instead of bytes.
 # Some differences between "integer" and "IntBuffer":
 #   1. an "IntBuffer" object can't be of length 0 (IntBuffer(0) produces an error)
