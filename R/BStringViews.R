@@ -4,14 +4,14 @@
 # A BStringViews object contains a set of views
 # on the same BString object, the subject string.
 
-setClassUnion("BStringUnion", c("BString", "DNAString", "RNAString"))
+setClassUnion("BStringLike", c("BString", "DNAString", "RNAString", "AAString"))
 
 # See the initialization section below for the integrity checking
 # of a BStringViews object.
 setClass(
     "BStringViews",
     representation(
-        subject="BStringUnion",
+        subject="BStringLike",
         first="integer",
         last="integer",
         desc="character"   # store per-view comment (e.g. from FASTA file)
@@ -162,7 +162,8 @@ adjacentViews <- function(subject, width, gapwidth=0)
 # -----------------------------------
 # 'src' should typically be a character vector but the function will also
 # work for other kind of input like numeric or even logical vectors.
-# 'subjectClass' must be "BString", "DNAString" or "RNAString".
+# 'subjectClass' must be "BString" or one of its derivations ("DNAString",
+# "RNAString" or "AAString").
 #
 # Benchmarks:
 #   alphabet <- strsplit("-TGCANBDHKMRSVWY", NULL)[[1]]
@@ -211,8 +212,8 @@ setMethod("BStringViews", "file",
 )
 
 # Called when 'src' is a BString (or derived) object.
-# When not missing, 'subjectClass' must be "BString", "DNAString"
-# or "RNAString".
+# When not missing, 'subjectClass' must be "BString" or one of its
+# derivations ("DNAString", "RNAString" or "AAString").
 setMethod("BStringViews", "BString",
     function(src, subjectClass, sep)
     {
@@ -230,7 +231,8 @@ setMethod("BStringViews", "BString",
 )
 
 # Called when 'src' is a BStringViews object.
-# 'subjectClass' must be "BString", "DNAString" or "RNAString".
+# 'subjectClass' must be "BString" or one of its derivations ("DNAString",
+# "RNAString" or "AAString").
 # The 'sep' arg is ignored.
 setMethod("BStringViews", "BStringViews",
     function(src, subjectClass, sep)
@@ -359,7 +361,7 @@ setReplaceMethod("[", "BStringViews",
 )
 
 # Extract the i-th views of a BStringViews object as a BString object.
-# Return a BString (or DNAString, or RNAString) object.
+# Return a "BString" (or one of its derivations) object.
 # Example:
 #   bs <- BString("ABCD-1234-abcd")
 #   bsv <- views(bs, 1:7, 13:7)

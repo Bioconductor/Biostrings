@@ -1,4 +1,4 @@
-\name{BString, DNAString, RNAString}
+\name{BString, DNAString, RNAString, AAString}
 \docType{class}
 
 % Classes
@@ -8,6 +8,8 @@
 \alias{DNAString-class}
 \alias{class:RNAString}
 \alias{RNAString-class}
+\alias{class:AAString}
+\alias{AAString-class}
 
 % Accesor methods:
 \alias{letter}
@@ -20,6 +22,8 @@
 \alias{DNAString}
 \alias{initialize,RNAString-method}
 \alias{RNAString}
+\alias{initialize,AAString-method}
+\alias{AAString}
 
 % Standard generic methods:
 \alias{show,BString-method}
@@ -39,14 +43,17 @@
 \alias{subBString,BString-method}
 
 
-\title{The BString, DNAString and RNAString classes}
+\title{The BString class and its 3 direct derivations: the DNAString,
+  RNAString and AAString classes}
 
 \description{
-  The BString, DNAString and RNAString classes are containers for big
-  strings in general, and DNA or RNA sequences in particular.
-  BString is the base class designed to store a big string
-  and to make its manipulation easy and efficient.
-  It's also the common parent of the DNAString and RNAString classes.
+  The BString class is a general container for storing a big string
+  (a long sequence of characters) and to make its manipulation easy
+  and efficient.
+  The DNAString, RNAString and AAString classes are direct BString
+  derivations with the more specific purpose of storing a DNA sequence
+  (DNAString), a RNA sequence (RNAString) or a sequence of amino acids
+  (AAString).
 }
 
 \details{
@@ -65,15 +72,13 @@
   are stored in the object) in a way that optimizes fast search algorithms.
   This makes the DNAString and RNAString classes particularly well suited
   for storing big DNA or RNA sequences.
-  When the strings you want to work with are not DNA or RNA sequences,
-  then you can use the BString class.
   All the methods that are defined for a BString object also work with a
-  DNAString or RNAString object.
+  DNAString, RNAString or AAString object.
 }
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a BString (or DNAString or RNAString) object
+  \code{x} is a BString (or derived) object
   and \code{i} is a numeric vector.
 
   \describe{
@@ -87,7 +92,7 @@
 \section{Constructor-like functions and generics}{
   In the code snippets below,
   \code{src} can be a character vector
-  or a BString (or DNAString or RNAString) object.
+  or a BString (or derived) object.
 
   \describe{
     \item{}{
@@ -102,13 +107,17 @@
       \code{RNAString(src)}:
       [TODO: Document me]
     }
+    \item{}{
+      \code{AAString(src)}:
+      [TODO: Document me]
+    }
   }
 }
 
 \section{Standard generic methods}{
   In the code snippets below,
   \code{x}, \code{object}, \code{e1} and \code{e2}
-  are BString (or DNAString or RNAString) objects,
+  are BString (or derived) objects,
   and \code{i} is a numeric vector.
 
   \describe{
@@ -141,7 +150,7 @@
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} is a BString (or DNAString or RNAString) object
+  \code{x} is a BString (or derived) object
   and \code{first} and \code{last} are single numerics.
 
   \describe{

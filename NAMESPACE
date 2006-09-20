@@ -3,7 +3,7 @@ import(methods)
 useDynLib(Biostrings)
 
 exportClasses(
-    "BString", "DNAString", "RNAString",
+    "BString", "DNAString", "RNAString", "AAString",
     "BStringViews"
 )
 
@@ -26,7 +26,7 @@ export(
     readFASTA,
     debug_utils, debug_ByteBuffer, debug_shiftor,
     #ByteBuffer, ByteBuffer.copy, IntBuffer, IntBuffer.read, IntBuffer.write,
-    letter, BString, DNAString, RNAString,
+    letter, BString, DNAString, RNAString, AAString,
     views, adjacentViews,
     matchDNAPattern,
     ## Copy/pasted from Biostrings 1

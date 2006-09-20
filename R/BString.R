@@ -11,10 +11,10 @@ setClass(
     )
 )
 
-# 2 direct extensions of the BString class
-# No additional slot!
+# 3 direct "BString" derivations (no additional slot)
 setClass("DNAString", representation("BString"))
 setClass("RNAString", representation("BString"))
+setClass("AAString", representation("BString"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,11 +98,12 @@ setMethod("letter", "BString",
 # Must work at least with 'src' being one of the following:
 #   - a single non-empty string (character vector of length 1)
 #   - a "ByteBuffer" object
-#   - a "BString", "DNAString" or "RNAString" object
+#   - a "BString" (or one of its derivations) object
 setMethod("initialize", "BString",
     function(.Object, src)
     {
-        # class(.Object) can be "BString", "DNAString" or "RNAString"!
+        # class(.Object) can be "BString" or one of its derivations ("DNAString",
+        # "RNAString" or "AAString").
         if (class(src) == class(.Object))
             return(src)
         .Object@offset <- as.integer(0) # Set me BEFORE calling writeChars()
@@ -185,6 +186,13 @@ RNAString <- function(...)
     ans
 }
 
+AAString <- function(...)
+{
+    ans <- try(new("AAString", ...), silent=TRUE)
+    if (is(ans, "try-error")) stop(ans)
+    ans
+}
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Standard generic methods
@@ -236,7 +244,8 @@ setMethod("[", "BString",
             stop("subscript out of bounds")
         data <- ByteBuffer(length(i))
         ByteBuffer.copy(data, i + x@offset, src=x@data)
-        # class(x) can be "BString", "DNAString" or "RNAString"
+        # class(x) can be "BString" or one of its derivations ("DNAString",
+        # "RNAString" or "AAString").
         new(class(x), data)
     }
 )
