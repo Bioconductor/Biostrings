@@ -5,7 +5,7 @@
 setClass(
     "BString",
     representation(
-        data="CharBuffer",            # byte buffer (contains the string data)
+        data="CharBuffer",      # contains the string data
         offset="integer",       # a single integer
         length="integer"        # a single integer
     )
@@ -295,7 +295,7 @@ setReplaceMethod("[", "BString",
     if (x@length != y@length)
         return(TRUE)
     one <- as.integer(1)
-    ans <- bbCompare(x@data, one + x@offset, y@data, one + y@offset, x@length)
+    ans <- CharBuffer.compare(x@data, one + x@offset, y@data, one + y@offset, x@length)
     as.logical(ans)
 }
 

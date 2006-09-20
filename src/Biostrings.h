@@ -61,11 +61,11 @@ SEXP xp_show(SEXP xp);
 SEXP xp_new();
 SEXP safe_explode(SEXP s);
 
-SEXP CharBuffer_alloc(SEXP bb_xp, SEXP length);
-SEXP CharBuffer_show(SEXP bb_xp);
-SEXP CharBuffer_length(SEXP bb_xp);
-SEXP CharBuffer_memcmp(SEXP bb1_xp, SEXP first1,
-		SEXP bb2_xp, SEXP first2, SEXP width);
+SEXP CharBuffer_alloc(SEXP cb_xp, SEXP length);
+SEXP CharBuffer_show(SEXP cb_xp);
+SEXP CharBuffer_length(SEXP cb_xp);
+SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP first1,
+		SEXP cb2_xp, SEXP first2, SEXP width);
 
 SEXP CharBuffer_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
 SEXP CharBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset);

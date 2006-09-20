@@ -10,7 +10,7 @@
 setClass(
     "BStringCodec",
     representation(
-        letters="cbuf",
+        letters="PrintableCharBuffer",
         codes="CharBuffer",
         enc_hash="CharBuffer",    # Hash table for encoding
         dec_hash="CharBuffer"     # Hash table for decoding
@@ -59,7 +59,7 @@ setMethod("initialize", "BStringCodec",
     function(.Object, letters, codes, enc_hole, dec_hole, extra_letters, extra_codes)
     {
         checkCodecLettersAndCodes(letters, codes)
-        .Object@letters <- new("cbuf", nchar(letters))
+        .Object@letters <- new("PrintableCharBuffer", nchar(letters))
         .Object@letters[] <- letters
         .Object@codes <- CharBuffer(length(codes))
         .Object@codes[] <- codes
@@ -67,7 +67,7 @@ setMethod("initialize", "BStringCodec",
         .Object@dec_hash <- buildCodecHashTable(codes, ord, dec_hole)
         if (!missing(extra_letters)) {
             checkCodecLettersAndCodes(extra_letters, extra_codes)
-            tmp <- new("cbuf", nchar(extra_letters))
+            tmp <- new("PrintableCharBuffer", nchar(extra_letters))
             tmp[] <- extra_letters
             ord <- c(ord, as.integer(tmp))
             codes <- c(codes, extra_codes)

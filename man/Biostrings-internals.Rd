@@ -20,12 +20,12 @@
 \alias{[,CharBuffer-method}
 \alias{[<-,CharBuffer-method}
 
-\alias{class:cbuf}
-\alias{cbuf-class}
-\alias{cbuf}
+\alias{class:PrintableCharBuffer}
+\alias{PrintableCharBuffer-class}
+\alias{PrintableCharBuffer}
 
-\alias{show,cbuf-method}
-\alias{[,cbuf-method}
+\alias{show,PrintableCharBuffer-method}
+\alias{[,PrintableCharBuffer-method}
 
 \alias{class:IntBuffer}
 \alias{IntBuffer-class}

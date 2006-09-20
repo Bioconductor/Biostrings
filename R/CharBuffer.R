@@ -1,14 +1,13 @@
 # ===========================================================================
-# CHAR BUFFER objects
+# "CharBuffer" objects
 # ---------------------------------------------------------------------------
 #
-# The "CharBuffer" class describes "byte buffer" objects.
-# A "byte buffer" object is a chunk of memory that:
+# A "CharBuffer" object is a chunk of memory that:
 #   a. Contains bytes (characters).
 #   b. Is readable and writable.
 #   c. Is not copied on object duplication i.e. when doing
-#        bb2 <- bb1
-#      both bb1 and bb2 point to the same place in memory.
+#        cb2 <- cb1
+#      both cb1 and cb2 point to the same place in memory.
 #      This is achieved by using R predefined type "externalptr".
 #   d. Is not 0-terminated (so it can contain zeros). This is achieved by
 #      having the length of the buffer stored in the "CharBuffer" object.
@@ -46,7 +45,7 @@ setMethod("show", "externalptr",
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "byte buffer" class.
+# The "CharBuffer" class.
 # Note: instead of defining the "CharBuffer" class with just one slot of type
 # "externalptr" (it HAS an "externalptr", and nothing else), an alternative
 # would be to simply extend the "externalptr" type.
@@ -62,7 +61,7 @@ setClass("CharBuffer", representation(xp="externalptr"))
 # Initialization
 
 # This:
-#   bb <- CharBuffer(30)
+#   cb <- CharBuffer(30)
 # will call the "initialize" method.
 setMethod("initialize", "CharBuffer",
     function(.Object, length)
@@ -197,7 +196,7 @@ CharBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
 CharBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
     if (class(src) != "CharBuffer")
-        stop("'src' is not a byte buffer")
+        stop("'src' is not a \"CharBuffer\" object")
     if (!is.integer(i))
         i <- as.integer(i)
     if (length(i) == 1) {
@@ -221,7 +220,7 @@ CharBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
 CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 {
     if (class(src) != "CharBuffer")
-        stop("'src' is not a byte buffer")
+        stop("'src' is not a \"CharBuffer\" object")
     if (length(i) != 1)
         stop("'i' must be a single integer")
     if (!is.integer(i))
@@ -239,7 +238,7 @@ CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# length(as.integer(bb)) is equivalent to length(bb)
+# length(as.integer(cb)) is equivalent to length(cb)
 # but the latter is MUCH faster!
 setMethod("as.integer", "CharBuffer",
     function(x)
@@ -249,15 +248,15 @@ setMethod("as.integer", "CharBuffer",
 )
 
 # Typical use:
-#   bb <- CharBuffer(15)
-#   bb[] <- 65
-#   toString(bb)
-#   bb[] <- "Hello"
-#   toString(bb)
+#   cb <- CharBuffer(15)
+#   cb[] <- 65
+#   toString(cb)
+#   cb[] <- "Hello"
+#   toString(cb)
 # So this should always rewrite the content of a "CharBuffer" object
 # to itself, without any modification:
-#   bb[] <- toString(bb)
-# whetever the content of bb is!
+#   cb[] <- toString(cb)
+# whatever the content of cb is!
 setMethod("toString", "CharBuffer",
     function(x)
     {
@@ -269,12 +268,12 @@ setMethod("toString", "CharBuffer",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Subsetting
 
-# Select bytes from a "byte buffer".
+# Select bytes from a "CharBuffer" object.
 # Typical use:
-#   bb <- CharBuffer(30)
-#   bb[25:20]
-#   bb[25:31] # subscript out of bounds
-# Note: bb[] can be used as a shortcut for as.integer(bb)
+#   cb <- CharBuffer(30)
+#   cb[25:20]
+#   cb[25:31] # subscript out of bounds
+# Note: cb[] can be used as a shortcut for as.integer(cb)
 setMethod("[", "CharBuffer",
     function(x, i, j, ..., drop)
     {
@@ -286,15 +285,15 @@ setMethod("[", "CharBuffer",
     }
 )
 
-# Replace bytes in a "byte buffer".
+# Replace bytes in a "CharBuffer" object.
 # Typical use:
-#   bb <- CharBuffer(30)
-#   bb[] <- 12 # fill with 12
-#   bb[3:10] <- 1:-2
-#   bb[3:10] <- "Ab"
-#   bb[0] <- 4 # subscript out of bounds
-#   bb[31] <- 4 # subscript out of bounds
-#   bb[3] <- -12 # subscript out of bounds
+#   cb <- CharBuffer(30)
+#   cb[] <- 12 # fill with 12
+#   cb[3:10] <- 1:-2
+#   cb[3:10] <- "Ab"
+#   cb[0] <- 4 # subscript out of bounds
+#   cb[31] <- 4 # subscript out of bounds
+#   cb[3] <- -12 # subscript out of bounds
 setReplaceMethod("[", "CharBuffer",
     function(x, i, j,..., value)
     {
@@ -310,7 +309,7 @@ setReplaceMethod("[", "CharBuffer",
             return(CharBuffer.write(x, i, value=value))
         }
 
-        # We want to allow this: bb[3] <- 4, even if storage.mode(value)
+        # We want to allow this: cb[3] <- 4, even if storage.mode(value)
         # is not "integer"
         if (!is.integer(value)) {
             if (length(value) >= 2)
@@ -335,8 +334,8 @@ setReplaceMethod("[", "CharBuffer",
 #   2 "CharBuffer" objects are equals if their @xp slot is the
 #   same "externalptr" instance (then they obviously have
 #   the same length and contain the same data).
-# With this definition, bb1 and bb2 can be 2 different "CharBuffer" objects
-# (bb1 != bb2) and contain the same data.
+# With this definition, cb1 and cb2 can be 2 different "CharBuffer" objects
+# (cb1 != cb2) and contain the same data.
 setMethod("==", signature(e1="CharBuffer", e2="CharBuffer"),
     function(e1, e2)
     {
@@ -358,19 +357,19 @@ setMethod("!=", signature(e1="CharBuffer", e2="CharBuffer"),
 #              1 <= first2 <= first2+width-1 <= length(x2)
 # WARNING: This function is voluntarly unsafe (it doesn't check its
 # arguments) because we want it to be the fastest possible!
-bbCompare <- function(x1, first1, x2, first2, width)
+CharBuffer.compare <- function(x1, first1, x2, first2, width)
 {
     .Call("CharBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
 }
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "cbuf" class is a simple extention of the "CharBuffer" class (no additional
-# slots)
+# The "PrintableCharBuffer" class is a simple extention of the "CharBuffer"
+# class (no additional slots)
 
-setClass("cbuf", representation("CharBuffer"))
+setClass("PrintableCharBuffer", representation("CharBuffer"))
 
-setMethod("show", "cbuf",
+setMethod("show", "PrintableCharBuffer",
     function(object)
     {
         print(toString(object))
@@ -385,7 +384,7 @@ safeExplode <- function(x)
     .Call("safe_explode", x, PACKAGE="Biostrings")
 }
 
-setMethod("[", "cbuf",
+setMethod("[", "PrintableCharBuffer",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)

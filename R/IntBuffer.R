@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------
 #
 # The "IntBuffer" class implements the concept of "CharBuffer" objects but
-# for integers instead of bytes.
+# for integers instead of chars.
 # Some differences between "integer" and "IntBuffer":
 #   1. an "IntBuffer" object can't be of length 0 (IntBuffer(0) produces an error)
 #   2. IntBuffer(10) does not initialize its values (integer(10) does)
@@ -106,7 +106,7 @@ IntBuffer.write <- function(x, i, imax=integer(0), value)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# length(as.integer(bb)) is equivalent to length(bb)
+# length(as.integer(ib)) is equivalent to length(ib)
 # but the latter is MUCH faster!
 setMethod("as.integer", "IntBuffer",
     function(x)
@@ -136,7 +136,7 @@ setReplaceMethod("[", "IntBuffer",
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
 
-        # We want to allow this: bb[3] <- 4, even if storage.mode(value)
+        # We want to allow this: ib[3] <- 4, even if storage.mode(value)
         # is not "integer"
         if (!is.integer(value)) {
             if (length(value) >= 2)
