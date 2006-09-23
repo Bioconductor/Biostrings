@@ -14,12 +14,11 @@ SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, S
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	src = R_ExternalPtrTag(src_xp);
-	/* hash = STRING_ELT(hash_xp, 0); */
 	hash = R_ExternalPtrTag(hash_xp);
 	hash_hole = CHAR(hash)[0];
         Biostrings_translate_charcpy_from_i1i2(i1, i2,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-                CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 0);
+                CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	return dest_xp;
 }
 
@@ -37,7 +36,7 @@ SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subse
 	hash_hole = CHAR(hash)[0];
 	Biostrings_translate_charcpy_from_subset(INTEGER(subset), LENGTH(subset),
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 0);
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	return dest_xp;
 }
 
@@ -72,12 +71,11 @@ SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	src = R_ExternalPtrTag(src_xp);
-	/* hash = STRING_ELT(hash_xp, 0); */
 	hash = R_ExternalPtrTag(hash_xp);
 	hash_hole = CHAR(hash)[0];
         Biostrings_reverse_translate_charcpy_from_i1i2(i1, i2,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-                CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 0);
+                CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	return dest_xp;
 }
 

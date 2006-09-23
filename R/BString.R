@@ -27,21 +27,21 @@ setGeneric(
 setMethod("readChars", "BString",
     function(x, i, imax)
     {
-        CharBuffer.read(x@data, i + x@offset, imax + x@offset)
+        CharBuffer.read(x@data, x@offset + i, x@offset + imax)
     }
 )
 setMethod("readChars", "DNAString",
     function(x, i, imax)
     {
         dec_hash = DNA_STRING_CODEC@dec_hash
-        CharBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
+        CharBuffer.read(x@data, x@offset + i, x@offset + imax, dec=dec_hash)
     }
 )
 setMethod("readChars", "RNAString",
     function(x, i, imax)
     {
         dec_hash = RNA_STRING_CODEC@dec_hash
-        CharBuffer.read(x@data, i + x@offset, imax + x@offset, dec=dec_hash)
+        CharBuffer.read(x@data, x@offset + i, x@offset + imax, dec=dec_hash)
     }
 )
 
@@ -53,7 +53,7 @@ setGeneric(
 setMethod("writeChars", "BString",
     function(x, i, imax, value)
     {
-        CharBuffer.write(x@data, i + x@offset, imax + x@offset, value=value)
+        CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value)
         x
     }
 )
@@ -61,7 +61,7 @@ setMethod("writeChars", "DNAString",
     function(x, i, imax, value)
     {
         enc_hash = DNA_STRING_CODEC@enc_hash
-        CharBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
+        CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
                          enc=enc_hash)
         x
     }
@@ -70,7 +70,7 @@ setMethod("writeChars", "RNAString",
     function(x, i, imax, value)
     {
         enc_hash = RNA_STRING_CODEC@enc_hash
-        CharBuffer.write(x@data, i + x@offset, imax + x@offset, value=value,
+        CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
                          enc=enc_hash)
         x
     }
@@ -95,75 +95,124 @@ setMethod("letter", "BString",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Constructor-like functions and generics
 
-# Must work at least with 'src' being one of the following:
-#   - a single non-empty string (character vector of length 1)
-#   - a "CharBuffer" object
-#   - a "BString" (or one of its derivations) object
+BString.init_with_CharBuffer <- function(.Object, src)
+{
+    .Object@data <- src
+    .Object@offset <- as.integer(0)
+    .Object@length <- length(src)
+    .Object
+}
+
+BString.init_with_character <- function(.Object, src, hash=NULL, verbose=FALSE)
+{
+    if (length(src) == 0)
+        stop("sorry, don't know what to do when 'src' is a character vector of length 0")
+    if (length(src) >= 2)
+        stop("please use BStringViews() when 'src' is a character vector of length >= 2")
+    length <- nchar(src)
+    data <- CharBuffer(length, verbose)
+    CharBuffer.write(data, 1, length, value=src, enc=hash)
+    BString.init_with_CharBuffer(.Object, data)
+}
+
+BString.init_with_BString_copy <- function(.Object, src, hash=NULL, verbose=FALSE)
+{
+    length <- src@length
+    data <- CharBuffer(length, verbose)
+    CharBuffer.copy(data, src@offset + 1, src@offset + length, src@data, hash=hash)
+    BString.init_with_CharBuffer(.Object, data)
+}
+
+BString.init_with_BString <- function(.Object, src, copy.data=FALSE, verbose=FALSE)
+{
+    if (copy.data)
+        return(BString.init_with_BString_copy(.Object, src, , verbose))
+    .Object@data <- src@data
+    .Object@offset <- src@offset
+    .Object@length <- src@length
+    .Object
+}
+
+BString.getInitErrorMsg <- function(.Object, src)
+{
+    if (class(src) == "BStringViews") {
+        if (class(src@subject) == class(.Object))
+            return("please use subject() if you are trying to extract the subject of 'src'")
+        else
+            return("please use BStringViews() when 'src' is a \"BStringViews\" object")
+    }
+    paste("sorry, don't know what to do when 'src' ",
+          "is of class \"", class(src), "\"", sep="")
+}
+
+# Because the 'initialize' method for "AAString" objects is using 'callNextMethod'
+# then '.Object' here can be of class "BString" or "AAString".
 setMethod("initialize", "BString",
-    function(.Object, src)
+    function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
-        # class(.Object) can be "BString" or one of its derivations ("DNAString",
-        # "RNAString" or "AAString").
-        if (class(src) == class(.Object))
-            return(src)
-        .Object@offset <- as.integer(0) # Set me BEFORE calling writeChars()
-        if (class(src) == "CharBuffer") {
-            length <- length(src)
-            .Object@data <- src
-        } else {
-            if (is.character(src)) {
-                if (length(src) > 1)
-                    stop("use BStringViews() when 'src' is a character vector of length > 1")
-            } else {
-                if (class(src) == "BStringViews") {
-                    if (class(src@subject) == class(.Object))
-                        stop("use subject() if you want to extract the subject of 'src'")
-                    else
-                        stop("use BStringViews() when 'src' is a \"BStringViews\" object")
-                }
-                src <- toString(src)
+        if (is.character(src))
+            return(BString.init_with_character(.Object, src, , verbose))
+        if (class(src) == "CharBuffer")
+            return(BString.init_with_CharBuffer(.Object, src))
+        if (class(src) %in% c("BString", "AAString"))
+            return(BString.init_with_BString(.Object, src, copy.data, verbose))
+        if (class(.Object) == "BString") {
+            if (class(src) == "DNAString") {
+                hash <- DNA_STRING_CODEC@dec_hash # for source data decoding
+                return(BString.init_with_BString_copy(.Object, src, hash, verbose))
             }
-            length <- nchar(src)
-            .Object@data <- CharBuffer(length)
-            writeChars(.Object, 1, length, value=src)
+            if (class(src) == "RNAString") {
+                hash <- RNA_STRING_CODEC@dec_hash # for source data decoding
+                return(BString.init_with_BString_copy(.Object, src, hash, verbose))
+            }
         }
-        .Object@length <- length
+        stop(BString.getInitErrorMsg(.Object, src))
+    }
+)
+
+.initEncodedBString <- function(.Object, src, hash, copy.data, verbose)
+{
+    if (is.character(src))
+        return(BString.init_with_character(.Object, src, hash, verbose))
+    if (class(src) == "CharBuffer")
+        return(BString.init_with_CharBuffer(.Object, src))
+    if (class(src) == class(.Object))
+        return(BString.init_with_BString(.Object, src, copy.data, verbose))
+    if (class(src) == "BString")
+        return(BString.init_with_BString_copy(.Object, src, hash, verbose))
+    BString.getInitErrorMsg(.Object, src)
+}
+
+setMethod("initialize", "DNAString",
+    function(.Object, src, copy.data=FALSE, verbose=FALSE)
+    {
+        if (class(src) == "RNAString")
+            return(BString.init_with_BString(.Object, src, copy.data, verbose))
+        hash <- DNA_STRING_CODEC@enc_hash # for source data encoding
+        .Object <- .initEncodedBString(.Object, src, hash, copy.data, verbose)
+        if (is.character(.Object))
+            stop(.Object)
         .Object
     }
 )
 
-BString <- function(...)
-{
-    ans <- try(new("BString", ...), silent=TRUE)
-    if (is(ans, "try-error")) stop(ans)
-    ans
-}
-
-# Uses global variable DNA_STRING_CODEC to encode source string.
-setMethod("initialize", "DNAString",
-    function(.Object, src)
+setMethod("initialize", "RNAString",
+    function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
-        if (class(src) == "RNAString") {
-            .Object@data <- src@data
-            .Object@offset <- src@offset
-            .Object@length <- src@length
-            return(.Object)
-        }
-        callNextMethod(.Object, src)
+        if (class(src) == "DNAString")
+            return(BString.init_with_BString(.Object, src, copy.data, verbose))
+        hash <- RNA_STRING_CODEC@enc_hash # for source data encoding
+        .Object <- .initEncodedBString(.Object, src, hash, copy.data, verbose)
+        if (is.character(.Object))
+            stop(.Object)
+        .Object
     }
 )
 
-# Uses global variable DNA_STRING_CODEC to encode source string.
-setMethod("initialize", "RNAString",
-    function(.Object, src)
+setMethod("initialize", "AAString",
+    function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
-        if (class(src) == "DNAString") {
-            .Object@data <- src@data
-            .Object@offset <- src@offset
-            .Object@length <- src@length
-            return(.Object)
-        }
-        callNextMethod(.Object, src)
+        callNextMethod(.Object, src, copy.data, verbose)
     }
 )
 
@@ -171,6 +220,13 @@ setMethod("initialize", "RNAString",
 # To test the speed:
 #   big <- paste(sample(c('A','C','G','T'), 10^6, replace=TRUE), collapse="")
 #   system.time(d <- DNAString(big))
+
+BString <- function(...)
+{
+    ans <- try(new("BString", ...), silent=TRUE)
+    if (is(ans, "try-error")) stop(ans)
+    ans
+}
 
 DNAString <- function(...)
 {
@@ -243,7 +299,7 @@ setMethod("[", "BString",
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
         data <- CharBuffer(length(i))
-        CharBuffer.copy(data, i + x@offset, src=x@data)
+        CharBuffer.copy(data, x@offset + i, src=x@data)
         # class(x) can be "BString" or one of its derivations ("DNAString",
         # "RNAString" or "AAString").
         new(class(x), data)
@@ -288,32 +344,52 @@ setReplaceMethod("[", "BString",
 #   s7 <- toString(dnav[[7]])
 #   s1 == s7
 
-.different <- function(x, y)
+BString.equal <- function(x, y)
 {
     if (class(y) != class(x))
         y <- new(class(x), y)
     if (x@length != y@length)
-        return(TRUE)
+        return(FALSE)
     one <- as.integer(1)
-    ans <- CharBuffer.compare(x@data, one + x@offset, y@data, one + y@offset, x@length)
+    ans <- !CharBuffer.compare(x@data, x@offset + one, y@data, y@offset + one, x@length)
     as.logical(ans)
 }
+
+setMethod("==", signature(e1="BString", e2="BString"),
+    function(e1, e2)
+    {
+        if (class(e1) == class(e2))
+            return(BString.equal(e1, e2))
+        if (class(e1) == "BString") # then e2 is a DNAString, RNAString or AAString
+            return(BString.equal(e2, e1))
+        if (class(e2) == "BString") # then e1 is a DNAString, RNAString or AAString
+            return(BString.equal(e1, e2))
+        if (class(e1) != "AAString" && class(e2) != "AAString")
+            return(BString.equal(e1, e2))
+        stop(paste("sorry, don't know how to compare ",
+                   "a \"", class(e1), "\" object with ",
+                   "a \"", class(e2), "\" object", sep=""))
+    }
+)
+setMethod("!=", signature(e1="BString", e2="BString"),
+    function(e1, e2) !(e1 == e2)
+)
 
 # These methods are called if at least one side of the "==" (or "!=")
 # operator is a "BString" object AND the other side is NOT a "BStringViews"
 # object.
 setMethod("==", signature(e1="BString"),
-    function(e1, e2) !.different(e1, e2)
+    function(e1, e2) BString.equal(e1, e2)
 )
-setMethod("==", signature(e2="BString"),
-    function(e1, e2) !.different(e2, e1)
+setMethod("!=", signature(e1="BString"),
+    function(e1, e2) !(e1 == e2)
 )
 
-setMethod("!=", signature(e1="BString"),
-    function(e1, e2) .different(e1, e2)
+setMethod("==", signature(e2="BString"),
+    function(e1, e2) BString.equal(e2, e1)
 )
 setMethod("!=", signature(e2="BString"),
-    function(e1, e2) .different(e2, e1)
+    function(e1, e2) !(e1 == e2)
 )
 
 

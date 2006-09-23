@@ -28,20 +28,20 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict);
+		char *hash, int hash_length, char hash_hole);
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict);
+		char *hash, int hash_length, char hash_hole);
 
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict);
+		char *hash, int hash_length, char hash_hole);
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict);
+		char *hash, int hash_length, char hash_hole);
 
 void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
@@ -49,7 +49,7 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict);
+		char *hash, int hash_length, char hash_hole);
 
 
 /* CharBuffer.c */
@@ -62,7 +62,7 @@ SEXP xp_new();
 SEXP safe_explode(SEXP s);
 
 SEXP CharBuffer_alloc(SEXP cb_xp, SEXP length);
-SEXP CharBuffer_show(SEXP cb_xp);
+SEXP CharBuffer_get_show_string(SEXP cb_xp);
 SEXP CharBuffer_length(SEXP cb_xp);
 SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP first1,
 		SEXP cb2_xp, SEXP first2, SEXP width);

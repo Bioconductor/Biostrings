@@ -14,7 +14,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"safe_explode", (DL_FUNC) &safe_explode, 1},
 
 	{"CharBuffer_alloc", (DL_FUNC) &CharBuffer_alloc, 2},
-	{"CharBuffer_show", (DL_FUNC) &CharBuffer_show, 1},
+	{"CharBuffer_get_show_string", (DL_FUNC) &CharBuffer_get_show_string, 1},
 	{"CharBuffer_length", (DL_FUNC) &CharBuffer_length, 1},
 	{"CharBuffer_memcmp", (DL_FUNC) &CharBuffer_memcmp, 5},
 

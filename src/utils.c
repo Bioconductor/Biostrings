@@ -215,7 +215,7 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict)
+		char *hash, int hash_length, char hash_hole)
 {
 	char *b, old, new;
 	int i, j, code;
@@ -232,10 +232,7 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		old = *(b++);
 		code = (unsigned char) old;
 		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			if (strict) {
-				error("code %d not in translation table", code);
-			}
-			new = old;
+			error("code %d not in translation table", code);
 		}
 		dest[j] = new;
 	}
@@ -256,9 +253,9 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict)
+		char *hash, int hash_length, char hash_hole)
 {
-	char *b, old, new;
+	char old, new;
 	int i, j, k, code;
 
 	if (dest_length == 0 && n != 0)
@@ -273,10 +270,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		old = src[i];
 		code = (unsigned char) old;
 		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			if (strict) {
-				error("code %d not in translation table", code);
-			}
-			new = old;
+			error("code %d not in translation table", code);
 		}
 		dest[j] = new;
 	}
@@ -298,7 +292,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict)
+		char *hash, int hash_length, char hash_hole)
 {
 	char *a, old, new;
 	int i, j, code;
@@ -315,10 +309,7 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		old = src[j];
 		code = (unsigned char) old;
 		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			if (strict) {
-				error("code %d not in translation table", code);
-			}
-			new = old;
+			error("code %d not in translation table", code);
 		}
 		*(a++) = new;
 	}
@@ -339,9 +330,9 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict)
+		char *hash, int hash_length, char hash_hole)
 {
-	char *b, old, new;
+	char old, new;
 	int i, j, k, code;
 
 	if (src_length == 0 && n != 0)
@@ -356,10 +347,7 @@ void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		old = src[j];
 		code = (unsigned char) old;
 		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			if (strict) {
-				error("code %d not in translation table", code);
-			}
-			new = old;
+			error("code %d not in translation table", code);
 		}
 		dest[i] = new;
 	}
@@ -417,7 +405,7 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole, int strict)
+		char *hash, int hash_length, char hash_hole)
 {
 	char *b, old, new;
 	int i, j, code;
@@ -434,10 +422,7 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		old = *(b++);
 		code = (unsigned char) old;
 		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			if (strict) {
-				error("code %d not in translation table", code);
-			}
-			new = old;
+			error("code %d not in translation table", code);
 		}
 		dest[j] = new;
 	}

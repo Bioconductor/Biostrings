@@ -64,7 +64,7 @@ setClass("CharBuffer", representation(xp="externalptr"))
 #   cb <- CharBuffer(30)
 # will call the "initialize" method.
 setMethod("initialize", "CharBuffer",
-    function(.Object, length)
+    function(.Object, length, verbose=FALSE)
     {
         if (missing(length))
             stop("argument 'length' is missing")
@@ -78,6 +78,10 @@ setMethod("initialize", "CharBuffer",
         xp <- .Call("xp_new", PACKAGE="Biostrings")
         .Call("CharBuffer_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
+        if (verbose) {
+            show_string <- .Call("CharBuffer_get_show_string", .Object@xp, PACKAGE="Biostrings")
+            cat("Allocating new ", show_string, "\n", sep="")
+        }
         .Object
     }
 )
@@ -90,7 +94,12 @@ CharBuffer <- function(...)
 setMethod("show", "CharBuffer",
     function(object)
     {
-        .Call("CharBuffer_show", object@xp, PACKAGE="Biostrings")
+        show_string <- .Call("CharBuffer_get_show_string", object@xp, PACKAGE="Biostrings")
+        cat(show_string, "\n", sep="")
+        # What is correct here? The documentation (?show) says that 'show'
+        # should return an invisible 'NULL' but, on the other hand, the 'show'
+        # method for intergers returns its 'object' argument...
+        invisible(object)
     }
 )
 
@@ -205,14 +214,18 @@ CharBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(hash))
-            .Call("CharBuffer_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+            .Call("CharBuffer_copy_from_i1i2", dest@xp, src@xp,
+                  i, imax, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
+            .Call("CharBuffer_translate_copy_from_i1i2", dest@xp, src@xp,
+                  i, imax, hash@xp, PACKAGE="Biostrings")
     } else {
         if (is.null(hash))
-            .Call("CharBuffer_copy_from_subset", dest@xp, src@xp, i, PACKAGE="Biostrings")
+            .Call("CharBuffer_copy_from_subset", dest@xp, src@xp,
+                  i, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_translate_copy_from_subset", dest@xp, src@xp, i, hash@xp, PACKAGE="Biostrings")
+            .Call("CharBuffer_translate_copy_from_subset", dest@xp, src@xp,
+                  i, hash@xp, PACKAGE="Biostrings")
     }
     dest
 }

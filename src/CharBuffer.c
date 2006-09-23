@@ -131,21 +131,26 @@ SEXP CharBuffer_alloc(SEXP cb_xp, SEXP length)
 }
 
 /*
- * Print some info about the R string pointed by 'cb_xp'.
+ * Return the single string printed by the show method for "CharBuffer" objects.
+ * 'cb_xp' must be the 'xp' slot of a "CharBuffer" object.
  * From R:
  *   cb <- CharBuffer(30)
- *   .Call("CharBuffer_show", cb@xp, PACKAGE="Biostrings")
+ *   .Call("CharBuffer_get_show_string", cb@xp, PACKAGE="Biostrings")
  */
-SEXP CharBuffer_show(SEXP cb_xp)
+SEXP CharBuffer_get_show_string(SEXP cb_xp)
 {
-	SEXP tag;
+	SEXP tag, string, ans;
 	int tag_length;
 
 	tag = R_ExternalPtrTag(cb_xp);
 	tag_length = LENGTH(tag);
-	Rprintf("%d-byte CharBuffer object (starting at address %p)\n",
+	PROTECT(string = allocString(100));
+	sprintf(CHAR(string), "%d-byte CharBuffer object (starting at address %p)",
 		tag_length, CHAR(tag));
-	return R_NilValue;
+	PROTECT(ans = allocVector(STRSXP, 1));
+	SET_STRING_ELT(ans, 0, string);
+	UNPROTECT(2);
+	return ans;
 }
 
 /*
@@ -519,7 +524,7 @@ SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP
 	PROTECT(dest = allocString(n));
 	Biostrings_translate_charcpy_from_i1i2(i1, i2,
 		CHAR(dest), n, CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	PROTECT(ans = allocVector(STRSXP, 1));
 	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
@@ -539,7 +544,7 @@ SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_x
 	PROTECT(dest = allocString(n));
 	Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	PROTECT(ans = allocVector(STRSXP, 1));
 	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
@@ -568,7 +573,7 @@ SEXP CharBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
 	hash_hole = CHAR(hash)[0];
 	Biostrings_translate_charcpy_to_i1i2(i1, i2,
 		CHAR(dest), n, CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	return dest_xp;
 }
 
@@ -586,7 +591,7 @@ SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 	hash_hole = CHAR(hash)[0];
 	Biostrings_translate_charcpy_to_subset(INTEGER(subset), n,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole, 1);
+		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	return dest_xp;
 }
 
