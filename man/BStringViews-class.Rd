@@ -1,4 +1,4 @@
-\name{BStringViews}
+\name{BStringViews-class}
 \docType{class}
 
 % Classes:
@@ -16,15 +16,6 @@
 \alias{width,BStringViews-method}
 \alias{desc}
 \alias{desc,BStringViews-method}
-
-% Constructor-like functions and generics:
-\alias{initialize,BStringViews-method}
-\alias{views}
-\alias{adjacentViews}
-\alias{BStringViews}
-\alias{BStringViews,file-method}
-\alias{BStringViews,BString-method}
-\alias{BStringViews,BStringViews-method}
 
 % Standard generic methods:
 \alias{show,BStringViews-method}
@@ -87,39 +78,6 @@
   }
 }
 
-\section{Constructor-like functions and generics}{
-  In the code snippets below,
-  \code{subject} is a character vector or a \link{BString}
-  (or \link{DNAString} or \link{RNAString}) object
-  and \code{first}, \code{last} and \code{width} are numeric vectors.
-
-  \describe{
-    \item{}{
-      \code{views(subject, first, last)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{adjacentViews(subject, width, gapwidth)}:
-      [TODO: Document me]
-    }
-  }
-
-  In the code snippets below,
-  \code{src} can be a character vector, a connection object,
-  a \link{BString} (or \link{DNAString} or \link{RNAString}) object
-  or a BStringViews object,
-  \code{subjectClass} is a character-string with value \code{"BString"},
-  \code{"DNAString"} or \code{"RNAString"}
-  and \code{sep} is a character-string.
-
-  \describe{
-    \item{}{
-      \code{BStringViews(src, subjectClass, sep)}:
-      [TODO: Document me]
-    }
-  }
-}
-
 \section{Standard generic methods}{
   In the code snippets below,
   \code{x}, \code{object}, \code{e1} and \code{e2} are BStringViews objects,
@@ -172,12 +130,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BString}, \link{DNAString}, \link{RNAString}
-}
-
-\examples{
-  ## A BStringViews object with 12 views
-  v12 <- views(DNAString("TAATAATG"), -2:9, 0:11)
+  \link{BStringViews-constructors}, \link{BString}, \link{DNAString}, \link{RNAString}
 }
 
 \keyword{methods}

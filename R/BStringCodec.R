@@ -77,6 +77,14 @@ setMethod("initialize", "BStringCodec",
     }
 )
 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+setGeneric("alphabet", function(x) standardGeneric("alphabet"))
+
+setMethod("alphabet", "BStringCodec", function(x) x@letters[])
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # IUPAC extended genetic alphabet
 #   R :== [GA]
 #   Y :== [TC]
@@ -89,7 +97,8 @@ setMethod("initialize", "BStringCodec",
 #   V :== [GCA]
 #   D :== [GAT]
 #   N :== [GATC]
-DNAcodec <- function()
+
+BStringCodec.DNA <- function()
 {
     letters <- c("ACGTMRSVWYHKDBN-")
     codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
@@ -99,7 +108,7 @@ DNAcodec <- function()
         extra_letters, as.integer(extra_codes))
 }
 
-RNAcodec <- function()
+BStringCodec.RNA <- function()
 {
     letters <- c("UGCAKYSBWRDMHVN-")
     codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)

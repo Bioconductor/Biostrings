@@ -65,5 +65,6 @@
 \examples{
 }
 
-\keyword{classes}
+\keyword{methods}
+
 

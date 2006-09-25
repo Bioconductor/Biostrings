@@ -14,8 +14,11 @@
 # the "CharBuffer" class needs it!
 library.dynam("Biostrings", package="Biostrings")
 
-DNA_STRING_CODEC <- DNAcodec()
-RNA_STRING_CODEC <- RNAcodec()
+DNA_STRING_CODEC <- BStringCodec.DNA()
+DNA_ALPHABET <- alphabet(DNA_STRING_CODEC)
+
+RNA_STRING_CODEC <- BStringCodec.RNA()
+RNA_ALPHABET <- alphabet(RNA_STRING_CODEC)
 
 .onLoad <- function(libname, pkgname)
 {

@@ -53,8 +53,8 @@ static const R_CallMethodDef callMethods[] = {
         {"CharBuffer_reverse_copy_from_i1i2", (DL_FUNC) &CharBuffer_reverse_copy_from_i1i2, 4},
         {"CharBuffer_reverse_translate_copy_from_i1i2", (DL_FUNC) &CharBuffer_reverse_translate_copy_from_i1i2, 5},
 
-/* alphabetFrequency.c */
-	{"alphabetFrequency", (DL_FUNC) &alphabetFrequency, 3},
+/* char_frequency.c */
+	{"CharBuffer_char_frequency", (DL_FUNC) &CharBuffer_char_frequency, 3},
 
 /* shiftor.c */
 	{"shiftor_debug", (DL_FUNC) &shiftor_debug, 0},

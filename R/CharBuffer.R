@@ -389,7 +389,7 @@ setMethod("show", "PrintableCharBuffer",
     }
 )
 
-# Safe alternative to 'strsplit(x, NULL)'.
+# Safe alternative to 'strsplit(x, NULL, fixed=TRUE)[[1]]'.
 safeExplode <- function(x)
 {
     if (!is.character(x) || length(x) != 1)
@@ -397,6 +397,9 @@ safeExplode <- function(x)
     .Call("safe_explode", x, PACKAGE="Biostrings")
 }
 
+# pcb <- new("PrintableCharBuffer", 10)
+# pcb[] <- "ab-C."
+# pcb[] == strsplit(toString(pcb), NULL, fixed=TRUE)[[1]]
 setMethod("[", "PrintableCharBuffer",
     function(x, i, j, ..., drop)
     {

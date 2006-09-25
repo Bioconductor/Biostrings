@@ -18,63 +18,55 @@ setClass("AAString", representation("BString"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "readChars" and "writeChars" new generics
+# The "codec", "enc_hash" and "dec_hash" new generics (NOT exported)
 
-setGeneric(
-    "readChars",
-    function(x, i, imax=integer(0)) standardGeneric("readChars")
-)
-setMethod("readChars", "BString",
-    function(x, i, imax)
+setGeneric("codec", function(x) standardGeneric("codec"))
+setMethod("codec", "BString", function(x) NULL)
+setMethod("codec", "DNAString", function(x) DNA_STRING_CODEC)
+setMethod("codec", "RNAString", function(x) RNA_STRING_CODEC)
+
+setGeneric("dec_hash", function(x) standardGeneric("dec_hash"))
+setMethod("dec_hash", "BString",
+    function(x)
     {
-        CharBuffer.read(x@data, x@offset + i, x@offset + imax)
-    }
-)
-setMethod("readChars", "DNAString",
-    function(x, i, imax)
-    {
-        dec_hash = DNA_STRING_CODEC@dec_hash
-        CharBuffer.read(x@data, x@offset + i, x@offset + imax, dec=dec_hash)
-    }
-)
-setMethod("readChars", "RNAString",
-    function(x, i, imax)
-    {
-        dec_hash = RNA_STRING_CODEC@dec_hash
-        CharBuffer.read(x@data, x@offset + i, x@offset + imax, dec=dec_hash)
+        codec <- codec(x)
+        if (is.null(codec)) NULL else codec@dec_hash
     }
 )
 
-# Only used at initialization!
-setGeneric(
-    "writeChars",
-    function(x, i, imax=integer(0), value) standardGeneric("writeChars")
-)
-setMethod("writeChars", "BString",
-    function(x, i, imax, value)
+setGeneric("enc_hash", function(x) standardGeneric("enc_hash"))
+setMethod("enc_hash", "BString",
+    function(x)
     {
-        CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value)
-        x
+        codec <- codec(x)
+        if (is.null(codec)) NULL else codec@enc_hash
     }
 )
-setMethod("writeChars", "DNAString",
-    function(x, i, imax, value)
-    {
-        enc_hash = DNA_STRING_CODEC@enc_hash
-        CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
-                         enc=enc_hash)
-        x
-    }
-)
-setMethod("writeChars", "RNAString",
-    function(x, i, imax, value)
-    {
-        enc_hash = RNA_STRING_CODEC@enc_hash
-        CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
-                         enc=enc_hash)
-        x
-    }
-)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# The "alphabet" generic is defined in BStringCodec.R
+
+setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
+setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# The "BString.read" and "BString.write" functions (NOT exported)
+
+BString.read <- function(x, i, imax=integer(0))
+{
+    CharBuffer.read(x@data, x@offset + i, x@offset + imax,
+                    dec_hash=dec_hash(x))
+}
+
+# Only used at initialization time!
+BString.write <- function(x, i, imax=integer(0), value)
+{
+    CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
+                     enc_hash=enc_hash(x))
+    x
+}
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,7 +79,7 @@ setMethod("letter", "BString",
     {
         if (!isTRUE(all(i >= 1)) || !isTRUE(all(i <= x@length))) # NA-proof
             stop("subscript out of bounds")
-        readChars(x, i)
+        BString.read(x, i)
     }
 )
 
@@ -133,7 +125,7 @@ BString.init_with_BString <- function(.Object, src, copy.data=FALSE, verbose=FAL
     .Object
 }
 
-BString.getInitErrorMsg <- function(.Object, src)
+BString.get_init_error_msg <- function(.Object, src)
 {
     if (class(src) == "BStringViews") {
         if (class(src@subject) == class(.Object))
@@ -156,22 +148,15 @@ setMethod("initialize", "BString",
             return(BString.init_with_CharBuffer(.Object, src))
         if (class(src) %in% c("BString", "AAString"))
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        if (class(.Object) == "BString") {
-            if (class(src) == "DNAString") {
-                hash <- DNA_STRING_CODEC@dec_hash # for source data decoding
-                return(BString.init_with_BString_copy(.Object, src, hash, verbose))
-            }
-            if (class(src) == "RNAString") {
-                hash <- RNA_STRING_CODEC@dec_hash # for source data decoding
-                return(BString.init_with_BString_copy(.Object, src, hash, verbose))
-            }
-        }
-        stop(BString.getInitErrorMsg(.Object, src))
+        if (class(.Object) == "BString" && class(src) %in% c("DNAString", "RNAString"))
+            return(BString.init_with_BString_copy(.Object, src, dec_hash(src), verbose))
+        stop(BString.get_init_error_msg(.Object, src))
     }
 )
 
-.initEncodedBString <- function(.Object, src, hash, copy.data, verbose)
+BString.init_DNA_or_RNA <- function(.Object, src, copy.data, verbose)
 {
+    hash <- enc_hash(.Object) # for source data encoding
     if (is.character(src))
         return(BString.init_with_character(.Object, src, hash, verbose))
     if (class(src) == "CharBuffer")
@@ -180,7 +165,7 @@ setMethod("initialize", "BString",
         return(BString.init_with_BString(.Object, src, copy.data, verbose))
     if (class(src) == "BString")
         return(BString.init_with_BString_copy(.Object, src, hash, verbose))
-    BString.getInitErrorMsg(.Object, src)
+    BString.get_init_error_msg(.Object, src)
 }
 
 setMethod("initialize", "DNAString",
@@ -188,8 +173,7 @@ setMethod("initialize", "DNAString",
     {
         if (class(src) == "RNAString")
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        hash <- DNA_STRING_CODEC@enc_hash # for source data encoding
-        .Object <- .initEncodedBString(.Object, src, hash, copy.data, verbose)
+        .Object <- BString.init_DNA_or_RNA(.Object, src, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -201,8 +185,7 @@ setMethod("initialize", "RNAString",
     {
         if (class(src) == "DNAString")
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        hash <- RNA_STRING_CODEC@enc_hash # for source data encoding
-        .Object <- .initEncodedBString(.Object, src, hash, copy.data, verbose)
+        .Object <- BString.init_DNA_or_RNA(.Object, src, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -254,19 +237,19 @@ AAString <- function(...)
 # Standard generic methods
 
 # Helper function used by the show() method
-bsSnippet <- function(x, snippetW)
+BString.get_snippet <- function(x, snippetWidth)
 {
-    if (snippetW < 7)
-        snippetW <- 7
+    if (snippetWidth < 7)
+        snippetWidth <- 7
     lx <- x@length
-    if (lx <= snippetW) {
+    if (lx <= snippetWidth) {
         toString(x)
     } else {
-        w1 <- (snippetW - 2) %/% 2
-        w2 <- (snippetW - 3) %/% 2
-        paste(readChars(x, 1, w1),
+        w1 <- (snippetWidth - 2) %/% 2
+        w2 <- (snippetWidth - 3) %/% 2
+        paste(BString.read(x, 1, w1),
               "...",
-              readChars(x, lx - w2 + 1, lx),
+              BString.read(x, lx - w2 + 1, lx),
               sep="")
     }
 }
@@ -278,7 +261,7 @@ setMethod("show", "BString",
         cat("  ", lo, "-letter \"", class(object), "\" object", sep="")
         #if (!is.null(object@codec))
         #    cat(" with alphabet:", toString(object@codec@letters))
-        cat("\nValue:", bsSnippet(object, 72))
+        cat("\nValue:", BString.get_snippet(object, 72))
         cat("\n")
     }
 )
@@ -394,7 +377,7 @@ setMethod("!=", signature(e2="BString"),
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("as.character", "BString", function(x) readChars(x, 1, x@length))
+setMethod("as.character", "BString", function(x) BString.read(x, 1, x@length))
 setMethod("toString", "BString", function(x) as.character(x))
 setMethod("nchar", "BString", function(x, type) x@length)
 
@@ -402,13 +385,13 @@ setMethod("nchar", "BString", function(x, type) x@length)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Other functions and generics
 
-# The "bsSubstr" function is very fast because it does not copy the string
-# data. Return a BString object (not vectorized).
+# The "BString.substring" function is very fast because it does not copy
+# the string data. Return a BString object (not vectorized).
 # 'first' and 'last' must be single integers verifying:
 #   1 <= first <= last <= length(x)
 # WARNING: This function is voluntarly unsafe (it doesn't check its
 # arguments) because we want it to be the fastest possible!
-bsSubstr <- function(x, first, last)
+BString.substring <- function(x, first, last)
 {
     one <- as.integer(1)
     x@offset <- x@offset + first - one
@@ -416,7 +399,7 @@ bsSubstr <- function(x, first, last)
     x
 }
 
-# The public (and safe) version of bsSubstr(). Not vectorized.
+# The public (and safe) version of BString.substring(). Not vectorized.
 # We deliberately choose the "NA trick" over defaulting 'first' and 'last'
 # to '1' and 'length(x)' because we want to be consistent with what the
 # views() function does.
@@ -437,104 +420,9 @@ setMethod("subBString", "BString",
         # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
         if (!isTRUE(1 <= first && first <= last && last <= length(x)))
             stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
-        bsSubstr(x, as.integer(first), as.integer(last))
+        BString.substring(x, as.integer(first), as.integer(last))
     }
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Helper functions for view manipulation
 
-# The 2 functions below convert a given view on a BString object into a
-# a character-string.
-# They are used as helper functions to display a BStringViews object.
-# Both assume that 'first' <= 'last' (so they don't check it) and
-# padd the result with spaces to produce the "margin effect"
-# if 'first' or 'last' are out of limits.
-
-# nchar(bsView(x, first, last)) is always last-first+1
-bsView <- function(x, first, last)
-{
-    lx <- length(x)
-    if (last < 1 || first > lx)
-            return(format("", width=last-first+1))
-    Lmargin <- ""
-    if (first < 1) {
-        Lmargin <- format("", width=1-first)
-        first <- 1
-    }
-    Rmargin <- ""
-    if (last > lx) {
-        Rmargin <- format("", width=last-lx)
-        last <- lx
-    }
-    paste(Lmargin, readChars(x, first, last), Rmargin, sep="")
-}
-
-# nchar(bsViewSnippet(x, first, last, snippetW)) is <= snippetW
-bsViewSnippet <- function(x, first, last, snippetW)
-{
-    if (snippetW < 7)
-        snippetW <- 7
-    width <- last - first + 1
-    if (width <= snippetW) {
-        bsView(x, first, last)
-    } else {
-        w1 <- (snippetW - 2) %/% 2
-        w2 <- (snippetW - 3) %/% 2
-        paste(bsView(x, first, first+w1-1),
-              "...",
-              bsView(x, last-w2+1, last), sep="")
-    }
-}
-
-# Assume that 'first1', 'last1', 'first2', 'last2' are single integers
-# and that first1 <= last1 and first2 <= last2.
-bsIdenticalViews <- function(x1, first1, last1, x2, first2, last2)
-{
-    one <- as.integer(1)
-    w1 <- last1 - first1 + one
-    w2 <- last2 - first2 + one
-    if (w1 != w2)
-        return(FALSE)
-
-    lx1 <- length(x1)
-    isBlank1 <- last1 < one || first1 > lx1
-    lx2 <- length(x2)
-    isBlank2 <- last2 < one || first2 > lx2
-    if (isBlank1 && isBlank2)
-        return(TRUE)
-    if (isBlank1 || isBlank2)
-        return(FALSE)
-
-    # Left margin
-    LmarginSize1 <- first1 < one
-    LmarginSize2 <- first2 < one
-    if (LmarginSize1 != LmarginSize2)
-        return(FALSE)
-    if (LmarginSize1) {
-        # Both views have a left margin
-        if (first1 != first2)
-            return(FALSE)
-        first1 <- one
-        first2 <- one
-    }
-
-    # Right margin
-    RmarginSize1 <- last1 > lx1
-    RmarginSize2 <- last2 > lx2
-    if (RmarginSize1 != RmarginSize2)
-        return(FALSE)
-    if (RmarginSize1) {
-        # Both views have a right margin
-        if (last1 - lx1 != last2 - lx2)
-            return(FALSE)
-        last1 <- lx1
-        last2 <- lx2
-    }
-
-    # At this point, we can trust that 1 <= first1 <= last1 <= lx1
-    # and that 1 <= first2 <= last2 <= lx2 so we can call unsafe
-    # function bsSubstr() with no fear...
-    bsSubstr(x1, first1, last1) == bsSubstr(x2, first2, last2)
-}

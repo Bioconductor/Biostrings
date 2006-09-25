@@ -1,19 +1,21 @@
-.alphabetFrequency <- function(x)
+BString.char_frequency <- function(x)
 {
-    .Call("alphabetFrequency",
+    .Call("CharBuffer_char_frequency",
           x@data@xp, x@offset, x@length,
           PACKAGE="Biostrings")
 }
 
-.DNAorRNA_alphabetFrequency <- function(x, baseOnly, codec)
+BString.alphabet_frequency <- function(x, baseOnly)
 {
-    af <- .alphabetFrequency(x)
-    if (baseOnly)
-        i <- c(1:4,16)
-    else
-        i <- 1:length(codec@letters)
-    ans <- af[codec@codes[i] + 1]
-    names <- codec@letters[i]
+    ans <- BString.char_frequency(x)
+    codes <- codec(x)@codes[]
+    names <- alphabet(x)
+    if (baseOnly) {
+        i <- c(1:4, 16)
+        codes <- codes[i]
+        names <- names[i]
+    }
+    ans <- ans[1 + codes]
     if (baseOnly) {
         names <- c(names, "other")
         ans <- c(ans, nchar(x) - sum(ans))
@@ -30,21 +32,21 @@ setGeneric(
 setMethod("alphabetFrequency", "BString",
     function(x, baseOnly)
     {
-        .alphabetFrequency(x)
+        BString.char_frequency(x)
     }
 )
 
 setMethod("alphabetFrequency", "DNAString",
     function(x, baseOnly)
     {
-        .DNAorRNA_alphabetFrequency(x, baseOnly, DNA_STRING_CODEC)
+        BString.alphabet_frequency(x, baseOnly)
     }
 )
 
 setMethod("alphabetFrequency", "RNAString",
     function(x, baseOnly)
     {
-        .DNAorRNA_alphabetFrequency(x, baseOnly, RNA_STRING_CODEC)
+        BString.alphabet_frequency(x, baseOnly)
     }
 )
 

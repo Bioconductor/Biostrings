@@ -110,9 +110,9 @@ SEXP CharBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEX
 SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
 
 
-/* alphabetFrequency.c */
+/* char_frequency.c */
 
-SEXP alphabetFrequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
+SEXP CharBuffer_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
 
 
 /* shiftor.c */

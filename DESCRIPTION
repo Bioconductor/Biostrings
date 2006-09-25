@@ -2,7 +2,7 @@ Package: Biostrings
 Title: String objects representing biological sequences, and matching algorithms
 Description: Class definitions and generics for biological sequences
         along with pattern matching algorithms.
-Version: 2.1.8
+Version: 2.1.9
 Author: Saikat DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: Genetics
@@ -12,7 +12,7 @@ License: LGPL
 SaveImage: yes
 Collate: readFASTA.R utils.R
         CharBuffer.R IntBuffer.R BStringCodec.R BString.R as.complex.R
-        BStringViews.R
+        BStringViews.R BStringViews-constructors.R
         reverseComplement.R alphabetFrequency.R matchPattern.R
         needwunsQS.R
         zzz.R

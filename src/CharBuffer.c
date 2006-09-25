@@ -73,7 +73,7 @@ SEXP xp_new()
  *   cb <- CharBuffer(5)
  *   cb[] <- 255
  *   s <- toString(cb)
- *   strsplit(s, NULL)
+ *   strsplit(s, NULL, fixed=TRUE)[[1]]
  * doesn't work!
  * The function below should be safe, whatever the content of 's' is!
  * The length of the returned string is the number of chars in single

@@ -1,4 +1,4 @@
-DNAComplementHash <- function()
+.DNAComplementHash <- function()
 {
     old <- DNAString(toString(DNA_STRING_CODEC@letters))
     new <- DNAString(chartr("U", "T", toString(RNA_STRING_CODEC@letters)))
@@ -16,7 +16,7 @@ setMethod("reverse", "BString",
         lx <- length(x)
         data <- CharBuffer(lx)
         CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
-        # class(x) can be "BString", "DNAString" or "RNAString"
+        # class(x) can be "BString", "DNAString", "RNAString" or "AAString"
         new(class(x), data)
     }
 )
@@ -42,7 +42,7 @@ setMethod("complement", "DNAString",
     {
         lx <- length(x)
         data <- CharBuffer(lx)
-        hash <- DNAComplementHash()
+        hash <- .DNAComplementHash()
         CharBuffer.copy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
         DNAString(data)
     }
@@ -66,7 +66,7 @@ setMethod("reverseComplement", "DNAString",
     {
         lx <- length(x)
         data <- CharBuffer(lx)
-        hash <- DNAComplementHash()
+        hash <- .DNAComplementHash()
         CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
         DNAString(data)
     }

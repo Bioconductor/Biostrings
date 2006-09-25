@@ -183,8 +183,8 @@ bsMismatch <- function(pattern, subject, first, fixed)
         if (j < 1 || j > length(subject)) {
             mm <- c(mm, i)
         } else {
-            l <- bsSubstr(pattern, i, i)
-            r <- bsSubstr(subject, j, j)
+            l <- BString.substring(pattern, i, i)
+            r <- BString.substring(subject, j, j)
             cp <- countPattern(l, r, algo="shift-or", mismatch=0, fixed)
             if (cp == 0)
                 mm <- c(mm, i)

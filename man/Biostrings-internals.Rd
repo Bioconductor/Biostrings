@@ -45,6 +45,10 @@
 
 \alias{initialize,BStringCodec-method}
 
+\alias{alphabet}
+\alias{alphabet,BStringCodec-method}
+
+
 \title{Biostrings internals}
 
 \description{

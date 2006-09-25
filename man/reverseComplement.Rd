@@ -27,10 +27,11 @@
 
 \arguments{
   \item{x}{
-    A \link{BString}, \link{DNAString}, \link{RNAString}
-    or \link{BStringViews} object for \code{reverse}.
-    A \link{DNAString} object (or a \link{BStringViews} object
-    with a \link{DNAString} subject) for \code{complement}
+    A \code{\link{BString}} (or derived) object
+    or a \code{\link{BStringViews}} object for \code{reverse}.
+    A \code{\link{DNAString}} object
+    or a \code{\link{BStringViews}} object
+    with a \code{\link{DNAString}} subject for \code{complement}
     and \code{reverseComplement}.
   }
 }
@@ -61,5 +62,6 @@
   reverseComplement(DNAString("ACGT-YN-"))
 }
 
+\keyword{methods}
 \keyword{manip}
 

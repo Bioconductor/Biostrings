@@ -128,11 +128,10 @@ With \Rpackage{Biostrings}~1, the call to
 quadratic in time, as reported by Wolfgang).
 
 %<<c3>>=
-%alphabet <- strsplit("-TGCANBDHKMRSVWY", NULL)[[1]]
 %length <- 20000
 %src <- sapply(1:length,
 %              function(i) {
-%                paste(sample(alphabet, 250, replace=TRUE), collapse="")
+%                paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse="")
 %              })
 %system.time(v2 <- BStringViews(src, "DNAString"))
 %v2
