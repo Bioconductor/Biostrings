@@ -49,6 +49,7 @@ setMethod("enc_hash", "BString",
 
 setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
 setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
+setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

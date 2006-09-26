@@ -1,5 +1,5 @@
-# 'baseValues' must be a named vector containing the complex values
-# associated to each base e.g.
+# Accepts an extra argument 'baseValues' that must be a named complex vector
+# containing the values associated to each base e.g.
 #   baseValues=c("A"=1+0i, "G"=0+1i, "T"=-1+0i, "C"=0-1i)
 setMethod("as.complex", "DNAString",
     function(x, ...)

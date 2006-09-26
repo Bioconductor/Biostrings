@@ -18,8 +18,10 @@
     A \code{\link{DNAString}} object.
   }
   \item{...}{
-    A named complex vector \code{baseValues} containing the values
-    associated to each base.
+    Accepts an extra argument \code{baseValues} that must be
+    a named complex vector containing the values associated
+    to each base e.g.
+      \code{c("A"=1+0i, "G"=0+1i, "T"=-1+0i, "C"=0-1i)}
   }
 }
 

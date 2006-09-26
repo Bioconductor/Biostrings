@@ -5,9 +5,15 @@
 \alias{class:AAString}
 \alias{AAString-class}
 
+% Constants:
+\alias{AA_ALPHABET}
+
 % Constructor-like functions and generics:
 \alias{initialize,AAString-method}
 \alias{AAString}
+
+% Other functions and generics:
+\alias{alphabet,AAString-method}
 
 
 \title{The AAString class}
@@ -27,12 +33,17 @@
   Unlike a \code{\link{BString}} object that allows storage
   of any non-empty string (based on a single-byte character set)
   a \code{AAString} object can only store a non-empty string
-  based on a limited alphabet (the Amino Acid
-  alphabet + the gap letter).
+  based on the \code{AAString} alphabet (see below).
 }
 
-\section{The Amino Acid alphabet}{
-  [TODO]
+\section{The AAString alphabet}{
+  This alphabet contains all letters from the
+  Single-Letter Amino Acid Code (see \code{\link{AMINO_ACID_CODE}}
+  + the stop letter \code{"*"}.
+  It is stored in the \code{AA_ALPHABET} constant (character vector).
+  The \code{alphabet} method also returns
+  \code{AA_ALPHABET} when applied to a \code{AAString}
+  object and is provided for convenience only.
 }
 
 \section{Constructor-like functions and generics}{
@@ -51,11 +62,15 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BString-class}, \link{BStringViews-class}
+  \code{\link{BString}}, \code{\link{AMINO_ACID_CODE}},
+  \code{\link{BStringViews}}
 }
 
 \examples{
-  ## [TODO: Provide examples]
+  AA_ALPHABET
+  a <- AAString("MARKSLEMSIR*")
+  length(a)
+  alphabet(a)
 }
 
 \keyword{methods}

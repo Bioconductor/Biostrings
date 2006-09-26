@@ -33,22 +33,19 @@
   Unlike a \code{\link{BString}} object that allows storage
   of any non-empty string (based on a single-byte character set)
   a \code{DNAString} object can only store a non-empty string
-  based on a limited alphabet (the IUPAC Extended Genetic
-  alphabet + the gap letter).
+  based on the \code{DNAString} alphabet (see below).
   In addition, the letters stored in a \code{DNAString} object
   are encoded in a way that optimizes fast search algorithms.
 }
 
-\section{The IUPAC Extended Genetic alphabet}{
-
-  [TODO]
-
-  \describe{
-    \item{}{
-      \code{DNA_ALPHABET}:
-      [TODO: Document me]
-    }
-  }
+\section{The DNAString alphabet}{
+  This alphabet contains all letters from the
+  IUPAC Extended Genetic alphabet (see \code{\link{IUPAC_CODE_MAP}}
+  + the gap letter \code{"-"}.
+  It is stored in the \code{DNA_ALPHABET} constant (character vector).
+  The \code{alphabet} method also returns
+  \code{DNA_ALPHABET} when applied to a \code{DNAString}
+  object and is provided for convenience only.
 }
 
 \section{Constructor-like functions and generics}{
@@ -64,27 +61,18 @@
   }
 }
 
-\section{Other functions and generics}{
-  In the code snippet below,
-  \code{x} is a \code{DNAString} object.
-
-  \describe{
-    \item{}{
-      \code{alphabet(x)}:
-      [TODO: Document me]
-    }
-  }
-}
-
 \author{H. Pages}
 
 \seealso{
-  \link{BString-class}, \link{RNAString-class}, \link{BStringViews-class}
+  \code{\link{BString}}, \code{\link{IUPAC_CODE_MAP}},
+  \code{\link{RNAString}}, \code{\link{BStringViews}}
 }
 
 \examples{
+  DNA_ALPHABET
   d <- DNAString("TTGAAAA-CTC-N")
   length(d)
+  alphabet(d)
 }
 
 \keyword{methods}

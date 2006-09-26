@@ -58,5 +58,6 @@
 
 \author{H. Pages}
 
+\keyword{internal}
 \keyword{methods}
 \keyword{classes}
