@@ -33,14 +33,14 @@
   Unlike a \code{\link{BString}} object that allows storage
   of any non-empty string (based on a single-byte character set)
   a \code{DNAString} object can only store a non-empty string
-  based on the \code{DNAString} alphabet (see below).
+  based on the DNAString alphabet (see below).
   In addition, the letters stored in a \code{DNAString} object
   are encoded in a way that optimizes fast search algorithms.
 }
 
 \section{The DNAString alphabet}{
   This alphabet contains all letters from the
-  IUPAC Extended Genetic alphabet (see \code{\link{IUPAC_CODE_MAP}}
+  IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}})
   + the gap letter \code{"-"}.
   It is stored in the \code{DNA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns

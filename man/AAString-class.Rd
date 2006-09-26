@@ -33,12 +33,12 @@
   Unlike a \code{\link{BString}} object that allows storage
   of any non-empty string (based on a single-byte character set)
   a \code{AAString} object can only store a non-empty string
-  based on the \code{AAString} alphabet (see below).
+  based on the AAString alphabet (see below).
 }
 
 \section{The AAString alphabet}{
   This alphabet contains all letters from the
-  Single-Letter Amino Acid Code (see \code{\link{AMINO_ACID_CODE}}
+  Single-Letter Amino Acid Code (see \code{\link{AMINO_ACID_CODE}})
   + the stop letter \code{"*"}.
   It is stored in the \code{AA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns

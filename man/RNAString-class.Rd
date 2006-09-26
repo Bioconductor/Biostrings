@@ -33,14 +33,14 @@
   Unlike a \code{\link{BString}} object that allows storage
   of any non-empty string (based on a single-byte character set)
   a \code{RNAString} object can only store a non-empty string
-  based on the \code{RNAString} alphabet (see below).
+  based on the RNAString alphabet (see below).
   In addition, the letters stored in a \code{RNAString} object
   are encoded in a way that optimizes fast search algorithms.
 }
 
 \section{The RNAString alphabet}{
   This alphabet contains all letters from the
-  IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}
+  IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}})
   where \code{"T"} is replaced by \code{"U"}
   + the gap letter \code{"-"}.
   It is stored in the \code{RNA_ALPHABET} constant (character vector).
