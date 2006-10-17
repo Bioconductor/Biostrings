@@ -20,7 +20,7 @@ testBiostrings <- function()
 {
     require("RUnit", quietly=TRUE) || stop("RUnit package not found")
     testDirs <- system.file("tests", package="Biostrings")
-    testFileRegexp <- "^runit.+\.[rR]$"
+    testFileRegexp <- "^runit.+\\.[rR]$"
     testSuite <- defineTestSuite(name="BioStrings Test Suite",
                                  dirs=testDirs,
                                  testFileRegexp=testFileRegexp)
