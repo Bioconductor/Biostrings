@@ -53,7 +53,7 @@
 Load the {\it Caenorhabditis elegans} genome:
 <<a1>>=
 library(BSgenome.Celegans.UCSC.ce2)
-ls(2)
+ls(package:BSgenome.Celegans.UCSC.ce2)
 Celegans
 comment(Celegans$chrI)
 @
@@ -63,22 +63,14 @@ Display chromosome I:
 Celegans$chrI
 @
 
-Note that \Robject{Celegans\$chrI} is a \Rclass{BStringViews} object with a
-single view (\Robject{length(Celegans\$chrI)} is 1).
 The number of letters in this sequence can be retrieved with:
 <<a3>>=
-cI <- Celegans$chrI[[1]]
+cI <- Celegans$chrI
 length(cI)
 @
 
-Try with an {\it upstream} object:
-<<a4>>=
-length(Celegans$upstream2000)
-length(Celegans$upstream2000[[1]])
-@
-
 Some basic stats:
-<<a5>>=
+<<a4>>=
 af <- alphabetFrequency(cI)
 af
 sum(af) == length(cI)
@@ -109,7 +101,7 @@ returns the positions of the mismatching letters.
 
 Note: The \Rmethod{mismatch} method is in fact a particular case
 of a (vectorized) {\it alignment} function where only ``replacements''
-are allowed. Current implementation is slow but (but this will change).
+are allowed. Current implementation is slow but this will change.
 
 
 It may happen that a match is {\it out of limits} like here:
