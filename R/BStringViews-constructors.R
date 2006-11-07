@@ -143,10 +143,8 @@ setGeneric(
 
 # Only FASTA files are supported for now.
 # Typical use:
-#   srcpath <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
-#   f <- file(srcpath)
-#   v <- BStringViews(f, "DNAString")
-#   close(f)
+#   file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+#   v <- BStringViews(file(file), "DNAString")
 setMethod("BStringViews", "file",
     function(src, subjectClass, sep)
     {
