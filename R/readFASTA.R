@@ -1,8 +1,18 @@
 # Robert contribution
 readFASTA <- function(file, checkComments=TRUE)
 {
-    if (is.character(file))
-        file <- file(file)
+    if (is.character(file)) {
+        file <- file(file, "r")
+        on.exit(close(file))
+    } else {
+        if (!inherits(file, "connection"))
+            stop("'file' must be a character string or connection")
+        if (!isOpen(file)) {
+            open(file, "r")
+            on.exit(close(file))
+        }
+    }
+
     s1 <- scan(file=file, what="", sep="\n",
                quote="", allowEscapes=FALSE);
     if (checkComments) {
