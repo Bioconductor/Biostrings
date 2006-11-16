@@ -50,12 +50,12 @@ setMethod("alphabetFrequency", "RNAString",
     }
 )
 
-# Will fail if x contains "out of limits" views.
+### Will fail if x contains "out of limits" views.
 setMethod("alphabetFrequency", "BStringViews",
     function(x, baseOnly)
     {
         lx <- length(x)
-        # Just a trick to generate a zero-filled answer
+        ## Just a trick to generate a zero-filled answer
         ans <- alphabetFrequency(x@subject[1], baseOnly)
         ans[] <- 0
         if (lx == 0)

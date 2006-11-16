@@ -1,19 +1,19 @@
-# ===========================================================================
-# "CharBuffer" objects
-# ---------------------------------------------------------------------------
-#
-# A "CharBuffer" object is a chunk of memory that:
-#   a. Contains bytes (characters).
-#   b. Is readable and writable.
-#   c. Is not copied on object duplication i.e. when doing
-#        cb2 <- cb1
-#      both cb1 and cb2 point to the same place in memory.
-#      This is achieved by using R predefined type "externalptr".
-#   d. Is not 0-terminated (so it can contain zeros). This is achieved by
-#      having the length of the buffer stored in the "CharBuffer" object.
+### =========================================================================
+### "CharBuffer" objects
+### -------------------------------------------------------------------------
+###
+### A "CharBuffer" object is a chunk of memory that:
+###   a. Contains bytes (characters).
+###   b. Is readable and writable.
+###   c. Is not copied on object duplication i.e. when doing
+###        cb2 <- cb1
+###      both cb1 and cb2 point to the same place in memory.
+###      This is achieved by using R predefined type "externalptr".
+###   d. Is not 0-terminated (so it can contain zeros). This is achieved by
+###      having the length of the buffer stored in the "CharBuffer" object.
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 debug_utils <- function()
 {
@@ -26,16 +26,16 @@ debug_CharBuffer <- function()
 }
 
 
-# Return the hexadecimal address of any R object in a string.
+### Return the hexadecimal address of any R object in a string.
 address <- function(x)
 {
     .Call("sexp_address", x, PACKAGE="Biostrings")
 }
 
-# Helper function (for debugging purpose).
-# Print some obscure info about an "externalptr" object.
-# Typical use:
-#   show(new("externalptr"))
+### Helper function (for debugging purpose).
+### Print some obscure info about an "externalptr" object.
+### Typical use:
+###   show(new("externalptr"))
 setMethod("show", "externalptr",
     function(object)
     {
@@ -44,25 +44,25 @@ setMethod("show", "externalptr",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "CharBuffer" class.
-# Note: instead of defining the "CharBuffer" class with just one slot of type
-# "externalptr" (it HAS an "externalptr", and nothing else), an alternative
-# would be to simply extend the "externalptr" type.
-# After all, a "CharBuffer" object IS an "externalptr" object.
-# However, I tried this but was not able to implement the "initialize" method
-# in such a way that it returns a new instance of the "CharBuffer" class (the
-# returned object was ALWAYS the same instance everytime the method was
-# called, I found no workaround).
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "CharBuffer" class.
+### Note: instead of defining the "CharBuffer" class with just one slot of type
+### "externalptr" (it HAS an "externalptr", and nothing else), an alternative
+### would be to simply extend the "externalptr" type.
+### After all, a "CharBuffer" object IS an "externalptr" object.
+### However, I tried this but was not able to implement the "initialize" method
+### in such a way that it returns a new instance of the "CharBuffer" class (the
+### returned object was ALWAYS the same instance everytime the method was
+### called, I found no workaround).
 setClass("CharBuffer", representation(xp="externalptr"))
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Initialization
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Initialization
 
-# This:
-#   cb <- CharBuffer(30)
-# will call the "initialize" method.
+### This:
+###   cb <- CharBuffer(30)
+### will call the "initialize" method.
 setMethod("initialize", "CharBuffer",
     function(.Object, length, verbose=FALSE)
     {
@@ -96,9 +96,9 @@ setMethod("show", "CharBuffer",
     {
         show_string <- .Call("CharBuffer_get_show_string", object@xp, PACKAGE="Biostrings")
         cat(show_string, "\n", sep="")
-        # What is correct here? The documentation (?show) says that 'show'
-        # should return an invisible 'NULL' but, on the other hand, the 'show'
-        # method for intergers returns its 'object' argument...
+        ## What is correct here? The documentation (?show) says that 'show'
+        ## should return an invisible 'NULL' but, on the other hand, the 'show'
+        ## method for intergers returns its 'object' argument...
         invisible(object)
     }
 )
@@ -110,11 +110,11 @@ setMethod("length", "CharBuffer",
     }
 )
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Read/write functions.
-# These are safe wrappers to unsafe C functions.
-# If length(i) == 0 then the read functions return an empty vector
-# and the write functions don't do anything.
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Read/write functions.
+### These are safe wrappers to unsafe C functions.
+### If length(i) == 0 then the read functions return an empty vector
+### and the write functions don't do anything.
 
 CharBuffer.readInts <- function(x, i, imax=integer(0))
 {
@@ -250,9 +250,9 @@ CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# length(as.integer(cb)) is equivalent to length(cb)
-# but the latter is MUCH faster!
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### length(as.integer(cb)) is equivalent to length(cb)
+### but the latter is MUCH faster!
 setMethod("as.integer", "CharBuffer",
     function(x)
     {
@@ -260,16 +260,16 @@ setMethod("as.integer", "CharBuffer",
     }
 )
 
-# Typical use:
-#   cb <- CharBuffer(15)
-#   cb[] <- 65
-#   toString(cb)
-#   cb[] <- "Hello"
-#   toString(cb)
-# So this should always rewrite the content of a "CharBuffer" object
-# to itself, without any modification:
-#   cb[] <- toString(cb)
-# whatever the content of cb is!
+### Typical use:
+###   cb <- CharBuffer(15)
+###   cb[] <- 65
+###   toString(cb)
+###   cb[] <- "Hello"
+###   toString(cb)
+### So this should always rewrite the content of a "CharBuffer" object
+### to itself, without any modification:
+###   cb[] <- toString(cb)
+### whatever the content of cb is!
 setMethod("toString", "CharBuffer",
     function(x)
     {
@@ -278,15 +278,15 @@ setMethod("toString", "CharBuffer",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Subsetting
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting
 
-# Select bytes from a "CharBuffer" object.
-# Typical use:
-#   cb <- CharBuffer(30)
-#   cb[25:20]
-#   cb[25:31] # subscript out of bounds
-# Note: cb[] can be used as a shortcut for as.integer(cb)
+### Select bytes from a "CharBuffer" object.
+### Typical use:
+###   cb <- CharBuffer(30)
+###   cb[25:20]
+###   cb[25:31] # subscript out of bounds
+### Note: cb[] can be used as a shortcut for as.integer(cb)
 setMethod("[", "CharBuffer",
     function(x, i, j, ..., drop)
     {
@@ -298,22 +298,22 @@ setMethod("[", "CharBuffer",
     }
 )
 
-# Replace bytes in a "CharBuffer" object.
-# Typical use:
-#   cb <- CharBuffer(30)
-#   cb[] <- 12 # fill with 12
-#   cb[3:10] <- 1:-2
-#   cb[3:10] <- "Ab"
-#   cb[0] <- 4 # subscript out of bounds
-#   cb[31] <- 4 # subscript out of bounds
-#   cb[3] <- -12 # subscript out of bounds
+### Replace bytes in a "CharBuffer" object.
+### Typical use:
+###   cb <- CharBuffer(30)
+###   cb[] <- 12 # fill with 12
+###   cb[3:10] <- 1:-2
+###   cb[3:10] <- "Ab"
+###   cb[0] <- 4 # subscript out of bounds
+###   cb[31] <- 4 # subscript out of bounds
+###   cb[3] <- -12 # subscript out of bounds
 setReplaceMethod("[", "CharBuffer",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
 
-        # 'value' is a string
+        ## 'value' is a string
         if (is.character(value)) {
             if (length(value) >= 2)
                 stop("character vector 'value' has more than one string")
@@ -322,8 +322,8 @@ setReplaceMethod("[", "CharBuffer",
             return(CharBuffer.write(x, i, value=value))
         }
 
-        # We want to allow this: cb[3] <- 4, even if storage.mode(value)
-        # is not "integer"
+        ## We want to allow this: cb[3] <- 4, even if storage.mode(value)
+        ## is not "integer"
         if (!is.integer(value)) {
             if (length(value) >= 2)
                 stop("'storage.mode(value)' must be \"integer\"")
@@ -332,7 +332,7 @@ setReplaceMethod("[", "CharBuffer",
             if (value != tmp)
                 stop("'value' is not an integer")
         }
-        # Now 'value' is an integer vector
+        ## Now 'value' is an integer vector
         if (missing(i))
             return(CharBuffer.writeInts(x, 1, length(x), value=value))
         CharBuffer.writeInts(x, i, value=value)
@@ -340,15 +340,15 @@ setReplaceMethod("[", "CharBuffer",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Equality
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Equality
 
-# Be careful to the semantic of the "==" operator:
-#   2 "CharBuffer" objects are equals if their @xp slot is the
-#   same "externalptr" instance (then they obviously have
-#   the same length and contain the same data).
-# With this definition, cb1 and cb2 can be 2 different "CharBuffer" objects
-# (cb1 != cb2) and contain the same data.
+### Be careful to the semantic of the "==" operator:
+###   2 "CharBuffer" objects are equals if their @xp slot is the
+###   same "externalptr" instance (then they obviously have
+###   the same length and contain the same data).
+### With this definition, cb1 and cb2 can be 2 different "CharBuffer" objects
+### (cb1 != cb2) and contain the same data.
 setMethod("==", signature(e1="CharBuffer", e2="CharBuffer"),
     function(e1, e2)
     {
@@ -362,23 +362,23 @@ setMethod("!=", signature(e1="CharBuffer", e2="CharBuffer"),
     }
 )
 
-# A wrapper to the very fast memcmp() C-function.
-# Arguments MUST be the following or it will crash R:
-#   x1, x2: "CharBuffer" objects
-#   first1, first2, width: single integers
-# In addition: 1 <= first1 <= first1+width-1 <= length(x1)
-#              1 <= first2 <= first2+width-1 <= length(x2)
-# WARNING: This function is voluntarly unsafe (it doesn't check its
-# arguments) because we want it to be the fastest possible!
+### A wrapper to the very fast memcmp() C-function.
+### Arguments MUST be the following or it will crash R:
+###   x1, x2: "CharBuffer" objects
+###   first1, first2, width: single integers
+### In addition: 1 <= first1 <= first1+width-1 <= length(x1)
+###              1 <= first2 <= first2+width-1 <= length(x2)
+### WARNING: This function is voluntarly unsafe (it doesn't check its
+### arguments) because we want it to be the fastest possible!
 CharBuffer.compare <- function(x1, first1, x2, first2, width)
 {
     .Call("CharBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "PrintableCharBuffer" class is a simple extention of the "CharBuffer"
-# class (no additional slots)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PrintableCharBuffer" class is a simple extention of the "CharBuffer"
+### class (no additional slots)
 
 setClass("PrintableCharBuffer", representation("CharBuffer"))
 
@@ -389,7 +389,7 @@ setMethod("show", "PrintableCharBuffer",
     }
 )
 
-# Safe alternative to 'strsplit(x, NULL, fixed=TRUE)[[1]]'.
+### Safe alternative to 'strsplit(x, NULL, fixed=TRUE)[[1]]'.
 safeExplode <- function(x)
 {
     if (!is.character(x) || length(x) != 1)
@@ -397,9 +397,9 @@ safeExplode <- function(x)
     .Call("safe_explode", x, PACKAGE="Biostrings")
 }
 
-# pcb <- new("PrintableCharBuffer", 10)
-# pcb[] <- "ab-C."
-# pcb[] == strsplit(toString(pcb), NULL, fixed=TRUE)[[1]]
+### pcb <- new("PrintableCharBuffer", 10)
+### pcb[] <- "ab-C."
+### pcb[] == strsplit(toString(pcb), NULL, fixed=TRUE)[[1]]
 setMethod("[", "PrintableCharBuffer",
     function(x, i, j, ..., drop)
     {

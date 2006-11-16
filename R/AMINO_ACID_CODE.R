@@ -1,5 +1,5 @@
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The Single-Letter Amino Acid Code
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The Single-Letter Amino Acid Code
 
 AMINO_ACID_CODE <- c(
     "A"="Ala", # Alanine
@@ -24,5 +24,5 @@ AMINO_ACID_CODE <- c(
     "V"="Val"  # Valine
 )
 
-# Amino Acid alphabet ("*" is a translation stop)
+### Amino Acid alphabet ("*" is a translation stop)
 AA_ALPHABET <- c(names(AMINO_ACID_CODE), "*")

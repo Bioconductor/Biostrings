@@ -1,5 +1,5 @@
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The Standard Genetic Code
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The Standard Genetic Code
 
 GENETIC_CODE <- c(
     "TTT"="F",

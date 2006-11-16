@@ -1,4 +1,4 @@
-# Some low-level helper functions
+### Some low-level helper functions
 
 isLooseNumeric <- function(x)
 {
@@ -11,3 +11,4 @@ recycleVector <- function(x, length)
     y[] <- x
     y
 }
+

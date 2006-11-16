@@ -1,10 +1,10 @@
-# Originally written by VJC for Biostrings 1.
-# Adapted for Biostrings 2 by H. Pages.
+### Originally written by VJC for Biostrings 1.
+### Adapted for Biostrings 2 by H. Pages.
 
-# Needleman-Wunsch global alignment following Durbin et al
-# QS = quadratic space requirement, simple gap penalty 
+### Needleman-Wunsch global alignment following Durbin et al
+### QS = quadratic space requirement, simple gap penalty 
 
-# 's1' and 's2' must be character vectors of length 1
+### 's1' and 's2' must be character vectors of length 1
 .needwunsQS <- function(s1, s2, substmat, gappen)
 {
     if (length(s1) != 1 || length(s2) != 1)
@@ -21,15 +21,15 @@
     }
     n1 <- length(es1)
     n2 <- length(es2)
-    # we are going to create matrices to hold score and traceback info
+    ## we are going to create matrices to hold score and traceback info
     sco <- matrix(0, nr=n1+1, nc=n2+1)
     tra <- matrix(0, nr=n1+1, nc=n2+1)
     sco[1,] <- -1*(0:(n2))*gappen
     sco[,1] <- -1*(0:(n1))*gappen
     for (i in 2:(n1+1))
       for (j in 2:(n2+1)) {
-        # traceback is 1 if we have a match, 2 (3) indicates gap
-        # in aligned string 2 (1)
+        ## traceback is 1 if we have a match, 2 (3) indicates gap
+        ## in aligned string 2 (1)
         tmp <- substmat[es1[i-1], es2[j-1]]
         tra[i,j] <- which.max(c(sco[i-1, j-1] + tmp,
                                 sco[i-1, j] - gappen,
@@ -65,8 +65,8 @@
     attr(ans,"scomat") <- sco
     attr(ans,"score") <- sco[n1, n2]
     attr(ans,"tramat") <- tra
-    # we will use S3 class concepts here until we come
-    # up with a consensus approach to class architecture
+    ## we will use S3 class concepts here until we come
+    ## up with a consensus approach to class architecture
     class(ans) <- "needwunsQS"
     ans
 }

@@ -1,4 +1,4 @@
-# Robert contribution
+### Robert contribution
 readFASTA <- function(file, checkComments=TRUE)
 {
     if (is.character(file)) {

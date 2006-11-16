@@ -16,7 +16,7 @@ setMethod("reverse", "BString",
         lx <- length(x)
         data <- CharBuffer(lx)
         CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
-        # class(x) can be "BString", "DNAString", "RNAString" or "AAString"
+        ## class(x) can be "BString", "DNAString", "RNAString" or "AAString"
         new(class(x), data)
     }
 )

@@ -1,12 +1,12 @@
-# ===========================================================================
-# The matchPattern() generic & related functions
-# ---------------------------------------------------------------------------
+### =========================================================================
+### The matchPattern() generic & related functions
+### -------------------------------------------------------------------------
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Boyer-Moore
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Boyer-Moore
 
-# Must return an integer vector.
+### Must return an integer vector.
 BoyerMoore <- function(pattern, subject, fixed, count.only)
 {
     stop("\"boyer-moore\" algorithm will be back soon...")
@@ -14,28 +14,28 @@ BoyerMoore <- function(pattern, subject, fixed, count.only)
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# forward-search
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### forward-search
 
-# Must return an integer vector.
+### Must return an integer vector.
 ForwardSearch <- function(pattern, subject, fixed, count.only)
 {
     stop("\"forward-search\" algorithm will be back soon...")
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# shift-or
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### shift-or
 
 debug_shiftor <- function()
 {
     invisible(.Call("shiftor_debug", PACKAGE="Biostrings"))
 }
 
-# Must return an integer vector.
+### Must return an integer vector.
 ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 {
-    # We treat the edge-cases at the R level
+    ## We treat the edge-cases at the R level
     p <- length(pattern)
     if (p <= mismatch) {
         if (count.only)
@@ -55,8 +55,8 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Dispatch function & user interface
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Dispatch function & user interface
 
 .matchPattern <- function(pattern, subject, algorithm, mismatch,
                           fixed, count.only=FALSE)
@@ -92,12 +92,12 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
     new("BStringViews", subject, ans + as.integer(1), ans + pattern@length)
 }
 
-# Typical use:
-#   matchPattern("TG", DNAString("GTGACGTGCAT"))
-#   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
-# Edge cases:
-#   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
-#   matchPattern("---", DNAString("A"))
+### Typical use:
+###   matchPattern("TG", DNAString("GTGACGTGCAT"))
+###   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
+### Edge cases:
+###   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
+###   matchPattern("---", DNAString("A"))
 setGeneric(
     "matchPattern",
     function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
@@ -131,15 +131,15 @@ matchDNAPattern <- function(...)
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# countPattern() is a slightly faster equivalent to length(matchPattern())
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### countPattern() is a slightly faster equivalent to length(matchPattern())
 
-# Typical use:
-#   countPattern("TG", DNAString("GTGACGTGCAT"))
-#   countPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
-# Edge cases:
-#   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
-#   countPattern("---", DNAString("A"))
+### Typical use:
+###   countPattern("TG", DNAString("GTGACGTGCAT"))
+###   countPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
+### Edge cases:
+###   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
+###   countPattern("---", DNAString("A"))
 setGeneric(
     "countPattern",
     function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
@@ -168,12 +168,12 @@ setMethod("countPattern", signature(subject="BStringViews"),
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# mismatch()
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### mismatch()
 
-# Helper function used by .mismatch()
-# Returns a vector of the positions of mismatches of 'pattern'
-# in a view on 'subject' starting at 'first' and whose width is length(pattern).
+### Helper function used by .mismatch()
+### Returns a vector of the positions of mismatches of 'pattern'
+### in a view on 'subject' starting at 'first' and whose width is length(pattern).
 bsMismatch <- function(pattern, subject, first, fixed)
 {
     mm <- integer(0)
@@ -206,9 +206,9 @@ setGeneric(
     function(pattern, x, fixed=NA) standardGeneric("mismatch")
 )
 
-# Typical use:
-#   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), mismatch=2)
-#   mismatch("TGA", mp)
+### Typical use:
+###   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), mismatch=2)
+###   mismatch("TGA", mp)
 setMethod("mismatch", signature(x="BStringViews"),
     function(pattern, x, fixed)
     {

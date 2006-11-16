@@ -1,5 +1,5 @@
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# IUPAC extended genetic alphabet
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### IUPAC extended genetic alphabet
 
 IUPAC_CODE_MAP <- c(
     "A"="A",

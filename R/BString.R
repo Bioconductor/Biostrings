@@ -1,6 +1,6 @@
-# ===========================================================================
-# The BString class
-# ---------------------------------------------------------------------------
+### =========================================================================
+### The BString class
+### -------------------------------------------------------------------------
 
 setClass(
     "BString",
@@ -11,14 +11,14 @@ setClass(
     )
 )
 
-# 3 direct "BString" derivations (no additional slot)
+### 3 direct "BString" derivations (no additional slot)
 setClass("DNAString", representation("BString"))
 setClass("RNAString", representation("BString"))
 setClass("AAString", representation("BString"))
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "codec", "enc_hash" and "dec_hash" new generics (NOT exported)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "codec", "enc_hash" and "dec_hash" new generics (NOT exported)
 
 setGeneric("codec", function(x) standardGeneric("codec"))
 setMethod("codec", "BString", function(x) NULL)
@@ -44,16 +44,16 @@ setMethod("enc_hash", "BString",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "alphabet" generic is defined in BStringCodec.R
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "alphabet" generic is defined in BStringCodec.R
 
 setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
 setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
 setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# The "BString.read" and "BString.write" functions (NOT exported)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "BString.read" and "BString.write" functions (NOT exported)
 
 BString.read <- function(x, i, imax=integer(0))
 {
@@ -61,7 +61,7 @@ BString.read <- function(x, i, imax=integer(0))
                     dec_hash=dec_hash(x))
 }
 
-# Only used at initialization time!
+### Only used at initialization time!
 BString.write <- function(x, i, imax=integer(0), value)
 {
     CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
@@ -70,10 +70,10 @@ BString.write <- function(x, i, imax=integer(0), value)
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Accessor methods
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessor methods
 
-# Returns a character-string
+### Returns a character-string
 setGeneric("letter", function(x, i) standardGeneric("letter"))
 setMethod("letter", "BString",
     function(x, i)
@@ -85,8 +85,8 @@ setMethod("letter", "BString",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Constructor-like functions and generics
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor-like functions and generics
 
 BString.init_with_CharBuffer <- function(.Object, src)
 {
@@ -138,8 +138,8 @@ BString.get_init_error_msg <- function(.Object, src)
           "is of class \"", class(src), "\"", sep="")
 }
 
-# Because the 'initialize' method for "AAString" objects is using 'callNextMethod'
-# then '.Object' here can be of class "BString" or "AAString".
+### Because the 'initialize' method for "AAString" objects is using 'callNextMethod'
+### then '.Object' here can be of class "BString" or "AAString".
 setMethod("initialize", "BString",
     function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
@@ -200,10 +200,10 @@ setMethod("initialize", "AAString",
     }
 )
 
-# Some wrappers for compatibility with Biostrings 1.
-# To test the speed:
-#   big <- paste(sample(c('A','C','G','T'), 10^6, replace=TRUE), collapse="")
-#   system.time(d <- DNAString(big))
+### Some wrappers for compatibility with Biostrings 1.
+### To test the speed:
+###   big <- paste(sample(c('A','C','G','T'), 10^6, replace=TRUE), collapse="")
+###   system.time(d <- DNAString(big))
 
 BString <- function(...)
 {
@@ -234,10 +234,10 @@ AAString <- function(...)
 }
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Standard generic methods
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Standard generic methods
 
-# Helper function used by the show() method
+### Helper function used by the show() method
 BString.get_snippet <- function(x, snippetWidth)
 {
     if (snippetWidth < 7)
@@ -268,8 +268,8 @@ setMethod("show", "BString",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Subsetting (with decoding)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting (with decoding)
 
 setMethod("length", "BString", function(x) x@length)
 
@@ -284,18 +284,18 @@ setMethod("[", "BString",
             stop("subscript out of bounds")
         data <- CharBuffer(length(i))
         CharBuffer.copy(data, x@offset + i, src=x@data)
-        # class(x) can be "BString" or one of its derivations ("DNAString",
-        # "RNAString" or "AAString").
+        ## class(x) can be "BString" or one of its derivations ("DNAString",
+        ## "RNAString" or "AAString").
         new(class(x), data)
     }
 )
 
-# The only reason for defining the replacement version of the "[" operator
-# is to let the user know that he can't use it:
-#   bs <- BString("AbnbIU")
-#   bs[2] <- "X" # provokes an error
-# If we don't define it, then the user can type the above and believe that
-# it actually did something but it didn't.
+### The only reason for defining the replacement version of the "[" operator
+### is to let the user know that he can't use it:
+###   bs <- BString("AbnbIU")
+###   bs[2] <- "X" # provokes an error
+### If we don't define it, then the user can type the above and believe that
+### it actually did something but it didn't.
 setReplaceMethod("[", "BString",
     function(x, i, j,..., value)
     {
@@ -305,28 +305,28 @@ setReplaceMethod("[", "BString",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Equality
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Equality
 
-# We want:
-#   BString("ab") == "ab" # TRUE
-#   BString("ab") == "" # Error ("" can't be converted to a BString)
-#   DNAString("TG") == "TG" # TRUE
-#   "TT" == DNAString("TG") # FALSE
-#   "TGG" == DNAString("TG") # FALSE
-#   DNAString("TG") == RNAString("UG") # TRUE!!!
-#   library(BSgenome.Hsapiens.UCSC.hg18)
-#   dna <- Hsapiens$chr1
-#   dna != Hsapiens$chr1 # FALSE
-#   dnav <- views(dna, 1:7, 101:107)
-#   dnav[[1]] == dnav[[7]] # TRUE
-#   dnav <- views(dna, 1:7, (length(dna)-6):length(dna))
-# This is fast:
-#   dnav[[1]] == dnav[[7]] # FALSE
-# But this would have killed your machine:
-#   s1 <- toString(dnav[[1]])
-#   s7 <- toString(dnav[[7]])
-#   s1 == s7
+### We want:
+###   BString("ab") == "ab" # TRUE
+###   BString("ab") == "" # Error ("" can't be converted to a BString)
+###   DNAString("TG") == "TG" # TRUE
+###   "TT" == DNAString("TG") # FALSE
+###   "TGG" == DNAString("TG") # FALSE
+###   DNAString("TG") == RNAString("UG") # TRUE!!!
+###   library(BSgenome.Hsapiens.UCSC.hg18)
+###   dna <- Hsapiens$chr1
+###   dna != Hsapiens$chr1 # FALSE
+###   dnav <- views(dna, 1:7, 101:107)
+###   dnav[[1]] == dnav[[7]] # TRUE
+###   dnav <- views(dna, 1:7, (length(dna)-6):length(dna))
+### This is fast:
+###   dnav[[1]] == dnav[[7]] # FALSE
+### But this would have killed your machine:
+###   s1 <- toString(dnav[[1]])
+###   s7 <- toString(dnav[[7]])
+###   s1 == s7
 
 BString.equal <- function(x, y)
 {
@@ -359,9 +359,9 @@ setMethod("!=", signature(e1="BString", e2="BString"),
     function(e1, e2) !(e1 == e2)
 )
 
-# These methods are called if at least one side of the "==" (or "!=")
-# operator is a "BString" object AND the other side is NOT a "BStringViews"
-# object.
+### These methods are called if at least one side of the "==" (or "!=")
+### operator is a "BString" object AND the other side is NOT a "BStringViews"
+### object.
 setMethod("==", signature(e1="BString"),
     function(e1, e2) BString.equal(e1, e2)
 )
@@ -377,21 +377,21 @@ setMethod("!=", signature(e2="BString"),
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 setMethod("as.character", "BString", function(x) BString.read(x, 1, x@length))
 setMethod("toString", "BString", function(x) as.character(x))
 setMethod("nchar", "BString", function(x, type) x@length)
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Other functions and generics
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other functions and generics
 
-# The "BString.substring" function is very fast because it does not copy
-# the string data. Return a BString object (not vectorized).
-# 'first' and 'last' must be single integers verifying:
-#   1 <= first <= last <= length(x)
-# WARNING: This function is voluntarly unsafe (it doesn't check its
-# arguments) because we want it to be the fastest possible!
+### The "BString.substring" function is very fast because it does not copy
+### the string data. Return a BString object (not vectorized).
+### 'first' and 'last' must be single integers verifying:
+###   1 <= first <= last <= length(x)
+### WARNING: This function is voluntarly unsafe (it doesn't check its
+### arguments) because we want it to be the fastest possible!
 BString.substring <- function(x, first, last)
 {
     one <- as.integer(1)
@@ -400,10 +400,10 @@ BString.substring <- function(x, first, last)
     x
 }
 
-# The public (and safe) version of BString.substring(). Not vectorized.
-# We deliberately choose the "NA trick" over defaulting 'first' and 'last'
-# to '1' and 'length(x)' because we want to be consistent with what the
-# views() function does.
+### The public (and safe) version of BString.substring(). Not vectorized.
+### We deliberately choose the "NA trick" over defaulting 'first' and 'last'
+### to '1' and 'length(x)' because we want to be consistent with what the
+### views() function does.
 setGeneric(
     "subBString", function(x, first=NA, last=NA) standardGeneric("subBString")
 )
@@ -418,7 +418,7 @@ setMethod("subBString", "BString",
             first <- 1
         if (is.na(last))
             last <- x@length
-        # This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
+        ## This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
         if (!isTRUE(1 <= first && first <= last && last <= length(x)))
             stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
         BString.substring(x, as.integer(first), as.integer(last))
