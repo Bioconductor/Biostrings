@@ -52,16 +52,16 @@ SEXP IntBuffer_length(SEXP ib_xp)
  *   ib <- IntBuffer(30)
  *   .Call("IntBuffer_memcmp", ib@xp, 1:1, ib@xp, 10:10, 21:21, PACKAGE="Biostrings")
  */
-SEXP IntBuffer_memcmp(SEXP ib1_xp, SEXP first1,
-		 SEXP ib2_xp, SEXP first2, SEXP width)
+SEXP IntBuffer_memcmp(SEXP ib1_xp, SEXP start1,
+		 SEXP ib2_xp, SEXP start2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
 	int i1, i2, n;
 
 	tag1 = R_ExternalPtrTag(ib1_xp);
-	i1 = INTEGER(first1)[0] - 1;
+	i1 = INTEGER(start1)[0] - 1;
 	tag2 = R_ExternalPtrTag(ib2_xp);
-	i2 = INTEGER(first2)[0] - 1;
+	i2 = INTEGER(start2)[0] - 1;
 	n = INTEGER(width)[0];
 
 	PROTECT(ans = allocVector(INTSXP, 1));

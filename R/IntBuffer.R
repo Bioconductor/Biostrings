@@ -173,12 +173,12 @@ setMethod("!=", signature(e1="IntBuffer", e2="IntBuffer"),
 ### A wrapper to the very fast memcmp() C-function.
 ### Arguments MUST be the following or it will crash R:
 ###   x1, x2: "IntBuffer" objects
-###   first1, first2, width: single integers
-### In addition: 1 <= first1 <= first1+width-1 <= length(x1)
-###              1 <= first2 <= first2+width-1 <= length(x2)
+###   start1, start2, width: single integers
+### In addition: 1 <= start1 <= start1+width-1 <= length(x1)
+###              1 <= start2 <= start2+width-1 <= length(x2)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-IntBuffer.compare <- function(x1, first1, x2, first2, width)
+IntBuffer.compare <- function(x1, start1, x2, start2, width)
 {
-    .Call("IntBuffer_memcmp", x1@xp, first1, x2@xp, first2, width, PACKAGE="Biostrings")
+    .Call("IntBuffer_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
 }

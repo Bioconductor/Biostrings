@@ -388,40 +388,40 @@ setMethod("nchar", "BString", function(x, type) x@length)
 
 ### The "BString.substring" function is very fast because it does not copy
 ### the string data. Return a BString object (not vectorized).
-### 'first' and 'last' must be single integers verifying:
-###   1 <= first <= last <= length(x)
+### 'start' and 'end' must be single integers verifying:
+###   1 <= start <= end <= length(x)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-BString.substring <- function(x, first, last)
+BString.substring <- function(x, start, end)
 {
     one <- as.integer(1)
-    x@offset <- x@offset + first - one
-    x@length <- last - first + one
+    x@offset <- x@offset + start - one
+    x@length <- end - start + one
     x
 }
 
 ### The public (and safe) version of BString.substring(). Not vectorized.
-### We deliberately choose the "NA trick" over defaulting 'first' and 'last'
+### We deliberately choose the "NA trick" over defaulting 'start' and 'end'
 ### to '1' and 'length(x)' because we want to be consistent with what the
 ### views() function does.
 setGeneric(
-    "subBString", function(x, first=NA, last=NA) standardGeneric("subBString")
+    "subBString", function(x, start=NA, end=NA) standardGeneric("subBString")
 )
 setMethod("subBString", "BString",
-    function(x, first, last)
+    function(x, start, end)
     {
-        if (!isLooseNumeric(first) || !isLooseNumeric(last))
-            stop("'first' and 'last' must be numerics")
-        if (length(first) != 1 || length(last) != 1)
-            stop("'first' and 'last' must be single numerics")
-        if (is.na(first))
-            first <- 1
-        if (is.na(last))
-            last <- x@length
-        ## This is NA-proof (well, 'first' and 'last' can't be NAs anymore...)
-        if (!isTRUE(1 <= first && first <= last && last <= length(x)))
-            stop("'first' and 'last' must verify '1 <= first <= last <= length(x)'")
-        BString.substring(x, as.integer(first), as.integer(last))
+        if (!isLooseNumeric(start) || !isLooseNumeric(end))
+            stop("'start' and 'end' must be numerics")
+        if (length(start) != 1 || length(end) != 1)
+            stop("'start' and 'end' must be single numerics")
+        if (is.na(start))
+            start <- 1
+        if (is.na(end))
+            end <- x@length
+        ## This is NA-proof (well, 'start' and 'end' can't be NAs anymore...)
+        if (!isTRUE(1 <= start && start <= end && end <= length(x)))
+            stop("'start' and 'end' must verify '1 <= start <= end <= length(x)'")
+        BString.substring(x, as.integer(start), as.integer(end))
     }
 )
 

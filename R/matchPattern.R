@@ -173,11 +173,11 @@ setMethod("countPattern", signature(subject="BStringViews"),
 
 ### Helper function used by .mismatch()
 ### Returns a vector of the positions of mismatches of 'pattern'
-### in a view on 'subject' starting at 'first' and whose width is length(pattern).
-bsMismatch <- function(pattern, subject, first, fixed)
+### in a view on 'subject' starting at 'start' and whose width is length(pattern).
+bsMismatch <- function(pattern, subject, start, fixed)
 {
     mm <- integer(0)
-    j0 <- first - as.integer(1)
+    j0 <- start - as.integer(1)
     for (i in 1:length(pattern)) {
         j <- j0 + i
         if (j < 1 || j > length(subject)) {
@@ -198,7 +198,7 @@ bsMismatch <- function(pattern, subject, first, fixed)
     if (any(width(x) != length(pattern)))
         warning("views in 'x' don't have a width equal to pattern length")
     lapply(1:length(x),
-           function(i) bsMismatch(pattern, x@subject, x@first[i], fixed))
+           function(i) bsMismatch(pattern, x@subject, x@start[i], fixed))
 }
 
 setGeneric(

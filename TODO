@@ -1,5 +1,5 @@
 
-For 2.0.4
+For 2.3.5
 
 - Vectorize matchPattern() (result will be a list of BStringViews
   objects).
@@ -20,15 +20,15 @@ For 2.0.4
   and size, how well do they work on different inputs)".
 
 
-For 2.0.5
+For 2.3.6
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
-    (2) views are sorted from left to right (first(v) is ascending),
+    (2) views are sorted from left to right (start(v) is ascending),
     (3) views don't overlap and can't even be adjacents
   If length(v) >= 2, then the 3 above conditions are equivalent to: 
-    1 <= first(v)[i] <= last(v)[i] < first(v)[i+1]
-                     <= last(v)[i+1] <= nchar(subject(v))
+    1 <= start(v)[i] <= end(v)[i] < start(v)[i+1]
+                     <= end(v)[i+1] <= nchar(subject(v))
   for every 1 <= i < length(v).
   If length(v) == 0, then 'v' is normalized.
   If length(v) == 1, then 'v' is normalized <=> view is not "out of limits".
@@ -36,7 +36,7 @@ For 2.0.5
   The normalize() function:
   For any given BStringViews object v0, let's call S(v0) the subset of
   integers defined by:
-    (union of all [first(v0)[i],last(v0)[i]]) inter [1,nchar(subject(v0))]
+    (union of all [start(v0)[i],end(v0)[i]]) inter [1,nchar(subject(v0))]
   We can see that there is a unique "normalized" BStringViews object v
   (with same subject as v0) such that S(v) = S(v0).
   So we can define the normalize() function: v0 -> v = normalize(v0).

@@ -5,17 +5,17 @@
 ### WARNING: This function is unsafe! (it doesn't check its arguments)
 ### Only 2 valid ways to use it:
 ###   new("BStringViews", subject)
-###   new("BStringViews", subject, first, last)
+###   new("BStringViews", subject, start, end)
 ### where 'subject' is a BString (or derived) object,
-### and 'first' and 'last' are integer vectors of the same length
-### such that 'first <= last'.
+### and 'start' and 'end' are integer vectors of the same length
+### such that 'start <= end'.
 setMethod("initialize", "BStringViews",
-    function(.Object, subject, first, last)
+    function(.Object, subject, start, end)
     {
         .Object@subject <- subject
-        if (!missing(first)) {
-            .Object@first <- first
-            .Object@last <- last
+        if (!missing(start)) {
+            .Object@start <- start
+            .Object@end <- end
         }
         .Object
     }
@@ -41,31 +41,31 @@ setMethod("initialize", "BStringViews",
 ###   dnav4 <- views(dna)
 ### A BStringViews object with no view:
 ###   dnav5 <- views(dna, integer(0), integer(0))
-views <- function(subject, first=NA, last=NA)
+views <- function(subject, start=NA, end=NA)
 {
     if (class(subject) == "character")
         subject <- BString(subject)
     ans <- new("BStringViews", subject)
     ## Integrity checking
-    if (!isLooseNumeric(first) || !isLooseNumeric(last))
-        stop("'first' and 'last' must be numerics")
-    #if (length(first) != length(last))
-    #    stop("'first' and 'last' must have the same length")
-    if (!is.integer(first))
-        first <- as.integer(first)
-    first[is.na(first)] <- as.integer(1)
-    if (!is.integer(last))
-        last <- as.integer(last)
-    last[is.na(last)] <- subject@length
-    if (length(first) < length(last))
-        first <- recycleVector(first, length(last))
-    else if (length(last) < length(first))
-        last <- recycleVector(last, length(first))
-    ## The NA-proof version of 'if (any(last < first))'
-    if (!isTRUE(all(first <= last)))
-        stop("'first' and 'last' must verify 'first <= last'")
-    ans@first <- first
-    ans@last <- last
+    if (!isLooseNumeric(start) || !isLooseNumeric(end))
+        stop("'start' and 'end' must be numerics")
+    #if (length(start) != length(end))
+    #    stop("'start' and 'end' must have the same length")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    start[is.na(start)] <- as.integer(1)
+    if (!is.integer(end))
+        end <- as.integer(end)
+    end[is.na(end)] <- subject@length
+    if (length(start) < length(end))
+        start <- recycleVector(start, length(end))
+    else if (length(end) < length(start))
+        end <- recycleVector(end, length(start))
+    ## The NA-proof version of 'if (any(end < start))'
+    if (!isTRUE(all(start <= end)))
+        stop("'start' and 'end' must verify 'start <= end'")
+    ans@start <- start
+    ans@end <- end
     ans
 }
 
@@ -88,21 +88,21 @@ adjacentViews <- function(subject, width, gapwidth=0)
     lg <- length(gapwidth)
     if (!is.integer(gapwidth))
         gapwidth <- as.integer(gapwidth)
-    first <- integer(lw)
-    last <- integer(lw)
+    start <- integer(lw)
+    end <- integer(lw)
     one <- as.integer(1)
-    first[1] <- one
-    last[1] <- width[1]
+    start[1] <- one
+    end[1] <- width[1]
     if (lw >= 2) {
         j <- 1
         for (i in 2:lw) {
-            first[i] <- last[i-1] + one + gapwidth[j]
-            last[i] <- first[i] + width[i] - one
+            start[i] <- end[i-1] + one + gapwidth[j]
+            end[i] <- start[i] + width[i] - one
             if (j < lg) j <- j + 1 else j <- 1
         }
     }
-    ans@first <- first
-    ans@last <- last
+    ans@start <- start
+    ans@end <- end
     ans
 }
 
@@ -125,7 +125,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
 ###   10000        0.51 s          16.29 s
 ###   20000        0.99 s          64.85 s
 ###   40000        1.69 s         488.43 s
-### The quadratic behaviour of "old" DNAString() was first reported
+### The quadratic behaviour of "old" DNAString() was start reported
 ### by Wolfgang.
 BStringViews <- function(src, subjectClass, sep="")
 {

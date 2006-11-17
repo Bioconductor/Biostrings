@@ -114,7 +114,7 @@ consmat <- function(Lmers, freq=FALSE) {
 To illustrate, the following application assumes the ORF data
 to be aligned for the first 10 positions (patently false):
 <<doal>>=
-orf10 <- views(subject(orf), first(orf), first(orf)+9)
+orf10 <- views(subject(orf), start(orf), start(orf)+9)
 consmat(orf10)
 @
 

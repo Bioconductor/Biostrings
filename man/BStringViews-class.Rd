@@ -8,10 +8,10 @@
 % Accesor methods:
 \alias{subject}
 \alias{subject,BStringViews-method}
-\alias{first}
-\alias{first,BStringViews-method}
-\alias{last}
-\alias{last,BStringViews-method}
+\alias{start}
+\alias{start,BStringViews-method}
+\alias{end}
+\alias{end,BStringViews-method}
 \alias{width}
 \alias{width,BStringViews-method}
 \alias{desc}
@@ -60,11 +60,11 @@
       [TODO: Document me]
     }
     \item{}{
-      \code{first(x)}:
+      \code{start(x)}:
       [TODO: Document me]
     }
     \item{}{
-      \code{last(x)}:
+      \code{end(x)}:
       [TODO: Document me]
     }
     \item{}{

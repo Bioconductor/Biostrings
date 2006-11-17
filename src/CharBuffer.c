@@ -179,8 +179,8 @@ SEXP CharBuffer_length(SEXP cb_xp)
  *   cb <- CharBuffer(30)
  *   .Call("CharBuffer_memcmp", cb@xp, 1:1, cb@xp, 10:10, 21:21, PACKAGE="Biostrings")
  */
-SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP first1,
-		 SEXP cb2_xp, SEXP first2, SEXP width)
+SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP start1,
+		 SEXP cb2_xp, SEXP start2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
 	int i1, i2, n;
@@ -191,9 +191,9 @@ SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP first1,
 	}
 #endif
 	tag1 = R_ExternalPtrTag(cb1_xp);
-	i1 = INTEGER(first1)[0] - 1;
+	i1 = INTEGER(start1)[0] - 1;
 	tag2 = R_ExternalPtrTag(cb2_xp);
-	i2 = INTEGER(first2)[0] - 1;
+	i2 = INTEGER(start2)[0] - 1;
 	n = INTEGER(width)[0];
 
 #ifdef DEBUG_BIOSTRINGS

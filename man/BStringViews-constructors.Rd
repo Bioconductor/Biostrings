@@ -18,7 +18,7 @@
 }
 
 \usage{
-  views(subject, first=NA, last=NA)
+  views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
   BStringViews(src, subjectClass, sep="")
 }
@@ -27,10 +27,10 @@
   \item{subject}{
     [TODO]
   }
-  \item{first}{
+  \item{start}{
     [TODO]
   }
-  \item{last}{
+  \item{end}{
     [TODO]
   }
   \item{width}{
@@ -54,11 +54,11 @@
   In the code snippets below,
   \code{subject} is a character vector or a \link{BString}
   (or \link{DNAString} or \link{RNAString}) object
-  and \code{first}, \code{last} and \code{width} are numeric vectors.
+  and \code{start}, \code{end} and \code{width} are numeric vectors.
 
   \describe{
     \item{}{
-      \code{views(subject, first, last)}:
+      \code{views(subject, start, end)}:
       [TODO: Document me]
     }
     \item{}{

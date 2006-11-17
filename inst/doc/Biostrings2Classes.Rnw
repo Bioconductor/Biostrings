@@ -112,8 +112,8 @@ objects is not efficient and one should always use the \Rmethod{subBString}
 method to extract a substring from a big string:
 <<a4>>=
 bb <- subBString(b, 3, 6)
-dd1 <- subBString(d, last=7)
-dd2 <- subBString(d, first=8)
+dd1 <- subBString(d, end=7)
+dd2 <- subBString(d, start=8)
 @
 
 To {\it dump} a \Rclass{BString} (or \Rclass{DNAString}) object as a character
@@ -206,10 +206,10 @@ cat('> v4[[3]]')
 cat(try(v4[[3]]))
 @
 
-Note that, when \Robject{first} and \Robject{last} are numeric
+Note that, when \Robject{start} and \Robject{end} are numeric
 vectors and \Robject{i} is a {\it single} integer,
-\Robject{views(b, first, last)[[i]]}
-is equivalent to \Robject{subBString(b, first[i], last[i])}.
+\Robject{views(b, start, end)[[i]]}
+is equivalent to \Robject{subBString(b, start[i], end[i])}.
 
 The following is the same as doing \Robject{subject(v4)}
 (provided as a convenience):
@@ -287,19 +287,19 @@ v12[3] == views(RNAString("AU"), 0, 2)
 
 % ---------------------------------------------------------------------------
 
-\section{The \Rmethod{first}, \Rmethod{last} and \Rmethod{width}
+\section{The \Rmethod{start}, \Rmethod{end} and \Rmethod{width}
 methods}
 
 <<f1>>=
-first(v4)
-last(v4)
+start(v4)
+end(v4)
 width(v4)
 @
 
-Note that \Robject{first(v4)[i]} is equivalent to
-\Robject{first(v4[i])}, except that the former will not issue
+Note that \Robject{start(v4)[i]} is equivalent to
+\Robject{start(v4[i])}, except that the former will not issue
 an error if \Robject{i} is out of bounds
-(same for \Rmethod{last} and \Rmethod{width} methods).
+(same for \Rmethod{end} and \Rmethod{width} methods).
 
 Also, when \Robject{i} is a {\it single} integer,
 \Robject{width(v4)[i]} is equivalent to \Robject{length(v4[[i]])}

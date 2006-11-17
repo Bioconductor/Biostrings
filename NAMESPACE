@@ -12,10 +12,10 @@ exportMethods(
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
     as.character, toString, nchar, as.complex,
-    as.matrix, as.list,
+    as.matrix, as.list, start, end,
     ## New generics
     alphabet, subBString,
-    subject, first, last, width, desc, BStringViews,
+    subject, width, desc, BStringViews,
     reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
     ## Copy/pasted from Biostrings 1

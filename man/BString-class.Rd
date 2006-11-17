@@ -120,11 +120,11 @@
 \section{Other functions and generics}{
   In the code snippets below,
   \code{x} is a \code{BString} (or derived) object
-  and \code{first} and \code{last} are single numerics.
+  and \code{start} and \code{end} are single numerics.
 
   \describe{
     \item{}{
-      \code{subBString(x, first, last)}:
+      \code{subBString(x, start, end)}:
       [TODO: Document me]
     }
   }
