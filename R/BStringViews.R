@@ -31,8 +31,14 @@ setMethod("subject", "BStringViews", function(x) x@subject)
 setGeneric("start", function(x) standardGeneric("start"))
 setMethod("start", "BStringViews", function(x) x@start)
 
+setGeneric("first", function(x) standardGeneric("first"))
+setMethod("first", "BStringViews", function(x) {.Deprecated("start"); start(x)})
+
 setGeneric("end", function(x) standardGeneric("end"))
 setMethod("end", "BStringViews", function(x) x@end)
+
+setGeneric("last", function(x) standardGeneric("last"))
+setMethod("last", "BStringViews", function(x) {.Deprecated("end"); end(x)})
 
 ### We choose to call this method 'width' and not 'length' because
 ### we want to define the length of a BStringViews object as the number

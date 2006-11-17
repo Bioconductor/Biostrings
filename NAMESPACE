@@ -15,7 +15,7 @@ exportMethods(
     as.matrix, as.list, start, end,
     ## New generics
     alphabet, subBString,
-    subject, width, desc, BStringViews,
+    subject, first, last, width, desc, BStringViews,
     reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
     ## Copy/pasted from Biostrings 1
