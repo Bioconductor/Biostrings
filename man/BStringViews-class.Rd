@@ -10,8 +10,12 @@
 \alias{subject,BStringViews-method}
 \alias{start}
 \alias{start,BStringViews-method}
+\alias{first}
+\alias{first,BStringViews-method}
 \alias{end}
 \alias{end,BStringViews-method}
+\alias{last}
+\alias{last,BStringViews-method}
 \alias{width}
 \alias{width,BStringViews-method}
 \alias{desc}
@@ -64,8 +68,16 @@
       [TODO: Document me]
     }
     \item{}{
+      \code{first(x)}:
+      deprecated. Use 'start' instead.
+    }
+    \item{}{
       \code{end(x)}:
       [TODO: Document me]
+    }
+    \item{}{
+      \code{last(x)}:
+      deprecated. Use 'end' instead.
     }
     \item{}{
       \code{width(x)}:
