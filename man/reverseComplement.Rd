@@ -20,7 +20,7 @@
 }
 
 \usage{
-  reverse(x)
+  reverse(x, ...)
   complement(x)
   reverseComplement(x)
 }
@@ -33,6 +33,9 @@
     or a \code{\link{BStringViews}} object
     with a \code{\link{DNAString}} subject for \code{complement}
     and \code{reverseComplement}.
+  }
+  \item{...}{
+    additional arguments to be passed to or from methods.
   }
 }
 

@@ -5,13 +5,10 @@
     buildCodecHashTable(old@data[], new@data[], 0)
 }
 
-setGeneric(
-    "reverse",
-    function(x) standardGeneric("reverse")
-)
+setGeneric("reverse", function(x, ...) standardGeneric("reverse"))
 
 setMethod("reverse", "BString",
-    function(x)
+    function(x, ...)
     {
         lx <- length(x)
         data <- CharBuffer(lx)
@@ -22,7 +19,7 @@ setMethod("reverse", "BString",
 )
 
 setMethod("reverse", "BStringViews",
-    function(x)
+    function(x, ...)
     {
         subject <- reverse(x@subject)
         ls <- subject@length

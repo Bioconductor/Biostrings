@@ -416,7 +416,7 @@ setMethod("nchar", "BStringViews",
 )
 
 setMethod("as.matrix", "BStringViews",
-    function(x)
+    function(x, ...)
     {
         cbind(x@start, x@end)
     }
