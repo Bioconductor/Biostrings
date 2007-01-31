@@ -5,22 +5,6 @@ static int debug = 0;
 
 SEXP utils_debug()
 {
-	size_t nmemb, membsize, size, i;
-        char *p, *q;
-
-	nmemb = 2000000000LU;
-	membsize = sizeof(int);
-	size = nmemb * membsize;
-        Rprintf("allocating %lu bytes with S_alloc()...\n", size);
-	p = S_alloc((long) nmemb, (int) membsize);
-	if (p == NULL)
-		Rprintf("S_alloc() failed\n");
-        for (i = 0; i < size; i++) p[i] = 'p';
-        Rprintf("allocating %lu bytes with malloc()...\n", size);
-	q = (char *) malloc(size);
-	if (q == NULL)
-		Rprintf("malloc() failed\n");
-        for (i = 0; i < size; i++) q[i] = 'q';
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
 	Rprintf("Debug mode turned %s in 'utils.c'\n", debug ? "on" : "off");
@@ -447,4 +431,46 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 			"of replacement length");
 	return;
 }
+
+/* ==========================================================================
+ * Memory copy with conversion to complex values:
+ *   dest[(i-i1) % dest_length] <- as.complex(src[i]) for i1 <= i <= i2
+ * --------------------------------------------------------------------------
+ * Reads a linear subset from 'src' defined by 'i1', 'i2'.
+ * IMPORTANT: Assumes that i1 <= i2.
+ * Writing is recycled in 'dest': it starts at its first member
+ * and comes back to it after it reaches its last member.
+ */
+void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
+		Rcomplex *dest, int dest_length,
+		char *src, int src_length,
+		Rcomplex *lookup_table, int lookup_length)
+{
+	char *b, old;
+	Rcomplex new;
+	int i, j, code;
+
+	if (i1 < 0 || i2 >= src_length)
+		error("subscript out of bounds");
+	if (dest_length == 0)
+		error("no destination to copy to");
+	b = src + i1;
+	for (i = i1, j = 0; i <= i2; i++, j++) {
+		if (j >= dest_length) { /* recycle */
+			j = 0;
+		}
+		old = *(b++);
+		code = (unsigned char) old;
+		if (code >= lookup_length) {
+			error("code %d not in lookup table", code);
+		}
+		new = lookup_table[code];
+		dest[j] = new;
+	}
+	if (j < dest_length)
+		warning("number of items to replace is not a multiple "
+			"of replacement length");
+	return;
+}
+
 

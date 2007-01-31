@@ -297,7 +297,7 @@ SEXP CharBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset)
 
 
 /* ==========================================================================
- * Read/write chars to a "CharBuffer" object
+ * Read/write chars from/to a "CharBuffer" object
  * --------------------------------------------------------------------------
  */
 
@@ -376,7 +376,7 @@ SEXP CharBuffer_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string)
 
 
 /* ==========================================================================
- * Read/write integers to a "CharBuffer" object
+ * Read/write integers from/to a "CharBuffer" object
  * --------------------------------------------------------------------------
  */
 
@@ -502,7 +502,7 @@ SEXP CharBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 
 
 /* ==========================================================================
- * Read/write encoded chars to a "CharBuffer" object
+ * Read/write encoded chars from/to a "CharBuffer" object
  * --------------------------------------------------------------------------
  */
 
@@ -593,5 +593,42 @@ SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
 		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
 	return dest_xp;
+}
+
+
+/* ==========================================================================
+ * Read chars from a "CharBuffer" object and convert them to a vector
+ * of complexes.
+ * --------------------------------------------------------------------------
+ */
+
+SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lookup_table)
+{
+	SEXP dest, src;
+	int i1, i2, n;
+
+	src = R_ExternalPtrTag(src_xp);
+	i1 = INTEGER(imin)[0] - 1;
+	i2 = INTEGER(imax)[0] - 1;
+	n = i2 - i1 + 1;
+	PROTECT(dest = allocVector(CPLXSXP, n));
+	Biostrings_coerce_to_complex_from_i1i2(i1, i2,
+		COMPLEX(dest), n, CHAR(src), LENGTH(src),
+		COMPLEX(lookup_table), LENGTH(lookup_table));
+	UNPROTECT(1);
+	return dest;
+}
+
+SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lookup_table)
+{
+	SEXP dest, src;
+	int n;
+
+	src = R_ExternalPtrTag(src_xp);
+	n = LENGTH(subset);
+	PROTECT(dest = allocVector(CPLXSXP, n));
+	error("not available yet");
+	UNPROTECT(1);
+	return dest;
 }
 

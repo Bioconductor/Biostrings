@@ -5,15 +5,15 @@ setMethod("as.complex", "DNAString",
     function(x, ...)
     {
         args <- list(...)
-        if ("baseValues" %in% names(args))
-            baseValues <- args$baseValues
-        else
-            baseValues <- c("A"=1+0i, "G"=0+1i, "T"=-1+0i, "C"=0-1i)
-        z <- complex(nchar(x))
-        for (i in 1:nchar(x)) {
-            z[i] <- baseValues[as.character(x[i])]
+        baseValues <- args[["baseValues"]]
+        if (is.null(baseValues))
+            baseValues <- c(A=1+0i, G=0+1i, T=-1+0i, C=0-1i)
+        lookup_table <- complex(length(DNA_ALPHABET))
+        for (letter in names(baseValues)) {
+            code <- DNAString(letter)@data[] # dirty trick, need to find something better
+            lookup_table[1 + code] <- baseValues[letter]
         }
-        z
+        CharBuffer.readComplexes(x@data, x@offset + 1, x@offset + x@length, lookup_table)
     }
 )
 

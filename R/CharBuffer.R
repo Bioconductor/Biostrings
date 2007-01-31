@@ -249,6 +249,24 @@ CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
     dest
 }
 
+### 'lookup_table' must be a vector of complexes
+CharBuffer.readComplexes <- function(x, i, imax=integer(0), lookup_table)
+{
+    if (!is.integer(i))
+        i <- as.integer(i)
+    if (length(i) == 1) {
+        if (length(imax) == 0)
+            imax <- i
+        else
+            imax <- as.integer(imax)
+        .Call("CharBuffer_read_complexes_from_i1i2",
+              x@xp, i, imax, lookup_table, PACKAGE="Biostrings")
+    } else {
+        .Call("CharBuffer_read_complexes_from_subset",
+              x@xp, i, lookup_table, PACKAGE="Biostrings")
+    }
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### length(as.integer(cb)) is equivalent to length(cb)

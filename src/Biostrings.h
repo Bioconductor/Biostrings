@@ -51,6 +51,11 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *src, int src_length,
 		char *hash, int hash_length, char hash_hole);
 
+void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
+		Rcomplex *dest, int dest_length,
+		char *src, int src_length,
+		Rcomplex *lookup_table, int lookup_length);
+
 
 /* CharBuffer.c */
 
@@ -86,6 +91,9 @@ SEXP CharBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
 		SEXP string, SEXP hash_xp);
 SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 		SEXP string, SEXP hash_xp);
+
+SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lookup_table);
+SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lookup_table);
 
 
 /* IntBuffer.c */

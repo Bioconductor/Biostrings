@@ -36,6 +36,9 @@ static const R_CallMethodDef callMethods[] = {
 	{"CharBuffer_write_enc_chars_to_i1i2", (DL_FUNC) &CharBuffer_write_enc_chars_to_i1i2, 5},
 	{"CharBuffer_write_enc_chars_to_subset", (DL_FUNC) &CharBuffer_write_enc_chars_to_subset, 4},
 
+	{"CharBuffer_read_complexes_from_i1i2", (DL_FUNC) &CharBuffer_read_complexes_from_i1i2, 4},
+	{"CharBuffer_read_complexes_from_subset", (DL_FUNC) &CharBuffer_read_complexes_from_subset, 3},
+
 /* IntBuffer.c */
 	{"IntBuffer_alloc", (DL_FUNC) &IntBuffer_alloc, 2},
 	{"IntBuffer_show", (DL_FUNC) &IntBuffer_show, 1},
@@ -58,7 +61,6 @@ static const R_CallMethodDef callMethods[] = {
 
 /* shiftor.c */
 	{"shiftor_debug", (DL_FUNC) &shiftor_debug, 0},
-
 	{"shiftor", (DL_FUNC) &shiftor, 9},
 
 	{NULL, NULL, 0}
@@ -68,3 +70,4 @@ void R_init_Biostrings(DllInfo *info)
 {
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 }
+
