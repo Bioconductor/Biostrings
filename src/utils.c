@@ -5,6 +5,22 @@ static int debug = 0;
 
 SEXP utils_debug()
 {
+	size_t nmemb, membsize, size, i;
+        char *p, *q;
+
+	nmemb = 2000000000LU;
+	membsize = sizeof(int);
+	size = nmemb * membsize;
+        Rprintf("allocating %lu bytes with S_alloc()...\n", size);
+	p = S_alloc((long) nmemb, (int) membsize);
+	if (p == NULL)
+		Rprintf("S_alloc() failed\n");
+        for (i = 0; i < size; i++) p[i] = 'p';
+        Rprintf("allocating %lu bytes with malloc()...\n", size);
+	q = (char *) malloc(size);
+	if (q == NULL)
+		Rprintf("malloc() failed\n");
+        for (i = 0; i < size; i++) q[i] = 'q';
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
 	Rprintf("Debug mode turned %s in 'utils.c'\n", debug ? "on" : "off");
