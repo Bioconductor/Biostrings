@@ -215,10 +215,10 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole)
+		int *lkup, int lkup_length)
 {
-	char *b, old, new;
-	int i, j, code;
+	char *b, src_val;
+	int i, j, lkup_key, lkup_val;
 
 	if (i1 < 0 || i2 >= src_length)
 		error("subscript out of bounds");
@@ -229,12 +229,12 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		if (j >= dest_length) { /* recycle */
 			j = 0;
 		}
-		old = *(b++);
-		code = (unsigned char) old;
-		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			error("code %d not in translation table", code);
+		src_val = *(b++);
+		lkup_key = (unsigned char) src_val;
+		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+			error("key %d not in lookup table", lkup_key);
 		}
-		dest[j] = new;
+		dest[j] = (char) lkup_val;
 	}
 	if (j < dest_length)
 		warning("number of items to replace is not a multiple "
@@ -253,10 +253,10 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole)
+		int *lkup, int lkup_length)
 {
-	char old, new;
-	int i, j, k, code;
+	char src_val;
+	int i, j, k, lkup_key, lkup_val;
 
 	if (dest_length == 0 && n != 0)
 		error("no destination to copy to");
@@ -267,12 +267,12 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		i = subset[k] - 1;
 		if (i < 0 || i >= src_length)
 			error("subscript out of bounds");
-		old = src[i];
-		code = (unsigned char) old;
-		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			error("code %d not in translation table", code);
+		src_val = src[i];
+		lkup_key = (unsigned char) src_val;
+		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+			error("key %d not in lookup table", lkup_key);
 		}
-		dest[j] = new;
+		dest[j] = (char) lkup_val;
 	}
 	if (j < dest_length)
 		warning("number of items to replace is not a multiple "
@@ -292,10 +292,10 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole)
+		int *lkup, int lkup_length)
 {
-	char *a, old, new;
-	int i, j, code;
+	char *a, src_val;
+	int i, j, lkup_key, lkup_val;
 
 	if (i1 < 0 || i2 >= dest_length)
 		error("subscript out of bounds");
@@ -306,12 +306,13 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		if (j >= src_length) { /* recycle */
 			j = 0;
 		}
-		old = src[j];
-		code = (unsigned char) old;
-		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			error("code %d not in translation table", code);
+		src_val = src[j];
+		lkup_key = (unsigned char) src_val;
+		Rprintf("%d\n", lkup[lkup_key]);
+		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+			error("key %d not in lookup table", lkup_key);
 		}
-		*(a++) = new;
+		*(a++) = (char) lkup_val;
 	}
 	if (j < src_length)
 		warning("number of items to replace is not a multiple "
@@ -330,10 +331,10 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole)
+		int *lkup, int lkup_length)
 {
-	char old, new;
-	int i, j, k, code;
+	char src_val;
+	int i, j, k, lkup_key, lkup_val;
 
 	if (src_length == 0 && n != 0)
 		error("no value provided");
@@ -344,12 +345,12 @@ void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		i = subset[k] - 1;
 		if (i < 0 || i >= dest_length)
 			error("subscript out of bounds");
-		old = src[j];
-		code = (unsigned char) old;
-		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			error("code %d not in translation table", code);
+		src_val = src[j];
+		lkup_key = (unsigned char) src_val;
+		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+			error("key %d not in lookup table", lkup_key);
 		}
-		dest[i] = new;
+		dest[i] = (char) lkup_val;
 	}
 	if (j < src_length)
 		warning("number of items to replace is not a multiple "
@@ -405,10 +406,10 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole)
+		int *lkup, int lkup_length)
 {
-	char *b, old, new;
-	int i, j, code;
+	char *b, src_val;
+	int i, j, lkup_key, lkup_val;
 
 	if (i1 < 0 || i2 >= src_length)
 		error("subscript out of bounds");
@@ -419,12 +420,12 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		if (j < 0) { /* recycle */
 			j = dest_length - 1;
 		}
-		old = *(b++);
-		code = (unsigned char) old;
-		if (code >= hash_length || (new = hash[code]) == hash_hole) {
-			error("code %d not in translation table", code);
+		src_val = *(b++);
+		lkup_key = (unsigned char) src_val;
+		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+			error("key %d not in lookup table", lkup_key);
 		}
-		dest[j] = new;
+		dest[j] = (char) lkup_val;
 	}
 	if (j >= 0)
 		warning("number of items to replace is not a multiple "
@@ -444,11 +445,11 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
 		char *src, int src_length,
-		Rcomplex *lookup_table, int lookup_length)
+		Rcomplex *lkup, int lkup_length)
 {
-	char *b, old;
-	Rcomplex new;
-	int i, j, code;
+	char *b, src_val;
+	int i, j, lkup_key;
+	Rcomplex lkup_val;
 
 	if (i1 < 0 || i2 >= src_length)
 		error("subscript out of bounds");
@@ -459,18 +460,18 @@ void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		if (j >= dest_length) { /* recycle */
 			j = 0;
 		}
-		old = *(b++);
-		code = (unsigned char) old;
-		if (code >= lookup_length) {
-			error("code %d not in lookup table", code);
+		src_val = *(b++);
+		lkup_key = (unsigned char) src_val;
+		if (lkup_key >= lkup_length
+		 || ISNA((lkup_val = lkup[lkup_key]).r)
+		 || ISNA(lkup_val.i)) {
+			error("key %d not in lookup table", lkup_key);
 		}
-		new = lookup_table[code];
-		dest[j] = new;
+		dest[j] = lkup_val;
 	}
 	if (j < dest_length)
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	return;
 }
-
 

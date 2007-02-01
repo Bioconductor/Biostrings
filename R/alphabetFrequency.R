@@ -8,7 +8,7 @@ BString.char_frequency <- function(x)
 BString.alphabet_frequency <- function(x, baseOnly)
 {
     ans <- BString.char_frequency(x)
-    codes <- codec(x)@codes[]
+    codes <- codec(x)@codes
     names <- alphabet(x)
     if (baseOnly) {
         i <- c(1:4, 16)

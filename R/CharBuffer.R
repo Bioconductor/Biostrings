@@ -149,7 +149,8 @@ CharBuffer.writeInts <- function(x, i, imax=integer(0), value)
     x
 }
 
-CharBuffer.read <- function(x, i, imax=integer(0), dec_hash=NULL)
+### 'dec_lkup' must be NULL or a vector of integers
+CharBuffer.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -158,23 +159,24 @@ CharBuffer.read <- function(x, i, imax=integer(0), dec_hash=NULL)
             imax <- i
         else
             imax <- as.integer(imax)
-        if (is.null(dec_hash))
+        if (is.null(dec_lkup))
             .Call("CharBuffer_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
             .Call("CharBuffer_read_enc_chars_from_i1i2",
-                  x@xp, i, imax, dec_hash@xp, PACKAGE="Biostrings")
+                  x@xp, i, imax, dec_lkup, PACKAGE="Biostrings")
     } else {
-        if (is.null(dec_hash))
+        if (is.null(dec_lkup))
             .Call("CharBuffer_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
             .Call("CharBuffer_read_enc_chars_from_subset",
-                  x@xp, i, dec_hash@xp, PACKAGE="Biostrings")
+                  x@xp, i, dec_lkup, PACKAGE="Biostrings")
     }
 }
 
-CharBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
+### 'enc_lkup' must be NULL or a vector of integers
+CharBuffer.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
 {
     if (!is.character(value))
         stop("'value' is not a character vector")
@@ -185,24 +187,25 @@ CharBuffer.write <- function(x, i, imax=integer(0), value, enc_hash=NULL)
             imax <- i
         else
             imax <- as.integer(imax)
-        if (is.null(enc_hash))
+        if (is.null(enc_lkup))
             .Call("CharBuffer_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
             .Call("CharBuffer_write_enc_chars_to_i1i2",
-                  x@xp, i, imax, value, enc_hash@xp, PACKAGE="Biostrings")
+                  x@xp, i, imax, value, enc_lkup, PACKAGE="Biostrings")
     } else {
-        if (is.null(enc_hash))
+        if (is.null(enc_lkup))
             .Call("CharBuffer_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
             .Call("CharBuffer_write_enc_chars_to_subset",
-                  x@xp, i, value, enc_hash@xp, PACKAGE="Biostrings")
+                  x@xp, i, value, enc_lkup, PACKAGE="Biostrings")
     }
     x
 }
 
-CharBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
+### 'lkup' must be NULL or a vector of integers
+CharBuffer.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
     if (class(src) != "CharBuffer")
         stop("'src' is not a \"CharBuffer\" object")
@@ -213,24 +216,25 @@ CharBuffer.copy <- function(dest, i, imax=integer(0), src, hash=NULL)
             imax <- i
         else
             imax <- as.integer(imax)
-        if (is.null(hash))
+        if (is.null(lkup))
             .Call("CharBuffer_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, PACKAGE="Biostrings")
         else
             .Call("CharBuffer_translate_copy_from_i1i2", dest@xp, src@xp,
-                  i, imax, hash@xp, PACKAGE="Biostrings")
+                  i, imax, lkup, PACKAGE="Biostrings")
     } else {
-        if (is.null(hash))
+        if (is.null(lkup))
             .Call("CharBuffer_copy_from_subset", dest@xp, src@xp,
                   i, PACKAGE="Biostrings")
         else
             .Call("CharBuffer_translate_copy_from_subset", dest@xp, src@xp,
-                  i, hash@xp, PACKAGE="Biostrings")
+                  i, lkup, PACKAGE="Biostrings")
     }
     dest
 }
 
-CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
+### 'lkup' must be NULL or a vector of integers
+CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
     if (class(src) != "CharBuffer")
         stop("'src' is not a \"CharBuffer\" object")
@@ -242,15 +246,15 @@ CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, hash=NULL)
         imax <- i
     else
         imax <- as.integer(imax)
-    if (is.null(hash))
+    if (is.null(lkup))
         .Call("CharBuffer_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
     else
-        .Call("CharBuffer_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, hash@xp, PACKAGE="Biostrings")
+        .Call("CharBuffer_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, lkup, PACKAGE="Biostrings")
     dest
 }
 
-### 'lookup_table' must be a vector of complexes
-CharBuffer.readComplexes <- function(x, i, imax=integer(0), lookup_table)
+### 'lkup' must be a vector of complexes
+CharBuffer.readComplexes <- function(x, i, imax=integer(0), lkup)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -260,10 +264,10 @@ CharBuffer.readComplexes <- function(x, i, imax=integer(0), lookup_table)
         else
             imax <- as.integer(imax)
         .Call("CharBuffer_read_complexes_from_i1i2",
-              x@xp, i, imax, lookup_table, PACKAGE="Biostrings")
+              x@xp, i, imax, lkup, PACKAGE="Biostrings")
     } else {
         .Call("CharBuffer_read_complexes_from_subset",
-              x@xp, i, lookup_table, PACKAGE="Biostrings")
+              x@xp, i, lkup, PACKAGE="Biostrings")
     }
 }
 

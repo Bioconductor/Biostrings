@@ -28,20 +28,20 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole);
+		int *lkup, int lkup_length);
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole);
+		int *lkup, int lkup_length);
 
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole);
+		int *lkup, int lkup_length);
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole);
+		int *lkup, int lkup_length);
 
 void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
@@ -49,12 +49,12 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		char *src, int src_length,
-		char *hash, int hash_length, char hash_hole);
+		int *lkup, int lkup_length);
 
 void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
 		char *src, int src_length,
-		Rcomplex *lookup_table, int lookup_length);
+		Rcomplex *lkup, int lkup_length);
 
 
 /* CharBuffer.c */
@@ -85,15 +85,15 @@ SEXP CharBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset);
 SEXP CharBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
 SEXP CharBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
-SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
-SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp);
+SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP lkup);
 SEXP CharBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
-		SEXP string, SEXP hash_xp);
+		SEXP string, SEXP lkup);
 SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
-		SEXP string, SEXP hash_xp);
+		SEXP string, SEXP lkup);
 
-SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lookup_table);
-SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lookup_table);
+SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lkup);
 
 
 /* IntBuffer.c */
@@ -112,10 +112,10 @@ SEXP IntBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
 /* reverseComplement.c */
 
-SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
-SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP hash_xp);
+SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup);
 SEXP CharBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
-SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp);
+SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
 
 
 /* char_frequency.c */

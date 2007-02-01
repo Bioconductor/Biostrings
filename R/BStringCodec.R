@@ -1,3 +1,36 @@
+### Could not find a simpler way to get the vector of ascii codes :-/
+letterAsByteVal <- function(letters)
+{
+    if (!all(nchar(letters) == 1))
+        stop("strings in 'letters' must have one single letter")
+    as.integer(charToRaw(paste(letters, collapse="")))
+}
+
+### Builds a lookup table for 'keys' (unique integers >= 0) and 'vals'.
+### The returned value is a vector 'lkup' such that:
+###   lkup[keys + 1] is identical to vals
+### Note that if 'x' and 'y' are both integer vectors of the same length,
+### then lkupxy <- buildLookupTable(x, y) and lkupyx <- buildLookupTable(y, x)
+### are reverse lookup tables.
+### The key property of reverse lookup tables is:
+###   lkupyx[lkupxy[x + 1]] + 1 is identical to x
+
+buildLookupTable <- function(keys, vals)
+{
+    if (!is.integer(keys) || min(keys) < 0)
+        stop("'keys' must be a vector of non-negative integers")
+    if (any(duplicated(keys)))
+        stop("'keys' are not unique")
+    if (length(keys) != length(vals))
+        stop("'keys' and 'vals' must have the same length")
+    table <- vector(mode=typeof(vals), length=max(keys)+1)
+    table[] <- NA
+    for (i in 1:length(keys))
+        table[keys[i] + 1] <- vals[[i]]
+    table
+}
+
+
 # ===========================================================================
 # The BStringCodec class
 # ---------------------------------------------------------------------------
@@ -10,69 +43,27 @@
 setClass(
     "BStringCodec",
     representation(
-        letters="PrintableCharBuffer",
-        codes="CharBuffer",
-        enc_hash="CharBuffer",    # Hash table for encoding
-        dec_hash="CharBuffer"     # Hash table for decoding
+        letters="character",
+        codes="integer",
+        enc_lkup="integer",    # Lookup table for fast encoding
+        dec_lkup="integer"     # Lookup table for fast decoding
     )
 )
 
-# The first value in a hash table is reserved: it must contain
-# the "hole" value.
-# The key property for the encoding and decoding hash tables is:
-#   enc_hash[dec_hash[x + 2] + 2] == x
-# for every x to be decoded.
-
-buildCodecHashTable <- function(x, y, hole)
-{
-    if (!is.integer(x) || !is.integer(y))
-        stop("'x' and 'y' must be integer vectors") 
-    if (length(x) != length(y))
-        stop("lengths of 'x' and 'y' are different")
-    hash <- CharBuffer(max(x) + 2)
-    hash[] <- hole
-    for (i in 1:length(x)) {
-        if (y[i] == hole)
-            stop("'hole' must be different from any value in 'y'")
-        hash[x[i] + 2] <- y[i]
-    }
-    hash
-}
-
-checkCodecLettersAndCodes <- function(letters, codes)
-{
-    if (!is.character(letters) || length(letters) != 1)
-        stop("'letters' must be a single string")
-    if (nchar(letters) == 0)
-        stop("no letter provided")
-    if (nchar(letters) != length(codes))
-        stop("number of letters and codes are different")
-    if (!is.integer(codes))
-        stop("'storage.mode(codes)' must be \"integer\"")
-}
-
-# 'enc_hole' is used to mark holes in the encoding hash table. Its value must
-# be different from any code.
-# 'dec_hole' is used to mark holes in the decoding hash table. Its value must
-# be different from any letter.
 setMethod("initialize", "BStringCodec",
-    function(.Object, letters, codes, enc_hole, dec_hole, extra_letters, extra_codes)
+    function(.Object, letters, codes, extra_letters, extra_codes)
     {
-        checkCodecLettersAndCodes(letters, codes)
-        .Object@letters <- new("PrintableCharBuffer", nchar(letters))
-        .Object@letters[] <- letters
-        .Object@codes <- CharBuffer(length(codes))
-        .Object@codes[] <- codes
-        ord <- as.integer(.Object@letters)
-        .Object@dec_hash <- buildCodecHashTable(codes, ord, dec_hole)
+        letter_byte_vals <- letterAsByteVal(letters)
+        codes <- as.integer(codes)
+        .Object@letters <- letters
+        .Object@codes <- codes
+        .Object@dec_lkup <- buildLookupTable(codes, letter_byte_vals)
         if (!missing(extra_letters)) {
-            checkCodecLettersAndCodes(extra_letters, extra_codes)
-            tmp <- new("PrintableCharBuffer", nchar(extra_letters))
-            tmp[] <- extra_letters
-            ord <- c(ord, as.integer(tmp))
+            letter_byte_vals <- c(letter_byte_vals, letterAsByteVal(extra_letters))
+            extra_codes <- as.integer(extra_codes)
             codes <- c(codes, extra_codes)
         }
-        .Object@enc_hash <- buildCodecHashTable(ord, codes, enc_hole)
+        .Object@enc_lkup <- buildLookupTable(letter_byte_vals, codes)
         .Object
     }
 )
@@ -81,7 +72,7 @@ setMethod("initialize", "BStringCodec",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 setGeneric("alphabet", function(x) standardGeneric("alphabet"))
 
-setMethod("alphabet", "BStringCodec", function(x) x@letters[])
+setMethod("alphabet", "BStringCodec", function(x) x@letters)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,22 +91,20 @@ setMethod("alphabet", "BStringCodec", function(x) x@letters[])
 
 BStringCodec.DNA <- function()
 {
-    letters <- c("ACGTMRSVWYHKDBN-")
+    letters <- strsplit("ACGTMRSVWYHKDBN-", "", fixed=TRUE)[[1]]
     codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
-    extra_letters <- c("acgtmrsvwyhkdbn")
+    extra_letters <- strsplit("acgtmrsvwyhkdbn", "", fixed=TRUE)[[1]]
     extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-    new("BStringCodec", letters, as.integer(codes), 99, 199,
-        extra_letters, as.integer(extra_codes))
+    new("BStringCodec", letters, codes, extra_letters, extra_codes)
 }
 
 BStringCodec.RNA <- function()
 {
-    letters <- c("UGCAKYSBWRDMHVN-")
+    letters <- strsplit("UGCAKYSBWRDMHVN-", "", fixed=TRUE)[[1]]
     codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
-    extra_letters <- c("ugcakysbwrdmhvn")
+    extra_letters <- strsplit("ugcakysbwrdmhvn", "", fixed=TRUE)[[1]]
     extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-    new("BStringCodec", letters, as.integer(codes), 99, 199,
-        extra_letters, as.integer(extra_codes))
+    new("BStringCodec", letters, codes, extra_letters, extra_codes)
 }
 
 # More codecs to come below...

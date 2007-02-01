@@ -1,8 +1,10 @@
-.DNAComplementHash <- function()
+### Dangerous, there is no guarantee that DNA_STRING_CODEC and RNA_STRING_CODEC
+### are complementary. FIX AS SOON AS POSSIBLE!
+.DNAComplementLookup <- function()
 {
-    old <- DNAString(toString(DNA_STRING_CODEC@letters))
-    new <- DNAString(chartr("U", "T", toString(RNA_STRING_CODEC@letters)))
-    buildCodecHashTable(old@data[], new@data[], 0)
+    lkup <- DNA_STRING_CODEC@dec_lkup
+    lkup[lkup %in% letterAsByteVal("T")] <- letterAsByteVal("U")
+    RNA_STRING_CODEC@enc_lkup[lkup + 1]
 }
 
 setGeneric("reverse", function(x, ...) standardGeneric("reverse"))
@@ -39,8 +41,8 @@ setMethod("complement", "DNAString",
     {
         lx <- length(x)
         data <- CharBuffer(lx)
-        hash <- .DNAComplementHash()
-        CharBuffer.copy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
+        lkup <- .DNAComplementLookup()
+        CharBuffer.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
     }
 )
@@ -63,8 +65,8 @@ setMethod("reverseComplement", "DNAString",
     {
         lx <- length(x)
         data <- CharBuffer(lx)
-        hash <- .DNAComplementHash()
-        CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, hash=hash)
+        lkup <- .DNAComplementLookup()
+        CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
     }
 )

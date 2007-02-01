@@ -18,28 +18,28 @@ setClass("AAString", representation("BString"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "codec", "enc_hash" and "dec_hash" new generics (NOT exported)
+### The "codec", "enc_lkup" and "dec_lkup" new generics (NOT exported)
 
 setGeneric("codec", function(x) standardGeneric("codec"))
 setMethod("codec", "BString", function(x) NULL)
 setMethod("codec", "DNAString", function(x) DNA_STRING_CODEC)
 setMethod("codec", "RNAString", function(x) RNA_STRING_CODEC)
 
-setGeneric("dec_hash", function(x) standardGeneric("dec_hash"))
-setMethod("dec_hash", "BString",
+setGeneric("dec_lkup", function(x) standardGeneric("dec_lkup"))
+setMethod("dec_lkup", "BString",
     function(x)
     {
         codec <- codec(x)
-        if (is.null(codec)) NULL else codec@dec_hash
+        if (is.null(codec)) NULL else codec@dec_lkup
     }
 )
 
-setGeneric("enc_hash", function(x) standardGeneric("enc_hash"))
-setMethod("enc_hash", "BString",
+setGeneric("enc_lkup", function(x) standardGeneric("enc_lkup"))
+setMethod("enc_lkup", "BString",
     function(x)
     {
         codec <- codec(x)
-        if (is.null(codec)) NULL else codec@enc_hash
+        if (is.null(codec)) NULL else codec@enc_lkup
     }
 )
 
@@ -58,14 +58,14 @@ setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 BString.read <- function(x, i, imax=integer(0))
 {
     CharBuffer.read(x@data, x@offset + i, x@offset + imax,
-                    dec_hash=dec_hash(x))
+                    dec_lkup=dec_lkup(x))
 }
 
 ### Only used at initialization time!
 BString.write <- function(x, i, imax=integer(0), value)
 {
     CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
-                     enc_hash=enc_hash(x))
+                     enc_lkup=enc_lkup(x))
     x
 }
 
@@ -96,7 +96,7 @@ BString.init_with_CharBuffer <- function(.Object, src)
     .Object
 }
 
-BString.init_with_character <- function(.Object, src, hash=NULL, verbose=FALSE)
+BString.init_with_character <- function(.Object, src, lkup=NULL, verbose=FALSE)
 {
     if (length(src) == 0)
         stop("sorry, don't know what to do when 'src' is a character vector of length 0")
@@ -104,15 +104,15 @@ BString.init_with_character <- function(.Object, src, hash=NULL, verbose=FALSE)
         stop("please use BStringViews() when 'src' is a character vector of length >= 2")
     length <- nchar(src)
     data <- CharBuffer(length, verbose)
-    CharBuffer.write(data, 1, length, value=src, enc=hash)
+    CharBuffer.write(data, 1, length, value=src, enc=lkup)
     BString.init_with_CharBuffer(.Object, data)
 }
 
-BString.init_with_BString_copy <- function(.Object, src, hash=NULL, verbose=FALSE)
+BString.init_with_BString_copy <- function(.Object, src, lkup=NULL, verbose=FALSE)
 {
     length <- src@length
     data <- CharBuffer(length, verbose)
-    CharBuffer.copy(data, src@offset + 1, src@offset + length, src@data, hash=hash)
+    CharBuffer.copy(data, src@offset + 1, src@offset + length, src@data, lkup=lkup)
     BString.init_with_CharBuffer(.Object, data)
 }
 
@@ -150,22 +150,22 @@ setMethod("initialize", "BString",
         if (class(src) %in% c("BString", "AAString"))
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
         if (class(.Object) == "BString" && class(src) %in% c("DNAString", "RNAString"))
-            return(BString.init_with_BString_copy(.Object, src, dec_hash(src), verbose))
+            return(BString.init_with_BString_copy(.Object, src, dec_lkup(src), verbose))
         stop(BString.get_init_error_msg(.Object, src))
     }
 )
 
 BString.init_DNA_or_RNA <- function(.Object, src, copy.data, verbose)
 {
-    hash <- enc_hash(.Object) # for source data encoding
+    lkup <- enc_lkup(.Object) # for source data encoding
     if (is.character(src))
-        return(BString.init_with_character(.Object, src, hash, verbose))
+        return(BString.init_with_character(.Object, src, lkup, verbose))
     if (class(src) == "CharBuffer")
         return(BString.init_with_CharBuffer(.Object, src))
     if (class(src) == class(.Object))
         return(BString.init_with_BString(.Object, src, copy.data, verbose))
     if (class(src) == "BString")
-        return(BString.init_with_BString_copy(.Object, src, hash, verbose))
+        return(BString.init_with_BString_copy(.Object, src, lkup, verbose))
     BString.get_init_error_msg(.Object, src)
 }
 

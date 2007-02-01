@@ -259,7 +259,7 @@ SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP start1,
  *   src_xp, dest_xp: externalptr
  *   imin, imax: single integers
  *   subset: integer vector containing the subscripts (with no NAs)
- *   hash_xp: externalptr (hash table for encoding/decoding)
+ *   lkup: lookup table for encoding/decoding (integer or complex vector)
  */
 
 
@@ -509,42 +509,36 @@ SEXP CharBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val)
 /*
  * Return a single string (character vector of length 1).
  */
-SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP hash_xp)
+SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
-	SEXP dest, src, hash, ans;
+	SEXP dest, src, ans;
 	int i1, i2, n;
-	char hash_hole;
 
 	src = R_ExternalPtrTag(src_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	hash = R_ExternalPtrTag(hash_xp);
-	hash_hole = CHAR(hash)[0];
 	PROTECT(dest = allocString(n));
 	Biostrings_translate_charcpy_from_i1i2(i1, i2,
 		CHAR(dest), n, CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
+		INTEGER(lkup), LENGTH(lkup));
 	PROTECT(ans = allocVector(STRSXP, 1));
 	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
 	return ans;
 }
 
-SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_xp)
+SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP lkup)
 {
-	SEXP dest, src, hash, ans;
+	SEXP dest, src, ans;
 	int n;
-	char hash_hole;
 
 	src = R_ExternalPtrTag(src_xp);
 	n = LENGTH(subset);
-	hash = R_ExternalPtrTag(hash_xp);
-	hash_hole = CHAR(hash)[0];
 	PROTECT(dest = allocString(n));
 	Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
+		INTEGER(lkup), LENGTH(lkup));
 	PROTECT(ans = allocVector(STRSXP, 1));
 	SET_STRING_ELT(ans, 0, dest);
 	UNPROTECT(2);
@@ -558,40 +552,34 @@ SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP hash_x
  * 'string' must be a non-empty single string (character vector of length 1).
  */
 SEXP CharBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
-		SEXP string, SEXP hash_xp)
+		SEXP string, SEXP lkup)
 {
-	SEXP dest, src, hash;
+	SEXP dest, src;
 	int i1, i2, n;
-	char hash_hole;
 
 	dest = R_ExternalPtrTag(dest_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
 	src = STRING_ELT(string, 0);
-	hash = R_ExternalPtrTag(hash_xp);
-	hash_hole = CHAR(hash)[0];
 	Biostrings_translate_charcpy_to_i1i2(i1, i2,
 		CHAR(dest), n, CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
+		INTEGER(lkup), LENGTH(lkup));
 	return dest_xp;
 }
 
 SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
-		SEXP string, SEXP hash_xp)
+		SEXP string, SEXP lkup)
 {
-	SEXP dest, src, hash;
+	SEXP dest, src;
 	int n;
-	char hash_hole;
 
 	dest = R_ExternalPtrTag(dest_xp);
 	n = LENGTH(subset);
 	src = STRING_ELT(string, 0);
-	hash = R_ExternalPtrTag(hash_xp);
-	hash_hole = CHAR(hash)[0];
 	Biostrings_translate_charcpy_to_subset(INTEGER(subset), n,
 		CHAR(dest), LENGTH(dest), CHAR(src), LENGTH(src),
-		CHAR(hash) + 1, LENGTH(hash) - 1, hash_hole);
+		INTEGER(lkup), LENGTH(lkup));
 	return dest_xp;
 }
 
@@ -602,7 +590,7 @@ SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
  * --------------------------------------------------------------------------
  */
 
-SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lookup_table)
+SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
 	SEXP dest, src;
 	int i1, i2, n;
@@ -614,12 +602,12 @@ SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP
 	PROTECT(dest = allocVector(CPLXSXP, n));
 	Biostrings_coerce_to_complex_from_i1i2(i1, i2,
 		COMPLEX(dest), n, CHAR(src), LENGTH(src),
-		COMPLEX(lookup_table), LENGTH(lookup_table));
+		COMPLEX(lkup), LENGTH(lkup));
 	UNPROTECT(1);
 	return dest;
 }
 
-SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lookup_table)
+SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lkup)
 {
 	SEXP dest, src;
 	int n;
