@@ -231,7 +231,7 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		}
 		src_val = *(b++);
 		lkup_key = (unsigned char) src_val;
-		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+		if (lkup_key >= lkup_length || (lkup_val = lkup[lkup_key]) == NA_INTEGER) {
 			error("key %d not in lookup table", lkup_key);
 		}
 		dest[j] = (char) lkup_val;
@@ -269,7 +269,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 			error("subscript out of bounds");
 		src_val = src[i];
 		lkup_key = (unsigned char) src_val;
-		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+		if (lkup_key >= lkup_length || (lkup_val = lkup[lkup_key]) == NA_INTEGER) {
 			error("key %d not in lookup table", lkup_key);
 		}
 		dest[j] = (char) lkup_val;
@@ -308,8 +308,7 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		}
 		src_val = src[j];
 		lkup_key = (unsigned char) src_val;
-		Rprintf("%d\n", lkup[lkup_key]);
-		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+		if (lkup_key >= lkup_length || (lkup_val = lkup[lkup_key]) == NA_INTEGER) {
 			error("key %d not in lookup table", lkup_key);
 		}
 		*(a++) = (char) lkup_val;
@@ -347,7 +346,7 @@ void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 			error("subscript out of bounds");
 		src_val = src[j];
 		lkup_key = (unsigned char) src_val;
-		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+		if (lkup_key >= lkup_length || (lkup_val = lkup[lkup_key]) == NA_INTEGER) {
 			error("key %d not in lookup table", lkup_key);
 		}
 		dest[i] = (char) lkup_val;
@@ -422,7 +421,7 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		}
 		src_val = *(b++);
 		lkup_key = (unsigned char) src_val;
-		if (lkup_key >= lkup_length || ISNAN(lkup_val = lkup[lkup_key])) {
+		if (lkup_key >= lkup_length || (lkup_val = lkup[lkup_key]) == NA_INTEGER) {
 			error("key %d not in lookup table", lkup_key);
 		}
 		dest[j] = (char) lkup_val;
