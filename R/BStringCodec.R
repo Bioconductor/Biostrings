@@ -1,3 +1,23 @@
+### =========================================================================
+### BStringCodec objects
+### --------------------
+###
+### A BStringCodec object allows fast mapping between letters and codes.
+###
+### In addition to the slots 'letters' and 'codes', it has 2 extra slots
+### 'enc_lkup' and 'dec_lkup' that are lookup tables. They allow fast
+### translation from letters to codes and from codes to letters.
+### Those lookup tables are used at the C level for fast encoding/decoding
+### of the sequence contained in a DNAString or RNAString object.
+### See the buildLookupTable() function for more details about lookup tables.
+###
+### -------------------------------------------------------------------------
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions.
+###
+
 ### Could not find a simpler way to get the vector of ascii codes :-/
 letterAsByteVal <- function(letters)
 {
@@ -6,14 +26,26 @@ letterAsByteVal <- function(letters)
     as.integer(charToRaw(paste(letters, collapse="")))
 }
 
-### Builds a lookup table for 'keys' (unique integers >= 0) and 'vals'.
+### Builds a lookup table that can be used for fast mapping from 'keys'
+### (unique integers >= 0) to 'vals'.
 ### The returned value is a vector 'lkup' such that:
 ###   lkup[keys + 1] is identical to vals
 ### Note that if 'x' and 'y' are both integer vectors of the same length,
-### then lkupxy <- buildLookupTable(x, y) and lkupyx <- buildLookupTable(y, x)
+### then lkupx2y <- buildLookupTable(x, y) and lkupy2x <- buildLookupTable(y, x)
 ### are reverse lookup tables.
 ### The key property of reverse lookup tables is:
-###   lkupyx[lkupxy[x + 1]] + 1 is identical to x
+###   lkupy2x[lkupx2y[x + 1]] + 1 is identical to x
+### More generally, if 'x', 'y1', 'y2', 'z' verify:
+###   a) 'x' is a vector of unique non-negative integers
+###   b) 'y1' is a vector of non-negative integers and same length as 'x'
+###   c) 'y2' is a vector of unique non-negative integers
+###   d) 'z' is a vector of same length as 'y2'
+### and if 'lkupx2y' and 'lkupy2z' are the lookup tables from 'x' to 'y1'
+### and from 'y2' to 'z' (respectively), then this table:
+###   lkupx2z <- lkupy2z[lkupx2y + 1]
+### is the lookup table from 'x' to the subset of 'z' defined by
+###   lkupx2z[x + 1]
+### Note that 'lkupx2z[x + 1]' is exactly the same as 'lkupy2z[y1 + 1]'.
 
 buildLookupTable <- function(keys, vals)
 {
@@ -31,14 +63,9 @@ buildLookupTable <- function(keys, vals)
 }
 
 
-# ===========================================================================
-# The BStringCodec class
-# ---------------------------------------------------------------------------
-
-# A BStringCodec object is used to store a mapping between letters
-# and their codes.
-# The 'initialize' method checks that slots 'letters' and 'codes'
-# (both "CharBuffer" objects) have the same length.
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The BStringCodec class.
+###
 
 setClass(
     "BStringCodec",
@@ -51,17 +78,16 @@ setClass(
 )
 
 setMethod("initialize", "BStringCodec",
-    function(.Object, letters, codes, extra_letters, extra_codes)
+    function(.Object, letters, codes, extra_letters=NULL, extra_codes=NULL)
     {
         letter_byte_vals <- letterAsByteVal(letters)
         codes <- as.integer(codes)
         .Object@letters <- letters
         .Object@codes <- codes
         .Object@dec_lkup <- buildLookupTable(codes, letter_byte_vals)
-        if (!missing(extra_letters)) {
+        if (!is.null(extra_letters)) {
             letter_byte_vals <- c(letter_byte_vals, letterAsByteVal(extra_letters))
-            extra_codes <- as.integer(extra_codes)
-            codes <- c(codes, extra_codes)
+            codes <- c(codes, as.integer(extra_codes))
         }
         .Object@enc_lkup <- buildLookupTable(letter_byte_vals, codes)
         .Object
@@ -69,44 +95,46 @@ setMethod("initialize", "BStringCodec",
 )
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setGeneric("alphabet", function(x) standardGeneric("alphabet"))
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The DNA and RNA codecs.
+###
 
-setMethod("alphabet", "BStringCodec", function(x) x@letters)
+### Note that this setting makes conversion from DNAString to RNAString look
+### like (ideal, perfect, hence not realistic) transcription:
+###   > dna <- DNAString("ACGT")
+###   > rna <- RNAString(dna)
+### This is almost instantaneous (even on a 100M-letter DNA) because the data
+### in 'dna' are not copied ('dna' and 'rna' share the same CharBuffer).
+DNA_BASE_CODES <- c(A=1, C=2, G=4, T=8)
+RNA_BASE_CODES <- c(U=1, G=2, C=4, A=8)
 
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# IUPAC extended genetic alphabet
-#   R :== [GA]
-#   Y :== [TC]
-#   M :== [AC]
-#   K :== [GT]
-#   S :== [GC]
-#   W :== [AT]
-#   H :== [ACT]
-#   B :== [GTC]
-#   V :== [GCA]
-#   D :== [GAT]
-#   N :== [GATC]
-
-BStringCodec.DNA <- function()
+IUPAC2codes <- function(baseCodes)
 {
-    letters <- strsplit("ACGTMRSVWYHKDBN-", "", fixed=TRUE)[[1]]
-    codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
-    extra_letters <- strsplit("acgtmrsvwyhkdbn", "", fixed=TRUE)[[1]]
-    extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-    new("BStringCodec", letters, codes, extra_letters, extra_codes)
+    baseIsU <- names(baseCodes) == "U"
+    if (any(baseIsU))
+        names(baseCodes)[baseIsU] <- "T"
+    code_list <- strsplit(IUPAC_CODE_MAP, "", fixed=TRUE)
+    codes <- sapply(code_list, function(x) sum(baseCodes[x]))
+    if (any(baseIsU))
+        names(codes)[names(codes) == "T"] <- "U"
+    codes
 }
 
-BStringCodec.RNA <- function()
+BStringCodec.DNAorRNA <- function(alphabet, baseCodes)
 {
-    letters <- strsplit("UGCAKYSBWRDMHVN-", "", fixed=TRUE)[[1]]
-    codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16)
-    extra_letters <- strsplit("ugcakysbwrdmhvn", "", fixed=TRUE)[[1]]
-    extra_codes <- c(1, 2, 4, 8, 3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-    new("BStringCodec", letters, codes, extra_letters, extra_codes)
+    extra_letters <- setdiff(tolower(alphabet), alphabet)
+    allcodes <- IUPAC2codes(baseCodes)
+    allcodes <- c(allcodes, '-'=16)
+    codes <- allcodes[alphabet]
+    extra_codes <- allcodes[toupper(extra_letters)]
+    new("BStringCodec", alphabet, codes, extra_letters, extra_codes)
 }
 
-# More codecs to come below...
+DNA_STRING_CODEC <- BStringCodec.DNAorRNA(DNA_ALPHABET, DNA_BASE_CODES)
+RNA_STRING_CODEC <- BStringCodec.DNAorRNA(RNA_ALPHABET, RNA_BASE_CODES)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Add extra codecs below...
 
 

@@ -45,8 +45,12 @@ setMethod("enc_lkup", "BString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "alphabet" generic is defined in BStringCodec.R
+### The "alphabet" new generic.
+###
 
+setGeneric("alphabet", function(x) standardGeneric("alphabet"))
+
+setMethod("alphabet", "BString", function(x) NULL)
 setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
 setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
 setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
@@ -155,7 +159,7 @@ setMethod("initialize", "BString",
     }
 )
 
-BString.init_DNA_or_RNA <- function(.Object, src, copy.data, verbose)
+BString.init_DNAorRNA <- function(.Object, src, copy.data, verbose)
 {
     lkup <- enc_lkup(.Object) # for source data encoding
     if (is.character(src))
@@ -174,7 +178,7 @@ setMethod("initialize", "DNAString",
     {
         if (class(src) == "RNAString")
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        .Object <- BString.init_DNA_or_RNA(.Object, src, copy.data, verbose)
+        .Object <- BString.init_DNAorRNA(.Object, src, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -186,7 +190,7 @@ setMethod("initialize", "RNAString",
     {
         if (class(src) == "DNAString")
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        .Object <- BString.init_DNA_or_RNA(.Object, src, copy.data, verbose)
+        .Object <- BString.init_DNAorRNA(.Object, src, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
