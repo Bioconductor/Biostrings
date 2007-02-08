@@ -69,7 +69,12 @@ static int prepare_LJ_table(char *P, int nP)
 {
 	int j1, j2, k1, k2, LJ_jump, jump, length;
 
-	if (nP > 5000)
+	/* Temporary (and arbitrary) limit until we find a way to speed up
+	 * the algo used below for the preparation of the LJ table.
+	 * It's currently quadratic in time in respect to nP (the length of
+	 * the pattern) which sucks!
+	 */
+	if (nP > 1000)
 		error("pattern is too long");
 	LJ_table_N = nP + 1;
 	LJ_table = (int *) R_alloc(LJ_table_N * LJ_table_N, sizeof(int));
