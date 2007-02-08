@@ -1,5 +1,5 @@
 
-For 2.3.5
+For 2.3.9
 
 - Vectorize matchPattern() (result will be a list of BStringViews
   objects).
@@ -8,8 +8,6 @@ For 2.3.5
   "out of limits" views.
 
 - Implement .needwunsQS in C.
-
-- Restore Boyer-Moore
 
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
   alignment algo) into Biostrings.
@@ -20,7 +18,7 @@ For 2.3.5
   and size, how well do they work on different inputs)".
 
 
-For 2.3.6
+For 2.3.10
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,

@@ -149,7 +149,6 @@ static int LJsearch(char *P, int nP, char *S, int nS,
 		}
 		if (j1 == 0 && j2 == nP) {
 			/* we have a full match! */
-			printf("MATCH AT %d,%d\n", i1, i2);
 			if (!is_count_only) {
 				if (count >= LENGTH(*p_matchpos)) {
 					*p_matchpos = Biostrings_expandMatchIndex(
