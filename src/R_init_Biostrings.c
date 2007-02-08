@@ -59,9 +59,14 @@ static const R_CallMethodDef callMethods[] = {
 /* char_frequency.c */
 	{"CharBuffer_char_frequency", (DL_FUNC) &CharBuffer_char_frequency, 3},
 
-/* shiftor.c */
-	{"shiftor_debug", (DL_FUNC) &shiftor_debug, 0},
-	{"shiftor", (DL_FUNC) &shiftor, 9},
+/* match_boyermoore.c */
+	{"match_boyermoore_debug", (DL_FUNC) &match_boyermoore_debug, 0},
+	{"match_boyermoore", (DL_FUNC) &match_boyermoore, 7},
+
+/* match_shiftor.c */
+	{"match_shiftor_debug", (DL_FUNC) &match_shiftor_debug, 0},
+	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
+	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
 	{NULL, NULL, 0}
 };

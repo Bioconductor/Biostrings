@@ -89,6 +89,7 @@ void Biostrings_memcpy_from_i1i2(int i1, int i2,
 	return;
 }
 
+
 /* ==========================================================================
  * Memory copy:
  *   dest[k % dest_nmemb] <- src[subset[k] - 1] for 0 <= k <= n
@@ -125,6 +126,7 @@ void Biostrings_memcpy_from_subset(int *subset, int n,
 			"of replacement length");
 	return;
 }
+
 
 /* ==========================================================================
  * Memory copy:
@@ -166,6 +168,7 @@ void Biostrings_memcpy_to_i1i2(int i1, int i2,
 	return;
 }
 
+
 /* ==========================================================================
  * Memory copy:
  *   dest[subset[k] - 1] <- src[k % src_nmemb] for 0 <= k <= n
@@ -202,6 +205,7 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 			"of replacement length");
 	return;
 }
+
 
 /* ==========================================================================
  * Memory copy with translation:
@@ -242,6 +246,7 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 	return;
 }
 
+
 /* ==========================================================================
  * Memory copy with translation:
  *   dest[k % dest_length] <- tr(src[subset[k] - 1]) for 0 <= k <= n
@@ -279,6 +284,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 			"of replacement length");
 	return;
 }
+
 
 /* ==========================================================================
  * Memory copy with translation:
@@ -319,6 +325,7 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 	return;
 }
 
+
 /* ==========================================================================
  * Memory copy with translation:
  *   dest[subset[k] - 1] <- tr(src[k % src_length]) for 0 <= k <= n
@@ -357,6 +364,7 @@ void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 	return;
 }
 
+
 /* ==========================================================================
  * Memory copy with reverse order:
  *   dest[(dest_nmemb-1-(i-i1)) % dest_nmemb] <- src[i] for i1 <= i <= i2
@@ -392,6 +400,7 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 			"of replacement length");
 	return;
 }
+
 
 /* ==========================================================================
  * Memory copy with reverse order and translation:
@@ -431,6 +440,7 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 			"of replacement length");
 	return;
 }
+
 
 /* ==========================================================================
  * Memory copy with conversion to complex values:
@@ -472,5 +482,38 @@ void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	return;
+}
+
+
+/* ==========================================================================
+ * An VERY naive estimate of the expected number of matches based on the
+ * lengths of P (the pattern) and S (the subject).
+ * Currently it returns the expected number of matches when P and S are
+ * random sequences based on an alphabet of length nalphabet:
+ *     E = ceil(length(S) / nalphabet**length(P))
+ * TODO: Improve me!
+ * --------------------------------------------------------------------------
+ */
+
+int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet)
+{
+	int count;
+
+	count = (int) ceil((double) nS / pow((double) nalphabet, (double) nP));
+	return count;
+}
+
+SEXP Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft)
+{
+	int count = LENGTH(index);
+	int count1;
+	double match_density = (count + 1.00) / (double) ndone;
+	int still_missing = (int) (match_density * nleft + 1.00);
+	SEXP new_index;
+
+	count1 = 2 * (count + still_missing);
+	new_index = allocVector(INTSXP, count1);
+	memcpy(INTEGER(new_index), INTEGER(index), count * sizeof(int));
+	return new_index;
 }
 

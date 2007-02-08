@@ -18,12 +18,13 @@
 
 \description{
   Generic that finds all matches of a pattern in a BString.
-  Currently only the ``shift-or'' algorithm is available. 
+  Currently only a ``Boyer-Moore-like'' algorithm and the ``shift-or''
+  algorithm are available. 
 }
 
 \usage{
-  matchPattern(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
-  countPattern(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
+  matchPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
+  countPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
   mismatch(pattern, x, fixed=NA)
 }
 
@@ -37,7 +38,8 @@
   }
   \item{algorithm}{
     One of the following: \code{"boyer-moore"}, \code{"forward-search"}
-    or \code{"shift-or"} (currently, only \code{"shift-or"} is available).
+    or \code{"shift-or"} (currently, only \code{"boyer-moore"} and
+    \code{"shift-or"} are available).
   }
   \item{mismatch}{
     The number of mismatches allowed. If non-zero a fuzzy string searching

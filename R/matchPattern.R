@@ -3,14 +3,35 @@
 ### -------------------------------------------------------------------------
 
 
+.Clongint.nbits <- function()
+{
+    .Call("bits_per_long", PACKAGE="Biostrings")
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Boyer-Moore
 
-### Must return an integer vector.
-BoyerMoore <- function(pattern, subject, fixed, count.only)
+debug_boyermoore <- function()
 {
-    stop("\"boyer-moore\" algorithm will be back soon...")
+    invisible(.Call("match_boyermoore_debug", PACKAGE="Biostrings"))
+}
 
+### Must return an integer vector.
+.matchBoyerMoore <- function(pattern, subject, count.only)
+{
+    ## We treat the edge-cases at the R level
+    p <- length(pattern)
+    if (p > length(subject)) {
+        if (count.only)
+            return(as.integer(0))
+        return(integer(0))
+    }
+    .Call("match_boyermoore",
+          pattern@data@xp, pattern@offset, pattern@length,
+          subject@data@xp, subject@offset, subject@length,
+          count.only,
+          PACKAGE="Biostrings")
 }
 
 
@@ -18,7 +39,7 @@ BoyerMoore <- function(pattern, subject, fixed, count.only)
 ### forward-search
 
 ### Must return an integer vector.
-ForwardSearch <- function(pattern, subject, fixed, count.only)
+.matchForwardSearch <- function(pattern, subject, fixed, count.only)
 {
     stop("\"forward-search\" algorithm will be back soon...")
 }
@@ -29,11 +50,11 @@ ForwardSearch <- function(pattern, subject, fixed, count.only)
 
 debug_shiftor <- function()
 {
-    invisible(.Call("shiftor_debug", PACKAGE="Biostrings"))
+    invisible(.Call("match_shiftor_debug", PACKAGE="Biostrings"))
 }
 
 ### Must return an integer vector.
-ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
+.matchShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 {
     ## We treat the edge-cases at the R level
     p <- length(pattern)
@@ -47,7 +68,7 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
             return(as.integer(0))
         return(integer(0))
     }
-    .Call("shiftor",
+    .Call("match_shiftor",
           pattern@data@xp, pattern@offset, pattern@length,
           subject@data@xp, subject@offset, subject@length,
           mismatch, fixed, count.only,
@@ -63,29 +84,46 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 {
     if (class(pattern) != class(subject))
         pattern <- new(class(subject), pattern)
-    algo <- match.arg(algorithm, c("boyer-moore", "forward-search", "shift-or"))
+    algo <- match.arg(algorithm, c("auto", "boyer-moore", "forward-search", "shift-or"))
     if (length(mismatch) != 1)
         stop("'mismatch' must be a single integer")
+    if (!is.integer(mismatch))
+        mismatch <- as.integer(mismatch)
     if (mismatch < 0)
         stop("'mismatch' must be a non-negative integer")
-    if (mismatch > 0 && algo != "shift-or")
-        stop("only \"shift-or\" algorithm supports 'mismatch > 0'")
     if (!is.logical(fixed) || length(fixed) != 1)
         stop("'fixed' must be a single logical")
-    if (is.na(fixed)) {
-        if (class(subject) == "BString")
+    if (algo == "auto") {
+        if (length(pattern) <= .Clongint.nbits()) {
+            algo <- "shift-or"
+        } else {
+            if (mismatch > 0 || identical(fixed, FALSE) || length(pattern) > 5000)
+                stop("no algorithm available for this, sorry")
+            algo <- "boyer-moore"
+        }
+    } else {
+        if (algo != "shift-or" && mismatch > 0)
+            stop("only \"shift-or\" algorithm supports 'mismatch > 0'")
+    }
+    if (algo == "shift-or" && class(subject) %in% c("DNAString", "RNAString")) {
+        if (is.na(fixed))
+            fixed <- FALSE
+    } else {
+        if (is.na(fixed))
             fixed <- TRUE
         else
-            fixed <- FALSE
+            if (!fixed)
+                stop("\"", algo, "\" algorithm does not support 'fixed=FALSE' ",
+                     "on \"", class(subject), "\" objects")
     }
     if (length(count.only) != 1)
         stop("'count.only' must be a single logical")
     count.only <- as.logical(count.only)
     ans <- switch(algo,
-        "boyer-moore"=BoyerMoore(pattern, subject, fixed, count.only),
-        "forward-search"=ForwardSearch(pattern, subject, fixed, count.only),
-        "shift-or"=ShiftOr(pattern, subject, as.integer(mismatch),
-                           fixed, count.only)
+        "boyer-moore"=.matchBoyerMoore(pattern, subject, count.only),
+        "forward-search"=.matchForwardSearch(pattern, subject, fixed, count.only),
+        "shift-or"=.matchShiftOr(pattern, subject, mismatch,
+                                fixed, count.only)
     )
     if (count.only)
         return(ans)
@@ -100,7 +138,7 @@ ShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
 ###   matchPattern("---", DNAString("A"))
 setGeneric(
     "matchPattern",
-    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
+    function(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
         standardGeneric("matchPattern")
 )
 setMethod("matchPattern", signature(subject="character"),
@@ -142,7 +180,7 @@ matchDNAPattern <- function(...)
 ###   countPattern("---", DNAString("A"))
 setGeneric(
     "countPattern",
-    function(pattern, subject, algorithm="shift-or", mismatch=0, fixed=NA)
+    function(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
         standardGeneric("countPattern")
 )
 setMethod("countPattern", signature(subject="character"),

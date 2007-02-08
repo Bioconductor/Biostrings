@@ -56,6 +56,9 @@ void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		char *src, int src_length,
 		Rcomplex *lkup, int lkup_length);
 
+int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet);
+SEXP Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft);
+
 
 /* CharBuffer.c */
 
@@ -123,11 +126,21 @@ SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP
 SEXP CharBuffer_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
 
 
-/* shiftor.c */
+/* match_boyermoore.c */
 
-SEXP shiftor_debug();
+SEXP match_boyermoore_debug();
 
-SEXP shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
+SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
+		SEXP count_only);
+
+
+/* match_shiftor.c */
+
+SEXP match_shiftor_debug();
+SEXP bits_per_long();
+
+SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP mismatch, SEXP fixed, SEXP count_only);
 
