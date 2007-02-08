@@ -64,37 +64,44 @@ static void prepare_rightPos_table(char *P, int nP)
 	}
 }
 
-
+/* In fact, it's a complete waste of time to compute all the potentially
+ * needed jumps. So we just initialize the LJ_table with zeros and we'll
+ * compute the jumps when needed (on-the-fly).
+ */
 static int prepare_LJ_table(char *P, int nP)
 {
-	int j1, j2, k1, k2, LJ_jump, jump, length;
+	int j1, j2;
 
-	/* Temporary (and arbitrary) limit until we find a way to speed up
-	 * the algo used below for the preparation of the LJ table.
-	 * It's currently quadratic in time in respect to nP (the length of
-	 * the pattern) which sucks!
-	 */
-	if (nP > 1000)
+	if (nP > 10000)
 		error("pattern is too long");
 	LJ_table_N = nP + 1;
 	LJ_table = (int *) R_alloc(LJ_table_N * LJ_table_N, sizeof(int));
 	for (j1 = 0; j1 < nP; j1++) {
 		for (j2 = j1+1; j2 <= nP; j2++) {
-			LJ_jump = j2;
-			for (jump = 1; jump < LJ_jump; jump++) {
-				if (jump < j1) k1 = j1 - jump; else k1 = 0;
-				k2 = j2 - jump;
-				length = k2 - k1;
-				if (memcmp(P + k1, P + j2 - length, length) == 0) {
-					LJ_jump = jump;
-					break;
-				}
-			}
-			LJ(j1, j2) = LJ_jump;
-			/* printf("LJ(%d,%d) = %d\n", j1, j2, LJ(j1, j2)); */
+			LJ(j1, j2) = 0;
 		}
 	}
 	return 0;
+}
+
+static int getLJ(char *P, int j1, int j2)
+{
+	int jump, j, k1, k2, length;
+
+	jump = LJ(j1, j2);
+	if (jump != 0)
+		return jump;
+	for (j = 1; j < j2; j++) {
+		if (j < j1) k1 = j1 - j; else k1 = 0;
+		k2 = j2 - j;
+		length = k2 - k1;
+		if (memcmp(P + k1, P + j2 - length, length) == 0) {
+			jump = j;
+			break;
+		}
+	}
+	LJ(j1, j2) = j;
+	return jump;
 }
 
 
@@ -165,7 +172,7 @@ static int LJsearch(char *P, int nP, char *S, int nS,
 			}
 			count++;
 		}
-		jump = LJ(j1, j2); /* always >= 1 and <= min(j2, LJ(0, nP)) */
+		jump = getLJ(P, j1, j2); /* always >= 1 and <= min(j2, LJ(0, nP)) */
 		n += jump;
 		if (n > nS)
 			break;

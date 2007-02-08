@@ -97,7 +97,7 @@ debug_shiftor <- function()
         if (length(pattern) <= .Clongint.nbits()) {
             algo <- "shift-or"
         } else {
-            if (mismatch > 0 || identical(fixed, FALSE) || length(pattern) > 1000)
+            if (mismatch > 0 || identical(fixed, FALSE) || length(pattern) > 10000)
                 stop("no algorithm available for this, sorry")
             algo <- "boyer-moore"
         }
