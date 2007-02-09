@@ -23,9 +23,9 @@
 }
 
 \usage{
-  matchPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
-  countPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
-  mismatch(pattern, x, fixed=NA)
+  matchPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  countPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  mismatch(pattern, x, fixed=TRUE)
 }
 
 \arguments{
@@ -37,16 +37,19 @@
     containing the subject string.
   }
   \item{algorithm}{
-    One of the following: \code{"boyer-moore"}, \code{"forward-search"}
-    or \code{"shift-or"} (currently, only \code{"boyer-moore"} and
-    \code{"shift-or"} are available).
+    One of the following: \code{"auto"}, \code{"boyer-moore"},
+    \code{"forward-search"} or \code{"shift-or"} (note that
+    \code{"forward-search"} is not available yet).
   }
   \item{mismatch}{
     The number of mismatches allowed. If non-zero a fuzzy string searching
     algorithm is used for matching.
   }
   \item{fixed}{
-    A logical.  If \code{TRUE}, \code{pattern} is a string to be matched as is.
+    A logical. Only \link{DNAString} or \link{RNAString} support \code{fixed=FALSE}.
+    In this case, ambiguities (i.e. letters from the IUPAC Extended Genetic Alphabet
+    (see \code{\link{IUPAC_CODE_MAP}}) that are not from the base alphabet)
+    match any letter that they stand for.
   }
   \item{x}{
     A \link{BStringViews} object (typically, one returned

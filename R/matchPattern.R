@@ -84,41 +84,41 @@ debug_shiftor <- function()
 {
     if (class(pattern) != class(subject))
         pattern <- new(class(subject), pattern)
+    if (length(pattern) > 10000)
+        stop("patterns with more than 10000 letters are not supported, sorry")
     algo <- match.arg(algorithm, c("auto", "boyer-moore", "forward-search", "shift-or"))
-    if (length(mismatch) != 1)
+    if (!is.numeric(mismatch) || length(mismatch) != 1 || is.na(mismatch))
         stop("'mismatch' must be a single integer")
-    if (!is.integer(mismatch))
-        mismatch <- as.integer(mismatch)
+    mismatch <- as.integer(mismatch)
     if (mismatch < 0)
         stop("'mismatch' must be a non-negative integer")
-    if (!is.logical(fixed) || length(fixed) != 1)
-        stop("'fixed' must be a single logical")
+    if (!is.logical(fixed) || length(fixed) != 1 || is.na(fixed))
+        stop("'fixed' must be TRUE or FALSE")
+    if (!fixed && !(class(subject) %in% c("DNAString", "RNAString")))
+        stop("'fixed=FALSE' is only supported for DNAString or RNAString objects")
     if (algo == "auto") {
-        if (length(pattern) <= .Clongint.nbits()) {
+        ## We try to choose the best algo
+        if (mismatch != 0 || !fixed) {
             algo <- "shift-or"
         } else {
-            if (mismatch > 0 || identical(fixed, FALSE) || length(pattern) > 10000)
-                stop("no algorithm available for this, sorry")
             algo <- "boyer-moore"
         }
     } else {
-        if (algo != "shift-or" && mismatch > 0)
-            stop("only \"shift-or\" algorithm supports 'mismatch > 0'")
+        ## We check that the algo choosen by the user is a valid choice
+        if (mismatch != 0 && algo != "shift-or")
+            stop("only the \"shift-or\" algorithm supports 'mismatch != 0'")
+        if (!fixed && algo != "shift-or")
+            stop("only the \"shift-or\" algorithm supports 'fixed=FALSE'")
+        if (!is.logical(count.only) || length(count.only) != 1 || is.na(count.only))
+            stop("'count.only' must be TRUE or FALSE")
     }
-    if (algo == "shift-or" && class(subject) %in% c("DNAString", "RNAString")) {
-        if (is.na(fixed))
-            fixed <- FALSE
-    } else {
-        if (is.na(fixed))
-            fixed <- TRUE
-        else
-            if (!fixed)
-                stop("\"", algo, "\" algorithm does not support 'fixed=FALSE' ",
-                     "on \"", class(subject), "\" objects")
-    }
-    if (length(count.only) != 1)
-        stop("'count.only' must be a single logical")
-    count.only <- as.logical(count.only)
+    ## At this point we have the guarantee that if 'mismatch' is != 0 or 'fixed'
+    ## is FALSE then 'algo' is "shift-or"
+    if (algo == "shift-or" && length(pattern) > .Clongint.nbits())
+        stop("your system can only support patterns up to ",
+             .Clongint.nbits(), " letters\n",
+             "        when 'algo' is \"shift-or\" ",
+             "or 'mismatch' is != 0 or 'fixed' is FALSE")
     ans <- switch(algo,
         "boyer-moore"=.matchBoyerMoore(pattern, subject, count.only),
         "forward-search"=.matchForwardSearch(pattern, subject, fixed, count.only),
@@ -138,7 +138,7 @@ debug_shiftor <- function()
 ###   matchPattern("---", DNAString("A"))
 setGeneric(
     "matchPattern",
-    function(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
+    function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("matchPattern")
 )
 setMethod("matchPattern", signature(subject="character"),
@@ -180,7 +180,7 @@ matchDNAPattern <- function(...)
 ###   countPattern("---", DNAString("A"))
 setGeneric(
     "countPattern",
-    function(pattern, subject, algorithm="auto", mismatch=0, fixed=NA)
+    function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("countPattern")
 )
 setMethod("countPattern", signature(subject="character"),
@@ -241,7 +241,7 @@ bsMismatch <- function(pattern, subject, start, fixed)
 
 setGeneric(
     "mismatch",
-    function(pattern, x, fixed=NA) standardGeneric("mismatch")
+    function(pattern, x, fixed=TRUE) standardGeneric("mismatch")
 )
 
 ### Typical use:
