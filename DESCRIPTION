@@ -17,4 +17,5 @@ Collate: readFASTA.R utils.R
         BStringViews.R BStringViews-constructors.R
         reverseComplement.R alphabetFrequency.R matchPattern.R
         needwunsQS.R
+        test.R
         zzz.R

@@ -2,15 +2,70 @@
                            THE SHIFT-OR ALGORITHM
                                    aka
                             THE BITAP ALGORITHM
- On Wikipedia:
-   http://en.wikipedia.org/wiki/Shift-or_algorithm
- Other resources:
-   http://www-igm.univ-mlv.fr/~lecroq/string/node6.html
- For all kind of string algorithms with animation in Java, see also:
-   http://www-igm.univ-mlv.fr/~lecroq/string/index.html
 
- The agrep homepage (DOS, Windows and OS/2 only):
-   http://www.tgries.de/agrep
+                             Author: H. Pages
+
+ This is a complete rewrite from Biostrings 1.
+
+ References:
+   - Wikipedia:
+       http://en.wikipedia.org/wiki/Shift-or_algorithm
+   - other:
+       http://www-igm.univ-mlv.fr/~lecroq/string/node6.html
+   - For all kind of string algorithms with animation in Java, see also:
+       http://www-igm.univ-mlv.fr/~lecroq/string/index.html
+   - The agrep homepage (DOS, Windows and OS/2 only):
+       http://www.tgries.de/agrep
+
+ Note that in Biostrings 1 (1.4.0) the "shift-or" algo was almost always
+ returning wrong results for 'mismatch' != 0 ("fuzzy searching").
+ The bug was in the C function ShiftOr_matchInternal() which was using
+ the following formula for computing the "pattern bitmasks":
+ 
+         ShiftOrWord_t tmp = M_k[0];
+	 M_k[0] = (tmp << 1) | U[xptr[k]];
+	 M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) & tmp & (tmp << 1) & (M_k[0] << 1);
+ 
+ where the correct formula would have been to replace the last line by:
+ 
+         M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) & (tmp << 1) & (M_k[0]);
+
+ Also note that using the formula given in D. Gusfield's book (Algorithms on
+ strings, trees, and sequences), p. 73, would result in doing:
+ 
+         M_k[1] = ((M_k[1] << 1) | U[xptr[k]]) & (tmp) & (M_k[0]);
+
+ which is wrong too. 
+ 
+ In this complete rewrite of the "shift-or" algo, we use a more general
+ version of the correct formula. The code doing this is in the
+ _update_PMmasks() function:
+ 
+	 for (e = 1; e < PMmask_length; e++) {
+	     PMmaskB = PMmaskA;
+	     PMmaskA = PMmask[e] >> 1;
+	     PMmask[e] = (PMmaskA | pmask) & PMmaskB & PMmask[e-1];
+	 }
+
+ Note that the bit order in those bitmasks is reverted relatively to the
+ order used in Biostrings 1. In Biostrings 1 the first position in the
+ pattern (the most left) was mapped to the most right bit (the weak bit)
+ of the bitmask. Now it is the last position in the pattern (the most right)
+ that is mapped to the most right bit of the bitmask which is more intuitive.
+ 
+ In addition to the "fuzzy searching" bug previously described, the following
+ problems have been addressed:
+   - The 'kerr' arg of ShiftOr_matchInternal() (nb of mismatches) is no
+     longer required to be <= 3. Now it can be whatever positive int. 
+   - The "border problem" occuring with "fuzzy searching" is fixed.
+     This new version of the "shift-or" algo should find ALL matches, even
+     those that are out of bounds (i.e. that start before the first or end
+     after the last character of the subject).
+   - The bus-error that occured on Solaris 2.9 and Mac OS X for:
+       > pattern <- DNAString("AAAA")
+       > subject <- DNAString("AAAAC")
+       > matchDNAPattern(pattern, subject, mis=2)
+     is gone.
 
  ****************************************************************************/
 #include "Biostrings.h"
