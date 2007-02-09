@@ -172,21 +172,19 @@ static void prepare_GRS_table(char *P, int nP)
 
 static int get_GRS(int j1, int j2)
 {
-	int grs, shift, k1, k2, length;
+	int grs, k1, k2, length;
 
 	grs = GRS(j1, j2);
 	if (grs != 0)
 		return grs;
-	grs = j2;
-	for (shift = 1; shift < j2; shift++) {
-		if (shift < j1) k1 = j1 - shift; else k1 = 0;
-		k2 = j2 - shift;
+	for (grs = 1; grs < j2; grs++) {
+		if (grs < j1) k1 = j1 - grs; else k1 = 0;
+		k2 = j2 - grs;
 		length = k2 - k1;
-		if (memcmp(GRS_P + k1, GRS_P + j2 - length, length) == 0) {
-			grs = shift;
+		if (memcmp(GRS_P + k1, GRS_P + j2 - length, length) == 0)
 			break;
-		}
 	}
+	/* grs is j2 when the "for" loop is not interrupted by "break" */
 	return GRS(j1, j2) = grs;
 }
 
