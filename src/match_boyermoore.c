@@ -125,30 +125,40 @@ static void prepare_rightPos_table(char *P, int nP)
 /* GRS_P contains the pattern associated with the current GRS_table. */
 static char *GRS_P = NULL;
 static int GRS_nP = 0;
-/* GRS_table is a 2-dim array with nrow = ncol > GRS_nP */
+/* GRS_table is a 2-dim array with nrow = ncol >= GRS_nP */
 static int *GRS_table = NULL;
-static int GRS_table_ncol = 0; /* GRS_nP < GRS_table_ncol */
+static int GRS_table_ncol = 0; /* GRS_table_ncol >= GRS_nP */
 
-#define GRS(j1, j2)	(GRS_table[GRS_table_ncol * (j1) + (j2)])
+/* The layout of GRS_table is (only the values marked with an "x" are will
+ * be potentially used):
+ *
+ *           1 2 3 4 5 6 j2
+ *         0 x x x x - -
+ *         1 - x x x - - 
+ *         2 - - x x - -    GRS_nP = 4 <= GRS_table_ncol = 6
+ *         3 - - - x - -
+ *         4 - - - - - -
+ *         5 - - - - - -
+ *        j1
+ *
+ * The "x" region is defined by 0 <= j1 < j2 <= GRS_nP
+ */
+
+#define GRS(j1, j2)	(GRS_table[GRS_table_ncol * (j1) + (j2) - 1])
 
 /*
  * The prepare_GRS_table() must ensure that the size of the GRS_P buffer
- * is always GRS_table_ncol - 1 */
+ * is always GRS_table_ncol */
 static void prepare_GRS_table(char *P, int nP)
 {
-	int j1, j2;
+	int j1, j2, min_nP_GRS_nP;
 
 	if (nP == 0) /* should never happen but safer anyway... */
 		return;
 	if (nP > 10000)
 		error("pattern is too long");
-	if (nP < GRS_table_ncol) {
-		/* ... then we can reuse the current memory */
-		if (nP <= GRS_nP && memcmp(P, GRS_P, nP) == 0) {
-			/* ... then we can reuse the current GRS_P + GRS_table */
-			return;
-		}
-	} else {
+	if (nP > GRS_table_ncol) {
+		/* We need more memory */
 		if (GRS_P != NULL)
 			free(GRS_P);
 		GRS_P = (char *) malloc(nP * sizeof(char));
@@ -156,15 +166,23 @@ static void prepare_GRS_table(char *P, int nP)
 			error("can't allocate memory for GRS_P");
 		if (GRS_table != NULL)
 			free(GRS_table);
-		GRS_table_ncol = nP + 1;
-		GRS_table = (int *) malloc(GRS_table_ncol * GRS_table_ncol * sizeof(int));
+		GRS_table = (int *) malloc(nP * nP * sizeof(int));
 		if (GRS_table == NULL)
 			error("can't allocate memory for GRS_table");
+		GRS_table_ncol = nP;
+		j2 = 1;
+	} else {
+		/* We have enough memory */
+		if (nP < GRS_nP) min_nP_GRS_nP = nP; else min_nP_GRS_nP = GRS_nP;
+		for (j2 = 0; j2 < min_nP_GRS_nP; j2++)
+			if (P[j2] != GRS_P[j2])
+				break;
+		j2++;
 	}
 	memcpy(GRS_P, P, nP * sizeof(char));
 	GRS_nP = nP;
-	for (j1 = 0; j1 < nP; j1++) {
-		for (j2 = j1+1; j2 <= nP; j2++) {
+	for ( ; j2 <= nP; j2++) {
+		for (j1 = 0; j1 < j2; j1++) {
 			GRS(j1, j2) = 0;
 		}
 	}
