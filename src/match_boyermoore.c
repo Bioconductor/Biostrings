@@ -8,19 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LJ(j1, j2)	(LJ_table[LJ_table_N * (j1) + (j2)])
-
-/*
- * A look up table mapping any possible char to the position of its last
- * occurrence in the pattern P.
- * Positions are counted from the right (most right character in P being
- * at position 0). Chars not in P are mapped to position -1.
- */
-static int rightPos_table[256];
-
-static int *LJ_table; /* 2-dim array with nrow = ncol */
-static int LJ_table_N; /* = nrow = ncol = nP+1 */
-
 
 /****************************************************************************/
 static int debug = 0;
@@ -37,7 +24,13 @@ SEXP match_boyermoore_debug()
 }
 
 
-/****************************************************************************/
+/****************************************************************************
+ * A lookup table mapping any possible char to the position of its last
+ * occurrence in the pattern P.
+ * Positions are counted from the right (most right character in P being
+ * at position 0). Chars not in P are mapped to position -1.
+ */
+static int rightPos_table[256];
 
 static void prepare_rightPos_table(char *P, int nP)
 {
@@ -64,67 +57,175 @@ static void prepare_rightPos_table(char *P, int nP)
 	}
 }
 
-/* In fact, it's a complete waste of time to compute all the potentially
- * needed jumps. So we just initialize the LJ_table with zeros and we'll
- * compute the jumps when needed (on-the-fly).
+
+/****************************************************************************
+ * The Good Right Shifts
+ * =====================
+ *
+ * Definition
+ * ----------
+ *
+ * For any j1 and j2 such that 0 <= j1 < j2 <= nP (nP being the length of the
+ * pattern P), we note P(j1, j2) the subpattern of P starting at j1 and
+ * ending at j2-1. Then GRS(j1, j2), the "Good Right Shift" for P(j1, j2), is
+ * defined by:
+ *   Imagine that, for a given alignement of P with the subject S, all
+ *   letters in subpattern P(j1, j2) are matching S (we say that the current
+ *   matching window is (j1, j2)). Then GRS(j1, j2) is the smallest (non-zero)
+ *   amount of letters that we can shift P to the right without introducing an
+ *   immediate mismatch.
+ *
+ * How to compute the GRS function
+ * --------------------------------
+ * 
+ * The GRS function depends only on the pattern and therefore can be
+ * preprocessed.
+ * To compute GRS(j1, j2) we need to solve a matching problem again but within
+ * P itself i.e. we must find the smallest (non-zero) amount of letters that we
+ * need to shift P(j1, j2) to the _left_ until it matches P again.
+ * IMPORTANT: This match must be a "full" match (when we are still within the
+ * limits of P) and a "partial" match (when we are out of limits i.e. we've
+ * moved to far to the left). For a "partial" match, all letters that are still
+ * within P limits must match. When we have moved so far that all letters are
+ * out of limits, then we have a "partial" match too.
+ * This ensure that GRS(j1, j2) is always <= j2.
+ * 
+ * Example: P = acbaba
+ *              012345
+ * 
+ *   GRS(0,1) = 1
+ *   GRS(1,2) = 2
+ *   GRS(2,3) = 3
+ *   GRS(3.4) = GRS(2,4) = GRS(1,4) = GRS(0,4) = 3
+ *   ...
+ *   GRS(4,5) = GRS(5,6) = GRS(4,6) = 2
+ *   GRS(0,6) = 5 (GRS max)
+ * 
+ * A nice property of the GRS function is that:
+ *     if j1 <= j1' < j2' <= j2, then GRS(j1', j2') <= GRS(j1, j2)
+ * Therefore the biggest value for GRS is reached for j1 = 0 and j2 = nP.
+ * To summarize:
+ *     1 <= GRS(j1, j2) <= min(j2, GRS(0, nP))
+ * Another property of the GRS function is that if P1 and P2 are 2 patterns
+ * such that P1 is a prefix of P2 then GRS1 and GRS2 (their respective GRS
+ * functions) are equal on the set of points (j1, j2) that are valid for GRS1.
+ * This last property is used by the prepare_GRS_table() C function below.
+ * 
+ * No need to preprocess the GRS function
+ * --------------------------------------
+ *
+ * However this preprocessing would be too expensive since it requires the
+ * evaluation of nP * (nP + 1) / 2 values, and each evaluation itself is a
+ * string matching sub-problem with a cost of its own. So the trick is to
+ * delay those evaluations until they are needed, and the fact is that, in
+ * practise, very few of them are actually needed compared to the total
+ * number of possible GRS(j1, j2) values.
  */
-static int prepare_LJ_table(char *P, int nP)
+
+/* GRS_P contains the pattern associated with the current GRS_table. */
+static char *GRS_P = NULL;
+static int GRS_nP = 0;
+/* GRS_table is a 2-dim array with nrow = ncol > GRS_nP */
+static int *GRS_table = NULL;
+static int GRS_table_ncol = 0; /* GRS_nP < GRS_table_ncol */
+
+#define GRS(j1, j2)	(GRS_table[GRS_table_ncol * (j1) + (j2)])
+
+/*
+ * The prepare_GRS_table() must ensure that the size of the GRS_P buffer
+ * is always GRS_table_ncol - 1 */
+static void prepare_GRS_table(char *P, int nP)
 {
 	int j1, j2;
 
+	if (nP == 0) /* should never happen but safer anyway... */
+		return;
 	if (nP > 10000)
 		error("pattern is too long");
-	LJ_table_N = nP + 1;
-	LJ_table = (int *) R_alloc(LJ_table_N * LJ_table_N, sizeof(int));
+	if (nP < GRS_table_ncol) {
+		/* ... then we can reuse the current memory */
+		if (nP <= GRS_nP && memcmp(P, GRS_P, nP) == 0) {
+			/* ... then we can reuse the current GRS_P + GRS_table */
+			return;
+		}
+	} else {
+		if (GRS_P != NULL)
+			free(GRS_P);
+		GRS_P = (char *) malloc(nP * sizeof(char));
+		if (GRS_P == NULL)
+			error("can't allocate memory for GRS_P");
+		if (GRS_table != NULL)
+			free(GRS_table);
+		GRS_table_ncol = nP + 1;
+		GRS_table = (int *) malloc(GRS_table_ncol * GRS_table_ncol * sizeof(int));
+		if (GRS_table == NULL)
+			error("can't allocate memory for GRS_table");
+	}
+	memcpy(GRS_P, P, nP * sizeof(char));
+	GRS_nP = nP;
 	for (j1 = 0; j1 < nP; j1++) {
 		for (j2 = j1+1; j2 <= nP; j2++) {
-			LJ(j1, j2) = 0;
+			GRS(j1, j2) = 0;
 		}
 	}
-	return 0;
 }
 
-static int getLJ(char *P, int j1, int j2)
+static int get_GRS(int j1, int j2)
 {
-	int jump, j, k1, k2, length;
+	int grs, shift, k1, k2, length;
 
-	jump = LJ(j1, j2);
-	if (jump != 0)
-		return jump;
-	for (j = 1; j < j2; j++) {
-		if (j < j1) k1 = j1 - j; else k1 = 0;
-		k2 = j2 - j;
+	grs = GRS(j1, j2);
+	if (grs != 0)
+		return grs;
+	grs = j2;
+	for (shift = 1; shift < j2; shift++) {
+		if (shift < j1) k1 = j1 - shift; else k1 = 0;
+		k2 = j2 - shift;
 		length = k2 - k1;
-		if (memcmp(P + k1, P + j2 - length, length) == 0) {
-			jump = j;
+		if (memcmp(GRS_P + k1, GRS_P + j2 - length, length) == 0) {
+			grs = shift;
 			break;
 		}
 	}
-	LJ(j1, j2) = j;
-	return jump;
+	return GRS(j1, j2) = grs;
 }
 
 
+/****************************************************************************
+ * The GRS-based exact matching algo
+ * =================================
+ * 
+ * My poor understanding of the original Boyer-Moore algo as explained in Dan
+ * Gusfield book "Algorithms on Strings, Trees, and Sequences", is that it
+ * will be inefficent in this situation:
+ *   S = "Xbabababababab"
+ *   P = "abababababab"
+ * because after it has applied the strong good suffix rule and shifted P 2
+ * letters to the right, it will start comparing P and S suffixes again which
+ * is a waste of time.
+ * The GRS_search algo below never compare twice the letters that are in the
+ * current matching window (defined by (j1, j2) in P and (i1, i2) in S).
+ */
+
 /* Returns the number of matches */
-static int LJsearch(char *P, int nP, char *S, int nS,
+static int GRS_search(char *P, int nP, char *S, int nS,
 		int is_count_only, SEXP *p_matchpos, PROTECT_INDEX matchpos_pi)
 {
-	int count = 0, *index, n, i1, i2, j1, j2, jump, i, j;
+	int count = 0, *index, n, i1, i2, j1, j2, shift0, grs, i, j;
 
-	
 	if (!is_count_only) {
 		index = INTEGER(*p_matchpos);
 	}
 	prepare_rightPos_table(P, nP);
-	prepare_LJ_table(P, nP);
+	prepare_GRS_table(P, nP);
 	n = nP;
 	i1 = i2 = n;
 	j1 = j2 = nP;
 	while (n <= nS) {
 		if (j1 == j2) {
 			/* No current partial match yet, we need to find one */
-			jump = rightPos_table[(unsigned char) S[n-1]];
-			if (jump == -1) {
+			shift0 = rightPos_table[(unsigned char) S[n-1]];
+			if (shift0 == -1) {
 				/* This is the best thing that can happen: the
 				 * most-right letter of the pattern is aligned 
 				 * with a letter in the subject that is not in
@@ -135,11 +236,11 @@ static int LJsearch(char *P, int nP, char *S, int nS,
 				j1 = j2 = nP;
 				continue;
 			}
-			n += jump; /* jump is always >= 0 and < nP */
+			n += shift0; /* shift0 is always >= 0 and < nP */
 			if (n > nS)
 				break;
-			i2 = n - jump;
-			j2 = nP - jump;
+			i2 = n - shift0;
+			j2 = nP - shift0;
 			i1 = i2 - 1;
 			j1 = j2 - 1;
 			/* Now we have a partial match (of length 1) */
@@ -172,17 +273,17 @@ static int LJsearch(char *P, int nP, char *S, int nS,
 			}
 			count++;
 		}
-		jump = getLJ(P, j1, j2); /* always >= 1 and <= min(j2, LJ(0, nP)) */
-		n += jump;
+		grs = get_GRS(j1, j2); /* always >= 1 and <= min(j2, GRS(0, nP)) */
+		n += grs;
 		if (n > nS)
 			break;
-		if (jump <= j1) {
-			j1 -= jump;
+		if (grs <= j1) {
+			j1 -= grs;
 		} else {
-			i1 += jump - j1;
+			i1 += grs - j1;
 			j1 = 0;
 		}
-	       	j2 -= jump;
+	       	j2 -= grs;
 	}
 	return count;
 }
@@ -214,7 +315,7 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		matchpos = allocVector(INTSXP, matchpos_length);
 		REPROTECT(matchpos, matchpos_pi);
 	}
-	count = LJsearch(pat, pat_length, subj, subj_length,
+	count = GRS_search(pat, pat_length, subj, subj_length,
 				is_count_only, &matchpos, matchpos_pi);
 	if (is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, 1));
@@ -227,31 +328,4 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	}
 	return ans;
 }
-
-/*
-int main()
-{
-	char *S, *P;
-	int nS, nP;
-	
-	S = "XabcaabYabcaabcaabZ";
-	P = "abcaab";
-	nS = strlen(S);
-	nP = strlen(P);
-	printf("S = %s\n", S);
-	printf("P = %s\n", P);
-	LJsearch(P, nP, S, nS);
-
-	// A bad case for the real Boyer-Moore algo
-	S = "Xbabababababab";
-	P = "abababababab";
-	nS = strlen(S);
-	nP = strlen(P);
-	printf("S = %s\n", S);
-	printf("P = %s\n", P);
-	LJsearch(P, nP, S, nS);
-	return 0;
-}
-*/
-
 
