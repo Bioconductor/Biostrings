@@ -10,7 +10,20 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "gregexpr" method
+### The "gregexpr" and "gregexpr2" methods (undocumented)
+
+### This method can miss matches (see below why)
+.match.gregexpr <- function(pattern, subject, count.only)
+{
+    matches <- gregexpr(pattern, subject)[[1]]
+    if (length(matches) == 1 && matches == -1)
+        matches <- integer(0)
+    else
+        attr(matches, "match.length") <- NULL
+    if (count.only)
+        return(length(matches))
+    matches
+}
 
 ### Standard R gregexpr() misses matches when they are overlapping:
 ###   > gregexpr("aa", c("XaaaYaa", "a"), fixed=TRUE)
@@ -65,7 +78,7 @@ gregexpr2 <- function(pattern, text)
     matches
 }
 
-.matchGregexpr <- function(pattern, subject, count.only)
+.match.gregexpr2 <- function(pattern, subject, count.only)
 {
     matches <- gregexpr2(pattern, subject)[[1]]
     if (length(matches) == 1 && matches == -1)
@@ -85,7 +98,7 @@ debug_naive <- function()
 }
 
 ### Must return an integer vector.
-.matchNaive <- function(pattern, subject, count.only)
+.match.naive <- function(pattern, subject, count.only)
 {
     .Call("match_naive",
           pattern@data@xp, pattern@offset, pattern@length,
@@ -104,7 +117,7 @@ debug_boyermoore <- function()
 }
 
 ### Must return an integer vector.
-.matchBoyerMoore <- function(pattern, subject, count.only)
+.match.boyermoore <- function(pattern, subject, count.only)
 {
     ## We treat the edge-cases at the R level
     p <- length(pattern)
@@ -125,7 +138,7 @@ debug_boyermoore <- function()
 ### forward-search
 
 ### Must return an integer vector.
-.matchForwardSearch <- function(pattern, subject, fixed, count.only)
+.match.forwardsearch <- function(pattern, subject, fixed, count.only)
 {
     stop("\"forward-search\" algorithm will be back soon...")
 }
@@ -140,7 +153,7 @@ debug_shiftor <- function()
 }
 
 ### Must return an integer vector.
-.matchShiftOr <- function(pattern, subject, mismatch, fixed, count.only)
+.match.shiftor <- function(pattern, subject, mismatch, fixed, count.only)
 {
     ## We treat the edge-cases at the R level
     p <- length(pattern)
@@ -168,11 +181,12 @@ debug_shiftor <- function()
 .matchPattern <- function(pattern, subject, algorithm, mismatch, fixed,
                           count.only=FALSE)
 {
-    algo <- match.arg(algorithm, c("auto", "gregexpr", "naive", "boyer-moore",
-                                   "forward-search", "shift-or"))
-    if (algo == "gregexpr") {
+    algo <- match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
+                                   "naive", "boyer-moore", "forward-search", "shift-or"))
+    if (algo == "gregexpr" || algo == "gregexpr2") {
         if (!is.character(subject))
-            stop("'algorithm=\"gregexpr\"' is only supported for character strings")
+            stop("'algorithms \"gregexpr\" and \"gregexpr2\" are only ",
+                 "supported for character strings")
         if (length(subject) != 1 || is.na(subject) || nchar(subject) == 0)
             stop("'subject' must be a single (non-NA) string")
         if (!is.character(pattern) || length(pattern) != 1
@@ -219,16 +233,17 @@ debug_shiftor <- function()
              "        when 'algo' is \"shift-or\" ",
              "or 'mismatch' is != 0 or 'fixed' is FALSE")
     ans <- switch(algo,
-        "gregexpr"=.matchGregexpr(pattern, subject, count.only),
-        "naive"=.matchNaive(pattern, subject, count.only),
-        "boyer-moore"=.matchBoyerMoore(pattern, subject, count.only),
-        "forward-search"=.matchForwardSearch(pattern, subject, fixed, count.only),
-        "shift-or"=.matchShiftOr(pattern, subject, mismatch,
+        "gregexpr"=.match.gregexpr(pattern, subject, count.only),
+        "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
+        "naive"=.match.naive(pattern, subject, count.only),
+        "boyer-moore"=.match.boyermoore(pattern, subject, count.only),
+        "forward-search"=.match.forwardsearch(pattern, subject, fixed, count.only),
+        "shift-or"=.match.shiftor(pattern, subject, mismatch,
                                 fixed, count.only)
     )
     if (count.only)
         return(ans)
-    if (algo == "gregexpr")
+    if (algo == "gregexpr" || algo == "gregexpr2")
         return(ans)
     new("BStringViews", subject, ans + as.integer(1), ans + pattern@length)
 }

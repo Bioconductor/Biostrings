@@ -23,7 +23,7 @@ exportMethods(
 )
 
 export(
-    readFASTA,
+    readFASTA, gregexpr2,
     debug_utils, debug_CharBuffer,
     debug_naive, debug_boyermoore, debug_shiftor,
     #CharBuffer, CharBuffer.copy, IntBuffer, IntBuffer.read, IntBuffer.write,
