@@ -37,7 +37,7 @@
     containing the subject string.
   }
   \item{algorithm}{
-    One of the following: \code{"auto"}, \code{"boyer-moore"},
+    One of the following: \code{"auto"}, \code{"naive"}, \code{"boyer-moore"},
     \code{"forward-search"} or \code{"shift-or"} (note that
     \code{"forward-search"} is not available yet).
   }

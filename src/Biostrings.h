@@ -126,6 +126,15 @@ SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP
 SEXP CharBuffer_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
 
 
+/* match_naive.c */
+
+SEXP match_naive_debug();
+
+SEXP match_naive(SEXP p_xp, SEXP p_offset, SEXP p_length,
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
+		SEXP count_only);
+
+
 /* match_boyermoore.c */
 
 SEXP match_boyermoore_debug();

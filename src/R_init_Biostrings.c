@@ -59,6 +59,10 @@ static const R_CallMethodDef callMethods[] = {
 /* char_frequency.c */
 	{"CharBuffer_char_frequency", (DL_FUNC) &CharBuffer_char_frequency, 3},
 
+/* match_naive.c */
+	{"match_naive_debug", (DL_FUNC) &match_naive_debug, 0},
+	{"match_naive", (DL_FUNC) &match_naive, 7},
+
 /* match_boyermoore.c */
 	{"match_boyermoore_debug", (DL_FUNC) &match_boyermoore_debug, 0},
 	{"match_boyermoore", (DL_FUNC) &match_boyermoore, 7},

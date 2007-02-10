@@ -10,6 +10,25 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "naive" method
+
+debug_naive <- function()
+{
+    invisible(.Call("match_naive_debug", PACKAGE="Biostrings"))
+}
+
+### Must return an integer vector.
+.matchNaive <- function(pattern, subject, count.only)
+{
+    .Call("match_naive",
+          pattern@data@xp, pattern@offset, pattern@length,
+          subject@data@xp, subject@offset, subject@length,
+          count.only,
+          PACKAGE="Biostrings")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Boyer-Moore
 
 debug_boyermoore <- function()
@@ -79,14 +98,14 @@ debug_shiftor <- function()
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Dispatch function & user interface
 
-.matchPattern <- function(pattern, subject, algorithm, mismatch,
-                          fixed, count.only=FALSE)
+.matchPattern <- function(pattern, subject, algorithm, mismatch, fixed,
+                          count.only=FALSE)
 {
     if (class(pattern) != class(subject))
         pattern <- new(class(subject), pattern)
     if (length(pattern) > 10000)
         stop("patterns with more than 10000 letters are not supported, sorry")
-    algo <- match.arg(algorithm, c("auto", "boyer-moore", "forward-search", "shift-or"))
+    algo <- match.arg(algorithm, c("auto", "naive", "boyer-moore", "forward-search", "shift-or"))
     if (!is.numeric(mismatch) || length(mismatch) != 1 || is.na(mismatch))
         stop("'mismatch' must be a single integer")
     mismatch <- as.integer(mismatch)
@@ -96,6 +115,8 @@ debug_shiftor <- function()
         stop("'fixed' must be TRUE or FALSE")
     if (!fixed && !(class(subject) %in% c("DNAString", "RNAString")))
         stop("'fixed=FALSE' is only supported for DNAString or RNAString objects")
+    if (!is.logical(count.only) || length(count.only) != 1 || is.na(count.only))
+        stop("'count.only' must be TRUE or FALSE")
     if (algo == "auto") {
         ## We try to choose the best algo
         if (mismatch != 0 || !fixed) {
@@ -109,8 +130,6 @@ debug_shiftor <- function()
             stop("only the \"shift-or\" algorithm supports 'mismatch != 0'")
         if (!fixed && algo != "shift-or")
             stop("only the \"shift-or\" algorithm supports 'fixed=FALSE'")
-        if (!is.logical(count.only) || length(count.only) != 1 || is.na(count.only))
-            stop("'count.only' must be TRUE or FALSE")
     }
     ## At this point we have the guarantee that if 'mismatch' is != 0 or 'fixed'
     ## is FALSE then 'algo' is "shift-or"
@@ -120,6 +139,7 @@ debug_shiftor <- function()
              "        when 'algo' is \"shift-or\" ",
              "or 'mismatch' is != 0 or 'fixed' is FALSE")
     ans <- switch(algo,
+        "naive"=.matchNaive(pattern, subject, count.only),
         "boyer-moore"=.matchBoyerMoore(pattern, subject, count.only),
         "forward-search"=.matchForwardSearch(pattern, subject, fixed, count.only),
         "shift-or"=.matchShiftOr(pattern, subject, mismatch,

@@ -212,7 +212,7 @@ static int get_GRS(int j1, int j2)
  * =================================
  * 
  * My poor understanding of the original Boyer-Moore algo as explained in Dan
- * Gusfield book "Algorithms on Strings, Trees, and Sequences", is that it
+ * Gusfield book "Algorithms on strings, trees, and sequences", is that it
  * will be inefficent in this situation:
  *   S = "Xbabababababab"
  *   P = "abababababab"
