@@ -68,6 +68,8 @@ gregexpr2 <- function(pattern, text)
 .matchGregexpr <- function(pattern, subject, count.only)
 {
     matches <- gregexpr2(pattern, subject)[[1]]
+    if (length(matches) == 1 && matches == -1)
+        matches <- integer(0)
     if (count.only)
         return(length(matches))
     matches
