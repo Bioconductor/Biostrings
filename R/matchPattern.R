@@ -303,7 +303,6 @@ setGeneric(
 setMethod("countPattern", signature(subject="character"),
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        subject <- BString(subject)
         .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
     }
 )
