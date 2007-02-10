@@ -6,7 +6,7 @@
 \description{
 This is a replacement for the standard gregexpr function that
 does exact matching only.
-Standard R gregexpr() misses matches when they are overlapping.
+Standard gregexpr() misses matches when they are overlapping.
 The gregexpr2 function finds all matches but it only works in "fixed"
 mode i.e. for exact matching (regular expressions are not
 supported).
