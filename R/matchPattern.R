@@ -10,6 +10,71 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "gregexpr" method
+
+### Standard R gregexpr() misses matches when they are overlapping:
+###   > gregexpr("aa", c("XaaaYaa", "a"), fixed=TRUE)
+###   [[1]]
+###   [1] 2 6
+###   attr(,"match.length")
+###   [1] 2 2
+###
+###   [[2]]
+###   [1] -1
+###   attr(,"match.length")
+###   [1] -1
+###
+### gregexpr2() is a modified version of gregexpr() that returns _all_
+### matches but it only works in 'fixed=TRUE' mode (i.e. for exact matching,
+### no regular expression):
+###   > gregexpr2("aa", c("XaaaYaa", "a"))
+###   [[1]]
+###   [1] 2 3 6
+###
+###   [[2]]
+###   [1] -1
+###
+### Note that, unlike gregexpr(), gregexpr2() doesn't attach a "match.length"
+### attribute to each element of the returned list because, since it only works
+### in 'fixed=TRUE' mode, then all the matches have the length of the pattern.
+### Another difference with gregexpr() is that with gregexpr2(), the 'pattern'
+### argument must be a single (non-NA, non-empty) string.
+
+gregexpr2 <- function(pattern, text)
+{
+    if (!is.character(pattern) || length(pattern) != 1
+      || is.na(pattern) || nchar(pattern) == 0)
+        stop("invalid pattern")
+    matches <- gregexpr(pattern, text, fixed=TRUE)
+    nP <- nchar(pattern)
+    for (i in 1:length(text)) {
+        mi <- matches[[i]]
+        if (length(mi) == 1 && mi == -1) {
+            attr(matches[[i]], "match.length") <- NULL
+        } else {
+            subtexts <- substring(text[i], mi + 1, mi + 2*nP - 2)
+            missing_matches <- gregexpr2(pattern, subtexts)
+            for (j in 1:length(mi)) {
+                mj <- missing_matches[[j]]
+                if (length(mj) != 1 || mj != -1)
+                    matches[[i]] <- c(matches[[i]], mi[j] + mj)
+            }
+            matches[[i]] <- sort(matches[[i]])
+        }
+    }
+    matches
+}
+
+.matchGregexpr <- function(pattern, subject, count.only)
+{
+    matches <- gregexpr2(pattern, subject)[[1]]
+    if (count.only)
+        return(length(matches))
+    matches
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "naive" method
 
 debug_naive <- function()
@@ -101,11 +166,24 @@ debug_shiftor <- function()
 .matchPattern <- function(pattern, subject, algorithm, mismatch, fixed,
                           count.only=FALSE)
 {
-    if (class(pattern) != class(subject))
-        pattern <- new(class(subject), pattern)
-    if (length(pattern) > 10000)
-        stop("patterns with more than 10000 letters are not supported, sorry")
-    algo <- match.arg(algorithm, c("auto", "naive", "boyer-moore", "forward-search", "shift-or"))
+    algo <- match.arg(algorithm, c("auto", "gregexpr", "naive", "boyer-moore",
+                                   "forward-search", "shift-or"))
+    if (algo == "gregexpr") {
+        if (!is.character(subject))
+            stop("'algorithm=\"gregexpr\"' is only supported for character strings")
+        if (length(subject) != 1 || is.na(subject) || nchar(subject) == 0)
+            stop("'subject' must be a single (non-NA) string")
+        if (!is.character(pattern) || length(pattern) != 1
+         || is.na(pattern) || nchar(pattern) == 0)
+            stop("'pattern' must be a single (non-NA, non-empty) string")
+    } else {
+        if (is.character(subject))
+            subject <- BString(subject)
+        if (class(pattern) != class(subject))
+            pattern <- new(class(subject), pattern)
+        if (nchar(pattern) > 10000)
+            stop("patterns with more than 10000 letters are not supported, sorry")
+    }
     if (!is.numeric(mismatch) || length(mismatch) != 1 || is.na(mismatch))
         stop("'mismatch' must be a single integer")
     mismatch <- as.integer(mismatch)
@@ -133,12 +211,13 @@ debug_shiftor <- function()
     }
     ## At this point we have the guarantee that if 'mismatch' is != 0 or 'fixed'
     ## is FALSE then 'algo' is "shift-or"
-    if (algo == "shift-or" && length(pattern) > .Clongint.nbits())
+    if (algo == "shift-or" && nchar(pattern) > .Clongint.nbits())
         stop("your system can only support patterns up to ",
              .Clongint.nbits(), " letters\n",
              "        when 'algo' is \"shift-or\" ",
              "or 'mismatch' is != 0 or 'fixed' is FALSE")
     ans <- switch(algo,
+        "gregexpr"=.matchGregexpr(pattern, subject, count.only),
         "naive"=.matchNaive(pattern, subject, count.only),
         "boyer-moore"=.matchBoyerMoore(pattern, subject, count.only),
         "forward-search"=.matchForwardSearch(pattern, subject, fixed, count.only),
@@ -146,6 +225,8 @@ debug_shiftor <- function()
                                 fixed, count.only)
     )
     if (count.only)
+        return(ans)
+    if (algo == "gregexpr")
         return(ans)
     new("BStringViews", subject, ans + as.integer(1), ans + pattern@length)
 }
@@ -164,7 +245,6 @@ setGeneric(
 setMethod("matchPattern", signature(subject="character"),
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        subject <- BString(subject)
         .matchPattern(pattern, subject, algorithm, mismatch, fixed)
     }
 )
