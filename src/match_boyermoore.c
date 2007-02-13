@@ -25,35 +25,130 @@ SEXP match_boyermoore_debug()
 
 
 /****************************************************************************
- * A lookup table mapping any possible char to the position of its last
- * occurrence in the pattern P.
- * Positions are counted from the right (most right character in P being
- * at position 0). Chars not in P are mapped to position -1.
+ * P0buffer holds a copy of the current pattern P0.
+ * We must always have nP0 <= P0buffer_length
  */
-static int rightPos_table[256];
+static char *P0buffer = NULL;
+static int P0buffer_length = 0, nP0 = 0;
 
-static void prepare_rightPos_table(char *P, int nP)
+/* Status meaning:
+ *     -1: init_P0buffer() has changed the value of P0buffer_length.
+ *   >= 0: init_P0buffer() didn't change the value of P0buffer_length.
+ *         The non-negative integer is the length of the longest common
+ *         suffix between old and new P0 (<= min(nP,nP0)).
+ */
+static int P0buffer_init_status;
+
+static void init_P0buffer(char *P, int nP)
+{
+	int min_nP_nP0, j;
+
+	if (nP == 0) {/* should never happen but safer anyway... */
+		P0buffer_init_status = 0;
+		return;
+	}
+	if (nP > 10000)
+		error("pattern is too long");
+	if (nP > P0buffer_length) {
+		/* We need more memory */
+		if (P0buffer != NULL)
+			free(P0buffer);
+		P0buffer_length = 0;
+		P0buffer = (char *) malloc(nP * sizeof(char));
+		if (P0buffer == NULL)
+			error("can't allocate memory for P0buffer");
+		P0buffer_length = nP;
+		P0buffer_init_status = -1;
+	} else {
+		/* We have enough memory */
+		if (nP < nP0) min_nP_nP0 = nP; else min_nP_nP0 = nP0;
+		for (j = 0; j < min_nP_nP0; j++)
+			if (P[j] != P0buffer[j])
+				break;
+		P0buffer_init_status = j;
+	}
+	memcpy(P0buffer, P, nP * sizeof(char));
+	nP0 = nP;
+	return;
+}
+
+
+/****************************************************************************
+ * The Strong Good Suffix shifts
+ * =============================
+ */
+
+/* Contains the Strong Good Suffix shifts for current pattern P0. */
+static int *SGSshift_table = NULL;
+
+/* SGSshift_table is a (256, P0buffer_length) matrix.
+ * The layout of SGSshift_table is (only the values marked with an "x" will
+ * be potentially used):
+ *
+ *           0 1 2 3 4 5 j
+ *         0 x x x x - -
+ *         1 x x x x - - 
+ *         2 x x x x - -    nP0 = 4 <= P0buffer_length = 6
+ *         .............
+ *       256 x x x x - -
+ *         c
+ *
+ * The "x" region is defined by 0 <= j < nP0
+ */
+
+#define SGSshift(c, j)	(SGSshift_table[P0buffer_length * ((unsigned char) c) + j])
+
+/* Dumb and slow.
+ * TODO: Use something faster like Cole's preprocessing algo.
+ */
+static int get_SGSshift(char c, int j)
+{
+	int shift, k, k1, k2, length;
+
+	shift = SGSshift(c, j);
+	if (shift != 0)
+		return shift;
+	for (shift = 1; shift < nP0; shift++) {
+		if (shift <= j) {
+			k = j - shift;
+			if (P0buffer[k] != c)
+				continue;
+		} else {
+			k = 0;
+		}
+		k1 = k + 1;
+		k2 = nP0 - shift;
+		if (k1 == k2)
+			break;
+		length = k2 - k1;
+		if (memcmp(P0buffer + k1, P0buffer + k1 + shift, length) == 0)
+			break;
+	}
+	/* shift is nP0 when the "for" loop is not interrupted by "break" */
+	/*Rprintf("SGSshift(c=%c, j=%d) = %d\n", c, j, shift); */
+	return SGSshift(c, j) = shift;
+}
+
+static void init_SGSshift_table()
 {
 	int u, j;
-	unsigned char uc;
 	char c;
 
+	if (P0buffer_init_status == -1 && SGSshift_table != NULL) {
+		free(SGSshift_table);
+		SGSshift_table = NULL;
+	}
+	if (P0buffer_length != 0 && SGSshift_table == NULL) {
+		SGSshift_table = (int *) malloc(256 * P0buffer_length *
+						sizeof(int));
+		if (SGSshift_table == NULL)
+			error("can't allocate memory for SGSshift_table");
+	}
 	for (u = 0; u < 256; u++) {
-		uc = (unsigned char) u;
-		rightPos_table[uc] = -1;
-		c = (char) uc;
-		for (j = nP-1; j >= 0; j--) {
-			if (P[j] == c) {
-				rightPos_table[uc] = nP - 1 - j;
-				break;
-			}
+		for (j = 0; j < nP0; j++) {
+			c = (char) u;
+			SGSshift(c, j) = 0;
 		}
-		/*
-		printf("rightPos_table[%d] = %d", u, rightPos_table[uc]);
-		if (rightPos_table[uc] != -1)
-			printf(" (%c)", c);
-		printf("\n");
-		*/
 	}
 }
 
@@ -109,7 +204,7 @@ static void prepare_rightPos_table(char *P, int nP)
  * Another property of the GRS function is that if P1 and P2 are 2 patterns
  * such that P1 is a prefix of P2 then GRS1 and GRS2 (their respective GRS
  * functions) are equal on the set of points (j1, j2) that are valid for GRS1.
- * This last property is used by the prepare_GRS_table() C function below.
+ * This last property is used by the init_GRS_table() C function below.
  * 
  * No need to preprocess the GRS function
  * --------------------------------------
@@ -122,71 +217,26 @@ static void prepare_rightPos_table(char *P, int nP)
  * number of possible GRS(j1, j2) values.
  */
 
-/* GRS_P contains the pattern associated with the current GRS_table. */
-static char *GRS_P = NULL;
-static int GRS_nP = 0;
-/* GRS_table is a 2-dim array with nrow = ncol >= GRS_nP */
+/* Contains the GRS values for current pattern P0. */
 static int *GRS_table = NULL;
-static int GRS_table_ncol = 0; /* GRS_table_ncol >= GRS_nP */
 
-/* The layout of GRS_table is (only the values marked with an "x" are will
+/* GRS_table is a 2-dim array with nrow = ncol = P0buffer_length.
+ * The layout of GRS_table is (only the values marked with an "x" will
  * be potentially used):
  *
  *           1 2 3 4 5 6 j2
  *         0 x x x x - -
  *         1 - x x x - - 
- *         2 - - x x - -    GRS_nP = 4 <= GRS_table_ncol = 6
+ *         2 - - x x - -    nP0 = 4 <= P0buffer_length = 6
  *         3 - - - x - -
  *         4 - - - - - -
  *         5 - - - - - -
  *        j1
  *
- * The "x" region is defined by 0 <= j1 < j2 <= GRS_nP
+ * The "x" region is defined by 0 <= j1 < j2 <= nP0
  */
 
-#define GRS(j1, j2)	(GRS_table[GRS_table_ncol * (j1) + (j2) - 1])
-
-/*
- * The prepare_GRS_table() must ensure that the size of the GRS_P buffer
- * is always GRS_table_ncol */
-static void prepare_GRS_table(char *P, int nP)
-{
-	int j1, j2, min_nP_GRS_nP;
-
-	if (nP == 0) /* should never happen but safer anyway... */
-		return;
-	if (nP > 10000)
-		error("pattern is too long");
-	if (nP > GRS_table_ncol) {
-		/* We need more memory */
-		if (GRS_P != NULL)
-			free(GRS_P);
-		GRS_P = (char *) malloc(nP * sizeof(char));
-		if (GRS_P == NULL)
-			error("can't allocate memory for GRS_P");
-		if (GRS_table != NULL)
-			free(GRS_table);
-		GRS_table = (int *) malloc(nP * nP * sizeof(int));
-		if (GRS_table == NULL)
-			error("can't allocate memory for GRS_table");
-		GRS_table_ncol = nP;
-		j2 = 1;
-	} else {
-		/* We have enough memory */
-		if (nP < GRS_nP) min_nP_GRS_nP = nP; else min_nP_GRS_nP = GRS_nP;
-		for (j2 = 0; j2 < min_nP_GRS_nP; j2++)
-			if (P[j2] != GRS_P[j2])
-				break;
-		j2++;
-	}
-	memcpy(GRS_P, P, nP * sizeof(char));
-	GRS_nP = nP;
-	for ( ; j2 <= nP; j2++) {
-		for (j1 = 0; j1 < j2; j1++) {
-			GRS(j1, j2) = 0;
-		}
-	}
-}
+#define GRS(j1, j2)	(GRS_table[P0buffer_length * (j1) + (j2) - 1])
 
 static int get_GRS(int j1, int j2)
 {
@@ -199,11 +249,34 @@ static int get_GRS(int j1, int j2)
 		if (grs < j1) k1 = j1 - grs; else k1 = 0;
 		k2 = j2 - grs;
 		length = k2 - k1;
-		if (memcmp(GRS_P + k1, GRS_P + j2 - length, length) == 0)
+		if (memcmp(P0buffer + k1, P0buffer + j2 - length, length) == 0)
 			break;
 	}
 	/* grs is j2 when the "for" loop is not interrupted by "break" */
 	return GRS(j1, j2) = grs;
+}
+
+static void init_GRS_table()
+{
+	int j1, j2 = 1;
+
+	if (P0buffer_init_status == -1 && GRS_table != NULL) {
+		free(GRS_table);
+		GRS_table = NULL;
+	}
+	if (P0buffer_length != 0 && GRS_table == NULL) {
+		GRS_table = (int *) malloc(P0buffer_length * P0buffer_length *
+						sizeof(int));
+		if (GRS_table == NULL)
+			error("can't allocate memory for GRS_table");
+	}
+	if (P0buffer_init_status != -1)
+		j2 = P0buffer_init_status + 1;
+	for ( ; j2 <= nP0; j2++) {
+		for (j1 = 0; j1 < j2; j1++) {
+			GRS(j1, j2) = 0;
+		}
+	}
 }
 
 
@@ -228,36 +301,36 @@ static int GRS_search(char *P, int nP, char *S, int nS, int is_count_only)
 {
 	int count = 0, n, i1, i2, j1, j2, shift0, i, j;
 
-	prepare_rightPos_table(P, nP);
-	prepare_GRS_table(P, nP);
+	init_P0buffer(P, nP);
+	init_SGSshift_table();
+	init_GRS_table();
 	n = nP;
 	i1 = i2 = n;
 	j1 = j2 = nP;
 	while (n <= nS) {
 		if (j1 == j2) {
-			/* No current partial match yet, we need to find one */
-			shift0 = rightPos_table[(unsigned char) S[n-1]];
-			if (shift0 == -1) {
-				/* This is the best thing that can happen: the
-				 * most-right letter of the pattern is aligned 
-				 * with a letter in the subject that is not in
-				 * the pattern.
-				 */
-				n += nP;
-				i1 = i2 = n;
-				j1 = j2 = nP;
-				continue;
+			/* No matching window yet, we need to find one */
+			if (S[n-1] != P[nP-1]) {
+				shift0 = get_SGSshift(S[n-1], nP-1);
+				if (shift0 == nP) {
+					n += nP;
+					continue;
+				} else {
+					n += shift0;
+					if (n > nS)
+						break;
+					i2 = n - shift0;
+					j2 = nP - shift0;
+				}
+			} else {
+				i2 = n;
+				j2 = nP;
 			}
-			n += shift0; /* shift0 is always >= 0 and < nP */
-			if (n > nS)
-				break;
-			i2 = n - shift0;
-			j2 = nP - shift0;
 			i1 = i2 - 1;
 			j1 = j2 - 1;
-			/* Now we have a partial match (of length 1) */
+			/* Now we have a matching window (of length 1) */
 		}
-		/* Let's try to extend the current partial match... */
+		/* Let's try to extend the current matching window... */
 		if (j1 > 0) {
 			/* ... to the left */
 			for (i = i1-1, j = j1-1; j >= 0; i--, j--)
