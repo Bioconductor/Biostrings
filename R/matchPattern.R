@@ -15,7 +15,7 @@
 ### This method can miss matches (see below why)
 .match.gregexpr <- function(pattern, subject, count.only)
 {
-    matches <- gregexpr(pattern, subject)[[1]]
+    matches <- gregexpr(pattern, subject, fixed=TRUE)[[1]]
     if (length(matches) == 1 && matches == -1)
         matches <- integer(0)
     else
@@ -245,7 +245,7 @@ debug_shiftor <- function()
         return(ans)
     if (algo == "gregexpr" || algo == "gregexpr2")
         return(ans)
-    new("BStringViews", subject, ans + as.integer(1), ans + pattern@length)
+    new("BStringViews", subject, ans, ans + pattern@length - as.integer(1))
 }
 
 ### Typical use:

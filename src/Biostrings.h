@@ -58,6 +58,8 @@ void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 
 int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet);
 SEXP Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft);
+int *Biostrings_resetMatchPosBuffer();
+int Biostrings_reportMatch(int pos);
 
 
 /* CharBuffer.c */

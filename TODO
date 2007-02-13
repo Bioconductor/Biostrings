@@ -1,5 +1,5 @@
 
-For 2.3.11
+For 2.3.14
 
 - Vectorize matchPattern() (result will be a list of BStringViews
   objects).
@@ -18,7 +18,7 @@ For 2.3.11
   and size, how well do they work on different inputs)".
 
 
-For 2.3.12
+For 2.3.15
 
 - "normalized" BStringViews objects: 'v' is "normalized" means
     (1) no "out of limits" views,
@@ -103,3 +103,4 @@ Later
 - Remove the Biostrings 1 subdir.
 
 - Merge SuffixTree package from Robert.
+

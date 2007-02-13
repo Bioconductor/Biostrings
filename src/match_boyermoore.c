@@ -224,14 +224,10 @@ static int get_GRS(int j1, int j2)
  */
 
 /* Returns the number of matches */
-static int GRS_search(char *P, int nP, char *S, int nS,
-		int is_count_only, SEXP *p_matchpos, PROTECT_INDEX matchpos_pi)
+static int GRS_search(char *P, int nP, char *S, int nS, int is_count_only)
 {
-	int count = 0, *index, n, i1, i2, j1, j2, shift0, grs, i, j;
+	int count = 0, n, i1, i2, j1, j2, shift0, i, j;
 
-	if (!is_count_only) {
-		index = INTEGER(*p_matchpos);
-	}
 	prepare_rightPos_table(P, nP);
 	prepare_GRS_table(P, nP);
 	n = nP;
@@ -278,28 +274,25 @@ static int GRS_search(char *P, int nP, char *S, int nS,
 		}
 		if (j1 == 0 && j2 == nP) {
 			/* we have a full match! */
-			if (!is_count_only) {
-				if (count >= LENGTH(*p_matchpos)) {
-					*p_matchpos = Biostrings_expandMatchIndex(
-							*p_matchpos, i2, nS - i2);
-					REPROTECT(*p_matchpos, matchpos_pi);
-					index = INTEGER(*p_matchpos);
-				}
-				index[count] = i1;
-			}
+			if (!is_count_only)
+				Biostrings_reportMatch(i1);
 			count++;
+			shift0 = get_GRS(0, nP);
+		} else {
+			/* We need to be smarter than this here */
+			shift0 = get_GRS(j1, j2); /* always >= 1 and <= min(j2, GRS(0, nP)) */
+			
 		}
-		grs = get_GRS(j1, j2); /* always >= 1 and <= min(j2, GRS(0, nP)) */
-		n += grs;
+		n += shift0;
 		if (n > nS)
 			break;
-		if (grs <= j1) {
-			j1 -= grs;
+		if (shift0 <= j1) {
+			j1 -= shift0;
 		} else {
-			i1 += grs - j1;
+			i1 += shift0 - j1;
 			j1 = 0;
 		}
-	       	j2 -= grs;
+	       	j2 -= shift0;
 	}
 	return count;
 }
@@ -312,9 +305,6 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	    is_count_only, count;
 	char *pat, *subj;
 	SEXP ans;
-	int matchpos_length;
-	SEXP matchpos = R_NilValue;
-	PROTECT_INDEX matchpos_pi;
 
 	pat_offset = INTEGER(p_offset)[0];
 	pat_length = INTEGER(p_length)[0];
@@ -324,24 +314,18 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	subj = CHAR(R_ExternalPtrTag(s_xp)) + subj_offset;
 	is_count_only = LOGICAL(count_only)[0];
 
+	if (!is_count_only)
+		Biostrings_resetMatchPosBuffer();
+	count = GRS_search(pat, pat_length, subj, subj_length, is_count_only);
 	if (!is_count_only) {
-		matchpos_length = Biostrings_estimateExpectedMatchCount(
-					pat_length, subj_length, 4);
-		PROTECT_WITH_INDEX(matchpos, &matchpos_pi);
-		matchpos = allocVector(INTSXP, matchpos_length);
-		REPROTECT(matchpos, matchpos_pi);
-	}
-	count = GRS_search(pat, pat_length, subj, subj_length,
-				is_count_only, &matchpos, matchpos_pi);
-	if (is_count_only) {
+		PROTECT(ans = allocVector(INTSXP, count));
+		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),
+					sizeof(int) * count);
+	} else {
 		PROTECT(ans = allocVector(INTSXP, 1));
 		INTEGER(ans)[0] = count;
-		UNPROTECT(1);
-	} else {
-		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), INTEGER(matchpos), sizeof(int) * count);
-		UNPROTECT(2);
 	}
+	UNPROTECT(1);
 	return ans;
 }
 

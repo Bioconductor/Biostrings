@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include <S.h> /* for Srealloc() */
 
 
 static int debug = 0;
@@ -486,15 +487,20 @@ void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 
 
 /* ==========================================================================
- * An VERY naive estimate of the expected number of matches based on the
+ * Helper functions used by the matching algo.
+ * --------------------------------------------------------------------------
+ */
+
+static int *match_pos_buffer;
+static int match_pos_buffer_length, match_count;
+
+/* A very blunt estimate of the expected number of matches based on the
  * lengths of P (the pattern) and S (the subject).
  * Currently it returns the expected number of matches when P and S are
  * random sequences based on an alphabet of length nalphabet:
  *     E = ceil(length(S) / nalphabet**length(P))
  * TODO: Improve me!
- * --------------------------------------------------------------------------
  */
-
 int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet)
 {
 	int count;
@@ -516,4 +522,36 @@ SEXP Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft)
 	memcpy(INTEGER(new_index), INTEGER(index), count * sizeof(int));
 	return new_index;
 }
+
+/* Reset match_pos_buffer */
+int *Biostrings_resetMatchPosBuffer()
+{
+	int *tmp;
+
+	tmp = match_pos_buffer;
+	match_pos_buffer = NULL;
+	match_pos_buffer_length = match_count = 0;
+	return tmp;
+}
+
+/* Returns the new number of matches */
+int Biostrings_reportMatch(int pos)
+{
+	long new_length;
+
+	if (match_count >= match_pos_buffer_length) {
+		/* Buffer is full */
+		if (match_pos_buffer_length == 0)
+			new_length = 1024;
+		else
+			new_length = 2 * match_pos_buffer_length;
+		match_pos_buffer = Srealloc((char *) match_pos_buffer, new_length,
+						(long) match_pos_buffer_length, int);
+		match_pos_buffer_length = new_length;
+	}
+	match_pos_buffer[match_count++] = ++pos;
+	return match_count;
+}
+
+
 

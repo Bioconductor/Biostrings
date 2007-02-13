@@ -133,7 +133,7 @@ static void _set_pmaskmap(
 		int is_fixed,
 		int pmaskmap_length,
 		ShiftOrWord_t *pmaskmap,
-		int pat_length,
+		int nP,
 		char *pat)
 {
 	ShiftOrWord_t pmask;
@@ -146,7 +146,7 @@ static void _set_pmaskmap(
 	*/
 	for (nncode = 0; nncode < pmaskmap_length; nncode++) {
 		pmask = 0LU;
-		for (i = 0; i < pat_length; i++) {
+		for (i = 0; i < nP; i++) {
 			pmask <<= 1;
 			if (is_fixed) {
 				if (((unsigned char) pat[i]) != nncode)
@@ -198,7 +198,7 @@ static void _update_PMmasks(
 static int _next_match(
 		int *Lpos,
 		int *Rpos,
-		int subj_length,
+		int nS,
 		char *subj,
 		ShiftOrWord_t *pmaskmap,
 		int PMmask_length, /* PMmask_length = kerr+1 */
@@ -208,8 +208,8 @@ static int _next_match(
 	static int nncode;
 	static int e;
 
-	while (*Lpos < subj_length) {
-		if (*Rpos < subj_length) {
+	while (*Lpos < nS) {
+		if (*Rpos < nS) {
 			nncode = (unsigned char) subj[*Rpos];
 			pmask = pmaskmap[nncode];
 #ifdef DEBUG_BIOSTRINGS
@@ -234,49 +234,36 @@ static int _next_match(
 	return -1;
 }
 
-static void _match_shiftor(
-		int is_fixed,
-		int PMmask_length,
-		int pat_length,
-		char *pat,
-		int subj_length,
-		char *subj,
-		int *p_nmatch,
-		SEXP *p_matchpos,
-		PROTECT_INDEX matchpos_pi)
+static int _match_shiftor(char *P, int nP, char *S, int nS, int is_count_only,
+		int PMmask_length, int is_fixed)
 {
 	ShiftOrWord_t *PMmask, pmaskmap[256];
-	int i, e, Lpos, Rpos, ret;
-	int *index;
+	int count = 0, i, e, Lpos, Rpos, ret;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _match_shiftor(): BEGIN\n");
 	}
 #endif
-	_set_pmaskmap(is_fixed, 256, pmaskmap, pat_length, pat);
+	_set_pmaskmap(is_fixed, 256, pmaskmap, nP, P);
 	PMmask = (ShiftOrWord_t *)
 			R_alloc(PMmask_length, sizeof(ShiftOrWord_t));
 	PMmask[0] = 1UL;
-	for (i = 1; i < pat_length; i++) {
+	for (i = 1; i < nP; i++) {
 		PMmask[0] <<= 1;
 		PMmask[0] |= 1UL;
 	}
 	for (e = 1; e < PMmask_length; e++) {
 		PMmask[e] = PMmask[e-1] >> 1;
 	}
-	if (*p_matchpos != R_NilValue) {
-		index = INTEGER(*p_matchpos);
-	}
-	*p_nmatch = 0;
-	Lpos = 1 - pat_length;
+	Lpos = 1 - nP;
 	Rpos = 0;
 	while (1) {
 		ret = _next_match(
 			&Lpos,
 			&Rpos,
-			subj_length,
-			subj,
+			nS,
+			S,
 			pmaskmap,
 			PMmask_length,
 			PMmask);
@@ -290,16 +277,9 @@ static void _match_shiftor(
 				Lpos-1, Rpos-1);
 		}
 #endif
-		if (*p_matchpos != R_NilValue) {
-			if (*p_nmatch == LENGTH(*p_matchpos)) {
-				*p_matchpos = Biostrings_expandMatchIndex(
-						*p_matchpos, Rpos, subj_length - Lpos);
-				REPROTECT(*p_matchpos, matchpos_pi);
-				index = INTEGER(*p_matchpos);
-			}
-			index[*p_nmatch] = Lpos - 1;
-		}
-		(*p_nmatch)++;
+		if (!is_count_only)
+			Biostrings_reportMatch(Lpos - 1);
+		count++;
 	}
 	/* No need to free PMmask, R does that for us */
 #ifdef DEBUG_BIOSTRINGS
@@ -307,7 +287,7 @@ static void _match_shiftor(
 		Rprintf("[DEBUG] _match_shiftor(): END\n");
 	}
 #endif
-	return;
+	return count;
 }
 
 /*
@@ -329,12 +309,9 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP mismatch, SEXP fixed, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
-	    kerr, is_fixed, is_count_only, ans_length;
+	    kerr, is_fixed, is_count_only, count;
 	char *pat, *subj;
 	SEXP ans;
-	int matchpos_length;
-	SEXP matchpos = R_NilValue;
-	PROTECT_INDEX matchpos_pi;
 
 	pat_length = INTEGER(p_length)[0];
 	if (pat_length > shiftor_maxbits)
@@ -359,38 +336,23 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			kerr, is_fixed, is_count_only);
 	}
 #endif
-	if (!is_count_only) {
-		matchpos_length = Biostrings_estimateExpectedMatchCount(
-					pat_length, subj_length, 4);
-		PROTECT_WITH_INDEX(matchpos, &matchpos_pi);
-		matchpos = allocVector(INTSXP, matchpos_length);
-		REPROTECT(matchpos, matchpos_pi);
-	}
-	_match_shiftor(
-		is_fixed,
-		kerr+1,
-		pat_length,
-		pat,
-		subj_length,
-		subj,
-		&ans_length,
-		&matchpos,
-		matchpos_pi
-	);
+	if (!is_count_only)
+		Biostrings_resetMatchPosBuffer();
+	count = _match_shiftor(pat, pat_length, subj, subj_length, is_count_only,
+				kerr+1, is_fixed);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] match_shiftor(): END\n");
 	}
 #endif
-	if (is_count_only) {
-		PROTECT(ans = allocVector(INTSXP, 1));
-		INTEGER(ans)[0] = ans_length;
-		UNPROTECT(1);
+	if (!is_count_only) {
+		PROTECT(ans = allocVector(INTSXP, count));
+		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),
+					sizeof(int) * count);
 	} else {
-		PROTECT(ans = allocVector(INTSXP, ans_length));
-		memcpy(INTEGER(ans), INTEGER(matchpos),
-			sizeof(int) * ans_length);
-		UNPROTECT(2);
+		PROTECT(ans = allocVector(INTSXP, 1));
+		INTEGER(ans)[0] = count;
 	}
+	UNPROTECT(1);
 	return ans;
 }
