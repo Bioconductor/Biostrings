@@ -8,6 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* I've turned off the GRS feature. Doesn't seem to give very good
+ * results :-( To turned it on, set MAXNP_WITH_GRS to a positive integer
+ * (typically 128, 256 or 512, doesn't have to be a power of 2).
+ * The original idea was that the "GRS feature" could boost the boyermoore()
+ * function when the pattern is small.
+ */
+#define MAXNP_WITH_GRS	0
+
 
 /****************************************************************************/
 static int debug = 0;
@@ -113,10 +121,10 @@ static int get_SGSshift(char c, int j)
 			k = j - shift;
 			if (P0buffer[k] != c)
 				continue;
+			k1 = k + 1;
 		} else {
-			k = 0;
+			k1 = 0;
 		}
-		k1 = k + 1;
 		k2 = nP0 - shift;
 		if (k1 == k2)
 			break;
@@ -125,7 +133,7 @@ static int get_SGSshift(char c, int j)
 			break;
 	}
 	/* shift is nP0 when the "for" loop is not interrupted by "break" */
-	/*Rprintf("SGSshift(c=%c, j=%d) = %d\n", c, j, shift); */
+	/*Rprintf("SGSshift(c=%c, j=%d) = %d\n", c, j, shift);*/
 	return SGSshift(c, j) = shift;
 }
 
@@ -292,49 +300,54 @@ static void init_GRS_table()
  * because after it has applied the strong good suffix rule and shifted P 2
  * letters to the right, it will start comparing P and S suffixes again which
  * is a waste of time.
- * The GRS_search algo below never compare twice the letters that are in the
+ * The original idea of the "GRS feature" introduced in the boyermoore()
+ * function below was to never compare twice the letters that are in the
  * current matching window (defined by (j1, j2) in P and (i1, i2) in S).
  */
 
+#define ADJUSTMW(i, j, shift) \
+{ \
+	if ((shift) <= (j)) \
+		(j) -= (shift); \
+	else { \
+		(i) += (shift) - (j); \
+		(j) = 0; \
+	} \
+}
+
 /* Returns the number of matches */
-static int GRS_search(char *P, int nP, char *S, int nS, int is_count_only)
+static int boyermoore(char *P, int nP, char *S, int nS, int is_count_only)
 {
-	int count = 0, n, i1, i2, j1, j2, shift0, i, j;
+	int count = 0, n, i1, i2, j1, j2, shift0, shift1, i, j;
+	char Pmrc, c; /* Pmrc is P most right char */
 
 	init_P0buffer(P, nP);
 	init_SGSshift_table();
-	init_GRS_table();
-	n = nP;
-	i1 = i2 = n;
-	j1 = j2 = nP;
-	while (n <= nS) {
-		if (j1 == j2) {
+	if (nP <= MAXNP_WITH_GRS)
+		init_GRS_table();
+	Pmrc = P[nP-1];
+	n = nP - 1;
+	j2 = 0;
+	while (n < nS) {
+		if (j2 == 0) {
 			/* No matching window yet, we need to find one */
-			if (S[n-1] != P[nP-1]) {
-				shift0 = get_SGSshift(S[n-1], nP-1);
-				if (shift0 == nP) {
-					n += nP;
-					continue;
-				} else {
-					n += shift0;
-					if (n > nS)
-						break;
-					i2 = n - shift0;
-					j2 = nP - shift0;
-				}
-			} else {
-				i2 = n;
-				j2 = nP;
+			c = S[n];
+			if (c != Pmrc) {
+				shift0 = get_SGSshift(c, nP-1);
+				n += shift0;
+				continue;
 			}
-			i1 = i2 - 1;
+			i1 = n;
+			i2 = i1 + 1;
+			j2 = nP;
 			j1 = j2 - 1;
-			/* Now we have a matching window (of length 1) */
+			/* Now we have a matching window (1-letter suffix) */
 		}
-		/* Let's try to extend the current matching window... */
+		/* We try to extend the current matching window... */
 		if (j1 > 0) {
 			/* ... to the left */
 			for (i = i1-1, j = j1-1; j >= 0; i--, j--)
-				if (S[i] != P[j])
+				if ((c = S[i]) != P[j])
 					break;
 			i1 = i + 1;
 			j1 = j + 1;
@@ -345,27 +358,32 @@ static int GRS_search(char *P, int nP, char *S, int nS, int is_count_only)
 				if (S[i2] != P[j2])
 					break;
 		}
-		if (j1 == 0 && j2 == nP) {
-			/* we have a full match! */
-			if (!is_count_only)
-				Biostrings_reportMatch(i1);
-			count++;
-			shift0 = get_GRS(0, nP);
+		if (j2 == nP) { /* matching window is a suffix */
+			if (j1 == 0) {
+				/* we have a full match! */
+				if (!is_count_only)
+					Biostrings_reportMatch(i1);
+				count++;
+				shift0 = get_SGSshift(P[0], 0); /* = max(GRS) */
+			} else {
+				shift0 = get_SGSshift(c, j1 - 1);
+			}
 		} else {
-			/* We need to be smarter than this here */
-			shift0 = get_GRS(j1, j2); /* always >= 1 and <= min(j2, GRS(0, nP)) */
-			
+			shift0 = get_GRS(j1, j2);
+			c = S[n];
+			if (c != Pmrc) {
+				shift1 = get_SGSshift(c, nP-1);
+				if (shift1 > shift0)
+					shift0 = shift1;
+			}
 		}
 		n += shift0;
-		if (n > nS)
-			break;
-		if (shift0 <= j1) {
-			j1 -= shift0;
+		if (nP <= MAXNP_WITH_GRS) {
+			ADJUSTMW(i1, j1, shift0)
+			ADJUSTMW(i2, j2, shift0)
 		} else {
-			i1 += shift0 - j1;
-			j1 = 0;
+			j2 = 0; /* forget the current matching window */
 		}
-	       	j2 -= shift0;
 	}
 	return count;
 }
@@ -389,7 +407,7 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 
 	if (!is_count_only)
 		Biostrings_resetMatchPosBuffer();
-	count = GRS_search(pat, pat_length, subj, subj_length, is_count_only);
+	count = boyermoore(pat, pat_length, subj, subj_length, is_count_only);
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
 		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),
