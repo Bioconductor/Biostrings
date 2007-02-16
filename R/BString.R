@@ -409,19 +409,32 @@ BString.substring <- function(x, start, end)
 ### to '1' and 'length(x)' because we want to be consistent with what the
 ### views() function does.
 setGeneric(
-    "subBString", function(x, start=NA, end=NA) standardGeneric("subBString")
+    "subBString", function(x, start=NA, end=NA, length=NA) standardGeneric("subBString")
 )
 setMethod("subBString", "BString",
-    function(x, start, end)
+    function(x, start, end, length)
     {
-        if (!isLooseNumeric(start) || !isLooseNumeric(end))
-            stop("'start' and 'end' must be numerics")
-        if (length(start) != 1 || length(end) != 1)
-            stop("'start' and 'end' must be single numerics")
-        if (is.na(start))
-            start <- 1
-        if (is.na(end))
-            end <- x@length
+        if (!isLooseNumeric(start) || length(start) != 1)
+            stop("'start' is not a single numeric")
+        if (!isLooseNumeric(end) || length(end) != 1)
+            stop("'end' is not a single numeric")
+        if (!isLooseNumeric(length) || length(length) != 1)
+            stop("'length' is not a single numeric")
+        if (!is.na(length)) {
+            if (is.na(start) && is.na(end))
+                stop("you must specify 'start' or 'end'")
+            if (is.na(end))
+                end <- start + length - 1
+            else if (is.na(start))
+                start <- end - length + 1
+            else if (length != end - start + 1)
+                stop("incompatible 'start', 'end' and 'length' values")
+        } else {
+            if (is.na(start))
+                start <- 1
+            if (is.na(end))
+                end <- x@length
+        }
         ## This is NA-proof (well, 'start' and 'end' can't be NAs anymore...)
         if (!isTRUE(1 <= start && start <= end && end <= length(x)))
             stop("'start' and 'end' must verify '1 <= start <= end <= length(x)'")
@@ -429,5 +442,17 @@ setMethod("subBString", "BString",
     }
 )
 
+setGeneric(
+    "substr", function(x, start=NA, stop=NA) standardGeneric("substr")
+)
+setMethod("substr", "BString",
+    function(x, start, stop) subBString(x, start, stop)
+)
 
+setGeneric(
+    "substring", function(text, first=NA, last=NA) standardGeneric("substring")
+)
+setMethod("substring", "BString",
+    function(text, first=NA, last=NA) subBString(text, first, last)
+)
 

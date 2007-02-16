@@ -31,6 +31,8 @@
 % Other functions and generics:
 \alias{subBString}
 \alias{subBString,BString-method}
+\alias{substr,BString-method}
+\alias{substring,BString-method}
 
 
 \title{The BString class}
@@ -120,11 +122,19 @@
 \section{Other functions and generics}{
   In the code snippets below,
   \code{x} is a \code{BString} (or derived) object
-  and \code{start} and \code{end} are single numerics.
+  and \code{start}, \code{end} and \code{length} are single numerics.
 
   \describe{
     \item{}{
-      \code{subBString(x, start, end)}:
+      \code{subBString(x, start, end, length)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{substr(x, start, stop)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{substring(text, first, last)}:
       [TODO: Document me]
     }
   }
