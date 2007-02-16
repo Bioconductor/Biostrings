@@ -349,6 +349,8 @@ bsMismatch <- function(pattern, subject, start, fixed)
 
 .mismatch <- function(pattern, x, fixed)
 {
+    if (length(x) == 0)
+        return(list())
     if (any(width(x) != length(pattern)))
         warning("views in 'x' don't have a width equal to pattern length")
     lapply(1:length(x),

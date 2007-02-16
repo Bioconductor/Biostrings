@@ -34,16 +34,16 @@ SEXP match_boyermoore_debug()
 
 /****************************************************************************
  * P0buffer holds a copy of the current pattern P0.
- * We must always have nP0 <= P0buffer_length
+ * We must always have P0buffer_nP <= P0buffer_length
  */
 static char *P0buffer = NULL;
-static int P0buffer_length = 0, nP0 = 0;
+static int P0buffer_length = 0, P0buffer_nP = 0;
 
 /* Status meaning:
  *     -1: init_P0buffer() has changed the value of P0buffer_length.
  *   >= 0: init_P0buffer() didn't change the value of P0buffer_length.
  *         The non-negative integer is the length of the longest common
- *         suffix between old and new P0 (<= min(nP,nP0)).
+ *         suffix between old and new P0 (<= min(nP,P0buffer_nP)).
  */
 static int P0buffer_init_status;
 
@@ -69,15 +69,67 @@ static void init_P0buffer(char *P, int nP)
 		P0buffer_init_status = -1;
 	} else {
 		/* We have enough memory */
-		if (nP < nP0) min_nP_nP0 = nP; else min_nP_nP0 = nP0;
+		if (nP < P0buffer_nP) min_nP_nP0 = nP; else min_nP_nP0 = P0buffer_nP;
 		for (j = 0; j < min_nP_nP0; j++)
 			if (P[j] != P0buffer[j])
 				break;
 		P0buffer_init_status = j;
 	}
 	memcpy(P0buffer, P, nP * sizeof(char));
-	nP0 = nP;
+	P0buffer_nP = nP;
 	return;
+}
+
+/****************************************************************************
+ * j0/shift0
+ * =========
+ * 
+ * For any j1 and j2 such that 0 <= j1 < j2 <= nP (nP being the length of
+ * the pattern P), we note P(j1, j2) the subpattern of P starting at
+ * position j1 and ending at position j2-1.
+ * Note that with this definition: P(0, nP) = P.
+ *
+ * Definition of j0 and shift0
+ * ---------------------------
+ *   j0 = start position in P of the smallest suffix of P that is not a
+ *        substring of P(1, nP-1)
+ * Note that j0 can also be defined by using the MWshift function (see
+ * section "The Matching Window shifts" below):
+ *   j0 = max{j1 | MWshift(j1, nP) >= j}
+ *
+ *  shift0 =  MWshift(j0, nP)
+ *
+ * Properties
+ * ----------
+ *
+ *   (a) If j1 <= j0, then MWshift(j1, nP) = shift0 >= j0
+ *   (b) If j1 > j0, then MWshift(j1, nP) < j1
+ *   (c) MWshift(j1, j2) <= shift0
+ *   (d) If j < j0, VSGSshift(c, j) = shift0
+ *   (e) VSGSshift(P[0], 0) = shift0
+ */
+
+static int P0buffer_j0, P0buffer_shift0;
+
+static void init_j0shift0()
+{
+	int j0, shift0, length, j;
+
+	length = 1;
+	j0 = P0buffer_nP - 1;
+	for (j = j0 - 1; j >= 1; j--) {
+		if (memcmp(P0buffer + j, P0buffer + j0, length) == 0) {
+			length++;
+			j0--;
+		}
+	}
+	for (shift0 = j0 - j; shift0 < P0buffer_nP; shift0++, length--) {
+		if (memcmp(P0buffer, P0buffer + shift0, length) == 0)
+			break;
+	}
+	P0buffer_j0 = j0;
+	P0buffer_shift0 = shift0;
+	/*Rprintf("j0=%d shift0=%d\n", j0, shift0);*/
 }
 
 
@@ -96,24 +148,26 @@ static int *VSGSshift_table = NULL;
  *           0 1 2 3 4 5 j
  *         0 x x x x - -
  *         1 x x x x - - 
- *         2 x x x x - -    nP0 = 4 <= P0buffer_length = 6
+ *         2 x x x x - -    P0buffer_nP = 4 <= P0buffer_length = 6
  *         .............
  *       256 x x x x - -
  *         c
  *
- * The "x" region is defined by 0 <= j < nP0
+ * The "x" region is defined by 0 <= j < P0buffer_nP
  */
 
-#define VSGSshift(c, j)	(VSGSshift_table[P0buffer_length * ((unsigned char) c) + j])
+#define VSGS_SHIFT(c, j) (VSGSshift_table[P0buffer_length * ((unsigned char) c) + j])
 
 static int get_VSGSshift(char c, int j)
 {
 	int shift, k, k1, k2, length;
 
-	shift = VSGSshift(c, j);
+	if (j < P0buffer_j0)
+		return P0buffer_shift0;
+	shift = VSGS_SHIFT(c, j);
 	if (shift != 0)
 		return shift;
-	for (shift = 1; shift < nP0; shift++) {
+	for (shift = 1; shift < P0buffer_nP; shift++) {
 		if (shift <= j) {
 			k = j - shift;
 			if (P0buffer[k] != c)
@@ -122,16 +176,16 @@ static int get_VSGSshift(char c, int j)
 		} else {
 			k1 = 0;
 		}
-		k2 = nP0 - shift;
+		k2 = P0buffer_nP - shift;
 		if (k1 == k2)
 			break;
 		length = k2 - k1;
 		if (memcmp(P0buffer + k1, P0buffer + k1 + shift, length) == 0)
 			break;
 	}
-	/* shift is nP0 when the "for" loop is not interrupted by "break" */
+	/* shift is P0buffer_nP when the "for" loop is not interrupted by "break" */
 	/*Rprintf("VSGSshift(c=%c, j=%d) = %d\n", c, j, shift);*/
-	return VSGSshift(c, j) = shift;
+	return VSGS_SHIFT(c, j) = shift;
 }
 
 static void init_VSGSshift_table()
@@ -150,11 +204,35 @@ static void init_VSGSshift_table()
 			error("can't allocate memory for VSGSshift_table");
 	}
 	for (u = 0; u < 256; u++) {
-		for (j = 0; j < nP0; j++) {
+		for (j = 0; j < P0buffer_nP; j++) {
 			c = (char) u;
-			VSGSshift(c, j) = 0;
+			VSGS_SHIFT(c, j) = 0;
 		}
 	}
+}
+
+static void print_VSGSshift_table()
+{
+	int u[4] = {1, 2, 4, 8}, i, j, nnonzero, shift;
+	char c;
+
+	Rprintf("\n");
+	for (j = 0; j < P0buffer_nP; j++) {
+		Rprintf(" %2d", P0buffer[j]);
+	}
+	Rprintf("\n");
+	nnonzero = 0;
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < P0buffer_nP; j++) {
+			c = (char) u[i];
+			shift = VSGS_SHIFT(c, j);
+			if (shift != 0)
+				nnonzero++;
+			Rprintf(" %2d", shift);
+		}
+		Rprintf("\n");
+	}
+	Rprintf("%.3f VSGS used\n", nnonzero / 4.00 / P0buffer_nP);
 }
 
 
@@ -165,10 +243,7 @@ static void init_VSGSshift_table()
  * Definition
  * ----------
  *
- * For any j1 and j2 such that 0 <= j1 < j2 <= nP (nP being the length of the
- * pattern P), we note P(j1, j2) the subpattern of P starting at j1 and
- * ending at j2-1. Then MWshift(j1, j2), the "Matching Window shift" for
- * P(j1, j2), is defined by:
+ * MWshift(j1, j2), the "Matching Window shift" for P(j1, j2), is defined by:
  *   Imagine that, for a given alignement of P with the subject S, all
  *   letters in subpattern P(j1, j2) are matching S (we say that the current
  *   Matching Window is (j1, j2)). Then MWshift(j1, j2) is the smallest
@@ -233,22 +308,22 @@ static int *MWshift_table = NULL;
  *           1 2 3 4 5 6 j2
  *         0 x x x x - -
  *         1 - x x x - - 
- *         2 - - x x - -    nP0 = 4 <= P0buffer_length = 6
+ *         2 - - x x - -    P0buffer_nP = 4 <= P0buffer_length = 6
  *         3 - - - x - -
  *         4 - - - - - -
  *         5 - - - - - -
  *        j1
  *
- * The "x" region is defined by 0 <= j1 < j2 <= nP0
+ * The "x" region is defined by 0 <= j1 < j2 <= P0buffer_nP
  */
 
-#define MWshift(j1, j2)	(MWshift_table[P0buffer_length * (j1) + (j2) - 1])
+#define MW_SHIFT(j1, j2) (MWshift_table[P0buffer_length * (j1) + (j2) - 1])
 
 static int get_MWshift(int j1, int j2)
 {
 	int shift, k1, k2, length;
 
-	shift = MWshift(j1, j2);
+	shift = MW_SHIFT(j1, j2);
 	if (shift != 0)
 		return shift;
 	for (shift = 1; shift < j2; shift++) {
@@ -259,7 +334,7 @@ static int get_MWshift(int j1, int j2)
 			break;
 	}
 	/* shift is j2 when the "for" loop is not interrupted by "break" */
-	return MWshift(j1, j2) = shift;
+	return MW_SHIFT(j1, j2) = shift;
 }
 
 static void init_MWshift_table()
@@ -278,9 +353,9 @@ static void init_MWshift_table()
 	}
 	if (P0buffer_init_status != -1)
 		j2 = P0buffer_init_status + 1;
-	for ( ; j2 <= nP0; j2++) {
+	for ( ; j2 <= P0buffer_nP; j2++) {
 		for (j1 = 0; j1 < j2; j1++) {
-			MWshift(j1, j2) = 0;
+			MW_SHIFT(j1, j2) = 0;
 		}
 	}
 }
@@ -316,10 +391,11 @@ static void init_MWshift_table()
 /* Returns the number of matches */
 static int boyermoore(char *P, int nP, char *S, int nS, int is_count_only)
 {
-	int count = 0, n, i1, i2, j1, j2, shift0, shift1, i, j;
+	int count = 0, n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Pmrc, c; /* Pmrc is P right-most char */
 
 	init_P0buffer(P, nP);
+	init_j0shift0();
 	init_VSGSshift_table();
 	if (nP <= MWSHIFT_NPMAX)
 		init_MWshift_table();
@@ -331,8 +407,8 @@ static int boyermoore(char *P, int nP, char *S, int nS, int is_count_only)
 			/* No Matching Window yet, we need to find one */
 			c = S[n];
 			if (c != Pmrc) {
-				shift0 = get_VSGSshift(c, nP-1);
-				n += shift0;
+				shift = get_VSGSshift(c, nP-1);
+				n += shift;
 				continue;
 			}
 			i1 = n;
@@ -362,27 +438,28 @@ static int boyermoore(char *P, int nP, char *S, int nS, int is_count_only)
 				if (!is_count_only)
 					Biostrings_reportMatch(i1);
 				count++;
-				shift0 = get_VSGSshift(P[0], 0); /* = max(MWshift) */
+				shift = P0buffer_shift0;
 			} else {
-				shift0 = get_VSGSshift(c, j1 - 1);
+				shift = get_VSGSshift(c, j1 - 1);
 			}
 		} else {
-			shift0 = get_MWshift(j1, j2);
+			shift = get_MWshift(j1, j2);
 			c = S[n];
 			if (c != Pmrc) {
 				shift1 = get_VSGSshift(c, nP-1);
-				if (shift1 > shift0)
-					shift0 = shift1;
+				if (shift1 > shift)
+					shift = shift1;
 			}
 		}
-		n += shift0;
+		n += shift;
 		if (nP <= MWSHIFT_NPMAX) {
-			ADJUSTMW(i1, j1, shift0)
-			ADJUSTMW(i2, j2, shift0)
+			ADJUSTMW(i1, j1, shift)
+			ADJUSTMW(i2, j2, shift)
 		} else {
 			j2 = 0; /* forget the current Matching Window */
 		}
 	}
+	/* print_VSGSshift_table(); */
 	return count;
 }
 
