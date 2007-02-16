@@ -211,30 +211,6 @@ static void init_VSGSshift_table()
 	}
 }
 
-static void print_VSGSshift_table()
-{
-	int u[4] = {1, 2, 4, 8}, i, j, nnonzero, shift;
-	char c;
-
-	Rprintf("\n");
-	for (j = 0; j < P0buffer_nP; j++) {
-		Rprintf(" %2d", P0buffer[j]);
-	}
-	Rprintf("\n");
-	nnonzero = 0;
-	for (i = 0; i < 4; i++) {
-		for (j = 0; j < P0buffer_nP; j++) {
-			c = (char) u[i];
-			shift = VSGS_SHIFT(c, j);
-			if (shift != 0)
-				nnonzero++;
-			Rprintf(" %2d", shift);
-		}
-		Rprintf("\n");
-	}
-	Rprintf("%.3f VSGS used\n", nnonzero / 4.00 / P0buffer_nP);
-}
-
 
 /****************************************************************************
  * The Matching Window shifts
@@ -459,7 +435,6 @@ static int boyermoore(char *P, int nP, char *S, int nS, int is_count_only)
 			j2 = 0; /* forget the current Matching Window */
 		}
 	}
-	/* print_VSGSshift_table(); */
 	return count;
 }
 
