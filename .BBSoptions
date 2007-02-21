@@ -1,0 +1,25 @@
+# Default value for 'Supported package types' is "source, win.binary, mac.binary".
+# For example, a package that is supported on all platforms except on Windows
+# should have:
+#   Supported package types: source, mac.binary
+#Supported package types: 
+
+# 'Alert' can be TRUE or FALSE, default is FALSE.
+Alert: TRUE
+
+# Default value for 'Alert on' is "ERROR".
+# Examples:
+#   - to receive an alert in case of any warning on any platform:
+#       Alert on: WARNINGS
+#   - to receive an alert in case of any error on any platform or any warning
+#     on Windows:
+#       Alert on: ERROR, win.WARNINGS
+#   - to receive an alert in case of any error on lamb1 or any warning on
+#     Mac OS X
+#       Alert on: lamb1.ERROR, mac.WARNINGS
+Alert on: ERROR, WARNINGS
+
+# Default value for 'Alert to' is the email address of the Maintainer found in
+# the DESCRIPTION file of the package.
+Alert to: hpages@fhcrc.org, herve.pages@laposte.net
+
