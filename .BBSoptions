@@ -2,7 +2,7 @@
 # For example, a package that is supported on all platforms except on Windows
 # should have:
 #   SupportedPackageTypes: source, mac.binary
-#SupportedPackageTypes: 
+SupportedPackageTypes: source, mac.binary
 
 # 'Alert' can be TRUE or FALSE, default is FALSE.
 Alert: TRUE
