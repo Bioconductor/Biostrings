@@ -1,8 +1,11 @@
-# Default value for 'SupportedPackageTypes' is "source, win.binary, mac.binary".
-# For example, a package that is supported on all platforms except on Windows
-# should have:
-#   SupportedPackageTypes: source, mac.binary
-SupportedPackageTypes: source, mac.binary
+# Default value for 'UnsupportedPlatforms' is the empty string.
+# Examples:
+#   - for a package that is supported on all platforms except on Windows:
+#       UnsupportedPlatforms: win
+#   - for a package that is supported on all platforms execept on Mac OS X and
+#     Solaris:
+#       UnsupportedPlatforms: mac, churchill
+UnsupportedPlatforms: win, mac, churchill
 
 # 'Alert' can be TRUE or FALSE, default is FALSE.
 Alert: TRUE
