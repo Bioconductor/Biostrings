@@ -5,7 +5,7 @@
 #   - for a package that is supported on all platforms execept on Mac OS X and
 #     Solaris:
 #       UnsupportedPlatforms: mac, churchill
-UnsupportedPlatforms: win, mac, churchill
+#UnsupportedPlatforms: win, mac, churchill
 
 # 'Alert' can be TRUE or FALSE, default is FALSE.
 Alert: TRUE
