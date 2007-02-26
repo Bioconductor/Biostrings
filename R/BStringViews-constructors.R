@@ -76,7 +76,8 @@ adjacentViews <- function(subject, width, gapwidth=0)
     if (class(subject) == "character")
         subject <- BString(subject)
     ans <- new("BStringViews", subject)
-    if (!is.numeric(width) || !isTRUE(all(width >= 1))) # NA-proof
+    ONE <- as.integer(1)
+    if (!is.numeric(width) || !isTRUE(all(width >= ONE))) # NA-proof
         stop("'width' must be numerics >= 1")
     if (!is.numeric(gapwidth) || !isTRUE(all(gapwidth >= 0))) # NA-proof
         stop("'gapwidth' must be numerics >= 0")
@@ -90,15 +91,14 @@ adjacentViews <- function(subject, width, gapwidth=0)
         gapwidth <- as.integer(gapwidth)
     start <- integer(lw)
     end <- integer(lw)
-    one <- as.integer(1)
-    start[1] <- one
-    end[1] <- width[1]
+    start[ONE] <- ONE
+    end[ONE] <- width[ONE]
     if (lw >= 2) {
-        j <- 1
+        j <- ONE
         for (i in 2:lw) {
-            start[i] <- end[i-1] + one + gapwidth[j]
-            end[i] <- start[i] + width[i] - one
-            if (j < lg) j <- j + 1 else j <- 1
+            start[i] <- end[i-ONE] + ONE + gapwidth[j]
+            end[i] <- start[i] + width[i] - ONE
+            if (j < lg) j <- j + ONE else j <- ONE
         }
     }
     ans@start <- start
