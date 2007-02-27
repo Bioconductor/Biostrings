@@ -1,4 +1,5 @@
 
+
 For 2.3.14
 
 - Vectorize matchPattern() (result will be a list of BStringViews
