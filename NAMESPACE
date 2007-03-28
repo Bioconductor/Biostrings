@@ -24,8 +24,8 @@ exportMethods(
 
 export(
     readFASTA, gregexpr2,
-    debug_utils, debug_CharBuffer,
-    debug_naive, debug_boyermoore, debug_shiftor,
+    #debug_utils, debug_CharBuffer,
+    #debug_naive, debug_boyermoore, debug_shiftor,
     #CharBuffer, CharBuffer.copy, IntBuffer, IntBuffer.read, IntBuffer.write,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,

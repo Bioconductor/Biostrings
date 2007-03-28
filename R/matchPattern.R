@@ -282,7 +282,7 @@ setMethod("matchPattern", signature(subject="BStringViews"),
 
 matchDNAPattern <- function(...)
 {
-    stop("matchDNAPattern() is DEPRECATED, please use matchPattern() instead")
+    .Defunct(" matchPattern")
 }
 
 
