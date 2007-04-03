@@ -53,7 +53,7 @@
 Load the {\it Caenorhabditis elegans} genome:
 <<a1>>=
 library(BSgenome.Celegans.UCSC.ce2)
-ls(package:BSgenome.Celegans.UCSC.ce2)
+ls("package:BSgenome.Celegans.UCSC.ce2")
 Celegans
 comment(Celegans$chrI)
 @

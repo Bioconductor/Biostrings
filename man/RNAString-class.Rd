@@ -62,6 +62,18 @@
   }
 }
 
+\section{Other functions and generics}{
+  In the code snippets below,
+  \code{x} is a \code{RNAString} object.
+
+  \describe{
+    \item{}{
+      \code{alphabet(x)}:
+      [TODO: Document me]
+    }
+  }
+}
+
 \author{H. Pages}
 
 \seealso{

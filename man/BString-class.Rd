@@ -33,6 +33,7 @@
 \alias{subBString,BString-method}
 \alias{substr,BString-method}
 \alias{substring,BString-method}
+\alias{alphabet,BString-method}
 
 
 \title{The BString class}
@@ -135,6 +136,10 @@
     }
     \item{}{
       \code{substring(text, first, last)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{alphabet(x)}:
       [TODO: Document me]
     }
   }
