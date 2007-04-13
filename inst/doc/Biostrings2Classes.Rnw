@@ -204,6 +204,7 @@ You can't extract a view that is {\it out of limits}:
 <<c6,echo=FALSE>>=
 cat('> v4[[3]]')
 cat(try(v4[[3]], silent=TRUE))
+cat(try(stop("aaaa"), silent=TRUE))
 @
 
 Note that, when \Robject{start} and \Robject{end} are numeric
