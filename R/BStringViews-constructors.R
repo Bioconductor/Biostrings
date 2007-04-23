@@ -13,10 +13,8 @@ setMethod("initialize", "BStringViews",
     function(.Object, subject, start, end)
     {
         .Object@subject <- subject
-        if (!missing(start)) {
-            .Object@start <- start
-            .Object@end <- end
-        }
+        if (!missing(start))
+            .Object@views <- data.frame(start=start, end=end)
         .Object
     }
 )
@@ -64,8 +62,7 @@ views <- function(subject, start=NA, end=NA)
     ## The NA-proof version of 'if (any(end < start))'
     if (!isTRUE(all(start <= end)))
         stop("'start' and 'end' must verify 'start <= end'")
-    ans@start <- start
-    ans@end <- end
+    ans@views <- data.frame(start=start, end=end)
     ans
 }
 
@@ -101,8 +98,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
             if (j < lg) j <- j + ONE else j <- ONE
         }
     }
-    ans@start <- start
-    ans@end <- end
+    ans@views <- data.frame(start=start, end=end)
     ans
 }
 
@@ -152,7 +148,7 @@ setMethod("BStringViews", "file",
         src <- sapply(fasta, function(rec) rec$seq)
         desc <- sapply(fasta, function(rec) rec$desc)
         ans <- BStringViews(src, subjectClass, sep) # call the default method
-        ans@desc <- desc
+        ans@views$desc <- desc
         ans
     }
 )

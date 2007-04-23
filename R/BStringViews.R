@@ -12,9 +12,7 @@ setClass(
     "BStringViews",
     representation(
         subject="BStringLike",
-        start="integer",
-        end="integer",
-        desc="character"   # store per-view comment (e.g. from FASTA file)
+        views="data.frame"
     )
 )
 
@@ -29,13 +27,13 @@ setMethod("subject", "BStringViews", function(x) x@subject)
 ### The 'substr' function uses 'start' and 'stop'.
 ### But we prefer to use 'start' and 'end'. That's all!
 setGeneric("start", function(x) standardGeneric("start"))
-setMethod("start", "BStringViews", function(x) x@start)
+setMethod("start", "BStringViews", function(x) x@views$start)
 
 setGeneric("first", function(x) standardGeneric("first"))
 setMethod("first", "BStringViews", function(x) {.Deprecated("start"); start(x)})
 
 setGeneric("end", function(x) standardGeneric("end"))
-setMethod("end", "BStringViews", function(x) x@end)
+setMethod("end", "BStringViews", function(x) x@views$end)
 
 setGeneric("last", function(x) standardGeneric("last"))
 setMethod("last", "BStringViews", function(x) {.Deprecated("end"); end(x)})
@@ -47,10 +45,10 @@ setMethod("last", "BStringViews", function(x) {.Deprecated("end"); end(x)})
 ### necesarily equal to the number of letters that it contains (this happens
 ### when the view is out of limits).
 setGeneric("width", function(x) standardGeneric("width"))
-setMethod("width", "BStringViews", function(x) x@end - x@start + 1)
+setMethod("width", "BStringViews", function(x) end(x) - start(x) + 1)
 
 setGeneric("desc", function(x) standardGeneric("desc"))
-setMethod("desc", "BStringViews", function(x) x@desc)
+setMethod("desc", "BStringViews", function(x) x@views$desc)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,8 +107,8 @@ BStringViews.show_frame_header <- function(iW, startW, endW, widthW)
 
 BStringViews.show_frame_line <- function(x, i, iW, startW, endW, widthW)
 {
-    start <- x@start[i]
-    end <- x@end[i]
+    start <- x@views$start[i]
+    end <- x@views$end[i]
     width <- end - start + 1
     snippetWidth <- 73 - iW - startW - endW - widthW
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
@@ -138,9 +136,9 @@ setMethod("show", "BStringViews",
         else {
             cat("\n")
             iW <- nchar(as.character(lo)) + 2 # 2 for the brackets
-            startMax <- max(object@start)
+            startMax <- max(object@views$start)
             startW <- max(nchar(startMax), nchar("start"))
-            endMax <- max(object@end)
+            endMax <- max(object@views$end)
             endW <- max(nchar(endMax), nchar("end"))
             widthMax <- max(width(object))
             widthW <- max(nchar(widthMax), nchar("width"))
@@ -173,7 +171,7 @@ setMethod("show", "BStringViews",
 setMethod("length", "BStringViews",
     function(x)
     {
-        length(x@start)
+        nrow(x@views)
     }
 )
 
@@ -194,11 +192,7 @@ setMethod("[", "BStringViews",
         } else {
             stop("invalid subscript type")
         }
-        x@start <- x@start[i]
-        x@end <- x@end[i]
-        if (length(x@desc) != 0) {
-            x@desc <- x@desc[i]
-        }
+        x@views <- x@views[i, , drop=FALSE]
         x
     }
 )
@@ -233,8 +227,8 @@ setMethod("[[", "BStringViews",
             return(x@subject)
         if (i < 1 || i > length(x))
             stop("subscript out of bounds")
-        start <- x@start[i]
-        end <- x@end[i]
+        start <- x@views$start[i]
+        end <- x@views$end[i]
         if (start < 1 || end > length(x@subject))
             stop("view is out of limits")
         BString.substring(x@subject, start, end)
@@ -325,8 +319,9 @@ BStringViews.equal <- function(x, y)
     ans <- logical(lx)
     j <- 1
     for (i in 1:lx) {
-        ans[i] <- BStringViews.view1_equal_view2(x@subject, x@start[i], x@end[i],
-                                                 y@subject, y@start[j], y@end[j])
+        ans[i] <- BStringViews.view1_equal_view2(
+                      x@subject, x@views$start[i], x@views$end[i],
+                      y@subject, y@views$start[j], y@views$end[j])
         # Recycle
         if (j < ly) j <- j + 1 else j <- 1
     }
@@ -393,7 +388,8 @@ setMethod("as.character", "BStringViews",
         ans <- character(lx)
         if (lx >= 1) {
             for (i in 1:lx) {
-                ans[i] <- BStringViews.get_view(x@subject, x@start[i], x@end[i])
+                ans[i] <- BStringViews.get_view(x@subject,
+                              x@views$start[i], x@views$end[i])
             }
         }
         ans
@@ -411,14 +407,15 @@ setMethod("nchar", "BStringViews",
     function(x, type)
     {
         ls <- length(x@subject)
-        ifelse(x@end<=ls, x@end, ls) - ifelse(x@start>=1, x@start, 1) + 1
+        ifelse(x@views$end<=ls, x@views$end, ls)
+          - ifelse(x@views$start>=1, x@views$start, 1) + 1
     }
 )
 
 setMethod("as.matrix", "BStringViews",
     function(x, ...)
     {
-        cbind(x@start, x@end)
+        cbind(x@views$start, x@views$end)
     }
 )
 
