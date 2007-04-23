@@ -407,8 +407,8 @@ setMethod("nchar", "BStringViews",
     function(x, type)
     {
         ls <- length(x@subject)
-        ifelse(x@views$end<=ls, x@views$end, ls)
-          - ifelse(x@views$start>=1, x@views$start, 1) + 1
+        (ifelse(x@views$end<=ls, x@views$end, ls) -
+         ifelse(x@views$start>=1, x@views$start, 1) + 1)
     }
 )
 
