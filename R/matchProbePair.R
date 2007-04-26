@@ -1,3 +1,62 @@
+# NOT USED, NOT EXPORTED
+# 'x' and 'y' must be numerics
+# Return the _list_ of all (x0, y0) pairs such that
+#   d(x0,y0) == min{d(xx,yy), xx in x, yy in y}
+closestValues <- function(x, y)
+{
+    sux <- sort(unique(x))
+    suy <- sort(unique(y))
+    lsux <- length(sux)
+    lsuy <- length(suy)
+    x0 <- sux[1]
+    y0 <- suy[1]
+    d0 <- abs(x0 - y0)
+    i <- j <- 1
+    repeat {
+        if (sux[i] <= suy[j]) i <- i + 1 else j <- j + 1
+        if (i > lsux || j > lsuy)
+            break
+        xx <- sux[i]
+        yy <- suy[j]
+        d <- abs(xx - yy)
+        if (d < d0) {
+            x0 <- xx
+            y0 <- yy
+            d0 <- d
+        } else if (d == d0) {
+            x0 <- append(x0, xx)
+            y0 <- append(y0, yy)
+        }
+    }
+    ans <- list()
+    for (k in 1:length(x0))
+        ans[[k]] <- c(x0[k], y0[k])
+    ans
+}
+
+reduceProbePairMatches <- function(start, end)
+{
+    start <- sort(unique(start))
+    end <- sort(unique(end))
+    nstart <- length(start)
+    nend <- length(end)
+    i <- j <- 1
+    start0 <- end0 <- integer(0)
+    while (i <= nstart && j <= nend) {
+        if (end[j] < start[i]) {
+            j <- j + 1
+            next
+        }
+        while (i < nstart && start[i + 1] <= end[j])
+            i <- i + 1
+        start0 <- c(start0, start[i])
+        end0 <- c(end0, end[j])
+        i <- i + 1
+        j <- j + 1
+    }
+    data.frame(start=start0, end=end0)
+}
+
 ### matchProbePair simulates a PCR experiment by finding the theoretical
 ### amplicons mapped to a given probe pair.
 matchProbePair <- function(Fprobe, Rprobe, subject, logfile=NULL, verbose=FALSE)
@@ -21,34 +80,17 @@ matchProbePair <- function(Fprobe, Rprobe, subject, logfile=NULL, verbose=FALSE)
             "  Fm_hits:", Fm_hits, "  Rm_hits:", Rm_hits, "\n")
     }
 
-    starts0 <- sort(unique(c(Fp_hits, Rp_hits)))
-    ends0 <- sort(unique(c(Fm_hits, Rm_hits)))
-    nstarts0 <- length(starts0)
-    nends0 <- length(ends0)
-    i <- j <- 1
-    start <- end <- integer(0)
-    while (i <= nstarts0 && j <= nends0) {
-        if (ends0[j] < starts0[i]) {
-            j <- j + 1
-            next
-        }
-        while (i < nstarts0 && starts0[i + 1] <= ends0[j])
-            i <- i + 1
-        start <- c(start, starts0[i])
-        end <- c(end, ends0[j])
-        i <- i + 1
-        j <- j + 1
-    }
-    ans <- views(subject, start, end)
+    matches0 <- reduceProbePairMatches(c(Fp_hits, Rp_hits), c(Fm_hits, Rm_hits))
+    ans <- views(subject, matches0$start, matches0$end)
 
     if (!is.null(logfile)) {
         nFp <- length(Fp_hits)
         nRp <- length(Rp_hits)
         nFm <- length(Fm_hits)
         nRm <- length(Rm_hits)
-        namp <- length(ans)
+        nmatches0 <- length(ans)
         # cat("", ..., sep="\t") is a trick to get an extra tab
-        cat("", nFp, nRp, nFm, nRm, namp, file=logfile, sep="\t")
+        cat("", nFp, nRp, nFm, nRm, nmatches0, file=logfile, sep="\t")
     }
     ans
 }
