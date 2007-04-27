@@ -17,7 +17,7 @@
 }
 
 \usage{
-  alphabetFrequency(x, baseOnly=TRUE)
+  alphabetFrequency(x, baseOnly=FALSE)
 }
 
 \arguments{
@@ -61,7 +61,7 @@
   data(yeastSEQCHR1)
   yeast1 <- DNAString(yeastSEQCHR1)
   alphabetFrequency(yeast1)
-  alphabetFrequency(yeast1, baseOnly=FALSE)
+  alphabetFrequency(yeast1, baseOnly=TRUE)
 }
 
 \keyword{category}

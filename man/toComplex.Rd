@@ -1,8 +1,11 @@
-\name{as.complex}
+\name{toComplex}
 
-% Standard generic methods:
+\alias{toComplex}
+\alias{toComplex,DNAString-method}
+
 \alias{as.complex}
 \alias{as.complex,DNAString-method}
+
 
 \title{Converting a DNAString to a vector of complexes}
 
@@ -10,7 +13,7 @@
 }
 
 \usage{
-  as.complex(x, baseValues)
+  toComplex(x, baseValues)
 }
 
 \arguments{

@@ -445,7 +445,7 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 
 /* ==========================================================================
  * Memory copy with conversion to complex values:
- *   dest[(i-i1) % dest_length] <- as.complex(src[i]) for i1 <= i <= i2
+ *   dest[(i-i1) % dest_length] <- toComplex(src[i]) for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Reads a linear subset from 'src' defined by 'i1', 'i2'.
  * IMPORTANT: Assumes that i1 <= i2.

@@ -1,3 +1,10 @@
+### =========================================================================
+### matchProbePair()
+### ----------------
+###
+### -------------------------------------------------------------------------
+
+
 # NOT USED, NOT EXPORTED
 # 'x' and 'y' must be numerics
 # Return the _list_ of all (x0, y0) pairs such that
@@ -57,41 +64,53 @@ reduceProbePairMatches <- function(start, end)
     data.frame(start=start0, end=end0)
 }
 
-### matchProbePair simulates a PCR experiment by finding the theoretical
-### amplicons mapped to a given probe pair.
-matchProbePair <- function(Fprobe, Rprobe, subject, logfile=NULL, verbose=FALSE)
-{
-    if (!is(subject, "DNAString"))
-        stop("'subject' must be a DNAString object")
-    # This won't copy the data if Fprobe and Rprobe are already DNAString objects
-    F <- DNAString(Fprobe)
-    R <- DNAString(Rprobe)
 
-    # F and R hits on the + strand
-    Fp_hits <- start(matchPattern(F, subject, fixed=TRUE))
-    Rp_hits <- start(matchPattern(R, subject, fixed=TRUE))
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "matchProbePair" new generic.
+###
+### Simulates a PCR experiment by finding the "theoretical amplicons" mapped
+### to a given probe pair.
+###
 
-    # F and R hits on the - strand
-    Fm_hits <- end(matchPattern(reverseComplement(F), subject, fixed=TRUE))
-    Rm_hits <- end(matchPattern(reverseComplement(R), subject, fixed=TRUE))
+setGeneric(
+    "matchProbePair",
+    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+        standardGeneric("matchProbePair")
+)
 
-    if (verbose) {
-        cat("Fp_hits:", Fp_hits, "  Rp_hits:", Rp_hits,
-            "  Fm_hits:", Fm_hits, "  Rm_hits:", Rm_hits, "\n")
+setMethod("matchProbePair", signature(subject="DNAString"),
+    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+    {
+        ## This won't copy the data if Fprobe and Rprobe are already DNAString objects
+        F <- DNAString(Fprobe)
+        R <- DNAString(Rprobe)
+
+        ## F and R hits on the + strand
+        Fp_hits <- start(matchPattern(F, subject, algorithm, fixed=TRUE))
+        Rp_hits <- start(matchPattern(R, subject, algorithm, fixed=TRUE))
+
+        ## F and R hits on the - strand
+        Fm_hits <- end(matchPattern(reverseComplement(F), subject, algorithm, fixed=TRUE))
+        Rm_hits <- end(matchPattern(reverseComplement(R), subject, algorithm, fixed=TRUE))
+
+        if (verbose) {
+            cat("Fp_hits:", Fp_hits, "  Rp_hits:", Rp_hits,
+                "  Fm_hits:", Fm_hits, "  Rm_hits:", Rm_hits, "\n")
+        }
+
+        matches0 <- reduceProbePairMatches(c(Fp_hits, Rp_hits), c(Fm_hits, Rm_hits))
+        ans <- views(subject, matches0$start, matches0$end)
+
+        if (!is.null(logfile)) {
+            nFp <- length(Fp_hits)
+            nRp <- length(Rp_hits)
+            nFm <- length(Fm_hits)
+            nRm <- length(Rm_hits)
+            nmatches0 <- length(ans)
+            ## cat("", ..., sep="\t") is a trick to get an extra tab
+            cat("", nFp, nRp, nFm, nRm, nmatches0, file=logfile, sep="\t")
+        }
+        ans
     }
-
-    matches0 <- reduceProbePairMatches(c(Fp_hits, Rp_hits), c(Fm_hits, Rm_hits))
-    ans <- views(subject, matches0$start, matches0$end)
-
-    if (!is.null(logfile)) {
-        nFp <- length(Fp_hits)
-        nRp <- length(Rp_hits)
-        nFm <- length(Fm_hits)
-        nRm <- length(Rm_hits)
-        nmatches0 <- length(ans)
-        # cat("", ..., sep="\t") is a trick to get an extra tab
-        cat("", nFp, nRp, nFm, nRm, nmatches0, file=logfile, sep="\t")
-    }
-    ans
-}
+)
 

@@ -1,6 +1,7 @@
 \name{matchProbePair}
 
 \alias{matchProbePair}
+\alias{matchProbePair,ANY,ANY,DNAString-method}
 
 
 \title{Find "theoretical amplicons" mapped to a probe pair}
@@ -16,7 +17,7 @@
 }
 
 \usage{
-  matchProbePair(Fprobe, Rprobe, subject, logfile=NULL, verbose=FALSE)
+  matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
 }
 
 \arguments{
@@ -28,6 +29,12 @@
   }
   \item{subject}{
     A \link{DNAString} object containing the target sequence.
+  }
+  \item{algorithm}{
+    One of the following: \code{"auto"}, \code{"naive"}, \code{"boyer-moore"},
+    \code{"forward-search"} or \code{"shift-or"} (note that
+    \code{"forward-search"} is not available yet).
+    See \code{\link{matchPattern}} for more information.
   }
   \item{logfile}{
     A file used for logging.

@@ -26,25 +26,25 @@ BString.alphabet_frequency <- function(x, baseOnly)
 
 setGeneric(
     "alphabetFrequency",
-    function(x, baseOnly=TRUE) standardGeneric("alphabetFrequency")
+    function(x, baseOnly=FALSE) standardGeneric("alphabetFrequency")
 )
 
 setMethod("alphabetFrequency", "BString",
-    function(x, baseOnly)
+    function(x, baseOnly=FALSE)
     {
         BString.char_frequency(x)
     }
 )
 
 setMethod("alphabetFrequency", "DNAString",
-    function(x, baseOnly)
+    function(x, baseOnly=FALSE)
     {
         BString.alphabet_frequency(x, baseOnly)
     }
 )
 
 setMethod("alphabetFrequency", "RNAString",
-    function(x, baseOnly)
+    function(x, baseOnly=FALSE)
     {
         BString.alphabet_frequency(x, baseOnly)
     }
@@ -52,7 +52,7 @@ setMethod("alphabetFrequency", "RNAString",
 
 ### Will fail if x contains "out of limits" views.
 setMethod("alphabetFrequency", "BStringViews",
-    function(x, baseOnly)
+    function(x, baseOnly=FALSE)
     {
         lx <- length(x)
         ## Just a trick to generate a zero-filled answer

@@ -11,13 +11,14 @@ exportMethods(
     ## Generics defined elsewhere
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
-    as.character, toString, nchar, as.complex,
+    as.character, toString, nchar, toComplex, as.complex,
     as.matrix, as.list, start, end,
     ## New generics
     alphabet, subBString, substr, substring,
     subject, first, last, width, desc, BStringViews,
     reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
+    matchProbePair,
     ## Copy/pasted from Biostrings 1
     needwunsQS
 )
@@ -31,7 +32,6 @@ export(
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     letter, BString, DNAString, RNAString, AAString,
     views, adjacentViews,
-    matchProbePair,
     matchDNAPattern,
     ## Copy/pasted from Biostrings 1
     alignScore
