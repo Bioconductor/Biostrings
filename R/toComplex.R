@@ -27,12 +27,6 @@ setMethod("toComplex", "DNAString",
 ### The "as.complex" generic is DEPRECATED in favor of toComplex().
 ###
 
-setGeneric(
-    "as.complex",
-    function(x, ...)
-        standardGeneric("as.complex")
-)
-
 setMethod("as.complex", "DNAString",
     function(x, ...)
     {

@@ -3,7 +3,6 @@
 \alias{toComplex}
 \alias{toComplex,DNAString-method}
 
-\alias{as.complex}
 \alias{as.complex,DNAString-method}
 
 
