@@ -9,7 +9,6 @@
 {
     if (length(s1) != 1 || length(s2) != 1)
         stop("currently requires s1, s2 each to be vectors of length 1")
-    alp <- colnames(substmat)
     es1 <- safeExplode(s1)
     es2 <- safeExplode(s2)
     allco <- unique(c(es1, es2))
@@ -22,26 +21,23 @@
     n1 <- length(es1)
     n2 <- length(es2)
     ## we are going to create matrices to hold score and traceback info
-    sco <- matrix(0, nr=n1+1, nc=n2+1)
-    tra <- matrix(0, nr=n1+1, nc=n2+1)
-    sco[1,] <- -1*(0:(n2))*gappen
-    sco[,1] <- -1*(0:(n1))*gappen
-    for (i in 2:(n1+1))
-      for (j in 2:(n2+1)) {
+    sco <- tra <- matrix(0, nr=n1+1, nc=n2+1)
+    sco[1,] <- -1*(0:n2)*gappen
+    sco[,1] <- -1*(0:n1)*gappen
+    for (i in seq_len(n1))
+      for (j in seq_len(n2)) {
         ## traceback is 1 if we have a match, 2 (3) indicates gap
         ## in aligned string 2 (1)
-        tmp <- substmat[es1[i-1], es2[j-1]]
-        tra[i,j] <- which.max(c(sco[i-1, j-1] + tmp,
-                                sco[i-1, j] - gappen,
-                                sco[i, j-1] - gappen))
-        sco[i,j] <- max(c(sco[i-1, j-1] + tmp,
-                          sco[i-1, j] - gappen,
-                          sco[i, j-1] - gappen))
+        tmp <- c(sco[i  ,j  ] + substmat[es1[i], es2[j]],
+                 sco[i  ,j+1] - gappen,
+                 sco[i+1,j  ] - gappen)
+        tra[i+1,j+1] <- which.max(tmp)
+        sco[i+1,j+1] <- max(tmp)
       }
+
     reval1 <- reval2 <- NULL
     fcol <- n2+1
     frow <- n1+1
-
     while (max(c(fcol, frow)) > 1) {
         crit <- tra[frow, fcol]
         if (crit > 0) {
@@ -63,7 +59,7 @@
     }
     ans <- c(al1=paste(reval1, collapse=""), al2=paste(reval2, collapse=""))
     attr(ans,"scomat") <- sco
-    attr(ans,"score") <- sco[n1, n2]
+    attr(ans,"score") <- sco[n1+1, n2+1]
     attr(ans,"tramat") <- tra
     ## we will use S3 class concepts here until we come
     ## up with a consensus approach to class architecture
