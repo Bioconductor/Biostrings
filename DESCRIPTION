@@ -10,7 +10,7 @@ Depends: R (>= 2.5.0), methods
 Suggests: RUnit, BSgenome, BSgenome.Celegans.UCSC.ce2,
           BSgenome.Dmelanogaster.FlyBase.r51, hgu95av2probe
 License: LGPL
-SaveImage: yes
+LazyLoad: yes
 Collate: readFASTA.R utils.R
         CharBuffer.R IntBuffer.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
