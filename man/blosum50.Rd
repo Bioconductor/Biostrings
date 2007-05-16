@@ -13,12 +13,6 @@ scoring matrix for codon substitution in protein alignments
 \details{
   taken from the web; many sources available
 }
-%\source{
-%not 
-%}
-%\references{
-%  ~~ possibly secondary sources and usages ~~
-%}
 \examples{
 data(blosum50)
 blosum50["A","A"]
