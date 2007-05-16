@@ -9,7 +9,6 @@ scoring matrix for codon substitution in protein alignments
 \format{
   A symmetric data frame with 24 rows and columns.
   }
-}
 \details{
   taken from the web; many sources available
 }
