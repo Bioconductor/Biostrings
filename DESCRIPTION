@@ -12,7 +12,7 @@ Suggests: RUnit, BSgenome, BSgenome.Celegans.UCSC.ce2,
 License: LGPL
 LazyLoad: yes
 Collate: readFASTA.R utils.R
-        CharBuffer.R IntBuffer.R
+        XRaw.R XInteger.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
         BStringCodec.R BString.R toComplex.R
         BStringViews.R BStringViews-constructors.R

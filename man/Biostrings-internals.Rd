@@ -1,43 +1,43 @@
 \name{Biostrings internals}
 \docType{class}
 
-\alias{debug_CharBuffer}
+\alias{debug_XRaw}
 \alias{debug_shiftor}
 \alias{debug_utils}
 
 \alias{show,externalptr-method}
 
-\alias{class:CharBuffer}
-\alias{CharBuffer-class}
-\alias{CharBuffer}
+\alias{class:XRaw}
+\alias{XRaw-class}
+\alias{XRaw}
 
-\alias{length,CharBuffer-method}
-\alias{toString,CharBuffer-method}
-\alias{initialize,CharBuffer-method}
-\alias{show,CharBuffer-method}
-\alias{==,CharBuffer,CharBuffer-method}
-\alias{!=,CharBuffer,CharBuffer-method}
-\alias{[,CharBuffer-method}
-\alias{[<-,CharBuffer-method}
+\alias{length,XRaw-method}
+\alias{toString,XRaw-method}
+\alias{initialize,XRaw-method}
+\alias{show,XRaw-method}
+\alias{==,XRaw,XRaw-method}
+\alias{!=,XRaw,XRaw-method}
+\alias{[,XRaw-method}
+\alias{[<-,XRaw-method}
 
-\alias{class:PrintableCharBuffer}
-\alias{PrintableCharBuffer-class}
-\alias{PrintableCharBuffer}
+\alias{class:PrintableXRaw}
+\alias{PrintableXRaw-class}
+\alias{PrintableXRaw}
 
-\alias{show,PrintableCharBuffer-method}
-\alias{[,PrintableCharBuffer-method}
+\alias{show,PrintableXRaw-method}
+\alias{[,PrintableXRaw-method}
 
-\alias{class:IntBuffer}
-\alias{IntBuffer-class}
-\alias{IntBuffer}
+\alias{class:XInteger}
+\alias{XInteger-class}
+\alias{XInteger}
 
-\alias{length,IntBuffer-method}
-\alias{initialize,IntBuffer-method}
-\alias{show,IntBuffer-method}
-\alias{==,IntBuffer,IntBuffer-method}
-\alias{!=,IntBuffer,IntBuffer-method}
-\alias{[,IntBuffer-method}
-\alias{[<-,IntBuffer-method}
+\alias{length,XInteger-method}
+\alias{initialize,XInteger-method}
+\alias{show,XInteger-method}
+\alias{==,XInteger,XInteger-method}
+\alias{!=,XInteger,XInteger-method}
+\alias{[,XInteger-method}
+\alias{[<-,XInteger-method}
 
 \alias{class:BStringCodec}
 \alias{BStringCodec-class}

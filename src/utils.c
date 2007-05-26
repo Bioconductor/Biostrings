@@ -34,7 +34,7 @@ SEXP utils_debug()
  * --------------------------------------------------------------------------
  */
 
-int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
+int Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size_t size)
 {
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
@@ -61,9 +61,9 @@ int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size)
  */
 void Biostrings_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size)
+		const char *src, size_t src_nmemb, size_t size)
 {
-	char *b;
+	const char *b;
 	int i2next, i1max, q;
 	size_t dest_size;
 
@@ -101,9 +101,10 @@ void Biostrings_memcpy_from_i1i2(int i1, int i2,
  */
 void Biostrings_memcpy_from_subset(int *subset, int n,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size)
+		const char *src, size_t src_nmemb, size_t size)
 {
-	char *a, *b;
+	char *a;
+        const char *b;
 	int i, j, k, z;
 
 	if (dest_nmemb == 0 && n != 0)
@@ -140,7 +141,7 @@ void Biostrings_memcpy_from_subset(int *subset, int n,
  */
 void Biostrings_memcpy_to_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size)
+		const char *src, size_t src_nmemb, size_t size)
 {
 	char *a;
 	int i2next, i1max, q;
@@ -180,9 +181,10 @@ void Biostrings_memcpy_to_i1i2(int i1, int i2,
  */
 void Biostrings_memcpy_to_subset(int *subset, int n,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size)
+		const char *src, size_t src_nmemb, size_t size)
 {
-	char *a, *b;
+	char *a;
+        const char *b;
 	int i, j, k, z;
 
 	if (src_nmemb == 0 && n != 0)
@@ -219,10 +221,11 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
  */
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length)
 {
-	char *b, src_val;
+	const char *b;
+        char src_val;
 	int i, j, lkup_key, lkup_val;
 
 	if (i1 < 0 || i2 >= src_length)
@@ -258,7 +261,7 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
  */
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length)
 {
 	char src_val;
@@ -298,7 +301,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
  */
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length)
 {
 	char *a, src_val;
@@ -337,7 +340,7 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
  */
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length)
 {
 	char src_val;
@@ -377,9 +380,10 @@ void Biostrings_translate_charcpy_to_subset(int *subset, int n,
  */
 void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size)
+		const char *src, size_t src_nmemb, size_t size)
 {
-	char *a, *b;
+	char *a;
+        const char *b;
 	int i, j, z;
 
 	if (i1 < 0 || i2 >= src_nmemb)
@@ -414,10 +418,11 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
  */
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length)
 {
-	char *b, src_val;
+	const char *b;
+        char src_val;
 	int i, j, lkup_key, lkup_val;
 
 	if (i1 < 0 || i2 >= src_length)
@@ -454,10 +459,11 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
  */
 void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		Rcomplex *lkup, int lkup_length)
 {
-	char *b, src_val;
+	const char *b;
+        char src_val;
 	int i, j, lkup_key;
 	Rcomplex lkup_val;
 
@@ -552,6 +558,5 @@ int Biostrings_reportMatch(int pos)
 	match_pos_buffer[match_count++] = ++pos;
 	return match_count;
 }
-
 
 

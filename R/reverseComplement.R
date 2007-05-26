@@ -13,8 +13,8 @@ setMethod("reverse", "BString",
     function(x, ...)
     {
         lx <- length(x)
-        data <- CharBuffer(lx)
-        CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
+        data <- XRaw(lx)
+        XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
         ## class(x) can be "BString", "DNAString", "RNAString" or "AAString"
         new(class(x), data)
     }
@@ -40,9 +40,9 @@ setMethod("complement", "DNAString",
     function(x)
     {
         lx <- length(x)
-        data <- CharBuffer(lx)
+        data <- XRaw(lx)
         lkup <- .DNAComplementLookup()
-        CharBuffer.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
+        XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
     }
 )
@@ -64,9 +64,9 @@ setMethod("reverseComplement", "DNAString",
     function(x)
     {
         lx <- length(x)
-        data <- CharBuffer(lx)
+        data <- XRaw(lx)
         lkup <- .DNAComplementLookup()
-        CharBuffer.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
+        XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
     }
 )

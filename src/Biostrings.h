@@ -3,57 +3,57 @@
 #include <string.h>
 
 #define DEBUG_BIOSTRINGS 1
-
+#define RALLOCSTRING(n)  (char *) R_alloc((long) (n) + 1L, sizeof(char))
 
 /* utils.c */
 
 SEXP utils_debug();
 
-int Biostrings_memcmp(char *a, int ia, char *b, int ib, int n, size_t size);
+int Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size_t size);
 
 void Biostrings_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size);
+		const char *src, size_t src_nmemb, size_t size);
 void Biostrings_memcpy_from_subset(int *subset, int n,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size);
+		const char *src, size_t src_nmemb, size_t size);
 
 void Biostrings_memcpy_to_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size);
+		const char *src, size_t src_nmemb, size_t size);
 void Biostrings_memcpy_to_subset(int *subset, int n,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size);
+		const char *src, size_t src_nmemb, size_t size);
 
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length);
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length);
 
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length);
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length);
 
 void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
-		char *src, size_t src_nmemb, size_t size);
+		const char *src, size_t src_nmemb, size_t size);
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		int *lkup, int lkup_length);
 
 void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
-		char *src, int src_length,
+		const char *src, int src_length,
 		Rcomplex *lkup, int lkup_length);
 
 int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet);
@@ -62,70 +62,70 @@ int *Biostrings_resetMatchPosBuffer();
 int Biostrings_reportMatch(int pos);
 
 
-/* CharBuffer.c */
+/* XRaw.c */
 
-SEXP CharBuffer_debug();
+SEXP XRaw_debug();
 
 SEXP sexp_address(SEXP s);
 SEXP xp_show(SEXP xp);
 SEXP xp_new();
 SEXP safe_explode(SEXP s);
 
-SEXP CharBuffer_alloc(SEXP cb_xp, SEXP length);
-SEXP CharBuffer_get_show_string(SEXP cb_xp);
-SEXP CharBuffer_length(SEXP cb_xp);
-SEXP CharBuffer_memcmp(SEXP cb1_xp, SEXP start1,
+SEXP XRaw_alloc(SEXP cb_xp, SEXP length);
+SEXP XRaw_get_show_string(SEXP cb_xp);
+SEXP XRaw_length(SEXP cb_xp);
+SEXP XRaw_memcmp(SEXP cb1_xp, SEXP start1,
 		SEXP cb2_xp, SEXP start2, SEXP width);
 
-SEXP CharBuffer_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
-SEXP CharBuffer_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset);
+SEXP XRaw_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
+SEXP XRaw_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset);
 
-SEXP CharBuffer_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
-SEXP CharBuffer_read_chars_from_subset(SEXP src_xp, SEXP subset);
-SEXP CharBuffer_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string);
-SEXP CharBuffer_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string);
+SEXP XRaw_read_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
+SEXP XRaw_read_chars_from_subset(SEXP src_xp, SEXP subset);
+SEXP XRaw_write_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP string);
+SEXP XRaw_write_chars_to_subset(SEXP dest_xp, SEXP subset, SEXP string);
 
-SEXP CharBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
-SEXP CharBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset);
-SEXP CharBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
-SEXP CharBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
+SEXP XRaw_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
+SEXP XRaw_read_ints_from_subset(SEXP src_xp, SEXP subset);
+SEXP XRaw_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
+SEXP XRaw_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
-SEXP CharBuffer_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
-SEXP CharBuffer_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP lkup);
-SEXP CharBuffer_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
+SEXP XRaw_read_enc_chars_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP XRaw_read_enc_chars_from_subset(SEXP src_xp, SEXP subset, SEXP lkup);
+SEXP XRaw_write_enc_chars_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax,
 		SEXP string, SEXP lkup);
-SEXP CharBuffer_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
+SEXP XRaw_write_enc_chars_to_subset(SEXP dest_xp, SEXP subset,
 		SEXP string, SEXP lkup);
 
-SEXP CharBuffer_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
-SEXP CharBuffer_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lkup);
+SEXP XRaw_read_complexes_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP XRaw_read_complexes_from_subset(SEXP src_xp, SEXP subset, SEXP lkup);
 
 
-/* IntBuffer.c */
+/* XInteger.c */
 
-SEXP IntBuffer_alloc(SEXP ib_xp, SEXP length);
-SEXP IntBuffer_show(SEXP ib_xp);
-SEXP IntBuffer_length(SEXP ib_xp);
-SEXP IntBuffer_memcmp(SEXP ib1_xp, SEXP start1,
+SEXP XInteger_alloc(SEXP ib_xp, SEXP length);
+SEXP XInteger_show(SEXP ib_xp);
+SEXP XInteger_length(SEXP ib_xp);
+SEXP XInteger_memcmp(SEXP ib1_xp, SEXP start1,
 		SEXP ib2_xp, SEXP start2, SEXP width);
 
-SEXP IntBuffer_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
-SEXP IntBuffer_read_ints_from_subset(SEXP src_xp, SEXP subset);
-SEXP IntBuffer_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
-SEXP IntBuffer_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
+SEXP XInteger_read_ints_from_i1i2(SEXP src_xp, SEXP imin, SEXP imax);
+SEXP XInteger_read_ints_from_subset(SEXP src_xp, SEXP subset);
+SEXP XInteger_write_ints_to_i1i2(SEXP dest_xp, SEXP imin, SEXP imax, SEXP val);
+SEXP XInteger_write_ints_to_subset(SEXP dest_xp, SEXP subset, SEXP val);
 
 
 /* reverseComplement.c */
 
-SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
-SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup);
-SEXP CharBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
-SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
+SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup);
+SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax);
+SEXP XRaw_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup);
 
 
 /* char_frequency.c */
 
-SEXP CharBuffer_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
+SEXP XRaw_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length);
 
 
 /* match_naive.c */

@@ -1,16 +1,16 @@
 ### =========================================================================
-### "CharBuffer" objects
+### External raw vectors: the "XRaw" class
 ### -------------------------------------------------------------------------
 ###
-### A "CharBuffer" object is a chunk of memory that:
-###   a. Contains bytes (characters).
+### A "XRaw" object is a chunk of memory that:
+###   a. Contains bytes (char at the C level).
 ###   b. Is readable and writable.
 ###   c. Is not copied on object duplication i.e. when doing
 ###        cb2 <- cb1
 ###      both cb1 and cb2 point to the same place in memory.
 ###      This is achieved by using R predefined type "externalptr".
 ###   d. Is not 0-terminated (so it can contain zeros). This is achieved by
-###      having the length of the buffer stored in the "CharBuffer" object.
+###      having the length of the buffer stored in the "XRaw" object.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,9 +20,9 @@ debug_utils <- function()
     invisible(.Call("utils_debug", PACKAGE="Biostrings"))
 }
 
-debug_CharBuffer <- function()
+debug_XRaw <- function()
 {
-    invisible(.Call("CharBuffer_debug", PACKAGE="Biostrings"))
+    invisible(.Call("XRaw_debug", PACKAGE="Biostrings"))
 }
 
 
@@ -45,25 +45,25 @@ setMethod("show", "externalptr",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "CharBuffer" class.
-### Note: instead of defining the "CharBuffer" class with just one slot of type
+### The "XRaw" class.
+### Note: instead of defining the "XRaw" class with just one slot of type
 ### "externalptr" (it HAS an "externalptr", and nothing else), an alternative
 ### would be to simply extend the "externalptr" type.
-### After all, a "CharBuffer" object IS an "externalptr" object.
+### After all, a "XRaw" object IS an "externalptr" object.
 ### However, I tried this but was not able to implement the "initialize" method
-### in such a way that it returns a new instance of the "CharBuffer" class (the
+### in such a way that it returns a new instance of the "XRaw" class (the
 ### returned object was ALWAYS the same instance everytime the method was
 ### called, I found no workaround).
-setClass("CharBuffer", representation(xp="externalptr"))
+setClass("XRaw", representation(xp="externalptr"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization
 
 ### This:
-###   cb <- CharBuffer(30)
+###   cb <- XRaw(30)
 ### will call the "initialize" method.
-setMethod("initialize", "CharBuffer",
+setMethod("initialize", "XRaw",
     function(.Object, length, verbose=FALSE)
     {
         if (missing(length))
@@ -76,25 +76,25 @@ setMethod("initialize", "CharBuffer",
         if (length < 1)
             stop("buffer length must be >= 1")
         xp <- .Call("xp_new", PACKAGE="Biostrings")
-        .Call("CharBuffer_alloc", xp, length, PACKAGE="Biostrings")
+        .Call("XRaw_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         if (verbose) {
-            show_string <- .Call("CharBuffer_get_show_string", .Object@xp, PACKAGE="Biostrings")
+            show_string <- .Call("XRaw_get_show_string", .Object@xp, PACKAGE="Biostrings")
             cat("Allocating new ", show_string, "\n", sep="")
         }
         .Object
     }
 )
 
-CharBuffer <- function(...)
+XRaw <- function(...)
 {
-    new("CharBuffer", ...)
+    new("XRaw", ...)
 }
 
-setMethod("show", "CharBuffer",
+setMethod("show", "XRaw",
     function(object)
     {
-        show_string <- .Call("CharBuffer_get_show_string", object@xp, PACKAGE="Biostrings")
+        show_string <- .Call("XRaw_get_show_string", object@xp, PACKAGE="Biostrings")
         cat(show_string, "\n", sep="")
         ## What is correct here? The documentation (?show) says that 'show'
         ## should return an invisible 'NULL' but, on the other hand, the 'show'
@@ -103,10 +103,10 @@ setMethod("show", "CharBuffer",
     }
 )
 
-setMethod("length", "CharBuffer",
+setMethod("length", "XRaw",
     function(x)
     {
-        .Call("CharBuffer_length", x@xp, PACKAGE="Biostrings")
+        .Call("XRaw_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
@@ -116,7 +116,7 @@ setMethod("length", "CharBuffer",
 ### If length(i) == 0 then the read functions return an empty vector
 ### and the write functions don't do anything.
 
-CharBuffer.readInts <- function(x, i, imax=integer(0))
+XRaw.readInts <- function(x, i, imax=integer(0))
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -125,13 +125,13 @@ CharBuffer.readInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("CharBuffer_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("XRaw_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("CharBuffer_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
+        .Call("XRaw_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
-CharBuffer.writeInts <- function(x, i, imax=integer(0), value)
+XRaw.writeInts <- function(x, i, imax=integer(0), value)
 {
     if (!is.integer(value))
         stop("'value' is not an integer vector")
@@ -142,15 +142,15 @@ CharBuffer.writeInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("CharBuffer_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("XRaw_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("CharBuffer_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("XRaw_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
 
 ### 'dec_lkup' must be NULL or a vector of integers
-CharBuffer.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
+XRaw.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -160,23 +160,23 @@ CharBuffer.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(dec_lkup))
-            .Call("CharBuffer_read_chars_from_i1i2",
+            .Call("XRaw_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_read_enc_chars_from_i1i2",
+            .Call("XRaw_read_enc_chars_from_i1i2",
                   x@xp, i, imax, dec_lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(dec_lkup))
-            .Call("CharBuffer_read_chars_from_subset",
+            .Call("XRaw_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_read_enc_chars_from_subset",
+            .Call("XRaw_read_enc_chars_from_subset",
                   x@xp, i, dec_lkup, PACKAGE="Biostrings")
     }
 }
 
 ### 'enc_lkup' must be NULL or a vector of integers
-CharBuffer.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
+XRaw.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
 {
     if (!is.character(value))
         stop("'value' is not a character vector")
@@ -188,27 +188,27 @@ CharBuffer.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(enc_lkup))
-            .Call("CharBuffer_write_chars_to_i1i2",
+            .Call("XRaw_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_write_enc_chars_to_i1i2",
+            .Call("XRaw_write_enc_chars_to_i1i2",
                   x@xp, i, imax, value, enc_lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(enc_lkup))
-            .Call("CharBuffer_write_chars_to_subset",
+            .Call("XRaw_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_write_enc_chars_to_subset",
+            .Call("XRaw_write_enc_chars_to_subset",
                   x@xp, i, value, enc_lkup, PACKAGE="Biostrings")
     }
     x
 }
 
 ### 'lkup' must be NULL or a vector of integers
-CharBuffer.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
+XRaw.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
-    if (class(src) != "CharBuffer")
-        stop("'src' is not a \"CharBuffer\" object")
+    if (class(src) != "XRaw")
+        stop("'src' is not a \"XRaw\" object")
     if (!is.integer(i))
         i <- as.integer(i)
     if (length(i) == 1) {
@@ -217,27 +217,27 @@ CharBuffer.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(lkup))
-            .Call("CharBuffer_copy_from_i1i2", dest@xp, src@xp,
+            .Call("XRaw_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_translate_copy_from_i1i2", dest@xp, src@xp,
+            .Call("XRaw_translate_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(lkup))
-            .Call("CharBuffer_copy_from_subset", dest@xp, src@xp,
+            .Call("XRaw_copy_from_subset", dest@xp, src@xp,
                   i, PACKAGE="Biostrings")
         else
-            .Call("CharBuffer_translate_copy_from_subset", dest@xp, src@xp,
+            .Call("XRaw_translate_copy_from_subset", dest@xp, src@xp,
                   i, lkup, PACKAGE="Biostrings")
     }
     dest
 }
 
 ### 'lkup' must be NULL or a vector of integers
-CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
+XRaw.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
-    if (class(src) != "CharBuffer")
-        stop("'src' is not a \"CharBuffer\" object")
+    if (class(src) != "XRaw")
+        stop("'src' is not a \"XRaw\" object")
     if (length(i) != 1)
         stop("'i' must be a single integer")
     if (!is.integer(i))
@@ -247,14 +247,14 @@ CharBuffer.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
     else
         imax <- as.integer(imax)
     if (is.null(lkup))
-        .Call("CharBuffer_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+        .Call("XRaw_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
     else
-        .Call("CharBuffer_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, lkup, PACKAGE="Biostrings")
+        .Call("XRaw_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, lkup, PACKAGE="Biostrings")
     dest
 }
 
 ### 'lkup' must be a vector of complexes
-CharBuffer.readComplexes <- function(x, i, imax=integer(0), lkup)
+XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -263,10 +263,10 @@ CharBuffer.readComplexes <- function(x, i, imax=integer(0), lkup)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("CharBuffer_read_complexes_from_i1i2",
+        .Call("XRaw_read_complexes_from_i1i2",
               x@xp, i, imax, lkup, PACKAGE="Biostrings")
     } else {
-        .Call("CharBuffer_read_complexes_from_subset",
+        .Call("XRaw_read_complexes_from_subset",
               x@xp, i, lkup, PACKAGE="Biostrings")
     }
 }
@@ -275,27 +275,27 @@ CharBuffer.readComplexes <- function(x, i, imax=integer(0), lkup)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### length(as.integer(cb)) is equivalent to length(cb)
 ### but the latter is MUCH faster!
-setMethod("as.integer", "CharBuffer",
+setMethod("as.integer", "XRaw",
     function(x)
     {
-        CharBuffer.readInts(x, 1, length(x))
+        XRaw.readInts(x, 1, length(x))
     }
 )
 
 ### Typical use:
-###   cb <- CharBuffer(15)
+###   cb <- XRaw(15)
 ###   cb[] <- 65
 ###   toString(cb)
 ###   cb[] <- "Hello"
 ###   toString(cb)
-### So this should always rewrite the content of a "CharBuffer" object
+### So this should always rewrite the content of a "XRaw" object
 ### to itself, without any modification:
 ###   cb[] <- toString(cb)
 ### whatever the content of cb is!
-setMethod("toString", "CharBuffer",
+setMethod("toString", "XRaw",
     function(x)
     {
-        CharBuffer.read(x, 1, length(x))
+        XRaw.read(x, 1, length(x))
     }
 )
 
@@ -303,33 +303,33 @@ setMethod("toString", "CharBuffer",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 
-### Select bytes from a "CharBuffer" object.
+### Select bytes from a "XRaw" object.
 ### Typical use:
-###   cb <- CharBuffer(30)
+###   cb <- XRaw(30)
 ###   cb[25:20]
 ###   cb[25:31] # subscript out of bounds
 ### Note: cb[] can be used as a shortcut for as.integer(cb)
-setMethod("[", "CharBuffer",
+setMethod("[", "XRaw",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
         if (missing(i))
             return(as.integer(x))
-        CharBuffer.readInts(x, i)
+        XRaw.readInts(x, i)
     }
 )
 
-### Replace bytes in a "CharBuffer" object.
+### Replace bytes in a "XRaw" object.
 ### Typical use:
-###   cb <- CharBuffer(30)
+###   cb <- XRaw(30)
 ###   cb[] <- 12 # fill with 12
 ###   cb[3:10] <- 1:-2
 ###   cb[3:10] <- "Ab"
 ###   cb[0] <- 4 # subscript out of bounds
 ###   cb[31] <- 4 # subscript out of bounds
 ###   cb[3] <- -12 # subscript out of bounds
-setReplaceMethod("[", "CharBuffer",
+setReplaceMethod("[", "XRaw",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -340,8 +340,8 @@ setReplaceMethod("[", "CharBuffer",
             if (length(value) >= 2)
                 stop("character vector 'value' has more than one string")
             if (missing(i))
-                return(CharBuffer.write(x, 1, length(x), value=value))
-            return(CharBuffer.write(x, i, value=value))
+                return(XRaw.write(x, 1, length(x), value=value))
+            return(XRaw.write(x, i, value=value))
         }
 
         ## We want to allow this: cb[3] <- 4, even if storage.mode(value)
@@ -356,8 +356,8 @@ setReplaceMethod("[", "CharBuffer",
         }
         ## Now 'value' is an integer vector
         if (missing(i))
-            return(CharBuffer.writeInts(x, 1, length(x), value=value))
-        CharBuffer.writeInts(x, i, value=value)
+            return(XRaw.writeInts(x, 1, length(x), value=value))
+        XRaw.writeInts(x, i, value=value)
     }
 )
 
@@ -366,18 +366,18 @@ setReplaceMethod("[", "CharBuffer",
 ### Equality
 
 ### Be careful to the semantic of the "==" operator:
-###   2 "CharBuffer" objects are equals if their @xp slot is the
+###   2 "XRaw" objects are equals if their @xp slot is the
 ###   same "externalptr" instance (then they obviously have
 ###   the same length and contain the same data).
-### With this definition, cb1 and cb2 can be 2 different "CharBuffer" objects
+### With this definition, cb1 and cb2 can be 2 different "XRaw" objects
 ### (cb1 != cb2) and contain the same data.
-setMethod("==", signature(e1="CharBuffer", e2="CharBuffer"),
+setMethod("==", signature(e1="XRaw", e2="XRaw"),
     function(e1, e2)
     {
         address(e1@xp) == address(e2@xp)
     }
 )
-setMethod("!=", signature(e1="CharBuffer", e2="CharBuffer"),
+setMethod("!=", signature(e1="XRaw", e2="XRaw"),
     function(e1, e2)
     {
         address(e1@xp) != address(e2@xp)
@@ -386,25 +386,25 @@ setMethod("!=", signature(e1="CharBuffer", e2="CharBuffer"),
 
 ### A wrapper to the very fast memcmp() C-function.
 ### Arguments MUST be the following or it will crash R:
-###   x1, x2: "CharBuffer" objects
+###   x1, x2: "XRaw" objects
 ###   start1, start2, width: single integers
 ### In addition: 1 <= start1 <= start1+width-1 <= length(x1)
 ###              1 <= start2 <= start2+width-1 <= length(x2)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-CharBuffer.compare <- function(x1, start1, x2, start2, width)
+XRaw.compare <- function(x1, start1, x2, start2, width)
 {
-    .Call("CharBuffer_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
+    .Call("XRaw_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PrintableCharBuffer" class is a simple extention of the "CharBuffer"
+### The "PrintableXRaw" class is a simple extention of the "XRaw"
 ### class (no additional slots)
 
-setClass("PrintableCharBuffer", representation("CharBuffer"))
+setClass("PrintableXRaw", representation("XRaw"))
 
-setMethod("show", "PrintableCharBuffer",
+setMethod("show", "PrintableXRaw",
     function(object)
     {
         print(toString(object))
@@ -419,10 +419,10 @@ safeExplode <- function(x)
     .Call("safe_explode", x, PACKAGE="Biostrings")
 }
 
-### pcb <- new("PrintableCharBuffer", 10)
+### pcb <- new("PrintableXRaw", 10)
 ### pcb[] <- "ab-C."
 ### pcb[] == strsplit(toString(pcb), NULL, fixed=TRUE)[[1]]
-setMethod("[", "PrintableCharBuffer",
+setMethod("[", "PrintableXRaw",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -430,7 +430,7 @@ setMethod("[", "PrintableCharBuffer",
         if (missing(i))
             s <- toString(x)
         else
-            s <- CharBuffer.read(x, i)
+            s <- XRaw.read(x, i)
         safeExplode(s)
     }
 )

@@ -9,7 +9,7 @@
  *   'x_length': x@length
  * Returns a vector of 256 integers.
  */
-SEXP CharBuffer_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
+SEXP XRaw_char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
 {
 	SEXP ans;
 	int offset, length, i;

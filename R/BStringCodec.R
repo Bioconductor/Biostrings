@@ -104,7 +104,7 @@ setMethod("initialize", "BStringCodec",
 ###   > dna <- DNAString("ACGT")
 ###   > rna <- RNAString(dna)
 ### This is almost instantaneous (even on a 100M-letter DNA) because the data
-### in 'dna' are not copied ('dna' and 'rna' share the same CharBuffer).
+### in 'dna' are not copied ('dna' and 'rna' share the same XRaw).
 DNA_BASE_CODES <- c(A=1, C=2, G=4, T=8)
 RNA_BASE_CODES <- c(U=1, G=2, C=4, A=8)
 

@@ -2,9 +2,9 @@
 
 
 /*
- * See CharBuffer_copy_from_i1i2() in CharBuffer.c for a description of the first 4 arguments.
+ * See XRaw_copy_from_i1i2() in XRaw.c for a description of the first 4 arguments.
  */
-SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
+SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -20,9 +20,9 @@ SEXP CharBuffer_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, S
 }
 
 /*
- * See CharBuffer_copy_from_subset() in CharBuffer.c for a description of the first 3 arguments.
+ * See XRaw_copy_from_subset() in XRaw.c for a description of the first 3 arguments.
  */
-SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup)
+SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup)
 {
 	SEXP dest, src;
 
@@ -35,9 +35,9 @@ SEXP CharBuffer_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subse
 }
 
 /*
- * See CharBuffer_copy_from_i1i2() in CharBuffer.c for a description of the arguments.
+ * See XRaw_copy_from_i1i2() in XRaw.c for a description of the arguments.
  */
-SEXP CharBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
+SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -53,9 +53,9 @@ SEXP CharBuffer_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEX
 }
 
 /*
- * See CharBuffer_copy_from_i1i2() in CharBuffer.c for a description of the first 4 arguments.
+ * See XRaw_copy_from_i1i2() in XRaw.c for a description of the first 4 arguments.
  */
-SEXP CharBuffer_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
+SEXP XRaw_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
 	SEXP dest, src;
 	int i1, i2;

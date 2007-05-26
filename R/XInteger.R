@@ -1,33 +1,33 @@
 ### =========================================================================
-### INTEGER BUFFER objects
+### External integer vectors: the "XInteger" class
 ### -------------------------------------------------------------------------
 ###
-### The "IntBuffer" class implements the concept of "CharBuffer" objects but
-### for integers instead of chars.
-### Some differences between "integer" and "IntBuffer":
-###   1. an "IntBuffer" object can't be of length 0 (IntBuffer(0) produces an error)
-###   2. IntBuffer(10) does not initialize its values (integer(10) does)
-###   3. IntBuffer(10)[i] produces an error if i is out of bounds
-###   4. "IntBuffer" objects are fast:
+### The "XInteger" class implements the concept of "XRaw" objects but
+### for integers instead of bytes.
+### Some differences between "integer" and "XInteger":
+###   1. an "XInteger" object can't be of length 0 (XInteger(0) produces an error)
+###   2. XInteger(10) does not initialize its values (integer(10) does)
+###   3. XInteger(10)[i] produces an error if i is out of bounds
+###   4. XInteger objects are fast:
 ###        > a <- integer(100000000)
 ###        > system.time(tmp <- a[])
 ###        [1] 0.65 0.30 0.95 0.00 0.00
 ###        > system.time(a[] <- 100:1)
 ###        [1] 3.08 0.52 3.61 0.00 0.00
 ###
-###        > ib <- IntBuffer(100000000)
+###        > ib <- XInteger(100000000)
 ###        > system.time(tmp <- ib[])
 ###        [1] 0.39 0.52 0.91 0.00 0.00
 ###        > system.time(ib[] <- 100:1)
 ###        [1] 0.56 0.00 0.56 0.00 0.00
 
-setClass("IntBuffer", representation(xp="externalptr"))
+setClass("XInteger", representation(xp="externalptr"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization
 
-setMethod("initialize", "IntBuffer",
+setMethod("initialize", "XInteger",
     function(.Object, length)
     {
         if (missing(length))
@@ -40,28 +40,28 @@ setMethod("initialize", "IntBuffer",
         if (length < 1)
             stop("buffer length must be >= 1")
         xp <- .Call("xp_new", PACKAGE="Biostrings")
-        .Call("IntBuffer_alloc", xp, length, PACKAGE="Biostrings")
+        .Call("XInteger_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         .Object
     }
 )
 
-IntBuffer <- function(...)
+XInteger <- function(...)
 {
-    new("IntBuffer", ...)
+    new("XInteger", ...)
 }
 
-setMethod("show", "IntBuffer",
+setMethod("show", "XInteger",
     function(object)
     {
-        .Call("IntBuffer_show", object@xp, PACKAGE="Biostrings")
+        .Call("XInteger_show", object@xp, PACKAGE="Biostrings")
     }
 )
 
-setMethod("length", "IntBuffer",
+setMethod("length", "XInteger",
     function(x)
     {
-        .Call("IntBuffer_length", x@xp, PACKAGE="Biostrings")
+        .Call("XInteger_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
@@ -71,7 +71,7 @@ setMethod("length", "IntBuffer",
 ### If length(i) == 0 then the read functions return an empty vector
 ### and the write functions don't do anything.
 
-IntBuffer.read <- function(x, i, imax=integer(0))
+XInteger.read <- function(x, i, imax=integer(0))
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -80,13 +80,13 @@ IntBuffer.read <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("IntBuffer_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("XInteger_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("IntBuffer_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
+        .Call("XInteger_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
-IntBuffer.write <- function(x, i, imax=integer(0), value)
+XInteger.write <- function(x, i, imax=integer(0), value)
 {
     if (!is.integer(value))
         stop("'value' is not an integer vector")
@@ -97,9 +97,9 @@ IntBuffer.write <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("IntBuffer_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("XInteger_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("IntBuffer_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("XInteger_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
@@ -108,10 +108,10 @@ IntBuffer.write <- function(x, i, imax=integer(0), value)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### length(as.integer(ib)) is equivalent to length(ib)
 ### but the latter is MUCH faster!
-setMethod("as.integer", "IntBuffer",
+setMethod("as.integer", "XInteger",
     function(x)
     {
-        IntBuffer.read(x, 1, length(x))
+        XInteger.read(x, 1, length(x))
     }
 )
 
@@ -119,18 +119,18 @@ setMethod("as.integer", "IntBuffer",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 
-setMethod("[", "IntBuffer",
+setMethod("[", "XInteger",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
         if (missing(i))
             return(as.integer(x))
-        IntBuffer.read(x, i)
+        XInteger.read(x, i)
     }
 )
 
-setReplaceMethod("[", "IntBuffer",
+setReplaceMethod("[", "XInteger",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -148,8 +148,8 @@ setReplaceMethod("[", "IntBuffer",
         }
         ## Now 'value' is an integer vector
         if (missing(i))
-            return(IntBuffer.write(x, 1, length(x), value=value))
-        IntBuffer.write(x, i, value=value)
+            return(XInteger.write(x, 1, length(x), value=value))
+        XInteger.write(x, i, value=value)
     }
 )
 
@@ -157,13 +157,13 @@ setReplaceMethod("[", "IntBuffer",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality
 
-setMethod("==", signature(e1="IntBuffer", e2="IntBuffer"),
+setMethod("==", signature(e1="XInteger", e2="XInteger"),
     function(e1, e2)
     {
         address(e1@xp) == address(e2@xp)
     }
 )
-setMethod("!=", signature(e1="IntBuffer", e2="IntBuffer"),
+setMethod("!=", signature(e1="XInteger", e2="XInteger"),
     function(e1, e2)
     {
         address(e1@xp) != address(e2@xp)
@@ -172,13 +172,13 @@ setMethod("!=", signature(e1="IntBuffer", e2="IntBuffer"),
 
 ### A wrapper to the very fast memcmp() C-function.
 ### Arguments MUST be the following or it will crash R:
-###   x1, x2: "IntBuffer" objects
+###   x1, x2: "XInteger" objects
 ###   start1, start2, width: single integers
 ### In addition: 1 <= start1 <= start1+width-1 <= length(x1)
 ###              1 <= start2 <= start2+width-1 <= length(x2)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-IntBuffer.compare <- function(x1, start1, x2, start2, width)
+XInteger.compare <- function(x1, start1, x2, start2, width)
 {
-    .Call("IntBuffer_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
+    .Call("XInteger_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
 }

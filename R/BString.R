@@ -5,7 +5,7 @@
 setClass(
     "BString",
     representation(
-        data="CharBuffer",      # contains the string data
+        data="XRaw",      # contains the string data
         offset="integer",       # a single integer
         length="integer"        # a single integer
     )
@@ -61,14 +61,14 @@ setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 BString.read <- function(x, i, imax=integer(0))
 {
-    CharBuffer.read(x@data, x@offset + i, x@offset + imax,
+    XRaw.read(x@data, x@offset + i, x@offset + imax,
                     dec_lkup=dec_lkup(x))
 }
 
 ### Only used at initialization time!
 BString.write <- function(x, i, imax=integer(0), value)
 {
-    CharBuffer.write(x@data, x@offset + i, x@offset + imax, value=value,
+    XRaw.write(x@data, x@offset + i, x@offset + imax, value=value,
                      enc_lkup=enc_lkup(x))
     x
 }
@@ -92,7 +92,7 @@ setMethod("letter", "BString",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor-like functions and generics
 
-BString.init_with_CharBuffer <- function(.Object, src)
+BString.init_with_XRaw <- function(.Object, src)
 {
     .Object@data <- src
     .Object@offset <- as.integer(0)
@@ -107,17 +107,17 @@ BString.init_with_character <- function(.Object, src, lkup=NULL, verbose=FALSE)
     if (length(src) >= 2)
         stop("please use BStringViews() when 'src' is a character vector of length >= 2")
     length <- nchar(src)
-    data <- CharBuffer(length, verbose)
-    CharBuffer.write(data, 1, length, value=src, enc=lkup)
-    BString.init_with_CharBuffer(.Object, data)
+    data <- XRaw(length, verbose)
+    XRaw.write(data, 1, length, value=src, enc=lkup)
+    BString.init_with_XRaw(.Object, data)
 }
 
 BString.init_with_BString_copy <- function(.Object, src, lkup=NULL, verbose=FALSE)
 {
     length <- src@length
-    data <- CharBuffer(length, verbose)
-    CharBuffer.copy(data, src@offset + 1, src@offset + length, src@data, lkup=lkup)
-    BString.init_with_CharBuffer(.Object, data)
+    data <- XRaw(length, verbose)
+    XRaw.copy(data, src@offset + 1, src@offset + length, src@data, lkup=lkup)
+    BString.init_with_XRaw(.Object, data)
 }
 
 BString.init_with_BString <- function(.Object, src, copy.data=FALSE, verbose=FALSE)
@@ -149,8 +149,8 @@ setMethod("initialize", "BString",
     {
         if (is.character(src))
             return(BString.init_with_character(.Object, src, , verbose))
-        if (class(src) == "CharBuffer")
-            return(BString.init_with_CharBuffer(.Object, src))
+        if (class(src) == "XRaw")
+            return(BString.init_with_XRaw(.Object, src))
         if (class(src) %in% c("BString", "AAString"))
             return(BString.init_with_BString(.Object, src, copy.data, verbose))
         if (class(.Object) == "BString" && class(src) %in% c("DNAString", "RNAString"))
@@ -164,8 +164,8 @@ BString.init_DNAorRNA <- function(.Object, src, copy.data, verbose)
     lkup <- enc_lkup(.Object) # for source data encoding
     if (is.character(src))
         return(BString.init_with_character(.Object, src, lkup, verbose))
-    if (class(src) == "CharBuffer")
-        return(BString.init_with_CharBuffer(.Object, src))
+    if (class(src) == "XRaw")
+        return(BString.init_with_XRaw(.Object, src))
     if (class(src) == class(.Object))
         return(BString.init_with_BString(.Object, src, copy.data, verbose))
     if (class(src) == "BString")
@@ -286,8 +286,8 @@ setMethod("[", "BString",
             return(x)
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        data <- CharBuffer(length(i))
-        CharBuffer.copy(data, x@offset + i, src=x@data)
+        data <- XRaw(length(i))
+        XRaw.copy(data, x@offset + i, src=x@data)
         ## class(x) can be "BString" or one of its derivations ("DNAString",
         ## "RNAString" or "AAString").
         new(class(x), data)
@@ -339,7 +339,7 @@ BString.equal <- function(x, y)
     if (x@length != y@length)
         return(FALSE)
     one <- as.integer(1)
-    ans <- !CharBuffer.compare(x@data, x@offset + one, y@data, y@offset + one, x@length)
+    ans <- !XRaw.compare(x@data, x@offset + one, y@data, y@offset + one, x@length)
     as.logical(ans)
 }
 
