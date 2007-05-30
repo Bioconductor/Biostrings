@@ -318,7 +318,7 @@ SEXP XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	dest = R_ALLOC_STRING(n);
+	dest = Biostrings_alloc_string(n);
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
 	Biostrings_memcpy_from_i1i2(i1, i2,
 			dest, n, (char *) RAW(src), LENGTH(src),
@@ -337,7 +337,7 @@ SEXP XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	dest = R_ALLOC_STRING(n);
+	dest = Biostrings_alloc_string(n);
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
 	Biostrings_memcpy_from_subset(INTEGER(subset), n,
 			dest, n, (char *) RAW(src), LENGTH(src),
@@ -525,7 +525,7 @@ SEXP XRaw_read_enc_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax, SEXP 
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	dest = R_ALLOC_STRING(n);
+	dest = Biostrings_alloc_string(n);
 	Biostrings_translate_charcpy_from_i1i2(i1, i2,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
@@ -543,7 +543,7 @@ SEXP XRaw_read_enc_chars_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	dest = R_ALLOC_STRING(n);
+	dest = Biostrings_alloc_string(n);
 	Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));

@@ -20,13 +20,24 @@ SEXP utils_debug()
 /****************************************************************************
  Functions defined below are NOT .Call methods: they are low level routines
  used by .Call methods. They are almost "R independent" (i.e. except for the
- use of the error/warning macros, they don't use/know anything about R
- internals).
+ use of R_alloc() or the error()/warning() macros, they don't use/know
+ anything about R internals).
  DON'T REGISTER THEM IN R_init_Biostrings.c!
  They are all prefixed with "Biostrings_" to minimize the risk of clash with
  symbols found in libc (before "_memcmp" was renamed "Biostrings_memcmp" it
  was clashing with "_memcmp" from libc on churchill).
  ****************************************************************************/
+
+
+/* Alloc memory for a string of length n */
+char * Biostrings_alloc_string(int n)
+{
+	char * s;
+
+	s = (char *) R_alloc((long) (n) + 1L, sizeof(char));
+	s[n] = (char) 0;
+	return s;
+}
 
 
 /* ==========================================================================

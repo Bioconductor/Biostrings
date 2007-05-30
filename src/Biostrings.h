@@ -3,11 +3,13 @@
 #include <string.h>
 
 #define DEBUG_BIOSTRINGS 1
-#define R_ALLOC_STRING(n)  (char *) R_alloc((long) (n) + 1L, sizeof(char))
+
 
 /* utils.c */
 
 SEXP utils_debug();
+
+char * Biostrings_alloc_string(int n);
 
 int Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size_t size);
 
