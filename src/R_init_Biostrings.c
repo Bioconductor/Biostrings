@@ -57,7 +57,7 @@ static const R_CallMethodDef callMethods[] = {
         {"XRaw_reverse_translate_copy_from_i1i2", (DL_FUNC) &XRaw_reverse_translate_copy_from_i1i2, 5},
 
 /* char_frequency.c */
-	{"XRaw_char_frequency", (DL_FUNC) &XRaw_char_frequency, 3},
+	{"char_frequency", (DL_FUNC) &char_frequency, 3},
 
 /* match_naive.c */
 	{"match_naive_debug", (DL_FUNC) &match_naive_debug, 0},

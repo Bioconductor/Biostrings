@@ -2,18 +2,16 @@
 ### External raw vectors: the "XRaw" class
 ### -------------------------------------------------------------------------
 ###
-### A "XRaw" object is a chunk of memory that:
+### An "XRaw" object is a chunk of memory that:
 ###   a. Contains bytes (char at the C level).
 ###   b. Is readable and writable.
 ###   c. Is not copied on object duplication i.e. when doing
-###        cb2 <- cb1
-###      both cb1 and cb2 point to the same place in memory.
+###        xr2 <- xr1
+###      both xr1 and xr2 point to the same place in memory.
 ###      This is achieved by using R predefined type "externalptr".
-###   d. Is not 0-terminated (so it can contain zeros). This is achieved by
-###      having the length of the buffer stored in the "XRaw" object.
-
-
+###
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 debug_utils <- function()
 {
@@ -54,14 +52,17 @@ setMethod("show", "externalptr",
 ### in such a way that it returns a new instance of the "XRaw" class (the
 ### returned object was ALWAYS the same instance everytime the method was
 ### called, I found no workaround).
+###
+
 setClass("XRaw", representation(xp="externalptr"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization
+### Initialization.
+### Note that unlike raw objects, XRaw objects are not initialized with 0's.
 
 ### This:
-###   cb <- XRaw(30)
+###   xr <- XRaw(30)
 ### will call the "initialize" method.
 setMethod("initialize", "XRaw",
     function(.Object, length, verbose=FALSE)
@@ -273,7 +274,7 @@ XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### length(as.integer(cb)) is equivalent to length(cb)
+### length(as.integer(xr)) is equivalent to length(xr)
 ### but the latter is MUCH faster!
 setMethod("as.integer", "XRaw",
     function(x)
@@ -283,15 +284,15 @@ setMethod("as.integer", "XRaw",
 )
 
 ### Typical use:
-###   cb <- XRaw(15)
-###   cb[] <- 65
-###   toString(cb)
-###   cb[] <- "Hello"
-###   toString(cb)
+###   xr <- XRaw(15)
+###   xr[] <- 65
+###   toString(xr)
+###   xr[] <- "Hello"
+###   toString(xr)
 ### So this should always rewrite the content of a "XRaw" object
 ### to itself, without any modification:
-###   cb[] <- toString(cb)
-### whatever the content of cb is!
+###   xr[] <- toString(xr)
+### whatever the content of xr is!
 setMethod("toString", "XRaw",
     function(x)
     {
@@ -305,10 +306,10 @@ setMethod("toString", "XRaw",
 
 ### Select bytes from a "XRaw" object.
 ### Typical use:
-###   cb <- XRaw(30)
-###   cb[25:20]
-###   cb[25:31] # subscript out of bounds
-### Note: cb[] can be used as a shortcut for as.integer(cb)
+###   xr <- XRaw(30)
+###   xr[25:20]
+###   xr[25:31] # subscript out of bounds
+### Note: xr[] can be used as a shortcut for as.integer(xr)
 setMethod("[", "XRaw",
     function(x, i, j, ..., drop)
     {
@@ -322,13 +323,13 @@ setMethod("[", "XRaw",
 
 ### Replace bytes in a "XRaw" object.
 ### Typical use:
-###   cb <- XRaw(30)
-###   cb[] <- 12 # fill with 12
-###   cb[3:10] <- 1:-2
-###   cb[3:10] <- "Ab"
-###   cb[0] <- 4 # subscript out of bounds
-###   cb[31] <- 4 # subscript out of bounds
-###   cb[3] <- -12 # subscript out of bounds
+###   xr <- XRaw(30)
+###   xr[] <- 12 # fill with 12
+###   xr[3:10] <- 1:-2
+###   xr[3:10] <- "Ab"
+###   xr[0] <- 4 # subscript out of bounds
+###   xr[31] <- 4 # subscript out of bounds
+###   xr[3] <- -12 # subscript out of bounds
 setReplaceMethod("[", "XRaw",
     function(x, i, j,..., value)
     {
@@ -344,7 +345,7 @@ setReplaceMethod("[", "XRaw",
             return(XRaw.write(x, i, value=value))
         }
 
-        ## We want to allow this: cb[3] <- 4, even if storage.mode(value)
+        ## We want to allow this: xr[3] <- 4, even if storage.mode(value)
         ## is not "integer"
         if (!is.integer(value)) {
             if (length(value) >= 2)
@@ -363,14 +364,15 @@ setReplaceMethod("[", "XRaw",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Equality
+### Equality.
+###
 
 ### Be careful to the semantic of the "==" operator:
 ###   2 "XRaw" objects are equals if their @xp slot is the
 ###   same "externalptr" instance (then they obviously have
 ###   the same length and contain the same data).
-### With this definition, cb1 and cb2 can be 2 different "XRaw" objects
-### (cb1 != cb2) and contain the same data.
+### With this definition, xr1 and xr2 can be 2 different "XRaw" objects
+### (xr1 != xr2) and contain the same data.
 setMethod("==", signature(e1="XRaw", e2="XRaw"),
     function(e1, e2)
     {
@@ -419,9 +421,9 @@ safeExplode <- function(x)
     .Call("safe_explode", x, PACKAGE="Biostrings")
 }
 
-### pcb <- new("PrintableXRaw", 10)
-### pcb[] <- "ab-C."
-### pcb[] == strsplit(toString(pcb), NULL, fixed=TRUE)[[1]]
+### pxr <- new("PrintableXRaw", 10)
+### pxr[] <- "ab-C."
+### pxr[] == strsplit(toString(pxr), NULL, fixed=TRUE)[[1]]
 setMethod("[", "PrintableXRaw",
     function(x, i, j, ..., drop)
     {

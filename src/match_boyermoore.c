@@ -47,7 +47,7 @@ static int P0buffer_length = 0, P0buffer_nP = 0;
  */
 static int P0buffer_init_status;
 
-static void init_P0buffer(char *P, int nP)
+static void init_P0buffer(const char *P, int nP)
 {
 	int min_nP_nP0, j;
 
@@ -365,7 +365,7 @@ static void init_MWshift_table()
 }
 
 /* Returns the number of matches */
-static int boyermoore(char *P, int nP, char *S, int nS, int is_count_only)
+static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count_only)
 {
 	int count = 0, n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Pmrc, c; /* Pmrc is P right-most char */
@@ -444,20 +444,20 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    is_count_only, count;
-	char *pat, *subj;
+	const Rbyte *pat, *subj;
 	SEXP ans;
 
 	pat_offset = INTEGER(p_offset)[0];
 	pat_length = INTEGER(p_length)[0];
-	pat = CHAR(R_ExternalPtrTag(p_xp)) + pat_offset;
+	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
-	subj = CHAR(R_ExternalPtrTag(s_xp)) + subj_offset;
+	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
 		Biostrings_resetMatchPosBuffer();
-	count = boyermoore(pat, pat_length, subj, subj_length, is_count_only);
+	count = boyermoore((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
 		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),

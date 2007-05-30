@@ -47,7 +47,7 @@ SEXP match_naive_debug()
  */
 
 /* Returns the number of matches */
-static int naive_search(char *P, int nP, char *S, int nS, int is_count_only)
+static int naive_search(const char *P, int nP, const char *S, int nS, int is_count_only)
 {
 	int count = 0, n1, n2;
 
@@ -69,20 +69,20 @@ SEXP match_naive(SEXP p_xp, SEXP p_offset, SEXP p_length,
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    is_count_only, count;
-	char *pat, *subj;
+	const Rbyte *pat, *subj;
 	SEXP ans;
 
 	pat_offset = INTEGER(p_offset)[0];
 	pat_length = INTEGER(p_length)[0];
-	pat = CHAR(R_ExternalPtrTag(p_xp)) + pat_offset;
+	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
-	subj = CHAR(R_ExternalPtrTag(s_xp)) + subj_offset;
+	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
 		Biostrings_resetMatchPosBuffer();
-	count = naive_search(pat, pat_length, subj, subj_length, is_count_only);
+	count = naive_search((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
 		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),

@@ -1,6 +1,6 @@
 BString.char_frequency <- function(x)
 {
-    .Call("XRaw_char_frequency",
+    .Call("char_frequency",
           x@data@xp, x@offset, x@length,
           PACKAGE="Biostrings")
 }

@@ -134,7 +134,7 @@ static void _set_pmaskmap(
 		int pmaskmap_length,
 		ShiftOrWord_t *pmaskmap,
 		int nP,
-		char *pat)
+		const char *pat)
 {
 	ShiftOrWord_t pmask;
 	int nncode, i;
@@ -199,7 +199,7 @@ static int _next_match(
 		int *Lpos,
 		int *Rpos,
 		int nS,
-		char *subj,
+		const char *subj,
 		ShiftOrWord_t *pmaskmap,
 		int PMmask_length, /* PMmask_length = kerr+1 */
 		ShiftOrWord_t *PMmask)
@@ -234,7 +234,7 @@ static int _next_match(
 	return -1;
 }
 
-static int _match_shiftor(char *P, int nP, char *S, int nS, int is_count_only,
+static int _match_shiftor(const char *P, int nP, const char *S, int nS, int is_count_only,
 		int PMmask_length, int is_fixed)
 {
 	ShiftOrWord_t *PMmask, pmaskmap[256];
@@ -310,17 +310,17 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    kerr, is_fixed, is_count_only, count;
-	char *pat, *subj;
+	const Rbyte *pat, *subj;
 	SEXP ans;
 
 	pat_length = INTEGER(p_length)[0];
 	if (pat_length > shiftor_maxbits)
 		error("pattern is too long");
 	pat_offset = INTEGER(p_offset)[0];
-	pat = CHAR(R_ExternalPtrTag(p_xp)) + pat_offset;
+	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
 	subj_length = INTEGER(s_length)[0];
 	subj_offset = INTEGER(s_offset)[0];
-	subj = CHAR(R_ExternalPtrTag(s_xp)) + subj_offset;
+	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	kerr = INTEGER(mismatch)[0];
 	is_fixed = LOGICAL(fixed)[0];
 	is_count_only = LOGICAL(count_only)[0];
@@ -338,7 +338,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 #endif
 	if (!is_count_only)
 		Biostrings_resetMatchPosBuffer();
-	count = _match_shiftor(pat, pat_length, subj, subj_length, is_count_only,
+	count = _match_shiftor((char *) pat, pat_length, (char *) subj, subj_length, is_count_only,
 				kerr+1, is_fixed);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
