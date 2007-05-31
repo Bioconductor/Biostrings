@@ -34,3 +34,32 @@ readFASTA <- function(file, checkComments=TRUE)
                          seq=paste(s1[dp[i]:end[i]], collapse=""))
     ans
 }
+
+writeFASTA <- function(x, file, width=80)
+{
+    if (is.character(file)) {
+        file <- file(file, "w")
+        on.exit(close(file))
+    } else {
+        if (!inherits(file, "connection"))
+            stop("'file' must be a character string or connection")
+        if (!isOpen(file)) {
+            open(file, "w")
+            on.exit(close(file))
+        }
+    }
+
+    for (rec in x) {
+        cat(rec$desc, "\n", file=file, sep="")
+        nlines <- nchar(rec$seq) %/% width + 1
+        for (i in seq_len(nlines)) {
+            start <- (i-1) * width + 1
+            stop <- start + width - 1
+            if (stop > nchar(rec$seq))
+                stop <- nchar(rec$seq)
+            line <- substr(rec$seq, start, stop)
+            cat(line, "\n", file=file, sep="")
+        }
+    }
+}
+

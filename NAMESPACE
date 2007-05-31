@@ -15,7 +15,7 @@ exportMethods(
     as.matrix, as.list, start, end,
     ## New generics
     alphabet, subBString, substr, substring,
-    subject, first, last, width, desc, BStringViews,
+    subject, first, last, width, desc, BStringViews, writeFASTA,
     reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch,
     matchProbePair,
@@ -24,7 +24,7 @@ exportMethods(
 )
 
 export(
-    readFASTA, gregexpr2,
+    readFASTA, writeFASTA, gregexpr2,
     #debug_utils, debug_XRaw,
     #debug_naive, debug_boyermoore, debug_shiftor,
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,

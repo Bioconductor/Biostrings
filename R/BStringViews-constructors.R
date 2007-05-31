@@ -185,3 +185,20 @@ setMethod("BStringViews", "BStringViews",
         src
     }
 )
+
+setGeneric(
+    "writeFASTA",
+    function(x, file, width=80) standardGeneric("writeFASTA")
+)
+
+setMethod("writeFASTA", "BStringViews",
+    function(x, file, width=80)
+    {
+        y <- list()
+        for (i in seq_len(length(x))) {
+            y[[i]] <- list(desc=desc(x)[i], seq=as.character(x[[i]]))
+        }
+        writeFASTA(y, file, width)
+    }
+)
+

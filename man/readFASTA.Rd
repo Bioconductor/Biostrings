@@ -1,6 +1,9 @@
 \name{readFASTA}
 \alias{readFASTA}
-\title{ A function to read FASTA formatted files}
+\alias{writeFASTA}
+\alias{writeFASTA,BStringViews-method}
+
+\title{Functions to read/write FASTA formatted files}
 \description{
  FASTA is a simple file format for biological sequence data. A file may
 contain one or more sequences, for each sequence there is a description 
@@ -8,11 +11,14 @@ line which begins with a \code{>}.
 }
 \usage{
 readFASTA(file, checkComments = TRUE)
+writeFASTA(x, file, width=80)
 }
 \arguments{
   \item{file}{ The name of the file to be read from.}
   \item{checkComments}{ Whether or not comments, lines beginning with
 a semi-colon should be found and removed. }
+  \item{x}{A list as produced by \code{readFASTA} or a \link{BStringViews} object.}
+  \item{width}{The maximum number of letters per line of sequence.}
 }
 \details{
  FASTA is a widely used format in biology. It is a relatively simple markup.
@@ -32,9 +38,20 @@ of the biological sequence.
 }
 \author{ R. Gentleman }
 
-\seealso{\code{\link{read.table}}, \code{\link{scan}}}
+\seealso{
+  \code{\link{read.table}},
+  \code{\link{scan}},
+  \code{\link{write.table}},
+  \code{\link{BStringViews}}
+}
+
 \examples{
-f1 = system.file("Exfiles/someORF.fsa", package="Biostrings")
-ff = readFASTA(f1)
+f1 <- system.file("Exfiles/someORF.fsa", package="Biostrings")
+ff <- readFASTA(f1)
+desc <- sapply(ff, function(x) x$desc)
+## Keep the "reverse complement" sequences only
+ff2 <- ff[grep("reverse complement", desc, fixed=TRUE)]
+writeFASTA(ff2, file.path(tempdir(), "someORF2.fsa"))
 }
 \keyword{ manip}
+
