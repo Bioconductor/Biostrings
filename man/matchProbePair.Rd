@@ -1,7 +1,7 @@
 \name{matchProbePair}
 
 \alias{matchProbePair}
-\alias{matchProbePair,ANY,ANY,DNAString-method}
+\alias{matchProbePair,DNAString-method}
 
 
 \title{Find "theoretical amplicons" mapped to a probe pair}

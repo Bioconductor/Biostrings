@@ -21,8 +21,8 @@
 
 \usage{
   reverse(x, ...)
-  complement(x)
-  reverseComplement(x)
+  complement(x, ...)
+  reverseComplement(x, ...)
 }
 
 \arguments{
@@ -35,7 +35,7 @@
     and \code{reverseComplement}.
   }
   \item{...}{
-    additional arguments to be passed to or from methods.
+    Additional arguments to be passed to or from methods.
   }
 }
 

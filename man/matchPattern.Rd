@@ -1,15 +1,15 @@
 \name{matchPattern}
 
 \alias{matchPattern}
-\alias{matchPattern,ANY,character-method}
-\alias{matchPattern,ANY,BString-method}
-\alias{matchPattern,ANY,BStringViews-method}
+\alias{matchPattern,character-method}
+\alias{matchPattern,BString-method}
+\alias{matchPattern,BStringViews-method}
 \alias{countPattern}
-\alias{countPattern,ANY,character-method}
-\alias{countPattern,ANY,BString-method}
-\alias{countPattern,ANY,BStringViews-method}
+\alias{countPattern,character-method}
+\alias{countPattern,BString-method}
+\alias{countPattern,BStringViews-method}
 \alias{mismatch}
-\alias{mismatch,ANY,BStringViews-method}
+\alias{mismatch,BStringViews-method}
 
 \alias{matchDNAPattern}
 

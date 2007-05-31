@@ -7,7 +7,9 @@
     RNA_STRING_CODEC@enc_lkup[lkup + 1]
 }
 
-setGeneric("reverse", function(x, ...) standardGeneric("reverse"))
+setGeneric("reverse", signature="x",
+    function(x, ...) standardGeneric("reverse")
+)
 
 setMethod("reverse", "BString",
     function(x, ...)
@@ -32,12 +34,12 @@ setMethod("reverse", "BStringViews",
 )
 
 setGeneric(
-    "complement",
-    function(x) standardGeneric("complement")
+    "complement", signature="x",
+    function(x, ...) standardGeneric("complement")
 )
 
 setMethod("complement", "DNAString",
-    function(x)
+    function(x, ...)
     {
         lx <- length(x)
         data <- XRaw(lx)
@@ -48,7 +50,7 @@ setMethod("complement", "DNAString",
 )
 
 setMethod("complement", "BStringViews",
-    function(x)
+    function(x, ...)
     {
         subject <- complement(x@subject)
         views(subject, x@views$start, x@views$end)
@@ -56,12 +58,12 @@ setMethod("complement", "BStringViews",
 )
 
 setGeneric(
-    "reverseComplement",
-    function(x) standardGeneric("reverseComplement")
+    "reverseComplement", signature="x",
+    function(x, ...) standardGeneric("reverseComplement")
 )
 
 setMethod("reverseComplement", "DNAString",
-    function(x)
+    function(x, ...)
     {
         lx <- length(x)
         data <- XRaw(lx)
@@ -72,7 +74,7 @@ setMethod("reverseComplement", "DNAString",
 )
 
 setMethod("reverseComplement", "BStringViews",
-    function(x)
+    function(x, ...)
     {
         subject <- reverseComplement(x@subject)
         ls <- subject@length

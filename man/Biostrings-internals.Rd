@@ -12,6 +12,7 @@
 \alias{XRaw}
 
 \alias{length,XRaw-method}
+\alias{as.integer,XRaw-method}
 \alias{toString,XRaw-method}
 \alias{initialize,XRaw-method}
 \alias{show,XRaw-method}
@@ -32,6 +33,7 @@
 \alias{XInteger}
 
 \alias{length,XInteger-method}
+\alias{as.integer,XInteger-method}
 \alias{initialize,XInteger-method}
 \alias{show,XInteger-method}
 \alias{==,XInteger,XInteger-method}

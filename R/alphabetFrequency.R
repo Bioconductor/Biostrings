@@ -25,7 +25,7 @@ BString.alphabet_frequency <- function(x, baseOnly)
 }
 
 setGeneric(
-    "alphabetFrequency",
+    "alphabetFrequency", signature="x",
     function(x, baseOnly=FALSE) standardGeneric("alphabetFrequency")
 )
 

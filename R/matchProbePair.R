@@ -73,12 +73,13 @@ reduceProbePairMatches <- function(start, end)
 ###
 
 setGeneric(
-    "matchProbePair",
+    "matchProbePair", signature="subject",
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
         standardGeneric("matchProbePair")
 )
 
-setMethod("matchProbePair", signature(subject="DNAString"),
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchProbePair", "DNAString", 
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
     {
         ## This won't copy the data if Fprobe and Rprobe are already DNAString objects

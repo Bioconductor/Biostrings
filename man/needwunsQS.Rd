@@ -4,6 +4,7 @@
 \alias{needwunsQS,character,character-method}
 \alias{needwunsQS,character,BString-method}
 \alias{needwunsQS,BString,character-method}
+\alias{needwunsQS,BString,BString-method}
 \alias{print.needwunsQS}
 \alias{alignScore.needwunsQS}
 \alias{alignScore}

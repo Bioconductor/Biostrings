@@ -133,7 +133,7 @@ BStringViews <- function(src, subjectClass, sep="")
 }
 
 setGeneric(
-    "BStringViews",
+    "BStringViews", signature="src",
     function(src, subjectClass, sep="") standardGeneric("BStringViews")
 )
 
@@ -187,7 +187,7 @@ setMethod("BStringViews", "BStringViews",
 )
 
 setGeneric(
-    "writeFASTA",
+    "writeFASTA", signature="x",
     function(x, file, width=80) standardGeneric("writeFASTA")
 )
 

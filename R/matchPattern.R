@@ -255,23 +255,29 @@ debug_shiftor <- function()
 ###   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
 ###   matchPattern("---", DNAString("A"))
 setGeneric(
-    "matchPattern",
+    "matchPattern", signature="subject",
     function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("matchPattern")
 )
-setMethod("matchPattern", signature(subject="character"),
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPattern", "character",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
         .matchPattern(pattern, subject, algorithm, mismatch, fixed)
     }
 )
-setMethod("matchPattern", signature(subject="BString"),
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPattern", "BString",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
         .matchPattern(pattern, subject, algorithm, mismatch, fixed)
     }
 )
-setMethod("matchPattern", signature(subject="BStringViews"),
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPattern", "BStringViews",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
         if (length(subject) != 1)
@@ -296,23 +302,29 @@ matchDNAPattern <- function(...)
 ###   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
 ###   countPattern("---", DNAString("A"))
 setGeneric(
-    "countPattern",
+    "countPattern", signature="subject",
     function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("countPattern")
 )
-setMethod("countPattern", signature(subject="character"),
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPattern", "character",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
         .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
     }
 )
-setMethod("countPattern", signature(subject="BString"),
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPattern", "BString",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
         .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
     }
 )
-setMethod("countPattern", signature(subject="BStringViews"),
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPattern", "BStringViews",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
         if (length(subject) != 1)
@@ -358,14 +370,15 @@ bsMismatch <- function(pattern, subject, start, fixed)
 }
 
 setGeneric(
-    "mismatch",
+    "mismatch", signature="x",
     function(pattern, x, fixed=TRUE) standardGeneric("mismatch")
 )
 
 ### Typical use:
 ###   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), mismatch=2)
 ###   mismatch("TGA", mp)
-setMethod("mismatch", signature(x="BStringViews"),
+### Dispatch on 'x' (see signature of generic).
+setMethod("mismatch", "BStringViews",
     function(pattern, x, fixed)
     {
         if (class(pattern) != class(x@subject)) {

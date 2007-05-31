@@ -78,7 +78,9 @@ BString.write <- function(x, i, imax=integer(0), value)
 ### Accessor methods
 
 ### Returns a character-string
-setGeneric("letter", function(x, i) standardGeneric("letter"))
+setGeneric("letter", signature="x",
+    function(x, i) standardGeneric("letter")
+)
 setMethod("letter", "BString",
     function(x, i)
     {
@@ -409,7 +411,8 @@ BString.substring <- function(x, start, end)
 ### to '1' and 'length(x)' because we want to be consistent with what the
 ### views() function does.
 setGeneric(
-    "subBString", function(x, start=NA, end=NA, length=NA) standardGeneric("subBString")
+    "subBString", signature="x",
+    function(x, start=NA, end=NA, length=NA) standardGeneric("subBString")
 )
 setMethod("subBString", "BString",
     function(x, start, end, length)
@@ -443,14 +446,16 @@ setMethod("subBString", "BString",
 )
 
 setGeneric(
-    "substr", function(x, start=NA, stop=NA) standardGeneric("substr")
+    "substr", signature="x",
+    function(x, start=NA, stop=NA) standardGeneric("substr")
 )
 setMethod("substr", "BString",
     function(x, start, stop) subBString(x, start, stop)
 )
 
 setGeneric(
-    "substring", function(text, first=NA, last=NA) standardGeneric("substring")
+    "substring", signature="text",
+    function(text, first=NA, last=NA) standardGeneric("substring")
 )
 setMethod("substring", "BString",
     function(text, first=NA, last=NA) subBString(text, first, last)
