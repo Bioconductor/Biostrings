@@ -383,8 +383,8 @@ setMethod("!=", signature(e2="BString"),
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 setMethod("as.character", "BString", function(x) BString.read(x, 1, x@length))
-setMethod("toString", "BString", function(x) as.character(x))
-setMethod("nchar", "BString", function(x, type) x@length)
+setMethod("toString", "BString", function(x, ...) as.character(x))
+setMethod("nchar", "BString", function(x, type="chars", allowNA=FALSE) x@length)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

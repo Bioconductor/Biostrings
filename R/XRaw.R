@@ -294,7 +294,7 @@ setMethod("as.integer", "XRaw",
 ###   xr[] <- toString(xr)
 ### whatever the content of xr is!
 setMethod("toString", "XRaw",
-    function(x)
+    function(x, ...)
     {
         XRaw.read(x, 1, length(x))
     }

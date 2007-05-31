@@ -397,14 +397,14 @@ setMethod("as.character", "BStringViews",
 )
 
 setMethod("toString", "BStringViews",
-    function(x)
+    function(x, ...)
     {
-        toString(as.character(x))
+        toString(as.character(x), ...)
     }
 )
 
 setMethod("nchar", "BStringViews",
-    function(x, type)
+    function(x, type = "chars", allowNA = FALSE)
     {
         ls <- length(x@subject)
         (ifelse(x@views$end<=ls, x@views$end, ls) -
