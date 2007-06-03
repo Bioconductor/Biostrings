@@ -157,3 +157,11 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP mismatch, SEXP fixed, SEXP count_only);
 
+
+/* align_needwunsQS.c */
+
+SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
+		SEXP s2_xp, SEXP s2_offset, SEXP s2_length,
+		SEXP mat, SEXP mat_nrow, SEXP lkup,
+		SEXP gap_cost, SEXP gap_code);
+

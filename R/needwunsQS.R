@@ -67,6 +67,46 @@
     ans
 }
 
+### 's1' and 's2' must be BString objects of the same derived class.
+BString.needwunsQS <- function(s1, s2, substmat, gappen)
+{
+    if (class(s1) != class(s2))
+        stop("'s1' and 's2' are not of the same class")
+    if (!is.matrix(substmat) || !is.integer(substmat))
+        stop("'substmat' must be a matrix of integers")
+    if (!identical(rownames(substmat), colnames(substmat)))
+        stop("row and column names differ for matrix 'substmat'")
+    if (is.null(rownames(substmat)))
+        stop("matrix 'substmat' must have row and column names")
+    if (any(duplicated(rownames(substmat))))
+        stop("matrix 'substmat' has duplicated row names")
+    if (!all(rownames(substmat) %in% alphabet(s1)))
+        stop("matrix 'substmat' is incompatible with 's1' alphabet")
+    if (is.null(codec(s1))) {
+        codes <- as.integer(charToRaw(paste(rownames(substmat), collapse="")))
+        gap_code <- charToRaw("-")
+    } else {
+        letters2codes <- codec(s1)@codes
+        names(letters2codes) <- codec(s1)@letters
+        codes <- letters2codes[rownames(substmat)]
+        gap_code <- as.raw(letters2codes[["-"]])
+    }
+    lkup <- buildLookupTable(codes, 0:(nrow(substmat)-1))
+    ans <- .Call("align_needwunsQS",
+                 s1@data@xp, s1@offset, s1@length,
+                 s2@data@xp, s2@offset, s2@length,
+                 substmat, nrow(substmat), lkup,
+                 gappen, gap_code,
+                 PACKAGE="Biostrings")
+    al1 <- XRaw(1) 
+    al1@xp <- ans[["al1"]]
+    ans[["al1"]] <- new(class(s1), al1)
+    al2 <- XRaw(1)
+    al2@xp <- ans[["al2"]]
+    ans[["al2"]] <- new(class(s2), al2)
+    ans
+}
+
 setGeneric(
     "needwunsQS", signature=c("s1", "s2"),
     function(s1, s2, substmat, gappen=8) standardGeneric("needwunsQS")

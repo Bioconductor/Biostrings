@@ -72,7 +72,7 @@ setMethod("initialize", "XRaw",
         if (!is.numeric(length) || is.nan(length))
             stop("'length' is not a number")
         if (length(length) != 1)
-            stop("'length' must have only one element")
+            stop("'length' must have exactly one element")
         length <- as.integer(length)
         if (length < 1)
             stop("buffer length must be >= 1")
