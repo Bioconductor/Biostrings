@@ -79,7 +79,7 @@ SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 	/* set the "score" element */
-	ans_elt = NEW_INTEGER(1);
+	PROTECT(ans_elt = NEW_INTEGER(1));
 	INTEGER(ans_elt)[0] = score;
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);

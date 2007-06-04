@@ -26,5 +26,5 @@ AMINO_ACID_CODE <- c(
 )
 
 ### Amino Acid alphabet ("*" is a translation stop)
-AA_ALPHABET <- c(names(AMINO_ACID_CODE), "*")
+AA_ALPHABET <- c(names(AMINO_ACID_CODE), "*", "-")
 

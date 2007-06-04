@@ -80,8 +80,10 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
         stop("matrix 'substmat' must have row and column names")
     if (any(duplicated(rownames(substmat))))
         stop("matrix 'substmat' has duplicated row names")
-    if (!all(rownames(substmat) %in% alphabet(s1)))
-        stop("matrix 'substmat' is incompatible with 's1' alphabet")
+    ## Can't force this for now, since 'substmat' has row names "B", "Z"
+    ## and "X" which are not part of the alphabet.
+    #if (!is.null(alphabet(s1)) && !all(rownames(substmat) %in% alphabet(s1)))
+    #    stop("matrix 'substmat' is incompatible with 's1' alphabet")
     if (is.null(codec(s1))) {
         codes <- as.integer(charToRaw(paste(rownames(substmat), collapse="")))
         gap_code <- charToRaw("-")
@@ -96,7 +98,7 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
                  s1@data@xp, s1@offset, s1@length,
                  s2@data@xp, s2@offset, s2@length,
                  substmat, nrow(substmat), lkup,
-                 gappen, gap_code,
+                 as.integer(gappen), gap_code,
                  PACKAGE="Biostrings")
     al1 <- XRaw(1) 
     al1@xp <- ans[["al1"]]
