@@ -91,7 +91,7 @@ nwdemo
 The score (final element of dynamic programming
 score matrix) can be accessed:
 <<lksc>>=
-alignScore(nwdemo)
+score(nwdemo)
 @
 
 

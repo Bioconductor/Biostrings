@@ -312,7 +312,8 @@ setReplaceMethod("[", "BString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Equality
+### Equality.
+###
 
 ### We want:
 ###   BString("ab") == "ab" # TRUE

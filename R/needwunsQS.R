@@ -1,10 +1,17 @@
-### Originally written by VJC for Biostrings 1.
-### Adapted for Biostrings 2 by H. Pages.
-
+### =========================================================================
+### The needwunsQS() generic & related functions and classes
+### --------------------------------------------------------
+###
 ### Needleman-Wunsch global alignment following Durbin et al
 ### QS = quadratic space requirement, simple gap penalty 
+###
+### -------------------------------------------------------------------------
 
-### 's1' and 's2' must be character vectors of length 1
+
+### NOT USED ANYMORE!
+### R-implementation of the Needleman-Wunsch algo originally written by VJC
+### for Biostrings 1 and adapted for Biostrings 2 by H. Pages.
+### 's1' and 's2' must be character vectors of length 1.
 .needwunsQS <- function(s1, s2, substmat, gappen)
 {
     if (length(s1) != 1 || length(s2) != 1)
@@ -67,11 +74,37 @@
     ans
 }
 
-### 's1' and 's2' must be BString objects of the same derived class.
+#alignScore <- function(x, ...) UseMethod("alignScore")
+#alignScore.needwunsQS <- function(x, ...) attr(x,"score")
+
+alignScore <- function(...) {.Deprecated("score"); score(...)}
+
+print.needwunsQS <- function(x, ...)
+{
+    print(matrix(c(x["al1"], x["al2"]),ncol=1))
+    cat(paste("Score: ", alignScore(x), collapse=""),"\n")
+    invisible(x)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### C-implementation of the Needleman-Wunsch algo.
+###
+### The various "needwunsQS" methods below don't call
+### .Call("align_needwunsQS", ...) directly but call BString.needwunsQS()
+### instead which itself calls .Call("align_needwunsQS", ...).
+### Some quick testing shows that, depending on the size of the strings to
+### align, this C version is 100 to 1000 times faster than the above
+### .needwunsQS().
+### 's1' and 's2' must be BString (or derived) objects of the same class.
+### Return a BStringAlign object where the "al1" and "al2" slots contain the
+### aligned versions of 's1' and 's2'.
 BString.needwunsQS <- function(s1, s2, substmat, gappen)
 {
     if (class(s1) != class(s2))
         stop("'s1' and 's2' are not of the same class")
+    if (length(s1) * length(s2) > 10000L * 10000L)
+        stop("'length(s1) * length(s2)' is too big (> 1e+08)")
     if (!is.matrix(substmat) || !is.integer(substmat))
         stop("'substmat' must be a matrix of integers")
     if (!identical(rownames(substmat), colnames(substmat)))
@@ -100,13 +133,13 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
                  substmat, nrow(substmat), lkup,
                  as.integer(gappen), gap_code,
                  PACKAGE="Biostrings")
-    al1 <- XRaw(1) 
-    al1@xp <- ans[["al1"]]
-    ans[["al1"]] <- new(class(s1), al1)
-    al2 <- XRaw(1)
-    al2@xp <- ans[["al2"]]
-    ans[["al2"]] <- new(class(s2), al2)
-    ans
+    xr1 <- XRaw(1) 
+    xr1@xp <- ans$al1
+    align1 <- new(class(s1), xr1)
+    xr2 <- XRaw(1) 
+    xr2@xp <- ans$al2
+    align2 <- new(class(s2), xr2)
+    new("BStringAlign", align1=align1, align2=align2, score=ans$score)
 }
 
 setGeneric(
@@ -115,28 +148,18 @@ setGeneric(
 )
 setMethod("needwunsQS", signature(s1="character", s2="character"),
     function(s1, s2, substmat, gappen)
-        .needwunsQS(s1, s2, substmat, gappen)
+        BString.needwunsQS(BString(s1), BString(s2), substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="character", s2="BString"),
     function(s1, s2, substmat, gappen)
-        .needwunsQS(s1, as.character(s2), substmat, gappen)
+        BString.needwunsQS(new(class(s2), s1), s2, substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="BString", s2="character"),
     function(s1, s2, substmat, gappen)
-        .needwunsQS(as.character(s1), s2, substmat, gappen)
+        BString.needwunsQS(s1, new(class(s1), s2), substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="BString", s2="BString"),
     function(s1, s2, substmat, gappen)
-        .needwunsQS(as.character(s1), as.character(s2), substmat, gappen)
+        BString.needwunsQS(s1, s2, substmat, gappen)
 )
-
-alignScore <- function(x, ...) UseMethod("alignScore")
-alignScore.needwunsQS <- function(x, ...) attr(x,"score")
-
-print.needwunsQS <- function(x, ...)
-{
-    print(matrix(c(x["al1"], x["al2"]),ncol=1))
-    cat(paste("Score: ", alignScore(x), collapse=""),"\n")
-    invisible(x)
-}
 

@@ -4,7 +4,7 @@ useDynLib(Biostrings)
 
 exportClasses(
     "BString", "DNAString", "RNAString", "AAString",
-    "BStringViews"
+    "BStringViews", "BStringAlign"
 )
 
 exportMethods(
@@ -12,15 +12,19 @@ exportMethods(
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
     as.character, toString, nchar, toComplex, as.complex,
-    as.matrix, as.list, start, end,
-    ## New generics
-    alphabet, subBString, substr, substring,
-    subject, first, last, width, desc, BStringViews, writeFASTA,
+    as.matrix, as.list,
+    ## Accessors
+    alphabet,
+    subject, start, end, width, desc,
+    align1, align2, score,
+    ## Others
+    subBString, substr, substring,
+    BStringViews, writeFASTA,
     reverse, complement, reverseComplement, alphabetFrequency,
-    matchPattern, countPattern, mismatch,
-    matchProbePair,
-    ## Copy/pasted from Biostrings 1
-    needwunsQS
+    matchPattern, countPattern, mismatch, matchProbePair,
+    needwunsQS,
+    ## Deprecated
+    first, last
 )
 
 export(
@@ -33,11 +37,6 @@ export(
     letter, BString, DNAString, RNAString, AAString,
     views, adjacentViews,
     matchDNAPattern,
-    ## Copy/pasted from Biostrings 1
     alignScore
 )
-
-## Copy/pasted from Biostrings 1
-S3method(print, needwunsQS)
-S3method(alignScore, needwunsQS)
 
