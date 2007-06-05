@@ -40,7 +40,19 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.  }
 %\seealso{  }
 
 \examples{
-data(blosum50)
-needwunsQS( "PAWHEAE", "HEAGAWGHEE", blosum50 )
+  ## nucleotide alignment
+  mat <- matrix(-5L, nrow=4, ncol=4)
+  for (i in seq_len(4)) mat[i, i] <- 0L
+  rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
+  s1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 1000, replace=TRUE), collapse=""))
+  s2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 1000, replace=TRUE), collapse=""))
+  nw0 <- needwunsQS(s1, s2, mat, gappen=0)
+  nw1 <- needwunsQS(s1, s2, mat, gappen=1)
+  nw5 <- needwunsQS(s1, s2, mat, gappen=5)
+
+  ## amino acid alignment
+  data(blosum50)
+  needwunsQS("PAWHEAE", "HEAGAWGHEE", blosum50)
 }
-\keyword{ models }
+
+\keyword{models}
