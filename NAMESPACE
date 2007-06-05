@@ -14,7 +14,7 @@ exportMethods(
     as.character, toString, nchar, toComplex, as.complex,
     as.matrix, as.list,
     ## Accessors
-    alphabet,
+    alphabet, letter,
     subject, start, end, width, desc,
     align1, align2, score,
     ## Others
@@ -34,7 +34,7 @@ export(
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
-    letter, BString, DNAString, RNAString, AAString,
+    BString, DNAString, RNAString, AAString,
     views, adjacentViews,
     matchDNAPattern,
     alignScore

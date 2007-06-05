@@ -148,7 +148,9 @@
 \author{H. Pages}
 
 \seealso{
-  \link{DNAString-class}, \link{RNAString-class}, \link{AAString-class}
+  \link{DNAString-class},
+  \link{RNAString-class},
+  \link{AAString-class},
   \link{BStringViews-class}
 }
 

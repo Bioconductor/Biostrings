@@ -24,13 +24,8 @@ setMethod("toComplex", "DNAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "as.complex" generic is DEPRECATED in favor of toComplex().
+### The "as.complex" generic is DEFUNCT in favor of "toComplex".
 ###
 
-setMethod("as.complex", "DNAString",
-    function(x, ...)
-    {
-        .Deprecated("toComplex")
-    }
-)
+setMethod("as.complex", "DNAString", function(x, ...) .Defunct("toComplex"))
 

@@ -37,7 +37,10 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.  }
 %\note{  }
 
 
-%\seealso{  }
+\seealso{
+  \link{BStringAlign-class},
+  \link{scoring\_matrices}
+}
 
 \examples{
   ## nucleotide alignment
@@ -51,8 +54,7 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.  }
   nw5 <- needwunsQS(s1, s2, mat, gappen=5)
 
   ## amino acid alignment
-  data(blosum50)
-  needwunsQS("PAWHEAE", "HEAGAWGHEE", blosum50)
+  needwunsQS("PAWHEAE", "HEAGAWGHEE", substmat="BLOSUM50")
 }
 
 \keyword{models}

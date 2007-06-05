@@ -286,10 +286,7 @@ setMethod("matchPattern", "BStringViews",
     }
 )
 
-matchDNAPattern <- function(...)
-{
-    .Defunct(" matchPattern")
-}
+matchDNAPattern <- function(...) .Defunct("matchPattern")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

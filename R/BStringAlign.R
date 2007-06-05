@@ -51,6 +51,11 @@ setMethod("align2", "BStringAlign", function(x) x@align2)
 setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "BStringAlign", function(x) x@score)
 
+setMethod("length", "BStringAlign", function(x) length(align1(x)))
+setMethod("nchar", "BStringAlign", function(x, type="chars", allowNA=FALSE) length(x))
+
+setMethod("alphabet", "BStringAlign", function(x) alphabet(align1(x)))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

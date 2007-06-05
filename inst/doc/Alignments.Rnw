@@ -80,12 +80,12 @@ are not currently used.
 
 The BLOSUM50 matrix is available in this package as a matrix:
 <<lkblo>>=
-data(blosum50)
-blosum50[1:4,1:4]
+data(BLOSUM50)
+BLOSUM50[1:4,1:4]
 @
 A canonical example from Durbin, Eddy et al:
 <<runnw>>=
-nwdemo <- needwunsQS( "PAWHEAE", "HEAGAWGHEE", blosum50 )
+nwdemo <- needwunsQS("PAWHEAE", "HEAGAWGHEE", BLOSUM50)
 nwdemo
 @
 The score (final element of dynamic programming

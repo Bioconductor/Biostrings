@@ -1,6 +1,6 @@
 ### =========================================================================
-### The needwunsQS() generic & related functions and classes
-### --------------------------------------------------------
+### The needwunsQS() generic & related functions
+### --------------------------------------------
 ###
 ### Needleman-Wunsch global alignment following Durbin et al
 ### QS = quadratic space requirement, simple gap penalty 
@@ -105,6 +105,14 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
         stop("'s1' and 's2' are not of the same class")
     if (length(s1) * length(s2) > 20000L * 20000L)
         stop("'length(s1) * length(s2)' is too big (> 4e+08)")
+    if (is.character(substmat)) {
+        if (length(substmat) != 1)
+            stop("'substmat' is a character vector of length != 1")
+        matname <- substmat
+        substmat <- try(getdata(matname), silent=TRUE)
+        if (is(substmat, "try-error"))
+            stop("unknown scoring matrix \"", matname, "\"")
+    }
     if (!is.matrix(substmat) || !is.integer(substmat))
         stop("'substmat' must be a matrix of integers")
     if (!identical(rownames(substmat), colnames(substmat)))
@@ -113,14 +121,12 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
         stop("matrix 'substmat' must have row and column names")
     if (any(duplicated(rownames(substmat))))
         stop("matrix 'substmat' has duplicated row names")
-    ## Can't force this for now, since 'substmat' has row names "B", "Z"
-    ## and "X" which are not part of the alphabet.
-    #if (!is.null(alphabet(s1)) && !all(rownames(substmat) %in% alphabet(s1)))
-    #    stop("matrix 'substmat' is incompatible with 's1' alphabet")
     if (is.null(codec(s1))) {
         codes <- as.integer(charToRaw(paste(rownames(substmat), collapse="")))
         gap_code <- charToRaw("-")
     } else {
+        if (!all(rownames(substmat) %in% alphabet(s1)))
+            stop("matrix 'substmat' is incompatible with 's1' alphabet")
         letters2codes <- codec(s1)@codes
         names(letters2codes) <- codec(s1)@letters
         codes <- letters2codes[rownames(substmat)]
