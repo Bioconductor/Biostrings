@@ -71,7 +71,7 @@ setMethod("show", "BStringAlign",
         al2 <- align2(object)
         #l1 <- length(al1)
         #cat("  ", l1, "-letter \"", class(al1), "\" objects", sep="")
-        cat("\nalign1:", BString.get_snippet(al1, 72))
+        cat("align1:", BString.get_snippet(al1, 72))
         cat("\nalign2:", BString.get_snippet(al2, 72))
         cat("\nscore:", score(object))
         cat("\n")
