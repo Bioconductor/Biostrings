@@ -37,7 +37,7 @@
 \format{
   A square symetric matrix with integer coefficients.
   The row and column names are identical and unique: each name
-  is a single letters representing a nucleotide or an amino acid.
+  is a single letter representing a nucleotide or an amino acid.
 }
 
 \details{
