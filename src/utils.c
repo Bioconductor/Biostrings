@@ -233,7 +233,7 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
 void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		int *lkup, int lkup_length)
+		const int *lkup, int lkup_length)
 {
 	const char *b;
         char src_val;
@@ -273,7 +273,7 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		int *lkup, int lkup_length)
+		const int *lkup, int lkup_length)
 {
 	char src_val;
 	int i, j, k, lkup_key, lkup_val;
@@ -313,7 +313,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
 void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		int *lkup, int lkup_length)
+		const int *lkup, int lkup_length)
 {
 	char *a, src_val;
 	int i, j, lkup_key, lkup_val;
@@ -352,7 +352,7 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 void Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		int *lkup, int lkup_length)
+		const int *lkup, int lkup_length)
 {
 	char src_val;
 	int i, j, k, lkup_key, lkup_val;
@@ -430,7 +430,7 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		int *lkup, int lkup_length)
+		const int *lkup, int lkup_length)
 {
 	const char *b;
         char src_val;
@@ -471,7 +471,7 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
 		const char *src, int src_length,
-		Rcomplex *lkup, int lkup_length)
+		const Rcomplex *lkup, int lkup_length)
 {
 	const char *b;
         char src_val;

@@ -6,7 +6,7 @@ Version: 2.5.7
 Author: H. Pages, R. Gentleman and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
-Depends: R (>= 2.5.0), methods
+Depends: R (>= 2.6.0), methods
 Suggests: RUnit, BSgenome, BSgenome.Celegans.UCSC.ce2,
           BSgenome.Dmelanogaster.FlyBase.r51, hgu95av2probe
 License: LGPL
