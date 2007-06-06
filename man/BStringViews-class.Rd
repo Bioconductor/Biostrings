@@ -32,10 +32,12 @@
 \alias{==,BString,BStringViews-method}
 \alias{==,BStringViews,ANY-method}
 \alias{==,ANY,BStringViews-method}
+\alias{==,BStringViews,BStringViews-method}
 \alias{!=,BStringViews,BString-method}
 \alias{!=,BString,BStringViews-method}
 \alias{!=,BStringViews,ANY-method}
 \alias{!=,ANY,BStringViews-method}
+\alias{!=,BStringViews,BStringViews-method}
 \alias{as.character,BStringViews-method}
 \alias{toString,BStringViews-method}
 \alias{nchar,BStringViews-method}

@@ -1,14 +1,12 @@
 
 
-For 2.3.14
+For 2.5.10
 
 - Vectorize matchPattern() (result will be a list of BStringViews
   objects).
 
 - Make alphabetFrequency works with BStringViews objects with
   "out of limits" views.
-
-- Implement .needwunsQS in C.
 
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
   alignment algo) into Biostrings.
@@ -19,52 +17,7 @@ For 2.3.14
   and size, how well do they work on different inputs)".
 
 
-For 2.3.15
-
-- "normalized" BStringViews objects: 'v' is "normalized" means
-    (1) no "out of limits" views,
-    (2) views are sorted from left to right (start(v) is ascending),
-    (3) views don't overlap and can't even be adjacents
-  If length(v) >= 2, then the 3 above conditions are equivalent to: 
-    1 <= start(v)[i] <= end(v)[i] < start(v)[i+1]
-                     <= end(v)[i+1] <= nchar(subject(v))
-  for every 1 <= i < length(v).
-  If length(v) == 0, then 'v' is normalized.
-  If length(v) == 1, then 'v' is normalized <=> view is not "out of limits".
-
-  The normalize() function:
-  For any given BStringViews object v0, let's call S(v0) the subset of
-  integers defined by:
-    (union of all [start(v0)[i],end(v0)[i]]) inter [1,nchar(subject(v0))]
-  We can see that there is a unique "normalized" BStringViews object v
-  (with same subject as v0) such that S(v) = S(v0).
-  So we can define the normalize() function: v0 -> v = normalize(v0).
-  An interesting property of this function is that, for any v0,
-  v = normalize(v0) is the smallest BStringViews object (with same
-  subject than v0) such that S(v) = S(v0).
-  It can also been shown that length(v) <= (nchar(subject(v0)) + 1) / 2.
-
-- Once we have this notion of "normalized" BStringViews objects, we can
-  define the following operators on them (the results of these operations
-  are "normalized" too):
-    v2 <- !v: (unary operation) S(v2) =  [1:nchar(subject(v))] - S(v)
-    v3 <- v | w: s(v3) = (S(v) union S(w))
-    v4 <- v & w: s(v4) = (S(v) inter S(w))
-  So we end up having the equivalent of the fundamental set operations
-  (complementary, union, intersection).
-  No need to define an equivalent for the set difference (S(v) - S(w)),
-  or the set symetric difference ((S(v) -S(w)) union (S(w) - S(v)))
-  since they can be achieved by using the fundamental operations.
-
-  Note: The results of the above operations are undetermined if one of
-  the operand is not "normalized" or if the 2 operands don't have the same
-  subject! (no need to do any check of any sort, or to try to fail
-  gracefully, this will just result in slowing down the operators).
-  The result has always the same subject than the operands.
-
-- One nice property: given any BStringViews object v, !normalized(v) is
-  the smallest BStringViews object with a set of views that covers the parts
-  of the subject that are not covered by the original set of views.
+For 2.5.11
 
 - Have the BStringViews() method for BString objects support the 'sep' arg.
 

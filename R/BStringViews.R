@@ -318,7 +318,7 @@ BStringViews.equal <- function(x, y)
     # Now we are sure that lx >= ly >= 1
     ans <- logical(lx)
     j <- 1
-    for (i in 1:lx) {
+    for (i in seq_len(lx)) {
         ans[i] <- BStringViews.view1_equal_view2(
                       x@subject, x@views$start[i], x@views$end[i],
                       y@subject, y@views$start[j], y@views$end[j])
@@ -357,11 +357,14 @@ setMethod("==", signature(e1="BStringViews", e2="BString"),
 setMethod("==", signature(e1="BString", e2="BStringViews"),
     function(e1, e2) BStringViews.equal(e2, e1)
 )
-setMethod("==", signature(e1="BStringViews"),
+setMethod("==", signature(e1="BStringViews", e2="ANY"),
     function(e1, e2) BStringViews.equal(e1, e2)
 )
-setMethod("==", signature(e2="BStringViews"),
+setMethod("==", signature(e1="ANY", e2="BStringViews"),
     function(e1, e2) BStringViews.equal(e2, e1)
+)
+setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
+    function(e1, e2) BStringViews.equal(e1, e2)
 )
 
 setMethod("!=", signature(e1="BStringViews", e2="BString"),
@@ -370,11 +373,14 @@ setMethod("!=", signature(e1="BStringViews", e2="BString"),
 setMethod("!=", signature(e1="BString", e2="BStringViews"),
     function(e1, e2) !BStringViews.equal(e2, e1)
 )
-setMethod("!=", signature(e1="BStringViews"),
+setMethod("!=", signature(e1="BStringViews", e2="ANY"),
     function(e1, e2) !BStringViews.equal(e1, e2)
 )
-setMethod("!=", signature(e2="BStringViews"),
+setMethod("!=", signature(e1="ANY", e2="BStringViews"),
     function(e1, e2) !BStringViews.equal(e2, e1)
+)
+setMethod("!=", signature(e1="BStringViews", e2="BStringViews"),
+    function(e1, e2) !BStringViews.equal(e1, e2)
 )
 
 

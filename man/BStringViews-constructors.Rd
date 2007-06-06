@@ -18,18 +18,13 @@
 \title{Constructor-like functions and generics for BStringViews objects}
 
 \description{
-    [TODO: Put a description here]
+  [TODO: Put a description here]
 }
 
 \usage{
   views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
-
-  ## "mask" method for class 'BString':
-  mask(x, start=NA, end=NA)
-  ## "mask" method for class 'BStringViews':
-  mask(x)
-
+  mask(x, ...)
   BStringViews(src, subjectClass, sep="")
 }
 
@@ -48,6 +43,12 @@
   }
   \item{gapwidth}{
     [TODO]
+  }
+  \item{x}{
+    [TODO]
+  }
+  \item{...}{
+    additional arguments to be passed to or from methods.
   }
   \item{src}{
     [TODO]
@@ -119,3 +120,4 @@
 }
 
 \keyword{methods}
+
