@@ -4,6 +4,7 @@
 \alias{BStringViews-constructors}
 \alias{initialize,BStringViews-method}
 \alias{views}
+\alias{complementViews}
 \alias{adjacentViews}
 \alias{BStringViews}
 \alias{BStringViews,file-method}
@@ -19,6 +20,7 @@
 
 \usage{
   views(subject, start=NA, end=NA)
+  complementViews(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
   BStringViews(src, subjectClass, sep="")
 }
@@ -59,6 +61,10 @@
   \describe{
     \item{}{
       \code{views(subject, start, end)}:
+      [TODO: Document me]
+    }
+    \item{}{
+      \code{complementViews(subject, start, end)}:
       [TODO: Document me]
     }
     \item{}{

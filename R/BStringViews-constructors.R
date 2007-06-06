@@ -19,13 +19,33 @@ setMethod("initialize", "BStringViews",
     }
 )
 
-### The 2 functions above share the following properties:
+### The 3 functions below share the following properties:
 ###   - They are exported (and safe).
 ###   - First argument is 'subject'. It must be a character vector or a BString
 ###     (or derived) object.
 ###   - Passing something else to 'subject' provokes an error.
 ###   - They return a BStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
+
+.makeViews <- function(subject, start, end)
+{
+    if (!isLooseNumeric(start) || !isLooseNumeric(end))
+        stop("'start' and 'end' must be numerics")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    start[is.na(start)] <- as.integer(1)
+    if (!is.integer(end))
+        end <- as.integer(end)
+    end[is.na(end)] <- subject@length
+    if (length(start) < length(end))
+        start <- recycleVector(start, length(end))
+    else if (length(end) < length(start))
+        end <- recycleVector(end, length(start))
+    ## The NA-proof version of 'if (any(end < start))'
+    if (!isTRUE(all(start <= end)))
+        stop("'start' and 'end' must verify 'start <= end'")
+    data.frame(start=start, end=end)
+}
 
 ### Typical use:
 ###   dna <- DNAString("AA-CC-GG-TT")
@@ -44,26 +64,33 @@ views <- function(subject, start=NA, end=NA)
     if (class(subject) == "character")
         subject <- BString(subject)
     ans <- new("BStringViews", subject)
-    ## Integrity checking
-    if (!isLooseNumeric(start) || !isLooseNumeric(end))
-        stop("'start' and 'end' must be numerics")
-    #if (length(start) != length(end))
-    #    stop("'start' and 'end' must have the same length")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    start[is.na(start)] <- as.integer(1)
-    if (!is.integer(end))
-        end <- as.integer(end)
-    end[is.na(end)] <- subject@length
-    if (length(start) < length(end))
-        start <- recycleVector(start, length(end))
-    else if (length(end) < length(start))
-        end <- recycleVector(end, length(start))
-    ## The NA-proof version of 'if (any(end < start))'
-    if (!isTRUE(all(start <= end)))
-        stop("'start' and 'end' must verify 'start <= end'")
-    ans@views <- data.frame(start=start, end=end)
+    ans@views <- .makeViews(subject, start, end)
     ans
+}
+
+### WARNING: complementViews() assumes that the views defined by 'start'
+### and 'end' are ordered from "left-to-right" i.e. that 'start' is in
+### ascending order.
+complementViews <- function(subject, start=NA, end=NA)
+{
+    if (class(subject) == "character")
+        subject <- BString(subject)
+    views <- .makeViews(subject, start, end)
+    start0 <- end0 <- integer(0)
+    next_start0 <- 1
+    for (i in seq_len(length(views$start))) {
+        if (views$start[i] - 1 >= next_start0) {
+            start0 <- c(start0, next_start0)
+            end0 <- c(end0, views$start[i] - 1)
+        }
+        if (views$end[i] + 1 > next_start0)
+            next_start0 <- views$end[i] + 1
+    }
+    if (next_start0 <= length(subject)) {
+        start0 <- c(start0, next_start0)
+        end0 <- c(end0, length(subject))
+    }
+    views(subject, start0, end0)
 }
 
 ### 'width' is the vector of view widths.

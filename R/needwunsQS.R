@@ -103,7 +103,10 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
 {
     if (class(s1) != class(s2))
         stop("'s1' and 's2' are not of the same class")
-    if (length(s1) * length(s2) > 20000L * 20000L)
+    ## The reason we test 'length(s1)' and 'length(s2)' separately is to
+    ## avoid a "NAs produced by integer overflow" in the product.
+    if (length(s1) > 20000L || length(s2) > 20000L
+        || length(s1) * length(s2) > 20000L * 20000L)
         stop("'length(s1) * length(s2)' is too big (> 4e+08)")
     if (is.character(substmat)) {
         if (length(substmat) != 1)

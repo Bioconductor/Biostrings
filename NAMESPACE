@@ -21,7 +21,7 @@ exportMethods(
     subBString, substr, substring,
     BStringViews, writeFASTA,
     reverse, complement, reverseComplement, alphabetFrequency,
-    matchPattern, countPattern, mismatch, matchProbePair,
+    matchPattern, countPattern, mismatch, split, matchProbePair,
     needwunsQS,
     ## Deprecated
     first, last
@@ -35,7 +35,7 @@ export(
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     BString, DNAString, RNAString, AAString,
-    views, adjacentViews,
+    views, complementViews, adjacentViews,
     matchDNAPattern,
     alignScore
 )

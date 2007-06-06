@@ -384,3 +384,20 @@ setMethod("mismatch", "BStringViews",
         .mismatch(pattern, x, fixed)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "split" method.
+###
+
+### TODO: Current implementation is very inefficient when f is a single
+### letter. This case needs to be addressed by dedicated C-code (should
+### be straightforward).
+setMethod("split", "BString",
+    function(x, f, drop=FALSE, ...)
+    {
+        bsv <- matchPattern(f, x)
+        complementViews(x, start(bsv), end(bsv))
+    }
+)
+
