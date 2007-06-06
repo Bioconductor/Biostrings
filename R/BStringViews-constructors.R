@@ -68,31 +68,6 @@ views <- function(subject, start=NA, end=NA)
     ans
 }
 
-### WARNING: complementViews() assumes that the views defined by 'start'
-### and 'end' are ordered from "left-to-right" i.e. that 'start' is in
-### ascending order.
-complementViews <- function(subject, start=NA, end=NA)
-{
-    if (class(subject) == "character")
-        subject <- BString(subject)
-    views <- .makeViews(subject, start, end)
-    start0 <- end0 <- integer(0)
-    next_start0 <- 1
-    for (i in seq_len(length(views$start))) {
-        if (views$start[i] - 1 >= next_start0) {
-            start0 <- c(start0, next_start0)
-            end0 <- c(end0, views$start[i] - 1)
-        }
-        if (views$end[i] + 1 > next_start0)
-            next_start0 <- views$end[i] + 1
-    }
-    if (next_start0 <= length(subject)) {
-        start0 <- c(start0, next_start0)
-        end0 <- c(end0, length(subject))
-    }
-    views(subject, start0, end0)
-}
-
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).
 adjacentViews <- function(subject, width, gapwidth=0)
@@ -130,16 +105,66 @@ adjacentViews <- function(subject, width, gapwidth=0)
 }
 
 
-### The BStringViews() generic function
-### -----------------------------------
-### 'src' should typically be a character vector but the function will also
-### work for other kind of input like numeric or even logical vectors.
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "mask" generic and methods.
+###
+
+BStringViews.mask <- function(x)
+{
+    ii <- order(start(x))
+    start <- end <- integer(0)
+    next_start <- 1
+    for (i in ii) {
+        end0 <- start(x)[i] - 1
+        start0 <- end(x)[i] + 1
+        if (end0 >= next_start) {
+            start <- c(start, next_start)
+            end <- c(end, end0)
+        }
+        if (start0 > next_start)
+            next_start <- start0
+    }
+    if (next_start <= length(subject(x))) {
+        start <- c(start, next_start)
+        end <- c(end, length(subject(x)))
+    }
+    x@views <- data.frame(start=start, end=end)
+    x
+}
+
+setGeneric("mask", function(x, ...) standardGeneric("mask"))
+
+setMethod("mask", "BString",
+    function(x, start=NA, end=NA)
+    {
+        BStringViews.mask(views(x, start, end))
+    }
+)
+
+setMethod("mask", "BStringViews",
+    function(x)
+    {
+        BStringViews.mask(x)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "BStringViews" generic and methods.
+###
+
+setGeneric(
+    "BStringViews", signature="src",
+    function(src, subjectClass, sep="") standardGeneric("BStringViews")
+)
+
 ### 'subjectClass' must be "BString" or one of its derivations ("DNAString",
 ### "RNAString" or "AAString").
 ###
 ### Benchmarks:
 ###   n <- 40000
-###   src <- sapply(1:n, function(i) {paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse="")})
+###   src <- sapply(1:n, function(i)
+###                      paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse=""))
 ###   v <- BStringViews(src, "DNAString")
 ### Comparing BStringViews() speed vs "old" vectorized DNAString() speed:
 ###       n  BStringViews  "old" DNAString
@@ -148,20 +173,27 @@ adjacentViews <- function(subject, width, gapwidth=0)
 ###   10000        0.51 s          16.29 s
 ###   20000        0.99 s          64.85 s
 ###   40000        1.69 s         488.43 s
-### The quadratic behaviour of "old" DNAString() was start reported
+### The quadratic behaviour of "old" DNAString() was first reported
 ### by Wolfgang.
-BStringViews <- function(src, subjectClass, sep="")
-{
-    if (!is.character(sep))
-        sep <- toString(sep)
-    collapsed <- paste(src, collapse=sep)
-    subject <- new(subjectClass, collapsed)
-    adjacentViews(subject, nchar(src), nchar(sep))
-}
 
-setGeneric(
-    "BStringViews", signature="src",
-    function(src, subjectClass, sep="") standardGeneric("BStringViews")
+### This is the "BStringViews" for "character" but we use the "ANY" signature
+### anyway. This because we've found some weird objects that look very much
+### like "character" vectors but break the dispatch mechanism.
+### For example:
+###   library(hgu95av2probe)
+###   src <- hgu95av2probe$sequence
+###   is.character(src) # TRUE
+###   is(src, "character") # FALSE
+### Welcome to R object model mess!
+setMethod("BStringViews", "ANY",
+    function(src, subjectClass, sep="")
+    {
+        if (!is.character(sep))
+            sep <- toString(sep)
+        collapsed <- paste(src, collapse=sep)
+        subject <- new(subjectClass, collapsed)
+        adjacentViews(subject, nchar(src), nchar(sep))
+    }
 )
 
 ### Only FASTA files are supported for now.
@@ -169,12 +201,12 @@ setGeneric(
 ###   file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
 ###   v <- BStringViews(file(file), "DNAString")
 setMethod("BStringViews", "file",
-    function(src, subjectClass, sep)
+    function(src, subjectClass, sep="")
     {
         fasta <- readFASTA(src)
         src <- sapply(fasta, function(rec) rec$seq)
         desc <- sapply(fasta, function(rec) rec$desc)
-        ans <- BStringViews(src, subjectClass, sep) # call the default method
+        ans <- BStringViews(src, subjectClass, sep)
         ans@views$desc <- desc
         ans
     }
@@ -184,7 +216,7 @@ setMethod("BStringViews", "file",
 ### When not missing, 'subjectClass' must be "BString" or one of its
 ### derivations ("DNAString", "RNAString" or "AAString").
 setMethod("BStringViews", "BString",
-    function(src, subjectClass, sep)
+    function(src, subjectClass, sep="")
     {
         if (!missing(sep)) {
             ## The semantic is: views are delimited by the occurences of 'sep'
@@ -204,7 +236,7 @@ setMethod("BStringViews", "BString",
 ### "RNAString" or "AAString").
 ### The 'sep' arg is ignored.
 setMethod("BStringViews", "BStringViews",
-    function(src, subjectClass, sep)
+    function(src, subjectClass, sep="")
     {
         if (!missing(sep))
             stop("'sep' not supported when 'src' is a \"BStringViews\" object")

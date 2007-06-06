@@ -396,8 +396,7 @@ setMethod("mismatch", "BStringViews",
 setMethod("split", "BString",
     function(x, f, drop=FALSE, ...)
     {
-        bsv <- matchPattern(f, x)
-        complementViews(x, start(bsv), end(bsv))
+        mask(matchPattern(f, x))
     }
 )
 

@@ -4,9 +4,12 @@
 \alias{BStringViews-constructors}
 \alias{initialize,BStringViews-method}
 \alias{views}
-\alias{complementViews}
 \alias{adjacentViews}
+\alias{mask}
+\alias{mask,BString-method}
+\alias{mask,BStringViews-method}
 \alias{BStringViews}
+\alias{BStringViews,ANY-method}
 \alias{BStringViews,file-method}
 \alias{BStringViews,BString-method}
 \alias{BStringViews,BStringViews-method}
@@ -20,8 +23,13 @@
 
 \usage{
   views(subject, start=NA, end=NA)
-  complementViews(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
+
+  ## "mask" method for class 'BString':
+  mask(x, start=NA, end=NA)
+  ## "mask" method for class 'BStringViews':
+  mask(x)
+
   BStringViews(src, subjectClass, sep="")
 }
 
@@ -64,11 +72,23 @@
       [TODO: Document me]
     }
     \item{}{
-      \code{complementViews(subject, start, end)}:
+      \code{adjacentViews(subject, width, gapwidth)}:
+      [TODO: Document me]
+    }
+  }
+
+  In the code snippets below,
+  \code{x} can be a \link{BString} (or \link{DNAString}
+  or \link{RNAString}) object or a BStringViews object,
+  and \code{start} and \code{end} are numeric vectors.
+
+  \describe{
+    \item{}{
+      \code{mask(x, start, end)}:
       [TODO: Document me]
     }
     \item{}{
-      \code{adjacentViews(subject, width, gapwidth)}:
+      \code{mask(x)}:
       [TODO: Document me]
     }
   }
@@ -88,8 +108,6 @@
     }
   }
 }
-
-\author{H. Pages}
 
 \seealso{
   \link{BStringViews-class}, \link{BString}, \link{DNAString}, \link{RNAString}
