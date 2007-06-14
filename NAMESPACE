@@ -19,9 +19,9 @@ exportMethods(
     align1, align2, score,
     ## Others
     subBString, substr, substring,
-    mask, BStringViews, writeFASTA,
+    BStringViews, writeFASTA,
     reverse, complement, reverseComplement, alphabetFrequency,
-    matchPattern, countPattern, mismatch, split, matchProbePair,
+    matchPattern, countPattern, mismatch, matchProbePair, mask,
     needwunsQS,
     ## Deprecated
     first, last

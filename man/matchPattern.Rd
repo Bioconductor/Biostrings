@@ -10,8 +10,6 @@
 \alias{countPattern,BStringViews-method}
 \alias{mismatch}
 \alias{mismatch,BStringViews-method}
-\alias{split}
-\alias{split,BString-method}
 
 \alias{matchDNAPattern}
 
@@ -28,7 +26,6 @@
   matchPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
   countPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
-  split(x, f, drop=FALSE, ...)
 }
 
 \arguments{
@@ -55,18 +52,8 @@
     match any letter that they stand for.
   }
   \item{x}{
-    A \link{BStringViews} object for \code{mismatch} (typically, one returned
-    by \code{matchPattern(pattern, subject)}) or a \link{BString} (or
-    \link{DNAString} or \link{RNAString}) object for \code{split}.
-  }
-  \item{f}{
-    The pattern string used to "split" \code{x}.
-  }
-  \item{drop}{
-    Unused (ignored).
-  }
-  \item{...}{
-    Unused (ignored).
+    A \link{BStringViews} object (typically, one returned
+    by \code{matchPattern(pattern, subject)}).
   }
 }
 
@@ -78,11 +65,12 @@
 
 \author{H. Pages}
 
-\seealso{}
+\seealso{
+  
+}
 
 \examples{
 }
 
 \keyword{methods}
-
 

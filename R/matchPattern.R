@@ -385,18 +385,3 @@ setMethod("mismatch", "BStringViews",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "split" method.
-###
-
-### TODO: Current implementation is very inefficient when f is a single
-### letter. This case needs to be addressed by dedicated C-code (should
-### be straightforward).
-setMethod("split", "BString",
-    function(x, f, drop=FALSE, ...)
-    {
-        mask(matchPattern(f, x))
-    }
-)
-

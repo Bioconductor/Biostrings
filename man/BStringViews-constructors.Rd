@@ -5,9 +5,6 @@
 \alias{initialize,BStringViews-method}
 \alias{views}
 \alias{adjacentViews}
-\alias{mask}
-\alias{mask,BString-method}
-\alias{mask,BStringViews-method}
 \alias{BStringViews}
 \alias{BStringViews,ANY-method}
 \alias{BStringViews,file-method}
@@ -24,7 +21,6 @@
 \usage{
   views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
-  mask(x, ...)
   BStringViews(src, subjectClass, sep="")
 }
 
@@ -43,12 +39,6 @@
   }
   \item{gapwidth}{
     [TODO]
-  }
-  \item{x}{
-    [TODO]
-  }
-  \item{...}{
-    additional arguments to be passed to or from methods.
   }
   \item{src}{
     [TODO]
@@ -74,22 +64,6 @@
     }
     \item{}{
       \code{adjacentViews(subject, width, gapwidth)}:
-      [TODO: Document me]
-    }
-  }
-
-  In the code snippets below,
-  \code{x} can be a \link{BString} (or \link{DNAString}
-  or \link{RNAString}) object or a BStringViews object,
-  and \code{start} and \code{end} are numeric vectors.
-
-  \describe{
-    \item{}{
-      \code{mask(x, start, end)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{mask(x)}:
       [TODO: Document me]
     }
   }
