@@ -1,10 +1,12 @@
-\name{substr}
+\name{subBString}
 
 \alias{subBString}
 \alias{subBStringViews}
 
+\alias{substr}
 \alias{substr,BString-method}
 \alias{substr,BStringViews-method}
+\alias{substring}
 \alias{substring,BString-method}
 \alias{substring,BStringViews-method}
 
@@ -65,6 +67,15 @@
 }
 
 \examples{
+  subBString("AxyxyxBC", 7)
+  subBString("AxyxyxBC", , 7)
+  subBString("AxyxyxBC", , 7, 3)
+
+  v <- views("AxyxyxBC", c(6, 4,-1, NA), c(7, 6, 1, 1))
+  ## keep only the last letter of each view
+  subBStringViews(v, end=width(v), width=1)
+  ## enlarge the views  
+  subBStringViews(v, -2, end=width(v)+3, check.limits=FALSE)
 }
 
 \keyword{methods}

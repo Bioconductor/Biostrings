@@ -9,8 +9,11 @@
 ### function.
 subBString <- function(x, start=NA, end=NA, length=NA)
 {
-    if (!is(x, "BString"))
-        stop("'x' must be a BString (or derived) object")
+    if (!is(x, "BString")) {
+        if (!is.character(x) || length(x) != 1 || is.na(x))
+            stop("'x' must be a BString (or derived) object or a single string")
+        x <- BString(x)
+    }
     if (!isLooseNumeric(start) || length(start) != 1)
         stop("'start' is not a single numeric")
     if (!isLooseNumeric(end) || length(end) != 1)
