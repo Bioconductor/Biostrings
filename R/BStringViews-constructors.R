@@ -19,7 +19,8 @@ setMethod("initialize", "BStringViews",
     }
 )
 
-### The 3 functions below share the following properties:
+### The "views" and "adjacentViews" functions below share the following
+### properties:
 ###   - They are exported (and safe).
 ###   - First argument is 'subject'. It must be a character vector or a BString
 ###     (or derived) object.
@@ -59,13 +60,19 @@ setMethod("initialize", "BStringViews",
 ###   dnav4 <- views(dna)
 ### A BStringViews object with no view:
 ###   dnav5 <- views(dna, integer(0), integer(0))
-### TODO: Add a 'width' arg (default to NA, see "subviews" function).
-###       Add a 'check.limits' arg (default to TRUE) for raising an error if
-###       some views are "out of limits".
+### TODO: Use same args for this function as for the "subviews" function i.e.:
+###   - add a 'width' arg (default to NA)
+###   - add a 'check.limits' arg (default to TRUE) for raising an error if
+###     some views are "out of limits"
+###   Also follow "subviews" style for the implementation (e.g. use solveViews()).
+###   Should perhaps be put in the same file as "subviews" (and solveViews()).
 views <- function(subject, start=NA, end=NA)
 {
-    if (class(subject) == "character")
+    if (!is(subject, "BString")) {
+        if (!is.character(subject) || length(subject) != 1 || is.na(subject))
+            stop("'subject' must be a BString (or derived) object or a single string")
         subject <- BString(subject)
+    }
     ans <- new("BStringViews", subject)
     ans@views <- .makeViews(subject, start, end)
     ans

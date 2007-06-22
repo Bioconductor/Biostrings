@@ -19,7 +19,7 @@
 
 \arguments{
   \item{x}{
-    The \link{BString} (or derived) object to mask.
+    The single string or \link{BString} (or derived) object to mask.
     This can also be a \link{BStringViews} object.
   }
   \item{...}{
@@ -56,10 +56,10 @@
 
 \examples{
   ## masking "by position"
-  mask(BString("AxyxyxBC"), 2, 6)
+  mask("AxyxyxBC", 2, 6)
 
   ## masking "by content"
-  mask(BString("AxyxyxBC"), "xyx")
+  mask("AxyxyxBC", "xyx")
 
   ## masking the N's in a chromosome sequence
   library(BSgenome.Dmelanogaster.FlyBase.r51)

@@ -113,6 +113,15 @@ setMethod("mask", "BString",
     }
 )
 
+setMethod("mask", "character",
+    function(x, ...)
+    {
+        if (length(x) != 1 || is.na(x))
+            stop("can't mask a character vector that is not a single string")
+        mask(BString(x), ...)
+    }
+)
+
 setMethod("mask", "BStringViews",
     function(x)
     {
