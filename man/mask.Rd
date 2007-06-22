@@ -2,6 +2,7 @@
 
 \alias{mask}
 \alias{mask,BString-method}
+\alias{mask,character-method}
 \alias{mask,BStringViews-method}
 
 
