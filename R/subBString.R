@@ -86,7 +86,7 @@ solveViews <- function(start, end, width, default_start, default_end)
     data.frame(start=start, end=end)
 }
 
-subBStringViews <- function(x, start=NA, end=NA, width=NA, check.limits=TRUE)
+subviews <- function(x, start=NA, end=NA, width=NA, check.limits=TRUE)
 {
     if (!is(x, "BStringViews"))
         stop("'x' must be a BStringViews object")
@@ -138,7 +138,7 @@ setMethod("substr", "BString",
     function(x, start, stop) subBString(x, start, stop)
 )
 setMethod("substr", "BStringViews",
-    function(x, start, stop) subBStringViews(x, start, stop)
+    function(x, start, stop) subviews(x, start, stop)
 )
 
 setGeneric(
@@ -149,6 +149,6 @@ setMethod("substring", "BString",
     function(text, first, last) subBString(text, first, last)
 )
 setMethod("substring", "BStringViews",
-    function(text, first, last) subBStringViews(text, first, last)
+    function(text, first, last) subviews(text, first, last)
 )
 
