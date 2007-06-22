@@ -53,7 +53,8 @@
 }
 
 \details{
-  [TODO]
+  For \code{subviews}, the start/end values must be given relatively to
+  \code{x} views.
 }
 
 \value{
@@ -72,9 +73,12 @@
   subBString("AxyxyxBC", , 7, 3)
 
   v <- views("AxyxyxBC", c(6, 4,-1, NA), c(7, 6, 1, 1))
-  ## keep only the last letter of each view
+  ## 2 equivalent ways of keeping the last letter of each view
+  views(subject(v), end(v), end(v))
   subviews(v, end=width(v), width=1)
-  ## make the views wider
+  
+  ## 2 equivalent ways of making the views wider
+  views(subject(v), start(v)-3, end(v)+3)
   subviews(v, -2, end=width(v)+3, check.limits=FALSE)
 }
 
