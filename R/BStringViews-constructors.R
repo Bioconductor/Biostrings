@@ -59,6 +59,9 @@ setMethod("initialize", "BStringViews",
 ###   dnav4 <- views(dna)
 ### A BStringViews object with no view:
 ###   dnav5 <- views(dna, integer(0), integer(0))
+### TODO: Add a 'width' arg (default to NA, see "subBStringViews" function).
+###       Add a 'check.limits' arg (default to TRUE) for raising an error if
+###       some views are "out of limits".
 views <- function(subject, start=NA, end=NA)
 {
     if (class(subject) == "character")

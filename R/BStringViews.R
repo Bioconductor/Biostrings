@@ -6,12 +6,14 @@
 
 setClassUnion("BStringLike", c("BString", "DNAString", "RNAString", "AAString"))
 
-### See the initialization section below for the integrity checking
-### of a BStringViews object.
 setClass(
     "BStringViews",
     representation(
         subject="BStringLike",
+        ## The 'views' slot must be a "valid views data frame" i.e. a data
+        ## frame with a "start" and an "end" column, both columns being integer
+        ## vectors (eventually of length 0) with no NAs and such that
+        ## all(start <= end).
         views="data.frame"
     )
 )
@@ -231,7 +233,7 @@ setMethod("[[", "BStringViews",
         end <- x@views$end[i]
         if (start < 1 || end > length(x@subject))
             stop("view is out of limits")
-        BString.substring(x@subject, start, end)
+        BString.substr(x@subject, start, end)
     }
 )
 
@@ -293,8 +295,8 @@ BStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
 
     # At this point, we can trust that 1 <= start1 <= end1 <= lx1
     # and that 1 <= start2 <= end2 <= lx2 so we can call unsafe
-    # function BString.substring() with no fear...
-    BString.substring(x1, start1, end1) == BString.substring(x2, start2, end2)
+    # function BString.substr() with no fear...
+    BString.substr(x1, start1, end1) == BString.substr(x2, start2, end2)
 }
 
 ### Returns a logical vector of length max(length(x), length(y)).

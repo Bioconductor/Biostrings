@@ -57,8 +57,6 @@
   An object of the same class and length as the original object.
 }
 
-\author{H. Pages}
-
 \seealso{}
 
 \examples{

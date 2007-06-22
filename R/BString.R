@@ -391,74 +391,21 @@ setMethod("nchar", "BString", function(x, type="chars", allowNA=FALSE) x@length)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other functions and generics
-
-### The "BString.substring" function is very fast because it does not copy
+### The "BString.substr" function.
+###
+### The "BString.substr" function is very fast because it does not copy
 ### the string data. Return a BString object (not vectorized).
 ### 'start' and 'end' must be single integers verifying:
 ###   1 <= start <= end <= length(x)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-BString.substring <- function(x, start, end)
+### The safe (and exported) version of "BString.substr" is the "subBString"
+### function.
+BString.substr <- function(x, start, end)
 {
     one <- as.integer(1)
     x@offset <- x@offset + start - one
     x@length <- end - start + one
     x
 }
-
-### The public (and safe) version of BString.substring(). Not vectorized.
-### We deliberately choose the "NA trick" over defaulting 'start' and 'end'
-### to '1' and 'length(x)' because we want to be consistent with what the
-### views() function does.
-setGeneric(
-    "subBString", signature="x",
-    function(x, start=NA, end=NA, length=NA) standardGeneric("subBString")
-)
-setMethod("subBString", "BString",
-    function(x, start, end, length)
-    {
-        if (!isLooseNumeric(start) || length(start) != 1)
-            stop("'start' is not a single numeric")
-        if (!isLooseNumeric(end) || length(end) != 1)
-            stop("'end' is not a single numeric")
-        if (!isLooseNumeric(length) || length(length) != 1)
-            stop("'length' is not a single numeric")
-        if (!is.na(length)) {
-            if (is.na(start) && is.na(end))
-                stop("you must specify 'start' or 'end'")
-            if (is.na(end))
-                end <- start + length - 1
-            else if (is.na(start))
-                start <- end - length + 1
-            else if (length != end - start + 1)
-                stop("incompatible 'start', 'end' and 'length' values")
-        } else {
-            if (is.na(start))
-                start <- 1
-            if (is.na(end))
-                end <- x@length
-        }
-        ## This is NA-proof (well, 'start' and 'end' can't be NAs anymore...)
-        if (!isTRUE(1 <= start && start <= end && end <= length(x)))
-            stop("'start' and 'end' must verify '1 <= start <= end <= length(x)'")
-        BString.substring(x, as.integer(start), as.integer(end))
-    }
-)
-
-setGeneric(
-    "substr", signature="x",
-    function(x, start=NA, stop=NA) standardGeneric("substr")
-)
-setMethod("substr", "BString",
-    function(x, start, stop) subBString(x, start, stop)
-)
-
-setGeneric(
-    "substring", signature="text",
-    function(text, first=NA, last=NA) standardGeneric("substring")
-)
-setMethod("substring", "BString",
-    function(text, first=NA, last=NA) subBString(text, first, last)
-)
 

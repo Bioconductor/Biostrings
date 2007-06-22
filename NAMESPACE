@@ -18,8 +18,8 @@ exportMethods(
     subject, start, end, width, desc,
     align1, align2, score,
     ## Others
-    subBString, substr, substring,
     BStringViews, writeFASTA,
+    substr, substring,
     reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch, matchProbePair, mask,
     needwunsQS,
@@ -36,6 +36,7 @@ export(
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     BString, DNAString, RNAString, AAString,
     views, adjacentViews,
+    subBString, subBStringViews,
     matchDNAPattern,
     alignScore
 )

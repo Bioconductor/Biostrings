@@ -29,10 +29,6 @@
 \alias{nchar,BString-method}
 
 % Other functions and generics:
-\alias{subBString}
-\alias{subBString,BString-method}
-\alias{substr,BString-method}
-\alias{substring,BString-method}
 \alias{alphabet,BString-method}
 
 
@@ -121,31 +117,16 @@
 }
 
 \section{Other functions and generics}{
-  In the code snippets below,
-  \code{x} is a \code{BString} (or derived) object
-  and \code{start}, \code{end} and \code{length} are single numerics.
+  In the code snippet below,
+  \code{x} is a \code{BString} (or derived) object.
 
   \describe{
-    \item{}{
-      \code{subBString(x, start, end, length)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{substr(x, start, stop)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{substring(text, first, last)}:
-      [TODO: Document me]
-    }
     \item{}{
       \code{alphabet(x)}:
       [TODO: Document me]
     }
   }
 }
-
-\author{H. Pages}
 
 \seealso{
   \link{DNAString-class},
