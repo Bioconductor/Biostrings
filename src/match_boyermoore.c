@@ -51,11 +51,11 @@ static void init_P0buffer(const char *P, int nP)
 {
 	int min_nP_nP0, j;
 
-	if (nP == 0) {/* should never happen but safer anyway... */
+	if (nP == 0) { /* should never happen but safer anyway... */
 		P0buffer_init_status = 0;
 		return;
 	}
-	if (nP > 10000)
+	if (nP > 20000)
 		error("pattern is too long");
 	if (nP > P0buffer_length) {
 		/* We need more memory */
