@@ -232,7 +232,7 @@ debug_shiftor <- function()
              .Clongint.nbits(), " letters\n",
              "        when 'algo' is \"shift-or\" ",
              "or 'mismatch' is != 0 or 'fixed' is FALSE")
-    ans <- switch(algo,
+    matches <- switch(algo,
         "gregexpr"=.match.gregexpr(pattern, subject, count.only),
         "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
         "naive"=.match.naive(pattern, subject, count.only),
@@ -242,10 +242,11 @@ debug_shiftor <- function()
                                 fixed, count.only)
     )
     if (count.only)
-        return(ans)
+        return(matches)
     if (algo == "gregexpr" || algo == "gregexpr2")
-        return(ans)
-    new("BStringViews", subject, ans, ans + pattern@length - as.integer(1))
+        return(matches)
+    new("BStringViews", subject=subject,
+                        views=data.frame(matches, matches + nchar(pattern) - 1L))
 }
 
 ### Typical use:

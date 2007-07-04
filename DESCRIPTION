@@ -17,6 +17,7 @@ Collate: 00datacache.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
         BStringCodec.R BString.R toComplex.R
         BStringViews.R BStringViews-constructors.R
+        BStringPartialMatches.R
         subBString.R
         reverseComplement.R alphabetFrequency.R
         matchPattern.R matchProbePair.R mask.R

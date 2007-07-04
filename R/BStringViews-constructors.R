@@ -9,15 +9,15 @@
 ### where 'subject' is a BString (or derived) object,
 ### and 'start' and 'end' are integer vectors of the same length
 ### such that 'start <= end'.
-setMethod("initialize", "BStringViews",
-    function(.Object, subject, start, end)
-    {
-        .Object@subject <- subject
-        if (!missing(start))
-            .Object@views <- data.frame(start=start, end=end)
-        .Object
-    }
-)
+#setMethod("initialize", "BStringViews",
+#    function(.Object, subject, start, end)
+#    {
+#        .Object@subject <- subject
+#        if (!missing(start))
+#            .Object@views <- data.frame(start=start, end=end)
+#        .Object
+#    }
+#)
 
 ### The "views" and "adjacentViews" functions below share the following
 ### properties:
@@ -73,7 +73,7 @@ views <- function(subject, start=NA, end=NA)
             stop("'subject' must be a BString (or derived) object or a single string")
         subject <- BString(subject)
     }
-    ans <- new("BStringViews", subject)
+    ans <- new("BStringViews", subject=subject)
     ans@views <- .makeViews(subject, start, end)
     ans
 }
@@ -84,7 +84,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
 {
     if (class(subject) == "character")
         subject <- BString(subject)
-    ans <- new("BStringViews", subject)
+    ans <- new("BStringViews", subject=subject)
     ONE <- as.integer(1)
     if (!is.numeric(width) || !isTRUE(all(width >= ONE))) # NA-proof
         stop("'width' must be numerics >= 1")
@@ -193,7 +193,7 @@ setMethod("BStringViews", "BString",
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- new(subjectClass, src)
-        new("BStringViews", src, as.integer(1), src@length)
+        new("BStringViews", subject=src, views=data.frame(1L, nchar(src)))
     }
 )
 

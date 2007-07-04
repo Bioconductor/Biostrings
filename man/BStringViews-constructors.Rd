@@ -2,7 +2,6 @@
 
 % Constructor-like functions and generics:
 \alias{BStringViews-constructors}
-\alias{initialize,BStringViews-method}
 \alias{views}
 \alias{adjacentViews}
 \alias{BStringViews}

@@ -54,7 +54,8 @@ setMethod("desc", "BStringViews", function(x) x@views$desc)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The 'show' method
+### The "show" method
+###
 
 ### The 2 helper functions below convert a given view on a BString object
 ### into a character-string.
@@ -98,7 +99,7 @@ BStringViews.get_snippet <- function(x, start, end, snippetWidth)
     }
 }
 
-BStringViews.show_frame_header <- function(iW, startW, endW, widthW)
+BStringViews.show_vframe_header <- function(iW, startW, endW, widthW)
 {
     cat(format("", width=iW+1),
         format("start", width=startW, justify="right"), " ",
@@ -107,7 +108,7 @@ BStringViews.show_frame_header <- function(iW, startW, endW, widthW)
         sep="")
 }
 
-BStringViews.show_frame_line <- function(x, i, iW, startW, endW, widthW)
+BStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
 {
     start <- x@views$start[i]
     end <- x@views$end[i]
@@ -121,6 +122,43 @@ BStringViews.show_frame_line <- function(x, i, iW, startW, endW, widthW)
         sep="")
 }
 
+### 'half_nrow' must be >= 1
+BStringViews.show_vframe <- function(x, half_nrow=9L)
+{
+    cat("\nViews:")
+    lx <- length(x)
+    if (lx == 0)
+        cat(" NONE\n")
+    else {
+        cat("\n")
+        iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
+        startMax <- max(x@views$start)
+        startW <- max(nchar(startMax), nchar("start"))
+        endMax <- max(x@views$end)
+        endW <- max(nchar(endMax), nchar("end"))
+        widthMax <- max(width(x))
+        widthW <- max(nchar(widthMax), nchar("width"))
+        BStringViews.show_vframe_header(iW, startW, endW, widthW)
+        if (lx <= 2*half_nrow+1) {
+            for (i in seq_len(lx))
+                BStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+        } else {
+            for (i in 1:half_nrow)
+                BStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+            cat(format("...", width=iW, justify="right"),
+                " ",
+                format("...", width=startW, justify="right"),
+                " ",
+                format("...", width=endW, justify="right"),
+                " ",
+                format("...", width=widthW, justify="right"),
+                " ...\n", sep="")
+            for (i in (lx-half_nrow+1L):lx)
+                BStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+        }
+    }
+}
+
 setMethod("show", "BStringViews",
     function(object)
     {
@@ -131,44 +169,14 @@ setMethod("show", "BStringViews",
         #if (!is.null(subject@codec))
         #    cat(" with alphabet:", toString(subject@codec@letters))
         cat("\nSubject:", BString.get_snippet(subject, 70))
-        cat("\nViews:")
-        lo <- length(object)
-        if (lo == 0)
-            cat(" NONE\n")
-        else {
-            cat("\n")
-            iW <- nchar(as.character(lo)) + 2 # 2 for the brackets
-            startMax <- max(object@views$start)
-            startW <- max(nchar(startMax), nchar("start"))
-            endMax <- max(object@views$end)
-            endW <- max(nchar(endMax), nchar("end"))
-            widthMax <- max(width(object))
-            widthW <- max(nchar(widthMax), nchar("width"))
-            BStringViews.show_frame_header(iW, startW, endW, widthW)
-            if (lo <= 19) {
-                for (i in 1:lo)
-                    BStringViews.show_frame_line(object, i, iW, startW, endW, widthW)
-            } else {
-                for (i in 1:9)
-                    BStringViews.show_frame_line(object, i, iW, startW, endW, widthW)
-                cat(format("...", width=iW, justify="right"),
-                    " ",
-                    format("...", width=startW, justify="right"),
-                    " ",
-                    format("...", width=endW, justify="right"),
-                    " ",
-                    format("...", width=widthW, justify="right"),
-                    " ...\n", sep="")
-                for (i in (lo-8):lo)
-                    BStringViews.show_frame_line(object, i, iW, startW, endW, widthW)
-            }
-        }
+        BStringViews.show_vframe(object)
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
+###
 
 setMethod("length", "BStringViews",
     function(x)
