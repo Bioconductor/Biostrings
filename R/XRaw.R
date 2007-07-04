@@ -75,7 +75,7 @@ setMethod("initialize", "XRaw",
             stop("'length' must have exactly one element")
         length <- as.integer(length)
         if (length < 1)
-            stop("buffer length must be >= 1")
+            stop("XRaw length must be >= 1")
         xp <- .Call("xp_new", PACKAGE="Biostrings")
         .Call("XRaw_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp

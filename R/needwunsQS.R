@@ -155,19 +155,23 @@ setGeneric(
     "needwunsQS", signature=c("s1", "s2"),
     function(s1, s2, substmat, gappen=8) standardGeneric("needwunsQS")
 )
-setMethod("needwunsQS", signature(s1="character", s2="character"),
+setMethod(
+    "needwunsQS", signature(s1="character", s2="character"),
     function(s1, s2, substmat, gappen)
         BString.needwunsQS(BString(s1), BString(s2), substmat, gappen)
 )
-setMethod("needwunsQS", signature(s1="character", s2="BString"),
+setMethod(
+    "needwunsQS", signature(s1="character", s2="BString"),
     function(s1, s2, substmat, gappen)
         BString.needwunsQS(new(class(s2), s1), s2, substmat, gappen)
 )
-setMethod("needwunsQS", signature(s1="BString", s2="character"),
+setMethod(
+    "needwunsQS", signature(s1="BString", s2="character"),
     function(s1, s2, substmat, gappen)
         BString.needwunsQS(s1, new(class(s1), s2), substmat, gappen)
 )
-setMethod("needwunsQS", signature(s1="BString", s2="BString"),
+setMethod(
+    "needwunsQS", signature(s1="BString", s2="BString"),
     function(s1, s2, substmat, gappen)
         BString.needwunsQS(s1, s2, substmat, gappen)
 )

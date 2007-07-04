@@ -28,7 +28,7 @@ SEXP XInteger_show(SEXP xint_xp)
 
 	tag = R_ExternalPtrTag(xint_xp);
 	tag_length = LENGTH(tag);
-	Rprintf("%d-integer buffer (starting at address %p)\n",
+	Rprintf("%d-integer XInteger object (starting at address %p)\n",
 		tag_length, INTEGER(tag));
 	return R_NilValue;
 }

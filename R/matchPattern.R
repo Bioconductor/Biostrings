@@ -246,7 +246,7 @@ debug_shiftor <- function()
     if (algo == "gregexpr" || algo == "gregexpr2")
         return(matches)
     new("BStringViews", subject=subject,
-                        views=data.frame(matches, matches + nchar(pattern) - 1L))
+                        views=data.frame(start=matches, end=matches+nchar(pattern)-1L))
 }
 
 ### Typical use:

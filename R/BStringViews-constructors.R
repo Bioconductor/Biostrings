@@ -193,7 +193,7 @@ setMethod("BStringViews", "BString",
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- new(subjectClass, src)
-        new("BStringViews", subject=src, views=data.frame(1L, nchar(src)))
+        new("BStringViews", subject=src, views=data.frame(start=1L, end=nchar(src)))
     }
 )
 

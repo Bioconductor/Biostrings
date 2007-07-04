@@ -23,7 +23,7 @@ exportMethods(
     substr, substring,
     reverse, complement, reverseComplement, alphabetFrequency,
     matchPattern, countPattern, mismatch, matchProbePair, mask,
-    needwunsQS,
+    lcprefix, lcsuffix, lcsubstr, needwunsQS,
     ## Deprecated
     first, last
 )
