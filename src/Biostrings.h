@@ -420,6 +420,27 @@ SEXP match_shiftor(
 );
 
 
+/* pmatchPattern.c */
+
+SEXP lcprefix(
+		SEXP s1_xp,
+		SEXP s1_offset,
+		SEXP s1_length,
+		SEXP s2_xp,
+		SEXP s2_offset,
+		SEXP s2_length
+);
+
+SEXP lcsuffix(
+		SEXP s1_xp,
+		SEXP s1_offset,
+		SEXP s1_length,
+		SEXP s2_xp,
+		SEXP s2_offset,
+		SEXP s2_length
+);
+
+
 /* align_needwunsQS.c */
 
 SEXP align_needwunsQS(

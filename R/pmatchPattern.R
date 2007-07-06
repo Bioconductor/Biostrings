@@ -9,16 +9,11 @@
 
 ### 's1' and 's2' must be BString (or derived) objects of the same class.
 ### Return the length (integer) of the Longest Common Prefix.
-### TODO: Implement this in C.
 BString.lcprefix <- function(s1, s2)
 {
-    i <- 1L
-    while (i <= length(s1) && i <= length(s2)) {
-        if (s1[i] != s2[i])
-            break
-        i <- i + 1L
-    }
-    i - 1L
+    .Call("lcprefix", s1@data@xp, s1@offset, s1@length,
+                      s2@data@xp, s2@offset, s2@length,
+                      PACKAGE="Biostrings")
 }
 
 setGeneric(
@@ -57,18 +52,11 @@ setMethod(
 
 ### 's1' and 's2' must be BString (or derived) objects of the same class.
 ### Return the length (integer) of the Longest Common Suffix.
-### TODO: Implement this in C.
 BString.lcsuffix <- function(s1, s2)
 {
-    i1 <- length(s1)
-    i2 <- length(s2)
-    while (i1 >= 1L && i2 >= 1L) {
-        if (s1[i1] != s2[i2])
-            break
-        i1 <- i1 - 1L
-        i2 <- i2 - 1L
-    }
-    length(s1) - i1
+    .Call("lcsuffix", s1@data@xp, s1@offset, s1@length,
+                      s2@data@xp, s2@offset, s2@length,
+                      PACKAGE="Biostrings")
 }
 
 setGeneric(
@@ -107,6 +95,17 @@ setMethod(
 
 ### 'subject' must be a BString (or derived) object.
 ### Return a BStringPartialMatches object.
+### Speed (on my Thinkpad):
+###   > library(BSgenome.Scerevisiae.UCSC.sacCer1)
+###   > Scerevisiae$chr1
+###   > file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+###   > orf <- BStringViews(file(file), "DNAString")
+###   > system.time(pmatchPattern(orf[[2]], Scerevisiae$chr1, max=1))
+###      user  system elapsed
+###     0.900   0.012   0.913
+###   > system.time(pmatchPattern(orf[[2]], Scerevisiae$chr1, max=6))
+###      user  system elapsed
+###   102.910   2.460 105.689
 .pmatchPattern.rec <- function(pattern, subject, maxlength.out)
 {
     if (class(pattern) != class(subject))
@@ -133,7 +132,7 @@ setMethod(
     Lindex <- which((Lpv_end == nchar(Lpattern)) & (Lpm_end < nchar(subject)))
     Loverlapping <- integer(0)
     for (i in Lindex) {
-        overlap <- lcprefix(Rpattern, BString.substr(subject, Lpm_end[i]+1L, nchar(subject)))
+        overlap <- BString.lcprefix(Rpattern, BString.substr(subject, Lpm_end[i]+1L, nchar(subject)))
         if (overlap == 0L)
             next
         Loverlapping <- c(Loverlapping, i)
@@ -150,7 +149,7 @@ setMethod(
     Rindex <- which((Rpv_start == 1L) & (Rpm_start > 1L))
     Roverlapping <- integer(0)
     for (i in Rindex) {
-        overlap <- lcsuffix(Lpattern, BString.substr(subject, 1L, Rpm_start[i]-1L))
+        overlap <- BString.lcsuffix(Lpattern, BString.substr(subject, 1L, Rpm_start[i]-1L))
         if (overlap == 0L)
             next
         Roverlapping <- c(Roverlapping, i)
@@ -188,7 +187,8 @@ setMethod(
     pv <- new("BStringViews", subject=pattern, views=pviews)
     ans <- new("BStringPartialMatches", sv, subpatterns=pv)
     ii <- order(width(ans), -start(ans), decreasing=TRUE)
-    ii <- ii[(width(ans)[ii] >= width(ans)[ii[1]] %/% 2) | (seq_along(ii) <= maxlength.out)]
+    minwidth <- width(ans)[ii[1]] %/% 2
+    ii <- ii[(width(ans)[ii] >= minwidth) | (seq_along(ii) <= maxlength.out)]
     ans[ii]
 }
 
@@ -239,8 +239,9 @@ setMethod("pmatchPattern", "BStringViews",
 ### Longest Common Substring: the "lcsubstr" new generic
 ###
 
+### Implementation taken from 
+###   http://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring
 ### 's1' and 's2' must be BString (or derived) objects of the same class.
-### Return a BStringPartialMatches object.
 BString.lcsubstr <- function(s1, s2)
 {
     stop("coming soon...")

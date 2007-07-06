@@ -72,6 +72,10 @@ static const R_CallMethodDef callMethods[] = {
 	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
 	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
+/* pmatchPattern.c */
+	{"lcprefix", (DL_FUNC) &lcprefix, 6},
+	{"lcsuffix", (DL_FUNC) &lcsuffix, 6},
+
 /* align_needwunsQS.c */
 	{"align_needwunsQS", (DL_FUNC) &align_needwunsQS, 11},
 
