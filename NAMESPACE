@@ -21,9 +21,13 @@ exportMethods(
     ## Others
     BStringViews, writeFASTA,
     substr, substring,
-    reverse, complement, reverseComplement, alphabetFrequency,
-    matchPattern, countPattern, mismatch, matchProbePair, mask,
-    lcprefix, lcsuffix, lcsubstr, needwunsQS,
+    alphabetFrequency,
+    reverse, complement, reverseComplement,
+    matchPattern, countPattern, mismatch,
+    mask,
+    matchProbePair,
+    lcprefix, lcsuffix, pmatchPattern, lcsubstr,
+    needwunsQS,
     ## Deprecated
     first, last
 )

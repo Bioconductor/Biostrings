@@ -15,12 +15,17 @@ Collate: 00datacache.R
         readFASTA.R utils.R
         XRaw.R XInteger.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
-        BStringCodec.R BString.R toComplex.R
+        BStringCodec.R BString.R
         BStringViews.R BStringViews-constructors.R
         BStringPartialMatches.R BStringAlign.R
         subBString.R
-        reverseComplement.R alphabetFrequency.R
-        matchPattern.R matchProbePair.R mask.R
-        lcsubstr.R needwunsQS.R
+        alphabetFrequency.R
+        reverseComplement.R
+        toComplex.R
+        matchPattern.R
+        mask.R
+        matchProbePair.R
+        pmatchPattern.R
+        needwunsQS.R
         test.R
         zzz.R
