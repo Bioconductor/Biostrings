@@ -18,8 +18,6 @@
 
 \description{
   Generic that finds all matches of a pattern in a BString.
-  Currently only a ``Boyer-Moore-like'' algorithm and the ``shift-or''
-  algorithm are available. 
 }
 
 \usage{
@@ -58,18 +56,49 @@
 }
 
 \details{
+  You can select between a ``naive'', a ``Boyer-Moore-like''
+  and the ``shift-or'' algorithms for performing the search.
+  Note that, depending on the values of the additional arguments
+  \code{mismatch} and \code{fixed}, some algorithms can't be used
+  so it's better to let \code{matchPattern} choose the right
+  algorithm for you.
+  When two different algorithms can be used for the same task,
+  then choosing one or the other only affect the performance,
+  not the semantic. Again it's better to let \code{matchPattern}
+  choose because it tries to select the faster for the task.
 }
 
 \value{
+  A \link{BStringViews} object for \code{matchPattern}.
+
+  A single integer for \code{countPattern}.
+
+  A list of integer vectors for \code{mismatch}.
 }
 
-\author{H. Pages}
-
 \seealso{
-  
+  \code{\link{mask}},
+  \code{\link{alphabetFrequency}},
+  \code{\link{IUPAC_CODE_MAP}},
+  \code{\link{BStringViews}},
+  \code{\link{DNAString}}
 }
 
 \examples{
+  ## With a genome containing isolated Ns
+  library(BSgenome.Celegans.UCSC.ce2)
+  chrII <- Celegans[["chrII"]]
+  alphabetFrequency(chrII)
+  matchPattern("N", chrII)
+  matchPattern("TGGGTGTCTTT", chrII) # no match
+  matchPattern("TGGGTGTCTTT", chrII, fixed=FALSE) # 1 match
+
+  ## Using wildcards ("N") in the pattern on a genome containing N-blocks
+  library(BSgenome.Dmelanogaster.FlyBase.r51)
+  chrX <- Dmelanogaster[["X"]]
+  noN_chrX <- mask(chrX, "N")
+  mask(noN_chrX) # See the N-blocks?
+  matchPattern("TTTATGNTTGGTA", noN_chrX, fixed=FALSE)
 }
 
 \keyword{methods}

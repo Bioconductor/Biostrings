@@ -64,12 +64,13 @@
 
   ## masking the N's in a chromosome sequence
   library(BSgenome.Dmelanogaster.FlyBase.r51)
-  x <- Dmelanogaster[["3L"]]
-  alphabetFrequency(x)
-  noN_x <- mask(x, "N")
-  alphabetFrequency(noN_x)
+  chrU <- Dmelanogaster[["U"]]
+  alphabetFrequency(chrU)
+  noN_chrU <- mask(chrU, "N")
+  alphabetFrequency(noN_chrU)
 
   ## masking a BStringViews object
+  mask(noN_chrU)
   v <- views("AxyxyxBC", c(6, 4,-1, NA), c(7, 6, 1, 1))
   mask(v)
 

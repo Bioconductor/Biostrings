@@ -278,12 +278,23 @@ setMethod("matchPattern", "BString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
+### WARNING: Unlike the other "matchPattern" methods, the BStringViews object
+### returned by this method is not guaranteed to have its views ordered from
+### left to right in general! One important particular case where this is
+### guaranteed though is when 'subject' is a normalized BStringViews object
+### and 'mismatch=0' (no "out of limits" matches).
 setMethod("matchPattern", "BStringViews",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (length(subject) != 1)
-            stop("'subject' must have a single view")
-        .matchPattern(pattern, subject[[1]], algorithm, mismatch, fixed)
+        ans_start <- ans_end <- integer(0)
+        for (i in seq_len(length(subject))) {
+            pm <- .matchPattern(pattern, subject[[i]], algorithm, mismatch, fixed)
+            offset <- start(subject)[i] - 1L
+            ans_start <- c(ans_start, offset + start(pm))
+            ans_end <- c(ans_end, offset + end(pm))
+        }
+        new("BStringViews", subject=subject(subject),
+            views=data.frame(start=ans_start, end=ans_end))
     }
 )
 
@@ -309,7 +320,7 @@ setGeneric(
 setMethod("countPattern", "character",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
+        .matchPattern(pattern, subject, algorithm, mismatch, fixed, count.only=TRUE)
     }
 )
 
@@ -317,7 +328,7 @@ setMethod("countPattern", "character",
 setMethod("countPattern", "BString",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        .matchPattern(pattern, subject, algorithm, mismatch, fixed, TRUE)
+        .matchPattern(pattern, subject, algorithm, mismatch, fixed, count.only=TRUE)
     }
 )
 
@@ -325,9 +336,13 @@ setMethod("countPattern", "BString",
 setMethod("countPattern", "BStringViews",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (length(subject) != 1)
-            stop("'subject' must have a single view")
-        .matchPattern(pattern, subject[[1]], algorithm, mismatch, fixed, TRUE)
+        sum(
+            sapply(seq_len(length(subject)),
+                   function(i) .matchPattern(pattern, subject[[i]],
+                                             algorithm, mismatch, fixed,
+                                             count.only=TRUE)
+            )
+        )
     }
 )
 
