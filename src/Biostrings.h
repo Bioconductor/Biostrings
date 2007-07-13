@@ -136,18 +136,6 @@ void _Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
-int _Biostrings_estimateExpectedMatchCount(
-		int nP,
-		int nS,
-		int nalphabet
-);
-
-SEXP _Biostrings_expandMatchIndex(
-		SEXP index,
-		int ndone,
-		int nleft
-);
-
 int *_Biostrings_resetMatchPosBuffer();
 
 int _Biostrings_reportMatch(int pos);

@@ -511,35 +511,6 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 static int *match_pos_buffer;
 static int match_pos_buffer_length, match_count;
 
-/* A very blunt estimate of the expected number of matches based on the
- * lengths of P (the pattern) and S (the subject).
- * Currently it returns the expected number of matches when P and S are
- * random sequences based on an alphabet of length nalphabet:
- *     E = ceil(length(S) / nalphabet**length(P))
- * TODO: Improve me!
- */
-int _Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet)
-{
-	int count;
-
-	count = (int) ceil((double) nS / pow((double) nalphabet, (double) nP));
-	return count;
-}
-
-SEXP _Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft)
-{
-	int count = LENGTH(index);
-	int count1;
-	double match_density = (count + 1.00) / (double) ndone;
-	int still_missing = (int) (match_density * nleft + 1.00);
-	SEXP new_index;
-
-	count1 = 2 * (count + still_missing);
-	new_index = allocVector(INTSXP, count1);
-	memcpy(INTEGER(new_index), INTEGER(index), count * sizeof(int));
-	return new_index;
-}
-
 /* Reset match_pos_buffer */
 int *_Biostrings_resetMatchPosBuffer()
 {
