@@ -136,15 +136,20 @@ void _Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
-void _Biostrings_reset_match_buffers();
+void _Biostrings_reset_views_buffer();
+
+int _Biostrings_report_view(
+		int start,
+		int end
+);
 
 int _Biostrings_report_match(
 		int Lpos,
 		int Rpos
 );
 
-int *_Biostrings_get_match_starts();
-int *_Biostrings_get_match_ends();
+int *_Biostrings_get_views_start();
+int *_Biostrings_get_views_end();
 
 
 /* XRaw.c */

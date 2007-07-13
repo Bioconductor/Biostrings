@@ -337,7 +337,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	}
 #endif
 	if (!is_count_only)
-		_Biostrings_reset_match_buffers();
+		_Biostrings_reset_views_buffer();
 	count = _match_shiftor((char *) pat, pat_length, (char *) subj, subj_length, is_count_only,
 				kerr+1, is_fixed);
 #ifdef DEBUG_BIOSTRINGS
@@ -347,7 +347,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 #endif
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), _Biostrings_get_match_starts(),
+		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
 					sizeof(int) * count);
 	} else {
 		PROTECT(ans = allocVector(INTSXP, 1));

@@ -456,11 +456,11 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
-		_Biostrings_reset_match_buffers();
+		_Biostrings_reset_views_buffer();
 	count = boyermoore((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), _Biostrings_get_match_starts(),
+		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
 					sizeof(int) * count);
 	} else {
 		PROTECT(ans = allocVector(INTSXP, 1));

@@ -504,51 +504,58 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 
 
 /* ==========================================================================
- * Helper functions used by the matching algos.
+ * Helper functions used for storing views in a temporary buffer like the
+ * matches found by the matching algos.
  * --------------------------------------------------------------------------
  */
 
-static int *match_starts, *match_ends;
-static int match_buffer_size, match_count;
+static int *views_start, *views_end;
+static int views_buffer_size, views_count;
 
-/* Reset match buffers */
-void _Biostrings_reset_match_buffers()
+/* Reset views buffer */
+void _Biostrings_reset_views_buffer()
 {
 	/* No memory leak here, because we use transient storage allocation */
-	match_starts = match_ends = NULL;
-	match_buffer_size = match_count = 0;
+	views_start = views_end = NULL;
+	views_buffer_size = views_count = 0;
 	return;
 }
 
-/* Return the new number of matches */
-int _Biostrings_report_match(int Lpos, int Rpos)
+/* Return the new number of views */
+int _Biostrings_report_view(int start, int end)
 {
 	long new_size;
 
-	if (match_count >= match_buffer_size) {
+	if (views_count >= views_buffer_size) {
 		/* Buffer is full */
-		if (match_buffer_size == 0)
+		if (views_buffer_size == 0)
 			new_size = 1024;
 		else
-			new_size = 2 * match_buffer_size;
-		match_starts = Srealloc((char *) match_starts, new_size,
-						(long) match_buffer_size, int);
-		match_ends = Srealloc((char *) match_ends, new_size,
-						(long) match_buffer_size, int);
-		match_buffer_size = new_size;
+			new_size = 2 * views_buffer_size;
+		views_start = Srealloc((char *) views_start, new_size,
+						(long) views_buffer_size, int);
+		views_end = Srealloc((char *) views_end, new_size,
+						(long) views_buffer_size, int);
+		views_buffer_size = new_size;
 	}
-	match_starts[match_count] = ++Lpos;
-	match_ends[match_count] = ++Rpos;
-	return ++match_count;
+	views_start[views_count] = start;
+	views_end[views_count] = end;
+	return ++views_count;
 }
 
-int *_Biostrings_get_match_starts()
+/* Return the new number of views */
+int _Biostrings_report_match(int Lpos, int Rpos)
 {
-	return match_starts;
+	return _Biostrings_report_view(++Lpos, ++Rpos);
 }
 
-int *_Biostrings_get_match_ends()
+int *_Biostrings_get_views_start()
 {
-	return match_ends;
+	return views_start;
+}
+
+int *_Biostrings_get_views_end()
+{
+	return views_end;
 }
 
