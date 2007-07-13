@@ -23,14 +23,14 @@ SEXP utils_debug()
  use of R_alloc() or the error()/warning() macros, they don't use/know
  anything about R internals).
  DON'T REGISTER THEM IN R_init_Biostrings.c!
- They are all prefixed with "Biostrings_" to minimize the risk of clash with
- symbols found in libc (before "_memcmp" was renamed "Biostrings_memcmp" it
+ They are all prefixed with "_Biostrings_" to minimize the risk of clash with
+ symbols found in libc (before "_memcmp" was renamed "_Biostrings_memcmp" it
  was clashing with "_memcmp" from libc on churchill).
  ****************************************************************************/
 
 
 /* Alloc memory for a string of length n */
-char * Biostrings_alloc_string(int n)
+char * _Biostrings_alloc_string(int n)
 {
 	char * s;
 
@@ -45,11 +45,11 @@ char * Biostrings_alloc_string(int n)
  * --------------------------------------------------------------------------
  */
 
-int Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size_t size)
+int _Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size_t size)
 {
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] Biostrings_memcmp(): ");
+		Rprintf("[DEBUG] _Biostrings_memcmp(): ");
 		Rprintf("a=%p ia=%d b=%p ib=%d n=%d size=%d\n",
 			a, ia, b, ib, n, size);
 	}
@@ -70,7 +70,7 @@ int Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size_
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_memcpy_from_i1i2(int i1, int i2,
+void _Biostrings_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -110,7 +110,7 @@ void Biostrings_memcpy_from_i1i2(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_memcpy_from_subset(int *subset, int n,
+void _Biostrings_memcpy_from_subset(int *subset, int n,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -150,7 +150,7 @@ void Biostrings_memcpy_from_subset(int *subset, int n,
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_memcpy_to_i1i2(int i1, int i2,
+void _Biostrings_memcpy_to_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -190,7 +190,7 @@ void Biostrings_memcpy_to_i1i2(int i1, int i2,
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_memcpy_to_subset(int *subset, int n,
+void _Biostrings_memcpy_to_subset(int *subset, int n,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -230,7 +230,7 @@ void Biostrings_memcpy_to_subset(int *subset, int n,
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
+void _Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)
@@ -270,7 +270,7 @@ void Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_translate_charcpy_from_subset(int *subset, int n,
+void _Biostrings_translate_charcpy_from_subset(int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)
@@ -310,7 +310,7 @@ void Biostrings_translate_charcpy_from_subset(int *subset, int n,
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
+void _Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)
@@ -349,7 +349,7 @@ void Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_translate_charcpy_to_subset(int *subset, int n,
+void _Biostrings_translate_charcpy_to_subset(int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)
@@ -389,7 +389,7 @@ void Biostrings_translate_charcpy_to_subset(int *subset, int n,
  * Writing is recycled in 'dest': it starts at its last member
  * and comes back to it after it reaches its first member.
  */
-void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
+void _Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -427,7 +427,7 @@ void Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its last member
  * and comes back to it after it reaches its first member.
  */
-void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
+void _Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)
@@ -468,7 +468,7 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
+void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
 		const char *src, int src_length,
 		const Rcomplex *lkup, int lkup_length)
@@ -518,7 +518,7 @@ static int match_pos_buffer_length, match_count;
  *     E = ceil(length(S) / nalphabet**length(P))
  * TODO: Improve me!
  */
-int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet)
+int _Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet)
 {
 	int count;
 
@@ -526,7 +526,7 @@ int Biostrings_estimateExpectedMatchCount(int nP, int nS, int nalphabet)
 	return count;
 }
 
-SEXP Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft)
+SEXP _Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft)
 {
 	int count = LENGTH(index);
 	int count1;
@@ -541,7 +541,7 @@ SEXP Biostrings_expandMatchIndex(SEXP index, int ndone, int nleft)
 }
 
 /* Reset match_pos_buffer */
-int *Biostrings_resetMatchPosBuffer()
+int *_Biostrings_resetMatchPosBuffer()
 {
 	int *tmp;
 
@@ -552,7 +552,7 @@ int *Biostrings_resetMatchPosBuffer()
 }
 
 /* Returns the new number of matches */
-int Biostrings_reportMatch(int pos)
+int _Biostrings_reportMatch(int pos)
 {
 	long new_length;
 

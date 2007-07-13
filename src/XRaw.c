@@ -203,7 +203,7 @@ SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 	}
 #endif
 	PROTECT(ans = allocVector(INTSXP, 1));
-	INTEGER(ans)[0] = Biostrings_memcmp((char *) RAW(tag1), i1,
+	INTEGER(ans)[0] = _Biostrings_memcmp((char *) RAW(tag1), i1,
 					(char *) RAW(tag2), i2,
 					n, sizeof(Rbyte));
 #ifdef DEBUG_BIOSTRINGS
@@ -276,7 +276,7 @@ SEXP XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP im
 	src = R_ExternalPtrTag(src_xraw_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	Biostrings_memcpy_from_i1i2(i1, i2,
+	_Biostrings_memcpy_from_i1i2(i1, i2,
 			(char *) RAW(dest), LENGTH(dest),
 			(char *) RAW(src), LENGTH(src), sizeof(Rbyte));
 	return dest_xraw_xp;
@@ -288,7 +288,7 @@ SEXP XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
 
 	dest = R_ExternalPtrTag(dest_xraw_xp);
 	src = R_ExternalPtrTag(src_xraw_xp);
-	Biostrings_memcpy_from_subset(INTEGER(subset), LENGTH(subset),
+	_Biostrings_memcpy_from_subset(INTEGER(subset), LENGTH(subset),
 			(char *) RAW(dest), LENGTH(dest),
 			(char *) RAW(src), LENGTH(src), sizeof(Rbyte));
 	return dest_xraw_xp;
@@ -318,9 +318,9 @@ SEXP XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	dest = Biostrings_alloc_string(n);
+	dest = _Biostrings_alloc_string(n);
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
-	Biostrings_memcpy_from_i1i2(i1, i2,
+	_Biostrings_memcpy_from_i1i2(i1, i2,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			sizeof(char));
 	PROTECT(ans = allocVector(STRSXP, 1));
@@ -337,9 +337,9 @@ SEXP XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	dest = Biostrings_alloc_string(n);
+	dest = _Biostrings_alloc_string(n);
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
-	Biostrings_memcpy_from_subset(INTEGER(subset), n,
+	_Biostrings_memcpy_from_subset(INTEGER(subset), n,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			sizeof(char));
 	PROTECT(ans = allocVector(STRSXP, 1));
@@ -361,7 +361,7 @@ SEXP XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax, SEXP stri
 	i2 = INTEGER(imax)[0] - 1;
 	src = STRING_ELT(string, 0);
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
-	Biostrings_memcpy_to_i1i2(i1, i2,
+	_Biostrings_memcpy_to_i1i2(i1, i2,
 			(char *) RAW(dest), LENGTH(dest),
 			CHAR(src), LENGTH(src), sizeof(char));
 	return dest_xraw_xp;
@@ -374,7 +374,7 @@ SEXP XRaw_write_chars_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP string)
 	dest = R_ExternalPtrTag(dest_xraw_xp);
 	src = STRING_ELT(string, 0);
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
-	Biostrings_memcpy_to_subset(INTEGER(subset), LENGTH(subset),
+	_Biostrings_memcpy_to_subset(INTEGER(subset), LENGTH(subset),
 			(char *) RAW(dest), LENGTH(dest),
 			CHAR(src), LENGTH(src), sizeof(char));
 	return dest_xraw_xp;
@@ -525,8 +525,8 @@ SEXP XRaw_read_enc_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax, SEXP 
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	dest = Biostrings_alloc_string(n);
-	Biostrings_translate_charcpy_from_i1i2(i1, i2,
+	dest = _Biostrings_alloc_string(n);
+	_Biostrings_translate_charcpy_from_i1i2(i1, i2,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
 	PROTECT(ans = allocVector(STRSXP, 1));
@@ -543,8 +543,8 @@ SEXP XRaw_read_enc_chars_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	dest = Biostrings_alloc_string(n);
-	Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
+	dest = _Biostrings_alloc_string(n);
+	_Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
 	PROTECT(ans = allocVector(STRSXP, 1));
@@ -570,7 +570,7 @@ SEXP XRaw_write_enc_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax,
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
 	src = STRING_ELT(string, 0);
-	Biostrings_translate_charcpy_to_i1i2(i1, i2,
+	_Biostrings_translate_charcpy_to_i1i2(i1, i2,
 		(char *) RAW(dest), n, CHAR(src), LENGTH(src),
 		INTEGER(lkup), LENGTH(lkup));
 	return dest_xraw_xp;
@@ -585,7 +585,7 @@ SEXP XRaw_write_enc_chars_to_subset(SEXP dest_xraw_xp, SEXP subset,
 	dest = R_ExternalPtrTag(dest_xraw_xp);
 	n = LENGTH(subset);
 	src = STRING_ELT(string, 0);
-	Biostrings_translate_charcpy_to_subset(INTEGER(subset), n,
+	_Biostrings_translate_charcpy_to_subset(INTEGER(subset), n,
 		(char *) RAW(dest), LENGTH(dest), CHAR(src), LENGTH(src),
 		INTEGER(lkup), LENGTH(lkup));
 	return dest_xraw_xp;
@@ -608,7 +608,7 @@ SEXP XRaw_read_complexes_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax, SEXP 
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
 	PROTECT(dest = allocVector(CPLXSXP, n));
-	Biostrings_coerce_to_complex_from_i1i2(i1, i2,
+	_Biostrings_coerce_to_complex_from_i1i2(i1, i2,
 		COMPLEX(dest), n, (char *) RAW(src), LENGTH(src),
 		COMPLEX(lkup), LENGTH(lkup));
 	UNPROTECT(1);

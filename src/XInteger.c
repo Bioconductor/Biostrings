@@ -65,7 +65,7 @@ SEXP XInteger_memcmp(SEXP xint1_xp, SEXP start1,
 	n = INTEGER(width)[0];
 
 	PROTECT(ans = allocVector(INTSXP, 1));
-	INTEGER(ans)[0] = Biostrings_memcmp((char *) INTEGER(tag1), i1,
+	INTEGER(ans)[0] = _Biostrings_memcmp((char *) INTEGER(tag1), i1,
 					(char *) INTEGER(tag2), i2,
 					n, sizeof(int));
 	UNPROTECT(1);
@@ -87,7 +87,7 @@ SEXP XInteger_read_ints_from_i1i2(SEXP src_xint_xp, SEXP imin, SEXP imax)
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
 	PROTECT(ans = allocVector(INTSXP, n));
-	Biostrings_memcpy_from_i1i2(i1, i2,
+	_Biostrings_memcpy_from_i1i2(i1, i2,
 			(char *) INTEGER(ans), LENGTH(ans),
 			(char *) INTEGER(src), LENGTH(src), sizeof(int));
 	UNPROTECT(1);
@@ -102,7 +102,7 @@ SEXP XInteger_read_ints_from_subset(SEXP src_xint_xp, SEXP subset)
 	src = R_ExternalPtrTag(src_xint_xp);
 	n = LENGTH(subset);
 	PROTECT(ans = allocVector(INTSXP, n));
-	Biostrings_memcpy_from_subset(INTEGER(subset), n,
+	_Biostrings_memcpy_from_subset(INTEGER(subset), n,
 			(char *) INTEGER(ans), n,
 			(char *) INTEGER(src), LENGTH(src), sizeof(int));
 	UNPROTECT(1);
@@ -120,7 +120,7 @@ SEXP XInteger_write_ints_to_i1i2(SEXP dest_xint_xp, SEXP imin, SEXP imax, SEXP v
 	dest = R_ExternalPtrTag(dest_xint_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
-	Biostrings_memcpy_to_i1i2(i1, i2,
+	_Biostrings_memcpy_to_i1i2(i1, i2,
 			(char *) INTEGER(dest), LENGTH(dest),
 			(char *) INTEGER(val), LENGTH(val), sizeof(int));
 	return dest_xint_xp;
@@ -131,7 +131,7 @@ SEXP XInteger_write_ints_to_subset(SEXP dest_xint_xp, SEXP subset, SEXP val)
 	SEXP dest;
 
 	dest = R_ExternalPtrTag(dest_xint_xp);
-	Biostrings_memcpy_to_subset(INTEGER(subset), LENGTH(subset),
+	_Biostrings_memcpy_to_subset(INTEGER(subset), LENGTH(subset),
 			(char *) INTEGER(dest), LENGTH(dest),
 			(char *) INTEGER(val), LENGTH(val), sizeof(int));
 	return dest_xint_xp;

@@ -57,7 +57,7 @@ static int naive_search(const char *P, int nP, const char *S, int nS, int is_cou
 		if (memcmp(P, S + n1, nP) != 0)
 			continue;
 		if (!is_count_only)
-			Biostrings_reportMatch(n1);
+			_Biostrings_reportMatch(n1);
 		count++;
 	}
 	return count;
@@ -81,11 +81,11 @@ SEXP match_naive(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
-		Biostrings_resetMatchPosBuffer();
+		_Biostrings_resetMatchPosBuffer();
 	count = naive_search((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),
+		memcpy(INTEGER(ans), _Biostrings_resetMatchPosBuffer(),
 					sizeof(int) * count);
 	} else {
 		PROTECT(ans = allocVector(INTSXP, 1));

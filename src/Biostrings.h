@@ -9,9 +9,9 @@
 
 SEXP utils_debug();
 
-char * Biostrings_alloc_string(int n);
+char * _Biostrings_alloc_string(int n);
 
-int Biostrings_memcmp(
+int _Biostrings_memcmp(
 		const char *a,
 		int ia,
 		const char *b,
@@ -20,7 +20,7 @@ int Biostrings_memcmp(
 		size_t size
 );
 
-void Biostrings_memcpy_from_i1i2(
+void _Biostrings_memcpy_from_i1i2(
 		int i1,
 		int i2,
 		char *dest,
@@ -30,7 +30,7 @@ void Biostrings_memcpy_from_i1i2(
 		size_t size
 );
 
-void Biostrings_memcpy_from_subset(
+void _Biostrings_memcpy_from_subset(
 		int *subset,
 		int n,
 		char *dest,
@@ -40,7 +40,7 @@ void Biostrings_memcpy_from_subset(
 		size_t size
 );
 
-void Biostrings_memcpy_to_i1i2(
+void _Biostrings_memcpy_to_i1i2(
 		int i1,
 		int i2,
 		char *dest,
@@ -50,7 +50,7 @@ void Biostrings_memcpy_to_i1i2(
 		size_t size
 );
 
-void Biostrings_memcpy_to_subset(
+void _Biostrings_memcpy_to_subset(
 		int *subset,
 		int n,
 		char *dest,
@@ -60,7 +60,7 @@ void Biostrings_memcpy_to_subset(
 		size_t size
 );
 
-void Biostrings_translate_charcpy_from_i1i2(
+void _Biostrings_translate_charcpy_from_i1i2(
 		int i1,
 		int i2,
 		char *dest,
@@ -71,29 +71,7 @@ void Biostrings_translate_charcpy_from_i1i2(
 		int lkup_length
 );
 
-void Biostrings_translate_charcpy_from_subset(
-		int *subset,
-		int n,
-		char *dest,
-		int dest_length,
-		const char *src,
-		int src_length,
-		const int *lkup,
-		int lkup_length
-);
-
-void Biostrings_translate_charcpy_to_i1i2(
-		int i1,
-		int i2,
-		char *dest,
-		int dest_length,
-		const char *src,
-		int src_length,
-		const int *lkup,
-		int lkup_length
-);
-
-void Biostrings_translate_charcpy_to_subset(
+void _Biostrings_translate_charcpy_from_subset(
 		int *subset,
 		int n,
 		char *dest,
@@ -104,17 +82,7 @@ void Biostrings_translate_charcpy_to_subset(
 		int lkup_length
 );
 
-void Biostrings_reverse_memcpy_from_i1i2(
-		int i1,
-		int i2,
-		char *dest,
-		size_t dest_nmemb,
-		const char *src,
-		size_t src_nmemb,
-		size_t size
-);
-
-void Biostrings_reverse_translate_charcpy_from_i1i2(
+void _Biostrings_translate_charcpy_to_i1i2(
 		int i1,
 		int i2,
 		char *dest,
@@ -125,7 +93,39 @@ void Biostrings_reverse_translate_charcpy_from_i1i2(
 		int lkup_length
 );
 
-void Biostrings_coerce_to_complex_from_i1i2(
+void _Biostrings_translate_charcpy_to_subset(
+		int *subset,
+		int n,
+		char *dest,
+		int dest_length,
+		const char *src,
+		int src_length,
+		const int *lkup,
+		int lkup_length
+);
+
+void _Biostrings_reverse_memcpy_from_i1i2(
+		int i1,
+		int i2,
+		char *dest,
+		size_t dest_nmemb,
+		const char *src,
+		size_t src_nmemb,
+		size_t size
+);
+
+void _Biostrings_reverse_translate_charcpy_from_i1i2(
+		int i1,
+		int i2,
+		char *dest,
+		int dest_length,
+		const char *src,
+		int src_length,
+		const int *lkup,
+		int lkup_length
+);
+
+void _Biostrings_coerce_to_complex_from_i1i2(
 		int i1,
 		int i2,
 		Rcomplex *dest,
@@ -136,21 +136,21 @@ void Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
-int Biostrings_estimateExpectedMatchCount(
+int _Biostrings_estimateExpectedMatchCount(
 		int nP,
 		int nS,
 		int nalphabet
 );
 
-SEXP Biostrings_expandMatchIndex(
+SEXP _Biostrings_expandMatchIndex(
 		SEXP index,
 		int ndone,
 		int nleft
 );
 
-int *Biostrings_resetMatchPosBuffer();
+int *_Biostrings_resetMatchPosBuffer();
 
-int Biostrings_reportMatch(int pos);
+int _Biostrings_reportMatch(int pos);
 
 
 /* XRaw.c */

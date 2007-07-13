@@ -278,7 +278,7 @@ static int _match_shiftor(const char *P, int nP, const char *S, int nS, int is_c
 		}
 #endif
 		if (!is_count_only)
-			Biostrings_reportMatch(Lpos - 1);
+			_Biostrings_reportMatch(Lpos - 1);
 		count++;
 	}
 	/* No need to free PMmask, R does that for us */
@@ -337,7 +337,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	}
 #endif
 	if (!is_count_only)
-		Biostrings_resetMatchPosBuffer();
+		_Biostrings_resetMatchPosBuffer();
 	count = _match_shiftor((char *) pat, pat_length, (char *) subj, subj_length, is_count_only,
 				kerr+1, is_fixed);
 #ifdef DEBUG_BIOSTRINGS
@@ -347,7 +347,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 #endif
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), Biostrings_resetMatchPosBuffer(),
+		memcpy(INTEGER(ans), _Biostrings_resetMatchPosBuffer(),
 					sizeof(int) * count);
 	} else {
 		PROTECT(ans = allocVector(INTSXP, 1));
