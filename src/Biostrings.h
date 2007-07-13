@@ -370,6 +370,14 @@ SEXP char_frequency(
 );
 
 
+/* normalize_views.c */
+
+SEXP Biostrings_normalize_views(
+		SEXP start,
+		SEXP end
+);
+
+
 /* match_naive.c */
 
 SEXP match_naive_debug();

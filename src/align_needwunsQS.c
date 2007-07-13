@@ -139,14 +139,14 @@ SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 {
 	int s1_off, s1_len, s2_off, s2_len, nrow, score;
 	const Rbyte *s1, *s2;
-	SEXP ans, names, tag, ans_elt;
+	SEXP ans, ans_names, tag, ans_elt;
 
-        s1_off = INTEGER(s1_offset)[0];
-        s1_len = INTEGER(s1_length)[0];
-        s1 = RAW(R_ExternalPtrTag(s1_xp)) + s1_off;
-        s2_off = INTEGER(s2_offset)[0];
-        s2_len = INTEGER(s2_length)[0];
-        s2 = RAW(R_ExternalPtrTag(s2_xp)) + s2_off;
+	s1_off = INTEGER(s1_offset)[0];
+	s1_len = INTEGER(s1_length)[0];
+	s1 = RAW(R_ExternalPtrTag(s1_xp)) + s1_off;
+	s2_off = INTEGER(s2_offset)[0];
+	s2_len = INTEGER(s2_length)[0];
+	s2 = RAW(R_ExternalPtrTag(s2_xp)) + s2_off;
 	nrow = INTEGER(mat_nrow)[0];
 	score = needwunsQS((char *) s1, s1_len, (char *) s2, s2_len,
 		   INTEGER(mat), nrow, INTEGER(lkup), LENGTH(lkup),
@@ -154,11 +154,11 @@ SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 
 	PROTECT(ans = NEW_LIST(3));
 	/* set the names */
-	PROTECT(names = allocVector(STRSXP, 3));
-	SET_STRING_ELT(names, 0, mkChar("al1"));
-	SET_STRING_ELT(names, 1, mkChar("al2"));
-	SET_STRING_ELT(names, 2, mkChar("score"));
-	SET_NAMES(ans, names);
+	PROTECT(ans_names = allocVector(STRSXP, 3));
+	SET_STRING_ELT(ans_names, 0, mkChar("al1"));
+	SET_STRING_ELT(ans_names, 1, mkChar("al2"));
+	SET_STRING_ELT(ans_names, 2, mkChar("score"));
+	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 	/* set the "al1" element */
 	PROTECT(ans_elt = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));

@@ -67,6 +67,16 @@
 ###   - mask(mask(x)) is normalize(x).
 ###
 
+### x@views must be ordered from left to right for this to work.
+### TODO: Add an optional arg for triggering the reordering of the views
+### (they should be reordered by default).
+BStringViews.normalize <- function(x)
+{
+    views <- .Call("Biostrings_normalize_views", start(x), end(x), PACKAGE="Biostrings")
+    x@views <- data.frame(views)
+    x
+}
+
 BStringViews.mask <- function(x)
 {
     ii <- order(start(x))
@@ -109,7 +119,10 @@ setMethod("mask", "BString",
             if (!missing(start) || !missing(end))
                 stop("can't give 'start' (or 'end') when 'pattern' is given")
         }
-        BStringViews.mask(matchPattern(pattern, x))
+        ## Normalizing before masking makes masking faster but is not
+        ## strictly required.
+        #BStringViews.mask(matchPattern(pattern, x))
+        BStringViews.mask(BStringViews.normalize(matchPattern(pattern, x)))
     }
 )
 
