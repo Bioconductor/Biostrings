@@ -15,19 +15,19 @@
 
 debug_utils <- function()
 {
-    invisible(.Call("utils_debug", PACKAGE="Biostrings"))
+    invisible(.Call("Biostrings_debug_utils", PACKAGE="Biostrings"))
 }
 
 debug_XRaw <- function()
 {
-    invisible(.Call("XRaw_debug", PACKAGE="Biostrings"))
+    invisible(.Call("Biostrings_debug_XRaw", PACKAGE="Biostrings"))
 }
 
 
 ### Return the hexadecimal address of any R object in a string.
 address <- function(x)
 {
-    .Call("sexp_address", x, PACKAGE="Biostrings")
+    .Call("Biostrings_sexp_address", x, PACKAGE="Biostrings")
 }
 
 ### Helper function (for debugging purpose).
@@ -37,7 +37,7 @@ address <- function(x)
 setMethod("show", "externalptr",
     function(object)
     {
-        .Call("xp_show", object, PACKAGE="Biostrings")
+        .Call("Biostrings_xp_show", object, PACKAGE="Biostrings")
     }
 )
 
@@ -76,11 +76,11 @@ setMethod("initialize", "XRaw",
         length <- as.integer(length)
         if (length < 1)
             stop("XRaw length must be >= 1")
-        xp <- .Call("xp_new", PACKAGE="Biostrings")
-        .Call("XRaw_alloc", xp, length, PACKAGE="Biostrings")
+        xp <- .Call("Biostrings_xp_new", PACKAGE="Biostrings")
+        .Call("Biostrings_XRaw_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         if (verbose) {
-            show_string <- .Call("XRaw_get_show_string", .Object@xp, PACKAGE="Biostrings")
+            show_string <- .Call("Biostrings_XRaw_get_show_string", .Object@xp, PACKAGE="Biostrings")
             cat("Allocating new ", show_string, "\n", sep="")
         }
         .Object
@@ -95,7 +95,7 @@ XRaw <- function(...)
 setMethod("show", "XRaw",
     function(object)
     {
-        show_string <- .Call("XRaw_get_show_string", object@xp, PACKAGE="Biostrings")
+        show_string <- .Call("Biostrings_XRaw_get_show_string", object@xp, PACKAGE="Biostrings")
         cat(show_string, "\n", sep="")
         ## What is correct here? The documentation (?show) says that 'show'
         ## should return an invisible 'NULL' but, on the other hand, the 'show'
@@ -107,7 +107,7 @@ setMethod("show", "XRaw",
 setMethod("length", "XRaw",
     function(x)
     {
-        .Call("XRaw_length", x@xp, PACKAGE="Biostrings")
+        .Call("Biostrings_XRaw_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
@@ -161,14 +161,14 @@ XRaw.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(dec_lkup))
-            .Call("XRaw_read_chars_from_i1i2",
+            .Call("Biostrings_XRaw_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
             .Call("XRaw_read_enc_chars_from_i1i2",
                   x@xp, i, imax, dec_lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(dec_lkup))
-            .Call("XRaw_read_chars_from_subset",
+            .Call("Biostrings_XRaw_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
             .Call("XRaw_read_enc_chars_from_subset",
@@ -189,14 +189,14 @@ XRaw.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(enc_lkup))
-            .Call("XRaw_write_chars_to_i1i2",
+            .Call("Biostrings_XRaw_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
             .Call("XRaw_write_enc_chars_to_i1i2",
                   x@xp, i, imax, value, enc_lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(enc_lkup))
-            .Call("XRaw_write_chars_to_subset",
+            .Call("Biostrings_XRaw_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
             .Call("XRaw_write_enc_chars_to_subset",
@@ -218,14 +218,14 @@ XRaw.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(lkup))
-            .Call("XRaw_copy_from_i1i2", dest@xp, src@xp,
+            .Call("Biostrings_XRaw_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, PACKAGE="Biostrings")
         else
             .Call("XRaw_translate_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(lkup))
-            .Call("XRaw_copy_from_subset", dest@xp, src@xp,
+            .Call("Biostrings_XRaw_copy_from_subset", dest@xp, src@xp,
                   i, PACKAGE="Biostrings")
         else
             .Call("XRaw_translate_copy_from_subset", dest@xp, src@xp,
@@ -396,7 +396,7 @@ setMethod("!=", signature(e1="XRaw", e2="XRaw"),
 ### arguments) because we want it to be the fastest possible!
 XRaw.compare <- function(x1, start1, x2, start2, width)
 {
-    .Call("XRaw_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
+    .Call("Biostrings_XRaw_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
 }
 
 
@@ -418,7 +418,7 @@ safeExplode <- function(x)
 {
     if (!is.character(x) || length(x) != 1)
         stop("'x' must be a single string")
-    .Call("safe_explode", x, PACKAGE="Biostrings")
+    .Call("Biostrings_safe_explode", x, PACKAGE="Biostrings")
 }
 
 ### pxr <- new("PrintableXRaw", 10)

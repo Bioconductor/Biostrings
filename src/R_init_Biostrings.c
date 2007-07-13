@@ -3,28 +3,28 @@
 static const R_CallMethodDef callMethods[] = {
 
 /* utils.c */
-	{"utils_debug", (DL_FUNC) &utils_debug, 0},
+	{"Biostrings_debug_utils", (DL_FUNC) &Biostrings_debug_utils, 0},
 
 /* XRaw.c */
-	{"XRaw_debug", (DL_FUNC) &XRaw_debug, 0},
+	{"Biostrings_debug_XRaw", (DL_FUNC) &Biostrings_debug_XRaw, 0},
 
-	{"sexp_address", (DL_FUNC) &sexp_address, 1},
-	{"xp_show", (DL_FUNC) &xp_show, 1},
-	{"xp_new", (DL_FUNC) &xp_new, 0},
-	{"safe_explode", (DL_FUNC) &safe_explode, 1},
+	{"Biostrings_sexp_address", (DL_FUNC) &Biostrings_sexp_address, 1},
+	{"Biostrings_xp_show", (DL_FUNC) &Biostrings_xp_show, 1},
+	{"Biostrings_xp_new", (DL_FUNC) &Biostrings_xp_new, 0},
+	{"Biostrings_safe_explode", (DL_FUNC) &Biostrings_safe_explode, 1},
 
-	{"XRaw_alloc", (DL_FUNC) &XRaw_alloc, 2},
-	{"XRaw_get_show_string", (DL_FUNC) &XRaw_get_show_string, 1},
-	{"XRaw_length", (DL_FUNC) &XRaw_length, 1},
-	{"XRaw_memcmp", (DL_FUNC) &XRaw_memcmp, 5},
+	{"Biostrings_XRaw_alloc", (DL_FUNC) &Biostrings_XRaw_alloc, 2},
+	{"Biostrings_XRaw_get_show_string", (DL_FUNC) &Biostrings_XRaw_get_show_string, 1},
+	{"Biostrings_XRaw_length", (DL_FUNC) &Biostrings_XRaw_length, 1},
+	{"Biostrings_XRaw_memcmp", (DL_FUNC) &Biostrings_XRaw_memcmp, 5},
 
-	{"XRaw_copy_from_i1i2", (DL_FUNC) &XRaw_copy_from_i1i2, 4},
-	{"XRaw_copy_from_subset", (DL_FUNC) &XRaw_copy_from_subset, 3},
+	{"Biostrings_XRaw_copy_from_i1i2", (DL_FUNC) &Biostrings_XRaw_copy_from_i1i2, 4},
+	{"Biostrings_XRaw_copy_from_subset", (DL_FUNC) &Biostrings_XRaw_copy_from_subset, 3},
 
-	{"XRaw_read_chars_from_i1i2", (DL_FUNC) &XRaw_read_chars_from_i1i2, 3},
-	{"XRaw_read_chars_from_subset", (DL_FUNC) &XRaw_read_chars_from_subset, 2},
-	{"XRaw_write_chars_to_i1i2", (DL_FUNC) &XRaw_write_chars_to_i1i2, 4},
-	{"XRaw_write_chars_to_subset", (DL_FUNC) &XRaw_write_chars_to_subset, 3},
+	{"Biostrings_XRaw_read_chars_from_i1i2", (DL_FUNC) &Biostrings_XRaw_read_chars_from_i1i2, 3},
+	{"Biostrings_XRaw_read_chars_from_subset", (DL_FUNC) &Biostrings_XRaw_read_chars_from_subset, 2},
+	{"Biostrings_XRaw_write_chars_to_i1i2", (DL_FUNC) &Biostrings_XRaw_write_chars_to_i1i2, 4},
+	{"Biostrings_XRaw_write_chars_to_subset", (DL_FUNC) &Biostrings_XRaw_write_chars_to_subset, 3},
 
 	{"XRaw_read_ints_from_i1i2", (DL_FUNC) &XRaw_read_ints_from_i1i2, 3},
 	{"XRaw_read_ints_from_subset", (DL_FUNC) &XRaw_read_ints_from_subset, 2},

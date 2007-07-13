@@ -3,7 +3,7 @@
 
 static int debug = 0;
 
-SEXP XRaw_debug()
+SEXP Biostrings_debug_XRaw()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
@@ -16,10 +16,10 @@ SEXP XRaw_debug()
 
 /*
  * From R:
- *   .Call("sexp_address", 6:4, PACKAGE="Biostrings")
- *   .Call("sexp_address", new("externalptr"), PACKAGE="Biostrings")
+ *   .Call("Biostrings_sexp_address", 6:4, PACKAGE="Biostrings")
+ *   .Call("Biostrings_sexp_address", new("externalptr"), PACKAGE="Biostrings")
  */
-SEXP sexp_address(SEXP s)
+SEXP Biostrings_sexp_address(SEXP s)
 {
 	SEXP ans;
 	char buf[40]; /* should be enough, even for 128-bit addresses */
@@ -34,9 +34,9 @@ SEXP sexp_address(SEXP s)
 /*
  * Print some obscure info about an "externalptr" object.
  * From R:
- *   .Call("xp_show", new("externalptr"), PACKAGE="Biostrings")
+ *   .Call("Biostrings_xp_show", new("externalptr"), PACKAGE="Biostrings")
  */
-SEXP xp_show(SEXP xp)
+SEXP Biostrings_xp_show(SEXP xp)
 {
 	SEXP s;
 	void *p;
@@ -58,9 +58,9 @@ SEXP xp_show(SEXP xp)
  * new("externalptr") will always return the same instance of an external
  * pointer object! If you need a new instance, use this function instead.
  * From R:
- *   xp <- .Call("xp_new", PACKAGE="Biostrings")
+ *   xp <- .Call("Biostrings_xp_new", PACKAGE="Biostrings")
  */
-SEXP xp_new()
+SEXP Biostrings_xp_new()
 {
 	return R_MakeExternalPtr(NULL, R_NilValue, R_NilValue);
 }
@@ -79,7 +79,7 @@ SEXP xp_new()
  * The length of the returned string is the number of chars in single
  * string s. Not vectorized.
  */
-SEXP safe_explode(SEXP s)
+SEXP Biostrings_safe_explode(SEXP s)
 {
 	SEXP s0, ans;
 	int s0_length, i;
@@ -112,7 +112,7 @@ SEXP safe_explode(SEXP s)
  * Alloc a RAWSXP vector of length 'length' and point 'xraw_xp' to it.
  * Does NOT initialize the allocated memory!
  */
-SEXP XRaw_alloc(SEXP xraw_xp, SEXP length)
+SEXP Biostrings_XRaw_alloc(SEXP xraw_xp, SEXP length)
 {
 	SEXP tag;
 	int tag_length;
@@ -134,9 +134,9 @@ SEXP XRaw_alloc(SEXP xraw_xp, SEXP length)
  * 'xraw_xp' must be the 'xp' slot of a "XRaw" object.
  * From R:
  *   xr <- XRaw(30)
- *   .Call("XRaw_get_show_string", xr@xp, PACKAGE="Biostrings")
+ *   .Call("Biostrings_XRaw_get_show_string", xr@xp, PACKAGE="Biostrings")
  */
-SEXP XRaw_get_show_string(SEXP xraw_xp)
+SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
@@ -156,10 +156,10 @@ SEXP XRaw_get_show_string(SEXP xraw_xp)
  * Return length of R string pointed by 'xraw_xp'.
  * From R:
  *   xr <- XRaw(30)
- *   .Call("XRaw_length", xr@xp, PACKAGE="Biostrings")
+ *   .Call("Biostrings_XRaw_length", xr@xp, PACKAGE="Biostrings")
  * Called by method length() for "XRaw" objects.
  */
-SEXP XRaw_length(SEXP xraw_xp)
+SEXP Biostrings_XRaw_length(SEXP xraw_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
@@ -176,9 +176,9 @@ SEXP XRaw_length(SEXP xraw_xp)
 /*
  * From R:
  *   xr <- XRaw(30)
- *   .Call("XRaw_memcmp", xr@xp, 1:1, xr@xp, 10:10, 21:21, PACKAGE="Biostrings")
+ *   .Call("Biostrings_XRaw_memcmp", xr@xp, 1:1, xr@xp, 10:10, 21:21, PACKAGE="Biostrings")
  */
-SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
+SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 		 SEXP xraw2_xp, SEXP start2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
@@ -186,7 +186,7 @@ SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] XRaw_memcmp(): BEGIN\n");
+		Rprintf("[DEBUG] Biostrings_XRaw_memcmp(): BEGIN\n");
 	}
 #endif
 	tag1 = R_ExternalPtrTag(xraw1_xp);
@@ -197,7 +197,7 @@ SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] XRaw_memcmp(): ");
+		Rprintf("[DEBUG] Biostrings_XRaw_memcmp(): ");
 		Rprintf("RAW(tag1)=%p i1=%d RAW(tag2)=%p i2=%d n=%d\n",
 			RAW(tag1), i1, RAW(tag2), i2, n);
 	}
@@ -208,7 +208,7 @@ SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 					n, sizeof(Rbyte));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] XRaw_memcmp(): END\n");
+		Rprintf("[DEBUG] Biostrings_XRaw_memcmp(): END\n");
 	}
 #endif
 	UNPROTECT(1);
@@ -267,7 +267,7 @@ SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
  * --------------------------------------------------------------------------
  */
 
-SEXP XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP imax)
+SEXP Biostrings_XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -282,7 +282,7 @@ SEXP XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP im
 	return dest_xraw_xp;
 }
 
-SEXP XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
+SEXP Biostrings_XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
 {
 	SEXP dest, src;
 
@@ -306,9 +306,9 @@ SEXP XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
  * From R:
  *   xr <- XRaw(15)
  *   xr[] < "Hello"
- *   .Call("XRaw_read_chars_from_i1i2", xr@xp, 2:2, 4:4, PACKAGE="Biostrings")
+ *   .Call("Biostrings_XRaw_read_chars_from_i1i2", xr@xp, 2:2, 4:4, PACKAGE="Biostrings")
  */
-SEXP XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
+SEXP Biostrings_XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
 {
 	SEXP src, ans;
 	int i1, i2, n;
@@ -329,7 +329,7 @@ SEXP XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
 	return ans;
 }
 
-SEXP XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
+SEXP Biostrings_XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
 {
 	SEXP src, ans;
 	int n;
@@ -351,7 +351,7 @@ SEXP XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
 /*
  * 'string' must be a non-empty single string (character vector of length 1).
  */
-SEXP XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax, SEXP string)
+SEXP Biostrings_XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax, SEXP string)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -367,7 +367,7 @@ SEXP XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax, SEXP stri
 	return dest_xraw_xp;
 }
 
-SEXP XRaw_write_chars_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP string)
+SEXP Biostrings_XRaw_write_chars_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP string)
 {
 	SEXP dest, src;
 

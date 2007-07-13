@@ -39,7 +39,7 @@ setMethod("initialize", "XInteger",
         length <- as.integer(length)
         if (length < 1)
             stop("XInteger length must be >= 1")
-        xp <- .Call("xp_new", PACKAGE="Biostrings")
+        xp <- .Call("Biostrings_xp_new", PACKAGE="Biostrings")
         .Call("XInteger_alloc", xp, length, PACKAGE="Biostrings")
         .Object@xp <- xp
         .Object

@@ -4,7 +4,7 @@
 
 static int debug = 0;
 
-SEXP utils_debug()
+SEXP Biostrings_debug_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
