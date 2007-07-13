@@ -504,41 +504,51 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 
 
 /* ==========================================================================
- * Helper functions used by the matching algo.
+ * Helper functions used by the matching algos.
  * --------------------------------------------------------------------------
  */
 
-static int *match_pos_buffer;
-static int match_pos_buffer_length, match_count;
+static int *match_starts, *match_ends;
+static int match_buffer_size, match_count;
 
-/* Reset match_pos_buffer */
-int *_Biostrings_resetMatchPosBuffer()
+/* Reset match buffers */
+void _Biostrings_reset_match_buffers()
 {
-	int *tmp;
-
-	tmp = match_pos_buffer;
-	match_pos_buffer = NULL;
-	match_pos_buffer_length = match_count = 0;
-	return tmp;
+	/* No memory leak here, because we use transient storage allocation */
+	match_starts = match_ends = NULL;
+	match_buffer_size = match_count = 0;
+	return;
 }
 
-/* Returns the new number of matches */
-int _Biostrings_reportMatch(int pos)
+/* Return the new number of matches */
+int _Biostrings_report_match(int Lpos, int Rpos)
 {
-	long new_length;
+	long new_size;
 
-	if (match_count >= match_pos_buffer_length) {
+	if (match_count >= match_buffer_size) {
 		/* Buffer is full */
-		if (match_pos_buffer_length == 0)
-			new_length = 1024;
+		if (match_buffer_size == 0)
+			new_size = 1024;
 		else
-			new_length = 2 * match_pos_buffer_length;
-		match_pos_buffer = Srealloc((char *) match_pos_buffer, new_length,
-						(long) match_pos_buffer_length, int);
-		match_pos_buffer_length = new_length;
+			new_size = 2 * match_buffer_size;
+		match_starts = Srealloc((char *) match_starts, new_size,
+						(long) match_buffer_size, int);
+		match_ends = Srealloc((char *) match_ends, new_size,
+						(long) match_buffer_size, int);
+		match_buffer_size = new_size;
 	}
-	match_pos_buffer[match_count++] = ++pos;
-	return match_count;
+	match_starts[match_count] = ++Lpos;
+	match_ends[match_count] = ++Rpos;
+	return ++match_count;
 }
 
+int *_Biostrings_get_match_starts()
+{
+	return match_starts;
+}
+
+int *_Biostrings_get_match_ends()
+{
+	return match_ends;
+}
 

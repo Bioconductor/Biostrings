@@ -136,9 +136,15 @@ void _Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
-int *_Biostrings_resetMatchPosBuffer();
+void _Biostrings_reset_match_buffers();
 
-int _Biostrings_reportMatch(int pos);
+int _Biostrings_report_match(
+		int Lpos,
+		int Rpos
+);
+
+int *_Biostrings_get_match_starts();
+int *_Biostrings_get_match_ends();
 
 
 /* XRaw.c */

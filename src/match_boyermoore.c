@@ -412,7 +412,7 @@ static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count
 			if (j1 == 0) {
 				/* we have a full match! */
 				if (!is_count_only)
-					_Biostrings_reportMatch(i1);
+					_Biostrings_report_match(i1, 0);
 				count++;
 				shift = P0buffer_shift0;
 			} else {
@@ -456,11 +456,11 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
-		_Biostrings_resetMatchPosBuffer();
+		_Biostrings_reset_match_buffers();
 	count = boyermoore((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), _Biostrings_resetMatchPosBuffer(),
+		memcpy(INTEGER(ans), _Biostrings_get_match_starts(),
 					sizeof(int) * count);
 	} else {
 		PROTECT(ans = allocVector(INTSXP, 1));
