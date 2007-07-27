@@ -18,7 +18,7 @@
   AMINO_ACID_CODE
 
   ## Convert an AAString object to a vector of 3-letter amino acid codes
-  aa <- AAString("LARNDEECQW")
+  aa <- AAString("LANDEECQW")
   AMINO_ACID_CODE[strsplit(as.character(aa), NULL)[[1]]]
 }
 

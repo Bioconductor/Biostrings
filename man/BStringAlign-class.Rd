@@ -36,17 +36,17 @@
   the notion of "filled-with-gaps supersequence".
   A "filled-with-gaps supersequence" of a string s1 is a string S1 that is
   obtained by inserting 0 or any number of gaps in s1.
-  For example --P-AW-HEAE is a "filled-with-gaps supersequence" of PAWHEAE.
+  For example L-A--ND is a "filled-with-gaps supersequence" of LAND.
   An alignment between 2 strings s1 and s2 is made of 2 strings align1 and
   align2 that are "filled-with-gaps supersequences" of s1 and s2, and that
   have the same length.
   Note that this common length must be greater or equal to the lengths
   of s1 and s2: nchar(align1) = nchar(align2) >= max(nchar(s1), nchar(s2))
 
-  For example, this is an alignment for PAWHEAE and HEAGAWGHEE:
+  For example, this is an alignment between LAND and LEAVES:
   \preformatted{
-    --P-AW-HEAE
-    HEAGAWGHE-E
+    L-A--ND
+    LEAVES-
   }
 
   An alignment can be seen as a compact representation of one set of basic
@@ -55,12 +55,11 @@
   align2),  "replacements".
   The above alignement represents the following basic operations:
   \preformatted{
-    insert H at pos 1
     insert E at pos 2
-    replace by A at pos 3 (P is replaced by A)
-    insert G at pos 4
-    insert G at pos 7
-    delete at pos 10 (the A is deleted)
+    insert V at pos 4
+    insert E at pos 5
+    replace by S at pos 6 (N is replaced by S)
+    delete at pos 7 (D is deleted)
   }
   Note that "insert X at pos i" means that all letters at a position >= i
   are moved 1 place to the right before X is actually inserted.
@@ -108,6 +107,19 @@
 }
 
 \examples{
+  s1 <- AAString("LAND")
+  s2 <- AAString("LEAVES")
+  ## With the needwunsQS function, the cost of an insertion or deletion
+  ## is controlled by the gappen (gap penalty) arg, the cost of a replacement
+  ## is controlled by the "substitution scoring matrix" passed thru the substmat
+  ## arg
+  nw1 <- needwunsQS(s1, s2, substmat="BLOSUM50", gappen=1)
+  nw1
+  length(nw1)
+  nw0 <- needwunsQS(s1, s2, substmat="BLOSUM50", gappen=0)
+  nw0
+  length(nw0)
+  ## Low gap penalties tend to produce longer alignments!
 }
 
 \keyword{methods}
