@@ -54,19 +54,24 @@
   \describe{
     \item{}{
       \code{AAString(src)}:
-      [TODO: Document me]
+      Tries to convert \code{src} into an \code{AAString} object.
+      \code{src} can be a single string (character vector of length 1)
+      or a \code{\link{BString}} object.
     }
   }
 }
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} is a \code{AAString} object.
+  \code{x} must be a \code{\link{BString}} (or derived) object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
-      [TODO: Document me]
+      If \code{x} is of class \code{AAString}, return the AAString
+      alphabet (see above).
+      See the corrsponding man pages when \code{x} is of class
+      \code{\link{BString}}, \code{\link{DNAString}} or \code{\link{RNAString}}.
     }
   }
 }

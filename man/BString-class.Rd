@@ -77,7 +77,10 @@
   \describe{
     \item{}{
       \code{BString(src)}:
-      [TODO: Document me]
+      Tries to convert \code{src} into a \code{BString} object.
+      \code{src} can be a single string (character vector of length 1),
+      a \code{\link{DNAString}} object, an \code{\link{RNAString}} object
+      or an \code{\link{AAString}} object.
     }
   }
 }
@@ -123,7 +126,9 @@
   \describe{
     \item{}{
       \code{alphabet(x)}:
-      [TODO: Document me]
+      \code{NULL} for a \code{BString} object.
+      See the corrsponding man pages when \code{x} is of class
+      \code{\link{DNAString}}, \code{\link{RNAString}} or code{\link{AAString}}.
     }
   }
 }

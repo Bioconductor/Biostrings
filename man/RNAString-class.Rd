@@ -57,19 +57,24 @@
   \describe{
     \item{}{
       \code{RNAString(src)}:
-      [TODO: Document me]
+      Tries to convert \code{src} into an \code{RNAString} object.
+      \code{src} can be a single string (character vector of length 1),
+      a \code{\link{BString}} object or a \code{\link{DNAString}} object.
     }
   }
 }
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} is a \code{RNAString} object.
+  \code{x} must be a \code{\link{BString}} (or derived) object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
-      [TODO: Document me]
+      If \code{x} is of class \code{RNAString}, return the RNAString
+      alphabet (see above).
+      See the corrsponding man pages when \code{x} is of class
+      \code{\link{BString}}, \code{\link{DNAString}} or \code{\link{AAString}}.
     }
   }
 }
