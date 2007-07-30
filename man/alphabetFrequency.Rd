@@ -6,8 +6,6 @@
 \alias{alphabetFrequency,RNAString-method}
 \alias{alphabetFrequency,BStringViews-method}
 
-\alias{alphabetFrequency}
-
 
 \title{Function to calculate the frequency of letters in a biological sequence}
 
@@ -50,8 +48,6 @@
   If \code{x} is a \link{BStringViews} object, then the returned
   vector contains the cumulated frequencies found in each view.
 }
-
-\author{H. Pages}
 
 \seealso{
   \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}

@@ -56,7 +56,7 @@
       \code{AAString(src)}:
       Tries to convert \code{src} into an \code{AAString} object.
       \code{src} can be a single string (character vector of length 1)
-      or a \code{\link{BString}} object.
+      or a \link{BString} object.
     }
   }
 }
@@ -79,8 +79,10 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link{BString}}, \code{\link{AMINO_ACID_CODE}},
-  \code{\link{BStringViews}}
+  \code{\link{AMINO_ACID_CODE}},
+  \code{\link{letter}},
+  \link{BString-class},
+  \link{BStringViews-class}
 }
 
 \examples{

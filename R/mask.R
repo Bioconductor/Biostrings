@@ -110,7 +110,7 @@ setMethod("mask", "BString",
     function(x, start=NA, end=NA, pattern)
     {
         if (missing(pattern)) {
-            if (isLooseNumeric(start))
+            if (isNumericOrNAs(start))
                 return(BStringViews.mask(views(x, start, end)))
             if (!missing(end))
                 stop("invalid 'start' argument")

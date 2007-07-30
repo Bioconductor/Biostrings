@@ -62,9 +62,10 @@
 }
 
 \seealso{
+  \code{\link{letter}},
+  \code{\link{views}},
   \link{BString-class},
-  \link{BStringViews-class},
-  \code{\link{views}}
+  \link{BStringViews-class}
 }
 
 \examples{

@@ -18,6 +18,7 @@ Collate: 00datacache.R
         BStringCodec.R BString.R
         BStringViews.R BStringViews-constructors.R
         BStringPartialMatches.R BStringAlign.R
+        letter.R
         subBString.R
         alphabetFrequency.R
         reverseComplement.R

@@ -5,9 +5,9 @@
 setClass(
     "BString",
     representation(
-        data="XRaw",      # contains the string data
-        offset="integer",       # a single integer
-        length="integer"        # a single integer
+        data="XRaw",        # contains the string data
+        offset="integer",   # a single integer
+        length="integer"    # a single integer
     )
 )
 
@@ -18,7 +18,8 @@ setClass("AAString", representation("BString"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "codec", "enc_lkup" and "dec_lkup" new generics (NOT exported)
+### The "codec", "enc_lkup" and "dec_lkup" new generics (NOT exported).
+###
 
 setGeneric("codec", function(x) standardGeneric("codec"))
 setMethod("codec", "BString", function(x) NULL)
@@ -57,38 +58,22 @@ setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "BString.read" and "BString.write" functions (NOT exported)
+### The "BString.read" and "BString.write" functions (NOT exported).
+###
 
 BString.read <- function(x, i, imax=integer(0))
 {
     XRaw.read(x@data, x@offset + i, x@offset + imax,
-                    dec_lkup=dec_lkup(x))
+                      dec_lkup=dec_lkup(x))
 }
 
-### Only used at initialization time!
+### Only used at initialization time! (BString objects are immutable)
 BString.write <- function(x, i, imax=integer(0), value)
 {
     XRaw.write(x@data, x@offset + i, x@offset + imax, value=value,
-                     enc_lkup=enc_lkup(x))
+                       enc_lkup=enc_lkup(x))
     x
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods
-
-### Returns a character-string
-setGeneric("letter", signature="x",
-    function(x, i) standardGeneric("letter")
-)
-setMethod("letter", "BString",
-    function(x, i)
-    {
-        if (!isTRUE(all(i >= 1)) || !isTRUE(all(i <= x@length))) # NA-proof
-            stop("subscript out of bounds")
-        BString.read(x, i)
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

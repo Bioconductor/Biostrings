@@ -5,10 +5,6 @@
 \alias{class:BString}
 \alias{BString-class}
 
-% Accesor methods:
-\alias{letter}
-\alias{letter,BString-method}
-
 % Constructor-like functions and generics:
 \alias{initialize,BString-method}
 \alias{BString}
@@ -56,19 +52,6 @@
   string based on a single-byte character set.
 }
 
-\section{Accesor methods}{
-  In the code snippets below,
-  \code{x} is a \code{BString} (or derived) object
-  and \code{i} is a numeric vector.
-
-  \describe{
-    \item{}{
-      \code{letter(x, i)}:
-      [TODO: Document me]
-    }
-  }
-}
-
 \section{Constructor-like functions and generics}{
   In the code snippet below,
   \code{src} can be a character vector
@@ -79,8 +62,8 @@
       \code{BString(src)}:
       Tries to convert \code{src} into a \code{BString} object.
       \code{src} can be a single string (character vector of length 1),
-      a \code{\link{DNAString}} object, an \code{\link{RNAString}} object
-      or an \code{\link{AAString}} object.
+      a \link{DNAString} object, an \link{RNAString} object
+      or an \link{AAString} object.
     }
   }
 }
@@ -134,6 +117,7 @@
 }
 
 \seealso{
+  \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},

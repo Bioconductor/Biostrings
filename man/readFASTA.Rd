@@ -42,7 +42,7 @@ of the biological sequence.
   \code{\link{read.table}},
   \code{\link{scan}},
   \code{\link{write.table}},
-  \code{\link{BStringViews}}
+  \link{BStringViews-class}
 }
 
 \examples{

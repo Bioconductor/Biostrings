@@ -30,7 +30,7 @@
 
 .makeViews <- function(subject, start, end)
 {
-    if (!isLooseNumeric(start) || !isLooseNumeric(end))
+    if (!isNumericOrNAs(start) || !isNumericOrNAs(end))
         stop("'start' and 'end' must be numerics")
     if (!is.integer(start))
         start <- as.integer(start)

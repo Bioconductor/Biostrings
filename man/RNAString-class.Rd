@@ -59,7 +59,7 @@
       \code{RNAString(src)}:
       Tries to convert \code{src} into an \code{RNAString} object.
       \code{src} can be a single string (character vector of length 1),
-      a \code{\link{BString}} object or a \code{\link{DNAString}} object.
+      a \link{BString} object or a \link{DNAString} object.
     }
   }
 }
@@ -82,8 +82,11 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link{BString}}, \code{\link{IUPAC_CODE_MAP}},
-  \code{\link{DNAString}}, \code{\link{BStringViews}}
+  \code{\link{IUPAC_CODE_MAP}},
+  \code{\link{letter}},
+  \link{BString-class},
+  \link{DNAString-class},
+  \link{BStringViews-class}
 }
 
 \examples{

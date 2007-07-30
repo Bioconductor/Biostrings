@@ -58,3 +58,4 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.  }
 }
 
 \keyword{models}
+\keyword{methods}

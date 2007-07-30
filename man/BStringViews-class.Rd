@@ -144,7 +144,9 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BStringViews-constructors}, \link{BString}, \link{DNAString}, \link{RNAString}
+  \link{BStringViews-constructors},
+  \link{BString-class},
+  \code{\link{letter}}
 }
 
 \keyword{methods}

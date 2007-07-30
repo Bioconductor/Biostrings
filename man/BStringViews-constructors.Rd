@@ -25,22 +25,22 @@
 
 \arguments{
   \item{subject}{
-    [TODO]
+    A \link{BString} (or derived) object or a single string.
   }
   \item{start}{
-    [TODO]
+    An integer vector containing the start positions of the views.
   }
   \item{end}{
-    [TODO]
+    An integer vector containing the end positions of the views.
   }
   \item{width}{
-    [TODO]
+    An integer vector containing the widths of the views.
   }
   \item{gapwidth}{
-    [TODO]
+    An integer vector containing the widths of the gaps between the views.
   }
   \item{src}{
-    [TODO]
+    A \link{BString} (or derived) object or a character vector.
   }
   \item{subjectClass}{
     [TODO]

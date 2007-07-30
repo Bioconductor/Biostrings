@@ -1,8 +1,8 @@
 ### Some low-level helper functions
 
-isLooseNumeric <- function(x)
+isNumericOrNAs <- function(x)
 {
-    return(is.numeric(x) || (!is.null(x) && all(is.na(x))))
+    return(is.numeric(x) || (is.atomic(x) && is.vector(x) && all(is.na(x))))
 }
 
 recycleVector <- function(x, length)
