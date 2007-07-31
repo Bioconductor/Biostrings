@@ -157,16 +157,6 @@ debug_boyermoore <- function()
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### forward-search
-
-### Must return an integer vector.
-.match.forwardsearch <- function(pattern, subject, fixed, count.only)
-{
-    stop("\"forward-search\" algorithm will be back soon...")
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### shift-or
 
 debug_shiftor <- function()
@@ -267,7 +257,7 @@ debug_shiftor <- function()
         stop("'algorithm' must be a single string")
     algo <- match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
                                    "naive-exact", "naive-fuzzy",
-                                   "boyer-moore", "forward-search", "shift-or"))
+                                   "boyer-moore", "shift-or"))
     if (algo %in% c("gregexpr", "gregexpr2")) {
         if (!is.character(subject))
             stop("algorithms \"gregexpr\" and \"gregexpr2\" are only ",
@@ -314,8 +304,6 @@ debug_shiftor <- function()
         "naive-fuzzy"=.match.naive.fuzzy(pattern, subject, mismatch, fixed,
                                          count.only),
         "boyer-moore"=.match.boyermoore(pattern, subject, count.only),
-        "forward-search"=.match.forwardsearch(pattern, subject, fixed,
-                                              count.only),
         "shift-or"=.match.shiftor(pattern, subject, mismatch, fixed,
                                   count.only)
     )

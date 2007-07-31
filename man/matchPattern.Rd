@@ -36,9 +36,7 @@
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
-    \code{"naive-fuzzy"}, \code{"boyer-moore"},
-    \code{"forward-search"} or \code{"shift-or"} (note that
-    \code{"forward-search"} is not available yet).
+    \code{"naive-fuzzy"}, \code{"boyer-moore"} or \code{"shift-or"}.
   }
   \item{mismatch}{
     The number of mismatches allowed. If non-zero a fuzzy string searching
@@ -96,11 +94,26 @@
   \code{\link{mask}},
   \code{\link{alphabetFrequency}},
   \code{\link{IUPAC_CODE_MAP}},
-  \code{\link{BStringViews}},
-  \code{\link{DNAString}}
+  \link{BStringViews-class},
+  \link{DNAString-class}
 }
 
 \examples{
+  ## A simple fuzzy matching example with a short subject
+  x <- DNAString("AAGCGCGATATG")
+  m1 <- matchPattern("GCNNNAT", x)
+  m1
+  m2 <- matchPattern("GCNNNAT", x, fixed=FALSE)
+  m2
+  as.matrix(m2)
+
+  ## With DNA sequence of yeast chromosome number 1
+  data(yeastSEQCHR1)
+  yeast1 <- DNAString(yeastSEQCHR1)
+  PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
+  match1.PpiI <- matchPattern(PpiI, yeast1, fixed=FALSE)
+  match2.PpiI <- matchPattern(PpiI, yeast1, mismatch=1, fixed=FALSE)
+
   ## With a genome containing isolated Ns
   library(BSgenome.Celegans.UCSC.ce2)
   chrII <- Celegans[["chrII"]]
