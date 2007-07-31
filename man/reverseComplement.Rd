@@ -61,6 +61,39 @@
 
 \examples{
   reverseComplement(DNAString("ACGT-YN-"))
+
+  ## Applying reverseComplement() to the pattern before calling matchPattern()
+  ## is the standard way to search hits on the reverse strand of a chromosome:
+  library(BSgenome.Dmelanogaster.FlyBase.r51)
+  chrX <- Dmelanogaster[["X"]]
+  pattern <- DNAString("GAACGGTGTCT")
+  matchPattern(pattern, chrX) # 1 hit on strand +
+  m0 <- matchPattern(reverseComplement(pattern), chrX) # 2 hits on strand -
+
+  ## Applying reverseComplement() to the subject instead of the pattern is not
+  ## a good idea for 2 reasons:
+  ## (1) Chromosome sequences are generally huge so it's going to be a lot of
+  ##     work and require a lot of memory to compute reverseComplement(subject).
+  ## (2) Chromosome locations are generally given relatively to the positive
+  ##     strand, even for features located in the negative strand, so after
+  ##     doing this:
+  m1 <- matchPattern(pattern, reverseComplement(chrX))
+  ##     the start/end of the matches are now relative to the negative strand.
+  ##     You need to apply reverseComplement() again on the result if you want
+  ##     them to be relative to the positive strand:
+  m2 <- reverseComplement(m1)
+  ##     and finally to apply rev() to sort the matches from left to right
+  ##     (5'3' direction) like in m0:
+  m3 <- rev(m2) # same as m0, finally!
+
+  ## Don't try the above example on human chromosome 1 since your computer
+  ## would need to allocate about 250Mb of memory for this:
+  if (FALSE) {
+    library(BSgenome.Hsapiens.UCSC.hg18)
+    chr1 <- Hsapiens$chr1
+    matchPattern(pattern, reverseComplement(chr1)) # DON'T DO THIS!
+    matchPattern(reverseComplement(pattern), chr1) # DO THIS INSTEAD
+  }
 }
 
 \keyword{methods}
