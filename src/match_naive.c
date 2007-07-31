@@ -1,5 +1,5 @@
 /****************************************************************************
-                      A NAIVE METHOD FOR EXACT MATCHING
+                  NAIVE METHODS FOR EXACT AND FUZZY MATCHING
 		             Author: Herve Pages
 
  Here is how the "naive" (aka "memcmp", aka "blunt") method for finding exact
@@ -13,9 +13,9 @@
      restarted from the left end of P. This process repeats until the right
      end of P shifts past the right end of S.
  
- Why do we need a "naive" algo?
+ Why implement this inefficient "naive" method?
    - For QC: we can validate other more sophisticated matching algo by
-     comparing their results to those obtains with the "naive" algo.
+     comparing their results to those obtains with the "naive" method.
    - To use as a point of reference when comparing performance.
 
  ****************************************************************************/
@@ -42,17 +42,16 @@ SEXP match_naive_debug()
 
 
 /****************************************************************************
- * A memcmp-based implementation of the "naive" method
- * ===================================================
+ * A memcmp-based implementation of the "naive" method for exact matching
+ * ======================================================================
  */
 
-/* Returns the number of matches */
-static int naive_search(const char *P, int nP, const char *S, int nS, int is_count_only)
+/* Return the number of matches */
+static int naive_exact_search(const char *P, int nP, const char *S, int nS,
+		int is_count_only)
 {
 	int count = 0, n1, n2;
 
-	n1 = 0;
-	n2 = n1 + nP;
 	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++) {
 		if (memcmp(P, S + n1, nP) != 0)
 			continue;
@@ -63,7 +62,76 @@ static int naive_search(const char *P, int nP, const char *S, int nS, int is_cou
 	return count;
 }
 
-SEXP match_naive(SEXP p_xp, SEXP p_offset, SEXP p_length,
+
+/****************************************************************************
+ * An implementation of the "naive" method for fuzzy matching
+ * ==========================================================
+ */
+
+/* Return the number of matches */
+static int naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
+		int mm_max, int fixedP, int fixedS,
+		int is_count_only)
+{
+	int count = 0, n1, n2, n2_max, mm, i, j;
+
+	n2_max = nS + mm_max;
+	for (n1 = -mm_max, n2 = nP - mm_max; n2 <= n2_max; n1++, n2++) {
+		mm = 0;
+		for (i = n1, j = 0; j < nP; i++, j++) {
+			if (i < 0 || nS <= i) {
+				mm++;
+			} else {
+				if (fixedS) {
+					if (fixedP) {
+						if (S[i] != P[j]) mm++;
+					} else {
+						if (S[i] & (~P[j])) mm++;
+					}
+				} else {
+					if (fixedP) {
+						if ((~S[i]) & P[j]) mm++;
+					} else {
+						if ((S[i] & P[j]) == 0) mm++;
+					}
+				}
+			}
+			if (mm > mm_max)
+				break;
+		}
+		/*
+		Rprintf("nS=%d nP=%d mm_max=%d n1=%d n2=%d mm=%d i=%d j=%d\n",
+			nS, nP, mm_max, n1, n2, mm, i, j);
+		*/
+		if (j < nP)
+			continue;
+		if (!is_count_only)
+			_Biostrings_report_match(n1, 0);
+		count++;
+	}
+	return count;
+}
+
+
+/****************************************************************************
+ * .Call entry points: "match_naive_exact" and "match_naive_fuzzy"
+ *
+ * Arguments:
+ *   'p_xp': pattern@data@xp
+ *   'p_offset': pattern@offset
+ *   'p_length': pattern@length
+ *   's_xp': subject@data@xp
+ *   's_offset': subject@offset
+ *   's_length': subject@length
+ *   'mismatch': the number of mismatches (integer vector of length 1)
+ *   'fixed': logical vector of length 2
+ *   'count_only': single logical
+ *
+ * The 2 functions return an integer vector containing the relative pos of
+ * the matches. All matches have the length of the pattern.
+ ****************************************************************************/
+
+SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP count_only)
 {
@@ -82,7 +150,11 @@ SEXP match_naive(SEXP p_xp, SEXP p_offset, SEXP p_length,
 
 	if (!is_count_only)
 		_Biostrings_reset_views_buffer();
-	count = naive_search((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
+	count = naive_exact_search(
+			(char *) pat, pat_length,
+			(char *) subj, subj_length,
+			is_count_only);
+
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
 		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
@@ -95,3 +167,43 @@ SEXP match_naive(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	return ans;
 }
 
+SEXP match_naive_fuzzy(SEXP p_xp, SEXP p_offset, SEXP p_length,
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
+		SEXP mismatch, SEXP fixed,
+		SEXP count_only)
+{
+	int pat_offset, pat_length, subj_offset, subj_length,
+	    mm_max, fixedP, fixedS, is_count_only, count;
+	const Rbyte *pat, *subj;
+	SEXP ans;
+
+	pat_offset = INTEGER(p_offset)[0];
+	pat_length = INTEGER(p_length)[0];
+	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
+	subj_offset = INTEGER(s_offset)[0];
+	subj_length = INTEGER(s_length)[0];
+	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+	mm_max = INTEGER(mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	is_count_only = LOGICAL(count_only)[0];
+
+	if (!is_count_only)
+		_Biostrings_reset_views_buffer();
+	count = naive_fuzzy_search(
+			(char *) pat, pat_length,
+			(char *) subj, subj_length,
+			mm_max, fixedP, fixedS,
+			is_count_only);
+
+	if (!is_count_only) {
+		PROTECT(ans = allocVector(INTSXP, count));
+		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
+					sizeof(int) * count);
+	} else {
+		PROTECT(ans = allocVector(INTSXP, 1));
+		INTEGER(ans)[0] = count;
+	}
+	UNPROTECT(1);
+	return ans;
+}

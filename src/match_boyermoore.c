@@ -264,7 +264,7 @@ static void init_VSGSshift_table()
  * This last property is used by the init_MWshift_table() C function below.
  * 
  * No need to preprocess the MWshift function
- * --------------------------------------
+ * ------------------------------------------
  *
  * However this preprocessing would be too expensive since it requires the
  * evaluation of nP * (nP + 1) / 2 values, and each evaluation itself is a
@@ -293,13 +293,13 @@ static int *MWshift_table = NULL;
  * The "x" region is defined by 0 <= j1 < j2 <= P0buffer_nP
  */
 
-#define MW_SHIFT(j1, j2) (MWshift_table[P0buffer_length * (j1) + (j2) - 1])
+#define MWSHIFT(j1, j2) (MWshift_table[P0buffer_length * (j1) + (j2) - 1])
 
 static int get_MWshift(int j1, int j2)
 {
 	int shift, k1, k2, length;
 
-	shift = MW_SHIFT(j1, j2);
+	shift = MWSHIFT(j1, j2);
 	if (shift != 0)
 		return shift;
 	for (shift = 1; shift < j2; shift++) {
@@ -310,7 +310,7 @@ static int get_MWshift(int j1, int j2)
 			break;
 	}
 	/* shift is j2 when the "for" loop is not interrupted by "break" */
-	return MW_SHIFT(j1, j2) = shift;
+	return MWSHIFT(j1, j2) = shift;
 }
 
 static void init_MWshift_table()
@@ -331,7 +331,7 @@ static void init_MWshift_table()
 		j2 = P0buffer_init_status + 1;
 	for ( ; j2 <= P0buffer_nP; j2++) {
 		for (j1 = 0; j1 < j2; j1++) {
-			MW_SHIFT(j1, j2) = 0;
+			MWSHIFT(j1, j2) = 0;
 		}
 	}
 }
@@ -349,12 +349,13 @@ static void init_MWshift_table()
  * because after it has applied the "strong good suffix rule" and shifted P 2
  * letters to the right, it will start comparing P and S suffixes again which
  * is a waste of time.
- * The original idea of the "MWshift feature" introduced in the boyermoore()
- * function below was to never compare twice the letters that are in the
- * current Matching Window (defined by (j1, j2) in P and (i1, i2) in S).
+ * The original idea behind our "MWshift feature" is to address this problem.
+ * By using this "feature", our boyermoore() function below never compares
+ * twice the letters that are in the current Matching Window (defined by
+ * (j1, j2) in P and (i1, i2) in S).
  */
 
-#define ADJUSTMW(i, j, shift) \
+#define ADJUST_MW(i, j, shift) \
 { \
 	if ((shift) <= (j)) \
 		(j) -= (shift); \
@@ -364,25 +365,25 @@ static void init_MWshift_table()
 	} \
 }
 
-/* Returns the number of matches */
+/* Return the number of matches */
 static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count_only)
 {
 	int count = 0, n, i1, i2, j1, j2, shift, shift1, i, j;
-	char Pmrc, c; /* Pmrc is P right-most char */
+	char Prmc, c; /* Prmc is P right-most char */
 
 	init_P0buffer(P, nP);
 	init_j0shift0();
 	init_VSGSshift_table();
 	if (nP <= MWSHIFT_NPMAX)
 		init_MWshift_table();
-	Pmrc = P[nP-1];
+	Prmc = P[nP-1];
 	n = nP - 1;
 	j2 = 0;
 	while (n < nS) {
 		if (j2 == 0) {
 			/* No Matching Window yet, we need to find one */
 			c = S[n];
-			if (c != Pmrc) {
+			if (c != Prmc) {
 				shift = get_VSGSshift(c, nP-1);
 				n += shift;
 				continue;
@@ -421,7 +422,7 @@ static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count
 		} else {
 			shift = get_MWshift(j1, j2);
 			c = S[n];
-			if (c != Pmrc) {
+			if (c != Prmc) {
 				shift1 = get_VSGSshift(c, nP-1);
 				if (shift1 > shift)
 					shift = shift1;
@@ -429,8 +430,8 @@ static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count
 		}
 		n += shift;
 		if (nP <= MWSHIFT_NPMAX) {
-			ADJUSTMW(i1, j1, shift)
-			ADJUSTMW(i2, j2, shift)
+			ADJUST_MW(i1, j1, shift)
+			ADJUST_MW(i2, j2, shift)
 		} else {
 			j2 = 0; /* forget the current Matching Window */
 		}
@@ -469,4 +470,3 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	UNPROTECT(1);
 	return ans;
 }
-

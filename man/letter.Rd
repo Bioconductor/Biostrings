@@ -51,23 +51,22 @@
 }
 
 \examples{
-  letter("abcd", 3)
-
   x <- c("abcd", "ABC")
   i <- c(3, 1, 1, 2, 1)
 
   ## With a character vector
+  letter(x[1], 3:1)
+  letter(x, 3)
   letter(x, i)
+  #letter(x, 4)             # Error!
 
   ## With a BString object
-  letter(BString(x), i)
+  letter(BString(x[1]), i)  # character vector
+  BString(x[1])[i]          # BString object
 
   ## With a BStringViews object
   x2 <- BStringViews(x, "BString")
   letter(x2, i)
-
-  ## Error
-  #letter(x, 4)
 }
 
 \keyword{methods}

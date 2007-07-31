@@ -35,7 +35,8 @@
     containing the subject string.
   }
   \item{algorithm}{
-    One of the following: \code{"auto"}, \code{"naive"}, \code{"boyer-moore"},
+    One of the following: \code{"auto"}, \code{"naive-exact"},
+    \code{"naive-fuzzy"}, \code{"boyer-moore"},
     \code{"forward-search"} or \code{"shift-or"} (note that
     \code{"forward-search"} is not available yet).
   }
@@ -44,10 +45,23 @@
     algorithm is used for matching.
   }
   \item{fixed}{
-    A logical. Only \link{DNAString} or \link{RNAString} support \code{fixed=FALSE}.
-    In this case, ambiguities (i.e. letters from the IUPAC Extended Genetic Alphabet
-    (see \code{\link{IUPAC_CODE_MAP}}) that are not from the base alphabet)
-    match any letter that they stand for.
+    Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
+    value other than the default (\code{TRUE}) be used.
+
+    With \code{fixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
+    Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
+    base alphabet) in the pattern _and_ in the subject are interpreted as
+    wildcards i.e. they match any letter that they stand for.
+
+    \code{fixed} can also be a character vector, a subset
+    of \code{c("pattern", "subject")}.
+    \code{fixed=c("pattern", "subject")} is equivalent to \code{fixed=TRUE}
+    (the default).
+    An empty vector is equivalent to \code{fixed=FALSE}.
+    With \code{fixed="subject"}, ambiguities in the pattern only
+    are interpreted as wildcards.
+    With \code{fixed="pattern"}, ambiguities in the subject only
+    are interpreted as wildcards.
   }
   \item{x}{
     A \link{BStringViews} object (typically, one returned
@@ -56,16 +70,18 @@
 }
 
 \details{
-  You can select between a ``naive'', a ``Boyer-Moore-like''
-  and the ``shift-or'' algorithms for performing the search.
-  Note that, depending on the values of the additional arguments
-  \code{mismatch} and \code{fixed}, some algorithms can't be used
-  so it's better to let \code{matchPattern} choose the right
-  algorithm for you.
-  When two different algorithms can be used for the same task,
-  then choosing one or the other only affect the performance,
-  not the semantic. Again it's better to let \code{matchPattern}
-  choose because it tries to select the faster for the task.
+  Available algorithms are: ``naive exact'', ``naive fuzzy'',
+  ``Boyer-Moore-like'' and ``shift-or''. Not all of them can be
+  used in all situations: restrictions depend on the length of
+  the pattern, the class of the subject and the values of
+  \code{mismatch} and \code{fixed}.
+
+  When 2 different algorithms can be used for a given task,
+  then choosing one or the other only affects the performance,
+  not the result, so there is no "wrong choice" (strictly speaking).
+  In short, it is better to just use \code{algorithm="auto"} (the default):
+  this way \code{matchPattern} will choose the algo that is best suited
+  for the task.
 }
 
 \value{
@@ -99,6 +115,8 @@
   noN_chrX <- mask(chrX, "N")
   mask(noN_chrX) # See the N-blocks?
   matchPattern("TTTATGNTTGGTA", noN_chrX, fixed=FALSE)
+  ## Can also be achieved with
+  matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
 }
 
 \keyword{methods}

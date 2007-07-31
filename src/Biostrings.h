@@ -382,13 +382,25 @@ SEXP Biostrings_normalize_views(
 
 SEXP match_naive_debug();
 
-SEXP match_naive(
+SEXP match_naive_exact(
 		SEXP p_xp,
 		SEXP p_offset,
 		SEXP p_length,
 		SEXP s_xp,
 		SEXP s_offset,
 		SEXP s_length,
+		SEXP count_only
+);
+
+SEXP match_naive_fuzzy(
+		SEXP p_xp,
+		SEXP p_offset,
+		SEXP p_length,
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length,
+		SEXP mismatch,
+		SEXP fixed,
 		SEXP count_only
 );
 

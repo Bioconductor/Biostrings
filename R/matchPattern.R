@@ -90,7 +90,7 @@ gregexpr2 <- function(pattern, text)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "naive" method
+### The "naive" methods
 
 debug_naive <- function()
 {
@@ -98,12 +98,34 @@ debug_naive <- function()
 }
 
 ### Must return an integer vector.
-.match.naive <- function(pattern, subject, count.only)
+.match.naive.exact <- function(pattern, subject, count.only)
 {
-    .Call("match_naive",
+    .Call("match_naive_exact",
           pattern@data@xp, pattern@offset, pattern@length,
           subject@data@xp, subject@offset, subject@length,
           count.only,
+          PACKAGE="Biostrings")
+}
+
+### Must return an integer vector.
+.match.naive.fuzzy <- function(pattern, subject, mismatch, fixed, count.only)
+{
+    ## We treat the edge-cases at the R level
+    p <- length(pattern)
+    if (p <= mismatch) {
+        if (count.only)
+            return(length(subject) + p - as.integer(1))
+        return((1-p):length(subject))
+    }
+    if (p > mismatch + length(subject)) {
+        if (count.only)
+            return(as.integer(0))
+        return(integer(0))
+    }
+    .Call("match_naive_fuzzy",
+          pattern@data@xp, pattern@offset, pattern@length,
+          subject@data@xp, subject@offset, subject@length,
+          mismatch, fixed, count.only,
           PACKAGE="Biostrings")
 }
 
@@ -160,7 +182,7 @@ debug_shiftor <- function()
     if (p <= mismatch) {
         if (count.only)
             return(length(subject) + p - as.integer(1))
-        return((1-p):(length(subject)-1))
+        return((1-p):length(subject))
     }
     if (p > mismatch + length(subject)) {
         if (count.only)
@@ -176,19 +198,82 @@ debug_shiftor <- function()
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Dispatch function & user interface
+### .matchPattern()
+###
+
+### Return a logical vector of length 2.
+.normalize.fixed <- function(fixed)
+{
+    if (!is.logical(fixed) && !is.character(fixed))
+        stop("'fixed' not a logical or character vector")
+    if (is.logical(fixed)) {
+        if (any(is.na(fixed)))
+            stop("'fixed' has NAs")
+        fixed_names <- names(fixed)
+        if (is.null(fixed_names)) {
+            if (!(length(fixed) %in% 1:2))
+                stop("when an unamed logical vector, ",
+                     "'fixed' fixed must be of length 1 or 2")
+            if (length(fixed) == 1)
+                fixed <- c(fixed, fixed)
+        } else {
+            if (length(fixed) != 2)
+                stop("when a named logical vector, 'fixed' must be of length 2")
+            if (!setequal(fixed_names, c("pattern", "subject")))
+                stop("'fixed' names must be \"pattern\" and \"subject\"")
+            fixed <- c(fixed["pattern"], fixed["subject"])
+        }
+    } else if (is.character(fixed)) {
+        if (any(duplicated(fixed)) || !all(fixed %in% c("pattern", "subject")))
+            stop("when a character vector, 'fixed' must be ",
+                 "a subset of 'c(\"pattern\", \"subject\")' ",
+                 "with no duplicated")
+        fixed <- c("pattern" %in% fixed, "subject" %in% fixed)
+    }
+    fixed
+}
+
+### Return a character vector containing the valid algos (best suited first)
+### for the given problem (problem is described by the values of 'pattern',
+### 'mismatch' and 'fixed').
+### Raise an error if the problem "doesn't make sense".
+### Make sure that:
+###   1. 'pattern' is of the same class as 'subject'
+###   2. 'mismatch' is a non-negative integer
+###   3. 'fixed' has been normalized
+### before you call .valid.algos()
+.valid.algos <- function(pattern, mismatch, fixed)
+{
+    if (!all(fixed) && !(class(pattern) %in% c("DNAString", "RNAString")))
+        stop("'fixed' value only supported for a DNAString or RNAString subject ",
+             "(you can only use 'fixed=TRUE' with your subject)")
+    algos <- character(0)
+    if (mismatch == 0 && all(fixed)) {
+        algos <- c(algos, "boyer-moore")
+        if (nchar(pattern) <= .Clongint.nbits())
+            algos <- c(algos, "shift-or")
+        algos <- c(algos, "naive-exact")
+    } else {
+        if (fixed[1] == fixed[2] && nchar(pattern) <= .Clongint.nbits())
+            algos <- c(algos, "shift-or")
+    }
+    c(algos, "naive-fuzzy") # "naive-fuzzy" is universal but slow
+}
 
 .matchPattern <- function(pattern, subject, algorithm, mismatch, fixed,
                           count.only=FALSE)
 {
+    if (!is.character(algorithm) || length(algorithm) != 1 || is.na(algorithm))
+        stop("'algorithm' must be a single string")
     algo <- match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
-                                   "naive", "boyer-moore", "forward-search", "shift-or"))
-    if (algo == "gregexpr" || algo == "gregexpr2") {
+                                   "naive-exact", "naive-fuzzy",
+                                   "boyer-moore", "forward-search", "shift-or"))
+    if (algo %in% c("gregexpr", "gregexpr2")) {
         if (!is.character(subject))
-            stop("'algorithms \"gregexpr\" and \"gregexpr2\" are only ",
+            stop("algorithms \"gregexpr\" and \"gregexpr2\" are only ",
                  "supported for character strings")
         if (length(subject) != 1 || is.na(subject) || nchar(subject) == 0)
-            stop("'subject' must be a single (non-NA) string")
+            stop("'subject' must be a single (non-NA, non-empty) string")
         if (!is.character(pattern) || length(pattern) != 1
          || is.na(pattern) || nchar(pattern) == 0)
             stop("'pattern' must be a single (non-NA, non-empty) string")
@@ -205,41 +290,34 @@ debug_shiftor <- function()
     mismatch <- as.integer(mismatch)
     if (mismatch < 0)
         stop("'mismatch' must be a non-negative integer")
-    if (!is.logical(fixed) || length(fixed) != 1 || is.na(fixed))
-        stop("'fixed' must be TRUE or FALSE")
-    if (!fixed && !(class(subject) %in% c("DNAString", "RNAString")))
-        stop("'fixed=FALSE' is only supported for DNAString or RNAString objects")
+    fixed <- .normalize.fixed(fixed)
     if (!is.logical(count.only) || length(count.only) != 1 || is.na(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    if (algo == "auto") {
-        ## We try to choose the best algo
-        if (mismatch != 0 || !fixed) {
-            algo <- "shift-or"
-        } else {
-            algo <- "boyer-moore"
-        }
+    if (algo %in% c("gregexpr", "gregexpr2")) {
+        if (mismatch != 0 || !all(fixed))
+            stop("algorithms \"gregexpr\" and \"gregexpr2\" only support ",
+                 "'mismatch=0' and 'fixed=TRUE'")
     } else {
-        ## We check that the algo choosen by the user is a valid choice
-        if (mismatch != 0 && algo != "shift-or")
-            stop("only the \"shift-or\" algorithm supports 'mismatch != 0'")
-        if (!fixed && algo != "shift-or")
-            stop("only the \"shift-or\" algorithm supports 'fixed=FALSE'")
+        algos <- .valid.algos(pattern, mismatch, fixed)
+        if (algo == "auto") {
+            algo <- algos[1]
+        } else {
+            if (!(algo %in% algos))
+                stop("valid algos for your problem (best suited first): ",
+                     paste(paste("\"", algos, "\"", sep=""), collapse=", "))
+        }
     }
-    ## At this point we have the guarantee that if 'mismatch' is != 0 or 'fixed'
-    ## is FALSE then 'algo' is "shift-or"
-    if (algo == "shift-or" && nchar(pattern) > .Clongint.nbits())
-        stop("your system can only support patterns up to ",
-             .Clongint.nbits(), " letters\n",
-             "        when 'algo' is \"shift-or\" ",
-             "or 'mismatch' is != 0 or 'fixed' is FALSE")
     matches <- switch(algo,
         "gregexpr"=.match.gregexpr(pattern, subject, count.only),
         "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
-        "naive"=.match.naive(pattern, subject, count.only),
+        "naive-exact"=.match.naive.exact(pattern, subject, count.only),
+        "naive-fuzzy"=.match.naive.fuzzy(pattern, subject, mismatch, fixed,
+                                         count.only),
         "boyer-moore"=.match.boyermoore(pattern, subject, count.only),
-        "forward-search"=.match.forwardsearch(pattern, subject, fixed, count.only),
-        "shift-or"=.match.shiftor(pattern, subject, mismatch,
-                                fixed, count.only)
+        "forward-search"=.match.forwardsearch(pattern, subject, fixed,
+                                              count.only),
+        "shift-or"=.match.shiftor(pattern, subject, mismatch, fixed,
+                                  count.only)
     )
     if (count.only)
         return(matches)

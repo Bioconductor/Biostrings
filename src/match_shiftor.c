@@ -234,7 +234,8 @@ static int _next_match(
 	return -1;
 }
 
-static int _match_shiftor(const char *P, int nP, const char *S, int nS, int is_count_only,
+static int _match_shiftor(const char *P, int nP,
+		const char *S, int nS, int is_count_only,
 		int PMmask_length, int is_fixed)
 {
 	ShiftOrWord_t *PMmask, pmaskmap[256];
@@ -299,7 +300,7 @@ static int _match_shiftor(const char *P, int nP, const char *S, int nS, int is_c
  *   's_offset': subject@offset
  *   's_length': subject@length
  *   'mismatch': the number of mismatches (integer vector of length 1)
- *   'fixed': single logical
+ *   'fixed': logical vector of length 2
  *   'count_only': single logical
  * Return an integer vector containing the relative pos of the matches.
  * All matches have the length of the pattern.
@@ -309,7 +310,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP mismatch, SEXP fixed, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
-	    kerr, is_fixed, is_count_only, count;
+	    kerr, fixedP, fixedS, is_count_only, count;
 	const Rbyte *pat, *subj;
 	SEXP ans;
 
@@ -322,29 +323,18 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	subj_offset = INTEGER(s_offset)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	kerr = INTEGER(mismatch)[0];
-	is_fixed = LOGICAL(fixed)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	if (fixedP != fixedS)
+		error("fixedP != fixedS not yet supported");
 	is_count_only = LOGICAL(count_only)[0];
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] match_shiftor(): BEGIN\n");
-		Rprintf("[DEBUG] match_shiftor(): ");
-		Rprintf("pat_offset=%d pat_length=%d pat[0]=%d\n",
-			pat_offset, pat_length, (unsigned char) pat[0]);
-		Rprintf("subj_offset=%d subj_length=%d subj[0]=%d\n",
-			subj_offset, subj_length, (unsigned char) subj[0]);
-		Rprintf("kerr=%d is_fixed=%d is_count_only=%d\n",
-			kerr, is_fixed, is_count_only);
-	}
-#endif
+
 	if (!is_count_only)
 		_Biostrings_reset_views_buffer();
-	count = _match_shiftor((char *) pat, pat_length, (char *) subj, subj_length, is_count_only,
-				kerr+1, is_fixed);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] match_shiftor(): END\n");
-	}
-#endif
+	count = _match_shiftor((char *) pat, pat_length,
+			(char *) subj, subj_length,
+			is_count_only, kerr+1, fixedP);
+
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
 		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
