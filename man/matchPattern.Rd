@@ -48,7 +48,7 @@
 
     With \code{fixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
     Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
-    base alphabet) in the pattern _and_ in the subject are interpreted as
+    base alphabet) in the pattern \_and\_ in the subject are interpreted as
     wildcards i.e. they match any letter that they stand for.
 
     \code{fixed} can also be a character vector, a subset
