@@ -94,6 +94,9 @@
   r <- RNAString(d)
   alphabet(r)
   RNA_ALPHABET
+
+  ## Comparison with a DNAString object:
+  RNAString("GAAAU") == DNAString("CTTTA") # TRUE
 }
 
 \keyword{methods}

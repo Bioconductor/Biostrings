@@ -271,12 +271,14 @@ setMethod("[", "BString",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (!is.numeric(i) || any(is.na(i)))
+            stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
         data <- XRaw(length(i))
         XRaw.copy(data, x@offset + i, src=x@data)
-        ## class(x) can be "BString" or one of its derivations ("DNAString",
-        ## "RNAString" or "AAString").
+        ## class(x) can be "BString" or one of its derivations: "DNAString",
+        ## "RNAString" or "AAString".
         new(class(x), data)
     }
 )

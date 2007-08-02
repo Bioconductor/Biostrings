@@ -71,33 +71,37 @@
 \section{Standard generic methods}{
   In the code snippets below,
   \code{x}, \code{object}, \code{e1} and \code{e2}
-  are \code{BString} (or derived) objects,
-  and \code{i} is a numeric vector.
+  are BString (or derived) objects,
+  and \code{i} is a NA-free numeric vector.
 
   \describe{
     \item{}{
       \code{length(x)} or \code{nchar(x)}:
-      Used to get the length of a \code{BString}, i.e., its number of letters
+      Get the length of a BString object, i.e., its number of letters.
     }
     \item{}{
       \code{x[i]}:
-      [TODO: Document me]
+      Return a BString (or derived) object made of the selected letters.
+      The returned object belongs to the same class as \code{x}.
     }
     \item{}{
       \code{e1 == e2}:
-      [TODO: Document me]
+      \code{TRUE} if \code{e1} is equal to \code{e2}.
+      \code{FALSE} otherwise.
+      Allows comparison between BString objects that are not instances
+      of the same class (see \link{RNAString-class}).
     }
     \item{}{
       \code{e1 != e2}:
-      [TODO: Document me]
+      Equivalent to \code{!(e1 == e2)}.
     }
     \item{}{
       \code{as.character(x)}:
-      [TODO: Document me]
+      Converts \code{x} to a character string.
     }
     \item{}{
       \code{toString(x)}:
-      [TODO: Document me]
+      Equivalent to \code{as.character(x)}.
     }
   }
 }
@@ -126,7 +130,10 @@
 
 \examples{
   b <- BString("I am a BString object")
+  b
   length(b)
+  b2 <- b[length(b):1]
+  as.character(b2)
 }
 
 \keyword{methods}

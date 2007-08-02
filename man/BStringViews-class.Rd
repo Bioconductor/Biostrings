@@ -8,6 +8,7 @@
 % Accesor methods:
 \alias{subject}
 \alias{subject,BStringViews-method}
+\alias{length,BStringViews-method}
 \alias{start}
 \alias{start,BStringViews-method}
 \alias{first}
@@ -23,7 +24,6 @@
 
 % Standard generic methods:
 \alias{show,BStringViews-method}
-\alias{length,BStringViews-method}
 \alias{[,BStringViews-method}
 \alias{[<-,BStringViews-method}
 \alias{[[,BStringViews-method}
@@ -49,11 +49,18 @@
 
 \description{
   A container for a set of views on the same \link{BString} (or
-  \link{DNAString}, or \link{RNAString}) object.
+  derived) object.
 }
 
 \details{
-    [TODO: Put some details here]
+  A BStringViews object contains a set of views on the same
+  \link{BString} (or derived) object called "the subject string"
+  or "the subject sequence" or simply "the subject".
+  Each view is defined by its start and end locations: both are
+  integers such that start <= end.
+  Note that two views can overlap and that a view can be "out of limits"
+  i.e. it starts before the first letter of the subject or/and ends
+  after its last letter. 
 }
 
 \section{Accesor methods}{
@@ -63,11 +70,17 @@
   \describe{
     \item{}{
       \code{subject(x)}:
-      [TODO: Document me]
+      The subject of \code{x}. This is always a \link{BString}
+      (or derived) object.
+    }
+    \item{}{
+      \code{length(x)}:
+      The number of views in \code{x}.
     }
     \item{}{
       \code{start(x)}:
-      [TODO: Document me]
+      The starting positions of the views.
+      An integer vector of the same length as \code{x}.
     }
     \item{}{
       \code{first(x)}:
@@ -75,7 +88,8 @@
     }
     \item{}{
       \code{end(x)}:
-      [TODO: Document me]
+      The ending positions of the views.
+      An integer vector of the same length as \code{x}.
     }
     \item{}{
       \code{last(x)}:
@@ -83,11 +97,18 @@
     }
     \item{}{
       \code{width(x)}:
-      [TODO: Document me]
+      The width of the views.
+      Equivalent to \code{end(x) - start(x) + 1L}.
+      A vector of positive integers of the same length as \code{x}.
     }
     \item{}{
       \code{desc(x)}:
-      [TODO: Document me]
+      \code{NULL} or a character vector of the same length as \code{x}
+      containing a short user provided description or comment for each view.
+      These are the only data in a BStringViews object that can safely
+      be changed by the user. All the other data are immutable!
+      As a general recommendation, the user should never try to modify
+      an object by accessing its slots directly.
     }
   }
 }
@@ -98,10 +119,6 @@
   and \code{i} can be a numeric or logical vector.
 
   \describe{
-    \item{}{
-      \code{length(x)}:
-      Used to get the length of a BStringViews, i.e., its number of views
-    }
     \item{}{
       \code{x[i]}:
       [TODO: Document me]
@@ -146,7 +163,22 @@
 \seealso{
   \link{BStringViews-constructors},
   \link{BString-class},
+  \link{DNAString-class},
+  \link{RNAString-class},
+  \link{AAString-class},
   \code{\link{letter}}
+}
+
+\examples{
+  s <- DNAString("-CTC-N")
+
+  ## One standard way to create a BStringViews object is to use
+  ## the "views" constructor:
+  v4 <- views(s, 3:0, 5:8)
+  v4
+
+  ## Attach a comment to view #4:
+  desc(v4)[4] <- "out of limits"
 }
 
 \keyword{methods}

@@ -52,6 +52,24 @@ setMethod("width", "BStringViews", function(x) end(x) - start(x) + 1)
 setGeneric("desc", function(x) standardGeneric("desc"))
 setMethod("desc", "BStringViews", function(x) x@views$desc)
 
+setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
+setReplaceMethod("desc", "BStringViews",
+    function(x, value)
+    {
+        if (is.null(value)) {
+            x@views$desc <- NULL
+        } else if (is.character(value)) {
+            if (length(value) > length(x))
+                stop("new 'desc' vector has more elements than the number of views")
+            length(value) <- length(x)
+            x@views$desc <- value
+        } else {
+            stop("'value' must be NULL or a character vector")
+        }
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method
