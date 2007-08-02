@@ -26,6 +26,7 @@ writeFASTA(x, file="", width=80)
   }
   \item{x}{
     A list as one returned by \code{readFASTA}.
+  }
   \item{width}{
     The maximum number of letters per line of sequence.
   }

@@ -58,11 +58,11 @@ The \Rpackage{Biostrings} package includes FASTA files
 encoding the DNA sequence for
 Yeast chromosome I, along with some ORFs.
 Here we load the {\tt someORF.fsa} file into a \Rclass{BStringViews} object
-using the \Rmethod{BStringViews} method:
+using the \Rfunction{read.BStringViews} function:
 <<gety>>=
 library(Biostrings)
 file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
-orf <- BStringViews(file(file), "DNAString")
+orf <- read.BStringViews(file, "fasta", "DNAString")
 orf
 desc(orf)
 @
