@@ -15,8 +15,9 @@ Collate: 00datacache.R
         readFASTA.R utils.R
         XRaw.R XInteger.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
-        BStringCodec.R BString.R
-        BStringViews.R BStringViews-constructors.R
+        BStringCodec.R
+        BString.R
+        BStringViews.R BStringViews-constructors.R BStringViews-io.R
         BStringPartialMatches.R BStringAlign.R
         letter.R
         subBString.R

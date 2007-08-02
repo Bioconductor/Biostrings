@@ -1,7 +1,6 @@
 \name{readFASTA}
 \alias{readFASTA}
 \alias{writeFASTA}
-\alias{writeFASTA,BStringViews-method}
 
 \title{Functions to read/write FASTA formatted files}
 \description{
@@ -11,14 +10,25 @@ line which begins with a \code{>}.
 }
 \usage{
 readFASTA(file, checkComments = TRUE)
-writeFASTA(x, file, width=80)
+writeFASTA(x, file="", width=80)
 }
 \arguments{
-  \item{file}{ The name of the file to be read from.}
-  \item{checkComments}{ Whether or not comments, lines beginning with
-a semi-colon should be found and removed. }
-  \item{x}{A list as produced by \code{readFASTA} or a \link{BStringViews} object.}
-  \item{width}{The maximum number of letters per line of sequence.}
+  \item{file}{
+    Either a character string naming a file or a connection open
+    for reading or writing.
+    If \code{""} (the default for \code{writeFASTA}),
+    \code{write.BStringViews} writes to the standard
+    output connection (the console) unless redirected by \code{sink}.
+  }
+  \item{checkComments}{
+    Whether or not comments, lines beginning with a semi-colon
+    should be found and removed.
+  }
+  \item{x}{
+    A list as one returned by \code{readFASTA}.
+  \item{width}{
+    The maximum number of letters per line of sequence.
+  }
 }
 \details{
  FASTA is a widely used format in biology. It is a relatively simple markup.

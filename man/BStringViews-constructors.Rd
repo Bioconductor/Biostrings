@@ -20,7 +20,7 @@
 \usage{
   views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
-  BStringViews(src, subjectClass, sep="")
+  BStringViews(src, subjectClass, collapse="")
 }
 
 \arguments{
@@ -45,7 +45,7 @@
   \item{subjectClass}{
     [TODO]
   }
-  \item{sep}{
+  \item{collapse}{
     [TODO]
   }
 }
@@ -68,16 +68,15 @@
   }
 
   In the code snippets below,
-  \code{src} can be a character vector, a connection object,
-  a \link{BString} (or \link{DNAString} or \link{RNAString}) object
+  \code{src} can be a character vector, a \link{BString} (or derived) object
   or a BStringViews object,
   \code{subjectClass} is a character-string with value \code{"BString"},
-  \code{"DNAString"} or \code{"RNAString"}
-  and \code{sep} is a character-string.
+  \code{"DNAString"}, \code{"RNAString"} or \code{"AAString"},
+  and \code{collapse} is a character string.
 
   \describe{
     \item{}{
-      \code{BStringViews(src, subjectClass, sep)}:
+      \code{BStringViews(src, subjectClass, collapse)}:
       [TODO: Document me]
     }
   }

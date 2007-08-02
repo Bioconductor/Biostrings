@@ -19,7 +19,7 @@ exportMethods(
     subject, start, end, width, desc,
     align1, align2, score,
     ## Others
-    BStringViews, writeFASTA,
+    BStringViews,
     substr, substring,
     alphabetFrequency,
     reverse, complement, reverseComplement,
@@ -41,6 +41,8 @@ export(
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     BString, DNAString, RNAString, AAString,
     views, adjacentViews,
+    FASTArecordsToBStringViews, BStringViewsToFASTArecords,
+    read.BStringViews, write.BStringViews,
     subBString, subviews,
     matchDNAPattern,
     alignScore

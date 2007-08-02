@@ -121,7 +121,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
 
 setGeneric(
     "BStringViews", signature="src",
-    function(src, subjectClass, sep="") standardGeneric("BStringViews")
+    function(src, subjectClass, collapse="") standardGeneric("BStringViews")
 )
 
 ### 'subjectClass' must be "BString" or one of its derivations ("DNAString",
@@ -152,29 +152,21 @@ setGeneric(
 ###   is(src, "character") # FALSE
 ### Welcome to R object model mess!
 setMethod("BStringViews", "ANY",
-    function(src, subjectClass, sep="")
+    function(src, subjectClass, collapse="")
     {
-        if (!is.character(sep))
-            sep <- toString(sep)
-        collapsed <- paste(src, collapse=sep)
+        if (!is.character(collapse))
+            collapse <- toString(collapse)
+        collapsed <- paste(src, collapse=collapse)
         subject <- new(subjectClass, collapsed)
-        adjacentViews(subject, nchar(src), nchar(sep))
+        adjacentViews(subject, nchar(src), nchar(collapse))
     }
 )
 
-### Only FASTA files are supported for now.
-### Typical use:
-###   file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
-###   v <- BStringViews(file(file), "DNAString")
 setMethod("BStringViews", "file",
-    function(src, subjectClass, sep="")
+    function(src, subjectClass, collapse="")
     {
-        fasta <- readFASTA(src)
-        src <- sapply(fasta, function(rec) rec$seq)
-        desc <- sapply(fasta, function(rec) rec$desc)
-        ans <- BStringViews(src, subjectClass, sep)
-        ans@views$desc <- desc
-        ans
+        .Deprecated("read.BStringViews")
+        read.BStringViews(src, "fasta", subjectClass, collapse)
     }
 )
 
@@ -182,14 +174,14 @@ setMethod("BStringViews", "file",
 ### When not missing, 'subjectClass' must be "BString" or one of its
 ### derivations ("DNAString", "RNAString" or "AAString").
 setMethod("BStringViews", "BString",
-    function(src, subjectClass, sep="")
+    function(src, subjectClass, collapse="")
     {
-        if (!missing(sep)) {
-            ## The semantic is: views are delimited by the occurences of 'sep'
+        if (!missing(collapse)) {
+            ## The semantic is: views are delimited by the occurences of 'collapse'
             ## in 'src' (a kind of strsplit() for BString objects).
             ## Uncomment when normalize() and ! method are ready (see TODO file):
-            #return(!normalize(matchPattern(sep, b, fixed=TRUE)))
-            stop("'sep' not yet supported when 'src' is a \"BString\" object")
+            #return(!normalize(matchPattern(collapse, b, fixed=TRUE)))
+            stop("'collapse' not yet supported when 'src' is a \"BString\" object")
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- new(subjectClass, src)
@@ -200,30 +192,14 @@ setMethod("BStringViews", "BString",
 ### Called when 'src' is a BStringViews object.
 ### 'subjectClass' must be "BString" or one of its derivations ("DNAString",
 ### "RNAString" or "AAString").
-### The 'sep' arg is ignored.
+### The 'collapse' arg is ignored.
 setMethod("BStringViews", "BStringViews",
-    function(src, subjectClass, sep="")
+    function(src, subjectClass, collapse="")
     {
-        if (!missing(sep))
-            stop("'sep' not supported when 'src' is a \"BStringViews\" object")
+        if (!missing(collapse))
+            stop("'collapse' not supported when 'src' is a \"BStringViews\" object")
         src@subject <- new(subjectClass, src@subject)
         src
-    }
-)
-
-setGeneric(
-    "writeFASTA", signature="x",
-    function(x, file, width=80) standardGeneric("writeFASTA")
-)
-
-setMethod("writeFASTA", "BStringViews",
-    function(x, file, width=80)
-    {
-        y <- list()
-        for (i in seq_len(length(x))) {
-            y[[i]] <- list(desc=desc(x)[i], seq=as.character(x[[i]]))
-        }
-        writeFASTA(y, file, width)
     }
 )
 
