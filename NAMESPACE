@@ -16,7 +16,7 @@ exportMethods(
     as.matrix, as.list,
     ## Accessors
     alphabet, letter,
-    subject, start, end, width, desc,
+    subject, start, end, width, desc, "desc<-",
     align1, align2, score,
     ## Others
     BStringViews,
