@@ -236,6 +236,7 @@
   #v4[[3]] # Error!
 
   v12 <- views(DNAString("TAATAATG"), -2:9, 0:11)
+  v12 == DNAString("TAA")
   v12[v12 == v12[4]]
   v12[v12 == v12[1]]
   v12[3] == views(RNAString("AU"), 0, 2)

@@ -134,12 +134,10 @@ BString objects. It will be essentially doing toString(subBString()).]}
 
 \section{The \Rmethod{==} binary operator for \Rclass{BString} objects}
 
-The 4 following expressions are \Robject{TRUE}:
+The 2 following comparisons are \Robject{TRUE}:
 <<b1,results=hide>>=
 bb == "am a"
 dd2 != DNAString("TG")
-"-CTC-N" == dd2
-DNAString("AC") == BString("AC")
 @
 
 When the 2 sides of \Rmethod{==} don't belong to the same class
@@ -260,7 +258,7 @@ views(d, integer(0), integer(0))
 This operator is the vectorized version of the \Rmethod{==} operator
 defined previously for \Rclass{BString} (or \Rclass{DNAString}) objects:
 <<e1>>=
-v12 == "TAA"
+v12 == DNAString("TAA")
 @
 
 To display all the views in \Robject{v12} that are equals to a given view,
@@ -270,17 +268,8 @@ v12[v12 == v12[4]]
 v12[v12 == v12[1]]
 @
 
-This is \Robject{FALSE} (whitespace matters):
-<<e3,results=hide>>=
-v12[3] == "TA"
-@
-and this provokes an error:
-<<e4,echo=FALSE>>=
-cat('> v12[3] == " TA"')
-@
-but these are \Robject{TRUE}:
-<<e5,results=hide>>=
-v12[3] == views(BString("TA"), 0, 2)
+This is \Robject{TRUE}:
+<<e2,results=hide>>=
 v12[3] == views(RNAString("AU"), 0, 2)
 @
 
