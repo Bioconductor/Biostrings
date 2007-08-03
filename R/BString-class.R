@@ -129,7 +129,7 @@ BString.get_init_error_msg <- function(.Object, src)
           "is of class \"", class(src), "\"", sep="")
 }
 
-### Because the 'initialize' method for "AAString" objects is using 'callNextMethod'
+### Because the 'initialize' method for AAString instances is using 'callNextMethod'
 ### then '.Object' here can be of class "BString" or "AAString".
 setMethod("initialize", "BString",
     function(.Object, src, copy.data=FALSE, verbose=FALSE)
@@ -250,7 +250,7 @@ setMethod("show", "BString",
     function(object)
     {
         lo <- object@length
-        cat("  ", lo, "-letter \"", class(object), "\" object", sep="")
+        cat("  ", lo, "-letter \"", class(object), "\" instance", sep="")
         #if (!is.null(object@codec))
         #    cat(" with alphabet:", toString(object@codec@letters))
         cat("\nValue:", BString.get_snippet(object, 72))
@@ -293,7 +293,7 @@ setReplaceMethod("[", "BString",
     function(x, i, j,..., value)
     {
         stop(paste("attempt to modify the value of a \"",
-                   class(x), "\" object", sep=""))
+                   class(x), "\" instance", sep=""))
     }
 )
 
@@ -301,13 +301,8 @@ setReplaceMethod("[", "BString",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality.
 ###
-
 ### We want:
 ###   BString("ab") == "ab" # TRUE
-###   BString("ab") == "" # Error ("" can't be converted to a BString)
-###   DNAString("TG") == "TG" # TRUE
-###   "TT" == DNAString("TG") # FALSE
-###   "TGG" == DNAString("TG") # FALSE
 ###   DNAString("TG") == RNAString("UG") # TRUE!!!
 ###   library(BSgenome.Hsapiens.UCSC.hg18)
 ###   dna <- Hsapiens$chr1
@@ -322,10 +317,19 @@ setReplaceMethod("[", "BString",
 ###   s7 <- toString(dnav[[7]])
 ###   s1 == s7
 
+BString.comparable <- function(class1, class2)
+{
+    if (class1 == class2)
+        return(TRUE)
+    if (class1 %in% c("DNAString", "RNAString")
+     && class2 %in% c("DNAString", "RNAString"))
+        return(TRUE)
+    FALSE
+}
+
+### 'x' and 'y' must be BString objects
 BString.equal <- function(x, y)
 {
-    if (class(y) != class(x))
-        y <- new(class(x), y)
     if (x@length != y@length)
         return(FALSE)
     one <- as.integer(1)
@@ -336,37 +340,41 @@ BString.equal <- function(x, y)
 setMethod("==", signature(e1="BString", e2="BString"),
     function(e1, e2)
     {
-        if (class(e1) == class(e2))
-            return(BString.equal(e1, e2))
-        if (class(e1) == "BString") # then e2 is a DNAString, RNAString or AAString
-            return(BString.equal(e2, e1))
-        if (class(e2) == "BString") # then e1 is a DNAString, RNAString or AAString
-            return(BString.equal(e1, e2))
-        if (class(e1) != "AAString" && class(e2) != "AAString")
-            return(BString.equal(e1, e2))
-        stop(paste("sorry, don't know how to compare ",
-                   "a \"", class(e1), "\" object with ",
-                   "a \"", class(e2), "\" object", sep=""))
+        class1 <- class(e1)
+        class2 <- class(e2)
+        if (!BString.comparable(class1, class2))
+            stop("comparison between a \"", class1, "\" instance ",
+                 "and a \"", class2, "\" instance ",
+                 "is not supported")
+        BString.equal(e1, e2)
     }
 )
+setMethod("==", signature(e1="BString", e2="character"),
+    function(e1, e2)
+    {
+        class1 <- class(e1)
+        if (class1 != "BString")
+            stop("comparison between a \"", class1, "\" instance ",
+                 "and a character vector ",
+                 "is not supported")
+        if (length(e2) != 1 || e2 %in% c("", NA))
+            stop("comparison between a \"BString\" instance and a character vector ",
+                 "of length != 1 or an empty string or an NA ",
+                 "is not supported")
+        BString.equal(e1, BString(e2))
+    }
+)
+setMethod("==", signature(e1="character", e2="BString"),
+    function(e1, e2) e2 == e1
+)
+
 setMethod("!=", signature(e1="BString", e2="BString"),
     function(e1, e2) !(e1 == e2)
 )
-
-### These methods are called if at least one side of the "==" (or "!=")
-### operator is a "BString" object AND the other side is NOT a "BStringViews"
-### object.
-setMethod("==", signature(e1="BString"),
-    function(e1, e2) BString.equal(e1, e2)
-)
-setMethod("!=", signature(e1="BString"),
+setMethod("!=", signature(e1="BString", e2="character"),
     function(e1, e2) !(e1 == e2)
 )
-
-setMethod("==", signature(e2="BString"),
-    function(e1, e2) BString.equal(e2, e1)
-)
-setMethod("!=", signature(e2="BString"),
+setMethod("!=", signature(e1="character", e2="BString"),
     function(e1, e2) !(e1 == e2)
 )
 

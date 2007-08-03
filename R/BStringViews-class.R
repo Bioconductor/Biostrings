@@ -25,6 +25,8 @@ setClass(
 setGeneric("subject", function(x) standardGeneric("subject"))
 setMethod("subject", "BStringViews", function(x) x@subject)
 
+setMethod("length", "BStringViews", function(x) nrow(x@views))
+
 ### The 'substring' function uses 'first' and 'last'.
 ### The 'substr' function uses 'start' and 'stop'.
 ### But we prefer to use 'start' and 'end'. That's all!
@@ -48,6 +50,17 @@ setMethod("last", "BStringViews", function(x) {.Deprecated("end"); end(x)})
 ### when the view is out of limits).
 setGeneric("width", function(x) standardGeneric("width"))
 setMethod("width", "BStringViews", function(x) end(x) - start(x) + 1)
+
+setMethod("nchar", "BStringViews",
+    function(x, type = "chars", allowNA = FALSE)
+    {
+        start0 <- pmax.int(start(x), 1L)
+        end0 <- pmin.int(end(x), nchar(x@subject))
+        ans <- end0 - start0 + 1L
+        ans[ans < 0L] <- 0L
+        ans
+    }
+)
 
 setGeneric("desc", function(x) standardGeneric("desc"))
 setMethod("desc", "BStringViews", function(x) x@views$desc)
@@ -196,13 +209,7 @@ setMethod("show", "BStringViews",
 ### Subsetting
 ###
 
-setMethod("length", "BStringViews",
-    function(x)
-    {
-        nrow(x@views)
-    }
-)
-
+### Supported 'i' types: numeric vector, logical vector, NULL and missing.
 setMethod("[", "BStringViews",
     function(x, i, j, ..., drop)
     {
@@ -217,7 +224,7 @@ setMethod("[", "BStringViews",
         } else if (is.logical(i)) {
             if (length(i) > lx)
                 stop("subscript out of bounds")
-        } else {
+        } else if (!is.null(i)) {
             stop("invalid subscript type")
         }
         x@views <- x@views[i, , drop=FALSE]
@@ -233,31 +240,33 @@ setReplaceMethod("[", "BStringViews",
 )
 
 ### Extract the i-th views of a BStringViews object as a BString object.
-### Return a "BString" (or one of its derivations) object.
+### Return a BString object of the same class as the subject of x.
 ### Example:
 ###   bs <- BString("ABCD-1234-abcd")
 ###   bsv <- views(bs, 1:7, 13:7)
 ###   bsv[[3]]
 ###   bsv[[0]] # Return bs, same as subject(bsv)
 ###   views(bs)[[1]] # Returns bs too!
+###
+### Supported 'i' types: numeric vector of length 1.
 setMethod("[[", "BStringViews",
     function(x, i, j, ...)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
-        if (missing(i))
+        if (missing(i) || !is.numeric(i))
             stop("invalid subscript type")
-        if (length(i) < 1)
+        if (length(i) < 1L)
             stop("attempt to select less than one element")
-        if (length(i) > 1)
+        if (length(i) > 1L)
             stop("attempt to select more than one element")
         if (i == 0)
-            return(x@subject)
-        if (i < 1 || i > length(x))
+            return(subject(x))
+        if (i < 1L || i > length(x))
             stop("subscript out of bounds")
         start <- x@views$start[i]
         end <- x@views$end[i]
-        if (start < 1 || end > length(x@subject))
+        if (start < 1L || end > length(subject(x)))
             stop("view is out of limits")
         BString.substr(x@subject, start, end)
     }
@@ -272,7 +281,8 @@ setReplaceMethod("[[", "BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Equality
+### Equality.
+###
 
 ### Assume that 'start1', 'end1', 'start2', 'end2' are single integers
 ### and that start1 <= end1 and start2 <= end2.
@@ -325,12 +335,11 @@ BStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
     BString.substr(x1, start1, end1) == BString.substr(x2, start2, end2)
 }
 
+### 'x' and 'y' must be BStringViews objects.
 ### Returns a logical vector of length max(length(x), length(y)).
 ### Recycle its arguments.
 BStringViews.equal <- function(x, y)
 {
-    if (class(y) != "BStringViews")
-        y <- BStringViews(y, class(x@subject))
     lx <- length(x)
     ly <- length(y)
     if (lx < ly) {
@@ -379,41 +388,72 @@ BStringViews.equal <- function(x, y)
 ### object):
 ###   v == "TG "
 
+setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
+    function(e1, e2)
+    {
+        class1 <- class(subject(e1))
+        class2 <- class(subject(e2))
+        if (!BString.comparable(class1, class2))
+            stop("comparison between BStringViews objects with subjects of ",
+                 "class \"", class1, "\" and \"", class2, "\" ",
+                 "is not supported")
+        BStringViews.equal(e1, e2)
+    }
+)
 setMethod("==", signature(e1="BStringViews", e2="BString"),
-    function(e1, e2) BStringViews.equal(e1, e2)
+    function(e1, e2)
+    {
+        class1 <- class(subject(e1))
+        class2 <- class(e2)
+        if (!BString.comparable(class1, class2))
+            stop("comparison between a BStringViews object with a subject of ",
+                 "class \"", class1, "\" and a \"", class2, "\" instance ",
+                 "is not supported")
+        BStringViews.equal(e1, BStringViews(e2))
+    }
+)
+setMethod("==", signature(e1="BStringViews", e2="character"),
+    function(e1, e2)
+    {
+        class1 <- class(subject(e1))
+        if (class1 != "BString")
+            stop("comparison between a BStringViews object with a subject of ",
+                 "class \"", class1, "\" and a character vector ",
+                 "is not supported")
+        if (length(e2) == 0 || any(e2 %in% c("", NA)))
+            stop("comparison between a BStringViews object and a character vector ",
+                 "of length 0 or with empty strings or NAs ",
+                 "is not supported")
+        BStringViews.equal(e1, BStringViews(e2, subjectClass="BString"))
+    }
 )
 setMethod("==", signature(e1="BString", e2="BStringViews"),
-    function(e1, e2) BStringViews.equal(e2, e1)
+    function(e1, e2) e2 == e1
 )
-setMethod("==", signature(e1="BStringViews", e2="ANY"),
-    function(e1, e2) BStringViews.equal(e1, e2)
-)
-setMethod("==", signature(e1="ANY", e2="BStringViews"),
-    function(e1, e2) BStringViews.equal(e2, e1)
-)
-setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
-    function(e1, e2) BStringViews.equal(e1, e2)
+setMethod("==", signature(e1="character", e2="BStringViews"),
+    function(e1, e2) e2 == e1
 )
 
+setMethod("!=", signature(e1="BStringViews", e2="BStringViews"),
+    function(e1, e2) !(e1 == e2)
+)
 setMethod("!=", signature(e1="BStringViews", e2="BString"),
-    function(e1, e2) !BStringViews.equal(e1, e2)
+    function(e1, e2) !(e1 == e2)
+)
+setMethod("!=", signature(e1="BStringViews", e2="character"),
+    function(e1, e2) !(e1 == e2)
 )
 setMethod("!=", signature(e1="BString", e2="BStringViews"),
-    function(e1, e2) !BStringViews.equal(e2, e1)
+    function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="BStringViews", e2="ANY"),
-    function(e1, e2) !BStringViews.equal(e1, e2)
-)
-setMethod("!=", signature(e1="ANY", e2="BStringViews"),
-    function(e1, e2) !BStringViews.equal(e2, e1)
-)
-setMethod("!=", signature(e1="BStringViews", e2="BStringViews"),
-    function(e1, e2) !BStringViews.equal(e1, e2)
+setMethod("!=", signature(e1="character", e2="BStringViews"),
+    function(e1, e2) !(e1 == e2)
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other standard generic methods
+### Other standard generic methods.
+###
 
 setMethod("as.character", "BStringViews",
     function(x)
@@ -430,26 +470,10 @@ setMethod("as.character", "BStringViews",
     }
 )
 
-setMethod("toString", "BStringViews",
-    function(x, ...)
-    {
-        toString(as.character(x), ...)
-    }
-)
-
-setMethod("nchar", "BStringViews",
-    function(x, type = "chars", allowNA = FALSE)
-    {
-        ls <- length(x@subject)
-        (ifelse(x@views$end<=ls, x@views$end, ls) -
-         ifelse(x@views$start>=1, x@views$start, 1) + 1)
-    }
-)
-
 setMethod("as.matrix", "BStringViews",
     function(x, ...)
     {
-        cbind(x@views$start, x@views$end)
+        as.matrix(x@views[ , c("start", "end")])
     }
 )
 
@@ -465,3 +489,9 @@ setMethod("as.list", "BStringViews",
     }
 )
 
+setMethod("toString", "BStringViews",
+    function(x, ...)
+    {
+        toString(as.character(x), ...)
+    }
+)

@@ -12,17 +12,17 @@
 % Standard generic methods:
 \alias{show,BString-method}
 \alias{length,BString-method}
+\alias{nchar,BString-method}
 \alias{[,BString-method}
 \alias{[<-,BString-method}
 \alias{==,BString,BString-method}
-\alias{!=,BString,BString-method}
 \alias{==,BString,ANY-method}
-\alias{!=,BString,ANY-method}
 \alias{==,ANY,BString-method}
+\alias{!=,BString,BString-method}
+\alias{!=,BString,ANY-method}
 \alias{!=,ANY,BString-method}
 \alias{as.character,BString-method}
 \alias{toString,BString-method}
-\alias{nchar,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,BString-method}
@@ -81,15 +81,22 @@
     }
     \item{}{
       \code{x[i]}:
-      Return a BString (or derived) object made of the selected letters.
+      Return a new BString (or derived) object made of the selected letters.
       The returned object belongs to the same class as \code{x}.
     }
     \item{}{
       \code{e1 == e2}:
       \code{TRUE} if \code{e1} is equal to \code{e2}.
       \code{FALSE} otherwise.
-      Allows comparison between BString objects that are not instances
-      of the same class (see \link{RNAString-class}).
+
+      Comparison between two BString objects of different classes (e.g. a BString
+      instance and a \link{DNAString} instance) is not supported
+      with one exception: a \link{DNAString} instance and a \link{RNAString}
+      instance can be compared (see \link{RNAString-class} for more details
+      about this).
+
+      Comparison between a BString instance and a character string
+      is also supported (see examples below).
     }
     \item{}{
       \code{e1 != e2}:
@@ -121,6 +128,7 @@
 }
 
 \seealso{
+  \code{\link{subBString}},
   \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},
@@ -134,6 +142,20 @@
   length(b)
   b2 <- b[length(b):1]
   as.character(b2)
+
+  ## b[1:length(b)] is equal but not identical to b!
+  b == b[1:length(b)]        # TRUE
+  identical(b, 1:length(b))  # FALSE
+  ## This is because subsetting a BString object with [ makes a copy
+  ## of part or all its sequence data. Hence, for the resulting object,
+  ## the internal slot containing the memory address of the sequence
+  ## data differs from the original. This is enough for identical() to
+  ## see the 2 objects as different. See ?subBString for a much more
+  ## efficient substring extraction (does NOT copy the sequence data of
+  ## the original object).
+
+  b2 == b                    # FALSE
+  b2 == as.character(b2)     # TRUE
 }
 
 \keyword{methods}

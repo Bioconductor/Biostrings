@@ -80,6 +80,7 @@
 
 \seealso{
   \code{\link{AMINO_ACID_CODE}},
+  \code{\link{subBString}},
   \code{\link{letter}},
   \link{BString-class},
   \link{BStringViews-class}

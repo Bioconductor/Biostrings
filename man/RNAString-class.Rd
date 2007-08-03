@@ -84,6 +84,7 @@
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link{letter}},
+  \code{\link{subBString}},
   \link{BString-class},
   \link{DNAString-class},
   \link{BStringViews-class}
@@ -91,12 +92,13 @@
 
 \examples{
   d <- DNAString("TTGAAAA-CTC-N")
-  r <- RNAString(d)
+  r <- RNAString(d)  # reflects the transcription processus
   alphabet(r)
   RNA_ALPHABET
 
-  ## Comparison with a DNAString object:
-  RNAString("GAAAU") == DNAString("CTTTA") # TRUE
+  ## Note that comparing an RNAString instance with a DNAString
+  ## instance is possible (and very fast):
+  RNAString("GAAAU") == DNAString("CTTTA")  # TRUE
 }
 
 \keyword{methods}

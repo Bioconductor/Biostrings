@@ -83,6 +83,7 @@
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link{letter}},
+  \code{\link{subBString}},
   \link{BString-class},
   \link{RNAString-class},
   \link{BStringViews-class}
