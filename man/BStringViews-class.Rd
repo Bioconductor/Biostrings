@@ -22,6 +22,8 @@
 \alias{nchar,BStringViews-method}
 \alias{desc}
 \alias{desc,BStringViews-method}
+\alias{desc<-}
+\alias{desc<-,BStringViews-method}
 
 % Standard generic methods:
 

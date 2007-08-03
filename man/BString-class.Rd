@@ -10,17 +10,21 @@
 \alias{BString}
 
 % Standard generic methods:
+
 \alias{show,BString-method}
 \alias{length,BString-method}
 \alias{nchar,BString-method}
 \alias{[,BString-method}
 \alias{[<-,BString-method}
+
 \alias{==,BString,BString-method}
-\alias{==,BString,ANY-method}
-\alias{==,ANY,BString-method}
+\alias{==,BString,character-method}
+\alias{==,character,BString-method}
+
 \alias{!=,BString,BString-method}
-\alias{!=,BString,ANY-method}
-\alias{!=,ANY,BString-method}
+\alias{!=,BString,character-method}
+\alias{!=,character,BString-method}
+
 \alias{as.character,BString-method}
 \alias{toString,BString-method}
 
