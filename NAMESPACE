@@ -17,6 +17,7 @@ exportMethods(
     ## Accessors
     alphabet, letter,
     subject, start, end, width, desc, "desc<-",
+    subpatterns, pattern,
     align1, align2, score,
     ## Others
     BStringViews,
