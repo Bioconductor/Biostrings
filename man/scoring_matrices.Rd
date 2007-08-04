@@ -1,7 +1,7 @@
-\name{scoring_matrices}
+\name{scoring.matrices}
 \docType{data}
 
-\alias{scoring_matrices}
+\alias{scoring.matrices}
 \alias{BLOSUM45}
 \alias{BLOSUM50}
 \alias{BLOSUM62}

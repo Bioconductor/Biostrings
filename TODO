@@ -1,9 +1,6 @@
 
 
-For 2.5.10
-
-- Vectorize matchPattern() (result will be a list of BStringViews
-  objects).
+For 2.5.19
 
 - Make alphabetFrequency works with BStringViews objects with
   "out of limits" views.
@@ -17,17 +14,13 @@ For 2.5.10
   and size, how well do they work on different inputs)".
 
 
-For 2.5.11
+For 2.5.20
 
 - Have the BStringViews() method for BString objects support the 'sep' arg.
 
 - Test Raphael use case with built-in string functions and compare speed
   with Biostrings solution. Add the conclusions to the matchPattern.Rnw
   vignette.
-
-- Add the substr() method for BString objects (returns a character-string)
-  and for BStringViews objects (returns a character vector of same length
-  than its first arg).
 
 - Why doesn't sapply or lapply work for a BStringViews object (it didn't
   work either for BioString objects). Isn't it enough that these objects
@@ -42,9 +35,6 @@ For 2.5.11
 Later
 
 - Restore the test units.
-
-- Improve the Rd files (a lot of TODO tags have to be replaced by real
-  documentation there).
 
 - Fix pb with length(x) <- 2 screwing up x if it's a BString or BStringViews
   object (prevent people of doing this by defining the replacement version
