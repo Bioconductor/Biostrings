@@ -11,11 +11,9 @@
 \alias{substring,BStringViews-method}
 
 
-\title{Very efficient substring extraction}
+\title{Fast substring extraction}
 
 \description{
-
-
   Functions for fast substring extraction.
 }
 
@@ -30,7 +28,8 @@
   \item{x}{
     A \code{\link{BString}} (or derived) object for \code{subBString}.
     A \code{\link{BStringViews}} object for \code{subviews}.
-    Any object for which a method is defined for \code{substr}.
+    A character vector, a \code{\link{BStringViews}} or a \code{\link{BString}}
+    object for \code{substr} or \code{substring}.
   }
   \item{start}{
     A numeric vector.
@@ -39,18 +38,26 @@
     A numeric vector.
   }
   \item{length}{
+    A numeric vector.
   }
   \item{width}{
+    A numeric vector.
   }
   \item{check.limits}{
+    A single logical.
   }
   \item{stop}{
+    A numeric vector.
   }
   \item{text}{
+    A character vector, a \code{\link{BStringViews}} or a \code{\link{BString}}
+    object.
   }
   \item{first}{
+    A numeric vector.
   }
   \item{last}{
+    A numeric vector.
   }
 }
 

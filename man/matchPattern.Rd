@@ -31,8 +31,7 @@
     The pattern string.
   }
   \item{subject}{
-    A \link{BString} (or \link{DNAString} or \link{RNAString}) object
-    containing the subject string.
+    A \link{BString} (or derived) object containing the subject string.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
