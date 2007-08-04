@@ -11,10 +11,10 @@
 \alias{BStringViews,BStringViews-method}
 
 
-\title{Constructor-like functions and generics for BStringViews objects}
+\title{Basic functions for creating BStringViews objects}
 
 \description{
-  [TODO: Put a description here]
+  A set of basic functions for creating BStringViews objects.
 }
 
 \usage{
@@ -43,43 +43,48 @@
     A \link{BString} (or derived) object or a character vector.
   }
   \item{subjectClass}{
-    [TODO]
+    The class to be given to the subject of the returned \link{BStringViews}
+    object.
+    Must be \code{"BString"} or one of its derivations: \code{"DNAString"},
+    \code{"RNAString"} or \code{"AAString"}.
   }
   \item{collapse}{
-    [TODO]
+    An optional character string used to separate the views of the
+    returned \link{BStringViews} object.
   }
 }
 
 \details{
-  In the code snippets below,
-  \code{subject} is a character vector or a \link{BString}
-  (or \link{DNAString} or \link{RNAString}) object
-  and \code{start}, \code{end} and \code{width} are numeric vectors.
+  The \code{views} function returns a BStringViews object
+  containing views on \code{subject} with start and end positions
+  given in the \code{start} and \code{end} vectors.
 
-  \describe{
-    \item{}{
-      \code{views(subject, start, end)}:
-      [TODO: Document me]
-    }
-    \item{}{
-      \code{adjacentViews(subject, width, gapwidth)}:
-      [TODO: Document me]
-    }
-  }
+  The \code{adjacentViews} function returns a BStringViews object
+  containing views on \code{subject} with widths given in the \code{width}
+  vector and separated by gaps of width \code{gapwidth}.
+  The first view starts at position 1.
 
-  In the code snippets below,
-  \code{src} can be a character vector, a \link{BString} (or derived) object
-  or a BStringViews object,
-  \code{subjectClass} is a character-string with value \code{"BString"},
-  \code{"DNAString"}, \code{"RNAString"} or \code{"AAString"},
-  and \code{collapse} is a character string.
+  The \code{BStringViews} constructor will try to create a BStringViews
+  object from the value passed to its \code{src} argument.
+  If \code{src} itself is a BStringViews object, the returned
+  object is obtained by coercing its subject to the class specified by
+  \code{subjectClass}.
+  If \code{src} is a \link{BString} object, the returned object is made of
+  a single view that starts at the first letter and ends at the last letter
+  of \code{src} (in addition \code{src} itself is coerced to the class
+  specified by \code{subjectClass} when specified).
+  If \code{src} is a character vector, the returned object has one view
+  per character string in \code{src} (and its subject is an instance of
+  the class specified by \code{subjectClass}).
+}
 
-  \describe{
-    \item{}{
-      \code{BStringViews(src, subjectClass, collapse)}:
-      [TODO: Document me]
-    }
-  }
+\value{
+  All these functions return a BStringViews object \code{y} with the following
+  number of views (\code{length(y)}):
+  \code{max(length(start), length(end)} for the \code{views} function
+  and \code{length(width)} for the \code{adjacentViews} function.
+  For the \code{BStringViews} constructor, \code{length(y)} is \code{1}
+  when \code{src} is a \link{BString} object and \code{length(src)} otherwise.
 }
 
 \seealso{
@@ -87,9 +92,23 @@
 }
 
 \examples{
-  ## A BStringViews object with 12 views
+  ## 'start' and 'end' are recycled
+  views("abcdefghij", 2:1, 4)
+  views("abcdefghij", 5:7, )
+  views("abcdefghij", , 5:7)
+
+  ## Views can be "out of limits"
+  views("abcdefghij", 2:0, 4)
+
+  ## Views on a DNAString object
   v12 <- views(DNAString("TAATAATG"), -2:9, 0:11)
+
+  ## Creating adjacent views
+  v3 <- adjacentViews("abcdefghij", 4:2, gapwidth=1)
+
+  BStringViews(v12, subjectClass="RNAString")
+  BStringViews(AAString("MARKSLEMSIR*"))
+  BStringViews("abcdefghij", subjectClass="BString")
 }
 
 \keyword{methods}
-
