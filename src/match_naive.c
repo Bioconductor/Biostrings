@@ -73,7 +73,12 @@ static int naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
 		int mm_max, int fixedP, int fixedS,
 		int is_count_only)
 {
-	int count = 0, n1, n2, n2_max, mm, i, j;
+	int count = 0,
+	    n1, /* position of pattern left-most char relative to the subject */
+	    n2, /* 1 + position of pattern right-most char relative to the subject */
+	    n2_max, 
+	    mm, /* current number of mismatches */
+	    i, j;
 
 	n2_max = nS + mm_max;
 	for (n1 = -mm_max, n2 = nP - mm_max; n2 <= n2_max; n1++, n2++) {
@@ -84,14 +89,24 @@ static int naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
 			} else {
 				if (fixedS) {
 					if (fixedP) {
+						/* S[i] and P[j] match iff they
+						   are equal */
 						if (S[i] != P[j]) mm++;
 					} else {
+						/* S[i] and P[j] match iff bits at 1
+						   in S[i] are a subset of bits at 1
+						   in P[j] */
 						if (S[i] & (~P[j])) mm++;
 					}
 				} else {
 					if (fixedP) {
+						/* S[i] and P[j] match iff bits at 1
+						   in P[j] are a subset of bits at 1
+						   in S[i] */
 						if ((~S[i]) & P[j]) mm++;
 					} else {
+						/* S[i] and P[j] match iff they have
+						   at least one bit at 1 in common */
 						if ((S[i] & P[j]) == 0) mm++;
 					}
 				}
