@@ -30,13 +30,11 @@ setMethod("length", "BStringViews", function(x) nrow(x@views))
 ### The 'substring' function uses 'first' and 'last'.
 ### The 'substr' function uses 'start' and 'stop'.
 ### But we prefer to use 'start' and 'end'. That's all!
-setGeneric("start", function(x) standardGeneric("start"))
 setMethod("start", "BStringViews", function(x) x@views$start)
 
 setGeneric("first", function(x) standardGeneric("first"))
 setMethod("first", "BStringViews", function(x) {.Deprecated("start"); start(x)})
 
-setGeneric("end", function(x) standardGeneric("end"))
 setMethod("end", "BStringViews", function(x) x@views$end)
 
 setGeneric("last", function(x) standardGeneric("last"))
@@ -458,16 +456,13 @@ setMethod("!=", signature(e1="character", e2="BStringViews"),
 ###
 
 setMethod("as.character", "BStringViews",
-    function(x)
+    function(x, use.names=TRUE)
     {
-        lx <- length(x)
-        ans <- character(lx)
-        if (lx >= 1) {
-            for (i in 1:lx) {
-                ans[i] <- BStringViews.get_view(x@subject,
-                              x@views$start[i], x@views$end[i])
-            }
-        }
+        ans <- sapply(seq_len(length(x)),
+                      function(i) BStringViews.get_view(subject(x), start(x)[i], end(x)[i])
+               )
+        if (use.names)
+            names(ans) <- desc(x)
         ans
     }
 )

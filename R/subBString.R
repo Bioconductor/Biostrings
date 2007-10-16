@@ -121,7 +121,8 @@ subviews <- function(x, start=NA, end=NA, width=NA, check.limits=TRUE)
     end <- start(x) + views$end - 1L
     if (check.limits && (any(start < 1L) || any(nchar(subject(x)) < end)))
         stop("result contains \"out of limits\" views")
-    x@views <- data.frame(start=start, end=end)
+    x@views$start <- start
+    x@views$end <- end
     x
 }
 

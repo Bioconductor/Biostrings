@@ -165,8 +165,10 @@
       Equivalent to \code{!(e1 == e2)}.
     }
     \item{}{
-      \code{as.character(x)}:
-      Converts \code{x} to a character vector of same length as \code{x}.
+      \code{as.character(x, use.names)}:
+      Converts \code{x} to a character vector of the same length as \code{x}.
+      \code{use.names} controls whether or not \code{desc(x)} should be
+      used to set the names of the returned vector.
     }
     \item{}{
       \code{as.matrix(x)}:

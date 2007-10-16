@@ -9,8 +9,8 @@ contain one or more sequences, for each sequence there is a description
 line which begins with a \code{>}.
 }
 \usage{
-readFASTA(file, checkComments = TRUE)
-writeFASTA(x, file="", width=80)
+  readFASTA(file, checkComments=TRUE, strip.desc=TRUE)
+  writeFASTA(x, file="", width=80)
 }
 \arguments{
   \item{file}{
@@ -23,6 +23,12 @@ writeFASTA(x, file="", width=80)
   \item{checkComments}{
     Whether or not comments, lines beginning with a semi-colon
     should be found and removed.
+  }
+  \item{strip.desc}{
+    Whether or not the ">" marking the beginning of the description
+    lines should be removed or not. Note that this argument was
+    introduced in Biostrings >= 2.6.1 and that, in previous versions
+    of the Biostrings package, \code{readFASTA} was keeping the ">".
   }
   \item{x}{
     A list as one returned by \code{readFASTA}.
@@ -50,15 +56,17 @@ of the biological sequence.
 \author{ R. Gentleman }
 
 \seealso{
+  \code{\link{read.BStringViews}},
+  \code{\link{write.BStringViews}},
+  \link{BStringViews-class},
   \code{\link{read.table}},
   \code{\link{scan}},
-  \code{\link{write.table}},
-  \link{BStringViews-class}
+  \code{\link{write.table}}
 }
 
 \examples{
 f1 <- system.file("Exfiles/someORF.fsa", package="Biostrings")
-ff <- readFASTA(f1)
+ff <- readFASTA(f1, strip.desc=TRUE)
 desc <- sapply(ff, function(x) x$desc)
 ## Keep the "reverse complement" sequences only
 ff2 <- ff[grep("reverse complement", desc, fixed=TRUE)]

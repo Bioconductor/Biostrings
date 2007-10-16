@@ -43,15 +43,16 @@
     A \link{BString} (or derived) object or a character vector.
   }
   \item{subjectClass}{
-    The class to be given to the subject of the returned \link{BStringViews}
-    object.
-    Must be \code{"BString"} or one of its derivations: \code{"DNAString"},
+    The class to be given to the subject of the \link{BStringViews} object
+    created and returned by the function.
+    Must be \code{"BString"} or one of its subclasses: \code{"DNAString"},
     \code{"RNAString"} or \code{"AAString"}.
   }
   \item{collapse}{
-    An optional character string used to separate the views of the
-    returned \link{BStringViews} object.
+    An optional character string to be inserted between the views of the
+    \link{BStringViews} object created and returned by the function.
   }
+
 }
 
 \details{

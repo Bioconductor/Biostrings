@@ -1,4 +1,5 @@
 import(methods)
+import(stats)
 
 useDynLib(Biostrings)
 
@@ -27,6 +28,7 @@ exportMethods(
     matchPattern, countPattern, mismatch,
     mask,
     matchProbePair,
+    consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     needwunsQS,
     ## Deprecated
@@ -42,6 +44,7 @@ export(
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     BString, DNAString, RNAString, AAString,
     views, adjacentViews,
+    FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToBStringViews, BStringViewsToFASTArecords,
     read.BStringViews, write.BStringViews,
     subBString, subviews,

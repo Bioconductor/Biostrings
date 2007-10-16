@@ -3,9 +3,10 @@
 \alias{read.BStringViews}
 \alias{write.BStringViews}
 
+\alias{FASTArecordsToCharacter}
+\alias{CharacterToFASTArecords}
 \alias{FASTArecordsToBStringViews}
 \alias{BStringViewsToFASTArecords}
-
 
 \title{Input/output of BStringViews objects}
 
@@ -18,6 +19,8 @@
   read.BStringViews(file, format, subjectClass, collapse="")
   write.BStringViews(x, file="", format, width=80)
 
+  FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
+  CharacterToFASTArecords(x)
   FASTArecordsToBStringViews(FASTArecs, subjectClass, collapse="")
   BStringViewsToFASTArecords(x)
 }
@@ -34,24 +37,35 @@
     Only \code{"fasta"} is supported for now.
   }
   \item{subjectClass}{
-    The class to be given to the subject of the returned \link{BStringViews}
-    object.
-    Must be \code{"BString"} or one of its derivations: \code{"DNAString"},
+    The class to be given to the subject of the \link{BStringViews} object
+    created and returned by the function.
+    Must be \code{"BString"} or one of its subclasses: \code{"DNAString"},
     \code{"RNAString"} or \code{"AAString"}.
   }
   \item{collapse}{
-    An optional character string used to separate the views of the
-    returned \link{BStringViews} object.
+    An optional character string to be inserted between the views of the
+    \link{BStringViews} object created and returned by the function.
   }
   \item{x}{
-    The \link{BStringViews} object to be written.
+    For \code{write.BStringViews}, the \link{BStringViews} object to be
+    written to \code{file}.
+    For \code{CharacterToFASTArecords}, the (possibly named) character
+    vector to be converted to a list of FASTA records as one returned
+    by \code{\link{readFASTA}}.
+    For \code{BStringViewsToFASTArecords}, the \link{BStringViews} object
+    to be converted to a list of FASTA records as one returned
+    by \code{\link{readFASTA}}.
   }
   \item{width}{
     Only relevant if \code{format} is \code{"fasta"}.
     The maximum number of letters per line of sequence.
   }
   \item{FASTArecs}{
-    A list as one returned by \code{\link{readFASTA}}.
+    A list of FASTA records as one returned by \code{\link{readFASTA}}.
+  }
+  \item{use.names}{
+    Whether or not the \code{desc} component of the FASTA records should be
+    used to set the names of the returned vector.
   }
 }
 
@@ -64,11 +78,11 @@
   \code{write.BStringViews} writes a \link{BStringViews} object
   to a file or connection.
 
+  \code{FASTArecordsToCharacter}, \code{CharacterToFASTArecords},
   \code{FASTArecordsToBStringViews} and \code{BStringViewsToFASTArecords}
-  are lower-level functions that are used by \code{read.BStringViews}
-  and \code{write.BStringViews} for the conversion between a "FASTA
-  records object" (a list as one returned by \code{\link{readFASTA}})
-  and a \link{BStringViews} object.
+  are convenience functions used internally by \code{read.BStringViews}
+  and \code{write.BStringViews} for switching between different
+  representations of the same object.
 }
 
 \seealso{
@@ -85,6 +99,12 @@
   file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
   x <- read.BStringViews(file, "fasta", "DNAString")
   write.BStringViews(x, format="fasta") # writes to the console
+
+  ## Converting 'x'...
+  ## ... to a list of FASTA records (as one returned by the "readFASTA" function)
+  x1 <- BStringViewsToFASTArecords(x)
+  ## ... to a named character vector
+  x2 <- FASTArecordsToCharacter(x1) # same as 'as.character(x)'
 }
 
 \keyword{manip}

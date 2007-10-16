@@ -158,7 +158,9 @@ setMethod("BStringViews", "ANY",
             collapse <- toString(collapse)
         collapsed <- paste(src, collapse=collapse)
         subject <- new(subjectClass, collapsed)
-        adjacentViews(subject, nchar(src), nchar(collapse))
+        ans <- adjacentViews(subject, nchar(src), nchar(collapse))
+        desc(ans) <- names(src)
+        ans
     }
 )
 
