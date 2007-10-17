@@ -456,21 +456,41 @@ setMethod("!=", signature(e1="character", e2="BStringViews"),
 ###
 
 setMethod("as.character", "BStringViews",
-    function(x, use.names=TRUE)
+    function(x, use.names=TRUE, check.limits=TRUE)
     {
-        ans <- sapply(seq_len(length(x)),
-                      function(i) BStringViews.get_view(subject(x), start(x)[i], end(x)[i])
-               )
+        if (check.limits)
+            ans <- sapply(seq_len(length(x)), function(i) as.character(x[[i]]))
+        else
+            ans <- sapply(seq_len(length(x)),
+                          function(i) BStringViews.get_view(subject(x), start(x)[i], end(x)[i]))
         if (use.names)
             names(ans) <- desc(x)
         ans
     }
 )
 
+### Supported modes: "integer" (default) and "character".
 setMethod("as.matrix", "BStringViews",
-    function(x, ...)
+    function(x, mode="integer", use.names=TRUE, check.limits=TRUE)
     {
-        as.matrix(x@views[ , c("start", "end")])
+        if (!is.character(mode) || length(mode) != 1
+         || !(mode %in% c("integer", "character")))
+            stop("'mode' must be either \"integer\" or \"character\"")
+        if (mode == "integer")
+            return(as.matrix(x@views[ , c("start", "end")]))
+        nrow <- length(x)
+        if (nrow == 0)
+            stop("'x' must contain at least 1 view")
+        widths <- width(x)
+        ncol <- widths[1]
+        if (!all(widths == ncol))
+            stop("'x' views are not equal-width")
+        y <- as.character(x, use.names=FALSE, check.limits=check.limits)
+        y <- unlist(strsplit(y, NULL), recursive=FALSE, use.names=FALSE)
+        m <- matrix(y, nrow=nrow, byrow=TRUE)
+        if (use.names)
+            rownames(m) <- desc(x)
+        m
     }
 )
 

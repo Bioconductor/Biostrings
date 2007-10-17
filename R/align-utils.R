@@ -1,3 +1,4 @@
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Alignment consensus matrix
 ###
@@ -22,6 +23,13 @@ setMethod("consmat", "character",
         if (freq)
             ans <- ans / nrow
         ans
+    }
+)
+
+setMethod("consmat", "matrix",
+    function(x, freq=TRUE)
+    {
+        cat("coming soon...")
     }
 )
 
