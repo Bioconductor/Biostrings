@@ -1,11 +1,6 @@
 ### Robert contribution
-readFASTA <- function(file, checkComments=TRUE, strip.desc=TRUE)
+readFASTA <- function(file, checkComments=TRUE, strip.desc=FALSE)
 {
-    if (missing(strip.desc))
-        warning("use 'strip.desc=FALSE' for compatibility with old version\n",
-                "  of readFASTA() or 'strip.desc=TRUE' to remove the \">\"\n",
-                "  marking the beginning of the description lines and get\n",
-                "  rid of this warning (see '?readFASTA' for more details)")
     if (is.character(file)) {
         file <- file(file, "r")
         on.exit(close(file))
