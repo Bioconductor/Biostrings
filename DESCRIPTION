@@ -23,6 +23,7 @@ Collate: 00datacache.R
         BStringViews-io.R
         BStringPartialMatches-class.R
         BStringAlign-class.R
+        PpString.R
         letter.R
         subBString.R
         alphabetFrequency.R

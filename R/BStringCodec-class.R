@@ -105,8 +105,8 @@ setMethod("initialize", "BStringCodec",
 ###   > rna <- RNAString(dna)
 ### This is almost instantaneous (even on a 100M-letter DNA) because the data
 ### in 'dna' are not copied ('dna' and 'rna' share the same XRaw).
-DNA_BASE_CODES <- c(A=1, C=2, G=4, T=8)
-RNA_BASE_CODES <- c(U=1, G=2, C=4, A=8)
+DNA_BASE_CODES <- c(A=1L, C=2L, G=4L, T=8L)
+RNA_BASE_CODES <- c(U=1L, G=2L, C=4L, A=8L)
 
 IUPAC2codes <- function(baseCodes)
 {

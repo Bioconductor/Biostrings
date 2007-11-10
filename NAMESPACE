@@ -6,7 +6,8 @@ useDynLib(Biostrings)
 exportClasses(
     "BString", "DNAString", "RNAString", "AAString",
     "BStringViews", "BStringPartialMatches",
-    "BStringAlign"
+    "BStringAlign",
+    "PpString", "3BaseCountPpString"
 )
 
 exportMethods(
@@ -15,11 +16,13 @@ exportMethods(
     initialize, length, "[", "[[", show, "==", "!=",
     as.character, toString, nchar, toComplex, as.complex,
     as.matrix, as.list,
+
     ## Accessors
     alphabet, letter,
     subject, start, end, width, desc, "desc<-",
     subpatterns, pattern,
     align1, align2, score,
+
     ## Others
     BStringViews,
     substr, substring,
@@ -32,6 +35,7 @@ exportMethods(
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     needwunsQS,
+
     ## Deprecated
     first, last
 )
