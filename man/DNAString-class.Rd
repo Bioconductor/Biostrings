@@ -72,7 +72,7 @@
       \code{alphabet(x)}:
       If \code{x} is of class \code{DNAString}, return the DNAString
       alphabet (see above).
-      See the corrsponding man pages when \code{x} is of class
+      See the corresponding man pages when \code{x} is of class
       \code{\link{BString}}, \code{\link{RNAString}} or code{\link{AAString}}.
     }
   }

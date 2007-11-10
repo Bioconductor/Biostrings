@@ -1,6 +1,6 @@
 #include "Biostrings.h"
 #include <S.h> /* for Srealloc() */
-
+#include <ctype.h> /* for isspace() */
 
 static int debug = 0;
 
@@ -509,53 +509,101 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
  * --------------------------------------------------------------------------
  */
 
-static int *views_start, *views_end;
-static int views_buffer_size, views_count;
+static int *views_startbuf, *views_endbuf;
+static char **views_descbuf;
+static int views_bufsize, views_count; /* views_bufsize >= views_count */
 
 /* Reset views buffer */
 void _Biostrings_reset_views_buffer()
 {
 	/* No memory leak here, because we use transient storage allocation */
-	views_start = views_end = NULL;
-	views_buffer_size = views_count = 0;
+	views_startbuf = views_endbuf = NULL;
+	views_descbuf = NULL;
+	views_bufsize = views_count = 0;
 	return;
-}
-
-/* Return the new number of views */
-int _Biostrings_report_view(int start, int end)
-{
-	long new_size;
-
-	if (views_count >= views_buffer_size) {
-		/* Buffer is full */
-		if (views_buffer_size == 0)
-			new_size = 1024;
-		else
-			new_size = 2 * views_buffer_size;
-		views_start = Srealloc((char *) views_start, new_size,
-						(long) views_buffer_size, int);
-		views_end = Srealloc((char *) views_end, new_size,
-						(long) views_buffer_size, int);
-		views_buffer_size = new_size;
-	}
-	views_start[views_count] = start;
-	views_end[views_count] = end;
-	return ++views_count;
-}
-
-/* Return the new number of views */
-int _Biostrings_report_match(int Lpos, int Rpos)
-{
-	return _Biostrings_report_view(++Lpos, ++Rpos);
 }
 
 int *_Biostrings_get_views_start()
 {
-	return views_start;
+	return views_startbuf;
 }
 
 int *_Biostrings_get_views_end()
 {
-	return views_end;
+	return views_endbuf;
+}
+
+char **_Biostrings_get_views_desc()
+{
+	return views_descbuf;
+}
+
+/* Return the new number of views */
+int _Biostrings_report_view(int start, int end, const char *desc)
+{
+	long new_size;
+	size_t desc_size;
+
+	if (views_count >= views_bufsize) {
+		/* Buffer is full */
+		if (views_bufsize == 0)
+			new_size = 1024;
+		else
+			new_size = 2 * views_bufsize;
+		views_startbuf = Srealloc((char *) views_startbuf, new_size,
+						(long) views_bufsize, int);
+		views_endbuf = Srealloc((char *) views_endbuf, new_size,
+						(long) views_bufsize, int);
+		views_descbuf = Srealloc((char *) views_descbuf, new_size,
+						(long) views_bufsize, char *);
+		views_bufsize = new_size;
+	}
+	views_startbuf[views_count] = start;
+	views_endbuf[views_count] = end;
+	desc_size = strlen(desc) + 1; /* + 1 for the terminating '\0' character */
+	views_descbuf[views_count] = Salloc((long) desc_size, char);
+	memcpy(views_descbuf[views_count], desc, desc_size);
+	return ++views_count;
+}
+
+/* Return the new number of views (== number of matches) */
+int _Biostrings_report_match(int Lpos, int Rpos)
+{
+	return _Biostrings_report_view(++Lpos, ++Rpos, "");
+}
+
+
+/* ==========================================================================
+ * Misceallenous.
+ * --------------------------------------------------------------------------
+ */
+
+/* Like fgets() except that:
+ *   - the string stored into the buffer pointed to by s is right-trimmed i.e.
+ *     all the rightmost white-space characters were removed,
+ *   - return the length of the string stored into the buffer pointed to by s
+ *     on success and -1 on error or when end of file occurs while no
+ *     characters have been read.
+ */
+int fgets_rtrimmed(char *s, int size, FILE *stream)
+{
+	char *s1;
+	int line_len, i;
+	long pos0;
+
+	pos0 = ftell(stream);
+	s1 = fgets(s, size, stream);
+	if (s1 == NULL)
+		return -1;
+	/* 2 almost equivalent ways to get the length of the current line,
+	   "almost" because of they will differ if a line contains embedded
+	   NUL characters */
+	line_len = ftell(stream) - pos0; /* should be faster than strlen() */
+	/* line_len = strlen(s); */
+	i = line_len - 1;
+	while (i >= 0 && isspace(s[i])) i--;
+	line_len = i + 1;
+	s[line_len] = 0;
+	return line_len;
 }
 

@@ -29,6 +29,7 @@
 \alias{toString,BString-method}
 
 % Other functions and generics:
+\alias{alphabet}
 \alias{alphabet,BString-method}
 
 
@@ -125,7 +126,7 @@
     \item{}{
       \code{alphabet(x)}:
       \code{NULL} for a \code{BString} object.
-      See the corrsponding man pages when \code{x} is of class
+      See the corresponding man pages when \code{x} is of class
       \code{\link{DNAString}}, \code{\link{RNAString}} or code{\link{AAString}}.
     }
   }

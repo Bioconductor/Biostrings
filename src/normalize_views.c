@@ -23,11 +23,11 @@ static int normalize_views(const int *start, const int *end, int nviews)
 				end0 = end1;
 			continue;
 		}
-		_Biostrings_report_view(start0, end0);
+		_Biostrings_report_view(start0, end0, "");
 		start0 = start1;
 		end0 = end1;
 	}
-	return _Biostrings_report_view(start0, end0);
+	return _Biostrings_report_view(start0, end0, "");
 }
 
 /*

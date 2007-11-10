@@ -39,6 +39,8 @@ static const R_CallMethodDef callMethods[] = {
 	{"XRaw_read_complexes_from_i1i2", (DL_FUNC) &XRaw_read_complexes_from_i1i2, 4},
 	{"XRaw_read_complexes_from_subset", (DL_FUNC) &XRaw_read_complexes_from_subset, 3},
 
+	{"XRaw_loadFASTA", (DL_FUNC) &XRaw_loadFASTA, 4},
+
 /* XInteger.c */
 	{"XInteger_alloc", (DL_FUNC) &XInteger_alloc, 2},
 	{"XInteger_show", (DL_FUNC) &XInteger_show, 1},

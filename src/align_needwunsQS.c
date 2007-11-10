@@ -154,7 +154,7 @@ SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 
 	PROTECT(ans = NEW_LIST(3));
 	/* set the names */
-	PROTECT(ans_names = allocVector(STRSXP, 3));
+	PROTECT(ans_names = NEW_CHARACTER(3));
 	SET_STRING_ELT(ans_names, 0, mkChar("al1"));
 	SET_STRING_ELT(ans_names, 1, mkChar("al2"));
 	SET_STRING_ELT(ans_names, 2, mkChar("score"));

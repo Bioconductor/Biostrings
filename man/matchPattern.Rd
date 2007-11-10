@@ -38,7 +38,7 @@
     \code{"naive-fuzzy"}, \code{"boyer-moore"} or \code{"shift-or"}.
   }
   \item{mismatch}{
-    The number of mismatches allowed. If non-zero a fuzzy string searching
+    The number of mismatches allowed. If non-zero, a fuzzy string searching
     algorithm is used for matching.
   }
   \item{fixed}{
@@ -90,6 +90,8 @@
 }
 
 \seealso{
+  \code{\link{matchLRPatterns}},
+  \code{\link{matchProbePair}},
   \code{\link{mask}},
   \code{\link{alphabetFrequency}},
   \code{\link{IUPAC_CODE_MAP}},

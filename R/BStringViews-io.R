@@ -80,6 +80,114 @@ BStringViewsToFASTArecords <- function(x)
     FASTArecordsToBStringViews(FASTArecs, subjectClass, collapse)
 }
 
+### WORK IN PROGRESS!
+###
+### Attempt to implement a _fast_ version of the above .read.fasta() by:
+###   - shortcutting the use of readFASTA()
+###   - use readLines to read the FASTA file line by line
+###   - call XRaw.write() on each line + XRaw() and XRaw.copy() when it's
+###     time to reallocate a biggest XRaw object.
+###
+### 'file' must be a character string or connection.
+### If 'file' is a connection, then 'type' is ignored.
+### If it's a character string then 'type' can be "default" (i.e. 'file' is a
+### path to the file to be opened or a complete URL, or '""' or '"stdin"' or
+### '"clipboard"'), "gzfile" (then 'file' should be path to a file that
+### is compressed by 'gzip'), "bzfile" (then 'file' should be path to a file
+### that is compressed by 'bzip2') or "unz" (not supported yet).
+.read.fasta2 <- function(file, subjectClass, collapse, type="default")
+{
+    filesize <- NA
+    if (is.character(file)) {
+        if (type == "default")
+            filesize <- file.info(file)$size
+        file <- switch(type,
+                    default = file(file, "r"),
+                    gzfile = gzfile(file, "r"),
+                    bzfile = bzfile(file, "r"),
+                    unz = stop("type \"unz\" not supported yet")
+                )
+        on.exit(close(file))
+    } else {
+        if (!inherits(file, "connection"))
+            stop("'file' must be a character string or connection")
+        if (!isOpen(file)) {
+            open(file, "r")
+            on.exit(close(file))
+        }
+    }
+    if (is.na(filesize)) {
+        datasize <- 0
+        while (length(line <- readLines(file, n=1)) != 0) {
+            if (substr(line, 1, 1) != ">")
+                datasize <- datasize + nchar(line, type="bytes")
+        }
+    } else {
+        datasize <- filesize # an estimate only, should be >= real datasize
+    }
+    datasize
+}
+
+### 'file' must be a filesystem path (character string) to an uncompressed FASTA file.
+.read.uncompressed_fasta_file <- function(file, subjectClass, collapse)
+{
+    if (!is.character(file) || length(file) != 1 || is.na(file))
+        stop("'file' must be a non-NA character string")
+    filesize <- file.info(file)$size
+    if (is.na(filesize))
+        stop(file, ": file not found")
+    filesize <- as.integer(filesize)
+    if (is.na(filesize))
+        stop(file, ": file is too big")
+    file <- file(file, "r")
+    on.exit(close(file))
+    subject <- new(subjectClass, XRaw(filesize))
+    subject@length <- 0L # temporarily broken BString object!
+
+    #ans <- XRaw.loadFASTA(subject@data, file, collapse, enc_lkup=enc_lkup(x))
+
+#-- implement this in C, from here
+    width <- integer(0)
+    current_width <- 0L
+    desc <- character(0)
+    ## Even if scan() is faster than readLines() for loading all the lines of a
+    ## file, the "load-all-the-lines-in-memory" solution is slower than the
+    ## "load-one-line-at-a-time" solution.
+    #lines <- scan(file=file, what="", sep="\n", allowEscapes=FALSE)
+    #for (i in seq_len(length(lines))) {
+    #    line <- lines[i]
+    while (length(line <- readLines(file, n=1)) != 0) {
+        nbytes <- nchar(line, type="bytes")
+        if (nbytes == 0L)
+            next
+        char0 <- substr(line, 1, 1)
+        if (char0 == ";")
+            next
+        if (char0 != ">") {
+            if (length(desc) != length(width) + 1)
+                stop("in file ", file, ", line ", i, ": ",
+                     "number of FASTA sequences doesn't match number of description lines")
+            subject <- BString.write(subject, value=line)
+            current_width <- current_width + nbytes
+            next
+        }
+        desc <- c(desc, substr(line, 2, nbytes))
+        if (current_width == 0L)
+            next
+        width <- c(width, current_width)
+        current_width <- 0L
+        subject <- BString.write(subject, value=collapse)
+    }
+    if (subject@length == 0L)
+        stop(file, ": file doesn't seem to be FASTA (no data in it)")
+    if (current_width != 0L)
+        width <- c(width, current_width)
+#--- to here
+    ans <- adjacentViews(subject, width, gapwidth=nchar(collapse, type="bytes"))
+    desc(ans) <- desc
+    ans
+}
+
 read.BStringViews <- function(file, format, subjectClass, collapse="")
 {
     if (missing(file))

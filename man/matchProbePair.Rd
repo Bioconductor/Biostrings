@@ -62,6 +62,7 @@
 
 \seealso{
   \code{\link{matchPattern}},
+  \code{\link{matchLRPatterns}},
   \code{\link{reverseComplement}},
   \code{\link{BStringViews}}
 }

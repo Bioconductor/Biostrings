@@ -27,6 +27,7 @@ exportMethods(
     reverse, complement, reverseComplement,
     matchPattern, countPattern, mismatch,
     mask,
+    matchLRPatterns,
     matchProbePair,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,

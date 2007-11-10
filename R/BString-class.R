@@ -68,8 +68,22 @@ BString.read <- function(x, i, imax=integer(0))
 }
 
 ### Only used at initialization time! (BString objects are immutable)
+### 'value' must be a character string (this is not checked)
 BString.write <- function(x, i, imax=integer(0), value)
 {
+    if (missing(i) && missing(imax)) {
+        nbytes <- nchar(value, type="bytes")
+        if (nbytes == 0)
+            return(x)
+        ## Write data starting immediately after the last byte in XRaw object
+        ## 'x@data' that belongs to the sequence BString object 'x' is
+        ## pointing at.
+        ## This is safe because XRaw.write() is protected against subscripts
+        ## 'i' and 'imax' being "out of bounds".
+        i <- x@length + 1L
+        imax <- x@length <- x@length + nbytes
+    }
+    #cat(x@offset + i, " -- ", x@offset + imax, "\n", sep="")
     XRaw.write(x@data, x@offset + i, x@offset + imax, value=value,
                        enc_lkup=enc_lkup(x))
     x
@@ -93,7 +107,7 @@ BString.init_with_character <- function(.Object, src, lkup=NULL, verbose=FALSE)
         stop("sorry, don't know what to do when 'src' is a character vector of length 0")
     if (length(src) >= 2)
         stop("please use BStringViews() when 'src' is a character vector of length >= 2")
-    length <- nchar(src)
+    length <- nchar(src, type="bytes")
     data <- XRaw(length, verbose)
     XRaw.write(data, 1, length, value=src, enc=lkup)
     BString.init_with_XRaw(.Object, data)
