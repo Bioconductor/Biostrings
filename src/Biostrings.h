@@ -486,6 +486,7 @@ SEXP match_BOC_exact(
 		SEXP code3,
 		SEXP buf3_xp,
 		SEXP code4,
+		SEXP means,
 		SEXP count_only
 );
 

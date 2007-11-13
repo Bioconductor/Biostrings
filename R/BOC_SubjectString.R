@@ -19,7 +19,10 @@ setClass("BOC_SubjectString",
         base2_OCbuffer="XRaw",
         base3_code="integer",
         base3_OCbuffer="XRaw",
-        base4_code="integer"
+        base4_code="integer",
+        ## Believe it or not but S4 doesn't let me use "double" here!
+        #OCmeans="double"           # an array of 4 doubles
+        OCmeans="numeric"           # an array of 4 doubles
     )
 )
 
@@ -50,7 +53,7 @@ setMethod("initialize", "BOC_SubjectString",
 	code3 <- DNA_BASE_CODES[base_letters[3]]
         buf3 <- XRaw(buf_length)
 	code4 <- DNA_BASE_CODES[setdiff(names(DNA_BASE_CODES), base_letters)]
-        .Call("match_BOC_preprocess",
+        means <- .Call("match_BOC_preprocess",
               subject@data@xp, subject@offset, subject@length,
               pattern_length,
               code1, buf1@xp,
@@ -65,6 +68,7 @@ setMethod("initialize", "BOC_SubjectString",
         .Object@base3_code <- code3
         .Object@base3_OCbuffer <- buf3
         .Object@base4_code <- code4
+        .Object@OCmeans <- means
         .Object
     }
 )
@@ -78,7 +82,7 @@ setMethod("initialize", "BOC_SubjectString",
           boc_subject@base1_code, boc_subject@base1_OCbuffer@xp,
           boc_subject@base2_code, boc_subject@base2_OCbuffer@xp,
           boc_subject@base3_code, boc_subject@base3_OCbuffer@xp,
-          boc_subject@base4_code, count.only,
+          boc_subject@base4_code, boc_subject@OCmeans, count.only,
           PACKAGE="Biostrings")
 }
 

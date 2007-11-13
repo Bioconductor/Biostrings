@@ -33,17 +33,19 @@ SEXP match_BOC_debug()
  */
 
 static void BOC_preprocess(const char *S, int nS, int nP,
-		char c1, char * buf1,
-		char c2, char * buf2,
-		char c3, char * buf3,
-		char c4)
+		char c1, char *buf1,
+		char c2, char *buf2,
+		char c3, char *buf3,
+		char c4, double *means)
 {
-	int cc1, cc2, cc3, n1, n2, last_nonbase_pos;
+	int cc1, cc2, cc3, n1, n2, last_nonbase_pos,
+	    total, i, partsum1, partsum2, partsum3;
 	char c;
 
 	/* Rprintf("nS=%d nP=%d c1=%d c2=%d c3=%d c4=%d\n", nS, nP, c1, c2, c3, c4); */
-	cc1 = cc2 = cc3 = 0;
+	cc1 = cc2 = cc3 = total = i = partsum1 = partsum2 = partsum3 = 0;
 	last_nonbase_pos = -1;
+	means[0] = means[1] = means[2] = 0.0;
 	for (n1 = -nP + 1, n2 = 0; n2 < nS; n1++, n2++) {
 		c = S[n2];
 		if (c == c1) cc1++;
@@ -65,10 +67,25 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 			else if (c == c2) cc2--;
 			else if (c == c3) cc3--;
 		}
-		buf1[n1] = cc1;
-		buf2[n1] = cc2;
-		buf3[n1] = cc3;
+		total++;
+		partsum1 += buf1[n1] = cc1;
+		partsum2 += buf2[n1] = cc2;
+		partsum3 += buf3[n1] = cc3;
+		if (i++ < 100000000)
+			continue;
+		i = 0;
+		means[0] += partsum1;
+		means[1] += partsum2;
+		means[2] += partsum3;
+		partsum1 = partsum2 = partsum3 = 0;
 	}
+	means[0] += partsum1;
+	means[1] += partsum2;
+	means[2] += partsum3;
+	means[0] /= total;
+	means[1] /= total;
+	means[2] /= total;
+	means[3] = nP - means[0] - means[1] - means[2];
 	return;
 }
 
@@ -82,13 +99,22 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		char c1, char * buf1,
 		char c2, char * buf2,
 		char c3, char * buf3,
-		char c4, int is_count_only)
+		char c4, double *means, int is_count_only)
 {
-	int count = 0, n1, n2;
+	int count = 0, n1, n2, cc1, cc2, cc3;
+	char c;
 
+	cc1 = cc2 = cc3 = 0;
+	for (n2 = 0; n2 < nP; n2++) {
+		c = P[n2];
+		if (c == c1) cc1++;
+		else if (c == c2) cc2++;
+		else if (c == c3) cc3++;
+		else if (c != c4)
+			error("'pattern' contains non-base DNA letters");
+	}
 	return count;
 }
-
 
 
 /****************************************************************************
@@ -117,7 +143,7 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 {
 	int subj_offset, subj_length, pat_length, c1, c2, c3, c4;
 	const Rbyte *subj;
-	SEXP buf1, buf2, buf3;
+	SEXP buf1, buf2, buf3, ans;
 
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
@@ -131,12 +157,14 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	buf3 = R_ExternalPtrTag(buf3_xp);
 	c4 = INTEGER(code4)[0];
 	
+	PROTECT(ans = NEW_NUMERIC(4));
 	BOC_preprocess((char *) subj, subj_length, pat_length,
 			(char) c1, (char *) RAW(buf1),
 			(char) c2, (char *) RAW(buf2),
 			(char) c3, (char *) RAW(buf3),
-			(char) c4);
-	return R_NilValue;
+			(char) c4, REAL(ans));
+	UNPROTECT(1);
+	return ans;
 }
 
 
@@ -157,6 +185,7 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
  *   'code3': boc_subject@base3_code
  *   'buf3_xp': boc_subject@base3_OCbuffer@xp
  *   'code4': boc_subject@base4_code
+ *   'means': boc_subject@OCmeans
  *   'count_only': single logical
  * 
  ****************************************************************************/
@@ -166,7 +195,7 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP code1, SEXP buf1_xp,
 		SEXP code2, SEXP buf2_xp,
 		SEXP code3, SEXP buf3_xp,
-		SEXP code4, SEXP count_only)
+		SEXP code4, SEXP means, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    c1, c2, c3, c4, is_count_only, count;
@@ -196,7 +225,7 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			(char) c1, (char *) RAW(buf1),
 			(char) c2, (char *) RAW(buf2),
 			(char) c3, (char *) RAW(buf3),
-			(char) c4, is_count_only);
+			(char) c4, REAL(means), is_count_only);
 
 	if (!is_count_only) {
 		PROTECT(ans = allocVector(INTSXP, count));
