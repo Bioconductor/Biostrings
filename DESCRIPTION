@@ -23,13 +23,13 @@ Collate: 00datacache.R
         BStringViews-io.R
         BStringPartialMatches-class.R
         BStringAlign-class.R
-        BOC_SubjectString.R
         letter.R
         subBString.R
         alphabetFrequency.R
         reverseComplement.R
         toComplex.R
         matchPattern.R
+        BOC_SubjectString.R
         mask.R
         matchLRPatterns.R
         matchProbePair.R

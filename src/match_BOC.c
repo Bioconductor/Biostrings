@@ -38,39 +38,57 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 		char c3, char * buf3,
 		char c4)
 {
-	int cc1, cc2, cc3, i1, i2, last_nonbase_pos;
+	int cc1, cc2, cc3, n1, n2, last_nonbase_pos;
 	char c;
 
 	/* Rprintf("nS=%d nP=%d c1=%d c2=%d c3=%d c4=%d\n", nS, nP, c1, c2, c3, c4); */
 	cc1 = cc2 = cc3 = 0;
 	last_nonbase_pos = -1;
-	for (i1 = -nP + 1, i2 = 0; i2 < nS; i1++, i2++) {
-		c = S[i2];
+	for (n1 = -nP + 1, n2 = 0; n2 < nS; n1++, n2++) {
+		c = S[n2];
 		if (c == c1) cc1++;
 		else if (c == c2) cc2++;
 		else if (c == c3) cc3++;
 		else if (c != c4) {
-			last_nonbase_pos = i2;
+			last_nonbase_pos = n2;
 			cc1 = cc2 = cc3 = 0;
 		}
-		if (i1 < 0)
+		if (n1 < 0)
 			continue;
-		if (i1 <= last_nonbase_pos) {
-			buf1[i1] = buf2[i1] = buf3[i1] = 255;
+		if (n1 <= last_nonbase_pos) {
+			buf1[n1] = buf2[n1] = buf3[n1] = 255;
 			continue;
 		}
-		if (i1 >= 1) {
-			c = S[i1 - 1];
+		if (n1 >= 1) {
+			c = S[n1 - 1];
 			if (c == c1) cc1--;
 			else if (c == c2) cc2--;
 			else if (c == c3) cc3--;
 		}
-		buf1[i1] = cc1;
-		buf2[i1] = cc2;
-		buf3[i1] = cc3;
+		buf1[n1] = cc1;
+		buf2[n1] = cc2;
+		buf3[n1] = cc3;
 	}
 	return;
 }
+
+
+/****************************************************************************
+ * An implementation of the "BOC" algo for exact matching
+ * ======================================================
+ */
+
+static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
+		char c1, char * buf1,
+		char c2, char * buf2,
+		char c3, char * buf3,
+		char c4, int is_count_only)
+{
+	int count = 0, n1, n2;
+
+	return count;
+}
+
 
 
 /****************************************************************************
@@ -92,9 +110,9 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 
 SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP p_length,
-                SEXP code1, SEXP buf1_xp,
-                SEXP code2, SEXP buf2_xp,
-                SEXP code3, SEXP buf3_xp,
+		SEXP code1, SEXP buf1_xp,
+		SEXP code2, SEXP buf2_xp,
+		SEXP code3, SEXP buf3_xp,
 		SEXP code4)
 {
 	int subj_offset, subj_length, pat_length, c1, c2, c3, c4;
@@ -119,5 +137,76 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 			(char) c3, (char *) RAW(buf3),
 			(char) c4);
 	return R_NilValue;
+}
+
+
+/****************************************************************************
+ * .Call entry point: "match_BOC_exact"
+ * 
+ * Arguments:
+ *   'p_xp': pattern@data@xp
+ *   'p_offset': pattern@offset
+ *   'p_length': pattern@length
+ *   's_xp': boc_subject@subject@data@xp
+ *   's_offset': boc_subject@subject@offset
+ *   's_length': boc_subject@subject@length
+ *   'code1': boc_subject@base1_code
+ *   'buf1_xp': boc_subject@base1_OCbuffer@xp
+ *   'code2': boc_subject@base2_code
+ *   'buf2_xp': boc_subject@base2_OCbuffer@xp
+ *   'code3': boc_subject@base3_code
+ *   'buf3_xp': boc_subject@base3_OCbuffer@xp
+ *   'code4': boc_subject@base4_code
+ *   'count_only': single logical
+ * 
+ ****************************************************************************/
+
+SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
+		SEXP code1, SEXP buf1_xp,
+		SEXP code2, SEXP buf2_xp,
+		SEXP code3, SEXP buf3_xp,
+		SEXP code4, SEXP count_only)
+{
+	int pat_offset, pat_length, subj_offset, subj_length,
+	    c1, c2, c3, c4, is_count_only, count;
+	const Rbyte *pat, *subj;
+	SEXP buf1, buf2, buf3, ans;
+
+	pat_offset = INTEGER(p_offset)[0];
+	pat_length = INTEGER(p_length)[0];
+	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
+	subj_offset = INTEGER(s_offset)[0];
+	subj_length = INTEGER(s_length)[0];
+	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+	c1 = INTEGER(code1)[0];
+	buf1 = R_ExternalPtrTag(buf1_xp);
+	c2 = INTEGER(code2)[0];
+	buf2 = R_ExternalPtrTag(buf2_xp);
+	c3 = INTEGER(code3)[0];
+	buf3 = R_ExternalPtrTag(buf3_xp);
+	c4 = INTEGER(code4)[0];
+	is_count_only = LOGICAL(count_only)[0];
+
+	if (!is_count_only)
+		_Biostrings_reset_views_buffer();
+	count = BOC_exact_search(
+			(char *) pat, pat_length,
+			(char *) subj, subj_length,
+			(char) c1, (char *) RAW(buf1),
+			(char) c2, (char *) RAW(buf2),
+			(char) c3, (char *) RAW(buf3),
+			(char) c4, is_count_only);
+
+	if (!is_count_only) {
+		PROTECT(ans = allocVector(INTSXP, count));
+		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
+					sizeof(int) * count);
+        } else {
+		PROTECT(ans = allocVector(INTSXP, 1));
+		INTEGER(ans)[0] = count;
+	}
+	UNPROTECT(1);
+	return ans;
 }
 

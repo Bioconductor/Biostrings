@@ -472,6 +472,23 @@ SEXP match_BOC_preprocess(
 		SEXP code4
 );
 
+SEXP match_BOC_exact(
+		SEXP p_xp,
+		SEXP p_offset,
+		SEXP p_length,
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length,
+		SEXP code1,
+		SEXP buf1_xp,
+		SEXP code2,
+		SEXP buf2_xp,
+		SEXP code3,
+		SEXP buf3_xp,
+		SEXP code4,
+		SEXP count_only
+);
+
 
 /* pmatchPattern.c */
 

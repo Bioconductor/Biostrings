@@ -23,8 +23,10 @@ setClass("BOC_SubjectString",
     )
 )
 
-### subject <- DNAString("acag-tcgatgc-NNNDR")
-### boc <- new("BOC_SubjectString", subject, 4, c("A", "C", "G"))
+### Typical use:
+###   library(BSgenome.Hsapiens.UCSC.hg18)
+###   chr1 <- Hsapiens$chr1
+###   chr1boc <- new("BOC_SubjectString", chr1, 36, c("A", "C", "G")) # 3-4 seconds on lamb1
 setMethod("initialize", "BOC_SubjectString",
     function(.Object, subject, pattern_length, base_letters)
     {
@@ -64,6 +66,49 @@ setMethod("initialize", "BOC_SubjectString",
         .Object@base3_OCbuffer <- buf3
         .Object@base4_code <- code4
         .Object
+    }
+)
+
+### Must return an integer vector.
+.match.BOC.exact <- function(pattern, boc_subject, count.only)
+{
+    .Call("match_BOC_exact",
+          pattern@data@xp, pattern@offset, pattern@length,
+          boc_subject@subject@data@xp, boc_subject@subject@offset, boc_subject@subject@length,
+          boc_subject@base1_code, boc_subject@base1_OCbuffer@xp,
+          boc_subject@base2_code, boc_subject@base2_OCbuffer@xp,
+          boc_subject@base3_code, boc_subject@base3_OCbuffer@xp,
+          boc_subject@base4_code, count.only,
+          PACKAGE="Biostrings")
+}
+
+### Must return an integer vector.
+.match.BOC.fuzzy <- function(pattern, boc_subject, mismatch, count.only)
+{
+    stop("NOT READY YET!")
+}
+
+### Dispatch on 'subject' (see signature of generic).
+### 'algorithm' is ignored.
+setMethod("matchPattern", "BOC_SubjectString",
+    function(pattern, subject, algorithm, mismatch, fixed)
+    {
+        if (class(pattern) != class(subject@subject))
+            pattern <- new(class(subject@subject), pattern)
+        pattern_length <- nchar(pattern)
+        if (pattern_length != subject@pattern_length)
+            stop("subject was preprocessed for patterns of length ", subject@pattern_length)
+        if (!missing(fixed)) {
+            fixed <- .normalize.fixed(fixed)
+            if (!all(fixed))
+                stop("only 'fixed=TRUE' can be used with a subject of class ", class(subject))
+        }
+        if (mismatch == 0)
+            matches <- .match.BOC.exact(pattern, subject, count.only=FALSE)
+        else
+            matches <- .match.BOC.fuzzy(pattern, subject, mismatch, count.only=FALSE)
+        new("BStringViews", subject=subject@subject,
+                            views=data.frame(start=matches, end=matches+pattern_length-1L))
     }
 )
 
