@@ -454,6 +454,25 @@ SEXP match_shiftor(
 );
 
 
+/* match_BOC.c */
+
+SEXP match_BOC_debug();
+
+SEXP match_BOC_preprocess(
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length,
+		SEXP p_length,
+		SEXP code1,
+		SEXP buf1_xp,
+		SEXP code2,
+		SEXP buf2_xp,
+		SEXP code3,
+		SEXP buf3_xp,
+		SEXP code4
+);
+
+
 /* pmatchPattern.c */
 
 SEXP lcprefix(

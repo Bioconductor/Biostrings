@@ -95,7 +95,7 @@ static int needwunsQS(const char *S1, int nS1, const char *S2, int nS2,
 			tr = 'I';
 		else
 			tr = TRA(i1, i2);
-		switch(tr) {
+		switch (tr) {
 		    case 'D':
 			*al1 = S1[j1];
 			*al2 = gap_code;

@@ -78,6 +78,10 @@ static const R_CallMethodDef callMethods[] = {
 	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
 	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
+/* match_BOC.c */
+	{"match_BOC_debug", (DL_FUNC) &match_BOC_debug, 0},
+	{"match_BOC_preprocess", (DL_FUNC) &match_BOC_preprocess, 11},
+
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},
 	{"lcsuffix", (DL_FUNC) &lcsuffix, 6},
