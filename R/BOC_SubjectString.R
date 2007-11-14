@@ -74,6 +74,36 @@ setMethod("initialize", "BOC_SubjectString",
     }
 )
 
+### Typical use:
+###   Biostrings:::plotBOC(chr1boc, "Human chr1")
+plotBOC <- function(x, main)
+{
+    XLAB <- "Base Occurence Count"
+    TITLE <- paste(XLAB, " for the ", x@pattern_length, "-mers in ", main, sep="")
+    YLAB <- paste("number of ", x@pattern_length, "-mers", sep="")
+    YMAX <- max(c(x@stats$table1, x@stats$table2, x@stats$table3, x@stats$table4))
+    plot.new()
+    plot.window(c(0, x@pattern_length), c(0, YMAX))
+    title(TITLE, xlab=XLAB, ylab=YLAB, col.main="black")
+    axis(1)
+    axis(2)
+    axis(4)
+
+    par(fg="red")
+    lines(0:x@pattern_length, x@stats$table1, type="l")
+    par(fg="blue")
+    lines(0:x@pattern_length, x@stats$table2, type="l")
+    par(fg="green")
+    lines(0:x@pattern_length, x@stats$table3, type="p")
+    par(fg="black")
+    lines(0:x@pattern_length, x@stats$table4, type="p")
+
+    LEGEND <- c(names(x@base1_code), names(x@base2_code), names(x@base3_code), names(x@base4_code))
+    LEGEND <- paste(LEGEND, "-count", sep="")
+    COLORS <- c("red", "blue", "green", "black")
+    legend(x=x@pattern_length, y=YMAX, legend=LEGEND, col=COLORS, lty="solid", lwd=3, xjust=1.0, yjust=1.0)
+}
+
 ### Must return an integer vector.
 .match.BOC.exact <- function(pattern, boc_subject, count.only)
 {
