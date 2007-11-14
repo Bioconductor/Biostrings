@@ -27,22 +27,26 @@ SEXP match_BOC_debug()
 /****************************************************************************
  * Initialisation of the 3 OCbuffers ("occurence count buffers")
  * =============================================================
- * nP is assumed to be >= 1 and <= min(254, nS)
- * The 3 buffers are assumed to be long enough for the preprocessing i.e. to
- * have a length >= nS - nP + 1
+ *   - nP is assumed to be >= 1 and <= min(254, nS).
+ *   - The 3 buffers are assumed to be long enough for the preprocessing i.e. to
+ *     have a length >= nS - nP + 1.
+ *   - The 4 tables are of length nP + 1.
  */
 
 static void BOC_preprocess(const char *S, int nS, int nP,
 		char c1, char *buf1,
 		char c2, char *buf2,
 		char c3, char *buf3,
-		char c4, double *means)
+		char c4,
+		double *means, int *table1, int *table2, int *table3, int *table4)
 {
 	int cc1, cc2, cc3, n1, n2, last_nonbase_pos,
 	    total, i, partsum1, partsum2, partsum3;
 	char c;
 
 	/* Rprintf("nS=%d nP=%d c1=%d c2=%d c3=%d c4=%d\n", nS, nP, c1, c2, c3, c4); */
+	for (i = 0; i <= nP; i++)
+		table1[i] = table2[i] = table3[i] = table4[i] = 0;
 	cc1 = cc2 = cc3 = total = i = partsum1 = partsum2 = partsum3 = 0;
 	last_nonbase_pos = -1;
 	means[0] = means[1] = means[2] = 0.0;
@@ -71,7 +75,11 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 		partsum1 += buf1[n1] = cc1;
 		partsum2 += buf2[n1] = cc2;
 		partsum3 += buf3[n1] = cc3;
-		if (i++ < 100000000)
+		table1[cc1]++;
+		table2[cc2]++;
+		table3[cc3]++;
+		table4[nP - cc1 - cc2 - cc3]++;
+		if (i++ < 5000000)
 			continue;
 		i = 0;
 		means[0] += partsum1;
@@ -96,9 +104,9 @@ static void BOC_preprocess(const char *S, int nS, int nP,
  */
 
 static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
-		char c1, char * buf1,
-		char c2, char * buf2,
-		char c3, char * buf3,
+		char c1, char *buf1,
+		char c2, char *buf2,
+		char c3, char *buf3,
 		char c4, double *means, int is_count_only)
 {
 	int count = 0, n1, n2, cc1, cc2, cc3;
@@ -113,6 +121,9 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		else if (c != c4)
 			error("'pattern' contains non-base DNA letters");
 	}
+	Rprintf("pattern: cc1=%d cc2=%d cc3=%d\n", cc1, cc2, cc3);
+	Rprintf("subject: mean1=%.2g mean2=%.2g mean3=%.2g\n", means[0], means[1], means[2]);
+
 	return count;
 }
 
@@ -132,6 +143,11 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
  *   'code3': base3_code
  *   'buf3_xp': base3_OCbuffer@xp
  *   'code4': base4_code
+ *
+ * Return an R list with the following elements:
+ *   - means: atomic vector of 4 doubles
+ *   - table1, table2, table3, table4: atomic vectors of (p_length + 1) integers
+ *
  ****************************************************************************/
 
 SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
@@ -143,7 +159,7 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 {
 	int subj_offset, subj_length, pat_length, c1, c2, c3, c4;
 	const Rbyte *subj;
-	SEXP buf1, buf2, buf3, ans;
+	SEXP buf1, buf2, buf3, ans, ans_names, ans_elt;
 
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
@@ -156,13 +172,49 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	c3 = INTEGER(code3)[0];
 	buf3 = R_ExternalPtrTag(buf3_xp);
 	c4 = INTEGER(code4)[0];
-	
-	PROTECT(ans = NEW_NUMERIC(4));
+
+	PROTECT(ans = NEW_LIST(5));
+	/* set the names */
+	PROTECT(ans_names = NEW_CHARACTER(5));
+	SET_STRING_ELT(ans_names, 0, mkChar("means"));
+	SET_STRING_ELT(ans_names, 1, mkChar("table1"));
+	SET_STRING_ELT(ans_names, 2, mkChar("table2"));
+	SET_STRING_ELT(ans_names, 3, mkChar("table3"));
+	SET_STRING_ELT(ans_names, 4, mkChar("table4"));
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(1);
+	/* set the "means" element */
+	PROTECT(ans_elt = NEW_NUMERIC(4));
+	SET_ELEMENT(ans, 0, ans_elt);
+	UNPROTECT(1);
+	/* set the "table1" element */
+	PROTECT(ans_elt = NEW_INTEGER(pat_length + 1));
+	SET_ELEMENT(ans, 1, ans_elt);
+	UNPROTECT(1);
+	/* set the "table2" element */
+	PROTECT(ans_elt = NEW_INTEGER(pat_length + 1));
+	SET_ELEMENT(ans, 2, ans_elt);
+	UNPROTECT(1);
+	/* set the "table3" element */
+	PROTECT(ans_elt = NEW_INTEGER(pat_length + 1));
+	SET_ELEMENT(ans, 3, ans_elt);
+	UNPROTECT(1);
+	/* set the "table4" element */
+	PROTECT(ans_elt = NEW_INTEGER(pat_length + 1));
+	SET_ELEMENT(ans, 4, ans_elt);
+	UNPROTECT(1);
+
 	BOC_preprocess((char *) subj, subj_length, pat_length,
 			(char) c1, (char *) RAW(buf1),
 			(char) c2, (char *) RAW(buf2),
 			(char) c3, (char *) RAW(buf3),
-			(char) c4, REAL(ans));
+			(char) c4,
+			REAL(VECTOR_ELT(ans, 0)),
+			INTEGER(VECTOR_ELT(ans, 1)),
+			INTEGER(VECTOR_ELT(ans, 2)),
+			INTEGER(VECTOR_ELT(ans, 3)),
+			INTEGER(VECTOR_ELT(ans, 4)));
+
 	UNPROTECT(1);
 	return ans;
 }
@@ -185,7 +237,7 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
  *   'code3': boc_subject@base3_code
  *   'buf3_xp': boc_subject@base3_OCbuffer@xp
  *   'code4': boc_subject@base4_code
- *   'means': boc_subject@OCmeans
+ *   'means': boc_subject@stats$means
  *   'count_only': single logical
  * 
  ****************************************************************************/
