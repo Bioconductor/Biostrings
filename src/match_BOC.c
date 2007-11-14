@@ -140,7 +140,54 @@ static void order3(int *order, const int *x)
 	}
 	return;
 }
-		
+
+static int switch_oc(int i, int c1_oc, int c2_oc, int c3_oc)
+{
+	switch (i) {
+		case 0: return c1_oc;
+		case 1: return c2_oc;
+		case 2: return c3_oc;
+	}
+}
+
+static const char *switch_buf(int i, const char *buf1, const char *buf2, const char *buf3)
+{
+	switch (i) {
+		case 0: return buf1;
+		case 1: return buf2;
+		case 2: return buf3;
+	}
+}
+
+static void order_bases(char *p_ocX, char *p_ocY, char *p_ocZ,
+		const char **p_bufX, const char **p_bufY, const char **p_bufZ,
+		int c1_oc, int c2_oc, int c3_oc,
+		const char *buf1, const char *buf2, const char *buf3,
+		int *nmers)
+{
+	int order[3];
+
+	order3(order, nmers);
+	// To turn off reordering, uncomment the following 3 lines
+	/*
+	order[0] = 0;
+	order[1] = 1;
+	order[2] = 2;
+	*/
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] order_bases: order[0]=%d order[1]=%d order[2]=%d\n",
+			order[0], order[1], order[2]);
+#endif
+	*p_ocX = (char) switch_oc(order[0], c1_oc, c2_oc, c3_oc);
+	*p_ocY = (char) switch_oc(order[1], c1_oc, c2_oc, c3_oc);
+	*p_ocZ = (char) switch_oc(order[2], c1_oc, c2_oc, c3_oc);
+	*p_bufX = switch_buf(order[0], buf1, buf2, buf3);
+	*p_bufY = switch_buf(order[1], buf1, buf2, buf3);
+	*p_bufZ = switch_buf(order[2], buf1, buf2, buf3);
+	return;
+}
+
 static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		char c1, const char *buf1,
 		char c2, const char *buf2,
@@ -150,60 +197,38 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		const int *table1, const int *table2, const int *table3, const int *table4,
 		int is_count_only)
 {
-	int count = 0, n1, n2, i, oc[3], nmers[3], order[3];
-	char c, reordered_oc[3];
-	const char *reordered_buf[3];
+	int count = 0, n1, n1max, n2, c1_oc, c2_oc, c3_oc, nmers[3];
+	char c, ocX, ocY, ocZ;
+	const char *bufX, *bufY, *bufZ;
 #ifdef DEBUG_BIOSTRINGS
 	int count_memcmp = 0;
 #endif
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] subject: mean1=%.2f mean2=%.2f mean3=%.2f\n", means[0], means[1], means[2]);
-#endif
-	for (i = 0; i < 3; i++)
-		oc[i] = 0;
+	c1_oc = c2_oc = c3_oc = 0;
 	for (n2 = 0; n2 < nP; n2++) {
 		c = P[n2];
-		if (c == c1) oc[0]++;
-		else if (c == c2) oc[1]++;
-		else if (c == c3) oc[2]++;
+		if (c == c1) c1_oc++;
+		else if (c == c2) c2_oc++;
+		else if (c == c3) c3_oc++;
 		else if (c != c4)
 			error("'pattern' contains non-base DNA letters");
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] pattern: oc[0]=%d oc[1]=%d oc[2]=%d\n", oc[0], oc[1], oc[2]);
+		Rprintf("[DEBUG] pattern: c1_oc=%d c2_oc=%d c3_oc=%d\n", c1_oc, c2_oc, c3_oc);
 #endif
-	// [REORDERING] To turn off reordering, uncomment the following 3 lines
-	/*
-	order[0] = 0;
-	order[1] = 1;
-	order[2] = 2;
-	*/
-	// [REORDERING] and comment the following 4 lines
-	nmers[0] = table1[oc[0]];
-	nmers[1] = table2[oc[1]];
-	nmers[2] = table3[oc[2]];
-	order3(order, nmers);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG]          order[0]=%d order[1]=%d order[2]=%d\n", order[0], order[1], order[2]);
-#endif
-	for (i = 0; i < 3; i++) {
-		reordered_oc[i] = oc[order[i]];
-		switch (order[i]) {
-			case 0: reordered_buf[i] = buf1; break;
-			case 1: reordered_buf[i] = buf2; break;
-			case 2: reordered_buf[i] = buf3; break;
-		}
-	}
-	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++) {
-		if (reordered_oc[0] != *(reordered_buf[0]++))
+	nmers[0] = table1[c1_oc];
+	nmers[1] = table2[c2_oc];
+	nmers[2] = table3[c3_oc];
+	order_bases(&ocX, &ocY, &ocZ, &bufX, &bufY, &bufZ,
+			c1_oc, c2_oc, c3_oc, buf1, buf2, buf3, nmers);
+	n1max = nS - nP;
+	for (n1 = 0; n1 <= n1max; n1++, bufX++, bufY++, bufZ++) {
+		if (ocX != *bufX)
 			continue;
-		if (reordered_oc[1] != reordered_buf[1][n1])
+		if (ocY != *bufY)
 			continue;
-		if (reordered_oc[2] != reordered_buf[2][n1])
+		if (ocZ != *bufZ)
 			continue;
 #ifdef DEBUG_BIOSTRINGS
 		count_memcmp++;
