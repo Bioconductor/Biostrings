@@ -104,6 +104,25 @@ plotBOC <- function(x, main)
     legend(x=x@pattern_length, y=YMAX, legend=LEGEND, col=COLORS, lty="solid", lwd=3, xjust=1.0, yjust=1.0)
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "matchPattern" method for BOC_SubjectString objects.
+###
+### Typical use:
+###   library(BSgenome.Hsapiens.UCSC.hg18)
+###   chr1 <- Hsapiens$chr1
+###   chr1boc <- new("BOC_SubjectString", chr1, 36, c("A", "C", "G"))
+###   matchPattern(chr1[1:36], chr1boc)
+###
+### Performance (kind of disappointing so far):
+###   for (i in 41:60) matchPattern(chr1[(1000000*i+1):(1000000*i+36)], chr1boc)
+###   #--> takes about 13 seconds on lamb1
+###   for (i in 41:60) matchPattern(chr1[(1000000*i+1):(1000000*i+36)], chr1, algo="boyer-moore")
+###   #--> takes about 7.6 seconds on lamb1
+###   for (i in 41:60) matchPattern(chr1[(1000000*i+1):(1000000*i+36)], chr1, algo="naive-exact")
+###   #--> takes about 111 seconds on lamb1
+###   
+
 ### Must return an integer vector.
 .match.BOC.exact <- function(pattern, boc_subject, count.only)
 {

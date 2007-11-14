@@ -153,8 +153,14 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 	int count = 0, n1, n2, i, oc[3], nmers[3], order[3];
 	char c, reordered_oc[3];
 	const char *reordered_buf[3];
+#ifdef DEBUG_BIOSTRINGS
+	int count_memcmp = 0;
+#endif
 
-	Rprintf("subject: mean1=%.2f mean2=%.2f mean3=%.2f\n", means[0], means[1], means[2]);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] subject: mean1=%.2f mean2=%.2f mean3=%.2f\n", means[0], means[1], means[2]);
+#endif
 	for (i = 0; i < 3; i++)
 		oc[i] = 0;
 	for (n2 = 0; n2 < nP; n2++) {
@@ -165,12 +171,25 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		else if (c != c4)
 			error("'pattern' contains non-base DNA letters");
 	}
-	Rprintf("pattern: oc[0]=%d oc[1]=%d oc[2]=%d\n", oc[0], oc[1], oc[2]);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] pattern: oc[0]=%d oc[1]=%d oc[2]=%d\n", oc[0], oc[1], oc[2]);
+#endif
+	// [REORDERING] To turn off reordering, uncomment the following 3 lines
+	/*
+	order[0] = 0;
+	order[1] = 1;
+	order[2] = 2;
+	*/
+	// [REORDERING] and comment the following 4 lines
 	nmers[0] = table1[oc[0]];
 	nmers[1] = table2[oc[1]];
 	nmers[2] = table3[oc[2]];
 	order3(order, nmers);
-	Rprintf("         order[0]=%d order[1]=%d order[2]=%d\n", order[0], order[1], order[2]);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG]          order[0]=%d order[1]=%d order[2]=%d\n", order[0], order[1], order[2]);
+#endif
 	for (i = 0; i < 3; i++) {
 		reordered_oc[i] = oc[order[i]];
 		switch (order[i]) {
@@ -186,12 +205,19 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 			continue;
 		if (reordered_oc[2] != reordered_buf[2][n1])
 			continue;
+#ifdef DEBUG_BIOSTRINGS
+		count_memcmp++;
+#endif
 		if (memcmp(P, S + n1, nP) != 0)
 			continue;
 		if (!is_count_only)
 			_Biostrings_report_match(n1, 0);
 		count++;
 	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] count_memcmp=%d\n", count_memcmp);
+#endif
 	return count;
 }
 
