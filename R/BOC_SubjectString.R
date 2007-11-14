@@ -113,7 +113,7 @@ plotBOC <- function(x, main)
           boc_subject@base1_code, boc_subject@base1_OCbuffer@xp,
           boc_subject@base2_code, boc_subject@base2_OCbuffer@xp,
           boc_subject@base3_code, boc_subject@base3_OCbuffer@xp,
-          boc_subject@base4_code, boc_subject@stats$means, count.only,
+          boc_subject@base4_code, boc_subject@stats, count.only,
           PACKAGE="Biostrings")
 }
 

@@ -38,26 +38,27 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 		char c2, char *buf2,
 		char c3, char *buf3,
 		char c4,
-		double *means, int *table1, int *table2, int *table3, int *table4)
+		double *means,
+		int *table1, int *table2, int *table3, int *table4)
 {
-	int cc1, cc2, cc3, n1, n2, last_nonbase_pos,
+	int c1_oc, c2_oc, c3_oc, n1, n2, last_nonbase_pos,
 	    total, i, partsum1, partsum2, partsum3;
 	char c;
 
 	/* Rprintf("nS=%d nP=%d c1=%d c2=%d c3=%d c4=%d\n", nS, nP, c1, c2, c3, c4); */
 	for (i = 0; i <= nP; i++)
 		table1[i] = table2[i] = table3[i] = table4[i] = 0;
-	cc1 = cc2 = cc3 = total = i = partsum1 = partsum2 = partsum3 = 0;
+	c1_oc = c2_oc = c3_oc = total = i = partsum1 = partsum2 = partsum3 = 0;
 	last_nonbase_pos = -1;
 	means[0] = means[1] = means[2] = 0.0;
 	for (n1 = -nP + 1, n2 = 0; n2 < nS; n1++, n2++) {
 		c = S[n2];
-		if (c == c1) cc1++;
-		else if (c == c2) cc2++;
-		else if (c == c3) cc3++;
+		if (c == c1) c1_oc++;
+		else if (c == c2) c2_oc++;
+		else if (c == c3) c3_oc++;
 		else if (c != c4) {
 			last_nonbase_pos = n2;
-			cc1 = cc2 = cc3 = 0;
+			c1_oc = c2_oc = c3_oc = 0;
 		}
 		if (n1 < 0)
 			continue;
@@ -67,18 +68,18 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 		}
 		if (n1 >= 1) {
 			c = S[n1 - 1];
-			if (c == c1) cc1--;
-			else if (c == c2) cc2--;
-			else if (c == c3) cc3--;
+			if (c == c1) c1_oc--;
+			else if (c == c2) c2_oc--;
+			else if (c == c3) c3_oc--;
 		}
 		total++;
-		partsum1 += buf1[n1] = cc1;
-		partsum2 += buf2[n1] = cc2;
-		partsum3 += buf3[n1] = cc3;
-		table1[cc1]++;
-		table2[cc2]++;
-		table3[cc3]++;
-		table4[nP - cc1 - cc2 - cc3]++;
+		partsum1 += buf1[n1] = c1_oc;
+		partsum2 += buf2[n1] = c2_oc;
+		partsum3 += buf3[n1] = c3_oc;
+		table1[c1_oc]++;
+		table2[c2_oc]++;
+		table3[c3_oc]++;
+		table4[nP - c1_oc - c2_oc - c3_oc]++;
 		if (i++ < 5000000)
 			continue;
 		i = 0;
@@ -103,27 +104,94 @@ static void BOC_preprocess(const char *S, int nS, int nP,
  * ======================================================
  */
 
-static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
-		char c1, char *buf1,
-		char c2, char *buf2,
-		char c3, char *buf3,
-		char c4, double *means, int is_count_only)
+/* 'order' and 'x' must be int arrays of length 3 */
+static void order3(int *order, const int *x)
 {
-	int count = 0, n1, n2, cc1, cc2, cc3;
-	char c;
+	if (x[1] < x[0]) {
+		if (x[2] < x[0]) {
+			order[2] = 0;
+			if (x[1] < x[2]) {
+				order[0] = 1;
+				order[1] = 2;
+			} else {
+				order[0] = 2;
+				order[1] = 1;
+			}
+		} else {
+			order[0] = 1;
+			order[1] = 0;
+			order[2] = 2;
+		}
+	} else {
+		if (x[2] < x[1]) {
+			order[2] = 1;
+			if (x[0] < x[2]) {
+				order[0] = 0;
+				order[1] = 2;
+			} else {
+				order[0] = 2;
+				order[1] = 0;
+			}
+		} else {
+			order[0] = 0;
+			order[1] = 1;
+			order[2] = 2;
+		}
+	}
+	return;
+}
+		
+static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
+		char c1, const char *buf1,
+		char c2, const char *buf2,
+		char c3, const char *buf3,
+		char c4,
+		const double *means,
+		const int *table1, const int *table2, const int *table3, const int *table4,
+		int is_count_only)
+{
+	int count = 0, n1, n2, i, oc[3], nmers[3], order[3];
+	char c, reordered_oc[3];
+	const char *reordered_buf[3];
 
-	cc1 = cc2 = cc3 = 0;
+	Rprintf("subject: mean1=%.2f mean2=%.2f mean3=%.2f\n", means[0], means[1], means[2]);
+	for (i = 0; i < 3; i++)
+		oc[i] = 0;
 	for (n2 = 0; n2 < nP; n2++) {
 		c = P[n2];
-		if (c == c1) cc1++;
-		else if (c == c2) cc2++;
-		else if (c == c3) cc3++;
+		if (c == c1) oc[0]++;
+		else if (c == c2) oc[1]++;
+		else if (c == c3) oc[2]++;
 		else if (c != c4)
 			error("'pattern' contains non-base DNA letters");
 	}
-	Rprintf("pattern: cc1=%d cc2=%d cc3=%d\n", cc1, cc2, cc3);
-	Rprintf("subject: mean1=%.2g mean2=%.2g mean3=%.2g\n", means[0], means[1], means[2]);
-
+	Rprintf("pattern: oc[0]=%d oc[1]=%d oc[2]=%d\n", oc[0], oc[1], oc[2]);
+	nmers[0] = table1[oc[0]];
+	nmers[1] = table2[oc[1]];
+	nmers[2] = table3[oc[2]];
+	order3(order, nmers);
+	Rprintf("         order[0]=%d order[1]=%d order[2]=%d\n", order[0], order[1], order[2]);
+	for (i = 0; i < 3; i++) {
+		reordered_oc[i] = oc[order[i]];
+		switch (order[i]) {
+			case 0: reordered_buf[i] = buf1; break;
+			case 1: reordered_buf[i] = buf2; break;
+			case 2: reordered_buf[i] = buf3; break;
+		}
+	}
+	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++) {
+		if (reordered_oc[0] != *(reordered_buf[0]++))
+			continue;
+		if (reordered_oc[1] != reordered_buf[1][n1])
+			continue;
+		if (reordered_oc[2] != reordered_buf[2][n1])
+			continue;
+		if (memcmp(P, S + n1, nP) != 0)
+			continue;
+		if (!is_count_only)
+			_Biostrings_report_match(n1, 0);
+		count++;
+	}
 	return count;
 }
 
@@ -237,7 +305,7 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
  *   'code3': boc_subject@base3_code
  *   'buf3_xp': boc_subject@base3_OCbuffer@xp
  *   'code4': boc_subject@base4_code
- *   'means': boc_subject@stats$means
+ *   'stats': boc_subject@stats
  *   'count_only': single logical
  * 
  ****************************************************************************/
@@ -247,7 +315,7 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP code1, SEXP buf1_xp,
 		SEXP code2, SEXP buf2_xp,
 		SEXP code3, SEXP buf3_xp,
-		SEXP code4, SEXP means, SEXP count_only)
+		SEXP code4, SEXP stats, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    c1, c2, c3, c4, is_count_only, count;
@@ -277,14 +345,20 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			(char) c1, (char *) RAW(buf1),
 			(char) c2, (char *) RAW(buf2),
 			(char) c3, (char *) RAW(buf3),
-			(char) c4, REAL(means), is_count_only);
+			(char) c4,
+			REAL(VECTOR_ELT(stats, 0)),
+			INTEGER(VECTOR_ELT(stats, 1)),
+			INTEGER(VECTOR_ELT(stats, 2)),
+			INTEGER(VECTOR_ELT(stats, 3)),
+			INTEGER(VECTOR_ELT(stats, 4)),
+			is_count_only);
 
 	if (!is_count_only) {
-		PROTECT(ans = allocVector(INTSXP, count));
+		PROTECT(ans = NEW_INTEGER(count));
 		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
 					sizeof(int) * count);
         } else {
-		PROTECT(ans = allocVector(INTSXP, 1));
+		PROTECT(ans = NEW_INTEGER(1));
 		INTEGER(ans)[0] = count;
 	}
 	UNPROTECT(1);
