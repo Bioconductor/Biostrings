@@ -242,7 +242,7 @@ cmp_BOC2vsBoyerMoore_exactmatching <- function(pattern_length)
 ###    212  212  239  242  243  231 
 ###
 
-scan123 <- function(pattern, subject1, subject2, subject3)
+scan123 <- function(pattern, subject1, subject2, subject3, min.sum=-1)
 {
     rc_pattern <- reverseComplement(pattern)
     cp1p <- countPattern(pattern, subject1)
@@ -251,6 +251,9 @@ scan123 <- function(pattern, subject1, subject2, subject3)
     cp2m <- countPattern(rc_pattern, subject2)
     cp3p <- countPattern(pattern, subject3)
     cp3m <- countPattern(rc_pattern, subject3)
-    c('cp1p'=cp1p, 'cp1m'=cp1m, 'cp2p'=cp2p, 'cp2m'=cp2m, 'cp3p'=cp3p, 'cp3m'=cp3m)
+    ans <- c('cp1p'=cp1p, 'cp1m'=cp1m, 'cp2p'=cp2p, 'cp2m'=cp2m, 'cp3p'=cp3p, 'cp3m'=cp3m)
+    if (min.sum >= 0 && sum(ans) >= min.sum)
+        cat(paste(ans, collapse=" "), "\n", sep="")
+    ans
 }
 
