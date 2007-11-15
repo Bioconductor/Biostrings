@@ -2,7 +2,7 @@
 ### Preprocessed Subject Strings of type BOC
 ### ------------------------------------------------------------
 
-### Now a real one!
+
 ### Note that 'base1_code', 'base2_code' and 'base3_code' must be distinct
 setClass("BOC_SubjectString",
     representation(
@@ -112,7 +112,7 @@ plotBOC <- function(x, main)
 ###
 ### Performance (kind of disappointing so far):
 ###   for (i in 41:60) matchPattern(chr1[1:36+1000000*i], chr1boc)
-###   #--> takes about 13 seconds on lamb1
+###   #--> takes about 11 seconds on lamb1
 ###   for (i in 41:60) matchPattern(chr1[1:36+1000000*i], chr1, algo="boyer-moore")
 ###   #--> takes about 7.6 seconds on lamb1
 ###   for (i in 41:60) matchPattern(chr1[1:36+1000000*i], chr1, algo="naive-exact")

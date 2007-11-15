@@ -26,17 +26,21 @@ SEXP match_BOC2_debug()
 	return R_NilValue;
 }
 
+static int make_32bit_signature(int c1_oc, int c2_oc, int c3_oc, char pre4)
+{
+	int signature = 0;
 
-/****************************************************************************
- * Initialisation of the 3 OCbuffers ("occurence count buffers")
- * =============================================================
- *   - nP is assumed to be >= 1 and <= min(254, nS).
- *   - The 3 buffers are assumed to be long enough for the preprocessing i.e. to
- *     have a length >= nS - nP + 1.
- *   - The 4 tables are of length nP + 1.
- */
+	signature += c1_oc;
+	signature <<= 8;
+	signature += c2_oc;
+	signature <<= 8;
+	signature += c3_oc;
+	signature <<= 8;
+	signature += (unsigned char) pre4;
+	return signature;
+}
 
-static char get_pre4(const char *s, char c1, char c2, char c3, char c4)
+static char make_pre4(const char *s, char c1, char c2, char c3, char c4)
 {
 	char pre4, c, twobit_code;
 	int i;
@@ -53,15 +57,24 @@ static char get_pre4(const char *s, char c1, char c2, char c3, char c4)
 	return pre4;
 }
 
+
+/****************************************************************************
+ * Initialization of the BOC2_SubjectString object
+ * ===============================================
+ * - nP is assumed to be >= 1 and <= min(254, nS).
+ * - The buffer is assumed to be long enough for the preprocessing i.e. to
+ *   have a length >= nS - nP + 1.
+ * - The 4 tables are of length nP + 1.
+ */
+
 static void BOC2_preprocess(const char *S, int nS, int nP,
 		char c1, char c2, char c3, char c4,
-		char *buf1, char *buf2, char *buf3, char *pre4buf,
-		double *means,
+		int *buf, double *means,
 		int *table1, int *table2, int *table3, int *table4)
 {
 	int c1_oc, c2_oc, c3_oc, n1, n2, last_nonbase_pos,
 	    total, i, partsum1, partsum2, partsum3;
-	char c;
+	char c, pre4;
 
 	/* Rprintf("nS=%d nP=%d c1=%d c2=%d c3=%d c4=%d\n", nS, nP, c1, c2, c3, c4); */
 	for (i = 0; i <= nP; i++)
@@ -81,7 +94,7 @@ static void BOC2_preprocess(const char *S, int nS, int nP,
 		if (n1 < 0)
 			continue;
 		if (n1 <= last_nonbase_pos) {
-			buf1[n1] = buf2[n1] = buf3[n1] = 255;
+			buf[n1] = make_32bit_signature(255, 255, 255, 0);
 			continue;
 		}
 		if (n1 >= 1) {
@@ -91,10 +104,11 @@ static void BOC2_preprocess(const char *S, int nS, int nP,
 			else if (c == c3) c3_oc--;
 		}
 		total++;
-		partsum1 += buf1[n1] = c1_oc;
-		partsum2 += buf2[n1] = c2_oc;
-		partsum3 += buf3[n1] = c3_oc;
-		pre4buf[n1] = get_pre4(S + n1, c1, c2, c3, c4);
+		pre4 =  make_pre4(S + n1, c1, c2, c3, c4);
+		buf[n1] = make_32bit_signature(c1_oc, c2_oc, c3_oc, pre4);
+		partsum1 += c1_oc;
+		partsum2 += c2_oc;
+		partsum3 += c3_oc;
 		table1[c1_oc]++;
 		table2[c2_oc]++;
 		table3[c3_oc]++;
@@ -160,55 +174,6 @@ static void order3(int *order, const int *x)
 	return;
 }
 
-static int switch_oc(int i, int c1_oc, int c2_oc, int c3_oc, int c4_oc)
-{
-	switch (i) {
-		case 0: return c1_oc;
-		case 1: return c2_oc;
-		case 2: return c3_oc;
-	}
-	return c4_oc;
-}
-
-static const char *switch_buf(int i, const char *buf1, const char *buf2, const char *buf3, const char *buf4)
-{
-	switch (i) {
-		case 0: return buf1;
-		case 1: return buf2;
-		case 2: return buf3;
-	}
-	return buf4;
-}
-
-static void order_bases(char *p_ocX, char *p_ocY, char *p_ocZ,
-		const char **p_bufX, const char **p_bufY, const char **p_bufZ,
-		int c1_oc, int c2_oc, int c3_oc,
-		const char *buf1, const char *buf2, const char *buf3,
-		int *nmers)
-{
-	int order[3];
-
-	order3(order, nmers);
-	// To turn off reordering, uncomment the following 3 lines
-	/*
-	order[0] = 0;
-	order[1] = 1;
-	order[2] = 2;
-	*/
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] order_bases: order[0]=%d order[1]=%d order[2]=%d\n",
-			order[0], order[1], order[2]);
-#endif
-	*p_ocX = (char) switch_oc(order[0], c1_oc, c2_oc, c3_oc, -1);
-	*p_ocY = (char) switch_oc(order[1], c1_oc, c2_oc, c3_oc, -1);
-	*p_ocZ = (char) switch_oc(order[2], c1_oc, c2_oc, c3_oc, -1);
-	*p_bufX = switch_buf(order[0], buf1, buf2, buf3, NULL);
-	*p_bufY = switch_buf(order[1], buf1, buf2, buf3, NULL);
-	*p_bufZ = switch_buf(order[2], buf1, buf2, buf3, NULL);
-	return;
-}
-
 static int split4_offsets(char codes[4], int *offsets[4], int noffsets[4], const char *P, int nP)
 {
 	int tmp_codes[4], *tmp_offsets[4], tmp_noffsets[4], order[4], i, offset, ii, j;
@@ -262,15 +227,14 @@ static int split4_offsets(char codes[4], int *offsets[4], int noffsets[4], const
 
 static int BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 		char c1, char c2, char c3, char c4,
-		const char *buf1, const char *buf2, const char *buf3, const char *pre4buf,
-		const double *means,
+		const int *buf, const double *means,
 		const int *table1, const int *table2, const int *table3, const int *table4,
 		int is_count_only)
 {
-	int count = 0, n1, n1max, n2, c1_oc, c2_oc, c3_oc, nmers[3],
+	int count = 0, n1, n1max, n2, c1_oc, c2_oc, c3_oc, Psignature,
 	    nPsuf4, *Psuf4_offsets[4], Psuf4_noffsets[4], i, j, *offsets, noffsets;
-	char c, ocX, ocY, ocZ, Ppre4, codes[4];
-	const char *bufX, *bufY, *bufZ, *Psuf4, *Ssuf4;
+	char c, Ppre4, codes[4];
+	const char *Psuf4, *Ssuf4;
 #ifdef DEBUG_BIOSTRINGS
 	int count_preapprovals = 0;
 #endif
@@ -284,16 +248,13 @@ static int BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 		else if (c != c4)
 			error("'pattern' contains non-base DNA letters");
 	}
+	Ppre4 = make_pre4(P, c1, c2, c3, c4);
+	Psignature = make_32bit_signature(c1_oc, c2_oc, c3_oc, Ppre4);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] pattern: c1_oc=%d c2_oc=%d c3_oc=%d\n", c1_oc, c2_oc, c3_oc);
+		Rprintf("[DEBUG] pattern: c1_oc=%d c2_oc=%d c3_oc=%d Ppre4=%d\n",
+			c1_oc, c2_oc, c3_oc, Ppre4);
 #endif
-	nmers[0] = table1[c1_oc];
-	nmers[1] = table2[c2_oc];
-	nmers[2] = table3[c3_oc];
-	order_bases(&ocX, &ocY, &ocZ, &bufX, &bufY, &bufZ,
-			c1_oc, c2_oc, c3_oc, buf1, buf2, buf3, nmers);
-	Ppre4 = get_pre4(P, c1, c2, c3, c4);
 	Psuf4 = P + 4;
 	nPsuf4 = nP - 4;
 	codes[0] = c1;
@@ -304,14 +265,8 @@ static int BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 		Psuf4_offsets[i] = Salloc((long) nP, int);
 	split4_offsets(codes, Psuf4_offsets, Psuf4_noffsets, Psuf4, nPsuf4);
 	n1max = nS - nP;
-	for (n1 = 0, Ssuf4 = S + 4; n1 <= n1max; n1++, Ssuf4++, pre4buf++, bufX++, bufY++, bufZ++) {
-		if (Ppre4 != *pre4buf)
-			continue;
-		if (ocX != *bufX)
-			continue;
-		if (ocY != *bufY)
-			continue;
-		if (ocZ != *bufZ)
+	for (n1 = 0, Ssuf4 = S + 4; n1 <= n1max; n1++, Ssuf4++, buf++) {
+		if (Psignature != *buf)
 			continue;
 #ifdef DEBUG_BIOSTRINGS
 		count_preapprovals++;
@@ -355,10 +310,7 @@ static int BOC2_exact_search(const char *P, int nP, const char *S, int nS,
  *   'code2': base2_code
  *   'code3': base3_code
  *   'code4': base4_code
- *   'buf1_xp': base1_OCbuffer@xp
- *   'buf2_xp': base2_OCbuffer@xp
- *   'buf3_xp': base3_OCbuffer@xp
- *   'pre4buf_xp': pre4buffer@xp
+ *   'buf_xp': buffer@xp
  *
  * Return an R list with the following elements:
  *   - means: atomic vector of 4 doubles
@@ -369,11 +321,11 @@ static int BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 SEXP match_BOC2_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP p_length,
 		SEXP code1, SEXP code2, SEXP code3, SEXP code4,
-		SEXP buf1_xp, SEXP buf2_xp, SEXP buf3_xp, SEXP pre4buf_xp)
+		SEXP buf_xp)
 {
 	int subj_offset, subj_length, pat_length, c1, c2, c3, c4;
 	const Rbyte *subj;
-	SEXP buf1, buf2, buf3, pre4buf, ans, ans_names, ans_elt;
+	SEXP buf, ans, ans_names, ans_elt;
 
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
@@ -383,10 +335,7 @@ SEXP match_BOC2_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	c2 = INTEGER(code2)[0];
 	c3 = INTEGER(code3)[0];
 	c4 = INTEGER(code4)[0];
-	buf1 = R_ExternalPtrTag(buf1_xp);
-	buf2 = R_ExternalPtrTag(buf2_xp);
-	buf3 = R_ExternalPtrTag(buf3_xp);
-	pre4buf = R_ExternalPtrTag(pre4buf_xp);
+	buf = R_ExternalPtrTag(buf_xp);
 
 	PROTECT(ans = NEW_LIST(5));
 	/* set the names */
@@ -421,7 +370,7 @@ SEXP match_BOC2_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 
 	BOC2_preprocess((char *) subj, subj_length, pat_length,
 			(char) c1, (char) c2, (char) c3, (char) c4,
-			(char *) RAW(buf1), (char *) RAW(buf2), (char *) RAW(buf3), (char *) RAW(pre4buf),
+			INTEGER(buf),
 			REAL(VECTOR_ELT(ans, 0)),
 			INTEGER(VECTOR_ELT(ans, 1)),
 			INTEGER(VECTOR_ELT(ans, 2)),
@@ -447,10 +396,7 @@ SEXP match_BOC2_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
  *   'code2': boc_subject@base2_code
  *   'code3': boc_subject@base3_code
  *   'code4': boc_subject@base4_code
- *   'buf1_xp': boc_subject@base1_OCbuffer@xp
- *   'buf2_xp': boc_subject@base2_OCbuffer@xp
- *   'buf3_xp': boc_subject@base3_OCbuffer@xp
- *   'pre4buf_xp': boc_subject@pre4buffer@xp
+ *   'buf_xp': boc_subject@buffer@xp
  *   'stats': boc_subject@stats
  *   'count_only': single logical
  * 
@@ -459,13 +405,13 @@ SEXP match_BOC2_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP code1, SEXP code2, SEXP code3, SEXP code4,
-		SEXP buf1_xp, SEXP buf2_xp, SEXP buf3_xp, SEXP pre4buf_xp,
+		SEXP buf_xp,
 		SEXP stats, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    c1, c2, c3, c4, is_count_only, count;
 	const Rbyte *pat, *subj;
-	SEXP buf1, buf2, buf3, pre4buf, ans;
+	SEXP buf, ans;
 
 	pat_offset = INTEGER(p_offset)[0];
 	pat_length = INTEGER(p_length)[0];
@@ -477,10 +423,7 @@ SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	c2 = INTEGER(code2)[0];
 	c3 = INTEGER(code3)[0];
 	c4 = INTEGER(code4)[0];
-	buf1 = R_ExternalPtrTag(buf1_xp);
-	buf2 = R_ExternalPtrTag(buf2_xp);
-	buf3 = R_ExternalPtrTag(buf3_xp);
-	pre4buf = R_ExternalPtrTag(pre4buf_xp);
+	buf = R_ExternalPtrTag(buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
@@ -489,7 +432,7 @@ SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			(char *) pat, pat_length,
 			(char *) subj, subj_length,
 			(char) c1, (char) c2, (char) c3, (char) c4,
-			(char *) RAW(buf1), (char *) RAW(buf2), (char *) RAW(buf3), (char *) RAW(pre4buf),
+			INTEGER(buf),
 			REAL(VECTOR_ELT(stats, 0)),
 			INTEGER(VECTOR_ELT(stats, 1)),
 			INTEGER(VECTOR_ELT(stats, 2)),

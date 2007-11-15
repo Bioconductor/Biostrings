@@ -2,7 +2,7 @@
 ### Preprocessed Subject Strings of type BOC2
 ### -------------------------------------------------------------------------
 
-### Now a real one!
+
 ### Note that 'base1_code', 'base2_code' and 'base3_code' must be distinct
 setClass("BOC2_SubjectString",
     representation(
@@ -12,10 +12,7 @@ setClass("BOC2_SubjectString",
         base2_code="integer",
         base3_code="integer",
         base4_code="integer",
-        base1_OCbuffer="XRaw",      # all buffers must be of length nchar(subject) - pattern_length + 1
-        base2_OCbuffer="XRaw",
-        base3_OCbuffer="XRaw",
-	pre4buffer="XRaw",
+        buffer="XInteger",          # must be of length nchar(subject) - pattern_length + 1
         ## The "stats" slot is a named list with the following elements:
         ##   means: vector of 4 doubles
         ##   table1, table2, table3, table4: vectors of (pattern_length + 1) integers
@@ -47,24 +44,18 @@ setMethod("initialize", "BOC2_SubjectString",
         code2 <- DNA_BASE_CODES[base_letters[2]]
         code3 <- DNA_BASE_CODES[base_letters[3]]
         code4 <- DNA_BASE_CODES[setdiff(names(DNA_BASE_CODES), base_letters)]
-        buf1 <- XRaw(buf_length)
-        buf2 <- XRaw(buf_length)
-        buf3 <- XRaw(buf_length)
-        pre4buf <- XRaw(buf_length)
+        buf <- XInteger(buf_length)
         stats <- .Call("match_BOC2_preprocess",
               subject@data@xp, subject@offset, subject@length,
               pattern_length,
               code1, code2, code3, code4,
-              buf1@xp, buf2@xp, buf3@xp, pre4buf@xp,
+              buf@xp,
               PACKAGE="Biostrings")
         .Object@base1_code <- code1
         .Object@base2_code <- code2
         .Object@base3_code <- code3
         .Object@base4_code <- code4
-        .Object@base1_OCbuffer <- buf1
-        .Object@base2_OCbuffer <- buf2
-        .Object@base3_OCbuffer <- buf3
-        .Object@pre4buffer <- pre4buf
+        .Object@buffer <- buf
         .Object@stats <- stats
         .Object
     }
@@ -110,13 +101,11 @@ plotBOC2 <- function(x, main)
 ###   chr1boc <- new("BOC2_SubjectString", chr1, 36, c("A", "C", "G"))
 ###   matchPattern(chr1[1:36], chr1boc)
 ###
-### Performance (kind of disappointing so far):
-###   for (i in 41:60) matchPattern(chr1[1:36+1000000*i], chr1boc)
-###   #--> takes about 13 seconds on lamb1
-###   for (i in 41:60) matchPattern(chr1[1:36+1000000*i], chr1, algo="boyer-moore")
-###   #--> takes about 7.6 seconds on lamb1
-###   for (i in 41:60) matchPattern(chr1[1:36+1000000*i], chr1, algo="naive-exact")
-###   #--> takes about 111 seconds on lamb1
+### Performance (a little bit better than with the first BOC algo):
+###   for (i in 41:80) matchPattern(chr1[1:36+1000000*i], chr1boc))
+###   #--> takes 12.81 seconds on lamb1
+###   for (i in 41:80) matchPattern(chr1[1:36+1000000*i], chr1, algo="boyer-moore")
+###   #--> takes 14.77 seconds on lamb1
 ###   
 
 debug_BOC2 <- function()
@@ -134,10 +123,7 @@ debug_BOC2 <- function()
           boc_subject@base2_code,
           boc_subject@base3_code,
           boc_subject@base4_code,
-          boc_subject@base1_OCbuffer@xp,
-          boc_subject@base2_OCbuffer@xp,
-          boc_subject@base3_OCbuffer@xp,
-          boc_subject@pre4buffer@xp,
+          boc_subject@buffer@xp,
           boc_subject@stats, count.only,
           PACKAGE="Biostrings")
 }

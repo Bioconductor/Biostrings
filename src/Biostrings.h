@@ -506,10 +506,7 @@ SEXP match_BOC2_preprocess(
 		SEXP code2,
 		SEXP code3,
 		SEXP code4,
-		SEXP buf1_xp,
-		SEXP buf2_xp,
-		SEXP buf3_xp,
-		SEXP pre4buf_xp
+		SEXP buf_xp
 );
 
 SEXP match_BOC2_exact(
@@ -523,10 +520,7 @@ SEXP match_BOC2_exact(
 		SEXP code2,
 		SEXP code3,
 		SEXP code4,
-		SEXP buf1_xp,
-		SEXP buf2_xp,
-		SEXP buf3_xp,
-		SEXP pre4buf_xp,
+		SEXP buf_xp,
 		SEXP stats,
 		SEXP count_only
 );

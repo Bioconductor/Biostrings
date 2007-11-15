@@ -24,16 +24,6 @@ SEXP match_BOC_debug()
 	return R_NilValue;
 }
 
-
-/****************************************************************************
- * Initialisation of the 3 OCbuffers ("occurence count buffers")
- * =============================================================
- *   - nP is assumed to be >= 1 and <= min(254, nS).
- *   - The 3 buffers are assumed to be long enough for the preprocessing i.e. to
- *     have a length >= nS - nP + 1.
- *   - The 4 tables are of length nP + 1.
- */
-
 static char get_pre4(const char *s, char c1, char c2, char c3, char c4)
 {
 	char pre4, c, twobit_code;
@@ -50,6 +40,16 @@ static char get_pre4(const char *s, char c1, char c2, char c3, char c4)
 	}
 	return pre4;
 }
+
+
+/****************************************************************************
+ * Initialization of the BOC_SubjectString object
+ * ==============================================
+ * - nP is assumed to be >= 1 and <= min(254, nS).
+ * - The 3 buffers are assumed to be long enough for the preprocessing i.e. to
+ *   have a length >= nS - nP + 1.
+ * - The 4 tables are of length nP + 1.
+ */
 
 static void BOC_preprocess(const char *S, int nS, int nP,
 		char c1, char c2, char c3, char c4,
