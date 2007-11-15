@@ -29,8 +29,8 @@ Collate: 00datacache.R
         reverseComplement.R
         toComplex.R
         matchPattern.R
-        matchPattern.BOC_SubjectString.R
-        matchPattern.BOC2_SubjectString.R
+        matchPattern.BOC.R
+        matchPattern.BOC2.R
         mask.R
         matchLRPatterns.R
         matchProbePair.R
