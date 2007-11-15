@@ -208,3 +208,49 @@ cmp_BOC2vsBoyerMoore_exactmatching <- function(pattern_length)
     c('boyer-moore'=dt0[['elapsed']], 'BOC2'=dt1[['elapsed']])
 }
 
+### A note about [40-120]mers in Human genome with a surprisingly high number
+### of occurences.
+###
+### TODO: Move this to a more appropiate place (vignette?)
+###
+### In Human chr1, the 50999961-51000124 region is rich in substring of 40-80
+### letters that have a lot of occurences (a few dozens) in the whole
+### chromosome sequence. More remarkably, these substrings also have a similar
+### number of occurences in the minus strand _and_ in the plus and minus
+### strands of other chromosomes (checked with chr2 and chr3 only, need to do
+### more checking).
+###
+### For example, this:
+###
+###   library(BSgenome.Hsapiens.UCSC.hg18)
+###   chr1 <- Hsapiens$chr1
+###   chr1boc <- new("BOC2_SubjectString", chr1, 120, c("A", "C", "G"))
+###   chr2 <- Hsapiens$chr2
+###   chr2boc <- new("BOC2_SubjectString", chr2, 120, c("A", "C", "G"))
+###   chr3 <- Hsapiens$chr3
+###   chr3boc <- new("BOC2_SubjectString", chr3, 120, c("A", "C", "G"))
+###   scan123(chr1[seq_len(120)+51000000-17], chr1boc, chr2boc, chr3boc)
+###
+### gives the following:
+###
+###   cp1p cp1m cp2p cp2m cp3p cp3m 
+###     14   21   13   16   12   18
+###
+### The same with a pattern length of 40 instead of 120 gives:
+###
+###   cp1p cp1m cp2p cp2m cp3p cp3m 
+###    212  212  239  242  243  231 
+###
+
+scan123 <- function(pattern, subject1, subject2, subject3)
+{
+    rc_pattern <- reverseComplement(pattern)
+    cp1p <- countPattern(pattern, subject1)
+    cp1m <- countPattern(rc_pattern, subject1)
+    cp2p <- countPattern(pattern, subject2)
+    cp2m <- countPattern(rc_pattern, subject2)
+    cp3p <- countPattern(pattern, subject3)
+    cp3m <- countPattern(rc_pattern, subject3)
+    c('cp1p'=cp1p, 'cp1m'=cp1m, 'cp2p'=cp2p, 'cp2m'=cp2m, 'cp3p'=cp3p, 'cp3m'=cp3m)
+}
+
