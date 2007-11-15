@@ -152,7 +152,7 @@ debug_BOC2 <- function()
         matches <- .match.BOC2.fuzzy(pattern, boc_subject, mismatch, count.only)
     if (count.only)
         return(matches)
-    new("BStringViews", boc_subject=subject,
+    new("BStringViews", subject=boc_subject@subject,
                         views=data.frame(start=matches, end=matches+nchar(pattern)-1L))
 }
 
