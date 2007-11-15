@@ -1,5 +1,6 @@
 #include "Biostrings.h"
 #include <S.h> /* for Srealloc() */
+
 #include <ctype.h> /* for isspace() */
 
 static int debug = 0;

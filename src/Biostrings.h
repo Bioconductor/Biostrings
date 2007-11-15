@@ -464,12 +464,13 @@ SEXP match_BOC_preprocess(
 		SEXP s_length,
 		SEXP p_length,
 		SEXP code1,
-		SEXP buf1_xp,
 		SEXP code2,
-		SEXP buf2_xp,
 		SEXP code3,
+		SEXP code4,
+		SEXP buf1_xp,
+		SEXP buf2_xp,
 		SEXP buf3_xp,
-		SEXP code4
+		SEXP pre4buf_xp
 );
 
 SEXP match_BOC_exact(
@@ -480,12 +481,13 @@ SEXP match_BOC_exact(
 		SEXP s_offset,
 		SEXP s_length,
 		SEXP code1,
-		SEXP buf1_xp,
 		SEXP code2,
-		SEXP buf2_xp,
 		SEXP code3,
-		SEXP buf3_xp,
 		SEXP code4,
+		SEXP buf1_xp,
+		SEXP buf2_xp,
+		SEXP buf3_xp,
+		SEXP pre4buf_xp,
 		SEXP stats,
 		SEXP count_only
 );

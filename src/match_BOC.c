@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include <S.h> /* for Srealloc() */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,11 +34,26 @@ SEXP match_BOC_debug()
  *   - The 4 tables are of length nP + 1.
  */
 
+static char get_pre4(const char *s, char c1, char c2, char c3, char c4)
+{
+	char pre4, c, twobit_code;
+	int i;
+
+	for (i = 0; i < 4; i++, s++) {
+		c = *s;
+		if (c == c1) twobit_code = 0;
+		else if (c == c2) twobit_code = 1;
+		else if (c == c3) twobit_code = 2;
+		else twobit_code = 3;
+		pre4 <<= 2;
+		pre4 += twobit_code;
+	}
+	return pre4;
+}
+
 static void BOC_preprocess(const char *S, int nS, int nP,
-		char c1, char *buf1,
-		char c2, char *buf2,
-		char c3, char *buf3,
-		char c4,
+		char c1, char c2, char c3, char c4,
+		char *buf1, char *buf2, char *buf3, char *pre4buf,
 		double *means,
 		int *table1, int *table2, int *table3, int *table4)
 {
@@ -76,6 +92,7 @@ static void BOC_preprocess(const char *S, int nS, int nP,
 		partsum1 += buf1[n1] = c1_oc;
 		partsum2 += buf2[n1] = c2_oc;
 		partsum3 += buf3[n1] = c3_oc;
+		pre4buf[n1] = get_pre4(S + n1, c1, c2, c3, c4);
 		table1[c1_oc]++;
 		table2[c2_oc]++;
 		table3[c3_oc]++;
@@ -141,22 +158,24 @@ static void order3(int *order, const int *x)
 	return;
 }
 
-static int switch_oc(int i, int c1_oc, int c2_oc, int c3_oc)
+static int switch_oc(int i, int c1_oc, int c2_oc, int c3_oc, int c4_oc)
 {
 	switch (i) {
 		case 0: return c1_oc;
 		case 1: return c2_oc;
 		case 2: return c3_oc;
 	}
+	return c4_oc;
 }
 
-static const char *switch_buf(int i, const char *buf1, const char *buf2, const char *buf3)
+static const char *switch_buf(int i, const char *buf1, const char *buf2, const char *buf3, const char *buf4)
 {
 	switch (i) {
 		case 0: return buf1;
 		case 1: return buf2;
 		case 2: return buf3;
 	}
+	return buf4;
 }
 
 static void order_bases(char *p_ocX, char *p_ocY, char *p_ocZ,
@@ -179,27 +198,77 @@ static void order_bases(char *p_ocX, char *p_ocY, char *p_ocZ,
 		Rprintf("[DEBUG] order_bases: order[0]=%d order[1]=%d order[2]=%d\n",
 			order[0], order[1], order[2]);
 #endif
-	*p_ocX = (char) switch_oc(order[0], c1_oc, c2_oc, c3_oc);
-	*p_ocY = (char) switch_oc(order[1], c1_oc, c2_oc, c3_oc);
-	*p_ocZ = (char) switch_oc(order[2], c1_oc, c2_oc, c3_oc);
-	*p_bufX = switch_buf(order[0], buf1, buf2, buf3);
-	*p_bufY = switch_buf(order[1], buf1, buf2, buf3);
-	*p_bufZ = switch_buf(order[2], buf1, buf2, buf3);
+	*p_ocX = (char) switch_oc(order[0], c1_oc, c2_oc, c3_oc, -1);
+	*p_ocY = (char) switch_oc(order[1], c1_oc, c2_oc, c3_oc, -1);
+	*p_ocZ = (char) switch_oc(order[2], c1_oc, c2_oc, c3_oc, -1);
+	*p_bufX = switch_buf(order[0], buf1, buf2, buf3, NULL);
+	*p_bufY = switch_buf(order[1], buf1, buf2, buf3, NULL);
+	*p_bufZ = switch_buf(order[2], buf1, buf2, buf3, NULL);
 	return;
 }
 
+static int split4_offsets(char codes[4], int *offsets[4], int noffsets[4], const char *P, int nP)
+{
+	int tmp_codes[4], *tmp_offsets[4], tmp_noffsets[4], order[4], i, offset, ii, j;
+	char c;
+
+	for (i = 0; i < 4; i++)
+		noffsets[i] = 0;
+	for (offset = 0; offset < nP; offset++) {
+		c = P[offset];
+		for (i = 0; i < 4; i++) {
+			if (c != codes[i])
+				continue;
+			offsets[i][noffsets[i]++] = offset;
+			goto continue0;
+		}
+		return 1;
+		continue0: ;
+	}
+	order3(order, noffsets);
+	for (i = 3; i >= 1; i--) {
+		if (noffsets[3] >= noffsets[order[i-1]])
+			break;
+		order[i] = order[i-1];
+	}
+	order[i] = 3;
+	// Would be neat to perform in-place reordering. Something like this:
+	//   http://www.priorartdatabase.com/IPCOM/000104324/
+	for (i = 0; i < 4; i++) {
+		tmp_codes[i] = codes[i];
+		tmp_offsets[i] = offsets[i];
+		tmp_noffsets[i] = noffsets[i];
+	}
+	for (i = 0; i < 4; i++) {
+		ii = order[i];
+		codes[i] = tmp_codes[ii];
+		offsets[i] = tmp_offsets[ii];
+		noffsets[i] = tmp_noffsets[ii];
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG] split4_offsets: codes[%d]=%d\n", i, codes[i]);
+			Rprintf("[DEBUG] split4_offsets: noffsets[%d]=%d\n", i, noffsets[i]);
+			Rprintf("[DEBUG] split4_offsets: offsets[%d]=", i);
+			for (j = 0; j < noffsets[i]; j++)
+				Rprintf(" %d", offsets[i][j]);
+			Rprintf("\n");
+		}
+#endif
+	}
+	return 0;
+}
+
 static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
-		char c1, const char *buf1,
-		char c2, const char *buf2,
-		char c3, const char *buf3,
-		char c4,
+		char c1, char c2, char c3, char c4,
+		const char *buf1, const char *buf2, const char *buf3, const char *pre4buf,
 		const double *means,
 		const int *table1, const int *table2, const int *table3, const int *table4,
 		int is_count_only)
 {
-	int count = 0, n1, n1max, n2, c1_oc, c2_oc, c3_oc, nmers[3];
-	char c, ocX, ocY, ocZ;
-	const char *bufX, *bufY, *bufZ;
+	int count = 0, n1, n1max, n2, c1_oc, c2_oc, c3_oc, nmers[3],
+	    nPsuf4, *Psuf4_offsets[4], Psuf4_noffsets[4], i, j, *offsets, noffsets;
+	char c, ocX, ocY, ocZ, Ppre4, codes[4];
+	const char *bufX, *bufY, *bufZ, *Psuf4, *Ssuf4;
 #ifdef DEBUG_BIOSTRINGS
 	int count_memcmp = 0;
 #endif
@@ -222,22 +291,46 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 	nmers[2] = table3[c3_oc];
 	order_bases(&ocX, &ocY, &ocZ, &bufX, &bufY, &bufZ,
 			c1_oc, c2_oc, c3_oc, buf1, buf2, buf3, nmers);
+	Ppre4 = get_pre4(P, c1, c2, c3, c4);
+	Psuf4 = P + 4;
+	nPsuf4 = nP - 4;
+	codes[0] = c1;
+	codes[1] = c2;
+	codes[2] = c3;
+	codes[3] = c4;
+	for (i = 0; i < 4; i++)
+		Psuf4_offsets[i] = Salloc((long) nP, int);
+	split4_offsets(codes, Psuf4_offsets, Psuf4_noffsets, Psuf4, nPsuf4);
 	n1max = nS - nP;
-	for (n1 = 0; n1 <= n1max; n1++, bufX++, bufY++, bufZ++) {
+	for (n1 = 0, Ssuf4 = S + 4; n1 <= n1max; n1++, Ssuf4++, pre4buf++, bufX++, bufY++, bufZ++) {
+		if (Ppre4 != *pre4buf)
+			continue;
+		//Rprintf("Ppre4 matches for subject offset = %d\n", n1);
 		if (ocX != *bufX)
 			continue;
 		if (ocY != *bufY)
 			continue;
 		if (ocZ != *bufZ)
 			continue;
+/*
 #ifdef DEBUG_BIOSTRINGS
 		count_memcmp++;
 #endif
-		if (memcmp(P, S + n1, nP) != 0)
-			continue;
+		if (memcmp(Psuf4, Ssuf4, nPsuf4) != 0)
+			continue; // same as goto continue0;
+*/
+		for (i = 0; i < 3; i++) {
+			c = codes[i];
+			offsets = Psuf4_offsets[i];
+			noffsets = Psuf4_noffsets[i];
+			for (j = 0; j < noffsets; j++)
+				if (c != Ssuf4[offsets[j]])
+					goto continue0;
+		}
 		if (!is_count_only)
 			_Biostrings_report_match(n1, 0);
 		count++;
+		continue0: ;
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -256,12 +349,13 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
  *   's_length': subject@length
  *   'p_length': pattern_length
  *   'code1': base1_code
- *   'buf1_xp': base1_OCbuffer@xp
  *   'code2': base2_code
- *   'buf2_xp': base2_OCbuffer@xp
  *   'code3': base3_code
- *   'buf3_xp': base3_OCbuffer@xp
  *   'code4': base4_code
+ *   'buf1_xp': base1_OCbuffer@xp
+ *   'buf2_xp': base2_OCbuffer@xp
+ *   'buf3_xp': base3_OCbuffer@xp
+ *   'pre4buf_xp': pre4buffer@xp
  *
  * Return an R list with the following elements:
  *   - means: atomic vector of 4 doubles
@@ -271,26 +365,25 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 
 SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP p_length,
-		SEXP code1, SEXP buf1_xp,
-		SEXP code2, SEXP buf2_xp,
-		SEXP code3, SEXP buf3_xp,
-		SEXP code4)
+		SEXP code1, SEXP code2, SEXP code3, SEXP code4,
+		SEXP buf1_xp, SEXP buf2_xp, SEXP buf3_xp, SEXP pre4buf_xp)
 {
 	int subj_offset, subj_length, pat_length, c1, c2, c3, c4;
 	const Rbyte *subj;
-	SEXP buf1, buf2, buf3, ans, ans_names, ans_elt;
+	SEXP buf1, buf2, buf3, pre4buf, ans, ans_names, ans_elt;
 
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	pat_length = INTEGER(p_length)[0];
 	c1 = INTEGER(code1)[0];
-	buf1 = R_ExternalPtrTag(buf1_xp);
 	c2 = INTEGER(code2)[0];
-	buf2 = R_ExternalPtrTag(buf2_xp);
 	c3 = INTEGER(code3)[0];
-	buf3 = R_ExternalPtrTag(buf3_xp);
 	c4 = INTEGER(code4)[0];
+	buf1 = R_ExternalPtrTag(buf1_xp);
+	buf2 = R_ExternalPtrTag(buf2_xp);
+	buf3 = R_ExternalPtrTag(buf3_xp);
+	pre4buf = R_ExternalPtrTag(pre4buf_xp);
 
 	PROTECT(ans = NEW_LIST(5));
 	/* set the names */
@@ -324,10 +417,8 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	UNPROTECT(1);
 
 	BOC_preprocess((char *) subj, subj_length, pat_length,
-			(char) c1, (char *) RAW(buf1),
-			(char) c2, (char *) RAW(buf2),
-			(char) c3, (char *) RAW(buf3),
-			(char) c4,
+			(char) c1, (char) c2, (char) c3, (char) c4,
+			(char *) RAW(buf1), (char *) RAW(buf2), (char *) RAW(buf3), (char *) RAW(pre4buf),
 			REAL(VECTOR_ELT(ans, 0)),
 			INTEGER(VECTOR_ELT(ans, 1)),
 			INTEGER(VECTOR_ELT(ans, 2)),
@@ -350,12 +441,13 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
  *   's_offset': boc_subject@subject@offset
  *   's_length': boc_subject@subject@length
  *   'code1': boc_subject@base1_code
- *   'buf1_xp': boc_subject@base1_OCbuffer@xp
  *   'code2': boc_subject@base2_code
- *   'buf2_xp': boc_subject@base2_OCbuffer@xp
  *   'code3': boc_subject@base3_code
- *   'buf3_xp': boc_subject@base3_OCbuffer@xp
  *   'code4': boc_subject@base4_code
+ *   'buf1_xp': boc_subject@base1_OCbuffer@xp
+ *   'buf2_xp': boc_subject@base2_OCbuffer@xp
+ *   'buf3_xp': boc_subject@base3_OCbuffer@xp
+ *   'pre4buf_xp': boc_subject@pre4buffer@xp
  *   'stats': boc_subject@stats
  *   'count_only': single logical
  * 
@@ -363,15 +455,14 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
 
 SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
-		SEXP code1, SEXP buf1_xp,
-		SEXP code2, SEXP buf2_xp,
-		SEXP code3, SEXP buf3_xp,
-		SEXP code4, SEXP stats, SEXP count_only)
+		SEXP code1, SEXP code2, SEXP code3, SEXP code4,
+		SEXP buf1_xp, SEXP buf2_xp, SEXP buf3_xp, SEXP pre4buf_xp,
+		SEXP stats, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    c1, c2, c3, c4, is_count_only, count;
 	const Rbyte *pat, *subj;
-	SEXP buf1, buf2, buf3, ans;
+	SEXP buf1, buf2, buf3, pre4buf, ans;
 
 	pat_offset = INTEGER(p_offset)[0];
 	pat_length = INTEGER(p_length)[0];
@@ -380,12 +471,13 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	subj_length = INTEGER(s_length)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	c1 = INTEGER(code1)[0];
-	buf1 = R_ExternalPtrTag(buf1_xp);
 	c2 = INTEGER(code2)[0];
-	buf2 = R_ExternalPtrTag(buf2_xp);
 	c3 = INTEGER(code3)[0];
-	buf3 = R_ExternalPtrTag(buf3_xp);
 	c4 = INTEGER(code4)[0];
+	buf1 = R_ExternalPtrTag(buf1_xp);
+	buf2 = R_ExternalPtrTag(buf2_xp);
+	buf3 = R_ExternalPtrTag(buf3_xp);
+	pre4buf = R_ExternalPtrTag(pre4buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (!is_count_only)
@@ -393,10 +485,8 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	count = BOC_exact_search(
 			(char *) pat, pat_length,
 			(char *) subj, subj_length,
-			(char) c1, (char *) RAW(buf1),
-			(char) c2, (char *) RAW(buf2),
-			(char) c3, (char *) RAW(buf3),
-			(char) c4,
+			(char) c1, (char) c2, (char) c3, (char) c4,
+			(char *) RAW(buf1), (char *) RAW(buf2), (char *) RAW(buf3), (char *) RAW(pre4buf),
 			REAL(VECTOR_ELT(stats, 0)),
 			INTEGER(VECTOR_ELT(stats, 1)),
 			INTEGER(VECTOR_ELT(stats, 2)),
