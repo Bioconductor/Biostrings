@@ -270,7 +270,7 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 	char c, ocX, ocY, ocZ, Ppre4, codes[4];
 	const char *bufX, *bufY, *bufZ, *Psuf4, *Ssuf4;
 #ifdef DEBUG_BIOSTRINGS
-	int count_memcmp = 0;
+	int count_preapprovals = 0;
 #endif
 
 	c1_oc = c2_oc = c3_oc = 0;
@@ -305,20 +305,20 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 	for (n1 = 0, Ssuf4 = S + 4; n1 <= n1max; n1++, Ssuf4++, pre4buf++, bufX++, bufY++, bufZ++) {
 		if (Ppre4 != *pre4buf)
 			continue;
-		//Rprintf("Ppre4 matches for subject offset = %d\n", n1);
 		if (ocX != *bufX)
 			continue;
 		if (ocY != *bufY)
 			continue;
 		if (ocZ != *bufZ)
 			continue;
-/*
 #ifdef DEBUG_BIOSTRINGS
-		count_memcmp++;
+		count_preapprovals++;
 #endif
 		if (memcmp(Psuf4, Ssuf4, nPsuf4) != 0)
 			continue; // same as goto continue0;
-*/
+/*
+		// Uncomment the 2 lines above if you want to use the fancy
+		// comparison method below.
 		for (i = 0; i < 3; i++) {
 			c = codes[i];
 			offsets = Psuf4_offsets[i];
@@ -327,6 +327,7 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 				if (c != Ssuf4[offsets[j]])
 					goto continue0;
 		}
+*/
 		if (!is_count_only)
 			_Biostrings_report_match(n1, 0);
 		count++;
@@ -334,7 +335,7 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] count_memcmp=%d\n", count_memcmp);
+		Rprintf("[DEBUG] count_preapprovals=%d\n", count_preapprovals);
 #endif
 	return count;
 }
