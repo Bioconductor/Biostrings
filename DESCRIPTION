@@ -30,6 +30,7 @@ Collate: 00datacache.R
         toComplex.R
         matchPattern.R
         BOC_SubjectString.R
+        BOC2_SubjectString.R
         mask.R
         matchLRPatterns.R
         matchProbePair.R

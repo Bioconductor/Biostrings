@@ -493,6 +493,45 @@ SEXP match_BOC_exact(
 );
 
 
+/* match_BOC2.c */
+
+SEXP match_BOC2_debug();
+
+SEXP match_BOC2_preprocess(
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length,
+		SEXP p_length,
+		SEXP code1,
+		SEXP code2,
+		SEXP code3,
+		SEXP code4,
+		SEXP buf1_xp,
+		SEXP buf2_xp,
+		SEXP buf3_xp,
+		SEXP pre4buf_xp
+);
+
+SEXP match_BOC2_exact(
+		SEXP p_xp,
+		SEXP p_offset,
+		SEXP p_length,
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length,
+		SEXP code1,
+		SEXP code2,
+		SEXP code3,
+		SEXP code4,
+		SEXP buf1_xp,
+		SEXP buf2_xp,
+		SEXP buf3_xp,
+		SEXP pre4buf_xp,
+		SEXP stats,
+		SEXP count_only
+);
+
+
 /* pmatchPattern.c */
 
 SEXP lcprefix(

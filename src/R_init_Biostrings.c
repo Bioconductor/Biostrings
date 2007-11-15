@@ -83,6 +83,11 @@ static const R_CallMethodDef callMethods[] = {
 	{"match_BOC_preprocess", (DL_FUNC) &match_BOC_preprocess, 12},
 	{"match_BOC_exact", (DL_FUNC) &match_BOC_exact, 16},
 
+/* match_BOC2.c */
+	{"match_BOC2_debug", (DL_FUNC) &match_BOC2_debug, 0},
+	{"match_BOC2_preprocess", (DL_FUNC) &match_BOC2_preprocess, 12},
+	{"match_BOC2_exact", (DL_FUNC) &match_BOC2_exact, 16},
+
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},
 	{"lcsuffix", (DL_FUNC) &lcsuffix, 6},
