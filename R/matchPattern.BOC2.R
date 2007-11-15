@@ -229,7 +229,7 @@ cmp_BOC2vsBoyerMoore_exactmatching <- function(pattern_length)
 ###   chr2boc <- new("BOC2_SubjectString", chr2, 120, c("A", "C", "G"))
 ###   chr3 <- Hsapiens$chr3
 ###   chr3boc <- new("BOC2_SubjectString", chr3, 120, c("A", "C", "G"))
-###   scan123(chr1[seq_len(120)+51000000-17], chr1boc, chr2boc, chr3boc)
+###   Biostrings:::scan123(chr1[seq_len(120)+51000000-17], chr1boc, chr2boc, chr3boc)
 ###
 ### gives the following:
 ###
