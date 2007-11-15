@@ -102,10 +102,12 @@ plotBOC2 <- function(x, main)
 ###   matchPattern(chr1[1:36], chr1boc)
 ###
 ### Performance (a little bit better than with the first BOC algo):
-###   for (i in 41:80) matchPattern(chr1[1:36+1000000*i], chr1boc))
-###   #--> takes 12.81 seconds on lamb1
+###   for (i in 41:80) matchPattern(chr1[1:36+1000000*i], chr1boc)
+###   #--> takes about 12.8 seconds on lamb1
 ###   for (i in 41:80) matchPattern(chr1[1:36+1000000*i], chr1, algo="boyer-moore")
 ###   #--> takes 14.77 seconds on lamb1
+###
+### See next section below for detailed benchmarks.
 ###   
 
 debug_BOC2 <- function()
@@ -134,27 +136,75 @@ debug_BOC2 <- function()
     stop("NOT READY YET!")
 }
 
+.matchPattern.BOC2 <- function(pattern, boc_subject, mismatch, fixed, count.only=FALSE)
+{
+    if (class(pattern) != class(boc_subject@subject))
+        pattern <- new(class(boc_subject@subject), pattern)
+    pattern_length <- nchar(pattern)
+    if (pattern_length != boc_subject@pattern_length)
+        stop("subject was preprocessed for patterns of length ", boc_subject@pattern_length)
+    fixed <- .normalize.fixed(fixed)
+    if (!all(fixed))
+        stop("only 'fixed=TRUE' can be used with a subject of class ", class(boc_subject))
+    if (mismatch == 0)
+        matches <- .match.BOC2.exact(pattern, boc_subject, count.only)
+    else
+        matches <- .match.BOC2.fuzzy(pattern, boc_subject, mismatch, count.only)
+    if (count.only)
+        return(matches)
+    new("BStringViews", boc_subject=subject,
+                        views=data.frame(start=matches, end=matches+nchar(pattern)-1L))
+}
+
 ### Dispatch on 'subject' (see signature of generic).
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC2_SubjectString",
     function(pattern, subject, algorithm, mismatch, fixed)
     {
-        if (class(pattern) != class(subject@subject))
-            pattern <- new(class(subject@subject), pattern)
-        pattern_length <- nchar(pattern)
-        if (pattern_length != subject@pattern_length)
-            stop("subject was preprocessed for patterns of length ", subject@pattern_length)
-        if (!missing(fixed)) {
-            fixed <- .normalize.fixed(fixed)
-            if (!all(fixed))
-                stop("only 'fixed=TRUE' can be used with a subject of class ", class(subject))
-        }
-        if (mismatch == 0)
-            matches <- .match.BOC2.exact(pattern, subject, count.only=FALSE)
-        else
-            matches <- .match.BOC2.fuzzy(pattern, subject, mismatch, count.only=FALSE)
-        new("BStringViews", subject=subject@subject,
-                            views=data.frame(start=matches, end=matches+pattern_length-1L))
+        .matchPattern.BOC2(pattern, subject, mismatch, fixed)
     }
 )
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPattern", "BOC2_SubjectString",
+    function(pattern, subject, algorithm, mismatch, fixed)
+    {
+        .matchPattern.BOC2(pattern, subject, mismatch, fixed, count.only=TRUE)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Benchmarks.
+###
+### Running the cmp_BOC2vsBoyerMoore_exactmatching() function with different
+### values of 'pattern_length' gives the following results:
+###
+###   pattern_length  boyer-moore       BOC2
+###   --------------  -----------  ---------
+###               12       11.432      6.419
+###               20        8.691      6.393
+###               36        7.539      6.386
+###               48        6.754      6.387
+###               60        5.893      6.394
+###               92        5.509      6.368
+###              132        4.867      6.384
+###              180        5.326      6.371
+###              236        4.448      6.390
+###              254        4.539      6.368
+###
+### Note: the BOC2 algo only supports pattern lengths <= 254 (no such limit
+### for Boyer-Moore).
+###
+
+### Search for 20 patterns in Human chromosome 1
+cmp_BOC2vsBoyerMoore_exactmatching <- function(pattern_length)
+{
+    library(BSgenome.Hsapiens.UCSC.hg18)
+    chr1 <- Hsapiens$chr1
+    chr1boc <- new("BOC2_SubjectString", chr1, pattern_length, c("A", "C", "G"))
+    dt0 <- system.time(for (i in 41:60) matchPattern(chr1[seq_len(pattern_length)+1000000*i], chr1, algo="boyer-moore"))
+    dt1 <- system.time(for (i in 41:60) matchPattern(chr1[seq_len(pattern_length)+1000000*i], chr1boc))
+    c('boyer-moore'=dt0[['elapsed']], 'BOC2'=dt1[['elapsed']])
+}
 
