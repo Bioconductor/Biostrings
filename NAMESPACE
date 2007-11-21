@@ -8,7 +8,7 @@ exportClasses(
     "BStringViews", "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
-    "PatternSet", "UniLengthDNAPatternSet"
+    "PatternSet", "UniLenDNAPatternSet"
 )
 
 exportMethods(
