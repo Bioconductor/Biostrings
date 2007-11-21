@@ -32,11 +32,12 @@ setClass("PatternSet", representation("VIRTUAL"))
 ###       in the AC_tree slot (see typedef ACNode in the C code for more
 ###       info). 
 ###
-###   dups: an unnamed (and eventually empty) list of integer vectors for
-###       efficient (compact) representation of the duplicated words (or
-###       patterns) found in the original dictionary.
-###       Example:
+###   dups: an unnamed (and eventually empty) list of integer vectors
+###       containing the indices of the duplicated words (patterns) found in
+###       the original dictionary. For example:
 ###           list(c(1, 8, 9), c(5, 7), c(6, 13))
+###       This allows efficient (compact) representation considering that the
+###       expected number of duplicated should be small.
 ###       All the integer values in this list are non NAs, >= 1, <= length
 ###       and unique across the entire list. Each element of the list is a
 ###       vector of length >= 2. In addition, the values within a vector are
@@ -55,17 +56,14 @@ setClass("UniLenDNAPatternSet",
     )
 )
 
-### Supported 'dict':
-###   - character vector
-###   - list of character strings or BString or DNAString or RNAString objects
-###   - BStringViews object
-### Typical use:
-###   library(hgu95av2probe)
-###   dict <- hgu95av2probe$sequence # the original dictionary
-###   ps <- new("UniLenDNAPatternSet", dict)
-###
+debug_ACuldna <- function()
+{
+    invisible(.Call("match_ACuldna_debug", PACKAGE="Biostrings"))
+}
 
-.UniLenDNAPatternSet.init_with_character <- function(.Object, dict)
+### 'dict' must be a string vector (aka character vector) with at least 1
+### element.
+.UniLenDNAPatternSet.init_with_StrVect <- function(.Object, dict)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
@@ -76,18 +74,49 @@ setClass("UniLenDNAPatternSet",
         stop("strings in 'dict' are empty")
     .Object@nchar <- pattern_length
     .Object@length <- length(dict)
-    ## init <- .Call("match_AC_init_with_stringvect", PACKAGE="Biostrings")
+    init <- .Call("ACuldna_init_with_StrVect", dict, PACKAGE="Biostrings")
+    .Object@AC_tree <- init$AC_tree
+    .Object@base_codes <- init$base_codes
+    .Object@dups <- init$dups
     .Object
 }
 
+### 'dict' must be a list of BString objects of the same class (i.e. all
+### BString instances or all DNAString instances or etc...) with at least 1
+### element.
+.UniLenDNAPatternSet.init_with_BStringList <- function(.Object, dict)
+{
+    pattern_length <- unique(sapply(dict, nchar))
+    if (length(pattern_length) != 1)
+        stop("all ", class(dict[[1]]), " objects in 'dict' must have the same length")
+    .Object@nchar <- pattern_length
+    .Object@length <- length(dict)
+    dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
+    init <- .Call("ACuldna_init_with_BStringList", dict0, PACKAGE="Biostrings")
+    .Object@AC_tree <- init$AC_tree
+    .Object@base_codes <- init$base_codes
+    .Object@dups <- init$dups
+    .Object
+}
+
+### Supported 'dict':
+###   - character vector
+###   - list of character strings or BString or DNAString or RNAString objects
+###   - BStringViews object
+### Typical use:
+###   library(hgu95av2probe)
+###   dict <- hgu95av2probe$sequence # the original dictionary
+###   ps <- new("UniLenDNAPatternSet", dict)
+###
 setMethod("initialize", "UniLenDNAPatternSet",
     function(.Object, dict)
     {
         if (is.character(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty character vector")
-            .Object <- .UniLenDNAPatternSet.init_with_character(.Object, dict)
-	} else if (is.list(dict)) {
+            return(.UniLenDNAPatternSet.init_with_StrVect(.Object, dict))
+	}
+        if (is.list(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty list")
             pattern_class <- unique(sapply(dict, class))
@@ -96,18 +125,13 @@ setMethod("initialize", "UniLenDNAPatternSet",
             if (pattern_class == "character") {
                 if (!all(sapply(dict, length) == 1))
                     stop("all character vectors in 'dict' must be of length 1")
-                dict <- unlist(dict, recursive=FALSE, use.names=FALSE)
-                .Object <- .UniLenDNAPatternSet.init_with_character(.Object, dict)
-            } else if (extends(pattern_class, "BString")) {
-                pattern_length <- unique(sapply(dict, nchar))
-                if (length(pattern_length) != 1)
-                    stop("all ", pattern_class, " objects in 'dict' must have the same length")
-                .Object@nchar <- pattern_length
-                .Object@length <- length(dict)
-                ## init <- .Call("match_AC_init_with_BStringList", PACKAGE="Biostrings")
-            } else
-                stop("invalid 'dict' (type '?UniLenDNAPatternSet' for more information)")
-        } else if (is(dict, "BStringViews")) {
+                dict0 <- unlist(dict, recursive=FALSE, use.names=FALSE)
+                return(.UniLenDNAPatternSet.init_with_StrVect(.Object, dict0))
+            }
+            if (extends(pattern_class, "BString"))
+                return(.UniLenDNAPatternSet.init_with_BStringList(.Object, dict))
+        }
+        if (is(dict, "BStringViews")) {
             if (length(dict) == 0)
                 stop("'dict' has no views")
             pattern_length <- width(dict)
@@ -116,13 +140,9 @@ setMethod("initialize", "UniLenDNAPatternSet",
             pattern_length <- unique(pattern_length)
             if (length(pattern_length) != 1)
                 stop("all views in 'dict' must have the same width")
-            .Object@nchar <- pattern_length
-            .Object@length <- length(dict)
-            dict <- as.list(dict)
-            ## init <- .Call("match_AC_init_with_BStringList", PACKAGE="Biostrings")
-        } else
-            stop("invalid 'dict' (type '?UniLenDNAPatternSet' for more information)")
-        .Object
+            return(.UniLenDNAPatternSet.init_with_BStringList(.Object, as.list(dict)))
+        }
+        stop("invalid 'dict' (type '?UniLenDNAPatternSet' for more information)")
     }
 )
 

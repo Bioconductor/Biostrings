@@ -88,6 +88,11 @@ static const R_CallMethodDef callMethods[] = {
 	{"match_BOC2_preprocess", (DL_FUNC) &match_BOC2_preprocess, 9},
 	{"match_BOC2_exact", (DL_FUNC) &match_BOC2_exact, 13},
 
+/* match_ACuldna.c */
+	{"match_ACuldna_debug", (DL_FUNC) &match_ACuldna_debug, 0},
+	{"ACuldna_init_with_StrVect", (DL_FUNC) &ACuldna_init_with_StrVect, 1},
+	{"ACuldna_init_with_BStringList", (DL_FUNC) &ACuldna_init_with_BStringList, 1},
+
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},
 	{"lcsuffix", (DL_FUNC) &lcsuffix, 6},

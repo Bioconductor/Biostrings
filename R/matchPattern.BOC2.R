@@ -20,6 +20,11 @@ setClass("BOC2_SubjectString",
     )
 )
 
+debug_BOC2 <- function()
+{
+    invisible(.Call("match_BOC2_debug", PACKAGE="Biostrings"))
+}
+
 ### Typical use:
 ###   library(BSgenome.Hsapiens.UCSC.hg18)
 ###   chr1 <- Hsapiens$chr1
@@ -109,11 +114,6 @@ plotBOC2 <- function(x, main)
 ###
 ### See next section below for detailed benchmarks.
 ###   
-
-debug_BOC2 <- function()
-{
-    invisible(.Call("match_BOC2_debug", PACKAGE="Biostrings"))
-}
 
 ### Must return an integer vector.
 .match.BOC2.exact <- function(pattern, boc_subject, count.only)
