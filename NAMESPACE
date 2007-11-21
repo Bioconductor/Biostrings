@@ -7,7 +7,8 @@ exportClasses(
     "BString", "DNAString", "RNAString", "AAString",
     "BStringViews", "BStringPartialMatches",
     "BStringAlign",
-    "BOC_SubjectString", "BOC2_SubjectString"
+    "BOC_SubjectString", "BOC2_SubjectString",
+    "PatternSet", "UniLengthDNAPatternSet"
 )
 
 exportMethods(
