@@ -13,7 +13,7 @@ setClass("PatternSet", representation("VIRTUAL"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "UniLenDNAPatternSet" class.
+### The "ULdna_PatternSet" class.
 ###
 ### A container for storing a preprocessed uniform-length dictionary (or set)
 ### of DNA patterns.
@@ -45,7 +45,7 @@ setClass("PatternSet", representation("VIRTUAL"))
 ###       sorted by ascending first value </NO MORE TRUE>.
 ###
 
-setClass("UniLenDNAPatternSet",
+setClass("ULdna_PatternSet",
     contains="PatternSet",
     representation(
         nchar="integer",
@@ -63,7 +63,7 @@ debug_ACuldna <- function()
 
 ### 'dict' must be a string vector (aka character vector) with at least 1
 ### element.
-.UniLenDNAPatternSet.init_with_StrVect <- function(.Object, dict)
+.ULdna_PatternSet.init_with_StrVect <- function(.Object, dict)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
@@ -75,7 +75,8 @@ debug_ACuldna <- function()
     .Object@nchar <- pattern_length
     .Object@length <- length(dict)
     init <- .Call("ACuldna_init_with_StrVect", dict, PACKAGE="Biostrings")
-    .Object@AC_tree <- init$AC_tree
+    .Object@AC_tree <- XInteger(1)
+    .Object@AC_tree@xp <- init$AC_tree_xp
     .Object@AC_base_codes <- init$AC_base_codes
     .Object@dups <- init$dups
     .Object
@@ -84,7 +85,7 @@ debug_ACuldna <- function()
 ### 'dict' must be a list of BString objects of the same class (i.e. all
 ### BString instances or all DNAString instances or etc...) with at least 1
 ### element.
-.UniLenDNAPatternSet.init_with_BStringList <- function(.Object, dict)
+.ULdna_PatternSet.init_with_BStringList <- function(.Object, dict)
 {
     pattern_length <- unique(sapply(dict, nchar))
     if (length(pattern_length) != 1)
@@ -93,7 +94,8 @@ debug_ACuldna <- function()
     .Object@length <- length(dict)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
     init <- .Call("ACuldna_init_with_BStringList", dict0, PACKAGE="Biostrings")
-    .Object@AC_tree <- init$AC_tree
+    .Object@AC_tree <- XInteger(1)
+    .Object@AC_tree@xp <- init$AC_tree_xp
     .Object@AC_base_codes <- init$AC_base_codes
     .Object@dups <- init$dups
     .Object
@@ -106,15 +108,15 @@ debug_ACuldna <- function()
 ### Typical use:
 ###   library(hgu95av2probe)
 ###   dict <- hgu95av2probe$sequence # the original dictionary
-###   ps <- new("UniLenDNAPatternSet", dict)
+###   patset <- new("ULdna_PatternSet", dict)
 ###
-setMethod("initialize", "UniLenDNAPatternSet",
+setMethod("initialize", "ULdna_PatternSet",
     function(.Object, dict)
     {
         if (is.character(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty character vector")
-            return(.UniLenDNAPatternSet.init_with_StrVect(.Object, dict))
+            return(.ULdna_PatternSet.init_with_StrVect(.Object, dict))
 	}
         if (is.list(dict)) {
             if (length(dict) == 0)
@@ -126,10 +128,10 @@ setMethod("initialize", "UniLenDNAPatternSet",
                 if (!all(sapply(dict, length) == 1))
                     stop("all character vectors in 'dict' must be of length 1")
                 dict0 <- unlist(dict, recursive=FALSE, use.names=FALSE)
-                return(.UniLenDNAPatternSet.init_with_StrVect(.Object, dict0))
+                return(.ULdna_PatternSet.init_with_StrVect(.Object, dict0))
             }
             if (extends(pattern_class, "BString"))
-                return(.UniLenDNAPatternSet.init_with_BStringList(.Object, dict))
+                return(.ULdna_PatternSet.init_with_BStringList(.Object, dict))
         }
         if (is(dict, "BStringViews")) {
             if (length(dict) == 0)
@@ -140,15 +142,15 @@ setMethod("initialize", "UniLenDNAPatternSet",
             pattern_length <- unique(pattern_length)
             if (length(pattern_length) != 1)
                 stop("all views in 'dict' must have the same width")
-            return(.UniLenDNAPatternSet.init_with_BStringList(.Object, as.list(dict)))
+            return(.ULdna_PatternSet.init_with_BStringList(.Object, as.list(dict)))
         }
-        stop("invalid 'dict' (type '?UniLenDNAPatternSet' for more information)")
+        stop("invalid 'dict' (type '?ULdna_PatternSet' for more information)")
     }
 )
 
-setMethod("nchar", "UniLenDNAPatternSet",
+setMethod("nchar", "ULdna_PatternSet",
     function(x, type = "chars", allowNA = FALSE) x@nchar)
 
-setMethod("length", "UniLenDNAPatternSet",
+setMethod("length", "ULdna_PatternSet",
     function(x) x@length)
 

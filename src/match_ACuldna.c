@@ -27,6 +27,11 @@ SEXP match_ACuldna_debug()
 	return R_NilValue;
 }
 
+typedef struct pattern {
+	const char *P;
+	int nP;
+} Pattern;
+
 
 /****************************************************************************
  * Manipulation of the buffer of duplicates
@@ -125,6 +130,8 @@ typedef struct ac_node {
         int P_id;
 } ACNode;
 
+#define INTS_PER_ACNODE (sizeof(ACNode) / sizeof(int))
+
 static ACNode *ACnodebuf;
 static int ACnodebuf_countmax, ACnodebuf_count;
 static int ACnodebuf_pattern_length;
@@ -194,8 +201,7 @@ static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
 		if (nP != ACnodebuf_pattern_length)
 			error("all patterns in dictionary must have the same length");
 	}
-	node = ACnodebuf;
-	for (n = 0; n < nP; n++, node = child_node) {
+	for (n = 0, node = ACnodebuf; n < nP; n++, node = child_node) {
 		child_node = ACnodebuf_tryMovingToChild(P[n], 0, &(node->ac_node1_id));
 		if (child_node != NULL)
 			continue;
@@ -217,17 +223,66 @@ static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
 	return;
 }
 
-static void ACuldna_init()
+static void ACuldna_init(const Pattern *patterns, int dict_length)
 {
+	const Pattern *p;
+	int i;
+
 	dupsbuf_reset();
 	ACnodebuf_reset();
 	ACnodebuf_newNode();
-	ACnodebuf_addPattern("aabaz", 5, 1);
-	ACnodebuf_addPattern("abzab", 5, 2);
-	ACnodebuf_addPattern("aabaz", 5, 3);
+	for (i = 0, p = patterns; i < dict_length; i++, p++)
+		ACnodebuf_addPattern(p->P, p->nP, i + 1);
 	return;
 }
 
+static SEXP ACuldna_init_mkSEXP()
+{
+	SEXP ans, ans_names, ans_elt, tag, ans_elt_elt;
+	DupsBufLine *line;
+	int tag_length, i;
+
+	PROTECT(ans = NEW_LIST(3));
+
+	/* set the names */
+	PROTECT(ans_names = NEW_CHARACTER(3));
+	SET_STRING_ELT(ans_names, 0, mkChar("AC_tree_xp"));
+	SET_STRING_ELT(ans_names, 1, mkChar("AC_base_codes"));
+	SET_STRING_ELT(ans_names, 2, mkChar("dups"));
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(1);
+
+	/* set the "AC_tree_xp" element */
+	PROTECT(ans_elt = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
+	tag_length = ACnodebuf_count * INTS_PER_ACNODE;
+	PROTECT(tag = NEW_INTEGER(tag_length));
+	memcpy((char *) INTEGER(tag), ACnodebuf, tag_length * sizeof(int));
+	R_SetExternalPtrTag(ans_elt, tag);
+	UNPROTECT(1);
+	SET_ELEMENT(ans, 0, ans_elt);
+	UNPROTECT(1);
+
+	/* set the "AC_base_codes" element */
+	PROTECT(ans_elt = NEW_INTEGER(4));
+	for (i = 0; i < 4; i++)
+		INTEGER(ans_elt)[i] = ACnodebuf_base_codes[i];
+	SET_ELEMENT(ans, 1, ans_elt);
+	UNPROTECT(1);
+
+	/* set the "dups" element */
+	PROTECT(ans_elt = NEW_LIST(dupsbuf_count));
+	for (i = 0, line = dupsbuf; i < dupsbuf_count; i++, line++) {
+		PROTECT(ans_elt_elt = NEW_INTEGER(line->count));
+		memcpy((char *) INTEGER(ans_elt_elt), line->vals, line->count * sizeof(int));
+		SET_ELEMENT(ans_elt, i, ans_elt_elt);
+		UNPROTECT(1);
+	}
+	SET_ELEMENT(ans, 2, ans_elt);
+	UNPROTECT(1);
+
+	UNPROTECT(1);
+	return ans;
+}
 
 /****************************************************************************
  * Exact matching
@@ -252,10 +307,11 @@ static int ACuldna_exact_search()
  *           ACuldna_init_with_BStringList.
  *
  * Return an R list with the following elements:
- *   - AC_tree: XInteger object containing the Aho-Corasick 4-ary tree built
- *         from 'dict'.
+ *   - AC_tree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
+ *         tree built from 'dict'.
  *   - AC_base_codes: integer vector containing the 4 character codes (ASCII)
- *         attached to the 4 child slots of any node in the AC_tree object.
+ *         attached to the 4 child slots of any node in the tree pointed by
+ *         AC_tree_xp.
  *   - dups: an unnamed (and eventually empty) list of integer vectors
  *         containing the indices of the duplicated words found in 'dict'.
  *
@@ -263,36 +319,18 @@ static int ACuldna_exact_search()
 
 SEXP ACuldna_init_with_StrVect(SEXP dict)
 {
-	int subj_offset, subj_length, pat_length, c1, c2, c3, c4;
-	const Rbyte *subj;
-	SEXP buf, ans, ans_names, ans_elt;
+	Pattern *patterns, *p;
+	SEXP dict_elt;
+	int i;
 
-	ACuldna_init();
-	error("Not ready yet!\n");
-
-	PROTECT(ans = NEW_LIST(3));
-	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(3));
-	SET_STRING_ELT(ans_names, 0, mkChar("AC_tree"));
-	SET_STRING_ELT(ans_names, 1, mkChar("AC_base_codes"));
-	SET_STRING_ELT(ans_names, 2, mkChar("dups"));
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-	/* set the "AC_tree" element */
-	PROTECT(ans_elt = NEW_NUMERIC(4));
-	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
-	/* set the "AC_base_codes" element */
-	PROTECT(ans_elt = NEW_INTEGER(4));
-	SET_ELEMENT(ans, 1, ans_elt);
-	UNPROTECT(1);
-	/* set the "dups" element */
-	PROTECT(ans_elt = NEW_INTEGER(4));
-	SET_ELEMENT(ans, 2, ans_elt);
-	UNPROTECT(1);
-
-	UNPROTECT(1);
-	return ans;
+	patterns = Salloc((long) LENGTH(dict), Pattern);
+	for (i = 0, p = patterns; i < LENGTH(dict); i++, p++) {
+		dict_elt = STRING_ELT(dict, i);
+		p->P = CHAR(dict_elt);
+		p->nP = LENGTH(dict_elt);
+	}
+	ACuldna_init(patterns, LENGTH(dict));
+	return ACuldna_init_mkSEXP();
 }
 
 SEXP ACuldna_init_with_BStringList(SEXP dict)
