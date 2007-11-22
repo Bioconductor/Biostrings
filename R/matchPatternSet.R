@@ -27,7 +27,7 @@ setClass("PatternSet", representation("VIRTUAL"))
 ###   AC_tree: an external integer vector (XInteger object) for the storage
 ###       of the Aho-Corasick 4-ary tree built from the original dictionary.
 ### 
-###   base_codes: 4 integers, normally the DNA base internal codes (see
+###   AC_base_codes: 4 integers, normally the DNA base internal codes (see
 ###       DNA_BASE_CODES), attached to the 4 internal child slots of any node
 ###       in the AC_tree slot (see typedef ACNode in the C code for more
 ###       info). 
@@ -35,14 +35,14 @@ setClass("PatternSet", representation("VIRTUAL"))
 ###   dups: an unnamed (and eventually empty) list of integer vectors
 ###       containing the indices of the duplicated words (patterns) found in
 ###       the original dictionary. For example:
-###           list(c(1, 8, 9), c(5, 7), c(6, 13))
+###           list(c(6, 8), c(2, 9, 13), c(4, 12))
 ###       This allows efficient (compact) representation considering that the
-###       expected number of duplicated should be small.
+###       number of duplicated is expected to be small.
 ###       All the integer values in this list are non NAs, >= 1, <= length
 ###       and unique across the entire list. Each element of the list is a
 ###       vector of length >= 2. In addition, the values within a vector are
-###       sorted (in ascending order) and the list elements are sorted by
-###       ascending first value.
+###       sorted (in ascending order) <NO MORE TRUE> and the list elements are
+###       sorted by ascending first value </NO MORE TRUE>.
 ###
 
 setClass("UniLenDNAPatternSet",
@@ -51,7 +51,7 @@ setClass("UniLenDNAPatternSet",
         nchar="integer",
         length="integer",
         AC_tree="XInteger",
-        base_codes="integer",
+        AC_base_codes="integer",
         dups="list" 
     )
 )
@@ -76,7 +76,7 @@ debug_ACuldna <- function()
     .Object@length <- length(dict)
     init <- .Call("ACuldna_init_with_StrVect", dict, PACKAGE="Biostrings")
     .Object@AC_tree <- init$AC_tree
-    .Object@base_codes <- init$base_codes
+    .Object@AC_base_codes <- init$AC_base_codes
     .Object@dups <- init$dups
     .Object
 }
@@ -94,7 +94,7 @@ debug_ACuldna <- function()
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
     init <- .Call("ACuldna_init_with_BStringList", dict0, PACKAGE="Biostrings")
     .Object@AC_tree <- init$AC_tree
-    .Object@base_codes <- init$base_codes
+    .Object@AC_base_codes <- init$AC_base_codes
     .Object@dups <- init$dups
     .Object
 }

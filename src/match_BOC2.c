@@ -5,7 +5,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
-#include <S.h> /* for Srealloc() */
+#include <S.h> /* for Salloc() */
 
 #include <stdio.h>
 #include <stdlib.h>
