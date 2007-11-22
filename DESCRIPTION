@@ -34,7 +34,7 @@ Collate: 00datacache.R
         mask.R
         matchLRPatterns.R
         matchProbePair.R
-        matchPatternSet.R
+        matchPDict.R
         align-utils.R
         pmatchPattern.R
         needwunsQS.R

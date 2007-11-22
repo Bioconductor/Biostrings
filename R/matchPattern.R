@@ -315,12 +315,17 @@ debug_shiftor <- function()
                         views=data.frame(start=matches, end=matches+nchar(pattern)-1L))
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "matchPattern" generic and methods.
+###
 ### Typical use:
 ###   matchPattern("TG", DNAString("GTGACGTGCAT"))
 ###   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
 ### Edge cases:
 ###   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
 ###   matchPattern("---", DNAString("A"))
+
 setGeneric(
     "matchPattern", signature="subject",
     function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)

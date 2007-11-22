@@ -4,8 +4,7 @@
 ### A BStringPartialMatches object contains a set of partial matches
 ### on the same BString object, the subject string.
 
-setClass(
-    "BStringPartialMatches",
+setClass("BStringPartialMatches",
     contains="BStringViews",
     representation(
         subpatterns="BStringViews"

@@ -4,12 +4,9 @@
 ### A BStringViews object contains a set of views
 ### on the same BString object, the subject string.
 
-setClassUnion("BStringLike", c("BString", "DNAString", "RNAString", "AAString"))
-
-setClass(
-    "BStringViews",
+setClass("BStringViews",
     representation(
-        subject="BStringLike",
+        subject="BString",
         ## The 'views' slot must be a "valid views data frame" i.e. a data
         ## frame with a "start" and an "end" column, both columns being integer
         ## vectors (eventually of length 0) with no NAs and such that

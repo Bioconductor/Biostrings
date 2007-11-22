@@ -2,8 +2,7 @@
 ### The BString class
 ### -------------------------------------------------------------------------
 
-setClass(
-    "BString",
+setClass("BString",
     representation(
         data="XRaw",        # contains the string data
         offset="integer",   # a single integer

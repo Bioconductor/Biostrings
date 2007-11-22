@@ -1,19 +1,19 @@
 ### =========================================================================
-### The matchPatternSet() generic & related functions
+### The matchPDict() generic & related functions
 ### -------------------------------------------------------------------------
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PatternSet" class.
+### The "PDict" class.
 ###
-### Very general container for the dictionary problem.
+### Very general container for any kind of pattern dictionary.
 ###
 
-setClass("PatternSet", representation("VIRTUAL"))
+setClass("PDict", representation("VIRTUAL"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ULdna_PatternSet" class.
+### The "ULdna_PDict" class.
 ###
 ### A container for storing a preprocessed uniform-length dictionary (or set)
 ### of DNA patterns.
@@ -45,8 +45,8 @@ setClass("PatternSet", representation("VIRTUAL"))
 ###       sorted by ascending first value </NO MORE TRUE>.
 ###
 
-setClass("ULdna_PatternSet",
-    contains="PatternSet",
+setClass("ULdna_PDict",
+    contains="PDict",
     representation(
         nchar="integer",
         length="integer",
@@ -63,7 +63,7 @@ debug_ULdna <- function()
 
 ### 'dict' must be a string vector (aka character vector) with at least 1
 ### element.
-.ULdna_PatternSet.init_with_StrVect <- function(.Object, dict)
+.ULdna_PDict.init_with_StrVect <- function(.Object, dict)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
@@ -85,7 +85,7 @@ debug_ULdna <- function()
 ### 'dict' must be a list of BString objects of the same class (i.e. all
 ### BString instances or all DNAString instances or etc...) with at least 1
 ### element.
-.ULdna_PatternSet.init_with_BStringList <- function(.Object, dict)
+.ULdna_PDict.init_with_BStringList <- function(.Object, dict)
 {
     pattern_length <- unique(sapply(dict, nchar))
     if (length(pattern_length) != 1)
@@ -108,15 +108,15 @@ debug_ULdna <- function()
 ### Typical use:
 ###   library(hgu95av2probe)
 ###   dict <- hgu95av2probe$sequence # the original dictionary
-###   patset <- new("ULdna_PatternSet", dict)
+###   pdict <- new("ULdna_PDict", dict)
 ###
-setMethod("initialize", "ULdna_PatternSet",
+setMethod("initialize", "ULdna_PDict",
     function(.Object, dict)
     {
         if (is.character(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty character vector")
-            return(.ULdna_PatternSet.init_with_StrVect(.Object, dict))
+            return(.ULdna_PDict.init_with_StrVect(.Object, dict))
 	}
         if (is.list(dict)) {
             if (length(dict) == 0)
@@ -128,10 +128,10 @@ setMethod("initialize", "ULdna_PatternSet",
                 if (!all(sapply(dict, length) == 1))
                     stop("all character vectors in 'dict' must be of length 1")
                 dict0 <- unlist(dict, recursive=FALSE, use.names=FALSE)
-                return(.ULdna_PatternSet.init_with_StrVect(.Object, dict0))
+                return(.ULdna_PDict.init_with_StrVect(.Object, dict0))
             }
             if (extends(pattern_class, "BString"))
-                return(.ULdna_PatternSet.init_with_BStringList(.Object, dict))
+                return(.ULdna_PDict.init_with_BStringList(.Object, dict))
         }
         if (is(dict, "BStringViews")) {
             if (length(dict) == 0)
@@ -142,15 +142,44 @@ setMethod("initialize", "ULdna_PatternSet",
             pattern_length <- unique(pattern_length)
             if (length(pattern_length) != 1)
                 stop("all views in 'dict' must have the same width")
-            return(.ULdna_PatternSet.init_with_BStringList(.Object, as.list(dict)))
+            return(.ULdna_PDict.init_with_BStringList(.Object, as.list(dict)))
         }
-        stop("invalid 'dict' (type '?ULdna_PatternSet' for more information)")
+        stop("invalid 'dict' (type '?ULdna_PDict' for more information)")
     }
 )
 
-setMethod("nchar", "ULdna_PatternSet",
+setMethod("nchar", "ULdna_PDict",
     function(x, type = "chars", allowNA = FALSE) x@nchar)
 
-setMethod("length", "ULdna_PatternSet",
+setMethod("length", "ULdna_PDict",
     function(x) x@length)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PDictMatches" class.
+###
+### A container for storing the matches returned by matchPDict().
+###
+### Slot description:
+###
+###   subject: the searched string.
+###
+###   matches: a list of integer vectors.
+
+setClass("PDictMatches",
+    representation(
+        subject="BString",
+        matches="list"
+    )
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "matchPDict" generic and methods.
+###
+
+setGeneric(
+    "matchPDict", signature="subject",
+    function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+        standardGeneric("matchPDict")
+)
 

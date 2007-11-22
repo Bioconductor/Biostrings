@@ -5,8 +5,7 @@
 ### objects.
 
 
-setClass(
-    "BStringAlign",
+setClass("BStringAlign",
     representation(
         align1="BString",
         align2="BString",
