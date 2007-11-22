@@ -56,9 +56,9 @@ setClass("ULdna_PatternSet",
     )
 )
 
-debug_ACuldna <- function()
+debug_ULdna <- function()
 {
-    invisible(.Call("match_ACuldna_debug", PACKAGE="Biostrings"))
+    invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
 }
 
 ### 'dict' must be a string vector (aka character vector) with at least 1
@@ -74,7 +74,7 @@ debug_ACuldna <- function()
         stop("strings in 'dict' are empty")
     .Object@nchar <- pattern_length
     .Object@length <- length(dict)
-    init <- .Call("ACuldna_init_with_StrVect", dict, PACKAGE="Biostrings")
+    init <- .Call("ULdna_init_with_StrVect", dict, PACKAGE="Biostrings")
     .Object@AC_tree <- XInteger(1)
     .Object@AC_tree@xp <- init$AC_tree_xp
     .Object@AC_base_codes <- init$AC_base_codes
@@ -93,7 +93,7 @@ debug_ACuldna <- function()
     .Object@nchar <- pattern_length
     .Object@length <- length(dict)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
-    init <- .Call("ACuldna_init_with_BStringList", dict0, PACKAGE="Biostrings")
+    init <- .Call("ULdna_init_with_BStringList", dict0, PACKAGE="Biostrings")
     .Object@AC_tree <- XInteger(1)
     .Object@AC_tree@xp <- init$AC_tree_xp
     .Object@AC_base_codes <- init$AC_base_codes

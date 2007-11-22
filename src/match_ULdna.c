@@ -16,13 +16,13 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP match_ACuldna_debug()
+SEXP match_ULdna_debug()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_ACuldna.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'match_ULdna.c'\n", debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'match_ACuldna.c'\n");
+	Rprintf("Debug mode not available in 'match_ULdna.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -223,7 +223,7 @@ static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
 	return;
 }
 
-static void ACuldna_init(const Pattern *patterns, int dict_length)
+static void ULdna_init(const Pattern *patterns, int dict_length)
 {
 	const Pattern *p;
 	int i;
@@ -236,7 +236,7 @@ static void ACuldna_init(const Pattern *patterns, int dict_length)
 	return;
 }
 
-static SEXP ACuldna_init_mkSEXP()
+static SEXP ULdna_init_mkSEXP()
 {
 	SEXP ans, ans_names, ans_elt, tag, ans_elt_elt;
 	DupsBufLine *line;
@@ -289,22 +289,22 @@ static SEXP ACuldna_init_mkSEXP()
  * ======================================================
  */
 
-static int ACuldna_exact_search()
+static int ULdna_exact_search()
 {
 	return 0;
 }
 
 
 /****************************************************************************
- * .Call entry points: "ACuldna_init_with_StrVect"
- *                 and "ACuldna_init_with_BStringList"
+ * .Call entry points: "ULdna_init_with_StrVect"
+ *                 and "ULdna_init_with_BStringList"
  *
  * Arguments:
  *   'dict': a string vector (aka character vector) containing the
- *           uniform-length dictionary for ACuldna_init_with_StrVect.
+ *           uniform-length dictionary for ULdna_init_with_StrVect.
  *           A list of (pattern@data@xp, pattern@offset, pattern@length)
  *           triplets containing the uniform-length dictionary for
- *           ACuldna_init_with_BStringList.
+ *           ULdna_init_with_BStringList.
  *
  * Return an R list with the following elements:
  *   - AC_tree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
@@ -317,7 +317,7 @@ static int ACuldna_exact_search()
  *
  ****************************************************************************/
 
-SEXP ACuldna_init_with_StrVect(SEXP dict)
+SEXP ULdna_init_with_StrVect(SEXP dict)
 {
 	Pattern *patterns, *p;
 	SEXP dict_elt;
@@ -329,11 +329,11 @@ SEXP ACuldna_init_with_StrVect(SEXP dict)
 		p->P = CHAR(dict_elt);
 		p->nP = LENGTH(dict_elt);
 	}
-	ACuldna_init(patterns, LENGTH(dict));
-	return ACuldna_init_mkSEXP();
+	ULdna_init(patterns, LENGTH(dict));
+	return ULdna_init_mkSEXP();
 }
 
-SEXP ACuldna_init_with_BStringList(SEXP dict)
+SEXP ULdna_init_with_BStringList(SEXP dict)
 {
 	SEXP ans;
 

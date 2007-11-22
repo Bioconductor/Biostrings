@@ -526,13 +526,13 @@ SEXP match_BOC2_exact(
 );
 
 
-/* match_ACuldna.c */
+/* match_ULdna.c */
 
-SEXP match_ACuldna_debug();
+SEXP match_ULdna_debug();
 
-SEXP ACuldna_init_with_StrVect(SEXP dict);
+SEXP ULdna_init_with_StrVect(SEXP dict);
 
-SEXP ACuldna_init_with_BStringList(SEXP dict);
+SEXP ULdna_init_with_BStringList(SEXP dict);
 
 
 /* pmatchPattern.c */
