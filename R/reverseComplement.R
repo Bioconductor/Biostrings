@@ -1,12 +1,3 @@
-### Dangerous, there is no guarantee that DNA_STRING_CODEC and RNA_STRING_CODEC
-### are complementary. FIX AS SOON AS POSSIBLE!
-.DNAComplementLookup <- function()
-{
-    lkup <- DNA_STRING_CODEC@dec_lkup
-    lkup[lkup %in% letterAsByteVal("T")] <- letterAsByteVal("U")
-    RNA_STRING_CODEC@enc_lkup[lkup + 1]
-}
-
 setGeneric("reverse", signature="x",
     function(x, ...) standardGeneric("reverse")
 )
@@ -43,7 +34,7 @@ setMethod("complement", "DNAString",
     {
         lx <- length(x)
         data <- XRaw(lx)
-        lkup <- .DNAComplementLookup()
+        lkup <- getDNAComplementLookup()
         XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
     }
@@ -67,7 +58,7 @@ setMethod("reverseComplement", "DNAString",
     {
         lx <- length(x)
         data <- XRaw(lx)
-        lkup <- .DNAComplementLookup()
+        lkup <- getDNAComplementLookup()
         XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
     }

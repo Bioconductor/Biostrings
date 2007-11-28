@@ -36,31 +36,8 @@ static int normalize_views(const int *start, const int *end, int nviews)
  */
 SEXP Biostrings_normalize_views(SEXP start, SEXP end)
 {
-	int count;
-	SEXP ans, ans_names, ans_elt;
-
 	_Biostrings_reset_views_buffer();
-	count = normalize_views(INTEGER(start), INTEGER(end), LENGTH(start));
-
-	PROTECT(ans = NEW_LIST(2));
-	/* set the names */
-	PROTECT(ans_names = allocVector(STRSXP, 2));
-	SET_STRING_ELT(ans_names, 0, mkChar("start"));
-	SET_STRING_ELT(ans_names, 1, mkChar("end"));
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-	/* set the "start" element */
-	PROTECT(ans_elt = allocVector(INTSXP, count));
-	memcpy(INTEGER(ans_elt), _Biostrings_get_views_start(), sizeof(int) * count);
-	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
-	/* set the "end" element */
-	PROTECT(ans_elt = allocVector(INTSXP, count));
-	memcpy(INTEGER(ans_elt), _Biostrings_get_views_end(), sizeof(int) * count);
-	SET_ELEMENT(ans, 1, ans_elt);
-	UNPROTECT(1);
-	/* ans is ready */
-	UNPROTECT(1);
-	return ans;
+	normalize_views(INTEGER(start), INTEGER(end), LENGTH(start));
+	return _Biostrings_get_views_LIST();
 }
 

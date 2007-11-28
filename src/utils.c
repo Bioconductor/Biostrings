@@ -1,5 +1,4 @@
 #include "Biostrings.h"
-#include <S.h> /* for Srealloc() */
 
 #include <ctype.h> /* for isspace() */
 
@@ -501,76 +500,6 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	return;
-}
-
-
-/* ==========================================================================
- * Helper functions used for storing views in a temporary buffer like the
- * matches found by the matching algos.
- * --------------------------------------------------------------------------
- */
-
-static int *views_startbuf, *views_endbuf;
-static char **views_descbuf;
-static int views_bufsize, views_count; /* views_bufsize >= views_count */
-
-/* Reset views buffer */
-void _Biostrings_reset_views_buffer()
-{
-	/* No memory leak here, because we use transient storage allocation */
-	views_startbuf = views_endbuf = NULL;
-	views_descbuf = NULL;
-	views_bufsize = views_count = 0;
-	return;
-}
-
-int *_Biostrings_get_views_start()
-{
-	return views_startbuf;
-}
-
-int *_Biostrings_get_views_end()
-{
-	return views_endbuf;
-}
-
-char **_Biostrings_get_views_desc()
-{
-	return views_descbuf;
-}
-
-/* Return the new number of views */
-int _Biostrings_report_view(int start, int end, const char *desc)
-{
-	long new_size;
-	size_t desc_size;
-
-	if (views_count >= views_bufsize) {
-		/* Buffer is full */
-		if (views_bufsize == 0)
-			new_size = 1024;
-		else
-			new_size = 2 * views_bufsize;
-		views_startbuf = Srealloc((char *) views_startbuf, new_size,
-						(long) views_bufsize, int);
-		views_endbuf = Srealloc((char *) views_endbuf, new_size,
-						(long) views_bufsize, int);
-		views_descbuf = Srealloc((char *) views_descbuf, new_size,
-						(long) views_bufsize, char *);
-		views_bufsize = new_size;
-	}
-	views_startbuf[views_count] = start;
-	views_endbuf[views_count] = end;
-	desc_size = strlen(desc) + 1; /* + 1 for the terminating '\0' character */
-	views_descbuf[views_count] = Salloc((long) desc_size, char);
-	memcpy(views_descbuf[views_count], desc, desc_size);
-	return ++views_count;
-}
-
-/* Return the new number of views (== number of matches) */
-int _Biostrings_report_match(int Lpos, int Rpos)
-{
-	return _Biostrings_report_view(++Lpos, ++Rpos, "");
 }
 
 

@@ -133,6 +133,17 @@ BStringCodec.DNAorRNA <- function(alphabet, baseCodes)
 DNA_STRING_CODEC <- BStringCodec.DNAorRNA(DNA_ALPHABET, DNA_BASE_CODES)
 RNA_STRING_CODEC <- BStringCodec.DNAorRNA(RNA_ALPHABET, RNA_BASE_CODES)
 
+### Return the lookup table that transforms a DNA (or RNA) sequence into its
+### complementary sequence.
+### IMPORTANT: Assumes that DNA_STRING_CODEC and RNA_STRING_CODEC are
+### complementary codecs.
+getDNAComplementLookup <- function()
+{
+    lkup <- DNA_STRING_CODEC@dec_lkup
+    lkup[lkup %in% letterAsByteVal("T")] <- letterAsByteVal("U")
+    RNA_STRING_CODEC@enc_lkup[lkup + 1]
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Add extra codecs below...

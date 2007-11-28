@@ -136,23 +136,6 @@ void _Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
-void _Biostrings_reset_views_buffer();
-
-int *_Biostrings_get_views_start();
-int *_Biostrings_get_views_end();
-char **_Biostrings_get_views_desc();
-
-int _Biostrings_report_view(
-		int start,
-		int end,
-		const char *desc
-);
-
-int _Biostrings_report_match(
-		int Lpos,
-		int Rpos
-);
-
 int fgets_rtrimmed(
 		char *s,
 		int size,
@@ -385,6 +368,28 @@ SEXP char_frequency(
 );
 
 
+/* views_buffer.c */
+
+void _Biostrings_reset_views_buffer();
+
+int *_Biostrings_get_views_start();
+int *_Biostrings_get_views_end();
+char **_Biostrings_get_views_desc();
+
+int _Biostrings_report_view(
+		int start,
+		int end,
+		const char *desc
+);
+
+int _Biostrings_report_match(
+		int Lpos,
+		int Rpos
+);
+
+SEXP _Biostrings_get_views_LIST();
+
+
 /* normalize_views.c */
 
 SEXP Biostrings_normalize_views(
@@ -451,6 +456,20 @@ SEXP match_shiftor(
 		SEXP mismatch,
 		SEXP fixed,
 		SEXP count_only
+);
+
+
+/* find_palindromes.c */
+
+SEXP find_palindromes_debug();
+
+SEXP find_palindromes(
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length,
+		SEXP min_armlength,
+		SEXP max_ngaps,
+		SEXP L2R_lkup
 );
 
 

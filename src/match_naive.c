@@ -52,8 +52,8 @@ static int naive_exact_search(const char *P, int nP, const char *S, int nS,
 {
 	int count = 0, n1, n2;
 
-	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++) {
-		if (memcmp(P, S + n1, nP) != 0)
+	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++, S++) {
+		if (memcmp(P, S, nP) != 0)
 			continue;
 		if (!is_count_only)
 			_Biostrings_report_match(n1, 0);

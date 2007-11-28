@@ -78,6 +78,10 @@ static const R_CallMethodDef callMethods[] = {
 	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
 	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
+/* find_palindromes.c */
+	{"find_palindromes_debug", (DL_FUNC) &find_palindromes_debug, 0},
+	{"find_palindromes", (DL_FUNC) &find_palindromes, 6},
+
 /* match_BOC.c */
 	{"match_BOC_debug", (DL_FUNC) &match_BOC_debug, 0},
 	{"match_BOC_preprocess", (DL_FUNC) &match_BOC_preprocess, 12},
