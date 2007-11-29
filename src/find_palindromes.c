@@ -51,8 +51,7 @@ static void naive_palindrome_search(const char *S, int nS, int armlen_min, int n
 static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, int ngaps_max,
 		const int *lkup, int lkup_length)
 {
-	int armlen0, Lpos0, Rpos0, n1, n2, ngaps, armlen, Lpos, Rpos,
-	    lkup_key, lkup_val;
+	int n1, n2, ngaps, armlen, Lpos, Rpos, lkup_key, lkup_val;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
@@ -60,7 +59,6 @@ static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, i
 			nS, armlen_min, ngaps_max);
 	}
 #endif
-	Lpos0 = -1;
 	for (n1 = armlen_min, n2 = 2 * armlen_min; n2 <= nS; n1++, n2++) {
 		for (ngaps = 0; ngaps <= ngaps_max; ngaps++) {
 			armlen = 0;
@@ -79,27 +77,10 @@ static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, i
 			}
 			if (armlen < armlen_min)
 				continue;
-			Lpos++;
-			Rpos--;
-			if (Lpos == Lpos0) {
-				if (Rpos > Rpos0)
-					Rpos0 = Rpos;
-				continue;
-			}
-			if (Rpos == Rpos0) {
-				if (Lpos < Lpos0)
-					Lpos0 = Lpos;
-				continue;
-			}
+			_Biostrings_report_match(++Lpos, --Rpos);
 			break;
 		}
-		if (Lpos0 != -1)
-			_Biostrings_report_match(Lpos0, Rpos0);
-		Lpos0 = Lpos;
-		Rpos0 = Rpos;
 	}
-	if (Lpos0 != -1)
-		_Biostrings_report_match(Lpos0, Rpos0);
 	return;
 }
 
