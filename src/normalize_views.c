@@ -12,7 +12,7 @@ static void normalize_views(const int *start, const int *end, int nviews)
 	int start0, end0, start1, end1, i;
 
 	if (nviews == 0)
-		return 0;
+		return;
 	start0 = start[0];
 	end0 = end[0];
 	for (i = 1; i < nviews; i++) {

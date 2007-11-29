@@ -53,7 +53,7 @@ SEXP lcprefix(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 
 	n = _lcprefix((char *) s1, s1_len, (char *) s2, s2_len);
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = n;
 	UNPROTECT(1);
 	return ans;
@@ -79,7 +79,7 @@ SEXP lcsuffix(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 
 	n = _lcsuffix((char *) s1, s1_len, (char *) s2, s2_len);
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = n;
 	UNPROTECT(1);
 	return ans;

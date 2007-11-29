@@ -120,7 +120,7 @@ SEXP bits_per_long()
 {
 	SEXP ans;
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = BITS_PER_LONG;
 	UNPROTECT(1);
 	return ans;
@@ -336,11 +336,9 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			is_count_only, kerr+1, fixedP);
 
 	if (!is_count_only) {
-		PROTECT(ans = allocVector(INTSXP, count));
-		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
-					sizeof(int) * count);
+		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
 	} else {
-		PROTECT(ans = allocVector(INTSXP, 1));
+		PROTECT(ans = NEW_INTEGER(1));
 		INTEGER(ans)[0] = count;
 	}
 	UNPROTECT(1);

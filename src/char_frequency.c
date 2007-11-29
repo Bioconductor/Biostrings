@@ -16,7 +16,7 @@ SEXP char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
 	const Rbyte *x;
 	Rbyte c;
 
-	PROTECT(ans = allocVector(INTSXP, 256));
+	PROTECT(ans = NEW_INTEGER(256));
 	memset(INTEGER(ans), 0, 256 * sizeof(int));
 	o = INTEGER(x_offset)[0];
 	x = RAW(R_ExternalPtrTag(x_xp)) + o;

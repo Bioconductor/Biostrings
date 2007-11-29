@@ -15,7 +15,7 @@ SEXP XInteger_alloc(SEXP xint_xp, SEXP length)
 
 	tag_length = INTEGER(length)[0];
 
-	PROTECT(tag = allocVector(INTSXP, tag_length));
+	PROTECT(tag = NEW_INTEGER(tag_length));
 	R_SetExternalPtrTag(xint_xp, tag);
 	UNPROTECT(1);
 	return xint_xp;
@@ -41,7 +41,7 @@ SEXP XInteger_length(SEXP xint_xp)
 	tag = R_ExternalPtrTag(xint_xp);
 	tag_length = LENGTH(tag);
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = tag_length;
 	UNPROTECT(1);
 	return ans;
@@ -64,7 +64,7 @@ SEXP XInteger_memcmp(SEXP xint1_xp, SEXP start1,
 	i2 = INTEGER(start2)[0] - 1;
 	n = INTEGER(width)[0];
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = _Biostrings_memcmp((char *) INTEGER(tag1), i1,
 					(char *) INTEGER(tag2), i2,
 					n, sizeof(int));
@@ -86,7 +86,7 @@ SEXP XInteger_read_ints_from_i1i2(SEXP src_xint_xp, SEXP imin, SEXP imax)
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	PROTECT(ans = allocVector(INTSXP, n));
+	PROTECT(ans = NEW_INTEGER(n));
 	_Biostrings_memcpy_from_i1i2(i1, i2,
 			(char *) INTEGER(ans), LENGTH(ans),
 			(char *) INTEGER(src), LENGTH(src), sizeof(int));
@@ -101,7 +101,7 @@ SEXP XInteger_read_ints_from_subset(SEXP src_xint_xp, SEXP subset)
 
 	src = R_ExternalPtrTag(src_xint_xp);
 	n = LENGTH(subset);
-	PROTECT(ans = allocVector(INTSXP, n));
+	PROTECT(ans = NEW_INTEGER(n));
 	_Biostrings_memcpy_from_subset(INTEGER(subset), n,
 			(char *) INTEGER(ans), n,
 			(char *) INTEGER(src), LENGTH(src), sizeof(int));

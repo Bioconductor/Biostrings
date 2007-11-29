@@ -171,9 +171,7 @@ SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			is_count_only);
 
 	if (!is_count_only) {
-		PROTECT(ans = NEW_INTEGER(count));
-		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
-					sizeof(int) * count);
+		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
 	} else {
 		PROTECT(ans = NEW_INTEGER(1));
 		INTEGER(ans)[0] = count;
@@ -212,9 +210,7 @@ SEXP match_naive_fuzzy(SEXP p_xp, SEXP p_offset, SEXP p_length,
 			is_count_only);
 
 	if (!is_count_only) {
-		PROTECT(ans = NEW_INTEGER(count));
-		memcpy(INTEGER(ans), _Biostrings_get_views_start(),
-					sizeof(int) * count);
+		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
 	} else {
 		PROTECT(ans = NEW_INTEGER(1));
 		INTEGER(ans)[0] = count;

@@ -24,7 +24,7 @@ SEXP Biostrings_sexp_address(SEXP s)
 	char buf[40]; /* should be enough, even for 128-bit addresses */
 
 	snprintf(buf, sizeof(buf), "%p", s);
-	PROTECT(ans = allocVector(STRSXP, 1));
+	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(buf));
 	UNPROTECT(1);
 	return ans;
@@ -87,7 +87,7 @@ SEXP Biostrings_safe_explode(SEXP s)
 	s0 = STRING_ELT(s, 0);
 	s0_length = LENGTH(s0);
 
-	PROTECT(ans = allocVector(STRSXP, s0_length));
+	PROTECT(ans = NEW_CHARACTER(s0_length));
 	for (i = 0; i < s0_length; i++) {
 		buf[0] = CHAR(s0)[i];
 		SET_STRING_ELT(ans, i, mkChar(buf));
@@ -145,7 +145,7 @@ SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp)
 	tag_length = LENGTH(tag);
 	snprintf(buf, sizeof(buf), "%d-byte XRaw object (starting at address %p)",
 		 tag_length, RAW(tag));
-	PROTECT(ans = allocVector(STRSXP, 1));
+	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(buf));
 	UNPROTECT(1);
 	return ans;
@@ -166,7 +166,7 @@ SEXP Biostrings_XRaw_length(SEXP xraw_xp)
 	tag = R_ExternalPtrTag(xraw_xp);
 	tag_length = LENGTH(tag);
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = tag_length;
 	UNPROTECT(1);
 	return ans;
@@ -201,7 +201,7 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 			RAW(tag1), i1, RAW(tag2), i2, n);
 	}
 #endif
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = NEW_INTEGER(1));
 	INTEGER(ans)[0] = _Biostrings_memcmp((char *) RAW(tag1), i1,
 					(char *) RAW(tag2), i2,
 					n, sizeof(Rbyte));
@@ -323,7 +323,7 @@ SEXP Biostrings_XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax
 	_Biostrings_memcpy_from_i1i2(i1, i2,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			sizeof(char));
-	PROTECT(ans = allocVector(STRSXP, 1));
+	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(dest));
 	UNPROTECT(1);
 	return ans;
@@ -342,7 +342,7 @@ SEXP Biostrings_XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
 	_Biostrings_memcpy_from_subset(INTEGER(subset), n,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			sizeof(char));
-	PROTECT(ans = allocVector(STRSXP, 1));
+	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(dest));
 	UNPROTECT(1);
 	return ans;
@@ -404,7 +404,7 @@ SEXP XRaw_read_ints_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
 		error("subscript out of bounds");
 	n = i2 - i1 + 1;
 
-	PROTECT(ans = allocVector(INTSXP, n));
+	PROTECT(ans = NEW_INTEGER(n));
 	for (j = 0; i1 <= i2; i1++, j++) {
 		INTEGER(ans)[j] = (unsigned char) RAW(src)[i1];
 	}
@@ -428,7 +428,7 @@ SEXP XRaw_read_ints_from_subset(SEXP src_xraw_xp, SEXP subset)
 	src_length = LENGTH(src);
 	n = LENGTH(subset);
 
-	PROTECT(ans = allocVector(INTSXP, n));
+	PROTECT(ans = NEW_INTEGER(n));
 	for (j = 0; j < n; j++) {
 		i = INTEGER(subset)[j] - 1;
 		if (i < 0 || i >= src_length)
@@ -529,7 +529,7 @@ SEXP XRaw_read_enc_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax, SEXP 
 	_Biostrings_translate_charcpy_from_i1i2(i1, i2,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
-	PROTECT(ans = allocVector(STRSXP, 1));
+	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(dest));
 	UNPROTECT(1);
 	return ans;
@@ -547,7 +547,7 @@ SEXP XRaw_read_enc_chars_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 	_Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
 			dest, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
-	PROTECT(ans = allocVector(STRSXP, 1));
+	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(dest));
 	UNPROTECT(1);
 	return ans;
@@ -607,7 +607,7 @@ SEXP XRaw_read_complexes_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax, SEXP 
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	PROTECT(dest = allocVector(CPLXSXP, n));
+	PROTECT(dest = NEW_COMPLEX(n));
 	_Biostrings_coerce_to_complex_from_i1i2(i1, i2,
 		COMPLEX(dest), n, (char *) RAW(src), LENGTH(src),
 		COMPLEX(lkup), LENGTH(lkup));
@@ -622,7 +622,7 @@ SEXP XRaw_read_complexes_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	PROTECT(dest = allocVector(CPLXSXP, n));
+	PROTECT(dest = NEW_COMPLEX(n));
 	error("not available yet");
 	UNPROTECT(1);
 	return dest;
@@ -698,8 +698,8 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	FILE *infile;
 	long int lineno;
 	char line[FASTALINE_MAX+1], desc[FASTALINE_MAX+1];
-	int nbyte_max, gaplen, L, line_len, status, view_start, i1, i2, i;
-	char **views_descbuf, c0;
+	int nbyte_max, gaplen, L, line_len, status, view_start, i1, i2;
+	char c0;
 
 	dest = R_ExternalPtrTag(xraw_xp);
 	nbyte_max = LENGTH(dest);
@@ -781,20 +781,15 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 	/* set the "start" element */
-	PROTECT(ans_elt = NEW_INTEGER(L));
-	memcpy(INTEGER(ans_elt), _Biostrings_get_views_start(), sizeof(int) * L);
+	PROTECT(ans_elt = _Biostrings_get_views_start_INTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 	/* set the "end" element */
-	PROTECT(ans_elt = NEW_INTEGER(L));
-	memcpy(INTEGER(ans_elt), _Biostrings_get_views_end(), sizeof(int) * L);
+	PROTECT(ans_elt = _Biostrings_get_views_end_INTEGER());
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 	/* set the "desc" element */
-	PROTECT(ans_elt = NEW_CHARACTER(L));
-	views_descbuf = _Biostrings_get_views_desc();
-	for (i = 0; i < L; i++)
-		SET_STRING_ELT(ans_elt, i, mkChar(views_descbuf[i]));
+	PROTECT(ans_elt = _Biostrings_get_views_desc_CHARACTER());
 	SET_ELEMENT(ans, 3, ans_elt);
 	UNPROTECT(1);
 	/* ans is ready */

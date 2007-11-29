@@ -59,21 +59,6 @@ void _Biostrings_reset_views_buffer()
 	return;
 }
 
-int *_Biostrings_get_views_start()
-{
-	return views_startbuf;
-}
-
-int *_Biostrings_get_views_end()
-{
-	return views_endbuf;
-}
-
-char **_Biostrings_get_views_desc()
-{
-	return views_descbuf;
-}
-
 /* Return the new number of views */
 int _Biostrings_report_view(int start, int end, const char *desc)
 {
@@ -106,25 +91,55 @@ int _Biostrings_report_match(int Lpos, int Rpos)
 	return 1;
 }
 
+SEXP _Biostrings_get_views_start_INTEGER()
+{
+	SEXP ans;
+
+	PROTECT(ans = NEW_INTEGER(views_count));
+	memcpy(INTEGER(ans), views_startbuf, sizeof(int) * views_count);
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP _Biostrings_get_views_end_INTEGER()
+{
+	SEXP ans;
+
+	PROTECT(ans = NEW_INTEGER(views_count));
+	memcpy(INTEGER(ans), views_endbuf, sizeof(int) * views_count);
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP _Biostrings_get_views_desc_CHARACTER()
+{
+	SEXP ans;
+	int i;
+
+	PROTECT(ans = NEW_CHARACTER(views_count));
+	for (i = 0; i < views_count; i++)
+		SET_STRING_ELT(ans, i, mkChar(views_descbuf[i]));
+	UNPROTECT(1);
+	return ans;
+}
+
 SEXP _Biostrings_get_views_LIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
 	PROTECT(ans = NEW_LIST(2));
 	/* set the names */
-	PROTECT(ans_names = allocVector(STRSXP, 2));
+	PROTECT(ans_names = NEW_CHARACTER(2));
 	SET_STRING_ELT(ans_names, 0, mkChar("start"));
 	SET_STRING_ELT(ans_names, 1, mkChar("end"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 	/* set the "start" element */
-	PROTECT(ans_elt = allocVector(INTSXP, views_count));
-	memcpy(INTEGER(ans_elt), _Biostrings_get_views_start(), sizeof(int) * views_count);
+	PROTECT(ans_elt = _Biostrings_get_views_start_INTEGER());
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 	/* set the "end" element */
-	PROTECT(ans_elt = allocVector(INTSXP, views_count));
-	memcpy(INTEGER(ans_elt), _Biostrings_get_views_end(), sizeof(int) * views_count);
+	PROTECT(ans_elt = _Biostrings_get_views_end_INTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 	/* ans is ready */

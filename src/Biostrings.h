@@ -372,10 +372,6 @@ SEXP char_frequency(
 
 void _Biostrings_reset_views_buffer();
 
-int *_Biostrings_get_views_start();
-int *_Biostrings_get_views_end();
-char **_Biostrings_get_views_desc();
-
 int _Biostrings_report_view(
 		int start,
 		int end,
@@ -386,6 +382,12 @@ int _Biostrings_report_match(
 		int Lpos,
 		int Rpos
 );
+
+SEXP _Biostrings_get_views_start_INTEGER();
+
+SEXP _Biostrings_get_views_end_INTEGER();
+
+SEXP _Biostrings_get_views_desc_CHARACTER();
 
 SEXP _Biostrings_get_views_LIST();
 
