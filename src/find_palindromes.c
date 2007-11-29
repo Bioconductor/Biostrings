@@ -21,7 +21,8 @@ SEXP find_palindromes_debug()
 
 static void naive_palindrome_search(const char *S, int nS, int armlen_min, int ngaps_max)
 {
-	int n1, n2, ngaps, armlen, Lpos, Rpos;
+	int n1, n2, ngaps, armlen, Lpos, Rpos, all_letter0;
+	char letter0;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
@@ -35,13 +36,36 @@ static void naive_palindrome_search(const char *S, int nS, int armlen_min, int n
 			Lpos = n1 - 1;
 			Rpos = n1 + ngaps;
 			while (0 <= Lpos && Rpos < nS && S[Lpos] == S[Rpos]) {
+				if (ngaps == 0) {
+					if (armlen == 0) {
+						letter0 = S[Rpos];
+						all_letter0 = 1;
+					} else {
+						if (S[Rpos] != letter0)
+							all_letter0 = 0;
+					} 
+				}
 				armlen++;
 				Lpos--;
 				Rpos++;
 			}
-			if (armlen < armlen_min)
-				continue;
-			_Biostrings_report_match(++Lpos, --Rpos);
+			Lpos++;
+			if (ngaps == 0 && armlen != 0 && all_letter0) {
+				// The current palindrome is in fact the left part of a region where the
+				// same letter (letter0) is repeated. We move to the right end of this region.
+				while (Rpos < nS && S[Rpos] == letter0)
+					Rpos++;
+				if (Rpos - Lpos < 2 * armlen_min)
+					continue;
+				Rpos--;
+				n1 = Rpos;
+				n2 = Rpos + armlen_min;
+			} else {
+				if (armlen < armlen_min)
+					continue;
+				Rpos--;
+			}
+			_Biostrings_report_match(Lpos, Rpos);
 			break;
 		}
 	}
@@ -51,7 +75,8 @@ static void naive_palindrome_search(const char *S, int nS, int armlen_min, int n
 static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, int ngaps_max,
 		const int *lkup, int lkup_length)
 {
-	int n1, n2, ngaps, armlen, Lpos, Rpos, lkup_key, lkup_val;
+	int n1, n2, ngaps, armlen, Lpos, Rpos, all_letter0, lkup_key, lkup_val;
+	char letter0;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
@@ -71,13 +96,38 @@ static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, i
 				}
 				if (((char) lkup_val) != S[Rpos])
 					break;
+				if (ngaps == 0) {
+					if (armlen == 0) {
+						letter0 = S[Rpos];
+						// Will be 1 iff S[Rpos] is its own complementary (only
+						// IUPAC letter N and the gap letter - have this property)
+						all_letter0 = S[Lpos] == S[Rpos];
+					} else {
+						if (S[Rpos] != letter0)
+							all_letter0 = 0;
+					} 
+				}
 				armlen++;
 				Lpos--;
 				Rpos++;
 			}
-			if (armlen < armlen_min)
-				continue;
-			_Biostrings_report_match(++Lpos, --Rpos);
+			Lpos++;
+			if (ngaps == 0 && armlen != 0 && all_letter0) {
+				// The current palindrome is in fact the left part of a region where the
+				// same letter (letter0) is repeated. We move to the right end of this region.
+				while (Rpos < nS && S[Rpos] == letter0)
+					Rpos++;
+				if (Rpos - Lpos < 2 * armlen_min)
+					continue;
+				Rpos--;
+				n1 = Rpos;
+				n2 = Rpos + armlen_min;
+			} else {
+				if (armlen < armlen_min)
+					continue;
+				Rpos--;
+			}
+			_Biostrings_report_match(Lpos, Rpos);
 			break;
 		}
 	}
