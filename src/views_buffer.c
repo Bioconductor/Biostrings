@@ -12,6 +12,43 @@ static int *views_startbuf, *views_endbuf;
 static char **views_descbuf;
 static int views_bufsize, views_count; /* views_bufsize >= views_count */
 
+static int new_view()
+{
+	long new_size;
+
+	if (views_count >= views_bufsize) {
+		/* Buffer is full */
+		if (views_bufsize == 0)
+			new_size = 1024;
+		else
+			new_size = 2 * views_bufsize;
+		views_startbuf = Srealloc((char *) views_startbuf, new_size,
+						(long) views_bufsize, int);
+		views_endbuf = Srealloc((char *) views_endbuf, new_size,
+						(long) views_bufsize, int);
+		views_descbuf = Srealloc((char *) views_descbuf, new_size,
+						(long) views_bufsize, char *);
+		views_bufsize = new_size;
+	}
+	return views_count++;
+}
+
+static void set_view(int i, int start, int end, const char *desc)
+{
+	size_t desc_size;
+
+	views_startbuf[i] = start;
+	views_endbuf[i] = end;
+	if (desc == NULL) {
+		views_descbuf[i] = NULL;
+	} else {
+		desc_size = strlen(desc) + 1; /* + 1 for the terminating '\0' character */
+		views_descbuf[i] = Salloc((long) desc_size, char);
+		memcpy(views_descbuf[i], desc, desc_size);
+	}
+	return;
+}
+
 /* Reset views buffer */
 void _Biostrings_reset_views_buffer()
 {
@@ -40,35 +77,33 @@ char **_Biostrings_get_views_desc()
 /* Return the new number of views */
 int _Biostrings_report_view(int start, int end, const char *desc)
 {
-	long new_size;
-	size_t desc_size;
-
-	if (views_count >= views_bufsize) {
-		/* Buffer is full */
-		if (views_bufsize == 0)
-			new_size = 1024;
-		else
-			new_size = 2 * views_bufsize;
-		views_startbuf = Srealloc((char *) views_startbuf, new_size,
-						(long) views_bufsize, int);
-		views_endbuf = Srealloc((char *) views_endbuf, new_size,
-						(long) views_bufsize, int);
-		views_descbuf = Srealloc((char *) views_descbuf, new_size,
-						(long) views_bufsize, char *);
-		views_bufsize = new_size;
-	}
-	views_startbuf[views_count] = start;
-	views_endbuf[views_count] = end;
-	desc_size = strlen(desc) + 1; /* + 1 for the terminating '\0' character */
-	views_descbuf[views_count] = Salloc((long) desc_size, char);
-	memcpy(views_descbuf[views_count], desc, desc_size);
-	return ++views_count;
+	set_view(new_view(), start, end, desc);
+	return views_count;
 }
 
-/* Return the new number of views (== number of matches) */
+/* Return 0 if the match is ignored (because it's a duplicated) or 1 if it's inserted */
 int _Biostrings_report_match(int Lpos, int Rpos)
 {
-	return _Biostrings_report_view(++Lpos, ++Rpos, "");
+	int start, end, i, j1, j2;
+
+	start = ++Lpos;
+	end = ++Rpos;
+	i = views_count - 1;
+	while (0 <= i && start < views_startbuf[i]) i--;
+	while (0 <= i && start == views_startbuf[i] && end < views_endbuf[i]) i--;
+	if (0 <= i && start == views_startbuf[i] && end == views_endbuf[i])
+		return 0;
+	j2 = new_view();
+	j1 = j2 - 1;
+	while (j1 > i) {
+		views_startbuf[j2] = views_startbuf[j1];
+		views_endbuf[j2] = views_endbuf[j1];
+		views_descbuf[j2] = views_descbuf[j1];
+		j1--;
+		j2--;
+	}
+	set_view(j2, start, end, NULL);
+	return 1;
 }
 
 SEXP _Biostrings_get_views_LIST()

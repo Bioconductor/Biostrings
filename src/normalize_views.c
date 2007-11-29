@@ -7,7 +7,7 @@
  * Assumes that 'start[i] <= end[i]' for all 0 <= i < nviews
  * and that 'start' is sorted in increasing order.
  */
-static int normalize_views(const int *start, const int *end, int nviews)
+static void normalize_views(const int *start, const int *end, int nviews)
 {
 	int start0, end0, start1, end1, i;
 
@@ -23,11 +23,12 @@ static int normalize_views(const int *start, const int *end, int nviews)
 				end0 = end1;
 			continue;
 		}
-		_Biostrings_report_view(start0, end0, "");
+		_Biostrings_report_view(start0, end0, NULL);
 		start0 = start1;
 		end0 = end1;
 	}
-	return _Biostrings_report_view(start0, end0, "");
+	_Biostrings_report_view(start0, end0, NULL);
+	return;
 }
 
 /*
