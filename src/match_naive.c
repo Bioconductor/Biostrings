@@ -47,19 +47,15 @@ SEXP match_naive_debug()
  */
 
 /* Return the number of matches */
-static int naive_exact_search(const char *P, int nP, const char *S, int nS,
-		int is_count_only)
+static void naive_exact_search(const char *P, int nP, const char *S, int nS)
 {
-	int count = 0, n1, n2;
+	int n1, n2;
 
 	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++, S++) {
-		if (memcmp(P, S, nP) != 0)
-			continue;
-		if (!is_count_only)
+		if (memcmp(P, S, nP) == 0)
 			_Biostrings_report_match(n1, 0);
-		count++;
 	}
-	return count;
+	return;
 }
 
 
@@ -69,12 +65,10 @@ static int naive_exact_search(const char *P, int nP, const char *S, int nS,
  */
 
 /* Return the number of matches */
-static int naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
-		int mm_max, int fixedP, int fixedS,
-		int is_count_only)
+static void naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
+		int mm_max, int fixedP, int fixedS)
 {
-	int count = 0,
-	    n1, /* position of pattern left-most char relative to the subject */
+	int n1, /* position of pattern left-most char relative to the subject */
 	    n2, /* 1 + position of pattern right-most char relative to the subject */
 	    n2_max, 
 	    mm, /* current number of mismatches */
@@ -120,11 +114,9 @@ static int naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
 		*/
 		if (j < nP)
 			continue;
-		if (!is_count_only)
-			_Biostrings_report_match(n1, 0);
-		count++;
+		_Biostrings_report_match(n1, 0);
 	}
-	return count;
+	return;
 }
 
 
@@ -150,8 +142,7 @@ SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP count_only)
 {
-	int pat_offset, pat_length, subj_offset, subj_length,
-	    is_count_only, count;
+	int pat_offset, pat_length, subj_offset, subj_length, is_count_only;
 	const Rbyte *pat, *subj;
 	SEXP ans;
 
@@ -163,19 +154,12 @@ SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	is_count_only = LOGICAL(count_only)[0];
 
-	if (!is_count_only)
-		_Biostrings_reset_views_buffer();
-	count = naive_exact_search(
-			(char *) pat, pat_length,
-			(char *) subj, subj_length,
-			is_count_only);
-
-	if (!is_count_only) {
+	_Biostrings_reset_views_buffer(is_count_only);
+	naive_exact_search((char *) pat, pat_length, (char *) subj, subj_length);
+	if (is_count_only)
+		PROTECT(ans = _Biostrings_get_views_count_INTEGER());
+	else
 		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
-	} else {
-		PROTECT(ans = NEW_INTEGER(1));
-		INTEGER(ans)[0] = count;
-	}
 	UNPROTECT(1);
 	return ans;
 }
@@ -186,7 +170,7 @@ SEXP match_naive_fuzzy(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
-	    mm_max, fixedP, fixedS, is_count_only, count;
+	    mm_max, fixedP, fixedS, is_count_only;
 	const Rbyte *pat, *subj;
 	SEXP ans;
 
@@ -201,20 +185,13 @@ SEXP match_naive_fuzzy(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
-	if (!is_count_only)
-		_Biostrings_reset_views_buffer();
-	count = naive_fuzzy_search(
-			(char *) pat, pat_length,
-			(char *) subj, subj_length,
-			mm_max, fixedP, fixedS,
-			is_count_only);
-
-	if (!is_count_only) {
+	_Biostrings_reset_views_buffer(is_count_only);
+	naive_fuzzy_search((char *) pat, pat_length, (char *) subj, subj_length,
+			   mm_max, fixedP, fixedS);
+	if (is_count_only)
+		PROTECT(ans = _Biostrings_get_views_count_INTEGER());
+	else
 		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
-	} else {
-		PROTECT(ans = NEW_INTEGER(1));
-		INTEGER(ans)[0] = count;
-	}
 	UNPROTECT(1);
 	return ans;
 }

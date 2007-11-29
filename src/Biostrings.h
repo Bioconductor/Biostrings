@@ -143,6 +143,36 @@ int fgets_rtrimmed(
 );
 
 
+/* views_buffer.c */
+
+SEXP Biostrings_debug_views_buffer();
+
+void _Biostrings_reset_views_buffer(
+		int count_only
+);
+
+int _Biostrings_report_view(
+		int start,
+		int end,
+		const char *desc
+);
+
+int _Biostrings_report_match(
+		int Lpos,
+		int Rpos
+);
+
+SEXP _Biostrings_get_views_count_INTEGER();
+
+SEXP _Biostrings_get_views_start_INTEGER();
+
+SEXP _Biostrings_get_views_end_INTEGER();
+
+SEXP _Biostrings_get_views_desc_CHARACTER();
+
+SEXP _Biostrings_get_views_LIST();
+
+
 /* XRaw.c */
 
 SEXP Biostrings_debug_XRaw();
@@ -366,30 +396,6 @@ SEXP char_frequency(
 		SEXP x_offset,
 		SEXP x_length
 );
-
-
-/* views_buffer.c */
-
-void _Biostrings_reset_views_buffer();
-
-int _Biostrings_report_view(
-		int start,
-		int end,
-		const char *desc
-);
-
-int _Biostrings_report_match(
-		int Lpos,
-		int Rpos
-);
-
-SEXP _Biostrings_get_views_start_INTEGER();
-
-SEXP _Biostrings_get_views_end_INTEGER();
-
-SEXP _Biostrings_get_views_desc_CHARACTER();
-
-SEXP _Biostrings_get_views_LIST();
 
 
 /* normalize_views.c */

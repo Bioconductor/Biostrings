@@ -19,13 +19,13 @@ SEXP find_palindromes_debug()
 
 /****************************************************************************/
 
-static int naive_palindrome_search(const char *S, int nS, int armlen_min, int ngaps_max)
+static void naive_palindrome_search(const char *S, int nS, int armlen_min, int ngaps_max)
 {
-	int count = 0, n1, n2, ngaps, armlen, Lpos, Rpos;
+	int n1, n2, ngaps, armlen, Lpos, Rpos;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] naive_antipalindrome_search(): nS=%d armlen_min=%d ngaps_max=%d\n",
+		Rprintf("[DEBUG] naive_palindrome_search(): nS=%d armlen_min=%d ngaps_max=%d\n",
 			nS, armlen_min, ngaps_max);
 	}
 #endif
@@ -42,17 +42,16 @@ static int naive_palindrome_search(const char *S, int nS, int armlen_min, int ng
 			if (armlen < armlen_min)
 				continue;
 			_Biostrings_report_match(++Lpos, --Rpos);
-			count++;
 			break;
 		}
 	}
-	return count;
+	return;
 }
 
-static int naive_antipalindrome_search(const char *S, int nS, int armlen_min, int ngaps_max,
+static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, int ngaps_max,
 		const int *lkup, int lkup_length)
 {
-	int count = 0, armlen0, Lpos0, Rpos0, n1, n2, ngaps, armlen, Lpos, Rpos,
+	int armlen0, Lpos0, Rpos0, n1, n2, ngaps, armlen, Lpos, Rpos,
 	    lkup_key, lkup_val;
 
 #ifdef DEBUG_BIOSTRINGS
@@ -94,18 +93,14 @@ static int naive_antipalindrome_search(const char *S, int nS, int armlen_min, in
 			}
 			break;
 		}
-		if (Lpos0 != -1) {
+		if (Lpos0 != -1)
 			_Biostrings_report_match(Lpos0, Rpos0);
-			count++;
-		}
 		Lpos0 = Lpos;
 		Rpos0 = Rpos;
 	}
-	if (Lpos0 != -1) {
+	if (Lpos0 != -1)
 		_Biostrings_report_match(Lpos0, Rpos0);
-		count++;
-	}
-	return count;
+	return;
 }
 
 /*
@@ -122,7 +117,7 @@ SEXP find_palindromes(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	armlen_min = INTEGER(min_armlength)[0];
 	ngaps_max = INTEGER(max_ngaps)[0];
-	_Biostrings_reset_views_buffer();
+	_Biostrings_reset_views_buffer(0);
 	if (L2R_lkup == R_NilValue)
 		naive_palindrome_search((char *) subj, subj_length,
 			armlen_min, ngaps_max);

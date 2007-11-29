@@ -13,11 +13,6 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-debug_utils <- function()
-{
-    invisible(.Call("Biostrings_debug_utils", PACKAGE="Biostrings"))
-}
-
 debug_XRaw <- function()
 {
     invisible(.Call("Biostrings_debug_XRaw", PACKAGE="Biostrings"))

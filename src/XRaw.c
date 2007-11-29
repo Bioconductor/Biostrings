@@ -698,7 +698,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	FILE *infile;
 	long int lineno;
 	char line[FASTALINE_MAX+1], desc[FASTALINE_MAX+1];
-	int nbyte_max, gaplen, L, line_len, status, view_start, i1, i2;
+	int nbyte_max, gaplen, line_len, status, view_start, i1, i2;
 	char c0;
 
 	dest = R_ExternalPtrTag(xraw_xp);
@@ -709,9 +709,9 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 
 	if ((infile = fopen(path, "r")) == NULL)
 		error("cannot open file");
-	lineno = L = i1 = 0;
+	lineno = i1 = 0;
 	status = 0; /* 0: expecting desc; 1: expecting seq; 2: no expectation */
-	_Biostrings_reset_views_buffer();
+	_Biostrings_reset_views_buffer(0);
 	while ((line_len = fgets_rtrimmed(line, FASTALINE_MAX+1, infile)) != -1) {
 	/* while (fgets(line, FASTALINE_MAX+1, infile) != NULL) { */
 		lineno++;
@@ -748,7 +748,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 			error("file does not seem to be FASTA");
 		}
 		if (status == 2) {
-			L = _Biostrings_report_view(view_start, i1, desc);
+			_Biostrings_report_view(view_start, i1, desc);
 			if (gaplen != 0) {
 				i2 = i1 + gaplen - 1;
 				_Biostrings_memcpy_to_i1i2(i1, i2,
@@ -764,7 +764,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	fclose(infile);
 	if (status != 2)
 		error("file does not seem to be FASTA");
-	L = _Biostrings_report_view(view_start, i1, desc);
+	_Biostrings_report_view(view_start, i1, desc);
 
 	PROTECT(ans = NEW_LIST(4));
 	/* set the names */

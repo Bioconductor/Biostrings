@@ -5,6 +5,9 @@ static const R_CallMethodDef callMethods[] = {
 /* utils.c */
 	{"Biostrings_debug_utils", (DL_FUNC) &Biostrings_debug_utils, 0},
 
+/* views_buffer.c */
+	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},
+
 /* XRaw.c */
 	{"Biostrings_debug_XRaw", (DL_FUNC) &Biostrings_debug_XRaw, 0},
 

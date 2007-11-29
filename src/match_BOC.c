@@ -258,14 +258,13 @@ static int split4_offsets(char codes[4], int *offsets[4], int noffsets[4], const
 	return 0;
 }
 
-static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
+static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		char c1, char c2, char c3, char c4,
 		const char *buf1, const char *buf2, const char *buf3, const char *pre4buf,
 		const double *means,
-		const int *table1, const int *table2, const int *table3, const int *table4,
-		int is_count_only)
+		const int *table1, const int *table2, const int *table3, const int *table4)
 {
-	int count = 0, n1, n1max, n2, c1_oc, c2_oc, c3_oc, nmers[3],
+	int n1, n1max, n2, c1_oc, c2_oc, c3_oc, nmers[3],
 	    nPsuf4, *Psuf4_offsets[4], Psuf4_noffsets[4], i, j, *offsets, noffsets;
 	char c, ocX, ocY, ocZ, Ppre4, codes[4];
 	const char *bufX, *bufY, *bufZ, *Psuf4, *Ssuf4;
@@ -328,16 +327,14 @@ static int BOC_exact_search(const char *P, int nP, const char *S, int nS,
 					goto continue0;
 		}
 */
-		if (!is_count_only)
-			_Biostrings_report_match(n1, 0);
-		count++;
+		_Biostrings_report_match(n1, 0);
 		continue0: ;
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] count_preapprovals=%d\n", count_preapprovals);
 #endif
-	return count;
+	return;
 }
 
 
@@ -461,7 +458,7 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP stats, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
-	    c1, c2, c3, c4, is_count_only, count;
+	    c1, c2, c3, c4, is_count_only;
 	const Rbyte *pat, *subj;
 	SEXP buf1, buf2, buf3, pre4buf, ans;
 
@@ -481,26 +478,21 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	pre4buf = R_ExternalPtrTag(pre4buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
-	if (!is_count_only)
-		_Biostrings_reset_views_buffer();
-	count = BOC_exact_search(
-			(char *) pat, pat_length,
-			(char *) subj, subj_length,
-			(char) c1, (char) c2, (char) c3, (char) c4,
-			(char *) RAW(buf1), (char *) RAW(buf2), (char *) RAW(buf3), (char *) RAW(pre4buf),
-			REAL(VECTOR_ELT(stats, 0)),
-			INTEGER(VECTOR_ELT(stats, 1)),
-			INTEGER(VECTOR_ELT(stats, 2)),
-			INTEGER(VECTOR_ELT(stats, 3)),
-			INTEGER(VECTOR_ELT(stats, 4)),
-			is_count_only);
-
-	if (!is_count_only) {
+	_Biostrings_reset_views_buffer(is_count_only);
+	BOC_exact_search(
+		(char *) pat, pat_length,
+		(char *) subj, subj_length,
+		(char) c1, (char) c2, (char) c3, (char) c4,
+		(char *) RAW(buf1), (char *) RAW(buf2), (char *) RAW(buf3), (char *) RAW(pre4buf),
+		REAL(VECTOR_ELT(stats, 0)),
+		INTEGER(VECTOR_ELT(stats, 1)),
+		INTEGER(VECTOR_ELT(stats, 2)),
+		INTEGER(VECTOR_ELT(stats, 3)),
+		INTEGER(VECTOR_ELT(stats, 4)));
+	if (is_count_only)
+		PROTECT(ans = _Biostrings_get_views_count_INTEGER());
+	else 
 		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
-        } else {
-		PROTECT(ans = NEW_INTEGER(1));
-		INTEGER(ans)[0] = count;
-	}
 	UNPROTECT(1);
 	return ans;
 }

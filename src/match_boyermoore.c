@@ -366,9 +366,9 @@ static void init_MWshift_table()
 }
 
 /* Return the number of matches */
-static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count_only)
+static void boyermoore(const char *P, int nP, const char *S, int nS)
 {
-	int count = 0, n, i1, i2, j1, j2, shift, shift1, i, j;
+	int n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Prmc, c; /* Prmc is P right-most char */
 
 	init_P0buffer(P, nP);
@@ -412,9 +412,7 @@ static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count
 		if (j2 == nP) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
-				if (!is_count_only)
-					_Biostrings_report_match(i1, 0);
-				count++;
+				_Biostrings_report_match(i1, 0);
 				shift = P0buffer_shift0;
 			} else {
 				shift = get_VSGSshift(c, j1 - 1);
@@ -436,15 +434,14 @@ static int boyermoore(const char *P, int nP, const char *S, int nS, int is_count
 			j2 = 0; /* forget the current Matching Window */
 		}
 	}
-	return count;
+	return;
 }
 
 SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP count_only)
 {
-	int pat_offset, pat_length, subj_offset, subj_length,
-	    is_count_only, count;
+	int pat_offset, pat_length, subj_offset, subj_length, is_count_only;
 	const Rbyte *pat, *subj;
 	SEXP ans;
 
@@ -456,15 +453,12 @@ SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	is_count_only = LOGICAL(count_only)[0];
 
-	if (!is_count_only)
-		_Biostrings_reset_views_buffer();
-	count = boyermoore((char *) pat, pat_length, (char *) subj, subj_length, is_count_only);
-	if (!is_count_only) {
+	_Biostrings_reset_views_buffer(is_count_only);
+	boyermoore((char *) pat, pat_length, (char *) subj, subj_length);
+	if (is_count_only)
+		PROTECT(ans = _Biostrings_get_views_count_INTEGER());
+	else
 		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
-	} else {
-		PROTECT(ans = NEW_INTEGER(1));
-		INTEGER(ans)[0] = count;
-	}
 	UNPROTECT(1);
 	return ans;
 }
