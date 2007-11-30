@@ -63,6 +63,7 @@
 \seealso{
   \code{\link{matchPattern}},
   \code{\link{matchLRPatterns}},
+  \code{\link{findPalindromes}},
   \code{\link{reverseComplement}},
   \code{\link{BStringViews}}
 }

@@ -3,6 +3,25 @@
 ### -------------------------------------------------------------------------
 
 
+.normalize.anti <- function(anti, class)
+{
+    if (class %in% c("DNAString", "RNAString")) {
+        if (is.null(anti))
+            return(TRUE)
+        if (!is.logical(anti) || length(anti) != 1 || is.na(anti))
+            stop("'anti' can only be 'NULL', 'TRUE' or 'FALSE'")
+        return(anti)
+    }
+    if (is.null(anti))
+        return(FALSE)
+    stop("'anti' must be 'NULL' with a non-DNAString (or non-RNAString) sequence")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "findPalindromes" generic and methods.
+###
+
 debug_find_palindromes <- function()
 {
     invisible(.Call("find_palindromes_debug", PACKAGE="Biostrings"))
@@ -38,13 +57,10 @@ setMethod("findPalindromes", "BString",
         max.ngaps <- as.integer(max.ngaps)
         if (max.ngaps < 0)
             stop("'max.ngaps' must be a non-negative integer")
-        L2R_lkup <- NULL
-        if (class(subject) %in% c("DNAString", "RNAString")) {
-            if (is.null(anti) || anti)
-                L2R_lkup <- getDNAComplementLookup()
-        } else if (!is.null(anti)) {
-            stop("'anti' must be 'NULL' with a non-DNAString (or non-RNAString) subject")
-        }
+        if (.normalize.anti(anti, class(subject)))
+            L2R_lkup <- getDNAComplementLookup()
+        else
+            L2R_lkup <- NULL
         .find.palindromes(subject, min.armlength, max.ngaps, L2R_lkup)
     }
 )
@@ -65,6 +81,86 @@ setMethod("findPalindromes", "BStringViews",
         }
         new("BStringViews", subject=subject(subject),
             views=data.frame(start=ans_start, end=ans_end))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "palindromeArmLength" generic and methods.
+###
+
+setGeneric(
+    "palindromeArmLength", signature="x",
+    function(x, anti=NULL, ...) standardGeneric("palindromeArmLength")
+)
+
+setMethod("palindromeArmLength", "BString",
+    function(x, anti=NULL, ...)
+    {
+        if (.normalize.anti(anti, class(x)))
+            revx <- reverseComplement(x)
+        else
+            revx <- reverse(x)
+        armlength <- lcprefix(x, revx)
+        if (armlength == 0L)
+            stop("'x' is not a palindrome (no arms found)")
+        armlength
+    }
+)
+
+setMethod("palindromeArmLength", "BStringViews",
+    function(x, anti=NULL, ...)
+    {
+        if (length(x) == 0)
+            return(integer(0))
+        sapply(seq_len(length(x)), function(i) palindromeArmLength(x[[i]], anti=anti))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "palindromeLeftArm" and "palindromeRightArm" generic and methods.
+###
+
+setGeneric(
+    "palindromeLeftArm", signature="x",
+    function(x, anti=NULL, ...) standardGeneric("palindromeLeftArm")
+)
+
+setMethod("palindromeLeftArm", "BString",
+    function(x, anti=NULL, ...)
+    {
+        BString.substr(x, 1L, palindromeArmLength(x, anti=anti))
+    }
+)
+
+setMethod("palindromeLeftArm", "BStringViews",
+    function(x, anti=NULL, ...)
+    {
+        arm_start <- start(x)
+        arm_end <- arm_start + palindromeArmLength(x, anti=anti) - 1L
+        new("BStringViews", subject=subject(x), views=data.frame(start=arm_start, end=arm_end))
+    }
+)
+
+setGeneric(
+    "palindromeRightArm", signature="x",
+    function(x, anti=NULL, ...) standardGeneric("palindromeRightArm")
+)
+
+setMethod("palindromeRightArm", "BString",
+    function(x, anti=NULL, ...)
+    {
+        BString.substr(x, nchar(x) - palindromeArmLength(x, anti=anti) + 1L, nchar(x))
+    }
+)
+
+setMethod("palindromeRightArm", "BStringViews",
+    function(x, anti=NULL, ...)
+    {
+        arm_end <- end(x)
+        arm_start <- arm_end - palindromeArmLength(x, anti=anti) + 1L
+        new("BStringViews", subject=subject(x), views=data.frame(start=arm_start, end=arm_end))
     }
 )
 

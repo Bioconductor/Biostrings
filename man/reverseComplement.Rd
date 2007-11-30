@@ -57,7 +57,9 @@
   An object of the same class and length as the original object.
 }
 
-\seealso{}
+\seealso{
+  \code{\link{findPalindromes}}
+}
 
 \examples{
   reverseComplement(DNAString("ACGT-YN-"))

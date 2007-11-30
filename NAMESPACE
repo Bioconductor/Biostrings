@@ -33,6 +33,7 @@ exportMethods(
     mask,
     matchLRPatterns,
     matchProbePair,
+    palindromeArmLength, palindromeLeftArm, palindromeRightArm,
     findPalindromes,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
