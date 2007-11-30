@@ -39,33 +39,33 @@ typedef struct pattern {
 
 typedef struct dupsbuf_line {
 	int *vals;
-	int countmax;
+	int maxcount;
 	int count;
 } DupsBufLine;
 
 static DupsBufLine *dupsbuf;
-static int dupsbuf_countmax, dupsbuf_count;
+static int dupsbuf_maxcount, dupsbuf_count;
 
 static void dupsbuf_reset()
 {
 	/* No memory leak here, because we use transient storage allocation */
 	dupsbuf = NULL;
-	dupsbuf_countmax = dupsbuf_count = 0;
+	dupsbuf_maxcount = dupsbuf_count = 0;
 	return;
 }
 
 static int dupsbuf_appendtoline(DupsBufLine *line, int P_id)
 {
-	long new_countmax;
+	long new_maxcount;
 
-	if (line->count >= line->countmax) {
-		if (line->countmax == 0)
-			new_countmax = 1000;
+	if (line->count >= line->maxcount) {
+		if (line->maxcount == 0)
+			new_maxcount = 1000;
 		else
-			new_countmax = 2 * line->countmax;
-		line->vals = Srealloc((char *) line->vals, new_countmax,
-				(long) line->countmax, int);
-		line->countmax = new_countmax;
+			new_maxcount = 2 * line->maxcount;
+		line->vals = Srealloc((char *) line->vals, new_maxcount,
+				(long) line->maxcount, int);
+		line->maxcount = new_maxcount;
 	}
 	line->vals[line->count++] = P_id;
 	return line->count;
@@ -75,24 +75,24 @@ static int dupsbuf_append(int P_id1, int P_id2)
 {
 	int i;
 	DupsBufLine *line;
-	long new_countmax;
+	long new_maxcount;
 
 	for (i = 0, line = dupsbuf; i < dupsbuf_count; i++, line++) {
 		if (line->vals[0] == P_id1)
 			return dupsbuf_appendtoline(line, P_id2);
 	}
-	if (dupsbuf_count >= dupsbuf_countmax) {
+	if (dupsbuf_count >= dupsbuf_maxcount) {
 		/* Buffer is full */
-		if (dupsbuf_countmax == 0)
-			new_countmax = 1000;
+		if (dupsbuf_maxcount == 0)
+			new_maxcount = 1000;
 		else
-			new_countmax = 2 * dupsbuf_countmax;
-		dupsbuf = Srealloc((char *) dupsbuf, new_countmax,
-					(long) dupsbuf_countmax, DupsBufLine);
-		dupsbuf_countmax = new_countmax;
+			new_maxcount = 2 * dupsbuf_maxcount;
+		dupsbuf = Srealloc((char *) dupsbuf, new_maxcount,
+					(long) dupsbuf_maxcount, DupsBufLine);
+		dupsbuf_maxcount = new_maxcount;
 	}
 	line = dupsbuf + dupsbuf_count++;
-	line->countmax = line->count = 0;
+	line->maxcount = line->count = 0;
 	line->vals = NULL;
 	dupsbuf_appendtoline(line, P_id1);
 	return dupsbuf_appendtoline(line, P_id2);
@@ -133,7 +133,7 @@ typedef struct ac_node {
 #define INTS_PER_ACNODE (sizeof(ACNode) / sizeof(int))
 
 static ACNode *ACnodebuf;
-static int ACnodebuf_countmax, ACnodebuf_count;
+static int ACnodebuf_maxcount, ACnodebuf_count;
 static int ACnodebuf_pattern_length;
 static int ACnodebuf_base_codes[4];
 
@@ -143,7 +143,7 @@ void ACnodebuf_reset()
 
 	/* No memory leak here, because we use transient storage allocation */
 	ACnodebuf = NULL;
-	ACnodebuf_countmax = ACnodebuf_count = 0;
+	ACnodebuf_maxcount = ACnodebuf_count = 0;
 	ACnodebuf_pattern_length = -1;
 	for (i = 0; i < 4; i++)
 		ACnodebuf_base_codes[i] = -1;
@@ -152,18 +152,18 @@ void ACnodebuf_reset()
 
 static int ACnodebuf_newNode()
 {
-	long new_countmax;
+	long new_maxcount;
 	ACNode *node;
 
-	if (ACnodebuf_count >= ACnodebuf_countmax) {
+	if (ACnodebuf_count >= ACnodebuf_maxcount) {
 		/* Buffer is full */
-		if (ACnodebuf_countmax == 0)
-			new_countmax = 50000;
+		if (ACnodebuf_maxcount == 0)
+			new_maxcount = 50000;
 		else
-			new_countmax = 2 * ACnodebuf_countmax;
-		ACnodebuf = Srealloc((char *) ACnodebuf, new_countmax,
-					(long) ACnodebuf_countmax, ACNode);
-		ACnodebuf_countmax = new_countmax;
+			new_maxcount = 2 * ACnodebuf_maxcount;
+		ACnodebuf = Srealloc((char *) ACnodebuf, new_maxcount,
+					(long) ACnodebuf_maxcount, ACNode);
+		ACnodebuf_maxcount = new_maxcount;
 	}
 	node = ACnodebuf + ACnodebuf_count;
 	node->ac_node1_id = -1;

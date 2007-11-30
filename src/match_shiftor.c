@@ -270,13 +270,6 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
 		if (ret == -1) {
 			break;
 		}
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] _match_shiftor(): ");
-			Rprintf("match found for Lpos=%d Rpos=%d\n",
-				Lpos-1, Rpos-1);
-		}
-#endif
 		_Biostrings_report_match(Lpos - 1, 0);
 	}
 	/* No need to free PMmask, R does that for us */
@@ -326,13 +319,13 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		error("fixedP != fixedS not yet supported");
 	is_count_only = LOGICAL(count_only)[0];
 
-	_Biostrings_reset_views_buffer(is_count_only);
+	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
 	_match_shiftor((char *) pat, pat_length, (char *) subj, subj_length,
 		       kerr+1, fixedP);
 	if (is_count_only)
-		PROTECT(ans = _Biostrings_get_views_count_INTEGER());
+		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
 	else
-		PROTECT(ans = _Biostrings_get_views_start_INTEGER());
+		PROTECT(ans = _Biostrings_viewsbuf_start_asINTEGER());
 	UNPROTECT(1);
 	return ans;
 }

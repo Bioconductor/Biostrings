@@ -37,8 +37,8 @@ static void normalize_views(const int *start, const int *end, int nviews)
  */
 SEXP Biostrings_normalize_views(SEXP start, SEXP end)
 {
-	_Biostrings_reset_views_buffer(0);
+	_Biostrings_reset_viewsbuf(0);
 	normalize_views(INTEGER(start), INTEGER(end), LENGTH(start));
-	return _Biostrings_get_views_LIST();
+	return _Biostrings_viewsbuf_asLIST();
 }
 

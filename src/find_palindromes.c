@@ -148,7 +148,7 @@ SEXP find_palindromes(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	armlen_min = INTEGER(min_armlength)[0];
 	ngaps_max = INTEGER(max_ngaps)[0];
-	_Biostrings_reset_views_buffer(0);
+	_Biostrings_reset_viewsbuf(3);
 	if (L2R_lkup == R_NilValue)
 		naive_palindrome_search((char *) subj, subj_length,
 			armlen_min, ngaps_max);
@@ -156,6 +156,6 @@ SEXP find_palindromes(SEXP s_xp, SEXP s_offset, SEXP s_length,
 		naive_antipalindrome_search((char *) subj, subj_length,
 			armlen_min, ngaps_max,
 			INTEGER(L2R_lkup), LENGTH(L2R_lkup));
-	return _Biostrings_get_views_LIST();
+	return _Biostrings_viewsbuf_asLIST();
 }
 

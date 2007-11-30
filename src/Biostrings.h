@@ -147,8 +147,8 @@ int fgets_rtrimmed(
 
 SEXP Biostrings_debug_views_buffer();
 
-void _Biostrings_reset_views_buffer(
-		int count_only
+void _Biostrings_reset_viewsbuf(
+		int reporting_mode
 );
 
 int _Biostrings_report_view(
@@ -162,15 +162,15 @@ int _Biostrings_report_match(
 		int Rpos
 );
 
-SEXP _Biostrings_get_views_count_INTEGER();
+SEXP _Biostrings_viewsbuf_count_asINTEGER();
 
-SEXP _Biostrings_get_views_start_INTEGER();
+SEXP _Biostrings_viewsbuf_start_asINTEGER();
 
-SEXP _Biostrings_get_views_end_INTEGER();
+SEXP _Biostrings_viewsbuf_end_asINTEGER();
 
-SEXP _Biostrings_get_views_desc_CHARACTER();
+SEXP _Biostrings_viewsbuf_desc_asCHARACTER();
 
-SEXP _Biostrings_get_views_LIST();
+SEXP _Biostrings_viewsbuf_asLIST();
 
 
 /* XRaw.c */
