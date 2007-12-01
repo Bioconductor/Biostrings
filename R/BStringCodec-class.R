@@ -67,8 +67,7 @@ buildLookupTable <- function(keys, vals)
 ### The BStringCodec class.
 ###
 
-setClass(
-    "BStringCodec",
+setClass("BStringCodec",
     representation(
         letters="character",
         codes="integer",
