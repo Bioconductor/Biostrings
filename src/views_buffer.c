@@ -2,12 +2,14 @@
  * Manipulation of the "views buffer".
  *
  * The "views buffer" is used for temporarily storing a set of views or
- * matches found in a sequence (e.g. the matches found by the matching algos).
- * Except for Biostrings_debug_views_buffer(), the functions defined in this
- * file are NOT .Call methods (but they are used by .Call methods defined in
- * other .c files) so THEY DON'T NEED TO BE REGISTERED (in R_init_Biostrings.c).
- * They are prefixed with "_Biostrings_" to minimize the risk of a clash
- * with symbols defined elsewhere (e.g. in libc).
+ * matches found in a sequence. E.g. it is used by the string searching
+ * functions like find_palindromes(), find_repeats(), the pattern matching
+ * functions, etc...
+ * Except for Biostrings_debug_views_buffer(), the functions defined in
+ * this file are NOT .Call methods (but they are used by .Call methods
+ * defined in other .c files) so THEY DON'T NEED TO BE REGISTERED in
+ * R_init_Biostrings.c. They are prefixed with "_Biostrings_" to minimize
+ * the risk of a clash with symbols defined elsewhere (e.g. in libc).
  */
 #include "Biostrings.h"
 #include <S.h> /* for Srealloc() */
@@ -26,15 +28,25 @@ SEXP Biostrings_debug_views_buffer()
         return R_NilValue;
 }
 
-/* 4 valid modes:
- *   0: views must be reported thru _Biostrings_report_view(start, end, desc),
- *      they are not reordered, not checked for duplicated
- *   1: matches must be reported thru _Biostrings_report_match(Lpos, Rpos),
- *      they are counted only
- *   2: matches must be reported thru _Biostrings_report_match(Lpos, Rpos),
- *      they are not reordered, not checked for duplicated
- *   3: matches must be reported thru _Biostrings_report_match(Lpos, Rpos),
- *      they are reordered and the duplicated are ignored
+/* 5 valid modes:
+ *
+ *   0: Views must be reported thru _Biostrings_append_view(start, end, desc).
+ *      They are not reordered, nor checked for duplicated.
+ *
+ *   1: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are counted only (no need to allocate memory to store them).
+ *
+ *   2: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are not reordered, nor checked for duplicated.
+ *
+ *   3: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are reordered and the duplicated are ignored.
+ *
+ *   4: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are reordered and merged when overlapping or adjacent
+ *      (normalization). Hence a call to _Biostrings_report_match() can
+ *      actually decrease viewsbuf_count if several views are replaced by
+ *      a single view.
  */
 static int viewsbuf_reporting_mode;
 
@@ -64,21 +76,78 @@ static int new_view()
 	return viewsbuf_count++;
 }
 
-static void set_view(int i, int start, int end, const char *desc)
+/*
+ * Must be used in reporting mode >= 2.
+ */
+static void insert_view_at(int start, int end, int insert_at)
 {
-	size_t desc_size;
+	int i, j;
 
+	j = new_view(); // viewsbuf_count - 1
+	i = j - 1;
+	while (insert_at <= i) {
+		viewsbuf_start[j] = viewsbuf_start[i];
+		viewsbuf_end[j] = viewsbuf_end[i];
+		i--;
+		j--;
+	}
+	viewsbuf_start[j] = start;
+	viewsbuf_end[j] = end;
+	return;
+}
+
+/*
+ * Must be used in reporting mode 3.
+ */
+static void insert_view_if_new(int start, int end)
+{
+	int i;
+
+	i = viewsbuf_count - 1;
+	while (0 <= i && start < viewsbuf_start[i]) i--;
+	while (0 <= i && start == viewsbuf_start[i] && end < viewsbuf_end[i]) i--;
+	if (0 <= i && start == viewsbuf_start[i] && end == viewsbuf_end[i])
+		return;
+	i++;
+	insert_view_at(start, end, i);
+	return;
+}
+
+/*
+ * Must be used in reporting mode 4.
+ */
+static void merge_view(int start, int end)
+{
+	int start1, end1, i, j;
+
+	start1 = start - 1;
+	end1 = end + 1;
+	j = viewsbuf_count - 1;
+	while (0 <= j && end1 < viewsbuf_start[j]) j--;
+	i = j;
+	while (0 <= i && start1 <= viewsbuf_end[i]) i--;
+	if (i == j) {
+		insert_view_at(start, end, i + 1);
+		return;
+	}
+	i++;
+	if (viewsbuf_start[i] < start)
+		start = viewsbuf_start[i];
+	if (end < viewsbuf_end[j])
+		end = viewsbuf_end[j];
 	viewsbuf_start[i] = start;
 	viewsbuf_end[i] = end;
-	if (viewsbuf_reporting_mode != 0)
+	if (i == j)
 		return;
-	if (desc != NULL) {
-		desc_size = strlen(desc) + 1; /* + 1 for the terminating '\0' character */
-		viewsbuf_desc[i] = Salloc((long) desc_size, char);
-		memcpy(viewsbuf_desc[i], desc, desc_size);
-	} else {
-		viewsbuf_desc[i] = NULL;
+	i++;
+	j++;
+	while (j < viewsbuf_count) {
+		viewsbuf_start[i] = viewsbuf_start[j];
+		viewsbuf_end[i] = viewsbuf_end[j];
+		i++;
+		j++;
 	}
+	viewsbuf_count = i;
 	return;
 }
 
@@ -97,24 +166,33 @@ void _Biostrings_reset_viewsbuf(int reporting_mode)
  * Can only be used in reporting mode 0.
  * Return the new number of views.
  */
-int _Biostrings_report_view(int start, int end, const char *desc)
+int _Biostrings_append_view(int start, int end, const char *desc)
 {
+	int i;
+	size_t desc_size;
+
 	if (viewsbuf_reporting_mode != 0)
-		error("_Biostrings_report_view(): viewsbuf_reporting_mode != 0");
-	set_view(new_view(), start, end, desc);
+		error("_Biostrings_append_view(): viewsbuf_reporting_mode != 0");
+	i = new_view();
+	viewsbuf_start[i] = start;
+	viewsbuf_end[i] = end;
+	if (desc != NULL) {
+		desc_size = strlen(desc) + 1; /* + 1 for the terminating '\0' character */
+		viewsbuf_desc[i] = Salloc((long) desc_size, char);
+		memcpy(viewsbuf_desc[i], desc, desc_size);
+	} else {
+		viewsbuf_desc[i] = NULL;
+	}
 	return viewsbuf_count;
 }
 
 /*
- * Can only be used in reporting mode 1, 2 and 3.
- * Return 1 if the match is counted, 0 if it's ignored.
+ * Can only be used in reporting mode != 0.
  */
 int _Biostrings_report_match(int Lpos, int Rpos)
 {
-	int start, end, i, j1, j2;
+	int start, end;
 
-	if (viewsbuf_reporting_mode == 0)
-		error("_Biostrings_report_match(): viewsbuf_reporting_mode == 0");
 	start = ++Lpos;
 	end = ++Rpos;
 #ifdef DEBUG_BIOSTRINGS
@@ -123,42 +201,29 @@ int _Biostrings_report_match(int Lpos, int Rpos)
 		Rprintf("match found at start=%d end=%d --> ", start, end);
 	}
 #endif
-	if (viewsbuf_reporting_mode == 1) {
-		viewsbuf_count++;
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) Rprintf("COUNTED (viewsbuf_count=%d)\n", viewsbuf_count);
-#endif
-		return 1;
+	switch (viewsbuf_reporting_mode) {
+		case 0:
+			error("_Biostrings_report_match(): viewsbuf_reporting_mode == 0");
+		break;
+		case 1:
+			viewsbuf_count++;
+		break;
+		case 2:
+			insert_view_at(start, end, viewsbuf_count);
+		break;
+		case 3:
+			insert_view_if_new(start, end);
+		break;
+		case 4:
+			merge_view(start, end);
+		break;
 	}
-	if (viewsbuf_reporting_mode == 2) {
-		set_view(new_view(), start, end, NULL);
 #ifdef DEBUG_BIOSTRINGS
-		if (debug) Rprintf("COUNTED (viewsbuf_count=%d)\n", viewsbuf_count);
-#endif
-		return 1;
+	if (debug) {
+		Rprintf("viewsbuf_count=%d\n", viewsbuf_count);
 	}
-	i = viewsbuf_count - 1;
-	while (0 <= i && start < viewsbuf_start[i]) i--;
-	while (0 <= i && start == viewsbuf_start[i] && end < viewsbuf_end[i]) i--;
-	if (0 <= i && start == viewsbuf_start[i] && end == viewsbuf_end[i]) {
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) Rprintf("IGNORED (duplicated)\n");
 #endif
-		return 0;
-	}
-	j2 = new_view();
-	j1 = j2 - 1;
-	while (j1 > i) {
-		viewsbuf_start[j2] = viewsbuf_start[j1];
-		viewsbuf_end[j2] = viewsbuf_end[j1];
-		j1--;
-		j2--;
-	}
-	set_view(j2, start, end, NULL);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("COUNTED (viewsbuf_count=%d)\n", viewsbuf_count);
-#endif
-	return 1;
+	return viewsbuf_count;
 }
 
 SEXP _Biostrings_viewsbuf_count_asINTEGER()

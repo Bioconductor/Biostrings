@@ -1,5 +1,5 @@
-In 2.[6:7].*
-============
+In 2.[6|7]
+==========
 
 - Fix this: 
     > matchPattern("ab", "xyz", mismatch=2)
@@ -17,8 +17,18 @@ In 2.[6:7].*
   mismatch >= nchar(pattern).
 
 
-In 2.7.*
-========
+In 2.7
+======
+
+- readFASTA(): set the default for strip.desc to TRUE (with a warning when
+  strip.desc is missing). This was already done in svn trunk/release a few
+  weeks ago (October 2007) and rolled back on Robert's request. Now Robert
+  seems to be ready for this change but wants Nolwenn to be personally notified
+  about it (so she can fix her code using readFASTA()). Make this change in
+  trunk only (too late for release). Remove the warning after the BioC 2.2
+  release.
+
+- Remove the Biostrings 1 subdir.
 
 - Make alphabetFrequency works with BStringViews objects with
   "out of limits" views.
@@ -47,6 +57,12 @@ In 2.7.*
 - Update the CHANGES file.
 
 
+In 2.9
+======
+
+- readFASTA(): remove warning when strip.desc is missing.
+
+
 Later
 =====
 
@@ -59,8 +75,6 @@ Later
 - Still have to think about it (Robert suggestion): make [[ work on "out
   of limits" views with a warning (we keep issuing an error only when the
   view is all blank).
-
-- Remove the Biostrings 1 subdir.
 
 - Merge SuffixTree package from Robert.
 

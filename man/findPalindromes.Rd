@@ -97,6 +97,8 @@
   same length as \code{x}.
 }
 
+\author{H. Pages}
+
 \seealso{
   \code{\link{matchPattern}},
   \code{\link{matchLRPatterns}},
@@ -117,8 +119,9 @@
   chrX_pals <- findPalindromes(noN_chrX, min.armlength=50, max.ngaps=20)
   palindromeArmLength(chrX_pals) # 251
 
-  ## Of course, spaces count
+  ## Of course, whitespaces matter
   palindromeArmLength(BString("was it a car or a cat I saw"))
+
   ## Note that the 2 arms of a strict palindrome (or antipalindrome) are equal
   ## to the full sequence.
   palindromeLeftArm(BString("Delia saw I was aileD"))

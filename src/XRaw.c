@@ -748,7 +748,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 			error("file does not seem to be FASTA");
 		}
 		if (status == 2) {
-			_Biostrings_report_view(view_start, i1, desc);
+			_Biostrings_append_view(view_start, i1, desc);
 			if (gaplen != 0) {
 				i2 = i1 + gaplen - 1;
 				_Biostrings_memcpy_to_i1i2(i1, i2,
@@ -764,7 +764,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	fclose(infile);
 	if (status != 2)
 		error("file does not seem to be FASTA");
-	_Biostrings_report_view(view_start, i1, desc);
+	_Biostrings_append_view(view_start, i1, desc);
 
 	PROTECT(ans = NEW_LIST(4));
 	/* set the names */

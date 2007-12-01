@@ -151,7 +151,7 @@ void _Biostrings_reset_viewsbuf(
 		int reporting_mode
 );
 
-int _Biostrings_report_view(
+int _Biostrings_append_view(
 		int start,
 		int end,
 		const char *desc
