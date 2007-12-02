@@ -24,8 +24,7 @@ setMethod("reverse", "BStringViews",
     }
 )
 
-setGeneric(
-    "complement", signature="x",
+setGeneric("complement", signature="x",
     function(x, ...) standardGeneric("complement")
 )
 
@@ -48,8 +47,7 @@ setMethod("complement", "BStringViews",
     }
 )
 
-setGeneric(
-    "reverseComplement", signature="x",
+setGeneric("reverseComplement", signature="x",
     function(x, ...) standardGeneric("reverseComplement")
 )
 

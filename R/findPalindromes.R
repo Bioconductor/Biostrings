@@ -38,8 +38,7 @@ debug_find_palindromes <- function()
     new("BStringViews", subject=subject, views=data.frame(start=views$start, end=views$end))
 }
 
-setGeneric(
-    "findPalindromes", signature="subject",
+setGeneric("findPalindromes", signature="subject",
     function(subject, min.armlength=4, max.ngaps=1, anti=NULL)
         standardGeneric("findPalindromes")
 )
@@ -89,8 +88,7 @@ setMethod("findPalindromes", "BStringViews",
 ### The "palindromeArmLength" generic and methods.
 ###
 
-setGeneric(
-    "palindromeArmLength", signature="x",
+setGeneric("palindromeArmLength", signature="x",
     function(x, anti=NULL, ...) standardGeneric("palindromeArmLength")
 )
 
@@ -119,11 +117,10 @@ setMethod("palindromeArmLength", "BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "palindromeLeftArm" and "palindromeRightArm" generic and methods.
+### The "palindromeLeftArm" generic and methods.
 ###
 
-setGeneric(
-    "palindromeLeftArm", signature="x",
+setGeneric("palindromeLeftArm", signature="x",
     function(x, anti=NULL, ...) standardGeneric("palindromeLeftArm")
 )
 
@@ -143,8 +140,12 @@ setMethod("palindromeLeftArm", "BStringViews",
     }
 )
 
-setGeneric(
-    "palindromeRightArm", signature="x",
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "palindromeRightArm" generic and methods.
+###
+
+setGeneric("palindromeRightArm", signature="x",
     function(x, anti=NULL, ...) standardGeneric("palindromeRightArm")
 )
 

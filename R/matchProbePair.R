@@ -72,8 +72,7 @@ reduceProbePairMatches <- function(start, end)
 ### to a given probe pair.
 ###
 
-setGeneric(
-    "matchProbePair", signature="subject",
+setGeneric("matchProbePair", signature="subject",
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
         standardGeneric("matchProbePair")
 )

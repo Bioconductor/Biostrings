@@ -2,8 +2,7 @@
 ### The "toComplex" new generic.
 ###
 
-setGeneric(
-    "toComplex",
+setGeneric("toComplex",
     function(x, baseValues)
         standardGeneric("toComplex")
 )

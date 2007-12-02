@@ -326,8 +326,7 @@ debug_shiftor <- function()
 ###   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
 ###   matchPattern("---", DNAString("A"))
 
-setGeneric(
-    "matchPattern", signature="subject",
+setGeneric("matchPattern", signature="subject",
     function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("matchPattern")
 )
@@ -381,8 +380,7 @@ matchDNAPattern <- function(...) .Defunct("matchPattern")
 ### Edge cases:
 ###   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
 ###   countPattern("---", DNAString("A"))
-setGeneric(
-    "countPattern", signature="subject",
+setGeneric("countPattern", signature="subject",
     function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("countPattern")
 )
@@ -453,8 +451,7 @@ bsMismatch <- function(pattern, subject, start, fixed)
            function(i) bsMismatch(pattern, x@subject, x@views$start[i], fixed))
 }
 
-setGeneric(
-    "mismatch", signature="x",
+setGeneric("mismatch", signature="x",
     function(pattern, x, fixed=TRUE) standardGeneric("mismatch")
 )
 

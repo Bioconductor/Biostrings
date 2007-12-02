@@ -1,13 +1,10 @@
 ## Defined for testing purpose only.
 
-setGeneric(
-    "eq",
+setGeneric("eq",
     function(bs1, bs2) standardGeneric("eq")
 )
 
-setMethod(
-    "eq",
-    signature(bs1="BioString", bs2="BioString"),
+setMethod("eq", signature(bs1="BioString", bs2="BioString"),
     function (bs1, bs2)
     {
         ok <- as.character(bs1) == as.character(bs2)

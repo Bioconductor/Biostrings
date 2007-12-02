@@ -2,8 +2,7 @@
 ### The "matchLRPatterns" new generic.
 ###
 
-setGeneric(
-    "matchLRPatterns", signature="subject",
+setGeneric("matchLRPatterns", signature="subject",
     function(Lpattern, Rpattern, max.ngaps, subject, Lmismatch=0, Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
         standardGeneric("matchLRPatterns")

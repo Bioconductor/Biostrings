@@ -119,8 +119,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
 ### The "BStringViews" generic and methods.
 ###
 
-setGeneric(
-    "BStringViews", signature="src",
+setGeneric("BStringViews", signature="src",
     function(src, subjectClass, collapse="") standardGeneric("BStringViews")
 )
 

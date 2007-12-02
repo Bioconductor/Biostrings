@@ -131,8 +131,7 @@ subviews <- function(x, start=NA, end=NA, width=NA, check.limits=TRUE)
 ### The "substr" and "substring" generics and methods.
 ###
 
-setGeneric(
-    "substr", signature="x",
+setGeneric("substr", signature="x",
     function(x, start=NA, stop=NA) standardGeneric("substr")
 )
 setMethod("substr", "BString",
@@ -142,8 +141,7 @@ setMethod("substr", "BStringViews",
     function(x, start, stop) subviews(x, start, stop)
 )
 
-setGeneric(
-    "substring", signature="text",
+setGeneric("substring", signature="text",
     function(text, first=NA, last=NA) standardGeneric("substring")
 )
 setMethod("substring", "BString",
