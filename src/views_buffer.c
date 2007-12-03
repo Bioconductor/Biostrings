@@ -28,26 +28,6 @@ SEXP Biostrings_debug_views_buffer()
         return R_NilValue;
 }
 
-/* 5 valid modes:
- *
- *   0: Views must be reported thru _Biostrings_append_view(start, end, desc).
- *      They are not reordered, nor checked for duplicated.
- *
- *   1: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
- *      They are counted only (no need to allocate memory to store them).
- *
- *   2: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
- *      They are not reordered, nor checked for duplicated.
- *
- *   3: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
- *      They are reordered and the duplicated are ignored.
- *
- *   4: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
- *      They are reordered and merged when overlapping or adjacent
- *      (normalization). Hence a call to _Biostrings_report_match() can
- *      actually decrease viewsbuf_count if several views are replaced by
- *      a single view.
- */
 static int viewsbuf_reporting_mode;
 
 static int *viewsbuf_start, *viewsbuf_end;
@@ -77,7 +57,7 @@ static int new_view()
 }
 
 /*
- * Must be used in reporting mode >= 2.
+ * Must be used in reporting mode >= 2 (see _Biostrings_reset_viewsbuf() below).
  */
 static void insert_view_at(int start, int end, int insert_at)
 {
@@ -97,7 +77,7 @@ static void insert_view_at(int start, int end, int insert_at)
 }
 
 /*
- * Must be used in reporting mode 3.
+ * Used by reporting mode 3 (see _Biostrings_reset_viewsbuf() below).
  */
 static void insert_view_if_new(int start, int end)
 {
@@ -114,7 +94,28 @@ static void insert_view_if_new(int start, int end)
 }
 
 /*
- * Must be used in reporting mode 4.
+ * Used by reporting mode 4 (see _Biostrings_reset_viewsbuf() below).
+ */
+static void merge_with_last_view(int start, int end)
+{
+	int end1;
+
+	if (viewsbuf_count == 0) {
+		insert_view_at(start, end, viewsbuf_count);
+		return;
+	}
+	end1 = viewsbuf_end[viewsbuf_count - 1] + 1;
+	if (start > end1) {
+		insert_view_at(start, end, viewsbuf_count);
+		return;
+	}
+	if (end >= end1)
+		viewsbuf_end[viewsbuf_count - 1] = end;
+	return;
+}
+
+/*
+ * Used by reporting mode 5 (see _Biostrings_reset_viewsbuf() below).
  */
 static void merge_view(int start, int end)
 {
@@ -151,7 +152,48 @@ static void merge_view(int start, int end)
 	return;
 }
 
-/* Reset views buffer */
+/*
+ * Reset views buffer
+ *
+ * 6 valid "reporting modes":
+ *
+ *   0: Views must be reported thru _Biostrings_append_view(start, end, desc).
+ *      They are not reordered, nor checked for duplicated.
+ *
+ *   1: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are counted only (no need to allocate memory to store them).
+ *
+ *   2: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are not reordered, nor checked for duplicated.
+ *
+ *   3: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are reordered and the duplicated are ignored.
+ *
+ *   4: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos)
+ *      "in ascending Lpos order" i.e. for each new call to
+ *      _Biostrings_report_match(), the value passed to the 'Lpos' argument
+ *      must greater or equal than for the previous call.
+ *      Each new match is merged with the previous match if overlapping or
+ *      adjacent so the current set of matches is kept normalized.
+ *
+ *   5: Matches must be reported thru _Biostrings_report_match(Lpos, Rpos).
+ *      They are reordered and merged when overlapping or adjacent
+ *      (normalization). Hence a call to _Biostrings_report_match() can
+ *      actually reduce the current set of matches if several matches are
+ *      replaced by a single one.
+ *      IMPORTANT: If the matches are reported "in ascending Lpos order",
+ *      mode 4 and 5 will be semantically equivalent: both will normalize
+ *      the set of matches but 4 will be slightly faster (20-30%) and
+ *      should be preferred. Use mode 5 only if there is no guarantee that
+ *      the matches will be found (and reported) "in ascending Lpos order".
+ *      Note that the reordering is performed every time a new match is
+ *      reported by using a simple bubble sort approach. This is clearly
+ *      not optimal since the bubble sort approach is not efficient when
+ *      the input needs a lot of reordering. However the bubble sort approach
+ *      is simple, has minimal memory footprint and its performance is not
+ *      too bad when the number of matches is small (< 10^5) or doesn't need
+ *      too much reodering.
+ */
 void _Biostrings_reset_viewsbuf(int reporting_mode)
 {
 	viewsbuf_reporting_mode = reporting_mode;
@@ -215,6 +257,9 @@ int _Biostrings_report_match(int Lpos, int Rpos)
 			insert_view_if_new(start, end);
 		break;
 		case 4:
+			merge_with_last_view(start, end);
+		break;
+		case 5:
 			merge_view(start, end);
 		break;
 	}
