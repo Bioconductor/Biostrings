@@ -76,6 +76,16 @@ void _IBuf_insert_at(IBuf *ibuf, int at, int val)
 	return;
 }
 
+SEXP _IBuf_asINTEGER(IBuf *ibuf)
+{
+	SEXP ans;
+
+	PROTECT(ans = NEW_INTEGER(ibuf->count));
+	memcpy(INTEGER(ans), ibuf->vals, sizeof(int) * ibuf->count);
+	UNPROTECT(1);
+	return ans;
+}
+
 
 /****************************************************************************
  * IBBuf functions
@@ -111,5 +121,21 @@ void _IBBuf_insert_at(IBBuf *ibbuf, int at, IBuf ibuf)
 		ibbuf->ibufs[j] = ibbuf->ibufs[i];
 	ibbuf->ibufs[j] = ibuf;
 	return;
+}
+
+SEXP _IBBuf_asLIST(IBBuf *ibbuf)
+{
+	SEXP ans, ans_elt;
+	int i;
+	IBuf *ibuf;
+
+	PROTECT(ans = NEW_LIST(ibbuf->count));
+	for (i = 0, ibuf = ibbuf->ibufs; i < ibbuf->count; i++, ibuf++) {
+		PROTECT(ans_elt = _IBuf_asINTEGER(ibuf));
+		SET_ELEMENT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
 }
 

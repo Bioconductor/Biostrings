@@ -177,6 +177,10 @@ void _IBuf_insert_at(
 		int val
 );
 
+SEXP _IBuf_asINTEGER(
+		IBuf *ibuf
+);
+
 void _IBBuf_init(
 		IBBuf *ibbuf
 );
@@ -189,6 +193,10 @@ void _IBBuf_insert_at(
 		IBBuf *ibbuf,
 		int at,
 		IBuf ibuf
+);
+
+SEXP _IBBuf_asLIST(
+		IBBuf *ibbuf
 );
 
 

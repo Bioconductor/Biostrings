@@ -207,8 +207,7 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
  */
 static SEXP ULdna_asLIST()
 {
-	SEXP ans, ans_names, ans_elt, tag, ans_elt_elt;
-	IBuf *line;
+	SEXP ans, ans_names, ans_elt, tag;
 	int tag_length, i;
 
 	PROTECT(ans = NEW_LIST(3));
@@ -239,13 +238,7 @@ static SEXP ULdna_asLIST()
 	UNPROTECT(1);
 
 	/* set the "dups" element */
-	PROTECT(ans_elt = NEW_LIST(dupsbuf.count));
-	for (i = 0, line = dupsbuf.ibufs; i < dupsbuf.count; i++, line++) {
-		PROTECT(ans_elt_elt = NEW_INTEGER(line->count));
-		memcpy((char *) INTEGER(ans_elt_elt), line->vals, line->count * sizeof(int));
-		SET_ELEMENT(ans_elt, i, ans_elt_elt);
-		UNPROTECT(1);
-	}
+	PROTECT(ans_elt = _IBBuf_asLIST(&dupsbuf));
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 
