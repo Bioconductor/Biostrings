@@ -6,19 +6,27 @@
 
 /*
  * Buffer structures used for temporary storage of arrays (or arrays of arrays)
- * of ints, chars, etc... Only buffers of ints are suported for now.
+ * of ints, chars, strings, etc...
+ * Only buffers of ints and chars are suported for now.
  */
+
 typedef struct ibuf {
         int *vals;
         int maxcount;
         int count;
-} IBuf;
+} IBuf; // Buffer for an array of integers
 
 typedef struct ibbuf {
         IBuf *ibufs;
         int maxcount;
         int count;
-} IBBuf;
+} IBBuf; // Buffer for an array of arrays of integers
+
+typedef struct cbuf {
+        char *vals;
+        int maxcount;
+        int count;
+} CBuf; // Buffer for an array of chars
 
 
 /* utils.c */
@@ -197,6 +205,24 @@ void _IBBuf_insert_at(
 
 SEXP _IBBuf_asLIST(
 		IBBuf *ibbuf
+);
+
+void _CBuf_init(
+		CBuf *cbuf
+);
+
+void _CBuf_get_more_room(
+		CBuf *cbuf
+);
+
+void _CBuf_insert_at(
+		CBuf *cbuf,
+		int at,
+		char val
+);
+
+SEXP _CBuf_asRAW(
+		CBuf *cbuf
 );
 
 

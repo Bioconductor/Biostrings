@@ -139,3 +139,52 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf)
 	return ans;
 }
 
+
+/****************************************************************************
+ * CBuf functions
+ */
+
+void _CBuf_init(CBuf *cbuf)
+{
+	/* No memory leak here, because we use transient storage allocation */
+	cbuf->vals = NULL;
+	cbuf->maxcount = cbuf->count = 0;
+	return;
+}
+
+void _CBuf_get_more_room(CBuf *cbuf)
+{
+	long new_maxcount;
+
+	new_maxcount = get_new_maxcount(cbuf->maxcount);
+	cbuf->vals = Srealloc((char *) cbuf->vals, new_maxcount,
+					(long) cbuf->maxcount, char);
+	cbuf->maxcount = new_maxcount;
+	return;
+}
+
+void _CBuf_insert_at(CBuf *cbuf, int at, char val)
+{
+	int i, j;
+
+	if (cbuf->count >= cbuf->maxcount)
+		_CBuf_get_more_room(cbuf);
+	j = cbuf->count++;
+	for (i = j - 1; i >= at; i--, j--)
+		cbuf->vals[j] = cbuf->vals[i];
+	cbuf->vals[j] = val;
+	return;
+}
+
+SEXP _CBuf_asRAW(CBuf *cbuf)
+{
+	SEXP ans;
+
+	if (sizeof(Rbyte) != sizeof(char)) // should never happen!
+		error("_CBuf_asRAW(): sizeof(Rbyte) != sizeof(char)");
+	PROTECT(ans = NEW_RAW(cbuf->count));
+	memcpy(RAW(ans), cbuf->vals, sizeof(char) * cbuf->count);
+	UNPROTECT(1);
+	return ans;
+}
+
