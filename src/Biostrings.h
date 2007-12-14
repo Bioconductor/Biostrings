@@ -189,6 +189,10 @@ SEXP _IBuf_asINTEGER(
 		IBuf *ibuf
 );
 
+IBuf _INTEGER_asIBuf(
+		SEXP x
+);
+
 void _IBBuf_init(
 		IBBuf *ibbuf
 );
@@ -205,6 +209,10 @@ void _IBBuf_insert_at(
 
 SEXP _IBBuf_asLIST(
 		IBBuf *ibbuf
+);
+
+IBBuf _LIST_asIBBuf(
+		SEXP x
 );
 
 void _CBuf_init(
@@ -640,9 +648,23 @@ SEXP match_BOC2_exact(
 
 SEXP match_ULdna_debug();
 
-SEXP ULdna_init_with_StrVect(SEXP dict);
+SEXP ULdna_init_with_StrVect(
+		SEXP dict
+);
 
-SEXP ULdna_init_with_BStringList(SEXP dict);
+SEXP ULdna_init_with_BStringList(
+		SEXP dict
+);
+
+SEXP match_ULdna_exact(
+		SEXP uldna_length,
+		SEXP uldna_dups,
+		SEXP ACtree_xp,
+		SEXP AC_base_codes,
+		SEXP s_xp,
+		SEXP s_offset,
+		SEXP s_length
+);
 
 
 /* pmatchPattern.c */

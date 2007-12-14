@@ -9,7 +9,7 @@
  * shared lib.
  */
 #include "Biostrings.h"
-#include <S.h> /* for Srealloc() */
+#include <S.h> /* for Salloc() and Srealloc() */
 
 #define MAX_BUFSIZEINC (128 * 1024 * 1024)
 #define MAX_BUFSIZE (8 * MAX_BUFSIZEINC)
@@ -33,7 +33,9 @@ static int get_new_maxcount(int maxcount)
 	if (maxcount >= MAX_BUFSIZE)
 		error("get_new_maxcount(): MAX_BUFSIZE reached");
 	if (maxcount == 0)
-		return 1024;
+		return 256;
+	if (maxcount <= 256 * 1024)
+		return 4 * maxcount;
 	if (maxcount <= MAX_BUFSIZEINC)
 		return 2 * maxcount;
 	return maxcount + MAX_BUFSIZEINC;
@@ -84,6 +86,18 @@ SEXP _IBuf_asINTEGER(IBuf *ibuf)
 	memcpy(INTEGER(ans), ibuf->vals, sizeof(int) * ibuf->count);
 	UNPROTECT(1);
 	return ans;
+}
+
+IBuf _INTEGER_asIBuf(SEXP x)
+{
+	IBuf ibuf;
+	int x_length;
+
+	x_length = LENGTH(x);
+	ibuf.vals = Salloc((long) x_length, int);
+	memcpy(ibuf.vals, INTEGER(x), sizeof(int) * x_length);
+	ibuf.maxcount = ibuf.count = x_length;
+	return ibuf;
 }
 
 
@@ -137,6 +151,20 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf)
 	}
 	UNPROTECT(1);
 	return ans;
+}
+
+IBBuf _LIST_asIBBuf(SEXP x)
+{
+	IBBuf ibbuf;
+	int x_length, i;
+	IBuf *ibuf_p;
+
+	x_length = LENGTH(x);
+	ibbuf.ibufs = Salloc((long) x_length, IBuf);
+	for (i = 0, ibuf_p = ibbuf.ibufs; i < x_length; i++, ibuf_p++)
+		*ibuf_p = _INTEGER_asIBuf(VECTOR_ELT(x, i));
+	ibbuf.maxcount = ibbuf.count = x_length;
+	return ibbuf;
 }
 
 

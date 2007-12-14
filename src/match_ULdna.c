@@ -59,8 +59,8 @@ static void dupsbuf_append(int P_id1, int P_id2)
 
 
 /****************************************************************************
- * Initialization of the Aho-Corasick 4-ary tree
- * =============================================
+ * Building the Aho-Corasick 4-ary tree
+ * ====================================
  *
  * For this Aho-Corasick implementation, we take advantage of 2
  * important specifities of the dictionary (aka pattern set):
@@ -195,45 +195,95 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
 	return;
 }
 
+
+/****************************************************************************
+ * Exact matching
+ * ==============
+ */
+
+IBBuf startsbuf;
+
+static void ULdna_exact_search(int uldna_len,
+		ACNode *ACtree, int ACtree_length,
+		const char *S, int nS)
+{
+	int i;
+	IBuf *ibuf_p;
+
+	startsbuf.ibufs = Salloc((long) uldna_len, IBuf);
+	for (i = 0, ibuf_p = startsbuf.ibufs; i < uldna_len; i++, ibuf_p++)
+		_IBuf_init(ibuf_p);
+	startsbuf.maxcount = startsbuf.count = uldna_len;
+	return;
+}
+
+
+/****************************************************************************
+ * Turning our local data structures into R objects
+ * ================================================
+ */
+
+/*
+ * Turn the Aho-Corasick 4-ary tree stored in ACnodebuf into an eXternal Pointer
+ */
+static SEXP ACnodebuf_asXP()
+{
+	SEXP ans, tag;
+	int tag_length;
+
+	PROTECT(ans = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
+	tag_length = ACnodebuf_count * INTS_PER_ACNODE;
+	PROTECT(tag = NEW_INTEGER(tag_length));
+	memcpy(INTEGER(tag), ACnodebuf, tag_length * sizeof(int));
+	R_SetExternalPtrTag(ans, tag);
+	UNPROTECT(2);
+	return ans;
+}
+
+/*
+ * Turn the ACnodebuf_base_codes array into an R vector of 4 integers
+ */
+static SEXP base_codes_asINTEGER()
+{
+	SEXP ans;
+
+	PROTECT(ans = NEW_INTEGER(4));
+	memcpy(INTEGER(ans), ACnodebuf_base_codes, 4 * sizeof(int));
+	UNPROTECT(1);
+	return ans;
+}
+
 /*
  * Return an R list with the following elements:
- *   - AC_tree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
+ *   - ACtree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
  *         tree built from 'dict'.
  *   - AC_base_codes: integer vector containing the 4 character codes (ASCII)
  *         attached to the 4 child slots of any node in the tree pointed by
- *         AC_tree_xp.
+ *         ACtree_xp.
  *   - dups: an unnamed (and eventually empty) list of integer vectors
  *         containing the indices of the duplicated words found in 'dict'.
  */
 static SEXP ULdna_asLIST()
 {
-	SEXP ans, ans_names, ans_elt, tag;
-	int tag_length, i;
+	SEXP ans, ans_names, ans_elt;
 
 	PROTECT(ans = NEW_LIST(3));
 
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(3));
-	SET_STRING_ELT(ans_names, 0, mkChar("AC_tree_xp"));
+	SET_STRING_ELT(ans_names, 0, mkChar("ACtree_xp"));
 	SET_STRING_ELT(ans_names, 1, mkChar("AC_base_codes"));
 	SET_STRING_ELT(ans_names, 2, mkChar("dups"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
-	/* set the "AC_tree_xp" element */
-	PROTECT(ans_elt = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
-	tag_length = ACnodebuf_count * INTS_PER_ACNODE;
-	PROTECT(tag = NEW_INTEGER(tag_length));
-	memcpy((char *) INTEGER(tag), ACnodebuf, tag_length * sizeof(int));
-	R_SetExternalPtrTag(ans_elt, tag);
-	UNPROTECT(1);
+	/* set the "ACtree_xp" element */
+	PROTECT(ans_elt = ACnodebuf_asXP());
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
 	/* set the "AC_base_codes" element */
-	PROTECT(ans_elt = NEW_INTEGER(4));
-	for (i = 0; i < 4; i++)
-		INTEGER(ans_elt)[i] = ACnodebuf_base_codes[i];
+	PROTECT(ans_elt = base_codes_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
@@ -244,17 +294,6 @@ static SEXP ULdna_asLIST()
 
 	UNPROTECT(1);
 	return ans;
-}
-
-
-/****************************************************************************
- * Exact matching
- * ======================================================
- */
-
-static int ULdna_exact_search()
-{
-	return 0;
 }
 
 
@@ -295,5 +334,49 @@ SEXP ULdna_init_with_BStringList(SEXP dict)
 
 	error("Not ready yet!\n");
 	return ans;
+}
+
+
+/****************************************************************************
+ * .Call entry point: "match_ULdna_exact"
+ *
+ * Arguments:
+ *   'uldna_length': uldna_pdict@length (this is the number of words in the
+ *                   uniform-length dictionary)
+ *   'uldna_dups': uldna_pdict@dups
+ *   'ACtree_xp': uldna_pdict@ACtree@xp
+ *   'AC_base_codes': uldna_pdict@AC_base_codes
+ *   's_xp': subject@data@xp
+ *   's_offset': subject@offset
+ *   's_length': subject@length
+ *
+ * For now return a list of length 'uldna_length' where each element is a
+ * vector of integers containing matches (start position). More precisely,
+ * for the i-th pattern in the dictionary, all the matches found in the
+ * subject are stored in the i-th element of this list.
+ *
+ ****************************************************************************/
+
+SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
+		SEXP ACtree_xp, SEXP AC_base_codes,
+		SEXP s_xp, SEXP s_offset, SEXP s_length)
+{
+	int uldna_len, ACtree_length, subj_offset, subj_length;
+	ACNode *ACtree;
+	const Rbyte *subj;
+	SEXP tag;
+
+	uldna_len = INTEGER(uldna_length)[0];
+	dupsbuf = _LIST_asIBBuf(uldna_dups);
+	tag = R_ExternalPtrTag(ACtree_xp);
+	ACtree = (ACNode *) INTEGER(tag);
+	ACtree_length = LENGTH(tag) / INTS_PER_ACNODE;
+	subj_offset = INTEGER(s_offset)[0];
+	subj_length = INTEGER(s_length)[0];
+	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+
+	ULdna_exact_search(uldna_len, ACtree, ACtree_length, (char *) subj, subj_length);
+
+	return _IBBuf_asLIST(&startsbuf);
 }
 

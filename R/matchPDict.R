@@ -24,12 +24,12 @@ setClass("PDict", representation("VIRTUAL"))
 ###
 ###   length: the length L of the original dictionary (e.g. L=10^6)
 ###
-###   AC_tree: an external integer vector (XInteger object) for the storage
+###   ACtree: an external integer vector (XInteger object) for the storage
 ###       of the Aho-Corasick 4-ary tree built from the original dictionary.
 ### 
 ###   AC_base_codes: 4 integers, normally the DNA base internal codes (see
 ###       DNA_BASE_CODES), attached to the 4 internal child slots of any node
-###       in the AC_tree slot (see typedef ACNode in the C code for more
+###       in the ACtree slot (see typedef ACNode in the C code for more
 ###       info). 
 ###
 ###   dups: an unnamed (and eventually empty) list of integer vectors
@@ -50,7 +50,7 @@ setClass("ULdna_PDict",
     representation(
         nchar="integer",
         length="integer",
-        AC_tree="XInteger",
+        ACtree="XInteger",
         AC_base_codes="integer",
         dups="list" 
     )
@@ -75,8 +75,8 @@ debug_ULdna <- function()
     .Object@nchar <- pattern_length
     .Object@length <- length(dict)
     init <- .Call("ULdna_init_with_StrVect", dict, PACKAGE="Biostrings")
-    .Object@AC_tree <- XInteger(1)
-    .Object@AC_tree@xp <- init$AC_tree_xp
+    .Object@ACtree <- XInteger(1)
+    .Object@ACtree@xp <- init$ACtree_xp
     .Object@AC_base_codes <- init$AC_base_codes
     .Object@dups <- init$dups
     .Object
@@ -94,8 +94,8 @@ debug_ULdna <- function()
     .Object@length <- length(dict)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
     init <- .Call("ULdna_init_with_BStringList", dict0, PACKAGE="Biostrings")
-    .Object@AC_tree <- XInteger(1)
-    .Object@AC_tree@xp <- init$AC_tree_xp
+    .Object@ACtree <- XInteger(1)
+    .Object@ACtree@xp <- init$ACtree_xp
     .Object@AC_base_codes <- init$AC_base_codes
     .Object@dups <- init$dups
     .Object
@@ -182,4 +182,16 @@ setGeneric(
     function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("matchPDict")
 )
+
+
+### WORK IN PROGRESS!!!
+### Must return a list of integer vectors.
+.match.ULdna_PDict.exact <- function(pdict, subject)
+{
+    .Call("match_ULdna_exact",
+          pdict@length, pdict@dups,
+          pdict@ACtree@xp, pdict@AC_base_codes,
+          subject@data@xp, subject@offset, subject@length,
+          PACKAGE="Biostrings")
+}
 
