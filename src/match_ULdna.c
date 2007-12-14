@@ -236,7 +236,17 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
 	return;
 }
 
-static SEXP ULdna_init_mkSEXP()
+/*
+ * Return an R list with the following elements:
+ *   - AC_tree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
+ *         tree built from 'dict'.
+ *   - AC_base_codes: integer vector containing the 4 character codes (ASCII)
+ *         attached to the 4 child slots of any node in the tree pointed by
+ *         AC_tree_xp.
+ *   - dups: an unnamed (and eventually empty) list of integer vectors
+ *         containing the indices of the duplicated words found in 'dict'.
+ */
+static SEXP ULdna_asLIST()
 {
 	SEXP ans, ans_names, ans_elt, tag, ans_elt_elt;
 	DupsBufLine *line;
@@ -284,6 +294,7 @@ static SEXP ULdna_init_mkSEXP()
 	return ans;
 }
 
+
 /****************************************************************************
  * Exact matching
  * ======================================================
@@ -306,14 +317,7 @@ static int ULdna_exact_search()
  *           triplets containing the uniform-length dictionary for
  *           ULdna_init_with_BStringList.
  *
- * Return an R list with the following elements:
- *   - AC_tree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
- *         tree built from 'dict'.
- *   - AC_base_codes: integer vector containing the 4 character codes (ASCII)
- *         attached to the 4 child slots of any node in the tree pointed by
- *         AC_tree_xp.
- *   - dups: an unnamed (and eventually empty) list of integer vectors
- *         containing the indices of the duplicated words found in 'dict'.
+ * See ULdna_asLIST() for a description of the returned SEXP.
  *
  ****************************************************************************/
 
@@ -330,7 +334,7 @@ SEXP ULdna_init_with_StrVect(SEXP dict)
 		p->nP = LENGTH(dict_elt);
 	}
 	ULdna_init(patterns, LENGTH(dict));
-	return ULdna_init_mkSEXP();
+	return ULdna_asLIST();
 }
 
 SEXP ULdna_init_with_BStringList(SEXP dict)

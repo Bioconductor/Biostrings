@@ -4,6 +4,22 @@
 
 #define DEBUG_BIOSTRINGS 1
 
+/*
+ * Buffer structures used for temporary storage of arrays (or arrays of arrays)
+ * of ints, chars, etc... Only buffers of ints are suported for now.
+ */
+typedef struct ibuf {
+        int *vals;
+        int maxcount;
+        int count;
+} IBuf;
+
+typedef struct ibbuf {
+        IBuf *ibufs;
+        int maxcount;
+        int count;
+} IBBuf;
+
 
 /* utils.c */
 
@@ -140,6 +156,39 @@ int fgets_rtrimmed(
 		char *s,
 		int size,
 		FILE *stream
+);
+
+
+/* bufutils.c */
+
+SEXP Biostrings_debug_bufutils();
+
+void _IBuf_init(
+		IBuf *ibuf
+);
+
+void _IBuf_get_more_room(
+		IBuf *ibuf
+);
+
+void _IBuf_insert_at(
+		IBuf *ibuf,
+		int at,
+		int val
+);
+
+void _IBBuf_init(
+		IBBuf *ibbuf
+);
+
+void _IBBuf_get_more_room(
+		IBBuf *ibbuf
+);
+
+void _IBBuf_insert_at(
+		IBBuf *ibbuf,
+		int at,
+		IBuf ibuf
 );
 
 
