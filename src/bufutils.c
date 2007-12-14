@@ -46,6 +46,7 @@ static int get_new_maxcount(int maxcount)
 
 void _IBuf_init(IBuf *ibuf)
 {
+	/* No memory leak here, because we use transient storage allocation */
 	ibuf->vals = NULL;
 	ibuf->maxcount = ibuf->count = 0;
 	return;
@@ -82,6 +83,7 @@ void _IBuf_insert_at(IBuf *ibuf, int at, int val)
 
 void _IBBuf_init(IBBuf *ibbuf)
 {
+	/* No memory leak here, because we use transient storage allocation */
 	ibbuf->ibufs = NULL;
 	ibbuf->maxcount = ibbuf->count = 0;
 	return;

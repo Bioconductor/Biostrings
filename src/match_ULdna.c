@@ -34,68 +34,27 @@ typedef struct pattern {
 
 
 /****************************************************************************
- * Manipulation of the buffer of duplicates
+ * Buffer of duplicates
  */
 
-typedef struct dupsbuf_line {
-	int *vals;
-	int maxcount;
-	int count;
-} DupsBufLine;
+IBBuf dupsbuf;
 
-static DupsBufLine *dupsbuf;
-static int dupsbuf_maxcount, dupsbuf_count;
-
-static void dupsbuf_reset()
-{
-	/* No memory leak here, because we use transient storage allocation */
-	dupsbuf = NULL;
-	dupsbuf_maxcount = dupsbuf_count = 0;
-	return;
-}
-
-static int dupsbuf_appendtoline(DupsBufLine *line, int P_id)
-{
-	long new_maxcount;
-
-	if (line->count >= line->maxcount) {
-		if (line->maxcount == 0)
-			new_maxcount = 1000;
-		else
-			new_maxcount = 2 * line->maxcount;
-		line->vals = Srealloc((char *) line->vals, new_maxcount,
-				(long) line->maxcount, int);
-		line->maxcount = new_maxcount;
-	}
-	line->vals[line->count++] = P_id;
-	return line->count;
-}
-
-static int dupsbuf_append(int P_id1, int P_id2)
+static void dupsbuf_append(int P_id1, int P_id2)
 {
 	int i;
-	DupsBufLine *line;
-	long new_maxcount;
+	IBuf *line, new_line;
 
-	for (i = 0, line = dupsbuf; i < dupsbuf_count; i++, line++) {
-		if (line->vals[0] == P_id1)
-			return dupsbuf_appendtoline(line, P_id2);
+	for (i = 0, line = dupsbuf.ibufs; i < dupsbuf.count; i++, line++) {
+		if (line->vals[0] == P_id1) {
+			_IBuf_insert_at(line, line->count, P_id2);
+			return;
+		}
 	}
-	if (dupsbuf_count >= dupsbuf_maxcount) {
-		/* Buffer is full */
-		if (dupsbuf_maxcount == 0)
-			new_maxcount = 1000;
-		else
-			new_maxcount = 2 * dupsbuf_maxcount;
-		dupsbuf = Srealloc((char *) dupsbuf, new_maxcount,
-					(long) dupsbuf_maxcount, DupsBufLine);
-		dupsbuf_maxcount = new_maxcount;
-	}
-	line = dupsbuf + dupsbuf_count++;
-	line->maxcount = line->count = 0;
-	line->vals = NULL;
-	dupsbuf_appendtoline(line, P_id1);
-	return dupsbuf_appendtoline(line, P_id2);
+	_IBuf_init(&new_line);
+	_IBuf_insert_at(&new_line, new_line.count, P_id1);
+	_IBuf_insert_at(&new_line, new_line.count, P_id2);
+	_IBBuf_insert_at(&dupsbuf, dupsbuf.count, new_line);
+	return;
 }
 
 
@@ -228,7 +187,7 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
 	const Pattern *p;
 	int i;
 
-	dupsbuf_reset();
+	_IBBuf_init(&dupsbuf);
 	ACnodebuf_reset();
 	ACnodebuf_newNode();
 	for (i = 0, p = patterns; i < dict_length; i++, p++)
@@ -249,7 +208,7 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
 static SEXP ULdna_asLIST()
 {
 	SEXP ans, ans_names, ans_elt, tag, ans_elt_elt;
-	DupsBufLine *line;
+	IBuf *line;
 	int tag_length, i;
 
 	PROTECT(ans = NEW_LIST(3));
@@ -280,8 +239,8 @@ static SEXP ULdna_asLIST()
 	UNPROTECT(1);
 
 	/* set the "dups" element */
-	PROTECT(ans_elt = NEW_LIST(dupsbuf_count));
-	for (i = 0, line = dupsbuf; i < dupsbuf_count; i++, line++) {
+	PROTECT(ans_elt = NEW_LIST(dupsbuf.count));
+	for (i = 0, line = dupsbuf.ibufs; i < dupsbuf.count; i++, line++) {
 		PROTECT(ans_elt_elt = NEW_INTEGER(line->count));
 		memcpy((char *) INTEGER(ans_elt_elt), line->vals, line->count * sizeof(int));
 		SET_ELEMENT(ans_elt, i, ans_elt_elt);
