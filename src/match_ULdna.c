@@ -80,13 +80,13 @@ static void dups_bbuf_append(int P_id1, int P_id2)
  * Note that the id of an ACNode element is just its offset in the array.
  */
 
+#define ALPHABET_LENGTH 4
+
 typedef struct ac_node {
-        int ac_node1_id;
-        int ac_node2_id;
-        int ac_node3_id;
-        int ac_node4_id;
+	int parent_id;
+	int child_id[ALPHABET_LENGTH];
 	int flink;
-        int P_id;
+	int P_id;
 } ACNode;
 
 #define INTS_PER_ACNODE (sizeof(ACNode) / sizeof(int))
@@ -94,9 +94,9 @@ typedef struct ac_node {
 static ACNode *ACnodebuf;
 static int ACnodebuf_maxcount, ACnodebuf_count;
 static int ACnodebuf_pattern_length;
-static int ACnodebuf_base_codes[4];
+static int ACnodebuf_base_codes[ALPHABET_LENGTH];
 
-void ACnodebuf_reset()
+static void ACnodebuf_init()
 {
 	int i;
 
@@ -104,53 +104,71 @@ void ACnodebuf_reset()
 	ACnodebuf = NULL;
 	ACnodebuf_maxcount = ACnodebuf_count = 0;
 	ACnodebuf_pattern_length = -1;
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < ALPHABET_LENGTH; i++)
 		ACnodebuf_base_codes[i] = -1;
 	return;
 }
 
-static int ACnodebuf_newNode()
+static void ACnodebuf_init_node(ACNode *node, int parent_id)
 {
-	long new_maxcount;
-	ACNode *node;
+	int i;
 
-	if (ACnodebuf_count >= ACnodebuf_maxcount) {
-		/* Buffer is full */
-		if (ACnodebuf_maxcount == 0)
-			new_maxcount = 50000;
-		else
-			new_maxcount = 2 * ACnodebuf_maxcount;
-		ACnodebuf = Srealloc((char *) ACnodebuf, new_maxcount,
-					(long) ACnodebuf_maxcount, ACNode);
-		ACnodebuf_maxcount = new_maxcount;
-	}
-	node = ACnodebuf + ACnodebuf_count;
-	node->ac_node1_id = -1;
-	node->ac_node2_id = -1;
-	node->ac_node3_id = -1;
-	node->ac_node4_id = -1;
+	node->parent_id = parent_id;
+	for (i = 0; i < ALPHABET_LENGTH; i++)
+		node->child_id[i] = -1;
 	node->flink = -1;
 	node->P_id = -1;
+	return;
+}
+
+static void ACnodebuf_get_more_room()
+{
+	long new_maxcount;
+
+	if (ACnodebuf_maxcount == 0)
+		new_maxcount = 50000;
+	else
+		new_maxcount = 2 * ACnodebuf_maxcount;
+	ACnodebuf = Srealloc((char *) ACnodebuf, new_maxcount,
+				(long) ACnodebuf_maxcount, ACNode);
+	ACnodebuf_maxcount = new_maxcount;
+	return;
+}
+
+static int ACnodebuf_append_node(int parent_id)
+{
+	ACNode *node;
+
+	if (ACnodebuf_count >= ACnodebuf_maxcount)
+		ACnodebuf_get_more_room();
+	node = ACnodebuf + ACnodebuf_count;
+	ACnodebuf_init_node(node, parent_id);
 	return ACnodebuf_count++;
 }
 
-static ACNode *ACnodebuf_tryMovingToChild(char c, int childslot, int *ac_node_id)
+static int ACnodebuf_tryMovingToChild(int node_id, int childslot, char c)
 {
+	ACNode *node;
+	int *child_id;
+
 	if (ACnodebuf_base_codes[childslot] == -1) {
 		ACnodebuf_base_codes[childslot] = c;
 	} else {
 		if (c != ACnodebuf_base_codes[childslot])
-			return NULL;
+			return -1;
 	}
-	if (*ac_node_id == -1)
-		*ac_node_id = ACnodebuf_newNode();
-	return ACnodebuf + *ac_node_id;
+	node = ACnodebuf + node_id;
+	child_id = node->child_id + childslot;
+	if (*child_id == -1)
+		*child_id = ACnodebuf_append_node(node_id);
+	return *child_id;
 }
 
 static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
 {
-	ACNode *node, *child_node;
-	int n;
+	int n, node_id, child_id, i;
+	char c;
+	ACNode *node;
 
 	if (ACnodebuf_pattern_length == -1) {
 		if (nP == 0)
@@ -160,21 +178,17 @@ static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
 		if (nP != ACnodebuf_pattern_length)
 			error("all patterns in dictionary must have the same length");
 	}
-	for (n = 0, node = ACnodebuf; n < nP; n++, node = child_node) {
-		child_node = ACnodebuf_tryMovingToChild(P[n], 0, &(node->ac_node1_id));
-		if (child_node != NULL)
-			continue;
-		child_node = ACnodebuf_tryMovingToChild(P[n], 1, &(node->ac_node2_id));
-		if (child_node != NULL)
-			continue;
-		child_node = ACnodebuf_tryMovingToChild(P[n], 2, &(node->ac_node3_id));
-		if (child_node != NULL)
-			continue;
-		child_node = ACnodebuf_tryMovingToChild(P[n], 3, &(node->ac_node4_id));
-		if (child_node != NULL)
-			continue;
-		error("dictionary contains more than 4 distinct letters");
+	for (n = 0, node_id = 0; n < nP; n++, node_id = child_id) {
+		c = P[n];
+		for (i = 0; i < ALPHABET_LENGTH; i++) {
+			child_id = ACnodebuf_tryMovingToChild(node_id, i, c);
+			if (child_id != -1)
+				break;
+		}
+		if (child_id == -1)
+			error("dictionary contains more than %d distinct letters", ALPHABET_LENGTH);
 	}
+	node = ACnodebuf + node_id;
 	if (node->P_id == -1)
 		node->P_id = P_id;
 	else
@@ -188,8 +202,8 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
 	int i;
 
 	_IBBuf_init(&dups_bbuf);
-	ACnodebuf_reset();
-	ACnodebuf_newNode();
+	ACnodebuf_init();
+	ACnodebuf_append_node(0);
 	for (i = 0, p = patterns; i < dict_length; i++, p++)
 		ACnodebuf_addPattern(p->P, p->nP, i + 1);
 	return;
@@ -205,14 +219,11 @@ IBBuf starts_bbuf;
 
 static int get_child_id(ACNode *node, char c)
 {
-	if (c == ACnodebuf_base_codes[0])
-		return node->ac_node1_id;
-	if (c == ACnodebuf_base_codes[1])
-		return node->ac_node2_id;
-	if (c == ACnodebuf_base_codes[2])
-		return node->ac_node3_id;
-	if (c == ACnodebuf_base_codes[3])
-		return node->ac_node4_id;
+	int i;
+
+	for (i = 0; i < ALPHABET_LENGTH; i++)
+		if (c == ACnodebuf_base_codes[i])
+			return node->child_id[i];
 	return -1;
 }
 
@@ -279,14 +290,14 @@ static SEXP ACnodebuf_asXP()
 }
 
 /*
- * Turn the ACnodebuf_base_codes array into an R vector of 4 integers
+ * Turn the ACnodebuf_base_codes array into an R vector of ALPHABET_LENGTH integers
  */
 static SEXP base_codes_asINTEGER()
 {
 	SEXP ans;
 
-	PROTECT(ans = NEW_INTEGER(4));
-	memcpy(INTEGER(ans), ACnodebuf_base_codes, 4 * sizeof(int));
+	PROTECT(ans = NEW_INTEGER(ALPHABET_LENGTH));
+	memcpy(INTEGER(ans), ACnodebuf_base_codes, ALPHABET_LENGTH * sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
@@ -295,9 +306,9 @@ static SEXP base_codes_asINTEGER()
  * Return an R list with the following elements:
  *   - ACtree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
  *         tree built from 'dict'.
- *   - AC_base_codes: integer vector containing the 4 character codes (ASCII)
- *         attached to the 4 child slots of any node in the tree pointed by
- *         ACtree_xp.
+ *   - AC_base_codes: integer vector containing the ALPHABET_LENGTH character
+ *         codes (ASCII) attached to the ALPHABET_LENGTH child slots of any
+ *         node in the tree pointed by ACtree_xp.
  *   - dups: an unnamed (and eventually empty) list of integer vectors
  *         containing the indices of the duplicated words found in 'dict'.
  */
