@@ -106,9 +106,31 @@ debug_ULdna <- function()
 ###   - list of character strings or BString or DNAString or RNAString objects
 ###   - BStringViews object
 ### Typical use:
-###   library(hgu95av2probe)
-###   dict <- hgu95av2probe$sequence # the original dictionary
-###   pdict <- new("ULdna_PDict", dict)
+###   > library(Biostrings)
+###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
+###   > pdict <- new("ULdna_PDict", dict)
+###   > pdict
+###   An object of class “ULdna_PDict”
+###   Slot "nchar":
+###   [1] 3
+###
+###   Slot "length":
+###   [1] 6
+###
+###   Slot "ACtree":
+###   91-integer XInteger object (starting at address 0x88a5600)
+###
+###   Slot "AC_base_codes":
+###   [1]  97  98  99 100
+###
+###   Slot "dups":
+###   [[1]]
+###   [1] 2 6
+###
+### A real use-case:   
+###   > library(hgu95av2probe)
+###   > dict <- hgu95av2probe$sequence # the original dictionary
+###   > pdict <- new("ULdna_PDict", dict)
 ###
 setMethod("initialize", "ULdna_PDict",
     function(.Object, dict)
