@@ -215,7 +215,7 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
  * ==============
  */
 
-IBBuf starts_bbuf;
+IBBuf ends_bbuf;
 
 static int get_child_id(ACNode *node, char c)
 {
@@ -238,14 +238,14 @@ static void ULdna_exact_search(int uldna_len,
 		const char *S, int nS)
 {
 	int i, n, child_id;
-	IBuf *starts_buf;
+	IBuf *ends_buf;
 	ACNode *node;
 	char c;
 
-	starts_bbuf.ibufs = Salloc((long) uldna_len, IBuf);
-	for (i = 0, starts_buf = starts_bbuf.ibufs; i < uldna_len; i++, starts_buf++)
-		_IBuf_init(starts_buf);
-	starts_bbuf.maxcount = starts_bbuf.count = uldna_len;
+	ends_bbuf.ibufs = Salloc((long) uldna_len, IBuf);
+	for (i = 0, ends_buf = ends_bbuf.ibufs; i < uldna_len; i++, ends_buf++)
+		_IBuf_init(ends_buf);
+	ends_bbuf.maxcount = ends_bbuf.count = uldna_len;
 	node = ACtree;
 	for (n = 0; n < nS; n++) {
 		c = S[n];
@@ -258,8 +258,8 @@ static void ULdna_exact_search(int uldna_len,
 		}
 		node = ACtree + child_id;
 		if (node->P_id != -1) {
-			starts_buf = starts_bbuf.ibufs + node->P_id - 1;
-			_IBuf_insert_at(starts_buf, starts_buf->count, n + 1);
+			ends_buf = ends_bbuf.ibufs + node->P_id - 1;
+			_IBuf_insert_at(ends_buf, ends_buf->count, n + 1);
 		}
 		continue0: ;
 	}
@@ -426,6 +426,6 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 
 	ULdna_exact_search(uldna_len, ACtree, ACtree_length, (char *) subj, subj_length);
 
-	return _IBBuf_asLIST(&starts_bbuf);
+	return _IBBuf_asLIST(&ends_bbuf);
 }
 

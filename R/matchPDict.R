@@ -205,9 +205,10 @@ setGeneric(
         standardGeneric("matchPDict")
 )
 
-
 ### WORK IN PROGRESS!!!
 ### Must return a list of integer vectors.
+### With the small 'pdict' object created in the first example above:
+###   > Biostrings:::.match.ULdna_PDict.exact(pdict, BString("aca"))
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
     .Call("match_ULdna_exact",
