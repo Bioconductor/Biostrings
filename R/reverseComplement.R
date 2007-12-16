@@ -1,3 +1,13 @@
+transcribe = function(x) {
+   if( !(is(x, "DNAString") ) stop("transcribe only works on DNA input")
+   RNAString(x)
+}
+
+cDNA = function(x) {
+   if( !(is(x, "RNAString") ) stop("cDNA only works on RNA input")
+   DNAString(x)
+}
+
 dna2rna = function( x ) {
     lx = length(x)
     data <- XRaw(lx)

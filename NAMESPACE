@@ -57,6 +57,6 @@ export(
     read.BStringViews, write.BStringViews,
     subBString, subviews,
     matchDNAPattern,
-    alignScore, dna2rna, rna2dna
+    alignScore, dna2rna, rna2dna, transcribe, cDNA
 )
 
