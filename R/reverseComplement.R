@@ -1,3 +1,19 @@
+dna2rna = function( x ) {
+    lx = length(x)
+    data <- XRaw(lx)
+    lkup <- getDNAComplementLookup()
+    XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
+    RNAString(data)
+}
+ 
+rna2dna = function( x ) {
+    lx = length(x)
+    data <- XRaw(lx)
+    lkup <- getRNAComplementLookup()
+    XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
+    DNAString(data)
+}
+ 
 setGeneric("reverse", signature="x",
     function(x, ...) standardGeneric("reverse")
 )
@@ -39,6 +55,18 @@ setMethod("complement", "DNAString",
     }
 )
 
+
+setMethod("complement", "RNAString",
+    function(x, ...)
+    {
+        lx <- length(x)
+        data <- XRaw(lx)
+        lkup <- getRNAComplementLookup()
+        XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
+        RNAString(data)
+    }
+)
+
 setMethod("complement", "BStringViews",
     function(x, ...)
     {
@@ -59,6 +87,17 @@ setMethod("reverseComplement", "DNAString",
         lkup <- getDNAComplementLookup()
         XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
         DNAString(data)
+    }
+)
+
+setMethod("reverseComplement", "RNAString",
+    function(x, ...)
+    {
+        lx <- length(x)
+        data <- XRaw(lx)
+        lkup <- getRNAComplementLookup()
+        XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
+        RNAString(data)
     }
 )
 

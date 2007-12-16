@@ -144,6 +144,13 @@ getDNAComplementLookup <- function()
 }
 
 
+getRNAComplementLookup <- function()
+{
+    lkup <- RNA_STRING_CODEC@dec_lkup
+    lkup[lkup %in% letterAsByteVal("U")] <- letterAsByteVal("T")
+    DNA_STRING_CODEC@enc_lkup[lkup + 1]
+}
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Add extra codecs below...
 
