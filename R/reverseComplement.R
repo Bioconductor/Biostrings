@@ -1,10 +1,10 @@
 transcribe = function(x) {
-   if( !(is(x, "DNAString") ) stop("transcribe only works on DNA input")
+   if( !(is(x, "DNAString")) ) stop("transcribe only works on DNA input")
    RNAString(x)
 }
 
 cDNA = function(x) {
-   if( !(is(x, "RNAString") ) stop("cDNA only works on RNA input")
+   if( !(is(x, "RNAString")) ) stop("cDNA only works on RNA input")
    DNAString(x)
 }
 
