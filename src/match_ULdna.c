@@ -217,6 +217,27 @@ static void ULdna_init(const Pattern *patterns, int dict_length)
 
 IBBuf ends_bbuf;
 
+static void init_ends_bbuf(int uldna_len)
+{
+	int i;
+	IBuf *ends_buf;
+
+	ends_bbuf.ibufs = Salloc((long) uldna_len, IBuf);
+	for (i = 0, ends_buf = ends_bbuf.ibufs; i < uldna_len; i++, ends_buf++)
+		_IBuf_init(ends_buf);
+	ends_bbuf.maxcount = ends_bbuf.count = uldna_len;
+	return;
+}
+
+static void report_match(int P_id, int end)
+{
+	IBuf *ends_buf;
+
+	ends_buf = ends_bbuf.ibufs + P_id - 1;
+	_IBuf_insert_at(ends_buf, ends_buf->count, end);
+	return;
+}
+
 static int get_child_id(ACNode *node, char c)
 {
 	int i;
@@ -227,54 +248,91 @@ static int get_child_id(ACNode *node, char c)
 	return -1;
 }
 
-static ACNode *follow_flink(ACNode *node0, ACNode *node)
+static int get_node_depth(ACNode *node0, ACNode *node)
 {
-	char path[1000];
-/*
-	node1 = node;
-	do {
-		parent_node = node0 + node1->parent_id;
-		for (i = 0; i < ALPHABET_LENGTH; i++)
-			if (node0 + parent_node->child_id[i] == node1)
-				break;
-		node1 = parent_node;
-	} while (parent_node != 0);
-	while (node->parent_id
-*/
-	/* not ready yet */
-	return node0;
+	int depth;
+
+	for (depth = 0; node != node0; depth++)
+		node = node0 + node->parent_id;
+	return depth;
 }
 
-static void ULdna_exact_search(int uldna_len,
-		ACNode *ACtree, int ACtree_length,
-		const char *S, int nS)
+static int follow_string(ACNode *node0, const char *S, int nS)
 {
-	int i, n, child_id;
-	IBuf *ends_buf;
+	int node_id, child_id, depth, new_depth, n;
+	const char *path;
 	ACNode *node;
-	char c;
+	static int rec_level = 0;
+#ifdef DEBUG_BIOSTRINGS
+	char format[20];
+#endif
 
-	ends_bbuf.ibufs = Salloc((long) uldna_len, IBuf);
-	for (i = 0, ends_buf = ends_bbuf.ibufs; i < uldna_len; i++, ends_buf++)
-		_IBuf_init(ends_buf);
-	ends_bbuf.maxcount = ends_bbuf.count = uldna_len;
-	node = ACtree;
-	for (n = 0; n < nS; n++) {
-		c = S[n];
-		child_id = get_child_id(node, c);
-		while (child_id == -1) {
-			if (node == ACtree)
-				goto continue0;
-			node = follow_flink(ACtree, node);
-			child_id = get_child_id(node, c);
+	node = node0;
+	node_id = 0;
+	path = S;
+	depth = 0;
+	for (n = 0; n < nS; n++, S++) {
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG] follow_string():");
+			sprintf(format, "%%%ds", 1 + 2*rec_level);
+			Rprintf(format, " ");
+			Rprintf("S[%d]=%c, node_id=%d\n", n, *S, node_id);
 		}
-		node = ACtree + child_id;
-		if (node->P_id != -1) {
-			ends_buf = ends_bbuf.ibufs + node->P_id - 1;
-			_IBuf_insert_at(ends_buf, ends_buf->count, n + 1);
+#endif
+		while (1) {
+			child_id = get_child_id(node, *S);
+			if (child_id != -1) {
+				node_id = child_id;
+				depth++;
+				break;
+			}
+			if (node_id == 0)
+				break;
+			if (node->flink == -1) {
+				rec_level++;
+				node->flink = follow_string(node0, path + 1,  depth - 1);
+				rec_level--;
+#ifdef DEBUG_BIOSTRINGS
+				if (debug) {
+					Rprintf("[DEBUG] follow_string():");
+					Rprintf(format, " ");
+					Rprintf("setting failure link %d -> %d\n", node_id, node->flink);
+				}
+#endif
+			}
+#ifdef DEBUG_BIOSTRINGS
+			if (debug) {
+				Rprintf("[DEBUG] follow_string():");
+				Rprintf(format, " ");
+				Rprintf("following failure link %d -> %d\n", node_id, node->flink);
+			}
+#endif
+			node_id = node->flink;
+			node = node0 + node_id;
+			new_depth = get_node_depth(node0, node);
+			path += depth - new_depth;
+			depth = new_depth;
 		}
-		continue0: ;
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG] follow_string():");
+			Rprintf(format, " ");
+			Rprintf("moving to node %d\n", node_id);
+		}
+#endif
+		node = node0 + node_id;
+		// Finding a match cannot happen during a nested call to follow_string()
+		if (node->P_id != -1)
+			report_match(node->P_id, n + 1);
 	}
+	return node_id;
+}
+
+static void ULdna_exact_search(int uldna_len, ACNode *ACtree, const char *S, int nS)
+{
+	init_ends_bbuf(uldna_len);
+	follow_string(ACtree, S, nS);
 	return;
 }
 
@@ -436,7 +494,7 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	subj_length = INTEGER(s_length)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 
-	ULdna_exact_search(uldna_len, ACtree, ACtree_length, (char *) subj, subj_length);
+	ULdna_exact_search(uldna_len, ACtree, (char *) subj, subj_length);
 
 	return _IBBuf_asLIST(&ends_bbuf);
 }
