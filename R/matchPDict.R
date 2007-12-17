@@ -207,30 +207,24 @@ setGeneric(
 ###   > library(hgu95av2probe)
 ###   > dict <- hgu95av2probe$sequence # the original dictionary
 ###   > pdict <- new("ULdna_PDict", dict)
+###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- BString(Hsapiens$chr1) # because dict is a character vector
-###   > system.time(ends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
+###   > system.time(pid2matchends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
-###   > nmatches <- sapply(ends, length)
+###   > nmatches <- sapply(pid2matchends, length)
 ###   > table(nmatches)
 ###   > id0 <- which(nmatches == max(nmatches))
 ###   > p0 <- BString(dict[id0])
 ###   > p0
 ###     25-letter "BString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subBString(chr1, ends[[id0]][1]-24, ends[[id0]][1]) == p0
+###   > subBString(chr1, pid2matchends[[id0]][1]-24, pid2matchends[[id0]][1]) == p0
 ###   [1] TRUE
-### BUT, THERE IS A BUG FOR NOW:
-###   > subBString(chr1, ends[[id0]][22]-24, ends[[id0]][22]) == p0
-###   [1] FALSE
-###   > subBString(chr1, ends[[id0]][22]-24, ends[[id0]][22])
-###     25-letter "BString" instance
-###   Value: CTGTTATCCCAGCACTTTGGGAGGC
-###
-### Easy to reproduce with:
-###   dict <- c("abb", "aca", "bab", "caa")
-###   pdict <- new("ULdna_PDict", dict)
-###   Biostrings:::.match.ULdna_PDict.exact(pdict, BString("dadcdadcbadbcdabcdbadcbdabcdbadcdabca"))
+### For a more extensive validation:
+###   > pidOK <- sapply(seq_len(length(pid2matchends)), function(pid) identical(pid2matchends[[pid]], end(matchPattern(BString(dict[pid]), chr1))))
+###   > all(pidOK)
+### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
 ###
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
