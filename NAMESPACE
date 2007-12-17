@@ -56,7 +56,8 @@ export(
     FASTArecordsToBStringViews, BStringViewsToFASTArecords,
     read.BStringViews, write.BStringViews,
     subBString, subviews,
+    transcribe, cDNA, dna2rna, rna2dna,
     matchDNAPattern,
-    alignScore, dna2rna, rna2dna, transcribe, cDNA
+    alignScore
 )
 

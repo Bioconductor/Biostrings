@@ -227,8 +227,20 @@ static int get_child_id(ACNode *node, char c)
 	return -1;
 }
 
-static ACNode *follow_flink(ACNode *node, ACNode *node0)
+static ACNode *follow_flink(ACNode *node0, ACNode *node)
 {
+	char path[1000];
+/*
+	node1 = node;
+	do {
+		parent_node = node0 + node1->parent_id;
+		for (i = 0; i < ALPHABET_LENGTH; i++)
+			if (node0 + parent_node->child_id[i] == node1)
+				break;
+		node1 = parent_node;
+	} while (parent_node != 0);
+	while (node->parent_id
+*/
 	/* not ready yet */
 	return node0;
 }
@@ -253,7 +265,7 @@ static void ULdna_exact_search(int uldna_len,
 		while (child_id == -1) {
 			if (node == ACtree)
 				goto continue0;
-			node = follow_flink(node, ACtree);
+			node = follow_flink(ACtree, node);
 			child_id = get_child_id(node, c);
 		}
 		node = ACtree + child_id;

@@ -1,29 +1,7 @@
-transcribe = function(x) {
-   if( !(is(x, "DNAString")) ) stop("transcribe only works on DNA input")
-   RNAString(x)
-}
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "reverse" generic function and methods.
+###
 
-cDNA = function(x) {
-   if( !(is(x, "RNAString")) ) stop("cDNA only works on RNA input")
-   DNAString(x)
-}
-
-dna2rna = function( x ) {
-    lx = length(x)
-    data <- XRaw(lx)
-    lkup <- getDNAComplementLookup()
-    XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
-    RNAString(data)
-}
- 
-rna2dna = function( x ) {
-    lx = length(x)
-    data <- XRaw(lx)
-    lkup <- getRNAComplementLookup()
-    XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
-    DNAString(data)
-}
- 
 setGeneric("reverse", signature="x",
     function(x, ...) standardGeneric("reverse")
 )
@@ -50,6 +28,11 @@ setMethod("reverse", "BStringViews",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "complement" generic function and methods.
+###
+
 setGeneric("complement", signature="x",
     function(x, ...) standardGeneric("complement")
 )
@@ -64,7 +47,6 @@ setMethod("complement", "DNAString",
         DNAString(data)
     }
 )
-
 
 setMethod("complement", "RNAString",
     function(x, ...)
@@ -84,6 +66,33 @@ setMethod("complement", "BStringViews",
         views(subject, x@views$start, x@views$end)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some convenience functions for transforming a DNA (or RNA) sequence into
+### an RNA (or DNA) sequence.
+###
+
+transcribe <- function(x)
+{
+    if( !(is(x, "DNAString")) ) stop("transcribe only works on DNA input")
+    RNAString(x)
+}
+
+cDNA <- function(x)
+{
+    if( !(is(x, "RNAString")) ) stop("cDNA only works on RNA input")
+    DNAString(x)
+}
+
+dna2rna <- function(x) RNAString(complement(x))
+ 
+rna2dna <- function(x) DNAString(complement(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "reverseComplement" generic function and methods.
+###
 
 setGeneric("reverseComplement", signature="x",
     function(x, ...) standardGeneric("reverseComplement")

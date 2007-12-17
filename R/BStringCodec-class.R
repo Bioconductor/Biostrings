@@ -103,7 +103,7 @@ setMethod("initialize", "BStringCodec",
 ###   > dna <- DNAString("ACGT")
 ###   > rna <- RNAString(dna)
 ### This is almost instantaneous (even on a 100M-letter DNA) because the data
-### in 'dna' are not copied ('dna' and 'rna' share the same XRaw).
+### in 'dna' are not copied ('dna' and 'rna' point to the same XRaw object).
 DNA_BASE_CODES <- c(A=1L, C=2L, G=4L, T=8L)
 RNA_BASE_CODES <- c(U=1L, G=2L, C=4L, A=8L)
 
@@ -143,13 +143,13 @@ getDNAComplementLookup <- function()
     RNA_STRING_CODEC@enc_lkup[lkup + 1]
 }
 
-
 getRNAComplementLookup <- function()
 {
     lkup <- RNA_STRING_CODEC@dec_lkup
     lkup[lkup %in% letterAsByteVal("U")] <- letterAsByteVal("T")
     DNA_STRING_CODEC@enc_lkup[lkup + 1]
 }
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Add extra codecs below...
