@@ -127,11 +127,6 @@ debug_ULdna <- function()
 ###   [[1]]
 ###   [1] 2 6
 ###
-### A real use-case:   
-###   > library(hgu95av2probe)
-###   > dict <- hgu95av2probe$sequence # the original dictionary
-###   > pdict <- new("ULdna_PDict", dict)
-###
 setMethod("initialize", "ULdna_PDict",
     function(.Object, dict)
     {
@@ -207,8 +202,36 @@ setGeneric(
 
 ### WORK IN PROGRESS!!!
 ### Must return a list of integer vectors.
-### With the small 'pdict' object created in the first example above:
-###   > Biostrings:::.match.ULdna_PDict.exact(pdict, BString("aca"))
+###
+### A real use-case:   
+###   > library(hgu95av2probe)
+###   > dict <- hgu95av2probe$sequence # the original dictionary
+###   > pdict <- new("ULdna_PDict", dict)
+###   > chr1 <- BString(Hsapiens$chr1) # because dict is a character vector
+###   > system.time(ends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
+###      user  system elapsed 
+###    50.663   0.000  50.763
+###   > nmatches <- sapply(ends, length)
+###   > table(nmatches)
+###   > id0 <- which(nmatches == max(nmatches))
+###   > p0 <- BString(dict[id0])
+###   > p0
+###     25-letter "BString" instance
+###   Value: CTGTAATCCCAGCACTTTGGGAGGC
+###   > subBString(chr1, ends[[id0]][1]-24, ends[[id0]][1]) == p0
+###   [1] TRUE
+### BUT, THERE IS A BUG FOR NOW:
+###   > subBString(chr1, ends[[id0]][22]-24, ends[[id0]][22]) == p0
+###   [1] FALSE
+###   > subBString(chr1, ends[[id0]][22]-24, ends[[id0]][22])
+###     25-letter "BString" instance
+###   Value: CTGTTATCCCAGCACTTTGGGAGGC
+###
+### Easy to reproduce with:
+###   dict <- c("abb", "aca", "bab", "caa")
+###   pdict <- new("ULdna_PDict", dict)
+###   Biostrings:::.match.ULdna_PDict.exact(pdict, BString("dadcdadcbadbcdabcdbadcbdabcdbadcdabca"))
+###
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
     .Call("match_ULdna_exact",

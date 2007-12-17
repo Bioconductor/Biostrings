@@ -264,7 +264,7 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 	ACNode *node;
 	static int rec_level = 0;
 #ifdef DEBUG_BIOSTRINGS
-	char format[20];
+	char format[20], pathbuf[2000];
 #endif
 
 	node = node0;
@@ -277,7 +277,8 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 			Rprintf("[DEBUG] follow_string():");
 			sprintf(format, "%%%ds", 1 + 2*rec_level);
 			Rprintf(format, " ");
-			Rprintf("S[%d]=%c, node_id=%d\n", n, *S, node_id);
+			snprintf(pathbuf, depth + 1, "%s", path);
+			Rprintf("On node_id=%d (path=%s), reading S[%d]=%c\n", node_id, pathbuf, n, *S);
 		}
 #endif
 		while (1) {
@@ -287,8 +288,10 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 				depth++;
 				break;
 			}
-			if (node_id == 0)
+			if (node_id == 0) {
+				path++;
 				break;
+			}
 			if (node->flink == -1) {
 				rec_level++;
 				node->flink = follow_string(node0, path + 1,  depth - 1);
