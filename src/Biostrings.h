@@ -656,6 +656,13 @@ SEXP ULdna_init_with_BStringList(
 		SEXP dict
 );
 
+SEXP ULdna_init_with_views(
+		SEXP dict_subj_xp,
+		SEXP dict_subj_offset,
+		SEXP dict_start,
+		SEXP dict_end
+);
+
 SEXP match_ULdna_exact(
 		SEXP uldna_length,
 		SEXP uldna_dups,

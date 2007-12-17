@@ -101,7 +101,34 @@ debug_ULdna <- function()
     .Object
 }
 
-### Supported 'dict':
+### 'dict' must be a BStringViews object.
+.ULdna_PDict.init_with_BStringViews <- function(.Object, dict)
+{
+    if (length(dict) == 0)
+        stop("'dict' has no views")
+    pattern_length <- width(dict)
+    if (any(nchar(dict) != pattern_length))
+        stop("'dict' has out of limits views")
+    pattern_length <- unique(pattern_length)
+    if (length(pattern_length) != 1)
+        stop("all views in 'dict' must have the same width")
+    .Object@nchar <- pattern_length
+    .Object@length <- length(dict)
+    init <- .Call("ULdna_init_with_views",
+                  subject(dict)@data@xp, subject(dict)@offset,
+                  start(dict), end(dict),
+                  PACKAGE="Biostrings")
+    .Object@ACtree <- XInteger(1)
+    .Object@ACtree@xp <- init$ACtree_xp
+    .Object@AC_base_codes <- init$AC_base_codes
+    .Object@dups <- init$dups
+    .Object
+}
+
+### The input dictionary 'dict' must be:
+###   - of length >= 1
+###   - uniform-length (i.e. all words have the same length)
+### The supported types for the input dictionary are:
 ###   - character vector
 ###   - list of character strings or BString or DNAString or RNAString objects
 ###   - BStringViews object
@@ -150,17 +177,8 @@ setMethod("initialize", "ULdna_PDict",
             if (extends(pattern_class, "BString"))
                 return(.ULdna_PDict.init_with_BStringList(.Object, dict))
         }
-        if (is(dict, "BStringViews")) {
-            if (length(dict) == 0)
-                stop("'dict' has no views")
-            pattern_length <- width(dict)
-            if (any(nchar(dict) != pattern_length))
-                stop("'dict' has out of limits views")
-            pattern_length <- unique(pattern_length)
-            if (length(pattern_length) != 1)
-                stop("all views in 'dict' must have the same width")
-            return(.ULdna_PDict.init_with_BStringList(.Object, as.list(dict)))
-        }
+        if (is(dict, "BStringViews"))
+            return(.ULdna_PDict.init_with_BStringViews(.Object, dict))
         stop("invalid 'dict' (type '?ULdna_PDict' for more information)")
     }
 )

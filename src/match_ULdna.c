@@ -420,20 +420,21 @@ static SEXP ULdna_asLIST()
 
 
 /****************************************************************************
- * .Call entry points: "ULdna_init_with_StrVect"
- *                 and "ULdna_init_with_BStringList"
- *
- * Arguments:
- *   'dict': a string vector (aka character vector) containing the
- *           uniform-length dictionary for ULdna_init_with_StrVect.
- *           A list of (pattern@data@xp, pattern@offset, pattern@length)
- *           triplets containing the uniform-length dictionary for
- *           ULdna_init_with_BStringList.
- *
- * See ULdna_asLIST() for a description of the returned SEXP.
- *
+ * .Call entry points for building the Aho-Corasick 4-ary tree from the input
+ * dictionary. The input dictionary must be:
+ *   - of length >= 1
+ *   - uniform-length (i.e. all words have the same length)
  ****************************************************************************/
 
+/*
+ * .Call entry point: "ULdna_init_with_StrVect"
+ *
+ * Argument:
+ *   'dict': a string vector (aka character vector) containing the
+ *           uniform-length dictionary
+ *
+ * See ULdna_asLIST() for a description of the returned SEXP.
+ */
 SEXP ULdna_init_with_StrVect(SEXP dict)
 {
 	Pattern *patterns, *p;
@@ -450,12 +451,63 @@ SEXP ULdna_init_with_StrVect(SEXP dict)
 	return ULdna_asLIST();
 }
 
+/*
+ * .Call entry point: "ULdna_init_with_BStringList"
+ *
+ * Argument:
+ *   'dict': a list of (pattern@data@xp, pattern@offset, pattern@length)
+ *           triplets containing the uniform-length dictionary
+ *
+ * See ULdna_asLIST() for a description of the returned SEXP.
+ */
 SEXP ULdna_init_with_BStringList(SEXP dict)
 {
-	SEXP ans;
-
 	error("Not ready yet!\n");
-	return ans;
+	return ULdna_asLIST();
+}
+
+/*
+ * .Call entry point: "ULdna_init_with_views"
+ *
+ * Arguments:
+ *   'dict_subj_xp': subject(dict)@data@xp
+ *   'dict_subj_offset': subject(dict)@offset
+ *   'dict_start': start(dict)
+ *   'dict_end': end(dict)
+ * Note that 'dict_start' and 'dict_end' describe a set of views on subject(dict)
+ * with no "out of limits" views.
+ *
+ * See ULdna_asLIST() for a description of the returned SEXP.
+ */
+SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset,
+		SEXP dict_start, SEXP dict_end)
+{
+	int subj_offset, dict_length, i, view_offset, end;
+	const Rbyte *subj;
+	Pattern *patterns, *p;
+
+	subj_offset = INTEGER(dict_subj_offset)[0];
+	subj = RAW(R_ExternalPtrTag(dict_subj_xp)) + subj_offset;
+	dict_length = LENGTH(dict_start); // must be the same as LENGTH(dict_end)
+	patterns = Salloc((long) dict_length, Pattern);
+	for (i = 0, p = patterns; i < dict_length; i++, p++) {
+		view_offset = INTEGER(dict_start)[i] - 1;
+		end = INTEGER(dict_end)[i];
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG] ULdna_init_with_views(): i=%d view_offset=%d end=%d\n",
+				i, view_offset, end);
+		}
+#endif
+/*
+		if (subj_offset + end > LENGTH(R_ExternalPtrTag(dict_subj_xp)))
+			error("ULdna_init_with_views(): view %d is pointing outside subject(dict)@data@xp\n", i);
+*/
+		p->P = (char *) (subj + view_offset);
+		p->nP = end - view_offset;
+	}
+	ULdna_init(patterns, dict_length);
+	return ULdna_asLIST();
 }
 
 
