@@ -20,7 +20,7 @@ setClass("PDict", representation("VIRTUAL"))
 ###
 ### Slot description:
 ###
-###   nchar: a single integer N (e.g. N=25)
+###   width: a single integer W (e.g. W=25)
 ###
 ###   length: the length L of the original dictionary (e.g. L=10^6)
 ###
@@ -48,7 +48,7 @@ setClass("PDict", representation("VIRTUAL"))
 setClass("ULdna_PDict",
     contains="PDict",
     representation(
-        nchar="integer",
+        width="integer",
         length="integer",
         ACtree="XInteger",
         AC_base_codes="integer",
@@ -72,7 +72,7 @@ debug_ULdna <- function()
         stop("all strings in 'dict' must have the same length")
     if (pattern_length == 0)
         stop("strings in 'dict' are empty")
-    .Object@nchar <- pattern_length
+    .Object@width <- pattern_length
     .Object@length <- length(dict)
     init <- .Call("ULdna_init_with_StrVect", dict, PACKAGE="Biostrings")
     .Object@ACtree <- XInteger(1)
@@ -90,7 +90,7 @@ debug_ULdna <- function()
     pattern_length <- unique(sapply(dict, nchar))
     if (length(pattern_length) != 1)
         stop("all ", class(dict[[1]]), " objects in 'dict' must have the same length")
-    .Object@nchar <- pattern_length
+    .Object@width <- pattern_length
     .Object@length <- length(dict)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
     init <- .Call("ULdna_init_with_BStringList", dict0, PACKAGE="Biostrings")
@@ -112,7 +112,7 @@ debug_ULdna <- function()
     pattern_length <- unique(pattern_length)
     if (length(pattern_length) != 1)
         stop("all views in 'dict' must have the same width")
-    .Object@nchar <- pattern_length
+    .Object@width <- pattern_length
     .Object@length <- length(dict)
     init <- .Call("ULdna_init_with_views",
                   subject(dict)@data@xp, subject(dict)@offset,
@@ -138,7 +138,7 @@ debug_ULdna <- function()
 ###   > pdict <- new("ULdna_PDict", dict)
 ###   > pdict
 ###   An object of class “ULdna_PDict”
-###   Slot "nchar":
+###   Slot "width":
 ###   [1] 3
 ###
 ###   Slot "length":
@@ -184,11 +184,9 @@ setMethod("initialize", "ULdna_PDict",
     }
 )
 
-setMethod("nchar", "ULdna_PDict",
-    function(x, type = "chars", allowNA = FALSE) x@nchar)
+setMethod("width", "ULdna_PDict", function(x) x@width)
 
-setMethod("length", "ULdna_PDict",
-    function(x) x@length)
+setMethod("length", "ULdna_PDict", function(x) x@length)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

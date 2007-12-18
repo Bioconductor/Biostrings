@@ -17,14 +17,45 @@
 /****************************************************************************/
 static int debug = 0;
 
-typedef struct pattern {
-	const char *P;
-	int nP;
-} Pattern;
+
+/****************************************************************************
+ * Storage of the pointers to the patterns contained in the uniform length
+ * dictionary provided by the user.
+ */
+
+typedef struct uldict {
+	int width;		// number of chars per pattern
+	int length;		// number of patterns
+	const char **patterns;	// pointers to the patterns
+} ULdict;
+
+static ULdict input_uldict;
+
+static void alloc_input_uldict(int length)
+{
+	input_uldict.patterns = Salloc((long) length, const char *);
+	input_uldict.length = length;
+	input_uldict.width = -1;
+	return;
+}
+
+static void add_pattern_to_input_uldict(int poffset, const char *pattern, int pattern_length)
+{
+	if (input_uldict.width == -1) {
+		if (pattern_length == 0)
+			error("dictionary contains empty patterns");
+		input_uldict.width = pattern_length;
+	} else {
+		if (pattern_length != input_uldict.width)
+			error("all patterns in dictionary must have the same length");
+	}
+	input_uldict.patterns[poffset] = pattern;
+	return;
+}
 
 
 /****************************************************************************
- * Buffer of duplicates
+ * Buffer of duplicates.
  */
 
 IBBuf dups_bbuf;
@@ -85,7 +116,6 @@ typedef struct ac_node {
 
 static ACNode *ACnodebuf = NULL;
 static int ACnodebuf_maxcount = 0, ACnodebuf_count = 0;
-static int ACnodebuf_pattern_length;
 static int ACnodebuf_base_codes[ALPHABET_LENGTH];
 
 static int get_new_maxcount(int maxcount)
@@ -133,7 +163,6 @@ static void ACnodebuf_init()
 {
 	int i;
 
-	ACnodebuf_pattern_length = -1;
 	for (i = 0; i < ALPHABET_LENGTH; i++)
 		ACnodebuf_base_codes[i] = -1;
 	return;
@@ -224,22 +253,16 @@ static int ACnodebuf_tryMovingToChild(int node_id, int childslot, char c)
 	return *child_id;
 }
 
-static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
+static void ACnodebuf_addPattern(int poffset)
 {
+	const char *pattern;
 	int n, node_id, child_id, i;
 	char c;
 	ACNode *node;
 
-	if (ACnodebuf_pattern_length == -1) {
-		if (nP == 0)
-			error("dictionary contains empty patterns");
-		ACnodebuf_pattern_length = nP;
-	} else {
-		if (nP != ACnodebuf_pattern_length)
-			error("all patterns in dictionary must have the same length");
-	}
-	for (n = 0, node_id = 0; n < nP; n++, node_id = child_id) {
-		c = P[n];
+	pattern = input_uldict.patterns[poffset];
+	for (n = 0, node_id = 0; n < input_uldict.width; n++, node_id = child_id) {
+		c = pattern[n];
 		for (i = 0; i < ALPHABET_LENGTH; i++) {
 			child_id = ACnodebuf_tryMovingToChild(node_id, i, c);
 			if (child_id != -1)
@@ -250,22 +273,21 @@ static void ACnodebuf_addPattern(const char *P, int nP, int P_id)
 	}
 	node = ACnodebuf + node_id;
 	if (node->P_id == -1)
-		node->P_id = P_id;
+		node->P_id = poffset + 1;
 	else
-		dups_bbuf_append(node->P_id, P_id);
+		dups_bbuf_append(node->P_id, poffset + 1);
 	return;
 }
 
-static void ULdna_init(const Pattern *patterns, int dict_length)
+static void build_ACtree()
 {
-	const Pattern *p;
-	int i;
+	int poffset;
 
 	_IBBuf_init(&dups_bbuf);
 	ACnodebuf_init();
 	ACnodebuf_append_node(0);
-	for (i = 0, p = patterns; i < dict_length; i++, p++)
-		ACnodebuf_addPattern(p->P, p->nP, i + 1);
+	for (poffset = 0; poffset < input_uldict.length; poffset++)
+		ACnodebuf_addPattern(poffset);
 	return;
 }
 
@@ -497,17 +519,15 @@ static SEXP ULdna_asLIST()
  */
 SEXP ULdna_init_with_StrVect(SEXP dict)
 {
-	Pattern *patterns, *p;
+	int poffset;
 	SEXP dict_elt;
-	int i;
 
-	patterns = Salloc((long) LENGTH(dict), Pattern);
-	for (i = 0, p = patterns; i < LENGTH(dict); i++, p++) {
-		dict_elt = STRING_ELT(dict, i);
-		p->P = CHAR(dict_elt);
-		p->nP = LENGTH(dict_elt);
+	alloc_input_uldict(LENGTH(dict));
+	for (poffset = 0; poffset < LENGTH(dict); poffset++) {
+		dict_elt = STRING_ELT(dict, poffset);
+		add_pattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
-	ULdna_init(patterns, LENGTH(dict));
+	build_ACtree();
 	return ULdna_asLIST();
 }
 
@@ -542,29 +562,27 @@ SEXP ULdna_init_with_BStringList(SEXP dict)
 SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset,
 		SEXP dict_start, SEXP dict_end)
 {
-	int subj_offset, dict_length, i, view_offset, end;
+	int subj_offset, dict_length, poffset, view_offset, end;
 	const Rbyte *subj;
-	Pattern *patterns, *p;
 
 	subj_offset = INTEGER(dict_subj_offset)[0];
 	subj = RAW(R_ExternalPtrTag(dict_subj_xp)) + subj_offset;
 	dict_length = LENGTH(dict_start); // must be the same as LENGTH(dict_end)
-	patterns = Salloc((long) dict_length, Pattern);
-	for (i = 0, p = patterns; i < dict_length; i++, p++) {
-		view_offset = INTEGER(dict_start)[i] - 1;
-		end = INTEGER(dict_end)[i];
+	alloc_input_uldict(dict_length);
+	for (poffset = 0; poffset < dict_length; poffset++) {
+		view_offset = INTEGER(dict_start)[poffset] - 1;
+		end = INTEGER(dict_end)[poffset];
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] ULdna_init_with_views(): i=%d view_offset=%d end=%d\n",
-				i, view_offset, end);
+			Rprintf("[DEBUG] ULdna_init_with_views(): poffset=%d view_offset=%d end=%d\n",
+				poffset, view_offset, end);
 		}
 #endif
 */
-		p->P = (char *) (subj + view_offset);
-		p->nP = end - view_offset;
+		add_pattern_to_input_uldict(poffset, (char *) (subj + view_offset), end - view_offset);
 	}
-	ULdna_init(patterns, dict_length);
+	build_ACtree();
 	return ULdna_asLIST();
 }
 
