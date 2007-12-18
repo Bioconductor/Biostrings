@@ -648,6 +648,8 @@ SEXP match_BOC2_exact(
 
 SEXP match_ULdna_debug();
 
+SEXP ULdna_free_ACnodebuf();
+
 SEXP ULdna_init_with_StrVect(
 		SEXP dict
 );

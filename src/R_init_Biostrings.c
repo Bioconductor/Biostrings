@@ -100,6 +100,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_ULdna.c */
 	{"match_ULdna_debug", (DL_FUNC) &match_ULdna_debug, 0},
+	{"ULdna_free_ACnodebuf", (DL_FUNC) &ULdna_free_ACnodebuf, 0},
 	{"ULdna_init_with_StrVect", (DL_FUNC) &ULdna_init_with_StrVect, 1},
 	{"ULdna_init_with_BStringList", (DL_FUNC) &ULdna_init_with_BStringList, 1},
 	{"ULdna_init_with_views", (DL_FUNC) &ULdna_init_with_views, 4},

@@ -157,6 +157,7 @@ debug_ULdna <- function()
 setMethod("initialize", "ULdna_PDict",
     function(.Object, dict)
     {
+        on.exit(.Call("ULdna_free_ACnodebuf", PACKAGE="Biostrings"))
         if (is.character(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty character vector")
@@ -247,8 +248,9 @@ setGeneric(
 ### With a big random dictionary, on george1:
 ###   Trying to simulate Solexa data:
 ###   > library(Biostrings)
-###   > s <- BString(paste(sample(c("A","C", "G", "T"), 36*10^6, replace=TRUE), collapse="")) # takes < 5 seconds
-###   > views_start <- (0:(10^6-1)) * 36 + 1
+###   > dict_length <- 10^6
+###   > s <- BString(paste(sample(c("A", "C", "G", "T"), 36*dict_length, replace=TRUE), collapse="")) # takes < 5 seconds
+###   > views_start <- (0:(dict_length-1)) * 36 + 1
 ###   > dict <- views(s, views_start, views_start + 35)
 ###   Building the Aho-Corasick 4-ary tree from the input dictionary:
 ###   > pdict <- new("ULdna_PDict", dict) # takes < 4 seconds, size of pdict@ACtree slot is about 720M

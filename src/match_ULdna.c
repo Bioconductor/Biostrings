@@ -11,21 +11,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 
 /****************************************************************************/
 static int debug = 0;
-
-SEXP match_ULdna_debug()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_ULdna.c'\n", debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_ULdna.c'\n");
-#endif
-	return R_NilValue;
-}
 
 typedef struct pattern {
 	const char *P;
@@ -90,23 +80,81 @@ typedef struct ac_node {
 } ACNode;
 
 #define INTS_PER_ACNODE (sizeof(ACNode) / sizeof(int))
+#define MAX_ACNODEBUF_LENGTH (INT_MAX / INTS_PER_ACNODE)
+#define MAX_ACNODEBUF_LENGTHINC (MAX_ACNODEBUF_LENGTH / 16)
 
-static ACNode *ACnodebuf;
-static int ACnodebuf_maxcount, ACnodebuf_count;
+static ACNode *ACnodebuf = NULL;
+static int ACnodebuf_maxcount = 0, ACnodebuf_count = 0;
 static int ACnodebuf_pattern_length;
 static int ACnodebuf_base_codes[ALPHABET_LENGTH];
+
+static int get_new_maxcount(int maxcount)
+{
+	if (maxcount == 0)
+		return 256;
+	if (maxcount <= 256 * 1024)
+		return 4 * maxcount;
+	if (maxcount <= MAX_ACNODEBUF_LENGTHINC)
+		return 2 * maxcount;
+	if (maxcount == MAX_ACNODEBUF_LENGTH)
+		error("get_new_maxcount(): MAX_ACNODEBUF_LENGTH reached");
+	maxcount += MAX_ACNODEBUF_LENGTHINC;
+	if (maxcount <= MAX_ACNODEBUF_LENGTH)
+		return maxcount;
+	return MAX_ACNODEBUF_LENGTH;
+}
+
+SEXP match_ULdna_debug()
+{
+#ifdef DEBUG_BIOSTRINGS
+	int maxcount = 0;
+
+	debug = !debug;
+	Rprintf("Debug mode turned %s in 'match_ULdna.c'\n", debug ? "on" : "off");
+	if (debug) {
+		Rprintf("[DEBUG] match_ULdna_debug(): INTS_PER_ACNODE=%d\n",
+			INTS_PER_ACNODE);
+		Rprintf("[DEBUG] match_ULdna_debug(): MAX_ACNODEBUF_LENGTH=%d\n",
+			MAX_ACNODEBUF_LENGTH);
+		Rprintf("[DEBUG] match_ULdna_debug(): MAX_ACNODEBUF_LENGTHINC=%d\n",
+			MAX_ACNODEBUF_LENGTHINC);
+		while (1) {
+			Rprintf("[DEBUG] match_ULdna_debug(): maxcount=%d\n", maxcount);
+			maxcount = get_new_maxcount(maxcount);
+		}
+	}
+#else
+	Rprintf("Debug mode not available in 'match_ULdna.c'\n");
+#endif
+	return R_NilValue;
+}
 
 static void ACnodebuf_init()
 {
 	int i;
 
-	/* No memory leak here, because we use transient storage allocation */
-	ACnodebuf = NULL;
-	ACnodebuf_maxcount = ACnodebuf_count = 0;
 	ACnodebuf_pattern_length = -1;
 	for (i = 0; i < ALPHABET_LENGTH; i++)
 		ACnodebuf_base_codes[i] = -1;
 	return;
+}
+
+SEXP ULdna_free_ACnodebuf()
+{
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] ULdna_free_ACnodebuf(): freeing ACnodebuf ... ");
+	}
+#endif
+	free(ACnodebuf);
+	ACnodebuf = NULL;
+	ACnodebuf_maxcount = ACnodebuf_count = 0;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("OK\n");
+	}
+#endif
+	return R_NilValue;
 }
 
 static void ACnodebuf_init_node(ACNode *node, int parent_id)
@@ -124,13 +172,25 @@ static void ACnodebuf_init_node(ACNode *node, int parent_id)
 static void ACnodebuf_get_more_room()
 {
 	long new_maxcount;
+	ACNode *new_ACnodebuf;
 
-	if (ACnodebuf_maxcount == 0)
-		new_maxcount = 50000;
-	else
-		new_maxcount = 2 * ACnodebuf_maxcount;
-	ACnodebuf = Srealloc((char *) ACnodebuf, new_maxcount,
-				(long) ACnodebuf_maxcount, ACNode);
+	new_maxcount = get_new_maxcount(ACnodebuf_maxcount);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] ACnodebuf_get_more_room(): reallocating ACnodebuf: ");
+		Rprintf("current_maxcount=%d, new_maxcount=%d ... ",
+			ACnodebuf_maxcount, new_maxcount);
+	}
+#endif
+	new_ACnodebuf = (ACNode *) realloc(ACnodebuf, sizeof(ACNode) * new_maxcount);
+	if (new_ACnodebuf == NULL)
+		error("ACnodebuf_get_more_room(): failed to realloc ACnodebuf");
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("OK\n");
+	}
+#endif
+	ACnodebuf = new_ACnodebuf;
 	ACnodebuf_maxcount = new_maxcount;
 	return;
 }
@@ -493,15 +553,13 @@ SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset,
 	for (i = 0, p = patterns; i < dict_length; i++, p++) {
 		view_offset = INTEGER(dict_start)[i] - 1;
 		end = INTEGER(dict_end)[i];
+/*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG] ULdna_init_with_views(): i=%d view_offset=%d end=%d\n",
 				i, view_offset, end);
 		}
 #endif
-/*
-		if (subj_offset + end > LENGTH(R_ExternalPtrTag(dict_subj_xp)))
-			error("ULdna_init_with_views(): view %d is pointing outside subject(dict)@data@xp\n", i);
 */
 		p->P = (char *) (subj + view_offset);
 		p->nP = end - view_offset;

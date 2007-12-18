@@ -11,8 +11,8 @@
 #include "Biostrings.h"
 #include <S.h> /* for Salloc() and Srealloc() */
 
-#define MAX_BUFSIZEINC (128 * 1024 * 1024)
-#define MAX_BUFSIZE (8 * MAX_BUFSIZEINC)
+#define MAX_BUF_LENGTHINC (128 * 1024 * 1024)
+#define MAX_BUF_LENGTH (8 * MAX_BUF_LENGTHINC)
 
 
 static int debug = 0;
@@ -30,15 +30,15 @@ SEXP Biostrings_debug_bufutils()
 
 static int get_new_maxcount(int maxcount)
 {
-	if (maxcount >= MAX_BUFSIZE)
-		error("get_new_maxcount(): MAX_BUFSIZE reached");
+	if (maxcount >= MAX_BUF_LENGTH)
+		error("get_new_maxcount(): MAX_BUF_LENGTH reached");
 	if (maxcount == 0)
 		return 256;
 	if (maxcount <= 256 * 1024)
 		return 4 * maxcount;
-	if (maxcount <= MAX_BUFSIZEINC)
+	if (maxcount <= MAX_BUF_LENGTHINC)
 		return 2 * maxcount;
-	return maxcount + MAX_BUFSIZEINC;
+	return maxcount + MAX_BUF_LENGTHINC;
 }
 
 
