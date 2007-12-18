@@ -154,9 +154,11 @@ BStringViewsToFASTArecords <- function(x)
     ## file, the "load-all-the-lines-in-memory" solution is slower than the
     ## "load-one-line-at-a-time" solution.
     #lines <- scan(file=file, what="", sep="\n", allowEscapes=FALSE)
-    #for (i in seq_len(length(lines))) {
-    #    line <- lines[i]
+    #for (lineno in seq_len(length(lines))) {
+    #    line <- lines[lineno]
+    lineno <- 0
     while (length(line <- readLines(file, n=1)) != 0) {
+        lineno <- lineno + 1
         nbytes <- nchar(line, type="bytes")
         if (nbytes == 0L)
             next
@@ -165,7 +167,7 @@ BStringViewsToFASTArecords <- function(x)
             next
         if (char0 != ">") {
             if (length(desc) != length(width) + 1)
-                stop("in file ", file, ", line ", i, ": ",
+                stop("in file ", file, ", line ", lineno, ": ",
                      "number of FASTA sequences doesn't match number of description lines")
             subject <- BString.write(subject, value=line)
             current_width <- current_width + nbytes
