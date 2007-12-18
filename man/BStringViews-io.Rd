@@ -98,6 +98,7 @@
 \examples{
   file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
   x <- read.BStringViews(file, "fasta", "DNAString")
+  desc(x)
   write.BStringViews(x, format="fasta") # writes to the console
 
   ## Converting 'x'...
