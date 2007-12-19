@@ -20,9 +20,10 @@ setClass("PDict", representation("VIRTUAL"))
 ###
 ### Slot description:
 ###
-###   width: a single integer W (e.g. W=25)
+###   length: the dictionary length L i.e. the number of patterns (e.g. L=10^6)
 ###
-###   length: the length L of the original dictionary (e.g. L=10^6)
+###   width: the dictionary width W i.e. the number of chars per pattern
+###       (e.g. W=25)
 ###
 ###   ACtree: an external integer vector (XInteger object) for the storage
 ###       of the Aho-Corasick 4-ary tree built from the original dictionary.
@@ -38,8 +39,8 @@ setClass("PDict", representation("VIRTUAL"))
 setClass("ULdna_PDict",
     contains="PDict",
     representation(
-        width="integer",
         length="integer",
+        width="integer",
         ACtree="XInteger",
         AC_base_codes="integer",
         dups="integer"
@@ -51,25 +52,25 @@ debug_ULdna <- function()
     invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
 }
 
+.ULdna_PDict.postinit <- function(.Object, length, slotvals)
+{
+    .Object@length <- length
+    .Object@width <- slotvals$width
+    .Object@ACtree <- XInteger(1)
+    .Object@ACtree@xp <- slotvals$ACtree_xp
+    .Object@AC_base_codes <- slotvals$AC_base_codes
+    .Object@dups <- slotvals$dups
+    .Object
+}
+
 ### 'dict' must be a string vector (aka character vector) with at least 1
 ### element.
 .ULdna_PDict.init_with_StrVect <- function(.Object, dict)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
-    pattern_length <- unique(nchar(dict, type="bytes"))
-    if (length(pattern_length) != 1)
-        stop("all strings in 'dict' must have the same length")
-    if (pattern_length == 0)
-        stop("strings in 'dict' are empty")
-    .Object@width <- pattern_length
-    .Object@length <- length(dict)
-    init <- .Call("ULdna_init_with_StrVect", dict, PACKAGE="Biostrings")
-    .Object@ACtree <- XInteger(1)
-    .Object@ACtree@xp <- init$ACtree_xp
-    .Object@AC_base_codes <- init$AC_base_codes
-    .Object@dups <- init$dups
-    .Object
+    slotvals <- .Call("ULdna_init_with_StrVect", dict, PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), slotvals)
 }
 
 ### 'dict' must be a list of BString objects of the same class (i.e. all
@@ -77,18 +78,9 @@ debug_ULdna <- function()
 ### element.
 .ULdna_PDict.init_with_BStringList <- function(.Object, dict)
 {
-    pattern_length <- unique(sapply(dict, nchar))
-    if (length(pattern_length) != 1)
-        stop("all ", class(dict[[1]]), " objects in 'dict' must have the same length")
-    .Object@width <- pattern_length
-    .Object@length <- length(dict)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
-    init <- .Call("ULdna_init_with_BStringList", dict0, PACKAGE="Biostrings")
-    .Object@ACtree <- XInteger(1)
-    .Object@ACtree@xp <- init$ACtree_xp
-    .Object@AC_base_codes <- init$AC_base_codes
-    .Object@dups <- init$dups
-    .Object
+    slotvals <- .Call("ULdna_init_with_BStringList", dict0, PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), slotvals)
 }
 
 ### 'dict' must be a BStringViews object.
@@ -96,23 +88,11 @@ debug_ULdna <- function()
 {
     if (length(dict) == 0)
         stop("'dict' has no views")
-    pattern_length <- width(dict)
-    if (any(nchar(dict) != pattern_length))
-        stop("'dict' has out of limits views")
-    pattern_length <- unique(pattern_length)
-    if (length(pattern_length) != 1)
-        stop("all views in 'dict' must have the same width")
-    .Object@width <- pattern_length
-    .Object@length <- length(dict)
-    init <- .Call("ULdna_init_with_views",
-                  subject(dict)@data@xp, subject(dict)@offset,
+    slotvals <- .Call("ULdna_init_with_views",
+                  subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
                   start(dict), end(dict),
                   PACKAGE="Biostrings")
-    .Object@ACtree <- XInteger(1)
-    .Object@ACtree@xp <- init$ACtree_xp
-    .Object@AC_base_codes <- init$AC_base_codes
-    .Object@dups <- init$dups
-    .Object
+    .ULdna_PDict.postinit(.Object, length(dict), slotvals)
 }
 
 ### The input dictionary 'dict' must be:
@@ -157,9 +137,9 @@ setMethod("initialize", "ULdna_PDict",
     }
 )
 
-setMethod("width", "ULdna_PDict", function(x) x@width)
-
 setMethod("length", "ULdna_PDict", function(x) x@length)
+
+setMethod("width", "ULdna_PDict", function(x) x@width)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -245,14 +225,15 @@ setGeneric(
 ###         user  system elapsed
 ###      105.239   0.188 105.429
 ###      > nmatches <- sapply(pid2matchends, length)
-###      > max(nmatches) # most likely no match were found
+###      > sum(nmatches) # most likely no match were found
 ###
-### Results obtained with other random dictionaries on george1:
+### Results obtained with some random dictionaries on george1:
 ###
-###       dict    dict   preprocess   pdict     searching   searching
-###     length   width         time    size     chr1 time       again
-###   --------   -----   ----------   -----   -----------   ---------
-###       10^7      36            ?   6760M   4-5 minutes           ?
-###       10^7      12        9 sec    340M       265 sec     236 sec
-###     3*10^7      12       27 sec    523M       491 sec           ? 
+###     dict    dict   preprocess   pdict   searching   searching     total nb
+###   length   width         time    size   chr1 time       again   of matches
+###   ------   -----   ----------   -----   ---------   ---------   ----------
+###       1M      36      2.5 sec    717M     106 sec     103 sec            0
+###      10M      36       56 sec   6724M     351 sec     200 sec            0
+###      10M      12      7.5 sec    340M     227 sec     216 sec         100M
+###      30M      12       27 sec    523M     491 sec           ? 
 
