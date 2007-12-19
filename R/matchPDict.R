@@ -32,17 +32,7 @@ setClass("PDict", representation("VIRTUAL"))
 ###       in the ACtree slot (see typedef ACNode in the C code for more
 ###       info). 
 ###
-###   dups: an unnamed (and eventually empty) list of integer vectors
-###       containing the indices of the duplicated words (patterns) found in
-###       the original dictionary. For example:
-###           list(c(6, 8), c(2, 9, 13), c(4, 12))
-###       This allows efficient (compact) representation considering that the
-###       number of duplicated is expected to be small.
-###       All the integer values in this list are non NAs, >= 1, <= length
-###       and unique across the entire list. Each element of the list is a
-###       vector of length >= 2. In addition, the values within a vector are
-###       sorted (in ascending order) <NO MORE TRUE> and the list elements are
-###       sorted by ascending first value </NO MORE TRUE>.
+###   dups: an integer vector of length L containing the duplicate info.
 ###
 
 setClass("ULdna_PDict",
@@ -52,7 +42,7 @@ setClass("ULdna_PDict",
         length="integer",
         ACtree="XInteger",
         AC_base_codes="integer",
-        dups="list" 
+        dups="integer"
     )
 )
 
@@ -136,23 +126,6 @@ debug_ULdna <- function()
 ###   > library(Biostrings)
 ###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
 ###   > pdict <- new("ULdna_PDict", dict)
-###   > pdict
-###   An object of class “ULdna_PDict”
-###   Slot "width":
-###   [1] 3
-###
-###   Slot "length":
-###   [1] 6
-###
-###   Slot "ACtree":
-###   91-integer XInteger object (starting at address 0x88a5600)
-###
-###   Slot "AC_base_codes":
-###   [1]  97  98  99 100
-###
-###   Slot "dups":
-###   [[1]]
-###   [1] 2 6
 ###
 setMethod("initialize", "ULdna_PDict",
     function(.Object, dict)
@@ -217,8 +190,7 @@ setGeneric(
         standardGeneric("matchPDict")
 )
 
-### WORK IN PROGRESS!!!
-### Must return a list of integer vectors.
+### Return a list of integer vectors.
 ###
 ### A real use-case:   
 ###   > library(hgu95av2probe)

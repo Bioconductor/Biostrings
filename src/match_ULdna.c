@@ -59,23 +59,17 @@ static void add_pattern_to_input_uldict(int poffset, const char *pattern, int pa
  * Buffer of duplicates.
  */
 
-IBBuf dups_bbuf;
+IBuf dups_buf;
 
-static void dups_bbuf_append(int P_id1, int P_id2)
+static void init_dups_buf(int length)
 {
-	int i;
-	IBuf *line, new_line;
+	_IBuf_init(&dups_buf, length, length);
+	return;
+}
 
-	for (i = 0, line = dups_bbuf.ibufs; i < dups_bbuf.count; i++, line++) {
-		if (line->vals[0] == P_id1) {
-			_IBuf_insert_at(line, line->count, P_id2);
-			return;
-		}
-	}
-	_IBuf_init(&new_line);
-	_IBuf_insert_at(&new_line, new_line.count, P_id1);
-	_IBuf_insert_at(&new_line, new_line.count, P_id2);
-	_IBBuf_insert_at(&dups_bbuf, dups_bbuf.count, new_line);
+static void report_dup(int poffset, int P_id)
+{
+	dups_buf.vals[poffset] = P_id;
 	return;
 }
 
@@ -269,7 +263,7 @@ static void ACnodebuf_addPattern(int poffset)
 	if (node->P_id == -1)
 		node->P_id = poffset + 1;
 	else
-		dups_bbuf_append(node->P_id, poffset + 1);
+		report_dup(poffset, node->P_id);
 	return;
 }
 
@@ -277,7 +271,7 @@ static void build_ACtree()
 {
 	int poffset;
 
-	_IBBuf_init(&dups_bbuf);
+	init_dups_buf(input_uldict.length);
 	init_AC_base_codes();
 	alloc_ACnodebuf(input_uldict.width, input_uldict.length);
 	ACnodebuf_append_node(0);
@@ -294,23 +288,17 @@ static void build_ACtree()
 
 IBBuf ends_bbuf;
 
-static void init_ends_bbuf(int uldna_len)
+static void init_ends_bbuf(int length)
 {
-	int i;
-	IBuf *ends_buf;
-
-	ends_bbuf.ibufs = Salloc((long) uldna_len, IBuf);
-	for (i = 0, ends_buf = ends_bbuf.ibufs; i < uldna_len; i++, ends_buf++)
-		_IBuf_init(ends_buf);
-	ends_bbuf.maxcount = ends_bbuf.count = uldna_len;
+	_IBBuf_init(&ends_bbuf, length, length);
 	return;
 }
 
-static void report_match(int P_id, int end)
+static void report_match(int poffset, int end)
 {
 	IBuf *ends_buf;
 
-	ends_buf = ends_bbuf.ibufs + P_id - 1;
+	ends_buf = ends_bbuf.ibufs + poffset;
 	_IBuf_insert_at(ends_buf, ends_buf->count, end);
 	return;
 }
@@ -404,7 +392,7 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 		node = node0 + node_id;
 		// Finding a match cannot happen during a nested call to follow_string()
 		if (node->P_id != -1)
-			report_match(node->P_id, n + 1);
+			report_match(node->P_id - 1, n + 1);
 	}
 	return node_id;
 }
@@ -459,8 +447,8 @@ static SEXP base_codes_asINTEGER()
  *   - AC_base_codes: integer vector containing the ALPHABET_LENGTH character
  *         codes (ASCII) attached to the ALPHABET_LENGTH child slots of any
  *         node in the tree pointed by ACtree_xp.
- *   - dups: an unnamed (and eventually empty) list of integer vectors
- *         containing the indices of the duplicated words found in 'dict'.
+ *   - dups: an integer vector of the same length as 'dict' containing the
+ *         duplicate info.
  */
 static SEXP ACtree_asLIST()
 {
@@ -487,7 +475,7 @@ static SEXP ACtree_asLIST()
 	UNPROTECT(1);
 
 	/* set the "dups" element */
-	PROTECT(ans_elt = _IBBuf_asLIST(&dups_bbuf));
+	PROTECT(ans_elt = _IBuf_asINTEGER(&dups_buf));
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 
@@ -607,7 +595,7 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	SEXP tag;
 
 	uldna_len = INTEGER(uldna_length)[0];
-	dups_bbuf = _LIST_asIBBuf(uldna_dups);
+	dups_buf = _INTEGER_asIBuf(uldna_dups);
 	tag = R_ExternalPtrTag(ACtree_xp);
 	ACtree = (ACNode *) INTEGER(tag);
 	ACtree_length = LENGTH(tag) / INTS_PER_ACNODE;

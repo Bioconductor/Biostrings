@@ -49,11 +49,19 @@ static int get_new_maxcount(int maxcount)
  * IBuf functions
  */
 
-void _IBuf_init(IBuf *ibuf)
+void _IBuf_init(IBuf *ibuf, int maxcount, int count)
 {
+	int i, *val;
+
 	/* No memory leak here, because we use transient storage allocation */
-	ibuf->vals = NULL;
-	ibuf->maxcount = ibuf->count = 0;
+	if (maxcount == 0)
+		ibuf->vals = NULL;
+	else
+		ibuf->vals = Salloc((long) maxcount, int);
+	ibuf->maxcount = maxcount;
+	for (i = 0, val = ibuf->vals; i < count; i++, val++)
+		*val = 0;
+	ibuf->count = count;
 	return;
 }
 
@@ -108,11 +116,20 @@ IBuf _INTEGER_asIBuf(SEXP x)
  * IBBuf functions
  */
 
-void _IBBuf_init(IBBuf *ibbuf)
+void _IBBuf_init(IBBuf *ibbuf, int maxcount, int count)
 {
+	int i;
+	IBuf *ibuf;
+
 	/* No memory leak here, because we use transient storage allocation */
-	ibbuf->ibufs = NULL;
-	ibbuf->maxcount = ibbuf->count = 0;
+	if (maxcount == 0)
+		ibbuf->ibufs = NULL;
+	else
+		ibbuf->ibufs = Salloc((long) maxcount, IBuf);
+	ibbuf->maxcount = maxcount;
+	for (i = 0, ibuf = ibbuf->ibufs; i < count; i++, ibuf++)
+		_IBuf_init(ibuf, 0, 0);
+	ibbuf->count = count;
 	return;
 }
 
@@ -175,11 +192,15 @@ IBBuf _LIST_asIBBuf(SEXP x)
  * CBuf functions
  */
 
-void _CBuf_init(CBuf *cbuf)
+void _CBuf_init(CBuf *cbuf, int maxcount)
 {
 	/* No memory leak here, because we use transient storage allocation */
-	cbuf->vals = NULL;
-	cbuf->maxcount = cbuf->count = 0;
+	if (maxcount == 0)
+		cbuf->vals = NULL;
+	else
+		cbuf->vals = Salloc((long) maxcount, char);
+	cbuf->maxcount = maxcount;
+	cbuf->count = 0;
 	return;
 }
 

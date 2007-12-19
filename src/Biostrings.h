@@ -172,7 +172,9 @@ int fgets_rtrimmed(
 SEXP Biostrings_debug_bufutils();
 
 void _IBuf_init(
-		IBuf *ibuf
+		IBuf *ibuf,
+		int maxcount,
+		int count
 );
 
 void _IBuf_get_more_room(
@@ -194,7 +196,9 @@ IBuf _INTEGER_asIBuf(
 );
 
 void _IBBuf_init(
-		IBBuf *ibbuf
+		IBBuf *ibbuf,
+		int maxcount,
+		int count
 );
 
 void _IBBuf_get_more_room(
@@ -216,7 +220,8 @@ IBBuf _LIST_asIBBuf(
 );
 
 void _CBuf_init(
-		CBuf *cbuf
+		CBuf *cbuf,
+		int maxcount
 );
 
 void _CBuf_get_more_room(
