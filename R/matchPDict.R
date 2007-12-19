@@ -261,6 +261,12 @@ setGeneric(
 ###   > nmatches <- sapply(pid2matchends, length)
 ###   > max(nmatches) # most likely no match were found
 ###
+### I did the same as above but with a very big random dictionary
+### (dict_length <- 10^7), on george1. It took 50 seconds to generate pdict.
+### The resulting ACtree (pdict@ACtree) contained about 250M nodes and its
+### size was about 6.6G. Then it took about 4 minutes to search chr1 (no match
+### were found.
+###
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
     .Call("match_ULdna_exact",

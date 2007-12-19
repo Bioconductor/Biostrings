@@ -30,15 +30,18 @@ SEXP Biostrings_debug_bufutils()
 
 static int get_new_maxcount(int maxcount)
 {
-	if (maxcount >= MAX_BUF_LENGTH)
-		error("get_new_maxcount(): MAX_BUF_LENGTH reached");
 	if (maxcount == 0)
 		return 256;
 	if (maxcount <= 256 * 1024)
 		return 4 * maxcount;
 	if (maxcount <= MAX_BUF_LENGTHINC)
 		return 2 * maxcount;
-	return maxcount + MAX_BUF_LENGTHINC;
+	if (maxcount == MAX_BUF_LENGTH)
+		error("get_new_maxcount(): MAX_BUF_LENGTH reached");
+	maxcount += MAX_BUF_LENGTHINC;
+	if (maxcount <= MAX_BUF_LENGTH)
+		return maxcount;
+	return MAX_BUF_LENGTH;
 }
 
 
