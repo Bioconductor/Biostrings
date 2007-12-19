@@ -211,33 +211,11 @@ setGeneric(
 ###   > subBString(chr1, pid2matchends[[id0]][1]-24, pid2matchends[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
-###   > pidOK <- sapply(seq_len(length(pid2matchends)), function(pid) identical(pid2matchends[[pid]], end(matchPattern(BString(dict[pid]), chr1))))
+###   > pidOK <- sapply(seq_len(length(pid2matchends)),
+###                     function(pid) identical(pid2matchends[[pid]],
+###                                             end(matchPattern(BString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
-###
-### With a big random dictionary, on george1:
-###   Trying to simulate Solexa data:
-###   > library(Biostrings)
-###   > dict_length <- 10^6
-###   > s <- BString(paste(sample(c("A", "C", "G", "T"), 36*dict_length, replace=TRUE), collapse="")) # takes < 5 seconds
-###   > views_start <- (0:(dict_length-1)) * 36 + 1
-###   > dict <- views(s, views_start, views_start + 35)
-###   Building the Aho-Corasick 4-ary tree from the input dictionary:
-###   > pdict <- new("ULdna_PDict", dict) # takes < 4 seconds, size of pdict@ACtree slot is about 720M
-###   Searching Human chr1:
-###   > library(BSgenome.Hsapiens.UCSC.hg18)
-###   > chr1 <- BString(Hsapiens$chr1) # because subject(dict) is a BString object
-###   > system.time(pid2matchends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
-###      user  system elapsed
-###   105.239   0.188 105.429
-###   > nmatches <- sapply(pid2matchends, length)
-###   > max(nmatches) # most likely no match were found
-###
-### I did the same as above but with a very big random dictionary
-### (dict_length <- 10^7), on george1. It took 50 seconds to generate pdict.
-### The resulting ACtree (pdict@ACtree) contained about 250M nodes and its
-### size was about 6.6G. Then it took about 4 minutes to search chr1 (no match
-### were found.
 ###
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
@@ -247,4 +225,34 @@ setGeneric(
           subject@data@xp, subject@offset, subject@length,
           PACKAGE="Biostrings")
 }
+
+### With a big random dictionary, on george1:
+###
+### 1. Trying to simulate Solexa data:
+###      > library(Biostrings)
+###      > dict_length <- 10^6
+###      > s <- BString(paste(sample(c("A", "C", "G", "T"), 36*dict_length, replace=TRUE), collapse=""))
+###      > views_start <- (0:(dict_length-1)) * 36 + 1
+###      > dict <- views(s, views_start, views_start + 35)
+###
+### 2. Building the Aho-Corasick 4-ary tree from the input dictionary:
+###      > pdict <- new("ULdna_PDict", dict)
+###
+### 3. Using pdict on Human chr1:
+###      > library(BSgenome.Hsapiens.UCSC.hg18)
+###      > chr1 <- BString(Hsapiens$chr1) # because subject(dict) is a BString object
+###      > system.time(pid2matchends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
+###         user  system elapsed
+###      105.239   0.188 105.429
+###      > nmatches <- sapply(pid2matchends, length)
+###      > max(nmatches) # most likely no match were found
+###
+### Results obtained with other random dictionaries on george1:
+###
+###       dict    dict   preprocess   pdict     searching   searching
+###     length   width         time    size     chr1 time       again
+###   --------   -----   ----------   -----   -----------   ---------
+###       10^7      36            ?   6760M   4-5 minutes           ?
+###       10^7      12        9 sec    340M       265 sec     236 sec
+###     3*10^7      12       27 sec    523M       491 sec           ? 
 
