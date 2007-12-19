@@ -317,6 +317,21 @@ static void report_match(int poffset, int end)
 	return;
 }
 
+static void report_matches_for_dups(int *dups, int dups_length)
+{
+	int poffset;
+	IBuf *ends_buf;
+
+	for (poffset = 0, ends_buf = ends_bbuf.ibufs;
+	     poffset < dups_length;
+	     poffset++, ends_buf++, dups++) {
+		if (*dups == 0)
+			continue;
+		*ends_buf = *(ends_bbuf.ibufs + *dups - 1);
+	}
+	return;
+}
+
 static int get_child_id(ACNode *node, char c)
 {
 	int childslot;
@@ -416,6 +431,7 @@ static void ULdna_exact_search(int uldna_len, ACNode *ACtree,
 {
 	init_ends_bbuf(uldna_len);
 	follow_string(ACtree, S, nS);
+	report_matches_for_dups(dups, uldna_len);
 	return;
 }
 
