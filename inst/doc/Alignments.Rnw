@@ -61,7 +61,7 @@ Here we load the {\tt someORF.fsa} file into a \Rclass{BStringViews} object
 using the \Rfunction{read.BStringViews} function:
 <<gety>>=
 library(Biostrings)
-file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+file <- system.file("extdata", "someORF.fsa", package="Biostrings")
 orf <- read.BStringViews(file, "fasta", "DNAString")
 orf
 desc(orf)

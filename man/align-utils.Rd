@@ -35,7 +35,7 @@
 }
 
 \examples{
-  file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+  file <- system.file("extdata", "someORF.fsa", package="Biostrings")
   orf <- read.BStringViews(file, "fasta", "DNAString")
 
   ## To illustrate, the following example assumes the ORF data

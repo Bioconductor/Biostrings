@@ -63,7 +63,7 @@ of the biological sequence.
 }
 
 \examples{
-f1 <- system.file("Exfiles/someORF.fsa", package="Biostrings")
+f1 <- system.file("extdata/someORF.fsa", package="Biostrings")
 ff <- readFASTA(f1, strip.desc=TRUE)
 desc <- sapply(ff, function(x) x$desc)
 ## Keep the "reverse complement" sequences only

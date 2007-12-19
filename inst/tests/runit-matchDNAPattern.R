@@ -162,7 +162,7 @@ test_ShiftOr_matchInternal_B4 <- function()
 ## in order to test the speed of the ShiftOr algorithm.
 test_ShiftOr_matchInternal_C1 <- function()
 {
-    f <- file(system.file("Exfiles/bigrandomTGCA.txt", package="Biostrings"))
+    f <- file(system.file("extdata/bigrandomTGCA.txt", package="Biostrings"))
     big <- scan(file=f, what="")
     subject <- DNAString(big)
     

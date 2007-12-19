@@ -148,7 +148,7 @@ quadratic in time, as reported by Wolfgang).
 The \Rfunction{read.BStringViews} function can be used to load a FASTA file
 in a \Rclass{BStringViews} object:
 <<d1>>=
-file <- system.file("Exfiles", "someORF.fsa", package="Biostrings")
+file <- system.file("extdata", "someORF.fsa", package="Biostrings")
 orf <- read.BStringViews(file, "fasta", "DNAString")
 orf
 desc(orf)
