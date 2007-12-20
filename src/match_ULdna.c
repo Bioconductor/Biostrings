@@ -98,9 +98,9 @@ static void report_dup(int poffset, int P_id)
 
 #define ALPHABET_LENGTH 4
 
-static int AC_base_codes[ALPHABET_LENGTH];
+static int actree_base_codes_buf[ALPHABET_LENGTH];
 
-typedef struct ac_node {
+typedef struct acnode {
 	int parent_id;
 	int child_id[ALPHABET_LENGTH];
 	int flink;
@@ -110,8 +110,8 @@ typedef struct ac_node {
 #define INTS_PER_ACNODE (sizeof(ACNode) / sizeof(int))
 #define MAX_ACNODEBUF_LENGTH (INT_MAX / INTS_PER_ACNODE)
 
-static ACNode *ACnodebuf = NULL;
-static int ACnodebuf_count;
+static ACNode *actree_nodes_buf = NULL;
+static int actree_nodes_buf_count;
 
 SEXP match_ULdna_debug()
 {
@@ -130,25 +130,25 @@ SEXP match_ULdna_debug()
 	return R_NilValue;
 }
 
-static void init_AC_base_codes()
+static void init_actree_base_codes_buf()
 {
 	int childslot;
 
 	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++)
-		AC_base_codes[childslot] = -1;
+		actree_base_codes_buf[childslot] = -1;
 	return;
 }
 
-SEXP ULdna_free_ACnodebuf()
+SEXP ULdna_free_actree_nodes_buf()
 {
-	if (ACnodebuf != NULL) {
+	if (actree_nodes_buf != NULL) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] ULdna_free_ACnodebuf(): freeing ACnodebuf ... ");
+			Rprintf("[DEBUG] ULdna_free_actree_nodes_buf(): freeing actree_nodes_buf ... ");
 		}
 #endif
-		free(ACnodebuf);
-		ACnodebuf = NULL;
+		free(actree_nodes_buf);
+		actree_nodes_buf = NULL;
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("OK\n");
@@ -159,10 +159,10 @@ SEXP ULdna_free_ACnodebuf()
 }
 
 /*
- * We want to avoid using reallocation for ACnodebuf (the buffer where we are
- * going to build the Aho-Corasick tree) so we need to know what's the maximum
- * number of nodes that is needed for storing a dictionary of a given width and
- * length. First some notations:
+ * We want to avoid using reallocation for actree_nodes_buf (the buffer where
+ * we are going to build the Aho-Corasick tree) so we need to know what's the
+ * maximum number of nodes that is needed for storing a dictionary of a given
+ * width and length. First some notations:
  *   L: dictionary length i.e. number of patterns
  *   W: dictionary width i.e. number of chars per pattern
  *   A: length of the alphabet i.e. max number of children per node
@@ -170,17 +170,17 @@ SEXP ULdna_free_ACnodebuf()
  * Now here is how to get maxnodes:
  *   maxnodes = sum(from: i=0, to: i=W, of: min(A^i, L))
  */
-static void alloc_ACnodebuf(int length, int width)
+static void alloc_actree_nodes_buf(int length, int width)
 {
 	int maxnodes, pow, depth;
 	size_t bufsize;
 
-	if (ACnodebuf != NULL) {
-		// We use the on.exit() mechanism to call ULdna_free_ACnodebuf()
+	if (actree_nodes_buf != NULL) {
+		// We use the on.exit() mechanism to call ULdna_free_actree_nodes_buf()
 		// to free the buffer so if this mechanism is reliable we should
 		// never come here. Anyway just in case...
-		warning("ACnodebuf was not previously freed, this is anormal, please report");
-		ULdna_free_ACnodebuf();
+		warning("actree_nodes_buf was not previously freed, this is anormal, please report");
+		ULdna_free_actree_nodes_buf();
 	}
 	maxnodes = 0;
 	for (depth = 0, pow = 1; depth <= width; depth++) {
@@ -192,7 +192,7 @@ static void alloc_ACnodebuf(int length, int width)
 	maxnodes += (width - depth + 1) * length;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] alloc_ACnodebuf(): length=%d width=%d maxnodes=%d\n",
+		Rprintf("[DEBUG] alloc_actree_nodes_buf(): length=%d width=%d maxnodes=%d\n",
 			length, width, maxnodes);
 	}
 #endif
@@ -201,23 +201,23 @@ static void alloc_ACnodebuf(int length, int width)
 	bufsize = sizeof(ACNode) * maxnodes;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] alloc_ACnodebuf(): allocating ACnodebuf (bufsize=%lu) ... ",
+		Rprintf("[DEBUG] alloc_actree_nodes_buf(): allocating actree_nodes_buf (bufsize=%lu) ... ",
 			bufsize);
 	}
 #endif
-	ACnodebuf = (ACNode *) malloc(bufsize);
-	if (ACnodebuf == NULL)
-		error("alloc_ACnodebuf(): failed to alloc ACnodebuf");
+	actree_nodes_buf = (ACNode *) malloc(bufsize);
+	if (actree_nodes_buf == NULL)
+		error("alloc_actree_nodes_buf(): failed to alloc actree_nodes_buf");
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("OK\n");
 	}
 #endif
-	ACnodebuf_count = 0;
+	actree_nodes_buf_count = 0;
 	return;
 }
 
-static void ACnodebuf_init_node(ACNode *node, int parent_id)
+static void init_acnode(ACNode *node, int parent_id)
 {
 	int childslot;
 
@@ -229,33 +229,33 @@ static void ACnodebuf_init_node(ACNode *node, int parent_id)
 	return;
 }
 
-static int ACnodebuf_append_node(int parent_id)
+static int append_acnode(int parent_id)
 {
 	ACNode *node;
 
-	node = ACnodebuf + ACnodebuf_count;
-	ACnodebuf_init_node(node, parent_id);
-	return ACnodebuf_count++;
+	node = actree_nodes_buf + actree_nodes_buf_count;
+	init_acnode(node, parent_id);
+	return actree_nodes_buf_count++;
 }
 
-static int ACnodebuf_tryMovingToChild(int node_id, int childslot, char c)
+static int try_moving_to_acnode_child(int node_id, int childslot, char c)
 {
 	int child_id;
 
-	if (AC_base_codes[childslot] == -1) {
-		AC_base_codes[childslot] = c;
+	if (actree_base_codes_buf[childslot] == -1) {
+		actree_base_codes_buf[childslot] = c;
 	} else {
-		if (c != AC_base_codes[childslot])
+		if (c != actree_base_codes_buf[childslot])
 			return -1;
 	}
-	child_id = ACnodebuf[node_id].child_id[childslot];
+	child_id = actree_nodes_buf[node_id].child_id[childslot];
 	if (child_id != -1)
 		return child_id;
-	child_id = ACnodebuf_append_node(node_id);
-	return ACnodebuf[node_id].child_id[childslot] = child_id;
+	child_id = append_acnode(node_id);
+	return actree_nodes_buf[node_id].child_id[childslot] = child_id;
 }
 
-static void ACnodebuf_addPattern(int poffset)
+static void pp_pattern(int poffset)
 {
 	const char *pattern;
 	int n, node_id, child_id, childslot;
@@ -266,14 +266,14 @@ static void ACnodebuf_addPattern(int poffset)
 	for (n = 0, node_id = 0; n < input_uldict.width; n++, node_id = child_id) {
 		c = pattern[n];
 		for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++) {
-			child_id = ACnodebuf_tryMovingToChild(node_id, childslot, c);
+			child_id = try_moving_to_acnode_child(node_id, childslot, c);
 			if (child_id != -1)
 				break;
 		}
 		if (child_id == -1)
 			error("'dict' contains more than %d distinct letters", ALPHABET_LENGTH);
 	}
-	node = ACnodebuf + node_id;
+	node = actree_nodes_buf + node_id;
 	if (node->P_id == -1)
 		node->P_id = poffset + 1;
 	else
@@ -281,16 +281,16 @@ static void ACnodebuf_addPattern(int poffset)
 	return;
 }
 
-static void build_ACtree()
+static void build_actree()
 {
 	int poffset;
 
 	init_dups_buf(input_uldict.length);
-	init_AC_base_codes();
-	alloc_ACnodebuf(input_uldict.length, input_uldict.width);
-	ACnodebuf_append_node(0);
+	init_actree_base_codes_buf();
+	alloc_actree_nodes_buf(input_uldict.length, input_uldict.width);
+	append_acnode(0);
 	for (poffset = 0; poffset < input_uldict.length; poffset++)
-		ACnodebuf_addPattern(poffset);
+		pp_pattern(poffset);
 	return;
 }
 
@@ -426,11 +426,11 @@ static int follow_string(ACNode *node0, int *base_codes, const char *S, int nS)
 	return node_id;
 }
 
-static void ULdna_exact_search(int uldna_len, ACNode *ACtree, int *base_codes,
+static void ULdna_exact_search(int uldna_len, ACNode *node0, int *base_codes,
 		const char *S, int nS, int *dups)
 {
 	init_ends_bbuf(uldna_len);
-	follow_string(ACtree, base_codes, S, nS);
+	follow_string(node0, base_codes, S, nS);
 	report_matches_for_dups(dups, uldna_len);
 	return;
 }
@@ -455,33 +455,33 @@ static SEXP width_asINTEGER()
 }
 
 /*
- * Turn the Aho-Corasick 4-ary tree stored in ACnodebuf into an R eXternal
+ * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an R eXternal
  * Pointer.
  */
-static SEXP ACtree_asXP()
+static SEXP actree_nodes_buf_asXP()
 {
 	SEXP ans, tag;
 	int tag_length;
 
 	PROTECT(ans = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
-	tag_length = ACnodebuf_count * INTS_PER_ACNODE;
+	tag_length = actree_nodes_buf_count * INTS_PER_ACNODE;
 	PROTECT(tag = NEW_INTEGER(tag_length));
-	memcpy(INTEGER(tag), ACnodebuf, tag_length * sizeof(int));
+	memcpy(INTEGER(tag), actree_nodes_buf, tag_length * sizeof(int));
 	R_SetExternalPtrTag(ans, tag);
 	UNPROTECT(2);
 	return ans;
 }
 
 /*
- * Turn the AC_base_codes array into an R integer vector of length
+ * Turn the actree_base_codes_buf array into an R integer vector of length
  * ALPHABET_LENGTH.
  */
-static SEXP base_codes_asINTEGER()
+static SEXP actree_base_codes_buf_asINTEGER()
 {
 	SEXP ans;
 
 	PROTECT(ans = NEW_INTEGER(ALPHABET_LENGTH));
-	memcpy(INTEGER(ans), AC_base_codes, ALPHABET_LENGTH * sizeof(int));
+	memcpy(INTEGER(ans), actree_base_codes_buf, ALPHABET_LENGTH * sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
@@ -489,15 +489,15 @@ static SEXP base_codes_asINTEGER()
 /*
  * Return an R list with the following elements:
  *   - width: dictionary width (single integer)
- *   - ACtree_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
+ *   - actree_nodes_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
  *         tree built from 'dict'.
- *   - AC_base_codes: integer vector containing the ALPHABET_LENGTH character
+ *   - actree_base_codes: integer vector containing the ALPHABET_LENGTH character
  *         codes (ASCII) attached to the ALPHABET_LENGTH child slots of any
- *         node in the tree pointed by ACtree_xp.
+ *         node in the tree pointed by actree_nodes_xp.
  *   - dups: an integer vector of the same length as 'dict' containing the
  *         duplicate info.
  */
-static SEXP ACtree_asLIST()
+static SEXP uldna_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
@@ -506,8 +506,8 @@ static SEXP ACtree_asLIST()
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(4));
 	SET_STRING_ELT(ans_names, 0, mkChar("width"));
-	SET_STRING_ELT(ans_names, 1, mkChar("ACtree_xp"));
-	SET_STRING_ELT(ans_names, 2, mkChar("AC_base_codes"));
+	SET_STRING_ELT(ans_names, 1, mkChar("actree_nodes_xp"));
+	SET_STRING_ELT(ans_names, 2, mkChar("actree_base_codes"));
 	SET_STRING_ELT(ans_names, 3, mkChar("dups"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
@@ -517,13 +517,13 @@ static SEXP ACtree_asLIST()
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
-	/* set the "ACtree_xp" element */
-	PROTECT(ans_elt = ACtree_asXP());
+	/* set the "actree_nodes_xp" element */
+	PROTECT(ans_elt = actree_nodes_buf_asXP());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
-	/* set the "AC_base_codes" element */
-	PROTECT(ans_elt = base_codes_asINTEGER());
+	/* set the "actree_base_codes" element */
+	PROTECT(ans_elt = actree_base_codes_buf_asINTEGER());
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 
@@ -545,15 +545,15 @@ static SEXP ACtree_asLIST()
  ****************************************************************************/
 
 /*
- * .Call entry point: "ULdna_init_with_StrVect"
+ * .Call entry point: "ULdna_pp_StrVect"
  *
  * Argument:
  *   'dict': a string vector (aka character vector) containing the
  *           uniform-length dictionary
  *
- * See ACtree_asLIST() for a description of the returned SEXP.
+ * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_init_with_StrVect(SEXP dict)
+SEXP ULdna_pp_StrVect(SEXP dict)
 {
 	int poffset;
 	SEXP dict_elt;
@@ -563,27 +563,27 @@ SEXP ULdna_init_with_StrVect(SEXP dict)
 		dict_elt = STRING_ELT(dict, poffset);
 		add_pattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
-	build_ACtree();
-	return ACtree_asLIST();
+	build_actree();
+	return uldna_asLIST();
 }
 
 /*
- * .Call entry point: "ULdna_init_with_BStringList"
+ * .Call entry point: "ULdna_pp_BStringList"
  *
  * Argument:
  *   'dict': a list of (pattern@data@xp, pattern@offset, pattern@length)
  *           triplets containing the uniform-length dictionary
  *
- * See ACtree_asLIST() for a description of the returned SEXP.
+ * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_init_with_BStringList(SEXP dict)
+SEXP ULdna_pp_BStringList(SEXP dict)
 {
 	error("Not ready yet!\n");
-	return ACtree_asLIST();
+	return uldna_asLIST();
 }
 
 /*
- * .Call entry point: "ULdna_init_with_views"
+ * .Call entry point: "ULdna_pp_views"
  *
  * Arguments:
  *   'dict_subj_xp': subject(dict)@data@xp
@@ -593,9 +593,9 @@ SEXP ULdna_init_with_BStringList(SEXP dict)
  * Note that 'dict_start' and 'dict_end' describe a set of views on subject(dict)
  * with no "out of limits" views.
  *
- * See ACtree_asLIST() for a description of the returned SEXP.
+ * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_length,
+SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_length,
 		SEXP dict_start, SEXP dict_end)
 {
 	int subj_offset, subj_length, dict_length;
@@ -616,8 +616,8 @@ SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_s
 		add_pattern_to_input_uldict(poffset,
 			(char *) (subj + view_offset), *view_end - view_offset);
 	}
-	build_ACtree();
-	return ACtree_asLIST();
+	build_actree();
+	return uldna_asLIST();
 }
 
 
@@ -628,8 +628,8 @@ SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_s
  *   'uldna_length': uldna_pdict@length (this is the number of words in the
  *                   uniform-length dictionary)
  *   'uldna_dups': uldna_pdict@dups
- *   'ACtree_xp': uldna_pdict@ACtree@xp
- *   'AC_base_codes': uldna_pdict@AC_base_codes
+ *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
+ *   'actree_base_codes': uldna_pdict@actree@base_codes
  *   's_xp': subject@data@xp
  *   's_offset': subject@offset
  *   's_length': subject@length
@@ -642,23 +642,23 @@ SEXP ULdna_init_with_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_s
  ****************************************************************************/
 
 SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
-		SEXP ACtree_xp, SEXP AC_base_codes,
+		SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP s_xp, SEXP s_offset, SEXP s_length)
 {
-	int uldna_len, ACtree_length, subj_offset, subj_length;
-	ACNode *ACtree;
+	int uldna_len, actree_length, subj_offset, subj_length;
+	ACNode *actree_nodes;
 	const Rbyte *subj;
 	SEXP tag;
 
 	uldna_len = INTEGER(uldna_length)[0];
-	tag = R_ExternalPtrTag(ACtree_xp);
-	ACtree = (ACNode *) INTEGER(tag);
-	ACtree_length = LENGTH(tag) / INTS_PER_ACNODE;
+	tag = R_ExternalPtrTag(actree_nodes_xp);
+	actree_nodes = (ACNode *) INTEGER(tag);
+	actree_length = LENGTH(tag) / INTS_PER_ACNODE;
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 
-	ULdna_exact_search(uldna_len, ACtree, INTEGER(AC_base_codes),
+	ULdna_exact_search(uldna_len, actree_nodes, INTEGER(actree_base_codes),
 		(char *) subj, subj_length, INTEGER(uldna_dups));
 
 	return _IBBuf_asLIST(&ends_bbuf);

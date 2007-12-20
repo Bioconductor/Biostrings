@@ -653,17 +653,17 @@ SEXP match_BOC2_exact(
 
 SEXP match_ULdna_debug();
 
-SEXP ULdna_free_ACnodebuf();
+SEXP ULdna_free_actree_nodes_buf();
 
-SEXP ULdna_init_with_StrVect(
+SEXP ULdna_pp_StrVect(
 		SEXP dict
 );
 
-SEXP ULdna_init_with_BStringList(
+SEXP ULdna_pp_BStringList(
 		SEXP dict
 );
 
-SEXP ULdna_init_with_views(
+SEXP ULdna_pp_views(
 		SEXP dict_subj_xp,
 		SEXP dict_subj_offset,
 		SEXP dict_subj_length,
@@ -674,8 +674,8 @@ SEXP ULdna_init_with_views(
 SEXP match_ULdna_exact(
 		SEXP uldna_length,
 		SEXP uldna_dups,
-		SEXP ACtree_xp,
-		SEXP AC_base_codes,
+		SEXP actree_nodes_xp,
+		SEXP actree_base_codes,
 		SEXP s_xp,
 		SEXP s_offset,
 		SEXP s_length

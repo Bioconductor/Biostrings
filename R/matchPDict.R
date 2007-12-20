@@ -18,31 +18,62 @@ setClass("PDict", representation("VIRTUAL"))
 ### A container for storing a preprocessed uniform-length dictionary (or set)
 ### of DNA patterns.
 ###
+
+### A low-level container for storing the Aho-Corasick tree built from the
+### input dictionary (note that this tree is actually an oriented graph if we
+### consider the failure links). When the input is based on an alphabet of 4
+### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
+### base_codes slot is a vector of 4 integers that will be filled with the
+### internal codes (byte values) of the unique letters found in the input.
+### The number of integers needed to represent a node is the number of letters
+### in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
+### representation of the Aho-Corasick tree can only be used for input based
+### on a very small alphabet.
+###
 ### Slot description:
 ###
-###   length: the dictionary length L i.e. the number of patterns (e.g. L=10^6)
+###   nodes: an external integer vector (XInteger object) for the storage
+###       of the nodes.
+### 
+###   base_codes: an integer vector filled with the internal codes (byte
+###       values) of the unique letters found in the input dictionary during
+###       its preprocessing.
+###
+setClass("ACtree",
+    representation(
+        nodes="XInteger",
+        base_codes="integer"
+    )
+)
+
+setMethod("initialize", "ACtree",
+    function(.Object, xp, base_codes)
+    {
+        .Object@nodes <- XInteger(1)
+        .Object@nodes@xp <- xp
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
+
+### Slot description:
+###
+###   length: the dictionary length L i.e. the number of patterns
+###       (e.g. L=10^6).
 ###
 ###   width: the dictionary width W i.e. the number of chars per pattern
-###       (e.g. W=25)
+###       (e.g. W=25).
 ###
-###   ACtree: an external integer vector (XInteger object) for the storage
-###       of the Aho-Corasick 4-ary tree built from the input dictionary.
-### 
-###   AC_base_codes: 4 integers, normally the DNA base internal codes (see
-###       DNA_BASE_CODES), attached to the 4 internal child slots of any node
-###       in the ACtree slot (see typedef ACNode in the C code for more
-###       info). 
+###   actree: the Aho-Corasick tree built from the input dictionary.
 ###
 ###   dups: an integer vector of length L containing the duplicate info.
 ###
-
 setClass("ULdna_PDict",
     contains="PDict",
     representation(
         length="integer",
         width="integer",
-        ACtree="XInteger",
-        AC_base_codes="integer",
+        actree="ACtree",
         dups="integer"
     )
 )
@@ -52,14 +83,14 @@ debug_ULdna <- function()
     invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
 }
 
-.ULdna_PDict.postinit <- function(.Object, length, slotvals)
+### 'ppans' is the answer returned by the preprocessing functions (the
+### ULdna_pp_*() functions).
+.ULdna_PDict.postinit <- function(.Object, length, ppans)
 {
     .Object@length <- length
-    .Object@width <- slotvals$width
-    .Object@ACtree <- XInteger(1)
-    .Object@ACtree@xp <- slotvals$ACtree_xp
-    .Object@AC_base_codes <- slotvals$AC_base_codes
-    .Object@dups <- slotvals$dups
+    .Object@width <- ppans$width
+    .Object@actree <- new("ACtree", ppans$actree_nodes_xp, ppans$actree_base_codes)
+    .Object@dups <- ppans$dups
     .Object
 }
 
@@ -69,8 +100,8 @@ debug_ULdna <- function()
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
-    slotvals <- .Call("ULdna_init_with_StrVect", dict, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), slotvals)
+    ppans <- .Call("ULdna_pp_StrVect", dict, PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), ppans)
 }
 
 ### 'dict' must be a list of BString objects of the same class (i.e. all
@@ -79,8 +110,8 @@ debug_ULdna <- function()
 .ULdna_PDict.init_with_BStringList <- function(.Object, dict)
 {
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
-    slotvals <- .Call("ULdna_init_with_BStringList", dict0, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), slotvals)
+    ppans <- .Call("ULdna_pp_BStringList", dict0, PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), ppans)
 }
 
 ### 'dict' must be a BStringViews object.
@@ -88,11 +119,11 @@ debug_ULdna <- function()
 {
     if (length(dict) == 0)
         stop("'dict' has no views")
-    slotvals <- .Call("ULdna_init_with_views",
+    ppans <- .Call("ULdna_pp_views",
                   subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
                   start(dict), end(dict),
                   PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), slotvals)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans)
 }
 
 ### The input dictionary 'dict' must be:
@@ -110,7 +141,7 @@ debug_ULdna <- function()
 setMethod("initialize", "ULdna_PDict",
     function(.Object, dict)
     {
-        on.exit(.Call("ULdna_free_ACnodebuf", PACKAGE="Biostrings"))
+        on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
         if (is.character(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty character vector")
@@ -202,17 +233,17 @@ setClass("PDictMatches",
 {
     ## Has pdict been generated from encoded input (DNAString views) or
     ## not (character vector or BString views)?
-    is_used <- pdict@AC_base_codes != -1
-    used_codes <- pdict@AC_base_codes[is_used]
+    is_used <- pdict@actree@base_codes != -1
+    used_codes <- pdict@actree@base_codes[is_used]
     if (!all(used_codes %in% DNA_STRING_CODEC@codes)) {
         used_codes <- DNA_STRING_CODEC@enc_lkup[used_codes + 1]
         if (any(is.na(used_codes)) || any(duplicated(used_codes)))
             stop("the pattern dictionary 'pdict' is incompatible with a DNAString subject")
-        pdict@AC_base_codes[is_used] <- used_codes
+        pdict@actree@base_codes[is_used] <- used_codes
     }
     .Call("match_ULdna_exact",
           pdict@length, pdict@dups,
-          pdict@ACtree@xp, pdict@AC_base_codes,
+          pdict@actree@nodes@xp, pdict@actree@base_codes,
           subject@data@xp, subject@offset, subject@length,
           PACKAGE="Biostrings")
 }
