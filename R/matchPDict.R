@@ -53,10 +53,18 @@ setMethod("show", "ACtree",
     }
 )
 
-### Implement the 0-based subsetting semantic (like in C):
-###   > pdict <- new("ULdna_PDict", c("abb", "aca", "bab", "caa", "abd", "aca"))
+### Implement the 0-based subsetting semantic (like in C).
+### Typical use:
+###   > pdict <- new("ULdna_PDict", c("agg", "aca", "gag", "caa", "agt", "aca"))
 ###   > pdict@actree[0:2] # look at the 3 first nodes
 ###   > pdict@actree[] # look at all the nodes
+###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks0 # no failure links is set yet
+###   > mends <- matchPDict(pdict, DNAString("acaagagagt"))
+###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks1 # some failure links have been set
+### As you can see the 'pdict' object "learns" from being used!
+###   
 setMethod("[", "ACtree",
     function(x, i, j, ..., drop)
     {
