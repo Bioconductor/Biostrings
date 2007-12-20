@@ -13,12 +13,8 @@ setClass("PDict", representation("VIRTUAL"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ULdna_PDict" class.
+### The "ACtree" class (NOT EXPORTED).
 ###
-### A container for storing a preprocessed uniform-length dictionary (or set)
-### of DNA patterns.
-###
-
 ### A low-level container for storing the Aho-Corasick tree built from the
 ### input dictionary (note that this tree is actually an oriented graph if we
 ### consider the failure links). When the input is based on an alphabet of 4
@@ -38,13 +34,50 @@ setClass("PDict", representation("VIRTUAL"))
 ###   base_codes: an integer vector filled with the internal codes (byte
 ###       values) of the unique letters found in the input dictionary during
 ###       its preprocessing.
-###
+
 setClass("ACtree",
     representation(
         nodes="XInteger",
         base_codes="integer"
     )
 )
+
+.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 3L)
+
+setMethod("length", "ACtree", function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x))
+
+setMethod("show", "ACtree",
+    function(object)
+    {
+        cat(length(object), "-node ", length(object@base_codes), "-ary Aho-Corasick tree\n", sep="")
+    }
+)
+
+### Implement the 0-based subsetting semantic (like in C):
+###   > pdict <- new("ULdna_PDict", c("abb", "aca", "bab", "caa", "abd", "aca"))
+###   > pdict@actree[0:2] # look at the 3 first nodes
+###   > pdict@actree[] # look at all the nodes
+setMethod("[", "ACtree",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        lx <- length(x)
+        if (missing(i))
+            i <- 0:(lx-1)
+        else if (!is.integer(i))
+            i <- as.integer(i)
+        ints_per_acnode <- .ACtree.ints_per_acnode(x)
+        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
+        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
+        colnames(ans) <- c("parent", pdict@actree@base_codes,
+                           "flink", "P_id")
+        rownames(ans) <- i
+        ans
+    }
+)
+
+setMethod("as.matrix", "ACtree", function(x) x[])
 
 setMethod("initialize", "ACtree",
     function(.Object, xp, base_codes)
@@ -56,6 +89,13 @@ setMethod("initialize", "ACtree",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ULdna_PDict" class.
+###
+### A container for storing a preprocessed uniform-length dictionary (or set)
+### of DNA patterns.
+###
 ### Slot description:
 ###
 ###   length: the dictionary length L i.e. the number of patterns
@@ -67,7 +107,7 @@ setMethod("initialize", "ACtree",
 ###   actree: the Aho-Corasick tree built from the input dictionary.
 ###
 ###   dups: an integer vector of length L containing the duplicate info.
-###
+
 setClass("ULdna_PDict",
     contains="PDict",
     representation(
@@ -76,6 +116,18 @@ setClass("ULdna_PDict",
         actree="ACtree",
         dups="integer"
     )
+)
+
+setMethod("length", "ULdna_PDict", function(x) x@length)
+
+setMethod("width", "ULdna_PDict", function(x) x@width)
+
+setMethod("show", "ULdna_PDict",
+    function(object)
+    {
+        cat(length(object), "-pattern uniform-length \"PDict\" object of width ",
+            width(object), "\n", sep="")
+    }
 )
 
 debug_ULdna <- function()
@@ -168,10 +220,6 @@ setMethod("initialize", "ULdna_PDict",
     }
 )
 
-setMethod("length", "ULdna_PDict", function(x) x@length)
-
-setMethod("width", "ULdna_PDict", function(x) x@width)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "PDictMatches" class.
@@ -229,21 +277,29 @@ setClass("PDictMatches",
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
 ###
-.match.ULdna_PDict.exact <- function(pdict, subject)
+
+### Temporary trick
+.ACtree.prepare_for_use_on_DNAString <- function(actree)
 {
-    ## Has pdict been generated from encoded input (DNAString views) or
+    ## Has 'actree' been generated from encoded input (DNAString views) or
     ## not (character vector or BString views)?
-    is_used <- pdict@actree@base_codes != -1
-    used_codes <- pdict@actree@base_codes[is_used]
+    is_used <- actree@base_codes != -1
+    used_codes <- actree@base_codes[is_used]
     if (!all(used_codes %in% DNA_STRING_CODEC@codes)) {
         used_codes <- DNA_STRING_CODEC@enc_lkup[used_codes + 1]
         if (any(is.na(used_codes)) || any(duplicated(used_codes)))
             stop("the pattern dictionary 'pdict' is incompatible with a DNAString subject")
-        pdict@actree@base_codes[is_used] <- used_codes
+        actree@base_codes[is_used] <- used_codes
     }
+    actree
+}
+
+.match.ULdna_PDict.exact <- function(pdict, subject)
+{
+    actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     .Call("match_ULdna_exact",
           pdict@length, pdict@dups,
-          pdict@actree@nodes@xp, pdict@actree@base_codes,
+          actree@nodes@xp, actree@base_codes,
           subject@data@xp, subject@offset, subject@length,
           PACKAGE="Biostrings")
 }
