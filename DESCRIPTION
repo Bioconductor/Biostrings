@@ -9,7 +9,8 @@ biocViews: SequenceMatching, Genetics, Infrastructure
 Depends: R (>= 2.6.0), methods, stats
 Imports: methods, stats
 Suggests: RUnit, BSgenome, BSgenome.Celegans.UCSC.ce2,
-          BSgenome.Dmelanogaster.FlyBase.r51, hgu95av2probe
+          BSgenome.Dmelanogaster.FlyBase.r51, drosophila2probe,
+          hgu95av2probe
 License: LGPL
 LazyLoad: yes
 Collate: 00datacache.R

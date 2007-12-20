@@ -26,7 +26,7 @@ setClass("PDict", representation("VIRTUAL"))
 ###       (e.g. W=25)
 ###
 ###   ACtree: an external integer vector (XInteger object) for the storage
-###       of the Aho-Corasick 4-ary tree built from the original dictionary.
+###       of the Aho-Corasick 4-ary tree built from the input dictionary.
 ### 
 ###   AC_base_codes: 4 integers, normally the DNA base internal codes (see
 ###       DNA_BASE_CODES), attached to the 4 internal child slots of any node
@@ -144,8 +144,11 @@ setMethod("width", "ULdna_PDict", function(x) x@width)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "PDictMatches" class.
-###
+### 
 ### A container for storing the matches returned by matchPDict().
+###
+### WARNING: This class is a WORK IN PROGRESS, it's not exported and not used
+### yet! For now, matchPDict() just returns a list of integer vectors.
 ###
 ### Slot description:
 ###
@@ -160,45 +163,53 @@ setClass("PDictMatches",
     )
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "matchPDict" generic and methods.
+### Aho-Corasick
 ###
-
-setGeneric(
-    "matchPDict", signature="subject",
-    function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
-        standardGeneric("matchPDict")
-)
-
 ### Return a list of integer vectors.
 ###
 ### A real use-case:   
 ###   > library(hgu95av2probe)
-###   > dict <- hgu95av2probe$sequence # the original dictionary
+###   > dict <- hgu95av2probe$sequence # the input dictionary
 ###   > pdict <- new("ULdna_PDict", dict)
+###   > length(pdict)
+###   [1] 201800
+###   > width(pdict)
+###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
-###   > chr1 <- BString(Hsapiens$chr1) # because dict is a character vector
-###   > system.time(pid2matchends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
+###   > chr1 <- Hsapiens$chr1
+###   > system.time(pid2matchends <- matchPDict(pdict, chr1))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
 ###   > nmatches <- sapply(pid2matchends, length)
 ###   > table(nmatches)
 ###   > id0 <- which(nmatches == max(nmatches))
-###   > p0 <- BString(dict[id0])
+###   > p0 <- DNAString(dict[id0])
 ###   > p0
-###     25-letter "BString" instance
+###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
 ###   > subBString(chr1, pid2matchends[[id0]][1]-24, pid2matchends[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
 ###   > pidOK <- sapply(seq_len(length(pid2matchends)),
 ###                     function(pid) identical(pid2matchends[[pid]],
-###                                             end(matchPattern(BString(dict[pid]), chr1))))
+###                                             end(matchPattern(DNAString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
 ###
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
+    ## Has pdict been generated from encoded input (DNAString views) or
+    ## not (character vector or BString views)?
+    is_used <- pdict@AC_base_codes != -1
+    used_codes <- pdict@AC_base_codes[is_used]
+    if (!all(used_codes %in% DNA_STRING_CODEC@codes)) {
+        used_codes <- DNA_STRING_CODEC@enc_lkup[used_codes + 1]
+        if (any(is.na(used_codes)) || any(duplicated(used_codes)))
+            stop("the pattern dictionary 'pdict' is incompatible with a DNAString subject")
+        pdict@AC_base_codes[is_used] <- used_codes
+    }
     .Call("match_ULdna_exact",
           pdict@length, pdict@dups,
           pdict@ACtree@xp, pdict@AC_base_codes,
@@ -211,17 +222,17 @@ setGeneric(
 ### 1. Trying to simulate Solexa data:
 ###      > library(Biostrings)
 ###      > dict_length <- 10^6
-###      > s <- BString(paste(sample(c("A", "C", "G", "T"), 36*dict_length, replace=TRUE), collapse=""))
+###      > s <- DNAString(paste(sample(c("A", "C", "G", "T"), 36*dict_length, replace=TRUE), collapse=""))
 ###      > views_start <- (0:(dict_length-1)) * 36 + 1
-###      > dict <- views(s, views_start, views_start + 35)
+###      > dict <- views(s, views_start, views_start + 35) # the input dictionary
 ###
 ### 2. Building the Aho-Corasick 4-ary tree from the input dictionary:
 ###      > pdict <- new("ULdna_PDict", dict)
 ###
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
-###      > chr1 <- BString(Hsapiens$chr1) # because subject(dict) is a BString object
-###      > system.time(pid2matchends <- Biostrings:::.match.ULdna_PDict.exact(pdict, chr1))
+###      > chr1 <- DNAString(Hsapiens$chr1)
+###      > system.time(pid2matchends <- matchPDict(pdict, chr1))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
 ###      > nmatches <- sapply(pid2matchends, length)
@@ -236,4 +247,43 @@ setGeneric(
 ###      10M      36       56 sec   6724M     351 sec     200 sec            0
 ###      10M      12      7.5 sec    340M     227 sec     216 sec         100M
 ###      30M      12       27 sec    523M     491 sec           ? 
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### .matchPDict()
+###
+
+.matchPDict <- function(pdict, subject, algorithm, mismatch, fixed)
+{
+    if (!is(pdict, "ULdna_PDict"))
+        stop("the pattern dictionary 'pdict' can only be a ULdna_PDict object for now")
+    if (!is(subject, "DNAString"))
+        stop("'subject' can only be a DNAString object for now")
+    if (!identical(algorithm, "auto"))
+        stop("'algo' can only be '\"auto\"' for now")
+    if (!identical(mismatch, 0))
+        stop("'mismatch' can only be set to 0 for now")
+    if (!identical(fixed, TRUE))
+        stop("'fixed' can only be 'TRUE' for now")
+    .match.ULdna_PDict.exact(pdict, subject)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "matchPDict" generic and methods.
+###
+
+setGeneric(
+    "matchPDict", signature="subject",
+    function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+        standardGeneric("matchPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPDict", "BString",
+    function(pdict, subject, algorithm, mismatch, fixed)
+    {
+	.matchPDict(pdict, subject, algorithm, mismatch, fixed)
+    }
+)
 

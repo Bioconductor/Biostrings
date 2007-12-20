@@ -332,12 +332,12 @@ static void report_matches_for_dups(int *dups, int dups_length)
 	return;
 }
 
-static int get_child_id(ACNode *node, char c)
+static int get_child_id(ACNode *node, int *base_codes, char c)
 {
 	int childslot;
 
 	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++)
-		if (c == AC_base_codes[childslot])
+		if (c == base_codes[childslot])
 			return node->child_id[childslot];
 	return -1;
 }
@@ -351,7 +351,7 @@ static int get_node_depth(ACNode *node0, ACNode *node)
 	return depth;
 }
 
-static int follow_string(ACNode *node0, const char *S, int nS)
+static int follow_string(ACNode *node0, int *base_codes, const char *S, int nS)
 {
 	int node_id, child_id, depth, new_depth, n;
 	const char *path;
@@ -376,7 +376,7 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 		}
 #endif
 		while (1) {
-			child_id = get_child_id(node, *S);
+			child_id = get_child_id(node, base_codes, *S);
 			if (child_id != -1) {
 				node_id = child_id;
 				depth++;
@@ -388,7 +388,7 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 			}
 			if (node->flink == -1) {
 				rec_level++;
-				node->flink = follow_string(node0, path + 1,  depth - 1);
+				node->flink = follow_string(node0, base_codes, path + 1,  depth - 1);
 				rec_level--;
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
@@ -426,11 +426,11 @@ static int follow_string(ACNode *node0, const char *S, int nS)
 	return node_id;
 }
 
-static void ULdna_exact_search(int uldna_len, ACNode *ACtree,
+static void ULdna_exact_search(int uldna_len, ACNode *ACtree, int *base_codes,
 		const char *S, int nS, int *dups)
 {
 	init_ends_bbuf(uldna_len);
-	follow_string(ACtree, S, nS);
+	follow_string(ACtree, base_codes, S, nS);
 	report_matches_for_dups(dups, uldna_len);
 	return;
 }
@@ -658,7 +658,7 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	subj_length = INTEGER(s_length)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 
-	ULdna_exact_search(uldna_len, ACtree,
+	ULdna_exact_search(uldna_len, ACtree, INTEGER(AC_base_codes),
 		(char *) subj, subj_length, INTEGER(uldna_dups));
 
 	return _IBBuf_asLIST(&ends_bbuf);

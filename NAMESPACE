@@ -35,6 +35,7 @@ exportMethods(
     matchProbePair,
     palindromeArmLength, palindromeLeftArm, palindromeRightArm,
     findPalindromes,
+    matchPDict,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     needwunsQS,
