@@ -1,0 +1,28 @@
+
+**************************************************
+*	       2.7 SERIES NEWS			 *
+**************************************************
+
+o Added the matchPDict() function for efficiently finding all occurences in
+  a text (the subject) of any pattern from a set of patterns (the dictionary).
+  See ?matchPDict for the details (especially the current limitations).
+
+o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
+  Biostrings 1).
+
+o Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions + a
+  "reverseComplement" method for RNAString objects.
+
+o Added the findPalindromes() function for basic support of palindrome finding.
+  Also added related utility functions palindromeArmLength(),
+  palindromeLeftArm() and palindromeRightArm().
+
+
+**************************************************
+*              2.6 SERIES NEWS                   *
+**************************************************
+
+o Added the matchLRPatterns() function for finding in a sequence patterns
+  that are defined by a left and a right part.
+  See ?matchLRPatterns for the details.
+

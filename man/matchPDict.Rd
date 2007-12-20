@@ -52,9 +52,9 @@
 }
 
 \value{
-  A list of the same length as the input directory where the i-th
+  A list of the same length as the input dictionary where the i-th
   element is an integer vector containing the \_ending\_ positions
-  of every match found for the i-th pattern in the directory.
+  of every match found for the i-th pattern in the dictionary.
 }
 
 \seealso{
