@@ -59,7 +59,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[0:2] # look at the 3 first nodes
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks0 # no failure links is set yet
+###   > flinks0 # no failure link is set yet
 ###   > mends <- matchPDict(pdict, DNAString("acaagagagt"))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set

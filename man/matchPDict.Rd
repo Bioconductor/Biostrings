@@ -67,11 +67,11 @@
 \examples{
   ## Creating the pattern dictionary
   library(drosophila2probe)
-  dict <- drosophila2probe$sequence     # The input dictionary.
-  length(dict)                          # Hundreds of thousands of patterns.
-  unique(nchar(dict))                   # Patterns are 25-mers.
-  dict[1:5]
-  pdict <- new("ULdna_PDict", dict)     # Store the input dictionary into a
+  dict0 <- drosophila2probe$sequence    # The input dictionary.
+  length(dict0)                         # Hundreds of thousands of patterns.
+  unique(nchar(dict0))                  # Patterns are 25-mers.
+  dict0[1:5]
+  pdict <- new("ULdna_PDict", dict0)    # Store the input dictionary into a
                                         # ULdna_PDict instance (preprocessing).
   length(pdict)                         # Same as the input dictionary.
   width(pdict)                          # The number of chars per pattern.
@@ -88,8 +88,36 @@
   sum(nmatches)                         # Total number of matches.
   table(nmatches)
   i0 <- which(nmatches == max(nmatches))
-  dict[i0]                              # The pattern with most occurences.
+  dict0[i0]                             # The pattern with most occurences.
   views(chr3R, mends[[i0]] - 24, mends[[i0]]) # All the occurences.
+
+  ## NOT RUN
+  if (FALSE) {
+    ## What's the impact of the dictionary width on performance?
+    ## Below is some code that can be used to figure out (will take a long
+    ## time to run). For different widths of the input dictionary, we look at:
+    ##   o pptime: preprocessing time (in sec.) i.e. time needed for building
+    ##             the PDict object from the truncated input sequences
+    ##   o nnodes: nb of nodes in the resulting Aho-Corasick tree
+    ##   o nupatt: nb of unique truncated input sequences
+    ##   o matchtime: time (in sec.) needed to find all the matches
+    ##   o nmatches: nb of matches found
+    getPDictStats <- function(dict0, width, subject)
+    {
+      dict <- substr(dict0, 1, width)
+      list(
+        width=width,
+        pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
+        nnodes=length(pdict@actree),
+        nupatt=sum(pdict@dups == 0),
+        matchtime=system.time(mends <- matchPDict(pdict, subject))[["elapsed"]],
+        nmatches=sum(sapply(mends, length))
+      )
+    }
+    stats <- lapply(6:25, function(width) getPDictStats(dict0, width, chr3R))
+    stats <- data.frame(do.call(rbind, stats))
+    stats
+  }
 }
 
 \keyword{methods}
