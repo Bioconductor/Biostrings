@@ -131,28 +131,29 @@ Note that this chrI sequence corresponds to the {\it forward} strand
 (aka {\it direct} or {\it sense} or {\it positive} or {\it plus} strand)
 of chromosome I.
 UCSC and genome providers in general don't provide files containing the
-the nucleotide sequence of the {\it reverse} strand (aka {\it indirect}
+nucleotide sequence of the {\it reverse} strand (aka {\it indirect}
 or {\it antisense} or {\it negative} or {\it minus} or {\it opposite} strand)
 of the chromosomes because these sequences can be deduced from the {\it forward}
-sequence by taking its reverse complement.
+sequences by taking their reverse complements.
 The {\it Biostrings-based genome data packages} are no exceptions: they only
 provide the {\it forward} strand sequence of every chromosome.
 See \Rfunction{?reverseComplement} for more details about the reverse
 complement of a \Rclass{DNAString} object.
 It is important to remember that, in practice, the {\it reverse} strand
-sequence is almost never needed hence computing it by applying
-\Rfunction{reverseComplement} to the {\it forward} strand sequence
-should be avoided at all cost!
-In fact, a {\it reverse} strand analysis can always be transposed into
-a {\it forward} strand analysis and this is indeed the right thing to
-do. See further in this document for how to find arbitrary patterns in the
-{\it reverse} strand of a chromosome.
+sequence is almost never needed.
+The reason behind this is that, in fact, a {\it reverse} strand analysis
+can (and should) always be transposed into a {\it forward} strand analysis.
+Therefore trying to compute the {\it reverse} strand sequence of an entire
+chromosome by applying \Rfunction{reverseComplement} to its {\it forward}
+strand sequence is almost always a bad idea.
+See the {\it Find arbitrary patterns in a genome} section in this document
+for how to find arbitrary patterns in the {\it reverse} strand of a chromosome.
 
 % It seems like this page http://www.medterms.com/script/main/art.asp?articlekey=20468
 % is lying about the noncoding (or coding, they are in fact contradicting themselves)
 % nature of the sense and antisense strands.
 
-The number of letters in this sequence can be retrieved with:
+The number of bases in this sequence can be retrieved with:
 <<b5>>=
 cI <- Celegans$chrI
 length(cI)
@@ -228,8 +229,8 @@ More precisely, here is the analysis we want to perform:
 %   > names(ce2dict0) <- paste("pattern", 1:50, sep="")
 %   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fsa", format="fasta")
   See the {\it Find all the occurences of a uniform-length pattern dictionary
-  in a genome} section below for the special case where all the patterns have
-  the same length.
+  in a genome} section in this document for a very efficient way to deal with
+  the special case where all the patterns have the same length.
 
   \item{The target: }
   Our target (or subject) is the {\it forward} and {\it reverse} strands of
