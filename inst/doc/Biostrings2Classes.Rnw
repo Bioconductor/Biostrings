@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Biostrings}
+%\VignetteIndexEntry{A short presentation of the basic classes defined in Biostrings 2}
 %\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
 %\VignettePackage{Biostrings}
 

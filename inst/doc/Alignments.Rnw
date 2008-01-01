@@ -1,5 +1,5 @@
 
-%\VignetteIndexEntry{Biostrings}
+%\VignetteIndexEntry{Some examples of sequence alignments}
 %\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
 %\VignettePackage{Biostrings}
 

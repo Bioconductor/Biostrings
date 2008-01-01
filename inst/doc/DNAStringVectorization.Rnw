@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Biostrings}
+%\VignetteIndexEntry{Some old notes about the vectorization feature of the DNAString() constructor. Not for the end user.}
 %\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
 %\VignettePackage{Biostrings}
 

@@ -91,6 +91,11 @@
   dict0[i0]                             # The pattern with most occurences.
   views(chr3R, mends[[i0]] - 24, mends[[i0]]) # All the occurences.
 
+  ## To search the plus and minus strands, one possibility is to add the
+  ## reverse complements of all the input sequences to the input dictionary
+  ## (this will double its size):
+  # will come soon...
+
   ## NOT RUN
   if (FALSE) {
     ## What's the impact of the dictionary width on performance?

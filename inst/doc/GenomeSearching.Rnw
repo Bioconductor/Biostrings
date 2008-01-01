@@ -1,0 +1,336 @@
+%\VignetteIndexEntry{How to efficiently use matchPattern() and matchPDict() for fast genome searching}
+%\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
+%\VignettePackage{Biostrings}
+
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[11pt]{article}
+
+%\usepackage{pstricks}
+%\usepackage[authoryear,round]{natbib}
+\usepackage{hyperref}
+
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+
+\bibliographystyle{plainnat}
+ 
+\begin{document}
+%\setkeys{Gin}{width=0.55\textwidth}
+
+\title{How to efficiently use \Rmethod{matchPattern} and \Rmethod{matchPDict}
+       for fast genome searching}
+\author{Herv\'e Pag\`es}
+\maketitle
+
+\tableofcontents
+
+
+% ---------------------------------------------------------------------------
+
+\section{The Biostrings-based genome data packages}
+
+The Bioconductor project provides data packages that contain the full genome
+of a given organism. These packages are called {\it Biostrings-based genome
+data packages} because the sequences they contain are stored in the basic
+containers defined in the \Rpackage{Biostrings} package (i.e. the
+\Rclass{DNAString} and \Rclass{BStringViews} classes).
+Except for the data they contain, all the Biostrings-based genome data
+packages are very similar and can be manipulated in an easy and consistent
+way. This is achieved by defining and sharing their basic functionalies
+in the infrastructure package \Rpackage{BSgenome} that they all depend on.
+This is the reason why they are also known as the {\it BSgenome data packages}.
+
+See the \Rfunction{available.genomes} man page (\Rfunction{?available.genomes})
+in \Rpackage{BSgenome} for more information about how to get the list of
+all the {\it Biostrings-based genome data packages} currently available
+in your version of Bioconductor.
+
+More genomes can be added if necessary. Note that the process of making a
+{\it Biostrings-based genome data package} is not yet documented but you
+are welcome to ask for help on the bioc-devel mailing
+(\url{http://bioconductor.org/docs/mailList.html}).
+
+
+
+% ---------------------------------------------------------------------------
+
+\section{Find arbitrary patterns in a chromosome}
+
+In this section we show how to find some arbitrary patterns in
+{\it Caenorhabditis elegans} chromosome I.
+UCSC provides several versions of the C. elegans genome: ce1, ce2 and ce4.
+These versions correspond to different genome releases from WormBase:
+repectively WS100, WS120 and WS170.
+See \url{http://genome.ucsc.edu/FAQ/FAQreleases#release1} for the list
+of all UCSC genome releases and for the correspondance between UCSC
+versions and release names.
+
+The {\it Biostrings-based genome data packages} for the ce2 genome is
+\Rpackage{BSgenome.Celegans.UCSC.ce2}. Note that ce1 and ce4 are not
+available in Bioconductor but they could be added if there is demand for
+them.
+
+See \Rfunction{?available.genomes} for how to install
+\Rpackage{BSgenome.Celegans.UCSC.ce2}.
+Then load the package and display the single object defined in it:
+<<b1>>=
+library(BSgenome.Celegans.UCSC.ce2)
+ls("package:BSgenome.Celegans.UCSC.ce2")
+Celegans
+@
+
+\Robject{Celegans} is a \Rclass{BSgenome} object:
+<<b2>>=
+class(Celegans)
+@
+
+When displayed, some basic information about the origin of the
+genome is shown (organism, provider, provider version, etc...)
+followed by the index of {\it single} sequences and eventually
+an additional index of {\it multiple} sequences.
+Methods (adequately called {\it accessor methods}) are defined
+for individual access to this information:
+<<b3>>=
+organism(Celegans)
+provider(Celegans)
+providerVersion(Celegans)
+seqnames(Celegans)
+mseqnames(Celegans)
+@
+
+See the man page for the \Rclass{BSgenome} class (\Rfunction{?BSgenome})
+for a complete list of accessor methods and their descriptions.
+
+Now we are ready to display chromosome I:
+<<b4>>=
+Celegans$chrI
+@
+
+Note that this chrI sequence corresponds to the {\it forward} strand
+(aka {\it direct} or {\it sense} or {\it positive} or {\it plus} strand)
+of chromosome I.
+UCSC and genome providers in general don't provide files containing the
+the nucleotide sequence of the {\it reverse} strand (aka {\it indirect}
+or {\it antisense} or {\it negative} or {\it minus} or {\it opposite} strand)
+of the chromosomes because these sequences can be deduced from the {\it forward}
+sequence by taking its reverse complement.
+The {\it Biostrings-based genome data packages} are no exceptions: they only
+provide the {\it forward} strand sequence of every chromosome.
+See \Rfunction{?reverseComplement} for more details about the reverse
+complement of a \Rclass{DNAString} object.
+It is important to remember that, in practice, the {\it reverse} strand
+sequence is almost never needed hence computing it by applying
+\Rfunction{reverseComplement} to the {\it forward} strand sequence
+should be avoided at all cost!
+In fact, a {\it reverse} strand analysis can always be transposed into
+a {\it forward} strand analysis and this is indeed the right thing to
+do. See further in this document for how to find arbitrary patterns in the
+{\it reverse} strand of a chromosome.
+
+% It seems like this page http://www.medterms.com/script/main/art.asp?articlekey=20468
+% is lying about the noncoding (or coding, they are in fact contradicting themselves)
+% nature of the sense and antisense strands.
+
+The number of letters in this sequence can be retrieved with:
+<<b5>>=
+cI <- Celegans$chrI
+length(cI)
+@
+
+Some basic stats:
+<<b6>>=
+af <- alphabetFrequency(cI)
+af
+sum(af) == length(cI)
+@
+
+Count all exact matches of pattern \Robject{"ACCCAGGGC"}:
+<<b7>>=
+p <- "ACCCAGGGC"
+countPattern(p, cI)
+countPattern(p, cI, mismatch=1)
+@
+
+The matches can be stored in a \Rclass{BStringViews} object
+by using the \Rmethod{matchPattern} method:
+<<b7>>=
+m <- matchPattern(p, cI, mismatch=1)
+m[4:6]
+mismatch(p, m[4:6])
+@
+
+The \Rmethod{mismatch} method (new in \Rpackage{Biostrings}~2)
+returns the positions of the mismatching letters.
+
+Note: The \Rmethod{mismatch} method is in fact a particular case
+of a (vectorized) {\it alignment} function where only ``replacements''
+are allowed. Current implementation is slow but this will change.
+
+
+It may happen that a match is {\it out of limits} like here:
+<<b8>>=
+p2 <- DNAString("AAGCCTAAGCCTAAGCCTAA")
+m2 <- matchPattern(p2, cI, mismatch=2)
+m2[1:4]
+p2 == m2[1:4]
+mismatch(p2, m2[1:4])
+@
+
+The list of exact matches and the list of inexact matches
+can both be obtained with:
+<<b9,results=hide>>=
+m2[p2 == m2]
+m2[p2 != m2]
+@
+
+Note that the length of \Robject{m2[p2 == m2]} should be
+equal to \Robject{countPattern(p2, cI, mismatch=0)}.
+
+
+% ---------------------------------------------------------------------------
+
+\section{Find arbitrary patterns in a genome}
+
+Now we want to extend our analysis to the {\it forward} and {\it reverse}
+strands of all the C. elegans chromosomes.
+More precisely, here is the analysis we want to perform:
+
+\begin{itemize}
+
+  \item{The input: }
+  Our input is a set of 50 patterns. Each pattern is a short nucleotide
+  sequence of 15 to 25 bases (As, Cs, Gs and Ts only, no Ns).
+  It is stored in a FASTA file called \Robject{"ce2dict0.fsa"}.
+% ce2dict0.fsa was generated with
+%   > set.seed(23)
+%   > ce2dict0 <- sapply(1:50, function(i) { x <- Celegans[[sample(seqnames(Celegans), 1)]]; start <- as.integer(runif(1, min=1, length(x)-20)); end <- start + as.integer(runif(1, min=14, max=25)); x <- subBString(x, start, end); if (sample(1:2, 1) == 2) x <- reverseComplement(x); as.character(x) })
+%   > names(ce2dict0) <- paste("pattern", 1:50, sep="")
+%   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fsa", format="fasta")
+  See the {\it Find all the occurences of a uniform-length pattern dictionary
+  in a genome} section below for the special case where all the patterns have
+  the same length.
+
+  \item{The target: }
+  Our target (or subject) is the {\it forward} and {\it reverse} strands of
+  the seven C. elegans chromosomes (14 sequences in total).
+  We want to find and report all occurences (or hits) of every pattern
+  in the target. Note that a given pattern can have 0, 1 or several hits
+  in 0, 1 or 2 strands of 0, 1 or several chromosomes.
+
+  \item{The output: }
+  We want to put the results of this analysis in a file so we can send
+  it to our collaborators for some post analysis work.
+  Our collaborators are not necessarily familiar with R or Bioconductor
+  so dumping a high-level R object (like a list or a data frame) into an
+  .rda file is not an option. For maximum portability (one of our
+  collaborators wants to use Excell for the post analysis) we choose
+  to put our results in a tabulated file where one line describes one
+  hit. The columns (or fields) of this file will be (in this order):
+  \begin{itemize}
+    \item{The pattern ID: }
+    We use the unique ID provided for every pattern in the
+    \Robject{"ce2dict0.fsa"} file.
+    \item{The seqname: }
+    The name of the chromosome where the hit occurs.
+    \item{The start: }
+    An integer giving the starting position of the hit.
+    \item{The end: }
+    An integer giving the ending position of the hit.
+    \item{The strand: }
+    A plus (\Robject{+}) for a hit in the positive strand
+    or a minus (\Robject{-}) for a hit in the negative strand.
+  \end{itemize}
+
+\end{itemize}
+
+[TO BE CONTINUED]
+
+
+% ---------------------------------------------------------------------------
+
+\section{Some important precautions when using \Rmethod{matchPattern}}
+
+Improper use of \Rmethod{matchPattern} (or \Rmethod{countPattern}) can affect
+performance.
+
+If needed, the \Rmethod{matchPattern} and \Rmethod{countPattern} methods
+convert their first argument (the pattern) to an object of the same class
+than their second argument (the subject) before they pass it to the subroutine
+that actually implements the fast search algorithm.
+
+So if you need to reuse the same pattern a high number of times,
+it's a good idea to convert it {\it before} to pass it to the
+\Rmethod{matchPattern} or \Rmethod{countPattern} method.
+This way the conversion is done only once:
+<<c1>>=
+library(hgu95av2probe)
+tmpseq <- BStringViews(hgu95av2probe$sequence, "DNAString")
+someStats <- function(v)
+{
+    GC <- DNAString("GC")
+    CG <- DNAString("CG")
+    sapply(1:length(v),
+           function(i) {
+               y <- v[i]
+               c(alphabetFrequency(y)[1:4],
+                 GC=countPattern(GC, y),
+                 CG=countPattern(CG, y))
+           }
+    )
+}
+someStats(tmpseq[1:10])
+@
+
+% The above example is Raphael's use case discussed on BioC on Feb 2006.
+% In Biostrings 1, the equivalent would be:
+% src <- sapply(1:100,
+%               function(i) {
+%                 paste(sample(c("A","C","G","T"), 25, replace=TRUE),
+%                 collapse="")
+%               }
+%        )
+% tmpseq <- DNAString(src)
+% someStats <- function(v)
+% {
+%     GC <- DNAString("GC")
+%     CG <- DNAString("CG")
+%     sapply(1:length(v),
+%            function(i) {
+%                y <- v[i]
+%                c(alphabetFrequency(y)[2:5],
+%                  GC=length(matchDNAPattern(GC, y)),
+%                  CG=length(matchDNAPattern(CG, y)))
+%            }
+%     )
+% }
+% someStats(tmpseq[1:10])
+
+
+% ---------------------------------------------------------------------------
+
+\section{Find all the occurences of a uniform-length pattern dictionary in
+         a genome}
+
+\end{document}
+
