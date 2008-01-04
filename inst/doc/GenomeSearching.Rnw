@@ -81,7 +81,7 @@ In this section we show how to find some arbitrary patterns in
 {\it Caenorhabditis elegans} chromosome I.
 UCSC provides several versions of the C. elegans genome: ce1, ce2 and ce4.
 These versions correspond to different genome releases from WormBase:
-repectively WS100, WS120 and WS170.
+respectively WS100, WS120 and WS170.
 See \url{http://genome.ucsc.edu/FAQ/FAQreleases#release1} for the list
 of all UCSC genome releases and for the correspondance between UCSC
 versions and release names.
@@ -219,8 +219,8 @@ More precisely, here is the analysis we want to perform:
 
 \begin{itemize}
 
-  \item{The input: }
-  Our input is a set of 50 patterns. Each pattern is a short nucleotide
+  \item{The input dictionary: }
+  Our input is a dictionary of 50 patterns. Each pattern is a short nucleotide
   sequence of 15 to 25 bases (As, Cs, Gs and Ts only, no Ns).
   It is stored in a FASTA file called \Robject{"ce2dict0.fsa"}.
 % ce2dict0.fsa was generated with
@@ -230,7 +230,8 @@ More precisely, here is the analysis we want to perform:
 %   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fsa", format="fasta")
   See the {\it Find all the occurences of a uniform-length pattern dictionary
   in a genome} section in this document for a very efficient way to deal with
-  the special case where all the patterns have the same length.
+  the special case where all the patterns in the input dictionary have the same
+  length.
 
   \item{The target: }
   Our target (or subject) is the {\it forward} and {\it reverse} strands of
@@ -239,15 +240,18 @@ More precisely, here is the analysis we want to perform:
   in the target. Note that a given pattern can have 0, 1 or several hits
   in 0, 1 or 2 strands of 0, 1 or several chromosomes.
 
+  \item{Exact or fuzzy matching? }
+  We are interested in exact matches only (for now).
+
   \item{The output: }
   We want to put the results of this analysis in a file so we can send
   it to our collaborators for some post analysis work.
   Our collaborators are not necessarily familiar with R or Bioconductor
   so dumping a high-level R object (like a list or a data frame) into an
   .rda file is not an option. For maximum portability (one of our
-  collaborators wants to use Excell for the post analysis) we choose
-  to put our results in a tabulated file where one line describes one
-  hit. The columns (or fields) of this file will be (in this order):
+  collaborators wants to use Microsoft Excel for the post analysis) we
+  choose to put our results in a tabulated file where one line describes
+  one hit. The columns (or fields) of this file will be (in this order):
   \begin{itemize}
     \item{The pattern ID: }
     We use the unique ID provided for every pattern in the
@@ -264,6 +268,40 @@ More precisely, here is the analysis we want to perform:
   \end{itemize}
 
 \end{itemize}
+
+Here is how we can write the functions that will perform this analysis:
+<<c1>>=
+writeMatches <- function(patternID, seqname, matches, strand, outfile)
+{
+    for (i in seq_len(length(matches))) {
+        cat(patternID, seqname, start(matches)[i], end(matches)[i], strand,
+            file=outfile, sep="\t", append=TRUE)
+        cat("\n", file=outfile, append=TRUE)
+    }
+}
+
+runAnalysis <- function(outfile)
+{
+    ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
+    cat("Input dictionary: ", ce2dict0_file, "\n", sep="")
+    ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
+    library(BSgenome.Celegans.UCSC.ce2)
+    seqnames <- seqnames(Celegans)
+    seq_list <- paste(seqnames, collapse=", ")
+    cat("Target: ", providerVersion(Celegans), " chromosomes ", seq_list, "\n", sep="")
+    for (seqname in seqnames) {
+        for (i in seq_len(length(ce2dict0))) {
+            pattern <- ce2dict0[[i]]
+            plus_matches <- matchPattern(pattern, Celegans[[seqname]])
+            writeMatches(desc(ce2dict0)[i], seqname, plus_matches, "+", outfile)
+            pattern <- reverseComplement(pattern)
+            minus_matches <- matchPattern(pattern, Celegans[[seqname]])
+            writeMatches(desc(ce2dict0)[i], seqname, minus_matches, "-", outfile)
+        }
+        unload(Celegans, seqname)
+    }
+}
+@
 
 [TO BE CONTINUED]
 
@@ -284,7 +322,7 @@ So if you need to reuse the same pattern a high number of times,
 it's a good idea to convert it {\it before} to pass it to the
 \Rmethod{matchPattern} or \Rmethod{countPattern} method.
 This way the conversion is done only once:
-<<c1>>=
+<<d1>>=
 library(hgu95av2probe)
 tmpseq <- BStringViews(hgu95av2probe$sequence, "DNAString")
 someStats <- function(v)
