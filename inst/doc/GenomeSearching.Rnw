@@ -11,7 +11,7 @@
 %\usepackage{pstricks}
 %\usepackage[authoryear,round]{natbib}
 \usepackage{hyperref}
-
+\usepackage{underscore}
 
 \textwidth=6.2in
 \textheight=8.5in
@@ -286,12 +286,9 @@ writeHits <- function(seqname, matches, strand, patternID, file="")
     }
 }
 
-runAnalysis1 <- function(outfile="")
+runAnalysis1 <- function(dict0, outfile="")
 {
     library(BSgenome.Celegans.UCSC.ce2)
-    ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
-    cat("Input dictionary: ", ce2dict0_file, "\n", sep="")
-    ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
     seqnames <- seqnames(Celegans)
     seq_list <- paste(seqnames, collapse=", ")
     cat("Target: ", providerVersion(Celegans), " chromosomes ", seq_list, "\n", sep="")
@@ -300,9 +297,9 @@ runAnalysis1 <- function(outfile="")
     for (seqname in seqnames) {
         subject <- Celegans[[seqname]]
         cat(">>> Finding all hits in chromosome ", seqname, " ...\n", sep="")
-        for (i in seq_len(length(ce2dict0))) {
-            patternID <- desc(ce2dict0)[i]
-            pattern <- ce2dict0[[i]]
+        for (i in seq_len(length(dict0))) {
+            patternID <- desc(dict0)[i]
+            pattern <- dict0[[i]]
             plus_matches <- matchPattern(pattern, subject)
             writeHits(seqname, plus_matches, "+", patternID, file=outfile)
             pattern <- reverseComplement(pattern)
@@ -317,7 +314,9 @@ runAnalysis1 <- function(outfile="")
 
 Run the analysis and put the results in \Robject{"ce2dict0_ana1.txt"} with:
 <<c2>>=
-runAnalysis1("ce2dict0_ana1.txt")
+ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
+ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
+runAnalysis1(ce2dict0, outfile="ce2dict0_ana1.txt")
 @
 
 Here is some very simple example of post analysis:
@@ -365,6 +364,11 @@ plotGenomeHits <- function(bsgenome, seqnames, hits)
         lines(c(hits$start[i], hits$end[i]), c(y, y), type="l", col=col, lwd=3)
     }
 }
+@
+
+To plot the hits found by \Rfunction{runAnalysis1} do:
+<<c5,eval=false>>=
+plotGenomeHits(Celegans, seqnames(Celegans), hits1)
 @
 
 
