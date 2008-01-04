@@ -253,9 +253,6 @@ More precisely, here is the analysis we want to perform:
   choose to put our results in a tabulated file where one line describes
   one hit. The columns (or fields) of this file will be (in this order):
   \begin{itemize}
-    \item{The pattern ID: }
-    We use the unique ID provided for every pattern in the
-    \Robject{"ce2dict0.fsa"} file.
     \item{The seqname: }
     The name of the chromosome where the hit occurs.
     \item{The start: }
@@ -265,45 +262,110 @@ More precisely, here is the analysis we want to perform:
     \item{The strand: }
     A plus (\Robject{+}) for a hit in the positive strand
     or a minus (\Robject{-}) for a hit in the negative strand.
+    \item{The pattern ID: }
+    We use the unique ID provided for every pattern in the
+    \Robject{"ce2dict0.fsa"} file.
   \end{itemize}
 
 \end{itemize}
 
 Here is how we can write the functions that will perform this analysis:
 <<c1>>=
-writeMatches <- function(patternID, seqname, matches, strand, outfile)
+writeHeader <- function(file="")
+{
+    cat("seqname", "start", "end", "strand", "patternID", file=file, sep="\t")
+    cat("\n", file=file, append=TRUE)
+}
+
+writeHits <- function(seqname, matches, strand, patternID, file="")
 {
     for (i in seq_len(length(matches))) {
-        cat(patternID, seqname, start(matches)[i], end(matches)[i], strand,
-            file=outfile, sep="\t", append=TRUE)
-        cat("\n", file=outfile, append=TRUE)
+        cat(seqname, start(matches)[i], end(matches)[i], strand, patternID,
+            file=file, sep="\t", append=TRUE)
+        cat("\n", file=file, append=TRUE)
     }
 }
 
-runAnalysis <- function(outfile)
+runAnalysis1 <- function(outfile="")
 {
+    library(BSgenome.Celegans.UCSC.ce2)
     ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
     cat("Input dictionary: ", ce2dict0_file, "\n", sep="")
     ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
-    library(BSgenome.Celegans.UCSC.ce2)
     seqnames <- seqnames(Celegans)
     seq_list <- paste(seqnames, collapse=", ")
     cat("Target: ", providerVersion(Celegans), " chromosomes ", seq_list, "\n", sep="")
+    if (outfile != "")
+        writeHeader(file=outfile)
     for (seqname in seqnames) {
+        subject <- Celegans[[seqname]]
+        cat(">>> Finding all hits in chromosome ", seqname, " ...\n", sep="")
         for (i in seq_len(length(ce2dict0))) {
+            patternID <- desc(ce2dict0)[i]
             pattern <- ce2dict0[[i]]
-            plus_matches <- matchPattern(pattern, Celegans[[seqname]])
-            writeMatches(desc(ce2dict0)[i], seqname, plus_matches, "+", outfile)
+            plus_matches <- matchPattern(pattern, subject)
+            writeHits(seqname, plus_matches, "+", patternID, file=outfile)
             pattern <- reverseComplement(pattern)
-            minus_matches <- matchPattern(pattern, Celegans[[seqname]])
-            writeMatches(desc(ce2dict0)[i], seqname, minus_matches, "-", outfile)
+            minus_matches <- matchPattern(pattern, subject)
+            writeHits(seqname, minus_matches, "-", patternID, file=outfile)
         }
+        cat(">>> DONE\n")
         unload(Celegans, seqname)
     }
 }
 @
 
-[TO BE CONTINUED]
+Run the analysis and put the results in \Robject{"ce2dict0_ana1.txt"} with:
+<<c2>>=
+runAnalysis1("ce2dict0_ana1.txt")
+@
+
+Here is some very simple example of post analysis:
+<<c3>>=
+hits1 <- read.table("ce2dict0_ana1.txt", header=TRUE)
+nrow(hits1) # total number of hits
+table(hits1$seqname) # hits per chromosome
+hits1_table <- table(hits1$patternID)
+hits1_table # hits per pattern
+hits1_table[hits1_table == max(hits1_table)] # pattern(s) with more hits
+setdiff(desc(ce2dict0), hits1$patternID) # pattern(s) with no hits
+@
+
+Here is a function that can be used to plot the hits:
+<<c4>>=
+plotGenomeHits <- function(bsgenome, seqnames, hits)
+{
+    ## Retrieve the sequence lengths
+    seqlengths <- integer(length(seqnames))
+    for (i in seq_len(length(seqnames))) {
+        seqname <- seqnames[i]
+        seqlengths[i] <- length(bsgenome[[seqname]])
+        unload(bsgenome, seqname)
+    }
+    XMAX <- max(seqlengths)
+    YMAX <- length(seqnames)
+    plot.new()
+    plot.window(c(1, XMAX), c(0, YMAX))
+    axis(1)
+    axis(2, at=seq_len(length(seqnames)), labels=rev(seqnames), tick=FALSE, las=1)
+    ## Plot the chromosomes
+    for (i in seq_len(length(seqnames)))
+        lines(c(1, seqlengths[i]), c(YMAX + 1 - i, YMAX + 1 - i), type="l")
+    ## Plot the hits
+    for (i in seq_len(nrow(hits))) {
+        seqname <- hits$seqname[i]
+        y0 <- YMAX + 1 - match(seqname, seqnames)
+        if (hits$strand[i] == "+") {
+            y <- y0 + 0.05
+            col <- "red"
+        } else {
+            y <- y0 - 0.05
+            col <- "blue"
+        }
+        lines(c(hits$start[i], hits$end[i]), c(y, y), type="l", col=col, lwd=3)
+    }
+}
+@
 
 
 % ---------------------------------------------------------------------------
