@@ -254,33 +254,47 @@ More precisely, here is the analysis we want to perform:
   one hit. The columns (or fields) of this file will be (in this order):
   \begin{itemize}
     \item{The seqname: }
-    The name of the chromosome where the hit occurs.
+    the name of the chromosome where the hit occurs.
     \item{The start: }
-    An integer giving the starting position of the hit.
+    an integer giving the starting position of the hit.
     \item{The end: }
-    An integer giving the ending position of the hit.
+    an integer giving the ending position of the hit.
     \item{The strand: }
-    A plus (\Robject{+}) for a hit in the positive strand
+    a plus (\Robject{+}) for a hit in the positive strand
     or a minus (\Robject{-}) for a hit in the negative strand.
     \item{The pattern ID: }
-    We use the unique ID provided for every pattern in the
+    we use the unique ID provided for every pattern in the
     \Robject{"ce2dict0.fsa"} file.
   \end{itemize}
 
 \end{itemize}
 
-Here is how we can write the functions that will perform this analysis:
+Let's start by loading the input dictionary with:
 <<c1>>=
-writeHeader <- function(file="")
+ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
+ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
+@
+
+Display the number of patterns in the dictionary and then the first five
+patterns and their IDs with:
+<<c2>>=
+length(ce2dict0)
+ce2dict0[1:5]
+desc(ce2dict0)[1:5]
+@
+
+Here is how we can write the functions that will perform our analysis:
+<<c3>>=
+writeHitHeader <- function(file="")
 {
     cat("seqname", "start", "end", "strand", "patternID", file=file, sep="\t")
     cat("\n", file=file, append=TRUE)
 }
 
-writeHits <- function(seqname, matches, strand, patternID, file="")
+writeHits <- function(seqname, starts, ends, strand, patternID, file="")
 {
-    for (i in seq_len(length(matches))) {
-        cat(seqname, start(matches)[i], end(matches)[i], strand, patternID,
+    for (i in seq_len(length(starts))) {
+        cat(seqname, starts[i], ends[i], strand, patternID,
             file=file, sep="\t", append=TRUE)
         cat("\n", file=file, append=TRUE)
     }
@@ -293,7 +307,7 @@ runAnalysis1 <- function(dict0, outfile="")
     seq_list <- paste(seqnames, collapse=", ")
     cat("Target: ", providerVersion(Celegans), " chromosomes ", seq_list, "\n", sep="")
     if (outfile != "")
-        writeHeader(file=outfile)
+        writeHitHeader(file=outfile)
     for (seqname in seqnames) {
         subject <- Celegans[[seqname]]
         cat(">>> Finding all hits in chromosome ", seqname, " ...\n", sep="")
@@ -301,10 +315,12 @@ runAnalysis1 <- function(dict0, outfile="")
             patternID <- desc(dict0)[i]
             pattern <- dict0[[i]]
             plus_matches <- matchPattern(pattern, subject)
-            writeHits(seqname, plus_matches, "+", patternID, file=outfile)
-            pattern <- reverseComplement(pattern)
-            minus_matches <- matchPattern(pattern, subject)
-            writeHits(seqname, minus_matches, "-", patternID, file=outfile)
+            writeHits(seqname, start(plus_matches), end(plus_matches),
+                      "+", patternID, file=outfile)
+            pattern2 <- reverseComplement(pattern)
+            minus_matches <- matchPattern(pattern2, subject)
+            writeHits(seqname, start(minus_matches), end(minus_matches),
+                      "-", patternID, file=outfile)
         }
         cat(">>> DONE\n")
         unload(Celegans, seqname)
@@ -312,26 +328,78 @@ runAnalysis1 <- function(dict0, outfile="")
 }
 @
 
-Run the analysis and put the results in \Robject{"ce2dict0_ana1.txt"} with:
-<<c2>>=
-ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
-ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
+Some important notes about the implementation of the \Rfunction{runAnalysis1}
+function:
+\begin{itemize}
+  \item{}
+  \Robject{subject <- Celegans[[seqname]]} is the code that actually loads a
+  chromosome sequence into memory.
+  After it's not needed anymore, the sequence is removed from memory by
+  calling \Robject{unload(Celegans, seqname)}.
+  Using only one sequence at a time and unloading it after it's not needed
+  anymore is a good practice to avoid memory allocation problems on a machine
+  with a limited amount of memory.
+  For example, loading all the human chromosome sequences in memory would
+  require more than 3GB of memory!
+
+  \item{}
+  We have 2 nested \Robject{for} loops: the outer loop walks thru the
+  target (7 chromosomes) and the inner loop walks thru the set of
+  patterns. Doing the other way around would be very inefficient,
+  especially with a bigger number of patterns because this would require
+  to load each chromosome sequence into memory as many times as the
+  number of patterns.
+  Trying to minimize the number of loading/unloading cycles for each
+  target sequence during an analysis is good practice because this cycle
+  takes a long time.
+  The \Rfunction{runAnalysis1} does this only once for each target
+  sequence.
+
+  \item{}
+  We find the matches in the minus strand (\Robject{minus_matches}) by
+  first taking the reverse complement of the current pattern (with
+  \Robject{pattern2 <- reverseComplement(pattern)}) and NOT by
+  taking the reverse complement of the current subject.
+\end{itemize}
+
+Now we are ready to run the analysis and put the results in the
+\Robject{"ce2dict0_ana1.txt"} file:
+<<c4>>=
 runAnalysis1(ce2dict0, outfile="ce2dict0_ana1.txt")
 @
 
 Here is some very simple example of post analysis:
-<<c3>>=
+\begin{itemize}
+  \item{}
+Get the total number of hits:
+<<c5>>=
 hits1 <- read.table("ce2dict0_ana1.txt", header=TRUE)
-nrow(hits1) # total number of hits
-table(hits1$seqname) # hits per chromosome
+nrow(hits1)
+@
+  \item{}
+Get the number of hits per chromosome:
+<<c6>>=
+table(hits1$seqname)
+@
+  \item{}
+Get the number of hits per pattern:
+<<c7>>=
 hits1_table <- table(hits1$patternID)
-hits1_table # hits per pattern
+hits1_table
+@
+  \item{}
+Get the pattern(s) with the higher number of hits:
+<<c8>>=
 hits1_table[hits1_table == max(hits1_table)] # pattern(s) with more hits
+@
+  \item{}
+Get the pattern(s) with no hits:
+<<c9>>=
 setdiff(desc(ce2dict0), hits1$patternID) # pattern(s) with no hits
 @
-
-Here is a function that can be used to plot the hits:
-<<c4>>=
+  \item{}
+And finally a function that can be used to plot the hits:
+<<c10>>=
 plotGenomeHits <- function(bsgenome, seqnames, hits)
 {
     ## Retrieve the sequence lengths
@@ -365,16 +433,16 @@ plotGenomeHits <- function(bsgenome, seqnames, hits)
     }
 }
 @
-
-To plot the hits found by \Rfunction{runAnalysis1} do:
-<<c5,eval=false>>=
+Plot the hits found by \Rfunction{runAnalysis1} with:
+<<c11,eval=false>>=
 plotGenomeHits(Celegans, seqnames(Celegans), hits1)
 @
+\end{itemize}
 
 
 % ---------------------------------------------------------------------------
 
-\section{Some important precautions when using \Rmethod{matchPattern}}
+\section{More precautions when using \Rmethod{matchPattern}}
 
 Improper use of \Rmethod{matchPattern} (or \Rmethod{countPattern}) can affect
 performance.
@@ -436,6 +504,62 @@ someStats(tmpseq[1:10])
 
 \section{Find all the occurences of a uniform-length pattern dictionary in
          a genome}
+
+The \Rfunction{matchPDict} function can be used instead of \Rfunction{matchPattern}
+for the kind of analysis described in the {\it Find arbitrary patterns in a genome}
+section but it will be much faster (between 100x and 10000x faster depending on the
+size of the input dictionary).
+Note that a current limitation of \Rfunction{matchPDict} is that it only works with
+a dictionary of DNA patterns where all the patterns have the same number of
+nucleotides (uniform-length dictionary).
+See \Rfunction{?matchPDict} for more information.
+
+Here is how our \Rfunction{runAnalysis1} function can be modified in order to use
+\Rfunction{matchPDict} instead of \Rfunction{matchPattern}:
+<<e1>>=
+runAnalysis2 <- function(dict0, outfile="")
+{
+    library(BSgenome.Celegans.UCSC.ce2)
+    seqnames <- seqnames(Celegans)
+    seq_list <- paste(seqnames, collapse=", ")
+    cat("Target: ", providerVersion(Celegans), " chromosomes ", seq_list, "\n", sep="")
+    if (outfile != "")
+        writeHitHeader(file=outfile)
+    pdict <- new("ULdna_PDict", dict0)
+    for (seqname in seqnames) {
+        subject <- Celegans[[seqname]]
+        cat(">>> Finding all hits in strand + of chromosome ", seqname, " ...\n", sep="")
+        plus_ends <- matchPDict(pdict, subject)
+        for (i in seq_len(length(plus_ends))) {
+            ends <- plus_ends[[i]]
+            if (length(ends) == 0)
+                next
+            starts <- ends - width(pdict) + 1
+            patternID <- desc(dict0)[i]
+            writeHits(seqname, starts, ends, "+", patternID, file=outfile)
+        }
+        cat(">>> DONE\n")
+        unload(Celegans, seqname)
+    }
+    rcdict0 <- reverseComplement(dict0)
+    pdict <- new("ULdna_PDict", rcdict0)
+    for (seqname in seqnames) {
+        subject <- Celegans[[seqname]]
+        cat(">>> Finding all hits in strand - of chromosome ", seqname, " ...\n", sep="")
+        plus_ends <- matchPDict(pdict, subject)
+        for (i in seq_len(length(plus_ends))) {
+            ends <- plus_ends[[i]]
+            if (length(ends) == 0)
+                next
+            starts <- ends - width(pdict) + 1
+            patternID <- desc(rcdict0)[i]
+            writeHits(seqname, starts, ends, "+", patternID, file=outfile)
+        }
+        cat(">>> DONE\n")
+        unload(Celegans, seqname)
+    }
+}
+@
 
 \end{document}
 
