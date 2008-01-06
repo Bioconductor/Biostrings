@@ -39,7 +39,7 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.  }
 
 \seealso{
   \link{BStringAlign-class},
-  \link{scoring.matrices}
+  \link{substitution.matrices}
 }
 
 \examples{

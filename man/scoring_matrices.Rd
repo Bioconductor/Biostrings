@@ -1,7 +1,7 @@
-\name{scoring.matrices}
+\name{substitution.matrices}
 \docType{data}
 
-\alias{scoring.matrices}
+\alias{substitution.matrices}
 \alias{BLOSUM45}
 \alias{BLOSUM50}
 \alias{BLOSUM62}
@@ -17,7 +17,7 @@
 \title{Scoring matrices}
 
 \description{
-  Predefined substitution scoring matrices for nucleotide
+  Predefined substitution matrices for nucleotide
   and amino acid alignments.
 }
 
@@ -41,7 +41,7 @@
 }
 
 \details{
-  Note that there can exist different versions of a given scoring matrix.
+  Note that there can exist different versions of a given substitution matrix.
   For example, definition of widely used BLOSUM62 matrix varies depending on
   the source. Even a given source can provide different versions of it but the
   name is always BLOSUM62 and they provide no history or versioning mechanism!
@@ -72,7 +72,7 @@
   ## See how the gap penalty influences the alignment
   needwunsQS(aa1, aa2, "BLOSUM62", gappen=8)
 
-  ## See how the scoring matrix influences the alignment
+  ## See how the substitution matrix influences the alignment
   needwunsQS(aa1, aa2, "BLOSUM50", gappen=3)
 
   ## Compare our BLOSUM62 with BLOSUM62 from ftp://ftp.ncbi.nih.gov/blast/matrices/

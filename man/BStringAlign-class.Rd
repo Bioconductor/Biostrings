@@ -111,7 +111,7 @@
   s2 <- AAString("LEAVES")
   ## With the needwunsQS function, the cost of an insertion or deletion
   ## is controlled by the gappen (gap penalty) arg, the cost of a replacement
-  ## is controlled by the "substitution scoring matrix" passed thru the substmat
+  ## is controlled by the "substitution matrix" passed thru the substmat
   ## arg
   nw1 <- needwunsQS(s1, s2, substmat="BLOSUM50", gappen=1)
   nw1
