@@ -56,6 +56,8 @@
   from ftp://ftp.ncbi.nih.gov/blast/matrices/
 }
 
+\author{H. Pages}
+
 \seealso{
   \code{\link{needwunsQS}},
   \link{BStringAlign-class},

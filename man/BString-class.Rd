@@ -132,6 +132,8 @@
   }
 }
 
+\author{H. Pages}
+
 \seealso{
   \code{\link{subBString}},
   \code{\link{letter}},

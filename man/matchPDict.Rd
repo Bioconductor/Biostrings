@@ -57,6 +57,8 @@
   of every match found for the i-th pattern in the dictionary.
 }
 
+\author{H. Pages}
+
 \seealso{
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},

@@ -84,6 +84,8 @@
   [TODO]
 }
 
+\author{H. Pages}
+
 \seealso{
   \code{\link{letter}},
   \code{\link{views}},
