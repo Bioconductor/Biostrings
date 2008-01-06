@@ -21,8 +21,8 @@ setClass("PDict", representation("VIRTUAL"))
 ### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
 ### base_codes slot is a vector of 4 integers that will be filled with the
 ### internal codes (byte values) of the unique letters found in the input.
-### The number of integers needed to represent a node is the number of letters
-### in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
+### The number of integers needed to represent a tree node is the number of
+### letters in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
 ### representation of the Aho-Corasick tree can only be used for input based
 ### on a very small alphabet.
 ###
@@ -114,7 +114,9 @@ setMethod("initialize", "ACtree",
 ###
 ###   actree: the Aho-Corasick tree built from the input dictionary.
 ###
-###   dups: an integer vector of length L containing the duplicate info.
+###   dups: an integer vector of length L and containing the duplicate info.
+###       If unique pattern IDs were provided as part of the input dictionary,
+###       then they are used to name the elements of this vector.
 
 setClass("ULdna_PDict",
     contains="PDict",
@@ -143,25 +145,39 @@ debug_ULdna <- function()
     invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
 }
 
+.checkpids <- function(pids)
+{
+    if (!is.null(pids)) {
+        if (any(pids %in% c("", NA)))
+            stop("'dict' has invalid names")
+        if (any(duplicated(pids)))
+            stop("'dict' has duplicated names")
+    }
+}
+
 ### 'ppans' is the answer returned by the preprocessing functions (the
 ### ULdna_pp_*() functions).
-.ULdna_PDict.postinit <- function(.Object, length, ppans)
+.ULdna_PDict.postinit <- function(.Object, length, ppans, pids)
 {
     .Object@length <- length
     .Object@width <- ppans$width
     .Object@actree <- new("ACtree", ppans$actree_nodes_xp, ppans$actree_base_codes)
     .Object@dups <- ppans$dups
+    names(.Object@dups) <- pids
     .Object
 }
 
 ### 'dict' must be a string vector (aka character vector) with at least 1
-### element.
+### element. If it has names, then they must be unique and are considered
+### to be the pattern IDs.
 .ULdna_PDict.init_with_StrVect <- function(.Object, dict)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
+    pids <- names(dict)
+    .checkpids(pids)
     ppans <- .Call("ULdna_pp_StrVect", dict, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
 ### 'dict' must be a list of BString objects of the same class (i.e. all
@@ -169,9 +185,11 @@ debug_ULdna <- function()
 ### element.
 .ULdna_PDict.init_with_BStringList <- function(.Object, dict)
 {
+    pids <- names(dict)
+    .checkpids(pids)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
     ppans <- .Call("ULdna_pp_BStringList", dict0, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
 ### 'dict' must be a BStringViews object.
@@ -179,11 +197,13 @@ debug_ULdna <- function()
 {
     if (length(dict) == 0)
         stop("'dict' has no views")
+    pids <- desc(dict)
+    .checkpids(pids)
     ppans <- .Call("ULdna_pp_views",
                   subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
                   start(dict), end(dict),
                   PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
 ### The input dictionary 'dict' must be:
