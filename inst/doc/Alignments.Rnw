@@ -74,7 +74,7 @@ Note that some of the ORF sequences are represented in reverse complement form.
 A very simple implementation of the Needleman-Wunsch global alignment
 algorithm is provided.  This takes space proportional to the square
 of the string length, uses a simple scalar gap penalty, and requires
-a substitution scoring matrix appropriate for the alphabets from which
+a substitution matrix appropriate for the alphabets from which
 the strings to be aligned are constructed.  Pattern alphabet concepts
 are not currently used.
 
