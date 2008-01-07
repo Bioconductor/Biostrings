@@ -635,9 +635,9 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *   's_length': subject@length
  *   'envir': environment to be populated with the matches
  *
- * Return an environment containing the matches. This environment is what the
- * 'ends' slot of the PDictMatches class is expected to be. Refer to the
- * description of this slot in the matchPDict.R file for the details.
+ * Return an R object that will be assigned to the 'ends' slot of the
+ * PDictMatches object returned by matchPDict(). Refer to the description
+ * of this slot in the matchPDict.R file for the details.
  *
  ****************************************************************************/
 
@@ -662,6 +662,8 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	ULdna_exact_search(uldna_len, actree_nodes, INTEGER(actree_base_codes),
 		(char *) subj, subj_length, INTEGER(uldna_dups));
 
+	if (envir == R_NilValue)
+		return _IBBuf_asLIST(&ends_bbuf);
 	return _IBBuf_toEnvir(&ends_bbuf, envir);
 }
 

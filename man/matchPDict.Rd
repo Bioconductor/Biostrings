@@ -3,6 +3,10 @@
 % Classes
 \alias{class:PDictMatches}
 \alias{PDictMatches-class}
+\alias{class:PDictMatchesWithoutIDs}
+\alias{PDictMatchesWithoutIDs-class}
+\alias{class:PDictMatchesWithIDs}
+\alias{PDictMatchesWithIDs-class}
 \alias{class:PDict}
 \alias{PDict-class}
 \alias{class:ULdna_PDict}

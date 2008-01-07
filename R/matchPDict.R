@@ -4,50 +4,56 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDictMatches" class.
+### The "PDictMatches" API.
 ### 
-### A container for storing the matches returned by matchPDict().
+### An API for manipulating the match container returned by matchPDict().
 ###
-### Slot description:
-###
-###   length: the length of the input dictionary.
-###
-###   ends: a key-value list (environment) where the values are integer
-###       vectors containing the ending positions of the input pattern whose
-###       position in the input dictionary is given by the key (the keys are
-###       strings representing positive integers).
-###       
-###   pids: either a character vector containing the unique pattern IDs if they
-###       were provided as part of the input dictionary, or NA.
 
-setClass("PDictMatches",
-    representation(
-        length="integer",
-        ends="environment",
-        pids="character"
-    )
-)
-
-setMethod("length", "PDictMatches", function(x) x@length)
+setClass("PDictMatches", representation("VIRTUAL"))
 
 setGeneric("pids", function(x) standardGeneric("pids"))
 
-setMethod("pids", "PDictMatches", function(x) if (length(x@pids) == 1 && is.na(x@pids)) NULL else x@pids)
+setMethod("$", "PDictMatches", function(x, name) x[[name]])
 
-setMethod("show", "PDictMatches",
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PDictMatchesWithoutIDs" class.
+### 
+### When 'pdict' is a PDict object without pattern IDs then matchPDict(pdict, ...)
+### returns the matches in a PDictMatchesWithoutIDs object.
+###
+### Note that in normal operations the user NEVER needs to create a
+### PDictMatchesWithoutIDs object explicitely or to modify an existing one:
+### PDictMatchesWithoutIDs objects are created by the matchPDict() function
+### and have a read-only semantic.
+###
+### Slot description:
+###
+###   ends: a list of integer vectors.
+###
+
+setClass("PDictMatchesWithoutIDs",
+    contains="PDictMatches",
+    representation(
+        ends="list"
+    )
+)
+
+setMethod("length", "PDictMatchesWithoutIDs", function(x) length(x@ends))
+
+setMethod("pids", "PDictMatchesWithoutIDs", function(x) NULL)
+
+setMethod("show", "PDictMatchesWithoutIDs",
     function(object)
     {
-        cat(length(object), "-pattern \"PDictMatches\" object", sep="")
-        if (is.null(pids(object)))
-            cat(" (no pattern IDs)")
-        cat("\n")
+        cat(length(object), "-pattern \"PDictMatches\" object (no pattern IDs)\n", sep="")
     }
 )
 
-setMethod("[[", "PDictMatches",
+setMethod("[[", "PDictMatchesWithoutIDs",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "PDictMatches" object (if it's not, then
+        # 'x' is guaranteed to be a "PDictMatchesWithoutIDs" object (if it's not, then
         # the method dispatch algo would not have called this method in the
         # first place), so nargs() is guaranteed to be >= 1
         if (nargs() >= 3)
@@ -67,12 +73,104 @@ setMethod("[[", "PDictMatches",
         if (length(name) > 1)
             stop("attempt to select more than one element")
         if (!(is.character(name) || is.numeric(name)) || is.na(name))
-            stop("wrong argument for subsetting an object of class ", sQuote(class(x)))
+            stop("wrong argument for subsetting an object of class \"PDictMatches\"")
+        if (is.character(name))
+            stop("\"PDictMatches\" object has no pattern IDs")
+        if (name < 1 || length(x) < name)
+            stop("subscript out of bounds")
+        x@ends[[name]]
+    }
+)
+
+### An example of a PDictMatchesWithoutIDs object of length 5 where only the
+### 2nd pattern has matches:
+###   > ends <- rep(list(integer(0)), 5)
+###   > ends[[2]] <- c(199L, 402L)
+###   > pm <- new("PDictMatchesWithoutIDs", ends=ends)
+###   > pm[[1]]
+###   > pm[[2]]
+###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
+###   > as.list(pm)
+###
+setMethod("as.list", "PDictMatchesWithoutIDs",
+    function(x, all.pids=FALSE, ...)
+    {
+        if (!missing(all.pids))
+            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+        x@ends
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PDictMatchesWithIDs" class.
+### 
+### When 'pdict' is a PDict object with pattern IDs then matchPDict(pdict, ...)
+### returns the matches in a PDictMatchesWithIDs object.
+###
+### Note that in normal operations the user NEVER needs to create a
+### PDictMatchesWithIDs object explicitely or to modify an existing one:
+### PDictMatchesWithIDs objects are created by the matchPDict() function
+### and have a read-only semantic.
+###
+### Slot description:
+###
+###   length: the length of the input dictionary.
+###
+###   ends: a key-value list (environment) where the values are integer
+###       vectors containing the ending positions of the input pattern whose
+###       position in the input dictionary is given by the key (the keys are
+###       strings representing positive integers).
+###       
+###   pids: a character vector containing the unique pattern IDs.
+###
+
+setClass("PDictMatchesWithIDs",
+    contains="PDictMatches",
+    representation(
+        length="integer",
+        ends="environment",
+        pids="character"
+    )
+)
+
+setMethod("length", "PDictMatchesWithIDs", function(x) x@length)
+
+setMethod("pids", "PDictMatchesWithIDs", function(x) x@pids)
+
+setMethod("show", "PDictMatchesWithIDs",
+    function(object)
+    {
+        cat(length(object), "-pattern \"PDictMatches\" object\n", sep="")
+    }
+)
+
+setMethod("[[", "PDictMatchesWithIDs",
+    function(x, i, j, ...)
+    {
+        # 'x' is guaranteed to be a "PDictMatchesWithIDs" object (if it's not, then
+        # the method dispatch algo would not have called this method in the
+        # first place), so nargs() is guaranteed to be >= 1
+        if (nargs() >= 3)
+            stop("too many subscripts")
+        subscripts <- list(...)
+        if (!missing(i))
+            subscripts$i <- i
+        if (!missing(j))
+            subscripts$j <- j
+        # At this point, 'subscripts' should be guaranteed
+        # to be of length <= 1
+        if (length(subscripts) == 0)
+            stop("no index specified")
+        name <- subscripts[[1]]
+        if (length(name) < 1)
+            stop("attempt to select less than one element")
+        if (length(name) > 1)
+            stop("attempt to select more than one element")
+        if (!(is.character(name) || is.numeric(name)) || is.na(name))
+            stop("wrong argument for subsetting an object of class \"PDictMatches\"")
         if (is.character(name)) {
-            ids <- pids(x)
-            if (is.null(ids))
-                stop(sQuote(class(x)), " object has no pattern IDs")
-            pos <- match(name, ids)
+            pos <- match(name, pids(x))
             if (is.na(pos))
                 stop("pattern ID ", sQuote(name), " not found")
         } else {
@@ -87,36 +185,25 @@ setMethod("[[", "PDictMatches",
     }
 )
 
-setMethod("$", "PDictMatches", function(x, name) x[[name]])
-
-### An example of a PDictMatches object of length 5 with no pattern IDs and
-### where only the 2nd pattern has matches:
+### An example of a PDictMatchesWithIDs object of length 5 where only the
+### 2nd pattern has matches:
 ###   > ends <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends[["2"]] <- c(199L, 402L)
-###   > pm <- new("PDictMatches", length=5L, ends=ends, pids=as.character(NA))
+###   > pm <- new("PDictMatchesWithIDs", length=5L, ends=ends, pids=letters[1:5])
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
-###   > as.list(pm)
-### Now with pattern IDs:
-###   > pm@pids <- letters[seq_len(length(pm))]
 ###   > pids(pm)
 ###   > pm[["a"]]
 ###   > pm[["b"]]
 ###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
 ###   > as.list(pm)
 ###   > as.list(pm, all.pids=TRUE)
-### Note that in normal use cases the user NEVER needs to create a PDictMatches
-### instance explicitely or to modify an existing one: PDictMatches instances
-### are created by the matchPDict() function and are read-only objects.
 ###
-### TODO: Make this much _faster_ (probably needs C coding)!!!
-setMethod("as.list", "PDictMatches",
+setMethod("as.list", "PDictMatchesWithIDs",
     function(x, all.pids=FALSE, ...)
     {
-        if (is.null(pids(x)) && !missing(all.pids))
-            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
-        if (is.null(pids(x)) || all.pids)
+        if (all.pids)
             ii <- seq_len(length(x))
         else
             ii <- sort(as.integer(ls(x@ends, all.names=TRUE)))
@@ -431,16 +518,21 @@ setMethod("initialize", "ULdna_PDict",
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
+    pids <- pids(pdict)
+    if (is.null(pids))
+        envir <- NULL
+    else
+        envir <- new.env(hash=TRUE, parent=emptyenv())
     ends <- .Call("match_ULdna_exact",
           pdict@length, pdict@dups,
           actree@nodes@xp, actree@base_codes,
           subject@data@xp, subject@offset, subject@length,
-          new.env(hash=TRUE, parent=emptyenv()),
+          envir,
           PACKAGE="Biostrings")
-    pids <- pids(pdict)
     if (is.null(pids))
-        pids <- as.character(NA)
-    new("PDictMatches", length=length(pdict), ends=ends, pids=pids)
+        new("PDictMatchesWithoutIDs", ends=ends)
+    else
+        new("PDictMatchesWithIDs", length=length(pdict), ends=ends, pids=pids)
 }
 
 ### With a big random dictionary, on george1:
