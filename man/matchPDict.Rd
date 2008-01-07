@@ -1,16 +1,21 @@
 \name{matchPDict}
 
 % Classes
+\alias{class:PDictMatches}
+\alias{PDictMatches-class}
 \alias{class:PDict}
 \alias{PDict-class}
 \alias{class:ULdna_PDict}
 \alias{ULdna_PDict-class}
 
 % Generics and methods:
+\alias{length,PDictMatches-method}
+\alias{pids,PDictMatches-method}
+
 \alias{initialize,ULdna_PDict-method}
 \alias{length,ULdna_PDict-method}
 \alias{width,ULdna_PDict-method}
-
+\alias{pids,ULdna_PDict-method}
 
 \alias{matchPDict}
 \alias{matchPDict,BString-method}
@@ -52,9 +57,7 @@
 }
 
 \value{
-  A list of the same length as the input dictionary where the i-th
-  element is an integer vector containing the \_ending\_ positions
-  of every match found for the i-th pattern in the dictionary.
+  A PDictMatches object containing the matches.
 }
 
 \author{H. Pages}
@@ -82,7 +85,7 @@
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]        # Load chromosome 3R
   chr3R
-  mends <- matchPDict(pdict, chr3R)     # Search...
+  mends <- as.list(matchPDict(pdict, chr3R)) # Search...
 
   ## Looking at the results
   length(mends)                         # Same as the input dictionary.
@@ -117,7 +120,7 @@
         pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
-        matchtime=system.time(mends <- matchPDict(pdict, subject))[["elapsed"]],
+        matchtime=system.time(mends <- as.list(matchPDict(pdict, subject)))[["elapsed"]],
         nmatches=sum(sapply(mends, length))
       )
     }

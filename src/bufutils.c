@@ -173,6 +173,21 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf)
 	return ans;
 }
 
+SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir)
+{
+	int i;
+	IBuf *ibuf;
+	char symbuf[12];
+
+	for (i = 0, ibuf = ibbuf->ibufs; i < ibbuf->count; i++, ibuf++) {
+		if (ibuf->count == 0)
+			continue;
+		snprintf(symbuf, sizeof(symbuf), "%d", i);
+		Rf_defineVar(Rf_install(symbuf), _IBuf_asINTEGER(ibuf), envir);
+	}
+	return envir;
+}
+
 IBBuf _LIST_asIBBuf(SEXP x)
 {
 	IBBuf ibbuf;

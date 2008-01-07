@@ -633,17 +633,18 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *   's_xp': subject@data@xp
  *   's_offset': subject@offset
  *   's_length': subject@length
+ *   'envir': environment to be populated with the matches
  *
- * For now return a list of length 'uldna_length' where each element is a
- * vector of integers containing matches (start position). More precisely,
- * for the i-th pattern in the dictionary, all the matches found in the
- * subject are stored in the i-th element of this list.
+ * Return an environment containing the matches. This environment is what the
+ * 'ends' slot of the PDictMatches class is expected to be. Refer to the
+ * description of this slot in the matchPDict.R file for the details.
  *
  ****************************************************************************/
 
 SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 		SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP s_xp, SEXP s_offset, SEXP s_length)
+		SEXP s_xp, SEXP s_offset, SEXP s_length,
+		SEXP envir)
 {
 	int uldna_len, actree_length, subj_offset, subj_length;
 	ACNode *actree_nodes;
@@ -661,6 +662,6 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	ULdna_exact_search(uldna_len, actree_nodes, INTEGER(actree_base_codes),
 		(char *) subj, subj_length, INTEGER(uldna_dups));
 
-	return _IBBuf_asLIST(&ends_bbuf);
+	return _IBBuf_toEnvir(&ends_bbuf, envir);
 }
 

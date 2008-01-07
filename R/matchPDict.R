@@ -13,7 +13,9 @@
 ###   length: the length of the input dictionary.
 ###
 ###   ends: a key-value list (environment) where the values are integer
-###       vectors containing the ending positions of the input pattern.
+###       vectors containing the ending positions of the input pattern whose
+###       position in the input dictionary is given by the key (the keys are
+###       strings representing positive integers).
 ###       
 ###   pids: either a character vector containing the unique pattern IDs if they
 ###       were provided as part of the input dictionary, or NA.
@@ -107,6 +109,8 @@ setMethod("$", "PDictMatches", function(x, name) x[[name]])
 ### Note that in normal use cases the user NEVER needs to create a PDictMatches
 ### instance explicitely or to modify an existing one: PDictMatches instances
 ### are created by the matchPDict() function and are read-only objects.
+###
+### TODO: Make this much _faster_ (probably needs C coding)!!!
 setMethod("as.list", "PDictMatches",
     function(x, all.pids=FALSE, ...)
     {
@@ -180,7 +184,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks0 # no failure link is set yet
-###   > mends <- matchPDict(pdict, DNAString("acaagagagt"))
+###   > mends <- as.list(matchPDict(pdict, DNAString("acaagagagt")))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set
 ### As you can see the 'pdict' object "learns" from being used!
@@ -388,7 +392,7 @@ setMethod("initialize", "ULdna_PDict",
 ###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
-###   > system.time(pid2matchends <- matchPDict(pdict, chr1))
+###   > system.time(pid2matchends <- as.list(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
 ###   > nmatches <- sapply(pid2matchends, length)
@@ -427,11 +431,16 @@ setMethod("initialize", "ULdna_PDict",
 .match.ULdna_PDict.exact <- function(pdict, subject)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
-    .Call("match_ULdna_exact",
+    ends <- .Call("match_ULdna_exact",
           pdict@length, pdict@dups,
           actree@nodes@xp, actree@base_codes,
           subject@data@xp, subject@offset, subject@length,
+          new.env(hash=TRUE, parent=emptyenv()),
           PACKAGE="Biostrings")
+    pids <- pids(pdict)
+    if (is.null(pids))
+        pids <- as.character(NA)
+    new("PDictMatches", length=length(pdict), ends=ends, pids=pids)
 }
 
 ### With a big random dictionary, on george1:
@@ -449,7 +458,7 @@ setMethod("initialize", "ULdna_PDict",
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
 ###      > chr1 <- DNAString(Hsapiens$chr1)
-###      > system.time(pid2matchends <- matchPDict(pdict, chr1))
+###      > system.time(pid2matchends <- as.list(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
 ###      > nmatches <- sapply(pid2matchends, length)

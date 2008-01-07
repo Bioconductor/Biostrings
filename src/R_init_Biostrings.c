@@ -104,7 +104,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"ULdna_pp_StrVect", (DL_FUNC) &ULdna_pp_StrVect, 1},
 	{"ULdna_pp_BStringList", (DL_FUNC) &ULdna_pp_BStringList, 1},
 	{"ULdna_pp_views", (DL_FUNC) &ULdna_pp_views, 5},
-	{"match_ULdna_exact", (DL_FUNC) &match_ULdna_exact, 7},
+	{"match_ULdna_exact", (DL_FUNC) &match_ULdna_exact, 8},
 
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},

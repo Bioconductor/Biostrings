@@ -529,7 +529,7 @@ runAnalysis2 <- function(dict0, outfile="")
     for (seqname in seqnames) {
         subject <- Celegans[[seqname]]
         cat(">>> Finding all hits in strand + of chromosome ", seqname, " ...\n", sep="")
-        plus_ends <- matchPDict(pdict, subject)
+        plus_ends <- as.list(matchPDict(pdict, subject))
         for (i in seq_len(length(plus_ends))) {
             ends <- plus_ends[[i]]
             if (length(ends) == 0)
@@ -546,7 +546,7 @@ runAnalysis2 <- function(dict0, outfile="")
     for (seqname in seqnames) {
         subject <- Celegans[[seqname]]
         cat(">>> Finding all hits in strand - of chromosome ", seqname, " ...\n", sep="")
-        plus_ends <- matchPDict(pdict, subject)
+        plus_ends <- as.list(matchPDict(pdict, subject))
         for (i in seq_len(length(plus_ends))) {
             ends <- plus_ends[[i]]
             if (length(ends) == 0)

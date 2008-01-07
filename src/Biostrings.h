@@ -215,6 +215,11 @@ SEXP _IBBuf_asLIST(
 		IBBuf *ibbuf
 );
 
+SEXP _IBBuf_toEnvir(
+		IBBuf *ibbuf,
+		SEXP envir
+);
+
 IBBuf _LIST_asIBBuf(
 		SEXP x
 );
@@ -678,7 +683,8 @@ SEXP match_ULdna_exact(
 		SEXP actree_base_codes,
 		SEXP s_xp,
 		SEXP s_offset,
-		SEXP s_length
+		SEXP s_length,
+		SEXP envir
 );
 
 

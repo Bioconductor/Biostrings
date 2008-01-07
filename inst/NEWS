@@ -3,6 +3,12 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o matchPDict() now returns a PDictMatches object (new) instead of a list of
+  integer vectors. The user can then convert this PDictMatches object into
+  a list of integer vectors with as.list (slow for now, needs to be improved)
+  or subset it with [[. Other methods will be added later in order to provide
+  the user with a wider choice of conversion/extraction tools.
+
 o Added the matchPDict() function for efficiently finding all occurences in
   a text (the subject) of any pattern from a set of patterns (the dictionary).
   See ?matchPDict for the details (especially the current limitations).
