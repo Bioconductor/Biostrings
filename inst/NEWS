@@ -6,14 +6,17 @@
 o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
   vignette (still a work-in-progress).
 
-o reverse(), complement() and reverseComplement() now preserve desc(x).
+o reverse(), complement() and reverseComplement() now preserve desc(x) when
+  applied to BStringViews object x.
 
 o matchPDict() now returns a PDictMatches object (new class) instead of a list
   of integer vectors. The user can then subset this PDictMatches object with [[,
-  convert it into a list of integer vectors with as.list or convert it into a
+  convert it into a list of integer vectors with as.list, or convert it into a
   set of views on the original subject with extractMatches(). Other functions
   can (and will) be added later in order to provide a wider choice of
-  efficient conversion/extraction tools. This is still a work-in-progress.
+  efficient conversion/extraction tools.
+  WARNING: This is still a work-in-progress. Function names and semantics are
+  not yet stabilized!
 
 o Added the matchPDict() function for efficiently finding all occurences in
   a text (the subject) of any pattern from a set of patterns (the dictionary).
