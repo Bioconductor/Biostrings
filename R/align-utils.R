@@ -48,3 +48,10 @@ setMethod("consmat", "BStringViews",
     }
 )
 
+setMethod("consmat", "BStringAlign",
+    function(x, freq=TRUE)
+    {
+        consmat(as.character(x), freq=freq)
+    }
+)
+

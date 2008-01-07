@@ -77,3 +77,15 @@ setMethod("show", "BStringAlign",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "as.character" method.
+###
+
+setMethod("as.character", "BStringAlign",
+    function(x)
+    {
+        c(align1=as.character(x@align1), align2=as.character(x@align2))
+    }
+)
+

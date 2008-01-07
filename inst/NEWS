@@ -3,6 +3,8 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added "as.character" and "consmat" methods for "BStringAlign" objects.
+
 o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
   vignette (still a work-in-progress).
 
