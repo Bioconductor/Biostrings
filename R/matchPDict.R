@@ -122,6 +122,10 @@ setMethod("as.list", "PDictMatchesWithoutIDs",
 ###       position in the input dictionary is given by the key (the keys are
 ###       strings representing positive integers).
 ###       
+###   width: temporary hack. In the future we will probably need to store the
+###       starts of the matches when 'pdict' is a PDict other than an
+###       ULdna_PDict object.
+###
 ###   pids: a character vector containing the unique pattern IDs.
 ###
 
@@ -130,6 +134,7 @@ setClass("PDictMatchesWithIDs",
     representation(
         length="integer",
         ends="environment",
+        width="integer",
         pids="character"
     )
 )
@@ -212,6 +217,26 @@ setMethod("as.list", "PDictMatchesWithIDs",
         ans
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "extractMatches" function.
+###
+
+extractMatches <- function(subject, pdictmatches)
+{
+    if (!is(subject, "BString"))
+        stop("'subject' must be a BString object")
+    if (!is(pdictmatches, "PDictMatches"))
+        stop("'pdictmatches' must be a PDictMatches object")
+    if (is.null(pids(pdictmatches)))
+        stop("extractMatches() works only with a \"PDictMatches\" object that has pattern IDs")
+    ends <- as.list(pdictmatches)
+    end <- unlist(ends, recursive=FALSE, use.names=FALSE)
+    ans <- views(subject, end - pdictmatches@width + 1, end)
+    desc(ans) <- rep(names(ends), sapply(ends, length))
+    ans
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -532,7 +557,7 @@ setMethod("initialize", "ULdna_PDict",
     if (is.null(pids))
         new("PDictMatchesWithoutIDs", ends=ends)
     else
-        new("PDictMatchesWithIDs", length=length(pdict), ends=ends, pids=pids)
+        new("PDictMatchesWithIDs", length=length(pdict), ends=ends, width=width(pdict), pids=pids)
 }
 
 ### With a big random dictionary, on george1:

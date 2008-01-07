@@ -3,11 +3,17 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-o matchPDict() now returns a PDictMatches object (new) instead of a list of
-  integer vectors. The user can then convert this PDictMatches object into
-  a list of integer vectors with as.list or subset it with [[. Other methods
+o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
+  vignette (still a work-in-progress).
+
+o reverse(), complement() and reverseComplement() now preserve desc(x).
+
+o matchPDict() now returns a PDictMatches object (new class) instead of a list
+  of integer vectors. The user can then subset this PDictMatches object with [[,
+  convert it into a list of integer vectors with as.list or convert it into a
+  set of views on the original subject with extractMatches(). Other functions
   can (and will) be added later in order to provide a wider choice of
-  efficient conversion/extraction tools.
+  efficient conversion/extraction tools. This is still a work-in-progress.
 
 o Added the matchPDict() function for efficiently finding all occurences in
   a text (the subject) of any pattern from a set of patterns (the dictionary).

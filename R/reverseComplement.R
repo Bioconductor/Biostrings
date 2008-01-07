@@ -24,7 +24,9 @@ setMethod("reverse", "BStringViews",
         ls <- subject@length
         start <- ls - x@views$end + 1
         end <- ls - x@views$start + 1
-        views(subject, start, end)
+        ans <- views(subject, start, end)
+        desc(ans) <- desc(x)
+        ans
     }
 )
 
@@ -63,7 +65,9 @@ setMethod("complement", "BStringViews",
     function(x, ...)
     {
         subject <- complement(x@subject)
-        views(subject, x@views$start, x@views$end)
+        ans <- views(subject, x@views$start, x@views$end)
+        desc(ans) <- desc(x)
+        ans
     }
 )
 
@@ -127,7 +131,9 @@ setMethod("reverseComplement", "BStringViews",
         ls <- subject@length
         start <- ls - x@views$end + 1
         end <- ls - x@views$start + 1
-        views(subject, start, end)
+        ans <- views(subject, start, end)
+        desc(ans) <- desc(x)
+        ans
     }
 )
 

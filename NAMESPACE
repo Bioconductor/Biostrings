@@ -61,6 +61,7 @@ export(
     subBString, subviews,
     transcribe, cDNA, dna2rna, rna2dna,
     matchDNAPattern,
+    extractMatches,
     alignScore
 )
 

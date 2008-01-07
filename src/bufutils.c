@@ -179,7 +179,7 @@ SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir)
 	IBuf *ibuf;
 	char symbuf[12];
 
-	for (i = 0, ibuf = ibbuf->ibufs; i < ibbuf->count; i++, ibuf++) {
+	for (i = 1, ibuf = ibbuf->ibufs; i <= ibbuf->count; i++, ibuf++) {
 		if (ibuf->count == 0)
 			continue;
 		snprintf(symbuf, sizeof(symbuf), "%d", i);
