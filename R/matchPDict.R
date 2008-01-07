@@ -103,14 +103,21 @@ setMethod("$", "PDictMatches", function(x, name) x[[name]])
 ###   > pm[["b"]]
 ###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
 ###   > as.list(pm)
+###   > as.list(pm, all.pids=TRUE)
 ### Note that in normal use cases the user NEVER needs to create a PDictMatches
 ### instance explicitely or to modify an existing one: PDictMatches instances
 ### are created by the matchPDict() function and are read-only objects.
 setMethod("as.list", "PDictMatches",
-    function(x, ...)
+    function(x, all.pids=FALSE, ...)
     {
-        ans <- lapply(seq_len(length(x)), function(name) x[[name]])
-        names(ans) <- pids(x)
+        if (is.null(pids(x)) && !missing(all.pids))
+            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+        if (is.null(pids(x)) || all.pids)
+            ii <- seq_len(length(x))
+        else
+            ii <- sort(as.integer(ls(x@ends, all.names=TRUE)))
+        ans <- lapply(ii, function(name) x[[name]])
+        names(ans) <- pids(x)[ii]
         ans
     }
 )
