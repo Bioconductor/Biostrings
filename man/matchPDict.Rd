@@ -13,16 +13,38 @@
 \alias{ULdna_PDict-class}
 
 % Generics and methods:
-\alias{length,PDictMatches-method}
-\alias{pids,PDictMatches-method}
+\alias{pids}
+\alias{$,PDictMatches-method}
+
+\alias{length,PDictMatchesWithoutIDs-method}
+\alias{pids,PDictMatchesWithoutIDs-method}
+\alias{show,PDictMatchesWithoutIDs-method}
+\alias{[[,PDictMatchesWithoutIDs-method}
+\alias{as.list,PDictMatchesWithoutIDs-method}
+
+\alias{length,PDictMatchesWithIDs-method}
+\alias{pids,PDictMatchesWithIDs-method}
+\alias{show,PDictMatchesWithIDs-method}
+\alias{[[,PDictMatchesWithIDs-method}
+\alias{as.list,PDictMatchesWithIDs-method}
+
+\alias{length,ACtree-method}
+\alias{show,ACtree-method}
+\alias{[,ACtree-method}
+\alias{as.matrix,ACtree-method}
+\alias{initialize,ACtree-method}
 
 \alias{initialize,ULdna_PDict-method}
 \alias{length,ULdna_PDict-method}
 \alias{width,ULdna_PDict-method}
 \alias{pids,ULdna_PDict-method}
+\alias{show,ULdna_PDict-method}
 
 \alias{matchPDict}
 \alias{matchPDict,BString-method}
+
+% Functions:
+\alias{extractMatches}
 
 
 \title{Searching a sequence for patterns stored in a dictionary}
@@ -39,6 +61,7 @@
 
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  extractMatches(subject, pdictmatches)
 }
 
 \arguments{
@@ -58,10 +81,15 @@
   \item{fixed}{
     Not supported yet.
   }
+  \item{pdictmatches}{
+    A PDictMatches object returned by a previous call to \code{matchPDict}.
+  }
 }
 
 \value{
-  A PDictMatches object containing the matches.
+  \code{matchPDict} returns a PDictMatches object.
+
+  \code{extractMatches} returns a \link{BStringViews} object.
 }
 
 \author{H. Pages}
