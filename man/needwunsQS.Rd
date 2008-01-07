@@ -33,7 +33,7 @@ print and alignScore methods.
 }
 \references{R. Durbin, S. Eddy, A. Krogh, G. Mitchison, 
 Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.  }
-\author{Vince Carey <stvjc@channing.harvard.edu>}
+\author{Vince Carey <stvjc@channing.harvard.edu> and H.Pages}
 %\note{  }
 
 
