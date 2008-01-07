@@ -8,7 +8,7 @@ exportClasses(
     "BStringViews", "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
-    "PDict", "ULdna_PDict"
+    "PDictMatches", "PDict", "ULdna_PDict"
 )
 
 exportMethods(
@@ -21,6 +21,7 @@ exportMethods(
     ## Accessors
     alphabet, letter,
     subject, start, end, width, desc, "desc<-",
+    pids,
     subpatterns, pattern,
     align1, align2, score,
 

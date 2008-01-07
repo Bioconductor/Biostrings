@@ -1,6 +1,119 @@
 ### =========================================================================
-### The matchPDict() generic & related functions
+### The matchPDict() generic & related classes and functions
 ### -------------------------------------------------------------------------
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PDictMatches" class.
+### 
+### A container for storing the matches returned by matchPDict().
+###
+### Slot description:
+###
+###   length: the length of the input dictionary.
+###
+###   ends: a key-value list (environment) where the values are integer
+###       vectors containing the ending positions of the input pattern.
+###       
+###   pids: either a character vector containing the unique pattern IDs if they
+###       were provided as part of the input dictionary, or NA.
+
+setClass("PDictMatches",
+    representation(
+        length="integer",
+        ends="environment",
+        pids="character"
+    )
+)
+
+setMethod("length", "PDictMatches", function(x) x@length)
+
+setGeneric("pids", function(x) standardGeneric("pids"))
+
+setMethod("pids", "PDictMatches", function(x) if (length(x@pids) == 1 && is.na(x@pids)) NULL else x@pids)
+
+setMethod("show", "PDictMatches",
+    function(object)
+    {
+        cat(length(object), "-pattern \"PDictMatches\" object", sep="")
+        if (is.null(pids(object)))
+            cat(" (no pattern IDs)")
+        cat("\n")
+    }
+)
+
+setMethod("[[", "PDictMatches",
+    function(x, i, j, ...)
+    {
+        # 'x' is guaranteed to be a "PDictMatches" object (if it's not, then
+        # the method dispatch algo would not have called this method in the
+        # first place), so nargs() is guaranteed to be >= 1
+        if (nargs() >= 3)
+            stop("too many subscripts")
+        subscripts <- list(...)
+        if (!missing(i))
+            subscripts$i <- i
+        if (!missing(j))
+            subscripts$j <- j
+        # At this point, 'subscripts' should be guaranteed
+        # to be of length <= 1
+        if (length(subscripts) == 0)
+            stop("no index specified")
+        name <- subscripts[[1]]
+        if (length(name) < 1)
+            stop("attempt to select less than one element")
+        if (length(name) > 1)
+            stop("attempt to select more than one element")
+        if (!(is.character(name) || is.numeric(name)) || is.na(name))
+            stop("wrong argument for subsetting an object of class ", sQuote(class(x)))
+        if (is.character(name)) {
+            ids <- pids(x)
+            if (is.null(ids))
+                stop(sQuote(class(x)), " object has no pattern IDs")
+            pos <- match(name, ids)
+            if (is.na(pos))
+                stop("pattern ID ", sQuote(name), " not found")
+        } else {
+            if (name < 1 || length(x) < name)
+                stop("subscript out of bounds")
+            pos <- as.integer(name)
+        }
+        ans <- x@ends[[as.character(pos)]]
+        if (is.null(ans))
+            ans <- integer(0)
+        ans
+    }
+)
+
+setMethod("$", "PDictMatches", function(x, name) x[[name]])
+
+### An example of a PDictMatches object of length 5 with no pattern IDs and
+### where only the 2nd pattern has matches:
+###   > ends <- new.env(hash=TRUE, parent=emptyenv())
+###   > ends[["2"]] <- c(199L, 402L)
+###   > pm <- new("PDictMatches", length=5L, ends=ends, pids=as.character(NA))
+###   > pm[[1]]
+###   > pm[[2]]
+###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
+###   > as.list(pm)
+### Now with pattern IDs:
+###   > pm@pids <- letters[seq_len(length(pm))]
+###   > pids(pm)
+###   > pm[["a"]]
+###   > pm[["b"]]
+###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
+###   > as.list(pm)
+### Note that in normal use cases the user NEVER needs to create a PDictMatches
+### instance explicitely or to modify an existing one: PDictMatches instances
+### are created by the matchPDict() function and are read-only objects.
+setMethod("as.list", "PDictMatches",
+    function(x, ...)
+    {
+        ans <- lapply(seq_len(length(x)), function(name) x[[name]])
+        names(ans) <- pids(x)
+        ans
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,11 +245,15 @@ setMethod("length", "ULdna_PDict", function(x) x@length)
 
 setMethod("width", "ULdna_PDict", function(x) x@width)
 
+setMethod("pids", "ULdna_PDict", function(x) names(x@dups))
+
 setMethod("show", "ULdna_PDict",
     function(object)
     {
-        cat(length(object), "-pattern uniform-length \"PDict\" object of width ",
-            width(object), "\n", sep="")
+        cat(length(object), "-pattern uniform-length \"PDict\" object of width ", width(object), sep="")
+        if (is.null(pids(object)))
+            cat(" (no pattern IDs)")
+        cat("\n")
     }
 )
 
@@ -246,28 +363,6 @@ setMethod("initialize", "ULdna_PDict",
             return(.ULdna_PDict.init_with_BStringViews(.Object, dict))
         stop("invalid 'dict' (type '?ULdna_PDict' for more information)")
     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDictMatches" class.
-### 
-### A container for storing the matches returned by matchPDict().
-###
-### WARNING: This class is a WORK IN PROGRESS, it's not exported and not used
-### yet! For now, matchPDict() just returns a list of integer vectors.
-###
-### Slot description:
-###
-###   subject: the searched string.
-###
-###   matches: a list of integer vectors.
-
-setClass("PDictMatches",
-    representation(
-        subject="BString",
-        matches="list"
-    )
 )
 
 
@@ -388,8 +483,7 @@ setClass("PDictMatches",
 ### The "matchPDict" generic and methods.
 ###
 
-setGeneric(
-    "matchPDict", signature="subject",
+setGeneric("matchPDict", signature="subject",
     function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
         standardGeneric("matchPDict")
 )
