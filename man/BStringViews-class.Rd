@@ -5,31 +5,17 @@
 \alias{class:BStringViews}
 \alias{BStringViews-class}
 
+% Constructor-like functions and generics:
+\alias{initialize,BStringViews-method}
+
 % Accesor methods:
 \alias{subject}
 \alias{subject,BStringViews-method}
-\alias{length,BStringViews-method}
-\alias{start}
-\alias{start,BStringViews-method}
-\alias{first}
-\alias{first,BStringViews-method}
-\alias{end}
-\alias{end,BStringViews-method}
-\alias{last}
-\alias{last,BStringViews-method}
-\alias{width}
-\alias{width,BStringViews-method}
 \alias{nchar,BStringViews-method}
-\alias{desc}
-\alias{desc,BStringViews-method}
-\alias{desc<-}
-\alias{desc<-,BStringViews-method}
 
-% Standard generic methods:
+% Other methods:
 
 \alias{show,BStringViews-method}
-\alias{[,BStringViews-method}
-\alias{[<-,BStringViews-method}
 \alias{[[,BStringViews-method}
 \alias{[[<-,BStringViews-method}
 
@@ -54,19 +40,23 @@
 \title{The BStringViews class}
 
 \description{
-  A container for a set of views on the same \link{BString} (or
-  derived) object.
+  The BStringViews class is the basic container for storing a set of views
+  (start/end locations) on the same sequence (\link{BString} or derived
+  object).
 }
 
 \details{
-  A BStringViews object contains a set of views on the same
-  \link{BString} (or derived) object called "the subject string"
+  A BStringViews object contains a set of views (start/end locations) on the
+  same \link{BString} (or derived) object called "the subject string"
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
+  A BStringViews object is in fact a particular case of a \link{Views} object
+  (the BStringViews class contains the \link{Views} class) so it can be
+  manipulated in the same way: see \code{\link{Views}} for more information.
   Note that two views can overlap and that a view can be "out of limits"
-  i.e. it starts before the first letter of the subject or/and ends
-  after its last letter. 
+  i.e. it can start before the first letter of the subject or/and end
+  after its last letter.
 }
 
 \section{Accesor methods}{
@@ -80,64 +70,21 @@
       (or derived) object.
     }
     \item{}{
-      \code{length(x)}:
-      The number of views in \code{x}.
-    }
-    \item{}{
-      \code{start(x)}:
-      The starting positions of the views.
-      An integer vector of the same length as \code{x}.
-    }
-    \item{}{
-      \code{first(x)}:
-      deprecated. Use 'start' instead.
-    }
-    \item{}{
-      \code{end(x)}:
-      The ending positions of the views.
-      An integer vector of the same length as \code{x}.
-    }
-    \item{}{
-      \code{last(x)}:
-      deprecated. Use 'end' instead.
-    }
-    \item{}{
-      \code{width(x)}:
-      The width of the views.
-      Equivalent to \code{end(x) - start(x) + 1L}.
-      A vector of positive integers of the same length as \code{x}.
-    }
-    \item{}{
       \code{nchar(x)}:
       A vector of non-negative integers containing the number
       of letters in each view.
       Values in \code{nchar(x)} coincide with values in \code{width(x)}
       except for "out of limits" views where they are lower.
     }
-    \item{}{
-      \code{desc(x)}:
-      \code{NULL} or a character vector of the same length as \code{x}
-      containing a short user provided description or comment for each view.
-      These are the only data in a BStringViews object that can safely
-      be changed by the user. All the other data are immutable!
-      As a general recommendation, the user should never try to modify
-      an object by accessing its slots directly.
-    }
   }
 }
 
-\section{Standard generic methods}{
+\section{Other methods}{
   In the code snippets below,
   \code{x}, \code{object}, \code{e1} and \code{e2} are BStringViews objects,
   and \code{i} can be a numeric or logical vector.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
-      Return a new BStringViews object made of the selected views.
-      \code{i} can be a numeric vector, a logical vector, \code{NULL} or missing.
-      The returned object has the same subject as \code{x}.
-    }
     \item{}{
       \code{x[[i]]}:
       Extract a view as a \link{BString} (or derived) object.
@@ -207,6 +154,7 @@
 \author{H. Pages}
 
 \seealso{
+  \link{Views-class},
   \link{BStringViews-constructors},
   \link{BString-class},
   \link{DNAString-class},
@@ -236,16 +184,6 @@
   desc(v4)[start(v4) < 1 | nchar(subject(v4)) < end(v4)] <- "out of limits"
   ## or just:
   desc(v4)[nchar(v4) < width(v4)] <- "out of limits"
-
-  ## Make a new BStringViews object by selecting some views only:
-  v4[4:2]               # 3 views
-  v4[-1]                # 3 views
-  v4[c(2,4)]            # 2 views
-  v4[width(v4) >= 5]    # 3 views
-  v4[is.na(desc(v4))]   # 2 views
-  v4[!is.na(desc(v4))]  # 2 views
-  v4[3]                 # 1 view
-  v4[FALSE]             # 0 view
 
   ## Two equivalent ways to extract a view as a BString (or derived) object:
   s2a <- v4[[2]]
