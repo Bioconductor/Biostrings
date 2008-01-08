@@ -13,6 +13,11 @@ setClass("PDictMatches", representation("VIRTUAL"))
 
 setGeneric("pids", function(x) standardGeneric("pids"))
 
+setGeneric("starts", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("starts"))
+setGeneric("ends", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("ends"))
+
 ### Return a single integer or string (not NA).
 setMethod("[[", "PDictMatches",
     function(x, i, j, ...)
@@ -112,10 +117,11 @@ setMethod("[[", "PDictMatchesWithoutIDs",
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
-###   > as.list(pm)
+###   > starts(pm)
+###   > ends(pm)
 ###
-setMethod("as.list", "PDictMatchesWithoutIDs",
-    function(x, all.pids=FALSE, ...)
+setMethod("ends", "PDictMatchesWithoutIDs",
+    function(x, all.pids=FALSE)
     {
         if (!missing(all.pids))
             warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
@@ -203,17 +209,19 @@ setMethod("[[", "PDictMatchesWithIDs",
 ###   > pm[["a"]]
 ###   > pm[["b"]]
 ###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
-###   > as.list(pm)
-###   > as.list(pm, all.pids=TRUE)
+###   > starts(pm)
+###   > starts(pm, all.pids=TRUE)
+###   > ends(pm)
+###   > ends(pm, all.pids=TRUE)
 ###
-setMethod("as.list", "PDictMatchesWithIDs",
-    function(x, all.pids=FALSE, ...)
+setMethod("ends", "PDictMatchesWithIDs",
+    function(x, all.pids=FALSE)
     {
         if (all.pids)
             ii <- seq_len(length(x))
         else
             ii <- sort(as.integer(ls(x@ends, all.names=TRUE)))
-        ans <- lapply(ii, function(name) x[[name]])
+        ans <- lapply(ii, function(i) end(x[[i]]))
         names(ans) <- pids(x)[ii]
         ans
     }
@@ -232,7 +240,7 @@ extractAllMatches <- function(subject, pdictmatches)
         stop("'pdictmatches' must be a PDictMatches object")
     if (is.null(pids(pdictmatches)))
         stop("extractAllMatches() works only with a \"PDictMatches\" object that has pattern IDs")
-    ends <- as.list(pdictmatches)
+    ends <- ends(pdictmatches)
     end <- unlist(ends, recursive=FALSE, use.names=FALSE)
     ans <- views(subject, end - pdictmatches@width + 1L, end)
     desc(ans) <- rep(names(ends), sapply(ends, length))
@@ -297,7 +305,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks0 # no failure link is set yet
-###   > mends <- as.list(matchPDict(pdict, DNAString("acaagagagt")))
+###   > mends <- ends(matchPDict(pdict, DNAString("acaagagagt")))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set
 ### As you can see the 'pdict' object "learns" from being used!
@@ -505,7 +513,7 @@ setMethod("initialize", "ULdna_PDict",
 ###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
-###   > system.time(pid2matchends <- as.list(matchPDict(pdict, chr1)))
+###   > system.time(pid2matchends <- ends(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
 ###   > nmatches <- sapply(pid2matchends, length)
@@ -576,7 +584,7 @@ setMethod("initialize", "ULdna_PDict",
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
 ###      > chr1 <- DNAString(Hsapiens$chr1)
-###      > system.time(pid2matchends <- as.list(matchPDict(pdict, chr1)))
+###      > system.time(pid2matchends <- ends(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
 ###      > nmatches <- sapply(pid2matchends, length)

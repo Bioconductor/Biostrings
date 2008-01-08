@@ -20,13 +20,15 @@
 \alias{pids,PDictMatchesWithoutIDs-method}
 \alias{show,PDictMatchesWithoutIDs-method}
 \alias{[[,PDictMatchesWithoutIDs-method}
-\alias{as.list,PDictMatchesWithoutIDs-method}
+\alias{starts,PDictMatchesWithoutIDs-method}
+\alias{ends,PDictMatchesWithoutIDs-method}
 
 \alias{length,PDictMatchesWithIDs-method}
 \alias{pids,PDictMatchesWithIDs-method}
 \alias{show,PDictMatchesWithIDs-method}
 \alias{[[,PDictMatchesWithIDs-method}
-\alias{as.list,PDictMatchesWithIDs-method}
+\alias{starts,PDictMatchesWithIDs-method}
+\alias{ends,PDictMatchesWithIDs-method}
 
 \alias{length,ACtree-method}
 \alias{show,ACtree-method}
@@ -61,6 +63,8 @@
 
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  starts(x, all.pids=FALSE)
+  ends(x, all.pids=FALSE)
   extractAllMatches(subject, pdictmatches)
 }
 
@@ -81,6 +85,12 @@
   \item{fixed}{
     Not supported yet.
   }
+  \item{x}{
+    A PDictMatches object returned by a previous call to \code{matchPDict}.
+  }
+  \item{all.pids}{
+    \code{TRUE} or \code{FALSE}.
+  }
   \item{pdictmatches}{
     A PDictMatches object returned by a previous call to \code{matchPDict}.
   }
@@ -88,6 +98,8 @@
 
 \value{
   \code{matchPDict} returns a PDictMatches object.
+
+  \code{starts} and \code{ends} return a list of integer vectors.
 
   \code{extractAllMatches} returns a \link{BStringViews} object.
 }
@@ -117,7 +129,7 @@
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]        # Load chromosome 3R
   chr3R
-  mends <- as.list(matchPDict(pdict, chr3R)) # Search...
+  mends <- ends(matchPDict(pdict, chr3R)) # Search...
 
   ## Looking at the results
   length(mends)                         # Same as the input dictionary.
@@ -152,7 +164,7 @@
         pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
-        matchtime=system.time(mends <- as.list(matchPDict(pdict, subject)))[["elapsed"]],
+        matchtime=system.time(mends <- ends(matchPDict(pdict, subject)))[["elapsed"]],
         nmatches=sum(sapply(mends, length))
       )
     }
