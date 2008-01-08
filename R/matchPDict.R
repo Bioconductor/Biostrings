@@ -13,6 +13,43 @@ setClass("PDictMatches", representation("VIRTUAL"))
 
 setGeneric("pids", function(x) standardGeneric("pids"))
 
+### Return a single integer or string (not NA).
+setMethod("[[", "PDictMatches",
+    function(x, i, j, ...)
+    {
+        # 'x' is guaranteed to be a "PDictMatches" object (if it's not, then
+        # the method dispatch algo would not have called this method in the
+        # first place), so nargs() is guaranteed to be >= 1
+        if (nargs() >= 3)
+            stop("too many subscripts")
+        subscripts <- list(...)
+        if (!missing(i))
+            subscripts$i <- i
+        if (!missing(j))
+            subscripts$j <- j
+        # At this point, 'subscripts' should be guaranteed
+        # to be of length <= 1
+        if (length(subscripts) == 0)
+            stop("no index specified")
+        key <- subscripts[[1]]
+        if (!is.character(key) && !is.numeric(key))
+            stop("wrong argument for subsetting an object of class \"PDictMatches\"")
+        if (length(key) < 1)
+            stop("attempt to select less than one element")
+        if (length(key) > 1)
+            stop("attempt to select more than one element")
+        if (is.na(key))
+            stop("subsetting an object of class \"PDictMatches\" with NA is not supported")
+        if (is.numeric(key)) {
+            if (!is.integer(key))
+                key <- as.integer(key)
+            if (key < 1 || length(x) < key)
+                stop("subscript out of bounds")
+        }
+        key
+    }
+)
+
 setMethod("$", "PDictMatches", function(x, name) x[[name]])
 
 
@@ -31,11 +68,18 @@ setMethod("$", "PDictMatches", function(x, name) x[[name]])
 ###
 ###   ends: a list of integer vectors.
 ###
+###   width: temporary hack. In the future we will probably want to store the
+###       starts of the matches when 'pdict' is a PDict other than an
+###       ULdna_PDict object. Another solution would be to keep the width slot
+###       and to make it the same length as the ends slot (it's currently of
+###       length 1 only).
+###
 
 setClass("PDictMatchesWithoutIDs",
     contains="PDictMatches",
     representation(
-        ends="list"
+        ends="list",
+        width="integer"
     )
 )
 
@@ -53,32 +97,10 @@ setMethod("show", "PDictMatchesWithoutIDs",
 setMethod("[[", "PDictMatchesWithoutIDs",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "PDictMatchesWithoutIDs" object (if it's not, then
-        # the method dispatch algo would not have called this method in the
-        # first place), so nargs() is guaranteed to be >= 1
-        if (nargs() >= 3)
-            stop("too many subscripts")
-        subscripts <- list(...)
-        if (!missing(i))
-            subscripts$i <- i
-        if (!missing(j))
-            subscripts$j <- j
-        # At this point, 'subscripts' should be guaranteed
-        # to be of length <= 1
-        if (length(subscripts) == 0)
-            stop("no index specified")
-        name <- subscripts[[1]]
-        if (length(name) < 1)
-            stop("attempt to select less than one element")
-        if (length(name) > 1)
-            stop("attempt to select more than one element")
-        if (!(is.character(name) || is.numeric(name)) || is.na(name))
-            stop("wrong argument for subsetting an object of class \"PDictMatches\"")
-        if (is.character(name))
+        key <- callNextMethod()
+        if (is.character(key))
             stop("\"PDictMatches\" object has no pattern IDs")
-        if (name < 1 || length(x) < name)
-            stop("subscript out of bounds")
-        x@ends[[name]]
+        new("Views", start=x@ends[[key]]-x@width+1L, end=x@ends[[key]], check.data=FALSE)
     }
 )
 
@@ -86,7 +108,7 @@ setMethod("[[", "PDictMatchesWithoutIDs",
 ### 2nd pattern has matches:
 ###   > ends <- rep(list(integer(0)), 5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > pm <- new("PDictMatchesWithoutIDs", ends=ends)
+###   > pm <- new("PDictMatchesWithoutIDs", ends=ends, width=10L)
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
@@ -122,9 +144,11 @@ setMethod("as.list", "PDictMatchesWithoutIDs",
 ###       position in the input dictionary is given by the key (the keys are
 ###       strings representing positive integers).
 ###       
-###   width: temporary hack. In the future we will probably need to store the
+###   width: temporary hack. In the future we will probably want to store the
 ###       starts of the matches when 'pdict' is a PDict other than an
-###       ULdna_PDict object.
+###       ULdna_PDict object. Another solution would be to keep the width slot
+###       and to make it the same length as the ends slot (it's currently of
+###       length 1 only).
 ###
 ###   pids: a character vector containing the unique pattern IDs.
 ###
@@ -153,40 +177,17 @@ setMethod("show", "PDictMatchesWithIDs",
 setMethod("[[", "PDictMatchesWithIDs",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "PDictMatchesWithIDs" object (if it's not, then
-        # the method dispatch algo would not have called this method in the
-        # first place), so nargs() is guaranteed to be >= 1
-        if (nargs() >= 3)
-            stop("too many subscripts")
-        subscripts <- list(...)
-        if (!missing(i))
-            subscripts$i <- i
-        if (!missing(j))
-            subscripts$j <- j
-        # At this point, 'subscripts' should be guaranteed
-        # to be of length <= 1
-        if (length(subscripts) == 0)
-            stop("no index specified")
-        name <- subscripts[[1]]
-        if (length(name) < 1)
-            stop("attempt to select less than one element")
-        if (length(name) > 1)
-            stop("attempt to select more than one element")
-        if (!(is.character(name) || is.numeric(name)) || is.na(name))
-            stop("wrong argument for subsetting an object of class \"PDictMatches\"")
-        if (is.character(name)) {
-            pos <- match(name, pids(x))
+        key <- callNextMethod()
+        if (is.character(key)) {
+            pos <- match(key, pids(x))
             if (is.na(pos))
-                stop("pattern ID ", sQuote(name), " not found")
-        } else {
-            if (name < 1 || length(x) < name)
-                stop("subscript out of bounds")
-            pos <- as.integer(name)
-        }
-        ans <- x@ends[[as.character(pos)]]
-        if (is.null(ans))
-            ans <- integer(0)
-        ans
+                stop("pattern ID \"", key, "\" not found")
+            key <- pos
+        } 
+        end <- x@ends[[as.character(key)]]
+        if (is.null(end))
+            end <- integer(0)
+        new("Views", start=end-x@width+1L, end=end, check.data=FALSE)
     }
 )
 
@@ -194,7 +195,7 @@ setMethod("[[", "PDictMatchesWithIDs",
 ### 2nd pattern has matches:
 ###   > ends <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends[["2"]] <- c(199L, 402L)
-###   > pm <- new("PDictMatchesWithIDs", length=5L, ends=ends, pids=letters[1:5])
+###   > pm <- new("PDictMatchesWithIDs", length=5L, ends=ends, width=10L, pids=letters[1:5])
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
@@ -220,17 +221,17 @@ setMethod("as.list", "PDictMatchesWithIDs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "extractMatches" function.
+### The "extractAllMatches" function.
 ###
 
-extractMatches <- function(subject, pdictmatches)
+extractAllMatches <- function(subject, pdictmatches)
 {
     if (!is(subject, "BString"))
         stop("'subject' must be a BString object")
     if (!is(pdictmatches, "PDictMatches"))
         stop("'pdictmatches' must be a PDictMatches object")
     if (is.null(pids(pdictmatches)))
-        stop("extractMatches() works only with a \"PDictMatches\" object that has pattern IDs")
+        stop("extractAllMatches() works only with a \"PDictMatches\" object that has pattern IDs")
     ends <- as.list(pdictmatches)
     end <- unlist(ends, recursive=FALSE, use.names=FALSE)
     ans <- views(subject, end - pdictmatches@width + 1, end)
@@ -555,7 +556,7 @@ setMethod("initialize", "ULdna_PDict",
           envir,
           PACKAGE="Biostrings")
     if (is.null(pids))
-        new("PDictMatchesWithoutIDs", ends=ends)
+        new("PDictMatchesWithoutIDs", ends=ends, width=width(pdict))
     else
         new("PDictMatchesWithIDs", length=length(pdict), ends=ends, width=width(pdict), pids=pids)
 }

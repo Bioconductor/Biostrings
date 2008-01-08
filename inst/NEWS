@@ -14,8 +14,8 @@ o reverse(), complement() and reverseComplement() now preserve desc(x) when
 o matchPDict() now returns a PDictMatches object (new class) instead of a list
   of integer vectors. The user can then subset this PDictMatches object with [[,
   convert it into a list of integer vectors with as.list, or convert it into a
-  set of views on the original subject with extractMatches(). Other functions
-  can (and will) be added later in order to provide a wider choice of
+  set of views on the original subject with extractAllMatches(). Other
+  functions can (and will) be added later in order to provide a wider choice of
   efficient conversion/extraction tools.
   WARNING: This is still a work-in-progress. Function names and semantics are
   not yet stabilized!

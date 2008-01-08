@@ -44,7 +44,7 @@
 \alias{matchPDict,BString-method}
 
 % Functions:
-\alias{extractMatches}
+\alias{extractAllMatches}
 
 
 \title{Searching a sequence for patterns stored in a dictionary}
@@ -61,7 +61,7 @@
 
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
-  extractMatches(subject, pdictmatches)
+  extractAllMatches(subject, pdictmatches)
 }
 
 \arguments{
@@ -89,7 +89,7 @@
 \value{
   \code{matchPDict} returns a PDictMatches object.
 
-  \code{extractMatches} returns a \link{BStringViews} object.
+  \code{extractAllMatches} returns a \link{BStringViews} object.
 }
 
 \author{H. Pages}
