@@ -18,7 +18,7 @@ o matchPDict() now returns a PDictMatches object (new class) instead of a list
   or convert it into a set of views on the original subject with
   extractAllMatches().
   Other functions can be added later in order to provide a wider choice of
-  efficient conversion/extraction tools if necessary.
+  extraction/conversion tools if necessary.
   WARNING: This is still a work-in-progress. Function names and semantics are
   not yet stabilized!
 
