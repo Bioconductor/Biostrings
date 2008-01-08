@@ -14,6 +14,9 @@
 
 % Generics and methods:
 \alias{pids}
+\alias{p2starts}
+\alias{p2ends}
+\alias{p2nmatch}
 \alias{$,PDictMatches-method}
 
 \alias{length,PDictMatchesWithoutIDs-method}
