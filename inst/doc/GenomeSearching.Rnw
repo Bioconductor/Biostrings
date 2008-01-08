@@ -559,7 +559,7 @@ ULce2dict0 <- subviews(ce2dict0, 1, 15)
 Now we can run this 2nd analysis and put the results in the
 \Robject{"ULce2dict0_ana2.txt"} file:
 <<e3>>=
-runAnalysis2(ULce2dict0, outfile="ce2dict0_ana2.txt")
+runAnalysis2(ULce2dict0, outfile="ULce2dict0_ana2.txt")
 @
 
 \end{document}

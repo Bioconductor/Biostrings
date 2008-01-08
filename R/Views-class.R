@@ -107,7 +107,7 @@ setReplaceMethod("desc", "Views",
 
 setMethod("show", "Views",
     function(object)
-        show(data.frame(object@views, width=width(x), check.names=FALSE)))
+        show(data.frame(object@views, width=width(object), check.names=FALSE)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

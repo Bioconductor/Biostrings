@@ -234,7 +234,7 @@ extractAllMatches <- function(subject, pdictmatches)
         stop("extractAllMatches() works only with a \"PDictMatches\" object that has pattern IDs")
     ends <- as.list(pdictmatches)
     end <- unlist(ends, recursive=FALSE, use.names=FALSE)
-    ans <- views(subject, end - pdictmatches@width + 1, end)
+    ans <- views(subject, end - pdictmatches@width + 1L, end)
     desc(ans) <- rep(names(ends), sapply(ends, length))
     ans
 }
