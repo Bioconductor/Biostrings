@@ -312,7 +312,7 @@ debug_shiftor <- function()
     if (algo == "gregexpr" || algo == "gregexpr2")
         return(matches)
     new("BStringViews", subject=subject,
-                        views=data.frame(start=matches, end=matches+nchar(pattern)-1L))
+        start=matches, end=matches+nchar(pattern)-1L, check.views=FALSE)
 }
 
 
@@ -364,7 +364,7 @@ setMethod("matchPattern", "BStringViews",
             ans_end <- c(ans_end, offset + end(pm))
         }
         new("BStringViews", subject=subject(subject),
-            views=data.frame(start=ans_start, end=ans_end))
+            start=ans_start, end=ans_end, check.views=FALSE)
     }
 )
 

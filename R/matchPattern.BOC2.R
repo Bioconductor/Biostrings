@@ -153,7 +153,7 @@ plotBOC2 <- function(x, main)
     if (count.only)
         return(matches)
     new("BStringViews", subject=boc_subject@subject,
-                        views=data.frame(start=matches, end=matches+nchar(pattern)-1L))
+        start=matches, end=matches+nchar(pattern)-1L, check.views=FALSE)
 }
 
 ### Dispatch on 'subject' (see signature of generic).

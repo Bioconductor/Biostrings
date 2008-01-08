@@ -5,7 +5,7 @@ useDynLib(Biostrings)
 
 exportClasses(
     "BString", "DNAString", "RNAString", "AAString",
-    "BStringViews", "BStringPartialMatches",
+    "Views", "BStringViews", "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
     "PDictMatches", "PDictMatchesWithoutIDs", "PDictMatchesWithIDs",
@@ -17,11 +17,11 @@ exportMethods(
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
     as.character, toString, nchar, toComplex, as.complex,
-    as.matrix, as.list,
+    as.data.frame, as.matrix, as.list,
 
     ## Accessors
     alphabet, letter,
-    subject, start, end, width, desc, "desc<-",
+    start, end, width, desc, "desc<-", subject,
     pids,
     subpatterns, pattern,
     align1, align2, score,

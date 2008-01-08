@@ -35,7 +35,8 @@ debug_find_palindromes <- function()
                    subject@data@xp, subject@offset, subject@length,
                    min.armlength, max.ngaps, L2R_lkup,
                    PACKAGE="Biostrings")
-    new("BStringViews", subject=subject, views=data.frame(start=views$start, end=views$end))
+    new("BStringViews", subject=subject,
+        start=views$start, end=views$end, check.views=FALSE)
 }
 
 setGeneric("findPalindromes", signature="subject",
@@ -79,7 +80,7 @@ setMethod("findPalindromes", "BStringViews",
             ans_end <- c(ans_end, offset + end(pals))
         }
         new("BStringViews", subject=subject(subject),
-            views=data.frame(start=ans_start, end=ans_end))
+            start=ans_start, end=ans_end, check.views=FALSE)
     }
 )
 
@@ -136,7 +137,8 @@ setMethod("palindromeLeftArm", "BStringViews",
     {
         arm_start <- start(x)
         arm_end <- arm_start + palindromeArmLength(x, anti=anti) - 1L
-        new("BStringViews", subject=subject(x), views=data.frame(start=arm_start, end=arm_end))
+        new("BStringViews", subject=subject(x),
+            start=arm_start, end=arm_end, check.views=FALSE)
     }
 )
 
@@ -161,7 +163,8 @@ setMethod("palindromeRightArm", "BStringViews",
     {
         arm_end <- end(x)
         arm_start <- arm_end - palindromeArmLength(x, anti=anti) + 1L
-        new("BStringViews", subject=subject(x), views=data.frame(start=arm_start, end=arm_end))
+        new("BStringViews", subject=subject(x),
+            start=arm_start, end=arm_end, check.views=FALSE)
     }
 )
 

@@ -168,7 +168,7 @@ setMethod("matchPattern", "BOC_SubjectString",
         else
             matches <- .match.BOC.fuzzy(pattern, subject, mismatch, count.only=FALSE)
         new("BStringViews", subject=subject@subject,
-                            views=data.frame(start=matches, end=matches+pattern_length-1L))
+            start=matches, end=matches+pattern_length-1L, check.views=FALSE)
     }
 )
 

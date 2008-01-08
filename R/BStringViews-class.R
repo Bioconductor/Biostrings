@@ -1,50 +1,53 @@
 ### =========================================================================
 ### The BStringViews class
 ### -------------------------------------------------------------------------
-### A BStringViews object contains a set of views
-### on the same BString object, the subject string.
+###
+### The BStringViews class is the basic container for storing a set of views
+### (start/end locations) on the same BString object, called the "subject"
+### string.
+###
 
 setClass("BStringViews",
+    contains="Views",
     representation(
-        subject="BString",
-        ## The 'views' slot must be a "valid views data frame" i.e. a data
-        ## frame with a "start" and an "end" column, both columns being integer
-        ## vectors (eventually of length 0) with no NAs and such that
-        ## all(start <= end).
-        views="data.frame"
+        subject="BString"
     )
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods
+### Initialization.
+###
+
+setMethod("initialize", "BStringViews",
+    function(.Object, subject, start=integer(0), end=integer(0), desc=NULL, check.views=TRUE)
+    {
+        if (!is(subject, "BString")) {
+            if (!is.character(subject))
+                stop("invalid 'subject'")
+            if (length(subject) != 1)
+                stop("when a character vector, 'subject' must be of length 1 (single string)")
+            if (subject %in% c(NA, ""))
+                stop("invalid 'subject'")
+            subject <- BString(subject)
+        }
+        .Object@subject <- subject
+        callNextMethod(.Object, start=start, end=end, desc=desc, check.data=check.views)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessor methods.
+###
 
 setGeneric("subject", function(x) standardGeneric("subject"))
 setMethod("subject", "BStringViews", function(x) x@subject)
 
-setMethod("length", "BStringViews", function(x) nrow(x@views))
-
-### The 'substring' function uses 'first' and 'last'.
-### The 'substr' function uses 'start' and 'stop'.
-### But we prefer to use 'start' and 'end'. That's all!
-setMethod("start", "BStringViews", function(x) x@views$start)
-
-setGeneric("first", function(x) standardGeneric("first"))
-setMethod("first", "BStringViews", function(x) {.Deprecated("start"); start(x)})
-
-setMethod("end", "BStringViews", function(x) x@views$end)
-
-setGeneric("last", function(x) standardGeneric("last"))
-setMethod("last", "BStringViews", function(x) {.Deprecated("end"); end(x)})
-
-### We choose to call this method 'width' and not 'length' because
-### we want to define the length of a BStringViews object as the number
-### of views contained in it.
-### Another option was to call it 'nchar' but the width of a view is not
-### necesarily equal to the number of letters that it contains (this happens
-### when the view is out of limits).
-setGeneric("width", function(x) standardGeneric("width"))
-setMethod("width", "BStringViews", function(x) end(x) - start(x) + 1L)
+### The "views" generic and methods are commented for now because they conflict with
+### the views() function currently defined in the BStringViews-constructors.R file.
+#setGeneric("views", function(x) standardGeneric("views"))
+#setMethod("views", "BStringViews", function(x) x@views)
 
 setMethod("nchar", "BStringViews",
     function(x, type = "chars", allowNA = FALSE)
@@ -59,30 +62,9 @@ setMethod("nchar", "BStringViews",
     }
 )
 
-setGeneric("desc", function(x) standardGeneric("desc"))
-setMethod("desc", "BStringViews", function(x) x@views$desc)
-
-setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
-setReplaceMethod("desc", "BStringViews",
-    function(x, value)
-    {
-        if (is.null(value)) {
-            x@views$desc <- NULL
-        } else if (is.character(value)) {
-            if (length(value) > length(x))
-                stop("new 'desc' vector has more elements than the number of views")
-            length(value) <- length(x)
-            x@views$desc <- value
-        } else {
-            stop("'value' must be NULL or a character vector")
-        }
-        x
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method
+### The "show" method.
 ###
 
 ### The 2 helper functions below convert a given view on a BString object
@@ -203,38 +185,8 @@ setMethod("show", "BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting
+### Subsetting.
 ###
-
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", "BStringViews",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        lx <- length(x)
-        if (is.numeric(i)) {
-            if (any(i < -lx) || any(i > lx))
-                stop("subscript out of bounds")
-        } else if (is.logical(i)) {
-            if (length(i) > lx)
-                stop("subscript out of bounds")
-        } else if (!is.null(i)) {
-            stop("invalid subscript type")
-        }
-        x@views <- x@views[i, , drop=FALSE]
-        x
-    }
-)
-
-setReplaceMethod("[", "BStringViews",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a \"BStringViews\" object")
-    }
-)
 
 ### Extract the i-th views of a BStringViews object as a BString object.
 ### Return a BString object of the same class as the subject of x.
@@ -272,7 +224,7 @@ setMethod("[[", "BStringViews",
 setReplaceMethod("[[", "BStringViews",
     function(x, i, j,..., value)
     {
-        stop("attempt to modify the value of a \"BStringViews\" object")
+        stop("attempt to modify the value of a ", sQuote(class(x)), " object")
     }
 )
 
@@ -474,7 +426,7 @@ setMethod("as.matrix", "BStringViews",
          || !(mode %in% c("integer", "character")))
             stop("'mode' must be either \"integer\" or \"character\"")
         if (mode == "integer")
-            return(as.matrix(x@views[ , c("start", "end")]))
+            return(callNextMethod())
         nrow <- length(x)
         if (nrow == 0)
             stop("'x' must contain at least 1 view")
@@ -509,3 +461,4 @@ setMethod("toString", "BStringViews",
         toString(as.character(x), ...)
     }
 )
+
