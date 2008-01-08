@@ -150,14 +150,14 @@
   starts[[8220]]                      # Starts of the 8220th pattern.
   ends <- p2ends(matches)             # Get the ends of the matches.
   ends[[8220]]                        # Ends of the 8220th pattern.
-  nmatches <- p2nmatch(matches)       # Get the number of matches per pattern.
-  nmatches[[8220]]
+  nmatch <- p2nmatch(matches)         # Get the number of matches per pattern.
+  nmatch[[8220]]
   matches[[8220]]                     # Get the matches for the 8220th pattern.
-  sum(nmatches)                       # Total number of matches.
-  table(nmatches)
-  i0 <- which(nmatches == max(nmatches))
+  sum(nmatch)                         # Total number of matches.
+  table(nmatch)
+  i0 <- which(nmatch == max(nmatch))
   dict0[i0]                           # The pattern with most occurences.
-  nmatches[i0]                        # Its matches as a Views object.
+  matches[[i0]]                       # Its matches as a Views object.
   views(chr3R, starts[[i0]], ends[[i0]]) # And as a BStringViews object.
 
   ## NOT RUN
@@ -170,7 +170,7 @@
     ##   o nnodes: nb of nodes in the resulting Aho-Corasick tree
     ##   o nupatt: nb of unique truncated input sequences
     ##   o matchtime: time (in sec.) needed to find all the matches
-    ##   o nmatches: nb of matches found
+    ##   o sum_nmatch: total number of matches
     getPDictStats <- function(dict0, width, subject)
     {
       dict <- substr(dict0, 1, width)
@@ -179,8 +179,8 @@
         pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
-        matchtime=system.time(ends <- p2ends(matchPDict(pdict, subject)))[["elapsed"]],
-        nmatches=sum(sapply(ends, length))
+        matchtime=system.time(matches <- matchPDict(pdict, subject))[["elapsed"]],
+        sum_nmatch=sum(p2nmatch(matches))
       )
     }
     stats <- lapply(6:25, function(width) getPDictStats(dict0, width, chr3R))
