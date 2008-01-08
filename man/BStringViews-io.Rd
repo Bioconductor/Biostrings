@@ -19,6 +19,7 @@
   read.BStringViews(file, format, subjectClass, collapse="")
   write.BStringViews(x, file="", format, width=80)
 
+  ## Some related utility functions
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
   CharacterToFASTArecords(x)
   FASTArecordsToBStringViews(FASTArecs, subjectClass, collapse="")

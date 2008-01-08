@@ -22,7 +22,7 @@ exportMethods(
     ## Accessors
     alphabet, letter,
     start, end, width, desc, "desc<-", subject,
-    pids, starts, ends,
+    pids, p2starts, p2ends, p2nmatch,
     subpatterns, pattern,
     align1, align2, score,
 

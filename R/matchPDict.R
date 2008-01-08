@@ -13,10 +13,37 @@ setClass("PDictMatches", representation("VIRTUAL"))
 
 setGeneric("pids", function(x) standardGeneric("pids"))
 
-setGeneric("starts", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("starts"))
-setGeneric("ends", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("ends"))
+
+setGeneric("p2starts", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("p2starts"))
+
+setMethod("p2starts", "PDictMatches",
+    function(x, all.pids=FALSE)
+    {
+        if (!is.null(pids(x)))
+            return(lapply(p2ends(x, all.pids=all.pids), function(end) { end - x@width + 1L }))
+        if (!missing(all.pids))
+            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+        lapply(p2ends(x), function(end) { end - x@width + 1L })
+    }
+)
+
+setGeneric("p2ends", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("p2ends"))
+
+setGeneric("p2nmatch", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("p2nmatch"))
+
+setMethod("p2nmatch", "PDictMatches",
+    function(x, all.pids=FALSE)
+    {
+        if (!is.null(pids(x)))
+            return(sapply(p2ends(x, all.pids=all.pids), length))
+        if (!missing(all.pids))
+            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+        sapply(p2ends(x), length)
+    }
+)
 
 ### Return a single integer or string (not NA).
 setMethod("[[", "PDictMatches",
@@ -117,10 +144,11 @@ setMethod("[[", "PDictMatchesWithoutIDs",
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
-###   > starts(pm)
-###   > ends(pm)
+###   > p2starts(pm)
+###   > p2ends(pm)
+###   > p2nmatch(pm)
 ###
-setMethod("ends", "PDictMatchesWithoutIDs",
+setMethod("p2ends", "PDictMatchesWithoutIDs",
     function(x, all.pids=FALSE)
     {
         if (!missing(all.pids))
@@ -209,12 +237,14 @@ setMethod("[[", "PDictMatchesWithIDs",
 ###   > pm[["a"]]
 ###   > pm[["b"]]
 ###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
-###   > starts(pm)
-###   > starts(pm, all.pids=TRUE)
-###   > ends(pm)
-###   > ends(pm, all.pids=TRUE)
+###   > p2starts(pm)
+###   > p2starts(pm, all.pids=TRUE)
+###   > p2ends(pm)
+###   > p2ends(pm, all.pids=TRUE)
+###   > p2nmatch(pm)
+###   > p2nmatch(pm, all.pids=TRUE)
 ###
-setMethod("ends", "PDictMatchesWithIDs",
+setMethod("p2ends", "PDictMatchesWithIDs",
     function(x, all.pids=FALSE)
     {
         if (all.pids)
@@ -240,7 +270,7 @@ extractAllMatches <- function(subject, pdictmatches)
         stop("'pdictmatches' must be a PDictMatches object")
     if (is.null(pids(pdictmatches)))
         stop("extractAllMatches() works only with a \"PDictMatches\" object that has pattern IDs")
-    ends <- ends(pdictmatches)
+    ends <- p2ends(pdictmatches)
     end <- unlist(ends, recursive=FALSE, use.names=FALSE)
     ans <- views(subject, end - pdictmatches@width + 1L, end)
     desc(ans) <- rep(names(ends), sapply(ends, length))
@@ -305,7 +335,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks0 # no failure link is set yet
-###   > mends <- ends(matchPDict(pdict, DNAString("acaagagagt")))
+###   > ends <- p2ends(matchPDict(pdict, DNAString("acaagagagt")))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set
 ### As you can see the 'pdict' object "learns" from being used!
@@ -513,21 +543,21 @@ setMethod("initialize", "ULdna_PDict",
 ###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
-###   > system.time(pid2matchends <- ends(matchPDict(pdict, chr1)))
+###   > system.time(ends <- p2ends(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
-###   > nmatches <- sapply(pid2matchends, length)
+###   > nmatches <- sapply(ends, length)
 ###   > table(nmatches)
 ###   > id0 <- which(nmatches == max(nmatches))
 ###   > p0 <- DNAString(dict[id0])
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subBString(chr1, pid2matchends[[id0]][1]-24, pid2matchends[[id0]][1]) == p0
+###   > subBString(chr1, ends[[id0]][1]-24, ends[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
-###   > pidOK <- sapply(seq_len(length(pid2matchends)),
-###                     function(pid) identical(pid2matchends[[pid]],
+###   > pidOK <- sapply(seq_len(length(ends)),
+###                     function(pid) identical(ends[[pid]],
 ###                                             end(matchPattern(DNAString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
@@ -584,10 +614,10 @@ setMethod("initialize", "ULdna_PDict",
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
 ###      > chr1 <- DNAString(Hsapiens$chr1)
-###      > system.time(pid2matchends <- ends(matchPDict(pdict, chr1)))
+###      > system.time(ends <- p2ends(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
-###      > nmatches <- sapply(pid2matchends, length)
+###      > nmatches <- sapply(ends, length)
 ###      > sum(nmatches) # most likely no match were found
 ###
 ### Results obtained with some random dictionaries on george1:

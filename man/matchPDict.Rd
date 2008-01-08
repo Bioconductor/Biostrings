@@ -20,15 +20,17 @@
 \alias{pids,PDictMatchesWithoutIDs-method}
 \alias{show,PDictMatchesWithoutIDs-method}
 \alias{[[,PDictMatchesWithoutIDs-method}
-\alias{starts,PDictMatchesWithoutIDs-method}
-\alias{ends,PDictMatchesWithoutIDs-method}
+\alias{p2starts,PDictMatchesWithoutIDs-method}
+\alias{p2ends,PDictMatchesWithoutIDs-method}
+\alias{p2nmatch,PDictMatchesWithoutIDs-method}
 
 \alias{length,PDictMatchesWithIDs-method}
 \alias{pids,PDictMatchesWithIDs-method}
 \alias{show,PDictMatchesWithIDs-method}
 \alias{[[,PDictMatchesWithIDs-method}
-\alias{starts,PDictMatchesWithIDs-method}
-\alias{ends,PDictMatchesWithIDs-method}
+\alias{p2starts,PDictMatchesWithIDs-method}
+\alias{p2ends,PDictMatchesWithIDs-method}
+\alias{p2nmatch,PDictMatchesWithIDs-method}
 
 \alias{length,ACtree-method}
 \alias{show,ACtree-method}
@@ -63,8 +65,11 @@
 
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
-  starts(x, all.pids=FALSE)
-  ends(x, all.pids=FALSE)
+
+  ## Manipulation of the PDictMatches object returned by matchPDict()
+  p2starts(x, all.pids=FALSE)
+  p2ends(x, all.pids=FALSE)
+  p2nmatch(x, all.pids=FALSE)
   extractAllMatches(subject, pdictmatches)
 }
 
@@ -99,7 +104,9 @@
 \value{
   \code{matchPDict} returns a PDictMatches object.
 
-  \code{starts} and \code{ends} return a list of integer vectors.
+  \code{p2starts}, \code{p2ends} and \code{p2nmatch} return vectors of the same
+  length as the input dictionary: \code{p2starts} and \code{p2ends} return a
+  list of integer vectors, and \code{p2nmatch} returns an integer vector.
 
   \code{extractAllMatches} returns a \link{BStringViews} object.
 }
@@ -116,34 +123,36 @@
 \examples{
   ## Creating the pattern dictionary
   library(drosophila2probe)
-  dict0 <- drosophila2probe$sequence    # The input dictionary.
-  length(dict0)                         # Hundreds of thousands of patterns.
-  unique(nchar(dict0))                  # Patterns are 25-mers.
+  dict0 <- drosophila2probe$sequence  # The input dictionary.
+  length(dict0)                       # Hundreds of thousands of patterns.
+  unique(nchar(dict0))                # Patterns are 25-mers.
   dict0[1:5]
-  pdict <- new("ULdna_PDict", dict0)    # Store the input dictionary into a
-                                        # ULdna_PDict instance (preprocessing).
-  length(pdict)                         # Same as the input dictionary.
-  width(pdict)                          # The number of chars per pattern.
+  pdict <- new("ULdna_PDict", dict0)  # Store the input dictionary into a
+                                      # ULdna_PDict instance (preprocessing).
+  length(pdict)                       # Same as the input dictionary.
+  width(pdict)                        # The number of chars per pattern.
 
   ## Using the pattern dictionary on chromosome 3R
   library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chr3R <- Dmelanogaster[["3R"]]        # Load chromosome 3R
+  chr3R <- Dmelanogaster[["3R"]]      # Load chromosome 3R
   chr3R
-  mends <- ends(matchPDict(pdict, chr3R)) # Search...
+  matches <- matchPDict(pdict, chr3R) # Search...
 
-  ## Looking at the results
-  length(mends)                         # Same as the input dictionary.
-  nmatches <- sapply(mends, length)
-  sum(nmatches)                         # Total number of matches.
+  ## Looking at the matches
+  starts <- p2starts(matches)         # Get the starts of the matches
+  length(starts)                      # Same as the input dictionary.
+  starts[[8220]]                      # Starts of the 8220th pattern.
+  ends <- p2ends(matches)             # Get the ends of the matches.
+  ends[[8220]]                        # Ends of the 8220th pattern.
+  nmatches <- p2nmatch(matches)       # Get the number of matches per pattern.
+  nmatches[[8220]]
+  matches[[8220]]                     # Get the matches for the 8220th pattern.
+  sum(nmatches)                       # Total number of matches.
   table(nmatches)
   i0 <- which(nmatches == max(nmatches))
-  dict0[i0]                             # The pattern with most occurences.
-  views(chr3R, mends[[i0]] - 24, mends[[i0]]) # All the occurences.
-
-  ## To search the plus and minus strands, one possibility is to add the
-  ## reverse complements of all the input sequences to the input dictionary
-  ## (this will double its size):
-  # will come soon...
+  dict0[i0]                           # The pattern with most occurences.
+  nmatches[i0]                        # Its matches as a Views object.
+  views(chr3R, starts[[i0]], ends[[i0]]) # And as a BStringViews object.
 
   ## NOT RUN
   if (FALSE) {
@@ -164,8 +173,8 @@
         pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
-        matchtime=system.time(mends <- ends(matchPDict(pdict, subject)))[["elapsed"]],
-        nmatches=sum(sapply(mends, length))
+        matchtime=system.time(ends <- p2ends(matchPDict(pdict, subject)))[["elapsed"]],
+        nmatches=sum(sapply(ends, length))
       )
     }
     stats <- lapply(6:25, function(width) getPDictStats(dict0, width, chr3R))
