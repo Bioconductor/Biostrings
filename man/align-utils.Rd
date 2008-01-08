@@ -9,7 +9,7 @@
 \title{Utility functions related to sequence alignment}
 
 \description{
-  [TODO]
+  A variety of different functions used to deal with sequence alignments.
 }
 
 \usage{
@@ -23,15 +23,17 @@
 
 \arguments{
   \item{x}{
-    [TODO]
+    A character vector, or an instance of either the BStringView, or the 
+   BStringAlign classes.
   }
   \item{freq}{
-    [TODO]
+    If \code{TRUE} then letter frequencies (per position) are reported, 
+    otherwise counts.
   }
 }
 
 \seealso{
-  \link{BStringViews-class}
+  \link{BStringViews-class}, \link{BStringAlign}
 }
 
 \examples{
