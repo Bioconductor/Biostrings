@@ -180,7 +180,7 @@ setMethod("p2end", "P2ViewsWithoutIDs",
 ###
 ###   length: the length of the input dictionary.
 ###
-###   ends: a key-value list (environment) where the values are integer
+###   ends_envir: a key-value list (environment) where the values are integer
 ###       vectors containing the ending positions of the input pattern whose
 ###       position in the input dictionary is given by the key (the keys are
 ###       strings representing positive integers).
@@ -188,8 +188,8 @@ setMethod("p2end", "P2ViewsWithoutIDs",
 ###   width: temporary hack. In the future we will probably want to store the
 ###       starts of the matches when 'pdict' is a PDict other than an
 ###       ULdna_PDict object. Another solution would be to keep the width slot
-###       and to make it the same length as the ends slot (it's currently of
-###       length 1 only).
+###       and to make it the same length as the ends_envir slot (it's currently
+###       of length 1 only).
 ###
 ###   pids: a character vector containing the unique pattern IDs.
 ###
@@ -198,7 +198,7 @@ setClass("P2ViewsWithIDs",
     contains="P2Views",
     representation(
         length="integer",
-        ends="environment",
+        ends_envir="environment",
         width="integer",
         pids="character"
     )
@@ -225,7 +225,7 @@ setMethod("[[", "P2ViewsWithIDs",
                 stop("pattern ID \"", key, "\" not found")
             key <- pos
         } 
-        end <- x@ends[[as.character(key)]]
+        end <- x@ends_envir[[as.character(key)]]
         if (is.null(end))
             end <- integer(0)
         new("Views", start=end-x@width+1L, end=end, check.data=FALSE)
@@ -234,9 +234,9 @@ setMethod("[[", "P2ViewsWithIDs",
 
 ### An example of a P2ViewsWithIDs object of length 5 where only the
 ### 2nd pattern has matches:
-###   > ends <- new.env(hash=TRUE, parent=emptyenv())
-###   > ends[["2"]] <- c(199L, 402L)
-###   > pm <- new("P2ViewsWithIDs", length=5L, ends=ends, width=10L, pids=letters[1:5])
+###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
+###   > ends_envir[["2"]] <- c(199L, 402L)
+###   > pm <- new("P2ViewsWithIDs", length=5L, ends_envir=ends_envir, width=10L, pids=letters[1:5])
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
@@ -257,7 +257,7 @@ setMethod("p2end", "P2ViewsWithIDs",
         if (all.pids)
             ii <- seq_len(length(x))
         else
-            ii <- sort(as.integer(ls(x@ends, all.names=TRUE)))
+            ii <- sort(as.integer(ls(x@ends_envir, all.names=TRUE)))
         ans <- lapply(ii, function(i) end(x[[i]]))
         names(ans) <- pids(x)[ii]
         ans
@@ -610,7 +610,7 @@ setMethod("initialize", "ULdna_PDict",
     if (is.null(pids))
         new("P2ViewsWithoutIDs", ends=ends, width=width(pdict))
     else
-        new("P2ViewsWithIDs", length=length(pdict), ends=ends, width=width(pdict), pids=pids)
+        new("P2ViewsWithIDs", length=length(pdict), ends_envir=ends, width=width(pdict), pids=pids)
 }
 
 ### With a big random dictionary, on george1:
