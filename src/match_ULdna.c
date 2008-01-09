@@ -636,7 +636,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *   'envir': environment to be populated with the matches
  *
  * Return an R object that will be assigned to the 'ends' slot of the
- * PDictMatches object returned by matchPDict(). Refer to the description
+ * P2Views object returned by matchPDict(). Refer to the description
  * of this slot in the matchPDict.R file for the details.
  *
  ****************************************************************************/

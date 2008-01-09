@@ -4,12 +4,12 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDictMatches" API.
+### The "P2Views" API.
 ### 
 ### An API for manipulating the match container returned by matchPDict().
 ###
 
-setClass("PDictMatches", representation("VIRTUAL"))
+setClass("P2Views", representation("VIRTUAL"))
 
 setGeneric("pids", function(x) standardGeneric("pids"))
 
@@ -17,13 +17,13 @@ setGeneric("pids", function(x) standardGeneric("pids"))
 setGeneric("p2starts", signature="x",
     function(x, all.pids=FALSE) standardGeneric("p2starts"))
 
-setMethod("p2starts", "PDictMatches",
+setMethod("p2starts", "P2Views",
     function(x, all.pids=FALSE)
     {
         if (!is.null(pids(x)))
             return(lapply(p2ends(x, all.pids=all.pids), function(end) { end - x@width + 1L }))
         if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
         lapply(p2ends(x), function(end) { end - x@width + 1L })
     }
 )
@@ -34,7 +34,7 @@ setGeneric("p2ends", signature="x",
 setGeneric("p2nmatch", signature="x",
     function(x, all.pids=FALSE) standardGeneric("p2nmatch"))
 
-setMethod("p2nmatch", "PDictMatches",
+setMethod("p2nmatch", "P2Views",
     function(x, all.pids=FALSE)
     {
         if (!is.null(pids(x))) {
@@ -44,7 +44,7 @@ setMethod("p2nmatch", "PDictMatches",
             return(sapply(ends, length))
         }
         if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
         ends <- p2ends(x)
         if (length(ends) == 0)
             return(integer(0))
@@ -53,10 +53,10 @@ setMethod("p2nmatch", "PDictMatches",
 )
 
 ### Return a single integer or string (not NA).
-setMethod("[[", "PDictMatches",
+setMethod("[[", "P2Views",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "PDictMatches" object (if it's not, then
+        # 'x' is guaranteed to be a "P2Views" object (if it's not, then
         # the method dispatch algo would not have called this method in the
         # first place), so nargs() is guaranteed to be >= 1
         if (nargs() >= 3)
@@ -72,13 +72,13 @@ setMethod("[[", "PDictMatches",
             stop("no index specified")
         key <- subscripts[[1]]
         if (!is.character(key) && !is.numeric(key))
-            stop("wrong argument for subsetting an object of class \"PDictMatches\"")
+            stop("wrong argument for subsetting an object of class \"P2Views\"")
         if (length(key) < 1)
             stop("attempt to select less than one element")
         if (length(key) > 1)
             stop("attempt to select more than one element")
         if (is.na(key))
-            stop("subsetting an object of class \"PDictMatches\" with NA is not supported")
+            stop("subsetting an object of class \"P2Views\" with NA is not supported")
         if (is.numeric(key)) {
             if (!is.integer(key))
                 key <- as.integer(key)
@@ -89,18 +89,18 @@ setMethod("[[", "PDictMatches",
     }
 )
 
-setMethod("$", "PDictMatches", function(x, name) x[[name]])
+setMethod("$", "P2Views", function(x, name) x[[name]])
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDictMatchesWithoutIDs" class.
+### The "P2ViewsWithoutIDs" class.
 ### 
 ### When 'pdict' is a PDict object without pattern IDs then matchPDict(pdict, ...)
-### returns the matches in a PDictMatchesWithoutIDs object.
+### returns the matches in a P2ViewsWithoutIDs object.
 ###
 ### Note that in normal operations the user NEVER needs to create a
-### PDictMatchesWithoutIDs object explicitely or to modify an existing one:
-### PDictMatchesWithoutIDs objects are created by the matchPDict() function
+### P2ViewsWithoutIDs object explicitely or to modify an existing one:
+### P2ViewsWithoutIDs objects are created by the matchPDict() function
 ### and have a read-only semantic.
 ###
 ### Slot description:
@@ -114,40 +114,40 @@ setMethod("$", "PDictMatches", function(x, name) x[[name]])
 ###       length 1 only).
 ###
 
-setClass("PDictMatchesWithoutIDs",
-    contains="PDictMatches",
+setClass("P2ViewsWithoutIDs",
+    contains="P2Views",
     representation(
         ends="list",
         width="integer"
     )
 )
 
-setMethod("length", "PDictMatchesWithoutIDs", function(x) length(x@ends))
+setMethod("length", "P2ViewsWithoutIDs", function(x) length(x@ends))
 
-setMethod("pids", "PDictMatchesWithoutIDs", function(x) NULL)
+setMethod("pids", "P2ViewsWithoutIDs", function(x) NULL)
 
-setMethod("show", "PDictMatchesWithoutIDs",
+setMethod("show", "P2ViewsWithoutIDs",
     function(object)
     {
-        cat(length(object), "-pattern \"PDictMatches\" object (no pattern IDs)\n", sep="")
+        cat(length(object), "-pattern \"P2Views\" object (no pattern IDs)\n", sep="")
     }
 )
 
-setMethod("[[", "PDictMatchesWithoutIDs",
+setMethod("[[", "P2ViewsWithoutIDs",
     function(x, i, j, ...)
     {
         key <- callNextMethod()
         if (is.character(key))
-            stop("\"PDictMatches\" object has no pattern IDs")
+            stop("\"P2Views\" object has no pattern IDs")
         new("Views", start=x@ends[[key]]-x@width+1L, end=x@ends[[key]], check.data=FALSE)
     }
 )
 
-### An example of a PDictMatchesWithoutIDs object of length 5 where only the
+### An example of a P2ViewsWithoutIDs object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends <- rep(list(integer(0)), 5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > pm <- new("PDictMatchesWithoutIDs", ends=ends, width=10L)
+###   > pm <- new("P2ViewsWithoutIDs", ends=ends, width=10L)
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
@@ -155,25 +155,25 @@ setMethod("[[", "PDictMatchesWithoutIDs",
 ###   > p2ends(pm)
 ###   > p2nmatch(pm)
 ###
-setMethod("p2ends", "PDictMatchesWithoutIDs",
+setMethod("p2ends", "P2ViewsWithoutIDs",
     function(x, all.pids=FALSE)
     {
         if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
+            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
         x@ends
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDictMatchesWithIDs" class.
+### The "P2ViewsWithIDs" class.
 ### 
 ### When 'pdict' is a PDict object with pattern IDs then matchPDict(pdict, ...)
-### returns the matches in a PDictMatchesWithIDs object.
+### returns the matches in a P2ViewsWithIDs object.
 ###
 ### Note that in normal operations the user NEVER needs to create a
-### PDictMatchesWithIDs object explicitely or to modify an existing one:
-### PDictMatchesWithIDs objects are created by the matchPDict() function
+### P2ViewsWithIDs object explicitely or to modify an existing one:
+### P2ViewsWithIDs objects are created by the matchPDict() function
 ### and have a read-only semantic.
 ###
 ### Slot description:
@@ -194,8 +194,8 @@ setMethod("p2ends", "PDictMatchesWithoutIDs",
 ###   pids: a character vector containing the unique pattern IDs.
 ###
 
-setClass("PDictMatchesWithIDs",
-    contains="PDictMatches",
+setClass("P2ViewsWithIDs",
+    contains="P2Views",
     representation(
         length="integer",
         ends="environment",
@@ -204,18 +204,18 @@ setClass("PDictMatchesWithIDs",
     )
 )
 
-setMethod("length", "PDictMatchesWithIDs", function(x) x@length)
+setMethod("length", "P2ViewsWithIDs", function(x) x@length)
 
-setMethod("pids", "PDictMatchesWithIDs", function(x) x@pids)
+setMethod("pids", "P2ViewsWithIDs", function(x) x@pids)
 
-setMethod("show", "PDictMatchesWithIDs",
+setMethod("show", "P2ViewsWithIDs",
     function(object)
     {
-        cat(length(object), "-pattern \"PDictMatches\" object\n", sep="")
+        cat(length(object), "-pattern \"P2Views\" object\n", sep="")
     }
 )
 
-setMethod("[[", "PDictMatchesWithIDs",
+setMethod("[[", "P2ViewsWithIDs",
     function(x, i, j, ...)
     {
         key <- callNextMethod()
@@ -232,11 +232,11 @@ setMethod("[[", "PDictMatchesWithIDs",
     }
 )
 
-### An example of a PDictMatchesWithIDs object of length 5 where only the
+### An example of a P2ViewsWithIDs object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends[["2"]] <- c(199L, 402L)
-###   > pm <- new("PDictMatchesWithIDs", length=5L, ends=ends, width=10L, pids=letters[1:5])
+###   > pm <- new("P2ViewsWithIDs", length=5L, ends=ends, width=10L, pids=letters[1:5])
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
@@ -251,7 +251,7 @@ setMethod("[[", "PDictMatchesWithIDs",
 ###   > p2nmatch(pm)
 ###   > p2nmatch(pm, all.pids=TRUE)
 ###
-setMethod("p2ends", "PDictMatchesWithIDs",
+setMethod("p2ends", "P2ViewsWithIDs",
     function(x, all.pids=FALSE)
     {
         if (all.pids)
@@ -273,10 +273,10 @@ extractAllMatches <- function(subject, pdictmatches)
 {
     if (!is(subject, "BString"))
         stop("'subject' must be a BString object")
-    if (!is(pdictmatches, "PDictMatches"))
-        stop("'pdictmatches' must be a PDictMatches object")
+    if (!is(pdictmatches, "P2Views"))
+        stop("'pdictmatches' must be a P2Views object")
     if (is.null(pids(pdictmatches)))
-        stop("extractAllMatches() works only with a \"PDictMatches\" object that has pattern IDs")
+        stop("extractAllMatches() works only with a \"P2Views\" object that has pattern IDs")
     starts <- p2starts(pdictmatches)
     if (length(starts) == 0)
         start <- integer(0)
@@ -608,9 +608,9 @@ setMethod("initialize", "ULdna_PDict",
           envir,
           PACKAGE="Biostrings")
     if (is.null(pids))
-        new("PDictMatchesWithoutIDs", ends=ends, width=width(pdict))
+        new("P2ViewsWithoutIDs", ends=ends, width=width(pdict))
     else
-        new("PDictMatchesWithIDs", length=length(pdict), ends=ends, width=width(pdict), pids=pids)
+        new("P2ViewsWithIDs", length=length(pdict), ends=ends, width=width(pdict), pids=pids)
 }
 
 ### With a big random dictionary, on george1:

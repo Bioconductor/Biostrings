@@ -1,12 +1,12 @@
 \name{matchPDict}
 
 % Classes
-\alias{class:PDictMatches}
-\alias{PDictMatches-class}
-\alias{class:PDictMatchesWithoutIDs}
-\alias{PDictMatchesWithoutIDs-class}
-\alias{class:PDictMatchesWithIDs}
-\alias{PDictMatchesWithIDs-class}
+\alias{class:P2Views}
+\alias{P2Views-class}
+\alias{class:P2ViewsWithoutIDs}
+\alias{P2ViewsWithoutIDs-class}
+\alias{class:P2ViewsWithIDs}
+\alias{P2ViewsWithIDs-class}
 \alias{class:PDict}
 \alias{PDict-class}
 \alias{class:ULdna_PDict}
@@ -15,28 +15,28 @@
 % Generics and methods:
 \alias{pids}
 \alias{p2starts}
-\alias{p2starts,PDictMatches-method}
+\alias{p2starts,P2Views-method}
 \alias{p2ends}
 \alias{p2nmatch}
-\alias{p2nmatch,PDictMatches-method}
-\alias{[[,PDictMatches-method}
-\alias{$,PDictMatches-method}
+\alias{p2nmatch,P2Views-method}
+\alias{[[,P2Views-method}
+\alias{$,P2Views-method}
 
-\alias{length,PDictMatchesWithoutIDs-method}
-\alias{pids,PDictMatchesWithoutIDs-method}
-\alias{show,PDictMatchesWithoutIDs-method}
-\alias{[[,PDictMatchesWithoutIDs-method}
-\alias{p2starts,PDictMatchesWithoutIDs-method}
-\alias{p2ends,PDictMatchesWithoutIDs-method}
-\alias{p2nmatch,PDictMatchesWithoutIDs-method}
+\alias{length,P2ViewsWithoutIDs-method}
+\alias{pids,P2ViewsWithoutIDs-method}
+\alias{show,P2ViewsWithoutIDs-method}
+\alias{[[,P2ViewsWithoutIDs-method}
+\alias{p2starts,P2ViewsWithoutIDs-method}
+\alias{p2ends,P2ViewsWithoutIDs-method}
+\alias{p2nmatch,P2ViewsWithoutIDs-method}
 
-\alias{length,PDictMatchesWithIDs-method}
-\alias{pids,PDictMatchesWithIDs-method}
-\alias{show,PDictMatchesWithIDs-method}
-\alias{[[,PDictMatchesWithIDs-method}
-\alias{p2starts,PDictMatchesWithIDs-method}
-\alias{p2ends,PDictMatchesWithIDs-method}
-\alias{p2nmatch,PDictMatchesWithIDs-method}
+\alias{length,P2ViewsWithIDs-method}
+\alias{pids,P2ViewsWithIDs-method}
+\alias{show,P2ViewsWithIDs-method}
+\alias{[[,P2ViewsWithIDs-method}
+\alias{p2starts,P2ViewsWithIDs-method}
+\alias{p2ends,P2ViewsWithIDs-method}
+\alias{p2nmatch,P2ViewsWithIDs-method}
 
 \alias{length,ACtree-method}
 \alias{show,ACtree-method}
@@ -72,7 +72,7 @@
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
 
-  ## Manipulation of the PDictMatches object returned by matchPDict()
+  ## Manipulation of the P2Views object returned by matchPDict()
   p2starts(x, all.pids=FALSE)
   p2ends(x, all.pids=FALSE)
   p2nmatch(x, all.pids=FALSE)
@@ -97,18 +97,18 @@
     Not supported yet.
   }
   \item{x}{
-    A PDictMatches object returned by a previous call to \code{matchPDict}.
+    A P2Views object returned by a previous call to \code{matchPDict}.
   }
   \item{all.pids}{
     \code{TRUE} or \code{FALSE}.
   }
   \item{pdictmatches}{
-    A PDictMatches object returned by a previous call to \code{matchPDict}.
+    A P2Views object returned by a previous call to \code{matchPDict}.
   }
 }
 
 \value{
-  \code{matchPDict} returns a PDictMatches object.
+  \code{matchPDict} returns a P2Views object.
 
   \code{p2starts}, \code{p2ends} and \code{p2nmatch} return vectors of the same
   length as the input dictionary: \code{p2starts} and \code{p2ends} return a
