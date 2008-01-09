@@ -31,10 +31,10 @@ setMethod("p2starts", "P2Views",
 setGeneric("p2ends", signature="x",
     function(x, all.pids=FALSE) standardGeneric("p2ends"))
 
-setGeneric("p2nmatch", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("p2nmatch"))
+setGeneric("p2nview", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("p2nview"))
 
-setMethod("p2nmatch", "P2Views",
+setMethod("p2nview", "P2Views",
     function(x, all.pids=FALSE)
     {
         if (!is.null(pids(x))) {
@@ -153,7 +153,7 @@ setMethod("[[", "P2ViewsWithoutIDs",
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
 ###   > p2starts(pm)
 ###   > p2ends(pm)
-###   > p2nmatch(pm)
+###   > p2nview(pm)
 ###
 setMethod("p2ends", "P2ViewsWithoutIDs",
     function(x, all.pids=FALSE)
@@ -248,8 +248,8 @@ setMethod("[[", "P2ViewsWithIDs",
 ###   > p2starts(pm, all.pids=TRUE)
 ###   > p2ends(pm)
 ###   > p2ends(pm, all.pids=TRUE)
-###   > p2nmatch(pm)
-###   > p2nmatch(pm, all.pids=TRUE)
+###   > p2nview(pm)
+###   > p2nview(pm, all.pids=TRUE)
 ###
 setMethod("p2ends", "P2ViewsWithIDs",
     function(x, all.pids=FALSE)
@@ -269,26 +269,26 @@ setMethod("p2ends", "P2ViewsWithIDs",
 ### The "extractAllMatches" function.
 ###
 
-extractAllMatches <- function(subject, pdictmatches)
+extractAllMatches <- function(subject, p2views)
 {
     if (!is(subject, "BString"))
         stop("'subject' must be a BString object")
-    if (!is(pdictmatches, "P2Views"))
-        stop("'pdictmatches' must be a P2Views object")
-    if (is.null(pids(pdictmatches)))
+    if (!is(p2views, "P2Views"))
+        stop("'p2views' must be a P2Views object")
+    if (is.null(pids(p2views)))
         stop("extractAllMatches() works only with a \"P2Views\" object that has pattern IDs")
-    starts <- p2starts(pdictmatches)
+    starts <- p2starts(p2views)
     if (length(starts) == 0)
         start <- integer(0)
     else
         start <- unlist(starts, recursive=FALSE, use.names=FALSE)
-    ends <- p2ends(pdictmatches)
+    ends <- p2ends(p2views)
     if (length(ends) == 0)
         end <- integer(0)
     else
         end <- unlist(ends, recursive=FALSE, use.names=FALSE)
     new("BStringViews", subject=subject, start=start, end=end,
-        desc=rep(names(ends), p2nmatch(pdictmatches)), check.views=FALSE)
+        desc=rep(names(ends), p2nview(p2views)), check.views=FALSE)
 }
 
 
