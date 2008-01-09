@@ -712,7 +712,7 @@ static SEXP addInt(SEXP e1, int e2)
  */
 SEXP shiftListOfInts(SEXP x, SEXP shift)
 {
-	SEXP ans;
+	SEXP ans, ans_elt;
 	int shiftval, i, j, *val;
 
 	PROTECT(ans = duplicate(x));
