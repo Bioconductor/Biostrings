@@ -37,11 +37,18 @@ setGeneric("p2nmatch", signature="x",
 setMethod("p2nmatch", "PDictMatches",
     function(x, all.pids=FALSE)
     {
-        if (!is.null(pids(x)))
-            return(sapply(p2ends(x, all.pids=all.pids), length))
+        if (!is.null(pids(x))) {
+            ends <- p2ends(x, all.pids=all.pids)
+            if (length(ends) == 0)
+                return(integer(0))
+            return(sapply(ends, length))
+        }
         if (!missing(all.pids))
             warning("'all.pids' is ignored when \"PDictMatches\" object has no pattern IDs")
-        sapply(p2ends(x), length)
+        ends <- p2ends(x)
+        if (length(ends) == 0)
+            return(integer(0))
+        sapply(ends, length)
     }
 )
 
@@ -270,11 +277,18 @@ extractAllMatches <- function(subject, pdictmatches)
         stop("'pdictmatches' must be a PDictMatches object")
     if (is.null(pids(pdictmatches)))
         stop("extractAllMatches() works only with a \"PDictMatches\" object that has pattern IDs")
+    starts <- p2starts(pdictmatches)
+    if (length(starts) == 0)
+        start <- integer(0)
+    else
+        start <- unlist(starts, recursive=FALSE, use.names=FALSE)
     ends <- p2ends(pdictmatches)
-    end <- unlist(ends, recursive=FALSE, use.names=FALSE)
-    ans <- views(subject, end - pdictmatches@width + 1L, end)
-    desc(ans) <- rep(names(ends), sapply(ends, length))
-    ans
+    if (length(ends) == 0)
+        end <- integer(0)
+    else
+        end <- unlist(ends, recursive=FALSE, use.names=FALSE)
+    new("BStringViews", subject=subject, start=start, end=end,
+        desc=rep(names(ends), p2nmatch(matches)), check.views=FALSE)
 }
 
 
