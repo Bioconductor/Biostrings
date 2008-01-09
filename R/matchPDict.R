@@ -288,7 +288,7 @@ extractAllMatches <- function(subject, pdictmatches)
     else
         end <- unlist(ends, recursive=FALSE, use.names=FALSE)
     new("BStringViews", subject=subject, start=start, end=end,
-        desc=rep(names(ends), p2nmatch(matches)), check.views=FALSE)
+        desc=rep(names(ends), p2nmatch(pdictmatches)), check.views=FALSE)
 }
 
 
