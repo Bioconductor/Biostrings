@@ -12,8 +12,8 @@ o reverse(), complement() and reverseComplement() now preserve desc(x) when
   applied to BStringViews object x.
 
 o matchPDict() now returns a P2Views object (new class) instead of a list
-  of integer vectors. The user can then extract the starts or the ends of the
-  matches with p2starts() or p2ends(), extract the number of matches per
+  of integer vectors. The user can then extract the starts or the ends of
+  the matches with p2start() or p2end(), extract the number of matches per
   pattern with p2nview(), extract the matches for a given pattern with [[,
   or convert it into a set of views on the original subject with
   extractAllMatches().

@@ -14,22 +14,22 @@ setClass("P2Views", representation("VIRTUAL"))
 setGeneric("pids", function(x) standardGeneric("pids"))
 
 
-setGeneric("p2starts", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("p2starts"))
+setGeneric("p2start", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("p2start"))
 
-setMethod("p2starts", "P2Views",
+setMethod("p2start", "P2Views",
     function(x, all.pids=FALSE)
     {
         if (!is.null(pids(x)))
-            return(lapply(p2ends(x, all.pids=all.pids), function(end) { end - x@width + 1L }))
+            return(lapply(p2end(x, all.pids=all.pids), function(end) { end - x@width + 1L }))
         if (!missing(all.pids))
             warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
-        lapply(p2ends(x), function(end) { end - x@width + 1L })
+        lapply(p2end(x), function(end) { end - x@width + 1L })
     }
 )
 
-setGeneric("p2ends", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("p2ends"))
+setGeneric("p2end", signature="x",
+    function(x, all.pids=FALSE) standardGeneric("p2end"))
 
 setGeneric("p2nview", signature="x",
     function(x, all.pids=FALSE) standardGeneric("p2nview"))
@@ -38,17 +38,17 @@ setMethod("p2nview", "P2Views",
     function(x, all.pids=FALSE)
     {
         if (!is.null(pids(x))) {
-            ends <- p2ends(x, all.pids=all.pids)
-            if (length(ends) == 0)
+            p2end <- p2end(x, all.pids=all.pids)
+            if (length(p2end) == 0)
                 return(integer(0))
-            return(sapply(ends, length))
+            return(sapply(p2end, length))
         }
         if (!missing(all.pids))
             warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
-        ends <- p2ends(x)
-        if (length(ends) == 0)
+        p2end <- p2end(x)
+        if (length(p2end) == 0)
             return(integer(0))
-        sapply(ends, length)
+        sapply(p2end, length)
     }
 )
 
@@ -151,11 +151,11 @@ setMethod("[[", "P2ViewsWithoutIDs",
 ###   > pm[[1]]
 ###   > pm[[2]]
 ###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
-###   > p2starts(pm)
-###   > p2ends(pm)
+###   > p2start(pm)
+###   > p2end(pm)
 ###   > p2nview(pm)
 ###
-setMethod("p2ends", "P2ViewsWithoutIDs",
+setMethod("p2end", "P2ViewsWithoutIDs",
     function(x, all.pids=FALSE)
     {
         if (!missing(all.pids))
@@ -244,14 +244,14 @@ setMethod("[[", "P2ViewsWithIDs",
 ###   > pm[["a"]]
 ###   > pm[["b"]]
 ###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
-###   > p2starts(pm)
-###   > p2starts(pm, all.pids=TRUE)
-###   > p2ends(pm)
-###   > p2ends(pm, all.pids=TRUE)
+###   > p2start(pm)
+###   > p2start(pm, all.pids=TRUE)
+###   > p2end(pm)
+###   > p2end(pm, all.pids=TRUE)
 ###   > p2nview(pm)
 ###   > p2nview(pm, all.pids=TRUE)
 ###
-setMethod("p2ends", "P2ViewsWithIDs",
+setMethod("p2end", "P2ViewsWithIDs",
     function(x, all.pids=FALSE)
     {
         if (all.pids)
@@ -277,18 +277,18 @@ extractAllMatches <- function(subject, p2views)
         stop("'p2views' must be a P2Views object")
     if (is.null(pids(p2views)))
         stop("extractAllMatches() works only with a \"P2Views\" object that has pattern IDs")
-    starts <- p2starts(p2views)
-    if (length(starts) == 0)
+    p2start <- p2start(p2views)
+    if (length(p2start) == 0)
         start <- integer(0)
     else
-        start <- unlist(starts, recursive=FALSE, use.names=FALSE)
-    ends <- p2ends(p2views)
-    if (length(ends) == 0)
+        start <- unlist(p2start, recursive=FALSE, use.names=FALSE)
+    p2end <- p2end(p2views)
+    if (length(p2end) == 0)
         end <- integer(0)
     else
-        end <- unlist(ends, recursive=FALSE, use.names=FALSE)
+        end <- unlist(p2end, recursive=FALSE, use.names=FALSE)
     new("BStringViews", subject=subject, start=start, end=end,
-        desc=rep(names(ends), p2nview(p2views)), check.views=FALSE)
+        desc=rep(names(p2end), p2nview(p2views)), check.views=FALSE)
 }
 
 
@@ -349,7 +349,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks0 # no failure link is set yet
-###   > ends <- p2ends(matchPDict(pdict, DNAString("acaagagagt")))
+###   > p2end <- p2end(matchPDict(pdict, DNAString("acaagagagt")))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set
 ### As you can see the 'pdict' object "learns" from being used!
@@ -557,21 +557,21 @@ setMethod("initialize", "ULdna_PDict",
 ###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
-###   > system.time(ends <- p2ends(matchPDict(pdict, chr1)))
+###   > system.time(p2end <- p2end(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
-###   > nmatches <- sapply(ends, length)
+###   > nmatches <- sapply(p2end, length)
 ###   > table(nmatches)
 ###   > id0 <- which(nmatches == max(nmatches))
 ###   > p0 <- DNAString(dict[id0])
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subBString(chr1, ends[[id0]][1]-24, ends[[id0]][1]) == p0
+###   > subBString(chr1, p2end[[id0]][1]-24, p2end[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
-###   > pidOK <- sapply(seq_len(length(ends)),
-###                     function(pid) identical(ends[[pid]],
+###   > pidOK <- sapply(seq_len(length(p2end)),
+###                     function(pid) identical(p2end[[pid]],
 ###                                             end(matchPattern(DNAString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
@@ -628,10 +628,10 @@ setMethod("initialize", "ULdna_PDict",
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
 ###      > chr1 <- DNAString(Hsapiens$chr1)
-###      > system.time(ends <- p2ends(matchPDict(pdict, chr1)))
+###      > system.time(p2end <- p2end(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
-###      > nmatches <- sapply(ends, length)
+###      > nmatches <- sapply(p2end, length)
 ###      > sum(nmatches) # most likely no match were found
 ###
 ### Results obtained with some random dictionaries on george1:

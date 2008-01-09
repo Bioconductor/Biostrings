@@ -14,9 +14,9 @@
 
 % Generics and methods:
 \alias{pids}
-\alias{p2starts}
-\alias{p2starts,P2Views-method}
-\alias{p2ends}
+\alias{p2start}
+\alias{p2start,P2Views-method}
+\alias{p2end}
 \alias{p2nview}
 \alias{p2nview,P2Views-method}
 \alias{[[,P2Views-method}
@@ -26,16 +26,16 @@
 \alias{pids,P2ViewsWithoutIDs-method}
 \alias{show,P2ViewsWithoutIDs-method}
 \alias{[[,P2ViewsWithoutIDs-method}
-\alias{p2starts,P2ViewsWithoutIDs-method}
-\alias{p2ends,P2ViewsWithoutIDs-method}
+\alias{p2start,P2ViewsWithoutIDs-method}
+\alias{p2end,P2ViewsWithoutIDs-method}
 \alias{p2nview,P2ViewsWithoutIDs-method}
 
 \alias{length,P2ViewsWithIDs-method}
 \alias{pids,P2ViewsWithIDs-method}
 \alias{show,P2ViewsWithIDs-method}
 \alias{[[,P2ViewsWithIDs-method}
-\alias{p2starts,P2ViewsWithIDs-method}
-\alias{p2ends,P2ViewsWithIDs-method}
+\alias{p2start,P2ViewsWithIDs-method}
+\alias{p2end,P2ViewsWithIDs-method}
 \alias{p2nview,P2ViewsWithIDs-method}
 
 \alias{length,ACtree-method}
@@ -73,8 +73,8 @@
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
 
   ## Manipulation of the P2Views object returned by matchPDict()
-  p2starts(x, all.pids=FALSE)
-  p2ends(x, all.pids=FALSE)
+  p2start(x, all.pids=FALSE)
+  p2end(x, all.pids=FALSE)
   p2nview(x, all.pids=FALSE)
   extractAllMatches(subject, p2views)
 }
@@ -110,8 +110,8 @@
 \value{
   \code{matchPDict} returns a P2Views object.
 
-  \code{p2starts}, \code{p2ends} and \code{p2nview} return vectors of the same
-  length as the input dictionary: \code{p2starts} and \code{p2ends} return a
+  \code{p2start}, \code{p2end} and \code{p2nview} return vectors of the same
+  length as the input dictionary: \code{p2start} and \code{p2end} return a
   list of integer vectors, and \code{p2nview} returns an integer vector.
 
   \code{extractAllMatches} returns a \link{BStringViews} object.
@@ -145,11 +145,11 @@
   p2views <- matchPDict(pdict, chr3R) # Search...
 
   ## Looking at the matches
-  starts <- p2starts(p2views)         # Get the starts of the matches
-  length(starts)                      # Same as the input dictionary.
-  starts[[8220]]                      # Starts of the 8220th pattern.
-  ends <- p2ends(p2views)             # Get the ends of the matches.
-  ends[[8220]]                        # Ends of the 8220th pattern.
+  p2start <- p2start(p2views)         # Get the starts of the matches
+  length(p2start)                     # Same as the input dictionary.
+  p2start[[8220]]                     # Starts of the 8220th pattern.
+  p2end <- p2end(p2views)             # Get the ends of the matches.
+  p2end[[8220]]                       # Ends of the 8220th pattern.
   nmatch <- p2nview(p2views)          # Get the number of matches per pattern.
   nmatch[[8220]]
   p2views[[8220]]                     # Get the matches for the 8220th pattern.
@@ -158,7 +158,7 @@
   i0 <- which(nmatch == max(nmatch))
   dict0[i0]                           # The pattern with most occurences.
   p2views[[i0]]                       # Its matches as a Views object.
-  views(chr3R, starts[[i0]], ends[[i0]]) # And as a BStringViews object.
+  views(chr3R, p2start[[i0]], p2end[[i0]]) # And as a BStringViews object.
 
   ## NOT RUN
   if (FALSE) {
