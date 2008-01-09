@@ -63,6 +63,8 @@ setMethod("initialize", "Views",
 ###
 
 setMethod("length", "Views", function(x) nrow(x@views))
+setGeneric("nview", function(x) standardGeneric("nview"))
+setMethod("nview", "Views", function(x) nrow(x@views))
 
 ### The substr() function uses 'start' and 'stop'.
 ### The substring() function uses 'first' and 'last'.

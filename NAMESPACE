@@ -21,7 +21,7 @@ exportMethods(
 
     ## Accessors
     alphabet, letter,
-    start, end, width, desc, "desc<-", subject,
+    nview, start, end, width, desc, "desc<-", subject,
     pids, p2starts, p2ends, p2nmatch,
     subpatterns, pattern,
     align1, align2, score,

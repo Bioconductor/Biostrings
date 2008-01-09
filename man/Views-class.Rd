@@ -11,6 +11,8 @@
 
 % Accesor methods:
 \alias{length,Views-method}
+\alias{nview}
+\alias{nview,Views-method}
 \alias{start,Views-method}
 \alias{end,Views-method}
 \alias{first}
@@ -61,6 +63,10 @@
     \item{}{
       \code{length(x)}:
       The number of views in \code{x}.
+    }
+    \item{}{
+      \code{nview(x)}:
+      Same as \code{length(x)}.
     }
     \item{}{
       \code{start(x)}:
