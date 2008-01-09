@@ -149,7 +149,7 @@ setMethod("p2start", "P2ViewsWithoutIDs",
     {
         if (!missing(all.pids))
             warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
-        lapply(p2end(x), function(end) { end - x@width + 1L })
+        .Call("shiftListOfInts", x@ends, 1L - x@width, PACKAGE="Biostrings")
     }
 )
 setMethod("p2end", "P2ViewsWithoutIDs",

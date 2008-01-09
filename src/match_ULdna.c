@@ -707,6 +707,27 @@ static SEXP addInt(SEXP e1, int e2)
 	return ans;
 }
 
+/*
+ * Only elements in 'x' that are integer vectors are shifted.
+ */
+SEXP shiftListOfInts(SEXP x, SEXP shift)
+{
+	SEXP ans;
+	int shiftval, i, j, *val;
+
+	PROTECT(ans = duplicate(x));
+	shiftval = INTEGER(shift)[0];
+	for (i = 0; i < LENGTH(ans); i++) {
+		ans_elt = VECTOR_ELT(ans, i);
+		if (!IS_INTEGER(ans_elt))
+			continue;
+		for (j = 0, val = INTEGER(ans_elt); j < LENGTH(ans_elt); j++, val++)
+			*val += shiftval;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
 /* For testing:
      library(Biostrings)
      ends_envir <- new.env(parent = emptyenv())

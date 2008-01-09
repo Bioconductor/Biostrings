@@ -688,6 +688,11 @@ SEXP match_ULdna_exact(
 		SEXP envir
 );
 
+SEXP shiftListOfInts(
+		SEXP x,
+		SEXP shift
+);
+
 SEXP extract_p2end(
 		SEXP ends_envir,
 		SEXP shift,
