@@ -153,6 +153,7 @@
   nmatch <- p2nview(p2views)          # Get the number of matches per pattern.
   nmatch[[8220]]
   p2views[[8220]]                     # Get the matches for the 8220th pattern.
+  start(p2views[[8220]])              # Equivalent to p2start(p2views)[[8220]].
   sum(nmatch)                         # Total number of matches.
   table(nmatch)
   i0 <- which(nmatch == max(nmatch))
