@@ -17,17 +17,6 @@ setGeneric("pids", function(x) standardGeneric("pids"))
 setGeneric("p2start", signature="x",
     function(x, all.pids=FALSE) standardGeneric("p2start"))
 
-setMethod("p2start", "P2Views",
-    function(x, all.pids=FALSE)
-    {
-        if (!is.null(pids(x)))
-            return(lapply(p2end(x, all.pids=all.pids), function(end) { end - x@width + 1L }))
-        if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
-        lapply(p2end(x), function(end) { end - x@width + 1L })
-    }
-)
-
 setGeneric("p2end", signature="x",
     function(x, all.pids=FALSE) standardGeneric("p2end"))
 
@@ -155,6 +144,14 @@ setMethod("[[", "P2ViewsWithoutIDs",
 ###   > p2end(pm)
 ###   > p2nview(pm)
 ###
+setMethod("p2start", "P2ViewsWithoutIDs",
+    function(x, all.pids=FALSE)
+    {
+        if (!missing(all.pids))
+            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
+        lapply(p2end(x), function(end) { end - x@width + 1L })
+    }
+)
 setMethod("p2end", "P2ViewsWithoutIDs",
     function(x, all.pids=FALSE)
     {
@@ -251,16 +248,20 @@ setMethod("[[", "P2ViewsWithIDs",
 ###   > p2nview(pm)
 ###   > p2nview(pm, all.pids=TRUE)
 ###
+setMethod("p2start", "P2ViewsWithIDs",
+    function(x, all.pids=FALSE)
+    {
+        if (!is.logical(all.pids) || length(all.pids) != 1 || is.na(all.pids))
+            stop("'all.pids' must be 'TRUE' or 'FALSE'")
+        .Call("extract_p2end", x@ends_envir, 1L - x@width, x@pids, all.pids, PACKAGE="Biostrings")
+    }
+)
 setMethod("p2end", "P2ViewsWithIDs",
     function(x, all.pids=FALSE)
     {
-        if (all.pids)
-            ii <- seq_len(length(x))
-        else
-            ii <- sort(as.integer(ls(x@ends_envir, all.names=TRUE)))
-        ans <- lapply(ii, function(i) end(x[[i]]))
-        names(ans) <- pids(x)[ii]
-        ans
+        if (!is.logical(all.pids) || length(all.pids) != 1 || is.na(all.pids))
+            stop("'all.pids' must be 'TRUE' or 'FALSE'")
+        .Call("extract_p2end", x@ends_envir, 0L, x@pids, all.pids, PACKAGE="Biostrings")
     }
 )
 

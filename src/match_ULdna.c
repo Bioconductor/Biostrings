@@ -667,3 +667,94 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	return _IBBuf_toEnvir(&ends_bbuf, envir);
 }
 
+
+/****************************************************************************
+ * Some additional utility functions used fast data extraction from the
+ * P2Views object returned by matchPDict().
+ */
+
+/* 'symbol' must be a CHARSXP */
+static SEXP getSymbolVal(SEXP symbol, SEXP envir)
+{
+	SEXP ans;
+
+	/* The following code was inspired by R's do_get() code.
+	 * Note that do_get() doesn't use PROTECT at all and so do we...
+	 */
+	ans = findVar(install(translateChar(symbol)), envir);
+	if (ans == R_UnboundValue)
+		error("Biosrings internal error in getSymbolVal(): unbound value");
+	if (TYPEOF(ans) == PROMSXP)
+		ans = eval(ans, envir);
+	if (ans != R_NilValue && NAMED(ans) == 0)
+		SET_NAMED(ans, 1);
+	return ans;
+}
+
+/*
+ * 'e1' must be an INTSXP.
+ * addInt() must ALWAYS duplicate 'e1', even when e2 = 0!
+ */
+static SEXP addInt(SEXP e1, int e2)
+{
+	SEXP ans;
+	int i, *val;
+
+	PROTECT(ans = duplicate(e1));
+	for (i = 0, val = INTEGER(ans); i < LENGTH(ans); i++, val++)
+		*val += e2;
+	UNPROTECT(1);
+	return ans;
+}
+
+/* For testing:
+     library(Biostrings)
+     ends_envir <- new.env(parent = emptyenv())
+     ends_envir[['4']] <- 9:6
+     ends_envir[['10']] <- -2:1
+     .Call("extract_p2end", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
+     .Call("extract_p2end", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+*/
+SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
+{
+	SEXP ans, ans_elt, ans_names, symbols, end;
+	int symbols_len, pids_len, i;
+	IBuf symbol2offset;
+	const char *symbol;
+	int tmp, *offset;
+
+	PROTECT(symbols = R_lsInternal(ends_envir, 1));
+	symbols_len = LENGTH(symbols);
+	_IBuf_init(&symbol2offset, symbols_len, 0);
+	for (i = 0, offset = symbol2offset.vals; i < symbols_len; i++, offset++) {
+		symbol = CHAR(STRING_ELT(symbols, i));
+		sscanf(symbol, "%d", &tmp);
+		*offset = tmp - 1;
+	}
+	symbol2offset.count = symbols_len; /* = symbol2offset.maxcount */
+	if (LOGICAL(all_pids)[0]) {
+		pids_len = LENGTH(pids);
+		PROTECT(ans = NEW_LIST(pids_len));
+		for (i = 0; i < symbols_len; i++) {
+			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
+			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
+			SET_ELEMENT(ans, symbol2offset.vals[i], ans_elt);
+			UNPROTECT(1);
+		}
+		SET_NAMES(ans, duplicate(pids));
+		UNPROTECT(1);
+	} else {
+		PROTECT(ans = NEW_LIST(symbols_len));
+		PROTECT(ans_names = NEW_CHARACTER(symbols_len));
+		for (i = 0; i < symbols_len; i++) {
+			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
+			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
+			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(pids, symbol2offset.vals[i])));
+		}
+		SET_NAMES(ans, ans_names);
+		UNPROTECT(2);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+

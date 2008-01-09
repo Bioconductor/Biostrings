@@ -687,6 +687,13 @@ SEXP match_ULdna_exact(
 		SEXP envir
 );
 
+SEXP extract_p2end(
+		SEXP ends_envir,
+		SEXP shift,
+		SEXP pids,
+		SEXP all_pids
+);
+
 
 /* pmatchPattern.c */
 
