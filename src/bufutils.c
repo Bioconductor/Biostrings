@@ -157,7 +157,10 @@ void _IBBuf_insert_at(IBBuf *ibbuf, int at, IBuf ibuf)
 	return;
 }
 
-SEXP _IBBuf_asLIST(IBBuf *ibbuf)
+/*
+ * mode: 0 -> integer(0), 1-> NULL, 2 -> NA
+ */
+SEXP _IBBuf_asLIST(IBBuf *ibbuf, int mode)
 {
 	SEXP ans, ans_elt;
 	int i;
@@ -165,7 +168,18 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf)
 
 	PROTECT(ans = NEW_LIST(ibbuf->count));
 	for (i = 0, ibuf = ibbuf->ibufs; i < ibbuf->count; i++, ibuf++) {
-		PROTECT(ans_elt = _IBuf_asINTEGER(ibuf));
+		if (ibuf->count == 0 && mode != 0) {
+			if (mode == 1) {
+				PROTECT(ans_elt = R_NilValue);
+			} else {
+				// Not sure new LOGICALs are initialized with NAs,
+				// need to check! If not, then LOGICAL(ans_elt)[0]
+				// must be set to NA but I don't know how to do this :-/
+				PROTECT(ans_elt = NEW_LOGICAL(1));
+			}
+		} else {
+			PROTECT(ans_elt = _IBuf_asINTEGER(ibuf));
+		}
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}

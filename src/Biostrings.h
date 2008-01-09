@@ -212,7 +212,8 @@ void _IBBuf_insert_at(
 );
 
 SEXP _IBBuf_asLIST(
-		IBBuf *ibbuf
+		IBBuf *ibbuf,
+		int mode
 );
 
 SEXP _IBBuf_toEnvir(

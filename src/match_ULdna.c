@@ -663,7 +663,7 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 		(char *) subj, subj_length, INTEGER(uldna_dups));
 
 	if (envir == R_NilValue)
-		return _IBBuf_asLIST(&ends_bbuf);
+		return _IBBuf_asLIST(&ends_bbuf, 1);
 	return _IBBuf_toEnvir(&ends_bbuf, envir);
 }
 
