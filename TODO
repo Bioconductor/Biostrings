@@ -24,6 +24,23 @@ In 2.7
 
 - Finish C implemntation of read.BStringViews()
 
+- Add a new generic that combines a subject and a Views (or Views-like)
+  object to return a BStringViews object. The Views-like object could be
+  P2Views object and the method for it would do as if it had received
+  unlist(P2Views). Currently my problem is that I can't come up with a good
+  name for such generic :-/ Maybe I could just use views(subject, x) for
+  this (dispatch would be on x, not subject). And the current views function
+  could be renamed (or maybe it's not needed at all, maybe a fancy
+  new("Views", ...) could replace it).
+
+- Add a MaskedBString class: extend the BStringViews class but the views
+  must be normalized. Then it can be used to represent a masked BString object.
+  For example alphabetFrequency would work by default in a vectorized fashion
+  on a BStringViews object (Robert suggests to control this via a collapse arg),
+  but in a cumulative fashion on a MaskedBString object.
+  Working on the MaskedBString class will require some reworking of the mask()
+  feature and the addition of some utility functions like is.normalized, etc...
+
 - readFASTA(): set the default for strip.desc to TRUE (with a warning when
   strip.desc is missing). This was already done in svn trunk/release a few
   weeks ago (October 2007) and rolled back on Robert's request. Now Robert
