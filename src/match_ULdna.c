@@ -102,6 +102,7 @@ static int actree_base_codes_buf[ALPHABET_LENGTH];
 
 typedef struct acnode {
 	int parent_id;
+	int depth;
 	int child_id[ALPHABET_LENGTH];
 	int flink;
 	int P_id;
@@ -222,6 +223,7 @@ static void init_acnode(ACNode *node, int parent_id)
 	int childslot;
 
 	node->parent_id = parent_id;
+	node->depth = actree_nodes_buf[parent_id].depth + 1;
 	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++)
 		node->child_id[childslot] = -1;
 	node->flink = -1;
@@ -342,53 +344,57 @@ static int get_child_id(const ACNode *node, const int *base_codes, char c)
 	return -1;
 }
 
-static int get_node_depth(const ACNode *node0, const ACNode *node)
+static void set_child_id(ACNode *basenode, const int *base_codes, char c, int node_id)
 {
-	int depth;
+	int childslot;
 
-	for (depth = 0; node != node0; depth++)
-		node = node0 + node->parent_id;
-	return depth;
+	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++) {
+		if (c == base_codes[childslot]) {
+			basenode->child_id[childslot] = node_id;
+			return;
+		}
+	}
+	return;
 }
 
 static int follow_string(ACNode *node0, const int *base_codes, const char *S, int nS)
 {
-	int node_id, child_id, depth, new_depth, n;
-	const char *path;
-	ACNode *node;
+	int basenode_id, node_id, child_id, n, subcall_nS;
+	ACNode *basenode, *node;
 	static int rec_level = 0;
 #ifdef DEBUG_BIOSTRINGS
 	char format[20], pathbuf[2000];
 #endif
 
-	node = node0;
-	node_id = 0;
-	path = S;
-	depth = 0;
+	basenode_id = 0;
+	basenode = node0;
 	for (n = 0; n < nS; n++, S++) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG] follow_string():");
 			sprintf(format, "%%%ds", 1 + 2*rec_level);
 			Rprintf(format, " ");
-			snprintf(pathbuf, depth + 1, "%s", path);
-			Rprintf("On node_id=%d (path=%s), reading S[%d]=%c\n", node_id, pathbuf, n, *S);
+			snprintf(pathbuf, basenode->depth + 1, "%s", S - basenode->depth);
+			Rprintf("On basenode_id=%d (basepath=%s), reading S[%d]=%c\n", basenode_id, pathbuf, n, *S);
 		}
 #endif
+		node_id = basenode_id;
+		node = basenode;
 		while (1) {
 			child_id = get_child_id(node, base_codes, *S);
 			if (child_id != -1) {
 				node_id = child_id;
-				depth++;
+				node = node0 + node_id;
 				break;
 			}
 			if (node_id == 0) {
-				path++;
+				node = node0; /* node == node0 */
 				break;
 			}
 			if (node->flink == -1) {
 				rec_level++;
-				node->flink = follow_string(node0, base_codes, path + 1,  depth - 1);
+				subcall_nS = node->depth - 1;
+				node->flink = follow_string(node0, base_codes, S - subcall_nS, subcall_nS);
 				rec_level--;
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
@@ -407,23 +413,23 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 #endif
 			node_id = node->flink;
 			node = node0 + node_id;
-			new_depth = get_node_depth(node0, node);
-			path += depth - new_depth;
-			depth = new_depth;
 		}
+		set_child_id(basenode, base_codes, *S, node_id);
+		basenode_id = node_id;
+		basenode = node0 + basenode_id;
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG] follow_string():");
 			Rprintf(format, " ");
-			Rprintf("moving to node %d\n", node_id);
+			Rprintf("moving to basenode %d\n", basenode_id);
 		}
 #endif
-		node = node0 + node_id;
 		// Finding a match cannot happen during a nested call to follow_string()
-		if (node->P_id != -1)
-			report_match(node->P_id - 1, n + 1);
+		// so there is no need to check that rec_level is 0
+		if (basenode->P_id != -1)
+			report_match(basenode->P_id - 1, n + 1);
 	}
-	return node_id;
+	return basenode_id;
 }
 
 static void ULdna_exact_search(int uldna_len, ACNode *node0, const int *base_codes,

@@ -343,7 +343,7 @@ setClass("ACtree",
     )
 )
 
-.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 3L)
+.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
 
 setMethod("length", "ACtree", function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x))
 
@@ -379,7 +379,7 @@ setMethod("[", "ACtree",
         ints_per_acnode <- .ACtree.ints_per_acnode(x)
         ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
         ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
-        colnames(ans) <- c("parent", pdict@actree@base_codes,
+        colnames(ans) <- c("parent_id", "depth", pdict@actree@base_codes,
                            "flink", "P_id")
         rownames(ans) <- i
         ans
