@@ -342,7 +342,7 @@ static int get_child_id(const ACNode *node, const int *base_codes, char c)
 	return -1;
 }
 
-static int get_node_depth(ACNode *node0, ACNode *node)
+static int get_node_depth(const ACNode *node0, const ACNode *node)
 {
 	int depth;
 
