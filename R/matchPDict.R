@@ -273,12 +273,12 @@ setMethod("p2end", "P2ViewsWithIDs",
 setMethod("unlist", "P2Views",
     function(x, recursive=TRUE, use.names=TRUE)
     {
-        p2start <- p2start(p2views)
+        p2start <- p2start(x)
         if (length(p2start) == 0)
             start <- integer(0)
         else
             start <- unlist(p2start, recursive=FALSE, use.names=FALSE)
-        p2end <- p2end(p2views)
+        p2end <- p2end(x)
         if (length(p2end) == 0)
             end <- integer(0)
         else
