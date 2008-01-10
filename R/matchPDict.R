@@ -267,8 +267,28 @@ setMethod("p2end", "P2ViewsWithIDs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "extractAllMatches" function.
+### The "unlist" method and the "extractAllMatches" function.
 ###
+
+setMethod("unlist", "P2Views",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        p2start <- p2start(p2views)
+        if (length(p2start) == 0)
+            start <- integer(0)
+        else
+            start <- unlist(p2start, recursive=FALSE, use.names=FALSE)
+        p2end <- p2end(p2views)
+        if (length(p2end) == 0)
+            end <- integer(0)
+        else
+            end <- unlist(p2end, recursive=FALSE, use.names=FALSE)
+        desc <- names(p2end)
+        if (!is.null(desc))
+            desc <- rep.int(desc, times=sapply(p2end, length))
+        new("Views", start=start, end=end, desc=desc, check.data=FALSE)
+    }
+)
 
 extractAllMatches <- function(subject, p2views)
 {
@@ -278,18 +298,9 @@ extractAllMatches <- function(subject, p2views)
         stop("'p2views' must be a P2Views object")
     if (is.null(pids(p2views)))
         stop("extractAllMatches() works only with a \"P2Views\" object that has pattern IDs")
-    p2start <- p2start(p2views)
-    if (length(p2start) == 0)
-        start <- integer(0)
-    else
-        start <- unlist(p2start, recursive=FALSE, use.names=FALSE)
-    p2end <- p2end(p2views)
-    if (length(p2end) == 0)
-        end <- integer(0)
-    else
-        end <- unlist(p2end, recursive=FALSE, use.names=FALSE)
-    new("BStringViews", subject=subject, start=start, end=end,
-        desc=rep(names(p2end), p2nview(p2views)), check.views=FALSE)
+    allviews <- unlist(p2views)
+    new("BStringViews", subject=subject, start=start(allviews), end=end(allviews),
+        desc=desc(allviews), check.views=FALSE)
 }
 
 

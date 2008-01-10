@@ -21,6 +21,7 @@
 \alias{p2nview,P2Views-method}
 \alias{[[,P2Views-method}
 \alias{$,P2Views-method}
+\alias{unlist,P2Views-method}
 
 \alias{length,P2ViewsWithoutIDs-method}
 \alias{pids,P2ViewsWithoutIDs-method}
@@ -72,10 +73,14 @@
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
 
+  ## Manipulation of the PDict object passed to matchPDict()
+  pids(x)
+
   ## Manipulation of the P2Views object returned by matchPDict()
   p2start(x, all.pids=FALSE)
   p2end(x, all.pids=FALSE)
   p2nview(x, all.pids=FALSE)
+  unlist(x, recursive=TRUE, use.names=TRUE)
   extractAllMatches(subject, p2views)
 }
 
@@ -97,10 +102,17 @@
     Not supported yet.
   }
   \item{x}{
-    A P2Views object returned by a previous call to \code{matchPDict}.
+    A PDict or P2Views object for \code{pids}.
+    A P2Views object for the other methods.
   }
   \item{all.pids}{
     \code{TRUE} or \code{FALSE}.
+  }
+  \item{recursive}{
+    ignored.
+  }
+  \item{use.names}{
+    ignored.
   }
   \item{p2views}{
     A P2Views object returned by a previous call to \code{matchPDict}.
@@ -127,6 +139,10 @@
 }
 
 \examples{
+  ##
+  ## A. WITHOUT USING PATTERN IDS
+  ##
+
   ## Creating the pattern dictionary
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence  # The input dictionary.
@@ -161,7 +177,34 @@
   p2views[[i0]]                       # Its matches as a Views object.
   views(chr3R, p2start[[i0]], p2end[[i0]]) # And as a BStringViews object.
 
-  ## NOT RUN
+  ##
+  ## B. USING PATTERN IDS
+  ##
+
+  dict1 <- dict0[8211:8236]           # The input dictionary.
+  names(dict1) <- LETTERS
+  dict1[1:5]
+  pdict <- new("ULdna_PDict", dict1)
+  length(pdict)                       # Same as the input dictionary.
+  pids(pdict)                         # Same as names(dict1).
+  p2views <- matchPDict(pdict, chr3R) # Search...
+
+  ## Looking at the matches
+  pids(p2views)                       # Same as names(dict1).
+  p2start <- p2start(p2views)
+  p2start
+  length(p2start)                     # NOT the same as the input dictionary.
+  p2start <- p2start(p2views, all.pids=TRUE)
+  length(p2start)                     # Same as the input dictionary.
+  p2nview(p2views)
+  unlist(p2views)
+  nview(unlist(p2views))              # Total number of matches.
+  extractAllMatches(chr3R, p2views)
+
+  ##
+  ## C. PERFORMANCE (NOT RUN)
+  ##
+
   if (FALSE) {
     ## What's the impact of the dictionary width on performance?
     ## Below is some code that can be used to figure out (will take a long
