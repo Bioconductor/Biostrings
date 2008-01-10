@@ -20,6 +20,10 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Boost feature on Aho-Corasick
+
+- Finish C implemntation of read.BStringViews()
+
 - readFASTA(): set the default for strip.desc to TRUE (with a warning when
   strip.desc is missing). This was already done in svn trunk/release a few
   weeks ago (October 2007) and rolled back on Robert's request. Now Robert
