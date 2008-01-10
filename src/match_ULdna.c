@@ -220,10 +220,15 @@ static void alloc_actree_nodes_buf(int length, int width)
 
 static void init_acnode(ACNode *node, int parent_id)
 {
+	ACNode *parent_node;
 	int childslot;
 
 	node->parent_id = parent_id;
-	node->depth = actree_nodes_buf[parent_id].depth + 1;
+	parent_node = actree_nodes_buf + parent_id;
+	if (parent_node == node)	
+		node->depth = 0;
+	else
+		node->depth = parent_node->depth + 1;
 	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++)
 		node->child_id[childslot] = -1;
 	node->flink = -1;
