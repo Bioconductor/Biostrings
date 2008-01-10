@@ -6,7 +6,6 @@
  * strings of the same length.                                              *
  ****************************************************************************/
 #include "Biostrings.h"
-#include <S.h> /* for Srealloc() */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -739,38 +738,42 @@ SEXP shiftListOfInts(SEXP x, SEXP shift)
 SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
-	int symbols_len, pids_len, i;
-	IBuf symbol2offset;
+	int symbols_len, pids_len, i, j;
+	IBuf poffsets, poffsets_order;
 	const char *symbol;
-	int tmp, *offset;
+	int tmp, *poffset;
 
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
 	symbols_len = LENGTH(symbols);
-	_IBuf_init(&symbol2offset, symbols_len, 0);
-	for (i = 0, offset = symbol2offset.vals; i < symbols_len; i++, offset++) {
+	_IBuf_init(&poffsets, symbols_len, 0);
+	for (i = 0, poffset = poffsets.vals; i < symbols_len; i++, poffset++) {
 		symbol = CHAR(STRING_ELT(symbols, i));
 		sscanf(symbol, "%d", &tmp);
-		*offset = tmp - 1;
+		*poffset = tmp - 1;
 	}
-	symbol2offset.count = symbols_len; /* = symbol2offset.maxcount */
+	poffsets.count = symbols_len; /* = poffsets.maxcount */
 	if (LOGICAL(all_pids)[0]) {
 		pids_len = LENGTH(pids);
 		PROTECT(ans = NEW_LIST(pids_len));
 		for (i = 0; i < symbols_len; i++) {
 			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
 			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
-			SET_ELEMENT(ans, symbol2offset.vals[i], ans_elt);
+			SET_ELEMENT(ans, poffsets.vals[i], ans_elt);
 			UNPROTECT(1);
 		}
 		SET_NAMES(ans, duplicate(pids));
 		UNPROTECT(1);
 	} else {
+		_IBuf_init(&poffsets_order, symbols_len, 0);
+		get_intorder(poffsets.vals, poffsets_order.vals, symbols_len);
+		poffsets_order.count = symbols_len; /* = poffsets_order.maxcount */
 		PROTECT(ans = NEW_LIST(symbols_len));
 		PROTECT(ans_names = NEW_CHARACTER(symbols_len));
 		for (i = 0; i < symbols_len; i++) {
-			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
+			j = poffsets_order.vals[i];
+			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir);
 			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
-			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(pids, symbol2offset.vals[i])));
+			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(pids, poffsets.vals[j])));
 		}
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(2);

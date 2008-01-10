@@ -166,6 +166,12 @@ int fgets_rtrimmed(
 		FILE *stream
 );
 
+void get_intorder(
+		const int *in,
+		int *out,
+		int len
+);
+
 
 /* bufutils.c */
 
