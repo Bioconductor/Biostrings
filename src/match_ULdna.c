@@ -317,7 +317,7 @@ static void report_match(int poffset, int end)
 	return;
 }
 
-static void report_matches_for_dups(int *dups, int dups_length)
+static void report_matches_for_dups(const int *dups, int dups_length)
 {
 	int poffset;
 	IBuf *ends_buf;
@@ -332,7 +332,7 @@ static void report_matches_for_dups(int *dups, int dups_length)
 	return;
 }
 
-static int get_child_id(ACNode *node, int *base_codes, char c)
+static int get_child_id(const ACNode *node, const int *base_codes, char c)
 {
 	int childslot;
 
@@ -351,7 +351,7 @@ static int get_node_depth(ACNode *node0, ACNode *node)
 	return depth;
 }
 
-static int follow_string(ACNode *node0, int *base_codes, const char *S, int nS)
+static int follow_string(ACNode *node0, const int *base_codes, const char *S, int nS)
 {
 	int node_id, child_id, depth, new_depth, n;
 	const char *path;
@@ -426,8 +426,8 @@ static int follow_string(ACNode *node0, int *base_codes, const char *S, int nS)
 	return node_id;
 }
 
-static void ULdna_exact_search(int uldna_len, ACNode *node0, int *base_codes,
-		const char *S, int nS, int *dups)
+static void ULdna_exact_search(int uldna_len, ACNode *node0, const int *base_codes,
+		const char *S, int nS, const int *dups)
 {
 	init_ends_bbuf(uldna_len);
 	follow_string(node0, base_codes, S, nS);

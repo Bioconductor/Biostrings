@@ -1,4 +1,6 @@
 #include "Biostrings.h"
+
+#include <stdlib.h>
 #include <ctype.h> /* for isspace() */
 
 static int debug = 0;
