@@ -6,6 +6,7 @@
  * strings of the same length.                                              *
  ****************************************************************************/
 #include "Biostrings.h"
+#include <S.h> /* for Salloc()/Srealloc() */
 
 #include <stdio.h>
 #include <stdlib.h>
