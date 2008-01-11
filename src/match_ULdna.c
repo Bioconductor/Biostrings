@@ -341,21 +341,31 @@ static void report_matches_for_dups(const int *dups, int dups_length)
 
 static int get_child_id(const ACNode *node, const int *base_codes, char c)
 {
-	int childslot;
+	int i;
+	const int *slot, *code;
 
-	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++)
-		if (c == base_codes[childslot])
-			return node->child_id[childslot];
+	for (i = 0, slot = node->child_id, code = base_codes;
+             i < ALPHABET_LENGTH;
+             i++, slot++, code++)
+	{
+		if (c == *code)
+			return *slot;
+	}
 	return -1;
 }
 
 static void set_child_id(ACNode *basenode, const int *base_codes, char c, int node_id)
 {
-	int childslot;
+	int i, *slot;
+	const int *code;
 
-	for (childslot = 0; childslot < ALPHABET_LENGTH; childslot++) {
-		if (c == base_codes[childslot]) {
-			basenode->child_id[childslot] = node_id;
+	for (i = 0, slot = basenode->child_id, code = base_codes;
+             i < ALPHABET_LENGTH;
+             i++, slot++, code++)
+	{
+		if (c == *code) {
+			if (*slot == -1)
+				*slot = node_id;
 			return;
 		}
 	}
