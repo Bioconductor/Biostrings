@@ -23,20 +23,22 @@ In 2.7
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
 
-- Add countPDict() function like we have a countPatterns() function for
-  counting the matches only.
+- matchPDict():
+  o Left-padd the keys used in the @ends_envir slot (P2ViewsWithIDs class)
+    with 0s so they are all the same length. Then no need to sort them anymore
+    in C function extract_p2end().
+  o Add countPDict() function (like we have a countPattern() function) for
+    counting the matches only.
+  o Make reverseComplement() work on a PDict object.
+  o Aho-Corasick should be slightly faster (10%, 20%?) by using fast mapping
+    (lookup table?) from an arbitrary c (the last character read) to the
+    corresponding childslot.
 
 - Add functions for extracting the dinucleotide/trinucleotide frequencies
   in a DNA. Could use countPDict() for this (resp. on a 16-pattern and on
   a 64-pattern PDict object) but I think it can be made much faster by
   implementing some bit-shifting stuff in C resp. on a 4-bit and on a
   6-bit bit pattern (2 bits per nucleotide).
-
-- Make reverseComplement work on a PDict object.
-
-- Aho-Corasick should be slightly faster (10%, 20%?) by using fast mapping
-  (lookup table?) from an arbitrary c (the last character read) to the
-  corresponding childslot.
 
 - Finish C implemntation of read.BStringViews()
 
