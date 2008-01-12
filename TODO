@@ -20,6 +20,15 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Add countPDict() function like we have a countPatterns() function for
+  counting the matches only.
+
+- Add functions for extracting the dinucleotide/trinucleotide frequencies
+  in a DNA. Could use countPDict() for this (resp. on a 16-pattern and on
+  a 64-pattern PDict object) but I think it can be made much faster by
+  implementing some bit-shifting stuff in C resp. on a 4-bit and on a
+  6-bit bit pattern (2 bits per nucleotide).
+
 - Make reverseComplement work on a PDict object.
 
 - Aho-Corasick should be slightly faster (10%, 20%?) by using fast mapping
