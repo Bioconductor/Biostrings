@@ -10,16 +10,16 @@ o Applied "matchPDict() boost feature" patch:
   your machine and the number of matches found).
   This puts matchPDict() at the same level as the Vmatch software
   (http://www.vmatch.de/) for a dictionary of this size. Memory footprint
-  for matchPDict() is still reasonable: between 500M and 800M for the
-  Aho-Corasick tree built from the 3.3M 32-mers dictionary. Building this
-  tree is still very fast (2 or 3 minutes) (Vmatch needs 60G of disk space
-  to build all its suffix arrays, don't know how long it takes for this,
-  don't know what's the memory footprint either when they are loaded into
-  memory but it looks like it is several Gigas).
+  for matchPDict() is about 2GB for the Aho-Corasick tree built from the
+  3.3M 32-mers dictionary. Building this tree is still very fast (2 or 3
+  minutes) (Vmatch needs 60G of disk space to build all its suffix arrays,
+  don't know how long it takes for this, don't know what's the memory
+  footprint either when they are loaded into memory but it looks like it
+  is several Gigas).
   matchPDict() only works with a dictionary of DNA patterns where all the
-  patterns have the same number of nucleotides (Vmatch doesn't have this
-  kind of limitations).
-  There is still room for making matchPDict() even faster (10%, maybe 20%).
+  patterns have the same number of nucleotides and it does only exact
+  matching for now (Vmatch doesn't have this kind of limitations).
+  There is still room for making matchPDict() even faster (20%, maybe more).
 
 o Added "as.character" and "consmat" methods for "BStringAlign" objects.
 
