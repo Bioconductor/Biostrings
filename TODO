@@ -20,6 +20,9 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Rework findPalindromes() (and findComplementedPalindromes()) so that they
+  return maximum palindromes only.
+
 - Add countPDict() function like we have a countPatterns() function for
   counting the matches only.
 
