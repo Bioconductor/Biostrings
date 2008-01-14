@@ -354,7 +354,19 @@ static int get_child_id(const ACNode *node, const int *base_codes, char c)
 	return -1;
 }
 
-static void set_child_id(ACNode *basenode, const int *base_codes, char c, int node_id)
+/*
+ * We use the child slots for storing the shortcuts so it's important to
+ * remember that a child slot doesn't necessary contain the ID of a child
+ * node anymore: it can be any other node in the tree. In fact, it can't be
+ * whatever other node either: its depth can't be greater than the depth of
+ * the referring node. This property provides an efficient way to know whether
+ * N1 -> N2 is a parent-to-child link or a shortcut:
+ *   parent-to-child: depth(N2) == depth(N1) + 1
+ *   shortcut: depth(N2) <= depth(N1)
+ * Note that this trick is not needed by the current implementation of the
+ * follow_string() function.
+ */
+static void set_shortcut(ACNode *basenode, const int *base_codes, char c, int node_id)
 {
 	int i, *slot;
 	const int *code;
@@ -429,7 +441,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 			node_id = node->flink;
 			node = node0 + node_id;
 		}
-		set_child_id(basenode, base_codes, *S, node_id);
+		set_shortcut(basenode, base_codes, *S, node_id);
 		basenode_id = node_id;
 		basenode = node0 + basenode_id;
 #ifdef DEBUG_BIOSTRINGS
