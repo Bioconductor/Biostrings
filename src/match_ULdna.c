@@ -308,6 +308,7 @@ static void build_actree()
  */
 
 IBBuf ends_bbuf;
+static int code2childoffset_lkup[256];
 
 static void init_ends_bbuf(int length)
 {
@@ -339,19 +340,25 @@ static void report_matches_for_dups(const int *dups, int dups_length)
 	return;
 }
 
-static int get_child_id(const ACNode *node, const int *base_codes, char c)
+static void init_code2childoffset_lkup(const int *base_codes)
 {
-	int i;
-	const int *slot, *code;
+	int code, offset;
 
-	for (i = 0, slot = node->child_id, code = base_codes;
-             i < ALPHABET_LENGTH;
-             i++, slot++, code++)
-	{
-		if (c == *code)
-			return *slot;
-	}
-	return -1;
+	for (code = 0; code < 256; code++)
+		code2childoffset_lkup[code] = -1;
+	for (offset = 0; offset < ALPHABET_LENGTH; offset++, base_codes++)
+		code2childoffset_lkup[(unsigned char) *base_codes] = offset;
+	return;
+}
+
+static int get_child_id(const ACNode *node, char c)
+{
+	int offset;
+
+	offset = code2childoffset_lkup[(unsigned char) c];
+	if (offset == -1)
+		return -1;
+	return node->child_id[offset];
 }
 
 /*
@@ -366,21 +373,16 @@ static int get_child_id(const ACNode *node, const int *base_codes, char c)
  * Note that this trick is not needed by the current implementation of the
  * follow_string() function.
  */
-static void set_shortcut(ACNode *basenode, const int *base_codes, char c, int node_id)
+static void set_shortcut(ACNode *basenode, char c, int node_id)
 {
-	int i, *slot;
-	const int *code;
+	int offset, *slot;
 
-	for (i = 0, slot = basenode->child_id, code = base_codes;
-             i < ALPHABET_LENGTH;
-             i++, slot++, code++)
-	{
-		if (c == *code) {
-			if (*slot == -1)
-				*slot = node_id;
-			return;
-		}
-	}
+	offset = code2childoffset_lkup[(unsigned char) c];
+	if (offset == -1)
+		return;
+	slot = basenode->child_id + offset;
+	if (*slot == -1)
+		*slot = node_id;
 	return;
 }
 
@@ -408,7 +410,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 		node_id = basenode_id;
 		node = basenode;
 		while (1) {
-			child_id = get_child_id(node, base_codes, *S);
+			child_id = get_child_id(node, *S);
 			if (child_id != -1) {
 				node_id = child_id;
 				node = node0 + node_id;
@@ -441,7 +443,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 			node_id = node->flink;
 			node = node0 + node_id;
 		}
-		set_shortcut(basenode, base_codes, *S, node_id);
+		set_shortcut(basenode, *S, node_id);
 		basenode_id = node_id;
 		basenode = node0 + basenode_id;
 #ifdef DEBUG_BIOSTRINGS
@@ -463,6 +465,7 @@ static void ULdna_exact_search(int uldna_len, ACNode *node0, const int *base_cod
 		const char *S, int nS, const int *dups)
 {
 	init_ends_bbuf(uldna_len);
+	init_code2childoffset_lkup(base_codes);
 	follow_string(node0, base_codes, S, nS);
 	report_matches_for_dups(dups, uldna_len);
 	return;

@@ -30,9 +30,6 @@ In 2.7
   o Add countPDict() function (like we have a countPattern() function) for
     counting the matches only.
   o Make reverseComplement() work on a PDict object.
-  o Aho-Corasick should be slightly faster (10%, 20%?) by using fast mapping
-    (lookup table?) from an arbitrary c (the last character read) to the
-    corresponding childslot.
 
 - Add functions for extracting the dinucleotide/trinucleotide frequencies
   in a DNA. Could use countPDict() for this (resp. on a 16-pattern and on

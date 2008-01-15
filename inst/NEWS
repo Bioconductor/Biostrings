@@ -19,7 +19,6 @@ o Applied "matchPDict() boost feature" patch:
   matchPDict() only works with a dictionary of DNA patterns where all the
   patterns have the same number of nucleotides and it does only exact
   matching for now (Vmatch doesn't have this kind of limitations).
-  There is still room for making matchPDict() even faster (20%, maybe more).
 
 o Added "as.character" and "consmat" methods for "BStringAlign" objects.
 
