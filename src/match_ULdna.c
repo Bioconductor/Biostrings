@@ -700,7 +700,7 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 
 	if (envir == R_NilValue)
 		return _IBBuf_asLIST(&ends_bbuf, 1);
-	return _IBBuf_toEnvir(&ends_bbuf, envir);
+	return _IBBuf_toEnvir(&ends_bbuf, envir, 1);
 }
 
 
@@ -764,35 +764,29 @@ SEXP shiftListOfInts(SEXP x, SEXP shift)
 	return ans;
 }
 
-/* For testing:
+/* All the keys in ends_envir must be representing integers left-padded with 0s
+ * so they have the same length. This works properly:
      library(Biostrings)
      ends_envir <- new.env(parent = emptyenv())
-     ends_envir[['4']] <- 9:6
-     ends_envir[['10']] <- -2:1
+     ends_envir[['0000000010']] <- -2:1
+     ends_envir[['0000000004']] <- 9:6
      .Call("extract_p2end", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
      .Call("extract_p2end", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
-*/
+ * but this doesn't:
+     ends_envir[['3']] <- 33L
+     .Call("extract_p2end", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+ */
 SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
-	int symbols_len, pids_len, i, j;
+	int i, j;
 	IBuf poffsets, poffsets_order;
-	const char *symbol;
-	int tmp, *poffset;
 
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
-	symbols_len = LENGTH(symbols);
-	_IBuf_init(&poffsets, symbols_len, 0);
-	for (i = 0, poffset = poffsets.vals; i < symbols_len; i++, poffset++) {
-		symbol = CHAR(STRING_ELT(symbols, i));
-		sscanf(symbol, "%d", &tmp);
-		*poffset = tmp - 1;
-	}
-	poffsets.count = symbols_len; /* = poffsets.maxcount */
+	poffsets = _CHARACTER_asIBuf(symbols, -1);
 	if (LOGICAL(all_pids)[0]) {
-		pids_len = LENGTH(pids);
-		PROTECT(ans = NEW_LIST(pids_len));
-		for (i = 0; i < symbols_len; i++) {
+		PROTECT(ans = NEW_LIST(LENGTH(pids)));
+		for (i = 0; i < poffsets.count; i++) {
 			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
 			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
 			SET_ELEMENT(ans, poffsets.vals[i], ans_elt);
@@ -801,13 +795,14 @@ SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
 		SET_NAMES(ans, duplicate(pids));
 		UNPROTECT(1);
 	} else {
-		_IBuf_init(&poffsets_order, symbols_len, 0);
-		get_intorder(poffsets.vals, poffsets_order.vals, symbols_len);
-		poffsets_order.count = symbols_len; /* = poffsets_order.maxcount */
-		PROTECT(ans = NEW_LIST(symbols_len));
-		PROTECT(ans_names = NEW_CHARACTER(symbols_len));
-		for (i = 0; i < symbols_len; i++) {
-			j = poffsets_order.vals[i];
+		//_IBuf_init(&poffsets_order, poffsets.count, 0);
+		//get_intorder(poffsets.vals, poffsets_order.vals, poffsets.count);
+		//poffsets_order.count = poffsets.count; /* = poffsets_order.maxcount */
+		PROTECT(ans = NEW_LIST(poffsets.count));
+		PROTECT(ans_names = NEW_CHARACTER(poffsets.count));
+		for (i = 0; i < poffsets.count; i++) {
+			//j = poffsets_order.vals[i];
+			j = i;
 			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir);
 			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
 			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(pids, poffsets.vals[j])));

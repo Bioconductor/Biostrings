@@ -201,6 +201,11 @@ IBuf _INTEGER_asIBuf(
 		SEXP x
 );
 
+IBuf _CHARACTER_asIBuf(
+		SEXP x,
+		int shift
+);
+
 void _IBBuf_init(
 		IBBuf *ibbuf,
 		int maxcount,
@@ -222,13 +227,14 @@ SEXP _IBBuf_asLIST(
 		int mode
 );
 
-SEXP _IBBuf_toEnvir(
-		IBBuf *ibbuf,
-		SEXP envir
-);
-
 IBBuf _LIST_asIBBuf(
 		SEXP x
+);
+
+SEXP _IBBuf_toEnvir(
+		IBBuf *ibbuf,
+		SEXP envir,
+		int shift
 );
 
 void _CBuf_init(

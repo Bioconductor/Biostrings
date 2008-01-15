@@ -102,12 +102,24 @@ SEXP _IBuf_asINTEGER(IBuf *ibuf)
 IBuf _INTEGER_asIBuf(SEXP x)
 {
 	IBuf ibuf;
-	int x_length;
 
-	x_length = LENGTH(x);
-	ibuf.vals = Salloc((long) x_length, int);
-	memcpy(ibuf.vals, INTEGER(x), sizeof(int) * x_length);
-	ibuf.maxcount = ibuf.count = x_length;
+	_IBuf_init(&ibuf, LENGTH(x), 0);
+	memcpy(ibuf.vals, INTEGER(x), sizeof(int) * LENGTH(x));
+	ibuf.count = ibuf.maxcount;
+	return ibuf;
+}
+
+IBuf _CHARACTER_asIBuf(SEXP x, int shift)
+{
+	IBuf ibuf;
+	int i, *val, tmp;
+
+	_IBuf_init(&ibuf, LENGTH(x), 0);
+	for (i = 0, val = ibuf.vals; i < ibuf.maxcount; i++, val++) {
+		sscanf(CHAR(STRING_ELT(x, i)), "%d", &tmp);
+		*val = tmp + shift;
+	}
+	ibuf.count = ibuf.maxcount;
 	return ibuf;
 }
 
@@ -187,21 +199,6 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf, int mode)
 	return ans;
 }
 
-SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir)
-{
-	int i;
-	IBuf *ibuf;
-	char symbuf[12];
-
-	for (i = 1, ibuf = ibbuf->ibufs; i <= ibbuf->count; i++, ibuf++) {
-		if (ibuf->count == 0)
-			continue;
-		snprintf(symbuf, sizeof(symbuf), "%d", i);
-		Rf_defineVar(Rf_install(symbuf), _IBuf_asINTEGER(ibuf), envir);
-	}
-	return envir;
-}
-
 IBBuf _LIST_asIBBuf(SEXP x)
 {
 	IBBuf ibbuf;
@@ -214,6 +211,22 @@ IBBuf _LIST_asIBBuf(SEXP x)
 		*ibuf_p = _INTEGER_asIBuf(VECTOR_ELT(x, i));
 	ibbuf.maxcount = ibbuf.count = x_length;
 	return ibbuf;
+}
+
+SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int shift)
+{
+	int i;
+	IBuf *ibuf;
+	char symbuf[12];
+
+	for (i = 0, ibuf = ibbuf->ibufs; i <= ibbuf->count; i++, ibuf++) {
+		if (ibuf->count == 0)
+			continue;
+		//snprintf(symbuf, sizeof(symbuf), "%d", i + shift);
+		snprintf(symbuf, sizeof(symbuf), "%010u", (unsigned int) (i + shift));
+		Rf_defineVar(Rf_install(symbuf), _IBuf_asINTEGER(ibuf), envir);
+	}
+	return envir;
 }
 
 

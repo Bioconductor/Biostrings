@@ -136,13 +136,13 @@ setMethod("[[", "P2ViewsWithoutIDs",
 ### 2nd pattern has matches:
 ###   > ends <- rep(list(integer(0)), 5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > pm <- new("P2ViewsWithoutIDs", ends=ends, width=10L)
-###   > pm[[1]]
-###   > pm[[2]]
-###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
-###   > p2start(pm)
-###   > p2end(pm)
-###   > p2nview(pm)
+###   > p2v <- new("P2ViewsWithoutIDs", ends=ends, width=10L)
+###   > p2v[[1]]
+###   > p2v[[2]]
+###   > p2v[[6]] # Error in p2v[[6]] : subscript out of bounds
+###   > p2start(p2v)
+###   > p2end(p2v)
+###   > p2nview(p2v)
 ###
 setMethod("p2start", "P2ViewsWithoutIDs",
     function(x, all.pids=FALSE)
@@ -222,7 +222,7 @@ setMethod("[[", "P2ViewsWithIDs",
                 stop("pattern ID \"", key, "\" not found")
             key <- pos
         } 
-        end <- x@ends_envir[[as.character(key)]]
+        end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
         if (is.null(end))
             end <- integer(0)
         new("Views", start=end-x@width+1L, end=end, check.data=FALSE)
@@ -232,21 +232,21 @@ setMethod("[[", "P2ViewsWithIDs",
 ### An example of a P2ViewsWithIDs object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
-###   > ends_envir[["2"]] <- c(199L, 402L)
-###   > pm <- new("P2ViewsWithIDs", length=5L, ends_envir=ends_envir, width=10L, pids=letters[1:5])
-###   > pm[[1]]
-###   > pm[[2]]
-###   > pm[[6]] # Error in pm[[6]] : subscript out of bounds
-###   > pids(pm)
-###   > pm[["a"]]
-###   > pm[["b"]]
-###   > pm[["aa"]] # Error in pm[["aa"]] : pattern ID ‘aa’ not found
-###   > p2start(pm)
-###   > p2start(pm, all.pids=TRUE)
-###   > p2end(pm)
-###   > p2end(pm, all.pids=TRUE)
-###   > p2nview(pm)
-###   > p2nview(pm, all.pids=TRUE)
+###   > ends_envir[['0000000002']] <- c(199L, 402L)
+###   > p2v <- new("P2ViewsWithIDs", length=5L, ends_envir=ends_envir, width=10L, pids=letters[1:5])
+###   > p2v[[1]]
+###   > p2v[[2]]
+###   > p2v[[6]] # Error in p2v[[6]] : subscript out of bounds
+###   > pids(p2v)
+###   > p2v[["a"]]
+###   > p2v[["b"]]
+###   > p2v[["aa"]] # Error in p2v[["aa"]] : pattern ID ‘aa’ not found
+###   > p2start(p2v)
+###   > p2start(p2v, all.pids=TRUE)
+###   > p2end(p2v)
+###   > p2end(p2v, all.pids=TRUE)
+###   > p2nview(p2v)
+###   > p2nview(p2v, all.pids=TRUE)
 ###
 setMethod("p2start", "P2ViewsWithIDs",
     function(x, all.pids=FALSE)
@@ -290,15 +290,15 @@ setMethod("unlist", "P2Views",
     }
 )
 
-extractAllMatches <- function(subject, p2views)
+extractAllMatches <- function(subject, p2v)
 {
     if (!is(subject, "BString"))
         stop("'subject' must be a BString object")
-    if (!is(p2views, "P2Views"))
-        stop("'p2views' must be a P2Views object")
-    if (is.null(pids(p2views)))
+    if (!is(p2v, "P2Views"))
+        stop("'p2v' must be a P2Views object")
+    if (is.null(pids(p2v)))
         stop("extractAllMatches() works only with a \"P2Views\" object that has pattern IDs")
-    allviews <- unlist(p2views)
+    allviews <- unlist(p2v)
     new("BStringViews", subject=subject, start=start(allviews), end=end(allviews),
         desc=desc(allviews), check.views=FALSE)
 }

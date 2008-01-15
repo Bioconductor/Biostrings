@@ -1,3 +1,24 @@
+Some R problems maybe worth to report:
+
+- Loading a serialized BStringViews object without prior loading the Biostrings
+  package seems to have problems: the object loads, but, when I try to display
+  it, then nothing is printed and the prompt doesn't come back either (unless I
+  CTRL C).
+
+- My script for a full genome analysis works with no problem when I load the
+  input dictionary with:
+    dict0_file <- "hg18-3.3M-32mers.fsa"
+    dict0 <- read.BStringViews(dict0_file, "fasta", subjectClass="DNAString")
+  However this call to read.BStringViews() takes about 20 min to complete.
+  Now if I serialize dict0 (BStringViews object) with:
+    save(dict0, file="hg18-3.3M-32mers.dict0.rda")
+  and modify my script to load the input dictionary with:
+    load("hg18-3.3M-32mers.dict0.rda")
+  then I get the following error in runAnalysis():
+    >>> Finding all hits in strand + of chromosome chr1 ...
+    Error: cons memory exhausted (limit reached?)
+
+
 In 2.[6|7]
 ==========
 
@@ -24,9 +45,6 @@ In 2.7
   return maximum palindromes only.
 
 - matchPDict():
-  o Left-padd the keys used in the @ends_envir slot (P2ViewsWithIDs class)
-    with 0s so they are all the same length. Then no need to sort them anymore
-    in C function extract_p2end().
   o Add countPDict() function (like we have a countPattern() function) for
     counting the matches only.
   o Make reverseComplement() work on a PDict object.

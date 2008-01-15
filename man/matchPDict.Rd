@@ -81,7 +81,7 @@
   p2end(x, all.pids=FALSE)
   p2nview(x, all.pids=FALSE)
   unlist(x, recursive=TRUE, use.names=TRUE)
-  extractAllMatches(subject, p2views)
+  extractAllMatches(subject, p2v)
 }
 
 \arguments{
@@ -114,7 +114,7 @@
   \item{use.names}{
     ignored.
   }
-  \item{p2views}{
+  \item{p2v}{
     A P2Views object returned by a previous call to \code{matchPDict}.
   }
 }
@@ -158,23 +158,23 @@
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]      # Load chromosome 3R
   chr3R
-  p2views <- matchPDict(pdict, chr3R) # Search...
+  p2v <- matchPDict(pdict, chr3R)     # Search...
 
   ## Looking at the matches
-  p2start <- p2start(p2views)         # Get the starts of the matches
+  p2start <- p2start(p2v)             # Get the starts of the matches
   length(p2start)                     # Same as the input dictionary.
   p2start[[8220]]                     # Starts of the 8220th pattern.
-  p2end <- p2end(p2views)             # Get the ends of the matches.
+  p2end <- p2end(p2v)                 # Get the ends of the matches.
   p2end[[8220]]                       # Ends of the 8220th pattern.
-  nmatch <- p2nview(p2views)          # Get the number of matches per pattern.
+  nmatch <- p2nview(p2v)              # Get the number of matches per pattern.
   nmatch[[8220]]
-  p2views[[8220]]                     # Get the matches for the 8220th pattern.
-  start(p2views[[8220]])              # Equivalent to p2start(p2views)[[8220]].
+  p2v[[8220]]                         # Get the matches for the 8220th pattern.
+  start(p2v[[8220]])                  # Equivalent to p2start(p2v)[[8220]].
   sum(nmatch)                         # Total number of matches.
   table(nmatch)
   i0 <- which(nmatch == max(nmatch))
   dict0[i0]                           # The pattern with most occurences.
-  p2views[[i0]]                       # Its matches as a Views object.
+  p2v[[i0]]                           # Its matches as a Views object.
   views(chr3R, p2start[[i0]], p2end[[i0]]) # And as a BStringViews object.
 
   ##
@@ -187,19 +187,19 @@
   pdict <- new("ULdna_PDict", dict1)
   length(pdict)                       # Same as the input dictionary.
   pids(pdict)                         # Same as names(dict1).
-  p2views <- matchPDict(pdict, chr3R) # Search...
+  p2v <- matchPDict(pdict, chr3R)     # Search...
 
   ## Looking at the matches
-  pids(p2views)                       # Same as names(dict1).
-  p2start <- p2start(p2views)
+  pids(p2v)                           # Same as names(dict1).
+  p2start <- p2start(p2v)
   p2start
   length(p2start)                     # NOT the same as the input dictionary.
-  p2start <- p2start(p2views, all.pids=TRUE)
+  p2start <- p2start(p2v, all.pids=TRUE)
   length(p2start)                     # Same as the input dictionary.
-  p2nview(p2views)
-  unlist(p2views)
-  nview(unlist(p2views))              # Total number of matches.
-  extractAllMatches(chr3R, p2views)
+  p2nview(p2v)
+  unlist(p2v)
+  nview(unlist(p2v))                  # Total number of matches.
+  extractAllMatches(chr3R, p2v)
 
   ##
   ## C. PERFORMANCE (NOT RUN)
@@ -223,8 +223,8 @@
         pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
-        matchtime=system.time(p2views <- matchPDict(pdict, subject))[["elapsed"]],
-        sum_nmatch=sum(p2nview(p2views))
+        matchtime=system.time(p2v <- matchPDict(pdict, subject))[["elapsed"]],
+        sum_nmatch=sum(p2nview(p2v))
       )
     }
     stats <- lapply(6:25, function(width) getPDictStats(dict0, width, chr3R))
