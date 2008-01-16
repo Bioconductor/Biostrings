@@ -25,26 +25,35 @@ static int debug = 0;
  */
 
 typedef struct uldict {
+	const char **patterns;	// array of pointers to the read-only patterns
 	int length;		// number of patterns
 	int width;		// number of chars per pattern
-	const char **patterns;	// array of pointers to the read-only patterns
+	int truncate_on_add;	// should patterns be truncated when added?
 } ULdict;
 
 static ULdict input_uldict;
 
-static void alloc_input_uldict(int length)
+static void alloc_input_uldict(int length, SEXP width)
 {
 	input_uldict.patterns = Salloc((long) length, const char *);
 	input_uldict.length = length;
-	input_uldict.width = -1;
+	input_uldict.truncate_on_add = width != R_NilValue;
+	if (input_uldict.truncate_on_add)
+		input_uldict.width = INTEGER(width)[0];
+	else
+		input_uldict.width = -1;
 	return;
 }
 
 static void add_pattern_to_input_uldict(int poffset, const char *pattern, int pattern_length)
 {
-	if (input_uldict.width == -1) {
+	if (input_uldict.truncate_on_add) {
+		if (pattern_length < input_uldict.width)
+			error("'dict' contains patterns with less than %d characters",
+			      input_uldict.width);
+	} else if (input_uldict.width == -1) {
 		if (pattern_length == 0)
-			error("'dict' contains empty patterns");
+			error("first pattern in 'dict' is empty");
 		input_uldict.width = pattern_length;
 	} else {
 		if (pattern_length != input_uldict.width)
@@ -575,7 +584,7 @@ static SEXP uldna_asLIST()
 
 /****************************************************************************
  * .Call entry points for building the Aho-Corasick 4-ary tree from the input
- * dictionary. The input dictionary must be:
+ * dictionary (preprocessing). The input dictionary must be:
  *   - of length >= 1
  *   - uniform-length (i.e. all words have the same length)
  ****************************************************************************/
@@ -589,12 +598,12 @@ static SEXP uldna_asLIST()
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_StrVect(SEXP dict)
+SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
 {
 	int poffset;
 	SEXP dict_elt;
 
-	alloc_input_uldict(LENGTH(dict));
+	alloc_input_uldict(LENGTH(dict), width);
 	for (poffset = 0; poffset < LENGTH(dict); poffset++) {
 		dict_elt = STRING_ELT(dict, poffset);
 		add_pattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
@@ -612,7 +621,7 @@ SEXP ULdna_pp_StrVect(SEXP dict)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_BStringList(SEXP dict)
+SEXP ULdna_pp_BStringList(SEXP dict, SEXP width)
 {
 	error("Not ready yet!\n");
 	return uldna_asLIST();
@@ -632,7 +641,7 @@ SEXP ULdna_pp_BStringList(SEXP dict)
  * See uldna_asLIST() for a description of the returned SEXP.
  */
 SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_length,
-		SEXP dict_start, SEXP dict_end)
+		SEXP dict_start, SEXP dict_end, SEXP width)
 {
 	int subj_offset, subj_length, dict_length;
 	const Rbyte *subj;
@@ -642,7 +651,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 	subj = RAW(R_ExternalPtrTag(dict_subj_xp)) + subj_offset;
 	subj_length = INTEGER(dict_subj_length)[0];
 	dict_length = LENGTH(dict_start); // must be the same as LENGTH(dict_end)
-	alloc_input_uldict(dict_length);
+	alloc_input_uldict(dict_length, width);
 	for (poffset = 0, view_start = INTEGER(dict_start), view_end = INTEGER(dict_end);
 	     poffset < dict_length;
 	     poffset++, view_start++, view_end++) {

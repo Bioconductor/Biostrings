@@ -217,10 +217,9 @@
     ##   o sum_nmatch: total number of matches
     getPDictStats <- function(dict0, width, subject)
     {
-      dict <- substr(dict0, 1, width)
       list(
         width=width,
-        pptime=system.time(pdict <- new("ULdna_PDict", dict))[["elapsed"]],
+        pptime=system.time(pdict <- new("ULdna_PDict", dict0, width))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
         matchtime=system.time(p2v <- matchPDict(pdict, subject))[["elapsed"]],

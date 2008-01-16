@@ -475,30 +475,30 @@ debug_ULdna <- function()
 ### 'dict' must be a string vector (aka character vector) with at least 1
 ### element. If it has names, then they must be unique and are considered
 ### to be the pattern IDs.
-.ULdna_PDict.init_with_StrVect <- function(.Object, dict)
+.ULdna_PDict.init_with_StrVect <- function(.Object, dict, width)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
     pids <- names(dict)
     .checkpids(pids)
-    ppans <- .Call("ULdna_pp_StrVect", dict, PACKAGE="Biostrings")
+    ppans <- .Call("ULdna_pp_StrVect", dict, width, PACKAGE="Biostrings")
     .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
 ### 'dict' must be a list of BString objects of the same class (i.e. all
 ### BString instances or all DNAString instances or etc...) with at least 1
 ### element.
-.ULdna_PDict.init_with_BStringList <- function(.Object, dict)
+.ULdna_PDict.init_with_BStringList <- function(.Object, dict, width)
 {
     pids <- names(dict)
     .checkpids(pids)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
-    ppans <- .Call("ULdna_pp_BStringList", dict0, PACKAGE="Biostrings")
+    ppans <- .Call("ULdna_pp_BStringList", dict0, width, PACKAGE="Biostrings")
     .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
 ### 'dict' must be a BStringViews object.
-.ULdna_PDict.init_with_BStringViews <- function(.Object, dict)
+.ULdna_PDict.init_with_BStringViews <- function(.Object, dict, width)
 {
     if (length(dict) == 0)
         stop("'dict' has no views")
@@ -506,7 +506,7 @@ debug_ULdna <- function()
     .checkpids(pids)
     ppans <- .Call("ULdna_pp_views",
                   subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
-                  start(dict), end(dict),
+                  start(dict), end(dict), width,
                   PACKAGE="Biostrings")
     .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
@@ -524,13 +524,20 @@ debug_ULdna <- function()
 ###   > pdict <- new("ULdna_PDict", dict)
 ###
 setMethod("initialize", "ULdna_PDict",
-    function(.Object, dict)
+    function(.Object, dict, width=NULL)
     {
         on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
+        if (!is.null(width)) {
+            if (!is.numeric(width) || length(width) != 1 || is.na(width))
+                stop("when specified, 'width' must be a single integer")
+            width <- as.integer(width)
+            if (width <= 0)
+                stop("when specified, 'width' must be a positive integer")
+        }
         if (is.character(dict)) {
             if (length(dict) == 0)
                 stop("'dict' is an empty character vector")
-            return(.ULdna_PDict.init_with_StrVect(.Object, dict))
+            return(.ULdna_PDict.init_with_StrVect(.Object, dict, width))
 	}
         if (is.list(dict)) {
             if (length(dict) == 0)
@@ -542,13 +549,13 @@ setMethod("initialize", "ULdna_PDict",
                 if (!all(sapply(dict, length) == 1))
                     stop("all character vectors in 'dict' must be of length 1")
                 dict0 <- unlist(dict, recursive=FALSE, use.names=FALSE)
-                return(.ULdna_PDict.init_with_StrVect(.Object, dict0))
+                return(.ULdna_PDict.init_with_StrVect(.Object, dict0, width))
             }
             if (extends(pattern_class, "BString"))
-                return(.ULdna_PDict.init_with_BStringList(.Object, dict))
+                return(.ULdna_PDict.init_with_BStringList(.Object, dict, width))
         }
         if (is(dict, "BStringViews"))
-            return(.ULdna_PDict.init_with_BStringViews(.Object, dict))
+            return(.ULdna_PDict.init_with_BStringViews(.Object, dict, width))
         stop("invalid 'dict' (type '?ULdna_PDict' for more information)")
     }
 )
