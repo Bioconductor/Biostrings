@@ -8,8 +8,8 @@ exportClasses(
     "Views", "BStringViews", "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
-    "P2Views", "P2ViewsWithoutIDs", "P2ViewsWithIDs",
-    "PDict", "ULdna_PDict"
+    "PDict", "ULdna_PDict", "TailedULdna_PDict",
+    "P2Views", "P2ViewsWithoutIDs", "P2ViewsWithIDs"
 )
 
 exportMethods(

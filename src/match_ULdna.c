@@ -542,18 +542,26 @@ static SEXP actree_base_codes_buf_asINTEGER()
  *   - dups: an integer vector of the same length as 'dict' containing the
  *         duplicate info.
  */
-static SEXP uldna_asLIST()
+static SEXP uldna_asLIST(SEXP tail)
 {
 	SEXP ans, ans_names, ans_elt;
 
-	PROTECT(ans = NEW_LIST(4));
+	if (tail != R_NilValue)
+		PROTECT(ans = NEW_LIST(5));
+	else
+		PROTECT(ans = NEW_LIST(4));
 
 	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(4));
+	if (tail != R_NilValue)
+		PROTECT(ans_names = NEW_CHARACTER(5));
+	else
+		PROTECT(ans_names = NEW_CHARACTER(4));
 	SET_STRING_ELT(ans_names, 0, mkChar("width"));
 	SET_STRING_ELT(ans_names, 1, mkChar("actree_nodes_xp"));
 	SET_STRING_ELT(ans_names, 2, mkChar("actree_base_codes"));
 	SET_STRING_ELT(ans_names, 3, mkChar("dups"));
+	if (tail != R_NilValue)
+		SET_STRING_ELT(ans_names, 4, mkChar("tail"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
@@ -577,6 +585,11 @@ static SEXP uldna_asLIST()
 	SET_ELEMENT(ans, 3, ans_elt);
 	UNPROTECT(1);
 
+	if (tail != R_NilValue) {
+		/* set the "tail" element */
+		SET_ELEMENT(ans, 4, tail);
+	}
+
 	UNPROTECT(1);
 	return ans;
 }
@@ -594,11 +607,15 @@ static SEXP uldna_asLIST()
  *
  * Argument:
  *   'dict': a string vector (aka character vector) containing the
- *           uniform-length dictionary
+ *       uniform-length dictionary
+ *   'width': if not NULL then truncate the input patterns to keep the first
+ *       'width' nucleotides ('width' must be a single integer)
+ *   'tail': environment where to store the tail of the returned object
+ *       (ignored if 'width' is NULL)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
+SEXP ULdna_pp_StrVect(SEXP dict, SEXP width, SEXP tail)
 {
 	int poffset;
 	SEXP dict_elt;
@@ -609,7 +626,7 @@ SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
 		add_pattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
 	build_actree();
-	return uldna_asLIST();
+	return uldna_asLIST(tail);
 }
 
 /*
@@ -621,10 +638,10 @@ SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_BStringList(SEXP dict, SEXP width)
+SEXP ULdna_pp_BStringList(SEXP dict, SEXP width, SEXP tail)
 {
 	error("Not ready yet!\n");
-	return uldna_asLIST();
+	return uldna_asLIST(tail);
 }
 
 /*
@@ -641,7 +658,7 @@ SEXP ULdna_pp_BStringList(SEXP dict, SEXP width)
  * See uldna_asLIST() for a description of the returned SEXP.
  */
 SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_length,
-		SEXP dict_start, SEXP dict_end, SEXP width)
+		SEXP dict_start, SEXP dict_end, SEXP width, SEXP tail)
 {
 	int subj_offset, subj_length, dict_length;
 	const Rbyte *subj;
@@ -662,7 +679,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 			(char *) (subj + view_offset), *view_end - view_offset);
 	}
 	build_actree();
-	return uldna_asLIST();
+	return uldna_asLIST(tail);
 }
 
 

@@ -1,7 +1,306 @@
-### =========================================================================
+#############################################################################
+###
 ### The matchPDict() generic & related classes and functions
+### ========================================================
+###
+### Author: Herve Pages (hpages@fhcrc.org)
+###
+#############################################################################
+
+
+
+
+### =========================================================================
+### A. PREPROCESSING
 ### -------------------------------------------------------------------------
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PDict" class.
+###
+### Very general container for any kind of preprocessed pattern dictionary.
+###
+
+setClass("PDict", representation("VIRTUAL"))
+
+setGeneric("pids", function(x) standardGeneric("pids"))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ACtree" class (NOT EXPORTED).
+###
+### A low-level container for storing the Aho-Corasick tree built from the
+### input dictionary (note that this tree is actually an oriented graph if we
+### consider the failure links). When the input is based on an alphabet of 4
+### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
+### base_codes slot is a vector of 4 integers that will be filled with the
+### internal codes (byte values) of the unique letters found in the input.
+### The number of integers needed to represent a tree node is the number of
+### letters in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
+### representation of the Aho-Corasick tree can only be used for input based
+### on a very small alphabet.
+###
+### Slot description:
+###
+###   nodes: an external integer vector (XInteger object) for the storage
+###       of the nodes.
+### 
+###   base_codes: an integer vector filled with the internal codes (byte
+###       values) of the unique letters found in the input dictionary during
+###       its preprocessing.
+
+setClass("ACtree",
+    representation(
+        nodes="XInteger",
+        base_codes="integer"
+    )
+)
+
+.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
+
+setMethod("length", "ACtree", function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x))
+
+setMethod("show", "ACtree",
+    function(object)
+    {
+        cat(length(object), "-node ", length(object@base_codes), "-ary Aho-Corasick tree\n", sep="")
+    }
+)
+
+### Implement the 0-based subsetting semantic (like in C).
+### Typical use:
+###   > pdict <- new("ULdna_PDict", c("agg", "aca", "gag", "caa", "agt", "aca"))
+###   > pdict@actree[0:2] # look at the 3 first nodes
+###   > pdict@actree[] # look at all the nodes
+###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks0 # no failure link is set yet
+###   > p2end <- p2end(matchPDict(pdict, DNAString("acaagagagt")))
+###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks1 # some failure links have been set
+### As you can see the 'pdict' object "learns" from being used!
+###   
+setMethod("[", "ACtree",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        lx <- length(x)
+        if (missing(i))
+            i <- 0:(lx-1)
+        else if (!is.integer(i))
+            i <- as.integer(i)
+        ints_per_acnode <- .ACtree.ints_per_acnode(x)
+        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
+        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
+        colnames(ans) <- c("parent_id", "depth", pdict@actree@base_codes,
+                           "flink", "P_id")
+        rownames(ans) <- i
+        ans
+    }
+)
+
+setMethod("as.matrix", "ACtree", function(x) x[])
+
+setMethod("initialize", "ACtree",
+    function(.Object, xp, base_codes)
+    {
+        .Object@nodes <- XInteger(1)
+        .Object@nodes@xp <- xp
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ULdna_PDict" class.
+###
+### A container for storing a preprocessed uniform-length dictionary (or set)
+### of DNA patterns.
+###
+### Slot description:
+###
+###   length: the dictionary length L i.e. the number of patterns
+###       (e.g. L=10^6).
+###
+###   width: the dictionary width W i.e. the number of chars per pattern
+###       (e.g. W=25).
+###
+###   actree: the Aho-Corasick tree built from the input dictionary.
+###
+###   dups: an integer vector of length L and containing the duplicate info.
+###       If unique pattern IDs were provided as part of the input dictionary,
+###       then they are used to name the elements of this vector.
+
+setClass("ULdna_PDict",
+    contains="PDict",
+    representation(
+        length="integer",
+        width="integer",
+        actree="ACtree",
+        dups="integer"
+    )
+)
+
+setMethod("length", "ULdna_PDict", function(x) x@length)
+
+setMethod("width", "ULdna_PDict", function(x) x@width)
+
+setMethod("pids", "ULdna_PDict", function(x) names(x@dups))
+
+setMethod("show", "ULdna_PDict",
+    function(object)
+    {
+        cat(length(object), "-pattern uniform-length \"PDict\" object of width ", width(object), sep="")
+        if (is.null(pids(object)))
+            cat(" (no pattern IDs)")
+        cat("\n")
+    }
+)
+
+debug_ULdna <- function()
+{
+    invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
+}
+
+.checkpids <- function(pids)
+{
+    if (!is.null(pids)) {
+        if (any(pids %in% c("", NA)))
+            stop("'dict' has invalid names")
+        if (any(duplicated(pids)))
+            stop("'dict' has duplicated names")
+    }
+}
+
+### 'ppans' is the answer returned by the preprocessing functions (the
+### ULdna_pp_*() functions).
+.ULdna_PDict.postinit <- function(.Object, length, ppans, pids)
+{
+    .Object@length <- length
+    .Object@width <- ppans$width
+    .Object@actree <- new("ACtree", ppans$actree_nodes_xp, ppans$actree_base_codes)
+    .Object@dups <- ppans$dups
+    names(.Object@dups) <- pids
+    .Object
+}
+
+### 'dict' must be a string vector (aka character vector) with at least 1
+### element. If it has names, then they must be unique and are considered
+### to be the pattern IDs.
+.ULdna_PDict.init_with_StrVect <- function(.Object, dict, width)
+{
+    if (any(is.na(dict)))
+        stop("'dict' contains NAs")
+    pids <- names(dict)
+    .checkpids(pids)
+    ppans <- .Call("ULdna_pp_StrVect", dict, width, NULL, PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
+}
+
+### 'dict' must be a list of BString objects of the same class (i.e. all
+### BString instances or all DNAString instances or etc...) with at least 1
+### element.
+.ULdna_PDict.init_with_BStringList <- function(.Object, dict, width)
+{
+    pids <- names(dict)
+    .checkpids(pids)
+    dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
+    ppans <- .Call("ULdna_pp_BStringList", dict0, width, NULL, PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
+}
+
+### 'dict' must be a BStringViews object.
+.ULdna_PDict.init_with_BStringViews <- function(.Object, dict, width)
+{
+    if (length(dict) == 0)
+        stop("'dict' has no views")
+    pids <- desc(dict)
+    .checkpids(pids)
+    ppans <- .Call("ULdna_pp_views",
+                  subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
+                  start(dict), end(dict), width, NULL,
+                  PACKAGE="Biostrings")
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
+}
+
+### The input dictionary 'dict' must be:
+###   - of length >= 1
+###   - uniform-length (i.e. all words have the same length)
+### The supported types for the input dictionary are:
+###   - character vector
+###   - list of character strings or BString or DNAString or RNAString objects
+###   - BStringViews object
+### Typical use:
+###   > library(Biostrings)
+###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
+###   > pdict <- new("ULdna_PDict", dict)
+###
+setMethod("initialize", "ULdna_PDict",
+    function(.Object, dict, width=NULL)
+    {
+        on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
+        if (!is.null(width)) {
+            if (!is.numeric(width) || length(width) != 1 || is.na(width))
+                stop("when specified, 'width' must be a single integer")
+            width <- as.integer(width)
+            if (width <= 0)
+                stop("when specified, 'width' must be a positive integer")
+        }
+        if (is.character(dict)) {
+            if (length(dict) == 0)
+                stop("'dict' is an empty character vector")
+            return(.ULdna_PDict.init_with_StrVect(.Object, dict, width))
+	}
+        if (is.list(dict)) {
+            if (length(dict) == 0)
+                stop("'dict' is an empty list")
+            pattern_class <- unique(sapply(dict, class))
+            if (length(pattern_class) != 1)
+                stop("all elements in 'dict' must belong to the same class")
+            if (pattern_class == "character") {
+                if (!all(sapply(dict, length) == 1))
+                    stop("all character vectors in 'dict' must be of length 1")
+                dict0 <- unlist(dict, recursive=FALSE, use.names=FALSE)
+                return(.ULdna_PDict.init_with_StrVect(.Object, dict0, width))
+            }
+            if (extends(pattern_class, "BString"))
+                return(.ULdna_PDict.init_with_BStringList(.Object, dict, width))
+        }
+        if (is(dict, "BStringViews"))
+            return(.ULdna_PDict.init_with_BStringViews(.Object, dict, width))
+        stop("invalid 'dict' (type '?ULdna_PDict' for more information)")
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "TailedULdna_PDict" class.
+###
+
+setClass("TailedULdna_PDict",
+    contains="ULdna_PDict",
+    representation(
+        tail="environment"
+    )
+)
+
+setMethod("show", "TailedULdna_PDict",
+    function(object)
+    {
+        cat(length(object), "-pattern \"PDict\" object with a head (of width ",
+            width(object), ") and a tail", sep="")
+        if (is.null(pids(object)))
+            cat(" (no pattern IDs)")
+        cat("\n")
+    }
+)
+
+
+
+
+### =========================================================================
+### B. SEARCH RESULT MANIPULATION
+### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "P2Views" API.
@@ -10,8 +309,6 @@
 ###
 
 setClass("P2Views", representation("VIRTUAL"))
-
-setGeneric("pids", function(x) standardGeneric("pids"))
 
 
 setGeneric("p2start", signature="x",
@@ -304,267 +601,14 @@ extractAllMatches <- function(subject, p2v)
 }
 
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDict" class.
-###
-### Very general container for any kind of pattern dictionary.
-###
-
-setClass("PDict", representation("VIRTUAL"))
 
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ACtree" class (NOT EXPORTED).
-###
-### A low-level container for storing the Aho-Corasick tree built from the
-### input dictionary (note that this tree is actually an oriented graph if we
-### consider the failure links). When the input is based on an alphabet of 4
-### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
-### base_codes slot is a vector of 4 integers that will be filled with the
-### internal codes (byte values) of the unique letters found in the input.
-### The number of integers needed to represent a tree node is the number of
-### letters in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
-### representation of the Aho-Corasick tree can only be used for input based
-### on a very small alphabet.
-###
-### Slot description:
-###
-###   nodes: an external integer vector (XInteger object) for the storage
-###       of the nodes.
-### 
-###   base_codes: an integer vector filled with the internal codes (byte
-###       values) of the unique letters found in the input dictionary during
-###       its preprocessing.
-
-setClass("ACtree",
-    representation(
-        nodes="XInteger",
-        base_codes="integer"
-    )
-)
-
-.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
-
-setMethod("length", "ACtree", function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x))
-
-setMethod("show", "ACtree",
-    function(object)
-    {
-        cat(length(object), "-node ", length(object@base_codes), "-ary Aho-Corasick tree\n", sep="")
-    }
-)
-
-### Implement the 0-based subsetting semantic (like in C).
-### Typical use:
-###   > pdict <- new("ULdna_PDict", c("agg", "aca", "gag", "caa", "agt", "aca"))
-###   > pdict@actree[0:2] # look at the 3 first nodes
-###   > pdict@actree[] # look at all the nodes
-###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks0 # no failure link is set yet
-###   > p2end <- p2end(matchPDict(pdict, DNAString("acaagagagt")))
-###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks1 # some failure links have been set
-### As you can see the 'pdict' object "learns" from being used!
-###   
-setMethod("[", "ACtree",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        lx <- length(x)
-        if (missing(i))
-            i <- 0:(lx-1)
-        else if (!is.integer(i))
-            i <- as.integer(i)
-        ints_per_acnode <- .ACtree.ints_per_acnode(x)
-        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
-        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
-        colnames(ans) <- c("parent_id", "depth", pdict@actree@base_codes,
-                           "flink", "P_id")
-        rownames(ans) <- i
-        ans
-    }
-)
-
-setMethod("as.matrix", "ACtree", function(x) x[])
-
-setMethod("initialize", "ACtree",
-    function(.Object, xp, base_codes)
-    {
-        .Object@nodes <- XInteger(1)
-        .Object@nodes@xp <- xp
-        .Object@base_codes <- base_codes
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ULdna_PDict" class.
-###
-### A container for storing a preprocessed uniform-length dictionary (or set)
-### of DNA patterns.
-###
-### Slot description:
-###
-###   length: the dictionary length L i.e. the number of patterns
-###       (e.g. L=10^6).
-###
-###   width: the dictionary width W i.e. the number of chars per pattern
-###       (e.g. W=25).
-###
-###   actree: the Aho-Corasick tree built from the input dictionary.
-###
-###   dups: an integer vector of length L and containing the duplicate info.
-###       If unique pattern IDs were provided as part of the input dictionary,
-###       then they are used to name the elements of this vector.
-
-setClass("ULdna_PDict",
-    contains="PDict",
-    representation(
-        length="integer",
-        width="integer",
-        actree="ACtree",
-        dups="integer"
-    )
-)
-
-setMethod("length", "ULdna_PDict", function(x) x@length)
-
-setMethod("width", "ULdna_PDict", function(x) x@width)
-
-setMethod("pids", "ULdna_PDict", function(x) names(x@dups))
-
-setMethod("show", "ULdna_PDict",
-    function(object)
-    {
-        cat(length(object), "-pattern uniform-length \"PDict\" object of width ", width(object), sep="")
-        if (is.null(pids(object)))
-            cat(" (no pattern IDs)")
-        cat("\n")
-    }
-)
-
-debug_ULdna <- function()
-{
-    invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
-}
-
-.checkpids <- function(pids)
-{
-    if (!is.null(pids)) {
-        if (any(pids %in% c("", NA)))
-            stop("'dict' has invalid names")
-        if (any(duplicated(pids)))
-            stop("'dict' has duplicated names")
-    }
-}
-
-### 'ppans' is the answer returned by the preprocessing functions (the
-### ULdna_pp_*() functions).
-.ULdna_PDict.postinit <- function(.Object, length, ppans, pids)
-{
-    .Object@length <- length
-    .Object@width <- ppans$width
-    .Object@actree <- new("ACtree", ppans$actree_nodes_xp, ppans$actree_base_codes)
-    .Object@dups <- ppans$dups
-    names(.Object@dups) <- pids
-    .Object
-}
-
-### 'dict' must be a string vector (aka character vector) with at least 1
-### element. If it has names, then they must be unique and are considered
-### to be the pattern IDs.
-.ULdna_PDict.init_with_StrVect <- function(.Object, dict, width)
-{
-    if (any(is.na(dict)))
-        stop("'dict' contains NAs")
-    pids <- names(dict)
-    .checkpids(pids)
-    ppans <- .Call("ULdna_pp_StrVect", dict, width, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
-}
-
-### 'dict' must be a list of BString objects of the same class (i.e. all
-### BString instances or all DNAString instances or etc...) with at least 1
-### element.
-.ULdna_PDict.init_with_BStringList <- function(.Object, dict, width)
-{
-    pids <- names(dict)
-    .checkpids(pids)
-    dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
-    ppans <- .Call("ULdna_pp_BStringList", dict0, width, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
-}
-
-### 'dict' must be a BStringViews object.
-.ULdna_PDict.init_with_BStringViews <- function(.Object, dict, width)
-{
-    if (length(dict) == 0)
-        stop("'dict' has no views")
-    pids <- desc(dict)
-    .checkpids(pids)
-    ppans <- .Call("ULdna_pp_views",
-                  subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
-                  start(dict), end(dict), width,
-                  PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
-}
-
-### The input dictionary 'dict' must be:
-###   - of length >= 1
-###   - uniform-length (i.e. all words have the same length)
-### The supported types for the input dictionary are:
-###   - character vector
-###   - list of character strings or BString or DNAString or RNAString objects
-###   - BStringViews object
-### Typical use:
-###   > library(Biostrings)
-###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
-###   > pdict <- new("ULdna_PDict", dict)
-###
-setMethod("initialize", "ULdna_PDict",
-    function(.Object, dict, width=NULL)
-    {
-        on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
-        if (!is.null(width)) {
-            if (!is.numeric(width) || length(width) != 1 || is.na(width))
-                stop("when specified, 'width' must be a single integer")
-            width <- as.integer(width)
-            if (width <= 0)
-                stop("when specified, 'width' must be a positive integer")
-        }
-        if (is.character(dict)) {
-            if (length(dict) == 0)
-                stop("'dict' is an empty character vector")
-            return(.ULdna_PDict.init_with_StrVect(.Object, dict, width))
-	}
-        if (is.list(dict)) {
-            if (length(dict) == 0)
-                stop("'dict' is an empty list")
-            pattern_class <- unique(sapply(dict, class))
-            if (length(pattern_class) != 1)
-                stop("all elements in 'dict' must belong to the same class")
-            if (pattern_class == "character") {
-                if (!all(sapply(dict, length) == 1))
-                    stop("all character vectors in 'dict' must be of length 1")
-                dict0 <- unlist(dict, recursive=FALSE, use.names=FALSE)
-                return(.ULdna_PDict.init_with_StrVect(.Object, dict0, width))
-            }
-            if (extends(pattern_class, "BString"))
-                return(.ULdna_PDict.init_with_BStringList(.Object, dict, width))
-        }
-        if (is(dict, "BStringViews"))
-            return(.ULdna_PDict.init_with_BStringViews(.Object, dict, width))
-        stop("invalid 'dict' (type '?ULdna_PDict' for more information)")
-    }
-)
-
+### =========================================================================
+### C. EXACT SEARCH
+### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Aho-Corasick
-###
-### Return a list of integer vectors.
 ###
 ### A real use-case:   
 ###   > library(hgu95av2probe)
@@ -663,6 +707,12 @@ setMethod("initialize", "ULdna_PDict",
 ###      10M      12      7.5 sec    340M     227 sec     216 sec         100M
 ###      30M      12       27 sec    523M     491 sec           ? 
 
+
+
+
+### =========================================================================
+### D. THE "matchPDict" GENERIC FUNCTION AND METHODS
+### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .matchPDict()

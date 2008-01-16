@@ -1,19 +1,32 @@
 \name{matchPDict}
 
 % Classes
+\alias{class:PDict}
+\alias{PDict-class}
+\alias{class:ULdna_PDict}
+\alias{ULdna_PDict-class}
 \alias{class:P2Views}
 \alias{P2Views-class}
 \alias{class:P2ViewsWithoutIDs}
 \alias{P2ViewsWithoutIDs-class}
 \alias{class:P2ViewsWithIDs}
 \alias{P2ViewsWithIDs-class}
-\alias{class:PDict}
-\alias{PDict-class}
-\alias{class:ULdna_PDict}
-\alias{ULdna_PDict-class}
 
 % Generics and methods:
 \alias{pids}
+
+\alias{length,ACtree-method}
+\alias{show,ACtree-method}
+\alias{[,ACtree-method}
+\alias{as.matrix,ACtree-method}
+\alias{initialize,ACtree-method}
+
+\alias{initialize,ULdna_PDict-method}
+\alias{length,ULdna_PDict-method}
+\alias{width,ULdna_PDict-method}
+\alias{pids,ULdna_PDict-method}
+\alias{show,ULdna_PDict-method}
+
 \alias{p2start}
 \alias{p2start,P2Views-method}
 \alias{p2end}
@@ -38,18 +51,6 @@
 \alias{p2start,P2ViewsWithIDs-method}
 \alias{p2end,P2ViewsWithIDs-method}
 \alias{p2nview,P2ViewsWithIDs-method}
-
-\alias{length,ACtree-method}
-\alias{show,ACtree-method}
-\alias{[,ACtree-method}
-\alias{as.matrix,ACtree-method}
-\alias{initialize,ACtree-method}
-
-\alias{initialize,ULdna_PDict-method}
-\alias{length,ULdna_PDict-method}
-\alias{width,ULdna_PDict-method}
-\alias{pids,ULdna_PDict-method}
-\alias{show,ULdna_PDict-method}
 
 \alias{matchPDict}
 \alias{matchPDict,BString-method}
