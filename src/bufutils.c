@@ -109,17 +109,36 @@ IBuf _INTEGER_asIBuf(SEXP x)
 	return ibuf;
 }
 
-IBuf _CHARACTER_asIBuf(SEXP x, int shift)
+IBuf _CHARACTER_asIBuf(SEXP x, int keyshift)
 {
 	IBuf ibuf;
-	int i, *val, tmp;
+	int *val;
 
-	_IBuf_init(&ibuf, LENGTH(x), 0);
-	for (i = 0, val = ibuf.vals; i < ibuf.maxcount; i++, val++) {
-		sscanf(CHAR(STRING_ELT(x, i)), "%d", &tmp);
-		*val = tmp + shift;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _CHARACTER_asIBuf(): BEGIN ... LENGTH(x)=%d keyshift=%d\n",
+			LENGTH(x), keyshift);
 	}
-	ibuf.count = ibuf.maxcount;
+#endif
+	_IBuf_init(&ibuf, LENGTH(x), 0);
+	for (ibuf.count = 0, val = ibuf.vals;
+	     ibuf.count < ibuf.maxcount;
+	     ibuf.count++, val++) {
+		sscanf(CHAR(STRING_ELT(x, ibuf.count)), "%d", val);
+		*val += keyshift;
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			if (ibuf.count < 100 || ibuf.count >= ibuf.maxcount - 100)
+				Rprintf("[DEBUG] _CHARACTER_asIBuf(): ibuf.count=%d key=%s *val=%d\n",
+					ibuf.count, CHAR(STRING_ELT(x, ibuf.count)), *val);
+		}
+#endif
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _CHARACTER_asIBuf(): END\n");
+	}
+#endif
 	return ibuf;
 }
 
@@ -202,30 +221,66 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf, int mode)
 IBBuf _LIST_asIBBuf(SEXP x)
 {
 	IBBuf ibbuf;
-	int x_length, i;
 	IBuf *ibuf_p;
 
-	x_length = LENGTH(x);
-	ibbuf.ibufs = Salloc((long) x_length, IBuf);
-	for (i = 0, ibuf_p = ibbuf.ibufs; i < x_length; i++, ibuf_p++)
-		*ibuf_p = _INTEGER_asIBuf(VECTOR_ELT(x, i));
-	ibbuf.maxcount = ibbuf.count = x_length;
+	_IBBuf_init(&ibbuf, LENGTH(x), 0);
+	for (ibbuf.count = 0, ibuf_p = ibbuf.ibufs;
+	     ibbuf.count < ibbuf.maxcount;
+	     ibbuf.count++, ibuf_p++) {
+		*ibuf_p = _INTEGER_asIBuf(VECTOR_ELT(x, ibbuf.count));
+	}
 	return ibbuf;
 }
 
-SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int shift)
+SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
 {
 	int i;
 	IBuf *ibuf;
-	char symbuf[12];
+	char key[11];
+	SEXP value;
 
-	for (i = 0, ibuf = ibbuf->ibufs; i <= ibbuf->count; i++, ibuf++) {
+#ifdef DEBUG_BIOSTRINGS
+	int nkey = 0, cum_length = 0;
+	if (debug) {
+		Rprintf("[DEBUG] _IBBuf_toEnvir(): BEGIN ... ibbuf->count=%d keyshift=%d\n",
+			ibbuf->count, keyshift);
+	}
+#endif
+	for (i = 0, ibuf = ibbuf->ibufs; i < ibbuf->count; i++, ibuf++) {
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			if (i < 100 || i >= ibbuf->count - 100)
+				Rprintf("[DEBUG] _IBBuf_toEnvir(): nkey=%d ibbuf->ibufs[%d].count=%d\n",
+					nkey, i, ibuf->count);
+		}
+#endif
 		if (ibuf->count == 0)
 			continue;
-		//snprintf(symbuf, sizeof(symbuf), "%d", i + shift);
-		snprintf(symbuf, sizeof(symbuf), "%010u", (unsigned int) (i + shift));
-		Rf_defineVar(Rf_install(symbuf), _IBuf_asINTEGER(ibuf), envir);
+		//snprintf(key, sizeof(key), "%d", i + keyshift);
+		snprintf(key, sizeof(key), "%010d", i + keyshift);
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			if (i < 100 || i >= ibbuf->count - 100)
+				Rprintf("[DEBUG] _IBBuf_toEnvir(): installing key=%s ... ", key);
+		}
+#endif
+		PROTECT(value = _IBuf_asINTEGER(ibuf));
+		defineVar(install(key), value, envir);
+		UNPROTECT(1);
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			nkey++;
+			cum_length += ibuf->count;
+			if (i < 100 || i >= ibbuf->count - 100)
+				Rprintf("OK (nkey=%d cum_length=%d)\n", nkey, cum_length);
+		}
+#endif
 	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _IBBuf_toEnvir(): END (nkey=%d cum_length=%d)\n", nkey, cum_length);
+	}
+#endif
 	return envir;
 }
 

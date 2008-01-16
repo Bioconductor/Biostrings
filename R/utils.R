@@ -17,6 +17,11 @@ debug_utils <- function()
     invisible(.Call("Biostrings_debug_utils", PACKAGE="Biostrings"))
 }
 
+debug_bufutils <- function()
+{
+    invisible(.Call("Biostrings_debug_bufutils", PACKAGE="Biostrings"))
+}
+
 debug_views_buffer <- function()
 {
     invisible(.Call("Biostrings_debug_views_buffer", PACKAGE="Biostrings"))

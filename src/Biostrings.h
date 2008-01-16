@@ -203,7 +203,7 @@ IBuf _INTEGER_asIBuf(
 
 IBuf _CHARACTER_asIBuf(
 		SEXP x,
-		int shift
+		int keyshift
 );
 
 void _IBBuf_init(
@@ -234,7 +234,7 @@ IBBuf _LIST_asIBBuf(
 SEXP _IBBuf_toEnvir(
 		IBBuf *ibbuf,
 		SEXP envir,
-		int shift
+		int keyshift
 );
 
 void _CBuf_init(
