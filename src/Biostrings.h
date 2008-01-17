@@ -675,14 +675,12 @@ SEXP ULdna_free_actree_nodes_buf();
 
 SEXP ULdna_pp_StrVect(
 		SEXP dict,
-		SEXP width,
-		SEXP tail
+		SEXP width
 );
 
 SEXP ULdna_pp_BStringList(
 		SEXP dict,
-		SEXP width,
-		SEXP tail
+		SEXP width
 );
 
 SEXP ULdna_pp_views(
@@ -691,8 +689,7 @@ SEXP ULdna_pp_views(
 		SEXP dict_subj_length,
 		SEXP dict_start,
 		SEXP dict_end,
-		SEXP width,
-		SEXP tail
+		SEXP width
 );
 
 SEXP match_ULdna_exact(

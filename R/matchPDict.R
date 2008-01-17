@@ -137,7 +137,8 @@ setClass("ULdna_PDict",
         length="integer",
         width="integer",
         actree="ACtree",
-        dups="integer"
+        dups="integer",
+        stats="list"
     )
 )
 
@@ -181,6 +182,7 @@ debug_ULdna <- function()
     .Object@actree <- new("ACtree", ppans$actree_nodes_xp, ppans$actree_base_codes)
     .Object@dups <- ppans$dups
     names(.Object@dups) <- pids
+    .Object@stats <- ppans$stats
     .Object
 }
 
@@ -193,7 +195,7 @@ debug_ULdna <- function()
         stop("'dict' contains NAs")
     pids <- names(dict)
     .checkpids(pids)
-    ppans <- .Call("ULdna_pp_StrVect", dict, width, NULL, PACKAGE="Biostrings")
+    ppans <- .Call("ULdna_pp_StrVect", dict, width, PACKAGE="Biostrings")
     .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
@@ -205,7 +207,7 @@ debug_ULdna <- function()
     pids <- names(dict)
     .checkpids(pids)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
-    ppans <- .Call("ULdna_pp_BStringList", dict0, width, NULL, PACKAGE="Biostrings")
+    ppans <- .Call("ULdna_pp_BStringList", dict0, width, PACKAGE="Biostrings")
     .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
 
@@ -218,7 +220,7 @@ debug_ULdna <- function()
     .checkpids(pids)
     ppans <- .Call("ULdna_pp_views",
                   subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
-                  start(dict), end(dict), width, NULL,
+                  start(dict), end(dict), width,
                   PACKAGE="Biostrings")
     .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
 }
@@ -280,7 +282,7 @@ setMethod("initialize", "ULdna_PDict",
 setClass("TailedULdna_PDict",
     contains="ULdna_PDict",
     representation(
-        tail="environment"
+        tail="BStringViews"
     )
 )
 
@@ -292,6 +294,28 @@ setMethod("show", "TailedULdna_PDict",
         if (is.null(pids(object)))
             cat(" (no pattern IDs)")
         cat("\n")
+    }
+)
+
+setMethod("initialize", "TailedULdna_PDict",
+    function(.Object, dict, width)
+    {
+        if (is.null(width))
+            stop("'width' must be a single integer")
+        .Object <- callNextMethod(.Object, dict, width=width)
+        if (.Object@stats$min.width == .Object@width)
+            stop("tails with empty strings are not supported yet, ",
+                 "try again with 'width' decreased by 1")
+        if (is.character(dict)) {
+            .Object@tail <- BStringViews(substr(dict, .Object@width + 1, .Object@stats$max.width),
+                                         subjectClass="DNAString")
+	} else if (is.list(dict)) {
+            stop("'dict' of type list is not yet supported")
+        } else if (is(dict, "BStringViews")) {
+            dict@views$start <- dict@views$start + .Object@width
+            .Object@tail <- dict
+        }
+        .Object
     }
 )
 
