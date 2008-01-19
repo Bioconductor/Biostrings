@@ -56,6 +56,7 @@ export(
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     BString, DNAString, RNAString, AAString,
+    mkAllStrings,
     views, adjacentViews,
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToBStringViews, BStringViewsToFASTArecords,
