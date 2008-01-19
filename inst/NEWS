@@ -3,6 +3,12 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added the dinucleotideFrequency() and trinucleotideFrequency() functions.
+
+o Small change in alphabetFrequency() semantic: when used with baseOnly=TRUE,
+  the frequency of the gap letter ("-") is not returned anymore (now it's
+  treated as any 'other' letter i.e. any non-base letter).
+
 o Applied "matchPDict() boost feature" patch:
   With this patch, finding all the matches of a 3.3M 32-mers dictionary in
   the full Human genome (+ and - strands of all chromosomes) is about 2.5x

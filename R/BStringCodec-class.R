@@ -19,7 +19,7 @@
 ###
 
 ### Could not find a simpler way to get the vector of ascii codes :-/
-letterAsByteVal <- function(letters)
+.letterAsByteVal <- function(letters)
 {
     if (!all(nchar(letters) == 1))
         stop("strings in 'letters' must have one single letter")
@@ -79,13 +79,13 @@ setClass("BStringCodec",
 setMethod("initialize", "BStringCodec",
     function(.Object, letters, codes, extra_letters=NULL, extra_codes=NULL)
     {
-        letter_byte_vals <- letterAsByteVal(letters)
+        letter_byte_vals <- .letterAsByteVal(letters)
         codes <- as.integer(codes)
         .Object@letters <- letters
         .Object@codes <- codes
         .Object@dec_lkup <- buildLookupTable(codes, letter_byte_vals)
         if (!is.null(extra_letters)) {
-            letter_byte_vals <- c(letter_byte_vals, letterAsByteVal(extra_letters))
+            letter_byte_vals <- c(letter_byte_vals, .letterAsByteVal(extra_letters))
             codes <- c(codes, as.integer(extra_codes))
         }
         .Object@enc_lkup <- buildLookupTable(letter_byte_vals, codes)
@@ -95,7 +95,7 @@ setMethod("initialize", "BStringCodec",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The DNA and RNA codecs.
+### The DNA and RNA alphabets and codecs.
 ###
 
 ### Note that this setting makes conversion from DNAString to RNAString look
@@ -107,7 +107,7 @@ setMethod("initialize", "BStringCodec",
 DNA_BASE_CODES <- c(A=1L, C=2L, G=4L, T=8L)
 RNA_BASE_CODES <- c(U=1L, G=2L, C=4L, A=8L)
 
-IUPAC2codes <- function(baseCodes)
+.IUPACcodes <- function(baseCodes)
 {
     baseIsU <- names(baseCodes) == "U"
     if (any(baseIsU))
@@ -119,18 +119,47 @@ IUPAC2codes <- function(baseCodes)
     codes
 }
 
-BStringCodec.DNAorRNA <- function(alphabet, baseCodes)
+.DNAorRNAcodes <- function(baseCodes, baseOnly)
 {
-    extra_letters <- setdiff(tolower(alphabet), alphabet)
-    allcodes <- IUPAC2codes(baseCodes)
-    allcodes <- c(allcodes, '-'=16)
-    codes <- allcodes[alphabet]
-    extra_codes <- allcodes[toupper(extra_letters)]
-    new("BStringCodec", alphabet, codes, extra_letters, extra_codes)
+    codes <- .IUPACcodes(baseCodes)
+    if (baseOnly)
+        codes[names(codes) %in% names(baseCodes)]
+    else
+        c(codes, '-'=16L)
 }
 
-DNA_STRING_CODEC <- BStringCodec.DNAorRNA(DNA_ALPHABET, DNA_BASE_CODES)
-RNA_STRING_CODEC <- BStringCodec.DNAorRNA(RNA_ALPHABET, RNA_BASE_CODES)
+
+### DNA and RNA alphabets
+DNA_CODES <- .DNAorRNAcodes(DNA_BASE_CODES, FALSE)
+RNA_CODES <- .DNAorRNAcodes(RNA_BASE_CODES, FALSE)
+DNA_ALPHABET <- names(DNA_CODES)
+RNA_ALPHABET <- names(RNA_CODES)
+
+
+### For internal use only. No need to export.
+setGeneric("codes", signature="x",
+    function(x, ...) standardGeneric("codes")
+)
+setMethod("codes", "DNAString",
+    function(x, baseOnly=FALSE) .DNAorRNAcodes(DNA_BASE_CODES, baseOnly=baseOnly)
+)
+setMethod("codes", "RNAString",
+    function(x, baseOnly=FALSE) .DNAorRNAcodes(RNA_BASE_CODES, baseOnly=baseOnly)
+)
+
+
+### DNA and RNA codecs
+.BStringCodec.DNAorRNA <- function(codes)
+{
+    letters <- names(codes)
+    extra_letters <- setdiff(tolower(letters), letters)
+    extra_codes <- codes[toupper(extra_letters)]
+    new("BStringCodec", letters, codes, extra_letters, extra_codes)
+}
+
+DNA_STRING_CODEC <- .BStringCodec.DNAorRNA(DNA_CODES)
+RNA_STRING_CODEC <- .BStringCodec.DNAorRNA(RNA_CODES)
+
 
 ### Return the lookup table that transforms a DNA (or RNA) sequence into its
 ### complementary sequence.
@@ -139,14 +168,14 @@ RNA_STRING_CODEC <- BStringCodec.DNAorRNA(RNA_ALPHABET, RNA_BASE_CODES)
 getDNAComplementLookup <- function()
 {
     lkup <- DNA_STRING_CODEC@dec_lkup
-    lkup[lkup %in% letterAsByteVal("T")] <- letterAsByteVal("U")
+    lkup[lkup %in% .letterAsByteVal("T")] <- .letterAsByteVal("U")
     RNA_STRING_CODEC@enc_lkup[lkup + 1]
 }
 
 getRNAComplementLookup <- function()
 {
     lkup <- RNA_STRING_CODEC@dec_lkup
-    lkup[lkup %in% letterAsByteVal("U")] <- letterAsByteVal("T")
+    lkup[lkup %in% .letterAsByteVal("U")] <- .letterAsByteVal("T")
     DNA_STRING_CODEC@enc_lkup[lkup + 1]
 }
 

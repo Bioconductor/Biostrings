@@ -48,7 +48,7 @@
   A, C, G, T are replaced by T, G, C, A respectively.
   Letters belonging to the "IUPAC extended genetic alphabet"
   are also replaced by their complement (M <-> K, R <-> Y, S <-> S, V <-> B,
-  W <-> W, H <-> D, N <-> N) and the gap symbol (-) is unchanged.
+  W <-> W, H <-> D, N <-> N) and the gap letter (-) is unchanged.
   \code{reverseComplement(x)} is equivalent to \code{reverse(complement(x))}
   but is faster and more memory efficient.
 }

@@ -20,8 +20,3 @@ IUPAC_CODE_MAP <- c(
     N="ACGT"
 )
 
-### DNA and RNA alphabets
-DNA_ALPHABET <- c(names(IUPAC_CODE_MAP), "-")
-RNA_ALPHABET <- DNA_ALPHABET
-RNA_ALPHABET[RNA_ALPHABET == "T"] <- "U"
-

@@ -29,3 +29,20 @@ SEXP char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
 	return ans;
 }
 
+SEXP multinucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
+		SEXP base_codes, SEXP width)
+{
+	SEXP ans;
+	int ans_len, i;
+
+	if (INTEGER(width)[0] > 8)
+		error("'width' must be <= 8");
+	ans_len = 1;
+	for (i = 0; i < INTEGER(width)[0]; i++)
+		ans_len *= 4;
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	warning("THIS FUNCTION IS NOT READY YET");
+	UNPROTECT(1);
+	return ans;
+}
+
