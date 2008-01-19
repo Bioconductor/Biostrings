@@ -3,7 +3,8 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-o Added the dinucleotideFrequency() and trinucleotideFrequency() functions.
+o Added the dinucleotideFrequency(), trinucleotideFrequency() and
+  mkAllStrings() functions.
 
 o Small change in alphabetFrequency() semantic: when used with baseOnly=TRUE,
   the frequency of the gap letter ("-") is not returned anymore (now it's

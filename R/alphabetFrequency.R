@@ -69,25 +69,55 @@ setMethod("alphabetFrequency", "BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "dinucleotideFrequency" generic and methods.
+### The "mkAllStrings" function.
+###
+### Something worth checking:
+###   library(BSgenome.Dmelanogaster.FlyBase.r51)
+###   chr3R <- Dmelanogaster[["3R"]]
+###   width <- 5
+###   dict0 <- mkAllStrings(Biostrings:::codes(chr3R, baseOnly=TRUE), width)
+###   names(dict0) <- dict0
+###   pdict <- new("ULdna_PDict", dict0)
+###   system.time(c1 <- countPDict(pdict, chr3R))
+###   system.time(c2 <- Biostrings:::.all_oligonucleotide_frequency(chr3R, width))
+###   identical(c1, c2) # must be TRUE
+### Then try for other values of 'width' (1 <= width <= 10).
 ###
 
-.all_multinucleotides <- function(letters, width)
+.mkAllStrings <- function(alphabet, width)
 {
     if (width == 0)
         return("")
-    unlist(lapply(letters, function(l) paste(l, .all_multinucleotides(letters, width - 1), sep="")))
+    tail <- .mkAllStrings(alphabet, width - 1)
+    unlist(lapply(alphabet, function(l) paste(l, tail, sep="")))
 }
 
-### .multinucleotide_frequency(x, 1L) should be exactly the same as
+mkAllStrings <- function(alphabet, width)
+{
+    if (!is.character(alphabet))
+        stop("'alphabet' must be a character vector")
+    if (!is.numeric(width) || length(width) != 1 || is.na(width))
+        stop("'width' must be a single integer")
+    width <- as.integer(width)
+    if (width < 0)
+        stop("'width' must be a non-negative integer")
+    .mkAllStrings(alphabet, width)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "dinucleotideFrequency" generic and methods.
+###
+
+### .all_oligonucleotide_frequency(x, 1L) should be exactly the same as
 ### alphabetFrequency(x, baseOnly=TRUE)
-.multinucleotide_frequency <- function(x, width)
+.all_oligonucleotide_frequency <- function(x, width)
 {
     base_codes <- codes(x, baseOnly=TRUE)
-    ans <- .Call("multinucleotide_frequency",
+    ans <- .Call("all_oligonucleotide_frequency",
                  x@data@xp, x@offset, x@length, base_codes, width,
                  PACKAGE="Biostrings")
-    names(ans) <- .all_multinucleotides(names(base_codes), width)
+    names(ans) <- .mkAllStrings(names(base_codes), width)
     ans
 }
 
@@ -98,14 +128,14 @@ setGeneric("dinucleotideFrequency", signature="x",
 setMethod("dinucleotideFrequency", "DNAString",
     function(x)
     {
-        .multinucleotide_frequency(x, 2L)
+        .all_oligonucleotide_frequency(x, 2L)
     }
 )
 
 setMethod("dinucleotideFrequency", "RNAString",
     function(x)
     {
-        .multinucleotide_frequency(x, 2L)
+        .all_oligonucleotide_frequency(x, 2L)
     }
 )
 
@@ -121,14 +151,14 @@ setGeneric("trinucleotideFrequency", signature="x",
 setMethod("trinucleotideFrequency", "DNAString",
     function(x)
     {
-        .multinucleotide_frequency(x, 3L)
+        .all_oligonucleotide_frequency(x, 3L)
     }
 )
 
 setMethod("trinucleotideFrequency", "RNAString",
     function(x)
     {
-        .multinucleotide_frequency(x, 3L)
+        .all_oligonucleotide_frequency(x, 3L)
     }
 )
 

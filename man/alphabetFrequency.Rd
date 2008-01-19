@@ -16,6 +16,8 @@
 \alias{trinucleotideFrequency,RNAString-method}
 \alias{trinucleotideFrequency,BStringViews-method}
 
+\alias{mkAllStrings}
+
 
 \title{Functions to calculate the frequency of letters in a biological sequence}
 
@@ -31,6 +33,9 @@
   alphabetFrequency(x, baseOnly=FALSE)
   dinucleotideFrequency(x)
   trinucleotideFrequency(x)
+
+  ## Some related utility function
+  mkAllStrings(alphabet, width)
 }
 
 \arguments{
@@ -85,6 +90,8 @@
 
   dinucleotideFrequency(yeast1)
   trinucleotideFrequency(yeast1)
+
+  mkAllStrings(LETTERS[1:3], 4)
 }
 
 \keyword{category}

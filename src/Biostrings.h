@@ -511,7 +511,7 @@ SEXP char_frequency(
 		SEXP x_length
 );
 
-SEXP multinucleotide_frequency(
+SEXP all_oligonucleotide_frequency(
 		SEXP x_xp,
 		SEXP x_offset,
 		SEXP x_length,

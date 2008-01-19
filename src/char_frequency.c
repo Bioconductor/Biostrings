@@ -29,7 +29,7 @@ SEXP char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
 	return ans;
 }
 
-SEXP multinucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
+SEXP all_oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
 		SEXP base_codes, SEXP width)
 {
 	SEXP ans;
