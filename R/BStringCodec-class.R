@@ -121,6 +121,8 @@ RNA_BASE_CODES <- c(U=1L, G=2L, C=4L, A=8L)
 
 .DNAorRNAcodes <- function(baseCodes, baseOnly)
 {
+    if (!isTRUEorFALSE(baseOnly))
+        stop("'baseOnly' must be 'TRUE' or 'FALSE'")
     codes <- .IUPACcodes(baseCodes)
     if (baseOnly)
         codes[names(codes) %in% names(baseCodes)]
@@ -128,24 +130,14 @@ RNA_BASE_CODES <- c(U=1L, G=2L, C=4L, A=8L)
         c(codes, '-'=16L)
 }
 
+DNAcodes <- function(baseOnly) .DNAorRNAcodes(DNA_BASE_CODES, baseOnly)
+RNAcodes <- function(baseOnly) .DNAorRNAcodes(RNA_BASE_CODES, baseOnly)
 
 ### DNA and RNA alphabets
-DNA_CODES <- .DNAorRNAcodes(DNA_BASE_CODES, FALSE)
-RNA_CODES <- .DNAorRNAcodes(RNA_BASE_CODES, FALSE)
-DNA_ALPHABET <- names(DNA_CODES)
-RNA_ALPHABET <- names(RNA_CODES)
-
-
-### For internal use only. No need to export.
-setGeneric("codes", signature="x",
-    function(x, ...) standardGeneric("codes")
-)
-setMethod("codes", "DNAString",
-    function(x, baseOnly=FALSE) .DNAorRNAcodes(DNA_BASE_CODES, baseOnly=baseOnly)
-)
-setMethod("codes", "RNAString",
-    function(x, baseOnly=FALSE) .DNAorRNAcodes(RNA_BASE_CODES, baseOnly=baseOnly)
-)
+.DNA_CODES <- DNAcodes(FALSE)
+.RNA_CODES <- RNAcodes(FALSE)
+DNA_ALPHABET <- names(.DNA_CODES)
+RNA_ALPHABET <- names(.RNA_CODES)
 
 
 ### DNA and RNA codecs
@@ -157,8 +149,8 @@ setMethod("codes", "RNAString",
     new("BStringCodec", letters, codes, extra_letters, extra_codes)
 }
 
-DNA_STRING_CODEC <- .BStringCodec.DNAorRNA(DNA_CODES)
-RNA_STRING_CODEC <- .BStringCodec.DNAorRNA(RNA_CODES)
+DNA_STRING_CODEC <- .BStringCodec.DNAorRNA(.DNA_CODES)
+RNA_STRING_CODEC <- .BStringCodec.DNAorRNA(.RNA_CODES)
 
 
 ### Return the lookup table that transforms a DNA (or RNA) sequence into its

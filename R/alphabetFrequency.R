@@ -15,7 +15,7 @@
 
 .normalize.freq <- function(freq)
 {
-    if (!is.logical(freq) || length(freq) != 1 || is.na(freq))
+    if (!isTRUEorFALSE(freq))
         stop("'freq' must be 'TRUE' or 'FALSE'")
     freq
 }
@@ -27,7 +27,7 @@
                  x@data@xp, x@offset, x@length,
                  PACKAGE="Biostrings")
     if (freq)
-        ans <- ans / sum(ans)
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
 }
 
@@ -37,8 +37,15 @@
     codes <- codes(x, baseOnly=baseOnly)
     ans <- char_freq[1 + codes]
     names(ans) <- names(codes)
-    if (baseOnly)
-        ans <- c(ans, other=nchar(x)-sum(ans))
+    if (baseOnly) {
+        ## 'total_freq' is 'sum(char_freq)' but we can avoid to calculate
+        ## this sum.
+        if (freq)
+            total_freq <- 1.0
+        else
+            total_freq <- nchar(x)
+        ans <- c(ans, other=total_freq-sum(ans))
+    }
     ans
 }
 
@@ -49,6 +56,8 @@ setGeneric("alphabetFrequency", signature="x",
 setMethod("alphabetFrequency", "BString",
     function(x, baseOnly=FALSE, freq=FALSE)
     {
+        if (!missing(baseOnly))
+            warning("'baseOnly' is ignored for a non DNA or RNA sequence")
         .BString.char_frequency(x, freq)
     }
 )
@@ -71,6 +80,8 @@ setMethod("alphabetFrequency", "RNAString",
 setMethod("alphabetFrequency", "BStringViews",
     function(x, baseOnly=FALSE, freq=FALSE)
     {
+        if (!is(x@subject, "DNAString") && !is(x@subject, "RNAString") && !missing(baseOnly))
+            warning("'baseOnly' is ignored for views on a non DNA or RNA sequence")
         freq <- .normalize.freq(freq)
         ## Just a trick to generate a zero-filled answer
         ans <- alphabetFrequency(x@subject[1], baseOnly, freq=FALSE)

@@ -17,8 +17,13 @@ setClass("AAString", representation("BString"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "codec", "enc_lkup" and "dec_lkup" new generics (NOT exported).
+### The "codes", "codec", "enc_lkup" and "dec_lkup" new generics.
+### For internal use only. No need to export.
 ###
+
+setGeneric("codes", signature="x", function(x, ...) standardGeneric("codes"))
+setMethod("codes", "DNAString", function(x, baseOnly=FALSE) DNAcodes(baseOnly))
+setMethod("codes", "RNAString", function(x, baseOnly=FALSE) RNAcodes(baseOnly))
 
 setGeneric("codec", function(x) standardGeneric("codec"))
 setMethod("codec", "BString", function(x) NULL)
