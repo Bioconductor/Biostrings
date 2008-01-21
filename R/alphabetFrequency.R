@@ -85,7 +85,7 @@ setMethod("alphabetFrequency", "BStringViews",
         freq <- .normalize.freq(freq)
         ## Just a trick to generate a zero-filled answer
         ans <- alphabetFrequency(x@subject[1], baseOnly, freq=FALSE)
-        ans[] <- 0
+        ans[] <- 0L
         for (i in seq_len(length(x)))
             ans <- ans + alphabetFrequency(x[[i]], baseOnly, freq=FALSE)
         if (freq)
