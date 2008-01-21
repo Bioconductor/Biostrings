@@ -5,19 +5,6 @@ Some R problems maybe worth to report:
   it, then nothing is printed and the prompt doesn't come back either (unless I
   CTRL C).
 
-- My script for a full genome analysis works with no problem when I load the
-  input dictionary with:
-    dict0_file <- "hg18-3.3M-32mers.fsa"
-    dict0 <- read.BStringViews(dict0_file, "fasta", subjectClass="DNAString")
-  However this call to read.BStringViews() takes about 20 min to complete.
-  Now if I serialize dict0 (BStringViews object) with:
-    save(dict0, file="hg18-3.3M-32mers.dict0.rda")
-  and modify my script to load the input dictionary with:
-    load("hg18-3.3M-32mers.dict0.rda")
-  then I get the following error in runAnalysis():
-    >>> Finding all hits in strand + of chromosome chr1 ...
-    Error: cons memory exhausted (limit reached?)
-
 
 In 2.[6|7]
 ==========
@@ -56,12 +43,6 @@ In 2.7
     to use for exact matching (stage 1). Then in stage 2, the "tail" (i.e.
     the pattern remainders) are compared with the nucleotides following the
     matches returned by stage 1.
-
-- Add functions for extracting the dinucleotide/trinucleotide frequencies
-  in a DNA. Could use countPDict() for this (resp. on a 16-pattern and on
-  a 64-pattern PDict object) but I think it can be made much faster by
-  implementing some bit-shifting stuff in C resp. on a 4-bit and on a
-  6-bit bit pattern (2 bits per nucleotide).
 
 - Finish C implemntation of read.BStringViews()
 

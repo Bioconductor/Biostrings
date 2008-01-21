@@ -1,5 +1,6 @@
-The chr*fsa and someORF.fsa files were extracted from
+The chr*fa and someORF.fa files were extracted from
 ftp://genome-ftp.stanford.edu/pub/yeast/sequence
 on 1 Nov 2005. -- VJC
 
-Only the someORF.fsa file has been kept from Biostrings 1. -- H. Pages
+Only the someORF.fa and fastaEx.fa files have been kept from Biostrings 1
+(original names were someORF.fsa and fastaEx). -- H. Pages

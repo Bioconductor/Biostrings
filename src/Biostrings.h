@@ -172,6 +172,12 @@ void get_intorder(
 		int len
 );
 
+void _init_code2offset_lkup(
+		const int *codes,
+		int len,
+		int *lkup
+);
+
 
 /* bufutils.c */
 

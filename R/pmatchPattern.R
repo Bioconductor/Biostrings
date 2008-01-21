@@ -88,7 +88,7 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
 ### Speed (on my Thinkpad):
 ###   > library(BSgenome.Scerevisiae.UCSC.sacCer1)
 ###   > Scerevisiae$chr1
-###   > file <- system.file("extdata", "someORF.fsa", package="Biostrings")
+###   > file <- system.file("extdata", "someORF.fa", package="Biostrings")
 ###   > orf <- BStringViews(file(file), "DNAString")
 ###   > system.time(pmatchPattern(orf[[2]], Scerevisiae$chr1, max=1))
 ###      user  system elapsed

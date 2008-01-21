@@ -222,12 +222,12 @@ More precisely, here is the analysis we want to perform:
   \item{The input dictionary: }
   Our input is a dictionary of 50 patterns. Each pattern is a short nucleotide
   sequence of 15 to 25 bases (As, Cs, Gs and Ts only, no Ns).
-  It is stored in a FASTA file called \Robject{"ce2dict0.fsa"}.
-% ce2dict0.fsa was generated with
+  It is stored in a FASTA file called \Robject{"ce2dict0.fa"}.
+% ce2dict0.fa was generated with
 %   > set.seed(23)
 %   > ce2dict0 <- sapply(1:50, function(i) { x <- Celegans[[sample(seqnames(Celegans), 1)]]; start <- as.integer(runif(1, min=1, length(x)-20)); end <- start + as.integer(runif(1, min=14, max=25)); x <- subBString(x, start, end); if (sample(1:2, 1) == 2) x <- reverseComplement(x); as.character(x) })
 %   > names(ce2dict0) <- paste("pattern", 1:50, sep="")
-%   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fsa", format="fasta")
+%   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fa", format="fasta")
   See the {\it Find all the occurences of a uniform-length pattern dictionary
   in a genome} section of this document for a very efficient way to deal with
   the special case where all the patterns in the input dictionary have the same
@@ -264,14 +264,14 @@ More precisely, here is the analysis we want to perform:
     or a minus (\Robject{-}) for a hit in the negative strand.
     \item{patternID: }
     we use the unique ID provided for every pattern in the
-    \Robject{"ce2dict0.fsa"} file.
+    \Robject{"ce2dict0.fa"} file.
   \end{itemize}
 
 \end{itemize}
 
 Let's start by loading the input dictionary with:
 <<c1>>=
-ce2dict0_file <- system.file("extdata/ce2dict0.fsa", package="Biostrings")
+ce2dict0_file <- system.file("extdata/ce2dict0.fa", package="Biostrings")
 ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
 @
 

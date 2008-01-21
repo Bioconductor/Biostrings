@@ -6,15 +6,13 @@
 \alias{alphabetFrequency,RNAString-method}
 \alias{alphabetFrequency,BStringViews-method}
 
-\alias{dinucleotideFrequency}
-\alias{dinucleotideFrequency,DNAString-method}
-\alias{dinucleotideFrequency,RNAString-method}
-\alias{dinucleotideFrequency,BStringViews-method}
+\alias{allOligonucleotideFrequency}
+\alias{allOligonucleotideFrequency,DNAString-method}
+\alias{allOligonucleotideFrequency,RNAString-method}
+\alias{allOligonucleotideFrequency,BStringViews-method}
 
+\alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
-\alias{trinucleotideFrequency,DNAString-method}
-\alias{trinucleotideFrequency,RNAString-method}
-\alias{trinucleotideFrequency,BStringViews-method}
 
 \alias{mkAllStrings}
 
@@ -27,14 +25,19 @@
   the \code{dinucleotideFrequency} function the frequency of all possible
   dinucleotides and the \code{trinucleotideFrequency} function the frequency
   of all possible trinucleotides.
+
+  More generally, the \code{allOligonucleotideFrequency} function will
+  calculate the frequency of all possible oligonucleotides of a given
+  length (called the "width" in this particular context).
 }
 
 \usage{
-  alphabetFrequency(x, baseOnly=FALSE)
-  dinucleotideFrequency(x)
-  trinucleotideFrequency(x)
+  alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
+  dinucleotideFrequency(x, freq=FALSE)
+  trinucleotideFrequency(x, freq=FALSE)
+  allOligonucleotideFrequency(x, width, freq=FALSE)
 
-  ## Some related utility function
+  ## A related utility function
   mkAllStrings(alphabet, width)
 }
 
@@ -55,10 +58,22 @@
     object with a \link{BString} subject), then the \code{baseOnly}
     argument is ignored.
   }
+  \item{freq}{
+    If \code{TRUE} then frequencies are reported, otherwise counts.
+  }
+  \item{width}{
+    The number of nucleotides per oligonucleotide for
+    \code{allOligonucleotideFrequency}.
+    The number of letters per string for \code{mkAllStrings}.
+  }
+  \item{alphabet}{
+    The alphabet to use to make the strings.
+  }
 }
 
 \value{
-  An integer vector.
+  An integer vector if \code{freq} is \code{FALSE} (default), otherwise a
+  double vector.
 
   For \code{alphabetFrequency}: if \code{x} is a \link{DNAString} or
   \link{RNAString} object (or a \link{BStringViews} object with a
@@ -67,15 +82,18 @@
   If the \code{baseOnly} argument is TRUE, then the returned vector
   has an extra element named 'other'.
 
-  \code{dinucleotideFrequency} and \code{trinucleotideFrequency} only
-  work on a \link{DNAString} or \link{RNAString} object (or a
-  \link{BStringViews} object with a \link{DNAString} or \link{RNAString}
-  subject) and return a vector named with all the possible dinucleotides
-  or trinucleotides.
+  \code{dinucleotideFrequency} (resp. \code{trinucleotideFrequency} and
+  \code{allOligonucleotideFrequency}) only works on a \link{DNAString} or
+  \link{RNAString} object (or a \link{BStringViews} object with a
+  \link{DNAString} or \link{RNAString} subject)
+  and returns a vector named with all the possible dinucleotides
+  (resp. trinucleotides or oligonucleotides).
   
   If \code{x} is a \link{BStringViews} object, then the returned
   vector contains the cumulated frequencies found in each view.
 }
+
+\author{H. Pages}
 
 \seealso{
   \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
@@ -90,7 +108,14 @@
 
   dinucleotideFrequency(yeast1)
   trinucleotideFrequency(yeast1)
+  allOligonucleotideFrequency(yeast1, 4)
 
+  ## Get the less and most represented 6-mers
+  f6 <- allOligonucleotideFrequency(yeast1, 6)
+  f6[f6 == min(f6)]
+  f6[f6 == max(f6)]
+
+  ## An utility function
   mkAllStrings(LETTERS[1:3], 4)
 }
 

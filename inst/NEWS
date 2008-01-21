@@ -3,18 +3,23 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-o Added the dinucleotideFrequency(), trinucleotideFrequency() and
-  mkAllStrings() functions.
+o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
+  FASTA files.
 
-o Small change in alphabetFrequency() semantic: when used with baseOnly=TRUE,
-  the frequency of the gap letter ("-") is not returned anymore (now it's
-  treated as any 'other' letter i.e. any non-base letter).
+o Added the dinucleotideFrequency(), trinucleotideFrequency(),
+  allOligonucleotideFrequency() and mkAllStrings() functions.
 
-o Applied "matchPDict() boost feature" patch:
-  With this patch, finding all the matches of a 3.3M 32-mers dictionary in
-  the full Human genome (+ and - strands of all chromosomes) is about 2.5x
-  faster than before (will take between 20 minutes and 2 hours depending on
-  your machine and the number of matches found).
+o Two small changes in alphabetFrequency():
+  (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is
+      not returned anymore (now it's treated as any 'other' letter i.e. any
+      non-base letter);
+  (2) added the 'freq' argument.
+
+o Implemented the "shortcut feature" to C function ULdna_exact_search().
+  With this patch, using matchPDict() to find all the matches of a
+  3.3M 32-mers dictionary in the full Human genome (+ and - strands of all
+  chromosomes) is about 2.5x faster than before (will take between 20 minutes
+  and 2 hours depending on your machine and the number of matches found).
   This puts matchPDict() at the same level as the Vmatch software
   (http://www.vmatch.de/) for a dictionary of this size. Memory footprint
   for matchPDict() is about 2GB for the Aho-Corasick tree built from the

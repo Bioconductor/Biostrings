@@ -8,9 +8,9 @@
 ### NOTE: Only FASTA files are supported for now.
 ###
 ### Typical use:
-###   file <- system.file("extdata", "someORF.fsa", package="Biostrings")
+###   file <- system.file("extdata", "someORF.fa", package="Biostrings")
 ###   v <- read.BStringViews(file(file), "fasta", "DNAString")
-###   write.BStringViews(v, file="someORF2.fsa", "fasta")
+###   write.BStringViews(v, file="someORF2.fa", "fasta")
 ###
 ### -------------------------------------------------------------------------
 

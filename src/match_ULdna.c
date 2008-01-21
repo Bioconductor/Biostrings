@@ -361,17 +361,6 @@ static void report_matches_for_dups(const int *dups, int dups_length)
 	return;
 }
 
-static void init_code2childoffset_lkup(const int *base_codes)
-{
-	int code, offset;
-
-	for (code = 0; code < 256; code++)
-		code2childoffset_lkup[code] = -1;
-	for (offset = 0; offset < ALPHABET_LENGTH; offset++, base_codes++)
-		code2childoffset_lkup[(unsigned char) *base_codes] = offset;
-	return;
-}
-
 static int get_child_id(const ACNode *node, char c)
 {
 	int offset;
@@ -486,7 +475,7 @@ static void ULdna_exact_search(int uldna_len, ACNode *node0, const int *base_cod
 		const char *S, int nS, const int *dups)
 {
 	init_ends_bbuf(uldna_len);
-	init_code2childoffset_lkup(base_codes);
+	_init_code2offset_lkup(base_codes, ALPHABET_LENGTH, code2childoffset_lkup);
 	follow_string(node0, base_codes, S, nS);
 	report_matches_for_dups(dups, uldna_len);
 	return;
