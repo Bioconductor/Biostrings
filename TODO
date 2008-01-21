@@ -28,6 +28,20 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Define a DNAorRNA class (or NucleotideString) that is the union of the
+  DNAString and RNAString classes (use a union class for this or "do it by
+  hand" by defining this as a virtual class and by having the DNAString
+  and RNAString classes derived from it). Then use it to simplify code like:
+    setMethod("alphabetFrequency", "DNAString", ...)
+    setMethod("alphabetFrequency", "RNAString", ...)
+  These 2 methods can be replaced by a single method:
+    setMethod("alphabetFrequency", "NucleotideString", ...)
+  Also this:
+    if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) ...
+  can be replaced by:
+    if (is(x@subject, "NucleotideString")) ...
+  Etc...
+
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
 

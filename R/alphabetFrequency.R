@@ -80,14 +80,19 @@ setMethod("alphabetFrequency", "RNAString",
 setMethod("alphabetFrequency", "BStringViews",
     function(x, baseOnly=FALSE, freq=FALSE)
     {
-        if (!is(x@subject, "DNAString") && !is(x@subject, "RNAString") && !missing(baseOnly))
-            warning("'baseOnly' is ignored for views on a non DNA or RNA sequence")
+        if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) {
+            viewFrequency <- function(v) alphabetFrequency(v, baseOnly=baseOnly, freq=FALSE)
+        } else {
+            if (!missing(baseOnly))
+                warning("'baseOnly' is ignored for views on a non DNA or RNA sequence")
+            viewFrequency <- function(v) alphabetFrequency(v, freq=FALSE)
+        }
         freq <- .normalize.freq(freq)
         ## Just a trick to generate a zero-filled answer
-        ans <- alphabetFrequency(x@subject[1], baseOnly, freq=FALSE)
+        ans <- viewFrequency(x@subject[1])
         ans[] <- 0L
         for (i in seq_len(length(x)))
-            ans <- ans + alphabetFrequency(x[[i]], baseOnly, freq=FALSE)
+            ans <- ans + viewFrequency(x[[i]])
         if (freq)
             ans <- ans / sum(ans)
         ans
