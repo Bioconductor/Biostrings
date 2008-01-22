@@ -522,7 +522,8 @@ SEXP all_oligonucleotide_frequency(
 		SEXP x_offset,
 		SEXP x_length,
 		SEXP base_codes,
-		SEXP width
+		SEXP width,
+		SEXP fast_moving_side
 );
 
 

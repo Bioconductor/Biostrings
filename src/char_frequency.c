@@ -26,11 +26,12 @@ SEXP char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
 }
 
 SEXP all_oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
-		SEXP base_codes, SEXP width)
+		SEXP base_codes, SEXP width, SEXP fast_moving_side)
 {
 	SEXP ans;
 	const Rbyte *x;
-	int ans_len, ans_offset_bitmask, ans_offset, x_len, i, nb_valid_left_char, twobit;
+	int ans_len, ans_offset_bitmask, ans_offset, x_len, width0, nbit_in_mask,
+            right_moves_fastest, i, nb_valid_left_char, twobit;
 	static int eightbit2twobit_lkup[256];
 
 	x = RAW(R_ExternalPtrTag(x_xp)) + INTEGER(x_offset)[0];
@@ -38,10 +39,15 @@ SEXP all_oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
 	if (LENGTH(base_codes) != 4)
 		error("'base_codes' must be of length 4");
 	_init_code2offset_lkup(INTEGER(base_codes), LENGTH(base_codes), eightbit2twobit_lkup);
-	if (INTEGER(width)[0] < 1 || INTEGER(width)[0] > 12)
+	width0 = INTEGER(width)[0];
+	if (width0 < 1 || width0 > 12)
 		error("'width' must be >=1 and <= 12");
-	ans_len = 1 << (INTEGER(width)[0] * 2);
-	ans_offset_bitmask = ans_len - 1;
+	right_moves_fastest = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") == 0;
+	ans_len = 1 << (width0 * 2);
+	nbit_in_mask = (width0 - 1) * 2;
+	ans_offset_bitmask = (1 << nbit_in_mask) - 1;
+	if (!right_moves_fastest)
+		ans_offset_bitmask <<= 2;
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
 	nb_valid_left_char = 0;
@@ -51,10 +57,15 @@ SEXP all_oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
 			nb_valid_left_char = 0;
 		} else {
 			nb_valid_left_char++;
-			ans_offset <<= 2;
 			ans_offset &= ans_offset_bitmask;
+			if (right_moves_fastest) {
+				ans_offset <<= 2;
+			} else {
+				ans_offset >>= 2;
+				twobit <<= nbit_in_mask;
+			}
 			ans_offset += twobit;
-			if (nb_valid_left_char >= INTEGER(width)[0])
+			if (nb_valid_left_char >= width0)
 				INTEGER(ans)[ans_offset]++;
 		}
 	}

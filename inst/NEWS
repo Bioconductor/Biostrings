@@ -7,7 +7,7 @@ o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
   FASTA files.
 
 o Added the dinucleotideFrequency(), trinucleotideFrequency(),
-  allOligonucleotideFrequency() and mkAllStrings() functions.
+  allOligonucleotideFrequency(), strrev() and mkAllStrings() functions.
 
 o Two small changes in alphabetFrequency():
   (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is

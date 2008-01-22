@@ -1,5 +1,6 @@
 ### =========================================================================
 ### alphabetFrequency()
+### strrev()
 ### mkAllStrings()
 ### allOligonucleotideFrequency()
 ### dinucleotideFrequency()
@@ -101,6 +102,18 @@ setMethod("alphabetFrequency", "BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "strrev" function.
+###
+
+strrev <- function(x)
+{
+    if (length(x) == 0)
+        return(x)
+    sapply(strsplit(x, NULL, fixed=TRUE), function(xx) paste(rev(xx), collapse=""))
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "mkAllStrings" function.
 ###
 
@@ -114,20 +127,46 @@ setMethod("alphabetFrequency", "BStringViews",
     width
 }
 
-.mkAllStrings <- function(alphabet, width)
+.normalize.fast.moving.side <- function(fast.moving.side)
+{
+    if (!is.character(fast.moving.side)
+     || length(fast.moving.side) != 1
+     || is.na(fast.moving.side))
+        stop("'fast.moving.side' must be a single string")
+    match.arg(fast.moving.side, c("left", "right"))
+}
+
+.mkAllStringsR <- function(alphabet, width)
 {
     if (width == 0)
         return("")
-    tail <- .mkAllStrings(alphabet, width - 1)
-    unlist(lapply(alphabet, function(l) paste(l, tail, sep="")))
+    ansR <- .mkAllStringsR(alphabet, width - 1)
+    unlist(lapply(alphabet, function(l) paste(l, ansR, sep="")))
 }
 
-mkAllStrings <- function(alphabet, width)
+.mkAllStringsL <- function(alphabet, width)
+{
+    if (width == 0)
+        return("")
+    ansL <- .mkAllStringsL(alphabet, width - 1)
+    unlist(lapply(alphabet, function(l) paste(ansL, l, sep="")))
+}
+
+.mkAllStrings <- function(alphabet, width, fast.moving.side)
+{
+    if (fast.moving.side == "right")
+        .mkAllStringsR(alphabet, width)
+    else
+        .mkAllStringsL(alphabet, width)
+}
+
+mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 {
     if (!is.character(alphabet))
         stop("'alphabet' must be a character vector")
-    width <- .normalize.width(width)
-    .mkAllStrings(alphabet, width)
+    .mkAllStrings(alphabet,
+                  .normalize.width(width),
+                  .normalize.fast.moving.side(fast.moving.side))
 }
 
 
@@ -141,7 +180,7 @@ mkAllStrings <- function(alphabet, width)
 ###   library(BSgenome.Dmelanogaster.FlyBase.r51)
 ###   chr3R <- Dmelanogaster[["3R"]]
 ###   width <- 5
-###   dict0 <- mkAllStrings(Biostrings:::codes(chr3R, baseOnly=TRUE), width)
+###   dict0 <- mkAllStrings(names(Biostrings:::DNAcodes(TRUE)), width)
 ###   names(dict0) <- dict0
 ###   pdict <- new("ULdna_PDict", dict0)
 ###   system.time(c1 <- countPDict(pdict, chr3R))
@@ -150,51 +189,56 @@ mkAllStrings <- function(alphabet, width)
 ### Then try for other values of 'width' (1 <= width <= 10).
 ###
 
-.all_oligonucleotide_frequency <- function(x, width, freq)
+.all_oligonucleotide_frequency <- function(x, width, freq, fast.moving.side)
 {
     width <- .normalize.width(width)
     freq <- .normalize.freq(freq)
+    fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
     base_codes <- codes(x, baseOnly=TRUE)
     ans <- .Call("all_oligonucleotide_frequency",
-                 x@data@xp, x@offset, x@length, base_codes, width,
+                 x@data@xp, x@offset, x@length,
+                 base_codes, width, fast.moving.side,
                  PACKAGE="Biostrings")
     if (freq)
         ans <- ans / sum(ans)
-    names(ans) <- .mkAllStrings(names(base_codes), width)
+    names(ans) <- .mkAllStrings(names(base_codes), width, fast.moving.side)
     ans
 }
 
 setGeneric("allOligonucleotideFrequency", signature="x",
-    function(x, width, freq=FALSE) standardGeneric("allOligonucleotideFrequency")
+    function(x, width, freq=FALSE, fast.moving.side="right")
+        standardGeneric("allOligonucleotideFrequency")
 )
 
 setMethod("allOligonucleotideFrequency", "DNAString",
-    function(x, width, freq=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right")
     {
-        .all_oligonucleotide_frequency(x, width, freq)
+        .all_oligonucleotide_frequency(x, width, freq, fast.moving.side)
     }
 )
 
 setMethod("allOligonucleotideFrequency", "RNAString",
-    function(x, width, freq=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right")
     {
-        .all_oligonucleotide_frequency(x, width, freq)
+        .all_oligonucleotide_frequency(x, width, freq, fast.moving.side)
     }
 )
 
 ### Will fail if x contains "out of limits" views.
 setMethod("allOligonucleotideFrequency", "BStringViews",
-    function(x, width, freq=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right")
     {
         width <- .normalize.width(width)
         freq <- .normalize.freq(freq)
+        fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
         base_codes <- codes(subject(x), baseOnly=TRUE)
-        ans_names <- .mkAllStrings(names(base_codes), width)
+        ans_names <- .mkAllStrings(names(base_codes), width, fast.moving.side)
         ans <- integer(length(ans_names))
         for (i in seq_len(length(x))) {
             xx <- x[[i]]
             ans <- ans + .Call("all_oligonucleotide_frequency",
-                               xx@data@xp, xx@offset, xx@length, base_codes, width,
+                               xx@data@xp, xx@offset, xx@length,
+                               base_codes, width, fast.moving.side,
                                PACKAGE="Biostrings")
         }
         if (freq)
@@ -210,6 +254,13 @@ setMethod("allOligonucleotideFrequency", "BStringViews",
 ### wrappers.
 ###
 
-dinucleotideFrequency <- function(x, freq=FALSE) allOligonucleotideFrequency(x, 2, freq=freq)
-trinucleotideFrequency <- function(x, freq=FALSE) allOligonucleotideFrequency(x, 3, freq=freq)
+dinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right")
+{
+    allOligonucleotideFrequency(x, 2, freq=freq, fast.moving.side=fast.moving.side)
+}
+
+trinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right")
+{
+    allOligonucleotideFrequency(x, 3, freq=freq, fast.moving.side=fast.moving.side)
+}
 

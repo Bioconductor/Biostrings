@@ -14,6 +14,7 @@
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
 
+\alias{strrev}
 \alias{mkAllStrings}
 
 
@@ -33,18 +34,20 @@
 
 \usage{
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
-  dinucleotideFrequency(x, freq=FALSE)
-  trinucleotideFrequency(x, freq=FALSE)
-  allOligonucleotideFrequency(x, width, freq=FALSE)
+  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right")
+  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right")
+  allOligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right")
 
-  ## A related utility function
-  mkAllStrings(alphabet, width)
+  ## Some related utility functions
+  strrev(x)
+  mkAllStrings(alphabet, width, fast.moving.side="right")
 }
 
 \arguments{
   \item{x}{
     A \link{BString}, \link{DNAString}, \link{RNAString}
-    or \link{BStringViews} object.
+    or \link{BStringViews} object for all the \code{*Frequency}
+    functions and a character vector for \code{strrev}.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
@@ -60,6 +63,9 @@
   }
   \item{freq}{
     If \code{TRUE} then frequencies are reported, otherwise counts.
+  }
+  \item{fast.moving.side}{
+    Which side of the strings should move fastest?
   }
   \item{width}{
     The number of nucleotides per oligonucleotide for
@@ -96,7 +102,8 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
+  \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews},
+  \code{\link{rev}}, \code{\link{strsplit}}
 }
 
 \examples{
@@ -115,8 +122,10 @@
   f6[f6 == min(f6)]
   f6[f6 == max(f6)]
 
-  ## An utility function
-  mkAllStrings(LETTERS[1:3], 4)
+  ## Some related utility functions
+  dict1 <- mkAllStrings(LETTERS[1:3], 4)
+  dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
+  identical(strrev(dict1), dict2) # TRUE 
 }
 
 \keyword{category}
