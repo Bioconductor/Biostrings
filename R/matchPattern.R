@@ -108,7 +108,7 @@ debug_naive <- function()
 }
 
 ### Must return an integer vector.
-.match.naive.fuzzy <- function(pattern, subject, mismatch, fixed, count.only)
+.match.naive.inexact <- function(pattern, subject, mismatch, fixed, count.only)
 {
     ## We treat the edge-cases at the R level
     p <- length(pattern)
@@ -122,7 +122,7 @@ debug_naive <- function()
             return(as.integer(0))
         return(integer(0))
     }
-    .Call("match_naive_fuzzy",
+    .Call("match_naive_inexact",
           pattern@data@xp, pattern@offset, pattern@length,
           subject@data@xp, subject@offset, subject@length,
           mismatch, fixed, count.only,
@@ -247,7 +247,7 @@ debug_shiftor <- function()
         if (fixed[1] == fixed[2] && nchar(pattern) <= .Clongint.nbits())
             algos <- c(algos, "shift-or")
     }
-    c(algos, "naive-fuzzy") # "naive-fuzzy" is universal but slow
+    c(algos, "naive-inexact") # "naive-inexact" is universal but slow
 }
 
 .matchPattern <- function(pattern, subject, algorithm, mismatch, fixed,
@@ -256,7 +256,7 @@ debug_shiftor <- function()
     if (!is.character(algorithm) || length(algorithm) != 1 || is.na(algorithm))
         stop("'algorithm' must be a single string")
     algo <- match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
-                                   "naive-exact", "naive-fuzzy",
+                                   "naive-exact", "naive-inexact",
                                    "boyer-moore", "shift-or"))
     if (algo %in% c("gregexpr", "gregexpr2")) {
         if (!is.character(subject))
@@ -301,7 +301,7 @@ debug_shiftor <- function()
         "gregexpr"=.match.gregexpr(pattern, subject, count.only),
         "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
         "naive-exact"=.match.naive.exact(pattern, subject, count.only),
-        "naive-fuzzy"=.match.naive.fuzzy(pattern, subject, mismatch, fixed,
+        "naive-inexact"=.match.naive.inexact(pattern, subject, mismatch, fixed,
                                          count.only),
         "boyer-moore"=.match.boyermoore(pattern, subject, count.only),
         "shift-or"=.match.shiftor(pattern, subject, mismatch, fixed,

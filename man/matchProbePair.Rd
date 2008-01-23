@@ -32,7 +32,7 @@
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
-    \code{"naive-fuzzy"}, \code{"boyer-moore"} or \code{"shift-or"}.
+    \code{"naive-inexact"}, \code{"boyer-moore"} or \code{"shift-or"}.
     See \code{\link{matchPattern}} for more information.
   }
   \item{logfile}{

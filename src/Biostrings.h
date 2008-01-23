@@ -549,7 +549,7 @@ SEXP match_naive_exact(
 		SEXP count_only
 );
 
-SEXP match_naive_fuzzy(
+SEXP match_naive_inexact(
 		SEXP p_xp,
 		SEXP p_offset,
 		SEXP p_length,

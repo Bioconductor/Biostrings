@@ -240,7 +240,7 @@ More precisely, here is the analysis we want to perform:
   in the target. Note that a given pattern can have 0, 1 or several hits
   in 0, 1 or 2 strands of 0, 1 or several chromosomes.
 
-  \item{Exact or fuzzy matching? }
+  \item{Exact or inexact matching? }
   We are interested in exact matches only (for now).
 
   \item{The output: }

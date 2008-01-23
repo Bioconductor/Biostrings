@@ -18,7 +18,7 @@
        http://www.tgries.de/agrep
 
  Note that in Biostrings 1 (1.4.0) the "shift-or" algo was almost always
- returning wrong results for 'mismatch' != 0 ("fuzzy searching").
+ returning wrong results for 'mismatch' != 0 ("inexact searching").
  The bug was in the C function ShiftOr_matchInternal() which was using
  the following formula for computing the "pattern bitmasks":
  
@@ -53,11 +53,11 @@
  of the bitmask. Now it is the last position in the pattern (the most right)
  that is mapped to the most right bit of the bitmask which is more intuitive.
  
- In addition to the "fuzzy searching" bug previously described, the following
+ In addition to the "inexact matching" bug previously described, the following
  problems have been addressed:
    - The 'kerr' arg of ShiftOr_matchInternal() (nb of mismatches) is no
      longer required to be <= 3. Now it can be whatever positive int. 
-   - The "border problem" occuring with "fuzzy searching" is fixed.
+   - The "border problem" occuring with "inexact matching" is fixed.
      This new version of the "shift-or" algo should find ALL matches, even
      those that are out of bounds (i.e. that start before the first or end
      after the last character of the subject).
@@ -193,7 +193,7 @@ static void _update_PMmasks(
 
 /*
  * Returns -1 if no match is found.
- * Returns nb of mismatches (>= 0) if a fuzzy match is found.
+ * Returns nb of mismatches (>= 0) if an inexact match is found.
  */
 static int _next_match(
 		int *Lpos,

@@ -1,5 +1,5 @@
 /****************************************************************************
-                  NAIVE METHODS FOR EXACT AND FUZZY MATCHING
+                 NAIVE METHODS FOR EXACT AND INEXACT MATCHING
 		             Author: Herve Pages
 
  Here is how the "naive" (aka "memcmp", aka "blunt") method for finding exact
@@ -60,12 +60,12 @@ static void naive_exact_search(const char *P, int nP, const char *S, int nS)
 
 
 /****************************************************************************
- * An implementation of the "naive" method for fuzzy matching
- * ==========================================================
+ * An implementation of the "naive" method for inexact matching
+ * ============================================================
  */
 
 /* Return the number of matches */
-static void naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
+static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
 		int mm_max, int fixedP, int fixedS)
 {
 	int n1, /* position of pattern left-most char relative to the subject */
@@ -121,7 +121,7 @@ static void naive_fuzzy_search(const char *P, int nP, const char *S, int nS,
 
 
 /****************************************************************************
- * .Call entry points: "match_naive_exact" and "match_naive_fuzzy"
+ * .Call entry points: "match_naive_exact" and "match_naive_inexact"
  *
  * Arguments:
  *   'p_xp': pattern@data@xp
@@ -164,7 +164,7 @@ SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	return ans;
 }
 
-SEXP match_naive_fuzzy(SEXP p_xp, SEXP p_offset, SEXP p_length,
+SEXP match_naive_inexact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
 		SEXP mismatch, SEXP fixed,
 		SEXP count_only)
@@ -186,7 +186,7 @@ SEXP match_naive_fuzzy(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	naive_fuzzy_search((char *) pat, pat_length, (char *) subj, subj_length,
+	naive_inexact_search((char *) pat, pat_length, (char *) subj, subj_length,
 			   mm_max, fixedP, fixedS);
 	if (is_count_only)
 		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());

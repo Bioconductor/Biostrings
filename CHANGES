@@ -19,8 +19,8 @@ o The following bugs and design flaws found in Biostrings 1 have been
          > matchDNAPattern("AAA", "ACT", mismatch=2)
        was displaying a first empty match.
 
-     - The "fuzzy searching" problems:
-         Pb1: Fuzzy searching (mismatch != 0) was almost always returning a
+     - Problems with the "inexact matching" feature:
+         Pb1: Inexact matching (mismatch != 0) was almost always returning a
          wrong result because of a bug in the implementation of the "shift-or"
          algorithm.
          Pb2: Only mismatch <= 3 was supported (now it's illimited even if

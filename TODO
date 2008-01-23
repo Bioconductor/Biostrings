@@ -58,7 +58,7 @@ In 2.7
 
   o Make reverseComplement() work on a PDict object.
 
-  o Fuzzy matching using a 2-stage approach: add a new PDict type
+  o Inexact matching using a 2-stage approach: add a new PDict type
     (e.g. HeadTail_PDict) for storing the "head" and the "tail" of a pattern
     dictionary (not necesarily of uniform-length).
     The initialize method for HeadTail_PDict objects should let the user

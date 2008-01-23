@@ -36,11 +36,11 @@
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
-    \code{"naive-fuzzy"}, \code{"boyer-moore"} or \code{"shift-or"}.
+    \code{"naive-inexact"}, \code{"boyer-moore"} or \code{"shift-or"}.
   }
   \item{mismatch}{
-    The number of mismatches allowed. If non-zero, a fuzzy string searching
-    algorithm is used for matching.
+    The number of mismatches allowed. If non-zero, an inexact matching
+    algorithm is used.
   }
   \item{fixed}{
     Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
@@ -68,7 +68,7 @@
 }
 
 \details{
-  Available algorithms are: ``naive exact'', ``naive fuzzy'',
+  Available algorithms are: ``naive exact'', ``naive inexact'',
   ``Boyer-Moore-like'' and ``shift-or''. Not all of them can be
   used in all situations: restrictions depend on the length of
   the pattern, the class of the subject and the values of
@@ -101,7 +101,7 @@
 }
 
 \examples{
-  ## A simple fuzzy matching example with a short subject
+  ## A simple inexact matching example with a short subject
   x <- DNAString("AAGCGCGATATG")
   m1 <- matchPattern("GCNNNAT", x)
   m1

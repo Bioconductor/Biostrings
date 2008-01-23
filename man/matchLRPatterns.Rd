@@ -30,8 +30,8 @@
   }
   \item{Lmismatch}{
     The number of mismatches allowed for the left part of the pattern.
-    If non-zero, a fuzzy string searching algorithm is used for matching
-    (see the \code{\link{matchPattern}} function for more information).
+    If non-zero, an inexact matching algorithm is used (see the
+    \code{\link{matchPattern}} function for more information).
   }
   \item{Rmismatch}{
     Same as \code{Lmismatch} but for the right part of the pattern.

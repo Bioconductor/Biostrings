@@ -131,7 +131,7 @@ plotBOC2 <- function(x, main)
 }
 
 ### Must return an integer vector.
-.match.BOC2.fuzzy <- function(pattern, boc_subject, mismatch, count.only)
+.match.BOC2.inexact <- function(pattern, boc_subject, mismatch, count.only)
 {
     stop("NOT READY YET!")
 }
@@ -149,7 +149,7 @@ plotBOC2 <- function(x, main)
     if (mismatch == 0)
         matches <- .match.BOC2.exact(pattern, boc_subject, count.only)
     else
-        matches <- .match.BOC2.fuzzy(pattern, boc_subject, mismatch, count.only)
+        matches <- .match.BOC2.inexact(pattern, boc_subject, mismatch, count.only)
     if (count.only)
         return(matches)
     new("BStringViews", subject=boc_subject@subject,
