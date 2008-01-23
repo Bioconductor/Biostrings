@@ -39,7 +39,7 @@ exportMethods(
     palindromeArmLength, palindromeLeftArm, palindromeRightArm,
     findComplementedPalindromes,
     complementedPalindromeArmLength, complementedPalindromeLeftArm, complementedPalindromeRightArm,
-    matchPDict,
+    matchPDict, countPDict,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     needwunsQS,

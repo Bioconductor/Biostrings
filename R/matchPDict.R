@@ -680,7 +680,7 @@ extractAllMatches <- function(subject, p2v)
     actree
 }
 
-.match.ULdna_PDict.exact <- function(pdict, subject)
+.match.ULdna_PDict.exact <- function(pdict, subject, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     pids <- pids(pdict)
@@ -692,7 +692,7 @@ extractAllMatches <- function(subject, p2v)
           pdict@length, pdict@dups,
           actree@nodes@xp, actree@base_codes,
           subject@data@xp, subject@offset, subject@length,
-          envir,
+          envir, count.only,
           PACKAGE="Biostrings")
     if (is.null(pids))
         new("P2ViewsWithoutIDs", ends=ends, width=width(pdict))
@@ -735,14 +735,14 @@ extractAllMatches <- function(subject, p2v)
 
 
 ### =========================================================================
-### D. THE "matchPDict" GENERIC FUNCTION AND METHODS
+### D. THE "matchPDict" AND "countPDict" GENERIC FUNCTION AND METHODS
 ### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .matchPDict()
 ###
 
-.matchPDict <- function(pdict, subject, algorithm, mismatch, fixed)
+.matchPDict <- function(pdict, subject, algorithm, mismatch, fixed, count.only=FALSE)
 {
     if (!is(pdict, "ULdna_PDict"))
         stop("the pattern dictionary 'pdict' can only be a ULdna_PDict object for now")
@@ -754,7 +754,7 @@ extractAllMatches <- function(subject, p2v)
         stop("'mismatch' can only be set to 0 for now")
     if (!identical(fixed, TRUE))
         stop("'fixed' can only be 'TRUE' for now")
-    .match.ULdna_PDict.exact(pdict, subject)
+    .match.ULdna_PDict.exact(pdict, subject, count.only)
 }
 
 
@@ -772,6 +772,24 @@ setMethod("matchPDict", "BString",
     function(pdict, subject, algorithm, mismatch, fixed)
     {
 	.matchPDict(pdict, subject, algorithm, mismatch, fixed)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "countPDict" generic and methods.
+###
+
+setGeneric("countPDict", signature="subject",
+    function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+        standardGeneric("countPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPDict", "BString",
+    function(pdict, subject, algorithm, mismatch, fixed)
+    {
+	.matchPDict(pdict, subject, algorithm, mismatch, fixed, count.only=TRUE)
     }
 )
 

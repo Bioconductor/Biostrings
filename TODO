@@ -46,9 +46,18 @@ In 2.7
   return maximum palindromes only.
 
 - matchPDict():
+
+  o Fix this bug:
+    > pdict <- new("ULdna_PDict", c("AA", "AC"))
+    > matchPDict(pdict, DNAString("TAACAC"))
+    Error in .match.ULdna_PDict.exact(pdict, subject, count.only) : 
+      Biostrings internal error in _init_code2offset_lkup(): invalid code
+
   o Add countPDict() function (like we have a countPattern() function) for
     counting the matches only.
+
   o Make reverseComplement() work on a PDict object.
+
   o Fuzzy matching using a 2-stage approach: add a new PDict type
     (e.g. HeadTail_PDict) for storing the "head" and the "tail" of a pattern
     dictionary (not necesarily of uniform-length).

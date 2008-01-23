@@ -54,6 +54,8 @@
 
 \alias{matchPDict}
 \alias{matchPDict,BString-method}
+\alias{countPDict}
+\alias{countPDict,BString-method}
 
 % Functions:
 \alias{extractAllMatches}
@@ -73,6 +75,7 @@
 
 \usage{
   matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  countPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
 
   ## Manipulation of the PDict object passed to matchPDict()
   pids(x)

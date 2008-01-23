@@ -474,7 +474,6 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 static void ULdna_exact_search(int uldna_len, ACNode *node0, const int *base_codes,
 		const char *S, int nS, const int *dups)
 {
-	init_ends_bbuf(uldna_len);
 	_init_code2offset_lkup(base_codes, ALPHABET_LENGTH, code2childoffset_lkup);
 	follow_string(node0, base_codes, S, nS);
 	report_matches_for_dups(dups, uldna_len);
@@ -729,9 +728,9 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 		SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
-		SEXP envir)
+		SEXP envir, SEXP count_only)
 {
-	int uldna_len, actree_length, subj_offset, subj_length;
+	int uldna_len, actree_length, subj_offset, subj_length, is_count_only;
 	ACNode *actree_nodes;
 	const Rbyte *subj;
 	SEXP tag;
@@ -743,6 +742,11 @@ SEXP match_ULdna_exact(SEXP uldna_length, SEXP uldna_dups,
 	subj_offset = INTEGER(s_offset)[0];
 	subj_length = INTEGER(s_length)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+	is_count_only = LOGICAL(count_only)[0];
+
+	if (is_count_only)
+		error("countPDict() NOT READY YET");
+	init_ends_bbuf(uldna_len);
 
 	ULdna_exact_search(uldna_len, actree_nodes, INTEGER(actree_base_codes),
 		(char *) subj, subj_length, INTEGER(uldna_dups));

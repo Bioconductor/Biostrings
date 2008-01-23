@@ -715,7 +715,8 @@ SEXP match_ULdna_exact(
 		SEXP s_xp,
 		SEXP s_offset,
 		SEXP s_length,
-		SEXP envir
+		SEXP envir,
+		SEXP count_only
 );
 
 SEXP shiftListOfInts(
