@@ -25,7 +25,7 @@ SEXP char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
 	return ans;
 }
 
-SEXP all_oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
+SEXP oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
 		SEXP base_codes, SEXP width, SEXP fast_moving_side)
 {
 	SEXP ans;

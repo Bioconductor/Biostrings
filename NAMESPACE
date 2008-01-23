@@ -29,7 +29,7 @@ exportMethods(
     ## Others
     BStringViews,
     substr, substring,
-    alphabetFrequency, allOligonucleotideFrequency,
+    alphabetFrequency, oligonucleotideFrequency,
     reverse, complement, reverseComplement,
     matchPattern, countPattern, mismatch,
     mask,

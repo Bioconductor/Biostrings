@@ -66,7 +66,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* char_frequency.c */
 	{"char_frequency", (DL_FUNC) &char_frequency, 3},
-	{"all_oligonucleotide_frequency", (DL_FUNC) &all_oligonucleotide_frequency, 6},
+	{"oligonucleotide_frequency", (DL_FUNC) &oligonucleotide_frequency, 6},
 
 /* normalize_views.c */
 	{"Biostrings_normalize_views", (DL_FUNC) &Biostrings_normalize_views, 2},

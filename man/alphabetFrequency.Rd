@@ -6,10 +6,10 @@
 \alias{alphabetFrequency,RNAString-method}
 \alias{alphabetFrequency,BStringViews-method}
 
-\alias{allOligonucleotideFrequency}
-\alias{allOligonucleotideFrequency,DNAString-method}
-\alias{allOligonucleotideFrequency,RNAString-method}
-\alias{allOligonucleotideFrequency,BStringViews-method}
+\alias{oligonucleotideFrequency}
+\alias{oligonucleotideFrequency,DNAString-method}
+\alias{oligonucleotideFrequency,RNAString-method}
+\alias{oligonucleotideFrequency,BStringViews-method}
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
@@ -27,7 +27,7 @@
   dinucleotides and the \code{trinucleotideFrequency} function the frequency
   of all possible trinucleotides.
 
-  More generally, the \code{allOligonucleotideFrequency} function will
+  More generally, the \code{oligonucleotideFrequency} function will
   calculate the frequency of all possible oligonucleotides of a given
   length (called the "width" in this particular context).
 }
@@ -36,7 +36,7 @@
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
   dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE)
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE)
-  allOligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
 
   ## Some related utility functions
   strrev(x)
@@ -77,7 +77,7 @@
   }
   \item{width}{
     The number of nucleotides per oligonucleotide for
-    \code{allOligonucleotideFrequency}.
+    \code{oligonucleotideFrequency}.
     The number of letters per string for \code{mkAllStrings}.
   }
   \item{alphabet}{
@@ -99,7 +99,7 @@
   has an extra element named 'other'.
 
   \code{dinucleotideFrequency} (resp. \code{trinucleotideFrequency} and
-  \code{allOligonucleotideFrequency}) only works on a \link{DNAString} or
+  \code{oligonucleotideFrequency}) only works on a \link{DNAString} or
   \link{RNAString} object (or a \link{BStringViews} object with a
   \link{DNAString} or \link{RNAString} subject)
   and returns a vector named with all the possible dinucleotides
@@ -125,10 +125,10 @@
 
   dinucleotideFrequency(yeast1)
   trinucleotideFrequency(yeast1)
-  allOligonucleotideFrequency(yeast1, 4)
+  oligonucleotideFrequency(yeast1, 4)
 
   ## Get the less and most represented 6-mers
-  f6 <- allOligonucleotideFrequency(yeast1, 6)
+  f6 <- oligonucleotideFrequency(yeast1, 6)
   f6[f6 == min(f6)]
   f6[f6 == max(f6)]
 
