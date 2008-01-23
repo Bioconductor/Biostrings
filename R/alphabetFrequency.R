@@ -198,59 +198,70 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     as.array
 }
 
-.formatFreqAnswer <- function(ans, alphabet, width, freq, fast.moving.side, as.array)
+.normalize.USE.NAMES <- function(USE.NAMES)
+{
+    if (!isTRUEorFALSE(USE.NAMES))
+        stop("'USE.NAMES' must be 'TRUE' or 'FALSE'")
+    USE.NAMES
+}
+
+.formatFreqAnswer <- function(ans, alphabet, width, freq, fast.moving.side, as.array, USE.NAMES)
 {
     if (freq)
         ans <- ans / sum(ans)
     if (as.array) {
-        dimnames <- rep(list(alphabet), each=width)
+        if (USE.NAMES)
+            dimnames <- rep(list(alphabet), each=width)
+        else
+            dimnames <- NULL
         ans <- array(ans, dim=rep.int(4L, width), dimnames=dimnames)
-    } else {
+    } else if (USE.NAMES) {
         names(ans) <- .mkAllStrings(alphabet, width, fast.moving.side)
     }
     ans
 }
 
-.oligonucleotideFrequency <- function(x, width, freq, fast.moving.side, as.array)
+.oligonucleotideFrequency <- function(x, width, freq, fast.moving.side, as.array, USE.NAMES)
 {
     width <- .normalize.width(width)
     freq <- .normalize.freq(freq)
     fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
     as.array <- .normalize.as.array(as.array, fast.moving.side)
+    USE.NAMES <- .normalize.USE.NAMES(USE.NAMES)
     base_codes <- codes(x, baseOnly=TRUE)
     ans <- .Call("oligonucleotide_frequency",
                  x@data@xp, x@offset, x@length,
                  base_codes, width, fast.moving.side,
                  PACKAGE="Biostrings")
-    .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array)
+    .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array, USE.NAMES)
 }
 
 setGeneric("oligonucleotideFrequency", signature="x",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, USE.NAMES=TRUE)
         standardGeneric("oligonucleotideFrequency")
 )
 
 setMethod("oligonucleotideFrequency", "DNAString",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, USE.NAMES=TRUE)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
-        .oligonucleotideFrequency(x, width, freq, fast.moving.side, as.array)
+        .oligonucleotideFrequency(x, width, freq, fast.moving.side, as.array, USE.NAMES)
     }
 )
 
 setMethod("oligonucleotideFrequency", "RNAString",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, USE.NAMES=TRUE)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
-        .oligonucleotideFrequency(x, width, freq, fast.moving.side, as.array)
+        .oligonucleotideFrequency(x, width, freq, fast.moving.side, as.array, USE.NAMES)
     }
 )
 
 ### Will fail if x contains "out of limits" views.
 setMethod("oligonucleotideFrequency", "BStringViews",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, USE.NAMES=TRUE)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
@@ -258,6 +269,7 @@ setMethod("oligonucleotideFrequency", "BStringViews",
         freq <- .normalize.freq(freq)
         fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
         as.array <- .normalize.as.array(as.array, fast.moving.side)
+        USE.NAMES <- .normalize.USE.NAMES(USE.NAMES)
         base_codes <- codes(subject(x), baseOnly=TRUE)
         ans <- integer(pow.int(4L, width))
         for (i in seq_len(length(x))) {
@@ -267,7 +279,7 @@ setMethod("oligonucleotideFrequency", "BStringViews",
                                base_codes, width, fast.moving.side,
                                PACKAGE="Biostrings")
         }
-        .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array)
+        .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array, USE.NAMES)
     }
 )
 

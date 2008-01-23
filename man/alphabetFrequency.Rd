@@ -36,7 +36,7 @@
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
   dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE)
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE)
-  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, USE.NAMES=TRUE)
 
   ## Some related utility functions
   strrev(x)
@@ -80,6 +80,9 @@
     \code{oligonucleotideFrequency}.
     The number of letters per string for \code{mkAllStrings}.
   }
+  \item{USE.NAMES}{
+    If \code{TRUE} then return a named vector (or array).
+  }
   \item{alphabet}{
     The alphabet to use to make the strings.
   }
@@ -87,16 +90,18 @@
 
 \value{
   All the \code{*Frequency} functions return an integer vector if \code{freq}
-  is \code{FALSE} (default), otherwise double vector.
+  is \code{FALSE} (default), otherwise a double vector.
   If \code{as.matrix} or \code{as.array} is \code{TRUE}, this vector is
   formatted as a matrix or an array.
 
   For \code{alphabetFrequency}: if \code{x} is a \link{DNAString} or
   \link{RNAString} object (or a \link{BStringViews} object with a
   \link{DNAString} or \link{RNAString} subject), then the returned vector
-  is named with the letters in the alphabet.
-  If the \code{baseOnly} argument is TRUE, then the returned vector
-  has an extra element named 'other'.
+  is named with the letters in the alphabet (unless \code{USE.NAMES}
+  is \code{FALSE}).
+  If the \code{baseOnly} argument is \code{TRUE}, then the returned vector
+  has only 5 elements: 4 elements corresponding to the 4 nucleotides
+  + the 'other' element.
 
   \code{dinucleotideFrequency} (resp. \code{trinucleotideFrequency} and
   \code{oligonucleotideFrequency}) only works on a \link{DNAString} or
@@ -106,12 +111,13 @@
   (resp. trinucleotides or oligonucleotides).
   
   If \code{x} is a \link{BStringViews} object, then the returned
-  vector contains the cumulated frequencies found in each view.
+  vector (or array) contains the cumulated frequencies found in each view.
 }
 
 \author{H. Pages}
 
 \seealso{
+  \code{\link{countPDict}},
   \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews},
   \code{\link{rev}}, \code{\link{strsplit}}
 }
@@ -142,6 +148,11 @@
   ## with 'fast.moving.side="left"':
   triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
   all(as.vector(tri) == triL)
+
+  ## In some situations, especially when the returned vector is very long
+  ## (e.g. width >= 10), using 'USE.NAMES=FALSE' will improve the performance
+  ## considerably (100x, 1000x or more):
+  f12 <- oligonucleotideFrequency(yeast1, 12, USE.NAMES=FALSE) # very fast!
 
   ## Some related utility functions
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
