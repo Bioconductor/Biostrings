@@ -133,14 +133,15 @@
   f6[f6 == max(f6)]
 
   ## Get the result as an array
-  triA <- trinucleotideFrequency(yeast1, as.array=TRUE)
-  triA["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
+  tri <- trinucleotideFrequency(yeast1, as.array=TRUE)
+  tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
+  tri["T", , ] # frequencies of trinucleotides starting with a "T"
 
-  ## Note that when dropping the dimensions of the triA array, elements
+  ## Note that when dropping the dimensions of the 'tri' array, elements
   ## in the resulting vector are ordered as if they had been obtained
-  ## with fast.moving.side="left":
+  ## with 'fast.moving.side="left"':
   triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
-  all(as.vector(triA) == triL)
+  all(as.vector(tri) == triL)
 
   ## Some related utility functions
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
