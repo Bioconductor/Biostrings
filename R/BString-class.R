@@ -271,7 +271,7 @@ setMethod("show", "BString",
         cat("  ", lo, "-letter \"", class(object), "\" instance", sep="")
         #if (!is.null(object@codec))
         #    cat(" with alphabet:", toString(object@codec@letters))
-        cat("\nValue:", BString.get_snippet(object, 72))
+        cat("\nSequence:", BString.get_snippet(object, 72))
         cat("\n")
     }
 )

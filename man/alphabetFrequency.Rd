@@ -34,9 +34,9 @@
 
 \usage{
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
-  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right")
-  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right")
-  allOligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right")
+  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE)
+  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+  allOligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE)
 
   ## Some related utility functions
   strrev(x)
@@ -67,6 +67,14 @@
   \item{fast.moving.side}{
     Which side of the strings should move fastest?
   }
+  \item{as.matrix}{
+    If \code{TRUE} then return a numeric matrix, otherwise a numeric
+    vector with no dim attribute.
+  }
+  \item{as.array}{
+    If \code{TRUE} then return a numeric array, otherwise a numeric
+    vector with no dim attribute.
+  }
   \item{width}{
     The number of nucleotides per oligonucleotide for
     \code{allOligonucleotideFrequency}.
@@ -78,8 +86,10 @@
 }
 
 \value{
-  An integer vector if \code{freq} is \code{FALSE} (default), otherwise a
-  double vector.
+  All the \code{*Frequency} functions return an integer vector if \code{freq}
+  is \code{FALSE} (default), otherwise double vector.
+  If \code{as.matrix} or \code{as.array} is \code{TRUE}, this vector is
+  formatted as a matrix or an array.
 
   For \code{alphabetFrequency}: if \code{x} is a \link{DNAString} or
   \link{RNAString} object (or a \link{BStringViews} object with a
@@ -121,6 +131,16 @@
   f6 <- allOligonucleotideFrequency(yeast1, 6)
   f6[f6 == min(f6)]
   f6[f6 == max(f6)]
+
+  ## Get the result as an array
+  triA <- trinucleotideFrequency(yeast1, as.array=TRUE)
+  triA["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
+
+  ## Note that when dropping the dimensions of the triA array, elements
+  ## in the resulting vector are ordered as if they had been obtained
+  ## with fast.moving.side="left":
+  triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
+  all(as.vector(triA) == triL)
 
   ## Some related utility functions
   dict1 <- mkAllStrings(LETTERS[1:3], 4)

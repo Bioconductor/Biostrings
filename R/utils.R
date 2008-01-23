@@ -17,6 +17,18 @@ recycleVector <- function(x, length)
     y
 }
 
+### Returns
+pow.int <- function(x, y)
+{
+    if (!is.numeric(x))
+        stop("'x' must be a numeric vector")
+    x <- as.integer(x)
+    ans <- rep.int(1L, length(x))
+    for (i in seq_len(y))
+        ans <- ans * x
+    ans
+}
+
 debug_utils <- function()
 {
     invisible(.Call("Biostrings_debug_utils", PACKAGE="Biostrings"))
