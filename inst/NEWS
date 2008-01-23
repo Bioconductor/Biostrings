@@ -3,6 +3,13 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Change in terminology to align with established practices: "fuzzy matching"
+  is now called "inexact matching". This change mostly affects the
+  documentation. The only change at the API level that is a consequence of
+  this change in terminology is that the "naive-fuzzy" algo is now called
+  "naive-inexact" (this affects the matchPattern() function and possibly any
+  function with an 'algo' argument).
+
 o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
   FASTA files.
 
@@ -62,9 +69,11 @@ o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
 o Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions + a
   "reverseComplement" method for RNAString objects.
 
-o Added the findPalindromes() function for basic support of palindrome finding.
+o Added basic support for palindrome finding: it can be achieved with the
+  new findPalindromes() and findComplementedPalindromes() functions.
   Also added related utility functions palindromeArmLength(),
-  palindromeLeftArm() and palindromeRightArm().
+  palindromeLeftArm(), palindromeRightArm(), complementedPalindromeArmLength(),
+  complementedPalindromeLeftArm() and complementedPalindromeRightArm().
 
 
 **************************************************
