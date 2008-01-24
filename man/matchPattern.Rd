@@ -41,6 +41,10 @@
   \item{mismatch}{
     The number of mismatches allowed. If non-zero, an inexact matching
     algorithm is used.
+    Note that \code{matchPattern} (and \code{countPattern}) don't support the
+    kind of inexact matching where a given number of insertions or deletions
+    are allowed. Hence the matches found have always the same length (called
+    the "width" in this particular context) as the pattern.
   }
   \item{fixed}{
     Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
