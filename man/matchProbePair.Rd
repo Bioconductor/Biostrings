@@ -2,6 +2,7 @@
 
 \alias{matchProbePair}
 \alias{matchProbePair,DNAString-method}
+\alias{matchProbePair,BStringViews-method}
 
 
 \title{Find "theoretical amplicons" mapped to a probe pair}
@@ -28,7 +29,8 @@
     The reverse probe.
   }
   \item{subject}{
-    A \link{DNAString} object containing the target sequence.
+    A \code{\link{DNAString}} object (or a \code{\link{BStringViews}} object
+    with a \code{\link{DNAString}} subject) containing the target sequence.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},

@@ -114,3 +114,25 @@ setMethod("matchProbePair", "DNAString",
     }
 )
 
+### Dispatch on 'subject' (see signature of generic).
+### WARNING: Unlike the other "matchProbePair" methods, the BStringViews object
+### returned by this method is not guaranteed to have its views ordered from
+### left to right in general! One important particular case where this is
+### guaranteed though is when 'subject' is a normalized BStringViews object
+### and 'mismatch=0' (no "out of limits" matches).
+setMethod("matchProbePair", "BStringViews",
+    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+    {
+        ans_start <- ans_end <- integer(0)
+        for (i in seq_len(length(subject))) {
+            pm <- matchProbePair(Fprobe, Rprobe, subject[[i]],
+                                 algorithm=algorithm, logfile=logfile, verbose=verbose)
+            offset <- start(subject)[i] - 1L
+            ans_start <- c(ans_start, offset + start(pm))
+            ans_end <- c(ans_end, offset + end(pm))
+        }
+        new("BStringViews", subject=subject(subject),
+            start=ans_start, end=ans_end, check.views=FALSE)
+    }
+)
+

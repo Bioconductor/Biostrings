@@ -2,6 +2,7 @@
 
 \alias{matchLRPatterns}
 \alias{matchLRPatterns,BString-method}
+\alias{matchLRPatterns,BStringViews-method}
 
 
 \title{Find patterns defined by a left and a right part in a sequence}
@@ -26,7 +27,8 @@
     and right parts of the pattern.
   }
   \item{subject}{
-    A \link{BString} (or derived) object containing the target sequence.
+    A \link{BString} (or derived) object (or a \link{BStringViews} object)
+    containing the target sequence.
   }
   \item{Lmismatch}{
     The number of mismatches allowed for the left part of the pattern.

@@ -3,6 +3,9 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added "matchLRPatterns" and "matchProbePair" methods for BStringViews
+  objects.
+
 o Made the "show" methods for BString, BStringViews and BStringAlign objects
   "getOption('width') aware" so that the user can control the width of the
   output they produce.

@@ -30,3 +30,27 @@ setMethod("matchLRPatterns", "BString",
     }
 )
 
+### Dispatch on 'subject' (see signature of generic).
+### WARNING: Unlike the other "matchLRPatterns" methods, the BStringViews object
+### returned by this method is not guaranteed to have its views ordered from
+### left to right in general! One important particular case where this is
+### guaranteed though is when 'subject' is a normalized BStringViews object
+### and 'mismatch=0' (no "out of limits" matches).
+setMethod("matchLRPatterns", "BStringViews",
+    function(Lpattern, Rpattern, max.ngaps, subject, Lmismatch=0, Rmismatch=0,
+             Lfixed=TRUE, Rfixed=TRUE)
+    {
+        ans_start <- ans_end <- integer(0)
+        for (i in seq_len(length(subject))) {
+            pm <- matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject[[i]],
+                                   Lmismatch=Lmismatch, Rmismatch=Rmismatch,
+                                   Lfixed=Lfixed, Rfixed=Rfixed)
+            offset <- start(subject)[i] - 1L
+            ans_start <- c(ans_start, offset + start(pm))
+            ans_end <- c(ans_end, offset + end(pm))
+        }
+        new("BStringViews", subject=subject(subject),
+            start=ans_start, end=ans_end, check.views=FALSE)
+    }
+)
+
