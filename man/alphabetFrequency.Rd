@@ -119,7 +119,8 @@
 \seealso{
   \code{\link{countPDict}},
   \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews},
-  \code{\link{rev}}, \code{\link{strsplit}}
+  \code{\link{rev}}, \code{\link{strsplit}},
+  \code{\link{GENETIC_CODE}}, \code{\link{AMINO_ACID_CODE}}
 }
 
 \examples{
@@ -144,14 +145,20 @@
   tri["T", , ] # frequencies of trinucleotides starting with a "T"
 
   ## Note that when dropping the dimensions of the 'tri' array, elements
-  ## in the resulting vector are ordered as if they had been obtained
-  ## with 'fast.moving.side="left"':
+  ## in the resulting vector are ordered as if they were obtained with
+  ## 'fast.moving.side="left"':
   triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
-  all(as.vector(tri) == triL)
+  all(as.vector(tri) == triL) # TRUE
 
-  ## In some situations, especially when the returned vector is very long
-  ## (e.g. width >= 10), using 'USE.NAMES=FALSE' will improve the performance
-  ## considerably (100x, 1000x or more):
+  ## Convert the trinucleotide frequency into the amino acid frequency based on
+  ## translation
+  tri1 <- trinucleotideFrequency(yeast1)
+  names(tri1) <- GENETIC_CODE[names(tri1)]
+  sapply(split(tri1, names(tri1)), sum) # 12512 occurences of the stop codon
+
+  ## When the returned vector is very long (e.g. width >= 10), using
+  ## 'USE.NAMES=FALSE' will improve the performance considerably (100x, 1000x
+  ## or more):
   f12 <- oligonucleotideFrequency(yeast1, 12, USE.NAMES=FALSE) # very fast!
 
   ## Some related utility functions

@@ -10,7 +10,8 @@
 }
 
 \seealso{
-  \code{\link{AAString}}
+  \code{\link{AAString}},
+  \code{\link{GENETIC_CODE}}
 }
 
 \examples{

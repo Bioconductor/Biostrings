@@ -15,6 +15,8 @@
 \author{H. Pages}
 
 \seealso{
+  \code{\link{AMINO_ACID_CODE}},
+  \code{\link{trinucleotideFrequency}},
   \code{\link{DNAString}}, \code{\link{RNAString}}, \code{\link{AAString}}
 }
 
