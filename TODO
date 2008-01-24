@@ -28,6 +28,9 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Change signature of matchPattern() and friends: rename 'mismatch' arg ->
+  'max.mismatch' and add a 'min.mismatch' arg.
+
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
 
