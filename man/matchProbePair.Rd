@@ -77,7 +77,7 @@
   ## With 20-nucleotide forward and reverse probes:
   Fprobe <- "AGCTCCGAGTTCCTGCAATA"
   Rprobe <- "CGTTGTTCACAAATATGCGG"
-  matchProbePair(Fprobe, Rprobe, subject) # 1 "theoretical amplicons"
+  matchProbePair(Fprobe, Rprobe, subject) # 1 "theoretical amplicon"
 
   ## With shorter forward and reverse probes, the risk of having multiple
   ## "theoretical amplicons" increases:
