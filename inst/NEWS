@@ -3,6 +3,10 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Made the "show" methods for BString, BStringViews and BStringAlign objects
+  "getOption('width') aware" so that the user can control the width of the
+  output they produce.
+
 o Change in terminology to align with established practices: "fuzzy matching"
   is now called "inexact matching". This change mostly affects the
   documentation. The only change at the API level that is a consequence of

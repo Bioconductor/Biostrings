@@ -123,7 +123,7 @@ BStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
     start <- x@views$start[i]
     end <- x@views$end[i]
     width <- end - start + 1
-    snippetWidth <- 73 - iW - startW - endW - widthW
+    snippetWidth <- getOption("width") - 6 - iW - startW - endW - widthW
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
         format(start, width=startW, justify="right"), " ",
         format(end, width=endW, justify="right"), " ",
@@ -135,7 +135,7 @@ BStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
 ### 'half_nrow' must be >= 1
 BStringViews.show_vframe <- function(x, half_nrow=9L)
 {
-    cat("\nViews:")
+    cat("\nviews:")
     lx <- length(x)
     if (lx == 0)
         cat(" NONE\n")
@@ -178,7 +178,7 @@ setMethod("show", "BStringViews",
             class(subject), " subject", sep="")
         #if (!is.null(subject@codec))
         #    cat(" with alphabet:", toString(subject@codec@letters))
-        cat("\nSubject:", BString.get_snippet(subject, 70))
+        cat("\nsubject:", BString.get_snippet(subject, getOption("width") - 9))
         BStringViews.show_vframe(object)
     }
 )
