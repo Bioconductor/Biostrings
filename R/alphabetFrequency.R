@@ -179,14 +179,16 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ### Something else worth checking:
 ###   library(BSgenome.Dmelanogaster.FlyBase.r51)
 ###   chr3R <- Dmelanogaster[["3R"]]
-###   width <- 5
+###   width <- 12
 ###   dict0 <- mkAllStrings(names(Biostrings:::DNAcodes(TRUE)), width)
 ###   names(dict0) <- dict0
 ###   pdict <- new("ULdna_PDict", dict0)
 ###   system.time(c1 <- countPDict(pdict, chr3R))
-###   system.time(c2 <- oligonucleotideFrequency(chr3R, width))
+###   system.time(c2 <- oligonucleotideFrequency(chr3R, width, use.names=FALSE))
 ###   identical(c1, c2) # must be TRUE
-### Then try for other values of 'width' (1 <= width <= 10).
+### Then try for other values of 'width' (1 <= width <= 12).
+### Of course oligonucleotideFrequency() is much better: it is >10x faster, does
+### not require preprocessing, and uses much less memory.
 ###
 
 .normalize.as.array <- function(as.array, fast.moving.side)
