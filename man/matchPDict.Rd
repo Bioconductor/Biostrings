@@ -212,7 +212,7 @@
   ## -------------------------------------------------------------------------
 
   ## If getting the number of matches is what matters only (without regarding
-  ## their position), then countPDict() will be faster, especially when there
+  ## their positions), then countPDict() will be faster, especially when there
   ## is a high number of matches
   nmatch1 <- countPDict(pdict, chr3R)
   identical(nmatch1, nmatch)          # TRUE
