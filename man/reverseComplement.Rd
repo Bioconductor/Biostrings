@@ -5,9 +5,11 @@
 \alias{reverse,BStringViews-method}
 \alias{complement}
 \alias{complement,DNAString-method}
+\alias{complement,RNAString-method}
 \alias{complement,BStringViews-method}
 \alias{reverseComplement}
 \alias{reverseComplement,DNAString-method}
+\alias{reverseComplement,RNAString-method}
 \alias{reverseComplement,BStringViews-method}
 
 
@@ -29,9 +31,9 @@
   \item{x}{
     A \code{\link{BString}} (or derived) object
     or a \code{\link{BStringViews}} object for \code{reverse}.
-    A \code{\link{DNAString}} object
-    or a \code{\link{BStringViews}} object
-    with a \code{\link{DNAString}} subject for \code{complement}
+    A \code{\link{DNAString}} or \code{\link{RNAString}} object
+    (or a \code{\link{BStringViews}} object with a \code{\link{DNAString}}
+    or \code{\link{RNAString}} subject) for \code{complement}
     and \code{reverseComplement}.
   }
   \item{...}{
@@ -42,10 +44,14 @@
 \details{
   Given an object \code{x} of class \link{BString}, \link{DNAString}
   or \link{RNAString}, \code{reverse(x)} returns an object of the same class
-  where letters in \code{x} are reordered in the reverse ordered.
-  If \code{x} is a \link{DNAString} object, \code{complement(x)} returns
-  an object where each base in \code{x} is "complemented" i.e.
-  A, C, G, T are replaced by T, G, C, A respectively.
+  where letters in \code{x} are reordered in the reverse order.
+
+  If \code{x} is a \link{DNAString} or \link{RNAString} object,
+  \code{complement(x)} returns an object where each base in \code{x}
+  is "complemented" i.e. A, C, G, T in a \link{DNAString} object are replaced
+  by T, G, C, A respectively and A, C, G, U in a \link{RNAString} object
+  are replaced by U, G, C, A respectively.
+
   Letters belonging to the "IUPAC extended genetic alphabet"
   are also replaced by their complement (M <-> K, R <-> Y, S <-> S, V <-> B,
   W <-> W, H <-> D, N <-> N) and the gap letter (-) is unchanged.
@@ -58,6 +64,7 @@
 }
 
 \seealso{
+  \code{\link{strrev}},
   \code{\link{findPalindromes}}
 }
 

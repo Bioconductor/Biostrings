@@ -36,7 +36,7 @@
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
   dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE)
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE)
-  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, USE.NAMES=TRUE)
+  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE)
 
   ## Some related utility functions
   strrev(x)
@@ -80,7 +80,7 @@
     \code{oligonucleotideFrequency}.
     The number of letters per string for \code{mkAllStrings}.
   }
-  \item{USE.NAMES}{
+  \item{use.names}{
     If \code{TRUE} then return a named vector (or array).
   }
   \item{alphabet}{
@@ -97,7 +97,7 @@
   For \code{alphabetFrequency}: if \code{x} is a \link{DNAString} or
   \link{RNAString} object (or a \link{BStringViews} object with a
   \link{DNAString} or \link{RNAString} subject), then the returned vector
-  is named with the letters in the alphabet (unless \code{USE.NAMES}
+  is named with the letters in the alphabet (unless \code{use.names}
   is \code{FALSE}).
   If the \code{baseOnly} argument is \code{TRUE}, then the returned vector
   has only 5 elements: 4 elements corresponding to the 4 nucleotides
@@ -157,9 +157,9 @@
   sapply(split(tri1, names(tri1)), sum) # 12512 occurences of the stop codon
 
   ## When the returned vector is very long (e.g. width >= 10), using
-  ## 'USE.NAMES=FALSE' will improve the performance considerably (100x, 1000x
+  ## 'use.names=FALSE' will improve the performance considerably (100x, 1000x
   ## or more):
-  f12 <- oligonucleotideFrequency(yeast1, 12, USE.NAMES=FALSE) # very fast!
+  f12 <- oligonucleotideFrequency(yeast1, 12, use.names=FALSE) # very fast!
 
   ## Some related utility functions
   dict1 <- mkAllStrings(LETTERS[1:3], 4)

@@ -22,6 +22,7 @@
 
 % Standard generic methods:
 \alias{show,BStringAlign-method}
+\alias{as.character,BStringAlign-method}
 
 
 \title{The BStringAlign class}
@@ -37,8 +38,8 @@
   A "filled-with-gaps supersequence" of a string s1 is a string S1 that is
   obtained by inserting 0 or any number of gaps in s1.
   For example L-A--ND is a "filled-with-gaps supersequence" of LAND.
-  An alignment between 2 strings s1 and s2 is made of 2 strings align1 and
-  align2 that are "filled-with-gaps supersequences" of s1 and s2, and that
+  An alignment between 2 strings s1 and s2 is made of 2 strings (align1 and
+  align2) that are "filled-with-gaps supersequences" of s1 and s2, and that
   have the same length.
   Note that this common length must be greater or equal to the lengths
   of s1 and s2: nchar(align1) = nchar(align2) >= max(nchar(s1), nchar(s2))
@@ -93,6 +94,10 @@
       \code{alphabet(x)}:
       Equivalent to \code{alphabet(align1(x))} (or \code{alphabet(align2(x))}).
     }
+    \item{}{
+      \code{as.character(x)}:
+      Converts \code{x} to a named character vector of length 2.
+    }
   }
 }
 
@@ -120,6 +125,8 @@
   nw0
   length(nw0)
   ## Low gap penalties tend to produce longer alignments!
+
+  as.character(nw0)
 }
 
 \keyword{methods}
