@@ -708,10 +708,9 @@ SEXP ULdna_pp_views(
 );
 
 SEXP match_ULdna_exact(
-		SEXP uldna_length,
-		SEXP uldna_dups,
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
+		SEXP uldna_dups,
 		SEXP s_xp,
 		SEXP s_offset,
 		SEXP s_length,

@@ -688,16 +688,17 @@ extractAllMatches <- function(subject, p2v)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ends <- .Call("match_ULdna_exact",
-          pdict@length, pdict@dups,
-          actree@nodes@xp, actree@base_codes,
-          subject@data@xp, subject@offset, subject@length,
-          envir, count.only,
-          PACKAGE="Biostrings")
+    ans <- .Call("match_ULdna_exact",
+                 actree@nodes@xp, actree@base_codes, pdict@dups,
+                 subject@data@xp, subject@offset, subject@length,
+                 envir, count.only,
+                 PACKAGE="Biostrings")
+    if (count.only)
+        return(ans)
     if (is.null(pids))
-        new("P2ViewsWithoutIDs", ends=ends, width=width(pdict))
+        new("P2ViewsWithoutIDs", ends=ans, width=width(pdict))
     else
-        new("P2ViewsWithIDs", length=length(pdict), ends_envir=ends, width=width(pdict), pids=pids)
+        new("P2ViewsWithIDs", length=length(pdict), ends_envir=ans, width=width(pdict), pids=pids)
 }
 
 ### With a big random dictionary, on george1:

@@ -69,9 +69,10 @@ o matchPDict() now returns a P2Views object (new class) instead of a list
   WARNING: This is still a work-in-progress. Function names and semantics are
   not yet stabilized!
 
-o Added the matchPDict() function for efficiently finding all occurences in
-  a text (the subject) of any pattern from a set of patterns (the dictionary).
-  See ?matchPDict for the details (especially the current limitations).
+o Added the matchPDict() and countPDict() functions for efficiently finding
+  (or just counting) all occurences in a text (the subject) of any pattern
+  from a set of patterns (the dictionary). See ?matchPDict for the details
+  (especially the current limitations).
 
 o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
   Biostrings 1).

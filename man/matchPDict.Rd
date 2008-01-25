@@ -126,6 +126,8 @@
 \value{
   \code{matchPDict} returns a P2Views object.
 
+  \code{countPDict} returns an integer vector.
+
   \code{p2start}, \code{p2end} and \code{p2nview} return vectors of the same
   length as the input dictionary: \code{p2start} and \code{p2end} return a
   list of integer vectors, and \code{p2nview} returns an integer vector.
@@ -143,9 +145,9 @@
 }
 
 \examples{
-  ##
+  ## -------------------------------------------------------------------------
   ## A. WITHOUT USING PATTERN IDS
-  ##
+  ## -------------------------------------------------------------------------
 
   ## Creating the pattern dictionary
   library(drosophila2probe)
@@ -181,9 +183,9 @@
   p2v[[i0]]                           # Its matches as a Views object.
   views(chr3R, p2start[[i0]], p2end[[i0]]) # And as a BStringViews object.
 
-  ##
+  ## -------------------------------------------------------------------------
   ## B. USING PATTERN IDS
-  ##
+  ## -------------------------------------------------------------------------
 
   dict1 <- dict0[8211:8236]           # The input dictionary.
   names(dict1) <- LETTERS
@@ -205,10 +207,17 @@
   nview(unlist(p2v))                  # Total number of matches.
   extractAllMatches(chr3R, p2v)
 
-  ##
-  ## C. PERFORMANCE (NOT RUN)
-  ##
+  ## -------------------------------------------------------------------------
+  ## C. PERFORMANCE
+  ## -------------------------------------------------------------------------
 
+  ## If getting the number of matches is what matters only (without regarding
+  ## their position), then countPDict() will be faster, especially when there
+  ## is a high number of matches
+  nmatch1 <- countPDict(pdict, chr3R)
+  identical(nmatch1, nmatch)          # TRUE
+
+  ## NOT RUN
   if (FALSE) {
     ## What's the impact of the dictionary width on performance?
     ## Below is some code that can be used to figure out (will take a long

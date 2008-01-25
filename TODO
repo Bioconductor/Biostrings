@@ -28,6 +28,9 @@ In 2.[6|7]
 In 2.7
 ======
 
+- When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
+  is high (e.g. >= 8, finding the exact cut-value requires some testing).
+
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
 
