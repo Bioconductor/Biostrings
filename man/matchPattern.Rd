@@ -21,8 +21,8 @@
 }
 
 \usage{
-  matchPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
-  countPattern(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+  countPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
 }
 
@@ -38,8 +38,8 @@
     One of the following: \code{"auto"}, \code{"naive-exact"},
     \code{"naive-inexact"}, \code{"boyer-moore"} or \code{"shift-or"}.
   }
-  \item{mismatch}{
-    The number of mismatches allowed. If non-zero, an inexact matching
+  \item{max.mismatch}{
+    The maximum number of mismatches allowed. If non-zero, an inexact matching
     algorithm is used.
     Note that \code{matchPattern} (and \code{countPattern}) don't support the
     kind of inexact matching where a given number of insertions or deletions
@@ -76,7 +76,7 @@
   ``Boyer-Moore-like'' and ``shift-or''. Not all of them can be
   used in all situations: restrictions depend on the length of
   the pattern, the class of the subject and the values of
-  \code{mismatch} and \code{fixed}.
+  \code{max.mismatch} and \code{fixed}.
 
   When 2 different algorithms can be used for a given task,
   then choosing one or the other only affects the performance,
@@ -118,7 +118,7 @@
   yeast1 <- DNAString(yeastSEQCHR1)
   PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
   match1.PpiI <- matchPattern(PpiI, yeast1, fixed=FALSE)
-  match2.PpiI <- matchPattern(PpiI, yeast1, mismatch=1, fixed=FALSE)
+  match2.PpiI <- matchPattern(PpiI, yeast1, max.mismatch=1, fixed=FALSE)
 
   ## With a genome containing isolated Ns
   library(BSgenome.Celegans.UCSC.ce2)

@@ -3,6 +3,9 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
+  matchLRPatterns() and matchPDict() functions.
+
 o Added "matchLRPatterns" and "matchProbePair" methods for BStringViews
   objects.
 

@@ -170,13 +170,13 @@ Count all exact matches of pattern \Robject{"ACCCAGGGC"}:
 <<b7>>=
 p <- "ACCCAGGGC"
 countPattern(p, chrI)
-countPattern(p, chrI, mismatch=1)
+countPattern(p, chrI, max.mismatch=1)
 @
 
 The matches can be stored in a \Rclass{BStringViews} object
 by using the \Rmethod{matchPattern} method:
 <<b8>>=
-m <- matchPattern(p, chrI, mismatch=1)
+m <- matchPattern(p, chrI, max.mismatch=1)
 m[4:6]
 mismatch(p, m[4:6])
 @
@@ -186,13 +186,13 @@ returns the positions of the mismatching letters.
 
 Note: The \Rmethod{mismatch} method is in fact a particular case
 of a (vectorized) {\it alignment} function where only ``replacements''
-are allowed. Current implementation is slow but this will change.
+are allowed. Current implementation is slow but this will be addressed.
 
 
 It may happen that a match is {\it out of limits} like in this example:
 <<b9>>=
 p2 <- DNAString("AAGCCTAAGCCTAAGCCTAA")
-m2 <- matchPattern(p2, chrI, mismatch=2)
+m2 <- matchPattern(p2, chrI, max.mismatch=2)
 m2[1:4]
 p2 == m2[1:4]
 mismatch(p2, m2[1:4])
@@ -206,7 +206,7 @@ m2[p2 != m2]
 @
 
 Note that the length of \Robject{m2[p2 == m2]} should be
-equal to \Robject{countPattern(p2, chrI, mismatch=0)}.
+equal to \Robject{countPattern(p2, chrI, max.mismatch=0)}.
 
 
 % ---------------------------------------------------------------------------

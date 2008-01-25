@@ -118,8 +118,7 @@ setMethod("matchProbePair", "DNAString",
 ### WARNING: Unlike the other "matchProbePair" methods, the BStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized BStringViews object
-### and 'mismatch=0' (no "out of limits" matches).
+### guaranteed though is when 'subject' is a normalized BStringViews object.
 setMethod("matchProbePair", "BStringViews",
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
     {

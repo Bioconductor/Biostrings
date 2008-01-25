@@ -3,20 +3,20 @@
 ###
 
 setGeneric("matchLRPatterns", signature="subject",
-    function(Lpattern, Rpattern, max.ngaps, subject, Lmismatch=0, Rmismatch=0,
+    function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
         standardGeneric("matchLRPatterns")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchLRPatterns", "BString", 
-    function(Lpattern, Rpattern, max.ngaps, subject, Lmismatch=0, Rmismatch=0,
+    function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
     {
         ans_start <- ans_end <- integer(0)
-        Lmatches <- matchPattern(Lpattern, subject, mismatch=Lmismatch, fixed=Lfixed)
+        Lmatches <- matchPattern(Lpattern, subject, max.mismatch=max.Lmismatch, fixed=Lfixed)
         if (length(Lmatches) != 0L) {
-            Rmatches <- matchPattern(Rpattern, subject, mismatch=Rmismatch, fixed=Rfixed)
+            Rmatches <- matchPattern(Rpattern, subject, max.mismatch=max.Rmismatch, fixed=Rfixed)
             if (length(Rmatches) != 0L) {
                 for (i in seq_len(length(Lmatches))) {
                     ngaps <- start(Rmatches) - end(Lmatches)[i] - 1L
@@ -35,15 +35,16 @@ setMethod("matchLRPatterns", "BString",
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
 ### guaranteed though is when 'subject' is a normalized BStringViews object
-### and 'mismatch=0' (no "out of limits" matches).
+### and 'max.Lmismatch=0' and 'max.Rmismatch=0' so there are no "out of limits"
+### matches.
 setMethod("matchLRPatterns", "BStringViews",
-    function(Lpattern, Rpattern, max.ngaps, subject, Lmismatch=0, Rmismatch=0,
+    function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
     {
         ans_start <- ans_end <- integer(0)
         for (i in seq_len(length(subject))) {
             pm <- matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject[[i]],
-                                   Lmismatch=Lmismatch, Rmismatch=Rmismatch,
+                                   max.Lmismatch=max.Lmismatch, max.Rmismatch=max.Rmismatch,
                                    Lfixed=Lfixed, Rfixed=Rfixed)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pm))

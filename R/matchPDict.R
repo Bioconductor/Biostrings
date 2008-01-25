@@ -742,7 +742,7 @@ extractAllMatches <- function(subject, p2v)
 ### .matchPDict()
 ###
 
-.matchPDict <- function(pdict, subject, algorithm, mismatch, fixed, count.only=FALSE)
+.matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed, count.only=FALSE)
 {
     if (!is(pdict, "ULdna_PDict"))
         stop("the pattern dictionary 'pdict' can only be a ULdna_PDict object for now")
@@ -750,8 +750,8 @@ extractAllMatches <- function(subject, p2v)
         stop("'subject' can only be a DNAString object for now")
     if (!identical(algorithm, "auto"))
         stop("'algo' can only be '\"auto\"' for now")
-    if (!identical(mismatch, 0))
-        stop("'mismatch' can only be set to 0 for now")
+    if (!identical(max.mismatch, 0))
+        stop("'max.mismatch' can only be set to 0 for now")
     if (!identical(fixed, TRUE))
         stop("'fixed' can only be 'TRUE' for now")
     .match.ULdna_PDict.exact(pdict, subject, count.only)
@@ -763,15 +763,15 @@ extractAllMatches <- function(subject, p2v)
 ###
 
 setGeneric("matchPDict", signature="subject",
-    function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         standardGeneric("matchPDict")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "BString",
-    function(pdict, subject, algorithm, mismatch, fixed)
+    function(pdict, subject, algorithm, max.mismatch, fixed)
     {
-	.matchPDict(pdict, subject, algorithm, mismatch, fixed)
+	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
     }
 )
 
@@ -781,15 +781,15 @@ setMethod("matchPDict", "BString",
 ###
 
 setGeneric("countPDict", signature="subject",
-    function(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         standardGeneric("countPDict")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "BString",
-    function(pdict, subject, algorithm, mismatch, fixed)
+    function(pdict, subject, algorithm, max.mismatch, fixed)
     {
-	.matchPDict(pdict, subject, algorithm, mismatch, fixed, count.only=TRUE)
+	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
     }
 )
 

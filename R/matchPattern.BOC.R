@@ -143,7 +143,7 @@ debug_BOC <- function()
 }
 
 ### Must return an integer vector.
-.match.BOC.inexact <- function(pattern, boc_subject, mismatch, count.only)
+.match.BOC.inexact <- function(pattern, boc_subject, max.mismatch, count.only)
 {
     stop("NOT READY YET!")
 }
@@ -151,7 +151,7 @@ debug_BOC <- function()
 ### Dispatch on 'subject' (see signature of generic).
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC_SubjectString",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         if (class(pattern) != class(subject@subject))
             pattern <- new(class(subject@subject), pattern)
@@ -163,10 +163,10 @@ setMethod("matchPattern", "BOC_SubjectString",
             if (!all(fixed))
                 stop("only 'fixed=TRUE' can be used with a subject of class ", class(subject))
         }
-        if (mismatch == 0)
+        if (max.mismatch == 0)
             matches <- .match.BOC.exact(pattern, subject, count.only=FALSE)
         else
-            matches <- .match.BOC.inexact(pattern, subject, mismatch, count.only=FALSE)
+            matches <- .match.BOC.inexact(pattern, subject, max.mismatch, count.only=FALSE)
         new("BStringViews", subject=subject@subject,
             start=matches, end=matches+pattern_length-1L, check.views=FALSE)
     }

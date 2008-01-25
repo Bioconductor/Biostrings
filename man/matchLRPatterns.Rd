@@ -11,7 +11,7 @@
 }
 
 \usage{
-  matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject, Lmismatch=0, Rmismatch=0,
+  matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
                   Lfixed=TRUE, Rfixed=TRUE)
 }
 
@@ -30,13 +30,13 @@
     A \link{BString} (or derived) object (or a \link{BStringViews} object)
     containing the target sequence.
   }
-  \item{Lmismatch}{
-    The number of mismatches allowed for the left part of the pattern.
+  \item{max.Lmismatch}{
+    The maximum number of mismatches allowed for the left part of the pattern.
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).
   }
-  \item{Rmismatch}{
-    Same as \code{Lmismatch} but for the right part of the pattern.
+  \item{max.Rmismatch}{
+    Same as \code{max.Lmismatch} but for the right part of the pattern.
   }
   \item{Lfixed}{
     Only with a \link{DNAString} or \link{RNAString} subject can a \code{Lfixed}

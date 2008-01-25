@@ -131,12 +131,12 @@ plotBOC2 <- function(x, main)
 }
 
 ### Must return an integer vector.
-.match.BOC2.inexact <- function(pattern, boc_subject, mismatch, count.only)
+.match.BOC2.inexact <- function(pattern, boc_subject, max.mismatch, count.only)
 {
     stop("NOT READY YET!")
 }
 
-.matchPattern.BOC2 <- function(pattern, boc_subject, mismatch, fixed, count.only=FALSE)
+.matchPattern.BOC2 <- function(pattern, boc_subject, max.mismatch, fixed, count.only=FALSE)
 {
     if (class(pattern) != class(boc_subject@subject))
         pattern <- new(class(boc_subject@subject), pattern)
@@ -146,10 +146,10 @@ plotBOC2 <- function(x, main)
     fixed <- .normalize.fixed(fixed)
     if (!all(fixed))
         stop("only 'fixed=TRUE' can be used with a subject of class ", class(boc_subject))
-    if (mismatch == 0)
+    if (max.mismatch == 0)
         matches <- .match.BOC2.exact(pattern, boc_subject, count.only)
     else
-        matches <- .match.BOC2.inexact(pattern, boc_subject, mismatch, count.only)
+        matches <- .match.BOC2.inexact(pattern, boc_subject, max.mismatch, count.only)
     if (count.only)
         return(matches)
     new("BStringViews", subject=boc_subject@subject,
@@ -159,17 +159,17 @@ plotBOC2 <- function(x, main)
 ### Dispatch on 'subject' (see signature of generic).
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC2_SubjectString",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        .matchPattern.BOC2(pattern, subject, mismatch, fixed)
+        .matchPattern.BOC2(pattern, subject, max.mismatch, fixed)
     }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "BOC2_SubjectString",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        .matchPattern.BOC2(pattern, subject, mismatch, fixed, count.only=TRUE)
+        .matchPattern.BOC2(pattern, subject, max.mismatch, fixed, count.only=TRUE)
     }
 )
 

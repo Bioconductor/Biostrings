@@ -108,16 +108,16 @@ debug_naive <- function()
 }
 
 ### Must return an integer vector.
-.match.naive.inexact <- function(pattern, subject, mismatch, fixed, count.only)
+.match.naive.inexact <- function(pattern, subject, max.mismatch, fixed, count.only)
 {
     ## We treat the edge-cases at the R level
     p <- length(pattern)
-    if (p <= mismatch) {
+    if (p <= max.mismatch) {
         if (count.only)
             return(length(subject) + p - as.integer(1))
         return((1-p):length(subject))
     }
-    if (p > mismatch + length(subject)) {
+    if (p > max.mismatch + length(subject)) {
         if (count.only)
             return(as.integer(0))
         return(integer(0))
@@ -125,7 +125,7 @@ debug_naive <- function()
     .Call("match_naive_inexact",
           pattern@data@xp, pattern@offset, pattern@length,
           subject@data@xp, subject@offset, subject@length,
-          mismatch, fixed, count.only,
+          max.mismatch, fixed, count.only,
           PACKAGE="Biostrings")
 }
 
@@ -165,16 +165,16 @@ debug_shiftor <- function()
 }
 
 ### Must return an integer vector.
-.match.shiftor <- function(pattern, subject, mismatch, fixed, count.only)
+.match.shiftor <- function(pattern, subject, max.mismatch, fixed, count.only)
 {
     ## We treat the edge-cases at the R level
     p <- length(pattern)
-    if (p <= mismatch) {
+    if (p <= max.mismatch) {
         if (count.only)
             return(length(subject) + p - as.integer(1))
         return((1-p):length(subject))
     }
-    if (p > mismatch + length(subject)) {
+    if (p > max.mismatch + length(subject)) {
         if (count.only)
             return(as.integer(0))
         return(integer(0))
@@ -182,7 +182,7 @@ debug_shiftor <- function()
     .Call("match_shiftor",
           pattern@data@xp, pattern@offset, pattern@length,
           subject@data@xp, subject@offset, subject@length,
-          mismatch, fixed, count.only,
+          max.mismatch, fixed, count.only,
           PACKAGE="Biostrings")
 }
 
@@ -225,20 +225,20 @@ debug_shiftor <- function()
 
 ### Return a character vector containing the valid algos (best suited first)
 ### for the given problem (problem is described by the values of 'pattern',
-### 'mismatch' and 'fixed').
+### 'max.mismatch' and 'fixed').
 ### Raise an error if the problem "doesn't make sense".
 ### Make sure that:
 ###   1. 'pattern' is of the same class as 'subject'
-###   2. 'mismatch' is a non-negative integer
+###   2. 'max.mismatch' is a non-negative integer
 ###   3. 'fixed' has been normalized
 ### before you call .valid.algos()
-.valid.algos <- function(pattern, mismatch, fixed)
+.valid.algos <- function(pattern, max.mismatch, fixed)
 {
     if (!all(fixed) && !(class(pattern) %in% c("DNAString", "RNAString")))
         stop("'fixed' value only supported for a DNAString or RNAString subject ",
              "(you can only use 'fixed=TRUE' with your subject)")
     algos <- character(0)
-    if (mismatch == 0 && all(fixed)) {
+    if (max.mismatch == 0 && all(fixed)) {
         algos <- c(algos, "boyer-moore")
         if (nchar(pattern) <= .Clongint.nbits())
             algos <- c(algos, "shift-or")
@@ -250,7 +250,7 @@ debug_shiftor <- function()
     c(algos, "naive-inexact") # "naive-inexact" is universal but slow
 }
 
-.matchPattern <- function(pattern, subject, algorithm, mismatch, fixed,
+.matchPattern <- function(pattern, subject, algorithm, max.mismatch, fixed,
                           count.only=FALSE)
 {
     if (!is.character(algorithm) || length(algorithm) != 1 || is.na(algorithm))
@@ -275,20 +275,20 @@ debug_shiftor <- function()
         if (nchar(pattern) > 20000)
             stop("patterns with more than 20000 letters are not supported, sorry")
     }
-    if (!is.numeric(mismatch) || length(mismatch) != 1 || is.na(mismatch))
-        stop("'mismatch' must be a single integer")
-    mismatch <- as.integer(mismatch)
-    if (mismatch < 0)
-        stop("'mismatch' must be a non-negative integer")
+    if (!is.numeric(max.mismatch) || length(max.mismatch) != 1 || is.na(max.mismatch))
+        stop("'max.mismatch' must be a single integer")
+    max.mismatch <- as.integer(max.mismatch)
+    if (max.mismatch < 0)
+        stop("'max.mismatch' must be a non-negative integer")
     fixed <- .normalize.fixed(fixed)
     if (!is.logical(count.only) || length(count.only) != 1 || is.na(count.only))
         stop("'count.only' must be TRUE or FALSE")
     if (algo %in% c("gregexpr", "gregexpr2")) {
-        if (mismatch != 0 || !all(fixed))
+        if (max.mismatch != 0 || !all(fixed))
             stop("algorithms \"gregexpr\" and \"gregexpr2\" only support ",
-                 "'mismatch=0' and 'fixed=TRUE'")
+                 "'max.mismatch=0' and 'fixed=TRUE'")
     } else {
-        algos <- .valid.algos(pattern, mismatch, fixed)
+        algos <- .valid.algos(pattern, max.mismatch, fixed)
         if (algo == "auto") {
             algo <- algos[1]
         } else {
@@ -301,10 +301,10 @@ debug_shiftor <- function()
         "gregexpr"=.match.gregexpr(pattern, subject, count.only),
         "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
         "naive-exact"=.match.naive.exact(pattern, subject, count.only),
-        "naive-inexact"=.match.naive.inexact(pattern, subject, mismatch, fixed,
+        "naive-inexact"=.match.naive.inexact(pattern, subject, max.mismatch, fixed,
                                          count.only),
         "boyer-moore"=.match.boyermoore(pattern, subject, count.only),
-        "shift-or"=.match.shiftor(pattern, subject, mismatch, fixed,
+        "shift-or"=.match.shiftor(pattern, subject, max.mismatch, fixed,
                                   count.only)
     )
     if (count.only)
@@ -323,27 +323,27 @@ debug_shiftor <- function()
 ###   matchPattern("TG", DNAString("GTGACGTGCAT"))
 ###   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
 ### Edge cases:
-###   matchPattern("---", DNAString("ACGTGCA"), mismatch=3)
+###   matchPattern("---", DNAString("ACGTGCA"), max.mismatch=3)
 ###   matchPattern("---", DNAString("A"))
 
 setGeneric("matchPattern", signature="subject",
-    function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         standardGeneric("matchPattern")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "character",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        .matchPattern(pattern, subject, algorithm, mismatch, fixed)
+        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
     }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "BString",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        .matchPattern(pattern, subject, algorithm, mismatch, fixed)
+        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
     }
 )
 
@@ -352,13 +352,13 @@ setMethod("matchPattern", "BString",
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
 ### guaranteed though is when 'subject' is a normalized BStringViews object
-### and 'mismatch=0' (no "out of limits" matches).
+### and 'max.mismatch=0' (no "out of limits" matches).
 setMethod("matchPattern", "BStringViews",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         ans_start <- ans_end <- integer(0)
         for (i in seq_len(length(subject))) {
-            pm <- .matchPattern(pattern, subject[[i]], algorithm, mismatch, fixed)
+            pm <- .matchPattern(pattern, subject[[i]], algorithm, max.mismatch, fixed)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pm))
             ans_end <- c(ans_end, offset + end(pm))
@@ -378,37 +378,37 @@ matchDNAPattern <- function(...) .Defunct("matchPattern")
 ###   countPattern("TG", DNAString("GTGACGTGCAT"))
 ###   countPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
 ### Edge cases:
-###   countPattern("---", DNAString("ACGTGCA"), mismatch=3)
+###   countPattern("---", DNAString("ACGTGCA"), max.mismatch=3)
 ###   countPattern("---", DNAString("A"))
 setGeneric("countPattern", signature="subject",
-    function(pattern, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         standardGeneric("countPattern")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "character",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        .matchPattern(pattern, subject, algorithm, mismatch, fixed, count.only=TRUE)
+        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
     }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "BString",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        .matchPattern(pattern, subject, algorithm, mismatch, fixed, count.only=TRUE)
+        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
     }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "BStringViews",
-    function(pattern, subject, algorithm, mismatch, fixed)
+    function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         sum(
             sapply(seq_len(length(subject)),
                    function(i) .matchPattern(pattern, subject[[i]],
-                                             algorithm, mismatch, fixed,
+                                             algorithm, max.mismatch, fixed,
                                              count.only=TRUE)
             )
         )
@@ -433,7 +433,7 @@ bsMismatch <- function(pattern, subject, start, fixed)
         } else {
             l <- BString.substr(pattern, i, i)
             r <- BString.substr(subject, j, j)
-            cp <- countPattern(l, r, algo="shift-or", mismatch=0, fixed)
+            cp <- countPattern(l, r, algo="shift-or", max.mismatch=0, fixed)
             if (cp == 0)
                 mm <- c(mm, i)
         }
@@ -456,7 +456,7 @@ setGeneric("mismatch", signature="x",
 )
 
 ### Typical use:
-###   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), mismatch=2)
+###   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), max.mismatch=2)
 ###   mismatch("TGA", mp)
 ### Dispatch on 'x' (see signature of generic).
 setMethod("mismatch", "BStringViews",

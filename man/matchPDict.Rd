@@ -74,8 +74,8 @@
 }
 
 \usage{
-  matchPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
-  countPDict(pdict, subject, algorithm="auto", mismatch=0, fixed=TRUE)
+  matchPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+  countPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
 
   ## Manipulation of the PDict object passed to matchPDict()
   pids(x)
@@ -99,7 +99,7 @@
   \item{algorithm}{
     Not supported yet.
   }
-  \item{mismatch}{
+  \item{max.mismatch}{
     Not supported yet.
   }
   \item{fixed}{
