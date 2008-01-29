@@ -39,6 +39,10 @@ In 2.7
     o Add methods for BStringList objects everywhere there are methods defined
       for BStringViews objects (alphabetFrequency, reverse, matchPattern,
       etc...). Make them work in a vectorized fashion for BStringList objects.
+    o Replace serialized BStringViews objects (multiple sequences) by serialized
+      BStringList objects in BSgenome.* packages. Modify BSgenome:::mseqnames
+      man page consequently. Bump versions of BSgenome + all the BSgenome.* pkgs
+      and make the updated BSgenome.* pkgs depend on the updated BSgenome pkg.
 
 - Define a DNAorRNA class (or NucleotideString) that is the union of the
   DNAString and RNAString classes (use a union class for this or "do it by
