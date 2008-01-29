@@ -21,9 +21,7 @@
 \alias{last,Views-method}
 \alias{width}
 \alias{width,Views-method}
-\alias{desc}
 \alias{desc,Views-method}
-\alias{desc<-}
 \alias{desc<-,Views-method}
 
 % Other methods:

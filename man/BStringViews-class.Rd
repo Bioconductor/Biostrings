@@ -160,6 +160,7 @@
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
+  \link{BStringList-class},
   \code{\link{letter}}
 }
 

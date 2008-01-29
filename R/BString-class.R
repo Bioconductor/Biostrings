@@ -11,9 +11,9 @@ setClass("BString",
 )
 
 ### 3 direct "BString" derivations (no additional slot)
-setClass("DNAString", representation("BString"))
-setClass("RNAString", representation("BString"))
-setClass("AAString", representation("BString"))
+setClass("DNAString", contains="BString")
+setClass("RNAString", contains="BString")
+setClass("AAString", contains="BString")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

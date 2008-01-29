@@ -34,6 +34,12 @@ In 2.7
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
 
+- BStringList objects:
+    o Add read.BStringList/write.BStringList.
+    o Add methods for BStringList objects everywhere there are methods defined
+      for BStringViews objects (alphabetFrequency, reverse, matchPattern,
+      etc...). Make them work in a vectorized fashion for BStringList objects.
+
 - Define a DNAorRNA class (or NucleotideString) that is the union of the
   DNAString and RNAString classes (use a union class for this or "do it by
   hand" by defining this as a virtual class and by having the DNAString

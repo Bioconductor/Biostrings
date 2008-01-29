@@ -33,15 +33,15 @@
 \alias{alphabet,BString-method}
 
 
-\title{The BString class}
+\title{The BString, DNAString, RNAString and AAString classes}
 
 \description{
   The \code{BString} class is a general container for storing
-  a big string (a long sequence of characters) and to make its
+  a big string (a long sequence of characters) and for making its
   manipulation easy and efficient.
   The \code{\link{DNAString}}, \code{\link{RNAString}}
   and \code{\link{AAString}} classes are direct \code{BString}
-  derivations with the more specific purpose of storing a DNA sequence
+  derivations with the biology-oriented purpose of storing a DNA sequence
   (\code{\link{DNAString}}), a RNA sequence (\code{\link{RNAString}})
   or a sequence of amino acids (\code{\link{AAString}}).
 }

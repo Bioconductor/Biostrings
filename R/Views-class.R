@@ -81,10 +81,8 @@ setMethod("last", "Views", function(x) {.Deprecated("end"); end(x)})
 setGeneric("width", function(x) standardGeneric("width"))
 setMethod("width", "Views", function(x) end(x) - start(x) + 1L)
 
-setGeneric("desc", function(x) standardGeneric("desc"))
 setMethod("desc", "Views", function(x) x@views$desc)
 
-setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
 setReplaceMethod("desc", "Views",
     function(x, value)
     {
