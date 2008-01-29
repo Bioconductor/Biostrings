@@ -3,6 +3,9 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added the "BStringList", "DNAStringList", "RNAStringList" and "AAStringList"
+  classes. Not used yet but will be soon... (more news to come here)
+
 o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
   matchLRPatterns() and matchPDict() functions.
 
@@ -69,6 +72,9 @@ o matchPDict() now returns a P2Views object (new class) instead of a list
   WARNING: This is still a work-in-progress. Function names and semantics are
   not yet stabilized!
 
+o Added the Views class (see ?Views for the details). Changed the definition
+  of the BStringViews class so now it extends the Views class.
+
 o Added the matchPDict() and countPDict() functions for efficiently finding
   (or just counting) all occurences in a text (the subject) of any pattern
   from a set of patterns (the dictionary). See ?matchPDict for the details
@@ -77,8 +83,8 @@ o Added the matchPDict() and countPDict() functions for efficiently finding
 o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
   Biostrings 1).
 
-o Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions + a
-  "reverseComplement" method for RNAString objects.
+o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
+  + a "reverseComplement" method for RNAString objects.
 
 o Added basic support for palindrome finding: it can be achieved with the
   new findPalindromes() and findComplementedPalindromes() functions.

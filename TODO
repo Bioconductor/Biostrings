@@ -123,6 +123,12 @@ In 2.7
 - Change signature of matchPattern() (and of friends too, maybe): add a
   'min.mismatch' arg.
 
+- Maybe: add a specific containers for results returned by matchPattern
+  (and family). Would derive from the BStringViews class with at least one
+  additional slot, the @call slot (of type "language"), that would contain
+  the value of match.call(), so that one knows what parameters were supplied
+  for a given matching task.
+
 - Make alphabetFrequency works with BStringViews objects with
   "out of limits" views.
 
