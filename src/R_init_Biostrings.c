@@ -48,8 +48,10 @@ static const R_CallMethodDef callMethods[] = {
 	{"XRaw_loadFASTA", (DL_FUNC) &XRaw_loadFASTA, 4},
 
 /* XInteger.c */
+	{"Biostrings_debug_XInteger", (DL_FUNC) &Biostrings_debug_XInteger, 0},
+
 	{"XInteger_alloc", (DL_FUNC) &XInteger_alloc, 2},
-	{"XInteger_show", (DL_FUNC) &XInteger_show, 1},
+	{"XInteger_get_show_string", (DL_FUNC) &XInteger_get_show_string, 1},
 	{"XInteger_length", (DL_FUNC) &XInteger_length, 1},
 	{"XInteger_memcmp", (DL_FUNC) &XInteger_memcmp, 5},
 

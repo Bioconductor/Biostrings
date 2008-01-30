@@ -5,7 +5,8 @@
 ### An "XRaw" object is a chunk of memory that:
 ###   a. Contains bytes (char at the C level).
 ###   b. Is readable and writable.
-###   c. Is not copied on object duplication i.e. when doing
+###   c. Has a passed by address semantic i.e. the data it contains are not
+###      copied on object duplication. For example when doing
 ###        xr2 <- xr1
 ###      both xr1 and xr2 point to the same place in memory.
 ###      This is achieved by using R predefined type "externalptr".
@@ -54,30 +55,31 @@ setClass("XRaw", representation(xp="externalptr"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization.
-### Note that unlike raw objects, XRaw objects are not initialized with 0's.
+###
+### Note that unlike raw vectors, XRaw objects are not initialized with 0's.
+###
 
 ### This:
 ###   xr <- XRaw(30)
-### will call the "initialize" method.
+### will call this "initialize" method.
 setMethod("initialize", "XRaw",
     function(.Object, length, verbose=FALSE)
     {
-        if (missing(length))
-            stop("argument 'length' is missing")
-        if (!is.numeric(length) || is.nan(length))
-            stop("'length' is not a number")
-        if (length(length) != 1)
-            stop("'length' must have exactly one element")
+        if (!isSingleNumber(length))
+            stop("'length' must be a single integer")
         length <- as.integer(length)
-        if (length < 1)
-            stop("XRaw length must be >= 1")
+        if (length < 0)
+            stop("'length' must be a non-negative integer")
         xp <- .Call("Biostrings_xp_new", PACKAGE="Biostrings")
+        if (verbose)
+            cat("Allocating memory for new", class(.Object), "object...")
         .Call("Biostrings_XRaw_alloc", xp, length, PACKAGE="Biostrings")
-        .Object@xp <- xp
         if (verbose) {
-            show_string <- .Call("Biostrings_XRaw_get_show_string", .Object@xp, PACKAGE="Biostrings")
-            cat("Allocating new ", show_string, "\n", sep="")
+            cat(" OK\n")
+            show_string <- .Call("Biostrings_XRaw_get_show_string", xp, PACKAGE="Biostrings")
+            cat("New", show_string, "successfully created\n")
         }
+        .Object@xp <- xp
         .Object
     }
 )
@@ -108,7 +110,8 @@ setMethod("length", "XRaw",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Read/write functions.
-### These are safe wrappers to unsafe C functions.
+### These are almost safe wrappers to unsafe C functions ("almost" because
+### they don't check for NAs in their arguments).
 ### If length(i) == 0 then the read functions return an empty vector
 ### and the write functions don't do anything.
 

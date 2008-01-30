@@ -434,12 +434,14 @@ SEXP XRaw_loadFASTA(
 
 /* XInteger.c */
 
+SEXP Biostrings_debug_XInteger();
+
 SEXP XInteger_alloc(
 		SEXP xint_xp,
 		SEXP length
 );
 
-SEXP XInteger_show(SEXP xint_xp);
+SEXP XInteger_get_show_string(SEXP xint_xp);
 
 SEXP XInteger_length(SEXP xint_xp);
 

@@ -4,6 +4,7 @@ import(stats)
 useDynLib(Biostrings)
 
 exportClasses(
+    "XRaw", "XInteger",
     "BString", "DNAString", "RNAString", "AAString",
     "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
     "Views", "BStringViews", "BStringPartialMatches",

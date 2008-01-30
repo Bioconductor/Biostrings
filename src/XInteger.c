@@ -1,5 +1,18 @@
 #include "Biostrings.h"
 
+static int debug = 0;
+
+SEXP Biostrings_debug_XInteger()
+{
+#ifdef DEBUG_BIOSTRINGS
+	debug = !debug;
+	Rprintf("Debug mode turned %s in 'XInteger.c'\n", debug ? "on" : "off");
+#else
+	Rprintf("Debug mode not available in 'XInteger.c'\n");
+#endif
+	return R_NilValue;
+}
+
 
 /****************************************************************************
  * Memory allocation for a "XInteger" object
@@ -21,16 +34,27 @@ SEXP XInteger_alloc(SEXP xint_xp, SEXP length)
 	return xint_xp;
 }
 
-SEXP XInteger_show(SEXP xint_xp)
+/*
+ * Return the single string printed by the show method for "XInteger" objects.
+ * 'xint_xp' must be the 'xp' slot of a "XInteger" object.
+ * From R:
+ *   xint <- XInteger(30)
+ *   .Call("XInteger_get_show_string", xint@xp, PACKAGE="Biostrings")
+ */
+SEXP XInteger_get_show_string(SEXP xint_xp)
 {
-	SEXP tag;
+	SEXP tag, ans;
 	int tag_length;
+	char buf[100]; /* should be enough... */
 
 	tag = R_ExternalPtrTag(xint_xp);
 	tag_length = LENGTH(tag);
-	Rprintf("%d-integer XInteger object (starting at address %p)\n",
+	snprintf(buf, sizeof(buf), "%d-integer XInteger object (starting at address %p)",
 		tag_length, INTEGER(tag));
-	return R_NilValue;
+	PROTECT(ans = NEW_CHARACTER(1));
+	SET_STRING_ELT(ans, 0, mkChar(buf));
+	UNPROTECT(1);
+	return ans;
 }
 
 SEXP XInteger_length(SEXP xint_xp)
@@ -86,6 +110,7 @@ SEXP XInteger_read_ints_from_i1i2(SEXP src_xint_xp, SEXP imin, SEXP imax)
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
+
 	PROTECT(ans = NEW_INTEGER(n));
 	_Biostrings_memcpy_from_i1i2(i1, i2,
 			(char *) INTEGER(ans), LENGTH(ans),

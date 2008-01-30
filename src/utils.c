@@ -67,9 +67,9 @@ int _Biostrings_memcmp(const char *a, int ia, const char *b, int ib, int n, size
  *   dest[(i-i1) % dest_nmemb] <- src[i] for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Reads a linear subset from 'src' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
@@ -79,6 +79,8 @@ void _Biostrings_memcpy_from_i1i2(int i1, int i2,
 	int i2next, i1max, q;
 	size_t dest_size;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= src_nmemb)
 		error("subscript out of bounds");
 	if (dest_nmemb == 0)
@@ -147,9 +149,9 @@ void _Biostrings_memcpy_from_subset(int *subset, int n,
  *   dest[i] <- src[(i-i1) % src_nmemb] for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Writes to a linear subset of 'dest' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_memcpy_to_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
@@ -159,6 +161,8 @@ void _Biostrings_memcpy_to_i1i2(int i1, int i2,
 	int i2next, i1max, q;
 	size_t src_size;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= dest_nmemb)
 		error("subscript out of bounds");
 	if (src_nmemb == 0)
@@ -227,9 +231,9 @@ void _Biostrings_memcpy_to_subset(int *subset, int n,
  *   dest[(i-i1) % dest_length] <- tr(src[i]) for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Reads a linear subset from 'src' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
@@ -240,6 +244,8 @@ void _Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
         char src_val;
 	int i, j, lkup_key, lkup_val;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= src_length)
 		error("subscript out of bounds");
 	if (dest_length == 0)
@@ -307,9 +313,9 @@ void _Biostrings_translate_charcpy_from_subset(int *subset, int n,
  *   dest[i] <- tr(src[(i-i1) % src_length]) for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Writes to a linear subset of 'dest' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
@@ -319,6 +325,8 @@ void _Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
 	char *a, src_val;
 	int i, j, lkup_key, lkup_val;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= dest_length)
 		error("subscript out of bounds");
 	if (src_length == 0)
@@ -386,9 +394,9 @@ void _Biostrings_translate_charcpy_to_subset(int *subset, int n,
  *   dest[(dest_nmemb-1-(i-i1)) % dest_nmemb] <- src[i] for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Reads a linear subset from 'src' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Writing is recycled in 'dest': it starts at its last member
  * and comes back to it after it reaches its first member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
 		char *dest, size_t dest_nmemb,
@@ -398,6 +406,8 @@ void _Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
         const char *b;
 	int i, j, z;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= src_nmemb)
 		error("subscript out of bounds");
 	if (dest_nmemb == 0)
@@ -424,9 +434,9 @@ void _Biostrings_reverse_memcpy_from_i1i2(int i1, int i2,
  *   dest[(dest_length-1-(i-i1)) % dest_length] <- tr(src[i]) for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Reads a linear subset from 'src' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Writing is recycled in 'dest': it starts at its last member
  * and comes back to it after it reaches its first member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
@@ -437,6 +447,8 @@ void _Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
         char src_val;
 	int i, j, lkup_key, lkup_val;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= src_length)
 		error("subscript out of bounds");
 	if (dest_length == 0)
@@ -465,9 +477,9 @@ void _Biostrings_reverse_translate_charcpy_from_i1i2(int i1, int i2,
  *   dest[(i-i1) % dest_length] <- toComplex(src[i]) for i1 <= i <= i2
  * --------------------------------------------------------------------------
  * Reads a linear subset from 'src' defined by 'i1', 'i2'.
- * IMPORTANT: Assumes that i1 <= i2.
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
+ * Don't do anything if i1 > i2.
  */
 void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 		Rcomplex *dest, int dest_length,
@@ -479,6 +491,8 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
 	int i, j, lkup_key;
 	Rcomplex lkup_val;
 
+	if (i1 > i2)
+		return;
 	if (i1 < 0 || i2 >= src_length)
 		error("subscript out of bounds");
 	if (dest_length == 0)

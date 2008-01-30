@@ -5,10 +5,13 @@
 ### The "XInteger" class implements the concept of "XRaw" objects but
 ### for integers instead of bytes.
 ### Some differences between "integer" and "XInteger":
-###   1. an "XInteger" object can't be of length 0 (XInteger(0) produces an error)
-###   2. XInteger(10) does not initialize its values (integer(10) does)
-###   3. XInteger(10)[i] produces an error if i is out of bounds
-###   4. XInteger objects are fast:
+###
+###   1. XInteger(10) does not initialize its values (integer(10) does)
+###
+###   2. XInteger(10)[i] produces an error if i is out of bounds
+###
+###   3. XInteger objects are faster:
+###
 ###        > a <- integer(100000000)
 ###        > system.time(tmp <- a[])
 ###        [1] 0.65 0.30 0.95 0.00 0.00
@@ -23,24 +26,39 @@
 
 setClass("XInteger", representation(xp="externalptr"))
 
+debug_XInteger <- function()
+{
+    invisible(.Call("Biostrings_debug_XInteger", PACKAGE="Biostrings"))
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization
+### Initialization.
+###
+### Note that unlike integer vectors, XInteger objects are not initialized
+### with 0's.
+###
 
+### This:
+###   xi <- XInteger(30)
+### will call this "initialize" method.
 setMethod("initialize", "XInteger",
-    function(.Object, length)
+    function(.Object, length, verbose=FALSE)
     {
-        if (missing(length))
-            stop("argument 'length' is missing")
-        if (!is.numeric(length) || is.nan(length))
-            stop("'length' is not a number")
-        if (length(length) != 1)
-            stop("'length' must have only one element")
+        if (!isSingleNumber(length))
+            stop("'length' must be a single integer")
         length <- as.integer(length)
-        if (length < 1)
-            stop("XInteger length must be >= 1")
+        if (length < 0)
+            stop("'length' must be a non-negative integer")
         xp <- .Call("Biostrings_xp_new", PACKAGE="Biostrings")
+        if (verbose)
+            cat("Allocating memory for new", class(.Object), "object...")
         .Call("XInteger_alloc", xp, length, PACKAGE="Biostrings")
+        if (verbose) {
+            cat(" OK\n")
+            show_string <- .Call("XInteger_get_show_string", xp, PACKAGE="Biostrings")
+            cat("New", show_string, "successfully created\n")
+        }
         .Object@xp <- xp
         .Object
     }
@@ -54,7 +72,12 @@ XInteger <- function(...)
 setMethod("show", "XInteger",
     function(object)
     {
-        .Call("XInteger_show", object@xp, PACKAGE="Biostrings")
+        show_string <- .Call("XInteger_get_show_string", object@xp, PACKAGE="Biostrings")
+        cat(show_string, "\n", sep="")
+        ## What is correct here? The documentation (?show) says that 'show'
+        ## should return an invisible 'NULL' but, on the other hand, the 'show'
+        ## method for intergers returns its 'object' argument...
+        invisible(object)
     }
 )
 
@@ -67,7 +90,8 @@ setMethod("length", "XInteger",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Read/write functions.
-### These are safe wrappers to unsafe C functions.
+### These are almost safe wrappers to unsafe C functions ("almost" because
+### they don't check for NAs in their arguments).
 ### If length(i) == 0 then the read functions return an empty vector
 ### and the write functions don't do anything.
 

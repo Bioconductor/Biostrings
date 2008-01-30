@@ -5,6 +5,11 @@ isTRUEorFALSE <- function(x)
     return(is.logical(x) && length(x) == 1 && !is.na(x))
 }
 
+isSingleNumber <- function(x)
+{
+    return(is.numeric(x) && length(x) == 1 && !is.na(x))
+}
+
 isNumericOrNAs <- function(x)
 {
     return(is.numeric(x) || (is.atomic(x) && is.vector(x) && all(is.na(x))))
