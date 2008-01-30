@@ -5,6 +5,15 @@
 \alias{class:BStringList}
 \alias{BStringList-class}
 \alias{BStringList}
+\alias{class:DNAStringList}
+\alias{DNAStringList-class}
+\alias{DNAStringList}
+\alias{class:RNAStringList}
+\alias{RNAStringList-class}
+\alias{RNAStringList}
+\alias{class:AAStringList}
+\alias{AAStringList-class}
+\alias{AAStringList}
 
 % Constructor-like functions and generics:
 \alias{initialize,BStringList-method}
