@@ -293,11 +293,14 @@ writeHitHeader <- function(file="")
 
 writeHits <- function(seqname, matches, strand, file="")
 {
-    for (i in seq_len(length(matches))) {
-        cat(seqname, start(matches)[i], end(matches)[i], strand, desc(matches)[i],
-            file=file, sep="\t", append=TRUE)
-        cat("\n", file=file, append=TRUE)
-    }
+    hits <- data.frame(seqname=rep(seqname, length(matches)),
+                       start=start(matches),
+                       end=end(matches),
+                       strand=rep(strand, length(matches)),
+                       patternID=desc(matches),
+                       check.names=FALSE)
+    write.table(hits, file=file, append=TRUE, quote=FALSE, sep="\t",
+                row.names=FALSE, col.names=FALSE)
 }
 
 runAnalysis1 <- function(dict0, outfile="")
@@ -320,7 +323,7 @@ runAnalysis1 <- function(dict0, outfile="")
             writeHits(seqname, plus_matches, "+", file=outfile)
             rcpattern <- reverseComplement(pattern)
             minus_matches <- matchPattern(rcpattern, subject)
-            desc(minus_matches)[] <- rep(patternID, length(minus_matches))
+            desc(minus_matches) <- rep(patternID, length(minus_matches))
             writeHits(seqname, minus_matches, "-", file=outfile)
         }
         cat(">>> DONE\n")
