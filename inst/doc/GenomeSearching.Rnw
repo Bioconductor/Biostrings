@@ -308,13 +308,13 @@ runAnalysis1 <- function(dict0, outfile="")
     library(BSgenome.Celegans.UCSC.ce2)
     seqnames <- seqnames(Celegans)
     seqnames_in1string <- paste(seqnames, collapse=", ")
-    cat("Target: ", providerVersion(Celegans),
-        " chromosomes ", seqnames_in1string, "\n", sep="")
+    cat("Target:", providerVersion(Celegans),
+        "chromosomes", seqnames_in1string, "\n")
     if (outfile != "")
         writeHitHeader(file=outfile)
     for (seqname in seqnames) {
         subject <- Celegans[[seqname]]
-        cat(">>> Finding all hits in chromosome ", seqname, " ...\n", sep="")
+        cat(">>> Finding all hits in chromosome", seqname, "...\n")
         for (i in seq_len(length(dict0))) {
             patternID <- desc(dict0)[i]
             pattern <- dict0[[i]]
@@ -526,8 +526,8 @@ runAnalysis2 <- function(dict0, outfile="")
     library(BSgenome.Celegans.UCSC.ce2)
     seqnames <- seqnames(Celegans)
     seqnames_in1string <- paste(seqnames, collapse=", ")
-    cat("Target: ", providerVersion(Celegans),
-        " chromosomes ", seqnames_in1string, "\n", sep="")
+    cat("Target:", providerVersion(Celegans),
+        "chromosomes", seqnames_in1string, "\n")
     if (outfile != "")
         writeHitHeader(file=outfile)
 
