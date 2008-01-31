@@ -61,6 +61,53 @@ setMethod("initialize", "AAStringList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some convenience constructors.
+###
+
+setGeneric("BStringList", function(src) standardGeneric("BStringList"))
+setGeneric("DNAStringList", function(src) standardGeneric("DNAStringList"))
+setGeneric("RNAStringList", function(src) standardGeneric("RNAStringList"))
+setGeneric("AAStringList", function(src) standardGeneric("AAStringList"))
+
+setMethod("BStringList", "list",
+    function(src)
+    {
+        bstrings <- lapply(src, BString)
+        new("BStringList", bstrings)
+    }
+)
+setMethod("DNAStringList", "list",
+    function(src)
+    {
+        bstrings <- lapply(src, DNAString)
+        new("DNAStringList", bstrings)
+    }
+)
+setMethod("RNAStringList", "list",
+    function(src)
+    {
+        bstrings <- lapply(src, RNAString)
+        new("RNAStringList", bstrings)
+    }
+)
+setMethod("AAStringList", "list",
+    function(src)
+    {
+        bstrings <- lapply(src, AAString)
+        new("AAStringList", bstrings)
+    }
+)
+
+### It is important that this works fine on a character vector and on a
+### BStringViews object. For those 2 types, as.list() does actually the right
+### thing (note that we rely on our "as.list" method for BStringViews objects).
+setMethod("BStringList", "ANY", function(src) BStringList(as.list(src)))
+setMethod("DNAStringList", "ANY", function(src) DNAStringList(as.list(src)))
+setMethod("RNAStringList", "ANY", function(src) RNAStringList(as.list(src)))
+setMethod("AAStringList", "ANY", function(src) AAStringList(as.list(src)))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 

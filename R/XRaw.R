@@ -177,8 +177,8 @@ XRaw.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
 ### 'enc_lkup' must be NULL or a vector of integers
 XRaw.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
 {
-    if (!is.character(value))
-        stop("'value' is not a character vector")
+    if (!isSingleString(value))
+        stop("'value' must be a single string")
     if (!is.integer(i))
         i <- as.integer(i)
     if (length(i) == 1) {
@@ -287,10 +287,10 @@ XRaw.saveFASTA <- function(x, filepath, dec_lkup=NULL)
 ### or '"clipboard"'.
 XRaw.loadFASTA <- function(x, filepath, collapse="", enc_lkup=NULL)
 {
-    if (!is.character(filepath) || length(filepath) != 1 || is.na(filepath))
-        stop("'filepath' must be a character string (cannot be NA)")
-    if (!is.character(collapse) || length(collapse) != 1 || is.na(collapse))
-        stop("'collapse' must be a character string (cannot be NA)")
+    if (!isSingleString(filepath))
+        stop("'filepath' must be a single string")
+    if (!isSingleString(collapse))
+        stop("'collapse' must be a single string")
     if (!is.null(enc_lkup) && !is.integer(enc_lkup))
         stop("'enc_lkup' must be an integer vector")
     filepath <- path.expand(filepath)
@@ -364,8 +364,6 @@ setReplaceMethod("[", "XRaw",
 
         ## 'value' is a string
         if (is.character(value)) {
-            if (length(value) >= 2)
-                stop("character vector 'value' has more than one string")
             if (missing(i))
                 return(XRaw.write(x, 1, length(x), value=value))
             return(XRaw.write(x, i, value=value))
@@ -442,7 +440,7 @@ setMethod("show", "PrintableXRaw",
 ### Safe alternative to 'strsplit(x, NULL, fixed=TRUE)[[1]]'.
 safeExplode <- function(x)
 {
-    if (!is.character(x) || length(x) != 1)
+    if (!isSingleString(x))
         stop("'x' must be a single string")
     .Call("Biostrings_safe_explode", x, PACKAGE="Biostrings")
 }

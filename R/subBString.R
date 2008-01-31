@@ -10,16 +10,16 @@
 subBString <- function(x, start=NA, end=NA, length=NA)
 {
     if (!is(x, "BString")) {
-        if (!is.character(x) || length(x) != 1 || is.na(x))
+        if (!isSingleString(x))
             stop("'x' must be a BString (or derived) object or a single string")
         x <- BString(x)
     }
     if (!isNumericOrNAs(start) || length(start) != 1)
-        stop("'start' is not a single numeric")
+        stop("'start' must be a single number")
     if (!isNumericOrNAs(end) || length(end) != 1)
-        stop("'end' is not a single numeric")
+        stop("'end' must be a single number")
     if (!isNumericOrNAs(length) || length(length) != 1)
-        stop("'length' is not a single numeric")
+        stop("'length' must be a single number")
     if (!is.na(length)) {
         if (is.na(start) && is.na(end))
             stop("you must specify 'start' or 'end'")
@@ -40,6 +40,15 @@ subBString <- function(x, start=NA, end=NA, length=NA)
         stop("'start' and 'end' must verify '1 <= start <= end <= length(x)'")
     BString.substr(x, as.integer(start), as.integer(end))
 }
+
+subBStringList <- function(x, start=NA, end=NA, length=NA)
+{
+    stop("not ready yet")
+}
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "subviews" generic and methods.
+###
 
 ### For internal use ONLY!
 ### Solve the views defined by 'start' and 'end' (i.e. get rid of any NAs
@@ -86,45 +95,49 @@ solveViews <- function(start, end, width, default_start, default_end)
     data.frame(start=start, end=end)
 }
 
-subviews <- function(x, start=NA, end=NA, width=NA, check.limits=TRUE)
-{
-    if (!is(x, "BStringViews"))
-        stop("'x' must be a BStringViews object")
-    if (!isNumericOrNAs(start))
-        stop("'start' must be a numeric vector")
-    if (!isNumericOrNAs(end))
-        stop("'end' must be a numeric vector")
-    if (!isNumericOrNAs(width))
-        stop("'width' must be a numeric vector")
-    if (length(x) == 0)
-        return(x)
-    if (length(start) == 0 || length(start) > length(x))
-        stop("length of 'start' must be != 0 and <= length of 'x'")
-    if (length(end) == 0 || length(end) > length(x))
-        stop("length of 'end' must be != 0 and <= length of 'x'")
-    if (length(width) == 0 || length(width) > length(x))
-        stop("length of 'width' must be != 0 and <= length of 'x'")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    if (!is.integer(end))
-        end <- as.integer(end)
-    if (!is.integer(width))
-        width <- as.integer(width)
-    if (length(start) < length(x))
-        start <- rep(start, length.out=length(x))
-    if (length(end) < length(x))
-        end <- rep(end, length.out=length(x))
-    if (length(width) < length(x))
-        width <- rep(width, length.out=length(x))
-    views <- solveViews(start, end, width, 1L, width(x))
-    start <- start(x) + views$start - 1L
-    end <- start(x) + views$end - 1L
-    if (check.limits && (any(start < 1L) || any(nchar(subject(x)) < end)))
-        stop("result contains \"out of limits\" views")
-    x@views$start <- start
-    x@views$end <- end
-    x
-}
+setGeneric("subviews", signature="x",
+    function(x, start=NA, end=NA, width=NA, check.limits=TRUE) standardGeneric("subviews")
+)
+
+setMethod("subviews", "BStringViews",
+    function(x, start=NA, end=NA, width=NA, check.limits=TRUE)
+    {
+        if (!isNumericOrNAs(start))
+            stop("'start' must be a numeric vector")
+        if (!isNumericOrNAs(end))
+            stop("'end' must be a numeric vector")
+        if (!isNumericOrNAs(width))
+            stop("'width' must be a numeric vector")
+        if (length(x) == 0)
+            return(x)
+        if (length(start) == 0 || length(start) > length(x))
+            stop("length of 'start' must be != 0 and <= length of 'x'")
+        if (length(end) == 0 || length(end) > length(x))
+            stop("length of 'end' must be != 0 and <= length of 'x'")
+        if (length(width) == 0 || length(width) > length(x))
+            stop("length of 'width' must be != 0 and <= length of 'x'")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (!is.integer(width))
+            width <- as.integer(width)
+        if (length(start) < length(x))
+            start <- rep(start, length.out=length(x))
+        if (length(end) < length(x))
+            end <- rep(end, length.out=length(x))
+        if (length(width) < length(x))
+            width <- rep(width, length.out=length(x))
+        views <- solveViews(start, end, width, 1L, width(x))
+        start <- start(x) + views$start - 1L
+        end <- start(x) + views$end - 1L
+        if (check.limits && (any(start < 1L) || any(nchar(subject(x)) < end)))
+            stop("result contains \"out of limits\" views")
+        x@views$start <- start
+        x@views$end <- end
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

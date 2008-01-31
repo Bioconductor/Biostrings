@@ -282,15 +282,15 @@ setMethod("initialize", "ULdna_PDict",
 setClass("TailedULdna_PDict",
     contains="ULdna_PDict",
     representation(
-        tail="BStringViews"
+        tail="DNAStringList"
     )
 )
 
 setMethod("show", "TailedULdna_PDict",
     function(object)
     {
-        cat(length(object), "-pattern \"PDict\" object with a head (of width ",
-            width(object), ") and a tail", sep="")
+        cat(length(object), "-pattern \"PDict\" object (of width ",
+            width(object), ") with a tail", sep="")
         if (is.null(pids(object)))
             cat(" (no pattern IDs)")
         cat("\n")
@@ -303,18 +303,24 @@ setMethod("initialize", "TailedULdna_PDict",
         if (is.null(width))
             stop("'width' must be a single integer")
         .Object <- callNextMethod(.Object, dict, width=width)
-        if (.Object@stats$min.width == .Object@width)
-            stop("tails with empty strings are not supported yet, ",
-                 "try again with 'width' decreased by 1")
         if (is.character(dict)) {
-            .Object@tail <- BStringViews(substr(dict, .Object@width + 1, .Object@stats$max.width),
-                                         subjectClass="DNAString")
+            tail <- DNAStringList(substr(dict, .Object@width + 1, .Object@stats$max.width))
 	} else if (is.list(dict)) {
             stop("'dict' of type list is not yet supported")
         } else if (is(dict, "BStringViews")) {
-            dict@views$start <- dict@views$start + .Object@width
-            .Object@tail <- dict
+            tmp <- DNAStringList(dict)
+            ## FIXME: Ugly and dangerous! We need a dedicated and safe function
+            ## for doing this kind of narrowing!
+            tail <- DNAStringList(lapply(as.list(tmp),
+                                         function(x)
+                                         {
+                                             x@offset <- x@offset + .Object@width
+                                             x
+                                         }
+                                  )
+                    )
         }
+        .Object@tail <- tail
         .Object
     }
 )

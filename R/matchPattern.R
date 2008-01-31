@@ -273,8 +273,8 @@ debug_shiftor <- function()
                                    "boyer-moore", "shift-or"))
     if (algo %in% c("gregexpr", "gregexpr2")) {
         if (!isSingleString(subject) || nchar(subject) == 0)
-            stop("algorithms \"gregexpr\" and \"gregexpr2\" ",
-                 "only work with a single (and non-empty) string")
+            stop("for algorithms \"gregexpr\" and \"gregexpr2\" ",
+                 "'subject' must be a single (and non-empty) string")
         if (!isSingleString(pattern) || nchar(pattern) == 0)
             stop("'pattern' must be a single (and non-empty) string")
     } else {

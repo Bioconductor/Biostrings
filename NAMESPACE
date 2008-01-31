@@ -29,8 +29,9 @@ exportMethods(
     align1, align2, score,
 
     ## Others
+    BStringList, DNAStringList, RNAStringList, AAStringList,
     BStringViews,
-    substr, substring,
+    subviews, substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
     reverse, complement, reverseComplement,
     matchPattern, countPattern, mismatch,
@@ -63,7 +64,7 @@ export(
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToBStringViews, BStringViewsToFASTArecords,
     read.BStringViews, write.BStringViews,
-    subBString, subviews,
+    subBString, subBStringList, subviews,
     transcribe, cDNA, dna2rna, rna2dna,
     matchDNAPattern,
     extractAllMatches,
