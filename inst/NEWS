@@ -3,6 +3,8 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added support for empty BString (and derived) objects.
+
 o Added the "BStringList", "DNAStringList", "RNAStringList" and "AAStringList"
   classes. Not used yet but will be soon... (more news to come here)
 
