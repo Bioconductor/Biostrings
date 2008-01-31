@@ -285,22 +285,20 @@ desc(ce2dict0)[1:5]
 
 Here is how we can write the functions that will perform our analysis:
 <<c3,keep.source=TRUE>>=
-writeHitHeader <- function(file="")
+writeHits <- function(seqname, matches, strand, file="", append=FALSE)
 {
-    cat("seqname", "start", "end", "strand", "patternID", file=file, sep="\t")
-    cat("\n", file=file, append=TRUE)
-}
-
-writeHits <- function(seqname, matches, strand, file="")
-{
+    if (file.exists(file) && !append)
+        warning("existing file ", file, " will be overwritten with 'append=FALSE'")
+    if (!file.exists(file) && append)
+        warning("new file ", file, " will have no header with 'append=TRUE'")
     hits <- data.frame(seqname=rep.int(seqname, length(matches)),
                        start=start(matches),
                        end=end(matches),
                        strand=rep.int(strand, length(matches)),
                        patternID=desc(matches),
                        check.names=FALSE)
-    write.table(hits, file=file, append=TRUE, quote=FALSE, sep="\t",
-                row.names=FALSE, col.names=FALSE)
+    write.table(hits, file=file, append=append, quote=FALSE, sep="\t",
+                row.names=FALSE, col.names=!append)
 }
 
 runAnalysis1 <- function(dict0, outfile="")
@@ -310,8 +308,7 @@ runAnalysis1 <- function(dict0, outfile="")
     seqnames_in1string <- paste(seqnames, collapse=", ")
     cat("Target:", providerVersion(Celegans),
         "chromosomes", seqnames_in1string, "\n")
-    if (outfile != "")
-        writeHitHeader(file=outfile)
+    append <- FALSE
     for (seqname in seqnames) {
         subject <- Celegans[[seqname]]
         cat(">>> Finding all hits in chromosome", seqname, "...\n")
@@ -320,11 +317,12 @@ runAnalysis1 <- function(dict0, outfile="")
             pattern <- dict0[[i]]
             plus_matches <- matchPattern(pattern, subject)
             desc(plus_matches) <- rep.int(patternID, length(plus_matches))
-            writeHits(seqname, plus_matches, "+", file=outfile)
+            writeHits(seqname, plus_matches, "+", file=outfile, append=append)
+            append <- TRUE
             rcpattern <- reverseComplement(pattern)
             minus_matches <- matchPattern(rcpattern, subject)
             desc(minus_matches) <- rep.int(patternID, length(minus_matches))
-            writeHits(seqname, minus_matches, "-", file=outfile)
+            writeHits(seqname, minus_matches, "-", file=outfile, append=append)
         }
         cat(">>> DONE\n")
         unload(Celegans, seqname)
@@ -521,33 +519,31 @@ See \Rfunction{?matchPDict} for more information.
 Here is how our \Rfunction{runAnalysis1} function can be modified in order to use
 \Rfunction{matchPDict} instead of \Rfunction{matchPattern}:
 <<e1,keep.source=TRUE>>=
+runOneStrandAnalysis <- function(dict0, bsgenome, seqnames, strand, outfile="", append=FALSE)
+{
+    cat("\nTarget: strand", strand, "of", providerVersion(bsgenome),
+        "chromosomes", paste(seqnames, collapse=", "), "\n")
+    if (strand == "-")
+        dict0 <- reverseComplement(dict0)
+    pdict <- new("ULdna_PDict", dict0)
+    for (seqname in seqnames) {
+        subject <- bsgenome[[seqname]]
+        cat(">>> Finding all hits in strand", strand, "of chromosome", seqname, "...\n")
+        p2v <- matchPDict(pdict, subject)
+        matches <- extractAllMatches(subject, p2v)
+        writeHits(seqname, matches, strand, file=outfile, append=append)
+        append <- TRUE
+        cat(">>> DONE\n")
+        unload(bsgenome, seqname)
+    }
+}
+
 runAnalysis2 <- function(dict0, outfile="")
 {
     library(BSgenome.Celegans.UCSC.ce2)
     seqnames <- seqnames(Celegans)
-    seqnames_in1string <- paste(seqnames, collapse=", ")
-    cat("Target:", providerVersion(Celegans),
-        "chromosomes", seqnames_in1string, "\n")
-    if (outfile != "")
-        writeHitHeader(file=outfile)
-
-    oneStrandAnalysis <- function(dict0, strand)
-    {
-        pdict <- new("ULdna_PDict", dict0)
-        for (seqname in seqnames) {
-            subject <- Celegans[[seqname]]
-            cat(">>> Finding all hits in strand", strand, "of chromosome", seqname, "...\n")
-            p2v <- matchPDict(pdict, subject)
-            matches <- extractAllMatches(subject, p2v)
-            writeHits(seqname, matches, strand, file=outfile)
-            cat(">>> DONE\n")
-            unload(Celegans, seqname)
-        }
-    }
-
-    oneStrandAnalysis(dict0, "+")
-    rcdict0 <- reverseComplement(dict0)
-    oneStrandAnalysis(rcdict0, "-")
+    runOneStrandAnalysis(dict0, Celegans, seqnames, "+", outfile=outfile, append=FALSE)
+    runOneStrandAnalysis(dict0, Celegans, seqnames, "-", outfile=outfile, append=TRUE)
 }
 @
 
