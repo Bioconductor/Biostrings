@@ -2,6 +2,38 @@
 ### The BStringList class
 ### -------------------------------------------------------------------------
 ###
+### We use the "has a" rather than the "is a" approach for this class.
+### The "is a" approach would be doing:
+###
+###   setClass("BStringList", contains="list")
+###
+### At first sight, this approach seems to offer the following big advantage
+### over the "has a" approach: BStringList objects inherit the full "list
+### semantic" out-of-the-box! In other words, the "list API" (i.e. all the
+### functions/methods that work on a list, e.g. [, [[, lapply(), rev(), etc...,
+### there are a lot) still work on a BStringList object.
+### Unfortunately, most of the time, they don't do the right thing.
+### For exampple:
+### 1. The user can easily screw up a BStringList object 'x' with
+###    x[1] <- something, or x[[1]] <- something
+###    This needs to be prevented by redefining the "[<-" and the "[[<-"
+###    methods for BStringList objects.
+### 2. [, rev(), and any method that you would expect to return an object of
+###    the same class as the input object, unfortunately won't. This is because
+###    they tend to drop the class attribute.
+###    Here again, this must be prevented by redefining all these methods.
+### So the party is almost over: we end up in a situation where we need to
+### redefine almost every "list" method. And there can be a lot of them, in
+### many different places (standard methods + methods defined in contributed
+### packages), and new ones can show up in the future... Let's face it: there
+### is no chance we could guarantee that the BStringList API does (and will
+### always do) the right thing.
+###
+### Long story short: THE "HAS A" APPROACH IS MUCH SAFER. Nothing works
+### out-of-the-box (which is in fact a good thing), and new methods are added
+### when the need raises. This way we have full control on the entire
+### BStringList API (which should stay reasonably small), I we can make it safe.
+###
 
 setClass("BStringList",
     representation(
