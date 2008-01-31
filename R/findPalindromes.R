@@ -5,7 +5,7 @@
 
 .normalize.max.mismatch <- function(max.mismatch)
 {
-    if (!is.numeric(max.mismatch) || length(max.mismatch) != 1 || is.na(max.mismatch))
+    if (!isSingleNumber(max.mismatch))
         stop("'max.mismatch' must be a single integer")
     max.mismatch <- as.integer(max.mismatch)
     if (max.mismatch < 0)

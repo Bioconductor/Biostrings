@@ -191,6 +191,16 @@ debug_shiftor <- function()
 ### .matchPattern()
 ###
 
+.normalize.max.mismatch <- function(max.mismatch)
+{
+    if (!isSingleNumber(max.mismatch))
+        stop("'max.mismatch' must be a single integer")
+    max.mismatch <- as.integer(max.mismatch)
+    if (max.mismatch < 0)
+        stop("'max.mismatch' must be a non-negative integer")
+    max.mismatch
+}
+
 ### Return a logical vector of length 2.
 .normalize.fixed <- function(fixed)
 {
@@ -229,11 +239,14 @@ debug_shiftor <- function()
 ### Raise an error if the problem "doesn't make sense".
 ### Make sure that:
 ###   1. 'pattern' is of the same class as 'subject'
-###   2. 'max.mismatch' is a non-negative integer
-###   3. 'fixed' has been normalized
+###   2. 'max.mismatch' ans 'fixed' have been normalized
 ### before you call .valid.algos()
 .valid.algos <- function(pattern, max.mismatch, fixed)
 {
+    if (nchar(pattern) == 0)
+        stop("empty pattern")
+    if (nchar(pattern) > 20000)
+        stop("patterns with more than 20000 letters are not supported, sorry")
     if (!all(fixed) && !(class(pattern) %in% c("DNAString", "RNAString")))
         stop("'fixed' value only supported for a DNAString or RNAString subject ",
              "(you can only use 'fixed=TRUE' with your subject)")
@@ -253,35 +266,26 @@ debug_shiftor <- function()
 .matchPattern <- function(pattern, subject, algorithm, max.mismatch, fixed,
                           count.only=FALSE)
 {
-    if (!is.character(algorithm) || length(algorithm) != 1 || is.na(algorithm))
+    if (!isSingleString(algorithm))
         stop("'algorithm' must be a single string")
     algo <- match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
                                    "naive-exact", "naive-inexact",
                                    "boyer-moore", "shift-or"))
     if (algo %in% c("gregexpr", "gregexpr2")) {
-        if (!is.character(subject))
-            stop("algorithms \"gregexpr\" and \"gregexpr2\" are only ",
-                 "supported for character strings")
-        if (length(subject) != 1 || is.na(subject) || nchar(subject) == 0)
-            stop("'subject' must be a single (non-NA, non-empty) string")
-        if (!is.character(pattern) || length(pattern) != 1
-         || is.na(pattern) || nchar(pattern) == 0)
-            stop("'pattern' must be a single (non-NA, non-empty) string")
+        if (!isSingleString(subject) || nchar(subject) == 0)
+            stop("algorithms \"gregexpr\" and \"gregexpr2\" ",
+                 "only work with a single (and non-empty) string")
+        if (!isSingleString(pattern) || nchar(pattern) == 0)
+            stop("'pattern' must be a single (and non-empty) string")
     } else {
         if (is.character(subject))
             subject <- BString(subject)
         if (class(pattern) != class(subject))
             pattern <- new(class(subject), pattern)
-        if (nchar(pattern) > 20000)
-            stop("patterns with more than 20000 letters are not supported, sorry")
     }
-    if (!is.numeric(max.mismatch) || length(max.mismatch) != 1 || is.na(max.mismatch))
-        stop("'max.mismatch' must be a single integer")
-    max.mismatch <- as.integer(max.mismatch)
-    if (max.mismatch < 0)
-        stop("'max.mismatch' must be a non-negative integer")
+    max.mismatch <- .normalize.max.mismatch(max.mismatch)
     fixed <- .normalize.fixed(fixed)
-    if (!is.logical(count.only) || length(count.only) != 1 || is.na(count.only))
+    if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
     if (algo %in% c("gregexpr", "gregexpr2")) {
         if (max.mismatch != 0 || !all(fixed))

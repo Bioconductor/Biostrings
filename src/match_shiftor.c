@@ -245,6 +245,8 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
 		Rprintf("[DEBUG] _match_shiftor(): BEGIN\n");
 	}
 #endif
+	if (nP <= 0)
+		error("empty pattern");
 	_set_pmaskmap(is_fixed, 256, pmaskmap, nP, P);
 	PMmask = (ShiftOrWord_t *)
 			R_alloc(PMmask_length, sizeof(ShiftOrWord_t));

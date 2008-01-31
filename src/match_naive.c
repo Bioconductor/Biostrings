@@ -51,6 +51,8 @@ static void naive_exact_search(const char *P, int nP, const char *S, int nS)
 {
 	int n1, n2;
 
+	if (nP <= 0)
+		error("empty pattern");
 	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++, S++) {
 		if (memcmp(P, S, nP) == 0)
 			_Biostrings_report_match(n1, 0);
@@ -74,6 +76,8 @@ static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
 	    mm, /* current number of mismatches */
 	    i, j;
 
+	if (nP <= 0)
+		error("empty pattern");
 	n2_max = nS + mm_max;
 	for (n1 = -mm_max, n2 = nP - mm_max; n2 <= n2_max; n1++, n2++) {
 		mm = 0;

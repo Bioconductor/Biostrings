@@ -371,6 +371,8 @@ static void boyermoore(const char *P, int nP, const char *S, int nS)
 	int n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Prmc, c; /* Prmc is P right-most char */
 
+	if (nP <= 0)
+		error("empty pattern");
 	init_P0buffer(P, nP);
 	init_j0shift0();
 	init_VSGSshift_table();

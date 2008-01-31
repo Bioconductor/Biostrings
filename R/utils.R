@@ -1,4 +1,4 @@
-### Some low-level helper functions
+### Some low-level (not exported) helper functions
 
 isTRUEorFALSE <- function(x)
 {
@@ -13,6 +13,11 @@ isSingleNumber <- function(x)
 isNumericOrNAs <- function(x)
 {
     return(is.numeric(x) || (is.atomic(x) && is.vector(x) && all(is.na(x))))
+}
+
+isSingleString <- function(x)
+{
+    return(is.character(x) && length(x) == 1 && !is.na(x))
 }
 
 recycleVector <- function(x, length)
