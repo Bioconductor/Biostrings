@@ -1,5 +1,7 @@
 \name{matchPDict-inexact}
 
+\alias{matchPDict-inexact}
+
 % Classes
 \alias{class:TailedULdna_PDict}
 \alias{TailedULdna_PDict-class}
