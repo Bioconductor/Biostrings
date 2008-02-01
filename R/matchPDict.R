@@ -317,6 +317,7 @@ setMethod("initialize", "TailedULdna_PDict",
                                          function(x)
                                          {
                                              x@offset <- x@offset + .Object@width
+                                             x@length <- x@length - .Object@width
                                              x
                                          }
                                   )
