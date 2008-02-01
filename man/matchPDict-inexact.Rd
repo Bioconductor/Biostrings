@@ -8,6 +8,7 @@
 
 % Generics and methods:
 \alias{initialize,TailedULdna_PDict-method}
+\alias{tail,TailedULdna_PDict-method}
 \alias{show,TailedULdna_PDict-method}
 
 
@@ -44,8 +45,10 @@
 }
 
 \examples{
-  ## Creating the pattern dictionary
-  pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), 2)
+  ## Use the 'width' argument to specify the length of the "trusted prefix"
+  pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), width=2)
+  pdict
+  tail(pdict) 
   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))

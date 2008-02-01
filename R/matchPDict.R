@@ -286,6 +286,8 @@ setClass("TailedULdna_PDict",
     )
 )
 
+setMethod("tail", "TailedULdna_PDict", function(x, ...) x@tail)
+
 setMethod("show", "TailedULdna_PDict",
     function(object)
     {
