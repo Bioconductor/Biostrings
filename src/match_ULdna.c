@@ -328,18 +328,17 @@ static void build_actree()
  * ===============
  */
 
-static int count_only_mode;
-static IBuf match_count; // used when count_only_mode == 1
-static IBBuf ends_bbuf;  // used when count_only_mode == 0
+static int match_reporting_mode; // 0, 1 or 2
+static IBuf match_count; // used when mode == 0 and initialized when mode == 2
+static IBBuf ends_bbuf;  // used when mode >= 1
 
-static void init_match_reporting(int count_only, int length)
+static void init_match_reporting(int not_tail, int is_count_only, int length)
 {
-	count_only_mode = count_only;
-	if (count_only_mode) {
+	match_reporting_mode = is_count_only ? (not_tail ? 0 : 2) : 1;
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
 		_IBuf_init(&match_count, length, length);
-		return;
-	}
-	_IBBuf_init(&ends_bbuf, length, length);
+	if (match_reporting_mode >= 1)
+		_IBBuf_init(&ends_bbuf, length, length);
 	return;
 }
 
@@ -347,7 +346,7 @@ static void report_match(int poffset, int end)
 {
 	IBuf *ends_buf;
 
-	if (count_only_mode) {
+	if (match_reporting_mode == 0) {
 		match_count.vals[poffset]++;
 		return;
 	}
@@ -361,7 +360,7 @@ static void report_matches_for_dups(const int *dups, int length)
 	int poffset, *val;
 	IBuf *ends_buf;
 
-	if (count_only_mode) {
+	if (match_reporting_mode == 0) {
 		for (poffset = 0, val = match_count.vals;
 		     poffset < length;
 		     poffset++, val++, dups++) {
@@ -503,6 +502,70 @@ static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char 
 {
 	_init_code2offset_lkup(base_codes, ALPHABET_LENGTH, code2childoffset_lkup);
 	follow_string(node0, base_codes, S, nS);
+	return;
+}
+
+static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
+			int poffset, const int *dups, int dups_len,
+			int max_mm, int is_count_only)
+{
+	int dup0, min_gm, i, end, s0_len, j, mm;
+	IBuf *ends_buf0, *ends_buf;
+	const char *t0, *s0;
+
+	dup0 = dups[poffset];
+	ends_buf0 = ends_bbuf.ibufs + poffset;
+	if (dup0 != 0) {
+		ends_buf = ends_buf0;
+		ends_buf0 = ends_bbuf.ibufs + dup0 - 1;
+	}
+	min_gm = tail_len - max_mm; // the min nb of good matches
+	if (min_gm <= 0) {
+		if (is_count_only) {
+			match_count.vals[poffset] = ends_buf0->count;
+			return;
+		}
+		if (dup0 == 0)
+			return;
+		*ends_buf = *ends_buf0;
+		return;
+	}
+	for (i = 0; i < ends_buf0->count; i++) {
+		end = ends_buf0->vals[i];
+		s0_len = nS - end;
+		if (s0_len < min_gm)
+			goto mismatch;
+		if (s0_len > tail_len)
+			s0_len = tail_len;
+		mm = 0;
+		for (j = 0, t0 = tail, s0 = S + end; j < s0_len; j++, t0++, s0++) {
+			if (*t0 != *s0) mm++;
+			if (mm > max_mm)
+				break;
+		}
+		if (j == s0_len) {
+			/* Match */
+			if (dup0 == 0)
+				continue;
+			if (is_count_only) {
+				match_count.vals[poffset]++;
+				continue;
+			}
+			_IBuf_insert_at(ends_buf, ends_buf->count, end);
+			continue;
+		}
+		mismatch:
+		if (dup0 != 0)
+			continue;
+		if (is_count_only) {
+			match_count.vals[poffset]--;
+			continue;
+		}
+		/* We need to shrink the buffer we are walking on! It is
+		 * safe because deleting a value can't trigger reallocation
+		 */
+		_IBuf_delete_at(ends_buf0, i--);
+	}
 	return;
 }
 
@@ -732,15 +795,16 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 
 
 /****************************************************************************
- * .Call entry point: "match_ULdna_exact"
+ * .Call entry point: "match_TailedULdna"
  *
  * Arguments:
- *   'uldna_dups': uldna_pdict@dups
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
  *   'actree_base_codes': uldna_pdict@actree@base_codes
- *   's_xp': subject@data@xp
- *   's_offset': subject@offset
- *   's_length': subject@length
+ *   'pdict_dups': pdict@dups
+ *   'pdict_tail_bstrings': pdict@tail@bstrings or NULL
+ *   'subject_BString': subject
+ *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
+ *   'count_only': TRUE or FALSE
  *   'envir': environment to be populated with the matches
  *
  * Return an R object that will be assigned to the 'ends' slot of the
@@ -749,28 +813,38 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *
  ****************************************************************************/
 
-SEXP match_ULdna_exact(SEXP actree_nodes_xp, SEXP actree_base_codes, SEXP uldna_dups,
-		SEXP s_xp, SEXP s_offset, SEXP s_length,
-		SEXP envir, SEXP count_only)
+SEXP match_TailedULdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
+                SEXP pdict_dups, SEXP pdict_tail_bstrings,
+		SEXP subject_BString,
+		SEXP max_mismatch, SEXP count_only, SEXP envir)
 {
-	int actree_length, subj_offset, subj_length;
 	ACNode *actree_nodes;
-	const Rbyte *subj;
-	SEXP tag;
+	const char *S, *tail;
+	int nS, no_tail, is_count_only, tail_len, poffset;
+	SEXP tail_BString;
 
-	tag = R_ExternalPtrTag(actree_nodes_xp);
-	actree_nodes = (ACNode *) INTEGER(tag);
-	actree_length = LENGTH(tag) / INTS_PER_ACNODE;
-	subj_offset = INTEGER(s_offset)[0];
-	subj_length = INTEGER(s_length)[0];
-	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
+	S = get_BString_seq(subject_BString, &nS);
+	no_tail = pdict_tail_bstrings == R_NilValue;
+	is_count_only = LOGICAL(count_only)[0];
 
-	init_match_reporting(LOGICAL(count_only)[0], LENGTH(uldna_dups));
-
-	ULdna_exact_search(actree_nodes, INTEGER(actree_base_codes), (char *) subj, subj_length);
-	report_matches_for_dups(INTEGER(uldna_dups), LENGTH(uldna_dups));
-
-	if (count_only_mode)
+	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
+	ULdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S, nS);
+	if (no_tail) {
+		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
+	} else {
+		/* The duplicated must be treated BEFORE the first pattern they
+		 * duplicate, hence we must walk from last to first.
+		 */
+		for (poffset = LENGTH(pdict_tail_bstrings) - 1; poffset >= 0; poffset--) {
+			tail_BString = VECTOR_ELT(pdict_tail_bstrings, poffset);
+			tail = get_BString_seq(tail_BString, &tail_len);
+			ULdna_match_tail(tail, tail_len, S, nS,
+				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
+				INTEGER(max_mismatch)[0], is_count_only);
+		}
+	}
+	if (is_count_only)
 		return _IBuf_asINTEGER(&match_count);
 	if (envir == R_NilValue)
 		return _IBBuf_asLIST(&ends_bbuf, 1);

@@ -694,10 +694,11 @@ extractAllMatches <- function(subject, p2v)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_ULdna_exact",
-                 actree@nodes@xp, actree@base_codes, pdict@dups,
-                 subject@data@xp, subject@offset, subject@length,
-                 envir, count.only,
+    ans <- .Call("match_TailedULdna",
+                 actree@nodes@xp, actree@base_codes,
+                 pdict@dups, NULL,
+                 subject,
+                 0L, count.only, envir,
                  PACKAGE="Biostrings")
     if (count.only)
         return(ans)

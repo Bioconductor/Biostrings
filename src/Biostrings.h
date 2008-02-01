@@ -199,6 +199,11 @@ void _IBuf_insert_at(
 		int val
 );
 
+void _IBuf_delete_at(
+		IBuf *ibuf,
+		int at
+);
+
 SEXP _IBuf_asINTEGER(
 		IBuf *ibuf
 );
@@ -478,6 +483,14 @@ SEXP XInteger_write_ints_to_subset(
 );
 
 
+/* BString_utils.c */
+
+const char *get_BString_seq(
+		SEXP bstring,
+		int *seq_len
+);
+
+
 /* reverseComplement.c */
 
 SEXP XRaw_translate_copy_from_i1i2(
@@ -542,22 +555,14 @@ SEXP Biostrings_normalize_views(
 SEXP match_naive_debug();
 
 SEXP match_naive_exact(
-		SEXP p_xp,
-		SEXP p_offset,
-		SEXP p_length,
-		SEXP s_xp,
-		SEXP s_offset,
-		SEXP s_length,
+		SEXP pattern_BString,
+		SEXP subject_BString,
 		SEXP count_only
 );
 
 SEXP match_naive_inexact(
-		SEXP p_xp,
-		SEXP p_offset,
-		SEXP p_length,
-		SEXP s_xp,
-		SEXP s_offset,
-		SEXP s_length,
+		SEXP pattern_BString,
+		SEXP subject_BString,
 		SEXP mismatch,
 		SEXP fixed,
 		SEXP count_only
@@ -709,15 +714,15 @@ SEXP ULdna_pp_views(
 		SEXP width
 );
 
-SEXP match_ULdna_exact(
+SEXP match_TailedULdna(
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
-		SEXP uldna_dups,
-		SEXP s_xp,
-		SEXP s_offset,
-		SEXP s_length,
-		SEXP envir,
-		SEXP count_only
+		SEXP pdict_dups,
+		SEXP pdict_tail_bstrings,
+		SEXP subject_BString,
+		SEXP max_mismatch,
+		SEXP count_only,
+		SEXP envir
 );
 
 SEXP shiftListOfInts(

@@ -75,8 +75,8 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_naive.c */
 	{"match_naive_debug", (DL_FUNC) &match_naive_debug, 0},
-	{"match_naive_exact", (DL_FUNC) &match_naive_exact, 7},
-	{"match_naive_inexact", (DL_FUNC) &match_naive_inexact, 9},
+	{"match_naive_exact", (DL_FUNC) &match_naive_exact, 3},
+	{"match_naive_inexact", (DL_FUNC) &match_naive_inexact, 5},
 
 /* match_boyermoore.c */
 	{"match_boyermoore_debug", (DL_FUNC) &match_boyermoore_debug, 0},
@@ -107,7 +107,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"ULdna_pp_StrVect", (DL_FUNC) &ULdna_pp_StrVect, 2},
 	{"ULdna_pp_BStringList", (DL_FUNC) &ULdna_pp_BStringList, 2},
 	{"ULdna_pp_views", (DL_FUNC) &ULdna_pp_views, 6},
-	{"match_ULdna_exact", (DL_FUNC) &match_ULdna_exact, 8},
+	{"match_TailedULdna", (DL_FUNC) &match_TailedULdna, 8},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
 	{"extract_p2end", (DL_FUNC) &extract_p2end, 4},
 

@@ -128,12 +128,8 @@ static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
  * .Call entry points: "match_naive_exact" and "match_naive_inexact"
  *
  * Arguments:
- *   'p_xp': pattern@data@xp
- *   'p_offset': pattern@offset
- *   'p_length': pattern@length
- *   's_xp': subject@data@xp
- *   's_offset': subject@offset
- *   's_length': subject@length
+ *   'pattern_BString': pattern
+ *   'subject_BString': subject
  *   'mismatch': the number of mismatches (integer vector of length 1)
  *   'fixed': logical vector of length 2
  *   'count_only': single logical
@@ -142,24 +138,19 @@ static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
  * the matches. All matches have the length of the pattern.
  ****************************************************************************/
 
-SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
-		SEXP s_xp, SEXP s_offset, SEXP s_length,
+SEXP match_naive_exact(SEXP pattern_BString, SEXP subject_BString,
 		SEXP count_only)
 {
-	int pat_offset, pat_length, subj_offset, subj_length, is_count_only;
-	const Rbyte *pat, *subj;
+	const char *P, *S;
+	int nP, nS, is_count_only;
 	SEXP ans;
 
-	pat_offset = INTEGER(p_offset)[0];
-	pat_length = INTEGER(p_length)[0];
-	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
-	subj_offset = INTEGER(s_offset)[0];
-	subj_length = INTEGER(s_length)[0];
-	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+	P = get_BString_seq(pattern_BString, &nP);
+	S = get_BString_seq(subject_BString, &nS);
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	naive_exact_search((char *) pat, pat_length, (char *) subj, subj_length);
+	naive_exact_search(P, nP, S, nS);
 	if (is_count_only)
 		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
 	else
@@ -168,30 +159,23 @@ SEXP match_naive_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	return ans;
 }
 
-SEXP match_naive_inexact(SEXP p_xp, SEXP p_offset, SEXP p_length,
-		SEXP s_xp, SEXP s_offset, SEXP s_length,
+SEXP match_naive_inexact(SEXP pattern_BString, SEXP subject_BString,
 		SEXP mismatch, SEXP fixed,
 		SEXP count_only)
 {
-	int pat_offset, pat_length, subj_offset, subj_length,
-	    mm_max, fixedP, fixedS, is_count_only;
-	const Rbyte *pat, *subj;
+	const char *P, *S;
+	int nP, nS, mm_max, fixedP, fixedS, is_count_only;
 	SEXP ans;
 
-	pat_offset = INTEGER(p_offset)[0];
-	pat_length = INTEGER(p_length)[0];
-	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
-	subj_offset = INTEGER(s_offset)[0];
-	subj_length = INTEGER(s_length)[0];
-	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
+	P = get_BString_seq(pattern_BString, &nP);
+	S = get_BString_seq(subject_BString, &nS);
 	mm_max = INTEGER(mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	naive_inexact_search((char *) pat, pat_length, (char *) subj, subj_length,
-			   mm_max, fixedP, fixedS);
+	naive_inexact_search(P, nP, S, nS, mm_max, fixedP, fixedS);
 	if (is_count_only)
 		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
 	else

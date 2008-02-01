@@ -78,14 +78,27 @@ void _IBuf_get_more_room(IBuf *ibuf)
 
 void _IBuf_insert_at(IBuf *ibuf, int at, int val)
 {
-	int i, j;
+	int *val1, *val2, i1;
 
 	if (ibuf->count >= ibuf->maxcount)
 		_IBuf_get_more_room(ibuf);
-	j = ibuf->count++;
-	for (i = j - 1; i >= at; i--, j--)
-		ibuf->vals[j] = ibuf->vals[i];
-	ibuf->vals[j] = val;
+	val1 = ibuf->vals + ibuf->count;
+	val2 = val1 + 1;
+	for (i1 = ibuf->count++; i1 >= at; i1--)
+		*(val2--) = *(val1--);
+	*val2 = val;
+	return;
+}
+
+void _IBuf_delete_at(IBuf *ibuf, int at)
+{
+	int *val1, *val2, i2;
+
+	val1 = ibuf->vals + at;
+	val2 = val1 + 1;
+	for (i2 = at + 1; i2 < ibuf->count; i2++)
+		*(val1++) = *(val2++);
+	ibuf->count--;
 	return;
 }
 

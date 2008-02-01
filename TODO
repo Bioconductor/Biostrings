@@ -30,6 +30,9 @@ In 2.7
 
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
+  Correct Robert's RBioinf book reporting that the performance decrease
+  significantly when max.mismatch becomes to large. Should not be the case
+  anymore.
 
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
@@ -43,20 +46,6 @@ In 2.7
       BStringList objects in BSgenome.* packages. Modify BSgenome:::mseqnames
       man page consequently. Bump versions of BSgenome + all the BSgenome.* pkgs
       and make the updated BSgenome.* pkgs depend on the updated BSgenome pkg.
-
-- Define a DNAorRNA class (or NucleotideString) that is the union of the
-  DNAString and RNAString classes (use a union class for this or "do it by
-  hand" by defining this as a virtual class and by having the DNAString
-  and RNAString classes derived from it). Then use it to simplify code like:
-    setMethod("alphabetFrequency", "DNAString", ...)
-    setMethod("alphabetFrequency", "RNAString", ...)
-  These 2 methods can be replaced by a single method:
-    setMethod("alphabetFrequency", "NucleotideString", ...)
-  Also this:
-    if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) ...
-  can be replaced by:
-    if (is(x@subject, "NucleotideString")) ...
-  Etc...
 
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
@@ -85,6 +74,20 @@ In 2.7
     matches returned by stage 1.
 
 - Finish C implemntation of read.BStringViews()
+
+- Define a DNAorRNA class (or NucleotideString) that is the union of the
+  DNAString and RNAString classes (use a union class for this or "do it by
+  hand" by defining this as a virtual class and by having the DNAString
+  and RNAString classes derived from it). Then use it to simplify code like:
+    setMethod("alphabetFrequency", "DNAString", ...)
+    setMethod("alphabetFrequency", "RNAString", ...)
+  These 2 methods can be replaced by a single method:
+    setMethod("alphabetFrequency", "NucleotideString", ...)
+  Also this:
+    if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) ...
+  can be replaced by:
+    if (is(x@subject, "NucleotideString")) ...
+  Etc...
 
 - Add a new generic that combines a subject and a Views (or Views-like)
   object to return a BStringViews object. The Views-like object could be
@@ -128,6 +131,11 @@ In 2.7
   additional slot, the @call slot (of type "language"), that would contain
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
+
+- Code cleaning: use get_BString_seq() in every C routine that receives a
+  BString argument. This reduces the number of args that need to be passed
+  and makes the code much cleaner. See match_naive_exact() and
+  match_naive_inexact() for an example.
 
 - Make alphabetFrequency works with BStringViews objects with
   "out of limits" views.

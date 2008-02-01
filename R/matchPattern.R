@@ -101,8 +101,7 @@ debug_naive <- function()
 .match.naive.exact <- function(pattern, subject, count.only)
 {
     .Call("match_naive_exact",
-          pattern@data@xp, pattern@offset, pattern@length,
-          subject@data@xp, subject@offset, subject@length,
+          pattern, subject,
           count.only,
           PACKAGE="Biostrings")
 }
@@ -123,8 +122,7 @@ debug_naive <- function()
         return(integer(0))
     }
     .Call("match_naive_inexact",
-          pattern@data@xp, pattern@offset, pattern@length,
-          subject@data@xp, subject@offset, subject@length,
+          pattern, subject,
           max.mismatch, fixed, count.only,
           PACKAGE="Biostrings")
 }
