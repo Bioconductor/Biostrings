@@ -52,6 +52,12 @@ In 2.7
 
 - matchPDict():
 
+  o "initialize" method for TailedULdna_PDict objects is having a hard time
+    extracting the tail of a big dictionary (> 50000 patterns). Fix this.
+
+  o p2start() is broken on the P2Views object returned by a call to
+    matchPDict() on a TailedULdna_PDict object.
+
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
     'match_count' in match_ULdna.c, store directly in the returned
     INTEGER vector.
@@ -63,15 +69,6 @@ In 2.7
       Biostrings internal error in _init_code2offset_lkup(): invalid code
 
   o Make reverseComplement() work on a PDict object.
-
-  o Inexact matching using a 2-stage approach: add a new PDict type
-    (e.g. HeadTail_PDict) for storing the "head" and the "tail" of a pattern
-    dictionary (not necesarily of uniform-length).
-    The initialize method for HeadTail_PDict objects should let the user
-    specify the width of the "head" i.e. the size of the pattern prefixes
-    to use for exact matching (stage 1). Then in stage 2, the "tail" (i.e.
-    the pattern remainders) are compared with the nucleotides following the
-    matches returned by stage 1.
 
 - Finish C implemntation of read.BStringViews()
 
