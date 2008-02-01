@@ -505,29 +505,39 @@ static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char 
 	return;
 }
 
+
+/****************************************************************************
+ * Inexact matching on the tails of the TailedULdna_PDict object
+ * =============================================================
+ */
+
 static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
 			int poffset, const int *dups, int dups_len,
 			int max_mm, int is_count_only)
 {
 	int dup0, min_gm, i, end, s0_len, j, mm;
-	IBuf *ends_buf0, *ends_buf;
+	IBuf *ends_buf, *ends_buf0;
 	const char *t0, *s0;
 
+	ends_buf = ends_buf0 = ends_bbuf.ibufs + poffset;
 	dup0 = dups[poffset];
-	ends_buf0 = ends_bbuf.ibufs + poffset;
-	if (dup0 != 0) {
-		ends_buf = ends_buf0;
+	if (dup0 != 0)
 		ends_buf0 = ends_bbuf.ibufs + dup0 - 1;
-	}
-	min_gm = tail_len - max_mm; // the min nb of good matches
+	min_gm = tail_len - max_mm; // the min nb of matching bytes
 	if (min_gm <= 0) {
 		if (is_count_only) {
 			match_count.vals[poffset] = ends_buf0->count;
 			return;
 		}
-		if (dup0 == 0)
+		if (dup0 == 0) {
+			for (i = 0; i < ends_buf0->count; i++)
+				ends_buf0->vals[i] += tail_len;
 			return;
-		*ends_buf = *ends_buf0;
+		}
+		for (i = 0; i < ends_buf0->count; i++) {
+			end = ends_buf0->vals[i] + tail_len;
+			_IBuf_insert_at(ends_buf, ends_buf->count, end);
+		}
 		return;
 	}
 	for (i = 0; i < ends_buf0->count; i++) {
@@ -545,24 +555,25 @@ static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int 
 		}
 		if (j == s0_len) {
 			/* Match */
-			if (dup0 == 0)
-				continue;
 			if (is_count_only) {
 				match_count.vals[poffset]++;
 				continue;
 			}
+			if (dup0 == 0) {
+				ends_buf0->vals[i] += tail_len;
+				continue;
+			}
+			end += tail_len;
 			_IBuf_insert_at(ends_buf, ends_buf->count, end);
 			continue;
 		}
 		mismatch:
+		if (is_count_only)
+			continue;
 		if (dup0 != 0)
 			continue;
-		if (is_count_only) {
-			match_count.vals[poffset]--;
-			continue;
-		}
-		/* We need to shrink the buffer we are walking on! It is
-		 * safe because deleting a value can't trigger reallocation
+		/* We need to shrink the buffer we are walking on! This is safe
+		 * because shrinking a IBuf object will never trigger reallocation.
 		 */
 		_IBuf_delete_at(ends_buf0, i--);
 	}
