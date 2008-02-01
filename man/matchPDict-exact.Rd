@@ -1,5 +1,7 @@
 \name{matchPDict}
 
+\alias{matchPDict-exact}
+
 % Classes
 \alias{class:PDict}
 \alias{PDict-class}
@@ -66,11 +68,19 @@
 \description{
   \code{matchPDict} efficiently finds all occurences in a text (the
   subject) of any pattern from a set of patterns (the dictionary).
+
   The implementation of \code{matchPDict} is based on the Aho-Corasick
-  algorithm and is very fast. However, for now, \code{matchPDict} only
-  works with a dictionary of DNA patterns where all the patterns have
-  the same number of nucleotides (uniform-length dictionary).
-  Also, only exact matching is currently supported.
+  algorithm and is very fast.
+
+  Note that, for now, \code{matchPDict} only works with a dictionary
+  of DNA patterns.
+
+  This man page shows how to use \code{matchPDict} for exact matching
+  of a "uniform-length dictionary" i.e. a dictionary where all the
+  patterns have the same length (same number of nucleotides).
+
+  See \link{matchPDict-inexact} for inexact matching (or for using a
+  "variable-length dictionary").
 }
 
 \usage{
@@ -138,6 +148,7 @@
 \author{H. Pages}
 
 \seealso{
+  \link{matchPDict-inexact},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
   \link{BStringViews-class},
