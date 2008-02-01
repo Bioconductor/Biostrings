@@ -1,5 +1,6 @@
 import(methods)
 import(stats)
+import(utils) ## for the "tail" generic
 
 useDynLib(Biostrings)
 
