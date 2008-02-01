@@ -511,49 +511,52 @@ static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char 
  * =============================================================
  */
 
+static int inexact_match(const char *P, int nP, const char *S, int nS, int max_mm)
+{
+	int min_pm, mm, pm, i;
+
+	min_pm = nP - max_mm;
+	if (min_pm <= 0)
+		return 1;
+	if (nP > nS) {
+		max_mm -= nP - nS;
+		if (max_mm < 0)
+			return 0;
+		nP = nS;
+	}
+	mm = pm = 0;
+	/* From here we have:
+	 *   0 = mm <= max_mm < nP <= nS
+	 *   0 = pm < min_pm <= nP <= nS
+         *   min_pm + max_mm = nP
+	 */
+	for (i = 0; i < nP; i++, P++, S++) {
+		if (*P == *S) {
+			if (++pm >= min_pm)
+				return 1;
+		} else {
+			if (++mm > max_mm)
+				return 0;
+		}
+	}
+	error("Biostrings internal error in inexact_match(): we should never be here");
+	return -1;
+}
+
 static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
 			int poffset, const int *dups, int dups_len,
 			int max_mm, int is_count_only)
 {
-	int dup0, min_gm, i, end, s0_len, j, mm;
+	int dup0, i, end;
 	IBuf *ends_buf, *ends_buf0;
-	const char *t0, *s0;
 
 	ends_buf = ends_buf0 = ends_bbuf.ibufs + poffset;
 	dup0 = dups[poffset];
 	if (dup0 != 0)
 		ends_buf0 = ends_bbuf.ibufs + dup0 - 1;
-	min_gm = tail_len - max_mm; // the min nb of matching bytes
-	if (min_gm <= 0) {
-		if (is_count_only) {
-			match_count.vals[poffset] = ends_buf0->count;
-			return;
-		}
-		if (dup0 == 0) {
-			for (i = 0; i < ends_buf0->count; i++)
-				ends_buf0->vals[i] += tail_len;
-			return;
-		}
-		for (i = 0; i < ends_buf0->count; i++) {
-			end = ends_buf0->vals[i] + tail_len;
-			_IBuf_insert_at(ends_buf, ends_buf->count, end);
-		}
-		return;
-	}
 	for (i = 0; i < ends_buf0->count; i++) {
 		end = ends_buf0->vals[i];
-		s0_len = nS - end;
-		if (s0_len < min_gm)
-			goto mismatch;
-		if (s0_len > tail_len)
-			s0_len = tail_len;
-		mm = 0;
-		for (j = 0, t0 = tail, s0 = S + end; j < s0_len; j++, t0++, s0++) {
-			if (*t0 != *s0) mm++;
-			if (mm > max_mm)
-				break;
-		}
-		if (j == s0_len) {
+		if (inexact_match(tail, tail_len, S + end, nS - end, max_mm)) {
 			/* Match */
 			if (is_count_only) {
 				match_count.vals[poffset]++;
@@ -567,7 +570,7 @@ static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int 
 			_IBuf_insert_at(ends_buf, ends_buf->count, end);
 			continue;
 		}
-		mismatch:
+		/* Mismatch */
 		if (is_count_only)
 			continue;
 		if (dup0 != 0)
@@ -878,7 +881,7 @@ static SEXP getSymbolVal(SEXP symbol, SEXP envir)
 	 */
 	ans = findVar(install(translateChar(symbol)), envir);
 	if (ans == R_UnboundValue)
-		error("Biosrings internal error in getSymbolVal(): unbound value");
+		error("Biostrings internal error in getSymbolVal(): unbound value");
 	if (TYPEOF(ans) == PROMSXP)
 		ans = eval(ans, envir);
 	if (ans != R_NilValue && NAMED(ans) == 0)
