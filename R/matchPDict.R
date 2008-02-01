@@ -634,7 +634,7 @@ extractAllMatches <- function(subject, p2v)
 
 
 ### =========================================================================
-### C. EXACT SEARCH
+### C. EXACT MATCHING
 ### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -743,25 +743,111 @@ extractAllMatches <- function(subject, p2v)
 
 
 ### =========================================================================
-### D. THE "matchPDict" AND "countPDict" GENERIC FUNCTION AND METHODS
+### D. INEXACT MATCHING
+### -------------------------------------------------------------------------
+
+### Example:
+###
+###   pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), 2)
+###   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
+###   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
+###   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
+###
+### At the moment, preprocessing a big TailedULdna_PDict object is very slow:
+###   > library(drosophila2probe)
+###   > dict0 <- drosophila2probe$sequence 
+###   > system.time(pdict0 <- new("ULdna_PDict", dict0[1:40000]))
+###      user  system elapsed
+###     0.040   0.032   0.072
+###   > system.time(pdict <- new("TailedULdna_PDict", dict0[1:40000], 10))
+###      user  system elapsed
+###    38.158   0.052  38.217
+###
+###   > library(BSgenome.Dmelanogaster.FlyBase.r51)
+###   > chr3R <- Dmelanogaster[["3R"]]
+###   > system.time(p2v0 <- matchPDict(pdict0, chr3R))
+###      user  system elapsed
+###     1.352   0.000   1.352
+###   > system.time(p2v <- matchPDict(pdict, chr3R))
+###      user  system elapsed
+###     1.332   0.008   1.338
+###   > identical(p2nview(p2v0), p2nview(p2v))
+###   [1] TRUE
+###
+### Allowing mismatches is fast:
+###   > system.time(p2v_mm6 <- matchPDict(pdict, chr3R, max.mismatch=4))
+###      user  system elapsed
+###     1.377   0.000   1.375
+###   > p2v_mm6[[103]]
+###        start      end width
+###   1  9381276  9381285    10
+###   2 16070100 16070109    10
+###   > v <- views(chr3R, start(p2v_mm6[[103]]), end(p2v_mm6[[103]])+15)
+###   > mismatch(dict0[103], v)
+###   [[1]]
+###   [1] 14 15 19 23 24 25
+###
+###   [[2]]
+###   integer(0)
+
+.match.TailedULdna_PDict <- function(pdict, subject, max.mismatch, count.only)
+{
+    actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
+    pids <- pids(pdict)
+    if (is.null(pids))
+        envir <- NULL
+    else
+        envir <- new.env(hash=TRUE, parent=emptyenv())
+    ans <- .Call("match_TailedULdna",
+                 actree@nodes@xp, actree@base_codes,
+                 pdict@dups, pdict@tail@bstrings,
+                 subject,
+                 max.mismatch, count.only, envir,
+                 PACKAGE="Biostrings")
+    if (count.only)
+        return(ans)
+    if (is.null(pids))
+        new("P2ViewsWithoutIDs", ends=ans, width=width(pdict))
+    else
+        new("P2ViewsWithIDs", length=length(pdict), ends_envir=ans, width=width(pdict), pids=pids)
+}
+
+
+
+
+### =========================================================================
+### E. THE "matchPDict" AND "countPDict" GENERIC FUNCTION AND METHODS
 ### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .matchPDict()
 ###
 
+.normalize.max.mismatch <- function(max.mismatch)
+{
+    if (!isSingleNumber(max.mismatch))
+        stop("'max.mismatch' must be a single integer")
+    max.mismatch <- as.integer(max.mismatch)
+    if (max.mismatch < 0)
+        stop("'max.mismatch' must be a non-negative integer")
+    max.mismatch
+}
+
 .matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed, count.only=FALSE)
 {
     if (!is(pdict, "ULdna_PDict"))
-        stop("the pattern dictionary 'pdict' can only be a ULdna_PDict object for now")
+        stop("the pattern dictionary 'pdict' can only be a ULdna_PDict (or derived) object for now")
     if (!is(subject, "DNAString"))
         stop("'subject' can only be a DNAString object for now")
     if (!identical(algorithm, "auto"))
         stop("'algo' can only be '\"auto\"' for now")
-    if (!identical(max.mismatch, 0))
-        stop("'max.mismatch' can only be set to 0 for now")
+    max.mismatch <- .normalize.max.mismatch(max.mismatch)
     if (!identical(fixed, TRUE))
         stop("'fixed' can only be 'TRUE' for now")
+    if (is(pdict, "TailedULdna_PDict"))
+        return(.match.TailedULdna_PDict(pdict, subject, max.mismatch, count.only))
+    if (max.mismatch != 0)
+        stop("only TailedULdna_PDict dictionaries support a non-zero 'max.mismatch'")
     .match.ULdna_PDict.exact(pdict, subject, count.only)
 }
 
