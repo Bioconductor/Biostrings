@@ -70,8 +70,8 @@ In 2.7
 
   o Make reverseComplement() work on a PDict object.
 
-  o P2Views objects: at some point the user will want to be able to combine
-    "compatible" P2Views objects. 2 P2Views objects are "compatible" if they
+  o ViewsIndex objects: at some point the user will want to be able to combine
+    "compatible" ViewsIndex objects. 2 ViewsIndex objects are "compatible" if they
     are describing 2 set of matches coming from the same input dict and on
     the same target (subject). In practice, it will be enough that they have
     the same index i.e. they have the same pids() or, if the pids() is NULL,
