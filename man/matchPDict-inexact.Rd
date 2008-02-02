@@ -45,13 +45,23 @@
 }
 
 \examples{
+  ## WARNING! THIS IS STILL WORK IN PROGRESS!!!
+  ## A known issue is that the "startIndex", "[[" and "unlist" methods are
+  ## BROKEN on the ViewsIndex object returned by matchPDict() called on a
+  ## TailedULdna_PDict object!
+
   ## Use the 'width' argument to specify the length of the "trusted prefix"
   pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), width=2)
   pdict
   tail(pdict) 
   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
-  endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
+  vindex <- matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2)
+  endIndex(vindex)
+
+  startIndex(vindex)   # CURRENTLY BROKEN!
+  vindex[[1]]          # CURRENTLY BROKEN!
+  unlist(vindex)       # CURRENTLY BROKEN!
 }
 
 \keyword{methods}

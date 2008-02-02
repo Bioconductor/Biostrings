@@ -3,6 +3,9 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added support in matchPDict() for inexact matching of a dictionary with
+  "trusted prefixes". See ?`matchPDict-inexact` for the details.
+
 o Added support for empty BString (and derived) objects.
 
 o Added the "BStringList", "DNAStringList", "RNAStringList" and "AAStringList"
@@ -64,10 +67,10 @@ o reverse(), complement() and reverseComplement() now preserve desc(x) when
 
 o matchPDict() now returns a ViewsIndex object (new class) instead of a list
   of integer vectors. The user can then extract the starts or the ends of
-  the matches with startIndex() or endIndex(), extract the number of matches per
-  pattern with nviewIndex(), extract the matches for a given pattern with [[,
-  put all the matches in a single Views object with unlist() or convert
-  the ViewsIndex object into a set of views on the original subject with
+  the matches with startIndex() or endIndex(), extract the number of matches
+  per pattern with nviewIndex(), extract the matches for a given pattern with
+  [[, put all the matches in a single Views object with unlist() or convert
+  this ViewsIndex object into a set of views on the original subject with
   extractAllMatches().
   Other functions can be added later in order to provide a wider choice of
   extraction/conversion tools if necessary.
