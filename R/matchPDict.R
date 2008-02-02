@@ -525,13 +525,13 @@ setClass("ByName_ViewsIndex",
         length="integer",
         ends_envir="environment",
         width="integer",
-        names="character"
+        NAMES="character" # R doesn't like @names !!
     )
 )
 
 setMethod("length", "ByName_ViewsIndex", function(x) x@length)
 
-setMethod("names", "ByName_ViewsIndex", function(x) x@names)
+setMethod("names", "ByName_ViewsIndex", function(x) x@NAMES)
 
 setMethod("show", "ByName_ViewsIndex",
     function(object)
@@ -581,7 +581,7 @@ setMethod("startIndex", "ByName_ViewsIndex",
     {
         if (!isTRUEorFALSE(all.names))
             stop("'all.names' must be 'TRUE' or 'FALSE'")
-        .Call("extract_endIndex", x@ends_envir, 1L - x@width, x@names, all.names, PACKAGE="Biostrings")
+        .Call("extract_endIndex", x@ends_envir, 1L - x@width, x@NAMES, all.names, PACKAGE="Biostrings")
     }
 )
 setMethod("endIndex", "ByName_ViewsIndex",
@@ -589,7 +589,7 @@ setMethod("endIndex", "ByName_ViewsIndex",
     {
         if (!isTRUEorFALSE(all.names))
             stop("'all.names' must be 'TRUE' or 'FALSE'")
-        .Call("extract_endIndex", x@ends_envir, 0L, x@names, all.names, PACKAGE="Biostrings")
+        .Call("extract_endIndex", x@ends_envir, 0L, x@NAMES, all.names, PACKAGE="Biostrings")
     }
 )
 
