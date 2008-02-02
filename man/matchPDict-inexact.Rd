@@ -49,9 +49,9 @@
   pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), width=2)
   pdict
   tail(pdict) 
-  p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
-  p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
-  p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
+  endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
+  endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
+  endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
 }
 
 \keyword{methods}

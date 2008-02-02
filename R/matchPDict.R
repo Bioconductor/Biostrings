@@ -22,8 +22,6 @@
 
 setClass("PDict", representation("VIRTUAL"))
 
-setGeneric("pids", function(x) standardGeneric("pids"))
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree" class (NOT EXPORTED).
@@ -73,7 +71,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks0 # no failure link is set yet
-###   > p2end <- p2end(matchPDict(pdict, DNAString("acaagagagt")))
+###   > endIndex <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set
 ### As you can see the 'pdict' object "learns" from being used!
@@ -128,7 +126,7 @@ setMethod("initialize", "ACtree",
 ###   actree: the Aho-Corasick tree built from the input dictionary.
 ###
 ###   dups: an integer vector of length L and containing the duplicate info.
-###       If unique pattern IDs were provided as part of the input dictionary,
+###       If unique pattern names were provided as part of the input dictionary,
 ###       then they are used to name the elements of this vector.
 
 setClass("ULdna_PDict",
@@ -146,14 +144,14 @@ setMethod("length", "ULdna_PDict", function(x) x@length)
 
 setMethod("width", "ULdna_PDict", function(x) x@width)
 
-setMethod("pids", "ULdna_PDict", function(x) names(x@dups))
+setMethod("names", "ULdna_PDict", function(x) names(x@dups))
 
 setMethod("show", "ULdna_PDict",
     function(object)
     {
         cat(length(object), "-pattern uniform-length \"PDict\" object of width ", width(object), sep="")
-        if (is.null(pids(object)))
-            cat(" (no pattern IDs)")
+        if (is.null(names(object)))
+            cat(" (patterns have no names)")
         cat("\n")
     }
 )
@@ -163,40 +161,40 @@ debug_ULdna <- function()
     invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
 }
 
-.checkpids <- function(pids)
+.check.names <- function(names)
 {
-    if (!is.null(pids)) {
-        if (any(pids %in% c("", NA)))
+    if (!is.null(names)) {
+        if (any(names %in% c("", NA)))
             stop("'dict' has invalid names")
-        if (any(duplicated(pids)))
+        if (any(duplicated(names)))
             stop("'dict' has duplicated names")
     }
 }
 
 ### 'ppans' is the answer returned by the preprocessing functions (the
 ### ULdna_pp_*() functions).
-.ULdna_PDict.postinit <- function(.Object, length, ppans, pids)
+.ULdna_PDict.postinit <- function(.Object, length, ppans, names)
 {
     .Object@length <- length
     .Object@width <- ppans$width
     .Object@actree <- new("ACtree", ppans$actree_nodes_xp, ppans$actree_base_codes)
     .Object@dups <- ppans$dups
-    names(.Object@dups) <- pids
+    names(.Object@dups) <- names
     .Object@stats <- ppans$stats
     .Object
 }
 
 ### 'dict' must be a string vector (aka character vector) with at least 1
 ### element. If it has names, then they must be unique and are considered
-### to be the pattern IDs.
+### to be the pattern names.
 .ULdna_PDict.init_with_StrVect <- function(.Object, dict, width)
 {
     if (any(is.na(dict)))
         stop("'dict' contains NAs")
-    pids <- names(dict)
-    .checkpids(pids)
+    names <- names(dict)
+    .check.names(names)
     ppans <- .Call("ULdna_pp_StrVect", dict, width, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, names)
 }
 
 ### 'dict' must be a list of BString objects of the same class (i.e. all
@@ -204,11 +202,11 @@ debug_ULdna <- function()
 ### element.
 .ULdna_PDict.init_with_BStringList <- function(.Object, dict, width)
 {
-    pids <- names(dict)
-    .checkpids(pids)
+    names <- names(dict)
+    .check.names(names)
     dict0 <- lapply(dict, function(pattern) list(pattern@data@xp, pattern@offset, pattern@length))
     ppans <- .Call("ULdna_pp_BStringList", dict0, width, PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, names)
 }
 
 ### 'dict' must be a BStringViews object.
@@ -216,13 +214,13 @@ debug_ULdna <- function()
 {
     if (length(dict) == 0)
         stop("'dict' has no views")
-    pids <- desc(dict)
-    .checkpids(pids)
+    names <- desc(dict)
+    .check.names(names)
     ppans <- .Call("ULdna_pp_views",
                   subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
                   start(dict), end(dict), width,
                   PACKAGE="Biostrings")
-    .ULdna_PDict.postinit(.Object, length(dict), ppans, pids)
+    .ULdna_PDict.postinit(.Object, length(dict), ppans, names)
 }
 
 ### The input dictionary 'dict' must be:
@@ -293,8 +291,8 @@ setMethod("show", "TailedULdna_PDict",
     {
         cat(length(object), "-pattern \"PDict\" object (of width ",
             width(object), ") with a tail", sep="")
-        if (is.null(pids(object)))
-            cat(" (no pattern IDs)")
+        if (is.null(names(object)))
+            cat(" (patterns have no names)")
         cat("\n")
     }
 )
@@ -336,46 +334,46 @@ setMethod("initialize", "TailedULdna_PDict",
 ### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "P2Views" API.
+### The "ViewsIndex" API.
 ### 
 ### An API for manipulating the match container returned by matchPDict().
 ###
 
-setClass("P2Views", representation("VIRTUAL"))
+setClass("ViewsIndex", representation("VIRTUAL"))
 
 
-setGeneric("p2start", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("p2start"))
+setGeneric("startIndex", signature="x",
+    function(x, all.names=FALSE) standardGeneric("startIndex"))
 
-setGeneric("p2end", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("p2end"))
+setGeneric("endIndex", signature="x",
+    function(x, all.names=FALSE) standardGeneric("endIndex"))
 
-setGeneric("p2nview", signature="x",
-    function(x, all.pids=FALSE) standardGeneric("p2nview"))
+setGeneric("nviewIndex", signature="x",
+    function(x, all.names=FALSE) standardGeneric("nviewIndex"))
 
-setMethod("p2nview", "P2Views",
-    function(x, all.pids=FALSE)
+setMethod("nviewIndex", "ViewsIndex",
+    function(x, all.names=FALSE)
     {
-        if (!is.null(pids(x))) {
-            p2end <- p2end(x, all.pids=all.pids)
-            if (length(p2end) == 0)
+        if (!is.null(names(x))) {
+            endIndex <- endIndex(x, all.names=all.names)
+            if (length(endIndex) == 0)
                 return(integer(0))
-            return(sapply(p2end, length))
+            return(sapply(endIndex, length))
         }
-        if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
-        p2end <- p2end(x)
-        if (length(p2end) == 0)
+        if (!missing(all.names))
+            warning("'all.names' is ignored when patterns have no names")
+        endIndex <- endIndex(x)
+        if (length(endIndex) == 0)
             return(integer(0))
-        sapply(p2end, length)
+        sapply(endIndex, length)
     }
 )
 
 ### Return a single integer or string (not NA).
-setMethod("[[", "P2Views",
+setMethod("[[", "ViewsIndex",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "P2Views" object (if it's not, then
+        # 'x' is guaranteed to be a "ViewsIndex" object (if it's not, then
         # the method dispatch algo would not have called this method in the
         # first place), so nargs() is guaranteed to be >= 1
         if (nargs() >= 3)
@@ -391,13 +389,13 @@ setMethod("[[", "P2Views",
             stop("no index specified")
         key <- subscripts[[1]]
         if (!is.character(key) && !is.numeric(key))
-            stop("wrong argument for subsetting an object of class \"P2Views\"")
+            stop("wrong argument for subsetting an object of class \"ViewsIndex\"")
         if (length(key) < 1)
             stop("attempt to select less than one element")
         if (length(key) > 1)
             stop("attempt to select more than one element")
         if (is.na(key))
-            stop("subsetting an object of class \"P2Views\" with NA is not supported")
+            stop("subsetting an object of class \"ViewsIndex\" with NA is not supported")
         if (is.numeric(key)) {
             if (!is.integer(key))
                 key <- as.integer(key)
@@ -408,18 +406,18 @@ setMethod("[[", "P2Views",
     }
 )
 
-setMethod("$", "P2Views", function(x, name) x[[name]])
+setMethod("$", "ViewsIndex", function(x, name) x[[name]])
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "P2ViewsWithoutIDs" class.
+### The "ByPos_ViewsIndex" class.
 ### 
-### When 'pdict' is a PDict object without pattern IDs then matchPDict(pdict, ...)
-### returns the matches in a P2ViewsWithoutIDs object.
+### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
+### returns the matches in a ByPos_ViewsIndex object.
 ###
 ### Note that in normal operations the user NEVER needs to create a
-### P2ViewsWithoutIDs object explicitely or to modify an existing one:
-### P2ViewsWithoutIDs objects are created by the matchPDict() function
+### ByPos_ViewsIndex object explicitely or to modify an existing one:
+### ByPos_ViewsIndex objects are created by the matchPDict() function
 ### and have a read-only semantic.
 ###
 ### Slot description:
@@ -433,74 +431,74 @@ setMethod("$", "P2Views", function(x, name) x[[name]])
 ###       length 1 only).
 ###
 
-setClass("P2ViewsWithoutIDs",
-    contains="P2Views",
+setClass("ByPos_ViewsIndex",
+    contains="ViewsIndex",
     representation(
         ends="list",
         width="integer"
     )
 )
 
-setMethod("length", "P2ViewsWithoutIDs", function(x) length(x@ends))
+setMethod("length", "ByPos_ViewsIndex", function(x) length(x@ends))
 
-setMethod("pids", "P2ViewsWithoutIDs", function(x) NULL)
+setMethod("names", "ByPos_ViewsIndex", function(x) NULL)
 
-setMethod("show", "P2ViewsWithoutIDs",
+setMethod("show", "ByPos_ViewsIndex",
     function(object)
     {
-        cat(length(object), "-pattern \"P2Views\" object (no pattern IDs)\n", sep="")
+        cat(length(object), "-pattern \"ViewsIndex\" object (patterns have no names)\n", sep="")
     }
 )
 
-setMethod("[[", "P2ViewsWithoutIDs",
+setMethod("[[", "ByPos_ViewsIndex",
     function(x, i, j, ...)
     {
         key <- callNextMethod()
         if (is.character(key))
-            stop("\"P2Views\" object has no pattern IDs")
+            stop("\"ViewsIndex\" object has no names")
         new("Views", start=x@ends[[key]]-x@width+1L, end=x@ends[[key]], check.data=FALSE)
     }
 )
 
-### An example of a P2ViewsWithoutIDs object of length 5 where only the
+### An example of a ByPos_ViewsIndex object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends <- rep(list(integer(0)), 5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > p2v <- new("P2ViewsWithoutIDs", ends=ends, width=10L)
-###   > p2v[[1]]
-###   > p2v[[2]]
-###   > p2v[[6]] # Error in p2v[[6]] : subscript out of bounds
-###   > p2start(p2v)
-###   > p2end(p2v)
-###   > p2nview(p2v)
+###   > vindex <- new("ByPos_ViewsIndex", ends=ends, width=10L)
+###   > vindex[[1]]
+###   > vindex[[2]]
+###   > vindex[[6]] # Error in vindex[[6]] : subscript out of bounds
+###   > startIndex(vindex)
+###   > endIndex(vindex)
+###   > nviewIndex(vindex)
 ###
-setMethod("p2start", "P2ViewsWithoutIDs",
-    function(x, all.pids=FALSE)
+setMethod("startIndex", "ByPos_ViewsIndex",
+    function(x, all.names=FALSE)
     {
-        if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
+        if (!missing(all.names))
+            warning("'all.names' is ignored when patterns have no names")
         .Call("shiftListOfInts", x@ends, 1L - x@width, PACKAGE="Biostrings")
     }
 )
-setMethod("p2end", "P2ViewsWithoutIDs",
-    function(x, all.pids=FALSE)
+setMethod("endIndex", "ByPos_ViewsIndex",
+    function(x, all.names=FALSE)
     {
-        if (!missing(all.pids))
-            warning("'all.pids' is ignored when \"P2Views\" object has no pattern IDs")
+        if (!missing(all.names))
+            warning("'all.names' is ignored when patterns have no names")
         x@ends
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "P2ViewsWithIDs" class.
+### The "ByName_ViewsIndex" class.
 ### 
-### When 'pdict' is a PDict object with pattern IDs then matchPDict(pdict, ...)
-### returns the matches in a P2ViewsWithIDs object.
+### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
+### returns the matches in a ByName_ViewsIndex object.
 ###
 ### Note that in normal operations the user NEVER needs to create a
-### P2ViewsWithIDs object explicitely or to modify an existing one:
-### P2ViewsWithIDs objects are created by the matchPDict() function
+### ByName_ViewsIndex object explicitely or to modify an existing one:
+### ByName_ViewsIndex objects are created by the matchPDict() function
 ### and have a read-only semantic.
 ###
 ### Slot description:
@@ -518,38 +516,38 @@ setMethod("p2end", "P2ViewsWithoutIDs",
 ###       and to make it the same length as the ends_envir slot (it's currently
 ###       of length 1 only).
 ###
-###   pids: a character vector containing the unique pattern IDs.
+###   names: a character vector containing the _unique_ pattern names.
 ###
 
-setClass("P2ViewsWithIDs",
-    contains="P2Views",
+setClass("ByName_ViewsIndex",
+    contains="ViewsIndex",
     representation(
         length="integer",
         ends_envir="environment",
         width="integer",
-        pids="character"
+        names="character"
     )
 )
 
-setMethod("length", "P2ViewsWithIDs", function(x) x@length)
+setMethod("length", "ByName_ViewsIndex", function(x) x@length)
 
-setMethod("pids", "P2ViewsWithIDs", function(x) x@pids)
+setMethod("names", "ByName_ViewsIndex", function(x) x@names)
 
-setMethod("show", "P2ViewsWithIDs",
+setMethod("show", "ByName_ViewsIndex",
     function(object)
     {
-        cat(length(object), "-pattern \"P2Views\" object\n", sep="")
+        cat(length(object), "-pattern \"ViewsIndex\" object\n", sep="")
     }
 )
 
-setMethod("[[", "P2ViewsWithIDs",
+setMethod("[[", "ByName_ViewsIndex",
     function(x, i, j, ...)
     {
         key <- callNextMethod()
         if (is.character(key)) {
-            pos <- match(key, pids(x))
+            pos <- match(key, names(x))
             if (is.na(pos))
-                stop("pattern ID \"", key, "\" not found")
+                stop("pattern name \"", key, "\" not found")
             key <- pos
         } 
         end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
@@ -559,39 +557,39 @@ setMethod("[[", "P2ViewsWithIDs",
     }
 )
 
-### An example of a P2ViewsWithIDs object of length 5 where only the
+### An example of a ByName_ViewsIndex object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends_envir[['0000000002']] <- c(199L, 402L)
-###   > p2v <- new("P2ViewsWithIDs", length=5L, ends_envir=ends_envir, width=10L, pids=letters[1:5])
-###   > p2v[[1]]
-###   > p2v[[2]]
-###   > p2v[[6]] # Error in p2v[[6]] : subscript out of bounds
-###   > pids(p2v)
-###   > p2v[["a"]]
-###   > p2v[["b"]]
-###   > p2v[["aa"]] # Error in p2v[["aa"]] : pattern ID ‘aa’ not found
-###   > p2start(p2v)
-###   > p2start(p2v, all.pids=TRUE)
-###   > p2end(p2v)
-###   > p2end(p2v, all.pids=TRUE)
-###   > p2nview(p2v)
-###   > p2nview(p2v, all.pids=TRUE)
+###   > vindex <- new("ByName_ViewsIndex", length=5L, ends_envir=ends_envir, width=10L, names=letters[1:5])
+###   > vindex[[1]]
+###   > vindex[[2]]
+###   > vindex[[6]] # Error in vindex[[6]] : subscript out of bounds
+###   > names(vindex)
+###   > vindex[["a"]]
+###   > vindex[["b"]]
+###   > vindex[["aa"]] # Error in vindex[["aa"]] : pattern name ‘aa’ not found
+###   > startIndex(vindex)
+###   > startIndex(vindex, all.names=TRUE)
+###   > endIndex(vindex)
+###   > endIndex(vindex, all.names=TRUE)
+###   > nviewIndex(vindex)
+###   > nviewIndex(vindex, all.names=TRUE)
 ###
-setMethod("p2start", "P2ViewsWithIDs",
-    function(x, all.pids=FALSE)
+setMethod("startIndex", "ByName_ViewsIndex",
+    function(x, all.names=FALSE)
     {
-        if (!is.logical(all.pids) || length(all.pids) != 1 || is.na(all.pids))
-            stop("'all.pids' must be 'TRUE' or 'FALSE'")
-        .Call("extract_p2end", x@ends_envir, 1L - x@width, x@pids, all.pids, PACKAGE="Biostrings")
+        if (!isTRUEorFALSE(all.names))
+            stop("'all.names' must be 'TRUE' or 'FALSE'")
+        .Call("extract_endIndex", x@ends_envir, 1L - x@width, x@names, all.names, PACKAGE="Biostrings")
     }
 )
-setMethod("p2end", "P2ViewsWithIDs",
-    function(x, all.pids=FALSE)
+setMethod("endIndex", "ByName_ViewsIndex",
+    function(x, all.names=FALSE)
     {
-        if (!is.logical(all.pids) || length(all.pids) != 1 || is.na(all.pids))
-            stop("'all.pids' must be 'TRUE' or 'FALSE'")
-        .Call("extract_p2end", x@ends_envir, 0L, x@pids, all.pids, PACKAGE="Biostrings")
+        if (!isTRUEorFALSE(all.names))
+            stop("'all.names' must be 'TRUE' or 'FALSE'")
+        .Call("extract_endIndex", x@ends_envir, 0L, x@names, all.names, PACKAGE="Biostrings")
     }
 )
 
@@ -600,35 +598,35 @@ setMethod("p2end", "P2ViewsWithIDs",
 ### The "unlist" method and the "extractAllMatches" function.
 ###
 
-setMethod("unlist", "P2Views",
+setMethod("unlist", "ViewsIndex",
     function(x, recursive=TRUE, use.names=TRUE)
     {
-        p2start <- p2start(x)
-        if (length(p2start) == 0)
+        startIndex <- startIndex(x)
+        if (length(startIndex) == 0)
             start <- integer(0)
         else
-            start <- unlist(p2start, recursive=FALSE, use.names=FALSE)
-        p2end <- p2end(x)
-        if (length(p2end) == 0)
+            start <- unlist(startIndex, recursive=FALSE, use.names=FALSE)
+        endIndex <- endIndex(x)
+        if (length(endIndex) == 0)
             end <- integer(0)
         else
-            end <- unlist(p2end, recursive=FALSE, use.names=FALSE)
-        desc <- names(p2end)
+            end <- unlist(endIndex, recursive=FALSE, use.names=FALSE)
+        desc <- names(endIndex)
         if (!is.null(desc))
-            desc <- rep.int(desc, times=sapply(p2end, length))
+            desc <- rep.int(desc, times=sapply(endIndex, length))
         new("Views", start=start, end=end, desc=desc, check.data=FALSE)
     }
 )
 
-extractAllMatches <- function(subject, p2v)
+extractAllMatches <- function(subject, vindex)
 {
     if (!is(subject, "BString"))
         stop("'subject' must be a BString object")
-    if (!is(p2v, "P2Views"))
-        stop("'p2v' must be a P2Views object")
-    if (is.null(pids(p2v)))
-        stop("extractAllMatches() works only with a \"P2Views\" object that has pattern IDs")
-    allviews <- unlist(p2v)
+    if (!is(vindex, "ViewsIndex"))
+        stop("'vindex' must be a ViewsIndex object")
+    if (is.null(names(vindex)))
+        stop("extractAllMatches() works only with a \"ViewsIndex\" object with names")
+    allviews <- unlist(vindex)
     new("BStringViews", subject=subject, start=start(allviews), end=end(allviews),
         desc=desc(allviews), check.views=FALSE)
 }
@@ -653,21 +651,21 @@ extractAllMatches <- function(subject, p2v)
 ###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
-###   > system.time(p2end <- p2end(matchPDict(pdict, chr1)))
+###   > system.time(endIndex <- endIndex(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
-###   > nmatches <- sapply(p2end, length)
+###   > nmatches <- sapply(endIndex, length)
 ###   > table(nmatches)
 ###   > id0 <- which(nmatches == max(nmatches))
 ###   > p0 <- DNAString(dict[id0])
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subBString(chr1, p2end[[id0]][1]-24, p2end[[id0]][1]) == p0
+###   > subBString(chr1, endIndex[[id0]][1]-24, endIndex[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
-###   > pidOK <- sapply(seq_len(length(p2end)),
-###                     function(pid) identical(p2end[[pid]],
+###   > pidOK <- sapply(seq_len(length(endIndex)),
+###                     function(pid) identical(endIndex[[pid]],
 ###                                             end(matchPattern(DNAString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
@@ -692,8 +690,8 @@ extractAllMatches <- function(subject, p2v)
 .match.ULdna_PDict.exact <- function(pdict, subject, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
-    pids <- pids(pdict)
-    if (is.null(pids))
+    names <- names(pdict)
+    if (is.null(names))
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
@@ -705,10 +703,10 @@ extractAllMatches <- function(subject, p2v)
                  PACKAGE="Biostrings")
     if (count.only)
         return(ans)
-    if (is.null(pids))
-        new("P2ViewsWithoutIDs", ends=ans, width=width(pdict))
+    if (is.null(names))
+        new("ByPos_ViewsIndex", ends=ans, width=width(pdict))
     else
-        new("P2ViewsWithIDs", length=length(pdict), ends_envir=ans, width=width(pdict), pids=pids)
+        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), names=names)
 }
 
 ### With a big random dictionary, on george1:
@@ -726,10 +724,10 @@ extractAllMatches <- function(subject, p2v)
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
 ###      > chr1 <- DNAString(Hsapiens$chr1)
-###      > system.time(p2end <- p2end(matchPDict(pdict, chr1)))
+###      > system.time(endIndex <- endIndex(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
-###      > nmatches <- sapply(p2end, length)
+###      > nmatches <- sapply(endIndex, length)
 ###      > sum(nmatches) # most likely no match were found
 ###
 ### Results obtained with some random dictionaries on george1:
@@ -752,9 +750,9 @@ extractAllMatches <- function(subject, p2v)
 ### Example:
 ###
 ###   pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), 2)
-###   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
-###   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
-###   p2end(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
+###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
+###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
+###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
 ###
 ### At the moment, preprocessing a big TailedULdna_PDict object is very slow:
 ###   > library(drosophila2probe)
@@ -768,24 +766,24 @@ extractAllMatches <- function(subject, p2v)
 ###
 ###   > library(BSgenome.Dmelanogaster.FlyBase.r51)
 ###   > chr3R <- Dmelanogaster[["3R"]]
-###   > system.time(p2v0 <- matchPDict(pdict0, chr3R))
+###   > system.time(vindex0 <- matchPDict(pdict0, chr3R))
 ###      user  system elapsed
 ###     1.352   0.000   1.352
-###   > system.time(p2v <- matchPDict(pdict, chr3R))
+###   > system.time(vindex <- matchPDict(pdict, chr3R))
 ###      user  system elapsed
 ###     1.332   0.008   1.338
-###   > identical(p2nview(p2v0), p2nview(p2v))
+###   > identical(nviewIndex(vindex0), nviewIndex(vindex))
 ###   [1] TRUE
 ###
 ### Allowing mismatches is fast:
-###   > system.time(p2v_mm6 <- matchPDict(pdict, chr3R, max.mismatch=4))
+###   > system.time(vindex_mm6 <- matchPDict(pdict, chr3R, max.mismatch=4))
 ###      user  system elapsed
 ###     1.377   0.000   1.375
-###   > p2v_mm6[[103]]
+###   > vindex_mm6[[103]]
 ###        start      end width
 ###   1  9381276  9381285    10
 ###   2 16070100 16070109    10
-###   > v <- views(chr3R, start(p2v_mm6[[103]]), end(p2v_mm6[[103]])+15)
+###   > v <- views(chr3R, start(vindex_mm6[[103]]), end(vindex_mm6[[103]])+15)
 ###   > mismatch(dict0[103], v)
 ###   [[1]]
 ###   [1] 14 15 19 23 24 25
@@ -796,8 +794,8 @@ extractAllMatches <- function(subject, p2v)
 .match.TailedULdna_PDict <- function(pdict, subject, max.mismatch, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
-    pids <- pids(pdict)
-    if (is.null(pids))
+    names <- names(pdict)
+    if (is.null(names))
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
@@ -809,10 +807,10 @@ extractAllMatches <- function(subject, p2v)
                  PACKAGE="Biostrings")
     if (count.only)
         return(ans)
-    if (is.null(pids))
-        new("P2ViewsWithoutIDs", ends=ans, width=width(pdict))
+    if (is.null(names))
+        new("ByPos_ViewsIndex", ends=ans, width=width(pdict))
     else
-        new("P2ViewsWithIDs", length=length(pdict), ends_envir=ans, width=width(pdict), pids=pids)
+        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), names=names)
 }
 
 

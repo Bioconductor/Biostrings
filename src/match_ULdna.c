@@ -822,7 +822,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *   'envir': environment to be populated with the matches
  *
  * Return an R object that will be assigned to the 'ends' slot of the
- * P2Views object returned by matchPDict(). Refer to the description
+ * ViewsIndex object returned by matchPDict(). Refer to the description
  * of this slot in the matchPDict.R file for the details.
  *
  ****************************************************************************/
@@ -868,7 +868,7 @@ SEXP match_TailedULdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 
 /****************************************************************************
  * Some additional utility functions used fast data extraction from the
- * P2Views object returned by matchPDict().
+ * ViewsIndex object returned by matchPDict().
  */
 
 /* 'symbol' must be a CHARSXP */
@@ -932,13 +932,13 @@ SEXP shiftListOfInts(SEXP x, SEXP shift)
      ends_envir <- new.env(parent = emptyenv())
      ends_envir[['0000000010']] <- -2:1
      ends_envir[['0000000004']] <- 9:6
-     .Call("extract_p2end", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
-     .Call("extract_p2end", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+     .Call("extract_endIndex", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
+     .Call("extract_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
  * but this doesn't:
      ends_envir[['3']] <- 33L
-     .Call("extract_p2end", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+     .Call("extract_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
  */
-SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
+SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;
@@ -946,15 +946,15 @@ SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
 
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
 	poffsets = _CHARACTER_asIBuf(symbols, -1);
-	if (LOGICAL(all_pids)[0]) {
-		PROTECT(ans = NEW_LIST(LENGTH(pids)));
+	if (LOGICAL(all_names)[0]) {
+		PROTECT(ans = NEW_LIST(LENGTH(names)));
 		for (i = 0; i < poffsets.count; i++) {
 			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
 			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
 			SET_ELEMENT(ans, poffsets.vals[i], ans_elt);
 			UNPROTECT(1);
 		}
-		SET_NAMES(ans, duplicate(pids));
+		SET_NAMES(ans, duplicate(names));
 		UNPROTECT(1);
 	} else {
 		//_IBuf_init(&poffsets_order, poffsets.count, 0);
@@ -967,7 +967,7 @@ SEXP extract_p2end(SEXP ends_envir, SEXP shift, SEXP pids, SEXP all_pids)
 			j = i;
 			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir);
 			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
-			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(pids, poffsets.vals[j])));
+			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(names, poffsets.vals[j])));
 		}
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(2);

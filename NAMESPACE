@@ -12,7 +12,7 @@ exportClasses(
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
     "PDict", "ULdna_PDict", "TailedULdna_PDict",
-    "P2Views", "P2ViewsWithoutIDs", "P2ViewsWithIDs"
+    "ViewsIndex", "ByPos_ViewsIndex", "ByName_ViewsIndex"
 )
 
 exportMethods(
@@ -20,12 +20,12 @@ exportMethods(
     #as.integer,
     initialize, length, "[", "[[", show, "==", "!=",
     as.character, toString, nchar, toComplex, as.complex,
-    as.data.frame, as.matrix, as.list,
+    as.data.frame, as.matrix, as.list, names,
 
     ## Accessors
     alphabet, letter,
     nview, start, end, width, desc, "desc<-", subject,
-    pids, tail, p2start, p2end, p2nview, unlist,
+    tail, startIndex, endIndex, nviewIndex, unlist,
     subpatterns, pattern,
     align1, align2, score,
 

@@ -210,7 +210,7 @@ debug_shiftor <- function()
         fixed_names <- names(fixed)
         if (is.null(fixed_names)) {
             if (!(length(fixed) %in% 1:2))
-                stop("when an unamed logical vector, ",
+                stop("when an unnamed logical vector, ",
                      "'fixed' fixed must be of length 1 or 2")
             if (length(fixed) == 1)
                 fixed <- c(fixed, fixed)

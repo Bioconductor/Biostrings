@@ -109,7 +109,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"ULdna_pp_views", (DL_FUNC) &ULdna_pp_views, 6},
 	{"match_TailedULdna", (DL_FUNC) &match_TailedULdna, 8},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
-	{"extract_p2end", (DL_FUNC) &extract_p2end, 4},
+	{"extract_endIndex", (DL_FUNC) &extract_endIndex, 4},
 
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},

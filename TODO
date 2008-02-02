@@ -55,7 +55,7 @@ In 2.7
   o "initialize" method for TailedULdna_PDict objects is having a hard time
     extracting the tail of a big dictionary (> 50000 patterns). Fix this.
 
-  o p2start() is broken on the P2Views object returned by a call to
+  o startIndex() is broken on the ViewsIndex object returned by a call to
     matchPDict() on a TailedULdna_PDict object.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
@@ -88,8 +88,8 @@ In 2.7
 
 - Add a new generic that combines a subject and a Views (or Views-like)
   object to return a BStringViews object. The Views-like object could be
-  P2Views object and the method for it would do as if it had received
-  unlist(P2Views). Currently my problem is that I can't come up with a good
+  ViewsIndex object and the method for it would do as if it had received
+  unlist(ViewsIndex). Currently my problem is that I can't come up with a good
   name for such generic :-/ Maybe I could just use views(subject, x) for
   this (dispatch would be on x, not subject). And the current views function
   could be renamed (or maybe it's not needed at all, maybe a fancy

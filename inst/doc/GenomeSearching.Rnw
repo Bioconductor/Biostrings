@@ -529,8 +529,8 @@ runOneStrandAnalysis <- function(dict0, bsgenome, seqnames, strand, outfile="", 
     for (seqname in seqnames) {
         subject <- bsgenome[[seqname]]
         cat(">>> Finding all hits in strand", strand, "of chromosome", seqname, "...\n")
-        p2v <- matchPDict(pdict, subject)
-        matches <- extractAllMatches(subject, p2v)
+        vindex <- matchPDict(pdict, subject)
+        matches <- extractAllMatches(subject, vindex)
         writeHits(seqname, matches, strand, file=outfile, append=append)
         append <- TRUE
         cat(">>> DONE\n")

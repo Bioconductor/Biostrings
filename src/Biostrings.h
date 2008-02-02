@@ -730,11 +730,11 @@ SEXP shiftListOfInts(
 		SEXP shift
 );
 
-SEXP extract_p2end(
+SEXP extract_endIndex(
 		SEXP ends_envir,
 		SEXP shift,
-		SEXP pids,
-		SEXP all_pids
+		SEXP names,
+		SEXP all_names
 );
 
 
