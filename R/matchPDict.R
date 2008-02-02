@@ -561,7 +561,7 @@ setMethod("[[", "ByName_ViewsIndex",
 ### 2nd pattern has matches:
 ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends_envir[['0000000002']] <- c(199L, 402L)
-###   > vindex <- new("ByName_ViewsIndex", length=5L, ends_envir=ends_envir, width=10L, names=letters[1:5])
+###   > vindex <- new("ByName_ViewsIndex", length=5L, ends_envir=ends_envir, width=10L, NAMES=letters[1:5])
 ###   > vindex[[1]]
 ###   > vindex[[2]]
 ###   > vindex[[6]] # Error in vindex[[6]] : subscript out of bounds
@@ -706,7 +706,7 @@ extractAllMatches <- function(subject, vindex)
     if (is.null(names))
         new("ByPos_ViewsIndex", ends=ans, width=width(pdict))
     else
-        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), names=names)
+        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), NAMES=names)
 }
 
 ### With a big random dictionary, on george1:
@@ -810,7 +810,7 @@ extractAllMatches <- function(subject, vindex)
     if (is.null(names))
         new("ByPos_ViewsIndex", ends=ans, width=width(pdict))
     else
-        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), names=names)
+        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), NAMES=names)
 }
 
 
