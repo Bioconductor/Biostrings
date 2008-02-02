@@ -71,7 +71,7 @@ setMethod("show", "ACtree",
 ###   > pdict@actree[] # look at all the nodes
 ###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks0 # no failure link is set yet
-###   > endIndex <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
+###   > end_index <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
 ###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
 ###   > flinks1 # some failure links have been set
 ### As you can see the 'pdict' object "learns" from being used!
@@ -355,17 +355,17 @@ setMethod("nviewIndex", "ViewsIndex",
     function(x, all.names=FALSE)
     {
         if (!is.null(names(x))) {
-            endIndex <- endIndex(x, all.names=all.names)
-            if (length(endIndex) == 0)
+            end_index <- endIndex(x, all.names=all.names)
+            if (length(end_index) == 0)
                 return(integer(0))
-            return(sapply(endIndex, length))
+            return(sapply(end_index, length))
         }
         if (!missing(all.names))
             warning("'all.names' is ignored when patterns have no names")
-        endIndex <- endIndex(x)
-        if (length(endIndex) == 0)
+        end_index <- endIndex(x)
+        if (length(end_index) == 0)
             return(integer(0))
-        sapply(endIndex, length)
+        sapply(end_index, length)
     }
 )
 
@@ -601,19 +601,19 @@ setMethod("endIndex", "ByName_ViewsIndex",
 setMethod("unlist", "ViewsIndex",
     function(x, recursive=TRUE, use.names=TRUE)
     {
-        startIndex <- startIndex(x)
-        if (length(startIndex) == 0)
+        start_index <- startIndex(x)
+        if (length(start_index) == 0)
             start <- integer(0)
         else
-            start <- unlist(startIndex, recursive=FALSE, use.names=FALSE)
-        endIndex <- endIndex(x)
-        if (length(endIndex) == 0)
+            start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
+        end_index <- endIndex(x)
+        if (length(end_index) == 0)
             end <- integer(0)
         else
-            end <- unlist(endIndex, recursive=FALSE, use.names=FALSE)
-        desc <- names(endIndex)
+            end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
+        desc <- names(end_index)
         if (!is.null(desc))
-            desc <- rep.int(desc, times=sapply(endIndex, length))
+            desc <- rep.int(desc, times=sapply(end_index, length))
         new("Views", start=start, end=end, desc=desc, check.data=FALSE)
     }
 )
@@ -651,21 +651,21 @@ extractAllMatches <- function(subject, vindex)
 ###   [1] 25
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
-###   > system.time(endIndex <- endIndex(matchPDict(pdict, chr1)))
+###   > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
-###   > nmatches <- sapply(endIndex, length)
+###   > nmatches <- sapply(end_index, length)
 ###   > table(nmatches)
 ###   > id0 <- which(nmatches == max(nmatches))
 ###   > p0 <- DNAString(dict[id0])
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subBString(chr1, endIndex[[id0]][1]-24, endIndex[[id0]][1]) == p0
+###   > subBString(chr1, end_index[[id0]][1]-24, end_index[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
-###   > pidOK <- sapply(seq_len(length(endIndex)),
-###                     function(pid) identical(endIndex[[pid]],
+###   > pidOK <- sapply(seq_len(length(end_index)),
+###                     function(pid) identical(end_index[[pid]],
 ###                                             end(matchPattern(DNAString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
@@ -724,10 +724,10 @@ extractAllMatches <- function(subject, vindex)
 ### 3. Using pdict on Human chr1:
 ###      > library(BSgenome.Hsapiens.UCSC.hg18)
 ###      > chr1 <- DNAString(Hsapiens$chr1)
-###      > system.time(endIndex <- endIndex(matchPDict(pdict, chr1)))
+###      > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
-###      > nmatches <- sapply(endIndex, length)
+###      > nmatches <- sapply(end_index, length)
 ###      > sum(nmatches) # most likely no match were found
 ###
 ### Results obtained with some random dictionaries on george1:

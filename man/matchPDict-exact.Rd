@@ -85,9 +85,6 @@
   matchPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   countPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
 
-  ## Manipulation of the PDict object passed to matchPDict()
-  names(x)
-
   ## Manipulation of the ViewsIndex object returned by matchPDict()
   startIndex(x, all.names=FALSE)
   endIndex(x, all.names=FALSE)
@@ -176,11 +173,11 @@
   vindex <- matchPDict(pdict, chr3R)  # Search...
 
   ## Looking at the matches
-  startIndex <- startIndex(vindex)    # Get the starts of the matches
-  length(startIndex)                  # Same as the input dictionary.
-  startIndex[[8220]]                  # Starts of the 8220th pattern.
-  endIndex <- endIndex(vindex)        # Get the ends of the matches.
-  endIndex[[8220]]                    # Ends of the 8220th pattern.
+  start_index <- startIndex(vindex)   # Get the start index.
+  length(start_index)                 # Same as the input dictionary.
+  start_index[[8220]]                 # Starts of the 8220th pattern.
+  end_index <- endIndex(vindex)       # Get the end index.
+  end_index[[8220]]                   # Ends of the 8220th pattern.
   nmatch <- nviewIndex(vindex)        # Get the number of matches per pattern.
   nmatch[[8220]]
   vindex[[8220]]                      # Get the matches for the 8220th pattern.
@@ -190,7 +187,7 @@
   i0 <- which(nmatch == max(nmatch))
   dict0[i0]                           # The pattern with most occurences.
   vindex[[i0]]                        # Its matches as a Views object.
-  views(chr3R, startIndex[[i0]], endIndex[[i0]]) # And as a BStringViews object.
+  views(chr3R, start_index[[i0]], end_index[[i0]]) # And as a BStringViews object.
 
   ## -------------------------------------------------------------------------
   ## B. WITH NAMED PATTERNS
@@ -206,11 +203,11 @@
 
   ## Looking at the matches
   names(vindex)                       # Same as names(dict1).
-  startIndex <- startIndex(vindex)
-  startIndex
-  length(startIndex)                  # NOT the same as the input dictionary.
-  startIndex <- startIndex(vindex, all.names=TRUE)
-  length(startIndex)                  # Same as the input dictionary.
+  start_index <- startIndex(vindex)
+  start_index
+  length(start_index)                 # NOT the same as the input dictionary.
+  start_index <- startIndex(vindex, all.names=TRUE)
+  length(start_index)                 # Same as the input dictionary.
   nviewIndex(vindex)
   unlist(vindex)
   nview(unlist(vindex))               # Total number of matches.
