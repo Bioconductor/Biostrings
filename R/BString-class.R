@@ -97,7 +97,7 @@ BString.write <- function(x, i, imax=integer(0), value)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor-like functions and generics
 
-BString.init_with_XRaw <- function(.Object, src)
+.BString.init_with_XRaw <- function(.Object, src)
 {
     .Object@data <- src
     .Object@offset <- as.integer(0)
@@ -105,37 +105,37 @@ BString.init_with_XRaw <- function(.Object, src)
     .Object
 }
 
-BString.init_with_character <- function(.Object, src, lkup=NULL, verbose=FALSE)
+.BString.init_with_character <- function(.Object, src, lkup, verbose)
 {
     if (length(src) == 0)
         stop("sorry, don't know what to do when 'src' is a character vector of length 0")
     if (length(src) >= 2)
         stop("see ?BStringList when 'src' is a character vector of length >= 2")
     length <- nchar(src, type="bytes")
-    data <- XRaw(length, verbose)
+    data <- XRaw(length, verbose=verbose)
     XRaw.write(data, 1, length, value=src, enc=lkup)
-    BString.init_with_XRaw(.Object, data)
+    .BString.init_with_XRaw(.Object, data)
 }
 
-BString.init_with_BString_copy <- function(.Object, src, lkup=NULL, verbose=FALSE)
+.BString.init_with_BString_copy <- function(.Object, src, lkup, verbose)
 {
     length <- src@length
-    data <- XRaw(length, verbose)
+    data <- XRaw(length, verbose=verbose)
     XRaw.copy(data, src@offset + 1, src@offset + length, src@data, lkup=lkup)
-    BString.init_with_XRaw(.Object, data)
+    .BString.init_with_XRaw(.Object, data)
 }
 
-BString.init_with_BString <- function(.Object, src, copy.data=FALSE, verbose=FALSE)
+.BString.init_with_BString <- function(.Object, src, copy.data, verbose)
 {
     if (copy.data)
-        return(BString.init_with_BString_copy(.Object, src, , verbose))
+        return(.BString.init_with_BString_copy(.Object, src, NULL, verbose))
     .Object@data <- src@data
     .Object@offset <- src@offset
     .Object@length <- src@length
     .Object
 }
 
-BString.get_init_error_msg <- function(.Object, src)
+.BString.get_init_error_msg <- function(.Object, src)
 {
     if (class(src) == "BStringViews") {
         if (class(src@subject) == class(.Object))
@@ -153,37 +153,37 @@ setMethod("initialize", "BString",
     function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
         if (is.character(src))
-            return(BString.init_with_character(.Object, src, , verbose))
+            return(.BString.init_with_character(.Object, src, NULL, verbose))
         if (class(src) == "XRaw")
-            return(BString.init_with_XRaw(.Object, src))
+            return(.BString.init_with_XRaw(.Object, src))
         if (class(src) %in% c("BString", "AAString"))
-            return(BString.init_with_BString(.Object, src, copy.data, verbose))
+            return(.BString.init_with_BString(.Object, src, copy.data, verbose))
         if (class(.Object) == "BString" && class(src) %in% c("DNAString", "RNAString"))
-            return(BString.init_with_BString_copy(.Object, src, dec_lkup(src), verbose))
-        stop(BString.get_init_error_msg(.Object, src))
+            return(.BString.init_with_BString_copy(.Object, src, dec_lkup(src), verbose))
+        stop(.BString.get_init_error_msg(.Object, src))
     }
 )
 
-BString.init_DNAorRNA <- function(.Object, src, copy.data, verbose)
+.BString.init_DNAorRNA <- function(.Object, src, copy.data, verbose)
 {
     lkup <- enc_lkup(.Object) # for source data encoding
     if (is.character(src))
-        return(BString.init_with_character(.Object, src, lkup, verbose))
+        return(.BString.init_with_character(.Object, src, lkup, verbose))
     if (class(src) == "XRaw")
-        return(BString.init_with_XRaw(.Object, src))
+        return(.BString.init_with_XRaw(.Object, src))
     if (class(src) == class(.Object))
-        return(BString.init_with_BString(.Object, src, copy.data, verbose))
+        return(.BString.init_with_BString(.Object, src, copy.data, verbose))
     if (class(src) == "BString")
-        return(BString.init_with_BString_copy(.Object, src, lkup, verbose))
-    BString.get_init_error_msg(.Object, src)
+        return(.BString.init_with_BString_copy(.Object, src, lkup, verbose))
+    .BString.get_init_error_msg(.Object, src)
 }
 
 setMethod("initialize", "DNAString",
     function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
         if (class(src) == "RNAString")
-            return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        .Object <- BString.init_DNAorRNA(.Object, src, copy.data, verbose)
+            return(.BString.init_with_BString(.Object, src, copy.data, verbose))
+        .Object <- .BString.init_DNAorRNA(.Object, src, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -194,8 +194,8 @@ setMethod("initialize", "RNAString",
     function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
         if (class(src) == "DNAString")
-            return(BString.init_with_BString(.Object, src, copy.data, verbose))
-        .Object <- BString.init_DNAorRNA(.Object, src, copy.data, verbose)
+            return(.BString.init_with_BString(.Object, src, copy.data, verbose))
+        .Object <- .BString.init_DNAorRNA(.Object, src, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -205,7 +205,7 @@ setMethod("initialize", "RNAString",
 setMethod("initialize", "AAString",
     function(.Object, src, copy.data=FALSE, verbose=FALSE)
     {
-        callNextMethod(.Object, src, copy.data, verbose)
+        callNextMethod(.Object, src, copy.data=copy.data, verbose=verbose)
     }
 )
 
@@ -346,7 +346,7 @@ BString.comparable <- function(class1, class2)
 }
 
 ### 'x' and 'y' must be BString objects
-BString.equal <- function(x, y)
+.BString.equal <- function(x, y)
 {
     if (x@length != y@length)
         return(FALSE)
@@ -364,7 +364,7 @@ setMethod("==", signature(e1="BString", e2="BString"),
             stop("comparison between a \"", class1, "\" instance ",
                  "and a \"", class2, "\" instance ",
                  "is not supported")
-        BString.equal(e1, e2)
+        .BString.equal(e1, e2)
     }
 )
 setMethod("==", signature(e1="BString", e2="character"),
@@ -379,7 +379,7 @@ setMethod("==", signature(e1="BString", e2="character"),
             stop("comparison between a \"BString\" instance and a character vector ",
                  "of length != 1 or an empty string or an NA ",
                  "is not supported")
-        BString.equal(e1, BString(e2))
+        .BString.equal(e1, BString(e2))
     }
 )
 setMethod("==", signature(e1="character", e2="BString"),
