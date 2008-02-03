@@ -274,19 +274,19 @@ setMethod("initialize", "ULdna_PDict",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "TailedULdna_PDict" class.
+### The "TPdna_PDict" class.
 ###
 
-setClass("TailedULdna_PDict",
+setClass("TPdna_PDict",
     contains="ULdna_PDict",
     representation(
         tail="DNAStringList"
     )
 )
 
-setMethod("tail", "TailedULdna_PDict", function(x, ...) x@tail)
+setMethod("tail", "TPdna_PDict", function(x, ...) x@tail)
 
-setMethod("show", "TailedULdna_PDict",
+setMethod("show", "TPdna_PDict",
     function(object)
     {
         cat(length(object), "-pattern \"PDict\" object (of width ",
@@ -297,7 +297,7 @@ setMethod("show", "TailedULdna_PDict",
     }
 )
 
-setMethod("initialize", "TailedULdna_PDict",
+setMethod("initialize", "TPdna_PDict",
     function(.Object, dict, width)
     {
         if (is.null(width))
@@ -749,18 +749,18 @@ extractAllMatches <- function(subject, vindex)
 
 ### Example:
 ###
-###   pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), 2)
+###   pdict <- new("TPdna_PDict", c("acgt", "gt", "cgt", "ac"), 2)
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
 ###
-### At the moment, preprocessing a big TailedULdna_PDict object is very slow:
+### At the moment, preprocessing a big TPdna_PDict object is very slow:
 ###   > library(drosophila2probe)
 ###   > dict0 <- drosophila2probe$sequence 
 ###   > system.time(pdict0 <- new("ULdna_PDict", dict0[1:40000]))
 ###      user  system elapsed
 ###     0.040   0.032   0.072
-###   > system.time(pdict <- new("TailedULdna_PDict", dict0[1:40000], 10))
+###   > system.time(pdict <- new("TPdna_PDict", dict0[1:40000], 10))
 ###      user  system elapsed
 ###    38.158   0.052  38.217
 ###
@@ -791,7 +791,7 @@ extractAllMatches <- function(subject, vindex)
 ###   [[2]]
 ###   integer(0)
 
-.match.TailedULdna_PDict <- function(pdict, subject, max.mismatch, count.only)
+.match.TPdna_PDict <- function(pdict, subject, max.mismatch, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     names <- names(pdict)
@@ -845,10 +845,10 @@ extractAllMatches <- function(subject, vindex)
     max.mismatch <- .normalize.max.mismatch(max.mismatch)
     if (!identical(fixed, TRUE))
         stop("'fixed' can only be 'TRUE' for now")
-    if (is(pdict, "TailedULdna_PDict"))
-        return(.match.TailedULdna_PDict(pdict, subject, max.mismatch, count.only))
+    if (is(pdict, "TPdna_PDict"))
+        return(.match.TPdna_PDict(pdict, subject, max.mismatch, count.only))
     if (max.mismatch != 0)
-        stop("only TailedULdna_PDict dictionaries support a non-zero 'max.mismatch'")
+        stop("only TPdna_PDict dictionaries support a non-zero 'max.mismatch'")
     .match.ULdna_PDict.exact(pdict, subject, count.only)
 }
 

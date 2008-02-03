@@ -52,11 +52,11 @@ In 2.7
 
 - matchPDict():
 
-  o "initialize" method for TailedULdna_PDict objects is having a hard time
+  o "initialize" method for TPdna_PDict objects is having a hard time
     extracting the tail of a big dictionary (> 50000 patterns). Fix this.
 
   o startIndex() is broken on the ViewsIndex object returned by a call to
-    matchPDict() on a TailedULdna_PDict object.
+    matchPDict() on a TPdna_PDict object.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
     'match_count' in match_ULdna.c, store directly in the returned

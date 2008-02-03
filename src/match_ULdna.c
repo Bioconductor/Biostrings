@@ -507,8 +507,8 @@ static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char 
 
 
 /****************************************************************************
- * Inexact matching on the tails of the TailedULdna_PDict object
- * =============================================================
+ * Inexact matching on the tails of the TPdna_PDict object
+ * =======================================================
  */
 
 static int inexact_match(const char *P, int nP, const char *S, int nS, int max_mm)

@@ -3,13 +3,13 @@
 \alias{matchPDict-inexact}
 
 % Classes
-\alias{class:TailedULdna_PDict}
-\alias{TailedULdna_PDict-class}
+\alias{class:TPdna_PDict}
+\alias{TPdna_PDict-class}
 
 % Generics and methods:
-\alias{initialize,TailedULdna_PDict-method}
-\alias{tail,TailedULdna_PDict-method}
-\alias{show,TailedULdna_PDict-method}
+\alias{initialize,TPdna_PDict-method}
+\alias{tail,TPdna_PDict-method}
+\alias{show,TPdna_PDict-method}
 
 
 \title{Inexact matching with matchPDict()}
@@ -48,10 +48,10 @@
   ## WARNING! THIS IS STILL WORK IN PROGRESS!!!
   ## A known issue is that the "startIndex", "[[" and "unlist" methods are
   ## BROKEN on the ViewsIndex object returned by matchPDict() called on a
-  ## TailedULdna_PDict object!
+  ## TPdna_PDict object!
 
   ## Use the 'width' argument to specify the length of the "trusted prefix"
-  pdict <- new("TailedULdna_PDict", c("acgt", "gt", "cgt", "ac"), width=2)
+  pdict <- new("TPdna_PDict", c("acgt", "gt", "cgt", "ac"), width=2)
   pdict
   tail(pdict) 
   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
