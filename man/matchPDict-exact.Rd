@@ -144,6 +144,7 @@
 
 \seealso{
   \link{matchPDict-inexact},
+  \code{\link{isMatching}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
   \link{BStringViews-class},

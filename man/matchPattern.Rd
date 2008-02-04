@@ -8,8 +8,6 @@
 \alias{countPattern,character-method}
 \alias{countPattern,BString-method}
 \alias{countPattern,BStringViews-method}
-\alias{mismatch}
-\alias{mismatch,BStringViews-method}
 
 \alias{matchDNAPattern}
 
@@ -23,7 +21,6 @@
 \usage{
   matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   countPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-  mismatch(pattern, x, fixed=TRUE)
 }
 
 \arguments{
@@ -90,13 +87,14 @@
   A \link{BStringViews} object for \code{matchPattern}.
 
   A single integer for \code{countPattern}.
-
-  A list of integer vectors for \code{mismatch}.
 }
 
 \seealso{
+  \code{\link{isMatching}},
+  \code{\link{mismatch}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
+  \code{\link{matchPDict}},
   \code{\link{mask}},
   \code{\link{alphabetFrequency}},
   \code{\link{IUPAC_CODE_MAP}},

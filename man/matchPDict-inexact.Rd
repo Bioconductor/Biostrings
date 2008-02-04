@@ -26,15 +26,18 @@
   in the subject, followed by
   (2) comparison of each tail with the short substrings in the subject
   located next to the positions found in (1).
-  Performance will mostly depend on the number of positions found in (1)
-  so it's important to keep the length of the "trusted prefix" as large
-  as possible in order to minimize this number.
+  Because performance will mostly depend on the number of positions found in
+  (1) it's important to minimize this number by keeping the length of the
+  "trusted prefix" as large as possible.
   A simple empiric rule is: if W is the length of the "trusted prefix"
   and L the length of the subject, then L / (4**W) should be as small as
   possible, typically < 10 or 20.
 
-  Note that, when used for inexact matching, \code{matchPDict} supports
-  dictionaries with patterns of variable length.
+  Note that, when \code{matchPDict} is used for inexact matching,
+  dictionaries with patterns of variable length are accepted.
+  In addition, when \code{fixed=FALSE}, then IUPAC extended letters placed
+  in the tail of the dictionary are interpreted as ambiguities.
+
   However, like in exact matching mode, it only works with a dictionary
   of DNA patterns.
 }
