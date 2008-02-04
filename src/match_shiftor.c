@@ -18,7 +18,7 @@
        http://www.tgries.de/agrep
 
  Note that in Biostrings 1 (1.4.0) the "shift-or" algo was almost always
- returning wrong results for 'mismatch' != 0 ("inexact searching").
+ returning wrong results for 'max_mismatch' != 0 ("inexact searching").
  The bug was in the C function ShiftOr_matchInternal() which was using
  the following formula for computing the "pattern bitmasks":
  
@@ -291,7 +291,7 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
  *   's_xp': subject@data@xp
  *   's_offset': subject@offset
  *   's_length': subject@length
- *   'mismatch': the number of mismatches (integer vector of length 1)
+ *   'max_mismatch': the number of mismatches (integer vector of length 1)
  *   'fixed': logical vector of length 2
  *   'count_only': single logical
  * Return an integer vector containing the relative pos of the matches.
@@ -299,7 +299,7 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
  */
 SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		SEXP s_xp, SEXP s_offset, SEXP s_length,
-		SEXP mismatch, SEXP fixed, SEXP count_only)
+		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    kerr, fixedP, fixedS, is_count_only;
@@ -314,7 +314,7 @@ SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	subj_length = INTEGER(s_length)[0];
 	subj_offset = INTEGER(s_offset)[0];
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
-	kerr = INTEGER(mismatch)[0];
+	kerr = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (fixedP != fixedS)

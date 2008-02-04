@@ -3,6 +3,8 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added the isMatching() function.
+
 o Added support in matchPDict() for inexact matching of a dictionary with
   "trusted prefixes". See ?`matchPDict-inexact` for the details.
 

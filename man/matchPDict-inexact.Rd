@@ -26,11 +26,12 @@
   in the subject, followed by
   (2) comparison of each tail with the short substrings in the subject
   located next to the positions found in (1).
-  So it's important to keep the length of the "trusted prefix" as large
-  as possible in order to minimize the number of positions found in (1)
-  in order to get reasonable performance. A simple empiric rule is: if W
-  is the length of the "trusted prefix" and L the length of the subject,
-  then L / (4**W) should be as small as possible, typically < 10 or 20.
+  Performance will mostly depend on the number of positions found in (1)
+  so it's important to keep the length of the "trusted prefix" as large
+  as possible in order to minimize this number.
+  A simple empiric rule is: if W is the length of the "trusted prefix"
+  and L the length of the subject, then L / (4**W) should be as small as
+  possible, typically < 10 or 20.
 
   Note that, when used for inexact matching, \code{matchPDict} supports
   dictionaries with patterns of variable length.
@@ -51,17 +52,20 @@
   ## TPdna_PDict object!
 
   ## Use the 'width' argument to specify the length of the "trusted prefix"
-  pdict <- new("TPdna_PDict", c("acgt", "gt", "cgt", "ac"), width=2)
+  pdict <- new("TPdna_PDict", c("ACNG", "GT", "CGT", "AC"), width=2)
   pdict
   tail(pdict) 
-  endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
-  endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
-  vindex <- matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2)
+  endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=0))
+  endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=1))
+  vindex <- matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=2)
   endIndex(vindex)
 
   startIndex(vindex)   # CURRENTLY BROKEN!
   vindex[[1]]          # CURRENTLY BROKEN!
   unlist(vindex)       # CURRENTLY BROKEN!
+
+  ## Ambiguities (IUPAC extended letters) are supported in the tail only:
+  endIndex(matchPDict(pdict, DNAString("ACGGACCG"), fixed=FALSE))
 }
 
 \keyword{methods}

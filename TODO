@@ -24,6 +24,11 @@ In 2.[6|7]
   match should not. An alternative is to raise an error (or a warning) when
   mismatch >= nchar(pattern).
 
+- Fix this:
+    > isMatching("b", "abcdb", start=c(1:5, NA))
+    [1] FALSE  TRUE FALSE FALSE  TRUE FALSE
+  Last element in returned vector should be NA.
+
 
 In 2.7
 ======
@@ -59,7 +64,7 @@ In 2.7
     matchPDict() on a TPdna_PDict object.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
-    'match_count' in match_ULdna.c, store directly in the returned
+    'match_count' in match_TPdna.c, store directly in the returned
     INTEGER vector.
     
   o Fix this bug:

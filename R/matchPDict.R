@@ -158,7 +158,7 @@ setMethod("show", "ULdna_PDict",
 
 debug_ULdna <- function()
 {
-    invisible(.Call("match_ULdna_debug", PACKAGE="Biostrings"))
+    invisible(.Call("match_TPdna_debug", PACKAGE="Biostrings"))
 }
 
 .check.names <- function(names)
@@ -275,6 +275,9 @@ setMethod("initialize", "ULdna_PDict",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "TPdna_PDict" class.
+###
+### A container for storing a preprocessed "Trusted Prefix" dictionary (or
+### set) of DNA patterns.
 ###
 
 setClass("TPdna_PDict",
@@ -695,11 +698,12 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_TailedULdna",
+    ans <- .Call("match_TPdna",
                  actree@nodes@xp, actree@base_codes,
                  pdict@dups, NULL,
                  subject,
-                 0L, count.only, envir,
+                 0L, c(TRUE, TRUE),
+                 count.only, envir,
                  PACKAGE="Biostrings")
     if (count.only)
         return(ans)
@@ -791,7 +795,7 @@ extractAllMatches <- function(subject, vindex)
 ###   [[2]]
 ###   integer(0)
 
-.match.TPdna_PDict <- function(pdict, subject, max.mismatch, count.only)
+.match.TPdna_PDict <- function(pdict, subject, max.mismatch, fixed, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     names <- names(pdict)
@@ -799,11 +803,12 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_TailedULdna",
+    ans <- .Call("match_TPdna",
                  actree@nodes@xp, actree@base_codes,
                  pdict@dups, pdict@tail@bstrings,
                  subject,
-                 max.mismatch, count.only, envir,
+                 max.mismatch, fixed,
+                 count.only, envir,
                  PACKAGE="Biostrings")
     if (count.only)
         return(ans)
@@ -824,16 +829,6 @@ extractAllMatches <- function(subject, vindex)
 ### .matchPDict()
 ###
 
-.normalize.max.mismatch <- function(max.mismatch)
-{
-    if (!isSingleNumber(max.mismatch))
-        stop("'max.mismatch' must be a single integer")
-    max.mismatch <- as.integer(max.mismatch)
-    if (max.mismatch < 0)
-        stop("'max.mismatch' must be a non-negative integer")
-    max.mismatch
-}
-
 .matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed, count.only=FALSE)
 {
     if (!is(pdict, "ULdna_PDict"))
@@ -842,13 +837,12 @@ extractAllMatches <- function(subject, vindex)
         stop("'subject' can only be a DNAString object for now")
     if (!identical(algorithm, "auto"))
         stop("'algo' can only be '\"auto\"' for now")
-    max.mismatch <- .normalize.max.mismatch(max.mismatch)
-    if (!identical(fixed, TRUE))
-        stop("'fixed' can only be 'TRUE' for now")
+    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    fixed <- normalize.fixed(fixed, class(subject))
     if (is(pdict, "TPdna_PDict"))
-        return(.match.TPdna_PDict(pdict, subject, max.mismatch, count.only))
-    if (max.mismatch != 0)
-        stop("only TPdna_PDict dictionaries support a non-zero 'max.mismatch'")
+        return(.match.TPdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
+    if (max.mismatch != 0 || !all(fixed))
+        stop("only TPdna_PDict dictionaries support inexact matching")
     .match.ULdna_PDict.exact(pdict, subject, count.only)
 }
 

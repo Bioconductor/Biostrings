@@ -3,19 +3,6 @@
 ### -------------------------------------------------------------------------
 
 
-.normalize.max.mismatch <- function(max.mismatch)
-{
-    if (!isSingleNumber(max.mismatch))
-        stop("'max.mismatch' must be a single integer")
-    max.mismatch <- as.integer(max.mismatch)
-    if (max.mismatch < 0)
-        stop("'max.mismatch' must be a non-negative integer")
-    if (max.mismatch >= 1)
-        stop("'max.mismatch' >= 1 not yet supported (will be very soon)")
-    max.mismatch
-}
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "findPalindromes" and "findComplementedPalindromes" generics and
 ### methods.
@@ -32,19 +19,19 @@ debug_find_palindromes <- function()
                               max.mismatch, L2R_lkup)
 {
     ## check min.armlength
-    if (!is.numeric(min.armlength) || length(min.armlength) != 1 || is.na(min.armlength))
+    if (!isSingleNumber(min.armlength))
         stop("'min.armlength' must be a single integer")
     min.armlength <- as.integer(min.armlength)
     if (min.armlength < 2)
         stop("'min.armlength' must be >= 2")
     ## check max.looplength
-    if (!is.numeric(max.looplength) || length(max.looplength) != 1 || is.na(max.looplength))
+    if (!isSingleNumber(max.looplength))
         stop("'max.looplength' must be a single integer")
     max.looplength <- as.integer(max.looplength)
     if (max.looplength < 0)
         stop("'max.looplength' must be a non-negative integer")
     ## check min.looplength
-    if (!is.numeric(min.looplength) || length(min.looplength) != 1 || is.na(min.looplength))
+    if (!isSingleNumber(min.looplength))
         stop("'min.looplength' must be a single integer")
     min.looplength <- as.integer(min.looplength)
     if (min.looplength > max.looplength)
@@ -54,7 +41,9 @@ debug_find_palindromes <- function()
     if (min.looplength >= 1)
         stop("'min.looplength' >= 1 not yet supported (will be very soon)")
     ## check max.mismatch
-    max.mismatch <- .normalize.max.mismatch(max.mismatch)
+    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    if (max.mismatch != 0)
+        stop("'max.mismatch' != 0 not yet supported (will be very soon)")
     views <- .Call("find_palindromes",
                    subject@data@xp, subject@offset, subject@length,
                    min.armlength, max.looplength, L2R_lkup,
@@ -146,7 +135,7 @@ setGeneric("complementedPalindromeArmLength", signature="x",
 setMethod("palindromeArmLength", "BString",
     function(x, max.mismatch=0, ...)
     {
-        max.mismatch <- .normalize.max.mismatch(max.mismatch)
+        max.mismatch <- normalize.max.mismatch(max.mismatch)
         revx <- reverse(x)
         armlength <- lcprefix(x, revx)
         if (armlength == 0L)
@@ -157,7 +146,7 @@ setMethod("palindromeArmLength", "BString",
 setMethod("complementedPalindromeArmLength", "DNAString",
     function(x, max.mismatch=0, ...)
     {
-        max.mismatch <- .normalize.max.mismatch(max.mismatch)
+        max.mismatch <- normalize.max.mismatch(max.mismatch)
         revx <- reverseComplement(x)
         armlength <- lcprefix(x, revx)
         if (armlength == 0L)

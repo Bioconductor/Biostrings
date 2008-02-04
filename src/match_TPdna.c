@@ -135,19 +135,19 @@ typedef struct acnode {
 static ACNode *actree_nodes_buf = NULL;
 static int actree_nodes_buf_count;
 
-SEXP match_ULdna_debug()
+SEXP match_TPdna_debug()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_ULdna.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'match_TPdna.c'\n", debug ? "on" : "off");
 	if (debug) {
-		Rprintf("[DEBUG] match_ULdna_debug(): INTS_PER_ACNODE=%d\n",
+		Rprintf("[DEBUG] match_TPdna_debug(): INTS_PER_ACNODE=%d\n",
 			INTS_PER_ACNODE);
-		Rprintf("[DEBUG] match_ULdna_debug(): MAX_ACNODEBUF_LENGTH=%d\n",
+		Rprintf("[DEBUG] match_TPdna_debug(): MAX_ACNODEBUF_LENGTH=%d\n",
 			MAX_ACNODEBUF_LENGTH);
 	}
 #else
-	Rprintf("Debug mode not available in 'match_ULdna.c'\n");
+	Rprintf("Debug mode not available in 'match_TPdna.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -511,41 +511,9 @@ static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char 
  * =======================================================
  */
 
-static int inexact_match(const char *P, int nP, const char *S, int nS, int max_mm)
-{
-	int min_pm, mm, pm, i;
-
-	min_pm = nP - max_mm;
-	if (min_pm <= 0)
-		return 1;
-	if (nP > nS) {
-		max_mm -= nP - nS;
-		if (max_mm < 0)
-			return 0;
-		nP = nS;
-	}
-	mm = pm = 0;
-	/* From here we have:
-	 *   0 = mm <= max_mm < nP <= nS
-	 *   0 = pm < min_pm <= nP <= nS
-         *   min_pm + max_mm = nP
-	 */
-	for (i = 0; i < nP; i++, P++, S++) {
-		if (*P == *S) {
-			if (++pm >= min_pm)
-				return 1;
-		} else {
-			if (++mm > max_mm)
-				return 0;
-		}
-	}
-	error("Biostrings internal error in inexact_match(): we should never be here");
-	return -1;
-}
-
-static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
+static void TPdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
 			int poffset, const int *dups, int dups_len,
-			int max_mm, int is_count_only)
+			int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int dup0, i, end;
 	IBuf *ends_buf, *ends_buf0;
@@ -556,7 +524,7 @@ static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int 
 		ends_buf0 = ends_bbuf.ibufs + dup0 - 1;
 	for (i = 0; i < ends_buf0->count; i++) {
 		end = ends_buf0->vals[i];
-		if (inexact_match(tail, tail_len, S + end, nS - end, max_mm)) {
+		if (_is_matching(tail, tail_len, S, nS, end, max_mm, fixedP, fixedS)) {
 			/* Match */
 			if (is_count_only) {
 				match_count.vals[poffset]++;
@@ -576,7 +544,7 @@ static void ULdna_match_tail(const char *tail, int tail_len, const char *S, int 
 		if (dup0 != 0)
 			continue;
 		/* We need to shrink the buffer we are walking on! This is safe
-		 * because shrinking a IBuf object will never trigger reallocation.
+		 * because shrinking a IBuf object should never trigger reallocation.
 		 */
 		_IBuf_delete_at(ends_buf0, i--);
 	}
@@ -809,7 +777,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 
 
 /****************************************************************************
- * .Call entry point: "match_TailedULdna"
+ * .Call entry point: "match_TPdna"
  *
  * Arguments:
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
@@ -827,20 +795,24 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *
  ****************************************************************************/
 
-SEXP match_TailedULdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
+SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
                 SEXP pdict_dups, SEXP pdict_tail_bstrings,
 		SEXP subject_BString,
-		SEXP max_mismatch, SEXP count_only, SEXP envir)
+		SEXP max_mismatch, SEXP fixed,
+		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
 	const char *S, *tail;
-	int nS, no_tail, is_count_only, tail_len, poffset;
+	int nS, max_mm, fixedP, fixedS, is_count_only, no_tail, tail_len, poffset;
 	SEXP tail_BString;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	S = get_BString_seq(subject_BString, &nS);
-	no_tail = pdict_tail_bstrings == R_NilValue;
+	max_mm = INTEGER(max_mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
+	no_tail = pdict_tail_bstrings == R_NilValue;
 
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
 	ULdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S, nS);
@@ -853,9 +825,9 @@ SEXP match_TailedULdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		for (poffset = LENGTH(pdict_tail_bstrings) - 1; poffset >= 0; poffset--) {
 			tail_BString = VECTOR_ELT(pdict_tail_bstrings, poffset);
 			tail = get_BString_seq(tail_BString, &tail_len);
-			ULdna_match_tail(tail, tail_len, S, nS,
+			TPdna_match_tail(tail, tail_len, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
-				INTEGER(max_mismatch)[0], is_count_only);
+				max_mm, fixedP, fixedS, is_count_only);
 		}
 	}
 	if (is_count_only)

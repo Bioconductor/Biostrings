@@ -554,6 +554,25 @@ SEXP Biostrings_normalize_views(
 
 SEXP match_naive_debug();
 
+int _is_matching(
+		const char *P,
+		int nP,
+		const char *S,
+		int nS,
+		int Pshift,
+		int max_mm,
+		int fixedP,
+		int fixedS
+);
+
+SEXP is_matching(
+		SEXP pattern_BString,
+		SEXP subject_BString,
+		SEXP start,
+		SEXP max_mismatch,
+		SEXP fixed
+);
+
 SEXP match_naive_exact(
 		SEXP pattern_BString,
 		SEXP subject_BString,
@@ -563,7 +582,7 @@ SEXP match_naive_exact(
 SEXP match_naive_inexact(
 		SEXP pattern_BString,
 		SEXP subject_BString,
-		SEXP mismatch,
+		SEXP max_mismatch,
 		SEXP fixed,
 		SEXP count_only
 );
@@ -597,7 +616,7 @@ SEXP match_shiftor(
 		SEXP s_xp,
 		SEXP s_offset,
 		SEXP s_length,
-		SEXP mismatch,
+		SEXP max_mismatch,
 		SEXP fixed,
 		SEXP count_only
 );
@@ -689,9 +708,9 @@ SEXP match_BOC2_exact(
 );
 
 
-/* match_ULdna.c */
+/* match_TPdna.c */
 
-SEXP match_ULdna_debug();
+SEXP match_TPdna_debug();
 
 SEXP ULdna_free_actree_nodes_buf();
 
@@ -714,13 +733,14 @@ SEXP ULdna_pp_views(
 		SEXP width
 );
 
-SEXP match_TailedULdna(
+SEXP match_TPdna(
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
 		SEXP pdict_dups,
 		SEXP pdict_tail_bstrings,
 		SEXP subject_BString,
 		SEXP max_mismatch,
+		SEXP fixed,
 		SEXP count_only,
 		SEXP envir
 );

@@ -32,6 +32,7 @@ Collate: 00datacache.R
         alphabetFrequency.R
         reverseComplement.R
         toComplex.R
+        match-utils.R
         matchPattern.R
         matchPattern.BOC.R
         matchPattern.BOC2.R
