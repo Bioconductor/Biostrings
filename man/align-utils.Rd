@@ -1,10 +1,12 @@
 \name{align-utils}
 
 \alias{consmat}
-\alias{consmat,matrix-method}
 \alias{consmat,character-method}
+\alias{consmat,matrix-method}
 \alias{consmat,list-method}
 \alias{consmat,BStringViews-method}
+\alias{consmat,BStringAlign-method}
+
 
 \title{Utility functions related to sequence alignment}
 
