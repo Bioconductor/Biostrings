@@ -62,7 +62,7 @@
 }
 
 \value{
-  An logical vector of the same length as \code{start} for \code{isMatching}.
+  A logical vector of the same length as \code{start} for \code{isMatching}.
 
   A list of integer vectors for \code{mismatch}.
 }
