@@ -10,7 +10,14 @@
 \title{Utility functions related to pattern matching}
 
 \description{
-  Some Utility functions related to pattern matching.
+  This man page gives some background information about the concept of "match"
+  ("exact match" or "inexact match") as understood by the various pattern matching
+  functions available in Biostrings.
+
+  The \code{isMatching} function implements this concept.
+
+  Some other utility functions related to pattern matching might be added here
+  in the future.
 }
 
 \usage{
@@ -29,12 +36,11 @@
     Integer vector specifying where to place the pattern relatively to the subject.
   }
   \item{max.mismatch}{
-    The maximum number of mismatches allowed. If non-zero, an inexact matching
-    algorithm is used.
-    Note that \code{matchPattern} (and \code{countPattern}) don't support the
-    kind of inexact matching where a given number of insertions or deletions
-    are allowed. Hence the matches found have always the same length (called
-    the "width" in this particular context) as the pattern.
+    The maximum number of mismatching letters allowed.
+    Note that \code{isMatching} doesn't support the kind of inexact matching
+    where a given number of insertions or deletions are allowed.
+    Therefore all the "matches" (i.e. the substrings in the subject that match
+    the pattern) have the length of the pattern.
   }
   \item{fixed}{
     Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
@@ -76,11 +82,21 @@
 }
 
 \examples{
-  isMatching("GC", "GCTGT")
-  isMatching("GC", "GCTGT", start=4)
-  isMatching("GC", "GCTGT", start=4, max.mismatch=1)
-  isMatching("GN", "GCTGT", start=1:4, fixed=TRUE)
-  isMatching("GN", "GCTGT", start=0, max.mismatch=1, fixed=TRUE)
+  subject <- DNAString("GTATA")
+  ## Pattern "AT" matches subject "GTATA" at position 3
+  isMatching("AT", subject, start=3)
+  ## No match at position 1
+  isMatching("AT", subject)
+  ## Match at position 1 if we allow 1 mismatching letter
+  isMatching("AT", subject, max.mismatch=1)
+  ## 3 matches in total if we allow 1 mismatching letter
+  isMatching("AT", subject, start=0:5, max.mismatch=1)
+  ## No match
+  isMatching("NT", subject, start=1:4)
+  ## 2 matches if N is interpreted as an ambiguity (fixed=FALSE)
+  isMatching("NT", subject, start=1:4, fixed=FALSE)
+  ## max.mismatch != 0 and fixed=FALSE can be used together
+  isMatching("NGA", subject, start=0:5, max.mismatch=1, fixed=FALSE)
 }
 
 \keyword{methods}

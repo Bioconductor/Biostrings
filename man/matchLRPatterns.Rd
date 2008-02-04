@@ -31,7 +31,8 @@
     containing the target sequence.
   }
   \item{max.Lmismatch}{
-    The maximum number of mismatches allowed for the left part of the pattern.
+    The maximum number of mismatching letters allowed in the left part of the
+    pattern.
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).
   }

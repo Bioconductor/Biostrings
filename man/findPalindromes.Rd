@@ -79,8 +79,8 @@
     (or complemented palindromes) to search for.
   }
   \item{max.mismatch}{
-    An integer giving the maximum number of mismatches allowed between the
-    2 arms of the palindromes (or complemented palindromes) to search for.
+    The maximum number of mismatching letters allowed between the 2 arms of
+    the palindromes (or complemented palindromes) to search for.
   }
   \item{x}{
     A \link{BString} (or derived) object containing a 2-arm palindrome

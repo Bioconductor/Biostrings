@@ -105,10 +105,18 @@
     Not supported yet.
   }
   \item{max.mismatch}{
-    Not supported yet.
+    The maximum number of mismatching letters allowed (see
+    \code{\link{isMatching}} for the details).
+    When used on a "uniform-length dictionary", \code{matchPDict} (and
+    \code{countPDict}) only support exact matching so \code{max.mismatch}
+    must be zero. See \link{matchPDict-inexact} for inexact matching.
   }
   \item{fixed}{
-    Not supported yet.
+    If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
+    (see \code{\link{isMatching}} for the details).
+    When used on a "uniform-length dictionary", \code{matchPDict} (and
+    \code{countPDict}) only support exact matching so \code{fixed}
+    must be \code{TRUE}. See \link{matchPDict-inexact} for inexact matching.
   }
   \item{x}{
     A PDict or ViewsIndex object for \code{names}.

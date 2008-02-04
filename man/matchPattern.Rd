@@ -36,31 +36,13 @@
     \code{"naive-inexact"}, \code{"boyer-moore"} or \code{"shift-or"}.
   }
   \item{max.mismatch}{
-    The maximum number of mismatches allowed. If non-zero, an inexact matching
-    algorithm is used.
-    Note that \code{matchPattern} (and \code{countPattern}) don't support the
-    kind of inexact matching where a given number of insertions or deletions
-    are allowed. Hence the matches found have always the same length (called
-    the "width" in this particular context) as the pattern.
+    The maximum number of mismatching letters allowed (see
+    \code{\link{isMatching}} for the details).
+    If non-zero, an inexact matching algorithm is used.
   }
   \item{fixed}{
-    Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
-    value other than the default (\code{TRUE}) be used.
-
-    With \code{fixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
-    Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
-    base alphabet) in the pattern \_and\_ in the subject are interpreted as
-    wildcards i.e. they match any letter that they stand for.
-
-    \code{fixed} can also be a character vector, a subset
-    of \code{c("pattern", "subject")}.
-    \code{fixed=c("pattern", "subject")} is equivalent to \code{fixed=TRUE}
-    (the default).
-    An empty vector is equivalent to \code{fixed=FALSE}.
-    With \code{fixed="subject"}, ambiguities in the pattern only
-    are interpreted as wildcards.
-    With \code{fixed="pattern"}, ambiguities in the subject only
-    are interpreted as wildcards.
+    If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
+    (see \code{\link{isMatching}} for the details).
   }
   \item{x}{
     A \link{BStringViews} object (typically, one returned
@@ -92,12 +74,11 @@
 \seealso{
   \code{\link{isMatching}},
   \code{\link{mismatch}},
+  \code{\link{matchPDict}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
-  \code{\link{matchPDict}},
   \code{\link{mask}},
   \code{\link{alphabetFrequency}},
-  \code{\link{IUPAC_CODE_MAP}},
   \link{BStringViews-class},
   \link{DNAString-class}
 }
