@@ -129,23 +129,23 @@ BString.write <- function(x, i, imax=integer(0), value)
     nchar
 }
 
-.BString.init_with_XRaw <- function(.Object, src, start, nchar, check.limits)
+.BString.init_with_XRaw <- function(.Object, src, start, nchar, check)
 {
-    if (check.limits)
+    if (check)
         nchar <- .normalize.nchar(start, nchar, length(src))
-    .Object@data <- src
-    .Object@offset <- start - 1L
-    .Object@length <- nchar
+    slot(.Object, "data", check=check) <- src
+    slot(.Object, "offset", check=check) <- start - 1L
+    slot(.Object, "length", check=check) <- nchar
     .Object
 }
 
-.BString.init_with_character <- function(.Object, src, start, nchar, check.limits, lkup, verbose)
+.BString.init_with_character <- function(.Object, src, start, nchar, check, lkup, verbose)
 {
     if (length(src) == 0)
         stop("sorry, don't know what to do when 'src' is a character vector of length 0")
     if (length(src) >= 2)
         stop("see ?BStringList when 'src' is a character vector of length >= 2")
-    if (check.limits)
+    if (check)
         nchar <- .normalize.nchar(start, nchar, nchar(src, type="bytes"))
     src <- substr(src, start, start + nchar - 1L)
     data <- XRaw(nchar, verbose=verbose)
@@ -153,20 +153,20 @@ BString.write <- function(x, i, imax=integer(0), value)
     .BString.init_with_XRaw(.Object, data, 1L, nchar, FALSE)
 }
 
-.BString.init_with_BString_copy <- function(.Object, src, start, nchar, check.limits, lkup, verbose)
+.BString.init_with_BString_copy <- function(.Object, src, start, nchar, check, lkup, verbose)
 {
-    if (check.limits)
+    if (check)
         nchar <- .normalize.nchar(start, nchar, src@length)
     data <- XRaw(nchar, verbose=verbose)
     XRaw.copy(data, src@offset + start, src@offset + start + nchar - 1L, src@data, lkup=lkup)
     .BString.init_with_XRaw(.Object, data, 1L, nchar, FALSE)
 }
 
-.BString.init_with_BString <- function(.Object, src, start, nchar, check.limits, copy.data, verbose)
+.BString.init_with_BString <- function(.Object, src, start, nchar, check, copy.data, verbose)
 {
     if (copy.data)
-        return(.BString.init_with_BString_copy(.Object, src, start, nchar, check.limits, NULL, verbose))
-    if (check.limits)
+        return(.BString.init_with_BString_copy(.Object, src, start, nchar, check, NULL, verbose))
+    if (check)
         nchar <- .normalize.nchar(start, nchar, src@length)
     .BString.init_with_XRaw(.Object, src@data, src@offset + start, nchar, FALSE)
 }
@@ -186,44 +186,44 @@ BString.write <- function(x, i, imax=integer(0), value)
 ### Because the 'initialize' method for AAString instances is using 'callNextMethod'
 ### then '.Object' here can be of class "BString" or "AAString".
 setMethod("initialize", "BString",
-    function(.Object, src, start=1, nchar=NA, check.limits=TRUE, copy.data=FALSE, verbose=FALSE)
+    function(.Object, src, start=1, nchar=NA, check=TRUE, copy.data=FALSE, verbose=FALSE)
     {
-        if (check.limits)
+        if (check)
             start <- .normalize.start(start)
         if (is.character(src))
-            return(.BString.init_with_character(.Object, src, start, nchar, check.limits, NULL, verbose))
+            return(.BString.init_with_character(.Object, src, start, nchar, check, NULL, verbose))
         if (class(src) == "XRaw")
-            return(.BString.init_with_XRaw(.Object, src, start, nchar, check.limits))
+            return(.BString.init_with_XRaw(.Object, src, start, nchar, check))
         if (class(src) %in% c("BString", "AAString"))
-            return(.BString.init_with_BString(.Object, src, start, nchar, check.limits, copy.data, verbose))
+            return(.BString.init_with_BString(.Object, src, start, nchar, check, copy.data, verbose))
         if (class(.Object) == "BString" && class(src) %in% c("DNAString", "RNAString"))
-            return(.BString.init_with_BString_copy(.Object, src, start, nchar, check.limits, dec_lkup(src), verbose))
+            return(.BString.init_with_BString_copy(.Object, src, start, nchar, check, dec_lkup(src), verbose))
         stop(.BString.get_init_error_msg(.Object, src))
     }
 )
 
-.BString.init_DNAorRNA <- function(.Object, src, start, nchar, check.limits, copy.data, verbose)
+.BString.init_DNAorRNA <- function(.Object, src, start, nchar, check, copy.data, verbose)
 {
     lkup <- enc_lkup(.Object) # for source data encoding
     if (is.character(src))
-        return(.BString.init_with_character(.Object, src, start, nchar, check.limits, lkup, verbose))
+        return(.BString.init_with_character(.Object, src, start, nchar, check, lkup, verbose))
     if (class(src) == "XRaw")
-        return(.BString.init_with_XRaw(.Object, src, start, nchar, check.limits))
+        return(.BString.init_with_XRaw(.Object, src, start, nchar, check))
     if (class(src) == class(.Object))
-        return(.BString.init_with_BString(.Object, src, start, nchar, check.limits, copy.data, verbose))
+        return(.BString.init_with_BString(.Object, src, start, nchar, check, copy.data, verbose))
     if (class(src) == "BString")
-        return(.BString.init_with_BString_copy(.Object, src, start, nchar, check.limits, lkup, verbose))
+        return(.BString.init_with_BString_copy(.Object, src, start, nchar, check, lkup, verbose))
     .BString.get_init_error_msg(.Object, src)
 }
 
 setMethod("initialize", "DNAString",
-    function(.Object, src, start=1, nchar=NA, check.limits=TRUE, copy.data=FALSE, verbose=FALSE)
+    function(.Object, src, start=1, nchar=NA, check=TRUE, copy.data=FALSE, verbose=FALSE)
     {
-        if (check.limits)
+        if (check)
             start <- .normalize.start(start)
         if (class(src) == "RNAString")
-            return(.BString.init_with_BString(.Object, src, start, nchar, check.limits, copy.data, verbose))
-        .Object <- .BString.init_DNAorRNA(.Object, src, start, nchar, check.limits, copy.data, verbose)
+            return(.BString.init_with_BString(.Object, src, start, nchar, check, copy.data, verbose))
+        .Object <- .BString.init_DNAorRNA(.Object, src, start, nchar, check, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -231,13 +231,13 @@ setMethod("initialize", "DNAString",
 )
 
 setMethod("initialize", "RNAString",
-    function(.Object, src, start=1, nchar=NA, check.limits=TRUE, copy.data=FALSE, verbose=FALSE)
+    function(.Object, src, start=1, nchar=NA, check=TRUE, copy.data=FALSE, verbose=FALSE)
     {
-        if (check.limits)
+        if (check)
             start <- .normalize.start(start)
         if (class(src) == "DNAString")
-            return(.BString.init_with_BString(.Object, src, start, nchar, check.limits, copy.data, verbose))
-        .Object <- .BString.init_DNAorRNA(.Object, src, start, nchar, check.limits, copy.data, verbose)
+            return(.BString.init_with_BString(.Object, src, start, nchar, check, copy.data, verbose))
+        .Object <- .BString.init_DNAorRNA(.Object, src, start, nchar, check, copy.data, verbose)
         if (is.character(.Object))
             stop(.Object)
         .Object
@@ -245,10 +245,10 @@ setMethod("initialize", "RNAString",
 )
 
 setMethod("initialize", "AAString",
-    function(.Object, src, start=1, nchar=NA, check.limits=TRUE, copy.data=FALSE, verbose=FALSE)
+    function(.Object, src, start=1, nchar=NA, check=TRUE, copy.data=FALSE, verbose=FALSE)
     {
         callNextMethod(.Object, src, start=start, nchar=nchar,
-                       check.limits=check.limits, copy.data=copy.data, verbose=verbose)
+                       check=check, copy.data=copy.data, verbose=verbose)
     }
 )
 
@@ -459,8 +459,9 @@ setMethod("nchar", "BString", function(x, type="chars", allowNA=FALSE) x@length)
 ### function.
 BString.substr <- function(x, start, end)
 {
-    x@offset <- x@offset + start - 1L
-    x@length <- end - start + 1L
+    shift <- start - 1L
+    slot(x, "offset", check=FALSE) <- x@offset + start - 1L
+    slot(x, "length", check=FALSE) <- end - shift
     x
 }
 
