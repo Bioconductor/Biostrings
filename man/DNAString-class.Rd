@@ -56,7 +56,8 @@
   \describe{
     \item{}{
       \code{DNAString(src)}:
-      Tries to convert \code{src} into a \code{DNAString} object.
+      Tries to convert \code{src} into a \code{DNAString} object by reading
+      \code{nchar} letters starting at position \code{start} in \code{src}.
       \code{src} can be a single string (character vector of length 1),
       a \link{BString} object or an \link{RNAString} object.
     }

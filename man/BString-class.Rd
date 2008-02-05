@@ -64,8 +64,9 @@
 
   \describe{
     \item{}{
-      \code{BString(src)}:
-      Tries to convert \code{src} into a \code{BString} object.
+      \code{BString(src, start=1, nchar=NA)}:
+      Tries to convert \code{src} into a \code{BString} object by reading
+      \code{nchar} letters starting at position \code{start} in \code{src}.
       \code{src} can be a single string (character vector of length 1),
       a \link{DNAString} object, an \link{RNAString} object
       or an \link{AAString} object.

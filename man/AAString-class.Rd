@@ -54,7 +54,8 @@
   \describe{
     \item{}{
       \code{AAString(src)}:
-      Tries to convert \code{src} into an \code{AAString} object.
+      Tries to convert \code{src} into an \code{AAString} object by reading
+      \code{nchar} letters starting at position \code{start} in \code{src}.
       \code{src} can be a single string (character vector of length 1)
       or a \link{BString} object.
     }

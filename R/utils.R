@@ -10,6 +10,11 @@ isSingleNumber <- function(x)
     return(is.numeric(x) && length(x) == 1 && !is.na(x))
 }
 
+isSingleNumberOrNA <- function(x)
+{
+    return(is.vector(x) && is.atomic(x) && length(x) == 1 && (is.numeric(x) || is.na(x)))
+}
+
 isNumericOrNAs <- function(x)
 {
     return(is.numeric(x) || (is.atomic(x) && is.vector(x) && all(is.na(x))))
