@@ -95,7 +95,7 @@ BString.write <- function(x, i, imax=integer(0), value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization
+### Initialization.
 ###
 
 .normalize.offset <- function(offset)
@@ -122,8 +122,6 @@ BString.write <- function(x, i, imax=integer(0), value)
     length
 }
 
-### Because the 'initialize' method for AAString instances is using 'callNextMethod'
-### then '.Object' here can be of class "BString" or "AAString".
 setMethod("initialize", "BString",
     function(.Object, data, offset, length, check=TRUE)
     {
