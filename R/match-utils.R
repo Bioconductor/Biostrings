@@ -61,7 +61,7 @@ normalize.fixed <- function(fixed, subjectClass)
     if (!is(subject, "BString"))
         subject <- BString(subject)
     if (class(pattern) != class(subject))
-        pattern <- new(class(subject), pattern)
+        pattern <- mkBString(class(subject), pattern)
     if (!is.numeric(start))
         stop("'start' must be a vector of integers")
     if (!is.integer(start))
@@ -141,9 +141,8 @@ setGeneric("mismatch", signature="x",
 setMethod("mismatch", "BStringViews",
     function(pattern, x, fixed)
     {
-        if (class(pattern) != class(x@subject)) {
-            pattern <- new(class(x@subject), pattern)
-        }
+        if (class(pattern) != class(x@subject))
+            pattern <- mkBString(class(x@subject), pattern)
         .mismatch(pattern, x, fixed)
     }
 )

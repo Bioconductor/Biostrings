@@ -234,7 +234,7 @@ debug_shiftor <- function()
         if (!is(subject, "BString"))
             subject <- BString(subject)
         if (class(pattern) != class(subject))
-            pattern <- new(class(subject), pattern)
+            pattern <- mkBString(class(subject), pattern)
     }
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject))

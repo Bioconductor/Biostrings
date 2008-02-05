@@ -25,11 +25,11 @@ setMethod("lcprefix", signature(s1="character", s2="character"),
 )
 setMethod("lcprefix", signature(s1="character", s2="BString"),
     function(s1, s2)
-        BString.lcprefix(new(class(s2), s1), s2)
+        BString.lcprefix(mkBString(class(s2), s1), s2)
 )
 setMethod("lcprefix", signature(s1="BString", s2="character"),
     function(s1, s2)
-        BString.lcprefix(s1, new(class(s1), s2))
+        BString.lcprefix(s1, mkBString(class(s1), s2))
 )
 setMethod("lcprefix", signature(s1="BString", s2="BString"),
     function(s1, s2)
@@ -63,11 +63,11 @@ setMethod("lcsuffix", signature(s1="character", s2="character"),
 )
 setMethod("lcsuffix", signature(s1="character", s2="BString"),
     function(s1, s2)
-        BString.lcsuffix(new(class(s2), s1), s2)
+        BString.lcsuffix(mkBString(class(s2), s1), s2)
 )
 setMethod("lcsuffix", signature(s1="BString", s2="character"),
     function(s1, s2)
-        BString.lcsuffix(s1, new(class(s1), s2))
+        BString.lcsuffix(s1, mkBString(class(s1), s2))
 )
 setMethod("lcsuffix", signature(s1="BString", s2="BString"),
     function(s1, s2)
@@ -99,7 +99,7 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
 .pmatchPattern.rec <- function(pattern, subject, maxlength.out)
 {
     if (class(pattern) != class(subject))
-        pattern <- new(class(subject), pattern)
+        pattern <- mkBString(class(subject), pattern)
     if (nchar(pattern) <= 20000) {
         sv <- matchPattern(pattern, subject)
         if (length(sv) >= maxlength.out || nchar(pattern) < 2L) {
@@ -246,11 +246,11 @@ setMethod("lcsubstr", signature(s1="character", s2="character"),
 )
 setMethod("lcsubstr", signature(s1="character", s2="BString"),
     function(s1, s2)
-        BString.lcsubstr(new(class(s2), s1), s2)
+        BString.lcsubstr(mkBString(class(s2), s1), s2)
 )
 setMethod("lcsubstr", signature(s1="BString", s2="character"),
     function(s1, s2)
-        BString.lcsubstr(s1, new(class(s1), s2))
+        BString.lcsubstr(s1, mkBString(class(s1), s2))
 )
 setMethod("lcsubstr", signature(s1="BString", s2="BString"),
     function(s1, s2)

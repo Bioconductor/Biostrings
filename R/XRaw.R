@@ -272,6 +272,64 @@ XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### 2 convenience wrappers
+###
+
+normalize.start <- function(start)
+{
+    if (!isSingleNumber(start))
+        stop("'start' must be a single integer")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    if (start < 1L)
+        stop("'start' must be >= 1")
+    start
+}
+
+normalize.nchar <- function(start, nchar, seq_nchar)
+{
+    if (!isSingleNumberOrNA(nchar))
+        stop("'nchar' must be a single integer or NA")
+    if (is.na(nchar)) {
+        nchar <- seq_nchar - start + 1L
+        if (nchar < 0L)
+            stop("cannot read a negative number of letters")
+        return(nchar)
+    }
+    if (!is.integer(nchar))
+        nchar <- as.integer(nchar)
+    if (nchar < 0L)
+        stop("cannot read a negative number of letters")
+    end <- start + nchar - 1L
+    if (end > seq_nchar)
+        stop("cannot read beyond the end of 'seq'")
+    nchar
+}
+
+charToXRaw <- function(x, start=1, nchar=NA, enc_lkup=NULL, check=TRUE)
+{
+    if (check) {
+        if (!isSingleString(x))
+            stop("'x' must be a single string")
+        start <- normalize.start(start)
+        nchar <- normalize.nchar(start, nchar, nchar(x, type="bytes"))
+    }
+    x <- substr(x, start, start + nchar - 1L)
+    XRaw.write(XRaw(nchar), 1L, nchar, value=x, enc_lkup=enc_lkup)
+}
+
+copyXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
+{
+    if (check) {
+        start <- normalize.start(start)
+        nchar <- normalize.nchar(start, nchar, length(x))
+    }
+    ans <- XRaw(nchar)
+    XRaw.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### XRaw IO
 ###
 
@@ -329,6 +387,7 @@ setMethod("toString", "XRaw",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
+###
 
 ### Select bytes from a "XRaw" object.
 ### Typical use:

@@ -131,8 +131,8 @@ setMethod("BStringViews", "ANY",
     {
         if (!is.character(collapse))
             collapse <- toString(collapse)
-        collapsed <- paste(src, collapse=collapse)
-        subject <- new(subjectClass, collapsed)
+        seq <- paste(src, collapse=collapse)
+        subject <- mkBString(subjectClass, seq)
         ans <- adjacentViews(subject, nchar(src), nchar(collapse))
         desc(ans) <- names(src)
         ans
@@ -161,7 +161,7 @@ setMethod("BStringViews", "BString",
             stop("'collapse' not yet supported when 'src' is a \"BString\" object")
         }
         if (!missing(subjectClass) && subjectClass != class(src))
-            src <- new(subjectClass, src)
+            src <- mkBString(subjectClass, src)
         new("BStringViews", subject=src, start=1L, end=nchar(src), check.views=FALSE)
     }
 )
@@ -175,7 +175,7 @@ setMethod("BStringViews", "BStringViews",
     {
         if (!missing(collapse))
             stop("'collapse' not supported when 'src' is a \"BStringViews\" object")
-        src@subject <- new(subjectClass, src@subject)
+        src@subject <- mkBString(subjectClass, src@subject)
         src
     }
 )

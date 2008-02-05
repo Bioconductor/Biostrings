@@ -142,12 +142,12 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
                  substmat, nrow(substmat), lkup,
                  as.integer(gappen), gap_code,
                  PACKAGE="Biostrings")
-    xr1 <- XRaw(1) 
-    xr1@xp <- ans$al1
-    align1 <- new(class(s1), xr1)
-    xr2 <- XRaw(1) 
-    xr2@xp <- ans$al2
-    align2 <- new(class(s2), xr2)
+    xdata1 <- XRaw(0)
+    xdata1@xp <- ans$al1
+    align1 <- new(class(s1), xdata1, 0L, length(xdata1), check=FALSE)
+    xdata2 <- XRaw(0)
+    xdata2@xp <- ans$al2
+    align2 <- new(class(s2), xdata2, 0L, length(xdata2), check=FALSE)
     new("BStringAlign", align1=align1, align2=align2, score=ans$score)
 }
 
@@ -160,11 +160,11 @@ setMethod("needwunsQS", signature(s1="character", s2="character"),
 )
 setMethod("needwunsQS", signature(s1="character", s2="BString"),
     function(s1, s2, substmat, gappen)
-        BString.needwunsQS(new(class(s2), s1), s2, substmat, gappen)
+        BString.needwunsQS(mkBString(class(s2), s1), s2, substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="BString", s2="character"),
     function(s1, s2, substmat, gappen)
-        BString.needwunsQS(s1, new(class(s1), s2), substmat, gappen)
+        BString.needwunsQS(s1, mkBString(class(s1), s2), substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="BString", s2="BString"),
     function(s1, s2, substmat, gappen)

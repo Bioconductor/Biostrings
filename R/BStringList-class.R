@@ -60,7 +60,6 @@ setMethod("initialize", "BStringList",
         .Object
     }
 )
-
 setMethod("initialize", "DNAStringList",
     function(.Object, seqs)
     {
@@ -70,7 +69,6 @@ setMethod("initialize", "DNAStringList",
         .Object
     }
 )
-
 setMethod("initialize", "RNAStringList",
     function(.Object, seqs)
     {
@@ -80,7 +78,6 @@ setMethod("initialize", "RNAStringList",
         .Object
     }
 )
-
 setMethod("initialize", "AAStringList",
     function(.Object, seqs)
     {
@@ -96,10 +93,14 @@ setMethod("initialize", "AAStringList",
 ### Some convenience constructors.
 ###
 
-setGeneric("BStringList", function(seqs, start=1, nchar=NA) standardGeneric("BStringList"))
-setGeneric("DNAStringList", function(seqs, start=1, nchar=NA) standardGeneric("DNAStringList"))
-setGeneric("RNAStringList", function(seqs, start=1, nchar=NA) standardGeneric("RNAStringList"))
-setGeneric("AAStringList", function(seqs, start=1, nchar=NA) standardGeneric("AAStringList"))
+setGeneric("BStringList", signature="seqs",
+    function(seqs, start=1, nchar=NA) standardGeneric("BStringList"))
+setGeneric("DNAStringList", signature="seqs",
+    function(seqs, start=1, nchar=NA) standardGeneric("DNAStringList"))
+setGeneric("RNAStringList", signature="seqs",
+    function(seqs, start=1, nchar=NA) standardGeneric("RNAStringList"))
+setGeneric("AAStringList", signature="seqs",
+    function(seqs, start=1, nchar=NA) standardGeneric("AAStringList"))
 
 setMethod("BStringList", "list",
     function(seqs, start=1, nchar=NA)

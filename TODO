@@ -42,6 +42,8 @@ In 2.7
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
 
+- Rename 'data' slot (BString class) -> 'xdata'
+
 - BStringList objects:
     o Add read.BStringList/write.BStringList.
     o Add methods for BStringList objects everywhere there are methods defined

@@ -13,7 +13,7 @@ setMethod("reverse", "BString",
         data <- XRaw(lx)
         XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
         ## class(x) can be "BString", "DNAString", "RNAString" or "AAString"
-        new(class(x), data)
+        new(class(x), data, 0L, length(data), check=FALSE)
     }
 )
 

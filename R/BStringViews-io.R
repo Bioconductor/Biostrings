@@ -141,7 +141,8 @@ BStringViewsToFASTArecords <- function(x)
         stop(file, ": file is too big")
     file <- file(file, "r")
     on.exit(close(file))
-    subject <- new(subjectClass, XRaw(filesize))
+    data <- XRaw(filesize)
+    subject <- new(subjectClass, data, 0L, length(data))
     subject@length <- 0L # temporarily broken BString object!
 
     #ans <- XRaw.loadFASTA(subject@data, file, collapse, enc_lkup=enc_lkup(x))

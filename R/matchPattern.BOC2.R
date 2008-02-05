@@ -139,7 +139,7 @@ plotBOC2 <- function(x, main)
 .matchPattern.BOC2 <- function(pattern, boc_subject, max.mismatch, fixed, count.only=FALSE)
 {
     if (class(pattern) != class(boc_subject@subject))
-        pattern <- new(class(boc_subject@subject), pattern)
+        pattern <- mkBString(class(boc_subject@subject), pattern)
     pattern_length <- nchar(pattern)
     if (pattern_length != boc_subject@pattern_length)
         stop("subject was preprocessed for patterns of length ", boc_subject@pattern_length)

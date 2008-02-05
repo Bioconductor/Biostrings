@@ -30,6 +30,7 @@ exportMethods(
     align1, align2, score,
 
     ## Others
+    BString, DNAString, RNAString, AAString,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     BStringViews,
     subviews, substr, substring,
@@ -60,7 +61,6 @@ export(
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
-    BString, DNAString, RNAString, AAString,
     strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
     views, adjacentViews,
     FASTArecordsToCharacter, CharacterToFASTArecords,
