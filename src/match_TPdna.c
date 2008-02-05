@@ -783,7 +783,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
  *   'actree_base_codes': uldna_pdict@actree@base_codes
  *   'pdict_dups': pdict@dups
- *   'pdict_tail_bstrings': pdict@tail@bstrings or NULL
+ *   'pdict_tail_seqs': pdict@tail@seqs or NULL
  *   'subject_BString': subject
  *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
  *   'count_only': TRUE or FALSE
@@ -796,7 +796,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  ****************************************************************************/
 
 SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-                SEXP pdict_dups, SEXP pdict_tail_bstrings,
+                SEXP pdict_dups, SEXP pdict_tail_seqs,
 		SEXP subject_BString,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
@@ -812,7 +812,7 @@ SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
-	no_tail = pdict_tail_bstrings == R_NilValue;
+	no_tail = pdict_tail_seqs == R_NilValue;
 
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
 	ULdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S, nS);
@@ -822,8 +822,8 @@ SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		/* The duplicated must be treated BEFORE the first pattern they
 		 * duplicate, hence we must walk from last to first.
 		 */
-		for (poffset = LENGTH(pdict_tail_bstrings) - 1; poffset >= 0; poffset--) {
-			tail_BString = VECTOR_ELT(pdict_tail_bstrings, poffset);
+		for (poffset = LENGTH(pdict_tail_seqs) - 1; poffset >= 0; poffset--) {
+			tail_BString = VECTOR_ELT(pdict_tail_seqs, poffset);
 			tail = get_BString_seq(tail_BString, &tail_len);
 			TPdna_match_tail(tail, tail_len, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),

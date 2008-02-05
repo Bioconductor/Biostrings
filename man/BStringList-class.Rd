@@ -20,6 +20,14 @@
 \alias{initialize,DNAStringList-method}
 \alias{initialize,RNAStringList-method}
 \alias{initialize,AAStringList-method}
+\alias{BStringList,list-method}
+\alias{DNAStringList,list-method}
+\alias{RNAStringList,list-method}
+\alias{AAStringList,list-method}
+\alias{BStringList,ANY-method}
+\alias{DNAStringList,ANY-method}
+\alias{RNAStringList,ANY-method}
+\alias{AAStringList,ANY-method}
 
 % Accesor methods:
 \alias{as.list,BStringList-method}

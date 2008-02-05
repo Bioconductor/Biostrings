@@ -37,7 +37,7 @@
 
 setClass("BStringList",
     representation(
-        bstrings="list"
+        seqs="list"
     )
 )
 
@@ -52,41 +52,41 @@ setClass("AAStringList", contains="BStringList")
 ###
 
 setMethod("initialize", "BStringList",
-    function(.Object, bstrings)
+    function(.Object, seqs)
     {
-        if (!is.list(bstrings) || !all(sapply(bstrings, function(x) is(x, "BString"))))
-                stop("'bstrings' must be a list of BString objects")
-        .Object@bstrings <- bstrings
+        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "BString"))))
+                stop("'seqs' must be a list of BString objects")
+        .Object@seqs <- seqs
         .Object
     }
 )
 
 setMethod("initialize", "DNAStringList",
-    function(.Object, bstrings)
+    function(.Object, seqs)
     {
-        if (!is.list(bstrings) || !all(sapply(bstrings, function(x) is(x, "DNAString"))))
-                stop("'bstrings' must be a list of DNAString objects")
-        .Object@bstrings <- bstrings
+        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "DNAString"))))
+                stop("'seqs' must be a list of DNAString objects")
+        .Object@seqs <- seqs
         .Object
     }
 )
 
 setMethod("initialize", "RNAStringList",
-    function(.Object, bstrings)
+    function(.Object, seqs)
     {
-        if (!is.list(bstrings) || !all(sapply(bstrings, function(x) is(x, "RNAString"))))
-                stop("'bstrings' must be a list of RNAString objects")
-        .Object@bstrings <- bstrings
+        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "RNAString"))))
+                stop("'seqs' must be a list of RNAString objects")
+        .Object@seqs <- seqs
         .Object
     }
 )
 
 setMethod("initialize", "AAStringList",
-    function(.Object, bstrings)
+    function(.Object, seqs)
     {
-        if (!is.list(bstrings) || !all(sapply(bstrings, function(x) is(x, "AAString"))))
-                stop("'bstrings' must be a list of AAString objects")
-        .Object@bstrings <- bstrings
+        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "AAString"))))
+                stop("'seqs' must be a list of AAString objects")
+        .Object@seqs <- seqs
         .Object
     }
 )
@@ -96,54 +96,54 @@ setMethod("initialize", "AAStringList",
 ### Some convenience constructors.
 ###
 
-setGeneric("BStringList", function(src) standardGeneric("BStringList"))
-setGeneric("DNAStringList", function(src) standardGeneric("DNAStringList"))
-setGeneric("RNAStringList", function(src) standardGeneric("RNAStringList"))
-setGeneric("AAStringList", function(src) standardGeneric("AAStringList"))
+setGeneric("BStringList", function(seqs, start=1, nchar=NA) standardGeneric("BStringList"))
+setGeneric("DNAStringList", function(seqs, start=1, nchar=NA) standardGeneric("DNAStringList"))
+setGeneric("RNAStringList", function(seqs, start=1, nchar=NA) standardGeneric("RNAStringList"))
+setGeneric("AAStringList", function(seqs, start=1, nchar=NA) standardGeneric("AAStringList"))
 
 setMethod("BStringList", "list",
-    function(src)
+    function(seqs, start=1, nchar=NA)
     {
-        bstrings <- lapply(src, BString)
-        new("BStringList", bstrings)
+        seqs <- lapply(seqs, BString)
+        new("BStringList", seqs)
     }
 )
 setMethod("DNAStringList", "list",
-    function(src)
+    function(seqs, start=1, nchar=NA)
     {
-        bstrings <- lapply(src, DNAString)
-        new("DNAStringList", bstrings)
+        seqs <- lapply(seqs, DNAString)
+        new("DNAStringList", seqs)
     }
 )
 setMethod("RNAStringList", "list",
-    function(src)
+    function(seqs, start=1, nchar=NA)
     {
-        bstrings <- lapply(src, RNAString)
-        new("RNAStringList", bstrings)
+        seqs <- lapply(seqs, RNAString)
+        new("RNAStringList", seqs)
     }
 )
 setMethod("AAStringList", "list",
-    function(src)
+    function(seqs, start=1, nchar=NA)
     {
-        bstrings <- lapply(src, AAString)
-        new("AAStringList", bstrings)
+        seqs <- lapply(seqs, AAString)
+        new("AAStringList", seqs)
     }
 )
 
 ### It is important that this works fine on a character vector and on a
 ### BStringViews object. For those 2 types, as.list() does actually the right
 ### thing (note that we rely on our "as.list" method for BStringViews objects).
-setMethod("BStringList", "ANY", function(src) BStringList(as.list(src)))
-setMethod("DNAStringList", "ANY", function(src) DNAStringList(as.list(src)))
-setMethod("RNAStringList", "ANY", function(src) RNAStringList(as.list(src)))
-setMethod("AAStringList", "ANY", function(src) AAStringList(as.list(src)))
+setMethod("BStringList", "ANY", function(seqs, start=1, nchar=NA) BStringList(as.list(seqs)))
+setMethod("DNAStringList", "ANY", function(seqs, start=1, nchar=NA) DNAStringList(as.list(seqs)))
+setMethod("RNAStringList", "ANY", function(seqs, start=1, nchar=NA) RNAStringList(as.list(seqs)))
+setMethod("AAStringList", "ANY", function(seqs, start=1, nchar=NA) AAStringList(as.list(seqs)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
-setMethod("as.list", "BStringList", function(x) x@bstrings)
+setMethod("as.list", "BStringList", function(x) x@seqs)
 
 setMethod("length", "BStringList", function(x) length(as.list(x)))
 
@@ -163,7 +163,7 @@ setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-")
 setReplaceMethod("desc", "BStringList",
     function(x, value)
     {
-        names(x@bstrings) <- value
+        names(x@seqs) <- value
         x
     }
 )
@@ -251,7 +251,7 @@ setMethod("[", "BStringList",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
-        x@bstrings <- x@bstrings[i]
+        x@seqs <- x@seqs[i]
         x
     }
 )

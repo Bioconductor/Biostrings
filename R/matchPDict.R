@@ -805,7 +805,7 @@ extractAllMatches <- function(subject, vindex)
         envir <- new.env(hash=TRUE, parent=emptyenv())
     ans <- .Call("match_TPdna",
                  actree@nodes@xp, actree@base_codes,
-                 pdict@dups, pdict@tail@bstrings,
+                 pdict@dups, pdict@tail@seqs,
                  subject,
                  max.mismatch, fixed,
                  count.only, envir,

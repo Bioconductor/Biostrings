@@ -737,7 +737,7 @@ SEXP match_TPdna(
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
 		SEXP pdict_dups,
-		SEXP pdict_tail_bstrings,
+		SEXP pdict_tail_seqs,
 		SEXP subject_BString,
 		SEXP max_mismatch,
 		SEXP fixed,
