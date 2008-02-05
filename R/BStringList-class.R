@@ -52,39 +52,44 @@ setClass("AAStringList", contains="BStringList")
 ###
 
 setMethod("initialize", "BStringList",
-    function(.Object, seqs)
+    function(.Object, seqs, check=TRUE)
     {
-        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "BString"))))
+        if (check) {
+            if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "BString"))))
                 stop("'seqs' must be a list of BString objects")
-        .Object@seqs <- seqs
+        }
+        slot(.Object, "seqs", check=FALSE) <- seqs
         .Object
     }
 )
 setMethod("initialize", "DNAStringList",
-    function(.Object, seqs)
+    function(.Object, seqs, check=TRUE)
     {
-        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "DNAString"))))
+        if (check) {
+            if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "DNAString"))))
                 stop("'seqs' must be a list of DNAString objects")
-        .Object@seqs <- seqs
-        .Object
+        }
+        callNextMethod(.Object, seqs, check=FALSE)
     }
 )
 setMethod("initialize", "RNAStringList",
-    function(.Object, seqs)
+    function(.Object, seqs, check=TRUE)
     {
-        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "RNAString"))))
+        if (check) {
+            if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "RNAString"))))
                 stop("'seqs' must be a list of RNAString objects")
-        .Object@seqs <- seqs
-        .Object
+        }
+        callNextMethod(.Object, seqs, check=FALSE)
     }
 )
 setMethod("initialize", "AAStringList",
-    function(.Object, seqs)
+    function(.Object, seqs, check=TRUE)
     {
-        if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "AAString"))))
+        if (check) {
+            if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "AAString"))))
                 stop("'seqs' must be a list of AAString objects")
-        .Object@seqs <- seqs
-        .Object
+        }
+        callNextMethod(.Object, seqs, check=FALSE)
     }
 )
 
@@ -94,50 +99,70 @@ setMethod("initialize", "AAStringList",
 ###
 
 setGeneric("BStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA) standardGeneric("BStringList"))
+    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("BStringList"))
 setGeneric("DNAStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA) standardGeneric("DNAStringList"))
+    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("DNAStringList"))
 setGeneric("RNAStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA) standardGeneric("RNAStringList"))
+    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("RNAStringList"))
 setGeneric("AAStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA) standardGeneric("AAStringList"))
+    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("AAStringList"))
 
-setMethod("BStringList", "list",
-    function(seqs, start=1, nchar=NA)
+### By "vector", we mean at least "character" or "list".
+setMethod("BStringList", "vector",
+    function(seqs, start=1, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, BString)
-        new("BStringList", seqs)
+        seqs <- lapply(seqs, function(seq) BString(seq, start=start, nchar=nchar, check=check))
+        new("BStringList", seqs, check=FALSE)
     }
 )
-setMethod("DNAStringList", "list",
-    function(seqs, start=1, nchar=NA)
+setMethod("DNAStringList", "vector",
+    function(seqs, start=1, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, DNAString)
-        new("DNAStringList", seqs)
+        seqs <- lapply(seqs, function(seq) DNAString(seq, start=start, nchar=nchar, check=check))
+        new("DNAStringList", seqs, check=FALSE)
     }
 )
-setMethod("RNAStringList", "list",
-    function(seqs, start=1, nchar=NA)
+setMethod("RNAStringList", "vector",
+    function(seqs, start=1, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, RNAString)
-        new("RNAStringList", seqs)
+        seqs <- lapply(seqs, function(seq) RNAString(seq, start=start, nchar=nchar, check=check))
+        new("RNAStringList", seqs, check=FALSE)
     }
 )
-setMethod("AAStringList", "list",
-    function(seqs, start=1, nchar=NA)
+setMethod("AAStringList", "vector",
+    function(seqs, start=1, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, AAString)
-        new("AAStringList", seqs)
+        seqs <- lapply(seqs, function(seq) AAString(seq, start=start, nchar=nchar, check=check))
+        new("AAStringList", seqs, check=FALSE)
     }
 )
 
-### It is important that this works fine on a character vector and on a
-### BStringViews object. For those 2 types, as.list() does actually the right
-### thing (note that we rely on our "as.list" method for BStringViews objects).
-setMethod("BStringList", "ANY", function(seqs, start=1, nchar=NA) BStringList(as.list(seqs)))
-setMethod("DNAStringList", "ANY", function(seqs, start=1, nchar=NA) DNAStringList(as.list(seqs)))
-setMethod("RNAStringList", "ANY", function(seqs, start=1, nchar=NA) RNAStringList(as.list(seqs)))
-setMethod("AAStringList", "ANY", function(seqs, start=1, nchar=NA) AAStringList(as.list(seqs)))
+### By "ANY", we mean at least "BStringList", "BStringViews" and those silly
+### "AsIs" objects found in the probe packages (e.g. drosophila2probe$sequence).
+### Note that we rely on the "as.list" methods defined for those objects.
+### Performance (on george1):
+###   > library(drosophila2probe)
+###   > dict0 <- drosophila2probe$sequence
+###   > system.time(DNAStringList(dict0[1:5000], start=11L))
+###      user  system elapsed 
+###     6.928   0.000   6.935 
+###
+setMethod("BStringList", "ANY",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+        BStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+)
+setMethod("DNAStringList", "ANY",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+        DNAStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+)
+setMethod("RNAStringList", "ANY",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+        RNAStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+)
+setMethod("AAStringList", "ANY",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+        AAStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

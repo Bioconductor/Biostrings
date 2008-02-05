@@ -20,10 +20,10 @@
 \alias{initialize,DNAStringList-method}
 \alias{initialize,RNAStringList-method}
 \alias{initialize,AAStringList-method}
-\alias{BStringList,list-method}
-\alias{DNAStringList,list-method}
-\alias{RNAStringList,list-method}
-\alias{AAStringList,list-method}
+\alias{BStringList,vector-method}
+\alias{DNAStringList,vector-method}
+\alias{RNAStringList,vector-method}
+\alias{AAStringList,vector-method}
 \alias{BStringList,ANY-method}
 \alias{DNAStringList,ANY-method}
 \alias{RNAStringList,ANY-method}
@@ -119,7 +119,7 @@
 }
 
 \examples{
-  seqs <- new("DNAStringList", list(seq1=DNAString("TTGA"), seq2=DNAString("-CTC-N")))
+  seqs <- DNAStringList(c("TTGA", "-CTC-N"))
   seqs
   desc(seqs)
   desc(seqs)[2] <- "seqB"

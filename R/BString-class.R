@@ -131,9 +131,9 @@ setMethod("initialize", "BString",
             offset <- .normalize.offset(offset)
             length <- .normalize.length(offset, length, length(data))
         }
-        slot(.Object, "data", check=check) <- data
-        slot(.Object, "offset", check=check) <- offset
-        slot(.Object, "length", check=check) <- length
+        slot(.Object, "data", check=FALSE) <- data
+        slot(.Object, "offset", check=FALSE) <- offset
+        slot(.Object, "length", check=FALSE) <- length
         .Object
     }
 )
@@ -441,8 +441,6 @@ setMethod("nchar", "BString", function(x, type="chars", allowNA=FALSE) x@length)
 BString.substr <- function(x, start, end)
 {
     shift <- start - 1L
-    slot(x, "offset", check=FALSE) <- x@offset + start - 1L
-    slot(x, "length", check=FALSE) <- end - shift
-    x
+    new(class(x), x@data, x@offset + shift, end - shift, check=FALSE)
 }
 
