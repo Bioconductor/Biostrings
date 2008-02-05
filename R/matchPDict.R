@@ -240,7 +240,7 @@ setMethod("initialize", "ULdna_PDict",
     {
         on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
         if (!is.null(width)) {
-            if (!is.numeric(width) || length(width) != 1 || is.na(width))
+            if (!isSingleNumber(width))
                 stop("when specified, 'width' must be a single integer")
             width <- as.integer(width)
             if (width <= 0)
@@ -306,25 +306,7 @@ setMethod("initialize", "TPdna_PDict",
         if (is.null(width))
             stop("'width' must be a single integer")
         .Object <- callNextMethod(.Object, dict, width=width)
-        if (is.character(dict)) {
-            tail <- DNAStringList(substr(dict, .Object@width + 1, .Object@stats$max.width))
-	} else if (is.list(dict)) {
-            stop("'dict' of type list is not yet supported")
-        } else if (is(dict, "BStringViews")) {
-            tmp <- DNAStringList(dict)
-            ## FIXME: Ugly and dangerous! We need a dedicated and safe function
-            ## for doing this kind of narrowing!
-            tail <- DNAStringList(lapply(as.list(tmp),
-                                         function(x)
-                                         {
-                                             x@offset <- x@offset + .Object@width
-                                             x@length <- x@length - .Object@width
-                                             x
-                                         }
-                                  )
-                    )
-        }
-        .Object@tail <- tail
+        .Object@tail <- DNAStringList(dict, start=.Object@width+1L)
         .Object
     }
 )
