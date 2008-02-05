@@ -205,7 +205,7 @@ setMethod("BString", "BString",
         start <- seq@offset + start
         if (is(seq, "DNAString") || is(seq, "RNAString")) {
             lkup <- dec_lkup(seq)
-            data <- copyXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+            data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
             return(new("BString", data, 0L, length(data), check=FALSE))
         }
         new("BString", seq@data, start-1L, nchar, check=FALSE)
@@ -224,7 +224,7 @@ setMethod("DNAString", "BString",
         if (is(seq, "DNAString") || is(seq, "RNAString"))
             return(new("DNAString", seq@data, start-1L, nchar, check=FALSE))
         lkup <- DNA_STRING_CODEC@enc_lkup
-        data <- copyXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+        data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
         new("DNAString", data, 0L, length(data), check=FALSE)
     }
 )
@@ -241,7 +241,7 @@ setMethod("RNAString", "BString",
         if (is(seq, "DNAString") || is(seq, "RNAString"))
             return(new("RNAString", seq@data, start-1L, nchar, check=FALSE))
         lkup <- RNA_STRING_CODEC@enc_lkup
-        data <- copyXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+        data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
         new("RNAString", data, 0L, length(data), check=FALSE)
     }
 )

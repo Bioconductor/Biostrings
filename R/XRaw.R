@@ -318,7 +318,7 @@ charToXRaw <- function(x, start=1, nchar=NA, enc_lkup=NULL, check=TRUE)
     XRaw.write(XRaw(nchar), 1L, nchar, value=x, enc_lkup=enc_lkup)
 }
 
-copyXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
+copySubXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
 {
     if (check) {
         start <- normalize.start(start)
