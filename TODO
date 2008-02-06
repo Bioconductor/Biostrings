@@ -51,6 +51,7 @@ In 2.7
 - Rename 'data' slot (BString class) -> 'xdata'
 
 - BStringList objects:
+    o Fix "show" method (very slow when the list is ling, e.g. > 100000)
     o Add read.BStringList/write.BStringList.
     o Add methods for BStringList objects everywhere there are methods defined
       for BStringViews objects (alphabetFrequency, reverse, matchPattern,
@@ -64,6 +65,10 @@ In 2.7
   return maximum palindromes only.
 
 - matchPDict():
+
+  o rename nviewIndex -> countIndex
+
+  o countPDict(...) should be equivalent to nviewIndex(matchPDict(...), all.names=TRUE)
 
   o "initialize" method for TPdna_PDict objects is having a hard time
     extracting the tail of a big dictionary (> 50000 patterns). Fix this.

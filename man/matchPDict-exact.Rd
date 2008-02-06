@@ -170,16 +170,16 @@
   length(dict0)                       # Hundreds of thousands of patterns.
   unique(nchar(dict0))                # Patterns are 25-mers.
   dict0[1:5]
-  pdict <- new("ULdna_PDict", dict0)  # Store the input dictionary into a
+  pdict0 <- new("ULdna_PDict", dict0) # Store the input dictionary into a
                                       # ULdna_PDict instance (preprocessing).
-  length(pdict)                       # Same as the input dictionary.
-  width(pdict)                        # The number of chars per pattern.
+  length(pdict0)                      # Same as the input dictionary.
+  width(pdict0)                       # The number of chars per pattern.
 
   ## Using the pattern dictionary on chromosome 3R
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]      # Load chromosome 3R
   chr3R
-  vindex <- matchPDict(pdict, chr3R)  # Search...
+  vindex <- matchPDict(pdict0, chr3R) # Search...
 
   ## Looking at the matches
   start_index <- startIndex(vindex)   # Get the start index.
@@ -205,10 +205,10 @@
   dict1 <- dict0[8211:8236]           # The input dictionary.
   names(dict1) <- LETTERS
   dict1[1:5]
-  pdict <- new("ULdna_PDict", dict1)
-  length(pdict)                       # Same as the input dictionary.
-  names(pdict)                        # Same as names(dict1).
-  vindex <- matchPDict(pdict, chr3R)  # Search...
+  pdict1 <- new("ULdna_PDict", dict1)
+  length(pdict1)                      # Same as the input dictionary.
+  names(pdict1)                       # Same as names(dict1).
+  vindex <- matchPDict(pdict1, chr3R) # Search...
 
   ## Looking at the matches
   names(vindex)                       # Same as names(dict1).
@@ -229,7 +229,7 @@
   ## If getting the number of matches is what matters only (without regarding
   ## their positions), then countPDict() will be faster, especially when there
   ## is a high number of matches
-  nmatch1 <- countPDict(pdict, chr3R)
+  nmatch1 <- countPDict(pdict1, chr3R)
   identical(nmatch1, nmatch)          # TRUE
 
   ## NOT RUN

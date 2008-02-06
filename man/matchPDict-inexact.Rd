@@ -54,6 +54,41 @@
   ## BROKEN on the ViewsIndex object returned by matchPDict() called on a
   ## TPdna_PDict object!
 
+  ## -------------------------------------------------------------------------
+  ## A. WITH UNNAMED PATTERNS
+  ## -------------------------------------------------------------------------
+
+  library(drosophila2probe)
+  dict0 <- drosophila2probe$sequence  # The input dictionary.
+
+  ## Specify the length of the "trusted prefix" via the 'width' argument
+  pdict7 <- new("TPdna_PDict", dict0, width=7)
+  pdict7
+  tail(pdict7)
+
+  library(BSgenome.Dmelanogaster.FlyBase.r51)
+  chr3R <- Dmelanogaster[["3R"]]
+  chr3R
+  table(countPDict(pdict7, chr3R, max.mismatch=1))
+  table(countPDict(pdict7, chr3R, max.mismatch=3))
+  table(countPDict(pdict7, chr3R, max.mismatch=5))
+
+  ## -------------------------------------------------------------------------
+  ## B. COMPARISON WITH EXACT MATCHING
+  ## -------------------------------------------------------------------------
+
+  ## When the input dictionary has a uniform length, using 'max.mismatch=0'
+  ## on the "trusted prefix" dictionary is equivalent to (but much slower than)
+  ## using the full "uniform length" dictionary.
+  pdict0 <- new("ULdna_PDict", dict0)
+  count0 <- countPDict(pdict0, chr3R)
+  count70 <- countPDict(pdict7, chr3R, max.mismatch=0)
+  identical(count0, count70)          # TRUE
+  
+  ## -------------------------------------------------------------------------
+  ## C. VARIABLE LENGTH DICTIONARY
+  ## -------------------------------------------------------------------------
+
   ## Use the 'width' argument to specify the length of the "trusted prefix"
   pdict <- new("TPdna_PDict", c("ACNG", "GT", "CGT", "AC"), width=2)
   pdict
@@ -63,9 +98,13 @@
   vindex <- matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=2)
   endIndex(vindex)
 
-  startIndex(vindex)   # CURRENTLY BROKEN!
-  vindex[[1]]          # CURRENTLY BROKEN!
-  unlist(vindex)       # CURRENTLY BROKEN!
+  startIndex(vindex)                  # CURRENTLY BROKEN!
+  vindex[[1]]                         # CURRENTLY BROKEN!
+  unlist(vindex)                      # CURRENTLY BROKEN!
+
+  ## -------------------------------------------------------------------------
+  ## D. WITH AMBIGUITIES IN THE TAIL
+  ## -------------------------------------------------------------------------
 
   ## Ambiguities (IUPAC extended letters) are supported in the tail only:
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), fixed=FALSE))
