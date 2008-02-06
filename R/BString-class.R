@@ -152,7 +152,31 @@ setMethod("initialize", "AAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some convenience constructors.
+### Core constructors (not exported, used by the exported constructors below).
+###
+
+charseqToBString <- function(seq, start=1L, nchar=NA, class="BString", check=TRUE)
+{
+    if (check) {
+        ## Only limited checking here, more is done at the C level 
+        if (!isSingleNumber(start))
+            stop("'start' must be a single integer")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(nchar))
+            stop("'nchar' must be a single integer or NA")
+        if (!is.integer(nchar))
+            nchar <- as.integer(nchar)
+    }
+    proto <- new(class, data=XRaw(0), 0L, 0L, check=FALSE)
+    .Call("charseq_to_BString",
+          seq, start, nchar, enc_lkup(proto), proto,
+          PACKAGE="Biostrings")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The exported constructors.
 ###
 
 setGeneric("BString", signature="seq",
@@ -167,31 +191,25 @@ setGeneric("AAString", signature="seq",
 setMethod("BString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        data <- charToXRaw(seq, start=start, nchar=nchar, enc_lkup=NULL, check=check)
-        new("BString", data, 0L, length(data), check=FALSE)
+        charseqToBString(seq, start=start, nchar=nchar, class="BString", check=check)
     }
 )
 setMethod("DNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        enc_lkup <- DNA_STRING_CODEC@enc_lkup
-        data <- charToXRaw(seq, start=start, nchar=nchar, enc_lkup=enc_lkup, check=check)
-        new("DNAString", data, 0L, length(data), check=FALSE)
+        charseqToBString(seq, start=start, nchar=nchar, class="DNAString", check=check)
     }
 )
 setMethod("RNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        enc_lkup <- RNA_STRING_CODEC@enc_lkup
-        data <- charToXRaw(seq, start=start, nchar=nchar, enc_lkup=enc_lkup, check=check)
-        new("RNAString", data, 0L, length(data), check=FALSE)
+        charseqToBString(seq, start=start, nchar=nchar, class="RNAString", check=check)
     }
 )
 setMethod("AAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        data <- charToXRaw(seq, start=start, nchar=nchar, enc_lkup=NULL, check=check)
-        new("AAString", data, 0L, length(data), check=FALSE)
+        charseqToBString(seq, start=start, nchar=nchar, class="AAString", check=check)
     }
 )
 
@@ -259,6 +277,7 @@ setMethod("AAString", "BString",
     }
 )
 
+### Not exported
 mkBString <- function(class, seq)
 {
     do.call(class, list(seq=seq))

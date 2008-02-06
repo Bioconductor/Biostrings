@@ -95,7 +95,32 @@ setMethod("initialize", "AAStringList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some convenience constructors.
+### Core constructors (not exported, used by the exported constructors below).
+###
+
+charseqsToBStringList <- function(seqs, start=1L, nchar=NA, class="BString", check=TRUE)
+{
+    if (check) {
+        ## Only limited checking here, more is done at the C level 
+        if (!isSingleNumber(start))
+            stop("'start' must be a single integer")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(nchar))
+            stop("'nchar' must be a single integer or NA")
+        if (!is.integer(nchar))
+            nchar <- as.integer(nchar)
+    }
+    proto <- new(class, data=XRaw(0), 0L, 0L, check=FALSE)
+    seqs <- .Call("charseqs_to_BStringList",
+                  seqs, start, nchar, enc_lkup(proto), proto,
+                  PACKAGE="Biostrings")
+    new(paste(class, "List", sep=""), seqs, check=FALSE)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The exported constructors.
 ###
 
 setGeneric("BStringList", signature="seqs",
@@ -107,7 +132,32 @@ setGeneric("RNAStringList", signature="seqs",
 setGeneric("AAStringList", signature="seqs",
     function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("AAStringList"))
 
-### By "vector", we mean at least "character" or "list".
+setMethod("BStringList", "character",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        charseqsToBStringList(seqs, start=start, nchar=nchar, class="BString", check=check)
+    }
+)
+setMethod("DNAStringList", "character",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        charseqsToBStringList(seqs, start=start, nchar=nchar, class="DNAString", check=check)
+    }
+)
+setMethod("RNAStringList", "character",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        charseqsToBStringList(seqs, start=start, nchar=nchar, class="RNAString", check=check)
+    }
+)
+setMethod("AAStringList", "character",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        charseqsToBStringList(seqs, start=start, nchar=nchar, class="AAString", check=check)
+    }
+)
+
+### By "vector", we mean at least "list".
 setMethod("BStringList", "vector",
     function(seqs, start=1, nchar=NA, check=TRUE)
     {
@@ -140,28 +190,33 @@ setMethod("AAStringList", "vector",
 ### By "ANY", we mean at least "BStringList", "BStringViews" and those silly
 ### "AsIs" objects found in the probe packages (e.g. drosophila2probe$sequence).
 ### Note that we rely on the "as.list" methods defined for those objects.
-### Performance (on george1):
+### Performance (on mustafa):
 ###   > library(drosophila2probe)
 ###   > dict0 <- drosophila2probe$sequence
-###   > system.time(DNAStringList(dict0[1:5000], start=11L))
+###   > system.time(DNAStringList(dict0[1:100000], start=11L, nchar=as.integer(NA)))
 ###      user  system elapsed 
-###     6.928   0.000   6.935 
+###     4.513   0.056   4.761 
 ###
+
+### Workaround for handling the "AsIs" objects found in the probe packages
+.normalize.seqs <- function(seqs)
+    if (is.character(seqs)) as.character(seqs) else as.list(seqs)
+
 setMethod("BStringList", "ANY",
     function(seqs, start=1, nchar=NA, check=TRUE)
-        BStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+        BStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
 )
 setMethod("DNAStringList", "ANY",
     function(seqs, start=1, nchar=NA, check=TRUE)
-        DNAStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+        DNAStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
 )
 setMethod("RNAStringList", "ANY",
     function(seqs, start=1, nchar=NA, check=TRUE)
-        RNAStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+        RNAStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
 )
 setMethod("AAStringList", "ANY",
     function(seqs, start=1, nchar=NA, check=TRUE)
-        AAStringList(as.list(seqs), start=start, nchar=nchar, check=check)
+        AAStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
 )
 
 
