@@ -543,13 +543,15 @@ SEXP charseq_to_BString(
 		SEXP proto
 );
 
-SEXP charseqs_to_BStringList(
+SEXP charseqs_to_BStrings(
 		SEXP seqs,
 		SEXP start,
 		SEXP nchar,
 		SEXP lkup,
 		SEXP proto
 );
+
+SEXP BStringList_to_nchar(SEXP x_seqs);
 
 
 /* reverseComplement.c */

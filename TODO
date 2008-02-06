@@ -35,7 +35,9 @@ In 2.7
 
 - In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
 
-- charToXRaw() and copySubXRaw(): use the C routines for the R versions.
+- Implement C routine copy_subXRaw() and use it for copySubXRaw().
+  Add copySubBString() and copySubBStrings() and use them in the BString() and
+  BStringList() constructors. (Follow the same path as for charseqs_to_BStrings().)
 
 - check that isMatching now understands the NAs in 'start'.
 
@@ -51,7 +53,6 @@ In 2.7
 - Rename 'data' slot (BString class) -> 'xdata'
 
 - BStringList objects:
-    o Fix "show" method (very slow when the list is ling, e.g. > 100000)
     o Add read.BStringList/write.BStringList.
     o Add methods for BStringList objects everywhere there are methods defined
       for BStringViews objects (alphabetFrequency, reverse, matchPattern,

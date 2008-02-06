@@ -112,7 +112,7 @@ charseqsToBStringList <- function(seqs, start=1L, nchar=NA, class="BString", che
             nchar <- as.integer(nchar)
     }
     proto <- new(class, data=XRaw(0), 0L, 0L, check=FALSE)
-    seqs <- .Call("charseqs_to_BStringList",
+    seqs <- .Call("charseqs_to_BStrings",
                   seqs, start, nchar, enc_lkup(proto), proto,
                   PACKAGE="Biostrings")
     new(paste(class, "List", sep=""), seqs, check=FALSE)
@@ -230,11 +230,7 @@ setMethod("length", "BStringList", function(x) length(as.list(x)))
 
 setMethod("nchar", "BStringList",
     function(x, type = "chars", allowNA = FALSE)
-    {
-        if (length(x) == 0)
-            return(integer(0))
-        sapply(as.list(x), nchar)
-    }
+        .Call("BStringList_to_nchar", x@seqs, PACKAGE="Biostrings")
 )
 
 setGeneric("desc", function(x) standardGeneric("desc"))

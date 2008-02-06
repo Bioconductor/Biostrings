@@ -74,7 +74,7 @@ SEXP charseq_to_BString(SEXP seq, SEXP start, SEXP nchar, SEXP lkup, SEXP proto)
 }
 
 /* Return the list, NOT the BStringList object! */
-SEXP charseqs_to_BStringList(SEXP seqs, SEXP start, SEXP nchar, SEXP lkup, SEXP proto)
+SEXP charseqs_to_BStrings(SEXP seqs, SEXP start, SEXP nchar, SEXP lkup, SEXP proto)
 {
 	SEXP ans, seq;
 	int nseq, i;
@@ -84,6 +84,22 @@ SEXP charseqs_to_BStringList(SEXP seqs, SEXP start, SEXP nchar, SEXP lkup, SEXP 
 	for (i = 0; i < nseq; i++) {
 		seq = STRING_ELT(seqs, i);
 		SET_ELEMENT(ans, i, CHARSXP_to_BString(seq, start, nchar, lkup, proto));
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/* 'x_seqs' must be the list, NOT the BStringList object! */
+SEXP BStringList_to_nchar(SEXP x_seqs)
+{
+	SEXP ans, x_elt;
+	int nseq, i, *ans_val;
+
+	nseq = LENGTH(x_seqs);
+	PROTECT(ans = NEW_INTEGER(nseq));
+	for (i = 0, ans_val = INTEGER(ans); i < nseq; i++, ans_val++) {
+		x_elt = VECTOR_ELT(x_seqs, i);
+		getBString_charseq(x_elt, ans_val);
 	}
 	UNPROTECT(1);
 	return ans;
