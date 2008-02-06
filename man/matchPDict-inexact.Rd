@@ -62,16 +62,16 @@
   dict0 <- drosophila2probe$sequence  # The input dictionary.
 
   ## Specify the length of the "trusted prefix" via the 'width' argument
-  pdict7 <- new("TPdna_PDict", dict0, width=7)
-  pdict7
-  tail(pdict7)
+  pdict9 <- new("TPdna_PDict", dict0, width=9)
+  pdict9
+  tail(pdict9)
 
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]
   chr3R
-  table(countPDict(pdict7, chr3R, max.mismatch=1))
-  table(countPDict(pdict7, chr3R, max.mismatch=3))
-  table(countPDict(pdict7, chr3R, max.mismatch=5))
+  table(countPDict(pdict9, chr3R, max.mismatch=1))
+  table(countPDict(pdict9, chr3R, max.mismatch=3))
+  table(countPDict(pdict9, chr3R, max.mismatch=5))
 
   ## -------------------------------------------------------------------------
   ## B. COMPARISON WITH EXACT MATCHING
@@ -82,8 +82,8 @@
   ## using the full "uniform length" dictionary.
   pdict0 <- new("ULdna_PDict", dict0)
   count0 <- countPDict(pdict0, chr3R)
-  count70 <- countPDict(pdict7, chr3R, max.mismatch=0)
-  identical(count0, count70)          # TRUE
+  count90 <- countPDict(pdict9, chr3R, max.mismatch=0)
+  identical(count0, count90)          # TRUE
   
   ## -------------------------------------------------------------------------
   ## C. VARIABLE LENGTH DICTIONARY
