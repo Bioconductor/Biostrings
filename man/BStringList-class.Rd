@@ -20,6 +20,10 @@
 \alias{initialize,DNAStringList-method}
 \alias{initialize,RNAStringList-method}
 \alias{initialize,AAStringList-method}
+\alias{BStringList,character-method}
+\alias{DNAStringList,character-method}
+\alias{RNAStringList,character-method}
+\alias{AAStringList,character-method}
 \alias{BStringList,vector-method}
 \alias{DNAStringList,vector-method}
 \alias{RNAStringList,vector-method}

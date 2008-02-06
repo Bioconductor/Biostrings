@@ -44,10 +44,6 @@
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
     (see \code{\link{isMatching}} for the details).
   }
-  \item{x}{
-    A \link{BStringViews} object (typically, one returned
-    by \code{matchPattern(pattern, subject)}).
-  }
 }
 
 \details{

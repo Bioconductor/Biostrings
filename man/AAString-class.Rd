@@ -11,6 +11,8 @@
 % Constructor-like functions and generics:
 \alias{initialize,AAString-method}
 \alias{AAString}
+\alias{AAString,character-method}
+\alias{AAString,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,AAString-method}

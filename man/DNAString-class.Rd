@@ -11,6 +11,8 @@
 % Constructor-like functions and generics:
 \alias{initialize,DNAString-method}
 \alias{DNAString}
+\alias{DNAString,character-method}
+\alias{DNAString,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,DNAString-method}

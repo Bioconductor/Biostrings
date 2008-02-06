@@ -8,6 +8,8 @@
 % Constructor-like functions and generics:
 \alias{initialize,BString-method}
 \alias{BString}
+\alias{BString,character-method}
+\alias{BString,BString-method}
 
 % Standard generic methods:
 

@@ -11,6 +11,8 @@
 % Constructor-like functions and generics:
 \alias{initialize,RNAString-method}
 \alias{RNAString}
+\alias{RNAString,character-method}
+\alias{RNAString,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,RNAString-method}
