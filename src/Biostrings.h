@@ -165,6 +165,14 @@ void _Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
+int _start2offset(int start);
+
+int _nchar2length(
+		int nchar,
+		int offset,
+		int seq_length
+);
+
 int fgets_rtrimmed(
 		char *s,
 		int size,
@@ -551,7 +559,14 @@ SEXP charseqs_to_BStrings(
 		SEXP proto
 );
 
-SEXP BStringList_to_nchar(SEXP x_seqs);
+SEXP subBStrings(
+		SEXP x_seqs,
+		SEXP start,
+		SEXP nchar,
+		SEXP proto
+);
+
+SEXP BStrings_to_nchars(SEXP x_seqs);
 
 
 /* reverseComplement.c */

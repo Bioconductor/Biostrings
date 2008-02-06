@@ -98,7 +98,7 @@ setMethod("initialize", "AAStringList",
 ### Core constructors (not exported, used by the exported constructors below).
 ###
 
-charseqsToBStringList <- function(seqs, start=1L, nchar=NA, class="BString", check=TRUE)
+.charseqsToBStringList <- function(seqs, start, nchar, baseClass, check)
 {
     if (check) {
         ## Only limited checking here, more is done at the C level 
@@ -111,11 +111,36 @@ charseqsToBStringList <- function(seqs, start=1L, nchar=NA, class="BString", che
         if (!is.integer(nchar))
             nchar <- as.integer(nchar)
     }
-    proto <- new(class, data=XRaw(0), 0L, 0L, check=FALSE)
+    class <- paste(baseClass, "List", sep="")
+    proto <- new(baseClass, data=XRaw(0), 0L, 0L, check=FALSE)
     seqs <- .Call("charseqs_to_BStrings",
                   seqs, start, nchar, enc_lkup(proto), proto,
                   PACKAGE="Biostrings")
-    new(paste(class, "List", sep=""), seqs, check=FALSE)
+    new(class, seqs, check=FALSE)
+}
+
+.subBStrings <- function(x, start, nchar, baseClass, check)
+{
+    if (check) {
+        ## Only limited checking here, more is done at the C level 
+        if (!isSingleNumber(start))
+            stop("'start' must be a single integer")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(nchar))
+            stop("'nchar' must be a single integer or NA")
+        if (!is.integer(nchar))
+            nchar <- as.integer(nchar)
+    }
+    class <- paste(baseClass, "List", sep="")
+    if (class(x) == class)
+        proto <- NULL
+    else
+        proto <- new(baseClass, data=XRaw(0), 0L, 0L, check=FALSE)
+    seqs <- .Call("subBStrings",
+                  x@seqs, start, nchar, proto,
+                  PACKAGE="Biostrings")
+    new(class, seqs, check=FALSE)
 }
 
 
@@ -134,26 +159,55 @@ setGeneric("AAStringList", signature="seqs",
 
 setMethod("BStringList", "character",
     function(seqs, start=1, nchar=NA, check=TRUE)
-    {
-        charseqsToBStringList(seqs, start=start, nchar=nchar, class="BString", check=check)
-    }
+        .charseqsToBStringList(seqs, start, nchar, "BString", check)
 )
 setMethod("DNAStringList", "character",
     function(seqs, start=1, nchar=NA, check=TRUE)
-    {
-        charseqsToBStringList(seqs, start=start, nchar=nchar, class="DNAString", check=check)
-    }
+        .charseqsToBStringList(seqs, start, nchar, "DNAString", check)
 )
 setMethod("RNAStringList", "character",
     function(seqs, start=1, nchar=NA, check=TRUE)
-    {
-        charseqsToBStringList(seqs, start=start, nchar=nchar, class="RNAString", check=check)
-    }
+        .charseqsToBStringList(seqs, start, nchar, "RNAString", check)
 )
 setMethod("AAStringList", "character",
     function(seqs, start=1, nchar=NA, check=TRUE)
+        .charseqsToBStringList(seqs, start, nchar, "AAString", check)
+)
+
+setMethod("BStringList", "BStringList",
+    function(seqs, start=1, nchar=NA, check=TRUE)
     {
-        charseqsToBStringList(seqs, start=start, nchar=nchar, class="AAString", check=check)
+        if (is(seqs, "DNAStringList") || is(seqs, "RNAStringList"))
+            stop("not supported yet, sorry!")
+        .subBStrings(seqs, start, nchar, "BString", check)
+    }
+)
+setMethod("DNAStringList", "BStringList",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        if (is(seqs, "AAStringList"))
+            stop("incompatible input type")
+        if (!is(seqs, "DNAStringList") && !is(seqs, "RNAStringList"))
+            stop("not supported yet, sorry!")
+        .subBStrings(seqs, start, nchar, "DNAString", check)
+    }
+)
+setMethod("RNAStringList", "BStringList",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        if (is(seqs, "AAStringList"))
+            stop("incompatible input type")
+        if (!is(seqs, "DNAStringList") && !is(seqs, "RNAStringList"))
+            stop("not supported yet, sorry!")
+        .subBStrings(seqs, start, nchar, "RNAString", check)
+    }
+)
+setMethod("AAStringList", "BStringList",
+    function(seqs, start=1, nchar=NA, check=TRUE)
+    {
+        if (is(seqs, "DNAStringList") || is(seqs, "RNAStringList"))
+            stop("incompatible input type")
+        .subBStrings(seqs, start, nchar, "AAString", check)
     }
 )
 
@@ -230,7 +284,7 @@ setMethod("length", "BStringList", function(x) length(as.list(x)))
 
 setMethod("nchar", "BStringList",
     function(x, type = "chars", allowNA = FALSE)
-        .Call("BStringList_to_nchar", x@seqs, PACKAGE="Biostrings")
+        .Call("BStrings_to_nchars", x@seqs, PACKAGE="Biostrings")
 )
 
 setGeneric("desc", function(x) standardGeneric("desc"))

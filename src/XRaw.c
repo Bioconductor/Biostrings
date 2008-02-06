@@ -653,20 +653,8 @@ SEXP CHARSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
 	int offset, length;
 	const char *src;
 
-	offset = INTEGER(start)[0] - 1;
-	if (offset < 0)
-		error("'start' must be >= 1");
-	length = INTEGER(nchar)[0];
-	if (length == NA_INTEGER) {
-		length = LENGTH(x) - offset;
-		if (length < 0L)
-            		error("cannot read a negative number of letters");
-	} else {
-		if (length < 0L)
-			error("cannot read a negative number of letters");
-		if (offset + length > LENGTH(x))
-			error("cannot read beyond the end of the input");
-	}
+	offset = _start2offset(INTEGER(start)[0]);
+	length = _nchar2length(INTEGER(nchar)[0], offset, LENGTH(x));
 	src = CHAR(x) + offset;
 
 	PROTECT(dest = NEW_RAW(length));

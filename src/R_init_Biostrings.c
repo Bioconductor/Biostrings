@@ -66,7 +66,8 @@ static const R_CallMethodDef callMethods[] = {
 /* BString_utils.c */
 	{"charseq_to_BString", (DL_FUNC) &charseq_to_BString, 5},
 	{"charseqs_to_BStrings", (DL_FUNC) &charseqs_to_BStrings, 5},
-	{"BStringList_to_nchar", (DL_FUNC) &BStringList_to_nchar, 1},
+	{"subBStrings", (DL_FUNC) &subBStrings, 4},
+	{"BStrings_to_nchars", (DL_FUNC) &BStrings_to_nchars, 1},
         
 /* reverseComplement.c */
         {"XRaw_translate_copy_from_i1i2", (DL_FUNC) &XRaw_translate_copy_from_i1i2, 5},

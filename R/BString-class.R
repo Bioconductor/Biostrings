@@ -155,7 +155,7 @@ setMethod("initialize", "AAString",
 ### Core constructors (not exported, used by the exported constructors below).
 ###
 
-charseqToBString <- function(seq, start=1L, nchar=NA, class="BString", check=TRUE)
+.charseqToBString <- function(seq, start, nchar, class, check)
 {
     if (check) {
         ## Only limited checking here, more is done at the C level 
@@ -191,25 +191,25 @@ setGeneric("AAString", signature="seq",
 setMethod("BString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        charseqToBString(seq, start=start, nchar=nchar, class="BString", check=check)
+        .charseqToBString(seq, start, nchar, "BString", check)
     }
 )
 setMethod("DNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        charseqToBString(seq, start=start, nchar=nchar, class="DNAString", check=check)
+        .charseqToBString(seq, start, nchar, "DNAString", check)
     }
 )
 setMethod("RNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        charseqToBString(seq, start=start, nchar=nchar, class="RNAString", check=check)
+        .charseqToBString(seq, start, nchar, "RNAString", check)
     }
 )
 setMethod("AAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
-        charseqToBString(seq, start=start, nchar=nchar, class="AAString", check=check)
+        .charseqToBString(seq, start, nchar, "AAString", check)
     }
 )
 
@@ -233,7 +233,7 @@ setMethod("DNAString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
         if (is(seq, "AAString"))
-            stop("incompatible 'seq' type")
+            stop("incompatible input type")
         if (check) {
             start <- normalize.start(start)
             nchar <- normalize.nchar(start, nchar, nchar(seq))
@@ -250,7 +250,7 @@ setMethod("RNAString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
         if (is(seq, "AAString"))
-            stop("incompatible 'seq' type")
+            stop("incompatible input type")
         if (check) {
             start <- normalize.start(start)
             nchar <- normalize.nchar(start, nchar, nchar(seq))
@@ -267,7 +267,7 @@ setMethod("AAString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
     {
         if (is(seq, "DNAString") || is(seq, "RNAString"))
-            stop("incompatible 'seq' type")
+            stop("incompatible input type")
         if (check) {
             start <- normalize.start(start)
             nchar <- normalize.nchar(start, nchar, nchar(seq))

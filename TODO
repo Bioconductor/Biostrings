@@ -28,6 +28,9 @@ In 2.7
 ======
 
 - BStringList objects:
+    o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
+      I suspect there is something wrong with C routine subBStrings when
+      proto is NULL.
     o Improve speed of BStringList() and family when the input is a BStringList
       or BStringViews object (i.e. XRaw input). Follow the same path as for
       character input where C routine charseqs_to_BStrings() is used.

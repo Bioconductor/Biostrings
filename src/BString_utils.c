@@ -89,17 +89,48 @@ SEXP charseqs_to_BStrings(SEXP seqs, SEXP start, SEXP nchar, SEXP lkup, SEXP pro
 	return ans;
 }
 
-/* 'x_seqs' must be the list, NOT the BStringList object! */
-SEXP BStringList_to_nchar(SEXP x_seqs)
+/* 'x_seqs' must be the list, NOT the BStringList object!
+   Return the list, NOT the BStringList object! */
+SEXP subBStrings(SEXP x_seqs, SEXP start, SEXP nchar, SEXP proto)
 {
-	SEXP ans, x_elt;
-	int nseq, i, *ans_val;
+	SEXP ans, ans_elt, x_seq, data;
+	int nseq, offset, length, seq_length, i;
+
+	offset = _start2offset(INTEGER(start)[0]);
+	nseq = LENGTH(x_seqs);
+	PROTECT(ans = NEW_LIST(nseq));
+	for (i = 0; i < nseq; i++) {
+		x_seq = VECTOR_ELT(x_seqs, i);
+		getBString_charseq(x_seq, &seq_length);
+		length = _nchar2length(INTEGER(nchar)[0], offset, seq_length);
+		if (proto == R_NilValue) {
+			PROTECT(ans_elt = duplicate(x_seq));
+		} else {
+			PROTECT(ans_elt = duplicate(proto));
+			PROTECT(data = duplicate(GET_SLOT(x_seq, install("data"))));
+			SET_SLOT(ans_elt, mkChar("data"), data);
+			UNPROTECT(1);
+		}
+		SET_SLOT(ans_elt, mkChar("offset"), ScalarInteger(offset));
+		SET_SLOT(ans_elt, mkChar("length"), ScalarInteger(length));
+		SET_ELEMENT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/* 'x_seqs' must be the list, NOT the BStringList object! */
+SEXP BStrings_to_nchars(SEXP x_seqs)
+{
+	SEXP ans, x_seq;
+	int nseq, i, *seq_length;
 
 	nseq = LENGTH(x_seqs);
 	PROTECT(ans = NEW_INTEGER(nseq));
-	for (i = 0, ans_val = INTEGER(ans); i < nseq; i++, ans_val++) {
-		x_elt = VECTOR_ELT(x_seqs, i);
-		getBString_charseq(x_elt, ans_val);
+	for (i = 0, seq_length = INTEGER(ans); i < nseq; i++, seq_length++) {
+		x_seq = VECTOR_ELT(x_seqs, i);
+		getBString_charseq(x_seq, seq_length);
 	}
 	UNPROTECT(1);
 	return ans;
