@@ -29,8 +29,8 @@
   Because performance will mostly depend on the number of positions found in
   (1) it's important to minimize this number by keeping the length of the
   "trusted prefix" as large as possible.
-  A simple empiric rule is: if W is the length of the "trusted prefix"
-  and L the length of the subject, then L / (4**W) should be as small as
+  A simple empiric rule is: if TP is the length of the "trusted prefix"
+  and L the length of the subject, then L / (4**TP) should be as small as
   possible, typically < 10 or 20.
 
   Note that, when \code{matchPDict} is used for inexact matching,
@@ -82,7 +82,7 @@
   ## using the full "uniform length" dictionary.
   pdict0 <- new("ULdna_PDict", dict0)
   count0 <- countPDict(pdict0, chr3R)
-  count90 <- countPDict(pdict9, chr3R, max.mismatch=0)
+  count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
   identical(count0, count90)          # TRUE
   
   ## -------------------------------------------------------------------------
