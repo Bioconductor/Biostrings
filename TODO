@@ -1,4 +1,4 @@
-Some R problems maybe worth to report:
+Some R problems that maybe worth reporting:
 
 - Loading a serialized BStringViews object without prior loading the Biostrings
   package seems to have problems: the object loads, but, when I try to display
@@ -24,35 +24,16 @@ In 2.[6|7]
   match should not. An alternative is to raise an error (or a warning) when
   mismatch >= nchar(pattern).
 
-- Fix this:
-    > isMatching("b", "abcdb", start=c(1:5, NA))
-    [1] FALSE  TRUE FALSE FALSE  TRUE FALSE
-  Last element in returned vector should be NA.
-
-
 In 2.7
 ======
 
-- In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
-
-- Implement C routine copy_subXRaw() and use it for copySubXRaw().
-  Add copySubBString() and copySubBStrings() and use them in the BString() and
-  BStringList() constructors. (Follow the same path as for charseqs_to_BStrings().)
-
-- check that isMatching now understands the NAs in 'start'.
-
-- When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
-  is high (e.g. >= 8, finding the exact cut-value requires some testing).
-  Correct Robert's RBioinf book reporting that the performance decrease
-  significantly when max.mismatch becomes to large. Should not be the case
-  anymore.
-
-- Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
-  curious user know which algos are available/used for a given search problem.
-
-- Rename 'data' slot (BString class) -> 'xdata'
-
 - BStringList objects:
+    o Improve speed of BStringList() and family when the input is a BStringList
+      or BStringViews object (i.e. XRaw input). Follow the same path as for
+      character input where C routine charseqs_to_BStrings() is used.
+      For XRaw input, implement C routine copy_subXRaw() and use it for
+      copySubXRaw(). Add copySubBString() and copySubBStrings() and use them in
+      the BString() and BStringList() constructors.
     o Add read.BStringList/write.BStringList.
     o Add methods for BStringList objects everywhere there are methods defined
       for BStringViews objects (alphabetFrequency, reverse, matchPattern,
@@ -61,6 +42,16 @@ In 2.7
       BStringList objects in BSgenome.* packages. Modify BSgenome:::mseqnames
       man page consequently. Bump versions of BSgenome + all the BSgenome.* pkgs
       and make the updated BSgenome.* pkgs depend on the updated BSgenome pkg.
+
+- In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
+
+- When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
+  is high (e.g. >= 8, finding the exact cut-value requires some testing).
+  Correct Robert's RBioinf book reporting that the performance decrease
+  significantly when max.mismatch becomes to large. Should not be the case
+  anymore.
+
+- Rename 'data' slot (BString class) -> 'xdata'
 
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
@@ -71,16 +62,18 @@ In 2.7
 
   o countPDict(...) should be equivalent to nviewIndex(matchPDict(...), all.names=TRUE)
 
-  o "initialize" method for TPdna_PDict objects is having a hard time
-    extracting the tail of a big dictionary (> 50000 patterns). Fix this.
-
   o startIndex() is broken on the ViewsIndex object returned by a call to
     matchPDict() on a TPdna_PDict object.
+
+  o Once DNAStringList() constructor is fast enough on character and
+    BStringViews input, simplify "initialize" method for ULdna_PDict:
+    convert character and BStringViews inputs with DNAStringList() and
+    support only one type of input (DNAStringList) at the C level.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
     'match_count' in match_TPdna.c, store directly in the returned
     INTEGER vector.
-    
+
   o Fix this bug:
     > pdict <- new("ULdna_PDict", c("AA", "AC"))
     > matchPDict(pdict, DNAString("TAACAC"))
@@ -100,7 +93,12 @@ In 2.7
     subsets of matches of each input pattern. Of course, 2 matches are
     considered equal if their start/end are the same.
 
+  o GenomeSearching.Rnw vignette: add section about inexact matching with matchPDict
+
 - Finish C implemntation of read.BStringViews()
+
+- Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
+  curious user know which algos are available/used for a given search problem.
 
 - Define a DNAorRNA class (or NucleotideString) that is the union of the
   DNAString and RNAString classes (use a union class for this or "do it by
