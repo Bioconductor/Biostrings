@@ -359,14 +359,10 @@ setReplaceMethod("[", "BString",
 ###   s7 <- toString(dnav[[7]])
 ###   s1 == s7
 
-BString.comparable <- function(class1, class2)
+BString.comparable <- function(e1, e2)
 {
-    if (class1 == class2)
-        return(TRUE)
-    if (class1 %in% c("DNAString", "RNAString")
-     && class2 %in% c("DNAString", "RNAString"))
-        return(TRUE)
-    FALSE
+    ## 'e1' and 'e2' are comparable iff they are both encoded or not
+    (is(e1, "DNAString") || is(e1, "RNAString")) == (is(e2, "DNAString") || is(e2, "RNAString"))
 }
 
 ### 'x' and 'y' must be BString objects
@@ -382,12 +378,13 @@ BString.comparable <- function(class1, class2)
 setMethod("==", signature(e1="BString", e2="BString"),
     function(e1, e2)
     {
-        class1 <- class(e1)
-        class2 <- class(e2)
-        if (!BString.comparable(class1, class2))
+        if (!BString.comparable(e1, e2)) {
+            class1 <- class(e1)
+            class2 <- class(e2)
             stop("comparison between a \"", class1, "\" instance ",
                  "and a \"", class2, "\" instance ",
                  "is not supported")
+        }
         .BString.equal(e1, e2)
     }
 )

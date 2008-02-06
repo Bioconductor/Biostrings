@@ -807,7 +807,7 @@ SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	SEXP tail_BString;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	S = get_BString_seq(subject_BString, &nS);
+	S = getBString_charseq(subject_BString, &nS);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -824,7 +824,7 @@ SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		 */
 		for (poffset = LENGTH(pdict_tail_seqs) - 1; poffset >= 0; poffset--) {
 			tail_BString = VECTOR_ELT(pdict_tail_seqs, poffset);
-			tail = get_BString_seq(tail_BString, &tail_len);
+			tail = getBString_charseq(tail_BString, &tail_len);
 			TPdna_match_tail(tail, tail_len, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
 				max_mm, fixedP, fixedS, is_count_only);

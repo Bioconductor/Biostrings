@@ -45,6 +45,9 @@ static const R_CallMethodDef callMethods[] = {
 	{"XRaw_read_complexes_from_i1i2", (DL_FUNC) &XRaw_read_complexes_from_i1i2, 4},
 	{"XRaw_read_complexes_from_subset", (DL_FUNC) &XRaw_read_complexes_from_subset, 3},
 
+	{"char_to_XRaw", (DL_FUNC) &char_to_XRaw, 4},
+	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
+
 	{"XRaw_loadFASTA", (DL_FUNC) &XRaw_loadFASTA, 4},
 
 /* XInteger.c */
@@ -60,6 +63,10 @@ static const R_CallMethodDef callMethods[] = {
 	{"XInteger_write_ints_to_i1i2", (DL_FUNC) &XInteger_write_ints_to_i1i2, 4},
 	{"XInteger_write_ints_to_subset", (DL_FUNC) &XInteger_write_ints_to_subset, 3},
 
+/* BString_utils.c */
+	{"charseq_to_BString", (DL_FUNC) &charseq_to_BString, 5},
+	{"charseqs_to_BStringList", (DL_FUNC) &charseqs_to_BStringList, 5},
+        
 /* reverseComplement.c */
         {"XRaw_translate_copy_from_i1i2", (DL_FUNC) &XRaw_translate_copy_from_i1i2, 5},
         {"XRaw_translate_copy_from_subset", (DL_FUNC) &XRaw_translate_copy_from_subset, 4},

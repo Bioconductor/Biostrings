@@ -340,24 +340,26 @@ BStringViews.equal <- function(x, y)
 setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
     function(e1, e2)
     {
-        class1 <- class(subject(e1))
-        class2 <- class(subject(e2))
-        if (!BString.comparable(class1, class2))
+        if (!BString.comparable(subject(e1), subject(e2))) {
+            class1 <- class(subject(e1))
+            class2 <- class(subject(e2))
             stop("comparison between BStringViews objects with subjects of ",
                  "class \"", class1, "\" and \"", class2, "\" ",
                  "is not supported")
+        }
         BStringViews.equal(e1, e2)
     }
 )
 setMethod("==", signature(e1="BStringViews", e2="BString"),
     function(e1, e2)
     {
-        class1 <- class(subject(e1))
-        class2 <- class(e2)
-        if (!BString.comparable(class1, class2))
+        if (!BString.comparable(subject(e1), e2)) {
+            class1 <- class(subject(e1))
+            class2 <- class(e2)
             stop("comparison between a BStringViews object with a subject of ",
                  "class \"", class1, "\" and a \"", class2, "\" instance ",
                  "is not supported")
+        }
         BStringViews.equal(e1, BStringViews(e2))
     }
 )

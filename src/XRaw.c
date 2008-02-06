@@ -630,6 +630,76 @@ SEXP XRaw_read_complexes_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 
 
 /****************************************************************************
+ * 4 convenience functions
+ * =======================
+ *
+ */
+
+/* NOT a Call() entry point! */
+SEXP mkXRaw(SEXP tag)
+{
+	SEXP ans;
+
+	PROTECT(ans = NEW_OBJECT(MAKE_CLASS("XRaw")));
+	SET_SLOT(ans, mkChar("xp"), R_MakeExternalPtr(NULL, tag, R_NilValue));
+	UNPROTECT(1);
+        return ans;
+}
+
+/* NOT a Call() entry point! */
+SEXP CHARSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+{
+	SEXP ans, dest;
+	int offset, length;
+	const char *src;
+
+	offset = INTEGER(start)[0] - 1;
+	if (offset < 0)
+		error("'start' must be >= 1");
+	length = INTEGER(nchar)[0];
+	if (length == NA_INTEGER) {
+		length = LENGTH(x) - offset;
+		if (length < 0L)
+            		error("cannot read a negative number of letters");
+	} else {
+		if (length < 0L)
+			error("cannot read a negative number of letters");
+		if (offset + length > LENGTH(x))
+			error("cannot read beyond the end of the input");
+	}
+	src = CHAR(x) + offset;
+
+	PROTECT(dest = NEW_RAW(length));
+	if (lkup == R_NilValue) {
+		_Biostrings_memcpy_to_i1i2(0, length - 1,
+			(char *) RAW(dest), length,
+			src, length, sizeof(char));
+	} else {
+		_Biostrings_translate_charcpy_to_i1i2(0, length - 1,
+			(char *) RAW(dest), length,
+			src, length,
+			INTEGER(lkup), LENGTH(lkup));
+	}
+	ans = mkXRaw(dest);
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP char_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+{
+	return CHARSXP_to_XRaw(STRING_ELT(x, 0), start, nchar, lkup);
+}
+
+SEXP copy_subXRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+{
+	SEXP ans;
+
+	error("copy_subXRaw() not ready yet");
+	return R_NilValue;
+}
+
+
+/****************************************************************************
  * I/O functions
  * =============
  *

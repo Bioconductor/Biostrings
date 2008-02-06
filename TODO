@@ -33,6 +33,12 @@ In 2.[6|7]
 In 2.7
 ======
 
+- In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
+
+- charToXRaw() and copySubXRaw(): use the C routines for the R versions.
+
+- check that isMatching now understands the NAs in 'start'.
+
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
   Correct Robert's RBioinf book reporting that the performance decrease
@@ -147,7 +153,7 @@ In 2.7
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- Code cleaning: use get_BString_seq() in every C routine that receives a
+- Code cleaning: use getBString_charseq() in every C routine that receives a
   BString argument. This reduces the number of args that need to be passed
   and makes the code much cleaner. See match_naive_exact() and
   match_naive_inexact() for an example.

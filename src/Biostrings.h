@@ -28,6 +28,11 @@ typedef struct cbuf {
         int count;
 } CBuf; // Buffer for an array of chars
 
+#define BSTRING   0
+#define DNASTRING 1
+#define RNASTRING 2
+#define AASTRING  3
+
 
 /* utils.c */
 
@@ -429,6 +434,29 @@ SEXP XRaw_read_complexes_from_subset(
 		SEXP lkup
 );
 
+SEXP mkXRaw(SEXP tag);
+
+SEXP CHARSXP_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+SEXP char_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+SEXP copy_subXRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
 SEXP XRaw_loadFASTA(
 		SEXP xraw_xp,
 		SEXP filepath,
@@ -485,9 +513,42 @@ SEXP XInteger_write_ints_to_subset(
 
 /* BString_utils.c */
 
-const char *get_BString_seq(
-		SEXP bstring,
-		int *seq_len
+const char *getBString_class(SEXP x);
+
+const char *getBString_charseq(
+		SEXP x,
+		int *length
+);
+
+SEXP mkBString(
+		const char *class,
+		SEXP data,
+		int offset,
+		int length
+);
+
+SEXP CHARSXP_to_BString(
+		SEXP seq,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup,
+		SEXP proto
+);
+
+SEXP charseq_to_BString(
+		SEXP seq,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup,
+		SEXP proto
+);
+
+SEXP charseqs_to_BStringList(
+		SEXP seqs,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup,
+		SEXP proto
 );
 
 

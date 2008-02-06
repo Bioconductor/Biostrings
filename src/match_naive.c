@@ -173,8 +173,8 @@ SEXP is_matching(SEXP pattern_BString, SEXP subject_BString, SEXP start,
 	int nP, nS, start_len, max_mm, fixedP, fixedS, i, *start_elt, *ans_elt;
 	SEXP ans;
 
-	P = get_BString_seq(pattern_BString, &nP);
-	S = get_BString_seq(subject_BString, &nS);
+	P = getBString_charseq(pattern_BString, &nP);
+	S = getBString_charseq(subject_BString, &nS);
 	start_len = LENGTH(start);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
@@ -184,8 +184,8 @@ SEXP is_matching(SEXP pattern_BString, SEXP subject_BString, SEXP start,
 	for (i = 0, start_elt = INTEGER(start), ans_elt = LOGICAL(ans);
              i < start_len;
              i++, start_elt++, ans_elt++) {
-		if (ISNA(*start_elt)) {
-			*ans_elt = NA_LOGICAL; // doesn't seem to work! (I get a FALSE instead)
+		if (*start_elt == NA_INTEGER) {
+			*ans_elt = NA_LOGICAL;
 			continue;
 		}
 		*ans_elt = _is_matching(P, nP, S, nS, *start_elt - 1, max_mm, fixedP, fixedS);
@@ -201,8 +201,8 @@ SEXP match_naive_exact(SEXP pattern_BString, SEXP subject_BString,
 	int nP, nS, is_count_only;
 	SEXP ans;
 
-	P = get_BString_seq(pattern_BString, &nP);
-	S = get_BString_seq(subject_BString, &nS);
+	P = getBString_charseq(pattern_BString, &nP);
+	S = getBString_charseq(subject_BString, &nS);
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
@@ -223,8 +223,8 @@ SEXP match_naive_inexact(SEXP pattern_BString, SEXP subject_BString,
 	int nP, nS, max_mm, fixedP, fixedS, is_count_only;
 	SEXP ans;
 
-	P = get_BString_seq(pattern_BString, &nP);
-	S = get_BString_seq(subject_BString, &nS);
+	P = getBString_charseq(pattern_BString, &nP);
+	S = getBString_charseq(subject_BString, &nS);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
