@@ -333,10 +333,10 @@ setGeneric("startIndex", signature="x",
 setGeneric("endIndex", signature="x",
     function(x, all.names=FALSE) standardGeneric("endIndex"))
 
-setGeneric("nviewIndex", signature="x",
-    function(x, all.names=FALSE) standardGeneric("nviewIndex"))
+setGeneric("countIndex", signature="x",
+    function(x, all.names=FALSE) standardGeneric("countIndex"))
 
-setMethod("nviewIndex", "ViewsIndex",
+setMethod("countIndex", "ViewsIndex",
     function(x, all.names=FALSE)
     {
         if (!is.null(names(x))) {
@@ -455,7 +455,7 @@ setMethod("[[", "ByPos_ViewsIndex",
 ###   > vindex[[6]] # Error in vindex[[6]] : subscript out of bounds
 ###   > startIndex(vindex)
 ###   > endIndex(vindex)
-###   > nviewIndex(vindex)
+###   > countIndex(vindex)
 ###
 setMethod("startIndex", "ByPos_ViewsIndex",
     function(x, all.names=FALSE)
@@ -558,8 +558,8 @@ setMethod("[[", "ByName_ViewsIndex",
 ###   > startIndex(vindex, all.names=TRUE)
 ###   > endIndex(vindex)
 ###   > endIndex(vindex, all.names=TRUE)
-###   > nviewIndex(vindex)
-###   > nviewIndex(vindex, all.names=TRUE)
+###   > countIndex(vindex)
+###   > countIndex(vindex, all.names=TRUE)
 ###
 setMethod("startIndex", "ByName_ViewsIndex",
     function(x, all.names=FALSE)
@@ -639,9 +639,9 @@ extractAllMatches <- function(subject, vindex)
 ###   > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
 ###      user  system elapsed 
 ###    50.663   0.000  50.763
-###   > nmatches <- sapply(end_index, length)
-###   > table(nmatches)
-###   > id0 <- which(nmatches == max(nmatches))
+###   > count_index <- sapply(end_index, length)
+###   > table(count_index)
+###   > id0 <- which(count_index == max(count_index))
 ###   > p0 <- DNAString(dict[id0])
 ###   > p0
 ###     25-letter "DNAString" instance
@@ -713,8 +713,8 @@ extractAllMatches <- function(subject, vindex)
 ###      > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
 ###         user  system elapsed
 ###      105.239   0.188 105.429
-###      > nmatches <- sapply(end_index, length)
-###      > sum(nmatches) # most likely no match were found
+###      > count_index <- sapply(end_index, length)
+###      > sum(count_index) # most likely no match were found
 ###
 ### Results obtained with some random dictionaries on george1:
 ###
@@ -758,7 +758,7 @@ extractAllMatches <- function(subject, vindex)
 ###   > system.time(vindex <- matchPDict(pdict, chr3R))
 ###      user  system elapsed
 ###     1.332   0.008   1.338
-###   > identical(nviewIndex(vindex0), nviewIndex(vindex))
+###   > identical(countIndex(vindex0), countIndex(vindex))
 ###   [1] TRUE
 ###
 ### Allowing mismatches is fast:

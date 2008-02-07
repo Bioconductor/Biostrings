@@ -61,9 +61,8 @@ In 2.7
 
 - matchPDict():
 
-  o rename nviewIndex -> countIndex
-
-  o countPDict(...) should be equivalent to nviewIndex(matchPDict(...), all.names=TRUE)
+  o check that countPDict(...) is equivalent to
+        countIndex(matchPDict(...), all.names=TRUE)
 
   o startIndex() is broken on the ViewsIndex object returned by a call to
     matchPDict() on a TPdna_PDict object.

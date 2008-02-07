@@ -70,7 +70,7 @@ o reverse(), complement() and reverseComplement() now preserve desc(x) when
 o matchPDict() now returns a ViewsIndex object (new class) instead of a list
   of integer vectors. The user can then extract the starts or the ends of
   the matches with startIndex() or endIndex(), extract the number of matches
-  per pattern with nviewIndex(), extract the matches for a given pattern with
+  per pattern with countIndex(), extract the matches for a given pattern with
   [[, put all the matches in a single Views object with unlist() or convert
   this ViewsIndex object into a set of views on the original subject with
   extractAllMatches().
