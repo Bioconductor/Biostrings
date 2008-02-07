@@ -27,6 +27,9 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
+  or RNA into AA.
+
 - BStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
       I suspect there is something wrong with C routine subBStrings when
