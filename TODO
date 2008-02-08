@@ -86,10 +86,12 @@ In 2.7
   o startIndex() is broken on the ViewsIndex object returned by a call to
     matchPDict() on a TPdna_PDict object.
 
-  o Once DNAStringList() constructor is fast enough on character and
+  o Maybe: once DNAStringList() constructor is fast enough on character and
     BStringViews input, simplify "initialize" method for ULdna_PDict:
     convert character and BStringViews inputs with DNAStringList() and
     support only one type of input (DNAStringList) at the C level.
+    Well, I'm not sure I want to do this anymore: performance on character
+    input would drop significantly.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
     'match_count' in match_TPdna.c, store directly in the returned
@@ -101,8 +103,6 @@ In 2.7
     Error in .match.ULdna_PDict.exact(pdict, subject, count.only) : 
       Biostrings internal error in _init_code2offset_lkup(): invalid code
 
-  o Make reverseComplement() work on a PDict object.
-
   o ViewsIndex objects: at some point the user will want to be able to combine
     "compatible" ViewsIndex objects. 2 ViewsIndex objects are "compatible" if they
     are describing 2 set of matches coming from the same input dict and on
@@ -113,6 +113,11 @@ In 2.7
     could be defined. The set operation would be performed between the 2
     subsets of matches of each input pattern. Of course, 2 matches are
     considered equal if their start/end are the same.
+
+  o Make matchPDict() work on masked sequences. This is in fact an important use
+    case for combining ViewsIndex objects (see above).
+
+  o Make reverseComplement() work on a PDict object.
 
   o GenomeSearching.Rnw vignette: add section about inexact matching with matchPDict
 
