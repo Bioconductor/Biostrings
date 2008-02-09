@@ -21,6 +21,7 @@ exportMethods(
     initialize, length, "[", "[[", show, "==", "!=",
     as.character, toString, nchar, toComplex, as.complex,
     as.data.frame, as.matrix, as.list, names,
+    duplicated,
 
     ## Accessors
     alphabet, letter,

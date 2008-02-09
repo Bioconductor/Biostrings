@@ -26,6 +26,7 @@
 \alias{width,ULdna_PDict-method}
 \alias{names,ULdna_PDict-method}
 \alias{show,ULdna_PDict-method}
+\alias{duplicated,ULdna_PDict-method}
 
 \alias{startIndex}
 \alias{startIndex,ViewsIndex-method}
@@ -174,6 +175,7 @@
                                        # ULdna_PDict instance (preprocessing).
   length(pdict0)                       # Same as the input dictionary.
   width(pdict0)                        # The number of chars per pattern.
+  duplicated(pdict0)
 
   ## Using the pattern dictionary on chromosome 3R
   library(BSgenome.Dmelanogaster.FlyBase.r51)

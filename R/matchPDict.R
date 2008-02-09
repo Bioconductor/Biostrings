@@ -156,6 +156,11 @@ setMethod("show", "ULdna_PDict",
     }
 )
 
+setMethod("duplicated", "ULdna_PDict",
+    function(x, incomparables=FALSE, ...)
+        x@dups != 0
+)
+
 debug_ULdna <- function()
 {
     invisible(.Call("match_TPdna_debug", PACKAGE="Biostrings"))
@@ -297,6 +302,13 @@ setMethod("show", "TPdna_PDict",
         if (is.null(names(object)))
             cat(" (patterns have no names)")
         cat("\n")
+    }
+)
+
+setMethod("duplicated", "TPdna_PDict",
+    function(x, incomparables=FALSE, ...)
+    {
+        stop("not ready yet, sorry!")
     }
 )
 
