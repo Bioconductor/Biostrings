@@ -80,6 +80,10 @@ In 2.7
 
 - matchPDict():
 
+  o Implement "duplicated" and "patternFrequency" methods for TPdna_PDict
+    objects. Add 'freq' arg (default FALSE) to patternFrequency() like
+    for alphabetFrequency().
+
   o check that countPDict(...) is equivalent to
         countIndex(matchPDict(...), all.names=TRUE)
 

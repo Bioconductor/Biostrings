@@ -27,6 +27,7 @@
 \alias{names,ULdna_PDict-method}
 \alias{show,ULdna_PDict-method}
 \alias{duplicated,ULdna_PDict-method}
+\alias{patternFrequency,ULdna_PDict-method}
 
 \alias{startIndex}
 \alias{startIndex,ViewsIndex-method}
@@ -176,6 +177,7 @@
   length(pdict0)                       # Same as the input dictionary.
   width(pdict0)                        # The number of chars per pattern.
   duplicated(pdict0)
+  table(patternFrequency(pdict0))      # 9 patterns are repeated 3 times.
 
   ## Using the pattern dictionary on chromosome 3R
   library(BSgenome.Dmelanogaster.FlyBase.r51)

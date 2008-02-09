@@ -26,7 +26,7 @@ exportMethods(
     ## Accessors
     alphabet, letter,
     nview, start, end, width, desc, "desc<-", subject,
-    tail, startIndex, endIndex, countIndex, unlist,
+    patternFrequency, tail, startIndex, endIndex, countIndex, unlist,
     subpatterns, pattern,
     align1, align2, score,
 

@@ -11,6 +11,7 @@
 \alias{tail,TPdna_PDict-method}
 \alias{show,TPdna_PDict-method}
 \alias{duplicated,TPdna_PDict-method}
+\alias{patternFrequency,TPdna_PDict-method}
 
 
 \title{Inexact matching with matchPDict()}
@@ -67,6 +68,7 @@
   pdict9
   tail(pdict9)
   #duplicated(pdict9) # not ready yet!
+  #table(patternFrequency(pdict9)) # not ready yet!
 
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]

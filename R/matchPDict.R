@@ -22,6 +22,8 @@
 
 setClass("PDict", representation("VIRTUAL"))
 
+setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree" class (NOT EXPORTED).
@@ -159,6 +161,19 @@ setMethod("show", "ULdna_PDict",
 setMethod("duplicated", "ULdna_PDict",
     function(x, incomparables=FALSE, ...)
         x@dups != 0
+)
+
+setMethod("patternFrequency", "ULdna_PDict",
+    function(x)
+    {
+        ans <- rep.int(1L, x@length)
+        tb <- table(x@dups[x@dups != 0])
+        for (pos in names(tb)) {
+            i <- as.integer(pos)
+            ans[c(i, which(x@dups == i))] <- 1L + tb[pos][[1]]
+        }
+        ans
+    }
 )
 
 debug_ULdna <- function()
@@ -307,6 +322,13 @@ setMethod("show", "TPdna_PDict",
 
 setMethod("duplicated", "TPdna_PDict",
     function(x, incomparables=FALSE, ...)
+    {
+        stop("not ready yet, sorry!")
+    }
+)
+
+setMethod("patternFrequency", "ULdna_PDict",
+    function(x)
     {
         stop("not ready yet, sorry!")
     }
