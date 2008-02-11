@@ -1,5 +1,4 @@
-#include <Rdefines.h>
-#include <R_ext/Rdynload.h>
+#include "../inst/include/Biostrings_defines.h"
 #include <string.h>
 
 #define DEBUG_BIOSTRINGS 1
@@ -310,6 +309,8 @@ SEXP _Biostrings_viewsbuf_desc_asCHARACTER();
 
 SEXP _Biostrings_viewsbuf_asLIST();
 
+SEXP _reported_matches_asSEXP();
+
 
 /* XRaw.c */
 
@@ -520,6 +521,10 @@ SEXP XInteger_write_ints_to_subset(
 
 
 /* BString_utils.c */
+
+int _DNAencode(char c);
+
+char _DNAdecode(char code);
 
 const char *getBString_class(SEXP x);
 

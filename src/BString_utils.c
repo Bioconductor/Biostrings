@@ -26,6 +26,18 @@ static SEXP getBString_data(SEXP x)
 	return GET_SLOT(x, install("data"));
 }
 
+int _DNAencode(char c)
+{
+	error("_DNAencode(): not ready yet");
+	return 0;
+}
+
+char _DNAdecode(char code)
+{
+	error("_DNAdecode(): not ready yet");
+	return 0;
+}
+
 const char *getBString_charseq(SEXP x, int *length)
 {
 	SEXP xp;

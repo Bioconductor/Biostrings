@@ -137,5 +137,11 @@ void R_init_Biostrings(DllInfo *info)
 	if (sizeof(Rbyte) != sizeof(char))
 		error("sizeof(Rbyte) != sizeof(char)");
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
+	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
+	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
+	R_RegisterCCallable("Biostrings", "getBString_charseq", (DL_FUNC) &getBString_charseq);
+	R_RegisterCCallable("Biostrings", "_Biostrings_reset_viewsbuf", (DL_FUNC) &_Biostrings_reset_viewsbuf);
+	R_RegisterCCallable("Biostrings", "_Biostrings_report_match", (DL_FUNC) &_Biostrings_report_match);
+	R_RegisterCCallable("Biostrings", "_reported_matches_asSEXP", (DL_FUNC) &_reported_matches_asSEXP);
 }
 

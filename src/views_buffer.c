@@ -345,3 +345,13 @@ SEXP _Biostrings_viewsbuf_asLIST()
 	return ans;
 }
 
+SEXP _reported_matches_asSEXP()
+{
+	if (viewsbuf_reporting_mode == 1)
+		return _Biostrings_viewsbuf_count_asINTEGER();
+	if (viewsbuf_reporting_mode == 2)
+		return _Biostrings_viewsbuf_start_asINTEGER();
+	error("_reported_matches_asSEXP(): unsupported reporting mode %d", viewsbuf_reporting_mode);
+	return R_NilValue;
+}
+
