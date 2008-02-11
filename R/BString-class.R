@@ -30,21 +30,21 @@ setMethod("codec", "BString", function(x) NULL)
 setMethod("codec", "DNAString", function(x) DNA_STRING_CODEC)
 setMethod("codec", "RNAString", function(x) RNA_STRING_CODEC)
 
-setGeneric("dec_lkup", function(x) standardGeneric("dec_lkup"))
-setMethod("dec_lkup", "BString",
-    function(x)
-    {
-        codec <- codec(x)
-        if (is.null(codec)) NULL else codec@dec_lkup
-    }
-)
-
 setGeneric("enc_lkup", function(x) standardGeneric("enc_lkup"))
 setMethod("enc_lkup", "BString",
     function(x)
     {
         codec <- codec(x)
         if (is.null(codec)) NULL else codec@enc_lkup
+    }
+)
+
+setGeneric("dec_lkup", function(x) standardGeneric("dec_lkup"))
+setMethod("dec_lkup", "BString",
+    function(x)
+    {
+        codec <- codec(x)
+        if (is.null(codec)) NULL else codec@dec_lkup
     }
 )
 

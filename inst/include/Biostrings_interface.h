@@ -1,8 +1,12 @@
 #include "Biostrings_defines.h"
 
-int DNAencode(char c);
+char DNAencode(char c);
 
 char DNAdecode(char code);
+
+char RNAencode(char c);
+
+char RNAdecode(char code);
 
 const char *get_BString_charseq(SEXP x, int *length);
 

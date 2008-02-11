@@ -1,11 +1,11 @@
 #include "Biostrings_interface.h"
 
-int DNAencode(char c)
+char DNAencode(char c)
 {
-	static int (*fun)(char) = NULL;
+	static char (*fun)(char) = NULL;
 
 	if (fun == NULL)
-		fun = (int (*)(char)) R_GetCCallable("Biostrings", "_DNAencode");
+		fun = (char (*)(char)) R_GetCCallable("Biostrings", "_DNAencode");
 	return fun(c);
 }
 
@@ -18,12 +18,30 @@ char DNAdecode(char code)
 	return fun(code);
 }
 
+char RNAencode(char c)
+{
+	static char (*fun)(char) = NULL;
+
+	if (fun == NULL)
+		fun = (char (*)(char)) R_GetCCallable("Biostrings", "_RNAencode");
+	return fun(c);
+}
+
+char RNAdecode(char code)
+{
+	static char (*fun)(char) = NULL;
+
+	if (fun == NULL)
+		fun = (char (*)(char)) R_GetCCallable("Biostrings", "_RNAdecode");
+	return fun(code);
+}
+
 const char *get_BString_charseq(SEXP x, int *length)
 {
 	static const char *(*fun)(SEXP, int *) = NULL;
 
 	if (fun == NULL)
-		fun = (const char *(*)(SEXP, int *)) R_GetCCallable("Biostrings", "getBString_charseq");
+		fun = (const char *(*)(SEXP, int *)) R_GetCCallable("Biostrings", "_get_BString_charseq");
 	return fun(x, length);
 }
 
@@ -32,7 +50,7 @@ void init_match_reporting(int mode)
 	static void (*fun)(int) = NULL;
 
 	if (fun == NULL)
-		fun = (void (*)(int)) R_GetCCallable("Biostrings", "_Biostrings_reset_viewsbuf");
+		fun = (void (*)(int)) R_GetCCallable("Biostrings", "_init_match_reporting");
 	return fun(mode);
 }
 
@@ -41,8 +59,8 @@ int report_match(int start, int end)
 	static int (*fun)(int, int) = NULL;
 
 	if (fun == NULL)
-		fun = (int (*)(int, int)) R_GetCCallable("Biostrings", "_Biostrings_report_match");
-	return fun(start - 1, end - 1); // Don't forget to change this when _Biostrings_report_match is fixed
+		fun = (int (*)(int, int)) R_GetCCallable("Biostrings", "_report_match");
+	return fun(start, end);
 }
 
 SEXP reported_matches_asSEXP()

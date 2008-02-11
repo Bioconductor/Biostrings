@@ -27,11 +27,6 @@ typedef struct cbuf {
         int count;
 } CBuf; // Buffer for an array of chars
 
-#define BSTRING   0
-#define DNASTRING 1
-#define RNASTRING 2
-#define AASTRING  3
-
 
 /* utils.c */
 
@@ -288,6 +283,8 @@ void _Biostrings_reset_viewsbuf(
 		int reporting_mode
 );
 
+void _init_match_reporting(int mode);
+
 int _Biostrings_append_view(
 		int start,
 		int end,
@@ -297,6 +294,11 @@ int _Biostrings_append_view(
 int _Biostrings_report_match(
 		int Lpos,
 		int Rpos
+);
+
+int _report_match(
+		int start,
+		int end
 );
 
 SEXP _Biostrings_viewsbuf_count_asINTEGER();
@@ -522,13 +524,21 @@ SEXP XInteger_write_ints_to_subset(
 
 /* BString_utils.c */
 
-int _DNAencode(char c);
+SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup);
+
+char _DNAencode(char c);
 
 char _DNAdecode(char code);
 
+SEXP init_RNAlkups(SEXP enc_lkup, SEXP dec_lkup);
+
+char _RNAencode(char c);
+
+char _RNAdecode(char code);
+
 const char *getBString_class(SEXP x);
 
-const char *getBString_charseq(
+const char *_get_BString_charseq(
 		SEXP x,
 		int *length
 );

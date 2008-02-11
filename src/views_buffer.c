@@ -204,6 +204,12 @@ void _Biostrings_reset_viewsbuf(int reporting_mode)
 	return;
 }
 
+// _init_match_reporting() is the replacement for _Biostrings_reset_viewsbuf()
+void _init_match_reporting(int mode)
+{
+	_Biostrings_reset_viewsbuf(mode);
+}
+
 /*
  * Can only be used in reporting mode 0.
  * Return the new number of views.
@@ -269,6 +275,12 @@ int _Biostrings_report_match(int Lpos, int Rpos)
 	}
 #endif
 	return viewsbuf_count;
+}
+
+// _report_match() is the replacement for _Biostrings_report_match()
+int _report_match(int start, int end)
+{
+	return _Biostrings_report_match(--start, --end);
 }
 
 SEXP _Biostrings_viewsbuf_count_asINTEGER()
