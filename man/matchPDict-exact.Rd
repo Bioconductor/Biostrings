@@ -176,7 +176,7 @@
                                        # ULdna_PDict instance (preprocessing).
   length(pdict0)                       # Same as the input dictionary.
   width(pdict0)                        # The number of chars per pattern.
-  duplicated(pdict0)
+  sum(duplicated(pdict0))
   table(patternFrequency(pdict0))      # 9 patterns are repeated 3 times.
 
   ## Using the pattern dictionary on chromosome 3R

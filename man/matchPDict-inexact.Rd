@@ -67,7 +67,7 @@
   pdict9 <- new("TPdna_PDict", dict0, width=9)
   pdict9
   tail(pdict9)
-  #duplicated(pdict9) # not ready yet!
+  #sum(duplicated(pdict9)) # not ready yet!
   #table(patternFrequency(pdict9)) # not ready yet!
 
   library(BSgenome.Dmelanogaster.FlyBase.r51)

@@ -327,7 +327,7 @@ setMethod("duplicated", "TPdna_PDict",
     }
 )
 
-setMethod("patternFrequency", "ULdna_PDict",
+setMethod("patternFrequency", "TPdna_PDict",
     function(x)
     {
         stop("not ready yet, sorry!")
