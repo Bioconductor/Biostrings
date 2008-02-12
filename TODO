@@ -88,8 +88,10 @@ In 2.7
     objects. Add 'freq' arg (default FALSE) to patternFrequency() like
     for alphabetFrequency().
 
-  o check that countPDict(...) is equivalent to
-        countIndex(matchPDict(...), all.names=TRUE)
+  o Added the all.names=TRUE arg to countPDict() with a warning when the
+    user specifies it and the PDict object has no name.
+    With this countPDict(..., all.names) should be exactly equivalent to
+    countIndex(matchPDict(...), all.names)
 
   o startIndex() is broken on the ViewsIndex object returned by a call to
     matchPDict() on a TPdna_PDict object.
