@@ -87,7 +87,7 @@
   pdict0 <- new("ULdna_PDict", dict0)
   count0 <- countPDict(pdict0, chr3R)
   count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
-  identical(count0, count90)          # TRUE
+  identical(count_tp9_mm0, count0)    # TRUE
   
   ## -------------------------------------------------------------------------
   ## C. VARIABLE LENGTH DICTIONARY
