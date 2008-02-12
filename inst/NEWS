@@ -3,6 +3,9 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added support for a Biostrings C interface (work-in-progress).
+  See inst/include/Biostrings_interface.h for how to use it in your package.
+
 o Added the isMatching() function.
 
 o Added support in matchPDict() for inexact matching of a dictionary with

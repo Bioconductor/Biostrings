@@ -34,6 +34,10 @@ In 2.7
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
       I suspect there is something wrong with C routine subBStrings when
       proto is NULL.
+    o DNAStringList(x) should not do anything when x is already a DNAStringList
+      _instance_ (class(x) == "DNAStringList"), but not necesarily when
+      it's a DNAStringList object (is(x, "DNAStringList")).
+      The same apply to everybody in the BStringList() family.
     o Improve speed of BStringList() and family when the input is a BStringList
       or BStringViews object (i.e. XRaw input). Follow the same path as for
       character input where C routine charseqs_to_BStrings() is used.
@@ -90,6 +94,9 @@ In 2.7
   o startIndex() is broken on the ViewsIndex object returned by a call to
     matchPDict() on a TPdna_PDict object.
 
+  o extractAllMatches() fails on a very big ViewsIndex object (can't allocate
+    vector of size 5.2Gb).
+
   o Maybe: once DNAStringList() constructor is fast enough on character and
     BStringViews input, simplify "initialize" method for ULdna_PDict:
     convert character and BStringViews inputs with DNAStringList() and
@@ -129,6 +136,8 @@ In 2.7
 
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
+
+- Maybe make strrev() a "reverse" method for character objects.
 
 - Define a DNAorRNA class (or NucleotideString) that is the union of the
   DNAString and RNAString classes (use a union class for this or "do it by
@@ -180,6 +189,23 @@ In 2.7
   object. Fix this.
 
 - Add "duplicated" methods for BStringViews, BStringList and BStringSet objects.
+
+- Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
+  Biostrings_define.h instead of the current magic values used all over the
+  place.
+
+- Add a no.match.length argument to gregexpr2() that is FALSE by
+  default so gregexpr(pattern, text, fixed=TRUE) is more interchangeable
+  with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
+  internal code.
+
+- Look at apse.c in R/src/main for Levenshtein. It's coming from
+    http://search.cpan.org/dist/String-Approx/
+  and is what Perl and Python are using.
+  It should stop and return an error code after some max.distance
+  has been reached. We definitely want to be able to do this if
+  we're going to use it on the millions of tails of a "trusted prefix"
+  dictionary.
 
 - Remove the Biostrings 1 subdir.
 

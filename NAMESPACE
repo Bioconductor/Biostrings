@@ -1,8 +1,8 @@
+useDynLib(Biostrings)
+
 import(methods)
 import(stats)
 import(utils) ## for the "tail" generic
-
-useDynLib(Biostrings)
 
 exportClasses(
     "XRaw", "XInteger",
