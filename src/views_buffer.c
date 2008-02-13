@@ -28,7 +28,7 @@ SEXP Biostrings_debug_views_buffer()
         return R_NilValue;
 }
 
-static int viewsbuf_reporting_mode;
+static int viewsbuf_mrmode;
 
 static int *viewsbuf_start, *viewsbuf_end;
 static char **viewsbuf_desc;
@@ -48,7 +48,7 @@ static int new_view()
 						(long) viewsbuf_maxcount, int);
 		viewsbuf_end = Srealloc((char *) viewsbuf_end, new_maxcount,
 						(long) viewsbuf_maxcount, int);
-		if (viewsbuf_reporting_mode == 0)
+		if (viewsbuf_mrmode == 0)
 			viewsbuf_desc = Srealloc((char *) viewsbuf_desc, new_maxcount,
 						(long) viewsbuf_maxcount, char *);
 		viewsbuf_maxcount = new_maxcount;
@@ -57,7 +57,7 @@ static int new_view()
 }
 
 /*
- * Must be used in reporting mode >= 2 (see _Biostrings_reset_viewsbuf() below).
+ * Must be used in mrmode >= 2 (see _Biostrings_reset_viewsbuf() below).
  */
 static void insert_view_at(int start, int end, int insert_at)
 {
@@ -77,7 +77,7 @@ static void insert_view_at(int start, int end, int insert_at)
 }
 
 /*
- * Used by reporting mode 3 (see _Biostrings_reset_viewsbuf() below).
+ * Used by mrmode 3 (see _Biostrings_reset_viewsbuf() below).
  */
 static void insert_view_if_new(int start, int end)
 {
@@ -94,7 +94,7 @@ static void insert_view_if_new(int start, int end)
 }
 
 /*
- * Used by reporting mode 4 (see _Biostrings_reset_viewsbuf() below).
+ * Used by mrmode 4 (see _Biostrings_reset_viewsbuf() below).
  */
 static void merge_with_last_view(int start, int end)
 {
@@ -115,7 +115,7 @@ static void merge_with_last_view(int start, int end)
 }
 
 /*
- * Used by reporting mode 5 (see _Biostrings_reset_viewsbuf() below).
+ * Used by mrmode 5 (see _Biostrings_reset_viewsbuf() below).
  */
 static void merge_view(int start, int end)
 {
@@ -155,7 +155,7 @@ static void merge_view(int start, int end)
 /*
  * Reset views buffer
  *
- * 6 valid "reporting modes":
+ * 6 valid "match reporting modes":
  *
  *   0: Views must be reported thru _Biostrings_append_view(start, end, desc).
  *      They are not reordered, nor checked for duplicated.
@@ -182,9 +182,9 @@ static void merge_view(int start, int end)
  *      actually reduce the current set of matches if several matches are
  *      replaced by a single one.
  *      IMPORTANT: If the matches are reported "in ascending Lpos order",
- *      mode 4 and 5 will be semantically equivalent: both will normalize
+ *      mrmode 4 and 5 will be semantically equivalent: both will normalize
  *      the set of matches but 4 will be slightly faster (20-30%) and
- *      should be preferred. Use mode 5 only if there is no guarantee that
+ *      should be preferred. Use mrmode 5 only if there is no guarantee that
  *      the matches will be found (and reported) "in ascending Lpos order".
  *      Note that the reordering is performed every time a new match is
  *      reported by using a simple bubble sort approach. This is clearly
@@ -194,9 +194,9 @@ static void merge_view(int start, int end)
  *      too bad when the number of matches is small (< 10^5) or doesn't need
  *      too much reodering.
  */
-void _Biostrings_reset_viewsbuf(int reporting_mode)
+void _Biostrings_reset_viewsbuf(int mrmode)
 {
-	viewsbuf_reporting_mode = reporting_mode;
+	viewsbuf_mrmode = mrmode;
 	/* No memory leak here, because we use transient storage allocation */
 	viewsbuf_start = viewsbuf_end = NULL;
 	viewsbuf_desc = NULL;
@@ -205,13 +205,13 @@ void _Biostrings_reset_viewsbuf(int reporting_mode)
 }
 
 // _init_match_reporting() is the replacement for _Biostrings_reset_viewsbuf()
-void _init_match_reporting(int mode)
+void _init_match_reporting(int mrmode)
 {
-	_Biostrings_reset_viewsbuf(mode);
+	_Biostrings_reset_viewsbuf(mrmode);
 }
 
 /*
- * Can only be used in reporting mode 0.
+ * Can only be used in mrmode 0.
  * Return the new number of views.
  */
 int _Biostrings_append_view(int start, int end, const char *desc)
@@ -219,8 +219,8 @@ int _Biostrings_append_view(int start, int end, const char *desc)
 	int i;
 	size_t desc_size;
 
-	if (viewsbuf_reporting_mode != 0)
-		error("_Biostrings_append_view(): viewsbuf_reporting_mode != 0");
+	if (viewsbuf_mrmode != 0)
+		error("_Biostrings_append_view(): viewsbuf_mrmode != 0");
 	i = new_view();
 	viewsbuf_start[i] = start;
 	viewsbuf_end[i] = end;
@@ -235,7 +235,7 @@ int _Biostrings_append_view(int start, int end, const char *desc)
 }
 
 /*
- * Can only be used in reporting mode != 0.
+ * Can only be used in mrmode != 0.
  */
 int _Biostrings_report_match(int Lpos, int Rpos)
 {
@@ -249,9 +249,9 @@ int _Biostrings_report_match(int Lpos, int Rpos)
 		Rprintf("match found at start=%d end=%d --> ", start, end);
 	}
 #endif
-	switch (viewsbuf_reporting_mode) {
+	switch (viewsbuf_mrmode) {
 		case 0:
-			error("_Biostrings_report_match(): viewsbuf_reporting_mode == 0");
+			error("_Biostrings_report_match(): viewsbuf_mrmode == 0");
 		break;
 		case 1:
 			viewsbuf_count++;
@@ -297,8 +297,8 @@ SEXP _Biostrings_viewsbuf_start_asINTEGER()
 {
 	SEXP ans;
 
-	if (viewsbuf_reporting_mode == 1)
-		error("_Biostrings_viewsbuf_start_asINTEGER(): viewsbuf_reporting_mode == 1");
+	if (viewsbuf_mrmode == 1)
+		error("_Biostrings_viewsbuf_start_asINTEGER(): viewsbuf_mrmode == 1");
 	PROTECT(ans = NEW_INTEGER(viewsbuf_count));
 	memcpy(INTEGER(ans), viewsbuf_start, sizeof(int) * viewsbuf_count);
 	UNPROTECT(1);
@@ -309,8 +309,8 @@ SEXP _Biostrings_viewsbuf_end_asINTEGER()
 {
 	SEXP ans;
 
-	if (viewsbuf_reporting_mode == 1)
-		error("_Biostrings_viewsbuf_end_asINTEGER(): viewsbuf_reporting_mode == 1");
+	if (viewsbuf_mrmode == 1)
+		error("_Biostrings_viewsbuf_end_asINTEGER(): viewsbuf_mrmode == 1");
 	PROTECT(ans = NEW_INTEGER(viewsbuf_count));
 	memcpy(INTEGER(ans), viewsbuf_end, sizeof(int) * viewsbuf_count);
 	UNPROTECT(1);
@@ -322,8 +322,8 @@ SEXP _Biostrings_viewsbuf_desc_asCHARACTER()
 	SEXP ans;
 	int i;
 
-	if (viewsbuf_reporting_mode != 0)
-		error("_Biostrings_viewsbuf_desc_asCHARACTER(): viewsbuf_reporting_mode != 0");
+	if (viewsbuf_mrmode != 0)
+		error("_Biostrings_viewsbuf_desc_asCHARACTER(): viewsbuf_mrmode != 0");
 	PROTECT(ans = NEW_CHARACTER(viewsbuf_count));
 	for (i = 0; i < viewsbuf_count; i++)
 		SET_STRING_ELT(ans, i, viewsbuf_desc[i] == NULL ? NA_STRING : mkChar(viewsbuf_desc[i]));
@@ -335,8 +335,8 @@ SEXP _Biostrings_viewsbuf_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
-	if (viewsbuf_reporting_mode == 1)
-		error("_Biostrings_viewsbuf_asLIST(): viewsbuf_reporting_mode == 1");
+	if (viewsbuf_mrmode == 1)
+		error("_Biostrings_viewsbuf_asLIST(): viewsbuf_mrmode == 1");
 	PROTECT(ans = NEW_LIST(2));
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
@@ -359,11 +359,11 @@ SEXP _Biostrings_viewsbuf_asLIST()
 
 SEXP _reported_matches_asSEXP()
 {
-	if (viewsbuf_reporting_mode == 1)
+	if (viewsbuf_mrmode == 1)
 		return _Biostrings_viewsbuf_count_asINTEGER();
-	if (viewsbuf_reporting_mode == 2)
+	if (viewsbuf_mrmode == 2)
 		return _Biostrings_viewsbuf_start_asINTEGER();
-	error("_reported_matches_asSEXP(): unsupported reporting mode %d", viewsbuf_reporting_mode);
+	error("_reported_matches_asSEXP(): invalid mrmode %d", viewsbuf_mrmode);
 	return R_NilValue;
 }
 

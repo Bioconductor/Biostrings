@@ -279,11 +279,9 @@ SEXP _CBuf_asRAW(
 
 SEXP Biostrings_debug_views_buffer();
 
-void _Biostrings_reset_viewsbuf(
-		int reporting_mode
-);
+void _Biostrings_reset_viewsbuf(int mrmode);
 
-void _init_match_reporting(int mode);
+void _init_match_reporting(int mrmode);
 
 int _Biostrings_append_view(
 		int start,

@@ -2,9 +2,9 @@
  Biostrings C interface
  ----------------------
 
- This file defines a subset of Biostrings C routines that can be called by
- C code in other packages.
- To use them in your package, you need to do the following:
+ This file contains the prototypes of a subset of Biostrings C routines that
+ can be called by C code in other packages.
+ In order to use these routines in your package, you need to do the following:
 
    a. Add the Biostrings package to the 'Depends:', 'Imports:' and 'LinkingTo:'
       fields of your DESCRIPTION file. Note that most of the times you should
@@ -97,10 +97,25 @@ char RNAdecode(char code);
 
 const char *get_BString_charseq(SEXP x, int *length);
 
-void init_match_reporting(int mode);
+/*
+ * Look at Biostrings_defines.h in this folder for the valid values of the
+ * 'mrmode' arg (the match reporting mode).
+ */
+void init_match_reporting(int mrmode);
 
+/*
+ * In mode COUNT_MRMODE, the values of the 'start' and 'end' args are ignored.
+ * In mode START_MRMODE, the value of the 'end' arg is ignored.
+ * So yes, for now, the 'end' arg is always ignored, but modes that look at
+ * this argument will be added in the future.
+ */
 int report_match(int start, int end);
 
+/*
+ * The SEXP returned by reported_matches_asSEXP() is unprotected! It's an
+ * integer vector of length 1 in mode COUNT_MRMODE and of length the number of
+ * matches in mode START_MRMODE.
+ */
 SEXP reported_matches_asSEXP();
 
 // more functions to come soon...

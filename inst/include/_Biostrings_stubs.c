@@ -45,13 +45,13 @@ const char *get_BString_charseq(SEXP x, int *length)
 	return fun(x, length);
 }
 
-void init_match_reporting(int mode)
+void init_match_reporting(int mrmode)
 {
 	static void (*fun)(int) = NULL;
 
 	if (fun == NULL)
 		fun = (void (*)(int)) R_GetCCallable("Biostrings", "_init_match_reporting");
-	return fun(mode);
+	return fun(mrmode);
 }
 
 int report_match(int start, int end)
