@@ -112,9 +112,10 @@ void init_match_reporting(int mrmode);
 int report_match(int start, int end);
 
 /*
- * The SEXP returned by reported_matches_asSEXP() is unprotected! It's an
- * integer vector of length 1 in mode COUNT_MRMODE and of length the number of
- * matches in mode START_MRMODE.
+ * The SEXP returned by reported_matches_asSEXP() is an integer vector
+ * of length 1 in mode COUNT_MRMODE and of length the number of matches
+ * in mode START_MRMODE.
+ * IMPORTANT: It is returned UNPROTECTED by reported_matches_asSEXP()!
  */
 SEXP reported_matches_asSEXP();
 
