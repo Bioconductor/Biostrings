@@ -172,8 +172,8 @@
   length(dict0)                        # Hundreds of thousands of patterns.
   unique(nchar(dict0))                 # Patterns are 25-mers.
   dict0[1:5]
-  pdict0 <- new("ULdna_PDict", dict0)  # Store the input dictionary into a
-                                       # ULdna_PDict instance (preprocessing).
+  pdict0 <- PDict(dict0)               # Store the input dictionary into a
+                                       # PDict object (preprocessing).
   length(pdict0)                       # Same as the input dictionary.
   width(pdict0)                        # The number of chars per pattern.
   sum(duplicated(pdict0))
@@ -209,7 +209,7 @@
   dict1 <- dict0[8211:8236]            # The input dictionary.
   names(dict1) <- LETTERS
   dict1[1:5]
-  pdict1 <- new("ULdna_PDict", dict1)
+  pdict1 <- PDict(dict1)
   length(pdict1)                       # Same as the input dictionary.
   names(pdict1)                        # Same as names(dict1).
   vindex <- matchPDict(pdict1, chr3R)  # Search...
@@ -249,9 +249,10 @@
     ##   o totalcount: total number of matches
     getPDictStats <- function(dict0, width, subject)
     {
+      dict <- DNAStringList(dict0, nchar=width)
       list(
         width=width,
-        pptime=system.time(pdict <- new("ULdna_PDict", dict0, width))[["elapsed"]],
+        pptime=system.time(pdict <- PDict(dict))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
         matchtime=system.time(vindex <- matchPDict(pdict, subject))[["elapsed"]],

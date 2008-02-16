@@ -63,8 +63,8 @@
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence  # The input dictionary.
 
-  ## Specify the length of the "trusted prefix" via the 'width' argument
-  pdict9 <- new("TPdna_PDict", dict0, width=9)
+  ## Specify the length of the "trusted prefix" via the 'tb.end' argument
+  pdict9 <- PDict(dict0, tb.end=9)
   pdict9
   tail(pdict9)
   #sum(duplicated(pdict9)) # not ready yet!
@@ -84,7 +84,7 @@
   ## When the input dictionary has a uniform length, using 'max.mismatch=0'
   ## on the "trusted prefix" dictionary is equivalent to (but much slower than)
   ## using the full "uniform length" dictionary.
-  pdict0 <- new("ULdna_PDict", dict0)
+  pdict0 <- PDict(dict0)
   count0 <- countPDict(pdict0, chr3R)
   count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
   identical(count_tp9_mm0, count0)    # TRUE
@@ -93,8 +93,7 @@
   ## C. VARIABLE LENGTH DICTIONARY
   ## -------------------------------------------------------------------------
 
-  ## Use the 'width' argument to specify the length of the "trusted prefix"
-  pdict <- new("TPdna_PDict", c("ACNG", "GT", "CGT", "AC"), width=2)
+  pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.end=2)
   pdict
   tail(pdict) 
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=0))

@@ -716,6 +716,8 @@ SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
 	alloc_input_uldict(LENGTH(dict), width);
 	for (poffset = 0; poffset < LENGTH(dict); poffset++) {
 		dict_elt = STRING_ELT(dict, poffset);
+		if (dict_elt == NA_STRING)
+			error("'dict' contains NAs");
 		add_pattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
 	build_actree();

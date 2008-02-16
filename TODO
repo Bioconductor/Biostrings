@@ -111,7 +111,7 @@ In 2.7
     INTEGER vector.
 
   o Fix this bug:
-    > pdict <- new("ULdna_PDict", c("AA", "AC"))
+    > pdict <- PDict(c("AA", "AC"))
     > matchPDict(pdict, DNAString("TAACAC"))
     Error in .match.ULdna_PDict.exact(pdict, subject, count.only) : 
       Biostrings internal error in _init_code2offset_lkup(): invalid code

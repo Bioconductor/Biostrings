@@ -525,7 +525,7 @@ runOneStrandAnalysis <- function(dict0, bsgenome, seqnames, strand, outfile="", 
         "chromosomes", paste(seqnames, collapse=", "), "\n")
     if (strand == "-")
         dict0 <- reverseComplement(dict0)
-    pdict <- new("ULdna_PDict", dict0)
+    pdict <- PDict(dict0)
     for (seqname in seqnames) {
         subject <- bsgenome[[seqname]]
         cat(">>> Finding all hits in strand", strand, "of chromosome", seqname, "...\n")

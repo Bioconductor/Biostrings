@@ -182,7 +182,7 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ###   width <- 12
 ###   dict0 <- mkAllStrings(names(Biostrings:::DNAcodes(TRUE)), width)
 ###   names(dict0) <- dict0
-###   pdict <- new("ULdna_PDict", dict0)
+###   pdict <- PDict(dict0)
 ###   system.time(c1 <- countPDict(pdict, chr3R))
 ###   system.time(c2 <- oligonucleotideFrequency(chr3R, width, use.names=FALSE))
 ###   identical(c1, c2) # must be TRUE
