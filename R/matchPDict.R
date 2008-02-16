@@ -357,7 +357,8 @@ setMethod("PDict", "AsIs",
     {
         if (!is.character(dict))
             stop("unsuported 'dict' type")
-        PDict(as.character(dict), tb.start=tb.start, tb.end=tb.end,
+        class(dict) <- "character" # keeps the names (unlike as.character())
+        PDict(dict, tb.start=tb.start, tb.end=tb.end,
               skip.invalid.patterns=skip.invalid.patterns)
     }
 )
