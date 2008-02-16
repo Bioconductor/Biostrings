@@ -84,6 +84,10 @@ In 2.7
 
 - matchPDict():
 
+  o Implement the skip.invalid.patterns arg in PDict() (so the user can build
+    a PDict object from Solexa data that would contain Ns if he wants, reads
+    with an N would just be skipped).
+
   o Implement "duplicated" and "patternFrequency" methods for TPdna_PDict
     objects. Add 'freq' arg (default FALSE) to patternFrequency() like
     for alphabetFrequency().
