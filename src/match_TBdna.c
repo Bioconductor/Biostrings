@@ -135,19 +135,19 @@ typedef struct acnode {
 static ACNode *actree_nodes_buf = NULL;
 static int actree_nodes_buf_count;
 
-SEXP match_TPdna_debug()
+SEXP match_TBdna_debug()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_TPdna.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'match_TBdna.c'\n", debug ? "on" : "off");
 	if (debug) {
-		Rprintf("[DEBUG] match_TPdna_debug(): INTS_PER_ACNODE=%d\n",
+		Rprintf("[DEBUG] match_TBdna_debug(): INTS_PER_ACNODE=%d\n",
 			INTS_PER_ACNODE);
-		Rprintf("[DEBUG] match_TPdna_debug(): MAX_ACNODEBUF_LENGTH=%d\n",
+		Rprintf("[DEBUG] match_TBdna_debug(): MAX_ACNODEBUF_LENGTH=%d\n",
 			MAX_ACNODEBUF_LENGTH);
 	}
 #else
-	Rprintf("Debug mode not available in 'match_TPdna.c'\n");
+	Rprintf("Debug mode not available in 'match_TBdna.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -507,11 +507,11 @@ static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char 
 
 
 /****************************************************************************
- * Inexact matching on the tails of the TPdna_PDict object
+ * Inexact matching on the tails of the TBdna_PDict object
  * =======================================================
  */
 
-static void TPdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
+static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
 			int poffset, const int *dups, int dups_len,
 			int max_mm, int fixedP, int fixedS, int is_count_only)
 {
@@ -708,11 +708,14 @@ static SEXP uldna_asLIST()
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
+SEXP ULdna_pp_StrVect(SEXP dict, SEXP start, SEXP end, SEXP width)
 {
 	int poffset;
 	SEXP dict_elt;
 
+	// current limitation, remove later
+	if (INTEGER(start)[0] != 1)
+		error("'start' must be 1 for now");
 	alloc_input_uldict(LENGTH(dict), width);
 	for (poffset = 0; poffset < LENGTH(dict); poffset++) {
 		dict_elt = STRING_ELT(dict, poffset);
@@ -733,8 +736,11 @@ SEXP ULdna_pp_StrVect(SEXP dict, SEXP width)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_BStringList(SEXP dict, SEXP width)
+SEXP ULdna_pp_BStringList(SEXP dict, SEXP start, SEXP end, SEXP width)
 {
+	// current limitation, remove later
+	if (INTEGER(start)[0] != 1)
+		error("'start' must be 1 for now");
 	error("Not ready yet!\n");
 	return uldna_asLIST();
 }
@@ -743,8 +749,7 @@ SEXP ULdna_pp_BStringList(SEXP dict, SEXP width)
  * .Call entry point: "ULdna_pp_views"
  *
  * Arguments:
- *   'dict_subj_xp': subject(dict)@data@xp
- *   'dict_subj_offset': subject(dict)@offset
+ *   'dict_subj_BString': subject(dict)
  *   'dict_start': start(dict)
  *   'dict_end': end(dict)
  * Note that 'dict_start' and 'dict_end' describe a set of views on subject(dict)
@@ -752,16 +757,17 @@ SEXP ULdna_pp_BStringList(SEXP dict, SEXP width)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_length,
-		SEXP dict_start, SEXP dict_end, SEXP width)
+SEXP ULdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
+		SEXP start, SEXP end, SEXP width)
 {
-	int subj_offset, subj_length, dict_length;
-	const Rbyte *subj;
+	int subj_length, dict_length;
+	const char *subj;
 	int poffset, *view_start, *view_end, view_offset;
 
-	subj_offset = INTEGER(dict_subj_offset)[0];
-	subj = RAW(R_ExternalPtrTag(dict_subj_xp)) + subj_offset;
-	subj_length = INTEGER(dict_subj_length)[0];
+	// current limitation, remove later
+	if (INTEGER(start)[0] != 1)
+		error("'start' must be 1 for now");
+	subj = _get_BString_charseq(dict_subj_BString, &subj_length);
 	dict_length = LENGTH(dict_start); // must be the same as LENGTH(dict_end)
 	alloc_input_uldict(dict_length, width);
 	for (poffset = 0, view_start = INTEGER(dict_start), view_end = INTEGER(dict_end);
@@ -771,7 +777,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 		if (view_offset < 0 || *view_end > subj_length)
 			error("'dict' has out of limits views");
 		add_pattern_to_input_uldict(poffset,
-			(char *) (subj + view_offset), *view_end - view_offset);
+			subj + view_offset, *view_end - view_offset);
 	}
 	build_actree();
 	return uldna_asLIST();
@@ -779,7 +785,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
 
 
 /****************************************************************************
- * .Call entry point: "match_TPdna"
+ * .Call entry point: "match_TBdna"
  *
  * Arguments:
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
@@ -797,7 +803,7 @@ SEXP ULdna_pp_views(SEXP dict_subj_xp, SEXP dict_subj_offset, SEXP dict_subj_len
  *
  ****************************************************************************/
 
-SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
+SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
                 SEXP pdict_dups, SEXP pdict_tail_seqs,
 		SEXP subject_BString,
 		SEXP max_mismatch, SEXP fixed,
@@ -827,7 +833,7 @@ SEXP match_TPdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		for (poffset = LENGTH(pdict_tail_seqs) - 1; poffset >= 0; poffset--) {
 			tail_BString = VECTOR_ELT(pdict_tail_seqs, poffset);
 			tail = _get_BString_charseq(tail_BString, &tail_len);
-			TPdna_match_tail(tail, tail_len, S, nS,
+			TBdna_match_tail(tail, tail_len, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
 				max_mm, fixedP, fixedS, is_count_only);
 		}

@@ -191,49 +191,62 @@ setMethod("patternFrequency", "ULdna_PDict",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "TPdna_PDict" class.
+### The "TBdna_PDict" class.
 ###
-### A container for storing a preprocessed "Trusted Prefix" dictionary (or
+### A container for storing a preprocessed "Trusted Band" dictionary (or
 ### set) of DNA patterns.
+### 2 important particular cases of "Trusted Band" dictionaries are:
+###   1) "Trusted Prefix": a "Trusted Prefix" dictionary is a "Trusted Band"
+###      dictionary with no head.
+###   2) "Trusted Suffix": a "Trusted Suffix" dictionary is a "Trusted Band"
+###      dictionary with no tail.
 ###
 
-setClass("TPdna_PDict",
+### 'head' and 'tail' must be DNAStringList objects of the same length.
+### One of them can be NULL but they can't both be NULL at the same time.
+setClass("TBdna_PDict",
     contains="ULdna_PDict",
     representation(
-        tail="DNAStringList"
+        head="DNAStringList", # can be NULL
+        tail="DNAStringList"  # can be NULL
     )
 )
 
-setMethod("initialize", "TPdna_PDict",
-    function(.Object, length, pp_Cans, names, tail)
+setMethod("initialize", "TBdna_PDict",
+    function(.Object, length, pp_Cans, names)
     {
-        .Object <- callNextMethod(.Object, length, pp_Cans, names)
-        .Object@tail <- tail
-        .Object
+        callNextMethod(.Object, length, pp_Cans, names)
     }
 )
 
-setMethod("tail", "TPdna_PDict", function(x, ...) x@tail)
+setMethod("head", "TBdna_PDict", function(x, ...) x@head)
+setMethod("tail", "TBdna_PDict", function(x, ...) x@tail)
 
-setMethod("show", "TPdna_PDict",
+setMethod("show", "TBdna_PDict",
     function(object)
     {
-        cat(length(object), "-pattern \"PDict\" object (of width ",
-            width(object), ") with a tail", sep="")
+        if (is.null(object@head))
+            trusted_part <- "Prefix"
+        else if (is.null(object@tail))
+            trusted_part <- "Suffix"
+        else
+            trusted_part <- "Band"
+        cat(length(object), "-pattern \"PDict\" object with a Trusted ",
+            trusted_part, " of width ", width(object), sep="")
         if (is.null(names(object)))
             cat(" (patterns have no names)")
         cat("\n")
     }
 )
 
-setMethod("duplicated", "TPdna_PDict",
+setMethod("duplicated", "TBdna_PDict",
     function(x, incomparables=FALSE, ...)
     {
         stop("not ready yet, sorry!")
     }
 )
 
-setMethod("patternFrequency", "TPdna_PDict",
+setMethod("patternFrequency", "TBdna_PDict",
     function(x)
     {
         stop("not ready yet, sorry!")
@@ -244,6 +257,117 @@ setMethod("patternFrequency", "TPdna_PDict",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The PDict() constructor.
 ###
+
+debug_ULdna <- function()
+{
+    invisible(.Call("match_TBdna_debug", PACKAGE="Biostrings"))
+}
+
+### 'tb.start', 'tb.end', 'tb.width' are used to control the geometry of the
+### Trusted Band. Exactly one of 'tb.start' or 'tb.end' must be NA, the other
+### one must be >= 1 or <= -1 (a negative value specifies a starting or ending
+### position relative to the end of the input patterns).
+### 'tb.width' must be NA or >= 1.
+### If 'tb.start' is <= -1, then 'tb.width' must be <= -tb.start
+### If 'tb.end' is >= 1, then 'tb.width' must be <= tb.end
+.PDict <- function(dict, names, tb.start, tb.end, tb.width,
+                   drop.head, drop.tail, skip.invalid.patterns)
+{
+    if (!is.null(names)) {
+        if (any(names %in% c("", NA)))
+            stop("'dict' has invalid names")
+        if (any(duplicated(names)))
+            stop("'dict' has duplicated names")
+    }
+    if (!isSingleNumberOrNA(tb.start))
+        stop("'tb.start' must be a single integer or NA")
+    if (!is.integer(tb.start))
+        tb.start <- as.integer(tb.start)
+    if (!isSingleNumberOrNA(tb.end))
+        stop("'tb.end' must be a single integer or NA")
+    if (!is.integer(tb.end))
+        tb.end <- as.integer(tb.end)
+    if (!isSingleNumberOrNA(tb.width))
+        stop("'tb.width' must be a single integer or NA")
+    if (!is.integer(tb.width))
+        tb.width <- as.integer(tb.width)
+    if (is.na(tb.width))
+        tb.width <- NULL
+    else if (tb.width < 1L)
+        stop("'tb.width' must be >= 1")
+    if (!isTRUEorFALSE(drop.head))
+        stop("'drop.head' must be 'TRUE' or 'FALSE'")
+    if (!isTRUEorFALSE(drop.tail))
+        stop("'drop.tail' must be 'TRUE' or 'FALSE'")
+    if (is.na(tb.start) == is.na(tb.end))
+        stop("exactly one of 'tb.start' or 'tb.end' must be NA")
+    if (is.na(tb.end)) {
+        ## 'tb.end' is NA, 'tb.start' is not
+        if (tb.start == 0)
+            stop("'tb.start' must be >= 1 or <= -1")
+        if (tb.start >= 1L) {
+            if (tb.start == 1L)
+                drop.head <- TRUE
+        } else {
+            if (is.null(tb.width))
+                stop("when 'tb.start' is <= -1, 'tb.width' cannot be NULL")
+            if (tb.width > -tb.start)
+                stop("when 'tb.start' is <= -1, 'tb.width' must be <= '-tb.start'")
+            if (tb.width == -tb.start)
+                drop.tail <- TRUE
+        }
+    } else {
+        ## 'tb.start' is NA, 'tb.end' is not
+        if (tb.end == 0)
+            stop("'tb.end' must be >= 1 or <= -1")
+        if (tb.end <= -1L) {
+            if (tb.end == -1L)
+                drop.tail <- TRUE
+        } else {
+            if (is.null(tb.width))
+                stop("when 'tb.end' is >= 1, 'tb.width' cannot be NULL")
+            if (tb.width > tb.end)
+                stop("when 'tb.end' is >= 1, 'tb.width' must be <= 'tb.end'")
+            if (tb.width == tb.end)
+                drop.head <- TRUE
+        }
+    }
+    ## Current limitation, remove later
+    if (is.na(tb.start) || tb.start != 1L)
+        stop("'tb.start' must be 1 for now")
+
+    on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
+    if (is.character(dict)) {
+        pp_Cans <- .Call("ULdna_pp_StrVect",
+                         dict,
+                         tb.start, tb.end, tb.width,
+                         PACKAGE="Biostrings")
+    } else if (is(dict, "DNAStringList")) {
+        pp_Cans <- .Call("ULdna_pp_BStringList",
+                         dict,
+                         tb.start, tb.end, tb.width,
+                         PACKAGE="Biostrings")
+    } else if (is(dict, "BStringViews")) {
+        pp_Cans <- .Call("ULdna_pp_views",
+                         subject(dict), start(dict), end(dict),
+                         tb.start, tb.end, tb.width,
+                         PACKAGE="Biostrings")
+    } else {
+        stop("unsuported 'dict' type")
+    }
+
+    ## Because of current limitation, this is simple. But it will become much
+    ## more complicated when current limitation has gone.
+    if (is.null(tb.width) || pp_Cans$width == pp_Cans$stats$max.width)
+        drop.tail <- TRUE
+
+    if (drop.head && drop.tail)
+        return(new("ULdna_PDict", length(dict), pp_Cans, names))
+    ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
+    ans@tail <- DNAStringList(dict, start=ans@width+1L)
+    ans
+}
+
 ### The input dictionary 'dict' must be:
 ###   - of length >= 1
 ### The supported types for the input dictionary are:
@@ -255,81 +379,26 @@ setMethod("patternFrequency", "TPdna_PDict",
 ###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
 ###   > pdict <- PDict(dict)
 ###
-
-debug_ULdna <- function()
-{
-    invisible(.Call("match_TPdna_debug", PACKAGE="Biostrings"))
-}
-
-.PDict <- function(dict, names, tb.start, tb.end, skip.invalid.patterns)
-{
-    if (!is.null(names)) {
-        if (any(names %in% c("", NA)))
-            stop("'dict' has invalid names")
-        if (any(duplicated(names)))
-            stop("'dict' has duplicated names")
-    }
-    if (!isSingleNumber(tb.start))
-        stop("'tb.start' must be a single integer")
-    if (!is.integer(tb.start))
-        tb.start <- as.integer(tb.start)
-    if (tb.start < 1L)
-        stop("'tb.start' must be >= 1")
-    if (!isSingleNumberOrNA(tb.end))
-        stop("'tb.end' must be a single integer or NA")
-    if (!is.integer(tb.end))
-        tb.end <- as.integer(tb.end)
-
-    ## Current limitations: we only support the Trusted Prefix for now, the
-    ## Trusted Suffix or the more general Trusted Band might come later...
-    if (tb.start != 1L)
-        stop("'tb.start' values other than 1 are not yet supported")
-    if (is.na(tb.end)) {
-        width <- NULL
-    } else {
-        if (tb.end < tb.start)
-            stop("'tb.end' must be >= 'tb.start'")
-        width <- tb.end
-    }
-    on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
-    if (is.character(dict)) {
-        pp_Cans <- .Call("ULdna_pp_StrVect",
-                         dict, width,
-                         PACKAGE="Biostrings")
-    } else if (is(dict, "DNAStringList")) {
-        pp_Cans <- .Call("ULdna_pp_BStringList",
-                         dict, width,
-                         PACKAGE="Biostrings")
-    } else if (is(dict, "BStringViews")) {
-        pp_Cans <- .Call("ULdna_pp_views",
-                         subject(dict)@data@xp, subject(dict)@offset, subject(dict)@length,
-                         start(dict), end(dict), width,
-                         PACKAGE="Biostrings")
-    } else {
-        stop("unsuported 'dict' type")
-    }
-    if (is.na(tb.end))
-        return(new("ULdna_PDict", length(dict), pp_Cans, names))
-    tail <- DNAStringList(dict, start=tb.end+1L)
-    new("TPdna_PDict", length(dict), pp_Cans, names, tail)
-}
-
 setGeneric("PDict", signature="dict",
-    function(dict, tb.start=1, tb.end=NA, skip.invalid.patterns=FALSE)
+    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
         standardGeneric("PDict")
 )
 
 setMethod("PDict", "character",
-    function(dict, tb.start=1, tb.end=NA, skip.invalid.patterns=FALSE)
+    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
             stop("'dict' must contain at least one pattern")
-        .PDict(dict, names(dict), tb.start, tb.end, skip.invalid.patterns)
+        .PDict(dict, names(dict), tb.start, tb.end, tb.width,
+               drop.head, drop.tail, skip.invalid.patterns)
     }
 )
 
 setMethod("PDict", "DNAStringList",
-    function(dict, tb.start=1, tb.end=NA, skip.invalid.patterns=FALSE)
+    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
             stop("'dict' must contain at least one pattern")
@@ -337,28 +406,33 @@ setMethod("PDict", "DNAStringList",
         pattern_class <- unique(sapply(as.list(dict), class))
         if (length(pattern_class) != 1)
             stop("all patterns in 'dict' must belong to the same class")
-        .PDict(dict, desc(dict), tb.start, tb.end, skip.invalid.patterns)
+        .PDict(dict, desc(dict), tb.start, tb.end, tb.width,
+               drop.head, drop.tail, skip.invalid.patterns)
     }
 )
 
 setMethod("PDict", "BStringViews",
-    function(dict, tb.start=1, tb.end=NA, skip.invalid.patterns=FALSE)
+    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
             stop("'dict' must have at least one view")
-        .PDict(dict, desc(dict), tb.start, tb.end, skip.invalid.patterns)
+        .PDict(dict, desc(dict), tb.start, tb.end, tb.width,
+               drop.head, drop.tail, skip.invalid.patterns)
     }
 )
 
 ### Just because of those silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("PDict", "AsIs",
-    function(dict, tb.start=1, tb.end=NA, skip.invalid.patterns=FALSE)
+    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (!is.character(dict))
             stop("unsuported 'dict' type")
         class(dict) <- "character" # keeps the names (unlike as.character())
-        PDict(dict, tb.start=tb.start, tb.end=tb.end,
+        PDict(dict, tb.start=tb.start, tb.end=tb.end, tb.width=tb.width,
+              drop.head=drop.head, drop.tail=drop.tail,
               skip.invalid.patterns=skip.invalid.patterns)
     }
 )
@@ -732,7 +806,7 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_TPdna",
+    ans <- .Call("match_TBdna",
                  actree@nodes@xp, actree@base_codes,
                  pdict@dups, NULL,
                  subject,
@@ -787,18 +861,18 @@ extractAllMatches <- function(subject, vindex)
 
 ### Example:
 ###
-###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
+###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.width=2)
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
 ###
-### At the moment, preprocessing a big TPdna_PDict object is very slow:
+### At the moment, preprocessing a big TBdna_PDict object is very slow:
 ###   > library(drosophila2probe)
 ###   > dict0 <- drosophila2probe$sequence 
 ###   > system.time(pdict0 <- PDict(dict0[1:40000]))
 ###      user  system elapsed
 ###     0.040   0.032   0.072
-###   > system.time(pdict <- PDict(dict0[1:40000], tb.end=10))
+###   > system.time(pdict <- PDict(dict0[1:40000], tb.width=10))
 ###      user  system elapsed
 ###    38.158   0.052  38.217
 ###
@@ -829,7 +903,7 @@ extractAllMatches <- function(subject, vindex)
 ###   [[2]]
 ###   integer(0)
 
-.match.TPdna_PDict <- function(pdict, subject, max.mismatch, fixed, count.only)
+.match.TBdna_PDict <- function(pdict, subject, max.mismatch, fixed, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     names <- names(pdict)
@@ -837,7 +911,7 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_TPdna",
+    ans <- .Call("match_TBdna",
                  actree@nodes@xp, actree@base_codes,
                  pdict@dups, pdict@tail@seqs,
                  subject,
@@ -873,10 +947,10 @@ extractAllMatches <- function(subject, vindex)
         stop("'algo' can only be '\"auto\"' for now")
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject))
-    if (is(pdict, "TPdna_PDict"))
-        return(.match.TPdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
+    if (is(pdict, "TBdna_PDict"))
+        return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
     if (max.mismatch != 0 || !all(fixed))
-        stop("only TPdna_PDict dictionaries support inexact matching")
+        stop("only TBdna_PDict dictionaries support inexact matching")
     .match.ULdna_PDict.exact(pdict, subject, count.only)
 }
 

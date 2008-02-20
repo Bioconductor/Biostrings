@@ -88,7 +88,7 @@ In 2.7
     a PDict object from Solexa data that would contain Ns if he wants, reads
     with an N would just be skipped).
 
-  o Implement "duplicated" and "patternFrequency" methods for TPdna_PDict
+  o Implement "duplicated" and "patternFrequency" methods for TBdna_PDict
     objects. Add 'freq' arg (default FALSE) to patternFrequency() like
     for alphabetFrequency().
 
@@ -98,7 +98,7 @@ In 2.7
     countIndex(matchPDict(...), all.names)
 
   o startIndex() is broken on the ViewsIndex object returned by a call to
-    matchPDict() on a TPdna_PDict object.
+    matchPDict() on a TBdna_PDict object.
 
   o extractAllMatches() fails on a very big ViewsIndex object (can't allocate
     vector of size 5.2Gb).
@@ -111,7 +111,7 @@ In 2.7
     input would drop significantly.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
-    'match_count' in match_TPdna.c, store directly in the returned
+    'match_count' in match_TBdna.c, store directly in the returned
     INTEGER vector.
 
   o Fix this bug:

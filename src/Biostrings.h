@@ -799,32 +799,36 @@ SEXP match_BOC2_exact(
 );
 
 
-/* match_TPdna.c */
+/* match_TBdna.c */
 
-SEXP match_TPdna_debug();
+SEXP match_TBdna_debug();
 
 SEXP ULdna_free_actree_nodes_buf();
 
 SEXP ULdna_pp_StrVect(
 		SEXP dict,
+		SEXP start,
+		SEXP end,
 		SEXP width
 );
 
 SEXP ULdna_pp_BStringList(
 		SEXP dict,
+		SEXP start,
+		SEXP end,
 		SEXP width
 );
 
 SEXP ULdna_pp_views(
-		SEXP dict_subj_xp,
-		SEXP dict_subj_offset,
-		SEXP dict_subj_length,
+		SEXP dict_subj_BString,
 		SEXP dict_start,
 		SEXP dict_end,
+		SEXP start,
+		SEXP end,
 		SEXP width
 );
 
-SEXP match_TPdna(
+SEXP match_TBdna(
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
 		SEXP pdict_dups,

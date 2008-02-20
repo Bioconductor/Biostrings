@@ -249,10 +249,9 @@
     ##   o totalcount: total number of matches
     getPDictStats <- function(dict0, width, subject)
     {
-      dict <- DNAStringList(dict0, nchar=width)
       list(
         width=width,
-        pptime=system.time(pdict <- PDict(dict))[["elapsed"]],
+        pptime=system.time(pdict <- PDict(dict0, tb.width=width, drop.tail=TRUE))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
         matchtime=system.time(vindex <- matchPDict(pdict, subject))[["elapsed"]],

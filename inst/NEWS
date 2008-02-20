@@ -86,16 +86,17 @@ o Added the Views class (see ?Views for the details). Changed the definition
   of the BStringViews class so now it extends the Views class.
 
 o Added the patternFrequency() generic function and a method for ULdna_PDict
-  objects (will come later for TPdna_PDict objects).
+  objects (will come later for TBdna_PDict objects).
 
 o Added a "duplicated" method for ULdna_PDict objects (will come later for
-  TPdna_PDict objects).
+  TBdna_PDict objects).
 
 o Added the matchPDict() and countPDict() functions for efficiently finding
   (or just counting) all occurences in a text (the subject) of any pattern
   from a set of patterns (the dictionary). The types of pattern dictionaries
   currently supported are "Uniform Length" DNA dictionaries (ULdna_PDict
-  objects) and "Trusted Prefix" dictionaries (TPdna_PDict objects).
+  objects) and "Trusted Prefix" DNA dictionaries (a particular case of
+  "Trusted Band" DNA dictionaries, represented by TBdna_PDict objects).
   See ?matchPDict for the details (especially the current limitations).
 
 o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from

@@ -3,15 +3,16 @@
 \alias{matchPDict-inexact}
 
 % Classes
-\alias{class:TPdna_PDict}
-\alias{TPdna_PDict-class}
+\alias{class:TBdna_PDict}
+\alias{TBdna_PDict-class}
 
 % Generics and methods:
-\alias{initialize,TPdna_PDict-method}
-\alias{tail,TPdna_PDict-method}
-\alias{show,TPdna_PDict-method}
-\alias{duplicated,TPdna_PDict-method}
-\alias{patternFrequency,TPdna_PDict-method}
+\alias{initialize,TBdna_PDict-method}
+\alias{head,TBdna_PDict-method}
+\alias{tail,TBdna_PDict-method}
+\alias{show,TBdna_PDict-method}
+\alias{duplicated,TBdna_PDict-method}
+\alias{patternFrequency,TBdna_PDict-method}
 
 
 \title{Inexact matching with matchPDict()}
@@ -54,7 +55,7 @@
   ## WARNING! THIS IS STILL WORK IN PROGRESS!!!
   ## A known issue is that the "startIndex", "[[" and "unlist" methods are
   ## BROKEN on the ViewsIndex object returned by matchPDict() called on a
-  ## TPdna_PDict object!
+  ## TBdna_PDict object!
 
   ## -------------------------------------------------------------------------
   ## A. WITH UNNAMED PATTERNS
@@ -63,8 +64,8 @@
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence  # The input dictionary.
 
-  ## Specify the length of the "trusted prefix" via the 'tb.end' argument
-  pdict9 <- PDict(dict0, tb.end=9)
+  ## Specify the length of the "trusted prefix" via the 'tb.width' argument
+  pdict9 <- PDict(dict0, tb.width=9)
   pdict9
   tail(pdict9)
   #sum(duplicated(pdict9)) # not ready yet!
@@ -93,7 +94,7 @@
   ## C. VARIABLE LENGTH DICTIONARY
   ## -------------------------------------------------------------------------
 
-  pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.end=2)
+  pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.width=2)
   pdict
   tail(pdict) 
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=0))

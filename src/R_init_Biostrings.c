@@ -113,13 +113,13 @@ static const R_CallMethodDef callMethods[] = {
 	{"match_BOC2_preprocess", (DL_FUNC) &match_BOC2_preprocess, 9},
 	{"match_BOC2_exact", (DL_FUNC) &match_BOC2_exact, 13},
 
-/* match_TPdna.c */
-	{"match_TPdna_debug", (DL_FUNC) &match_TPdna_debug, 0},
+/* match_TBdna.c */
+	{"match_TBdna_debug", (DL_FUNC) &match_TBdna_debug, 0},
 	{"ULdna_free_actree_nodes_buf", (DL_FUNC) &ULdna_free_actree_nodes_buf, 0},
-	{"ULdna_pp_StrVect", (DL_FUNC) &ULdna_pp_StrVect, 2},
-	{"ULdna_pp_BStringList", (DL_FUNC) &ULdna_pp_BStringList, 2},
+	{"ULdna_pp_StrVect", (DL_FUNC) &ULdna_pp_StrVect, 4},
+	{"ULdna_pp_BStringList", (DL_FUNC) &ULdna_pp_BStringList, 4},
 	{"ULdna_pp_views", (DL_FUNC) &ULdna_pp_views, 6},
-	{"match_TPdna", (DL_FUNC) &match_TPdna, 9},
+	{"match_TBdna", (DL_FUNC) &match_TBdna, 9},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
 	{"extract_endIndex", (DL_FUNC) &extract_endIndex, 4},
 
