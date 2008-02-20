@@ -21,9 +21,12 @@
   The \code{matchPDict} function can be used for inexact matching.
 
   For the moment, only one kind of inexact matching is provided where
-  the user must specify the length of the "trusted prefix" for each
+  the user must specify the length of the Trusted Prefix for each
   pattern stored in the dictionary and the maximum number of mismatching
-  letters allowed in each pattern suffix (or "tail").
+  letters allowed in each pattern suffix (or "tail"). Please refer
+  to the \code{\link{PDict}} documentation for how to create a
+  Trusted Prefix DNA dictionary (preprocessing).
+
   The inexact matches are searched by using a 2-stage approach:
   (1) use the Aho-Corasick algorithm for fast lookup of all the prefixes
   in the subject, followed by
@@ -31,8 +34,8 @@
   located next to the positions found in (1).
   Because performance will mostly depend on the number of positions found in
   (1) it's important to minimize this number by keeping the length of the
-  "trusted prefix" as large as possible.
-  A simple empiric rule is: if TP is the length of the "trusted prefix"
+  Trusted Prefix as large as possible.
+  A simple empiric rule is: if TP is the length of the Trusted Prefix
   and L the length of the subject, then L / (4**TP) should be as small as
   possible, typically < 10 or 20.
 
@@ -48,6 +51,7 @@
 \author{H. Pages}
 
 \seealso{
+  \link{PDict},
   \link{matchPDict-exact}
 }
 
@@ -64,7 +68,7 @@
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence  # The input dictionary.
 
-  ## Specify the length of the "trusted prefix" via the 'tb.width' argument
+  ## Specify the length of the Trusted Prefix via the 'tb.width' argument
   pdict9 <- PDict(dict0, tb.width=9)
   pdict9
   tail(pdict9)
@@ -83,7 +87,7 @@
   ## -------------------------------------------------------------------------
 
   ## When the input dictionary has a uniform length, using 'max.mismatch=0'
-  ## on the "trusted prefix" dictionary is equivalent to (but much slower than)
+  ## on the Trusted Prefix dictionary is equivalent to (but much slower than)
   ## using the full "uniform length" dictionary.
   pdict0 <- PDict(dict0)
   count0 <- countPDict(pdict0, chr3R)

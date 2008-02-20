@@ -3,10 +3,6 @@
 \alias{matchPDict-exact}
 
 % Classes
-\alias{class:PDict}
-\alias{PDict-class}
-\alias{class:ULdna_PDict}
-\alias{ULdna_PDict-class}
 \alias{class:ViewsIndex}
 \alias{ViewsIndex-class}
 \alias{class:ByPos_ViewsIndex}
@@ -20,14 +16,6 @@
 \alias{[,ACtree-method}
 \alias{as.matrix,ACtree-method}
 \alias{initialize,ACtree-method}
-
-\alias{initialize,ULdna_PDict-method}
-\alias{length,ULdna_PDict-method}
-\alias{width,ULdna_PDict-method}
-\alias{names,ULdna_PDict-method}
-\alias{show,ULdna_PDict-method}
-\alias{duplicated,ULdna_PDict-method}
-\alias{patternFrequency,ULdna_PDict-method}
 
 \alias{startIndex}
 \alias{startIndex,ViewsIndex-method}
@@ -153,6 +141,7 @@
 \author{H. Pages}
 
 \seealso{
+  \link{PDict},
   \link{matchPDict-inexact},
   \code{\link{isMatching}},
   \code{\link{matchPattern}},
@@ -170,14 +159,8 @@
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence   # The input dictionary.
   length(dict0)                        # Hundreds of thousands of patterns.
-  unique(nchar(dict0))                 # Patterns are 25-mers.
-  dict0[1:5]
   pdict0 <- PDict(dict0)               # Store the input dictionary into a
                                        # PDict object (preprocessing).
-  length(pdict0)                       # Same as the input dictionary.
-  width(pdict0)                        # The number of chars per pattern.
-  sum(duplicated(pdict0))
-  table(patternFrequency(pdict0))      # 9 patterns are repeated 3 times.
 
   ## Using the pattern dictionary on chromosome 3R
   library(BSgenome.Dmelanogaster.FlyBase.r51)
