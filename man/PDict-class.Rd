@@ -26,7 +26,7 @@
 \alias{PDict,character-method}
 \alias{PDict,DNAStringList-method}
 \alias{PDict,BStringViews-method}
-\alias{PDict,AsIs}
+\alias{PDict,AsIs-method}
 
 % Other generics and methods:
 \alias{show,CWdna_PDict-method}
