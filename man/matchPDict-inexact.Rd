@@ -28,7 +28,8 @@
   possible, typically < 10 or 20.
 
   Note that, when \code{matchPDict} is used for inexact matching,
-  dictionaries with patterns of variable length are accepted.
+  variable width dictionaries (i.e. containing patterns of variable length)
+  are accepted.
   In addition, when \code{fixed=FALSE}, then IUPAC extended letters placed
   in the tail of the dictionary are interpreted as ambiguities.
 
@@ -56,8 +57,8 @@
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence  # The input dictionary.
 
-  ## Specify the length of the Trusted Prefix via the 'tb.width' argument
-  pdict9 <- PDict(dict0, tb.width=9)
+  ## Specify the length of the Trusted Prefix via the 'tb.end' argument
+  pdict9 <- PDict(dict0, tb.end=9)
   pdict9
   tail(pdict9)
   #sum(duplicated(pdict9)) # not ready yet!
@@ -83,10 +84,10 @@
   identical(count_tp9_mm0, count0)    # TRUE
   
   ## -------------------------------------------------------------------------
-  ## C. VARIABLE LENGTH DICTIONARY
+  ## C. VARIABLE WIDTH DICTIONARY
   ## -------------------------------------------------------------------------
 
-  pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.width=2)
+  pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.end=2)
   pdict
   tail(pdict) 
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=0))

@@ -53,12 +53,12 @@ static ULdict input_uldict;
  * input sequences.
  * 4 types of cropping operations are supported:
  *   a) 1 <= start <= end:
- *        o the croppping operation will work on any variable length input
+ *        o the croppping operation will work on any variable width input
  *          where the shortest sequence has at least 'end' letters,
  *        o the head is rectangular (constant width),
  *        o the tail has a variable width (tail_min_width, tail_max_width);
  *   b) start <= end <= -1:
- *        o the croppping operation will work on any variable length input
+ *        o the croppping operation will work on any variable width input
  *          where the shortest sequence has at least '-start' letters,
  *        o the tail is rectangular (constant width),
  *        o the head has a variable width (head_min_width, head_max_width).

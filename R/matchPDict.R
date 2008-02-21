@@ -264,7 +264,7 @@ debug_TBdna <- function()
     invisible(.Call("match_TBdna_debug", PACKAGE="Biostrings"))
 }
 
-.PDict <- function(dict, names, tb.start, tb.end, tb.width,
+.PDict <- function(dict, names, tb.start, tb.end,
                    drop.head, drop.tail, skip.invalid.patterns)
 {
     if (!is.null(names)) {
@@ -281,30 +281,10 @@ debug_TBdna <- function()
         stop("'tb.end' must be a single integer or NA")
     if (!is.integer(tb.end))
         tb.end <- as.integer(tb.end)
-    if (!isSingleNumberOrNA(tb.width))
-        stop("'tb.width' must be a single integer or NA")
-    if (!is.integer(tb.width))
-        tb.width <- as.integer(tb.width)
-    if (!is.na(tb.width)) {
-        if (is.na(tb.start) && is.na(tb.end))
-            stop("'tb.start' and 'tb.end' cannot both be NA")
-        if (!is.na(tb.start) && !is.na(tb.end))
-            stop("at least one of 'tb.start', 'tb.end' and 'tb.width' must be NA")
-        if (tb.width < 1L)
-            stop("'tb.width' must be >= 1")
-        if (is.na(tb.end))
-            tb.end <- tb.start + tb.width - 1L
-        if (is.na(tb.start))
-            tb.start <- tb.end - tb.width + 1L
-    }
     if (!isTRUEorFALSE(drop.head))
         stop("'drop.head' must be 'TRUE' or 'FALSE'")
     if (!isTRUEorFALSE(drop.tail))
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
-    if (is.na(tb.start) || tb.start == 1L)
-        drop.head <- TRUE
-    if (is.na(tb.end) || tb.end == -1L)
-        drop.tail <- TRUE
     on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
     if (is.character(dict)) {
         pp_Cans <- .Call("CWdna_pp_StrVect",
@@ -324,16 +304,24 @@ debug_TBdna <- function()
     } else {
         stop("unsuported 'dict' type")
     }
+    if (is.na(tb.start) || tb.start == 1L)
+        drop.head <- TRUE
+    if (is.na(tb.end) || tb.end == -1L)
+        drop.tail <- TRUE
     if (drop.head && drop.tail)
         return(new("CWdna_PDict", length(dict), pp_Cans, names))
     ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
     if (!drop.head) {
+        ## Use DNAStringSet(dict, end=tb.start-1L) when DNAStringSet() is ready
+        ## It will work with tb.start > 0L and tb.start < 0L
         if (tb.start > 0L)
             ans@head <- DNAStringList(dict, nchar=tb.start-1L)
         else
             stop("keeping the head when 'tb.start' and 'tb.end' are negative is not ready yet, sorry!")
     }
     if (!drop.tail) {
+        ## Use DNAStringSet(dict, start=tb.end+1L) when DNAStringSet() is ready
+        ## It will work with tb.end > 0L and tb.end < 0L
         if (tb.start > 0L)
             ans@tail <- DNAStringList(dict, start=ans@width+1L)
         else
@@ -354,24 +342,24 @@ debug_TBdna <- function()
 ###   > pdict <- PDict(dict)
 ###
 setGeneric("PDict", signature="dict",
-    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+    function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
         standardGeneric("PDict")
 )
 
 setMethod("PDict", "character",
-    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+    function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
             stop("'dict' must contain at least one pattern")
-        .PDict(dict, names(dict), tb.start, tb.end, tb.width,
+        .PDict(dict, names(dict), tb.start, tb.end,
                drop.head, drop.tail, skip.invalid.patterns)
     }
 )
 
 setMethod("PDict", "DNAStringList",
-    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+    function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
@@ -380,18 +368,18 @@ setMethod("PDict", "DNAStringList",
         pattern_class <- unique(sapply(as.list(dict), class))
         if (length(pattern_class) != 1)
             stop("all patterns in 'dict' must belong to the same class")
-        .PDict(dict, desc(dict), tb.start, tb.end, tb.width,
+        .PDict(dict, desc(dict), tb.start, tb.end,
                drop.head, drop.tail, skip.invalid.patterns)
     }
 )
 
 setMethod("PDict", "BStringViews",
-    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+    function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
             stop("'dict' must have at least one view")
-        .PDict(dict, desc(dict), tb.start, tb.end, tb.width,
+        .PDict(dict, desc(dict), tb.start, tb.end,
                drop.head, drop.tail, skip.invalid.patterns)
     }
 )
@@ -399,13 +387,13 @@ setMethod("PDict", "BStringViews",
 ### Just because of those silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("PDict", "AsIs",
-    function(dict, tb.start=1, tb.end=NA, tb.width=NA,
+    function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (!is.character(dict))
             stop("unsuported 'dict' type")
         class(dict) <- "character" # keeps the names (unlike as.character())
-        PDict(dict, tb.start=tb.start, tb.end=tb.end, tb.width=tb.width,
+        PDict(dict, tb.start=tb.start, tb.end=tb.end,
               drop.head=drop.head, drop.tail=drop.tail,
               skip.invalid.patterns=skip.invalid.patterns)
     }
@@ -835,7 +823,7 @@ extractAllMatches <- function(subject, vindex)
 
 ### Example:
 ###
-###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.width=2)
+###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
@@ -846,7 +834,7 @@ extractAllMatches <- function(subject, vindex)
 ###   > system.time(pdict0 <- PDict(dict0[1:40000]))
 ###      user  system elapsed
 ###     0.040   0.032   0.072
-###   > system.time(pdict <- PDict(dict0[1:40000], tb.width=10))
+###   > system.time(pdict <- PDict(dict0[1:40000], tb.end=10))
 ###      user  system elapsed
 ###    38.158   0.052  38.217
 ###

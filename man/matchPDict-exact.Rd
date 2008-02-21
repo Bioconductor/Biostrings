@@ -68,7 +68,7 @@
   patterns have the same length (same number of nucleotides).
 
   See \link{matchPDict-inexact} for inexact matching (or for using a
-  "variable-length dictionary").
+  variable width dictionary).
 }
 
 \usage{
@@ -234,7 +234,7 @@
     {
       list(
         width=width,
-        pptime=system.time(pdict <- PDict(dict0, tb.width=width, drop.tail=TRUE))[["elapsed"]],
+        pptime=system.time(pdict <- PDict(dict0, tb.end=width, drop.tail=TRUE))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
         matchtime=system.time(vindex <- matchPDict(pdict, subject))[["elapsed"]],

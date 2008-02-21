@@ -52,7 +52,7 @@
 }
 
 \usage{
-  PDict(dict, tb.start=1, tb.end=NA, tb.width=NA, drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
+  PDict(dict, tb.start=1, tb.end=NA, drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
 }
 
 \arguments{
@@ -63,9 +63,6 @@
       [DOCUMENT ME]
   }
   \item{tb.end}{
-      [DOCUMENT ME]
-  }
-  \item{tb.width}{
       [DOCUMENT ME]
   }
   \item{drop.head}{
@@ -202,7 +199,7 @@
   ## Creating a constant width DNA dictionary by truncating the input
   ## sequences
   dict1 <- c("ACNG", "GT", "CGT", "AC")
-  pdict1a <- PDict(dict1, tb.width=2, drop.tail=TRUE)
+  pdict1a <- PDict(dict1, tb.end=2, drop.tail=TRUE)
   pdict1a
   class(pdict1a)
   length(pdict1a)
@@ -211,7 +208,7 @@
   patternFrequency(pdict1a)
 
   ## Preprocessing a Trusted Prefix DNA dictionary
-  pdict1b <- PDict(dict1, tb.width=2)
+  pdict1b <- PDict(dict1, tb.end=2)
   pdict1b
   class(pdict1b)
   length(pdict1b)
