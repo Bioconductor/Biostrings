@@ -283,7 +283,7 @@ setMethod("as.list", "BStringList", function(x) x@seqs)
 setMethod("length", "BStringList", function(x) length(as.list(x)))
 
 setMethod("nchar", "BStringList",
-    function(x, type = "chars", allowNA = FALSE)
+    function(x, type="chars", allowNA=FALSE)
         .Call("BStrings_to_nchars", x@seqs, PACKAGE="Biostrings")
 )
 

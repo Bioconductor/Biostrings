@@ -5,6 +5,10 @@
 ### The BStringViews class is the basic container for storing a set of views
 ### (start/end locations) on the same BString object, called the "subject"
 ### string.
+### Some notable differences with the BStringSet container:
+###   - the "show" methods produce very different output
+###   - the width of a view can't be 0
+###   - views can be out of limits
 ###
 
 setClass("BStringViews",
@@ -50,7 +54,7 @@ setMethod("subject", "BStringViews", function(x) x@subject)
 #setMethod("views", "BStringViews", function(x) x@views)
 
 setMethod("nchar", "BStringViews",
-    function(x, type = "chars", allowNA = FALSE)
+    function(x, type="chars", allowNA=FALSE)
     {
         if (length(x) == 0)
             return(integer(0))

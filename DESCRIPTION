@@ -21,6 +21,8 @@ Collate: 00datacache.R
         BStringCodec-class.R
         BString-class.R
         BStringList-class.R
+        SubstrLocs-class.R
+	BStringSet-class.R
         Views-class.R
         BStringViews-class.R
         BStringViews-constructors.R

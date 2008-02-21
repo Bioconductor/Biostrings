@@ -8,7 +8,10 @@ exportClasses(
     "XRaw", "XInteger",
     "BString", "DNAString", "RNAString", "AAString",
     "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
-    "Views", "BStringViews", "BStringPartialMatches",
+    "SubstrLocs",
+    "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
+    "Views",
+    "BStringViews", "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
     "PDict", "CWdna_PDict", "TBdna_PDict",
@@ -25,7 +28,8 @@ exportMethods(
 
     ## Accessors
     alphabet, letter,
-    nview, start, end, width, desc, "desc<-", subject,
+    start, end, super,
+    nview, width, desc, "desc<-", subject,
     patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
     subpatterns, pattern,
     align1, align2, score,
@@ -33,6 +37,7 @@ exportMethods(
     ## Others
     BString, DNAString, RNAString, AAString,
     BStringList, DNAStringList, RNAStringList, AAStringList,
+    #BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringViews,
     subviews, substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
