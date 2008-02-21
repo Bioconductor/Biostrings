@@ -11,7 +11,7 @@ exportClasses(
     "Views", "BStringViews", "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
-    "PDict", "ULdna_PDict", "TBdna_PDict",
+    "PDict", "CWdna_PDict", "TBdna_PDict",
     "ViewsIndex", "ByPos_ViewsIndex", "ByName_ViewsIndex"
 )
 

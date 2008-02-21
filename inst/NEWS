@@ -45,7 +45,7 @@ o Two small changes in alphabetFrequency():
       non-base letter);
   (2) added the 'freq' argument.
 
-o Implemented the "shortcut feature" to C function ULdna_exact_search().
+o Implemented the "shortcut feature" to C function CWdna_exact_search().
   With this patch, using matchPDict() to find all the matches of a
   3.3M 32-mers dictionary in the full Human genome (+ and - strands of all
   chromosomes) is about 2.5x faster than before (will take between 20 minutes
@@ -85,16 +85,16 @@ o matchPDict() now returns a ViewsIndex object (new class) instead of a list
 o Added the Views class (see ?Views for the details). Changed the definition
   of the BStringViews class so now it extends the Views class.
 
-o Added the patternFrequency() generic function and a method for ULdna_PDict
+o Added the patternFrequency() generic function and a method for CWdna_PDict
   objects (will come later for TBdna_PDict objects).
 
-o Added a "duplicated" method for ULdna_PDict objects (will come later for
+o Added a "duplicated" method for CWdna_PDict objects (will come later for
   TBdna_PDict objects).
 
 o Added the matchPDict() and countPDict() functions for efficiently finding
   (or just counting) all occurences in a text (the subject) of any pattern
   from a set of patterns (the dictionary). The types of pattern dictionaries
-  currently supported are "Uniform Length" DNA dictionaries (ULdna_PDict
+  currently supported are constant width DNA dictionaries (CWdna_PDict
   objects) and "Trusted Prefix" DNA dictionaries (a particular case of
   "Trusted Band" DNA dictionaries, represented by TBdna_PDict objects).
   See ?matchPDict for the details (especially the current limitations).

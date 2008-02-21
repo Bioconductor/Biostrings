@@ -64,7 +64,7 @@
   of DNA patterns.
 
   This man page shows how to use \code{matchPDict} for exact matching
-  of a "uniform-length dictionary" i.e. a dictionary where all the
+  of a constant width dictionary i.e. a dictionary where all the
   patterns have the same length (same number of nucleotides).
 
   See \link{matchPDict-inexact} for inexact matching (or for using a
@@ -97,14 +97,14 @@
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed (see
     \code{\link{isMatching}} for the details).
-    When used on a "uniform-length dictionary", \code{matchPDict} (and
+    When used on a constant width dictionary, \code{matchPDict} (and
     \code{countPDict}) only support exact matching so \code{max.mismatch}
     must be zero. See \link{matchPDict-inexact} for inexact matching.
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
     (see \code{\link{isMatching}} for the details).
-    When used on a "uniform-length dictionary", \code{matchPDict} (and
+    When used on a constant width dictionary, \code{matchPDict} (and
     \code{countPDict}) only support exact matching so \code{fixed}
     must be \code{TRUE}. See \link{matchPDict-inexact} for inexact matching.
   }

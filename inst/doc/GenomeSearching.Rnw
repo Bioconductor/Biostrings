@@ -228,7 +228,7 @@ More precisely, here is the analysis we want to perform:
 %   > ce2dict0 <- sapply(1:50, function(i) { x <- Celegans[[sample(seqnames(Celegans), 1)]]; start <- as.integer(runif(1, min=1, length(x)-20)); end <- start + as.integer(runif(1, min=14, max=25)); x <- subBString(x, start, end); if (sample(1:2, 1) == 2) x <- reverseComplement(x); as.character(x) })
 %   > names(ce2dict0) <- paste("pattern", 1:50, sep="")
 %   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fa", format="fasta")
-  See the {\it Find all the occurences of a uniform-length pattern dictionary
+  See the {\it Find all the occurences of a constant width dictionary of patterns
   in a genome} section of this document for a very efficient way to deal with
   the special case where all the patterns in the input dictionary have the same
   length.
@@ -504,8 +504,8 @@ someStats(tmpseq[1:10])
 
 % ---------------------------------------------------------------------------
 
-\section{Find all the occurences of a uniform-length pattern dictionary in
-         a genome}
+\section{Find all the occurences of a constant width dictionary of patterns
+         in a genome}
 
 The \Rfunction{matchPDict} function can be used instead of \Rfunction{matchPattern}
 for the kind of analysis described in the {\it Find arbitrary patterns in a genome}
@@ -513,7 +513,7 @@ section but it will be much faster (between 100x and 10000x faster depending on 
 size of the input dictionary).
 Note that a current limitation of \Rfunction{matchPDict} is that it only works with
 a dictionary of DNA patterns where all the patterns have the same number of
-nucleotides (uniform-length dictionary).
+nucleotides (constant width dictionary).
 See \Rfunction{?matchPDict} for more information.
 
 Here is how our \Rfunction{runAnalysis1} function can be modified in order to use

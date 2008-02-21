@@ -4,18 +4,18 @@
 % Classes:
 \alias{class:PDict}
 \alias{PDict-class}
-\alias{class:ULdna_PDict}
-\alias{ULdna_PDict-class}
-\alias{ULdna_PDict}
+\alias{class:CWdna_PDict}
+\alias{CWdna_PDict-class}
+\alias{CWdna_PDict}
 \alias{class:TBdna_PDict}
 \alias{TBdna_PDict-class}
 \alias{TBdna_PDict}
 
 % Low level initialization and accesor methods:
-\alias{initialize,ULdna_PDict-method}
-\alias{length,ULdna_PDict-method}
-\alias{width,ULdna_PDict-method}
-\alias{names,ULdna_PDict-method}
+\alias{initialize,CWdna_PDict-method}
+\alias{length,CWdna_PDict-method}
+\alias{width,CWdna_PDict-method}
+\alias{names,CWdna_PDict-method}
 
 \alias{initialize,TBdna_PDict-method}
 \alias{head,TBdna_PDict-method}
@@ -29,12 +29,12 @@
 \alias{PDict,AsIs}
 
 % Other generics and methods:
-\alias{show,ULdna_PDict-method}
+\alias{show,CWdna_PDict-method}
 \alias{show,TBdna_PDict-method}
-\alias{duplicated,ULdna_PDict-method}
+\alias{duplicated,CWdna_PDict-method}
 \alias{duplicated,TBdna_PDict-method}
 \alias{patternFrequency}
-\alias{patternFrequency,ULdna_PDict-method}
+\alias{patternFrequency,CWdna_PDict-method}
 \alias{patternFrequency,TBdna_PDict-method}
 
 
@@ -81,14 +81,14 @@
 
 \details{
   This is a work in progress and only 2 types of dictionaries are supported
-  at the moment: Uniform Length DNA dictionaries and Trusted Band DNA
+  at the moment: constant width DNA dictionaries and Trusted Band DNA
   dictionaries.
 
-  A Uniform Length DNA dictionary is a dictionary where all the patterns are
+  A constant width DNA dictionary is a dictionary where all the patterns are
   DNA sequences of the same length (i.e. all the patterns have the same number
   of nucleotides). For now the patterns can only contain As, Cs, Gs and
   Ts (no IUPAC extended letters).
-  The container for this particular type of dictionary is the ULdna_PDict
+  The container for this particular type of dictionary is the CWdna\_PDict
   class (a subclass of the PDict class).
 
   A Trusted Band DNA dictionary is a dictionary where the patterns are DNA
@@ -98,9 +98,9 @@
   This trusted region must have the same length for all patterns. It can be a
   prefix (Trusted Prefix), a suffix (Trusted Suffix) or more generally any
   substring (Trusted Band) of the input patterns.
-  The container for this particular type of dictionary is the TBdna_PDict
+  The container for this particular type of dictionary is the TBdna\_PDict
   class (a subclass of the PDict class). The dictionary stored in a
-  TBdna_PDict object is splitted in 3 parts: the Trusted Band, the head
+  TBdna\_PDict object is splitted in 3 parts: the Trusted Band, the head
   and the tail of the dictionary. Each of them contains the same number
   of sequences (eventually empty) which is the number of input patterns.
   The Trusted Band is the set of sequences obtained by extracting
@@ -110,15 +110,15 @@
   The tail is the set of sequences obtained by extracting the region located
   after (i.e. to the right of) the trusted region from each input pattern.
 
-  Like for a Uniform Length DNA dictionary, the Trusted Band can only contain
+  Like for a constant width DNA dictionary, the Trusted Band can only contain
   As, Cs, Gs and Ts (no IUPAC extended letters) for now.
   However, the head and the tail of a Trusted Band DNA dictionary can contain
   any valid DNA letter including IUPAC extended letters (see
   \code{\link{DNA_ALPHABET}} for the set of valid DNA letters).
 
   Note that a Trusted Band DNA dictionary with no head and no tail (i.e. with
-  a head and a tail where all the sequences are empty) is in fact a Uniform
-  Length DNA dictionary.
+  a head and a tail where all the sequences are empty) is in fact a constant
+  width DNA dictionary.
   A Trusted Band DNA dictionary with no head is called a Trusted Prefix DNA
   dictionary.
   A Trusted Band DNA dictionary with no tail is called a Trusted Suffix DNA
@@ -138,7 +138,7 @@
     }
     \item{}{
       \code{width(x)}:
-      The number of nucleotides per pattern for a Uniform Length DNA dictionary.
+      The number of nucleotides per pattern for a constant width DNA dictionary.
       The width of the Trusted Band (i.e. the number of nucleotides in the
       trusted region of each pattern) for a Trusted Band DNA dictionary.
     }
@@ -178,13 +178,13 @@
 \author{H. Pages}
 
 \seealso{
-  \link{matchPDict},
-  \link{DNA_ALPHABET},
+  \code{\link{matchPDict}},
+  \code{\link{DNA_ALPHABET}},
   \link{DNAStringList-class}
 }
 
 \examples{
-  ## Preprocessing a Uniform Length DNA dictionary
+  ## Preprocessing a constant width DNA dictionary
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence   # The input dictionary.
   length(dict0)                        # Hundreds of thousands of patterns.
@@ -199,7 +199,7 @@
   sum(duplicated(pdict0))
   table(patternFrequency(pdict0))      # 9 patterns are repeated 3 times.
 
-  ## Creating a Uniform Length DNA dictionary by truncating the input
+  ## Creating a constant width DNA dictionary by truncating the input
   ## sequences
   dict1 <- c("ACNG", "GT", "CGT", "AC")
   pdict1a <- PDict(dict1, tb.width=2, drop.tail=TRUE)

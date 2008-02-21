@@ -112,9 +112,9 @@ setMethod("initialize", "ACtree",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ULdna_PDict" class.
+### The "CWdna_PDict" class.
 ###
-### A container for storing a preprocessed uniform-length dictionary (or set)
+### A container for storing a preprocessed constant width dictionary (or set)
 ### of DNA patterns.
 ###
 ### Slot description:
@@ -131,7 +131,7 @@ setMethod("initialize", "ACtree",
 ###       If unique pattern names were provided as part of the input dictionary,
 ###       then they are used to name the elements of this vector.
 
-setClass("ULdna_PDict",
+setClass("CWdna_PDict",
     contains="PDict",
     representation(
         length="integer",
@@ -142,7 +142,7 @@ setClass("ULdna_PDict",
     )
 )
 
-setMethod("initialize", "ULdna_PDict",
+setMethod("initialize", "CWdna_PDict",
     function(.Object, length, pp_Cans, names)
     {
         .Object@length <- length
@@ -155,28 +155,29 @@ setMethod("initialize", "ULdna_PDict",
     }
 )
 
-setMethod("length", "ULdna_PDict", function(x) x@length)
+setMethod("length", "CWdna_PDict", function(x) x@length)
 
-setMethod("width", "ULdna_PDict", function(x) x@width)
+setMethod("width", "CWdna_PDict", function(x) x@width)
 
-setMethod("names", "ULdna_PDict", function(x) names(x@dups))
+setMethod("names", "CWdna_PDict", function(x) names(x@dups))
 
-setMethod("show", "ULdna_PDict",
+setMethod("show", "CWdna_PDict",
     function(object)
     {
-        cat(length(object), "-pattern uniform-length \"PDict\" object of width ", width(object), sep="")
+        cat(length(object), "-pattern constant width \"PDict\" object of width ",
+            width(object), sep="")
         if (is.null(names(object)))
             cat(" (patterns have no names)")
         cat("\n")
     }
 )
 
-setMethod("duplicated", "ULdna_PDict",
+setMethod("duplicated", "CWdna_PDict",
     function(x, incomparables=FALSE, ...)
         x@dups != 0
 )
 
-setMethod("patternFrequency", "ULdna_PDict",
+setMethod("patternFrequency", "CWdna_PDict",
     function(x)
     {
         ans <- rep.int(1L, x@length)
@@ -205,7 +206,7 @@ setMethod("patternFrequency", "ULdna_PDict",
 ### 'head' and 'tail' must be DNAStringList objects of the same length.
 ### One of them can be NULL but they can't both be NULL at the same time.
 setClass("TBdna_PDict",
-    contains="ULdna_PDict",
+    contains="CWdna_PDict",
     representation(
         head="DNAStringList", # can be NULL
         tail="DNAStringList"  # can be NULL
@@ -263,13 +264,6 @@ debug_TBdna <- function()
     invisible(.Call("match_TBdna_debug", PACKAGE="Biostrings"))
 }
 
-### 'tb.start', 'tb.end', 'tb.width' are used to control the geometry of the
-### Trusted Band. Exactly one of 'tb.start' or 'tb.end' must be NA, the other
-### one must be >= 1 or <= -1 (a negative value specifies a starting or ending
-### position relative to the end of the input patterns).
-### 'tb.width' must be NA or >= 1.
-### If 'tb.start' is <= -1, then 'tb.width' must be <= -tb.start
-### If 'tb.end' is >= 1, then 'tb.width' must be <= tb.end
 .PDict <- function(dict, names, tb.start, tb.end, tb.width,
                    drop.head, drop.tail, skip.invalid.patterns)
 {
@@ -291,80 +285,60 @@ debug_TBdna <- function()
         stop("'tb.width' must be a single integer or NA")
     if (!is.integer(tb.width))
         tb.width <- as.integer(tb.width)
-    if (is.na(tb.width))
-        tb.width <- NULL
-    else if (tb.width < 1L)
-        stop("'tb.width' must be >= 1")
+    if (!is.na(tb.width)) {
+        if (is.na(tb.start) && is.na(tb.end))
+            stop("'tb.start' and 'tb.end' cannot both be NA")
+        if (!is.na(tb.start) && !is.na(tb.end))
+            stop("at least one of 'tb.start', 'tb.end' and 'tb.width' must be NA")
+        if (tb.width < 1L)
+            stop("'tb.width' must be >= 1")
+        if (is.na(tb.end))
+            tb.end <- tb.start + tb.width - 1L
+        if (is.na(tb.start))
+            tb.start <- tb.end - tb.width + 1L
+    }
     if (!isTRUEorFALSE(drop.head))
         stop("'drop.head' must be 'TRUE' or 'FALSE'")
     if (!isTRUEorFALSE(drop.tail))
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
-    if (is.na(tb.start) == is.na(tb.end))
-        stop("exactly one of 'tb.start' or 'tb.end' must be NA")
-    if (is.na(tb.end)) {
-        ## 'tb.end' is NA, 'tb.start' is not
-        if (tb.start == 0)
-            stop("'tb.start' must be >= 1 or <= -1")
-        if (tb.start >= 1L) {
-            if (tb.start == 1L)
-                drop.head <- TRUE
-        } else {
-            if (is.null(tb.width))
-                stop("when 'tb.start' is <= -1, 'tb.width' cannot be NULL")
-            if (tb.width > -tb.start)
-                stop("when 'tb.start' is <= -1, 'tb.width' must be <= '-tb.start'")
-            if (tb.width == -tb.start)
-                drop.tail <- TRUE
-        }
-    } else {
-        ## 'tb.start' is NA, 'tb.end' is not
-        if (tb.end == 0)
-            stop("'tb.end' must be >= 1 or <= -1")
-        if (tb.end <= -1L) {
-            if (tb.end == -1L)
-                drop.tail <- TRUE
-        } else {
-            if (is.null(tb.width))
-                stop("when 'tb.end' is >= 1, 'tb.width' cannot be NULL")
-            if (tb.width > tb.end)
-                stop("when 'tb.end' is >= 1, 'tb.width' must be <= 'tb.end'")
-            if (tb.width == tb.end)
-                drop.head <- TRUE
-        }
-    }
-    ## Current limitation, remove later
-    if (is.na(tb.start) || tb.start != 1L)
-        stop("'tb.start' must be 1 for now")
-
-    on.exit(.Call("ULdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
+    if (is.na(tb.start) || tb.start == 1L)
+        drop.head <- TRUE
+    if (is.na(tb.end) || tb.end == -1L)
+        drop.tail <- TRUE
+    on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
     if (is.character(dict)) {
-        pp_Cans <- .Call("ULdna_pp_StrVect",
+        pp_Cans <- .Call("CWdna_pp_StrVect",
                          dict,
-                         tb.start, tb.end, tb.width,
+                         tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else if (is(dict, "DNAStringList")) {
-        pp_Cans <- .Call("ULdna_pp_BStringList",
+        pp_Cans <- .Call("CWdna_pp_BStringList",
                          dict,
-                         tb.start, tb.end, tb.width,
+                         tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else if (is(dict, "BStringViews")) {
-        pp_Cans <- .Call("ULdna_pp_views",
+        pp_Cans <- .Call("CWdna_pp_views",
                          subject(dict), start(dict), end(dict),
-                         tb.start, tb.end, tb.width,
+                         tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else {
         stop("unsuported 'dict' type")
     }
-
-    ## Because of current limitation, this is simple. But it will become much
-    ## more complicated when current limitation has gone.
-    if (is.null(tb.width) || pp_Cans$width == pp_Cans$stats$max.width)
-        drop.tail <- TRUE
-
     if (drop.head && drop.tail)
-        return(new("ULdna_PDict", length(dict), pp_Cans, names))
+        return(new("CWdna_PDict", length(dict), pp_Cans, names))
     ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
-    ans@tail <- DNAStringList(dict, start=ans@width+1L)
+    if (!drop.head) {
+        if (tb.start > 0L)
+            ans@head <- DNAStringList(dict, nchar=tb.start-1L)
+        else
+            stop("keeping the head when 'tb.start' and 'tb.end' are negative is not ready yet, sorry!")
+    }
+    if (!drop.tail) {
+        if (tb.start > 0L)
+            ans@tail <- DNAStringList(dict, start=ans@width+1L)
+        else
+            stop("keeping the tail when 'tb.start' and 'tb.end' are negative is not ready yet, sorry!")
+    }
     ans
 }
 
@@ -537,7 +511,7 @@ setMethod("$", "ViewsIndex", function(x, name) x[[name]])
 ###
 ###   width: temporary hack. In the future we will probably want to store the
 ###       starts of the matches when 'pdict' is a PDict other than an
-###       ULdna_PDict object. Another solution would be to keep the width slot
+###       CWdna_PDict object. Another solution would be to keep the width slot
 ###       and to make it the same length as the ends slot (it's currently of
 ###       length 1 only).
 ###
@@ -623,7 +597,7 @@ setMethod("endIndex", "ByPos_ViewsIndex",
 ###       
 ###   width: temporary hack. In the future we will probably want to store the
 ###       starts of the matches when 'pdict' is a PDict other than an
-###       ULdna_PDict object. Another solution would be to keep the width slot
+###       CWdna_PDict object. Another solution would be to keep the width slot
 ###       and to make it the same length as the ends_envir slot (it's currently
 ###       of length 1 only).
 ###
@@ -798,7 +772,7 @@ extractAllMatches <- function(subject, vindex)
     actree
 }
 
-.match.ULdna_PDict.exact <- function(pdict, subject, count.only)
+.match.CWdna_PDict.exact <- function(pdict, subject, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     names <- names(pdict)
@@ -808,7 +782,7 @@ extractAllMatches <- function(subject, vindex)
         envir <- new.env(hash=TRUE, parent=emptyenv())
     ans <- .Call("match_TBdna",
                  actree@nodes@xp, actree@base_codes,
-                 pdict@dups, NULL,
+                 pdict@dups, NULL, NULL,
                  subject,
                  0L, c(TRUE, TRUE),
                  count.only, envir,
@@ -911,9 +885,17 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
+    if (is.null(pdict@head))
+        head <- NULL
+    else
+        head <- pdict@head@seqs
+    if (is.null(pdict@tail))
+        tail <- NULL
+    else
+        tail <- pdict@tail@seqs
     ans <- .Call("match_TBdna",
                  actree@nodes@xp, actree@base_codes,
-                 pdict@dups, pdict@tail@seqs,
+                 pdict@dups, head, tail,
                  subject,
                  max.mismatch, fixed,
                  count.only, envir,
@@ -939,8 +921,8 @@ extractAllMatches <- function(subject, vindex)
 
 .matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed, count.only=FALSE)
 {
-    if (!is(pdict, "ULdna_PDict"))
-        stop("the pattern dictionary 'pdict' can only be a ULdna_PDict (or derived) object for now")
+    if (!is(pdict, "CWdna_PDict"))
+        stop("the pattern dictionary 'pdict' can only be a CWdna_PDict (or derived) object for now")
     if (!is(subject, "DNAString"))
         stop("'subject' can only be a DNAString object for now")
     if (!identical(algorithm, "auto"))
@@ -951,7 +933,7 @@ extractAllMatches <- function(subject, vindex)
         return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
     if (max.mismatch != 0 || !all(fixed))
         stop("only TBdna_PDict dictionaries support inexact matching")
-    .match.ULdna_PDict.exact(pdict, subject, count.only)
+    .match.CWdna_PDict.exact(pdict, subject, count.only)
 }
 
 

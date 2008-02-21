@@ -1,9 +1,9 @@
 /****************************************************************************
- *              Aho-Corasick for uniform-length DNA dictionary              *
+ *              Aho-Corasick for constant width DNA dictionary              *
  *                           Author: Herve Pages                            *
  *                                                                          *
- * Note: a uniform-length dictionary is a non-empty set of non-empty        *
- * strings of the same length.                                              *
+ * Note: a constant width dictionary is a non-empty set of non-empty        *
+ * words of the same length.                                                *
  ****************************************************************************/
 #include "Biostrings.h"
 #include <S.h> /* for Salloc()/Srealloc() */
@@ -20,58 +20,172 @@ static int debug = 0;
 
 /****************************************************************************
  * The input_uldict object is used for storing the pointers to the patterns
- * contained in the uniform length dictionary provided by the user.
+ * contained in the input dictionary provided by the user.
  * These patterns can only be accessed for reading!
  */
 
 typedef struct uldict {
-	const char **patterns;	// array of pointers to the read-only patterns
-	int length;		// number of patterns
-	int width;		// number of chars per pattern
-	int truncate_on_add;	// should patterns be truncated when added?
-	int min_width;
-	int max_width;
+	// 'start' and 'end' define the cropping operation
+	int start;
+	int end;
+	int width;
+	char cropping_type; // 'a', 'b', 'c', 'd'
+	int head_min_width, head_max_width;
+	int tail_min_width, tail_max_width;
+	// subpatterns resulting from the cropping operation are stored in
+	// the (const char *) array below (of length 'length')
+	const char **patterns;
+	int length;
 } ULdict;
 
 static ULdict input_uldict;
 
-static void alloc_input_uldict(int length, SEXP width)
+/*
+ * 'start' and 'end' are user-specified values that describe the cropping
+ * operation that needs to be applied to an arbitrary set of input sequences
+ * to turn it into a constant width dictionary. In the most general case, this
+ * cropping operation consists of removing a prefix, a suffix or both from each
+ * input sequence. The set of prefixes to remove is called "the head", and the
+ * set of suffixes "the tail".
+ * 'start' and 'end' must be integers (eventually NA) giving the relative
+ * starting and ending position of the substring to extract from each input
+ * sequence. Negative values indicate positions relative to the end of the
+ * input sequences.
+ * 4 types of cropping operations are supported:
+ *   a) 1 <= start <= end:
+ *        o the croppping operation will work on any variable length input
+ *          where the shortest sequence has at least 'end' letters,
+ *        o the head is rectangular (constant width),
+ *        o the tail has a variable width (tail_min_width, tail_max_width);
+ *   b) start <= end <= -1:
+ *        o the croppping operation will work on any variable length input
+ *          where the shortest sequence has at least '-start' letters,
+ *        o the tail is rectangular (constant width),
+ *        o the head has a variable width (head_min_width, head_max_width).
+ *   c) 1 <= start and end == NA:
+ *        o the set of input sequences must be already of constant width or
+ *          the cropping operation will raise an error,
+ *        o the head is rectangular (constant width),
+ *        o no tail;
+ *   d) start == NA and end <= -1:
+ *        o the set of input sequences must be already of constant width or
+ *          the cropping operation will raise an error,
+ *        o the tail is rectangular (constant width),
+ *        o no head;
+ */
+static char cropping_type(int start, int end)
 {
+	if (start == NA_INTEGER && end == NA_INTEGER)
+		error("'start' and 'end' cannot both be NA");
+	if (start == 0)
+		error("'start' must be a single >= 1, <= -1 or NA integer");
+	if (end == 0)
+		error("'end' must be a single >= 1, <= -1 or NA integer");
+	if (end == NA_INTEGER) {
+		if (start < 0)
+			error("'start' must be positive when 'end' is NA");
+		return 'c';
+	}
+	if (start == NA_INTEGER) {
+		if (end > 0)
+			error("'end' must be negative when 'start' is NA");
+		return 'd';
+	}
+	if ((start > 0) != (end > 0))
+		error("'start' and 'end' must have the same sign");
+	if (end < start)
+		error("'end' must be >= 'start'");
+	return start > 0 ? 'a' : 'b';
+}
+
+static void alloc_input_uldict(int length, int start, int end)
+{
+	input_uldict.cropping_type = cropping_type(start, end);
+	input_uldict.start = start;
+	input_uldict.end = end;
+	if (input_uldict.cropping_type == 'a') {
+		input_uldict.width = input_uldict.end - input_uldict.start + 1;
+		input_uldict.tail_min_width = input_uldict.tail_max_width = -1;
+	}
+	if (input_uldict.cropping_type == 'b') {
+		input_uldict.width = input_uldict.end - input_uldict.start + 1;
+		input_uldict.head_min_width = input_uldict.head_max_width = -1;
+	}
 	input_uldict.patterns = Salloc((long) length, const char *);
 	input_uldict.length = length;
-	input_uldict.truncate_on_add = width != R_NilValue;
-	if (input_uldict.truncate_on_add) {
-		input_uldict.width = INTEGER(width)[0];
-		input_uldict.min_width = input_uldict.max_width = -1;
-	} else {
-		input_uldict.width = -1;
-	}
 	return;
 }
 
-static void add_pattern_to_input_uldict(int poffset, const char *pattern, int pattern_length)
+static void add_subpattern_to_input_uldict(int poffset,
+		const char *pattern, int pattern_length)
 {
-	if (input_uldict.truncate_on_add) {
-		if (pattern_length < input_uldict.width)
+	int head_width, tail_width;
+
+	if (pattern_length == 0)
+		error("'dict' contains empty patterns");
+
+	switch (input_uldict.cropping_type) {
+
+	    case 'a':
+		tail_width = pattern_length - input_uldict.end;
+		if (tail_width < 0)
 			error("'dict' contains patterns with less than %d characters",
-			      input_uldict.width);
-		if (input_uldict.min_width == -1) {
-			input_uldict.min_width = input_uldict.max_width = pattern_length;
+			      input_uldict.end);
+		input_uldict.patterns[poffset] = pattern + input_uldict.start - 1;
+		if (input_uldict.tail_min_width == -1) {
+			input_uldict.tail_min_width = input_uldict.tail_max_width = tail_width;
+			break;
+		}
+		if (tail_width < input_uldict.tail_min_width)
+			input_uldict.tail_min_width = tail_width;
+		if (tail_width > input_uldict.tail_max_width)
+			input_uldict.tail_max_width = tail_width;
+		break;
+
+	    case 'b':
+		head_width = pattern_length + input_uldict.start;
+		if (head_width < 0)
+			error("'dict' contains patterns with less than %d characters",
+			      -input_uldict.start);
+		input_uldict.patterns[poffset] = pattern + head_width;
+		if (input_uldict.head_min_width == -1) {
+			input_uldict.head_min_width = input_uldict.head_max_width = head_width;
+			break;
+		}
+		if (head_width < input_uldict.head_min_width)
+			input_uldict.head_min_width = head_width;
+		if (head_width > input_uldict.head_max_width)
+			input_uldict.head_max_width = head_width;
+		break;
+
+	    case 'c':
+		if (input_uldict.end == NA_INTEGER) {
+			input_uldict.end = pattern_length;
+			input_uldict.width = input_uldict.end - input_uldict.start + 1;
+			if (input_uldict.width < 1)
+				error("'dict' contains patterns with less than %d characters",
+				      input_uldict.start);
 		} else {
-			if (pattern_length < input_uldict.min_width)
-				input_uldict.min_width = pattern_length;
-			if (pattern_length > input_uldict.max_width)
-				input_uldict.max_width = pattern_length;
-		}	
-	} else if (input_uldict.width == -1) {
-		if (pattern_length == 0)
-			error("first pattern in 'dict' is empty");
-		input_uldict.width = pattern_length;
-	} else {
-		if (pattern_length != input_uldict.width)
-			error("all patterns in 'dict' must have the same length");
+			if (pattern_length != input_uldict.end)
+				error("all patterns in 'dict' must have the same length");
+		}
+		input_uldict.patterns[poffset] = pattern + input_uldict.start - 1;
+		break;
+
+	    case 'd':
+		if (input_uldict.start == NA_INTEGER) {
+			input_uldict.start = -pattern_length;
+			input_uldict.width = input_uldict.end - input_uldict.start + 1;
+			if (input_uldict.width < 1)
+				error("'dict' contains patterns with less than %d characters",
+				      -input_uldict.end);
+		} else {
+			if (pattern_length != -input_uldict.start)
+				error("all patterns in 'dict' must have the same length");
+		}
+		input_uldict.patterns[poffset] = pattern;
+		break;
 	}
-	input_uldict.patterns[poffset] = pattern;
 	return;
 }
 
@@ -101,7 +215,7 @@ static void report_dup(int poffset, int P_id)
  *
  * For this Aho-Corasick implementation, we take advantage of 2
  * important specifities of the dictionary (aka pattern set):
- *   1. it's a uniform length dictionary (all words have the same length)
+ *   1. it's a constant width dictionary (all words have the same length)
  *   2. it's based on a 4-letter alphabet
  * Because of this, the Aho-Corasick tree (which is in fact a graph if we
  * consider the failure links) can be stored in an array of ACNode elements.
@@ -161,12 +275,12 @@ static void init_actree_base_codes_buf()
 	return;
 }
 
-SEXP ULdna_free_actree_nodes_buf()
+SEXP CWdna_free_actree_nodes_buf()
 {
 	if (actree_nodes_buf != NULL) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] ULdna_free_actree_nodes_buf(): freeing actree_nodes_buf ... ");
+			Rprintf("[DEBUG] CWdna_free_actree_nodes_buf(): freeing actree_nodes_buf ... ");
 		}
 #endif
 		free(actree_nodes_buf);
@@ -198,11 +312,11 @@ static void alloc_actree_nodes_buf(int length, int width)
 	size_t bufsize;
 
 	if (actree_nodes_buf != NULL) {
-		// We use the on.exit() mechanism to call ULdna_free_actree_nodes_buf()
+		// We use the on.exit() mechanism to call CWdna_free_actree_nodes_buf()
 		// to free the buffer so if this mechanism is reliable we should
 		// never come here. Anyway just in case...
 		warning("actree_nodes_buf was not previously freed, this is anormal, please report");
-		ULdna_free_actree_nodes_buf();
+		CWdna_free_actree_nodes_buf();
 	}
 	maxnodes = 0;
 	for (depth = 0, pow = 1; depth <= width; depth++) {
@@ -498,7 +612,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 	return basenode_id;
 }
 
-static void ULdna_exact_search(ACNode *node0, const int *base_codes, const char *S, int nS)
+static void CWdna_exact_search(ACNode *node0, const int *base_codes, const char *S, int nS)
 {
 	_init_code2offset_lkup(base_codes, ALPHABET_LENGTH, code2childoffset_lkup);
 	follow_string(node0, base_codes, S, nS);
@@ -605,26 +719,39 @@ static SEXP actree_base_codes_buf_asINTEGER()
 static SEXP stats_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
+	const char *min_width_name, *max_width_name;
+	int min_width_val, max_width_val;
 
-	if (!input_uldict.truncate_on_add)
+	if (input_uldict.cropping_type != 'a' && input_uldict.cropping_type != 'b')
 		return NEW_LIST(0);
 
+	if (input_uldict.cropping_type == 'a') {
+		min_width_name = "tail.min.width";
+		max_width_name = "tail.max.width";
+		min_width_val = input_uldict.tail_min_width;
+		max_width_val = input_uldict.tail_max_width;
+	} else {
+		min_width_name = "head.min.width";
+		max_width_name = "head.max.width";
+		min_width_val = input_uldict.head_min_width;
+		max_width_val = input_uldict.head_max_width;
+	}
 	PROTECT(ans = NEW_LIST(2));
 
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
-	SET_STRING_ELT(ans_names, 0, mkChar("min.width"));
-	SET_STRING_ELT(ans_names, 1, mkChar("max.width"));
+	SET_STRING_ELT(ans_names, 0, mkChar(min_width_name));
+	SET_STRING_ELT(ans_names, 1, mkChar(max_width_name));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
 	/* set the "min.width" element */
-	PROTECT(ans_elt = oneint_asINTEGER(input_uldict.min_width));
+	PROTECT(ans_elt = oneint_asINTEGER(min_width_val));
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
 	/* set the "max.width" element */
-	PROTECT(ans_elt = oneint_asINTEGER(input_uldict.max_width));
+	PROTECT(ans_elt = oneint_asINTEGER(max_width_val));
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
@@ -694,49 +821,47 @@ static SEXP uldna_asLIST()
  * .Call entry points for building the Aho-Corasick 4-ary tree from the input
  * dictionary (preprocessing). The input dictionary must be:
  *   - of length >= 1
- *   - uniform-length (i.e. all words have the same length)
+ *   - of constant width (i.e. all words have the same length)
  ****************************************************************************/
 
 /*
- * .Call entry point: "ULdna_pp_StrVect"
+ * .Call entry point: "CWdna_pp_StrVect"
  *
  * Argument:
- *   'dict': a string vector (aka character vector) containing the
- *       uniform-length dictionary
- *   'width': if not NULL then truncate the input patterns to keep the first
- *       'width' nucleotides ('width' must be a single integer)
+ *   'dict': a string vector (aka character vector) containing the input
+ *           sequences
+ *   'start': single >= 1, <= -1 or NA integer
+ *   'end': single >= 1, <= -1 or NA integer
+ * 'start' and 'end' can't be both NA. When both are not NA, they must have
+ *       the same sign
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_StrVect(SEXP dict, SEXP start, SEXP end, SEXP width)
+SEXP CWdna_pp_StrVect(SEXP dict, SEXP start, SEXP end)
 {
 	int poffset;
 	SEXP dict_elt;
 
-	// current limitation, remove later
-	if (INTEGER(start)[0] != 1)
-		error("'start' must be 1 for now");
-	alloc_input_uldict(LENGTH(dict), width);
+	alloc_input_uldict(LENGTH(dict), INTEGER(start)[0], INTEGER(end)[0]);
 	for (poffset = 0; poffset < LENGTH(dict); poffset++) {
 		dict_elt = STRING_ELT(dict, poffset);
 		if (dict_elt == NA_STRING)
 			error("'dict' contains NAs");
-		add_pattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
+		add_subpattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
 	build_actree();
 	return uldna_asLIST();
 }
 
 /*
- * .Call entry point: "ULdna_pp_BStringList"
+ * .Call entry point: "CWdna_pp_BStringList"
  *
  * Argument:
- *   'dict': a list of (pattern@data@xp, pattern@offset, pattern@length)
- *           triplets containing the uniform-length dictionary
+ *   'dict': 
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_BStringList(SEXP dict, SEXP start, SEXP end, SEXP width)
+SEXP CWdna_pp_BStringList(SEXP dict, SEXP start, SEXP end)
 {
 	// current limitation, remove later
 	if (INTEGER(start)[0] != 1)
@@ -746,7 +871,7 @@ SEXP ULdna_pp_BStringList(SEXP dict, SEXP start, SEXP end, SEXP width)
 }
 
 /*
- * .Call entry point: "ULdna_pp_views"
+ * .Call entry point: "CWdna_pp_views"
  *
  * Arguments:
  *   'dict_subj_BString': subject(dict)
@@ -757,26 +882,23 @@ SEXP ULdna_pp_BStringList(SEXP dict, SEXP start, SEXP end, SEXP width)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP ULdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
-		SEXP start, SEXP end, SEXP width)
+SEXP CWdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
+		SEXP start, SEXP end)
 {
 	int subj_length, dict_length;
 	const char *subj;
 	int poffset, *view_start, *view_end, view_offset;
 
-	// current limitation, remove later
-	if (INTEGER(start)[0] != 1)
-		error("'start' must be 1 for now");
 	subj = _get_BString_charseq(dict_subj_BString, &subj_length);
 	dict_length = LENGTH(dict_start); // must be the same as LENGTH(dict_end)
-	alloc_input_uldict(dict_length, width);
+	alloc_input_uldict(dict_length, INTEGER(start)[0], INTEGER(end)[0]);
 	for (poffset = 0, view_start = INTEGER(dict_start), view_end = INTEGER(dict_end);
 	     poffset < dict_length;
 	     poffset++, view_start++, view_end++) {
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || *view_end > subj_length)
 			error("'dict' has out of limits views");
-		add_pattern_to_input_uldict(poffset,
+		add_subpattern_to_input_uldict(poffset,
 			subj + view_offset, *view_end - view_offset);
 	}
 	build_actree();
@@ -804,15 +926,16 @@ SEXP ULdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
  ****************************************************************************/
 
 SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-                SEXP pdict_dups, SEXP pdict_tail_seqs,
+                SEXP pdict_dups, SEXP pdict_head_seqs, SEXP pdict_tail_seqs,
 		SEXP subject_BString,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
-	const char *S, *tail;
-	int nS, max_mm, fixedP, fixedS, is_count_only, no_tail, tail_len, poffset;
-	SEXP tail_BString;
+	const char *S, *head, *tail;
+	int nS, max_mm, fixedP, fixedS, is_count_only, no_head, no_tail,
+            head_len, tail_len, poffset;
+	SEXP head_BString, tail_BString;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	S = _get_BString_charseq(subject_BString, &nS);
@@ -820,10 +943,13 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
+	no_head = pdict_head_seqs == R_NilValue;
 	no_tail = pdict_tail_seqs == R_NilValue;
 
+	if (!no_head)
+		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
-	ULdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S, nS);
+	CWdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S, nS);
 	if (no_tail) {
 		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
 	} else {

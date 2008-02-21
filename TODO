@@ -104,7 +104,7 @@ In 2.7
     vector of size 5.2Gb).
 
   o Maybe: once DNAStringList() constructor is fast enough on character and
-    BStringViews input, simplify "initialize" method for ULdna_PDict:
+    BStringViews input, simplify "initialize" method for CWdna_PDict:
     convert character and BStringViews inputs with DNAStringList() and
     support only one type of input (DNAStringList) at the C level.
     Well, I'm not sure I want to do this anymore: performance on character
@@ -117,7 +117,7 @@ In 2.7
   o Fix this bug:
     > pdict <- PDict(c("AA", "AC"))
     > matchPDict(pdict, DNAString("TAACAC"))
-    Error in .match.ULdna_PDict.exact(pdict, subject, count.only) : 
+    Error in .match.CWdna_PDict.exact(pdict, subject, count.only) : 
       Biostrings internal error in _init_code2offset_lkup(): invalid code
 
   o ViewsIndex objects: at some point the user will want to be able to combine

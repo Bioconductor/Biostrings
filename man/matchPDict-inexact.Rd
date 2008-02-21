@@ -86,9 +86,9 @@
   ## B. COMPARISON WITH EXACT MATCHING
   ## -------------------------------------------------------------------------
 
-  ## When the input dictionary has a uniform length, using 'max.mismatch=0'
+  ## When the input dictionary is of constant width, using 'max.mismatch=0'
   ## on the Trusted Prefix dictionary is equivalent to (but much slower than)
-  ## using the full "uniform length" dictionary.
+  ## using the full dictionary.
   pdict0 <- PDict(dict0)
   count0 <- countPDict(pdict0, chr3R)
   count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
