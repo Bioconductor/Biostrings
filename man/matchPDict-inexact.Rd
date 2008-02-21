@@ -2,18 +2,6 @@
 
 \alias{matchPDict-inexact}
 
-% Classes
-\alias{class:TBdna_PDict}
-\alias{TBdna_PDict-class}
-
-% Generics and methods:
-\alias{initialize,TBdna_PDict-method}
-\alias{head,TBdna_PDict-method}
-\alias{tail,TBdna_PDict-method}
-\alias{show,TBdna_PDict-method}
-\alias{duplicated,TBdna_PDict-method}
-\alias{patternFrequency,TBdna_PDict-method}
-
 
 \title{Inexact matching with matchPDict()}
 
