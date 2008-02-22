@@ -336,6 +336,14 @@ SEXP get_start_for_adjacent_seqs(SEXP seq_nchars)
 	return ans;
 }
 
+int _get_BStringSet_length(SEXP x)
+{
+	SEXP locs;
+
+	locs = GET_SLOT(x, install("locs"));
+	return LENGTH(VECTOR_ELT(locs, 0));
+}
+
 const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
 {
 	SEXP locs, super, xp;

@@ -597,6 +597,8 @@ SEXP SEN_to_locs(
 
 SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
+int _get_BStringSet_length(SEXP x);
+
 const char *_get_BStringSet_charseq(
 		SEXP x,
 		int i,
@@ -827,7 +829,7 @@ SEXP match_TBdna_debug();
 
 SEXP CWdna_free_actree_nodes_buf();
 
-SEXP CWdna_pp_StrVect(
+SEXP CWdna_pp_charseqs(
 		SEXP dict,
 		SEXP start,
 		SEXP end
@@ -835,14 +837,6 @@ SEXP CWdna_pp_StrVect(
 
 SEXP CWdna_pp_BStringSet(
 		SEXP dict,
-		SEXP start,
-		SEXP end
-);
-
-SEXP CWdna_pp_views(
-		SEXP dict_subj_BString,
-		SEXP dict_start,
-		SEXP dict_end,
 		SEXP start,
 		SEXP end
 );

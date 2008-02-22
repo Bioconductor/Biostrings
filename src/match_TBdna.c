@@ -825,25 +825,24 @@ static SEXP uldna_asLIST()
  ****************************************************************************/
 
 /*
- * .Call entry point: "CWdna_pp_StrVect"
+ * .Call entry point: "CWdna_pp_charseqs"
  *
  * Argument:
  *   'dict': a string vector (aka character vector) containing the input
  *           sequences
  *   'start': single >= 1, <= -1 or NA integer
  *   'end': single >= 1, <= -1 or NA integer
- * 'start' and 'end' can't be both NA. When both are not NA, they must have
- *       the same sign
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_StrVect(SEXP dict, SEXP start, SEXP end)
+SEXP CWdna_pp_charseqs(SEXP dict, SEXP start, SEXP end)
 {
-	int poffset;
+	int dict_len, poffset;
 	SEXP dict_elt;
 
-	alloc_input_uldict(LENGTH(dict), INTEGER(start)[0], INTEGER(end)[0]);
-	for (poffset = 0; poffset < LENGTH(dict); poffset++) {
+	dict_len = LENGTH(dict);
+	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
+	for (poffset = 0; poffset < dict_len; poffset++) {
 		dict_elt = STRING_ELT(dict, poffset);
 		if (dict_elt == NA_STRING)
 			error("'dict' contains NAs");
@@ -857,49 +856,22 @@ SEXP CWdna_pp_StrVect(SEXP dict, SEXP start, SEXP end)
  * .Call entry point: "CWdna_pp_BStringSet"
  *
  * Argument:
- *   'dict': 
+ *   'dict': a DNAStringSet object containing the input sequences
+ *   'start': single >= 1, <= -1 or NA integer
+ *   'end': single >= 1, <= -1 or NA integer
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
 SEXP CWdna_pp_BStringSet(SEXP dict, SEXP start, SEXP end)
 {
-	// current limitation, remove later
-	if (INTEGER(start)[0] != 1)
-		error("'start' must be 1 for now");
-	error("Not ready yet!\n");
-	return uldna_asLIST();
-}
+	int dict_len, poffset, pattern_length;
+	const char *pattern;
 
-/*
- * .Call entry point: "CWdna_pp_views"
- *
- * Arguments:
- *   'dict_subj_BString': subject(dict)
- *   'dict_start': start(dict)
- *   'dict_end': end(dict)
- * Note that 'dict_start' and 'dict_end' describe a set of views on subject(dict)
- * with no "out of limits" views.
- *
- * See uldna_asLIST() for a description of the returned SEXP.
- */
-SEXP CWdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
-		SEXP start, SEXP end)
-{
-	int subj_length, dict_length;
-	const char *subj;
-	int poffset, *view_start, *view_end, view_offset;
-
-	subj = _get_BString_charseq(dict_subj_BString, &subj_length);
-	dict_length = LENGTH(dict_start); // must be the same as LENGTH(dict_end)
-	alloc_input_uldict(dict_length, INTEGER(start)[0], INTEGER(end)[0]);
-	for (poffset = 0, view_start = INTEGER(dict_start), view_end = INTEGER(dict_end);
-	     poffset < dict_length;
-	     poffset++, view_start++, view_end++) {
-		view_offset = *view_start - 1;
-		if (view_offset < 0 || *view_end > subj_length)
-			error("'dict' has out of limits views");
-		add_subpattern_to_input_uldict(poffset,
-			subj + view_offset, *view_end - view_offset);
+	dict_len = _get_BStringSet_length(dict);
+	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
+	for (poffset = 0; poffset < dict_len; poffset++) {
+		pattern = _get_BStringSet_charseq(dict, poffset, &pattern_length);
+		add_subpattern_to_input_uldict(poffset, pattern, pattern_length);
 	}
 	build_actree();
 	return uldna_asLIST();

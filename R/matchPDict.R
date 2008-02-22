@@ -165,7 +165,7 @@ setMethod("names", "CWdna_PDict", function(x) names(x@dups))
 setMethod("show", "CWdna_PDict",
     function(object)
     {
-        cat(length(object), "-pattern constant width \"PDict\" object of width ",
+        cat(length(object), "-pattern constant width PDict object of width ",
             width(object), sep="")
         if (is.null(names(object)))
             cat(" (patterns have no names)")
@@ -234,7 +234,7 @@ setMethod("show", "TBdna_PDict",
             trusted_part <- "Suffix"
         else
             trusted_part <- "Band"
-        cat(length(object), "-pattern \"PDict\" object with a Trusted ",
+        cat(length(object), "-pattern PDict object with a Trusted ",
             trusted_part, " of width ", width(object), sep="")
         if (is.null(names(object)))
             cat(" (patterns have no names)")
@@ -289,18 +289,13 @@ debug_TBdna <- function()
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
     on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
     if (is.character(dict)) {
-        pp_Cans <- .Call("CWdna_pp_StrVect",
+        pp_Cans <- .Call("CWdna_pp_charseqs",
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else if (is(dict, "DNAStringSet")) {
         pp_Cans <- .Call("CWdna_pp_BStringSet",
                          dict,
-                         tb.start, tb.end,
-                         PACKAGE="Biostrings")
-    } else if (is(dict, "BStringViews")) {
-        pp_Cans <- .Call("CWdna_pp_views",
-                         subject(dict), start(dict), end(dict),
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else {
@@ -354,11 +349,7 @@ setMethod("PDict", "DNAStringSet",
     {
         if (length(dict) == 0)
             stop("'dict' must contain at least one pattern")
-        ## The following check should enforced by the DNAStringSet() constructor
-        pattern_class <- unique(sapply(as.list(dict), class))
-        if (length(pattern_class) != 1)
-            stop("all patterns in 'dict' must belong to the same class")
-        .PDict(dict, desc(dict), tb.start, tb.end,
+        .PDict(dict, names(dict), tb.start, tb.end,
                drop.head, drop.tail, skip.invalid.patterns)
     }
 )
@@ -367,10 +358,10 @@ setMethod("PDict", "BStringViews",
     function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
-        if (length(dict) == 0)
-            stop("'dict' must have at least one view")
-        .PDict(dict, desc(dict), tb.start, tb.end,
-               drop.head, drop.tail, skip.invalid.patterns)
+        dict <- DNAStringSet(dict)
+        PDict(dict, tb.start=tb.start, tb.end=tb.end,
+                    drop.head=drop.head, drop.tail=drop.tail,
+                    skip.invalid.patterns=skip.invalid.patterns)
     }
 )
 
@@ -384,8 +375,8 @@ setMethod("PDict", "AsIs",
             stop("unsuported 'dict' type")
         class(dict) <- "character" # keeps the names (unlike as.character())
         PDict(dict, tb.start=tb.start, tb.end=tb.end,
-              drop.head=drop.head, drop.tail=drop.tail,
-              skip.invalid.patterns=skip.invalid.patterns)
+                    drop.head=drop.head, drop.tail=drop.tail,
+                    skip.invalid.patterns=skip.invalid.patterns)
     }
 )
 

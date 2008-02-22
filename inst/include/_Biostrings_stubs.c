@@ -45,6 +45,15 @@ const char *get_BString_charseq(SEXP x, int *length)
 	return fun(x, length);
 }
 
+int get_BStringSet_length(SEXP x)
+{
+	static int (*fun)(SEXP) = NULL;
+
+	if (fun == NULL)
+		fun = (int (*)(SEXP)) R_GetCCallable("Biostrings", "_get_BStringSet_length");
+	return fun(x);
+}
+
 const char *get_BStringSet_charseq(SEXP x, int i, int *nchar)
 {
 	static const char *(*fun)(SEXP, int, int *) = NULL;

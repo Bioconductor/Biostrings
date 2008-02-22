@@ -64,6 +64,14 @@ setClass("AAStringSet", contains="BStringSet")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessor methods.
+###
+
+setGeneric("super", function(x) standardGeneric("super"))
+setMethod("super", "BStringSet", function(x) x@super)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization (not intended to be used directly by the user).
 ###
 
@@ -156,16 +164,69 @@ setGeneric("AAStringSet", signature="x",
         if (!is.integer(nchar))
             nchar <- as.integer(nchar)
     }
-    seq_nchars <- nchar(charseqs, type="bytes")
-    locs <- .SEN2locs(start, end, nchar, seq_nchars)
     class <- paste(baseClass, "Set", sep="")
+    locs <- .SEN2locs(start, end, nchar, nchar(charseqs, type="bytes"))
     proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
                   charseqs, locs$start, locs$nchar, enc_lkup(proto),
                   PACKAGE="Biostrings")
     super <- new(baseClass, data, 0L, length(data), check=FALSE)
     new(class, super, start=.getStartForAdjacentSeqs(locs$nchar),
-               nchar=locs$nchar, names=names(charseqs), check=FALSE)
+                      nchar=locs$nchar,
+                      names=names(charseqs),
+                      check=FALSE)
+}
+
+.narrowBStringSet <- function(x, start, end, nchar, baseClass, check)
+{
+    if (check) {
+        ## Only limited checking here, more is done at the C level
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (!isSingleNumberOrNA(nchar))
+            stop("'nchar' must be a single integer or NA")
+        if (!is.integer(nchar))
+            nchar <- as.integer(nchar)
+    }
+    class <- paste(baseClass, "Set", sep="")
+    super <- mkBString(baseClass, super(x))
+    locs <- .SEN2locs(start, end, nchar, nchar(x))
+    new(class, super, start=start(x)+locs$start-1L,
+                      nchar=locs$nchar,
+                      names=names(x),
+                      check=FALSE)
+}
+
+.BStringViewsToBStringSet <- function(x, start, end, nchar, baseClass, check)
+{
+    if (check) {
+        ## Only limited checking here, more is done at the C level
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (!isSingleNumberOrNA(nchar))
+            stop("'nchar' must be a single integer or NA")
+        if (!is.integer(nchar))
+            nchar <- as.integer(nchar)
+    }
+    class <- paste(baseClass, "Set", sep="")
+    super <- mkBString(baseClass, subject(x))
+    locs <- .SEN2locs(start, end, nchar, width(x))
+    new(class, super, start=start(x)+locs$start-1L,
+                      nchar=locs$nchar,
+                      names=desc(x),
+                      check=TRUE) # TRUE for catching out of limits views
 }
 
 setMethod("BStringSet", "character",
@@ -218,19 +279,45 @@ setMethod("AAStringSet", "AsIs",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
         if (!is.character(x))
-            stop("unsuported input type")
+            stop("unsupported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
 	AAStringSet(x, start=start, end=end, nchar=nchar, check=check)
     }
 )
 
+setMethod("BStringSet", "BStringSet",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .narrowBStringSet(x, start, end, nchar, "BString", check)
+)
+setMethod("DNAStringSet", "BStringSet",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .narrowBStringSet(x, start, end, nchar, "DNAString", check)
+)
+setMethod("RNAStringSet", "BStringSet",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .narrowBStringSet(x, start, end, nchar, "RNAString", check)
+)
+setMethod("AAStringSet", "BStringSet",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .narrowBStringSet(x, start, end, nchar, "AAString", check)
+)
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
-###
-
-setGeneric("super", function(x) standardGeneric("super"))
-setMethod("super", "BStringSet", function(x) x@super)
+setMethod("BStringSet", "BStringViews",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .BStringViewsToBStringSet(x, start, end, nchar, "BString", check)
+)
+setMethod("DNAStringSet", "BStringViews",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .BStringViewsToBStringSet(x, start, end, nchar, "DNAString", check)
+)
+setMethod("RNAStringSet", "BStringViews",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .BStringViewsToBStringSet(x, start, end, nchar, "RNAString", check)
+)
+setMethod("AAStringSet", "BStringViews",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .BStringViewsToBStringSet(x, start, end, nchar, "AAString", check)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -299,7 +386,8 @@ setMethod("show", "BStringSet",
     function(object)
     {
         cat("  A ", class(object), " instance of length ", length(object), "\n", sep="")
-        BStringSet.show_frame(object)
+        if (length(object) != 0)
+            BStringSet.show_frame(object)
     }
 )
 

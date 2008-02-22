@@ -97,6 +97,8 @@ char RNAdecode(char code);
 
 const char *get_BString_charseq(SEXP x, int *length);
 
+int get_BStringSet_length(SEXP x);
+
 const char *get_BStringSet_charseq(SEXP x, int i, int *nchar);
 
 /*

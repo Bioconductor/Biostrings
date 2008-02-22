@@ -364,7 +364,8 @@ setMethod("show", "BStringList",
     function(object)
     {
         cat("  A ", class(object), " instance of length ", length(object), "\n", sep="")
-        BStringList.show_frame(object)
+        if (length(object) != 0)
+            BStringList.show_frame(object)
     }
 )
 

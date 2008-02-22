@@ -57,22 +57,23 @@
 
 \arguments{
   \item{dict}{
-      [DOCUMENT ME]
+    A character vector, a \code{\link{DNAStringSet}} object or a
+    \code{\link{BStringViews}} object containing the input sequences.
   }
   \item{tb.start}{
-      [DOCUMENT ME]
+    [DOCUMENT ME]
   }
   \item{tb.end}{
-      [DOCUMENT ME]
+    [DOCUMENT ME]
   }
   \item{drop.head}{
-      [DOCUMENT ME]
+    [DOCUMENT ME]
   }
   \item{drop.tail}{
-      [DOCUMENT ME]
+    [DOCUMENT ME]
   }
   \item{skip.invalid.patterns}{
-      [DOCUMENT ME]
+    [DOCUMENT ME]
   }
 }
 
@@ -177,13 +178,14 @@
 \seealso{
   \code{\link{matchPDict}},
   \code{\link{DNA_ALPHABET}},
-  \link{DNAStringSet-class}
+  \link{DNAStringSet-class},
+  \link{BStringViews-class}
 }
 
 \examples{
   ## Preprocessing a constant width DNA dictionary
   library(drosophila2probe)
-  dict0 <- drosophila2probe$sequence   # The input dictionary.
+  dict0 <- drosophila2probe$sequence   # The input sequences.
   length(dict0)                        # Hundreds of thousands of patterns.
   unique(nchar(dict0))                 # Patterns are 25-mers.
   dict0[1:5]
