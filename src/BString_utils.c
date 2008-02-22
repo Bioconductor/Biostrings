@@ -1,6 +1,7 @@
-/*
- * Low-level manipulation of BString and BStringList objects.
- */
+/****************************************************************************
+ *  Low-level manipulation of BString, BStringList and BStringSet objects   *
+ *                           Author: Herve Pages                            *
+ ****************************************************************************/
 #include "Biostrings.h"
 
 static int DNA_enc_lkup[256], DNA_dec_lkup[256];
@@ -208,80 +209,96 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 	return ans;
 }
 
+
+/****************************************************************************
+ * Low-level manipulation of BStringSet objects.
+ */
+
+typedef struct startend {
+	int start;
+	int end;
+} StartEnd;
+
+/*
+ * Check and simplify user-specified values 'start', 'end', 'nchar'.
+ */
+static StartEnd SEN_to_StartEnd(int start, int end, int nchar)
+{
+	StartEnd startend;
+
+	if (start == 0)
+		error("'start' must be a single >= 1, <= -1 or NA integer");
+	if (end == 0)
+		error("'end' must be a single >= 1, <= -1 or NA integer");
+	if (nchar == NA_INTEGER) {
+		if (start == NA_INTEGER)
+			start = 1;
+		if (end == NA_INTEGER)
+			end = -1;
+		if ((end > 0 || start < 0) && end < start)
+			error("invalid ('start','end') combination");
+	} else if (nchar < 0) {
+		error("'nchar' must be a single >= 0 or NA integer");
+	} else if ((start == NA_INTEGER) == (end == NA_INTEGER)) {
+		error("either 'start' or 'end' (but not both) must be NA when 'nchar' is not NA");
+	} else if (start == NA_INTEGER) {
+		// 'end' is not NA
+		if (0 < end && end < nchar)
+			error("invalid ('end','nchar') combination");
+		start = end - nchar + 1; // will be 0 iff 'end' = -1 and 'nchar' = 0
+	} else {
+		// 'end' is NA
+		if (start < 0 && -start < nchar)
+			error("invalid ('start','nchar') combination");
+		end = start + nchar - 1; // will be 0 iff 'start' = 1 and 'nchar' = 0
+	}
+	// 'start' and 'end' cannot be NA anymore!
+	startend.start = start;
+	startend.end = end;
+	return startend;
+}
+
 /*
  * --- .Call ENTRY POINT ---
  * SEN_to_locs() arguments are assumed to be:
- *   seq_nchars: vector of non-negative integers (no NAs either)
  *   start, end, nchar: single integer (possibly NA)
+ *   seq_nchars: vector of non-negative integers (no NAs either)
  * SEN_to_locs() converts user-specified values 'start', 'end', 'nchar' into
  * valid start/nchar locations.
  * Return a list with 2 elements named "start" and "nchar", each of them being
  * an integer vector of the same length as 'seq_nchars'.
  */
-SEXP SEN_to_locs(SEXP seq_nchars, SEXP start, SEXP end, SEXP nchar)
+SEXP SEN_to_locs(SEXP start, SEXP end, SEXP nchar, SEXP seq_nchars)
 {
 	SEXP ans_start, ans_nchar, ans, ans_names;
-	int start0, end0, nchar0, nseq, i, *seq_nchar, *start_elt, *nchar_elt;
+	StartEnd startend;
+	int nseq, i, *seq_nchar, *ans_start_elt, *ans_nchar_elt;
 
-	start0 = INTEGER(start)[0];
-	end0 = INTEGER(end)[0];
-	nchar0 = INTEGER(nchar)[0];
-	// Checking user-specified values 'start', 'end', 'nchar'
-	if (start0 == 0)
-		error("'start' must be a single >= 1, <= -1 or NA integer");
-	if (end0 == 0)
-		error("'end' must be a single >= 1, <= -1 or NA integer");
-	if (nchar0 == NA_INTEGER) {
-		if (start0 == NA_INTEGER)
-			start0 = 1;
-		if (end0 == NA_INTEGER)
-			end0 = -1;
-		if ((end0 > 0 || start0 < 0) && end0 < start0)
-			error("invalid ('start','end') combination");
-	} else if (nchar0 < 0) {
-		error("'nchar' must be a single >= 0 or NA integer");
-	} else if ((start0 == NA_INTEGER) == (end0 == NA_INTEGER)) {
-		error("either 'start' or 'end' (but not both) must be NA when 'nchar' is not NA");
-	} else if (start0 == NA_INTEGER) {
-		// end0 is not NA
-		if (0 < end0 && end0 < nchar0)
-			error("invalid ('end','nchar') combination");
-		start0 = end0 - nchar0 + 1; // will be 0 iff end0 = -1 and nchar0 = 0
-	} else {
-		// end0 is NA
-		if (start0 < 0 && -start0 < nchar0)
-			error("invalid ('start','nchar') combination");
-		end0 = start0 + nchar0 - 1; // will be 0 iff start0 = 1 and nchar0 = 0
-	}
-	// From here, start0 and end0 can't be NA anymore so we don't
-	// need nchar0 anymore.
-
+	startend = SEN_to_StartEnd(INTEGER(start)[0], INTEGER(end)[0], INTEGER(nchar)[0]);
 	nseq = LENGTH(seq_nchars);
 	PROTECT(ans_start = NEW_INTEGER(nseq));
 	PROTECT(ans_nchar = NEW_INTEGER(nseq));
 	for (i = 0, seq_nchar = INTEGER(seq_nchars),
-		    start_elt = INTEGER(ans_start),
-		    nchar_elt = INTEGER(ans_nchar);
+		    ans_start_elt = INTEGER(ans_start),
+		    ans_nchar_elt = INTEGER(ans_nchar);
 	     i < nseq;
-	     i++, seq_nchar++, start_elt++, nchar_elt++)
+	     i++, seq_nchar++, ans_start_elt++, ans_nchar_elt++)
 	{
-		if (start0 > 0)
-			*start_elt = start0;
-		else
-			*start_elt = *seq_nchar + start0 + 1;
-		if (end0 >= 0)
-			*nchar_elt = end0 - *start_elt + 1;
-		else
-			*nchar_elt = *seq_nchar + end0 + 1 - *start_elt + 1;
-		if (*start_elt < 1) {
+		*ans_start_elt = startend.start;
+		if (startend.start <= 0) // yes, <= 0
+			*ans_start_elt += *seq_nchar + 1;
+		*ans_nchar_elt = startend.end - *ans_start_elt + 1;
+		if (startend.end < 0) // yes, < 0
+			*ans_nchar_elt += *seq_nchar + 1;
+		if (*ans_start_elt < 1) {
 			UNPROTECT(2);
 			error("trying to read before the start of input sequence %d", i+1);
 		}
-		if (*nchar_elt < 0) {
+		if (*ans_nchar_elt < 0) {
 			UNPROTECT(2);
 			error("trying to read a negative number of letters from input sequence %d", i+1);
 		}
-		if (*start_elt + *nchar_elt - 1 > *seq_nchar) {
+		if (*ans_start_elt + *ans_nchar_elt - 1 > *seq_nchar) {
 			UNPROTECT(2);
 			error("trying to read after the end of input sequence %d", i+1);
 		}

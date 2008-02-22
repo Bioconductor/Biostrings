@@ -589,10 +589,10 @@ SEXP subBStrings(
 SEXP BStrings_to_nchars(SEXP x_seqs);
 
 SEXP SEN_to_locs(
-		SEXP seq_nchars,
 		SEXP start,
 		SEXP end,
-		SEXP nchar
+		SEXP nchar,
+		SEXP seq_nchars
 );
 
 SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);

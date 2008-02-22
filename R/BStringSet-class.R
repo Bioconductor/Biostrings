@@ -127,9 +127,9 @@ setGeneric("RNAStringSet", signature="x",
 setGeneric("AAStringSet", signature="x",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("AAStringSet"))
 
-.SEN2locs <- function(seq_nchars, start, end, nchar)
+.SEN2locs <- function(start, end, nchar, seq_nchars)
 {
-    .Call("SEN_to_locs", seq_nchars, start, end, nchar, PACKAGE="Biostrings")
+    .Call("SEN_to_locs", start, end, nchar, seq_nchars, PACKAGE="Biostrings")
 }
 
 .getStartForAdjacentSeqs <- function(seq_nchars)
@@ -157,7 +157,7 @@ setGeneric("AAStringSet", signature="x",
             nchar <- as.integer(nchar)
     }
     seq_nchars <- nchar(charseqs, type="bytes")
-    locs <- .SEN2locs(seq_nchars, start, end, nchar)
+    locs <- .SEN2locs(start, end, nchar, seq_nchars)
     class <- paste(baseClass, "Set", sep="")
     proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
