@@ -97,6 +97,8 @@ char RNAdecode(char code);
 
 const char *get_BString_charseq(SEXP x, int *length);
 
+const char *get_BStringSet_charseq(SEXP x, int i, int *nchar);
+
 /*
  * Look at Biostrings_defines.h in this folder for the valid values of the
  * 'mrmode' arg (the match reporting mode).

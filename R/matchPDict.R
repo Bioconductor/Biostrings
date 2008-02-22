@@ -863,17 +863,9 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    if (is.null(pdict@head))
-        head <- NULL
-    else
-        head <- pdict@head@seqs
-    if (is.null(pdict@tail))
-        tail <- NULL
-    else
-        tail <- pdict@tail@seqs
     ans <- .Call("match_TBdna",
                  actree@nodes@xp, actree@base_codes,
-                 pdict@dups, head, tail,
+                 pdict@dups, pdict@head, pdict@tail,
                  subject,
                  max.mismatch, fixed,
                  count.only, envir,

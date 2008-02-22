@@ -913,9 +913,11 @@ SEXP CWdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
  *   'actree_base_codes': uldna_pdict@actree@base_codes
  *   'pdict_dups': pdict@dups
- *   'pdict_tail_seqs': pdict@tail@seqs or NULL
+ *   'pdict_head_BStringSet': pdict@head (can be NULL)
+ *   'pdict_tail_BStringSet': pdict@tail (can be NULL)
  *   'subject_BString': subject
  *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
+ *   'fixed': logical vector of length 2
  *   'count_only': TRUE or FALSE
  *   'envir': environment to be populated with the matches
  *
@@ -926,7 +928,7 @@ SEXP CWdna_pp_views(SEXP dict_subj_BString, SEXP dict_start, SEXP dict_end,
  ****************************************************************************/
 
 SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-                SEXP pdict_dups, SEXP pdict_head_seqs, SEXP pdict_tail_seqs,
+		SEXP pdict_dups, SEXP pdict_head_BStringSet, SEXP pdict_tail_BStringSet,
 		SEXP subject_BString,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
@@ -935,7 +937,6 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	const char *S, *head, *tail;
 	int nS, max_mm, fixedP, fixedS, is_count_only, no_head, no_tail,
             head_len, tail_len, poffset;
-	SEXP head_BString, tail_BString;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	S = _get_BString_charseq(subject_BString, &nS);
@@ -943,8 +944,8 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
-	no_head = pdict_head_seqs == R_NilValue;
-	no_tail = pdict_tail_seqs == R_NilValue;
+	no_head = pdict_head_BStringSet == R_NilValue;
+	no_tail = pdict_tail_BStringSet == R_NilValue;
 
 	if (!no_head)
 		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
@@ -953,12 +954,10 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (no_tail) {
 		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
 	} else {
-		/* The duplicated must be treated BEFORE the first pattern they
-		 * duplicate, hence we must walk from last to first.
-		 */
-		for (poffset = LENGTH(pdict_tail_seqs) - 1; poffset >= 0; poffset--) {
-			tail_BString = VECTOR_ELT(pdict_tail_seqs, poffset);
-			tail = _get_BString_charseq(tail_BString, &tail_len);
+		// The duplicated must be treated BEFORE the first pattern they
+		// duplicate, hence we must walk from last to first.
+		for (poffset = LENGTH(pdict_dups) - 1; poffset >= 0; poffset--) {
+			tail = _get_BStringSet_charseq(pdict_tail_BStringSet, poffset, &tail_len);
 			TBdna_match_tail(tail, tail_len, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
 				max_mm, fixedP, fixedS, is_count_only);

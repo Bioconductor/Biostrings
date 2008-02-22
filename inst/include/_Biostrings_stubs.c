@@ -45,6 +45,15 @@ const char *get_BString_charseq(SEXP x, int *length)
 	return fun(x, length);
 }
 
+const char *get_BStringSet_charseq(SEXP x, int i, int *nchar)
+{
+	static const char *(*fun)(SEXP, int, int *) = NULL;
+
+	if (fun == NULL)
+		fun = (const char *(*)(SEXP, int, int *)) R_GetCCallable("Biostrings", "_get_BStringSet_charseq");
+	return fun(x, i, nchar);
+}
+
 void init_match_reporting(int mrmode)
 {
 	static void (*fun)(int) = NULL;

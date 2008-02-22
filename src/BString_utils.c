@@ -336,3 +336,17 @@ SEXP get_start_for_adjacent_seqs(SEXP seq_nchars)
 	return ans;
 }
 
+const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
+{
+	SEXP locs, super, xp;
+	int start, offset;
+
+	locs = GET_SLOT(x, install("locs"));
+	start = INTEGER(VECTOR_ELT(locs, 0))[i];
+	*nchar = INTEGER(VECTOR_ELT(locs, 1))[i];
+	super = GET_SLOT(x, install("super"));
+	xp = GET_SLOT(getBString_data(super), install("xp"));
+	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
+	return (const char *) (RAW(R_ExternalPtrTag(xp)) + offset + start - 1);
+}
+

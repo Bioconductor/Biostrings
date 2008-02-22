@@ -597,6 +597,12 @@ SEXP SEN_to_locs(
 
 SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
+const char *_get_BStringSet_charseq(
+		SEXP x,
+		int i,
+		int *nchar
+);
+
 
 /* reverseComplement.c */
 
@@ -845,8 +851,8 @@ SEXP match_TBdna(
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
 		SEXP pdict_dups,
-		SEXP pdict_head_seqs,
-		SEXP pdict_tail_seqs,
+		SEXP pdict_head_BStringSet,
+		SEXP pdict_tail_BStringSet,
 		SEXP subject_BString,
 		SEXP max_mismatch,
 		SEXP fixed,
