@@ -185,6 +185,45 @@ setMethod("AAStringSet", "character",
         .charseqsToBStringSet(x, start, end, nchar, "AAString", check)
 )
 
+### Just because of those silly "AsIs" objects found in the probe packages
+### (e.g. drosophila2probe$sequence)
+setMethod("BStringSet", "AsIs",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+	BStringSet(x, start=start, end=end, nchar=nchar, check=check)
+    }
+)
+setMethod("DNAStringSet", "AsIs",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+	DNAStringSet(x, start=start, end=end, nchar=nchar, check=check)
+    }
+)
+setMethod("RNAStringSet", "AsIs",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+	RNAStringSet(x, start=start, end=end, nchar=nchar, check=check)
+    }
+)
+setMethod("AAStringSet", "AsIs",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+	AAStringSet(x, start=start, end=end, nchar=nchar, check=check)
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
