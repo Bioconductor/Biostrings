@@ -120,7 +120,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"match_TBdna_debug", (DL_FUNC) &match_TBdna_debug, 0},
 	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
 	{"CWdna_pp_StrVect", (DL_FUNC) &CWdna_pp_StrVect, 3},
-	{"CWdna_pp_BStringList", (DL_FUNC) &CWdna_pp_BStringList, 3},
+	{"CWdna_pp_BStringSet", (DL_FUNC) &CWdna_pp_BStringSet, 3},
 	{"CWdna_pp_views", (DL_FUNC) &CWdna_pp_views, 5},
 	{"match_TBdna", (DL_FUNC) &match_TBdna, 10},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},

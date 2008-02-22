@@ -204,13 +204,13 @@ setMethod("patternFrequency", "CWdna_PDict",
 ###      dictionary with no tail.
 ###
 
-### 'head' and 'tail' must be DNAStringList objects of the same length.
+### 'head' and 'tail' must be DNAStringSet objects of the same length.
 ### One of them can be NULL but they can't both be NULL at the same time.
 setClass("TBdna_PDict",
     contains="CWdna_PDict",
     representation(
-        head="DNAStringList", # can be NULL
-        tail="DNAStringList"  # can be NULL
+        head="DNAStringSet", # can be NULL
+        tail="DNAStringSet"  # can be NULL
     )
 )
 
@@ -293,8 +293,8 @@ debug_TBdna <- function()
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
-    } else if (is(dict, "DNAStringList")) {
-        pp_Cans <- .Call("CWdna_pp_BStringList",
+    } else if (is(dict, "DNAStringSet")) {
+        pp_Cans <- .Call("CWdna_pp_BStringSet",
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
@@ -313,22 +313,10 @@ debug_TBdna <- function()
     if (drop.head && drop.tail)
         return(new("CWdna_PDict", length(dict), pp_Cans, names))
     ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
-    if (!drop.head) {
-        ## Use DNAStringSet(dict, end=tb.start-1L) when DNAStringSet() is ready
-        ## It will work with tb.start > 0L and tb.start < 0L
-        if (tb.start > 0L)
-            ans@head <- DNAStringList(dict, nchar=tb.start-1L)
-        else
-            stop("keeping the head when 'tb.start' and 'tb.end' are negative is not ready yet, sorry!")
-    }
-    if (!drop.tail) {
-        ## Use DNAStringSet(dict, start=tb.end+1L) when DNAStringSet() is ready
-        ## It will work with tb.end > 0L and tb.end < 0L
-        if (tb.start > 0L)
-            ans@tail <- DNAStringList(dict, start=ans@width+1L)
-        else
-            stop("keeping the tail when 'tb.start' and 'tb.end' are negative is not ready yet, sorry!")
-    }
+    if (!drop.head) 
+        ans@head <- DNAStringSet(dict, end=tb.start-1L)
+    if (!drop.tail)
+        ans@tail <- DNAStringSet(dict, start=tb.end+1L)
     ans
 }
 
@@ -336,7 +324,7 @@ debug_TBdna <- function()
 ###   - of length >= 1
 ### The supported types for the input dictionary are:
 ###   - character vector
-###   - DNAStringList object
+###   - DNAStringSet object
 ###   - BStringViews object
 ### Typical use:
 ###   > library(Biostrings)
@@ -360,13 +348,13 @@ setMethod("PDict", "character",
     }
 )
 
-setMethod("PDict", "DNAStringList",
+setMethod("PDict", "DNAStringSet",
     function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
         if (length(dict) == 0)
             stop("'dict' must contain at least one pattern")
-        ## The following check should enforced by the DNAStringList() constructor
+        ## The following check should enforced by the DNAStringSet() constructor
         pattern_class <- unique(sapply(as.list(dict), class))
         if (length(pattern_class) != 1)
             stop("all patterns in 'dict' must belong to the same class")

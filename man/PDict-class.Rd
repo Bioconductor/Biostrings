@@ -24,7 +24,7 @@
 % User level constructor:
 \alias{PDict}
 \alias{PDict,character-method}
-\alias{PDict,DNAStringList-method}
+\alias{PDict,DNAStringSet-method}
 \alias{PDict,BStringViews-method}
 \alias{PDict,AsIs-method}
 
@@ -145,12 +145,12 @@
     }
     \item{}{
       \code{head(x)}:
-      The head of the PDict object (a \code{\link{DNAStringList}} object
+      The head of the PDict object (a \code{\link{DNAStringSet}} object
       of length \code{length(x)} or \code{NULL}).
     }
     \item{}{
       \code{tail(x)}:
-      The tail of the PDict object (a \code{\link{DNAStringList}} object
+      The tail of the PDict object (a \code{\link{DNAStringSet}} object
       of length \code{length(x)} or \code{NULL}).
     }
   }
@@ -177,7 +177,7 @@
 \seealso{
   \code{\link{matchPDict}},
   \code{\link{DNA_ALPHABET}},
-  \link{DNAStringList-class}
+  \link{DNAStringSet-class}
 }
 
 \examples{

@@ -827,7 +827,7 @@ SEXP CWdna_pp_StrVect(
 		SEXP end
 );
 
-SEXP CWdna_pp_BStringList(
+SEXP CWdna_pp_BStringSet(
 		SEXP dict,
 		SEXP start,
 		SEXP end

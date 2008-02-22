@@ -854,14 +854,14 @@ SEXP CWdna_pp_StrVect(SEXP dict, SEXP start, SEXP end)
 }
 
 /*
- * .Call entry point: "CWdna_pp_BStringList"
+ * .Call entry point: "CWdna_pp_BStringSet"
  *
  * Argument:
  *   'dict': 
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_BStringList(SEXP dict, SEXP start, SEXP end)
+SEXP CWdna_pp_BStringSet(SEXP dict, SEXP start, SEXP end)
 {
 	// current limitation, remove later
 	if (INTEGER(start)[0] != 1)
