@@ -2,6 +2,53 @@
 ### The BStringSet class
 ### -------------------------------------------------------------------------
 ###
+### The BStringSet class is a container for storing a set of BString objects
+### of the same class (e.g. all BString instances or all DNAString instances).
+### The current implementation only allows the storage of a set of strings
+### that are all substrings of a common string called the super string.
+### For storing BString objects that point to different XRaw objects, the user
+### should use the BStringList container.
+###
+### Of course, the responsability of choosing between BStringSet and
+### BStringList based on such an obscure criteria ("are my BString objects
+### sharing the same XRaw object?") should not be left to the user.
+### In the future this unfriendly situation could be worked around by renaming
+### the BStringSet class -> SubstrSet and making BStringSet an interface only
+### (i.e. a virtual class with no slots) that would be shared by specific
+### BStringSet-like containers like BStringList and SubstrSet.
+###   (1) BStringList: the current BStringList container where each sequence
+###       points to its own XRaw object. Maybe some sequences are in fact
+###       sharing the same XRaw object but it doesn't matter, except when they
+###       all share the same, then the BStringList object can be easily and
+###       very efficiently converted to a SubstrSet object.
+###   (2) SubstrSet: this would remain the most efficient (i.e. compact and
+###       fast) BStringSet-like container and the one still used in most use
+###       cases.
+### Other BStringSet-like containers could be added later e.g. the
+### OnfileBStringList container: would use some delayed loading mechanism like
+### what is currently in use for the BSgenome stuff. Still need to think more
+### about the pros and cons of having such container though...
+### Also worth considering: could the current BStringViews container inherit
+### the BStringSet interface?
+###
+### Conversion between BStringViews, BStringSet and BStringList objects:
+###   o BStringViews --> BStringSet: should always work, except when views in
+###     BStringViews are out of limits.
+###   o BStringSet --> BStringViews: doesn't make sense.
+###   o BStringSet --> BStringList: should always work (no restriction) but I
+###     can't think of any use case where doing this would be a good idea!
+###     (the BStringSet container is much more efficient).
+###   o BStringList --> BStringSet: would be fast and easy to implement when
+###     all the sequences in BStringList share the same XRaw object (then
+###     no need to copy any data). When they don't share the same XRaw object,
+###     then all the sequence data in BStringList need to be copied,
+###     concatenated and stuffed into a new XRaw object.
+###
+### Some notable differences between BStringSet and BStringViews objects:
+###   - the "show" methods produce very different output
+###   - the views in a BStringViews object can't have a 0-width
+###   - the views in a BStringViews object can be out of limits
+###
 
 setClass("BStringSet",
     contains="SubstrLocs",
@@ -17,7 +64,7 @@ setClass("AAStringSet", contains="BStringSet")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
+### Initialization (not intended to be used directly by the user).
 ###
 
 setMethod("initialize", "BStringSet",
@@ -63,6 +110,79 @@ setMethod("initialize", "AAStringSet",
         }
         callNextMethod(.Object, super, start, nchar, names, check)
     }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The user-friendly constructors.
+###
+### All these constructors use the SEN (Start/End/Nchar) interface.
+###
+setGeneric("BStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("BStringSet"))
+setGeneric("DNAStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("DNAStringSet"))
+setGeneric("RNAStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("RNAStringSet"))
+setGeneric("AAStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("AAStringSet"))
+
+.SEN2locs <- function(seq_nchars, start, end, nchar)
+{
+    .Call("SEN_to_locs", seq_nchars, start, end, nchar, PACKAGE="Biostrings")
+}
+
+.getStartForAdjacentSeqs <- function(seq_nchars)
+{
+    .Call("get_start_for_adjacent_seqs", seq_nchars, PACKAGE="Biostrings")
+}
+
+.charseqsToBStringSet <- function(charseqs, start, end, nchar, baseClass, check)
+{
+    if (check) {
+        ## Only limited checking here, more is done at the C level
+        if (any(is.na(charseqs)))
+            stop("'charseqs' cannot contain NAs")
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (!isSingleNumberOrNA(nchar))
+            stop("'nchar' must be a single integer or NA")
+        if (!is.integer(nchar))
+            nchar <- as.integer(nchar)
+    }
+    seq_nchars <- nchar(charseqs, type="bytes")
+    locs <- .SEN2locs(seq_nchars, start, end, nchar)
+    class <- paste(baseClass, "Set", sep="")
+    proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
+    data <- .Call("STRSXP_to_XRaw",
+                  charseqs, locs$start, locs$nchar, enc_lkup(proto),
+                  PACKAGE="Biostrings")
+    super <- new(baseClass, data, 0L, length(data), check=FALSE)
+    new(class, super, start=.getStartForAdjacentSeqs(locs$nchar),
+               nchar=locs$nchar, names=names(charseqs), check=FALSE)
+}
+
+setMethod("BStringSet", "character",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringSet(x, start, end, nchar, "BString", check)
+)
+setMethod("DNAStringSet", "character",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringSet(x, start, end, nchar, "DNAString", check)
+)
+setMethod("RNAStringSet", "character",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringSet(x, start, end, nchar, "RNAString", check)
+)
+setMethod("AAStringSet", "character",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringSet(x, start, end, nchar, "AAString", check)
 )
 
 
@@ -181,4 +301,12 @@ setReplaceMethod("[[", "BStringSet",
         stop("attempt to modify the value of a ", sQuote(class(x)), " object")
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Equality.
+###
+
+### WON'T START THIS UNLESS SOMEONE HAS A USE CASE...
+### Look at BStringViews-class.R for how to do this.
 

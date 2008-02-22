@@ -20,13 +20,13 @@ Collate: 00datacache.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
         BStringCodec-class.R
         BString-class.R
-        BStringList-class.R
-        SubstrLocs-class.R
-	BStringSet-class.R
         Views-class.R
         BStringViews-class.R
         BStringViews-constructors.R
         BStringViews-io.R
+        BStringList-class.R
+        SubstrLocs-class.R
+        BStringSet-class.R
         BStringPartialMatches-class.R
         BStringAlign-class.R
         letter.R

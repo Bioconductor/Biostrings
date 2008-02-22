@@ -47,6 +47,7 @@ static const R_CallMethodDef callMethods[] = {
 
 	{"char_to_XRaw", (DL_FUNC) &char_to_XRaw, 4},
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
+	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 4},
 
 	{"XRaw_loadFASTA", (DL_FUNC) &XRaw_loadFASTA, 4},
 
@@ -70,6 +71,8 @@ static const R_CallMethodDef callMethods[] = {
 	{"charseqs_to_BStrings", (DL_FUNC) &charseqs_to_BStrings, 5},
 	{"subBStrings", (DL_FUNC) &subBStrings, 4},
 	{"BStrings_to_nchars", (DL_FUNC) &BStrings_to_nchars, 1},
+	{"SEN_to_locs", (DL_FUNC) &SEN_to_locs, 4},
+	{"get_start_for_adjacent_seqs", (DL_FUNC) &get_start_for_adjacent_seqs, 1},
         
 /* reverseComplement.c */
         {"XRaw_translate_copy_from_i1i2", (DL_FUNC) &XRaw_translate_copy_from_i1i2, 5},

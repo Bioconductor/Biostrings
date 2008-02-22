@@ -142,6 +142,7 @@ setClass("CWdna_PDict",
     )
 )
 
+### Not intended to be used directly by the user.
 setMethod("initialize", "CWdna_PDict",
     function(.Object, length, pp_Cans, names)
     {
@@ -213,6 +214,7 @@ setClass("TBdna_PDict",
     )
 )
 
+### Not intended to be used directly by the user.
 setMethod("initialize", "TBdna_PDict",
     function(.Object, length, pp_Cans, names)
     {
@@ -256,7 +258,7 @@ setMethod("patternFrequency", "TBdna_PDict",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The PDict() constructor.
+### The PDict() constructor (user-friendly).
 ###
 
 debug_TBdna <- function()

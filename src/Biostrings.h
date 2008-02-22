@@ -466,6 +466,13 @@ SEXP copy_subXRaw(
 		SEXP lkup
 );
 
+SEXP STRSXP_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
 SEXP XRaw_loadFASTA(
 		SEXP xraw_xp,
 		SEXP filepath,
@@ -580,6 +587,15 @@ SEXP subBStrings(
 );
 
 SEXP BStrings_to_nchars(SEXP x_seqs);
+
+SEXP SEN_to_locs(
+		SEXP seq_nchars,
+		SEXP start,
+		SEXP end,
+		SEXP nchar
+);
+
+SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
 
 /* reverseComplement.c */

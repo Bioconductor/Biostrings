@@ -7,11 +7,12 @@ import(utils) ## for the "head" and "tail" generics
 exportClasses(
     "XRaw", "XInteger",
     "BString", "DNAString", "RNAString", "AAString",
+    "Views",
+    "BStringViews",
     "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
     "SubstrLocs",
     "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
-    "Views",
-    "BStringViews", "BStringPartialMatches",
+    "BStringPartialMatches",
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
     "PDict", "CWdna_PDict", "TBdna_PDict",
@@ -28,17 +29,16 @@ exportMethods(
 
     ## Accessors
     alphabet, letter,
-    start, end, super,
-    nview, width, desc, "desc<-", subject,
+    nview, start, end, width, desc, "desc<-", subject, super,
     patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
     subpatterns, pattern,
     align1, align2, score,
 
     ## Others
     BString, DNAString, RNAString, AAString,
-    BStringList, DNAStringList, RNAStringList, AAStringList,
-    #BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringViews,
+    BStringList, DNAStringList, RNAStringList, AAStringList,
+    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     subviews, substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
     reverse, complement, reverseComplement,

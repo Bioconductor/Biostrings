@@ -630,7 +630,7 @@ SEXP XRaw_read_complexes_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 
 
 /****************************************************************************
- * 4 convenience functions
+ * 6 convenience functions
  * =======================
  *
  */
@@ -684,6 +684,47 @@ SEXP copy_subXRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
 
 	error("copy_subXRaw() not ready yet");
 	return R_NilValue;
+}
+
+/*
+ * No checking of 'start' and 'nchar' lengths! We assume they are always good...
+ */
+SEXP STRSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+{
+	SEXP dest, x_elt, ans;
+	int x_len, dest_len, i, *start_elt, *nchar_elt, offset, length;
+	char *dest_elt;
+	const char *src;
+
+	x_len = LENGTH(x);
+	dest_len = 0;
+	for (i = 0, nchar_elt = INTEGER(nchar); i < x_len; i++, nchar_elt++)
+		dest_len += *nchar_elt;
+
+	PROTECT(dest = NEW_RAW(dest_len));
+	dest_elt = (char *) RAW(dest);
+	for (i = 0, start_elt = INTEGER(start), nchar_elt = INTEGER(nchar);
+             i < x_len;
+             i++, start_elt++, nchar_elt++) {
+		x_elt = STRING_ELT(x, i);
+		offset = _start2offset(*start_elt);
+		length = _nchar2length(*nchar_elt, offset, LENGTH(x_elt));
+		src = CHAR(x_elt) + offset;
+		if (lkup == R_NilValue) {
+			_Biostrings_memcpy_to_i1i2(0, length - 1,
+				dest_elt, length,
+				src, length, sizeof(char));
+		} else {
+			_Biostrings_translate_charcpy_to_i1i2(0, length - 1,
+				dest_elt, length,
+				src, length,
+				INTEGER(lkup), LENGTH(lkup));
+		}
+		dest_elt += length;
+	}
+	ans = mkXRaw(dest);
+	UNPROTECT(1);
+	return ans;
 }
 
 

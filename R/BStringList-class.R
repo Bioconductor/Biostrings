@@ -48,7 +48,7 @@ setClass("AAStringList", contains="BStringList")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
+### Initialization (not intended to be used directly by the user).
 ###
 
 setMethod("initialize", "BStringList",
@@ -145,7 +145,7 @@ setMethod("initialize", "AAStringList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The exported constructors.
+### The user-friendly constructors.
 ###
 
 setGeneric("BStringList", signature="seqs",
@@ -287,10 +287,8 @@ setMethod("nchar", "BStringList",
         .Call("BStrings_to_nchars", x@seqs, PACKAGE="Biostrings")
 )
 
-setGeneric("desc", function(x) standardGeneric("desc"))
 setMethod("desc", "BStringList", function(x) names(as.list(x)))
 
-setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
 setReplaceMethod("desc", "BStringList",
     function(x, value)
     {

@@ -208,3 +208,114 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ * SEN_to_locs() arguments are assumed to be:
+ *   seq_nchars: vector of non-negative integers (no NAs either)
+ *   start, end, nchar: single integer (possibly NA)
+ * SEN_to_locs() converts user-specified values 'start', 'end', 'nchar' into
+ * valid start/nchar locations.
+ * Return a list with 2 elements named "start" and "nchar", each of them being
+ * an integer vector of the same length as 'seq_nchars'.
+ */
+SEXP SEN_to_locs(SEXP seq_nchars, SEXP start, SEXP end, SEXP nchar)
+{
+	SEXP ans_start, ans_nchar, ans, ans_names;
+	int start0, end0, nchar0, nseq, i, *seq_nchar, *start_elt, *nchar_elt;
+
+	start0 = INTEGER(start)[0];
+	end0 = INTEGER(end)[0];
+	nchar0 = INTEGER(nchar)[0];
+	// Checking user-specified values 'start', 'end', 'nchar'
+	if (start0 == 0)
+		error("'start' must be a single >= 1, <= -1 or NA integer");
+	if (end0 == 0)
+		error("'end' must be a single >= 1, <= -1 or NA integer");
+	if (nchar0 == NA_INTEGER) {
+		if (start0 == NA_INTEGER)
+			start0 = 1;
+		if (end0 == NA_INTEGER)
+			end0 = -1;
+		if ((end0 > 0 || start0 < 0) && end0 < start0)
+			error("invalid ('start','end') combination");
+	} else if (nchar0 < 0) {
+		error("'nchar' must be a single >= 0 or NA integer");
+	} else if ((start0 == NA_INTEGER) == (end0 == NA_INTEGER)) {
+		error("either 'start' or 'end' (but not both) must be NA when 'nchar' is not NA");
+	} else if (start0 == NA_INTEGER) {
+		// end0 is not NA
+		if (0 < end0 && end0 < nchar0)
+			error("invalid ('end','nchar') combination");
+		start0 = end0 - nchar0 + 1; // will be 0 iff end0 = -1 and nchar0 = 0
+	} else {
+		// end0 is NA
+		if (start0 < 0 && -start0 < nchar0)
+			error("invalid ('start','nchar') combination");
+		end0 = start0 + nchar0 - 1; // will be 0 iff start0 = 1 and nchar0 = 0
+	}
+	// From here, start0 and end0 can't be NA anymore so we don't
+	// need nchar0 anymore.
+
+	nseq = LENGTH(seq_nchars);
+	PROTECT(ans_start = NEW_INTEGER(nseq));
+	PROTECT(ans_nchar = NEW_INTEGER(nseq));
+	for (i = 0, seq_nchar = INTEGER(seq_nchars),
+		    start_elt = INTEGER(ans_start),
+		    nchar_elt = INTEGER(ans_nchar);
+	     i < nseq;
+	     i++, seq_nchar++, start_elt++, nchar_elt++)
+	{
+		if (start0 > 0)
+			*start_elt = start0;
+		else
+			*start_elt = *seq_nchar + start0 + 1;
+		if (end0 >= 0)
+			*nchar_elt = end0 - *start_elt + 1;
+		else
+			*nchar_elt = *seq_nchar + end0 + 1 - *start_elt + 1;
+		if (*start_elt < 1) {
+			UNPROTECT(2);
+			error("trying to read before the start of input sequence %d", i+1);
+		}
+		if (*nchar_elt < 0) {
+			UNPROTECT(2);
+			error("trying to read a negative number of letters from input sequence %d", i+1);
+		}
+		if (*start_elt + *nchar_elt - 1 > *seq_nchar) {
+			UNPROTECT(2);
+			error("trying to read after the end of input sequence %d", i+1);
+		}
+	}
+
+	PROTECT(ans = NEW_LIST(2));
+	PROTECT(ans_names = NEW_CHARACTER(2));
+	SET_STRING_ELT(ans_names, 0, mkChar("start"));
+	SET_STRING_ELT(ans_names, 1, mkChar("nchar"));
+	SET_NAMES(ans, ans_names);
+	SET_ELEMENT(ans, 0, ans_start);
+	SET_ELEMENT(ans, 1, ans_nchar);
+	UNPROTECT(4);
+	return ans;
+}
+
+SEXP get_start_for_adjacent_seqs(SEXP seq_nchars)
+{
+	SEXP ans;
+	int nseq, i, *seq_nchar, *ans_elt0, *ans_elt1;
+
+	nseq = LENGTH(seq_nchars);
+	PROTECT(ans = NEW_INTEGER(nseq));
+	if (nseq >= 1)
+		INTEGER(ans)[0] = 1;
+	if (nseq >= 2)
+		for (i = 1, seq_nchar = INTEGER(seq_nchars),
+			    ans_elt0 = INTEGER(ans),
+			    ans_elt1 = INTEGER(ans)+1;
+		     i < nseq;
+		     i++, seq_nchar++, ans_elt0++, ans_elt1++) {
+			*ans_elt1 = *ans_elt0 + *seq_nchar;
+		}
+	UNPROTECT(1);
+	return ans;
+}
+

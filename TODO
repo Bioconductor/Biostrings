@@ -44,22 +44,6 @@ In 2.7
       For XRaw input, implement C routine copy_subXRaw() and use it for
       copySubXRaw(). Add copySubBString() and copySubBStrings() and use them in
       the BString() and BStringList() constructors.
-    o The BStringList class needs to be hidden and replaced by a better, more
-      versatile container BStringSet. BStringSet would be just an interface
-      (virtual class with no slots) shared by 3 underlying types of containers:
-      LinearBStringSet, BStringList and OnfileBStringList:
-        a) LinearBStringSet (the most efficient and good for most use cases):
-           uses the BStringViews approach: all the sequences in it point to the
-           same XRaw object
-        b) BStringList: the current BStringList container where each sequence
-           points to its own XRaw object. Maybe some sequences share in fact
-           the same XRaw object but it doesn't matter, except when they all
-           share the same, then the BStringList object can be easily and very
-           efficiently converted to a LinearBStringSet.
-        c) OnfileBStringList: would use some delayed loading mechanism like for
-           the current BSgenome stuff. Need to think more about the pros and
-           cons of having this container but something worth considering (not
-           for the near future anyway).
     o Add read.BStringList/write.BStringList.
     o Add methods for BStringList objects everywhere there are methods defined
       for BStringViews objects (alphabetFrequency, reverse, matchPattern,
