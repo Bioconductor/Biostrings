@@ -319,6 +319,13 @@ setMethod("AAStringSet", "BStringViews",
         .BStringViewsToBStringSet(x, start, end, nchar, "AAString", check)
 )
 
+### Not exported
+mkBStringSet <- function(baseClass, x)
+{
+    class <- paste(baseClass, "Set", sep="")
+    do.call(class, list(x=x))
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

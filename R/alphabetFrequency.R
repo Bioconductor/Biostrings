@@ -21,6 +21,15 @@
     freq
 }
 
+.normalize.collapse <- function(collapse)
+{
+    if (is.null(collapse))
+        return(FALSE)
+    if (!isTRUEorFALSE(collapse))
+        stop("'collapse' must be 'TRUE' or 'FALSE'")
+    collapse
+}
+
 .BString.char_frequency <- function(x, freq)
 {
     freq <- .normalize.freq(freq)
@@ -51,11 +60,11 @@
 }
 
 setGeneric("alphabetFrequency", signature="x",
-    function(x, baseOnly=FALSE, freq=FALSE) standardGeneric("alphabetFrequency")
+    function(x, baseOnly=FALSE, freq=FALSE, ...) standardGeneric("alphabetFrequency")
 )
 
 setMethod("alphabetFrequency", "BString",
-    function(x, baseOnly=FALSE, freq=FALSE)
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
         if (!missing(baseOnly))
             warning("'baseOnly' is ignored for a non DNA or RNA sequence")
@@ -64,36 +73,60 @@ setMethod("alphabetFrequency", "BString",
 )
 
 setMethod("alphabetFrequency", "DNAString",
-    function(x, baseOnly=FALSE, freq=FALSE)
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
         .nucleotide_frequency(x, baseOnly, freq)
     }
 )
 
 setMethod("alphabetFrequency", "RNAString",
-    function(x, baseOnly=FALSE, freq=FALSE)
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
         .nucleotide_frequency(x, baseOnly, freq)
     }
 )
 
-### Will fail if x contains "out of limits" views.
+### library(drosophila2probe)
+### dict0 <- drosophila2probe$sequence
+### x <- BStringViews(as.character(dict0[1:2000]), subjectClass="DNAString")
+### alphabetFrequency(x, baseOnly=TRUE)
+### y <- DNAStringSet(x)
+### alphabetFrequency(y, baseOnly=TRUE)
 setMethod("alphabetFrequency", "BStringViews",
-    function(x, baseOnly=FALSE, freq=FALSE)
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
-        if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) {
-            viewFrequency <- function(v) alphabetFrequency(v, baseOnly=baseOnly, freq=FALSE)
+        ## Turning BStringViews object 'x' into a BStringSet object will fail
+        ## if 'x' contains "out of limits" views. This might change in the future.
+        y <- mkBStringSet(class(subject(x)), x)
+        alphabetFrequency(y, baseOnly=baseOnly, freq=freq, ...)
+    }
+)
+
+setMethod("alphabetFrequency", "BStringSet",
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
+    {
+        if (is(super(x), "DNAString") || is(super(x), "RNAString")) {
+            frequency <- function(v) alphabetFrequency(v, baseOnly=baseOnly, freq=FALSE)
         } else {
             if (!missing(baseOnly))
-                warning("'baseOnly' is ignored for views on a non DNA or RNA sequence")
-            viewFrequency <- function(v) alphabetFrequency(v, freq=FALSE)
+                warning("'baseOnly' is ignored for non DNA or RNA sequences")
+            frequency <- function(v) alphabetFrequency(v, freq=FALSE)
         }
         freq <- .normalize.freq(freq)
-        ## Just a trick to generate a zero-filled answer
-        ans <- viewFrequency(x@subject[1])
-        ans[] <- 0L
-        for (i in seq_len(length(x)))
-            ans <- ans + viewFrequency(x[[i]])
+        collapse <- .normalize.collapse(list(...)$collapse)
+        ## Generate a zero-filled answer
+        ans_row <- frequency(mkBString(class(super(x)), ""))
+        if (collapse) {
+            ans <- ans_row
+            for (i in seq_len(length(x)))
+                ans <- ans + frequency(x[[i]])
+        } else {
+            ans <- matrix(rep.int(ans_row, length(x)), ncol=length(ans_row), byrow=TRUE,
+                                                       dimnames=list(NULL, names(ans_row)))
+            for (i in seq_len(length(x)))
+                ans[i, ] <- frequency(x[[i]])
+            ## The "collapsed" result could also be obtained with colSums(ans)...
+        }
         if (freq)
             ans <- ans / sum(ans)
         ans
@@ -239,12 +272,12 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 }
 
 setGeneric("oligonucleotideFrequency", signature="x",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
         standardGeneric("oligonucleotideFrequency")
 )
 
 setMethod("oligonucleotideFrequency", "DNAString",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
@@ -253,7 +286,7 @@ setMethod("oligonucleotideFrequency", "DNAString",
 )
 
 setMethod("oligonucleotideFrequency", "RNAString",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
@@ -261,9 +294,19 @@ setMethod("oligonucleotideFrequency", "RNAString",
     }
 )
 
-### Will fail if x contains "out of limits" views.
 setMethod("oligonucleotideFrequency", "BStringViews",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE)
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
+    {
+        ## Turning BStringViews object 'x' into a BStringSet object will fail
+        ## if 'x' contains "out of limits" views. This might change in the future.
+        y <- mkBStringSet(class(subject(x)), x)
+        oligonucleotideFrequency(x, width, freq=freq, fast.moving.side=fast.moving.side,
+                                           as.array=as.array, use.names=use.names, ...)
+    }
+)
+
+setMethod("oligonucleotideFrequency", "BStringSet",
+    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
@@ -272,16 +315,30 @@ setMethod("oligonucleotideFrequency", "BStringViews",
         fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
         as.array <- .normalize.as.array(as.array, fast.moving.side)
         use.names <- .normalize.use.names(use.names)
-        base_codes <- codes(subject(x), baseOnly=TRUE)
+        collapse <- .normalize.collapse(list(...)$collapse)
+        base_codes <- codes(super(x), baseOnly=TRUE)
         ans <- integer(pow.int(4L, width))
-        for (i in seq_len(length(x))) {
-            xx <- x[[i]]
-            ans <- ans + .Call("oligonucleotide_frequency",
-                               xx@data@xp, xx@offset, xx@length,
-                               base_codes, width, fast.moving.side,
-                               PACKAGE="Biostrings")
+        if (collapse) {
+            for (i in seq_len(length(x))) {
+                xx <- x[[i]]
+                ans <- ans + .Call("oligonucleotide_frequency",
+                                   xx@data@xp, xx@offset, xx@length,
+                                   base_codes, width, fast.moving.side,
+                                   PACKAGE="Biostrings")
+            }
+            ans <- .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array, use.names)
+        } else {
+            ans <- rep.int(list(ans), length(x))
+            for (i in seq_len(length(x))) {
+                xx <- x[[i]]
+                tmp <- .Call("oligonucleotide_frequency",
+                             xx@data@xp, xx@offset, xx@length,
+                             base_codes, width, fast.moving.side,
+                             PACKAGE="Biostrings")
+                ans[[i]] <- .formatFreqAnswer(tmp, names(base_codes), width, freq, fast.moving.side, as.array, use.names)
+            }
         }
-        .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array, use.names)
+        ans
     }
 )
 
@@ -291,21 +348,21 @@ setMethod("oligonucleotideFrequency", "BStringViews",
 ### wrappers.
 ###
 
-dinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE)
+dinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, ...)
 {
     if (missing(fast.moving.side) && !missing(as.matrix))
         fast.moving.side <- "left"
     oligonucleotideFrequency(x, 2, freq=freq,
                                 fast.moving.side=fast.moving.side,
-                                as.array=as.matrix)
+                                as.array=as.matrix, ...)
 }
 
-trinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.array=FALSE)
+trinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, ...)
 {
     if (missing(fast.moving.side) && !missing(as.array))
         fast.moving.side <- "left"
     oligonucleotideFrequency(x, 3, freq=freq,
                                 fast.moving.side=fast.moving.side,
-                                as.array=as.array)
+                                as.array=as.array, ...)
 }
 

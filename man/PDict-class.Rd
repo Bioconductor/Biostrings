@@ -100,7 +100,7 @@
   class (a subclass of the PDict class). The dictionary stored in a
   TBdna\_PDict object is splitted in 3 parts: the Trusted Band, the head
   and the tail of the dictionary. Each of them contains the same number
-  of sequences (eventually empty) which is the number of input patterns.
+  of sequences (eventually empty) which is also the number of input patterns.
   The Trusted Band is the set of sequences obtained by extracting
   the trusted region from each input pattern.
   The head is the set of sequences obtained by extracting the region located

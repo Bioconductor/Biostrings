@@ -39,11 +39,12 @@ o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
 o Added the dinucleotideFrequency(), trinucleotideFrequency(),
   oligonucleotideFrequency(), strrev() and mkAllStrings() functions.
 
-o Two small changes in alphabetFrequency():
+o Three changes in alphabetFrequency():
   (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is
       not returned anymore (now it's treated as any 'other' letter i.e. any
       non-base letter);
-  (2) added the 'freq' argument.
+  (2) added the 'freq' argument;
+  (3) added the 'collapse' argument.
 
 o Implemented the "shortcut feature" to C function CWdna_exact_search().
   With this patch, using matchPDict() to find all the matches of a

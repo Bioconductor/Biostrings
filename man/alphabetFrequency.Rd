@@ -5,11 +5,13 @@
 \alias{alphabetFrequency,DNAString-method}
 \alias{alphabetFrequency,RNAString-method}
 \alias{alphabetFrequency,BStringViews-method}
+\alias{alphabetFrequency,BStringSet-method}
 
 \alias{oligonucleotideFrequency}
 \alias{oligonucleotideFrequency,DNAString-method}
 \alias{oligonucleotideFrequency,RNAString-method}
 \alias{oligonucleotideFrequency,BStringViews-method}
+\alias{oligonucleotideFrequency,BStringSet-method}
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
@@ -30,13 +32,20 @@
   More generally, the \code{oligonucleotideFrequency} function will
   calculate the frequency of all possible oligonucleotides of a given
   length (called the "width" in this particular context).
+
+  In this man page we call "DNA input" a \link{DNAString} object, or a
+  \link{BStringViews} object with a \link{DNAString} subject,
+  or a \link{DNAStringSet} object.
+  Similarly we call "RNA input" an \link{RNAString} object, or a
+  \link{BStringViews} object with an \link{RNAString} subject,
+  or an \link{RNAStringSet} object.
 }
 
 \usage{
-  alphabetFrequency(x, baseOnly=FALSE, freq=FALSE)
-  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE)
-  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE)
-  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE)
+  alphabetFrequency(x, baseOnly=FALSE, freq=FALSE, ...)
+  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, ...)
+  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, ...)
+  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
 
   ## Some related utility functions
   strrev(x)
@@ -45,21 +54,23 @@
 
 \arguments{
   \item{x}{
-    A \link{BString}, \link{DNAString}, \link{RNAString}
-    or \link{BStringViews} object for all the \code{*Frequency}
-    functions and a character vector for \code{strrev}.
+    A \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
+    or \link{BStringSet} object for all the \code{*Frequency} functions.
+    A character vector for \code{strrev}.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
     If \code{TRUE}, the returned vector only contains frequencies for the
-    letters in the "base" alphabet i.e. "A", "C", "G", "T" when \code{x}
-    is a \link{DNAString} object (or a \link{BStringViews} object with a
-    \link{DNAString} subject), and "A", "C", "G", "U" when \code{x} is a
-    \link{RNAString} object (or a \link{BStringViews} object with a
-    \link{RNAString} subject).
-    When \code{x} is a \link{BString} object (or a \link{BStringViews}
-    object with a \link{BString} subject), then the \code{baseOnly}
-    argument is ignored.
+    letters in the "base" alphabet i.e. "A", "C", "G", "T" if \code{x}
+    is a "DNA input", and "A", "C", "G", "U" if \code{x} is "RNA input".
+    When \code{x} is a \link{BString} instance (or a \link{BStringViews}
+    object with a \link{BString} subject, or a \link{BStringSet} instance),
+    then the \code{baseOnly} argument is ignored.
+  }
+  \item{...}{
+    Further arguments to be passed to or from other methods.
+    For the \link{BStringViews} and \link{BStringSet} methods,
+    the \code{collapse} argument is accepted.
   }
   \item{freq}{
     If \code{TRUE} then frequencies are reported, otherwise counts.
@@ -88,37 +99,44 @@
   }
 }
 
+\details{
+  \code{alphabetFrequency} and \code{oligonucleotideFrequency} are generic
+  functions with methods in the Biostrings package defined for
+  \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
+  and \link{BStringSet} objects.
+}
+
 \value{
   All the \code{*Frequency} functions return an integer vector if \code{freq}
   is \code{FALSE} (default), otherwise a double vector.
   If \code{as.matrix} or \code{as.array} is \code{TRUE}, this vector is
   formatted as a matrix or an array.
 
-  For \code{alphabetFrequency}: if \code{x} is a \link{DNAString} or
-  \link{RNAString} object (or a \link{BStringViews} object with a
-  \link{DNAString} or \link{RNAString} subject), then the returned vector
-  is named with the letters in the alphabet (unless \code{use.names}
-  is \code{FALSE}).
+  For \code{alphabetFrequency}: if \code{x} is a "DNA or RNA input", then the
+  returned vector is named with the letters in the alphabet (unless
+  \code{use.names} is \code{FALSE}).
   If the \code{baseOnly} argument is \code{TRUE}, then the returned vector
   has only 5 elements: 4 elements corresponding to the 4 nucleotides
   + the 'other' element.
 
   \code{dinucleotideFrequency} (resp. \code{trinucleotideFrequency} and
-  \code{oligonucleotideFrequency}) only works on a \link{DNAString} or
-  \link{RNAString} object (or a \link{BStringViews} object with a
-  \link{DNAString} or \link{RNAString} subject)
+  \code{oligonucleotideFrequency}) only works on "DNA or RNA input"
   and returns a vector named with all the possible dinucleotides
   (resp. trinucleotides or oligonucleotides).
   
-  If \code{x} is a \link{BStringViews} object, then the returned
-  vector (or array) contains the cumulated frequencies found in each view.
+  If \code{x} is a multiple sequence input (i.e. a \link{BStringViews} or
+  \link{BStringSet} object), then the returned object is a matrix (or a list)
+  with the same number of rows (or elements) as \code{x} unless \code{collapse=TRUE}
+  is specified. In that case the returned vector (or array) contains the frequencies
+  cumulated across all sequences in \code{x}.
 }
 
 \author{H. Pages}
 
 \seealso{
   \code{\link{countPDict}},
-  \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews},
+  \link{BString}, \link{DNAString}, \link{RNAString},
+  \link{BStringViews}, \link{BStringSet},
   \code{\link{rev}}, \code{\link{strsplit}},
   \code{\link{GENETIC_CODE}}, \code{\link{AMINO_ACID_CODE}}
 }
@@ -133,6 +151,12 @@
   dinucleotideFrequency(yeast1)
   trinucleotideFrequency(yeast1)
   oligonucleotideFrequency(yeast1, 4)
+
+  ## With a multiple sequence input
+  library(drosophila2probe)
+  x <- DNAStringSet(drosophila2probe$sequence[1:50])
+  alphabetFrequency(x, baseOnly=TRUE)
+  alphabetFrequency(x, baseOnly=TRUE, collapse=TRUE)
 
   ## Get the less and most represented 6-mers
   f6 <- oligonucleotideFrequency(yeast1, 6)
