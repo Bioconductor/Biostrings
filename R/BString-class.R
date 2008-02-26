@@ -22,6 +22,7 @@ setClass("AAString", contains="BString")
 ###
 
 setGeneric("codes", signature="x", function(x, ...) standardGeneric("codes"))
+setMethod("codes", "BString", function(x, ...) 0:255)
 setMethod("codes", "DNAString", function(x, baseOnly=FALSE) DNAcodes(baseOnly))
 setMethod("codes", "RNAString", function(x, baseOnly=FALSE) RNAcodes(baseOnly))
 
@@ -62,13 +63,19 @@ setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "BString.read" and "BString.write" functions (NOT exported).
+### The "BString.read", "BString.write" and "BString.readInts" functions.
+### NOT exported!
 ###
 
 BString.read <- function(x, i, imax=integer(0))
 {
     XRaw.read(x@data, x@offset + i, x@offset + imax,
                       dec_lkup=dec_lkup(x))
+}
+
+BString.readInts <- function(x, i, imax=integer(0))
+{
+    XRaw.readInts(x@data, x@offset + i, x@offset + imax)
 }
 
 ### Only used at initialization time! (BString objects are immutable)

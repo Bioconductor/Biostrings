@@ -402,8 +402,12 @@ setReplaceMethod("[", "BStringList",
 setMethod("[[", "BStringList",
     function(x, i, j, ...)
     {
-        if (!missing(j) || length(list(...)) > 0 || missing(i))
+        if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
+        if (missing(i))
+            stop("subscript is missing")
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
         as.list(x)[[i]]
     }
 )

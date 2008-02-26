@@ -41,6 +41,7 @@ exportMethods(
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     subviews, substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
+    chartr,
     reverse, complement, reverseComplement,
     isMatching, mismatch,
     matchPattern, countPattern,

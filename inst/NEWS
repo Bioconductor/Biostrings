@@ -3,6 +3,10 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Added the chartr() generic function with a method for BString objects.
+  Methods for other types of objects (in particular for BStringViews and
+  BStringSet objects) will come later.
+
 o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
   to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of
   trying to mimic transciption. This conversion is still performed without
@@ -10,6 +14,17 @@ o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
   Also the semantic of comparing RNA with DNA has been changed to remain
   consistent with the new semantic of RNAString() and DNAString() e.g.
   RNAString("UUGAAAA-CUC-N") is considered equal to DNAString("TTGAAAA-CTC-N").
+
+o Added a bunch of new containers for storing a big set of sequences:
+    - BStringList, DNAStringList, RNAStringList and AAStringList
+    - BStringSet, DNAStringSet, RNAStringSet and AAStringSet
+  They are almost the same from a user point of view, but the internal
+  representations and method implementations are very different.
+  The BStringList family was a first attempt to address the problem of storing
+  a big set of sequences in an efficent manner but its performance turned out
+  to be disappointing. So the BStringSet family was introduced as a response
+  to the poor performance of the BStringList container. The BStringList family
+  might be removed soon.
 
 o Added support for a Biostrings C interface (work-in-progress).
   See inst/include/Biostrings_interface.h for how to use it in your package.
@@ -20,9 +35,6 @@ o Added support in matchPDict() for inexact matching of a dictionary with
   "trusted prefixes". See ?`matchPDict-inexact` for the details.
 
 o Added support for empty BString (and derived) objects.
-
-o Added the "BStringList", "DNAStringList", "RNAStringList" and "AAStringList"
-  classes. Not used yet but will be soon... (more news to come here)
 
 o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
   matchLRPatterns() and matchPDict() functions.

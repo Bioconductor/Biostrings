@@ -420,7 +420,11 @@ setMethod("[[", "BStringSet",
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
-        if (missing(i) || !is.numeric(i))
+        if (missing(i))
+            stop("subscript is missing")
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
+        if (!is.numeric(i))
             stop("invalid subscript type")
         if (length(i) < 1L)
             stop("attempt to select less than one element")

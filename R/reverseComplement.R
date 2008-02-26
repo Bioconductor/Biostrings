@@ -8,13 +8,7 @@ setGeneric("reverse", signature="x",
 
 setMethod("reverse", "BString",
     function(x, ...)
-    {
-        lx <- length(x)
-        data <- XRaw(lx)
-        XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data)
-        ## class(x) can be "BString", "DNAString", "RNAString" or "AAString"
-        new(class(x), data, 0L, length(data), check=FALSE)
-    }
+        BString.tr(x, reverse=TRUE)
 )
 
 setMethod("reverse", "BStringViews",
@@ -41,24 +35,12 @@ setGeneric("complement", signature="x",
 
 setMethod("complement", "DNAString",
     function(x, ...)
-    {
-        lx <- length(x)
-        data <- XRaw(lx)
-        lkup <- getDNAComplementLookup()
-        XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
-        new("DNAString", data, 0L, length(data), check=FALSE)
-    }
+        BString.tr(x, lkup=getDNAComplementLookup())
 )
 
 setMethod("complement", "RNAString",
     function(x, ...)
-    {
-        lx <- length(x)
-        data <- XRaw(lx)
-        lkup <- getRNAComplementLookup()
-        XRaw.copy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
-        new("RNAString", data, 0L, length(data), check=FALSE)
-    }
+        BString.tr(x, lkup=getRNAComplementLookup())
 )
 
 setMethod("complement", "BStringViews",
@@ -112,24 +94,12 @@ setGeneric("reverseComplement", signature="x",
 
 setMethod("reverseComplement", "DNAString",
     function(x, ...)
-    {
-        lx <- length(x)
-        data <- XRaw(lx)
-        lkup <- getDNAComplementLookup()
-        XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
-        new("DNAString", data, 0L, length(data), check=FALSE)
-    }
+        BString.tr(x, lkup=getDNAComplementLookup(), reverse=TRUE)
 )
 
 setMethod("reverseComplement", "RNAString",
     function(x, ...)
-    {
-        lx <- length(x)
-        data <- XRaw(lx)
-        lkup <- getRNAComplementLookup()
-        XRaw.reverseCopy(data, x@offset + 1, x@offset + lx, src=x@data, lkup=lkup)
-        new("RNAString", data, 0L, length(data), check=FALSE)
-    }
+        BString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
 )
 
 setMethod("reverseComplement", "BStringViews",

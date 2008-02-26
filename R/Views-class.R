@@ -125,6 +125,8 @@ setMethod("[", "Views",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
         lx <- length(x)
         if (is.numeric(i)) {
             if (any(i < -lx) || any(i > lx))
