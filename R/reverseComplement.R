@@ -79,19 +79,27 @@ setMethod("complement", "BStringViews",
 
 transcribe <- function(x)
 {
-    if( !(is(x, "DNAString")) ) stop("transcribe only works on DNA input")
-    RNAString(x)
+    if (!is(x, "DNAString")) stop("transcribe() only works on DNA input")
+    RNAString(complement(x))
 }
 
 cDNA <- function(x)
 {
-    if( !(is(x, "RNAString")) ) stop("cDNA only works on RNA input")
-    DNAString(x)
+    if (!is(x, "RNAString")) stop("cDNA() only works on RNA input")
+    DNAString(complement(x))
 }
 
-dna2rna <- function(x) RNAString(complement(x))
+dna2rna <- function(x)
+{
+    if (!is(x, "DNAString")) stop("dna2rna() only works on DNA input")
+    RNAString(x)
+}
  
-rna2dna <- function(x) DNAString(complement(x))
+rna2dna <- function(x)
+{
+    if (!is(x, "RNAString")) stop("rna2dna() only works on RNA input")
+    DNAString(x)
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

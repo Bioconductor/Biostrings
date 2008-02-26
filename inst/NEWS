@@ -3,6 +3,14 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
+o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
+  to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of
+  trying to mimic transciption. This conversion is still performed without
+  copying the sequence data and thus remains very fast.
+  Also the semantic of comparing RNA with DNA has been changed to remain
+  consistent with the new semantic of RNAString() and DNAString() e.g.
+  RNAString("UUGAAAA-CUC-N") is considered equal to DNAString("TTGAAAA-CTC-N").
+
 o Added support for a Biostrings C interface (work-in-progress).
   See inst/include/Biostrings_interface.h for how to use it in your package.
 

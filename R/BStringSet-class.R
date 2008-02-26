@@ -122,7 +122,7 @@ setMethod("initialize", "AAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user-friendly constructors.
+### The user-friendly versatile constructors.
 ###
 ### All these constructors use the SEN (Start/End/Nchar) interface.
 ###

@@ -176,7 +176,7 @@ setMethod("initialize", "AAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The exported constructors.
+### The user-friendly versatile constructors.
 ###
 
 setGeneric("BString", signature="seq",

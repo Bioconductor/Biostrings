@@ -156,16 +156,13 @@ cat('> bb == ""')
 cat('> d == bb')
 @
 
-A \Rclass{DNAString} object and a \Rclass{RNAString} object are considered
-equals when they are complementary:
+When comparing an \Rclass{RNAString} object with a \Rclass{DNAString} object,
+U and T are considered equals:
 <<b3>>=
-dAlphabet <- DNAString("ACGT-MRSVWYHKDBN")
-rAlphabet <- RNAString("UGCA-KYSBWRDMHVN")
-dAlphabet == rAlphabet
+r <- RNAString(d)
+r
+r == d
 @
-Note that this behaviour is consistent with the fact that
-\Robject{RNAString(dAlphabet)} is equal to \Robject{rAlphabet} and
-\Robject{DNAString(rAlphabet)} is equal to \Robject{dAlphabet}.
 
 
 % ---------------------------------------------------------------------------

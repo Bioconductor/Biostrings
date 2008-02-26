@@ -95,13 +95,14 @@
 
 \examples{
   d <- DNAString("TTGAAAA-CTC-N")
-  r <- RNAString(d)  # reflects the transcription processus
+  r <- RNAString(d)
+  r
   alphabet(r)
   RNA_ALPHABET
 
-  ## Note that comparing an RNAString instance with a DNAString
-  ## instance is possible (and very fast):
-  RNAString("GAAAU") == DNAString("CTTTA")  # TRUE
+  ## When comparing an RNAString object with a DNAString object,
+  ## U and T are considered equals:
+  r == d
 }
 
 \keyword{methods}

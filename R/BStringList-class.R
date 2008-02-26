@@ -145,7 +145,7 @@ setMethod("initialize", "AAStringList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user-friendly constructors.
+### The user-friendly versatile constructors.
 ###
 
 setGeneric("BStringList", signature="seqs",

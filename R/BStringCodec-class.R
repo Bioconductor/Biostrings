@@ -98,14 +98,8 @@ setMethod("initialize", "BStringCodec",
 ### The DNA and RNA alphabets and codecs.
 ###
 
-### Note that this setting makes conversion from DNAString to RNAString look
-### like (ideal, perfect, hence not realistic) transcription:
-###   > dna <- DNAString("ACGT")
-###   > rna <- RNAString(dna)
-### This is almost instantaneous (even on a 100M-letter DNA) because the data
-### in 'dna' are not copied ('dna' and 'rna' point to the same XRaw object).
 DNA_BASE_CODES <- c(A=1L, C=2L, G=4L, T=8L)
-RNA_BASE_CODES <- c(U=1L, G=2L, C=4L, A=8L)
+RNA_BASE_CODES <- c(A=1L, C=2L, G=4L, U=8L)
 
 .IUPACcodes <- function(baseCodes)
 {
@@ -153,22 +147,30 @@ DNA_STRING_CODEC <- .BStringCodec.DNAorRNA(.DNA_CODES)
 RNA_STRING_CODEC <- .BStringCodec.DNAorRNA(.RNA_CODES)
 
 
-### Return the lookup table that transforms a DNA (or RNA) sequence into its
+### Return the lookup table that transforms a DNA sequence into its
 ### complementary sequence.
-### IMPORTANT: Assumes that DNA_STRING_CODEC and RNA_STRING_CODEC are
-### complementary codecs.
 getDNAComplementLookup <- function()
 {
-    lkup <- DNA_STRING_CODEC@dec_lkup
-    lkup[lkup %in% .letterAsByteVal("T")] <- .letterAsByteVal("U")
-    RNA_STRING_CODEC@enc_lkup[lkup + 1]
+    complement_base_codes <- c(A=DNA_BASE_CODES["T"][[1]],
+                               C=DNA_BASE_CODES["G"][[1]],
+                               G=DNA_BASE_CODES["C"][[1]],
+                               T=DNA_BASE_CODES["A"][[1]])
+    complement_codes <- .DNAorRNAcodes(complement_base_codes, FALSE)
+    complement_codec <- .BStringCodec.DNAorRNA(complement_codes)
+    complement_codec@enc_lkup[DNA_STRING_CODEC@dec_lkup + 1]
 }
 
+### Return the lookup table that transforms an RNA sequence into its
+### complementary sequence.
 getRNAComplementLookup <- function()
 {
-    lkup <- RNA_STRING_CODEC@dec_lkup
-    lkup[lkup %in% .letterAsByteVal("U")] <- .letterAsByteVal("T")
-    DNA_STRING_CODEC@enc_lkup[lkup + 1]
+    complement_base_codes <- c(A=RNA_BASE_CODES["U"][[1]],
+                               C=RNA_BASE_CODES["G"][[1]],
+                               G=RNA_BASE_CODES["C"][[1]],
+                               U=RNA_BASE_CODES["A"][[1]])
+    complement_codes <- .DNAorRNAcodes(complement_base_codes, FALSE)
+    complement_codec <- .BStringCodec.DNAorRNA(complement_codes)
+    complement_codec@enc_lkup[RNA_STRING_CODEC@dec_lkup + 1]
 }
 
 
