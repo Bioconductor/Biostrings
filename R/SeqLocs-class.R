@@ -1,12 +1,12 @@
 ### =========================================================================
-### The SubstrLocs class
+### The SeqLocs class
 ### -------------------------------------------------------------------------
 ###
-### The SubstrLocs class is the basic container for storing a set of
-### substrings locations defined by their start/nchar.
+### The SeqLocs class is the basic container for storing a set of sequence
+### locations defined by their start/nchar.
 ###
 
-setClass("SubstrLocs",
+setClass("SeqLocs",
     representation(
         ## The 'locs' slot must be a data frame containing a "valid set of
         ## start/nchar locations" i.e. a data frame with a "start" and
@@ -25,7 +25,7 @@ setClass("SubstrLocs",
 ### Initialization.
 ###
 
-setMethod("initialize", "SubstrLocs",
+setMethod("initialize", "SeqLocs",
     function(.Object, start=integer(0), nchar=integer(0), names=NULL, check=TRUE)
     {
         if (check) {
@@ -69,17 +69,17 @@ setMethod("initialize", "SubstrLocs",
 ### Accessor methods.
 ###
 
-setMethod("length", "SubstrLocs", function(x) nrow(x@locs))
+setMethod("length", "SeqLocs", function(x) nrow(x@locs))
 
 ### The "start" and "end" generics are defined in the stats package.
-setMethod("start", "SubstrLocs", function(x, ...) x@locs$start)
-setMethod("nchar", "SubstrLocs", function(x, type="chars", allowNA=FALSE) x@locs$nchar)
+setMethod("start", "SeqLocs", function(x, ...) x@locs$start)
+setMethod("nchar", "SeqLocs", function(x, type="chars", allowNA=FALSE) x@locs$nchar)
 ### Note that when nchar(x)[i] is 0, the end(x)[i] is start(x)[i] - 1
-setMethod("end", "SubstrLocs", function(x, ...) (x@locs$start + x@locs$nchar -1L))
+setMethod("end", "SeqLocs", function(x, ...) (x@locs$start + x@locs$nchar -1L))
 
-setMethod("names", "SubstrLocs", function(x) x@locs$names)
+setMethod("names", "SeqLocs", function(x) x@locs$names)
 
-setReplaceMethod("names", "SubstrLocs",
+setReplaceMethod("names", "SeqLocs",
     function(x, value)
     {
         if (is.null(value)) {
@@ -101,7 +101,7 @@ setReplaceMethod("names", "SubstrLocs",
 ### The "show" method.
 ###
 
-setMethod("show", "SubstrLocs", function(object) show(object@locs))
+setMethod("show", "SeqLocs", function(object) show(object@locs))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,7 +109,7 @@ setMethod("show", "SubstrLocs", function(object) show(object@locs))
 ###
 
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", "SubstrLocs",
+setMethod("[", "SeqLocs",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -131,7 +131,7 @@ setMethod("[", "SubstrLocs",
     }
 )
 
-setReplaceMethod("[", "SubstrLocs",
+setReplaceMethod("[", "SeqLocs",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", sQuote(class(x)), " object")
@@ -143,12 +143,12 @@ setReplaceMethod("[", "SubstrLocs",
 ### Other methods.
 ###
 
-setMethod("as.data.frame", "SubstrLocs",
+setMethod("as.data.frame", "SeqLocs",
     function(x, row.names=NULL, optional=FALSE, ...)
         as.data.frame(x@locs, row.names=row.names, optional=optional, ...)
 )
 
-setMethod("as.matrix", "SubstrLocs",
+setMethod("as.matrix", "SeqLocs",
     function(x, ...)
     {
         ans <- as.matrix(x@locs[ , c("start", "nchar")], ...)

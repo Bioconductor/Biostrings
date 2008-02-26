@@ -51,7 +51,7 @@
 ###
 
 setClass("BStringSet",
-    contains="SubstrLocs",
+    contains="SeqLocs",
     representation(
         super="BString"
     )

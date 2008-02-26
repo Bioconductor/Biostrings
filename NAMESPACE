@@ -10,7 +10,7 @@ exportClasses(
     "Views",
     "BStringViews",
     "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
-    "SubstrLocs",
+    "SeqLocs",
     "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
     "BStringPartialMatches",
     "BStringAlign",

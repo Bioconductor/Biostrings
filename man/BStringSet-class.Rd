@@ -62,8 +62,8 @@
 }
 
 \section{Accesor methods}{
-  The BStringSet class derives from the \link{SubstrLocs} class hence
-  all the accessor methods defined for a \link{SubstrLocs} object can also
+  The BStringSet class derives from the \link{SeqLocs} class hence
+  all the accessor methods defined for a \link{SeqLocs} object can also
   be used on a BStringSet object.
 }
 
@@ -92,7 +92,7 @@
   \link{RNAString-class},
   \link{AAString-class},
   \link{BStringViews-class},
-  \link{SubstrLocs}
+  \link{SeqLocs}
 }
 
 \examples{
