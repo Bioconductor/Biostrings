@@ -310,9 +310,11 @@ BStringList.show_frame_header <- function(iW, ncharW, with.desc)
         format("nchar", width=ncharW, justify="right"),
         sep="")
     if (with.desc) {
-        cat(format("", width=getOption("width")-iW-ncharW-.descW-1),
+        cat(format(" seq", width=getOption("width")-iW-ncharW-.descW-1),
             format("desc", width=.descW, justify="left"),
             sep="")
+    } else {
+        cat(" seq")
     }
     cat("\n")
 }
@@ -323,15 +325,20 @@ BStringList.show_frame_line <- function(x, i, iW, ncharW)
     snippetWidth <- getOption("width") - 2 - iW - ncharW
     if (!is.null(desc(x)))
         snippetWidth <- snippetWidth - .descW - 1
+    seq_snippet <- BString.get_snippet(x[[i]], snippetWidth)
+    if (!is.null(desc(x)))
+        seq_snippet <- format(seq_snippet, width=snippetWidth)
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
         format(nchar, width=ncharW, justify="right"), " ",
-        BString.get_snippet(x[[i]], snippetWidth),
+        seq_snippet,
         sep="")
     if (!is.null(desc(x))) {
-        snippetDesc <- desc(x)[i]
-        if (nchar(snippetDesc) > .descW)
-            snippetDesc <- paste(substr(snippetDesc, 1, .descW-3), "...", sep="")
-        cat(" ", snippetDesc, sep="")
+        snippet_desc <- desc(x)[i]
+        if (is.na(snippet_desc))
+            snippet_desc <- "<NA>"
+        else if (nchar(snippet_desc) > .descW)
+            snippet_desc <- paste(substr(snippet_desc, 1, .descW-3), "...", sep="")
+        cat(" ", snippet_desc, sep="")
     }
     cat("\n")
 }
@@ -340,8 +347,6 @@ BStringList.show_frame_line <- function(x, i, iW, ncharW)
 BStringList.show_frame <- function(x, half_nrow=9L)
 {
     lx <- length(x)
-    if (lx == 0)
-        return
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(nchar(x))
     ncharW <- max(nchar(ncharMax), nchar("nchar"))

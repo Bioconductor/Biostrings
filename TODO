@@ -24,15 +24,6 @@ In 2.[6|7]
   match should not. An alternative is to raise an error (or a warning) when
   mismatch >= nchar(pattern).
 
-- Fix this bug in "show" method for BStringSet (and BStringList) objects:
-    > x1 <- DNAStringSet(c("TTGA", "-CTC-N"))
-    > names(x1)[2] <- "seqB"
-    > x1
-      A DNAStringSet instance of length 2
-        nchar                                                   names               
-    [1]     4 TTGA NA
-    [2]     6 -CTC-N seqB
-
 
 In 2.7
 ======
