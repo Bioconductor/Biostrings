@@ -200,7 +200,7 @@ setMethod("initialize", "AAStringSet",
     }
     class <- paste(baseClass, "Set", sep="")
     locs <- .SEN2locs(start, end, nchar, nchar(x))
-    if (copyDataOnBStringConversion(class(super(x)), baseClass)) {
+    if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
         super <- .BStringSetToBString(x, locs$start, locs$nchar, baseClass)
         ans_start <- .getStartForAdjacentSeqs(locs$nchar)
     } else {
@@ -232,7 +232,7 @@ setMethod("initialize", "AAStringSet",
     }
     class <- paste(baseClass, "Set", sep="")
     locs <- .SEN2locs(start, end, nchar, width(x))
-    if (copyDataOnBStringConversion(class(subject(x)), baseClass)) {
+    if (copyDataOnBStringTypeConversion(class(subject(x)), baseClass)) {
         stop("converting a BStringViews object with a ", class(subject(x)), " subject\n",
              "  into a ", class, " object is not supported yet, sorry!\n",
              "  For now you need to convert it into a ",

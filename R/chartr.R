@@ -33,8 +33,8 @@ setMethod("chartr", "BString",
             new <- mkBString(class(x), new)
         if (nchar(old) != nchar(new))
             stop("'old' and 'new' must have the same length")
-        old_codes <- BString.readInts(old, 1, nchar(old))
-        new_codes <- BString.readInts(new, 1, nchar(new))
+        old_codes <- BString.readCodes(old, 1, nchar(old))
+        new_codes <- BString.readCodes(new, 1, nchar(new))
         lkup <- buildLookupTable(codes(x), codes(x))
         lkup[1 + old_codes] <- new_codes
         BString.tr(x, lkup=lkup)

@@ -63,7 +63,58 @@ setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "BString.read", "BString.write" and "BString.readInts" functions.
+### Some restrictions apply for converting from a BString specific type to
+### another or for comparing BString objects of different types. This is due
+### to the fact that different BString types can use different encoding of
+### their data (or no encoding at all) or simply to the fact that the
+### conversion or comparison doesn't make sense from a biological perspective.
+### The helper functions below are used internally (they are NOT exported) to
+### determine those restrictions.
+###
+
+compatibleBStringTypes <- function(class1, class2)
+{
+    if (extends(class1, "DNAString") || extends(class1, "RNAString"))
+        return(!extends(class2, "AAString"))
+    if (extends(class1, "AAString"))
+        return(!(extends(class2, "DNAString") || extends(class2, "RNAString")))
+    TRUE
+}
+
+getBStringTypeConversionLookup <- function(from_class, to_class)
+{
+    if (!compatibleBStringTypes(from_class, to_class))
+        stop("incompatible BString types")
+    from_nucleo <- extends(from_class, "DNAString") || extends(from_class, "RNAString")
+    to_nucleo <- extends(to_class, "DNAString") || extends(to_class, "RNAString")
+    if (from_nucleo == to_nucleo)
+        return(NULL)
+    if (extends(to_class, "DNAString"))
+        return(DNA_STRING_CODEC@enc_lkup)
+    if (extends(to_class, "RNAString"))
+        return(RNA_STRING_CODEC@enc_lkup)
+    if (extends(from_class, "DNAString"))
+        return(DNA_STRING_CODEC@dec_lkup)
+    if (extends(from_class, "RNAString"))
+        return(RNA_STRING_CODEC@dec_lkup)
+    stop("Biostrings internal error, please report") # should never happen
+}
+
+copyDataOnBStringTypeConversion <- function(class1, class2)
+{
+    !is.null(getBStringTypeConversionLookup(class1, class2))
+}
+
+comparableBStrings <- function(x1, x2)
+{
+    is_nucleo1 <- is(x1, "DNAString") || is(x1, "RNAString")
+    is_nucleo2 <- is(x2, "DNAString") || is(x2, "RNAString")
+    is_nucleo1 == is_nucleo2
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "BString.read", "BString.write" and "BString.readCodes" functions.
 ### NOT exported!
 ###
 
@@ -73,7 +124,7 @@ BString.read <- function(x, i, imax=integer(0))
                       dec_lkup=dec_lkup(x))
 }
 
-BString.readInts <- function(x, i, imax=integer(0))
+BString.readCodes <- function(x, i, imax=integer(0))
 {
     XRaw.readInts(x@data, x@offset + i, x@offset + imax)
 }
@@ -159,7 +210,7 @@ setMethod("initialize", "AAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions used by the versatile constructors below.
+### Helper functions (NOT exported) used by the versatile constructors below.
 ###
 
 .charseqToBString <- function(seq, start, nchar, class, check)
@@ -181,11 +232,18 @@ setMethod("initialize", "AAString",
           PACKAGE="Biostrings")
 }
 
-copyDataOnBStringConversion <- function(class1, class2)
+.BStringToBString <- function(seq, start, nchar, class, check)
 {
-    is_nucl1 <- extends(class1, "DNAString") || extends(class1, "RNAString")
-    is_nucl2 <- extends(class2, "DNAString") || extends(class2, "RNAString")
-    is_nucl1 != is_nucl2
+    if (check) {
+        start <- normalize.start(start)
+        nchar <- normalize.nchar(start, nchar, nchar(seq))
+    }
+    start <- seq@offset + start
+    lkup <- getBStringTypeConversionLookup(class(seq), class)
+    if (is.null(lkup))
+        return(new(class, seq@data, start-1L, nchar, check=FALSE))
+    data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+    new(class, data, 0L, length(data), check=FALSE)
 }
 
 
@@ -204,90 +262,36 @@ setGeneric("AAString", signature="seq",
 
 setMethod("BString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
         .charseqToBString(seq, start, nchar, "BString", check)
-    }
 )
 setMethod("DNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
         .charseqToBString(seq, start, nchar, "DNAString", check)
-    }
 )
 setMethod("RNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
         .charseqToBString(seq, start, nchar, "RNAString", check)
-    }
 )
 setMethod("AAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
         .charseqToBString(seq, start, nchar, "AAString", check)
-    }
 )
 
 setMethod("BString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
-        if (check) {
-            start <- normalize.start(start)
-            nchar <- normalize.nchar(start, nchar, nchar(seq))
-        }
-        start <- seq@offset + start
-        if (!copyDataOnBStringConversion(class(seq), "BString"))
-            return(new("BString", seq@data, start-1L, nchar, check=FALSE))
-        lkup <- dec_lkup(seq)
-        data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
-        new("BString", data, 0L, length(data), check=FALSE)
-    }
+        .BStringToBString(seq, start, nchar, "BString", check)
 )
 setMethod("DNAString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
-        if (is(seq, "AAString"))
-            stop("incompatible input type")
-        if (check) {
-            start <- normalize.start(start)
-            nchar <- normalize.nchar(start, nchar, nchar(seq))
-        }
-        start <- seq@offset + start
-        if (!copyDataOnBStringConversion(class(seq), "DNAString"))
-            return(new("DNAString", seq@data, start-1L, nchar, check=FALSE))
-        lkup <- DNA_STRING_CODEC@enc_lkup
-        data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
-        new("DNAString", data, 0L, length(data), check=FALSE)
-    }
+        .BStringToBString(seq, start, nchar, "DNAString", check)
 )
 setMethod("RNAString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
-        if (is(seq, "AAString"))
-            stop("incompatible input type")
-        if (check) {
-            start <- normalize.start(start)
-            nchar <- normalize.nchar(start, nchar, nchar(seq))
-        }
-        start <- seq@offset + start
-        if (!copyDataOnBStringConversion(class(seq), "RNAString"))
-            return(new("RNAString", seq@data, start-1L, nchar, check=FALSE))
-        lkup <- RNA_STRING_CODEC@enc_lkup
-        data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
-        new("RNAString", data, 0L, length(data), check=FALSE)
-    }
+        .BStringToBString(seq, start, nchar, "RNAString", check)
 )
 setMethod("AAString", "BString",
     function(seq, start=1, nchar=NA, check=TRUE)
-    {
-        if (is(seq, "DNAString") || is(seq, "RNAString"))
-            stop("incompatible input type")
-        if (check) {
-            start <- normalize.start(start)
-            nchar <- normalize.nchar(start, nchar, nchar(seq))
-        }
-        start <- seq@offset + start
-        new("AAString", seq@data, start-1L, nchar, check=FALSE)
-    }
+        .BStringToBString(seq, start, nchar, "AAString", check)
 )
 
 ### Not exported
@@ -390,12 +394,6 @@ setReplaceMethod("[", "BString",
 ###   s1 <- toString(dnav[[1]])
 ###   s7 <- toString(dnav[[7]])
 ###   s1 == s7
-
-comparableBStrings <- function(e1, e2)
-{
-    ## 'e1' and 'e2' are comparable iff they are both encoded or not
-    (is(e1, "DNAString") || is(e1, "RNAString")) == (is(e2, "DNAString") || is(e2, "RNAString"))
-}
 
 ### 'x' and 'y' must be BString objects
 .BString.equal <- function(x, y)
