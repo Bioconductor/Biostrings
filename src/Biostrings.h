@@ -443,36 +443,6 @@ SEXP XRaw_read_complexes_from_subset(
 		SEXP lkup
 );
 
-SEXP mkXRaw(SEXP tag);
-
-SEXP CHARSXP_to_XRaw(
-		SEXP x,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup
-);
-
-SEXP char_to_XRaw(
-		SEXP x,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup
-);
-
-SEXP copy_subXRaw(
-		SEXP x,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup
-);
-
-SEXP STRSXP_to_XRaw(
-		SEXP x,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup
-);
-
 SEXP XRaw_loadFASTA(
 		SEXP xraw_xp,
 		SEXP filepath,
@@ -555,6 +525,56 @@ SEXP mkBString(
 		int length
 );
 
+SEXP BStrings_to_nchars(SEXP x_seqs);
+
+int _get_BStringSet_length(SEXP x);
+
+const char *_get_BStringSet_charseq(
+		SEXP x,
+		int i,
+		int *nchar
+);
+
+
+/* seqs_to_XRaw.c */
+
+SEXP Biostrings_debug_seqs_to_XRaw();
+
+SEXP mkXRaw(SEXP tag);
+
+SEXP CHARSXP_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+SEXP char_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+SEXP copy_subXRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+SEXP STRSXP_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+
+/* seqs_to_BString.c */
+
+SEXP Biostrings_debug_seqs_to_BString();
+
 SEXP CHARSXP_to_BString(
 		SEXP seq,
 		SEXP start,
@@ -586,8 +606,6 @@ SEXP subBStrings(
 		SEXP proto
 );
 
-SEXP BStrings_to_nchars(SEXP x_seqs);
-
 SEXP SEN_to_locs(
 		SEXP start,
 		SEXP end,
@@ -596,14 +614,6 @@ SEXP SEN_to_locs(
 );
 
 SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
-
-int _get_BStringSet_length(SEXP x);
-
-const char *_get_BStringSet_charseq(
-		SEXP x,
-		int i,
-		int *nchar
-);
 
 
 /* reverseComplement.c */

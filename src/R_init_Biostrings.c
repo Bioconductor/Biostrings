@@ -45,10 +45,6 @@ static const R_CallMethodDef callMethods[] = {
 	{"XRaw_read_complexes_from_i1i2", (DL_FUNC) &XRaw_read_complexes_from_i1i2, 4},
 	{"XRaw_read_complexes_from_subset", (DL_FUNC) &XRaw_read_complexes_from_subset, 3},
 
-	{"char_to_XRaw", (DL_FUNC) &char_to_XRaw, 4},
-	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
-	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 4},
-
 	{"XRaw_loadFASTA", (DL_FUNC) &XRaw_loadFASTA, 4},
 
 /* XInteger.c */
@@ -67,10 +63,21 @@ static const R_CallMethodDef callMethods[] = {
 /* BString_utils.c */
 	{"init_DNAlkups", (DL_FUNC) &init_DNAlkups, 2},
 	{"init_RNAlkups", (DL_FUNC) &init_RNAlkups, 2},
+	{"BStrings_to_nchars", (DL_FUNC) &BStrings_to_nchars, 1},
+
+/* seqs_to_XRaw.c */
+	{"Biostrings_debug_seqs_to_XRaw", (DL_FUNC) &Biostrings_debug_seqs_to_XRaw, 1},
+
+	{"char_to_XRaw", (DL_FUNC) &char_to_XRaw, 4},
+	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
+	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 4},
+
+/* seqs_to_BString.c */
+	{"Biostrings_debug_seqs_to_BString", (DL_FUNC) &Biostrings_debug_seqs_to_BString, 1},
+
 	{"charseq_to_BString", (DL_FUNC) &charseq_to_BString, 5},
 	{"charseqs_to_BStrings", (DL_FUNC) &charseqs_to_BStrings, 5},
 	{"subBStrings", (DL_FUNC) &subBStrings, 4},
-	{"BStrings_to_nchars", (DL_FUNC) &BStrings_to_nchars, 1},
 	{"SEN_to_locs", (DL_FUNC) &SEN_to_locs, 4},
 	{"get_start_for_adjacent_seqs", (DL_FUNC) &get_start_for_adjacent_seqs, 1},
         
