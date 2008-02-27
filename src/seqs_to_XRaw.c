@@ -68,43 +68,63 @@ SEXP copy_subXRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
 	return R_NilValue;
 }
 
-/*
- * No checking of 'start' and 'nchar' lengths! We assume they are always good...
- */
-SEXP STRSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+static SEXP charseqs_to_RAW(const CharSeq *seqs, int nseq, SEXP lkup)
 {
-	SEXP dest, x_elt, ans;
-	int x_len, dest_len, i, *start_elt, *nchar_elt, offset, length;
-	char *dest_elt;
-	const char *src;
+	SEXP ans;
+	int ans_length, i;
+	const CharSeq *seq;
+	char *dest;
 
-	x_len = LENGTH(x);
-	dest_len = 0;
-	for (i = 0, nchar_elt = INTEGER(nchar); i < x_len; i++, nchar_elt++)
-		dest_len += *nchar_elt;
-
-	PROTECT(dest = NEW_RAW(dest_len));
-	dest_elt = (char *) RAW(dest);
-	for (i = 0, start_elt = INTEGER(start), nchar_elt = INTEGER(nchar);
-             i < x_len;
-             i++, start_elt++, nchar_elt++) {
-		x_elt = STRING_ELT(x, i);
-		offset = _start2offset(*start_elt);
-		length = _nchar2length(*nchar_elt, offset, LENGTH(x_elt));
-		src = CHAR(x_elt) + offset;
+	ans_length = 0;
+	for (i = 0, seq = seqs; i < nseq; i++, seq++)
+		ans_length += seq->length;
+	PROTECT(ans = NEW_RAW(ans_length));
+	dest = (char *) RAW(ans);
+	for (i = 0, seq = seqs; i < nseq; i++, seq++) {
 		if (lkup == R_NilValue) {
-			_Biostrings_memcpy_to_i1i2(0, length - 1,
-				dest_elt, length,
-				src, length, sizeof(char));
+			_Biostrings_memcpy_to_i1i2(0, seq->length - 1,
+				dest, seq->length,
+				seq->data, seq->length, sizeof(char));
 		} else {
-			_Biostrings_translate_charcpy_to_i1i2(0, length - 1,
-				dest_elt, length,
-				src, length,
+			_Biostrings_translate_charcpy_to_i1i2(0, seq->length - 1,
+				dest, seq->length,
+				seq->data, seq->length,
 				INTEGER(lkup), LENGTH(lkup));
 		}
-		dest_elt += length;
+		dest += seq->length;
 	}
-	ans = mkXRaw(dest);
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP STRSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+{
+	int nseq;
+	const CharSeq *seqs;
+	SEXP tag, ans;
+
+	nseq = LENGTH(x);
+	if (LENGTH(start) != nseq || LENGTH(nchar) != nseq)
+		error("invalid length of 'start' or 'end'");
+	seqs = STRSXP_to_charseqs(x, INTEGER(start), INTEGER(nchar), &nseq);
+	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
+	ans = mkXRaw(tag);
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP BStringSet_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+{
+	int nseq;
+	const CharSeq *seqs;
+	SEXP tag, ans;
+
+	nseq = _get_BStringSet_length(x);
+	if (LENGTH(start) != nseq || LENGTH(nchar) != nseq)
+		error("invalid length of 'start' or 'end'");
+	seqs = BStringSet_to_charseqs(x, INTEGER(start), INTEGER(nchar), &nseq);
+	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
+	ans = mkXRaw(tag);
 	UNPROTECT(1);
 	return ans;
 }

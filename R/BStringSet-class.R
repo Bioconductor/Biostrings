@@ -122,22 +122,30 @@ setMethod("initialize", "AAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user-friendly versatile constructors.
+### Helper functions used by the versatile constructors below.
 ###
-### All these constructors use the SEN (Start/End/Nchar) interface.
-###
-setGeneric("BStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("BStringSet"))
-setGeneric("DNAStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("DNAStringSet"))
-setGeneric("RNAStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("RNAStringSet"))
-setGeneric("AAStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("AAStringSet"))
 
 .SEN2locs <- function(start, end, nchar, seq_nchars)
 {
     .Call("SEN_to_locs", start, end, nchar, seq_nchars, PACKAGE="Biostrings")
+}
+
+.charseqsToBString <- function(x, start, nchar, class)
+{
+    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
+    data <- .Call("STRSXP_to_XRaw",
+                  x, start, nchar, enc_lkup(proto),
+                  PACKAGE="Biostrings")
+    new(class, data, 0L, length(data), check=FALSE)
+}
+
+.BStringSetToBString <- function(x, start, nchar, class)
+{
+    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
+    data <- .Call("BStringSet_to_XRaw",
+                  x, start, nchar, enc_lkup(proto),
+                  PACKAGE="Biostrings")
+    new(class, data, 0L, length(data), check=FALSE)
 }
 
 .getStartForAdjacentSeqs <- function(seq_nchars)
@@ -145,12 +153,12 @@ setGeneric("AAStringSet", signature="x",
     .Call("get_start_for_adjacent_seqs", seq_nchars, PACKAGE="Biostrings")
 }
 
-.charseqsToBStringSet <- function(charseqs, start, end, nchar, baseClass, check)
+.charseqsToBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
     if (check) {
         ## Only limited checking here, more is done at the C level
-        if (any(is.na(charseqs)))
-            stop("'charseqs' cannot contain NAs")
+        if (any(is.na(x)))
+            stop("'x' cannot contain NAs")
         if (!isSingleNumberOrNA(start))
             stop("'start' must be a single integer or NA")
         if (!is.integer(start))
@@ -165,15 +173,11 @@ setGeneric("AAStringSet", signature="x",
             nchar <- as.integer(nchar)
     }
     class <- paste(baseClass, "Set", sep="")
-    locs <- .SEN2locs(start, end, nchar, nchar(charseqs, type="bytes"))
-    proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("STRSXP_to_XRaw",
-                  charseqs, locs$start, locs$nchar, enc_lkup(proto),
-                  PACKAGE="Biostrings")
-    super <- new(baseClass, data, 0L, length(data), check=FALSE)
+    locs <- .SEN2locs(start, end, nchar, nchar(x, type="bytes"))
+    super <- .charseqsToBString(x, locs$start, locs$nchar, baseClass)
     new(class, super, start=.getStartForAdjacentSeqs(locs$nchar),
                       nchar=locs$nchar,
-                      names=names(charseqs),
+                      names=names(x),
                       check=FALSE)
 }
 
@@ -195,9 +199,15 @@ setGeneric("AAStringSet", signature="x",
             nchar <- as.integer(nchar)
     }
     class <- paste(baseClass, "Set", sep="")
-    super <- mkBString(baseClass, super(x))
     locs <- .SEN2locs(start, end, nchar, nchar(x))
-    new(class, super, start=start(x)+locs$start-1L,
+    if (copyDataOnBStringConversion(class(super(x)), baseClass)) {
+        super <- .BStringSetToBString(x, locs$start, locs$nchar, baseClass)
+        ans_start <- .getStartForAdjacentSeqs(locs$nchar)
+    } else {
+        super <- mkBString(baseClass, super(x))
+        ans_start <- start(x)+locs$start-1L
+    }
+    new(class, super, start=ans_start,
                       nchar=locs$nchar,
                       names=names(x),
                       check=FALSE)
@@ -221,13 +231,37 @@ setGeneric("AAStringSet", signature="x",
             nchar <- as.integer(nchar)
     }
     class <- paste(baseClass, "Set", sep="")
-    super <- mkBString(baseClass, subject(x))
     locs <- .SEN2locs(start, end, nchar, width(x))
-    new(class, super, start=start(x)+locs$start-1L,
+    if (copyDataOnBStringConversion(class(subject(x)), baseClass)) {
+        stop("converting a BStringViews object with a ", class(subject(x)), " subject\n",
+             "  into a ", class, " object is not supported yet, sorry!\n",
+             "  For now you need to convert it into a ",
+             paste(class(subject(x)), "Set", sep=""), " object first")
+    } else {
+        super <- mkBString(baseClass, subject(x))
+        ans_start <- start(x)+locs$start-1L
+    }
+    new(class, super, start=ans_start,
                       nchar=locs$nchar,
                       names=desc(x),
                       check=TRUE) # TRUE for catching out of limits views
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The user-friendly versatile constructors.
+###
+### All these constructors use the SEN (Start/End/Nchar) interface.
+###
+
+setGeneric("BStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("BStringSet"))
+setGeneric("DNAStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("DNAStringSet"))
+setGeneric("RNAStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("RNAStringSet"))
+setGeneric("AAStringSet", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("AAStringSet"))
 
 setMethod("BStringSet", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)

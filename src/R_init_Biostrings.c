@@ -71,6 +71,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"char_to_XRaw", (DL_FUNC) &char_to_XRaw, 4},
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
 	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 4},
+	{"BStringSet_to_XRaw", (DL_FUNC) &BStringSet_to_XRaw, 4},
 
 /* seqs_to_BString.c */
 	{"Biostrings_debug_seqs_to_BString", (DL_FUNC) &Biostrings_debug_seqs_to_BString, 1},

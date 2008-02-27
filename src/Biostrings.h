@@ -3,10 +3,10 @@
 
 #define DEBUG_BIOSTRINGS 1
 
+
 /*
  * Buffer structures used for temporary storage of arrays (or arrays of arrays)
- * of ints, chars, strings, etc...
- * Only buffers of ints and chars are suported for now.
+ * of ints and chars.
  */
 
 typedef struct ibuf {
@@ -26,6 +26,16 @@ typedef struct cbuf {
         int maxcount;
         int count;
 } CBuf; // Buffer for an array of chars
+
+
+/*
+ * SEXP-agnostic representation of a sequence used in many places in Biostrings
+ * by SEXP-agnostic C code.
+ */
+typedef struct charseq {
+	const char *data;
+	int length;
+} CharSeq;
 
 
 /* utils.c */
@@ -536,6 +546,23 @@ const char *_get_BStringSet_charseq(
 );
 
 
+/* SEXP_to_charseqs.c */
+
+const CharSeq *STRSXP_to_charseqs(
+		SEXP x,
+		const int *start,
+		const int *nchar,
+		int *nseq
+);
+
+const CharSeq *BStringSet_to_charseqs(
+		SEXP x,
+		const int *start,
+		const int *nchar,
+		int *nseq
+);
+
+
 /* seqs_to_XRaw.c */
 
 SEXP Biostrings_debug_seqs_to_XRaw();
@@ -564,6 +591,13 @@ SEXP copy_subXRaw(
 );
 
 SEXP STRSXP_to_XRaw(
+		SEXP x,
+		SEXP start,
+		SEXP nchar,
+		SEXP lkup
+);
+
+SEXP BStringSet_to_XRaw(
 		SEXP x,
 		SEXP start,
 		SEXP nchar,
