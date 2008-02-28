@@ -24,6 +24,10 @@
 \alias{DNAStringList,character-method}
 \alias{RNAStringList,character-method}
 \alias{AAStringList,character-method}
+\alias{BStringList,BStringList-method}
+\alias{DNAStringList,BStringList-method}
+\alias{RNAStringList,BStringList-method}
+\alias{AAStringList,BStringList-method}
 \alias{BStringList,vector-method}
 \alias{DNAStringList,vector-method}
 \alias{RNAStringList,vector-method}
