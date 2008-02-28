@@ -98,7 +98,7 @@ setMethod("initialize", "AAStringList",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charseqsToBStringList <- function(x, start, end, nchar, baseClass, check)
+.charToBStringList <- function(x, start, end, nchar, baseClass, check)
 {
     locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
     proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
@@ -141,19 +141,19 @@ setGeneric("AAStringList", signature="x",
 
 setMethod("BStringList", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringList(x, start, end, nchar, "BString", check)
+        .charToBStringList(x, start, end, nchar, "BString", check)
 )
 setMethod("DNAStringList", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringList(x, start, end, nchar, "DNAString", check)
+        .charToBStringList(x, start, end, nchar, "DNAString", check)
 )
 setMethod("RNAStringList", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringList(x, start, end, nchar, "RNAString", check)
+        .charToBStringList(x, start, end, nchar, "RNAString", check)
 )
 setMethod("AAStringList", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringList(x, start, end, nchar, "AAString", check)
+        .charToBStringList(x, start, end, nchar, "AAString", check)
 )
 
 setMethod("BStringList", "BStringList",

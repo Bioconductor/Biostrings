@@ -125,7 +125,7 @@ setMethod("initialize", "AAStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charseqsToBString <- function(x, start, nchar, class)
+.charToBString <- function(x, start, nchar, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
@@ -143,11 +143,11 @@ setMethod("initialize", "AAStringSet",
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.charseqsToBStringSet <- function(x, start, end, nchar, baseClass, check)
+.charToBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
     locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
     class <- paste(baseClass, "Set", sep="")
-    super <- .charseqsToBString(x, locs$start, locs$nchar, baseClass)
+    super <- .charToBString(x, locs$start, locs$nchar, baseClass)
     new(class, super, start=getStartForAdjacentSeqs(locs$nchar),
                       nchar=locs$nchar,
                       names=names(x),
@@ -208,19 +208,19 @@ setGeneric("AAStringSet", signature="x",
 
 setMethod("BStringSet", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringSet(x, start, end, nchar, "BString", check)
+        .charToBStringSet(x, start, end, nchar, "BString", check)
 )
 setMethod("DNAStringSet", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringSet(x, start, end, nchar, "DNAString", check)
+        .charToBStringSet(x, start, end, nchar, "DNAString", check)
 )
 setMethod("RNAStringSet", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringSet(x, start, end, nchar, "RNAString", check)
+        .charToBStringSet(x, start, end, nchar, "RNAString", check)
 )
 setMethod("AAStringSet", "character",
     function(x, start=NA, end=NA, nchar=NA, check=TRUE)
-        .charseqsToBStringSet(x, start, end, nchar, "AAString", check)
+        .charToBStringSet(x, start, end, nchar, "AAString", check)
 )
 
 ### Just because of those silly "AsIs" objects found in the probe packages
