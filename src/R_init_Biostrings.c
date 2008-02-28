@@ -67,7 +67,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* seqs_to_seqs.c */
 	{"Biostrings_debug_seqs_to_seqs", (DL_FUNC) &Biostrings_debug_seqs_to_seqs, 0},
-	{"SEN_to_locs", (DL_FUNC) &SEN_to_locs, 4},
+	{"SEN_to_safelocs", (DL_FUNC) &SEN_to_safelocs, 4},
 	{"get_start_for_adjacent_seqs", (DL_FUNC) &get_start_for_adjacent_seqs, 1},
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
 	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 5},

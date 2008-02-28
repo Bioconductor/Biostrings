@@ -125,55 +125,55 @@ setMethod("initialize", "AAStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToBString <- function(x, start, nchar, class)
+.charToBString <- function(x, safe_starts, safe_nchars, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
-                  x, start, nchar, "", enc_lkup(proto),
+                  x, safe_starts, safe_nchars, "", enc_lkup(proto),
                   PACKAGE="Biostrings")
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.BStringSetToBString <- function(x, start, nchar, class)
+.BStringSetToBString <- function(x, safe_starts, safe_nchars, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("BStringSet_to_XRaw",
-                  x, start, nchar, enc_lkup(proto),
+                  x, safe_starts, safe_nchars, enc_lkup(proto),
                   PACKAGE="Biostrings")
     new(class, data, 0L, length(data), check=FALSE)
 }
 
 .charToBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
-    locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
+    locs <- SEN2safelocs(start, end, nchar, nchar(x, type="bytes"), check=check)
     class <- paste(baseClass, "Set", sep="")
-    super <- .charToBString(x, locs$start, locs$nchar, baseClass)
-    new(class, super, start=getStartForAdjacentSeqs(locs$nchar),
-                      nchar=locs$nchar,
+    super <- .charToBString(x, start(locs), nchar(locs), baseClass)
+    new(class, super, start=getStartForAdjacentSeqs(nchar(locs)),
+                      nchar=nchar(locs),
                       names=names(x),
                       check=FALSE)
 }
 
 .narrowBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
-    locs <- SEN2locs(start, end, nchar, nchar(x), check=check)
+    locs <- SEN2safelocs(start, end, nchar, nchar(x), check=check)
     class <- paste(baseClass, "Set", sep="")
     if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
-        super <- .BStringSetToBString(x, locs$start, locs$nchar, baseClass)
-        ans_start <- getStartForAdjacentSeqs(locs$nchar)
+        super <- .BStringSetToBString(x, start(locs), nchar(locs), baseClass)
+        ans_start <- getStartForAdjacentSeqs(nchar(locs))
     } else {
         super <- mkBString(baseClass, super(x))
-        ans_start <- start(x)+locs$start-1L
+        ans_start <- start(x)+start(locs)-1L
     }
     new(class, super, start=ans_start,
-                      nchar=locs$nchar,
+                      nchar=nchar(locs),
                       names=names(x),
                       check=FALSE)
 }
 
 .BStringViewsToBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
-    locs <- SEN2locs(start, end, nchar, width(x), check=check)
+    locs <- SEN2safelocs(start, end, nchar, width(x), check=check)
     class <- paste(baseClass, "Set", sep="")
     if (copyDataOnBStringTypeConversion(class(subject(x)), baseClass)) {
         stop("converting a BStringViews object with a ", class(subject(x)), " subject\n",
@@ -182,10 +182,10 @@ setMethod("initialize", "AAStringSet",
              paste(class(subject(x)), "Set", sep=""), " object first")
     } else {
         super <- mkBString(baseClass, subject(x))
-        ans_start <- start(x)+locs$start-1L
+        ans_start <- start(x)+start(locs)-1L
     }
     new(class, super, start=ans_start,
-                      nchar=locs$nchar,
+                      nchar=nchar(locs),
                       names=desc(x),
                       check=TRUE) # TRUE for catching out of limits views
 }

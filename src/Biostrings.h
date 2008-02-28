@@ -550,7 +550,7 @@ const char *_get_BStringSet_charseq(
 
 SEXP Biostrings_debug_seqs_to_seqs();
 
-SEXP SEN_to_locs(
+SEXP SEN_to_safelocs(
 		SEXP start,
 		SEXP end,
 		SEXP nchar,
@@ -561,22 +561,22 @@ SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
 const CharSeq *STRSXP_to_charseqs(
 		SEXP x,
-		const int *start,
-		const int *nchar,
+		const int *safe_starts,
+		const int *safe_nchars,
 		int *nseq
 );
 
 const CharSeq *BStringList_to_charseqs(
 		SEXP x,
-		const int *start,
-		const int *nchar,
+		const int *safe_starts,
+		const int *safe_nchars,
 		int *nseq
 );
 
 const CharSeq *BStringSet_to_charseqs(
 		SEXP x,
-		const int *start,
-		const int *nchar,
+		const int *safe_starts,
+		const int *safe_nchars,
 		int *nseq
 );
 
@@ -591,30 +591,30 @@ SEXP copy_subXRaw(
 
 SEXP STRSXP_to_XRaw(
 		SEXP x,
-		SEXP start,
-		SEXP nchar,
+		SEXP safe_starts,
+		SEXP safe_nchars,
 		SEXP collapse,
 		SEXP lkup
 );
 
 SEXP BStringSet_to_XRaw(
 		SEXP x,
-		SEXP start,
-		SEXP nchar,
+		SEXP safe_starts,
+		SEXP safe_nchars,
 		SEXP lkup
 );
 
 SEXP XRaw_to_BStringList(
 		SEXP x,
-		SEXP start,
-		SEXP nchar,
+		SEXP safe_starts,
+		SEXP safe_nchars,
 		SEXP proto
 );
 
 SEXP narrow_BStringList(
 		SEXP x,
-		SEXP start,
-		SEXP nchar,
+		SEXP safe_starts,
+		SEXP safe_nchars,
 		SEXP proto
 );
 

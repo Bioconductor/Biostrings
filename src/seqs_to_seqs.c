@@ -70,45 +70,47 @@ static StartEnd SEN_to_StartEnd(int start, int end, int nchar)
 
 /*
  * --- .Call ENTRY POINT ---
- * SEN_to_locs() arguments are assumed to be:
+ * SEN_to_safelocs() arguments are assumed to be:
  *   start, end, nchar: single integer (possibly NA)
  *   seq_nchars: vector of non-negative integers (no NAs either)
- * SEN_to_locs() converts user-specified values 'start', 'end', 'nchar' into
- * valid start/nchar locations.
- * Return a list with 2 elements named "start" and "nchar", each of them being
- * an integer vector of the same length as 'seq_nchars'.
+ * Create a set of valid locations in 'x' from user-specified Start/End/Nchar
+ * values ('start', 'end', 'nchar').
+ * Return a list with 2 elements named "start" and "nchar", each of
+ * them being an integer vector of the same length as 'seq_nchars'. Those
+ * vectors are _safe_ i.e. they describe a set of valid locations in the
+ * sequences whose lengths are passed to 'seq_nchars'.
  */
-SEXP SEN_to_locs(SEXP start, SEXP end, SEXP nchar, SEXP seq_nchars)
+SEXP SEN_to_safelocs(SEXP start, SEXP end, SEXP nchar, SEXP seq_nchars)
 {
-	SEXP ans_start, ans_nchar, ans, ans_names;
+	SEXP safe_starts, safe_nchars, ans, ans_names;
 	StartEnd startend;
-	int nseq, i, *seq_nchar, *ans_start_elt, *ans_nchar_elt;
+	int nseq, i, *seq_nchar, *start_p, *nchar_p;
 
 	startend = SEN_to_StartEnd(INTEGER(start)[0], INTEGER(end)[0], INTEGER(nchar)[0]);
 	nseq = LENGTH(seq_nchars);
-	PROTECT(ans_start = NEW_INTEGER(nseq));
-	PROTECT(ans_nchar = NEW_INTEGER(nseq));
+	PROTECT(safe_starts = NEW_INTEGER(nseq));
+	PROTECT(safe_nchars = NEW_INTEGER(nseq));
 	for (i = 0, seq_nchar = INTEGER(seq_nchars),
-		    ans_start_elt = INTEGER(ans_start),
-		    ans_nchar_elt = INTEGER(ans_nchar);
+		    start_p = INTEGER(safe_starts),
+		    nchar_p = INTEGER(safe_nchars);
 	     i < nseq;
-	     i++, seq_nchar++, ans_start_elt++, ans_nchar_elt++)
+	     i++, seq_nchar++, start_p++, nchar_p++)
 	{
-		*ans_start_elt = startend.start;
+		*start_p = startend.start;
 		if (startend.start <= 0) // yes, <= 0
-			*ans_start_elt += *seq_nchar + 1;
-		*ans_nchar_elt = startend.end - *ans_start_elt + 1;
+			*start_p += *seq_nchar + 1;
+		*nchar_p = startend.end - *start_p + 1;
 		if (startend.end < 0) // yes, < 0
-			*ans_nchar_elt += *seq_nchar + 1;
-		if (*ans_start_elt < 1) {
+			*nchar_p += *seq_nchar + 1;
+		if (*start_p < 1) {
 			UNPROTECT(2);
 			error("trying to read before the start of input sequence %d", i+1);
 		}
-		if (*ans_nchar_elt < 0) {
+		if (*nchar_p < 0) {
 			UNPROTECT(2);
 			error("trying to read a negative number of letters from input sequence %d", i+1);
 		}
-		if (*ans_start_elt + *ans_nchar_elt - 1 > *seq_nchar) {
+		if (*start_p + *nchar_p - 1 > *seq_nchar) {
 			UNPROTECT(2);
 			error("trying to read after the end of input sequence %d", i+1);
 		}
@@ -118,8 +120,8 @@ SEXP SEN_to_locs(SEXP start, SEXP end, SEXP nchar, SEXP seq_nchars)
 	SET_STRING_ELT(ans_names, 0, mkChar("start"));
 	SET_STRING_ELT(ans_names, 1, mkChar("nchar"));
 	SET_NAMES(ans, ans_names);
-	SET_ELEMENT(ans, 0, ans_start);
-	SET_ELEMENT(ans, 1, ans_nchar);
+	SET_ELEMENT(ans, 0, safe_starts);
+	SET_ELEMENT(ans, 1, safe_nchars);
 	UNPROTECT(4);
 	return ans;
 }
@@ -150,93 +152,84 @@ SEXP get_start_for_adjacent_seqs(SEXP seq_nchars)
 
 
 /****************************************************************************
- * 2 helper functions
+ * This helper function should never raise an error.
+ *
+ * All the functions in the rest of this file assume that their 'safe_starts'
+ * and 'safe_nchars' arguments have been obtained by processing the
+ * user-specified Start/End/Nchar values thru SEN_to_safelocs().
+ * Hence those arguments are assumed to be safe i.e. to describe a set of
+ * valid locations in 'x'.
  */
 
-static int start2offset(int start)
+static int start2offset(int safe_start)
 {
-	if (start < 1)
-		error("'start' must be >= 1");
-	return --start;
-}
-
-static int nchar2length(int nchar, int offset, int seq_length)
-{
-	if (nchar == NA_INTEGER) {
-		nchar = seq_length - offset;
-		if (nchar < 0L)
-			error("cannot read a negative number of letters");
-	} else {
-		if (nchar < 0L)
-			error("cannot read a negative number of letters");
-		if (offset + nchar > seq_length)
-			error("cannot read beyond the end of the input sequence");
-	}
-	return nchar;
+	if (safe_start < 1)
+		error("Biostrings internal error in start2offset(): safe_start < 1");
+	return --safe_start;
 }
 
 
 /****************************************************************************
  * Converting a set of sequences into an array of CharSeq structs.
- *
- * The 3 functions below assume that 'start' and 'nchar' have the same
- * length as 'x'.
  */
 
-const CharSeq *STRSXP_to_charseqs(SEXP x, const int *start, const int *nchar, int *nseq)
+const CharSeq *STRSXP_to_charseqs(SEXP x,
+		const int *safe_starts, const int *safe_nchars, int *nseq)
 {
 	CharSeq *seqs, *seq;
-	int i, offset;
+	int i;
 	const int *start_p, *nchar_p;
 	SEXP x_elt;
 
 	*nseq = LENGTH(x);
 	seqs = Salloc((long) *nseq, CharSeq);
-	for (i = 0, start_p = start, nchar_p = nchar, seq = seqs;
+	for (i = 0, start_p = safe_starts, nchar_p = safe_nchars, seq = seqs;
 	     i < *nseq;
 	     i++, start_p++, nchar_p++, seq++) {
 		x_elt = STRING_ELT(x, i);
 		if (x_elt == NA_STRING)
 			error("input sequence %d is NA", i+1);
 		seq->data = CHAR(x_elt);
-		seq->data += offset = start2offset(*start_p);
-		seq->length = nchar2length(*nchar_p, offset, LENGTH(x_elt));
+		seq->data += start2offset(*start_p);
+		seq->length = *nchar_p;
 	}
 	return seqs;
 }
 
-const CharSeq *BStringList_to_charseqs(SEXP x, const int *start, const int *nchar, int *nseq)
+const CharSeq *BStringList_to_charseqs(SEXP x,
+		const int *safe_starts, const int *safe_nchars, int *nseq)
 {
 	CharSeq *seqs, *seq;
-	int i, offset;
+	int i;
 	const int *start_p, *nchar_p;
 
 	*nseq = _get_BStringList_length(x);
 	seqs = Salloc((long) *nseq, CharSeq);
-	for (i = 0, start_p = start, nchar_p = nchar, seq = seqs;
+	for (i = 0, start_p = safe_starts, nchar_p = safe_nchars, seq = seqs;
 	     i < *nseq;
 	     i++, start_p++, nchar_p++, seq++) {
 		seq->data = _get_BStringList_charseq(x, i, &(seq->length));
-		seq->data += offset = start2offset(*start_p);
-		seq->length = nchar2length(*nchar_p, offset, seq->length);
+		seq->data += start2offset(*start_p);
+		seq->length = *nchar_p;
 	}
 	return seqs;
 }
 
-const CharSeq *BStringSet_to_charseqs(SEXP x, const int *start, const int *nchar, int *nseq)
+const CharSeq *BStringSet_to_charseqs(SEXP x,
+		const int *safe_starts, const int *safe_nchars, int *nseq)
 {
 	CharSeq *seqs, *seq;
-	int i, offset;
+	int i;
 	const int *start_p, *nchar_p;
 
 	*nseq = _get_BStringSet_length(x);
 	seqs = Salloc((long) *nseq, CharSeq);
-	for (i = 0, start_p = start, nchar_p = nchar, seq = seqs;
+	for (i = 0, start_p = safe_starts, nchar_p = safe_nchars, seq = seqs;
 	     i < *nseq;
 	     i++, start_p++, nchar_p++, seq++) {
 		seq->data = _get_BStringSet_charseq(x, i, &(seq->length));
-		seq->data += offset = start2offset(*start_p);
-		seq->length = nchar2length(*nchar_p, offset, seq->length);
+		seq->data += start2offset(*start_p);
+		seq->length = *nchar_p;
 	}
 	return seqs;
 }
@@ -301,15 +294,15 @@ static SEXP charseqs_to_RAW(const CharSeq *seqs, int nseq, SEXP lkup)
  * --- .Call ENTRY POINT ---
  * TODO: Support the 'collapse' argument
  */
-SEXP STRSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP collapse, SEXP lkup)
+SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP collapse, SEXP lkup)
 {
 	int nseq;
 	const CharSeq *seqs;
 	SEXP tag, ans;
 
 	nseq = LENGTH(x);
-	if (LENGTH(start) != nseq || LENGTH(nchar) != nseq)
-		error("invalid length of 'start' or 'nchar'");
+	if (LENGTH(safe_starts) != nseq || LENGTH(safe_nchars) != nseq)
+		error("invalid length of 'safe_starts' or 'safe_nchars'");
 	if (collapse == R_NilValue) {
 		if (nseq != 1)
 			error("'collapse' must be specified when the number of input sequences is not exactly 1");
@@ -317,7 +310,7 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP collapse, SEXP lkup)
 		if (LENGTH(collapse) != 1 || LENGTH(STRING_ELT(collapse, 0)) != 0)
 			error("'collapse' can only be NULL or the empty string for now");
 	}
-	seqs = STRSXP_to_charseqs(x, INTEGER(start), INTEGER(nchar), &nseq);
+	seqs = STRSXP_to_charseqs(x, INTEGER(safe_starts), INTEGER(safe_nchars), &nseq);
 	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
 	ans = mkXRaw(tag);
 	UNPROTECT(1);
@@ -327,16 +320,16 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP collapse, SEXP lkup)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP BStringSet_to_XRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
+SEXP BStringSet_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP lkup)
 {
 	int nseq;
 	const CharSeq *seqs;
 	SEXP tag, ans;
 
 	nseq = _get_BStringSet_length(x);
-	if (LENGTH(start) != nseq || LENGTH(nchar) != nseq)
-		error("invalid length of 'start' or 'nchar'");
-	seqs = BStringSet_to_charseqs(x, INTEGER(start), INTEGER(nchar), &nseq);
+	if (LENGTH(safe_starts) != nseq || LENGTH(safe_nchars) != nseq)
+		error("invalid length of 'safe_starts' or 'safe_nchars'");
+	seqs = BStringSet_to_charseqs(x, INTEGER(safe_starts), INTEGER(safe_nchars), &nseq);
 	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
 	ans = mkXRaw(tag);
 	UNPROTECT(1);
@@ -363,28 +356,26 @@ SEXP mkBStringList(const char *class, SEXP seqs)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XRaw_to_BStringList(SEXP x, SEXP start, SEXP nchar, SEXP proto)
+SEXP XRaw_to_BStringList(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP proto)
 {
-	int nseq, x_length, i, offset, length;
+	int nseq, x_length, i;
 	SEXP ans, ans_seqs, ans_seq, data;
 	const int *start_p, *nchar_p;
 	char classbuf[14]; // longest string will be "DNAStringList"
 
-	if (LENGTH(start) != LENGTH(nchar))
-		error("'start' and 'nchar' must have the same length");
-	nseq = LENGTH(start);
+	if (LENGTH(safe_starts) != LENGTH(safe_nchars))
+		error("'safe_starts' and 'safe_nchars' must have the same length");
+	nseq = LENGTH(safe_starts);
 	x_length = LENGTH(R_ExternalPtrTag(GET_SLOT(x, install("xp"))));
 	PROTECT(ans_seqs = NEW_LIST(nseq));
-	for (i = 0, start_p = INTEGER(start), nchar_p = INTEGER(nchar);
+	for (i = 0, start_p = INTEGER(safe_starts), nchar_p = INTEGER(safe_nchars);
 	     i < nseq;
 	     i++, start_p++, nchar_p++) {
 		PROTECT(ans_seq = duplicate(proto));
 		PROTECT(data = duplicate(x));
-		offset = start2offset(*start_p);
-		length = nchar2length(*nchar_p, offset, x_length);
 		SET_SLOT(ans_seq, mkChar("data"), data);
-		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(offset));
-		SET_SLOT(ans_seq, mkChar("length"), ScalarInteger(length));
+		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(start2offset(*start_p)));
+		SET_SLOT(ans_seq, mkChar("length"), ScalarInteger(*nchar_p));
 		SET_ELEMENT(ans_seqs, i, ans_seq);
 		UNPROTECT(2);
 	}
@@ -397,20 +388,20 @@ SEXP XRaw_to_BStringList(SEXP x, SEXP start, SEXP nchar, SEXP proto)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP narrow_BStringList(SEXP x, SEXP start, SEXP nchar, SEXP proto)
+SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP proto)
 {
-	int nseq, i, seq_length, offset, length;
+	int nseq, i, seq_length;
 	SEXP x_seqs, x_seq, ans, ans_seqs, ans_seq, data;
 	const int *start_p, *nchar_p;
 	char classbuf[14]; // longest string will be "DNAStringList"
 	const char *class;
 
 	nseq = _get_BStringList_length(x);
-	if (LENGTH(start) != nseq || LENGTH(nchar) != nseq)
-		error("invalid length of 'start' or 'nchar'");
+	if (LENGTH(safe_starts) != nseq || LENGTH(safe_nchars) != nseq)
+		error("invalid length of 'safe_starts' or 'safe_nchars'");
 	x_seqs = GET_SLOT(x, install("seqs"));
 	PROTECT(ans_seqs = NEW_LIST(nseq));
-	for (i = 0, start_p = INTEGER(start), nchar_p = INTEGER(nchar);
+	for (i = 0, start_p = INTEGER(safe_starts), nchar_p = INTEGER(safe_nchars);
 	     i < nseq;
 	     i++, start_p++, nchar_p++) {
 	        x_seq = VECTOR_ELT(x_seqs, i);
@@ -423,10 +414,8 @@ SEXP narrow_BStringList(SEXP x, SEXP start, SEXP nchar, SEXP proto)
 			SET_SLOT(ans_seq, mkChar("data"), data);
 			UNPROTECT(1);
 		}
-		offset = start2offset(*start_p);
-		length = nchar2length(*nchar_p, offset, seq_length);
-		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(offset));
-		SET_SLOT(ans_seq, mkChar("length"), ScalarInteger(length));
+		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(start2offset(*start_p)));
+		SET_SLOT(ans_seq, mkChar("length"), ScalarInteger(*nchar_p));
 		SET_ELEMENT(ans_seqs, i, ans_seq);
 		UNPROTECT(1);
 	}

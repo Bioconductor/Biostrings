@@ -1,6 +1,6 @@
 ### Can't think of better place to put this for now...
 
-SEN2locs <- function(start, end, nchar, seq_nchars, check=TRUE)
+SEN2safelocs <- function(start, end, nchar, seq_nchars, check=TRUE)
 {
     if (check) {
         ## Only limited checking here, more is done at the C level
@@ -17,7 +17,8 @@ SEN2locs <- function(start, end, nchar, seq_nchars, check=TRUE)
         if (!is.integer(nchar))
             nchar <- as.integer(nchar)
     }
-    .Call("SEN_to_locs", start, end, nchar, seq_nchars, PACKAGE="Biostrings")
+    safelocs <- .Call("SEN_to_safelocs", start, end, nchar, seq_nchars, PACKAGE="Biostrings")
+    new("SeqLocs", start=safelocs$start, nchar=safelocs$nchar, check=FALSE)
 }
 
 getStartForAdjacentSeqs <- function(seq_nchars)
