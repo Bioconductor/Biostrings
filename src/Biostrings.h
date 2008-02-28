@@ -521,7 +521,7 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-const char *getBString_class(SEXP x);
+const char *get_class(SEXP x);
 
 const char *_get_BString_charseq(
 		SEXP x,
@@ -536,6 +536,14 @@ SEXP mkBString(
 );
 
 SEXP BStrings_to_nchars(SEXP x_seqs);
+
+int _get_BStringList_length(SEXP x);
+
+const char *_get_BStringList_charseq(
+		SEXP x,
+		int i,
+		int *nchar
+);
 
 int _get_BStringSet_length(SEXP x);
 
@@ -555,6 +563,13 @@ const CharSeq *STRSXP_to_charseqs(
 		int *nseq
 );
 
+const CharSeq *BStringList_to_charseqs(
+		SEXP x,
+		const int *start,
+		const int *nchar,
+		int *nseq
+);
+
 const CharSeq *BStringSet_to_charseqs(
 		SEXP x,
 		const int *start,
@@ -563,9 +578,9 @@ const CharSeq *BStringSet_to_charseqs(
 );
 
 
-/* seqs_to_XRaw.c */
+/* seqs_to_SEXP.c */
 
-SEXP Biostrings_debug_seqs_to_XRaw();
+SEXP Biostrings_debug_seqs_to_SEXP();
 
 SEXP mkXRaw(SEXP tag);
 
@@ -604,37 +619,15 @@ SEXP BStringSet_to_XRaw(
 		SEXP lkup
 );
 
-
-/* seqs_to_BString.c */
-
-SEXP Biostrings_debug_seqs_to_BString();
-
-SEXP CHARSXP_to_BString(
-		SEXP seq,
+SEXP XRaw_to_BStringList(
+		SEXP x,
 		SEXP start,
 		SEXP nchar,
-		SEXP lkup,
 		SEXP proto
 );
 
-SEXP charseq_to_BString(
-		SEXP seq,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup,
-		SEXP proto
-);
-
-SEXP charseqs_to_BStrings(
-		SEXP seqs,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup,
-		SEXP proto
-);
-
-SEXP subBStrings(
-		SEXP x_seqs,
+SEXP narrow_BStringList(
+		SEXP x,
 		SEXP start,
 		SEXP nchar,
 		SEXP proto

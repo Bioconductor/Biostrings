@@ -95,154 +95,144 @@ setMethod("initialize", "AAStringList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Core constructors (not exported, used by the exported constructors below).
+### Helper functions used by the versatile constructors below.
 ###
 
-.charseqsToBStringList <- function(seqs, start, nchar, baseClass, check)
+.charseqsToBStringList <- function(x, start, end, nchar, baseClass, check)
 {
-    if (check) {
-        ## Only limited checking here, more is done at the C level 
-        if (!isSingleNumber(start))
-            stop("'start' must be a single integer")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
-    }
-    class <- paste(baseClass, "List", sep="")
-    proto <- new(baseClass, data=XRaw(0), 0L, 0L, check=FALSE)
-    seqs <- .Call("charseqs_to_BStrings",
-                  seqs, start, nchar, enc_lkup(proto), proto,
+    locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
+    proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
+    data <- .Call("STRSXP_to_XRaw",
+                  x, locs$start, locs$nchar, enc_lkup(proto),
                   PACKAGE="Biostrings")
-    new(class, seqs, check=FALSE)
+    .Call("XRaw_to_BStringList",
+          data, getStartForAdjacentSeqs(locs$nchar), locs$nchar, proto,
+          PACKAGE="Biostrings")
 }
 
-.subBStrings <- function(x, start, nchar, baseClass, check)
+.narrowBStringList <- function(x, start, end, nchar, baseClass, check)
 {
-    if (check) {
-        ## Only limited checking here, more is done at the C level 
-        if (!isSingleNumber(start))
-            stop("'start' must be a single integer")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
-    }
+    locs <- SEN2locs(start, end, nchar, nchar(x), check=check)
     class <- paste(baseClass, "List", sep="")
     if (class(x) == class)
         proto <- NULL
     else
-        proto <- new(baseClass, data=XRaw(0), 0L, 0L, check=FALSE)
-    seqs <- .Call("subBStrings",
-                  x@seqs, start, nchar, proto,
-                  PACKAGE="Biostrings")
-    new(class, seqs, check=FALSE)
+        proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
+    .Call("narrow_BStringList",
+          x, locs$start, locs$nchar, proto,
+          PACKAGE="Biostrings")
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The user-friendly versatile constructors.
 ###
+### All these constructors use the SEN (Start/End/Nchar) interface.
+###
 
-setGeneric("BStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("BStringList"))
-setGeneric("DNAStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("DNAStringList"))
-setGeneric("RNAStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("RNAStringList"))
-setGeneric("AAStringList", signature="seqs",
-    function(seqs, start=1, nchar=NA, check=TRUE) standardGeneric("AAStringList"))
+setGeneric("BStringList", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("BStringList"))
+setGeneric("DNAStringList", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("DNAStringList"))
+setGeneric("RNAStringList", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("RNAStringList"))
+setGeneric("AAStringList", signature="x",
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE) standardGeneric("AAStringList"))
 
 setMethod("BStringList", "character",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        .charseqsToBStringList(seqs, start, nchar, "BString", check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringList(x, start, end, nchar, "BString", check)
 )
 setMethod("DNAStringList", "character",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        .charseqsToBStringList(seqs, start, nchar, "DNAString", check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringList(x, start, end, nchar, "DNAString", check)
 )
 setMethod("RNAStringList", "character",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        .charseqsToBStringList(seqs, start, nchar, "RNAString", check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringList(x, start, end, nchar, "RNAString", check)
 )
 setMethod("AAStringList", "character",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        .charseqsToBStringList(seqs, start, nchar, "AAString", check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        .charseqsToBStringList(x, start, end, nchar, "AAString", check)
 )
 
 setMethod("BStringList", "BStringList",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        if (is(seqs, "DNAStringList") || is(seqs, "RNAStringList"))
+        if (is(x, "DNAStringList") || is(x, "RNAStringList"))
             stop("not supported yet, sorry!")
-        .subBStrings(seqs, start, nchar, "BString", check)
+        .narrowBStringList(x, start, end, nchar, "BString", check)
     }
 )
 setMethod("DNAStringList", "BStringList",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        if (is(seqs, "AAStringList"))
+        if (is(x, "AAStringList"))
             stop("incompatible input type")
-        if (!is(seqs, "DNAStringList") && !is(seqs, "RNAStringList"))
+        if (!is(x, "DNAStringList") && !is(x, "RNAStringList"))
             stop("not supported yet, sorry!")
-        .subBStrings(seqs, start, nchar, "DNAString", check)
+        .narrowBStringList(x, start, end, nchar, "DNAString", check)
     }
 )
 setMethod("RNAStringList", "BStringList",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        if (is(seqs, "AAStringList"))
+        if (is(x, "AAStringList"))
             stop("incompatible input type")
-        if (!is(seqs, "DNAStringList") && !is(seqs, "RNAStringList"))
+        if (!is(x, "DNAStringList") && !is(x, "RNAStringList"))
             stop("not supported yet, sorry!")
-        .subBStrings(seqs, start, nchar, "RNAString", check)
+        .narrowBStringList(x, start, end, nchar, "RNAString", check)
     }
 )
 setMethod("AAStringList", "BStringList",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        if (is(seqs, "DNAStringList") || is(seqs, "RNAStringList"))
+        if (is(x, "DNAStringList") || is(x, "RNAStringList"))
             stop("incompatible input type")
-        .subBStrings(seqs, start, nchar, "AAString", check)
+        .narrowBStringList(x, start, end, nchar, "AAString", check)
     }
 )
 
 ### By "vector", we mean at least "list".
 setMethod("BStringList", "vector",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, function(seq) BString(seq, start=start, nchar=nchar, check=check))
-        new("BStringList", seqs, check=FALSE)
+        if (!is.na(end))
+            stop("non-NA 'end' not yet supported by this method, sorry!")
+        x <- lapply(x, function(seq) BString(seq, start=start, nchar=nchar, check=check))
+        new("BStringList", x, check=FALSE)
     }
 )
 setMethod("DNAStringList", "vector",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, function(seq) DNAString(seq, start=start, nchar=nchar, check=check))
-        new("DNAStringList", seqs, check=FALSE)
+        if (!is.na(end))
+            stop("non-NA 'end' not yet supported by this method, sorry!")
+        x <- lapply(x, function(seq) DNAString(seq, start=start, nchar=nchar, check=check))
+        new("DNAStringList", x, check=FALSE)
     }
 )
 setMethod("RNAStringList", "vector",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, function(seq) RNAString(seq, start=start, nchar=nchar, check=check))
-        new("RNAStringList", seqs, check=FALSE)
+        if (!is.na(end))
+            stop("non-NA 'end' not yet supported by this method, sorry!")
+        x <- lapply(x, function(seq) RNAString(seq, start=start, nchar=nchar, check=check))
+        new("RNAStringList", x, check=FALSE)
     }
 )
 setMethod("AAStringList", "vector",
-    function(seqs, start=1, nchar=NA, check=TRUE)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
     {
-        seqs <- lapply(seqs, function(seq) AAString(seq, start=start, nchar=nchar, check=check))
-        new("AAStringList", seqs, check=FALSE)
+        if (!is.na(end))
+            stop("non-NA 'end' not yet supported by this method, sorry!")
+        x <- lapply(x, function(seq) AAString(seq, start=start, nchar=nchar, check=check))
+        new("AAStringList", x, check=FALSE)
     }
 )
 
-### By "ANY", we mean at least "BStringList", "BStringViews" and those silly
-### "AsIs" objects found in the probe packages (e.g. drosophila2probe$sequence).
+### By "ANY", we mean at least "BStringViews" and those silly "AsIs" objects
+### found in the probe packages (e.g. drosophila2probe$sequence).
 ### Note that we rely on the "as.list" methods defined for those objects.
 ### Performance (on mustafa):
 ###   > library(drosophila2probe)
@@ -253,24 +243,24 @@ setMethod("AAStringList", "vector",
 ###
 
 ### Workaround for handling the "AsIs" objects found in the probe packages
-.normalize.seqs <- function(seqs)
-    if (is.character(seqs)) as.character(seqs) else as.list(seqs)
+.normalize.x <- function(x)
+    if (is.character(x)) as.character(x) else as.list(x)
 
 setMethod("BStringList", "ANY",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        BStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        BStringList(.normalize.x(x), start=start, nchar=nchar, check=check)
 )
 setMethod("DNAStringList", "ANY",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        DNAStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        DNAStringList(.normalize.x(x), start=start, nchar=nchar, check=check)
 )
 setMethod("RNAStringList", "ANY",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        RNAStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        RNAStringList(.normalize.x(x), start=start, nchar=nchar, check=check)
 )
 setMethod("AAStringList", "ANY",
-    function(seqs, start=1, nchar=NA, check=TRUE)
-        AAStringList(.normalize.seqs(seqs), start=start, nchar=nchar, check=check)
+    function(x, start=NA, end=NA, nchar=NA, check=TRUE)
+        AAStringList(.normalize.x(x), start=start, nchar=nchar, check=check)
 )
 
 

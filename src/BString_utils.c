@@ -99,7 +99,7 @@ char _RNAdecode(char code)
  * Low-level manipulation of BString objects.
  */
 
-const char *getBString_class(SEXP x)
+const char *get_class(SEXP x)
 {
 	return CHAR(STRING_ELT(GET_CLASS(x), 0));
 }
@@ -140,7 +140,24 @@ SEXP mkBString(const char *class, SEXP data, int offset, int length)
  * Low-level manipulation of BStringList objects.
  */
 
-/* 'x_seqs' must be the list, NOT the BStringList object! */
+int _get_BStringList_length(SEXP x)
+{
+	return LENGTH(GET_SLOT(x, install("seqs")));
+}
+
+const char *_get_BStringList_charseq(SEXP x, int i, int *nchar)
+{
+	SEXP seqs, seq;
+
+	seqs = GET_SLOT(x, install("seqs"));
+	seq = VECTOR_ELT(seqs, i);
+	return _get_BString_charseq(seq, nchar);
+}
+
+/* 'x_seqs' must be the list, NOT the BStringList object!
+ * TODO: make this work directly on the BStringList object and use the
+ * 2 helper functions above to simplify the code.
+ */
 SEXP BStrings_to_nchars(SEXP x_seqs)
 {
 	SEXP ans, x_seq;

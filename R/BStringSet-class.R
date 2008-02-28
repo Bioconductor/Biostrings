@@ -125,11 +125,6 @@ setMethod("initialize", "AAStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.SEN2locs <- function(start, end, nchar, seq_nchars)
-{
-    .Call("SEN_to_locs", start, end, nchar, seq_nchars, PACKAGE="Biostrings")
-}
-
 .charseqsToBString <- function(x, start, nchar, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
@@ -148,34 +143,12 @@ setMethod("initialize", "AAStringSet",
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.getStartForAdjacentSeqs <- function(seq_nchars)
-{
-    .Call("get_start_for_adjacent_seqs", seq_nchars, PACKAGE="Biostrings")
-}
-
 .charseqsToBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
-    if (check) {
-        ## Only limited checking here, more is done at the C level
-        if (any(is.na(x)))
-            stop("'x' cannot contain NAs")
-        if (!isSingleNumberOrNA(start))
-            stop("'start' must be a single integer or NA")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(end))
-            stop("'end' must be a single integer or NA")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
-    }
+    locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
     class <- paste(baseClass, "Set", sep="")
-    locs <- .SEN2locs(start, end, nchar, nchar(x, type="bytes"))
     super <- .charseqsToBString(x, locs$start, locs$nchar, baseClass)
-    new(class, super, start=.getStartForAdjacentSeqs(locs$nchar),
+    new(class, super, start=getStartForAdjacentSeqs(locs$nchar),
                       nchar=locs$nchar,
                       names=names(x),
                       check=FALSE)
@@ -183,26 +156,11 @@ setMethod("initialize", "AAStringSet",
 
 .narrowBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
-    if (check) {
-        ## Only limited checking here, more is done at the C level
-        if (!isSingleNumberOrNA(start))
-            stop("'start' must be a single integer or NA")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(end))
-            stop("'end' must be a single integer or NA")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
-    }
+    locs <- SEN2locs(start, end, nchar, nchar(x), check=check)
     class <- paste(baseClass, "Set", sep="")
-    locs <- .SEN2locs(start, end, nchar, nchar(x))
     if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
         super <- .BStringSetToBString(x, locs$start, locs$nchar, baseClass)
-        ans_start <- .getStartForAdjacentSeqs(locs$nchar)
+        ans_start <- getStartForAdjacentSeqs(locs$nchar)
     } else {
         super <- mkBString(baseClass, super(x))
         ans_start <- start(x)+locs$start-1L
@@ -215,23 +173,8 @@ setMethod("initialize", "AAStringSet",
 
 .BStringViewsToBStringSet <- function(x, start, end, nchar, baseClass, check)
 {
-    if (check) {
-        ## Only limited checking here, more is done at the C level
-        if (!isSingleNumberOrNA(start))
-            stop("'start' must be a single integer or NA")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(end))
-            stop("'end' must be a single integer or NA")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
-    }
+    locs <- SEN2locs(start, end, nchar, width(x), check=check)
     class <- paste(baseClass, "Set", sep="")
-    locs <- .SEN2locs(start, end, nchar, width(x))
     if (copyDataOnBStringTypeConversion(class(subject(x)), baseClass)) {
         stop("converting a BStringViews object with a ", class(subject(x)), " subject\n",
              "  into a ", class, " object is not supported yet, sorry!\n",

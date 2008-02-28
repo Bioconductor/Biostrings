@@ -61,6 +61,31 @@
   (or \code{\link{RNAString}}, or \code{\link{AAString}}) objects.
 }
 
+\usage{
+  BStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  DNAStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  RNAStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  AAStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
+}
+
+\arguments{
+  \item{x}{
+    [TODO]
+  }
+  \item{start}{
+    [TODO]
+  }
+  \item{end}{
+    [TODO]
+  }
+  \item{nchar}{
+    [TODO]
+  }
+  \item{check}{
+    [TODO]
+  }
+}
+
 \details{
   [TODO]
 }

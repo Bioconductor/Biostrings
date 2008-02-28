@@ -28,20 +28,23 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Merge SEXP_to_charseqs.c and seqs_to_SEXP.c into one single seqs_to_seqs.c
+  file. Then move the _start2offset() and _nchar2length() functions to it and
+  make them static functions.
+
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
 
 - BStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
-      I suspect there is something wrong with C routine subBStrings when
-      proto is NULL.
+      I suspect there is something wrong with C routine narrow_BStringList()
+      when proto is NULL.
     o DNAStringList(x) should not do anything when x is already a DNAStringList
       _instance_ (class(x) == "DNAStringList"), but not necesarily when
       it's a DNAStringList object (is(x, "DNAStringList")).
       The same apply to everybody in the BStringList() family.
     o Improve speed of BStringList() and family when the input is a BStringList
-      or BStringViews object (i.e. XRaw input). Follow the same path as for
-      character input where C routine charseqs_to_BStrings() is used.
+      or BStringViews object (i.e. XRaw input).
       For XRaw input, implement C routine copy_subXRaw() and use it for
       copySubXRaw(). Add copySubBString() and copySubBStrings() and use them in
       the BString() and BStringList() constructors.

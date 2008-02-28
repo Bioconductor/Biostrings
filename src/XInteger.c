@@ -49,7 +49,7 @@ SEXP XInteger_get_show_string(SEXP xint_xp)
 
 	tag = R_ExternalPtrTag(xint_xp);
 	tag_length = LENGTH(tag);
-	snprintf(buf, sizeof(buf), "%d-integer XInteger object (starting at address %p)",
+	snprintf(buf, sizeof(buf), "%d-integer XInteger object (data starting at memory address %p)",
 		tag_length, INTEGER(tag));
 	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(buf));

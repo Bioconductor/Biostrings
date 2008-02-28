@@ -57,6 +57,31 @@
   (or \code{\link{RNAString}}, or \code{\link{AAString}}) instances.
 }
 
+\usage{
+  BStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  DNAStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  RNAStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  AAStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
+}
+
+\arguments{
+  \item{x}{
+    [TODO]
+  }
+  \item{start}{
+    [TODO]
+  }
+  \item{end}{
+    [TODO]
+  }
+  \item{nchar}{
+    [TODO]
+  }
+  \item{check}{
+    [TODO]
+  }
+}
+
 \details{
   [TODO]
 }

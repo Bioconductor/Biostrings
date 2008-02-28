@@ -210,26 +210,21 @@ setMethod("initialize", "AAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions (NOT exported) used by the versatile constructors below.
+### Helper functions used by the versatile constructors below.
 ###
 
-.charseqToBString <- function(seq, start, nchar, class, check)
+.charseqToBString <- function(x, start, end, nchar, class, check)
 {
     if (check) {
-        ## Only limited checking here, more is done at the C level 
-        if (!isSingleNumber(start))
-            stop("'start' must be a single integer")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
+        if (length(x) != 1)
+            stop("more than one input sequence")
     }
+    locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
-    .Call("charseq_to_BString",
-          seq, start, nchar, enc_lkup(proto), proto,
-          PACKAGE="Biostrings")
+    data <- .Call("STRSXP_to_XRaw",
+                  x, locs$start, locs$nchar, enc_lkup(proto),
+                  PACKAGE="Biostrings")
+    new(class, data, 0L, length(data), check=FALSE)
 }
 
 .BStringToBString <- function(seq, start, nchar, class, check)
@@ -262,19 +257,19 @@ setGeneric("AAString", signature="seq",
 
 setMethod("BString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, nchar, "BString", check)
+        .charseqToBString(seq, start, NA, nchar, "BString", check)
 )
 setMethod("DNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, nchar, "DNAString", check)
+        .charseqToBString(seq, start, NA, nchar, "DNAString", check)
 )
 setMethod("RNAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, nchar, "RNAString", check)
+        .charseqToBString(seq, start, NA, nchar, "RNAString", check)
 )
 setMethod("AAString", "character",
     function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, nchar, "AAString", check)
+        .charseqToBString(seq, start, NA, nchar, "AAString", check)
 )
 
 setMethod("BString", "BString",

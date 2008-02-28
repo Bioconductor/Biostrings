@@ -15,6 +15,7 @@ License: LGPL
 LazyLoad: yes
 Collate: 00datacache.R
         utils.R
+        SEN2locs.R
         readFASTA.R
         XRaw.R XInteger.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R

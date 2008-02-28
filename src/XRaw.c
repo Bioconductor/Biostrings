@@ -120,7 +120,7 @@ SEXP Biostrings_XRaw_alloc(SEXP xraw_xp, SEXP length)
 
 	PROTECT(tag = NEW_RAW(tag_length));
 	/*
-	Rprintf("Memory successfully allocated for %d-byte XRaw object (starting at address %p)\n",
+	Rprintf("Memory successfully allocated for %d-byte XRaw object (data starting at memory address %p)\n",
 		tag_length, RAW(tag));
 	 */
 	R_SetExternalPtrTag(xraw_xp, tag);
@@ -143,7 +143,7 @@ SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp)
 
 	tag = R_ExternalPtrTag(xraw_xp);
 	tag_length = LENGTH(tag);
-	snprintf(buf, sizeof(buf), "%d-byte XRaw object (starting at address %p)",
+	snprintf(buf, sizeof(buf), "%d-byte XRaw object (data starting at memory address %p)",
 		 tag_length, RAW(tag));
 	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(buf));
