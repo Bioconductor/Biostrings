@@ -41,10 +41,6 @@ subBString <- function(x, start=NA, end=NA, length=NA)
     BString.substr(x, as.integer(start), as.integer(end))
 }
 
-subBStringList <- function(x, start=NA, end=NA, length=NA)
-{
-    stop("not ready yet")
-}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "subviews" generic and methods.

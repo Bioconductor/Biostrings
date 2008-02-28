@@ -73,7 +73,7 @@ export(
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToBStringViews, BStringViewsToFASTArecords,
     read.BStringViews, write.BStringViews,
-    subBString, subBStringList, subviews,
+    subBString, subviews,
     transcribe, cDNA, dna2rna, rna2dna,
     matchDNAPattern,
     extractAllMatches,
