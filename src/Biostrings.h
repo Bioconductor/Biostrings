@@ -314,6 +314,20 @@ SEXP _Biostrings_viewsbuf_asLIST();
 SEXP _reported_matches_asSEXP();
 
 
+/* SEN.c */
+
+SEXP Biostrings_debug_SEN();
+
+SEXP SEN_to_safelocs(
+		SEXP start,
+		SEXP end,
+		SEXP nchar,
+		SEXP seq_nchars
+);
+
+SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
+
+
 /* XRaw.c */
 
 SEXP Biostrings_debug_XRaw();
@@ -549,15 +563,6 @@ const char *_get_BStringSet_charseq(
 /* seqs_to_seqs.c */
 
 SEXP Biostrings_debug_seqs_to_seqs();
-
-SEXP SEN_to_safelocs(
-		SEXP start,
-		SEXP end,
-		SEXP nchar,
-		SEXP seq_nchars
-);
-
-SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
 const CharSeq *STRSXP_to_charseqs(
 		SEXP x,

@@ -16,8 +16,6 @@
 \alias{AAStringSet}
 
 % Accesor methods:
-\alias{super}
-\alias{super,BStringSet-method}
 
 % Constructor-like functions and generics:
 \alias{initialize,BStringSet-method}

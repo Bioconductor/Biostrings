@@ -67,6 +67,7 @@ setClass("AAStringSet", contains="BStringSet")
 ### Accessor methods.
 ###
 
+### NOT exported
 setGeneric("super", function(x) standardGeneric("super"))
 setMethod("super", "BStringSet", function(x) x@super)
 

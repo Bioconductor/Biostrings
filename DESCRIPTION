@@ -15,18 +15,18 @@ License: LGPL
 LazyLoad: yes
 Collate: 00datacache.R
         utils.R
-        SEN2safelocs.R
+        Views-class.R
+        SeqLocs-class.R
+        SEN.R
         readFASTA.R
-        XRaw.R XInteger.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
         BStringCodec-class.R
+        XRaw.R XInteger.R
         BString-class.R
-        Views-class.R
         BStringViews-class.R
         BStringViews-constructors.R
         BStringViews-io.R
         BStringList-class.R
-        SeqLocs-class.R
         BStringSet-class.R
         BStringPartialMatches-class.R
         BStringAlign-class.R

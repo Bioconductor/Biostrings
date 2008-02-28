@@ -1,4 +1,6 @@
-### Can't think of better place to put this for now...
+### =========================================================================
+### The SEN (Start/End/Nchar) interface
+### -------------------------------------------------------------------------
 
 SEN2safelocs <- function(start, end, nchar, seq_nchars, check=TRUE)
 {
