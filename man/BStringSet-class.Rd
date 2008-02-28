@@ -85,8 +85,8 @@
 }
 
 \section{Accesor methods}{
-  The BStringSet class derives from the \link{SeqLocs} class hence
-  all the accessor methods defined for a \link{SeqLocs} object can also
+  The BStringSet class derives from the \link{IntIntervals} class hence
+  all the accessor methods defined for a \link{IntIntervals} object can also
   be used on a BStringSet object.
 }
 
@@ -115,7 +115,7 @@
   \link{RNAString-class},
   \link{AAString-class},
   \link{BStringViews-class},
-  \link{SeqLocs}
+  \link{IntIntervals}
 }
 
 \examples{

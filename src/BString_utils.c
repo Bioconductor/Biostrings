@@ -180,20 +180,20 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 
 int _get_BStringSet_length(SEXP x)
 {
-	SEXP locs;
+	SEXP inters;
 
-	locs = GET_SLOT(x, install("locs"));
-	return LENGTH(VECTOR_ELT(locs, 0));
+	inters = GET_SLOT(x, install("inters"));
+	return LENGTH(VECTOR_ELT(inters, 0));
 }
 
 const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
 {
-	SEXP locs, super, xp;
+	SEXP inters, super, xp;
 	int start, offset;
 
-	locs = GET_SLOT(x, install("locs"));
-	start = INTEGER(VECTOR_ELT(locs, 0))[i];
-	*nchar = INTEGER(VECTOR_ELT(locs, 1))[i];
+	inters = GET_SLOT(x, install("inters"));
+	start = INTEGER(VECTOR_ELT(inters, 0))[i];
+	*nchar = INTEGER(VECTOR_ELT(inters, 1))[i];
 	super = GET_SLOT(x, install("super"));
 	xp = GET_SLOT(getBString_data(super), install("xp"));
 	offset = INTEGER(GET_SLOT(super, install("offset")))[0];

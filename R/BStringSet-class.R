@@ -51,7 +51,7 @@
 ###
 
 setClass("BStringSet",
-    contains="SeqLocs",
+    contains="IntIntervals",
     representation(
         super="BString"
     )
@@ -83,8 +83,12 @@ setMethod("initialize", "BStringSet",
         if (check) {
             if (!is(super, "BString"))
                 stop("'super' must be a BString object")
-            if (length(.Object) != 0 && max(end(.Object)) > nchar(super))
-                stop("some start/nchar locations are ending after the end of 'super'")
+            if (length(.Object) != 0) {
+                if (min(start(.Object)) < 1)
+                    stop("bad spanning (some intervals are starting before the start of 'super')")
+                if (max(end(.Object)) > nchar(super))
+                    stop("bad spanning (some intervals are ending after the end of 'super')")
+            }
         }
         slot(.Object, "super", check=FALSE) <- super
         .Object
@@ -97,7 +101,7 @@ setMethod("initialize", "DNAStringSet",
             if (!is(super, "DNAString"))
                 stop("'super' must be a DNAString object")
         }
-        callNextMethod(.Object, super, start, nchar, names, check)
+        callNextMethod(.Object, super, start=start, nchar=nchar, names=names, check=check)
     }
 )
 setMethod("initialize", "RNAStringSet",
@@ -107,7 +111,7 @@ setMethod("initialize", "RNAStringSet",
             if (!is(super, "RNAString"))
                 stop("'super' must be a RNAString object")
         }
-        callNextMethod(.Object, super, start, nchar, names, check)
+        callNextMethod(.Object, super, start=start, nchar=nchar, names=names, check=check)
     }
 )
 setMethod("initialize", "AAStringSet",
@@ -117,7 +121,7 @@ setMethod("initialize", "AAStringSet",
             if (!is(super, "AAString"))
                 stop("'super' must be a AAString object")
         }
-        callNextMethod(.Object, super, start, nchar, names, check)
+        callNextMethod(.Object, super, start=start, nchar=nchar, names=names, check=check)
     }
 )
 

@@ -28,8 +28,8 @@ In 2.[6|7]
 In 2.7
 ======
 
-- Maybe derive the Views class from the SeqLocs class. Be careful with
-  the "nchar" method: Views will inherit it from SeqLocs but it will
+- Maybe derive the Views class from the IntIntervals class. Be careful with
+  the "nchar" method: Views will inherit it from IntIntervals but it will
   still need to be redefined for BStringViews objects (and will give
   a different result on BStringViews object 'x' and its underlying
   Views object if 'x' contains "out of limits" views).
