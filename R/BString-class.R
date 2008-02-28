@@ -213,31 +213,28 @@ setMethod("initialize", "AAString",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charseqToBString <- function(x, start, end, nchar, class, check)
+.charToBString <- function(x, start, end, nchar, class, check)
 {
-    if (check) {
-        if (length(x) != 1)
-            stop("more than one input sequence")
-    }
-    locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
-    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("STRSXP_to_XRaw",
-                  x, locs$start, locs$nchar, enc_lkup(proto),
-                  PACKAGE="Biostrings")
+    if (length(x) == 0)
+        stop("no input sequence")
+    if (length(x) > 1)
+        stop("more than one input sequence")
+    lkup <- enc_lkup(new(class, XRaw(0), 0L, 0L, check=FALSE))
+    data <- charToXRaw(x, start=start, end=end, nchar=nchar, lkup=lkup, check=check)
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.BStringToBString <- function(seq, start, nchar, class, check)
+.BStringToBString <- function(x, start, nchar, class, check)
 {
     if (check) {
         start <- normalize.start(start)
-        nchar <- normalize.nchar(start, nchar, nchar(seq))
+        nchar <- normalize.nchar(start, nchar, nchar(x))
     }
-    start <- seq@offset + start
-    lkup <- getBStringTypeConversionLookup(class(seq), class)
+    start <- x@offset + start
+    lkup <- getBStringTypeConversionLookup(class(x), class)
     if (is.null(lkup))
-        return(new(class, seq@data, start-1L, nchar, check=FALSE))
-    data <- copySubXRaw(seq@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+        return(new(class, x@data, start-1L, nchar, check=FALSE))
+    data <- copySubXRaw(x@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
     new(class, data, 0L, length(data), check=FALSE)
 }
 
@@ -246,53 +243,53 @@ setMethod("initialize", "AAString",
 ### The user-friendly versatile constructors.
 ###
 
-setGeneric("BString", signature="seq",
-    function(seq, start=1, nchar=NA, check=TRUE) standardGeneric("BString"))
-setGeneric("DNAString", signature="seq",
-    function(seq, start=1, nchar=NA, check=TRUE) standardGeneric("DNAString"))
-setGeneric("RNAString", signature="seq",
-    function(seq, start=1, nchar=NA, check=TRUE) standardGeneric("RNAString"))
-setGeneric("AAString", signature="seq",
-    function(seq, start=1, nchar=NA, check=TRUE) standardGeneric("AAString"))
+setGeneric("BString", signature="x",
+    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("BString"))
+setGeneric("DNAString", signature="x",
+    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("DNAString"))
+setGeneric("RNAString", signature="x",
+    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("RNAString"))
+setGeneric("AAString", signature="x",
+    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("AAString"))
 
 setMethod("BString", "character",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, NA, nchar, "BString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .charToBString(x, start, NA, nchar, "BString", check)
 )
 setMethod("DNAString", "character",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, NA, nchar, "DNAString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .charToBString(x, start, NA, nchar, "DNAString", check)
 )
 setMethod("RNAString", "character",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, NA, nchar, "RNAString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .charToBString(x, start, NA, nchar, "RNAString", check)
 )
 setMethod("AAString", "character",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .charseqToBString(seq, start, NA, nchar, "AAString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .charToBString(x, start, NA, nchar, "AAString", check)
 )
 
 setMethod("BString", "BString",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(seq, start, nchar, "BString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .BStringToBString(x, start, nchar, "BString", check)
 )
 setMethod("DNAString", "BString",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(seq, start, nchar, "DNAString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .BStringToBString(x, start, nchar, "DNAString", check)
 )
 setMethod("RNAString", "BString",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(seq, start, nchar, "RNAString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .BStringToBString(x, start, nchar, "RNAString", check)
 )
 setMethod("AAString", "BString",
-    function(seq, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(seq, start, nchar, "AAString", check)
+    function(x, start=1, nchar=NA, check=TRUE)
+        .BStringToBString(x, start, nchar, "AAString", check)
 )
 
 ### Not exported
-mkBString <- function(class, seq)
+mkBString <- function(class, x)
 {
-    do.call(class, list(seq=seq))
+    do.call(class, list(x=x))
 }
 
 

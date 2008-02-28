@@ -523,28 +523,6 @@ void _Biostrings_coerce_to_complex_from_i1i2(int i1, int i2,
  * --------------------------------------------------------------------------
  */
 
-int _start2offset(int start)
-{
-        if (start < 1)
-		error("'start' must be >= 1");
-	return --start;
-}
-
-int _nchar2length(int nchar, int offset, int seq_length)
-{
-	if (nchar == NA_INTEGER) {
-		nchar = seq_length - offset;
-		if (nchar < 0L)
-			error("cannot read a negative number of letters");
-	} else {
-		if (nchar < 0L)
-			error("cannot read a negative number of letters");
-		if (offset + nchar > seq_length)
-			error("cannot read beyond the end of the input sequence");
-	}
-	return nchar;
-}
-
 /* Like fgets() except that:
  *   - the string stored into the buffer pointed to by s is right-trimmed i.e.
  *     all the rightmost white-space characters were removed,

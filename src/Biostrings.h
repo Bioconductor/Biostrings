@@ -169,14 +169,6 @@ void _Biostrings_coerce_to_complex_from_i1i2(
 		int lkup_length
 );
 
-int _start2offset(int start);
-
-int _nchar2length(
-		int nchar,
-		int offset,
-		int seq_length
-);
-
 int fgets_rtrimmed(
 		char *s,
 		int size,
@@ -554,7 +546,18 @@ const char *_get_BStringSet_charseq(
 );
 
 
-/* SEXP_to_charseqs.c */
+/* seqs_to_seqs.c */
+
+SEXP Biostrings_debug_seqs_to_seqs();
+
+SEXP SEN_to_locs(
+		SEXP start,
+		SEXP end,
+		SEXP nchar,
+		SEXP seq_nchars
+);
+
+SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
 const CharSeq *STRSXP_to_charseqs(
 		SEXP x,
@@ -577,26 +580,7 @@ const CharSeq *BStringSet_to_charseqs(
 		int *nseq
 );
 
-
-/* seqs_to_SEXP.c */
-
-SEXP Biostrings_debug_seqs_to_SEXP();
-
 SEXP mkXRaw(SEXP tag);
-
-SEXP CHARSXP_to_XRaw(
-		SEXP x,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup
-);
-
-SEXP char_to_XRaw(
-		SEXP x,
-		SEXP start,
-		SEXP nchar,
-		SEXP lkup
-);
 
 SEXP copy_subXRaw(
 		SEXP x,
@@ -609,6 +593,7 @@ SEXP STRSXP_to_XRaw(
 		SEXP x,
 		SEXP start,
 		SEXP nchar,
+		SEXP collapse,
 		SEXP lkup
 );
 
@@ -632,15 +617,6 @@ SEXP narrow_BStringList(
 		SEXP nchar,
 		SEXP proto
 );
-
-SEXP SEN_to_locs(
-		SEXP start,
-		SEXP end,
-		SEXP nchar,
-		SEXP seq_nchars
-);
-
-SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
 
 
 /* reverseComplement.c */

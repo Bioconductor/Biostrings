@@ -28,10 +28,6 @@ In 2.[6|7]
 In 2.7
 ======
 
-- Merge SEXP_to_charseqs.c and seqs_to_SEXP.c into one single seqs_to_seqs.c
-  file. Then move the _start2offset() and _nchar2length() functions to it and
-  make them static functions.
-
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
 

@@ -65,16 +65,12 @@ static const R_CallMethodDef callMethods[] = {
 	{"init_RNAlkups", (DL_FUNC) &init_RNAlkups, 2},
 	{"BStrings_to_nchars", (DL_FUNC) &BStrings_to_nchars, 1},
 
-/* SEXP_to_charseqs.c */
+/* seqs_to_seqs.c */
+	{"Biostrings_debug_seqs_to_seqs", (DL_FUNC) &Biostrings_debug_seqs_to_seqs, 0},
 	{"SEN_to_locs", (DL_FUNC) &SEN_to_locs, 4},
 	{"get_start_for_adjacent_seqs", (DL_FUNC) &get_start_for_adjacent_seqs, 1},
-
-/* seqs_to_SEXP.c */
-	{"Biostrings_debug_seqs_to_SEXP", (DL_FUNC) &Biostrings_debug_seqs_to_SEXP, 1},
-
-	{"char_to_XRaw", (DL_FUNC) &char_to_XRaw, 4},
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
-	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 4},
+	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 5},
 	{"BStringSet_to_XRaw", (DL_FUNC) &BStringSet_to_XRaw, 4},
 	{"XRaw_to_BStringList", (DL_FUNC) &XRaw_to_BStringList, 4},
 	{"narrow_BStringList", (DL_FUNC) &narrow_BStringList, 4},

@@ -129,7 +129,7 @@ setMethod("initialize", "AAStringSet",
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
-                  x, start, nchar, enc_lkup(proto),
+                  x, start, nchar, "", enc_lkup(proto),
                   PACKAGE="Biostrings")
     new(class, data, 0L, length(data), check=FALSE)
 }

@@ -306,20 +306,10 @@ normalize.nchar <- function(start, nchar, seq_nchar)
     nchar
 }
 
-charToXRaw <- function(x, start=1L, nchar=NA, lkup=NULL, check=TRUE)
+charToXRaw <- function(x, start=NA, end=NA, nchar=NA, collapse=NULL, lkup=NULL, check=TRUE)
 {
-    if (check) {
-        ## Only limited checking here, more is done at the C level 
-        if (!isSingleNumber(start))
-            stop("'start' must be a single integer")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(nchar))
-            stop("'nchar' must be a single integer or NA")
-        if (!is.integer(nchar))
-            nchar <- as.integer(nchar)
-    }
-    .Call("char_to_XRaw", x, start, nchar, lkup, PACKAGE="Biostrings")
+    locs <- SEN2locs(start, end, nchar, nchar(x, type="bytes"), check=check)
+    .Call("STRSXP_to_XRaw", x, locs$start, locs$nchar, collapse, lkup, PACKAGE="Biostrings")
 }
 
 copySubXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
