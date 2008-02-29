@@ -154,7 +154,7 @@ plotBOC2 <- function(x, main)
     if (count.only)
         return(matches)
     ans_width <- rep.int(nchar(pattern), length(matches))
-    new("BStringViews", subject=boc_subject@subject,
+    new("BStringViews", boc_subject@subject,
         start=matches, width=ans_width, check=FALSE)
 }
 

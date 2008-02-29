@@ -27,8 +27,8 @@ setMethod("initialize", "BStringViews",
             if (!is(subject, "BString"))
                 stop("'subject' must be a BString object")
             if (length(.Object) != 0) {
-                if (min(width) < 1)
-                    stop("views cannot be of width 0")
+                if (!(min(width) >= 1))
+                    stop("some views are empty")
             }
         }
         slot(.Object, "subject", check=FALSE) <- subject

@@ -692,7 +692,7 @@ extractAllMatches <- function(subject, vindex)
     if (is.null(names(vindex)))
         stop("extractAllMatches() works only with a \"ViewsIndex\" object with names")
     allviews <- unlist(vindex)
-    new("BStringViews", subject=subject,
+    new("BStringViews", subject,
         start=start(allviews), width=width(allviews),
         desc=desc(allviews), check=FALSE)
 }

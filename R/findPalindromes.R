@@ -50,7 +50,7 @@ debug_find_palindromes <- function()
                    PACKAGE="Biostrings")
     ans_start <- C_ans$start
     ans_width <- C_ans$end - ans_start + 1L
-    new("BStringViews", subject=subject,
+    new("BStringViews", subject,
         start=ans_start, width=ans_width, check=FALSE)
 }
 
@@ -98,7 +98,7 @@ setMethod("findPalindromes", "BStringViews",
             ans_start <- c(ans_start, offset + start(pals))
             ans_width <- c(ans_width, width(pals))
         }
-        new("BStringViews", subject=subject(subject),
+        new("BStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -116,7 +116,7 @@ setMethod("findComplementedPalindromes", "BStringViews",
             ans_start <- c(ans_start, offset + start(pals))
             ans_width <- c(ans_width, width(pals))
         }
-        new("BStringViews", subject=subject(subject),
+        new("BStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -207,7 +207,7 @@ setMethod("palindromeLeftArm", "BStringViews",
     {
         ans_start <- start(x)
         ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        new("BStringViews", subject=subject(x),
+        new("BStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -216,7 +216,7 @@ setMethod("complementedPalindromeLeftArm", "BStringViews",
     {
         ans_start <- start(x)
         ans_width <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        new("BStringViews", subject=subject(x),
+        new("BStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -254,7 +254,7 @@ setMethod("palindromeRightArm", "BStringViews",
     {
         ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
-        new("BStringViews", subject=subject(x),
+        new("BStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -263,7 +263,7 @@ setMethod("complementedPalindromeRightArm", "BStringViews",
     {
         ans_width <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
-        new("BStringViews", subject=subject(x),
+        new("BStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )

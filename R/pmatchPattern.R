@@ -103,7 +103,7 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
     if (nchar(pattern) <= 20000) {
         sv <- matchPattern(pattern, subject)
         if (length(sv) >= maxlength.out || nchar(pattern) < 2L) {
-            pv <- new("BStringViews", subject=pattern,
+            pv <- new("BStringViews", pattern,
                       start=rep.int(1L, length(sv)),
                       width=rep.int(nchar(pattern), length(sv)),
                       check=FALSE)
@@ -175,11 +175,11 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
     ## Merge left results with right results
     sv_start <- c(Lpm_start, Rpm_start)
     sv_width <- c(Lpm_end, Rpm_end) - sv_start + 1L
-    sv <- new("BStringViews", subject=subject,
+    sv <- new("BStringViews", subject,
               start=sv_start, width=sv_width, check=FALSE)
     pv_start <- c(Lpv_start, Rpv_start)
     pv_width <- c(Lpv_end, Rpv_end) - pv_start + 1L
-    pv <- new("BStringViews", subject=pattern,
+    pv <- new("BStringViews", pattern,
               start=pv_start, width=pv_width, check=FALSE)
     ans <- new("BStringPartialMatches", sv, subpatterns=pv)
     ii <- order(width(ans), -start(ans), decreasing=TRUE)

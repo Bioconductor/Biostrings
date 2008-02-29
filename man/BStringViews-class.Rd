@@ -201,7 +201,7 @@
   v12[3] == views(RNAString("AU"), 0, 2)
 
   ## Here the first view doesn't even overlap with the subject:
-  views(BString("aaa--b"), -2:4, -2:4 + c(3:6, 6:4))
+  views(BString("aaa--b"), -3:4, -3:4 + c(3:6, 6:3))
 }
 
 \keyword{methods}

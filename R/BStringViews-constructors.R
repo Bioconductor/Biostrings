@@ -53,7 +53,7 @@ views <- function(subject, start=NA, end=NA)
 {
     if (!is(subject, "BString"))
         subject <- BString(subject)
-    ans <- new("BStringViews", subject=subject, check=FALSE)
+    ans <- new("BStringViews", subject, check=FALSE)
     ans@inters <- .makeIntervals(subject(ans), start, end)
     ans
 }
@@ -72,7 +72,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         stop("'gapwidth' must be numerics >= 0")
     lw <- length(width)
     if (lw == 0)
-        return(new("BStringViews", subject=subject, check=FALSE))
+        return(new("BStringViews", subject, check=FALSE))
     if (!is.integer(width))
         width <- as.integer(width)
     lg <- length(gapwidth)
@@ -87,7 +87,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    new("BStringViews", subject=subject, start=ans_start, width=width, check=FALSE)
+    new("BStringViews", subject, start=ans_start, width=width, check=FALSE)
 }
 
 
@@ -162,7 +162,7 @@ setMethod("BStringViews", "BString",
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- mkBString(subjectClass, src)
-        new("BStringViews", subject=src, start=1L, width=nchar(src), check=FALSE)
+        new("BStringViews", src, start=1L, width=nchar(src), check=FALSE)
     }
 )
 
@@ -180,22 +180,12 @@ setMethod("BStringViews", "BStringViews",
     }
 )
 
-trim <- function(x, use.names=TRUE, with.warning=FALSE)
+trim <- function(x, use.names=TRUE)
 {
-    use.names <- normalize.use.names(use.names)
-    ii1 <- start(x) < 1L
-    ii2 <- end(x) > nchar(subject(x))
-    if (!any(ii1) && !any(ii2))
-        return(x)
-    if (with.warning)
-        warning("trimming \"out of limits\" views")
-    ans_start <- start(x)
-    ans_start[ii1] <- 1L
-    ans_end <- end(x)
-    ans_end[ii2] <- nchar(subject(x))
-    ans_width <- ans_end - ans_start + 1L
-    if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("BStringViews", subject=subject(x),
-        start=ans_start, width=ans_width, desc=ans_names, check=FALSE)
+    y <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
+    if (any(width(y) == 0))
+        stop("some views are empty")
+    new("BStringViews", subject(x),
+        start=start(y), width=width(y), desc=names(y), check=FALSE)
 }
 

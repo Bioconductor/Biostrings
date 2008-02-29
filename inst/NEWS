@@ -3,8 +3,9 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-o Added the trim() function for trimming the "out of limits" views of a
-  BStringViews object.
+o Added the restrict() function to restrict a set of intervals to an interval
+  of reference. Added the trim() function for trimming the "out of limits"
+  views of a BStringViews object.
 
 o Added the chartr() generic function with a method for BString objects.
   Methods for other types of objects (in particular for BStringViews and

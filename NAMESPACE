@@ -65,6 +65,7 @@ export(
     #debug_utils, debug_XRaw,
     #debug_naive, debug_boyermoore, debug_shiftor,
 
+    restrict,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,

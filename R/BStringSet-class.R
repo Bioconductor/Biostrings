@@ -186,9 +186,11 @@ setMethod("initialize", "AAStringSet",
 ### Canonical conversion from BStringViews to a BStringSet (or derived)
 .BStringViewsToSet <- function(x, use.names)
 {
-    x <- trim(x, use.names=use.names, with.warning=TRUE)
+    y <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
+    if (any(width(y) == 0))
+        warning("some views were empty")
     class <- paste(class(subject(x)), "Set", sep="")
-    new(class, subject(x), start=start(x), nchar=width(x), names=names(x), check=FALSE)
+    new(class, subject(x), start=start(y), nchar=width(y), names=names(y), check=FALSE)
 }
 
 

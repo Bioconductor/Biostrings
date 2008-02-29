@@ -181,3 +181,43 @@ setMethod("first", "IntIntervals", function(x) {.Deprecated("start"); start(x)})
 setGeneric("last", function(x) standardGeneric("last"))
 setMethod("last", "IntIntervals", function(x) {.Deprecated("end"); end(x)})
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "restrict" function.
+###
+
+restrict <- function(x, start, end, use.names=TRUE)
+{
+    if (!is(x, "IntIntervals"))
+        stop("'x' must be an IntIntervals object")
+    if (!isSingleNumber(start))
+        stop("'start' must be a single integer")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    if (!isSingleNumber(end))
+        stop("'end' must be a single integer")
+    if (!is.integer(end))
+        end <- as.integer(end)
+    if (end + 1L < start)
+        stop("'start' must be <= 'end + 1'")
+    use.names <- normalize.use.names(use.names)
+
+    ans_start <- start(x)
+    ans_end <- end(x)
+
+    far_too_left <- ans_end < start
+    ans_end[far_too_left] <- start - 1L
+    too_left <- ans_start < start
+    ans_start[too_left] <- start
+
+    far_too_right <- end < ans_start
+    ans_start[far_too_right] <- end + 1L
+    too_right <- end < ans_end
+    ans_end[too_right] <- end
+
+    ans_width <- ans_end - ans_start + 1L
+    if (use.names) ans_names <- names(x) else ans_names <- NULL
+    new("IntIntervals", start=ans_start, width=ans_width,
+        names=ans_names, check=FALSE)
+}
+

@@ -130,7 +130,7 @@ setMethod("matchProbePair", "BStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        new("BStringViews", subject=subject(subject),
+        new("BStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
