@@ -180,3 +180,22 @@ setMethod("BStringViews", "BStringViews",
     }
 )
 
+trim <- function(x, use.names=TRUE, with.warning=FALSE)
+{
+    use.names <- normalize.use.names(use.names)
+    ii1 <- start(x) < 1L
+    ii2 <- end(x) > nchar(subject(x))
+    if (!any(ii1) && !any(ii2))
+        return(x)
+    if (with.warning)
+        warning("trimming \"out of limits\" views")
+    ans_start <- start(x)
+    ans_start[ii1] <- 1L
+    ans_end <- end(x)
+    ans_end[ii2] <- nchar(subject(x))
+    ans_width <- ans_end - ans_start + 1L
+    if (use.names) ans_names <- names(x) else ans_names <- NULL
+    new("BStringViews", subject=subject(x),
+        start=ans_start, width=ans_width, desc=ans_names, check=FALSE)
+}
+

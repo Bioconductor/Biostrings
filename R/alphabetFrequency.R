@@ -233,13 +233,6 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     as.array
 }
 
-.normalize.use.names <- function(use.names)
-{
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be 'TRUE' or 'FALSE'")
-    use.names
-}
-
 .formatFreqAnswer <- function(ans, alphabet, width, freq, fast.moving.side, as.array, use.names)
 {
     if (freq)
@@ -262,7 +255,7 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     freq <- .normalize.freq(freq)
     fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
     as.array <- .normalize.as.array(as.array, fast.moving.side)
-    use.names <- .normalize.use.names(use.names)
+    use.names <- normalize.use.names(use.names)
     base_codes <- codes(x, baseOnly=TRUE)
     ans <- .Call("oligonucleotide_frequency",
                  x@data@xp, x@offset, x@length,
@@ -314,7 +307,7 @@ setMethod("oligonucleotideFrequency", "BStringSet",
         freq <- .normalize.freq(freq)
         fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
         as.array <- .normalize.as.array(as.array, fast.moving.side)
-        use.names <- .normalize.use.names(use.names)
+        use.names <- normalize.use.names(use.names)
         collapse <- .normalize.collapse(list(...)$collapse)
         base_codes <- codes(super(x), baseOnly=TRUE)
         ans <- integer(pow.int(4L, width))

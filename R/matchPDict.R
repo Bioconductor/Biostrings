@@ -660,6 +660,7 @@ setMethod("endIndex", "ByName_ViewsIndex",
 setMethod("unlist", "ViewsIndex",
     function(x, recursive=TRUE, use.names=TRUE)
     {
+        use.names <- normalize.use.names(use.names)
         start_index <- startIndex(x)
         if (length(start_index) == 0)
             ans_start <- integer(0)
@@ -670,11 +671,15 @@ setMethod("unlist", "ViewsIndex",
             ans_end <- integer(0)
         else
             ans_end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
-        names <- names(end_index)
-        if (!is.null(names))
-            names <- rep.int(names, times=sapply(end_index, length))
+        if (use.names) {
+            ans_names <- names(end_index)
+            if (!is.null(ans_names))
+                ans_names <- rep.int(ans_names, times=sapply(end_index, length))
+        } else {
+            ans_names <- NULL
+        }
         ans_width <- ans_end - ans_start + 1L
-        new("IntIntervals", start=ans_start, width=ans_width, names=names, check=FALSE)
+        new("IntIntervals", start=ans_start, width=ans_width, names=ans_names, check=FALSE)
     }
 )
 

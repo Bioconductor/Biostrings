@@ -25,6 +25,13 @@ isSingleString <- function(x)
     is.character(x) && length(x) == 1 && !is.na(x)
 }
 
+normalize.use.names <- function(use.names)
+{
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be 'TRUE' or 'FALSE'")
+    use.names
+}
+
 recycleVector <- function(x, length)
 {
     y <- vector(storage.mode(x), length)

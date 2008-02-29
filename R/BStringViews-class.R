@@ -406,6 +406,7 @@ setMethod("!=", signature(e1="character", e2="BStringViews"),
 setMethod("as.character", "BStringViews",
     function(x, use.names=TRUE, check.limits=TRUE)
     {
+        use.names <- normalize.use.names(use.names)
         if (check.limits)
             ans <- sapply(seq_len(length(x)), function(i) as.character(x[[i]]))
         else
@@ -424,6 +425,7 @@ setMethod("as.matrix", "BStringViews",
         if (!is.character(mode) || length(mode) != 1
          || !(mode %in% c("integer", "character")))
             stop("'mode' must be either \"integer\" or \"character\"")
+        use.names <- normalize.use.names(use.names)
         if (mode == "integer")
             return(callNextMethod())
         nrow <- length(x)

@@ -57,10 +57,10 @@
 }
 
 \usage{
-  BStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
-  DNAStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
-  RNAStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
-  AAStringSet(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  BStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+  DNAStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+  RNAStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+  AAStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
 }
 
 \arguments{
@@ -74,6 +74,9 @@
     [TODO]
   }
   \item{nchar}{
+    [TODO]
+  }
+  \item{use.names}{
     [TODO]
   }
   \item{check}{
