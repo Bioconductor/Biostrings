@@ -67,7 +67,10 @@ setMethod("initialize", "IntIntervals",
 
 setMethod("length", "IntIntervals", function(x) nrow(x@inters))
 
-### The "start" and "end" generics are defined in the stats package.
+### The substr() function uses 'start' and 'stop'.
+### The substring() function uses 'first' and 'last'.
+### We use 'start' and 'end'.
+### Note that the "start" and "end" generic are defined in the stats package.
 setMethod("start", "IntIntervals", function(x, ...) x@inters$start)
 setMethod("nchar", "IntIntervals", function(x, type="chars", allowNA=FALSE) x@inters$nchar)
 ### Note that when nchar(x)[i] is 0, the end(x)[i] is start(x)[i] - 1
@@ -85,19 +88,32 @@ setReplaceMethod("names", "IntIntervals",
         if (!is.character(value))
             stop("'value' must be a character vector (or NULL)")
         if (length(value) > length(x))
-            stop("new 'names' vector has more elements than 'x'")
+            stop("too many names")
         length(value) <- length(x)
         x@inters$names <- value
         x
     }
 )
 
+### Some aliases...
+width <- nchar
+
+### "desc" is an alias for "names". It may be deprecated soon...
+setGeneric("desc", function(x) standardGeneric("desc"))
+setMethod("desc", "ANY", function(x) names(x))
+setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
+setReplaceMethod("desc", "ANY", function(x, value) `names<-`(x, value))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 
-setMethod("show", "IntIntervals", function(object) show(object@inters))
+setMethod("show", "IntIntervals",
+    function(object)
+        show(object@inters)
+        #show(data.frame(object@inters, end=end(object), check.names=FALSE))
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -154,4 +170,14 @@ setMethod("as.matrix", "IntIntervals",
         ans
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deprecated methods.
+###
+
+setGeneric("first", function(x) standardGeneric("first"))
+setMethod("first", "IntIntervals", function(x) {.Deprecated("start"); start(x)})
+setGeneric("last", function(x) standardGeneric("last"))
+setMethod("last", "IntIntervals", function(x) {.Deprecated("end"); end(x)})
 

@@ -127,7 +127,7 @@ setMethod("isMatching", "BString",
     if (any(width(x) != length(pattern)))
         warning("views in 'x' don't have a width equal to pattern length")
     lapply(1:length(x),
-           function(i) .bsMismatch(pattern, x@subject, x@views$start[i], fixed))
+           function(i) .bsMismatch(pattern, subject(x), start(x)[i], fixed))
 }
 
 setGeneric("mismatch", signature="x",

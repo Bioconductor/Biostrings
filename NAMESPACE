@@ -5,12 +5,11 @@ import(stats)
 import(utils) ## for the "head" and "tail" generics
 
 exportClasses(
+    "IntIntervals",
     "XRaw", "XInteger",
     "BString", "DNAString", "RNAString", "AAString",
-    "Views",
     "BStringViews",
     "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
-    "IntIntervals",
     "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
     "BStringPartialMatches",
     "BStringAlign",
@@ -28,8 +27,8 @@ exportMethods(
     duplicated,
 
     ## Accessors
+    start, end, subject,
     alphabet, letter,
-    nview, start, end, width, desc, "desc<-", subject,
     patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
     subpatterns, pattern,
     align1, align2, score,
@@ -62,18 +61,20 @@ exportMethods(
 )
 
 export(
-    readFASTA, writeFASTA, gregexpr2,
     #debug_utils, debug_XRaw,
     #debug_naive, debug_boyermoore, debug_shiftor,
-    #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
+
+    width, desc, "desc<-",
+    readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
-    strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
+    #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
     views, adjacentViews,
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToBStringViews, BStringViewsToFASTArecords,
     read.BStringViews, write.BStringViews,
     subBString, subviews,
+    strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
     transcribe, cDNA, dna2rna, rna2dna,
     matchDNAPattern,
     extractAllMatches,

@@ -16,15 +16,25 @@
 \alias{end,IntIntervals-method}
 \alias{names,IntIntervals-method}
 \alias{names<-,IntIntervals-method}
+\alias{width}
+\alias{desc}
+\alias{desc,ANY-method}
+\alias{desc<-}
+\alias{desc<-,ANY-method}
 
 % Other methods:
-
 \alias{show,IntIntervals-method}
 \alias{[,IntIntervals-method}
 \alias{[<-,IntIntervals-method}
 
 \alias{as.data.frame,IntIntervals-method}
 \alias{as.matrix,IntIntervals-method}
+
+% Deprecated methods:
+\alias{first}
+\alias{first,Views-method}
+\alias{last}
+\alias{last,Views-method}
 
 
 \title{IntIntervals objects}
@@ -73,6 +83,10 @@
       \code{x}). This is a vector of \code{length(x)} nonnegative integers.
     }
     \item{}{
+      \code{width(x)}:
+      \code{width} is an alias for \code{nchar}.
+    }
+    \item{}{
       \code{end(x)}:
       \code{start(x) + nchar(x) - 1L}
     }
@@ -83,6 +97,10 @@
       be changed by the user. All other data are immutable!
       As a general recommendation, the user should never try to modify
       an object by accessing its slots directly.
+    }
+    \item{}{
+      \code{desc(x)}:
+      \code{desc} is an alias for \code{names}.
     }
   }
 }
@@ -108,6 +126,17 @@
       \code{start(x)} and \code{nchar(x)}.
     }
   }
+}
+
+\section{Deprecated methods}{
+    \item{}{
+      \code{first(x)}:
+      deprecated. Use 'start' instead.
+    }
+    \item{}{
+      \code{last(x)}:
+      deprecated. Use 'end' instead.
+    }
 }
 
 \author{H. Pages}

@@ -41,9 +41,7 @@
 \alias{as.list,BStringList-method}
 \alias{length,BStringList-method}
 \alias{nchar,BStringList-method}
-\alias{desc}
 \alias{desc,BStringList-method}
-\alias{desc<-}
 \alias{desc<-,BStringList-method}
 
 % Other methods:

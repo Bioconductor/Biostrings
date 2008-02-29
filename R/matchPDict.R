@@ -510,7 +510,9 @@ setMethod("[[", "ByPos_ViewsIndex",
         key <- callNextMethod()
         if (is.character(key))
             stop("\"ViewsIndex\" object has no names")
-        new("Views", start=x@ends[[key]]-x@width+1L, end=x@ends[[key]], check.data=FALSE)
+        end <- x@ends[[key]]
+        nchar <- rep.int(x@width, length(end))
+        new("IntIntervals", start=end-x@width+1L, nchar=nchar, check=FALSE)
     }
 )
 
@@ -607,7 +609,8 @@ setMethod("[[", "ByName_ViewsIndex",
         end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
         if (is.null(end))
             end <- integer(0)
-        new("Views", start=end-x@width+1L, end=end, check.data=FALSE)
+        nchar <- rep.int(x@width, length(end))
+        new("IntIntervals", start=end-x@width+1L, nchar=nchar, check=FALSE)
     }
 )
 
@@ -665,10 +668,10 @@ setMethod("unlist", "ViewsIndex",
             end <- integer(0)
         else
             end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
-        desc <- names(end_index)
-        if (!is.null(desc))
-            desc <- rep.int(desc, times=sapply(end_index, length))
-        new("Views", start=start, end=end, desc=desc, check.data=FALSE)
+        names <- names(end_index)
+        if (!is.null(names))
+            names <- rep.int(names, times=sapply(end_index, length))
+        new("IntIntervals", start=start, nchar=end-start+1L, names=names, check=FALSE)
     }
 )
 
@@ -681,8 +684,9 @@ extractAllMatches <- function(subject, vindex)
     if (is.null(names(vindex)))
         stop("extractAllMatches() works only with a \"ViewsIndex\" object with names")
     allviews <- unlist(vindex)
-    new("BStringViews", subject=subject, start=start(allviews), end=end(allviews),
-        desc=desc(allviews), check.views=FALSE)
+    new("BStringViews", subject=subject,
+        start=start(allviews), nchar=nchar(allviews),
+        desc=desc(allviews), check=FALSE)
 }
 
 

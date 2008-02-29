@@ -51,9 +51,9 @@
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
-  A BStringViews object is in fact a particular case of a \link{Views} object
-  (the BStringViews class contains the \link{Views} class) so it can be
-  manipulated in the same way: see \code{\link{Views}} for more information.
+  A BStringViews object is in fact a particular case of a \link{IntIntervals} object
+  (the BStringViews class contains the \link{IntIntervals} class) so it can be
+  manipulated in the same way: see \link{IntIntervals} for more information.
   Note that two views can overlap and that a view can be "out of limits"
   i.e. it can start before the first letter of the subject or/and end
   after its last letter.
@@ -154,7 +154,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link{Views-class},
+  \link{IntIntervals-class},
   \link{BStringViews-constructors},
   \link{BString-class},
   \link{DNAString-class},
@@ -165,10 +165,10 @@
 }
 
 \examples{
-  s <- DNAString("-CTC-N")
 
   ## One standard way to create a BStringViews object is to use
   ## the "views" constructor:
+  s <- DNAString("-CTC-N")
   v4 <- views(s, 3:0, 5:8)
   v4
   subject(v4)
@@ -199,6 +199,9 @@
   v12[v12 == v12[4]]
   v12[v12 == v12[1]]
   v12[3] == views(RNAString("AU"), 0, 2)
+
+  ## Here the first view doesn't even overlap with the subject:
+  views(BString("aaa--b"), -2:4, -2:4 + c(3:6, 6:4))
 }
 
 \keyword{methods}

@@ -206,7 +206,7 @@
   length(start_index)                  # Same as the input dictionary.
   countIndex(vindex)
   unlist(vindex)
-  nview(unlist(vindex))                # Total number of matches.
+  length(unlist(vindex))               # Total number of matches.
   extractAllMatches(chr3R, vindex)
 
   ## -------------------------------------------------------------------------

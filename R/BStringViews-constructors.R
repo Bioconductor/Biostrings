@@ -11,7 +11,7 @@
 ###   - They return a BStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
 
-.makeViews <- function(subject, start, end)
+.makeIntervals <- function(subject, start, end)
 {
     if (!isNumericOrNAs(start) || !isNumericOrNAs(end))
         stop("'start' and 'end' must be numerics")
@@ -28,7 +28,7 @@
     ## The NA-proof version of 'if (any(end < start))'
     if (!isTRUE(all(start <= end)))
         stop("'start' and 'end' must verify 'start <= end'")
-    data.frame(start=start, end=end)
+    data.frame(start=start, nchar=end-start+1L)
 }
 
 ### Typical use:
@@ -51,16 +51,18 @@
 ###   Should perhaps be put in the same file as "subviews" (and solveViews()).
 views <- function(subject, start=NA, end=NA)
 {
-    ans <- new("BStringViews", subject=subject, check.views=FALSE)
-    ans@views <- .makeViews(ans@subject, start, end)
+    ans <- new("BStringViews", subject=subject, check=FALSE)
+    ans@inters <- .makeIntervals(ans@subject, start, end)
     ans
 }
 
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).
+### TODO: Use helper getStartForAdjacentSeqs() in adjacentViews(), this
+### will be MUCH faster (getStartForAdjacentSeqs() is written in C).
+### But first, the 'gapwidth' arg must be added to it...
 adjacentViews <- function(subject, width, gapwidth=0)
 {
-    ans <- new("BStringViews", subject=subject, check.views=FALSE)
     ONE <- as.integer(1)
     if (!is.numeric(width) || !isTRUE(all(width >= ONE))) # NA-proof
         stop("'width' must be numerics >= 1")
@@ -68,26 +70,22 @@ adjacentViews <- function(subject, width, gapwidth=0)
         stop("'gapwidth' must be numerics >= 0")
     lw <- length(width)
     if (lw == 0)
-        return(ans)
+        return(new("BStringViews", subject=subject, check=FALSE))
     if (!is.integer(width))
         width <- as.integer(width)
     lg <- length(gapwidth)
+    if (lw > 1 && lg == 0)
+        stop("'gapwidth' is empty")
     if (!is.integer(gapwidth))
         gapwidth <- as.integer(gapwidth)
     start <- integer(lw)
-    end <- integer(lw)
     start[ONE] <- ONE
-    end[ONE] <- width[ONE]
-    if (lw >= 2) {
-        j <- ONE
-        for (i in 2:lw) {
-            start[i] <- end[i-ONE] + ONE + gapwidth[j]
-            end[i] <- start[i] + width[i] - ONE
-            if (j < lg) j <- j + ONE else j <- ONE
-        }
+    j <- ONE
+    for (i in seq_len(lw-1)) {
+        start[i+ONE] <- start[i] + width[j] + gapwidth[j]
+        if (j < lg) j <- j + ONE else j <- ONE
     }
-    ans@views <- data.frame(start=start, end=end)
-    ans
+    new("BStringViews", subject=subject, start=start, nchar=width, check=FALSE)
 }
 
 
@@ -162,7 +160,7 @@ setMethod("BStringViews", "BString",
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- mkBString(subjectClass, src)
-        new("BStringViews", subject=src, start=1L, end=nchar(src), check.views=FALSE)
+        new("BStringViews", subject=src, start=1L, nchar=nchar(src), check=FALSE)
     }
 )
 

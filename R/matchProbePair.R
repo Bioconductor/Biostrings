@@ -122,16 +122,16 @@ setMethod("matchProbePair", "DNAString",
 setMethod("matchProbePair", "BStringViews",
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
     {
-        ans_start <- ans_end <- integer(0)
+        ans_start <- ans_nchar <- integer(0)
         for (i in seq_len(length(subject))) {
             pm <- matchProbePair(Fprobe, Rprobe, subject[[i]],
                                  algorithm=algorithm, logfile=logfile, verbose=verbose)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pm))
-            ans_end <- c(ans_end, offset + end(pm))
+            ans_nchar <- c(ans_nchar, nchar(pm))
         }
         new("BStringViews", subject=subject(subject),
-            start=ans_start, end=ans_end, check.views=FALSE)
+            start=ans_start, nchar=ans_nchar, check=FALSE)
     }
 )
 

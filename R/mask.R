@@ -67,13 +67,13 @@
 ###   - mask(mask(x)) is normalize(x).
 ###
 
-### x@views must be ordered from left to right for this to work.
+### x@inters must be ordered from left to right for this to work.
 ### TODO: Add an optional arg for triggering the reordering of the views
 ### (they should be reordered by default).
 .BStringViews.normalize <- function(x)
 {
     views <- .Call("Biostrings_normalize_views", start(x), end(x), PACKAGE="Biostrings")
-    x@views <- data.frame(views)
+    x@inters <- data.frame(views)
     x
 }
 
@@ -96,7 +96,7 @@
         new_start <- c(new_start, start0)
         new_end <- c(new_end, length(subject(x)))
     }
-    x@views <- data.frame(start=new_start, end=new_end)
+    x@inters <- data.frame(start=new_start, end=new_end)
     x
 }
 

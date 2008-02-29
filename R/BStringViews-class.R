@@ -8,7 +8,7 @@
 ###
 
 setClass("BStringViews",
-    contains="Views",
+    contains="IntIntervals",
     representation(
         subject="BString"
     )
@@ -16,23 +16,23 @@ setClass("BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
+### Initialization (not intended to be used directly by the user).
 ###
 
 setMethod("initialize", "BStringViews",
-    function(.Object, subject, start=integer(0), end=integer(0), desc=NULL, check.views=TRUE)
+    function(.Object, subject, start=integer(0), nchar=integer(0), desc=NULL, check=TRUE)
     {
-        if (!is(subject, "BString")) {
-            if (!is.character(subject))
-                stop("invalid 'subject'")
-            if (length(subject) != 1)
-                stop("when a character vector, 'subject' must be of length 1 (single string)")
-            if (subject %in% c(NA, ""))
-                stop("invalid 'subject'")
-            subject <- BString(subject)
+        .Object <- callNextMethod(.Object, start=start, nchar=nchar, names=desc, check=check)
+        if (check) {
+            if (!is(subject, "BString"))
+                stop("'subject' must be a BString object")
+            if (length(.Object) != 0) {
+                if (min(nchar) < 1)
+                    stop("some views are empty")
+            }
         }
-        .Object@subject <- subject
-        callNextMethod(.Object, start=start, end=end, desc=desc, check.data=check.views)
+        slot(.Object, "subject", check=FALSE) <- subject
+        .Object
     }
 )
 
@@ -47,7 +47,7 @@ setMethod("subject", "BStringViews", function(x) x@subject)
 ### The "views" generic and methods are commented for now because they conflict with
 ### the views() function currently defined in the BStringViews-constructors.R file.
 #setGeneric("views", function(x) standardGeneric("views"))
-#setMethod("views", "BStringViews", function(x) x@views)
+#setMethod("views", "BStringViews", function(x) x@inters)
 
 setMethod("nchar", "BStringViews",
     function(x, type="chars", allowNA=FALSE)
@@ -55,7 +55,7 @@ setMethod("nchar", "BStringViews",
         if (length(x) == 0)
             return(integer(0))
         start0 <- pmax.int(start(x), 1L)
-        end0 <- pmin.int(end(x), nchar(x@subject))
+        end0 <- pmin.int(end(x), nchar(subject(x)))
         ans <- end0 - start0 + 1L
         ans[ans < 0L] <- 0L
         ans
@@ -120,8 +120,8 @@ BStringViews.show_vframe_header <- function(iW, startW, endW, widthW)
 
 BStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
 {
-    start <- x@views$start[i]
-    end <- x@views$end[i]
+    start <- start(x)[i]
+    end <- end(x)[i]
     width <- end - start + 1
     snippetWidth <- getOption("width") - 6 - iW - startW - endW - widthW
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
@@ -142,9 +142,9 @@ BStringViews.show_vframe <- function(x, half_nrow=9L)
     else {
         cat("\n")
         iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
-        startMax <- max(x@views$start)
+        startMax <- max(start(x))
         startW <- max(nchar(startMax), nchar("start"))
-        endMax <- max(x@views$end)
+        endMax <- max(end(x))
         endW <- max(nchar(endMax), nchar("end"))
         widthMax <- max(width(x))
         widthW <- max(nchar(widthMax), nchar("width"))
@@ -174,10 +174,7 @@ setMethod("show", "BStringViews",
     {
         subject <- subject(object)
         lsub <- length(subject)
-        cat("  Views on a ", lsub, "-letter ",
-            class(subject), " subject", sep="")
-        #if (!is.null(subject@codec))
-        #    cat(" with alphabet:", toString(subject@codec@letters))
+        cat("  Views on a ", lsub, "-letter ", class(subject), " subject", sep="")
         cat("\nsubject:", BString.get_snippet(subject, getOption("width") - 9))
         BStringViews.show_vframe(object)
     }
@@ -213,11 +210,11 @@ setMethod("[[", "BStringViews",
             return(subject(x))
         if (i < 1L || i > length(x))
             stop("subscript out of bounds")
-        start <- x@views$start[i]
-        end <- x@views$end[i]
+        start <- start(x)[i]
+        end <- end(x)[i]
         if (start < 1L || end > length(subject(x)))
             stop("view is out of limits")
-        BString.substr(x@subject, start, end)
+        BString.substr(subject(x), start, end)
     }
 )
 
@@ -306,8 +303,8 @@ BStringViews.equal <- function(x, y)
     j <- 1
     for (i in seq_len(lx)) {
         ans[i] <- BStringViews.view1_equal_view2(
-                      x@subject, x@views$start[i], x@views$end[i],
-                      y@subject, y@views$start[j], y@views$end[j])
+                      subject(x), start(x)[i], end(x)[i],
+                      subject(y), start(y)[j], end(y)[j])
         # Recycle
         if (j < ly) j <- j + 1 else j <- 1
     }

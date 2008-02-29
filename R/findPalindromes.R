@@ -49,7 +49,7 @@ debug_find_palindromes <- function()
                    min.armlength, max.looplength, L2R_lkup,
                    PACKAGE="Biostrings")
     new("BStringViews", subject=subject,
-        start=views$start, end=views$end, check.views=FALSE)
+        start=views$start, nchar=views$end-views$start+1L, check=FALSE)
 }
 
 setGeneric("findPalindromes", signature="subject",
@@ -85,7 +85,7 @@ setMethod("findComplementedPalindromes", "DNAString",
 setMethod("findPalindromes", "BStringViews",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
-        ans_start <- ans_end <- integer(0)
+        ans_start <- ans_nchar <- integer(0)
         for (i in seq_len(length(subject))) {
             pals <- findPalindromes(subject[[i]],
                                     min.armlength=min.armlength,
@@ -94,16 +94,16 @@ setMethod("findPalindromes", "BStringViews",
                                     max.mismatch=max.mismatch)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pals))
-            ans_end <- c(ans_end, offset + end(pals))
+            ans_nchar <- c(ans_nchar, nchar(pals))
         }
         new("BStringViews", subject=subject(subject),
-            start=ans_start, end=ans_end, check.views=FALSE)
+            start=ans_start, nchar=ans_nchar, check=FALSE)
     }
 )
 setMethod("findComplementedPalindromes", "BStringViews",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
-        ans_start <- ans_end <- integer(0)
+        ans_start <- ans_nchar <- integer(0)
         for (i in seq_len(length(subject))) {
             pals <- findComplementedPalindromes(subject[[i]],
                                                 min.armlength=min.armlength,
@@ -112,10 +112,10 @@ setMethod("findComplementedPalindromes", "BStringViews",
                                                 max.mismatch=max.mismatch)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pals))
-            ans_end <- c(ans_end, offset + end(pals))
+            ans_nchar <- c(ans_nchar, nchar(pals))
         }
         new("BStringViews", subject=subject(subject),
-            start=ans_start, end=ans_end, check.views=FALSE)
+            start=ans_start, nchar=ans_nchar, check=FALSE)
     }
 )
 
@@ -203,19 +203,19 @@ setMethod("complementedPalindromeLeftArm", "DNAString",
 setMethod("palindromeLeftArm", "BStringViews",
     function(x, max.mismatch=0, ...)
     {
-        arm_start <- start(x)
-        arm_end <- arm_start + palindromeArmLength(x, max.mismatch=max.mismatch, ...) - 1L
+        ans_start <- start(x)
+        ans_nchar <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
         new("BStringViews", subject=subject(x),
-            start=arm_start, end=arm_end, check.views=FALSE)
+            start=ans_start, nchar=ans_nchar, check=FALSE)
     }
 )
 setMethod("complementedPalindromeLeftArm", "BStringViews",
     function(x, max.mismatch=0, ...)
     {
-        arm_start <- start(x)
-        arm_end <- arm_start + complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...) - 1L
+        ans_start <- start(x)
+        ans_nchar <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
         new("BStringViews", subject=subject(x),
-            start=arm_start, end=arm_end, check.views=FALSE)
+            start=ans_start, nchar=ans_nchar, check=FALSE)
     }
 )
 
@@ -250,19 +250,19 @@ setMethod("complementedPalindromeRightArm", "DNAString",
 setMethod("palindromeRightArm", "BStringViews",
     function(x, max.mismatch=0, ...)
     {
-        arm_end <- end(x)
-        arm_start <- arm_end - palindromeArmLength(x, max.mismatch=max.mismatch, ...) + 1L
+        ans_nchar <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        ans_start <- end(x) - ans_nchar + 1L
         new("BStringViews", subject=subject(x),
-            start=arm_start, end=arm_end, check.views=FALSE)
+            start=ans_start, nchar=ans_nchar, check=FALSE)
     }
 )
 setMethod("complementedPalindromeRightArm", "BStringViews",
     function(x, max.mismatch=0, ...)
     {
-        arm_end <- end(x)
-        arm_start <- arm_end - complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...) + 1L
+        ans_nchar <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        ans_start <- end(x) - ans_nchar + 1L
         new("BStringViews", subject=subject(x),
-            start=arm_start, end=arm_end, check.views=FALSE)
+            start=ans_start, nchar=ans_start, check=FALSE)
     }
 )
 
