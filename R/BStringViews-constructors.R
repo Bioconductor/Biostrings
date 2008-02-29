@@ -51,6 +51,8 @@
 ###   Should perhaps be put in the same file as "subviews" (and solveViews()).
 views <- function(subject, start=NA, end=NA)
 {
+    if (!is(subject, "BString"))
+        subject <- BString(subject)
     ans <- new("BStringViews", subject=subject, check=FALSE)
     ans@inters <- .makeIntervals(subject(ans), start, end)
     ans
@@ -78,14 +80,14 @@ adjacentViews <- function(subject, width, gapwidth=0)
         stop("'gapwidth' is empty")
     if (!is.integer(gapwidth))
         gapwidth <- as.integer(gapwidth)
-    start <- integer(lw)
-    start[ONE] <- ONE
+    ans_start <- integer(lw)
+    ans_start[ONE] <- ONE
     j <- ONE
     for (i in seq_len(lw-1)) {
-        start[i+ONE] <- start[i] + width[j] + gapwidth[j]
+        ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    new("BStringViews", subject=subject, start=start, width=width, check=FALSE)
+    new("BStringViews", subject=subject, start=ans_start, width=width, check=FALSE)
 }
 
 
