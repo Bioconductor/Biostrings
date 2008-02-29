@@ -130,7 +130,8 @@ setMethod("subviews", "BStringViews",
         if (check.limits && (any(start < 1L) || any(nchar(subject(x)) < end)))
             stop("result contains \"out of limits\" views")
         ans_width <- end - start + 1L
-        new("BStringViews", subject(x), start=start, width=ans_width, check=FALSE)
+        new("BStringViews", subject(x),
+            start=start, width=ans_width, desc=desc(x), check=FALSE)
     }
 )
 
