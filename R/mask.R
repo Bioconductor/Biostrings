@@ -72,31 +72,33 @@
 ### (they should be reordered by default).
 .BStringViews.normalize <- function(x)
 {
-    views <- .Call("Biostrings_normalize_views", start(x), end(x), PACKAGE="Biostrings")
-    x@inters <- data.frame(views)
+    C_ans <- .Call("Biostrings_normalize_views", start(x), end(x), PACKAGE="Biostrings")
+    x@inters$start <- C_ans$start
+    x@inters$width <- C_ans$end - C_ans$start + 1L
     x
 }
 
 .BStringViews.mask <- function(x)
 {
     ii <- order(start(x))
-    new_start <- new_end <- integer(0)
+    ans_start <- ans_end <- integer(0)
     start0 <- 1L
     for (i in ii) {
         end0 <- start(x)[i] - 1L
         start1 <- end(x)[i] + 1L
         if (end0 >= start0) {
-            new_start <- c(new_start, start0)
-            new_end <- c(new_end, end0)
+            ans_start <- c(ans_start, start0)
+            ans_end <- c(ans_end, end0)
         }
         if (start1 > start0)
             start0 <- start1
     }
     if (start0 <= length(subject(x))) {
-        new_start <- c(new_start, start0)
-        new_end <- c(new_end, length(subject(x)))
+        ans_start <- c(ans_start, start0)
+        ans_end <- c(ans_end, length(subject(x)))
     }
-    x@inters <- data.frame(start=new_start, end=new_end)
+    x@inters$start <- ans_start
+    x@inters$width <- ans_end - ans_start + 1L
     x
 }
 
