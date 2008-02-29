@@ -71,6 +71,8 @@ setClass("AAStringSet", contains="BStringSet")
 setGeneric("super", function(x) standardGeneric("super"))
 setMethod("super", "BStringSet", function(x) x@super)
 
+setMethod("nchar", "BStringSet", function(x, type="chars", allowNA=FALSE) width(x))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization (not intended to be used directly by the user).
@@ -79,7 +81,7 @@ setMethod("super", "BStringSet", function(x) x@super)
 setMethod("initialize", "BStringSet",
     function(.Object, super, start=integer(0), nchar=integer(0), names=NULL, check=TRUE)
     {
-        .Object <- callNextMethod(.Object, start=start, nchar=nchar, names=names, check=check)
+        .Object <- callNextMethod(.Object, start=start, width=nchar, names=names, check=check)
         if (check) {
             if (!is(super, "BString"))
                 stop("'super' must be a BString object")
@@ -152,9 +154,9 @@ setMethod("initialize", "AAStringSet",
 {
     locs <- SEN2safelocs(start, end, nchar, nchar(x, type="bytes"), check=check)
     class <- paste(baseClass, "Set", sep="")
-    super <- .charToBString(x, start(locs), nchar(locs), baseClass)
-    new(class, super, start=getStartForAdjacentSeqs(nchar(locs)),
-                      nchar=nchar(locs),
+    super <- .charToBString(x, start(locs), width(locs), baseClass)
+    new(class, super, start=getStartForAdjacentSeqs(width(locs)),
+                      nchar=width(locs),
                       names=names(x),
                       check=FALSE)
 }
@@ -164,14 +166,14 @@ setMethod("initialize", "AAStringSet",
     locs <- SEN2safelocs(start, end, nchar, nchar(x), check=check)
     class <- paste(baseClass, "Set", sep="")
     if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
-        super <- .BStringSetToBString(x, start(locs), nchar(locs), baseClass)
-        ans_start <- getStartForAdjacentSeqs(nchar(locs))
+        super <- .BStringSetToBString(x, start(locs), width(locs), baseClass)
+        ans_start <- getStartForAdjacentSeqs(width(locs))
     } else {
         super <- mkBString(baseClass, super(x))
         ans_start <- start(x)+start(locs)-1L
     }
     new(class, super, start=ans_start,
-                      nchar=nchar(locs),
+                      nchar=width(locs),
                       names=names(x),
                       check=FALSE)
 }
@@ -190,7 +192,7 @@ setMethod("initialize", "AAStringSet",
         ans_start <- start(x)+start(locs)-1L
     }
     new(class, super, start=ans_start,
-                      nchar=nchar(locs),
+                      nchar=width(locs),
                       names=desc(x),
                       check=TRUE) # TRUE for catching out of limits views
 }

@@ -12,11 +12,10 @@
 % Accesor methods:
 \alias{length,IntIntervals-method}
 \alias{start,IntIntervals-method}
-\alias{nchar,IntIntervals-method}
+\alias{width,IntIntervals-method}
 \alias{end,IntIntervals-method}
 \alias{names,IntIntervals-method}
 \alias{names<-,IntIntervals-method}
-\alias{width}
 \alias{desc}
 \alias{desc,ANY-method}
 \alias{desc<-}
@@ -48,7 +47,7 @@
   An IntIntervals object is a data frame-like object where each row describes
   an interval (or range) of integers. Each interval is defined by its start and
   its length. The start can be any integer (see \code{start} below) but the
-  length must be a nonnegative integer (see \code{nchar} below).
+  length must be a nonnegative integer (see \code{width} below).
 
   An important difference with a standard R data frame object is that an
   IntIntervals object can only be subsetted by row whereas a standard R data
@@ -78,17 +77,13 @@
       This is a vector of \code{length(x)} positive integers.
     }
     \item{}{
-      \code{nchar(x)}:
+      \code{width(x)}:
       The lengths of the intervals (not to be confunded with the length of
       \code{x}). This is a vector of \code{length(x)} nonnegative integers.
     }
     \item{}{
-      \code{width(x)}:
-      \code{width} is an alias for \code{nchar}.
-    }
-    \item{}{
       \code{end(x)}:
-      \code{start(x) + nchar(x) - 1L}
+      \code{start(x) + width(x) - 1L}
     }
     \item{}{
       \code{names(x)}:
@@ -123,7 +118,7 @@
     \item{}{
       \code{as.matrix(x, ...)}:
       Converts \code{x} into a 2-column integer matrix containing
-      \code{start(x)} and \code{nchar(x)}.
+      \code{start(x)} and \code{width(x)}.
     }
   }
 }
@@ -146,10 +141,10 @@
 }
 
 \examples{
-  inters <- new("IntIntervals", start=4:1, nchar=0:3)
+  inters <- new("IntIntervals", start=4:1, width=0:3)
   inters
   start(inters)
-  nchar(inters)
+  width(inters)
   end(inters)
   names(inters)
   names(inters) <- c("inter1", "inter2")
@@ -159,7 +154,7 @@
   inters[4:2]                    # 3 intervals
   inters[-1]                     # 3 intervals
   inters[c(2,4)]                 # 2 intervals
-  inters[nchar(inters) != 0]     # 3 intervals
+  inters[width(inters) != 0]     # 3 intervals
   inters[is.na(names(inters))]   # 2 intervals
   inters[!is.na(names(inters))]  # 2 intervals
   inters[3]                      # 1 intervals

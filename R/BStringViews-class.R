@@ -20,15 +20,15 @@ setClass("BStringViews",
 ###
 
 setMethod("initialize", "BStringViews",
-    function(.Object, subject, start=integer(0), nchar=integer(0), desc=NULL, check=TRUE)
+    function(.Object, subject, start=integer(0), width=integer(0), desc=NULL, check=TRUE)
     {
-        .Object <- callNextMethod(.Object, start=start, nchar=nchar, names=desc, check=check)
+        .Object <- callNextMethod(.Object, start=start, width=width, names=desc, check=check)
         if (check) {
             if (!is(subject, "BString"))
                 stop("'subject' must be a BString object")
             if (length(.Object) != 0) {
-                if (min(nchar) < 1)
-                    stop("some views are empty")
+                if (min(width) < 1)
+                    stop("views cannot be of width 0")
             }
         }
         slot(.Object, "subject", check=FALSE) <- subject

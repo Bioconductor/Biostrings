@@ -27,7 +27,8 @@ exportMethods(
     duplicated,
 
     ## Accessors
-    start, end, subject,
+    start, width, end, desc, "desc<-",
+    subject,
     alphabet, letter,
     patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
     subpatterns, pattern,
@@ -64,7 +65,6 @@ export(
     #debug_utils, debug_XRaw,
     #debug_naive, debug_boyermoore, debug_shiftor,
 
-    width, desc, "desc<-",
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,

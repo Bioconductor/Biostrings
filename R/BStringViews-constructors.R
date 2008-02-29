@@ -28,7 +28,7 @@
     ## The NA-proof version of 'if (any(end < start))'
     if (!isTRUE(all(start <= end)))
         stop("'start' and 'end' must verify 'start <= end'")
-    data.frame(start=start, nchar=end-start+1L)
+    data.frame(start=start, width=end-start+1L)
 }
 
 ### Typical use:
@@ -52,7 +52,7 @@
 views <- function(subject, start=NA, end=NA)
 {
     ans <- new("BStringViews", subject=subject, check=FALSE)
-    ans@inters <- .makeIntervals(ans@subject, start, end)
+    ans@inters <- .makeIntervals(subject(ans), start, end)
     ans
 }
 
@@ -85,7 +85,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         start[i+ONE] <- start[i] + width[j] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    new("BStringViews", subject=subject, start=start, nchar=width, check=FALSE)
+    new("BStringViews", subject=subject, start=start, width=width, check=FALSE)
 }
 
 
@@ -160,7 +160,7 @@ setMethod("BStringViews", "BString",
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- mkBString(subjectClass, src)
-        new("BStringViews", subject=src, start=1L, nchar=nchar(src), check=FALSE)
+        new("BStringViews", subject=src, start=1L, width=nchar(src), check=FALSE)
     }
 )
 
@@ -173,7 +173,7 @@ setMethod("BStringViews", "BStringViews",
     {
         if (!missing(collapse))
             stop("'collapse' not supported when 'src' is a \"BStringViews\" object")
-        src@subject <- mkBString(subjectClass, src@subject)
+        src@subject <- mkBString(subjectClass, subject(src))
         src
     }
 )

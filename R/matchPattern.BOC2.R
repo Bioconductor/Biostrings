@@ -153,8 +153,9 @@ plotBOC2 <- function(x, main)
         matches <- .match.BOC2.inexact(pattern, boc_subject, max.mismatch, count.only)
     if (count.only)
         return(matches)
+    ans_width <- rep.int(nchar(pattern), length(matches))
     new("BStringViews", subject=boc_subject@subject,
-        start=matches, nchar=nchar(pattern), check=FALSE)
+        start=matches, width=ans_width, check=FALSE)
 }
 
 ### Dispatch on 'subject' (see signature of generic).

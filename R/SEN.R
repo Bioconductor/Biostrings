@@ -20,7 +20,7 @@ SEN2safelocs <- function(start, end, nchar, seq_nchars, check=TRUE)
             nchar <- as.integer(nchar)
     }
     safelocs <- .Call("SEN_to_safelocs", start, end, nchar, seq_nchars, PACKAGE="Biostrings")
-    new("IntIntervals", start=safelocs$start, nchar=safelocs$nchar, check=FALSE)
+    new("IntIntervals", start=safelocs$start, width=safelocs$nchar, check=FALSE)
 }
 
 getStartForAdjacentSeqs <- function(seq_nchars)

@@ -41,17 +41,17 @@ setMethod("matchLRPatterns", "BStringViews",
     function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
     {
-        ans_start <- ans_nchar <- integer(0)
+        ans_start <- ans_width <- integer(0)
         for (i in seq_len(length(subject))) {
             pm <- matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject[[i]],
                                    max.Lmismatch=max.Lmismatch, max.Rmismatch=max.Rmismatch,
                                    Lfixed=Lfixed, Rfixed=Rfixed)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pm))
-            ans_nchar <- c(ans_nchar, nchar(pm))
+            ans_width <- c(ans_width, width(pm))
         }
         new("BStringViews", subject=subject(subject),
-            start=ans_start, nchar=ans_nchar, check=FALSE)
+            start=ans_start, width=ans_width, check=FALSE)
     }
 )
 

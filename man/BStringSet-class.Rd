@@ -16,6 +16,7 @@
 \alias{AAStringSet}
 
 % Accesor methods:
+\alias{nchar,BStringSet-method}
 
 % Constructor-like functions and generics:
 \alias{initialize,BStringSet-method}

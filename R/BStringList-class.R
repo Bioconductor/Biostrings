@@ -103,10 +103,10 @@ setMethod("initialize", "AAStringList",
     locs <- SEN2safelocs(start, end, nchar, nchar(x, type="bytes"), check=check)
     proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
-                  x, start(locs), nchar(locs), "", enc_lkup(proto),
+                  x, start(locs), width(locs), "", enc_lkup(proto),
                   PACKAGE="Biostrings")
     .Call("XRaw_to_BStringList",
-          data, getStartForAdjacentSeqs(nchar(locs)), nchar(locs), proto,
+          data, getStartForAdjacentSeqs(width(locs)), width(locs), proto,
           PACKAGE="Biostrings")
 }
 
@@ -119,7 +119,7 @@ setMethod("initialize", "AAStringList",
     else
         proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
     .Call("narrow_BStringList",
-          x, start(locs), nchar(locs), proto,
+          x, start(locs), width(locs), proto,
           PACKAGE="Biostrings")
 }
 

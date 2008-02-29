@@ -268,9 +268,9 @@ debug_shiftor <- function()
         return(matches)
     if (algo == "gregexpr" || algo == "gregexpr2")
         return(matches)
-    ans_nchar <- rep.int(nchar(pattern), length(matches))
+    ans_width <- rep.int(nchar(pattern), length(matches))
     new("BStringViews", subject=subject,
-        start=matches, nchar=ans_nchar, check=FALSE)
+        start=matches, width=ans_width, check=FALSE)
 }
 
 
@@ -314,15 +314,15 @@ setMethod("matchPattern", "BString",
 setMethod("matchPattern", "BStringViews",
     function(pattern, subject, algorithm, max.mismatch, fixed)
     {
-        ans_start <- ans_nchar <- integer(0)
+        ans_start <- ans_width <- integer(0)
         for (i in seq_len(length(subject))) {
             pm <- .matchPattern(pattern, subject[[i]], algorithm, max.mismatch, fixed)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pm))
-            ans_nchar <- c(ans_nchar, nchar(pm))
+            ans_width <- c(ans_width, width(pm))
         }
         new("BStringViews", subject=subject(subject),
-            start=ans_start, nchar=ans_nchar, check=FALSE)
+            start=ans_start, width=ans_width, check=FALSE)
     }
 )
 

@@ -510,9 +510,10 @@ setMethod("[[", "ByPos_ViewsIndex",
         key <- callNextMethod()
         if (is.character(key))
             stop("\"ViewsIndex\" object has no names")
-        end <- x@ends[[key]]
-        nchar <- rep.int(x@width, length(end))
-        new("IntIntervals", start=end-x@width+1L, nchar=nchar, check=FALSE)
+        ans_end <- x@ends[[key]]
+        ans_width <- rep.int(x@width, length(ans_end))
+        ans_start <- ans_end - ans_width + 1L
+        new("IntIntervals", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
@@ -606,11 +607,12 @@ setMethod("[[", "ByName_ViewsIndex",
                 stop("pattern name \"", key, "\" not found")
             key <- pos
         } 
-        end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
-        if (is.null(end))
-            end <- integer(0)
-        nchar <- rep.int(x@width, length(end))
-        new("IntIntervals", start=end-x@width+1L, nchar=nchar, check=FALSE)
+        ans_end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
+        if (is.null(ans_end))
+            ans_end <- integer(0)
+        ans_width <- rep.int(x@width, length(ans_end))
+        ans_start <- ans_end - ans_width + 1L
+        new("IntIntervals", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
@@ -660,18 +662,19 @@ setMethod("unlist", "ViewsIndex",
     {
         start_index <- startIndex(x)
         if (length(start_index) == 0)
-            start <- integer(0)
+            ans_start <- integer(0)
         else
-            start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
+            ans_start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
         end_index <- endIndex(x)
         if (length(end_index) == 0)
-            end <- integer(0)
+            ans_end <- integer(0)
         else
-            end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
+            ans_end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
         names <- names(end_index)
         if (!is.null(names))
             names <- rep.int(names, times=sapply(end_index, length))
-        new("IntIntervals", start=start, nchar=end-start+1L, names=names, check=FALSE)
+        ans_width <- ans_end - ans_start + 1L
+        new("IntIntervals", start=ans_start, width=ans_width, names=names, check=FALSE)
     }
 )
 
@@ -685,7 +688,7 @@ extractAllMatches <- function(subject, vindex)
         stop("extractAllMatches() works only with a \"ViewsIndex\" object with names")
     allviews <- unlist(vindex)
     new("BStringViews", subject=subject,
-        start=start(allviews), nchar=nchar(allviews),
+        start=start(allviews), width=width(allviews),
         desc=desc(allviews), check=FALSE)
 }
 
@@ -753,19 +756,19 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_TBdna",
-                 actree@nodes@xp, actree@base_codes,
-                 pdict@dups, NULL, NULL,
-                 subject,
-                 0L, c(TRUE, TRUE),
-                 count.only, envir,
-                 PACKAGE="Biostrings")
+    C_ans <- .Call("match_TBdna",
+                   actree@nodes@xp, actree@base_codes,
+                   pdict@dups, NULL, NULL,
+                   subject,
+                   0L, c(TRUE, TRUE),
+                   count.only, envir,
+                   PACKAGE="Biostrings")
     if (count.only)
-        return(ans)
+        return(C_ans)
     if (is.null(names))
-        new("ByPos_ViewsIndex", ends=ans, width=width(pdict))
+        new("ByPos_ViewsIndex", ends=C_ans, width=width(pdict))
     else
-        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), NAMES=names)
+        new("ByName_ViewsIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
 }
 
 ### With a big random dictionary, on george1:
@@ -858,19 +861,19 @@ extractAllMatches <- function(subject, vindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    ans <- .Call("match_TBdna",
-                 actree@nodes@xp, actree@base_codes,
-                 pdict@dups, pdict@head, pdict@tail,
-                 subject,
-                 max.mismatch, fixed,
-                 count.only, envir,
-                 PACKAGE="Biostrings")
+    C_ans <- .Call("match_TBdna",
+                   actree@nodes@xp, actree@base_codes,
+                   pdict@dups, pdict@head, pdict@tail,
+                   subject,
+                   max.mismatch, fixed,
+                   count.only, envir,
+                   PACKAGE="Biostrings")
     if (count.only)
-        return(ans)
+        return(C_ans)
     if (is.null(names))
-        new("ByPos_ViewsIndex", ends=ans, width=width(pdict))
+        new("ByPos_ViewsIndex", ends=C_ans, width=width(pdict))
     else
-        new("ByName_ViewsIndex", length=length(pdict), ends_envir=ans, width=width(pdict), NAMES=names)
+        new("ByName_ViewsIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
 }
 
 
