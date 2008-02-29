@@ -73,9 +73,9 @@
 .BStringViews.normalize <- function(x)
 {
     C_ans <- .Call("Biostrings_normalize_views", start(x), end(x), PACKAGE="Biostrings")
-    x@inters$start <- C_ans$start
-    x@inters$width <- C_ans$end - C_ans$start + 1L
-    x
+    ans_start <- C_ans$start
+    ans_width <- C_ans$end - ans_start + 1L
+    new("BStringViews", subject(x), start=ans_start, width=ans_width, check=FALSE)
 }
 
 .BStringViews.mask <- function(x)
@@ -97,9 +97,8 @@
         ans_start <- c(ans_start, start0)
         ans_end <- c(ans_end, length(subject(x)))
     }
-    x@inters$start <- ans_start
-    x@inters$width <- ans_end - ans_start + 1L
-    x
+    ans_width <- ans_end - ans_start + 1L
+    new("BStringViews", subject(x), start=ans_start, width=ans_width, check=FALSE)
 }
 
 setGeneric("mask", function(x, ...) standardGeneric("mask"))
