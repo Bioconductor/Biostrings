@@ -59,6 +59,19 @@ In 2.7
       man page consequently. Bump versions of BSgenome + all the BSgenome.* pkgs
       and make the updated BSgenome.* pkgs depend on the updated BSgenome pkg.
 
+- BStringSet objects:
+    o Helper function .narrowBStringSet() is not optimal when the data need
+      to be copied. In this case, it does:
+
+        super <- .BStringSetToBString(x, start(locs), width(locs), baseClass)
+        ans_start <- getStartForAdjacentSeqs(width(locs))
+
+      which means that each sequence is narrowed and concatenated into 'super'.
+      It ignores the fact that the narrowed sequences could overlap in the
+      original super(x) so too much data is copied. In fact it would be enough
+      to copy only the regions of super(x) that are covered by the narrowed
+      sequences.
+
 - In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
 
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
