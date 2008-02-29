@@ -130,7 +130,7 @@ setMethod("subviews", "BStringViews",
         if (check.limits && (any(start < 1L) || any(nchar(subject(x)) < end)))
             stop("result contains \"out of limits\" views")
         x@inters$start <- start
-        x@inters$end <- end
+        x@inters$width <- end - start + 1L
         x
     }
 )
