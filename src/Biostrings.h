@@ -573,21 +573,21 @@ SEXP Biostrings_debug_seqs_to_seqs();
 const CharSeq *STRSXP_to_charseqs(
 		SEXP x,
 		const int *safe_starts,
-		const int *safe_nchars,
+		const int *safe_widths,
 		int *nseq
 );
 
 const CharSeq *BStringList_to_charseqs(
 		SEXP x,
 		const int *safe_starts,
-		const int *safe_nchars,
+		const int *safe_widths,
 		int *nseq
 );
 
 const CharSeq *BStringSet_to_charseqs(
 		SEXP x,
 		const int *safe_starts,
-		const int *safe_nchars,
+		const int *safe_widths,
 		int *nseq
 );
 
@@ -603,7 +603,7 @@ SEXP copy_subXRaw(
 SEXP STRSXP_to_XRaw(
 		SEXP x,
 		SEXP safe_starts,
-		SEXP safe_nchars,
+		SEXP safe_widths,
 		SEXP collapse,
 		SEXP lkup
 );
@@ -611,21 +611,21 @@ SEXP STRSXP_to_XRaw(
 SEXP BStringSet_to_XRaw(
 		SEXP x,
 		SEXP safe_starts,
-		SEXP safe_nchars,
+		SEXP safe_widths,
 		SEXP lkup
 );
 
 SEXP XRaw_to_BStringList(
 		SEXP x,
 		SEXP safe_starts,
-		SEXP safe_nchars,
+		SEXP safe_widths,
 		SEXP proto
 );
 
 SEXP narrow_BStringList(
 		SEXP x,
 		SEXP safe_starts,
-		SEXP safe_nchars,
+		SEXP safe_widths,
 		SEXP proto
 );
 
