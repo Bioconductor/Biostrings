@@ -446,5 +446,5 @@ setReplaceMethod("[[", "BStringList",
 ### Other methods.
 ###
 
-setMethod("as.list", "BStringList", function(x) x@seqs)
+setMethod("as.list", "BStringList", function(x, ...) x@seqs)
 

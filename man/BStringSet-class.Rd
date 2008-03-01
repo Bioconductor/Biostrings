@@ -15,8 +15,27 @@
 \alias{AAStringSet-class}
 \alias{AAStringSet}
 
+\alias{class:BStringList}
+\alias{BStringList-class}
+\alias{BStringList}
+\alias{class:DNAStringList}
+\alias{DNAStringList-class}
+\alias{DNAStringList}
+\alias{class:RNAStringList}
+\alias{RNAStringList-class}
+\alias{RNAStringList}
+\alias{class:AAStringList}
+\alias{AAStringList-class}
+\alias{AAStringList}
+
 % Accesor methods:
 \alias{nchar,BStringSet-method}
+
+\alias{length,BStringList-method}
+\alias{nchar,BStringList-method}
+\alias{width,BStringList-method}
+\alias{names,BStringList-method}
+\alias{names<-,BStringList-method}
 
 % Constructor-like functions and generics:
 \alias{initialize,BStringSet-method}
@@ -40,10 +59,39 @@
 \alias{RNAStringSet,BStringViews-method}
 \alias{AAStringSet,BStringViews-method}
 
+\alias{initialize,BStringList-method}
+\alias{initialize,DNAStringList-method}
+\alias{initialize,RNAStringList-method}
+\alias{initialize,AAStringList-method}
+\alias{BStringList,character-method}
+\alias{DNAStringList,character-method}
+\alias{RNAStringList,character-method}
+\alias{AAStringList,character-method}
+\alias{BStringList,BStringList-method}
+\alias{DNAStringList,BStringList-method}
+\alias{RNAStringList,BStringList-method}
+\alias{AAStringList,BStringList-method}
+\alias{BStringList,vector-method}
+\alias{DNAStringList,vector-method}
+\alias{RNAStringList,vector-method}
+\alias{AAStringList,vector-method}
+\alias{BStringList,ANY-method}
+\alias{DNAStringList,ANY-method}
+\alias{RNAStringList,ANY-method}
+\alias{AAStringList,ANY-method}
+
 % Other methods:
 \alias{show,BStringSet-method}
 \alias{[[,BStringSet-method}
 \alias{[[<-,BStringSet-method}
+\alias{as.list,BStringSet-method}
+
+\alias{show,BStringList-method}
+\alias{[,BStringList-method}
+\alias{[<-,BStringList-method}
+\alias{[[,BStringList-method}
+\alias{[[<-,BStringList-method}
+\alias{as.list,BStringList-method}
 
 
 \title{BStringSet objects}
@@ -54,13 +102,24 @@
   The DNAStringSet (or RNAStringSet, or AAStringSet) class is a direct
   BStringSet derivation for storing a set of \code{\link{DNAString}}
   (or \code{\link{RNAString}}, or \code{\link{AAString}}) instances.
+
+  The BStringList class (and family) is equivalent to the BStringSet family.
+  It was a first attempt to address the problem of storing a large set of
+  sequences but it has been superseded by the BStringSet family.
 }
 
 \usage{
-  BStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-  DNAStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-  RNAStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-  AAStringSet(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+  BStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+
+  ## The BStringList family has been superseded by more efficient BStringSet
+  ## family
+  BStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  DNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  RNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  AAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
 }
 
 \arguments{
@@ -73,7 +132,7 @@
   \item{end}{
     [TODO]
   }
-  \item{nchar}{
+  \item{width}{
     [TODO]
   }
   \item{use.names}{
@@ -91,7 +150,34 @@
 \section{Accesor methods}{
   The BStringSet class derives from the \link{IntIntervals} class hence
   all the accessor methods defined for a \link{IntIntervals} object can also
-  be used on a BStringSet object.
+  be used on a BStringSet object. In particular, the following methods
+  are available (in the code snippets below, \code{x} is a BStringSet (or
+  derived) object):
+
+  \describe{
+    \item{}{
+      \code{length(x)}:
+      The number of sequences in \code{x}.
+    }
+    \item{}{
+      \code{width(x)}:
+      A vector of non-negative integers containing the number
+      of letters for each element in \code{x}.
+    }
+    \item{}{
+      \code{nchar(x)}:
+      The same as \code{width(x)}.
+    }
+    \item{}{
+      \code{names(x)}:
+      \code{NULL} or a character vector of the same length as \code{x} containing
+      a short user-provided description or comment for each element in \code{x}.
+      These are the only data in a BStringSet object that can safely
+      be changed by the user. All the other data are immutable!
+      As a general recommendation, the user should never try to modify
+      an object by accessing its slots directly.
+    }
+  }
 }
 
 \section{Subsetting methods}{
@@ -107,6 +193,17 @@
     \item{}{
       \code{x[[i]]}:
       Extract the i-th \code{\link{BString}} object from \code{x}.
+    }
+  }
+}
+
+\section{Other methods}{
+  In the code snippets below,
+  \code{x} is a BStringSet (or derived) object.
+  \describe{
+    \item{}{
+      \code{as.list(x)}:
+      Return the elements in \code{x} as a standard R list.
     }
   }
 }
@@ -138,3 +235,4 @@
 
 \keyword{methods}
 \keyword{classes}
+

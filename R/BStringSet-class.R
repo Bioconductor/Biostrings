@@ -66,6 +66,12 @@ setClass("AAStringSet", contains="BStringSet")
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
+### Like for BStringList and BStringViews objects, the strict minimum of
+### methods that must work with BStringSet objects is:
+###   length, width, nchar, names
+### Note that BStringSet objects inherit the "length", "width" and "names"
+### methods from the IntIntervals class.
+###
 
 ### NOT exported
 setGeneric("super", function(x) standardGeneric("super"))
@@ -79,9 +85,9 @@ setMethod("nchar", "BStringSet", function(x, type="chars", allowNA=FALSE) width(
 ###
 
 setMethod("initialize", "BStringSet",
-    function(.Object, super, start=integer(0), nchar=integer(0), names=NULL, check=TRUE)
+    function(.Object, super, start=integer(0), width=integer(0), names=NULL, check=TRUE)
     {
-        .Object <- callNextMethod(.Object, start=start, width=nchar, names=names, check=check)
+        .Object <- callNextMethod(.Object, start=start, width=width, names=names, check=check)
         if (check) {
             if (!is(super, "BString"))
                 stop("'super' must be a BString object")
@@ -97,33 +103,33 @@ setMethod("initialize", "BStringSet",
     }
 )
 setMethod("initialize", "DNAStringSet",
-    function(.Object, super, start=integer(0), nchar=integer(0), names=NULL, check=TRUE)
+    function(.Object, super, start=integer(0), width=integer(0), names=NULL, check=TRUE)
     {
         if (check) {
             if (!is(super, "DNAString"))
                 stop("'super' must be a DNAString object")
         }
-        callNextMethod(.Object, super, start=start, nchar=nchar, names=names, check=check)
+        callNextMethod(.Object, super, start=start, width=width, names=names, check=check)
     }
 )
 setMethod("initialize", "RNAStringSet",
-    function(.Object, super, start=integer(0), nchar=integer(0), names=NULL, check=TRUE)
+    function(.Object, super, start=integer(0), width=integer(0), names=NULL, check=TRUE)
     {
         if (check) {
             if (!is(super, "RNAString"))
                 stop("'super' must be a RNAString object")
         }
-        callNextMethod(.Object, super, start=start, nchar=nchar, names=names, check=check)
+        callNextMethod(.Object, super, start=start, width=width, names=names, check=check)
     }
 )
 setMethod("initialize", "AAStringSet",
-    function(.Object, super, start=integer(0), nchar=integer(0), names=NULL, check=TRUE)
+    function(.Object, super, start=integer(0), width=integer(0), names=NULL, check=TRUE)
     {
         if (check) {
             if (!is(super, "AAString"))
                 stop("'super' must be a AAString object")
         }
-        callNextMethod(.Object, super, start=start, nchar=nchar, names=names, check=check)
+        callNextMethod(.Object, super, start=start, width=width, names=names, check=check)
     }
 )
 
@@ -155,30 +161,30 @@ setMethod("initialize", "AAStringSet",
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
     new(class, super, start=start(inters),
-                      nchar=width(inters),
+                      width=width(inters),
                       names=ans_names,
                       check=FALSE)
 }
 
-.charToBStringSet <- function(x, start, end, nchar, use.names, baseClass, check)
+.charToBStringSet <- function(x, start, end, width, use.names, baseClass, check)
 {
     class <- paste(baseClass, "Set", sep="")
-    safe_locs <- narrow(nchar(x, type="bytes"), start, end, nchar)
+    safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     super <- .charToBString(x, safe_locs, baseClass)
     inters <- intToAdjacentIntervals(width(safe_locs))
     .newBStringSet(class, super, inters, x, use.names)
 }
 
-.narrowBStringSet <- function(x, start, end, nchar, use.names, baseClass, check)
+.narrowBStringSet <- function(x, start, end, width, use.names, baseClass, check)
 {
     class <- paste(baseClass, "Set", sep="")
     if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
-        safe_locs <- narrow(nchar(x), start, end, nchar)
+        safe_locs <- narrow(nchar(x), start, end, width)
         super <- .BStringSetToBString(x, safe_locs, baseClass)
         inters <- intToAdjacentIntervals(width(safe_locs))
     } else {
         super <- mkBString(baseClass, super(x))
-        inters <- narrow(x, start, end, nchar)
+        inters <- narrow(x, start, end, width)
     }
     .newBStringSet(class, super, inters, x, use.names)
 }
@@ -191,7 +197,7 @@ setMethod("initialize", "AAStringSet",
         warning("trimming \"out of limits\" views")
     class <- paste(class(subject(x)), "Set", sep="")
     new(class, subject(x),
-        start=start(inters), nchar=width(inters), names=names(inters), check=FALSE)
+        start=start(inters), width=width(inters), names=names(inters), check=FALSE)
 }
 
 
@@ -203,118 +209,118 @@ setMethod("initialize", "AAStringSet",
 ###
 
 setGeneric("BStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         standardGeneric("BStringSet")
 )
 setGeneric("DNAStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         standardGeneric("DNAStringSet")
 )
 setGeneric("RNAStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         standardGeneric("RNAStringSet")
 )
 setGeneric("AAStringSet", signature="x",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         standardGeneric("AAStringSet")
 )
 
 setMethod("BStringSet", "character",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .charToBStringSet(x, start, end, nchar, use.names, "BString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .charToBStringSet(x, start, end, width, use.names, "BString", check)
 )
 setMethod("DNAStringSet", "character",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .charToBStringSet(x, start, end, nchar, use.names, "DNAString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .charToBStringSet(x, start, end, width, use.names, "DNAString", check)
 )
 setMethod("RNAStringSet", "character",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .charToBStringSet(x, start, end, nchar, use.names, "RNAString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .charToBStringSet(x, start, end, width, use.names, "RNAString", check)
 )
 setMethod("AAStringSet", "character",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .charToBStringSet(x, start, end, nchar, use.names, "AAString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .charToBStringSet(x, start, end, width, use.names, "AAString", check)
 )
 
 ### Just because of those silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("BStringSet", "AsIs",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	BStringSet(x, start=start, end=end, nchar=nchar,
+	BStringSet(x, start=start, end=end, width=width,
                    use.names=use.names, check=check)
     }
 )
 setMethod("DNAStringSet", "AsIs",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	DNAStringSet(x, start=start, end=end, nchar=nchar,
+	DNAStringSet(x, start=start, end=end, width=width,
                      use.names=use.names, check=check)
     }
 )
 setMethod("RNAStringSet", "AsIs",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	RNAStringSet(x, start=start, end=end, nchar=nchar,
+	RNAStringSet(x, start=start, end=end, width=width,
                      use.names=use.names, check=check)
     }
 )
 setMethod("AAStringSet", "AsIs",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (!is.character(x))
             stop("unsupported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	AAStringSet(x, start=start, end=end, nchar=nchar,
+	AAStringSet(x, start=start, end=end, width=width,
                     use.names=use.names, check=check)
     }
 )
 
 setMethod("BStringSet", "BStringSet",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(x, start, end, nchar, use.names, "BString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .narrowBStringSet(x, start, end, width, use.names, "BString", check)
 )
 setMethod("DNAStringSet", "BStringSet",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(x, start, end, nchar, use.names, "DNAString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .narrowBStringSet(x, start, end, width, use.names, "DNAString", check)
 )
 setMethod("RNAStringSet", "BStringSet",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(x, start, end, nchar, use.names, "RNAString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .narrowBStringSet(x, start, end, width, use.names, "RNAString", check)
 )
 setMethod("AAStringSet", "BStringSet",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(x, start, end, nchar, use.names, "AAString", check)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+        .narrowBStringSet(x, start, end, width, use.names, "AAString", check)
 )
 
 setMethod("BStringSet", "BStringViews",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         .narrowBStringSet(.BStringViewsToSet(x, use.names),
-                          start, end, nchar, TRUE, "BString", check)
+                          start, end, width, TRUE, "BString", check)
 )
 setMethod("DNAStringSet", "BStringViews",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         .narrowBStringSet(.BStringViewsToSet(x, use.names),
-                          start, end, nchar, TRUE, "DNAString", check)
+                          start, end, width, TRUE, "DNAString", check)
 )
 setMethod("RNAStringSet", "BStringViews",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         .narrowBStringSet(.BStringViewsToSet(x, use.names),
-                          start, end, nchar, TRUE, "RNAString", check)
+                          start, end, width, TRUE, "RNAString", check)
 )
 setMethod("AAStringSet", "BStringViews",
-    function(x, start=NA, end=NA, nchar=NA, use.names=TRUE, check=TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
         .narrowBStringSet(.BStringViewsToSet(x, use.names),
-                          start, end, nchar, TRUE, "AAString", check)
+                          start, end, width, TRUE, "AAString", check)
 )
 
 ### Not exported
@@ -331,13 +337,13 @@ mkBStringSet <- function(baseClass, x)
 
 .namesW <- 20
 
-BStringSet.show_frame_header <- function(iW, ncharW, with.names)
+BStringSet.show_frame_header <- function(iW, widthW, with.names)
 {
     cat(format("", width=iW+1),
-        format("nchar", width=ncharW, justify="right"),
+        format("width", width=widthW, justify="right"),
         sep="")
     if (with.names) {
-        cat(format(" seq", width=getOption("width")-iW-ncharW-.namesW-1),
+        cat(format(" seq", width=getOption("width")-iW-widthW-.namesW-1),
             format("names", width=.namesW, justify="left"),
             sep="")
     } else {
@@ -346,17 +352,17 @@ BStringSet.show_frame_header <- function(iW, ncharW, with.names)
     cat("\n")
 }
 
-BStringSet.show_frame_line <- function(x, i, iW, ncharW)
+BStringSet.show_frame_line <- function(x, i, iW, widthW)
 {
-    nchar <- nchar(x[[i]])
-    snippetWidth <- getOption("width") - 2 - iW - ncharW
+    width <- nchar(x[[i]])
+    snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(names(x)))
         snippetWidth <- snippetWidth - .namesW - 1
     seq_snippet <- BString.get_snippet(x[[i]], snippetWidth)
     if (!is.null(names(x)))
         seq_snippet <- format(seq_snippet, width=snippetWidth)
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
-        format(nchar, width=ncharW, justify="right"), " ",
+        format(width, width=widthW, justify="right"), " ",
         seq_snippet,
         sep="")
     if (!is.null(names(x))) {
@@ -376,19 +382,19 @@ BStringSet.show_frame <- function(x, half_nrow=9L)
     lx <- length(x)
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(nchar(x))
-    ncharW <- max(nchar(ncharMax), nchar("nchar"))
-    BStringSet.show_frame_header(iW, ncharW, !is.null(names(x)))
+    widthW <- max(nchar(ncharMax), nchar("width"))
+    BStringSet.show_frame_header(iW, widthW, !is.null(names(x)))
     if (lx <= 2*half_nrow+1) {
         for (i in seq_len(lx))
-            BStringSet.show_frame_line(x, i, iW, ncharW)
+            BStringSet.show_frame_line(x, i, iW, widthW)
     } else {
         for (i in 1:half_nrow)
-            BStringSet.show_frame_line(x, i, iW, ncharW)
+            BStringSet.show_frame_line(x, i, iW, widthW)
         cat(format("...", width=iW, justify="right"),
-            format("...", width=ncharW, justify="right"),
+            format("...", width=widthW, justify="right"),
             "...\n")
         for (i in (lx-half_nrow+1L):lx)
-            BStringSet.show_frame_line(x, i, iW, ncharW)
+            BStringSet.show_frame_line(x, i, iW, widthW)
     }
 }
 
@@ -450,4 +456,18 @@ setReplaceMethod("[[", "BStringSet",
 
 ### WON'T START THIS UNLESS SOMEONE HAS A USE CASE...
 ### Look at BStringViews-class.R for how to do this.
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods.
+###
+
+setMethod("as.list", "BStringSet",
+    function(x, ...)
+    {
+        ans <- lapply(seq_len(length(x)), function(i) x[[i]])
+        names(ans) <- names(x)
+        ans
+    }
+)
 

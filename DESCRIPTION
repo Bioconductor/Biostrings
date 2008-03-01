@@ -24,8 +24,8 @@ Collate: 00datacache.R
         BStringViews-class.R
         BStringViews-constructors.R
         BStringViews-io.R
-        BStringList-class.R
         BStringSet-class.R
+        BStringList-class.R
         BStringPartialMatches-class.R
         BStringAlign-class.R
         letter.R
