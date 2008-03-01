@@ -47,8 +47,6 @@
 ###   - add a 'width' arg (default to NA)
 ###   - add a 'check.limits' arg (default to TRUE) for raising an error if
 ###     some views are "out of limits"
-###   Also follow "subviews" style for the implementation (e.g. use solveViews()).
-###   Should perhaps be put in the same file as "subviews" (and solveViews()).
 views <- function(subject, start=NA, end=NA)
 {
     if (!is(subject, "BString"))
@@ -180,11 +178,27 @@ setMethod("BStringViews", "BStringViews",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "trim" and "subviews" functions.
+###
+
 trim <- function(x, use.names=TRUE)
 {
     if (!is(x, "BStringViews"))
         stop("'x' must be a BStringViews object")
     inters <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
+    if (any(width(inters) == 0))
+        stop("some views are empty")
+    new("BStringViews", subject(x),
+        start=start(inters), width=width(inters), desc=names(inters), check=FALSE)
+}
+
+subviews <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+{
+    if (!is(x, "BStringViews"))
+        stop("'x' must be a BStringViews object")
+    inters <- narrow(x, start=start, end=end, width=width, use.names=use.names)
     if (any(width(inters) == 0))
         stop("some views are empty")
     new("BStringViews", subject(x),

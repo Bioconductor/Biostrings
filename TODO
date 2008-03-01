@@ -194,9 +194,6 @@ In 2.7
   trunk only (too late for release). Remove the warning after the BioC 2.2
   release.
 
-- subviews() (and maybe other functions) loose the desc field of the BStringViews
-  object. Fix this.
-
 - Add "duplicated" methods for BStringViews, BStringList and BStringSet objects.
 
 - Clean the views_buffer.c mess. Use the *_MRMODE codes defined in

@@ -10,17 +10,23 @@
 \alias{BStringViews,BString-method}
 \alias{BStringViews,BStringViews-method}
 
+% Other functions:
+\alias{trim}
+\alias{subviews}
 
-\title{Basic functions for creating BStringViews objects}
+
+\title{Basic functions for creating or modifying BStringViews objects}
 
 \description{
-  A set of basic functions for creating BStringViews objects.
+  A set of basic functions for creating or modifying BStringViews objects.
 }
 
 \usage{
   views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
   BStringViews(src, subjectClass, collapse="")
+  trim(x, use.names=TRUE)
+  subviews(x, start=NA, end=NA, width=NA, use.names=TRUE)
 }
 
 \arguments{
@@ -52,7 +58,12 @@
     An optional character string to be inserted between the views of the
     \link{BStringViews} object created and returned by the function.
   }
-
+  \item{x}{
+    [TODO]
+  }
+  \item{use.names}{
+    [TODO]
+  }
 }
 
 \details{
