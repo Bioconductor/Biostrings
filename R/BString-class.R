@@ -213,7 +213,7 @@ setMethod("initialize", "AAString",
 ### Helper functions used by the versatile constructors below.
 ###
 
-charToBString <- function(x, start=NA, end=NA, nchar=NA, class="BString", check=TRUE)
+charToBString <- function(x, start=NA, end=NA, width=NA, class="BString", check=TRUE)
 {
     if (check) {
         if (length(x) == 0)
@@ -222,7 +222,7 @@ charToBString <- function(x, start=NA, end=NA, nchar=NA, class="BString", check=
             stop("more than one input sequence")
     }
     lkup <- enc_lkup(new(class, XRaw(0), 0L, 0L, check=FALSE))
-    data <- charToXRaw(x, start=start, end=end, nchar=nchar, lkup=lkup, check=check)
+    data <- charToXRaw(x, start=start, end=end, width=width, lkup=lkup, check=check)
     new(class, data, 0L, length(data), check=FALSE)
 }
 
@@ -256,19 +256,19 @@ setGeneric("AAString", signature="x",
 
 setMethod("BString", "character",
     function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, end=NA, nchar=nchar, class="BString", check=check)
+        charToBString(x, start=start, width=nchar, class="BString", check=check)
 )
 setMethod("DNAString", "character",
     function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, end=NA, nchar=nchar, class="DNAString", check=check)
+        charToBString(x, start=start, width=nchar, class="DNAString", check=check)
 )
 setMethod("RNAString", "character",
     function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, end=NA, nchar=nchar, class="RNAString", check=check)
+        charToBString(x, start=start, width=nchar, class="RNAString", check=check)
 )
 setMethod("AAString", "character",
     function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, end=NA, nchar=nchar, class="AAString", check=check)
+        charToBString(x, start=start, width=nchar, class="AAString", check=check)
 )
 
 setMethod("BString", "BString",
