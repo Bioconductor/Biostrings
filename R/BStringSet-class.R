@@ -132,55 +132,55 @@ setMethod("initialize", "AAStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToBString <- function(x, safe_starts, safe_nchars, class)
+.charToBString <- function(x, safe_locs, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
-                  x, safe_starts, safe_nchars, "", enc_lkup(proto),
+                  x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                   PACKAGE="Biostrings")
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.BStringSetToBString <- function(x, safe_starts, safe_nchars, class)
+.BStringSetToBString <- function(x, safe_locs, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("BStringSet_to_XRaw",
-                  x, safe_starts, safe_nchars, enc_lkup(proto),
+                  x, start(safe_locs), width(safe_locs), enc_lkup(proto),
                   PACKAGE="Biostrings")
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.newBStringSet <- function(class, ans_super, ans_start, ans_nchar, x, use.names)
+.newBStringSet <- function(class, super, inters, x, use.names)
 {
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new(class, ans_super, start=ans_start,
-                          nchar=ans_nchar,
-                          names=ans_names,
-                          check=FALSE)
+    new(class, super, start=start(inters),
+                      nchar=width(inters),
+                      names=ans_names,
+                      check=FALSE)
 }
 
 .charToBStringSet <- function(x, start, end, nchar, use.names, baseClass, check)
 {
-    locs <- SEN2safelocs(start, end, nchar, nchar(x, type="bytes"), check=check)
     class <- paste(baseClass, "Set", sep="")
-    super <- .charToBString(x, start(locs), width(locs), baseClass)
-    ans_start <- getStartForAdjacentSeqs(width(locs))
-    .newBStringSet(class, super, ans_start, width(locs), x, use.names)
+    safe_locs <- narrow(nchar(x, type="bytes"), start, end, nchar)
+    super <- .charToBString(x, safe_locs, baseClass)
+    inters <- intToAdjacentIntervals(width(safe_locs))
+    .newBStringSet(class, super, inters, x, use.names)
 }
 
 .narrowBStringSet <- function(x, start, end, nchar, use.names, baseClass, check)
 {
-    locs <- SEN2safelocs(start, end, nchar, nchar(x), check=check)
     class <- paste(baseClass, "Set", sep="")
     if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
-        super <- .BStringSetToBString(x, start(locs), width(locs), baseClass)
-        ans_start <- getStartForAdjacentSeqs(width(locs))
+        safe_locs <- narrow(nchar(x), start, end, nchar)
+        super <- .BStringSetToBString(x, safe_locs, baseClass)
+        inters <- intToAdjacentIntervals(width(safe_locs))
     } else {
         super <- mkBString(baseClass, super(x))
-        ans_start <- start(x) + start(locs) - 1L
+        inters <- narrow(x, start, end, nchar)
     }
-    .newBStringSet(class, super, ans_start, width(locs), x, use.names)
+    .newBStringSet(class, super, inters, x, use.names)
 }
 
 ### Canonical conversion from BStringViews to a BStringSet (or derived)

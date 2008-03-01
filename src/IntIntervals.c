@@ -1,5 +1,5 @@
 /****************************************************************************
- *                   The SEN (Start/End/Nchar) interface                    *
+ *                  Fast IntIntervals objects manipulation                  *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -11,13 +11,13 @@ typedef struct startend {
 
 static int debug = 0;
 
-SEXP Biostrings_debug_SEN()
+SEXP Biostrings_debug_IntIntervals()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'SEN.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'IntIntervals.c'\n", debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'SEN.c'\n");
+	Rprintf("Debug mode not available in 'IntIntervals.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -61,60 +61,84 @@ static StartEnd SEN_to_StartEnd(int start, int end, int nchar)
 	return startend;
 }
 
+int _get_IntIntervals_length(SEXP x)
+{
+	SEXP inters;
+
+	inters = GET_SLOT(x, install("inters"));
+	return LENGTH(VECTOR_ELT(inters, 0));
+}
+
+const int *_get_IntIntervals_start(SEXP x)
+{
+	SEXP inters;
+
+	inters = GET_SLOT(x, install("inters"));
+	return INTEGER(VECTOR_ELT(inters, 0));
+}
+
+const int *_get_IntIntervals_width(SEXP x)
+{
+	SEXP inters;
+
+	inters = GET_SLOT(x, install("inters"));
+	return INTEGER(VECTOR_ELT(inters, 1));
+}
+
 /*
  * --- .Call ENTRY POINT ---
- * SEN_to_safelocs() arguments are assumed to be:
- *   start, end, nchar: single integer (possibly NA)
- *   seq_nchars: vector of non-negative integers (no NAs either)
- * Create a set of valid locations in 'x' from user-specified Start/End/Nchar
- * values ('start', 'end', 'nchar').
- * Return a list with 2 elements named "start" and "nchar", each of
- * them being an integer vector of the same length as 'seq_nchars'. Those
- * vectors are _safe_ i.e. they describe a set of valid locations in the
- * sequences whose lengths are passed to 'seq_nchars'.
  */
-SEXP SEN_to_safelocs(SEXP start, SEXP end, SEXP nchar, SEXP seq_nchars)
+SEXP narrow_IntIntervals(SEXP x, SEXP start, SEXP end, SEXP width)
 {
-	SEXP safe_starts, safe_nchars, ans, ans_names;
 	StartEnd startend;
-	int nseq, i, *seq_nchar, *start_p, *nchar_p;
+	const int *old_start, *old_width;
+	int x_length, i, *new_start, *new_width, shift1, shift2;
+	SEXP ans_start, ans_width, ans, ans_names;
 
-	startend = SEN_to_StartEnd(INTEGER(start)[0], INTEGER(end)[0], INTEGER(nchar)[0]);
-	nseq = LENGTH(seq_nchars);
-	PROTECT(safe_starts = NEW_INTEGER(nseq));
-	PROTECT(safe_nchars = NEW_INTEGER(nseq));
-	for (i = 0, seq_nchar = INTEGER(seq_nchars),
-		    start_p = INTEGER(safe_starts),
-		    nchar_p = INTEGER(safe_nchars);
-	     i < nseq;
-	     i++, seq_nchar++, start_p++, nchar_p++)
+	startend = SEN_to_StartEnd(INTEGER(start)[0], INTEGER(end)[0], INTEGER(width)[0]);
+	x_length = _get_IntIntervals_length(x);
+	PROTECT(ans_start = NEW_INTEGER(x_length));
+	PROTECT(ans_width = NEW_INTEGER(x_length));
+	for (i = 0, old_start = _get_IntIntervals_start(x),
+		    old_width = _get_IntIntervals_width(x),
+		    new_start = INTEGER(ans_start),
+		    new_width = INTEGER(ans_width);
+	     i < x_length;
+	     i++, old_start++, old_width++, new_start++, new_width++)
 	{
-		*start_p = startend.start;
-		if (startend.start <= 0) // yes, <= 0
-			*start_p += *seq_nchar + 1;
-		*nchar_p = startend.end - *start_p + 1;
-		if (startend.end < 0) // yes, < 0
-			*nchar_p += *seq_nchar + 1;
-		if (*start_p < 1) {
+		if (startend.start > 0)
+			shift1 = startend.start - 1;
+		else
+			shift1 = startend.start + *old_width;
+		if (shift1 < 0) {
 			UNPROTECT(2);
-			error("trying to read before the start of input sequence %d", i+1);
+			error("cannot narrow interval %d, this would require moving "
+			      "its 'start' (%d) to the left", i + 1, *old_start);
 		}
-		if (*nchar_p < 0) {
+		if (startend.end < 0)
+			shift2 = startend.end + 1;
+		else
+			shift2 = startend.end - *old_width;
+		if (shift2 > 0) {
 			UNPROTECT(2);
-			error("trying to read a negative number of letters from input sequence %d", i+1);
+			error("cannot narrow interval %d, this would require moving "
+			      "its 'end' (%d) to the right", i + 1, *old_start + *old_width - 1);
 		}
-		if (*start_p + *nchar_p - 1 > *seq_nchar) {
+		*new_width = *old_width - shift1 + shift2;
+		if (*new_width < 0) {
 			UNPROTECT(2);
-			error("trying to read after the end of input sequence %d", i+1);
+			error("cannot narrow interval %d, its 'width' (%d) is too small",
+			      i + 1, *old_width);
 		}
+		*new_start = *old_start + shift1;
 	}
 	PROTECT(ans = NEW_LIST(2));
 	PROTECT(ans_names = NEW_CHARACTER(2));
 	SET_STRING_ELT(ans_names, 0, mkChar("start"));
-	SET_STRING_ELT(ans_names, 1, mkChar("nchar"));
+	SET_STRING_ELT(ans_names, 1, mkChar("width"));
 	SET_NAMES(ans, ans_names);
-	SET_ELEMENT(ans, 0, safe_starts);
-	SET_ELEMENT(ans, 1, safe_nchars);
+	SET_ELEMENT(ans, 0, ans_start);
+	SET_ELEMENT(ans, 1, ans_width);
 	UNPROTECT(4);
 	return ans;
 }

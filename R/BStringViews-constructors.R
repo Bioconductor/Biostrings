@@ -60,8 +60,8 @@ views <- function(subject, start=NA, end=NA)
 
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).
-### TODO: Use helper getStartForAdjacentSeqs() in adjacentViews(), this
-### will be MUCH faster (getStartForAdjacentSeqs() is written in C).
+### TODO: Use intToAdjacentIntervals() in adjacentViews(), this
+### will be MUCH faster (intToAdjacentIntervals() is written in C).
 ### But first, the 'gapwidth' arg must be added to it...
 adjacentViews <- function(subject, width, gapwidth=0)
 {

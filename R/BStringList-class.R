@@ -100,26 +100,27 @@ setMethod("initialize", "AAStringList",
 
 .charToBStringList <- function(x, start, end, nchar, baseClass, check)
 {
-    locs <- SEN2safelocs(start, end, nchar, nchar(x, type="bytes"), check=check)
+    safe_locs <- narrow(nchar(x, type="bytes"), start, end, nchar)
     proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
     data <- .Call("STRSXP_to_XRaw",
-                  x, start(locs), width(locs), "", enc_lkup(proto),
+                  x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                   PACKAGE="Biostrings")
+    locs2 <- intToAdjacentIntervals(width(safe_locs))
     .Call("XRaw_to_BStringList",
-          data, getStartForAdjacentSeqs(width(locs)), width(locs), proto,
+          data, start(locs2), width(locs2), proto,
           PACKAGE="Biostrings")
 }
 
 .narrowBStringList <- function(x, start, end, nchar, baseClass, check)
 {
-    locs <- SEN2safelocs(start, end, nchar, nchar(x), check=check)
+    safe_locs <- narrow(nchar(x), start, end, nchar)
     class <- paste(baseClass, "List", sep="")
     if (class(x) == class)
         proto <- NULL
     else
         proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
     .Call("narrow_BStringList",
-          x, start(locs), width(locs), proto,
+          x, start(safe_locs), width(safe_locs), proto,
           PACKAGE="Biostrings")
 }
 

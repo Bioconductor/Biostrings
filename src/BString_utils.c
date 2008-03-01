@@ -180,23 +180,20 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 
 int _get_BStringSet_length(SEXP x)
 {
-	SEXP inters;
-
-	inters = GET_SLOT(x, install("inters"));
-	return LENGTH(VECTOR_ELT(inters, 0));
+	// Because a BStringSet object IS an IntIntervals object
+	return _get_IntIntervals_length(x);
 }
 
 const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
 {
-	SEXP inters, super, xp;
-	int start, offset;
+	SEXP super;
+	int start, super_length;
+	const char *super_seq;
 
-	inters = GET_SLOT(x, install("inters"));
-	start = INTEGER(VECTOR_ELT(inters, 0))[i];
-	*nchar = INTEGER(VECTOR_ELT(inters, 1))[i];
+	start = _get_IntIntervals_start(x)[i];
+	*nchar = _get_IntIntervals_width(x)[i];
 	super = GET_SLOT(x, install("super"));
-	xp = GET_SLOT(getBString_data(super), install("xp"));
-	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
-	return (const char *) (RAW(R_ExternalPtrTag(xp)) + offset + start - 1);
+	super_seq = _get_BString_charseq(super, &super_length);
+	return super_seq + start - 1;
 }
 

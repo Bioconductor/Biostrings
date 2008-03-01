@@ -308,8 +308,10 @@ normalize.nchar <- function(start, nchar, seq_nchar)
 
 charToXRaw <- function(x, start=NA, end=NA, nchar=NA, collapse=NULL, lkup=NULL, check=TRUE)
 {
-    locs <- SEN2safelocs(start, end, nchar, nchar(x, type="bytes"), check=check)
-    .Call("STRSXP_to_XRaw", x, start(locs), width(locs), collapse, lkup, PACKAGE="Biostrings")
+    safe_locs <- narrow(nchar(x, type="bytes"), start, end, nchar)
+    .Call("STRSXP_to_XRaw",
+          x, start(safe_locs), width(safe_locs), collapse, lkup,
+          PACKAGE="Biostrings")
 }
 
 copySubXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)

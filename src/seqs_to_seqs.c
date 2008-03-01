@@ -22,9 +22,9 @@ SEXP Biostrings_debug_seqs_to_seqs()
 /*
  * IMPORTANT: All the functions in this file assume that their 'safe_starts'
  * and 'safe_nchars' arguments have been obtained by processing the
- * user-specified Start/End/Nchar values thru SEN_to_safelocs().
- * Hence those arguments are assumed to be safe i.e. to describe a set of
- * valid locations in their first argument 'x'.
+ * user-specified Start/End/Nchar values thru R function restrict().
+ * In other words those arguments are assumed to be safe i.e. they should
+ * describe a set of valid locations in their first argument 'x'.
  */
 
 /*
@@ -259,7 +259,7 @@ SEXP XRaw_to_BStringList(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP proto)
  */
 SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP proto)
 {
-	int nseq, i, seq_length;
+	int nseq, i, seq_length, offset;
 	SEXP x_seqs, x_seq, ans, ans_seqs, ans_seq, data;
 	const int *start_p, *nchar_p;
 	char classbuf[14]; // longest string will be "DNAStringList"
@@ -283,7 +283,8 @@ SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_nchars, SEXP proto)
 			SET_SLOT(ans_seq, mkChar("data"), data);
 			UNPROTECT(1);
 		}
-		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(start2offset(*start_p)));
+		offset = INTEGER(GET_SLOT(x_seq, install("offset")))[0] + *start_p - 1;
+		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(offset));
 		SET_SLOT(ans_seq, mkChar("length"), ScalarInteger(*nchar_p));
 		SET_ELEMENT(ans_seqs, i, ans_seq);
 		UNPROTECT(1);

@@ -314,15 +314,21 @@ SEXP _Biostrings_viewsbuf_asLIST();
 SEXP _reported_matches_asSEXP();
 
 
-/* SEN.c */
+/* IntIntervals.c */
 
-SEXP Biostrings_debug_SEN();
+SEXP Biostrings_debug_IntIntervals();
 
-SEXP SEN_to_safelocs(
+int _get_IntIntervals_length(SEXP x);
+
+const int *_get_IntIntervals_start(SEXP x);
+
+const int *_get_IntIntervals_width(SEXP x);
+
+SEXP narrow_IntIntervals(
+		SEXP x,
 		SEXP start,
 		SEXP end,
-		SEXP nchar,
-		SEXP seq_nchars
+		SEXP width
 );
 
 SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);

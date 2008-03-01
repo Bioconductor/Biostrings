@@ -3,9 +3,11 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-o Added the restrict() function to restrict a set of intervals to an interval
-  of reference. Added the trim() function for trimming the "out of limits"
+o Added the trim() function for trimming the "out of limits"
   views of a BStringViews object.
+
+o Added the intToIntervals(), intToAdjacentIntervals(), restrict(), and
+  narrow() functions for creating or modifying IntIntervals objects.
 
 o Added the chartr() generic function with a method for BString objects.
   Methods for other types of objects (in particular for BStringViews and
@@ -27,8 +29,9 @@ o Added a bunch of new containers for storing a big set of sequences:
   The BStringList family was a first attempt to address the problem of storing
   a big set of sequences in an efficent manner but its performance turned out
   to be disappointing. So the BStringSet family was introduced as a response
-  to the poor performance of the BStringList container. The BStringList family
-  might be removed soon.
+  to the poor performance of the BStringList container. Like the BStringViews
+  class, the BStringSet class derives from the IntIntervals class.
+  The BStringList family might be removed soon.
 
 o Added support for a Biostrings C interface (work-in-progress).
   See inst/include/Biostrings_interface.h for how to use it in your package.
@@ -99,16 +102,17 @@ o matchPDict() now returns a ViewsIndex object (new class) instead of a list
   of integer vectors. The user can then extract the starts or the ends of
   the matches with startIndex() or endIndex(), extract the number of matches
   per pattern with countIndex(), extract the matches for a given pattern with
-  [[, put all the matches in a single Views object with unlist() or convert
-  this ViewsIndex object into a set of views on the original subject with
-  extractAllMatches().
+  [[, put all the matches in a single IntIntervals object with unlist() or
+  convert this ViewsIndex object into a set of views on the original subject
+  with extractAllMatches().
   Other functions can be added later in order to provide a wider choice of
   extraction/conversion tools if necessary.
   WARNING: This is still a work-in-progress. Function names and semantics are
   not yet stabilized!
 
-o Added the Views class (see ?Views for the details). Changed the definition
-  of the BStringViews class so now it extends the Views class.
+o Added the IntIntervals class for representing a set of integer intervals
+  (see ?IntIntervals for the details). Changed the definition of the
+  BStringViews class so now it derives from this new class.
 
 o Added the patternFrequency() generic function and a method for CWdna_PDict
   objects (will come later for TBdna_PDict objects).

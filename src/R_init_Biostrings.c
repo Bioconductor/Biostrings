@@ -11,10 +11,10 @@ static const R_CallMethodDef callMethods[] = {
 /* views_buffer.c */
 	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},
 
-/* SEN.c */
-	{"Biostrings_debug_SEN", (DL_FUNC) &Biostrings_debug_SEN, 0},
+/* IntIntervals.c */
+	{"Biostrings_debug_IntIntervals", (DL_FUNC) &Biostrings_debug_IntIntervals, 0},
 
-	{"SEN_to_safelocs", (DL_FUNC) &SEN_to_safelocs, 4},
+	{"narrow_IntIntervals", (DL_FUNC) &narrow_IntIntervals, 4},
 	{"get_start_for_adjacent_seqs", (DL_FUNC) &get_start_for_adjacent_seqs, 1},
 
 /* XRaw.c */
