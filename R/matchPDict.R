@@ -388,12 +388,12 @@ setMethod("PDict", "AsIs",
 ### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ViewsIndex" API.
+### The "MIndex" API.
 ### 
 ### An API for manipulating the match container returned by matchPDict().
 ###
 
-setClass("ViewsIndex", representation("VIRTUAL"))
+setClass("MIndex", representation("VIRTUAL"))
 
 
 setGeneric("startIndex", signature="x",
@@ -405,7 +405,7 @@ setGeneric("endIndex", signature="x",
 setGeneric("countIndex", signature="x",
     function(x, all.names=FALSE) standardGeneric("countIndex"))
 
-setMethod("countIndex", "ViewsIndex",
+setMethod("countIndex", "MIndex",
     function(x, all.names=FALSE)
     {
         if (!is.null(names(x))) {
@@ -424,10 +424,10 @@ setMethod("countIndex", "ViewsIndex",
 )
 
 ### Return a single integer or string (not NA).
-setMethod("[[", "ViewsIndex",
+setMethod("[[", "MIndex",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "ViewsIndex" object (if it's not, then
+        # 'x' is guaranteed to be a "MIndex" object (if it's not, then
         # the method dispatch algo would not have called this method in the
         # first place), so nargs() is guaranteed to be >= 1
         if (nargs() >= 3)
@@ -443,13 +443,13 @@ setMethod("[[", "ViewsIndex",
             stop("no index specified")
         key <- subscripts[[1]]
         if (!is.character(key) && !is.numeric(key))
-            stop("wrong argument for subsetting an object of class \"ViewsIndex\"")
+            stop("wrong argument for subsetting an object of class \"MIndex\"")
         if (length(key) < 1)
             stop("attempt to select less than one element")
         if (length(key) > 1)
             stop("attempt to select more than one element")
         if (is.na(key))
-            stop("subsetting an object of class \"ViewsIndex\" with NA is not supported")
+            stop("subsetting an object of class \"MIndex\" with NA is not supported")
         if (is.numeric(key)) {
             if (!is.integer(key))
                 key <- as.integer(key)
@@ -460,18 +460,18 @@ setMethod("[[", "ViewsIndex",
     }
 )
 
-setMethod("$", "ViewsIndex", function(x, name) x[[name]])
+setMethod("$", "MIndex", function(x, name) x[[name]])
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ByPos_ViewsIndex" class.
+### The "ByPos_MIndex" class.
 ### 
 ### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
-### returns the matches in a ByPos_ViewsIndex object.
+### returns the matches in a ByPos_MIndex object.
 ###
 ### Note that in normal operations the user NEVER needs to create a
-### ByPos_ViewsIndex object explicitely or to modify an existing one:
-### ByPos_ViewsIndex objects are created by the matchPDict() function
+### ByPos_MIndex object explicitely or to modify an existing one:
+### ByPos_MIndex objects are created by the matchPDict() function
 ### and have a read-only semantic.
 ###
 ### Slot description:
@@ -485,31 +485,31 @@ setMethod("$", "ViewsIndex", function(x, name) x[[name]])
 ###       length 1 only).
 ###
 
-setClass("ByPos_ViewsIndex",
-    contains="ViewsIndex",
+setClass("ByPos_MIndex",
+    contains="MIndex",
     representation(
         ends="list",
         width="integer"
     )
 )
 
-setMethod("length", "ByPos_ViewsIndex", function(x) length(x@ends))
+setMethod("length", "ByPos_MIndex", function(x) length(x@ends))
 
-setMethod("names", "ByPos_ViewsIndex", function(x) NULL)
+setMethod("names", "ByPos_MIndex", function(x) NULL)
 
-setMethod("show", "ByPos_ViewsIndex",
+setMethod("show", "ByPos_MIndex",
     function(object)
     {
-        cat(length(object), "-pattern \"ViewsIndex\" object (patterns have no names)\n", sep="")
+        cat(length(object), "-pattern \"MIndex\" object (patterns have no names)\n", sep="")
     }
 )
 
-setMethod("[[", "ByPos_ViewsIndex",
+setMethod("[[", "ByPos_MIndex",
     function(x, i, j, ...)
     {
         key <- callNextMethod()
         if (is.character(key))
-            stop("\"ViewsIndex\" object has no names")
+            stop("\"MIndex\" object has no names")
         ans_end <- x@ends[[key]]
         ans_width <- rep.int(x@width, length(ans_end))
         ans_start <- ans_end - ans_width + 1L
@@ -517,19 +517,19 @@ setMethod("[[", "ByPos_ViewsIndex",
     }
 )
 
-### An example of a ByPos_ViewsIndex object of length 5 where only the
+### An example of a ByPos_MIndex object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends <- rep(list(integer(0)), 5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > vindex <- new("ByPos_ViewsIndex", ends=ends, width=10L)
-###   > vindex[[1]]
-###   > vindex[[2]]
-###   > vindex[[6]] # Error in vindex[[6]] : subscript out of bounds
-###   > startIndex(vindex)
-###   > endIndex(vindex)
-###   > countIndex(vindex)
+###   > mindex <- new("ByPos_MIndex", ends=ends, width=10L)
+###   > mindex[[1]]
+###   > mindex[[2]]
+###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
+###   > startIndex(mindex)
+###   > endIndex(mindex)
+###   > countIndex(mindex)
 ###
-setMethod("startIndex", "ByPos_ViewsIndex",
+setMethod("startIndex", "ByPos_MIndex",
     function(x, all.names=FALSE)
     {
         if (!missing(all.names))
@@ -537,7 +537,7 @@ setMethod("startIndex", "ByPos_ViewsIndex",
         .Call("shiftListOfInts", x@ends, 1L - x@width, PACKAGE="Biostrings")
     }
 )
-setMethod("endIndex", "ByPos_ViewsIndex",
+setMethod("endIndex", "ByPos_MIndex",
     function(x, all.names=FALSE)
     {
         if (!missing(all.names))
@@ -548,14 +548,14 @@ setMethod("endIndex", "ByPos_ViewsIndex",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ByName_ViewsIndex" class.
+### The "ByName_MIndex" class.
 ### 
 ### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
-### returns the matches in a ByName_ViewsIndex object.
+### returns the matches in a ByName_MIndex object.
 ###
 ### Note that in normal operations the user NEVER needs to create a
-### ByName_ViewsIndex object explicitely or to modify an existing one:
-### ByName_ViewsIndex objects are created by the matchPDict() function
+### ByName_MIndex object explicitely or to modify an existing one:
+### ByName_MIndex objects are created by the matchPDict() function
 ### and have a read-only semantic.
 ###
 ### Slot description:
@@ -576,8 +576,8 @@ setMethod("endIndex", "ByPos_ViewsIndex",
 ###   names: a character vector containing the _unique_ pattern names.
 ###
 
-setClass("ByName_ViewsIndex",
-    contains="ViewsIndex",
+setClass("ByName_MIndex",
+    contains="MIndex",
     representation(
         length="integer",
         ends_envir="environment",
@@ -586,18 +586,18 @@ setClass("ByName_ViewsIndex",
     )
 )
 
-setMethod("length", "ByName_ViewsIndex", function(x) x@length)
+setMethod("length", "ByName_MIndex", function(x) x@length)
 
-setMethod("names", "ByName_ViewsIndex", function(x) x@NAMES)
+setMethod("names", "ByName_MIndex", function(x) x@NAMES)
 
-setMethod("show", "ByName_ViewsIndex",
+setMethod("show", "ByName_MIndex",
     function(object)
     {
-        cat(length(object), "-pattern \"ViewsIndex\" object\n", sep="")
+        cat(length(object), "-pattern \"MIndex\" object\n", sep="")
     }
 )
 
-setMethod("[[", "ByName_ViewsIndex",
+setMethod("[[", "ByName_MIndex",
     function(x, i, j, ...)
     {
         key <- callNextMethod()
@@ -616,26 +616,26 @@ setMethod("[[", "ByName_ViewsIndex",
     }
 )
 
-### An example of a ByName_ViewsIndex object of length 5 where only the
+### An example of a ByName_MIndex object of length 5 where only the
 ### 2nd pattern has matches:
 ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends_envir[['0000000002']] <- c(199L, 402L)
-###   > vindex <- new("ByName_ViewsIndex", length=5L, ends_envir=ends_envir, width=10L, NAMES=letters[1:5])
-###   > vindex[[1]]
-###   > vindex[[2]]
-###   > vindex[[6]] # Error in vindex[[6]] : subscript out of bounds
-###   > names(vindex)
-###   > vindex[["a"]]
-###   > vindex[["b"]]
-###   > vindex[["aa"]] # Error in vindex[["aa"]] : pattern name ‘aa’ not found
-###   > startIndex(vindex)
-###   > startIndex(vindex, all.names=TRUE)
-###   > endIndex(vindex)
-###   > endIndex(vindex, all.names=TRUE)
-###   > countIndex(vindex)
-###   > countIndex(vindex, all.names=TRUE)
+###   > mindex <- new("ByName_MIndex", length=5L, ends_envir=ends_envir, width=10L, NAMES=letters[1:5])
+###   > mindex[[1]]
+###   > mindex[[2]]
+###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
+###   > names(mindex)
+###   > mindex[["a"]]
+###   > mindex[["b"]]
+###   > mindex[["aa"]] # Error in mindex[["aa"]] : pattern name ‘aa’ not found
+###   > startIndex(mindex)
+###   > startIndex(mindex, all.names=TRUE)
+###   > endIndex(mindex)
+###   > endIndex(mindex, all.names=TRUE)
+###   > countIndex(mindex)
+###   > countIndex(mindex, all.names=TRUE)
 ###
-setMethod("startIndex", "ByName_ViewsIndex",
+setMethod("startIndex", "ByName_MIndex",
     function(x, all.names=FALSE)
     {
         if (!isTRUEorFALSE(all.names))
@@ -643,7 +643,7 @@ setMethod("startIndex", "ByName_ViewsIndex",
         .Call("extract_endIndex", x@ends_envir, 1L - x@width, x@NAMES, all.names, PACKAGE="Biostrings")
     }
 )
-setMethod("endIndex", "ByName_ViewsIndex",
+setMethod("endIndex", "ByName_MIndex",
     function(x, all.names=FALSE)
     {
         if (!isTRUEorFALSE(all.names))
@@ -657,7 +657,7 @@ setMethod("endIndex", "ByName_ViewsIndex",
 ### The "unlist" method and the "extractAllMatches" function.
 ###
 
-setMethod("unlist", "ViewsIndex",
+setMethod("unlist", "MIndex",
     function(x, recursive=TRUE, use.names=TRUE)
     {
         use.names <- normalize.use.names(use.names)
@@ -683,15 +683,15 @@ setMethod("unlist", "ViewsIndex",
     }
 )
 
-extractAllMatches <- function(subject, vindex)
+extractAllMatches <- function(subject, mindex)
 {
     if (!is(subject, "BString"))
         stop("'subject' must be a BString object")
-    if (!is(vindex, "ViewsIndex"))
-        stop("'vindex' must be a ViewsIndex object")
-    if (is.null(names(vindex)))
-        stop("extractAllMatches() works only with a \"ViewsIndex\" object with names")
-    allviews <- unlist(vindex)
+    if (!is(mindex, "MIndex"))
+        stop("'mindex' must be an MIndex object")
+    if (is.null(names(mindex)))
+        stop("extractAllMatches() works only with a \"MIndex\" object with names")
+    allviews <- unlist(mindex)
     new("BStringViews", subject,
         start=start(allviews), width=width(allviews),
         desc=desc(allviews), check=FALSE)
@@ -771,9 +771,9 @@ extractAllMatches <- function(subject, vindex)
     if (count.only)
         return(C_ans)
     if (is.null(names))
-        new("ByPos_ViewsIndex", ends=C_ans, width=width(pdict))
+        new("ByPos_MIndex", ends=C_ans, width=width(pdict))
     else
-        new("ByName_ViewsIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
+        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
 }
 
 ### With a big random dictionary, on george1:
@@ -833,24 +833,24 @@ extractAllMatches <- function(subject, vindex)
 ###
 ###   > library(BSgenome.Dmelanogaster.FlyBase.r51)
 ###   > chr3R <- Dmelanogaster[["3R"]]
-###   > system.time(vindex0 <- matchPDict(pdict0, chr3R))
+###   > system.time(mindex0 <- matchPDict(pdict0, chr3R))
 ###      user  system elapsed
 ###     1.352   0.000   1.352
-###   > system.time(vindex <- matchPDict(pdict, chr3R))
+###   > system.time(mindex <- matchPDict(pdict, chr3R))
 ###      user  system elapsed
 ###     1.332   0.008   1.338
-###   > identical(countIndex(vindex0), countIndex(vindex))
+###   > identical(countIndex(mindex0), countIndex(mindex))
 ###   [1] TRUE
 ###
 ### Allowing mismatches is fast:
-###   > system.time(vindex_mm6 <- matchPDict(pdict, chr3R, max.mismatch=4))
+###   > system.time(mindex_mm6 <- matchPDict(pdict, chr3R, max.mismatch=4))
 ###      user  system elapsed
 ###     1.377   0.000   1.375
-###   > vindex_mm6[[103]]
+###   > mindex_mm6[[103]]
 ###        start      end width
 ###   1  9381276  9381285    10
 ###   2 16070100 16070109    10
-###   > v <- views(chr3R, start(vindex_mm6[[103]]), end(vindex_mm6[[103]])+15)
+###   > v <- views(chr3R, start(mindex_mm6[[103]]), end(mindex_mm6[[103]])+15)
 ###   > mismatch(dict0[103], v)
 ###   [[1]]
 ###   [1] 14 15 19 23 24 25
@@ -876,9 +876,9 @@ extractAllMatches <- function(subject, vindex)
     if (count.only)
         return(C_ans)
     if (is.null(names))
-        new("ByPos_ViewsIndex", ends=C_ans, width=width(pdict))
+        new("ByPos_MIndex", ends=C_ans, width=width(pdict))
     else
-        new("ByName_ViewsIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
+        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
 }
 
 

@@ -98,12 +98,12 @@ o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
 o reverse(), complement() and reverseComplement() now preserve desc(x) when
   applied to BStringViews object x.
 
-o matchPDict() now returns a ViewsIndex object (new class) instead of a list
+o matchPDict() now returns an MIndex object (new class) instead of a list
   of integer vectors. The user can then extract the starts or the ends of
   the matches with startIndex() or endIndex(), extract the number of matches
   per pattern with countIndex(), extract the matches for a given pattern with
   [[, put all the matches in a single IntIntervals object with unlist() or
-  convert this ViewsIndex object into a set of views on the original subject
+  convert this MIndex object into a set of views on the original subject
   with extractAllMatches().
   Other functions can be added later in order to provide a wider choice of
   extraction/conversion tools if necessary.

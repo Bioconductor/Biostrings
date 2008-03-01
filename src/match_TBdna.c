@@ -894,7 +894,7 @@ SEXP CWdna_pp_BStringSet(SEXP dict, SEXP start, SEXP end)
  *   'envir': environment to be populated with the matches
  *
  * Return an R object that will be assigned to the 'ends' slot of the
- * ViewsIndex object returned by matchPDict(). Refer to the description
+ * MIndex object returned by matchPDict(). Refer to the description
  * of this slot in the matchPDict.R file for the details.
  *
  ****************************************************************************/
@@ -945,7 +945,7 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 
 /****************************************************************************
  * Some additional utility functions used fast data extraction from the
- * ViewsIndex object returned by matchPDict().
+ * MIndex object returned by matchPDict().
  */
 
 /* 'symbol' must be a CHARSXP */

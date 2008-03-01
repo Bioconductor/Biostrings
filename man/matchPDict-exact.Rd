@@ -3,12 +3,12 @@
 \alias{matchPDict-exact}
 
 % Classes
-\alias{class:ViewsIndex}
-\alias{ViewsIndex-class}
-\alias{class:ByPos_ViewsIndex}
-\alias{ByPos_ViewsIndex-class}
-\alias{class:ByName_ViewsIndex}
-\alias{ByName_ViewsIndex-class}
+\alias{class:MIndex}
+\alias{MIndex-class}
+\alias{class:ByPos_MIndex}
+\alias{ByPos_MIndex-class}
+\alias{class:ByName_MIndex}
+\alias{ByName_MIndex-class}
 
 % Generics and methods:
 \alias{length,ACtree-method}
@@ -18,29 +18,29 @@
 \alias{initialize,ACtree-method}
 
 \alias{startIndex}
-\alias{startIndex,ViewsIndex-method}
+\alias{startIndex,MIndex-method}
 \alias{endIndex}
 \alias{countIndex}
-\alias{countIndex,ViewsIndex-method}
-\alias{[[,ViewsIndex-method}
-\alias{$,ViewsIndex-method}
-\alias{unlist,ViewsIndex-method}
+\alias{countIndex,MIndex-method}
+\alias{[[,MIndex-method}
+\alias{$,MIndex-method}
+\alias{unlist,MIndex-method}
 
-\alias{length,ByPos_ViewsIndex-method}
-\alias{names,ByPos_ViewsIndex-method}
-\alias{show,ByPos_ViewsIndex-method}
-\alias{[[,ByPos_ViewsIndex-method}
-\alias{startIndex,ByPos_ViewsIndex-method}
-\alias{endIndex,ByPos_ViewsIndex-method}
-\alias{countIndex,ByPos_ViewsIndex-method}
+\alias{length,ByPos_MIndex-method}
+\alias{names,ByPos_MIndex-method}
+\alias{show,ByPos_MIndex-method}
+\alias{[[,ByPos_MIndex-method}
+\alias{startIndex,ByPos_MIndex-method}
+\alias{endIndex,ByPos_MIndex-method}
+\alias{countIndex,ByPos_MIndex-method}
 
-\alias{length,ByName_ViewsIndex-method}
-\alias{names,ByName_ViewsIndex-method}
-\alias{show,ByName_ViewsIndex-method}
-\alias{[[,ByName_ViewsIndex-method}
-\alias{startIndex,ByName_ViewsIndex-method}
-\alias{endIndex,ByName_ViewsIndex-method}
-\alias{countIndex,ByName_ViewsIndex-method}
+\alias{length,ByName_MIndex-method}
+\alias{names,ByName_MIndex-method}
+\alias{show,ByName_MIndex-method}
+\alias{[[,ByName_MIndex-method}
+\alias{startIndex,ByName_MIndex-method}
+\alias{endIndex,ByName_MIndex-method}
+\alias{countIndex,ByName_MIndex-method}
 
 \alias{matchPDict}
 \alias{matchPDict,BString-method}
@@ -75,12 +75,12 @@
   matchPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   countPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
 
-  ## Manipulation of the ViewsIndex object returned by matchPDict()
+  ## Manipulation of the MIndex object returned by matchPDict()
   startIndex(x, all.names=FALSE)
   endIndex(x, all.names=FALSE)
   countIndex(x, all.names=FALSE)
   unlist(x, recursive=TRUE, use.names=TRUE)
-  extractAllMatches(subject, vindex)
+  extractAllMatches(subject, mindex)
 }
 
 \arguments{
@@ -109,8 +109,8 @@
     must be \code{TRUE}. See \link{matchPDict-inexact} for inexact matching.
   }
   \item{x}{
-    A PDict or ViewsIndex object for \code{names}.
-    A ViewsIndex object for the other methods.
+    A PDict or MIndex object for \code{names}.
+    An MIndex object for the other methods.
   }
   \item{all.names}{
     \code{TRUE} or \code{FALSE}.
@@ -121,13 +121,13 @@
   \item{use.names}{
     ignored.
   }
-  \item{vindex}{
-    A ViewsIndex object returned by a previous call to \code{matchPDict}.
+  \item{mindex}{
+    An MIndex object returned by a previous call to \code{matchPDict}.
   }
 }
 
 \value{
-  \code{matchPDict} returns a ViewsIndex object.
+  \code{matchPDict} returns an MIndex object.
 
   \code{countPDict} returns an integer vector.
 
@@ -166,23 +166,23 @@
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chr3R <- Dmelanogaster[["3R"]]       # Load chromosome 3R
   chr3R
-  vindex <- matchPDict(pdict0, chr3R)  # Search...
+  mindex <- matchPDict(pdict0, chr3R)  # Search...
 
   ## Looking at the matches
-  start_index <- startIndex(vindex)    # Get the start index.
+  start_index <- startIndex(mindex)    # Get the start index.
   length(start_index)                  # Same as the input dictionary.
   start_index[[8220]]                  # Starts of the 8220th pattern.
-  end_index <- endIndex(vindex)        # Get the end index.
+  end_index <- endIndex(mindex)        # Get the end index.
   end_index[[8220]]                    # Ends of the 8220th pattern.
-  count_index <- countIndex(vindex)    # Get the number of matches per pattern.
+  count_index <- countIndex(mindex)    # Get the number of matches per pattern.
   count_index[[8220]]
-  vindex[[8220]]                       # Get the matches for the 8220th pattern.
-  start(vindex[[8220]])                # Equivalent to startIndex(vindex)[[8220]].
+  mindex[[8220]]                       # Get the matches for the 8220th pattern.
+  start(mindex[[8220]])                # Equivalent to startIndex(mindex)[[8220]].
   sum(count_index)                     # Total number of matches.
   table(count_index)
   i0 <- which(count_index == max(count_index))
   dict0[i0]                            # The pattern with most occurences.
-  vindex[[i0]]                         # Its matches as a Views object.
+  mindex[[i0]]                         # Its matches as a Views object.
   views(chr3R, start_index[[i0]], end_index[[i0]]) # And as a BStringViews object.
 
   ## -------------------------------------------------------------------------
@@ -195,19 +195,19 @@
   pdict1 <- PDict(dict1)
   length(pdict1)                       # Same as the input dictionary.
   names(pdict1)                        # Same as names(dict1).
-  vindex <- matchPDict(pdict1, chr3R)  # Search...
+  mindex <- matchPDict(pdict1, chr3R)  # Search...
 
   ## Looking at the matches
-  names(vindex)                        # Same as names(dict1).
-  start_index <- startIndex(vindex)
+  names(mindex)                        # Same as names(dict1).
+  start_index <- startIndex(mindex)
   start_index
   length(start_index)                  # NOT the same as the input dictionary.
-  start_index <- startIndex(vindex, all.names=TRUE)
+  start_index <- startIndex(mindex, all.names=TRUE)
   length(start_index)                  # Same as the input dictionary.
-  countIndex(vindex)
-  unlist(vindex)
-  length(unlist(vindex))               # Total number of matches.
-  extractAllMatches(chr3R, vindex)
+  countIndex(mindex)
+  unlist(mindex)
+  length(unlist(mindex))               # Total number of matches.
+  extractAllMatches(chr3R, mindex)
 
   ## -------------------------------------------------------------------------
   ## C. PERFORMANCE
@@ -237,8 +237,8 @@
         pptime=system.time(pdict <- PDict(dict0, tb.end=width, drop.tail=TRUE))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(pdict@dups == 0),
-        matchtime=system.time(vindex <- matchPDict(pdict, subject))[["elapsed"]],
-        totalcount=sum(countIndex(vindex))
+        matchtime=system.time(mindex <- matchPDict(pdict, subject))[["elapsed"]],
+        totalcount=sum(countIndex(mindex))
       )
     }
     stats <- lapply(6:25, function(width) getPDictStats(dict0, width, chr3R))

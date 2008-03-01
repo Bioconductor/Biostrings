@@ -15,7 +15,7 @@ exportClasses(
     "BStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
     "PDict", "CWdna_PDict", "TBdna_PDict",
-    "ViewsIndex", "ByPos_ViewsIndex", "ByName_ViewsIndex"
+    "MIndex", "ByPos_MIndex", "ByName_MIndex"
 )
 
 exportMethods(

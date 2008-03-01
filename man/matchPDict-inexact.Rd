@@ -47,7 +47,7 @@
 \examples{
   ## WARNING! THIS IS STILL WORK IN PROGRESS!!!
   ## A known issue is that the "startIndex", "[[" and "unlist" methods are
-  ## BROKEN on the ViewsIndex object returned by matchPDict() called on a
+  ## BROKEN on the MIndex object returned by matchPDict() called on a
   ## TBdna_PDict object!
 
   ## -------------------------------------------------------------------------
@@ -92,12 +92,12 @@
   tail(pdict) 
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=0))
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=1))
-  vindex <- matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=2)
-  endIndex(vindex)
+  mindex <- matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=2)
+  endIndex(mindex)
 
-  startIndex(vindex)                  # CURRENTLY BROKEN!
-  vindex[[1]]                         # CURRENTLY BROKEN!
-  unlist(vindex)                      # CURRENTLY BROKEN!
+  startIndex(mindex)                  # CURRENTLY BROKEN!
+  mindex[[1]]                         # CURRENTLY BROKEN!
+  unlist(mindex)                      # CURRENTLY BROKEN!
 
   ## -------------------------------------------------------------------------
   ## D. WITH AMBIGUITIES IN THE TAIL

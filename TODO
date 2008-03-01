@@ -100,10 +100,10 @@ In 2.7
     With this countPDict(..., all.names) should be exactly equivalent to
     countIndex(matchPDict(...), all.names)
 
-  o startIndex() is broken on the ViewsIndex object returned by a call to
+  o startIndex() is broken on the MIndex object returned by a call to
     matchPDict() on a TBdna_PDict object.
 
-  o extractAllMatches() fails on a very big ViewsIndex object (can't allocate
+  o extractAllMatches() fails on a very big MIndex object (can't allocate
     vector of size 5.2Gb).
 
   o Maybe: once DNAStringList() constructor is fast enough on character and
@@ -123,8 +123,8 @@ In 2.7
     Error in .match.CWdna_PDict.exact(pdict, subject, count.only) : 
       Biostrings internal error in _init_code2offset_lkup(): invalid code
 
-  o ViewsIndex objects: at some point the user will want to be able to combine
-    "compatible" ViewsIndex objects. 2 ViewsIndex objects are "compatible" if they
+  o MIndex objects: at some point the user will want to be able to combine
+    "compatible" MIndex objects. 2 MIndex objects are "compatible" if they
     are describing 2 set of matches coming from the same input dict and on
     the same target (subject). In practice, it will be enough that they have
     the same index i.e. they have the same pids() or, if the pids() is NULL,
@@ -135,7 +135,7 @@ In 2.7
     considered equal if their start/end are the same.
 
   o Make matchPDict() work on masked sequences. This is in fact an important use
-    case for combining ViewsIndex objects (see above).
+    case for combining MIndex objects (see above).
 
   o Make reverseComplement() work on a PDict object.
 
@@ -164,8 +164,8 @@ In 2.7
 
 - Add a new generic that combines a subject and a Views (or Views-like)
   object to return a BStringViews object. The Views-like object could be
-  ViewsIndex object and the method for it would do as if it had received
-  unlist(ViewsIndex). Currently my problem is that I can't come up with a good
+  MIndex object and the method for it would do as if it had received
+  unlist(MIndex). Currently my problem is that I can't come up with a good
   name for such generic :-/ Maybe I could just use views(subject, x) for
   this (dispatch would be on x, not subject). And the current views function
   could be renamed (or maybe it's not needed at all, maybe a fancy
