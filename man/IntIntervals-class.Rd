@@ -29,11 +29,17 @@
 \alias{as.data.frame,IntIntervals-method}
 \alias{as.matrix,IntIntervals-method}
 
+% Utility functions:
+\alias{intToIntervals}
+\alias{intToAdjacentIntervals}
+\alias{restrict}
+\alias{narrow}
+
 % Deprecated methods:
 \alias{first}
-\alias{first,Views-method}
+\alias{first,IntIntervals-method}
 \alias{last}
-\alias{last,Views-method}
+\alias{last,IntIntervals-method}
 
 
 \title{IntIntervals objects}
