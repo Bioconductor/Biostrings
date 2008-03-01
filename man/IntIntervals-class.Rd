@@ -12,6 +12,7 @@
 % Accesor methods:
 \alias{length,IntIntervals-method}
 \alias{start,IntIntervals-method}
+\alias{width}
 \alias{width,IntIntervals-method}
 \alias{end,IntIntervals-method}
 \alias{names,IntIntervals-method}
