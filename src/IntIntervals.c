@@ -23,9 +23,9 @@ SEXP Biostrings_debug_IntIntervals()
 }
 
 /*
- * Check and simplify user-specified values 'start', 'end', 'nchar'.
+ * Check and simplify user-specified values 'start', 'end', 'width'.
  */
-static StartEnd SEN_to_StartEnd(int start, int end, int nchar)
+static StartEnd uSEW_to_StartEnd(int start, int end, int width)
 {
 	StartEnd startend;
 
@@ -33,27 +33,27 @@ static StartEnd SEN_to_StartEnd(int start, int end, int nchar)
 		error("'start' must be a single >= 1, <= -1 or NA integer");
 	if (end == 0)
 		error("'end' must be a single >= 1, <= -1 or NA integer");
-	if (nchar == NA_INTEGER) {
+	if (width == NA_INTEGER) {
 		if (start == NA_INTEGER)
 			start = 1;
 		if (end == NA_INTEGER)
 			end = -1;
 		if ((end > 0 || start < 0) && end < start)
 			error("invalid ('start','end') combination");
-	} else if (nchar < 0) {
-		error("'nchar' must be a single >= 0 or NA integer");
+	} else if (width < 0) {
+		error("'width' must be a single >= 0 or NA integer");
 	} else if ((start == NA_INTEGER) == (end == NA_INTEGER)) {
-		error("either 'start' or 'end' (but not both) must be NA when 'nchar' is not NA");
+		error("either 'start' or 'end' (but not both) must be NA when 'width' is not NA");
 	} else if (start == NA_INTEGER) {
 		// 'end' is not NA
-		if (0 < end && end < nchar)
-			error("invalid ('end','nchar') combination");
-		start = end - nchar + 1; // will be 0 iff 'end' = -1 and 'nchar' = 0
+		if (0 < end && end < width)
+			error("invalid ('end','width') combination");
+		start = end - width + 1; // will be 0 iff 'end' = -1 and 'width' = 0
 	} else {
 		// 'end' is NA
-		if (start < 0 && -start < nchar)
-			error("invalid ('start','nchar') combination");
-		end = start + nchar - 1; // will be 0 iff 'start' = 1 and 'nchar' = 0
+		if (start < 0 && -start < width)
+			error("invalid ('start','width') combination");
+		end = start + width - 1; // will be 0 iff 'start' = 1 and 'width' = 0
 	}
 	// 'start' and 'end' cannot be NA anymore!
 	startend.start = start;
@@ -95,7 +95,7 @@ SEXP narrow_IntIntervals(SEXP x, SEXP start, SEXP end, SEXP width)
 	int x_length, i, *new_start, *new_width, shift1, shift2;
 	SEXP ans_start, ans_width, ans, ans_names;
 
-	startend = SEN_to_StartEnd(INTEGER(start)[0], INTEGER(end)[0], INTEGER(width)[0]);
+	startend = uSEW_to_StartEnd(INTEGER(start)[0], INTEGER(end)[0], INTEGER(width)[0]);
 	x_length = _get_IntIntervals_length(x);
 	PROTECT(ans_start = NEW_INTEGER(x_length));
 	PROTECT(ans_width = NEW_INTEGER(x_length));
@@ -146,22 +146,22 @@ SEXP narrow_IntIntervals(SEXP x, SEXP start, SEXP end, SEXP width)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP get_start_for_adjacent_seqs(SEXP seq_nchars)
+SEXP int_to_adjacent_intervals(SEXP x)
 {
 	SEXP ans;
-	int nseq, i, *seq_nchar, *ans_elt0, *ans_elt1;
+	int nseq, i, *x_elt, *ans_elt0, *ans_elt1;
 
-	nseq = LENGTH(seq_nchars);
+	nseq = LENGTH(x);
 	PROTECT(ans = NEW_INTEGER(nseq));
 	if (nseq >= 1)
 		INTEGER(ans)[0] = 1;
 	if (nseq >= 2)
-		for (i = 1, seq_nchar = INTEGER(seq_nchars),
+		for (i = 1, x_elt = INTEGER(x),
 			    ans_elt0 = INTEGER(ans),
 			    ans_elt1 = INTEGER(ans)+1;
 		     i < nseq;
-		     i++, seq_nchar++, ans_elt0++, ans_elt1++) {
-			*ans_elt1 = *ans_elt0 + *seq_nchar;
+		     i++, x_elt++, ans_elt0++, ans_elt1++) {
+			*ans_elt1 = *ans_elt0 + *x_elt;
 		}
 	UNPROTECT(1);
 	return ans;

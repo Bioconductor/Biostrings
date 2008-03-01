@@ -198,7 +198,8 @@ setMethod("initialize", "AAStringSet",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The user-friendly versatile constructors.
 ###
-### All these constructors use the SEN (Start/End/Nchar) interface.
+### All these constructors use the uSEW (user-specified Start/End/Width)
+### interface.
 ###
 
 setGeneric("BStringSet", signature="x",

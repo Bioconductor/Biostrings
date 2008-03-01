@@ -331,7 +331,7 @@ SEXP narrow_IntIntervals(
 		SEXP width
 );
 
-SEXP get_start_for_adjacent_seqs(SEXP seq_nchars);
+SEXP int_to_adjacent_intervals(SEXP x);
 
 
 /* XRaw.c */

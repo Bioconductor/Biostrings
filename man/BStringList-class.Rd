@@ -15,6 +15,13 @@
 \alias{AAStringList-class}
 \alias{AAStringList}
 
+% Accesor methods:
+\alias{length,BStringList-method}
+\alias{nchar,BStringList-method}
+\alias{width,BStringList-method}
+\alias{names,BStringList-method}
+\alias{names<-,BStringList-method}
+
 % Constructor-like functions and generics:
 \alias{initialize,BStringList-method}
 \alias{initialize,DNAStringList-method}
@@ -37,20 +44,14 @@
 \alias{RNAStringList,ANY-method}
 \alias{AAStringList,ANY-method}
 
-% Accesor methods:
-\alias{as.list,BStringList-method}
-\alias{length,BStringList-method}
-\alias{nchar,BStringList-method}
-\alias{desc,BStringList-method}
-\alias{desc<-,BStringList-method}
-
 % Other methods:
-
 \alias{show,BStringList-method}
 \alias{[,BStringList-method}
 \alias{[<-,BStringList-method}
 \alias{[[,BStringList-method}
 \alias{[[<-,BStringList-method}
+
+\alias{as.list,BStringList-method}
 
 
 \title{The BStringList, DNAStringList, RNAStringList and AAStringList classes}
@@ -64,10 +65,10 @@
 }
 
 \usage{
-  BStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
-  DNAStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
-  RNAStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
-  AAStringList(x, start=NA, end=NA, nchar=NA, check=TRUE)
+  BStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  DNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  RNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  AAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
 }
 
 \arguments{

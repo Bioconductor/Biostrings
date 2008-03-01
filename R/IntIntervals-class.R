@@ -200,7 +200,7 @@ intToAdjacentIntervals <- function(x, use.names=TRUE)
     if (!is.integer(x))
         x <- as.integer(x)
     use.names <- normalize.use.names(use.names)
-    ans_start <- .Call("get_start_for_adjacent_seqs", x, PACKAGE="Biostrings")
+    ans_start <- .Call("int_to_adjacent_intervals", x, PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
     new("IntIntervals", start=ans_start, width=x,
         names=ans_names, check=FALSE)
