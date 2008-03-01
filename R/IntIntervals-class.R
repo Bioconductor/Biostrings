@@ -173,16 +173,6 @@ setMethod("as.matrix", "IntIntervals",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Deprecated methods.
-###
-
-setGeneric("first", function(x) standardGeneric("first"))
-setMethod("first", "IntIntervals", function(x) {.Deprecated("start"); start(x)})
-setGeneric("last", function(x) standardGeneric("last"))
-setMethod("last", "IntIntervals", function(x) {.Deprecated("end"); end(x)})
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "restrict" function.
 ###
 
@@ -198,20 +188,22 @@ restrict <- function(x, start, end, use.names=TRUE)
         stop("'end' must be a single integer")
     if (!is.integer(end))
         end <- as.integer(end)
-    if (end + 1L < start)
+    if (start > end + 1L)
         stop("'start' must be <= 'end + 1'")
     use.names <- normalize.use.names(use.names)
 
     ans_start <- start(x)
     ans_end <- end(x)
 
-    far_too_left <- ans_end < start
-    ans_end[far_too_left] <- start - 1L
+    ## "fix" ans_start
+    far_too_right <- end < ans_start
+    ans_start[far_too_right] <- end + 1L
     too_left <- ans_start < start
     ans_start[too_left] <- start
 
-    far_too_right <- end < ans_start
-    ans_start[far_too_right] <- end + 1L
+    ## "fix" ans_end
+    far_too_left <- ans_end < start
+    ans_end[far_too_left] <- start - 1L
     too_right <- end < ans_end
     ans_end[too_right] <- end
 
@@ -220,4 +212,14 @@ restrict <- function(x, start, end, use.names=TRUE)
     new("IntIntervals", start=ans_start, width=ans_width,
         names=ans_names, check=FALSE)
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deprecated methods.
+###
+
+setGeneric("first", function(x) standardGeneric("first"))
+setMethod("first", "IntIntervals", function(x) {.Deprecated("start"); start(x)})
+setGeneric("last", function(x) standardGeneric("last"))
+setMethod("last", "IntIntervals", function(x) {.Deprecated("end"); end(x)})
 

@@ -182,10 +182,12 @@ setMethod("BStringViews", "BStringViews",
 
 trim <- function(x, use.names=TRUE)
 {
-    y <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
-    if (any(width(y) == 0))
+    if (!is(x, "BStringViews"))
+        stop("'x' must be a BStringViews object")
+    inters <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
+    if (any(width(inters) == 0))
         stop("some views are empty")
     new("BStringViews", subject(x),
-        start=start(y), width=width(y), desc=names(y), check=FALSE)
+        start=start(inters), width=width(inters), desc=names(inters), check=FALSE)
 }
 
