@@ -633,13 +633,6 @@ SEXP BString_to_XRaw(
 		SEXP lkup
 );
 
-SEXP BStringSet_to_XRaw(
-		SEXP x,
-		SEXP safe_starts,
-		SEXP safe_widths,
-		SEXP lkup
-);
-
 SEXP XRaw_to_BStringList(
 		SEXP x,
 		SEXP safe_starts,

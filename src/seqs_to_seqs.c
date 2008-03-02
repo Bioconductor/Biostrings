@@ -223,23 +223,6 @@ SEXP BString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
-SEXP BStringSet_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
-{
-	int nseq;
-	const CharSeq *seqs;
-	SEXP tag, ans;
-
-	nseq = LENGTH(safe_starts);
-	seqs = BStringSet_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
-	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
-	ans = mkXRaw(tag);
-	UNPROTECT(1);
-	return ans;
-}
-
 
 /****************************************************************************
  * Converting a set of sequences into a BStringList object.

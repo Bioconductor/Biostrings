@@ -78,7 +78,6 @@ static const R_CallMethodDef callMethods[] = {
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
 	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 5},
 	{"BString_to_XRaw", (DL_FUNC) &BString_to_XRaw, 4},
-	{"BStringSet_to_XRaw", (DL_FUNC) &BStringSet_to_XRaw, 4},
 	{"XRaw_to_BStringList", (DL_FUNC) &XRaw_to_BStringList, 4},
 	{"narrow_BStringList", (DL_FUNC) &narrow_BStringList, 4},
         

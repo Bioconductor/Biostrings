@@ -35,16 +35,6 @@
   \item{length}{
     A numeric vector.
   }
-  \item{width}{
-    A numeric vector.
-  }
-  \item{check.limits}{
-    A single logical indicating whether or not an error should be raised
-    if the \code{\link{BStringViews}} object to be returned contains
-    "out of limit" views (default is \code{TRUE}).
-    With \code{check.limits=FALSE} then "out of limit" views are padded
-    with spaces.
-  }
   \item{stop}{
     A numeric vector.
   }
