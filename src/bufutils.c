@@ -65,7 +65,7 @@ void _IBuf_init(IBuf *ibuf, int maxcount, int count)
 	return;
 }
 
-void _IBuf_get_more_room(IBuf *ibuf)
+static void _IBuf_extend(IBuf *ibuf)
 {
 	long new_maxcount;
 
@@ -81,7 +81,7 @@ void _IBuf_insert_at(IBuf *ibuf, int at, int val)
 	int *val1, *val2, i1;
 
 	if (ibuf->count >= ibuf->maxcount)
-		_IBuf_get_more_room(ibuf);
+		_IBuf_extend(ibuf);
 	val1 = ibuf->vals + ibuf->count;
 	val2 = val1 + 1;
 	for (i1 = ibuf->count++; i1 >= at; i1--)
@@ -177,7 +177,7 @@ void _IBBuf_init(IBBuf *ibbuf, int maxcount, int count)
 	return;
 }
 
-void _IBBuf_get_more_room(IBBuf *ibbuf)
+static void _IBBuf_extend(IBBuf *ibbuf)
 {
 	long new_maxcount;
 
@@ -193,7 +193,7 @@ void _IBBuf_insert_at(IBBuf *ibbuf, int at, IBuf ibuf)
 	int i, j;
 
 	if (ibbuf->count >= ibbuf->maxcount)
-		_IBBuf_get_more_room(ibbuf);
+		_IBBuf_extend(ibbuf);
 	j = ibbuf->count++;
 	for (i = j - 1; i >= at; i--, j--)
 		ibbuf->ibufs[j] = ibbuf->ibufs[i];
@@ -299,6 +299,25 @@ SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
 
 
 /****************************************************************************
+ * InterBuf functions
+ */
+
+void _InterBuf_init(InterBuf *interbuf, int maxcount, int count)
+{
+	_IBuf_init(&(interbuf->start), maxcount, count);
+	_IBuf_init(&(interbuf->width), maxcount, count);
+	return;
+}
+
+void _InterBuf_insert_at(InterBuf *interbuf, int at, int start, int width)
+{
+	_IBuf_insert_at(&(interbuf->start), at, start);
+	_IBuf_insert_at(&(interbuf->width), at, width);
+	return;
+}
+
+
+/****************************************************************************
  * CBuf functions
  */
 
@@ -314,7 +333,7 @@ void _CBuf_init(CBuf *cbuf, int maxcount)
 	return;
 }
 
-void _CBuf_get_more_room(CBuf *cbuf)
+static void _CBuf_extend(CBuf *cbuf)
 {
 	long new_maxcount;
 
@@ -330,7 +349,7 @@ void _CBuf_insert_at(CBuf *cbuf, int at, char val)
 	int i, j;
 
 	if (cbuf->count >= cbuf->maxcount)
-		_CBuf_get_more_room(cbuf);
+		_CBuf_extend(cbuf);
 	j = cbuf->count++;
 	for (i = j - 1; i >= at; i--, j--)
 		cbuf->vals[j] = cbuf->vals[i];

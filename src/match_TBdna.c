@@ -1035,7 +1035,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 		UNPROTECT(1);
 	} else {
 		//_IBuf_init(&poffsets_order, poffsets.count, 0);
-		//get_intorder(poffsets.vals, poffsets_order.vals, poffsets.count);
+		//get_intorder(poffsets.count, poffsets.vals, poffsets_order.vals);
 		//poffsets_order.count = poffsets.count; /* = poffsets_order.maxcount */
 		PROTECT(ans = NEW_LIST(poffsets.count));
 		PROTECT(ans_names = NEW_CHARACTER(poffsets.count));

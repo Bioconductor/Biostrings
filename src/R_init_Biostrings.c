@@ -16,6 +16,7 @@ static const R_CallMethodDef callMethods[] = {
 
 	{"narrow_IntIntervals", (DL_FUNC) &narrow_IntIntervals, 4},
 	{"int_to_adjacent_intervals", (DL_FUNC) &int_to_adjacent_intervals, 1},
+	{"normalize_IntIntervals", (DL_FUNC) &normalize_IntIntervals, 2},
 
 /* XRaw.c */
 	{"Biostrings_debug_XRaw", (DL_FUNC) &Biostrings_debug_XRaw, 0},

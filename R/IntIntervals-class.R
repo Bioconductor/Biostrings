@@ -283,6 +283,26 @@ narrow <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Normalization.
+###
+
+normalize <- function(x, with.inframe.attrib=FALSE)
+{
+    if (!is(x, "IntIntervals"))
+        stop("'x' must be an IntIntervals object")
+    if (!isTRUEorFALSE(with.inframe.attrib))
+        stop("'with.inframe.attrib' must be 'TRUE' or 'FALSE'")
+    C_ans <- .Call("normalize_IntIntervals", x, with.inframe.attrib, PACKAGE="Biostrings")
+    ans <- new("IntIntervals", start=C_ans$start, width=C_ans$width, check=FALSE)
+    if (with.inframe.attrib) {
+        inframe <- new("IntIntervals", start=C_ans$inframe.start, width=width(x), check=FALSE)
+        attr(ans, "inframe") <- inframe
+    }
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Deprecated methods.
 ###
 

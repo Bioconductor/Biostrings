@@ -568,7 +568,7 @@ static int cmpintpp(const void *p1, const void *p2)
 		return 1;
         return 0;
 }
-void get_intorder(const int *in, int *out, int len)
+void get_intorder(int len, const int *in, int *out)
 {
 	const int **inp, *tmp0, **tmp1;
 	int k, *tmp2;

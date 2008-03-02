@@ -5,27 +5,32 @@
 
 
 /*
- * Buffer structures used for temporary storage of arrays (or arrays of arrays)
- * of ints and chars.
+ * Extendable buffers used for temporary storage of data whose size is not
+ * known in advance.
  */
 
 typedef struct ibuf {
         int *vals;
         int maxcount;
         int count;
-} IBuf; // Buffer for an array of integers
+} IBuf; // Extendable buffer of integers
 
 typedef struct ibbuf {
         IBuf *ibufs;
         int maxcount;
         int count;
-} IBBuf; // Buffer for an array of arrays of integers
+} IBBuf; // Extendable buffer of arrays of integers
+
+typedef struct interbuf {
+        IBuf start;
+        IBuf width;
+} InterBuf; // Extendable buffer of intervals
 
 typedef struct cbuf {
         char *vals;
         int maxcount;
         int count;
-} CBuf; // Buffer for an array of chars
+} CBuf; // Extendable buffer of chars
 
 
 /*
@@ -176,9 +181,9 @@ int fgets_rtrimmed(
 );
 
 void get_intorder(
+		int len,
 		const int *in,
-		int *out,
-		int len
+		int *out
 );
 
 void _init_code2offset_lkup(
@@ -196,10 +201,6 @@ void _IBuf_init(
 		IBuf *ibuf,
 		int maxcount,
 		int count
-);
-
-void _IBuf_get_more_room(
-		IBuf *ibuf
 );
 
 void _IBuf_insert_at(
@@ -232,10 +233,6 @@ void _IBBuf_init(
 		int count
 );
 
-void _IBBuf_get_more_room(
-		IBBuf *ibbuf
-);
-
 void _IBBuf_insert_at(
 		IBBuf *ibbuf,
 		int at,
@@ -257,13 +254,22 @@ SEXP _IBBuf_toEnvir(
 		int keyshift
 );
 
+void _InterBuf_init(
+		InterBuf *interbuf,
+		int maxcount,
+		int count
+);
+
+void _InterBuf_insert_at(
+		InterBuf *interbuf,
+		int at,
+		int start,
+		int width
+);
+
 void _CBuf_init(
 		CBuf *cbuf,
 		int maxcount
-);
-
-void _CBuf_get_more_room(
-		CBuf *cbuf
 );
 
 void _CBuf_insert_at(
@@ -332,6 +338,11 @@ SEXP narrow_IntIntervals(
 );
 
 SEXP int_to_adjacent_intervals(SEXP x);
+
+SEXP normalize_IntIntervals(
+		SEXP x,
+		SEXP with_inframe_start
+);
 
 
 /* XRaw.c */
