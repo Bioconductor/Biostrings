@@ -16,7 +16,7 @@ static const R_CallMethodDef callMethods[] = {
 
 	{"narrow_IntIntervals", (DL_FUNC) &narrow_IntIntervals, 4},
 	{"int_to_adjacent_intervals", (DL_FUNC) &int_to_adjacent_intervals, 1},
-	{"normalize_IntIntervals", (DL_FUNC) &normalize_IntIntervals, 2},
+	{"reduce_IntIntervals", (DL_FUNC) &reduce_IntIntervals, 2},
 
 /* XRaw.c */
 	{"Biostrings_debug_XRaw", (DL_FUNC) &Biostrings_debug_XRaw, 0},
@@ -77,6 +77,7 @@ static const R_CallMethodDef callMethods[] = {
 
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
 	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 5},
+	{"BString_to_XRaw", (DL_FUNC) &BString_to_XRaw, 4},
 	{"BStringSet_to_XRaw", (DL_FUNC) &BStringSet_to_XRaw, 4},
 	{"XRaw_to_BStringList", (DL_FUNC) &XRaw_to_BStringList, 4},
 	{"narrow_BStringList", (DL_FUNC) &narrow_BStringList, 4},

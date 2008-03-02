@@ -7,7 +7,7 @@ o Added the trim() function for trimming the "out of limits"
   views of a BStringViews object.
 
 o Added the intToIntervals(), intToAdjacentIntervals(), restrict(), narrow()
-  and normalize() utility functions for creating or modifying IntIntervals
+  and reduce() utility functions for creating or modifying IntIntervals
   objects.
 
 o Added the chartr() generic function with a method for BString objects.

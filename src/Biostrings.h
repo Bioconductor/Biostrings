@@ -339,7 +339,7 @@ SEXP narrow_IntIntervals(
 
 SEXP int_to_adjacent_intervals(SEXP x);
 
-SEXP normalize_IntIntervals(
+SEXP reduce_IntIntervals(
 		SEXP x,
 		SEXP with_inframe_start
 );
@@ -583,23 +583,30 @@ SEXP Biostrings_debug_seqs_to_seqs();
 
 const CharSeq *STRSXP_to_charseqs(
 		SEXP x,
+		int nseq,
 		const int *safe_starts,
-		const int *safe_widths,
-		int *nseq
+		const int *safe_widths
 );
 
-const CharSeq *BStringList_to_charseqs(
+const CharSeq *BString_to_charseqs(
 		SEXP x,
+		int nseq,
 		const int *safe_starts,
-		const int *safe_widths,
-		int *nseq
+		const int *safe_widths
 );
 
 const CharSeq *BStringSet_to_charseqs(
 		SEXP x,
+		int nseq,
 		const int *safe_starts,
-		const int *safe_widths,
-		int *nseq
+		const int *safe_widths
+);
+
+const CharSeq *BStringList_to_charseqs(
+		SEXP x,
+		int nseq,
+		const int *safe_starts,
+		const int *safe_widths
 );
 
 SEXP mkXRaw(SEXP tag);
@@ -616,6 +623,13 @@ SEXP STRSXP_to_XRaw(
 		SEXP safe_starts,
 		SEXP safe_widths,
 		SEXP collapse,
+		SEXP lkup
+);
+
+SEXP BString_to_XRaw(
+		SEXP x,
+		SEXP safe_starts,
+		SEXP safe_widths,
 		SEXP lkup
 );
 

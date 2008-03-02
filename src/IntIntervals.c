@@ -171,20 +171,20 @@ SEXP int_to_adjacent_intervals(SEXP x)
 
 
 /****************************************************************************
- * Normalization
+ * Reduction (aka extracting the frame)
  */
 
-static InterBuf normalized_intervals;
+static InterBuf reduced_intervals;
 static int max_end, inframe_offset;
 
-static void add_to_normalized_intervals(int start, int width)
+static void add_to_reduced_intervals(int start, int width)
 {
 	int buf_length, end, gap;
 
-	buf_length = normalized_intervals.start.count;
+	buf_length = reduced_intervals.start.count;
 	end = start + width - 1;
 	if (buf_length == 0 || (gap = start - max_end - 1) > 0) {
-		_InterBuf_insert_at(&normalized_intervals, buf_length, start, width);
+		_InterBuf_insert_at(&reduced_intervals, buf_length, start, width);
 		if (buf_length == 0)
 			inframe_offset = start - 1;
 		else
@@ -194,22 +194,22 @@ static void add_to_normalized_intervals(int start, int width)
 	}
 	if (end <= max_end)
 		return;
-	normalized_intervals.width.vals[buf_length - 1] += end - max_end;
+	reduced_intervals.width.vals[buf_length - 1] += end - max_end;
 	max_end = end;
 	return;
 }
 
-static void normalize_intervals(int length, const int *start, const int *width, int *inframe_start)
+static void reduce_intervals(int length, const int *start, const int *width, int *inframe_start)
 {
 	int i, j;
 	IBuf start_order;
 
 	_IBuf_init(&start_order, length, 0);
 	get_intorder(length, start, start_order.vals);
-	_InterBuf_init(&normalized_intervals, 0, 0);
+	_InterBuf_init(&reduced_intervals, 0, 0);
 	for (i = 0; i < length; i++) {
 		j = start_order.vals[i];
-		add_to_normalized_intervals(start[j], width[j]);
+		add_to_reduced_intervals(start[j], width[j]);
 		if (inframe_start != NULL)
 			inframe_start[j] = start[j] - inframe_offset;
 	}
@@ -219,7 +219,7 @@ static void normalize_intervals(int length, const int *start, const int *width, 
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP normalize_IntIntervals(SEXP x, SEXP with_inframe_start)
+SEXP reduce_IntIntervals(SEXP x, SEXP with_inframe_start)
 {
 	int x_length;
 	const int *x_start, *x_width;
@@ -235,7 +235,7 @@ SEXP normalize_IntIntervals(SEXP x, SEXP with_inframe_start)
 	} else {
 		inframe_start = NULL;
 	}
-	normalize_intervals(x_length, x_start, x_width, inframe_start);
+	reduce_intervals(x_length, x_start, x_width, inframe_start);
 
 	PROTECT(ans = NEW_LIST(3));
 	PROTECT(ans_names = NEW_CHARACTER(3));
@@ -244,8 +244,8 @@ SEXP normalize_IntIntervals(SEXP x, SEXP with_inframe_start)
 	SET_STRING_ELT(ans_names, 2, mkChar("inframe.start"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
-	SET_ELEMENT(ans, 0, _IBuf_asINTEGER(&(normalized_intervals.start)));
-	SET_ELEMENT(ans, 1, _IBuf_asINTEGER(&(normalized_intervals.width)));
+	SET_ELEMENT(ans, 0, _IBuf_asINTEGER(&(reduced_intervals.start)));
+	SET_ELEMENT(ans, 1, _IBuf_asINTEGER(&(reduced_intervals.width)));
 	if (inframe_start != NULL) {
 		SET_ELEMENT(ans, 2, ans_inframe_start);
 		UNPROTECT(1);

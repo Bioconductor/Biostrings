@@ -35,7 +35,7 @@
 \alias{intToAdjacentIntervals}
 \alias{restrict}
 \alias{narrow}
-\alias{normalize}
+\alias{reduce}
 
 % Deprecated methods:
 \alias{first}

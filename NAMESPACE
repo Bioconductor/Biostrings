@@ -65,7 +65,7 @@ export(
     #debug_utils, debug_XRaw,
     #debug_naive, debug_boyermoore, debug_shiftor,
 
-    intToIntervals, intToAdjacentIntervals, restrict, narrow, normalize,
+    intToIntervals, intToAdjacentIntervals, restrict, narrow, reduce,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,

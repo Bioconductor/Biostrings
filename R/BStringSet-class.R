@@ -138,24 +138,6 @@ setMethod("initialize", "AAStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToBString <- function(x, safe_locs, class)
-{
-    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("STRSXP_to_XRaw",
-                  x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
-                  PACKAGE="Biostrings")
-    new(class, data, 0L, length(data), check=FALSE)
-}
-
-.BStringSetToBString <- function(x, safe_locs, class)
-{
-    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("BStringSet_to_XRaw",
-                  x, start(safe_locs), width(safe_locs), enc_lkup(proto),
-                  PACKAGE="Biostrings")
-    new(class, data, 0L, length(data), check=FALSE)
-}
-
 .newBStringSet <- function(class, super, inters, x, use.names)
 {
     use.names <- normalize.use.names(use.names)
@@ -164,6 +146,15 @@ setMethod("initialize", "AAStringSet",
                       width=width(inters),
                       names=ans_names,
                       check=FALSE)
+}
+
+.charToBString <- function(x, safe_locs, class)
+{
+    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
+    data <- .Call("STRSXP_to_XRaw",
+                  x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
+                  PACKAGE="Biostrings")
+    new(class, data, 0L, length(data), check=FALSE)
 }
 
 .charToBStringSet <- function(x, start, end, width, use.names, baseClass, check)
@@ -178,10 +169,20 @@ setMethod("initialize", "AAStringSet",
 .narrowBStringSet <- function(x, start, end, width, use.names, baseClass, check)
 {
     class <- paste(baseClass, "Set", sep="")
-    if (copyDataOnBStringTypeConversion(class(super(x)), baseClass)) {
-        safe_locs <- narrow(nchar(x), start, end, width)
-        super <- .BStringSetToBString(x, safe_locs, baseClass)
-        inters <- intToAdjacentIntervals(width(safe_locs))
+    lkup <- getBStringTypeConversionLookup(class(super(x)), baseClass)
+    if (!is.null(lkup)) {
+        ## The frame is the strict minimal region of the original data that
+        ## needs to be copied.
+        ## This will be paticularly useful (and will significantly reduce the
+        ## memory footprint) when the sequences in 'x' point to regions in
+        ## 'super(x)' that have a lot of overlapping.
+        safe_locs <- narrow(x, start, end, width)
+        frame <- reduce(safe_locs, TRUE)
+        data <- .Call("BString_to_XRaw",
+                      super(x), start(frame), width(frame), lkup,
+                      PACKAGE="Biostrings")
+        super <- new(baseClass, data, 0L, length(data), check=FALSE)
+        inters <- attr(frame, "inframe")
     } else {
         super <- mkBString(baseClass, super(x))
         inters <- narrow(x, start, end, width)
