@@ -112,24 +112,14 @@ SEXP narrow_IntIntervals(SEXP x, SEXP start, SEXP end, SEXP width)
 			shift1 = startend.start - 1;
 		else
 			shift1 = startend.start + *old_width;
-		if (shift1 < 0) {
-			UNPROTECT(2);
-			error("cannot narrow interval %d, this would require moving "
-			      "its 'start' (%d) to the left", i + 1, *old_start);
-		}
 		if (startend.end < 0)
 			shift2 = startend.end + 1;
 		else
 			shift2 = startend.end - *old_width;
-		if (shift2 > 0) {
-			UNPROTECT(2);
-			error("cannot narrow interval %d, this would require moving "
-			      "its 'end' (%d) to the right", i + 1, *old_start + *old_width - 1);
-		}
 		*new_width = *old_width - shift1 + shift2;
-		if (*new_width < 0) {
+		if (shift1 < 0 || shift2 > 0 || *new_width < 0) {
 			UNPROTECT(2);
-			error("cannot narrow interval %d, its 'width' (%d) is too small",
+			error("width of interval %d is too small (%d) for this narrowing",
 			      i + 1, *old_width);
 		}
 		*new_start = *old_start + shift1;
