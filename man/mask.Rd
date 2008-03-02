@@ -1,27 +1,34 @@
 \name{mask}
 
 \alias{mask}
+\alias{mask,IntIntervals-method}
+\alias{mask,BStringViews-method}
 \alias{mask,BString-method}
 \alias{mask,character-method}
-\alias{mask,BStringViews-method}
 
 
-\title{Masking portions of a sequence}
+\title{Masking regions in a sequence}
 
 \description{
-  Use this function to mask some portions of a sequence.
-  The portions to mask can either be specified "by position" (start/end)
+  Use this function to mask regions in a sequence.
+  The regions to mask can either be specified "by position" (start/end)
   or "by content" (they match a given pattern).
 }
 
 \usage{
-  mask(x, ...)
+  mask(x, start, end, ...)
 }
 
 \arguments{
   \item{x}{
     The single string or \link{BString} (or derived) object to mask.
     This can also be a \link{BStringViews} object.
+  }
+  \item{start}{
+    [TODO]
+  }
+  \item{end}{
+    [TODO]
   }
   \item{...}{
     Additional arguments to be passed to or from methods.
@@ -30,20 +37,20 @@
 
 \details{
   For \link{BString} (or derived) objects, \code{mask()} can be used in two
-  different ways: by specifying the starts/ends of the portions to mask
+  different ways: by specifying the starts/ends of the regions to mask
   (masking "by position") or by specifying a pattern (masking "by content").
 
   For \link{BStringViews} objects, no extra argument is needed: \code{y <- mask(x)}
   is the shortest (in term of number of views) \link{BStringViews} object such that:
     (a) subject(y) == subject(x),
-    (b) y views cover the portions of the subject that are not covered by x
+    (b) y views cover the regions of the subject that are not covered by x
         views,
     (c) y views are sorted from left to right,
     (d) y views are not "out of limits".
 }
 
 \value{
-  A \link{BStringViews} object containing the set of "unmasked" portions.
+  A \link{BStringViews} object containing the set of "unmasked" regions.
 }
 
 \author{H. Pages}
@@ -52,7 +59,8 @@
   \link{BStringViews},
   \link{BString},
   \link{DNAString},
-  \link{RNAString}
+  \link{RNAString},
+  \link{IntIntervals-utils}
 }
 
 \examples{
@@ -76,7 +84,7 @@
 
   ## note that applying mask() again returns a BStringViews object
   ## where the original views on v have been merged, sorted from left to right
-  ## and cleaned from their "out of limits" portions
+  ## and cleaned from their "out of limits" regions
   mask(mask(v))
 
   ## finally, note that mask(mask(mask(v))) is _always_ the same as mask(v)

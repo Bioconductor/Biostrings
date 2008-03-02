@@ -1,36 +1,45 @@
 \name{IntIntervals-class}
 \docType{class}
 
-% Classes:
+% Classes
 \alias{class:IntIntervals}
 \alias{IntIntervals-class}
 \alias{IntIntervals}
 
-% Constructor-like functions and generics:
-\alias{initialize,IntIntervals-method}
-
-% Accesor methods:
+% Accesor methods
 \alias{length,IntIntervals-method}
 \alias{start,IntIntervals-method}
 \alias{width}
 \alias{width,IntIntervals-method}
 \alias{end,IntIntervals-method}
 \alias{names,IntIntervals-method}
-\alias{names<-,IntIntervals-method}
 \alias{desc}
 \alias{desc,ANY-method}
+
+% Initialization
+\alias{initialize,IntIntervals-method}
+
+% Replacement methods
+\alias{start<-,IntIntervals-method}
+\alias{width<-,IntIntervals-method}
+\alias{end<-,IntIntervals-method}
+\alias{names<-,IntIntervals-method}
 \alias{desc<-}
 \alias{desc<-,ANY-method}
+\alias{update,IntIntervals-method}
 
-% Other methods:
+% Show method
+\alias{as.data.frame,IntIntervals-method}
 \alias{show,IntIntervals-method}
+
+% Subsetting
 \alias{[,IntIntervals-method}
 \alias{[<-,IntIntervals-method}
 
-\alias{as.data.frame,IntIntervals-method}
+% Other methods
 \alias{as.matrix,IntIntervals-method}
 
-% Deprecated methods:
+% Deprecated methods
 \alias{first}
 \alias{first,IntIntervals-method}
 \alias{last}

@@ -7,8 +7,6 @@
 \alias{restrict}
 \alias{narrow}
 \alias{reduce}
-\alias{mask}
-\alias{mask,IntIntervals-method}
 
 
 \title{IntIntervals utility functions}
@@ -23,7 +21,6 @@
   restrict(x, start, end, use.names=TRUE)
   narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)
   reduce(x, with.inframe.attrib=FALSE)
-  mask(x, start, end)
 }
 
 \arguments{
@@ -55,6 +52,7 @@
 
 \seealso{
   \link{IntIntervals-class},
+  \link{mask},
   \link{BStringViews}
 }
 
