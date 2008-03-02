@@ -444,6 +444,8 @@ setMethod("as.matrix", "BStringViews",
     }
 )
 
+### This overrides the "as.list" method for IntIntervals objects with a
+### totally different semantic!
 setMethod("as.list", "BStringViews",
     function(x)
     {

@@ -30,13 +30,6 @@
 \alias{as.data.frame,IntIntervals-method}
 \alias{as.matrix,IntIntervals-method}
 
-% Utility functions:
-\alias{intToIntervals}
-\alias{intToAdjacentIntervals}
-\alias{restrict}
-\alias{narrow}
-\alias{reduce}
-
 % Deprecated methods:
 \alias{first}
 \alias{first,IntIntervals-method}
@@ -65,10 +58,10 @@
 
   Note that it is unlikely that the user will have to create or manipulate
   directly an IntIntervals instance when using the Biostrings package. However
-  the IntIntervals class being the superclass of the \code{\link{BStringSet}}
-  class, any \code{\link{BStringSet}} object is also an IntIntervals object and
-  can be manipulated as such. Therefore all the methods described below also
-  work with a \code{\link{BStringSet}} object.
+  the IntIntervals class being the superclass of the \link{BStringViews}
+  class, any \link{BStringViews} object is also an IntIntervals object and
+  can be manipulated as such. Therefore all the methods described here also
+  work with a \link{BStringViews} object.
 }
 
 \section{Accesor methods}{
@@ -145,6 +138,7 @@
 \author{H. Pages}
 
 \seealso{
+  \link{BStringViews-class},
   \link{BStringSet-class}
 }
 

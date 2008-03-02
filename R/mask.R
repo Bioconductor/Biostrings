@@ -67,52 +67,32 @@
 ###   - mask(mask(x)) is normalize(x).
 ###
 
-### x@inters must be ordered from left to right for this to work.
-### TODO: Add an optional arg for triggering the reordering of the views
-### (they should be reordered by default).
-.BStringViews.normalize <- function(x)
-{
-    C_ans <- .Call("Biostrings_normalize_views", start(x), end(x), PACKAGE="Biostrings")
-    ans_start <- C_ans$start
-    ans_width <- C_ans$end - ans_start + 1L
-    new("BStringViews", subject(x), start=ans_start, width=ans_width, check=FALSE)
-}
-
-.BStringViews.mask <- function(x)
-{
-    ii <- order(start(x))
-    ans_start <- ans_end <- integer(0)
-    start0 <- 1L
-    for (i in ii) {
-        end0 <- start(x)[i] - 1L
-        start1 <- end(x)[i] + 1L
-        if (end0 >= start0) {
-            ans_start <- c(ans_start, start0)
-            ans_end <- c(ans_end, end0)
-        }
-        if (start1 > start0)
-            start0 <- start1
+setMethod("mask", "BStringViews",
+    function(x, start, end, ...)
+    {
+        if (missing(start))
+            start <- 1L
+        if (missing(end))
+            end <- nchar(subject(x))
+        callNextMethod(x, start, end, ...)
     }
-    if (start0 <= length(subject(x))) {
-        ans_start <- c(ans_start, start0)
-        ans_end <- c(ans_end, length(subject(x)))
-    }
-    ans_width <- ans_end - ans_start + 1L
-    new("BStringViews", subject(x), start=ans_start, width=ans_width, check=FALSE)
-}
-
-setGeneric("mask", function(x, ...) standardGeneric("mask"))
+)
 
 ### We wan't to be able to do this:
 ###   > mask(BString("AbcbcbDE"), 2, 6)
 ### or this:
 ###   > mask(BString("AbcbcbDE"), "bcb")
 setMethod("mask", "BString",
-    function(x, start=NA, end=NA, pattern)
+    function(x, start, end, pattern)
     {
         if (missing(pattern)) {
-            if (isNumericOrNAs(start))
-                return(.BStringViews.mask(views(x, start, end)))
+            if (missing(start))
+                start <- NA
+            if (isNumericOrNAs(start)) {
+                if (missing(end))
+                    end <- NA
+                return(mask(views(x, start, end)))
+            }
             if (!missing(end))
                 stop("invalid 'start' argument")
             pattern <- start
@@ -120,26 +100,16 @@ setMethod("mask", "BString",
             if (!missing(start) || !missing(end))
                 stop("can't give 'start' (or 'end') when 'pattern' is given")
         }
-        ## Normalizing before masking makes masking faster but is not
-        ## strictly required.
-        #.BStringViews.mask(matchPattern(pattern, x))
-        .BStringViews.mask(.BStringViews.normalize(matchPattern(pattern, x)))
+        mask(matchPattern(pattern, x))
     }
 )
 
 setMethod("mask", "character",
-    function(x, ...)
+    function(x, start, end, pattern)
     {
         if (length(x) != 1 || is.na(x))
             stop("can't mask a character vector that is not a single string")
-        mask(BString(x), ...)
-    }
-)
-
-setMethod("mask", "BStringViews",
-    function(x)
-    {
-        .BStringViews.mask(x)
+        mask(BString(x), start, end, pattern)
     }
 )
 

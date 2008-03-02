@@ -16,6 +16,7 @@ LazyLoad: yes
 Collate: 00datacache.R
         utils.R
         IntIntervals-class.R
+        IntIntervals-utils.R
         readFASTA.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
         BStringCodec-class.R

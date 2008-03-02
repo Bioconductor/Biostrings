@@ -15,53 +15,6 @@ setClass("IntIntervals",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
-###
-### Both 'start' and 'width' must be integer vectors of equal length
-### (eventually 0) with no NAs and such that all(width >= 0) is TRUE.
-### 'names' must be NULL or a character vector of the same length as 'start'
-### (or 'width').
-###
-
-setMethod("initialize", "IntIntervals",
-    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
-    {
-        if (check) {
-            if (!is.integer(start) || any(is.na(start)))
-                stop("'start' must be an integer vector with no NAs")
-            if (!is.integer(width) || any(is.na(width)))
-                stop("'width' must be an integer vector with no NAs")
-            if (length(start) != length(width))
-                stop("'start' and 'width' must have the same length")
-            if (!all(width >= 0L))
-                stop("all values in 'width' must be >= 0")
-        }
-        if (is.null(names)) {
-            inters <- data.frame(start=start, width=width,
-                                 check.names=FALSE, stringsAsFactors=FALSE)
-            slot(.Object, "inters", check=FALSE) <- inters
-            return(.Object)
-        }
-        if (check) {
-            if (!is.character(names))
-                stop("'names' must be a character vector (or NULL)")
-            # Disabled for now. Forbidding NAs or empty strings would not be
-            # consistent with the "names<-" method that currently allows the
-            # user to stick this kind of values into the 'names' slot!
-            #if (any(names %in% c(NA, "")))
-            #    stop("'names' cannot contain NAs or empty strings")
-            if (length(names) != length(start))
-                stop("'names' must have the same length as 'start' and 'width'")
-        }
-        inters <- data.frame(start=start, width=width, names=names,
-                             check.names=FALSE, stringsAsFactors=FALSE)
-        slot(.Object, "inters", check=FALSE) <- inters
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
@@ -81,6 +34,159 @@ setMethod("end", "IntIntervals", function(x, ...) {start(x) + width(x) - 1L})
 
 setMethod("names", "IntIntervals", function(x) x@inters$names)
 
+### "desc" is an alias for "names". It might be deprecated soon...
+setGeneric("desc", function(x) standardGeneric("desc"))
+setMethod("desc", "ANY", function(x) names(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity.
+###
+### Both 'start' and 'width' must be integer vectors of equal length
+### (eventually 0) with no NAs and such that all(width >= 0) is TRUE.
+### 'names' must be NULL or a character vector of the same length as 'start'
+### (or 'width').
+###
+
+.valid.IntIntervals.start <- function(object)
+{
+    start <- start(object)
+    if (!is.integer(start) || any(is.na(start)))
+        return("'start' must be an integer vector with no NAs")
+    if (length(start) != length(width(object)))
+        return("'start' must have the same length as 'width'")
+    NULL
+}
+
+.valid.IntIntervals.width <- function(object)
+{
+    width <- width(object)
+    if (!is.integer(width) || any(is.na(width)))
+        return("'width' must be an integer vector with no NAs")
+    if (length(width) != length(start(object)))
+        return("'width' must have the same length as 'start'")
+    if (!all(width >= 0L))
+        return("negative widths are not allowed")
+    NULL
+}
+
+.valid.IntIntervals.names <- function(object)
+{
+    names <- names(object)
+    if (is.null(names)) return(NULL)
+    if (!is.character(names))
+        return("'names' must be NULL or a character vector")
+    # Disabled for now. Forbidding NAs or empty strings would not be
+    # consistent with the "names<-" method that currently allows the
+    # user to stick this kind of values into the 'names' slot!
+    #if (any(names %in% c(NA, "")))
+    #    return("'names' cannot contain NAs or empty strings")
+    if (length(names) != length(start(object)))
+        return("'names' must have the same length as 'start'")
+    NULL
+}
+
+.valid.IntIntervals <- function(object)
+{
+    problems <- c(.valid.IntIntervals.start(object),
+                  .valid.IntIntervals.width(object),
+                  .valid.IntIntervals.names(object))
+    if (!is.null(problems)) return(problems)
+    TRUE
+}
+
+setValidity("IntIntervals", .valid.IntIntervals)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Initialization.
+###
+
+.make.inters <- function(start, width, names)
+{
+    if (is.null(names))
+        inters <- data.frame(start=start, width=width,
+                             check.names=FALSE, stringsAsFactors=FALSE)
+    else
+        inters <- data.frame(start=start, width=width, names=names,
+                             check.names=FALSE, stringsAsFactors=FALSE)
+    inters
+}
+
+setMethod("initialize", "IntIntervals",
+    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
+    {
+        inters <- .make.inters(start, width, names)
+        slot(.Object, "inters", check=FALSE) <- inters
+        if (check) validObject(.Object)
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Replacement methods.
+###
+### The rules are:
+### (1) changing the start preserves the width (so it changes the end)
+### (2) changing the width preserves the start (so it changes the end)
+### (3) changing the end preserves the width (so it changes the start)
+###
+
+setGeneric("start<-", signature="x",
+    function(x, check=TRUE, value) standardGeneric("start<-")
+)
+
+setReplaceMethod("start", "IntIntervals",
+    function(x, check=TRUE, value)
+    {
+        x@inters$start <- value
+        if (check) {
+            ## No need to call validObject(): partial validation is enough and
+            ## faster
+            problem <- .valid.IntIntervals.start(x)
+            if (!is.null(problem)) stop(problem)
+        }
+        x
+    }
+)
+
+setGeneric("width<-", signature="x",
+    function(x, check=TRUE, value) standardGeneric("width<-")
+)
+
+setReplaceMethod("width", "IntIntervals",
+    function(x, check=TRUE, value)
+    {
+        x@inters$width <- value
+        if (check) {
+            ## No need to call validObject(): partial validation is enough and
+            ## faster
+            problem <- .valid.IntIntervals.width(x)
+            if (!is.null(problem)) stop(problem)
+        }
+        x
+    }
+)
+
+setGeneric("end<-", signature="x",
+    function(x, check=TRUE, value) standardGeneric("end<-")
+)
+
+setReplaceMethod("end", "IntIntervals",
+    function(x, check=TRUE, value)
+    {
+        x@inters$start <- value - x@inters$width + 1L
+        if (check) {
+            ## No need to call validObject(): partial validation is enough and
+            ## faster
+            problem <- .valid.IntIntervals.start(x)
+            if (!is.null(problem)) stop(problem)
+        }
+        x
+    }
+)
+
 setReplaceMethod("names", "IntIntervals",
     function(x, value)
     {
@@ -89,7 +195,7 @@ setReplaceMethod("names", "IntIntervals",
             return(x)
         }
         if (!is.character(value))
-            stop("'value' must be a character vector (or NULL)")
+            stop("'value' must be NULL or a character vector")
         if (length(value) > length(x))
             stop("too many names")
         length(value) <- length(x)
@@ -98,21 +204,101 @@ setReplaceMethod("names", "IntIntervals",
     }
 )
 
-### "desc" is an alias for "names". It may be deprecated soon...
-setGeneric("desc", function(x) standardGeneric("desc"))
-setMethod("desc", "ANY", function(x) names(x))
 setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
 setReplaceMethod("desc", "ANY", function(x, value) `names<-`(x, value))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "update" method.
+###
+### This is a convenience method for combining multiple modifications in one
+### single call.
+###
+### It must verify 2 important properties:
+###   (1) update(x) must be identical to x (doesn't touch x at all)
+###   (2) do.call("update", c(x, x@inters)) must be identical to x (it updates
+###       x with its own content)
+###
+
+setMethod("update", "IntIntervals",
+    function(object, ...)
+    {
+        args <- list(...)
+        argnames <- names(args)
+        if (length(args) != 0
+            && (is.null(argnames) || any(argnames %in% c("", NA))))
+            stop("all extra arguments must be named")
+        valid_argnames <- c("start", "end", "width", "names", "check")
+        if (!all(argnames %in% valid_argnames))
+            stop("valid extra argument names are ",
+                 paste("'", valid_argnames, "'", sep="", collapse=", "))
+        if (any(duplicated(argnames)))
+            stop("argument names must be unique")
+        check <- args$check
+        if (is.null(check)) check <- TRUE
+        swe <- c("start", "end", "width")
+        narg_in_swe <- sum(swe %in% argnames)
+        if (narg_in_swe == 3)
+            stop("only two of the ",
+                 paste("'", swe, "'", sep="", collapse=", "),
+                 " arguments can be specified")
+        do_atomic_update <- narg_in_swe == 2 && (("names" %in% argnames)
+                                                 || is.null(names(object)))
+        if (do_atomic_update) {
+            if ("end" %in% argnames) {
+                if ("width" %in% argnames) {
+                    width <- args$width
+                    start <- args$end - width + 1L
+                } else {
+                    start <- args$start
+                    width <- args$end - start + 1L
+                }
+            } else {
+                start <- args$start
+                width <- args$width
+            }
+            inters <- .make.inters(start, width, args$names)
+            slot(object, "inters", check=FALSE) <- inters
+            if (check) validObject(object)
+            return(object)
+        }
+        if ("start" %in% argnames)
+            start(object, check=check) <- args$start
+        if ("end" %in% argnames)
+            end(object, check=check) <- args$end
+        if ("width" %in% argnames)
+            width(object, check=check) <- args$width
+        if ("names" %in% argnames) {
+            ## "names<-" has no 'check' argument
+            if (check)
+                names(object) <- args$names
+            else
+                object@inters$names <- args$names
+        }
+        object
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 
+setMethod("as.data.frame", "IntIntervals",
+    function(x, row.names=NULL, optional=FALSE, ...)
+    {
+        ans <- data.frame(start=start(x),
+                          end=end(x),
+                          width=width(x),
+                          check.names=FALSE,
+                          stringsAsFactors=FALSE)
+        ans$names <- names(x)
+        ans
+    }
+)
+
 setMethod("show", "IntIntervals",
-    function(object)
-        show(object@inters)
-        #show(data.frame(object@inters, end=end(object), check.names=FALSE))
+    function(object) show(as.data.frame(object))
 )
 
 
@@ -154,13 +340,16 @@ setReplaceMethod("[", "IntIntervals",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other methods.
+### The "as.list" method.
 ###
 
-setMethod("as.data.frame", "IntIntervals",
-    function(x, row.names=NULL, optional=FALSE, ...)
-        as.data.frame(x@inters, row.names=row.names, optional=optional, ...)
-)
+#Not sure we want this!
+#setMethod("as.list", "IntIntervals", function(x, ...) x@inters)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods.
+###
 
 setMethod("as.matrix", "IntIntervals",
     function(x, ...)
@@ -170,136 +359,6 @@ setMethod("as.matrix", "IntIntervals",
         ans
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "intToIntervals" function.
-###
-
-intToIntervals <- function(x, use.names=TRUE)
-{
-    if (!is.numeric(x))
-        stop("'x' must be an integer vector")
-    if (!is.integer(x))
-        x <- as.integer(x)
-    use.names <- normalize.use.names(use.names)
-    if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IntIntervals", start=rep.int(1L, length(x)), width=x,
-        names=ans_names, check=TRUE)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "intToAdjacentIntervals" function.
-###
-
-intToAdjacentIntervals <- function(x, use.names=TRUE)
-{
-    if (!is.numeric(x))
-        stop("'x' must be an integer vector")
-    if (!is.integer(x))
-        x <- as.integer(x)
-    use.names <- normalize.use.names(use.names)
-    ans_start <- .Call("int_to_adjacent_intervals", x, PACKAGE="Biostrings")
-    if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IntIntervals", start=ans_start, width=x,
-        names=ans_names, check=FALSE)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "restrict" function.
-###
-
-restrict <- function(x, start, end, use.names=TRUE)
-{
-    if (!is(x, "IntIntervals"))
-        stop("'x' must be an IntIntervals object")
-    if (!isSingleNumber(start))
-        stop("'start' must be a single integer")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    if (!isSingleNumber(end))
-        stop("'end' must be a single integer")
-    if (!is.integer(end))
-        end <- as.integer(end)
-    if (start > end + 1L)
-        stop("'start' must be <= 'end + 1'")
-    use.names <- normalize.use.names(use.names)
-
-    ans_start <- start(x)
-    ans_end <- end(x)
-
-    ## "fix" ans_start
-    far_too_right <- end < ans_start
-    ans_start[far_too_right] <- end + 1L
-    too_left <- ans_start < start
-    ans_start[too_left] <- start
-
-    ## "fix" ans_end
-    far_too_left <- ans_end < start
-    ans_end[far_too_left] <- start - 1L
-    too_right <- end < ans_end
-    ans_end[too_right] <- end
-
-    ans_width <- ans_end - ans_start + 1L
-    if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IntIntervals", start=ans_start, width=ans_width,
-        names=ans_names, check=FALSE)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "narrow" function.
-###
-
-narrow <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-{
-    if (is.numeric(x)) {
-        x <- intToIntervals(x, use.names=use.names)
-        ans_names <- names(x)
-    } else {
-        if (!is(x, "IntIntervals"))
-            stop("'x' must be an IntIntervals object (or a numeric vector)")
-        use.names <- normalize.use.names(use.names)
-        if (use.names) ans_names <- names(x) else ans_names <- NULL
-    }
-    if (!isSingleNumberOrNA(start))
-        stop("'start' must be a single integer or NA")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    if (!isSingleNumberOrNA(end))
-        stop("'end' must be a single integer or NA")
-    if (!is.integer(end))
-        end <- as.integer(end)
-    if (!isSingleNumberOrNA(width))
-        stop("'width' must be a single integer or NA")
-    if (!is.integer(width))
-        width <- as.integer(width)
-    C_ans <- .Call("narrow_IntIntervals", x, start, end, width, PACKAGE="Biostrings")
-    new("IntIntervals", start=C_ans$start, width=C_ans$width,
-        names=ans_names, check=FALSE)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "reduce" function.
-###
-
-reduce <- function(x, with.inframe.attrib=FALSE)
-{
-    if (!is(x, "IntIntervals"))
-        stop("'x' must be an IntIntervals object")
-    if (!isTRUEorFALSE(with.inframe.attrib))
-        stop("'with.inframe.attrib' must be 'TRUE' or 'FALSE'")
-    C_ans <- .Call("reduce_IntIntervals", x, with.inframe.attrib, PACKAGE="Biostrings")
-    ans <- new("IntIntervals", start=C_ans$start, width=C_ans$width, check=FALSE)
-    if (with.inframe.attrib) {
-        inframe <- new("IntIntervals", start=C_ans$inframe.start, width=width(x), check=FALSE)
-        attr(ans, "inframe") <- inframe
-    }
-    ans
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
