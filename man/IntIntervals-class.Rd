@@ -20,8 +20,11 @@
 \alias{initialize,IntIntervals-method}
 
 % Replacement methods
+\alias{start<-}
 \alias{start<-,IntIntervals-method}
+\alias{width<-}
 \alias{width<-,IntIntervals-method}
+\alias{end<-}
 \alias{end<-,IntIntervals-method}
 \alias{names<-,IntIntervals-method}
 \alias{desc<-}
