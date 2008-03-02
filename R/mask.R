@@ -109,7 +109,10 @@ setMethod("mask", "character",
     {
         if (length(x) != 1 || is.na(x))
             stop("can't mask a character vector that is not a single string")
-        mask(BString(x), start, end, pattern)
+        if (missing(pattern))
+            mask(BString(x), start, end)
+        else
+            mask(BString(x), start, end, pattern)
     }
 )
 
