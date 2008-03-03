@@ -136,7 +136,7 @@ setMethod("initialize", "IntIntervals",
             ## order that makes sense to me...)
             #validObject(.Object)
             problems <- .valid.IntIntervals(.Object)
-            if (!is.null(problems)) stop(paste(problems, collapse="\n       "))
+            if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
         .Object
     }
@@ -166,6 +166,8 @@ setGeneric("start<-", signature="x",
 setReplaceMethod("start", "IntIntervals",
     function(x, check=TRUE, value)
     {
+        if (is.numeric(value) && !is.integer(value))
+            value <- as.integer(value)
         x@inters$start <- value
         if (check) {
             problem <- .valid.IntIntervals.start(x)
@@ -182,6 +184,8 @@ setGeneric("width<-", signature="x",
 setReplaceMethod("width", "IntIntervals",
     function(x, check=TRUE, value)
     {
+        if (is.numeric(value) && !is.integer(value))
+            value <- as.integer(value)
         x@inters$width <- value
         if (check) {
             problem <- .valid.IntIntervals.width(x)
@@ -198,6 +202,8 @@ setGeneric("end<-", signature="x",
 setReplaceMethod("end", "IntIntervals",
     function(x, check=TRUE, value)
     {
+        if (is.numeric(value) && !is.integer(value))
+            value <- as.integer(value)
         start(x, check=check) <- value - width(x) + 1L
         x
     }

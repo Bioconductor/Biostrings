@@ -80,7 +80,7 @@ setMethod("initialize", "BStringViews",
             ## order that makes sense to me...)
             #validObject(.Object)
             problems <- .valid.BStringViews(.Object)
-            if (!is.null(problems)) stop(paste(problems, collapse="\n       "))
+            if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
         .Object
     }
