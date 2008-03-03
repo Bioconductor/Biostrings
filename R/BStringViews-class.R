@@ -16,38 +16,102 @@ setClass("BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization (not intended to be used directly by the user).
-###
-
-setMethod("initialize", "BStringViews",
-    function(.Object, subject, start=integer(0), width=integer(0), desc=NULL, check=TRUE)
-    {
-        .Object <- callNextMethod(.Object, start=start, width=width, names=desc, check=check)
-        if (check) {
-            if (!is(subject, "BString"))
-                stop("'subject' must be a BString object")
-            if (length(.Object) != 0) {
-                if (!(min(width) >= 1))
-                    stop("some views are empty")
-            }
-        }
-        slot(.Object, "subject", check=FALSE) <- subject
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
 setGeneric("subject", function(x) standardGeneric("subject"))
 setMethod("subject", "BStringViews", function(x) x@subject)
 
-### The "views" generic and methods are commented for now because they conflict with
-### the views() function currently defined in the BStringViews-constructors.R file.
+### The "views" generic and methods are commented for now because they
+### conflict with the views() function currently defined in the
+### BStringViews-constructors.R file.
 #setGeneric("views", function(x) standardGeneric("views"))
 #setMethod("views", "BStringViews", function(x) x@inters)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity.
+###
+
+.valid.BStringViews.subject <- function(object)
+{
+    if (!is(subject(object), "BString"))
+        return("the subject must be a BString object")
+    NULL
+}
+
+.valid.BStringViews.width <- function(object)
+{
+    if (length(width(object)) != 0 && min(width(object)) < 1L)
+        return("null widths are not allowed")
+    NULL
+}
+
+.valid.BStringViews <- function(object)
+{
+    #cat("validating BStringViews object...\n")
+    c(.valid.BStringViews.subject(object),
+      .valid.BStringViews.width(object))
+}
+
+setValidity("BStringViews",
+    function(object)
+    {
+        problems <- .valid.BStringViews(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Initialization (not intended to be used directly by the user).
+###
+
+setMethod("initialize", "BStringViews",
+    function(.Object, subject, start=integer(0), width=integer(0),
+                               desc=NULL, check=TRUE)
+    {
+        .Object <- callNextMethod(.Object, start=start, width=width,
+                                           names=desc, check=check)
+        slot(.Object, "subject", check=FALSE) <- subject
+        if (check) {
+            ## I found that using validObject() in "initialize" doesn't work
+            ## properly (validation is called too many times and not in an
+            ## order that makes sense to me...)
+            #validObject(.Object)
+            problems <- .valid.BStringViews(.Object)
+            if (!is.null(problems)) stop(paste(problems, collapse="\n       "))
+        }
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Replacement methods.
+###
+### BStringViews objects inherit the replacement methods defined for parent
+### class IntIntervals (see IntIntervals-class.R).
+### However, the "width" method needs to be overridden because of the
+### additional constraint that applies to BStringViews objects.
+###
+
+setReplaceMethod("width", "BStringViews",
+    function(x, check=TRUE, value)
+    {
+        x <- callNextMethod(x, check=TRUE, value)
+        if (check) {
+            problem <- .valid.BStringViews.width(x)
+            if (!is.null(problem)) stop(problem)
+        }
+        x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "nchar" method.
+###
 
 setMethod("nchar", "BStringViews",
     function(x, type="chars", allowNA=FALSE)

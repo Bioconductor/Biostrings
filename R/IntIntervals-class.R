@@ -50,52 +50,61 @@ setMethod("desc", "ANY", function(x) names(x))
 
 .valid.IntIntervals.start <- function(object)
 {
-    start <- start(object)
-    if (!is.integer(start) || any(is.na(start)))
-        return("'start' must be an integer vector with no NAs")
-    if (length(start) != length(width(object)))
-        return("'start' must have the same length as 'width'")
+    if (!is.integer(start(object)) || any(is.na(start(object))))
+        return("the starts must be non-NA integers")
+    ## This is already enforced by the fact that 'start(object)' and
+    ## 'width(object)' are currently stored in the same data frame but we
+    ## check their lengths anyway because there is no guarantee that this will
+    ## not change in the future (e.g. they could be moved from this data.frame
+    ## to separate slots).
+    if (length(start(object)) != length(width(object)))
+        return("number of starts and number of widths differ")
     NULL
 }
 
 .valid.IntIntervals.width <- function(object)
 {
-    width <- width(object)
-    if (!is.integer(width) || any(is.na(width)))
-        return("'width' must be an integer vector with no NAs")
-    if (length(width) != length(start(object)))
-        return("'width' must have the same length as 'start'")
-    if (!all(width >= 0L))
+    if (!is.integer(width(object)) || any(is.na(width(object))))
+        return("the widths must be non-NA integers")
+    ## See comment in .valid.IntIntervals.start() in above...
+    if (length(start(object)) != length(width(object)))
+        return("number of starts and number of widths differ")
+    if (length(width(object)) != 0 && min(width(object)) < 0L)
         return("negative widths are not allowed")
     NULL
 }
 
 .valid.IntIntervals.names <- function(object)
 {
-    names <- names(object)
-    if (is.null(names)) return(NULL)
-    if (!is.character(names))
-        return("'names' must be NULL or a character vector")
+    if (is.null(names(object)))
+        return(NULL)
+    if (!is.character(names(object)))
+        return("the names must a character vector (or the NULL value)")
     # Disabled for now. Forbidding NAs or empty strings would not be
     # consistent with the "names<-" method that currently allows the
     # user to stick this kind of values into the 'names' slot!
-    #if (any(names %in% c(NA, "")))
-    #    return("'names' cannot contain NAs or empty strings")
-    if (length(names) != length(start(object)))
-        return("'names' must have the same length as 'start'")
+    #if (any(names(object) %in% c(NA, "")))
+    #    return("names cannot be NAs or empty strings")
+    if (length(names(object)) != length(object))
+        return("number of names and number of elements differ")
     NULL
 }
 
 .valid.IntIntervals <- function(object)
 {
-    problems <- c(.valid.IntIntervals.start(object),
-                  .valid.IntIntervals.width(object),
-                  .valid.IntIntervals.names(object))
-    if (!is.null(problems)) return(problems)
-    TRUE
+    #cat("validating IntIntervals object of length", length(object), "...\n")
+    c(.valid.IntIntervals.start(object),
+      .valid.IntIntervals.width(object),
+      .valid.IntIntervals.names(object))
 }
 
-setValidity("IntIntervals", .valid.IntIntervals)
+setValidity("IntIntervals",
+    function(object)
+    {
+        problems <- .valid.IntIntervals(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,6 +113,9 @@ setValidity("IntIntervals", .valid.IntIntervals)
 
 .make.inters <- function(start, width, names)
 {
+    ## We could put the starts and the widths in the data frame and then add
+    ## the "names" column to it but it might be slower (maybe it will copy the
+    ## original data frame?). I've not tested this though...
     if (is.null(names))
         inters <- data.frame(start=start, width=width,
                              check.names=FALSE, stringsAsFactors=FALSE)
@@ -118,7 +130,14 @@ setMethod("initialize", "IntIntervals",
     {
         inters <- .make.inters(start, width, names)
         slot(.Object, "inters", check=FALSE) <- inters
-        if (check) validObject(.Object)
+        if (check) {
+            ## I found that using validObject() in "initialize" doesn't work
+            ## properly (validation is called too many times and not in an
+            ## order that makes sense to me...)
+            #validObject(.Object)
+            problems <- .valid.IntIntervals(.Object)
+            if (!is.null(problems)) stop(paste(problems, collapse="\n       "))
+        }
         .Object
     }
 )
@@ -128,9 +147,16 @@ setMethod("initialize", "IntIntervals",
 ### Replacement methods.
 ###
 ### The rules are:
-### (1) changing the start preserves the width (so it changes the end)
-### (2) changing the width preserves the start (so it changes the end)
-### (3) changing the end preserves the width (so it changes the start)
+###   (1) changing the start preserves the width (so it changes the end)
+###   (2) changing the width preserves the start (so it changes the end)
+###   (3) changing the end preserves the width (so it changes the start)
+###
+### Note that we don't call validObject(x) after 'x' has been modified because
+### we don't need to revalidate the entire object: validating the bits that
+### have been touched is enough (and faster). However, because of this, if
+### instances of derived classes must satisfy additional constraints, then some
+### of the replacement methods below need to be overridden. See for example the
+### "width<-" method for BStringViews objects (BStringViews-class.R file).
 ###
 
 setGeneric("start<-", signature="x",
@@ -142,8 +168,6 @@ setReplaceMethod("start", "IntIntervals",
     {
         x@inters$start <- value
         if (check) {
-            ## No need to call validObject(): partial validation is enough and
-            ## faster
             problem <- .valid.IntIntervals.start(x)
             if (!is.null(problem)) stop(problem)
         }
@@ -160,8 +184,6 @@ setReplaceMethod("width", "IntIntervals",
     {
         x@inters$width <- value
         if (check) {
-            ## No need to call validObject(): partial validation is enough and
-            ## faster
             problem <- .valid.IntIntervals.width(x)
             if (!is.null(problem)) stop(problem)
         }
@@ -176,13 +198,7 @@ setGeneric("end<-", signature="x",
 setReplaceMethod("end", "IntIntervals",
     function(x, check=TRUE, value)
     {
-        x@inters$start <- value - x@inters$width + 1L
-        if (check) {
-            ## No need to call validObject(): partial validation is enough and
-            ## faster
-            problem <- .valid.IntIntervals.start(x)
-            if (!is.null(problem)) stop(problem)
-        }
+        start(x, check=check) <- value - width(x) + 1L
         x
     }
 )

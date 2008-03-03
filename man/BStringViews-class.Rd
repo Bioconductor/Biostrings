@@ -11,6 +11,7 @@
 % Accesor methods:
 \alias{subject}
 \alias{subject,BStringViews-method}
+\alias{width<-,BStringViews-method}
 \alias{nchar,BStringViews-method}
 
 % Other methods:
