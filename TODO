@@ -28,7 +28,7 @@ In 2.[6|7]
 In 2.7
 ======
 
-- Rename IntIntervals -> IIvals (and "inters" slot "iiframe" slot).
+- Rename IntIntervals -> IRanges (and "inters" slot "ranges" slot).
 
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
