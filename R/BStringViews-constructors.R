@@ -180,28 +180,47 @@ setMethod("BStringViews", "BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "trim" and "subviews" functions.
+### The "restrict" method and the "trim" function.
 ###
+
+setMethod("restrict", "BStringViews",
+    function(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
+    {
+        if (!missing(keep.nonoverlapping))
+            stop("'keep.nonoverlapping' is not supported for BStringViews objects")
+        callNextMethod(x, start, end, use.names=use.names)
+    }
+)
 
 trim <- function(x, use.names=TRUE)
 {
     if (!is(x, "BStringViews"))
         stop("'x' must be a BStringViews object")
-    inters <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
-    if (any(width(inters) == 0))
-        stop("some views are empty")
-    new("BStringViews", subject(x),
-        start=start(inters), width=width(inters), desc=names(inters), check=FALSE)
+    y <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
+    if (length(y) != length(x))
+        stop("some views are not overlapping with the subject, cannot trim them")
+    y
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "narrow" method and the "subviews" function.
+###
+
+setMethod("narrow", "BStringViews",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        y <- callNextMethod()
+        if (any(width(y) == 0))
+            stop("some views would have a null width after narrowing")
+        y
+    }
+)
 
 subviews <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 {
     if (!is(x, "BStringViews"))
         stop("'x' must be a BStringViews object")
-    inters <- narrow(x, start=start, end=end, width=width, use.names=use.names)
-    if (any(width(inters) == 0))
-        stop("some views are empty")
-    new("BStringViews", subject(x),
-        start=start(inters), width=width(inters), desc=names(inters), check=FALSE)
+    narrow(x, start=start, end=end, width=width, use.names=use.names)
 }
 

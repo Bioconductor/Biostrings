@@ -39,13 +39,17 @@ intToAdjacentIntervals <- function(x, use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "restrict" function.
+### The "restrict" generic and methods.
 ###
 
-restrict <- function(x, start, end, use.names=TRUE)
+setGeneric("restrict", signature="x",
+    function(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
+        standardGeneric("restrict")
+)
+
+.restrict.IntIntervals <- function(x, start, end,
+                                   keep.nonoverlapping=FALSE, use.names=TRUE)
 {
-    if (!is(x, "IntIntervals"))
-        stop("'x' must be an IntIntervals object")
     if (!isSingleNumber(start))
         stop("'start' must be a single integer")
     if (!is.integer(start))
@@ -56,45 +60,52 @@ restrict <- function(x, start, end, use.names=TRUE)
         end <- as.integer(end)
     if (start > end + 1L)
         stop("'start' must be <= 'end + 1'")
+    if (!isTRUEorFALSE(keep.nonoverlapping))
+        stop("'keep.nonoverlapping' must be 'TRUE' or 'FALSE'")
     use.names <- normalize.use.names(use.names)
 
     ans_start <- start(x)
     ans_end <- end(x)
+    if (use.names) ans_names <- names(x) else ans_names <- NULL
 
-    ## "fix" ans_start
     far_too_right <- end < ans_start
-    ans_start[far_too_right] <- end + 1L
+    far_too_left <- ans_end < start
+    if (keep.nonoverlapping) {
+        ans_start[far_too_right] <- end + 1L
+        ans_end[far_too_left] <- start - 1L
+    } else {
+        keep <- !(far_too_right | far_too_left)
+        ans_start <- ans_start[keep]
+        ans_end <- ans_end[keep]
+        if (!is.null(ans_names))
+            ans_names <- ans_names[keep]
+    }
+    ## "fix" ans_start
     too_left <- ans_start < start
     ans_start[too_left] <- start
-
     ## "fix" ans_end
-    far_too_left <- ans_end < start
-    ans_end[far_too_left] <- start - 1L
     too_right <- end < ans_end
     ans_end[too_right] <- end
 
     ans_width <- ans_end - ans_start + 1L
-    if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IntIntervals", start=ans_start, width=ans_width,
-        names=ans_names, check=FALSE)
+
+    update(x, start=ans_start, width=ans_width, names=ans_names, check=FALSE)
 }
+
+setMethod("restrict", "IntIntervals", .restrict.IntIntervals)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "narrow" function.
+### The "narrow" generic and methods.
 ###
 
-narrow <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+setGeneric("narrow", signature="x",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+        standardGeneric("narrow")
+)
+
+.narrow.IntIntervals <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 {
-    if (is.numeric(x)) {
-        x <- intToIntervals(x, use.names=use.names)
-        ans_names <- names(x)
-    } else {
-        if (!is(x, "IntIntervals"))
-            stop("'x' must be an IntIntervals object (or a numeric vector)")
-        use.names <- normalize.use.names(use.names)
-        if (use.names) ans_names <- names(x) else ans_names <- NULL
-    }
     if (!isSingleNumberOrNA(start))
         stop("'start' must be a single integer or NA")
     if (!is.integer(start))
@@ -107,28 +118,43 @@ narrow <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
         stop("'width' must be a single integer or NA")
     if (!is.integer(width))
         width <- as.integer(width)
+    use.names <- normalize.use.names(use.names)
+
     C_ans <- .Call("narrow_IntIntervals",
                    x, start, end, width,
                    PACKAGE="Biostrings")
-    new("IntIntervals", start=C_ans$start, width=C_ans$width,
-        names=ans_names, check=FALSE)
+    if (use.names) ans_names <- names(x) else ans_names <- NULL
+
+    update(x, start=C_ans$start, width=C_ans$width, names=ans_names, check=FALSE)
 }
+
+setMethod("narrow", "IntIntervals", .narrow.IntIntervals)
+
+setMethod("narrow", "numeric",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        y <- intToIntervals(x, use.names=use.names)
+        narrow(y, start=start, end=end, width=width, use.names=TRUE)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "reduce" function.
+### The "reduce" generic and methods.
 ###
 
-reduce <- function(x, with.inframe.attrib=FALSE)
+setGeneric("reduce", signature="x",
+    function(x, with.inframe.attrib=FALSE) standardGeneric("reduce")
+)
+
+.reduce.IntIntervals <- function(x, with.inframe.attrib=FALSE)
 {
-    if (!is(x, "IntIntervals"))
-        stop("'x' must be an IntIntervals object")
     if (!isTRUEorFALSE(with.inframe.attrib))
         stop("'with.inframe.attrib' must be 'TRUE' or 'FALSE'")
     C_ans <- .Call("reduce_IntIntervals",
                     x, with.inframe.attrib,
                     PACKAGE="Biostrings")
-    ans <- new("IntIntervals", start=C_ans$start, width=C_ans$width, check=FALSE)
+    ans <- update(x, start=C_ans$start, width=C_ans$width, check=FALSE)
     if (with.inframe.attrib) {
         inframe <- new("IntIntervals", start=C_ans$inframe.start,
                        width=width(x), check=FALSE)
@@ -137,9 +163,11 @@ reduce <- function(x, with.inframe.attrib=FALSE)
     ans
 }
 
+setMethod("reduce", "IntIntervals", .reduce.IntIntervals)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "mask" method.
+### The "mask" generic and methods.
 ###
 
 setGeneric("mask", signature="x",

@@ -5,8 +5,12 @@
 \alias{intToIntervals}
 \alias{intToAdjacentIntervals}
 \alias{restrict}
+\alias{restrict,IntIntervals-method}
 \alias{narrow}
+\alias{narrow,IntIntervals-method}
+\alias{narrow,numeric-method}
 \alias{reduce}
+\alias{reduce,IntIntervals-method}
 
 
 \title{IntIntervals utility functions}
@@ -18,7 +22,7 @@
 \usage{
   intToIntervals(x, use.names=TRUE)
   intToAdjacentIntervals(x, use.names=TRUE)
-  restrict(x, start, end, use.names=TRUE)
+  restrict(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
   narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)
   reduce(x, with.inframe.attrib=FALSE)
 }

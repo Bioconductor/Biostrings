@@ -3,76 +3,14 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-o Added the trim() function for trimming the "out of limits"
-  views of a BStringViews object.
 
-o Added the intToIntervals(), intToAdjacentIntervals(), restrict(), narrow(),
-  reduce() and mask() utility functions for creating or modifying IntIntervals
-  objects.
+STRING MATCHING
 
-o Added the chartr() generic function with a method for BString objects.
-  Methods for other types of objects (in particular for BStringViews and
-  BStringSet objects) will come later.
-
-o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
-  to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of
-  trying to mimic transciption. This conversion is still performed without
-  copying the sequence data and thus remains very fast.
-  Also the semantic of comparing RNA with DNA has been changed to remain
-  consistent with the new semantic of RNAString() and DNAString() e.g.
-  RNAString("UUGAAAA-CUC-N") is considered equal to DNAString("TTGAAAA-CTC-N").
-
-o Added a bunch of new containers for storing a big set of sequences:
-    - BStringList, DNAStringList, RNAStringList and AAStringList
-    - BStringSet, DNAStringSet, RNAStringSet and AAStringSet
-  They are almost the same from a user point of view, but the internal
-  representations and method implementations are very different.
-  The BStringList family was a first attempt to address the problem of storing
-  a big set of sequences in an efficent manner but its performance turned out
-  to be disappointing. So the BStringSet family was introduced as a response
-  to the poor performance of the BStringList container. Like the BStringViews
-  class, the BStringSet class derives from the IntIntervals class.
-  The BStringList family might be removed soon.
-
-o Added support for a Biostrings C interface (work-in-progress).
-  See inst/include/Biostrings_interface.h for how to use it in your package.
-
-o Added the isMatching() function.
+o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
+  vignette (still a work-in-progress).
 
 o Added support in matchPDict() for inexact matching of a dictionary with
   "trusted prefixes". See ?`matchPDict-inexact` for the details.
-
-o Added support for empty BString (and derived) objects.
-
-o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
-  matchLRPatterns() and matchPDict() functions.
-
-o Added "matchLRPatterns" and "matchProbePair" methods for BStringViews
-  objects.
-
-o Made the "show" methods for BString, BStringViews and BStringAlign objects
-  "getOption('width') aware" so that the user can control the width of the
-  output they produce.
-
-o Change in terminology to align with established practices: "fuzzy matching"
-  is now called "inexact matching". This change mostly affects the
-  documentation. The only change at the API level that is a consequence of
-  this change in terminology is that the "naive-fuzzy" algo is now called
-  "naive-inexact" (this affects the matchPattern() function and possibly any
-  function with an 'algo' argument).
-
-o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
-  FASTA files.
-
-o Added the dinucleotideFrequency(), trinucleotideFrequency(),
-  oligonucleotideFrequency(), strrev() and mkAllStrings() functions.
-
-o Three changes in alphabetFrequency():
-  (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is
-      not returned anymore (now it's treated as any 'other' letter i.e. any
-      non-base letter);
-  (2) added the 'freq' argument;
-  (3) added the 'collapse' argument.
 
 o Implemented the "shortcut feature" to C function CWdna_exact_search().
   With this patch, using matchPDict() to find all the matches of a
@@ -91,14 +29,6 @@ o Implemented the "shortcut feature" to C function CWdna_exact_search().
   patterns have the same number of nucleotides and it does only exact
   matching for now (Vmatch doesn't have this kind of limitations).
 
-o Added "as.character" and "consmat" methods for "BStringAlign" objects.
-
-o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
-  vignette (still a work-in-progress).
-
-o reverse(), complement() and reverseComplement() now preserve desc(x) when
-  applied to BStringViews object x.
-
 o matchPDict() now returns an MIndex object (new class) instead of a list
   of integer vectors. The user can then extract the starts or the ends of
   the matches with startIndex() or endIndex(), extract the number of matches
@@ -111,16 +41,6 @@ o matchPDict() now returns an MIndex object (new class) instead of a list
   WARNING: This is still a work-in-progress. Function names and semantics are
   not yet stabilized!
 
-o Added the IntIntervals class for representing a set of integer intervals
-  (see ?IntIntervals for the details). Changed the definition of the
-  BStringViews class so now it derives from this new class.
-
-o Added the patternFrequency() generic function and a method for CWdna_PDict
-  objects (will come later for TBdna_PDict objects).
-
-o Added a "duplicated" method for CWdna_PDict objects (will come later for
-  TBdna_PDict objects).
-
 o Added the matchPDict() and countPDict() functions for efficiently finding
   (or just counting) all occurences in a text (the subject) of any pattern
   from a set of patterns (the dictionary). The types of pattern dictionaries
@@ -129,17 +49,117 @@ o Added the matchPDict() and countPDict() functions for efficiently finding
   "Trusted Band" DNA dictionaries, represented by TBdna_PDict objects).
   See ?matchPDict for the details (especially the current limitations).
 
-o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
-  Biostrings 1).
-
-o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
-  + a "reverseComplement" method for RNAString objects.
-
 o Added basic support for palindrome finding: it can be achieved with the
   new findPalindromes() and findComplementedPalindromes() functions.
   Also added related utility functions palindromeArmLength(),
   palindromeLeftArm(), palindromeRightArm(), complementedPalindromeArmLength(),
   complementedPalindromeLeftArm() and complementedPalindromeRightArm().
+
+o Added "matchLRPatterns" and "matchProbePair" methods for BStringViews
+  objects.
+
+o Added the isMatching() function.
+
+o Change in terminology to align with established practices: "fuzzy matching"
+  is now called "inexact matching". This change mostly affects the
+  documentation. The only change at the API level that is a consequence of
+  this change in terminology is that the "naive-fuzzy" algo is now called
+  "naive-inexact" (this affects the matchPattern() function and possibly any
+  function with an 'algo' argument).
+
+o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
+  matchLRPatterns() and matchPDict() functions.
+
+UTILITIES
+
+o Added the chartr() generic function with a method for BString objects.
+  Methods for other types of objects (in particular for BStringViews and
+  BStringSet objects) will come later.
+
+o Made the "show" methods for BString, BStringViews and BStringAlign objects
+  "getOption('width') aware" so that the user can control the width of the
+  output they produce.
+
+o Added the dinucleotideFrequency(), trinucleotideFrequency(),
+  oligonucleotideFrequency(), strrev() and mkAllStrings() functions.
+
+o Three changes in alphabetFrequency():
+  (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is
+      not returned anymore (now it's treated as any 'other' letter i.e. any
+      non-base letter);
+  (2) added the 'freq' argument;
+  (3) added the 'collapse' argument.
+
+o Added "as.character" and "consmat" methods for "BStringAlign" objects.
+
+o reverse(), complement() and reverseComplement() now preserve desc(x) when
+  applied to BStringViews object x.
+
+o Added the patternFrequency() generic function with a method for CWdna_PDict
+  objects (will come later for TBdna_PDict objects).
+
+o Added a "duplicated" method for CWdna_PDict objects (will come later for
+  TBdna_PDict objects).
+
+o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
+  + a "reverseComplement" method for RNAString objects.
+
+C-LEVEL FACILITIES
+
+o Started the Biostrings C interface (work-in-progress).
+  See inst/include/Biostrings_interface.h for how to use it in your package.
+
+BASIC CONTAINERS
+
+o Added a bunch of new containers for storing a big set of sequences:
+    - BStringList, DNAStringList, RNAStringList and AAStringList
+    - BStringSet, DNAStringSet, RNAStringSet and AAStringSet
+  They are almost the same from a user point of view, but the internal
+  representations and method implementations are very different.
+  The BStringList family was a first attempt to address the problem of storing
+  a big set of sequences in an efficent manner but its performance turned out
+  to be disappointing. So the BStringSet family was introduced as a response
+  to the poor performance of the BStringList container. Like the BStringViews
+  class, the BStringSet class derives from the IntIntervals class.
+  The BStringList family might be removed soon.
+
+o Added the trim() function for trimming the "out of limits" views of a
+  BStringViews object.
+
+o Added "restrict", "narrow" and "reduce" generic functions with methods for
+  IntIntervals and BStringViews objects. Also added a "mask" method for
+  IntIntervals objects. These functions provide basic transformations of an
+  IntIntervals object into another IntIntervals object of the same class.
+
+o Added the "start<-", "width<-" and "end<-" generics with methods for
+  IntIntervals and BStringViews objects. Also added the "update" method for
+  IntIntervals objects to provide a convenient way of combining multiple
+  modifications of an IntIntervals object into one single call.
+
+o Added the intToIntervals() and intToAdjacentIntervals() utility functions
+  for creating IntIntervals instances.
+
+o Added the IntIntervals class for representing a set of integer intervals
+  (see ?IntIntervals for the details). Changed the definition of the
+  BStringViews class so now it derives from this new class.
+
+o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
+  to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of
+  trying to mimic transciption. This conversion is still performed without
+  copying the sequence data and thus remains very fast.
+  Also the semantic of comparing RNA with DNA has been changed to remain
+  consistent with the new semantic of RNAString() and DNAString() e.g.
+  RNAString("UUGAAAA-CUC-N") is considered equal to DNAString("TTGAAAA-CTC-N").
+
+o Added support for empty BString (and derived) objects.
+
+MISCELLANEOUS
+
+o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
+  FASTA files.
+
+o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
+  Biostrings 1).
 
 
 **************************************************
