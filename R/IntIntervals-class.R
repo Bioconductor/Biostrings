@@ -111,8 +111,15 @@ setValidity("IntIntervals",
 ### Initialization.
 ###
 
+.numeric2integer <- function(x)
+{
+    if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
+}
+
 .make.inters <- function(start, width, names)
 {
+    start <- .numeric2integer(start)
+    width <- .numeric2integer(width)
     ## We could put the starts and the widths in the data frame and then add
     ## the "names" column to it but it might be slower (maybe it will copy the
     ## original data frame?). I've not tested this though...
@@ -166,9 +173,7 @@ setGeneric("start<-", signature="x",
 setReplaceMethod("start", "IntIntervals",
     function(x, check=TRUE, value)
     {
-        if (is.numeric(value) && !is.integer(value))
-            value <- as.integer(value)
-        x@inters$start <- value
+        x@inters$start <- .numeric2integer(value)
         if (check) {
             problem <- .valid.IntIntervals.start(x)
             if (!is.null(problem)) stop(problem)
@@ -184,9 +189,7 @@ setGeneric("width<-", signature="x",
 setReplaceMethod("width", "IntIntervals",
     function(x, check=TRUE, value)
     {
-        if (is.numeric(value) && !is.integer(value))
-            value <- as.integer(value)
-        x@inters$width <- value
+        x@inters$width <- .numeric2integer(value)
         if (check) {
             problem <- .valid.IntIntervals.width(x)
             if (!is.null(problem)) stop(problem)
@@ -202,8 +205,6 @@ setGeneric("end<-", signature="x",
 setReplaceMethod("end", "IntIntervals",
     function(x, check=TRUE, value)
     {
-        if (is.numeric(value) && !is.integer(value))
-            value <- as.integer(value)
         start(x, check=check) <- value - width(x) + 1L
         x
     }
@@ -377,7 +378,7 @@ setMethod("as.matrix", "IntIntervals",
     function(x, ...)
     {
         ans <- as.matrix(x@inters[ , c("start", "width")], ...)
-        rownames(ans) <- x@inters$names
+        rownames(ans) <- names(x)
         ans
     }
 )
