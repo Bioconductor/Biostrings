@@ -148,8 +148,8 @@
 }
 
 \section{Accesor methods}{
-  The BStringSet class derives from the \link{IntIntervals} class hence
-  all the accessor methods defined for a \link{IntIntervals} object can also
+  The BStringSet class derives from the \link{IRanges} class hence
+  all the accessor methods defined for a \link{IRanges} object can also
   be used on a BStringSet object. In particular, the following methods
   are available (in the code snippets below, \code{x} is a BStringSet (or
   derived) object):
@@ -216,7 +216,7 @@
   \link{RNAString-class},
   \link{AAString-class},
   \link{BStringViews-class},
-  \link{IntIntervals}
+  \link{IRanges}
 }
 
 \examples{

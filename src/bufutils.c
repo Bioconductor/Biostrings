@@ -299,20 +299,20 @@ SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
 
 
 /****************************************************************************
- * InterBuf functions
+ * RangesBuf functions
  */
 
-void _InterBuf_init(InterBuf *interbuf, int maxcount, int count)
+void _RangesBuf_init(RangesBuf *rangesbuf, int maxcount, int count)
 {
-	_IBuf_init(&(interbuf->start), maxcount, count);
-	_IBuf_init(&(interbuf->width), maxcount, count);
+	_IBuf_init(&(rangesbuf->start), maxcount, count);
+	_IBuf_init(&(rangesbuf->width), maxcount, count);
 	return;
 }
 
-void _InterBuf_insert_at(InterBuf *interbuf, int at, int start, int width)
+void _RangesBuf_insert_at(RangesBuf *rangesbuf, int at, int start, int width)
 {
-	_IBuf_insert_at(&(interbuf->start), at, start);
-	_IBuf_insert_at(&(interbuf->width), at, width);
+	_IBuf_insert_at(&(rangesbuf->start), at, start);
+	_IBuf_insert_at(&(rangesbuf->width), at, width);
 	return;
 }
 

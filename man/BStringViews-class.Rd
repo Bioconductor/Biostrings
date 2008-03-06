@@ -52,9 +52,9 @@
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
-  A BStringViews object is in fact a particular case of a \link{IntIntervals} object
-  (the BStringViews class contains the \link{IntIntervals} class) so it can be
-  manipulated in the same way: see \link{IntIntervals} for more information.
+  A BStringViews object is in fact a particular case of a \link{IRanges} object
+  (the BStringViews class contains the \link{IRanges} class) so it can be
+  manipulated in the same way: see \link{IRanges} for more information.
   Note that two views can overlap and that a view can be "out of limits"
   i.e. it can start before the first letter of the subject or/and end
   after its last letter.
@@ -155,7 +155,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link{IntIntervals-class},
+  \link{IRanges-class},
   \link{BStringViews-constructors},
   \link{BString-class},
   \link{DNAString-class},

@@ -1,7 +1,7 @@
 \name{mask}
 
 \alias{mask}
-\alias{mask,IntIntervals-method}
+\alias{mask,IRanges-method}
 \alias{mask,BStringViews-method}
 \alias{mask,BString-method}
 \alias{mask,character-method}
@@ -60,7 +60,7 @@
   \link{BString},
   \link{DNAString},
   \link{RNAString},
-  \link{IntIntervals-utils}
+  \link{IRanges-utils}
 }
 
 \examples{

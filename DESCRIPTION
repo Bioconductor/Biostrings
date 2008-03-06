@@ -2,7 +2,7 @@ Package: Biostrings
 Title: String objects representing biological sequences, and matching algorithms
 Description: Class definitions and generics for biological sequences
         along with pattern matching algorithms.
-Version: 2.7.30
+Version: 2.7.31
 Author: H. Pages, R. Gentleman and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
@@ -15,8 +15,8 @@ License: LGPL
 LazyLoad: yes
 Collate: 00datacache.R
         utils.R
-        IntIntervals-class.R
-        IntIntervals-utils.R
+        IRanges-class.R
+        IRanges-utils.R
         readFASTA.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
         BStringCodec-class.R

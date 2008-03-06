@@ -8,7 +8,7 @@
 ###
 
 setClass("BStringViews",
-    contains="IntIntervals",
+    contains="IRanges",
     representation(
         subject="BString"
     )
@@ -26,7 +26,7 @@ setMethod("subject", "BStringViews", function(x) x@subject)
 ### conflict with the views() function currently defined in the
 ### BStringViews-constructors.R file.
 #setGeneric("views", function(x) standardGeneric("views"))
-#setMethod("views", "BStringViews", function(x) x@inters)
+#setMethod("views", "BStringViews", function(x) x@ranges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,7 +91,7 @@ setMethod("initialize", "BStringViews",
 ### Replacement methods.
 ###
 ### BStringViews objects inherit the replacement methods defined for parent
-### class IntIntervals (see IntIntervals-class.R).
+### class IRanges (see IRanges-class.R).
 ### However, the "width" method needs to be overridden because of the
 ### additional constraint that applies to BStringViews objects.
 ###
@@ -508,7 +508,7 @@ setMethod("as.matrix", "BStringViews",
     }
 )
 
-### This overrides the "as.list" method for IntIntervals objects with a
+### This overrides the "as.list" method for IRanges objects with a
 ### totally different semantic!
 setMethod("as.list", "BStringViews",
     function(x)

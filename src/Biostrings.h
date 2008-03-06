@@ -21,10 +21,10 @@ typedef struct ibbuf {
         int count;
 } IBBuf; // Extendable buffer of arrays of integers
 
-typedef struct interbuf {
+typedef struct rangesbuf {
         IBuf start;
         IBuf width;
-} InterBuf; // Extendable buffer of intervals
+} RangesBuf; // Extendable buffer of integer ranges
 
 typedef struct cbuf {
         char *vals;
@@ -254,14 +254,14 @@ SEXP _IBBuf_toEnvir(
 		int keyshift
 );
 
-void _InterBuf_init(
-		InterBuf *interbuf,
+void _RangesBuf_init(
+		RangesBuf *rangesbuf,
 		int maxcount,
 		int count
 );
 
-void _InterBuf_insert_at(
-		InterBuf *interbuf,
+void _RangesBuf_insert_at(
+		RangesBuf *rangesbuf,
 		int at,
 		int start,
 		int width
@@ -320,26 +320,26 @@ SEXP _Biostrings_viewsbuf_asLIST();
 SEXP _reported_matches_asSEXP();
 
 
-/* IntIntervals.c */
+/* IRanges.c */
 
-SEXP Biostrings_debug_IntIntervals();
+SEXP Biostrings_debug_IRanges();
 
-int _get_IntIntervals_length(SEXP x);
+int _get_IRanges_length(SEXP x);
 
-const int *_get_IntIntervals_start(SEXP x);
+const int *_get_IRanges_start(SEXP x);
 
-const int *_get_IntIntervals_width(SEXP x);
+const int *_get_IRanges_width(SEXP x);
 
-SEXP narrow_IntIntervals(
+SEXP narrow_IRanges(
 		SEXP x,
 		SEXP start,
 		SEXP end,
 		SEXP width
 );
 
-SEXP int_to_adjacent_intervals(SEXP x);
+SEXP int_to_adjacent_ranges(SEXP x);
 
-SEXP reduce_IntIntervals(
+SEXP reduce_IRanges(
 		SEXP x,
 		SEXP with_inframe_start
 );

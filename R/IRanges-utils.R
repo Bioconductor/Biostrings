@@ -1,13 +1,13 @@
 ### =========================================================================
-### Utility functions for creating or modifying IntIntervals objects
+### Utility functions for creating or modifying IRanges objects
 ### -------------------------------------------------------------------------
 ###
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "intToIntervals" function.
+### The "intToRanges" function.
 ###
 
-intToIntervals <- function(x, use.names=TRUE)
+intToRanges <- function(x, use.names=TRUE)
 {
     if (!is.numeric(x))
         stop("'x' must be an integer vector")
@@ -15,25 +15,25 @@ intToIntervals <- function(x, use.names=TRUE)
         x <- as.integer(x)
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IntIntervals", start=rep.int(1L, length(x)), width=x,
+    new("IRanges", start=rep.int(1L, length(x)), width=x,
         names=ans_names, check=TRUE)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "intToAdjacentIntervals" function.
+### The "intToAdjacentRanges" function.
 ###
 
-intToAdjacentIntervals <- function(x, use.names=TRUE)
+intToAdjacentRanges <- function(x, use.names=TRUE)
 {
     if (!is.numeric(x))
         stop("'x' must be an integer vector")
     if (!is.integer(x))
         x <- as.integer(x)
     use.names <- normalize.use.names(use.names)
-    ans_start <- .Call("int_to_adjacent_intervals", x, PACKAGE="Biostrings")
+    ans_start <- .Call("int_to_adjacent_ranges", x, PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IntIntervals", start=ans_start, width=x,
+    new("IRanges", start=ans_start, width=x,
         names=ans_names, check=FALSE)
 }
 
@@ -47,7 +47,7 @@ setGeneric("restrict", signature="x",
         standardGeneric("restrict")
 )
 
-.restrict.IntIntervals <- function(x, start, end,
+.restrict.IRanges <- function(x, start, end,
                                    keep.nonoverlapping=FALSE, use.names=TRUE)
 {
     if (!isSingleNumber(start))
@@ -92,7 +92,7 @@ setGeneric("restrict", signature="x",
     update(x, start=ans_start, width=ans_width, names=ans_names, check=FALSE)
 }
 
-setMethod("restrict", "IntIntervals", .restrict.IntIntervals)
+setMethod("restrict", "IRanges", .restrict.IRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,7 +104,7 @@ setGeneric("narrow", signature="x",
         standardGeneric("narrow")
 )
 
-.narrow.IntIntervals <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+.narrow.IRanges <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 {
     if (!isSingleNumberOrNA(start))
         stop("'start' must be a single integer or NA")
@@ -120,7 +120,7 @@ setGeneric("narrow", signature="x",
         width <- as.integer(width)
     use.names <- normalize.use.names(use.names)
 
-    C_ans <- .Call("narrow_IntIntervals",
+    C_ans <- .Call("narrow_IRanges",
                    x, start, end, width,
                    PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
@@ -128,12 +128,12 @@ setGeneric("narrow", signature="x",
     update(x, start=C_ans$start, width=C_ans$width, names=ans_names, check=FALSE)
 }
 
-setMethod("narrow", "IntIntervals", .narrow.IntIntervals)
+setMethod("narrow", "IRanges", .narrow.IRanges)
 
 setMethod("narrow", "numeric",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        y <- intToIntervals(x, use.names=use.names)
+        y <- intToRanges(x, use.names=use.names)
         narrow(y, start=start, end=end, width=width, use.names=TRUE)
     }
 )
@@ -147,23 +147,23 @@ setGeneric("reduce", signature="x",
     function(x, with.inframe.attrib=FALSE) standardGeneric("reduce")
 )
 
-.reduce.IntIntervals <- function(x, with.inframe.attrib=FALSE)
+.reduce.IRanges <- function(x, with.inframe.attrib=FALSE)
 {
     if (!isTRUEorFALSE(with.inframe.attrib))
         stop("'with.inframe.attrib' must be 'TRUE' or 'FALSE'")
-    C_ans <- .Call("reduce_IntIntervals",
+    C_ans <- .Call("reduce_IRanges",
                     x, with.inframe.attrib,
                     PACKAGE="Biostrings")
     ans <- update(x, start=C_ans$start, width=C_ans$width, check=FALSE)
     if (with.inframe.attrib) {
-        inframe <- new("IntIntervals", start=C_ans$inframe.start,
+        inframe <- new("IRanges", start=C_ans$inframe.start,
                        width=width(x), check=FALSE)
         attr(ans, "inframe") <- inframe
     }
     ans
 }
 
-setMethod("reduce", "IntIntervals", .reduce.IntIntervals)
+setMethod("reduce", "IRanges", .reduce.IRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -174,7 +174,7 @@ setGeneric("mask", signature="x",
     function(x, start, end, ...) standardGeneric("mask")
 )
 
-.mask.IntIntervals <- function(x, start, end, ...)
+.mask.IRanges <- function(x, start, end, ...)
 {
     if (!isSingleNumber(start))
         stop("'start' must be a single integer")
@@ -188,7 +188,7 @@ setGeneric("mask", signature="x",
         stop("'start' must be <= 'end + 1'")
     y <- restrict(reduce(x), start, end)
     y <- y[width(y) != 0]
-    ## Intervals in 'y' are ordered from left to right and separated by gaps
+    ## Ranges in 'y' are ordered from left to right and separated by gaps
     ans_start <- ans_end <- integer(0)
     start0 <- start
     for (i in seq_len(length(y))) {
@@ -209,5 +209,5 @@ setGeneric("mask", signature="x",
     update(x, start=ans_start, width=ans_width, check=FALSE)
 }
 
-setMethod("mask", "IntIntervals", .mask.IntIntervals)
+setMethod("mask", "IRanges", .mask.IRanges)
 

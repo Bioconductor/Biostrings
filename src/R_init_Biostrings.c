@@ -11,12 +11,12 @@ static const R_CallMethodDef callMethods[] = {
 /* views_buffer.c */
 	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},
 
-/* IntIntervals.c */
-	{"Biostrings_debug_IntIntervals", (DL_FUNC) &Biostrings_debug_IntIntervals, 0},
+/* IRanges.c */
+	{"Biostrings_debug_IRanges", (DL_FUNC) &Biostrings_debug_IRanges, 0},
 
-	{"narrow_IntIntervals", (DL_FUNC) &narrow_IntIntervals, 4},
-	{"int_to_adjacent_intervals", (DL_FUNC) &int_to_adjacent_intervals, 1},
-	{"reduce_IntIntervals", (DL_FUNC) &reduce_IntIntervals, 2},
+	{"narrow_IRanges", (DL_FUNC) &narrow_IRanges, 4},
+	{"int_to_adjacent_ranges", (DL_FUNC) &int_to_adjacent_ranges, 1},
+	{"reduce_IRanges", (DL_FUNC) &reduce_IRanges, 2},
 
 /* XRaw.c */
 	{"Biostrings_debug_XRaw", (DL_FUNC) &Biostrings_debug_XRaw, 0},

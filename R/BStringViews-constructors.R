@@ -11,7 +11,7 @@
 ###   - They return a BStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
 
-.makeIntervals <- function(subject, start, end)
+.makeRanges <- function(subject, start, end)
 {
     if (!isNumericOrNAs(start) || !isNumericOrNAs(end))
         stop("'start' and 'end' must be numerics")
@@ -52,14 +52,14 @@ views <- function(subject, start=NA, end=NA)
     if (!is(subject, "BString"))
         subject <- BString(subject)
     ans <- new("BStringViews", subject, check=FALSE)
-    ans@inters <- .makeIntervals(subject(ans), start, end)
+    ans@ranges <- .makeRanges(subject(ans), start, end)
     ans
 }
 
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).
-### TODO: Use intToAdjacentIntervals() in adjacentViews(), this
-### will be MUCH faster (intToAdjacentIntervals() is written in C).
+### TODO: Use intToAdjacentRanges() in adjacentViews(), this
+### will be MUCH faster (intToAdjacentRanges() is written in C).
 ### But first, the 'gapwidth' arg must be added to it...
 adjacentViews <- function(subject, width, gapwidth=0)
 {

@@ -51,7 +51,7 @@
 ###
 
 setClass("BStringSet",
-    contains="IntIntervals",
+    contains="IRanges",
     representation(
         super="BString"
     )
@@ -70,7 +70,7 @@ setClass("AAStringSet", contains="BStringSet")
 ### methods that must work with BStringSet objects is:
 ###   length, width, nchar, names
 ### Note that BStringSet objects inherit the "length", "width" and "names"
-### methods from the IntIntervals class.
+### methods from the IRanges class.
 ###
 
 ### NOT exported
@@ -93,9 +93,9 @@ setMethod("initialize", "BStringSet",
                 stop("'super' must be a BString object")
             if (length(.Object) != 0) {
                 if (min(start(.Object)) < 1)
-                    stop("bad spanning (some intervals are starting before the start of 'super')")
+                    stop("bad spanning (some ranges are starting before the start of 'super')")
                 if (max(end(.Object)) > nchar(super))
-                    stop("bad spanning (some intervals are ending after the end of 'super')")
+                    stop("bad spanning (some ranges are ending after the end of 'super')")
             }
         }
         slot(.Object, "super", check=FALSE) <- super
@@ -138,12 +138,12 @@ setMethod("initialize", "AAStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.newBStringSet <- function(class, super, inters, x, use.names)
+.newBStringSet <- function(class, super, ranges, x, use.names)
 {
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new(class, super, start=start(inters),
-                      width=width(inters),
+    new(class, super, start=start(ranges),
+                      width=width(ranges),
                       names=ans_names,
                       check=FALSE)
 }
@@ -162,8 +162,8 @@ setMethod("initialize", "AAStringSet",
     class <- paste(baseClass, "Set", sep="")
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     super <- .charToBString(x, safe_locs, baseClass)
-    inters <- intToAdjacentIntervals(width(safe_locs))
-    .newBStringSet(class, super, inters, x, use.names)
+    ranges <- intToAdjacentRanges(width(safe_locs))
+    .newBStringSet(class, super, ranges, x, use.names)
 }
 
 .narrowBStringSet <- function(x, start, end, width, use.names, baseClass, check)
@@ -182,12 +182,12 @@ setMethod("initialize", "AAStringSet",
                       super(x), start(frame), width(frame), lkup,
                       PACKAGE="Biostrings")
         super <- new(baseClass, data, 0L, length(data), check=FALSE)
-        inters <- attr(frame, "inframe")
+        ranges <- attr(frame, "inframe")
     } else {
         super <- mkBString(baseClass, super(x))
-        inters <- narrow(x, start, end, width)
+        ranges <- narrow(x, start, end, width)
     }
-    .newBStringSet(class, super, inters, x, use.names)
+    .newBStringSet(class, super, ranges, x, use.names)
 }
 
 ### Canonical conversion from BStringViews to a BStringSet (or derived)
@@ -195,12 +195,12 @@ setMethod("initialize", "AAStringSet",
 {
     if (any(nchar(x) < width(x)))
         warning("trimming \"out of limits\" views")
-    inters <- restrict(as(x, "IntIntervals"), 1L, nchar(subject(x)),
+    ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
                        keep.nonoverlapping=TRUE,
                        use.names=use.names)
     class <- paste(class(subject(x)), "Set", sep="")
-    new(class, subject(x), start=start(inters), width=width(inters),
-               names=names(inters), check=FALSE)
+    new(class, subject(x), start=start(ranges), width=width(ranges),
+               names=names(ranges), check=FALSE)
 }
 
 

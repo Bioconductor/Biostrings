@@ -56,7 +56,7 @@ v~1.4.x), they were designed to make manipulation of big strings (like DNA
 or RNA sequences) easy and fast.
 This is achieved by keeping the 3 following ideas from the
 \Rpackage{Biostrings}~1 package:
-(1) use R external pointers to store the string data,
+(1) use R external poranges to store the string data,
 (2) use bit patterns to encode the string data,
 (3) provide the user with a convenient class of objects where each instance
     can store a set of views {\it on the same} big string (these views being

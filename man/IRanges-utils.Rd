@@ -1,27 +1,27 @@
-\name{IntIntervals-utils}
+\name{IRanges-utils}
 
-\alias{IntIntervals-utils}
+\alias{IRanges-utils}
 
-\alias{intToIntervals}
-\alias{intToAdjacentIntervals}
+\alias{intToRanges}
+\alias{intToAdjacentRanges}
 \alias{restrict}
-\alias{restrict,IntIntervals-method}
+\alias{restrict,IRanges-method}
 \alias{narrow}
-\alias{narrow,IntIntervals-method}
+\alias{narrow,IRanges-method}
 \alias{narrow,numeric-method}
 \alias{reduce}
-\alias{reduce,IntIntervals-method}
+\alias{reduce,IRanges-method}
 
 
-\title{IntIntervals utility functions}
+\title{IRanges utility functions}
 
 \description{
-  Utility functions for creating or modifying \link{IntIntervals} objects.
+  Utility functions for creating or modifying \link{IRanges} objects.
 }
 
 \usage{
-  intToIntervals(x, use.names=TRUE)
-  intToAdjacentIntervals(x, use.names=TRUE)
+  intToRanges(x, use.names=TRUE)
+  intToAdjacentRanges(x, use.names=TRUE)
   restrict(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
   narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)
   reduce(x, with.inframe.attrib=FALSE)
@@ -55,14 +55,14 @@
 \author{H. Pages}
 
 \seealso{
-  \link{IntIntervals-class},
+  \link{IRanges-class},
   \link{mask},
   \link{BStringViews}
 }
 
 \examples{
-  intToIntervals(c(19, 5, 0, 8, 5))
-  x <- intToAdjacentIntervals(c(19, 5, 0, 8, 5))
+  intToRanges(c(19, 5, 0, 8, 5))
+  x <- intToAdjacentRanges(c(19, 5, 0, 8, 5))
   x
   restrict(x, 12, 34)
   y <- x[width(x) != 0]
@@ -70,12 +70,12 @@
   narrow(y, start=-4, end=-2)
   narrow(y, end=5, width=3)
 
-  x <- new("IntIntervals",
+  x <- new("IRanges",
            start=c(-2L,  9L, -4L, 1L, 0L, -6L, 10L),
            width=c( 5L,  6L,  1L, 4L, 3L,  2L,  3L))
-  reduce(x)  # 3 intervals ordered from left to right and separated by gaps
+  reduce(x)  # 3 ranges ordered from left to right and separated by gaps
              # of width >= 1
-  mask(x, -6, 20)  # regions of the [-6, 20] interval that are not maked by
+  mask(x, -6, 20)  # regions of the -6:20 range that are not masked by
                    # 'x'
 }
 

@@ -28,8 +28,6 @@ In 2.[6|7]
 In 2.7
 ======
 
-- Rename IntIntervals -> IRanges (and "inters" slot "ranges" slot).
-
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
 
@@ -68,7 +66,7 @@ In 2.7
       to copy only the regions of super(x) that are covered by the narrowed
       sequences.
 
-- In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
+- In align_needwunsQS(): use mkXRaw() instead of making external poranges by hand.
 
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
@@ -125,7 +123,7 @@ In 2.7
     the same target (subject). In practice, it will be enough that they have
     the same index i.e. they have the same pids() or, if the pids() is NULL,
     they have the same length.
-    Then methods like "union", "intersect", "setdiff", "setequal", etc...
+    Then methods like "union", "rangesect", "setdiff", "setequal", etc...
     could be defined. The set operation would be performed between the 2
     subsets of matches of each input pattern. Of course, 2 matches are
     considered equal if their start/end are the same.
@@ -158,27 +156,27 @@ In 2.7
     if (is(x@subject, "NucleotideString")) ...
   Etc...
 
-- Add a new generic that combines a subject and an IntIntervals (or IntIntervals-like)
-  object to return a BStringViews object. The IntIntervals-like object could be
+- Add a new generic that combines a subject and an IRanges (or IRanges-like)
+  object to return a BStringViews object. The IRanges-like object could be
   MIndex object and the method for it would do as if it had received
   unlist(MIndex). Currently my problem is that I can't come up with a good
   name for such generic :-/ Maybe I could just use views(subject, x) for
   this (dispatch would be on x, not subject). And the current views function
   could be renamed (or maybe it's not needed at all, maybe a fancy
-  new("IntIntervals", ...) could replace it).
+  new("IRanges", ...) could replace it).
 
 - Add a MaskedBString class. 2 ways to do this:
     1. Extend the BStringViews class
     2. I think I prefer this: add a Mask class (a direct extension of the
-       IntIntervals class where the views are guaranted to be normalized) and define
+       IRanges class where the views are guaranted to be normalized) and define
        the MaskedBString class on top of that (in the same way that the
-       BStringViews class is defined on top of the IntIntervals class).
+       BStringViews class is defined on top of the IRanges class).
   For example alphabetFrequency would work by default in a vectorized fashion
   on a BStringViews object (Robert suggests to control this via a collapse arg),
   but in a cumulative fashion on a MaskedBString object.
   Working on the MaskedBString class will require some reworking of the mask()
   feature and the addition of some utility functions like is.normalized (define
-  a method for IntIntervals objects, can then be used to check that a Mask or a
+  a method for IRanges objects, can then be used to check that a Mask or a
   MaskedBString object is valid or that a BStringViews object is normalized
   and can then be turned into a MaskedBString object), etc...
 

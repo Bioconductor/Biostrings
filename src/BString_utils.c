@@ -180,8 +180,8 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 
 int _get_BStringSet_length(SEXP x)
 {
-	// Because a BStringSet object IS an IntIntervals object
-	return _get_IntIntervals_length(x);
+	// Because a BStringSet object IS an IRanges object
+	return _get_IRanges_length(x);
 }
 
 const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
@@ -190,8 +190,8 @@ const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
 	int start, super_length;
 	const char *super_seq;
 
-	start = _get_IntIntervals_start(x)[i];
-	*nchar = _get_IntIntervals_width(x)[i];
+	start = _get_IRanges_start(x)[i];
+	*nchar = _get_IRanges_width(x)[i];
 	super = GET_SLOT(x, install("super"));
 	super_seq = _get_BString_charseq(super, &super_length);
 	return super_seq + start - 1;

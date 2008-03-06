@@ -1,15 +1,15 @@
 ### =========================================================================
-### IntIntervals objects
+### IRanges objects
 ### -------------------------------------------------------------------------
 ###
-### The IntIntervals class is a simple container for storing a set of integer
-### intervals.
+### The IRanges class is a simple container for storing a set of integer
+### ranges.
 ###
 
-setClass("IntIntervals",
+setClass("IRanges",
     representation(
         ## See the "initialize" method below for more details.
-        inters="data.frame"
+        ranges="data.frame"
     )
 )
 
@@ -18,21 +18,21 @@ setClass("IntIntervals",
 ### Accessor methods.
 ###
 
-setMethod("length", "IntIntervals", function(x) nrow(x@inters))
+setMethod("length", "IRanges", function(x) nrow(x@ranges))
 
 ### The substr() function uses 'start' and 'stop'.
 ### The substring() function uses 'first' and 'last'.
 ### We use 'start' and 'end'.
 ### Note that the "start" and "end" generic are defined in the stats package.
-setMethod("start", "IntIntervals", function(x, ...) x@inters$start)
+setMethod("start", "IRanges", function(x, ...) x@ranges$start)
 
 setGeneric("width", function(x) standardGeneric("width"))
-setMethod("width", "IntIntervals", function(x) x@inters$width)
+setMethod("width", "IRanges", function(x) x@ranges$width)
 
 ### Note that when width(x)[i] is 0, then end(x)[i] is start(x)[i] - 1
-setMethod("end", "IntIntervals", function(x, ...) {start(x) + width(x) - 1L})
+setMethod("end", "IRanges", function(x, ...) {start(x) + width(x) - 1L})
 
-setMethod("names", "IntIntervals", function(x) x@inters$names)
+setMethod("names", "IRanges", function(x) x@ranges$names)
 
 ### "desc" is an alias for "names". It might be deprecated soon...
 setGeneric("desc", function(x) standardGeneric("desc"))
@@ -48,7 +48,7 @@ setMethod("desc", "ANY", function(x) names(x))
 ### (or 'width').
 ###
 
-.valid.IntIntervals.start <- function(object)
+.valid.IRanges.start <- function(object)
 {
     if (!is.integer(start(object)) || any(is.na(start(object))))
         return("the starts must be non-NA integers")
@@ -62,11 +62,11 @@ setMethod("desc", "ANY", function(x) names(x))
     NULL
 }
 
-.valid.IntIntervals.width <- function(object)
+.valid.IRanges.width <- function(object)
 {
     if (!is.integer(width(object)) || any(is.na(width(object))))
         return("the widths must be non-NA integers")
-    ## See comment in .valid.IntIntervals.start() in above...
+    ## See comment in .valid.IRanges.start() in above...
     if (length(start(object)) != length(width(object)))
         return("number of starts and number of widths differ")
     if (length(width(object)) != 0 && min(width(object)) < 0L)
@@ -74,7 +74,7 @@ setMethod("desc", "ANY", function(x) names(x))
     NULL
 }
 
-.valid.IntIntervals.names <- function(object)
+.valid.IRanges.names <- function(object)
 {
     if (is.null(names(object)))
         return(NULL)
@@ -90,18 +90,18 @@ setMethod("desc", "ANY", function(x) names(x))
     NULL
 }
 
-.valid.IntIntervals <- function(object)
+.valid.IRanges <- function(object)
 {
-    #cat("validating IntIntervals object of length", length(object), "...\n")
-    c(.valid.IntIntervals.start(object),
-      .valid.IntIntervals.width(object),
-      .valid.IntIntervals.names(object))
+    #cat("validating IRanges object of length", length(object), "...\n")
+    c(.valid.IRanges.start(object),
+      .valid.IRanges.width(object),
+      .valid.IRanges.names(object))
 }
 
-setValidity("IntIntervals",
+setValidity("IRanges",
     function(object)
     {
-        problems <- .valid.IntIntervals(object)
+        problems <- .valid.IRanges(object)
         if (is.null(problems)) TRUE else problems
     }
 )
@@ -116,7 +116,7 @@ setValidity("IntIntervals",
     if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
 }
 
-.make.inters <- function(start, width, names)
+.make.ranges <- function(start, width, names)
 {
     start <- .numeric2integer(start)
     width <- .numeric2integer(width)
@@ -124,25 +124,25 @@ setValidity("IntIntervals",
     ## the "names" column to it but it might be slower (maybe it will copy the
     ## original data frame?). I've not tested this though...
     if (is.null(names))
-        inters <- data.frame(start=start, width=width,
+        ranges <- data.frame(start=start, width=width,
                              check.names=FALSE, stringsAsFactors=FALSE)
     else
-        inters <- data.frame(start=start, width=width, names=names,
+        ranges <- data.frame(start=start, width=width, names=names,
                              check.names=FALSE, stringsAsFactors=FALSE)
-    inters
+    ranges
 }
 
-setMethod("initialize", "IntIntervals",
+setMethod("initialize", "IRanges",
     function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
     {
-        inters <- .make.inters(start, width, names)
-        slot(.Object, "inters", check=FALSE) <- inters
+        ranges <- .make.ranges(start, width, names)
+        slot(.Object, "ranges", check=FALSE) <- ranges
         if (check) {
             ## I found that using validObject() in "initialize" doesn't work
             ## properly (validation is called too many times and not in an
             ## order that makes sense to me...)
             #validObject(.Object)
-            problems <- .valid.IntIntervals(.Object)
+            problems <- .valid.IRanges(.Object)
             if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
         .Object
@@ -170,12 +170,12 @@ setGeneric("start<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("start<-")
 )
 
-setReplaceMethod("start", "IntIntervals",
+setReplaceMethod("start", "IRanges",
     function(x, check=TRUE, value)
     {
-        x@inters$start <- .numeric2integer(value)
+        x@ranges$start <- .numeric2integer(value)
         if (check) {
-            problem <- .valid.IntIntervals.start(x)
+            problem <- .valid.IRanges.start(x)
             if (!is.null(problem)) stop(problem)
         }
         x
@@ -186,12 +186,12 @@ setGeneric("width<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("width<-")
 )
 
-setReplaceMethod("width", "IntIntervals",
+setReplaceMethod("width", "IRanges",
     function(x, check=TRUE, value)
     {
-        x@inters$width <- .numeric2integer(value)
+        x@ranges$width <- .numeric2integer(value)
         if (check) {
-            problem <- .valid.IntIntervals.width(x)
+            problem <- .valid.IRanges.width(x)
             if (!is.null(problem)) stop(problem)
         }
         x
@@ -202,7 +202,7 @@ setGeneric("end<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("end<-")
 )
 
-setReplaceMethod("end", "IntIntervals",
+setReplaceMethod("end", "IRanges",
     function(x, check=TRUE, value)
     {
         start(x, check=check) <- value - width(x) + 1L
@@ -210,11 +210,11 @@ setReplaceMethod("end", "IntIntervals",
     }
 )
 
-setReplaceMethod("names", "IntIntervals",
+setReplaceMethod("names", "IRanges",
     function(x, value)
     {
         if (is.null(value)) {
-            x@inters$names <- NULL
+            x@ranges$names <- NULL
             return(x)
         }
         if (!is.character(value))
@@ -222,7 +222,7 @@ setReplaceMethod("names", "IntIntervals",
         if (length(value) > length(x))
             stop("too many names")
         length(value) <- length(x)
-        x@inters$names <- value
+        x@ranges$names <- value
         x
     }
 )
@@ -239,11 +239,11 @@ setReplaceMethod("desc", "ANY", function(x, value) `names<-`(x, value))
 ###
 ### It must verify 2 important properties:
 ###   (1) update(x) must be identical to x (doesn't touch x at all)
-###   (2) do.call("update", c(x, x@inters)) must be identical to x (it updates
+###   (2) do.call("update", c(x, x@ranges)) must be identical to x (it updates
 ###       x with its own content)
 ###
 
-setMethod("update", "IntIntervals",
+setMethod("update", "IRanges",
     function(object, ...)
     {
         args <- list(...)
@@ -280,8 +280,8 @@ setMethod("update", "IntIntervals",
                 start <- args$start
                 width <- args$width
             }
-            inters <- .make.inters(start, width, args$names)
-            slot(object, "inters", check=FALSE) <- inters
+            ranges <- .make.ranges(start, width, args$names)
+            slot(object, "ranges", check=FALSE) <- ranges
             if (check) validObject(object)
             return(object)
         }
@@ -296,7 +296,7 @@ setMethod("update", "IntIntervals",
             if (check)
                 names(object) <- args$names
             else
-                object@inters$names <- args$names
+                object@ranges$names <- args$names
         }
         object
     }
@@ -307,7 +307,7 @@ setMethod("update", "IntIntervals",
 ### The "show" method.
 ###
 
-setMethod("as.data.frame", "IntIntervals",
+setMethod("as.data.frame", "IRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
         ans <- data.frame(start=start(x),
@@ -320,7 +320,7 @@ setMethod("as.data.frame", "IntIntervals",
     }
 )
 
-setMethod("show", "IntIntervals",
+setMethod("show", "IRanges",
     function(object) show(as.data.frame(object))
 )
 
@@ -330,7 +330,7 @@ setMethod("show", "IntIntervals",
 ###
 
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", "IntIntervals",
+setMethod("[", "IRanges",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -349,12 +349,12 @@ setMethod("[", "IntIntervals",
         } else if (!is.null(i)) {
             stop("invalid subscript type")
         }
-        x@inters <- x@inters[i, , drop=FALSE]
+        x@ranges <- x@ranges[i, , drop=FALSE]
         x
     }
 )
 
-setReplaceMethod("[", "IntIntervals",
+setReplaceMethod("[", "IRanges",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", sQuote(class(x)), " object")
@@ -367,17 +367,17 @@ setReplaceMethod("[", "IntIntervals",
 ###
 
 #Not sure we want this!
-#setMethod("as.list", "IntIntervals", function(x, ...) x@inters)
+#setMethod("as.list", "IRanges", function(x, ...) x@ranges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other methods.
 ###
 
-setMethod("as.matrix", "IntIntervals",
+setMethod("as.matrix", "IRanges",
     function(x, ...)
     {
-        ans <- as.matrix(x@inters[ , c("start", "width")], ...)
+        ans <- as.matrix(x@ranges[ , c("start", "width")], ...)
         rownames(ans) <- names(x)
         ans
     }
@@ -389,7 +389,7 @@ setMethod("as.matrix", "IntIntervals",
 ###
 
 setGeneric("first", function(x) standardGeneric("first"))
-setMethod("first", "IntIntervals", function(x) {.Deprecated("start"); start(x)})
+setMethod("first", "IRanges", function(x) {.Deprecated("start"); start(x)})
 setGeneric("last", function(x) standardGeneric("last"))
-setMethod("last", "IntIntervals", function(x) {.Deprecated("end"); end(x)})
+setMethod("last", "IRanges", function(x) {.Deprecated("end"); end(x)})
 

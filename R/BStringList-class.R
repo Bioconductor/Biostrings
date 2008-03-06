@@ -142,7 +142,7 @@ setMethod("initialize", "AAStringList",
     data <- .Call("STRSXP_to_XRaw",
                   x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                   PACKAGE="Biostrings")
-    locs2 <- intToAdjacentIntervals(width(safe_locs))
+    locs2 <- intToAdjacentRanges(width(safe_locs))
     ans <- .Call("XRaw_to_BStringList",
                  data, start(locs2), width(locs2), proto,
                  PACKAGE="Biostrings")
