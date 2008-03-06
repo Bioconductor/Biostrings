@@ -85,6 +85,7 @@
 \alias{[[,BStringSet-method}
 \alias{[[<-,BStringSet-method}
 \alias{as.list,BStringSet-method}
+\alias{as.character,BStringSet-method}
 
 \alias{show,BStringList-method}
 \alias{[,BStringList-method}

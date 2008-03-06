@@ -41,6 +41,13 @@ setMethod("consmat", "list",
     }
 )
 
+setMethod("consmat", "BStringSet",
+    function(x, freq=TRUE)
+    {
+        consmat(as.character(x, use.names=FALSE), freq=freq)
+    }
+)
+
 setMethod("consmat", "BStringViews",
     function(x, freq=TRUE)
     {

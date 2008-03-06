@@ -474,3 +474,14 @@ setMethod("as.list", "BStringSet",
     }
 )
 
+setMethod("as.character", "BStringSet",
+    function(x, use.names=TRUE)
+    {
+        use.names <- normalize.use.names(use.names)
+        ans <- sapply(seq_len(length(x)), function(i) as.character(x[[i]]))
+        if (use.names)
+            names(ans) <- names(x)
+        ans
+    }
+)
+

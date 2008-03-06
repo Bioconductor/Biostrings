@@ -54,7 +54,7 @@ The Bioconductor project provides data packages that contain the full genome
 of a given organism. These packages are called {\it Biostrings-based genome
 data packages} because the sequences they contain are stored in the basic
 containers defined in the \Rpackage{Biostrings} package (i.e. the
-\Rclass{DNAString} and \Rclass{BStringViews} classes).
+\Rclass{DNAString} and \Rclass{DNAStringSet} classes).
 Except for the data they contain, all the Biostrings-based genome data
 packages are very similar and can be manipulated in an easy and consistent
 way. This is achieved by defining and sharing their basic functionalies
@@ -272,15 +272,14 @@ More precisely, here is the analysis we want to perform:
 Let's start by loading the input dictionary with:
 <<c1>>=
 ce2dict0_file <- system.file("extdata/ce2dict0.fa", package="Biostrings")
-ce2dict0 <- read.BStringViews(ce2dict0_file, "fasta", subjectClass="DNAString")
+ce2dict0 <- read.DNAStringSet(ce2dict0_file, "fasta")
 @
 
 We can display the number of patterns in the dictionary, the first five
 patterns, and the first five pattern IDs with:
 <<c2>>=
 length(ce2dict0)
-ce2dict0[1:5]
-desc(ce2dict0)[1:5]
+ce2dict0
 @
 
 Here is how we can write the functions that will perform our analysis:
@@ -295,7 +294,7 @@ writeHits <- function(seqname, matches, strand, file="", append=FALSE)
                        start=start(matches),
                        end=end(matches),
                        strand=rep.int(strand, length(matches)),
-                       patternID=desc(matches),
+                       patternID=names(matches),
                        check.names=FALSE)
     write.table(hits, file=file, append=append, quote=FALSE, sep="\t",
                 row.names=FALSE, col.names=!append)
@@ -313,15 +312,15 @@ runAnalysis1 <- function(dict0, outfile="")
         subject <- Celegans[[seqname]]
         cat(">>> Finding all hits in chromosome", seqname, "...\n")
         for (i in seq_len(length(dict0))) {
-            patternID <- desc(dict0)[i]
+            patternID <- names(dict0)[i]
             pattern <- dict0[[i]]
             plus_matches <- matchPattern(pattern, subject)
-            desc(plus_matches) <- rep.int(patternID, length(plus_matches))
+            names(plus_matches) <- rep.int(patternID, length(plus_matches))
             writeHits(seqname, plus_matches, "+", file=outfile, append=append)
             append <- TRUE
             rcpattern <- reverseComplement(pattern)
             minus_matches <- matchPattern(rcpattern, subject)
-            desc(minus_matches) <- rep.int(patternID, length(minus_matches))
+            names(minus_matches) <- rep.int(patternID, length(minus_matches))
             writeHits(seqname, minus_matches, "-", file=outfile, append=append)
         }
         cat(">>> DONE\n")
@@ -397,7 +396,7 @@ hits1_table[hits1_table == max(hits1_table)] # pattern(s) with more hits
   \item{}
 Get the pattern(s) with no hits:
 <<c9>>=
-setdiff(desc(ce2dict0), hits1$patternID) # pattern(s) with no hits
+setdiff(names(ce2dict0), hits1$patternID) # pattern(s) with no hits
 @
   \item{}
 And finally a function that can be used to plot the hits:
@@ -460,7 +459,7 @@ it's a good idea to convert it {\it before} to pass it to the
 This way the conversion is done only once:
 <<d1,keep.source=TRUE>>=
 library(hgu95av2probe)
-tmpseq <- BStringViews(hgu95av2probe$sequence, "DNAString")
+tmpseq <- DNAStringSet(hgu95av2probe$sequence)
 someStats <- function(v)
 {
     GC <- DNAString("GC")

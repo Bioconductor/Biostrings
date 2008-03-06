@@ -17,8 +17,8 @@ line which begins with a \code{>}.
     Either a character string naming a file or a connection open
     for reading or writing.
     If \code{""} (the default for \code{writeFASTA}),
-    \code{write.BStringViews} writes to the standard
-    output connection (the console) unless redirected by \code{sink}.
+    then the function writes to the standard output connection (the console)
+    unless redirected by \code{sink}.
   }
   \item{checkComments}{
     Whether or not comments, lines beginning with a semi-colon
@@ -54,9 +54,8 @@ of the biological sequence.
 \author{ R. Gentleman }
 
 \seealso{
-  \code{\link{read.BStringViews}},
-  \code{\link{write.BStringViews}},
-  \link{BStringViews-class},
+  \code{\link{read.BStringSet}},
+  \code{\link{write.BStringSet}},
   \code{\link{read.table}},
   \code{\link{scan}},
   \code{\link{write.table}}

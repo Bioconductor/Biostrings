@@ -24,11 +24,11 @@ Collate: 00datacache.R
         BString-class.R
         BStringViews-class.R
         BStringViews-constructors.R
-        BStringViews-io.R
         BStringSet-class.R
         BStringList-class.R
         BStringPartialMatches-class.R
         BStringAlign-class.R
+        BStringSet-io.R
         letter.R
         subBString.R
         alphabetFrequency.R

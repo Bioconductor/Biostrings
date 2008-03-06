@@ -57,14 +57,13 @@ and consensus matrix calculation.
 The \Rpackage{Biostrings} package includes FASTA files
 encoding the DNA sequence for
 Yeast chromosome I, along with some ORFs.
-Here we load the {\tt someORF.fa} file into a \Rclass{BStringViews} object
-using the \Rfunction{read.BStringViews} function:
+Here we load the {\tt someORF.fa} file into a \Rclass{DNAStringSet} object
+by using the \Rfunction{read.DNAStringSet} function:
 <<gety>>=
 library(Biostrings)
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
-orf <- read.BStringViews(file, "fasta", "DNAString")
+orf <- read.DNAStringSet(file, "fasta")
 orf
-desc(orf)
 @
 Note that some of the ORF sequences are represented in reverse complement form.
 
@@ -103,7 +102,7 @@ assumed to be aligned.
 To illustrate, the following application assumes the ORF data
 to be aligned for the first 10 positions (patently false):
 <<doal>>=
-orf10 <- subviews(orf, 1, 10)
+orf10 <- DNAStringSet(orf, end=10)
 consmat(orf10)
 @
 

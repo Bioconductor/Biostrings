@@ -151,7 +151,7 @@ in a \Rclass{BStringViews} object:
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
 orf <- read.BStringViews(file, "fasta", "DNAString")
 orf
-desc(orf)
+names(orf)
 @
 
 

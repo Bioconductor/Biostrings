@@ -44,13 +44,13 @@ CharacterToFASTArecords <- function(x)
 ###
 ### Note that, for any well-formed list of FASTA records 'FASTArecs',
 ###
-###   BStringViewsToFASTArecords(FASTArecordsToBStringViews(FASTArecs))
+###   BStringSetToFASTArecords(BStringSet(FASTArecordsToBStringViews(FASTArecs)))
 ###
 ### is identical to 'FASTArecs'.
 ### But it is NOT the case that any BStringViews object y can
 ### be "reconstructed" with
 ###
-###   FASTArecordsToBStringViews(BStringViewsToFASTArecords(y))
+###   FASTArecordsToBStringViews(BStringSetToFASTArecords(BStringSet(y)))
 ###
 
 FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
@@ -63,10 +63,10 @@ FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
     BStringViews(src, subjectClass, collapse)
 }
 
-BStringViewsToFASTArecords <- function(x)
+BStringSetToFASTArecords <- function(x)
 {
-    if (!is(x, "BStringViews"))
-        stop("'x' must be a BStringViews object")
+    if (!is(x, "BStringSet"))
+        stop("'x' must be a BStringSet object")
     CharacterToFASTArecords(as.character(x))
 }
 
@@ -208,23 +208,48 @@ read.BStringViews <- function(file, format, subjectClass, collapse="")
     )
 }
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "write.BStringViews" function.
+### The "read.BStringSet", "read.DNAStringSet", "read.RNAStringSet" and
+### "read.AAStringSet" functions.
+###
+
+read.BStringSet <- function(file, format)
+    BStringSet(read.BStringViews(file, format, "BString"))
+
+read.DNAStringSet <- function(file, format)
+    DNAStringSet(read.BStringViews(file, format, "DNAString"))
+
+read.RNAStringSet <- function(file, format)
+    RNAStringSet(read.BStringViews(file, format, "RNAString"))
+
+read.AAStringSet <- function(file, format)
+    AAStringSet(read.BStringViews(file, format, "AAString"))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "write.BStringSet" and "write.BStringViews" functions.
 ###
 
 .write.fasta <- function(x, file, width)
 {
-    FASTArecs <- BStringViewsToFASTArecords(x)
+    FASTArecs <- BStringSetToFASTArecords(x)
     writeFASTA(FASTArecs, file, width)
 }
 
-write.BStringViews <- function(x, file="", format, width=80)
+write.BStringSet <- function(x, file="", format, width=80)
 {
-    if (!is.character(format) || length(format) != 1 || is.na(format))
+    if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta"))
     switch(format,
         "fasta"=.write.fasta(x, file, width)
     )
+}
+
+write.BStringViews <- function(x, file="", format, width=80)
+{
+    x <- mkBStringSet(class(subject(x)), x)
+    write.BStringSet(x, file=file, format, width=width)
 }
 
