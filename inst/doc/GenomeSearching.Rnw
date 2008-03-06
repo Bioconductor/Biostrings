@@ -464,9 +464,9 @@ someStats <- function(v)
 {
     GC <- DNAString("GC")
     CG <- DNAString("CG")
-    sapply(1:length(v),
+    sapply(seq_len(length(v)),
            function(i) {
-               y <- v[i]
+               y <- v[[i]]
                c(alphabetFrequency(y)[1:4],
                  GC=countPattern(GC, y),
                  CG=countPattern(CG, y))
