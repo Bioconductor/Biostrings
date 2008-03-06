@@ -273,17 +273,11 @@ Let's start by loading the input dictionary with:
 <<c1>>=
 ce2dict0_file <- system.file("extdata/ce2dict0.fa", package="Biostrings")
 ce2dict0 <- read.DNAStringSet(ce2dict0_file, "fasta")
-@
-
-We can display the number of patterns in the dictionary, the first five
-patterns, and the first five pattern IDs with:
-<<c2>>=
-length(ce2dict0)
 ce2dict0
 @
 
 Here is how we can write the functions that will perform our analysis:
-<<c3,keep.source=TRUE>>=
+<<c2,keep.source=TRUE>>=
 writeHits <- function(seqname, matches, strand, file="", append=FALSE)
 {
     if (file.exists(file) && !append)
@@ -365,7 +359,7 @@ function:
 
 Now we are ready to run the analysis and put the results in the
 \Robject{"ce2dict0_ana1.txt"} file:
-<<c4>>=
+<<c3>>=
 runAnalysis1(ce2dict0, outfile="ce2dict0_ana1.txt")
 @
 
@@ -373,34 +367,34 @@ Here is some very simple example of post analysis:
 \begin{itemize}
   \item{}
 Get the total number of hits:
-<<c5>>=
+<<c4>>=
 hits1 <- read.table("ce2dict0_ana1.txt", header=TRUE)
 nrow(hits1)
 @
   \item{}
 Get the number of hits per chromosome:
-<<c6>>=
+<<c5>>=
 table(hits1$seqname)
 @
   \item{}
 Get the number of hits per pattern:
-<<c7>>=
+<<c6>>=
 hits1_table <- table(hits1$patternID)
 hits1_table
 @
   \item{}
 Get the pattern(s) with the higher number of hits:
-<<c8>>=
+<<c7>>=
 hits1_table[hits1_table == max(hits1_table)] # pattern(s) with more hits
 @
   \item{}
 Get the pattern(s) with no hits:
-<<c9>>=
+<<c8>>=
 setdiff(names(ce2dict0), hits1$patternID) # pattern(s) with no hits
 @
   \item{}
 And finally a function that can be used to plot the hits:
-<<c10,keep.source=TRUE>>=
+<<c9,keep.source=TRUE>>=
 plotGenomeHits <- function(bsgenome, seqnames, hits)
 {
     ## Retrieve the sequence lengths
@@ -435,7 +429,7 @@ plotGenomeHits <- function(bsgenome, seqnames, hits)
 }
 @
 Plot the hits found by \Rfunction{runAnalysis1} with:
-<<c11,eval=false>>=
+<<c10,eval=false>>=
 plotGenomeHits(Celegans, seqnames(Celegans), hits1)
 @
 \end{itemize}
@@ -550,7 +544,7 @@ Remember that \Rfunction{matchPDict} only works if all the patterns in the
 input dictionary have the same length so for this 2nd analysis, we will truncate
 the patterns in \Robject{ce2dict0} to 15 nucleotides:
 <<e2>>=
-ULce2dict0 <- subviews(ce2dict0, 1, 15)
+ULce2dict0 <- DNAStringSet(ce2dict0, end=15)
 @
 
 Now we can run this 2nd analysis and put the results in the
