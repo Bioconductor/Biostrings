@@ -82,7 +82,11 @@
 }
 
 \examples{
-  reverseComplement(DNAString("ACGT-YN-"))
+  x <- DNAString("ACGT-YN-")
+  reverseComplement(x)
+  library(drosophila2probe)
+  x <- DNAStringSet(drosophila2probe$sequence)
+  reverseComplement(x)
 
   ## Applying reverseComplement() to the pattern before calling matchPattern()
   ## is the standard way to search hits on the reverse strand of a chromosome:
