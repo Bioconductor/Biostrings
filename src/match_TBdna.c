@@ -19,7 +19,7 @@ static int debug = 0;
 
 
 /****************************************************************************
- * The input_uldict object is used for storing the poranges to the patterns
+ * The input_uldict object is used for storing the pointers to the patterns
  * contained in the input dictionary provided by the user.
  * These patterns can only be accessed for reading!
  */

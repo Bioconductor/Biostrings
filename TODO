@@ -31,42 +31,25 @@ In 2.7
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
 
+- BStringSet objects:
+    o DNAStringSet(x) should not do anything when x is already a DNAStringSet
+      _instance_ (class(x) == "DNAStringSet").
+    o Add methods for BStringSet objects everywhere there are methods defined
+      for BStringViews objects (matchPattern, countPattern, etc...).
+      Make them work in a vectorized fashion for BStringSet objects.
+
 - BStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
       I suspect there is something wrong with C routine narrow_BStringList()
       when proto is NULL.
-    o DNAStringList(x) should not do anything when x is already a DNAStringList
-      _instance_ (class(x) == "DNAStringList"), but not necesarily when
-      it's a DNAStringList object (is(x, "DNAStringList")).
-      The same apply to everybody in the BStringList() family.
     o Improve speed of BStringList() and family when the input is a BStringList
       or BStringViews object (i.e. XRaw input).
       For XRaw input, implement C routine copy_subXRaw() and use it for
       copySubXRaw(). Add copySubBString() and copySubBStrings() and use them in
       the BString() and BStringList() constructors.
     o Add read.BStringList/write.BStringList.
-    o Add methods for BStringList objects everywhere there are methods defined
-      for BStringViews objects (alphabetFrequency, reverse, matchPattern,
-      etc...). Make them work in a vectorized fashion for BStringList objects.
-    o Replace serialized BStringViews objects (multiple sequences) by serialized
-      BStringList objects in BSgenome.* packages. Modify BSgenome:::mseqnames
-      man page consequently. Bump versions of BSgenome + all the BSgenome.* pkgs
-      and make the updated BSgenome.* pkgs depend on the updated BSgenome pkg.
 
-- BStringSet objects:
-    o Helper function .narrowBStringSet() is not optimal when the data need
-      to be copied. In this case, it does:
-
-        super <- .BStringSetToBString(x, start(locs), width(locs), baseClass)
-        ans_start <- getStartForAdjacentSeqs(width(locs))
-
-      which means that each sequence is narrowed and concatenated into 'super'.
-      It ignores the fact that the narrowed sequences could overlap in the
-      original super(x) so too much data is copied. In fact it would be enough
-      to copy only the regions of super(x) that are covered by the narrowed
-      sequences.
-
-- In align_needwunsQS(): use mkXRaw() instead of making external poranges by hand.
+- In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
 
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
