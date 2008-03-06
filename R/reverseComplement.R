@@ -11,16 +11,21 @@ setMethod("reverse", "BString",
         BString.tr(x, reverse=TRUE)
 )
 
+setMethod("reverse", "BStringSet",
+    function(x, ...)
+    {
+        x@super <- reverse(super(x))
+        start(x, check=FALSE) <- nchar(super(x)) - end(x) + 1L
+        x
+    }
+)
+
 setMethod("reverse", "BStringViews",
     function(x, ...)
     {
-        subject <- reverse(x@subject)
-        ls <- subject@length
-        start <- ls - end(x) + 1
-        end <- ls - start(x) + 1
-        ans <- views(subject, start, end)
-        desc(ans) <- desc(x)
-        ans
+        x@subject <- reverse(subject(x))
+        start(x, check=FALSE) <- nchar(subject(x)) - end(x) + 1L
+        x
     }
 )
 
@@ -43,13 +48,73 @@ setMethod("complement", "RNAString",
         BString.tr(x, lkup=getRNAComplementLookup())
 )
 
+setMethod("complement", "DNAStringSet",
+    function(x, ...)
+    {
+        x@super <- complement(super(x))
+        x
+    }
+)
+
+setMethod("complement", "RNAStringSet",
+    function(x, ...)
+    {
+        x@super <- complement(super(x))
+        x
+    }
+)
+
 setMethod("complement", "BStringViews",
     function(x, ...)
     {
-        subject <- complement(x@subject)
-        ans <- views(subject, start(x), end(x))
-        desc(ans) <- desc(x)
-        ans
+        x@subject <- complement(subject(x))
+        x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "reverseComplement" generic function and methods.
+###
+
+setGeneric("reverseComplement", signature="x",
+    function(x, ...) standardGeneric("reverseComplement")
+)
+
+setMethod("reverseComplement", "DNAString",
+    function(x, ...)
+        BString.tr(x, lkup=getDNAComplementLookup(), reverse=TRUE)
+)
+
+setMethod("reverseComplement", "RNAString",
+    function(x, ...)
+        BString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
+)
+
+setMethod("reverseComplement", "DNAStringSet",
+    function(x, ...)
+    {
+        x@super <- reverseComplement(super(x))
+        start(x, check=FALSE) <- nchar(super(x)) - end(x) + 1L
+        x
+    }
+)
+
+setMethod("reverseComplement", "RNAStringSet",
+    function(x, ...)
+    {
+        x@super <- reverseComplement(super(x))
+        start(x, check=FALSE) <- nchar(super(x)) - end(x) + 1L
+        x
+    }
+)
+
+setMethod("reverseComplement", "BStringViews",
+    function(x, ...)
+    {
+        x@subject <- reverseComplement(subject(x))
+        start(x, check=FALSE) <- nchar(subject(x)) - end(x) + 1L
+        x
     }
 )
 
@@ -82,36 +147,4 @@ rna2dna <- function(x)
     if (!is(x, "RNAString")) stop("rna2dna() only works on RNA input")
     DNAString(x)
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "reverseComplement" generic function and methods.
-###
-
-setGeneric("reverseComplement", signature="x",
-    function(x, ...) standardGeneric("reverseComplement")
-)
-
-setMethod("reverseComplement", "DNAString",
-    function(x, ...)
-        BString.tr(x, lkup=getDNAComplementLookup(), reverse=TRUE)
-)
-
-setMethod("reverseComplement", "RNAString",
-    function(x, ...)
-        BString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
-)
-
-setMethod("reverseComplement", "BStringViews",
-    function(x, ...)
-    {
-        subject <- reverseComplement(x@subject)
-        ls <- subject@length
-        start <- ls - end(x) + 1L
-        end <- ls - start(x) + 1L
-        ans <- views(subject, start, end)
-        desc(ans) <- desc(x)
-        ans
-    }
-)
 

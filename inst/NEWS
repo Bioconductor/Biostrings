@@ -72,6 +72,12 @@ o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
 
 UTILITIES
 
+o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
+  read.AAStringSet() and write.BStringSet(). read.BStringSet() and family is
+  now prefered over read.BStringViews() for loading a FASTA file into R.
+  Renamed helper function BStringViewsToFASTArecords() ->
+  BStringSetToFASTArecords().
+
 o Added the chartr() generic function with a method for BString objects.
   Methods for other types of objects (in particular for BStringViews and
   BStringSet objects) will come later.
@@ -92,14 +98,18 @@ o Three changes in alphabetFrequency():
 
 o Added "as.character" and "consmat" methods for "BStringAlign" objects.
 
-o reverse(), complement() and reverseComplement() now preserve desc(x) when
-  applied to BStringViews object x.
-
 o Added the patternFrequency() generic function with a method for CWdna_PDict
   objects (will come later for TBdna_PDict objects).
 
 o Added a "duplicated" method for CWdna_PDict objects (will come later for
   TBdna_PDict objects).
+
+o Added "reverse" method for BStringSet objects, and "complement" and
+  "reverseComplement" methods method for DNAStringSet and RNAStringSet objects.
+  They all preserve the names.
+
+o reverse(), complement() and reverseComplement() now preserve the names when
+  applied to a BStringViews object.
 
 o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
   + a "reverseComplement" method for RNAString objects.

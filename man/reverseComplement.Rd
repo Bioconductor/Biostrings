@@ -2,14 +2,19 @@
 
 \alias{reverse}
 \alias{reverse,BString-method}
+\alias{reverse,BStringSet-method}
 \alias{reverse,BStringViews-method}
 \alias{complement}
 \alias{complement,DNAString-method}
 \alias{complement,RNAString-method}
+\alias{complement,DNAStringSet-method}
+\alias{complement,RNAStringSet-method}
 \alias{complement,BStringViews-method}
 \alias{reverseComplement}
 \alias{reverseComplement,DNAString-method}
 \alias{reverseComplement,RNAString-method}
+\alias{reverseComplement,DNAStringSet-method}
+\alias{reverseComplement,RNAStringSet-method}
 \alias{reverseComplement,BStringViews-method}
 
 
@@ -29,11 +34,14 @@
 
 \arguments{
   \item{x}{
-    A \code{\link{BString}} (or derived) object
-    or a \code{\link{BStringViews}} object for \code{reverse}.
-    A \code{\link{DNAString}} or \code{\link{RNAString}} object
-    (or a \code{\link{BStringViews}} object with a \code{\link{DNAString}}
-    or \code{\link{RNAString}} subject) for \code{complement}
+    A \link{BString} (or derived) object,
+    a \link{BStringSet} (or derived) object,
+    or a \link{BStringViews} object for \code{reverse}.
+
+    A \link{DNAString}, \link{RNAString},
+    \link{DNAStringSet} or \link{RNAStringSet} object,
+    or a \link{BStringViews} object with a \link{DNAString}
+    or \link{RNAString} subject for \code{complement}
     and \code{reverseComplement}.
   }
   \item{...}{
@@ -64,6 +72,11 @@
 }
 
 \seealso{
+  \link{DNAString-class},
+  \link{RNAString-class},
+  \link{DNAStringSet-class},
+  \link{RNAStringSet-class},
+  \link{BStringViews-class},
   \code{\link{strrev}},
   \code{\link{findPalindromes}}
 }
