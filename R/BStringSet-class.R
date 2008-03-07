@@ -194,7 +194,7 @@ setMethod("initialize", "AAStringSet",
 BStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
     ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
-                       keep.nonoverlapping=TRUE,
+                       keep.all.ranges=TRUE,
                        use.names=use.names)
     if (verbose && any(width(ranges) < width(x)))
         warning("trimming \"out of limits\" views")

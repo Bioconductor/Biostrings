@@ -22,7 +22,7 @@
 \usage{
   intToRanges(x, use.names=TRUE)
   intToAdjacentRanges(x, use.names=TRUE)
-  restrict(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
+  restrict(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
   narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)
   reduce(x, with.inframe.attrib=FALSE)
 }
@@ -38,6 +38,9 @@
     [TODO]
   }
   \item{end}{
+    [TODO]
+  }
+  \item{keep.all.ranges}{
     [TODO]
   }
   \item{width}{

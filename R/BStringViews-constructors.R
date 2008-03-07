@@ -184,10 +184,10 @@ setMethod("BStringViews", "BStringViews",
 ###
 
 setMethod("restrict", "BStringViews",
-    function(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
+    function(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
     {
-        if (!missing(keep.nonoverlapping))
-            stop("'keep.nonoverlapping' is not supported for BStringViews objects")
+        if (!missing(keep.all.ranges))
+            stop("'keep.all.ranges' is not supported for BStringViews objects")
         callNextMethod(x, start, end, use.names=use.names)
     }
 )

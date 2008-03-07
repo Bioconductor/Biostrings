@@ -43,11 +43,11 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
 ###
 
 setGeneric("restrict", signature="x",
-    function(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
+    function(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
         standardGeneric("restrict")
 )
 
-.restrict.IRanges <- function(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
+.restrict.IRanges <- function(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
 {
     if (!isSingleNumber(start))
         stop("'start' must be a single integer")
@@ -59,8 +59,8 @@ setGeneric("restrict", signature="x",
         end <- as.integer(end)
     if (start > end + 1L)
         stop("'start' must be <= 'end + 1'")
-    if (!isTRUEorFALSE(keep.nonoverlapping))
-        stop("'keep.nonoverlapping' must be 'TRUE' or 'FALSE'")
+    if (!isTRUEorFALSE(keep.all.ranges))
+        stop("'keep.all.ranges' must be 'TRUE' or 'FALSE'")
     use.names <- normalize.use.names(use.names)
 
     ans_start <- start(x)
@@ -69,7 +69,7 @@ setGeneric("restrict", signature="x",
 
     far_too_right <- end < ans_start
     far_too_left <- ans_end < start
-    if (keep.nonoverlapping) {
+    if (keep.all.ranges) {
         ans_start[far_too_right] <- end + 1L
         ans_end[far_too_left] <- start - 1L
     } else {
