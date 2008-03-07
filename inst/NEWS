@@ -3,7 +3,6 @@
 *	       2.7 SERIES NEWS			 *
 **************************************************
 
-
 STRING MATCHING
 
 o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
@@ -170,6 +169,8 @@ o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
 
 o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
   Biostrings 1).
+
+o Changed license from LGPL to Artistic-2.0
 
 
 **************************************************
