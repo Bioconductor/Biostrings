@@ -4,14 +4,14 @@
 \alias{alphabetFrequency,BString-method}
 \alias{alphabetFrequency,DNAString-method}
 \alias{alphabetFrequency,RNAString-method}
-\alias{alphabetFrequency,BStringViews-method}
 \alias{alphabetFrequency,BStringSet-method}
+\alias{alphabetFrequency,BStringViews-method}
 
 \alias{oligonucleotideFrequency}
 \alias{oligonucleotideFrequency,DNAString-method}
 \alias{oligonucleotideFrequency,RNAString-method}
-\alias{oligonucleotideFrequency,BStringViews-method}
 \alias{oligonucleotideFrequency,BStringSet-method}
+\alias{oligonucleotideFrequency,BStringViews-method}
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
@@ -43,9 +43,9 @@
 
 \usage{
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE, ...)
-  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, ...)
-  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, ...)
-  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, use.names=TRUE, ...)
+  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, with.labels=TRUE, ...)
+  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
 
   ## Some related utility functions
   strrev(x)
@@ -67,13 +67,13 @@
     object with a \link{BString} subject, or a \link{BStringSet} instance),
     then the \code{baseOnly} argument is ignored.
   }
+  \item{freq}{
+    If \code{TRUE} then frequencies are reported, otherwise counts.
+  }
   \item{...}{
     Further arguments to be passed to or from other methods.
     For the \link{BStringViews} and \link{BStringSet} methods,
     the \code{collapse} argument is accepted.
-  }
-  \item{freq}{
-    If \code{TRUE} then frequencies are reported, otherwise counts.
   }
   \item{fast.moving.side}{
     Which side of the strings should move fastest?
@@ -86,13 +86,13 @@
     If \code{TRUE} then return a numeric array, otherwise a numeric
     vector with no dim attribute.
   }
+  \item{with.labels}{
+    If \code{TRUE} then return a named vector (or array).
+  }
   \item{width}{
     The number of nucleotides per oligonucleotide for
     \code{oligonucleotideFrequency}.
     The number of letters per string for \code{mkAllStrings}.
-  }
-  \item{use.names}{
-    If \code{TRUE} then return a named vector (or array).
   }
   \item{alphabet}{
     The alphabet to use to make the strings.
@@ -114,7 +114,7 @@
 
   For \code{alphabetFrequency}: if \code{x} is a "DNA or RNA input", then the
   returned vector is named with the letters in the alphabet (unless
-  \code{use.names} is \code{FALSE}).
+  \code{with.labels} is \code{FALSE}).
   If the \code{baseOnly} argument is \code{TRUE}, then the returned vector
   has only 5 elements: 4 elements corresponding to the 4 nucleotides
   + the 'other' element.
@@ -136,7 +136,7 @@
 \seealso{
   \code{\link{countPDict}},
   \link{BString}, \link{DNAString}, \link{RNAString},
-  \link{BStringViews}, \link{BStringSet},
+  \link{BStringSet}, \link{BStringViews},
   \code{\link{rev}}, \code{\link{strsplit}},
   \code{\link{GENETIC_CODE}}, \code{\link{AMINO_ACID_CODE}}
 }
@@ -181,9 +181,9 @@
   sapply(split(tri1, names(tri1)), sum) # 12512 occurences of the stop codon
 
   ## When the returned vector is very long (e.g. width >= 10), using
-  ## 'use.names=FALSE' will improve the performance considerably (100x, 1000x
+  ## 'with.labels=FALSE' will improve the performance considerably (100x, 1000x
   ## or more):
-  f12 <- oligonucleotideFrequency(yeast1, 12, use.names=FALSE) # very fast!
+  f12 <- oligonucleotideFrequency(yeast1, 12, with.labels=FALSE) # very fast!
 
   ## Some related utility functions
   dict1 <- mkAllStrings(LETTERS[1:3], 4)

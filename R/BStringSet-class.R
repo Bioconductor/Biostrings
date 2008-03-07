@@ -191,13 +191,13 @@ setMethod("initialize", "AAStringSet",
 }
 
 ### Canonical conversion from BStringViews to a BStringSet (or derived)
-.BStringViewsToSet <- function(x, use.names)
+BStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
-    if (any(nchar(x) < width(x)))
-        warning("trimming \"out of limits\" views")
     ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
                        keep.nonoverlapping=TRUE,
                        use.names=use.names)
+    if (verbose && any(width(ranges) < width(x)))
+        warning("trimming \"out of limits\" views")
     class <- paste(class(subject(x)), "Set", sep="")
     new(class, subject(x), start=start(ranges), width=width(ranges),
                names=names(ranges), check=FALSE)
@@ -307,22 +307,22 @@ setMethod("AAStringSet", "BStringSet",
 
 setMethod("BStringSet", "BStringViews",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(.BStringViewsToSet(x, use.names),
+        .narrowBStringSet(BStringViewsToSet(x, use.names),
                           start, end, width, TRUE, "BString", check)
 )
 setMethod("DNAStringSet", "BStringViews",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(.BStringViewsToSet(x, use.names),
+        .narrowBStringSet(BStringViewsToSet(x, use.names),
                           start, end, width, TRUE, "DNAString", check)
 )
 setMethod("RNAStringSet", "BStringViews",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(.BStringViewsToSet(x, use.names),
+        .narrowBStringSet(BStringViewsToSet(x, use.names),
                           start, end, width, TRUE, "RNAString", check)
 )
 setMethod("AAStringSet", "BStringViews",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .narrowBStringSet(.BStringViewsToSet(x, use.names),
+        .narrowBStringSet(BStringViewsToSet(x, use.names),
                           start, end, width, TRUE, "AAString", check)
 )
 

@@ -249,7 +249,7 @@ write.BStringSet <- function(x, file="", format, width=80)
 
 write.BStringViews <- function(x, file="", format, width=80)
 {
-    x <- mkBStringSet(class(subject(x)), x)
-    write.BStringSet(x, file=file, format, width=width)
+    y <- BStringViewsToSet(x, use.names=TRUE)
+    write.BStringSet(y, file=file, format, width=width)
 }
 

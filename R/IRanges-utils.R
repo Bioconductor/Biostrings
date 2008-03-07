@@ -47,8 +47,7 @@ setGeneric("restrict", signature="x",
         standardGeneric("restrict")
 )
 
-.restrict.IRanges <- function(x, start, end,
-                                   keep.nonoverlapping=FALSE, use.names=TRUE)
+.restrict.IRanges <- function(x, start, end, keep.nonoverlapping=FALSE, use.names=TRUE)
 {
     if (!isSingleNumber(start))
         stop("'start' must be a single integer")
