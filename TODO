@@ -40,7 +40,7 @@ In 2.7
 
 - BStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
-      I suspect there is something wrong with C routine narrow_BStringList()
+      I suspect there is something wrong with C routine narrow_XStringList()
       when proto is NULL.
     o Improve speed of BStringList() and family when the input is a BStringList
       or BStringViews object (i.e. XRaw input).
@@ -201,7 +201,7 @@ In 2.7
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- Code cleaning: use _get_BString_charseq() in every C routine that receives a
+- Code cleaning: use _get_XString_charseq() in every C routine that receives a
   BString argument. This reduces the number of args that need to be passed
   and makes the code much cleaner. See match_naive_exact() and
   match_naive_inexact() for an example.

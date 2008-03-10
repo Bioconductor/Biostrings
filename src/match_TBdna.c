@@ -853,7 +853,7 @@ SEXP CWdna_pp_charseqs(SEXP dict, SEXP start, SEXP end)
 }
 
 /*
- * .Call entry point: "CWdna_pp_BStringSet"
+ * .Call entry point: "CWdna_pp_XStringSet"
  *
  * Argument:
  *   'dict': a DNAStringSet object containing the input sequences
@@ -862,15 +862,15 @@ SEXP CWdna_pp_charseqs(SEXP dict, SEXP start, SEXP end)
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_BStringSet(SEXP dict, SEXP start, SEXP end)
+SEXP CWdna_pp_XStringSet(SEXP dict, SEXP start, SEXP end)
 {
 	int dict_len, poffset, pattern_length;
 	const char *pattern;
 
-	dict_len = _get_BStringSet_length(dict);
+	dict_len = _get_XStringSet_length(dict);
 	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
 	for (poffset = 0; poffset < dict_len; poffset++) {
-		pattern = _get_BStringSet_charseq(dict, poffset, &pattern_length);
+		pattern = _get_XStringSet_charseq(dict, poffset, &pattern_length);
 		add_subpattern_to_input_uldict(poffset, pattern, pattern_length);
 	}
 	build_actree();
@@ -885,9 +885,9 @@ SEXP CWdna_pp_BStringSet(SEXP dict, SEXP start, SEXP end)
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
  *   'actree_base_codes': uldna_pdict@actree@base_codes
  *   'pdict_dups': pdict@dups
- *   'pdict_head_BStringSet': pdict@head (can be NULL)
- *   'pdict_tail_BStringSet': pdict@tail (can be NULL)
- *   'subject_BString': subject
+ *   'pdict_head_XStringSet': pdict@head (can be NULL)
+ *   'pdict_tail_XStringSet': pdict@tail (can be NULL)
+ *   'subject_XString': subject
  *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
  *   'fixed': logical vector of length 2
  *   'count_only': TRUE or FALSE
@@ -900,8 +900,8 @@ SEXP CWdna_pp_BStringSet(SEXP dict, SEXP start, SEXP end)
  ****************************************************************************/
 
 SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_dups, SEXP pdict_head_BStringSet, SEXP pdict_tail_BStringSet,
-		SEXP subject_BString,
+		SEXP pdict_dups, SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
+		SEXP subject_XString,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
@@ -911,13 +911,13 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
             head_len, tail_len, poffset;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	S = _get_BString_charseq(subject_BString, &nS);
+	S = _get_XString_charseq(subject_XString, &nS);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
-	no_head = pdict_head_BStringSet == R_NilValue;
-	no_tail = pdict_tail_BStringSet == R_NilValue;
+	no_head = pdict_head_XStringSet == R_NilValue;
+	no_tail = pdict_tail_XStringSet == R_NilValue;
 
 	if (!no_head)
 		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
@@ -929,7 +929,7 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		// The duplicated must be treated BEFORE the first pattern they
 		// duplicate, hence we must walk from last to first.
 		for (poffset = LENGTH(pdict_dups) - 1; poffset >= 0; poffset--) {
-			tail = _get_BStringSet_charseq(pdict_tail_BStringSet, poffset, &tail_len);
+			tail = _get_XStringSet_charseq(pdict_tail_XStringSet, poffset, &tail_len);
 			TBdna_match_tail(tail, tail_len, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
 				max_mm, fixedP, fixedS, is_count_only);

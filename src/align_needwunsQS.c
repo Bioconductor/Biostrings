@@ -121,16 +121,16 @@ static int needwunsQS(const char *S1, int nS1, const char *S2, int nS2,
 }
 
 /*
- * 's1_xp', 's1_offset', 's1_length': left BString object
- * 's2_xp', 's2_offset', 's2_length': right BString object
+ * 's1_xp', 's1_offset', 's1_length': left XString object
+ * 's2_xp', 's2_offset', 's2_length': right XString object
  * 'mat': scoring matrix (integer square matrix)
- * 'lkup': lookup table for translating BString bytes to scoring matrix
+ * 'lkup': lookup table for translating XString bytes to scoring matrix
  *         indices (integer vector)
  * 'gap_cost': gap cost or penalty (integer vector of length 1)
  * 'gap_code': encoded value of the '-' letter (raw vector of length 1)
  * Return a named list with 3 elements: 2 "externalptr" objects describing
  * the alignments + the score.
- * Note that the 2 BString objects to align should contain no gaps.
+ * Note that the 2 XString objects to align should contain no gaps.
  */
 SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 		SEXP s2_xp, SEXP s2_offset, SEXP s2_length,

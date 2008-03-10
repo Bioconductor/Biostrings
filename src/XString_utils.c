@@ -1,12 +1,12 @@
 /****************************************************************************
- *  Low-level manipulation of BString, BStringList and BStringSet objects   *
+ *  Low-level manipulation of XString, XStringList and XStringSet objects   *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
 
 
 /****************************************************************************
- * Encoding/decoding BString data.
+ * Encoding/decoding XString data.
  */
 
 static int DNA_enc_lkup[256], DNA_dec_lkup[256];
@@ -96,7 +96,7 @@ char _RNAdecode(char code)
 
 
 /****************************************************************************
- * Low-level manipulation of BString objects.
+ * Low-level manipulation of XString objects.
  */
 
 const char *get_class(SEXP x)
@@ -104,17 +104,17 @@ const char *get_class(SEXP x)
 	return CHAR(STRING_ELT(GET_CLASS(x), 0));
 }
 
-static SEXP getBString_data(SEXP x)
+static SEXP getXString_data(SEXP x)
 {
 	return GET_SLOT(x, install("data"));
 }
 
-const char *_get_BString_charseq(SEXP x, int *length)
+const char *_get_XString_charseq(SEXP x, int *length)
 {
 	SEXP xp;
 	int offset;
 
-	xp = GET_SLOT(getBString_data(x), install("xp"));
+	xp = GET_SLOT(getXString_data(x), install("xp"));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	*length = INTEGER(GET_SLOT(x, install("length")))[0];
 	return (const char *) (RAW(R_ExternalPtrTag(xp)) + offset);
@@ -137,28 +137,28 @@ SEXP mkXString(const char *class, SEXP data, int offset, int length)
 
 
 /****************************************************************************
- * Low-level manipulation of BStringList objects.
+ * Low-level manipulation of XStringList objects.
  */
 
-int _get_BStringList_length(SEXP x)
+int _get_XStringList_length(SEXP x)
 {
 	return LENGTH(GET_SLOT(x, install("seqs")));
 }
 
-const char *_get_BStringList_charseq(SEXP x, int i, int *nchar)
+const char *_get_XStringList_charseq(SEXP x, int i, int *nchar)
 {
 	SEXP seqs, seq;
 
 	seqs = GET_SLOT(x, install("seqs"));
 	seq = VECTOR_ELT(seqs, i);
-	return _get_BString_charseq(seq, nchar);
+	return _get_XString_charseq(seq, nchar);
 }
 
-/* 'x_seqs' must be the list, NOT the BStringList object!
- * TODO: make this work directly on the BStringList object and use the
+/* 'x_seqs' must be the list, NOT the XStringList object!
+ * TODO: make this work directly on the XStringList object and use the
  * 2 helper functions above to simplify the code.
  */
-SEXP BStrings_to_nchars(SEXP x_seqs)
+SEXP XStrings_to_nchars(SEXP x_seqs)
 {
 	SEXP ans, x_seq;
 	int nseq, i, *seq_length;
@@ -167,7 +167,7 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 	PROTECT(ans = NEW_INTEGER(nseq));
 	for (i = 0, seq_length = INTEGER(ans); i < nseq; i++, seq_length++) {
 		x_seq = VECTOR_ELT(x_seqs, i);
-		_get_BString_charseq(x_seq, seq_length);
+		_get_XString_charseq(x_seq, seq_length);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -175,16 +175,16 @@ SEXP BStrings_to_nchars(SEXP x_seqs)
 
 
 /****************************************************************************
- * Low-level manipulation of BStringSet objects.
+ * Low-level manipulation of XStringSet objects.
  */
 
-int _get_BStringSet_length(SEXP x)
+int _get_XStringSet_length(SEXP x)
 {
-	// Because a BStringSet object IS an IRanges object
+	// Because an XStringSet object IS an .IRanges object
 	return _get_IRanges_length(x);
 }
 
-const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
+const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
 {
 	SEXP super;
 	int start, super_length;
@@ -193,7 +193,7 @@ const char *_get_BStringSet_charseq(SEXP x, int i, int *nchar)
 	start = _get_IRanges_start(x)[i];
 	*nchar = _get_IRanges_width(x)[i];
 	super = GET_SLOT(x, install("super"));
-	super_seq = _get_BString_charseq(super, &super_length);
+	super_seq = _get_XString_charseq(super, &super_length);
 	return super_seq + start - 1;
 }
 

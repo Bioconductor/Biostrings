@@ -34,8 +34,8 @@ static int _lcsuffix(const char *S1, int nS1, const char *S2, int nS2)
 }
 
 /*
- * 's1_xp', 's1_offset', 's1_length': left BString object
- * 's2_xp', 's2_offset', 's2_length': right BString object
+ * 's1_xp', 's1_offset', 's1_length': left XString object
+ * 's2_xp', 's2_offset', 's2_length': right XString object
  */
 SEXP lcprefix(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 		SEXP s2_xp, SEXP s2_offset, SEXP s2_length)
@@ -60,8 +60,8 @@ SEXP lcprefix(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 }
 
 /*
- * 's1_xp', 's1_offset', 's1_length': left BString object
- * 's2_xp', 's2_offset', 's2_length': right BString object
+ * 's1_xp', 's1_offset', 's1_length': left XString object
+ * 's2_xp', 's2_offset', 's2_length': right XString object
  */
 SEXP lcsuffix(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 		SEXP s2_xp, SEXP s2_offset, SEXP s2_length)

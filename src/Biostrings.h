@@ -530,7 +530,7 @@ SEXP XInteger_write_ints_to_subset(
 );
 
 
-/* BString_utils.c */
+/* XString_utils.c */
 
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup);
 
@@ -546,7 +546,7 @@ char _RNAdecode(char code);
 
 const char *get_class(SEXP x);
 
-const char *_get_BString_charseq(
+const char *_get_XString_charseq(
 		SEXP x,
 		int *length
 );
@@ -558,19 +558,19 @@ SEXP mkXString(
 		int length
 );
 
-SEXP BStrings_to_nchars(SEXP x_seqs);
+SEXP XStrings_to_nchars(SEXP x_seqs);
 
-int _get_BStringList_length(SEXP x);
+int _get_XStringList_length(SEXP x);
 
-const char *_get_BStringList_charseq(
+const char *_get_XStringList_charseq(
 		SEXP x,
 		int i,
 		int *nchar
 );
 
-int _get_BStringSet_length(SEXP x);
+int _get_XStringSet_length(SEXP x);
 
-const char *_get_BStringSet_charseq(
+const char *_get_XStringSet_charseq(
 		SEXP x,
 		int i,
 		int *nchar
@@ -588,21 +588,21 @@ const CharSeq *STRSXP_to_charseqs(
 		const int *safe_widths
 );
 
-const CharSeq *BString_to_charseqs(
+const CharSeq *XString_to_charseqs(
 		SEXP x,
 		int nseq,
 		const int *safe_starts,
 		const int *safe_widths
 );
 
-const CharSeq *BStringSet_to_charseqs(
+const CharSeq *XStringSet_to_charseqs(
 		SEXP x,
 		int nseq,
 		const int *safe_starts,
 		const int *safe_widths
 );
 
-const CharSeq *BStringList_to_charseqs(
+const CharSeq *XStringList_to_charseqs(
 		SEXP x,
 		int nseq,
 		const int *safe_starts,
@@ -626,21 +626,21 @@ SEXP STRSXP_to_XRaw(
 		SEXP lkup
 );
 
-SEXP BString_to_XRaw(
+SEXP XString_to_XRaw(
 		SEXP x,
 		SEXP safe_starts,
 		SEXP safe_widths,
 		SEXP lkup
 );
 
-SEXP XRaw_to_BStringList(
+SEXP XRaw_to_XStringList(
 		SEXP x,
 		SEXP safe_starts,
 		SEXP safe_widths,
 		SEXP proto
 );
 
-SEXP narrow_BStringList(
+SEXP narrow_XStringList(
 		SEXP x,
 		SEXP safe_starts,
 		SEXP safe_widths,
@@ -723,22 +723,22 @@ int _is_matching(
 );
 
 SEXP is_matching(
-		SEXP pattern_BString,
-		SEXP subject_BString,
+		SEXP pattern_XString,
+		SEXP subject_XString,
 		SEXP start,
 		SEXP max_mismatch,
 		SEXP fixed
 );
 
 SEXP match_naive_exact(
-		SEXP pattern_BString,
-		SEXP subject_BString,
+		SEXP pattern_XString,
+		SEXP subject_XString,
 		SEXP count_only
 );
 
 SEXP match_naive_inexact(
-		SEXP pattern_BString,
-		SEXP subject_BString,
+		SEXP pattern_XString,
+		SEXP subject_XString,
 		SEXP max_mismatch,
 		SEXP fixed,
 		SEXP count_only
@@ -877,7 +877,7 @@ SEXP CWdna_pp_charseqs(
 		SEXP end
 );
 
-SEXP CWdna_pp_BStringSet(
+SEXP CWdna_pp_XStringSet(
 		SEXP dict,
 		SEXP start,
 		SEXP end
@@ -887,9 +887,9 @@ SEXP match_TBdna(
 		SEXP actree_nodes_xp,
 		SEXP actree_base_codes,
 		SEXP pdict_dups,
-		SEXP pdict_head_BStringSet,
-		SEXP pdict_tail_BStringSet,
-		SEXP subject_BString,
+		SEXP pdict_head_XStringSet,
+		SEXP pdict_tail_XStringSet,
+		SEXP subject_XString,
 		SEXP max_mismatch,
 		SEXP fixed,
 		SEXP count_only,

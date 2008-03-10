@@ -61,7 +61,7 @@ setMethod("length", "XStringList", function(x) length(x@seqs))
 
 setMethod("nchar", "XStringList",
     function(x, type="chars", allowNA=FALSE)
-        .Call("BStrings_to_nchars", x@seqs, PACKAGE="Biostrings")
+        .Call("XStrings_to_nchars", x@seqs, PACKAGE="Biostrings")
 )
 
 setMethod("width", "XStringList", function(x) nchar(x))
@@ -145,7 +145,7 @@ setMethod("initialize", "AAStringList",
                   x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                   PACKAGE="Biostrings")
     locs2 <- intToAdjacentRanges(width(safe_locs))
-    ans <- .Call("XRaw_to_BStringList",
+    ans <- .Call("XRaw_to_XStringList",
                  data, start(locs2), width(locs2), proto,
                  PACKAGE="Biostrings")
     if (use.names) names(ans) <- names(x)
@@ -161,7 +161,7 @@ setMethod("initialize", "AAStringList",
         proto <- NULL
     else
         proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
-    ans <- .Call("narrow_BStringList",
+    ans <- .Call("narrow_XStringList",
                  x, start(safe_locs), width(safe_locs), proto,
                  PACKAGE="Biostrings")
     if (use.names) names(ans) <- names(x)

@@ -36,48 +36,48 @@ char RNAdecode(char code)
 	return fun(code);
 }
 
-const char *get_BString_charseq(SEXP x, int *length)
+const char *get_XString_charseq(SEXP x, int *length)
 {
 	static const char *(*fun)(SEXP, int *) = NULL;
 
 	if (fun == NULL)
-		fun = (const char *(*)(SEXP, int *)) R_GetCCallable("Biostrings", "_get_BString_charseq");
+		fun = (const char *(*)(SEXP, int *)) R_GetCCallable("Biostrings", "_get_XString_charseq");
 	return fun(x, length);
 }
 
-int get_BStringList_length(SEXP x)
+int get_XStringList_length(SEXP x)
 {
 	static int (*fun)(SEXP) = NULL;
 
 	if (fun == NULL)
-		fun = (int (*)(SEXP)) R_GetCCallable("Biostrings", "_get_BStringList_length");
+		fun = (int (*)(SEXP)) R_GetCCallable("Biostrings", "_get_XStringList_length");
 	return fun(x);
 }
 
-const char *get_BStringList_charseq(SEXP x, int i, int *nchar)
+const char *get_XStringList_charseq(SEXP x, int i, int *nchar)
 {
 	static const char *(*fun)(SEXP, int, int *) = NULL;
 
 	if (fun == NULL)
-		fun = (const char *(*)(SEXP, int, int *)) R_GetCCallable("Biostrings", "_get_BStringList_charseq");
+		fun = (const char *(*)(SEXP, int, int *)) R_GetCCallable("Biostrings", "_get_XStringList_charseq");
 	return fun(x, i, nchar);
 }
 
-int get_BStringSet_length(SEXP x)
+int get_XStringSet_length(SEXP x)
 {
 	static int (*fun)(SEXP) = NULL;
 
 	if (fun == NULL)
-		fun = (int (*)(SEXP)) R_GetCCallable("Biostrings", "_get_BStringSet_length");
+		fun = (int (*)(SEXP)) R_GetCCallable("Biostrings", "_get_XStringSet_length");
 	return fun(x);
 }
 
-const char *get_BStringSet_charseq(SEXP x, int i, int *nchar)
+const char *get_XStringSet_charseq(SEXP x, int i, int *nchar)
 {
 	static const char *(*fun)(SEXP, int, int *) = NULL;
 
 	if (fun == NULL)
-		fun = (const char *(*)(SEXP, int, int *)) R_GetCCallable("Biostrings", "_get_BStringSet_charseq");
+		fun = (const char *(*)(SEXP, int, int *)) R_GetCCallable("Biostrings", "_get_XStringSet_charseq");
 	return fun(x, i, nchar);
 }
 

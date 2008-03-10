@@ -294,7 +294,7 @@ debug_TBdna <- function()
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else if (is(dict, "DNAStringSet")) {
-        pp_Cans <- .Call("CWdna_pp_BStringSet",
+        pp_Cans <- .Call("CWdna_pp_XStringSet",
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")

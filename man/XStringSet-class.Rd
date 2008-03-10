@@ -90,7 +90,7 @@
 \alias{[<-,XStringList-method}
 \alias{[[,XStringList-method}
 \alias{[[<-,XStringList-method}
-\alias{as.list,BStringList-method}
+\alias{as.list,XStringList-method}
 
 
 \title{BStringSet, DNAStringSet, RNAStringSet and AAStringSet objects}

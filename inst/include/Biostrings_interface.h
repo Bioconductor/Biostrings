@@ -48,35 +48,35 @@
       called in your .c file. For example, you could write the following
       function:
 
-        SEXP print_BString_charseq_as_bytes(SEXP x_BString)
+        SEXP print_XString_charseq_as_bytes(SEXP x_XString)
         {
             const char *S, *current_Schar;
             int nS, i;
 
-            S = get_BString_charseq(x_BString, &nS);
+            S = get_XString_charseq(x_XString, &nS);
             for (i = 0, current_Schar = S; i < nS; i++, current_Schar++)
                 Rprintf("%x ", *current_Schar);
             Rprintf("\n");
             return R_NilValue;
         }
 
-      to display the sequence of a BString object (in hexadecimal format).
-      Don't forget to register the print_BString_charseq_as_bytes() function
+      to display the sequence of an XString object (in hexadecimal format).
+      Don't forget to register the print_XString_charseq_as_bytes() function
       if you want to make it a .Call entry point!
 
-   f. 3 IMPORTANT THINGS TO REMEMBER ABOUT BString OBJECTS:
+   f. 3 IMPORTANT THINGS TO REMEMBER ABOUT XString OBJECTS:
         o their data are IMMUTABLE: this is enforced by having
-          get_BString_charseq() returning a const char *
+          get_XString_charseq() returning a const char *
         o they are NOT null-terminated like standard strings in C: they can
           contain the null byte so you should never use the C standard string
           functions on them
         o DNAString and RNAString objects have their data ENCODED: for
-          example, if you know that the x_BString SEXP in the code above will
+          example, if you know that the x_XString SEXP in the code above will
           always be containing a DNAString instance, then you could replace
             Rprintf("%x ", *current_Schar);
           by
             Rprintf("%x(%c) ", *current_Schar, DNAdecode(*current_Schar));
-          Note that this code will only work if x_BString is a DNAString
+          Note that this code will only work if x_XString is a DNAString
           instance!
 
  Please consult the "System and foreign language interfaces" section in the
@@ -95,15 +95,15 @@ char RNAencode(char c);
 
 char RNAdecode(char code);
 
-const char *get_BString_charseq(SEXP x, int *length);
+const char *get_XString_charseq(SEXP x, int *length);
 
-int get_BStringList_length(SEXP x);
+int get_XStringList_length(SEXP x);
 
-const char *get_BStringList_charseq(SEXP x, int i, int *nchar);
+const char *get_XStringList_charseq(SEXP x, int i, int *nchar);
 
-int get_BStringSet_length(SEXP x);
+int get_XStringSet_length(SEXP x);
 
-const char *get_BStringSet_charseq(SEXP x, int i, int *nchar);
+const char *get_XStringSet_charseq(SEXP x, int i, int *nchar);
 
 /*
  * Look at Biostrings_defines.h in this folder for the valid values of the

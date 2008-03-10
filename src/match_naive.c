@@ -153,8 +153,8 @@ static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
  * .Call entry points: "is_matching", "match_naive_exact" and "match_naive_inexact"
  *
  * Arguments:
- *   'pattern_BString': pattern
- *   'subject_BString': subject
+ *   'pattern_XString': pattern
+ *   'subject_XString': subject
  *   'start': starting positions of the pattern relative to the subject
  *   'max_mismatch': the number of mismatches (integer vector of length 1)
  *   'fixed': logical vector of length 2
@@ -166,15 +166,15 @@ static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
  * the pattern.
  ****************************************************************************/
 
-SEXP is_matching(SEXP pattern_BString, SEXP subject_BString, SEXP start,
+SEXP is_matching(SEXP pattern_XString, SEXP subject_XString, SEXP start,
 		SEXP max_mismatch, SEXP fixed)
 {
 	const char *P, *S;
 	int nP, nS, start_len, max_mm, fixedP, fixedS, i, *start_elt, *ans_elt;
 	SEXP ans;
 
-	P = _get_BString_charseq(pattern_BString, &nP);
-	S = _get_BString_charseq(subject_BString, &nS);
+	P = _get_XString_charseq(pattern_XString, &nP);
+	S = _get_XString_charseq(subject_XString, &nS);
 	start_len = LENGTH(start);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
@@ -194,15 +194,15 @@ SEXP is_matching(SEXP pattern_BString, SEXP subject_BString, SEXP start,
 	return ans;
 }
 
-SEXP match_naive_exact(SEXP pattern_BString, SEXP subject_BString,
+SEXP match_naive_exact(SEXP pattern_XString, SEXP subject_XString,
 		SEXP count_only)
 {
 	const char *P, *S;
 	int nP, nS, is_count_only;
 	SEXP ans;
 
-	P = _get_BString_charseq(pattern_BString, &nP);
-	S = _get_BString_charseq(subject_BString, &nS);
+	P = _get_XString_charseq(pattern_XString, &nP);
+	S = _get_XString_charseq(subject_XString, &nS);
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
@@ -215,7 +215,7 @@ SEXP match_naive_exact(SEXP pattern_BString, SEXP subject_BString,
 	return ans;
 }
 
-SEXP match_naive_inexact(SEXP pattern_BString, SEXP subject_BString,
+SEXP match_naive_inexact(SEXP pattern_XString, SEXP subject_XString,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only)
 {
@@ -223,8 +223,8 @@ SEXP match_naive_inexact(SEXP pattern_BString, SEXP subject_BString,
 	int nP, nS, max_mm, fixedP, fixedS, is_count_only;
 	SEXP ans;
 
-	P = _get_BString_charseq(pattern_BString, &nP);
-	S = _get_BString_charseq(subject_BString, &nS);
+	P = _get_XString_charseq(pattern_XString, &nP);
+	S = _get_XString_charseq(subject_XString, &nS);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];

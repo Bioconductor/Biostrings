@@ -159,7 +159,7 @@ setMethod("initialize", "XStringSet",
         ## 'super(x)' that have a lot of overlapping.
         safe_locs <- narrow(x, start, end, width)
         frame <- reduce(safe_locs, TRUE)
-        data <- .Call("BString_to_XRaw",
+        data <- .Call("XString_to_XRaw",
                       super(x), start(frame), width(frame), lkup,
                       PACKAGE="Biostrings")
         super <- new(baseClass, data, 0L, length(data), check=FALSE)

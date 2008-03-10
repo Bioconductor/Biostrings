@@ -555,7 +555,7 @@ SEXP XRaw_read_enc_chars_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 
 /*
  * The XRaw_write_enc_chars_to_i1i2() function is used when initializing
- * a BString object to encode and store the source string in the @data
+ * an XString object to encode and store the source string in the @data
  * slot of the object.
  * 'string' must be a non-empty single string (character vector of length 1).
  */

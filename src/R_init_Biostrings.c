@@ -67,19 +67,19 @@ static const R_CallMethodDef callMethods[] = {
 	{"XInteger_write_ints_to_i1i2", (DL_FUNC) &XInteger_write_ints_to_i1i2, 4},
 	{"XInteger_write_ints_to_subset", (DL_FUNC) &XInteger_write_ints_to_subset, 3},
 
-/* BString_utils.c */
+/* XString_utils.c */
 	{"init_DNAlkups", (DL_FUNC) &init_DNAlkups, 2},
 	{"init_RNAlkups", (DL_FUNC) &init_RNAlkups, 2},
-	{"BStrings_to_nchars", (DL_FUNC) &BStrings_to_nchars, 1},
+	{"XStrings_to_nchars", (DL_FUNC) &XStrings_to_nchars, 1},
 
 /* seqs_to_seqs.c */
 	{"Biostrings_debug_seqs_to_seqs", (DL_FUNC) &Biostrings_debug_seqs_to_seqs, 0},
 
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
 	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 5},
-	{"BString_to_XRaw", (DL_FUNC) &BString_to_XRaw, 4},
-	{"XRaw_to_BStringList", (DL_FUNC) &XRaw_to_BStringList, 4},
-	{"narrow_BStringList", (DL_FUNC) &narrow_BStringList, 4},
+	{"XString_to_XRaw", (DL_FUNC) &XString_to_XRaw, 4},
+	{"XRaw_to_XStringList", (DL_FUNC) &XRaw_to_XStringList, 4},
+	{"narrow_XStringList", (DL_FUNC) &narrow_XStringList, 4},
         
 /* reverseComplement.c */
         {"XRaw_translate_copy_from_i1i2", (DL_FUNC) &XRaw_translate_copy_from_i1i2, 5},
@@ -127,7 +127,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"match_TBdna_debug", (DL_FUNC) &match_TBdna_debug, 0},
 	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
 	{"CWdna_pp_charseqs", (DL_FUNC) &CWdna_pp_charseqs, 3},
-	{"CWdna_pp_BStringSet", (DL_FUNC) &CWdna_pp_BStringSet, 3},
+	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},
 	{"match_TBdna", (DL_FUNC) &match_TBdna, 10},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
 	{"extract_endIndex", (DL_FUNC) &extract_endIndex, 4},
@@ -150,7 +150,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
-	R_RegisterCCallable("Biostrings", "_get_BString_charseq", (DL_FUNC) &_get_BString_charseq);
+	R_RegisterCCallable("Biostrings", "_get_XString_charseq", (DL_FUNC) &_get_XString_charseq);
 	R_RegisterCCallable("Biostrings", "_init_match_reporting", (DL_FUNC) &_init_match_reporting);
 	R_RegisterCCallable("Biostrings", "_report_match", (DL_FUNC) &_report_match);
 	R_RegisterCCallable("Biostrings", "_reported_matches_asSEXP", (DL_FUNC) &_reported_matches_asSEXP);

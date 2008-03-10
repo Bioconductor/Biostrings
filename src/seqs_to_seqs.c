@@ -66,7 +66,7 @@ const CharSeq *STRSXP_to_charseqs(SEXP x,
 	return seqs;
 }
 
-const CharSeq *BString_to_charseqs(SEXP x,
+const CharSeq *XString_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
 	CharSeq *seqs, *seq;
@@ -77,47 +77,47 @@ const CharSeq *BString_to_charseqs(SEXP x,
 	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
 	     i < nseq;
 	     i++, safe_start++, safe_width++, seq++) {
-		seq->data = _get_BString_charseq(x, &(seq->length));
+		seq->data = _get_XString_charseq(x, &(seq->length));
 		seq->data += start2offset(*safe_start);
 		seq->length = *safe_width;
 	}
 	return seqs;
 }
 
-const CharSeq *BStringSet_to_charseqs(SEXP x,
+const CharSeq *XStringSet_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
 	CharSeq *seqs, *seq;
 	int i;
 	const int *safe_start, *safe_width;
 
-	if (_get_BStringSet_length(x) != nseq)
+	if (_get_XStringSet_length(x) != nseq)
 		error("invalid length of 'safe_starts' or 'safe_widths'");
 	seqs = Salloc((long) nseq, CharSeq);
 	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
 	     i < nseq;
 	     i++, safe_start++, safe_width++, seq++) {
-		seq->data = _get_BStringSet_charseq(x, i, &(seq->length));
+		seq->data = _get_XStringSet_charseq(x, i, &(seq->length));
 		seq->data += start2offset(*safe_start);
 		seq->length = *safe_width;
 	}
 	return seqs;
 }
 
-const CharSeq *BStringList_to_charseqs(SEXP x,
+const CharSeq *XStringList_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
 	CharSeq *seqs, *seq;
 	int i;
 	const int *safe_start, *safe_width;
 
-	if (_get_BStringList_length(x) != nseq)
+	if (_get_XStringList_length(x) != nseq)
 		error("invalid length of 'safe_starts' or 'safe_widths'");
 	seqs = Salloc((long) nseq, CharSeq);
 	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
 	     i < nseq;
 	     i++, safe_start++, safe_width++, seq++) {
-		seq->data = _get_BStringList_charseq(x, i, &(seq->length));
+		seq->data = _get_XStringList_charseq(x, i, &(seq->length));
 		seq->data += start2offset(*safe_start);
 		seq->length = *safe_width;
 	}
@@ -209,14 +209,14 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, S
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP BString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
+SEXP XString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 {
 	int nseq;
 	const CharSeq *seqs;
 	SEXP tag, ans;
 
 	nseq = LENGTH(safe_starts);
-	seqs = BString_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
+	seqs = XString_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
 	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
 	ans = mkXRaw(tag);
 	UNPROTECT(1);
@@ -225,7 +225,7 @@ SEXP BString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 
 
 /****************************************************************************
- * Converting a set of sequences into a BStringList object.
+ * Converting a set of sequences into an XStringList object.
  */
 
 /* NOT a Call() entry point! */
@@ -243,7 +243,7 @@ SEXP mkXStringList(const char *class, SEXP seqs)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XRaw_to_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
+SEXP XRaw_to_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 {
 	int nseq, x_length, i;
 	SEXP ans, ans_seqs, ans_seq, data;
@@ -275,7 +275,7 @@ SEXP XRaw_to_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
+SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 {
 	int nseq, i, seq_length, offset;
 	SEXP x_seqs, x_seq, ans, ans_seqs, ans_seq, data;
@@ -283,7 +283,7 @@ SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 	char classbuf[14]; // longest string will be "DNAStringList"
 	const char *class;
 
-	nseq = _get_BStringList_length(x);
+	nseq = _get_XStringList_length(x);
 	if (LENGTH(safe_starts) != nseq || LENGTH(safe_widths) != nseq)
 		error("invalid length of 'safe_starts' or 'safe_widths'");
 	x_seqs = GET_SLOT(x, install("seqs"));
@@ -292,7 +292,7 @@ SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 	     i < nseq;
 	     i++, safe_start++, safe_width++) {
 	        x_seq = VECTOR_ELT(x_seqs, i);
-		_get_BString_charseq(x_seq, &seq_length);
+		_get_XString_charseq(x_seq, &seq_length);
 		if (proto == R_NilValue) {
 			PROTECT(ans_seq = duplicate(x_seq));
 		} else {
