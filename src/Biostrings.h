@@ -551,7 +551,7 @@ const char *_get_BString_charseq(
 		int *length
 );
 
-SEXP mkBString(
+SEXP mkXString(
 		const char *class,
 		SEXP data,
 		int offset,

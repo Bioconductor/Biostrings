@@ -6,16 +6,16 @@ setGeneric("reverse", signature="x",
     function(x, ...) standardGeneric("reverse")
 )
 
-setMethod("reverse", "BString",
+setMethod("reverse", "XString",
     function(x, ...)
-        BString.tr(x, reverse=TRUE)
+        XString.tr(x, reverse=TRUE)
 )
 
-setMethod("reverse", "BStringSet",
+setMethod("reverse", "XStringSet",
     function(x, ...)
     {
         x@super <- reverse(super(x))
-        start(x, check=FALSE) <- nchar(super(x)) - end(x) + 1L
+        .start(x) <- nchar(super(x)) - end(x) + 1L
         x
     }
 )
@@ -40,12 +40,12 @@ setGeneric("complement", signature="x",
 
 setMethod("complement", "DNAString",
     function(x, ...)
-        BString.tr(x, lkup=getDNAComplementLookup())
+        XString.tr(x, lkup=getDNAComplementLookup())
 )
 
 setMethod("complement", "RNAString",
     function(x, ...)
-        BString.tr(x, lkup=getRNAComplementLookup())
+        XString.tr(x, lkup=getRNAComplementLookup())
 )
 
 setMethod("complement", "DNAStringSet",
@@ -83,19 +83,19 @@ setGeneric("reverseComplement", signature="x",
 
 setMethod("reverseComplement", "DNAString",
     function(x, ...)
-        BString.tr(x, lkup=getDNAComplementLookup(), reverse=TRUE)
+        XString.tr(x, lkup=getDNAComplementLookup(), reverse=TRUE)
 )
 
 setMethod("reverseComplement", "RNAString",
     function(x, ...)
-        BString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
+        XString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
 )
 
 setMethod("reverseComplement", "DNAStringSet",
     function(x, ...)
     {
         x@super <- reverseComplement(super(x))
-        start(x, check=FALSE) <- nchar(super(x)) - end(x) + 1L
+        .start(x) <- nchar(super(x)) - end(x) + 1L
         x
     }
 )
@@ -104,7 +104,7 @@ setMethod("reverseComplement", "RNAStringSet",
     function(x, ...)
     {
         x@super <- reverseComplement(super(x))
-        start(x, check=FALSE) <- nchar(super(x)) - end(x) + 1L
+        .start(x) <- nchar(super(x)) - end(x) + 1L
         x
     }
 )

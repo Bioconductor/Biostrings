@@ -3,15 +3,15 @@
 ### -------------------------------------------------------------------------
 
 
-### The safe (and exported) version of "BString.substr". Not vectorized.
+### The safe (and exported) version of "XString.substr". Not vectorized.
 ### We deliberately choose the "NA trick" over defaulting 'start' and 'end'
 ### to '1' and 'length(x)' because we want to be consistent with the "views"
 ### function.
-subBString <- function(x, start=NA, end=NA, length=NA)
+subXString <- function(x, start=NA, end=NA, length=NA)
 {
-    if (!is(x, "BString")) {
+    if (!is(x, "XString")) {
         if (!isSingleString(x))
-            stop("'x' must be a BString (or derived) object or a single string")
+            stop("'x' must be an XString object or a single string")
         x <- BString(x)
     }
     if (!isNumericOrNAs(start) || length(start) != 1)
@@ -38,7 +38,13 @@ subBString <- function(x, start=NA, end=NA, length=NA)
     ## This is NA-proof (well, 'start' and 'end' can't be NAs anymore...)
     if (!isTRUE(1 <= start && start <= end && end <= length(x)))
         stop("'start' and 'end' must verify '1 <= start <= end <= length(x)'")
-    BString.substr(x, as.integer(start), as.integer(end))
+    XString.substr(x, as.integer(start), as.integer(end))
+}
+
+subBString <- function(x, start=NA, end=NA, length=NA)
+{
+    .Deprecated("subXString")
+    subXString(x, start=start, end=end, length=length)
 }
 
 
@@ -49,14 +55,14 @@ subBString <- function(x, start=NA, end=NA, length=NA)
 setGeneric("substr", signature="x",
     function(x, start=NA, stop=NA) standardGeneric("substr")
 )
-setMethod("substr", "BString",
-    function(x, start=NA, stop=NA) subBString(x, start, stop)
+setMethod("substr", "XString",
+    function(x, start=NA, stop=NA) subXString(x, start, stop)
 )
 
 setGeneric("substring", signature="text",
     function(text, first=NA, last=NA) standardGeneric("substring")
 )
-setMethod("substring", "BString",
-    function(text, first=NA, last=NA) subBString(text, first, last)
+setMethod("substring", "XString",
+    function(text, first=NA, last=NA) subXString(text, first, last)
 )
 

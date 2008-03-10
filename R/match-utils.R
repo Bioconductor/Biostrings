@@ -58,10 +58,10 @@ normalize.fixed <- function(fixed, subjectClass)
 
 .isMatching <- function(pattern, subject, start, max.mismatch, fixed)
 {
-    if (!is(subject, "BString"))
+    if (!is(subject, "XString"))
         subject <- BString(subject)
     if (class(pattern) != class(subject))
-        pattern <- mkBString(class(subject), pattern)
+        pattern <- XString(class(subject), pattern)
     if (!is.numeric(start))
         stop("'start' must be a vector of integers")
     if (!is.integer(start))
@@ -87,7 +87,7 @@ setMethod("isMatching", "character",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("isMatching", "BString",
+setMethod("isMatching", "XString",
     function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
     {
         .isMatching(pattern, subject, start, max.mismatch, fixed)
@@ -111,7 +111,7 @@ setMethod("isMatching", "BString",
         if (j < 1 || j > length(subject)) {
             mm <- c(mm, i)
         } else {
-            l <- BString.substr(pattern, i, i)
+            l <- XString.substr(pattern, i, i)
             cp <- isMatching(l, subject, j, max.mismatch=0, fixed=fixed)
             if (cp == 0)
                 mm <- c(mm, i)
@@ -142,7 +142,7 @@ setMethod("mismatch", "BStringViews",
     function(pattern, x, fixed)
     {
         if (class(pattern) != class(x@subject))
-            pattern <- mkBString(class(x@subject), pattern)
+            pattern <- XString(class(x@subject), pattern)
         .mismatch(pattern, x, fixed)
     }
 )

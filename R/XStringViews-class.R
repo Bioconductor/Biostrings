@@ -3,14 +3,14 @@
 ### -------------------------------------------------------------------------
 ###
 ### The BStringViews class is the basic container for storing a set of views
-### (start/end locations) on the same BString object, called the "subject"
+### (start/end locations) on the same XString object, called the "subject"
 ### string.
 ###
 
 setClass("BStringViews",
     contains="IRanges",
     representation(
-        subject="BString"
+        subject="XString"
     )
 )
 
@@ -35,8 +35,8 @@ setMethod("subject", "BStringViews", function(x) x@subject)
 
 .valid.BStringViews.subject <- function(object)
 {
-    if (!is(subject(object), "BString"))
-        return("the subject must be a BString object")
+    if (!is(subject(object), "XString"))
+        return("the subject must be an XString object")
     NULL
 }
 
@@ -131,7 +131,7 @@ setMethod("nchar", "BStringViews",
 ### The "show" method.
 ###
 
-### The 2 helper functions below convert a given view on a BString object
+### The 2 helper functions below convert a given view on an XString object
 ### into a character-string.
 ### Both assume that 'start' <= 'end' (so they don't check it) and
 ### padd the result with spaces to produce the "margin effect"
@@ -153,7 +153,7 @@ BStringViews.get_view <- function(x, start, end)
         Rmargin <- format("", width=end-lx)
         end <- lx
     }
-    paste(Lmargin, BString.read(x, start, end), Rmargin, sep="")
+    paste(Lmargin, XString.read(x, start, end), Rmargin, sep="")
 }
 
 ### nchar(BStringViews.get_snippet(x, start, end, snippetWidth)) is <= snippetWidth
@@ -239,7 +239,7 @@ setMethod("show", "BStringViews",
         subject <- subject(object)
         lsub <- length(subject)
         cat("  Views on a ", lsub, "-letter ", class(subject), " subject", sep="")
-        cat("\nsubject:", BString.get_snippet(subject, getOption("width") - 9))
+        cat("\nsubject:", XString.get_snippet(subject, getOption("width") - 9))
         BStringViews.show_vframe(object)
     }
 )
@@ -249,8 +249,8 @@ setMethod("show", "BStringViews",
 ### Subsetting.
 ###
 
-### Extract the i-th views of a BStringViews object as a BString object.
-### Return a BString object of the same class as the subject of x.
+### Extract the i-th views of a BStringViews object as an XString object.
+### Return an XString object of the same subtype as subject(x).
 ### Example:
 ###   bs <- BString("ABCD-1234-abcd")
 ###   bsv <- views(bs, 1:7, 13:7)
@@ -278,7 +278,7 @@ setMethod("[[", "BStringViews",
         end <- end(x)[i]
         if (start < 1L || end > length(subject(x)))
             stop("view is out of limits")
-        BString.substr(subject(x), start, end)
+        XString.substr(subject(x), start, end)
     }
 )
 
@@ -341,8 +341,8 @@ BStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
 
     # At this point, we can trust that 1 <= start1 <= end1 <= lx1
     # and that 1 <= start2 <= end2 <= lx2 so we can call unsafe
-    # function BString.substr() with no fear...
-    BString.substr(x1, start1, end1) == BString.substr(x2, start2, end2)
+    # function XString.substr() with no fear...
+    XString.substr(x1, start1, end1) == XString.substr(x2, start2, end2)
 }
 
 ### 'x' and 'y' must be BStringViews objects.
@@ -379,17 +379,17 @@ BStringViews.equal <- function(x, y)
 }
 
 ### These methods are called if at least one side of the "==" (or "!=")
-### operator is a "BStringViews" object. They have precedence over the
-### corresponding methods defined for "BString" objects, i.e. they will
-### be called if one side is a "BStringViews" object and the other side
-### is a "BString" object.
+### operator is a BStringViews object. They have precedence over the
+### corresponding methods defined for XString objects, i.e. they will
+### be called if one side is a BStringViews object and the other side
+### is an XString object.
 ### Typical use:
 ###   v <- views(DNAString("TAATAATG"), -2:9, 0:11)
 ###   v == v[4]
 ###   v == v[1]
 ###   v2 <- views(DNAString("G"), 1, 3)
 ###   v == v2
-### Also works if one side is a BString object:
+### Also works if one side is an XString object:
 ###   v == DNAString("ATG")
 ###   RNAString("AUG") == v
 ### Whitespace matters:
@@ -401,7 +401,7 @@ BStringViews.equal <- function(x, y)
 setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
     function(e1, e2)
     {
-        if (!comparableBStrings(subject(e1), subject(e2))) {
+        if (!comparableXStrings(subject(e1), subject(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(subject(e2))
             stop("comparison between BStringViews objects with subjects of ",
@@ -411,10 +411,10 @@ setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
         BStringViews.equal(e1, e2)
     }
 )
-setMethod("==", signature(e1="BStringViews", e2="BString"),
+setMethod("==", signature(e1="BStringViews", e2="XString"),
     function(e1, e2)
     {
-        if (!comparableBStrings(subject(e1), e2)) {
+        if (!comparableXStrings(subject(e1), e2)) {
             class1 <- class(subject(e1))
             class2 <- class(e2)
             stop("comparison between a BStringViews object with a subject of ",
@@ -427,19 +427,18 @@ setMethod("==", signature(e1="BStringViews", e2="BString"),
 setMethod("==", signature(e1="BStringViews", e2="character"),
     function(e1, e2)
     {
-        class1 <- class(subject(e1))
-        if (class1 != "BString")
+        if (!is(subject(e1), "BString"))
             stop("comparison between a BStringViews object with a subject of ",
-                 "class \"", class1, "\" and a character vector ",
+                 "class \"", class(subject(e1)), "\" and a character vector ",
                  "is not supported")
         if (length(e2) == 0 || any(e2 %in% c("", NA)))
-            stop("comparison between a BStringViews object and a character vector ",
-                 "of length 0 or with empty strings or NAs ",
+            stop("comparison between a BStringViews object and a character ",
+                 "vector of length 0 or with empty strings or NAs ",
                  "is not supported")
         BStringViews.equal(e1, BStringViews(e2, subjectClass="BString"))
     }
 )
-setMethod("==", signature(e1="BString", e2="BStringViews"),
+setMethod("==", signature(e1="XString", e2="BStringViews"),
     function(e1, e2) e2 == e1
 )
 setMethod("==", signature(e1="character", e2="BStringViews"),
@@ -449,13 +448,13 @@ setMethod("==", signature(e1="character", e2="BStringViews"),
 setMethod("!=", signature(e1="BStringViews", e2="BStringViews"),
     function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="BStringViews", e2="BString"),
+setMethod("!=", signature(e1="BStringViews", e2="XString"),
     function(e1, e2) !(e1 == e2)
 )
 setMethod("!=", signature(e1="BStringViews", e2="character"),
     function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="BString", e2="BStringViews"),
+setMethod("!=", signature(e1="XString", e2="BStringViews"),
     function(e1, e2) !(e1 == e2)
 )
 setMethod("!=", signature(e1="character", e2="BStringViews"),

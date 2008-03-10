@@ -9,7 +9,7 @@ setGeneric("matchLRPatterns", signature="subject",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("matchLRPatterns", "BString", 
+setMethod("matchLRPatterns", "XString", 
     function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
     {

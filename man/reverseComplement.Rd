@@ -2,7 +2,7 @@
 
 \alias{reverse}
 \alias{reverse,BString-method}
-\alias{reverse,BStringSet-method}
+\alias{reverse,XStringSet-method}
 \alias{reverse,BStringViews-method}
 \alias{complement}
 \alias{complement,DNAString-method}
@@ -35,7 +35,7 @@
 \arguments{
   \item{x}{
     A \link{BString} (or derived) object,
-    a \link{BStringSet} (or derived) object,
+    an \link{XStringSet} object,
     or a \link{BStringViews} object for \code{reverse}.
 
     A \link{DNAString}, \link{RNAString},

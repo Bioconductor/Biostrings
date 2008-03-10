@@ -1,35 +1,35 @@
-\name{BStringAlign-class}
+\name{XStringAlign-class}
 \docType{class}
 
 % Classes
-\alias{class:BStringAlign}
-\alias{BStringAlign-class}
-\alias{BStringAlign}
+\alias{class:XStringAlign}
+\alias{XStringAlign-class}
+\alias{XStringAlign}
 
 % Constructor-like functions and generics:
-\alias{initialize,BStringAlign-method}
+\alias{initialize,XStringAlign-method}
 
 % Accesor methods:
 \alias{align1}
-\alias{align1,BStringAlign-method}
+\alias{align1,XStringAlign-method}
 \alias{align2}
-\alias{align2,BStringAlign-method}
+\alias{align2,XStringAlign-method}
 \alias{score}
-\alias{score,BStringAlign-method}
-\alias{length,BStringAlign-method}
-\alias{nchar,BStringAlign-method}
-\alias{alphabet,BStringAlign-method}
+\alias{score,XStringAlign-method}
+\alias{length,XStringAlign-method}
+\alias{nchar,XStringAlign-method}
+\alias{alphabet,XStringAlign-method}
 
 % Standard generic methods:
-\alias{show,BStringAlign-method}
-\alias{as.character,BStringAlign-method}
+\alias{show,XStringAlign-method}
+\alias{as.character,XStringAlign-method}
 
 
-\title{The BStringAlign class}
+\title{XStringAlign objects}
 
 \description{
-  The \code{BStringAlign class} is a container for storing
-  an alignment between 2 \code{\link{BString}} (or derived) objects.
+  The \code{XStringAlign} class is a container for storing
+  an alignment between 2 \link{XString} objects of the same subtype.
 }
 
 \details{
@@ -72,14 +72,14 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a \code{BStringAlign} object.
+  \code{x} is a \code{XStringAlign} object.
 
   \describe{
     \item{}{
       \code{align1(x)} and \code{align2(x)}:
       The "filled-with-gaps supersequences" of the original strings to align.
-      Note that \code{align1(x)} and \code{align2(x)} are \code{\link{BString}}
-      (or derived) objects of the same class and of the same length.
+      Note that \code{align1(x)} and \code{align2(x)} are \link{XString}
+      objects of the same subtype and length.
     }
     \item{}{
       \code{score(x)}:
@@ -105,10 +105,7 @@
 
 \seealso{
   \code{\link{needwunsQS}},
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class}
+  \link{XString-class}
 }
 
 \examples{

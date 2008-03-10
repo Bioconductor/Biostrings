@@ -31,12 +31,12 @@ In 2.7
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
 
-- BStringSet objects:
+- XStringSet objects:
     o DNAStringSet(x) should not do anything when x is already a DNAStringSet
       _instance_ (class(x) == "DNAStringSet").
-    o Add methods for BStringSet objects everywhere there are methods defined
+    o Add methods for XStringSet objects everywhere there are methods defined
       for BStringViews objects (matchPattern, countPattern, etc...).
-      Make them work in a vectorized fashion for BStringSet objects.
+      Make them work in a vectorized fashion for XStringSet objects.
 
 - BStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
@@ -171,7 +171,7 @@ In 2.7
   trunk only (too late for release). Remove the warning after the BioC 2.2
   release.
 
-- Add "duplicated" methods for BStringViews, BStringList and BStringSet objects.
+- Add "duplicated" methods for BStringViews, BStringList and XStringSet objects.
 
 - Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
   Biostrings_define.h instead of the current magic values used all over the

@@ -88,7 +88,7 @@ setGeneric("restrict", signature="x",
 
     ans_width <- ans_end - ans_start + 1L
 
-    update(x, start=ans_start, width=ans_width, names=ans_names, check=FALSE)
+    .update(x, start=ans_start, width=ans_width, names=ans_names)
 }
 
 setMethod("restrict", "IRanges", .restrict.IRanges)
@@ -124,10 +124,10 @@ setGeneric("narrow", signature="x",
                    PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
 
-    update(x, start=C_ans$start, width=C_ans$width, names=ans_names, check=FALSE)
+    .update(x, start=C_ans$start, width=C_ans$width, names=ans_names)
 }
 
-setMethod("narrow", "IRanges", .narrow.IRanges)
+setMethod("narrow", ".IRanges", .narrow.IRanges)
 
 setMethod("narrow", "numeric",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -153,7 +153,7 @@ setGeneric("reduce", signature="x",
     C_ans <- .Call("reduce_IRanges",
                     x, with.inframe.attrib,
                     PACKAGE="Biostrings")
-    ans <- update(x, start=C_ans$start, width=C_ans$width, check=FALSE)
+    ans <- .update(x, start=C_ans$start, width=C_ans$width)
     if (with.inframe.attrib) {
         inframe <- new("IRanges", start=C_ans$inframe.start,
                        width=width(x), check=FALSE)
@@ -205,7 +205,7 @@ setGeneric("mask", signature="x",
         ans_end <- c(ans_end, end)
     }
     ans_width <- ans_end - ans_start + 1L
-    update(x, start=ans_start, width=ans_width, check=FALSE)
+    .update(x, start=ans_start, width=ans_width)
 }
 
 setMethod("mask", "IRanges", .mask.IRanges)

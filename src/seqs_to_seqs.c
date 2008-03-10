@@ -229,7 +229,7 @@ SEXP BString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
  */
 
 /* NOT a Call() entry point! */
-SEXP mkBStringList(const char *class, SEXP seqs)
+SEXP mkXStringList(const char *class, SEXP seqs)
 {
 	SEXP class_def, ans;
 
@@ -267,7 +267,7 @@ SEXP XRaw_to_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 		UNPROTECT(2);
 	}
 	snprintf(classbuf, sizeof(classbuf), "%sList", get_class(proto));
-	ans = mkBStringList(classbuf, ans_seqs);
+	ans = mkXStringList(classbuf, ans_seqs);
 	UNPROTECT(1);
 	return ans;
 }
@@ -313,7 +313,7 @@ SEXP narrow_BStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 		snprintf(classbuf, sizeof(classbuf), "%sList", get_class(proto));
 		class = classbuf;
 	}
-	ans = mkBStringList(class, ans_seqs);
+	ans = mkXStringList(class, ans_seqs);
 	UNPROTECT(1);
 	return ans;
 }

@@ -41,7 +41,7 @@ setMethod("consmat", "list",
     }
 )
 
-setMethod("consmat", "BStringSet",
+setMethod("consmat", "XStringSet",
     function(x, freq=TRUE)
     {
         consmat(as.character(x, use.names=FALSE), freq=freq)
@@ -55,7 +55,7 @@ setMethod("consmat", "BStringViews",
     }
 )
 
-setMethod("consmat", "BStringAlign",
+setMethod("consmat", "XStringAlign",
     function(x, freq=TRUE)
     {
         consmat(as.character(x), freq=freq)

@@ -9,74 +9,69 @@
 \alias{DNA_ALPHABET}
 
 % Constructor-like functions and generics:
-\alias{initialize,DNAString-method}
 \alias{DNAString}
-\alias{DNAString,character-method}
-\alias{DNAString,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,DNAString-method}
 
 
-\title{The DNAString class}
+\title{DNAString objects}
 
 \description{
-  A \code{DNAString} object allows efficient storage
+  A DNAString object allows efficient storage
   and manipulation of a long DNA sequence.
 }
 
 \details{
-  The \code{DNAString} class derives directly from the
-  \code{\link{BString}} class (with no additional slot).
-  All functions and methods described in the
-  \code{\link{BString}} man page also work
-  with a \code{DNAString} object (inheritance).
+  The DNAString class is a direct \link{XString} subtype
+  (with no additional slot).
+  Therefore all functions and methods described in the
+  \link{XString} man page also work
+  with a DNAString object (inheritance).
 
-  Unlike a \code{\link{BString}} object that allows storage
-  of any non-empty string (based on a single-byte character set)
-  a \code{DNAString} object can only store a non-empty string
-  based on the DNAString alphabet (see below).
-  In addition, the letters stored in a \code{DNAString} object
+  Unlike the \link{BString} container that allows storage
+  of any single string (based on a single-byte character set)
+  the DNAString container can only store a string
+  based on the DNA alphabet (see below).
+  In addition, the letters stored in a DNAString object
   are encoded in a way that optimizes fast search algorithms.
 }
 
-\section{The DNAString alphabet}{
+\section{The DNA alphabet}{
   This alphabet contains all letters from the
   IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}})
   + the gap letter \code{"-"}.
   It is stored in the \code{DNA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
-  \code{DNA_ALPHABET} when applied to a \code{DNAString}
+  \code{DNA_ALPHABET} when applied to a DNAString
   object and is provided for convenience only.
 }
 
 \section{Constructor-like functions and generics}{
   In the code snippet below,
-  \code{src} can be a character vector
-  or a \code{\link{BString}} (or derived) object.
+  \code{src} can be a single string (character vector of length 1),
+  a \link{BString} object or an \link{RNAString} object.
 
   \describe{
     \item{}{
       \code{DNAString(src)}:
-      Tries to convert \code{src} into a \code{DNAString} object by reading
+      Tries to convert \code{src} into a DNAString object by reading
       \code{nchar} letters starting at position \code{start} in \code{src}.
-      \code{src} can be a single string (character vector of length 1),
-      a \link{BString} object or an \link{RNAString} object.
     }
   }
 }
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} must be a \code{\link{BString}} (or derived) object.
+  \code{x} must be an \link{XString} object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
-      If \code{x} is of class \code{DNAString}, return the DNAString
+      If \code{x} is a DNAString object, then return the DNA
       alphabet (see above).
       See the corresponding man pages when \code{x} is of class
-      \code{\link{BString}}, \code{\link{RNAString}} or code{\link{AAString}}.
+      \link{BString}, \link{RNAString} or \link{AAString}.
     }
   }
 }
@@ -86,8 +81,8 @@
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link{letter}},
-  \code{\link{subBString}},
-  \link{BString-class},
+  \code{\link{subXString}},
+  \link{XString-class},
   \link{RNAString-class},
   \link{BStringViews-class}
 }

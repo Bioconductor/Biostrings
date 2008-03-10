@@ -19,18 +19,18 @@ Collate: 00datacache.R
         IRanges-utils.R
         readFASTA.R
         IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
-        BStringCodec-class.R
+        XStringCodec-class.R
         XRaw.R XInteger.R
-        BString-class.R
-        BStringViews-class.R
-        BStringViews-constructors.R
-        BStringSet-class.R
-        BStringList-class.R
-        BStringPartialMatches-class.R
-        BStringAlign-class.R
-        BStringSet-io.R
+        XString-class.R
+        XStringViews-class.R
+        XStringViews-constructors.R
+        XStringSet-class.R
+        XStringList-class.R
+        XStringPartialMatches-class.R
+        XStringAlign-class.R
+        XStringSet-io.R
         letter.R
-        subBString.R
+        subXString.R
         alphabetFrequency.R
         chartr.R
         reverseComplement.R

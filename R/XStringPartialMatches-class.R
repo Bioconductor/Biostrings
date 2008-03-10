@@ -1,10 +1,10 @@
 ### =========================================================================
-### The BStringPartialMatches class
+### XStringPartialMatches objects
 ### -------------------------------------------------------------------------
-### A BStringPartialMatches object contains a set of partial matches
-### on the same BString object, the subject string.
+### A XStringPartialMatches object contains a set of partial matches
+### on the same XString object, the subject string.
 
-setClass("BStringPartialMatches",
+setClass("XStringPartialMatches",
     contains="BStringViews",
     representation(
         subpatterns="BStringViews"
@@ -16,17 +16,17 @@ setClass("BStringPartialMatches",
 ### Accessor methods
 
 setGeneric("subpatterns", function(x) standardGeneric("subpatterns"))
-setMethod("subpatterns", "BStringPartialMatches", function(x) x@subpatterns)
+setMethod("subpatterns", "XStringPartialMatches", function(x) x@subpatterns)
 
 setGeneric("pattern", function(x) standardGeneric("pattern"))
-setMethod("pattern", "BStringPartialMatches", function(x) x@subpatterns@subject)
+setMethod("pattern", "XStringPartialMatches", function(x) x@subpatterns@subject)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method
 ###
 
-setMethod("show", "BStringPartialMatches",
+setMethod("show", "XStringPartialMatches",
     function(object)
     {
         subject <- subject(object)
@@ -35,7 +35,7 @@ setMethod("show", "BStringPartialMatches",
             class(subject), " subject", sep="")
         #if (!is.null(subject@codec))
         #    cat(" with alphabet:", toString(subject@codec@letters))
-        cat("\nSubject:", BString.get_snippet(subject, 70))
+        cat("\nSubject:", XString.get_snippet(subject, 70))
         BStringViews.show_vframe(object, 5L)
 
         pattern <- pattern(object)
@@ -44,7 +44,7 @@ setMethod("show", "BStringPartialMatches",
             class(pattern), " pattern", sep="")
         #if (!is.null(pattern@codec))
         #    cat(" with alphabet:", toString(pattern@codec@letters))
-        cat("\nPattern:", BString.get_snippet(pattern, 70))
+        cat("\nPattern:", XString.get_snippet(pattern, 70))
         BStringViews.show_vframe(subpatterns(object), 5L)
     }
 )
@@ -54,7 +54,7 @@ setMethod("show", "BStringPartialMatches",
 ### Subsetting
 ###
 
-setMethod("[", "BStringPartialMatches",
+setMethod("[", "XStringPartialMatches",
     function(x, i, j, ..., drop)
     {
         ans <- callNextMethod()

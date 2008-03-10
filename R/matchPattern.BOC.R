@@ -154,7 +154,7 @@ setMethod("matchPattern", "BOC_SubjectString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         if (class(pattern) != class(subject@subject))
-            pattern <- mkBString(class(subject@subject), pattern)
+            pattern <- XString(class(subject@subject), pattern)
         pattern_length <- nchar(pattern)
         if (pattern_length != subject@pattern_length)
             stop("subject was preprocessed for patterns of length ", subject@pattern_length)

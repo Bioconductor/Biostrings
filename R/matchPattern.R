@@ -231,10 +231,10 @@ debug_shiftor <- function()
         if (!isSingleString(pattern) || nchar(pattern) == 0)
             stop("'pattern' must be a single (and non-empty) string")
     } else {
-        if (!is(subject, "BString"))
+        if (!is(subject, "XString"))
             subject <- BString(subject)
         if (class(pattern) != class(subject))
-            pattern <- mkBString(class(subject), pattern)
+            pattern <- XString(class(subject), pattern)
     }
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject))
@@ -298,7 +298,7 @@ setMethod("matchPattern", "character",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("matchPattern", "BString",
+setMethod("matchPattern", "XString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         .matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
@@ -352,7 +352,7 @@ setMethod("countPattern", "character",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("countPattern", "BString",
+setMethod("countPattern", "XString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         .matchPattern(pattern, subject, algorithm, max.mismatch, fixed, count.only=TRUE)

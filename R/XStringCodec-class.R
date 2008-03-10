@@ -1,8 +1,8 @@
 ### =========================================================================
-### BStringCodec objects
+### XStringCodec objects
 ### --------------------
 ###
-### A BStringCodec object allows fast mapping between letters and codes.
+### A XStringCodec object allows fast mapping between letters and codes.
 ###
 ### In addition to the slots 'letters' and 'codes', it has 2 extra slots
 ### 'enc_lkup' and 'dec_lkup' that are lookup tables. They allow fast
@@ -64,10 +64,10 @@ buildLookupTable <- function(keys, vals)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The BStringCodec class.
+### The XStringCodec class.
 ###
 
-setClass("BStringCodec",
+setClass("XStringCodec",
     representation(
         letters="character",
         codes="integer",
@@ -76,7 +76,7 @@ setClass("BStringCodec",
     )
 )
 
-setMethod("initialize", "BStringCodec",
+setMethod("initialize", "XStringCodec",
     function(.Object, letters, codes, extra_letters=NULL, extra_codes=NULL)
     {
         letter_byte_vals <- .letterAsByteVal(letters)
@@ -135,16 +135,16 @@ RNA_ALPHABET <- names(.RNA_CODES)
 
 
 ### DNA and RNA codecs
-.BStringCodec.DNAorRNA <- function(codes)
+.XStringCodec.DNAorRNA <- function(codes)
 {
     letters <- names(codes)
     extra_letters <- setdiff(tolower(letters), letters)
     extra_codes <- codes[toupper(extra_letters)]
-    new("BStringCodec", letters, codes, extra_letters, extra_codes)
+    new("XStringCodec", letters, codes, extra_letters, extra_codes)
 }
 
-DNA_STRING_CODEC <- .BStringCodec.DNAorRNA(.DNA_CODES)
-RNA_STRING_CODEC <- .BStringCodec.DNAorRNA(.RNA_CODES)
+DNA_STRING_CODEC <- .XStringCodec.DNAorRNA(.DNA_CODES)
+RNA_STRING_CODEC <- .XStringCodec.DNAorRNA(.RNA_CODES)
 
 
 ### Return the lookup table that transforms a DNA sequence into its
@@ -156,7 +156,7 @@ getDNAComplementLookup <- function()
                                G=DNA_BASE_CODES["C"][[1]],
                                T=DNA_BASE_CODES["A"][[1]])
     complement_codes <- .DNAorRNAcodes(complement_base_codes, FALSE)
-    complement_codec <- .BStringCodec.DNAorRNA(complement_codes)
+    complement_codec <- .XStringCodec.DNAorRNA(complement_codes)
     complement_codec@enc_lkup[DNA_STRING_CODEC@dec_lkup + 1]
 }
 
@@ -169,7 +169,7 @@ getRNAComplementLookup <- function()
                                G=RNA_BASE_CODES["C"][[1]],
                                U=RNA_BASE_CODES["A"][[1]])
     complement_codes <- .DNAorRNAcodes(complement_base_codes, FALSE)
-    complement_codec <- .BStringCodec.DNAorRNA(complement_codes)
+    complement_codec <- .XStringCodec.DNAorRNA(complement_codes)
     complement_codec@enc_lkup[RNA_STRING_CODEC@dec_lkup + 1]
 }
 

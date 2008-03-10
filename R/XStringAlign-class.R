@@ -1,14 +1,14 @@
 ### =========================================================================
-### The BStringAlign class
+### XStringAlign objects
 ### -------------------------------------------------------------------------
-### A BStringAlign object contains the result of the alignment of 2 BString
-### objects.
+### An XStringAlign object contains the result of the alignment of 2 XString
+### objects of the same subtype.
 
 
-setClass("BStringAlign",
+setClass("XStringAlign",
     representation(
-        align1="BString",
-        align2="BString",
+        align1="XString",
+        align2="XString",
         score="integer"
     )
 )
@@ -18,11 +18,11 @@ setClass("BStringAlign",
 ### Initialization.
 ###
 
-setMethod("initialize", "BStringAlign",
+setMethod("initialize", "XStringAlign",
     function(.Object, align1, align2, score)
     {
         if (!identical(class(align1), class(align2)))
-            stop("'align1' and 'align2' must be of the same class")
+            stop("'align1' and 'align2' must be XString objects of the same subtype")
         if (length(align1) != length(align2))
             stop("'align1' and 'align2' must have the same length")
         if (length(score) != 1)
@@ -42,18 +42,18 @@ setMethod("initialize", "BStringAlign",
 ###
 
 setGeneric("align1", function(x) standardGeneric("align1"))
-setMethod("align1", "BStringAlign", function(x) x@align1)
+setMethod("align1", "XStringAlign", function(x) x@align1)
 
 setGeneric("align2", function(x) standardGeneric("align2"))
-setMethod("align2", "BStringAlign", function(x) x@align2)
+setMethod("align2", "XStringAlign", function(x) x@align2)
 
 setGeneric("score", function(x) standardGeneric("score"))
-setMethod("score", "BStringAlign", function(x) x@score)
+setMethod("score", "XStringAlign", function(x) x@score)
 
-setMethod("length", "BStringAlign", function(x) length(align1(x)))
-setMethod("nchar", "BStringAlign", function(x, type="chars", allowNA=FALSE) length(x))
+setMethod("length", "XStringAlign", function(x) length(align1(x)))
+setMethod("nchar", "XStringAlign", function(x, type="chars", allowNA=FALSE) length(x))
 
-setMethod("alphabet", "BStringAlign", function(x) alphabet(align1(x)))
+setMethod("alphabet", "XStringAlign", function(x) alphabet(align1(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,15 +63,15 @@ setMethod("alphabet", "BStringAlign", function(x) alphabet(align1(x)))
 ### TODO: Make the "show" method to format the alignment in a SGD fashion
 ### i.e. split in 60-letter blocks and use the "|" character to highlight
 ### exact matches.
-setMethod("show", "BStringAlign",
+setMethod("show", "XStringAlign",
     function(object)
     {
         al1 <- align1(object)
         al2 <- align2(object)
         #l1 <- length(al1)
         #cat("  ", l1, "-letter \"", class(al1), "\" objects", sep="")
-        cat("align1:", BString.get_snippet(al1, getOption("width") - 8))
-        cat("\nalign2:", BString.get_snippet(al2, getOption("width") - 8))
+        cat("align1:", XString.get_snippet(al1, getOption("width") - 8))
+        cat("\nalign2:", XString.get_snippet(al2, getOption("width") - 8))
         cat("\nscore:", score(object))
         cat("\n")
     }
@@ -82,7 +82,7 @@ setMethod("show", "BStringAlign",
 ### The "as.character" method.
 ###
 
-setMethod("as.character", "BStringAlign",
+setMethod("as.character", "XStringAlign",
     function(x)
     {
         c(align1=as.character(x@align1), align2=as.character(x@align2))

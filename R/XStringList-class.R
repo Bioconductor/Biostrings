@@ -1,23 +1,23 @@
 ### =========================================================================
-### The BStringList class
+### The XStringList class
 ### -------------------------------------------------------------------------
 ###
 ### We use the "has a" rather than the "is a" approach for this class.
 ### The "is a" approach would be doing:
 ###
-###   setClass("BStringList", contains="list")
+###   setClass("XStringList", contains="list")
 ###
 ### At first sight, this approach seems to offer the following big advantage
-### over the "has a" approach: BStringList objects inherit the full "list
+### over the "has a" approach: XStringList objects inherit the full "list
 ### semantic" out-of-the-box! In other words, the "list API" (i.e. all the
 ### functions/methods that work on a list, e.g. [, [[, lapply(), rev(), etc...,
-### there are a lot) still work on a BStringList object.
+### there are a lot) still work on a XStringList object.
 ### Unfortunately, most of the time, they don't do the right thing.
 ### For exampple:
-### 1. The user can easily screw up a BStringList object 'x' with
+### 1. The user can easily screw up a XStringList object 'x' with
 ###    x[1] <- something, or x[[1]] <- something
 ###    This needs to be prevented by redefining the "[<-" and the "[[<-"
-###    methods for BStringList objects.
+###    methods for XStringList objects.
 ### 2. [, rev(), and any method that you would expect to return an object of
 ###    the same class as the input object, unfortunately won't. This is because
 ###    they tend to drop the class attribute.
@@ -26,47 +26,49 @@
 ### redefine almost every "list" method. And there can be a lot of them, in
 ### many different places (standard methods + methods defined in contributed
 ### packages), and new ones can show up in the future... Let's face it: there
-### is no chance we could guarantee that the BStringList API does (and will
+### is no chance we could guarantee that the XStringList API does (and will
 ### always do) the right thing.
 ###
 ### Long story short: THE "HAS A" APPROACH IS MUCH SAFER. Nothing works
 ### out-of-the-box (which is in fact a good thing), and new methods are added
 ### when the need raises. This way we have full control on the entire
-### BStringList API (which should stay reasonably small), I we can make it safe.
+### XStringList API (which should stay reasonably small), I we can make it safe.
 ###
 
-setClass("BStringList",
+setClass("XStringList",
     representation(
+        "VIRTUAL",
         seqs="list"
     )
 )
 
-### 3 direct "BStringList" derivations (no additional slot)
-setClass("DNAStringList", contains="BStringList")
-setClass("RNAStringList", contains="BStringList")
-setClass("AAStringList", contains="BStringList")
+### 4 direct XStringList subtypes (no additional slot)
+setClass("BStringList", contains="XStringList")
+setClass("DNAStringList", contains="XStringList")
+setClass("RNAStringList", contains="XStringList")
+setClass("AAStringList", contains="XStringList")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
-### Like for BStringSet and BStringViews objects, the strict minimum of
-### methods that must work with BStringList objects is:
+### Like for XStringSet and BStringViews objects, the strict minimum of
+### methods that must work with XStringList objects is:
 ###   length, width, nchar, names
 ###
 
-setMethod("length", "BStringList", function(x) length(x@seqs))
+setMethod("length", "XStringList", function(x) length(x@seqs))
 
-setMethod("nchar", "BStringList",
+setMethod("nchar", "XStringList",
     function(x, type="chars", allowNA=FALSE)
         .Call("BStrings_to_nchars", x@seqs, PACKAGE="Biostrings")
 )
 
-setMethod("width", "BStringList", function(x) nchar(x))
+setMethod("width", "XStringList", function(x) nchar(x))
 
-setMethod("names", "BStringList", function(x) names(x@seqs))
+setMethod("names", "XStringList", function(x) names(x@seqs))
 
-setReplaceMethod("names", "BStringList",
+setReplaceMethod("names", "XStringList",
     function(x, value)
     {
         names(x@seqs) <- value
@@ -134,7 +136,7 @@ setMethod("initialize", "AAStringList",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToBStringList <- function(x, start, end, width, use.names, baseClass, check)
+.charToXStringList <- function(x, start, end, width, use.names, baseClass, check)
 {
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     use.names <- normalize.use.names(use.names)
@@ -150,7 +152,7 @@ setMethod("initialize", "AAStringList",
     ans
 }
 
-.narrowBStringList <- function(x, start, end, width, use.names, baseClass, check)
+.narrowXStringList <- function(x, start, end, width, use.names, baseClass, check)
 {
     safe_locs <- narrow(nchar(x), start, end, width)
     use.names <- normalize.use.names(use.names)
@@ -193,55 +195,55 @@ setGeneric("AAStringList", signature="x",
 
 setMethod("BStringList", "character",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .charToBStringList(x, start, end, width, use.names, "BString", check)
+        .charToXStringList(x, start, end, width, use.names, "BString", check)
 )
 setMethod("DNAStringList", "character",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .charToBStringList(x, start, end, width, use.names, "DNAString", check)
+        .charToXStringList(x, start, end, width, use.names, "DNAString", check)
 )
 setMethod("RNAStringList", "character",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .charToBStringList(x, start, end, width, use.names, "RNAString", check)
+        .charToXStringList(x, start, end, width, use.names, "RNAString", check)
 )
 setMethod("AAStringList", "character",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        .charToBStringList(x, start, end, width, use.names, "AAString", check)
+        .charToXStringList(x, start, end, width, use.names, "AAString", check)
 )
 
-setMethod("BStringList", "BStringList",
+setMethod("BStringList", "XStringList",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (is(x, "DNAStringList") || is(x, "RNAStringList"))
             stop("not supported yet, sorry!")
-        .narrowBStringList(x, start, end, width, use.names, "BString", check)
+        .narrowXStringList(x, start, end, width, use.names, "BString", check)
     }
 )
-setMethod("DNAStringList", "BStringList",
+setMethod("DNAStringList", "XStringList",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (is(x, "AAStringList"))
             stop("incompatible input type")
         if (!is(x, "DNAStringList") && !is(x, "RNAStringList"))
             stop("not supported yet, sorry!")
-        .narrowBStringList(x, start, end, width, use.names, "DNAString", check)
+        .narrowXStringList(x, start, end, width, use.names, "DNAString", check)
     }
 )
-setMethod("RNAStringList", "BStringList",
+setMethod("RNAStringList", "XStringList",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (is(x, "AAStringList"))
             stop("incompatible input type")
         if (!is(x, "DNAStringList") && !is(x, "RNAStringList"))
             stop("not supported yet, sorry!")
-        .narrowBStringList(x, start, end, width, use.names, "RNAString", check)
+        .narrowXStringList(x, start, end, width, use.names, "RNAString", check)
     }
 )
-setMethod("AAStringList", "BStringList",
+setMethod("AAStringList", "XStringList",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
     {
         if (is(x, "DNAStringList") || is(x, "RNAStringList"))
             stop("incompatible input type")
-        .narrowBStringList(x, start, end, width, use.names, "AAString", check)
+        .narrowXStringList(x, start, end, width, use.names, "AAString", check)
     }
 )
 
@@ -326,7 +328,7 @@ setMethod("AAStringList", "ANY",
 
 .namesW <- 20
 
-BStringList.show_frame_header <- function(iW, widthW, with.names)
+XStringList.show_frame_header <- function(iW, widthW, with.names)
 {
     cat(format("", width=iW+1),
         format("width", width=widthW, justify="right"),
@@ -341,13 +343,13 @@ BStringList.show_frame_header <- function(iW, widthW, with.names)
     cat("\n")
 }
 
-BStringList.show_frame_line <- function(x, i, iW, widthW)
+XStringList.show_frame_line <- function(x, i, iW, widthW)
 {
     width <- nchar(x[[i]])
     snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(names(x)))
         snippetWidth <- snippetWidth - .namesW - 1
-    seq_snippet <- BString.get_snippet(x[[i]], snippetWidth)
+    seq_snippet <- XString.get_snippet(x[[i]], snippetWidth)
     if (!is.null(names(x)))
         seq_snippet <- format(seq_snippet, width=snippetWidth)
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
@@ -366,33 +368,33 @@ BStringList.show_frame_line <- function(x, i, iW, widthW)
 }
 
 ### 'half_nrow' must be >= 1
-BStringList.show_frame <- function(x, half_nrow=9L)
+XStringList.show_frame <- function(x, half_nrow=9L)
 {
     lx <- length(x)
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(nchar(x))
     widthW <- max(nchar(ncharMax), nchar("width"))
-    BStringList.show_frame_header(iW, widthW, !is.null(names(x)))
+    XStringList.show_frame_header(iW, widthW, !is.null(names(x)))
     if (lx <= 2*half_nrow+1) {
         for (i in seq_len(lx))
-            BStringList.show_frame_line(x, i, iW, widthW)
+            XStringList.show_frame_line(x, i, iW, widthW)
     } else {
         for (i in 1:half_nrow)
-            BStringList.show_frame_line(x, i, iW, widthW)
+            XStringList.show_frame_line(x, i, iW, widthW)
         cat(format("...", width=iW, justify="right"),
             format("...", width=widthW, justify="right"),
             "...\n")
         for (i in (lx-half_nrow+1L):lx)
-            BStringList.show_frame_line(x, i, iW, widthW)
+            XStringList.show_frame_line(x, i, iW, widthW)
     }
 }
 
-setMethod("show", "BStringList",
+setMethod("show", "XStringList",
     function(object)
     {
         cat("  A ", class(object), " instance of length ", length(object), "\n", sep="")
         if (length(object) != 0)
-            BStringList.show_frame(object)
+            XStringList.show_frame(object)
     }
 )
 
@@ -401,7 +403,7 @@ setMethod("show", "BStringList",
 ### Subsetting.
 ###
 
-setMethod("[", "BStringList",
+setMethod("[", "XStringList",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -413,15 +415,15 @@ setMethod("[", "BStringList",
     }
 )
 
-setReplaceMethod("[", "BStringList",
+setReplaceMethod("[", "XStringList",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", sQuote(class(x)), " object")
     }
 )
 
-### Extract the i-th element of a BStringList object as a BString object.
-setMethod("[[", "BStringList",
+### Extract the i-th element of a XStringList object as an XString object.
+setMethod("[[", "XStringList",
     function(x, i, j, ...)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -434,7 +436,7 @@ setMethod("[[", "BStringList",
     }
 )
 
-setReplaceMethod("[[", "BStringList",
+setReplaceMethod("[[", "XStringList",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", sQuote(class(x)), " object")
@@ -446,5 +448,5 @@ setReplaceMethod("[[", "BStringList",
 ### Other methods.
 ###
 
-setMethod("as.list", "BStringList", function(x, ...) x@seqs)
+setMethod("as.list", "XStringList", function(x, ...) x@seqs)
 

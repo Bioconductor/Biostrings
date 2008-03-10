@@ -63,7 +63,7 @@ setGeneric("findComplementedPalindromes", signature="subject",
         standardGeneric("findComplementedPalindromes")
 )
 
-setMethod("findPalindromes", "BString",
+setMethod("findPalindromes", "XString",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
         .find.palindromes(subject, min.armlength,
@@ -80,7 +80,7 @@ setMethod("findComplementedPalindromes", "DNAString",
     }
 )
 
-### WARNING: Unlike with the "findPalindromes" method for BString objects, the
+### WARNING: Unlike with the "findPalindromes" method for XString objects, the
 ### BStringViews object returned by this method is not guaranteed to have its
 ### views ordered from left to right! One important particular case where this
 ### is guaranteed though is when 'subject' is a normalized BStringViews object.
@@ -134,7 +134,7 @@ setGeneric("complementedPalindromeArmLength", signature="x",
     function(x, max.mismatch=0, ...) standardGeneric("complementedPalindromeArmLength")
 )
 
-setMethod("palindromeArmLength", "BString",
+setMethod("palindromeArmLength", "XString",
     function(x, max.mismatch=0, ...)
     {
         max.mismatch <- normalize.max.mismatch(max.mismatch)
@@ -189,16 +189,16 @@ setGeneric("complementedPalindromeLeftArm", signature="x",
     function(x, max.mismatch=0, ...) standardGeneric("complementedPalindromeLeftArm")
 )
 
-setMethod("palindromeLeftArm", "BString",
+setMethod("palindromeLeftArm", "XString",
     function(x, max.mismatch=0, ...)
     {
-        BString.substr(x, 1L, palindromeArmLength(x, max.mismatch=max.mismatch, ...))
+        XString.substr(x, 1L, palindromeArmLength(x, max.mismatch=max.mismatch, ...))
     }
 )
 setMethod("complementedPalindromeLeftArm", "DNAString",
     function(x, max.mismatch=0, ...)
     {
-        BString.substr(x, 1L, complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...))
+        XString.substr(x, 1L, complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...))
     }
 )
 
@@ -234,18 +234,18 @@ setGeneric("complementedPalindromeRightArm", signature="x",
     function(x, max.mismatch=0, ...) standardGeneric("complementedPalindromeRightArm")
 )
 
-setMethod("palindromeRightArm", "BString",
+setMethod("palindromeRightArm", "XString",
     function(x, max.mismatch=0, ...)
     {
         start <- nchar(x) - palindromeArmLength(x, max.mismatch=max.mismatch, ...) + 1L
-        BString.substr(x, start, nchar(x))
+        XString.substr(x, start, nchar(x))
     }
 )
 setMethod("complementedPalindromeRightArm", "DNAString",
     function(x, max.mismatch=0, ...)
     {
         start <- nchar(x) - complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...) + 1L
-        BString.substr(x, start, nchar(x))
+        XString.substr(x, start, nchar(x))
     }
 )
 

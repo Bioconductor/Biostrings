@@ -4,13 +4,13 @@
 \alias{alphabetFrequency,BString-method}
 \alias{alphabetFrequency,DNAString-method}
 \alias{alphabetFrequency,RNAString-method}
-\alias{alphabetFrequency,BStringSet-method}
+\alias{alphabetFrequency,XStringSet-method}
 \alias{alphabetFrequency,BStringViews-method}
 
 \alias{oligonucleotideFrequency}
 \alias{oligonucleotideFrequency,DNAString-method}
 \alias{oligonucleotideFrequency,RNAString-method}
-\alias{oligonucleotideFrequency,BStringSet-method}
+\alias{oligonucleotideFrequency,XStringSet-method}
 \alias{oligonucleotideFrequency,BStringViews-method}
 
 \alias{dinucleotideFrequency}
@@ -55,7 +55,7 @@
 \arguments{
   \item{x}{
     A \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
-    or \link{BStringSet} object for all the \code{*Frequency} functions.
+    or \link{XStringSet} object for all the \code{*Frequency} functions.
     A character vector for \code{strrev}.
   }
   \item{baseOnly}{
@@ -64,7 +64,7 @@
     letters in the "base" alphabet i.e. "A", "C", "G", "T" if \code{x}
     is a "DNA input", and "A", "C", "G", "U" if \code{x} is "RNA input".
     When \code{x} is a \link{BString} instance (or a \link{BStringViews}
-    object with a \link{BString} subject, or a \link{BStringSet} instance),
+    object with a \link{BString} subject, or a \link{XStringSet} instance),
     then the \code{baseOnly} argument is ignored.
   }
   \item{freq}{
@@ -72,7 +72,7 @@
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
-    For the \link{BStringViews} and \link{BStringSet} methods,
+    For the \link{BStringViews} and \link{XStringSet} methods,
     the \code{collapse} argument is accepted.
   }
   \item{fast.moving.side}{
@@ -103,7 +103,7 @@
   \code{alphabetFrequency} and \code{oligonucleotideFrequency} are generic
   functions with methods in the Biostrings package defined for
   \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
-  and \link{BStringSet} objects.
+  and \link{XStringSet} objects.
 }
 
 \value{
@@ -125,7 +125,7 @@
   (resp. trinucleotides or oligonucleotides).
   
   If \code{x} is a multiple sequence input (i.e. a \link{BStringViews} or
-  \link{BStringSet} object), then the returned object is a matrix (or a list)
+  \link{XStringSet} object), then the returned object is a matrix (or a list)
   with the same number of rows (or elements) as \code{x} unless \code{collapse=TRUE}
   is specified. In that case the returned vector (or array) contains the frequencies
   cumulated across all sequences in \code{x}.
@@ -136,7 +136,7 @@
 \seealso{
   \code{\link{countPDict}},
   \link{BString}, \link{DNAString}, \link{RNAString},
-  \link{BStringSet}, \link{BStringViews},
+  \link{XStringSet}, \link{BStringViews},
   \code{\link{rev}}, \code{\link{strsplit}},
   \code{\link{GENETIC_CODE}}, \code{\link{AMINO_ACID_CODE}}
 }

@@ -66,7 +66,7 @@
 ### sum(alphabetFrequency(x)) should always be exactly nchar(x)
 ###
 
-.BString.char_frequency <- function(x, freq)
+.XString.char_frequency <- function(x, freq)
 {
     freq <- .normalize.freq(freq)
     ans <- .Call("char_frequency",
@@ -79,7 +79,7 @@
 
 .nucleotide_frequency <- function(x, baseOnly, freq)
 {
-    char_freq <- .BString.char_frequency(x, freq)
+    char_freq <- .XString.char_frequency(x, freq)
     codes <- codes(x, baseOnly=baseOnly)
     ans <- char_freq[1 + codes]
     names(ans) <- names(codes)
@@ -104,7 +104,7 @@ setMethod("alphabetFrequency", "BString",
     {
         if (!missing(baseOnly))
             warning("'baseOnly' is ignored for a non DNA or RNA sequence")
-        .BString.char_frequency(x, freq)
+        .XString.char_frequency(x, freq)
     }
 )
 
@@ -122,7 +122,7 @@ setMethod("alphabetFrequency", "RNAString",
     }
 )
 
-setMethod("alphabetFrequency", "BStringSet",
+setMethod("alphabetFrequency", "XStringSet",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
         if (is(super(x), "DNAString") || is(super(x), "RNAString")) {
@@ -135,7 +135,7 @@ setMethod("alphabetFrequency", "BStringSet",
         freq <- .normalize.freq(freq)
         collapse <- .normalize.collapse(list(...)$collapse)
         ## Generate a zero-filled answer
-        ans_row <- frequency(mkBString(class(super(x)), ""))
+        ans_row <- frequency(XString(class(super(x)), ""))
         if (collapse) {
             ans <- ans_row
             for (i in seq_len(length(x)))
@@ -293,7 +293,7 @@ setMethod("oligonucleotideFrequency", "RNAString",
     }
 )
 
-setMethod("oligonucleotideFrequency", "BStringSet",
+setMethod("oligonucleotideFrequency", "XStringSet",
     function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))

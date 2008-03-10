@@ -9,72 +9,67 @@
 \alias{AA_ALPHABET}
 
 % Constructor-like functions and generics:
-\alias{initialize,AAString-method}
 \alias{AAString}
-\alias{AAString,character-method}
-\alias{AAString,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,AAString-method}
 
 
-\title{The AAString class}
+\title{AAString objects}
 
 \description{
-  A \code{AAString} object allows efficient storage
+  An AAString object allows efficient storage
   and manipulation of a long amino acid sequence.
 }
 
 \details{
-  The \code{AAString} class derives directly from the
-  \code{\link{BString}} class (with no additional slot).
-  All functions and methods described in the
-  \code{\link{BString}} man page also work
-  with a \code{AAString} object (inheritance).
+  The AAString class is a direct \link{XString} subtype
+  (with no additional slot).
+  Therefore all functions and methods described in the
+  \link{XString} man page also work
+  with an AAString object (inheritance).
 
-  Unlike a \code{\link{BString}} object that allows storage
-  of any non-empty string (based on a single-byte character set)
-  a \code{AAString} object can only store a non-empty string
-  based on the AAString alphabet (see below).
+  Unlike the \link{BString} container that allows storage
+  of any single string (based on a single-byte character set)
+  the AAString container can only store a string
+  based on the Amino Acid alphabet (see below).
 }
 
-\section{The AAString alphabet}{
+\section{The Amino Acid alphabet}{
   This alphabet contains all letters from the
   Single-Letter Amino Acid Code (see \code{\link{AMINO_ACID_CODE}})
   + the stop letter \code{"*"}.
   It is stored in the \code{AA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
-  \code{AA_ALPHABET} when applied to a \code{AAString}
+  \code{AA_ALPHABET} when applied to an AAString
   object and is provided for convenience only.
 }
 
 \section{Constructor-like functions and generics}{
   In the code snippet below,
-  \code{src} can be a character vector
-  or a \code{\link{BString}} (or derived) object.
+  \code{src} can be a single string (character vector of length 1)
+  or a \link{BString} object.
 
   \describe{
     \item{}{
       \code{AAString(src)}:
-      Tries to convert \code{src} into an \code{AAString} object by reading
+      Tries to convert \code{src} into an AAString object by reading
       \code{nchar} letters starting at position \code{start} in \code{src}.
-      \code{src} can be a single string (character vector of length 1)
-      or a \link{BString} object.
     }
   }
 }
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} must be a \code{\link{BString}} (or derived) object.
+  \code{x} must be an \link{XString} object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
-      If \code{x} is of class \code{AAString}, return the AAString
+      If \code{x} is an AAString object, then return the Amino Acid
       alphabet (see above).
       See the corresponding man pages when \code{x} is of class
-      \code{\link{BString}}, \code{\link{DNAString}} or \code{\link{RNAString}}.
+      \link{BString}, \link{DNAString} or \link{RNAString}.
     }
   }
 }
@@ -83,9 +78,9 @@
 
 \seealso{
   \code{\link{AMINO_ACID_CODE}},
-  \code{\link{subBString}},
+  \code{\link{subXString}},
   \code{\link{letter}},
-  \link{BString-class},
+  \link{XString-class},
   \link{BStringViews-class}
 }
 

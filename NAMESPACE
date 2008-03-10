@@ -7,12 +7,12 @@ import(utils) ## for the "head" and "tail" generics
 exportClasses(
     "IRanges",
     "XRaw", "XInteger",
-    "BString", "DNAString", "RNAString", "AAString",
+    "XString", "BString", "DNAString", "RNAString", "AAString",
     "BStringViews",
-    "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
+    "XStringSet", "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
     "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
-    "BStringPartialMatches",
-    "BStringAlign",
+    "XStringPartialMatches",
+    "XStringAlign",
     "BOC_SubjectString", "BOC2_SubjectString",
     "PDict", "CWdna_PDict", "TBdna_PDict",
     "MIndex", "ByPos_MIndex", "ByName_MIndex"
@@ -38,9 +38,8 @@ exportMethods(
     align1, align2, score,
 
     ## Others
-    BString, DNAString, RNAString, AAString,
+    XString,
     BStringViews,
-    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
@@ -72,17 +71,24 @@ export(
     IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
+    BString, DNAString, RNAString, AAString,
+    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     views, adjacentViews, trim, subviews,
     FASTArecordsToCharacter, CharacterToFASTArecords,
-    FASTArecordsToBStringViews, BStringSetToFASTArecords,
+    FASTArecordsToBStringViews, XStringSetToFASTArecords,
     read.BStringViews,
     read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
-    write.BStringSet, write.BStringViews,
-    subBString, subviews,
+    write.XStringSet, write.BStringViews,
+    subXString, subviews,
     strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
     transcribe, cDNA, dna2rna, rna2dna,
-    matchDNAPattern,
     extractAllMatches,
-    alignScore
+    alignScore,
+
+    ## Deprecated
+    subBString,
+
+    ## Defunct
+    matchDNAPattern
 )
 

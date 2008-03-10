@@ -6,33 +6,35 @@
 ### ranges.
 ###
 
-setClass("IRanges",
+setClass(".IRanges",
     representation(
         ## See the "initialize" method below for more details.
         ranges="data.frame"
     )
 )
 
+setClass("IRanges", contains=".IRanges")
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
-setMethod("length", "IRanges", function(x) nrow(x@ranges))
+setMethod("length", ".IRanges", function(x) nrow(x@ranges))
 
 ### The substr() function uses 'start' and 'stop'.
 ### The substring() function uses 'first' and 'last'.
 ### We use 'start' and 'end'.
 ### Note that the "start" and "end" generic are defined in the stats package.
-setMethod("start", "IRanges", function(x, ...) x@ranges$start)
+setMethod("start", ".IRanges", function(x, ...) x@ranges$start)
 
 setGeneric("width", function(x) standardGeneric("width"))
-setMethod("width", "IRanges", function(x) x@ranges$width)
+setMethod("width", ".IRanges", function(x) x@ranges$width)
 
 ### Note that when width(x)[i] is 0, then end(x)[i] is start(x)[i] - 1
-setMethod("end", "IRanges", function(x, ...) {start(x) + width(x) - 1L})
+setMethod("end", ".IRanges", function(x, ...) {start(x) + width(x) - 1L})
 
-setMethod("names", "IRanges", function(x) x@ranges$names)
+setMethod("names", ".IRanges", function(x) x@ranges$names)
 
 ### "desc" is an alias for "names". It might be deprecated soon...
 setGeneric("desc", function(x) standardGeneric("desc"))
@@ -66,7 +68,7 @@ setMethod("desc", "ANY", function(x) names(x))
 {
     if (!is.integer(width(object)) || any(is.na(width(object))))
         return("the widths must be non-NA integers")
-    ## See comment in .valid.IRanges.start() in above...
+    ## See comment in .valid.IRanges.start() above...
     if (length(start(object)) != length(width(object)))
         return("number of starts and number of widths differ")
     if (length(width(object)) != 0 && min(width(object)) < 0L)
@@ -98,7 +100,7 @@ setMethod("desc", "ANY", function(x) names(x))
       .valid.IRanges.names(object))
 }
 
-setValidity("IRanges",
+setValidity(".IRanges",
     function(object)
     {
         problems <- .valid.IRanges(object)
@@ -132,11 +134,19 @@ setValidity("IRanges",
     ranges
 }
 
-setMethod("initialize", "IRanges",
-    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
+setMethod("initialize", ".IRanges",
+    function(.Object, start, width, names)
     {
         ranges <- .make.ranges(start, width, names)
         slot(.Object, "ranges", check=FALSE) <- ranges
+        .Object
+    }
+)
+
+setMethod("initialize", "IRanges",
+    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
+    {
+        .Object <- callNextMethod(.Object, start, width, names=names)
         if (check) {
             ## I found that using validObject() in "initialize" doesn't work
             ## properly (validation is called too many times and not in an
@@ -151,12 +161,167 @@ setMethod("initialize", "IRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Replacement methods.
+### The "show" method.
+###
+
+setMethod("as.data.frame", ".IRanges",
+    function(x, row.names=NULL, optional=FALSE, ...)
+    {
+        ans <- data.frame(start=start(x),
+                          end=end(x),
+                          width=width(x),
+                          check.names=FALSE,
+                          stringsAsFactors=FALSE)
+        ans$names <- names(x)
+        ans
+    }
+)
+
+setMethod("show", ".IRanges",
+    function(object) show(as.data.frame(object))
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
+###
+
+### Supported 'i' types: numeric vector, logical vector, NULL and missing.
+setMethod("[", ".IRanges",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
+        lx <- length(x)
+        if (is.numeric(i)) {
+            if (any(i < -lx) || any(i > lx))
+                stop("subscript out of bounds")
+        } else if (is.logical(i)) {
+            if (length(i) > lx)
+                stop("subscript out of bounds")
+        } else if (!is.null(i)) {
+            stop("invalid subscript type")
+        }
+        slot(x, "ranges", check=FALSE) <- x@ranges[i, , drop=FALSE]
+        x
+    }
+)
+
+setReplaceMethod("[", ".IRanges",
+    function(x, i, j,..., value)
+    {
+        stop("attempt to modify the value of a ", sQuote(class(x)), " object")
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "as.list" method.
+###
+
+#Not sure we want this!
+#setMethod("as.list", ".IRanges", function(x, ...) x@ranges)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods.
+###
+
+setMethod("as.matrix", ".IRanges",
+    function(x, ...)
+    {
+        ans <- as.matrix(x@ranges[ , c("start", "width")], ...)
+        rownames(ans) <- names(x)
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deprecated methods.
+###
+
+setGeneric("first", function(x) standardGeneric("first"))
+setMethod("first", ".IRanges", function(x) {.Deprecated("start"); start(x)})
+setGeneric("last", function(x) standardGeneric("last"))
+setMethod("last", ".IRanges", function(x) {.Deprecated("end"); end(x)})
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Non-exported replacement functions for .IRanges objects.
+###
+### IMPORTANT: They do NOT check their argument 'x' and 'value' at all, not
+### even that 'value' is of type integer!
 ###
 ### The rules are:
 ###   (1) changing the start preserves the width (so it changes the end)
 ###   (2) changing the width preserves the start (so it changes the end)
 ###   (3) changing the end preserves the width (so it changes the start)
+###
+
+`.start<-` <- function(x, value) { x@ranges$start <- value; x }
+`.width<-` <- function(x, value) { x@ranges$width <- value; x }
+`.end<-` <- function(x, value) { .start(x) <- value - width(x) + 1L; x }
+`.names<-` <- function(x, value) { x@ranges$names <- value; x }
+
+.update <- function(object, ...)
+{
+    args <- list(...)
+    argnames <- names(args)
+    if (length(args) != 0
+        && (is.null(argnames) || any(argnames %in% c("", NA))))
+        stop("all extra arguments must be named")
+    valid_argnames <- c("start", "end", "width", "names", "check")
+    if (!all(argnames %in% valid_argnames))
+        stop("valid extra argument names are ",
+             paste("'", valid_argnames, "'", sep="", collapse=", "))
+    if (any(duplicated(argnames)))
+        stop("argument names must be unique")
+    sew <- c("start", "end", "width")
+    narg_in_sew <- sum(sew %in% argnames)
+    if (narg_in_sew == 3)
+        stop("only two of the ",
+             paste("'", sew, "'", sep="", collapse=", "),
+             " arguments can be specified")
+    do_atomic_update <- narg_in_sew == 2 && (("names" %in% argnames)
+                                             || is.null(names(object)))
+    if (do_atomic_update) {
+        if ("end" %in% argnames) {
+            if ("width" %in% argnames) {
+                width <- args$width
+                start <- args$end - width + 1L
+            } else {
+                start <- args$start
+                width <- args$end - start + 1L
+            }
+        } else {
+            start <- args$start
+            width <- args$width
+        }
+        ranges <- .make.ranges(start, width, args$names)
+        slot(object, "ranges", check=FALSE) <- ranges
+        return(object)
+    }
+    if ("start" %in% argnames)
+        .start(object) <- args$start
+    if ("end" %in% argnames)
+        .end(object) <- args$end
+    if ("width" %in% argnames)
+        .width(object) <- args$width
+    if ("names" %in% argnames)
+        .names(object) <- args$names
+    object
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Exported replacement methods.
+###
+### See .start<-, .width<- and .end<- above for the rules.
 ###
 ### Note that we don't call validObject(x) after 'x' has been modified because
 ### we don't need to revalidate the entire object: validating the bits that
@@ -170,10 +335,11 @@ setGeneric("start<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("start<-")
 )
 
+### No method for .IRanges objects!
 setReplaceMethod("start", "IRanges",
     function(x, check=TRUE, value)
     {
-        x@ranges$start <- .numeric2integer(value)
+        .start(x) <- .numeric2integer(value)
         if (check) {
             problem <- .valid.IRanges.start(x)
             if (!is.null(problem)) stop(problem)
@@ -186,10 +352,11 @@ setGeneric("width<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("width<-")
 )
 
+### No method for .IRanges objects!
 setReplaceMethod("width", "IRanges",
     function(x, check=TRUE, value)
     {
-        x@ranges$width <- .numeric2integer(value)
+        .width(x) <- .numeric2integer(value)
         if (check) {
             problem <- .valid.IRanges.width(x)
             if (!is.null(problem)) stop(problem)
@@ -202,27 +369,29 @@ setGeneric("end<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("end<-")
 )
 
+### No method for .IRanges objects!
 setReplaceMethod("end", "IRanges",
     function(x, check=TRUE, value)
     {
-        start(x, check=check) <- value - width(x) + 1L
+        .end(x) <- .numeric2integer(value)
+        if (check) {
+            problem <- .valid.IRanges.start(x)
+            if (!is.null(problem)) stop(problem)
+        }
         x
     }
 )
 
-setReplaceMethod("names", "IRanges",
+### Yes, for .IRanges objects!
+setReplaceMethod("names", ".IRanges",
     function(x, value)
     {
-        if (is.null(value)) {
-            x@ranges$names <- NULL
-            return(x)
-        }
-        if (!is.character(value))
+        if (!(is.null(value) || is.character(value)))
             stop("'value' must be NULL or a character vector")
         if (length(value) > length(x))
             stop("too many names")
         length(value) <- length(x)
-        x@ranges$names <- value
+        .names(x) <- value
         x
     }
 )
@@ -243,153 +412,18 @@ setReplaceMethod("desc", "ANY", function(x, value) `names<-`(x, value))
 ###       x with its own content)
 ###
 
+### No method for .IRanges objects!
 setMethod("update", "IRanges",
     function(object, ...)
     {
-        args <- list(...)
-        argnames <- names(args)
-        if (length(args) != 0
-            && (is.null(argnames) || any(argnames %in% c("", NA))))
-            stop("all extra arguments must be named")
-        valid_argnames <- c("start", "end", "width", "names", "check")
-        if (!all(argnames %in% valid_argnames))
-            stop("valid extra argument names are ",
-                 paste("'", valid_argnames, "'", sep="", collapse=", "))
-        if (any(duplicated(argnames)))
-            stop("argument names must be unique")
-        check <- args$check
-        if (is.null(check)) check <- TRUE
-        swe <- c("start", "end", "width")
-        narg_in_swe <- sum(swe %in% argnames)
-        if (narg_in_swe == 3)
-            stop("only two of the ",
-                 paste("'", swe, "'", sep="", collapse=", "),
-                 " arguments can be specified")
-        do_atomic_update <- narg_in_swe == 2 && (("names" %in% argnames)
-                                                 || is.null(names(object)))
-        if (do_atomic_update) {
-            if ("end" %in% argnames) {
-                if ("width" %in% argnames) {
-                    width <- args$width
-                    start <- args$end - width + 1L
-                } else {
-                    start <- args$start
-                    width <- args$end - start + 1L
-                }
-            } else {
-                start <- args$start
-                width <- args$width
-            }
-            ranges <- .make.ranges(start, width, args$names)
-            slot(object, "ranges", check=FALSE) <- ranges
-            if (check) validObject(object)
-            return(object)
-        }
-        if ("start" %in% argnames)
-            start(object, check=check) <- args$start
-        if ("end" %in% argnames)
-            end(object, check=check) <- args$end
-        if ("width" %in% argnames)
-            width(object, check=check) <- args$width
-        if ("names" %in% argnames) {
-            ## "names<-" has no 'check' argument
-            if (check)
-                names(object) <- args$names
-            else
-                object@ranges$names <- args$names
-        }
+        object <- .update(object, ...)
+        check <- list(...)$check
+        if (is.null(check))
+            check <- TRUE
+        if (check)
+            validObject(object)
         object
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
-###
-
-setMethod("as.data.frame", "IRanges",
-    function(x, row.names=NULL, optional=FALSE, ...)
-    {
-        ans <- data.frame(start=start(x),
-                          end=end(x),
-                          width=width(x),
-                          check.names=FALSE,
-                          stringsAsFactors=FALSE)
-        ans$names <- names(x)
-        ans
-    }
-)
-
-setMethod("show", "IRanges",
-    function(object) show(as.data.frame(object))
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", "IRanges",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (is.character(i))
-            stop("cannot subset a ", class(x), " object by names")
-        lx <- length(x)
-        if (is.numeric(i)) {
-            if (any(i < -lx) || any(i > lx))
-                stop("subscript out of bounds")
-        } else if (is.logical(i)) {
-            if (length(i) > lx)
-                stop("subscript out of bounds")
-        } else if (!is.null(i)) {
-            stop("invalid subscript type")
-        }
-        x@ranges <- x@ranges[i, , drop=FALSE]
-        x
-    }
-)
-
-setReplaceMethod("[", "IRanges",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", sQuote(class(x)), " object")
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "as.list" method.
-###
-
-#Not sure we want this!
-#setMethod("as.list", "IRanges", function(x, ...) x@ranges)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other methods.
-###
-
-setMethod("as.matrix", "IRanges",
-    function(x, ...)
-    {
-        ans <- as.matrix(x@ranges[ , c("start", "width")], ...)
-        rownames(ans) <- names(x)
-        ans
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Deprecated methods.
-###
-
-setGeneric("first", function(x) standardGeneric("first"))
-setMethod("first", "IRanges", function(x) {.Deprecated("start"); start(x)})
-setGeneric("last", function(x) standardGeneric("last"))
-setMethod("last", "IRanges", function(x) {.Deprecated("end"); end(x)})
 

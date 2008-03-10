@@ -161,7 +161,7 @@
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
-  \link{BStringSet-class},
+  \link{XStringSet-class},
   \code{\link{letter}}
 }
 
@@ -189,7 +189,7 @@
 
   ## Two equivalent ways to extract a view as a BString (or derived) object:
   s2a <- v4[[2]]
-  s2b <- subBString(subject(v4), start(v4)[2], end(v4)[2])
+  s2b <- subXString(subject(v4), start(v4)[2], end(v4)[2])
   identical(s2a, s2b) # TRUE
 
   ## It is an error to try to extract an "out of limits" view:

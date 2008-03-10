@@ -5,8 +5,8 @@
 ### The "views" and "adjacentViews" functions below share the following
 ### properties:
 ###   - They are exported (and safe).
-###   - First argument is 'subject'. It must be a character vector or a BString
-###     (or derived) object.
+###   - First argument is 'subject'. It must be a character vector or an
+###     XString object.
 ###   - Passing something else to 'subject' provokes an error.
 ###   - They return a BStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
@@ -49,7 +49,7 @@
 ###     some views are "out of limits"
 views <- function(subject, start=NA, end=NA)
 {
-    if (!is(subject, "BString"))
+    if (!is(subject, "XString"))
         subject <- BString(subject)
     ans <- new("BStringViews", subject, check=FALSE)
     ans@ranges <- .makeRanges(subject(ans), start, end)
@@ -97,8 +97,8 @@ setGeneric("BStringViews", signature="src",
     function(src, subjectClass, collapse="") standardGeneric("BStringViews")
 )
 
-### 'subjectClass' must be "BString" or one of its derivations ("DNAString",
-### "RNAString" or "AAString").
+### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
+### "BString", "DNAString", "RNAString" or "AAString".
 ###
 ### Benchmarks:
 ###   n <- 40000
@@ -130,7 +130,7 @@ setMethod("BStringViews", "ANY",
         if (!is.character(collapse))
             collapse <- toString(collapse)
         seq <- paste(src, collapse=collapse)
-        subject <- mkBString(subjectClass, seq)
+        subject <- XString(subjectClass, seq)
         ans <- adjacentViews(subject, nchar(src), nchar(collapse))
         desc(ans) <- names(src)
         ans
@@ -145,35 +145,35 @@ setMethod("BStringViews", "file",
     }
 )
 
-### Called when 'src' is a BString (or derived) object.
-### When not missing, 'subjectClass' must be "BString" or one of its
-### derivations ("DNAString", "RNAString" or "AAString").
-setMethod("BStringViews", "BString",
+### Called when 'src' is an XString object.
+### When not missing, 'subjectClass' must be the name of one of the direct
+### XString subtypes i.e. "BString", "DNAString", "RNAString" or "AAString".
+setMethod("BStringViews", "XString",
     function(src, subjectClass, collapse="")
     {
         if (!missing(collapse)) {
-            ## The semantic is: views are delimited by the occurences of 'collapse'
-            ## in 'src' (a kind of strsplit() for BString objects).
+            ## The semantic is: views are delimited by the occurences of
+            ## 'collapse' in 'src' (a kind of strsplit() for XString objects).
             ## Uncomment when normalize() and ! method are ready (see TODO file):
             #return(!normalize(matchPattern(collapse, b, fixed=TRUE)))
-            stop("'collapse' not yet supported when 'src' is a \"BString\" object")
+            stop("'collapse' not yet supported when 'src' is an XString object")
         }
         if (!missing(subjectClass) && subjectClass != class(src))
-            src <- mkBString(subjectClass, src)
+            src <- XString(subjectClass, src)
         new("BStringViews", src, start=1L, width=nchar(src), check=FALSE)
     }
 )
 
 ### Called when 'src' is a BStringViews object.
-### 'subjectClass' must be "BString" or one of its derivations ("DNAString",
-### "RNAString" or "AAString").
+### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
+### "BString", "DNAString", "RNAString" or "AAString".
 ### The 'collapse' arg is ignored.
 setMethod("BStringViews", "BStringViews",
     function(src, subjectClass, collapse="")
     {
         if (!missing(collapse))
-            stop("'collapse' not supported when 'src' is a \"BStringViews\" object")
-        src@subject <- mkBString(subjectClass, subject(src))
+            stop("'collapse' not supported when 'src' is a BStringViews object")
+        src@subject <- XString(subjectClass, subject(src))
         src
     }
 )

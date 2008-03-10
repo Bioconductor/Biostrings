@@ -2,7 +2,7 @@
 ### The "chartr" generic function and methods.
 ###
 
-BString.tr <- function(x, lkup=NULL, reverse=FALSE)
+XString.tr <- function(x, lkup=NULL, reverse=FALSE)
 {
     lx <- length(x)
     data <- XRaw(lx)
@@ -24,20 +24,20 @@ setGeneric("chartr", signature="x",
     function(old, new, x) standardGeneric("chartr")
 )
 
-setMethod("chartr", "BString",
+setMethod("chartr", "XString",
     function(old, new, x)
     {
         if (class(old) != class(x))
-            old <- mkBString(class(x), old)
+            old <- XString(class(x), old)
         if (class(new) != class(x))
-            new <- mkBString(class(x), new)
+            new <- XString(class(x), new)
         if (nchar(old) != nchar(new))
             stop("'old' and 'new' must have the same length")
-        old_codes <- BString.readCodes(old, 1, nchar(old))
-        new_codes <- BString.readCodes(new, 1, nchar(new))
+        old_codes <- XString.readCodes(old, 1, nchar(old))
+        new_codes <- XString.readCodes(new, 1, nchar(new))
         lkup <- buildLookupTable(codes(x), codes(x))
         lkup[1 + old_codes] <- new_codes
-        BString.tr(x, lkup=lkup)
+        XString.tr(x, lkup=lkup)
     }
 )
 
@@ -46,7 +46,7 @@ setMethod("chartr", "BStringViews",
         error("not ready yet, sorry!")
 )
 
-setMethod("chartr", "BStringSet",
+setMethod("chartr", "XStringSet",
     function(old, new, x)
         error("not ready yet, sorry!")
 )

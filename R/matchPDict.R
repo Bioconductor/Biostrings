@@ -685,8 +685,8 @@ setMethod("unlist", "MIndex",
 
 extractAllMatches <- function(subject, mindex)
 {
-    if (!is(subject, "BString"))
-        stop("'subject' must be a BString object")
+    if (!is(subject, "XString"))
+        stop("'subject' must be an XString object")
     if (!is(mindex, "MIndex"))
         stop("'mindex' must be an MIndex object")
     if (is.null(names(mindex)))
@@ -727,7 +727,7 @@ extractAllMatches <- function(subject, mindex)
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subBString(chr1, end_index[[id0]][1]-24, end_index[[id0]][1]) == p0
+###   > subXString(chr1, end_index[[id0]][1]-24, end_index[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
 ###   > pidOK <- sapply(seq_len(length(end_index)),
@@ -920,7 +920,7 @@ setGeneric("matchPDict", signature="subject",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("matchPDict", "BString",
+setMethod("matchPDict", "XString",
     function(pdict, subject, algorithm, max.mismatch, fixed)
     {
 	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
@@ -938,7 +938,7 @@ setGeneric("countPDict", signature="subject",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("countPDict", "BString",
+setMethod("countPDict", "XString",
     function(pdict, subject, algorithm, max.mismatch, fixed)
     {
 	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed, count.only=TRUE)

@@ -39,14 +39,14 @@ setMethod("letter", "character",
 )
 
 ### Return a character vector of length 1.
-setMethod("letter", "BString",
+setMethod("letter", "XString",
     function(x, i)
     {
         if (!is.numeric(i) || any(is.na(i)))
             stop("'i' must be an NA-free numeric vector")
         if (!all(i >= 1) || !all(i <= x@length))
             stop("subscript out of bounds")
-        BString.read(x, i)
+        XString.read(x, i)
     }
 )
 
@@ -61,6 +61,6 @@ setMethod("letter", "BStringViews",
         imax <- min(nchar(x))
         if (!all(i >= 1) || !all(i <= imax))
             stop("subscript out of bounds")
-        sapply(seq_len(length(x)), function(n) BString.read(x[[n]], i))
+        sapply(seq_len(length(x)), function(n) XString.read(x[[n]], i))
     }
 )

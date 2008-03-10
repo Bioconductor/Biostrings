@@ -60,7 +60,7 @@
 
 \seealso{
   \code{\link{needwunsQS}},
-  \link{BStringAlign-class},
+  \link{XStringAlign-class},
   \link{DNAString-class},
   \link{AAString-class}
 }

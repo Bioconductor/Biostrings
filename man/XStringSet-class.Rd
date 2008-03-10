@@ -1,7 +1,11 @@
-\name{BStringSet-class}
+\name{XStringSet-class}
 \docType{class}
 
 % Classes:
+\alias{class:XStringSet}
+\alias{XStringSet-class}
+\alias{XStringSet}
+
 \alias{class:BStringSet}
 \alias{BStringSet-class}
 \alias{BStringSet}
@@ -14,6 +18,10 @@
 \alias{class:AAStringSet}
 \alias{AAStringSet-class}
 \alias{AAStringSet}
+
+\alias{class:XStringList}
+\alias{XStringList-class}
+\alias{XStringList}
 
 \alias{class:BStringList}
 \alias{BStringList-class}
@@ -29,7 +37,7 @@
 \alias{AAStringList}
 
 % Accesor methods:
-\alias{nchar,BStringSet-method}
+\alias{nchar,XStringSet-method}
 
 \alias{length,BStringList-method}
 \alias{nchar,BStringList-method}
@@ -38,26 +46,16 @@
 \alias{names<-,BStringList-method}
 
 % Constructor-like functions and generics:
-\alias{initialize,BStringSet-method}
-\alias{initialize,DNAStringSet-method}
-\alias{initialize,RNAStringSet-method}
-\alias{initialize,AAStringSet-method}
-\alias{BStringSet,character-method}
-\alias{DNAStringSet,character-method}
-\alias{RNAStringSet,character-method}
-\alias{AAStringSet,character-method}
-\alias{BStringSet,AsIs-method}
-\alias{DNAStringSet,AsIs-method}
-\alias{RNAStringSet,AsIs-method}
-\alias{AAStringSet,AsIs-method}
-\alias{BStringSet,BStringSet-method}
-\alias{DNAStringSet,BStringSet-method}
-\alias{RNAStringSet,BStringSet-method}
-\alias{AAStringSet,BStringSet-method}
-\alias{BStringSet,BStringViews-method}
-\alias{DNAStringSet,BStringViews-method}
-\alias{RNAStringSet,BStringViews-method}
-\alias{AAStringSet,BStringViews-method}
+\alias{initialize,XStringSet-method}
+\alias{XStringSet,character-method}
+\alias{XStringSet,AsIs-method}
+\alias{XStringSet,XStringSet-method}
+\alias{XStringSet,BStringViews-method}
+
+\alias{BStringSet}
+\alias{DNAStringSet}
+\alias{RNAStringSet}
+\alias{AAStringSet}
 
 \alias{initialize,BStringList-method}
 \alias{initialize,DNAStringList-method}
@@ -81,11 +79,11 @@
 \alias{AAStringList,ANY-method}
 
 % Other methods:
-\alias{show,BStringSet-method}
-\alias{[[,BStringSet-method}
-\alias{[[<-,BStringSet-method}
-\alias{as.list,BStringSet-method}
-\alias{as.character,BStringSet-method}
+\alias{show,XStringSet-method}
+\alias{[[,XStringSet-method}
+\alias{[[<-,XStringSet-method}
+\alias{as.list,XStringSet-method}
+\alias{as.character,XStringSet-method}
 
 \alias{show,BStringList-method}
 \alias{[,BStringList-method}
@@ -95,14 +93,14 @@
 \alias{as.list,BStringList-method}
 
 
-\title{BStringSet objects}
+\title{BStringSet, DNAStringSet, RNAStringSet and AAStringSet objects}
 
 \description{
   The BStringSet class is a container for storing a set of \code{\link{BString}}
-  instances and for making its manipulation easy and efficient.
-  The DNAStringSet (or RNAStringSet, or AAStringSet) class is a direct
-  BStringSet derivation for storing a set of \code{\link{DNAString}}
-  (or \code{\link{RNAString}}, or \code{\link{AAString}}) instances.
+  objects and for making its manipulation easy and efficient.
+  Similarly, the DNAStringSet (or RNAStringSet, or AAStringSet) class is
+  a container for storing a set of \code{\link{DNAString}}
+  (or \code{\link{RNAString}}, or \code{\link{AAString}}) objects.
 
   The BStringList class (and family) is equivalent to the BStringSet family.
   It was a first attempt to address the problem of storing a large set of
@@ -110,10 +108,10 @@
 }
 
 \usage{
-  BStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-  DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-  RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-  AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
+  BStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
   ## The BStringList family has been superseded by more efficient BStringSet
   ## family
@@ -149,11 +147,11 @@
 }
 
 \section{Accesor methods}{
-  The BStringSet class derives from the \link{IRanges} class hence
+  The XStringSet class derives from the \link{IRanges} class hence
   all the accessor methods defined for a \link{IRanges} object can also
-  be used on a BStringSet object. In particular, the following methods
-  are available (in the code snippets below, \code{x} is a BStringSet (or
-  derived) object):
+  be used on an XStringSet object. In particular, the following methods
+  are available (in the code snippets below, \code{x} is an XStringSet
+  object:
 
   \describe{
     \item{}{
@@ -173,7 +171,7 @@
       \code{names(x)}:
       \code{NULL} or a character vector of the same length as \code{x} containing
       a short user-provided description or comment for each element in \code{x}.
-      These are the only data in a BStringSet object that can safely
+      These are the only data in an XStringSet object that can safely
       be changed by the user. All the other data are immutable!
       As a general recommendation, the user should never try to modify
       an object by accessing its slots directly.
@@ -183,13 +181,13 @@
 
 \section{Subsetting methods}{
   In the code snippets below,
-  \code{x} is a BStringSet (or derived) object,
+  \code{x} is an XStringSet object,
   and \code{i} should be an index specifying the elements to extract.
 
   \describe{
     \item{}{
       \code{x[i]}:
-      Return a new BStringSet object made of the selected elements.
+      Return a new XStringSet object made of the selected elements.
     }
     \item{}{
       \code{x[[i]]}:
@@ -200,7 +198,7 @@
 
 \section{Other methods}{
   In the code snippets below,
-  \code{x} is a BStringSet (or derived) object.
+  \code{x} is an XStringSet object.
   \describe{
     \item{}{
       \code{as.list(x)}:

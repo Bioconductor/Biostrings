@@ -122,7 +122,7 @@ const char *_get_BString_charseq(SEXP x, int *length)
 
 /* UNTESTED */
 /* NOT a Call() entry point! */
-SEXP mkBString(const char *class, SEXP data, int offset, int length)
+SEXP mkXString(const char *class, SEXP data, int offset, int length)
 {
 	SEXP class_def, ans;
 

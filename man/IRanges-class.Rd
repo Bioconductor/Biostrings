@@ -150,8 +150,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BStringViews-class},
-  \link{BStringSet-class}
+  \link{BStringViews-class}
 }
 
 \examples{

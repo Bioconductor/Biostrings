@@ -82,7 +82,7 @@ setMethod("mask", "BStringViews",
 ###   > mask(BString("AbcbcbDE"), 2, 6)
 ### or this:
 ###   > mask(BString("AbcbcbDE"), "bcb")
-setMethod("mask", "BString",
+setMethod("mask", "XString",
     function(x, start, end, pattern)
     {
         if (missing(pattern)) {

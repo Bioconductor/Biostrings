@@ -72,16 +72,16 @@ o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
 UTILITIES
 
 o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
-  read.AAStringSet() and write.BStringSet(). read.BStringSet() and family is
+  read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is
   now prefered over read.BStringViews() for loading a FASTA file into R.
   Renamed helper function BStringViewsToFASTArecords() ->
-  BStringSetToFASTArecords().
+  XStringSetToFASTArecords().
 
-o Added the chartr() generic function with a method for BString objects.
+o Added the chartr() generic function with a method for XString objects.
   Methods for other types of objects (in particular for BStringViews and
-  BStringSet objects) will come later.
+  XStringSet objects) will come later.
 
-o Made the "show" methods for BString, BStringViews and BStringAlign objects
+o Made the "show" methods for XString, BStringViews and XStringAlign objects
   "getOption('width') aware" so that the user can control the width of the
   output they produce.
 
@@ -95,7 +95,7 @@ o Three changes in alphabetFrequency():
   (2) added the 'freq' argument;
   (3) added the 'collapse' argument.
 
-o Added "as.character" and "consmat" methods for "BStringAlign" objects.
+o Added "as.character" and "consmat" methods for XStringAlign objects.
 
 o Added the patternFrequency() generic function with a method for CWdna_PDict
   objects (will come later for TBdna_PDict objects).
@@ -103,7 +103,7 @@ o Added the patternFrequency() generic function with a method for CWdna_PDict
 o Added a "duplicated" method for CWdna_PDict objects (will come later for
   TBdna_PDict objects).
 
-o Added "reverse" method for BStringSet objects, and "complement" and
+o Added "reverse" method for XStringSet objects, and "complement" and
   "reverseComplement" methods method for DNAStringSet and RNAStringSet objects.
   They all preserve the names.
 
@@ -120,17 +120,18 @@ o Started the Biostrings C interface (work-in-progress).
 
 BASIC CONTAINERS
 
-o Added a bunch of new containers for storing a big set of sequences:
-    - BStringList, DNAStringList, RNAStringList and AAStringList
-    - BStringSet, DNAStringSet, RNAStringSet and AAStringSet
-  They are almost the same from a user point of view, but the internal
-  representations and method implementations are very different.
-  The BStringList family was a first attempt to address the problem of storing
+o Added new containers for storing a big set of sequences:
+    - The XStringSet family: BStringSet, DNAStringSet, RNAStringSet and
+      AAStringSet (all direct XStringSet subtypes with no additional slots).
+    - The XStringList family: BStringList, DNAStringList, RNAStringList and
+      AAStringList (all direct XStringList subtypes with no additional slots).
+  The 2 families are almost the same from a user point of view, but the
+  internal representations and method implementations are very different.
+  The XStringList family was a first attempt to address the problem of storing
   a big set of sequences in an efficent manner but its performance turned out
-  to be disappointing. So the BStringSet family was introduced as a response
-  to the poor performance of the BStringList container. Like the BStringViews
-  class, the BStringSet class derives from the IRanges class.
-  The BStringList family might be removed soon.
+  to be disappointing. So the XStringSet family was introduced as a response
+  to the poor performance of the XStringList container.
+  The XStringList family might be removed soon.
 
 o Added the trim() function for trimming the "out of limits" views of a
   BStringViews object.
@@ -160,7 +161,17 @@ o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
   consistent with the new semantic of RNAString() and DNAString() e.g.
   RNAString("UUGAAAA-CUC-N") is considered equal to DNAString("TTGAAAA-CTC-N").
 
-o Added support for empty BString (and derived) objects.
+o Added support for empty XString objects.
+
+o Added the XString() versatile constructor (it's a generic function with
+  methods for character and XString objects). The BString(), DNAString(),
+  RNAString() and AAString() constructors are now based on it.
+
+o Reorganized the hierarchy of the BString class and subclasses by adding the
+  XString virtual class: now the BString, DNAString, RNAString and AAString
+  classes are all direct XString subtypes with no additional slots.
+  Most importantly, they are all at the same level in the new hierarchy i.e.
+  DNAString, RNAString and AAString objects are NOT BString objects anymore.
 
 MISCELLANEOUS
 

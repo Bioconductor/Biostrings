@@ -9,75 +9,70 @@
 \alias{RNA_ALPHABET}
 
 % Constructor-like functions and generics:
-\alias{initialize,RNAString-method}
 \alias{RNAString}
-\alias{RNAString,character-method}
-\alias{RNAString,BString-method}
 
 % Other functions and generics:
 \alias{alphabet,RNAString-method}
 
 
-\title{The RNAString class}
+\title{RNAString objects}
 
 \description{
-  A \code{RNAString} object allows efficient storage
+  An RNAString object allows efficient storage
   and manipulation of a long RNA sequence.
 }
 
 \details{
-  The \code{RNAString} class derives directly from the
-  \code{\link{BString}} class (with no additional slot).
-  All functions and methods described in the
-  \code{\link{BString}} man page also work
-  with a \code{RNAString} object (inheritance).
+  The RNAString class is a direct \link{XString} subtype
+  (with no additional slot).
+  Therefore all functions and methods described in the
+  \link{XString} man page also work
+  with an RNAString object (inheritance).
 
-  Unlike a \code{\link{BString}} object that allows storage
-  of any non-empty string (based on a single-byte character set)
-  a \code{RNAString} object can only store a non-empty string
-  based on the RNAString alphabet (see below).
-  In addition, the letters stored in a \code{RNAString} object
+  Unlike the \link{BString} container that allows storage
+  of any single string (based on a single-byte character set)
+  the RNAString container can only store a string
+  based on the RNA alphabet (see below).
+  In addition, the letters stored in an RNAString object
   are encoded in a way that optimizes fast search algorithms.
 }
 
-\section{The RNAString alphabet}{
+\section{The RNA alphabet}{
   This alphabet contains all letters from the
   IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}})
   where \code{"T"} is replaced by \code{"U"}
   + the gap letter \code{"-"}.
   It is stored in the \code{RNA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
-  \code{RNA_ALPHABET} when applied to a \code{RNAString}
+  \code{RNA_ALPHABET} when applied to an RNAString
   object and is provided for convenience only.
 }
 
 \section{Constructor-like functions and generics}{
   In the code snippet below,
-  \code{src} can be a character vector
-  or a \code{\link{BString}} (or derived) object.
+  \code{src} can be a single string (character vector of length 1),
+  a \link{BString} object or a \link{DNAString} object.
 
   \describe{
     \item{}{
       \code{RNAString(src)}:
-      Tries to convert \code{src} into an \code{RNAString} object by reading
+      Tries to convert \code{src} into an RNAString object by reading
       \code{nchar} letters starting at position \code{start} in \code{src}.
-      \code{src} can be a single string (character vector of length 1),
-      a \link{BString} object or a \link{DNAString} object.
     }
   }
 }
 
 \section{Other functions and generics}{
   In the code snippets below,
-  \code{x} must be a \code{\link{BString}} (or derived) object.
+  \code{x} must be an \link{XString} object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
-      If \code{x} is of class \code{RNAString}, return the RNAString
+      If \code{x} is an RNAString object, then return the RNA
       alphabet (see above).
       See the corresponding man pages when \code{x} is of class
-      \code{\link{BString}}, \code{\link{DNAString}} or \code{\link{AAString}}.
+      \link{BString}, \link{DNAString} or \link{AAString}.
     }
   }
 }
@@ -87,8 +82,8 @@
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link{letter}},
-  \code{\link{subBString}},
-  \link{BString-class},
+  \code{\link{subXString}},
+  \link{XString-class},
   \link{DNAString-class},
   \link{BStringViews-class}
 }

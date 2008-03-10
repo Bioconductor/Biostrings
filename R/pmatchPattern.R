@@ -7,9 +7,9 @@
 ### Longest Common Prefix: the "lcprefix" new generic
 ###
 
-### 's1' and 's2' must be BString (or derived) objects of the same class.
+### 's1' and 's2' must be XString objects of the same subtype.
 ### Return the length (integer) of the Longest Common Prefix.
-BString.lcprefix <- function(s1, s2)
+XString.lcprefix <- function(s1, s2)
 {
     .Call("lcprefix", s1@data@xp, s1@offset, s1@length,
                       s2@data@xp, s2@offset, s2@length,
@@ -21,22 +21,22 @@ setGeneric("lcprefix", signature=c("s1", "s2"),
 )
 setMethod("lcprefix", signature(s1="character", s2="character"),
     function(s1, s2)
-        BString.lcprefix(BString(s1), BString(s2))
+        XString.lcprefix(BString(s1), BString(s2))
 )
-setMethod("lcprefix", signature(s1="character", s2="BString"),
+setMethod("lcprefix", signature(s1="character", s2="XString"),
     function(s1, s2)
-        BString.lcprefix(mkBString(class(s2), s1), s2)
+        XString.lcprefix(XString(class(s2), s1), s2)
 )
-setMethod("lcprefix", signature(s1="BString", s2="character"),
+setMethod("lcprefix", signature(s1="XString", s2="character"),
     function(s1, s2)
-        BString.lcprefix(s1, mkBString(class(s1), s2))
+        XString.lcprefix(s1, XString(class(s1), s2))
 )
-setMethod("lcprefix", signature(s1="BString", s2="BString"),
+setMethod("lcprefix", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
         if (class(s1) != class(s2))
-            stop("'s1' and 's2' are not of the same class")
-        BString.lcprefix(s1, s2)
+            stop("'s1' and 's2' must have the same XString subtype")
+        XString.lcprefix(s1, s2)
     }
 )
 
@@ -45,9 +45,9 @@ setMethod("lcprefix", signature(s1="BString", s2="BString"),
 ### Longest Common Suffix: the "lcsuffix" new generic
 ###
 
-### 's1' and 's2' must be BString (or derived) objects of the same class.
+### 's1' and 's2' must be XString objects of the same subtype.
 ### Return the length (integer) of the Longest Common Suffix.
-BString.lcsuffix <- function(s1, s2)
+XString.lcsuffix <- function(s1, s2)
 {
     .Call("lcsuffix", s1@data@xp, s1@offset, s1@length,
                       s2@data@xp, s2@offset, s2@length,
@@ -59,22 +59,22 @@ setGeneric("lcsuffix", signature=c("s1", "s2"),
 )
 setMethod("lcsuffix", signature(s1="character", s2="character"),
     function(s1, s2)
-        BString.lcsuffix(BString(s1), BString(s2))
+        XString.lcsuffix(BString(s1), BString(s2))
 )
-setMethod("lcsuffix", signature(s1="character", s2="BString"),
+setMethod("lcsuffix", signature(s1="character", s2="XString"),
     function(s1, s2)
-        BString.lcsuffix(mkBString(class(s2), s1), s2)
+        XString.lcsuffix(XString(class(s2), s1), s2)
 )
-setMethod("lcsuffix", signature(s1="BString", s2="character"),
+setMethod("lcsuffix", signature(s1="XString", s2="character"),
     function(s1, s2)
-        BString.lcsuffix(s1, mkBString(class(s1), s2))
+        XString.lcsuffix(s1, XString(class(s1), s2))
 )
-setMethod("lcsuffix", signature(s1="BString", s2="BString"),
+setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
         if (class(s1) != class(s2))
-            stop("'s1' and 's2' are not of the same class")
-        BString.lcsuffix(s1, s2)
+            stop("'s1' and 's2' must have the same XString subtype")
+        XString.lcsuffix(s1, s2)
     }
 )
 
@@ -83,8 +83,8 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
 ### The "pmatchPattern" generic
 ###
 
-### 'subject' must be a BString (or derived) object.
-### Return a BStringPartialMatches object.
+### 'subject' must be an XString object.
+### Return an XStringPartialMatches object.
 ### Speed (on my Thinkpad):
 ###   > library(BSgenome.Scerevisiae.UCSC.sacCer1)
 ###   > Scerevisiae$chr1
@@ -99,7 +99,7 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
 .pmatchPattern.rec <- function(pattern, subject, maxlength.out)
 {
     if (class(pattern) != class(subject))
-        pattern <- mkBString(class(subject), pattern)
+        pattern <- XString(class(subject), pattern)
     if (nchar(pattern) <= 20000) {
         sv <- matchPattern(pattern, subject)
         if (length(sv) >= maxlength.out || nchar(pattern) < 2L) {
@@ -107,14 +107,14 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
                       start=rep.int(1L, length(sv)),
                       width=rep.int(nchar(pattern), length(sv)),
                       check=FALSE)
-            ans <- new("BStringPartialMatches", sv, subpatterns=pv)
+            ans <- new("XStringPartialMatches", sv, subpatterns=pv)
             return(ans)
         }
     }
     ## Split 'pattern' in 2 parts
     Lnc <- nchar(pattern) %/% 2L
-    Lpattern <- BString.substr(pattern, 1L, Lnc)
-    Rpattern <- BString.substr(pattern, Lnc+1L, nchar(pattern))
+    Lpattern <- XString.substr(pattern, 1L, Lnc)
+    Rpattern <- XString.substr(pattern, Lnc+1L, nchar(pattern))
     ## Recursive call on the left part
     Lpm <- .pmatchPattern.rec(Lpattern, subject, maxlength.out)
     Lpm_start <- start(Lpm)
@@ -124,7 +124,7 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
     Lindex <- which((Lpv_end == nchar(Lpattern)) & (Lpm_end < nchar(subject)))
     Loverlapping <- integer(0)
     for (i in Lindex) {
-        overlap <- BString.lcprefix(Rpattern, BString.substr(subject, Lpm_end[i]+1L, nchar(subject)))
+        overlap <- XString.lcprefix(Rpattern, XString.substr(subject, Lpm_end[i]+1L, nchar(subject)))
         if (overlap == 0L)
             next
         Loverlapping <- c(Loverlapping, i)
@@ -141,7 +141,7 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
     Rindex <- which((Rpv_start == 1L) & (Rpm_start > 1L))
     Roverlapping <- integer(0)
     for (i in Rindex) {
-        overlap <- BString.lcsuffix(Lpattern, BString.substr(subject, 1L, Rpm_start[i]-1L))
+        overlap <- XString.lcsuffix(Lpattern, XString.substr(subject, 1L, Rpm_start[i]-1L))
         if (overlap == 0L)
             next
         Roverlapping <- c(Roverlapping, i)
@@ -181,15 +181,15 @@ setMethod("lcsuffix", signature(s1="BString", s2="BString"),
     pv_width <- c(Lpv_end, Rpv_end) - pv_start + 1L
     pv <- new("BStringViews", pattern,
               start=pv_start, width=pv_width, check=FALSE)
-    ans <- new("BStringPartialMatches", sv, subpatterns=pv)
+    ans <- new("XStringPartialMatches", sv, subpatterns=pv)
     ii <- order(width(ans), -start(ans), decreasing=TRUE)
     minwidth <- width(ans)[ii[1]] %/% 2
     ii <- ii[(width(ans)[ii] >= minwidth) | (seq_along(ii) <= maxlength.out)]
     ans[ii]
 }
 
-### 'subject' must be a BString (or derived) object.
-### Return a BStringPartialMatches object.
+### 'subject' must be an XString object.
+### Return an XStringPartialMatches object.
 .pmatchPattern <- function(pattern, subject, maxlength.out)
 {
     ans <- .pmatchPattern.rec(pattern, subject, maxlength.out)
@@ -212,7 +212,7 @@ setMethod("pmatchPattern", "character",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("pmatchPattern", "BString",
+setMethod("pmatchPattern", "XString",
     function(pattern, subject, maxlength.out)
     {
         .pmatchPattern(pattern, subject, maxlength.out)
@@ -236,8 +236,8 @@ setMethod("pmatchPattern", "BStringViews",
 
 ### Implementation taken from 
 ###   http://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring
-### 's1' and 's2' must be BString (or derived) objects of the same class.
-BString.lcsubstr <- function(s1, s2)
+### 's1' and 's2' must be XString objects of the same class.
+XString.lcsubstr <- function(s1, s2)
 {
     stop("coming soon...")
 }
@@ -247,22 +247,22 @@ setGeneric("lcsubstr", signature=c("s1", "s2"),
 )
 setMethod("lcsubstr", signature(s1="character", s2="character"),
     function(s1, s2)
-        BString.lcsubstr(BString(s1), BString(s2))
+        XString.lcsubstr(BString(s1), BString(s2))
 )
-setMethod("lcsubstr", signature(s1="character", s2="BString"),
+setMethod("lcsubstr", signature(s1="character", s2="XString"),
     function(s1, s2)
-        BString.lcsubstr(mkBString(class(s2), s1), s2)
+        XString.lcsubstr(XString(class(s2), s1), s2)
 )
-setMethod("lcsubstr", signature(s1="BString", s2="character"),
+setMethod("lcsubstr", signature(s1="XString", s2="character"),
     function(s1, s2)
-        BString.lcsubstr(s1, mkBString(class(s1), s2))
+        XString.lcsubstr(s1, XString(class(s1), s2))
 )
-setMethod("lcsubstr", signature(s1="BString", s2="BString"),
+setMethod("lcsubstr", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
         if (class(s1) != class(s2))
-            stop("'s1' and 's2' are not of the same class")
-        BString.lcsubstr(s1, s2)
+            stop("'s1' and 's2' must have the same XString subtype")
+        XString.lcsubstr(s1, s2)
     }
 )
 

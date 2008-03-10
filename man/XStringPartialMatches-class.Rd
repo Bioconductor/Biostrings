@@ -1,21 +1,21 @@
-\name{BStringPartialMatches-class}
+\name{XStringPartialMatches-class}
 \docType{class}
 
 % Classes:
-\alias{class:BStringPartialMatches}
-\alias{BStringPartialMatches-class}
+\alias{class:XStringPartialMatches}
+\alias{XStringPartialMatches-class}
 
 % Accesor methods:
 \alias{subpatterns}
-\alias{subpatterns,BStringPartialMatches-method}
+\alias{subpatterns,XStringPartialMatches-method}
 \alias{pattern}
-\alias{pattern,BStringPartialMatches-method}
+\alias{pattern,XStringPartialMatches-method}
 
 % Standard generic methods:
-\alias{show,BStringPartialMatches-method}
-\alias{[,BStringPartialMatches-method}
+\alias{show,XStringPartialMatches-method}
+\alias{[,XStringPartialMatches-method}
 
-\title{The BStringPartialMatches class}
+\title{XStringPartialMatches objects}
 
 \description{
   WARNING: This class is currently under development and might
@@ -32,7 +32,7 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a BStringPartialMatches object.
+  \code{x} is a XStringPartialMatches object.
 
   \describe{
     \item{}{
@@ -48,13 +48,13 @@
 
 \section{Standard generic methods}{
   In the code snippets below,
-  \code{x} is a BStringPartialMatches objects,
+  \code{x} is a XStringPartialMatches objects,
   and \code{i} can be a numeric or logical vector.
 
   \describe{
     \item{}{
       \code{x[i]}:
-      Return a new BStringPartialMatches object made of the selected views.
+      Return a new XStringPartialMatches object made of the selected views.
       \code{i} can be a numeric vector, a logical vector, \code{NULL} or missing.
       The returned object has the same subject as \code{x}.
     }
@@ -65,10 +65,7 @@
 
 \seealso{
   \link{BStringViews-class},
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class},
+  \link{XString-class},
   \code{\link{letter}}
 }
 

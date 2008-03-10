@@ -108,12 +108,12 @@ b[length(b):1]
 Only {\it in bounds} positive numeric subscripts are supported.
 
 In fact the subsetting operator for \Rclass{BString} (or \Rclass{DNAString})
-objects is not efficient and one should always use the \Rmethod{subBString}
+objects is not efficient and one should always use the \Rmethod{subXString}
 method to extract a substring from a big string:
 <<a4>>=
-bb <- subBString(b, 3, 6)
-dd1 <- subBString(d, end=7)
-dd2 <- subBString(d, start=8)
+bb <- subXString(b, 3, 6)
+dd1 <- subXString(d, end=7)
+dd2 <- subXString(d, start=8)
 @
 
 To {\it dump} a \Rclass{BString} (or \Rclass{DNAString}) object as a character
@@ -127,7 +127,7 @@ Note that \Robject{length(dd2)} is equivalent to
 on a big \Rclass{DNAString} object.
 
 {\it [TODO: Make a generic of the substr() function to work with
-BString objects. It will be essentially doing toString(subBString()).]}
+BString objects. It will be essentially doing toString(subXString()).]}
 
 
 % ---------------------------------------------------------------------------
@@ -204,7 +204,7 @@ cat(try(v4[[3]], silent=TRUE))
 Note that, when \Robject{start} and \Robject{end} are numeric
 vectors and \Robject{i} is a {\it single} integer,
 \Robject{views(b, start, end)[[i]]}
-is equivalent to \Robject{subBString(b, start[i], end[i])}.
+is equivalent to \Robject{subXString(b, start[i], end[i])}.
 
 The following is the same as doing \Robject{subject(v4)}
 (provided as a convenience):

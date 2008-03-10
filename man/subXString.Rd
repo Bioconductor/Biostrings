@@ -1,11 +1,12 @@
-\name{subBString}
+\name{subXString}
 
+\alias{subXString}
 \alias{subBString}
 
 \alias{substr}
-\alias{substr,BString-method}
+\alias{substr,XString-method}
 \alias{substring}
-\alias{substring,BString-method}
+\alias{substring,XString-method}
 
 
 \title{Fast substring extraction}
@@ -15,15 +16,15 @@
 }
 
 \usage{
-  subBString(x, start=NA, end=NA, length=NA)
+  subXString(x, start=NA, end=NA, length=NA)
   substr(x, start=NA, stop=NA)
   substring(text, first=NA, last=NA)
 }
 
 \arguments{
   \item{x}{
-    A \code{\link{BString}} (or derived) object for \code{subBString}.
-    A character vector, a \code{\link{BStringViews}} or a \code{\link{BString}}
+    An \link{XString} object for \code{subXString}.
+    A character vector, a \link{BStringViews} or an \link{XString}
     object for \code{substr} or \code{substring}.
   }
   \item{start}{
@@ -39,7 +40,7 @@
     A numeric vector.
   }
   \item{text}{
-    A character vector, a \code{\link{BStringViews}} or a \code{\link{BString}}
+    A character vector, a \link{BStringViews} or an \link{XString}
     object.
   }
   \item{first}{
@@ -51,14 +52,14 @@
 }
 
 \details{
-  \code{subBString} provides a very efficient way to extract a substring
-  from a \link{BString} (or derived) object.
+  \code{subXString} provides a very efficient way to extract a substring
+  from an \link{XString} object.
   For example, extracting a 100Mb substring from Human chromosome 1 (250Mb)
-  with \code{subBString} is almost instantaneous and has almost no memory
-  footprint. In fact, the cost in time and memory of a call to \code{subBString}
+  with \code{subXString} is almost instantaneous and has almost no memory
+  footprint. In fact, the cost in time and memory of a call to \code{subXString}
   doesn't depend on the length of the original object or on the length of
   the extracted object.
-  The "trick" behind this "feature" is very simple: \code{subBString}
+  The "trick" behind this "feature" is very simple: \code{subXString}
   does NOT copy the sequence data.
 }
 
@@ -71,20 +72,17 @@
 \seealso{
   \code{\link{letter}},
   \code{\link{views}},
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class},
+  \link{XString-class},
   \link{BStringViews-class}
 }
 
 \examples{
-  subBString("AxyxyxBC", 7)
+  subXString("AxyxyxBC", 7)
   s <- BString("AxyxyxBC")
-  subBString(s, 7)  # same as subBString("AxyxyxBC", 7)
-  subBString(s, , 7)
-  subBString(s, , 7, 3)
-  identical(subBString(s), s) # TRUE
+  subXString(s, 7)  # same as subXString("AxyxyxBC", 7)
+  subXString(s, , 7)
+  subXString(s, , 7, 3)
+  identical(subXString(s), s) # TRUE
 
   v <- views(s, c(6, 4,-1, NA), c(7, 6, 1, 1))
   ## 2 equivalent ways of keeping the last letter of each view

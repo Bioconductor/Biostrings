@@ -91,15 +91,15 @@ print.needwunsQS <- function(x, ...)
 ### C-implementation of the Needleman-Wunsch algo.
 ###
 ### The various "needwunsQS" methods below don't call
-### .Call("align_needwunsQS", ...) directly but call BString.needwunsQS()
+### .Call("align_needwunsQS", ...) directly but call XString.needwunsQS()
 ### instead which itself calls .Call("align_needwunsQS", ...).
 ### Some quick testing shows that, depending on the size of the strings to
 ### align, this C version is 100 to 1000 times faster than the above
 ### .needwunsQS().
-### 's1' and 's2' must be BString (or derived) objects of the same class.
-### Return a BStringAlign object where the "al1" and "al2" slots contain the
+### 's1' and 's2' must be XString objects of the same subtype.
+### Return an XStringAlign object where the "al1" and "al2" slots contain the
 ### aligned versions of 's1' and 's2'.
-BString.needwunsQS <- function(s1, s2, substmat, gappen)
+XString.needwunsQS <- function(s1, s2, substmat, gappen)
 {
     if (class(s1) != class(s2))
         stop("'s1' and 's2' are not of the same class")
@@ -148,7 +148,7 @@ BString.needwunsQS <- function(s1, s2, substmat, gappen)
     xdata2 <- XRaw(0)
     xdata2@xp <- ans$al2
     align2 <- new(class(s2), xdata2, 0L, length(xdata2), check=FALSE)
-    new("BStringAlign", align1=align1, align2=align2, score=ans$score)
+    new("XStringAlign", align1=align1, align2=align2, score=ans$score)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),
@@ -156,18 +156,18 @@ setGeneric("needwunsQS", signature=c("s1", "s2"),
 )
 setMethod("needwunsQS", signature(s1="character", s2="character"),
     function(s1, s2, substmat, gappen)
-        BString.needwunsQS(BString(s1), BString(s2), substmat, gappen)
+        XString.needwunsQS(BString(s1), BString(s2), substmat, gappen)
 )
-setMethod("needwunsQS", signature(s1="character", s2="BString"),
+setMethod("needwunsQS", signature(s1="character", s2="XString"),
     function(s1, s2, substmat, gappen)
-        BString.needwunsQS(mkBString(class(s2), s1), s2, substmat, gappen)
+        XString.needwunsQS(XString(class(s2), s1), s2, substmat, gappen)
 )
-setMethod("needwunsQS", signature(s1="BString", s2="character"),
+setMethod("needwunsQS", signature(s1="XString", s2="character"),
     function(s1, s2, substmat, gappen)
-        BString.needwunsQS(s1, mkBString(class(s1), s2), substmat, gappen)
+        XString.needwunsQS(s1, XString(class(s1), s2), substmat, gappen)
 )
-setMethod("needwunsQS", signature(s1="BString", s2="BString"),
+setMethod("needwunsQS", signature(s1="XString", s2="XString"),
     function(s1, s2, substmat, gappen)
-        BString.needwunsQS(s1, s2, substmat, gappen)
+        XString.needwunsQS(s1, s2, substmat, gappen)
 )
 

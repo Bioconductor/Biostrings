@@ -45,8 +45,8 @@
 }
 
 \seealso{
-  \code{\link{subBString}},
-  \link{BString-class},
+  \code{\link{subXString}},
+  \link{XString-class},
   \link{BStringViews-class}
 }
 

@@ -1,32 +1,32 @@
-\name{BStringSet-io}
+\name{XStringSet-io}
 
 \alias{read.BStringViews}
 \alias{read.BStringSet}
 \alias{read.DNAStringSet}
 \alias{read.RNAStringSet}
 \alias{read.AAStringSet}
-\alias{write.BStringSet}
+\alias{write.XStringSet}
 \alias{write.BStringViews}
 
 \alias{FASTArecordsToCharacter}
 \alias{CharacterToFASTArecords}
 \alias{FASTArecordsToBStringViews}
-\alias{BStringSetToFASTArecords}
+\alias{XStringSetToFASTArecords}
 
-\title{Read/write a BStringSet or BStringViews object from/to a file}
+\title{Read/write an XStringSet or BStringViews object from/to a file}
 
 \description{
-  Functions to read/write a \link{BStringSet} or \link{BStringViews} object
+  Functions to read/write an \link{XStringSet} or \link{BStringViews} object
   from/to a file.
 }
 
 \usage{
-  ## BStringSet object
+  ## XStringSet object
   read.BStringSet(file, format)
   read.DNAStringSet(file, format)
   read.RNAStringSet(file, format)
   read.AAStringSet(file, format)
-  write.BStringSet(x, file="", format, width=80)
+  write.XStringSet(x, file="", format, width=80)
 
   ## BStringViews object
   read.BStringViews(file, format, subjectClass, collapse="")
@@ -36,14 +36,14 @@
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
   CharacterToFASTArecords(x)
   FASTArecordsToBStringViews(FASTArecs, subjectClass, collapse="")
-  BStringSetToFASTArecords(x)
+  XStringSetToFASTArecords(x)
 }
 
 \arguments{
   \item{file}{
     Either a character string naming a file or a connection open
     for reading or writing.
-    If \code{""} (the default for \code{write.BStringSet} and
+    If \code{""} (the default for \code{write.XStringSet} and
     \code{write.BStringViews}), then the functions write to the standard
     output connection (the console) unless redirected by \code{sink}.
   }
@@ -51,12 +51,12 @@
     Only \code{"fasta"} is supported for now.
   }
   \item{x}{
-    For \code{write.BStringSet} and \code{write.BStringViews}, the object to
+    For \code{write.XStringSet} and \code{write.BStringViews}, the object to
     write to \code{file}.
     For \code{CharacterToFASTArecords}, the (possibly named) character
     vector to be converted to a list of FASTA records as one returned
     by \code{\link{readFASTA}}.
-    For \code{BStringSetToFASTArecords}, the \link{BStringSet} object
+    For \code{XStringSetToFASTArecords}, the \link{XStringSet} object
     to be converted to a list of FASTA records as one returned
     by \code{\link{readFASTA}}.
   }
@@ -88,16 +88,16 @@
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
   \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.BStringViews}
-  load sequences from a file into a \link{BStringSet} or \link{BStringViews}
+  load sequences from a file into an \link{XStringSet} or \link{BStringViews}
   object.
 
-  Writing functions \code{write.BStringSet} and \code{write.BStringViews}
-  write a \link{BStringSet} or \link{BStringViews} object to a file or
+  Writing functions \code{write.XStringSet} and \code{write.BStringViews}
+  write an \link{XStringSet} or \link{BStringViews} object to a file or
   connection.
 
   \code{FASTArecordsToCharacter}, \code{CharacterToFASTArecords},
-  \code{FASTArecordsToBStringViews} and \code{BStringSetToFASTArecords}
-  are helper functions used internally by \code{write.BStringSet} and
+  \code{FASTArecordsToBStringViews} and \code{XStringSetToFASTArecords}
+  are helper functions used internally by \code{write.XStringSet} and
   \code{read.BStringViews} for switching between different
   representations of the same object.
 }
@@ -105,7 +105,7 @@
 \seealso{
   \code{\link{readFASTA}},
   \code{\link{writeFASTA}},
-  \link{BStringSet-class},
+  \link{XStringSet-class},
   \link{BStringViews-class},
   \link{BString-class},
   \link{DNAString-class},
@@ -117,11 +117,11 @@
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   x <- read.DNAStringSet(file, "fasta")
   x
-  write.BStringSet(x, format="fasta") # writes to the console
+  write.XStringSet(x, format="fasta") # writes to the console
 
   ## Converting 'x'...
   ## ... to a list of FASTA records (as one returned by the "readFASTA" function)
-  x1 <- BStringSetToFASTArecords(x)
+  x1 <- XStringSetToFASTArecords(x)
   ## ... to a named character vector
   x2 <- FASTArecordsToCharacter(x1) # same as 'as.character(x)'
 }

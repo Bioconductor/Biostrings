@@ -1,19 +1,21 @@
 ### =========================================================================
-### The BString class
+### XString objects
 ### -------------------------------------------------------------------------
 
-setClass("BString",
+setClass("XString",
     representation(
+        "VIRTUAL",
         data="XRaw",        # contains the string data
         offset="integer",   # a single integer
         length="integer"    # a single integer
     )
 )
 
-### 3 direct "BString" derivations (no additional slot)
-setClass("DNAString", contains="BString")
-setClass("RNAString", contains="BString")
-setClass("AAString", contains="BString")
+### 4 direct "XString" derivations (no additional slot)
+setClass("BString", contains="XString")
+setClass("DNAString", contains="XString")
+setClass("RNAString", contains="XString")
+setClass("AAString", contains="XString")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,17 +24,17 @@ setClass("AAString", contains="BString")
 ###
 
 setGeneric("codes", signature="x", function(x, ...) standardGeneric("codes"))
-setMethod("codes", "BString", function(x, ...) 0:255)
+setMethod("codes", "XString", function(x, ...) 0:255)
 setMethod("codes", "DNAString", function(x, baseOnly=FALSE) DNAcodes(baseOnly))
 setMethod("codes", "RNAString", function(x, baseOnly=FALSE) RNAcodes(baseOnly))
 
 setGeneric("codec", function(x) standardGeneric("codec"))
-setMethod("codec", "BString", function(x) NULL)
+setMethod("codec", "XString", function(x) NULL)
 setMethod("codec", "DNAString", function(x) DNA_STRING_CODEC)
 setMethod("codec", "RNAString", function(x) RNA_STRING_CODEC)
 
 setGeneric("enc_lkup", function(x) standardGeneric("enc_lkup"))
-setMethod("enc_lkup", "BString",
+setMethod("enc_lkup", "XString",
     function(x)
     {
         codec <- codec(x)
@@ -41,7 +43,7 @@ setMethod("enc_lkup", "BString",
 )
 
 setGeneric("dec_lkup", function(x) standardGeneric("dec_lkup"))
-setMethod("dec_lkup", "BString",
+setMethod("dec_lkup", "XString",
     function(x)
     {
         codec <- codec(x)
@@ -63,16 +65,17 @@ setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some restrictions apply for converting from a BString specific type to
-### another or for comparing BString objects of different types. This is due
-### to the fact that different BString types can use different encoding of
-### their data (or no encoding at all) or simply to the fact that the
-### conversion or comparison doesn't make sense from a biological perspective.
+### Some restrictions apply for converting from an XString subtype to
+### another or for comparing XString objects of different subtypes. This is
+### due to the fact that different XString subtypes can use different
+### encodings for their data (or no encoding at all) or simply to the fact
+### that the conversion or comparison doesn't make sense from a biological
+### perspective.
 ### The helper functions below are used internally (they are NOT exported) to
 ### determine those restrictions.
 ###
 
-compatibleBStringTypes <- function(class1, class2)
+compatibleXStringSubtypes <- function(class1, class2)
 {
     if (extends(class1, "DNAString") || extends(class1, "RNAString"))
         return(!extends(class2, "AAString"))
@@ -81,10 +84,10 @@ compatibleBStringTypes <- function(class1, class2)
     TRUE
 }
 
-getBStringTypeConversionLookup <- function(from_class, to_class)
+getXStringSubtypeConversionLookup <- function(from_class, to_class)
 {
-    if (!compatibleBStringTypes(from_class, to_class))
-        stop("incompatible BString types")
+    if (!compatibleXStringSubtypes(from_class, to_class))
+        stop("incompatible XString subtypes")
     from_nucleo <- extends(from_class, "DNAString") || extends(from_class, "RNAString")
     to_nucleo <- extends(to_class, "DNAString") || extends(to_class, "RNAString")
     if (from_nucleo == to_nucleo)
@@ -100,12 +103,7 @@ getBStringTypeConversionLookup <- function(from_class, to_class)
     stop("Biostrings internal error, please report") # should never happen
 }
 
-copyDataOnBStringTypeConversion <- function(class1, class2)
-{
-    !is.null(getBStringTypeConversionLookup(class1, class2))
-}
-
-comparableBStrings <- function(x1, x2)
+comparableXStrings <- function(x1, x2)
 {
     is_nucleo1 <- is(x1, "DNAString") || is(x1, "RNAString")
     is_nucleo2 <- is(x2, "DNAString") || is(x2, "RNAString")
@@ -114,31 +112,31 @@ comparableBStrings <- function(x1, x2)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "BString.read", "BString.write" and "BString.readCodes" functions.
+### The "XString.read", "XString.readCodes" and "XString.write" functions.
 ### NOT exported!
 ###
 
-BString.read <- function(x, i, imax=integer(0))
+XString.read <- function(x, i, imax=integer(0))
 {
     XRaw.read(x@data, x@offset + i, x@offset + imax,
                       dec_lkup=dec_lkup(x))
 }
 
-BString.readCodes <- function(x, i, imax=integer(0))
+XString.readCodes <- function(x, i, imax=integer(0))
 {
     XRaw.readInts(x@data, x@offset + i, x@offset + imax)
 }
 
-### Only used at initialization time! (BString objects are immutable)
+### Only used at initialization time! (XString objects are immutable)
 ### 'value' must be a character string (this is not checked)
-BString.write <- function(x, i, imax=integer(0), value)
+XString.write <- function(x, i, imax=integer(0), value)
 {
     if (missing(i) && missing(imax)) {
         nbytes <- nchar(value, type="bytes")
         if (nbytes == 0)
             return(x)
         ## Write data starting immediately after the last byte in XRaw object
-        ## 'x@data' that belongs to the sequence BString object 'x' is
+        ## 'x@data' that belongs to the sequence XString object 'x' is
         ## pointing at.
         ## This is safe because XRaw.write() is protected against subscripts
         ## 'i' and 'imax' being "out of bounds".
@@ -180,7 +178,7 @@ BString.write <- function(x, i, imax=integer(0), value)
     length
 }
 
-setMethod("initialize", "BString",
+setMethod("initialize", "XString",
     function(.Object, data, offset, length, check=TRUE)
     {
         if (check) {
@@ -195,25 +193,13 @@ setMethod("initialize", "BString",
         .Object
     }
 )
-setMethod("initialize", "DNAString",
-    function(.Object, data, offset, length, check=TRUE)
-        callNextMethod(.Object, data, offset, length, check=check)
-)
-setMethod("initialize", "RNAString",
-    function(.Object, data, offset, length, check=TRUE)
-        callNextMethod(.Object, data, offset, length, check=check)
-)
-setMethod("initialize", "AAString",
-    function(.Object, data, offset, length, check=TRUE)
-        callNextMethod(.Object, data, offset, length, check=check)
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions used by the versatile constructors below.
 ###
 
-charToBString <- function(x, start=NA, end=NA, width=NA, class="BString", check=TRUE)
+charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=TRUE)
 {
     if (check) {
         if (length(x) == 0)
@@ -226,14 +212,14 @@ charToBString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
     new(class, data, 0L, length(data), check=FALSE)
 }
 
-.BStringToBString <- function(x, start, nchar, class, check)
+.XStringToXString <- function(x, start, nchar, class, check)
 {
     if (check) {
         start <- normalize.start(start)
         nchar <- normalize.nchar(start, nchar, nchar(x))
     }
     start <- x@offset + start
-    lkup <- getBStringTypeConversionLookup(class(x), class)
+    lkup <- getXStringSubtypeConversionLookup(class(x), class)
     if (is.null(lkup))
         return(new(class, x@data, start-1L, nchar, check=FALSE))
     data <- copySubXRaw(x@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
@@ -245,54 +231,26 @@ charToBString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
 ### The user-friendly versatile constructors.
 ###
 
-setGeneric("BString", signature="x",
-    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("BString"))
-setGeneric("DNAString", signature="x",
-    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("DNAString"))
-setGeneric("RNAString", signature="x",
-    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("RNAString"))
-setGeneric("AAString", signature="x",
-    function(x, start=1, nchar=NA, check=TRUE) standardGeneric("AAString"))
-
-setMethod("BString", "character",
-    function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, width=nchar, class="BString", check=check)
+setGeneric("XString", signature="x",
+    function(class, x, start=1, nchar=NA, check=TRUE) standardGeneric("XString")
 )
-setMethod("DNAString", "character",
-    function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, width=nchar, class="DNAString", check=check)
+setMethod("XString", "character",
+    function(class, x, start=1, nchar=NA, check=TRUE)
+        charToXString(x, start=start, width=nchar, class=class, check=check)
 )
-setMethod("RNAString", "character",
-    function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, width=nchar, class="RNAString", check=check)
-)
-setMethod("AAString", "character",
-    function(x, start=1, nchar=NA, check=TRUE)
-        charToBString(x, start=start, width=nchar, class="AAString", check=check)
+setMethod("XString", "XString",
+    function(class, x, start=1, nchar=NA, check=TRUE)
+        .XStringToXString(x, start, nchar, class, check)
 )
 
-setMethod("BString", "BString",
-    function(x, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(x, start, nchar, "BString", check)
-)
-setMethod("DNAString", "BString",
-    function(x, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(x, start, nchar, "DNAString", check)
-)
-setMethod("RNAString", "BString",
-    function(x, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(x, start, nchar, "RNAString", check)
-)
-setMethod("AAString", "BString",
-    function(x, start=1, nchar=NA, check=TRUE)
-        .BStringToBString(x, start, nchar, "AAString", check)
-)
-
-### Not exported
-mkBString <- function(class, x)
-{
-    do.call(class, list(x=x))
-}
+BString <- function(x, start=1, nchar=NA, check=TRUE)
+    XString("BString", x, start=start, nchar=nchar, check=check)
+DNAString <- function(x, start=1, nchar=NA, check=TRUE)
+    XString("DNAString", x, start=start, nchar=nchar, check=check)
+RNAString <- function(x, start=1, nchar=NA, check=TRUE)
+    XString("RNAString", x, start=start, nchar=nchar, check=check)
+AAString <- function(x, start=1, nchar=NA, check=TRUE)
+    XString("AAString", x, start=start, nchar=nchar, check=check)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -300,7 +258,7 @@ mkBString <- function(class, x)
 ###
 
 ### Helper function used by the show() method
-BString.get_snippet <- function(x, snippetWidth)
+XString.get_snippet <- function(x, snippetWidth)
 {
     if (snippetWidth < 7)
         snippetWidth <- 7
@@ -310,21 +268,21 @@ BString.get_snippet <- function(x, snippetWidth)
     } else {
         w1 <- (snippetWidth - 2) %/% 2
         w2 <- (snippetWidth - 3) %/% 2
-        paste(BString.read(x, 1, w1),
+        paste(XString.read(x, 1, w1),
               "...",
-              BString.read(x, lx - w2 + 1, lx),
+              XString.read(x, lx - w2 + 1, lx),
               sep="")
     }
 }
 
-setMethod("show", "BString",
+setMethod("show", "XString",
     function(object)
     {
         lo <- object@length
         cat("  ", lo, "-letter \"", class(object), "\" instance", sep="")
         #if (!is.null(object@codec))
         #    cat(" with alphabet:", toString(object@codec@letters))
-        cat("\nseq:", BString.get_snippet(object, getOption("width") - 5))
+        cat("\nseq:", XString.get_snippet(object, getOption("width") - 5))
         cat("\n")
     }
 )
@@ -334,9 +292,9 @@ setMethod("show", "BString",
 ### Subsetting.
 ###
 
-setMethod("length", "BString", function(x) x@length)
+setMethod("length", "XString", function(x) x@length)
 
-setMethod("[", "BString",
+setMethod("[", "XString",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -349,8 +307,6 @@ setMethod("[", "BString",
             stop("subscript out of bounds")
         data <- XRaw(length(i))
         XRaw.copy(data, x@offset + i, src=x@data)
-        ## class(x) can be "BString" or one of its derivations: "DNAString",
-        ## "RNAString" or "AAString".
         new(class(x), data, 0L, length(data), check=FALSE)
     }
 )
@@ -361,7 +317,7 @@ setMethod("[", "BString",
 ###   bs[2] <- "X" # provokes an error
 ### If we don't define it, then the user can type the above and believe that
 ### it actually did something but it didn't.
-setReplaceMethod("[", "BString",
+setReplaceMethod("[", "XString",
     function(x, i, j,..., value)
     {
         stop(paste("attempt to modify the value of a \"",
@@ -389,8 +345,8 @@ setReplaceMethod("[", "BString",
 ###   s7 <- toString(dnav[[7]])
 ###   s1 == s7
 
-### 'x' and 'y' must be BString objects
-.BString.equal <- function(x, y)
+### 'x' and 'y' must be XString objects
+.XString.equal <- function(x, y)
 {
     if (x@length != y@length)
         return(FALSE)
@@ -399,39 +355,34 @@ setReplaceMethod("[", "BString",
     as.logical(ans)
 }
 
-setMethod("==", signature(e1="BString", e2="BString"),
+setMethod("==", signature(e1="XString", e2="XString"),
     function(e1, e2)
     {
-        if (!comparableBStrings(e1, e2)) {
+        if (!comparableXStrings(e1, e2)) {
             class1 <- class(e1)
             class2 <- class(e2)
             stop("comparison between a \"", class1, "\" instance ",
                  "and a \"", class2, "\" instance ",
                  "is not supported")
         }
-        .BString.equal(e1, e2)
+        .XString.equal(e1, e2)
     }
 )
 setMethod("==", signature(e1="BString", e2="character"),
     function(e1, e2)
     {
-        class1 <- class(e1)
-        if (class1 != "BString")
-            stop("comparison between a \"", class1, "\" instance ",
-                 "and a character vector ",
-                 "is not supported")
         if (length(e2) != 1 || e2 %in% c("", NA))
-            stop("comparison between a \"BString\" instance and a character vector ",
+            stop("comparison between a \"BString\" object and a character vector ",
                  "of length != 1 or an empty string or an NA ",
                  "is not supported")
-        .BString.equal(e1, BString(e2))
+        .XString.equal(e1, BString(e2))
     }
 )
 setMethod("==", signature(e1="character", e2="BString"),
     function(e1, e2) e2 == e1
 )
 
-setMethod("!=", signature(e1="BString", e2="BString"),
+setMethod("!=", signature(e1="XString", e2="XString"),
     function(e1, e2) !(e1 == e2)
 )
 setMethod("!=", signature(e1="BString", e2="character"),
@@ -443,23 +394,23 @@ setMethod("!=", signature(e1="character", e2="BString"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("as.character", "BString", function(x) BString.read(x, 1, x@length))
-setMethod("toString", "BString", function(x, ...) as.character(x))
-setMethod("nchar", "BString", function(x, type="chars", allowNA=FALSE) x@length)
+setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
+setMethod("toString", "XString", function(x, ...) as.character(x))
+setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "BString.substr" function.
+### The "XString.substr" function.
 ###
-### The "BString.substr" function is very fast because it does not copy
-### the string data. Return a BString object (not vectorized).
+### The "XString.substr" function is very fast because it does not copy
+### the string data. Return a XString object (not vectorized).
 ### 'start' and 'end' must be single integers verifying:
 ###   1 <= start <= end <= length(x)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-### The safe (and exported) version of "BString.substr" is the "subBString"
+### The safe (and exported) version of "XString.substr" is the "subXString"
 ### function.
-BString.substr <- function(x, start, end)
+XString.substr <- function(x, start, end)
 {
     shift <- start - 1L
     new(class(x), x@data, x@offset + shift, end - shift, check=FALSE)

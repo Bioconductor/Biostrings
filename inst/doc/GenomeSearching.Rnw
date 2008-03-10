@@ -225,7 +225,7 @@ More precisely, here is the analysis we want to perform:
   It is stored in a FASTA file called \Robject{"ce2dict0.fa"}.
 % ce2dict0.fa was generated with
 %   > set.seed(23)
-%   > ce2dict0 <- sapply(1:50, function(i) { x <- Celegans[[sample(seqnames(Celegans), 1)]]; start <- as.integer(runif(1, min=1, length(x)-20)); end <- start + as.integer(runif(1, min=14, max=25)); x <- subBString(x, start, end); if (sample(1:2, 1) == 2) x <- reverseComplement(x); as.character(x) })
+%   > ce2dict0 <- sapply(1:50, function(i) { x <- Celegans[[sample(seqnames(Celegans), 1)]]; start <- as.integer(runif(1, min=1, length(x)-20)); end <- start + as.integer(runif(1, min=14, max=25)); x <- subXString(x, start, end); if (sample(1:2, 1) == 2) x <- reverseComplement(x); as.character(x) })
 %   > names(ce2dict0) <- paste("pattern", 1:50, sep="")
 %   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fa", format="fasta")
   See the {\it Find all the occurences of a constant width dictionary of patterns

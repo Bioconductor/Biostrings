@@ -1,16 +1,13 @@
 ### =========================================================================
-### Input/output of BStringViews objects
+### Input/output of XStringSet objects
 ### ------------------------------------
-###
-### Create a BStringViews object by reading a file or write a BStringViews
-### object to a file.
 ###
 ### NOTE: Only FASTA files are supported for now.
 ###
 ### Typical use:
 ###   file <- system.file("extdata", "someORF.fa", package="Biostrings")
-###   v <- read.BStringViews(file(file), "fasta", "DNAString")
-###   write.BStringViews(v, file="someORF2.fa", "fasta")
+###   v <- read.DNAStringSet(file(file), "fasta", "DNAString")
+###   write.XStringSet(v, file="someORF2.fa", "fasta")
 ###
 ### -------------------------------------------------------------------------
 
@@ -44,13 +41,13 @@ CharacterToFASTArecords <- function(x)
 ###
 ### Note that, for any well-formed list of FASTA records 'FASTArecs',
 ###
-###   BStringSetToFASTArecords(BStringSet(FASTArecordsToBStringViews(FASTArecs)))
+###   XStringSetToFASTArecords(BStringSet(FASTArecordsToBStringViews(FASTArecs)))
 ###
 ### is identical to 'FASTArecs'.
 ### But it is NOT the case that any BStringViews object y can
 ### be "reconstructed" with
 ###
-###   FASTArecordsToBStringViews(BStringSetToFASTArecords(BStringSet(y)))
+###   FASTArecordsToBStringViews(XStringSetToFASTArecords(BStringSet(y)))
 ###
 
 FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
@@ -63,10 +60,10 @@ FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
     BStringViews(src, subjectClass, collapse)
 }
 
-BStringSetToFASTArecords <- function(x)
+XStringSetToFASTArecords <- function(x)
 {
-    if (!is(x, "BStringSet"))
-        stop("'x' must be a BStringSet object")
+    if (!is(x, "XStringSet"))
+        stop("'x' must be an XStringSet object")
     CharacterToFASTArecords(as.character(x))
 }
 
@@ -144,7 +141,7 @@ BStringSetToFASTArecords <- function(x)
     on.exit(close(file))
     data <- XRaw(filesize)
     subject <- new(subjectClass, data, 0L, length(data))
-    subject@length <- 0L # temporarily broken BString object!
+    subject@length <- 0L
 
     #ans <- XRaw.loadFASTA(subject@data, file, collapse, enc_lkup=enc_lkup(x))
 
@@ -171,7 +168,7 @@ BStringSetToFASTArecords <- function(x)
             if (length(desc) != length(width) + 1)
                 stop("in file ", file, ", line ", lineno, ": ",
                      "number of FASTA sequences doesn't match number of description lines")
-            subject <- BString.write(subject, value=line)
+            subject <- XString.write(subject, value=line)
             current_width <- current_width + nbytes
             next
         }
@@ -180,7 +177,7 @@ BStringSetToFASTArecords <- function(x)
             next
         width <- c(width, current_width)
         current_width <- 0L
-        subject <- BString.write(subject, value=collapse)
+        subject <- XString.write(subject, value=collapse)
     }
     if (subject@length == 0L)
         stop(file, ": file doesn't seem to be FASTA (no data in it)")
@@ -228,16 +225,16 @@ read.AAStringSet <- function(file, format)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "write.BStringSet" and "write.BStringViews" functions.
+### The "write.XStringSet" and "write.BStringViews" functions.
 ###
 
 .write.fasta <- function(x, file, width)
 {
-    FASTArecs <- BStringSetToFASTArecords(x)
+    FASTArecs <- XStringSetToFASTArecords(x)
     writeFASTA(FASTArecs, file, width)
 }
 
-write.BStringSet <- function(x, file="", format, width=80)
+write.XStringSet <- function(x, file="", format, width=80)
 {
     if (!isSingleString(format))
         stop("'format' must be a single string")
@@ -250,6 +247,6 @@ write.BStringSet <- function(x, file="", format, width=80)
 write.BStringViews <- function(x, file="", format, width=80)
 {
     y <- BStringViewsToSet(x, use.names=TRUE)
-    write.BStringSet(y, file=file, format, width=width)
+    write.XStringSet(y, file=file, format, width=width)
 }
 

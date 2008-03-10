@@ -55,7 +55,10 @@ of the biological sequence.
 
 \seealso{
   \code{\link{read.BStringSet}},
-  \code{\link{write.BStringSet}},
+  \code{\link{read.DNAStringSet}},
+  \code{\link{read.RNAStringSet}},
+  \code{\link{read.AAStringSet}},
+  \code{\link{write.XStringSet}},
   \code{\link{read.table}},
   \code{\link{scan}},
   \code{\link{write.table}}

@@ -41,13 +41,13 @@
 \alias{[,XInteger-method}
 \alias{[<-,XInteger-method}
 
-\alias{class:BStringCodec}
-\alias{BStringCodec-class}
-\alias{BStringCodec}
+\alias{class:XStringCodec}
+\alias{XStringCodec-class}
+\alias{XStringCodec}
 
-\alias{initialize,BStringCodec-method}
+\alias{initialize,XStringCodec-method}
 
-\alias{alphabet,BStringCodec-method}
+\alias{alphabet,XStringCodec-method}
 
 
 \title{Biostrings internals}
