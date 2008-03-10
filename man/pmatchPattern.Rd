@@ -2,25 +2,25 @@
 
 \alias{lcprefix}
 \alias{lcprefix,character,character-method}
-\alias{lcprefix,character,BString-method}
-\alias{lcprefix,BString,character-method}
-\alias{lcprefix,BString,BString-method}
+\alias{lcprefix,character,XString-method}
+\alias{lcprefix,XString,character-method}
+\alias{lcprefix,XString,XString-method}
 
 \alias{lcsuffix}
 \alias{lcsuffix,character,character-method}
-\alias{lcsuffix,character,BString-method}
-\alias{lcsuffix,BString,character-method}
-\alias{lcsuffix,BString,BString-method}
+\alias{lcsuffix,character,XString-method}
+\alias{lcsuffix,XString,character-method}
+\alias{lcsuffix,XString,XString-method}
 
 \alias{lcsubstr}
 \alias{lcsubstr,character,character-method}
-\alias{lcsubstr,character,BString-method}
-\alias{lcsubstr,BString,character-method}
-\alias{lcsubstr,BString,BString-method}
+\alias{lcsubstr,character,XString-method}
+\alias{lcsubstr,XString,character-method}
+\alias{lcsubstr,XString,XString-method}
 
 \alias{pmatchPattern}
 \alias{pmatchPattern,character-method}
-\alias{pmatchPattern,BString-method}
+\alias{pmatchPattern,XString-method}
 \alias{pmatchPattern,BStringViews-method}
 
 
@@ -47,16 +47,16 @@
 
 \arguments{
   \item{s1}{
-    1st string, a character string or a \link{BString} object.
+    1st string, a character string or an \link{XString} object.
   }
   \item{s2}{
-    2nd string, a character string or a \link{BString} object.
+    2nd string, a character string or an \link{XString} object.
   }
   \item{pattern}{
     The pattern string.
   }
   \item{subject}{
-    A \link{BString} (or derived) object containing the subject string.
+    An \link{XString} object containing the subject string.
   }
   \item{maxlength.out}{
     The maximum length of the output i.e. the maximum number of views
@@ -75,10 +75,7 @@
 \seealso{
   \link{matchPattern},
   \link{BStringViews-class},
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class}
+  \link{XString-class}
 }
 
 \examples{

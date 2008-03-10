@@ -7,7 +7,7 @@
 \alias{BStringViews}
 \alias{BStringViews,ANY-method}
 \alias{BStringViews,file-method}
-\alias{BStringViews,BString-method}
+\alias{BStringViews,XString-method}
 \alias{BStringViews,BStringViews-method}
 
 % Other functions:
@@ -31,7 +31,7 @@
 
 \arguments{
   \item{subject}{
-    A \link{BString} (or derived) object or a single string.
+    An \link{XString} object or a single string.
   }
   \item{start}{
     An integer vector containing the start positions of the views.
@@ -46,13 +46,14 @@
     An integer vector containing the widths of the gaps between the views.
   }
   \item{src}{
-    A \link{BString} (or derived) object or a character vector.
+    An \link{XString} object or a character vector.
   }
   \item{subjectClass}{
     The class to be given to the subject of the \link{BStringViews} object
     created and returned by the function.
-    Must be \code{"BString"} or one of its subclasses: \code{"DNAString"},
-    \code{"RNAString"} or \code{"AAString"}.
+    Must be the name of one of the direct XString subtypes i.e.
+    \code{"BString"}, \code{"DNAString"}, \code{"RNAString"}
+    or \code{"AAString"}.
   }
   \item{collapse}{
     An optional character string to be inserted between the views of the
@@ -81,7 +82,7 @@
   If \code{src} itself is a BStringViews object, the returned
   object is obtained by coercing its subject to the class specified by
   \code{subjectClass}.
-  If \code{src} is a \link{BString} object, the returned object is made of
+  If \code{src} is an \link{XString} object, the returned object is made of
   a single view that starts at the first letter and ends at the last letter
   of \code{src} (in addition \code{src} itself is coerced to the class
   specified by \code{subjectClass} when specified).
@@ -96,11 +97,12 @@
   \code{max(length(start), length(end)} for the \code{views} function
   and \code{length(width)} for the \code{adjacentViews} function.
   For the \code{BStringViews} constructor, \code{length(y)} is \code{1}
-  when \code{src} is a \link{BString} object and \code{length(src)} otherwise.
+  when \code{src} is an \link{XString} object and \code{length(src)} otherwise.
 }
 
 \seealso{
-  \link{BStringViews-class}, \link{BString}, \link{DNAString}, \link{RNAString}
+  \link{BStringViews-class},
+  \link{XString-class}
 }
 
 \examples{

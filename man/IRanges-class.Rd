@@ -7,16 +7,17 @@
 \alias{IRanges}
 
 % Accesor methods
-\alias{length,IRanges-method}
-\alias{start,IRanges-method}
+\alias{length,.IRanges-method}
+\alias{start,.IRanges-method}
 \alias{width}
-\alias{width,IRanges-method}
-\alias{end,IRanges-method}
-\alias{names,IRanges-method}
+\alias{width,.IRanges-method}
+\alias{end,.IRanges-method}
+\alias{names,.IRanges-method}
 \alias{desc}
 \alias{desc,ANY-method}
 
 % Initialization
+\alias{initialize,.IRanges-method}
 \alias{initialize,IRanges-method}
 
 % Replacement methods
@@ -26,27 +27,27 @@
 \alias{width<-,IRanges-method}
 \alias{end<-}
 \alias{end<-,IRanges-method}
-\alias{names<-,IRanges-method}
+\alias{names<-,.IRanges-method}
 \alias{desc<-}
 \alias{desc<-,ANY-method}
 \alias{update,IRanges-method}
 
 % Show method
-\alias{as.data.frame,IRanges-method}
-\alias{show,IRanges-method}
+\alias{as.data.frame,.IRanges-method}
+\alias{show,.IRanges-method}
 
 % Subsetting
-\alias{[,IRanges-method}
-\alias{[<-,IRanges-method}
+\alias{[,.IRanges-method}
+\alias{[<-,.IRanges-method}
 
 % Other methods
-\alias{as.matrix,IRanges-method}
+\alias{as.matrix,.IRanges-method}
 
 % Deprecated methods
 \alias{first}
-\alias{first,IRanges-method}
+\alias{first,.IRanges-method}
 \alias{last}
-\alias{last,IRanges-method}
+\alias{last,.IRanges-method}
 
 
 \title{IRanges objects}

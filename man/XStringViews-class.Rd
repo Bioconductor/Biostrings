@@ -21,15 +21,15 @@
 \alias{[[<-,BStringViews-method}
 
 \alias{==,BStringViews,BStringViews-method}
-\alias{==,BStringViews,BString-method}
+\alias{==,BStringViews,XString-method}
 \alias{==,BStringViews,character-method}
-\alias{==,BString,BStringViews-method}
+\alias{==,XString,BStringViews-method}
 \alias{==,character,BStringViews-method}
 
 \alias{!=,BStringViews,BStringViews-method}
-\alias{!=,BStringViews,BString-method}
+\alias{!=,BStringViews,XString-method}
 \alias{!=,BStringViews,character-method}
-\alias{!=,BString,BStringViews-method}
+\alias{!=,XString,BStringViews-method}
 \alias{!=,character,BStringViews-method}
 
 \alias{as.character,BStringViews-method}
@@ -42,13 +42,12 @@
 
 \description{
   The BStringViews class is the basic container for storing a set of views
-  (start/end locations) on the same sequence (\link{BString} or derived
-  object).
+  (start/end locations) on the same sequence (an \link{XString} object).
 }
 
 \details{
   A BStringViews object contains a set of views (start/end locations) on the
-  same \link{BString} (or derived) object called "the subject string"
+  same \link{XString} object called "the subject string"
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
@@ -67,8 +66,8 @@
   \describe{
     \item{}{
       \code{subject(x)}:
-      The subject of \code{x}. This is always a \link{BString}
-      (or derived) object.
+      The subject of \code{x}. This is always an \link{XString}
+      object.
     }
     \item{}{
       \code{nchar(x)}:
@@ -88,10 +87,11 @@
   \describe{
     \item{}{
       \code{x[[i]]}:
-      Extract a view as a \link{BString} (or derived) object.
+      Extract a view as an \link{XString} object.
       \code{i} must be a single numeric value (a numeric vector of length 1).
-      Can't be used for extracting a view that is "out of limits" (raise an error).
-      The returned object belongs to the same class as \code{subject(x)}.
+      Can't be used for extracting a view that is "out of limits" (raise an
+      error). The returned object has the same \link{XString} subtype as
+      \code{subject(x)}.
     }
     \item{}{
       \code{e1 == e2}:
@@ -99,14 +99,14 @@
       view comparison. The views in the shorter of the two BStringViews
       object being compared are recycled as necessary.
 
-      Like for comparison between \link{BString} objects, comparison between two
+      Like for comparison between \link{XString} objects, comparison between two
       BStringViews objects with subjects of different classes is not supported
-      with one exception: when the subjects are \link{DNAString} and \link{RNAString}
-      instances.
+      with one exception: when the subjects are \link{DNAString} and
+      \link{RNAString} instances.
 
-      Also, like with \link{BString} objects, comparison between a BStringViews
-      object with a subject of class "BString" and a character vector
-      is supported (see examples below).
+      Also, like with \link{XString} objects, comparison between a BStringViews
+      object with a BString subject and a character vector is supported (see
+      examples below).
     }
     \item{}{
       \code{e1 != e2}:
@@ -142,7 +142,7 @@
     }
     \item{}{
       \code{as.list(x)}:
-      Convert \code{x} to a list of \link{BString} objects.
+      Convert \code{x} to a list of \link{XString} objects.
       Can't be used if \code{x} has "out of limits" views (raise an error).
     }
     \item{}{
@@ -157,10 +157,7 @@
 \seealso{
   \link{IRanges-class},
   \link{BStringViews-constructors},
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class},
+  \link{XString-class},
   \link{XStringSet-class},
   \code{\link{letter}}
 }
@@ -187,7 +184,7 @@
   ## or just:
   desc(v4)[nchar(v4) < width(v4)] <- "out of limits"
 
-  ## Two equivalent ways to extract a view as a BString (or derived) object:
+  ## Two equivalent ways to extract a view as an XString object:
   s2a <- v4[[2]]
   s2b <- subXString(subject(v4), start(v4)[2], end(v4)[2])
   identical(s2a, s2b) # TRUE

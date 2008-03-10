@@ -1,7 +1,7 @@
 \name{matchLRPatterns}
 
 \alias{matchLRPatterns}
-\alias{matchLRPatterns,BString-method}
+\alias{matchLRPatterns,XString-method}
 \alias{matchLRPatterns,BStringViews-method}
 
 
@@ -27,7 +27,7 @@
     and right parts of the pattern.
   }
   \item{subject}{
-    A \link{BString} (or derived) object (or a \link{BStringViews} object)
+    An \link{XString} object (or a \link{BStringViews} object)
     containing the target sequence.
   }
   \item{max.Lmismatch}{
@@ -72,7 +72,8 @@
   \code{\link{matchProbePair}},
   \code{\link{findPalindromes}},
   \code{\link{reverseComplement}},
-  \code{\link{BStringViews}}
+  \link{XString-class},
+  \link{BStringViews-class}
 }
 
 \examples{

@@ -1,7 +1,7 @@
 \name{reverseComplement}
 
 \alias{reverse}
-\alias{reverse,BString-method}
+\alias{reverse,XString-method}
 \alias{reverse,XStringSet-method}
 \alias{reverse,BStringViews-method}
 \alias{complement}
@@ -21,9 +21,8 @@
 \title{Sequence reversing and complementing}
 
 \description{
-  These functions can reverse a \link{BString}, \link{DNAString}
-  or \link{RNAString} object and complement each base
-  of a \link{DNAString} object.
+  These functions can reverse an \link{XString} object
+  and complement each base of a \link{DNAString} object.
 }
 
 \usage{
@@ -34,9 +33,8 @@
 
 \arguments{
   \item{x}{
-    A \link{BString} (or derived) object,
-    an \link{XStringSet} object,
-    or a \link{BStringViews} object for \code{reverse}.
+    An \link{XString}, \link{XStringSet} or \link{BStringViews} object
+    for \code{reverse}.
 
     A \link{DNAString}, \link{RNAString},
     \link{DNAStringSet} or \link{RNAStringSet} object,
@@ -50,9 +48,9 @@
 }
 
 \details{
-  Given an object \code{x} of class \link{BString}, \link{DNAString}
-  or \link{RNAString}, \code{reverse(x)} returns an object of the same class
-  where letters in \code{x} are reordered in the reverse order.
+  Given an \link{XString} object \code{x}, \code{reverse(x)} returns
+  an object of the same \link{XString} subtype as \code{x} where letters
+  in \code{x} have been reordered in the reverse order.
 
   If \code{x} is a \link{DNAString} or \link{RNAString} object,
   \code{complement(x)} returns an object where each base in \code{x}

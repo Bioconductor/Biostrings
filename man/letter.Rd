@@ -2,7 +2,7 @@
 
 \alias{letter}
 \alias{letter,character-method}
-\alias{letter,BString-method}
+\alias{letter,XString-method}
 \alias{letter,BStringViews-method}
 
 
@@ -19,7 +19,7 @@
 
 \arguments{
   \item{x}{
-    A character vector, a \link{BString} (or derived) object
+    A character vector, an \link{XString} object
     or a \link{BStringViews} object.
   }
   \item{i}{
@@ -34,7 +34,7 @@
 
 \value{
   A character vector of length 1 when \code{x} is
-  a \link{BString} (or derived) object.
+  an \link{XString} object.
 
   A character vector of the same length as \code{x} when \code{x}
   is a character vector or a \link{BStringViews} object.

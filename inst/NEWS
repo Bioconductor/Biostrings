@@ -167,6 +167,8 @@ o Added the XString() versatile constructor (it's a generic function with
   methods for character and XString objects). The BString(), DNAString(),
   RNAString() and AAString() constructors are now based on it.
 
+o Renamed subBString() -> subXString() and deprecated subBString().
+
 o Reorganized the hierarchy of the BString class and subclasses by adding the
   XString virtual class: now the BString, DNAString, RNAString and AAString
   classes are all direct XString subtypes with no additional slots.

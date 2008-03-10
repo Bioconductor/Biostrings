@@ -1,19 +1,19 @@
 \name{findPalindromes}
 
 \alias{findPalindromes}
-\alias{findPalindromes,BString-method}
+\alias{findPalindromes,XString-method}
 \alias{findPalindromes,BStringViews-method}
 
 \alias{palindromeArmLength}
-\alias{palindromeArmLength,BString-method}
+\alias{palindromeArmLength,XString-method}
 \alias{palindromeArmLength,BStringViews-method}
 
 \alias{palindromeLeftArm}
-\alias{palindromeLeftArm,BString-method}
+\alias{palindromeLeftArm,XString-method}
 \alias{palindromeLeftArm,BStringViews-method}
 
 \alias{palindromeRightArm}
-\alias{palindromeRightArm,BString-method}
+\alias{palindromeRightArm,XString-method}
 \alias{palindromeRightArm,BStringViews-method}
 
 \alias{findComplementedPalindromes}
@@ -60,7 +60,7 @@
 
 \arguments{
   \item{subject}{
-    A \link{BString} (or derived) object containing the subject string,
+    An \link{XString} object containing the subject string,
     or a \link{BStringViews} object.
   }
   \item{min.armlength}{
@@ -83,7 +83,7 @@
     the palindromes (or complemented palindromes) to search for.
   }
   \item{x}{
-    A \link{BString} (or derived) object containing a 2-arm palindrome
+    An \link{XString} object containing a 2-arm palindrome
     or complemented palindrome, or a \link{BStringViews} object containing a set
     of 2-arm palindromes or complemented palindromes.
   }

@@ -43,9 +43,9 @@
 \alias{countIndex,ByName_MIndex-method}
 
 \alias{matchPDict}
-\alias{matchPDict,BString-method}
+\alias{matchPDict,XString-method}
 \alias{countPDict}
-\alias{countPDict,BString-method}
+\alias{countPDict,XString-method}
 
 % Functions:
 \alias{extractAllMatches}
@@ -88,8 +88,9 @@
     The preprocessed dictionary (see below for the details).
   }
   \item{subject}{
-    A \link{BString} (or derived) object containing the subject string.
-    For now, only \link{DNAString} subjects are supported.
+    An \link{XString} object containing the subject string.
+    For now, only \link{XString} subjects of subtype \link{DNAString}
+    are supported.
   }
   \item{algorithm}{
     Not supported yet.

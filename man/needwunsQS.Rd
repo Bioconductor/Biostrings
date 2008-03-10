@@ -2,9 +2,9 @@
 \alias{needwunsQS}
 
 \alias{needwunsQS,character,character-method}
-\alias{needwunsQS,character,BString-method}
-\alias{needwunsQS,BString,character-method}
-\alias{needwunsQS,BString,BString-method}
+\alias{needwunsQS,character,XString-method}
+\alias{needwunsQS,XString,character-method}
+\alias{needwunsQS,XString,XString-method}
 \alias{print.needwunsQS}
 \alias{alignScore.needwunsQS}
 \alias{alignScore}
@@ -19,7 +19,7 @@ needwunsQS(s1, s2, substmat, gappen=8)
 }
 \arguments{
   \item{s1}{ s1: first string, an R character vector of length 1
-or a \link{BString} instance}
+or an \link{XString} object}
   \item{s2}{ s2: second string, same data type as \code{s1}}
   \item{substmat}{ substmat: matrix of alignment score values}
   \item{gappen}{ gappen: penalty for introducing a gap in the alignment}

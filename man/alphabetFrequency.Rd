@@ -63,8 +63,8 @@
     If \code{TRUE}, the returned vector only contains frequencies for the
     letters in the "base" alphabet i.e. "A", "C", "G", "T" if \code{x}
     is a "DNA input", and "A", "C", "G", "U" if \code{x} is "RNA input".
-    When \code{x} is a \link{BString} instance (or a \link{BStringViews}
-    object with a \link{BString} subject, or a \link{XStringSet} instance),
+    When \code{x} is a \link{BString} object (or a \link{BStringViews}
+    object with a \link{BString} subject, or a \link{BStringSet} object),
     then the \code{baseOnly} argument is ignored.
   }
   \item{freq}{

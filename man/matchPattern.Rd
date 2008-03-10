@@ -2,11 +2,11 @@
 
 \alias{matchPattern}
 \alias{matchPattern,character-method}
-\alias{matchPattern,BString-method}
+\alias{matchPattern,XString-method}
 \alias{matchPattern,BStringViews-method}
 \alias{countPattern}
 \alias{countPattern,character-method}
-\alias{countPattern,BString-method}
+\alias{countPattern,XString-method}
 \alias{countPattern,BStringViews-method}
 
 \alias{matchDNAPattern}
@@ -15,7 +15,7 @@
 \title{String searching functions}
 
 \description{
-  Generic that finds all matches of a pattern in a BString.
+  Generic that finds all matches of a pattern in a sequence (an XString object).
 }
 
 \usage{
@@ -28,7 +28,7 @@
     The pattern string.
   }
   \item{subject}{
-    A \link{BString} (or derived) object containing the subject string,
+    An \link{XString} object containing the subject string,
     or a \link{BStringViews} object.
   }
   \item{algorithm}{
@@ -76,7 +76,7 @@
   \code{\link{mask}},
   \code{\link{alphabetFrequency}},
   \link{BStringViews-class},
-  \link{DNAString-class}
+  \link{XString-class}
 }
 
 \examples{

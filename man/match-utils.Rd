@@ -2,7 +2,7 @@
 
 \alias{isMatching}
 \alias{isMatching,character-method}
-\alias{isMatching,BString-method}
+\alias{isMatching,XString-method}
 \alias{mismatch}
 \alias{mismatch,BStringViews-method}
 
@@ -30,7 +30,7 @@
     The pattern string.
   }
   \item{subject}{
-    A \link{BString} (or derived) object containing the subject string,
+    An \link{XString} object containing the subject sequence,
   }
   \item{start}{
     Integer vector specifying where to place the pattern relatively to the subject.
@@ -77,8 +77,8 @@
   \code{\link{matchPattern}},
   \code{\link{matchPDict}},
   \code{\link{IUPAC_CODE_MAP}},
-  \link{BStringViews-class},
-  \link{DNAString-class}
+  \link{XString-class},
+  \link{BStringViews-class}
 }
 
 \examples{

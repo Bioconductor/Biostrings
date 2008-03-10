@@ -3,7 +3,7 @@
 \alias{mask}
 \alias{mask,IRanges-method}
 \alias{mask,BStringViews-method}
-\alias{mask,BString-method}
+\alias{mask,XString-method}
 \alias{mask,character-method}
 
 
@@ -21,7 +21,7 @@
 
 \arguments{
   \item{x}{
-    The single string or \link{BString} (or derived) object to mask.
+    The single string or \link{XString} object to mask.
     This can also be a \link{BStringViews} object.
   }
   \item{start}{
@@ -36,7 +36,7 @@
 }
 
 \details{
-  For \link{BString} (or derived) objects, \code{mask()} can be used in two
+  For \link{XString} objects, \code{mask()} can be used in two
   different ways: by specifying the starts/ends of the regions to mask
   (masking "by position") or by specifying a pattern (masking "by content").
 
@@ -57,9 +57,7 @@
 
 \seealso{
   \link{BStringViews},
-  \link{BString},
-  \link{DNAString},
-  \link{RNAString},
+  \link{XString-class},
   \link{IRanges-utils}
 }
 

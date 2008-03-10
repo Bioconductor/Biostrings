@@ -39,11 +39,11 @@
 % Accesor methods:
 \alias{nchar,XStringSet-method}
 
-\alias{length,BStringList-method}
-\alias{nchar,BStringList-method}
-\alias{width,BStringList-method}
-\alias{names,BStringList-method}
-\alias{names<-,BStringList-method}
+\alias{length,XStringList-method}
+\alias{nchar,XStringList-method}
+\alias{width,XStringList-method}
+\alias{names,XStringList-method}
+\alias{names<-,XStringList-method}
 
 % Constructor-like functions and generics:
 \alias{initialize,XStringSet-method}
@@ -65,10 +65,10 @@
 \alias{DNAStringList,character-method}
 \alias{RNAStringList,character-method}
 \alias{AAStringList,character-method}
-\alias{BStringList,BStringList-method}
-\alias{DNAStringList,BStringList-method}
-\alias{RNAStringList,BStringList-method}
-\alias{AAStringList,BStringList-method}
+\alias{BStringList,XStringList-method}
+\alias{DNAStringList,XStringList-method}
+\alias{RNAStringList,XStringList-method}
+\alias{AAStringList,XStringList-method}
 \alias{BStringList,vector-method}
 \alias{DNAStringList,vector-method}
 \alias{RNAStringList,vector-method}
@@ -85,11 +85,11 @@
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
 
-\alias{show,BStringList-method}
-\alias{[,BStringList-method}
-\alias{[<-,BStringList-method}
-\alias{[[,BStringList-method}
-\alias{[[<-,BStringList-method}
+\alias{show,XStringList-method}
+\alias{[,XStringList-method}
+\alias{[<-,XStringList-method}
+\alias{[[,XStringList-method}
+\alias{[[<-,XStringList-method}
 \alias{as.list,BStringList-method}
 
 
