@@ -369,3 +369,73 @@ SEXP _CBuf_asRAW(CBuf *cbuf)
 	return ans;
 }
 
+
+/****************************************************************************
+ * SBuf functions
+ */
+
+void _SBuf_init(SBuf *sbuf, int maxcount, int count)
+{
+	int i;
+	char **string;
+
+	/* No memory leak here, because we use transient storage allocation */
+	if (maxcount == 0)
+		sbuf->strings = NULL;
+	else
+		sbuf->strings = Salloc((long) maxcount, char *);
+	sbuf->maxcount = maxcount;
+	for (i = 0, string = sbuf->strings; i < count; i++, string++)
+		*string = NULL;
+	sbuf->count = count;
+	return;
+}
+
+static void _SBuf_extend(SBuf *sbuf)
+{
+	long new_maxcount;
+
+	new_maxcount = get_new_maxcount(sbuf->maxcount);
+	sbuf->strings = Srealloc((char *) sbuf->strings, new_maxcount,
+					(long) sbuf->maxcount, char *);
+	sbuf->maxcount = new_maxcount;
+	return;
+}
+
+void _SBuf_insert_at(SBuf *sbuf, int at, const char *string)
+{
+	int i1, stringsize;
+	char **string1, **string2;
+
+	if (sbuf->count >= sbuf->maxcount)
+		_SBuf_extend(sbuf);
+	string1 = sbuf->strings + sbuf->count;
+	string2 = string1 + 1;
+	for (i1 = sbuf->count++; i1 >= at; i1--)
+		*(string2--) = *(string1--);
+	stringsize = strlen(string) + 1;
+	*string2 = Salloc((long) stringsize, char);
+	memcpy(*string2, string, stringsize);
+	return;
+}
+
+
+/****************************************************************************
+ * NamedSBuf functions
+ */
+
+void _NamedSBuf_init(NamedSBuf *namedsbuf, int maxcount, int count)
+{
+	_SBuf_init(&(namedsbuf->sbuf), maxcount, count);
+	_SBuf_init(&(namedsbuf->names), maxcount, count);
+	return;
+}
+
+void _NamedSBuf_insert_at(NamedSBuf *namedsbuf, int at, const char *string, const char *name)
+{
+	_SBuf_insert_at(&(namedsbuf->sbuf), at, string);
+	_SBuf_insert_at(&(namedsbuf->names), at, name);
+	return;
+}
+
+

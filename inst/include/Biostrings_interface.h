@@ -87,6 +87,19 @@
  *****************************************************************************/
 #include "Biostrings_defines.h"
 
+void NamedSBuf_init(
+	NamedSBuf *namedsbuf,
+	int maxcount,
+	int count
+);
+
+void NamedSBuf_insert_at(
+	NamedSBuf *namedsbuf,
+	int at,
+	const char *string,
+	const char *name
+);
+
 char DNAencode(char c);
 
 char DNAdecode(char code);
@@ -95,15 +108,26 @@ char RNAencode(char c);
 
 char RNAdecode(char code);
 
-const char *get_XString_charseq(SEXP x, int *length);
+const char *get_XString_charseq(
+	SEXP x,
+	int *length
+);
 
 int get_XStringList_length(SEXP x);
 
-const char *get_XStringList_charseq(SEXP x, int i, int *nchar);
+const char *get_XStringList_charseq(
+	SEXP x,
+	int i,
+	int *nchar
+);
 
 int get_XStringSet_length(SEXP x);
 
-const char *get_XStringSet_charseq(SEXP x, int i, int *nchar);
+const char *get_XStringSet_charseq(
+	SEXP x,
+	int i,
+	int *nchar
+);
 
 /*
  * Look at Biostrings_defines.h in this folder for the valid values of the

@@ -45,83 +45,87 @@ static int start2offset(int safe_start)
 const CharSeq *STRSXP_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
-	CharSeq *seqs, *seq;
+	CharSeq *charseqs, *charseq;
 	int i;
 	const int *safe_start, *safe_width;
 	SEXP x_elt;
 
 	if (LENGTH(x) != nseq)
 		error("invalid length of 'safe_starts' or 'safe_widths'");
-	seqs = Salloc((long) nseq, CharSeq);
-	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
+	charseqs = Salloc((long) nseq, CharSeq);
+	for (i = 0, safe_start = safe_starts, safe_width = safe_widths,
+		    charseq = charseqs;
 	     i < nseq;
-	     i++, safe_start++, safe_width++, seq++) {
+	     i++, safe_start++, safe_width++, charseq++) {
 		x_elt = STRING_ELT(x, i);
 		if (x_elt == NA_STRING)
 			error("input sequence %d is NA", i+1);
-		seq->data = CHAR(x_elt);
-		seq->data += start2offset(*safe_start);
-		seq->length = *safe_width;
+		charseq->seq = CHAR(x_elt);
+		charseq->seq += start2offset(*safe_start);
+		charseq->length = *safe_width;
 	}
-	return seqs;
+	return charseqs;
 }
 
 const CharSeq *XString_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
-	CharSeq *seqs, *seq;
+	CharSeq *charseqs, *charseq;
 	int i;
 	const int *safe_start, *safe_width;
 
-	seqs = Salloc((long) nseq, CharSeq);
-	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
+	charseqs = Salloc((long) nseq, CharSeq);
+	for (i = 0, safe_start = safe_starts, safe_width = safe_widths,
+		    charseq = charseqs;
 	     i < nseq;
-	     i++, safe_start++, safe_width++, seq++) {
-		seq->data = _get_XString_charseq(x, &(seq->length));
-		seq->data += start2offset(*safe_start);
-		seq->length = *safe_width;
+	     i++, safe_start++, safe_width++, charseq++) {
+		charseq->seq = _get_XString_charseq(x, &(charseq->length));
+		charseq->seq += start2offset(*safe_start);
+		charseq->length = *safe_width;
 	}
-	return seqs;
+	return charseqs;
 }
 
 const CharSeq *XStringSet_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
-	CharSeq *seqs, *seq;
+	CharSeq *charseqs, *charseq;
 	int i;
 	const int *safe_start, *safe_width;
 
 	if (_get_XStringSet_length(x) != nseq)
 		error("invalid length of 'safe_starts' or 'safe_widths'");
-	seqs = Salloc((long) nseq, CharSeq);
-	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
+	charseqs = Salloc((long) nseq, CharSeq);
+	for (i = 0, safe_start = safe_starts, safe_width = safe_widths,
+		    charseq = charseqs;
 	     i < nseq;
-	     i++, safe_start++, safe_width++, seq++) {
-		seq->data = _get_XStringSet_charseq(x, i, &(seq->length));
-		seq->data += start2offset(*safe_start);
-		seq->length = *safe_width;
+	     i++, safe_start++, safe_width++, charseq++) {
+		charseq->seq = _get_XStringSet_charseq(x, i, &(charseq->length));
+		charseq->seq += start2offset(*safe_start);
+		charseq->length = *safe_width;
 	}
-	return seqs;
+	return charseqs;
 }
 
 const CharSeq *XStringList_to_charseqs(SEXP x,
 		int nseq, const int *safe_starts, const int *safe_widths)
 {
-	CharSeq *seqs, *seq;
+	CharSeq *charseqs, *charseq;
 	int i;
 	const int *safe_start, *safe_width;
 
 	if (_get_XStringList_length(x) != nseq)
 		error("invalid length of 'safe_starts' or 'safe_widths'");
-	seqs = Salloc((long) nseq, CharSeq);
-	for (i = 0, safe_start = safe_starts, safe_width = safe_widths, seq = seqs;
+	charseqs = Salloc((long) nseq, CharSeq);
+	for (i = 0, safe_start = safe_starts, safe_width = safe_widths,
+		    charseq = charseqs;
 	     i < nseq;
-	     i++, safe_start++, safe_width++, seq++) {
-		seq->data = _get_XStringList_charseq(x, i, &(seq->length));
-		seq->data += start2offset(*safe_start);
-		seq->length = *safe_width;
+	     i++, safe_start++, safe_width++, charseq++) {
+		charseq->seq = _get_XStringList_charseq(x, i, &(charseq->length));
+		charseq->seq += start2offset(*safe_start);
+		charseq->length = *safe_width;
 	}
-	return seqs;
+	return charseqs;
 }
 
 
@@ -140,30 +144,30 @@ SEXP mkXRaw(SEXP tag)
         return ans;
 }
 
-static SEXP charseqs_to_RAW(const CharSeq *seqs, int nseq, SEXP lkup)
+static SEXP charseqs_to_RAW(const CharSeq *charseqs, int nseq, SEXP lkup)
 {
 	SEXP ans;
 	int ans_length, i;
-	const CharSeq *seq;
+	const CharSeq *charseq;
 	char *dest;
 
 	ans_length = 0;
-	for (i = 0, seq = seqs; i < nseq; i++, seq++)
-		ans_length += seq->length;
+	for (i = 0, charseq = charseqs; i < nseq; i++, charseq++)
+		ans_length += charseq->length;
 	PROTECT(ans = NEW_RAW(ans_length));
 	dest = (char *) RAW(ans);
-	for (i = 0, seq = seqs; i < nseq; i++, seq++) {
+	for (i = 0, charseq = charseqs; i < nseq; i++, charseq++) {
 		if (lkup == R_NilValue) {
-			_Biostrings_memcpy_to_i1i2(0, seq->length - 1,
-				dest, seq->length,
-				seq->data, seq->length, sizeof(char));
+			_Biostrings_memcpy_to_i1i2(0, charseq->length - 1,
+				dest, charseq->length,
+				charseq->seq, charseq->length, sizeof(char));
 		} else {
-			_Biostrings_translate_charcpy_to_i1i2(0, seq->length - 1,
-				dest, seq->length,
-				seq->data, seq->length,
+			_Biostrings_translate_charcpy_to_i1i2(0, charseq->length - 1,
+				dest, charseq->length,
+				charseq->seq, charseq->length,
 				INTEGER(lkup), LENGTH(lkup));
 		}
-		dest += seq->length;
+		dest += charseq->length;
 	}
 	UNPROTECT(1);
 	return ans;
@@ -187,7 +191,7 @@ SEXP copy_subXRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
 SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, SEXP lkup)
 {
 	int nseq;
-	const CharSeq *seqs;
+	const CharSeq *charseqs;
 	SEXP tag, ans;
 
 	nseq = LENGTH(safe_starts);
@@ -199,8 +203,8 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, S
 		if (LENGTH(collapse) != 1 || LENGTH(STRING_ELT(collapse, 0)) != 0)
 			error("'collapse' can only be NULL or the empty string for now");
 	}
-	seqs = STRSXP_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
-	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
+	charseqs = STRSXP_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
+	PROTECT(tag = charseqs_to_RAW(charseqs, nseq, lkup));
 	ans = mkXRaw(tag);
 	UNPROTECT(1);
 	return ans;
@@ -212,12 +216,12 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, S
 SEXP XString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 {
 	int nseq;
-	const CharSeq *seqs;
+	const CharSeq *charseqs;
 	SEXP tag, ans;
 
 	nseq = LENGTH(safe_starts);
-	seqs = XString_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
-	PROTECT(tag = charseqs_to_RAW(seqs, nseq, lkup));
+	charseqs = XString_to_charseqs(x, nseq, INTEGER(safe_starts), INTEGER(safe_widths));
+	PROTECT(tag = charseqs_to_RAW(charseqs, nseq, lkup));
 	ans = mkXRaw(tag);
 	UNPROTECT(1);
 	return ans;

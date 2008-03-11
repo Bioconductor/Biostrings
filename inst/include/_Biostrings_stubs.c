@@ -1,5 +1,32 @@
 #include "Biostrings_interface.h"
 
+typedef void (*NamedSBuf_init_FUNTYPE)
+	(NamedSBuf *, int, int);
+
+void NamedSBuf_init(NamedSBuf *namedsbuf, int maxcount, int count)
+{
+	static NamedSBuf_init_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (NamedSBuf_init_FUNTYPE)
+			R_GetCCallable("Biostrings", "_NamedSBuf_init");
+	return fun(namedsbuf, maxcount, count);
+}
+
+typedef void (*NamedSBuf_insert_at_FUNTYPE)
+	(NamedSBuf *, int, const char *, const char *);
+
+void NamedSBuf_insert_at(NamedSBuf *namedsbuf, int at,
+		const char *string, const char *name)
+{
+	static NamedSBuf_insert_at_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (NamedSBuf_insert_at_FUNTYPE)
+			R_GetCCallable("Biostrings", "_NamedSBuf_insert_at");
+	return fun(namedsbuf, at, string, name);
+}
+
 char DNAencode(char c)
 {
 	static char (*fun)(char) = NULL;

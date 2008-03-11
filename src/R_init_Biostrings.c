@@ -8,9 +8,6 @@ static const R_CallMethodDef callMethods[] = {
 /* bufutils.c */
 	{"Biostrings_debug_bufutils", (DL_FUNC) &Biostrings_debug_bufutils, 0},
 
-/* views_buffer.c */
-	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},
-
 /* IRanges.c */
 	{"Biostrings_debug_IRanges", (DL_FUNC) &Biostrings_debug_IRanges, 0},
 
@@ -91,6 +88,9 @@ static const R_CallMethodDef callMethods[] = {
 	{"char_frequency", (DL_FUNC) &char_frequency, 3},
 	{"oligonucleotide_frequency", (DL_FUNC) &oligonucleotide_frequency, 6},
 
+/* views_buffer.c */
+	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},
+
 /* normalize_views.c */
 	{"Biostrings_normalize_views", (DL_FUNC) &Biostrings_normalize_views, 2},
 
@@ -148,6 +148,8 @@ void R_init_Biostrings(DllInfo *info)
 	if (sizeof(Rbyte) != sizeof(char))
 		error("sizeof(Rbyte) != sizeof(char)");
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
+	R_RegisterCCallable("Biostrings", "_NamedSBuf_init", (DL_FUNC) &_NamedSBuf_init);
+	R_RegisterCCallable("Biostrings", "_NamedSBuf_insert_at", (DL_FUNC) &_NamedSBuf_insert_at);
 	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
 	R_RegisterCCallable("Biostrings", "_get_XString_charseq", (DL_FUNC) &_get_XString_charseq);
