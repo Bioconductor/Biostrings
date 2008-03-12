@@ -1,30 +1,25 @@
 #include "Biostrings_interface.h"
 
-typedef void (*NamedSBuf_init_FUNTYPE)
-	(NamedSBuf *, int, int);
-
-void NamedSBuf_init(NamedSBuf *namedsbuf, int maxcount, int count)
+typedef CBBuf (*new_CBBuf_FUNTYPE) (int, int);
+CBBuf new_CBBuf(int buflength, int nelt)
 {
-	static NamedSBuf_init_FUNTYPE fun = NULL;
+	static new_CBBuf_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (NamedSBuf_init_FUNTYPE)
-			R_GetCCallable("Biostrings", "_NamedSBuf_init");
-	return fun(namedsbuf, maxcount, count);
+		fun = (new_CBBuf_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_CBBuf");
+	return fun(buflength, nelt);
 }
 
-typedef void (*NamedSBuf_insert_at_FUNTYPE)
-	(NamedSBuf *, int, const char *, const char *);
-
-void NamedSBuf_insert_at(NamedSBuf *namedsbuf, int at,
-		const char *string, const char *name)
+typedef void (*append_string_to_CBBuf_FUNTYPE) (CBBuf *, const char *);
+void append_string_to_CBBuf(CBBuf *cbbuf, const char *string)
 {
-	static NamedSBuf_insert_at_FUNTYPE fun = NULL;
+	static append_string_to_CBBuf_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (NamedSBuf_insert_at_FUNTYPE)
-			R_GetCCallable("Biostrings", "_NamedSBuf_insert_at");
-	return fun(namedsbuf, at, string, name);
+		fun = (append_string_to_CBBuf_FUNTYPE)
+			R_GetCCallable("Biostrings", "_append_string_to_CBBuf");
+	return fun(cbbuf, string);
 }
 
 char DNAencode(char c)

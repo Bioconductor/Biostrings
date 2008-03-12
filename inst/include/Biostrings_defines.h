@@ -3,21 +3,25 @@
 
 
 /*
- * Extendable buffers used for temporary storage of data whose size is not
- * known in advance.
+ * Extendable buffers used for temporary storage of incoming data whose size
+ * is not known in advance.
+ * They are NOT an attempt to reinvent an SEXP subsystem. Some notable
+ * differences are: they are extendable (i.e. they are automatically
+ * reallocated when more room is needed to add a new element), they are much
+ * faster, and they don't need any PROTECT/UNPROTECT mechanism.
  */
 
 typedef struct ibuf {
-	int *vals;
-	int maxcount;
-	int count;
+	int *elts;
+	int buflength;
+	int nelt;
 } IBuf; // Extendable buffer of integers
 
 typedef struct ibbuf {
-	IBuf *ibufs;
-	int maxcount;
-	int count;
-} IBBuf; // Extendable buffer of arrays of integers
+	IBuf *elts;
+	int buflength;
+	int nelt;
+} IBBuf; // Extendable buffer of extendable buffers of integers
 
 typedef struct rangesbuf {
 	IBuf start;
@@ -25,21 +29,16 @@ typedef struct rangesbuf {
 } RangesBuf; // Extendable buffer of integer ranges
 
 typedef struct cbuf {
-	char *vals;
-	int maxcount;
-	int count;
+	char *elts;
+	int buflength;
+	int nelt;
 } CBuf; // Extendable buffer of chars
 
-typedef struct sbuf {
-	char **strings;
-	int maxcount;
-	int count;
-} SBuf; // Extendable buffer of strings
-
-typedef struct namedsbuf {
-	SBuf sbuf;
-	SBuf names;
-} NamedSBuf; // Extendable buffer of named strings
+typedef struct cbbuf {
+        CBuf *elts;
+        int buflength;
+        int nelt;
+} CBBuf; // Extendable buffer of extendable buffers of chars
 
 
 /*

@@ -171,7 +171,7 @@ static void add_to_reduced_ranges(int start, int width)
 {
 	int buf_length, end, gap;
 
-	buf_length = reduced_ranges.start.count;
+	buf_length = reduced_ranges.start.nelt;
 	end = start + width - 1;
 	if (buf_length == 0 || (gap = start - max_end - 1) > 0) {
 		_RangesBuf_insert_at(&reduced_ranges, buf_length, start, width);
@@ -184,7 +184,7 @@ static void add_to_reduced_ranges(int start, int width)
 	}
 	if (end <= max_end)
 		return;
-	reduced_ranges.width.vals[buf_length - 1] += end - max_end;
+	reduced_ranges.width.elts[buf_length - 1] += end - max_end;
 	max_end = end;
 	return;
 }
@@ -194,11 +194,11 @@ static void reduce_ranges(int length, const int *start, const int *width, int *i
 	int i, j;
 	IBuf start_order;
 
-	_IBuf_init(&start_order, length, 0);
-	get_intorder(length, start, start_order.vals);
-	_RangesBuf_init(&reduced_ranges, 0, 0);
+	start_order = _new_IBuf(length, 0);
+	get_intorder(length, start, start_order.elts);
+	reduced_ranges = _new_RangesBuf(0, 0);
 	for (i = 0; i < length; i++) {
-		j = start_order.vals[i];
+		j = start_order.elts[i];
 		add_to_reduced_ranges(start[j], width[j]);
 		if (inframe_start != NULL)
 			inframe_start[j] = start[j] - inframe_offset;

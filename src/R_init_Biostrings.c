@@ -148,8 +148,8 @@ void R_init_Biostrings(DllInfo *info)
 	if (sizeof(Rbyte) != sizeof(char))
 		error("sizeof(Rbyte) != sizeof(char)");
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
-	R_RegisterCCallable("Biostrings", "_NamedSBuf_init", (DL_FUNC) &_NamedSBuf_init);
-	R_RegisterCCallable("Biostrings", "_NamedSBuf_insert_at", (DL_FUNC) &_NamedSBuf_insert_at);
+	R_RegisterCCallable("Biostrings", "_new_CBBuf", (DL_FUNC) &_new_CBBuf);
+	R_RegisterCCallable("Biostrings", "_append_string_to_CBBuf", (DL_FUNC) &_append_string_to_CBBuf);
 	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
 	R_RegisterCCallable("Biostrings", "_get_XString_charseq", (DL_FUNC) &_get_XString_charseq);

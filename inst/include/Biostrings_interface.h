@@ -87,17 +87,14 @@
  *****************************************************************************/
 #include "Biostrings_defines.h"
 
-void NamedSBuf_init(
-	NamedSBuf *namedsbuf,
-	int maxcount,
-	int count
+CBBuf new_CBBuf(
+	int buflength,
+	int nelt
 );
 
-void NamedSBuf_insert_at(
-	NamedSBuf *namedsbuf,
-	int at,
-	const char *string,
-	const char *name
+void append_string_to_CBBuf(
+	CBBuf *cbbuf,
+	const char *string
 );
 
 char DNAencode(char c);

@@ -167,10 +167,9 @@ void _init_code2offset_lkup(
 
 SEXP Biostrings_debug_bufutils();
 
-void _IBuf_init(
-	IBuf *ibuf,
-	int maxcount,
-	int count
+IBuf _new_IBuf(
+	int buflength,
+	int nelt
 );
 
 void _IBuf_insert_at(
@@ -193,10 +192,9 @@ IBuf _CHARACTER_asIBuf(
 	int keyshift
 );
 
-void _IBBuf_init(
-	IBBuf *ibbuf,
-	int maxcount,
-	int count
+IBBuf _new_IBBuf(
+	int buflength,
+	int nelt
 );
 
 void _IBBuf_insert_at(
@@ -218,10 +216,9 @@ SEXP _IBBuf_toEnvir(
 	int keyshift
 );
 
-void _RangesBuf_init(
-	RangesBuf *rangesbuf,
-	int maxcount,
-	int count
+RangesBuf _new_RangesBuf(
+	int buflength,
+	int nelt
 );
 
 void _RangesBuf_insert_at(
@@ -231,42 +228,32 @@ void _RangesBuf_insert_at(
 	int width
 );
 
-void _CBuf_init(
-	CBuf *cbuf,
-	int maxcount
-);
+CBuf _new_CBuf(int buflength);
+
+CBuf _new_CBuf_from_string(const char *string);
 
 void _CBuf_insert_at(
 	CBuf *cbuf,
 	int at,
-	char val
+	char c
 );
 
 SEXP _CBuf_asRAW(CBuf *cbuf);
 
-void _SBuf_init(
-	SBuf *sbuf,
-	int maxcount,
-	int count
+CBBuf _new_CBBuf(
+	int buflength,
+	int nelt
 );
 
-void _SBuf_insert_at(
-	SBuf *sbuf,
+void _CBBuf_insert_at(
+	CBBuf *cbbuf,
 	int at,
+	CBuf cbuf
+);
+
+void _append_string_to_CBBuf(
+	CBBuf *cbbuf,
 	const char *string
-);
-
-void _NamedSBuf_init(
-	NamedSBuf *namedsbuf,
-	int maxcount,
-	int count
-);
-
-void _NamedSBuf_insert_at(
-	NamedSBuf *namedsbuf,
-	int at,
-	const char *string,
-	const char *name
 );
 
 

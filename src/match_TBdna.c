@@ -198,13 +198,13 @@ static IBuf dups_buf;
 
 static void init_dups_buf(int length)
 {
-	_IBuf_init(&dups_buf, length, length);
+	dups_buf = _new_IBuf(length, length);
 	return;
 }
 
 static void report_dup(int poffset, int P_id)
 {
-	dups_buf.vals[poffset] = P_id;
+	dups_buf.elts[poffset] = P_id;
 	return;
 }
 
@@ -450,9 +450,9 @@ static void init_match_reporting(int not_tail, int is_count_only, int length)
 {
 	match_reporting_mode = is_count_only ? (not_tail ? 0 : 2) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
-		_IBuf_init(&match_count, length, length);
+		match_count = _new_IBuf(length, length);
 	if (match_reporting_mode >= 1)
-		_IBBuf_init(&ends_bbuf, length, length);
+		ends_bbuf = _new_IBBuf(length, length);
 	return;
 }
 
@@ -461,11 +461,11 @@ static void report_match(int poffset, int end)
 	IBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
-		match_count.vals[poffset]++;
+		match_count.elts[poffset]++;
 		return;
 	}
-	ends_buf = ends_bbuf.ibufs + poffset;
-	_IBuf_insert_at(ends_buf, ends_buf->count, end);
+	ends_buf = ends_bbuf.elts + poffset;
+	_IBuf_insert_at(ends_buf, ends_buf->nelt, end);
 	return;
 }
 
@@ -475,21 +475,21 @@ static void report_matches_for_dups(const int *dups, int length)
 	IBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
-		for (poffset = 0, val = match_count.vals;
+		for (poffset = 0, val = match_count.elts;
 		     poffset < length;
 		     poffset++, val++, dups++) {
 			if (*dups == 0)
 				continue;
-			*val = *(match_count.vals + *dups - 1);
+			*val = *(match_count.elts + *dups - 1);
 		}
 		return;
 	}
-	for (poffset = 0, ends_buf = ends_bbuf.ibufs;
+	for (poffset = 0, ends_buf = ends_bbuf.elts;
 	     poffset < length;
 	     poffset++, ends_buf++, dups++) {
 		if (*dups == 0)
 			continue;
-		*ends_buf = *(ends_bbuf.ibufs + *dups - 1);
+		*ends_buf = *(ends_bbuf.elts + *dups - 1);
 	}
 	return;
 }
@@ -632,24 +632,24 @@ static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int 
 	int dup0, i, end;
 	IBuf *ends_buf, *ends_buf0;
 
-	ends_buf = ends_buf0 = ends_bbuf.ibufs + poffset;
+	ends_buf = ends_buf0 = ends_bbuf.elts + poffset;
 	dup0 = dups[poffset];
 	if (dup0 != 0)
-		ends_buf0 = ends_bbuf.ibufs + dup0 - 1;
-	for (i = 0; i < ends_buf0->count; i++) {
-		end = ends_buf0->vals[i];
+		ends_buf0 = ends_bbuf.elts + dup0 - 1;
+	for (i = 0; i < ends_buf0->nelt; i++) {
+		end = ends_buf0->elts[i];
 		if (_is_matching(tail, tail_len, S, nS, end, max_mm, fixedP, fixedS)) {
 			/* Match */
 			if (is_count_only) {
-				match_count.vals[poffset]++;
+				match_count.elts[poffset]++;
 				continue;
 			}
 			if (dup0 == 0) {
-				ends_buf0->vals[i] += tail_len;
+				ends_buf0->elts[i] += tail_len;
 				continue;
 			}
 			end += tail_len;
-			_IBuf_insert_at(ends_buf, ends_buf->count, end);
+			_IBuf_insert_at(ends_buf, ends_buf->nelt, end);
 			continue;
 		}
 		/* Mismatch */
@@ -1025,26 +1025,26 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 	poffsets = _CHARACTER_asIBuf(symbols, -1);
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(names)));
-		for (i = 0; i < poffsets.count; i++) {
+		for (i = 0; i < poffsets.nelt; i++) {
 			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
 			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
-			SET_ELEMENT(ans, poffsets.vals[i], ans_elt);
+			SET_ELEMENT(ans, poffsets.elts[i], ans_elt);
 			UNPROTECT(1);
 		}
 		SET_NAMES(ans, duplicate(names));
 		UNPROTECT(1);
 	} else {
-		//_IBuf_init(&poffsets_order, poffsets.count, 0);
-		//get_intorder(poffsets.count, poffsets.vals, poffsets_order.vals);
-		//poffsets_order.count = poffsets.count; /* = poffsets_order.maxcount */
-		PROTECT(ans = NEW_LIST(poffsets.count));
-		PROTECT(ans_names = NEW_CHARACTER(poffsets.count));
-		for (i = 0; i < poffsets.count; i++) {
-			//j = poffsets_order.vals[i];
+		//poffsets_order = _new_IBuf(poffsets.nelt, 0);
+		//get_intorder(poffsets.nelt, poffsets.elts, poffsets_order.elts);
+		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
+		PROTECT(ans = NEW_LIST(poffsets.nelt));
+		PROTECT(ans_names = NEW_CHARACTER(poffsets.nelt));
+		for (i = 0; i < poffsets.nelt; i++) {
+			//j = poffsets_order.elts[i];
 			j = i;
 			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir);
 			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
-			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(names, poffsets.vals[j])));
+			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(names, poffsets.elts[j])));
 		}
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(2);
