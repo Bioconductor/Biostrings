@@ -167,51 +167,51 @@ void _init_code2offset_lkup(
 
 SEXP Biostrings_debug_bufutils();
 
-IBuf _new_IBuf(
+IntBuf _new_IntBuf(
 	int buflength,
 	int nelt
 );
 
-void _IBuf_insert_at(
-	IBuf *ibuf,
+void _IntBuf_insert_at(
+	IntBuf *ibuf,
 	int at,
 	int val
 );
 
-void _IBuf_delete_at(
-	IBuf *ibuf,
+void _IntBuf_delete_at(
+	IntBuf *ibuf,
 	int at
 );
 
-SEXP _IBuf_asINTEGER(IBuf *ibuf);
+SEXP _IntBuf_asINTEGER(IntBuf *ibuf);
 
-IBuf _INTEGER_asIBuf(SEXP x);
+IntBuf _INTEGER_asIntBuf(SEXP x);
 
-IBuf _CHARACTER_asIBuf(
+IntBuf _CHARACTER_asIntBuf(
 	SEXP x,
 	int keyshift
 );
 
-IBBuf _new_IBBuf(
+IntBBuf _new_IntBBuf(
 	int buflength,
 	int nelt
 );
 
-void _IBBuf_insert_at(
-	IBBuf *ibbuf,
+void _IntBBuf_insert_at(
+	IntBBuf *ibbuf,
 	int at,
-	IBuf ibuf
+	IntBuf ibuf
 );
 
-SEXP _IBBuf_asLIST(
-	IBBuf *ibbuf,
+SEXP _IntBBuf_asLIST(
+	IntBBuf *ibbuf,
 	int mode
 );
 
-IBBuf _LIST_asIBBuf(SEXP x);
+IntBBuf _LIST_asIntBBuf(SEXP x);
 
-SEXP _IBBuf_toEnvir(
-	IBBuf *ibbuf,
+SEXP _IntBBuf_toEnvir(
+	IntBBuf *ibbuf,
 	SEXP envir,
 	int keyshift
 );
@@ -228,33 +228,35 @@ void _RangesBuf_insert_at(
 	int width
 );
 
-CBuf _new_CBuf(int buflength);
+CharBuf _new_CharBuf(int buflength);
 
-CBuf _new_CBuf_from_string(const char *string);
+CharBuf _new_CharBuf_from_string(const char *string);
 
-void _CBuf_insert_at(
-	CBuf *cbuf,
+void _CharBuf_insert_at(
+	CharBuf *cbuf,
 	int at,
 	char c
 );
 
-SEXP _CBuf_asRAW(CBuf *cbuf);
+SEXP _CharBuf_asRAW(CharBuf *cbuf);
 
-CBBuf _new_CBBuf(
+CharBBuf _new_CharBBuf(
 	int buflength,
 	int nelt
 );
 
-void _CBBuf_insert_at(
-	CBBuf *cbbuf,
+void _CharBBuf_insert_at(
+	CharBBuf *cbbuf,
 	int at,
-	CBuf cbuf
+	CharBuf cbuf
 );
 
-void _append_string_to_CBBuf(
-	CBBuf *cbbuf,
+void _append_string_to_CharBBuf(
+	CharBBuf *cbbuf,
 	const char *string
 );
+
+ConstCharAArr _new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf);
 
 
 /* IRanges.c */
@@ -568,6 +570,12 @@ SEXP XString_to_XRaw(
 	SEXP safe_starts,
 	SEXP safe_widths,
 	SEXP lkup
+);
+
+SEXP _new_XStringSet_from_seqsnames(
+	const char *baseClass,
+	ConstCharAArr seqs,
+	ConstCharAArr names
 );
 
 SEXP XRaw_to_XStringList(

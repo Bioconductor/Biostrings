@@ -87,16 +87,26 @@
  *****************************************************************************/
 #include "Biostrings_defines.h"
 
-CBBuf new_CBBuf(
+/*
+ * Low-level manipulation of the extendable buffers.
+ */
+
+CharBBuf new_CharBBuf(
 	int buflength,
 	int nelt
 );
 
-void append_string_to_CBBuf(
-	CBBuf *cbbuf,
+void append_string_to_CharBBuf(
+	CharBBuf *cbbuf,
 	const char *string
 );
 
+ConstCharAArr new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf);
+
+
+/*
+ * Low-level manipulation of XString and XStringSet objects.
+ */
 char DNAencode(char c);
 
 char DNAdecode(char code);
@@ -110,14 +120,6 @@ const char *get_XString_charseq(
 	int *length
 );
 
-int get_XStringList_length(SEXP x);
-
-const char *get_XStringList_charseq(
-	SEXP x,
-	int i,
-	int *nchar
-);
-
 int get_XStringSet_length(SEXP x);
 
 const char *get_XStringSet_charseq(
@@ -126,27 +128,34 @@ const char *get_XStringSet_charseq(
 	int *nchar
 );
 
+SEXP new_XStringSet_from_seqsnames(
+	const char *baseClass,
+	ConstCharAArr seqs,
+	ConstCharAArr names
+);
+
+
 /*
- * Look at Biostrings_defines.h in this folder for the valid values of the
- * 'mrmode' arg (the match reporting mode).
+ * Match reporting facilities.
+ *
+ * init_match_reporting():
+ *   Look at Biostrings_defines.h in this folder for the valid values of the
+ *   'mrmode' arg (the match reporting mode).
+ *
+ * report_match():
+ *   In mode COUNT_MRMODE, it ignores the values of its 'start' and 'end' args.
+ *   In mode START_MRMODE, it ignores the value of its 'end' arg.
+ *   So yes, for now, the 'end' arg is always ignored, but modes that look at
+ *   this argument will be added in the future.
+ *
+ * reported_matches_asSEXP():
+ *   The SEXP returned by reported_matches_asSEXP() is an integer vector
+ *   of length 1 in mode COUNT_MRMODE and of length the number of matches
+ *   in mode START_MRMODE. IMPORTANT: It is returned UNPROTECTED!
  */
 void init_match_reporting(int mrmode);
 
-/*
- * In mode COUNT_MRMODE, the values of the 'start' and 'end' args are ignored.
- * In mode START_MRMODE, the value of the 'end' arg is ignored.
- * So yes, for now, the 'end' arg is always ignored, but modes that look at
- * this argument will be added in the future.
- */
 int report_match(int start, int end);
 
-/*
- * The SEXP returned by reported_matches_asSEXP() is an integer vector
- * of length 1 in mode COUNT_MRMODE and of length the number of matches
- * in mode START_MRMODE.
- * IMPORTANT: It is returned UNPROTECTED by reported_matches_asSEXP()!
- */
 SEXP reported_matches_asSEXP();
-
-// more functions to come soon...
 

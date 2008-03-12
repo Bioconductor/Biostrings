@@ -229,11 +229,24 @@ SEXP XString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 
 
 /****************************************************************************
+ * Converting a set of sequences into an XStringSet object.
+ */
+
+SEXP _new_XStringSet_from_seqsnames(const char *baseClass,
+		ConstCharAArr seqs, ConstCharAArr names)
+{
+	SEXP ans;
+
+	error("_new_XStringSet_from_seqsnames() is not ready yet");
+	return ans;
+}
+
+
+/****************************************************************************
  * Converting a set of sequences into an XStringList object.
  */
 
-/* NOT a Call() entry point! */
-SEXP mkXStringList(const char *class, SEXP seqs)
+static SEXP mkXStringList(const char *class, SEXP seqs)
 {
 	SEXP class_def, ans;
 

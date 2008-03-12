@@ -15,30 +15,40 @@ typedef struct ibuf {
 	int *elts;
 	int buflength;
 	int nelt;
-} IBuf; // Extendable buffer of integers
+} IntBuf; // Extendable buffer of integers
 
 typedef struct ibbuf {
-	IBuf *elts;
+	IntBuf *elts;
 	int buflength;
 	int nelt;
-} IBBuf; // Extendable buffer of extendable buffers of integers
+} IntBBuf; // Extendable buffer of extendable buffers of integers
 
 typedef struct rangesbuf {
-	IBuf start;
-	IBuf width;
+	IntBuf start;
+	IntBuf width;
 } RangesBuf; // Extendable buffer of integer ranges
 
 typedef struct cbuf {
 	char *elts;
 	int buflength;
 	int nelt;
-} CBuf; // Extendable buffer of chars
+} CharBuf; // Extendable buffer of chars
 
 typedef struct cbbuf {
-        CBuf *elts;
+        CharBuf *elts;
         int buflength;
         int nelt;
-} CBBuf; // Extendable buffer of extendable buffers of chars
+} CharBBuf; // Extendable buffer of extendable buffers of chars
+
+typedef struct ccarr {
+	const char *elts;
+	int nelt;
+} ConstCharArr;
+
+typedef struct ccaarr {
+	ConstCharArr *elts;
+	int nelt;
+} ConstCharAArr;
 
 
 /*

@@ -1,5 +1,5 @@
 /*
- * Manipulation of the "views buffer".
+ * Match reporting facilities.
  *
  * The "views buffer" is used for temporarily storing a set of views or
  * matches found in a sequence. E.g. it is used by the string searching

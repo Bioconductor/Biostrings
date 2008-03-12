@@ -1,5 +1,5 @@
 /*
- * Functions for low-level manipulation of the "temporary buffers".
+ * Low-level manipulation of the extendable buffers.
  *
  * Except for Biostrings_debug_bufutils(), the functions defined in
  * this file are NOT .Call methods (but they are used by .Call methods
@@ -46,12 +46,12 @@ static int get_new_buflength(int buflength)
 
 
 /****************************************************************************
- * IBuf functions
+ * IntBuf functions
  */
 
-IBuf _new_IBuf(int buflength, int nelt)
+IntBuf _new_IntBuf(int buflength, int nelt)
 {
-	IBuf ibuf;
+	IntBuf ibuf;
 	int *elt;
 
 	/* No memory leak here, because we use transient storage allocation */
@@ -67,7 +67,7 @@ IBuf _new_IBuf(int buflength, int nelt)
 	return ibuf;
 }
 
-static void _IBuf_extend(IBuf *ibuf)
+static void _IntBuf_extend(IntBuf *ibuf)
 {
 	long new_buflength;
 
@@ -78,13 +78,13 @@ static void _IBuf_extend(IBuf *ibuf)
 	return;
 }
 
-void _IBuf_insert_at(IBuf *ibuf, int at, int val)
+void _IntBuf_insert_at(IntBuf *ibuf, int at, int val)
 {
 	int *elt1, *elt2;
 	int i1;
 
 	if (ibuf->nelt >= ibuf->buflength)
-		_IBuf_extend(ibuf);
+		_IntBuf_extend(ibuf);
 	elt1 = ibuf->elts + ibuf->nelt;
 	elt2 = elt1 + 1;
 	for (i1 = ibuf->nelt++; i1 >= at; i1--)
@@ -93,7 +93,7 @@ void _IBuf_insert_at(IBuf *ibuf, int at, int val)
 	return;
 }
 
-void _IBuf_delete_at(IBuf *ibuf, int at)
+void _IntBuf_delete_at(IntBuf *ibuf, int at)
 {
 	int *elt1, *elt2;
 	int i2;
@@ -106,7 +106,7 @@ void _IBuf_delete_at(IBuf *ibuf, int at)
 	return;
 }
 
-SEXP _IBuf_asINTEGER(IBuf *ibuf)
+SEXP _IntBuf_asINTEGER(IntBuf *ibuf)
 {
 	SEXP ans;
 
@@ -116,29 +116,29 @@ SEXP _IBuf_asINTEGER(IBuf *ibuf)
 	return ans;
 }
 
-IBuf _INTEGER_asIBuf(SEXP x)
+IntBuf _INTEGER_asIntBuf(SEXP x)
 {
-	IBuf ibuf;
+	IntBuf ibuf;
 
-	ibuf = _new_IBuf(LENGTH(x), 0);
+	ibuf = _new_IntBuf(LENGTH(x), 0);
 	memcpy(ibuf.elts, INTEGER(x), sizeof(int) * LENGTH(x));
 	ibuf.nelt = ibuf.buflength;
 	return ibuf;
 }
 
-IBuf _CHARACTER_asIBuf(SEXP x, int keyshift)
+IntBuf _CHARACTER_asIntBuf(SEXP x, int keyshift)
 {
-	IBuf ibuf;
+	IntBuf ibuf;
 	int *elt;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _CHARACTER_asIBuf(): BEGIN ... "
+		Rprintf("[DEBUG] _CHARACTER_asIntBuf(): BEGIN ... "
 			"LENGTH(x)=%d keyshift=%d\n",
 			LENGTH(x), keyshift);
 	}
 #endif
-	ibuf = _new_IBuf(LENGTH(x), 0);
+	ibuf = _new_IntBuf(LENGTH(x), 0);
 	for (ibuf.nelt = 0, elt = ibuf.elts;
 	     ibuf.nelt < ibuf.buflength;
 	     ibuf.nelt++, elt++) {
@@ -148,7 +148,7 @@ IBuf _CHARACTER_asIBuf(SEXP x, int keyshift)
 		if (debug) {
 			if (ibuf.nelt < 100
 			 || ibuf.nelt >= ibuf.buflength - 100)
-				Rprintf("[DEBUG] _CHARACTER_asIBuf(): "
+				Rprintf("[DEBUG] _CHARACTER_asIntBuf(): "
 					"ibuf.nelt=%d key=%s *elt=%d\n",
 					ibuf.nelt,
 					CHAR(STRING_ELT(x, ibuf.nelt)), *elt);
@@ -157,7 +157,7 @@ IBuf _CHARACTER_asIBuf(SEXP x, int keyshift)
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _CHARACTER_asIBuf(): END\n");
+		Rprintf("[DEBUG] _CHARACTER_asIntBuf(): END\n");
 	}
 #endif
 	return ibuf;
@@ -165,45 +165,45 @@ IBuf _CHARACTER_asIBuf(SEXP x, int keyshift)
 
 
 /****************************************************************************
- * IBBuf functions
+ * IntBBuf functions
  */
 
-IBBuf _new_IBBuf(int buflength, int nelt)
+IntBBuf _new_IntBBuf(int buflength, int nelt)
 {
-	IBBuf ibbuf;
-	IBuf *elt;
+	IntBBuf ibbuf;
+	IntBuf *elt;
 
 	/* No memory leak here, because we use transient storage allocation */
 	if (buflength == 0)
 		ibbuf.elts = NULL;
 	else
-		ibbuf.elts = Salloc((long) buflength, IBuf);
+		ibbuf.elts = Salloc((long) buflength, IntBuf);
 	ibbuf.buflength = buflength;
 	for (ibbuf.nelt = 0, elt = ibbuf.elts;
 	     ibbuf.nelt < nelt;
 	     ibbuf.nelt++, elt++)
-		*elt = _new_IBuf(0, 0);
+		*elt = _new_IntBuf(0, 0);
 	return ibbuf;
 }
 
-static void _IBBuf_extend(IBBuf *ibbuf)
+static void _IntBBuf_extend(IntBBuf *ibbuf)
 {
 	long new_buflength;
 
 	new_buflength = get_new_buflength(ibbuf->buflength);
 	ibbuf->elts = Srealloc((char *) ibbuf->elts, new_buflength,
-					(long) ibbuf->buflength, IBuf);
+					(long) ibbuf->buflength, IntBuf);
 	ibbuf->buflength = new_buflength;
 	return;
 }
 
-void _IBBuf_insert_at(IBBuf *ibbuf, int at, IBuf ibuf)
+void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, IntBuf ibuf)
 {
-	IBuf *elt1, *elt2;
+	IntBuf *elt1, *elt2;
 	int i1;
 
 	if (ibbuf->nelt >= ibbuf->buflength)
-		_IBBuf_extend(ibbuf);
+		_IntBBuf_extend(ibbuf);
 	elt1 = ibbuf->elts + ibbuf->nelt;
 	elt2 = elt1 + 1;
 	for (i1 = ibbuf->nelt++; i1 >= at; i1--)
@@ -215,11 +215,11 @@ void _IBBuf_insert_at(IBBuf *ibbuf, int at, IBuf ibuf)
 /*
  * mode: 0 -> integer(0), 1-> NULL, 2 -> NA
  */
-SEXP _IBBuf_asLIST(IBBuf *ibbuf, int mode)
+SEXP _IntBBuf_asLIST(IntBBuf *ibbuf, int mode)
 {
 	SEXP ans, ans_elt;
 	int i;
-	IBuf *elt;
+	IntBuf *elt;
 
 	PROTECT(ans = NEW_LIST(ibbuf->nelt));
 	for (i = 0, elt = ibbuf->elts; i < ibbuf->nelt; i++, elt++) {
@@ -233,7 +233,7 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf, int mode)
 				PROTECT(ans_elt = NEW_LOGICAL(1));
 			}
 		} else {
-			PROTECT(ans_elt = _IBuf_asINTEGER(elt));
+			PROTECT(ans_elt = _IntBuf_asINTEGER(elt));
 		}
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
@@ -242,31 +242,31 @@ SEXP _IBBuf_asLIST(IBBuf *ibbuf, int mode)
 	return ans;
 }
 
-IBBuf _LIST_asIBBuf(SEXP x)
+IntBBuf _LIST_asIntBBuf(SEXP x)
 {
-	IBBuf ibbuf;
-	IBuf *elt;
+	IntBBuf ibbuf;
+	IntBuf *elt;
 
-	ibbuf = _new_IBBuf(LENGTH(x), 0);
+	ibbuf = _new_IntBBuf(LENGTH(x), 0);
 	for (ibbuf.nelt = 0, elt = ibbuf.elts;
 	     ibbuf.nelt < ibbuf.buflength;
 	     ibbuf.nelt++, elt++) {
-		*elt = _INTEGER_asIBuf(VECTOR_ELT(x, ibbuf.nelt));
+		*elt = _INTEGER_asIntBuf(VECTOR_ELT(x, ibbuf.nelt));
 	}
 	return ibbuf;
 }
 
-SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
+SEXP _IntBBuf_toEnvir(IntBBuf *ibbuf, SEXP envir, int keyshift)
 {
 	int i;
-	IBuf *elt;
+	IntBuf *elt;
 	char key[11];
 	SEXP value;
 
 #ifdef DEBUG_BIOSTRINGS
 	int nkey = 0, cum_length = 0;
 	if (debug) {
-		Rprintf("[DEBUG] _IBBuf_toEnvir(): BEGIN ... "
+		Rprintf("[DEBUG] _IntBBuf_toEnvir(): BEGIN ... "
 			"ibbuf->nelt=%d keyshift=%d\n",
 			ibbuf->nelt, keyshift);
 	}
@@ -275,7 +275,7 @@ SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			if (i < 100 || i >= ibbuf->nelt - 100)
-				Rprintf("[DEBUG] _IBBuf_toEnvir(): "
+				Rprintf("[DEBUG] _IntBBuf_toEnvir(): "
 					"nkey=%d ibbuf->elts[%d].nelt=%d\n",
 					nkey, i, elt->nelt);
 		}
@@ -287,11 +287,11 @@ SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			if (i < 100 || i >= ibbuf->nelt - 100)
-				Rprintf("[DEBUG] _IBBuf_toEnvir(): "
+				Rprintf("[DEBUG] _IntBBuf_toEnvir(): "
 					"installing key=%s ... ", key);
 		}
 #endif
-		PROTECT(value = _IBuf_asINTEGER(elt));
+		PROTECT(value = _IntBuf_asINTEGER(elt));
 		defineVar(install(key), value, envir);
 		UNPROTECT(1);
 #ifdef DEBUG_BIOSTRINGS
@@ -306,7 +306,7 @@ SEXP _IBBuf_toEnvir(IBBuf *ibbuf, SEXP envir, int keyshift)
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _IBBuf_toEnvir(): END "
+		Rprintf("[DEBUG] _IntBBuf_toEnvir(): END "
 			"(nkey=%d cum_length=%d)\n", nkey, cum_length);
 	}
 #endif
@@ -322,26 +322,26 @@ RangesBuf _new_RangesBuf(int buflength, int nelt)
 {
 	RangesBuf rangesbuf;
 
-	rangesbuf.start = _new_IBuf(buflength, nelt);
-	rangesbuf.width = _new_IBuf(buflength, nelt);
+	rangesbuf.start = _new_IntBuf(buflength, nelt);
+	rangesbuf.width = _new_IntBuf(buflength, nelt);
 	return rangesbuf;
 }
 
 void _RangesBuf_insert_at(RangesBuf *rangesbuf, int at, int start, int width)
 {
-	_IBuf_insert_at(&(rangesbuf->start), at, start);
-	_IBuf_insert_at(&(rangesbuf->width), at, width);
+	_IntBuf_insert_at(&(rangesbuf->start), at, start);
+	_IntBuf_insert_at(&(rangesbuf->width), at, width);
 	return;
 }
 
 
 /****************************************************************************
- * CBuf functions
+ * CharBuf functions
  */
 
-CBuf _new_CBuf(int buflength)
+CharBuf _new_CharBuf(int buflength)
 {
-	CBuf cbuf;
+	CharBuf cbuf;
 
 	/* No memory leak here, because we use transient storage allocation */
 	if (buflength == 0)
@@ -353,18 +353,18 @@ CBuf _new_CBuf(int buflength)
 	return cbuf;
 }
 
-CBuf _new_CBuf_from_string(const char *string)
+CharBuf _new_CharBuf_from_string(const char *string)
 {
-	CBuf cbuf;
+	CharBuf cbuf;
 	int buflength;
 
 	buflength = strlen(string) + 1;
-	cbuf = _new_CBuf(buflength);
+	cbuf = _new_CharBuf(buflength);
 	memcpy(cbuf.elts, string, buflength);
         return cbuf;
 }
 
-static void _CBuf_extend(CBuf *cbuf)
+static void _CharBuf_extend(CharBuf *cbuf)
 {
 	long new_buflength;
 
@@ -375,13 +375,13 @@ static void _CBuf_extend(CBuf *cbuf)
 	return;
 }
 
-void _CBuf_insert_at(CBuf *cbuf, int at, char c)
+void _CharBuf_insert_at(CharBuf *cbuf, int at, char c)
 {
 	char *elt1, *elt2;
 	int i1;
 
 	if (cbuf->nelt >= cbuf->buflength)
-		_CBuf_extend(cbuf);
+		_CharBuf_extend(cbuf);
 	elt1 = cbuf->elts + cbuf->nelt;
 	elt2 = elt1 + 1;
 	for (i1 = cbuf->nelt++; i1 >= at; i1--)
@@ -390,12 +390,12 @@ void _CBuf_insert_at(CBuf *cbuf, int at, char c)
 	return;
 }
 
-SEXP _CBuf_asRAW(CBuf *cbuf)
+SEXP _CharBuf_asRAW(CharBuf *cbuf)
 {
 	SEXP ans;
 
 	if (sizeof(Rbyte) != sizeof(char)) // should never happen!
-		error("_CBuf_asRAW(): sizeof(Rbyte) != sizeof(char)");
+		error("_CharBuf_asRAW(): sizeof(Rbyte) != sizeof(char)");
 	PROTECT(ans = NEW_RAW(cbuf->nelt));
 	memcpy(RAW(ans), cbuf->elts, sizeof(char) * cbuf->nelt);
 	UNPROTECT(1);
@@ -404,45 +404,45 @@ SEXP _CBuf_asRAW(CBuf *cbuf)
 
 
 /****************************************************************************
- * CBBuf functions
+ * CharBBuf functions
  */
 
-CBBuf _new_CBBuf(int buflength, int nelt)
+CharBBuf _new_CharBBuf(int buflength, int nelt)
 {
-	CBBuf cbbuf;
-	CBuf *elt;
+	CharBBuf cbbuf;
+	CharBuf *elt;
 
 	/* No memory leak here, because we use transient storage allocation */
 	if (buflength == 0)
 		cbbuf.elts = NULL;
 	else
-		cbbuf.elts = Salloc((long) buflength, CBuf);
+		cbbuf.elts = Salloc((long) buflength, CharBuf);
 	cbbuf.buflength = buflength;
 	for (cbbuf.nelt = 0, elt = cbbuf.elts;
 	     cbbuf.nelt < nelt;
 	     cbbuf.nelt++, elt++)
-		*elt = _new_CBuf(0);
+		*elt = _new_CharBuf(0);
 	return cbbuf;
 }
 
-static void _CBBuf_extend(CBBuf *cbbuf)
+static void _CharBBuf_extend(CharBBuf *cbbuf)
 {
 	long new_buflength;
 
 	new_buflength = get_new_buflength(cbbuf->buflength);
 	cbbuf->elts = Srealloc((char *) cbbuf->elts, new_buflength,
-				(long) cbbuf->buflength, CBuf);
+				(long) cbbuf->buflength, CharBuf);
 	cbbuf->buflength = new_buflength;
 	return;
 }
 
-void _CBBuf_insert_at(CBBuf *cbbuf, int at, CBuf cbuf)
+void _CharBBuf_insert_at(CharBBuf *cbbuf, int at, CharBuf cbuf)
 {
-	CBuf *elt1, *elt2;
+	CharBuf *elt1, *elt2;
 	int i1;
 
 	if (cbbuf->nelt >= cbbuf->buflength)
-		_CBBuf_extend(cbbuf);
+		_CharBBuf_extend(cbbuf);
 	elt1 = cbbuf->elts + cbbuf->nelt;
 	elt2 = elt1 + 1;
 	for (i1 = cbbuf->nelt++; i1 >= at; i1--)
@@ -451,12 +451,20 @@ void _CBBuf_insert_at(CBBuf *cbbuf, int at, CBuf cbuf)
 	return;
 }
 
-void _append_string_to_CBBuf(CBBuf *cbbuf, const char *string)
+void _append_string_to_CharBBuf(CharBBuf *cbbuf, const char *string)
 {
-	CBuf cbuf;
+	CharBuf cbuf;
 
-	cbuf = _new_CBuf_from_string(string);
-	_CBBuf_insert_at(cbbuf, cbbuf->nelt, cbuf);
+	cbuf = _new_CharBuf_from_string(string);
+	_CharBBuf_insert_at(cbbuf, cbbuf->nelt, cbuf);
 	return;
+}
+
+ConstCharAArr _new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf)
+{
+	ConstCharAArr ccaarr;
+
+	error("_new_ConstCharAArr_from_CharBBuf() is not ready yet");
+	return ccaarr;
 }
 

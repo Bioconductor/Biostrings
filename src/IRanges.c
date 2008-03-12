@@ -192,9 +192,9 @@ static void add_to_reduced_ranges(int start, int width)
 static void reduce_ranges(int length, const int *start, const int *width, int *inframe_start)
 {
 	int i, j;
-	IBuf start_order;
+	IntBuf start_order;
 
-	start_order = _new_IBuf(length, 0);
+	start_order = _new_IntBuf(length, 0);
 	get_intorder(length, start, start_order.elts);
 	reduced_ranges = _new_RangesBuf(0, 0);
 	for (i = 0; i < length; i++) {
@@ -234,8 +234,8 @@ SEXP reduce_IRanges(SEXP x, SEXP with_inframe_start)
 	SET_STRING_ELT(ans_names, 2, mkChar("inframe.start"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
-	SET_ELEMENT(ans, 0, _IBuf_asINTEGER(&(reduced_ranges.start)));
-	SET_ELEMENT(ans, 1, _IBuf_asINTEGER(&(reduced_ranges.width)));
+	SET_ELEMENT(ans, 0, _IntBuf_asINTEGER(&(reduced_ranges.start)));
+	SET_ELEMENT(ans, 1, _IntBuf_asINTEGER(&(reduced_ranges.width)));
 	if (inframe_start != NULL) {
 		SET_ELEMENT(ans, 2, ans_inframe_start);
 		UNPROTECT(1);

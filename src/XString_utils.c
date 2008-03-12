@@ -1,5 +1,5 @@
 /****************************************************************************
- *  Low-level manipulation of XString, XStringList and XStringSet objects   *
+ *  Low-level manipulation of XString, XStringSet and XStringList objects   *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"

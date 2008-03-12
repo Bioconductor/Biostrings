@@ -194,11 +194,11 @@ static void add_subpattern_to_input_uldict(int poffset,
  * Buffer of duplicates.
  */
 
-static IBuf dups_buf;
+static IntBuf dups_buf;
 
 static void init_dups_buf(int length)
 {
-	dups_buf = _new_IBuf(length, length);
+	dups_buf = _new_IntBuf(length, length);
 	return;
 }
 
@@ -443,36 +443,36 @@ static void build_actree()
  */
 
 static int match_reporting_mode; // 0, 1 or 2
-static IBuf match_count; // used when mode == 0 and initialized when mode == 2
-static IBBuf ends_bbuf;  // used when mode >= 1
+static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
+static IntBBuf ends_bbuf;  // used when mode >= 1
 
 static void init_match_reporting(int not_tail, int is_count_only, int length)
 {
 	match_reporting_mode = is_count_only ? (not_tail ? 0 : 2) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
-		match_count = _new_IBuf(length, length);
+		match_count = _new_IntBuf(length, length);
 	if (match_reporting_mode >= 1)
-		ends_bbuf = _new_IBBuf(length, length);
+		ends_bbuf = _new_IntBBuf(length, length);
 	return;
 }
 
 static void report_match(int poffset, int end)
 {
-	IBuf *ends_buf;
+	IntBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
 		match_count.elts[poffset]++;
 		return;
 	}
 	ends_buf = ends_bbuf.elts + poffset;
-	_IBuf_insert_at(ends_buf, ends_buf->nelt, end);
+	_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 	return;
 }
 
 static void report_matches_for_dups(const int *dups, int length)
 {
 	int poffset, *val;
-	IBuf *ends_buf;
+	IntBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
 		for (poffset = 0, val = match_count.elts;
@@ -630,7 +630,7 @@ static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int 
 			int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int dup0, i, end;
-	IBuf *ends_buf, *ends_buf0;
+	IntBuf *ends_buf, *ends_buf0;
 
 	ends_buf = ends_buf0 = ends_bbuf.elts + poffset;
 	dup0 = dups[poffset];
@@ -649,7 +649,7 @@ static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int 
 				continue;
 			}
 			end += tail_len;
-			_IBuf_insert_at(ends_buf, ends_buf->nelt, end);
+			_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 			continue;
 		}
 		/* Mismatch */
@@ -658,9 +658,9 @@ static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int 
 		if (dup0 != 0)
 			continue;
 		/* We need to shrink the buffer we are walking on! This is safe
-		 * because shrinking a IBuf object should never trigger reallocation.
+		 * because shrinking a IntBuf object should never trigger reallocation.
 		 */
-		_IBuf_delete_at(ends_buf0, i--);
+		_IntBuf_delete_at(ends_buf0, i--);
 	}
 	return;
 }
@@ -803,7 +803,7 @@ static SEXP uldna_asLIST()
 	UNPROTECT(1);
 
 	/* set the "dups" element */
-	PROTECT(ans_elt = _IBuf_asINTEGER(&dups_buf));
+	PROTECT(ans_elt = _IntBuf_asINTEGER(&dups_buf));
 	SET_ELEMENT(ans, 3, ans_elt);
 	UNPROTECT(1);
 
@@ -936,10 +936,10 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		}
 	}
 	if (is_count_only)
-		return _IBuf_asINTEGER(&match_count);
+		return _IntBuf_asINTEGER(&match_count);
 	if (envir == R_NilValue)
-		return _IBBuf_asLIST(&ends_bbuf, 1);
-	return _IBBuf_toEnvir(&ends_bbuf, envir, 1);
+		return _IntBBuf_asLIST(&ends_bbuf, 1);
+	return _IntBBuf_toEnvir(&ends_bbuf, envir, 1);
 }
 
 
@@ -1019,10 +1019,10 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;
-	IBuf poffsets, poffsets_order;
+	IntBuf poffsets, poffsets_order;
 
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
-	poffsets = _CHARACTER_asIBuf(symbols, -1);
+	poffsets = _CHARACTER_asIntBuf(symbols, -1);
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(names)));
 		for (i = 0; i < poffsets.nelt; i++) {
@@ -1034,7 +1034,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 		SET_NAMES(ans, duplicate(names));
 		UNPROTECT(1);
 	} else {
-		//poffsets_order = _new_IBuf(poffsets.nelt, 0);
+		//poffsets_order = _new_IntBuf(poffsets.nelt, 0);
 		//get_intorder(poffsets.nelt, poffsets.elts, poffsets_order.elts);
 		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
 		PROTECT(ans = NEW_LIST(poffsets.nelt));
