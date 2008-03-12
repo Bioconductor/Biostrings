@@ -113,8 +113,8 @@
   RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
-  ## The BStringList family has been superseded by more efficient BStringSet
-  ## family
+  ## The BStringList family has been superseded by the more efficient
+  ## BStringSet family
   BStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
   DNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
   RNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)

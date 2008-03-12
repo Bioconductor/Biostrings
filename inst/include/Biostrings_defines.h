@@ -6,9 +6,9 @@
  * Extendable buffers used for temporary storage of incoming data whose size
  * is not known in advance.
  * They are NOT an attempt to reinvent an SEXP subsystem. Some notable
- * differences are: they are extendable (i.e. they are automatically
- * reallocated when more room is needed to add a new element), they are much
- * faster, and they don't need any PROTECT/UNPROTECT mechanism.
+ * differences are: (a) they are extendable (i.e. they are automatically
+ * reallocated when more room is needed to add a new element), (b) they are
+ * much faster, and (c) they don't require any PROTECT/UNPROTECT mechanism.
  */
 
 typedef struct ibuf {
@@ -42,11 +42,8 @@ typedef struct cbbuf {
 
 
 /*
- * Match reporting modes
+ * Match reporting modes (more modes will be added soon...)
  */
 #define COUNT_MRMODE	1
 #define START_MRMODE	2
-
-// more modes to come soon...
-
 
