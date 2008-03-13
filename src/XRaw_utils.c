@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include <stdlib.h> /* for realloc() */
 
 static int debug = 0;
 
@@ -22,6 +23,11 @@ SEXP Biostrings_debug_XRaw_utils()
  * Things in this section are not necessarily directly related to XRaw
  * objects but they needed to go somewhere so here they are...
  */
+
+const char *get_class(SEXP x)
+{
+	return CHAR(STRING_ELT(GET_CLASS(x), 0));
+}
 
 /*
  * From R:
@@ -215,33 +221,87 @@ SEXP _new_XRaw(SEXP tag)
         return ans;
 }
 
-SEXP _new_XRaw_from_CharAArr(CharAArr arr, SEXP lkup)
+SEXP _new_XRaw_from_CharAArr(CharAArr seqs, SEXP lkup)
 {
 	SEXP tag, ans;
 	int tag_length, i;
-	CharArr *arr_elt;
+	CharArr *seq;
 	char *dest;
 
 	tag_length = 0;
-	for (i = 0, arr_elt = arr.elts; i < arr.nelt; i++, arr_elt++)
-		tag_length += arr_elt->nelt;
+	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++)
+		tag_length += seq->nelt;
 	PROTECT(tag = NEW_RAW(tag_length));
 	dest = (char *) RAW(tag);
-	for (i = 0, arr_elt = arr.elts; i < arr.nelt; i++, arr_elt++) {
+	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++) {
 		if (lkup == R_NilValue) {
-			_Biostrings_memcpy_to_i1i2(0, arr_elt->nelt - 1,
-				dest, arr_elt->nelt,
-				arr_elt->elts, arr_elt->nelt, sizeof(char));
+			_Biostrings_memcpy_to_i1i2(0, seq->nelt - 1,
+				dest, seq->nelt,
+				seq->elts, seq->nelt, sizeof(char));
 		} else {
-			_Biostrings_translate_charcpy_to_i1i2(0, arr_elt->nelt - 1,
-				dest, arr_elt->nelt,
-				arr_elt->elts, arr_elt->nelt,
+			_Biostrings_translate_charcpy_to_i1i2(0, seq->nelt - 1,
+				dest, seq->nelt,
+				seq->elts, seq->nelt,
 				INTEGER(lkup), LENGTH(lkup));
 		}
-		dest += arr_elt->nelt;
+		dest += seq->nelt;
 	}
 	PROTECT(ans = _new_XRaw(tag));
 	UNPROTECT(2);
+	return ans;
+}
+
+
+/****************************************************************************
+ * Converting a CharAArr struct (array of arrays of const chars) into a set
+ * of sequences.
+ * FIXME: This has nothing to do with XRaw objects! Find another place for it
+ */
+
+static SEXP _new_CHARSXP_from_CharArr(CharArr seq, SEXP lkup)
+{
+	// IMPORTANT: We use user-controlled memory for this private memory
+	// pool so it is persistent between calls to .Call().
+	// It will last until the end of the R session and can only grow
+	// during the session. It is NOT a memory leak!
+	static int bufsize = 0;
+	static char *buf = NULL;
+	int new_bufsize;
+	char *new_buf;
+
+	new_bufsize = seq.nelt + 1;
+	if (new_bufsize > bufsize) {
+		new_buf = (char *) realloc(buf, new_bufsize);
+		if (new_buf == NULL)
+			error("_new_CHARSXP_from_CharArr(): "
+			      "call to realloc() failed");
+		buf = new_buf;
+		bufsize = new_bufsize;
+	}
+	if (lkup == R_NilValue) {
+		_Biostrings_memcpy_to_i1i2(0, seq.nelt - 1,
+			buf, seq.nelt,
+			seq.elts, seq.nelt, sizeof(char));
+	} else {
+		_Biostrings_translate_charcpy_to_i1i2(0, seq.nelt - 1,
+			buf, seq.nelt,
+			seq.elts, seq.nelt,
+			INTEGER(lkup), LENGTH(lkup));
+	}
+	buf[seq.nelt] = 0;
+	return mkChar(buf);
+}
+
+SEXP _new_STRSXP_from_CharAArr(CharAArr seqs, SEXP lkup)
+{
+	SEXP ans;
+	int i;
+	CharArr *seq;
+
+	PROTECT(ans = NEW_CHARACTER(seqs.nelt));
+	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++)
+		SET_STRING_ELT(ans, i, _new_CHARSXP_from_CharArr(*seq, lkup));
+	UNPROTECT(1);
 	return ans;
 }
 

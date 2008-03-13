@@ -10,7 +10,8 @@ SEXP Biostrings_debug_IRanges()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'IRanges.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'IRanges.c'\n",
+	        debug ? "on" : "off");
 #else
 	Rprintf("Debug mode not available in 'IRanges.c'\n");
 #endif
@@ -160,6 +161,18 @@ SEXP _new_IRanges_from_CharAArr(CharAArr seqs)
 			*(width_elt++) = seq->nelt;
 		}
 	PROTECT(ans = _new_IRanges(start, width, R_NilValue));
+	UNPROTECT(3);
+	return ans;
+}
+
+SEXP _replace_IRanges_names(SEXP x, SEXP names)
+{
+	SEXP ranges, start, width, ans;
+
+	ranges = GET_SLOT(x, install("ranges"));
+	PROTECT(start = duplicate(VECTOR_ELT(ranges, 0)));
+	PROTECT(width = duplicate(VECTOR_ELT(ranges, 1)));
+	PROTECT(ans = _new_IRanges(start, width, names));
 	UNPROTECT(3);
 	return ans;
 }

@@ -143,6 +143,8 @@ void set_XStringSet_names(
 
 CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf);
 
+SEXP new_STRSXP_from_CharAArr(CharAArr seqs, SEXP lkup);
+
 
 /*
  * Match reporting facilities.

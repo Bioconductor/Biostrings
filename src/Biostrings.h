@@ -266,6 +266,11 @@ SEXP _new_IRanges(
 
 SEXP _new_IRanges_from_CharAArr(CharAArr seqs);
 
+SEXP _replace_IRanges_names(
+	SEXP x,
+	SEXP names
+);
+
 SEXP narrow_IRanges(
 	SEXP x,
 	SEXP start,
@@ -284,6 +289,8 @@ SEXP reduce_IRanges(
 /* XRaw_utils.c */
 
 SEXP Biostrings_debug_XRaw_utils();
+
+const char *get_class(SEXP x);
 
 SEXP Biostrings_sexp_address(SEXP s);
 
@@ -307,7 +314,12 @@ SEXP Biostrings_XRaw_length(SEXP xraw_xp);
 SEXP _new_XRaw(SEXP tag);
 
 SEXP _new_XRaw_from_CharAArr(
-	CharAArr arr,
+	CharAArr seqs,
+	SEXP lkup
+);
+
+SEXP _new_STRSXP_from_CharAArr(
+	CharAArr seqs,
 	SEXP lkup
 );
 
@@ -493,8 +505,6 @@ SEXP init_RNAlkups(SEXP enc_lkup, SEXP dec_lkup);
 char _RNAencode(char c);
 
 char _RNAdecode(char code);
-
-const char *get_class(SEXP x);
 
 const char *_get_XString_charseq(
 	SEXP x,

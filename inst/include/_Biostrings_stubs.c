@@ -118,6 +118,17 @@ CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf)
 	return fun(cbbuf);
 }
 
+typedef SEXP (*new_STRSXP_from_CharAArr_FUNTYPE)(CharAArr, SEXP);
+SEXP new_STRSXP_from_CharAArr(CharAArr seqs, SEXP lkup)
+{
+	static new_STRSXP_from_CharAArr_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (new_STRSXP_from_CharAArr_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_STRSXP_from_CharAArr");
+	return fun(seqs, lkup);
+}
+
 void init_match_reporting(int mrmode)
 {
 	static void (*fun)(int) = NULL;

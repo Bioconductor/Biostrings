@@ -99,11 +99,6 @@ char _RNAdecode(char code)
  * Low-level manipulation of XString objects.
  */
 
-const char *get_class(SEXP x)
-{
-	return CHAR(STRING_ELT(GET_CLASS(x), 0));
-}
-
 static SEXP getXString_data(SEXP x)
 {
 	return GET_SLOT(x, install("data"));
@@ -188,24 +183,33 @@ const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
 SEXP _new_XStringSet(const char *baseClass, CharAArr seqs)
 {
 	char classbuf[13]; // longest string will be "DNAStringSet"
-	SEXP class_def, ans, super, tmp, ranges;
+	SEXP class_def, ans, ans_super, tmp, ans_ranges;
 
 	snprintf(classbuf, sizeof(classbuf), "%sSet", baseClass);
 	class_def = MAKE_CLASS(classbuf);
 	PROTECT(ans = NEW_OBJECT(class_def));
-	PROTECT(super = _new_XString_from_CharAArr(baseClass, seqs));
-	SET_SLOT(ans, mkChar("super"), super);
+	PROTECT(ans_super = _new_XString_from_CharAArr(baseClass, seqs));
+	SET_SLOT(ans, mkChar("super"), ans_super);
 	UNPROTECT(1);
 	PROTECT(tmp = _new_IRanges_from_CharAArr(seqs));
-	ranges = GET_SLOT(tmp, install("ranges"));
-	SET_SLOT(ans, mkChar("ranges"), ranges);
-        UNPROTECT(2);
-        return ans;
+	PROTECT(ans_ranges = duplicate(GET_SLOT(tmp, install("ranges"))));
+	SET_SLOT(ans, mkChar("ranges"), ans_ranges);
+	UNPROTECT(3);
+	return ans;
 }
 
+/*
+ * Does NOT duplicate 'x'. The @ranges slot is modified in place!
+ */
 void _set_XStringSet_names(SEXP x, CharAArr names)
 {
-	error("_set_XStringSet_names() is not ready yet");
+	SEXP new_names, old_ranges, new_ranges;
+
+	PROTECT(new_names = _new_STRSXP_from_CharAArr(names, R_NilValue));
+	old_ranges = GET_SLOT(x, install("ranges"));
+	PROTECT(new_ranges = _replace_IRanges_names(old_ranges, new_names));
+	SET_SLOT(x, mkChar("ranges"), new_ranges);
+	UNPROTECT(2);
 	return;
 }
 
