@@ -358,10 +358,11 @@ CharBuf _new_CharBuf_from_string(const char *string)
 	CharBuf cbuf;
 	int buflength;
 
-	buflength = strlen(string) + 1;
+	buflength = strlen(string);
 	cbuf = _new_CharBuf(buflength);
 	memcpy(cbuf.elts, string, buflength);
-        return cbuf;
+	cbuf.nelt = buflength;
+	return cbuf;
 }
 
 static void _CharBuf_extend(CharBuf *cbuf)
