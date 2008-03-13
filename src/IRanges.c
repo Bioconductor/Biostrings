@@ -89,30 +89,10 @@ const int *_get_IRanges_width(SEXP x)
 
 static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
 {
-	SEXP ans, ans_names, ans_row_names, ans_attribs, ans_attrib_names;
+	SEXP ans, ans_names, ans_row_names;
 	int i;
 
-	PROTECT(ans_attribs = NEW_LIST(3));
-
-	/* set the attrib names */
-	PROTECT(ans_attrib_names = NEW_CHARACTER(3));
-	SET_STRING_ELT(ans_attrib_names, 0, mkChar("names"));
-	SET_STRING_ELT(ans_attrib_names, 1, mkChar("row.names"));
-	SET_STRING_ELT(ans_attrib_names, 2, mkChar("class"));
-	SET_NAMES(ans_attribs, ans_attrib_names);
-	UNPROTECT(1);
-
-	/* set the class */
-	SET_ELEMENT(ans_attribs, 2, mkString("data.frame"));
-
-	/* set the row names */
-	PROTECT(ans_row_names = NEW_INTEGER(LENGTH(start)));
-	for (i = 0; i < LENGTH(ans_row_names); i++)
-		INTEGER(ans_row_names)[i] = i + 1;
-	SET_ELEMENT(ans_attribs, 1, ans_row_names);
-	UNPROTECT(1);
-
-	/* set the elements and their names */
+	/* set the elements and prepare their names */
 	if (names == R_NilValue) {
 		PROTECT(ans = NEW_LIST(2));
 		PROTECT(ans_names = NEW_CHARACTER(2));
@@ -128,11 +108,17 @@ static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
 		SET_ELEMENT(ans, 2, names);
 		SET_STRING_ELT(ans_names, 2, mkChar("names"));
 	}
-	SET_ELEMENT(ans_attribs, 0, ans_names);
-	UNPROTECT(1);
 
-	SET_ATTRIB(ans, ans_attribs);
-	UNPROTECT(2);
+	/* set the attributes */
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(1);
+	PROTECT(ans_row_names = NEW_INTEGER(LENGTH(start)));
+	for (i = 0; i < LENGTH(ans_row_names); i++)
+		INTEGER(ans_row_names)[i] = i + 1;
+	setAttrib(ans, mkString("row.names"), ans_row_names);
+	UNPROTECT(1);
+	SET_CLASS(ans, mkString("data.frame"));
+	UNPROTECT(1);
 	return ans;
 }
 

@@ -1,9 +1,13 @@
 \name{Biostrings internals}
 \docType{class}
 
+\alias{debug_utils}
 \alias{debug_XRaw}
 \alias{debug_shiftor}
-\alias{debug_utils}
+
+\alias{class:.IRanges}
+\alias{.IRanges-class}
+\alias{.IRanges}
 
 \alias{show,externalptr-method}
 

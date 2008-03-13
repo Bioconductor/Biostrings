@@ -5,7 +5,7 @@ import(stats)
 import(utils) ## for the "head" and "tail" generics
 
 exportClasses(
-    "IRanges",
+    ".IRanges", "IRanges",
     "XRaw", "XInteger",
     "XString", "BString", "DNAString", "RNAString", "AAString",
     "BStringViews",
