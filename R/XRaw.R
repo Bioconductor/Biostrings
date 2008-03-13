@@ -309,7 +309,7 @@ normalize.nchar <- function(start, nchar, seq_nchar)
 charToXRaw <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
 {
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
-    .Call("STRSXP_to_XRaw",
+    .Call("new_XRaw_from_STRSXP",
           x, start(safe_locs), width(safe_locs), collapse, lkup,
           PACKAGE="Biostrings")
 }

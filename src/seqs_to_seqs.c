@@ -189,7 +189,7 @@ CharAArr _new_CharAArr_from_XStringList(int nelt, SEXP x,
  */
 
 /* NOT a Call() entry point! */
-SEXP mkXRaw(SEXP tag)
+SEXP new_XRaw(SEXP tag)
 {
 	SEXP ans;
 
@@ -243,7 +243,7 @@ SEXP copy_subXRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
  * --- .Call ENTRY POINT ---
  * TODO: Support the 'collapse' argument
  */
-SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, SEXP lkup)
+SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, SEXP lkup)
 {
 	int nseq;
 	CharAArr arr;
@@ -260,7 +260,7 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, S
 	}
 	arr = _new_CharAArr_from_STRSXP(nseq, x, INTEGER(safe_starts), INTEGER(safe_widths));
 	PROTECT(tag = new_RAW_from_CharAArr(arr, lkup));
-	ans = mkXRaw(tag);
+	ans = new_XRaw(tag);
 	UNPROTECT(1);
 	return ans;
 }
@@ -268,7 +268,7 @@ SEXP STRSXP_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP collapse, S
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
+SEXP new_XRaw_from_XString(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 {
 	int nseq;
 	CharAArr arr;
@@ -277,7 +277,7 @@ SEXP XString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 	nseq = LENGTH(safe_starts);
 	arr = _new_CharAArr_from_XString(nseq, x, INTEGER(safe_starts), INTEGER(safe_widths));
 	PROTECT(tag = new_RAW_from_CharAArr(arr, lkup));
-	ans = mkXRaw(tag);
+	ans = new_XRaw(tag);
 	UNPROTECT(1);
 	return ans;
 }
@@ -301,7 +301,7 @@ SEXP _new_XStringSet_from_seqsnames(const char *baseClass,
  * Converting a set of sequences into an XStringList object.
  */
 
-static SEXP mkXStringList(const char *class, SEXP seqs)
+static SEXP new_XStringList(const char *class, SEXP seqs)
 {
 	SEXP class_def, ans;
 
@@ -315,7 +315,7 @@ static SEXP mkXStringList(const char *class, SEXP seqs)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XRaw_to_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
+SEXP new_XStringList_from_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 {
 	int nseq, x_length, i;
 	SEXP ans, ans_seqs, ans_seq, data;
@@ -339,7 +339,7 @@ SEXP XRaw_to_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 		UNPROTECT(2);
 	}
 	snprintf(classbuf, sizeof(classbuf), "%sList", get_class(proto));
-	ans = mkXStringList(classbuf, ans_seqs);
+	ans = new_XStringList(classbuf, ans_seqs);
 	UNPROTECT(1);
 	return ans;
 }
@@ -385,7 +385,7 @@ SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 		snprintf(classbuf, sizeof(classbuf), "%sList", get_class(proto));
 		class = classbuf;
 	}
-	ans = mkXStringList(class, ans_seqs);
+	ans = new_XStringList(class, ans_seqs);
 	UNPROTECT(1);
 	return ans;
 }

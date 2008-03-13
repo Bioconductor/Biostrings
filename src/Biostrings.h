@@ -539,7 +539,7 @@ CharAArr _new_CharAArr_from_XStringList(
 	const int *safe_widths
 );
 
-SEXP mkXRaw(SEXP tag);
+SEXP new_XRaw(SEXP tag);
 
 SEXP copy_subXRaw(
 	SEXP x,
@@ -548,7 +548,7 @@ SEXP copy_subXRaw(
 	SEXP lkup
 );
 
-SEXP STRSXP_to_XRaw(
+SEXP new_XRaw_from_STRSXP(
 	SEXP x,
 	SEXP safe_starts,
 	SEXP safe_widths,
@@ -556,7 +556,7 @@ SEXP STRSXP_to_XRaw(
 	SEXP lkup
 );
 
-SEXP XString_to_XRaw(
+SEXP new_XRaw_from_XString(
 	SEXP x,
 	SEXP safe_starts,
 	SEXP safe_widths,
@@ -569,7 +569,7 @@ SEXP _new_XStringSet_from_seqsnames(
 	CharAArr names
 );
 
-SEXP XRaw_to_XStringList(
+SEXP new_XStringList_from_XRaw(
 	SEXP x,
 	SEXP safe_starts,
 	SEXP safe_widths,
@@ -906,12 +906,8 @@ SEXP lcsuffix(
 /* align_needwunsQS.c */
 
 SEXP align_needwunsQS(
-	SEXP s1_xp,
-	SEXP s1_offset,
-	SEXP s1_length,
-	SEXP s2_xp,
-	SEXP s2_offset,
-	SEXP s2_length,
+	SEXP s1,
+	SEXP s2,
 	SEXP mat,
 	SEXP mat_nrow,
 	SEXP lkup,

@@ -121,8 +121,7 @@ static int needwunsQS(const char *S1, int nS1, const char *S2, int nS2,
 }
 
 /*
- * 's1_xp', 's1_offset', 's1_length': left XString object
- * 's2_xp', 's2_offset', 's2_length': right XString object
+ * 's1', 's2': left and right XString objects
  * 'mat': scoring matrix (integer square matrix)
  * 'lkup': lookup table for translating XString bytes to scoring matrix
  *         indices (integer vector)
@@ -132,23 +131,18 @@ static int needwunsQS(const char *S1, int nS1, const char *S2, int nS2,
  * the alignments + the score.
  * Note that the 2 XString objects to align should contain no gaps.
  */
-SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
-		SEXP s2_xp, SEXP s2_offset, SEXP s2_length,
+SEXP align_needwunsQS(SEXP s1, SEXP s2, 
 		SEXP mat, SEXP mat_nrow, SEXP lkup,
 		SEXP gap_cost, SEXP gap_code)
 {
-	int s1_off, s1_len, s2_off, s2_len, nrow, score;
-	const Rbyte *s1, *s2;
+	const char *s1_seq, *s2_seq;
+	int s1_len, s2_len, nrow, score;
 	SEXP ans, ans_names, tag, ans_elt;
 
-	s1_off = INTEGER(s1_offset)[0];
-	s1_len = INTEGER(s1_length)[0];
-	s1 = RAW(R_ExternalPtrTag(s1_xp)) + s1_off;
-	s2_off = INTEGER(s2_offset)[0];
-	s2_len = INTEGER(s2_length)[0];
-	s2 = RAW(R_ExternalPtrTag(s2_xp)) + s2_off;
+	s1_seq = _get_XString_charseq(s1, &s1_len);
+	s2_seq = _get_XString_charseq(s2, &s2_len);
 	nrow = INTEGER(mat_nrow)[0];
-	score = needwunsQS((char *) s1, s1_len, (char *) s2, s2_len,
+	score = needwunsQS(s1_seq, s1_len, s2_seq, s2_len,
 		   INTEGER(mat), nrow, INTEGER(lkup), LENGTH(lkup),
 		   INTEGER(gap_cost)[0], (char) RAW(gap_code)[0]);
 
@@ -161,21 +155,17 @@ SEXP align_needwunsQS(SEXP s1_xp, SEXP s1_offset, SEXP s1_length,
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 	/* set the "al1" element */
-	PROTECT(ans_elt = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
 	PROTECT(tag = NEW_RAW(nal));
 	memcpy((char *) RAW(tag), al1, nal * sizeof(char));
-	R_SetExternalPtrTag(ans_elt, tag);
-	UNPROTECT(1);
+	PROTECT(ans_elt = new_XRaw(tag));
 	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
+	UNPROTECT(2);
 	/* set the "al2" element */
-	PROTECT(ans_elt = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
 	PROTECT(tag = NEW_RAW(nal));
 	memcpy((char *) RAW(tag), al2, nal * sizeof(char));
-	R_SetExternalPtrTag(ans_elt, tag);
-	UNPROTECT(1);
+	PROTECT(ans_elt = new_XRaw(tag));
 	SET_ELEMENT(ans, 1, ans_elt);
-	UNPROTECT(1);
+	UNPROTECT(2);
 	/* set the "score" element */
 	PROTECT(ans_elt = NEW_INTEGER(1));
 	INTEGER(ans_elt)[0] = score;

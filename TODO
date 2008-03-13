@@ -49,8 +49,6 @@ In 2.7
       the BString() and BStringList() constructors.
     o Add read.BStringList/write.BStringList.
 
-- In align_needwunsQS(): use mkXRaw() instead of making external pointers by hand.
-
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
   Correct Robert's RBioinf book reporting that the performance decrease

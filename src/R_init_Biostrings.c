@@ -73,9 +73,9 @@ static const R_CallMethodDef callMethods[] = {
 	{"Biostrings_debug_seqs_to_seqs", (DL_FUNC) &Biostrings_debug_seqs_to_seqs, 0},
 
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
-	{"STRSXP_to_XRaw", (DL_FUNC) &STRSXP_to_XRaw, 5},
-	{"XString_to_XRaw", (DL_FUNC) &XString_to_XRaw, 4},
-	{"XRaw_to_XStringList", (DL_FUNC) &XRaw_to_XStringList, 4},
+	{"new_XRaw_from_STRSXP", (DL_FUNC) &new_XRaw_from_STRSXP, 5},
+	{"new_XRaw_from_XString", (DL_FUNC) &new_XRaw_from_XString, 4},
+	{"new_XStringList_from_XRaw", (DL_FUNC) &new_XStringList_from_XRaw, 4},
 	{"narrow_XStringList", (DL_FUNC) &narrow_XStringList, 4},
         
 /* reverseComplement.c */
@@ -137,7 +137,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"lcsuffix", (DL_FUNC) &lcsuffix, 6},
 
 /* align_needwunsQS.c */
-	{"align_needwunsQS", (DL_FUNC) &align_needwunsQS, 11},
+	{"align_needwunsQS", (DL_FUNC) &align_needwunsQS, 7},
 
 	{NULL, NULL, 0}
 };

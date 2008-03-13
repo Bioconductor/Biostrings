@@ -136,19 +136,14 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
         gap_code <- as.raw(letters2codes[["-"]])
     }
     lkup <- buildLookupTable(codes, 0:(nrow(substmat)-1))
-    ans <- .Call("align_needwunsQS",
-                 s1@data@xp, s1@offset, s1@length,
-                 s2@data@xp, s2@offset, s2@length,
-                 substmat, nrow(substmat), lkup,
-                 as.integer(gappen), gap_code,
-                 PACKAGE="Biostrings")
-    xdata1 <- XRaw(0)
-    xdata1@xp <- ans$al1
-    align1 <- new(class(s1), xdata1, 0L, length(xdata1), check=FALSE)
-    xdata2 <- XRaw(0)
-    xdata2@xp <- ans$al2
-    align2 <- new(class(s2), xdata2, 0L, length(xdata2), check=FALSE)
-    new("XStringAlign", align1=align1, align2=align2, score=ans$score)
+    C_ans <- .Call("align_needwunsQS",
+                   s1, s2,
+                   substmat, nrow(substmat), lkup,
+                   as.integer(gappen), gap_code,
+                   PACKAGE="Biostrings")
+    align1 <- new(class(s1), C_ans$al1, 0L, length(C_ans$al1), check=FALSE)
+    align2 <- new(class(s2), C_ans$al2, 0L, length(C_ans$al2), check=FALSE)
+    new("XStringAlign", align1=align1, align2=align2, score=C_ans$score)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),

@@ -132,7 +132,7 @@ setMethod("initialize", "XStringSet",
 .charToXString <- function(x, safe_locs, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("STRSXP_to_XRaw",
+    data <- .Call("new_XRaw_from_STRSXP",
                   x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                   PACKAGE="Biostrings")
     new(class, data, 0L, length(data), check=FALSE)
@@ -159,7 +159,7 @@ setMethod("initialize", "XStringSet",
         ## 'super(x)' that have a lot of overlapping.
         safe_locs <- narrow(x, start, end, width)
         frame <- reduce(safe_locs, TRUE)
-        data <- .Call("XString_to_XRaw",
+        data <- .Call("new_XRaw_from_XString",
                       super(x), start(frame), width(frame), lkup,
                       PACKAGE="Biostrings")
         super <- new(baseClass, data, 0L, length(data), check=FALSE)
