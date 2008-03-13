@@ -6,11 +6,11 @@
  * Extendable buffers used for temporary storage of incoming data whose size
  * is not known in advance:
  *
- *   o IntBuf:   extendable buffer of ints
- *   o IntBBuf:  extendable buffer of extendable buffers of ints
- *   o RangeBuf: extendable buffer of integer ranges
- *   o CharBuf:  extendable buffer of chars
- *   o CharBBuf: extendable buffer of extendable buffers of chars
+ *   o IntBuf:   extendable buffer of ints;
+ *   o IntBBuf:  extendable buffer of extendable buffers of ints;
+ *   o RangeBuf: extendable buffer of integer ranges;
+ *   o CharBuf:  extendable buffer of chars;
+ *   o CharBBuf: extendable buffer of extendable buffers of chars.
  *
  * They are NOT an attempt to reinvent an SEXP subsystem. Some notable
  * differences are: (a) they are extendable (i.e. they are automatically
@@ -52,8 +52,8 @@ typedef struct cbbuf {
  * Two additional types:
  *
  *   o CharArr:  array of const chars (think of this as a pointer to a non
- *                  null-terminated sequence of chars)
- *   o CharAArr: array of arrays of const chars
+ *               null-terminated sequence of chars);
+ *   o CharAArr: array of arrays of const chars.
  */
 typedef struct carr {
 	const char *elts;

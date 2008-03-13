@@ -546,34 +546,32 @@ SEXP XStrings_to_nchars(SEXP x_seqs);
 
 SEXP Biostrings_debug_seqs_to_seqs();
 
+void narrow_CharAArr(
+	CharAArr *seqs,
+	const int *safe_starts,
+	const int *safe_widths
+);
+
 CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf);
 
 CharAArr _new_CharAArr_from_STRSXP(
-	int nelt,
-	SEXP x,
-	const int *safe_starts,
-	const int *safe_widths
+	int nseq,
+	SEXP x
 );
 
 CharAArr _new_CharAArr_from_XString(
-	int nelt,
-	SEXP x,
-	const int *safe_starts,
-	const int *safe_widths
+	int nseq,
+	SEXP x
 );
 
 CharAArr _new_CharAArr_from_XStringSet(
-	int nelt,
-	SEXP x,
-	const int *safe_starts,
-	const int *safe_widths
+	int nseq,
+	SEXP x
 );
 
 CharAArr _new_CharAArr_from_XStringList(
-	int nelt,
-	SEXP x,
-	const int *safe_starts,
-	const int *safe_widths
+	int nseq,
+	SEXP x
 );
 
 SEXP copy_subXRaw(
