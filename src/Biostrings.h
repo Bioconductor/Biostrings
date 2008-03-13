@@ -258,6 +258,12 @@ const int *_get_IRanges_start(SEXP x);
 
 const int *_get_IRanges_width(SEXP x);
 
+SEXP _new_IRanges(
+	SEXP start,
+	SEXP width,
+	SEXP names
+);
+
 SEXP narrow_IRanges(
 	SEXP x,
 	SEXP start,
@@ -539,7 +545,7 @@ CharAArr _new_CharAArr_from_XStringList(
 	const int *safe_widths
 );
 
-SEXP new_XRaw(SEXP tag);
+SEXP _new_XRaw(SEXP tag);
 
 SEXP copy_subXRaw(
 	SEXP x,

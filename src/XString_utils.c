@@ -120,8 +120,9 @@ const char *_get_XString_charseq(SEXP x, int *length)
 	return (const char *) (RAW(R_ExternalPtrTag(xp)) + offset);
 }
 
-/* UNTESTED */
-/* NOT a Call() entry point! */
+/*
+ * NOT a .Call() entry point!
+ */
 SEXP mkXString(const char *class, SEXP data, int offset, int length)
 {
 	SEXP class_def, ans;

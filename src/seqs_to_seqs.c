@@ -188,8 +188,12 @@ CharAArr _new_CharAArr_from_XStringList(int nelt, SEXP x,
  * Converting a set of sequences into an XRaw object.
  */
 
-/* NOT a Call() entry point! */
-SEXP new_XRaw(SEXP tag)
+/*
+ * Do NOT make this a .Call() entry point!
+ * Its argument is NOT duplicated so it would be a disaster if it was
+ * coming from the user space.
+ */
+SEXP _new_XRaw(SEXP tag)
 {
 	SEXP ans;
 
@@ -260,7 +264,7 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP colla
 	}
 	arr = _new_CharAArr_from_STRSXP(nseq, x, INTEGER(safe_starts), INTEGER(safe_widths));
 	PROTECT(tag = new_RAW_from_CharAArr(arr, lkup));
-	ans = new_XRaw(tag);
+	ans = _new_XRaw(tag);
 	UNPROTECT(1);
 	return ans;
 }
@@ -277,7 +281,7 @@ SEXP new_XRaw_from_XString(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup
 	nseq = LENGTH(safe_starts);
 	arr = _new_CharAArr_from_XString(nseq, x, INTEGER(safe_starts), INTEGER(safe_widths));
 	PROTECT(tag = new_RAW_from_CharAArr(arr, lkup));
-	ans = new_XRaw(tag);
+	ans = _new_XRaw(tag);
 	UNPROTECT(1);
 	return ans;
 }
@@ -290,9 +294,12 @@ SEXP new_XRaw_from_XString(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup
 SEXP _new_XStringSet_from_seqsnames(const char *baseClass,
 		CharAArr seqs, CharAArr names)
 {
-	SEXP ans;
+	SEXP ans, start, width;
 
-	error("_new_XStringSet_from_seqsnames() is not ready yet");
+	PROTECT(start = ScalarInteger(99));
+	PROTECT(width = ScalarInteger(6));
+	PROTECT(ans = _new_IRanges(start, width, R_NilValue));
+	UNPROTECT(3);
 	return ans;
 }
 

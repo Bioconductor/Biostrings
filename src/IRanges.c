@@ -1,5 +1,5 @@
 /****************************************************************************
- *                  Fast IRanges objects manipulation                  *
+ *                    Fast IRanges objects manipulation                     *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -85,6 +85,72 @@ const int *_get_IRanges_width(SEXP x)
 
 	ranges = GET_SLOT(x, install("ranges"));
 	return INTEGER(VECTOR_ELT(ranges, 1));
+}
+
+static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
+{
+	SEXP ans, ans_names, ans_row_names, ans_attribs, ans_attrib_names;
+	int i;
+
+	PROTECT(ans_attribs = NEW_LIST(3));
+
+	/* set the attrib names */
+	PROTECT(ans_attrib_names = NEW_CHARACTER(3));
+	SET_STRING_ELT(ans_attrib_names, 0, mkChar("names"));
+	SET_STRING_ELT(ans_attrib_names, 1, mkChar("row.names"));
+	SET_STRING_ELT(ans_attrib_names, 2, mkChar("class"));
+	SET_NAMES(ans_attribs, ans_attrib_names);
+	UNPROTECT(1);
+
+	/* set the class */
+	SET_ELEMENT(ans_attribs, 2, mkString("data.frame"));
+
+	/* set the row names */
+	PROTECT(ans_row_names = NEW_INTEGER(LENGTH(start)));
+	for (i = 0; i < LENGTH(ans_row_names); i++)
+		INTEGER(ans_row_names)[i] = i + 1;
+	SET_ELEMENT(ans_attribs, 1, ans_row_names);
+	UNPROTECT(1);
+
+	/* set the elements and their names */
+	if (names == R_NilValue) {
+		PROTECT(ans = NEW_LIST(2));
+		PROTECT(ans_names = NEW_CHARACTER(2));
+	} else {
+		PROTECT(ans = NEW_LIST(3));
+		PROTECT(ans_names = NEW_CHARACTER(3));
+	}
+	SET_ELEMENT(ans, 0, start);
+	SET_STRING_ELT(ans_names, 0, mkChar("start"));
+	SET_ELEMENT(ans, 1, width);
+	SET_STRING_ELT(ans_names, 1, mkChar("width"));
+	if (names != R_NilValue) {
+		SET_ELEMENT(ans, 2, names);
+		SET_STRING_ELT(ans_names, 2, mkChar("names"));
+	}
+	SET_ELEMENT(ans_attribs, 0, ans_names);
+	UNPROTECT(1);
+
+	SET_ATTRIB(ans, ans_attribs);
+	UNPROTECT(2);
+	return ans;
+}
+
+/*
+ * Do NOT make this a .Call() entry point!
+ * Its arguments are NOT duplicated so it would be a disaster if they were
+ * coming from the user space.
+ */
+SEXP _new_IRanges(SEXP start, SEXP width, SEXP names)
+{
+	SEXP class_def, ans, ans_slot;
+
+	class_def = MAKE_CLASS(".IRanges");
+	PROTECT(ans = NEW_OBJECT(class_def));
+	PROTECT(ans_slot = mk_ranges_slot(start, width, names));
+	SET_SLOT(ans, mkChar("ranges"), ans_slot);
+	UNPROTECT(2);
+	return ans;
 }
 
 /*
