@@ -150,7 +150,6 @@ void R_init_Biostrings(DllInfo *info)
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 	R_RegisterCCallable("Biostrings", "_new_CharBBuf", (DL_FUNC) &_new_CharBBuf);
 	R_RegisterCCallable("Biostrings", "_append_string_to_CharBBuf", (DL_FUNC) &_append_string_to_CharBBuf);
-	R_RegisterCCallable("Biostrings", "_new_ConstCharAArr_from_CharBBuf", (DL_FUNC) &_new_ConstCharAArr_from_CharBBuf);
 	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
 	R_RegisterCCallable("Biostrings", "_RNAencode", (DL_FUNC) &_RNAencode);
@@ -158,6 +157,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_get_XString_charseq", (DL_FUNC) &_get_XString_charseq);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_length", (DL_FUNC) &_get_XStringSet_length);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_charseq", (DL_FUNC) &_get_XStringSet_charseq);
+	R_RegisterCCallable("Biostrings", "_new_CharAArr_from_BBuf", (DL_FUNC) &_new_CharAArr_from_BBuf);
 	R_RegisterCCallable("Biostrings", "_new_XStringSet_from_seqsnames", (DL_FUNC) &_new_XStringSet_from_seqsnames);
 	R_RegisterCCallable("Biostrings", "_init_match_reporting", (DL_FUNC) &_init_match_reporting);
 	R_RegisterCCallable("Biostrings", "_report_match", (DL_FUNC) &_report_match);

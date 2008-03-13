@@ -4,7 +4,14 @@
 
 /*
  * Extendable buffers used for temporary storage of incoming data whose size
- * is not known in advance.
+ * is not known in advance:
+ *
+ *   o IntBuf:   extendable buffer of ints
+ *   o IntBBuf:  extendable buffer of extendable buffers of ints
+ *   o RangeBuf: extendable buffer of integer ranges
+ *   o CharBuf:  extendable buffer of chars
+ *   o CharBBuf: extendable buffer of extendable buffers of chars
+ *
  * They are NOT an attempt to reinvent an SEXP subsystem. Some notable
  * differences are: (a) they are extendable (i.e. they are automatically
  * reallocated when more room is needed to add a new element), (b) they are
@@ -12,43 +19,51 @@
  */
 
 typedef struct ibuf {
-	int *elts;
 	int buflength;
+	int *elts;
 	int nelt;
-} IntBuf; // Extendable buffer of integers
+} IntBuf;
 
 typedef struct ibbuf {
-	IntBuf *elts;
 	int buflength;
+	IntBuf *elts;
 	int nelt;
-} IntBBuf; // Extendable buffer of extendable buffers of integers
+} IntBBuf; 
 
-typedef struct rangesbuf {
+typedef struct rangebuf {
 	IntBuf start;
 	IntBuf width;
-} RangesBuf; // Extendable buffer of integer ranges
+} RangeBuf;
 
 typedef struct cbuf {
-	char *elts;
 	int buflength;
+	char *elts;
 	int nelt;
-} CharBuf; // Extendable buffer of chars
+} CharBuf; 
 
 typedef struct cbbuf {
-        CharBuf *elts;
         int buflength;
+        CharBuf *elts;
         int nelt;
-} CharBBuf; // Extendable buffer of extendable buffers of chars
+} CharBBuf; 
 
-typedef struct ccarr {
+
+/*
+ * Two additional types:
+ *
+ *   o CharArr:  array of const chars (think of this as a pointer to a non
+ *                  null-terminated sequence of chars)
+ *   o CharAArr: array of arrays of const chars
+ */
+typedef struct carr {
 	const char *elts;
 	int nelt;
-} ConstCharArr;
+} CharArr;
 
-typedef struct ccaarr {
-	ConstCharArr *elts;
+typedef struct caarr {
+	CharArr *elts;
 	int nelt;
-} ConstCharAArr;
+} CharAArr;
 
 
 /*

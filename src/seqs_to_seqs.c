@@ -27,6 +27,15 @@ SEXP Biostrings_debug_seqs_to_seqs()
  * describe a set of valid locations in their first argument 'x'.
  */
 
+static CharAArr _new_CharAArr(int nelt)
+{
+	CharAArr arr;
+
+	arr.elts = Salloc((long) nelt, CharArr);
+	arr.nelt = nelt;
+	return arr;
+}
+
 /*
  * Should never raise an error.
  */
@@ -35,6 +44,28 @@ static int start2offset(int safe_start)
 	if (safe_start < 1)
 		error("Biostrings internal error in start2offset(): safe_start < 1");
 	return --safe_start;
+}
+
+
+/****************************************************************************
+ * Converting a set of sequences into a CharAArr struct (array of arrays of
+ * const chars).
+ */
+
+CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf)
+{
+	CharAArr arr;
+	CharArr *elt1;
+	CharBuf *elt2;
+
+	arr = _new_CharAArr(cbbuf.nelt);
+	for (arr.nelt = 0, elt1 = arr.elts, elt2 = cbbuf.elts;
+	     arr.nelt < cbbuf.nelt;
+	     arr.nelt++, elt1++, elt2++) {
+		elt1->elts = elt2->elts;
+		elt1->nelt = elt2->nelt;
+	}
+	return arr;
 }
 
 
@@ -233,7 +264,7 @@ SEXP XString_to_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
  */
 
 SEXP _new_XStringSet_from_seqsnames(const char *baseClass,
-		ConstCharAArr seqs, ConstCharAArr names)
+		CharAArr seqs, CharAArr names)
 {
 	SEXP ans;
 

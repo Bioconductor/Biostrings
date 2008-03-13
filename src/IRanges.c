@@ -164,7 +164,7 @@ SEXP int_to_adjacent_ranges(SEXP x)
  * Reduction (aka extracting the frame)
  */
 
-static RangesBuf reduced_ranges;
+static RangeBuf reduced_ranges;
 static int max_end, inframe_offset;
 
 static void add_to_reduced_ranges(int start, int width)
@@ -174,7 +174,7 @@ static void add_to_reduced_ranges(int start, int width)
 	buf_length = reduced_ranges.start.nelt;
 	end = start + width - 1;
 	if (buf_length == 0 || (gap = start - max_end - 1) > 0) {
-		_RangesBuf_insert_at(&reduced_ranges, buf_length, start, width);
+		_RangeBuf_insert_at(&reduced_ranges, buf_length, start, width);
 		if (buf_length == 0)
 			inframe_offset = start - 1;
 		else
@@ -196,7 +196,7 @@ static void reduce_ranges(int length, const int *start, const int *width, int *i
 
 	start_order = _new_IntBuf(length, 0);
 	get_intorder(length, start, start_order.elts);
-	reduced_ranges = _new_RangesBuf(0, 0);
+	reduced_ranges = _new_RangeBuf(0, 0);
 	for (i = 0; i < length; i++) {
 		j = start_order.elts[i];
 		add_to_reduced_ranges(start[j], width[j]);

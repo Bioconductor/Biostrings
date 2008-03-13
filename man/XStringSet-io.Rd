@@ -67,8 +67,9 @@
   \item{subjectClass}{
     The class to be given to the subject of the \link{BStringViews} object
     created and returned by the function.
-    Must be \code{"BString"} or one of its subclasses: \code{"DNAString"},
-    \code{"RNAString"} or \code{"AAString"}.
+    Must be the name of one of the direct XString subtypes i.e.
+    \code{"BString"}, \code{"DNAString"}, \code{"RNAString"}
+    or \code{"AAString"}.
   }
   \item{collapse}{
     An optional character string to be inserted between the views of the

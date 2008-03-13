@@ -87,6 +87,7 @@
  *****************************************************************************/
 #include "Biostrings_defines.h"
 
+
 /*
  * Low-level manipulation of the extendable buffers.
  */
@@ -100,9 +101,6 @@ void append_string_to_CharBBuf(
 	CharBBuf *cbbuf,
 	const char *string
 );
-
-ConstCharAArr new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf);
-
 
 /*
  * Low-level manipulation of XString and XStringSet objects.
@@ -128,10 +126,17 @@ const char *get_XStringSet_charseq(
 	int *nchar
 );
 
+
+/*
+ * Converting a set of sequences from one internal representation into another.
+ */
+
+CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf);
+
 SEXP new_XStringSet_from_seqsnames(
 	const char *baseClass,
-	ConstCharAArr seqs,
-	ConstCharAArr names
+	CharAArr seqs,
+	CharAArr names
 );
 
 

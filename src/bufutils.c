@@ -315,22 +315,22 @@ SEXP _IntBBuf_toEnvir(IntBBuf *ibbuf, SEXP envir, int keyshift)
 
 
 /****************************************************************************
- * RangesBuf functions
+ * RangeBuf functions
  */
 
-RangesBuf _new_RangesBuf(int buflength, int nelt)
+RangeBuf _new_RangeBuf(int buflength, int nelt)
 {
-	RangesBuf rangesbuf;
+	RangeBuf rangebuf;
 
-	rangesbuf.start = _new_IntBuf(buflength, nelt);
-	rangesbuf.width = _new_IntBuf(buflength, nelt);
-	return rangesbuf;
+	rangebuf.start = _new_IntBuf(buflength, nelt);
+	rangebuf.width = _new_IntBuf(buflength, nelt);
+	return rangebuf;
 }
 
-void _RangesBuf_insert_at(RangesBuf *rangesbuf, int at, int start, int width)
+void _RangeBuf_insert_at(RangeBuf *rangebuf, int at, int start, int width)
 {
-	_IntBuf_insert_at(&(rangesbuf->start), at, start);
-	_IntBuf_insert_at(&(rangesbuf->width), at, width);
+	_IntBuf_insert_at(&(rangebuf->start), at, start);
+	_IntBuf_insert_at(&(rangebuf->width), at, width);
 	return;
 }
 
@@ -458,13 +458,5 @@ void _append_string_to_CharBBuf(CharBBuf *cbbuf, const char *string)
 	cbuf = _new_CharBuf_from_string(string);
 	_CharBBuf_insert_at(cbbuf, cbbuf->nelt, cbuf);
 	return;
-}
-
-ConstCharAArr _new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf)
-{
-	ConstCharAArr ccaarr;
-
-	error("_new_ConstCharAArr_from_CharBBuf() is not ready yet");
-	return ccaarr;
 }
 

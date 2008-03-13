@@ -22,17 +22,6 @@ void append_string_to_CharBBuf(CharBBuf *cbbuf, const char *string)
 	return fun(cbbuf, string);
 }
 
-typedef ConstCharAArr (*new_ConstCharAArr_from_CharBBuf_FUNTYPE)(CharBBuf);
-ConstCharAArr new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf)
-{
-	static new_ConstCharAArr_from_CharBBuf_FUNTYPE fun = NULL;
-
-	if (fun == NULL)
-		fun = (new_ConstCharAArr_from_CharBBuf_FUNTYPE)
-			R_GetCCallable("Biostrings", "_new_ConstCharAArr_from_CharBBuf");
-	return fun(cbbuf);
-}
-
 char DNAencode(char c)
 {
 	static char (*fun)(char) = NULL;
@@ -96,8 +85,19 @@ const char *get_XStringSet_charseq(SEXP x, int i, int *nchar)
 	return fun(x, i, nchar);
 }
 
-typedef SEXP (*new_XStringSet_from_seqsnames_FUNTYPE)(const char *, ConstCharAArr, ConstCharAArr);
-SEXP new_XStringSet_from_seqsnames(const char *baseClass, ConstCharAArr seqs, ConstCharAArr names)
+typedef CharAArr (*new_CharAArr_from_BBuf_FUNTYPE)(CharBBuf);
+CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf)
+{
+	static new_CharAArr_from_BBuf_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (new_CharAArr_from_BBuf_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_CharAArr_from_BBuf");
+	return fun(cbbuf);
+}
+
+typedef SEXP (*new_XStringSet_from_seqsnames_FUNTYPE)(const char *, CharAArr, CharAArr);
+SEXP new_XStringSet_from_seqsnames(const char *baseClass, CharAArr seqs, CharAArr names)
 {
 	static new_XStringSet_from_seqsnames_FUNTYPE fun = NULL;
 

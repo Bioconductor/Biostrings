@@ -216,13 +216,13 @@ SEXP _IntBBuf_toEnvir(
 	int keyshift
 );
 
-RangesBuf _new_RangesBuf(
+RangeBuf _new_RangeBuf(
 	int buflength,
 	int nelt
 );
 
-void _RangesBuf_insert_at(
-	RangesBuf *rangesbuf,
+void _RangeBuf_insert_at(
+	RangeBuf *rangebuf,
 	int at,
 	int start,
 	int width
@@ -255,8 +255,6 @@ void _append_string_to_CharBBuf(
 	CharBBuf *cbbuf,
 	const char *string
 );
-
-ConstCharAArr _new_ConstCharAArr_from_CharBBuf(CharBBuf cbbuf);
 
 
 /* IRanges.c */
@@ -520,6 +518,8 @@ const char *_get_XStringSet_charseq(
 
 SEXP Biostrings_debug_seqs_to_seqs();
 
+CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf);
+
 const CharSeq *STRSXP_to_charseqs(
 	SEXP x,
 	int nseq,
@@ -574,8 +574,8 @@ SEXP XString_to_XRaw(
 
 SEXP _new_XStringSet_from_seqsnames(
 	const char *baseClass,
-	ConstCharAArr seqs,
-	ConstCharAArr names
+	CharAArr seqs,
+	CharAArr names
 );
 
 SEXP XRaw_to_XStringList(
