@@ -261,11 +261,6 @@ setMethod("patternFrequency", "TBdna_PDict",
 ### The PDict() constructor (user-friendly).
 ###
 
-debug_TBdna <- function()
-{
-    invisible(.Call("match_TBdna_debug", PACKAGE="Biostrings"))
-}
-
 .PDict <- function(dict, names, tb.start, tb.end,
                    drop.head, drop.tail, skip.invalid.patterns)
 {

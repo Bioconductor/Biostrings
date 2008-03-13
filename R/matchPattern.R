@@ -92,11 +92,6 @@ gregexpr2 <- function(pattern, text)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "naive" methods
 
-debug_naive <- function()
-{
-    invisible(.Call("match_naive_debug", PACKAGE="Biostrings"))
-}
-
 ### Must return an integer vector.
 .match.naive.exact <- function(pattern, subject, count.only)
 {
@@ -131,11 +126,6 @@ debug_naive <- function()
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Boyer-Moore
 
-debug_boyermoore <- function()
-{
-    invisible(.Call("match_boyermoore_debug", PACKAGE="Biostrings"))
-}
-
 ### Must return an integer vector.
 .match.boyermoore <- function(pattern, subject, count.only)
 {
@@ -156,11 +146,6 @@ debug_boyermoore <- function()
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### shift-or
-
-debug_shiftor <- function()
-{
-    invisible(.Call("match_shiftor_debug", PACKAGE="Biostrings"))
-}
 
 ### Must return an integer vector.
 .match.shiftor <- function(pattern, subject, max.mismatch, fixed, count.only)

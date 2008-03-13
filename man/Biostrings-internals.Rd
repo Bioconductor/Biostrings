@@ -2,7 +2,7 @@
 \docType{class}
 
 \alias{debug_utils}
-\alias{debug_XRaw}
+\alias{debug_XRaw_fillread}
 \alias{debug_shiftor}
 
 \alias{class:.IRanges}

@@ -20,11 +20,6 @@ setClass("BOC2_SubjectString",
     )
 )
 
-debug_BOC2 <- function()
-{
-    invisible(.Call("match_BOC2_debug", PACKAGE="Biostrings"))
-}
-
 ### Typical use:
 ###   library(BSgenome.Hsapiens.UCSC.hg18)
 ###   chr1 <- Hsapiens$chr1

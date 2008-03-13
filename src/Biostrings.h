@@ -264,6 +264,8 @@ SEXP _new_IRanges(
 	SEXP names
 );
 
+SEXP _new_IRanges_from_CharAArr(CharAArr seqs);
+
 SEXP narrow_IRanges(
 	SEXP x,
 	SEXP start,
@@ -279,26 +281,40 @@ SEXP reduce_IRanges(
 );
 
 
-/* XRaw.c */
+/* XRaw_utils.c */
 
-SEXP Biostrings_debug_XRaw();
+SEXP Biostrings_debug_XRaw_utils();
 
 SEXP Biostrings_sexp_address(SEXP s);
+
+SEXP Biostrings_safe_explode(SEXP s);
 
 SEXP Biostrings_xp_show(SEXP xp);
 
 SEXP Biostrings_xp_new();
-
-SEXP Biostrings_safe_explode(SEXP s);
 
 SEXP Biostrings_XRaw_alloc(
 	SEXP xraw_xp,
 	SEXP length
 );
 
+int _get_XRaw_length(SEXP x);
+
 SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp);
 
 SEXP Biostrings_XRaw_length(SEXP xraw_xp);
+
+SEXP _new_XRaw(SEXP tag);
+
+SEXP _new_XRaw_from_CharAArr(
+	CharAArr arr,
+	SEXP lkup
+);
+
+
+/* XRaw_fillread.c */
+
+SEXP Biostrings_debug_XRaw_fillread();
 
 SEXP Biostrings_XRaw_memcmp(
 	SEXP xraw1_xp,
@@ -485,21 +501,16 @@ const char *_get_XString_charseq(
 	int *length
 );
 
-SEXP mkXString(
+SEXP _new_XString(
 	const char *class,
 	SEXP data,
 	int offset,
 	int length
 );
 
-SEXP XStrings_to_nchars(SEXP x_seqs);
-
-int _get_XStringList_length(SEXP x);
-
-const char *_get_XStringList_charseq(
-	SEXP x,
-	int i,
-	int *nchar
+SEXP _new_XString_from_CharAArr(
+	const char *class,
+	CharAArr seqs
 );
 
 int _get_XStringSet_length(SEXP x);
@@ -509,6 +520,26 @@ const char *_get_XStringSet_charseq(
 	int i,
 	int *nchar
 );
+
+SEXP _new_XStringSet(
+	const char *baseClass,
+	CharAArr seqs
+);
+
+void _set_XStringSet_names(
+	SEXP x,
+	CharAArr names
+);
+
+int _get_XStringList_length(SEXP x);
+
+const char *_get_XStringList_charseq(
+	SEXP x,
+	int i,
+	int *nchar
+);
+
+SEXP XStrings_to_nchars(SEXP x_seqs);
 
 
 /* seqs_to_seqs.c */
@@ -545,8 +576,6 @@ CharAArr _new_CharAArr_from_XStringList(
 	const int *safe_widths
 );
 
-SEXP _new_XRaw(SEXP tag);
-
 SEXP copy_subXRaw(
 	SEXP x,
 	SEXP start,
@@ -567,12 +596,6 @@ SEXP new_XRaw_from_XString(
 	SEXP safe_starts,
 	SEXP safe_widths,
 	SEXP lkup
-);
-
-SEXP _new_XStringSet_from_seqsnames(
-	const char *baseClass,
-	CharAArr seqs,
-	CharAArr names
 );
 
 SEXP new_XStringList_from_XRaw(

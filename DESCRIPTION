@@ -47,5 +47,6 @@ Collate: 00datacache.R
         align-utils.R
         pmatchPattern.R
         needwunsQS.R
+	debug.R
         test.R
         zzz.R

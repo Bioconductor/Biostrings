@@ -126,18 +126,22 @@ const char *get_XStringSet_charseq(
 	int *nchar
 );
 
+SEXP new_XStringSet(
+	const char *baseClass,
+	CharAArr seqs
+);
+
+void set_XStringSet_names(
+	SEXP x,
+	CharAArr names
+);
+
 
 /*
  * Converting a set of sequences from one internal representation into another.
  */
 
 CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf);
-
-SEXP new_XStringSet_from_seqsnames(
-	const char *baseClass,
-	CharAArr seqs,
-	CharAArr names
-);
 
 
 /*

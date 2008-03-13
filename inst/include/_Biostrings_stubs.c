@@ -85,6 +85,28 @@ const char *get_XStringSet_charseq(SEXP x, int i, int *nchar)
 	return fun(x, i, nchar);
 }
 
+typedef SEXP (*new_XStringSet_FUNTYPE)(const char *, CharAArr);
+SEXP new_XStringSet(const char *baseClass, CharAArr seqs)
+{
+	static new_XStringSet_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (new_XStringSet_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_XStringSet");
+	return fun(baseClass, seqs);
+}
+
+typedef void (*set_XStringSet_names_FUNTYPE)(SEXP, CharAArr);
+void set_XStringSet_names(SEXP x, CharAArr names)
+{
+	static set_XStringSet_names_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (set_XStringSet_names_FUNTYPE)
+			R_GetCCallable("Biostrings", "_set_XStringSet_names");
+	return fun(x, names);
+}
+
 typedef CharAArr (*new_CharAArr_from_BBuf_FUNTYPE)(CharBBuf);
 CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf)
 {
@@ -94,17 +116,6 @@ CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf)
 		fun = (new_CharAArr_from_BBuf_FUNTYPE)
 			R_GetCCallable("Biostrings", "_new_CharAArr_from_BBuf");
 	return fun(cbbuf);
-}
-
-typedef SEXP (*new_XStringSet_from_seqsnames_FUNTYPE)(const char *, CharAArr, CharAArr);
-SEXP new_XStringSet_from_seqsnames(const char *baseClass, CharAArr seqs, CharAArr names)
-{
-	static new_XStringSet_from_seqsnames_FUNTYPE fun = NULL;
-
-	if (fun == NULL)
-		fun = (new_XStringSet_from_seqsnames_FUNTYPE)
-			R_GetCCallable("Biostrings", "_new_XStringSet_from_seqsnames");
-	return fun(baseClass, seqs, names);
 }
 
 void init_match_reporting(int mrmode)

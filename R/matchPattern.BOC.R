@@ -119,11 +119,6 @@ plotBOC <- function(x, main)
 ###   #--> takes about 111 seconds on lamb1
 ###   
 
-debug_BOC <- function()
-{
-    invisible(.Call("match_BOC_debug", PACKAGE="Biostrings"))
-}
-
 ### Must return an integer vector.
 .match.BOC.exact <- function(pattern, boc_subject, count.only)
 {

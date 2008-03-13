@@ -9,8 +9,19 @@
  * Encoding/decoding XString data.
  */
 
-static int DNA_enc_lkup[256], DNA_dec_lkup[256];
-static int RNA_enc_lkup[256], RNA_dec_lkup[256];
+#define STATIC_LKUP_LENGTH 256
+
+static int DNA_enc_lkup[STATIC_LKUP_LENGTH], DNA_dec_lkup[STATIC_LKUP_LENGTH];
+static int RNA_enc_lkup[STATIC_LKUP_LENGTH], RNA_dec_lkup[STATIC_LKUP_LENGTH];
+
+static const int *get_enc_lkup(const char *class)
+{
+	if (strcmp(class, "DNAString") == 0)
+		return DNA_enc_lkup;
+	else if (strcmp(class, "RNAString") == 0)
+		return RNA_enc_lkup;
+	return NULL;
+}
 
 static void copy_lkup(const int *lkup1, int len1, int *lkup2, int len2)
 {
@@ -22,26 +33,15 @@ static void copy_lkup(const int *lkup1, int len1, int *lkup2, int len2)
 		lkup2[i] = lkup1[i];
 	for ( ; i < len2; i++)
 		lkup2[i] = NA_INTEGER;
-}
-
-static int class2code(const char *class)
-{
-	error("class2code() not ready yet");
-	return 0;
-}
-
-static const char *code2class(int code)
-{
-	error("code2class() not ready yet");
-	return 0;
+	return;
 }
 
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
 	copy_lkup(INTEGER(enc_lkup), LENGTH(enc_lkup),
-		DNA_enc_lkup, sizeof(DNA_enc_lkup) / sizeof(int));
+		  DNA_enc_lkup, STATIC_LKUP_LENGTH);
 	copy_lkup(INTEGER(dec_lkup), LENGTH(dec_lkup),
-		DNA_dec_lkup, sizeof(DNA_dec_lkup) / sizeof(int));
+		  DNA_dec_lkup, STATIC_LKUP_LENGTH);
 	return R_NilValue;
 }
 
@@ -68,9 +68,9 @@ char _DNAdecode(char code)
 SEXP init_RNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
 	copy_lkup(INTEGER(enc_lkup), LENGTH(enc_lkup),
-		RNA_enc_lkup, sizeof(RNA_enc_lkup) / sizeof(int));
+		  RNA_enc_lkup, STATIC_LKUP_LENGTH);
 	copy_lkup(INTEGER(dec_lkup), LENGTH(dec_lkup),
-		RNA_dec_lkup, sizeof(RNA_dec_lkup) / sizeof(int));
+		  RNA_dec_lkup, STATIC_LKUP_LENGTH);
 	return R_NilValue;
 }
 
@@ -123,7 +123,7 @@ const char *_get_XString_charseq(SEXP x, int *length)
 /*
  * NOT a .Call() entry point!
  */
-SEXP mkXString(const char *class, SEXP data, int offset, int length)
+SEXP _new_XString(const char *class, SEXP data, int offset, int length)
 {
 	SEXP class_def, ans;
 
@@ -134,6 +134,79 @@ SEXP mkXString(const char *class, SEXP data, int offset, int length)
 	SET_SLOT(ans, mkChar("length"), ScalarInteger(length));
 	UNPROTECT(1);
 	return ans;
+}
+
+SEXP _new_XString_from_CharAArr(const char *class, CharAArr seqs)
+{
+	const int *enc_lkup;
+        SEXP lkup, data, ans;
+
+	enc_lkup = get_enc_lkup(class);
+	if (enc_lkup == NULL) {
+		lkup = R_NilValue;
+	} else {
+		PROTECT(lkup = NEW_INTEGER(STATIC_LKUP_LENGTH));
+		copy_lkup(enc_lkup, STATIC_LKUP_LENGTH,
+			  INTEGER(lkup), LENGTH(lkup));
+	}
+	PROTECT(data = _new_XRaw_from_CharAArr(seqs, lkup));
+	PROTECT(ans = _new_XString(class, data, 1, _get_XRaw_length(data)));
+	if (enc_lkup == NULL)
+		UNPROTECT(2);
+	else
+		UNPROTECT(3);
+	return ans;
+}
+
+
+/****************************************************************************
+ * Low-level manipulation of XStringSet objects.
+ */
+
+int _get_XStringSet_length(SEXP x)
+{
+	// Because an XStringSet object IS an .IRanges object
+	return _get_IRanges_length(x);
+}
+
+const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
+{
+	SEXP super;
+	int start, super_length;
+	const char *super_seq;
+
+	start = _get_IRanges_start(x)[i];
+	*nchar = _get_IRanges_width(x)[i];
+	super = GET_SLOT(x, install("super"));
+	super_seq = _get_XString_charseq(super, &super_length);
+	return super_seq + start - 1;
+}
+
+/*
+ * Assume that the sequences in 'seqs' are NOT already encoded.
+ */
+SEXP _new_XStringSet(const char *baseClass, CharAArr seqs)
+{
+	char classbuf[13]; // longest string will be "DNAStringSet"
+	SEXP class_def, ans, super, tmp, ranges;
+
+	snprintf(classbuf, sizeof(classbuf), "%sSet", baseClass);
+	class_def = MAKE_CLASS(classbuf);
+	PROTECT(ans = NEW_OBJECT(class_def));
+	PROTECT(super = _new_XString_from_CharAArr(baseClass, seqs));
+	SET_SLOT(ans, mkChar("super"), super);
+	UNPROTECT(1);
+	PROTECT(tmp = _new_IRanges_from_CharAArr(seqs));
+	ranges = GET_SLOT(tmp, install("ranges"));
+	SET_SLOT(ans, mkChar("ranges"), ranges);
+        UNPROTECT(2);
+        return ans;
+}
+
+void _set_XStringSet_names(SEXP x, CharAArr names)
+{
+	error("_set_XStringSet_names() is not ready yet");
+	return;
 }
 
 
@@ -172,29 +245,5 @@ SEXP XStrings_to_nchars(SEXP x_seqs)
 	}
 	UNPROTECT(1);
 	return ans;
-}
-
-
-/****************************************************************************
- * Low-level manipulation of XStringSet objects.
- */
-
-int _get_XStringSet_length(SEXP x)
-{
-	// Because an XStringSet object IS an .IRanges object
-	return _get_IRanges_length(x);
-}
-
-const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
-{
-	SEXP super;
-	int start, super_length;
-	const char *super_seq;
-
-	start = _get_IRanges_start(x)[i];
-	*nchar = _get_IRanges_width(x)[i];
-	super = GET_SLOT(x, install("super"));
-	super_seq = _get_XString_charseq(super, &super_length);
-	return super_seq + start - 1;
 }
 

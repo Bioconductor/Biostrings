@@ -189,50 +189,6 @@ CharAArr _new_CharAArr_from_XStringList(int nelt, SEXP x,
  */
 
 /*
- * Do NOT make this a .Call() entry point!
- * Its argument is NOT duplicated so it would be a disaster if it was
- * coming from the user space.
- */
-SEXP _new_XRaw(SEXP tag)
-{
-	SEXP ans;
-
-	PROTECT(ans = NEW_OBJECT(MAKE_CLASS("XRaw")));
-	SET_SLOT(ans, mkChar("xp"), R_MakeExternalPtr(NULL, tag, R_NilValue));
-	UNPROTECT(1);
-        return ans;
-}
-
-static SEXP new_RAW_from_CharAArr(CharAArr arr, SEXP lkup)
-{
-	SEXP ans;
-	int ans_length, i;
-	CharArr *arr_elt;
-	char *dest;
-
-	ans_length = 0;
-	for (i = 0, arr_elt = arr.elts; i < arr.nelt; i++, arr_elt++)
-		ans_length += arr_elt->nelt;
-	PROTECT(ans = NEW_RAW(ans_length));
-	dest = (char *) RAW(ans);
-	for (i = 0, arr_elt = arr.elts; i < arr.nelt; i++, arr_elt++) {
-		if (lkup == R_NilValue) {
-			_Biostrings_memcpy_to_i1i2(0, arr_elt->nelt - 1,
-				dest, arr_elt->nelt,
-				arr_elt->elts, arr_elt->nelt, sizeof(char));
-		} else {
-			_Biostrings_translate_charcpy_to_i1i2(0, arr_elt->nelt - 1,
-				dest, arr_elt->nelt,
-				arr_elt->elts, arr_elt->nelt,
-				INTEGER(lkup), LENGTH(lkup));
-		}
-		dest += arr_elt->nelt;
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
  * --- .Call ENTRY POINT ---
  */
 SEXP copy_subXRaw(SEXP x, SEXP start, SEXP nchar, SEXP lkup)
@@ -251,7 +207,6 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP colla
 {
 	int nseq;
 	CharAArr arr;
-	SEXP tag, ans;
 
 	nseq = LENGTH(safe_starts);
 	if (collapse == R_NilValue) {
@@ -263,10 +218,7 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP colla
 			error("'collapse' can only be NULL or the empty string for now");
 	}
 	arr = _new_CharAArr_from_STRSXP(nseq, x, INTEGER(safe_starts), INTEGER(safe_widths));
-	PROTECT(tag = new_RAW_from_CharAArr(arr, lkup));
-	ans = _new_XRaw(tag);
-	UNPROTECT(1);
-	return ans;
+	return _new_XRaw_from_CharAArr(arr, lkup);
 }
 
 /*
@@ -276,31 +228,10 @@ SEXP new_XRaw_from_XString(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup
 {
 	int nseq;
 	CharAArr arr;
-	SEXP tag, ans;
 
 	nseq = LENGTH(safe_starts);
 	arr = _new_CharAArr_from_XString(nseq, x, INTEGER(safe_starts), INTEGER(safe_widths));
-	PROTECT(tag = new_RAW_from_CharAArr(arr, lkup));
-	ans = _new_XRaw(tag);
-	UNPROTECT(1);
-	return ans;
-}
-
-
-/****************************************************************************
- * Converting a set of sequences into an XStringSet object.
- */
-
-SEXP _new_XStringSet_from_seqsnames(const char *baseClass,
-		CharAArr seqs, CharAArr names)
-{
-	SEXP ans, start, width;
-
-	PROTECT(start = ScalarInteger(99));
-	PROTECT(width = ScalarInteger(6));
-	PROTECT(ans = _new_IRanges(start, width, R_NilValue));
-	UNPROTECT(3);
-	return ans;
+	return _new_XRaw_from_CharAArr(arr, lkup);
 }
 
 

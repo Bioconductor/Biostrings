@@ -15,17 +15,20 @@ static const R_CallMethodDef callMethods[] = {
 	{"int_to_adjacent_ranges", (DL_FUNC) &int_to_adjacent_ranges, 1},
 	{"reduce_IRanges", (DL_FUNC) &reduce_IRanges, 2},
 
-/* XRaw.c */
-	{"Biostrings_debug_XRaw", (DL_FUNC) &Biostrings_debug_XRaw, 0},
+/* XRaw_utils.c */
+	{"Biostrings_debug_XRaw_utils", (DL_FUNC) &Biostrings_debug_XRaw_utils, 0},
 
 	{"Biostrings_sexp_address", (DL_FUNC) &Biostrings_sexp_address, 1},
+	{"Biostrings_safe_explode", (DL_FUNC) &Biostrings_safe_explode, 1},
 	{"Biostrings_xp_show", (DL_FUNC) &Biostrings_xp_show, 1},
 	{"Biostrings_xp_new", (DL_FUNC) &Biostrings_xp_new, 0},
-	{"Biostrings_safe_explode", (DL_FUNC) &Biostrings_safe_explode, 1},
-
 	{"Biostrings_XRaw_alloc", (DL_FUNC) &Biostrings_XRaw_alloc, 2},
 	{"Biostrings_XRaw_get_show_string", (DL_FUNC) &Biostrings_XRaw_get_show_string, 1},
 	{"Biostrings_XRaw_length", (DL_FUNC) &Biostrings_XRaw_length, 1},
+
+/* XRaw_fillread.c */
+	{"Biostrings_debug_XRaw_fillread", (DL_FUNC) &Biostrings_debug_XRaw_fillread, 0},
+
 	{"Biostrings_XRaw_memcmp", (DL_FUNC) &Biostrings_XRaw_memcmp, 5},
 
 	{"Biostrings_XRaw_copy_from_i1i2", (DL_FUNC) &Biostrings_XRaw_copy_from_i1i2, 4},
@@ -157,8 +160,9 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_get_XString_charseq", (DL_FUNC) &_get_XString_charseq);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_length", (DL_FUNC) &_get_XStringSet_length);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_charseq", (DL_FUNC) &_get_XStringSet_charseq);
+	R_RegisterCCallable("Biostrings", "_new_XStringSet", (DL_FUNC) &_new_XStringSet);
+	R_RegisterCCallable("Biostrings", "_set_XStringSet_names", (DL_FUNC) &_set_XStringSet_names);
 	R_RegisterCCallable("Biostrings", "_new_CharAArr_from_BBuf", (DL_FUNC) &_new_CharAArr_from_BBuf);
-	R_RegisterCCallable("Biostrings", "_new_XStringSet_from_seqsnames", (DL_FUNC) &_new_XStringSet_from_seqsnames);
 	R_RegisterCCallable("Biostrings", "_init_match_reporting", (DL_FUNC) &_init_match_reporting);
 	R_RegisterCCallable("Biostrings", "_report_match", (DL_FUNC) &_report_match);
 	R_RegisterCCallable("Biostrings", "_reported_matches_asSEXP", (DL_FUNC) &_reported_matches_asSEXP);

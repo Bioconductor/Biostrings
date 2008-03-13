@@ -8,11 +8,6 @@
 ### methods.
 ###
 
-debug_find_palindromes <- function()
-{
-    invisible(.Call("find_palindromes_debug", PACKAGE="Biostrings"))
-}
-
 ### Return a list with the "start" and the "end" components.
 .find.palindromes <- function(subject, min.armlength,
                               max.looplength, min.looplength,

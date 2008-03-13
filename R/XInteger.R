@@ -26,11 +26,6 @@
 
 setClass("XInteger", representation(xp="externalptr"))
 
-debug_XInteger <- function()
-{
-    invisible(.Call("Biostrings_debug_XInteger", PACKAGE="Biostrings"))
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization.
