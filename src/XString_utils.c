@@ -150,7 +150,7 @@ SEXP _new_XString_from_CharAArr(const char *class, CharAArr seqs)
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(data = _new_XRaw_from_CharAArr(seqs, lkup));
-	PROTECT(ans = _new_XString(class, data, 1, _get_XRaw_length(data)));
+	PROTECT(ans = _new_XString(class, data, 0, _get_XRaw_length(data)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
 	else
