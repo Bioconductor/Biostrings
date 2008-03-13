@@ -32,6 +32,7 @@ In 2.7
   or RNA into AA.
 
 - XStringSet objects:
+    o Fix validObject() for XStringSet objects (currently broken).
     o DNAStringSet(x) should not do anything when x is already a DNAStringSet
       _instance_ (class(x) == "DNAStringSet").
     o Add methods for XStringSet objects everywhere there are methods defined
