@@ -3,15 +3,6 @@
 
 #define DEBUG_BIOSTRINGS 1
 
-/*
- * SEXP-agnostic representation of a sequence used in many places in Biostrings
- * by SEXP-agnostic C code.
- */
-typedef struct charseq {
-	const char *seq;
-	int length;
-} CharSeq;
-
 
 /* utils.c */
 
@@ -520,30 +511,30 @@ SEXP Biostrings_debug_seqs_to_seqs();
 
 CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf);
 
-const CharSeq *STRSXP_to_charseqs(
+CharAArr _new_CharAArr_from_STRSXP(
+	int nelt,
 	SEXP x,
-	int nseq,
 	const int *safe_starts,
 	const int *safe_widths
 );
 
-const CharSeq *XString_to_charseqs(
+CharAArr _new_CharAArr_from_XString(
+	int nelt,
 	SEXP x,
-	int nseq,
 	const int *safe_starts,
 	const int *safe_widths
 );
 
-const CharSeq *XStringSet_to_charseqs(
+CharAArr _new_CharAArr_from_XStringSet(
+	int nelt,
 	SEXP x,
-	int nseq,
 	const int *safe_starts,
 	const int *safe_widths
 );
 
-const CharSeq *XStringList_to_charseqs(
+CharAArr _new_CharAArr_from_XStringList(
+	int nelt,
 	SEXP x,
-	int nseq,
 	const int *safe_starts,
 	const int *safe_widths
 );
