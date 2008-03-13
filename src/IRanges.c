@@ -66,26 +66,26 @@ static StartEnd uSEW_to_StartEnd(int start, int end, int width)
 
 int _get_IRanges_length(SEXP x)
 {
-	SEXP ranges;
+	SEXP ranges_slot;
 
-	ranges = GET_SLOT(x, install("ranges"));
-	return LENGTH(VECTOR_ELT(ranges, 0));
+	ranges_slot = GET_SLOT(x, install("ranges"));
+	return LENGTH(VECTOR_ELT(ranges_slot, 0));
 }
 
 const int *_get_IRanges_start(SEXP x)
 {
-	SEXP ranges;
+	SEXP ranges_slot;
 
-	ranges = GET_SLOT(x, install("ranges"));
-	return INTEGER(VECTOR_ELT(ranges, 0));
+	ranges_slot = GET_SLOT(x, install("ranges"));
+	return INTEGER(VECTOR_ELT(ranges_slot, 0));
 }
 
 const int *_get_IRanges_width(SEXP x)
 {
-	SEXP ranges;
+	SEXP ranges_slot;
 
-	ranges = GET_SLOT(x, install("ranges"));
-	return INTEGER(VECTOR_ELT(ranges, 1));
+	ranges_slot = GET_SLOT(x, install("ranges"));
+	return INTEGER(VECTOR_ELT(ranges_slot, 1));
 }
 
 /*
@@ -138,12 +138,12 @@ static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
  */
 SEXP _new_IRanges(SEXP start, SEXP width, SEXP names)
 {
-	SEXP class_def, ans, ans_slot;
+	SEXP class_def, ans, ranges_slot;
 
 	class_def = MAKE_CLASS(".IRanges");
 	PROTECT(ans = NEW_OBJECT(class_def));
-	PROTECT(ans_slot = mk_ranges_slot(start, width, names));
-	SET_SLOT(ans, mkChar("ranges"), ans_slot);
+	PROTECT(ranges_slot = mk_ranges_slot(start, width, names));
+	SET_SLOT(ans, mkChar("ranges"), ranges_slot);
 	UNPROTECT(2);
 	return ans;
 }
@@ -175,11 +175,11 @@ SEXP _new_IRanges_from_CharAArr(CharAArr seqs)
 
 SEXP _replace_IRanges_names(SEXP x, SEXP names)
 {
-	SEXP ranges, start, width, ans;
+	SEXP ranges_slot, start, width, ans;
 
-	ranges = GET_SLOT(x, install("ranges"));
-	PROTECT(start = duplicate(VECTOR_ELT(ranges, 0)));
-	PROTECT(width = duplicate(VECTOR_ELT(ranges, 1)));
+	ranges_slot = GET_SLOT(x, install("ranges"));
+	PROTECT(start = duplicate(VECTOR_ELT(ranges_slot, 0)));
+	PROTECT(width = duplicate(VECTOR_ELT(ranges_slot, 1)));
 	PROTECT(ans = _new_IRanges(start, width, names));
 	UNPROTECT(3);
 	return ans;

@@ -178,22 +178,35 @@ const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
 }
 
 /*
+ * Do NOT try to make this a .Call() entry point!
+ * Its arguments are NOT duplicated so it would be a disaster if they were
+ * coming from the user space.
+ */
+static SEXP new_XStringSet_from_IRanges_and_super(SEXP iranges, SEXP super)
+{
+	char classbuf[80]; // longest string will be "DNAStringSet"
+	SEXP class_def, ans, ranges_slot;
+
+	snprintf(classbuf, sizeof(classbuf), "%sSet", get_class(super));
+	class_def = MAKE_CLASS(classbuf);
+	PROTECT(ans = NEW_OBJECT(class_def));
+	PROTECT(ranges_slot = duplicate(GET_SLOT(iranges, install("ranges"))));
+	SET_SLOT(ans, mkChar("ranges"), ranges_slot);
+	SET_SLOT(ans, mkChar("super"), super);
+	UNPROTECT(2);
+	return ans;
+}
+
+/*
  * Assume that the sequences in 'seqs' are NOT already encoded.
  */
 SEXP _new_XStringSet(const char *baseClass, CharAArr seqs)
 {
-	char classbuf[13]; // longest string will be "DNAStringSet"
-	SEXP class_def, ans, ans_super, tmp, ans_ranges;
+	SEXP iranges, super, ans;
 
-	snprintf(classbuf, sizeof(classbuf), "%sSet", baseClass);
-	class_def = MAKE_CLASS(classbuf);
-	PROTECT(ans = NEW_OBJECT(class_def));
-	PROTECT(ans_super = _new_XString_from_CharAArr(baseClass, seqs));
-	SET_SLOT(ans, mkChar("super"), ans_super);
-	UNPROTECT(1);
-	PROTECT(tmp = _new_IRanges_from_CharAArr(seqs));
-	PROTECT(ans_ranges = duplicate(GET_SLOT(tmp, install("ranges"))));
-	SET_SLOT(ans, mkChar("ranges"), ans_ranges);
+	PROTECT(iranges = _new_IRanges_from_CharAArr(seqs));
+	PROTECT(super = _new_XString_from_CharAArr(baseClass, seqs));
+	PROTECT(ans = new_XStringSet_from_IRanges_and_super(iranges, super));
 	UNPROTECT(3);
 	return ans;
 }
@@ -203,13 +216,13 @@ SEXP _new_XStringSet(const char *baseClass, CharAArr seqs)
  */
 void _set_XStringSet_names(SEXP x, CharAArr names)
 {
-	SEXP new_names, old_ranges, new_ranges;
+	SEXP new_names, iranges, ranges_slot;
 
 	PROTECT(new_names = _new_STRSXP_from_CharAArr(names, R_NilValue));
-	old_ranges = GET_SLOT(x, install("ranges"));
-	PROTECT(new_ranges = _replace_IRanges_names(old_ranges, new_names));
-	SET_SLOT(x, mkChar("ranges"), new_ranges);
-	UNPROTECT(2);
+	PROTECT(iranges = _replace_IRanges_names(x, new_names));
+	PROTECT(ranges_slot = duplicate(GET_SLOT(iranges, install("ranges"))));
+	SET_SLOT(x, mkChar("ranges"), ranges_slot);
+	UNPROTECT(3);
 	return;
 }
 
