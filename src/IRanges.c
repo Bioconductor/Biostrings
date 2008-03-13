@@ -88,16 +88,24 @@ const int *_get_IRanges_width(SEXP x)
 	return INTEGER(VECTOR_ELT(ranges, 1));
 }
 
+/*
+ * Note that 'start' and 'width' must NOT contain NAs.
+ * mk_ranges_slot() trusts the caller and does NOT check this!
+ */
 static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
 {
 	SEXP ans, ans_names, ans_row_names;
 	int i;
 
+	if (LENGTH(width) != LENGTH(start))
+		error("number of starts and number of widths differ");
 	/* set the elements and prepare their names */
 	if (names == R_NilValue) {
 		PROTECT(ans = NEW_LIST(2));
 		PROTECT(ans_names = NEW_CHARACTER(2));
 	} else {
+		if (LENGTH(names) != LENGTH(start))
+			error("number of names and number of elements differ");
 		PROTECT(ans = NEW_LIST(3));
 		PROTECT(ans_names = NEW_CHARACTER(3));
 	}
