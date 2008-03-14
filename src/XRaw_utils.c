@@ -221,11 +221,11 @@ SEXP _new_XRaw(SEXP tag)
         return ans;
 }
 
-SEXP _new_XRaw_from_CharAArr(CharAArr seqs, SEXP lkup)
+SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 {
 	SEXP tag, ans;
 	int tag_length, i;
-	CharArr *seq;
+	RoSeq *seq;
 	char *dest;
 
 	tag_length = 0;
@@ -253,12 +253,12 @@ SEXP _new_XRaw_from_CharAArr(CharAArr seqs, SEXP lkup)
 
 
 /****************************************************************************
- * Converting a CharAArr struct (array of arrays of const chars) into a set
+ * Converting an RoSeqs struct (array of arrays of const chars) into a set
  * of sequences.
  * FIXME: This has nothing to do with XRaw objects! Find another place for it
  */
 
-static SEXP _new_CHARSXP_from_CharArr(CharArr seq, SEXP lkup)
+static SEXP _new_CHARSXP_from_RoSeq(RoSeq seq, SEXP lkup)
 {
 	// IMPORTANT: We use user-controlled memory for this private memory
 	// pool so it is persistent between calls to .Call().
@@ -273,7 +273,7 @@ static SEXP _new_CHARSXP_from_CharArr(CharArr seq, SEXP lkup)
 	if (new_bufsize > bufsize) {
 		new_buf = (char *) realloc(buf, new_bufsize);
 		if (new_buf == NULL)
-			error("_new_CHARSXP_from_CharArr(): "
+			error("_new_CHARSXP_from_RoSeq(): "
 			      "call to realloc() failed");
 		buf = new_buf;
 		bufsize = new_bufsize;
@@ -292,15 +292,15 @@ static SEXP _new_CHARSXP_from_CharArr(CharArr seq, SEXP lkup)
 	return mkChar(buf);
 }
 
-SEXP _new_STRSXP_from_CharAArr(CharAArr seqs, SEXP lkup)
+SEXP _new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 {
 	SEXP ans;
 	int i;
-	CharArr *seq;
+	RoSeq *seq;
 
 	PROTECT(ans = NEW_CHARACTER(seqs.nelt));
 	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++)
-		SET_STRING_ELT(ans, i, _new_CHARSXP_from_CharArr(*seq, lkup));
+		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(*seq, lkup));
 	UNPROTECT(1);
 	return ans;
 }

@@ -148,9 +148,9 @@ SEXP _new_IRanges(SEXP start, SEXP width, SEXP names)
 	return ans;
 }
 
-SEXP _new_IRanges_from_CharAArr(CharAArr seqs)
+SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
 {
-	CharArr *seq;
+	RoSeq *seq;
 	SEXP start, width, ans;
 	int *start_elt, *width_elt, *start_prev_elt, i;
 

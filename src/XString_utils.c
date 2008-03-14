@@ -131,7 +131,7 @@ SEXP _new_XString(const char *class, SEXP data, int offset, int length)
 	return ans;
 }
 
-SEXP _new_XString_from_CharAArr(const char *class, CharAArr seqs)
+SEXP _new_XString_from_RoSeqs(const char *class, RoSeqs seqs)
 {
 	const int *enc_lkup;
         SEXP lkup, data, ans;
@@ -144,7 +144,7 @@ SEXP _new_XString_from_CharAArr(const char *class, CharAArr seqs)
 		copy_lkup(enc_lkup, STATIC_LKUP_LENGTH,
 			  INTEGER(lkup), LENGTH(lkup));
 	}
-	PROTECT(data = _new_XRaw_from_CharAArr(seqs, lkup));
+	PROTECT(data = _new_XRaw_from_RoSeqs(seqs, lkup));
 	PROTECT(ans = _new_XString(class, data, 0, _get_XRaw_length(data)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
@@ -200,12 +200,12 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP iranges, SEXP super)
 /*
  * Assume that the sequences in 'seqs' are NOT already encoded.
  */
-SEXP _new_XStringSet(const char *baseClass, CharAArr seqs)
+SEXP _new_XStringSet(const char *baseClass, RoSeqs seqs)
 {
 	SEXP iranges, super, ans;
 
-	PROTECT(iranges = _new_IRanges_from_CharAArr(seqs));
-	PROTECT(super = _new_XString_from_CharAArr(baseClass, seqs));
+	PROTECT(iranges = _new_IRanges_from_RoSeqs(seqs));
+	PROTECT(super = _new_XString_from_RoSeqs(baseClass, seqs));
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(iranges, super));
 	UNPROTECT(3);
 	return ans;
@@ -214,11 +214,11 @@ SEXP _new_XStringSet(const char *baseClass, CharAArr seqs)
 /*
  * Does NOT duplicate 'x'. The @ranges slot is modified in place!
  */
-void _set_XStringSet_names(SEXP x, CharAArr names)
+void _set_XStringSet_names(SEXP x, RoSeqs names)
 {
 	SEXP new_names, iranges, ranges_slot;
 
-	PROTECT(new_names = _new_STRSXP_from_CharAArr(names, R_NilValue));
+	PROTECT(new_names = _new_STRSXP_from_RoSeqs(names, R_NilValue));
 	PROTECT(iranges = _replace_IRanges_names(x, new_names));
 	PROTECT(ranges_slot = duplicate(GET_SLOT(iranges, install("ranges"))));
 	SET_SLOT(x, mkChar("ranges"), ranges_slot);

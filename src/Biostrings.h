@@ -264,7 +264,7 @@ SEXP _new_IRanges(
 	SEXP names
 );
 
-SEXP _new_IRanges_from_CharAArr(CharAArr seqs);
+SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs);
 
 SEXP _replace_IRanges_names(
 	SEXP x,
@@ -313,13 +313,13 @@ SEXP Biostrings_XRaw_length(SEXP xraw_xp);
 
 SEXP _new_XRaw(SEXP tag);
 
-SEXP _new_XRaw_from_CharAArr(
-	CharAArr seqs,
+SEXP _new_XRaw_from_RoSeqs(
+	RoSeqs seqs,
 	SEXP lkup
 );
 
-SEXP _new_STRSXP_from_CharAArr(
-	CharAArr seqs,
+SEXP _new_STRSXP_from_RoSeqs(
+	RoSeqs seqs,
 	SEXP lkup
 );
 
@@ -518,9 +518,9 @@ SEXP _new_XString(
 	int length
 );
 
-SEXP _new_XString_from_CharAArr(
+SEXP _new_XString_from_RoSeqs(
 	const char *class,
-	CharAArr seqs
+	RoSeqs seqs
 );
 
 int _get_XStringSet_length(SEXP x);
@@ -533,12 +533,12 @@ const char *_get_XStringSet_charseq(
 
 SEXP _new_XStringSet(
 	const char *baseClass,
-	CharAArr seqs
+	RoSeqs seqs
 );
 
 void _set_XStringSet_names(
 	SEXP x,
-	CharAArr names
+	RoSeqs names
 );
 
 int _get_XStringList_length(SEXP x);
@@ -556,30 +556,30 @@ SEXP XStrings_to_nchars(SEXP x_seqs);
 
 SEXP Biostrings_debug_seqs_to_seqs();
 
-void narrow_CharAArr(
-	CharAArr *seqs,
+void narrow_RoSeqs(
+	RoSeqs *seqs,
 	const int *safe_starts,
 	const int *safe_widths
 );
 
-CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf);
+RoSeqs _new_RoSeqs_from_BBuf(CharBBuf cbbuf);
 
-CharAArr _new_CharAArr_from_STRSXP(
+RoSeqs _new_RoSeqs_from_STRSXP(
 	int nseq,
 	SEXP x
 );
 
-CharAArr _new_CharAArr_from_XString(
+RoSeqs _new_RoSeqs_from_XString(
 	int nseq,
 	SEXP x
 );
 
-CharAArr _new_CharAArr_from_XStringSet(
+RoSeqs _new_RoSeqs_from_XStringSet(
 	int nseq,
 	SEXP x
 );
 
-CharAArr _new_CharAArr_from_XStringList(
+RoSeqs _new_RoSeqs_from_XStringList(
 	int nseq,
 	SEXP x
 );

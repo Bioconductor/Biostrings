@@ -1,10 +1,19 @@
 /*****************************************************************************
- Biostrings C interface
- ----------------------
+ Biostrings C interface: prototypes
+ ----------------------------------
 
- This file contains the prototypes of a subset of Biostrings C routines that
- can be called by C code in other packages.
- In order to use these routines in your package, you need to do the following:
+   The Biostrings C interface is splitted in 2 files:
+     1. Biostrings_defines.h (in this directory): contains the typedefs and
+        defines of the interface.
+     2. Biostrings_interface.h (this file): contains the prototypes of the
+        Biostrings C routines that are part of the interface.
+
+ -----------------------------------------------------------------------------
+
+   This file contains the prototypes of a subset of Biostrings C routines that
+   can be called by C code in other packages.
+   In order to use these routines in your package, you need to do the
+   following:
 
    a. Add the Biostrings package to the 'Depends:', 'Imports:' and 'LinkingTo:'
       fields of your DESCRIPTION file. Note that most of the times you should
@@ -79,10 +88,10 @@
           Note that this code will only work if x_XString is a DNAString
           instance!
 
- Please consult the "System and foreign language interfaces" section in the
- Writing R Extensions manual for more information:
+   Please consult the "System and foreign language interfaces" section in the
+   Writing R Extensions manual for more information:
 
-   http://cran.r-project.org/doc/manuals/R-exts.html#System-and-foreign-language-interfaces
+     http://cran.r-project.org/doc/manuals/R-exts.html
 
  *****************************************************************************/
 #include "Biostrings_defines.h"
@@ -128,12 +137,12 @@ const char *get_XStringSet_charseq(
 
 SEXP new_XStringSet(
 	const char *baseClass,
-	CharAArr seqs
+	RoSeqs seqs
 );
 
 void set_XStringSet_names(
 	SEXP x,
-	CharAArr names
+	RoSeqs names
 );
 
 
@@ -141,9 +150,9 @@ void set_XStringSet_names(
  * Converting a set of sequences from one internal representation into another.
  */
 
-CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf);
+RoSeqs new_RoSeqs_from_BBuf(CharBBuf cbbuf);
 
-SEXP new_STRSXP_from_CharAArr(CharAArr seqs, SEXP lkup);
+SEXP new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup);
 
 
 /*

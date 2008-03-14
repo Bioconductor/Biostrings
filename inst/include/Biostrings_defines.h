@@ -1,3 +1,17 @@
+/*****************************************************************************
+ Biostrings C interface: typedefs and defines
+ --------------------------------------------
+
+   The Biostrings C interface is splitted in 2 files:
+     1. Biostrings_defines.h (this file): contains the typedefs and defines
+        of the interface.
+     2. Biostrings_interface.h (in this directory): contains the prototypes
+        of the Biostrings C routines that are part of the interface.
+
+   Please consult Biostrings_interface.h for how to use this interface in your
+   package.
+
+ *****************************************************************************/
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
@@ -51,19 +65,19 @@ typedef struct cbbuf {
 /*
  * Two additional types:
  *
- *   o CharArr:  array of const chars (think of this as a pointer to a non
+ *   o RoSeq:  array of const chars (think of this as a pointer to a non
  *               null-terminated sequence of chars);
- *   o CharAArr: array of arrays of const chars.
+ *   o RoSeqs: array of arrays of const chars.
  */
-typedef struct carr {
+typedef struct roseq {
 	const char *elts;
 	int nelt;
-} CharArr;
+} RoSeq;
 
-typedef struct caarr {
-	CharArr *elts;
+typedef struct roseqs {
+	RoSeq *elts;
 	int nelt;
-} CharAArr;
+} RoSeqs;
 
 
 /*

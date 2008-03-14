@@ -20,11 +20,11 @@ SEXP Biostrings_debug_seqs_to_seqs()
 	return R_NilValue;
 }
 
-static CharAArr new_CharAArr(int nelt)
+static RoSeqs new_RoSeqs(int nelt)
 {
-	CharAArr seqs;
+	RoSeqs seqs;
 
-	seqs.elts = Salloc((long) nelt, CharArr);
+	seqs.elts = Salloc((long) nelt, RoSeq);
 	seqs.nelt = nelt;
 	return seqs;
 }
@@ -48,11 +48,11 @@ static int start2offset(int safe_start)
 	return --safe_start;
 }
 
-void narrow_CharAArr(CharAArr *seqs,
+void narrow_RoSeqs(RoSeqs *seqs,
 		const int *safe_starts, const int *safe_widths)
 {
 	int i;
-	CharArr *seq;
+	RoSeq *seq;
 
 	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
 		if (safe_starts != NULL)
@@ -65,20 +65,20 @@ void narrow_CharAArr(CharAArr *seqs,
 
 
 /****************************************************************************
- * Converting a set of sequences into a CharAArr struct (array of arrays of
+ * Converting a set of sequences into an RoSeqs struct (array of arrays of
  * const chars).
  * For all these functions 'safe_starts' must either be NULL of have at least
  * 'nelt' elements. Same for 'safe_widths'.
  */
 
-CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf)
+RoSeqs _new_RoSeqs_from_BBuf(CharBBuf cbbuf)
 {
-	CharAArr seqs;
-	CharArr *elt1;
+	RoSeqs seqs;
+	RoSeq *elt1;
 	CharBuf *elt2;
 	int i;
 
-	seqs = new_CharAArr(cbbuf.nelt);
+	seqs = new_RoSeqs(cbbuf.nelt);
 	for (i = 0, elt1 = seqs.elts, elt2 = cbbuf.elts;
 	     i < cbbuf.nelt;
 	     i++, elt1++, elt2++) {
@@ -88,17 +88,17 @@ CharAArr _new_CharAArr_from_BBuf(CharBBuf cbbuf)
 	return seqs;
 }
 
-CharAArr _new_CharAArr_from_STRSXP(int nseq, SEXP x)
+RoSeqs _new_RoSeqs_from_STRSXP(int nseq, SEXP x)
 {
-	CharAArr seqs;
-	CharArr *elt1;
+	RoSeqs seqs;
+	RoSeq *elt1;
 	SEXP elt2;
 	int i;
 
 	if (nseq > LENGTH(x))
-		error("_new_CharAArr_from_STRSXP(): "
+		error("_new_RoSeqs_from_STRSXP(): "
 		      "'nseq' must be <= 'LENGTH(x)'");
-	seqs = new_CharAArr(nseq);
+	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++) {
 		elt2 = STRING_ELT(x, i);
 		if (elt2 == NA_STRING)
@@ -109,43 +109,43 @@ CharAArr _new_CharAArr_from_STRSXP(int nseq, SEXP x)
 	return seqs;
 }
 
-CharAArr _new_CharAArr_from_XString(int nseq, SEXP x)
+RoSeqs _new_RoSeqs_from_XString(int nseq, SEXP x)
 {
-	CharAArr seqs;
-	CharArr *elt1;
+	RoSeqs seqs;
+	RoSeq *elt1;
 	int i;
 
-	seqs = new_CharAArr(nseq);
+	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
 		elt1->elts = _get_XString_charseq(x, &(elt1->nelt));
 	return seqs;
 }
 
-CharAArr _new_CharAArr_from_XStringSet(int nseq, SEXP x)
+RoSeqs _new_RoSeqs_from_XStringSet(int nseq, SEXP x)
 {
-	CharAArr seqs;
-	CharArr *elt1;
+	RoSeqs seqs;
+	RoSeq *elt1;
 	int i;
 
 	if (nseq > _get_XStringSet_length(x))
-		error("_new_CharAArr_from_XStringSet(): "
+		error("_new_RoSeqs_from_XStringSet(): "
 		      "'nseq' must be <= '_get_XStringSet_length(x)'");
-	seqs = new_CharAArr(nseq);
+	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
 		elt1->elts = _get_XStringSet_charseq(x, i, &(elt1->nelt));
 	return seqs;
 }
 
-CharAArr _new_CharAArr_from_XStringList(int nseq, SEXP x)
+RoSeqs _new_RoSeqs_from_XStringList(int nseq, SEXP x)
 {
-	CharAArr seqs;
-	CharArr *elt1;
+	RoSeqs seqs;
+	RoSeq *elt1;
 	int i;
 
 	if (nseq > _get_XStringList_length(x))
-		error("_new_CharAArr_from_XStringList(): "
+		error("_new_RoSeqs_from_XStringList(): "
 		      "'nseq' must be <= '_get_XStringList_length(x)'");
-	seqs = new_CharAArr(nseq);
+	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
 		elt1->elts = _get_XStringList_charseq(x, i, &(elt1->nelt));
 	return seqs;
@@ -175,7 +175,7 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths,
 		SEXP collapse, SEXP lkup)
 {
 	int nseq;
-	CharAArr seqs;
+	RoSeqs seqs;
 
 	nseq = LENGTH(safe_starts);
 	if (collapse == R_NilValue) {
@@ -188,9 +188,9 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths,
 			error("'collapse' can only be NULL "
 			      "or the empty string for now");
 	}
-	seqs = _new_CharAArr_from_STRSXP(nseq, x);
-	narrow_CharAArr(&seqs, INTEGER(safe_starts), INTEGER(safe_widths));
-	return _new_XRaw_from_CharAArr(seqs, lkup);
+	seqs = _new_RoSeqs_from_STRSXP(nseq, x);
+	narrow_RoSeqs(&seqs, INTEGER(safe_starts), INTEGER(safe_widths));
+	return _new_XRaw_from_RoSeqs(seqs, lkup);
 }
 
 /*
@@ -199,12 +199,12 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP safe_starts, SEXP safe_widths,
 SEXP new_XRaw_from_XString(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup)
 {
 	int nseq;
-	CharAArr seqs;
+	RoSeqs seqs;
 
 	nseq = LENGTH(safe_starts);
-	seqs = _new_CharAArr_from_XString(nseq, x);
-	narrow_CharAArr(&seqs, INTEGER(safe_starts), INTEGER(safe_widths));
-	return _new_XRaw_from_CharAArr(seqs, lkup);
+	seqs = _new_RoSeqs_from_XString(nseq, x);
+	narrow_RoSeqs(&seqs, INTEGER(safe_starts), INTEGER(safe_widths));
+	return _new_XRaw_from_RoSeqs(seqs, lkup);
 }
 
 

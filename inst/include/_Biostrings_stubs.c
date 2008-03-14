@@ -85,8 +85,8 @@ const char *get_XStringSet_charseq(SEXP x, int i, int *nchar)
 	return fun(x, i, nchar);
 }
 
-typedef SEXP (*new_XStringSet_FUNTYPE)(const char *, CharAArr);
-SEXP new_XStringSet(const char *baseClass, CharAArr seqs)
+typedef SEXP (*new_XStringSet_FUNTYPE)(const char *, RoSeqs);
+SEXP new_XStringSet(const char *baseClass, RoSeqs seqs)
 {
 	static new_XStringSet_FUNTYPE fun = NULL;
 
@@ -96,8 +96,8 @@ SEXP new_XStringSet(const char *baseClass, CharAArr seqs)
 	return fun(baseClass, seqs);
 }
 
-typedef void (*set_XStringSet_names_FUNTYPE)(SEXP, CharAArr);
-void set_XStringSet_names(SEXP x, CharAArr names)
+typedef void (*set_XStringSet_names_FUNTYPE)(SEXP, RoSeqs);
+void set_XStringSet_names(SEXP x, RoSeqs names)
 {
 	static set_XStringSet_names_FUNTYPE fun = NULL;
 
@@ -107,25 +107,25 @@ void set_XStringSet_names(SEXP x, CharAArr names)
 	return fun(x, names);
 }
 
-typedef CharAArr (*new_CharAArr_from_BBuf_FUNTYPE)(CharBBuf);
-CharAArr new_CharAArr_from_BBuf(CharBBuf cbbuf)
+typedef RoSeqs (*new_RoSeqs_from_BBuf_FUNTYPE)(CharBBuf);
+RoSeqs new_RoSeqs_from_BBuf(CharBBuf cbbuf)
 {
-	static new_CharAArr_from_BBuf_FUNTYPE fun = NULL;
+	static new_RoSeqs_from_BBuf_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (new_CharAArr_from_BBuf_FUNTYPE)
-			R_GetCCallable("Biostrings", "_new_CharAArr_from_BBuf");
+		fun = (new_RoSeqs_from_BBuf_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_RoSeqs_from_BBuf");
 	return fun(cbbuf);
 }
 
-typedef SEXP (*new_STRSXP_from_CharAArr_FUNTYPE)(CharAArr, SEXP);
-SEXP new_STRSXP_from_CharAArr(CharAArr seqs, SEXP lkup)
+typedef SEXP (*new_STRSXP_from_RoSeqs_FUNTYPE)(RoSeqs, SEXP);
+SEXP new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 {
-	static new_STRSXP_from_CharAArr_FUNTYPE fun = NULL;
+	static new_STRSXP_from_RoSeqs_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (new_STRSXP_from_CharAArr_FUNTYPE)
-			R_GetCCallable("Biostrings", "_new_STRSXP_from_CharAArr");
+		fun = (new_STRSXP_from_RoSeqs_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_STRSXP_from_RoSeqs");
 	return fun(seqs, lkup);
 }
 
