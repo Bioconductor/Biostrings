@@ -1,5 +1,4 @@
 #include "Biostrings.h"
-#include <R_ext/Rdynload.h>
 
 static const R_CallMethodDef callMethods[] = {
 
