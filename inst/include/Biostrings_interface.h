@@ -101,6 +101,10 @@
  * Low-level manipulation of the extendable buffers.
  */
 
+CharBuf new_CharBuf_from_string(
+	const char *string
+);
+
 CharBBuf new_CharBBuf(
 	int buflength,
 	int nelt
@@ -110,6 +114,7 @@ void append_string_to_CharBBuf(
 	CharBBuf *cbbuf,
 	const char *string
 );
+
 
 /*
  * Low-level manipulation of XString and XStringSet objects.

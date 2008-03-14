@@ -1,5 +1,16 @@
 #include "Biostrings_interface.h"
 
+typedef CharBuf (*new_CharBuf_from_string_FUNTYPE)(const char *);
+CharBBuf new_CharBuf_from_string(const char *string)
+{
+	static new_CharBuf_from_string_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (new_CharBuf_from_string_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_CharBuf_from_string");
+	return fun(string);
+}
+
 typedef CharBBuf (*new_CharBBuf_FUNTYPE)(int, int);
 CharBBuf new_CharBBuf(int buflength, int nelt)
 {
