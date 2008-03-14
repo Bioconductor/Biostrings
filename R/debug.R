@@ -30,6 +30,11 @@ debug_XInteger <- function()
     invisible(.Call("Biostrings_debug_XInteger", PACKAGE="Biostrings"))
 }
 
+debug_XString_utils <- function()
+{
+    invisible(.Call("Biostrings_debug_XString_utils", PACKAGE="Biostrings"))
+}
+
 debug_seqs_to_seqs <- function()
 {
     invisible(.Call("Biostrings_debug_seqs_to_seqs", PACKAGE="Biostrings"))

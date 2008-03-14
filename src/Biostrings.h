@@ -494,6 +494,8 @@ SEXP XInteger_write_ints_to_subset(
 
 /* XString_utils.c */
 
+SEXP Biostrings_debug_XString_utils();
+
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup);
 
 char _DNAencode(char c);

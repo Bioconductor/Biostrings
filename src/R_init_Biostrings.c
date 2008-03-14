@@ -68,6 +68,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"XInteger_write_ints_to_subset", (DL_FUNC) &XInteger_write_ints_to_subset, 3},
 
 /* XString_utils.c */
+	{"Biostrings_debug_XString_utils", (DL_FUNC) &Biostrings_debug_XString_utils, 0},
 	{"init_DNAlkups", (DL_FUNC) &init_DNAlkups, 2},
 	{"init_RNAlkups", (DL_FUNC) &init_RNAlkups, 2},
 	{"XStrings_to_nchars", (DL_FUNC) &XStrings_to_nchars, 1},

@@ -85,9 +85,9 @@ void _IntBuf_insert_at(IntBuf *ibuf, int at, int val)
 
 	if (ibuf->nelt >= ibuf->buflength)
 		_IntBuf_extend(ibuf);
-	elt1 = ibuf->elts + ibuf->nelt;
-	elt2 = elt1 + 1;
-	for (i1 = ibuf->nelt++; i1 >= at; i1--)
+	elt2 = ibuf->elts + ibuf->nelt;
+	elt1 = elt2 - 1;
+	for (i1 = ibuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
 	*elt2 = val;
 	return;
@@ -204,9 +204,9 @@ void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, IntBuf ibuf)
 
 	if (ibbuf->nelt >= ibbuf->buflength)
 		_IntBBuf_extend(ibbuf);
-	elt1 = ibbuf->elts + ibbuf->nelt;
-	elt2 = elt1 + 1;
-	for (i1 = ibbuf->nelt++; i1 >= at; i1--)
+	elt2 = ibbuf->elts + ibbuf->nelt;
+	elt1 = elt2 - 1;
+	for (i1 = ibbuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
 	*elt2 = ibuf;
 	return;
@@ -383,9 +383,9 @@ void _CharBuf_insert_at(CharBuf *cbuf, int at, char c)
 
 	if (cbuf->nelt >= cbuf->buflength)
 		_CharBuf_extend(cbuf);
-	elt1 = cbuf->elts + cbuf->nelt;
-	elt2 = elt1 + 1;
-	for (i1 = cbuf->nelt++; i1 >= at; i1--)
+	elt2 = cbuf->elts + cbuf->nelt;
+	elt1 = elt2 - 1;
+	for (i1 = cbuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
 	*elt2 = c;
 	return;
@@ -431,9 +431,23 @@ static void _CharBBuf_extend(CharBBuf *cbbuf)
 	long new_buflength;
 
 	new_buflength = get_new_buflength(cbbuf->buflength);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _CharBBuf_extend(): BEGIN\n");
+		Rprintf("[DEBUG] _CharBBuf_extend(): "
+			"cbbuf->elts=%p buflength=%d new_buflength=%d\n",
+			cbbuf->elts, cbbuf->buflength, new_buflength);
+	}
+#endif
 	cbbuf->elts = Srealloc((char *) cbbuf->elts, new_buflength,
 				(long) cbbuf->buflength, CharBuf);
 	cbbuf->buflength = new_buflength;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _CharBBuf_extend(): END (cbbuf->elts=%p)\n",
+			cbbuf->elts);
+	}
+#endif
 	return;
 }
 
@@ -442,13 +456,23 @@ void _CharBBuf_insert_at(CharBBuf *cbbuf, int at, CharBuf cbuf)
 	CharBuf *elt1, *elt2;
 	int i1;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _CharBBuf_insert_at(): BEGIN\n");
+	}
+#endif
 	if (cbbuf->nelt >= cbbuf->buflength)
 		_CharBBuf_extend(cbbuf);
-	elt1 = cbbuf->elts + cbbuf->nelt;
-	elt2 = elt1 + 1;
-	for (i1 = cbbuf->nelt++; i1 >= at; i1--)
+	elt2 = cbbuf->elts + cbbuf->nelt;
+	elt1 = elt2 - 1;
+	for (i1 = cbbuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
 	*elt2 = cbuf;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _CharBBuf_insert_at(): END\n");
+	}
+#endif
 	return;
 }
 

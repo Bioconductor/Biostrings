@@ -4,6 +4,19 @@
  ****************************************************************************/
 #include "Biostrings.h"
 
+static int debug = 0;
+
+SEXP Biostrings_debug_XString_utils()
+{
+#ifdef DEBUG_BIOSTRINGS
+	debug = !debug;
+	Rprintf("Debug mode turned %s in 'XString_utils.c'\n", debug ? "on" : "off");
+#else
+	Rprintf("Debug mode not available in 'XString_utils.c'\n");
+#endif
+	return R_NilValue;
+}
+
 
 /****************************************************************************
  * Encoding/decoding XString data.
@@ -204,9 +217,19 @@ SEXP _new_XStringSet(const char *baseClass, RoSeqs seqs)
 {
 	SEXP iranges, super, ans;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _new_XStringSet(): BEGIN\n");
+	}
+#endif
 	PROTECT(iranges = _new_IRanges_from_RoSeqs(seqs));
 	PROTECT(super = _new_XString_from_RoSeqs(baseClass, seqs));
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(iranges, super));
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _new_XStringSet(): END\n");
+	}
+#endif
 	UNPROTECT(3);
 	return ans;
 }

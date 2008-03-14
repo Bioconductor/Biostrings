@@ -24,8 +24,18 @@ static RoSeqs new_RoSeqs(int nelt)
 {
 	RoSeqs seqs;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] new_RoSeqs(): BEGIN (nelt=%d)\n", nelt);
+	}
+#endif
 	seqs.elts = Salloc((long) nelt, RoSeq);
 	seqs.nelt = nelt;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] new_RoSeqs(): END\n");
+	}
+#endif
 	return seqs;
 }
 
@@ -78,13 +88,28 @@ RoSeqs _new_RoSeqs_from_BBuf(CharBBuf cbbuf)
 	CharBuf *elt2;
 	int i;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _new_RoSeqs_from_BBuf(): BEGIN\n");
+	}
+#endif
 	seqs = new_RoSeqs(cbbuf.nelt);
 	for (i = 0, elt1 = seqs.elts, elt2 = cbbuf.elts;
 	     i < cbbuf.nelt;
 	     i++, elt1++, elt2++) {
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG] _new_RoSeqs_from_BBuf(): i=%d\n", i);
+		}
+#endif
 		elt1->elts = elt2->elts;
 		elt1->nelt = elt2->nelt;
 	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _new_RoSeqs_from_BBuf(): END\n");
+	}
+#endif
 	return seqs;
 }
 

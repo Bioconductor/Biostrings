@@ -154,6 +154,11 @@ SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
 	SEXP start, width, ans;
 	int *start_elt, *width_elt, *start_prev_elt, i;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): BEGIN\n");
+	}
+#endif
 	seq = seqs.elts;
 	PROTECT(start = NEW_INTEGER(seqs.nelt));
 	PROTECT(width = NEW_INTEGER(seqs.nelt));
@@ -169,6 +174,11 @@ SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
 			*(width_elt++) = seq->nelt;
 		}
 	PROTECT(ans = _new_IRanges(start, width, R_NilValue));
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): END\n");
+	}
+#endif
 	UNPROTECT(3);
 	return ans;
 }
