@@ -533,14 +533,14 @@ const char *_get_XStringSet_charseq(
 	int *nchar
 );
 
-SEXP _new_XStringSet(
+SEXP _new_XStringSet_from_RoSeqs(
 	const char *baseClass,
 	RoSeqs seqs
 );
 
 void _set_XStringSet_names(
 	SEXP x,
-	RoSeqs names
+	SEXP names
 );
 
 int _get_XStringList_length(SEXP x);

@@ -140,14 +140,14 @@ const char *get_XStringSet_charseq(
 	int *nchar
 );
 
-SEXP new_XStringSet(
+SEXP new_XStringSet_from_RoSeqs(
 	const char *baseClass,
 	RoSeqs seqs
 );
 
 void set_XStringSet_names(
 	SEXP x,
-	RoSeqs names
+	SEXP names
 );
 
 

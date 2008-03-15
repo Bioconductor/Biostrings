@@ -1,7 +1,7 @@
 #include "Biostrings_interface.h"
 
 typedef CharBuf (*new_CharBuf_from_string_FUNTYPE)(const char *);
-CharBBuf new_CharBuf_from_string(const char *string)
+CharBuf new_CharBuf_from_string(const char *string)
 {
 	static new_CharBuf_from_string_FUNTYPE fun = NULL;
 
@@ -96,19 +96,19 @@ const char *get_XStringSet_charseq(SEXP x, int i, int *nchar)
 	return fun(x, i, nchar);
 }
 
-typedef SEXP (*new_XStringSet_FUNTYPE)(const char *, RoSeqs);
-SEXP new_XStringSet(const char *baseClass, RoSeqs seqs)
+typedef SEXP (*new_XStringSet_from_RoSeqs_FUNTYPE)(const char *, RoSeqs);
+SEXP new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
 {
-	static new_XStringSet_FUNTYPE fun = NULL;
+	static new_XStringSet_from_RoSeqs_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (new_XStringSet_FUNTYPE)
-			R_GetCCallable("Biostrings", "_new_XStringSet");
+		fun = (new_XStringSet_from_RoSeqs_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_XStringSet_from_RoSeqs");
 	return fun(baseClass, seqs);
 }
 
-typedef void (*set_XStringSet_names_FUNTYPE)(SEXP, RoSeqs);
-void set_XStringSet_names(SEXP x, RoSeqs names)
+typedef void (*set_XStringSet_names_FUNTYPE)(SEXP, SEXP);
+void set_XStringSet_names(SEXP x, SEXP names)
 {
 	static set_XStringSet_names_FUNTYPE fun = NULL;
 

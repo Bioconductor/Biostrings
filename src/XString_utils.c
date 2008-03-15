@@ -213,13 +213,13 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP iranges, SEXP super)
 /*
  * Assume that the sequences in 'seqs' are NOT already encoded.
  */
-SEXP _new_XStringSet(const char *baseClass, RoSeqs seqs)
+SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
 {
 	SEXP iranges, super, ans;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _new_XStringSet(): BEGIN\n");
+		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): BEGIN\n");
 	}
 #endif
 	PROTECT(iranges = _new_IRanges_from_RoSeqs(seqs));
@@ -227,7 +227,7 @@ SEXP _new_XStringSet(const char *baseClass, RoSeqs seqs)
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(iranges, super));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _new_XStringSet(): END\n");
+		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): END\n");
 	}
 #endif
 	UNPROTECT(3);
@@ -237,15 +237,14 @@ SEXP _new_XStringSet(const char *baseClass, RoSeqs seqs)
 /*
  * Does NOT duplicate 'x'. The @ranges slot is modified in place!
  */
-void _set_XStringSet_names(SEXP x, RoSeqs names)
+void _set_XStringSet_names(SEXP x, SEXP names)
 {
-	SEXP new_names, iranges, ranges_slot;
+	SEXP iranges, ranges_slot;
 
-	PROTECT(new_names = _new_STRSXP_from_RoSeqs(names, R_NilValue));
-	PROTECT(iranges = _replace_IRanges_names(x, new_names));
+	PROTECT(iranges = _replace_IRanges_names(x, names));
 	PROTECT(ranges_slot = duplicate(GET_SLOT(iranges, install("ranges"))));
 	SET_SLOT(x, mkChar("ranges"), ranges_slot);
-	UNPROTECT(3);
+	UNPROTECT(2);
 	return;
 }
 
