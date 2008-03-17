@@ -150,6 +150,18 @@ void set_XStringSet_names(
 	SEXP names
 );
 
+SEXP alloc_XStringSet(
+	const char *baseClass,
+	int length,
+	int super_length
+);
+
+void write_RoSeq_to_XStringSet_elt(
+	SEXP x,
+	int i,
+	RoSeq seq
+);
+
 
 /*
  * Converting a set of sequences from one internal representation into another.

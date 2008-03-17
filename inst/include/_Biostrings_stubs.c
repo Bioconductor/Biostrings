@@ -118,6 +118,28 @@ void set_XStringSet_names(SEXP x, SEXP names)
 	return fun(x, names);
 }
 
+typedef SEXP (*alloc_XStringSet_FUNTYPE)(const char *, int, int);
+SEXP alloc_XStringSet(const char *baseClass, int length, int super_length)
+{
+	static alloc_XStringSet_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (alloc_XStringSet_FUNTYPE)
+			R_GetCCallable("Biostrings", "_alloc_XStringSet");
+	return fun(baseClass, length, super_length);
+}
+
+typedef void (*write_RoSeq_to_XStringSet_elt_FUNTYPE)(SEXP, int, RoSeq);
+void write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq)
+{
+	static write_RoSeq_to_XStringSet_elt_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (write_RoSeq_to_XStringSet_elt_FUNTYPE)
+			R_GetCCallable("Biostrings", "_write_RoSeq_to_XStringSet_elt");
+	return fun(x, i, seq);
+}
+
 typedef RoSeqs (*new_RoSeqs_from_BBuf_FUNTYPE)(CharBBuf);
 RoSeqs new_RoSeqs_from_BBuf(CharBBuf cbbuf)
 {

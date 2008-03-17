@@ -22,17 +22,19 @@ SEXP Biostrings_debug_XString_utils()
  * Encoding/decoding XString data.
  */
 
-#define STATIC_LKUP_LENGTH 256
+#define TRTABLE_LENGTH 256
 
-static int DNA_enc_lkup[STATIC_LKUP_LENGTH], DNA_dec_lkup[STATIC_LKUP_LENGTH];
-static int RNA_enc_lkup[STATIC_LKUP_LENGTH], RNA_dec_lkup[STATIC_LKUP_LENGTH];
+static int DNA_enc_trtable[TRTABLE_LENGTH],
+	   DNA_dec_trtable[TRTABLE_LENGTH],
+	   RNA_enc_trtable[TRTABLE_LENGTH],
+	   RNA_dec_trtable[TRTABLE_LENGTH];
 
-static const int *get_enc_lkup(const char *class)
+static const int *get_enc_trtable(const char *class)
 {
 	if (strcmp(class, "DNAString") == 0)
-		return DNA_enc_lkup;
+		return DNA_enc_trtable;
 	else if (strcmp(class, "RNAString") == 0)
-		return RNA_enc_lkup;
+		return RNA_enc_trtable;
 	return NULL;
 }
 
@@ -52,9 +54,9 @@ static void copy_lkup(const int *lkup1, int len1, int *lkup2, int len2)
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
 	copy_lkup(INTEGER(enc_lkup), LENGTH(enc_lkup),
-		  DNA_enc_lkup, STATIC_LKUP_LENGTH);
+		  DNA_enc_trtable, TRTABLE_LENGTH);
 	copy_lkup(INTEGER(dec_lkup), LENGTH(dec_lkup),
-		  DNA_dec_lkup, STATIC_LKUP_LENGTH);
+		  DNA_dec_trtable, TRTABLE_LENGTH);
 	return R_NilValue;
 }
 
@@ -62,7 +64,7 @@ char _DNAencode(char c)
 {
 	int code;
 
-	code = DNA_enc_lkup[(unsigned char) c];
+	code = DNA_enc_trtable[(unsigned char) c];
 	if (code == NA_INTEGER)
 		error("_DNAencode: key %d not in lookup table", (int) c);
 	return code;
@@ -72,7 +74,7 @@ char _DNAdecode(char code)
 {
 	int c;
 
-	c = DNA_dec_lkup[(unsigned char) code];
+	c = DNA_dec_trtable[(unsigned char) code];
 	if (c == NA_INTEGER)
 		error("_DNAdecode: key %d not in lookup table", (int) code);
 	return c;
@@ -81,9 +83,9 @@ char _DNAdecode(char code)
 SEXP init_RNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
 	copy_lkup(INTEGER(enc_lkup), LENGTH(enc_lkup),
-		  RNA_enc_lkup, STATIC_LKUP_LENGTH);
+		  RNA_enc_trtable, TRTABLE_LENGTH);
 	copy_lkup(INTEGER(dec_lkup), LENGTH(dec_lkup),
-		  RNA_dec_lkup, STATIC_LKUP_LENGTH);
+		  RNA_dec_trtable, TRTABLE_LENGTH);
 	return R_NilValue;
 }
 
@@ -91,7 +93,7 @@ char _RNAencode(char c)
 {
 	int code;
 
-	code = RNA_enc_lkup[(unsigned char) c];
+	code = RNA_enc_trtable[(unsigned char) c];
 	if (code == NA_INTEGER)
 		error("_RNAencode: key %d not in lookup table", (int) c);
 	return code;
@@ -101,7 +103,7 @@ char _RNAdecode(char code)
 {
 	int c;
 
-	c = RNA_dec_lkup[(unsigned char) code];
+	c = RNA_dec_trtable[(unsigned char) code];
 	if (c == NA_INTEGER)
 		error("_RNAdecode: key %d not in lookup table", (int) code);
 	return (char) c;
@@ -112,7 +114,7 @@ char _RNAdecode(char code)
  * Low-level manipulation of XString objects.
  */
 
-static SEXP getXString_data(SEXP x)
+static SEXP get_XString_data(SEXP x)
 {
 	return GET_SLOT(x, install("data"));
 }
@@ -122,7 +124,7 @@ const char *_get_XString_charseq(SEXP x, int *length)
 	SEXP xp;
 	int offset;
 
-	xp = GET_SLOT(getXString_data(x), install("xp"));
+	xp = GET_SLOT(get_XString_data(x), install("xp"));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	*length = INTEGER(GET_SLOT(x, install("length")))[0];
 	return (const char *) (RAW(R_ExternalPtrTag(xp)) + offset);
@@ -149,12 +151,12 @@ SEXP _new_XString_from_RoSeqs(const char *class, RoSeqs seqs)
 	const int *enc_lkup;
         SEXP lkup, data, ans;
 
-	enc_lkup = get_enc_lkup(class);
+	enc_lkup = get_enc_trtable(class);
 	if (enc_lkup == NULL) {
 		lkup = R_NilValue;
 	} else {
-		PROTECT(lkup = NEW_INTEGER(STATIC_LKUP_LENGTH));
-		copy_lkup(enc_lkup, STATIC_LKUP_LENGTH,
+		PROTECT(lkup = NEW_INTEGER(TRTABLE_LENGTH));
+		copy_lkup(enc_lkup, TRTABLE_LENGTH,
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(data = _new_XRaw_from_RoSeqs(seqs, lkup));
@@ -168,6 +170,37 @@ SEXP _new_XString_from_RoSeqs(const char *class, RoSeqs seqs)
 
 
 /****************************************************************************
+ * Utilities for creating an XString instance in 2 steps: first create the
+ * skeleton (with junk data in it), then fill it with some character data.
+ */
+
+/*
+ * Allocate only. The 'data' slot is not initialized (it contains junk,
+ * or zeros).
+ */
+SEXP _alloc_XString(const char *class, int length)
+{
+	SEXP tag, data, ans;
+
+	PROTECT(tag = NEW_RAW(length));
+	PROTECT(data = _new_XRaw(tag));
+	PROTECT(ans = _new_XString(class, data, 0, length));
+	UNPROTECT(3);
+	return ans;
+}
+
+void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq)
+{
+	int offset;
+
+	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
+	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq,
+			get_enc_trtable(get_class(x)), TRTABLE_LENGTH);
+	return;
+}
+
+
+/****************************************************************************
  * Low-level manipulation of XStringSet objects.
  */
 
@@ -177,15 +210,20 @@ int _get_XStringSet_length(SEXP x)
 	return _get_IRanges_length(x);
 }
 
+static SEXP get_XStringSet_super(SEXP x)
+{
+        return GET_SLOT(x, install("super"));
+}
+
 const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
 {
 	SEXP super;
 	int start, super_length;
 	const char *super_seq;
 
-	start = _get_IRanges_start(x)[i];
-	*nchar = _get_IRanges_width(x)[i];
-	super = GET_SLOT(x, install("super"));
+	start = _get_IRanges_start0(x)[i];
+	*nchar = _get_IRanges_width0(x)[i];
+	super = get_XStringSet_super(x);
 	super_seq = _get_XString_charseq(super, &super_length);
 	return super_seq + start - 1;
 }
@@ -245,6 +283,56 @@ void _set_XStringSet_names(SEXP x, SEXP names)
 	PROTECT(ranges_slot = duplicate(GET_SLOT(iranges, install("ranges"))));
 	SET_SLOT(x, mkChar("ranges"), ranges_slot);
 	UNPROTECT(2);
+	return;
+}
+
+
+/****************************************************************************
+ * Utilities for creating an XStringSet instance in 2 steps: first create the
+ * skeleton (with junk data in it), then fill it with some character data.
+ */
+
+/*
+ * Allocate only. The 'start', 'width' and 'super' slots are not initialized
+ * (they contain junk, or zeros).
+ */
+SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
+{
+	SEXP iranges, super, ans;
+
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _alloc_XStringSet(): BEGIN\n");
+		Rprintf("[DEBUG] _alloc_XStringSet(): "
+			" baseClass=%s length=%d super_length=%d\n",
+			baseClass, length, super_length);
+	}
+#endif
+	PROTECT(iranges = _alloc_IRanges(length));
+	PROTECT(super = _alloc_XString(baseClass, super_length));
+	PROTECT(ans = new_XStringSet_from_IRanges_and_super(iranges, super));
+	UNPROTECT(3);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] _alloc_XStringSet(): END\n");
+	}
+#endif
+	return ans;
+}
+
+void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq)
+{
+	int *start, *width, new_start;
+
+	start = INTEGER(_get_IRanges_start(x)) + i;
+	width = INTEGER(_get_IRanges_width(x)) + i;
+	if (i == 0)
+		new_start = 1;
+	else
+		new_start = *(start - 1) + *(width - 1);
+	_write_RoSeq_to_XString(get_XStringSet_super(x), new_start, seq);
+	*start = new_start;
+	*width = seq.nelt;
 	return;
 }
 

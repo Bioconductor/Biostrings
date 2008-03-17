@@ -64,29 +64,37 @@ static StartEnd uSEW_to_StartEnd(int start, int end, int width)
 	return startend;
 }
 
+SEXP _get_IRanges_start(SEXP x)
+{
+	SEXP ranges_slot;
+
+	ranges_slot = GET_SLOT(x, install("ranges"));
+	return VECTOR_ELT(ranges_slot, 0);
+}
+
+SEXP _get_IRanges_width(SEXP x)
+{
+	SEXP ranges_slot;
+
+	ranges_slot = GET_SLOT(x, install("ranges"));
+	return VECTOR_ELT(ranges_slot, 1);
+}
+
 int _get_IRanges_length(SEXP x)
 {
-	SEXP ranges_slot;
-
-	ranges_slot = GET_SLOT(x, install("ranges"));
-	return LENGTH(VECTOR_ELT(ranges_slot, 0));
+	return LENGTH(_get_IRanges_start(x));
 }
 
-const int *_get_IRanges_start(SEXP x)
+const int *_get_IRanges_start0(SEXP x)
 {
-	SEXP ranges_slot;
-
-	ranges_slot = GET_SLOT(x, install("ranges"));
-	return INTEGER(VECTOR_ELT(ranges_slot, 0));
+	return INTEGER(_get_IRanges_start(x));
 }
 
-const int *_get_IRanges_width(SEXP x)
+const int *_get_IRanges_width0(SEXP x)
 {
-	SEXP ranges_slot;
-
-	ranges_slot = GET_SLOT(x, install("ranges"));
-	return INTEGER(VECTOR_ELT(ranges_slot, 1));
+	return INTEGER(_get_IRanges_width(x));
 }
+
 
 /*
  * Note that 'start' and 'width' must NOT contain NAs.
@@ -195,6 +203,32 @@ SEXP _replace_IRanges_names(SEXP x, SEXP names)
 	return ans;
 }
 
+
+/****************************************************************************
+ * Utilities for creating an IRanges instance in 2 steps: first create the
+ * skeleton (with junk data in it), then fill it with data.
+ */
+
+/*
+ * Allocate only. The 'start' and 'width' slots are not initialized
+ * (they contain junk, or zeros).
+ */
+SEXP _alloc_IRanges(int length)
+{
+        SEXP start, width, ans;
+
+        PROTECT(start = NEW_INTEGER(length));
+        PROTECT(width = NEW_INTEGER(length));
+        PROTECT(ans = _new_IRanges(start, width, R_NilValue));
+        UNPROTECT(3);
+        return ans;
+}
+
+
+/****************************************************************************
+ * Transforming an IRanges object.
+ */
+
 /*
  * --- .Call ENTRY POINT ---
  */
@@ -209,8 +243,8 @@ SEXP narrow_IRanges(SEXP x, SEXP start, SEXP end, SEXP width)
 	x_length = _get_IRanges_length(x);
 	PROTECT(ans_start = NEW_INTEGER(x_length));
 	PROTECT(ans_width = NEW_INTEGER(x_length));
-	for (i = 0, old_start = _get_IRanges_start(x),
-		    old_width = _get_IRanges_width(x),
+	for (i = 0, old_start = _get_IRanges_start0(x),
+		    old_width = _get_IRanges_width0(x),
 		    new_start = INTEGER(ans_start),
 		    new_width = INTEGER(ans_width);
 	     i < x_length;
@@ -325,8 +359,8 @@ SEXP reduce_IRanges(SEXP x, SEXP with_inframe_start)
 	int *inframe_start;
 
 	x_length = _get_IRanges_length(x);
-	x_start = _get_IRanges_start(x);
-	x_width = _get_IRanges_width(x);
+	x_start = _get_IRanges_start0(x);
+	x_width = _get_IRanges_width0(x);
 	if (LOGICAL(with_inframe_start)[0]) {
 		PROTECT(ans_inframe_start = NEW_INTEGER(x_length));
 		inframe_start = INTEGER(ans_inframe_start);

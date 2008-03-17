@@ -164,6 +164,8 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_charseq", (DL_FUNC) &_get_XStringSet_charseq);
 	R_RegisterCCallable("Biostrings", "_new_XStringSet_from_RoSeqs", (DL_FUNC) &_new_XStringSet_from_RoSeqs);
 	R_RegisterCCallable("Biostrings", "_set_XStringSet_names", (DL_FUNC) &_set_XStringSet_names);
+	R_RegisterCCallable("Biostrings", "_alloc_XStringSet", (DL_FUNC) &_alloc_XStringSet);
+	R_RegisterCCallable("Biostrings", "_write_RoSeq_to_XStringSet_elt", (DL_FUNC) &_write_RoSeq_to_XStringSet_elt);
 	R_RegisterCCallable("Biostrings", "_new_RoSeqs_from_BBuf", (DL_FUNC) &_new_RoSeqs_from_BBuf);
 	R_RegisterCCallable("Biostrings", "_new_STRSXP_from_RoSeqs", (DL_FUNC) &_new_STRSXP_from_RoSeqs);
 	R_RegisterCCallable("Biostrings", "_init_match_reporting", (DL_FUNC) &_init_match_reporting);

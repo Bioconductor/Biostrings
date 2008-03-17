@@ -252,11 +252,15 @@ void _append_string_to_CharBBuf(
 
 SEXP Biostrings_debug_IRanges();
 
+SEXP _get_IRanges_start(SEXP x);
+
+SEXP _get_IRanges_width(SEXP x);
+
 int _get_IRanges_length(SEXP x);
 
-const int *_get_IRanges_start(SEXP x);
+const int *_get_IRanges_start0(SEXP x);
 
-const int *_get_IRanges_width(SEXP x);
+const int *_get_IRanges_width0(SEXP x);
 
 SEXP _new_IRanges(
 	SEXP start,
@@ -270,6 +274,8 @@ SEXP _replace_IRanges_names(
 	SEXP x,
 	SEXP names
 );
+
+SEXP _alloc_IRanges(int length);
 
 SEXP narrow_IRanges(
 	SEXP x,
@@ -305,6 +311,8 @@ SEXP Biostrings_XRaw_alloc(
 	SEXP length
 );
 
+SEXP _get_XRaw_tag(SEXP x);
+
 int _get_XRaw_length(SEXP x);
 
 SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp);
@@ -316,6 +324,14 @@ SEXP _new_XRaw(SEXP tag);
 SEXP _new_XRaw_from_RoSeqs(
 	RoSeqs seqs,
 	SEXP lkup
+);
+
+void _write_RoSeq_to_XRaw(
+	SEXP x,
+	int offset,
+	RoSeq seq,
+	const int *trtable,
+	int trtable_length
 );
 
 SEXP _new_STRSXP_from_RoSeqs(
@@ -525,6 +541,17 @@ SEXP _new_XString_from_RoSeqs(
 	RoSeqs seqs
 );
 
+SEXP _alloc_XString(
+	const char *class,
+	int length
+);
+
+void _write_RoSeq_to_XString(
+	SEXP x,
+	int start,
+	RoSeq seq
+);
+
 int _get_XStringSet_length(SEXP x);
 
 const char *_get_XStringSet_charseq(
@@ -541,6 +568,18 @@ SEXP _new_XStringSet_from_RoSeqs(
 void _set_XStringSet_names(
 	SEXP x,
 	SEXP names
+);
+
+SEXP _alloc_XStringSet(
+	const char *baseClass,
+	int length,
+	int super_length
+);
+
+void _write_RoSeq_to_XStringSet_elt(
+	SEXP x,
+	int i,
+	RoSeq seq
 );
 
 int _get_XStringList_length(SEXP x);

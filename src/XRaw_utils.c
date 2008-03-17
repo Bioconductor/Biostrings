@@ -149,12 +149,14 @@ SEXP Biostrings_XRaw_alloc(SEXP xraw_xp, SEXP length)
  * Getting information about an XRaw object.
  */
 
+SEXP _get_XRaw_tag(SEXP x)
+{
+	return R_ExternalPtrTag(GET_SLOT(x, install("xp")));
+}
+
 int _get_XRaw_length(SEXP x)
 {
-	SEXP xp;
-
-	xp = GET_SLOT(x, install("xp"));
-	return LENGTH(R_ExternalPtrTag(xp));
+	return LENGTH(_get_XRaw_tag(x));
 }
 
 /*
@@ -249,6 +251,34 @@ SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 	PROTECT(ans = _new_XRaw(tag));
 	UNPROTECT(2);
 	return ans;
+}
+
+
+/****************************************************************************
+ * Writing an RoSeq object to an XRaw object.
+ */
+
+void _write_RoSeq_to_XRaw(SEXP x, int offset, RoSeq seq,
+		const int *trtable, int trtable_length)
+{
+	SEXP tag;
+	char *dest;
+
+	tag = _get_XRaw_tag(x);
+	dest = (char *) RAW(tag);
+	if (trtable == NULL) {
+		_Biostrings_memcpy_to_i1i2(
+			offset, offset + seq.nelt - 1,
+			dest, LENGTH(tag),
+			seq.elts, seq.nelt, sizeof(char));
+	} else {
+		_Biostrings_translate_charcpy_to_i1i2(
+			offset, offset + seq.nelt - 1,
+			dest, LENGTH(tag),
+			seq.elts, seq.nelt,
+			trtable, trtable_length);
+	}
+	return;
 }
 
 
