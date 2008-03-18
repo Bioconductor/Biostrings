@@ -864,14 +864,14 @@ SEXP CWdna_pp_charseqs(SEXP dict, SEXP start, SEXP end)
  */
 SEXP CWdna_pp_XStringSet(SEXP dict, SEXP start, SEXP end)
 {
-	int dict_len, poffset, pattern_length;
-	const char *pattern;
+	int dict_len, poffset;
+	RoSeq pattern;
 
 	dict_len = _get_XStringSet_length(dict);
 	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
 	for (poffset = 0; poffset < dict_len; poffset++) {
-		pattern = _get_XStringSet_charseq(dict, poffset, &pattern_length);
-		add_subpattern_to_input_uldict(poffset, pattern, pattern_length);
+		pattern = _get_XStringSet_elt_asRoSeq(dict, poffset);
+		add_subpattern_to_input_uldict(poffset, pattern.elts, pattern.nelt);
 	}
 	build_actree();
 	return uldna_asLIST();
@@ -906,9 +906,9 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
-	const char *S, *head, *tail;
-	int nS, max_mm, fixedP, fixedS, is_count_only, no_head, no_tail,
-            head_len, tail_len, poffset;
+	const char *S;
+	RoSeq head, tail;
+	int nS, max_mm, fixedP, fixedS, is_count_only, no_head, no_tail, poffset;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	S = _get_XString_charseq(subject_XString, &nS);
@@ -929,8 +929,8 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		// The duplicated must be treated BEFORE the first pattern they
 		// duplicate, hence we must walk from last to first.
 		for (poffset = LENGTH(pdict_dups) - 1; poffset >= 0; poffset--) {
-			tail = _get_XStringSet_charseq(pdict_tail_XStringSet, poffset, &tail_len);
-			TBdna_match_tail(tail, tail_len, S, nS,
+			tail = _get_XStringSet_elt_asRoSeq(pdict_tail_XStringSet, poffset);
+			TBdna_match_tail(tail.elts, tail.nelt, S, nS,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
 				max_mm, fixedP, fixedS, is_count_only);
 		}

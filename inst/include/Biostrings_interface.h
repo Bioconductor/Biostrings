@@ -134,10 +134,9 @@ const char *get_XString_charseq(
 
 int get_XStringSet_length(SEXP x);
 
-const char *get_XStringSet_charseq(
+RoSeq get_XStringSet_elt_asRoSeq(
 	SEXP x,
-	int i,
-	int *nchar
+	int i
 );
 
 SEXP new_XStringSet_from_RoSeqs(

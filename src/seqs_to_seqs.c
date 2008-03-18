@@ -157,7 +157,7 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nseq, SEXP x)
 		      "'nseq' must be <= '_get_XStringSet_length(x)'");
 	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
-		elt1->elts = _get_XStringSet_charseq(x, i, &(elt1->nelt));
+		*elt1 = _get_XStringSet_elt_asRoSeq(x, i);
 	return seqs;
 }
 

@@ -87,13 +87,15 @@ int get_XStringSet_length(SEXP x)
 	return fun(x);
 }
 
-const char *get_XStringSet_charseq(SEXP x, int i, int *nchar)
+typedef RoSeq (*get_XStringSet_elt_asRoSeq_FUNTYPE)(SEXP, int);
+RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
 {
-	static const char *(*fun)(SEXP, int, int *) = NULL;
+	static get_XStringSet_elt_asRoSeq_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (const char *(*)(SEXP, int, int *)) R_GetCCallable("Biostrings", "_get_XStringSet_charseq");
-	return fun(x, i, nchar);
+		fun = (get_XStringSet_elt_asRoSeq_FUNTYPE)
+			R_GetCCallable("Biostrings", "_get_XStringSet_elt_asRoSeq");
+	return fun(x, i);
 }
 
 typedef SEXP (*new_XStringSet_from_RoSeqs_FUNTYPE)(const char *, RoSeqs);

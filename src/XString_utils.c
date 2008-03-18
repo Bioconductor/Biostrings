@@ -215,17 +215,19 @@ static SEXP get_XStringSet_super(SEXP x)
         return GET_SLOT(x, install("super"));
 }
 
-const char *_get_XStringSet_charseq(SEXP x, int i, int *nchar)
+RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
 {
+	RoSeq seq;
 	SEXP super;
 	int start, super_length;
 	const char *super_seq;
 
 	start = _get_IRanges_start0(x)[i];
-	*nchar = _get_IRanges_width0(x)[i];
+	seq.nelt = _get_IRanges_width0(x)[i];
 	super = get_XStringSet_super(x);
 	super_seq = _get_XString_charseq(super, &super_length);
-	return super_seq + start - 1;
+	seq.elts = super_seq + start - 1;
+	return seq;
 }
 
 /*
