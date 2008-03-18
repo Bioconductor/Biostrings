@@ -217,7 +217,7 @@ static SEXP get_XStringSet_super(SEXP x)
         return GET_SLOT(x, install("super"));
 }
 
-RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
+RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
 {
 	RoSeq seq, super_seq;
 	SEXP super;
