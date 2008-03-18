@@ -349,15 +349,12 @@ int _get_XStringList_length(SEXP x)
 	return LENGTH(GET_SLOT(x, install("seqs")));
 }
 
-const char *_get_XStringList_charseq(SEXP x, int i, int *nchar)
+RoSeq _get_XStringList_elt_asRoSeq(SEXP x, int i)
 {
 	SEXP seqs;
-	RoSeq seq;
 
 	seqs = GET_SLOT(x, install("seqs"));
-	seq = _get_XString_asRoSeq(VECTOR_ELT(seqs, i));
-	*nchar = seq.nelt;
-	return seq.elts;
+	return _get_XString_asRoSeq(VECTOR_ELT(seqs, i));
 }
 
 /* 'x_seqs' must be the list, NOT the XStringList object!

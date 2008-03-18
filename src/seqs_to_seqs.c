@@ -172,7 +172,7 @@ RoSeqs _new_RoSeqs_from_XStringList(int nseq, SEXP x)
 		      "'nseq' must be <= '_get_XStringList_length(x)'");
 	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
-		elt1->elts = _get_XStringList_charseq(x, i, &(elt1->nelt));
+		*elt1 = _get_XStringList_elt_asRoSeq(x, i);
 	return seqs;
 }
 

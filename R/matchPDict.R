@@ -284,7 +284,7 @@ setMethod("patternFrequency", "TBdna_PDict",
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
     on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
     if (is.character(dict)) {
-        pp_Cans <- .Call("CWdna_pp_charseqs",
+        pp_Cans <- .Call("CWdna_pp_STRSXP",
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")

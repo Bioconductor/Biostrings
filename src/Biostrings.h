@@ -580,10 +580,9 @@ void _write_RoSeq_to_XStringSet_elt(
 
 int _get_XStringList_length(SEXP x);
 
-const char *_get_XStringList_charseq(
+RoSeq _get_XStringList_elt_asRoSeq(
 	SEXP x,
-	int i,
-	int *nchar
+	int i
 );
 
 SEXP XStrings_to_nchars(SEXP x_seqs);
@@ -916,7 +915,7 @@ SEXP match_TBdna_debug();
 
 SEXP CWdna_free_actree_nodes_buf();
 
-SEXP CWdna_pp_charseqs(
+SEXP CWdna_pp_STRSXP(
 	SEXP dict,
 	SEXP start,
 	SEXP end

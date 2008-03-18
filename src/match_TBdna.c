@@ -825,7 +825,7 @@ static SEXP uldna_asLIST()
  ****************************************************************************/
 
 /*
- * .Call entry point: "CWdna_pp_charseqs"
+ * .Call entry point: "CWdna_pp_STRSXP"
  *
  * Argument:
  *   'dict': a string vector (aka character vector) containing the input
@@ -835,7 +835,7 @@ static SEXP uldna_asLIST()
  *
  * See uldna_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_charseqs(SEXP dict, SEXP start, SEXP end)
+SEXP CWdna_pp_STRSXP(SEXP dict, SEXP start, SEXP end)
 {
 	int dict_len, poffset;
 	SEXP dict_elt;

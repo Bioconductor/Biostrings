@@ -57,7 +57,7 @@
       called in your .c file. For example, you could write the following
       function:
 
-        SEXP print_XString_charseq_as_bytes(SEXP x)
+        SEXP print_XString_seq_as_bytes(SEXP x)
         {
             RoSeq S, *current_Schar;
             int i;
@@ -70,7 +70,7 @@
         }
 
       to display the sequence of an XString object (in hexadecimal format).
-      Don't forget to register the print_XString_charseq_as_bytes() function
+      Don't forget to register the print_XString_seq_as_bytes() function
       if you want to make it a .Call entry point!
 
    f. 2 IMPORTANT THINGS TO REMEMBER ABOUT XString OBJECTS:

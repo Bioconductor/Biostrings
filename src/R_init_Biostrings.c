@@ -130,7 +130,7 @@ static const R_CallMethodDef callMethods[] = {
 /* match_TBdna.c */
 	{"match_TBdna_debug", (DL_FUNC) &match_TBdna_debug, 0},
 	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
-	{"CWdna_pp_charseqs", (DL_FUNC) &CWdna_pp_charseqs, 3},
+	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 3},
 	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},
 	{"match_TBdna", (DL_FUNC) &match_TBdna, 10},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
