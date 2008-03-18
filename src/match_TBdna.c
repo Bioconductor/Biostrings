@@ -500,13 +500,13 @@ static void report_matches_for_dups(const int *dups, int length)
  * ==============
  */
 
-static int code2childoffset_lkup[256];
+static int code2childoffset_chrtrtable[CHRTRTABLE_LENGTH];
 
 static int get_child_id(const ACNode *node, char c)
 {
 	int offset;
 
-	offset = code2childoffset_lkup[(unsigned char) c];
+	offset = code2childoffset_chrtrtable[(unsigned char) c];
 	if (offset == -1)
 		return -1;
 	return node->child_id[offset];
@@ -528,7 +528,7 @@ static void set_shortcut(ACNode *basenode, char c, int node_id)
 {
 	int offset, *slot;
 
-	offset = code2childoffset_lkup[(unsigned char) c];
+	offset = code2childoffset_chrtrtable[(unsigned char) c];
 	if (offset == -1)
 		return;
 	slot = basenode->child_id + offset;
@@ -614,7 +614,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 
 static void CWdna_exact_search(ACNode *node0, const int *base_codes, const char *S, int nS)
 {
-	_init_code2offset_lkup(base_codes, ALPHABET_LENGTH, code2childoffset_lkup);
+	_init_chrtrtable(base_codes, ALPHABET_LENGTH, code2childoffset_chrtrtable);
 	follow_string(node0, base_codes, S, nS);
 	return;
 }

@@ -587,24 +587,28 @@ void get_intorder(int len, const int *in, int *out)
 
 /*
  * Values in 'codes' must represent byte values i.e. values >= 0 and < 256.
- * Output is written to 'lkup' which must be a writable int array of length 256.
+ * Output is written to 'chrtrtable' which must be a writable int array of
+ * length CHRTRTABLE_LENGTH (256).
  */
-void _init_code2offset_lkup(const int *codes, int len, int *lkup)
+void _init_chrtrtable(const int *codes, int len, int *chrtrtable)
 {
 	int code, *offset_p, offset;
 
-	for (code = 0, offset_p = lkup; code < 256; code++, offset_p++)
+	for (code = 0, offset_p = chrtrtable;
+	     code < CHRTRTABLE_LENGTH;
+	     code++, offset_p++)
 		*offset_p = -1;
 	for (offset = 0; offset < len; offset++, codes++) {
 		code = *codes;
-		if (code < 0 || code >= 256)
-			error("Biostrings internal error in _init_code2offset_lkup(): invalid code");
-		lkup[(unsigned char) code] = offset;
+		if (code < 0 || code >= CHRTRTABLE_LENGTH)
+			error("Biostrings internal error in _init_chrtrtable(): "
+			      "invalid code %d", code);
+		chrtrtable[(unsigned char) code] = offset;
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		for (code = 0, offset_p = lkup; code < 256; code++, offset_p++)
-			Rprintf("[DEBUG] _init_code2offset_lkup(): code=%d offset=%d\n", code, *offset_p);
+		for (code = 0, offset_p = chrtrtable; code < CHRTRTABLE_LENGTH; code++, offset_p++)
+			Rprintf("[DEBUG] _init_chrtrtable(): code=%d offset=%d\n", code, *offset_p);
 	}
 #endif
 	return;

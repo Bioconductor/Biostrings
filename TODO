@@ -97,7 +97,7 @@ In 2.7
     > pdict <- PDict(c("AA", "AC"))
     > matchPDict(pdict, DNAString("TAACAC"))
     Error in .match.CWdna_PDict.exact(pdict, subject, count.only) : 
-      Biostrings internal error in _init_code2offset_lkup(): invalid code
+      Biostrings internal error in _init_chrtrtable(): invalid code
 
   o MIndex objects: at some point the user will want to be able to combine
     "compatible" MIndex objects. 2 MIndex objects are "compatible" if they

@@ -69,29 +69,46 @@
 .XString.char_frequency <- function(x, freq)
 {
     freq <- .normalize.freq(freq)
-    ans <- .Call("char_frequency",
-                 x@data@xp, x@offset, x@length,
-                 PACKAGE="Biostrings")
+    ans <- .Call("XString_char_frequency", x, PACKAGE="Biostrings")
     if (freq)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
 }
 
-.nucleotide_frequency <- function(x, baseOnly, freq)
+.XString.code_frequency <- function(x, baseOnly, freq)
 {
-    char_freq <- .XString.char_frequency(x, freq)
     codes <- codes(x, baseOnly=baseOnly)
-    ans <- char_freq[1 + codes]
+    freq <- .normalize.freq(freq)
+    ans <- .Call("XString_code_frequency", x, codes, PACKAGE="Biostrings")
     names(ans) <- names(codes)
-    if (baseOnly) {
-        ## 'total_freq' is 'sum(char_freq)' but we can avoid to calculate
-        ## this sum.
-        if (freq)
-            total_freq <- 1.0
-        else
-            total_freq <- nchar(x)
-        ans <- c(ans, other=total_freq-sum(ans))
-    }
+    if (baseOnly)
+        ans <- c(ans, other=nchar(x)-sum(ans))
+    if (freq)
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
+    ans
+}
+
+.XStringSet.char_frequency <- function(x, freq, collapse)
+{
+    freq <- .normalize.freq(freq)
+    collapse <- .normalize.collapse(collapse)
+    ans <- .Call("XStringSet_char_frequency", x, collapse, PACKAGE="Biostrings")
+    if (freq)
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
+    ans
+}
+
+.XStringSet.code_frequency <- function(x, baseOnly, freq, collapse)
+{
+    codes <- codes(x, baseOnly=baseOnly)
+    freq <- .normalize.freq(freq)
+    collapse <- .normalize.collapse(collapse)
+    ans <- .Call("XStringSet_code_frequency", x, collapse, codes, PACKAGE="Biostrings")
+    names(ans) <- names(codes)
+    if (baseOnly)
+        ans <- rbind(ans, other=nchar(x)-sum(ans))
+    if (freq)
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
 }
 
@@ -110,16 +127,12 @@ setMethod("alphabetFrequency", "BString",
 
 setMethod("alphabetFrequency", "DNAString",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
-    {
-        .nucleotide_frequency(x, baseOnly, freq)
-    }
+        .XString.code_frequency(x, baseOnly, freq)
 )
 
 setMethod("alphabetFrequency", "RNAString",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
-    {
-        .nucleotide_frequency(x, baseOnly, freq)
-    }
+        .XString.code_frequency(x, baseOnly, freq)
 )
 
 setMethod("alphabetFrequency", "XStringSet",

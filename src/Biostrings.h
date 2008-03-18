@@ -3,6 +3,8 @@
 
 #define DEBUG_BIOSTRINGS 1
 
+#define CHRTRTABLE_LENGTH 256
+
 
 /* utils.c */
 
@@ -147,10 +149,10 @@ void get_intorder(
 	int *out
 );
 
-void _init_code2offset_lkup(
+void _init_chrtrtable(
 	const int *codes,
 	int len,
-	int *lkup
+	int *chrtrtable
 );
 
 
@@ -692,11 +694,13 @@ SEXP XRaw_reverse_translate_copy_from_i1i2(
 
 /* char_frequency.c */
 
-SEXP char_frequency(
-	SEXP x_xp,
-	SEXP x_offset,
-	SEXP x_length
-);
+SEXP XString_char_frequency(SEXP x);
+
+SEXP XString_code_frequency(SEXP x, SEXP codes);
+
+SEXP XStringSet_char_frequency(SEXP x, SEXP collapse);
+
+SEXP XStringSet_code_frequency(SEXP x, SEXP collapse, SEXP codes);
 
 SEXP oligonucleotide_frequency(
 	SEXP x_xp,

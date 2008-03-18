@@ -22,19 +22,17 @@ SEXP Biostrings_debug_XString_utils()
  * Encoding/decoding XString data.
  */
 
-#define TRTABLE_LENGTH 256
+static int DNA_enc_chrtrtable[CHRTRTABLE_LENGTH],
+	   DNA_dec_chrtrtable[CHRTRTABLE_LENGTH],
+	   RNA_enc_chrtrtable[CHRTRTABLE_LENGTH],
+	   RNA_dec_chrtrtable[CHRTRTABLE_LENGTH];
 
-static int DNA_enc_trtable[TRTABLE_LENGTH],
-	   DNA_dec_trtable[TRTABLE_LENGTH],
-	   RNA_enc_trtable[TRTABLE_LENGTH],
-	   RNA_dec_trtable[TRTABLE_LENGTH];
-
-static const int *get_enc_trtable(const char *class)
+static const int *get_enc_chrtrtable(const char *class)
 {
 	if (strcmp(class, "DNAString") == 0)
-		return DNA_enc_trtable;
+		return DNA_enc_chrtrtable;
 	else if (strcmp(class, "RNAString") == 0)
-		return RNA_enc_trtable;
+		return RNA_enc_chrtrtable;
 	return NULL;
 }
 
@@ -54,9 +52,9 @@ static void copy_lkup(const int *lkup1, int len1, int *lkup2, int len2)
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
 	copy_lkup(INTEGER(enc_lkup), LENGTH(enc_lkup),
-		  DNA_enc_trtable, TRTABLE_LENGTH);
+		  DNA_enc_chrtrtable, CHRTRTABLE_LENGTH);
 	copy_lkup(INTEGER(dec_lkup), LENGTH(dec_lkup),
-		  DNA_dec_trtable, TRTABLE_LENGTH);
+		  DNA_dec_chrtrtable, CHRTRTABLE_LENGTH);
 	return R_NilValue;
 }
 
@@ -64,7 +62,7 @@ char _DNAencode(char c)
 {
 	int code;
 
-	code = DNA_enc_trtable[(unsigned char) c];
+	code = DNA_enc_chrtrtable[(unsigned char) c];
 	if (code == NA_INTEGER)
 		error("_DNAencode: key %d not in lookup table", (int) c);
 	return code;
@@ -74,7 +72,7 @@ char _DNAdecode(char code)
 {
 	int c;
 
-	c = DNA_dec_trtable[(unsigned char) code];
+	c = DNA_dec_chrtrtable[(unsigned char) code];
 	if (c == NA_INTEGER)
 		error("_DNAdecode: key %d not in lookup table", (int) code);
 	return c;
@@ -83,9 +81,9 @@ char _DNAdecode(char code)
 SEXP init_RNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
 	copy_lkup(INTEGER(enc_lkup), LENGTH(enc_lkup),
-		  RNA_enc_trtable, TRTABLE_LENGTH);
+		  RNA_enc_chrtrtable, CHRTRTABLE_LENGTH);
 	copy_lkup(INTEGER(dec_lkup), LENGTH(dec_lkup),
-		  RNA_dec_trtable, TRTABLE_LENGTH);
+		  RNA_dec_chrtrtable, CHRTRTABLE_LENGTH);
 	return R_NilValue;
 }
 
@@ -93,7 +91,7 @@ char _RNAencode(char c)
 {
 	int code;
 
-	code = RNA_enc_trtable[(unsigned char) c];
+	code = RNA_enc_chrtrtable[(unsigned char) c];
 	if (code == NA_INTEGER)
 		error("_RNAencode: key %d not in lookup table", (int) c);
 	return code;
@@ -103,7 +101,7 @@ char _RNAdecode(char code)
 {
 	int c;
 
-	c = RNA_dec_trtable[(unsigned char) code];
+	c = RNA_dec_chrtrtable[(unsigned char) code];
 	if (c == NA_INTEGER)
 		error("_RNAdecode: key %d not in lookup table", (int) code);
 	return (char) c;
@@ -153,12 +151,12 @@ SEXP _new_XString_from_RoSeqs(const char *class, RoSeqs seqs)
 	const int *enc_lkup;
         SEXP lkup, data, ans;
 
-	enc_lkup = get_enc_trtable(class);
+	enc_lkup = get_enc_chrtrtable(class);
 	if (enc_lkup == NULL) {
 		lkup = R_NilValue;
 	} else {
-		PROTECT(lkup = NEW_INTEGER(TRTABLE_LENGTH));
-		copy_lkup(enc_lkup, TRTABLE_LENGTH,
+		PROTECT(lkup = NEW_INTEGER(CHRTRTABLE_LENGTH));
+		copy_lkup(enc_lkup, CHRTRTABLE_LENGTH,
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(data = _new_XRaw_from_RoSeqs(seqs, lkup));
@@ -197,7 +195,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq)
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq,
-			get_enc_trtable(get_class(x)), TRTABLE_LENGTH);
+			get_enc_chrtrtable(get_class(x)), CHRTRTABLE_LENGTH);
 	return;
 }
 

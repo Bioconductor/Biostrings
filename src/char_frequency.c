@@ -2,29 +2,122 @@
 #include <string.h>
 
 
+static int chrtrtable[CHRTRTABLE_LENGTH];
+
+static void add_char_freqs(RoSeq X, int *freqs)
+{
+	int i;
+
+	for (i = 0; i < X.nelt; i++, X.elts++)
+		freqs[(unsigned char) *X.elts]++;
+	return;
+}
+
+static void add_code_freqs(RoSeq X, int *freqs)
+{
+	int i, offset;
+
+	for (i = 0; i < X.nelt; i++, X.elts++) {
+		offset = chrtrtable[(unsigned char) *X.elts];
+		if (offset == -1)
+			continue;
+		freqs[(unsigned char) offset]++;
+	}
+	return;
+}
+
 /*
- * Arguments:
- *   'x_xp': x@data@xp
- *   'x_offset': x@offset
- *   'x_length': x@length
- * Returns a vector of 256 integers.
+ * --- .Call ENTRY POINT ---
+ * Return a vector of 256 integers.
  */
-SEXP char_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length)
+SEXP XString_char_frequency(SEXP x)
 {
 	SEXP ans;
-	const Rbyte *x;
-	int x_len, i;
+	RoSeq X;
 
-	x = RAW(R_ExternalPtrTag(x_xp)) + INTEGER(x_offset)[0];
-	x_len = INTEGER(x_length)[0];
 	PROTECT(ans = NEW_INTEGER(256));
 	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	for (i = 0; i < x_len; i++, x++)
-		INTEGER(ans)[(unsigned char) *x]++;
+	X = _get_XString_asRoSeq(x);
+	add_char_freqs(X, INTEGER(ans));
 	UNPROTECT(1);
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ * Return a vector of LENGTH(codes) integers.
+ */
+SEXP XString_code_frequency(SEXP x, SEXP codes)
+{
+	SEXP ans;
+	RoSeq X;
+
+	_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
+	PROTECT(ans = NEW_INTEGER(LENGTH(codes)));
+	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
+	X = _get_XString_asRoSeq(x);
+	add_code_freqs(X, INTEGER(ans));
+	
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_char_frequency(SEXP x, SEXP collapse)
+{
+	SEXP ans;
+	int x_length, *freqs, i;
+	RoSeq X;
+
+	x_length = _get_XStringSet_length(x);
+	if (LOGICAL(collapse)[0])
+		PROTECT(ans = NEW_INTEGER(256));
+	else
+		PROTECT(ans = NEW_INTEGER(256 * x_length));
+	freqs = INTEGER(ans);
+	memset(freqs, 0, LENGTH(ans) * sizeof(int));
+	for (i = 0; i < x_length; i++) {
+		X = _get_XStringSet_elt_asRoSeq(x, i);
+		add_char_freqs(X, freqs);
+		if (!LOGICAL(collapse)[0])
+			freqs += 256;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_code_frequency(SEXP x, SEXP collapse, SEXP codes)
+{
+	SEXP ans;
+	int x_length, *freqs, i;
+	RoSeq X;
+
+	_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
+	x_length = _get_XStringSet_length(x);
+	if (LOGICAL(collapse)[0])
+		PROTECT(ans = NEW_INTEGER(LENGTH(codes)));
+	else
+		PROTECT(ans = NEW_INTEGER(LENGTH(codes) * x_length));
+	freqs = INTEGER(ans);
+	memset(freqs, 0, LENGTH(ans) * sizeof(int));
+	for (i = 0; i < x_length; i++) {
+		X = _get_XStringSet_elt_asRoSeq(x, i);
+		add_code_freqs(X, freqs);
+		if (!LOGICAL(collapse)[0])
+			freqs += LENGTH(codes);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
 SEXP oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
 		SEXP base_codes, SEXP width, SEXP fast_moving_side)
 {
@@ -38,7 +131,7 @@ SEXP oligonucleotide_frequency(SEXP x_xp, SEXP x_offset, SEXP x_length,
 	x_len = INTEGER(x_length)[0];
 	if (LENGTH(base_codes) != 4)
 		error("'base_codes' must be of length 4");
-	_init_code2offset_lkup(INTEGER(base_codes), LENGTH(base_codes), eightbit2twobit_lkup);
+	_init_chrtrtable(INTEGER(base_codes), LENGTH(base_codes), eightbit2twobit_lkup);
 	width0 = INTEGER(width)[0];
 	if (width0 < 1 || width0 > 12)
 		error("'width' must be >=1 and <= 12");

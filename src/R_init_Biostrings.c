@@ -89,7 +89,10 @@ static const R_CallMethodDef callMethods[] = {
         {"XRaw_reverse_translate_copy_from_i1i2", (DL_FUNC) &XRaw_reverse_translate_copy_from_i1i2, 5},
 
 /* char_frequency.c */
-	{"char_frequency", (DL_FUNC) &char_frequency, 3},
+	{"XString_char_frequency", (DL_FUNC) &XString_char_frequency, 1},
+	{"XString_code_frequency", (DL_FUNC) &XString_code_frequency, 2},
+	{"XStringSet_char_frequency", (DL_FUNC) &XStringSet_char_frequency, 2},
+	{"XStringSet_code_frequency", (DL_FUNC) &XStringSet_code_frequency, 3},
 	{"oligonucleotide_frequency", (DL_FUNC) &oligonucleotide_frequency, 6},
 
 /* views_buffer.c */
