@@ -625,7 +625,7 @@ static void CWdna_exact_search(ACNode *node0, const int *base_codes, const char 
  * =======================================================
  */
 
-static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int nS,
+static void TBdna_match_tail(RoSeq tail, RoSeq S,
 			int poffset, const int *dups, int dups_len,
 			int max_mm, int fixedP, int fixedS, int is_count_only)
 {
@@ -638,17 +638,17 @@ static void TBdna_match_tail(const char *tail, int tail_len, const char *S, int 
 		ends_buf0 = ends_bbuf.elts + dup0 - 1;
 	for (i = 0; i < ends_buf0->nelt; i++) {
 		end = ends_buf0->elts[i];
-		if (_is_matching(tail, tail_len, S, nS, end, max_mm, fixedP, fixedS)) {
+		if (_is_matching(tail, S, end, max_mm, fixedP, fixedS)) {
 			/* Match */
 			if (is_count_only) {
 				match_count.elts[poffset]++;
 				continue;
 			}
 			if (dup0 == 0) {
-				ends_buf0->elts[i] += tail_len;
+				ends_buf0->elts[i] += tail.nelt;
 				continue;
 			}
-			end += tail_len;
+			end += tail.nelt;
 			_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 			continue;
 		}
@@ -906,12 +906,11 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
-	const char *S;
-	RoSeq head, tail;
-	int nS, max_mm, fixedP, fixedS, is_count_only, no_head, no_tail, poffset;
+	RoSeq S, head, tail;
+	int max_mm, fixedP, fixedS, is_count_only, no_head, no_tail, poffset;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	S = _get_XString_charseq(subject_XString, &nS);
+	S = _get_XString_asRoSeq(subject_XString);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -922,7 +921,7 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (!no_head)
 		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
-	CWdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S, nS);
+	CWdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S.elts, S.nelt);
 	if (no_tail) {
 		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
 	} else {
@@ -930,7 +929,7 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		// duplicate, hence we must walk from last to first.
 		for (poffset = LENGTH(pdict_dups) - 1; poffset >= 0; poffset--) {
 			tail = _get_XStringSet_elt_asRoSeq(pdict_tail_XStringSet, poffset);
-			TBdna_match_tail(tail.elts, tail.nelt, S, nS,
+			TBdna_match_tail(tail, S,
 				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
 				max_mm, fixedP, fixedS, is_count_only);
 		}

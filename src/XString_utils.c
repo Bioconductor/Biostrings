@@ -119,15 +119,17 @@ static SEXP get_XString_data(SEXP x)
 	return GET_SLOT(x, install("data"));
 }
 
-const char *_get_XString_charseq(SEXP x, int *length)
+RoSeq _get_XString_asRoSeq(SEXP x)
 {
-	SEXP xp;
+	RoSeq seq;
+	SEXP tag;
 	int offset;
 
-	xp = GET_SLOT(get_XString_data(x), install("xp"));
+	tag = _get_XRaw_tag(get_XString_data(x));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
-	*length = INTEGER(GET_SLOT(x, install("length")))[0];
-	return (const char *) (RAW(R_ExternalPtrTag(xp)) + offset);
+	seq.elts = (const char *) (RAW(tag) + offset);
+	seq.nelt = INTEGER(GET_SLOT(x, install("length")))[0];
+	return seq;
 }
 
 /*
@@ -217,16 +219,15 @@ static SEXP get_XStringSet_super(SEXP x)
 
 RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
 {
-	RoSeq seq;
+	RoSeq seq, super_seq;
 	SEXP super;
-	int start, super_length;
-	const char *super_seq;
+	int start;
 
 	start = _get_IRanges_start0(x)[i];
 	seq.nelt = _get_IRanges_width0(x)[i];
 	super = get_XStringSet_super(x);
-	super_seq = _get_XString_charseq(super, &super_length);
-	seq.elts = super_seq + start - 1;
+	super_seq = _get_XString_asRoSeq(super);
+	seq.elts = super_seq.elts + start - 1;
 	return seq;
 }
 
@@ -350,11 +351,13 @@ int _get_XStringList_length(SEXP x)
 
 const char *_get_XStringList_charseq(SEXP x, int i, int *nchar)
 {
-	SEXP seqs, seq;
+	SEXP seqs;
+	RoSeq seq;
 
 	seqs = GET_SLOT(x, install("seqs"));
-	seq = VECTOR_ELT(seqs, i);
-	return _get_XString_charseq(seq, nchar);
+	seq = _get_XString_asRoSeq(VECTOR_ELT(seqs, i));
+	*nchar = seq.nelt;
+	return seq.elts;
 }
 
 /* 'x_seqs' must be the list, NOT the XStringList object!
@@ -363,14 +366,15 @@ const char *_get_XStringList_charseq(SEXP x, int i, int *nchar)
  */
 SEXP XStrings_to_nchars(SEXP x_seqs)
 {
-	SEXP ans, x_seq;
-	int nseq, i, *seq_length;
+	SEXP ans;
+	int nseq, i, *ans_elt;
+	RoSeq seq;
 
 	nseq = LENGTH(x_seqs);
 	PROTECT(ans = NEW_INTEGER(nseq));
-	for (i = 0, seq_length = INTEGER(ans); i < nseq; i++, seq_length++) {
-		x_seq = VECTOR_ELT(x_seqs, i);
-		_get_XString_charseq(x_seq, seq_length);
+	for (i = 0, ans_elt = INTEGER(ans); i < nseq; i++, ans_elt++) {
+		seq = _get_XString_asRoSeq(VECTOR_ELT(x_seqs, i));
+		*ans_elt = seq.nelt;
 	}
 	UNPROTECT(1);
 	return ans;

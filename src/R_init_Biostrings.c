@@ -159,7 +159,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
 	R_RegisterCCallable("Biostrings", "_RNAencode", (DL_FUNC) &_RNAencode);
 	R_RegisterCCallable("Biostrings", "_RNAdecode", (DL_FUNC) &_RNAdecode);
-	R_RegisterCCallable("Biostrings", "_get_XString_charseq", (DL_FUNC) &_get_XString_charseq);
+	R_RegisterCCallable("Biostrings", "_get_XString_asRoSeq", (DL_FUNC) &_get_XString_asRoSeq);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_length", (DL_FUNC) &_get_XStringSet_length);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_elt_asRoSeq", (DL_FUNC) &_get_XStringSet_elt_asRoSeq);
 	R_RegisterCCallable("Biostrings", "_new_XStringSet_from_RoSeqs", (DL_FUNC) &_new_XStringSet_from_RoSeqs);

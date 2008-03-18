@@ -524,10 +524,7 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-const char *_get_XString_charseq(
-	SEXP x,
-	int *length
-);
+RoSeq _get_XString_asRoSeq(SEXP x);
 
 SEXP _new_XString(
 	const char *class,
@@ -762,10 +759,8 @@ SEXP Biostrings_normalize_views(
 SEXP match_naive_debug();
 
 int _is_matching(
-	const char *P,
-	int nP,
-	const char *S,
-	int nS,
+	RoSeq P,
+	RoSeq S,
 	int Pshift,
 	int max_mm,
 	int fixedP,

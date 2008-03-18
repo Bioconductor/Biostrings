@@ -200,7 +200,7 @@ In 2.7
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- Code cleaning: use _get_XString_charseq() in every C routine that receives a
+- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives a
   BString argument. This reduces the number of args that need to be passed
   and makes the code much cleaner. See match_naive_exact() and
   match_naive_inexact() for an example.

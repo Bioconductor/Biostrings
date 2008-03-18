@@ -142,7 +142,7 @@ RoSeqs _new_RoSeqs_from_XString(int nseq, SEXP x)
 
 	seqs = new_RoSeqs(nseq);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
-		elt1->elts = _get_XString_charseq(x, &(elt1->nelt));
+		*elt1 = _get_XString_asRoSeq(x);
 	return seqs;
 }
 
@@ -285,7 +285,7 @@ SEXP new_XStringList_from_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP 
  */
 SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 {
-	int nseq, i, seq_length, offset;
+	int nseq, i, offset;
 	SEXP x_seqs, x_seq, ans, ans_seqs, ans_seq, data;
 	const int *safe_start, *safe_width;
 	char classbuf[14]; // longest string will be "DNAStringList"
@@ -300,7 +300,6 @@ SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 	     i < nseq;
 	     i++, safe_start++, safe_width++) {
 	        x_seq = VECTOR_ELT(x_seqs, i);
-		_get_XString_charseq(x_seq, &seq_length);
 		if (proto == R_NilValue) {
 			PROTECT(ans_seq = duplicate(x_seq));
 		} else {

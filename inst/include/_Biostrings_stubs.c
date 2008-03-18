@@ -69,13 +69,15 @@ char RNAdecode(char code)
 	return fun(code);
 }
 
-const char *get_XString_charseq(SEXP x, int *length)
+typedef RoSeq (*get_XString_asRoSeq_FUNTYPE)(SEXP);
+RoSeq get_XString_asRoSeq(SEXP x)
 {
-	static const char *(*fun)(SEXP, int *) = NULL;
+	static get_XString_asRoSeq_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (const char *(*)(SEXP, int *)) R_GetCCallable("Biostrings", "_get_XString_charseq");
-	return fun(x, length);
+		fun = (get_XString_asRoSeq_FUNTYPE)
+			R_GetCCallable("Biostrings", "_get_XString_asRoSeq");
+	return fun(x);
 }
 
 int get_XStringSet_length(SEXP x)

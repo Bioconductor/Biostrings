@@ -57,13 +57,13 @@
       called in your .c file. For example, you could write the following
       function:
 
-        SEXP print_XString_charseq_as_bytes(SEXP x_XString)
+        SEXP print_XString_charseq_as_bytes(SEXP x)
         {
-            const char *S, *current_Schar;
-            int nS, i;
+            RoSeq S, *current_Schar;
+            int i;
 
-            S = get_XString_charseq(x_XString, &nS);
-            for (i = 0, current_Schar = S; i < nS; i++, current_Schar++)
+            S = get_XString_asRoSeq(x);
+            for (i = 0, current_Schar = S.elts; i < S.nelt; i++, current_Schar++)
                 Rprintf("%x ", *current_Schar);
             Rprintf("\n");
             return R_NilValue;
@@ -73,9 +73,7 @@
       Don't forget to register the print_XString_charseq_as_bytes() function
       if you want to make it a .Call entry point!
 
-   f. 3 IMPORTANT THINGS TO REMEMBER ABOUT XString OBJECTS:
-        o their data are IMMUTABLE: this is enforced by having
-          get_XString_charseq() returning a const char *
+   f. 2 IMPORTANT THINGS TO REMEMBER ABOUT XString OBJECTS:
         o they are NOT null-terminated like standard strings in C: they can
           contain the null byte so you should never use the C standard string
           functions on them
@@ -127,10 +125,7 @@ char RNAencode(char c);
 
 char RNAdecode(char code);
 
-const char *get_XString_charseq(
-	SEXP x,
-	int *length
-);
+RoSeq get_XString_asRoSeq(SEXP x);
 
 int get_XStringSet_length(SEXP x);
 

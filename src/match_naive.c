@@ -47,14 +47,14 @@ SEXP match_naive_debug()
  */
 
 /* Return the number of matches */
-static void naive_exact_search(const char *P, int nP, const char *S, int nS)
+static void naive_exact_search(RoSeq P, RoSeq S)
 {
 	int n1, n2;
 
-	if (nP <= 0)
+	if (P.nelt <= 0)
 		error("empty pattern");
-	for (n1 = 0, n2 = nP; n2 <= nS; n1++, n2++, S++) {
-		if (memcmp(P, S, nP) == 0)
+	for (n1 = 0, n2 = P.nelt; n2 <= S.nelt; n1++, n2++, S.elts++) {
+		if (memcmp(P.elts, S.elts, P.nelt) == 0)
 			_Biostrings_report_match(n1, 0);
 	}
 	return;
@@ -69,55 +69,55 @@ static void naive_exact_search(const char *P, int nP, const char *S, int nS)
 /* 
  * max_mm must be >= 0 (not safe otherwise)
  */
-int _is_matching(const char *P, int nP, const char *S, int nS, int Pshift,
-		int max_mm, int fixedP, int fixedS)
+int _is_matching(RoSeq P, RoSeq S, int Pshift, int max_mm,
+		int fixedP, int fixedS)
 {
 	int min_pm, mm, pm, i, chars_match;
 
-	if (nP <= max_mm)
+	if (P.nelt <= max_mm)
 		return 1;
-	// 0 <= max_mm < nP
+	// 0 <= max_mm < P.nelt
 	if (Pshift < 0) {
-		max_mm += Pshift; // Pshift <= max_mm < nP + Pshift < nP
+		max_mm += Pshift; // Pshift <= max_mm < P.nelt + Pshift < P.nelt
 		if (max_mm < 0)
 			return 0;
-		// -nP < Pshift < 0
-		P -= Pshift;
-		nP += Pshift; // 0 < nP
+		// -P.nelt < Pshift < 0
+		P.elts -= Pshift;
+		P.nelt += Pshift; // 0 < P.nelt
 	} else {
-		S += Pshift;
-		nS -= Pshift;
+		S.elts += Pshift;
+		S.nelt -= Pshift;
 	}
-	if (nP > nS) {
-		max_mm -= nP - nS;
+	if (P.nelt > S.nelt) {
+		max_mm -= P.nelt - S.nelt;
 		if (max_mm < 0)
 			return 0;
-		nP = nS;
+		P.nelt = S.nelt;
 	}
-	min_pm = nP - max_mm;
+	min_pm = P.nelt - max_mm;
 	mm = pm = 0;
-	// 0 = mm <= max_mm < nP <= nS
-	// 0 = pm < min_pm <= nP <= nS
-	// min_pm + max_mm = nP
-	for (i = 0; i < nP; i++, P++, S++) {
+	// 0 = mm <= max_mm < P.nelt <= S.nelt
+	// 0 = pm < min_pm <= P.nelt <= S.nelt
+	// min_pm + max_mm = P.nelt
+	for (i = 0; i < P.nelt; i++, P.elts++, S.elts++) {
 		if (fixedP) {
 			if (fixedS) {
-				// *P and *S match iff they are equal
-				chars_match = *P == *S;
+				// *P.elts and *S.elts match iff they are equal
+				chars_match = *P.elts == *S.elts;
 			} else {
-				// *P and *S match iff bits at 1 in *P
-				// are are also at 1 in *S
-				chars_match = (*P & ~(*S)) == 0;
+				// *P.elts and *S.elts match iff bits at 1
+				// in *P.elts are are also at 1 in *S.elts
+				chars_match = (*P.elts & ~(*S.elts)) == 0;
 			}
 		} else {
 			if (fixedS) {
-				// *P and *S match iff bits at 1 in *S
-				// are also at 1 in *P
-				chars_match = (~(*P) & *S) == 0;
+				// *P.elts and *S.elts match iff bits at 1
+				// in *S.elts are also at 1 in *P.elts
+				chars_match = (~(*P.elts) & *S.elts) == 0;
 			} else {
-				// *P and *S match iff they share
+				// *P.elts and *S.elts match iff they share
 				// at least one bit at 1
-				chars_match = *P & *S;
+				chars_match = *P.elts & *S.elts;
 			}
 		}
 		if (chars_match) {
@@ -128,22 +128,23 @@ int _is_matching(const char *P, int nP, const char *S, int nS, int Pshift,
 				return 0;
 		}
 	}
-	error("Biostrings internal error in _is_matching(): we should never be here");
+	error("Biostrings internal error in _is_matching(): "
+	      "we should never be here");
 	return -1;
 }
 
-static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
+static void naive_inexact_search(RoSeq P, RoSeq S,
 		int max_mm, int fixedP, int fixedS)
 {
 	int n1, // position of pattern left-most char relative to the subject
 	    n2, // 1 + position of pattern right-most char relative to the subject
 	    max_n2;
 
-	if (nP <= 0)
+	if (P.nelt <= 0)
 		error("empty pattern");
-	max_n2 = nS + max_mm;
-	for (n1 = -max_mm, n2 = nP - max_mm; n2 <= max_n2; n1++, n2++)
-		if (_is_matching(P, nP, S, nS, n1, max_mm, fixedP, fixedS))
+	max_n2 = S.nelt + max_mm;
+	for (n1 = -max_mm, n2 = P.nelt - max_mm; n2 <= max_n2; n1++, n2++)
+		if (_is_matching(P, S, n1, max_mm, fixedP, fixedS))
 			_Biostrings_report_match(n1, 0);
 	return;
 }
@@ -169,12 +170,12 @@ static void naive_inexact_search(const char *P, int nP, const char *S, int nS,
 SEXP is_matching(SEXP pattern_XString, SEXP subject_XString, SEXP start,
 		SEXP max_mismatch, SEXP fixed)
 {
-	const char *P, *S;
-	int nP, nS, start_len, max_mm, fixedP, fixedS, i, *start_elt, *ans_elt;
+	RoSeq P, S;
+	int start_len, max_mm, fixedP, fixedS, i, *start_elt, *ans_elt;
 	SEXP ans;
 
-	P = _get_XString_charseq(pattern_XString, &nP);
-	S = _get_XString_charseq(subject_XString, &nS);
+	P = _get_XString_asRoSeq(pattern_XString);
+	S = _get_XString_asRoSeq(subject_XString);
 	start_len = LENGTH(start);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
@@ -188,7 +189,8 @@ SEXP is_matching(SEXP pattern_XString, SEXP subject_XString, SEXP start,
 			*ans_elt = NA_LOGICAL;
 			continue;
 		}
-		*ans_elt = _is_matching(P, nP, S, nS, *start_elt - 1, max_mm, fixedP, fixedS);
+ 		*ans_elt = _is_matching(P, S, *start_elt - 1, max_mm,
+				fixedP, fixedS);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -197,16 +199,16 @@ SEXP is_matching(SEXP pattern_XString, SEXP subject_XString, SEXP start,
 SEXP match_naive_exact(SEXP pattern_XString, SEXP subject_XString,
 		SEXP count_only)
 {
-	const char *P, *S;
-	int nP, nS, is_count_only;
+	RoSeq P, S;
+	int is_count_only;
 	SEXP ans;
 
-	P = _get_XString_charseq(pattern_XString, &nP);
-	S = _get_XString_charseq(subject_XString, &nS);
+	P = _get_XString_asRoSeq(pattern_XString);
+	S = _get_XString_asRoSeq(subject_XString);
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	naive_exact_search(P, nP, S, nS);
+	naive_exact_search(P, S);
 	if (is_count_only)
 		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
 	else
@@ -219,19 +221,19 @@ SEXP match_naive_inexact(SEXP pattern_XString, SEXP subject_XString,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only)
 {
-	const char *P, *S;
-	int nP, nS, max_mm, fixedP, fixedS, is_count_only;
+	RoSeq P, S;
+	int max_mm, fixedP, fixedS, is_count_only;
 	SEXP ans;
 
-	P = _get_XString_charseq(pattern_XString, &nP);
-	S = _get_XString_charseq(subject_XString, &nS);
+	P = _get_XString_asRoSeq(pattern_XString);
+	S = _get_XString_asRoSeq(subject_XString);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	naive_inexact_search(P, nP, S, nS, max_mm, fixedP, fixedS);
+	naive_inexact_search(P, S, max_mm, fixedP, fixedS);
 	if (is_count_only)
 		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
 	else
