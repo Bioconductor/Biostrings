@@ -386,3 +386,4 @@ trinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.a
                                 as.array=as.array, with.labels=with.labels, ...)
 }
 
+
