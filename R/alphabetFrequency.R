@@ -69,7 +69,9 @@
 .XString.char_frequency <- function(x, freq)
 {
     freq <- .normalize.freq(freq)
-    ans <- .Call("XString_char_frequency", x, PACKAGE="Biostrings")
+    ans <- .Call("XString_char_frequency",
+                 x, NULL, FALSE,
+                 PACKAGE="Biostrings")
     if (freq)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
@@ -79,44 +81,45 @@
 {
     codes <- codes(x, baseOnly=baseOnly)
     freq <- .normalize.freq(freq)
-    ans <- .Call("XString_code_frequency", x, codes, PACKAGE="Biostrings")
-    names(ans) <- names(codes)
-    if (baseOnly)
-        ans <- c(ans, other=nchar(x)-sum(ans))
+    ans <- .Call("XString_char_frequency",
+                 x, codes, baseOnly,
+                 PACKAGE="Biostrings")
     if (freq)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
 }
 
-.XStringSet.char_frequency <- function(x, freq, collapse)
+.XStringSet.char_frequency <- function(x, freq, ...)
 {
     freq <- .normalize.freq(freq)
-    collapse <- .normalize.collapse(collapse)
-    ans <- .Call("XStringSet_char_frequency", x, collapse, PACKAGE="Biostrings")
+    collapse <- .normalize.collapse(list(...)$collapse)
+    ans <- .Call("XStringSet_char_frequency",
+                 x, NULL, FALSE, collapse,
+                 PACKAGE="Biostrings")
     if (freq)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
 }
 
-.XStringSet.code_frequency <- function(x, baseOnly, freq, collapse)
+.XStringSet.code_frequency <- function(x, baseOnly, freq, ...)
 {
-    codes <- codes(x, baseOnly=baseOnly)
+    codes <- codes(super(x), baseOnly=baseOnly)
     freq <- .normalize.freq(freq)
-    collapse <- .normalize.collapse(collapse)
-    ans <- .Call("XStringSet_code_frequency", x, collapse, codes, PACKAGE="Biostrings")
-    names(ans) <- names(codes)
-    if (baseOnly)
-        ans <- rbind(ans, other=nchar(x)-sum(ans))
+    collapse <- .normalize.collapse(list(...)$collapse)
+    ans <- .Call("XStringSet_char_frequency",
+                 x, codes, baseOnly, collapse,
+                 PACKAGE="Biostrings")
     if (freq)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
     ans
 }
 
 setGeneric("alphabetFrequency", signature="x",
-    function(x, baseOnly=FALSE, freq=FALSE, ...) standardGeneric("alphabetFrequency")
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
+        standardGeneric("alphabetFrequency")
 )
 
-setMethod("alphabetFrequency", "BString",
+setMethod("alphabetFrequency", "XString",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
         if (!missing(baseOnly))
@@ -138,32 +141,20 @@ setMethod("alphabetFrequency", "RNAString",
 setMethod("alphabetFrequency", "XStringSet",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
-        if (is(super(x), "DNAString") || is(super(x), "RNAString")) {
-            frequency <- function(v) alphabetFrequency(v, baseOnly=baseOnly, freq=FALSE)
-        } else {
-            if (!missing(baseOnly))
-                warning("'baseOnly' is ignored for non DNA or RNA sequences")
-            frequency <- function(v) alphabetFrequency(v, freq=FALSE)
-        }
-        freq <- .normalize.freq(freq)
-        collapse <- .normalize.collapse(list(...)$collapse)
-        ## Generate a zero-filled answer
-        ans_row <- frequency(XString(class(super(x)), ""))
-        if (collapse) {
-            ans <- ans_row
-            for (i in seq_len(length(x)))
-                ans <- ans + frequency(x[[i]])
-        } else {
-            ans <- matrix(rep.int(ans_row, length(x)), ncol=length(ans_row), byrow=TRUE,
-                                                       dimnames=list(NULL, names(ans_row)))
-            for (i in seq_len(length(x)))
-                ans[i, ] <- frequency(x[[i]])
-            ## The "collapsed" result could also be obtained with colSums(ans)...
-        }
-        if (freq)
-            ans <- ans / sum(ans)
-        ans
+        if (!missing(baseOnly))
+            warning("'baseOnly' is ignored for a non DNA or RNA sequence")
+        .XStringSet.char_frequency(x, freq, ...)
     }
+)
+
+setMethod("alphabetFrequency", "DNAStringSet",
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
+        .XStringSet.code_frequency(x, baseOnly, freq, ...)
+)
+
+setMethod("alphabetFrequency", "RNAStringSet",
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
+        .XStringSet.code_frequency(x, baseOnly, freq, ...)
 )
 
 ### library(drosophila2probe)
@@ -189,7 +180,8 @@ strrev <- function(x)
 {
     if (length(x) == 0)
         return(x)
-    sapply(strsplit(x, NULL, fixed=TRUE), function(xx) paste(rev(xx), collapse=""))
+    sapply(strsplit(x, NULL, fixed=TRUE),
+           function(xx) paste(rev(xx), collapse=""))
 }
 
 

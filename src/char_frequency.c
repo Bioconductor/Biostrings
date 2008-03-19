@@ -4,113 +4,169 @@
 
 static int chrtrtable[CHRTRTABLE_LENGTH];
 
-static void add_char_freqs(RoSeq X, int *freqs)
+static void add_char_freqs(RoSeq X, int *freqs, int nrow)
 {
 	int i;
 
 	for (i = 0; i < X.nelt; i++, X.elts++)
-		freqs[(unsigned char) *X.elts]++;
+		freqs[((unsigned char) *X.elts) * nrow]++;
 	return;
 }
 
-static void add_code_freqs(RoSeq X, int *freqs)
+static int add_code_freqs(RoSeq X, int *freqs, int nrow)
 {
-	int i, offset;
+	int other, i, col_offset;
 
+	other = 0;
 	for (i = 0; i < X.nelt; i++, X.elts++) {
-		offset = chrtrtable[(unsigned char) *X.elts];
-		if (offset == -1)
+		col_offset = chrtrtable[(unsigned char) *X.elts];
+		if (col_offset == -1) {
+			other++;
 			continue;
-		freqs[(unsigned char) offset]++;
+		}
+		freqs[col_offset * nrow]++;
 	}
+	return other;
+}
+
+static void add_freqs(RoSeq X, SEXP codes, int with_other, int *freqs, int nrow)
+{
+	int other;
+
+	if (codes == R_NilValue) {
+		add_char_freqs(X, freqs, nrow);
+	} else {
+		other = add_code_freqs(X, freqs, nrow);
+		if (with_other)
+			freqs[LENGTH(codes) * nrow] += other;
+	}
+	return;
+}
+
+static SEXP append_other_to_names(SEXP codes)
+{
+	SEXP names, name, codes_names;
+	int i;
+
+	PROTECT(names = NEW_CHARACTER(LENGTH(codes) + 1));
+	codes_names = GET_NAMES(codes);
+	for (i = 0; i < LENGTH(codes); i++) {
+		if (codes_names == R_NilValue)
+			PROTECT(name = mkChar(""));
+		else
+			PROTECT(name = duplicate(STRING_ELT(codes_names, i)));
+		SET_STRING_ELT(names, i, name);
+		UNPROTECT(1);
+	}
+	SET_STRING_ELT(names, i, mkChar("other"));
+	UNPROTECT(1);
+	return names;
+}
+
+static void set_names(SEXP x, SEXP codes, int with_other, int collapse)
+{
+	SEXP names, codes_names, dim_names;
+
+	if (codes == R_NilValue)
+		return;
+	if (with_other) {
+		PROTECT(names = append_other_to_names(codes));
+	} else {
+		codes_names = GET_NAMES(codes);
+		PROTECT(names = duplicate(codes_names));
+	}
+	if (collapse) {
+		SET_NAMES(x, names);
+	} else {
+		PROTECT(dim_names = NEW_LIST(2));
+		SET_ELEMENT(dim_names, 0, R_NilValue);
+		SET_ELEMENT(dim_names, 1, names);
+		SET_DIMNAMES(x, dim_names);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return;
+}
+
+static void set_dim(SEXP x, int nrow, int ncol)
+{
+	SEXP dim;
+
+	PROTECT(dim = NEW_INTEGER(2));
+	INTEGER(dim)[0] = nrow;
+	INTEGER(dim)[1] = ncol;
+	SET_DIM(x, dim);
+	UNPROTECT(1);
 	return;
 }
 
 /*
  * --- .Call ENTRY POINT ---
- * Return a vector of 256 integers.
  */
-SEXP XString_char_frequency(SEXP x)
+SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 {
+	int ans_length, *freqs;
 	SEXP ans;
 	RoSeq X;
 
-	PROTECT(ans = NEW_INTEGER(256));
-	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	X = _get_XString_asRoSeq(x);
-	add_char_freqs(X, INTEGER(ans));
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
- * --- .Call ENTRY POINT ---
- * Return a vector of LENGTH(codes) integers.
- */
-SEXP XString_code_frequency(SEXP x, SEXP codes)
-{
-	SEXP ans;
-	RoSeq X;
-
-	_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
-	PROTECT(ans = NEW_INTEGER(LENGTH(codes)));
-	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	X = _get_XString_asRoSeq(x);
-	add_code_freqs(X, INTEGER(ans));
-	
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
- * --- .Call ENTRY POINT ---
- */
-SEXP XStringSet_char_frequency(SEXP x, SEXP collapse)
-{
-	SEXP ans;
-	int x_length, *freqs, i;
-	RoSeq X;
-
-	x_length = _get_XStringSet_length(x);
-	if (LOGICAL(collapse)[0])
-		PROTECT(ans = NEW_INTEGER(256));
-	else
-		PROTECT(ans = NEW_INTEGER(256 * x_length));
+	if (codes == R_NilValue) {
+		ans_length = 256;
+	} else {
+		_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
+		ans_length = LENGTH(codes);
+		if (LOGICAL(with_other)[0])
+			ans_length++;
+	}
+	PROTECT(ans = NEW_INTEGER(ans_length));
 	freqs = INTEGER(ans);
-	memset(freqs, 0, LENGTH(ans) * sizeof(int));
+	memset(freqs, 0, ans_length * sizeof(int));
+	X = _get_XString_asRoSeq(x);
+	add_freqs(X, codes, LOGICAL(with_other)[0], freqs, 1);
+	set_names(ans, codes, LOGICAL(with_other)[0], 1);
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
+		SEXP collapse)
+{
+	int ans_length, x_length, ans_ncol, *freqs, i;
+	SEXP ans;
+	RoSeq X;
+
+	if (codes == R_NilValue) {
+		ans_length = 256;
+	} else {
+		_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
+		ans_length = LENGTH(codes);
+		if (LOGICAL(with_other)[0])
+			ans_length++;
+	}
+	x_length = _get_XStringSet_length(x);
+	if (!LOGICAL(collapse)[0]) {
+		ans_ncol = ans_length;
+		ans_length *= x_length;
+	}
+	PROTECT(ans = NEW_INTEGER(ans_length));
+	freqs = INTEGER(ans);
+	memset(freqs, 0, ans_length * sizeof(int));
 	for (i = 0; i < x_length; i++) {
 		X = _get_XStringSet_elt_asRoSeq(x, i);
-		add_char_freqs(X, freqs);
-		if (!LOGICAL(collapse)[0])
-			freqs += 256;
+		if (LOGICAL(collapse)[0]) {
+			add_freqs(X, codes, LOGICAL(with_other)[0],
+				  freqs, 1);
+		} else {
+			add_freqs(X, codes, LOGICAL(with_other)[0],
+				  freqs, x_length);
+			freqs++;
+		}
 	}
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
- * --- .Call ENTRY POINT ---
- */
-SEXP XStringSet_code_frequency(SEXP x, SEXP collapse, SEXP codes)
-{
-	SEXP ans;
-	int x_length, *freqs, i;
-	RoSeq X;
-
-	_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
-	x_length = _get_XStringSet_length(x);
-	if (LOGICAL(collapse)[0])
-		PROTECT(ans = NEW_INTEGER(LENGTH(codes)));
-	else
-		PROTECT(ans = NEW_INTEGER(LENGTH(codes) * x_length));
-	freqs = INTEGER(ans);
-	memset(freqs, 0, LENGTH(ans) * sizeof(int));
-	for (i = 0; i < x_length; i++) {
-		X = _get_XStringSet_elt_asRoSeq(x, i);
-		add_code_freqs(X, freqs);
-		if (!LOGICAL(collapse)[0])
-			freqs += LENGTH(codes);
-	}
+	if (!LOGICAL(collapse)[0])
+		set_dim(ans, x_length, ans_ncol);
+	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);
 	UNPROTECT(1);
 	return ans;
 }

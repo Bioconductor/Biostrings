@@ -1,10 +1,12 @@
 \name{alphabetFrequency}
 
 \alias{alphabetFrequency}
-\alias{alphabetFrequency,BString-method}
+\alias{alphabetFrequency,XString-method}
 \alias{alphabetFrequency,DNAString-method}
 \alias{alphabetFrequency,RNAString-method}
 \alias{alphabetFrequency,XStringSet-method}
+\alias{alphabetFrequency,DNAStringSet-method}
+\alias{alphabetFrequency,RNAStringSet-method}
 \alias{alphabetFrequency,BStringViews-method}
 
 \alias{oligonucleotideFrequency}
@@ -154,8 +156,8 @@
 
   ## With a multiple sequence input
   library(drosophila2probe)
-  x <- DNAStringSet(drosophila2probe$sequence[1:50])
-  alphabetFrequency(x, baseOnly=TRUE)
+  x <- DNAStringSet(drosophila2probe$sequence)
+  alphabetFrequency(x[1:50], baseOnly=TRUE)
   alphabetFrequency(x, baseOnly=TRUE, collapse=TRUE)
 
   ## Get the less and most represented 6-mers

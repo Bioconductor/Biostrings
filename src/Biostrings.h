@@ -694,13 +694,18 @@ SEXP XRaw_reverse_translate_copy_from_i1i2(
 
 /* char_frequency.c */
 
-SEXP XString_char_frequency(SEXP x);
+SEXP XString_char_frequency(
+	SEXP x,
+	SEXP codes,
+	SEXP with_other
+);
 
-SEXP XString_code_frequency(SEXP x, SEXP codes);
-
-SEXP XStringSet_char_frequency(SEXP x, SEXP collapse);
-
-SEXP XStringSet_code_frequency(SEXP x, SEXP collapse, SEXP codes);
+SEXP XStringSet_char_frequency(
+	SEXP x,
+	SEXP codes,
+	SEXP with_other,
+	SEXP collapse
+);
 
 SEXP oligonucleotide_frequency(
 	SEXP x_xp,
