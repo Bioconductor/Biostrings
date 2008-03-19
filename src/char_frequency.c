@@ -22,7 +22,7 @@ static void init_code2offset(SEXP codes, int with_other, int nrow)
 
 static void add_freqs(RoSeq X, SEXP codes, int *freqs, int nrow)
 {
-	int i, offset;
+	static int i, offset;
 
 	if (codes == R_NilValue)
 		for (i = 0; i < X.nelt; i++, X.elts++)
@@ -115,7 +115,9 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
-	int x_length, ans_nrow, ans_ncol, ans_length, *freqs, i;
+	static const int zero = 0;
+
+	int x_length, ans_nrow, ans_ncol, ans_length, *voffset, *freqs, i;
 	SEXP ans;
 	RoSeq X;
 
@@ -130,17 +132,18 @@ SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 		init_code2offset(codes, LOGICAL(with_other)[0], ans_nrow);
 	}
 	ans_length = ans_nrow * ans_ncol;
-	if (LOGICAL(collapse)[0])
+	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_length));
-	else
+		voffset = &zero;
+	} else {
 		PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
+		voffset = &i;
+	}
 	freqs = INTEGER(ans);
 	memset(freqs, 0, ans_length * sizeof(int));
 	for (i = 0; i < x_length; i++) {
 		X = _get_XStringSet_elt_asRoSeq(x, i);
-		add_freqs(X, codes, freqs, ans_nrow);
-		if (!LOGICAL(collapse)[0])
-			freqs++;
+		add_freqs(X, codes, freqs + *voffset, ans_nrow);
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);
 	UNPROTECT(1);
