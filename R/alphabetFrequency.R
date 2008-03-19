@@ -91,8 +91,12 @@
 
 .XStringSet.char_frequency <- function(x, freq, ...)
 {
-    freq <- .normalize.freq(freq)
     collapse <- .normalize.collapse(list(...)$collapse)
+    ## When 'collapse' is TRUE, we can use this shortcut for a 15x speedup
+    if (collapse)
+        return(.XString.char_frequency(super(x), freq))
+    ## The code below also works if 'collapse' is TRUE!
+    freq <- .normalize.freq(freq)
     ans <- .Call("XStringSet_char_frequency",
                  x, NULL, FALSE, collapse,
                  PACKAGE="Biostrings")
@@ -103,9 +107,13 @@
 
 .XStringSet.code_frequency <- function(x, baseOnly, freq, ...)
 {
+    collapse <- .normalize.collapse(list(...)$collapse)
+    ## When 'collapse' is TRUE, we can use this shortcut for a 15x speedup
+    if (collapse)
+        return(.XString.code_frequency(super(x), baseOnly, freq))
+    ## The code below also works if 'collapse' is TRUE!
     codes <- codes(super(x), baseOnly=baseOnly)
     freq <- .normalize.freq(freq)
-    collapse <- .normalize.collapse(list(...)$collapse)
     ans <- .Call("XStringSet_char_frequency",
                  x, codes, baseOnly, collapse,
                  PACKAGE="Biostrings")
