@@ -2,44 +2,38 @@
 #include <string.h>
 
 
-static int chrtrtable[CHRTRTABLE_LENGTH];
+static int code2offset[CHRTRTABLE_LENGTH];
 
-static void add_char_freqs(RoSeq X, int *freqs, int nrow)
+static void init_code2offset(SEXP codes, int with_other, int nrow)
 {
 	int i;
 
-	for (i = 0; i < X.nelt; i++, X.elts++)
-		freqs[((unsigned char) *X.elts) * nrow]++;
+	_init_chrtrtable(INTEGER(codes), LENGTH(codes), code2offset);
+	for (i = 0; i < CHRTRTABLE_LENGTH; i++) {
+		if (code2offset[i] == -1) {
+			if (!with_other)
+				continue;
+			code2offset[i] = LENGTH(codes);
+		}
+		code2offset[i] *= nrow;
+	}
 	return;
 }
 
-static int add_code_freqs(RoSeq X, int *freqs, int nrow)
+static void add_freqs(RoSeq X, SEXP codes, int *freqs, int nrow)
 {
-	int other, i, col_offset;
+	int i, offset;
 
-	other = 0;
-	for (i = 0; i < X.nelt; i++, X.elts++) {
-		col_offset = chrtrtable[(unsigned char) *X.elts];
-		if (col_offset == -1) {
-			other++;
-			continue;
+	if (codes == R_NilValue)
+		for (i = 0; i < X.nelt; i++, X.elts++)
+			freqs[((unsigned char) *X.elts) * nrow]++;
+	else 
+		for (i = 0; i < X.nelt; i++, X.elts++) {
+			offset = code2offset[(unsigned char) *X.elts];
+			if (offset == -1) 
+				continue;
+			freqs[offset]++;
 		}
-		freqs[col_offset * nrow]++;
-	}
-	return other;
-}
-
-static void add_freqs(RoSeq X, SEXP codes, int with_other, int *freqs, int nrow)
-{
-	int other;
-
-	if (codes == R_NilValue) {
-		add_char_freqs(X, freqs, nrow);
-	} else {
-		other = add_code_freqs(X, freqs, nrow);
-		if (with_other)
-			freqs[LENGTH(codes) * nrow] += other;
-	}
 	return;
 }
 
@@ -88,18 +82,6 @@ static void set_names(SEXP x, SEXP codes, int with_other, int collapse)
 	return;
 }
 
-static void set_dim(SEXP x, int nrow, int ncol)
-{
-	SEXP dim;
-
-	PROTECT(dim = NEW_INTEGER(2));
-	INTEGER(dim)[0] = nrow;
-	INTEGER(dim)[1] = ncol;
-	SET_DIM(x, dim);
-	UNPROTECT(1);
-	return;
-}
-
 /*
  * --- .Call ENTRY POINT ---
  */
@@ -112,16 +94,16 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 	if (codes == R_NilValue) {
 		ans_length = 256;
 	} else {
-		_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
 		ans_length = LENGTH(codes);
 		if (LOGICAL(with_other)[0])
 			ans_length++;
+		init_code2offset(codes, LOGICAL(with_other)[0], 1);
 	}
 	PROTECT(ans = NEW_INTEGER(ans_length));
 	freqs = INTEGER(ans);
 	memset(freqs, 0, ans_length * sizeof(int));
 	X = _get_XString_asRoSeq(x);
-	add_freqs(X, codes, LOGICAL(with_other)[0], freqs, 1);
+	add_freqs(X, codes, freqs, 1);
 	set_names(ans, codes, LOGICAL(with_other)[0], 1);
 	UNPROTECT(1);
 	return ans;
@@ -133,39 +115,33 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
-	int ans_length, x_length, ans_ncol, *freqs, i;
+	int x_length, ans_nrow, ans_ncol, ans_length, *freqs, i;
 	SEXP ans;
 	RoSeq X;
 
-	if (codes == R_NilValue) {
-		ans_length = 256;
-	} else {
-		_init_chrtrtable(INTEGER(codes), LENGTH(codes), chrtrtable);
-		ans_length = LENGTH(codes);
-		if (LOGICAL(with_other)[0])
-			ans_length++;
-	}
 	x_length = _get_XStringSet_length(x);
-	if (!LOGICAL(collapse)[0]) {
-		ans_ncol = ans_length;
-		ans_length *= x_length;
+	ans_nrow = LOGICAL(collapse)[0] ? 1 : x_length;
+	if (codes == R_NilValue) {
+		ans_ncol = 256;
+	} else {
+		ans_ncol = LENGTH(codes);
+		if (LOGICAL(with_other)[0])
+			ans_ncol++;
+		init_code2offset(codes, LOGICAL(with_other)[0], ans_nrow);
 	}
-	PROTECT(ans = NEW_INTEGER(ans_length));
+	ans_length = ans_nrow * ans_ncol;
+	if (LOGICAL(collapse)[0])
+		PROTECT(ans = NEW_INTEGER(ans_length));
+	else
+		PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
 	freqs = INTEGER(ans);
 	memset(freqs, 0, ans_length * sizeof(int));
 	for (i = 0; i < x_length; i++) {
 		X = _get_XStringSet_elt_asRoSeq(x, i);
-		if (LOGICAL(collapse)[0]) {
-			add_freqs(X, codes, LOGICAL(with_other)[0],
-				  freqs, 1);
-		} else {
-			add_freqs(X, codes, LOGICAL(with_other)[0],
-				  freqs, x_length);
+		add_freqs(X, codes, freqs, ans_nrow);
+		if (!LOGICAL(collapse)[0])
 			freqs++;
-		}
 	}
-	if (!LOGICAL(collapse)[0])
-		set_dim(ans, x_length, ans_ncol);
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);
 	UNPROTECT(1);
 	return ans;
