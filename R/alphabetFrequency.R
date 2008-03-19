@@ -73,7 +73,7 @@
                  x, NULL, FALSE,
                  PACKAGE="Biostrings")
     if (freq)
-        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) in faster
     ans
 }
 
@@ -85,7 +85,7 @@
                  x, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (freq)
-        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) in faster
     ans
 }
 
@@ -100,8 +100,12 @@
     ans <- .Call("XStringSet_char_frequency",
                  x, NULL, FALSE, collapse,
                  PACKAGE="Biostrings")
-    if (freq)
-        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
+    if (freq) {
+        if (collapse)
+            ans <- ans / sum(ans)
+        else
+            ans <- ans / nchar(x)
+    }
     ans
 }
 
@@ -117,8 +121,12 @@
     ans <- .Call("XStringSet_char_frequency",
                  x, codes, baseOnly, collapse,
                  PACKAGE="Biostrings")
-    if (freq)
-        ans <- ans / nchar(x) # nchar(x) is sum(ans) but is faster
+    if (freq) {
+        if (collapse)
+            ans <- ans / sum(ans)
+        else
+            ans <- ans / nchar(x)
+    }
     ans
 }
 
