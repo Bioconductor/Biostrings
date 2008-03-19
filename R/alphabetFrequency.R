@@ -92,10 +92,11 @@
 .XStringSet.char_frequency <- function(x, freq, ...)
 {
     collapse <- .normalize.collapse(list(...)$collapse)
-    ## When 'collapse' is TRUE, we can use this shortcut for a 15x speedup
-    if (collapse)
-        return(.XString.char_frequency(super(x), freq))
-    ## The code below also works if 'collapse' is TRUE!
+    ## NO, we cannot use this shortcut when 'collapse' is TRUE because
+    ## there is no guarantee that the elements in x cover super(x) entirely
+    ## and don't overlap!
+    #if (collapse)
+    #    return(.XString.char_frequency(super(x), freq))
     freq <- .normalize.freq(freq)
     ans <- .Call("XStringSet_char_frequency",
                  x, NULL, FALSE, collapse,
@@ -112,10 +113,11 @@
 .XStringSet.code_frequency <- function(x, baseOnly, freq, ...)
 {
     collapse <- .normalize.collapse(list(...)$collapse)
-    ## When 'collapse' is TRUE, we can use this shortcut for a 15x speedup
-    if (collapse)
-        return(.XString.code_frequency(super(x), baseOnly, freq))
-    ## The code below also works if 'collapse' is TRUE!
+    ## NO, we cannot use this shortcut when 'collapse' is TRUE because
+    ## there is no guarantee that the elements in x cover super(x) entirely
+    ## and don't overlap!
+    #if (collapse)
+    #    return(.XString.code_frequency(super(x), baseOnly, freq))
     codes <- codes(super(x), baseOnly=baseOnly)
     freq <- .normalize.freq(freq)
     ans <- .Call("XStringSet_char_frequency",
