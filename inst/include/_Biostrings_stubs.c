@@ -100,6 +100,17 @@ RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
 	return fun(x, i);
 }
 
+typedef RoSeq (*next_XStringSet_elt_asRoSeq_FUNTYPE)(SEXP);
+RoSeq next_XStringSet_elt_asRoSeq(SEXP x)
+{
+	static next_XStringSet_elt_asRoSeq_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (next_XStringSet_elt_asRoSeq_FUNTYPE)
+			R_GetCCallable("Biostrings", "_next_XStringSet_elt_asRoSeq");
+	return fun(x);
+}
+
 typedef SEXP (*new_XStringSet_from_RoSeqs_FUNTYPE)(const char *, RoSeqs);
 SEXP new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
 {

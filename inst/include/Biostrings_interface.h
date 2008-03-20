@@ -134,6 +134,8 @@ RoSeq get_XStringSet_elt_asRoSeq(
 	int i
 );
 
+RoSeq next_XStringSet_elt_asRoSeq(SEXP x);
+
 SEXP new_XStringSet_from_RoSeqs(
 	const char *baseClass,
 	RoSeqs seqs

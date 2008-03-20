@@ -2,6 +2,7 @@
 #include <string.h>
 
 static int code2offset[CHRTRTABLE_LENGTH];
+static int rowbuf[256];
 
 static int get_ans_width(SEXP codes, int with_other)
 {
@@ -37,12 +38,12 @@ static void add_freqs(RoSeq X, SEXP codes, int *freqs)
 	return;
 }
 
-static void copy_rowbuf_to_matrix(const int *rowbuf, int *freqs, int nrow, int ncol)
+static void copy_rowbuf_to_row0_in_matrix(int *matrix, int nrow, int ncol)
 {
 	static int i;
 
 	for (i = 0; i < ncol; i++)
-		freqs[i * nrow] = rowbuf[i];
+		matrix[i * nrow] = rowbuf[i];
 	return;
 }
 
@@ -96,8 +97,8 @@ static void set_names(SEXP x, SEXP codes, int with_other, int collapse)
  */
 SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 {
-	int ans_length, *freqs;
 	SEXP ans;
+	int ans_length, *freqs;
 	RoSeq X;
 
 	ans_length = get_ans_width(codes, LOGICAL(with_other)[0]);
@@ -117,29 +118,28 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
-	static int rowbuf[256];
-
-	int x_length, ans_width, *freqs, i;
 	SEXP ans;
+	int ans_width, x_length, *freqs, i;
 	RoSeq X;
 
-	x_length = _get_XStringSet_length(x);
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
+	x_length = _get_XStringSet_length(x);
+	X = _get_XStringSet_elt_asRoSeq(x, 0);
 	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_width));
 		freqs = INTEGER(ans);
 		memset(freqs, 0, ans_width * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			X = _get_XStringSet_elt_asRoSeq(x, i);
 			add_freqs(X, codes, freqs);
+			X = _next_XStringSet_elt_asRoSeq(x);
 		}
 	} else {
 		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
 		for (i = 0, freqs = INTEGER(ans); i < x_length; i++, freqs++) {
-			X = _get_XStringSet_elt_asRoSeq(x, i);
 			memset(rowbuf, 0, ans_width * sizeof(int));
 			add_freqs(X, codes, rowbuf);
-			copy_rowbuf_to_matrix(rowbuf, freqs, x_length, ans_width);
+			copy_rowbuf_to_row0_in_matrix(freqs, x_length, ans_width);
+			X = _next_XStringSet_elt_asRoSeq(x);
 		}
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);

@@ -215,17 +215,36 @@ static SEXP get_XStringSet_super(SEXP x)
         return GET_SLOT(x, install("super"));
 }
 
+static const int *last_XStringSet_start0;
+static const int *last_XStringSet_width0;
+static RoSeq last_XStringSet_super_seq;
+static const int *last_XStringSet_start;
+static const int *last_XStringSet_width;
+
 RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
 {
-	RoSeq seq, super_seq;
+	RoSeq seq;
 	SEXP super;
-	int start;
 
-	start = _get_IRanges_start0(x)[i];
-	seq.nelt = _get_IRanges_width0(x)[i];
+	last_XStringSet_start0 = _get_IRanges_start0(x);
+	last_XStringSet_width0 = _get_IRanges_width0(x);
 	super = get_XStringSet_super(x);
-	super_seq = _get_XString_asRoSeq(super);
-	seq.elts = super_seq.elts + start - 1;
+	last_XStringSet_super_seq = _get_XString_asRoSeq(super);
+	last_XStringSet_start = last_XStringSet_start0 + i;
+	last_XStringSet_width = last_XStringSet_width0 + i;
+	seq.elts = last_XStringSet_super_seq.elts + *last_XStringSet_start - 1;
+	seq.nelt = *last_XStringSet_width;
+	return seq;
+}
+
+RoSeq _next_XStringSet_elt_asRoSeq(SEXP x)
+{
+	RoSeq seq;
+
+	last_XStringSet_start++;
+	last_XStringSet_width++;
+	seq.elts = last_XStringSet_super_seq.elts + *last_XStringSet_start - 1;
+	seq.nelt = *last_XStringSet_width;
 	return seq;
 }
 
