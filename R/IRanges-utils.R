@@ -162,7 +162,7 @@ setGeneric("reduce", signature="x",
     ans
 }
 
-setMethod("reduce", "IRanges", .reduce.IRanges)
+setMethod("reduce", ".IRanges", .reduce.IRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
