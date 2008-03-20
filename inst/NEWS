@@ -61,10 +61,10 @@ o Added the isMatching() function.
 
 o Change in terminology to align with established practices: "fuzzy matching"
   is now called "inexact matching". This change mostly affects the
-  documentation. The only change at the API level that is a consequence of
-  this change in terminology is that the "naive-fuzzy" algo is now called
-  "naive-inexact" (this affects the matchPattern() function and possibly any
-  function with an 'algo' argument).
+  documentation. The only place where it also affects the API is that now
+  'algo="naive-inexact"' must be used instead of 'algo="naive-fuzzy"' when
+  calling the matchPattern() function or any other function that has the 'algo'
+  argument.
 
 o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
   matchLRPatterns() and matchPDict() functions.
@@ -88,12 +88,13 @@ o Made the "show" methods for XString, BStringViews and XStringAlign objects
 o Added the dinucleotideFrequency(), trinucleotideFrequency(),
   oligonucleotideFrequency(), strrev() and mkAllStrings() functions.
 
-o Three changes in alphabetFrequency():
+o Four changes in alphabetFrequency():
   (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is
       not returned anymore (now it's treated as any 'other' letter i.e. any
       non-base letter);
   (2) added the 'freq' argument;
-  (3) added the 'collapse' argument.
+  (3) added the 'collapse' argument;
+  (4) made it 1000x faster on BStringViews and XStringSet objects.
 
 o Added "as.character" and "consmat" methods for XStringAlign objects.
 
