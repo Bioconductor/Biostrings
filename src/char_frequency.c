@@ -1,32 +1,32 @@
 #include "Biostrings.h"
 #include <string.h>
 
-
 static int code2offset[CHRTRTABLE_LENGTH];
 
-static void init_code2offset(SEXP codes, int with_other, int nrow)
+static int get_ans_width(SEXP codes, int with_other)
 {
-	int i;
+	int width, i;
 
-	_init_chrtrtable(INTEGER(codes), LENGTH(codes), code2offset);
-	for (i = 0; i < CHRTRTABLE_LENGTH; i++) {
-		if (code2offset[i] == -1) {
-			if (!with_other)
-				continue;
-			code2offset[i] = LENGTH(codes);
-		}
-		code2offset[i] *= nrow;
+	if (codes == R_NilValue)
+		return 256;
+	width = LENGTH(codes);
+	_init_chrtrtable(INTEGER(codes), width, code2offset);
+	if (with_other) {
+		for (i = 0; i < CHRTRTABLE_LENGTH; i++)
+			if (code2offset[i] == -1)
+				code2offset[i] = width;
+		width++;
 	}
-	return;
+	return width;
 }
 
-static void add_freqs(RoSeq X, SEXP codes, int *freqs, int nrow)
+static void add_freqs(RoSeq X, SEXP codes, int *freqs)
 {
 	static int i, offset;
 
 	if (codes == R_NilValue)
 		for (i = 0; i < X.nelt; i++, X.elts++)
-			freqs[((unsigned char) *X.elts) * nrow]++;
+			freqs[((unsigned char) *X.elts)]++;
 	else 
 		for (i = 0; i < X.nelt; i++, X.elts++) {
 			offset = code2offset[(unsigned char) *X.elts];
@@ -34,6 +34,15 @@ static void add_freqs(RoSeq X, SEXP codes, int *freqs, int nrow)
 				continue;
 			freqs[offset]++;
 		}
+	return;
+}
+
+static void copy_rowbuf_to_matrix(const int *rowbuf, int *freqs, int nrow, int ncol)
+{
+	static int i;
+
+	for (i = 0; i < ncol; i++)
+		freqs[i * nrow] = rowbuf[i];
 	return;
 }
 
@@ -91,19 +100,12 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 	SEXP ans;
 	RoSeq X;
 
-	if (codes == R_NilValue) {
-		ans_length = 256;
-	} else {
-		ans_length = LENGTH(codes);
-		if (LOGICAL(with_other)[0])
-			ans_length++;
-		init_code2offset(codes, LOGICAL(with_other)[0], 1);
-	}
+	ans_length = get_ans_width(codes, LOGICAL(with_other)[0]);
 	PROTECT(ans = NEW_INTEGER(ans_length));
 	freqs = INTEGER(ans);
 	memset(freqs, 0, ans_length * sizeof(int));
 	X = _get_XString_asRoSeq(x);
-	add_freqs(X, codes, freqs, 1);
+	add_freqs(X, codes, freqs);
 	set_names(ans, codes, LOGICAL(with_other)[0], 1);
 	UNPROTECT(1);
 	return ans;
@@ -115,35 +117,30 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
-	static const int zero = 0;
+	static int rowbuf[256];
 
-	int x_length, ans_nrow, ans_ncol, ans_length, *voffset, *freqs, i;
+	int x_length, ans_width, *freqs, i;
 	SEXP ans;
 	RoSeq X;
 
 	x_length = _get_XStringSet_length(x);
-	ans_nrow = LOGICAL(collapse)[0] ? 1 : x_length;
-	if (codes == R_NilValue) {
-		ans_ncol = 256;
-	} else {
-		ans_ncol = LENGTH(codes);
-		if (LOGICAL(with_other)[0])
-			ans_ncol++;
-		init_code2offset(codes, LOGICAL(with_other)[0], ans_nrow);
-	}
-	ans_length = ans_nrow * ans_ncol;
+	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	if (LOGICAL(collapse)[0]) {
-		PROTECT(ans = NEW_INTEGER(ans_length));
-		voffset = &zero;
+		PROTECT(ans = NEW_INTEGER(ans_width));
+		freqs = INTEGER(ans);
+		memset(freqs, 0, ans_width * sizeof(int));
+		for (i = 0; i < x_length; i++) {
+			X = _get_XStringSet_elt_asRoSeq(x, i);
+			add_freqs(X, codes, freqs);
+		}
 	} else {
-		PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
-		voffset = &i;
-	}
-	freqs = INTEGER(ans);
-	memset(freqs, 0, ans_length * sizeof(int));
-	for (i = 0; i < x_length; i++) {
-		X = _get_XStringSet_elt_asRoSeq(x, i);
-		add_freqs(X, codes, freqs + *voffset, ans_nrow);
+		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
+		for (i = 0, freqs = INTEGER(ans); i < x_length; i++, freqs++) {
+			X = _get_XStringSet_elt_asRoSeq(x, i);
+			memset(rowbuf, 0, ans_width * sizeof(int));
+			add_freqs(X, codes, rowbuf);
+			copy_rowbuf_to_matrix(rowbuf, freqs, x_length, ans_width);
+		}
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);
 	UNPROTECT(1);
