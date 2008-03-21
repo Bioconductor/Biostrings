@@ -113,7 +113,7 @@ CachedXStringSet new_CachedXStringSet(SEXP x)
 	return fun(x);
 }
 
-typedef RoSeq (*get_CachedXStringSet_elt_asRoSeq_FUNTYPE)(CachedXStringSet, int);
+typedef RoSeq (*get_CachedXStringSet_elt_asRoSeq_FUNTYPE)(CachedXStringSet *, int);
 RoSeq get_CachedXStringSet_elt_asRoSeq(CachedXStringSet *x, int i)
 {
 	static get_CachedXStringSet_elt_asRoSeq_FUNTYPE fun = NULL;
