@@ -63,11 +63,13 @@ typedef struct cbbuf {
 
 
 /*
- * Two additional types:
+ * Three additional types:
  *
  *   o RoSeq:  array of const chars (think of this as a pointer to a non
  *               null-terminated sequence of chars);
- *   o RoSeqs: array of arrays of const chars.
+ *   o RoSeqs: array of arrays of const chars;
+ *   o CachedXStringSet: use for fast extraction of the elements of
+ *             an XStringSet object in a loop.
  */
 typedef struct roseq {
 	const char *elts;
@@ -78,6 +80,12 @@ typedef struct roseqs {
 	RoSeq *elts;
 	int nelt;
 } RoSeqs;
+
+typedef struct cachedxstringset {
+	const int *start;
+	const int *width;
+	RoSeq super;
+} CachedXStringSet;
 
 
 /*

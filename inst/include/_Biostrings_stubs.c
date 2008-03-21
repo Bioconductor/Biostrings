@@ -102,6 +102,28 @@ int get_XStringSet_length(SEXP x)
 	return fun(x);
 }
 
+typedef CachedXStringSet (*new_CachedXStringSet_FUNTYPE)(SEXP);
+CachedXStringSet new_CachedXStringSet(SEXP x)
+{
+	static new_CachedXStringSet_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (new_CachedXStringSet_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_CachedXStringSet");
+	return fun(x);
+}
+
+typedef RoSeq (*get_CachedXStringSet_elt_asRoSeq_FUNTYPE)(SEXP, int);
+RoSeq get_CachedXStringSet_elt_asRoSeq(SEXP x, int i)
+{
+	static get_CachedXStringSet_elt_asRoSeq_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (get_CachedXStringSet_elt_asRoSeq_FUNTYPE)
+			R_GetCCallable("Biostrings", "_get_CachedXStringSet_elt_asRoSeq");
+	return fun(x, i);
+}
+
 typedef RoSeq (*get_XStringSet_elt_asRoSeq_FUNTYPE)(SEXP, int);
 RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
 {
@@ -111,17 +133,6 @@ RoSeq get_XStringSet_elt_asRoSeq(SEXP x, int i)
 		fun = (get_XStringSet_elt_asRoSeq_FUNTYPE)
 			R_GetCCallable("Biostrings", "_get_XStringSet_elt_asRoSeq");
 	return fun(x, i);
-}
-
-typedef RoSeq (*next_XStringSet_elt_asRoSeq_FUNTYPE)(SEXP);
-RoSeq next_XStringSet_elt_asRoSeq(SEXP x)
-{
-	static next_XStringSet_elt_asRoSeq_FUNTYPE fun = NULL;
-
-	if (fun == NULL)
-		fun = (next_XStringSet_elt_asRoSeq_FUNTYPE)
-			R_GetCCallable("Biostrings", "_next_XStringSet_elt_asRoSeq");
-	return fun(x);
 }
 
 typedef SEXP (*new_XStringSet_from_RoSeqs_FUNTYPE)(const char *, RoSeqs);

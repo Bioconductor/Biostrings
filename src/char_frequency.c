@@ -120,26 +120,27 @@ SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 {
 	SEXP ans;
 	int ans_width, x_length, *freqs, i;
-	RoSeq X;
+	CachedXStringSet cached_x;
+	RoSeq xx;
 
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
-	X = _get_XStringSet_elt_asRoSeq(x, 0);
+	cached_x = _new_CachedXStringSet(x);
 	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_width));
 		freqs = INTEGER(ans);
 		memset(freqs, 0, ans_width * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			add_freqs(X, codes, freqs);
-			X = _next_XStringSet_elt_asRoSeq(x);
+			xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			add_freqs(xx, codes, freqs);
 		}
 	} else {
 		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
 		for (i = 0, freqs = INTEGER(ans); i < x_length; i++, freqs++) {
+			xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
 			memset(rowbuf, 0, ans_width * sizeof(int));
-			add_freqs(X, codes, rowbuf);
+			add_freqs(xx, codes, rowbuf);
 			copy_rowbuf_to_row0_in_matrix(freqs, x_length, ans_width);
-			X = _next_XStringSet_elt_asRoSeq(x);
 		}
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);

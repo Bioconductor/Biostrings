@@ -131,12 +131,17 @@ const char *get_XStringSet_baseClass(SEXP x);
 
 int get_XStringSet_length(SEXP x);
 
+CachedXStringSet new_CachedXStringSet(SEXP x);
+
+RoSeq get_CachedXStringSet_elt_asRoSeq(
+	CachedXStringSet *x,
+	int i
+);
+
 RoSeq get_XStringSet_elt_asRoSeq(
 	SEXP x,
 	int i
 );
-
-RoSeq next_XStringSet_elt_asRoSeq(SEXP x);
 
 SEXP new_XStringSet_from_RoSeqs(
 	const char *baseClass,

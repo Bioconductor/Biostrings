@@ -80,37 +80,37 @@ SEXP XRaw_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin,
 SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 {
 	int x_length, x_ncharsum, x_ncharmax, i, write_at;
-	RoSeq X, Y;
+	CachedXStringSet cached_x;
+	RoSeq xx, yy;
 	const char *x_baseClass;
 	SEXP ans;
 	char *buf;
 
 	x_length = _get_XStringSet_length(x);
 	x_ncharsum = x_ncharmax = 0;
-	X = _get_XStringSet_elt_asRoSeq(x, 0);
+	cached_x = _new_CachedXStringSet(x);
 	for (i = 0; i < x_length; i++) {
-		x_ncharsum += X.nelt;
-		if (X.nelt > x_ncharmax)
-			x_ncharmax = X.nelt;
-		X = _next_XStringSet_elt_asRoSeq(x);
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		x_ncharsum += xx.nelt;
+		if (xx.nelt > x_ncharmax)
+			x_ncharmax = xx.nelt;
 	}
 	if (x_ncharmax == 0)
 		return x;
 	x_baseClass = _get_XStringSet_baseClass(x);
 	PROTECT(ans = _alloc_XString(x_baseClass, x_ncharsum));
 	buf = Salloc((long) x_ncharmax, char);
-	Y.elts = buf;
+	yy.elts = buf;
 	write_at = 1;
-	X = _get_XStringSet_elt_asRoSeq(x, 0);
 	for (i = 0; i < x_length; i++) {
-		_Biostrings_translate_charcpy_from_i1i2(0, X.nelt - 1,
-			buf, X.nelt,
-			X.elts, X.nelt,
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		_Biostrings_translate_charcpy_from_i1i2(0, xx.nelt - 1,
+			buf, xx.nelt,
+			xx.elts, xx.nelt,
 			INTEGER(lkup), LENGTH(lkup));
-		Y.nelt = X.nelt;
-		_write_RoSeq_to_XString(ans, write_at, Y, 0);
-		write_at += Y.nelt;
-		X = _next_XStringSet_elt_asRoSeq(x);
+		yy.nelt = xx.nelt;
+		_write_RoSeq_to_XString(ans, write_at, yy, 0);
+		write_at += yy.nelt;
 	}
 	UNPROTECT(1);
 	return ans;

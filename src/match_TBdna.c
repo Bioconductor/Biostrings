@@ -625,9 +625,9 @@ static void CWdna_exact_search(ACNode *node0, const int *base_codes, const char 
  * =======================================================
  */
 
-static void TBdna_match_tail(RoSeq tail, RoSeq S,
-			int poffset, const int *dups, int dups_len,
-			int max_mm, int fixedP, int fixedS, int is_count_only)
+static void TBdna_match_pattern_tail(RoSeq pattern_tail, RoSeq S,
+		int poffset, const int *dups, int dups_len,
+		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int dup0, i, end;
 	IntBuf *ends_buf, *ends_buf0;
@@ -638,17 +638,17 @@ static void TBdna_match_tail(RoSeq tail, RoSeq S,
 		ends_buf0 = ends_bbuf.elts + dup0 - 1;
 	for (i = 0; i < ends_buf0->nelt; i++) {
 		end = ends_buf0->elts[i];
-		if (_is_matching(tail, S, end, max_mm, fixedP, fixedS)) {
+		if (_is_matching(pattern_tail, S, end, max_mm, fixedP, fixedS)) {
 			/* Match */
 			if (is_count_only) {
 				match_count.elts[poffset]++;
 				continue;
 			}
 			if (dup0 == 0) {
-				ends_buf0->elts[i] += tail.nelt;
+				ends_buf0->elts[i] += pattern_tail.nelt;
 				continue;
 			}
-			end += tail.nelt;
+			end += pattern_tail.nelt;
 			_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 			continue;
 		}
@@ -661,6 +661,26 @@ static void TBdna_match_tail(RoSeq tail, RoSeq S,
 		 * because shrinking a IntBuf object should never trigger reallocation.
 		 */
 		_IntBuf_delete_at(ends_buf0, i--);
+	}
+	return;
+}
+
+static void TBdna_match_tail(SEXP tail, RoSeq S,
+		const int *dups, int dups_len,
+		int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	int poffset;
+	CachedXStringSet cached_tail;
+	RoSeq pattern_tail;
+
+	cached_tail = _new_CachedXStringSet(tail);
+	// The duplicated must be treated BEFORE the first pattern they
+	// duplicate, hence we must walk from last to first.
+	for (poffset = dups_len - 1; poffset >= 0; poffset--) {
+		pattern_tail = _get_CachedXStringSet_elt_asRoSeq(&cached_tail, poffset);
+		TBdna_match_pattern_tail(pattern_tail, S,
+			poffset, dups, dups_len,
+			max_mm, fixedP, fixedS, is_count_only);
 	}
 	return;
 }
@@ -865,14 +885,15 @@ SEXP CWdna_pp_STRSXP(SEXP dict, SEXP start, SEXP end)
 SEXP CWdna_pp_XStringSet(SEXP dict, SEXP start, SEXP end)
 {
 	int dict_len, poffset;
+	CachedXStringSet cached_dict;
 	RoSeq pattern;
 
 	dict_len = _get_XStringSet_length(dict);
 	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
-	pattern = _get_XStringSet_elt_asRoSeq(dict, 0);
+	cached_dict = _new_CachedXStringSet(dict);
 	for (poffset = 0; poffset < dict_len; poffset++) {
+		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_dict, poffset);
 		add_subpattern_to_input_uldict(poffset, pattern.elts, pattern.nelt);
-		pattern = _next_XStringSet_elt_asRoSeq(dict);
 	}
 	build_actree();
 	return uldna_asLIST();
@@ -907,14 +928,11 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
-	RoSeq S, head, tail;
-	int max_mm, fixedP, fixedS, is_count_only, no_head, no_tail, poffset;
+	RoSeq S;
+	int is_count_only, no_head, no_tail;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	S = _get_XString_asRoSeq(subject_XString);
-	max_mm = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 	no_head = pdict_head_XStringSet == R_NilValue;
 	no_tail = pdict_tail_XStringSet == R_NilValue;
@@ -926,14 +944,10 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (no_tail) {
 		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
 	} else {
-		// The duplicated must be treated BEFORE the first pattern they
-		// duplicate, hence we must walk from last to first.
-		for (poffset = LENGTH(pdict_dups) - 1; poffset >= 0; poffset--) {
-			tail = _get_XStringSet_elt_asRoSeq(pdict_tail_XStringSet, poffset);
-			TBdna_match_tail(tail, S,
-				poffset, INTEGER(pdict_dups), LENGTH(pdict_dups),
-				max_mm, fixedP, fixedS, is_count_only);
-		}
+		TBdna_match_tail(pdict_tail_XStringSet, S,
+			INTEGER(pdict_dups), LENGTH(pdict_dups),
+			INTEGER(max_mismatch)[0], LOGICAL(fixed)[0], LOGICAL(fixed)[1],
+			is_count_only);
 	}
 	if (is_count_only)
 		return _IntBuf_asINTEGER(&match_count);

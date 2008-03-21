@@ -149,6 +149,7 @@ RoSeqs _new_RoSeqs_from_XString(int nseq, SEXP x)
 RoSeqs _new_RoSeqs_from_XStringSet(int nseq, SEXP x)
 {
 	RoSeqs seqs;
+	CachedXStringSet cached_x;
 	RoSeq *elt1;
 	int i;
 
@@ -156,8 +157,9 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nseq, SEXP x)
 		error("_new_RoSeqs_from_XStringSet(): "
 		      "'nseq' must be <= '_get_XStringSet_length(x)'");
 	seqs = new_RoSeqs(nseq);
+	cached_x = _new_CachedXStringSet(x);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
-		*elt1 = _get_XStringSet_elt_asRoSeq(x, i);
+		*elt1 = _get_CachedXStringSet_elt_asRoSeq(x, i);
 	return seqs;
 }
 
