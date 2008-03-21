@@ -869,9 +869,10 @@ SEXP CWdna_pp_XStringSet(SEXP dict, SEXP start, SEXP end)
 
 	dict_len = _get_XStringSet_length(dict);
 	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
+	pattern = _get_XStringSet_elt_asRoSeq(dict, 0);
 	for (poffset = 0; poffset < dict_len; poffset++) {
-		pattern = _get_XStringSet_elt_asRoSeq(dict, poffset);
 		add_subpattern_to_input_uldict(poffset, pattern.elts, pattern.nelt);
+		pattern = _next_XStringSet_elt_asRoSeq(dict);
 	}
 	build_actree();
 	return uldna_asLIST();

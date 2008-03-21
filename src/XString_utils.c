@@ -64,7 +64,7 @@ char _DNAencode(char c)
 
 	code = DNA_enc_chrtrtable[(unsigned char) c];
 	if (code == NA_INTEGER)
-		error("_DNAencode: key %d not in lookup table", (int) c);
+		error("_DNAencode(): key %d not in lookup table", (int) c);
 	return code;
 }
 
@@ -74,7 +74,7 @@ char _DNAdecode(char code)
 
 	c = DNA_dec_chrtrtable[(unsigned char) code];
 	if (c == NA_INTEGER)
-		error("_DNAdecode: key %d not in lookup table", (int) code);
+		error("_DNAdecode(): key %d not in lookup table", (int) code);
 	return c;
 }
 
@@ -93,7 +93,7 @@ char _RNAencode(char c)
 
 	code = RNA_enc_chrtrtable[(unsigned char) c];
 	if (code == NA_INTEGER)
-		error("_RNAencode: key %d not in lookup table", (int) c);
+		error("_RNAencode(): key %d not in lookup table", (int) c);
 	return code;
 }
 
@@ -103,7 +103,7 @@ char _RNAdecode(char code)
 
 	c = RNA_dec_chrtrtable[(unsigned char) code];
 	if (c == NA_INTEGER)
-		error("_RNAdecode: key %d not in lookup table", (int) code);
+		error("_RNAdecode(): key %d not in lookup table", (int) code);
 	return (char) c;
 }
 
@@ -222,6 +222,12 @@ int _get_XStringSet_length(SEXP x)
 	return _get_IRanges_length(x);
 }
 
+/*
+ * The following static variables are used for caching information about the
+ * XStringSet object accessed by the last call to _get_XStringSet_elt_asRoSeq().
+ */
+static const SEXP last_XStringSet;
+static int last_XStringSet_length;
 static const int *last_XStringSet_start0;
 static const int *last_XStringSet_width0;
 static RoSeq last_XStringSet_super_seq;
@@ -233,12 +239,18 @@ RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
 	RoSeq seq;
 	SEXP super;
 
+	last_XStringSet = x;
+	last_XStringSet_length = _get_XStringSet_length(x);
 	last_XStringSet_start0 = _get_IRanges_start0(x);
 	last_XStringSet_width0 = _get_IRanges_width0(x);
 	super = get_XStringSet_super(x);
 	last_XStringSet_super_seq = _get_XString_asRoSeq(super);
 	last_XStringSet_start = last_XStringSet_start0 + i;
 	last_XStringSet_width = last_XStringSet_width0 + i;
+	if (i >= last_XStringSet_length) {
+		seq.elts = NULL;
+		return seq;
+	}
 	seq.elts = last_XStringSet_super_seq.elts + *last_XStringSet_start - 1;
 	seq.nelt = *last_XStringSet_width;
 	return seq;
@@ -246,10 +258,35 @@ RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
 
 RoSeq _next_XStringSet_elt_asRoSeq(SEXP x)
 {
+	int i;
 	RoSeq seq;
 
+	// The test below will catch 99% of the cache misuse, but it will not
+	// catch the 2 following misuses:
+	//   - Reading past the last element (strictly speaking not a misuse
+	//     as long as the returned RoSeq object is ignored by the caller).
+	//   - A very rare condition could happen when
+	//     _next_XStringSet_elt_asRoSeq() is called without any previous
+	//     call to _get_XStringSet_elt_asRoSeq() but x and last_XStringSet
+	//     happen to contain the same memory address anyway. For example
+	//     this could happen if the cache was initialized during a previous
+	//     .Call() but then there is no guarantee that the data in the
+	//     cache is still valid (x could have been modified by the user or
+	//     last_XStringSet could have been garbage collected so now x
+	//     refers to a completely different object).
+	if (x != last_XStringSet)
+		error("_next_XStringSet_elt_asRoSeq(): "
+		      "either you didn't initialize the cache with a "
+		      "previous call to _get_XStringSet_elt_asRoSeq() "
+		      "or you are trying to use the caching mechanism "
+		      "simultaneously on 2 XStringSet objects (not ready yet)");
 	last_XStringSet_start++;
 	last_XStringSet_width++;
+	i = last_XStringSet_start - last_XStringSet_start0;
+	if (i >= last_XStringSet_length) {
+		seq.elts = NULL;
+		return seq;
+	}
 	seq.elts = last_XStringSet_super_seq.elts + *last_XStringSet_start - 1;
 	seq.nelt = *last_XStringSet_width;
 	return seq;
