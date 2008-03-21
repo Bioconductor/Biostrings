@@ -226,7 +226,7 @@ int _get_XStringSet_length(SEXP x)
  * The following static variables are used for caching information about the
  * XStringSet object accessed by the last call to _get_XStringSet_elt_asRoSeq().
  */
-static const SEXP last_XStringSet;
+static SEXP last_XStringSet;
 static int last_XStringSet_length;
 static const int *last_XStringSet_start0;
 static const int *last_XStringSet_width0;
