@@ -80,12 +80,25 @@ RoSeq get_XString_asRoSeq(SEXP x)
 	return fun(x);
 }
 
-int get_XStringSet_length(SEXP x)
+typedef const char *(*get_XStringSet_baseClass_FUNTYPE)(SEXP);
+const char *get_XStringSet_baseClass(SEXP x)
 {
-	static int (*fun)(SEXP) = NULL;
+	static get_XStringSet_baseClass_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
-		fun = (int (*)(SEXP)) R_GetCCallable("Biostrings", "_get_XStringSet_length");
+		fun = (get_XStringSet_baseClass_FUNTYPE)
+			R_GetCCallable("Biostrings", "_get_XStringSet_baseClass");
+	return fun(x);
+}
+
+typedef int (*get_XStringSet_length_FUNTYPE)(SEXP);
+int get_XStringSet_length(SEXP x)
+{
+	static get_XStringSet_length_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (get_XStringSet_length_FUNTYPE)
+			R_GetCCallable("Biostrings", "_get_XStringSet_length");
 	return fun(x);
 }
 
@@ -144,15 +157,15 @@ SEXP alloc_XStringSet(const char *baseClass, int length, int super_length)
 	return fun(baseClass, length, super_length);
 }
 
-typedef void (*write_RoSeq_to_XStringSet_elt_FUNTYPE)(SEXP, int, RoSeq);
-void write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq)
+typedef void (*write_RoSeq_to_XStringSet_elt_FUNTYPE)(SEXP, int, RoSeq, int);
+void write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq, int encode)
 {
 	static write_RoSeq_to_XStringSet_elt_FUNTYPE fun = NULL;
 
 	if (fun == NULL)
 		fun = (write_RoSeq_to_XStringSet_elt_FUNTYPE)
 			R_GetCCallable("Biostrings", "_write_RoSeq_to_XStringSet_elt");
-	return fun(x, i, seq);
+	return fun(x, i, seq, encode);
 }
 
 typedef RoSeqs (*new_RoSeqs_from_BBuf_FUNTYPE)(CharBBuf);

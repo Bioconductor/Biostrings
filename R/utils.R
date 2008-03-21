@@ -27,6 +27,8 @@ isSingleString <- function(x)
 
 normalize.use.names <- function(use.names)
 {
+    if (is.null(use.names))
+        return(TRUE)
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be 'TRUE' or 'FALSE'")
     use.names

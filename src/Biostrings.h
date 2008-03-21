@@ -548,8 +548,11 @@ SEXP _alloc_XString(
 void _write_RoSeq_to_XString(
 	SEXP x,
 	int start,
-	RoSeq seq
+	RoSeq seq,
+	int encode
 );
+
+const char *_get_XStringSet_baseClass(SEXP x);
 
 int _get_XStringSet_length(SEXP x);
 
@@ -579,7 +582,8 @@ SEXP _alloc_XStringSet(
 void _write_RoSeq_to_XStringSet_elt(
 	SEXP x,
 	int i,
-	RoSeq seq
+	RoSeq seq,
+	int encode
 );
 
 int _get_XStringList_length(SEXP x);
@@ -661,7 +665,7 @@ SEXP narrow_XStringList(
 );
 
 
-/* reverseComplement.c */
+/* char_translate.c */
 
 SEXP XRaw_translate_copy_from_i1i2(
 	SEXP dest_xraw_xp,
@@ -691,6 +695,12 @@ SEXP XRaw_reverse_translate_copy_from_i1i2(
 	SEXP imin,
 	SEXP imax,
 	SEXP lkup
+);
+
+SEXP XStringSet_char_translate(
+	SEXP x,
+	SEXP lkup,
+	SEXP reverse
 );
 
 

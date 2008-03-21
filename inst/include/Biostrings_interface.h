@@ -127,6 +127,8 @@ char RNAdecode(char code);
 
 RoSeq get_XString_asRoSeq(SEXP x);
 
+const char *get_XStringSet_baseClass(SEXP x);
+
 int get_XStringSet_length(SEXP x);
 
 RoSeq get_XStringSet_elt_asRoSeq(
@@ -155,7 +157,8 @@ SEXP alloc_XStringSet(
 void write_RoSeq_to_XStringSet_elt(
 	SEXP x,
 	int i,
-	RoSeq seq
+	RoSeq seq,
+	int encode
 );
 
 

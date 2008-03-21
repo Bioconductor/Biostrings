@@ -189,13 +189,15 @@ SEXP _alloc_XString(const char *class, int length)
 	return ans;
 }
 
-void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq)
+void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq, int encode)
 {
 	int offset;
+	const int *enc_chrtrtable;
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
+	enc_chrtrtable = encode ? get_enc_chrtrtable(get_class(x)) : NULL;
 	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq,
-			get_enc_chrtrtable(get_class(x)), CHRTRTABLE_LENGTH);
+			enc_chrtrtable, CHRTRTABLE_LENGTH);
 	return;
 }
 
@@ -204,15 +206,20 @@ void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq)
  * Low-level manipulation of XStringSet objects.
  */
 
+static SEXP get_XStringSet_super(SEXP x)
+{
+        return GET_SLOT(x, install("super"));
+}
+
+const char *_get_XStringSet_baseClass(SEXP x)
+{
+	return get_class(get_XStringSet_super(x));
+}
+
 int _get_XStringSet_length(SEXP x)
 {
 	// Because an XStringSet object IS an .IRanges object
 	return _get_IRanges_length(x);
-}
-
-static SEXP get_XStringSet_super(SEXP x)
-{
-        return GET_SLOT(x, install("super"));
 }
 
 static const int *last_XStringSet_start0;
@@ -340,7 +347,7 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 	return ans;
 }
 
-void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq)
+void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq, int encode)
 {
 	int *start, *width, new_start;
 
@@ -350,7 +357,7 @@ void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq)
 		new_start = 1;
 	else
 		new_start = *(start - 1) + *(width - 1);
-	_write_RoSeq_to_XString(get_XStringSet_super(x), new_start, seq);
+	_write_RoSeq_to_XString(get_XStringSet_super(x), new_start, seq, encode);
 	*start = new_start;
 	*width = seq.nelt;
 	return;

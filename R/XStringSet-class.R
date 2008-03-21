@@ -122,7 +122,7 @@ setMethod("initialize", "XStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-.newXStringSet <- function(class, super, ranges, x, use.names)
+newXStringSet <- function(class, super, ranges, x, use.names)
 {
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
@@ -144,7 +144,7 @@ setMethod("initialize", "XStringSet",
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     super <- .charToXString(x, safe_locs, baseClass)
     ranges <- intToAdjacentRanges(width(safe_locs))
-    .newXStringSet(class, super, ranges, x, use.names)
+    newXStringSet(class, super, ranges, x, use.names)
 }
 
 .narrowXStringSet <- function(x, start, end, width, use.names, baseClass)
@@ -158,7 +158,7 @@ setMethod("initialize", "XStringSet",
         ## memory footprint) when the sequences in 'x' point to regions in
         ## 'super(x)' that have a lot of overlapping.
         safe_locs <- narrow(x, start, end, width)
-        frame <- reduce(safe_locs, TRUE)
+        frame <- reduce(safe_locs, with.inframe.attrib=TRUE)
         data <- .Call("new_XRaw_from_XString",
                       super(x), start(frame), width(frame), lkup,
                       PACKAGE="Biostrings")
@@ -168,7 +168,7 @@ setMethod("initialize", "XStringSet",
         super <- XString(baseClass, super(x))
         ranges <- narrow(x, start, end, width)
     }
-    .newXStringSet(class, super, ranges, x, use.names)
+    newXStringSet(class, super, ranges, x, use.names)
 }
 
 ### Canonical conversion from BStringViews to XStringSet

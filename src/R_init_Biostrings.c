@@ -82,11 +82,12 @@ static const R_CallMethodDef callMethods[] = {
 	{"new_XStringList_from_XRaw", (DL_FUNC) &new_XStringList_from_XRaw, 4},
 	{"narrow_XStringList", (DL_FUNC) &narrow_XStringList, 4},
         
-/* reverseComplement.c */
+/* char_translate.c */
         {"XRaw_translate_copy_from_i1i2", (DL_FUNC) &XRaw_translate_copy_from_i1i2, 5},
         {"XRaw_translate_copy_from_subset", (DL_FUNC) &XRaw_translate_copy_from_subset, 4},
         {"XRaw_reverse_copy_from_i1i2", (DL_FUNC) &XRaw_reverse_copy_from_i1i2, 4},
         {"XRaw_reverse_translate_copy_from_i1i2", (DL_FUNC) &XRaw_reverse_translate_copy_from_i1i2, 5},
+        {"XStringSet_char_translate", (DL_FUNC) &XStringSet_char_translate, 3},
 
 /* char_frequency.c */
 	{"XString_char_frequency", (DL_FUNC) &XString_char_frequency, 3},
@@ -161,6 +162,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_RNAencode", (DL_FUNC) &_RNAencode);
 	R_RegisterCCallable("Biostrings", "_RNAdecode", (DL_FUNC) &_RNAdecode);
 	R_RegisterCCallable("Biostrings", "_get_XString_asRoSeq", (DL_FUNC) &_get_XString_asRoSeq);
+	R_RegisterCCallable("Biostrings", "_get_XStringSet_baseClass", (DL_FUNC) &_get_XStringSet_baseClass);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_length", (DL_FUNC) &_get_XStringSet_length);
 	R_RegisterCCallable("Biostrings", "_get_XStringSet_elt_asRoSeq", (DL_FUNC) &_get_XStringSet_elt_asRoSeq);
 	R_RegisterCCallable("Biostrings", "_next_XStringSet_elt_asRoSeq", (DL_FUNC) &_next_XStringSet_elt_asRoSeq);
