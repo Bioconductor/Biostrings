@@ -258,26 +258,12 @@ SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
  * Writing an RoSeq object to an XRaw object.
  */
 
-void _write_RoSeq_to_XRaw(SEXP x, int offset, RoSeq seq,
-		const int *trtable, int trtable_length)
+void _write_RoSeq_to_XRaw(SEXP x, int offset, RoSeq seq, const int *chrtrtable)
 {
-	SEXP tag;
 	char *dest;
 
-	tag = _get_XRaw_tag(x);
-	dest = (char *) RAW(tag);
-	if (trtable == NULL) {
-		_Biostrings_memcpy_to_i1i2(
-			offset, offset + seq.nelt - 1,
-			dest, LENGTH(tag),
-			seq.elts, seq.nelt, sizeof(char));
-	} else {
-		_Biostrings_translate_charcpy_to_i1i2(
-			offset, offset + seq.nelt - 1,
-			dest, LENGTH(tag),
-			seq.elts, seq.nelt,
-			trtable, trtable_length);
-	}
+	dest = (char *) RAW(_get_XRaw_tag(x)) + offset;
+	_copy_seq(dest, seq.elts, seq.nelt, chrtrtable);
 	return;
 }
 

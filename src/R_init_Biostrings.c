@@ -2,6 +2,9 @@
 
 static const R_CallMethodDef callMethods[] = {
 
+/* copy_seq.c */
+	{"debug_copy_seq", (DL_FUNC) &debug_copy_seq, 0},
+
 /* utils.c */
 	{"Biostrings_debug_utils", (DL_FUNC) &Biostrings_debug_utils, 0},
 
@@ -170,6 +173,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_new_XStringSet_from_RoSeqs", (DL_FUNC) &_new_XStringSet_from_RoSeqs);
 	R_RegisterCCallable("Biostrings", "_set_XStringSet_names", (DL_FUNC) &_set_XStringSet_names);
 	R_RegisterCCallable("Biostrings", "_alloc_XStringSet", (DL_FUNC) &_alloc_XStringSet);
+	R_RegisterCCallable("Biostrings", "_write_RoSeq_to_CachedXStringSet_elt", (DL_FUNC) &_write_RoSeq_to_CachedXStringSet_elt);
 	R_RegisterCCallable("Biostrings", "_write_RoSeq_to_XStringSet_elt", (DL_FUNC) &_write_RoSeq_to_XStringSet_elt);
 	R_RegisterCCallable("Biostrings", "_new_RoSeqs_from_BBuf", (DL_FUNC) &_new_RoSeqs_from_BBuf);
 	R_RegisterCCallable("Biostrings", "_new_STRSXP_from_RoSeqs", (DL_FUNC) &_new_STRSXP_from_RoSeqs);

@@ -36,6 +36,15 @@ static const int *get_enc_chrtrtable(const char *class)
 	return NULL;
 }
 
+static const int *get_dec_chrtrtable(const char *class)
+{
+	if (strcmp(class, "DNAString") == 0)
+		return DNA_dec_chrtrtable;
+	else if (strcmp(class, "RNAString") == 0)
+		return RNA_dec_chrtrtable;
+	return NULL;
+}
+
 static void copy_lkup(const int *lkup1, int len1, int *lkup2, int len2)
 {
 	int i;
@@ -196,8 +205,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq, int encode)
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	enc_chrtrtable = encode ? get_enc_chrtrtable(get_class(x)) : NULL;
-	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq,
-			enc_chrtrtable, CHRTRTABLE_LENGTH);
+	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }
 
@@ -225,10 +233,22 @@ int _get_XStringSet_length(SEXP x)
 CachedXStringSet _new_CachedXStringSet(SEXP x)
 {
 	CachedXStringSet cached_x;
+	SEXP super, tag;
+	int offset;
 
-	cached_x.start = _get_IRanges_start0(x);
-	cached_x.width = _get_IRanges_width0(x);
-	cached_x.super = _get_XString_asRoSeq(get_XStringSet_super(x));
+	cached_x.start = INTEGER(_get_IRanges_start(x));
+	cached_x.width = INTEGER(_get_IRanges_width(x));
+
+	super = get_XStringSet_super(x);
+	tag = _get_XRaw_tag(get_XString_data(super));
+	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
+	cached_x.super_elts = (char *) RAW(tag) + offset;
+	cached_x.super_nelt = INTEGER(GET_SLOT(super, install("length")))[0];
+
+	cached_x.baseClass = get_class(super);
+	cached_x.enc_chrtrtable = get_enc_chrtrtable(cached_x.baseClass);
+	cached_x.dec_chrtrtable = get_dec_chrtrtable(cached_x.baseClass);
+
 	return cached_x;
 }
 
@@ -236,7 +256,7 @@ RoSeq _get_CachedXStringSet_elt_asRoSeq(CachedXStringSet *x, int i)
 {
 	RoSeq seq;
 
-	seq.elts = x->super.elts + x->start[i] - 1;
+	seq.elts = x->super_elts + x->start[i] - 1;
 	seq.nelt = x->width[i];
 	return seq;
 }
@@ -341,19 +361,30 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 	return ans;
 }
 
+void _write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i,
+		RoSeq seq, int encode)
+{
+	int new_start;
+	const int *chrtrtable;
+
+	if (i == 0) {
+		new_start = 1;
+	} else {
+		new_start = x->start[i - 1] + x->width[i - 1];
+	}
+	chrtrtable = encode ? x->enc_chrtrtable : NULL;
+	_copy_seq(x->super_elts + new_start - 1, seq.elts, seq.nelt, chrtrtable);
+	x->start[i] = new_start;
+	x->width[i] = seq.nelt;
+	return;
+}
+
 void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq, int encode)
 {
-	int *start, *width, new_start;
+	CachedXStringSet cached_x;
 
-	start = INTEGER(_get_IRanges_start(x)) + i;
-	width = INTEGER(_get_IRanges_width(x)) + i;
-	if (i == 0)
-		new_start = 1;
-	else
-		new_start = *(start - 1) + *(width - 1);
-	_write_RoSeq_to_XString(get_XStringSet_super(x), new_start, seq, encode);
-	*start = new_start;
-	*width = seq.nelt;
+	cached_x = _new_CachedXStringSet(x);
+	_write_RoSeq_to_CachedXStringSet_elt(&cached_x, i, seq, encode);
 	return;
 }
 

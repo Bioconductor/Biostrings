@@ -82,9 +82,13 @@ typedef struct roseqs {
 } RoSeqs;
 
 typedef struct cachedxstringset {
-	const int *start;
-	const int *width;
-	RoSeq super;
+	int *start;
+	int *width;
+	char *super_elts;
+	int super_nelt;
+	const char *baseClass;
+	const int *enc_chrtrtable;
+	const int *dec_chrtrtable;
 } CachedXStringSet;
 
 

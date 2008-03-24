@@ -6,6 +6,52 @@
 #define CHRTRTABLE_LENGTH 256
 
 
+/* copy_seq.c */
+
+SEXP debug_copy_seq();
+
+void _copy_seq(
+	char *dest,
+	const char *src,
+	size_t n,
+	const int *chrtrtable
+);
+
+void _revcopy_seq(
+	char *dest,
+	const char *src,
+	size_t n,
+	const int *chrtrtable
+);
+
+void _copy_seq_from_i1i2(
+	int i1, int i2,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const int *chrtrtable
+);
+
+void _copy_seq_to_i1i2(
+	int i1, int i2,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const int *chrtrtable
+);
+
+void _copy_seq_from_subset(
+	int *subset, int n,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const int *chrtrtable
+);
+
+void _copy_seq_to_subset(int *subset, int n,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const int *chrtrtable
+);
+
+
 /* utils.c */
 
 SEXP Biostrings_debug_utils();
@@ -332,8 +378,7 @@ void _write_RoSeq_to_XRaw(
 	SEXP x,
 	int offset,
 	RoSeq seq,
-	const int *trtable,
-	int trtable_length
+	const int *chrtrtable
 );
 
 SEXP _new_STRSXP_from_RoSeqs(
@@ -582,6 +627,13 @@ SEXP _alloc_XStringSet(
 	const char *baseClass,
 	int length,
 	int super_length
+);
+
+void _write_RoSeq_to_CachedXStringSet_elt(
+	CachedXStringSet *x,
+	int i,
+	RoSeq seq,
+	int encode
 );
 
 void _write_RoSeq_to_XStringSet_elt(
