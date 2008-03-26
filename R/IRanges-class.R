@@ -287,8 +287,8 @@ setMethod("last", ".IRanges", function(x) {.Deprecated("end"); end(x)})
         stop("only two of the ",
              paste("'", sew, "'", sep="", collapse=", "),
              " arguments can be specified")
-    do_atomic_update <- narg_in_sew == 2 && (("names" %in% argnames)
-                                             || is.null(names(object)))
+    do_atomic_update <- narg_in_sew == 2 && (is.null(names(object))
+                                             || ("names" %in% argnames))
     if (do_atomic_update) {
         if ("end" %in% argnames) {
             if ("width" %in% argnames) {

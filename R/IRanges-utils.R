@@ -153,7 +153,7 @@ setGeneric("reduce", signature="x",
     C_ans <- .Call("reduce_IRanges",
                     x, with.inframe.attrib,
                     PACKAGE="Biostrings")
-    ans <- .update(x, start=C_ans$start, width=C_ans$width)
+    ans <- .update(x, start=C_ans$start, width=C_ans$width, names=NULL)
     if (with.inframe.attrib) {
         inframe <- new("IRanges", start=C_ans$inframe.start,
                        width=width(x), check=FALSE)
@@ -205,7 +205,7 @@ setGeneric("mask", signature="x",
         ans_end <- c(ans_end, end)
     }
     ans_width <- ans_end - ans_start + 1L
-    .update(x, start=ans_start, width=ans_width)
+    .update(x, start=ans_start, width=ans_width, names=NULL)
 }
 
 setMethod("mask", "IRanges", .mask.IRanges)
