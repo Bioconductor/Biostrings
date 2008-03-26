@@ -37,6 +37,6 @@ lettersToAmbiguity <- function(x)
         names(ans) <- NULL
         ans
     }
-    sapply(strsplit(x, "", fixed=TRUE), toAmbiguity)
+    sapply(strsplit(toupper(x), "", fixed=TRUE), toAmbiguity)
 }
 
