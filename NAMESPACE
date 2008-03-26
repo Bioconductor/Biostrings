@@ -68,7 +68,8 @@ export(
 
     intToRanges, intToAdjacentRanges, restrict, narrow, reduce,
     readFASTA, writeFASTA, gregexpr2,
-    IUPAC_CODE_MAP, AMINO_ACID_CODE, GENETIC_CODE,
+    IUPAC_CODE_MAP, lettersToAmbiguity,
+    AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
     BString, DNAString, RNAString, AAString,

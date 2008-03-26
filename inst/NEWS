@@ -113,6 +113,8 @@ o reverse(), complement() and reverseComplement() now preserve the names when
 o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
   + a "reverseComplement" method for RNAString objects.
 
+o Added the lettersToAmbiguity() utility function.
+
 C-LEVEL FACILITIES
 
 o Started the Biostrings C interface (work-in-progress).
