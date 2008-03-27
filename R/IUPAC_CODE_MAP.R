@@ -20,7 +20,7 @@ IUPAC_CODE_MAP <- c(
     N="ACGT"
 )
 
-lettersToAmbiguity <- function(x)
+mergeIUPACLetters <- function(x)
 {
     if (!is.character(x) || any(is.na(x)) || any(nchar(x) == 0))
         stop("'x' must be a vector of non-empty character strings")

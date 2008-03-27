@@ -1,7 +1,7 @@
 \name{IUPAC_CODE_MAP}
 
 \alias{IUPAC_CODE_MAP}
-\alias{lettersToAmbiguity}
+\alias{mergeIUPACLetters}
 
 
 \title{The IUPAC Extended Genetic Alphabet}
@@ -12,7 +12,7 @@
 
 \usage{
     IUPAC_CODE_MAP
-    lettersToAmbiguity(x)
+    mergeIUPACLetters(x)
 }
 
 \arguments{
@@ -33,7 +33,7 @@
 
 \examples{
   IUPAC_CODE_MAP
-  lettersToAmbiguity(c("A", "AC", "MAAMC", "GM", "AB", "MK"))
+  mergeIUPACLetters(c("A", "AC", "MAAMC", "GM", "AB", "MK"))
 }
 
 \keyword{utilities}
