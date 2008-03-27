@@ -39,13 +39,14 @@ void _copy_seq_to_i1i2(
 );
 
 void _copy_seq_from_subset(
-	int *subset, int n,
+	const int *subset, int n,
 	char *dest, int dest_length,
 	const char *src, int src_length,
 	const int *chrtrtable
 );
 
-void _copy_seq_to_subset(int *subset, int n,
+void _copy_seq_to_subset(
+	const int *subset, int n,
 	char *dest, int dest_length,
 	const char *src, int src_length,
 	const int *chrtrtable
@@ -78,7 +79,7 @@ void _Biostrings_memcpy_from_i1i2(
 );
 
 void _Biostrings_memcpy_from_subset(
-	int *subset,
+	const int *subset,
 	int n,
 	char *dest,
 	size_t dest_nmemb,
@@ -98,7 +99,7 @@ void _Biostrings_memcpy_to_i1i2(
 );
 
 void _Biostrings_memcpy_to_subset(
-	int *subset,
+	const int *subset,
 	int n,
 	char *dest,
 	size_t dest_nmemb,
@@ -119,7 +120,7 @@ void _Biostrings_translate_charcpy_from_i1i2(
 );
 
 void _Biostrings_translate_charcpy_from_subset(
-	int *subset,
+	const int *subset,
 	int n,
 	char *dest,
 	int dest_length,
@@ -141,7 +142,7 @@ void _Biostrings_translate_charcpy_to_i1i2(
 );
 
 void _Biostrings_translate_charcpy_to_subset(
-	int *subset,
+	const int *subset,
 	int n,
 	char *dest,
 	int dest_length,
@@ -344,7 +345,7 @@ SEXP reduce_IRanges(
 
 SEXP Biostrings_debug_XRaw_utils();
 
-const char *get_class(SEXP x);
+const char *_get_class(SEXP x);
 
 SEXP Biostrings_sexp_address(SEXP s);
 
@@ -722,6 +723,31 @@ SEXP narrow_XStringList(
 );
 
 
+/* char_frequency.c */
+
+SEXP XString_char_frequency(
+	SEXP x,
+	SEXP codes,
+	SEXP with_other
+);
+
+SEXP XStringSet_char_frequency(
+	SEXP x,
+	SEXP codes,
+	SEXP with_other,
+	SEXP collapse
+);
+
+SEXP oligonucleotide_frequency(
+	SEXP x_xp,
+	SEXP x_offset,
+	SEXP x_length,
+	SEXP base_codes,
+	SEXP width,
+	SEXP fast_moving_side
+);
+
+
 /* char_translate.c */
 
 SEXP XRaw_translate_copy_from_i1i2(
@@ -761,28 +787,16 @@ SEXP XStringSet_char_translate(
 );
 
 
-/* char_frequency.c */
+/* replace_locs.c */
 
-SEXP XString_char_frequency(
+SEXP XString_replace_locs_bySTRSXP(
 	SEXP x,
-	SEXP codes,
-	SEXP with_other
-);
-
-SEXP XStringSet_char_frequency(
-	SEXP x,
-	SEXP codes,
-	SEXP with_other,
-	SEXP collapse
-);
-
-SEXP oligonucleotide_frequency(
-	SEXP x_xp,
-	SEXP x_offset,
-	SEXP x_length,
-	SEXP base_codes,
-	SEXP width,
-	SEXP fast_moving_side
+	SEXP loc,
+	SEXP letter,
+	SEXP lkup,
+	SEXP mode,
+	SEXP on_incompatible,
+	SEXP verbose
 );
 
 

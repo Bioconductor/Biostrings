@@ -24,7 +24,7 @@ SEXP Biostrings_debug_XRaw_utils()
  * objects but they needed to go somewhere so here they are...
  */
 
-const char *get_class(SEXP x)
+const char *_get_class(SEXP x)
 {
 	return CHAR(STRING_ELT(GET_CLASS(x), 0));
 }

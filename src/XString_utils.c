@@ -204,7 +204,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq, int encode)
 	const int *enc_chrtrtable;
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
-	enc_chrtrtable = encode ? get_enc_chrtrtable(get_class(x)) : NULL;
+	enc_chrtrtable = encode ? get_enc_chrtrtable(_get_class(x)) : NULL;
 	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }
@@ -221,7 +221,7 @@ static SEXP get_XStringSet_super(SEXP x)
 
 const char *_get_XStringSet_baseClass(SEXP x)
 {
-	return get_class(get_XStringSet_super(x));
+	return _get_class(get_XStringSet_super(x));
 }
 
 int _get_XStringSet_length(SEXP x)
@@ -245,7 +245,7 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	cached_x.super_elts = (char *) RAW(tag) + offset;
 	cached_x.super_nelt = INTEGER(GET_SLOT(super, install("length")))[0];
 
-	cached_x.baseClass = get_class(super);
+	cached_x.baseClass = _get_class(super);
 	cached_x.enc_chrtrtable = get_enc_chrtrtable(cached_x.baseClass);
 	cached_x.dec_chrtrtable = get_dec_chrtrtable(cached_x.baseClass);
 
@@ -279,7 +279,7 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP iranges, SEXP super)
 	char classbuf[80]; // longest string will be "DNAStringSet"
 	SEXP class_def, ans, ranges_slot;
 
-	snprintf(classbuf, sizeof(classbuf), "%sSet", get_class(super));
+	snprintf(classbuf, sizeof(classbuf), "%sSet", _get_class(super));
 	class_def = MAKE_CLASS(classbuf);
 	PROTECT(ans = NEW_OBJECT(class_def));
 	PROTECT(ranges_slot = duplicate(GET_SLOT(iranges, install("ranges"))));

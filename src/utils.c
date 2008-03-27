@@ -113,7 +113,7 @@ void _Biostrings_memcpy_from_i1i2(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void _Biostrings_memcpy_from_subset(int *subset, int n,
+void _Biostrings_memcpy_from_subset(const int *subset, int n,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -195,7 +195,7 @@ void _Biostrings_memcpy_to_i1i2(int i1, int i2,
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void _Biostrings_memcpy_to_subset(int *subset, int n,
+void _Biostrings_memcpy_to_subset(const int *subset, int n,
 		char *dest, size_t dest_nmemb,
 		const char *src, size_t src_nmemb, size_t size)
 {
@@ -277,7 +277,7 @@ void _Biostrings_translate_charcpy_from_i1i2(int i1, int i2,
  * Writing is recycled in 'dest': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void _Biostrings_translate_charcpy_from_subset(int *subset, int n,
+void _Biostrings_translate_charcpy_from_subset(const int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)
@@ -358,7 +358,7 @@ void _Biostrings_translate_charcpy_to_i1i2(int i1, int i2,
  * Reading is recycled in 'src': it starts at its first member
  * and comes back to it after it reaches its last member.
  */
-void _Biostrings_translate_charcpy_to_subset(int *subset, int n,
+void _Biostrings_translate_charcpy_to_subset(const int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *lkup, int lkup_length)

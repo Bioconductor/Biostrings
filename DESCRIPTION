@@ -4,7 +4,7 @@ Title: String objects representing biological sequences, and matching
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or set of sequences.
-Version: 2.7.40
+Version: 2.7.41
 Author: H. Pages, R. Gentleman and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
@@ -36,6 +36,7 @@ Collate: 00datacache.R
 	chartr.R
 	reverseComplement.R
 	toComplex.R
+	replaceLetterAtLoc.R
 	match-utils.R
 	matchPattern.R
 	matchPattern.BOC.R

@@ -159,7 +159,7 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nseq, SEXP x)
 	seqs = new_RoSeqs(nseq);
 	cached_x = _new_CachedXStringSet(x);
 	for (i = 0, elt1 = seqs.elts; i < nseq; i++, elt1++)
-		*elt1 = _get_CachedXStringSet_elt_asRoSeq(x, i);
+		*elt1 = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
 	return seqs;
 }
 
@@ -276,7 +276,7 @@ SEXP new_XStringList_from_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP 
 		SET_ELEMENT(ans_seqs, i, ans_seq);
 		UNPROTECT(2);
 	}
-	snprintf(classbuf, sizeof(classbuf), "%sList", get_class(proto));
+	snprintf(classbuf, sizeof(classbuf), "%sList", _get_class(proto));
 	ans = new_XStringList(classbuf, ans_seqs);
 	UNPROTECT(1);
 	return ans;
@@ -317,9 +317,9 @@ SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 		UNPROTECT(1);
 	}
 	if (proto == R_NilValue) {
-		class = get_class(x);
+		class = _get_class(x);
 	} else {
-		snprintf(classbuf, sizeof(classbuf), "%sList", get_class(proto));
+		snprintf(classbuf, sizeof(classbuf), "%sList", _get_class(proto));
 		class = classbuf;
 	}
 	ans = new_XStringList(class, ans_seqs);

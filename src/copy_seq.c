@@ -138,7 +138,7 @@ void _copy_seq_to_i1i2(int i1, int i2,
  *
  *   dest[k % dest_length] <- tr(src[subset[k] - 1]) for 0 <= k < n
  */
-void _copy_seq_from_subset(int *subset, int n,
+void _copy_seq_from_subset(const int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *chrtrtable)
@@ -184,7 +184,7 @@ void _copy_seq_from_subset(int *subset, int n,
  *
  *   dest[subset[k] - 1] <- tr(src[k % src_length]) for 0 <= k < n
  */
-void _copy_seq_to_subset(int *subset, int n,
+void _copy_seq_to_subset(const int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
 		const int *chrtrtable)
@@ -207,12 +207,12 @@ void _copy_seq_to_subset(int *subset, int n,
 			i = subset[k] - 1;
 			if (i < 0 || i >= dest_length)
 				error("subscript out of bounds");
-			trkey = (unsigned char) src[i];
+			if (j >= src_length)
+				j = 0; /* recycle */
+			trkey = (unsigned char) src[j];
 			if ((trval = chrtrtable[trkey]) == -1)
 				error("sequence contains invalid code %d",
 				      trkey);
-			if (j >= src_length)
-				j = 0; /* recycle */
 			dest[i] = (char) trval;
 		}
 	}

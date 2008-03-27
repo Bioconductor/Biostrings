@@ -45,6 +45,7 @@ exportMethods(
     alphabetFrequency, oligonucleotideFrequency,
     chartr,
     reverse, complement, reverseComplement,
+    replaceLetterAtLoc,
     isMatching, mismatch,
     matchPattern, countPattern,
     matchLRPatterns,
