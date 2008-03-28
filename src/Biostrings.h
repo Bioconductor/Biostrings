@@ -794,8 +794,7 @@ SEXP XString_replace_locs_bySTRSXP(
 	SEXP loc,
 	SEXP letter,
 	SEXP lkup,
-	SEXP mode,
-	SEXP on_incompatible,
+	SEXP if_not_extending,
 	SEXP verbose
 );
 
