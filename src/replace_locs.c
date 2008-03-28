@@ -6,6 +6,7 @@
 #define ERROR_IFNOTEXTEND	4
 
 static int notextend_action;
+static int skip_or_merge_count;
 static char errmsg_buf[200];
 static int chrtrtable[CHRTRTABLE_LENGTH];
 
@@ -78,14 +79,15 @@ static int replace_locs(char *dest, int dest_length,
 			dest[i] = new_letter;
 			continue;
 		}
-		if (notextend_action == SKIP_IFNOTEXTEND)
-			continue;
 		if (notextend_action == ERROR_IFNOTEXTEND) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "new letter (code %d) does not extend old letter (code %d) "
 				 "at location %d", new_letter, old_letter, i + 1);
 			return -1;
 		}
+		skip_or_merge_count++;
+		if (notextend_action == SKIP_IFNOTEXTEND)
+			continue;
 		// only IUPAC letters are mergeable
 		if (!are_IUPAC) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -119,7 +121,7 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 
 	PROTECT(tag = NEW_RAW(x_seq.nelt));
 	memcpy((char *) RAW(tag), x_seq.elts, x_seq.nelt);
-	letter_ncharsum = 0;
+	skip_or_merge_count = letter_ncharsum = 0;
 	loc_p = INTEGER(loc);
 	for (i = 0; i < LENGTH(letter); i++) {
 		letter_elt = STRING_ELT(letter, i);
@@ -142,6 +144,12 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 		UNPROTECT(1);
 		error("total nb of letters in 'letter' must be the same as nb of locations");
 	}
+	if (skip_or_merge_count != 0
+         && notextend_action != REPLACE_IFNOTEXTEND
+         && LOGICAL(verbose)[0])
+		warning("%s %d letter(s)",
+			notextend_action == SKIP_IFNOTEXTEND ? "skipped" : "merged",
+			skip_or_merge_count);
 	PROTECT(data = _new_XRaw(tag));
 	PROTECT(ans = _new_XString(x_class, data, 0, LENGTH(tag)));
 	UNPROTECT(3);
