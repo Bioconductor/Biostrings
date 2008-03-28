@@ -123,7 +123,7 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 	memcpy((char *) RAW(tag), x_seq.elts, x_seq.nelt);
 	skip_or_merge_count = letter_ncharsum = 0;
 	loc_p = INTEGER(loc);
-	for (i = 0; i < LENGTH(letter); i++) {
+	for (i = 0; i < letter_length; i++) {
 		letter_elt = STRING_ELT(letter, i);
 		if (letter_elt == NA_STRING) {
 			UNPROTECT(1);
@@ -132,7 +132,7 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 		letter_ncharsum += letter_elt_length = LENGTH(letter_elt);
 		if (letter_ncharsum > loc_length)
 			break;
-		if (replace_locs((char *) RAW(tag), x_seq.nelt,
+		if (replace_locs((char *) RAW(tag), LENGTH(tag),
                 		 loc_p, letter_elt_length, CHAR(letter_elt),
 				 lkup != R_NilValue) != 0) {
 			UNPROTECT(1);
@@ -154,5 +154,42 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 	PROTECT(ans = _new_XString(x_class, data, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XString_inplace_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup)
+{
+	SEXP tag, letter_elt;
+	int loc_length, letter_length, letter_elt_length, letter_ncharsum, i;
+	const int *loc_p;
+
+	loc_length = LENGTH(loc);
+	letter_length = LENGTH(letter);
+	if (lkup != R_NilValue)
+		init_chrtrtable_with_lkup(lkup);
+	notextend_action = MERGE_IFNOTEXTEND;
+
+	tag = _get_XRaw_tag(_get_XString_data(x));
+	skip_or_merge_count = letter_ncharsum = 0;
+	loc_p = INTEGER(loc);
+	for (i = 0; i < letter_length; i++) {
+		letter_elt = STRING_ELT(letter, i);
+		if (letter_elt == NA_STRING)
+			error("'letter' contains NAs");
+		letter_ncharsum += letter_elt_length = LENGTH(letter_elt);
+		if (letter_ncharsum > loc_length)
+			break;
+		if (replace_locs((char *) RAW(tag), LENGTH(tag),
+                		 loc_p, letter_elt_length, CHAR(letter_elt),
+				 lkup != R_NilValue) != 0) {
+			error("%s", errmsg_buf);
+		}
+		loc_p += letter_elt_length;
+	}
+	if (letter_ncharsum != loc_length)
+		error("total nb of letters in 'letter' must be the same as nb of locations");
+	return x;
 }
 

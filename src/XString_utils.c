@@ -121,7 +121,7 @@ char _RNAdecode(char code)
  * Low-level manipulation of XString objects.
  */
 
-static SEXP get_XString_data(SEXP x)
+SEXP _get_XString_data(SEXP x)
 {
 	return GET_SLOT(x, install("data"));
 }
@@ -132,7 +132,7 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 	SEXP tag;
 	int offset;
 
-	tag = _get_XRaw_tag(get_XString_data(x));
+	tag = _get_XRaw_tag(_get_XString_data(x));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	seq.elts = (const char *) (RAW(tag) + offset);
 	seq.nelt = INTEGER(GET_SLOT(x, install("length")))[0];
@@ -205,7 +205,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq, int encode)
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	enc_chrtrtable = encode ? get_enc_chrtrtable(_get_class(x)) : NULL;
-	_write_RoSeq_to_XRaw(get_XString_data(x), offset + start - 1, seq, enc_chrtrtable);
+	_write_RoSeq_to_XRaw(_get_XString_data(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }
 
@@ -240,7 +240,7 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	cached_x.width = INTEGER(_get_IRanges_width(x));
 
 	super = get_XStringSet_super(x);
-	tag = _get_XRaw_tag(get_XString_data(super));
+	tag = _get_XRaw_tag(_get_XString_data(super));
 	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
 	cached_x.super_elts = (char *) RAW(tag) + offset;
 	cached_x.super_nelt = INTEGER(GET_SLOT(super, install("length")))[0];

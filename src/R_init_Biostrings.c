@@ -99,6 +99,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* replace_locs.c */
 	{"XString_replace_locs_bySTRSXP", (DL_FUNC) &XString_replace_locs_bySTRSXP, 6},
+	{"XString_inplace_replace_locs_bySTRSXP", (DL_FUNC) &XString_inplace_replace_locs_bySTRSXP, 4},
 
 /* views_buffer.c */
 	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},

@@ -32,3 +32,20 @@ setMethod("replaceLetterAtLoc", "DNAString",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The ".inplaceReplaceLetterAtLoc" function.
+###
+### The user should NEVER use this function!
+### This function is used by the BSgenome package for injecting SNPs into the
+### sequences of a BSgenome object at sequence-load time.
+###
+
+.inplaceReplaceLetterAtLoc <- function(x, loc, letter)
+{
+    lkup <- getXStringSubtypeConversionLookup("BString", class(x))
+    .Call("XString_inplace_replace_locs_bySTRSXP",
+          x, loc, letter, lkup,
+          PACKAGE="Biostrings")
+}
+

@@ -84,6 +84,7 @@ export(
     subXString, subviews,
     strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
     transcribe, cDNA, dna2rna, rna2dna,
+    .inplaceReplaceLetterAtLoc,
     extractAllMatches,
     alignScore,
 

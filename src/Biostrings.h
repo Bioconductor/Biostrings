@@ -572,6 +572,8 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
+SEXP _get_XString_data(SEXP x);
+
 RoSeq _get_XString_asRoSeq(SEXP x);
 
 SEXP _new_XString(
@@ -796,6 +798,13 @@ SEXP XString_replace_locs_bySTRSXP(
 	SEXP lkup,
 	SEXP if_not_extending,
 	SEXP verbose
+);
+
+SEXP XString_inplace_replace_locs_bySTRSXP(
+	SEXP x,
+	SEXP loc,
+	SEXP letter,
+	SEXP lkup
 );
 
 
