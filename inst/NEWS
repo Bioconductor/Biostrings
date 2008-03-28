@@ -77,6 +77,11 @@ o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   Renamed helper function BStringViewsToFASTArecords() ->
   XStringSetToFASTArecords().
 
+o Added the replaceLetterAtLoc() generic function with a method for DNAString
+  objects (methods for other types of objects will come later) for creating
+  a copy of a sequence where letters are replaced by new letters at some
+  specified locations.
+
 o Added the chartr() generic function with a method for XString, XStringSet
   and BStringViews objects.
 
