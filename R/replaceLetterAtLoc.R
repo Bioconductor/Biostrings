@@ -7,10 +7,6 @@ setGeneric("replaceLetterAtLoc", signature="x",
         standardGeneric("replaceLetterAtLoc")
 )
 
-### loc: integer vect with no NAs (locations can be repeated, in this case the
-###      last replacement to occur at a given location prevails)
-### letter: character vector with no NAs
-### The gap letter ("-") is not extending or extended by any other letter.
 setMethod("replaceLetterAtLoc", "DNAString",
     function(x, loc, letter, if.not.extending="replace", verbose=FALSE)
     {

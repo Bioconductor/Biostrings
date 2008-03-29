@@ -78,7 +78,7 @@ o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   XStringSetToFASTArecords().
 
 o Added the replaceLetterAtLoc() generic function with a method for DNAString
-  objects (methods for other types of objects will come later) for creating
+  objects (methods for other types of objects will come later) for making
   a copy of a sequence where letters are replaced by new letters at some
   specified locations.
 
