@@ -5,6 +5,9 @@ Some R problems that maybe worth reporting:
   it, then nothing is printed and the prompt doesn't come back either (unless I
   CTRL C).
 
+- rowSums() and colSums() should return integer vectors when applied on
+  an integer matrix.
+
 
 In 2.[6|7]
 ==========
@@ -38,6 +41,16 @@ In 2.7
     o Add methods for XStringSet objects everywhere there are methods defined
       for BStringViews objects (matchPattern, countPattern, etc...).
       Make them work in a vectorized fashion for XStringSet objects.
+    o Add "==" and "unique" methods for XStringSet objects.
+
+- Add 'baseOnly' arg to consmat(). Rework the implementation (currently
+  totally inefficient). Another approach to providing consmat()'s functionality
+  could be to add a 'bycol' (or by 'byCycle', or 'byPos") argument to
+  alphabetFrequency(). When 'x' is an XStringSet object,
+  alphabetFrequency(x, byCycle=TRUE) would return what Martin's
+  alphabetByCycle() function currently returns.
+
+- Try to speed up "show" method for XStringSet objects.
 
 - BStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.

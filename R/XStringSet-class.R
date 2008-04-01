@@ -105,6 +105,13 @@ setMethod("nchar", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "alphabet" method.
+###
+
+setMethod("alphabet", "XStringSet", function(x) alphabet(super(x)))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization (not intended to be used directly by the user).
 ###
 
@@ -257,7 +264,7 @@ AAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 .XStringSet.show_frame_line <- function(x, i, iW, widthW)
 {
-    width <- nchar(x[[i]])
+    width <- nchar(x)[i]
     snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(names(x)))
         snippetWidth <- snippetWidth - .namesW - 1
