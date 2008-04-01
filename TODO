@@ -128,6 +128,11 @@ In 2.7
 
   o GenomeSearching.Rnw vignette: add section about inexact matching with matchPDict
 
+  o Compare with other software for fast alignement and assembly:
+      Vmatch (http://www.vmatch.de/)
+      Maq (http://maq.sourceforge.net/)
+      MUMmer (http://mummer.sourceforge.net/)
+
 - Finish C implemntation of read.BStringViews()
 
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
