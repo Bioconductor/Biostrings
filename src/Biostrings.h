@@ -311,6 +311,16 @@ const int *_get_IRanges_start0(SEXP x);
 
 const int *_get_IRanges_width0(SEXP x);
 
+void _set_IRanges_names(
+	SEXP x,
+	SEXP names
+);
+
+void _copy_IRanges_slots(
+	SEXP x,
+	SEXP x0
+);
+
 SEXP _new_IRanges(
 	SEXP start,
 	SEXP width,
@@ -318,11 +328,6 @@ SEXP _new_IRanges(
 );
 
 SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs);
-
-SEXP _replace_IRanges_names(
-	SEXP x,
-	SEXP names
-);
 
 SEXP _alloc_IRanges(int length);
 

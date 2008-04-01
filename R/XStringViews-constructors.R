@@ -11,7 +11,7 @@
 ###   - They return a BStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
 
-.makeRanges <- function(subject, start, end)
+.safeMakeIRanges <- function(subject, start, end)
 {
     if (!isNumericOrNAs(start) || !isNumericOrNAs(end))
         stop("'start' and 'end' must be numerics")
@@ -28,7 +28,7 @@
     ## The NA-proof version of 'if (any(end < start))'
     if (!isTRUE(all(start <= end)))
         stop("'start' and 'end' must verify 'start <= end'")
-    data.frame(start=start, width=end-start+1L)
+    new("IRanges", start=start, width=end-start+1L)
 }
 
 ### Typical use:
@@ -52,8 +52,8 @@ views <- function(subject, start=NA, end=NA)
     if (!is(subject, "XString"))
         subject <- BString(subject)
     ans <- new("BStringViews", subject, check=FALSE)
-    ans@ranges <- .makeRanges(subject(ans), start, end)
-    ans
+    ranges <- .safeMakeIRanges(subject(ans), start, end)
+    update(ans, start=start(ranges), width=width(ranges))
 }
 
 ### 'width' is the vector of view widths.

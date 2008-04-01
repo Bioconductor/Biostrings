@@ -66,18 +66,12 @@ static StartEnd uSEW_to_StartEnd(int start, int end, int width)
 
 SEXP _get_IRanges_start(SEXP x)
 {
-	SEXP ranges_slot;
-
-	ranges_slot = GET_SLOT(x, install("ranges"));
-	return VECTOR_ELT(ranges_slot, 0);
+	return GET_SLOT(x, install("start"));
 }
 
 SEXP _get_IRanges_width(SEXP x)
 {
-	SEXP ranges_slot;
-
-	ranges_slot = GET_SLOT(x, install("ranges"));
-	return VECTOR_ELT(ranges_slot, 1);
+	return GET_SLOT(x, install("width"));
 }
 
 int _get_IRanges_length(SEXP x)
@@ -95,48 +89,46 @@ const int *_get_IRanges_width0(SEXP x)
 	return INTEGER(_get_IRanges_width(x));
 }
 
+/*
+ * Does NOT duplicate 'x'. The @names slot is modified in place!
+ */
+void _set_IRanges_names(SEXP x, SEXP names)
+{
+	SEXP names_slot;
+
+	if (names == R_NilValue) {
+		PROTECT(names_slot = NEW_CHARACTER(1));
+		SET_STRING_ELT(names_slot, 0, NA_STRING);
+		SET_SLOT(x, mkChar("names"), names_slot);
+		UNPROTECT(1);
+	} else {
+		if (LENGTH(names) != _get_IRanges_length(x))
+			error("number of names and number of elements differ");
+		SET_SLOT(x, mkChar("names"), names);
+	}
+	return;
+}
 
 /*
  * Note that 'start' and 'width' must NOT contain NAs.
- * mk_ranges_slot() trusts the caller and does NOT check this!
+ * set_IRanges_slots() trusts the caller and does NOT check this!
  */
-static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
+static void set_IRanges_slots(SEXP x, SEXP start, SEXP width, SEXP names)
 {
-	SEXP ans, ans_names, ans_row_names;
-	int i;
-
 	if (LENGTH(width) != LENGTH(start))
 		error("number of starts and number of widths differ");
-	/* set the elements and prepare their names */
-	if (names == R_NilValue) {
-		PROTECT(ans = NEW_LIST(2));
-		PROTECT(ans_names = NEW_CHARACTER(2));
-	} else {
-		if (LENGTH(names) != LENGTH(start))
-			error("number of names and number of elements differ");
-		PROTECT(ans = NEW_LIST(3));
-		PROTECT(ans_names = NEW_CHARACTER(3));
-	}
-	SET_ELEMENT(ans, 0, start);
-	SET_STRING_ELT(ans_names, 0, mkChar("start"));
-	SET_ELEMENT(ans, 1, width);
-	SET_STRING_ELT(ans_names, 1, mkChar("width"));
-	if (names != R_NilValue) {
-		SET_ELEMENT(ans, 2, names);
-		SET_STRING_ELT(ans_names, 2, mkChar("names"));
-	}
+	SET_SLOT(x, mkChar("start"), start);
+	SET_SLOT(x, mkChar("width"), width);
+	_set_IRanges_names(x, names);
+	return;
+}
 
-	/* set the attributes */
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-	PROTECT(ans_row_names = NEW_INTEGER(LENGTH(start)));
-	for (i = 0; i < LENGTH(ans_row_names); i++)
-		INTEGER(ans_row_names)[i] = i + 1;
-	setAttrib(ans, mkString("row.names"), ans_row_names);
-	UNPROTECT(1);
-	SET_CLASS(ans, mkString("data.frame"));
-	UNPROTECT(1);
-	return ans;
+void _copy_IRanges_slots(SEXP x, SEXP x0)
+{
+	SET_SLOT(x, mkChar("start"), duplicate(GET_SLOT(x0, install("start"))));
+	SET_SLOT(x, mkChar("width"), duplicate(GET_SLOT(x0, install("width"))));
+	SET_SLOT(x, mkChar("names"), duplicate(GET_SLOT(x0, install("names"))));
+	return;
 }
 
 /*
@@ -146,13 +138,12 @@ static SEXP mk_ranges_slot(SEXP start, SEXP width, SEXP names)
  */
 SEXP _new_IRanges(SEXP start, SEXP width, SEXP names)
 {
-	SEXP class_def, ans, ranges_slot;
+	SEXP class_def, ans;
 
 	class_def = MAKE_CLASS(".IRanges");
 	PROTECT(ans = NEW_OBJECT(class_def));
-	PROTECT(ranges_slot = mk_ranges_slot(start, width, names));
-	SET_SLOT(ans, mkChar("ranges"), ranges_slot);
-	UNPROTECT(2);
+	set_IRanges_slots(ans, start, width, names);
+	UNPROTECT(1);
 	return ans;
 }
 
@@ -187,18 +178,6 @@ SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
 		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): END\n");
 	}
 #endif
-	UNPROTECT(3);
-	return ans;
-}
-
-SEXP _replace_IRanges_names(SEXP x, SEXP names)
-{
-	SEXP ranges_slot, start, width, ans;
-
-	ranges_slot = GET_SLOT(x, install("ranges"));
-	PROTECT(start = duplicate(VECTOR_ELT(ranges_slot, 0)));
-	PROTECT(width = duplicate(VECTOR_ELT(ranges_slot, 1)));
-	PROTECT(ans = _new_IRanges(start, width, names));
 	UNPROTECT(3);
 	return ans;
 }

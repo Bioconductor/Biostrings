@@ -22,12 +22,6 @@ setClass("BStringViews",
 setGeneric("subject", function(x) standardGeneric("subject"))
 setMethod("subject", "BStringViews", function(x) x@subject)
 
-### The "views" generic and methods are commented for now because they
-### conflict with the views() function currently defined in the
-### BStringViews-constructors.R file.
-#setGeneric("views", function(x) standardGeneric("views"))
-#setMethod("views", "BStringViews", function(x) x@ranges)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
