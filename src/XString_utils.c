@@ -313,7 +313,7 @@ SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
 }
 
 /*
- * Does NOT duplicate 'x'. The @names slot is modified in place!
+ * Does NOT duplicate 'x'. The @NAMES slot is modified in place!
  */
 void _set_XStringSet_names(SEXP x, SEXP names)
 {

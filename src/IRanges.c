@@ -90,7 +90,7 @@ const int *_get_IRanges_width0(SEXP x)
 }
 
 /*
- * Does NOT duplicate 'x'. The @names slot is modified in place!
+ * Does NOT duplicate 'x'. The @NAMES slot is modified in place!
  */
 void _set_IRanges_names(SEXP x, SEXP names)
 {
@@ -99,12 +99,12 @@ void _set_IRanges_names(SEXP x, SEXP names)
 	if (names == R_NilValue) {
 		PROTECT(names_slot = NEW_CHARACTER(1));
 		SET_STRING_ELT(names_slot, 0, NA_STRING);
-		SET_SLOT(x, mkChar("names"), names_slot);
+		SET_SLOT(x, mkChar("NAMES"), names_slot);
 		UNPROTECT(1);
 	} else {
 		if (LENGTH(names) != _get_IRanges_length(x))
 			error("number of names and number of elements differ");
-		SET_SLOT(x, mkChar("names"), names);
+		SET_SLOT(x, mkChar("NAMES"), names);
 	}
 	return;
 }
@@ -127,7 +127,7 @@ void _copy_IRanges_slots(SEXP x, SEXP x0)
 {
 	SET_SLOT(x, mkChar("start"), duplicate(GET_SLOT(x0, install("start"))));
 	SET_SLOT(x, mkChar("width"), duplicate(GET_SLOT(x0, install("width"))));
-	SET_SLOT(x, mkChar("names"), duplicate(GET_SLOT(x0, install("names"))));
+	SET_SLOT(x, mkChar("NAMES"), duplicate(GET_SLOT(x0, install("NAMES"))));
 	return;
 }
 
