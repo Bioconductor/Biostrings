@@ -137,8 +137,8 @@ gregexpr2 <- function(pattern, text)
         return(integer(0))
     }
     .Call("match_boyermoore",
-          pattern@data@xp, pattern@offset, pattern@length,
-          subject@data@xp, subject@offset, subject@length,
+          pattern@xdata@xp, pattern@offset, pattern@length,
+          subject@xdata@xp, subject@offset, subject@length,
           count.only,
           PACKAGE="Biostrings")
 }
@@ -163,8 +163,8 @@ gregexpr2 <- function(pattern, text)
         return(integer(0))
     }
     .Call("match_shiftor",
-          pattern@data@xp, pattern@offset, pattern@length,
-          subject@data@xp, subject@offset, subject@length,
+          pattern@xdata@xp, pattern@offset, pattern@length,
+          subject@xdata@xp, subject@offset, subject@length,
           max.mismatch, fixed, count.only,
           PACKAGE="Biostrings")
 }

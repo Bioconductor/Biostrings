@@ -11,8 +11,8 @@
 ### Return the length (integer) of the Longest Common Prefix.
 XString.lcprefix <- function(s1, s2)
 {
-    .Call("lcprefix", s1@data@xp, s1@offset, s1@length,
-                      s2@data@xp, s2@offset, s2@length,
+    .Call("lcprefix", s1@xdata@xp, s1@offset, s1@length,
+                      s2@xdata@xp, s2@offset, s2@length,
                       PACKAGE="Biostrings")
 }
 
@@ -49,8 +49,8 @@ setMethod("lcprefix", signature(s1="XString", s2="XString"),
 ### Return the length (integer) of the Longest Common Suffix.
 XString.lcsuffix <- function(s1, s2)
 {
-    .Call("lcsuffix", s1@data@xp, s1@offset, s1@length,
-                      s2@data@xp, s2@offset, s2@length,
+    .Call("lcsuffix", s1@xdata@xp, s1@offset, s1@length,
+                      s2@xdata@xp, s2@offset, s2@length,
                       PACKAGE="Biostrings")
 }
 

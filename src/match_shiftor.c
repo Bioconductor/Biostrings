@@ -285,10 +285,10 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
 
 /*
  * Arguments:
- *   'p_xp': pattern@data@xp
+ *   'p_xp': pattern@xdata@xp
  *   'p_offset': pattern@offset
  *   'p_length': pattern@length
- *   's_xp': subject@data@xp
+ *   's_xp': subject@xdata@xp
  *   's_offset': subject@offset
  *   's_length': subject@length
  *   'max_mismatch': the number of mismatches (integer vector of length 1)

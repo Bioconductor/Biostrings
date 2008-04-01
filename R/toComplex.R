@@ -15,9 +15,9 @@ setMethod("toComplex", "DNAString",
     {
         letters <- names(baseValues)
         # dirty trick, need to find something better
-        codes <- DNAString(paste(letters, collapse=""))@data[]
+        codes <- DNAString(paste(letters, collapse=""))@xdata[]
         lkup <- buildLookupTable(codes, baseValues)
-        XRaw.readComplexes(x@data, x@offset + 1, x@offset + x@length, lkup)
+        XRaw.readComplexes(x@xdata, x@offset + 1, x@offset + x@length, lkup)
     }
 )
 

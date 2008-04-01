@@ -52,7 +52,7 @@ setMethod("initialize", "BOC_SubjectString",
         buf3 <- XRaw(buf_length)
         pre4buf <- XRaw(buf_length)
         stats <- .Call("match_BOC_preprocess",
-              subject@data@xp, subject@offset, subject@length,
+              subject@xdata@xp, subject@offset, subject@length,
               pattern_length,
               code1, code2, code3, code4,
               buf1@xp, buf2@xp, buf3@xp, pre4buf@xp,
@@ -123,8 +123,8 @@ plotBOC <- function(x, main)
 .match.BOC.exact <- function(pattern, boc_subject, count.only)
 {
     .Call("match_BOC_exact",
-          pattern@data@xp, pattern@offset, pattern@length,
-          boc_subject@subject@data@xp, boc_subject@subject@offset, boc_subject@subject@length,
+          pattern@xdata@xp, pattern@offset, pattern@length,
+          boc_subject@subject@xdata@xp, boc_subject@subject@offset, boc_subject@subject@length,
           boc_subject@base1_code,
           boc_subject@base2_code,
           boc_subject@base3_code,

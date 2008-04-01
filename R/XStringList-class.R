@@ -141,12 +141,12 @@ setMethod("initialize", "AAStringList",
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     use.names <- normalize.use.names(use.names)
     proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("new_XRaw_from_STRSXP",
-                  x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
-                  PACKAGE="Biostrings")
+    xdata <- .Call("new_XRaw_from_STRSXP",
+                   x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
+                   PACKAGE="Biostrings")
     locs2 <- intToAdjacentRanges(width(safe_locs))
     ans <- .Call("new_XStringList_from_XRaw",
-                 data, start(locs2), width(locs2), proto,
+                 xdata, start(locs2), width(locs2), proto,
                  PACKAGE="Biostrings")
     if (use.names) names(ans) <- names(x)
     ans

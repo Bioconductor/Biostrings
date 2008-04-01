@@ -572,13 +572,13 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-SEXP _get_XString_data(SEXP x);
+SEXP _get_XString_xdata(SEXP x);
 
 RoSeq _get_XString_asRoSeq(SEXP x);
 
 SEXP _new_XString(
 	const char *class,
-	SEXP data,
+	SEXP xdata,
 	int offset,
 	int length
 );

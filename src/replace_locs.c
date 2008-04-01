@@ -107,7 +107,7 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 {
 	const char *x_class;
 	RoSeq x_seq;
-	SEXP tag, letter_elt, data, ans;
+	SEXP tag, letter_elt, xdata, ans;
 	int loc_length, letter_length, letter_elt_length, letter_ncharsum, i;
 	const int *loc_p;
 
@@ -150,8 +150,8 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 		warning("%s %d letter(s)",
 			notextend_action == SKIP_IFNOTEXTEND ? "skipped" : "merged",
 			skip_or_merge_count);
-	PROTECT(data = _new_XRaw(tag));
-	PROTECT(ans = _new_XString(x_class, data, 0, LENGTH(tag)));
+	PROTECT(xdata = _new_XRaw(tag));
+	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
 }
@@ -171,7 +171,7 @@ SEXP XString_inplace_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP l
 		init_chrtrtable_with_lkup(lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
-	tag = _get_XRaw_tag(_get_XString_data(x));
+	tag = _get_XRaw_tag(_get_XString_xdata(x));
 	skip_or_merge_count = letter_ncharsum = 0;
 	loc_p = INTEGER(loc);
 	for (i = 0; i < letter_length; i++) {

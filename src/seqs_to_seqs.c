@@ -256,7 +256,7 @@ static SEXP new_XStringList(const char *class, SEXP seqs)
 SEXP new_XStringList_from_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 {
 	int nseq, x_length, i;
-	SEXP ans, ans_seqs, ans_seq, data;
+	SEXP ans, ans_seqs, ans_seq, xdata;
 	const int *safe_start, *safe_width;
 	char classbuf[14]; // longest string will be "DNAStringList"
 
@@ -269,8 +269,8 @@ SEXP new_XStringList_from_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP 
 	     i < nseq;
 	     i++, safe_start++, safe_width++) {
 		PROTECT(ans_seq = duplicate(proto));
-		PROTECT(data = duplicate(x));
-		SET_SLOT(ans_seq, mkChar("data"), data);
+		PROTECT(xdata = duplicate(x));
+		SET_SLOT(ans_seq, mkChar("xdata"), xdata);
 		SET_SLOT(ans_seq, mkChar("offset"), ScalarInteger(start2offset(*safe_start)));
 		SET_SLOT(ans_seq, mkChar("length"), ScalarInteger(*safe_width));
 		SET_ELEMENT(ans_seqs, i, ans_seq);
@@ -288,7 +288,7 @@ SEXP new_XStringList_from_XRaw(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP 
 SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 {
 	int nseq, i, offset;
-	SEXP x_seqs, x_seq, ans, ans_seqs, ans_seq, data;
+	SEXP x_seqs, x_seq, ans, ans_seqs, ans_seq, xdata;
 	const int *safe_start, *safe_width;
 	char classbuf[14]; // longest string will be "DNAStringList"
 	const char *class;
@@ -306,8 +306,8 @@ SEXP narrow_XStringList(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP proto)
 			PROTECT(ans_seq = duplicate(x_seq));
 		} else {
 			PROTECT(ans_seq = duplicate(proto));
-			PROTECT(data = duplicate(GET_SLOT(x_seq, install("data"))));
-			SET_SLOT(ans_seq, mkChar("data"), data);
+			PROTECT(xdata = duplicate(GET_SLOT(x_seq, install("xdata"))));
+			SET_SLOT(ans_seq, mkChar("xdata"), xdata);
 			UNPROTECT(1);
 		}
 		offset = INTEGER(GET_SLOT(x_seq, install("offset")))[0] + *safe_start - 1;

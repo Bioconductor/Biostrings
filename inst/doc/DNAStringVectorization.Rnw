@@ -167,8 +167,8 @@ orf2 <- BStringViews(orf, "RNAString")
 
 These conversions are very fast because no string data needs to be copied:
 <<e2>>=
-orf[[0]]@data
-orf2[[0]]@data
+orf[[0]]@xdata
+orf2[[0]]@xdata
 @
 
 \end{document}

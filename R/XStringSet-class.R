@@ -139,10 +139,10 @@ newXStringSet <- function(class, super, ranges, x, use.names)
 .charToXString <- function(x, safe_locs, class)
 {
     proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
-    data <- .Call("new_XRaw_from_STRSXP",
-                  x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
-                  PACKAGE="Biostrings")
-    new(class, data, 0L, length(data), check=FALSE)
+    xdata <- .Call("new_XRaw_from_STRSXP",
+                   x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
+                   PACKAGE="Biostrings")
+    new(class, xdata, 0L, length(xdata), check=FALSE)
 }
 
 .charToXStringSet <- function(x, start, end, width, use.names, baseClass)
@@ -166,10 +166,10 @@ newXStringSet <- function(class, super, ranges, x, use.names)
         ## 'super(x)' that have a lot of overlapping.
         safe_locs <- narrow(x, start, end, width)
         frame <- reduce(safe_locs, with.inframe.attrib=TRUE)
-        data <- .Call("new_XRaw_from_XString",
-                      super(x), start(frame), width(frame), lkup,
-                      PACKAGE="Biostrings")
-        super <- new(baseClass, data, 0L, length(data), check=FALSE)
+        xdata <- .Call("new_XRaw_from_XString",
+                       super(x), start(frame), width(frame), lkup,
+                       PACKAGE="Biostrings")
+        super <- new(baseClass, xdata, 0L, length(xdata), check=FALSE)
         ranges <- attr(frame, "inframe")
     } else {
         super <- XString(baseClass, super(x))

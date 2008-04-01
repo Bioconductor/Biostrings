@@ -139,11 +139,11 @@ XStringSetToFASTArecords <- function(x)
         stop(file, ": file is too big")
     file <- file(file, "r")
     on.exit(close(file))
-    data <- XRaw(filesize)
-    subject <- new(subjectClass, data, 0L, length(data))
+    xdata <- XRaw(filesize)
+    subject <- new(subjectClass, xdata, 0L, length(xdata))
     subject@length <- 0L
 
-    #ans <- XRaw.loadFASTA(subject@data, file, collapse, enc_lkup=enc_lkup(x))
+    #ans <- XRaw.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))
 
 #-- implement this in C, from here
     width <- integer(0)

@@ -69,8 +69,6 @@ In 2.7
   significantly when max.mismatch becomes to large. Should not be the case
   anymore.
 
-- Rename 'data' slot (BString class) -> 'xdata'
-
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
 

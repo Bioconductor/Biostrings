@@ -5,7 +5,7 @@
 setClass("XString",
     representation(
         "VIRTUAL",
-        data="XRaw",        # contains the string data
+        xdata="XRaw",       # contains the sequence data (external)
         offset="integer",   # a single integer
         length="integer"    # a single integer
     )
@@ -118,13 +118,13 @@ comparableXStrings <- function(x1, x2)
 
 XString.read <- function(x, i, imax=integer(0))
 {
-    XRaw.read(x@data, x@offset + i, x@offset + imax,
+    XRaw.read(x@xdata, x@offset + i, x@offset + imax,
                       dec_lkup=dec_lkup(x))
 }
 
 XString.readCodes <- function(x, i, imax=integer(0))
 {
-    XRaw.readInts(x@data, x@offset + i, x@offset + imax)
+    XRaw.readInts(x@xdata, x@offset + i, x@offset + imax)
 }
 
 ### Only used at initialization time! (XString objects are immutable)
@@ -136,7 +136,7 @@ XString.write <- function(x, i, imax=integer(0), value)
         if (nbytes == 0)
             return(x)
         ## Write data starting immediately after the last byte in XRaw object
-        ## 'x@data' that belongs to the sequence XString object 'x' is
+        ## 'x@xdata' that belongs to the sequence XString object 'x' is
         ## pointing at.
         ## This is safe because XRaw.write() is protected against subscripts
         ## 'i' and 'imax' being "out of bounds".
@@ -144,7 +144,7 @@ XString.write <- function(x, i, imax=integer(0), value)
         imax <- x@length <- x@length + nbytes
     }
     #cat(x@offset + i, " -- ", x@offset + imax, "\n", sep="")
-    XRaw.write(x@data, x@offset + i, x@offset + imax, value=value,
+    XRaw.write(x@xdata, x@offset + i, x@offset + imax, value=value,
                        enc_lkup=enc_lkup(x))
     x
 }
@@ -179,15 +179,15 @@ XString.write <- function(x, i, imax=integer(0), value)
 }
 
 setMethod("initialize", "XString",
-    function(.Object, data, offset, length, check=TRUE)
+    function(.Object, xdata, offset, length, check=TRUE)
     {
         if (check) {
-            if (!is(data, "XRaw"))
-                stop("'data' must be an XRaw object")
+            if (!is(xdata, "XRaw"))
+                stop("'xdata' must be an XRaw object")
             offset <- .normalize.offset(offset)
-            length <- .normalize.length(offset, length, length(data))
+            length <- .normalize.length(offset, length, length(xdata))
         }
-        slot(.Object, "data", check=FALSE) <- data
+        slot(.Object, "xdata", check=FALSE) <- xdata
         slot(.Object, "offset", check=FALSE) <- offset
         slot(.Object, "length", check=FALSE) <- length
         .Object
@@ -208,8 +208,8 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
             stop("more than one input sequence")
     }
     lkup <- enc_lkup(new(class, XRaw(0), 0L, 0L, check=FALSE))
-    data <- charToXRaw(x, start=start, end=end, width=width, lkup=lkup, check=check)
-    new(class, data, 0L, length(data), check=FALSE)
+    xdata <- charToXRaw(x, start=start, end=end, width=width, lkup=lkup, check=check)
+    new(class, xdata, 0L, length(xdata), check=FALSE)
 }
 
 .XStringToXString <- function(x, start, nchar, class, check)
@@ -221,9 +221,9 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
     start <- x@offset + start
     lkup <- getXStringSubtypeConversionLookup(class(x), class)
     if (is.null(lkup))
-        return(new(class, x@data, start-1L, nchar, check=FALSE))
-    data <- copySubXRaw(x@data, start=start, nchar=nchar, lkup=lkup, check=FALSE)
-    new(class, data, 0L, length(data), check=FALSE)
+        return(new(class, x@xdata, start-1L, nchar, check=FALSE))
+    xdata <- copySubXRaw(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+    new(class, xdata, 0L, length(xdata), check=FALSE)
 }
 
 
@@ -305,9 +305,9 @@ setMethod("[", "XString",
             stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        data <- XRaw(length(i))
-        XRaw.copy(data, x@offset + i, src=x@data)
-        new(class(x), data, 0L, length(data), check=FALSE)
+        xdata <- XRaw(length(i))
+        XRaw.copy(xdata, x@offset + i, src=x@xdata)
+        new(class(x), xdata, 0L, length(xdata), check=FALSE)
     }
 )
 
@@ -351,7 +351,7 @@ setReplaceMethod("[", "XString",
     if (x@length != y@length)
         return(FALSE)
     one <- as.integer(1)
-    ans <- !XRaw.compare(x@data, x@offset + one, y@data, y@offset + one, x@length)
+    ans <- !XRaw.compare(x@xdata, x@offset + one, y@xdata, y@offset + one, x@length)
     as.logical(ans)
 }
 
@@ -403,7 +403,7 @@ setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
 ### The "XString.substr" function.
 ###
 ### The "XString.substr" function is very fast because it does not copy
-### the string data. Return a XString object (not vectorized).
+### the sequence data. Return a XString object (not vectorized).
 ### 'start' and 'end' must be single integers verifying:
 ###   1 <= start <= end <= length(x)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
@@ -413,6 +413,6 @@ setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
 XString.substr <- function(x, start, end)
 {
     shift <- start - 1L
-    new(class(x), x@data, x@offset + shift, end - shift, check=FALSE)
+    new(class(x), x@xdata, x@offset + shift, end - shift, check=FALSE)
 }
 
