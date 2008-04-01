@@ -284,7 +284,7 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
 	PROTECT(ans = NEW_OBJECT(class_def));
 	_copy_IRanges_slots(ans, ranges);
 	SET_SLOT(ans, mkChar("super"), super);
-	UNPROTECT(2);
+	UNPROTECT(1);
 	return ans;
 }
 
@@ -346,12 +346,12 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 	PROTECT(ranges = _alloc_IRanges(length));
 	PROTECT(super = _alloc_XString(baseClass, super_length));
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(ranges, super));
-	UNPROTECT(3);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _alloc_XStringSet(): END\n");
 	}
 #endif
+	UNPROTECT(3);
 	return ans;
 }
 
