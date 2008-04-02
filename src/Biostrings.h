@@ -1028,6 +1028,23 @@ SEXP match_BOC2_exact(
 );
 
 
+/* MIndex_utils.c */
+
+SEXP debug_MIndex_utils();
+
+SEXP shiftListOfInts(
+	SEXP x,
+	SEXP shift
+);
+
+SEXP extract_endIndex(
+	SEXP ends_envir,
+	SEXP shift,
+	SEXP names,
+	SEXP all_names
+);
+
+
 /* match_TBdna.c */
 
 SEXP debug_match_TBdna();
@@ -1057,18 +1074,6 @@ SEXP match_TBdna(
 	SEXP fixed,
 	SEXP count_only,
 	SEXP envir
-);
-
-SEXP shiftListOfInts(
-	SEXP x,
-	SEXP shift
-);
-
-SEXP extract_endIndex(
-	SEXP ends_envir,
-	SEXP shift,
-	SEXP names,
-	SEXP all_names
 );
 
 
