@@ -297,9 +297,9 @@ void _append_string_to_CharBBuf(
 );
 
 
-/* IRanges.c */
+/* IRanges_class.c */
 
-SEXP Biostrings_debug_IRanges();
+SEXP debug_IRanges_class();
 
 SEXP _get_IRanges_start(SEXP x);
 
@@ -331,6 +331,11 @@ SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs);
 
 SEXP _alloc_IRanges(int length);
 
+
+/* IRanges_utils.c */
+
+SEXP debug_IRanges_utils();
+
 SEXP narrow_IRanges(
 	SEXP x,
 	SEXP start,
@@ -346,9 +351,9 @@ SEXP reduce_IRanges(
 );
 
 
-/* XRaw_utils.c */
+/* XRaw_class.c */
 
-SEXP Biostrings_debug_XRaw_utils();
+SEXP debug_XRaw_class();
 
 const char *_get_class(SEXP x);
 
@@ -561,9 +566,13 @@ SEXP XInteger_write_ints_to_subset(
 );
 
 
-/* XString_utils.c */
+/* XString_class.c */
 
-SEXP Biostrings_debug_XString_utils();
+SEXP debug_XString_class();
+
+const int *get_enc_chrtrtable(const char *class);
+
+const int *get_dec_chrtrtable(const char *class);
 
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup);
 
@@ -604,6 +613,11 @@ void _write_RoSeq_to_XString(
 	RoSeq seq,
 	int encode
 );
+
+
+/* XStringSet_class.c */
+
+SEXP debug_XStringSet_class();
 
 const char *_get_XStringSet_baseClass(SEXP x);
 

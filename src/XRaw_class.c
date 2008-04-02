@@ -1,5 +1,5 @@
 /****************************************************************************
- *                  Low-level manipulation of XRaw objects                  *
+ *                    Basic manipulation of XRaw objects                    *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -7,13 +7,13 @@
 
 static int debug = 0;
 
-SEXP Biostrings_debug_XRaw_utils()
+SEXP debug_XRaw_class()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'XRaw_utils.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'XRaw_class.c'\n", debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'XRaw_utils.c'\n");
+	Rprintf("Debug mode not available in 'XRaw_class.c'\n");
 #endif
 	return R_NilValue;
 }

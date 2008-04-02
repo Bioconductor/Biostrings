@@ -15,14 +15,19 @@ debug_bufutils <- function()
     invisible(.Call("Biostrings_debug_bufutils", PACKAGE="Biostrings"))
 }
 
-debug_IRanges <- function()
+debug_IRanges_class <- function()
 {
-    invisible(.Call("Biostrings_debug_IRanges", PACKAGE="Biostrings"))
+    invisible(.Call("debug_IRanges_class", PACKAGE="Biostrings"))
 }
 
-debug_XRaw_utils <- function()
+debug_IRanges_utils <- function()
 {
-    invisible(.Call("Biostrings_debug_XRaw_utils", PACKAGE="Biostrings"))
+    invisible(.Call("debug_IRanges_utils", PACKAGE="Biostrings"))
+}
+
+debug_XRaw_class <- function()
+{
+    invisible(.Call("debug_XRaw_class", PACKAGE="Biostrings"))
 }
 
 debug_XRaw_fillread <- function()
@@ -35,9 +40,14 @@ debug_XInteger <- function()
     invisible(.Call("Biostrings_debug_XInteger", PACKAGE="Biostrings"))
 }
 
-debug_XString_utils <- function()
+debug_XString_class <- function()
 {
-    invisible(.Call("Biostrings_debug_XString_utils", PACKAGE="Biostrings"))
+    invisible(.Call("debug_XString_class", PACKAGE="Biostrings"))
+}
+
+debug_XStringSet_class <- function()
+{
+    invisible(.Call("debug_XStringSet_class", PACKAGE="Biostrings"))
 }
 
 debug_seqs_to_seqs <- function()

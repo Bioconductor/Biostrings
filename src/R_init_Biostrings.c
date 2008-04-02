@@ -11,15 +11,18 @@ static const R_CallMethodDef callMethods[] = {
 /* bufutils.c */
 	{"Biostrings_debug_bufutils", (DL_FUNC) &Biostrings_debug_bufutils, 0},
 
-/* IRanges.c */
-	{"Biostrings_debug_IRanges", (DL_FUNC) &Biostrings_debug_IRanges, 0},
+/* IRanges_class.c */
+	{"debug_IRanges_class", (DL_FUNC) &debug_IRanges_class, 0},
+
+/* IRanges_utils.c */
+	{"debug_IRanges_utils", (DL_FUNC) &debug_IRanges_utils, 0},
 
 	{"narrow_IRanges", (DL_FUNC) &narrow_IRanges, 4},
 	{"int_to_adjacent_ranges", (DL_FUNC) &int_to_adjacent_ranges, 1},
 	{"reduce_IRanges", (DL_FUNC) &reduce_IRanges, 2},
 
-/* XRaw_utils.c */
-	{"Biostrings_debug_XRaw_utils", (DL_FUNC) &Biostrings_debug_XRaw_utils, 0},
+/* XRaw_class.c */
+	{"debug_XRaw_class", (DL_FUNC) &debug_XRaw_class, 0},
 
 	{"Biostrings_sexp_address", (DL_FUNC) &Biostrings_sexp_address, 1},
 	{"Biostrings_safe_explode", (DL_FUNC) &Biostrings_safe_explode, 1},
@@ -70,10 +73,13 @@ static const R_CallMethodDef callMethods[] = {
 	{"XInteger_write_ints_to_i1i2", (DL_FUNC) &XInteger_write_ints_to_i1i2, 4},
 	{"XInteger_write_ints_to_subset", (DL_FUNC) &XInteger_write_ints_to_subset, 3},
 
-/* XString_utils.c */
-	{"Biostrings_debug_XString_utils", (DL_FUNC) &Biostrings_debug_XString_utils, 0},
+/* XString_class.c */
+	{"debug_XString_class", (DL_FUNC) &debug_XString_class, 0},
 	{"init_DNAlkups", (DL_FUNC) &init_DNAlkups, 2},
 	{"init_RNAlkups", (DL_FUNC) &init_RNAlkups, 2},
+
+/* XStringSet_class.c */
+	{"debug_XStringSet_class", (DL_FUNC) &debug_XStringSet_class, 0},
 	{"XStrings_to_nchars", (DL_FUNC) &XStrings_to_nchars, 1},
 
 /* seqs_to_seqs.c */
