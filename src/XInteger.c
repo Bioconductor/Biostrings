@@ -2,7 +2,7 @@
 
 static int debug = 0;
 
-SEXP Biostrings_debug_XInteger()
+SEXP debug_XInteger()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

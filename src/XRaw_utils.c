@@ -1,8 +1,13 @@
+/****************************************************************************
+ *                           Fast XRaw utilities                            *
+ *                           Author: Herve Pages                            *
+ ****************************************************************************/
+
 #include "Biostrings.h"
 
 static int debug = 0;
 
-SEXP Biostrings_debug_XRaw_fillread()
+SEXP debug_XRaw_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

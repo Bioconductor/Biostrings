@@ -5,7 +5,7 @@
  * matches found in a sequence. E.g. it is used by the string searching
  * functions like find_palindromes(), find_repeats(), the pattern matching
  * functions, etc...
- * Except for Biostrings_debug_views_buffer(), the functions defined in
+ * Except for debug_views_buffer(), the functions defined in
  * this file are NOT .Call methods (but they are used by .Call methods
  * defined in other .c files) so THEY DON'T NEED TO BE REGISTERED in
  * R_init_Biostrings.c. They are prefixed with "_Biostrings_" to minimize
@@ -17,7 +17,7 @@
 
 static int debug = 0;
 
-SEXP Biostrings_debug_views_buffer()
+SEXP debug_views_buffer()
 {
 #ifdef DEBUG_BIOSTRINGS
         debug = !debug;

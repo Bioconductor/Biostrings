@@ -6,7 +6,7 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP find_palindromes_debug()
+SEXP debug_find_palindromes()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

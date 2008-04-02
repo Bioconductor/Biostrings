@@ -7,12 +7,12 @@ debug_copy_seq <- function()
 
 debug_utils <- function()
 {
-    invisible(.Call("Biostrings_debug_utils", PACKAGE="Biostrings"))
+    invisible(.Call("debug_utils", PACKAGE="Biostrings"))
 }
 
 debug_bufutils <- function()
 {
-    invisible(.Call("Biostrings_debug_bufutils", PACKAGE="Biostrings"))
+    invisible(.Call("debug_bufutils", PACKAGE="Biostrings"))
 }
 
 debug_IRanges_class <- function()
@@ -30,14 +30,14 @@ debug_XRaw_class <- function()
     invisible(.Call("debug_XRaw_class", PACKAGE="Biostrings"))
 }
 
-debug_XRaw_fillread <- function()
+debug_XRaw_utils <- function()
 {
-    invisible(.Call("Biostrings_debug_XRaw_fillread", PACKAGE="Biostrings"))
+    invisible(.Call("debug_XRaw_utils", PACKAGE="Biostrings"))
 }
 
 debug_XInteger <- function()
 {
-    invisible(.Call("Biostrings_debug_XInteger", PACKAGE="Biostrings"))
+    invisible(.Call("debug_XInteger", PACKAGE="Biostrings"))
 }
 
 debug_XString_class <- function()
@@ -52,46 +52,46 @@ debug_XStringSet_class <- function()
 
 debug_seqs_to_seqs <- function()
 {
-    invisible(.Call("Biostrings_debug_seqs_to_seqs", PACKAGE="Biostrings"))
+    invisible(.Call("debug_seqs_to_seqs", PACKAGE="Biostrings"))
 }
 
 debug_views_buffer <- function()
 {
-    invisible(.Call("Biostrings_debug_views_buffer", PACKAGE="Biostrings"))
+    invisible(.Call("debug_views_buffer", PACKAGE="Biostrings"))
 }
 
-debug_naive <- function()
+debug_match_naive <- function()
 {
-    invisible(.Call("match_naive_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_naive", PACKAGE="Biostrings"))
 }
 
-debug_boyermoore <- function()
+debug_match_boyermoore <- function()
 {
-    invisible(.Call("match_boyermoore_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_boyermoore", PACKAGE="Biostrings"))
 }
 
-debug_shiftor <- function()
+debug_match_shiftor <- function()
 {
-    invisible(.Call("match_shiftor_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_shiftor", PACKAGE="Biostrings"))
 }
 
 debug_find_palindromes <- function()
 {
-    invisible(.Call("find_palindromes_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_find_palindromes", PACKAGE="Biostrings"))
 }
 
-debug_BOC <- function()
+debug_match_BOC <- function()
 {
-    invisible(.Call("match_BOC_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_BOC", PACKAGE="Biostrings"))
 }
 
-debug_BOC2 <- function()
+debug_match_BOC2 <- function()
 {
-    invisible(.Call("match_BOC2_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_BOC2", PACKAGE="Biostrings"))
 }
 
-debug_TBdna <- function()
+debug_match_TBdna <- function()
 {
-    invisible(.Call("match_TBdna_debug", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_TBdna", PACKAGE="Biostrings"))
 }
 

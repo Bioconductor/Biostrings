@@ -329,7 +329,7 @@ XRaw.saveFASTA <- function(x, filepath, dec_lkup=NULL)
 }
 
 ### Return a list of 4 elements (see comments for XRaw_loadFASTA() in
-### src/XRaw_fillread.c for the details).
+### src/XRaw_utils.c for the details).
 ### 'filepath' must a path to an uncompressed FASTA file. Note that,
 ### unlike with the file() function, it cannot an URL, '""', '"stdin"'
 ### or '"clipboard"'.

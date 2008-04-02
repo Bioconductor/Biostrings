@@ -1,10 +1,6 @@
 \name{Biostrings internals}
 \docType{class}
 
-\alias{debug_utils}
-\alias{debug_XRaw_fillread}
-\alias{debug_shiftor}
-
 \alias{class:.IRanges}
 \alias{.IRanges-class}
 \alias{.IRanges}

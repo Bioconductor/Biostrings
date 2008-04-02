@@ -8,7 +8,7 @@
 
 static int debug = 0;
 
-SEXP Biostrings_debug_seqs_to_seqs()
+SEXP debug_seqs_to_seqs()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

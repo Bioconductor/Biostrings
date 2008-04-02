@@ -2,7 +2,7 @@
 #include <S.h> /* for Salloc() */
 
 /*
- * See Biostrings_XRaw_copy_from_i1i2() in XRaw_fillread.c for a description of the first 4 arguments.
+ * See Biostrings_XRaw_copy_from_i1i2() in XRaw_utils.c for a description of the first 4 arguments.
  */
 SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
@@ -21,7 +21,7 @@ SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP im
 }
 
 /*
- * See Biostrings_XRaw_copy_from_subset() in XRaw_fillread.c for a description of the first 3 arguments.
+ * See Biostrings_XRaw_copy_from_subset() in XRaw_utils.c for a description of the first 3 arguments.
  */
 SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup)
 {
@@ -37,7 +37,7 @@ SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEX
 }
 
 /*
- * See Biostrings_XRaw_copy_from_i1i2() in XRaw_fillread.c for a description of the arguments.
+ * See Biostrings_XRaw_copy_from_i1i2() in XRaw_utils.c for a description of the arguments.
  */
 SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
@@ -55,7 +55,7 @@ SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax
 }
 
 /*
- * See Biostrings_XRaw_copy_from_i1i2() in XRaw_fillread.c for a description of the first 4 arguments.
+ * See Biostrings_XRaw_copy_from_i1i2() in XRaw_utils.c for a description of the first 4 arguments.
  */
 SEXP XRaw_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {

@@ -1,7 +1,7 @@
 /*
  * Low-level manipulation of the extendable buffers.
  *
- * Except for Biostrings_debug_bufutils(), the functions defined in
+ * Except for debug_bufutils(), the functions defined in
  * this file are NOT .Call methods (but they are used by .Call methods
  * defined in other .c files) so THEY DON'T NEED TO BE REGISTERED in
  * R_init_Biostrings.c. They are prefixed with a "_" (underscore) to
@@ -17,7 +17,7 @@
 
 static int debug = 0;
 
-SEXP Biostrings_debug_bufutils()
+SEXP debug_bufutils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

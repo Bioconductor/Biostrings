@@ -249,15 +249,15 @@ typedef struct acnode {
 static ACNode *actree_nodes_buf = NULL;
 static int actree_nodes_buf_count;
 
-SEXP match_TBdna_debug()
+SEXP debug_match_TBdna()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
 	Rprintf("Debug mode turned %s in 'match_TBdna.c'\n", debug ? "on" : "off");
 	if (debug) {
-		Rprintf("[DEBUG] match_TBdna_debug(): INTS_PER_ACNODE=%d\n",
+		Rprintf("[DEBUG] debug_match_TBdna(): INTS_PER_ACNODE=%d\n",
 			INTS_PER_ACNODE);
-		Rprintf("[DEBUG] match_TBdna_debug(): MAX_ACNODEBUF_LENGTH=%d\n",
+		Rprintf("[DEBUG] debug_match_TBdna(): MAX_ACNODEBUF_LENGTH=%d\n",
 			MAX_ACNODEBUF_LENGTH);
 	}
 #else

@@ -13,7 +13,7 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP match_BOC_debug()
+SEXP debug_match_BOC()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

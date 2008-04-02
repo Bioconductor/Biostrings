@@ -20,7 +20,7 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP match_boyermoore_debug()
+SEXP debug_match_boyermoore()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

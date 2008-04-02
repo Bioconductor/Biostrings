@@ -6,10 +6,10 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_copy_seq", (DL_FUNC) &debug_copy_seq, 0},
 
 /* utils.c */
-	{"Biostrings_debug_utils", (DL_FUNC) &Biostrings_debug_utils, 0},
+	{"debug_utils", (DL_FUNC) &debug_utils, 0},
 
 /* bufutils.c */
-	{"Biostrings_debug_bufutils", (DL_FUNC) &Biostrings_debug_bufutils, 0},
+	{"debug_bufutils", (DL_FUNC) &debug_bufutils, 0},
 
 /* IRanges_class.c */
 	{"debug_IRanges_class", (DL_FUNC) &debug_IRanges_class, 0},
@@ -32,8 +32,8 @@ static const R_CallMethodDef callMethods[] = {
 	{"Biostrings_XRaw_get_show_string", (DL_FUNC) &Biostrings_XRaw_get_show_string, 1},
 	{"Biostrings_XRaw_length", (DL_FUNC) &Biostrings_XRaw_length, 1},
 
-/* XRaw_fillread.c */
-	{"Biostrings_debug_XRaw_fillread", (DL_FUNC) &Biostrings_debug_XRaw_fillread, 0},
+/* XRaw_utils.c */
+	{"debug_XRaw_utils", (DL_FUNC) &debug_XRaw_utils, 0},
 
 	{"Biostrings_XRaw_memcmp", (DL_FUNC) &Biostrings_XRaw_memcmp, 5},
 
@@ -61,7 +61,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"XRaw_loadFASTA", (DL_FUNC) &XRaw_loadFASTA, 4},
 
 /* XInteger.c */
-	{"Biostrings_debug_XInteger", (DL_FUNC) &Biostrings_debug_XInteger, 0},
+	{"debug_XInteger", (DL_FUNC) &debug_XInteger, 0},
 
 	{"XInteger_alloc", (DL_FUNC) &XInteger_alloc, 2},
 	{"XInteger_get_show_string", (DL_FUNC) &XInteger_get_show_string, 1},
@@ -83,7 +83,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"XStrings_to_nchars", (DL_FUNC) &XStrings_to_nchars, 1},
 
 /* seqs_to_seqs.c */
-	{"Biostrings_debug_seqs_to_seqs", (DL_FUNC) &Biostrings_debug_seqs_to_seqs, 0},
+	{"debug_seqs_to_seqs", (DL_FUNC) &debug_seqs_to_seqs, 0},
 
 	{"copy_subXRaw", (DL_FUNC) &copy_subXRaw, 4},
 	{"new_XRaw_from_STRSXP", (DL_FUNC) &new_XRaw_from_STRSXP, 5},
@@ -108,42 +108,42 @@ static const R_CallMethodDef callMethods[] = {
 	{"XString_inplace_replace_locs_bySTRSXP", (DL_FUNC) &XString_inplace_replace_locs_bySTRSXP, 4},
 
 /* views_buffer.c */
-	{"Biostrings_debug_views_buffer", (DL_FUNC) &Biostrings_debug_views_buffer, 0},
+	{"debug_views_buffer", (DL_FUNC) &debug_views_buffer, 0},
 
 /* normalize_views.c */
 	{"Biostrings_normalize_views", (DL_FUNC) &Biostrings_normalize_views, 2},
 
 /* match_naive.c */
-	{"match_naive_debug", (DL_FUNC) &match_naive_debug, 0},
+	{"debug_match_naive", (DL_FUNC) &debug_match_naive, 0},
 	{"is_matching", (DL_FUNC) &is_matching, 5},
 	{"match_naive_exact", (DL_FUNC) &match_naive_exact, 3},
 	{"match_naive_inexact", (DL_FUNC) &match_naive_inexact, 5},
 
 /* match_boyermoore.c */
-	{"match_boyermoore_debug", (DL_FUNC) &match_boyermoore_debug, 0},
+	{"debug_match_boyermoore", (DL_FUNC) &debug_match_boyermoore, 0},
 	{"match_boyermoore", (DL_FUNC) &match_boyermoore, 7},
 
 /* match_shiftor.c */
-	{"match_shiftor_debug", (DL_FUNC) &match_shiftor_debug, 0},
+	{"debug_match_shiftor", (DL_FUNC) &debug_match_shiftor, 0},
 	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
 	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
 /* find_palindromes.c */
-	{"find_palindromes_debug", (DL_FUNC) &find_palindromes_debug, 0},
+	{"debug_find_palindromes", (DL_FUNC) &debug_find_palindromes, 0},
 	{"find_palindromes", (DL_FUNC) &find_palindromes, 6},
 
 /* match_BOC.c */
-	{"match_BOC_debug", (DL_FUNC) &match_BOC_debug, 0},
+	{"debug_match_BOC", (DL_FUNC) &debug_match_BOC, 0},
 	{"match_BOC_preprocess", (DL_FUNC) &match_BOC_preprocess, 12},
 	{"match_BOC_exact", (DL_FUNC) &match_BOC_exact, 16},
 
 /* match_BOC2.c */
-	{"match_BOC2_debug", (DL_FUNC) &match_BOC2_debug, 0},
+	{"debug_match_BOC2", (DL_FUNC) &debug_match_BOC2, 0},
 	{"match_BOC2_preprocess", (DL_FUNC) &match_BOC2_preprocess, 9},
 	{"match_BOC2_exact", (DL_FUNC) &match_BOC2_exact, 13},
 
 /* match_TBdna.c */
-	{"match_TBdna_debug", (DL_FUNC) &match_TBdna_debug, 0},
+	{"debug_match_TBdna", (DL_FUNC) &debug_match_TBdna, 0},
 	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
 	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 3},
 	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},

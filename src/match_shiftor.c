@@ -87,7 +87,7 @@ int shiftor_maxbits = sizeof(ShiftOrWord_t) * CHAR_BIT;
 /****************************************************************************/
 static int debug = 0;
 
-SEXP match_shiftor_debug()
+SEXP debug_match_shiftor()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;

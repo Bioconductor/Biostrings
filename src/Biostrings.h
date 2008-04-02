@@ -55,7 +55,7 @@ void _copy_seq_to_subset(
 
 /* utils.c */
 
-SEXP Biostrings_debug_utils();
+SEXP debug_utils();
 
 char * _Biostrings_alloc_string(int n);
 
@@ -205,7 +205,7 @@ void _init_chrtrtable(
 
 /* bufutils.c */
 
-SEXP Biostrings_debug_bufutils();
+SEXP debug_bufutils();
 
 IntBuf _new_IntBuf(
 	int buflength,
@@ -398,9 +398,9 @@ SEXP _new_STRSXP_from_RoSeqs(
 );
 
 
-/* XRaw_fillread.c */
+/* XRaw_utils.c */
 
-SEXP Biostrings_debug_XRaw_fillread();
+SEXP debug_XRaw_utils();
 
 SEXP Biostrings_XRaw_memcmp(
 	SEXP xraw1_xp,
@@ -522,7 +522,7 @@ SEXP XRaw_loadFASTA(
 
 /* XInteger.c */
 
-SEXP Biostrings_debug_XInteger();
+SEXP debug_XInteger();
 
 SEXP XInteger_alloc(
 	SEXP xint_xp,
@@ -677,7 +677,7 @@ SEXP XStrings_to_nchars(SEXP x_seqs);
 
 /* seqs_to_seqs.c */
 
-SEXP Biostrings_debug_seqs_to_seqs();
+SEXP debug_seqs_to_seqs();
 
 void narrow_RoSeqs(
 	RoSeqs *seqs,
@@ -829,7 +829,7 @@ SEXP XString_inplace_replace_locs_bySTRSXP(
 
 /* views_buffer.c */
 
-SEXP Biostrings_debug_views_buffer();
+SEXP debug_views_buffer();
 
 void _Biostrings_reset_viewsbuf(int mrmode);
 
@@ -874,7 +874,7 @@ SEXP Biostrings_normalize_views(
 
 /* match_naive.c */
 
-SEXP match_naive_debug();
+SEXP debug_match_naive();
 
 int _is_matching(
 	RoSeq P,
@@ -910,7 +910,7 @@ SEXP match_naive_inexact(
 
 /* match_boyermoore.c */
 
-SEXP match_boyermoore_debug();
+SEXP debug_match_boyermoore();
 
 SEXP match_boyermoore(
 	SEXP p_xp,
@@ -925,7 +925,7 @@ SEXP match_boyermoore(
 
 /* match_shiftor.c */
 
-SEXP match_shiftor_debug();
+SEXP debug_match_shiftor();
 
 SEXP bits_per_long();
 
@@ -944,7 +944,7 @@ SEXP match_shiftor(
 
 /* find_palindromes.c */
 
-SEXP find_palindromes_debug();
+SEXP debug_find_palindromes();
 
 SEXP find_palindromes(
 	SEXP s_xp,
@@ -958,7 +958,7 @@ SEXP find_palindromes(
 
 /* match_BOC.c */
 
-SEXP match_BOC_debug();
+SEXP debug_match_BOC();
 
 SEXP match_BOC_preprocess(
 	SEXP s_xp,
@@ -997,7 +997,7 @@ SEXP match_BOC_exact(
 
 /* match_BOC2.c */
 
-SEXP match_BOC2_debug();
+SEXP debug_match_BOC2();
 
 SEXP match_BOC2_preprocess(
 	SEXP s_xp,
@@ -1030,7 +1030,7 @@ SEXP match_BOC2_exact(
 
 /* match_TBdna.c */
 
-SEXP match_TBdna_debug();
+SEXP debug_match_TBdna();
 
 SEXP CWdna_free_actree_nodes_buf();
 

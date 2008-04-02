@@ -64,9 +64,6 @@ exportMethods(
 )
 
 export(
-    #debug_utils, debug_XRaw,
-    #debug_naive, debug_boyermoore, debug_shiftor,
-
     intToRanges, intToAdjacentRanges, restrict, narrow, reduce,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,

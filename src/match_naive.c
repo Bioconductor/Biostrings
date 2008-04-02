@@ -29,7 +29,7 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP match_naive_debug()
+SEXP debug_match_naive()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
