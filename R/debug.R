@@ -90,6 +90,11 @@ debug_match_BOC2 <- function()
     invisible(.Call("debug_match_BOC2", PACKAGE="Biostrings"))
 }
 
+debug_ACtree_utils <- function()
+{
+    invisible(.Call("debug_ACtree_utils", PACKAGE="Biostrings"))
+}
+
 debug_MIndex_utils <- function()
 {
     invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))

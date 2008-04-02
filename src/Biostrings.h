@@ -5,6 +5,15 @@
 
 #define CHRTRTABLE_LENGTH 256
 
+#define MAX_CHILDREN_PER_ACNODE 4
+typedef struct acnode {
+	int parent_id;
+	int depth;
+	int child_id[MAX_CHILDREN_PER_ACNODE];
+	int flink;
+	int P_id;
+} ACNode;
+
 
 /* copy_seq.c */
 
@@ -1028,6 +1037,25 @@ SEXP match_BOC2_exact(
 );
 
 
+/* ACtree_utils.c */
+
+SEXP debug_ACtree_utils();
+
+SEXP CWdna_free_actree_nodes_buf();
+
+SEXP CWdna_pp_STRSXP(
+	SEXP dict,
+	SEXP start,
+	SEXP end
+);
+
+SEXP CWdna_pp_XStringSet(
+	SEXP dict,
+	SEXP start,
+	SEXP end
+);
+
+
 /* MIndex_utils.c */
 
 SEXP debug_MIndex_utils();
@@ -1048,20 +1076,6 @@ SEXP extract_endIndex(
 /* match_TBdna.c */
 
 SEXP debug_match_TBdna();
-
-SEXP CWdna_free_actree_nodes_buf();
-
-SEXP CWdna_pp_STRSXP(
-	SEXP dict,
-	SEXP start,
-	SEXP end
-);
-
-SEXP CWdna_pp_XStringSet(
-	SEXP dict,
-	SEXP start,
-	SEXP end
-);
 
 SEXP match_TBdna(
 	SEXP actree_nodes_xp,

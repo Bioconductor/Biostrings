@@ -9,13 +9,13 @@ static int debug = 0;
 SEXP debug_MIndex_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
-        debug = !debug;
-        Rprintf("Debug mode turned %s in 'MIndex_utils.c'\n",
-                debug ? "on" : "off");
+	debug = !debug;
+	Rprintf("Debug mode turned %s in 'MIndex_utils.c'\n",
+		debug ? "on" : "off");
 #else
-        Rprintf("Debug mode not available in 'MIndex_utils.c'\n");
+	Rprintf("Debug mode not available in 'MIndex_utils.c'\n");
 #endif
-        return R_NilValue;
+	return R_NilValue;
 }
 
 /* 'symbol' must be a CHARSXP */

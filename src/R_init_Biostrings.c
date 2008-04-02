@@ -142,6 +142,12 @@ static const R_CallMethodDef callMethods[] = {
 	{"match_BOC2_preprocess", (DL_FUNC) &match_BOC2_preprocess, 9},
 	{"match_BOC2_exact", (DL_FUNC) &match_BOC2_exact, 13},
 
+/* ACtree_utils.c */
+	{"debug_ACtree_utils", (DL_FUNC) &debug_ACtree_utils, 0},
+	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
+	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 3},
+	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},
+
 /* MIndex_utils.c */
 	{"debug_MIndex_utils", (DL_FUNC) &debug_MIndex_utils, 0},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
@@ -149,9 +155,6 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_TBdna.c */
 	{"debug_match_TBdna", (DL_FUNC) &debug_match_TBdna, 0},
-	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
-	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 3},
-	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},
 	{"match_TBdna", (DL_FUNC) &match_TBdna, 10},
 
 /* pmatchPattern.c */
