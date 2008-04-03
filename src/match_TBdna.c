@@ -83,16 +83,16 @@ static void report_matches_for_dups(const int *dups, int length)
  * ==============
  */
 
-static int code2childoffset_chrtrtable[CHRTRTABLE_LENGTH];
+static int slotno_chrtrtable[CHRTRTABLE_LENGTH];
 
 static int get_child_node_id(const ACNode *node, char c)
 {
-	int offset;
+	int slotno;
 
-	offset = code2childoffset_chrtrtable[(unsigned char) c];
-	if (offset == -1)
+	slotno = slotno_chrtrtable[(unsigned char) c];
+	if (slotno == -1)
 		return -1;
-	return node->child_id[offset];
+	return node->child_id[slotno];
 }
 
 /*
@@ -107,16 +107,16 @@ static int get_child_node_id(const ACNode *node, char c)
  * Note that this trick is not needed by the current implementation of the
  * walk_string() function.
  */
-static void set_shortcut(ACNode *basenode, char c, int node_id)
+static void set_shortcut(ACNode *node, char c, int next_node_id)
 {
-	int offset, *slot;
+	int slotno, *slot;
 
-	offset = code2childoffset_chrtrtable[(unsigned char) c];
-	if (offset == -1)
+	slotno = slotno_chrtrtable[(unsigned char) c];
+	if (slotno == -1)
 		return;
-	slot = basenode->child_id + offset;
+	slot = node->child_id + slotno;
 	if (*slot == -1)
-		*slot = node_id;
+		*slot = next_node_id;
 	return;
 }
 
@@ -126,9 +126,11 @@ static void set_shortcut(ACNode *basenode, char c, int node_id)
  * get_next_node_id(): the latter calls the former which in turn calls the
  * latter.
  */
-static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, const char *c);
+static int get_next_node_id(ACNode *node0, const int *base_codes,
+		int node_id, const char *c);
 
-static int path_to_node_id(ACNode *node0, const int *base_codes, const char *path, int path_len)
+static int path_to_node_id(ACNode *node0, const int *base_codes,
+		const char *path, int path_len)
 {
 	int node_id, n;
 	ACNode *node;
@@ -141,11 +143,14 @@ static int path_to_node_id(ACNode *node0, const int *base_codes, const char *pat
 	return node_id;
 }
 
-// An important trick here is that the chars located _before_ c must contain
-// node_id label i.e. the path from the root node to node_id.
-// More precisely, if d is the depth of node_id, then the characters from c - d
-// to c - 1 must contain the path.
-static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, const char *c)
+/*
+ * An important trick here is that the chars located _before_ 'Stail' will
+ * always describe the path that goes from the root node to 'node_id'.
+ * More precisely, if d is the depth of 'node_id', then this path is made
+ * of the path[i] chars where path is 'Stail' - d and 0 <= i < d.
+ */
+static int get_next_node_id(ACNode *node0, const int *base_codes,
+		int node_id, const char *Stail)
 {
 	ACNode *node, *next_node;
 	int next_node_id, child_node_id, subpath_len;
@@ -162,13 +167,14 @@ static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, c
 		Rprintf("[DEBUG] ENTERING get_next_node_id():");
 		sprintf(format, "%%%ds", 1 + 2*rec_level);
 		Rprintf(format, " ");
-		snprintf(pathbuf, node->depth + 1, "%s", c - node->depth);
-		Rprintf("node_id=%d path=%s c=%c\n", node_id, pathbuf, *c);
+		snprintf(pathbuf, node->depth + 1, "%s", Stail - node->depth);
+		Rprintf("node_id=%d path=%s *Stail=%c\n",
+			node_id, pathbuf, *Stail);
 	}
 #endif
 	while (1) {
 		next_node = node0 + next_node_id;
-		child_node_id = get_child_node_id(next_node, *c);
+		child_node_id = get_child_node_id(next_node, *Stail);
 		if (child_node_id != -1) {
 			next_node_id = child_node_id;
 			break;
@@ -180,13 +186,14 @@ static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, c
 		if (next_node->flink == -1) {
 			rec_level++;
 			subpath_len = next_node->depth - 1;
-			subpath = c - subpath_len;
-			next_node->flink = path_to_node_id(node0, base_codes, subpath, subpath_len);
+			subpath = Stail - subpath_len;
+			next_node->flink = path_to_node_id(node0, base_codes,
+						subpath, subpath_len);
 			rec_level--;
 		}
 		next_node_id = next_node->flink;
 	}
-	set_shortcut(node, *c, next_node_id);
+	set_shortcut(node, *Stail, next_node_id);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] LEAVING get_next_node_id(): ");
@@ -197,7 +204,8 @@ static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, c
 	return next_node_id;
 }
 
-static int walk_string(ACNode *node0, const int *base_codes, const char *S, int nS)
+static int walk_string(ACNode *node0, const int *base_codes,
+		const char *S, int nS)
 {
 	int basenode_id, node_id, child_id, n, subwalk_nS;
 	ACNode *basenode, *node;
@@ -272,31 +280,34 @@ static int walk_string(ACNode *node0, const int *base_codes, const char *S, int 
 	return basenode_id;
 }
 
-static void CWdna_exact_search(ACNode *node0, const int *base_codes, const char *S, int nS)
+static void CWdna_exact_search(ACNode *node0,
+		const int *base_codes, RoSeq S)
 {
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, code2childoffset_chrtrtable);
-	walk_string(node0, base_codes, S, nS);
+	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
+	walk_string(node0, base_codes, S.elts, S.nelt);
 	return;
 }
 
-static void CWdna_exact_search_on_nonfixedS(ACNode *node0, const int *base_codes,
-		const char *S, int nS)
+static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
+		const int *base_codes, RoSeq S)
 {
 	IntBuf cnode_ids; // buffer of current node ids
 	int n, i, node_id;
+	const char *Stail;
 	ACNode *node;
 
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, code2childoffset_chrtrtable);
+	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
 	cnode_ids = _new_IntBuf(100, 0);
 	_IntBuf_insert_at(&cnode_ids, 0, 0);
-	for (n = 0; n < nS; n++, S++) {
+	for (n = 1, Stail = S.elts; n <= S.nelt; n++, Stail++) {
 		for (i = 0; i < cnode_ids.nelt; i++) {
 			node_id = cnode_ids.elts[i];
 			node = node0 + node_id;
-			node_id = get_next_node_id(node0, base_codes, node_id, S);
+			node_id = get_next_node_id(node0, base_codes,
+					node_id, Stail);
 			node = node0 + node_id;
 			if (node->P_id != -1)
-				report_match(node->P_id - 1, n + 1);
+				report_match(node->P_id - 1, n);
 			cnode_ids.elts[i] = node_id;
 		}
 	}
@@ -309,7 +320,7 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0, const int *base_codes
  * =======================================================
  */
 
-static void TBdna_match_pattern_tail(RoSeq pattern_tail, RoSeq S,
+static void TBdna_match_Ptail(RoSeq Ptail, RoSeq S,
 		int poffset, const int *dups, int dups_len,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
@@ -322,17 +333,17 @@ static void TBdna_match_pattern_tail(RoSeq pattern_tail, RoSeq S,
 		ends_buf0 = ends_bbuf.elts + dup0 - 1;
 	for (i = 0; i < ends_buf0->nelt; i++) {
 		end = ends_buf0->elts[i];
-		if (_is_matching(pattern_tail, S, end, max_mm, fixedP, fixedS)) {
+		if (_is_matching(Ptail, S, end, max_mm, fixedP, fixedS)) {
 			/* Match */
 			if (is_count_only) {
 				match_count.elts[poffset]++;
 				continue;
 			}
 			if (dup0 == 0) {
-				ends_buf0->elts[i] += pattern_tail.nelt;
+				ends_buf0->elts[i] += Ptail.nelt;
 				continue;
 			}
-			end += pattern_tail.nelt;
+			end += Ptail.nelt;
 			_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 			continue;
 		}
@@ -356,14 +367,14 @@ static void TBdna_match_tail(SEXP tail, RoSeq S,
 {
 	int poffset;
 	CachedXStringSet cached_tail;
-	RoSeq pattern_tail;
+	RoSeq Ptail;
 
 	cached_tail = _new_CachedXStringSet(tail);
 	// The duplicated must be treated BEFORE the first pattern they
 	// duplicate, hence we must walk from last to first.
 	for (poffset = dups_len - 1; poffset >= 0; poffset--) {
-		pattern_tail = _get_CachedXStringSet_elt_asRoSeq(&cached_tail, poffset);
-		TBdna_match_pattern_tail(pattern_tail, S,
+		Ptail = _get_CachedXStringSet_elt_asRoSeq(&cached_tail, poffset);
+		TBdna_match_Ptail(Ptail, S,
 			poffset, dups, dups_len,
 			max_mm, fixedP, fixedS, is_count_only);
 	}
@@ -414,10 +425,11 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
 	if (fixedS)
-		CWdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S.elts, S.nelt);
+		CWdna_exact_search(actree_nodes,
+			INTEGER(actree_base_codes), S);
 	else
-		CWdna_exact_search_on_nonfixedS(actree_nodes, INTEGER(actree_base_codes),
-				S.elts, S.nelt);
+		CWdna_exact_search_on_nonfixedS(actree_nodes,
+			INTEGER(actree_base_codes), S);
 	if (no_tail) {
 		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
 	} else {
