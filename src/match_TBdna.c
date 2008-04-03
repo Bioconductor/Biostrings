@@ -293,10 +293,9 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
 		const int *base_codes, RoSeq S)
 {
 	IntBuf cnode_ids; // buffer of current node ids
-	int n, npointers, i, node_id, next_node_id, is_first, j, base;
+	int n, npointers, i, node_id, next_node_id, is_first, j, base, P_id;
 	const char *Stail;
 	char c;
-	ACNode *next_node;
 
 	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
 	cnode_ids = _new_IntBuf(256, 0);
@@ -313,10 +312,6 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
 					next_node_id = get_next_node_id(node0,
 							base_codes,
 							node_id, Stail, base);
-					next_node = node0 + next_node_id;
-					if (next_node->P_id != -1)
-						report_match(next_node->P_id - 1,
-							n);
 					if (is_first) {
 						cnode_ids.elts[i] = next_node_id;
 						is_first = 0;
@@ -327,7 +322,7 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
 				}
 			}
 		}
-		// merge pointers
+		// merge pointers and report matches
 		for (i = 0; i < cnode_ids.nelt; i++) {
 			node_id = cnode_ids.elts[i];
 			// FIXME: This merging algo is dumb and inefficient!
@@ -336,6 +331,9 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
 				if (cnode_ids.elts[j] == node_id)
 					_IntBuf_delete_at(&cnode_ids, j--);
 			}
+			P_id = node0[node_id].P_id;
+			if (P_id != -1)
+				report_match(P_id - 1, n);
 		}
 		// error if too many remaining pointers
 		if (cnode_ids.nelt > 4096)
