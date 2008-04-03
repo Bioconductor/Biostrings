@@ -127,7 +127,7 @@ static void set_shortcut(ACNode *node, char c, int next_node_id)
  * latter.
  */
 static int get_next_node_id(ACNode *node0, const int *base_codes,
-		int node_id, const char *c);
+		int node_id, const char *Stail, char c);
 
 static int path_to_node_id(ACNode *node0, const int *base_codes,
 		const char *path, int path_len)
@@ -138,7 +138,8 @@ static int path_to_node_id(ACNode *node0, const int *base_codes,
 	node_id = 0;
 	for (n = 0; n < path_len; n++, path++) {
 		node = node0 + node_id;
-		node_id = get_next_node_id(node0, base_codes, node_id, path);
+		node_id = get_next_node_id(node0, base_codes,
+				node_id, path, *path);
 	}
 	return node_id;
 }
@@ -150,7 +151,7 @@ static int path_to_node_id(ACNode *node0, const int *base_codes,
  * of the path[i] chars where path is 'Stail' - d and 0 <= i < d.
  */
 static int get_next_node_id(ACNode *node0, const int *base_codes,
-		int node_id, const char *Stail)
+		int node_id, const char *Stail, char c)
 {
 	ACNode *node, *next_node;
 	int next_node_id, child_node_id, subpath_len;
@@ -168,13 +169,13 @@ static int get_next_node_id(ACNode *node0, const int *base_codes,
 		sprintf(format, "%%%ds", 1 + 2*rec_level);
 		Rprintf(format, " ");
 		snprintf(pathbuf, node->depth + 1, "%s", Stail - node->depth);
-		Rprintf("node_id=%d path=%s *Stail=%c\n",
-			node_id, pathbuf, *Stail);
+		Rprintf("node_id=%d path=%s c=%c\n",
+			node_id, pathbuf, c);
 	}
 #endif
 	while (1) {
 		next_node = node0 + next_node_id;
-		child_node_id = get_child_node_id(next_node, *Stail);
+		child_node_id = get_child_node_id(next_node, c);
 		if (child_node_id != -1) {
 			next_node_id = child_node_id;
 			break;
@@ -193,7 +194,7 @@ static int get_next_node_id(ACNode *node0, const int *base_codes,
 		}
 		next_node_id = next_node->flink;
 	}
-	set_shortcut(node, *Stail, next_node_id);
+	set_shortcut(node, c, next_node_id);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] LEAVING get_next_node_id(): ");
@@ -292,24 +293,53 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
 		const int *base_codes, RoSeq S)
 {
 	IntBuf cnode_ids; // buffer of current node ids
-	int n, i, node_id;
+	int n, npointers, i, node_id, next_node_id, is_first, j, base;
 	const char *Stail;
-	ACNode *node;
+	char c;
+	ACNode *next_node;
 
 	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
-	cnode_ids = _new_IntBuf(100, 0);
+	cnode_ids = _new_IntBuf(256, 0);
 	_IntBuf_insert_at(&cnode_ids, 0, 0);
 	for (n = 1, Stail = S.elts; n <= S.nelt; n++, Stail++) {
+		c = *Stail;
+		npointers = cnode_ids.nelt;
+		// move and split pointers
+		for (i = 0; i < npointers; i++) {
+			node_id = cnode_ids.elts[i];
+			is_first = 1;
+			for (j = 0, base = 1; j < 4; j++, base *= 2) {
+				if ((((unsigned char) c) & base) != 0) {
+					next_node_id = get_next_node_id(node0,
+							base_codes,
+							node_id, Stail, base);
+					next_node = node0 + next_node_id;
+					if (next_node->P_id != -1)
+						report_match(next_node->P_id - 1,
+							n);
+					if (is_first) {
+						cnode_ids.elts[i] = next_node_id;
+						is_first = 0;
+					} else {
+						_IntBuf_insert_at(&cnode_ids,
+							cnode_ids.nelt, next_node_id);
+					}
+				}
+			}
+		}
+		// merge pointers
 		for (i = 0; i < cnode_ids.nelt; i++) {
 			node_id = cnode_ids.elts[i];
-			node = node0 + node_id;
-			node_id = get_next_node_id(node0, base_codes,
-					node_id, Stail);
-			node = node0 + node_id;
-			if (node->P_id != -1)
-				report_match(node->P_id - 1, n);
-			cnode_ids.elts[i] = node_id;
+			// FIXME: This merging algo is dumb and inefficient!
+			// There must be a way to do something better.
+			for (j = i + 1; j < cnode_ids.nelt; j++) {
+				if (cnode_ids.elts[j] == node_id)
+					_IntBuf_delete_at(&cnode_ids, j--);
+			}
 		}
+		// error if too many remaining pointers
+		if (cnode_ids.nelt > 4096)
+			error("too many IUPAC ambiguity letters in 'subject'");
 	}
 	return;
 }
