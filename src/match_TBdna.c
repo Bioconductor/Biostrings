@@ -85,7 +85,7 @@ static void report_matches_for_dups(const int *dups, int length)
 
 static int code2childoffset_chrtrtable[CHRTRTABLE_LENGTH];
 
-static int get_child_id(const ACNode *node, char c)
+static int get_child_node_id(const ACNode *node, char c)
 {
 	int offset;
 
@@ -105,7 +105,7 @@ static int get_child_id(const ACNode *node, char c)
  *   parent-to-child: depth(N2) == depth(N1) + 1
  *   shortcut: depth(N2) <= depth(N1)
  * Note that this trick is not needed by the current implementation of the
- * follow_string() function.
+ * walk_string() function.
  */
 static void set_shortcut(ACNode *basenode, char c, int node_id)
 {
@@ -120,9 +120,86 @@ static void set_shortcut(ACNode *basenode, char c, int node_id)
 	return;
 }
 
-static int follow_string(ACNode *node0, const int *base_codes, const char *S, int nS)
+/*
+ * We use indirect recursion for walking the Aho-Corasick tree.
+ * This indirect recursion involves the 2 core functions path_to_node_id() and
+ * get_next_node_id(): the latter calls the former which in turn calls the
+ * latter.
+ */
+static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, const char *c);
+
+static int path_to_node_id(ACNode *node0, const int *base_codes, const char *path, int path_len)
 {
-	int basenode_id, node_id, child_id, n, subcall_nS;
+	int node_id, n;
+	ACNode *node;
+
+	node_id = 0;
+	for (n = 0; n < path_len; n++, path++) {
+		node = node0 + node_id;
+		node_id = get_next_node_id(node0, base_codes, node_id, path);
+	}
+	return node_id;
+}
+
+// An important trick here is that the chars located _before_ c must contain
+// node_id label i.e. the path from the root node to node_id.
+// More precisely, if d is the depth of node_id, then the characters from c - d
+// to c - 1 must contain the path.
+static int get_next_node_id(ACNode *node0, const int *base_codes, int node_id, const char *c)
+{
+	ACNode *node, *next_node;
+	int next_node_id, child_node_id, subpath_len;
+	const char *subpath;
+#ifdef DEBUG_BIOSTRINGS
+	static int rec_level = 0;
+	char format[20], pathbuf[2000];
+#endif
+
+	node = node0 + node_id;
+	next_node_id = node_id;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] ENTERING get_next_node_id():");
+		sprintf(format, "%%%ds", 1 + 2*rec_level);
+		Rprintf(format, " ");
+		snprintf(pathbuf, node->depth + 1, "%s", c - node->depth);
+		Rprintf("node_id=%d path=%s c=%c\n", node_id, pathbuf, *c);
+	}
+#endif
+	while (1) {
+		next_node = node0 + next_node_id;
+		child_node_id = get_child_node_id(next_node, *c);
+		if (child_node_id != -1) {
+			next_node_id = child_node_id;
+			break;
+		}
+		if (next_node_id == 0) {
+			//next_node->flink = 0;
+			break;
+		}
+		if (next_node->flink == -1) {
+			rec_level++;
+			subpath_len = next_node->depth - 1;
+			subpath = c - subpath_len;
+			next_node->flink = path_to_node_id(node0, base_codes, subpath, subpath_len);
+			rec_level--;
+		}
+		next_node_id = next_node->flink;
+	}
+	set_shortcut(node, *c, next_node_id);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] LEAVING get_next_node_id(): ");
+		Rprintf(format, " ");
+		Rprintf("next_node_id=%d\n", next_node_id);
+	}
+#endif
+	return next_node_id;
+}
+
+static int walk_string(ACNode *node0, const int *base_codes, const char *S, int nS)
+{
+	int basenode_id, node_id, child_id, n, subwalk_nS;
 	ACNode *basenode, *node;
 	static int rec_level = 0;
 #ifdef DEBUG_BIOSTRINGS
@@ -134,7 +211,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 	for (n = 0; n < nS; n++, S++) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] follow_string():");
+			Rprintf("[DEBUG] walk_string():");
 			sprintf(format, "%%%ds", 1 + 2*rec_level);
 			Rprintf(format, " ");
 			snprintf(pathbuf, basenode->depth + 1, "%s", S - basenode->depth);
@@ -144,7 +221,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 		node_id = basenode_id;
 		node = basenode;
 		while (1) {
-			child_id = get_child_id(node, *S);
+			child_id = get_child_node_id(node, *S);
 			if (child_id != -1) {
 				node_id = child_id;
 				node = node0 + node_id;
@@ -156,12 +233,12 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 			}
 			if (node->flink == -1) {
 				rec_level++;
-				subcall_nS = node->depth - 1;
-				node->flink = follow_string(node0, base_codes, S - subcall_nS, subcall_nS);
+				subwalk_nS = node->depth - 1;
+				node->flink = walk_string(node0, base_codes, S - subwalk_nS, subwalk_nS);
 				rec_level--;
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
-					Rprintf("[DEBUG] follow_string():");
+					Rprintf("[DEBUG] walk_string():");
 					Rprintf(format, " ");
 					Rprintf("setting failure link %d -> %d\n", node_id, node->flink);
 				}
@@ -169,7 +246,7 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 			}
 #ifdef DEBUG_BIOSTRINGS
 			if (debug) {
-				Rprintf("[DEBUG] follow_string():");
+				Rprintf("[DEBUG] walk_string():");
 				Rprintf(format, " ");
 				Rprintf("following failure link %d -> %d\n", node_id, node->flink);
 			}
@@ -182,12 +259,12 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 		basenode = node0 + basenode_id;
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] follow_string():");
+			Rprintf("[DEBUG] walk_string():");
 			Rprintf(format, " ");
 			Rprintf("moving to basenode %d\n", basenode_id);
 		}
 #endif
-		// Finding a match cannot happen during a nested call to follow_string()
+		// Finding a match cannot happen during a nested call to walk_string()
 		// so there is no need to check that rec_level is 0
 		if (basenode->P_id != -1)
 			report_match(basenode->P_id - 1, n + 1);
@@ -198,7 +275,31 @@ static int follow_string(ACNode *node0, const int *base_codes, const char *S, in
 static void CWdna_exact_search(ACNode *node0, const int *base_codes, const char *S, int nS)
 {
 	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, code2childoffset_chrtrtable);
-	follow_string(node0, base_codes, S, nS);
+	walk_string(node0, base_codes, S, nS);
+	return;
+}
+
+static void CWdna_exact_search_on_nonfixedS(ACNode *node0, const int *base_codes,
+		const char *S, int nS)
+{
+	IntBuf cnode_ids; // buffer of current node ids
+	int n, i, node_id;
+	ACNode *node;
+
+	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, code2childoffset_chrtrtable);
+	cnode_ids = _new_IntBuf(100, 0);
+	_IntBuf_insert_at(&cnode_ids, 0, 0);
+	for (n = 0; n < nS; n++, S++) {
+		for (i = 0; i < cnode_ids.nelt; i++) {
+			node_id = cnode_ids.elts[i];
+			node = node0 + node_id;
+			node_id = get_next_node_id(node0, base_codes, node_id, S);
+			node = node0 + node_id;
+			if (node->P_id != -1)
+				report_match(node->P_id - 1, n + 1);
+			cnode_ids.elts[i] = node_id;
+		}
+	}
 	return;
 }
 
@@ -299,10 +400,12 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 {
 	ACNode *actree_nodes;
 	RoSeq S;
-	int is_count_only, no_head, no_tail;
+	int fixedP, fixedS, is_count_only, no_head, no_tail;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	S = _get_XString_asRoSeq(subject_XString);
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 	no_head = pdict_head_XStringSet == R_NilValue;
 	no_tail = pdict_tail_XStringSet == R_NilValue;
@@ -310,13 +413,17 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (!no_head)
 		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
-	CWdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S.elts, S.nelt);
+	if (fixedS)
+		CWdna_exact_search(actree_nodes, INTEGER(actree_base_codes), S.elts, S.nelt);
+	else
+		CWdna_exact_search_on_nonfixedS(actree_nodes, INTEGER(actree_base_codes),
+				S.elts, S.nelt);
 	if (no_tail) {
 		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
 	} else {
 		TBdna_match_tail(pdict_tail_XStringSet, S,
 			INTEGER(pdict_dups), LENGTH(pdict_dups),
-			INTEGER(max_mismatch)[0], LOGICAL(fixed)[0], LOGICAL(fixed)[1],
+			INTEGER(max_mismatch)[0], fixedP, fixedS,
 			is_count_only);
 	}
 	if (is_count_only)

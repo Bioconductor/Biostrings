@@ -748,7 +748,7 @@ extractAllMatches <- function(subject, mindex)
     actree
 }
 
-.match.CWdna_PDict.exact <- function(pdict, subject, count.only)
+.match.CWdna_PDict.exact <- function(pdict, subject, fixed, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     names <- names(pdict)
@@ -760,7 +760,7 @@ extractAllMatches <- function(subject, mindex)
                    actree@nodes@xp, actree@base_codes,
                    pdict@dups, NULL, NULL,
                    subject,
-                   0L, c(TRUE, TRUE),
+                   0L, fixed,
                    count.only, envir,
                    PACKAGE="Biostrings")
     if (count.only)
@@ -768,7 +768,8 @@ extractAllMatches <- function(subject, mindex)
     if (is.null(names))
         new("ByPos_MIndex", ends=C_ans, width=width(pdict))
     else
-        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
+        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
+                             width=width(pdict), NAMES=names)
 }
 
 ### With a big random dictionary, on george1:
@@ -873,7 +874,8 @@ extractAllMatches <- function(subject, mindex)
     if (is.null(names))
         new("ByPos_MIndex", ends=C_ans, width=width(pdict))
     else
-        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans, width=width(pdict), NAMES=names)
+        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
+                             width=width(pdict), NAMES=names)
 }
 
 
@@ -899,9 +901,13 @@ extractAllMatches <- function(subject, mindex)
     fixed <- normalize.fixed(fixed, class(subject))
     if (is(pdict, "TBdna_PDict"))
         return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
-    if (max.mismatch != 0 || !all(fixed))
-        stop("only TBdna_PDict dictionaries support inexact matching")
-    .match.CWdna_PDict.exact(pdict, subject, count.only)
+    if (max.mismatch != 0)
+        stop("'max.mismatch' must be zero ",
+             "with this type of PDict object (", class(pdict), ")")
+    if (!fixed[1])
+        stop("IUPAC ambiguities in the patterns are not supported ",
+             "with this type of PDict object (", class(pdict), ")")
+    .match.CWdna_PDict.exact(pdict, subject, fixed, count.only)
 }
 
 
