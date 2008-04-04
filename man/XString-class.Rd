@@ -11,6 +11,7 @@
 \alias{initialize,XString-method}
 \alias{XString}
 \alias{XString,character-method}
+\alias{XString,AsIs-method}
 \alias{XString,XString-method}
 \alias{BString}
 

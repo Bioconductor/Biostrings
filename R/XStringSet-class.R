@@ -216,7 +216,7 @@ setMethod("XStringSet", "character",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
         .charToXStringSet(x, start, end, width, use.names, baseClass)
 )
-### Just because of those silly "AsIs" objects found in the probe packages
+### Just because of the silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("XStringSet", "AsIs",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)

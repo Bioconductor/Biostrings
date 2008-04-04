@@ -234,10 +234,24 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
 setGeneric("XString", signature="x",
     function(class, x, start=1, nchar=NA, check=TRUE) standardGeneric("XString")
 )
+
 setMethod("XString", "character",
     function(class, x, start=1, nchar=NA, check=TRUE)
         charToXString(x, start=start, width=nchar, class=class, check=check)
 )
+
+### Just because of the silly "AsIs" objects found in the probe packages
+### (e.g. drosophila2probe$sequence)
+setMethod("XString", "AsIs",
+    function(class, x, start=1, nchar=NA, check=TRUE)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+        charToXString(x, start=start, width=nchar, class=class, check=check)
+    }
+)
+
 setMethod("XString", "XString",
     function(class, x, start=1, nchar=NA, check=TRUE)
         .XStringToXString(x, start, nchar, class, check)
@@ -245,10 +259,13 @@ setMethod("XString", "XString",
 
 BString <- function(x, start=1, nchar=NA, check=TRUE)
     XString("BString", x, start=start, nchar=nchar, check=check)
+
 DNAString <- function(x, start=1, nchar=NA, check=TRUE)
     XString("DNAString", x, start=start, nchar=nchar, check=check)
+
 RNAString <- function(x, start=1, nchar=NA, check=TRUE)
     XString("RNAString", x, start=start, nchar=nchar, check=check)
+
 AAString <- function(x, start=1, nchar=NA, check=TRUE)
     XString("AAString", x, start=start, nchar=nchar, check=check)
 
