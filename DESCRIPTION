@@ -10,8 +10,11 @@ Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
 Depends: R (>= 2.7.0), methods, stats
 Imports: methods, stats
-Suggests: RUnit, BSgenome (>= 1.7.4), BSgenome.Celegans.UCSC.ce2 (>= 1.3.2),
-	BSgenome.Dmelanogaster.FlyBase.r51, drosophila2probe, hgu95av2probe
+Suggests: BSgenome (>= 1.7.7),
+	BSgenome.Celegans.UCSC.ce2 (>= 1.3.3),
+	BSgenome.Dmelanogaster.FlyBase.r51 (>= 1.3.3),
+	drosophila2probe, hgu95av2probe,
+	RUnit
 License: Artistic-2.0
 LazyLoad: yes
 Collate: 00datacache.R

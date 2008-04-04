@@ -3,47 +3,57 @@
 ### -------------------------------------------------------------------------
 ###
 ### The XStringSet class is a container for storing a set of XString objects
-### of the same subtype (e.g. all BString instances or all DNAString instances).
-### The current implementation only allows the storage of a set of strings
-### that are all substrings of a common string called the super string.
-### For storing XString objects that point to different XRaw objects, the user
-### should use an XStringList container.
+### of the same subtype (e.g. all elements are BString objects or they are
+### all DNAString objects).
 ###
-### Of course, the responsability of choosing between XStringSet and
-### XStringList based on such an obscure criteria ("are my XString objects
-### sharing the same XRaw object?") should not be left to the user.
-### In the future this unfriendly situation could be worked around by renaming
-### the XStringSet class -> SubstrSet and making XStringSet an interface
-### only (i.e. a virtual class with no slots) that would be shared by specific
-### XStringSet-like containers like XStringList and SubstrSet.
-###   (1) XStringList: the current XStringList container where each sequence
-###       points to its own XRaw object. Maybe some sequences are in fact
-###       sharing the same XRaw object but it doesn't matter, except when they
-###       all share the same, then the XStringList object can be easily and
-###       very efficiently converted to a SubstrSet object.
-###   (2) SubstrSet: this would remain the most efficient (i.e. compact and
-###       fast) XStringSet-like container and the one still used in most use
-###       cases.
-### Other XStringSet-like containers could be added later e.g. the
-### OnfileXStringList container: would use some delayed loading mechanism like
-### what is currently in use for the BSgenome stuff. Still need to think more
-### about the pros and cons of having such container though...
+### The current implementation only allows for storage of a set of strings
+### that belong to the same XRaw object i.e. all the elements of an XStringSet
+### object must be substrings of a common string called the "super string".
+### So for storing XString objects that point to different XRaw objects, the
+### user must use an XStringList container.
+### There are 3 problems with this:
+###   1. It's not user-friendly. The responsability of choosing between
+###      XStringSet and XStringList based on such an obscure criteria ("are
+###      my XString objects sharing the same XRaw object?") should not be left
+###      to the user.
+###   2. It's currently not possible to add new elements to an existing
+###      XStringSet object. Well, in fact it can be done, but only if the new
+###      elements belong to the XRaw object shared by the existing elements.
+###      Such restriction would not make sense from a user point of view.
+###   3. The XStringList container is not as efficient as the XStringSet
+###      container.
+### This could be changed (and maybe this will show up in the 2.9 series) by
+### using something like this for the XStringSet class:
 ###
-### Conversion between BStringViews, XStringSet and XStringList objects:
-###   o BStringViews --> XStringSet: should always work, except when views
-###     in BStringViews are out of limits.
-###   o XStringSet --> BStringViews: doesn't make sense.
-###   o XStringSet --> XStringList: should always work (no restriction) but
-###     I can't think of any use case where doing this would be a good idea!
-###     (the XStringSet container is much more efficient).
-###   o XStringList --> XStringSet: would be fast and easy to implement when
-###     all the sequences in XStringList share the same XRaw object (then
-###     no need to copy any data). When they don't share the same XRaw object,
-###     then all the sequence data in XStringList need to be copied,
-###     concatenated and stuffed into a new XRaw object.
+###   setClass("XRawViews",
+###     contains=".IRanges",
+###     representation(
+###         subject="XRaw"
+###     )
+###   )
+###
+###   setClass("XStringSet",
+###     representation(
+###         "VIRTUAL",
+###         xrvlist="list",   # a list of XRawViews objects
+###         strong="integer",
+###         weak="integer"
+###     )
+###   )
+###
+### x@strong and x@weak (both of length the number of elements) are maps used
+### to "find" the i-th element in x i.e. x[[i]] can be efficiently extracted
+### with:
+###     xrv <- x@xrvlist[[x@strong[i]]]
+###     start <- start(xrv)[x@weak[i]]
+###     width <- width(xrv)[x@weak[i]]
+###     new(baseClass, xrv@subject, start - 1L, width, check=FALSE)
+### This new XStringSet container would combine the efficiency of the old one
+### and the flexibility of the XStringList container (which can then be
+### removed).
 ###
 ### Some notable differences between XStringSet and BStringViews objects:
-###   - the "show" methods produce very different output
+###   - the "show" methods produce different output
 ###   - the views in a BStringViews object can't have a 0-width
 ###   - the views in a BStringViews object can be out of limits
 ###
