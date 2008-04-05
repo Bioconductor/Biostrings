@@ -17,6 +17,22 @@ setClass(".IRanges",
 
 setClass("IRanges", contains=".IRanges")
 
+### A NormalIRanges object is an IRanges object where the ranges are:
+###   (a) of non-null width;
+###   (b) not overlapping;
+###   (c) not even adjacent (there must be a non-null gap between 2
+###       consecutive ranges);
+###   (d) ordered from left to right.
+### If 'x' is an IRanges object of length >= 2 where the ranges are already
+### ordered from left to right, then it is normal iff:
+###   start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]
+### for every 1 <= i < length(x).
+### If length(x) == 1, then 'x' is normal iff width(x)[1] >= 1.
+### If length(x) == 0, then 'x' is normal.
+### Subsetting 'x' preserves normality.
+
+setClass("NormalIRanges", contains="IRanges")
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
@@ -44,6 +60,21 @@ setMethod("names", ".IRanges",
 ### "desc" is an alias for "names". It might be deprecated soon...
 setGeneric("desc", function(x) standardGeneric("desc"))
 setMethod("desc", "ANY", function(x) names(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "is.normal" generic and method.
+###
+
+setGeneric("is.normal", function(x) standardGeneric("is.normal"))
+
+setMethod("is.normal", ".IRanges",
+    function(x)
+    {
+        stop("is.normal() is not ready")
+        all(width(x) >= 1)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,6 +140,21 @@ setValidity(".IRanges",
     function(object)
     {
         problems <- .valid.IRanges(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
+
+.valid.NormalIRanges <- function(object)
+{
+    if (!is.normal(object))
+        return("object is not normal")
+    NULL
+}
+
+setValidity("NormalIRanges",
+    function(object)
+    {
+        problems <- .valid.NormalIRanges(object)
         if (is.null(problems)) TRUE else problems
     }
 )
