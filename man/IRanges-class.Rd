@@ -5,6 +5,9 @@
 \alias{class:IRanges}
 \alias{IRanges-class}
 \alias{IRanges}
+\alias{class:NormalIRanges}
+\alias{NormalIRanges-class}
+\alias{NormalIRanges}
 
 % Accesor methods
 \alias{length,.IRanges-method}
@@ -15,6 +18,9 @@
 \alias{names,.IRanges-method}
 \alias{desc}
 \alias{desc,ANY-method}
+
+\alias{is.normal}
+\alias{is.normal,.IRanges-method}
 
 % Initialization
 \alias{initialize,.IRanges-method}
@@ -59,9 +65,29 @@
 
 \details{
   An IRanges object is a data frame-like object where each row describes
-  a range of integers. Each range is defined by its start and
-  its length. The start can be any integer (see \code{start} below) but the
-  length must be a nonnegative integer (see \code{width} below).
+  a "range" of integers i.e. a set of consecutive integer values.
+  Each range is defined by its start (i.e. its smaller value) and
+  its width (i.e. the number of elements in the range).
+  The start can be any integer (see \code{start} below) but the
+  width must be a nonnegative integer (see \code{width} below).
+  The end of a range (i.e. its greater value) is its start plus its width
+  minus one (see \code{end} below).
+  The length of an IRanges object is the number of ranges in it
+  i.e. the number of rows in the object.
+
+  An IRanges object is said to be "normal" when its ranges are:
+  (a) of non-null width; (b) not overlapping; (c) not even adjacent (there
+  must be a non-null gap between 2 consecutive ranges); (d) ordered from left
+  to right.
+  If \code{x} is an IRanges object with more than one element (i.e.
+  \code{length >= 2}), then \code{x} is normal iff:
+  \preformatted{start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]}
+  for every 1 <= \code{i} < \code{length(x)}.
+  If \code{length(x) == 1}, then \code{x} is normal iff \code{width(x)[1] >= 1}.
+  If \code{length(x) == 0}, then \code{x} is normal.
+  Subsetting \code{x} preserves normality.
+
+  A NormalIRanges object is an IRanges object that is normal.
 
   An important difference with a standard R data frame object is that an
   IRanges object can only be subsetted by row whereas a standard R data

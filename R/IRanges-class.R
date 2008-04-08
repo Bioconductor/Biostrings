@@ -23,8 +23,7 @@ setClass("IRanges", contains=".IRanges")
 ###   (c) not even adjacent (there must be a non-null gap between 2
 ###       consecutive ranges);
 ###   (d) ordered from left to right.
-### If 'x' is an IRanges object of length >= 2 where the ranges are already
-### ordered from left to right, then it is normal iff:
+### If 'x' is an IRanges object of length >= 2, then 'x' is normal iff:
 ###   start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]
 ### for every 1 <= i < length(x).
 ### If length(x) == 1, then 'x' is normal iff width(x)[1] >= 1.
@@ -71,8 +70,7 @@ setGeneric("is.normal", function(x) standardGeneric("is.normal"))
 setMethod("is.normal", ".IRanges",
     function(x)
     {
-        stop("is.normal() is not ready")
-        all(width(x) >= 1)
+        all(width(x) >= 1) && (length(x) <= 1 || all(end(x)[-length(x)] < start(x)[-1]))
     }
 )
 

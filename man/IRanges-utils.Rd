@@ -10,7 +10,7 @@
 \alias{narrow,.IRanges-method}
 \alias{narrow,numeric-method}
 \alias{reduce}
-\alias{reduce,IRanges-method}
+\alias{reduce,.IRanges-method}
 
 
 \title{IRanges utility functions}
