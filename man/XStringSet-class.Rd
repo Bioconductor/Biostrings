@@ -38,6 +38,7 @@
 
 % Accesor methods:
 \alias{nchar,XStringSet-method}
+\alias{alphabet,XStringSet-method}
 
 \alias{length,XStringList-method}
 \alias{nchar,XStringList-method}
@@ -199,6 +200,7 @@
 \section{Other methods}{
   In the code snippets below,
   \code{x} is an XStringSet object.
+
   \describe{
     \item{}{
       \code{as.list(x)}:

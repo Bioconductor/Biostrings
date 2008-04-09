@@ -21,10 +21,10 @@ exportClasses(
 exportMethods(
     ## Generics defined elsewhere
     #as.integer,
-    initialize, length, "[", "[[", show, "==", "!=",
-    as.character, toString, nchar, toComplex, as.complex,
-    as.data.frame, as.matrix, as.list, update, names,
-    duplicated,
+    initialize, length, names, "[", "[[", show, "==", "!=", duplicated,
+    coerce, as.data.frame, as.matrix, as.list,
+    as.character, toString, as.complex, toComplex,
+    nchar, update,
 
     ## IRanges objects
     start, width, end, desc, is.normal,

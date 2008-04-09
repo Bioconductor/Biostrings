@@ -220,8 +220,7 @@
   count_index1 <- countPDict(pdict1, chr3R)
   identical(count_index1, count_index) # TRUE
 
-  ## NOT RUN
-  if (FALSE) {
+  if (interactive()) {
     ## What's the impact of the dictionary width on performance?
     ## Below is some code that can be used to figure out (will take a long
     ## time to run). For different widths of the input dictionary, we look at:

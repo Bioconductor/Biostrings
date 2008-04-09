@@ -25,6 +25,22 @@
 % Initialization
 \alias{initialize,.IRanges-method}
 \alias{initialize,IRanges-method}
+\alias{initialize,NormalIRanges-method}
+\alias{coerce,.IRanges,NormalIRanges-method}
+
+% "show" method
+\alias{as.data.frame,.IRanges-method}
+\alias{show,.IRanges-method}
+
+% Subsetting
+\alias{[,.IRanges-method}
+\alias{[<-,.IRanges-method}
+
+% "duplicated" method
+\alias{duplicated,.IRanges-method}
+
+% Other methods
+\alias{as.matrix,.IRanges-method}
 
 % Replacement methods
 \alias{start<-}
@@ -38,17 +54,6 @@
 \alias{desc<-,ANY-method}
 \alias{update,IRanges-method}
 
-% Show method
-\alias{as.data.frame,.IRanges-method}
-\alias{show,.IRanges-method}
-
-% Subsetting
-\alias{[,.IRanges-method}
-\alias{[<-,.IRanges-method}
-
-% Other methods
-\alias{as.matrix,.IRanges-method}
-
 % Deprecated methods
 \alias{first}
 \alias{first,.IRanges-method}
@@ -56,44 +61,44 @@
 \alias{last,.IRanges-method}
 
 
-\title{IRanges objects}
+\title{IRanges and NormalIRanges objects}
 
 \description{
   The IRanges class is a simple container for storing a set of integer
   ranges.
+
+  A NormalIRanges object is an IRanges object that is "normal".
+  See the Normality section below for the definition and properties
+  of normal IRanges objects.
 }
 
 \details{
   An IRanges object is a data frame-like object where each row describes
-  a "range" of integers i.e. a set of consecutive integer values.
-  Each range is defined by its start (i.e. its smaller value) and
-  its width (i.e. the number of elements in the range).
+  a "range" of integers.
+
+  A "range" of integers is a set of consecutive integer values.
+  Each range can be fully described with exactly 2 integers which can be
+  arbitrarily picked up among the 3 following integers:
+  its "start" i.e. its smallest (or first, or leftmost) value;
+  its "end" i.e. its greatest (or last, or rightmost) value;
+  and its "width" i.e. the number of values in the range.
+  For example the set of integers that are greater than or equal to -20
+  and less than or equal to 400 is the range of integers that starts
+  at -20 and has a width of 421.
+
   The start can be any integer (see \code{start} below) but the
   width must be a nonnegative integer (see \code{width} below).
-  The end of a range (i.e. its greater value) is its start plus its width
-  minus one (see \code{end} below).
+  The end of a range is its start plus its width minus one (see
+  \code{end} below).
+  An "empty" range is a range with no value in it i.e. with a null width.
+  Note that for an empty range, the end is smaller than the start.
+
+  Two ranges are considered equal iff they share the same start and width.
+  Note that with this definition, 2 empty ranges are generally
+  not equal (they need to share the same start to be considered equal).
+
   The length of an IRanges object is the number of ranges in it
   i.e. the number of rows in the object.
-
-  An IRanges object is said to be "normal" when its ranges are:
-  (a) of non-null width; (b) not overlapping; (c) not even adjacent (there
-  must be a non-null gap between 2 consecutive ranges); (d) ordered from left
-  to right.
-  If \code{x} is an IRanges object with more than one element (i.e.
-  \code{length >= 2}), then \code{x} is normal iff:
-  \preformatted{start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]}
-  for every 1 <= \code{i} < \code{length(x)}.
-  If \code{length(x) == 1}, then \code{x} is normal iff \code{width(x)[1] >= 1}.
-  If \code{length(x) == 0}, then \code{x} is normal.
-  Subsetting \code{x} preserves normality.
-
-  A NormalIRanges object is an IRanges object that is normal.
-
-  An important difference with a standard R data frame object is that an
-  IRanges object can only be subsetted by row whereas a standard R data
-  frame object can be subsetted by row and by column. Also, the length of an
-  IRanges object is its number of rows whereas the length of a standard R
-  data frame object is its number of columns.
 
   Note that it is unlikely that the user will have to create or manipulate
   directly an IRanges instance when using the Biostrings package. However
@@ -101,6 +106,16 @@
   class, any \link{BStringViews} object is also an IRanges object and
   can be manipulated as such. Therefore all the methods described here also
   work with a \link{BStringViews} object.
+}
+
+\section{IRanges object vs data frame}{
+  An important difference with standard R data frames is that
+  IRanges objects only support single subscript subsetting i.e.
+  subsetting by row, whereas standard R data frames can be subsetted
+  by row and by column.
+  As a consequence, the length of an IRanges object is its number of rows,
+  whereas the length of a standard R data frame object is its number of
+  columns.
 }
 
 \section{Accesor methods}{
@@ -127,11 +142,7 @@
     }
     \item{}{
       \code{names(x)}:
-      A character vector or \code{NULL} of the same length as \code{x}.
-      The names are the only data in an IRanges object that can safely
-      be changed by the user. All other data are immutable!
-      As a general recommendation, the user should never try to modify
-      an object by accessing its slots directly.
+      \code{NULL} or a character vector of the same length as \code{x}.
     }
     \item{}{
       \code{desc(x)}:
@@ -156,9 +167,44 @@
       Converts \code{x} into a standard R data frame object.
     }
     \item{}{
+      \code{duplicated(x)}:
+      Determines which elements of \code{x} are equal to elements
+      with smaller subscripts, and returns a logical vector indicating
+      which elements are duplicates.
+      It is semantically equivalent to \code{duplicated(as.data.frame(x))}
+      (see \link{duplicated} for more info).
+    }
+    \item{}{
       \code{as.matrix(x, ...)}:
       Converts \code{x} into a 2-column integer matrix containing
       \code{start(x)} and \code{width(x)}.
+    }
+  }
+}
+
+\section{Normality}{
+  An IRanges object is said to be "normal" when its ranges are:
+  (a) of non-null width; (b) not overlapping; (c) not even adjacent (there
+  must be a non-null gap between 2 consecutive ranges); (d) ordered from left
+  to right.
+  If \code{x} is an IRanges object with more than one element (i.e.
+  \code{length >= 2}), then \code{x} is normal iff:
+  \preformatted{  start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]}
+  for every 1 <= \code{i} < \code{length(x)}.
+  If \code{length(x) == 1}, then \code{x} is normal iff \code{width(x)[1] >= 1}.
+  If \code{length(x) == 0}, then \code{x} is normal.
+
+  Subsetting \code{x} preserves its normality.
+
+  A NormalIRanges object is an IRanges object that is normal.
+
+  Use the \code{is.normal} method to check whether an IRanges object is
+  normal or not. In the code snippet below, \code{x} is an IRanges object.
+
+  \describe{
+    \item{}{
+      \code{is.normal(x)}:
+      Whether \code{x} is normal or not.
     }
   }
 }
@@ -177,7 +223,8 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BStringViews-class}
+  \link{BStringViews-class},
+  \link{duplicated}
 }
 
 \examples{
@@ -186,9 +233,6 @@
   start(x)
   width(x)
   end(x)
-  names(x)
-  names(x) <- c("range1", "range2")
-  x
 
   ## Make a new IRanges object by selecting some ranges only:
   x[4:2]               # 3 ranges
@@ -199,6 +243,52 @@
   x[!is.na(names(x))]  # 2 ranges
   x[3]                 # 1 ranges
   x[FALSE]             # 0 ranges
+
+  ## Use replacement methods to slide or resize elements of an IRanges object:
+  width(x) <- width(x) * 2  + 1  # resize elements
+  x
+  start(x) <- end(x)             # slide elements
+  x
+  start(x)[4] <- end(x)[4]       # slide the 4th element
+  x
+  end(x)[1] <- start(x)[3]       # slide the first element
+  x
+  width(x) <- c(2, 0)            # resize elements
+  x
+  duplicated(x)
+
+  ## Name the elements:
+  names(x)
+  names(x) <- c("range1", "range2")
+  x
+
+  ## Using an IRanges object for storing a big set of ranges is more efficient
+  ## than using a standard R data frame:
+  N <- 2000000L  # nb of ranges
+  W <- 180L      # width of each range
+  start <- 1L
+  end <- 50000000L
+  set.seed(777)
+  range_starts <- sort(sample(end-W+1L, N))
+  range_widths <- rep.int(W, N)
+  ## Instantiation is faster
+  system.time(x <- new("IRanges", start=range_starts, width=range_widths))
+  system.time(y <- data.frame(start=range_starts, width=range_widths))
+  ## Subsetting is faster
+  system.time(x16 <- x[c(TRUE, rep.int(FALSE, 15))])
+  system.time(y16 <- y[c(TRUE, rep.int(FALSE, 15)), ])
+  ## Internal representation is more compact
+  object.size(x16)
+  object.size(y16)
+
+  ## Normality:
+  is.normal(x16)                       # FALSE
+  if (interactive())
+      x16 <- as(x16, "NormalIRanges")  # Error!
+  x32 <- x16[c(TRUE, FALSE)]
+  is.normal(x32)                       # TRUE (just luck!)
+  x32 <- as(x32, "NormalIRanges")
+  class(x32)
 }
 
 \keyword{methods}

@@ -8,7 +8,6 @@
 
 setClass(".IRanges",
     representation(
-        ## See the "initialize" method below for more details.
         start="integer",
         width="integer",
         NAMES="character" # R doesn't like @names !!
@@ -159,7 +158,7 @@ setValidity("NormalIRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
+### Initialization and coercion.
 ###
 
 .numeric2integer <- function(x)
@@ -183,7 +182,7 @@ setMethod("initialize", ".IRanges",
 setMethod("initialize", "IRanges",
     function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
     {
-        .Object <- callNextMethod(.Object, start, width, names=names)
+        .Object <- callNextMethod(.Object, start, width, names)
         if (check) {
             ## I found that using validObject() in "initialize" doesn't work
             ## properly (validation is called too many times and not in an
@@ -193,6 +192,29 @@ setMethod("initialize", "IRanges",
             if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
         .Object
+    }
+)
+
+setMethod("initialize", "NormalIRanges",
+    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
+    {
+        .Object <- callNextMethod(.Object, start=start, width=width, names=names, check=check)
+        if (check) {
+            problems <- .valid.NormalIRanges(.Object)
+            if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
+        }
+        .Object
+    }
+)
+
+### By default as(x, "NormalIRanges") would not check that the returned object
+### is a valid NormalIRanges object.
+setAs(".IRanges", "NormalIRanges",
+    function(from)
+    {
+        class(from) <- "NormalIRanges"
+        validObject(from)
+        from
     }
 )
 
@@ -260,6 +282,23 @@ setReplaceMethod("[", ".IRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "duplicated" method.
+###
+### TODO: current implementation is very inefficient and needs some C help!
+###
+
+setMethod("duplicated", ".IRanges",
+    function(x, incomparables=FALSE, ...)
+    {
+        duplicated(data.frame(start=start(x),
+                              width=width(x),
+                              check.names=FALSE,
+                              stringsAsFactors=FALSE))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other methods.
 ###
 
@@ -267,16 +306,6 @@ setMethod("as.matrix", ".IRanges",
     function(x, ...)
         matrix(data=c(start(x), width(x)), ncol=2, dimnames=list(names(x), NULL))
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Deprecated methods.
-###
-
-setGeneric("first", function(x) standardGeneric("first"))
-setMethod("first", ".IRanges", function(x) {.Deprecated("start"); start(x)})
-setGeneric("last", function(x) standardGeneric("last"))
-setMethod("last", ".IRanges", function(x) {.Deprecated("end"); end(x)})
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -479,4 +508,14 @@ setMethod("update", "IRanges",
         object
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deprecated methods.
+###
+
+setGeneric("first", function(x) standardGeneric("first"))
+setMethod("first", ".IRanges", function(x) {.Deprecated("start"); start(x)})
+setGeneric("last", function(x) standardGeneric("last"))
+setMethod("last", ".IRanges", function(x) {.Deprecated("end"); end(x)})
 

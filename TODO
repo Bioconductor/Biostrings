@@ -41,7 +41,7 @@ In 2.7
     o Add methods for XStringSet objects everywhere there are methods defined
       for BStringViews objects (matchPattern, countPattern, etc...).
       Make them work in a vectorized fashion for XStringSet objects.
-    o Add "==" and "unique" methods for XStringSet objects.
+    o Add "==" method for XStringSet objects.
 
 - Add 'baseOnly' arg to consmat(). Rework the implementation (currently
   totally inefficient). Another approach to providing consmat()'s functionality
@@ -163,20 +163,14 @@ In 2.7
   could be renamed (or maybe it's not needed at all, maybe a fancy
   new("IRanges", ...) could replace it).
 
-- Add a MaskedBString class. 2 ways to do this:
-    1. Extend the BStringViews class
-    2. I think I prefer this: add a Mask class (a direct extension of the
-       IRanges class where the views are guaranted to be normalized) and define
-       the MaskedBString class on top of that (in the same way that the
-       BStringViews class is defined on top of the IRanges class).
-  For example alphabetFrequency would work by default in a vectorized fashion
-  on a BStringViews object (Robert suggests to control this via a collapse arg),
-  but in a cumulative fashion on a MaskedBString object.
-  Working on the MaskedBString class will require some reworking of the mask()
-  feature and the addition of some utility functions like is.normalized (define
-  a method for IRanges objects, can then be used to check that a Mask or a
-  MaskedBString object is valid or that a BStringViews object is normalized
-  and can then be turned into a MaskedBString object), etc...
+- Add the MaskedXString class (and family) by extending the XString class and
+  adding a @mask slot of class NormalIRanges.
+  Add "unmask" generic with method for MaskedXString objects.
+  Important: don't forget to overwrite the following methods:
+    "nchar" for MaskedXString must return the number of non-masked letters.
+    "show" for MaskedXString must display #'s in place of masked letters.
+    "alphabetFrequency" for MaskedXString must take the mask into account.
+  Find all other methods that need to be overwritten and redefine them.
 
 - readFASTA(): set the default for strip.desc to TRUE (with a warning when
   strip.desc is missing). This was already done in svn trunk/release a few
@@ -186,7 +180,9 @@ In 2.7
   trunk only (too late for release). Remove the warning after the BioC 2.2
   release.
 
-- Add "duplicated" methods for BStringViews, BStringList and XStringSet objects.
+- Add "unique" method for .IRanges objects.
+
+- Add "duplicated" and "unique" methods for XStringSet and BStringViews objects.
 
 - Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
   Biostrings_define.h instead of the current magic values used all over the

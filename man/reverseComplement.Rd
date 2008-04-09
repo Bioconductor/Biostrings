@@ -110,9 +110,9 @@
   ##     (5'3' direction) like in m0:
   m3 <- rev(m2) # same as m0, finally!
 
-  ## Don't try the above example on human chromosome 1 since your computer
-  ## would need to allocate about 250Mb of memory for this:
-  if (FALSE) {
+  ## WARNING: Before you try the example below on human chromosome 1, be aware
+  ## that it will require the allocation of about 500Mb of memory!
+  if (interactive()) {
     library(BSgenome.Hsapiens.UCSC.hg18)
     chr1 <- Hsapiens$chr1
     matchPattern(pattern, reverseComplement(chr1)) # DON'T DO THIS!
