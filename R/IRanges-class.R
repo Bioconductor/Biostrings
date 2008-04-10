@@ -61,15 +61,30 @@ setMethod("desc", "ANY", function(x) names(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "is.normal" generic and method.
+### The "isNormal" and "whichFirstNotNormal" generics and methods.
 ###
 
-setGeneric("is.normal", function(x) standardGeneric("is.normal"))
+setGeneric("isNormal", function(x) standardGeneric("isNormal"))
 
-setMethod("is.normal", ".IRanges",
+setMethod("isNormal", ".IRanges",
     function(x)
     {
-        all(width(x) >= 1) && (length(x) <= 1 || all(end(x)[-length(x)] < start(x)[-1]))
+        all_ok <- all(width(x) >= 1)
+        if (length(x) >= 2)
+            all_ok <- all_ok && all(end(x)[-length(x)] < start(x)[-1])
+        all_ok
+    }
+)
+
+setGeneric("whichFirstNotNormal", function(x) standardGeneric("whichFirstNotNormal"))
+
+setMethod("whichFirstNotNormal", ".IRanges",
+    function(x)
+    {
+        is_ok <- width(x) >= 1
+        if (length(x) >= 2)
+            is_ok <- is_ok & c(TRUE, end(x)[-length(x)] < start(x)[-1])
+        which(!is_ok)[1]
     }
 )
 
@@ -143,7 +158,7 @@ setValidity(".IRanges",
 
 .valid.NormalIRanges <- function(object)
 {
-    if (!is.normal(object))
+    if (!isNormal(object))
         return("object is not normal")
     NULL
 }
@@ -209,7 +224,10 @@ setMethod("initialize", "NormalIRanges",
 
 ### By default as(x, "NormalIRanges") would not check that the returned object
 ### is a valid NormalIRanges object.
-setAs(".IRanges", "NormalIRanges",
+### NOTE: Having ".IRanges" instead of "IRanges" will not work as expected
+### when 'x' is an IRanges object. Unfortunately, this is an S4 "feature":
+###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049027.html
+setAs("IRanges", "NormalIRanges",
     function(from)
     {
         class(from) <- "NormalIRanges"

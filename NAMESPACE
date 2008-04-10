@@ -27,7 +27,7 @@ exportMethods(
     nchar, update,
 
     ## IRanges objects
-    start, width, end, desc, is.normal,
+    start, width, end, desc, isNormal, whichFirstNotNormal,
     "start<-", "width<-", "end<-", "desc<-",
     mask,
 

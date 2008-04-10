@@ -160,9 +160,11 @@ o Added the "start<-", "width<-" and "end<-" generics with methods for
 o Added the intToRanges() and intToAdjacentRanges() utility functions
   for creating IRanges instances.
 
-o Added the IRanges class for representing a set of integer ranges
-  (see ?IRanges for the details). Changed the definition of the
-  BStringViews class so now it derives from this new class.
+o Added the .IRanges, IRanges and NormalIRanges classes for representing a set
+  of integer ranges + the "isNormal" and "whichFirstNotNormal" generic
+  functions with methods for ".IRanges" objects (see ?IRanges for the details).
+  Changed the definition of the BStringViews class so now it derives from the
+  IRanges class.
 
 o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
   to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of

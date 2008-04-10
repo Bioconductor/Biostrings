@@ -19,14 +19,16 @@
 \alias{desc}
 \alias{desc,ANY-method}
 
-\alias{is.normal}
-\alias{is.normal,.IRanges-method}
+\alias{isNormal}
+\alias{isNormal,.IRanges-method}
+\alias{whichFirstNotNormal}
+\alias{whichFirstNotNormal,.IRanges-method}
 
 % Initialization
 \alias{initialize,.IRanges-method}
 \alias{initialize,IRanges-method}
 \alias{initialize,NormalIRanges-method}
-\alias{coerce,.IRanges,NormalIRanges-method}
+\alias{coerce,IRanges,NormalIRanges-method}
 
 % "show" method
 \alias{as.data.frame,.IRanges-method}
@@ -215,13 +217,18 @@
 
   Subsetting \code{x} preserves its normality.
 
-  Use the \code{is.normal} method to check whether an IRanges object is
+  Use the \code{isNormal} method to check whether an IRanges object is
   normal or not. In the code snippet below, \code{x} is an IRanges object.
 
   \describe{
     \item{}{
-      \code{is.normal(x)}:
-      Whether \code{x} is normal or not.
+      \code{isNormal(x)}:
+      Return a logical value indicating whether \code{x} is normal or not.
+    }
+    \item{}{
+      \code{whichFirstNotNormal(x)}:
+      Return \code{NA} if \code{x} is normal, or the smallest valid indice
+      \code{i} in \code{x} for which \code{x[1:i]} is not normal.
     }
   }
 }
@@ -261,7 +268,8 @@
   x[3]                 # 1 ranges
   x[FALSE]             # 0 ranges
 
-  ## Use replacement methods to slide or resize elements of an IRanges object:
+  ## Use replacement methods to slide or resize elements of an IRanges
+  ## object:
   width(x) <- width(x) * 2  + 1  # resize elements
   x
   start(x) <- end(x)             # slide elements
@@ -279,8 +287,8 @@
   names(x) <- c("range1", "range2")
   x
 
-  ## Using an IRanges object for storing a big set of ranges is more efficient
-  ## than using a standard R data frame:
+  ## Using an IRanges object for storing a big set of ranges is more
+  ## efficient than using a standard R data frame:
   N <- 2000000L  # nb of ranges
   W <- 180L      # width of each range
   start <- 1L
@@ -299,13 +307,13 @@
   object.size(y16)
 
   ## Normality:
-  is.normal(x16)                       # FALSE
+  isNormal(x16)                        # FALSE
   if (interactive())
       x16 <- as(x16, "NormalIRanges")  # Error!
-  x32 <- x16[c(TRUE, FALSE)]
-  is.normal(x32)                       # TRUE (just luck!)
-  x32 <- as(x32, "NormalIRanges")
-  class(x32)
+  whichFirstNotNormal(x16)                  # 57
+  isNormal(x16[1:56])                  # TRUE
+  xx <- as(x16[1:56], "NormalIRanges")
+  class(xx)
 }
 
 \keyword{methods}
