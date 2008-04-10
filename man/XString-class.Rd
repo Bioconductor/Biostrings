@@ -8,7 +8,6 @@
 \alias{BString-class}
 
 % Constructor-like functions and generics:
-\alias{initialize,XString-method}
 \alias{XString}
 \alias{XString,character-method}
 \alias{XString,AsIs-method}

@@ -140,7 +140,7 @@ XStringSetToFASTArecords <- function(x)
     file <- file(file, "r")
     on.exit(close(file))
     xdata <- XRaw(filesize)
-    subject <- new(subjectClass, xdata, 0L, length(xdata))
+    subject <- new(subjectClass, xdata=xdata, length=length(xdata))
     subject@length <- 0L
 
     #ans <- XRaw.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))

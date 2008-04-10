@@ -310,7 +310,7 @@
   isNormal(x16)                        # FALSE
   if (interactive())
       x16 <- as(x16, "NormalIRanges")  # Error!
-  whichFirstNotNormal(x16)                  # 57
+  whichFirstNotNormal(x16)             # 57
   isNormal(x16[1:56])                  # TRUE
   xx <- as(x16[1:56], "NormalIRanges")
   class(xx)

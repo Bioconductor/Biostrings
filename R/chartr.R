@@ -26,7 +26,7 @@ XString.tr <- function(x, lkup=NULL, reverse=FALSE)
     } else {
         XRaw.copy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
     }
-    new(class(x), xdata, 0L, length(xdata), check=FALSE)
+    new(class(x), xdata=xdata, length=length(xdata))
 }
 
 XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)

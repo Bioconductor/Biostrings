@@ -8,6 +8,12 @@ setClass("XString",
         xdata="XRaw",       # contains the sequence data (external)
         offset="integer",   # a single integer
         length="integer"    # a single integer
+    ),
+    prototype(
+        #xdata=XRaw(0),     # see newEmptyXString() below for why this doesn't
+                            # work
+        offset=0L,
+        length=0L
     )
 )
 
@@ -16,6 +22,19 @@ setClass("BString", contains="XString")
 setClass("DNAString", contains="XString")
 setClass("RNAString", contains="XString")
 setClass("AAString", contains="XString")
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "newEmptyXString" constructor.
+### For internal use only. No need to export.
+###
+### Note that this cannot be made the prototype part of the XString class
+### definition (and trying to do so will cause an error at installation time)
+### because the DLL of the package needs to be loaded before XRaw() can be
+### called.
+###
+
+newEmptyXString <- function(class) new(class, xdata=XRaw(0))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,8 +146,8 @@ XString.readCodes <- function(x, i, imax=integer(0))
     XRaw.readInts(x@xdata, x@offset + i, x@offset + imax)
 }
 
-### Only used at initialization time! (XString objects are immutable)
-### 'value' must be a character string (this is not checked)
+### Only used at initialization time! (XString objects are immutable.)
+### 'value' must be a character string (this is not checked).
 XString.write <- function(x, i, imax=integer(0), value)
 {
     if (missing(i) && missing(imax)) {
@@ -151,51 +170,6 @@ XString.write <- function(x, i, imax=integer(0), value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
-###
-
-.normalize.offset <- function(offset)
-{
-    if (!isSingleNumber(offset))
-        stop("'offset' must be a single integer")
-    if (!is.integer(offset))
-        offset <- as.integer(offset)
-    if (offset < 0L)
-        stop("'offset' must be a non-negative integer")
-    offset
-}
-
-.normalize.length <- function(offset, length, data_length)
-{
-    if (!isSingleNumber(length))
-        stop("'length' must be a single integer")
-    if (!is.integer(length))
-        length <- as.integer(length)
-    if (length < 0L)
-        stop("'length' must be a non-negative integer")
-    if (offset + length > data_length)
-        stop("invalid 'length'")
-    length
-}
-
-setMethod("initialize", "XString",
-    function(.Object, xdata, offset, length, check=TRUE)
-    {
-        if (check) {
-            if (!is(xdata, "XRaw"))
-                stop("'xdata' must be an XRaw object")
-            offset <- .normalize.offset(offset)
-            length <- .normalize.length(offset, length, length(xdata))
-        }
-        slot(.Object, "xdata", check=FALSE) <- xdata
-        slot(.Object, "offset", check=FALSE) <- offset
-        slot(.Object, "length", check=FALSE) <- length
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions used by the versatile constructors below.
 ###
 
@@ -207,9 +181,9 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
         if (length(x) > 1)
             stop("more than one input sequence")
     }
-    lkup <- enc_lkup(new(class, XRaw(0), 0L, 0L, check=FALSE))
+    lkup <- enc_lkup(newEmptyXString(class))
     xdata <- charToXRaw(x, start=start, end=end, width=width, lkup=lkup, check=check)
-    new(class, xdata, 0L, length(xdata), check=FALSE)
+    new(class, xdata=xdata, length=length(xdata))
 }
 
 .XStringToXString <- function(x, start, nchar, class, check)
@@ -221,9 +195,9 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
     start <- x@offset + start
     lkup <- getXStringSubtypeConversionLookup(class(x), class)
     if (is.null(lkup))
-        return(new(class, x@xdata, start-1L, nchar, check=FALSE))
+        return(new(class, xdata=x@xdata, offset=start-1L, length=nchar))
     xdata <- copySubXRaw(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
-    new(class, xdata, 0L, length(xdata), check=FALSE)
+    new(class, xdata=xdata, length=length(xdata))
 }
 
 
@@ -324,7 +298,7 @@ setMethod("[", "XString",
             stop("subscript out of bounds")
         xdata <- XRaw(length(i))
         XRaw.copy(xdata, x@offset + i, src=x@xdata)
-        new(class(x), xdata, 0L, length(xdata), check=FALSE)
+        new(class(x), xdata=xdata, length=length(xdata))
     }
 )
 
@@ -430,6 +404,6 @@ setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
 XString.substr <- function(x, start, end)
 {
     shift <- start - 1L
-    new(class(x), x@xdata, x@offset + shift, end - shift, check=FALSE)
+    new(class(x), xdata=x@xdata, offset=x@offset+shift, length=end-shift)
 }
 

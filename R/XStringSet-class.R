@@ -47,7 +47,7 @@
 ###     xrv <- x@xrvlist[[x@strong[i]]]
 ###     start <- start(xrv)[x@weak[i]]
 ###     width <- width(xrv)[x@weak[i]]
-###     new(baseClass, xrv@subject, start - 1L, width, check=FALSE)
+###     new(baseClass, xdata=xrv@subject, offset=start-1L, length=width)
 ### This new XStringSet container would combine the efficiency of the old one
 ### and the flexibility of the XStringList container (which can then be
 ### removed).
@@ -148,11 +148,11 @@ newXStringSet <- function(class, super, ranges, x, use.names)
 
 .charToXString <- function(x, safe_locs, class)
 {
-    proto <- new(class, XRaw(0), 0L, 0L, check=FALSE)
+    proto <- newEmptyXString(class)
     xdata <- .Call("new_XRaw_from_STRSXP",
                    x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                    PACKAGE="Biostrings")
-    new(class, xdata, 0L, length(xdata), check=FALSE)
+    new(class, xdata=xdata, length=length(xdata))
 }
 
 .charToXStringSet <- function(x, start, end, width, use.names, baseClass)
@@ -179,7 +179,7 @@ newXStringSet <- function(class, super, ranges, x, use.names)
         xdata <- .Call("new_XRaw_from_XString",
                        super(x), start(frame), width(frame), lkup,
                        PACKAGE="Biostrings")
-        super <- new(baseClass, xdata, 0L, length(xdata), check=FALSE)
+        super <- new(baseClass, xdata=xdata, length=length(xdata))
         ranges <- attr(frame, "inframe")
     } else {
         super <- XString(baseClass, super(x))

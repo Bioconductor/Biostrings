@@ -5,17 +5,18 @@ import(stats)
 import(utils) ## for the "head" and "tail" generics
 
 exportClasses(
-    ".IRanges", "IRanges", "NormalIRanges",
-    "XRaw", "XInteger",
-    "XString", "BString", "DNAString", "RNAString", "AAString",
-    "BStringViews",
-    "XStringSet", "BStringSet", "DNAStringSet", "RNAStringSet", "AAStringSet",
-    "BStringList", "DNAStringList", "RNAStringList", "AAStringList",
-    "XStringPartialMatches",
-    "XStringAlign",
-    "BOC_SubjectString", "BOC2_SubjectString",
-    "PDict", "CWdna_PDict", "TBdna_PDict",
-    "MIndex", "ByPos_MIndex", "ByName_MIndex"
+    .IRanges, IRanges, NormalIRanges,
+    XRaw, XInteger,
+    XString, BString, DNAString, RNAString, AAString,
+    MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
+    BStringViews,
+    XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
+    BStringList, DNAStringList, RNAStringList, AAStringList,
+    XStringPartialMatches,
+    XStringAlign,
+    BOC_SubjectString, BOC2_SubjectString,
+    PDict, CWdna_PDict, TBdna_PDict,
+    MIndex, ByPos_MIndex, ByName_MIndex
 )
 
 exportMethods(

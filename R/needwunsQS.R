@@ -141,8 +141,8 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    substmat, nrow(substmat), lkup,
                    as.integer(gappen), gap_code,
                    PACKAGE="Biostrings")
-    align1 <- new(class(s1), C_ans$al1, 0L, length(C_ans$al1), check=FALSE)
-    align2 <- new(class(s2), C_ans$al2, 0L, length(C_ans$al2), check=FALSE)
+    align1 <- new(class(s1), xdata=C_ans$al1, length=length(C_ans$al1))
+    align2 <- new(class(s2), xdata=C_ans$al2, length=length(C_ans$al2))
     new("XStringAlign", align1=align1, align2=align2, score=C_ans$score)
 }
 

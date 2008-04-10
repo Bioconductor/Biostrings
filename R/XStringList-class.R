@@ -140,7 +140,7 @@ setMethod("initialize", "AAStringList",
 {
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     use.names <- normalize.use.names(use.names)
-    proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
+    proto <- newEmptyXString(baseClass)
     xdata <- .Call("new_XRaw_from_STRSXP",
                    x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                    PACKAGE="Biostrings")
@@ -160,7 +160,7 @@ setMethod("initialize", "AAStringList",
     if (class(x) == class)
         proto <- NULL
     else
-        proto <- new(baseClass, XRaw(0), 0L, 0L, check=FALSE)
+        proto <- newEmptyXString(baseClass)
     ans <- .Call("narrow_XStringList",
                  x, start(safe_locs), width(safe_locs), proto,
                  PACKAGE="Biostrings")
