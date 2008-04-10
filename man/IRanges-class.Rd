@@ -76,7 +76,7 @@
   An IRanges object is a data frame-like object where each row describes
   a "range" of integers.
 
-  A "range" of integers is a set of consecutive integer values.
+  A "range" of integers is a finite set of consecutive integer values.
   Each range can be fully described with exactly 2 integers which can be
   arbitrarily picked up among the 3 following integers:
   its "start" i.e. its smallest (or first, or leftmost) value;
@@ -183,6 +183,8 @@
 }
 
 \section{Normality}{
+  A NormalIRanges object is an IRanges object that is "normal".
+
   An IRanges object is said to be "normal" when its ranges are:
   (a) of non-null width; (b) not overlapping; (c) not even adjacent (there
   must be a non-null gap between 2 consecutive ranges); (d) ordered from left
@@ -194,9 +196,24 @@
   If \code{length(x) == 1}, then \code{x} is normal iff \code{width(x)[1] >= 1}.
   If \code{length(x) == 0}, then \code{x} is normal.
 
-  Subsetting \code{x} preserves its normality.
+  An IRanges object can be used to represent an arbitrary finite set of
+  integers (that are not necessarily consecutive).
+  Now the 2 most interesting properties of normal IRanges objects are that:
+  (1) they are the "best" (in terms of storage space) IRanges objects for
+  representing arbitrary finite sets of integers and (2) the mapping between
+  finite sets of integers and normal IRanges objects is one-to-one.
+  More precisely, if \code{x} is an IRanges object, then it can be seen
+  as representing the set of integers obtained by taking the union of
+  all its ranges.
+  Inverserly, since any finite set of integers can be obtained by a finite
+  union of ranges, then it can be represented by an IRanges object, but this
+  representation is clearly not unique.
+  However, among all the IRanges objects that represent (or map) the
+  same finite set of integers, only one is normal, and this normal
+  representation is minimal in terms of length (and therefore in terms
+  of storage space).
 
-  A NormalIRanges object is an IRanges object that is normal.
+  Subsetting \code{x} preserves its normality.
 
   Use the \code{is.normal} method to check whether an IRanges object is
   normal or not. In the code snippet below, \code{x} is an IRanges object.
