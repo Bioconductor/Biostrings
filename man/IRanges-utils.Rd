@@ -11,6 +11,7 @@
 \alias{narrow,numeric-method}
 \alias{reduce}
 \alias{reduce,.IRanges-method}
+\alias{toNormalIRanges}
 
 
 \title{IRanges utility functions}
@@ -25,6 +26,7 @@
   restrict(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
   narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)
   reduce(x, with.inframe.attrib=FALSE)
+  toNormalIRanges(x)
 }
 
 \arguments{
@@ -76,8 +78,8 @@
   x <- new("IRanges",
            start=c(-2L,  9L, -4L, 1L, 0L, -6L, 10L),
            width=c( 5L,  6L,  1L, 4L, 3L,  2L,  3L))
-  reduce(x)  # 3 ranges ordered from left to right and separated by gaps
-             # of width >= 1
+  toNormalIRanges(x)  # 3 ranges ordered from left to right and separated by
+                      # gaps of width >= 1
   mask(x, -6, 20)  # regions of the -6:20 range that are not masked by
                    # 'x'
 }

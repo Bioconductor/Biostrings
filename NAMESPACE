@@ -65,7 +65,7 @@ exportMethods(
 )
 
 export(
-    intToRanges, intToAdjacentRanges, restrict, narrow, reduce,
+    intToRanges, intToAdjacentRanges, restrict, narrow, reduce, toNormalIRanges,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, GENETIC_CODE,

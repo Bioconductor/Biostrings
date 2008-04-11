@@ -247,6 +247,7 @@
 \author{H. Pages}
 
 \seealso{
+  \link{IRanges-utils},
   \link{BStringViews-class},
   \link{duplicated}
 }

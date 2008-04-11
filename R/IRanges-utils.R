@@ -166,6 +166,24 @@ setMethod("reduce", ".IRanges", .reduce.IRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "toNormalIRanges" function.
+###
+
+toNormalIRanges <- function(x)
+{
+    if (!is(x, "IRanges"))
+        stop("'x' must be an IRanges object")
+    x <- as(x, "IRanges") # downgrade
+    ans <- reduce(x)
+    ans <- ans[width(ans) != 0]
+    ## This is faster than calling as(ans, "NormalIRanges") because it does
+    ## not call validObject().
+    class(ans) <- class(newEmptyNormalIRanges())
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "mask" generic and methods.
 ###
 

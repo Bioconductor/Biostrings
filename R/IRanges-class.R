@@ -222,6 +222,10 @@ setMethod("initialize", "NormalIRanges",
     }
 )
 
+### For internal use only. No need to export.
+newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
+
+
 ### By default as(x, "NormalIRanges") would not check that the returned object
 ### is a valid NormalIRanges object.
 ### NOTE: Having ".IRanges" instead of "IRanges" will not work as expected
@@ -230,7 +234,10 @@ setMethod("initialize", "NormalIRanges",
 setAs("IRanges", "NormalIRanges",
     function(from)
     {
-        class(from) <- "NormalIRanges"
+        #class(from) <- "NormalIRanges"
+        ## Doing this is better than the above line because what's returned by
+        ## class(newEmptyNormalIRanges()) has a "package" attribute.
+        class(from) <- class(newEmptyNormalIRanges())
         validObject(from)
         from
     }
