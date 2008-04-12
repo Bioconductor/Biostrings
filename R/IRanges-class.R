@@ -176,15 +176,10 @@ setValidity("NormalIRanges",
 ### Initialization and coercion.
 ###
 
-.numeric2integer <- function(x)
-{
-    if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
-}
-
 .set.IRanges.slots <- function(object, start, width, names)
 {
-    slot(object, "start", check=FALSE) <- .numeric2integer(start)
-    slot(object, "width", check=FALSE) <- .numeric2integer(width)
+    slot(object, "start", check=FALSE) <- numeric2integer(start)
+    slot(object, "width", check=FALSE) <- numeric2integer(width)
     slot(object, "NAMES", check=FALSE) <- if (is.null(names)) as.character(NA) else names
     object
 }
@@ -447,7 +442,7 @@ setGeneric("start<-", signature="x",
 setReplaceMethod("start", "IRanges",
     function(x, check=TRUE, value)
     {
-        .start(x) <- .numeric2integer(value)
+        .start(x) <- numeric2integer(value)
         if (check) {
             problem <- .valid.IRanges.start(x)
             if (!is.null(problem)) stop(problem)
@@ -464,7 +459,7 @@ setGeneric("width<-", signature="x",
 setReplaceMethod("width", "IRanges",
     function(x, check=TRUE, value)
     {
-        .width(x) <- .numeric2integer(value)
+        .width(x) <- numeric2integer(value)
         if (check) {
             problem <- .valid.IRanges.width(x)
             if (!is.null(problem)) stop(problem)
@@ -481,7 +476,7 @@ setGeneric("end<-", signature="x",
 setReplaceMethod("end", "IRanges",
     function(x, check=TRUE, value)
     {
-        .end(x) <- .numeric2integer(value)
+        .end(x) <- numeric2integer(value)
         if (check) {
             problem <- .valid.IRanges.start(x)
             if (!is.null(problem)) stop(problem)

@@ -255,6 +255,7 @@
 \examples{
   x <- new("IRanges", start=4:1, width=0:3)
   x
+  length(x)
   start(x)
   width(x)
   end(x)

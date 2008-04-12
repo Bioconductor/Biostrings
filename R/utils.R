@@ -25,6 +25,11 @@ isSingleString <- function(x)
     is.character(x) && length(x) == 1 && !is.na(x)
 }
 
+numeric2integer <- function(x)
+{
+    if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
+}
+
 normalize.use.names <- function(use.names)
 {
     if (is.null(use.names))
