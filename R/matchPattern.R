@@ -311,6 +311,12 @@ setMethod("matchPattern", "BStringViews",
     }
 )
 
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPattern", "MaskedXString",
+    function(pattern, subject, algorithm, max.mismatch, fixed)
+        matchPattern(pattern, as(subject, "BStringViews"), algorithm, max.mismatch, fixed)
+)
+
 matchDNAPattern <- function(...) .Defunct("matchPattern")
 
 
@@ -356,5 +362,11 @@ setMethod("countPattern", "BStringViews",
             )
         )
     }
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPattern", "MaskedXString",
+    function(pattern, subject, algorithm, max.mismatch, fixed)
+        countPattern(pattern, as(subject, "BStringViews"), algorithm, max.mismatch, fixed)
 )
 

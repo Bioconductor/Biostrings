@@ -70,8 +70,8 @@ setMethod("show", "XStringAlign",
         al2 <- align2(object)
         #l1 <- length(al1)
         #cat("  ", l1, "-letter \"", class(al1), "\" objects", sep="")
-        cat("align1:", XString.get_snippet(al1, getOption("width") - 8))
-        cat("\nalign2:", XString.get_snippet(al2, getOption("width") - 8))
+        cat("align1:", toSeqSnippet(al1, getOption("width") - 8))
+        cat("\nalign2:", toSeqSnippet(al2, getOption("width") - 8))
         cat("\nscore:", score(object))
         cat("\n")
     }

@@ -31,6 +31,11 @@ In 2.[6|7]
 In 2.7
 ======
 
+- Use subseq() instead of subXString(). Remove subXString.R file.
+
+- Add "baseXStringSubtype" methods for XStringViews, XStringSet and XStringList
+  objects and replace use of "baseClass" by use of "baseXStringSubtype".
+
 - Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
   or RNA into AA.
 

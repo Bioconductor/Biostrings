@@ -35,7 +35,7 @@ setMethod("show", "XStringPartialMatches",
             class(subject), " subject", sep="")
         #if (!is.null(subject@codec))
         #    cat(" with alphabet:", toString(subject@codec@letters))
-        cat("\nSubject:", XString.get_snippet(subject, 70))
+        cat("\nSubject:", toSeqSnippet(subject, 70))
         BStringViews.show_vframe(object, 5L)
 
         pattern <- pattern(object)
@@ -44,7 +44,7 @@ setMethod("show", "XStringPartialMatches",
             class(pattern), " pattern", sep="")
         #if (!is.null(pattern@codec))
         #    cat(" with alphabet:", toString(pattern@codec@letters))
-        cat("\nPattern:", XString.get_snippet(pattern, 70))
+        cat("\nPattern:", toSeqSnippet(pattern, 70))
         BStringViews.show_vframe(subpatterns(object), 5L)
     }
 )

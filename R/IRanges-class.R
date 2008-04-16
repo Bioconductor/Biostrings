@@ -71,7 +71,7 @@ setMethod("isNormal", ".IRanges",
     {
         all_ok <- all(width(x) >= 1)
         if (length(x) >= 2)
-            all_ok <- all_ok && all(end(x)[-length(x)] < start(x)[-1])
+            all_ok <- all_ok && all(start(x)[-1] - end(x)[-length(x)] >= 2)
         all_ok
     }
 )
@@ -83,7 +83,7 @@ setMethod("whichFirstNotNormal", ".IRanges",
     {
         is_ok <- width(x) >= 1
         if (length(x) >= 2)
-            is_ok <- is_ok & c(TRUE, end(x)[-length(x)] < start(x)[-1])
+            is_ok <- is_ok & c(TRUE, start(x)[-1] - end(x)[-length(x)] >= 2)
         which(!is_ok)[1]
     }
 )
@@ -102,11 +102,6 @@ setMethod("whichFirstNotNormal", ".IRanges",
 {
     if (!is.integer(start(object)) || any(is.na(start(object))))
         return("the starts must be non-NA integers")
-    ## This is already enforced by the fact that 'start(object)' and
-    ## 'width(object)' are currently stored in the same data frame but we
-    ## check their lengths anyway because there is no guarantee that this will
-    ## not change in the future (e.g. they could be moved from this data.frame
-    ## to separate slots).
     if (length(start(object)) != length(width(object)))
         return("number of starts and number of widths differ")
     NULL
@@ -116,7 +111,6 @@ setMethod("whichFirstNotNormal", ".IRanges",
 {
     if (!is.integer(width(object)) || any(is.na(width(object))))
         return("the widths must be non-NA integers")
-    ## See comment in .valid.IRanges.start() above...
     if (length(start(object)) != length(width(object)))
         return("number of starts and number of widths differ")
     if (length(width(object)) != 0 && min(width(object)) < 0L)
@@ -296,7 +290,7 @@ setMethod("[", ".IRanges",
 setReplaceMethod("[", ".IRanges",
     function(x, i, j,..., value)
     {
-        stop("attempt to modify the value of a ", sQuote(class(x)), " object")
+        stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
 
@@ -451,6 +445,11 @@ setReplaceMethod("start", "IRanges",
     }
 )
 
+setReplaceMethod("start", "NormalIRanges",
+    function(x, check=TRUE, value)
+        stop("modifying the starts/ends/widths of a ", class(x), " instance is not supported")
+)
+
 setGeneric("width<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("width<-")
 )
@@ -468,6 +467,11 @@ setReplaceMethod("width", "IRanges",
     }
 )
 
+setReplaceMethod("width", "NormalIRanges",
+    function(x, check=TRUE, value)
+        stop("modifying the starts/ends/widths of a ", class(x), " instance is not supported")
+)
+
 setGeneric("end<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("end<-")
 )
@@ -483,6 +487,11 @@ setReplaceMethod("end", "IRanges",
         }
         x
     }
+)
+
+setReplaceMethod("end", "NormalIRanges",
+    function(x, check=TRUE, value)
+        stop("modifying the starts/ends/widths of a ", class(x), " instance is not supported")
 )
 
 ### Yes, for .IRanges objects!

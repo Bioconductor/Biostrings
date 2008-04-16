@@ -97,6 +97,16 @@ setMethod("findPalindromes", "BStringViews",
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
+setMethod("findPalindromes", "MaskedXString",
+    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    {
+        findPalindromes(as(subject, "BStringViews"),
+                        min.armlength=min.armlength,
+                        max.looplength=max.looplength,
+                        min.looplength=min.looplength,
+                        max.mismatch=max.mismatch)
+    }
+)
 setMethod("findComplementedPalindromes", "BStringViews",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
@@ -113,6 +123,16 @@ setMethod("findComplementedPalindromes", "BStringViews",
         }
         new("BStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
+    }
+)
+setMethod("findComplementedPalindromes", "MaskedXString",
+    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    {
+        findComplementedPalindromes(as(subject, "BStringViews"),
+                                    min.armlength=min.armlength,
+                                    max.looplength=max.looplength,
+                                    min.looplength=min.looplength,
+                                    max.mismatch=max.mismatch)
     }
 )
 

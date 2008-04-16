@@ -106,10 +106,11 @@
   ## Using wildcards ("N") in the pattern on a genome containing N-blocks
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chrX <- Dmelanogaster[["X"]]
-  noN_chrX <- mask(chrX, "N")
-  mask(noN_chrX) # See the N-blocks?
-  matchPattern("TTTATGNTTGGTA", noN_chrX, fixed=FALSE)
-  ## Can also be achieved with
+  mask(chrX) <- "N"
+  as(chrX, "BStringViews") # 4 non masked regions
+  matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
+  ## Can also be achieved with no mask
+  mask(chrX) <- NULL
   matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
 }
 

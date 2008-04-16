@@ -58,9 +58,10 @@ setValidity("BStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization (not intended to be used directly by the user).
+### Initialization and coercion.
 ###
 
+### Not intended to be used directly by the user.
 setMethod("initialize", "BStringViews",
     function(.Object, subject, start=integer(0), width=integer(0),
                                desc=NULL, check=TRUE)
@@ -77,6 +78,16 @@ setMethod("initialize", "BStringViews",
             if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
         .Object
+    }
+)
+
+setAs("MaskedXString", "BStringViews",
+    function(from)
+    {
+        views <- gaps(from)
+        ans_start <- start(views)
+        ans_width <- width(views)
+        new("BStringViews", unmasked(from), start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
@@ -233,7 +244,7 @@ setMethod("show", "BStringViews",
         subject <- subject(object)
         lsub <- length(subject)
         cat("  Views on a ", lsub, "-letter ", class(subject), " subject", sep="")
-        cat("\nsubject:", XString.get_snippet(subject, getOption("width") - 9))
+        cat("\nsubject:", toSeqSnippet(subject, getOption("width") - 9))
         BStringViews.show_vframe(object)
     }
 )
@@ -279,7 +290,7 @@ setMethod("[[", "BStringViews",
 setReplaceMethod("[[", "BStringViews",
     function(x, i, j,..., value)
     {
-        stop("attempt to modify the value of a ", sQuote(class(x)), " object")
+        stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
 

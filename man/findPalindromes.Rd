@@ -146,8 +146,8 @@
   ## A real use case
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chrX <- Dmelanogaster[["X"]]
-  noN_chrX <- mask(chrX, "N")
-  chrX_pals <- findComplementedPalindromes(noN_chrX, min.armlength=50, max.looplength=20)
+  mask(chrX) <- "N"
+  chrX_pals <- findComplementedPalindromes(chrX, min.armlength=50, max.looplength=20)
   complementedPalindromeArmLength(chrX_pals) # 251
 
   ## Of course, whitespaces matter

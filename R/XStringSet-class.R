@@ -72,21 +72,18 @@ setClass("BStringSet",
         super="BString"
     )
 )
-
 setClass("DNAStringSet",
     contains="XStringSet",
     representation(
         super="DNAString"
     )
 )
-
 setClass("RNAStringSet",
     contains="XStringSet",
     representation(
         super="RNAString"
     )
 )
-
 setClass("AAStringSet",
     contains="XStringSet",
     representation(
@@ -278,7 +275,7 @@ AAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(names(x)))
         snippetWidth <- snippetWidth - .namesW - 1
-    seq_snippet <- XString.get_snippet(x[[i]], snippetWidth)
+    seq_snippet <- toSeqSnippet(x[[i]], snippetWidth)
     if (!is.null(names(x)))
         seq_snippet <- format(seq_snippet, width=snippetWidth)
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
@@ -365,7 +362,7 @@ setMethod("[[", "XStringSet",
 setReplaceMethod("[[", "XStringSet",
     function(x, i, j,..., value)
     {
-        stop("attempt to modify the value of a ", sQuote(class(x)), " object")
+        stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
 

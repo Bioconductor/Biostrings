@@ -131,6 +131,8 @@ o Started the Biostrings C interface (work-in-progress).
 
 BASIC CONTAINERS
 
+o Added the MaskedXString family of containers for storing masked sequences.
+
 o Added new containers for storing a big set of sequences:
     - The XStringSet family: BStringSet, DNAStringSet, RNAStringSet and
       AAStringSet (all direct XStringSet subtypes with no additional slots).
@@ -147,10 +149,11 @@ o Added new containers for storing a big set of sequences:
 o Added the trim() function for trimming the "out of limits" views of a
   BStringViews object.
 
-o Added "restrict", "narrow" and "reduce" generic functions with methods for
-  IRanges and BStringViews objects. Also added a "mask" method for
-  IRanges objects. These functions provide basic transformations of an
-  IRanges object into another IRanges object of the same class.
+o Added "restrict", "narrow", "reduce" and "gaps" generic functions with
+  methods for IRanges and BStringViews objects. These functions provide basic
+  transformations of an IRanges object into another IRanges object of the same
+  class. Also added the toNormalIRanges() function for normalizing an IRanges
+  object.
 
 o Added the "start<-", "width<-" and "end<-" generics with methods for
   IRanges and BStringViews objects. Also added the "update" method for

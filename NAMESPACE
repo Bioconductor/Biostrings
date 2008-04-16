@@ -8,7 +8,7 @@ exportClasses(
     .IRanges, IRanges, NormalIRanges,
     XRaw, XInteger,
     XString, BString, DNAString, RNAString, AAString,
-    MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
+    Mask, MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
     BStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
@@ -30,23 +30,21 @@ exportMethods(
     ## IRanges objects
     start, width, end, desc, isNormal, whichFirstNotNormal,
     "start<-", "width<-", "end<-", "desc<-",
-    mask,
 
-    subject,
-    alphabet, letter,
-    patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
-    subpatterns, pattern,
-    align1, align2, score,
-
-    ## Others
-    XString,
-    BStringViews,
+    ## XString, MaskedXString, BStringViews and XStringList objects
+    XString, alphabet, subseq, unmasked, mask, "mask<-",
+    BStringViews, subject,
     BStringList, DNAStringList, RNAStringList, AAStringList,
+    letter,
+
+    ## Utilities
     substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
     chartr,
     reverse, complement, reverseComplement,
     replaceLetterAtLoc,
+
+    ## Others
     isMatching, mismatch,
     matchPattern, countPattern,
     matchLRPatterns,
@@ -55,7 +53,12 @@ exportMethods(
     palindromeArmLength, palindromeLeftArm, palindromeRightArm,
     findComplementedPalindromes,
     complementedPalindromeArmLength, complementedPalindromeLeftArm, complementedPalindromeRightArm,
+
+    patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
     PDict, matchPDict, countPDict,
+
+    subpatterns, pattern,
+    align1, align2, score,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     needwunsQS,
@@ -65,7 +68,7 @@ exportMethods(
 )
 
 export(
-    intToRanges, intToAdjacentRanges, restrict, narrow, reduce, toNormalIRanges,
+    intToRanges, intToAdjacentRanges, restrict, narrow, reduce, toNormalIRanges, gaps,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, GENETIC_CODE,

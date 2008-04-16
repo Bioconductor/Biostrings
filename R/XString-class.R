@@ -17,7 +17,7 @@ setClass("XString",
     )
 )
 
-### 4 direct "XString" derivations (no additional slot)
+### XString subtypes (direct "XString" derivations with no additional slots)
 setClass("BString", contains="XString")
 setClass("DNAString", contains="XString")
 setClass("RNAString", contains="XString")
@@ -38,9 +38,37 @@ newEmptyXString <- function(class) new(class, xdata=XRaw(0))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "codes", "codec", "enc_lkup" and "dec_lkup" new generics.
-### For internal use only. No need to export.
+### Accessor methods.
 ###
+
+setGeneric("alphabet", function(x) standardGeneric("alphabet"))
+setMethod("alphabet", "BString", function(x) NULL)
+setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
+setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
+setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
+
+setMethod("length", "XString", function(x) x@length)
+
+setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other non exported accessor methods.
+###
+
+setGeneric("baseXStringSubtype", function(x) standardGeneric("baseXStringSubtype"))
+setMethod("baseXStringSubtype", "BString",
+    function(x) class(newEmptyXString("DNAString"))
+)
+setMethod("baseXStringSubtype", "DNAString",
+    function(x) class(newEmptyXString("DNAString"))
+)
+setMethod("baseXStringSubtype", "RNAString",
+    function(x) class(newEmptyXString("DNAString"))
+)
+setMethod("baseXStringSubtype", "AAAString",
+    function(x) class(newEmptyXString("DNAString"))
+)
 
 setGeneric("codes", signature="x", function(x, ...) standardGeneric("codes"))
 setMethod("codes", "XString", function(x, ...) 0:255)
@@ -69,18 +97,6 @@ setMethod("dec_lkup", "XString",
         if (is.null(codec)) NULL else codec@dec_lkup
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "alphabet" new generic.
-###
-
-setGeneric("alphabet", function(x) standardGeneric("alphabet"))
-
-setMethod("alphabet", "BString", function(x) NULL)
-setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
-setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
-setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,6 +186,15 @@ XString.write <- function(x, i, imax=integer(0), value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
+
+setMethod("toString", "XString", function(x, ...) as.character(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions used by the versatile constructors below.
 ###
 
@@ -245,23 +270,61 @@ AAString <- function(x, start=1, nchar=NA, check=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Standard generic methods
+### The "XString.substr" function (NOT exported).
+###
+### The "XString.substr" function is very fast because it does not copy
+### the sequence data. Return an XString object (not vectorized).
+### 'start' and 'end' must be single integers verifying:
+###   1 <= start AND end <= length(x) AND end >= start - 1
+### WARNING: This function is voluntarly unsafe (it doesn't check its
+### arguments) because we want it to be the fastest possible!
+### The safe (and exported) version of "XString.substr" is the "subXString"
+### function.
 ###
 
-### Helper function used by the show() method
-XString.get_snippet <- function(x, snippetWidth)
+XString.substr <- function(x, start, end)
 {
-    if (snippetWidth < 7)
-        snippetWidth <- 7
-    lx <- x@length
-    if (lx <= snippetWidth) {
-        toString(x)
+    shift <- start - 1L
+    new(class(x), xdata=x@xdata, offset=x@offset+shift, length=end-shift)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "subseq" generic and method for XString objects.
+###
+
+setGeneric("subseq", signature="x",
+    function(x, start=NA, end=NA, width=NA) standardGeneric("subseq")
+)
+
+setMethod("subseq", "XString",
+    function(x, start=NA, end=NA, width=NA)
+    {
+        limits <- new("IRanges", 1L, length(x))
+        limits <- narrow(limits, start=start, end=end, width=width)
+        XString.substr(x, start(limits), end(limits))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "show" method.
+###
+
+### 'x' must be an XString or MaskedXString object.
+toSeqSnippet <- function(x, width)
+{
+    if (width < 7L)
+        width <- 7L
+    seqlen <- length(x)
+    if (seqlen <= width) {
+        as.character(x)
     } else {
-        w1 <- (snippetWidth - 2) %/% 2
-        w2 <- (snippetWidth - 3) %/% 2
-        paste(XString.read(x, 1, w1),
+        w1 <- (width - 2) %/% 2
+        w2 <- (width - 3) %/% 2
+        paste(as.character(subseq(x, start=1, width=w1)),
               "...",
-              XString.read(x, lx - w2 + 1, lx),
+              as.character(subseq(x, end=seqlen, width=w2)),
               sep="")
     }
 }
@@ -270,10 +333,8 @@ setMethod("show", "XString",
     function(object)
     {
         lo <- object@length
-        cat("  ", lo, "-letter \"", class(object), "\" instance", sep="")
-        #if (!is.null(object@codec))
-        #    cat(" with alphabet:", toString(object@codec@letters))
-        cat("\nseq:", XString.get_snippet(object, getOption("width") - 5))
+        cat("  ", lo, "-letter \"", class(object), "\" instance\n", sep="")
+        cat("nseq:", toSeqSnippet(object, getOption("width") - 5))
         cat("\n")
     }
 )
@@ -282,8 +343,6 @@ setMethod("show", "XString",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
-
-setMethod("length", "XString", function(x) x@length)
 
 setMethod("[", "XString",
     function(x, i, j, ..., drop)
@@ -310,10 +369,7 @@ setMethod("[", "XString",
 ### it actually did something but it didn't.
 setReplaceMethod("[", "XString",
     function(x, i, j,..., value)
-    {
-        stop(paste("attempt to modify the value of a \"",
-                   class(x), "\" instance", sep=""))
-    }
+        stop("attempt to modify the value of a ", class(x), " instance")
 )
 
 
@@ -382,28 +438,4 @@ setMethod("!=", signature(e1="BString", e2="character"),
 setMethod("!=", signature(e1="character", e2="BString"),
     function(e1, e2) !(e1 == e2)
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
-setMethod("toString", "XString", function(x, ...) as.character(x))
-setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "XString.substr" function.
-###
-### The "XString.substr" function is very fast because it does not copy
-### the sequence data. Return a XString object (not vectorized).
-### 'start' and 'end' must be single integers verifying:
-###   1 <= start <= end <= length(x)
-### WARNING: This function is voluntarly unsafe (it doesn't check its
-### arguments) because we want it to be the fastest possible!
-### The safe (and exported) version of "XString.substr" is the "subXString"
-### function.
-XString.substr <- function(x, start, end)
-{
-    shift <- start - 1L
-    new(class(x), xdata=x@xdata, offset=x@offset+shift, length=end-shift)
-}
 
