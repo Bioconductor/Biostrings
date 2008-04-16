@@ -14,6 +14,8 @@
 \alias{align1,XStringAlign-method}
 \alias{align2}
 \alias{align2,XStringAlign-method}
+\alias{type}
+\alias{type,XStringAlign-method}
 \alias{score}
 \alias{score,XStringAlign-method}
 \alias{length,XStringAlign-method}
@@ -80,6 +82,10 @@
       The "filled-with-gaps supersequences" of the original strings to align.
       Note that \code{align1(x)} and \code{align2(x)} are \link{XString}
       objects of the same subtype and length.
+    }
+    \item{}{
+      \code{type(x)}:
+      The type of the alignment (\code{"global"}, \code{"local"}, or \code{"overlap"}).
     }
     \item{}{
       \code{score(x)}:

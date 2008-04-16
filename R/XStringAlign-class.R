@@ -9,7 +9,8 @@ setClass("XStringAlign",
     representation(
         align1="XString",
         align2="XString",
-        score="integer"
+		type="character",
+		score="integer"
     )
 )
 
@@ -19,7 +20,7 @@ setClass("XStringAlign",
 ###
 
 setMethod("initialize", "XStringAlign",
-    function(.Object, align1, align2, score)
+    function(.Object, align1, align2, type, score)
     {
         if (!identical(class(align1), class(align2)))
             stop("'align1' and 'align2' must be XString objects of the same subtype")
@@ -29,9 +30,12 @@ setMethod("initialize", "XStringAlign",
             stop("'score' must be a single integer")
         if (!is.integer(score))
             score <- as.integer(score)
+        if (length(type) != 1 || !(type %in% c("global", "local", "overlap")))
+            stop("'type' must be one of 'global', 'local', or 'overlap'")
         .Object@align1 <- align1
         .Object@align2 <- align2
-        .Object@score <- score
+		.Object@type <- type
+		.Object@score <- score
         .Object
     }
 )
@@ -46,6 +50,9 @@ setMethod("align1", "XStringAlign", function(x) x@align1)
 
 setGeneric("align2", function(x) standardGeneric("align2"))
 setMethod("align2", "XStringAlign", function(x) x@align2)
+
+setGeneric("type", function(x) standardGeneric("type"))
+setMethod("type", "XStringAlign", function(x) x@type)
 
 setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "XStringAlign", function(x) x@score)
@@ -66,14 +73,11 @@ setMethod("alphabet", "XStringAlign", function(x) alphabet(align1(x)))
 setMethod("show", "XStringAlign",
     function(object)
     {
-        al1 <- align1(object)
-        al2 <- align2(object)
-        #l1 <- length(al1)
-        #cat("  ", l1, "-letter \"", class(al1), "\" objects", sep="")
-        cat("align1:", toSeqSnippet(al1, getOption("width") - 8))
-        cat("\nalign2:", toSeqSnippet(al2, getOption("width") - 8))
-        cat("\nscore:", score(object))
-        cat("\n")
+        cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
+                   "local" = "Local"), "Pairwise Alignment\n")
+        cat("1: ", toSeqSnippet(align1(object), getOption("width") - 8), "\n")
+        cat("2: ", toSeqSnippet(align2(object), getOption("width") - 8), "\n")
+        cat("Score: ", score(object), "\n")
     }
 )
 
@@ -85,7 +89,7 @@ setMethod("show", "XStringAlign",
 setMethod("as.character", "XStringAlign",
     function(x)
     {
-        c(align1=as.character(x@align1), align2=as.character(x@align2))
+        c(align1 = as.character(align1(x)), align2 = as.character(align2(x)))
     }
 )
 

@@ -58,10 +58,10 @@ exportMethods(
     PDict, matchPDict, countPDict,
 
     subpatterns, pattern,
-    align1, align2, score,
+    align1, align2, type, score,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
-    needwunsQS,
+    pairwiseAlignment, needwunsQS,
 
     ## Deprecated
     first, last
