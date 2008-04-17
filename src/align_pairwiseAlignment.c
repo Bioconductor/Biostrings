@@ -273,7 +273,7 @@ static int pairwiseAlignment(
  * the alignments and 1 integer vector containing the alignment score.
  * Note that the 2 XString objects to align should contain no gaps.
  */
-SEXP R_pairwiseAlignment(
+SEXP align_pairwiseAlignment(
 		SEXP string1,
 		SEXP string2,
 		SEXP matchScores,

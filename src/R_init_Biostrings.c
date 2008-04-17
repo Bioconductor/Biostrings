@@ -164,6 +164,9 @@ static const R_CallMethodDef callMethods[] = {
 /* align_needwunsQS.c */
 	{"align_needwunsQS", (DL_FUNC) &align_needwunsQS, 7},
 
+/* align_pairwiseAlignment.c */
+	{"align_pairwiseAlignment", (DL_FUNC) &align_pairwiseAlignment, 9},
+
 	{NULL, NULL, 0}
 };
 

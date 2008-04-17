@@ -1125,9 +1125,9 @@ SEXP align_needwunsQS(
 );
 
 
-/* pairwiseAlignment.c */
+/* align_pairwiseAlignment.c */
 
-SEXP R_pairwiseAlignment(
+SEXP align_pairwiseAlignment(
 	SEXP string1,
 	SEXP string2,
 	SEXP matchScores,

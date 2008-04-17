@@ -260,7 +260,7 @@ function(string1,
     gapCode <- as.raw(lettersToCodes[["-"]])
   }
   lookupTable <- buildLookupTable(codes, 0:(nrow(matchScores) - 1))
-  answer <- .Call("R_pairwiseAlignment",
+  answer <- .Call("align_pairwiseAlignment",
                   string1,
                   string2,
                   matchScores,
