@@ -12,14 +12,14 @@ Simple gap implementation of Needleman-Wunsch global alignment and
 Smith-Waterman local alignment algorithms.
 }
 \usage{
-pairwiseAlignment(string1, string2, matchScores, gapExtension = -8L,
-                  gapOpening = 0L, type = "global")
+pairwiseAlignment(string1, string2, matchScores, gapOpening = -5L,
+                  gapExtension = -2L, type = "global")
 }
 \arguments{
   \item{string1, string2}{an R character vector of length 1 or an \link{XString} object.}
   \item{matchScores}{matrix of alignment score values.}
+  \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
-  \item{gapOpening}{penalty for opening a gap in the alignment. (not used)}
   \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
 }
 \details{
@@ -35,17 +35,20 @@ An instance of class \code{"XStringAlign"}.
   \link{substitution.matrices}
 }
 \examples{
-  ## nucleotide global alignment
-  mat <- matrix(-5L, nrow = 4, ncol = 4)
-  for (i in seq_len(4)) mat[i, i] <- 0L
+  ## Nucleotide global, local, and overlap alignments
+  mat <- matrix(-3L, nrow = 4, ncol = 4)
+  diag(mat) <- 1L
   rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
-  s1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 1000, replace=TRUE), collapse=""))
-  s2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 1000, replace=TRUE), collapse=""))
-  nw0 <- pairwiseAlignment(s1, s2, mat, gapExtension = 0L)
-  nw1 <- pairwiseAlignment(s1, s2, mat, gapExtension = -1L)
-  nw5 <- pairwiseAlignment(s1, s2, mat, gapExtension = -5L)
+  s1 <- 
+    DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
+  s2 <-
+    DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+  globalAlign <- pairwiseAlignment(s1, s2, mat)
+  localAlign <- pairwiseAlignment(s1, s2, mat, type = "local")
+  overlapAlign <- pairwiseAlignment(s1, s2, mat, type = "overlap")
+  pairwiseAlignment(s1, s2, mat, gapOpening = 0L, gapExtension = -1L)
 
-  ## amino acid local alignment
+  ## Amino acid local alignment
   pairwiseAlignment("PAWHEAE", "HEAGAWGHEE", matchScores = "BLOSUM50", type = "local")
 }
 \keyword{models}

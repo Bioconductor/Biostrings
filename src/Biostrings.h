@@ -1125,14 +1125,15 @@ SEXP align_needwunsQS(
 );
 
 
-/* align_needwunsQS.c */
+/* pairwiseAlignment.c */
 
-SEXP align_pairwiseAlignment(
+SEXP R_pairwiseAlignment(
 	SEXP string1,
 	SEXP string2,
 	SEXP matchScores,
 	SEXP matchScoresDim,
 	SEXP lookupTable,
+	SEXP gapOpening,
 	SEXP gapExtension,
 	SEXP gapCode,
 	SEXP typeCode

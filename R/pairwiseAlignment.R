@@ -17,8 +17,8 @@
 function(string1,
          string2,
          matchScores,
-         gapExtension = -8L,
-         gapOpening = 0L,
+         gapOpening = -5L,
+         gapExtension = -2L,
          type = "global")
 {
   getIndex <- function(i, j, ncol) {
@@ -212,8 +212,8 @@ XString.pairwiseAlignment <-
 function(string1,
          string2,
          matchScores,
-         gapExtension = -8L,
-         gapOpening = 0L,
+         gapOpening = -5L,
+         gapExtension = -2L,
          type = "global")
 {
   if (class(string1) != class(string2))
@@ -240,10 +240,12 @@ function(string1,
     stop("matrix 'matchScores' must have row and column names")
   if (any(duplicated(rownames(matchScores))))
     stop("matrix 'matchScores' has duplicated row names")
+  gapOpening <- as.integer(- abs(gapOpening))
+  if (is.na(gapOpening) || length(gapOpening) != 1)
+    stop("'gapOpening' must be a non-positive integer vector of length 1")
   gapExtension <- as.integer(- abs(gapExtension))
-  if(gapOpening != 0L) {
-    stop("affine gaps are currently not supported")
-  }
+  if (is.na(gapExtension) || length(gapExtension) != 1)
+    stop("'gapExtension' must be a non-positive integer vector of length 1")
   type <- match.arg(tolower(type), c("global", "local", "overlap"))
   typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
   if (is.null(codec(string1))) {
@@ -258,12 +260,13 @@ function(string1,
     gapCode <- as.raw(lettersToCodes[["-"]])
   }
   lookupTable <- buildLookupTable(codes, 0:(nrow(matchScores) - 1))
-  answer <- .Call("align_pairwiseAlignment",
+  answer <- .Call("R_pairwiseAlignment",
                   string1,
                   string2,
                   matchScores,
                   dim(matchScores),
                   lookupTable,
+                  gapOpening,
                   gapExtension,
                   gapCode,
                   typeCode,
@@ -286,14 +289,14 @@ function(string1,
 
 setGeneric("pairwiseAlignment", signature = c("string1", "string2"),
            function(string1, string2, matchScores,
-                    gapExtension = -8L, gapOpening = 0L,
+                    gapOpening = -5L, gapExtension = -2L,
                     type = "global")
            standardGeneric("pairwiseAlignment"))
 
 setMethod("pairwiseAlignment",
           signature(string1 = "character", string2 = "character"),
           function(string1, string2, matchScores,
-                   gapExtension = -8L, gapOpening = 0L,
+                   gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(BString(string1), BString(string2),
                                     matchScores = matchScores,
@@ -304,7 +307,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(string1 = "character", string2 = "XString"),
           function(string1, string2, matchScores,
-                   gapExtension = -8L, gapOpening = 0L,
+                   gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(XString(class(string2), string1), string2,
                                     matchScores = matchScores,
@@ -315,7 +318,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(string1 = "XString", string2 = "character"),
           function(string1, string2, matchScores,
-                   gapExtension = -8L, gapOpening = 0L,
+                   gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(string1, XString(class(string1), string2),
                                     matchScores = matchScores,
@@ -326,7 +329,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(string1 = "XString", string2 = "XString"),
           function(string1, string2, matchScores,
-                   gapExtension = -8L, gapOpening = 0L,
+                   gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(string1, string2,
                                     matchScores = matchScores,
