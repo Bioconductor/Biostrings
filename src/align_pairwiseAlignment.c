@@ -8,9 +8,9 @@
 #define   LOCAL_ALIGNMENT 2
 #define OVERLAP_ALIGNMENT 3
 
-#define REPLACEMENT 0
-#define INSERTION   1
-#define DELETION    2
+#define REPLACEMENT 'R'
+#define INSERTION   'I'
+#define DELETION    'D'
 
 #define F_MATRIX(i, j) (fMatrix[(nCharString2 + 1) * i + j])
 #define H_MATRIX(i, j) (hMatrix[(nCharString2 + 1) * i + j])
@@ -82,28 +82,22 @@ static int pairwiseAlignment(
 			H_MATRIX(0, j) = NEGATIVE_INFINITY;
 		}
 	}
-
-	int traceValue;
-	int **traceMatrix = (int **) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(int*));
-	int *possibleTraceValues = (int *) R_alloc((long) 3, sizeof(int));
-	possibleTraceValues[REPLACEMENT] = REPLACEMENT;
-	possibleTraceValues[INSERTION] = INSERTION;
-	possibleTraceValues[DELETION] = DELETION;
+	char *traceMatrix = (char *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(char));
 
 	/* Step 3:  Generate scores and traceback values */
 	int score;
 	int startRow = -1;
 	int startCol = -1;
 	int startScore = NEGATIVE_INFINITY;
-	for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
-		for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
-			int lookupValue;
-			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements1.elts[iMinus1]);
-			int element1 = lookupValue;
-			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
-			int element2 = lookupValue;
-			int scoreReplacement, scoreInsertion, scoreDeletion;
-			if (gapOpening == 0) {
+	if (gapOpening == 0) {
+		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+				int lookupValue;
+				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements1.elts[iMinus1]);
+				int element1 = lookupValue;
+				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
+				int element2 = lookupValue;
+				int scoreReplacement, scoreInsertion, scoreDeletion;
 				scoreReplacement = F_MATRIX(iMinus1, jMinus1) + matchScoring[matchScoringDim[0] * element1 + element2];
 				scoreInsertion   = V_MATRIX(i, jMinus1) + gapExtension;
 				scoreDeletion    = H_MATRIX(iMinus1, j) + gapExtension;
@@ -116,9 +110,27 @@ static int pairwiseAlignment(
 						startScore = scoreReplacement;
 					}
 				}
-				score = MAX(scoreReplacement, MAX(scoreInsertion, scoreDeletion));
-				F_MATRIX(i, j) = score;
-			} else {
+				if (scoreReplacement >= MAX(scoreInsertion, scoreDeletion)) {
+					F_MATRIX(i, j) = scoreReplacement;
+					TRACE_MATRIX(i, j) = REPLACEMENT;
+				} else if (scoreInsertion >= scoreDeletion) {
+					F_MATRIX(i, j) = scoreInsertion;
+					TRACE_MATRIX(i, j) = INSERTION;
+				} else {
+					F_MATRIX(i, j) = scoreDeletion;
+					TRACE_MATRIX(i, j) = DELETION;
+				}
+			}
+		}
+	} else {
+		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+				int lookupValue;
+				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements1.elts[iMinus1]);
+				int element1 = lookupValue;
+				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
+				int element2 = lookupValue;
+				int scoreReplacement, scoreInsertion, scoreDeletion;
 				F_MATRIX(i, j) =
 					SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
 					         matchScoring[matchScoringDim[0] * element1 + element2]);
@@ -142,16 +154,13 @@ static int pairwiseAlignment(
 				scoreInsertion   = V_MATRIX(i, j);
 				scoreDeletion    = H_MATRIX(i, j);
 
-				score = MAX(scoreReplacement, MAX(scoreInsertion, scoreDeletion));
+				if (scoreReplacement >= MAX(scoreInsertion, scoreDeletion))
+					TRACE_MATRIX(i, j) = REPLACEMENT;
+				else if (scoreInsertion >= scoreDeletion)
+					TRACE_MATRIX(i, j) = INSERTION;
+				else
+					TRACE_MATRIX(i, j) = DELETION;
 			}
-			if (scoreReplacement == score) {
-				traceValue = REPLACEMENT;
-			} else if (scoreInsertion == score) {
-				traceValue = INSERTION;
-			} else {
-				traceValue = DELETION;
-			}
-			TRACE_MATRIX(i, j) = &possibleTraceValues[traceValue];
 		}
 	}
 	if (typeCode == GLOBAL_ALIGNMENT) {
@@ -223,12 +232,13 @@ static int pairwiseAlignment(
 		align2--;
 		iMinus1 = i - 1;
 		jMinus1 = j - 1;
+		char traceValue;
 		if (j == 0)
 			traceValue = DELETION;
 		else if (i == 0)
 			traceValue = INSERTION;
 		else
-			traceValue = *TRACE_MATRIX(i, j);
+			traceValue = TRACE_MATRIX(i, j);
 		switch (traceValue) {
 		    case DELETION:
 			*align1 = stringElements1.elts[iMinus1];
