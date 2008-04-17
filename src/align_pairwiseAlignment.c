@@ -17,7 +17,7 @@
 #define V_MATRIX(i, j) (vMatrix[(nCharString2 + 1) * i + j])
 #define TRACE_MATRIX(i, j) (traceMatrix[(nCharString2 + 1) * i + j])
 
-#define SAFE_PLUS(x, y) (x == NEGATIVE_INFINITY ? x : (x + y))
+#define SAFE_SUM(x, y) (x == NEGATIVE_INFINITY ? x : (x + y))
 
 #define SET_LOOKUP_VALUE(lookupTable, length, key) \
 { \
@@ -34,8 +34,8 @@ static char *align1Buffer, *align2Buffer, *align1, *align2;
 static int pairwiseAlignment(
 		RoSeq stringElements1,
 		RoSeq stringElements2,
-		const int *matchScores,
-		const int *matchScoresDim,
+		const int *matchScoring,
+		const int *matchScoringDim,
 		const int *lookupTable,
 		int lookupTableLength,
 		int gapOpening,
@@ -104,7 +104,7 @@ static int pairwiseAlignment(
 			int element2 = lookupValue;
 			int scoreReplacement, scoreInsertion, scoreDeletion;
 			if (gapOpening == 0) {
-				scoreReplacement = F_MATRIX(iMinus1, jMinus1) + matchScores[matchScoresDim[0] * element1 + element2];
+				scoreReplacement = F_MATRIX(iMinus1, jMinus1) + matchScoring[matchScoringDim[0] * element1 + element2];
 				scoreInsertion   = V_MATRIX(i, jMinus1) + gapExtension;
 				scoreDeletion    = H_MATRIX(iMinus1, j) + gapExtension;
 				if (typeCode == LOCAL_ALIGNMENT) {
@@ -120,8 +120,8 @@ static int pairwiseAlignment(
 				F_MATRIX(i, j) = score;
 			} else {
 				F_MATRIX(i, j) =
-					SAFE_PLUS(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
-					          matchScores[matchScoresDim[0] * element1 + element2]);
+					SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
+					         matchScoring[matchScoringDim[0] * element1 + element2]);
 				if (typeCode == LOCAL_ALIGNMENT) {
 					if (F_MATRIX(i, j) < 0)
 						F_MATRIX(i, j) = 0;
@@ -132,11 +132,11 @@ static int pairwiseAlignment(
 					}
 				}
 				H_MATRIX(i, j) = 
-					MAX(SAFE_PLUS(F_MATRIX(iMinus1, j), gapOpening + gapExtension),
-					    SAFE_PLUS(H_MATRIX(iMinus1, j), gapExtension));
+					MAX(SAFE_SUM(F_MATRIX(iMinus1, j), gapOpening + gapExtension),
+					    SAFE_SUM(H_MATRIX(iMinus1, j), gapExtension));
 				V_MATRIX(i, j) =
-					MAX(SAFE_PLUS(F_MATRIX(i, jMinus1), gapOpening + gapExtension),
-					    SAFE_PLUS(V_MATRIX(i, jMinus1), gapExtension));
+					MAX(SAFE_SUM(F_MATRIX(i, jMinus1), gapOpening + gapExtension),
+					    SAFE_SUM(V_MATRIX(i, jMinus1), gapExtension));
 
 				scoreReplacement = F_MATRIX(i, j);
 				scoreInsertion   = V_MATRIX(i, j);
@@ -258,8 +258,8 @@ static int pairwiseAlignment(
 /*
  * INPUTS
  * 'string1', 'string2':  left and right XString objects
- * 'matchScores':  scoring matrix for matches/mismatches (integer matrix)
- * 'matchScoresDim':  dimension of 'matchScores' (integer vector of length 2
+ * 'matchScoring':  scoring matrix for matches/mismatches (integer matrix)
+ * 'matchScoringDim':  dimension of 'matchScoring' (integer vector of length 2
  * 'lookupTable':  lookup table for translating XString bytes to scoring matrix
  *                 indices (integer vector)
  * 'gapOpening':  gap opening cost or penalty (integer vector of length 1)
@@ -276,8 +276,8 @@ static int pairwiseAlignment(
 SEXP align_pairwiseAlignment(
 		SEXP string1,
 		SEXP string2,
-		SEXP matchScores,
-		SEXP matchScoresDim,
+		SEXP matchScoring,
+		SEXP matchScoringDim,
 		SEXP lookupTable,
 		SEXP gapOpening,
 		SEXP gapExtension,
@@ -293,8 +293,8 @@ SEXP align_pairwiseAlignment(
 	score = pairwiseAlignment(
 			stringElements1,
 			stringElements2,
-			INTEGER(matchScores),
-			INTEGER(matchScoresDim),
+			INTEGER(matchScoring),
+			INTEGER(matchScoringDim),
 			INTEGER(lookupTable),
 			LENGTH(lookupTable),
 			INTEGER(gapOpening)[0],

@@ -12,12 +12,12 @@ Simple gap implementation of Needleman-Wunsch global alignment and
 Smith-Waterman local alignment algorithms.
 }
 \usage{
-pairwiseAlignment(string1, string2, matchScores, gapOpening = -5L,
+pairwiseAlignment(string1, string2, matchScoring, gapOpening = -5L,
                   gapExtension = -2L, type = "global")
 }
 \arguments{
   \item{string1, string2}{an R character vector of length 1 or an \link{XString} object.}
-  \item{matchScores}{matrix of alignment score values.}
+  \item{matchScoring}{matrix of alignment score values.}
   \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
   \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
@@ -46,10 +46,10 @@ An instance of class \code{"XStringAlign"}.
   globalAlign <- pairwiseAlignment(s1, s2, mat)
   localAlign <- pairwiseAlignment(s1, s2, mat, type = "local")
   overlapAlign <- pairwiseAlignment(s1, s2, mat, type = "overlap")
-  pairwiseAlignment(s1, s2, mat, gapOpening = 0L, gapExtension = -1L)
+  pairwiseAlignment(s1, s2, mat, gapOpening = -3L, gapExtension = -1L)
 
-  ## Amino acid local alignment
-  pairwiseAlignment("PAWHEAE", "HEAGAWGHEE", matchScores = "BLOSUM50", type = "local")
+  ## Amino acid global alignment
+  pairwiseAlignment("PAWHEAE", "HEAGAWGHEE", matchScoring = "BLOSUM50")
 }
 \keyword{models}
 \keyword{methods}

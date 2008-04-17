@@ -9,8 +9,11 @@ setClass("XStringAlign",
     representation(
         align1="XString",
         align2="XString",
-		type="character",
-		score="integer"
+        type="character",
+        matchScoring="matrix",
+        gapOpening="integer",
+        gapExtension="integer",
+        score="integer"
     )
 )
 
@@ -20,22 +23,35 @@ setClass("XStringAlign",
 ###
 
 setMethod("initialize", "XStringAlign",
-    function(.Object, align1, align2, type, score)
+    function(.Object, align1, align2, type, matchScoring, gapOpening, gapExtension, score)
     {
         if (!identical(class(align1), class(align2)))
             stop("'align1' and 'align2' must be XString objects of the same subtype")
         if (length(align1) != length(align2))
             stop("'align1' and 'align2' must have the same length")
-        if (length(score) != 1)
-            stop("'score' must be a single integer")
-        if (!is.integer(score))
-            score <- as.integer(score)
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap")))
             stop("'type' must be one of 'global', 'local', or 'overlap'")
+        if (!is.matrix(matchScoring) || !is.integer(matchScoring))
+            stop("'matchScoring' must be a matrix of integers")
+        if (!identical(rownames(matchScoring), colnames(matchScoring)))
+            stop("row and column names differ for matrix 'matchScoring'")
+        if (is.null(rownames(matchScoring)))
+            stop("matrix 'matchScoring' must have row and column names")
+        if (any(duplicated(rownames(matchScoring))))
+            stop("matrix 'matchScoring' has duplicated row names")
+        gapOpening <- as.integer(- abs(gapOpening))
+        if (is.na(gapOpening) || length(gapOpening) != 1)
+            stop("'gapOpening' must be a non-positive integer vector of length 1")
+        gapExtension <- as.integer(- abs(gapExtension))
+        if (is.na(gapExtension) || length(gapExtension) != 1)
+            stop("'gapExtension' must be a non-positive integer vector of length 1")
         .Object@align1 <- align1
         .Object@align2 <- align2
-		.Object@type <- type
-		.Object@score <- score
+        .Object@type <- type
+        .Object@matchScoring <- matchScoring
+        .Object@gapOpening <- gapOpening
+        .Object@gapExtension <- gapExtension
+        .Object@score <- score
         .Object
     }
 )
@@ -78,6 +94,10 @@ setMethod("show", "XStringAlign",
         cat("1: ", toSeqSnippet(align1(object), getOption("width") - 8), "\n")
         cat("2: ", toSeqSnippet(align2(object), getOption("width") - 8), "\n")
         cat("Score: ", score(object), "\n")
+        cat("Gap Opening: ", object@gapOpening, "\n")
+        cat("Gap Extension: ", object@gapExtension, "\n")
+        cat("Match/Mismatch Scoring:\n")
+        print(object@matchScoring)
     }
 )
 

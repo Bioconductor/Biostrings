@@ -16,7 +16,7 @@
 .pairwiseAlignment <-
 function(string1,
          string2,
-         matchScores,
+         matchScoring,
          gapOpening = -5L,
          gapExtension = -2L,
          type = "global")
@@ -32,10 +32,10 @@ function(string1,
 
   stringElements1 <- safeExplode(string1)
   stringElements2 <- safeExplode(string2)
-  if (!all(unique(stringElements1) %in% rownames(matchScores)) &&
-      !all(unique(stringElements2) %in% colnames(matchScores))) {
+  if (!all(unique(stringElements1) %in% rownames(matchScoring)) &&
+      !all(unique(stringElements2) %in% colnames(matchScoring))) {
     stop(paste("not all symbols used in 'string1' and 'string2'",
-               "are present in 'matchScores' matrix"))
+               "are present in 'matchScoring' matrix"))
   }
 
   ## Step 1:  Get information on input strings
@@ -75,7 +75,7 @@ function(string1,
   for (i in seq_len(n1)) {
     for (j in seq_len(n2)) {
       candidates <-
-        c(fMatrix[i, j] + matchScores[stringElements1[i], stringElements2[j]],
+        c(fMatrix[i, j] + matchScoring[stringElements1[i], stringElements2[j]],
           fMatrix[i, j + 1] + gapExtension,
           fMatrix[i + 1, j] + gapExtension,
           minPossibleScore)
@@ -211,7 +211,7 @@ print.PairwiseAlignment <- function(x, ...)
 XString.pairwiseAlignment <-
 function(string1,
          string2,
-         matchScores,
+         matchScoring,
          gapOpening = -5L,
          gapExtension = -2L,
          type = "global")
@@ -224,22 +224,22 @@ function(string1,
   if (length(string1) > 20000L || length(string2) > 20000L ||
       length(string1) * length(string2) > 20000L * 20000L)
     stop("'length(string1) * length(string2)' is too big (> 4e+08)")
-  if (is.character(matchScores)) {
-    if (length(matchScores) != 1)
-      stop("'matchScores' is a character vector of length != 1")
-    tempMatrix <- matchScores
-    matchScores <- try(getdata(tempMatrix), silent=TRUE)
-    if (is(matchScores, "try-error"))
+  if (is.character(matchScoring)) {
+    if (length(matchScoring) != 1)
+      stop("'matchScoring' is a character vector of length != 1")
+    tempMatrix <- matchScoring
+    matchScoring <- try(getdata(tempMatrix), silent=TRUE)
+    if (is(matchScoring, "try-error"))
       stop("unknown scoring matrix \"", tempMatrix, "\"")
   }
-  if (!is.matrix(matchScores) || !is.integer(matchScores))
-    stop("'matchScores' must be a matrix of integers")
-  if (!identical(rownames(matchScores), colnames(matchScores)))
-    stop("row and column names differ for matrix 'matchScores'")
-  if (is.null(rownames(matchScores)))
-    stop("matrix 'matchScores' must have row and column names")
-  if (any(duplicated(rownames(matchScores))))
-    stop("matrix 'matchScores' has duplicated row names")
+  if (!is.matrix(matchScoring) || !is.integer(matchScoring))
+    stop("'matchScoring' must be a matrix of integers")
+  if (!identical(rownames(matchScoring), colnames(matchScoring)))
+    stop("row and column names differ for matrix 'matchScoring'")
+  if (is.null(rownames(matchScoring)))
+    stop("matrix 'matchScoring' must have row and column names")
+  if (any(duplicated(rownames(matchScoring))))
+    stop("matrix 'matchScoring' has duplicated row names")
   gapOpening <- as.integer(- abs(gapOpening))
   if (is.na(gapOpening) || length(gapOpening) != 1)
     stop("'gapOpening' must be a non-positive integer vector of length 1")
@@ -249,22 +249,22 @@ function(string1,
   type <- match.arg(tolower(type), c("global", "local", "overlap"))
   typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
   if (is.null(codec(string1))) {
-    codes <- as.integer(charToRaw(paste(rownames(matchScores), collapse="")))
+    codes <- as.integer(charToRaw(paste(rownames(matchScoring), collapse="")))
     gapCode <- charToRaw("-")
   } else {
-    if (!all(rownames(matchScores) %in% alphabet(string1)))
-      stop("matrix 'matchScores' is incompatible with 'string1' alphabet")
+    if (!all(rownames(matchScoring) %in% alphabet(string1)))
+      stop("matrix 'matchScoring' is incompatible with 'string1' alphabet")
     lettersToCodes <- codec(string1)@codes
     names(lettersToCodes) <- codec(string1)@letters
-    codes <- lettersToCodes[rownames(matchScores)]
+    codes <- lettersToCodes[rownames(matchScoring)]
     gapCode <- as.raw(lettersToCodes[["-"]])
   }
-  lookupTable <- buildLookupTable(codes, 0:(nrow(matchScores) - 1))
+  lookupTable <- buildLookupTable(codes, 0:(nrow(matchScoring) - 1))
   answer <- .Call("align_pairwiseAlignment",
                   string1,
                   string2,
-                  matchScores,
-                  dim(matchScores),
+                  matchScoring,
+                  dim(matchScoring),
                   lookupTable,
                   gapOpening,
                   gapExtension,
@@ -283,56 +283,59 @@ function(string1,
              align1 = align1,
              align2 = align2,
              type = type,
+             matchScoring = matchScoring,
+             gapOpening = gapOpening,
+             gapExtension = gapExtension,
              score = answer[["score"]]))
 }
 
 
 setGeneric("pairwiseAlignment", signature = c("string1", "string2"),
-           function(string1, string2, matchScores,
+           function(string1, string2, matchScoring,
                     gapOpening = -5L, gapExtension = -2L,
                     type = "global")
            standardGeneric("pairwiseAlignment"))
 
 setMethod("pairwiseAlignment",
           signature(string1 = "character", string2 = "character"),
-          function(string1, string2, matchScores,
+          function(string1, string2, matchScoring,
                    gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(BString(string1), BString(string2),
-                                    matchScores = matchScores,
+                                    matchScoring = matchScoring,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
                                     type = type))
 
 setMethod("pairwiseAlignment",
           signature(string1 = "character", string2 = "XString"),
-          function(string1, string2, matchScores,
+          function(string1, string2, matchScoring,
                    gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(XString(class(string2), string1), string2,
-                                    matchScores = matchScores,
+                                    matchScoring = matchScoring,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
                                     type = type))
 
 setMethod("pairwiseAlignment",
           signature(string1 = "XString", string2 = "character"),
-          function(string1, string2, matchScores,
+          function(string1, string2, matchScoring,
                    gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(string1, XString(class(string1), string2),
-                                    matchScores = matchScores,
+                                    matchScoring = matchScoring,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
                                     type = type))
 
 setMethod("pairwiseAlignment",
           signature(string1 = "XString", string2 = "XString"),
-          function(string1, string2, matchScores,
+          function(string1, string2, matchScoring,
                    gapOpening = -5L, gapExtension = -2L,
                    type = "global")
           XString.pairwiseAlignment(string1, string2,
-                                    matchScores = matchScores,
+                                    matchScoring = matchScoring,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
                                     type = type))

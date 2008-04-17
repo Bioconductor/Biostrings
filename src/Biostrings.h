@@ -1130,8 +1130,8 @@ SEXP align_needwunsQS(
 SEXP align_pairwiseAlignment(
 	SEXP string1,
 	SEXP string2,
-	SEXP matchScores,
-	SEXP matchScoresDim,
+	SEXP matchScoring,
+	SEXP matchScoringDim,
 	SEXP lookupTable,
 	SEXP gapOpening,
 	SEXP gapExtension,
