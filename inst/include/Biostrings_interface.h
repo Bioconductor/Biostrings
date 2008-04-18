@@ -57,34 +57,35 @@
       called in your .c file. For example, you could write the following
       function:
 
-        SEXP print_XString_seq_as_bytes(SEXP x)
+        SEXP print_XString_bytes(SEXP xstring)
         {
-            RoSeq S, *current_Schar;
+            RoSeq x;
             int i;
+            const char *x_char;
 
-            S = get_XString_asRoSeq(x);
-            for (i = 0, current_Schar = S.elts; i < S.nelt; i++, current_Schar++)
-                Rprintf("%x ", *current_Schar);
+            x = get_XString_asRoSeq(xstring);
+            for (i = 0, x_char = x.elts; i < x.nelt; i++, x_char++)
+                Rprintf("%x ", *x_char);
             Rprintf("\n");
             return R_NilValue;
         }
 
       to display the sequence of an XString object (in hexadecimal format).
-      Don't forget to register the print_XString_seq_as_bytes() function
+      Don't forget to register the print_XString_bytes() function
       if you want to make it a .Call entry point!
 
    f. 2 IMPORTANT THINGS TO REMEMBER ABOUT XString OBJECTS:
         o they are NOT null-terminated like standard strings in C: they can
           contain the null byte so you should never use the C standard string
-          functions on them
+          functions on them;
         o DNAString and RNAString objects have their data ENCODED: for
-          example, if you know that the x_XString SEXP in the code above will
-          always be containing a DNAString instance, then you could replace
-            Rprintf("%x ", *current_Schar);
+          example, if you know that the 'xstring' argument in the above code
+          will always point to a DNAString instance, then you could replace
+            Rprintf("%x ", *x_char);
           by
-            Rprintf("%x(%c) ", *current_Schar, DNAdecode(*current_Schar));
-          Note that this code will only work if x_XString is a DNAString
-          instance!
+            Rprintf("%x(%c) ", *x_char, DNAdecode(*x_char));
+          Note that this code will work properly only if 'xstring' is a
+          DNAString instance!
 
    Please consult the "System and foreign language interfaces" section in the
    Writing R Extensions manual for more information:
