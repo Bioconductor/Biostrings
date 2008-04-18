@@ -8,8 +8,7 @@
 
 \title{Optimal Pairwise Alignment}
 \description{
-Simple gap implementation of Needleman-Wunsch global alignment and
-Smith-Waterman local alignment algorithms.
+Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignment problems.
 }
 \usage{
 pairwiseAlignment(string1, string2, matchScoring, gapOpening = -5L,
@@ -23,7 +22,7 @@ pairwiseAlignment(string1, string2, matchScoring, gapOpening = -5L,
   \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
 }
 \details{
-Follows specification of Haubold and Wiehe (2006).
+Implements the algorithms specified in Chapter 2 of Haubold and Wiehe (2006).
 }
 \value{
 An instance of class \code{"XStringAlign"}.
