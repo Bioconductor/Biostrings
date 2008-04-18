@@ -334,7 +334,7 @@ setMethod("show", "XString",
     {
         lo <- object@length
         cat("  ", lo, "-letter \"", class(object), "\" instance\n", sep="")
-        cat("nseq:", toSeqSnippet(object, getOption("width") - 5))
+        cat("seq:", toSeqSnippet(object, getOption("width") - 5))
         cat("\n")
     }
 )
