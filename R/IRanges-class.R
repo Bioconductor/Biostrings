@@ -324,21 +324,21 @@ setMethod("show", ".IRanges",
 
 `.start<-` <- function(x, value)
 {
-    ## Use 'x@start[]' instead of just 'x@start' so 'value' is recycled
-    x@start[] <- value
+    ## Use 'x@start[]' instead of just 'x@start' so the right value is recycled
+    x@start[] <- numeric2integer(value)
     x
 }
 
 `.width<-` <- function(x, value)
 {
-    ## Use 'x@width[]' instead of just 'x@width' so 'value' is recycled
-    x@width[] <- value
+    ## Use 'x@width[]' instead of just 'x@width' so the right value is recycled
+    x@width[] <- numeric2integer(value)
     x
 }
 
 `.end<-` <- function(x, value)
 {
-    .start(x) <- value - width(x) + 1L
+    .start(x) <- numeric2integer(value) - width(x) + 1L
     x
 }
 
@@ -349,7 +349,7 @@ setMethod("show", ".IRanges",
     else {
         if (is.null(names(x)))
             x@NAMES <- character(length(x))
-        ## Use 'x@NAMES[]' instead of just 'x@NAMES' so 'value' is recycled
+        ## Use 'x@NAMES[]' instead of just 'x@NAMES' so the right value is recycled
         x@NAMES[] <- value
     }
     x
@@ -424,7 +424,7 @@ setGeneric("start<-", signature="x",
 setReplaceMethod("start", "IRanges",
     function(x, check=TRUE, value)
     {
-        .start(x) <- numeric2integer(value)
+        .start(x) <- value
         if (check) {
             problem <- .valid.IRanges.start(x)
             if (!is.null(problem)) stop(problem)
@@ -446,7 +446,7 @@ setGeneric("width<-", signature="x",
 setReplaceMethod("width", "IRanges",
     function(x, check=TRUE, value)
     {
-        .width(x) <- numeric2integer(value)
+        .width(x) <- value
         if (check) {
             problem <- .valid.IRanges.width(x)
             if (!is.null(problem)) stop(problem)
@@ -468,7 +468,7 @@ setGeneric("end<-", signature="x",
 setReplaceMethod("end", "IRanges",
     function(x, check=TRUE, value)
     {
-        .end(x) <- numeric2integer(value)
+        .end(x) <- value
         if (check) {
             problem <- .valid.IRanges.start(x)
             if (!is.null(problem)) stop(problem)
@@ -526,6 +526,11 @@ setMethod("update", "IRanges",
     }
 )
 
+setMethod("update", "NormalIRanges",
+    function(object, ...)
+        stop("updating a ", class(object), " instance is not supported")
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
@@ -560,7 +565,7 @@ setMethod("[", ".IRanges",
 )
 
 ### Only subsetting with a strictly increasing subscript would preserve
-### normality but we don't need this for now:
+### normality but we don't need this for now.
 setMethod("[", "NormalIRanges",
     function(x, i, j, ..., drop)
         stop("attempt to subset a ", class(x), " object")
