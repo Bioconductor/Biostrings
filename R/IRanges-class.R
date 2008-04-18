@@ -17,17 +17,16 @@ setClass(".IRanges",
 setClass("IRanges", contains=".IRanges")
 
 ### A NormalIRanges object is an IRanges object where the ranges are:
-###   (a) of non-null width;
+###   (a) not empty (i.e. they have a non-null width);
 ###   (b) not overlapping;
-###   (c) not even adjacent (there must be a non-null gap between 2
-###       consecutive ranges);
-###   (d) ordered from left to right.
+###   (c) ordered from left to right;
+###   (d) not even adjacent (i.e. there must be a non empty gap between 2
+###       consecutive ranges).
 ### If 'x' is an IRanges object of length >= 2, then 'x' is normal iff:
 ###   start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]
 ### for every 1 <= i < length(x).
 ### If length(x) == 1, then 'x' is normal iff width(x)[1] >= 1.
 ### If length(x) == 0, then 'x' is normal.
-### Subsetting 'x' preserves normality.
 
 setClass("NormalIRanges", contains="IRanges")
 
@@ -85,6 +84,58 @@ setMethod("whichFirstNotNormal", ".IRanges",
         if (length(x) >= 2)
             is_ok <- is_ok & c(TRUE, start(x)[-1] - end(x)[-length(x)] >= 2)
         which(!is_ok)[1]
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "isEmpty" generic and methods.
+###
+### An .IRanges object is considered empty iff all its ranges are empty.
+### 
+
+setGeneric("isEmpty", function(x) standardGeneric("isEmpty"))
+
+setMethod("isEmpty", ".IRanges", function(x) all(width(x) == 0))
+
+### The "isEmpty" method for .IRanges objects would work fine on
+### NormalIRanges objects but it can be made faster.
+setMethod("isEmpty", "NormalIRanges", function(x) length(x) == 0)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "max" and "min" methods.
+###
+### Note: defined for NormalIRanges objects only.
+### For an ordinary .IRanges object 'x', it's not clear what the semantic
+### should. In particular, should empty ranges be ignored or not? If not then
+### we could end up with 'min(x)' > 'max(x)' (e.g. when 'x' is made of 1 empty
+### range) which is not nice. Another (and more pragmatic) reason for not
+### defining these methods for .IRanges objects is that I don't need them at
+### the moment.
+###
+
+setMethod("max", "NormalIRanges",
+    function(x, ..., na.rm)
+    {
+        if (isEmpty(x)) {
+            warning("empty ", class(x), " object; returning -Inf")
+            -Inf
+        } else {
+            end(x)[length(x)]
+        }
+    }
+)
+
+setMethod("min", "NormalIRanges",
+    function(x, ..., na.rm)
+    {
+        if (isEmpty(x)) {
+            warning("empty ", class(x), " object; returning Inf")
+            Inf
+        } else {
+            start(x)[1]
+        }
     }
 )
 
@@ -240,9 +291,13 @@ setAs("IRanges", "NormalIRanges",
 setMethod("as.data.frame", ".IRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
+        if (!(is.null(row.names) || is.character(row.names)))
+            stop("'row.names'  must be NULL or a character vector")
         ans <- data.frame(start=start(x),
                           end=end(x),
                           width=width(x),
+                          row.names=row.names,
+                          check.rows=TRUE,
                           check.names=FALSE,
                           stringsAsFactors=FALSE)
         ans$names <- names(x)
@@ -252,73 +307,6 @@ setMethod("as.data.frame", ".IRanges",
 
 setMethod("show", ".IRanges",
     function(object) show(as.data.frame(object))
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", ".IRanges",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (is.character(i))
-            stop("cannot subset a ", class(x), " object by names")
-        lx <- length(x)
-        if (is.numeric(i)) {
-            if (any(i < -lx) || any(i > lx))
-                stop("subscript out of bounds")
-        } else if (is.logical(i)) {
-            if (length(i) > lx)
-                stop("subscript out of bounds")
-        } else if (!is.null(i)) {
-            stop("invalid subscript type")
-        }
-        slot(x, "start", check=FALSE) <- start(x)[i]
-        slot(x, "width", check=FALSE) <- width(x)[i]
-        if (!is.null(names(x)))
-            slot(x, "NAMES", check=FALSE) <- names(x)[i]
-        x
-    }
-)
-
-setReplaceMethod("[", ".IRanges",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", class(x), " instance")
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "duplicated" method.
-###
-### TODO: current implementation is very inefficient and needs some C help!
-###
-
-setMethod("duplicated", ".IRanges",
-    function(x, incomparables=FALSE, ...)
-    {
-        duplicated(data.frame(start=start(x),
-                              width=width(x),
-                              check.names=FALSE,
-                              stringsAsFactors=FALSE))
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other methods.
-###
-
-setMethod("as.matrix", ".IRanges",
-    function(x, ...)
-        matrix(data=c(start(x), width(x)), ncol=2, dimnames=list(names(x), NULL))
 )
 
 
@@ -536,6 +524,78 @@ setMethod("update", "IRanges",
             validObject(object)
         object
     }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
+###
+
+### Supported 'i' types: numeric vector, logical vector, NULL and missing.
+setMethod("[", ".IRanges",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
+        lx <- length(x)
+        if (is.numeric(i)) {
+            if (any(i < -lx) || any(i > lx))
+                stop("subscript out of bounds")
+        } else if (is.logical(i)) {
+            if (length(i) > lx)
+                stop("subscript out of bounds")
+        } else if (!is.null(i)) {
+            stop("invalid subscript type")
+        }
+        slot(x, "start", check=FALSE) <- start(x)[i]
+        slot(x, "width", check=FALSE) <- width(x)[i]
+        if (!is.null(names(x)))
+            slot(x, "NAMES", check=FALSE) <- names(x)[i]
+        x
+    }
+)
+
+### Only subsetting with a strictly increasing subscript would preserve
+### normality but we don't need this for now:
+setMethod("[", "NormalIRanges",
+    function(x, i, j, ..., drop)
+        stop("attempt to subset a ", class(x), " object")
+)
+
+setReplaceMethod("[", ".IRanges",
+    function(x, i, j,..., value)
+        stop("attempt to modify the value of a ", class(x), " instance")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "duplicated" method.
+###
+### TODO: current implementation is very inefficient and needs some C help!
+###
+
+setMethod("duplicated", ".IRanges",
+    function(x, incomparables=FALSE, ...)
+    {
+        duplicated(data.frame(start=start(x),
+                              width=width(x),
+                              check.names=FALSE,
+                              stringsAsFactors=FALSE))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods.
+###
+
+setMethod("as.matrix", ".IRanges",
+    function(x, ...)
+        matrix(data=c(start(x), width(x)), ncol=2, dimnames=list(names(x), NULL))
 )
 
 

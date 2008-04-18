@@ -41,6 +41,9 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "restrict" generic and methods.
 ###
+### Note that when used with 'keep.all.ranges=FALSE', restrict() preserves
+### normality.
+###
 
 setGeneric("restrict", signature="x",
     function(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
@@ -106,6 +109,8 @@ setMethod("restrict", "IRanges", .restrict.IRanges)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "narrow" generic and methods.
 ###
+### Note that in general, narrow() does NOT preserve normality.
+###
 
 setGeneric("narrow", signature="x",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -138,6 +143,11 @@ setGeneric("narrow", signature="x",
 
 setMethod("narrow", ".IRanges", .narrow.IRanges)
 
+setMethod("narrow", "NormalIRanges",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+        stop("narrowing a ", class(x), " instance is not supported")
+)
+
 setMethod("narrow", "numeric",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
@@ -149,6 +159,8 @@ setMethod("narrow", "numeric",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "reduce" generic and methods.
+###
+### Note that reduce() preserves normality (of course).
 ###
 
 setGeneric("reduce", signature="x",
@@ -195,6 +207,9 @@ toNormalIRanges <- function(x)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "gaps" generic and methods.
 ###
+### Note that gaps() will always return a normal IRanges object (so, obviously,
+### it preserves normality).
+###
 
 setGeneric("gaps", signature="x",
     function(x, start=NA, end=NA)
@@ -211,23 +226,28 @@ setGeneric("gaps", signature="x",
         stop("'end' must be a single integer")
     if (!is.integer(end))
         end <- as.integer(end)
-    y <- restrict(reduce(x), start, end)
-    y <- y[width(y) != 0]
+    ## No matter in what order restricting and normalizing are done, the final
+    ## result should always be exactly the same.
+    ## Now which order is the most efficient? It depends...
+    xx <- toNormalIRanges(x)
+    xx0 <- restrict(xx, start, end) # preserves normality
     ans_start <- ans_width <- integer(0)
-    if (length(y) == 0) {
-        if (!is.na(start) && !is.na(end) && end >= start) {
+    if (isEmpty(xx0)) {
+        if (is.na(start) || is.na(end))
+            stop("'x' is not overlapping with the unbounded region ",
+                 "represented by 'start' and 'end'")
+        if (start <= end) {
             ans_start <- start
             ans_width <- end - start + 1L
         }
     } else {
-        ## Now 'y' is normal and in the limits defined by start/end
-        start0 <- start(y)
-        end0 <- end(y)
-        if (!is.na(start) && start < start0[1]) {
+        start0 <- start(xx0)
+        end0 <- end(xx0)
+        if (!is.na(start) && start < min(xx0)) {
             start0 <- c(start, start0)
             end0 <- c(start - 1L, end0)
         }
-        if (!is.na(end) && end0[length(start0)] < end) {
+        if (!is.na(end) && max(xx0) < end) {
             start0 <- c(start0, end + 1L)
             end0 <- c(end0, end)
         }

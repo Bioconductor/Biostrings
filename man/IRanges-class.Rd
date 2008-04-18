@@ -23,6 +23,10 @@
 \alias{isNormal,.IRanges-method}
 \alias{whichFirstNotNormal}
 \alias{whichFirstNotNormal,.IRanges-method}
+\alias{isEmpty}
+\alias{isEmpty,.IRanges-method}
+\alias{max,NormalIRanges-method}
+\alias{min,NormalIRanges-method}
 
 % Initialization
 \alias{initialize,.IRanges-method}
@@ -36,6 +40,7 @@
 
 % Subsetting
 \alias{[,.IRanges-method}
+\alias{[,NormalIRanges-method}
 \alias{[<-,.IRanges-method}
 
 % "duplicated" method
@@ -92,7 +97,8 @@
   width must be a nonnegative integer (see \code{width} below).
   The end of a range is its start plus its width minus one (see
   \code{end} below).
-  An "empty" range is a range with no value in it i.e. with a null width.
+  An "empty" range is a range that contains no value i.e. a range that
+  has a null width.
   Note that for an empty range, the end is smaller than the start.
 
   Two ranges are considered equal iff they share the same start and width.
@@ -101,6 +107,8 @@
 
   The length of an IRanges object is the number of ranges in it
   i.e. the number of rows in the object.
+
+  An IRanges object is considered empty iff all its ranges are empty.
 
   Note that it is unlikely that the user will have to create or manipulate
   directly an IRanges instance when using the Biostrings package. However
@@ -153,20 +161,37 @@
   }
 }
 
-\section{Other methods}{
-  In the code snippets below, \code{x} is an IRanges objects,
-  and \code{i} can be a numeric or logical vector.
+\section{Subsetting}{
+  In the code snippet below, \code{x} is an IRanges object
+  that is NOT a NormalIRanges object.
 
   \describe{
     \item{}{
       \code{x[i]}:
-      Return a new IRanges object made of the selected ranges.
+      Return a new IRanges object (of the same type as \code{x})
+      made of the selected ranges.
       \code{i} can be a numeric vector, a logical vector, \code{NULL}
       or missing.
+    }
+  }
+}
+
+\section{Other methods}{
+  In the code snippets below, \code{x} is an IRanges object.
+
+  \describe{
+    \item{}{
+      \code{isEmpty(x)}:
+      Return a logical value indicating whether \code{x} is empty or not.
     }
     \item{}{
       \code{as.data.frame(x, row.names=NULL, optional=FALSE, ...)}:
       Converts \code{x} into a standard R data frame object.
+      \code{row.names} must be \code{NULL} or a character vector giving
+      the row names for the data frame, and \code{optional} and any
+      additional argument (\code{...}) is ignored.
+      See \code{?\link{as.data.frame}} for more information about these
+      arguments.
     }
     \item{}{
       \code{duplicated(x)}:
@@ -174,12 +199,13 @@
       with smaller subscripts, and returns a logical vector indicating
       which elements are duplicates.
       It is semantically equivalent to \code{duplicated(as.data.frame(x))}
-      (see \link{duplicated} for more info).
+      (see \code{?\link{duplicated}} for more information).
     }
     \item{}{
       \code{as.matrix(x, ...)}:
       Converts \code{x} into a 2-column integer matrix containing
       \code{start(x)} and \code{width(x)}.
+      Extra arguments (\code{...}) are ignored.
     }
   }
 }
@@ -188,9 +214,11 @@
   A NormalIRanges object is an IRanges object that is "normal".
 
   An IRanges object is said to be "normal" when its ranges are:
-  (a) of non-null width; (b) not overlapping; (c) not even adjacent (there
-  must be a non-null gap between 2 consecutive ranges); (d) ordered from left
-  to right.
+    (a) not empty (i.e. they have a non-null width);
+    (b) not overlapping;
+    (c) ordered from left to right;
+    (d) not even adjacent (i.e. there must be a non empty gap between 2
+        consecutive ranges).
   If \code{x} is an IRanges object with more than one element (i.e.
   \code{length >= 2}), then \code{x} is normal iff:
   \preformatted{  start(x)[i] <= end(x)[i] < start(x)[i+1] <= end(x)[i+1]}
@@ -215,7 +243,9 @@
   representation is minimal in terms of length (and therefore in terms
   of storage space).
 
-  Subsetting \code{x} preserves its normality.
+  Subsetting \code{x} is currently not supported although it could be but
+  should only accept strictly increasing subscripts in order to preserve
+  normality.
 
   Use the \code{isNormal} method to check whether an IRanges object is
   normal or not. In the code snippet below, \code{x} is an IRanges object.
@@ -230,17 +260,27 @@
       Return \code{NA} if \code{x} is normal, or the smallest valid indice
       \code{i} in \code{x} for which \code{x[1:i]} is not normal.
     }
+    \item{}{
+      \code{max(x)}:
+      (Defined for NormalIRanges objects only.)
+      The maximum value in the finite set of integers represented by \code{x}.
+    }
+    \item{}{
+      \code{min(x)}:
+      (Defined for NormalIRanges objects only.)
+      The minimum value in the finite set of integers represented by \code{x}.
+    }
   }
 }
 
 \section{Deprecated methods}{
     \item{}{
       \code{first(x)}:
-      deprecated. Use 'start' instead.
+      deprecated. Use \code{start} instead.
     }
     \item{}{
       \code{last(x)}:
-      deprecated. Use 'end' instead.
+      deprecated. Use \code{end} instead.
     }
 }
 
@@ -249,26 +289,28 @@
 \seealso{
   \link{IRanges-utils},
   \link{BStringViews-class},
-  \link{duplicated}
+  \code{\link{as.data.frame}},
+  \code{\link{duplicated}},
+  \code{\link{as.matrix}}
 }
 
 \examples{
-  x <- new("IRanges", start=4:1, width=0:3)
+  x <- new("IRanges", start=c(2:-1, 13:15), width=c(0:3, 2:0))
   x
   length(x)
   start(x)
   width(x)
   end(x)
+  isEmpty(x)
+  as.data.frame(x)
+  as.matrix(x)
 
-  ## Make a new IRanges object by selecting some ranges only:
-  x[4:2]               # 3 ranges
-  x[-1]                # 3 ranges
-  x[c(2,4)]            # 2 ranges
-  x[width(x) != 0]     # 3 ranges
-  x[is.na(names(x))]   # 2 ranges
-  x[!is.na(names(x))]  # 2 ranges
-  x[3]                 # 1 ranges
-  x[FALSE]             # 0 ranges
+  ## Subsetting:
+  x[4:2]                  # 3 ranges
+  x[-1]                   # 6 ranges
+  x[FALSE]                # 0 range
+  x0 <- x[width(x) == 0]  # 2 ranges
+  isEmpty(x0)
 
   ## Use replacement methods to slide or resize elements of an IRanges
   ## object:
@@ -288,6 +330,8 @@
   names(x)
   names(x) <- c("range1", "range2")
   x
+  x[is.na(names(x))]   # 5 ranges
+  x[!is.na(names(x))]  # 2 ranges
 
   ## Using an IRanges object for storing a big set of ranges is more
   ## efficient than using a standard R data frame:
@@ -316,6 +360,8 @@
   isNormal(x16[1:56])                  # TRUE
   xx <- as(x16[1:56], "NormalIRanges")
   class(xx)
+  max(xx)
+  min(xx)
 }
 
 \keyword{methods}

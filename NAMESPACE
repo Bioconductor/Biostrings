@@ -28,7 +28,7 @@ exportMethods(
     nchar, update,
 
     ## IRanges objects
-    start, width, end, desc, isNormal, whichFirstNotNormal,
+    start, width, end, desc, isNormal, whichFirstNotNormal, isEmpty, max, min,
     "start<-", "width<-", "end<-", "desc<-",
 
     ## XString, MaskedXString, BStringViews and XStringList objects
