@@ -58,6 +58,10 @@ o Added basic support for palindrome finding: it can be achieved with the
   palindromeLeftArm(), palindromeRightArm(), complementedPalindromeArmLength(),
   complementedPalindromeLeftArm() and complementedPalindromeRightArm().
 
+o Added basic support for Position Weight Matrix matching thru the new
+  matchPWM() and countPWM() functions. Also added related utility functions
+  maxWeights(), maxScore() and PWMscore().
+
 o Added "matchLRPatterns" and "matchProbePair" methods for BStringViews
   objects.
 

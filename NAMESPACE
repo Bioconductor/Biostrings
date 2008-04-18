@@ -86,6 +86,7 @@ export(
     strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
     transcribe, cDNA, dna2rna, rna2dna,
     .inplaceReplaceLetterAtLoc,
+    maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
     alignScore,
 

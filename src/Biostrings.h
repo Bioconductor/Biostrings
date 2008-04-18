@@ -951,20 +951,6 @@ SEXP match_shiftor(
 );
 
 
-/* find_palindromes.c */
-
-SEXP debug_find_palindromes();
-
-SEXP find_palindromes(
-	SEXP s_xp,
-	SEXP s_offset,
-	SEXP s_length,
-	SEXP min_armlength,
-	SEXP max_ngaps,
-	SEXP L2R_lkup
-);
-
-
 /* match_BOC.c */
 
 SEXP debug_match_BOC();
@@ -1034,6 +1020,36 @@ SEXP match_BOC2_exact(
 	SEXP buf_xp,
 	SEXP stats,
 	SEXP count_only
+);
+
+
+/* match_PWM.c */
+
+SEXP PWM_score(
+	SEXP pwm,
+	SEXP subject,
+	SEXP start
+);
+
+SEXP match_PWM(
+	SEXP pwm,
+	SEXP subject,
+	SEXP min_score,
+	SEXP count_only
+);
+
+
+/* find_palindromes.c */
+
+SEXP debug_find_palindromes();
+
+SEXP find_palindromes(
+	SEXP s_xp,
+	SEXP s_offset,
+	SEXP s_length,
+	SEXP min_armlength,
+	SEXP max_ngaps,
+	SEXP L2R_lkup
 );
 
 

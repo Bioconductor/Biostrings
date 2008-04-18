@@ -128,10 +128,6 @@ static const R_CallMethodDef callMethods[] = {
 	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
 	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
-/* find_palindromes.c */
-	{"debug_find_palindromes", (DL_FUNC) &debug_find_palindromes, 0},
-	{"find_palindromes", (DL_FUNC) &find_palindromes, 6},
-
 /* match_BOC.c */
 	{"debug_match_BOC", (DL_FUNC) &debug_match_BOC, 0},
 	{"match_BOC_preprocess", (DL_FUNC) &match_BOC_preprocess, 12},
@@ -141,6 +137,14 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_match_BOC2", (DL_FUNC) &debug_match_BOC2, 0},
 	{"match_BOC2_preprocess", (DL_FUNC) &match_BOC2_preprocess, 9},
 	{"match_BOC2_exact", (DL_FUNC) &match_BOC2_exact, 13},
+
+/* match_PWM.c */
+	{"PWM_score", (DL_FUNC) &PWM_score, 3},
+	{"match_PWM", (DL_FUNC) &match_PWM, 4},
+
+/* find_palindromes.c */
+	{"debug_find_palindromes", (DL_FUNC) &debug_find_palindromes, 0},
+	{"find_palindromes", (DL_FUNC) &find_palindromes, 6},
 
 /* ACtree_utils.c */
 	{"debug_ACtree_utils", (DL_FUNC) &debug_ACtree_utils, 0},
