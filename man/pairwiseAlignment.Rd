@@ -49,7 +49,7 @@ An instance of class \code{"XStringAlign"}.
   localAlign <- pairwiseAlignment(s1, s2, matchScoring = mat, type = "local")
   overlapAlign <- pairwiseAlignment(s1, s2, matchScoring = mat, type = "overlap")
   pairwiseAlignment(s1, s2,
-                    quality1 = rep(c(0.85, 0.65), times = c(36,18)),
+                    quality1 = rep(c(0.85, 0.65), times = c(36, 18)),
                     quality2 = rep(c(0.75, 0.50), times = c(40, 20)),
                     matchScoring = mat, gapOpening = -3, gapExtension = -1)
 
