@@ -103,11 +103,6 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
 {
     if (class(s1) != class(s2))
         stop("'s1' and 's2' are not of the same class")
-    ## The reason we test 'length(s1)' and 'length(s2)' separately is to
-    ## avoid a "NAs produced by integer overflow" in the product.
-    if (length(s1) > 20000L || length(s2) > 20000L
-        || length(s1) * length(s2) > 20000L * 20000L)
-        stop("'length(s1) * length(s2)' is too big (> 4e+08)")
     if (is.character(substmat)) {
         if (length(substmat) != 1)
             stop("'substmat' is a character vector of length != 1")
@@ -143,9 +138,10 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    PACKAGE="Biostrings")
     align1 <- new(class(s1), xdata=C_ans$al1, length=length(C_ans$al1))
     align2 <- new(class(s2), xdata=C_ans$al2, length=length(C_ans$al2))
-    new("XStringAlign", align1=align1, align2=align2, type="global",
-			matchScoring=substmat, gapOpening=0L, gapExtension=gappen,
-			score=C_ans$score)
+    new("XStringAlign",
+        align1=align1, align2=align2, quality1=1, quality2=1, type="global",
+        matchScoring=substmat, gapOpening=0, gapExtension=gappen,
+        score=C_ans$score)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),

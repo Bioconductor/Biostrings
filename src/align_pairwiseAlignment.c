@@ -1,8 +1,9 @@
+#include <float.h>
 #include "Biostrings.h"
 
 #define MAX(x, y) (x > y ? x : y)
 
-#define NEGATIVE_INFINITY -2147483647
+#define NEGATIVE_INFINITY (- FLT_MAX)
 
 #define  GLOBAL_ALIGNMENT 1
 #define   LOCAL_ALIGNMENT 2
@@ -31,17 +32,21 @@ static int nCharAligned = 0;
 static char *align1Buffer, *align2Buffer, *align1, *align2;
 
 /* Returns the score of the alignment */
-static int pairwiseAlignment(
+static float pairwiseAlignment(
 		RoSeq stringElements1,
 		RoSeq stringElements2,
-		const int *matchScoring,
-		const int *matchScoringDim,
+		const double *qualityElements1,
+		const double *qualityElements2,
+		int qualityElements1Length,
+		int qualityElements2Length,
+		char gapCode,
+		int typeCode,
 		const int *lookupTable,
 		int lookupTableLength,
-		int gapOpening,
-		int gapExtension,
-		char gapCode,
-		int typeCode)
+		const double *matchScoring,
+		const int *matchScoringDim,
+		double gapOpening,
+		double gapExtension)
 {
 	int i, j, iMinus1, jMinus1;
 
@@ -51,14 +56,14 @@ static int pairwiseAlignment(
 	nCharString2 = stringElements2.nelt;
 
 	/* Step 2:  Create objects for scores and traceback values */
-	int *fMatrix, *hMatrix, *vMatrix;
-	fMatrix = (int *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(int));
+	float *fMatrix, *hMatrix, *vMatrix;
+	fMatrix = (float *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(float));
 	if (gapOpening == 0) {
 		hMatrix = fMatrix;
 		vMatrix = fMatrix;
 	} else {
-		hMatrix = (int *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(int));
-		vMatrix = (int *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(int));		
+		hMatrix = (float *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(float));
+		vMatrix = (float *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(float));		
 	}
 	if (typeCode == GLOBAL_ALIGNMENT) {
 		for (i = 0; i <= nCharString1; i++)
@@ -85,10 +90,8 @@ static int pairwiseAlignment(
 	char *traceMatrix = (char *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(char));
 
 	/* Step 3:  Generate scores and traceback values */
-	int score;
-	int startRow = -1;
-	int startCol = -1;
-	int startScore = NEGATIVE_INFINITY;
+	int startRow = -1, startCol = -1;
+	float score, startScore = NEGATIVE_INFINITY;
 	if (gapOpening == 0) {
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
 			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
@@ -97,8 +100,12 @@ static int pairwiseAlignment(
 				int element1 = lookupValue;
 				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
 				int element2 = lookupValue;
-				int scoreReplacement, scoreInsertion, scoreDeletion;
-				scoreReplacement = F_MATRIX(iMinus1, jMinus1) + matchScoring[matchScoringDim[0] * element1 + element2];
+				float scoreReplacement, scoreInsertion, scoreDeletion;
+				double quality1 = (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
+				double quality2 = (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
+				double quality = quality1 * quality2;
+				scoreReplacement =
+					F_MATRIX(iMinus1, jMinus1) + (float) (quality * matchScoring[matchScoringDim[0] * element1 + element2]);
 				scoreInsertion   = V_MATRIX(i, jMinus1) + gapExtension;
 				scoreDeletion    = H_MATRIX(iMinus1, j) + gapExtension;
 				if (typeCode == LOCAL_ALIGNMENT) {
@@ -130,10 +137,13 @@ static int pairwiseAlignment(
 				int element1 = lookupValue;
 				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
 				int element2 = lookupValue;
-				int scoreReplacement, scoreInsertion, scoreDeletion;
+				float scoreReplacement, scoreInsertion, scoreDeletion;
+				double quality1 = (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
+				double quality2 = (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
+				double quality = quality1 * quality2;
 				F_MATRIX(i, j) =
 					SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
-					         matchScoring[matchScoringDim[0] * element1 + element2]);
+					         (float) (quality * matchScoring[matchScoringDim[0] * element1 + element2]));
 				if (typeCode == LOCAL_ALIGNMENT) {
 					if (F_MATRIX(i, j) < 0)
 						F_MATRIX(i, j) = 0;
@@ -268,15 +278,16 @@ static int pairwiseAlignment(
 /*
  * INPUTS
  * 'string1', 'string2':  left and right XString objects
- * 'matchScoring':  scoring matrix for matches/mismatches (integer matrix)
- * 'matchScoringDim':  dimension of 'matchScoring' (integer vector of length 2
- * 'lookupTable':  lookup table for translating XString bytes to scoring matrix
- *                 indices (integer vector)
- * 'gapOpening':  gap opening cost or penalty (integer vector of length 1)
- * 'gapExtension':  gap extension cost or penalty (integer vector of length 1)
+ * 'quality1', 'quality2': left and right quality measures between 0 and 1
  * 'gapCode':  encoded value of the '-' letter (raw vector of length 1)
  * 'typeCode':  type of pairwise alignment
  *          (integer vector of length 1; 1 = 'global', 2 = 'local', 3 = 'overlap')
+ * 'lookupTable':  lookup table for translating XString bytes to scoring matrix
+ *                 indices (integer vector)
+ * 'matchScoring':  scoring matrix for matches/mismatches (double matrix)
+ * 'matchScoringDim':  dimension of 'matchScoring' (integer vector of length 2
+ * 'gapOpening':  gap opening cost or penalty (double vector of length 1)
+ * 'gapExtension':  gap extension cost or penalty (double vector of length 1)
  * 
  * OUTPUT
  * Return a named list with 3 elements: 2 "externalptr" objects describing
@@ -286,15 +297,17 @@ static int pairwiseAlignment(
 SEXP align_pairwiseAlignment(
 		SEXP string1,
 		SEXP string2,
+		SEXP quality1,
+		SEXP quality2,
+		SEXP gapCode,
+		SEXP typeCode,
+		SEXP lookupTable,
 		SEXP matchScoring,
 		SEXP matchScoringDim,
-		SEXP lookupTable,
 		SEXP gapOpening,
-		SEXP gapExtension,
-		SEXP gapCode,
-		SEXP typeCode)
+		SEXP gapExtension)
 {
-	int score;
+	float score;
 	RoSeq stringElements1, stringElements2;
 	SEXP answer, answerNames, answerElements, tag;
 
@@ -303,14 +316,18 @@ SEXP align_pairwiseAlignment(
 	score = pairwiseAlignment(
 			stringElements1,
 			stringElements2,
-			INTEGER(matchScoring),
-			INTEGER(matchScoringDim),
+			REAL(quality1),
+			REAL(quality2),
+			LENGTH(quality1),
+			LENGTH(quality2),
+			(char) RAW(gapCode)[0],
+			INTEGER(typeCode)[0],
 			INTEGER(lookupTable),
 			LENGTH(lookupTable),
-			INTEGER(gapOpening)[0],
-			INTEGER(gapExtension)[0],
-			(char) RAW(gapCode)[0],
-			INTEGER(typeCode)[0]);
+			REAL(matchScoring),
+			INTEGER(matchScoringDim),
+			REAL(gapOpening)[0],
+			REAL(gapExtension)[0]);
 
 	PROTECT(answer = NEW_LIST(3));
 	/* set the names */
@@ -333,8 +350,8 @@ SEXP align_pairwiseAlignment(
 	SET_ELEMENT(answer, 1, answerElements);
 	UNPROTECT(2);
 	/* set the "score" element */
-	PROTECT(answerElements = NEW_INTEGER(1));
-	INTEGER(answerElements)[0] = score;
+	PROTECT(answerElements = NEW_NUMERIC(1));
+	REAL(answerElements)[0] = score;
 	SET_ELEMENT(answer, 2, answerElements);
 	UNPROTECT(1);
 	/* answer is ready */

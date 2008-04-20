@@ -9,11 +9,13 @@ setClass("XStringAlign",
     representation(
         align1="XString",
         align2="XString",
+        quality1="numeric",
+        quality2="numeric",
         type="character",
         matchScoring="matrix",
-        gapOpening="integer",
-        gapExtension="integer",
-        score="integer"
+        gapOpening="numeric",
+        gapExtension="numeric",
+        score="numeric"
     )
 )
 
@@ -23,30 +25,41 @@ setClass("XStringAlign",
 ###
 
 setMethod("initialize", "XStringAlign",
-    function(.Object, align1, align2, type, matchScoring, gapOpening, gapExtension, score)
+    function(.Object, align1, align2, quality1, quality2, type, matchScoring, gapOpening, gapExtension, score)
     {
         if (!identical(class(align1), class(align2)))
             stop("'align1' and 'align2' must be XString objects of the same subtype")
         if (length(align1) != length(align2))
             stop("'align1' and 'align2' must have the same length")
+        if (any(is.na(quality1)) || any(quality1 < 0) || any(quality1 > 1))
+            stop("all elements in 'quality1' must be between 0 and 1")
+        if (any(is.na(quality2)) || any(quality2 < 0) || any(quality2 > 1))
+            stop("all elements in 'quality2' must be between 0 and 1")
+        quality1 <- as.double(quality1)
+        quality2 <- as.double(quality2)
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap")))
             stop("'type' must be one of 'global', 'local', or 'overlap'")
-        if (!is.matrix(matchScoring) || !is.integer(matchScoring))
-            stop("'matchScoring' must be a matrix of integers")
+        if (!is.matrix(matchScoring) || !is.numeric(matchScoring))
+            stop("'matchScoring' must be a numeric matrix")
         if (!identical(rownames(matchScoring), colnames(matchScoring)))
             stop("row and column names differ for matrix 'matchScoring'")
         if (is.null(rownames(matchScoring)))
             stop("matrix 'matchScoring' must have row and column names")
         if (any(duplicated(rownames(matchScoring))))
             stop("matrix 'matchScoring' has duplicated row names")
-        gapOpening <- as.integer(- abs(gapOpening))
+        matchScoring <-
+			matrix(as.double(matchScoring), nrow = nrow(matchScoring), ncol = ncol(matchScoring),
+			       dimnames = dimnames(matchScoring))
+        gapOpening <- as.double(- abs(gapOpening))
         if (is.na(gapOpening) || length(gapOpening) != 1)
-            stop("'gapOpening' must be a non-positive integer vector of length 1")
-        gapExtension <- as.integer(- abs(gapExtension))
+            stop("'gapOpening' must be a non-positive numeric vector of length 1")
+        gapExtension <- as.double(- abs(gapExtension))
         if (is.na(gapExtension) || length(gapExtension) != 1)
-            stop("'gapExtension' must be a non-positive integer vector of length 1")
+            stop("'gapExtension' must be a non-positive numeric vector of length 1")
         .Object@align1 <- align1
         .Object@align2 <- align2
+        .Object@quality1 <- quality1
+        .Object@quality2 <- quality2
         .Object@type <- type
         .Object@matchScoring <- matchScoring
         .Object@gapOpening <- gapOpening

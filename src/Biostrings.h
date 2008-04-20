@@ -1146,11 +1146,13 @@ SEXP align_needwunsQS(
 SEXP align_pairwiseAlignment(
 	SEXP string1,
 	SEXP string2,
+	SEXP quality1,
+	SEXP quality2,
+	SEXP gapCode,
+	SEXP typeCode,
+	SEXP lookupTable,
 	SEXP matchScoring,
 	SEXP matchScoringDim,
-	SEXP lookupTable,
 	SEXP gapOpening,
-	SEXP gapExtension,
-	SEXP gapCode,
-	SEXP typeCode
+	SEXP gapExtension
 );
