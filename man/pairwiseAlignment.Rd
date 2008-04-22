@@ -16,10 +16,10 @@ pairwiseAlignment(string1, string2, quality1 = 1, quality2 = 1, substitutionMatr
 }
 \arguments{
   \item{string1, string2}{an R character vector of length 1 or an \link{XString} object.}
-  \item{quality1, quality2}{quality measures for \code{string1} and \code{string2}.
+  \item{quality1, quality2}{quality scores for \code{string1} and \code{string2}.
     These measures must either be represented by [0, 1] numeric vectors or character
     vectors that get converted to [0, 1] measures through the formula \code{dec/max(dec)},
-    where \code{dec = as.numeric(charToRaw(quality))}. In either case these vectors
+    where \code{dec = as.numeric(charToRaw(quality)) - 33}. In either case these vectors
     must have either one element or one element for each character in \code{string1}
     and \code{string2} respectively.}
   \item{substitutionMatrix}{substitution matrix for the alignment.}

@@ -29,11 +29,11 @@ function(string1,
   if (!(length(quality2) %in% c(1, nchar(string2))))
     stop("length(quality2) must be 1 or nchar(string2)")
   if (is.character(quality1)) {
-    quality1 <- as.numeric(charToRaw(paste(quality1, collapse = "")))
+    quality1 <- as.numeric(charToRaw(paste(quality1, collapse = ""))) - 33
     quality1 <- quality1 / max(quality1)
   }
   if (is.character(quality2)) {
-    quality2 <- as.numeric(charToRaw(paste(quality2, collapse = "")))
+    quality2 <- as.numeric(charToRaw(paste(quality2, collapse = ""))) - 33
     quality2 <- quality2 / max(quality2)
   }
   if (any(is.na(quality1)) || any(quality1 < 0) || any(quality1 > 1))
