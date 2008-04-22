@@ -140,7 +140,7 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
     align2 <- new(class(s2), xdata=C_ans$al2, length=length(C_ans$al2))
     new("XStringAlign",
         align1=align1, align2=align2, quality1=1, quality2=1, type="global",
-        matchScoring=substmat, gapOpening=0, gapExtension=gappen,
+        substitutionMatrix=substmat, gapOpening=0, gapExtension=gappen,
         score=C_ans$score)
 }
 

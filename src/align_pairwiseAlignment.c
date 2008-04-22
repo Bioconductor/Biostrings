@@ -9,9 +9,9 @@
 #define   LOCAL_ALIGNMENT 2
 #define OVERLAP_ALIGNMENT 3
 
-#define REPLACEMENT 'R'
-#define INSERTION   'I'
-#define DELETION    'D'
+#define SUBSTITUTION 'S'
+#define INSERTION    'I'
+#define DELETION     'D'
 
 #define F_MATRIX(i, j) (fMatrix[(nCharString2 + 1) * i + j])
 #define H_MATRIX(i, j) (hMatrix[(nCharString2 + 1) * i + j])
@@ -29,9 +29,9 @@
 }
 
 static int nCharAligned = 0;
-static char *align1Buffer, *align2Buffer, *align1, *align2;
+static char *align1, *align2;
 
-/* Returns the score of the alignment */
+/* Returns the score of the optimal pairwise alignment */
 static float pairwiseAlignment(
 		RoSeq stringElements1,
 		RoSeq stringElements2,
@@ -41,24 +41,24 @@ static float pairwiseAlignment(
 		int qualityElements2Length,
 		char gapCode,
 		int typeCode,
+		int scoreOnly,
 		const int *lookupTable,
 		int lookupTableLength,
-		const double *matchScoring,
-		const int *matchScoringDim,
-		double gapOpening,
-		double gapExtension)
+		const double *substitutionMatrix,
+		const int *substitutionMatrixDim,
+		float gapOpening,
+		float gapExtension)
 {
 	int i, j, iMinus1, jMinus1;
 
 	/* Step 1:  Get information on input strings */
-	int nCharString1, nCharString2;
-	nCharString1 = stringElements1.nelt;
-	nCharString2 = stringElements2.nelt;
+	int nCharString1 = stringElements1.nelt;
+	int nCharString2 = stringElements2.nelt;
 
 	/* Step 2:  Create objects for scores and traceback values */
 	float *fMatrix, *hMatrix, *vMatrix;
 	fMatrix = (float *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(float));
-	if (gapOpening == 0) {
+	if (gapOpening == 0.0) {
 		hMatrix = fMatrix;
 		vMatrix = fMatrix;
 	} else {
@@ -72,9 +72,9 @@ static float pairwiseAlignment(
 			V_MATRIX(0, j) = gapOpening + j * gapExtension;
 	} else if (typeCode == LOCAL_ALIGNMENT || typeCode == OVERLAP_ALIGNMENT) {
 		for (i = 0; i <= nCharString1; i++)
-			H_MATRIX(i, 0) = 0;
+			H_MATRIX(i, 0) = 0.0;
 		for (j = 0; j <= nCharString2; j++)
-			V_MATRIX(0, j) = 0;
+			V_MATRIX(0, j) = 0.0;
 	}
 	if (gapOpening < 0) {
 		F_MATRIX(0, 0) = 0;
@@ -100,26 +100,25 @@ static float pairwiseAlignment(
 				int element1 = lookupValue;
 				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
 				int element2 = lookupValue;
-				float scoreReplacement, scoreInsertion, scoreDeletion;
-				double quality1 = (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
-				double quality2 = (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
-				double quality = quality1 * quality2;
-				scoreReplacement =
-					F_MATRIX(iMinus1, jMinus1) + (float) (quality * matchScoring[matchScoringDim[0] * element1 + element2]);
-				scoreInsertion   = V_MATRIX(i, jMinus1) + gapExtension;
-				scoreDeletion    = H_MATRIX(iMinus1, j) + gapExtension;
+				float quality1 = (float) (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
+				float quality2 = (float) (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
+				float quality = quality1 * quality2;
+				float scoreSubstitution = F_MATRIX(iMinus1, jMinus1) +
+						quality * ((float) substitutionMatrix[substitutionMatrixDim[0] * element1 + element2]);
+				float scoreInsertion    = V_MATRIX(i, jMinus1) + gapExtension;
+				float scoreDeletion     = H_MATRIX(iMinus1, j) + gapExtension;
 				if (typeCode == LOCAL_ALIGNMENT) {
-					if (scoreReplacement < 0)
-						scoreReplacement = 0;
-					if (scoreReplacement > startScore) {
+					if (scoreSubstitution < 0.0)
+						scoreSubstitution = 0.0;
+					if (scoreSubstitution > startScore) {
 						startRow = i;
 						startCol = j;
-						startScore = scoreReplacement;
+						startScore = scoreSubstitution;
 					}
 				}
-				if (scoreReplacement >= MAX(scoreInsertion, scoreDeletion)) {
-					F_MATRIX(i, j) = scoreReplacement;
-					TRACE_MATRIX(i, j) = REPLACEMENT;
+				if (scoreSubstitution >= MAX(scoreInsertion, scoreDeletion)) {
+					F_MATRIX(i, j) = scoreSubstitution;
+					TRACE_MATRIX(i, j) = SUBSTITUTION;
 				} else if (scoreInsertion >= scoreDeletion) {
 					F_MATRIX(i, j) = scoreInsertion;
 					TRACE_MATRIX(i, j) = INSERTION;
@@ -137,16 +136,15 @@ static float pairwiseAlignment(
 				int element1 = lookupValue;
 				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
 				int element2 = lookupValue;
-				float scoreReplacement, scoreInsertion, scoreDeletion;
-				double quality1 = (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
-				double quality2 = (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
-				double quality = quality1 * quality2;
+				float quality1 = (float) (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
+				float quality2 = (float) (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
+				float quality = quality1 * quality2;
 				F_MATRIX(i, j) =
 					SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
-					         (float) (quality * matchScoring[matchScoringDim[0] * element1 + element2]));
+					         quality * ((float) substitutionMatrix[substitutionMatrixDim[0] * element1 + element2]));
 				if (typeCode == LOCAL_ALIGNMENT) {
-					if (F_MATRIX(i, j) < 0)
-						F_MATRIX(i, j) = 0;
+					if (F_MATRIX(i, j) < 0.0)
+						F_MATRIX(i, j) = 0.0;
 					if (F_MATRIX(i, j) > startScore) {
 						startRow = i;
 						startCol = j;
@@ -160,12 +158,12 @@ static float pairwiseAlignment(
 					MAX(SAFE_SUM(F_MATRIX(i, jMinus1), gapOpening + gapExtension),
 					    SAFE_SUM(V_MATRIX(i, jMinus1), gapExtension));
 
-				scoreReplacement = F_MATRIX(i, j);
-				scoreInsertion   = V_MATRIX(i, j);
-				scoreDeletion    = H_MATRIX(i, j);
+				float scoreSubstitution = F_MATRIX(i, j);
+				float scoreInsertion    = V_MATRIX(i, j);
+				float scoreDeletion     = H_MATRIX(i, j);
 
-				if (scoreReplacement >= MAX(scoreInsertion, scoreDeletion))
-					TRACE_MATRIX(i, j) = REPLACEMENT;
+				if (scoreSubstitution >= MAX(scoreInsertion, scoreDeletion))
+					TRACE_MATRIX(i, j) = SUBSTITUTION;
 				else if (scoreInsertion >= scoreDeletion)
 					TRACE_MATRIX(i, j) = INSERTION;
 				else
@@ -205,70 +203,72 @@ static float pairwiseAlignment(
 	    }
 	}
 
-	/* Step 4:  Get a starting location for the traceback */
 	nCharAligned = 0;
-	int alignmentBufferSize = nCharString1 + nCharString2;
-	align1Buffer = (char *) R_alloc((long) alignmentBufferSize, sizeof(char));
-	align2Buffer = (char *) R_alloc((long) alignmentBufferSize, sizeof(char));
-	align1 = align1Buffer + alignmentBufferSize;
-	align2 = align2Buffer + alignmentBufferSize;
-	if (typeCode == OVERLAP_ALIGNMENT && (startRow < nCharString1 || startCol < nCharString2)) {
-		if (startRow == nCharString1) {
-			nCharAligned += nCharString2 - startCol;
-			for (j = 1; j <= nCharString2 - startCol; j++) {
-				align1--;
-				align2--;
-				*align1 = gapCode;
-				*align2 = stringElements2.elts[nCharString2 - j];
+	if (scoreOnly == 0) {
+		/* Step 4:  Get a starting location for the traceback */
+		int alignmentBufferSize = nCharString1 + nCharString2;
+		char *align1Buffer = (char *) R_alloc((long) alignmentBufferSize, sizeof(char));
+		char *align2Buffer = (char *) R_alloc((long) alignmentBufferSize, sizeof(char));
+		align1 = align1Buffer + alignmentBufferSize;
+		align2 = align2Buffer + alignmentBufferSize;
+		if (typeCode == OVERLAP_ALIGNMENT && (startRow < nCharString1 || startCol < nCharString2)) {
+			if (startRow == nCharString1) {
+				nCharAligned += nCharString2 - startCol;
+				for (j = 1; j <= nCharString2 - startCol; j++) {
+					align1--;
+					align2--;
+					*align1 = gapCode;
+					*align2 = stringElements2.elts[nCharString2 - j];
+				}
+			} else {
+				nCharAligned += nCharString1 - startRow;
+				for (i = 1; i <= nCharString1 - startRow; i++) {
+					align1--;
+					align2--;
+					*align1 = stringElements1.elts[nCharString1 - i];
+					*align2 = gapCode;
+				}
 			}
-	    } else {
-			nCharAligned += nCharString1 - startRow;
-			for (i = 1; i <= nCharString1 - startRow; i++) {
-				align1--;
-				align2--;
-				*align1 = stringElements1.elts[nCharString1 - i];
-				*align2 = gapCode;
-			}
-	    }
-	}
+		}
 
-	/* Step 5:  Traceback through the score matrix */
-	i = startRow;
-	j = startCol;
-	while (((typeCode == GLOBAL_ALIGNMENT || typeCode == OVERLAP_ALIGNMENT) && (i >= 1 || j >= 1)) ||
-			(typeCode == LOCAL_ALIGNMENT && F_MATRIX(i, j) > 0)) {
-		nCharAligned++;
-		align1--;
-		align2--;
-		iMinus1 = i - 1;
-		jMinus1 = j - 1;
-		char traceValue;
-		if (j == 0)
-			traceValue = DELETION;
-		else if (i == 0)
-			traceValue = INSERTION;
-		else
-			traceValue = TRACE_MATRIX(i, j);
-		switch (traceValue) {
-		    case DELETION:
-			*align1 = stringElements1.elts[iMinus1];
-			*align2 = gapCode;
-			i--;
-			break;
-		    case INSERTION:
-			*align1 = gapCode;
-			*align2 = stringElements2.elts[jMinus1];
-			j--;
-			break;
-		    case REPLACEMENT:
-			*align1 = stringElements1.elts[iMinus1];
-			*align2 = stringElements2.elts[jMinus1];
-			i--;
-			j--;
-			break;
-		    default:
-			error("unknown traceback code %d", traceValue);
-			break;
+		/* Step 5:  Traceback through the score matrix */
+		i = startRow;
+		j = startCol;
+		while (((typeCode == GLOBAL_ALIGNMENT || typeCode == OVERLAP_ALIGNMENT) && (i >= 1 || j >= 1)) ||
+				(typeCode == LOCAL_ALIGNMENT && F_MATRIX(i, j) > 0)) {
+			nCharAligned++;
+			align1--;
+			align2--;
+			iMinus1 = i - 1;
+			jMinus1 = j - 1;
+			char traceValue;
+			if (j == 0)
+				traceValue = DELETION;
+			else if (i == 0)
+				traceValue = INSERTION;
+			else
+				traceValue = TRACE_MATRIX(i, j);
+			switch (traceValue) {
+		    	case DELETION:
+		    		*align1 = stringElements1.elts[iMinus1];
+		    		*align2 = gapCode;
+		    		i--;
+		    		break;
+		    	case INSERTION:
+		    		*align1 = gapCode;
+		    		*align2 = stringElements2.elts[jMinus1];
+		    		j--;
+		    		break;
+		    	case SUBSTITUTION:
+		    		*align1 = stringElements1.elts[iMinus1];
+		    		*align2 = stringElements2.elts[jMinus1];
+		    		i--;
+		    		j--;
+		    		break;
+		    	default:
+		    		error("unknown traceback code %d", traceValue);
+		    		break;
+			}
 		}
 	}
 
@@ -281,11 +281,13 @@ static float pairwiseAlignment(
  * 'quality1', 'quality2': left and right quality measures between 0 and 1
  * 'gapCode':  encoded value of the '-' letter (raw vector of length 1)
  * 'typeCode':  type of pairwise alignment
- *          (integer vector of length 1; 1 = 'global', 2 = 'local', 3 = 'overlap')
+ *              (integer vector of length 1; 1 = 'global', 2 = 'local', 3 = 'overlap')
+ * 'scoreOnly':  denotes whether or not to only return the scores of the
+ *               optimal pairwise alignment (logical vector)
  * 'lookupTable':  lookup table for translating XString bytes to scoring matrix
  *                 indices (integer vector)
- * 'matchScoring':  scoring matrix for matches/mismatches (double matrix)
- * 'matchScoringDim':  dimension of 'matchScoring' (integer vector of length 2
+ * 'substitutionMatrix':  substitution matrix for matches/mismatches (double matrix)
+ * 'substitutionMatrixDim':  dimension of 'substitutionMatrix' (integer vector of length 2
  * 'gapOpening':  gap opening cost or penalty (double vector of length 1)
  * 'gapExtension':  gap extension cost or penalty (double vector of length 1)
  * 
@@ -301,19 +303,16 @@ SEXP align_pairwiseAlignment(
 		SEXP quality2,
 		SEXP gapCode,
 		SEXP typeCode,
+		SEXP scoreOnly,
 		SEXP lookupTable,
-		SEXP matchScoring,
-		SEXP matchScoringDim,
+		SEXP substitutionMatrix,
+		SEXP substitutionMatrixDim,
 		SEXP gapOpening,
 		SEXP gapExtension)
 {
-	float score;
-	RoSeq stringElements1, stringElements2;
-	SEXP answer, answerNames, answerElements, tag;
-
-	stringElements1 = _get_XString_asRoSeq(string1);
-	stringElements2 = _get_XString_asRoSeq(string2);
-	score = pairwiseAlignment(
+	RoSeq stringElements1 = _get_XString_asRoSeq(string1);
+	RoSeq stringElements2 = _get_XString_asRoSeq(string2);
+	float score = pairwiseAlignment(
 			stringElements1,
 			stringElements2,
 			REAL(quality1),
@@ -322,13 +321,15 @@ SEXP align_pairwiseAlignment(
 			LENGTH(quality2),
 			(char) RAW(gapCode)[0],
 			INTEGER(typeCode)[0],
+			LOGICAL(scoreOnly)[0],
 			INTEGER(lookupTable),
 			LENGTH(lookupTable),
-			REAL(matchScoring),
-			INTEGER(matchScoringDim),
-			REAL(gapOpening)[0],
-			REAL(gapExtension)[0]);
+			REAL(substitutionMatrix),
+			INTEGER(substitutionMatrixDim),
+			(float) REAL(gapOpening)[0],
+			(float) REAL(gapExtension)[0]);
 
+	SEXP answer, answerNames, answerElements, tag;
 	PROTECT(answer = NEW_LIST(3));
 	/* set the names */
 	PROTECT(answerNames = NEW_CHARACTER(3));
