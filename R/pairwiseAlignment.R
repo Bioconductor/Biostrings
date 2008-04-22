@@ -28,10 +28,18 @@ function(string1,
     stop("length(quality1) must be 1 or nchar(string1)")
   if (!(length(quality2) %in% c(1, nchar(string2))))
     stop("length(quality2) must be 1 or nchar(string2)")
+  if (is.character(quality1)) {
+    quality1 <- as.numeric(charToRaw(paste(quality1, collapse = "")))
+    quality1 <- quality1 / max(quality1)
+  }
+  if (is.character(quality2)) {
+    quality2 <- as.numeric(charToRaw(paste(quality2, collapse = "")))
+    quality2 <- quality2 / max(quality2)
+  }
   if (any(is.na(quality1)) || any(quality1 < 0) || any(quality1 > 1))
-    stop("all elements in 'quality1' must be between 0 and 1")
+    stop("all elements in 'quality1' must result in values between 0 and 1")
   if (any(is.na(quality2)) || any(quality2 < 0) || any(quality2 > 1))
-    stop("all elements in 'quality2' must be between 0 and 1")
+    stop("all elements in 'quality2' must result in values between 0 and 1")
   if (is.character(substitutionMatrix)) {
     if (length(substitutionMatrix) != 1)
       stop("'substitutionMatrix' is a character vector of length != 1")
@@ -64,7 +72,8 @@ function(string1,
   if (length(scoreOnly) != 1 || any(is.na(scoreOnly)))
     stop("'scoreOnly' must be a non-missing logical value")
   if (is.null(codec(string1))) {
-    codes <- as.integer(charToRaw(paste(rownames(substitutionMatrix), collapse="")))
+    codes <-
+      as.integer(charToRaw(paste(rownames(substitutionMatrix), collapse="")))
     gapCode <- charToRaw("-")
   } else {
     if (!all(rownames(substitutionMatrix) %in% alphabet(string1)))

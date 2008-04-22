@@ -16,9 +16,12 @@ pairwiseAlignment(string1, string2, quality1 = 1, quality2 = 1, substitutionMatr
 }
 \arguments{
   \item{string1, string2}{an R character vector of length 1 or an \link{XString} object.}
-  \item{quality1, quality2}{quality measures for \code{string1} and \code{string2}
-    represented by [0, 1] numeric vectors with either one element or one element
-    for each character in \code{string1} and \code{string2} respectively.}
+  \item{quality1, quality2}{quality measures for \code{string1} and \code{string2}.
+    These measures must either be represented by [0, 1] numeric vectors or character
+    vectors that get converted to [0, 1] measures through the formula \code{dec/max(dec)},
+    where \code{dec = as.numeric(charToRaw(quality))}. In either case these vectors
+    must have either one element or one element for each character in \code{string1}
+    and \code{string2} respectively.}
   \item{substitutionMatrix}{substitution matrix for the alignment.}
   \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
@@ -53,8 +56,8 @@ pairwise alignments is returned.
   localAlign <- pairwiseAlignment(s1, s2, substitutionMatrix = mat, type = "local")
   overlapAlign <- pairwiseAlignment(s1, s2, substitutionMatrix = mat, type = "overlap")
   pairwiseAlignment(s1, s2,
-                    quality1 = rep(c(0.85, 0.65), times = c(36, 18)),
-                    quality2 = rep(c(0.75, 0.50), times = c(40, 20)),
+                    quality1 = rep(c("L", "G"), times = c(36, 18)),
+                    quality2 = rep(c("L", "G"), times = c(40, 20)),
                     substitutionMatrix = mat, gapOpening = -3, gapExtension = -1,
                     scoreOnly = TRUE)
 
