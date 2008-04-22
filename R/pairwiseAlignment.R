@@ -28,10 +28,14 @@ function(string1,
     stop("length(quality1) must be 1 or nchar(string1)")
   if (!(length(quality2) %in% c(1, nchar(string2))))
     stop("length(quality2) must be 1 or nchar(string2)")
+  if (is(quality1, "XString"))
+    quality1 <- as(quality1, "character")
   if (is.character(quality1)) {
     quality1 <- as.numeric(charToRaw(paste(quality1, collapse = ""))) - 33
     quality1 <- quality1 / max(quality1)
   }
+  if (is(quality2, "XString"))
+    quality2 <- as(quality2, "character")
   if (is.character(quality2)) {
     quality2 <- as.numeric(charToRaw(paste(quality2, collapse = ""))) - 33
     quality2 <- quality2 / max(quality2)

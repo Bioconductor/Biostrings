@@ -15,13 +15,13 @@ pairwiseAlignment(string1, string2, quality1 = 1, quality2 = 1, substitutionMatr
                   gapOpening = -5, gapExtension = -2, type = "global", scoreOnly = FALSE)
 }
 \arguments{
-  \item{string1, string2}{an R character vector of length 1 or an \link{XString} object.}
+  \item{string1, string2}{an R character vector of length 1 or an \code{\link{XString}} object.}
   \item{quality1, quality2}{quality scores for \code{string1} and \code{string2}.
-    These measures must either be represented by [0, 1] numeric vectors or character
-    vectors that get converted to [0, 1] measures through the formula \code{dec/max(dec)},
-    where \code{dec = as.numeric(charToRaw(quality)) - 33}. In either case these vectors
-    must have either one element or one element for each character in \code{string1}
-    and \code{string2} respectively.}
+    These measures must either be represented by [0, 1] numeric vectors, or character
+    vectors or \code{\link{XString}} objects that get converted to [0, 1] measures through
+    the formula \code{dec/max(dec)}, where \code{dec = as.numeric(charToRaw(quality)) - 33}.
+    The resulting [0, 1] vector must have either a single element or one element for each
+    character in \code{string1} and \code{string2} respectively.}
   \item{substitutionMatrix}{substitution matrix for the alignment.}
   \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
@@ -56,8 +56,8 @@ pairwise alignments is returned.
   localAlign <- pairwiseAlignment(s1, s2, substitutionMatrix = mat, type = "local")
   overlapAlign <- pairwiseAlignment(s1, s2, substitutionMatrix = mat, type = "overlap")
   pairwiseAlignment(s1, s2,
-                    quality1 = rep(c("L", "G"), times = c(36, 18)),
-                    quality2 = rep(c("L", "G"), times = c(40, 20)),
+                    quality1 = paste(rep(c("L", "G"), times = c(36, 18)), collapse = ""),
+                    quality2 = paste(rep(c("L", "G"), times = c(40, 20)), collapse = ""),
                     substitutionMatrix = mat, gapOpening = -3, gapExtension = -1,
                     scoreOnly = TRUE)
 
