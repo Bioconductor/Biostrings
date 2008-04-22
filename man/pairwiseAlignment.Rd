@@ -45,8 +45,8 @@ pairwise alignments is returned.
 }
 \examples{
   ## Nucleotide global, local, and overlap alignments
-  mat <- matrix(-3L, nrow = 4, ncol = 4)
-  diag(mat) <- 1L
+  mat <- matrix(-3, nrow = 4, ncol = 4)
+  diag(mat) <- 1
   rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
   s1 <- 
     DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
