@@ -8,7 +8,8 @@ exportClasses(
     .IRanges, IRanges, NormalIRanges,
     XRaw, XInteger,
     XString, BString, DNAString, RNAString, AAString,
-    Mask, MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
+    Mask, MaskCollection,
+    MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
     BStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
@@ -32,7 +33,8 @@ exportMethods(
     "start<-", "width<-", "end<-", "desc<-",
 
     ## XString, MaskedXString, BStringViews and XStringList objects
-    XString, alphabet, subseq, unmasked, mask, "mask<-",
+    XString, alphabet, subseq,
+    masks, unmasked, mask, "mask<-",
     BStringViews, subject,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     letter,

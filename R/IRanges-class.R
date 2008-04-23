@@ -171,15 +171,12 @@ setMethod("min", "NormalIRanges",
 
 .valid.IRanges.names <- function(object)
 {
+    if (!is.character(object@NAMES))
+        return("the 'NAMES' slot must contain a character vector")
     if (is.null(names(object)))
         return(NULL)
-    if (!is.character(names(object)) || any(is.na(names(object))))
+    if (any(is.na(names(object))))
         return("the names must be non-NA strings")
-    # Disabled for now. Forbidding NAs or empty strings would not be
-    # consistent with the "names<-" method that currently allows the
-    # user to stick this kind of values into the 'names' slot!
-    #if (any(names(object) %in% c(NA, "")))
-    #    return("names cannot be NAs or empty strings")
     if (length(names(object)) != length(object))
         return("number of names and number of elements differ")
     NULL

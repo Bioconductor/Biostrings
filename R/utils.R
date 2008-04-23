@@ -5,6 +5,11 @@ isTRUEorFALSE <- function(x)
     is.logical(x) && length(x) == 1 && !is.na(x)
 }
 
+isSingleInteger <- function(x)
+{
+    is.integer(x) && length(x) == 1 && !is.na(x)
+}
+
 isSingleNumber <- function(x)
 {
     is.numeric(x) && length(x) == 1 && !is.na(x)
