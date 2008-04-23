@@ -32,9 +32,12 @@ exportMethods(
     start, width, end, desc, isNormal, whichFirstNotNormal, isEmpty, max, min,
     "start<-", "width<-", "end<-", "desc<-",
 
+    ## MaskCollection objects
+    masks, maskedwidth, maskedratio,
+
     ## XString, MaskedXString, BStringViews and XStringList objects
     XString, alphabet, subseq,
-    masks, unmasked, mask, "mask<-",
+    unmasked, mask, "mask<-",
     BStringViews, subject,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     letter,
