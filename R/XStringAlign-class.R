@@ -9,13 +9,13 @@ setClass("XStringAlign",
     representation(
         align1="XString",
         align2="XString",
-        quality1="numeric",
-        quality2="numeric",
+        quality1="BString",
+        quality2="BString",
         type="character",
-        substitutionMatrix="matrix",
+        score="numeric",
+        constantMatrix="matrix",
         gapOpening="numeric",
-        gapExtension="numeric",
-        score="numeric"
+        gapExtension="numeric"
     )
 )
 
@@ -25,31 +25,14 @@ setClass("XStringAlign",
 ###
 
 setMethod("initialize", "XStringAlign",
-    function(.Object, align1, align2, quality1, quality2, type, substitutionMatrix, gapOpening, gapExtension, score)
+    function(.Object, align1, align2, quality1, quality2, type, score, constantMatrix, gapOpening, gapExtension)
     {
         if (!identical(class(align1), class(align2)))
             stop("'align1' and 'align2' must be XString objects of the same subtype")
         if (length(align1) != length(align2))
             stop("'align1' and 'align2' must have the same length")
-        if (any(is.na(quality1)) || any(quality1 < 0) || any(quality1 > 1))
-            stop("all elements in 'quality1' must be between 0 and 1")
-        if (any(is.na(quality2)) || any(quality2 < 0) || any(quality2 > 1))
-            stop("all elements in 'quality2' must be between 0 and 1")
-        quality1 <- as.double(quality1)
-        quality2 <- as.double(quality2)
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap")))
             stop("'type' must be one of 'global', 'local', or 'overlap'")
-        if (!is.matrix(substitutionMatrix) || !is.numeric(substitutionMatrix))
-            stop("'substitutionMatrix' must be a numeric matrix")
-        if (!identical(rownames(substitutionMatrix), colnames(substitutionMatrix)))
-            stop("row and column names differ for matrix 'substitutionMatrix'")
-        if (is.null(rownames(substitutionMatrix)))
-            stop("matrix 'substitutionMatrix' must have row and column names")
-        if (any(duplicated(rownames(substitutionMatrix))))
-            stop("matrix 'substitutionMatrix' has duplicated row names")
-        substitutionMatrix <-
-			matrix(as.double(substitutionMatrix), nrow = nrow(substitutionMatrix), ncol = ncol(substitutionMatrix),
-			       dimnames = dimnames(substitutionMatrix))
         gapOpening <- as.double(- abs(gapOpening))
         if (is.na(gapOpening) || length(gapOpening) != 1)
             stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -61,10 +44,10 @@ setMethod("initialize", "XStringAlign",
         .Object@quality1 <- quality1
         .Object@quality2 <- quality2
         .Object@type <- type
-        .Object@substitutionMatrix <- substitutionMatrix
+        .Object@score <- score
+        .Object@constantMatrix <- constantMatrix
         .Object@gapOpening <- gapOpening
         .Object@gapExtension <- gapExtension
-        .Object@score <- score
         .Object
     }
 )
@@ -107,10 +90,6 @@ setMethod("show", "XStringAlign",
         cat("1: ", toSeqSnippet(align1(object), getOption("width") - 8), "\n")
         cat("2: ", toSeqSnippet(align2(object), getOption("width") - 8), "\n")
         cat("Score: ", score(object), "\n")
-        cat("Gap Opening: ", object@gapOpening, "\n")
-        cat("Gap Extension: ", object@gapExtension, "\n")
-        cat("Match/Mismatch Scoring:\n")
-        print(object@substitutionMatrix)
     }
 )
 

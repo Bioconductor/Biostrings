@@ -28,32 +28,39 @@
 	} \
 }
 
+/* Global Variables */
 static int nCharAligned = 0;
 static char *align1, *align2;
+
 
 /* Returns the score of the optimal pairwise alignment */
 static float pairwiseAlignment(
 		RoSeq stringElements1,
 		RoSeq stringElements2,
-		const double *qualityElements1,
-		const double *qualityElements2,
-		int qualityElements1Length,
-		int qualityElements2Length,
+		RoSeq qualityElements1,
+		RoSeq qualityElements2,
 		char gapCode,
 		int typeCode,
 		int scoreOnly,
-		const int *lookupTable,
-		int lookupTableLength,
-		const double *substitutionMatrix,
-		const int *substitutionMatrixDim,
 		float gapOpening,
-		float gapExtension)
+		float gapExtension,
+		const int *qualityLookupTable,
+		int qualityLookupTableLength,
+		const double *qualityMatchMatrix,
+		const double *qualityMismatchMatrix,
+		const int *qualityMatrixDim,
+		const int *constantLookupTable,
+		int constantLookupTableLength,
+		const double *constantMatrix,
+		const int *constantMatrixDim)
 {
 	int i, j, iMinus1, jMinus1;
 
-	/* Step 1:  Get information on input strings */
+	/* Step 1:  Get information on input XString objects */
 	int nCharString1 = stringElements1.nelt;
 	int nCharString2 = stringElements2.nelt;
+	int nQuality1 = qualityElements1.nelt;
+	int nQuality2 = qualityElements2.nelt;
 
 	/* Step 2:  Create objects for scores and traceback values */
 	float *fMatrix, *hMatrix, *vMatrix;
@@ -90,21 +97,49 @@ static float pairwiseAlignment(
 	char *traceMatrix = (char *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(char));
 
 	/* Step 3:  Generate scores and traceback values */
+	RoSeq sequence1, sequence2;
+	int scalar1, scalar2;
+	const int *lookupTable;
+	int lookupTableLength;
+	const double *matchMatrix, *mismatchMatrix;
+	const int *matrixDim;
+	if (nQuality1 == 0) {
+		sequence1 = stringElements1;
+		sequence2 = stringElements2;
+		scalar1 = (nCharString1 == 1);
+		scalar2 = (nCharString2 == 1);
+		lookupTable = constantLookupTable;
+		lookupTableLength = constantLookupTableLength;
+		matchMatrix = constantMatrix;
+		mismatchMatrix = constantMatrix;
+		matrixDim = constantMatrixDim;
+	} else {
+		sequence1 = qualityElements1;
+		sequence2 = qualityElements2;
+		scalar1 = (nQuality1 == 1);
+		scalar2 = (nQuality2 == 1);
+		lookupTable = qualityLookupTable;
+		lookupTableLength = qualityLookupTableLength;
+		matchMatrix = qualityMatchMatrix;
+		mismatchMatrix = qualityMismatchMatrix;
+		matrixDim = qualityMatrixDim;
+	}
 	int startRow = -1, startCol = -1;
-	float score, startScore = NEGATIVE_INFINITY;
+	int lookupValue, element1, element2;
+	float substitutionValue, score, startScore = NEGATIVE_INFINITY;
 	if (gapOpening == 0) {
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iMinus1]);
+			element1 = lookupValue;
 			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
-				int lookupValue;
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements1.elts[iMinus1]);
-				int element1 = lookupValue;
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
-				int element2 = lookupValue;
-				float quality1 = (float) (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
-				float quality2 = (float) (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
-				float quality = quality1 * quality2;
-				float scoreSubstitution = F_MATRIX(iMinus1, jMinus1) +
-						quality * ((float) substitutionMatrix[substitutionMatrixDim[0] * element1 + element2]);
+				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jMinus1]);
+				element2 = lookupValue;
+				if (stringElements1.elts[iMinus1] == stringElements2.elts[jMinus1])
+					substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
+				else
+					substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+
+				float scoreSubstitution = F_MATRIX(iMinus1, jMinus1) + substitutionValue;
 				float scoreInsertion    = V_MATRIX(i, jMinus1) + gapExtension;
 				float scoreDeletion     = H_MATRIX(iMinus1, j) + gapExtension;
 				if (typeCode == LOCAL_ALIGNMENT) {
@@ -130,18 +165,19 @@ static float pairwiseAlignment(
 		}
 	} else {
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iMinus1]);
+			element1 = lookupValue;
 			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
-				int lookupValue;
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements1.elts[iMinus1]);
-				int element1 = lookupValue;
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, stringElements2.elts[jMinus1]);
-				int element2 = lookupValue;
-				float quality1 = (float) (qualityElements1Length == 1 ? qualityElements1[0] : qualityElements1[iMinus1]);
-				float quality2 = (float) (qualityElements2Length == 1 ? qualityElements2[0] : qualityElements2[jMinus1]);
-				float quality = quality1 * quality2;
+				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jMinus1]);
+				element2 = lookupValue;
+				if (stringElements1.elts[iMinus1] == stringElements2.elts[jMinus1])
+					substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
+				else
+					substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+
 				F_MATRIX(i, j) =
 					SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
-					         quality * ((float) substitutionMatrix[substitutionMatrixDim[0] * element1 + element2]));
+					         substitutionValue);
 				if (typeCode == LOCAL_ALIGNMENT) {
 					if (F_MATRIX(i, j) < 0.0)
 						F_MATRIX(i, j) = 0.0;
@@ -277,19 +313,35 @@ static float pairwiseAlignment(
 
 /*
  * INPUTS
- * 'string1', 'string2':  left and right XString objects
- * 'quality1', 'quality2': left and right quality measures between 0 and 1
- * 'gapCode':  encoded value of the '-' letter (raw vector of length 1)
- * 'typeCode':  type of pairwise alignment
- *              (integer vector of length 1; 1 = 'global', 2 = 'local', 3 = 'overlap')
- * 'scoreOnly':  denotes whether or not to only return the scores of the
- *               optimal pairwise alignment (logical vector)
- * 'lookupTable':  lookup table for translating XString bytes to scoring matrix
- *                 indices (integer vector)
- * 'substitutionMatrix':  substitution matrix for matches/mismatches (double matrix)
- * 'substitutionMatrixDim':  dimension of 'substitutionMatrix' (integer vector of length 2
- * 'gapOpening':  gap opening cost or penalty (double vector of length 1)
- * 'gapExtension':  gap extension cost or penalty (double vector of length 1)
+ * 'string1', 'string2':     left and right XString objects for reads
+ * 'quality1', 'quality2':   left and right BString objects for quality scores
+ * 'gapCode':                encoded value of the '-' letter
+ *                           (raw vector of length 1)
+ * 'typeCode':               type of pairwise alignment
+ *                           (integer vector of length 1;
+ *                            1 = 'global', 2 = 'local', 3 = 'overlap')
+ * 'scoreOnly':              denotes whether or not to only return the scores
+ *                           of the optimal pairwise alignment
+ *                           (logical vector of length 1)
+ * 'gapOpening':             gap opening cost or penalty
+ *                           (double vector of length 1)
+ * 'gapExtension':           gap extension cost or penalty
+ *                           (double vector of length 1)
+ * 'qualityLookupTable':     lookup table for translating BString bytes to
+ *                           quality-based scoring matrix indices
+ *                           (integer vector)
+ * 'qualityMatchMatrix':     quality-based substitution matrix for matches
+ * 'qualityMismatchMatrix':  quality-based substitution matrix for matches
+ * 'qualityMatrixDim':       dimension of 'qualityMatchMatrix' and
+ *                           'qualityMismatchMatrix'
+ *                           (integer vector of lenth 2)
+ * 'constantLookupTable':    lookup table for translating XString bytes to scoring
+ *                           matrix indices
+ *                           (integer vector)
+ * 'constantMatrix':         constant substitution matrix for matches/mismatches
+ *                           (double matrix)
+ * 'constantMatrixDim':      dimension of 'constantMatrix'
+ *                           (integer vector of length 2)
  * 
  * OUTPUT
  * Return a named list with 3 elements: 2 "externalptr" objects describing
@@ -304,30 +356,39 @@ SEXP align_pairwiseAlignment(
 		SEXP gapCode,
 		SEXP typeCode,
 		SEXP scoreOnly,
-		SEXP lookupTable,
-		SEXP substitutionMatrix,
-		SEXP substitutionMatrixDim,
 		SEXP gapOpening,
-		SEXP gapExtension)
+		SEXP gapExtension,
+		SEXP qualityLookupTable,
+		SEXP qualityMatchMatrix,
+		SEXP qualityMismatchMatrix,
+		SEXP qualityMatrixDim,
+		SEXP constantLookupTable,
+		SEXP constantMatrix,
+		SEXP constantMatrixDim)
 {
 	RoSeq stringElements1 = _get_XString_asRoSeq(string1);
 	RoSeq stringElements2 = _get_XString_asRoSeq(string2);
+	RoSeq qualityElements1 = _get_XString_asRoSeq(quality1);
+	RoSeq qualityElements2 = _get_XString_asRoSeq(quality2);
 	float score = pairwiseAlignment(
 			stringElements1,
 			stringElements2,
-			REAL(quality1),
-			REAL(quality2),
-			LENGTH(quality1),
-			LENGTH(quality2),
+			qualityElements1,
+			qualityElements2,
 			(char) RAW(gapCode)[0],
 			INTEGER(typeCode)[0],
 			LOGICAL(scoreOnly)[0],
-			INTEGER(lookupTable),
-			LENGTH(lookupTable),
-			REAL(substitutionMatrix),
-			INTEGER(substitutionMatrixDim),
 			(float) REAL(gapOpening)[0],
-			(float) REAL(gapExtension)[0]);
+			(float) REAL(gapExtension)[0],
+			INTEGER(qualityLookupTable),
+			LENGTH(qualityLookupTable),
+			REAL(qualityMatchMatrix),
+			REAL(qualityMismatchMatrix),
+			INTEGER(qualityMatrixDim),
+			INTEGER(constantLookupTable),
+			LENGTH(constantLookupTable),
+			REAL(constantMatrix),
+			INTEGER(constantMatrixDim));
 
 	SEXP answer, answerNames, answerElements, tag;
 	PROTECT(answer = NEW_LIST(3));

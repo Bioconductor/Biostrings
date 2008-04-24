@@ -1151,9 +1151,13 @@ SEXP align_pairwiseAlignment(
 	SEXP gapCode,
 	SEXP typeCode,
 	SEXP scoreOnly,
-	SEXP lookupTable,
-	SEXP substitutionMatrix,
-	SEXP substitutionMatrixDim,
 	SEXP gapOpening,
-	SEXP gapExtension
+	SEXP gapExtension,
+	SEXP qualityLookupTable,
+	SEXP qualityMatchMatrix,
+	SEXP qualityMismatchMatrix,
+	SEXP qualityMatrixDim,
+	SEXP constantLookupTable,
+	SEXP constantMatrix,
+	SEXP constantMatrixDim
 );

@@ -66,7 +66,7 @@ setMethod("baseXStringSubtype", "DNAString",
 setMethod("baseXStringSubtype", "RNAString",
     function(x) class(newEmptyXString("DNAString"))
 )
-setMethod("baseXStringSubtype", "AAAString",
+setMethod("baseXStringSubtype", "AAString",
     function(x) class(newEmptyXString("DNAString"))
 )
 
