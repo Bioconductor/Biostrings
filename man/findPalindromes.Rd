@@ -134,7 +134,7 @@
   \code{\link{matchPattern}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
-  \code{\link{mask}},
+  \code{\link{masks}},
   \link{BStringViews-class},
   \link{DNAString-class}
 }
@@ -146,7 +146,7 @@
   ## A real use case
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chrX <- Dmelanogaster[["X"]]
-  mask(chrX) <- "N"
+  masks(chrX) <- "N"
   chrX_pals <- findComplementedPalindromes(chrX, min.armlength=50, max.looplength=20)
   complementedPalindromeArmLength(chrX_pals) # 251
 

@@ -6,9 +6,9 @@ import(utils) ## for the "head" and "tail" generics
 
 exportClasses(
     .IRanges, IRanges, NormalIRanges,
+    MaskCollection,
     XRaw, XInteger,
     XString, BString, DNAString, RNAString, AAString,
-    Mask, MaskCollection,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
     BStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
@@ -35,14 +35,14 @@ exportMethods(
     ## MaskCollection objects
     nirlist, maskedwidth, maskedratio,
 
-    ## XString, MaskedXString, BStringViews and XStringList objects
+    ## XString, BStringViews, XStringList and MaskedXString objects
     XString, alphabet, subseq,
-    unmasked, mask, "mask<-",
     BStringViews, subject,
     BStringList, DNAStringList, RNAStringList, AAStringList,
-    letter,
+    unmasked, masks, "masks<-",
 
     ## Utilities
+    letter,
     substr, substring,
     alphabetFrequency, oligonucleotideFrequency,
     chartr,

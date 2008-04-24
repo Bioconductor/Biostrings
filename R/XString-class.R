@@ -58,16 +58,16 @@ setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
 
 setGeneric("baseXStringSubtype", function(x) standardGeneric("baseXStringSubtype"))
 setMethod("baseXStringSubtype", "BString",
-    function(x) class(newEmptyXString("DNAString"))
+    function(x) class(newEmptyXString("BString"))
 )
 setMethod("baseXStringSubtype", "DNAString",
     function(x) class(newEmptyXString("DNAString"))
 )
 setMethod("baseXStringSubtype", "RNAString",
-    function(x) class(newEmptyXString("DNAString"))
+    function(x) class(newEmptyXString("RNAString"))
 )
 setMethod("baseXStringSubtype", "AAString",
-    function(x) class(newEmptyXString("DNAString"))
+    function(x) class(newEmptyXString("AAString"))
 )
 
 setGeneric("codes", signature="x", function(x, ...) standardGeneric("codes"))
@@ -275,7 +275,7 @@ AAString <- function(x, start=1, nchar=NA, check=TRUE)
 ### The "XString.substr" function is very fast because it does not copy
 ### the sequence data. Return an XString object (not vectorized).
 ### 'start' and 'end' must be single integers verifying:
-###   1 <= start AND end <= length(x) AND end >= start - 1
+###   1 <= start AND end <= length(x) AND start <= end + 1
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
 ### The safe (and exported) version of "XString.substr" is the "subXString"

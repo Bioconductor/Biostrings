@@ -13,22 +13,27 @@
 \alias{width,MaskCollection-method}
 \alias{names,MaskCollection-method}
 
-% Other accessor-like methods
+% Other methods
 \alias{isEmpty,MaskCollection-method}
 \alias{max,MaskCollection-method}
 \alias{min,MaskCollection-method}
 \alias{maskedwidth,MaskCollection-method}
 \alias{maskedratio,MaskCollection-method}
 
-% "show" method and related
+% Transforming methods
+\alias{restrict,MaskCollection-method}
 \alias{reduce,MaskCollection-method}
+\alias{gaps,MaskCollection-method}
+
+% "show" method 
 \alias{show,MaskCollection-method}
 
-% Subsetting
+% Subsetting and appending
 \alias{[[,MaskCollection-method}
 \alias{[[<-,MaskCollection-method}
 \alias{[,MaskCollection-method}
 \alias{[<-,MaskCollection-method}
+\alias{append,MaskCollection-method}
 
 
 \title{MaskCollection objects}
@@ -42,7 +47,7 @@
   [TODO]
 }
 
-\section{Accesor methods}{
+\section{Basic accesor methods}{
   In the code snippets below, \code{x} is a MaskCollection object.
 
   \describe{
@@ -89,14 +94,29 @@
       \code{maskedratio(x)}:
       [TODO]
     }
+  }
+}
+
+\section{Transforming methods}{
+  In the code snippets below, \code{x} is a MaskCollection object.
+
+  \describe{
+    \item{}{
+      \code{restrict(x, start=NA, end=NA, use.names=TRUE)}:
+      [TODO]
+    }
     \item{}{
       \code{reduce(x)}:
+      [TODO]
+    }
+    \item{}{
+      \code{gaps(x)}:
       [TODO]
     }
   }
 }
 
-\section{Subsetting}{
+\section{Subsetting and appending}{
   In the code snippets below, \code{x} is a MaskCollection object.
 
   \describe{
@@ -108,6 +128,10 @@
       \code{x[i]}:
       [TODO]
     }
+    \item{}{
+      \code{append(x, values, after=length(x))}:
+      [TODO]
+    }
   }
 }
 
@@ -115,7 +139,8 @@
 
 \seealso{
   \link{MaskedXString-class},
-  \link{NormalIRanges-class}
+  \link{NormalIRanges-class},
+  \link{IRanges-utils}
 }
 
 \examples{
@@ -130,6 +155,10 @@
   x[[2]]
   length(x[[2]])
   x[[2]][-3]
+  append(x[-2], gaps(x[2]))
+  y <- restrict(x, start=8)
+  y
+  y[[2]]
 }
 
 \keyword{methods}

@@ -47,7 +47,7 @@ setMethod("names", "MaskCollection",
 .valid.MaskCollection.nirlist <- function(object)
 {
     if (!is.list(nirlist(object))
-     || !all(sapply(nirlist(object), function(x) is(x, "NormalIRanges"))))
+     || !all(sapply(nirlist(object), function(nir) is(nir, "NormalIRanges"))))
         return("the 'nirlist' slot must contain a list of NormalIRanges objects")
     if (!all(1 <= min(object)) || !all(max(object) <= width(object)))
         return("the min and max of the masks must be >= 1 and <= width of the collection")
@@ -125,7 +125,7 @@ setMethod("maskedwidth", "MaskCollection",
         if (length(nirlist) == 0)
             integer(0)
         else
-            sapply(nirlist, function(mask) sum(width(mask)))
+            sapply(nirlist, function(nir) sum(width(nir)))
     }
 )
 
@@ -134,21 +134,73 @@ setMethod("maskedratio", "MaskCollection", function(x) maskedwidth(x) / width(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "reduce" method.
+### The transformation methods (endomorphisms) "restrict", "reduce" and "gaps".
 ###
 
+### 'keep.all.ranges' is ignored.
+setMethod("restrict", "MaskCollection",
+    function(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
+    {
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (is.na(start))
+            start <- 1L
+        else if (start < 1L)
+            stop("'start' must be >= 1")
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (is.na(end))
+            end <- width(x)
+        else if (end > width(x))
+            stop("'end' must be <= 'width(x)'")
+        shift <- start - 1L
+        width <- end - shift
+        if (width < 0)
+            stop("'start' must be <= 'end' + 1")
+        x@nirlist <- lapply(nirlist(x),
+                            function(nir)
+                            {
+                                ans <- restrict(nir, start=start, end=end)
+                                .start(ans) <- start(ans) - shift
+                                ans
+                            }
+                     )
+        x@width <- width
+        if (!normalize.use.names(use.names))
+            x@NAMES <- as.character(NA)
+        x
+    }
+)
+
+### 'with.inframe.attrib' is ignored.
 setMethod("reduce", "MaskCollection",
     function(x, with.inframe.attrib=FALSE)
     {
         nirlist <- nirlist(x)
         if (length(nirlist) == 0) {
-            mask1 <- newEmptyNormalIRanges()
+            nir1 <- newEmptyNormalIRanges()
         } else {
             start1 <- unlist(lapply(nirlist, start))
             width1 <- unlist(lapply(nirlist, width))
-            mask1 <- toNormalIRanges(new("IRanges", start=start1, width=width1, check=FALSE))
+            nir1 <- toNormalIRanges(new("IRanges", start=start1, width=width1, check=FALSE))
         }
-        x@nirlist <- list(mask1)
+        x@nirlist <- list(nir1)
+        x@NAMES <- as.character(NA)
+        x
+    }
+)
+
+### 'start' and 'end' are ignored.
+setMethod("gaps", "MaskCollection",
+    function(x, start=NA, end=NA)
+    {
+        start <- 1L
+        end <- width(x)
+        x@nirlist <- lapply(nirlist(x), function(nir) gaps(nir, start=start, end=end))
         x@NAMES <- as.character(NA)
         x
     }
@@ -159,31 +211,37 @@ setMethod("reduce", "MaskCollection",
 ### The "show" method.
 ###
 
+MaskCollection.show_frame <- function(x)
+{
+    lx <- length(x)
+    cat("masks:")
+    if (lx == 0) {
+        cat(" NONE\n")
+    } else {
+        cat("\n")
+        frame <- data.frame(maskedwidth=maskedwidth(x),
+                            maskedratio=maskedratio(x),
+                            check.names=FALSE)
+        frame$names <- names(x)
+        show(frame)
+        if (lx >= 2) {
+            cat("all masks together:\n")
+            mask0 <- reduce(x)
+            frame <- data.frame(maskedwidth=maskedwidth(mask0),
+                                maskedratio=maskedratio(mask0),
+                                check.names=FALSE)
+            show(frame)
+        }
+    }
+}
+
 setMethod("show", "MaskCollection",
     function(object)
     {
         lo <- length(object)
         cat("  A ", class(object), " instance of length ", lo,
             " and width ", width(object), "\n", sep="")
-        cat("masks:")
-        if (lo == 0) {
-            cat(" NONE\n")
-        } else {
-            cat("\n")
-            frame <- data.frame(maskedwidth=maskedwidth(object),
-                                maskedratio=maskedratio(object),
-                                check.names=FALSE)
-            frame$names <- names(object)
-            show(frame)
-            if (lo >= 2) {
-                cat("reduced mask (obtained with the 'reduce' method):\n")
-                mask0 <- reduce(object)
-                frame <- data.frame(maskedwidth=maskedwidth(mask0),
-                                    maskedratio=maskedratio(mask0),
-                                    check.names=FALSE)
-                show(frame)
-            }
-        }
+        MaskCollection.show_frame(object)
     }
 )
 
@@ -261,5 +319,43 @@ setMethod("[", "MaskCollection",
 setReplaceMethod("[", "MaskCollection",
     function(x, i, j,..., value)
         stop("attempt to modify the value of a ", class(x), " instance")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+### From a MaskCollection object to a NormalIRanges object.
+setAs("MaskCollection", "NormalIRanges",
+    function(from) reduce(from)[[1]]
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "append" method.
+###
+
+setMethod("append", signature(x="MaskCollection"),
+    function(x, values, after=length(x))
+    {
+        if (!is(values, "MaskCollection"))
+            stop("'values' must be a MaskCollection object")
+        if (width(values) != width(x))
+            stop("'x' and 'values' must have the same width")
+        if (!isSingleNumber(after))
+            stop("'after' must be a single number")
+        x@nirlist <- append(nirlist(x), nirlist(values), after=after)
+        nm1 <- names(x)
+        nm2 <- names(values)
+        if (is.null(nm1) && is.null(nm2))
+            return(x)
+        if (is.null(nm1))
+            nm1 <- rep.int("", length(x))
+        if (is.null(nm2))
+            nm2 <- rep.int("", length(values))
+        x@NAMES <- append(nm1, nm2, after=after)
+        x
+    }
 )
 

@@ -81,16 +81,6 @@ setMethod("initialize", "BStringViews",
     }
 )
 
-setAs("MaskedXString", "BStringViews",
-    function(from)
-    {
-        views <- gaps(from)
-        ans_start <- start(views)
-        ans_width <- width(views)
-        new("BStringViews", unmasked(from), start=ans_start, width=ans_width, check=FALSE)
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Replacement methods.

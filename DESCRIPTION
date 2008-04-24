@@ -27,11 +27,11 @@ Collate: 00datacache.R
 	XStringCodec-class.R
 	XRaw.R XInteger.R
 	XString-class.R
-	MaskedXString-class.R
 	XStringViews-class.R
 	XStringViews-constructors.R
 	XStringSet-class.R
 	XStringList-class.R
+	MaskedXString-class.R
 	XStringPartialMatches-class.R
 	XStringAlign-class.R
 	XStringSet-io.R

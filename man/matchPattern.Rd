@@ -73,7 +73,7 @@
   \code{\link{matchPDict}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
-  \code{\link{mask}},
+  \code{\link{masks}},
   \code{\link{alphabetFrequency}},
   \link{BStringViews-class},
   \link{XString-class}
@@ -106,11 +106,11 @@
   ## Using wildcards ("N") in the pattern on a genome containing N-blocks
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chrX <- Dmelanogaster[["X"]]
-  mask(chrX) <- "N"
+  masks(chrX) <- "N"
   as(chrX, "BStringViews") # 4 non masked regions
   matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
   ## Can also be achieved with no mask
-  mask(chrX) <- NULL
+  masks(chrX) <- NULL
   matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
 }
 

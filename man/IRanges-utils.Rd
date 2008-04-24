@@ -64,7 +64,6 @@
 
 \seealso{
   \link{IRanges-class},
-  \link{mask},
   \link{BStringViews}
 }
 

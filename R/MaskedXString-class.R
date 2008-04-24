@@ -1,51 +1,4 @@
 ### =========================================================================
-### Mask objects
-### -------------------------------------------------------------------------
-
-setClass("Mask", contains="NormalIRanges")
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
-###
-### This is a trick to have the Mask validity method being the same as the
-### NormalIRanges validity method. It's ugly and we should not need to do
-### this because the Mask class inherits the validity method from its
-### parent class (i.e. calling validObject() on a Mask object will call the
-### validity method for NormalIRanges objects). But unfortunately, in the
-### absence of a validity method for Mask objects, recursive (aka deep)
-### validation of objects that have slots of type Mask is not working properly
-### as reported here:
-###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049120.html
-###
-
-setValidity("Mask", getValidity(getClassDef(extends("Mask")[2])))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization and coercion.
-###
-### We need to explicitly define the "coerce,IRanges,Mask" method below,
-### because the implicitly defined one doesn't check validity.
-###
-
-newEmptyMask <- function() as(newEmptyNormalIRanges(), "Mask")
-
-setAs("IRanges", "Mask",
-    function(from)
-    {
-        ## This calls our "coerce,IRanges,NormalIRanges" method which does
-        ## check validity.
-        from <- as(from, "NormalIRanges")
-        ## This calls the implicitly defined "coerce,NormalIRanges,mask"
-        ## which does not check anything but this is OK because a valid
-        ## NormalIRanges object is always a valid Mask object.
-        as(from, "Mask")
-    }
-)
-
-
-### =========================================================================
 ### MaskedXString objects
 ### -------------------------------------------------------------------------
 ###
@@ -68,7 +21,7 @@ setAs("IRanges", "Mask",
 #    contains="XString",
 #    representation(
 #        "VIRTUAL",
-#        mask="Mask"
+#        masks="MaskCollection"
 #    )
 #)
 ### 4 direct "MaskedXString" derivations (no additional slot)
@@ -82,7 +35,7 @@ setClass("MaskedXString",
     representation(
         "VIRTUAL",
         unmasked="XString",
-        mask="Mask"
+        masks="MaskCollection"
     )
 )
 
@@ -119,9 +72,9 @@ setClass("MaskedAAString",
 setGeneric("unmasked", function(x) standardGeneric("unmasked"))
 setMethod("unmasked", "MaskedXString", function(x) x@unmasked)
 
-setGeneric("mask", function(x) standardGeneric("mask"))
-setMethod("mask", "XString", function(x) NULL)
-setMethod("mask", "MaskedXString", function(x) x@mask)
+setGeneric("masks", function(x) standardGeneric("masks"))
+setMethod("masks", "XString", function(x) NULL)
+setMethod("masks", "MaskedXString", function(x) x@masks)
 
 setMethod("alphabet", "MaskedXString",
     function(x) alphabet(unmasked(x))
@@ -129,13 +82,6 @@ setMethod("alphabet", "MaskedXString",
 
 setMethod("length", "MaskedXString",
     function(x) length(unmasked(x))
-)
-
-setMethod("nchar", "MaskedXString",
-    function(x, type="chars", allowNA=FALSE)
-    {
-        length(x) - sum(width(mask(x)))
-    }
 )
 
 
@@ -152,20 +98,37 @@ setMethod("baseXStringSubtype", "MaskedXString",
 ### Validity.
 ###
 
-.valid.MaskedXString.mask <- function(object)
+.valid.MaskedXString.unmasked <- function(object)
 {
-    mask <- mask(object)
-    if (length(mask) == 0)
-        return(NULL)
-    if (start(mask)[1] < 1 || length(object) < end(mask)[length(mask)])
-        return("the mask contains \"out of limits\" ranges")
+    if (!is(unmasked(object), "XString"))
+        return("the 'unmasked' slot must contain an XString object")
+    if (!is(object, paste("Masked", baseXStringSubtype(object), sep="")))
+        return("bad XString subtype for the unmasked sequence")
+    if (length(object) != width(masks(object)))
+        return("the length of the object and the width of the mask collection differ")
     NULL
+}
+
+.valid.MaskedXString.masks <- function(object)
+{
+    masks <- masks(object)
+    if (!is(masks, "MaskCollection"))
+        return("the 'masks' slot must contain a MaskCollection object")
+    if (width(masks) != length(object))
+        return("the length of the object and the width of the mask collection differ")
+    NULL
+}
+
+.valid.MaskedXString <- function(object)
+{
+    c(.valid.MaskedXString.unmasked(object),
+      .valid.MaskedXString.masks(object))
 }
 
 setValidity("MaskedXString",
     function(object)
     {
-        problems <- .valid.MaskedXString.mask(object)
+        problems <- .valid.MaskedXString(object)
         if (is.null(problems)) TRUE else problems
     }
 )
@@ -177,16 +140,32 @@ setValidity("MaskedXString",
 
 ### From XString objects to MaskedXString objects.
 setAs("BString", "MaskedBString",
-    function(from) new("MaskedBString", unmasked=from, mask=newEmptyMask())
+    function(from)
+    {
+        masks <- new("MaskCollection", width=length(from))
+        new("MaskedBString", unmasked=from, masks=masks)
+    }
 )
 setAs("DNAString", "MaskedDNAString",
-    function(from) new("MaskedDNAString", unmasked=from, mask=newEmptyMask())
+    function(from)
+    {
+        masks <- new("MaskCollection", width=length(from))
+        new("MaskedDNAString", unmasked=from, masks=masks)
+    }
 )
 setAs("RNAString", "MaskedRNAString",
-    function(from) new("MaskedRNAString", unmasked=from, mask=newEmptyMask())
+    function(from)
+    {
+        masks <- new("MaskCollection", width=length(from))
+        new("MaskedRNAString", unmasked=from, masks=masks)
+    }
 )
 setAs("AAString", "MaskedAAString",
-    function(from) new("MaskedAAString", unmasked=from, mask=newEmptyMask())
+    function(from)
+    {
+        masks <- new("MaskCollection", width=length(from))
+        new("MaskedAAString", unmasked=from, masks=masks)
+    }
 )
 
 ### From MaskedXString objects to XString objects.
@@ -203,80 +182,63 @@ setAs("MaskedAAString", "AAString",
     function(from) unmasked(from)
 )
 
-### Others.
-setMethod("as.character", "MaskedXString",
-    function(x)
-    {
-        ans <- as.character(unmasked(x))
-        mask <- mask(x)
-        for (i in seq_len(length(mask))) {
-            strip <- paste(rep.int("#", width(mask)[i]), collapse="")
-            substr(ans,  start(mask)[i], end(mask)[i]) <- strip
-        }
-        ans
-    }
+### From a MaskedXString object to a MaskCollection object.
+setAs("MaskedXString", "MaskCollection",
+    function(from) masks(from)
 )
 
-setMethod("toString", "MaskedXString", function(x, ...) as.character(x))
+### From a MaskedXString object to a NormalIRanges object.
+setAs("MaskedXString", "NormalIRanges",
+    function(from) as(masks(from), "NormalIRanges")
+)
+
+### From a MaskedXString object to an IRanges object.
+setAs("MaskedXString", "IRanges",
+    function(from) as(as(from, "NormalIRanges"), "IRanges")
+)
+
+### From a MaskedXString object to a BStringViews object.
+setAs("MaskedXString", "BStringViews",
+    function(from)
+    {
+        views <- gaps(reduce(masks(from)))[[1]]
+        ans_start <- start(views)
+        ans_width <- width(views)
+        new("BStringViews", unmasked(from), start=ans_start, width=ans_width, check=FALSE)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "mask<-" replacement methods.
+### The "nchar" method.
 ###
 
-setGeneric("mask<-", function(x, value) standardGeneric("mask<-"))
+setMethod("nchar", "MaskedXString",
+    function(x, type="chars", allowNA=FALSE)
+    {
+        length(x) - maskedwidth(reduce(masks(x)))
+    }
+)
 
-### Setting the mask of a MaskedXString object...
-setReplaceMethod("mask", signature(x="MaskedXString", value="NULL"),
-    function(x, value) unmasked(x)
-)
-setReplaceMethod("mask", signature(x="MaskedXString", value="Mask"),
-    function(x, value)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The transformation methods (endomorphisms) "reduce" and "gaps".
+###
+
+### 'with.inframe.attrib' is ignored.
+setMethod("reduce", "MaskedXString",
+    function(x, with.inframe.attrib=FALSE)
     {
-        x@mask <- restrict(value, 1L, length(x), use.names=FALSE)
-        x
-    }
-)
-setReplaceMethod("mask", signature(x="MaskedXString", value="NormalIRanges"),
-    function(x, value)
-    {
-        mask(x) <- as(value, "Mask")
-        x
-    }
-)
-setReplaceMethod("mask", signature(x="MaskedXString", value="IRanges"),
-    function(x, value)
-    {
-        mask(x) <- toNormalIRanges(value)
-        x
-    }
-)
-setReplaceMethod("mask", signature(x="MaskedXString", value="XString"),
-    function(x, value)
-    {
-        ## We need to remove the current mask before calling matchPattern()
-        mask(x) <- NULL
-        mask(x) <- matchPattern(value, x)
-        x
-    }
-)
-setReplaceMethod("mask", signature(x="MaskedXString", value="character"),
-    function(x, value)
-    {
-        mask(x) <- XString(baseXStringSubtype(x), value)
+        x@masks <- reduce(masks(x))
         x
     }
 )
 
-### Setting the mask of an XString object...
-setReplaceMethod("mask", signature(x="XString", value="NULL"),
-    function(x, value) x
-)
-setReplaceMethod("mask", signature(x="XString", value="ANY"),
-    function(x, value)
+### 'start' and 'end' are ignored.
+setMethod("gaps", "MaskedXString",
+    function(x, start=NA, end=NA)
     {
-        x <- as(x, paste("Masked", baseXStringSubtype(x), sep=""))
-        mask(x) <- value
+        x@masks <- gaps(masks(x))
         x
     }
 )
@@ -288,18 +250,17 @@ setReplaceMethod("mask", signature(x="XString", value="ANY"),
 ### Return a MaskedXString object (not vectorized).
 ### Like for XString.substr(), 'start' and 'end' must be single integers
 ### verifying:
-###   1 <= start AND end <= length(x) AND end >= start - 1
+###   1 <= start AND end <= length(x) AND start <= end + 1
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
 ###
 
 MaskedXString.substr <- function(x, start, end)
 {
+    ## The "restrict" method for MaskCollection objects does actually check
+    ## that 'start' and 'end' are safe.
+    x@masks <- restrict(masks(x), start=start, end=end)
     x@unmasked <- XString.substr(unmasked(x), start, end)
-    mask <- mask(x)
-    shift <- start - 1L
-    .start(mask) <- start(mask) - shift
-    mask(x) <- mask # will restrict the mask
     x
 }
 
@@ -307,6 +268,8 @@ MaskedXString.substr <- function(x, start, end)
 ### The "subseq" method for MaskedXString objects.
 ###
 
+### This method is used by the toSeqSnippet() function when called
+### on a MaskedXString object.
 setMethod("subseq", "MaskedXString",
     function(x, start=NA, end=NA, width=NA)
     {
@@ -318,6 +281,28 @@ setMethod("subseq", "MaskedXString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "as.character" and "toString" methods.
+###
+
+### This method is used by the toSeqSnippet() function when called
+### on a MaskedXString object.
+setMethod("as.character", "MaskedXString",
+    function(x)
+    {
+        ans <- as.character(unmasked(x))
+        nir0 <- as(x, "NormalIRanges")
+        for (i in seq_len(length(nir0))) {
+            strip <- paste(rep.int("#", width(nir0)[i]), collapse="")
+            substr(ans,  start(nir0)[i], end(nir0)[i]) <- strip
+        }
+        ans
+    }
+)
+
+setMethod("toString", "MaskedXString", function(x, ...) as.character(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 
@@ -325,26 +310,66 @@ setMethod("show", "MaskedXString",
     function(object)
     {
         lo <- length(object)
-        nmasked <- sum(width(mask(object)))
-        cat("  ", lo, "-letter (", nmasked, " masked with #) \"",
-                  class(object), "\" instance\n", sep="")
+        cat("  ", lo, "-letter \"", class(object), "\" instance (# for masking)\n", sep="")
         cat("seq:", toSeqSnippet(object, getOption("width") - 5))
         cat("\n")
+        MaskCollection.show_frame(masks(object))
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "gaps" method.
-###
-### Allows mask inversion in a convenient way: mask(x) <- gaps(x)
+### The "masks<-" replacement methods.
 ###
 
-### 'start' and 'end' are ignored.
-setMethod("gaps", "MaskedXString",
-    function(x, start=NA, end=NA)
+setGeneric("masks<-", function(x, value) standardGeneric("masks<-"))
+
+### Setting the masks of a MaskedXString object...
+setReplaceMethod("masks", signature(x="MaskedXString", value="NULL"),
+    function(x, value) unmasked(x)
+)
+setReplaceMethod("masks", signature(x="MaskedXString", value="MaskCollection"),
+    function(x, value)
     {
-        gaps(mask(x), start=1, end=length(x))
+        if (width(value) != length(x))
+            stop("the width of the mask collection must be equal ",
+                 "to the length of the sequence")
+        x@masks <- value
+        x
+    }
+)
+setReplaceMethod("masks", signature(x="MaskedXString", value="XString"),
+    function(x, value)
+    {
+        ## We need to remove the current masks before calling matchPattern()
+        masks(x) <- NULL
+        nir1 <- toNormalIRanges(matchPattern(value, x))
+        name1 <- paste(as.character(value), "-blocks", sep="")
+        masks(x) <- new("MaskCollection",
+                        nirlist=list(nir1),
+                        width=length(x),
+                        NAMES=name1)
+        x
+    }
+)
+setReplaceMethod("masks", signature(x="MaskedXString", value="character"),
+    function(x, value)
+    {
+        masks(x) <- XString(baseXStringSubtype(x), value)
+        x
+    }
+)
+
+### Setting the masks of an XString object...
+setReplaceMethod("masks", signature(x="XString", value="NULL"),
+    function(x, value) x
+)
+setReplaceMethod("masks", signature(x="XString", value="ANY"),
+    function(x, value)
+    {
+        x <- as(x, paste("Masked", baseXStringSubtype(x), sep=""))
+        masks(x) <- value
+        x
     }
 )
 

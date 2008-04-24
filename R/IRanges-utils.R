@@ -53,11 +53,11 @@ setGeneric("restrict", signature="x",
 .restrict.IRanges <- function(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
 {
     if (!isSingleNumberOrNA(start))
-        stop("'start' must be a single integer")
+        stop("'start' must be a single integer or NA")
     if (!is.integer(start))
         start <- as.integer(start)
     if (!isSingleNumberOrNA(end))
-        stop("'end' must be a single integer")
+        stop("'end' must be a single integer or NA")
     if (!is.integer(end))
         end <- as.integer(end)
     if (!isTRUEorFALSE(keep.all.ranges))
