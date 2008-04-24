@@ -410,6 +410,24 @@ setMethod("[", "XStringList",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (!is.atomic(i))
+            stop("invalid subscript type")
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
+        lx <- length(x)
+        if (is.numeric(i)) {
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
+            if (any(i < -lx) || any(i > lx))
+                stop("subscript out of bounds")
+        } else if (is.logical(i)) {
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
+            if (length(i) > lx)
+                stop("subscript out of bounds")
+        } else if (!is.null(i)) {
+            stop("invalid subscript type")
+        }
         x@seqs <- x@seqs[i]
         x
     }
@@ -432,6 +450,16 @@ setMethod("[[", "XStringList",
             stop("subscript is missing")
         if (is.character(i))
             stop("cannot subset a ", class(x), " object by names")
+        if (!is.numeric(i))
+            stop("invalid subscript type")
+        if (length(i) < 1L)
+            stop("attempt to select less than one element")
+        if (length(i) > 1L)
+            stop("attempt to select more than one element")
+        if (is.na(i))
+            stop("subscript cannot be NA")
+        if (i < 1L || i > length(x))
+            stop("subscript out of bounds")
         as.list(x)[[i]]
     }
 )

@@ -84,10 +84,16 @@ setMethod("[", "ACtree",
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
         lx <- length(x)
-        if (missing(i))
+        if (missing(i)) {
             i <- 0:(lx-1)
-        else if (!is.integer(i))
-            i <- as.integer(i)
+        } else {
+            if (!is.numeric(i))
+                stop("invalid subscript type")
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
+            if (!is.integer(i))
+                i <- as.integer(i)
+        }
         ints_per_acnode <- .ACtree.ints_per_acnode(x)
         ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
         ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)

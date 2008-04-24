@@ -11,7 +11,7 @@
 \alias{TBdna_PDict-class}
 \alias{TBdna_PDict}
 
-% Low level initialization and accesor methods:
+% Low level initialization and accessor methods:
 \alias{initialize,CWdna_PDict-method}
 \alias{length,CWdna_PDict-method}
 \alias{width,CWdna_PDict-method}

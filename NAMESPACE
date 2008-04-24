@@ -33,7 +33,7 @@ exportMethods(
     "start<-", "width<-", "end<-", "desc<-",
 
     ## MaskCollection objects
-    masks, maskedwidth, maskedratio,
+    nirlist, maskedwidth, maskedratio,
 
     ## XString, MaskedXString, BStringViews and XStringList objects
     XString, alphabet, subseq,

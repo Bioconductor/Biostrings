@@ -541,13 +541,25 @@ setMethod("[", ".IRanges",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (!is.atomic(i))
+            stop("invalid subscript type")
         if (is.character(i))
             stop("cannot subset a ", class(x), " object by names")
         lx <- length(x)
         if (is.numeric(i)) {
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
             if (any(i < -lx) || any(i > lx))
                 stop("subscript out of bounds")
+            if (is(x, "NormalIRanges") && all(i >= 0)) {
+                i <- i[i != 0]
+                if (.Internal(is.unsorted(i)) || any(duplicated(i)))
+                    stop("positive numeric subscript must be strictly increasing ",
+                         "for NormalIRanges objects")
+            }
         } else if (is.logical(i)) {
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
             if (length(i) > lx)
                 stop("subscript out of bounds")
         } else if (!is.null(i)) {
@@ -559,13 +571,6 @@ setMethod("[", ".IRanges",
             slot(x, "NAMES", check=FALSE) <- names(x)[i]
         x
     }
-)
-
-### Only subsetting with a strictly increasing subscript would preserve
-### normality but we don't need this for now.
-setMethod("[", "NormalIRanges",
-    function(x, i, j, ..., drop)
-        stop("attempt to subset a ", class(x), " object")
 )
 
 setReplaceMethod("[", ".IRanges",

@@ -4,9 +4,14 @@
 
 setClass("MaskCollection",
     representation(
-        masks="list",      # a list of NormalIRanges objects
+        nirlist="list",    # a list of NormalIRanges objects
         width="integer",
         NAMES="character"
+    ),
+    prototype(
+        nirlist=list(),
+        width=0L,
+        NAMES=as.character(NA)
     )
 )
 
@@ -15,46 +20,16 @@ setClass("MaskCollection",
 ### Accessor methods.
 ###
 
-setGeneric("masks", function(x) standardGeneric("masks"))
-setMethod("masks", "MaskCollection", function(x) x@masks)
+setGeneric("nirlist", function(x) standardGeneric("nirlist"))
+setMethod("nirlist", "MaskCollection", function(x) x@nirlist)
 
-setMethod("length", "MaskCollection", function(x) length(masks(x)))
+setMethod("length", "MaskCollection", function(x) length(nirlist(x)))
 
 setMethod("width", "MaskCollection", function(x) x@width)
 
 setMethod("names", "MaskCollection",
     function(x)
         if (length(x@NAMES) == 1 && is.na(x@NAMES)) NULL else x@NAMES
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "isEmpty" methods.
-###
-
-setMethod("isEmpty", "MaskCollection", function(x) sapply(masks(x), isEmpty))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "max" and "min" methods.
-###
-
-setMethod("max", "MaskCollection",
-    function(x, ..., na.rm)
-    {
-        if (length(x) == 0)
-            return(integer(0))
-        sapply(masks(x), max)
-    }
-)
-
-setMethod("min", "MaskCollection",
-    function(x, ..., na.rm)
-    {
-        if (length(x) == 0)
-            return(integer(0))
-        sapply(masks(x), min)
-    }
 )
 
 
@@ -69,11 +44,11 @@ setMethod("min", "MaskCollection",
     NULL
 }
 
-.valid.MaskCollection.masks <- function(object)
+.valid.MaskCollection.nirlist <- function(object)
 {
-    if (!is.list(masks(object))
-     || !all(sapply(masks(object), function(x) is(x, "NormalIRanges"))))
-        return("the 'masks' slot must contain a list of NormalIRanges objects")
+    if (!is.list(nirlist(object))
+     || !all(sapply(nirlist(object), function(x) is(x, "NormalIRanges"))))
+        return("the 'nirlist' slot must contain a list of NormalIRanges objects")
     if (!all(1 <= min(object)) || !all(max(object) <= width(object)))
         return("the min and max of the masks must be >= 1 and <= width of the collection")
     NULL
@@ -95,7 +70,7 @@ setMethod("min", "MaskCollection",
 .valid.MaskCollection <- function(object)
 {
     c(.valid.MaskCollection.width(object),
-      .valid.MaskCollection.masks(object),
+      .valid.MaskCollection.nirlist(object),
       .valid.MaskCollection.names(object))
 }
 
@@ -109,6 +84,36 @@ setValidity("MaskCollection",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "isEmpty" methods.
+###
+
+setMethod("isEmpty", "MaskCollection", function(x) sapply(nirlist(x), isEmpty))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "max" and "min" methods.
+###
+
+setMethod("max", "MaskCollection",
+    function(x, ..., na.rm)
+    {
+        if (length(x) == 0)
+            return(integer(0))
+        sapply(nirlist(x), max)
+    }
+)
+
+setMethod("min", "MaskCollection",
+    function(x, ..., na.rm)
+    {
+        if (length(x) == 0)
+            return(integer(0))
+        sapply(nirlist(x), min)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "maskedwidth" and "maskedratio" generics and methods.
 ###
 
@@ -116,11 +121,11 @@ setGeneric("maskedwidth", function(x) standardGeneric("maskedwidth"))
 setMethod("maskedwidth", "MaskCollection",
     function(x)
     {
-        masks <- masks(x)
-        if (length(masks) == 0)
+        nirlist <- nirlist(x)
+        if (length(nirlist) == 0)
             integer(0)
         else
-            sapply(masks, function(mask) sum(width(mask)))
+            sapply(nirlist, function(mask) sum(width(mask)))
     }
 )
 
@@ -135,15 +140,15 @@ setMethod("maskedratio", "MaskCollection", function(x) maskedwidth(x) / width(x)
 setMethod("reduce", "MaskCollection",
     function(x, with.inframe.attrib=FALSE)
     {
-        masks <- masks(x)
-        if (length(masks) == 0) {
+        nirlist <- nirlist(x)
+        if (length(nirlist) == 0) {
             mask1 <- newEmptyNormalIRanges()
         } else {
-            start1 <- unlist(lapply(masks, start))
-            width1 <- unlist(lapply(masks, width))
+            start1 <- unlist(lapply(nirlist, start))
+            width1 <- unlist(lapply(nirlist, width))
             mask1 <- toNormalIRanges(new("IRanges", start=start1, width=width1, check=FALSE))
         }
-        x@masks <- list(mask1)
+        x@nirlist <- list(mask1)
         x@NAMES <- as.character(NA)
         x
     }
@@ -170,6 +175,14 @@ setMethod("show", "MaskCollection",
                                 check.names=FALSE)
             frame$names <- names(object)
             show(frame)
+            if (lo >= 2) {
+                cat("reduced mask (obtained with the 'reduce' method):\n")
+                mask0 <- reduce(object)
+                frame <- data.frame(maskedwidth=maskedwidth(mask0),
+                                    maskedratio=maskedratio(mask0),
+                                    check.names=FALSE)
+                show(frame)
+            }
         }
     }
 )
@@ -179,6 +192,39 @@ setMethod("show", "MaskCollection",
 ### Subsetting.
 ###
 
+### Extract the i-th element of a MaskCollection object as a NormalIRanges
+### object.
+### Supported 'i' types: numeric vector of length 1.
+setMethod("[[", "MaskCollection",
+    function(x, i, j, ...)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (missing(i))
+            stop("subscript is missing")
+        if (is.character(i))
+            stop("cannot subset a ", class(x), " object by names")
+        if (!is.numeric(i))
+            stop("invalid subscript type")
+        if (length(i) < 1L)
+            stop("attempt to select less than one element")
+        if (length(i) > 1L)
+            stop("attempt to select more than one element")
+        if (is.na(i))
+            stop("subscript cannot be NA")
+        if (i < 1L || i > length(x))
+            stop("subscript out of bounds")
+        nirlist(x)[[i]]
+    }
+)
+
+setReplaceMethod("[[", "MaskCollection",
+    function(x, i, j,..., value)
+    {
+        stop("attempt to modify the value of a ", class(x), " instance")
+    }
+)
+
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
 setMethod("[", "MaskCollection",
     function(x, i, j, ..., drop)
@@ -187,19 +233,25 @@ setMethod("[", "MaskCollection",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (!is.atomic(i))
+            stop("invalid subscript type")
         if (is.character(i))
             stop("cannot subset a ", class(x), " object by names")
         lx <- length(x)
         if (is.numeric(i)) {
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
             if (any(i < -lx) || any(i > lx))
                 stop("subscript out of bounds")
         } else if (is.logical(i)) {
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
             if (length(i) > lx)
                 stop("subscript out of bounds")
         } else if (!is.null(i)) {
             stop("invalid subscript type")
         }
-        slot(x, "masks", check=FALSE) <- masks(x)[i]
+        slot(x, "nirlist", check=FALSE) <- nirlist(x)[i]
         if (!is.null(names(x)))
             slot(x, "NAMES", check=FALSE) <- names(x)[i]
         x

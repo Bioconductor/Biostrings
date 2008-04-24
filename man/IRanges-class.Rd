@@ -40,7 +40,6 @@
 
 % Subsetting
 \alias{[,.IRanges-method}
-\alias{[,NormalIRanges-method}
 \alias{[<-,.IRanges-method}
 
 % "duplicated" method
@@ -162,8 +161,7 @@
 }
 
 \section{Subsetting}{
-  In the code snippet below, \code{x} is an IRanges object
-  that is NOT a NormalIRanges object.
+  In the code snippet below, \code{x} is an IRanges object.
 
   \describe{
     \item{}{
@@ -171,7 +169,9 @@
       Return a new IRanges object (of the same type as \code{x})
       made of the selected ranges.
       \code{i} can be a numeric vector, a logical vector, \code{NULL}
-      or missing.
+      or missing. If \code{x} is a NormalIRanges object and \code{i}
+      a positive numeric subscript (i.e. a numeric vector of positive
+      values), then \code{i} must be strictly increasing.
     }
   }
 }
