@@ -29,8 +29,8 @@ exportMethods(
     nchar, update,
 
     ## IRanges objects
-    start, width, end, desc, isNormal, whichFirstNotNormal, isEmpty, max, min,
-    "start<-", "width<-", "end<-", "desc<-",
+    start, width, end, isNormal, whichFirstNotNormal, isEmpty, max, min,
+    "start<-", "width<-", "end<-",
 
     ## MaskCollection objects
     nirlist, maskedwidth, maskedratio,
@@ -95,6 +95,9 @@ export(
     maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
     alignScore,
+
+    ## Aliases
+    desc, "desc<-",
 
     ## Deprecated
     subBString,

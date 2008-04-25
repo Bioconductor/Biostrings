@@ -695,7 +695,7 @@ extractAllMatches <- function(subject, mindex)
     allviews <- unlist(mindex)
     new("XStringViews", subject,
         start=start(allviews), width=width(allviews),
-        desc=desc(allviews), check=FALSE)
+        names=names(allviews), check=FALSE)
 }
 
 

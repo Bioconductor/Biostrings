@@ -55,8 +55,7 @@ setMethod("names", ".IRanges",
 )
 
 ### "desc" is an alias for "names". It might be deprecated soon...
-setGeneric("desc", function(x) standardGeneric("desc"))
-setMethod("desc", "ANY", function(x) names(x))
+desc <- function(x) names(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -493,8 +492,9 @@ setReplaceMethod("names", ".IRanges",
     }
 )
 
-setGeneric("desc<-", signature="x", function(x, value) standardGeneric("desc<-"))
-setReplaceMethod("desc", "ANY", function(x, value) `names<-`(x, value))
+
+### "desc<-" is an alias for "names<-". It might be deprecated soon...
+`desc<-` <- function(x, value) `names<-`(x, value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

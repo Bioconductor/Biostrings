@@ -17,7 +17,6 @@
 \alias{end,.IRanges-method}
 \alias{names,.IRanges-method}
 \alias{desc}
-\alias{desc,ANY-method}
 
 \alias{isNormal}
 \alias{isNormal,.IRanges-method}
@@ -57,7 +56,6 @@
 \alias{end<-,IRanges-method}
 \alias{names<-,.IRanges-method}
 \alias{desc<-}
-\alias{desc<-,ANY-method}
 \alias{update,IRanges-method}
 
 % Deprecated methods

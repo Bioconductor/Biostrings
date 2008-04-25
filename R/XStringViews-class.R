@@ -64,10 +64,10 @@ setValidity("XStringViews",
 ### Not intended to be used directly by the user.
 setMethod("initialize", "XStringViews",
     function(.Object, subject, start=integer(0), width=integer(0),
-                               desc=NULL, check=TRUE)
+                               names=NULL, check=TRUE)
     {
         .Object <- callNextMethod(.Object, start=start, width=width,
-                                           names=desc, check=check)
+                                           names=names, check=check)
         slot(.Object, "subject", check=FALSE) <- subject
         if (check) {
             ## I found that using validObject() in "initialize" doesn't work
@@ -477,7 +477,7 @@ setMethod("as.character", "XStringViews",
             ans <- sapply(seq_len(length(x)),
                           function(i) XStringViews.get_view(subject(x), start(x)[i], end(x)[i]))
         if (use.names)
-            names(ans) <- desc(x)
+            names(ans) <- names(x)
         ans
     }
 )
@@ -503,7 +503,7 @@ setMethod("as.matrix", "XStringViews",
         y <- unlist(strsplit(y, NULL), recursive=FALSE, use.names=FALSE)
         m <- matrix(y, nrow=nrow, byrow=TRUE)
         if (use.names)
-            rownames(m) <- desc(x)
+            rownames(m) <- names(x)
         m
     }
 )

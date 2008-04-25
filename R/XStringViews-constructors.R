@@ -132,7 +132,7 @@ setMethod("XStringViews", "ANY",
         seq <- paste(src, collapse=collapse)
         subject <- XString(subjectClass, seq)
         ans <- adjacentViews(subject, nchar(src), nchar(collapse))
-        desc(ans) <- names(src)
+        names(ans) <- names(src)
         ans
     }
 )
