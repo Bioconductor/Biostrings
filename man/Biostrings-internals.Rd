@@ -4,6 +4,9 @@
 \alias{class:.IRanges}
 \alias{.IRanges-class}
 \alias{.IRanges}
+\alias{class:LockedIRanges}
+\alias{LockedIRanges-class}
+\alias{LockedIRanges}
 
 \alias{show,externalptr-method}
 

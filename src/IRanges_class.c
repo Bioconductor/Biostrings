@@ -86,22 +86,22 @@ void _copy_IRanges_slots(SEXP x, SEXP x0)
 }
 
 /*
- * Do NOT make this a .Call() entry point!
+ * Never try to make this a .Call() entry point!
  * Its arguments are NOT duplicated so it would be a disaster if they were
  * coming from the user space.
  */
-SEXP _new_IRanges(SEXP start, SEXP width, SEXP names)
+SEXP _new_IRanges(const char *class, SEXP start, SEXP width, SEXP names)
 {
 	SEXP class_def, ans;
 
-	class_def = MAKE_CLASS(".IRanges");
+	class_def = MAKE_CLASS(class);
 	PROTECT(ans = NEW_OBJECT(class_def));
 	set_IRanges_slots(ans, start, width, names);
 	UNPROTECT(1);
 	return ans;
 }
 
-SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
+SEXP _new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs)
 {
 	RoSeq *seq;
 	SEXP start, width, ans;
@@ -126,7 +126,7 @@ SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
 			*(start_elt++) = *(start_prev_elt++) + (seq++)->nelt;
 			*(width_elt++) = seq->nelt;
 		}
-	PROTECT(ans = _new_IRanges(start, width, R_NilValue));
+	PROTECT(ans = _new_IRanges(class, start, width, R_NilValue));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): END\n");
@@ -140,13 +140,13 @@ SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs)
  * Allocation WITHOUT initialization.
  * The 'start' and 'width' slots are not initialized (they contain junk).
  */
-SEXP _alloc_IRanges(int length)
+SEXP _alloc_IRanges(const char *class, int length)
 {
         SEXP start, width, ans;
 
         PROTECT(start = NEW_INTEGER(length));
         PROTECT(width = NEW_INTEGER(length));
-        PROTECT(ans = _new_IRanges(start, width, R_NilValue));
+        PROTECT(ans = _new_IRanges(class, start, width, R_NilValue));
         UNPROTECT(3);
         return ans;
 }

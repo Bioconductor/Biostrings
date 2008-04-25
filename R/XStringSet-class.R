@@ -26,7 +26,7 @@
 ### using something like this for the XStringSet class:
 ###
 ###   setClass("XRawViews",
-###     contains=".IRanges",
+###     contains="LockedIRanges",
 ###     representation(
 ###         subject="XRaw"
 ###     )
@@ -59,7 +59,7 @@
 ###
 
 setClass("XStringSet",
-    contains=".IRanges",
+    contains="LockedIRanges",
     representation(
         "VIRTUAL",
         super="XString"
@@ -165,7 +165,7 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 {
     class <- paste(baseClass, "Set", sep="")
     super <- subseq(x, start=start, end=end, width=width)
-    ranges <- new(".IRanges", 1L, length(super), NULL)
+    ranges <- new("LockedIRanges", 1L, length(super), NULL)
     newXStringSet(class, super, ranges)
 }
 

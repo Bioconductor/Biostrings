@@ -331,14 +331,21 @@ void _copy_IRanges_slots(
 );
 
 SEXP _new_IRanges(
+	const char *class,
 	SEXP start,
 	SEXP width,
 	SEXP names
 );
 
-SEXP _new_IRanges_from_RoSeqs(RoSeqs seqs);
+SEXP _new_IRanges_from_RoSeqs(
+	const char *class,
+	RoSeqs seqs
+);
 
-SEXP _alloc_IRanges(int length);
+SEXP _alloc_IRanges(
+	const char *class,
+	int length
+);
 
 
 /* IRanges_utils.c */

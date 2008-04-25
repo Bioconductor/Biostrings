@@ -14,6 +14,7 @@ setClass(".IRanges",
     )
 )
 
+setClass("LockedIRanges", contains=".IRanges")
 setClass("IRanges", contains=".IRanges")
 
 ### A NormalIRanges object is an IRanges object where the ranges are:

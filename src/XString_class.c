@@ -146,7 +146,9 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 }
 
 /*
- * NOT a .Call() entry point!
+ * Never try to make this a .Call() entry point!
+ * Its arguments are NOT duplicated so it would be a disaster if they were
+ * coming from the user space.
  */
 SEXP _new_XString(const char *class, SEXP xdata, int offset, int length)
 {
