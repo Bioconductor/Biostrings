@@ -50,6 +50,7 @@
 \alias{initialize,XStringSet-method}
 \alias{XStringSet,character-method}
 \alias{XStringSet,AsIs-method}
+\alias{XStringSet,XString-method}
 \alias{XStringSet,XStringSet-method}
 \alias{XStringSet,BStringViews-method}
 

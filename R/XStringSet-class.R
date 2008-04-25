@@ -136,11 +136,11 @@ setMethod("initialize", "XStringSet",
 ### Helper functions used by the versatile constructors below.
 ###
 
-newXStringSet <- function(class, super, ranges, x, use.names)
+newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 {
-    use.names <- normalize.use.names(use.names)
-    if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new(class, super, start(ranges), width(ranges), ans_names)
+    if (!normalize.use.names(use.names))
+        names <- NULL
+    new(class, super, start(ranges), width(ranges), names)
 }
 
 .charToXString <- function(x, safe_locs, class)
@@ -158,7 +158,15 @@ newXStringSet <- function(class, super, ranges, x, use.names)
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     super <- .charToXString(x, safe_locs, baseClass)
     ranges <- intToAdjacentRanges(width(safe_locs))
-    newXStringSet(class, super, ranges, x, use.names)
+    newXStringSet(class, super, ranges, use.names=use.names, names=names(x))
+}
+
+.XStringToXStringSet <- function(x, start, end, width, use.names, baseClass)
+{
+    class <- paste(baseClass, "Set", sep="")
+    super <- subseq(x, start=start, end=end, width=width)
+    ranges <- new(".IRanges", 1L, length(super), NULL)
+    newXStringSet(class, super, ranges)
 }
 
 .narrowXStringSet <- function(x, start, end, width, use.names, baseClass)
@@ -182,7 +190,7 @@ newXStringSet <- function(class, super, ranges, x, use.names)
         super <- XString(baseClass, super(x))
         ranges <- narrow(x, start, end, width)
     }
-    newXStringSet(class, super, ranges, x, use.names)
+    newXStringSet(class, super, ranges, use.names=use.names, names=names(x))
 }
 
 ### Canonical conversion from BStringViews to XStringSet
@@ -223,6 +231,10 @@ setMethod("XStringSet", "AsIs",
         class(x) <- "character" # keeps the names (unlike as.character())
 	.charToXStringSet(x, start, end, width, use.names, baseClass)
     }
+)
+setMethod("XStringSet", "XString",
+    function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        .XStringToXStringSet(x, start, end, width, use.names, baseClass)
 )
 setMethod("XStringSet", "XStringSet",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
