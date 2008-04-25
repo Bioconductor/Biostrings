@@ -150,7 +150,8 @@
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
-  \link{BStringViews-class}
+  \link{XStringSet-class},
+  \link{XStringViews-class}
 }
 
 \examples{

@@ -138,7 +138,7 @@ setGeneric("mismatch", signature="x",
 ###   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), max.mismatch=2)
 ###   mismatch("TGA", mp)
 ### Dispatch on 'x' (see signature of generic).
-setMethod("mismatch", "BStringViews",
+setMethod("mismatch", "XStringViews",
     function(pattern, x, fixed)
     {
         if (class(pattern) != class(x@subject))

@@ -84,7 +84,7 @@
   \code{\link{subXString}},
   \link{XString-class},
   \link{RNAString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

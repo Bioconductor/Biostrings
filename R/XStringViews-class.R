@@ -1,13 +1,13 @@
 ### =========================================================================
-### The BStringViews class
+### The XStringViews class
 ### -------------------------------------------------------------------------
 ###
-### The BStringViews class is the basic container for storing a set of views
+### The XStringViews class is the basic container for storing a set of views
 ### (start/end locations) on the same XString object, called the "subject"
 ### string.
 ###
 
-setClass("BStringViews",
+setClass("XStringViews",
     contains="IRanges",
     representation(
         subject="XString"
@@ -20,38 +20,38 @@ setClass("BStringViews",
 ###
 
 setGeneric("subject", function(x) standardGeneric("subject"))
-setMethod("subject", "BStringViews", function(x) x@subject)
+setMethod("subject", "XStringViews", function(x) x@subject)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
 
-.valid.BStringViews.subject <- function(object)
+.valid.XStringViews.subject <- function(object)
 {
     if (!is(subject(object), "XString"))
         return("the subject must be an XString object")
     NULL
 }
 
-.valid.BStringViews.width <- function(object)
+.valid.XStringViews.width <- function(object)
 {
     if (length(width(object)) != 0 && min(width(object)) < 1L)
         return("null widths are not allowed")
     NULL
 }
 
-.valid.BStringViews <- function(object)
+.valid.XStringViews <- function(object)
 {
-    #cat("validating BStringViews object...\n")
-    c(.valid.BStringViews.subject(object),
-      .valid.BStringViews.width(object))
+    #cat("validating XStringViews object...\n")
+    c(.valid.XStringViews.subject(object),
+      .valid.XStringViews.width(object))
 }
 
-setValidity("BStringViews",
+setValidity("XStringViews",
     function(object)
     {
-        problems <- .valid.BStringViews(object)
+        problems <- .valid.XStringViews(object)
         if (is.null(problems)) TRUE else problems
     }
 )
@@ -62,7 +62,7 @@ setValidity("BStringViews",
 ###
 
 ### Not intended to be used directly by the user.
-setMethod("initialize", "BStringViews",
+setMethod("initialize", "XStringViews",
     function(.Object, subject, start=integer(0), width=integer(0),
                                desc=NULL, check=TRUE)
     {
@@ -74,7 +74,7 @@ setMethod("initialize", "BStringViews",
             ## properly (validation is called too many times and not in an
             ## order that makes sense to me...)
             #validObject(.Object)
-            problems <- .valid.BStringViews(.Object)
+            problems <- .valid.XStringViews(.Object)
             if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
         .Object
@@ -85,18 +85,18 @@ setMethod("initialize", "BStringViews",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Replacement methods.
 ###
-### BStringViews objects inherit the replacement methods defined for parent
+### XStringViews objects inherit the replacement methods defined for parent
 ### class IRanges (see IRanges-class.R).
 ### However, the "width" method needs to be overridden because of the
-### additional constraint that applies to BStringViews objects.
+### additional constraint that applies to XStringViews objects.
 ###
 
-setReplaceMethod("width", "BStringViews",
+setReplaceMethod("width", "XStringViews",
     function(x, check=TRUE, value)
     {
         x <- callNextMethod(x, check=TRUE, value)
         if (check) {
-            problem <- .valid.BStringViews.width(x)
+            problem <- .valid.XStringViews.width(x)
             if (!is.null(problem)) stop(problem)
         }
         x
@@ -108,7 +108,7 @@ setReplaceMethod("width", "BStringViews",
 ### The "nchar" method.
 ###
 
-setMethod("nchar", "BStringViews",
+setMethod("nchar", "XStringViews",
     function(x, type="chars", allowNA=FALSE)
     {
         if (length(x) == 0)
@@ -132,8 +132,8 @@ setMethod("nchar", "BStringViews",
 ### padd the result with spaces to produce the "margin effect"
 ### if 'start' or 'end' are out of limits.
 
-### nchar(BStringViews.get_view(x, start, end)) is always end-start+1
-BStringViews.get_view <- function(x, start, end)
+### nchar(XStringViews.get_view(x, start, end)) is always end-start+1
+XStringViews.get_view <- function(x, start, end)
 {
     lx <- length(x)
     if (end < 1 || start > lx)
@@ -151,24 +151,24 @@ BStringViews.get_view <- function(x, start, end)
     paste(Lmargin, XString.read(x, start, end), Rmargin, sep="")
 }
 
-### nchar(BStringViews.get_snippet(x, start, end, snippetWidth)) is <= snippetWidth
-BStringViews.get_snippet <- function(x, start, end, snippetWidth)
+### nchar(XStringViews.get_snippet(x, start, end, snippetWidth)) is <= snippetWidth
+XStringViews.get_snippet <- function(x, start, end, snippetWidth)
 {
     if (snippetWidth < 7)
         snippetWidth <- 7
     width <- end - start + 1
     if (width <= snippetWidth) {
-        BStringViews.get_view(x, start, end)
+        XStringViews.get_view(x, start, end)
     } else {
         w1 <- (snippetWidth - 2) %/% 2
         w2 <- (snippetWidth - 3) %/% 2
-        paste(BStringViews.get_view(x, start, start+w1-1),
+        paste(XStringViews.get_view(x, start, start+w1-1),
               "...",
-              BStringViews.get_view(x, end-w2+1, end), sep="")
+              XStringViews.get_view(x, end-w2+1, end), sep="")
     }
 }
 
-BStringViews.show_vframe_header <- function(iW, startW, endW, widthW)
+XStringViews.show_vframe_header <- function(iW, startW, endW, widthW)
 {
     cat(format("", width=iW+1),
         format("start", width=startW, justify="right"), " ",
@@ -177,7 +177,7 @@ BStringViews.show_vframe_header <- function(iW, startW, endW, widthW)
         sep="")
 }
 
-BStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
+XStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
 {
     start <- start(x)[i]
     end <- end(x)[i]
@@ -187,12 +187,12 @@ BStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
         format(start, width=startW, justify="right"), " ",
         format(end, width=endW, justify="right"), " ",
         format(width, width=widthW, justify="right"), " ",
-        "[", BStringViews.get_snippet(subject(x), start, end, snippetWidth), "]\n",
+        "[", XStringViews.get_snippet(subject(x), start, end, snippetWidth), "]\n",
         sep="")
 }
 
 ### 'half_nrow' must be >= 1
-BStringViews.show_vframe <- function(x, half_nrow=9L)
+XStringViews.show_vframe <- function(x, half_nrow=9L)
 {
     cat("\nviews:")
     lx <- length(x)
@@ -207,13 +207,13 @@ BStringViews.show_vframe <- function(x, half_nrow=9L)
         endW <- max(nchar(endMax), nchar("end"))
         widthMax <- max(width(x))
         widthW <- max(nchar(widthMax), nchar("width"))
-        BStringViews.show_vframe_header(iW, startW, endW, widthW)
+        XStringViews.show_vframe_header(iW, startW, endW, widthW)
         if (lx <= 2*half_nrow+1) {
             for (i in seq_len(lx))
-                BStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+                XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
         } else {
             for (i in 1:half_nrow)
-                BStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+                XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
             cat(format("...", width=iW, justify="right"),
                 " ",
                 format("...", width=startW, justify="right"),
@@ -223,19 +223,19 @@ BStringViews.show_vframe <- function(x, half_nrow=9L)
                 format("...", width=widthW, justify="right"),
                 " ...\n", sep="")
             for (i in (lx-half_nrow+1L):lx)
-                BStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+                XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
         }
     }
 }
 
-setMethod("show", "BStringViews",
+setMethod("show", "XStringViews",
     function(object)
     {
         subject <- subject(object)
         lsub <- length(subject)
         cat("  Views on a ", lsub, "-letter ", class(subject), " subject", sep="")
         cat("\nsubject:", toSeqSnippet(subject, getOption("width") - 9))
-        BStringViews.show_vframe(object)
+        XStringViews.show_vframe(object)
     }
 )
 
@@ -244,7 +244,7 @@ setMethod("show", "BStringViews",
 ### Subsetting.
 ###
 
-### Extract the i-th views of a BStringViews object as an XString object.
+### Extract the i-th views of an XStringViews object as an XString object.
 ### Return an XString object of the same subtype as subject(x).
 ### Example:
 ###   bs <- BString("ABCD-1234-abcd")
@@ -254,7 +254,7 @@ setMethod("show", "BStringViews",
 ###   views(bs)[[1]] # Returns bs too!
 ###
 ### Supported 'i' types: numeric vector of length 1.
-setMethod("[[", "BStringViews",
+setMethod("[[", "XStringViews",
     function(x, i, j, ...)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -283,7 +283,7 @@ setMethod("[[", "BStringViews",
     }
 )
 
-setReplaceMethod("[[", "BStringViews",
+setReplaceMethod("[[", "XStringViews",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", class(x), " instance")
@@ -297,7 +297,7 @@ setReplaceMethod("[[", "BStringViews",
 
 ### Assume that 'start1', 'end1', 'start2', 'end2' are single integers
 ### and that start1 <= end1 and start2 <= end2.
-BStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
+XStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
 {
     one <- as.integer(1)
     w1 <- end1 - start1 + one
@@ -346,10 +346,10 @@ BStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
     XString.substr(x1, start1, end1) == XString.substr(x2, start2, end2)
 }
 
-### 'x' and 'y' must be BStringViews objects.
+### 'x' and 'y' must be XStringViews objects.
 ### Returns a logical vector of length max(length(x), length(y)).
 ### Recycle its arguments.
-BStringViews.equal <- function(x, y)
+XStringViews.equal <- function(x, y)
 {
     lx <- length(x)
     ly <- length(y)
@@ -367,7 +367,7 @@ BStringViews.equal <- function(x, y)
     ans <- logical(lx)
     j <- 1
     for (i in seq_len(lx)) {
-        ans[i] <- BStringViews.view1_equal_view2(
+        ans[i] <- XStringViews.view1_equal_view2(
                       subject(x), start(x)[i], end(x)[i],
                       subject(y), start(y)[j], end(y)[j])
         # Recycle
@@ -380,9 +380,9 @@ BStringViews.equal <- function(x, y)
 }
 
 ### These methods are called if at least one side of the "==" (or "!=")
-### operator is a BStringViews object. They have precedence over the
+### operator is an XStringViews object. They have precedence over the
 ### corresponding methods defined for XString objects, i.e. they will
-### be called if one side is a BStringViews object and the other side
+### be called if one side is an XStringViews object and the other side
 ### is an XString object.
 ### Typical use:
 ###   v <- views(DNAString("TAATAATG"), -2:9, 0:11)
@@ -399,66 +399,66 @@ BStringViews.equal <- function(x, y)
 ### object):
 ###   v == "TG "
 
-setMethod("==", signature(e1="BStringViews", e2="BStringViews"),
+setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
     function(e1, e2)
     {
         if (!comparableXStrings(subject(e1), subject(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(subject(e2))
-            stop("comparison between BStringViews objects with subjects of ",
+            stop("comparison between XStringViews objects with subjects of ",
                  "class \"", class1, "\" and \"", class2, "\" ",
                  "is not supported")
         }
-        BStringViews.equal(e1, e2)
+        XStringViews.equal(e1, e2)
     }
 )
-setMethod("==", signature(e1="BStringViews", e2="XString"),
+setMethod("==", signature(e1="XStringViews", e2="XString"),
     function(e1, e2)
     {
         if (!comparableXStrings(subject(e1), e2)) {
             class1 <- class(subject(e1))
             class2 <- class(e2)
-            stop("comparison between a BStringViews object with a subject of ",
+            stop("comparison between an XStringViews object with a subject of ",
                  "class \"", class1, "\" and a \"", class2, "\" instance ",
                  "is not supported")
         }
-        BStringViews.equal(e1, BStringViews(e2))
+        XStringViews.equal(e1, XStringViews(e2))
     }
 )
-setMethod("==", signature(e1="BStringViews", e2="character"),
+setMethod("==", signature(e1="XStringViews", e2="character"),
     function(e1, e2)
     {
         if (!is(subject(e1), "BString"))
-            stop("comparison between a BStringViews object with a subject of ",
+            stop("comparison between an XStringViews object with a subject of ",
                  "class \"", class(subject(e1)), "\" and a character vector ",
                  "is not supported")
         if (length(e2) == 0 || any(e2 %in% c("", NA)))
-            stop("comparison between a BStringViews object and a character ",
+            stop("comparison between an XStringViews object and a character ",
                  "vector of length 0 or with empty strings or NAs ",
                  "is not supported")
-        BStringViews.equal(e1, BStringViews(e2, subjectClass="BString"))
+        XStringViews.equal(e1, XStringViews(e2, subjectClass="BString"))
     }
 )
-setMethod("==", signature(e1="XString", e2="BStringViews"),
+setMethod("==", signature(e1="XString", e2="XStringViews"),
     function(e1, e2) e2 == e1
 )
-setMethod("==", signature(e1="character", e2="BStringViews"),
+setMethod("==", signature(e1="character", e2="XStringViews"),
     function(e1, e2) e2 == e1
 )
 
-setMethod("!=", signature(e1="BStringViews", e2="BStringViews"),
+setMethod("!=", signature(e1="XStringViews", e2="XStringViews"),
     function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="BStringViews", e2="XString"),
+setMethod("!=", signature(e1="XStringViews", e2="XString"),
     function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="BStringViews", e2="character"),
+setMethod("!=", signature(e1="XStringViews", e2="character"),
     function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="XString", e2="BStringViews"),
+setMethod("!=", signature(e1="XString", e2="XStringViews"),
     function(e1, e2) !(e1 == e2)
 )
-setMethod("!=", signature(e1="character", e2="BStringViews"),
+setMethod("!=", signature(e1="character", e2="XStringViews"),
     function(e1, e2) !(e1 == e2)
 )
 
@@ -467,7 +467,7 @@ setMethod("!=", signature(e1="character", e2="BStringViews"),
 ### Other standard generic methods.
 ###
 
-setMethod("as.character", "BStringViews",
+setMethod("as.character", "XStringViews",
     function(x, use.names=TRUE, check.limits=TRUE)
     {
         use.names <- normalize.use.names(use.names)
@@ -475,7 +475,7 @@ setMethod("as.character", "BStringViews",
             ans <- sapply(seq_len(length(x)), function(i) as.character(x[[i]]))
         else
             ans <- sapply(seq_len(length(x)),
-                          function(i) BStringViews.get_view(subject(x), start(x)[i], end(x)[i]))
+                          function(i) XStringViews.get_view(subject(x), start(x)[i], end(x)[i]))
         if (use.names)
             names(ans) <- desc(x)
         ans
@@ -483,7 +483,7 @@ setMethod("as.character", "BStringViews",
 )
 
 ### Supported modes: "integer" (default) and "character".
-setMethod("as.matrix", "BStringViews",
+setMethod("as.matrix", "XStringViews",
     function(x, mode="integer", use.names=TRUE, check.limits=TRUE)
     {
         if (!is.character(mode) || length(mode) != 1
@@ -510,7 +510,7 @@ setMethod("as.matrix", "BStringViews",
 
 ### This overrides the "as.list" method for IRanges objects with a
 ### totally different semantic!
-setMethod("as.list", "BStringViews",
+setMethod("as.list", "XStringViews",
     function(x)
     {
         lx <- length(x)
@@ -522,7 +522,7 @@ setMethod("as.list", "BStringViews",
     }
 )
 
-setMethod("toString", "BStringViews",
+setMethod("toString", "XStringViews",
     function(x, ...)
     {
         toString(as.character(x), ...)

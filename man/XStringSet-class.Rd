@@ -52,7 +52,7 @@
 \alias{XStringSet,AsIs-method}
 \alias{XStringSet,XString-method}
 \alias{XStringSet,XStringSet-method}
-\alias{XStringSet,BStringViews-method}
+\alias{XStringSet,XStringViews-method}
 
 \alias{BStringSet}
 \alias{DNAStringSet}
@@ -217,7 +217,7 @@
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{IRanges}
 }
 

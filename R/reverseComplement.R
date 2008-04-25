@@ -20,7 +20,7 @@ setMethod("reverse", "XStringSet",
     }
 )
 
-setMethod("reverse", "BStringViews",
+setMethod("reverse", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverse(subject(x))
@@ -64,7 +64,7 @@ setMethod("complement", "RNAStringSet",
     }
 )
 
-setMethod("complement", "BStringViews",
+setMethod("complement", "XStringViews",
     function(x, ...)
     {
         x@subject <- complement(subject(x))
@@ -109,7 +109,7 @@ setMethod("reverseComplement", "RNAStringSet",
     }
 )
 
-setMethod("reverseComplement", "BStringViews",
+setMethod("reverseComplement", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverseComplement(subject(x))

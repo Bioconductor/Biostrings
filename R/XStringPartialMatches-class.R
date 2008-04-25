@@ -5,9 +5,9 @@
 ### on the same XString object, the subject string.
 
 setClass("XStringPartialMatches",
-    contains="BStringViews",
+    contains="XStringViews",
     representation(
-        subpatterns="BStringViews"
+        subpatterns="XStringViews"
     )
 )
 
@@ -36,7 +36,7 @@ setMethod("show", "XStringPartialMatches",
         #if (!is.null(subject@codec))
         #    cat(" with alphabet:", toString(subject@codec@letters))
         cat("\nSubject:", toSeqSnippet(subject, 70))
-        BStringViews.show_vframe(object, 5L)
+        XStringViews.show_vframe(object, 5L)
 
         pattern <- pattern(object)
         lpat <- length(pattern)
@@ -45,7 +45,7 @@ setMethod("show", "XStringPartialMatches",
         #if (!is.null(pattern@codec))
         #    cat(" with alphabet:", toString(pattern@codec@letters))
         cat("\nPattern:", toSeqSnippet(pattern, 70))
-        BStringViews.show_vframe(subpatterns(object), 5L)
+        XStringViews.show_vframe(subpatterns(object), 5L)
     }
 )
 

@@ -21,7 +21,7 @@
 \alias{pmatchPattern}
 \alias{pmatchPattern,character-method}
 \alias{pmatchPattern,XString-method}
-\alias{pmatchPattern,BStringViews-method}
+\alias{pmatchPattern,XStringViews-method}
 
 
 \title{Longest Common Prefix/Suffix/Substring searching functions}
@@ -74,7 +74,7 @@
 
 \seealso{
   \link{matchPattern},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{XString-class}
 }
 

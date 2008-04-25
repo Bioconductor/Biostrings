@@ -37,27 +37,27 @@ CharacterToFASTArecords <- function(x)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Conversion between a list of FASTA records (as one returned by
-### readFASTA) and a BStringViews object.
+### readFASTA) and an XStringViews object.
 ###
 ### Note that, for any well-formed list of FASTA records 'FASTArecs',
 ###
-###   XStringSetToFASTArecords(BStringSet(FASTArecordsToBStringViews(FASTArecs)))
+###   XStringSetToFASTArecords(BStringSet(FASTArecordsToXStringViews(FASTArecs)))
 ###
 ### is identical to 'FASTArecs'.
-### But it is NOT the case that any BStringViews object y can
+### But it is NOT the case that any XStringViews object y can
 ### be "reconstructed" with
 ###
-###   FASTArecordsToBStringViews(XStringSetToFASTArecords(BStringSet(y)))
+###   FASTArecordsToXStringViews(XStringSetToFASTArecords(BStringSet(y)))
 ###
 
-FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
+FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
 {
-    if (!is.character(subjectClass) || length(subjectClass) != 1 || is.na(subjectClass))
+    if (!isSingleString(subjectClass))
         stop("'subjectClass' must be a single string")
-    if (!is.character(collapse) || length(collapse) != 1 || is.na(collapse))
+    if (!isSingleString(collapse))
         stop("'collapse' must be a single string")
     src <- FASTArecordsToCharacter(FASTArecs)
-    BStringViews(src, subjectClass, collapse)
+    XStringViews(src, subjectClass, collapse)
 }
 
 XStringSetToFASTArecords <- function(x)
@@ -69,13 +69,13 @@ XStringSetToFASTArecords <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "read.BStringViews" function.
+### The "read.XStringViews" function.
 ###
 
 .read.fasta <- function(file, subjectClass, collapse)
 {
     FASTArecs <- readFASTA(file, strip.desc=TRUE)
-    FASTArecordsToBStringViews(FASTArecs, subjectClass, collapse)
+    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse)
 }
 
 ### WORK IN PROGRESS!
@@ -189,7 +189,7 @@ XStringSetToFASTArecords <- function(x)
     ans
 }
 
-read.BStringViews <- function(file, format, subjectClass, collapse="")
+read.XStringViews <- function(file, format, subjectClass, collapse="")
 {
     if (missing(file))
         stop("'file' must be specified")
@@ -212,20 +212,20 @@ read.BStringViews <- function(file, format, subjectClass, collapse="")
 ###
 
 read.BStringSet <- function(file, format)
-    BStringSet(read.BStringViews(file, format, "BString"))
+    BStringSet(read.XStringViews(file, format, "BString"))
 
 read.DNAStringSet <- function(file, format)
-    DNAStringSet(read.BStringViews(file, format, "DNAString"))
+    DNAStringSet(read.XStringViews(file, format, "DNAString"))
 
 read.RNAStringSet <- function(file, format)
-    RNAStringSet(read.BStringViews(file, format, "RNAString"))
+    RNAStringSet(read.XStringViews(file, format, "RNAString"))
 
 read.AAStringSet <- function(file, format)
-    AAStringSet(read.BStringViews(file, format, "AAString"))
+    AAStringSet(read.XStringViews(file, format, "AAString"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "write.XStringSet" and "write.BStringViews" functions.
+### The "write.XStringSet" and "write.XStringViews" functions.
 ###
 
 .write.fasta <- function(x, file, width)
@@ -244,9 +244,32 @@ write.XStringSet <- function(x, file="", format, width=80)
     )
 }
 
+write.XStringViews <- function(x, file="", format, width=80)
+{
+    y <- XStringViewsToSet(x, use.names=TRUE)
+    write.XStringSet(y, file=file, format, width=width)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deprecated functions.
+###
+
+FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
+{
+    .Deprecated("FASTArecordsToXStringViews")
+    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse=collapse)
+}
+
+read.BStringViews <- function(file, format, subjectClass, collapse="")
+{
+    .Deprecated("read.XStringViews")
+    read.XStringViews(file, format, subjectClass, collapse=collapse)
+}
+
 write.BStringViews <- function(x, file="", format, width=80)
 {
-    y <- BStringViewsToSet(x, use.names=TRUE)
-    write.XStringSet(y, file=file, format, width=width)
+    .Deprecated("write.XStringViews")
+    write.XStringViews(x, file=file, format, width=width)
 }
 

@@ -173,7 +173,7 @@ countPattern(p, chrI)
 countPattern(p, chrI, max.mismatch=1)
 @
 
-The matches can be stored in a \Rclass{BStringViews} object
+The matches can be stored in an \Rclass{XStringViews} object
 by using the \Rmethod{matchPattern} method:
 <<b8>>=
 m <- matchPattern(p, chrI, max.mismatch=1)
@@ -227,7 +227,7 @@ More precisely, here is the analysis we want to perform:
 %   > set.seed(23)
 %   > ce2dict0 <- sapply(1:50, function(i) { x <- Celegans[[sample(seqnames(Celegans), 1)]]; start <- as.integer(runif(1, min=1, length(x)-20)); end <- start + as.integer(runif(1, min=14, max=25)); x <- subXString(x, start, end); if (sample(1:2, 1) == 2) x <- reverseComplement(x); as.character(x) })
 %   > names(ce2dict0) <- paste("pattern", 1:50, sep="")
-%   > write.BStringViews(BStringViews(ce2dict0, "DNAString"), file="ce2dict0.fa", format="fasta")
+%   > write.XStringViews(XStringViews(ce2dict0, "DNAString"), file="ce2dict0.fa", format="fasta")
   See the {\it Find all the occurences of a constant width dictionary of patterns
   in a genome} section of this document for a very efficient way to deal with
   the special case where all the patterns in the input dictionary have the same

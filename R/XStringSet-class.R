@@ -52,10 +52,10 @@
 ### and the flexibility of the XStringList container (which can then be
 ### removed).
 ###
-### Some notable differences between XStringSet and BStringViews objects:
+### Some notable differences between XStringSet and XStringViews objects:
 ###   - the "show" methods produce different output
-###   - the views in a BStringViews object can't have a 0-width
-###   - the views in a BStringViews object can be out of limits
+###   - the views in an XStringViews object can't have a 0-width
+###   - the views in an XStringViews object can be out of limits
 ###
 
 setClass("XStringSet",
@@ -95,7 +95,7 @@ setClass("AAStringSet",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
-### Like for XStringList and BStringViews objects, the strict minimum of
+### Like for XStringList and XStringViews objects, the strict minimum of
 ### methods that must work with XStringSet objects is:
 ###   length, width, nchar, names
 ### Note that XStringSet objects inherit the "length", "width" and "names"
@@ -193,8 +193,8 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
     newXStringSet(class, super, ranges, use.names=use.names, names=names(x))
 }
 
-### Canonical conversion from BStringViews to XStringSet
-BStringViewsToSet <- function(x, use.names, verbose=TRUE)
+### Canonical conversion from XStringViews to XStringSet
+XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
     ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
                        keep.all.ranges=TRUE,
@@ -240,9 +240,9 @@ setMethod("XStringSet", "XStringSet",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
         .narrowXStringSet(x, start, end, width, use.names, baseClass)
 )
-setMethod("XStringSet", "BStringViews",
+setMethod("XStringSet", "XStringViews",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowXStringSet(BStringViewsToSet(x, use.names),
+        .narrowXStringSet(XStringViewsToSet(x, use.names),
                           start, end, width, TRUE, baseClass)
 )
 

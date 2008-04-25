@@ -62,7 +62,7 @@ o Added basic support for Position Weight Matrix matching thru the new
   matchPWM() and countPWM() functions. Also added related utility functions
   maxWeights(), maxScore() and PWMscore().
 
-o Added "matchLRPatterns" and "matchProbePair" methods for BStringViews
+o Added "matchLRPatterns" and "matchProbePair" methods for XStringViews
   objects.
 
 o Added the isMatching() function.
@@ -81,7 +81,7 @@ UTILITIES
 
 o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is
-  now prefered over read.BStringViews() for loading a FASTA file into R.
+  now prefered over read.XStringViews() for loading a FASTA file into R.
   Renamed helper function BStringViewsToFASTArecords() ->
   XStringSetToFASTArecords().
 
@@ -91,9 +91,9 @@ o Added the replaceLetterAtLoc() generic function with a method for DNAString
   specified locations.
 
 o Added the chartr() generic function with a method for XString, XStringSet
-  and BStringViews objects.
+  and XStringViews objects.
 
-o Made the "show" methods for XString, BStringViews and XStringAlign objects
+o Made the "show" methods for XString, XStringViews and XStringAlign objects
   "getOption('width') aware" so that the user can control the width of the
   output they produce.
 
@@ -106,7 +106,7 @@ o Four changes in alphabetFrequency():
       non-base letter);
   (2) added the 'freq' argument;
   (3) added the 'collapse' argument;
-  (4) made it 1000x faster on BStringViews and XStringSet objects.
+  (4) made it 1000x faster on XStringViews and XStringSet objects.
 
 o Added "as.character" and "consmat" methods for XStringAlign objects.
 
@@ -121,7 +121,7 @@ o Added "reverse" method for XStringSet objects, and "complement" and
   They all preserve the names.
 
 o reverse(), complement() and reverseComplement() now preserve the names when
-  applied to a BStringViews object.
+  applied to an XStringViews object.
 
 o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
   + a "reverseComplement" method for RNAString objects.
@@ -150,17 +150,17 @@ o Added new containers for storing a big set of sequences:
   to the poor performance of the XStringList container.
   The XStringList family might be removed soon.
 
-o Added the trim() function for trimming the "out of limits" views of a
-  BStringViews object.
+o Added the trim() function for trimming the "out of limits" views of an
+  XStringViews object.
 
 o Added "restrict", "narrow", "reduce" and "gaps" generic functions with
-  methods for IRanges and BStringViews objects. These functions provide basic
+  methods for IRanges and XStringViews objects. These functions provide basic
   transformations of an IRanges object into another IRanges object of the same
   class. Also added the toNormalIRanges() function for normalizing an IRanges
   object.
 
 o Added the "start<-", "width<-" and "end<-" generics with methods for
-  IRanges and BStringViews objects. Also added the "update" method for
+  IRanges and XStringViews objects. Also added the "update" method for
   IRanges objects to provide a convenient way of combining multiple
   modifications of an IRanges object into one single call.
 
@@ -170,7 +170,7 @@ o Added the intToRanges() and intToAdjacentRanges() utility functions
 o Added the .IRanges, IRanges and NormalIRanges classes for representing a set
   of integer ranges + the "isNormal" and "whichFirstNotNormal" generic
   functions with methods for ".IRanges" objects (see ?IRanges for the details).
-  Changed the definition of the BStringViews class so now it derives from the
+  Changed the definition of the XStringViews class so now it derives from the
   IRanges class.
 
 o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
@@ -188,6 +188,8 @@ o Added the XString() versatile constructor (it's a generic function with
   RNAString() and AAString() constructors are now based on it.
 
 o Renamed subBString() -> subXString() and deprecated subBString().
+
+o Renamed the BStringViews class -> XStringViews.
 
 o Reorganized the hierarchy of the BString class and subclasses by adding the
   XString virtual class: now the BString, DNAString, RNAString and AAString

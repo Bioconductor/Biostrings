@@ -197,14 +197,14 @@ setAs("MaskedXString", "IRanges",
     function(from) as(as(from, "NormalIRanges"), "IRanges")
 )
 
-### From a MaskedXString object to a BStringViews object.
-setAs("MaskedXString", "BStringViews",
+### From a MaskedXString object to an XStringViews object.
+setAs("MaskedXString", "XStringViews",
     function(from)
     {
         views <- gaps(reduce(masks(from)))[[1]]
         ans_start <- start(views)
         ans_width <- width(views)
-        new("BStringViews", unmasked(from), start=ans_start, width=ans_width, check=FALSE)
+        new("XStringViews", unmasked(from), start=ans_start, width=ans_width, check=FALSE)
     }
 )
 

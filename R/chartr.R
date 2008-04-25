@@ -65,7 +65,7 @@ setMethod("chartr", "XStringSet",
     }
 )
 
-setMethod("chartr", "BStringViews",
+setMethod("chartr", "XStringViews",
     function(old, new, x)
     {
         x@subject <- chartr(old, new, subject(x))

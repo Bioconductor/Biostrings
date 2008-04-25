@@ -2,7 +2,7 @@
 
 \alias{matchLRPatterns}
 \alias{matchLRPatterns,XString-method}
-\alias{matchLRPatterns,BStringViews-method}
+\alias{matchLRPatterns,XStringViews-method}
 
 
 \title{Find patterns defined by a left and a right part in a sequence}
@@ -27,7 +27,7 @@
     and right parts of the pattern.
   }
   \item{subject}{
-    An \link{XString} object (or a \link{BStringViews} object)
+    An \link{XString} object (or an \link{XStringViews} object)
     containing the target sequence.
   }
   \item{max.Lmismatch}{
@@ -60,7 +60,7 @@
 }
 
 \value{
-  A \link{BStringViews} object containing all the matches, even when they are
+  An \link{XStringViews} object containing all the matches, even when they are
   overlapping (see the examples below), and where the matches are ordered
   from left to right (i.e. by ascending starting position).
 }
@@ -73,7 +73,7 @@
   \code{\link{findPalindromes}},
   \code{\link{reverseComplement}},
   \link{XString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

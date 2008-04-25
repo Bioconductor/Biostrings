@@ -115,11 +115,11 @@ setMethod("matchProbePair", "DNAString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-### WARNING: Unlike the other "matchProbePair" methods, the BStringViews object
+### WARNING: Unlike the other "matchProbePair" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized BStringViews object.
-setMethod("matchProbePair", "BStringViews",
+### guaranteed though is when 'subject' is a normalized XStringViews object.
+setMethod("matchProbePair", "XStringViews",
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
     {
         ans_start <- ans_width <- integer(0)
@@ -130,7 +130,7 @@ setMethod("matchProbePair", "BStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        new("BStringViews", subject(subject),
+        new("XStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )

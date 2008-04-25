@@ -1,6 +1,6 @@
 Some R problems that maybe worth reporting:
 
-- Loading a serialized BStringViews object without prior loading the Biostrings
+- Loading a serialized XStringViews object without prior loading the Biostrings
   package seems to have problems: the object loads, but, when I try to display
   it, then nothing is printed and the prompt doesn't come back either (unless I
   CTRL C).
@@ -44,7 +44,7 @@ In 2.7
     o DNAStringSet(x) should not do anything when x is already a DNAStringSet
       _instance_ (class(x) == "DNAStringSet").
     o Add methods for XStringSet objects everywhere there are methods defined
-      for BStringViews objects (matchPattern, countPattern, etc...).
+      for XStringViews objects (matchPattern, countPattern, etc...).
       Make them work in a vectorized fashion for XStringSet objects.
     o Add "==" method for XStringSet objects.
 
@@ -57,16 +57,16 @@ In 2.7
 
 - Try to speed up "show" method for XStringSet objects.
 
-- BStringList objects:
+- XStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
       I suspect there is something wrong with C routine narrow_XStringList()
       when proto is NULL.
-    o Improve speed of BStringList() and family when the input is a BStringList
-      or BStringViews object (i.e. XRaw input).
+    o Improve speed of BStringList() and family when the input is an XStringList
+      or XStringViews object (i.e. XRaw input).
       For XRaw input, implement C routine copy_subXRaw() and use it for
-      copySubXRaw(). Add copySubBString() and copySubBStrings() and use them in
-      the BString() and BStringList() constructors.
-    o Add read.BStringList/write.BStringList.
+      copySubXRaw(). Add copySubXString() and copySubXStrings() and use them in
+      the BString()/BStringList() constructors and families.
+    o Add read.XStringList/write.XStringList.
 
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
@@ -99,8 +99,8 @@ In 2.7
     vector of size 5.2Gb).
 
   o Maybe: once DNAStringList() constructor is fast enough on character and
-    BStringViews input, simplify "initialize" method for CWdna_PDict:
-    convert character and BStringViews inputs with DNAStringList() and
+    XStringViews input, simplify "initialize" method for CWdna_PDict:
+    convert character and XStringViews inputs with DNAStringList() and
     support only one type of input (DNAStringList) at the C level.
     Well, I'm not sure I want to do this anymore: performance on character
     input would drop significantly.
@@ -138,7 +138,7 @@ In 2.7
       Maq (http://maq.sourceforge.net/)
       MUMmer (http://mummer.sourceforge.net/)
 
-- Finish C implemntation of read.BStringViews()
+- Finish C implemntation of read.XStringViews()
 
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
@@ -160,7 +160,7 @@ In 2.7
   Etc...
 
 - Add a new generic that combines a subject and an IRanges (or IRanges-like)
-  object to return a BStringViews object. The IRanges-like object could be
+  object to return an XStringViews object. The IRanges-like object could be
   MIndex object and the method for it would do as if it had received
   unlist(MIndex). Currently my problem is that I can't come up with a good
   name for such generic :-/ Maybe I could just use views(subject, x) for
@@ -187,7 +187,7 @@ In 2.7
 
 - Add "unique" method for .IRanges objects.
 
-- Add "duplicated" and "unique" methods for XStringSet and BStringViews objects.
+- Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
 
 - Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
   Biostrings_define.h instead of the current magic values used all over the
@@ -212,17 +212,17 @@ In 2.7
   'min.mismatch' arg.
 
 - Maybe: add a specific containers for results returned by matchPattern
-  (and family). Would derive from the BStringViews class with at least one
+  (and family). Would derive from the XStringViews class with at least one
   additional slot, the @call slot (of type "language"), that would contain
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives a
-  BString argument. This reduces the number of args that need to be passed
+- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
+  an XString argument. This reduces the number of args that need to be passed
   and makes the code much cleaner. See match_naive_exact() and
   match_naive_inexact() for an example.
 
-- Make alphabetFrequency works with BStringViews objects with
+- Make alphabetFrequency works with XStringViews objects with
   "out of limits" views.
 
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
@@ -233,13 +233,13 @@ In 2.7
   so, what the differences are between the packages (also some notion of speed
   and size, how well do they work on different inputs)".
 
-- Have the BStringViews() method for BString objects support the 'sep' arg.
+- Have the XStringViews() method for XString objects support the 'sep' arg.
 
 - Test Raphael use case with built-in string functions and compare speed
   with Biostrings solution. Add the conclusions to the matchPattern.Rnw
   vignette.
 
-- Why doesn't sapply or lapply work for a BStringViews object (it didn't
+- Why doesn't sapply or lapply work for an XStringViews object (it didn't
   work either for BioString objects). Isn't it enough that these objects
   are subsettable?
 
@@ -260,7 +260,7 @@ Later
 
 - Restore the test units.
 
-- Fix pb with length(x) <- 2 screwing up x if it's a BString or BStringViews
+- Fix pb with length(x) <- 2 screwing up x if it's an XString or XStringViews
   object (prevent people of doing this by defining the replacement version
   of the length method and issuing an error).
 

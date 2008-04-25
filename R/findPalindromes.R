@@ -45,7 +45,7 @@
                    PACKAGE="Biostrings")
     ans_start <- C_ans$start
     ans_width <- C_ans$end - ans_start + 1L
-    new("BStringViews", subject,
+    new("XStringViews", subject,
         start=ans_start, width=ans_width, check=FALSE)
 }
 
@@ -76,10 +76,10 @@ setMethod("findComplementedPalindromes", "DNAString",
 )
 
 ### WARNING: Unlike with the "findPalindromes" method for XString objects, the
-### BStringViews object returned by this method is not guaranteed to have its
+### XStringViews object returned by this method is not guaranteed to have its
 ### views ordered from left to right! One important particular case where this
-### is guaranteed though is when 'subject' is a normalized BStringViews object.
-setMethod("findPalindromes", "BStringViews",
+### is guaranteed though is when 'subject' is a normalized XStringViews object.
+setMethod("findPalindromes", "XStringViews",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
         ans_start <- ans_width <- integer(0)
@@ -93,21 +93,21 @@ setMethod("findPalindromes", "BStringViews",
             ans_start <- c(ans_start, offset + start(pals))
             ans_width <- c(ans_width, width(pals))
         }
-        new("BStringViews", subject(subject),
+        new("XStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
 setMethod("findPalindromes", "MaskedXString",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
-        findPalindromes(as(subject, "BStringViews"),
+        findPalindromes(as(subject, "XStringViews"),
                         min.armlength=min.armlength,
                         max.looplength=max.looplength,
                         min.looplength=min.looplength,
                         max.mismatch=max.mismatch)
     }
 )
-setMethod("findComplementedPalindromes", "BStringViews",
+setMethod("findComplementedPalindromes", "XStringViews",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
         ans_start <- ans_width <- integer(0)
@@ -121,14 +121,14 @@ setMethod("findComplementedPalindromes", "BStringViews",
             ans_start <- c(ans_start, offset + start(pals))
             ans_width <- c(ans_width, width(pals))
         }
-        new("BStringViews", subject(subject),
+        new("XStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
 setMethod("findComplementedPalindromes", "MaskedXString",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
-        findComplementedPalindromes(as(subject, "BStringViews"),
+        findComplementedPalindromes(as(subject, "XStringViews"),
                                     min.armlength=min.armlength,
                                     max.looplength=max.looplength,
                                     min.looplength=min.looplength,
@@ -172,7 +172,7 @@ setMethod("complementedPalindromeArmLength", "DNAString",
     }
 )
 
-setMethod("palindromeArmLength", "BStringViews",
+setMethod("palindromeArmLength", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         if (length(x) == 0)
@@ -181,7 +181,7 @@ setMethod("palindromeArmLength", "BStringViews",
                palindromeArmLength(x[[i]], max.mismatch=max.mismatch, ...))
     }
 )
-setMethod("complementedPalindromeArmLength", "BStringViews",
+setMethod("complementedPalindromeArmLength", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         if (length(x) == 0)
@@ -217,21 +217,21 @@ setMethod("complementedPalindromeLeftArm", "DNAString",
     }
 )
 
-setMethod("palindromeLeftArm", "BStringViews",
+setMethod("palindromeLeftArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         ans_start <- start(x)
         ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        new("BStringViews", subject(x),
+        new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
-setMethod("complementedPalindromeLeftArm", "BStringViews",
+setMethod("complementedPalindromeLeftArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         ans_start <- start(x)
         ans_width <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        new("BStringViews", subject(x),
+        new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -264,21 +264,21 @@ setMethod("complementedPalindromeRightArm", "DNAString",
     }
 )
 
-setMethod("palindromeRightArm", "BStringViews",
+setMethod("palindromeRightArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
-        new("BStringViews", subject(x),
+        new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
-setMethod("complementedPalindromeRightArm", "BStringViews",
+setMethod("complementedPalindromeRightArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         ans_width <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
-        new("BStringViews", subject(x),
+        new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )

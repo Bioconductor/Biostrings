@@ -136,7 +136,7 @@
   length as the input dictionary: \code{startIndex} and \code{endIndex} return a
   list of integer vectors, and \code{countIndex} returns an integer vector.
 
-  \code{extractAllMatches} returns a \link{BStringViews} object.
+  \code{extractAllMatches} returns an \link{XStringViews} object.
 }
 
 \author{H. Pages}
@@ -147,7 +147,7 @@
   \code{\link{isMatching}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{DNAString-class}
 }
 
@@ -184,7 +184,7 @@
   i0 <- which(count_index == max(count_index))
   dict0[i0]                            # The pattern with most occurences.
   mindex[[i0]]                         # Its matches as a Views object.
-  views(chr3R, start_index[[i0]], end_index[[i0]]) # And as a BStringViews object.
+  views(chr3R, start_index[[i0]], end_index[[i0]]) # And as an XStringViews object.
 
   ## -------------------------------------------------------------------------
   ## B. WITH NAMED PATTERNS

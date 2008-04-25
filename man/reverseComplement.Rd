@@ -3,19 +3,19 @@
 \alias{reverse}
 \alias{reverse,XString-method}
 \alias{reverse,XStringSet-method}
-\alias{reverse,BStringViews-method}
+\alias{reverse,XStringViews-method}
 \alias{complement}
 \alias{complement,DNAString-method}
 \alias{complement,RNAString-method}
 \alias{complement,DNAStringSet-method}
 \alias{complement,RNAStringSet-method}
-\alias{complement,BStringViews-method}
+\alias{complement,XStringViews-method}
 \alias{reverseComplement}
 \alias{reverseComplement,DNAString-method}
 \alias{reverseComplement,RNAString-method}
 \alias{reverseComplement,DNAStringSet-method}
 \alias{reverseComplement,RNAStringSet-method}
-\alias{reverseComplement,BStringViews-method}
+\alias{reverseComplement,XStringViews-method}
 
 
 \title{Sequence reversing and complementing}
@@ -33,12 +33,12 @@
 
 \arguments{
   \item{x}{
-    An \link{XString}, \link{XStringSet} or \link{BStringViews} object
+    An \link{XString}, \link{XStringSet} or \link{XStringViews} object
     for \code{reverse}.
 
     A \link{DNAString}, \link{RNAString},
     \link{DNAStringSet} or \link{RNAStringSet} object,
-    or a \link{BStringViews} object with a \link{DNAString}
+    or an \link{XStringViews} object with a \link{DNAString}
     or \link{RNAString} subject for \code{complement}
     and \code{reverseComplement}.
   }
@@ -74,7 +74,7 @@
   \link{RNAString-class},
   \link{DNAStringSet-class},
   \link{RNAStringSet-class},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \code{\link{strrev}},
   \code{\link{findPalindromes}}
 }

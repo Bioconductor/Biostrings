@@ -56,18 +56,19 @@ Feel free to add your own comments.
 
 % ---------------------------------------------------------------------------
 
-\section{\Rfunction{DNAString} vs \Rfunction{BStringViews}}
+\section{\Rfunction{DNAString} vs \Rfunction{XStringViews}}
 
 The {\tt Biostrings2Classes} vignette presents a proposal for 2 new classes
-(\Rclass{BString} and \Rclass{BStringViews}) as a replacement for the
+(\Rclass{XString} and \Rclass{XStringViews}) as a replacement for the
 \Rclass{BioString} class currently defined in the \Rpackage{Biostrings}~1
 (\Rpackage{Biostrings} v~1.4.x) package.
 
 It also shows how to use the \Rfunction{DNAString} function to create
 a \Rclass{DNAString} object (a \Rclass{DNAString} object is just a
-particular case of a \Rclass{BString} object):
+particular case of an \Rclass{XString} object):
 <<a1>>=
 d <- DNAString("TTGAAAA-CTC-N")
+is(d, "XString")
 @
 
 However this function is NOT vectorized: it always returns a
@@ -89,14 +90,14 @@ as the number of elements passed in the \Robject{src} argument).
 
 % ---------------------------------------------------------------------------
 
-\section{The \Rfunction{BStringViews} generic function}
+\section{The \Rfunction{XStringViews} generic function}
 
 The feature described in the previous section (provided by the vectorized
 form of the \Rfunction{DNAString} function in \Rpackage{Biostrings}~1)
 is provided in \Rpackage{Biostrings}~2 via the
-\Rfunction{BStringViews} generic function:
+\Rfunction{XStringViews} generic function:
 <<b1>>=
-v <- BStringViews(c("TTGAAAA-C", "TC-N"), "DNAString")
+v <- XStringViews(c("TTGAAAA-C", "TC-N"), "DNAString")
 v
 @
 
@@ -118,7 +119,7 @@ library(hgu95av2probe)
 @
 
 <<c2>>=
-system.time(z <- BStringViews(hgu95av2probe$sequence, "DNAString"))
+system.time(z <- XStringViews(hgu95av2probe$sequence, "DNAString"))
 z
 @
 
@@ -133,7 +134,7 @@ quadratic in time, as reported by Wolfgang).
 %              function(i) {
 %                paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse="")
 %              })
-%system.time(v2 <- BStringViews(src, "DNAString"))
+%system.time(v2 <- XStringViews(src, "DNAString"))
 %v2
 %@
 %
@@ -143,13 +144,13 @@ quadratic in time, as reported by Wolfgang).
 
 % ---------------------------------------------------------------------------
 
-\section{Loading a FASTA file into a \Rclass{BStringViews} object}
+\section{Loading a FASTA file into an \Rclass{XStringViews} object}
 
-The \Rfunction{read.BStringViews} function can be used to load a FASTA file
-in a \Rclass{BStringViews} object:
+The \Rfunction{read.XStringViews} function can be used to load a FASTA file
+in an \Rclass{XStringViews} object:
 <<d1>>=
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
-orf <- read.BStringViews(file, "fasta", "DNAString")
+orf <- read.XStringViews(file, "fasta", "DNAString")
 orf
 names(orf)
 @
@@ -159,10 +160,10 @@ names(orf)
 
 \section{Switching between DNA and RNA views}
 
-The \Rfunction{BStringViews} function can also be used
+The \Rfunction{XStringViews} function can also be used
 to switch between ``DNA'' and ``RNA'' views on the same string:
 <<e1>>=
-orf2 <- BStringViews(orf, "RNAString")
+orf2 <- XStringViews(orf, "RNAString")
 @
 
 These conversions are very fast because no string data needs to be copied:

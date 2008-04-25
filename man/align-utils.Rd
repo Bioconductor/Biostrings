@@ -5,7 +5,7 @@
 \alias{consmat,matrix-method}
 \alias{consmat,list-method}
 \alias{consmat,XStringSet-method}
-\alias{consmat,BStringViews-method}
+\alias{consmat,XStringViews-method}
 \alias{consmat,XStringAlign-method}
 
 
@@ -36,7 +36,7 @@
 }
 
 \seealso{
-  \link{BStringViews-class}, \link{XStringAlign}
+  \link{XStringViews-class}, \link{XStringAlign}
 }
 
 \examples{

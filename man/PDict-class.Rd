@@ -25,7 +25,7 @@
 \alias{PDict}
 \alias{PDict,character-method}
 \alias{PDict,DNAStringSet-method}
-\alias{PDict,BStringViews-method}
+\alias{PDict,XStringViews-method}
 \alias{PDict,AsIs-method}
 
 % Other generics and methods:
@@ -57,8 +57,8 @@
 
 \arguments{
   \item{dict}{
-    A character vector, a \code{\link{DNAStringSet}} object or a
-    \code{\link{BStringViews}} object containing the input sequences.
+    A character vector, a \link{DNAStringSet} object or an
+    \link{XStringViews} object containing the input sequences.
   }
   \item{tb.start}{
     [DOCUMENT ME]
@@ -179,7 +179,7 @@
   \code{\link{matchPDict}},
   \code{\link{DNA_ALPHABET}},
   \link{DNAStringSet-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

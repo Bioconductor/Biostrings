@@ -81,7 +81,7 @@
   \code{\link{subXString}},
   \code{\link{letter}},
   \link{XString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

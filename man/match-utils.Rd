@@ -4,7 +4,7 @@
 \alias{isMatching,character-method}
 \alias{isMatching,XString-method}
 \alias{mismatch}
-\alias{mismatch,BStringViews-method}
+\alias{mismatch,XStringViews-method}
 
 
 \title{Utility functions related to pattern matching}
@@ -62,7 +62,7 @@
     are interpreted as wildcards.
   }
   \item{x}{
-    A \link{BStringViews} object (typically, one returned
+    An \link{XStringViews} object (typically, one returned
     by \code{matchPattern(pattern, subject)}).
   }
 }
@@ -78,7 +78,7 @@
   \code{\link{matchPDict}},
   \code{\link{IUPAC_CODE_MAP}},
   \link{XString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

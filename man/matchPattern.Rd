@@ -3,11 +3,11 @@
 \alias{matchPattern}
 \alias{matchPattern,character-method}
 \alias{matchPattern,XString-method}
-\alias{matchPattern,BStringViews-method}
+\alias{matchPattern,XStringViews-method}
 \alias{countPattern}
 \alias{countPattern,character-method}
 \alias{countPattern,XString-method}
-\alias{countPattern,BStringViews-method}
+\alias{countPattern,XStringViews-method}
 
 \alias{matchDNAPattern}
 
@@ -29,7 +29,7 @@
   }
   \item{subject}{
     An \link{XString} object containing the subject string,
-    or a \link{BStringViews} object.
+    or an \link{XStringViews} object.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
@@ -62,7 +62,7 @@
 }
 
 \value{
-  A \link{BStringViews} object for \code{matchPattern}.
+  An \link{XStringViews} object for \code{matchPattern}.
 
   A single integer for \code{countPattern}.
 }
@@ -75,7 +75,7 @@
   \code{\link{matchProbePair}},
   \code{\link{masks}},
   \code{\link{alphabetFrequency}},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{XString-class}
 }
 
@@ -107,7 +107,7 @@
   library(BSgenome.Dmelanogaster.FlyBase.r51)
   chrX <- Dmelanogaster[["X"]]
   masks(chrX) <- "N"
-  as(chrX, "BStringViews") # 4 non masked regions
+  as(chrX, "XStringViews") # 4 non masked regions
   matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
   ## Can also be achieved with no mask
   masks(chrX) <- NULL

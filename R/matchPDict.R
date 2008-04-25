@@ -321,7 +321,7 @@ setMethod("patternFrequency", "TBdna_PDict",
 ### The supported types for the input dictionary are:
 ###   - character vector
 ###   - DNAStringSet object
-###   - BStringViews object
+###   - XStringViews object
 ### Typical use:
 ###   > library(Biostrings)
 ###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
@@ -355,7 +355,7 @@ setMethod("PDict", "DNAStringSet",
     }
 )
 
-setMethod("PDict", "BStringViews",
+setMethod("PDict", "XStringViews",
     function(dict, tb.start=1, tb.end=NA,
              drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
     {
@@ -693,7 +693,7 @@ extractAllMatches <- function(subject, mindex)
     if (is.null(names(mindex)))
         stop("extractAllMatches() works only with a \"MIndex\" object with names")
     allviews <- unlist(mindex)
-    new("BStringViews", subject,
+    new("XStringViews", subject,
         start=start(allviews), width=width(allviews),
         desc=desc(allviews), check=FALSE)
 }

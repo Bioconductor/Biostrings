@@ -11,10 +11,10 @@
 ### over the "has a" approach: XStringList objects inherit the full "list
 ### semantic" out-of-the-box! In other words, the "list API" (i.e. all the
 ### functions/methods that work on a list, e.g. [, [[, lapply(), rev(), etc...,
-### there are a lot) still work on a XStringList object.
+### there are a lot) still work on an XStringList object.
 ### Unfortunately, most of the time, they don't do the right thing.
 ### For exampple:
-### 1. The user can easily screw up a XStringList object 'x' with
+### 1. The user can easily screw up an XStringList object 'x' with
 ###    x[1] <- something, or x[[1]] <- something
 ###    This needs to be prevented by redefining the "[<-" and the "[[<-"
 ###    methods for XStringList objects.
@@ -52,7 +52,7 @@ setClass("AAStringList", contains="XStringList")
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
-### Like for XStringSet and BStringViews objects, the strict minimum of
+### Like for XStringSet and XStringViews objects, the strict minimum of
 ### methods that must work with XStringList objects is:
 ###   length, width, nchar, names
 ###
@@ -285,7 +285,7 @@ setMethod("AAStringList", "vector",
     }
 )
 
-### By "ANY", we mean at least "BStringViews" and those silly "AsIs" objects
+### By "ANY", we mean at least "XStringViews" and those silly "AsIs" objects
 ### found in the probe packages (e.g. drosophila2probe$sequence).
 ### Note that we rely on the "as.list" methods defined for those objects.
 ### Performance (on mustafa):
@@ -440,7 +440,7 @@ setReplaceMethod("[", "XStringList",
     }
 )
 
-### Extract the i-th element of a XStringList object as an XString object.
+### Extract the i-th element of an XStringList object as an XString object.
 setMethod("[[", "XStringList",
     function(x, i, j, ...)
     {

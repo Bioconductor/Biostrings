@@ -3,7 +3,7 @@
 \alias{letter}
 \alias{letter,character-method}
 \alias{letter,XString-method}
-\alias{letter,BStringViews-method}
+\alias{letter,XStringViews-method}
 
 
 \title{Subsetting a string}
@@ -20,7 +20,7 @@
 \arguments{
   \item{x}{
     A character vector, an \link{XString} object
-    or a \link{BStringViews} object.
+    or an \link{XStringViews} object.
   }
   \item{i}{
     An NA-free numeric vector.
@@ -37,7 +37,7 @@
   an \link{XString} object.
 
   A character vector of the same length as \code{x} when \code{x}
-  is a character vector or a \link{BStringViews} object.
+  is a character vector or an \link{XStringViews} object.
 
   Note that, because \code{i} must contain valid positions,
   all non-NA elements in the result are guaranted to have exactly
@@ -47,7 +47,7 @@
 \seealso{
   \code{\link{subXString}},
   \link{XString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{
@@ -64,8 +64,8 @@
   letter(BString(x[1]), i)  # character vector
   BString(x[1])[i]          # BString object
 
-  ## With a BStringViews object
-  x2 <- BStringViews(x, "BString")
+  ## With an XStringViews object
+  x2 <- XStringViews(x, "BString")
   letter(x2, i)
 }
 

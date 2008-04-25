@@ -32,7 +32,7 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a XStringPartialMatches object.
+  \code{x} is an XStringPartialMatches object.
 
   \describe{
     \item{}{
@@ -48,7 +48,7 @@
 
 \section{Standard generic methods}{
   In the code snippets below,
-  \code{x} is a XStringPartialMatches objects,
+  \code{x} is an XStringPartialMatches objects,
   and \code{i} can be a numeric or logical vector.
 
   \describe{
@@ -64,7 +64,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{XString-class},
   \code{\link{letter}}
 }

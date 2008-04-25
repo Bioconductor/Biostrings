@@ -2,35 +2,35 @@
 
 \alias{findPalindromes}
 \alias{findPalindromes,XString-method}
-\alias{findPalindromes,BStringViews-method}
+\alias{findPalindromes,XStringViews-method}
 
 \alias{palindromeArmLength}
 \alias{palindromeArmLength,XString-method}
-\alias{palindromeArmLength,BStringViews-method}
+\alias{palindromeArmLength,XStringViews-method}
 
 \alias{palindromeLeftArm}
 \alias{palindromeLeftArm,XString-method}
-\alias{palindromeLeftArm,BStringViews-method}
+\alias{palindromeLeftArm,XStringViews-method}
 
 \alias{palindromeRightArm}
 \alias{palindromeRightArm,XString-method}
-\alias{palindromeRightArm,BStringViews-method}
+\alias{palindromeRightArm,XStringViews-method}
 
 \alias{findComplementedPalindromes}
 \alias{findComplementedPalindromes,DNAString-method}
-\alias{findComplementedPalindromes,BStringViews-method}
+\alias{findComplementedPalindromes,XStringViews-method}
 
 \alias{complementedPalindromeArmLength}
 \alias{complementedPalindromeArmLength,DNAString-method}
-\alias{complementedPalindromeArmLength,BStringViews-method}
+\alias{complementedPalindromeArmLength,XStringViews-method}
 
 \alias{complementedPalindromeLeftArm}
 \alias{complementedPalindromeLeftArm,DNAString-method}
-\alias{complementedPalindromeLeftArm,BStringViews-method}
+\alias{complementedPalindromeLeftArm,XStringViews-method}
 
 \alias{complementedPalindromeRightArm}
 \alias{complementedPalindromeRightArm,DNAString-method}
-\alias{complementedPalindromeRightArm,BStringViews-method}
+\alias{complementedPalindromeRightArm,XStringViews-method}
 
 
 \title{Searching a sequence for palindromes or complemented palindromes}
@@ -61,7 +61,7 @@
 \arguments{
   \item{subject}{
     An \link{XString} object containing the subject string,
-    or a \link{BStringViews} object.
+    or an \link{XStringViews} object.
   }
   \item{min.armlength}{
     An integer giving the minimum length of the arms of the palindromes
@@ -84,7 +84,7 @@
   }
   \item{x}{
     An \link{XString} object containing a 2-arm palindrome
-    or complemented palindrome, or a \link{BStringViews} object containing a set
+    or complemented palindrome, or an \link{XStringViews} object containing a set
     of 2-arm palindromes or complemented palindromes.
   }
   \item{...}{
@@ -96,8 +96,8 @@
 }
 
 \value{
-  \code{findPalindromes} and \code{findComplementedPalindromes} return a
-  \link{BStringViews} object containing all palindromes (or complemented
+  \code{findPalindromes} and \code{findComplementedPalindromes} return an
+  \link{XStringViews} object containing all palindromes (or complemented
   palindromes) found in \code{subject} (one view per palindromic substring
   found).
 
@@ -109,7 +109,7 @@
   are not: \code{x} must have arms of length greater or equal to 1 in order to
   be considered a 2-arm palindrome. The same apply to 2-arm complemented
   palindromes.
-  When applied to a \link{BStringViews} object \code{x},
+  When applied to an \link{XStringViews} object \code{x},
   \code{palindromeArmLength} and \code{complementedPalindromeArmLength} behave
   in a vectorized fashion by returning an integer vector of the same length
   as \code{x}.
@@ -123,8 +123,8 @@
 
   Like \code{palindromeArmLength}, both \code{palindromeLeftArm} and
   \code{palindromeRightArm} will raise an error if \code{x} has no arms.
-  Also, when applied to a \link{BStringViews} object \code{x}, both behave
-  in a vectorized fashion by returning a \link{BStringViews} object of the
+  Also, when applied to an \link{XStringViews} object \code{x}, both behave
+  in a vectorized fashion by returning an \link{XStringViews} object of the
   same length as \code{x}.
 }
 
@@ -135,7 +135,7 @@
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
   \code{\link{masks}},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{DNAString-class}
 }
 

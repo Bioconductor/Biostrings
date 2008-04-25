@@ -410,7 +410,7 @@ setMethod("show", ".IRanges",
 ### have been touched is enough (and faster). However, because of this, if
 ### instances of derived classes must satisfy additional constraints, then some
 ### of the replacement methods below need to be overridden. See for example the
-### "width<-" method for BStringViews objects (BStringViews-class.R file).
+### "width<-" method for XStringViews objects (XStringViews-class.R file).
 ###
 
 setGeneric("start<-", signature="x",
@@ -607,7 +607,7 @@ setMethod("as.matrix", ".IRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Deprecated methods.
+### Deprecated generics and methods.
 ###
 
 setGeneric("first", function(x) standardGeneric("first"))

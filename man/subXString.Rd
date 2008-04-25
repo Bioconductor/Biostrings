@@ -24,7 +24,7 @@
 \arguments{
   \item{x}{
     An \link{XString} object for \code{subXString}.
-    A character vector, a \link{BStringViews} or an \link{XString}
+    A character vector, an \link{XStringViews} or an \link{XString}
     object for \code{substr} or \code{substring}.
   }
   \item{start}{
@@ -40,7 +40,7 @@
     A numeric vector.
   }
   \item{text}{
-    A character vector, a \link{BStringViews} or an \link{XString}
+    A character vector, an \link{XStringViews} or an \link{XString}
     object.
   }
   \item{first}{
@@ -73,7 +73,7 @@
   \code{\link{letter}},
   \code{\link{views}},
   \link{XString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

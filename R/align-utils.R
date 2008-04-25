@@ -48,7 +48,7 @@ setMethod("consmat", "XStringSet",
     }
 )
 
-setMethod("consmat", "BStringViews",
+setMethod("consmat", "XStringViews",
     function(x, freq=TRUE)
     {
         consmat(as.character(x, use.names=FALSE), freq=freq)

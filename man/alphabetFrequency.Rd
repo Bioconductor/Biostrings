@@ -7,13 +7,13 @@
 \alias{alphabetFrequency,XStringSet-method}
 \alias{alphabetFrequency,DNAStringSet-method}
 \alias{alphabetFrequency,RNAStringSet-method}
-\alias{alphabetFrequency,BStringViews-method}
+\alias{alphabetFrequency,XStringViews-method}
 
 \alias{oligonucleotideFrequency}
 \alias{oligonucleotideFrequency,DNAString-method}
 \alias{oligonucleotideFrequency,RNAString-method}
 \alias{oligonucleotideFrequency,XStringSet-method}
-\alias{oligonucleotideFrequency,BStringViews-method}
+\alias{oligonucleotideFrequency,XStringViews-method}
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
@@ -35,11 +35,11 @@
   calculate the frequency of all possible oligonucleotides of a given
   length (called the "width" in this particular context).
 
-  In this man page we call "DNA input" a \link{DNAString} object, or a
-  \link{BStringViews} object with a \link{DNAString} subject,
+  In this man page we call "DNA input" a \link{DNAString} object, or an
+  \link{XStringViews} object with a \link{DNAString} subject,
   or a \link{DNAStringSet} object.
-  Similarly we call "RNA input" an \link{RNAString} object, or a
-  \link{BStringViews} object with an \link{RNAString} subject,
+  Similarly we call "RNA input" an \link{RNAString} object, or an
+  \link{XStringViews} object with an \link{RNAString} subject,
   or an \link{RNAStringSet} object.
 }
 
@@ -56,7 +56,7 @@
 
 \arguments{
   \item{x}{
-    A \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
+    A \link{BString}, \link{DNAString}, \link{RNAString}, \link{XStringViews}
     or \link{XStringSet} object for all the \code{*Frequency} functions.
     A character vector for \code{strrev}.
   }
@@ -65,7 +65,7 @@
     If \code{TRUE}, the returned vector only contains frequencies for the
     letters in the "base" alphabet i.e. "A", "C", "G", "T" if \code{x}
     is a "DNA input", and "A", "C", "G", "U" if \code{x} is "RNA input".
-    When \code{x} is a \link{BString} object (or a \link{BStringViews}
+    When \code{x} is a \link{BString} object (or an \link{XStringViews}
     object with a \link{BString} subject, or a \link{BStringSet} object),
     then the \code{baseOnly} argument is ignored.
   }
@@ -74,7 +74,7 @@
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
-    For the \link{BStringViews} and \link{XStringSet} methods,
+    For the \link{XStringViews} and \link{XStringSet} methods,
     the \code{collapse} argument is accepted.
   }
   \item{fast.moving.side}{
@@ -104,7 +104,7 @@
 \details{
   \code{alphabetFrequency} and \code{oligonucleotideFrequency} are generic
   functions with methods in the Biostrings package defined for
-  \link{BString}, \link{DNAString}, \link{RNAString}, \link{BStringViews}
+  \link{BString}, \link{DNAString}, \link{RNAString}, \link{XStringViews}
   and \link{XStringSet} objects.
 }
 
@@ -126,7 +126,7 @@
   and returns a vector named with all the possible dinucleotides
   (resp. trinucleotides or oligonucleotides).
   
-  If \code{x} is a multiple sequence input (i.e. a \link{BStringViews} or
+  If \code{x} is a multiple sequence input (i.e. an \link{XStringViews} or
   \link{XStringSet} object), then the returned object is a matrix (or a list)
   with the same number of rows (or elements) as \code{x} unless \code{collapse=TRUE}
   is specified. In that case the returned vector (or array) contains the frequencies
@@ -138,7 +138,7 @@
 \seealso{
   \code{\link{countPDict}},
   \link{BString}, \link{DNAString}, \link{RNAString},
-  \link{XStringSet}, \link{BStringViews},
+  \link{XStringSet}, \link{XStringViews},
   \code{\link{rev}}, \code{\link{strsplit}},
   \code{\link{GENETIC_CODE}}, \code{\link{AMINO_ACID_CODE}}
 }

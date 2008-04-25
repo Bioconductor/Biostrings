@@ -2,7 +2,7 @@
 
 \alias{matchProbePair}
 \alias{matchProbePair,DNAString-method}
-\alias{matchProbePair,BStringViews-method}
+\alias{matchProbePair,XStringViews-method}
 
 
 \title{Find "theoretical amplicons" mapped to a probe pair}
@@ -29,7 +29,7 @@
     The reverse probe.
   }
   \item{subject}{
-    A \code{\link{DNAString}} object (or a \code{\link{BStringViews}} object
+    A \code{\link{DNAString}} object (or an \code{\link{XStringViews}} object
     with a \code{\link{DNAString}} subject) containing the target sequence.
   }
   \item{algorithm}{
@@ -57,7 +57,7 @@
 }
 
 \value{
-  A \link{BStringViews} object containing the set of "theoretical amplicons".
+  An \link{XStringViews} object containing the set of "theoretical amplicons".
 }
 
 \author{H. Pages}
@@ -67,7 +67,7 @@
   \code{\link{matchLRPatterns}},
   \code{\link{findPalindromes}},
   \code{\link{reverseComplement}},
-  \code{\link{BStringViews}}
+  \code{\link{XStringViews}}
 }
 
 \examples{

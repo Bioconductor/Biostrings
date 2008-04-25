@@ -49,7 +49,7 @@
 }
 
 \value{
-  A \link{BStringViews} object for \code{matchPWM}.
+  An \link{XStringViews} object for \code{matchPWM}.
 
   A single integer for \code{countPWM}.
 
@@ -68,7 +68,7 @@
   \code{\link{matchPattern}},
   \code{\link{reverseComplement}},
   \link{DNAString-class},
-  \link{BStringViews-class}
+  \link{XStringViews-class}
 }
 
 \examples{

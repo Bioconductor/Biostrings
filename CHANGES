@@ -37,7 +37,7 @@ o The following bugs and design flaws found in Biostrings 1 have been
 
   b) Time of 'DNAString(src)' was quadratic in respect to 'length(src)' ('src'
      being a character vector). In Biostrings 2 this has been replaced by
-     'BStringViews(src, "DNAString")' which is much faster (linear in time).
+     'XStringViews(src, "DNAString")' which is much faster (linear in time).
 
 o Other bugs in Biostrings 1:
 
@@ -64,28 +64,28 @@ o Other bugs in Biostrings 1:
 
 o Changes in the API:
   - No more BioString class: it has been replaced by the BString, DNAString,
-    RNAString and BStringViews classes.
+    RNAString and XStringViews classes.
   - A BString object can be used to store a plain string and a DNAString
     (or RNAString) object can be used to store a DNA (or RNA) sequence.
   - No more NucleotideString() method: use the BString(), DNAString(),
     or RNAString() functions instead.
   - The DNAString() function is _not_ vectorized anymore. You need to use the
-    new BStringViews() method when 'src' is a character vector of length > 1.
+    new XStringViews() method when 'src' is a character vector of length > 1.
   - New constructors BString() and RNAString() follow the DNAString() new
     behavior: they are _not_ vectorized.
-  - The as.list() method for BStringViews objects. This allows constructions
+  - The as.list() method for XStringViews objects. This allows constructions
     like 'for (b in as.list(v)) ...' and 'lapply(as.list(v), ...)'.
   - New generics: subBString(), subject(), start(), end(), width(), desc(),
-    BStringViews(), reverse(), complement(), countPattern() and mismatch().
+    XStringViews(), reverse(), complement(), countPattern() and mismatch().
   - New functions: letter(), BString(), RNAString(), views(), adjacentViews().
   - Renamed functions: matchDNAPattern() has been replaced by matchPattern().
   - Deprecated functions: matchDNAPattern().
 
 o New features:
-  - A new format for displaying BString or BStringViews objects.
+  - A new format for displaying BString or XStringViews objects.
   - New [, == and != operators for BString objects.
-  - New [[, == and != operators for BStringViews objects.
-  - BStringViews() (the replacement for the vectorized DNAString() found in
+  - New [[, == and != operators for XStringViews objects.
+  - XStringViews() (the replacement for the vectorized DNAString() found in
     Biostrings 1) has a 'sep' argument).
   - reverseComplement() has been splitted in 2 separate functions reverse()
     and complement(). 'reverseComplement(x)' is now a shortcut for

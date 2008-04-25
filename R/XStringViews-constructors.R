@@ -1,5 +1,5 @@
 ### =========================================================================
-### Constructor-like functions and generics for BStringViews objects
+### Constructor-like functions and generics for XStringViews objects
 ### -------------------------------------------------------------------------
 
 ### The "views" and "adjacentViews" functions below share the following
@@ -8,7 +8,7 @@
 ###   - First argument is 'subject'. It must be a character vector or an
 ###     XString object.
 ###   - Passing something else to 'subject' provokes an error.
-###   - They return a BStringViews object whose 'subject' slot is the object
+###   - They return an XStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
 
 .safeMakeIRanges <- function(subject, start, end)
@@ -41,7 +41,7 @@
 ###   dnav3 <- views(dna, -5:-1, 0:4)
 ### Same as doing views(dna, 1, length(dna)):
 ###   dnav4 <- views(dna)
-### A BStringViews object with no view:
+### An XStringViews object with no view:
 ###   dnav5 <- views(dna, integer(0), integer(0))
 ### TODO: Use same args for this function as for the "subviews" function i.e.:
 ###   - add a 'width' arg (default to NA)
@@ -51,7 +51,7 @@ views <- function(subject, start=NA, end=NA)
 {
     if (!is(subject, "XString"))
         subject <- BString(subject)
-    ans <- new("BStringViews", subject, check=FALSE)
+    ans <- new("XStringViews", subject, check=FALSE)
     ranges <- .safeMakeIRanges(subject(ans), start, end)
     update(ans, start=start(ranges), width=width(ranges))
 }
@@ -70,7 +70,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         stop("'gapwidth' must be numerics >= 0")
     lw <- length(width)
     if (lw == 0)
-        return(new("BStringViews", subject, check=FALSE))
+        return(new("XStringViews", subject, check=FALSE))
     if (!is.integer(width))
         width <- as.integer(width)
     lg <- length(gapwidth)
@@ -85,16 +85,16 @@ adjacentViews <- function(subject, width, gapwidth=0)
         ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    new("BStringViews", subject, start=ans_start, width=width, check=FALSE)
+    new("XStringViews", subject, start=ans_start, width=width, check=FALSE)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "BStringViews" generic and methods.
+### The "XStringViews" generic and methods.
 ###
 
-setGeneric("BStringViews", signature="src",
-    function(src, subjectClass, collapse="") standardGeneric("BStringViews")
+setGeneric("XStringViews", signature="src",
+    function(src, subjectClass, collapse="") standardGeneric("XStringViews")
 )
 
 ### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
@@ -104,9 +104,9 @@ setGeneric("BStringViews", signature="src",
 ###   n <- 40000
 ###   src <- sapply(1:n, function(i)
 ###                      paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse=""))
-###   v <- BStringViews(src, "DNAString")
-### Comparing BStringViews() speed vs "old" vectorized DNAString() speed:
-###       n  BStringViews  "old" DNAString
+###   v <- XStringViews(src, "DNAString")
+### Comparing XStringViews() speed vs "old" vectorized DNAString() speed:
+###       n  XStringViews  "old" DNAString
 ###   -----  ------------  ---------------
 ###    5000        0.26 s           4.15 s
 ###   10000        0.51 s          16.29 s
@@ -115,7 +115,7 @@ setGeneric("BStringViews", signature="src",
 ### The quadratic behaviour of "old" DNAString() was first reported
 ### by Wolfgang.
 
-### This is the "BStringViews" for "character" but we use the "ANY" signature
+### This is the "XStringViews" for "character" but we use the "ANY" signature
 ### anyway. This because we've found some weird objects that look very much
 ### like "character" vectors but break the dispatch mechanism.
 ### For example:
@@ -124,7 +124,7 @@ setGeneric("BStringViews", signature="src",
 ###   is.character(src) # TRUE
 ###   is(src, "character") # FALSE
 ### Welcome to R object model mess!
-setMethod("BStringViews", "ANY",
+setMethod("XStringViews", "ANY",
     function(src, subjectClass, collapse="")
     {
         if (!is.character(collapse))
@@ -137,18 +137,10 @@ setMethod("BStringViews", "ANY",
     }
 )
 
-setMethod("BStringViews", "file",
-    function(src, subjectClass, collapse="")
-    {
-        .Deprecated("read.BStringViews")
-        read.BStringViews(src, "fasta", subjectClass, collapse)
-    }
-)
-
 ### Called when 'src' is an XString object.
 ### When not missing, 'subjectClass' must be the name of one of the direct
 ### XString subtypes i.e. "BString", "DNAString", "RNAString" or "AAString".
-setMethod("BStringViews", "XString",
+setMethod("XStringViews", "XString",
     function(src, subjectClass, collapse="")
     {
         if (!missing(collapse)) {
@@ -160,19 +152,19 @@ setMethod("BStringViews", "XString",
         }
         if (!missing(subjectClass) && subjectClass != class(src))
             src <- XString(subjectClass, src)
-        new("BStringViews", src, start=1L, width=nchar(src), check=FALSE)
+        new("XStringViews", src, start=1L, width=nchar(src), check=FALSE)
     }
 )
 
-### Called when 'src' is a BStringViews object.
+### Called when 'src' is an XStringViews object.
 ### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
 ### "BString", "DNAString", "RNAString" or "AAString".
 ### The 'collapse' arg is ignored.
-setMethod("BStringViews", "BStringViews",
+setMethod("XStringViews", "XStringViews",
     function(src, subjectClass, collapse="")
     {
         if (!missing(collapse))
-            stop("'collapse' not supported when 'src' is a BStringViews object")
+            stop("'collapse' not supported when 'src' is an XStringViews object")
         src@subject <- XString(subjectClass, subject(src))
         src
     }
@@ -183,19 +175,19 @@ setMethod("BStringViews", "BStringViews",
 ### The "restrict" method and the "trim" function.
 ###
 
-setMethod("restrict", "BStringViews",
+setMethod("restrict", "XStringViews",
     function(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
     {
         if (!missing(keep.all.ranges))
-            stop("'keep.all.ranges' is not supported for BStringViews objects")
+            stop("'keep.all.ranges' is not supported for XStringViews objects")
         callNextMethod(x, start, end, use.names=use.names)
     }
 )
 
 trim <- function(x, use.names=TRUE)
 {
-    if (!is(x, "BStringViews"))
-        stop("'x' must be a BStringViews object")
+    if (!is(x, "XStringViews"))
+        stop("'x' must be an XStringViews object")
     y <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
     if (length(y) != length(x))
         stop("some views are not overlapping with the subject, cannot trim them")
@@ -207,7 +199,7 @@ trim <- function(x, use.names=TRUE)
 ### The "narrow" method and the "subviews" function.
 ###
 
-setMethod("narrow", "BStringViews",
+setMethod("narrow", "XStringViews",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
         y <- callNextMethod()
@@ -219,8 +211,37 @@ setMethod("narrow", "BStringViews",
 
 subviews <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 {
-    if (!is(x, "BStringViews"))
-        stop("'x' must be a BStringViews object")
+    if (!is(x, "XStringViews"))
+        stop("'x' must be an XStringViews object")
     narrow(x, start=start, end=end, width=width, use.names=use.names)
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deprecated generics and methods.
+###
+
+setGeneric("BStringViews", signature="src",
+    function(src, subjectClass, collapse="") standardGeneric("BStringViews")
+)
+
+.redirect.BStringViews.to.XStringViews <- function(src, subjectClass, collapse="")
+{
+    .Deprecated("XStringViews")
+    XStringViews(src, subjectClass, collapse=collapse)
+}
+
+setMethod("BStringViews", "ANY", .redirect.BStringViews.to.XStringViews)
+
+setMethod("BStringViews", "file",
+    function(src, subjectClass, collapse="")
+    {
+        .Deprecated("read.XStringViews")
+        read.XStringViews(src, "fasta", subjectClass, collapse)
+    }
+)
+
+setMethod("BStringViews", "XString", .redirect.BStringViews.to.XStringViews)
+
+setMethod("BStringViews", "XStringViews", .redirect.BStringViews.to.XStringViews)
 

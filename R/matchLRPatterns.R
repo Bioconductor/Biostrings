@@ -31,13 +31,13 @@ setMethod("matchLRPatterns", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-### WARNING: Unlike the other "matchLRPatterns" methods, the BStringViews object
+### WARNING: Unlike the other "matchLRPatterns" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized BStringViews object
+### guaranteed though is when 'subject' is a normalized XStringViews object
 ### and 'max.Lmismatch=0' and 'max.Rmismatch=0' so there are no "out of limits"
 ### matches.
-setMethod("matchLRPatterns", "BStringViews",
+setMethod("matchLRPatterns", "XStringViews",
     function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)
     {
@@ -50,7 +50,7 @@ setMethod("matchLRPatterns", "BStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        new("BStringViews", subject(subject),
+        new("XStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )

@@ -64,7 +64,7 @@
 
 \seealso{
   \link{IRanges-class},
-  \link{BStringViews}
+  \link{XStringViews-class}
 }
 
 \examples{

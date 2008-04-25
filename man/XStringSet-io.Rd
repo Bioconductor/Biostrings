@@ -1,22 +1,28 @@
 \name{XStringSet-io}
 
-\alias{read.BStringViews}
+\alias{read.XStringViews}
 \alias{read.BStringSet}
 \alias{read.DNAStringSet}
 \alias{read.RNAStringSet}
 \alias{read.AAStringSet}
 \alias{write.XStringSet}
-\alias{write.BStringViews}
+\alias{write.XStringViews}
 
 \alias{FASTArecordsToCharacter}
 \alias{CharacterToFASTArecords}
-\alias{FASTArecordsToBStringViews}
+\alias{FASTArecordsToXStringViews}
 \alias{XStringSetToFASTArecords}
 
-\title{Read/write an XStringSet or BStringViews object from/to a file}
+% Deprecated:
+\alias{read.BStringViews}
+\alias{write.BStringViews}
+\alias{FASTArecordsToBStringViews}
+
+
+\title{Read/write an XStringSet or XStringViews object from/to a file}
 
 \description{
-  Functions to read/write an \link{XStringSet} or \link{BStringViews} object
+  Functions to read/write an \link{XStringSet} or \link{XStringViews} object
   from/to a file.
 }
 
@@ -28,14 +34,14 @@
   read.AAStringSet(file, format)
   write.XStringSet(x, file="", format, width=80)
 
-  ## BStringViews object
-  read.BStringViews(file, format, subjectClass, collapse="")
-  write.BStringViews(x, file="", format, width=80)
+  ## XStringViews object
+  read.XStringViews(file, format, subjectClass, collapse="")
+  write.XStringViews(x, file="", format, width=80)
 
   ## Some related helper functions
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
   CharacterToFASTArecords(x)
-  FASTArecordsToBStringViews(FASTArecs, subjectClass, collapse="")
+  FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse="")
   XStringSetToFASTArecords(x)
 }
 
@@ -44,14 +50,14 @@
     Either a character string naming a file or a connection open
     for reading or writing.
     If \code{""} (the default for \code{write.XStringSet} and
-    \code{write.BStringViews}), then the functions write to the standard
+    \code{write.XStringViews}), then the functions write to the standard
     output connection (the console) unless redirected by \code{sink}.
   }
   \item{format}{
     Only \code{"fasta"} is supported for now.
   }
   \item{x}{
-    For \code{write.XStringSet} and \code{write.BStringViews}, the object to
+    For \code{write.XStringSet} and \code{write.XStringViews}, the object to
     write to \code{file}.
     For \code{CharacterToFASTArecords}, the (possibly named) character
     vector to be converted to a list of FASTA records as one returned
@@ -65,7 +71,7 @@
     The maximum number of letters per line of sequence.
   }
   \item{subjectClass}{
-    The class to be given to the subject of the \link{BStringViews} object
+    The class to be given to the subject of the \link{XStringViews} object
     created and returned by the function.
     Must be the name of one of the direct XString subtypes i.e.
     \code{"BString"}, \code{"DNAString"}, \code{"RNAString"}
@@ -73,7 +79,7 @@
   }
   \item{collapse}{
     An optional character string to be inserted between the views of the
-    \link{BStringViews} object created and returned by the function.
+    \link{XStringViews} object created and returned by the function.
   }
   \item{FASTArecs}{
     A list of FASTA records as one returned by \code{\link{readFASTA}}.
@@ -88,18 +94,18 @@
   Only FASTA files are supported for now.
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
-  \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.BStringViews}
-  load sequences from a file into an \link{XStringSet} or \link{BStringViews}
+  \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.XStringViews}
+  load sequences from a file into an \link{XStringSet} or \link{XStringViews}
   object.
 
-  Writing functions \code{write.XStringSet} and \code{write.BStringViews}
-  write an \link{XStringSet} or \link{BStringViews} object to a file or
+  Writing functions \code{write.XStringSet} and \code{write.XStringViews}
+  write an \link{XStringSet} or \link{XStringViews} object to a file or
   connection.
 
   \code{FASTArecordsToCharacter}, \code{CharacterToFASTArecords},
-  \code{FASTArecordsToBStringViews} and \code{XStringSetToFASTArecords}
+  \code{FASTArecordsToXStringViews} and \code{XStringSetToFASTArecords}
   are helper functions used internally by \code{write.XStringSet} and
-  \code{read.BStringViews} for switching between different
+  \code{read.XStringViews} for switching between different
   representations of the same object.
 }
 
@@ -107,7 +113,7 @@
   \code{\link{readFASTA}},
   \code{\link{writeFASTA}},
   \link{XStringSet-class},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{BString-class},
   \link{DNAString-class},
   \link{RNAString-class},

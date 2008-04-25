@@ -1,58 +1,58 @@
-\name{BStringViews-class}
+\name{XStringViews-class}
 \docType{class}
 
 % Classes:
-\alias{class:BStringViews}
-\alias{BStringViews-class}
+\alias{class:XStringViews}
+\alias{XStringViews-class}
 
 % Constructor-like functions and generics:
-\alias{initialize,BStringViews-method}
+\alias{initialize,XStringViews-method}
 
 % Accesor methods:
 \alias{subject}
-\alias{subject,BStringViews-method}
-\alias{width<-,BStringViews-method}
-\alias{nchar,BStringViews-method}
+\alias{subject,XStringViews-method}
+\alias{width<-,XStringViews-method}
+\alias{nchar,XStringViews-method}
 
 % Other methods:
 
-\alias{show,BStringViews-method}
-\alias{[[,BStringViews-method}
-\alias{[[<-,BStringViews-method}
+\alias{show,XStringViews-method}
+\alias{[[,XStringViews-method}
+\alias{[[<-,XStringViews-method}
 
-\alias{==,BStringViews,BStringViews-method}
-\alias{==,BStringViews,XString-method}
-\alias{==,BStringViews,character-method}
-\alias{==,XString,BStringViews-method}
-\alias{==,character,BStringViews-method}
+\alias{==,XStringViews,XStringViews-method}
+\alias{==,XStringViews,XString-method}
+\alias{==,XStringViews,character-method}
+\alias{==,XString,XStringViews-method}
+\alias{==,character,XStringViews-method}
 
-\alias{!=,BStringViews,BStringViews-method}
-\alias{!=,BStringViews,XString-method}
-\alias{!=,BStringViews,character-method}
-\alias{!=,XString,BStringViews-method}
-\alias{!=,character,BStringViews-method}
+\alias{!=,XStringViews,XStringViews-method}
+\alias{!=,XStringViews,XString-method}
+\alias{!=,XStringViews,character-method}
+\alias{!=,XString,XStringViews-method}
+\alias{!=,character,XStringViews-method}
 
-\alias{as.character,BStringViews-method}
-\alias{as.matrix,BStringViews-method}
-\alias{as.list,BStringViews-method}
-\alias{toString,BStringViews-method}
+\alias{as.character,XStringViews-method}
+\alias{as.matrix,XStringViews-method}
+\alias{as.list,XStringViews-method}
+\alias{toString,XStringViews-method}
 
 
-\title{The BStringViews class}
+\title{The XStringViews class}
 
 \description{
-  The BStringViews class is the basic container for storing a set of views
+  The XStringViews class is the basic container for storing a set of views
   (start/end locations) on the same sequence (an \link{XString} object).
 }
 
 \details{
-  A BStringViews object contains a set of views (start/end locations) on the
+  An XStringViews object contains a set of views (start/end locations) on the
   same \link{XString} object called "the subject string"
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
-  A BStringViews object is in fact a particular case of a \link{IRanges} object
-  (the BStringViews class contains the \link{IRanges} class) so it can be
+  An XStringViews object is in fact a particular case of an \link{IRanges} object
+  (the XStringViews class contains the \link{IRanges} class) so it can be
   manipulated in the same way: see \link{IRanges} for more information.
   Note that two views can overlap and that a view can be "out of limits"
   i.e. it can start before the first letter of the subject or/and end
@@ -61,7 +61,7 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a BStringViews object.
+  \code{x} is an XStringViews object.
 
   \describe{
     \item{}{
@@ -81,7 +81,7 @@
 
 \section{Other methods}{
   In the code snippets below,
-  \code{x}, \code{object}, \code{e1} and \code{e2} are BStringViews objects,
+  \code{x}, \code{object}, \code{e1} and \code{e2} are XStringViews objects,
   and \code{i} can be a numeric or logical vector.
 
   \describe{
@@ -96,15 +96,15 @@
     \item{}{
       \code{e1 == e2}:
       A vector of logicals indicating the result of the view by
-      view comparison. The views in the shorter of the two BStringViews
+      view comparison. The views in the shorter of the two XStringViews
       object being compared are recycled as necessary.
 
       Like for comparison between \link{XString} objects, comparison between two
-      BStringViews objects with subjects of different classes is not supported
+      XStringViews objects with subjects of different classes is not supported
       with one exception: when the subjects are \link{DNAString} and
       \link{RNAString} instances.
 
-      Also, like with \link{XString} objects, comparison between a BStringViews
+      Also, like with \link{XString} objects, comparison between an XStringViews
       object with a BString subject and a character vector is supported (see
       examples below).
     }
@@ -128,7 +128,7 @@
       \code{"character"}), return either a 2-column integer matrix containing
       \code{start(x)} and \code{end(x)} or a character matrix containing the
       "exploded" representation of the views.
-      \code{mode="character"} can only be used on a BStringViews
+      \code{mode="character"} can only be used on an XStringViews
       object with equal-width views.
       Arguments \code{use.names} and \code{check.limits} are ignored with
       \code{mode="integer"}.
@@ -156,7 +156,7 @@
 
 \seealso{
   \link{IRanges-class},
-  \link{BStringViews-constructors},
+  \link{XStringViews-constructors},
   \link{XString-class},
   \link{XStringSet-class},
   \code{\link{letter}}
@@ -164,7 +164,7 @@
 
 \examples{
 
-  ## One standard way to create a BStringViews object is to use
+  ## One standard way to create an XStringViews object is to use
   ## the "views" constructor:
   s <- DNAString("-CTC-N")
   v4 <- views(s, 3:0, 5:8)

@@ -254,7 +254,7 @@ gregexpr2 <- function(pattern, text)
     if (algo == "gregexpr" || algo == "gregexpr2")
         return(matches)
     ans_width <- rep.int(nchar(pattern), length(matches))
-    new("BStringViews", subject,
+    new("XStringViews", subject,
         start=matches, width=ans_width, check=FALSE)
 }
 
@@ -291,12 +291,12 @@ setMethod("matchPattern", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-### WARNING: Unlike the other "matchPattern" methods, the BStringViews object
+### WARNING: Unlike the other "matchPattern" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized BStringViews object
+### guaranteed though is when 'subject' is a normalized XStringViews object
 ### and 'max.mismatch=0' (no "out of limits" matches).
-setMethod("matchPattern", "BStringViews",
+setMethod("matchPattern", "XStringViews",
     function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         ans_start <- ans_width <- integer(0)
@@ -306,7 +306,7 @@ setMethod("matchPattern", "BStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        new("BStringViews", subject(subject),
+        new("XStringViews", subject(subject),
             start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -314,7 +314,7 @@ setMethod("matchPattern", "BStringViews",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "MaskedXString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-        matchPattern(pattern, as(subject, "BStringViews"), algorithm, max.mismatch, fixed)
+        matchPattern(pattern, as(subject, "XStringViews"), algorithm, max.mismatch, fixed)
 )
 
 matchDNAPattern <- function(...) .Defunct("matchPattern")
@@ -351,7 +351,7 @@ setMethod("countPattern", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("countPattern", "BStringViews",
+setMethod("countPattern", "XStringViews",
     function(pattern, subject, algorithm, max.mismatch, fixed)
     {
         sum(
@@ -367,6 +367,6 @@ setMethod("countPattern", "BStringViews",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "MaskedXString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-        countPattern(pattern, as(subject, "BStringViews"), algorithm, max.mismatch, fixed)
+        countPattern(pattern, as(subject, "XStringViews"), algorithm, max.mismatch, fixed)
 )
 

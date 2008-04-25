@@ -111,10 +111,10 @@
 
   Note that it is unlikely that the user will have to create or manipulate
   directly an IRanges instance when using the Biostrings package. However
-  the IRanges class being the superclass of the \link{BStringViews}
-  class, any \link{BStringViews} object is also an IRanges object and
+  the IRanges class being the superclass of the \link{XStringViews}
+  class, any \link{XStringViews} object is also an IRanges object and
   can be manipulated as such. Therefore all the methods described here also
-  work with a \link{BStringViews} object.
+  work with an \link{XStringViews} object.
 }
 
 \section{IRanges object vs data frame}{
@@ -288,7 +288,7 @@
 
 \seealso{
   \link{IRanges-utils},
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \code{\link{as.data.frame}},
   \code{\link{duplicated}},
   \code{\link{as.matrix}}

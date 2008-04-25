@@ -537,7 +537,7 @@ SEXP XRaw_read_complexes_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
    Compare to the time it takes to load Hsapiens$chr1 from the
    BSgenome.Hsapiens.UCSC.hg18 package: 1.340 second on lamb1!
    Conclusion: we could put and load directly the FASTA files in the
-   BSgenome.* packages. The DNAString and BStringViews instances would be
+   BSgenome.* packages. The DNAString and XStringViews instances would be
    created on the fly. No need to store them in .rda files anymore!
 
 */

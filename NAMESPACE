@@ -10,7 +10,7 @@ exportClasses(
     XRaw, XInteger,
     XString, BString, DNAString, RNAString, AAString,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
-    BStringViews,
+    XStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     XStringPartialMatches,
@@ -35,9 +35,9 @@ exportMethods(
     ## MaskCollection objects
     nirlist, maskedwidth, maskedratio,
 
-    ## XString, BStringViews, XStringList and MaskedXString objects
+    ## XString, XStringViews, XStringList and MaskedXString objects
     XString, alphabet, subseq,
-    BStringViews, subject,
+    XStringViews, subject,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     unmasked, masks, "masks<-",
 
@@ -69,7 +69,8 @@ exportMethods(
     pairwiseAlignment, needwunsQS,
 
     ## Deprecated
-    first, last
+    first, last,
+    BStringViews
 )
 
 export(
@@ -83,10 +84,10 @@ export(
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     views, adjacentViews, trim, subviews,
     FASTArecordsToCharacter, CharacterToFASTArecords,
-    FASTArecordsToBStringViews, XStringSetToFASTArecords,
-    read.BStringViews,
+    FASTArecordsToXStringViews, XStringSetToFASTArecords,
+    read.XStringViews,
     read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
-    write.XStringSet, write.BStringViews,
+    write.XStringSet, write.XStringViews,
     subXString, subviews,
     strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
     transcribe, cDNA, dna2rna, rna2dna,
@@ -97,6 +98,8 @@ export(
 
     ## Deprecated
     subBString,
+    FASTArecordsToBStringViews,
+    read.BStringViews, write.BStringViews,
 
     ## Defunct
     matchDNAPattern

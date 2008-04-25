@@ -177,14 +177,14 @@ setMethod("alphabetFrequency", "RNAStringSet",
 
 ### library(drosophila2probe)
 ### dict0 <- drosophila2probe$sequence
-### x <- BStringViews(as.character(dict0[1:2000]), subjectClass="DNAString")
+### x <- XStringViews(as.character(dict0[1:2000]), subjectClass="DNAString")
 ### alphabetFrequency(x, baseOnly=TRUE)
 ### y <- DNAStringSet(x)
 ### alphabetFrequency(y, baseOnly=TRUE)
-setMethod("alphabetFrequency", "BStringViews",
+setMethod("alphabetFrequency", "XStringViews",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
-        y <- BStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
         alphabetFrequency(y, baseOnly=baseOnly, freq=freq, ...)
     }
 )
@@ -353,10 +353,10 @@ setMethod("oligonucleotideFrequency", "XStringSet",
     }
 )
 
-setMethod("oligonucleotideFrequency", "BStringViews",
+setMethod("oligonucleotideFrequency", "XStringViews",
     function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
-        y <- BStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
         oligonucleotideFrequency(y, width, freq=freq, fast.moving.side=fast.moving.side,
                                            as.array=as.array, with.labels=with.labels, ...)
     }

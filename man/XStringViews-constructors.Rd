@@ -1,30 +1,37 @@
-\name{BStringViews-constructors}
+\name{XStringViews-constructors}
 
 % Constructor-like functions and generics:
-\alias{BStringViews-constructors}
+\alias{XStringViews-constructors}
 \alias{views}
 \alias{adjacentViews}
-\alias{BStringViews}
-\alias{BStringViews,ANY-method}
-\alias{BStringViews,file-method}
-\alias{BStringViews,XString-method}
-\alias{BStringViews,BStringViews-method}
+\alias{XStringViews}
+\alias{XStringViews,ANY-method}
+\alias{XStringViews,file-method}
+\alias{XStringViews,XString-method}
+\alias{XStringViews,XStringViews-method}
 
 % Other functions:
 \alias{trim}
 \alias{subviews}
 
+% Deprecated:
+\alias{BStringViews}
+\alias{BStringViews,ANY-method}
+\alias{BStringViews,file-method}
+\alias{BStringViews,XString-method}
+\alias{BStringViews,XStringViews-method}
 
-\title{Basic functions for creating or modifying BStringViews objects}
+
+\title{Basic functions for creating or modifying XStringViews objects}
 
 \description{
-  A set of basic functions for creating or modifying BStringViews objects.
+  A set of basic functions for creating or modifying XStringViews objects.
 }
 
 \usage{
   views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
-  BStringViews(src, subjectClass, collapse="")
+  XStringViews(src, subjectClass, collapse="")
   trim(x, use.names=TRUE)
   subviews(x, start=NA, end=NA, width=NA, use.names=TRUE)
 }
@@ -49,7 +56,7 @@
     An \link{XString} object or a character vector.
   }
   \item{subjectClass}{
-    The class to be given to the subject of the \link{BStringViews} object
+    The class to be given to the subject of the \link{XStringViews} object
     created and returned by the function.
     Must be the name of one of the direct XString subtypes i.e.
     \code{"BString"}, \code{"DNAString"}, \code{"RNAString"}
@@ -57,7 +64,7 @@
   }
   \item{collapse}{
     An optional character string to be inserted between the views of the
-    \link{BStringViews} object created and returned by the function.
+    \link{XStringViews} object created and returned by the function.
   }
   \item{x}{
     [TODO]
@@ -68,18 +75,18 @@
 }
 
 \details{
-  The \code{views} function returns a BStringViews object
+  The \code{views} function returns an XStringViews object
   containing views on \code{subject} with start and end positions
   given in the \code{start} and \code{end} vectors.
 
-  The \code{adjacentViews} function returns a BStringViews object
+  The \code{adjacentViews} function returns an XStringViews object
   containing views on \code{subject} with widths given in the \code{width}
   vector and separated by gaps of width \code{gapwidth}.
   The first view starts at position 1.
 
-  The \code{BStringViews} constructor will try to create a BStringViews
+  The \code{XStringViews} constructor will try to create an XStringViews
   object from the value passed to its \code{src} argument.
-  If \code{src} itself is a BStringViews object, the returned
+  If \code{src} itself is an XStringViews object, the returned
   object is obtained by coercing its subject to the class specified by
   \code{subjectClass}.
   If \code{src} is an \link{XString} object, the returned object is made of
@@ -92,16 +99,16 @@
 }
 
 \value{
-  All these functions return a BStringViews object \code{y} with the following
+  All these functions return an XStringViews object \code{y} with the following
   number of views (\code{length(y)}):
   \code{max(length(start), length(end)} for the \code{views} function
   and \code{length(width)} for the \code{adjacentViews} function.
-  For the \code{BStringViews} constructor, \code{length(y)} is \code{1}
+  For the \code{XStringViews} constructor, \code{length(y)} is \code{1}
   when \code{src} is an \link{XString} object and \code{length(src)} otherwise.
 }
 
 \seealso{
-  \link{BStringViews-class},
+  \link{XStringViews-class},
   \link{XString-class}
 }
 
@@ -120,9 +127,9 @@
   ## Creating adjacent views
   v3 <- adjacentViews("abcdefghij", 4:2, gapwidth=1)
 
-  BStringViews(v12, subjectClass="RNAString")
-  BStringViews(AAString("MARKSLEMSIR*"))
-  BStringViews("abcdefghij", subjectClass="BString")
+  XStringViews(v12, subjectClass="RNAString")
+  XStringViews(AAString("MARKSLEMSIR*"))
+  XStringViews("abcdefghij", subjectClass="BString")
 }
 
 \keyword{methods}

@@ -95,7 +95,7 @@ PWMscore <- function(pwm, subject, start=1)
     if (count.only)
         return(ans_start)
     ans_width <- rep.int(ncol(pwm), length(ans_start))
-    new("BStringViews", subject=subject, start=ans_start, width=ans_width, check=FALSE)
+    new("XStringViews", subject=subject, start=ans_start, width=ans_width, check=FALSE)
 }
 
 ### 

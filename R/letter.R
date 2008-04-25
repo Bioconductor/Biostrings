@@ -51,7 +51,7 @@ setMethod("letter", "XString",
 )
 
 ### Return a character vector of the same length as 'x'.
-setMethod("letter", "BStringViews",
+setMethod("letter", "XStringViews",
     function(x, i)
     {
         if (!is.numeric(i) || any(is.na(i)))

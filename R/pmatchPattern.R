@@ -89,7 +89,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
 ###   > library(BSgenome.Scerevisiae.UCSC.sacCer1)
 ###   > Scerevisiae$chr1
 ###   > file <- system.file("extdata", "someORF.fa", package="Biostrings")
-###   > orf <- BStringViews(file(file), "DNAString")
+###   > orf <- XStringViews(file(file), "DNAString")
 ###   > system.time(pmatchPattern(orf[[2]], Scerevisiae$chr1, max=1))
 ###      user  system elapsed
 ###     0.900   0.012   0.913
@@ -103,7 +103,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     if (nchar(pattern) <= 20000) {
         sv <- matchPattern(pattern, subject)
         if (length(sv) >= maxlength.out || nchar(pattern) < 2L) {
-            pv <- new("BStringViews", pattern,
+            pv <- new("XStringViews", pattern,
                       start=rep.int(1L, length(sv)),
                       width=rep.int(nchar(pattern), length(sv)),
                       check=FALSE)
@@ -175,11 +175,11 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     ## Merge left results with right results
     sv_start <- c(Lpm_start, Rpm_start)
     sv_width <- c(Lpm_end, Rpm_end) - sv_start + 1L
-    sv <- new("BStringViews", subject,
+    sv <- new("XStringViews", subject,
               start=sv_start, width=sv_width, check=FALSE)
     pv_start <- c(Lpv_start, Rpv_start)
     pv_width <- c(Lpv_end, Rpv_end) - pv_start + 1L
-    pv <- new("BStringViews", pattern,
+    pv <- new("XStringViews", pattern,
               start=pv_start, width=pv_width, check=FALSE)
     ans <- new("XStringPartialMatches", sv, subpatterns=pv)
     ii <- order(width(ans), -start(ans), decreasing=TRUE)
@@ -220,7 +220,7 @@ setMethod("pmatchPattern", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("pmatchPattern", "BStringViews",
+setMethod("pmatchPattern", "XStringViews",
     function(pattern, subject, maxlength.out)
     {
         if (length(subject) != 1)
