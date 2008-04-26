@@ -8,10 +8,12 @@
 \title{Find patterns defined by a left and a right part in a sequence}
 
 \description{
+  [TODO]
 }
 
 \usage{
-  matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
+  matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject,
+                  max.Lmismatch=0, max.Rmismatch=0,
                   Lfixed=TRUE, Rfixed=TRUE)
 }
 

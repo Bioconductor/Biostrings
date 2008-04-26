@@ -38,6 +38,7 @@
 
 % Initialization:
 \alias{initialize,IRanges-method}
+\alias{initialize,Views-method}
 \alias{initialize,NormalIRanges-method}
 
 % Coercion:

@@ -9,6 +9,7 @@
 \title{Converting a DNAString to a vector of complexes}
 
 \description{
+  [TODO]
 }
 
 \usage{

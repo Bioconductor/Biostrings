@@ -8,6 +8,7 @@
 \alias{restrict,IRanges-method}
 \alias{narrow}
 \alias{narrow,IRanges-method}
+\alias{narrow,NormalIRanges-method}
 \alias{narrow,numeric-method}
 \alias{reduce}
 \alias{reduce,IRanges-method}

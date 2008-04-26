@@ -50,8 +50,8 @@
   or a sequence of amino acids (\link{AAString}).
 
   All those containers derive directly (and with no additional slots)
-  from the XString virtual class. They are also said to be direct XString
-  subtypes with no additional slots.
+  from the XString virtual class. They are also said to be XString
+  subtypes.
 }
 
 \details{

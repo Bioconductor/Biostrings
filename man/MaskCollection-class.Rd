@@ -1,38 +1,45 @@
 \name{MaskCollection-class}
 \docType{class}
 
-% Classes
+% Classes:
 \alias{class:MaskCollection}
 \alias{MaskCollection-class}
 \alias{MaskCollection}
 
-% Basic accessor methods
+% Basic accessor methods:
 \alias{nirlist}
 \alias{nirlist,MaskCollection-method}
 \alias{length,MaskCollection-method}
 \alias{width,MaskCollection-method}
 \alias{names,MaskCollection-method}
 
-% Other methods
+% Other methods:
 \alias{isEmpty,MaskCollection-method}
 \alias{max,MaskCollection-method}
 \alias{min,MaskCollection-method}
+\alias{maskedwidth}
 \alias{maskedwidth,MaskCollection-method}
+\alias{maskedratio}
 \alias{maskedratio,MaskCollection-method}
 
-% Transforming methods
+% Transforming methods:
 \alias{restrict,MaskCollection-method}
 \alias{reduce,MaskCollection-method}
 \alias{gaps,MaskCollection-method}
 
-% "show" method 
+% "show" method :
 \alias{show,MaskCollection-method}
 
-% Subsetting and appending
+% Subsetting:
 \alias{[[,MaskCollection-method}
 \alias{[[<-,MaskCollection-method}
 \alias{[,MaskCollection-method}
 \alias{[<-,MaskCollection-method}
+
+% Coercion:
+\alias{coerce,MaskCollection,NormalIRanges-method}
+
+% "append" method:
 \alias{append,MaskCollection-method}
 
 

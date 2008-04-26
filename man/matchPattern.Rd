@@ -4,10 +4,12 @@
 \alias{matchPattern,character-method}
 \alias{matchPattern,XString-method}
 \alias{matchPattern,XStringViews-method}
+\alias{matchPattern,MaskedXString-method}
 \alias{countPattern}
 \alias{countPattern,character-method}
 \alias{countPattern,XString-method}
 \alias{countPattern,XStringViews-method}
+\alias{countPattern,MaskedXString-method}
 
 \alias{matchDNAPattern}
 

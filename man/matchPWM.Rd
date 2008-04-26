@@ -6,7 +6,6 @@
 \alias{matchPWM}
 \alias{countPWM}
 
-\alias{reverseComplement}
 \alias{reverseComplement,matrix-method}
 
 

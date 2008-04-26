@@ -20,6 +20,41 @@ exportClasses(
     MIndex, ByPos_MIndex, ByName_MIndex
 )
 
+export(
+    intToRanges, intToAdjacentRanges, restrict, narrow, reduce, toNormalIRanges, gaps,
+    readFASTA, writeFASTA, gregexpr2,
+    IUPAC_CODE_MAP, mergeIUPACLetters,
+    AMINO_ACID_CODE, GENETIC_CODE,
+    DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
+    #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
+    BString, DNAString, RNAString, AAString,
+    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
+    views, adjacentViews, trim, subviews,
+    FASTArecordsToCharacter, CharacterToFASTArecords,
+    FASTArecordsToXStringViews, XStringSetToFASTArecords,
+    read.XStringViews,
+    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
+    write.XStringSet, write.XStringViews,
+    subXString, subviews,
+    strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
+    transcribe, cDNA, dna2rna, rna2dna,
+    .inplaceReplaceLetterAtLoc,
+    maxWeights, maxScore, PWMscore, matchPWM, countPWM,
+    extractAllMatches,
+    alignScore,
+
+    ## Aliases
+    desc, "desc<-",
+
+    ## Deprecated
+    subBString,
+    FASTArecordsToBStringViews,
+    read.BStringViews, write.BStringViews,
+
+    ## Defunct
+    matchDNAPattern
+)
+
 exportMethods(
     ## Generics defined elsewhere
     #as.integer,
@@ -71,40 +106,5 @@ exportMethods(
     ## Deprecated
     first, last,
     BStringViews
-)
-
-export(
-    intToRanges, intToAdjacentRanges, restrict, narrow, reduce, toNormalIRanges, gaps,
-    readFASTA, writeFASTA, gregexpr2,
-    IUPAC_CODE_MAP, mergeIUPACLetters,
-    AMINO_ACID_CODE, GENETIC_CODE,
-    DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
-    #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
-    BString, DNAString, RNAString, AAString,
-    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
-    views, adjacentViews, trim, subviews,
-    FASTArecordsToCharacter, CharacterToFASTArecords,
-    FASTArecordsToXStringViews, XStringSetToFASTArecords,
-    read.XStringViews,
-    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
-    write.XStringSet, write.XStringViews,
-    subXString, subviews,
-    strrev, mkAllStrings, dinucleotideFrequency, trinucleotideFrequency,
-    transcribe, cDNA, dna2rna, rna2dna,
-    .inplaceReplaceLetterAtLoc,
-    maxWeights, maxScore, PWMscore, matchPWM, countPWM,
-    extractAllMatches,
-    alignScore,
-
-    ## Aliases
-    desc, "desc<-",
-
-    ## Deprecated
-    subBString,
-    FASTArecordsToBStringViews,
-    read.BStringViews, write.BStringViews,
-
-    ## Defunct
-    matchDNAPattern
 )
 
