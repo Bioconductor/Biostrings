@@ -10,12 +10,17 @@ setClass(".IRanges",
     representation(
         start="integer",
         width="integer",
-        NAMES="character" # R doesn't like @names !!
+        NAMES="character"  # R doesn't like @names !!
+    ),
+    prototype(
+        start=integer(0),
+        width=integer(0),
+        NAMES=as.character(NA)
     )
 )
 
-setClass("LockedIRanges", contains=".IRanges")
 setClass("IRanges", contains=".IRanges")
+setClass("LockedIRanges", contains=".IRanges")
 
 ### A NormalIRanges object is an IRanges object where the ranges are:
 ###   (a) not empty (i.e. they have a non-null width);
@@ -29,7 +34,7 @@ setClass("IRanges", contains=".IRanges")
 ### If length(x) == 1, then 'x' is normal iff width(x)[1] >= 1.
 ### If length(x) == 0, then 'x' is normal.
 
-setClass("NormalIRanges", contains="IRanges")
+setClass("NormalIRanges", contains="LockedIRanges")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -215,36 +220,28 @@ setValidity("NormalIRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization and coercion.
+### Initialization.
 ###
 
-.set.IRanges.slots <- function(object, start, width, names)
+.set.IRanges.slots <- function(object, start, width, names, check=TRUE)
 {
     slot(object, "start", check=FALSE) <- numeric2integer(start)
     slot(object, "width", check=FALSE) <- numeric2integer(width)
     slot(object, "NAMES", check=FALSE) <- if (is.null(names)) as.character(NA) else names
+    if (check) {
+        ## I found that using validObject() in "initialize" doesn't work
+        ## properly (validation is called too many times and not in an
+        ## order that makes sense to me...)
+        #validObject(object)
+        problems <- .valid.IRanges(object)
+        if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
+    }
     object
 }
 
 setMethod("initialize", ".IRanges",
-    function(.Object, start, width, names)
-        .set.IRanges.slots(.Object, start, width, names)
-)
-
-setMethod("initialize", "IRanges",
     function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
-    {
-        .Object <- callNextMethod(.Object, start, width, names)
-        if (check) {
-            ## I found that using validObject() in "initialize" doesn't work
-            ## properly (validation is called too many times and not in an
-            ## order that makes sense to me...)
-            #validObject(.Object)
-            problems <- .valid.IRanges(.Object)
-            if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
-        }
-        .Object
-    }
+        .set.IRanges.slots(.Object, start, width, names, check=check)
 )
 
 setMethod("initialize", "NormalIRanges",
@@ -252,6 +249,10 @@ setMethod("initialize", "NormalIRanges",
     {
         .Object <- callNextMethod(.Object, start=start, width=width, names=names, check=check)
         if (check) {
+            ## I found that using validObject() in "initialize" doesn't work
+            ## properly (validation is called too many times and not in an
+            ## order that makes sense to me...)
+            #validObject(.Object)
             problems <- .valid.NormalIRanges(.Object)
             if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
         }
@@ -263,22 +264,31 @@ setMethod("initialize", "NormalIRanges",
 newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 
 
-### By default as(x, "NormalIRanges") would not check that the returned object
-### is a valid NormalIRanges object.
-### NOTE: Having ".IRanges" instead of "IRanges" will not work as expected
-### when 'x' is an IRanges object. Unfortunately, this is an S4 "feature":
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+### We cannot rely on the implicit "coerce" methods for coercing an arbitrary
+### .IRanges object into a NormalIRanges object because they do NOT check that
+### the returned object is valid! Yes, implicit "coerce" methods were supposed
+### to be a nice S4 "feature"...
+###
+
+### NOT exported and unsafe: 'from' MUST be an .IRanges object.
+as.NormalIRanges <- function(from, check=TRUE)
+{
+    new("NormalIRanges", start=start(from), width=width(from), names=names(from), check=check)
+}
+
+.as.NormalIRanges <- function(from) as.NormalIRanges(from, check=TRUE)
+
+### No, defining the .IRanges->NormalIRanges "coerce" method is not enough and
+### we also need to define the other methods! Otherwise a silly implicit
+### method would be called when calling as(x, "NormalIRanges") on an IRanges
+### or LockedIRanges object. Yes, this is another S4 "feature":
 ###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049027.html
-setAs("IRanges", "NormalIRanges",
-    function(from)
-    {
-        #class(from) <- "NormalIRanges"
-        ## Doing this is better than the above line because what's returned by
-        ## class(newEmptyNormalIRanges()) has a "package" attribute.
-        class(from) <- class(newEmptyNormalIRanges())
-        validObject(from)
-        from
-    }
-)
+setAs(".IRanges", "NormalIRanges", .as.NormalIRanges)
+setAs("IRanges", "NormalIRanges", .as.NormalIRanges)
+setAs("LockedIRanges", "NormalIRanges", .as.NormalIRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -386,7 +396,7 @@ setMethod("show", ".IRanges",
             start <- args$start
             width <- args$width
         }
-        return(.set.IRanges.slots(object, start, width, args$names))
+        return(.set.IRanges.slots(object, start, width, args$names, check=FALSE))
     }
     if ("start" %in% argnames)
         .start(object) <- args$start
@@ -430,11 +440,6 @@ setReplaceMethod("start", "IRanges",
     }
 )
 
-setReplaceMethod("start", "NormalIRanges",
-    function(x, check=TRUE, value)
-        stop("modifying the starts/ends/widths of a ", class(x), " instance is not supported")
-)
-
 setGeneric("width<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("width<-")
 )
@@ -452,11 +457,6 @@ setReplaceMethod("width", "IRanges",
     }
 )
 
-setReplaceMethod("width", "NormalIRanges",
-    function(x, check=TRUE, value)
-        stop("modifying the starts/ends/widths of a ", class(x), " instance is not supported")
-)
-
 setGeneric("end<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("end<-")
 )
@@ -472,11 +472,6 @@ setReplaceMethod("end", "IRanges",
         }
         x
     }
-)
-
-setReplaceMethod("end", "NormalIRanges",
-    function(x, check=TRUE, value)
-        stop("modifying the starts/ends/widths of a ", class(x), " instance is not supported")
 )
 
 ### Yes, for .IRanges objects!
@@ -522,11 +517,6 @@ setMethod("update", "IRanges",
             validObject(object)
         object
     }
-)
-
-setMethod("update", "NormalIRanges",
-    function(object, ...)
-        stop("updating a ", class(object), " instance is not supported")
 )
 
 

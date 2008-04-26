@@ -165,7 +165,7 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 {
     class <- paste(baseClass, "Set", sep="")
     super <- subseq(x, start=start, end=end, width=width)
-    ranges <- new("LockedIRanges", 1L, length(super), NULL)
+    ranges <- new("IRanges", start=1L, width=length(super), check=FALSE)
     newXStringSet(class, super, ranges)
 }
 

@@ -25,10 +25,9 @@
         start <- recycleVector(start, length(end))
     else if (length(end) < length(start))
         end <- recycleVector(end, length(start))
-    ## The NA-proof version of 'if (any(end < start))'
-    if (!isTRUE(all(start <= end)))
+    if (!all(start <= end))
         stop("'start' and 'end' must verify 'start <= end'")
-    new("IRanges", start=start, width=end-start+1L)
+    new("IRanges", start=start, width=end-start+1L, check=FALSE)
 }
 
 ### Typical use:

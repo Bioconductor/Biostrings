@@ -273,7 +273,7 @@ MaskedXString.substr <- function(x, start, end)
 setMethod("subseq", "MaskedXString",
     function(x, start=NA, end=NA, width=NA)
     {
-        limits <- new("IRanges", 1L, length(x))
+        limits <- new("IRanges", start=1L, width=length(x), check=FALSE)
         limits <- narrow(limits, start=start, end=end, width=width)
         MaskedXString.substr(x, start(limits), end(limits))
     }

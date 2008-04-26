@@ -6,7 +6,7 @@ setClass("MaskCollection",
     representation(
         nirlist="list",    # a list of NormalIRanges objects
         width="integer",
-        NAMES="character"
+        NAMES="character"  # R doesn't like @names !!
     ),
     prototype(
         nirlist=list(),
