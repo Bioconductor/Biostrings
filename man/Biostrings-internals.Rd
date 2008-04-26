@@ -1,13 +1,6 @@
 \name{Biostrings internals}
 \docType{class}
 
-\alias{class:.IRanges}
-\alias{.IRanges-class}
-\alias{.IRanges}
-\alias{class:LockedIRanges}
-\alias{LockedIRanges-class}
-\alias{LockedIRanges}
-
 \alias{show,externalptr-method}
 
 \alias{class:XRaw}

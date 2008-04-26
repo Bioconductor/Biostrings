@@ -1,15 +1,21 @@
 \name{IRanges-class}
 \docType{class}
 
-% Classes
-\alias{class:IRanges}
-\alias{IRanges-class}
-\alias{IRanges}
+% Classes:
+\alias{class:.IRanges}
+\alias{.IRanges-class}
+\alias{.IRanges}
+\alias{class:UnlockedIRanges}
+\alias{UnlockedIRanges-class}
+\alias{UnlockedIRanges}
+\alias{class:LockedIRanges}
+\alias{LockedIRanges-class}
+\alias{LockedIRanges}
 \alias{class:NormalIRanges}
 \alias{NormalIRanges-class}
 \alias{NormalIRanges}
 
-% Accesor methods
+% Accesor methods:
 \alias{length,.IRanges-method}
 \alias{start,.IRanges-method}
 \alias{width}
@@ -27,38 +33,41 @@
 \alias{max,NormalIRanges-method}
 \alias{min,NormalIRanges-method}
 
-% Initialization
+% Initialization:
 \alias{initialize,.IRanges-method}
-\alias{initialize,IRanges-method}
 \alias{initialize,NormalIRanges-method}
-\alias{coerce,IRanges,NormalIRanges-method}
 
-% "show" method
+% Coercion:
+\alias{coerce,.IRanges,NormalIRanges-method}
+\alias{coerce,UnlockedIRanges,NormalIRanges-method}
+\alias{coerce,LockedIRanges,NormalIRanges-method}
+
+% "show" method:
 \alias{as.data.frame,.IRanges-method}
 \alias{show,.IRanges-method}
 
-% Subsetting
+% Subsetting:
 \alias{[,.IRanges-method}
 \alias{[<-,.IRanges-method}
 
-% "duplicated" method
+% "duplicated" method:
 \alias{duplicated,.IRanges-method}
 
-% Other methods
+% Other methods:
 \alias{as.matrix,.IRanges-method}
 
-% Replacement methods
+% Replacement methods:
 \alias{start<-}
-\alias{start<-,IRanges-method}
+\alias{start<-,UnlockedIRanges-method}
 \alias{width<-}
-\alias{width<-,IRanges-method}
+\alias{width<-,UnlockedIRanges-method}
 \alias{end<-}
-\alias{end<-,IRanges-method}
+\alias{end<-,UnlockedIRanges-method}
 \alias{names<-,.IRanges-method}
 \alias{desc<-}
-\alias{update,IRanges-method}
+\alias{update,UnlockedIRanges-method}
 
-% Deprecated methods
+% Deprecated methods:
 \alias{first}
 \alias{first,.IRanges-method}
 \alias{last}
@@ -293,7 +302,7 @@
 }
 
 \examples{
-  x <- new("IRanges", start=c(2:-1, 13:15), width=c(0:3, 2:0))
+  x <- new(".IRanges", start=c(2:-1, 13:15), width=c(0:3, 2:0))
   x
   length(x)
   start(x)
@@ -310,8 +319,9 @@
   x0 <- x[width(x) == 0]  # 2 ranges
   isEmpty(x0)
 
-  ## Use replacement methods to slide or resize elements of an IRanges
-  ## object:
+  ## Unlock the IRanges instance and use replacement methods to slide
+  ## or resize its elements:
+  x <- as(x, "UnlockedIRanges")
   width(x) <- width(x) * 2  + 1  # resize elements
   x
   start(x) <- end(x)             # slide elements
@@ -341,7 +351,7 @@
   range_starts <- sort(sample(end-W+1L, N))
   range_widths <- rep.int(W, N)
   ## Instantiation is faster
-  system.time(x <- new("IRanges", start=range_starts, width=range_widths))
+  system.time(x <- new(".IRanges", start=range_starts, width=range_widths))
   system.time(y <- data.frame(start=range_starts, width=range_widths))
   ## Subsetting is faster
   system.time(x16 <- x[c(TRUE, rep.int(FALSE, 15))])

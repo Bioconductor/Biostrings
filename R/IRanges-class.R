@@ -19,7 +19,7 @@ setClass(".IRanges",
     )
 )
 
-setClass("IRanges", contains=".IRanges")
+setClass("UnlockedIRanges", contains=".IRanges")
 setClass("LockedIRanges", contains=".IRanges")
 
 ### A NormalIRanges object is an IRanges object where the ranges are:
@@ -283,11 +283,11 @@ as.NormalIRanges <- function(from, check=TRUE)
 
 ### No, defining the .IRanges->NormalIRanges "coerce" method is not enough and
 ### we also need to define the other methods! Otherwise a silly implicit
-### method would be called when calling as(x, "NormalIRanges") on an IRanges
-### or LockedIRanges object. Yes, this is another S4 "feature":
+### method would be called when calling as(x, "NormalIRanges") on an
+### UnlockedIRanges or LockedIRanges object. Yes, this is another S4 "feature":
 ###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049027.html
 setAs(".IRanges", "NormalIRanges", .as.NormalIRanges)
-setAs("IRanges", "NormalIRanges", .as.NormalIRanges)
+setAs("UnlockedIRanges", "NormalIRanges", .as.NormalIRanges)
 setAs("LockedIRanges", "NormalIRanges", .as.NormalIRanges)
 
 
@@ -428,7 +428,7 @@ setGeneric("start<-", signature="x",
 )
 
 ### No method for .IRanges objects!
-setReplaceMethod("start", "IRanges",
+setReplaceMethod("start", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
         .start(x) <- value
@@ -445,7 +445,7 @@ setGeneric("width<-", signature="x",
 )
 
 ### No method for .IRanges objects!
-setReplaceMethod("width", "IRanges",
+setReplaceMethod("width", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
         .width(x) <- value
@@ -462,7 +462,7 @@ setGeneric("end<-", signature="x",
 )
 
 ### No method for .IRanges objects!
-setReplaceMethod("end", "IRanges",
+setReplaceMethod("end", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
         .end(x) <- value
@@ -506,7 +506,7 @@ setReplaceMethod("names", ".IRanges",
 ###
 
 ### No method for .IRanges objects!
-setMethod("update", "IRanges",
+setMethod("update", "UnlockedIRanges",
     function(object, ...)
     {
         object <- .update(object, ...)

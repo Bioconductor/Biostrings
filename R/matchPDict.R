@@ -514,7 +514,7 @@ setMethod("[[", "ByPos_MIndex",
         ans_end <- x@ends[[key]]
         ans_width <- rep.int(x@width, length(ans_end))
         ans_start <- ans_end - ans_width + 1L
-        new("IRanges", start=ans_start, width=ans_width, check=FALSE)
+        new(".IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
@@ -613,7 +613,7 @@ setMethod("[[", "ByName_MIndex",
             ans_end <- integer(0)
         ans_width <- rep.int(x@width, length(ans_end))
         ans_start <- ans_end - ans_width + 1L
-        new("IRanges", start=ans_start, width=ans_width, check=FALSE)
+        new(".IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
@@ -680,7 +680,7 @@ setMethod("unlist", "MIndex",
             ans_names <- NULL
         }
         ans_width <- ans_end - ans_start + 1L
-        new("IRanges", start=ans_start, width=ans_width, names=ans_names, check=FALSE)
+        new(".IRanges", start=ans_start, width=ans_width, names=ans_names, check=FALSE)
     }
 )
 

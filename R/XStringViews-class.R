@@ -8,7 +8,7 @@
 ###
 
 setClass("XStringViews",
-    contains="IRanges",
+    contains="UnlockedIRanges",
     representation(
         subject="XString"
     )
@@ -86,7 +86,7 @@ setMethod("initialize", "XStringViews",
 ### Replacement methods.
 ###
 ### XStringViews objects inherit the replacement methods defined for parent
-### class IRanges (see IRanges-class.R).
+### class UnlockedIRanges (see IRanges-class.R).
 ### However, the "width" method needs to be overridden because of the
 ### additional constraint that applies to XStringViews objects.
 ###

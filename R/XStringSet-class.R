@@ -165,7 +165,7 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 {
     class <- paste(baseClass, "Set", sep="")
     super <- subseq(x, start=start, end=end, width=width)
-    ranges <- new("IRanges", start=1L, width=length(super), check=FALSE)
+    ranges <- new("LockedIRanges", start=1L, width=length(super), check=FALSE)
     newXStringSet(class, super, ranges)
 }
 
@@ -196,7 +196,7 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 ### Canonical conversion from XStringViews to XStringSet
 XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
-    ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
+    ranges <- restrict(as(x, ".IRanges"), 1L, nchar(subject(x)),
                        keep.all.ranges=TRUE,
                        use.names=use.names)
     if (verbose && any(width(ranges) < width(x)))

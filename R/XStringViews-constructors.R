@@ -27,7 +27,7 @@
         end <- recycleVector(end, length(start))
     if (!all(start <= end))
         stop("'start' and 'end' must verify 'start <= end'")
-    new("IRanges", start=start, width=end-start+1L, check=FALSE)
+    new("UnlockedIRanges", start=start, width=end-start+1L, check=FALSE)
 }
 
 ### Typical use:

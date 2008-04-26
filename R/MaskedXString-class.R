@@ -192,11 +192,6 @@ setAs("MaskedXString", "NormalIRanges",
     function(from) as(masks(from), "NormalIRanges")
 )
 
-### From a MaskedXString object to an IRanges object.
-setAs("MaskedXString", "IRanges",
-    function(from) as(as(from, "NormalIRanges"), "IRanges")
-)
-
 ### From a MaskedXString object to an XStringViews object.
 setAs("MaskedXString", "XStringViews",
     function(from)
@@ -273,7 +268,7 @@ MaskedXString.substr <- function(x, start, end)
 setMethod("subseq", "MaskedXString",
     function(x, start=NA, end=NA, width=NA)
     {
-        limits <- new("IRanges", start=1L, width=length(x), check=FALSE)
+        limits <- new(".IRanges", start=1L, width=length(x), check=FALSE)
         limits <- narrow(limits, start=start, end=end, width=width)
         MaskedXString.substr(x, start(limits), end(limits))
     }

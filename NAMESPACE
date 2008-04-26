@@ -5,7 +5,7 @@ import(stats)
 import(utils) ## for the "head" and "tail" generics
 
 exportClasses(
-    .IRanges, LockedIRanges, IRanges, NormalIRanges,
+    .IRanges, UnlockedIRanges, LockedIRanges, NormalIRanges,
     MaskCollection,
     XRaw, XInteger,
     XString, BString, DNAString, RNAString, AAString,

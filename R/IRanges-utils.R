@@ -15,8 +15,8 @@ intToRanges <- function(x, use.names=TRUE)
         x <- as.integer(x)
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IRanges", start=rep.int(1L, length(x)), width=x,
-                   names=ans_names, check=TRUE)
+    new(".IRanges", start=rep.int(1L, length(x)), width=x,
+                    names=ans_names, check=TRUE)
 }
 
 
@@ -33,8 +33,8 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
     use.names <- normalize.use.names(use.names)
     ans_start <- .Call("int_to_adjacent_ranges", x, PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new("IRanges", start=ans_start, width=x,
-                   names=ans_names, check=FALSE)
+    new(".IRanges", start=ans_start, width=x,
+                    names=ans_names, check=FALSE)
 }
 
 
@@ -176,8 +176,8 @@ setGeneric("reduce", signature="x",
                     PACKAGE="Biostrings")
     ans <- .update(x, start=C_ans$start, width=C_ans$width, names=NULL)
     if (with.inframe.attrib) {
-        inframe <- new("IRanges", start=C_ans$inframe.start,
-                                  width=width(x), check=FALSE)
+        inframe <- new(".IRanges", start=C_ans$inframe.start,
+                                   width=width(x), check=FALSE)
         attr(ans, "inframe") <- inframe
     }
     ans
