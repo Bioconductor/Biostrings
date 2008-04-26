@@ -167,9 +167,9 @@ o Added the "start<-", "width<-" and "end<-" generics with methods for
 o Added the intToRanges() and intToAdjacentRanges() utility functions
   for creating an IRanges instance.
 
-o Added the .IRanges, UnlockedIRanges, LockedIRanges and NormalIRanges classes
+o Added the IRanges, UnlockedIRanges, LockedIRanges and NormalIRanges classes
   for representing a set of integer ranges + the "isNormal" and
-  "whichFirstNotNormal" generic functions with methods for .IRanges objects
+  "whichFirstNotNormal" generic functions with methods for IRanges objects
   (see ?IRanges for the details).
   Changed the definition of the XStringViews class so now it derives from the
   UnlockedIRanges class.

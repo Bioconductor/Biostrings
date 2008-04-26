@@ -6,7 +6,7 @@
 ### ranges.
 ###
 
-setClass(".IRanges",
+setClass("IRanges",
     representation(
         start="integer",
         width="integer",
@@ -19,8 +19,8 @@ setClass(".IRanges",
     )
 )
 
-setClass("UnlockedIRanges", contains=".IRanges")
-setClass("LockedIRanges", contains=".IRanges")
+setClass("UnlockedIRanges", contains="IRanges")
+setClass("LockedIRanges", contains="IRanges")
 
 ### A NormalIRanges object is an IRanges object where the ranges are:
 ###   (a) not empty (i.e. they have a non-null width);
@@ -41,21 +41,21 @@ setClass("NormalIRanges", contains="LockedIRanges")
 ### Accessor methods.
 ###
 
-setMethod("length", ".IRanges", function(x) length(x@start))
+setMethod("length", "IRanges", function(x) length(x@start))
 
 ### The substr() function uses 'start' and 'stop'.
 ### The substring() function uses 'first' and 'last'.
 ### We use 'start' and 'end'.
 ### Note that the "start" and "end" generic are defined in the stats package.
-setMethod("start", ".IRanges", function(x, ...) x@start)
+setMethod("start", "IRanges", function(x, ...) x@start)
 
 setGeneric("width", function(x) standardGeneric("width"))
-setMethod("width", ".IRanges", function(x) x@width)
+setMethod("width", "IRanges", function(x) x@width)
 
 ### Note that when width(x)[i] is 0, then end(x)[i] is start(x)[i] - 1
-setMethod("end", ".IRanges", function(x, ...) {start(x) + width(x) - 1L})
+setMethod("end", "IRanges", function(x, ...) {start(x) + width(x) - 1L})
 
-setMethod("names", ".IRanges",
+setMethod("names", "IRanges",
     function(x)
         if (length(x@NAMES) == 1 && is.na(x@NAMES)) NULL else x@NAMES
 )
@@ -70,7 +70,7 @@ desc <- function(x) names(x)
 
 setGeneric("isNormal", function(x) standardGeneric("isNormal"))
 
-setMethod("isNormal", ".IRanges",
+setMethod("isNormal", "IRanges",
     function(x)
     {
         all_ok <- all(width(x) >= 1)
@@ -82,7 +82,7 @@ setMethod("isNormal", ".IRanges",
 
 setGeneric("whichFirstNotNormal", function(x) standardGeneric("whichFirstNotNormal"))
 
-setMethod("whichFirstNotNormal", ".IRanges",
+setMethod("whichFirstNotNormal", "IRanges",
     function(x)
     {
         is_ok <- width(x) >= 1
@@ -96,14 +96,14 @@ setMethod("whichFirstNotNormal", ".IRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "isEmpty" generic and methods.
 ###
-### An .IRanges object is considered empty iff all its ranges are empty.
+### An IRanges object is considered empty iff all its ranges are empty.
 ### 
 
 setGeneric("isEmpty", function(x) standardGeneric("isEmpty"))
 
-setMethod("isEmpty", ".IRanges", function(x) all(width(x) == 0))
+setMethod("isEmpty", "IRanges", function(x) all(width(x) == 0))
 
-### The "isEmpty" method for .IRanges objects would work fine on
+### The "isEmpty" method for IRanges objects would work fine on
 ### NormalIRanges objects but it can be made faster.
 setMethod("isEmpty", "NormalIRanges", function(x) length(x) == 0)
 
@@ -112,11 +112,11 @@ setMethod("isEmpty", "NormalIRanges", function(x) length(x) == 0)
 ### The "max" and "min" methods.
 ###
 ### Note: defined for NormalIRanges objects only.
-### For an ordinary .IRanges object 'x', it's not clear what the semantic
+### For an ordinary IRanges object 'x', it's not clear what the semantic
 ### should. In particular, should empty ranges be ignored or not? If not then
 ### we could end up with 'min(x)' > 'max(x)' (e.g. when 'x' is made of 1 empty
 ### range) which is not nice. Another (and more pragmatic) reason for not
-### defining these methods for .IRanges objects is that I don't need them at
+### defining these methods for IRanges objects is that I don't need them at
 ### the moment.
 ###
 
@@ -195,7 +195,7 @@ setMethod("min", "NormalIRanges",
       .valid.IRanges.names(object))
 }
 
-setValidity(".IRanges",
+setValidity("IRanges",
     function(object)
     {
         problems <- .valid.IRanges(object)
@@ -239,7 +239,7 @@ setValidity("NormalIRanges",
     object
 }
 
-setMethod("initialize", ".IRanges",
+setMethod("initialize", "IRanges",
     function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
         .set.IRanges.slots(.Object, start, width, names, check=check)
 )
@@ -268,12 +268,12 @@ newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 ### Coercion.
 ###
 ### We cannot rely on the implicit "coerce" methods for coercing an arbitrary
-### .IRanges object into a NormalIRanges object because they do NOT check that
+### IRanges object into a NormalIRanges object because they do NOT check that
 ### the returned object is valid! Yes, implicit "coerce" methods were supposed
 ### to be a nice S4 "feature"...
 ###
 
-### NOT exported and unsafe: 'from' MUST be an .IRanges object.
+### NOT exported and unsafe: 'from' MUST be an IRanges object.
 as.NormalIRanges <- function(from, check=TRUE)
 {
     new("NormalIRanges", start=start(from), width=width(from), names=names(from), check=check)
@@ -281,12 +281,12 @@ as.NormalIRanges <- function(from, check=TRUE)
 
 .as.NormalIRanges <- function(from) as.NormalIRanges(from, check=TRUE)
 
-### No, defining the .IRanges->NormalIRanges "coerce" method is not enough and
+### No, defining the IRanges->NormalIRanges "coerce" method is not enough and
 ### we also need to define the other methods! Otherwise a silly implicit
 ### method would be called when calling as(x, "NormalIRanges") on an
 ### UnlockedIRanges or LockedIRanges object. Yes, this is another S4 "feature":
 ###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049027.html
-setAs(".IRanges", "NormalIRanges", .as.NormalIRanges)
+setAs("IRanges", "NormalIRanges", .as.NormalIRanges)
 setAs("UnlockedIRanges", "NormalIRanges", .as.NormalIRanges)
 setAs("LockedIRanges", "NormalIRanges", .as.NormalIRanges)
 
@@ -295,7 +295,7 @@ setAs("LockedIRanges", "NormalIRanges", .as.NormalIRanges)
 ### The "show" method.
 ###
 
-setMethod("as.data.frame", ".IRanges",
+setMethod("as.data.frame", "IRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
         if (!(is.null(row.names) || is.character(row.names)))
@@ -312,13 +312,13 @@ setMethod("as.data.frame", ".IRanges",
     }
 )
 
-setMethod("show", ".IRanges",
+setMethod("show", "IRanges",
     function(object) show(as.data.frame(object))
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Non-exported replacement functions for .IRanges objects.
+### Non-exported replacement functions for IRanges objects.
 ###
 ### IMPORTANT: They do NOT check their argument 'x' and 'value' at all, not
 ### even whether 'value' is of type integer or not!
@@ -427,7 +427,7 @@ setGeneric("start<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("start<-")
 )
 
-### No method for .IRanges objects!
+### No method for IRanges objects!
 setReplaceMethod("start", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
@@ -444,7 +444,7 @@ setGeneric("width<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("width<-")
 )
 
-### No method for .IRanges objects!
+### No method for IRanges objects!
 setReplaceMethod("width", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
@@ -461,7 +461,7 @@ setGeneric("end<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("end<-")
 )
 
-### No method for .IRanges objects!
+### No method for IRanges objects!
 setReplaceMethod("end", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
@@ -474,8 +474,8 @@ setReplaceMethod("end", "UnlockedIRanges",
     }
 )
 
-### Yes, for .IRanges objects!
-setReplaceMethod("names", ".IRanges",
+### Yes, for IRanges objects!
+setReplaceMethod("names", "IRanges",
     function(x, value)
     {
         if (!(is.null(value) || is.character(value)))
@@ -505,7 +505,7 @@ setReplaceMethod("names", ".IRanges",
 ###       must be identical to x too (but this time it updates x with its own content)
 ###
 
-### No method for .IRanges objects!
+### No method for IRanges objects!
 setMethod("update", "UnlockedIRanges",
     function(object, ...)
     {
@@ -525,7 +525,7 @@ setMethod("update", "UnlockedIRanges",
 ###
 
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", ".IRanges",
+setMethod("[", "IRanges",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -564,7 +564,7 @@ setMethod("[", ".IRanges",
     }
 )
 
-setReplaceMethod("[", ".IRanges",
+setReplaceMethod("[", "IRanges",
     function(x, i, j,..., value)
         stop("attempt to modify the value of a ", class(x), " instance")
 )
@@ -576,7 +576,7 @@ setReplaceMethod("[", ".IRanges",
 ### TODO: current implementation is very inefficient and needs some C help!
 ###
 
-setMethod("duplicated", ".IRanges",
+setMethod("duplicated", "IRanges",
     function(x, incomparables=FALSE, ...)
     {
         duplicated(data.frame(start=start(x),
@@ -591,7 +591,7 @@ setMethod("duplicated", ".IRanges",
 ### Other methods.
 ###
 
-setMethod("as.matrix", ".IRanges",
+setMethod("as.matrix", "IRanges",
     function(x, ...)
         matrix(data=c(start(x), width(x)), ncol=2, dimnames=list(names(x), NULL))
 )
@@ -602,7 +602,7 @@ setMethod("as.matrix", ".IRanges",
 ###
 
 setGeneric("first", function(x) standardGeneric("first"))
-setMethod("first", ".IRanges", function(x) {.Deprecated("start"); start(x)})
+setMethod("first", "IRanges", function(x) {.Deprecated("start"); start(x)})
 setGeneric("last", function(x) standardGeneric("last"))
-setMethod("last", ".IRanges", function(x) {.Deprecated("end"); end(x)})
+setMethod("last", "IRanges", function(x) {.Deprecated("end"); end(x)})
 

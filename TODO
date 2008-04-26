@@ -185,7 +185,7 @@ In 2.7
   trunk only (too late for release). Remove the warning after the BioC 2.2
   release.
 
-- Add "unique" method for .IRanges objects.
+- Add "unique" method for IRanges objects.
 
 - Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
 

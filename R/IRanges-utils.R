@@ -15,7 +15,7 @@ intToRanges <- function(x, use.names=TRUE)
         x <- as.integer(x)
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new(".IRanges", start=rep.int(1L, length(x)), width=x,
+    new("IRanges", start=rep.int(1L, length(x)), width=x,
                     names=ans_names, check=TRUE)
 }
 
@@ -33,7 +33,7 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
     use.names <- normalize.use.names(use.names)
     ans_start <- .Call("int_to_adjacent_ranges", x, PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
-    new(".IRanges", start=ans_start, width=x,
+    new("IRanges", start=ans_start, width=x,
                     names=ans_names, check=FALSE)
 }
 
@@ -103,7 +103,7 @@ setGeneric("restrict", signature="x",
     .update(x, start=ans_start, width=ans_width, names=ans_names)
 }
 
-setMethod("restrict", ".IRanges", .restrict.IRanges)
+setMethod("restrict", "IRanges", .restrict.IRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,7 +141,7 @@ setGeneric("narrow", signature="x",
     .update(x, start=C_ans$start, width=C_ans$width, names=ans_names)
 }
 
-setMethod("narrow", ".IRanges", .narrow.IRanges)
+setMethod("narrow", "IRanges", .narrow.IRanges)
 
 setMethod("narrow", "NormalIRanges",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -176,14 +176,14 @@ setGeneric("reduce", signature="x",
                     PACKAGE="Biostrings")
     ans <- .update(x, start=C_ans$start, width=C_ans$width, names=NULL)
     if (with.inframe.attrib) {
-        inframe <- new(".IRanges", start=C_ans$inframe.start,
+        inframe <- new("IRanges", start=C_ans$inframe.start,
                                    width=width(x), check=FALSE)
         attr(ans, "inframe") <- inframe
     }
     ans
 }
 
-setMethod("reduce", ".IRanges", .reduce.IRanges)
+setMethod("reduce", "IRanges", .reduce.IRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -192,9 +192,9 @@ setMethod("reduce", ".IRanges", .reduce.IRanges)
 
 toNormalIRanges <- function(x)
 {
-    if (!is(x, ".IRanges"))
-        stop("'x' must be an .IRanges object")
-    x1 <- as(x, ".IRanges") # downgrade
+    if (!is(x, "IRanges"))
+        stop("'x' must be an IRanges object")
+    x1 <- as(x, "IRanges") # downgrade
     x2 <- reduce(x1)
     x3 <- x2[width(x2) != 0]
     as.NormalIRanges(x3, check=FALSE)
@@ -256,5 +256,5 @@ setGeneric("gaps", signature="x",
     .update(x, start=ans_start, width=ans_width, names=NULL)
 }
 
-setMethod("gaps", ".IRanges", .gaps.IRanges)
+setMethod("gaps", "IRanges", .gaps.IRanges)
 

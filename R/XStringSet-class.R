@@ -99,7 +99,7 @@ setClass("AAStringSet",
 ### methods that must work with XStringSet objects is:
 ###   length, width, nchar, names
 ### Note that XStringSet objects inherit the "length", "width" and "names"
-### methods from the .IRanges class.
+### methods from the IRanges class.
 ###
 
 ### NOT exported
@@ -196,7 +196,7 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 ### Canonical conversion from XStringViews to XStringSet
 XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
-    ranges <- restrict(as(x, ".IRanges"), 1L, nchar(subject(x)),
+    ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
                        keep.all.ranges=TRUE,
                        use.names=use.names)
     if (verbose && any(width(ranges) < width(x)))

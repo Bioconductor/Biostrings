@@ -2,9 +2,9 @@
 \docType{class}
 
 % Classes:
-\alias{class:.IRanges}
-\alias{.IRanges-class}
-\alias{.IRanges}
+\alias{class:IRanges}
+\alias{IRanges-class}
+\alias{IRanges}
 \alias{class:UnlockedIRanges}
 \alias{UnlockedIRanges-class}
 \alias{UnlockedIRanges}
@@ -16,45 +16,45 @@
 \alias{NormalIRanges}
 
 % Accesor methods:
-\alias{length,.IRanges-method}
-\alias{start,.IRanges-method}
+\alias{length,IRanges-method}
+\alias{start,IRanges-method}
 \alias{width}
-\alias{width,.IRanges-method}
-\alias{end,.IRanges-method}
-\alias{names,.IRanges-method}
+\alias{width,IRanges-method}
+\alias{end,IRanges-method}
+\alias{names,IRanges-method}
 \alias{desc}
 
 \alias{isNormal}
-\alias{isNormal,.IRanges-method}
+\alias{isNormal,IRanges-method}
 \alias{whichFirstNotNormal}
-\alias{whichFirstNotNormal,.IRanges-method}
+\alias{whichFirstNotNormal,IRanges-method}
 \alias{isEmpty}
-\alias{isEmpty,.IRanges-method}
+\alias{isEmpty,IRanges-method}
 \alias{max,NormalIRanges-method}
 \alias{min,NormalIRanges-method}
 
 % Initialization:
-\alias{initialize,.IRanges-method}
+\alias{initialize,IRanges-method}
 \alias{initialize,NormalIRanges-method}
 
 % Coercion:
-\alias{coerce,.IRanges,NormalIRanges-method}
+\alias{coerce,IRanges,NormalIRanges-method}
 \alias{coerce,UnlockedIRanges,NormalIRanges-method}
 \alias{coerce,LockedIRanges,NormalIRanges-method}
 
 % "show" method:
-\alias{as.data.frame,.IRanges-method}
-\alias{show,.IRanges-method}
+\alias{as.data.frame,IRanges-method}
+\alias{show,IRanges-method}
 
 % Subsetting:
-\alias{[,.IRanges-method}
-\alias{[<-,.IRanges-method}
+\alias{[,IRanges-method}
+\alias{[<-,IRanges-method}
 
 % "duplicated" method:
-\alias{duplicated,.IRanges-method}
+\alias{duplicated,IRanges-method}
 
 % Other methods:
-\alias{as.matrix,.IRanges-method}
+\alias{as.matrix,IRanges-method}
 
 % Replacement methods:
 \alias{start<-}
@@ -63,15 +63,15 @@
 \alias{width<-,UnlockedIRanges-method}
 \alias{end<-}
 \alias{end<-,UnlockedIRanges-method}
-\alias{names<-,.IRanges-method}
+\alias{names<-,IRanges-method}
 \alias{desc<-}
 \alias{update,UnlockedIRanges-method}
 
 % Deprecated methods:
 \alias{first}
-\alias{first,.IRanges-method}
+\alias{first,IRanges-method}
 \alias{last}
-\alias{last,.IRanges-method}
+\alias{last,IRanges-method}
 
 
 \title{IRanges and NormalIRanges objects}
@@ -302,7 +302,7 @@
 }
 
 \examples{
-  x <- new(".IRanges", start=c(2:-1, 13:15), width=c(0:3, 2:0))
+  x <- new("IRanges", start=c(2:-1, 13:15), width=c(0:3, 2:0))
   x
   length(x)
   start(x)
@@ -351,7 +351,7 @@
   range_starts <- sort(sample(end-W+1L, N))
   range_widths <- rep.int(W, N)
   ## Instantiation is faster
-  system.time(x <- new(".IRanges", start=range_starts, width=range_widths))
+  system.time(x <- new("IRanges", start=range_starts, width=range_widths))
   system.time(y <- data.frame(start=range_starts, width=range_widths))
   ## Subsetting is faster
   system.time(x16 <- x[c(TRUE, rep.int(FALSE, 15))])

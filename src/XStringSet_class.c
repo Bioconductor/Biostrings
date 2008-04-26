@@ -29,7 +29,7 @@ const char *_get_XStringSet_baseClass(SEXP x)
 
 int _get_XStringSet_length(SEXP x)
 {
-	// Because an XStringSet object IS an .IRanges object
+	// Because an XStringSet object IS an IRanges object
 	return _get_IRanges_length(x);
 }
 

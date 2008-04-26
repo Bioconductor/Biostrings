@@ -186,7 +186,7 @@ setMethod("reduce", "MaskCollection",
         } else {
             start1 <- unlist(lapply(nirlist, start))
             width1 <- unlist(lapply(nirlist, width))
-            nir1 <- toNormalIRanges(new(".IRanges", start=start1, width=width1, check=FALSE))
+            nir1 <- toNormalIRanges(new("IRanges", start=start1, width=width1, check=FALSE))
         }
         x@nirlist <- list(nir1)
         x@NAMES <- as.character(NA)

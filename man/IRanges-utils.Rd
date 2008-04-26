@@ -5,15 +5,15 @@
 \alias{intToRanges}
 \alias{intToAdjacentRanges}
 \alias{restrict}
-\alias{restrict,.IRanges-method}
+\alias{restrict,IRanges-method}
 \alias{narrow}
-\alias{narrow,.IRanges-method}
+\alias{narrow,IRanges-method}
 \alias{narrow,numeric-method}
 \alias{reduce}
-\alias{reduce,.IRanges-method}
+\alias{reduce,IRanges-method}
 \alias{toNormalIRanges}
 \alias{gaps}
-\alias{gaps,.IRanges-method}
+\alias{gaps,IRanges-method}
 
 
 \title{IRanges utility functions}
@@ -77,7 +77,7 @@
   narrow(y, start=-4, end=-2)
   narrow(y, end=5, width=3)
 
-  x <- new(".IRanges",
+  x <- new("IRanges",
            start=c(-2L,  6L, 9L, -4L, 1L, 0L, -6L, 10L),
            width=c( 5L,  0L, 6L,  1L, 4L, 3L,  2L,  3L))
   reduce(x)
