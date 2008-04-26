@@ -11,8 +11,9 @@
 Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignment problems.
 }
 \usage{
-pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, substitutionMatrix = NULL,
-                  gapOpening = -10, gapExtension = -4, type = "global", scoreOnly = FALSE)
+pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, type = "global",
+                  substitutionMatrix = NULL, gapOpening = -10, gapExtension = -0.5,
+                  endGap = TRUE, scoreOnly = FALSE)
 }
 \arguments{
   \item{string1, string2}{a character vector of length 1 or an \code{\link{XString}} object.}
@@ -22,12 +23,14 @@ pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, substitution
     vectors, or \code{\link{BString}} objects. If integers are given, they are converted to
     characters using the formula \code{rawToChar(as.raw(33L + quality))}. These arguments
     are ignored if \code{!is.null(substitutionMatrix)}.}
+  \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
   \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
     use \code{substitutionMatrix} in conjunction with \code{quality1} and \code{quality2}
     arguments.}
   \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
-  \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
+  \item{endGap}{logical to denote whether or not to penalize end gaps like internal gaps
+    when \code{type = "global"}. If \code{FALSE}, end/terminal gaps are not penalized.}
   \item{scoreOnly}{logical to denote whether or not to only return the scores of the
     optimal pairwise alignment. (See Value section below.)}
 }

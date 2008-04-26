@@ -42,6 +42,7 @@ static float pairwiseAlignment(
 		char gapCode,
 		int typeCode,
 		int scoreOnly,
+		int endGap,
 		float gapOpening,
 		float gapExtension,
 		const int *qualityLookupTable,
@@ -72,12 +73,12 @@ static float pairwiseAlignment(
 		hMatrix = (float *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(float));
 		vMatrix = (float *) R_alloc((long) (nCharString1 + 1) * (nCharString2 + 1), sizeof(float));		
 	}
-	if (typeCode == GLOBAL_ALIGNMENT) {
+	if (typeCode == GLOBAL_ALIGNMENT && endGap) {
 		for (i = 0; i <= nCharString1; i++)
 			H_MATRIX(i, 0) = gapOpening + i * gapExtension;
 		for (j = 0; j <= nCharString2; j++)
 			V_MATRIX(0, j) = gapOpening + j * gapExtension;
-	} else if (typeCode == LOCAL_ALIGNMENT || typeCode == OVERLAP_ALIGNMENT) {
+	} else {
 		for (i = 0; i <= nCharString1; i++)
 			H_MATRIX(i, 0) = 0.0;
 		for (j = 0; j <= nCharString2; j++)
@@ -323,6 +324,9 @@ static float pairwiseAlignment(
  * 'scoreOnly':              denotes whether or not to only return the scores
  *                           of the optimal pairwise alignment
  *                           (logical vector of length 1)
+ * 'endGap':                 denote whether or not to penalize end gaps like
+ *                           internal gaps.
+ *                           (logical vector of length 1)
  * 'gapOpening':             gap opening cost or penalty
  *                           (double vector of length 1)
  * 'gapExtension':           gap extension cost or penalty
@@ -356,6 +360,7 @@ SEXP align_pairwiseAlignment(
 		SEXP gapCode,
 		SEXP typeCode,
 		SEXP scoreOnly,
+		SEXP endGap,
 		SEXP gapOpening,
 		SEXP gapExtension,
 		SEXP qualityLookupTable,
@@ -378,6 +383,7 @@ SEXP align_pairwiseAlignment(
 			(char) RAW(gapCode)[0],
 			INTEGER(typeCode)[0],
 			LOGICAL(scoreOnly)[0],
+			LOGICAL(endGap)[0],
 			(float) REAL(gapOpening)[0],
 			(float) REAL(gapExtension)[0],
 			INTEGER(qualityLookupTable),

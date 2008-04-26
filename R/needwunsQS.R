@@ -141,7 +141,7 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
     new("XStringAlign",
         align1=align1, align2=align2, quality1=BString(""), quality2=BString(""),
         type="global", score=C_ans$score, constantMatrix=substmat,
-        gapOpening=0, gapExtension=gappen)
+        gapOpening=0, gapExtension=gappen, endGap=TRUE)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),
