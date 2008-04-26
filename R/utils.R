@@ -35,6 +35,11 @@ numeric2integer <- function(x)
     if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
 }
 
+stopIfProblems <- function(problems)
+{
+    if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
+}
+
 normalize.use.names <- function(use.names)
 {
     if (is.null(use.names))

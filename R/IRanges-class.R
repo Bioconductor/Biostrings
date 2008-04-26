@@ -20,9 +20,13 @@ setClass("IRanges",
 )
 
 setClass("UnlockedIRanges", contains="IRanges")
+
+### A Views object is an UnlockedIRanges object with no null widths.
+setClass("Views", contains="UnlockedIRanges")
+
 setClass("LockedIRanges", contains="IRanges")
 
-### A NormalIRanges object is an IRanges object where the ranges are:
+### A NormalIRanges object is a LockedIRanges object where the ranges are:
 ###   (a) not empty (i.e. they have a non-null width);
 ###   (b) not overlapping;
 ###   (c) ordered from left to right;
@@ -33,7 +37,6 @@ setClass("LockedIRanges", contains="IRanges")
 ### for every 1 <= i < length(x).
 ### If length(x) == 1, then 'x' is normal iff width(x)[1] >= 1.
 ### If length(x) == 0, then 'x' is normal.
-
 setClass("NormalIRanges", contains="LockedIRanges")
 
 
@@ -154,6 +157,7 @@ setMethod("min", "NormalIRanges",
 ### (or 'width').
 ###
 
+### IRanges objects
 .valid.IRanges.start <- function(object)
 {
     if (!is.integer(start(object)) || any(is.na(start(object))))
@@ -162,7 +166,6 @@ setMethod("min", "NormalIRanges",
         return("number of starts and number of widths differ")
     NULL
 }
-
 .valid.IRanges.width <- function(object)
 {
     if (!is.integer(width(object)) || any(is.na(width(object))))
@@ -173,7 +176,6 @@ setMethod("min", "NormalIRanges",
         return("negative widths are not allowed")
     NULL
 }
-
 .valid.IRanges.names <- function(object)
 {
     if (!is.character(object@NAMES))
@@ -186,7 +188,6 @@ setMethod("min", "NormalIRanges",
         return("number of names and number of elements differ")
     NULL
 }
-
 .valid.IRanges <- function(object)
 {
     #cat("validating IRanges object of length", length(object), "...\n")
@@ -194,7 +195,6 @@ setMethod("min", "NormalIRanges",
       .valid.IRanges.width(object),
       .valid.IRanges.names(object))
 }
-
 setValidity("IRanges",
     function(object)
     {
@@ -203,13 +203,28 @@ setValidity("IRanges",
     }
 )
 
+### Views objects
+.valid.Views.width <- function(object)
+{
+    if (length(object) != 0 && any(width(object) == 0))
+        return("null widths are not allowed")
+    NULL
+}
+setValidity("Views",
+    function(object)
+    {
+        problems <- .valid.Views.width(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
+
+### NormalIRanges objects
 .valid.NormalIRanges <- function(object)
 {
     if (!isNormal(object))
         return("object is not normal")
     NULL
 }
-
 setValidity("NormalIRanges",
     function(object)
     {
@@ -222,40 +237,47 @@ setValidity("NormalIRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization.
 ###
+### I found that using validObject() in "initialize" doesn't work properly
+### (validation is called too many times and not in an order that makes sense
+### to me...)
+###
 
 .set.IRanges.slots <- function(object, start, width, names, check=TRUE)
 {
     slot(object, "start", check=FALSE) <- numeric2integer(start)
     slot(object, "width", check=FALSE) <- numeric2integer(width)
     slot(object, "NAMES", check=FALSE) <- if (is.null(names)) as.character(NA) else names
-    if (check) {
-        ## I found that using validObject() in "initialize" doesn't work
-        ## properly (validation is called too many times and not in an
-        ## order that makes sense to me...)
-        #validObject(object)
-        problems <- .valid.IRanges(object)
-        if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
-    }
+    if (check)
+        stopIfProblems(.valid.IRanges(object))
     object
 }
 
 setMethod("initialize", "IRanges",
-    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
+    function(.Object, start=integer(0), width=integer(0),
+                      names=NULL, check=TRUE)
         .set.IRanges.slots(.Object, start, width, names, check=check)
 )
 
-setMethod("initialize", "NormalIRanges",
-    function(.Object, start=integer(0), width=integer(0), names=NULL, check=TRUE)
+setMethod("initialize", "Views",
+    function(.Object, start=integer(0), width=integer(0),
+                      names=NULL, check=TRUE)
     {
-        .Object <- callNextMethod(.Object, start=start, width=width, names=names, check=check)
-        if (check) {
-            ## I found that using validObject() in "initialize" doesn't work
-            ## properly (validation is called too many times and not in an
-            ## order that makes sense to me...)
-            #validObject(.Object)
-            problems <- .valid.NormalIRanges(.Object)
-            if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
-        }
+        .Object <- callNextMethod(.Object, start=start, width=width,
+                                           names=names, check=check)
+        if (check)
+            stopIfProblems(.valid.Views.width(.Object))
+        .Object
+    }
+)
+
+setMethod("initialize", "NormalIRanges",
+    function(.Object, start=integer(0), width=integer(0),
+                      names=NULL, check=TRUE)
+    {
+        .Object <- callNextMethod(.Object, start=start, width=width,
+                                           names=names, check=check)
+        if (check)
+            stopIfProblems(.valid.NormalIRanges(.Object))
         .Object
     }
 )
@@ -276,7 +298,8 @@ newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 ### NOT exported and unsafe: 'from' MUST be an IRanges object.
 as.NormalIRanges <- function(from, check=TRUE)
 {
-    new("NormalIRanges", start=start(from), width=width(from), names=names(from), check=check)
+    new("NormalIRanges", start=start(from), width=width(from),
+                         names=names(from), check=check)
 }
 
 .as.NormalIRanges <- function(from) as.NormalIRanges(from, check=TRUE)
@@ -284,10 +307,12 @@ as.NormalIRanges <- function(from, check=TRUE)
 ### No, defining the IRanges->NormalIRanges "coerce" method is not enough and
 ### we also need to define the other methods! Otherwise a silly implicit
 ### method would be called when calling as(x, "NormalIRanges") on an
-### UnlockedIRanges or LockedIRanges object. Yes, this is another S4 "feature":
+### UnlockedIRanges, Views or LockedIRanges object. Yes, this is another S4
+### "feature":
 ###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049027.html
 setAs("IRanges", "NormalIRanges", .as.NormalIRanges)
 setAs("UnlockedIRanges", "NormalIRanges", .as.NormalIRanges)
+setAs("Views", "NormalIRanges", .as.NormalIRanges)
 setAs("LockedIRanges", "NormalIRanges", .as.NormalIRanges)
 
 
@@ -313,7 +338,11 @@ setMethod("as.data.frame", "IRanges",
 )
 
 setMethod("show", "IRanges",
-    function(object) show(as.data.frame(object))
+    function(object)
+    {
+        cat(class(object), " object:\n", sep="")
+        show(as.data.frame(object))
+    }
 )
 
 
@@ -323,7 +352,7 @@ setMethod("show", "IRanges",
 ### IMPORTANT: They do NOT check their argument 'x' and 'value' at all, not
 ### even whether 'value' is of type integer or not!
 ###
-### The rules are:
+### The "sliding rules" are:
 ###   (1) changing the start preserves the width (so it changes the end)
 ###   (2) changing the width preserves the start (so it changes the end)
 ###   (3) changing the end preserves the width (so it changes the start)
@@ -413,29 +442,26 @@ setMethod("show", "IRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Exported replacement methods.
 ###
-### See .start<-, .width<- and .end<- above for the rules.
+### See .start<-, .width<- and .end<- above for the "sliding rules".
 ###
 ### Note that we don't call validObject(x) after 'x' has been modified because
 ### we don't need to revalidate the entire object: validating the bits that
-### have been touched is enough (and faster). However, because of this, if
-### instances of derived classes must satisfy additional constraints, then some
-### of the replacement methods below need to be overridden. See for example the
-### "width<-" method for XStringViews objects (XStringViews-class.R file).
+### have been touched is enough (and faster). However, because of this, when
+### defining a new class that extends the UnlockedIRanges class, if objects of
+### the new class must satisfy additional constraints, then some of the
+### replacement methods below need to be overridden for this new class.
 ###
 
 setGeneric("start<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("start<-")
 )
 
-### No method for IRanges objects!
 setReplaceMethod("start", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
         .start(x) <- value
-        if (check) {
-            problem <- .valid.IRanges.start(x)
-            if (!is.null(problem)) stop(problem)
-        }
+        if (check)
+            stopIfProblems(.valid.IRanges.start(x))
         x
     }
 )
@@ -444,14 +470,14 @@ setGeneric("width<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("width<-")
 )
 
-### No method for IRanges objects!
 setReplaceMethod("width", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
         .width(x) <- value
         if (check) {
-            problem <- .valid.IRanges.width(x)
-            if (!is.null(problem)) stop(problem)
+            stopIfProblems(.valid.IRanges.width(x))
+            if (is(x, "Views"))
+                stopIfProblems(.valid.Views.width(x))
         }
         x
     }
@@ -461,15 +487,12 @@ setGeneric("end<-", signature="x",
     function(x, check=TRUE, value) standardGeneric("end<-")
 )
 
-### No method for IRanges objects!
 setReplaceMethod("end", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
         .end(x) <- value
-        if (check) {
-            problem <- .valid.IRanges.start(x)
-            if (!is.null(problem)) stop(problem)
-        }
+        if (check)
+            stopIfProblems(.valid.IRanges.start(x))
         x
     }
 )
@@ -502,10 +525,10 @@ setReplaceMethod("names", "IRanges",
 ### It must verify 2 important properties:
 ###   (1) update(x) must be identical to x (doesn't touch x at all)
 ###   (2) update(x, start=start(x), width=width(x), names=names(x))
-###       must be identical to x too (but this time it updates x with its own content)
+###       must be identical to x too (but this time it updates x with its own
+###       content)
 ###
 
-### No method for IRanges objects!
 setMethod("update", "UnlockedIRanges",
     function(object, ...)
     {

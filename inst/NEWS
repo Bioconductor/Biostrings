@@ -160,19 +160,19 @@ o Added "restrict", "narrow", "reduce" and "gaps" generic functions with
   object.
 
 o Added the "start<-", "width<-" and "end<-" generics with methods for
-  UnlockedIRanges and XStringViews objects. Also added the "update" method for
+  UnlockedIRanges and Views objects. Also added the "update" method for
   UnlockedIRanges objects to provide a convenient way of combining multiple
   modifications of an UnlockedIRanges object into one single call.
 
 o Added the intToRanges() and intToAdjacentRanges() utility functions
   for creating an IRanges instance.
 
-o Added the IRanges, UnlockedIRanges, LockedIRanges and NormalIRanges classes
-  for representing a set of integer ranges + the "isNormal" and
+o Added the IRanges, UnlockedIRanges, Views, LockedIRanges and NormalIRanges
+  classes for representing a set of integer ranges + the "isNormal" and
   "whichFirstNotNormal" generic functions with methods for IRanges objects
   (see ?IRanges for the details).
   Changed the definition of the XStringViews class so now it derives from the
-  UnlockedIRanges class.
+  Views class.
 
 o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
   to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of

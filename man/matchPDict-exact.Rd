@@ -24,6 +24,7 @@
 \alias{countIndex,MIndex-method}
 \alias{[[,MIndex-method}
 \alias{$,MIndex-method}
+\alias{unlist}
 \alias{unlist,MIndex-method}
 
 \alias{length,ByPos_MIndex-method}

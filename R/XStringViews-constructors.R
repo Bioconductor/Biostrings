@@ -11,7 +11,7 @@
 ###   - They return an XStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
 
-.safeMakeIRanges <- function(subject, start, end)
+.safeMakeViews <- function(subject, start, end)
 {
     if (!isNumericOrNAs(start) || !isNumericOrNAs(end))
         stop("'start' and 'end' must be numerics")
@@ -27,7 +27,7 @@
         end <- recycleVector(end, length(start))
     if (!all(start <= end))
         stop("'start' and 'end' must verify 'start <= end'")
-    new("UnlockedIRanges", start=start, width=end-start+1L, check=FALSE)
+    new("Views", start=start, width=end-start+1L, check=FALSE)
 }
 
 ### Typical use:
@@ -51,7 +51,7 @@ views <- function(subject, start=NA, end=NA)
     if (!is(subject, "XString"))
         subject <- BString(subject)
     ans <- new("XStringViews", subject, check=FALSE)
-    ranges <- .safeMakeIRanges(subject(ans), start, end)
+    ranges <- .safeMakeViews(subject(ans), start, end)
     update(ans, start=start(ranges), width=width(ranges))
 }
 

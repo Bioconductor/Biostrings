@@ -8,7 +8,7 @@
 ###
 
 setClass("XStringViews",
-    contains="UnlockedIRanges",
+    contains="Views",
     representation(
         subject="XString"
     )
@@ -27,25 +27,11 @@ setMethod("subject", "XStringViews", function(x) x@subject)
 ### Validity.
 ###
 
-.valid.XStringViews.subject <- function(object)
+.valid.XStringViews <- function(object)
 {
     if (!is(subject(object), "XString"))
         return("the subject must be an XString object")
     NULL
-}
-
-.valid.XStringViews.width <- function(object)
-{
-    if (length(width(object)) != 0 && min(width(object)) < 1L)
-        return("null widths are not allowed")
-    NULL
-}
-
-.valid.XStringViews <- function(object)
-{
-    #cat("validating XStringViews object...\n")
-    c(.valid.XStringViews.subject(object),
-      .valid.XStringViews.width(object))
 }
 
 setValidity("XStringViews",
@@ -69,37 +55,9 @@ setMethod("initialize", "XStringViews",
         .Object <- callNextMethod(.Object, start=start, width=width,
                                            names=names, check=check)
         slot(.Object, "subject", check=FALSE) <- subject
-        if (check) {
-            ## I found that using validObject() in "initialize" doesn't work
-            ## properly (validation is called too many times and not in an
-            ## order that makes sense to me...)
-            #validObject(.Object)
-            problems <- .valid.XStringViews(.Object)
-            if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
-        }
+        if (check)
+            stopIfProblems(.valid.XStringViews(.Object))
         .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Replacement methods.
-###
-### XStringViews objects inherit the replacement methods defined for parent
-### class UnlockedIRanges (see IRanges-class.R).
-### However, the "width" method needs to be overridden because of the
-### additional constraint that applies to XStringViews objects.
-###
-
-setReplaceMethod("width", "XStringViews",
-    function(x, check=TRUE, value)
-    {
-        x <- callNextMethod(x, check=TRUE, value)
-        if (check) {
-            problem <- .valid.XStringViews.width(x)
-            if (!is.null(problem)) stop(problem)
-        }
-        x
     }
 )
 
