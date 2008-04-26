@@ -209,6 +209,22 @@ static float pairwiseAlignment(
 		}
 	}
 	if (typeCode == GLOBAL_ALIGNMENT) {
+		if (endGap == 0) {
+			for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+				if (H_MATRIX(i, nCharString2) < H_MATRIX(iMinus1, nCharString2)) {
+					H_MATRIX(i, nCharString2) = H_MATRIX(iMinus1, nCharString2);
+					if (H_MATRIX(i, nCharString2) >= MAX(F_MATRIX(i, nCharString2), V_MATRIX(i, nCharString2)))
+						TRACE_MATRIX(i, nCharString2) = DELETION;
+				}
+			}
+			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+				if (V_MATRIX(nCharString1, j) < V_MATRIX(nCharString1, jMinus1)) {
+					V_MATRIX(nCharString1, j) = V_MATRIX(nCharString1, jMinus1);
+					if (V_MATRIX(nCharString1, j) >= MAX(F_MATRIX(nCharString1, j), H_MATRIX(nCharString1, j)))
+						TRACE_MATRIX(nCharString1, j) = INSERTION;
+				}
+			}
+		}
 		startRow = nCharString1;
 		startCol = nCharString2;
 		startScore =
