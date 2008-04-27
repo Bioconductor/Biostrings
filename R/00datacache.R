@@ -1,5 +1,13 @@
-# ============================================================================
-# Serialized objects
+### =========================================================================
+### Environment for storing run-time objects
+###
+
+RTobjs <- new.env(hash=TRUE, parent=emptyenv())
+
+
+### =========================================================================
+### Serialized objects
+###
 
 SERIALIZED_OBJNAMES <- c(
     "BLOSUM45",
@@ -15,11 +23,13 @@ SERIALIZED_OBJNAMES <- c(
 )
 
 
-# ============================================================================
-# Objects created "on-the-fly" (not serialized)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Objects created "on-the-fly" (not serialized)
+###
+### WARNING: Improper calls to 'getdata' by the 'createObject' function can
+### lead to infinite recursive loops!
+###
 
-# WARNING: Improper calls to 'getdata' by the 'createObject' function can lead
-# to infinite recursive loops!
 createObject <- function(objname)
 {
     # add more here...
@@ -27,8 +37,9 @@ createObject <- function(objname)
 }
 
 
-# ============================================================================
-# The 'getdata' function
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "getdata" function (NOT exported)
+###
 
 datacache <- new.env(hash=TRUE, parent=emptyenv())
 

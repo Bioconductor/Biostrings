@@ -233,7 +233,7 @@ setMethod("reduce", "MaskedXString",
 setMethod("gaps", "MaskedXString",
     function(x, start=NA, end=NA)
     {
-        x@masks <- gaps(masks(x))
+        x@masks <- gaps(reduce(masks(x)))
         x
     }
 )

@@ -106,7 +106,7 @@ o Four changes in alphabetFrequency():
       non-base letter);
   (2) added the 'freq' argument;
   (3) added the 'collapse' argument;
-  (4) made it 1000x faster on XStringViews and XStringSet objects.
+  (4) made it 1000x faster on XStringSet and XStringViews objects.
 
 o Added "as.character" and "consmat" methods for XStringAlign objects.
 

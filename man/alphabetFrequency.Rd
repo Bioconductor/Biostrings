@@ -8,12 +8,14 @@
 \alias{alphabetFrequency,DNAStringSet-method}
 \alias{alphabetFrequency,RNAStringSet-method}
 \alias{alphabetFrequency,XStringViews-method}
+\alias{alphabetFrequency,MaskedXString-method}
 
 \alias{oligonucleotideFrequency}
 \alias{oligonucleotideFrequency,DNAString-method}
 \alias{oligonucleotideFrequency,RNAString-method}
 \alias{oligonucleotideFrequency,XStringSet-method}
 \alias{oligonucleotideFrequency,XStringViews-method}
+\alias{oligonucleotideFrequency,MaskedXString-method}
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
@@ -35,12 +37,12 @@
   calculate the frequency of all possible oligonucleotides of a given
   length (called the "width" in this particular context).
 
-  In this man page we call "DNA input" a \link{DNAString} object, or an
-  \link{XStringViews} object with a \link{DNAString} subject,
-  or a \link{DNAStringSet} object.
-  Similarly we call "RNA input" an \link{RNAString} object, or an
-  \link{XStringViews} object with an \link{RNAString} subject,
-  or an \link{RNAStringSet} object.
+  In this man page we call "DNA input" a \link{DNAString} object,
+  or a \link{DNAStringSet} object, or an \link{XStringViews} object
+  with a \link{DNAString} subject, or a \link{MaskedDNAString} object.
+  Similarly we call "RNA input" an \link{RNAString} object,
+  or an \link{RNAStringSet} object, or an \link{XStringViews} object
+  with an \link{RNAString} subject, or a \link{MaskedRNAStringSet} object.
 }
 
 \usage{
@@ -56,8 +58,8 @@
 
 \arguments{
   \item{x}{
-    A \link{BString}, \link{DNAString}, \link{RNAString}, \link{XStringViews}
-    or \link{XStringSet} object for all the \code{*Frequency} functions.
+    An \link{XString}, \link{XStringSet}, \link{XStringViews}
+    or \link{MaskedXString} object for all the \code{*Frequency} functions.
     A character vector for \code{strrev}.
   }
   \item{baseOnly}{
@@ -140,6 +142,7 @@
   \link{XString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
+  \link{MaskedXString-class},
   \code{\link{reverse}},
   \code{\link{rev}},
   \code{\link{strsplit}},

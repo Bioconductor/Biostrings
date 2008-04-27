@@ -15,10 +15,17 @@
     freq
 }
 
+.set.collapse.default <- function(collapse.default)
+{
+    assign("collapse.default", collapse.default, envir=RTobjs)
+}
+
+.set.collapse.default(FALSE)
+
 .normalize.collapse <- function(collapse)
 {
     if (is.null(collapse))
-        return(FALSE)
+        return(get("collapse.default", envir=RTobjs))
     if (!isTRUEorFALSE(collapse))
         stop("'collapse' must be 'TRUE' or 'FALSE'")
     collapse
@@ -189,6 +196,17 @@ setMethod("alphabetFrequency", "XStringViews",
     }
 )
 
+setMethod("alphabetFrequency", "MaskedXString",
+    function(x, baseOnly=FALSE, freq=FALSE, ...)
+    {
+        y <- as(x, "XStringViews")
+        .set.collapse.default(TRUE)
+        ans <- alphabetFrequency(y, baseOnly=baseOnly, freq=freq, ...)
+        .set.collapse.default(FALSE)
+        ans
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "strrev" function.
@@ -262,7 +280,8 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ### not require preprocessing, and uses much less memory.
 ###
 
-.formatFreqAnswer <- function(ans, alphabet, width, freq, fast.moving.side, as.array, with.labels)
+.formatFreqAnswer <- function(ans, alphabet, width, freq,
+                              fast.moving.side, as.array, with.labels)
 {
     if (freq)
         ans <- ans / sum(ans)
@@ -278,7 +297,8 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     ans
 }
 
-.oligonucleotideFrequency <- function(x, width, freq, fast.moving.side, as.array, with.labels)
+.oligonucleotideFrequency <- function(x, width, freq,
+                                      fast.moving.side, as.array, with.labels)
 {
     width <- .normalize.width(width)
     freq <- .normalize.freq(freq)
@@ -290,34 +310,41 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
                  x@xdata@xp, x@offset, x@length,
                  base_codes, width, fast.moving.side,
                  PACKAGE="Biostrings")
-    .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array, with.labels)
+    .formatFreqAnswer(ans, names(base_codes), width, freq,
+                      fast.moving.side, as.array, with.labels)
 }
 
 setGeneric("oligonucleotideFrequency", signature="x",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+    function(x, width, freq=FALSE,
+             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
         standardGeneric("oligonucleotideFrequency")
 )
 
 setMethod("oligonucleotideFrequency", "DNAString",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+    function(x, width, freq=FALSE,
+             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
-        .oligonucleotideFrequency(x, width, freq, fast.moving.side, as.array, with.labels)
+        .oligonucleotideFrequency(x, width, freq,
+                                  fast.moving.side, as.array, with.labels)
     }
 )
 
 setMethod("oligonucleotideFrequency", "RNAString",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+    function(x, width, freq=FALSE,
+             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
-        .oligonucleotideFrequency(x, width, freq, fast.moving.side, as.array, with.labels)
+        .oligonucleotideFrequency(x, width, freq,
+                                  fast.moving.side, as.array, with.labels)
     }
 )
 
 setMethod("oligonucleotideFrequency", "XStringSet",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+    function(x, width, freq=FALSE,
+             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
@@ -337,7 +364,8 @@ setMethod("oligonucleotideFrequency", "XStringSet",
                                    base_codes, width, fast.moving.side,
                                    PACKAGE="Biostrings")
             }
-            ans <- .formatFreqAnswer(ans, names(base_codes), width, freq, fast.moving.side, as.array, with.labels)
+            ans <- .formatFreqAnswer(ans, names(base_codes), width, freq,
+                                     fast.moving.side, as.array, with.labels)
         } else {
             ans <- rep.int(list(ans), length(x))
             for (i in seq_len(length(x))) {
@@ -346,7 +374,9 @@ setMethod("oligonucleotideFrequency", "XStringSet",
                              xx@xdata@xp, xx@offset, xx@length,
                              base_codes, width, fast.moving.side,
                              PACKAGE="Biostrings")
-                ans[[i]] <- .formatFreqAnswer(tmp, names(base_codes), width, freq, fast.moving.side, as.array, with.labels)
+                ans[[i]] <- .formatFreqAnswer(tmp, names(base_codes), width,
+                                              freq, fast.moving.side, as.array,
+                                              with.labels)
             }
         }
         ans
@@ -354,11 +384,29 @@ setMethod("oligonucleotideFrequency", "XStringSet",
 )
 
 setMethod("oligonucleotideFrequency", "XStringViews",
-    function(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+    function(x, width, freq=FALSE,
+             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-        oligonucleotideFrequency(y, width, freq=freq, fast.moving.side=fast.moving.side,
-                                           as.array=as.array, with.labels=with.labels, ...)
+        oligonucleotideFrequency(y, width, freq=freq,
+                                 fast.moving.side=fast.moving.side,
+                                 as.array=as.array,
+                                 with.labels=with.labels, ...)
+    }
+)
+
+setMethod("oligonucleotideFrequency", "MaskedXString",
+    function(x, width, freq=FALSE,
+             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+    {
+        y <- as(x, "XStringViews")
+        .set.collapse.default(TRUE)
+        ans <- oligonucleotideFrequency(y, width, freq=freq,
+                                        fast.moving.side=fast.moving.side,
+                                        as.array=as.array,
+                                        with.labels=with.labels, ...)
+        .set.collapse.default(FALSE)
+        ans
     }
 )
 
@@ -368,22 +416,27 @@ setMethod("oligonucleotideFrequency", "XStringViews",
 ### wrappers.
 ###
 
-dinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, with.labels=TRUE, ...)
+dinucleotideFrequency <- function(x, freq=FALSE,
+                                  fast.moving.side="right",
+                                  as.matrix=FALSE, with.labels=TRUE, ...)
 {
     if (missing(fast.moving.side) && !missing(as.matrix))
         fast.moving.side <- "left"
     oligonucleotideFrequency(x, 2, freq=freq,
-                                fast.moving.side=fast.moving.side,
-                                as.array=as.matrix, with.labels=with.labels, ...)
+                             fast.moving.side=fast.moving.side,
+                             as.array=as.matrix,
+                             with.labels=with.labels, ...)
 }
 
-trinucleotideFrequency <- function(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+trinucleotideFrequency <- function(x, freq=FALSE,
+                                   fast.moving.side="right",
+                                   as.array=FALSE, with.labels=TRUE, ...)
 {
     if (missing(fast.moving.side) && !missing(as.array))
         fast.moving.side <- "left"
     oligonucleotideFrequency(x, 3, freq=freq,
-                                fast.moving.side=fast.moving.side,
-                                as.array=as.array, with.labels=with.labels, ...)
+                             fast.moving.side=fast.moving.side,
+                             as.array=as.array,
+                             with.labels=with.labels, ...)
 }
-
 
