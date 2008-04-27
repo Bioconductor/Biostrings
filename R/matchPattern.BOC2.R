@@ -28,7 +28,7 @@ setMethod("initialize", "BOC2_SubjectString",
     function(.Object, subject, pattern_length, base_letters)
     {
         .Object@subject <- subject
-        if (!is.numeric(pattern_length) || length(pattern_length) != 1 || is.na(pattern_length))
+        if (!isSingleNumber(pattern_length))
             stop("'pattern_length' must be a single integer")
         pattern_length <- as.integer(pattern_length)
         if (pattern_length < 4L || 254L < pattern_length)
