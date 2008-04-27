@@ -137,10 +137,14 @@
 
 \seealso{
   \code{\link{countPDict}},
-  \link{BString}, \link{DNAString}, \link{RNAString},
-  \link{XStringSet}, \link{XStringViews},
-  \code{\link{rev}}, \code{\link{strsplit}},
-  \code{\link{GENETIC_CODE}}, \code{\link{AMINO_ACID_CODE}}
+  \link{XString-class},
+  \link{XStringSet-class},
+  \link{XStringViews-class},
+  \code{\link{reverse}},
+  \code{\link{rev}},
+  \code{\link{strsplit}},
+  \code{\link{GENETIC_CODE}},
+  \code{\link{AMINO_ACID_CODE}}
 }
 
 \examples{

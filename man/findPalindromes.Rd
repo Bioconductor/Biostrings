@@ -3,6 +3,7 @@
 \alias{findPalindromes}
 \alias{findPalindromes,XString-method}
 \alias{findPalindromes,XStringViews-method}
+\alias{findPalindromes,MaskedXString-method}
 
 \alias{palindromeArmLength}
 \alias{palindromeArmLength,XString-method}
@@ -19,6 +20,7 @@
 \alias{findComplementedPalindromes}
 \alias{findComplementedPalindromes,DNAString-method}
 \alias{findComplementedPalindromes,XStringViews-method}
+\alias{findComplementedPalindromes,MaskedXString-method}
 
 \alias{complementedPalindromeArmLength}
 \alias{complementedPalindromeArmLength,DNAString-method}

@@ -37,7 +37,7 @@
 
 \section{The Amino Acid alphabet}{
   This alphabet contains all letters from the
-  Single-Letter Amino Acid Code (see \code{\link{AMINO_ACID_CODE}})
+  Single-Letter Amino Acid Code (see \code{?\link{AMINO_ACID_CODE}})
   + the stop letter \code{"*"}.
   It is stored in the \code{AA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
@@ -59,17 +59,16 @@
   }
 }
 
-\section{Other functions and generics}{
-  In the code snippets below,
-  \code{x} must be an \link{XString} object.
+\section{Accessor methods}{
+  In the code snippet below, \code{x} is an \link{AAString} object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
       If \code{x} is an AAString object, then return the Amino Acid
       alphabet (see above).
-      See the corresponding man pages when \code{x} is of class
-      \link{BString}, \link{DNAString} or \link{RNAString}.
+      See the corresponding man pages when \code{x} is a
+      \link{BString}, \link{DNAString} or \link{RNAString} object.
     }
   }
 }
@@ -78,10 +77,9 @@
 
 \seealso{
   \code{\link{AMINO_ACID_CODE}},
-  \code{\link{subXString}},
   \code{\link{letter}},
   \link{XString-class},
-  \link{XStringViews-class}
+  \code{\link{alphabetFrequency}}
 }
 
 \examples{

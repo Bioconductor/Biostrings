@@ -11,7 +11,9 @@
 \alias{XStringViews,XStringViews-method}
 
 % Other functions:
+\alias{restrict,XStringViews-method}
 \alias{trim}
+\alias{narrow,XStringViews-method}
 \alias{subviews}
 
 % Deprecated:

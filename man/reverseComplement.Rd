@@ -17,12 +17,18 @@
 \alias{reverseComplement,RNAStringSet-method}
 \alias{reverseComplement,XStringViews-method}
 
+% Some convenience wrappers:
+\alias{transcribe}
+\alias{cDNA}
+\alias{dna2rna}
+\alias{rna2dna}
+
 
 \title{Sequence reversing and complementing}
 
 \description{
-  These functions can reverse an \link{XString} object
-  and complement each base of a \link{DNAString} object.
+  Use these functions for reversing a sequence and/or complementing a DNA
+  sequence.
 }
 
 \usage{
@@ -76,6 +82,7 @@
   \link{RNAStringSet-class},
   \link{XStringViews-class},
   \code{\link{strrev}},
+  \code{\link{chartr}},
   \code{\link{findPalindromes}}
 }
 

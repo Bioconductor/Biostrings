@@ -33,6 +33,7 @@
 \alias{whichFirstNotNormal,IRanges-method}
 \alias{isEmpty}
 \alias{isEmpty,IRanges-method}
+\alias{isEmpty,NormalIRanges-method}
 \alias{max,NormalIRanges-method}
 \alias{min,NormalIRanges-method}
 

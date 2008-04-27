@@ -195,15 +195,16 @@ setMethod("countPattern", "BOC2_SubjectString",
 ###
 
 ### Search for 20 patterns in Human chromosome 1
-cmp_BOC2vsBoyerMoore_exactmatching <- function(pattern_length)
-{
-    library(BSgenome.Hsapiens.UCSC.hg18)
-    chr1 <- Hsapiens$chr1
-    chr1boc <- new("BOC2_SubjectString", chr1, pattern_length, c("A", "C", "G"))
-    dt0 <- system.time(for (i in 41:60) matchPattern(chr1[seq_len(pattern_length)+1000000*i], chr1, algo="boyer-moore"))
-    dt1 <- system.time(for (i in 41:60) matchPattern(chr1[seq_len(pattern_length)+1000000*i], chr1boc))
-    c('boyer-moore'=dt0[['elapsed']], 'BOC2'=dt1[['elapsed']])
-}
+#(commented for now because it generates 'R CMD check' WARNINGs)
+#cmp_BOC2vsBoyerMoore_exactmatching <- function(pattern_length)
+#{
+#    library(BSgenome.Hsapiens.UCSC.hg18)
+#    chr1 <- Hsapiens$chr1
+#    chr1boc <- new("BOC2_SubjectString", chr1, pattern_length, c("A", "C", "G"))
+#    dt0 <- system.time(for (i in 41:60) matchPattern(chr1[seq_len(pattern_length)+1000000*i], chr1, algo="boyer-moore"))
+#    dt1 <- system.time(for (i in 41:60) matchPattern(chr1[seq_len(pattern_length)+1000000*i], chr1boc))
+#    c('boyer-moore'=dt0[['elapsed']], 'BOC2'=dt1[['elapsed']])
+#}
 
 ### A note about [40-120]mers in Human genome with a surprisingly high number
 ### of occurences.

@@ -14,13 +14,26 @@
 \alias{XString,XString-method}
 \alias{BString}
 
-% Standard generic methods:
-\alias{show,XString-method}
+% Accessor methods:
+\alias{alphabet}
+\alias{alphabet,BString-method}
 \alias{length,XString-method}
 \alias{nchar,XString-method}
+
+% Coercion:
+\alias{as.character,XString-method}
+\alias{toString,XString-method}
+
+% "show" method:
+\alias{show,XString-method}
+
+% "subseq" method and subsetting:
+\alias{subseq}
+\alias{subseq,XString-method}
 \alias{[,XString-method}
 \alias{[<-,XString-method}
 
+% Equality:
 \alias{==,XString,XString-method}
 \alias{==,BString,character-method}
 \alias{==,character,BString-method}
@@ -28,13 +41,6 @@
 \alias{!=,XString,XString-method}
 \alias{!=,BString,character-method}
 \alias{!=,character,BString-method}
-
-\alias{as.character,XString-method}
-\alias{toString,XString-method}
-
-% Other functions and generics:
-\alias{alphabet}
-\alias{alphabet,BString-method}
 
 
 \title{BString objects}
@@ -81,29 +87,89 @@
   }
 }
 
-\section{Standard generic methods}{
-  In the code snippets below,
-  \code{x}, \code{object}, \code{e1} and \code{e2}
-  are XString objects,
-  and \code{i} is a NA-free numeric vector.
+\section{Accessor methods}{
+  In the code snippets below, \code{x} is an XString object.
 
   \describe{
+    \item{}{
+      \code{alphabet(x)}:
+      \code{NULL} for a \code{BString} object.
+      See the corresponding man pages when \code{x} is a 
+      \link{DNAString}, \link{RNAString} or \link{AAString} object.
+    }
     \item{}{
       \code{length(x)} or \code{nchar(x)}:
       Get the length of an XString object, i.e., its number of letters.
     }
+  }
+}
+
+\section{Coercion}{
+  In the code snippets below, \code{x} is an XString object.
+
+  \describe{
+    \item{}{
+      \code{as.character(x)}:
+      Converts \code{x} to a character string.
+    }
+    \item{}{
+      \code{toString(x)}:
+      Equivalent to \code{as.character(x)}.
+    }
+  }
+}
+
+\section{Subsequence extraction and subsetting}{
+  In the code snippets below, \code{x} is an XString object.
+
+  \describe{
+    \item{}{
+      \code{subseq(x, start=NA, end=NA, width=NA)}:
+      Extract the subsequence from \code{x} specified by \code{start},
+      \code{end} and \code{width}.
+      At least one of \code{start}, \code{end} and \code{width} must be
+      \code{NA} and the other ones must be single numeric values.
+      If at least two of them are \code{NA}s, then \code{start=NA} is
+      interpreted as \code{start=1} and \code{end=NA} is interpreted as
+      \code{end=length(x)}.
+      A negative value for \code{start} or \code{end} is interpreted
+      relatively to the end of \code{x} e.g. \code{start=-1} is equivalent
+      to \code{start=length(x)}.
+     
+      A note about performance: \code{subseq} does NOT copy the sequence data,
+      hence it's very efficient and is the recommended way to extract a
+      subsequence (i.e. a set of consecutive letters) from an XString object.
+      For example, extracting a 100Mb subsequence from Human chromosome 1
+      (250Mb) with \code{subseq} is (almost) instantaneous and has (almost)
+      no memory footprint (the cost in time and memory does not depend on the
+      length of the original sequence or on the length of the subsequence to
+      extract).
+    }
     \item{}{
       \code{x[i]}:
-      Return a new XString object made of the selected letters.
-      The returned object belongs to the same class as \code{x}
-      (same XString substype).
+      Return a new XString object made of the selected letters (subscript
+      \code{i} must be an NA-free numeric vector specifying the positions of
+      the letters to select).
+      The returned object belongs to the same class (i.e. same XString
+      subtype) as \code{x}.
+
+      Note that, unlike \code{subseq}, \code{x[i]} does copy the sequence
+      data and therefore will be very inefficient for extracting a big number
+      of letters (e.g. when \code{i} contains millions of positions).
     }
+  }
+}
+
+\section{Equality}{
+  In the code snippets below, \code{e1} and \code{e2} are XString objects.
+
+  \describe{
     \item{}{
       \code{e1 == e2}:
       \code{TRUE} if \code{e1} is equal to \code{e2}.
       \code{FALSE} otherwise.
 
-      Comparison between two XString objects of different substypes (e.g.
+      Comparison between two XString objects of different subtypes (e.g.
       a BString object and a \link{DNAString} object) is not supported
       with one exception: a \link{DNAString} object and an \link{RNAString}
       object can be compared (see \link{RNAString-class} for more details
@@ -116,50 +182,40 @@
       \code{e1 != e2}:
       Equivalent to \code{!(e1 == e2)}.
     }
-    \item{}{
-      \code{as.character(x)}:
-      Converts \code{x} to a character string.
-    }
-    \item{}{
-      \code{toString(x)}:
-      Equivalent to \code{as.character(x)}.
-    }
-  }
-}
-
-\section{Other functions and generics}{
-  In the code snippet below,
-  \code{x} must be an XString object.
-
-  \describe{
-    \item{}{
-      \code{alphabet(x)}:
-      \code{NULL} for a \code{BString} object.
-      See the corresponding man pages when \code{x} is a 
-      \link{DNAString}, an \link{RNAString} or an \link{AAString}
-      object.
-    }
   }
 }
 
 \author{H. Pages}
 
 \seealso{
-  \code{\link{subXString}},
   \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
   \link{XStringSet-class},
-  \link{XStringViews-class}
+  \link{XStringViews-class},
+  \code{\link{reverse}}
 }
 
 \examples{
   b <- BString("I am a BString object")
   b
   length(b)
-  b2 <- b[length(b):1]
+
+  ## Subsequence extraction
+  subseq(b)
+  subseq(b, start=3)
+  subseq(b, start=-3)
+  subseq(b, end=-3)
+  subseq(b, end=-3, width=5)
+
+  ## Subsetting
+  b2 <- b[length(b):1]       # better done with reverse(b)
+
   as.character(b2)
+
+  b2 == b                    # FALSE
+  b2 == as.character(b2)     # TRUE
 
   ## b[1:length(b)] is equal but not identical to b!
   b == b[1:length(b)]        # TRUE
@@ -168,12 +224,7 @@
   ## of part or all its sequence data. Hence, for the resulting object,
   ## the internal slot containing the memory address of the sequence
   ## data differs from the original. This is enough for identical() to
-  ## see the 2 objects as different. See ?subXString for a much more
-  ## efficient substring extraction (does NOT copy the sequence data of
-  ## the original object).
-
-  b2 == b                    # FALSE
-  b2 == as.character(b2)     # TRUE
+  ## see the 2 objects as different.
 }
 
 \keyword{methods}

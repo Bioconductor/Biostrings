@@ -39,7 +39,7 @@
 
 \section{The RNA alphabet}{
   This alphabet contains all letters from the
-  IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}})
+  IUPAC Extended Genetic Alphabet (see \code{?\link{IUPAC_CODE_MAP}})
   where \code{"T"} is replaced by \code{"U"}
   + the gap letter \code{"-"}.
   It is stored in the \code{RNA_ALPHABET} constant (character vector).
@@ -62,17 +62,16 @@
   }
 }
 
-\section{Other functions and generics}{
-  In the code snippets below,
-  \code{x} must be an \link{XString} object.
+\section{Accessor methods}{
+  In the code snippet below, \code{x} is an \link{RNAString} object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
       If \code{x} is an RNAString object, then return the RNA
       alphabet (see above).
-      See the corresponding man pages when \code{x} is of class
-      \link{BString}, \link{DNAString} or \link{AAString}.
+      See the corresponding man pages when \code{x} is a
+      \link{BString}, \link{DNAString} or \link{AAString} object.
     }
   }
 }
@@ -82,10 +81,10 @@
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link{letter}},
-  \code{\link{subXString}},
   \link{XString-class},
   \link{DNAString-class},
-  \link{XStringViews-class}
+  \code{\link{reverseComplement}},
+  \code{\link{alphabetFrequency}}
 }
 
 \examples{

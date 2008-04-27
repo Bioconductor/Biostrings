@@ -39,7 +39,7 @@
 
 \section{The DNA alphabet}{
   This alphabet contains all letters from the
-  IUPAC Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}})
+  IUPAC Extended Genetic Alphabet (see \code{?\link{IUPAC_CODE_MAP}})
   + the gap letter \code{"-"}.
   It is stored in the \code{DNA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
@@ -61,17 +61,16 @@
   }
 }
 
-\section{Other functions and generics}{
-  In the code snippets below,
-  \code{x} must be an \link{XString} object.
+\section{Accessor methods}{
+  In the code snippet below, \code{x} is a \link{DNAString} object.
 
   \describe{
     \item{}{
       \code{alphabet(x)}:
       If \code{x} is a DNAString object, then return the DNA
       alphabet (see above).
-      See the corresponding man pages when \code{x} is of class
-      \link{BString}, \link{RNAString} or \link{AAString}.
+      See the corresponding man pages when \code{x} is a
+      \link{BString}, \link{RNAString} or \link{AAString} object.
     }
   }
 }
@@ -81,10 +80,10 @@
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link{letter}},
-  \code{\link{subXString}},
   \link{XString-class},
   \link{RNAString-class},
-  \link{XStringViews-class}
+  \code{\link{reverseComplement}},
+  \code{\link{alphabetFrequency}}
 }
 
 \examples{

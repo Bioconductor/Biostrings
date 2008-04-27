@@ -120,8 +120,8 @@ setMethod("reverseComplement", "XStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some convenience functions for transforming a DNA (or RNA) sequence into
-### an RNA (or DNA) sequence.
+### Some convenience wrappers for different kinds of DNA <-> RNA
+### transformations.
 ###
 
 transcribe <- function(x)
