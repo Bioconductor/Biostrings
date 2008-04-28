@@ -15,7 +15,7 @@ setMethod("reverse", "XStringSet",
     function(x, ...)
     {
         x@super <- reverse(super(x))
-        .start(x) <- nchar(super(x)) - end(x) + 1L
+        unsafe.start(x) <- nchar(super(x)) - end(x) + 1L
         x
     }
 )
@@ -95,7 +95,7 @@ setMethod("reverseComplement", "DNAStringSet",
     function(x, ...)
     {
         x@super <- reverseComplement(super(x))
-        .start(x) <- nchar(super(x)) - end(x) + 1L
+        unsafe.start(x) <- nchar(super(x)) - end(x) + 1L
         x
     }
 )
@@ -104,7 +104,7 @@ setMethod("reverseComplement", "RNAStringSet",
     function(x, ...)
     {
         x@super <- reverseComplement(super(x))
-        .start(x) <- nchar(super(x)) - end(x) + 1L
+        unsafe.start(x) <- nchar(super(x)) - end(x) + 1L
         x
     }
 )

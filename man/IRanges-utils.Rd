@@ -92,11 +92,12 @@
   Finally, if \code{width} is not \code{NA}, then \code{start} and
   \code{end} cannot be both \code{NA}s.
 
-  \code{reduce} first orders the ranges in \code{x} from left to right
-  and then merges the adjacent ones.
+  \code{reduce} first orders the ranges in \code{x} from left to right,
+  then merges the overlapping or adjacent ones.
 
-  \code{toNormalIRanges} first reduces \code{x} and then removes the
-  empty ranges. The final result is a \link{NormalIRanges} object.
+  \code{toNormalIRanges} first reduces \code{x}, then removes the
+  empty ranges. The final result is returned as a \link{NormalIRanges}
+  object.
 
   \code{gaps} returns the normal \link{IRanges} object describing
   the set of integers obtained by removing the set of integers described

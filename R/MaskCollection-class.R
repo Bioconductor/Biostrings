@@ -32,6 +32,22 @@ setMethod("names", "MaskCollection",
         if (length(x@NAMES) == 1 && is.na(x@NAMES)) NULL else x@NAMES
 )
 
+### The only replacement method for MaskCollection objects!
+setReplaceMethod("names", "MaskCollection",
+    function(x, value)
+    {
+        if (is.character(value)) {
+            ii <- is.na(value)
+            if (any(ii))
+                value[ii] <- ""
+        } else if (!is.null(value)) {
+            stop("'value' must be NULL or a character vector")
+        }
+        unsafe.names(x) <- value
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
@@ -254,7 +270,7 @@ setMethod("narrow", "MaskCollection",
                             function(nir)
                             {
                                 ans <- restrict(nir, start=start, end=end)
-                                .start(ans) <- start(ans) - shift
+                                unsafe.start(ans) <- start(ans) - shift
                                 ans
                             }
                      )

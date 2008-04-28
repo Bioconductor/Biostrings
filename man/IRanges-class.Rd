@@ -344,8 +344,8 @@
   names(x)
   names(x) <- c("range1", "range2")
   x
-  x[is.na(names(x))]   # 5 ranges
-  x[!is.na(names(x))]  # 2 ranges
+  x[names(x) == ""]  # 5 ranges
+  x[names(x) != ""]  # 2 ranges
 
   ## Using an IRanges object for storing a big set of ranges is more
   ## efficient than using a standard R data frame:

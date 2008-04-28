@@ -12,6 +12,7 @@
 \alias{length,MaskCollection-method}
 \alias{width,MaskCollection-method}
 \alias{names,MaskCollection-method}
+\alias{names<-,MaskCollection-method}
 
 % Other methods:
 \alias{isEmpty,MaskCollection-method}

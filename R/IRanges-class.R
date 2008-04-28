@@ -347,10 +347,12 @@ setMethod("show", "IRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Non-exported replacement functions for IRanges objects.
+### Non-exported (and unsafe) replacement functions for IRanges objects.
 ###
-### IMPORTANT: They do NOT check their argument 'x' and 'value' at all, not
-### even whether 'value' is of type integer or not!
+### IMPORTANT: They do NOT check their arguments ('x' and 'value'). In
+### particular they do not check that 'value' is of the expected type (integer
+### for "unsafe.start<-", "unsafe.width<-", "unsafe.end<-", and character for
+### "unsafe.names<-").
 ###
 ### The "sliding rules" are:
 ###   (1) changing the start preserves the width (so it changes the end)
@@ -358,35 +360,42 @@ setMethod("show", "IRanges",
 ###   (3) changing the end preserves the width (so it changes the start)
 ###
 
-`.start<-` <- function(x, value)
+### 'value' is recycled.
+`unsafe.start<-` <- function(x, value)
 {
     ## Use 'x@start[]' instead of just 'x@start' so the right value is recycled
     x@start[] <- numeric2integer(value)
     x
 }
 
-`.width<-` <- function(x, value)
+### 'value' is recycled.
+`unsafe.width<-` <- function(x, value)
 {
     ## Use 'x@width[]' instead of just 'x@width' so the right value is recycled
     x@width[] <- numeric2integer(value)
     x
 }
 
-`.end<-` <- function(x, value)
+### 'value' is recycled.
+`unsafe.end<-` <- function(x, value)
 {
-    .start(x) <- numeric2integer(value) - width(x) + 1L
+    unsafe.start(x) <- numeric2integer(value) - width(x) + 1L
     x
 }
 
-`.names<-` <- function(x, value)
+### 'value' is NOT recycled so we stay close to what the standard R "names<-"
+### methods generally do (except that if 'value' is shorter than 'x', we extend
+### it by empty strings, not by character NAs).
+`unsafe.names<-` <- function(x, value)
 {
     if (is.null(value))
         x@NAMES <- as.character(NA)
     else {
-        if (is.null(names(x)))
-            x@NAMES <- character(length(x))
-        ## Use 'x@NAMES[]' instead of just 'x@NAMES' so the right value is recycled
-        x@NAMES[] <- value
+        if (length(value) > length(x))
+            stop("too many names")
+        if (length(value) < length(x))
+            value <- c(value, character(length(x) - length(value)))
+        x@NAMES <- value
     }
     x
 }
@@ -428,21 +437,22 @@ setMethod("show", "IRanges",
         return(.set.IRanges.slots(object, start, width, args$names, check=FALSE))
     }
     if ("start" %in% argnames)
-        .start(object) <- args$start
+        unsafe.start(object) <- args$start
     if ("end" %in% argnames)
-        .end(object) <- args$end
+        unsafe.end(object) <- args$end
     if ("width" %in% argnames)
-        .width(object) <- args$width
+        unsafe.width(object) <- args$width
     if ("names" %in% argnames)
-        .names(object) <- args$names
+        unsafe.names(object) <- args$names
     object
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Exported replacement methods.
+### Exported (and safe) replacement methods.
 ###
-### See .start<-, .width<- and .end<- above for the "sliding rules".
+### See the unsafe replacement functions for IRanges objects above for the
+### "sliding rules".
 ###
 ### Note that we don't call validObject(x) after 'x' has been modified because
 ### we don't need to revalidate the entire object: validating the bits that
@@ -459,7 +469,7 @@ setGeneric("start<-", signature="x",
 setReplaceMethod("start", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
-        .start(x) <- value
+        unsafe.start(x) <- value
         if (check)
             stopIfProblems(.valid.IRanges.start(x))
         x
@@ -473,7 +483,7 @@ setGeneric("width<-", signature="x",
 setReplaceMethod("width", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
-        .width(x) <- value
+        unsafe.width(x) <- value
         if (check) {
             stopIfProblems(.valid.IRanges.width(x))
             if (is(x, "Views"))
@@ -490,7 +500,7 @@ setGeneric("end<-", signature="x",
 setReplaceMethod("end", "UnlockedIRanges",
     function(x, check=TRUE, value)
     {
-        .end(x) <- value
+        unsafe.end(x) <- value
         if (check)
             stopIfProblems(.valid.IRanges.start(x))
         x
@@ -501,12 +511,14 @@ setReplaceMethod("end", "UnlockedIRanges",
 setReplaceMethod("names", "IRanges",
     function(x, value)
     {
-        if (!(is.null(value) || is.character(value)))
+        if (is.character(value)) {
+            ii <- is.na(value)
+            if (any(ii))
+                value[ii] <- ""
+        } else if (!is.null(value)) {
             stop("'value' must be NULL or a character vector")
-        if (length(value) > length(x))
-            stop("too many names")
-        length(value) <- length(x)
-        .names(x) <- value
+        }
+        unsafe.names(x) <- value
         x
     }
 )
