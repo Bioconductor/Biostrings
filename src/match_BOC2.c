@@ -45,6 +45,7 @@ static char make_pre4(const char *s, char c1, char c2, char c3, char c4)
 	char pre4, c, twobit_code;
 	int i;
 
+	pre4 = 0;
 	for (i = 0; i < 4; i++, s++) {
 		c = *s;
 		if (c == c1) twobit_code = 0;

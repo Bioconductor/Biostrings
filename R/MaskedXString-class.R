@@ -252,9 +252,9 @@ setMethod("gaps", "MaskedXString",
 
 MaskedXString.substr <- function(x, start, end)
 {
-    ## The "restrict" method for MaskCollection objects does actually check
+    ## The "narrow" method for MaskCollection objects does actually check
     ## that 'start' and 'end' are safe.
-    x@masks <- restrict(masks(x), start=start, end=end)
+    x@masks <- narrow(masks(x), start=start, end=end)
     x@unmasked <- XString.substr(unmasked(x), start, end)
     x
 }

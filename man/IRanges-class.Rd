@@ -151,12 +151,12 @@
     \item{}{
       \code{start(x)}:
       The start values of the ranges.
-      This is a vector of \code{length(x)} positive integers.
+      This is a vector of positive integers of the same length as \code{x}.
     }
     \item{}{
       \code{width(x)}:
-      The number of integers of the ranges.
-      This is a vector of \code{length(x)} nonnegative integers.
+      The number of integers in each range.
+      This is a vector of nonnegative integers of the same length as \code{x}.
     }
     \item{}{
       \code{end(x)}:
