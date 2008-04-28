@@ -23,8 +23,9 @@
 
 \description{
   The BOC\_SubjectString and BOC2\_SubjectString classes are
-  experimental. Please DO NOT TRY TO USE them or to ask questions
-  about them. Thanks!
+  experimental and might not work properly.
+
+  Please DO NOT TRY TO USE them for now. Thanks for your comprehension!
 }
 
 \author{H. Pages}

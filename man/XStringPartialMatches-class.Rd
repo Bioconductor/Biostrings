@@ -21,13 +21,7 @@
   WARNING: This class is currently under development and might
   not work properly! Full documentation will come later.
 
-  Please send questions/comments to hpages@fhcrc.org
-
-  Thanks for your comprehension!
-}
-
-\details{
-  [TODO]
+  Please DO NOT TRY TO USE it for now. Thanks for your comprehension!
 }
 
 \section{Accesor methods}{
@@ -37,11 +31,11 @@
   \describe{
     \item{}{
       \code{subpatterns(x)}:
-      [TODO]
+      Not ready yet.
     }
     \item{}{
       \code{pattern(x)}:
-      [TODO]
+      Not ready yet.
     }
   }
 }
@@ -67,10 +61,6 @@
   \link{XStringViews-class},
   \link{XString-class},
   \code{\link{letter}}
-}
-
-\examples{
-  ## [TODO]
 }
 
 \keyword{methods}

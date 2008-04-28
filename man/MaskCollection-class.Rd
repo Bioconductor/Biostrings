@@ -95,7 +95,7 @@
     \item{}{
       \code{nirlist(x)}:
       A list of the same length as \code{x}, where each element is
-      a \code{\link{NormalIRanges}} object representing a mask in \code{x}.
+      a \link{NormalIRanges} object representing a mask in \code{x}.
     }
   }
 }
@@ -148,7 +148,7 @@
     }
     \item{}{
       \code{x[[i]]}:
-      Extract the i-th mask as a \link{MaskCollection} object.
+      Extract the i-th mask as a \link{NormalIRanges} object.
     }
   }
 }
@@ -179,8 +179,7 @@
   \link{MaskedXString-class},
   \code{\link{alphabetFrequency}},
   \code{\link{matchPattern}},
-  \link{NormalIRanges-class},
-  \link{IRanges-utils}
+  \link{NormalIRanges-class}
 }
 
 \examples{

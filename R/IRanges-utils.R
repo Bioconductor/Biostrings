@@ -16,7 +16,7 @@ intToRanges <- function(x, use.names=TRUE)
     use.names <- normalize.use.names(use.names)
     if (use.names) ans_names <- names(x) else ans_names <- NULL
     new("IRanges", start=rep.int(1L, length(x)), width=x,
-                    names=ans_names, check=TRUE)
+                   names=ans_names, check=TRUE)
 }
 
 
@@ -34,7 +34,7 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
     ans_start <- .Call("int_to_adjacent_ranges", x, PACKAGE="Biostrings")
     if (use.names) ans_names <- names(x) else ans_names <- NULL
     new("IRanges", start=ans_start, width=x,
-                    names=ans_names, check=FALSE)
+                   names=ans_names, check=FALSE)
 }
 
 

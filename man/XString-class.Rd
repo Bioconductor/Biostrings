@@ -135,6 +135,8 @@
       A negative value for \code{start} or \code{end} is interpreted
       relatively to the end of \code{x} e.g. \code{start=-1} is equivalent
       to \code{start=length(x)}.
+      Finally, if \code{width} is not \code{NA}, then \code{start} and
+      \code{end} cannot be both \code{NA}s.
      
       A note about performance: \code{subseq} does NOT copy the sequence data,
       hence it's very efficient and is the recommended way to extract a
