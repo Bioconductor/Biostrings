@@ -42,7 +42,7 @@
   with a \link{DNAString} subject, or a \link{MaskedDNAString} object.
   Similarly we call "RNA input" an \link{RNAString} object,
   or an \link{RNAStringSet} object, or an \link{XStringViews} object
-  with an \link{RNAString} subject, or a \link{MaskedRNAStringSet} object.
+  with an \link{RNAString} subject, or a \link{MaskedRNAString} object.
 }
 
 \usage{
