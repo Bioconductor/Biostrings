@@ -22,7 +22,7 @@ pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, type = "glob
     These scores must either be represented by [0 - 99] integer vectors, character
     vectors, or \code{\link{BString}} objects. Characters are interpreted as [0 - 99]
     quality measures by subtracting 33 from their ASCII decimal representation
-    (e.g. ! = 0, " = 1, # = 2, ...). These two arguments are ignored if
+    (e.g. ! = 0, " = 1, \# = 2, ...). These two arguments are ignored if
     \code{!is.null(substitutionMatrix)}.}
   \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
   \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
