@@ -48,17 +48,16 @@
 
 \section{Introduction}
 
-In this document we illustrate import of FASTA files, simple alignments,
-and consensus matrix calculation.
+In this document we illustrate import of FASTA files, simple alignments, and
+consensus matrix calculation.
 
 \section{Data import}
 \label{fastaread}
 
-The \Rpackage{Biostrings} package includes FASTA files
-encoding the DNA sequence for
-Yeast chromosome I, along with some ORFs.
-Here we load the {\tt someORF.fa} file into a \Rclass{DNAStringSet} object
-by using the \Rfunction{read.DNAStringSet} function:
+The \Rpackage{Biostrings} package includes FASTA files encoding the DNA sequence
+for Yeast chromosome I, along with some ORFs. Here we load the {\tt someORF.fa}
+file into a \Rclass{DNAStringSet} object by using the \Rfunction{read.DNAStringSet}
+function:
 <<gety>>=
 library(Biostrings)
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
@@ -68,27 +67,63 @@ orf
 Note that some of the ORF sequences are represented in reverse complement form.
 
 
-\section{Alignments}
+\section{Optimal Pairwise Alignments}
 
-A very simple implementation of the Needleman-Wunsch global alignment
-algorithm is provided.  This takes space proportional to the square
-of the string length, uses a simple scalar gap penalty, and requires
-a substitution matrix appropriate for the alphabets from which
-the strings to be aligned are constructed.  Pattern alphabet concepts
-are not currently used.
+The function \Rfunction{pairwiseAlignment} solves the (Needleman-Wunsch) global,
+the (Smith-Waterman) local, and the overlap optimal pairwise alignment problems.
+The solution to each of these problems is dependent on the specified
+substitution scores and the gap penalties:
+
+\begin{itemize}
+  \item{Substitution Scores:  }
+  The substitution scores can either be fixed for each pairing of letters
+  within the two strings or be dependent on the qualities associated with those
+  letters. When the scores are fixed by pairing, the \Rfunarg{substituionMatrix}
+  argument takes a matrix with the appropriate alphabets as dimension names.
+  When the scores are quality-based, the \Rfunarg{quality1} and \Rfunarg{quality2}
+  arguments accept the equivalent of [0-99] numeric quality values for the respective
+  strings.
+  \item{Gap Penalties:  }
+  Gaps have the potential to incur a cost when they are introduced and when they
+  are extended in an optimal pairwise alignment. The former is regulated by the
+  \Rfunarg{gapOpening} argument and the latter by the \Rfunarg{gapExtension}
+  argument. For global alignments, end/terminal gaps can be ignored by setting
+  the \Rfunarg{endGap} argument to \texttt{FALSE}.
+\end{itemize}
+
+The \Rfunction{pairwiseAlignment} function uses memory and computation time
+proportional to the product of the two string lengths.
 
 The BLOSUM50 matrix is available in this package as a matrix:
 <<lkblo>>=
 data(BLOSUM50)
 BLOSUM50[1:4,1:4]
 @
-A canonical example from Durbin, Eddy et al:
+A comparison of the three optimal pairwise alignments problems from Haubold and Wiehe:
+<<haubold>>=
+s1 <- 
+  DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
+s2 <-
+  DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+
+mat <- matrix(-3, nrow = 4, ncol = 4)
+diag(mat) <- 1
+rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
+globalAlign <- pairwiseAlignment(s1, s2, substitutionMatrix = mat,
+  gapOpening = -5, gapExtension = -2)
+localAlign <- pairwiseAlignment(s1, s2, type = "local", substitutionMatrix = mat,
+  gapOpening = -5, gapExtension = -2)
+overlapAlign <- pairwiseAlignment(s1, s2, type = "overlap",
+  substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+@
+A canonical global optimal pairwise alignment example from Durbin, Eddy et al:
 <<runnw>>=
-nwdemo <- needwunsQS("PAWHEAE", "HEAGAWGHEE", BLOSUM50)
+nwdemo <- 
+  pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM50,
+                    gapOpening = 0, gapExtension = -8)
 nwdemo
 @
-The score (final element of dynamic programming
-score matrix) can be accessed:
+The score (final element of dynamic programming score matrix) can be accessed:
 <<lksc>>=
 score(nwdemo)
 @
@@ -96,18 +131,17 @@ score(nwdemo)
 
 \section{Computing alignment consensus matrices}
 
-The \Rfunction{consmat} function is provided for computing
-a consensus matrix for a set of equal-length strings
-assumed to be aligned.
-To illustrate, the following application assumes the ORF data
-to be aligned for the first 10 positions (patently false):
+The \Rfunction{consmat} function is provided for computing a consensus matrix
+for a set of equal-length strings assumed to be aligned. To illustrate, the
+following application assumes the ORF data to be aligned for the first 10
+positions (patently false):
 <<doal>>=
 orf10 <- DNAStringSet(orf, end=10)
 consmat(orf10)
 @
 
-The information content as defined by Hertz and Stormo 1995
-is computed as follows:
+The information content as defined by Hertz and Stormo 1995 is computed as
+follows:
 <<infco>>= 
 infContent <- function(Lmers) {
  zlog <- function(x) ifelse(x==0,0,log(x))

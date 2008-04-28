@@ -80,7 +80,8 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
 
 
   ## Amino acid global alignment
-  pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = "BLOSUM50")
+  pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = "BLOSUM50",
+                    gapOpening = 0, gapExtension = -8)
 }
 \keyword{models}
 \keyword{methods}

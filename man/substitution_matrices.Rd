@@ -35,7 +35,7 @@
 }
 
 \format{
-  A square symetric matrix with integer coefficients.
+  A square symmetric matrix with integer coefficients.
   The row and column names are identical and unique: each name
   is a single letter representing a nucleotide or an amino acid.
 }
@@ -47,10 +47,10 @@
   name is always BLOSUM62 and they provide no history or versioning mechanism!
   NCBI for example provides many matrices here ftp://ftp.ncbi.nih.gov/blast/matrices/
   but their definitions don't match those of the matrices bundled with their
-  standalone BLAST software available here ftp://ftp.ncbi.nih.gov/blast/
+  stand-alone BLAST software available here ftp://ftp.ncbi.nih.gov/blast/
 
   The BLOSUM45, BLOSUM62, BLOSUM80, PAM30 and PAM70 matrices were taken
-  from NCBI standalone BLAST software.
+  from NCBI stand-alone BLAST software.
 
   The BLOSUM50, BLOSUM100, PAM40, PAM120 and PAM250 matrices were taken
   from ftp://ftp.ncbi.nih.gov/blast/matrices/
@@ -59,7 +59,7 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link{needwunsQS}},
+  \code{\link{pairwiseAlignment}},
   \link{XStringAlign-class},
   \link{DNAString-class},
   \link{AAString-class}
@@ -69,13 +69,13 @@
   ## Align 2 amino acid sequences with the BLOSUM62 matrix
   aa1 <- AAString("HXBLVYMGCHFDCXVBEHIKQZ")
   aa2 <- AAString("QRNYMYCFQCISGNEYKQN")
-  needwunsQS(aa1, aa2, "BLOSUM62", gappen=3)
+  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = -3, gapExtension = -1)
 
   ## See how the gap penalty influences the alignment
-  needwunsQS(aa1, aa2, "BLOSUM62", gappen=8)
+  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = -6, gapExtension = -2)
 
   ## See how the substitution matrix influences the alignment
-  needwunsQS(aa1, aa2, "BLOSUM50", gappen=3)
+  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
 
   ## Compare our BLOSUM62 with BLOSUM62 from ftp://ftp.ncbi.nih.gov/blast/matrices/
   data(BLOSUM62)
@@ -88,4 +88,3 @@
 \keyword{utilities}
 \keyword{data}
 \keyword{datasets}
-

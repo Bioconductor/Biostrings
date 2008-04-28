@@ -101,6 +101,7 @@ print.needwunsQS <- function(x, ...)
 ### aligned versions of 's1' and 's2'.
 XString.needwunsQS <- function(s1, s2, substmat, gappen)
 {
+    .Deprecated("pairwiseAlignment")
     if (class(s1) != class(s2))
         stop("'s1' and 's2' are not of the same class")
     if (is.character(substmat)) {

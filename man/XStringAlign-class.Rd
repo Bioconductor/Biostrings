@@ -110,21 +110,17 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link{needwunsQS}},
+  \code{\link{pairwiseAlignment}},
   \link{XString-class}
 }
 
 \examples{
   s1 <- AAString("LAND")
   s2 <- AAString("LEAVES")
-  ## With the needwunsQS function, the cost of an insertion or deletion
-  ## is controlled by the gappen (gap penalty) arg, the cost of a replacement
-  ## is controlled by the "substitution matrix" passed thru the substmat
-  ## arg
-  nw1 <- needwunsQS(s1, s2, substmat="BLOSUM50", gappen=1)
+  nw1 <- pairwiseAlignment(s1, s2, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
   nw1
   length(nw1)
-  nw0 <- needwunsQS(s1, s2, substmat="BLOSUM50", gappen=0)
+  nw0 <- pairwiseAlignment(s1, s2, substitutionMatrix = "BLOSUM50", gapOpening = 0, gapExtension = 0)
   nw0
   length(nw0)
   ## Low gap penalties tend to produce longer alignments!

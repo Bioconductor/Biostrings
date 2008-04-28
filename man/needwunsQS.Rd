@@ -9,7 +9,7 @@
 \alias{alignScore.needwunsQS}
 \alias{alignScore}
 
-\title{Needleman-Wunsch Global Alignment}
+\title{(Deprecated) Needleman-Wunsch Global Alignment}
 \description{Simple gap implementation of Needleman-Wunsch global alignment algorithm.}
 \usage{
 needwunsQS(s1, s2, substmat, gappen = 8)
@@ -20,7 +20,9 @@ needwunsQS(s1, s2, substmat, gappen = 8)
   \item{gappen}{penalty for introducing a gap in the alignment.}
 }
 \details{
-follows specification of Durbin, Eddy, Krogh, Mitchison (1998).
+Follows specification of Durbin, Eddy, Krogh, Mitchison (1998).
+This function has been deprecated and is being replaced by
+\code{pairwiseAlignment}.
 }
 \value{
 An instance of class \code{"XStringAlign"}.
@@ -34,6 +36,10 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.}
   \link{substitution.matrices}
 }
 \examples{
+\dontrun{
+  ## This function has been deprecated
+  ## Use 'pairwiseAlignment' instead.
+
   ## nucleotide alignment
   mat <- matrix(-5L, nrow = 4, ncol = 4)
   for (i in seq_len(4)) mat[i, i] <- 0L
@@ -46,6 +52,7 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.}
 
   ## amino acid alignment
   needwunsQS("PAWHEAE", "HEAGAWGHEE", substmat = "BLOSUM50")
+}
 }
 \keyword{models}
 \keyword{methods}
