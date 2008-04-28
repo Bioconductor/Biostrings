@@ -17,12 +17,13 @@ pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, type = "glob
 }
 \arguments{
   \item{string1, string2}{a character vector of length 1 or an \code{\link{XString}} object.}
-  \item{quality1, quality2}{quality scores for \code{string1} and \code{string2}
+  \item{quality1, quality2}{respective quality scores for \code{string1} and \code{string2}
     that are used in a quality-based method for generating a substitution matrix.
     These scores must either be represented by [0 - 99] integer vectors, character
-    vectors, or \code{\link{BString}} objects. If integers are given, they are converted to
-    characters using the formula \code{rawToChar(as.raw(33L + quality))}. These arguments
-    are ignored if \code{!is.null(substitutionMatrix)}.}
+    vectors, or \code{\link{BString}} objects. Characters are interpreted as [0 - 99]
+    quality measures by subtracting 33 from their ASCII decimal representation
+    (e.g. ! = 0, " = 1, # = 2, ...). These two arguments are ignored if
+    \code{!is.null(substitutionMatrix)}.}
   \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
   \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
     use \code{substitutionMatrix} in conjunction with \code{quality1} and \code{quality2}
@@ -67,9 +68,9 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   globalAlign <-
     pairwiseAlignment(s1, s2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
   localAlign <-
-    pairwiseAlignment(s1, s2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2, type = "local")
+    pairwiseAlignment(s1, s2, type = "local", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
   overlapAlign <-
-    pairwiseAlignment(s1, s2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2, type = "overlap")
+    pairwiseAlignment(s1, s2, type = "overlap", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
 
   # Then use quality-based method for generating a substitution matrix
   pairwiseAlignment(s1, s2,
