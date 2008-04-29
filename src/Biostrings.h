@@ -902,22 +902,17 @@ int _is_matching(
 );
 
 SEXP is_matching(
-	SEXP pattern_XString,
-	SEXP subject_XString,
+	SEXP pattern,
+	SEXP subject,
 	SEXP start,
 	SEXP max_mismatch,
 	SEXP fixed
 );
 
-SEXP match_naive_exact(
-	SEXP pattern_XString,
-	SEXP subject_XString,
-	SEXP count_only
-);
-
-SEXP match_naive_inexact(
-	SEXP pattern_XString,
-	SEXP subject_XString,
+SEXP match_pattern(
+	SEXP pattern,
+	SEXP subject,
+	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP fixed,
 	SEXP count_only

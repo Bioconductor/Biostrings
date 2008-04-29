@@ -184,8 +184,7 @@ In 2.7
 
 - Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
   an XString argument. This reduces the number of args that need to be passed
-  and makes the code much cleaner. See match_naive_exact() and
-  match_naive_inexact() for an example.
+  and makes the code much cleaner. See match_pattern() for an example.
 
 - Update the CHANGES file.
 

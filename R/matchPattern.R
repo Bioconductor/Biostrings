@@ -90,13 +90,15 @@ gregexpr2 <- function(pattern, text)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "naive" methods
+### The "naive" algos.
+###
 
 ### Must return an integer vector.
 .match.naive.exact <- function(pattern, subject, count.only)
 {
-    .Call("match_naive_exact",
-          pattern, subject,
+    .Call("match_pattern",
+          pattern, subject, "naive-exact",
+          0L, c(TRUE, TRUE),
           count.only,
           PACKAGE="Biostrings")
 }
@@ -104,27 +106,17 @@ gregexpr2 <- function(pattern, text)
 ### Must return an integer vector.
 .match.naive.inexact <- function(pattern, subject, max.mismatch, fixed, count.only)
 {
-    ## We treat the edge-cases at the R level
-    p <- length(pattern)
-    if (p <= max.mismatch) {
-        if (count.only)
-            return(length(subject) + p - as.integer(1))
-        return((1-p):length(subject))
-    }
-    if (p > max.mismatch + length(subject)) {
-        if (count.only)
-            return(as.integer(0))
-        return(integer(0))
-    }
-    .Call("match_naive_inexact",
-          pattern, subject,
-          max.mismatch, fixed, count.only,
+    .Call("match_pattern",
+          pattern, subject, "naive-inexact",
+          max.mismatch, fixed,
+          count.only,
           PACKAGE="Biostrings")
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Boyer-Moore
+###
 
 ### Must return an integer vector.
 .match.boyermoore <- function(pattern, subject, count.only)

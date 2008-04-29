@@ -116,8 +116,7 @@ static const R_CallMethodDef callMethods[] = {
 /* match_naive.c */
 	{"debug_match_naive", (DL_FUNC) &debug_match_naive, 0},
 	{"is_matching", (DL_FUNC) &is_matching, 5},
-	{"match_naive_exact", (DL_FUNC) &match_naive_exact, 3},
-	{"match_naive_inexact", (DL_FUNC) &match_naive_inexact, 5},
+	{"match_pattern", (DL_FUNC) &match_pattern, 6},
 
 /* match_boyermoore.c */
 	{"debug_match_boyermoore", (DL_FUNC) &debug_match_boyermoore, 0},
