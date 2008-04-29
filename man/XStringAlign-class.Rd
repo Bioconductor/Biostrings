@@ -56,7 +56,7 @@
   operations that transforms s1 into s2. There are 3 different kinds of
   basic operations: "insertions" (gaps in align1), "deletions" (gaps in
   align2),  "replacements".
-  The above alignement represents the following basic operations:
+  The above alignment represents the following basic operations:
   \preformatted{
     insert E at pos 2
     insert V at pos 4
