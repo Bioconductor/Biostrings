@@ -56,8 +56,8 @@ FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
         stop("'subjectClass' must be a single string")
     if (!isSingleString(collapse))
         stop("'collapse' must be a single string")
-    src <- FASTArecordsToCharacter(FASTArecs)
-    XStringViews(src, subjectClass, collapse)
+    x <- FASTArecordsToCharacter(FASTArecs)
+    XStringViews(x, subjectClass, collapse)
 }
 
 XStringSetToFASTArecords <- function(x)

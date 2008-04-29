@@ -3,7 +3,13 @@
 ### -------------------------------------------------------------------------
 
 
-### The safe (and exported) version of "XString.substr". Not vectorized.
+### An attempt to have an substr() equivalent for XString objects with some
+### important differences though:
+###   - subBString() is NOT vectorized with respect to 'x'
+###   - the arguments have different names
+###   - there is one extra argument: the 'length' arg
+###   - NAs are valid starts, ends or lengths
+###   - using subBString() for replacement is not supported
 ### We deliberately choose the "NA trick" over defaulting 'start' and 'end'
 ### to '1' and 'length(x)' because we want to be consistent with the "views"
 ### function.

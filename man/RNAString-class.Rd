@@ -50,14 +50,14 @@
 
 \section{Constructor-like functions and generics}{
   In the code snippet below,
-  \code{src} can be a single string (character vector of length 1),
+  \code{x} can be a single string (character vector of length 1),
   a \link{BString} object or a \link{DNAString} object.
 
   \describe{
     \item{}{
-      \code{RNAString(src)}:
-      Tries to convert \code{src} into an RNAString object by reading
-      \code{nchar} letters starting at position \code{start} in \code{src}.
+      \code{RNAString(x, start=1, nchar=NA, check=TRUE)}:
+      Tries to convert \code{x} into an RNAString object by reading
+      \code{nchar} letters starting at position \code{start} in \code{x}.
     }
   }
 }

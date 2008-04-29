@@ -75,14 +75,14 @@
 
 \section{Constructor-like functions and generics}{
   In the code snippet below,
-  \code{src} can be a single string (character vector of length 1)
+  \code{x} can be a single string (character vector of length 1)
   or an XString object.
 
   \describe{
     \item{}{
-      \code{BString(src, start=1, nchar=NA)}:
-      Tries to convert \code{src} into a BString object by reading
-      \code{nchar} letters starting at position \code{start} in \code{src}.
+      \code{BString(x, start=1, nchar=NA, check=TRUE)}:
+      Tries to convert \code{x} into a BString object by reading
+      \code{nchar} letters starting at position \code{start} in \code{x}.
     }
   }
 }

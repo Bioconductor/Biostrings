@@ -92,8 +92,8 @@ adjacentViews <- function(subject, width, gapwidth=0)
 ### The "XStringViews" generic and methods.
 ###
 
-setGeneric("XStringViews", signature="src",
-    function(src, subjectClass, collapse="") standardGeneric("XStringViews")
+setGeneric("XStringViews", signature="x",
+    function(x, subjectClass, collapse="") standardGeneric("XStringViews")
 )
 
 ### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
@@ -101,9 +101,9 @@ setGeneric("XStringViews", signature="src",
 ###
 ### Benchmarks:
 ###   n <- 40000
-###   src <- sapply(1:n, function(i)
-###                      paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse=""))
-###   v <- XStringViews(src, "DNAString")
+###   x <- sapply(1:n, function(i)
+###                    paste(sample(DNA_ALPHABET, 250, replace=TRUE), collapse=""))
+###   v <- XStringViews(x, "DNAString")
 ### Comparing XStringViews() speed vs "old" vectorized DNAString() speed:
 ###       n  XStringViews  "old" DNAString
 ###   -----  ------------  ---------------
@@ -119,53 +119,51 @@ setGeneric("XStringViews", signature="src",
 ### like "character" vectors but break the dispatch mechanism.
 ### For example:
 ###   library(hgu95av2probe)
-###   src <- hgu95av2probe$sequence
-###   is.character(src) # TRUE
-###   is(src, "character") # FALSE
+###   x <- hgu95av2probe$sequence
+###   is.character(x) # TRUE
+###   is(x, "character") # FALSE
 ### Welcome to R object model mess!
 setMethod("XStringViews", "ANY",
-    function(src, subjectClass, collapse="")
+    function(x, subjectClass, collapse="")
     {
         if (!is.character(collapse))
             collapse <- toString(collapse)
-        seq <- paste(src, collapse=collapse)
+        seq <- paste(x, collapse=collapse)
         subject <- XString(subjectClass, seq)
-        ans <- adjacentViews(subject, nchar(src), nchar(collapse))
-        names(ans) <- names(src)
+        ans <- adjacentViews(subject, nchar(x), gapwidth=nchar(collapse))
+        names(ans) <- names(x)
         ans
     }
 )
 
-### Called when 'src' is an XString object.
 ### When not missing, 'subjectClass' must be the name of one of the direct
 ### XString subtypes i.e. "BString", "DNAString", "RNAString" or "AAString".
 setMethod("XStringViews", "XString",
-    function(src, subjectClass, collapse="")
+    function(x, subjectClass, collapse="")
     {
         if (!missing(collapse)) {
             ## The semantic is: views are delimited by the occurences of
-            ## 'collapse' in 'src' (a kind of strsplit() for XString objects).
+            ## 'collapse' in 'x' (a kind of strsplit() for XString objects).
             ## Uncomment when normalize() and ! method are ready (see TODO file):
             #return(!normalize(matchPattern(collapse, b, fixed=TRUE)))
-            stop("'collapse' not yet supported when 'src' is an XString object")
+            stop("'collapse' not yet supported when 'x' is an XString object")
         }
-        if (!missing(subjectClass) && subjectClass != class(src))
-            src <- XString(subjectClass, src)
-        new("XStringViews", src, start=1L, width=nchar(src), check=FALSE)
+        if (!missing(subjectClass) && subjectClass != class(x))
+            x <- XString(subjectClass, x)
+        new("XStringViews", x, start=1L, width=nchar(x), check=FALSE)
     }
 )
 
-### Called when 'src' is an XStringViews object.
 ### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
 ### "BString", "DNAString", "RNAString" or "AAString".
 ### The 'collapse' arg is ignored.
 setMethod("XStringViews", "XStringViews",
-    function(src, subjectClass, collapse="")
+    function(x, subjectClass, collapse="")
     {
         if (!missing(collapse))
-            stop("'collapse' not supported when 'src' is an XStringViews object")
-        src@subject <- XString(subjectClass, subject(src))
-        src
+            stop("'collapse' not supported when 'x' is an XStringViews object")
+        x@subject <- XString(subjectClass, subject(x))
+        x
     }
 )
 
@@ -236,7 +234,7 @@ setMethod("BStringViews", "file",
     function(src, subjectClass, collapse="")
     {
         .Deprecated("read.XStringViews")
-        read.XStringViews(src, "fasta", subjectClass, collapse)
+        read.XStringViews(src, "fasta", subjectClass, collapse=collapse)
     }
 )
 

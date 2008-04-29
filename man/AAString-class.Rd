@@ -47,14 +47,14 @@
 
 \section{Constructor-like functions and generics}{
   In the code snippet below,
-  \code{src} can be a single string (character vector of length 1)
+  \code{x} can be a single string (character vector of length 1)
   or a \link{BString} object.
 
   \describe{
     \item{}{
-      \code{AAString(src)}:
-      Tries to convert \code{src} into an AAString object by reading
-      \code{nchar} letters starting at position \code{start} in \code{src}.
+      \code{AAString(x, start=1, nchar=NA, check=TRUE)}:
+      Tries to convert \code{x} into an AAString object by reading
+      \code{nchar} letters starting at position \code{start} in \code{x}.
     }
   }
 }

@@ -278,8 +278,8 @@ AAString <- function(x, start=1, nchar=NA, check=TRUE)
 ###   1 <= start AND end <= length(x) AND start <= end + 1
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-### The safe (and exported) version of "XString.substr" is the "subXString"
-### function.
+### The safe (and exported) version of "XString.substr" is the "subseq"
+### method for XString objects below.
 ###
 
 XString.substr <- function(x, start, end)

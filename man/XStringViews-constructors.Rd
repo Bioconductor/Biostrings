@@ -33,7 +33,7 @@
 \usage{
   views(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
-  XStringViews(src, subjectClass, collapse="")
+  XStringViews(x, subjectClass, collapse="")
   trim(x, use.names=TRUE)
   subviews(x, start=NA, end=NA, width=NA, use.names=TRUE)
 }
@@ -54,8 +54,9 @@
   \item{gapwidth}{
     An integer vector containing the widths of the gaps between the views.
   }
-  \item{src}{
-    An \link{XString} object or a character vector.
+  \item{x}{
+    An \link{XString} object or a character vector for \code{XStringViews}.
+    An XStringViews object for \code{trim} and \code{subviews}.
   }
   \item{subjectClass}{
     The class to be given to the subject of the \link{XStringViews} object
@@ -67,9 +68,6 @@
   \item{collapse}{
     An optional character string to be inserted between the views of the
     \link{XStringViews} object created and returned by the function.
-  }
-  \item{x}{
-    [TODO]
   }
   \item{use.names}{
     [TODO]
@@ -87,16 +85,16 @@
   The first view starts at position 1.
 
   The \code{XStringViews} constructor will try to create an XStringViews
-  object from the value passed to its \code{src} argument.
-  If \code{src} itself is an XStringViews object, the returned
+  object from the value passed to its \code{x} argument.
+  If \code{x} itself is an XStringViews object, the returned
   object is obtained by coercing its subject to the class specified by
   \code{subjectClass}.
-  If \code{src} is an \link{XString} object, the returned object is made of
+  If \code{x} is an \link{XString} object, the returned object is made of
   a single view that starts at the first letter and ends at the last letter
-  of \code{src} (in addition \code{src} itself is coerced to the class
+  of \code{x} (in addition \code{x} itself is coerced to the class
   specified by \code{subjectClass} when specified).
-  If \code{src} is a character vector, the returned object has one view
-  per character string in \code{src} (and its subject is an instance of
+  If \code{x} is a character vector, the returned object has one view
+  per character string in \code{x} (and its subject is an instance of
   the class specified by \code{subjectClass}).
 }
 
@@ -106,7 +104,7 @@
   \code{max(length(start), length(end)} for the \code{views} function
   and \code{length(width)} for the \code{adjacentViews} function.
   For the \code{XStringViews} constructor, \code{length(y)} is \code{1}
-  when \code{src} is an \link{XString} object and \code{length(src)} otherwise.
+  when \code{x} is an \link{XString} object and \code{length(x)} otherwise.
 }
 
 \seealso{
