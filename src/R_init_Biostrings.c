@@ -118,14 +118,12 @@ static const R_CallMethodDef callMethods[] = {
 	{"is_matching", (DL_FUNC) &is_matching, 5},
 	{"match_pattern", (DL_FUNC) &match_pattern, 6},
 
-/* match_boyermoore.c */
-	{"debug_match_boyermoore", (DL_FUNC) &debug_match_boyermoore, 0},
-	{"match_boyermoore", (DL_FUNC) &match_boyermoore, 7},
+/* match_pattern_boyermoore.c */
+	{"debug_match_pattern_boyermoore", (DL_FUNC) &debug_match_pattern_boyermoore, 0},
 
-/* match_shiftor.c */
-	{"debug_match_shiftor", (DL_FUNC) &debug_match_shiftor, 0},
+/* match_pattern_shiftor.c */
+	{"debug_match_pattern_shiftor", (DL_FUNC) &debug_match_pattern_shiftor, 0},
 	{"bits_per_long", (DL_FUNC) &bits_per_long, 0},
-	{"match_shiftor", (DL_FUNC) &match_shiftor, 9},
 
 /* match_BOC.c */
 	{"debug_match_BOC", (DL_FUNC) &debug_match_BOC, 0},

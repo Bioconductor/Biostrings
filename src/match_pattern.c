@@ -218,12 +218,10 @@ SEXP match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 		match_naive_inexact(P, S, max_mm, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
 		match_naive_exact(P, S);
-/*
 	else if (strcmp(algo, "boyer-moore") == 0)
-		_match_boyer_moore(P, S, max_mm, fixedP, fixedS);
+		_match_pattern_boyermoore(P, S);
 	else if (strcmp(algo, "shift-or") == 0)
-		_match_shift_or(P, S, max_mm, fixedP, fixedS);
-*/
+		_match_pattern_shiftor(P, S, max_mm, fixedP, fixedS);
 	else
 		error("\"%s\": unknown algorithm", algo);
 	if (is_count_only)

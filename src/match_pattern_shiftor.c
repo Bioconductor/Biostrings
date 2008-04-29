@@ -87,13 +87,14 @@ int shiftor_maxbits = sizeof(ShiftOrWord_t) * CHAR_BIT;
 /****************************************************************************/
 static int debug = 0;
 
-SEXP debug_match_shiftor()
+SEXP debug_match_pattern_shiftor()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_shiftor.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'match_pattern_shiftor.c'\n",
+		debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'match_shiftor.c'\n");
+	Rprintf("Debug mode not available in 'match_pattern_shiftor.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -283,51 +284,13 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
 	return;
 }
 
-/*
- * Arguments:
- *   'p_xp': pattern@xdata@xp
- *   'p_offset': pattern@offset
- *   'p_length': pattern@length
- *   's_xp': subject@xdata@xp
- *   's_offset': subject@offset
- *   's_length': subject@length
- *   'max_mismatch': the number of mismatches (integer vector of length 1)
- *   'fixed': logical vector of length 2
- *   'count_only': single logical
- * Return an integer vector containing the relative pos of the matches.
- * All matches have the length of the pattern.
- */
-SEXP match_shiftor(SEXP p_xp, SEXP p_offset, SEXP p_length,
-		SEXP s_xp, SEXP s_offset, SEXP s_length,
-		SEXP max_mismatch, SEXP fixed, SEXP count_only)
+void _match_pattern_shiftor(RoSeq P, RoSeq S,
+		int max_mm, int fixedP, int fixedS)
 {
-	int pat_offset, pat_length, subj_offset, subj_length,
-	    kerr, fixedP, fixedS, is_count_only;
-	const Rbyte *pat, *subj;
-	SEXP ans;
-
-	pat_length = INTEGER(p_length)[0];
-	if (pat_length > shiftor_maxbits)
+	if (P.nelt > shiftor_maxbits)
 		error("pattern is too long");
-	pat_offset = INTEGER(p_offset)[0];
-	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
-	subj_length = INTEGER(s_length)[0];
-	subj_offset = INTEGER(s_offset)[0];
-	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
-	kerr = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	if (fixedP != fixedS)
-		error("fixedP != fixedS not yet supported");
-	is_count_only = LOGICAL(count_only)[0];
-
-	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	_match_shiftor((char *) pat, pat_length, (char *) subj, subj_length,
-		       kerr+1, fixedP);
-	if (is_count_only)
-		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
-	else
-		PROTECT(ans = _Biostrings_viewsbuf_start_asINTEGER());
-	UNPROTECT(1);
-	return ans;
+		error("fixedP != fixedS not supported by shift-or algo");
+	_match_shiftor(P.elts, P.nelt, S.elts, S.nelt, max_mm + 1, fixedP);
 }
+

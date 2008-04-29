@@ -919,37 +919,28 @@ SEXP match_pattern(
 );
 
 
-/* match_boyermoore.c */
+/* match_pattern_boyermoore.c */
 
-SEXP debug_match_boyermoore();
+SEXP debug_match_pattern_boyermoore();
 
-SEXP match_boyermoore(
-	SEXP p_xp,
-	SEXP p_offset,
-	SEXP p_length,
-	SEXP s_xp,
-	SEXP s_offset,
-	SEXP s_length,
-	SEXP count_only
+void _match_pattern_boyermoore(
+	RoSeq P,
+	RoSeq S
 );
 
 
-/* match_shiftor.c */
+/* match_pattern_shiftor.c */
 
-SEXP debug_match_shiftor();
+SEXP debug_match_pattern_shiftor();
 
 SEXP bits_per_long();
 
-SEXP match_shiftor(
-	SEXP p_xp,
-	SEXP p_offset,
-	SEXP p_length,
-	SEXP s_xp,
-	SEXP s_offset,
-	SEXP s_length,
-	SEXP max_mismatch,
-	SEXP fixed,
-	SEXP count_only
+void _match_pattern_shiftor(
+	RoSeq P,
+	RoSeq S,
+	int max_mm,
+	int fixedP,
+	int fixedS
 );
 
 

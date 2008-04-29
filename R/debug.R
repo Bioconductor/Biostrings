@@ -65,14 +65,14 @@ debug_match_pattern <- function()
     invisible(.Call("debug_match_pattern", PACKAGE="Biostrings"))
 }
 
-debug_match_boyermoore <- function()
+debug_match_pattern_boyermoore <- function()
 {
-    invisible(.Call("debug_match_boyermoore", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_pattern_boyermoore", PACKAGE="Biostrings"))
 }
 
-debug_match_shiftor <- function()
+debug_match_pattern_shiftor <- function()
 {
-    invisible(.Call("debug_match_shiftor", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_pattern_shiftor", PACKAGE="Biostrings"))
 }
 
 debug_find_palindromes <- function()

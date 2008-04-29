@@ -20,13 +20,14 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP debug_match_boyermoore()
+SEXP debug_match_pattern_boyermoore()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_boyermoore.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'match_pattern_boyermoore.c'\n",
+		debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'match_boyermoore.c'\n");
+	Rprintf("Debug mode not available in 'match_pattern_boyermoore.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -365,34 +366,33 @@ static void init_MWshift_table()
 	} \
 }
 
-/* Return the number of matches */
-static void boyermoore(const char *P, int nP, const char *S, int nS)
+void _match_pattern_boyermoore(RoSeq P, RoSeq S)
 {
 	int n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Prmc, c; /* Prmc is P right-most char */
 
-	if (nP <= 0)
+	if (P.nelt <= 0)
 		error("empty pattern");
-	init_P0buffer(P, nP);
+	init_P0buffer(P.elts, P.nelt);
 	init_j0shift0();
 	init_VSGSshift_table();
-	if (nP <= MWSHIFT_NPMAX)
+	if (P.nelt <= MWSHIFT_NPMAX)
 		init_MWshift_table();
-	Prmc = P[nP-1];
-	n = nP - 1;
+	Prmc = P.elts[P.nelt - 1];
+	n = P.nelt - 1;
 	j2 = 0;
-	while (n < nS) {
+	while (n < S.nelt) {
 		if (j2 == 0) {
 			/* No Matching Window yet, we need to find one */
-			c = S[n];
+			c = S.elts[n];
 			if (c != Prmc) {
-				shift = get_VSGSshift(c, nP-1);
+				shift = get_VSGSshift(c, P.nelt - 1);
 				n += shift;
 				continue;
 			}
 			i1 = n;
 			i2 = i1 + 1;
-			j2 = nP;
+			j2 = P.nelt;
 			j1 = j2 - 1;
 			/* Now we have a Matching Window (1-letter suffix) */
 		}
@@ -400,18 +400,18 @@ static void boyermoore(const char *P, int nP, const char *S, int nS)
 		if (j1 > 0) {
 			/* ... to the left */
 			for (i = i1-1, j = j1-1; j >= 0; i--, j--)
-				if ((c = S[i]) != P[j])
+				if ((c = S.elts[i]) != P.elts[j])
 					break;
 			i1 = i + 1;
 			j1 = j + 1;
 		}
-		if (j2 < nP) {
+		if (j2 < P.nelt) {
 			/* ... to the right */
-			for ( ; j2 < nP; i2++, j2++)
-				if (S[i2] != P[j2])
+			for ( ; j2 < P.nelt; i2++, j2++)
+				if (S.elts[i2] != P.elts[j2])
 					break;
 		}
-		if (j2 == nP) { /* the Matching Window is a suffix */
+		if (j2 == P.nelt) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
 				_Biostrings_report_match(i1, 0);
@@ -421,15 +421,15 @@ static void boyermoore(const char *P, int nP, const char *S, int nS)
 			}
 		} else {
 			shift = get_MWshift(j1, j2);
-			c = S[n];
+			c = S.elts[n];
 			if (c != Prmc) {
-				shift1 = get_VSGSshift(c, nP-1);
+				shift1 = get_VSGSshift(c, P.nelt - 1);
 				if (shift1 > shift)
 					shift = shift1;
 			}
 		}
 		n += shift;
-		if (nP <= MWSHIFT_NPMAX) {
+		if (P.nelt <= MWSHIFT_NPMAX) {
 			ADJUST_MW(i1, j1, shift)
 			ADJUST_MW(i2, j2, shift)
 		} else {
@@ -439,28 +439,3 @@ static void boyermoore(const char *P, int nP, const char *S, int nS)
 	return;
 }
 
-SEXP match_boyermoore(SEXP p_xp, SEXP p_offset, SEXP p_length,
-		SEXP s_xp, SEXP s_offset, SEXP s_length,
-		SEXP count_only)
-{
-	int pat_offset, pat_length, subj_offset, subj_length, is_count_only;
-	const Rbyte *pat, *subj;
-	SEXP ans;
-
-	pat_offset = INTEGER(p_offset)[0];
-	pat_length = INTEGER(p_length)[0];
-	pat = RAW(R_ExternalPtrTag(p_xp)) + pat_offset;
-	subj_offset = INTEGER(s_offset)[0];
-	subj_length = INTEGER(s_length)[0];
-	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
-	is_count_only = LOGICAL(count_only)[0];
-
-	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	boyermoore((char *) pat, pat_length, (char *) subj, subj_length);
-	if (is_count_only)
-		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
-	else
-		PROTECT(ans = _Biostrings_viewsbuf_start_asINTEGER());
-	UNPROTECT(1);
-	return ans;
-}

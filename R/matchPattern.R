@@ -90,79 +90,6 @@ gregexpr2 <- function(pattern, text)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "naive" algos.
-###
-
-### Must return an integer vector.
-.match.naive.exact <- function(pattern, subject, count.only)
-{
-    .Call("match_pattern",
-          pattern, subject, "naive-exact",
-          0L, c(TRUE, TRUE),
-          count.only,
-          PACKAGE="Biostrings")
-}
-
-### Must return an integer vector.
-.match.naive.inexact <- function(pattern, subject, max.mismatch, fixed, count.only)
-{
-    .Call("match_pattern",
-          pattern, subject, "naive-inexact",
-          max.mismatch, fixed,
-          count.only,
-          PACKAGE="Biostrings")
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Boyer-Moore
-###
-
-### Must return an integer vector.
-.match.boyermoore <- function(pattern, subject, count.only)
-{
-    ## We treat the edge-cases at the R level
-    p <- length(pattern)
-    if (p > length(subject)) {
-        if (count.only)
-            return(as.integer(0))
-        return(integer(0))
-    }
-    .Call("match_boyermoore",
-          pattern@xdata@xp, pattern@offset, pattern@length,
-          subject@xdata@xp, subject@offset, subject@length,
-          count.only,
-          PACKAGE="Biostrings")
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### shift-or
-
-### Must return an integer vector.
-.match.shiftor <- function(pattern, subject, max.mismatch, fixed, count.only)
-{
-    ## We treat the edge-cases at the R level
-    p <- length(pattern)
-    if (p <= max.mismatch) {
-        if (count.only)
-            return(length(subject) + p - as.integer(1))
-        return((1-p):length(subject))
-    }
-    if (p > max.mismatch + length(subject)) {
-        if (count.only)
-            return(as.integer(0))
-        return(integer(0))
-    }
-    .Call("match_shiftor",
-          pattern@xdata@xp, pattern@offset, pattern@length,
-          subject@xdata@xp, subject@offset, subject@length,
-          max.mismatch, fixed, count.only,
-          PACKAGE="Biostrings")
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .matchPattern()
 ###
 
@@ -192,6 +119,28 @@ gregexpr2 <- function(pattern, text)
     }
     c(algos, "naive-inexact") # "naive-inexact" is universal but slow
 }
+
+### Must return an integer vector.
+.matchPattern.exact <- function(pattern, subject, algo, count.only)
+{
+    .Call("match_pattern",
+          pattern, subject, algo,
+          0L, c(TRUE, TRUE),
+          count.only,
+          PACKAGE="Biostrings")
+}
+
+### Must return an integer vector.
+.matchPattern.inexact <- function(pattern, subject, algo,
+                                  max.mismatch, fixed, count.only)
+{
+    .Call("match_pattern",
+          pattern, subject, algo,
+          max.mismatch, fixed,
+          count.only,
+          PACKAGE="Biostrings")
+}
+
 
 .matchPattern <- function(pattern, subject, algorithm, max.mismatch, fixed,
                           count.only=FALSE)
@@ -234,12 +183,12 @@ gregexpr2 <- function(pattern, text)
     matches <- switch(algo,
         "gregexpr"=.match.gregexpr(pattern, subject, count.only),
         "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
-        "naive-exact"=.match.naive.exact(pattern, subject, count.only),
-        "naive-inexact"=.match.naive.inexact(pattern, subject, max.mismatch, fixed,
-                                         count.only),
-        "boyer-moore"=.match.boyermoore(pattern, subject, count.only),
-        "shift-or"=.match.shiftor(pattern, subject, max.mismatch, fixed,
-                                  count.only)
+        "naive-exact"=.matchPattern.exact(pattern, subject, algo, count.only),
+        "naive-inexact"=.matchPattern.inexact(pattern, subject, algo,
+                                              max.mismatch, fixed, count.only),
+        "boyer-moore"=.matchPattern.exact(pattern, subject, algo, count.only),
+        "shift-or"=.matchPattern.inexact(pattern, subject, algo,
+                                         max.mismatch, fixed, count.only)
     )
     if (count.only)
         return(matches)
