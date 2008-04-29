@@ -60,9 +60,9 @@ debug_views_buffer <- function()
     invisible(.Call("debug_views_buffer", PACKAGE="Biostrings"))
 }
 
-debug_match_naive <- function()
+debug_match_pattern <- function()
 {
-    invisible(.Call("debug_match_naive", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_pattern", PACKAGE="Biostrings"))
 }
 
 debug_match_boyermoore <- function()

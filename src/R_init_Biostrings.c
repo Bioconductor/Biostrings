@@ -113,8 +113,8 @@ static const R_CallMethodDef callMethods[] = {
 /* normalize_views.c */
 	{"Biostrings_normalize_views", (DL_FUNC) &Biostrings_normalize_views, 2},
 
-/* match_naive.c */
-	{"debug_match_naive", (DL_FUNC) &debug_match_naive, 0},
+/* match_pattern.c */
+	{"debug_match_pattern", (DL_FUNC) &debug_match_pattern, 0},
 	{"is_matching", (DL_FUNC) &is_matching, 5},
 	{"match_pattern", (DL_FUNC) &match_pattern, 6},
 

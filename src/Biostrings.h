@@ -888,9 +888,9 @@ SEXP Biostrings_normalize_views(
 );
 
 
-/* match_naive.c */
+/* match_pattern.c */
 
-SEXP debug_match_naive();
+SEXP debug_match_pattern();
 
 int _is_matching(
 	RoSeq P,

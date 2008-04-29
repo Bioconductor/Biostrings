@@ -12,14 +12,14 @@
 /****************************************************************************/
 static int debug = 0;
 
-SEXP debug_match_naive()
+SEXP debug_match_pattern()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_naive.c'\n",
+	Rprintf("Debug mode turned %s in 'match_pattern.c'\n",
                  debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'match_naive.c'\n");
+	Rprintf("Debug mode not available in 'match_pattern.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -46,7 +46,7 @@ SEXP debug_match_naive()
  */
 
 /* Return the number of matches */
-static void _match_naive_exact(RoSeq P, RoSeq S)
+static void match_naive_exact(RoSeq P, RoSeq S)
 {
 	int n1, n2;
 
@@ -131,7 +131,7 @@ int _is_matching(RoSeq P, RoSeq S, int Pshift, int max_mm,
 	return -1;
 }
 
-static void _match_naive_inexact(RoSeq P, RoSeq S,
+static void match_naive_inexact(RoSeq P, RoSeq S,
 		int max_mm, int fixedP, int fixedS)
 {
 	int n1, // position of pattern left-most char relative to the subject
@@ -215,9 +215,9 @@ SEXP match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	if (P.nelt > max_mm + S.nelt)
 		;
 	else if (P.nelt <= max_mm || strcmp(algo, "naive-inexact") == 0)
-		_match_naive_inexact(P, S, max_mm, fixedP, fixedS);
+		match_naive_inexact(P, S, max_mm, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
-		_match_naive_exact(P, S);
+		match_naive_exact(P, S);
 /*
 	else if (strcmp(algo, "boyer-moore") == 0)
 		_match_boyer_moore(P, S, max_mm, fixedP, fixedS);
