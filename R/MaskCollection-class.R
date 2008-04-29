@@ -100,6 +100,17 @@ setValidity("MaskCollection",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The safe and user-friendly "Mask" constructor.
+###
+
+Mask <- function(mask.width, start=NULL, end=NULL, width=NULL)
+{
+    nir <- asNormalIRanges(IRanges(start=start, end=end, width=width))
+    new("MaskCollection", nirlist=list(nir), width=numeric2integer(mask.width))
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "isEmpty" methods.
 ###
 
@@ -226,10 +237,14 @@ setReplaceMethod("[", "MaskCollection",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "append" method.
+### The "append" generic and method.
 ###
 
-setMethod("append", signature(x="MaskCollection"),
+#setGeneric("append", signature="x",
+#    function(x, values, after=length(x)) standardGeneric("append")
+#)
+
+setMethod("append", "MaskCollection",
     function(x, values, after=length(x))
     {
         if (!is(values, "MaskCollection"))

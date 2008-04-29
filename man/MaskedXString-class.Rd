@@ -81,31 +81,46 @@
 }
 
 \examples{
-  ## masking "by position"
-  #mask("AxyxyxBC", 2, 6)
+  ## -------------------------------------------------------------------------
+  ## A. MASKING BY POSITION
+  ## -------------------------------------------------------------------------
 
-  ## masking "by content"
-  #mask("AxyxyxBC", "xyx")
+  mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))
+  x <- DNAString("ACTCAAACTAGGATAGNACTTNNCCAGGC")
+  masks(x) <- mask0
+  x
+  gaps(x)
 
-  ## masking the N's in a chromosome sequence
-  #library(BSgenome.Dmelanogaster.FlyBase.r51)
-  #chrU <- Dmelanogaster[["U"]]
-  #alphabetFrequency(chrU)
-  #noN_chrU <- mask(chrU, "N")
-  #alphabetFrequency(noN_chrU)
+  ## -------------------------------------------------------------------------
+  ## B. MASKING BY CONTENT
+  ## -------------------------------------------------------------------------
 
-  ## masking a BStringViews object
-  #mask(noN_chrU)
-  #v <- views("AxyxyxBC", c(6, 4,-1, NA), c(7, 6, 1, 1))
-  #mask(v)
+  masks(x) <- "N"
+  x
+  as(x, "XStringViews")
+  gaps(x)
+  as(gaps(x), "XStringViews")
 
-  ## note that applying mask() again returns a BStringViews object
-  ## where the original views on v have been merged, sorted from left to right
-  ## and cleaned from their "out of limits" regions
-  #mask(mask(v))
+  library(BSgenome.Dmelanogaster.FlyBase.r51)
+  chrU <- Dmelanogaster[["U"]]
+  chrU
+  alphabetFrequency(chrU)
+  masks(chrU) <- "N"
+  chrU
+  alphabetFrequency(chrU)
+  as(chrU, "XStringViews")
+  as(gaps(chrU), "XStringViews")
 
-  ## finally, note that mask(mask(mask(v))) is _always_ the same as mask(v)
-  #mask(mask(mask(v)))
+  ## -------------------------------------------------------------------------
+  ## C. MASKING WITH MORE THAN ONE MASK
+  ## -------------------------------------------------------------------------
+
+  mask2 <- Mask(mask.width=length(chrU), start=c(50000, 350000, 543900), width=25000)
+  names(mask2) <- "some ugly regions"
+  masks(chrU) <- append(masks(chrU), mask2)
+  chrU
+  as(chrU, "XStringViews")
+  as(gaps(chrU), "XStringViews")
 }
 
 \keyword{methods}

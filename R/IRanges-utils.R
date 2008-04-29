@@ -197,7 +197,7 @@ toNormalIRanges <- function(x)
     x1 <- as(x, "IRanges") # downgrade
     x2 <- reduce(x1)
     x3 <- x2[width(x2) != 0]
-    as.NormalIRanges(x3, check=FALSE)
+    asNormalIRanges(x3, check=FALSE)
 }
 
 

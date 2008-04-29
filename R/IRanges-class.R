@@ -287,6 +287,62 @@ newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The safe and user-friendly "IRanges" constructor.
+###
+
+.IRanges.normalize.start_end_width <- function(start_end_width, argname)
+{
+    if (is.null(start_end_width))
+        return(start_end_width)
+    if (!is.numeric(start_end_width))
+        stop("'", argname, "' must be a numeric vector (or NULL)")
+#    if (length(start_end_width) == 0)
+#        stop("'", argname, "' must contain at least one integer value")
+    if (!is.integer(start_end_width))
+        start_end_width <- as.integer(start_end_width)
+    if (any(is.na(start_end_width)))
+        stop("'", argname,, "' cannot contain NAs")
+    start_end_width
+}
+
+IRanges <- function(start=NULL, end=NULL, width=NULL)
+{
+    start <- .IRanges.normalize.start_end_width(start, "start")
+    end <- .IRanges.normalize.start_end_width(end, "end")
+    width <- .IRanges.normalize.start_end_width(width, "width")
+    if (sum(!c(is.null(start), is.null(end), is.null(width))) != 2)
+        stop("exactly two of the 'start', 'end' and 'width' arguments must be specified")
+    if (is.null(width)) { 
+        if (length(start) != length(end))
+            stop("'start' and 'end' must have the same length")
+        if (length(start) != 0)
+            width <- end - start + 1L
+        else
+            width <- integer(0)
+    } else if (is.null(start)) {
+        if (length(width) > length(end))
+            stop("'width' has more elements than 'end'")
+        if (length(width) != 0)
+            start <- end - width + 1L
+        else if (length(end) == 0)
+            start <- integer(0)
+        else
+            stop("cannot recycle zero length 'width'")
+    } else {
+        if (length(width) > length(start))
+            stop("'width' has more elements than 'start'")
+        if (length(width) < length(start)) {
+            if (length(width) != 0)
+                width <- rep(width, length.out=length(start))
+            else
+                stop("cannot recycle zero length 'width'")
+        }
+    }
+    new("IRanges", start=start, width=width)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###
 ### We cannot rely on the implicit "coerce" methods for coercing an arbitrary
@@ -296,13 +352,13 @@ newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 ###
 
 ### NOT exported and unsafe: 'from' MUST be an IRanges object.
-as.NormalIRanges <- function(from, check=TRUE)
+asNormalIRanges <- function(from, check=TRUE)
 {
     new("NormalIRanges", start=start(from), width=width(from),
                          names=names(from), check=check)
 }
 
-.as.NormalIRanges <- function(from) as.NormalIRanges(from, check=TRUE)
+.asNormalIRanges <- function(from) asNormalIRanges(from, check=TRUE)
 
 ### No, defining the IRanges->NormalIRanges "coerce" method is not enough and
 ### we also need to define the other methods! Otherwise a silly implicit
@@ -310,10 +366,10 @@ as.NormalIRanges <- function(from, check=TRUE)
 ### UnlockedIRanges, Views or LockedIRanges object. Yes, this is another S4
 ### "feature":
 ###   https://stat.ethz.ch/pipermail/r-devel/2008-April/049027.html
-setAs("IRanges", "NormalIRanges", .as.NormalIRanges)
-setAs("UnlockedIRanges", "NormalIRanges", .as.NormalIRanges)
-setAs("Views", "NormalIRanges", .as.NormalIRanges)
-setAs("LockedIRanges", "NormalIRanges", .as.NormalIRanges)
+setAs("IRanges", "NormalIRanges", .asNormalIRanges)
+setAs("UnlockedIRanges", "NormalIRanges", .asNormalIRanges)
+setAs("Views", "NormalIRanges", .asNormalIRanges)
+setAs("LockedIRanges", "NormalIRanges", .asNormalIRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

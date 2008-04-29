@@ -42,6 +42,9 @@
 \alias{initialize,Views-method}
 \alias{initialize,NormalIRanges-method}
 
+% Constructor:
+\alias{IRanges}
+
 % Coercion:
 \alias{coerce,IRanges,NormalIRanges-method}
 \alias{coerce,UnlockedIRanges,NormalIRanges-method}
@@ -169,6 +172,25 @@
     \item{}{
       \code{desc(x)}:
       \code{desc} is an alias for \code{names}.
+    }
+  }
+}
+
+\section{Constructor}{
+  \describe{
+    \item{}{
+      \code{IRanges(start=NULL, end=NULL, width=NULL)}:
+      Return the IRanges object containing the ranges specified by \code{start},
+      \code{end} and \code{width}.
+      Exactly two of the \code{start}, \code{end} and \code{width}
+      arguments must be specified as integer vectors (with no \code{NA}s)
+      and the other argument must be \code{NULL}.
+      If \code{start} and \code{end} are specified, then they must be
+      vectors of the same length.
+      If \code{start} and \code{width} (or \code{end} and \code{width})
+      are specified, then the length of \code{width} must be <= to the
+      length of \code{start} and, if it is <, then \code{width} is expanded
+      cyclically to the length of \code{start}.
     }
   }
 }
@@ -308,7 +330,7 @@
 }
 
 \examples{
-  x <- new("IRanges", start=c(2:-1, 13:15), width=c(0:3, 2:0))
+  x <- IRanges(start=c(2:-1, 13:15), width=c(0:3, 2:0))
   x
   length(x)
   start(x)
@@ -357,7 +379,7 @@
   range_starts <- sort(sample(end-W+1L, N))
   range_widths <- rep.int(W, N)
   ## Instantiation is faster
-  system.time(x <- new("IRanges", start=range_starts, width=range_widths))
+  system.time(x <- IRanges(start=range_starts, width=range_widths))
   system.time(y <- data.frame(start=range_starts, width=range_widths))
   ## Subsetting is faster
   system.time(x16 <- x[c(TRUE, rep.int(FALSE, 15))])

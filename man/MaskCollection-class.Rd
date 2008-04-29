@@ -14,6 +14,9 @@
 \alias{names,MaskCollection-method}
 \alias{names<-,MaskCollection-method}
 
+% Constructor:
+\alias{Mask}
+
 % Other methods:
 \alias{isEmpty,MaskCollection-method}
 \alias{max,MaskCollection-method}
@@ -97,6 +100,20 @@
       \code{nirlist(x)}:
       A list of the same length as \code{x}, where each element is
       a \link{NormalIRanges} object representing a mask in \code{x}.
+    }
+  }
+}
+
+\section{Constructor}{
+  \describe{
+    \item{}{
+      \code{Mask(mask.width, start=NULL, end=NULL, width=NULL)}:
+      Return a single mask (i.e. a MaskCollection object of length 1)
+      of width \code{mask.width} (a single integer >= 1)
+      and masking the ranges of positions specified by \code{start},
+      \code{end} and \code{width}.
+      See the \code{\link{IRanges}} constructor (\code{?\link{IRanges}})
+      for how \code{start}, \code{end} and \code{width} can be specified.
     }
   }
 }
@@ -185,16 +202,16 @@
 
 \examples{
   ### Making a MaskCollection object:
-  nir1 <- new("NormalIRanges", start=c(11, 25, 28), width=c(5, 2, 2))
-  nir2 <- new("NormalIRanges", start=c(3, 10, 27), width=c(5, 8, 1))
-  nir3 <- new("NormalIRanges", start=c(7, 12), width=c(2, 4))
-  mymasks <- new("MaskCollection", nirlist=list(nir1, nir2, nir3), width=29L)
+  mask1 <- Mask(mask.width=29, start=c(11, 25, 28), width=c(5, 2, 2))
+  mask2 <- Mask(mask.width=29, start=c(3, 10, 27), width=c(5, 8, 1))
+  mask3 <- Mask(mask.width=29, start=c(7, 12), width=c(2, 4))
+  mymasks <- append(append(mask1, mask2), mask3)
   mymasks
   length(mymasks)
   width(mymasks)
 
   ### Putting a MaskCollection object on a sequence:
-  x <- DNAString("ACTCAAACTAGGATAGNACTTAACCAGGC")
+  x <- DNAString("ACTCAAACTAGGATAGNACTTNNCCAGGC")
   x
   length(x)  # same as width(mymasks)
   nchar(x)   # same as length(x)
