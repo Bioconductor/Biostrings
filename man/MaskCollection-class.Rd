@@ -61,7 +61,7 @@
   or \code{\link{matchPattern}} on a chromosome sequence, you might want
   to exclude some regions like the centromere or the repeat regions.
   This can be achieved by putting one or several masks on the sequence
-  before \code{\link{alphabetFrequency}} is called on it.
+  before calling \code{\link{alphabetFrequency}} on it.
 
   A MaskCollection object is a vector-like object that represents
   such set of masks.
@@ -201,7 +201,7 @@
 }
 
 \examples{
-  ### Making a MaskCollection object:
+  ## Making a MaskCollection object:
   mask1 <- Mask(mask.width=29, start=c(11, 25, 28), width=c(5, 2, 2))
   mask2 <- Mask(mask.width=29, start=c(3, 10, 27), width=c(5, 8, 1))
   mask3 <- Mask(mask.width=29, start=c(7, 12), width=c(2, 4))
@@ -210,7 +210,7 @@
   length(mymasks)
   width(mymasks)
 
-  ### Putting a MaskCollection object on a sequence:
+  ## Putting a MaskCollection object on a sequence:
   x <- DNAString("ACTCAAACTAGGATAGNACTTNNCCAGGC")
   x
   length(x)  # same as width(mymasks)
@@ -221,12 +221,12 @@
   nchar(x)   # has changed
   alphabetFrequency(x)
 
-  ### Removing the masks:
+  ## Removing the masks:
   masks(x) <- NULL
   x
   alphabetFrequency(x)
 
-  ### Some operations on the MaskCollection object itself:
+  ## Some operations on the MaskCollection object itself:
   reduce(mymasks)
   mymasks[[2]]
   length(mymasks[[2]])
