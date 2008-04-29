@@ -49,7 +49,7 @@ In 2.7
     o Add "==" method for XStringSet objects.
 
 - Add 'baseOnly' arg to consmat(). Rework the implementation (currently
-  totally inefficient). Another approach to providing consmat()'s functionality
+  very inefficient). Another approach to providing consmat()'s functionality
   could be to add a 'bycol' (or by 'byCycle', or 'byPos") argument to
   alphabetFrequency(). When 'x' is an XStringSet object,
   alphabetFrequency(x, byCycle=TRUE) would return what Martin's
@@ -126,12 +126,13 @@ In 2.7
     subsets of matches of each input pattern. Of course, 2 matches are
     considered equal if their start/end are the same.
 
-  o Make matchPDict() work on masked sequences. This is in fact an important use
-    case for combining MIndex objects (see above).
+  o Make matchPDict() work on XStringViews and MaskedXString objects. This is
+    in fact an important use case for combining MIndex objects (see above).
 
   o Make reverseComplement() work on a PDict object.
 
-  o GenomeSearching.Rnw vignette: add section about inexact matching with matchPDict
+  o GenomeSearching.Rnw vignette: add section about inexact matching with
+    matchPDict().
 
   o Compare with other software for fast alignement and assembly:
       Vmatch (http://www.vmatch.de/)
@@ -168,15 +169,6 @@ In 2.7
   could be renamed (or maybe it's not needed at all, maybe a fancy
   new("IRanges", ...) could replace it).
 
-- Add the MaskedXString class (and family) by extending the XString class and
-  adding a @mask slot of class NormalIRanges.
-  Add "unmask" generic with method for MaskedXString objects.
-  Important: don't forget to overwrite the following methods:
-    "nchar" for MaskedXString must return the number of non-masked letters.
-    "show" for MaskedXString must display #'s in place of masked letters.
-    "alphabetFrequency" for MaskedXString must take the mask into account.
-  Find all other methods that need to be overwritten and redefine them.
-
 - readFASTA(): set the default for strip.desc to TRUE (with a warning when
   strip.desc is missing). This was already done in svn trunk/release a few
   weeks ago (October 2007) and rolled back on Robert's request. Now Robert
@@ -198,6 +190,22 @@ In 2.7
   with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
   internal code.
 
+- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
+  an XString argument. This reduces the number of args that need to be passed
+  and makes the code much cleaner. See match_naive_exact() and
+  match_naive_inexact() for an example.
+
+- Update the CHANGES file.
+
+
+In 2.9
+======
+
+- Compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
+  make sure no important feature has been lost.
+
+- Remove the Biostrings 1 subdir.
+
 - Look at apse.c in R/src/main for Levenshtein. It's coming from
     http://search.cpan.org/dist/String-Approx/
   and is what Perl and Python are using.
@@ -206,10 +214,10 @@ In 2.7
   we're going to use it on the millions of tails of a "trusted prefix"
   dictionary.
 
-- Remove the Biostrings 1 subdir.
-
 - Change signature of matchPattern() (and of friends too, maybe): add a
   'min.mismatch' arg.
+
+- Have the "XStringViews" method for XString objects support the 'collapse' arg.
 
 - Maybe: add a specific containers for results returned by matchPattern
   (and family). Would derive from the XStringViews class with at least one
@@ -217,13 +225,7 @@ In 2.7
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
-  an XString argument. This reduces the number of args that need to be passed
-  and makes the code much cleaner. See match_naive_exact() and
-  match_naive_inexact() for an example.
-
-- Make alphabetFrequency works with XStringViews objects with
-  "out of limits" views.
+- readFASTA(): remove warning when strip.desc is missing.
 
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
   alignment algo) into Biostrings.
@@ -233,30 +235,13 @@ In 2.7
   so, what the differences are between the packages (also some notion of speed
   and size, how well do they work on different inputs)".
 
-- Have the XStringViews() method for XString objects support the 'sep' arg.
 
-- Test Raphael use case with built-in string functions and compare speed
-  with Biostrings solution. Add the conclusions to the matchPattern.Rnw
-  vignette.
+Later
+=====
 
 - Why doesn't sapply or lapply work for an XStringViews object (it didn't
   work either for BioString objects). Isn't it enough that these objects
   are subsettable?
-
-- Compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
-  make sure no important feature has been lost.
-
-- Update the CHANGES file.
-
-
-In 2.9
-======
-
-- readFASTA(): remove warning when strip.desc is missing.
-
-
-Later
-=====
 
 - Restore the test units.
 
