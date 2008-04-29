@@ -9,7 +9,7 @@ contain one or more sequences, for each sequence there is a description
 line which begins with a \code{>}.
 }
 \usage{
-  readFASTA(file, checkComments=TRUE, strip.desc=FALSE)
+  readFASTA(file, checkComments=TRUE, strip.desc=TRUE)
   writeFASTA(x, file="", width=80)
 }
 \arguments{
@@ -26,7 +26,9 @@ line which begins with a \code{>}.
   }
   \item{strip.desc}{
     Whether or not the ">" marking the beginning of the description
-    lines should be removed or not.
+    lines should be removed. Note that this argument is new
+    in Biostrings >= 2.8. In previous versions \code{readFASTA}
+    was keeping the ">".
   }
   \item{x}{
     A list as one returned by \code{readFASTA}.

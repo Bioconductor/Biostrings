@@ -169,14 +169,6 @@ In 2.7
   could be renamed (or maybe it's not needed at all, maybe a fancy
   new("IRanges", ...) could replace it).
 
-- readFASTA(): set the default for strip.desc to TRUE (with a warning when
-  strip.desc is missing). This was already done in svn trunk/release a few
-  weeks ago (October 2007) and rolled back on Robert's request. Now Robert
-  seems to be ready for this change but wants Nolwenn to be personally notified
-  about it (so she can fix her code using readFASTA()). Make this change in
-  trunk only (too late for release). Remove the warning after the BioC 2.2
-  release.
-
 - Add "unique" method for IRanges objects.
 
 - Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
