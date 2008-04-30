@@ -148,6 +148,24 @@ static void match_naive_inexact(RoSeq P, RoSeq S,
 	return;
 }
 
+static void match_pattern(RoSeq P, RoSeq S, const char *algo,
+		int max_mm, int fixedP, int fixedS)
+{
+	if (P.nelt > max_mm + S.nelt)
+		return;
+	if (P.nelt <= max_mm || strcmp(algo, "naive-inexact") == 0)
+		match_naive_inexact(P, S, max_mm, fixedP, fixedS);
+	else if (strcmp(algo, "naive-exact") == 0)
+		match_naive_exact(P, S);
+	else if (strcmp(algo, "boyer-moore") == 0)
+		_match_pattern_boyermoore(P, S);
+	else if (strcmp(algo, "shift-or") == 0)
+		_match_pattern_shiftor(P, S, max_mm, fixedP, fixedS);
+	else
+		error("\"%s\": unknown algorithm", algo);
+	return;
+}
+
 
 /****************************************************************************
  * --- .Call ENTRY POINTS ---
@@ -162,8 +180,9 @@ static void match_naive_inexact(RoSeq P, RoSeq S,
  *   'count_only': single logical
  *
  * is_matching() returns a logical vector of the same length as 'start'.
- * match_pattern() returns an integer vector containing the relative pos of
- * the matches. All matches have the length of the pattern.
+ * XString_match_pattern() returns an integer vector containing the relative
+ * pos of the matches.
+ * All matches have the length of the pattern.
  */
 
 SEXP is_matching(SEXP pattern, SEXP subject, SEXP start,
@@ -195,7 +214,7 @@ SEXP is_matching(SEXP pattern, SEXP subject, SEXP start,
 	return ans;
 }
 
-SEXP match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
+SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only)
 {
@@ -212,18 +231,43 @@ SEXP match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	if (P.nelt > max_mm + S.nelt)
-		;
-	else if (P.nelt <= max_mm || strcmp(algo, "naive-inexact") == 0)
-		match_naive_inexact(P, S, max_mm, fixedP, fixedS);
-	else if (strcmp(algo, "naive-exact") == 0)
-		match_naive_exact(P, S);
-	else if (strcmp(algo, "boyer-moore") == 0)
-		_match_pattern_boyermoore(P, S);
-	else if (strcmp(algo, "shift-or") == 0)
-		_match_pattern_shiftor(P, S, max_mm, fixedP, fixedS);
-	else
-		error("\"%s\": unknown algorithm", algo);
+	match_pattern(P, S, algo, max_mm, fixedP, fixedS);
+	if (is_count_only)
+		return _Biostrings_viewsbuf_count_asINTEGER();
+	return _Biostrings_viewsbuf_start_asINTEGER();
+}
+
+SEXP XStringViews_match_pattern(SEXP pattern,
+		SEXP subject, SEXP views_start, SEXP views_width,
+		SEXP algorithm, SEXP max_mismatch, SEXP fixed,
+		SEXP count_only)
+{
+	RoSeq P, S, V;
+	const char *algo;
+	int max_mm, fixedP, fixedS, is_count_only,
+	    nviews, i, *view_start, *view_width, view_offset;
+
+	P = _get_XString_asRoSeq(pattern);
+	S = _get_XString_asRoSeq(subject);
+	algo = CHAR(STRING_ELT(algorithm, 0));
+	max_mm = INTEGER(max_mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	is_count_only = LOGICAL(count_only)[0];
+
+	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
+	nviews = LENGTH(views_start);
+	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
+	     i < nviews;
+	     i++, view_start++, view_width++) {
+		view_offset = *view_start - 1;
+		if (view_offset < 0 || view_offset + *view_width > S.nelt)
+			error("'subject' has out of limits views");
+		V.elts = S.elts + view_offset;
+		V.nelt = *view_width;
+		_set_match_shift(view_offset);
+		match_pattern(P, V, algo, max_mm, fixedP, fixedS);
+	}
 	if (is_count_only)
 		return _Biostrings_viewsbuf_count_asINTEGER();
 	return _Biostrings_viewsbuf_start_asINTEGER();

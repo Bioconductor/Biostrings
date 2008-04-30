@@ -94,25 +94,48 @@ gregexpr2 <- function(pattern, text)
     matches
 }
 
-.character.matchPattern <- function(pattern, subject, algo)
+.character.matchPattern <- function(pattern, subject, algo,
+                                    max.mismatch, fixed, count.only)
 {
-    switch(algo,
-        "gregexpr"=.matchPattern.gregexpr(pattern, subject),
-        "gregexpr2"=.matchPattern.gregexpr2(pattern, subject))
+    if (!isSingleString(pattern) || nchar(pattern) == 0)
+        stop("'pattern' must be a single (non-empty) string ",
+             "for this algorithm")
+    if (!isSingleString(subject) || nchar(subject) == 0)
+        stop("'subject' must be a single (non-empty) string ",
+             "for this algorithm")
+    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    ## We need to cheat on normalize.fixed()
+    fixed <- normalize.fixed(fixed, "DNAString")
+    if (!(max.mismatch == 0 && all(fixed)))
+        stop("this algorithm only supports exact matching ",
+             "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
+    if (!isTRUEorFALSE(count.only))
+        stop("'count.only' must be TRUE or FALSE")
+    matches <- switch(algo,
+                      "gregexpr"=.matchPattern.gregexpr(pattern, subject),
+                      "gregexpr2"=.matchPattern.gregexpr2(pattern, subject))
+    if (count.only) length(matches) else matches
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .matchPattern()
+### .XString.matchPattern() and .XStringViews.matchPattern()
 ###
+
+.ALL.ALGOS <- c(
+    "auto",
+    "naive-exact",
+    "naive-inexact",
+    "boyer-moore",
+    "shift-or",
+    .CHARACTER.ALGOS
+)
 
 .normalize.algorithm <- function(algorithm)
 {
     if (!isSingleString(algorithm))
         stop("'algorithm' must be a single string")
-    match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
-                           "naive-exact", "naive-inexact",
-                           "boyer-moore", "shift-or"))
+    match.arg(algorithm, .ALL.ALGOS)
 }
 
 ### Return a character vector containing the valid algos (best suited first)
@@ -125,68 +148,86 @@ gregexpr2 <- function(pattern, text)
 ### before you call .valid.algos()
 .valid.algos <- function(pattern, max.mismatch, fixed)
 {
-    if (nchar(pattern) == 0)
+    if (length(pattern) == 0)
         stop("empty pattern")
-    if (nchar(pattern) > 20000)
+    if (length(pattern) > 20000)
         stop("patterns with more than 20000 letters are not supported, sorry")
     algos <- character(0)
     if (max.mismatch == 0 && all(fixed)) {
         algos <- c(algos, "boyer-moore")
-        if (nchar(pattern) <= .Clongint.nbits())
+        if (length(pattern) <= .Clongint.nbits())
             algos <- c(algos, "shift-or")
         algos <- c(algos, "naive-exact")
     } else {
-        if (fixed[1] == fixed[2] && nchar(pattern) <= .Clongint.nbits())
+        if (fixed[1] == fixed[2] && length(pattern) <= .Clongint.nbits())
             algos <- c(algos, "shift-or")
     }
     c(algos, "naive-inexact") # "naive-inexact" is universal but slow
 }
 
-.matchPattern <- function(pattern, subject, algorithm, max.mismatch, fixed,
-                          count.only=FALSE)
+.select.algo <- function(algo, pattern, max.mismatch, fixed)
+{
+    algos <- .valid.algos(pattern, max.mismatch, fixed)
+    if (algo == "auto")
+        return(algos[1])
+    if (!(algo %in% algos))
+        stop("valid algos for your problem (best suited first): ",
+             paste(paste("\"", algos, "\"", sep=""), collapse=", "))
+    algo
+}
+
+.XString.matchPattern <- function(pattern, subject, algorithm,
+                                  max.mismatch, fixed, count.only=FALSE)
 {
     algo <- .normalize.algorithm(algorithm)
-    if (.is.character.algo(algo)) {
-        if (!isSingleString(subject) || nchar(subject) == 0)
-            stop("'subject' must be a single (and non-empty) string ",
-                 "for this algorithm")
-        if (!isSingleString(pattern) || nchar(pattern) == 0)
-            stop("'pattern' must be a single (and non-empty) string ",
-                 "for this algorithm")
-    } else {
-        if (!is(subject, "XString"))
-            subject <- BString(subject)
-        if (class(pattern) != class(subject))
-            pattern <- XString(class(subject), pattern)
-    }
+    if (.is.character.algo(algo))
+        return(.character.matchPattern(pattern, subject, algo,
+                                       max.mismatch, fixed, count.only))
+    if (!is(subject, "XString"))
+        subject <- BString(subject)
+    if (class(pattern) != class(subject))
+        pattern <- XString(class(subject), pattern)
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject))
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    if (.is.character.algo(algo)) {
-        if (!(max.mismatch == 0 && all(fixed)))
-            stop("this algorithm only supports exact matching ",
-                 "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
-        matches <- .character.matchPattern(pattern, subject, algo)
-        if (count.only)
-            matches <- length(matches)
-        return(matches)
-    } 
-    algos <- .valid.algos(pattern, max.mismatch, fixed)
-    if (algo == "auto")
-        algo <- algos[1]
-    else if (!(algo %in% algos))
-        stop("valid algos for your problem (best suited first): ",
-             paste(paste("\"", algos, "\"", sep=""), collapse=", "))
-    matches <- .Call("match_pattern",
+    algo <- .select.algo(algo, pattern, max.mismatch, fixed)
+    matches <- .Call("XString_match_pattern",
                      pattern, subject, algo,
                      max.mismatch, fixed,
                      count.only,
                      PACKAGE="Biostrings")
     if (count.only)
         return(matches)
-    ans_width <- rep.int(nchar(pattern), length(matches))
+    ans_width <- rep.int(length(pattern), length(matches))
     new("XStringViews", subject,
+        start=matches, width=ans_width, check=FALSE)
+}
+
+.XStringViews.matchPattern <- function(pattern, subject, algorithm,
+                                       max.mismatch, fixed, count.only=FALSE)
+{
+    algo <- .normalize.algorithm(algorithm)
+    if (.is.character.algo(algo))
+        stop("'subject' must be a single (non-empty) string ",
+             "for this algorithm")
+    if (class(pattern) != class(subject(subject)))
+        pattern <- XString(class(subject(subject)), pattern)
+    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    fixed <- normalize.fixed(fixed, class(subject(subject)))
+    if (!isTRUEorFALSE(count.only))
+        stop("'count.only' must be TRUE or FALSE")
+    algo <- .select.algo(algo, pattern, max.mismatch, fixed)
+    matches <- .Call("XStringViews_match_pattern",
+                     pattern,
+                     subject(subject), start(subject), width(subject),
+                     algo, max.mismatch, fixed,
+                     count.only,
+                     PACKAGE="Biostrings")
+    if (count.only)
+        return(matches)
+    ans_width <- rep.int(length(pattern), length(matches))
+    new("XStringViews", subject(subject),
         start=matches, width=ans_width, check=FALSE)
 }
 
@@ -196,10 +237,11 @@ gregexpr2 <- function(pattern, text)
 ###
 ### Typical use:
 ###   matchPattern("TG", DNAString("GTGACGTGCAT"))
-###   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
+###   matchPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", max.mismatch=1)
 ### Edge cases:
 ###   matchPattern("---", DNAString("ACGTGCA"), max.mismatch=3)
 ###   matchPattern("---", DNAString("A"))
+###
 
 setGeneric("matchPattern", signature="subject",
     function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
@@ -209,58 +251,52 @@ setGeneric("matchPattern", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "character",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-    {
-        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
-    }
+        .XString.matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "XString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-    {
-        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
-    }
+        .XString.matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 ### WARNING: Unlike the other "matchPattern" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized XStringViews object
-### and 'max.mismatch=0' (no "out of limits" matches).
+### guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
+### a normal XStringViews object) and 'max.mismatch=0' (no "out of limits"
+### matches).
 setMethod("matchPattern", "XStringViews",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-    {
-        ans_start <- ans_width <- integer(0)
-        for (i in seq_len(length(subject))) {
-            pm <- .matchPattern(pattern, subject[[i]], algorithm, max.mismatch, fixed)
-            offset <- start(subject)[i] - 1L
-            ans_start <- c(ans_start, offset + start(pm))
-            ans_width <- c(ans_width, width(pm))
-        }
-        new("XStringViews", subject(subject),
-            start=ans_start, width=ans_width, check=FALSE)
-    }
+        .XStringViews.matchPattern(pattern, subject, algorithm,
+                                   max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "MaskedXString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-        matchPattern(pattern, as(subject, "XStringViews"), algorithm, max.mismatch, fixed)
+        matchPattern(pattern, as(subject, "XStringViews"),
+                     algorithm, max.mismatch, fixed)
 )
 
 matchDNAPattern <- function(...) .Defunct("matchPattern")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### countPattern() is a slightly faster equivalent to length(matchPattern())
-
+### The "countPattern" generic and methods.
+###
+### countPattern() is equivalent to length(matchPattern()) but should be
+### slightly faster, especially when there is a high number of matches.
+###
 ### Typical use:
 ###   countPattern("TG", DNAString("GTGACGTGCAT"))
-###   countPattern("TG", DNAString("GTGACGTGCAT"), algo="shift", mis=1)
+###   countPattern("TG", DNAString("GTGACGTGCAT"), max.mismatch=1)
 ### Edge cases:
 ###   countPattern("---", DNAString("ACGTGCA"), max.mismatch=3)
 ###   countPattern("---", DNAString("A"))
+###
+
 setGeneric("countPattern", signature="subject",
     function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         standardGeneric("countPattern")
@@ -269,36 +305,28 @@ setGeneric("countPattern", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "character",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-    {
-        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
-    }
+        .XString.matchPattern(pattern, subject, algorithm,
+                              max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-    {
-        .matchPattern(pattern, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
-    }
+        .XString.matchPattern(pattern, subject, algorithm,
+                              max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XStringViews",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-    {
-        sum(
-            sapply(seq_len(length(subject)),
-                   function(i) .matchPattern(pattern, subject[[i]],
-                                             algorithm, max.mismatch, fixed,
-                                             count.only=TRUE)
-            )
-        )
-    }
+        .XStringViews.matchPattern(pattern, subject, algorithm,
+                                   max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "MaskedXString",
     function(pattern, subject, algorithm, max.mismatch, fixed)
-        countPattern(pattern, as(subject, "XStringViews"), algorithm, max.mismatch, fixed)
+        countPattern(pattern, as(subject, "XStringViews"),
+                     algorithm, max.mismatch, fixed)
 )
 

@@ -118,7 +118,8 @@ setMethod("matchProbePair", "DNAString",
 ### WARNING: Unlike the other "matchProbePair" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized XStringViews object.
+### guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
+### a normal XStringViews object).
 setMethod("matchProbePair", "XStringViews",
     function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
     {

@@ -33,6 +33,7 @@ static int viewsbuf_mrmode;
 static int *viewsbuf_start, *viewsbuf_end;
 static char **viewsbuf_desc;
 static int viewsbuf_maxcount, viewsbuf_count; /* viewsbuf_maxcount >= viewsbuf_count */
+static int match_shift;
 
 static int new_view()
 {
@@ -201,6 +202,7 @@ void _Biostrings_reset_viewsbuf(int mrmode)
 	viewsbuf_start = viewsbuf_end = NULL;
 	viewsbuf_desc = NULL;
 	viewsbuf_maxcount = viewsbuf_count = 0;
+	match_shift = 0;
 	return;
 }
 
@@ -208,6 +210,11 @@ void _Biostrings_reset_viewsbuf(int mrmode)
 void _init_match_reporting(int mrmode)
 {
 	_Biostrings_reset_viewsbuf(mrmode);
+}
+
+void _set_match_shift(int shift)
+{
+	match_shift = shift;
 }
 
 /*
@@ -241,8 +248,8 @@ int _Biostrings_report_match(int Lpos, int Rpos)
 {
 	int start, end;
 
-	start = ++Lpos;
-	end = ++Rpos;
+	start = match_shift + Lpos + 1;
+	end = match_shift + Rpos + 1;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _Biostrings_report_match(): ");

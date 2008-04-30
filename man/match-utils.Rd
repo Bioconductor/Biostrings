@@ -97,6 +97,10 @@
   isMatching("NT", subject, start=1:4, fixed=FALSE)
   ## max.mismatch != 0 and fixed=FALSE can be used together
   isMatching("NGA", subject, start=0:5, max.mismatch=1, fixed=FALSE)
+
+  some_starts <- c(10:-10, NA, 6)
+  is_matching <- isMatching("CAT", DNAString("ACGTGCA"), start=some_starts, max.mismatch=1)
+  some_starts[is_matching]
 }
 
 \keyword{methods}

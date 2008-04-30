@@ -851,6 +851,8 @@ void _Biostrings_reset_viewsbuf(int mrmode);
 
 void _init_match_reporting(int mrmode);
 
+void _set_match_shift(int shift);
+
 int _Biostrings_append_view(
 	int start,
 	int end,
@@ -909,9 +911,20 @@ SEXP is_matching(
 	SEXP fixed
 );
 
-SEXP match_pattern(
+SEXP XString_match_pattern(
 	SEXP pattern,
 	SEXP subject,
+	SEXP algorithm,
+	SEXP max_mismatch,
+	SEXP fixed,
+	SEXP count_only
+);
+
+SEXP XStringViews_match_pattern(
+	SEXP pattern,
+	SEXP subject,
+	SEXP views_start,
+	SEXP views_width,
 	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP fixed,

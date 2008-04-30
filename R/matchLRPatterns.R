@@ -34,9 +34,9 @@ setMethod("matchLRPatterns", "XString",
 ### WARNING: Unlike the other "matchLRPatterns" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
-### guaranteed though is when 'subject' is a normalized XStringViews object
-### and 'max.Lmismatch=0' and 'max.Rmismatch=0' so there are no "out of limits"
-### matches.
+### guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
+### a normal XStringViews object) and 'max.mismatch=0' and 'max.Rmismatch=0'
+### (so there are no "out of limits" matches).
 setMethod("matchLRPatterns", "XStringViews",
     function(Lpattern, Rpattern, max.ngaps, subject, max.Lmismatch=0, max.Rmismatch=0,
              Lfixed=TRUE, Rfixed=TRUE)

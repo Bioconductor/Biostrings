@@ -78,7 +78,8 @@ setMethod("findComplementedPalindromes", "DNAString",
 ### WARNING: Unlike with the "findPalindromes" method for XString objects, the
 ### XStringViews object returned by this method is not guaranteed to have its
 ### views ordered from left to right! One important particular case where this
-### is guaranteed though is when 'subject' is a normalized XStringViews object.
+### is guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
+### a normal XStringViews object).
 setMethod("findPalindromes", "XStringViews",
     function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
     {
