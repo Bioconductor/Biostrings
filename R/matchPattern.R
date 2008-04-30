@@ -10,18 +10,26 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "gregexpr" and "gregexpr2" methods (undocumented)
+### matchPattern algos for standard character vectors.
+###
+### Note that these algos are not documented.
+###
 
-### This method can miss matches (see below why)
-.match.gregexpr <- function(pattern, subject, count.only)
+.CHARACTER.ALGOS <- c("gregexpr", "gregexpr2")
+
+.is.character.algo <- function(algo)
+{
+    algo %in% .CHARACTER.ALGOS
+}
+
+### This matchPattern algo can miss matches (see below why).
+.matchPattern.gregexpr <- function(pattern, subject)
 {
     matches <- gregexpr(pattern, subject, fixed=TRUE)[[1]]
     if (length(matches) == 1 && matches == -1)
         matches <- integer(0)
     else
         attr(matches, "match.length") <- NULL
-    if (count.only)
-        return(length(matches))
     matches
 }
 
@@ -78,20 +86,34 @@ gregexpr2 <- function(pattern, text)
     matches
 }
 
-.match.gregexpr2 <- function(pattern, subject, count.only)
+.matchPattern.gregexpr2 <- function(pattern, subject)
 {
     matches <- gregexpr2(pattern, subject)[[1]]
     if (length(matches) == 1 && matches == -1)
         matches <- integer(0)
-    if (count.only)
-        return(length(matches))
     matches
+}
+
+.character.matchPattern <- function(pattern, subject, algo)
+{
+    switch(algo,
+        "gregexpr"=.matchPattern.gregexpr(pattern, subject),
+        "gregexpr2"=.matchPattern.gregexpr2(pattern, subject))
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .matchPattern()
 ###
+
+.normalize.algorithm <- function(algorithm)
+{
+    if (!isSingleString(algorithm))
+        stop("'algorithm' must be a single string")
+    match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
+                           "naive-exact", "naive-inexact",
+                           "boyer-moore", "shift-or"))
+}
 
 ### Return a character vector containing the valid algos (best suited first)
 ### for the given problem (problem is described by the values of 'pattern',
@@ -120,42 +142,17 @@ gregexpr2 <- function(pattern, text)
     c(algos, "naive-inexact") # "naive-inexact" is universal but slow
 }
 
-### Must return an integer vector.
-.matchPattern.exact <- function(pattern, subject, algo, count.only)
-{
-    .Call("match_pattern",
-          pattern, subject, algo,
-          0L, c(TRUE, TRUE),
-          count.only,
-          PACKAGE="Biostrings")
-}
-
-### Must return an integer vector.
-.matchPattern.inexact <- function(pattern, subject, algo,
-                                  max.mismatch, fixed, count.only)
-{
-    .Call("match_pattern",
-          pattern, subject, algo,
-          max.mismatch, fixed,
-          count.only,
-          PACKAGE="Biostrings")
-}
-
-
 .matchPattern <- function(pattern, subject, algorithm, max.mismatch, fixed,
                           count.only=FALSE)
 {
-    if (!isSingleString(algorithm))
-        stop("'algorithm' must be a single string")
-    algo <- match.arg(algorithm, c("auto", "gregexpr", "gregexpr2",
-                                   "naive-exact", "naive-inexact",
-                                   "boyer-moore", "shift-or"))
-    if (algo %in% c("gregexpr", "gregexpr2")) {
+    algo <- .normalize.algorithm(algorithm)
+    if (.is.character.algo(algo)) {
         if (!isSingleString(subject) || nchar(subject) == 0)
-            stop("for algorithms \"gregexpr\" and \"gregexpr2\" ",
-                 "'subject' must be a single (and non-empty) string")
+            stop("'subject' must be a single (and non-empty) string ",
+                 "for this algorithm")
         if (!isSingleString(pattern) || nchar(pattern) == 0)
-            stop("'pattern' must be a single (and non-empty) string")
+            stop("'pattern' must be a single (and non-empty) string ",
+                 "for this algorithm")
     } else {
         if (!is(subject, "XString"))
             subject <- BString(subject)
@@ -166,33 +163,27 @@ gregexpr2 <- function(pattern, text)
     fixed <- normalize.fixed(fixed, class(subject))
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    if (algo %in% c("gregexpr", "gregexpr2")) {
-        if (max.mismatch != 0 || !all(fixed))
-            stop("algorithms \"gregexpr\" and \"gregexpr2\" only support ",
-                 "'max.mismatch=0' and 'fixed=TRUE'")
-    } else {
-        algos <- .valid.algos(pattern, max.mismatch, fixed)
-        if (algo == "auto") {
-            algo <- algos[1]
-        } else {
-            if (!(algo %in% algos))
-                stop("valid algos for your problem (best suited first): ",
-                     paste(paste("\"", algos, "\"", sep=""), collapse=", "))
-        }
-    }
-    matches <- switch(algo,
-        "gregexpr"=.match.gregexpr(pattern, subject, count.only),
-        "gregexpr2"=.match.gregexpr2(pattern, subject, count.only),
-        "naive-exact"=.matchPattern.exact(pattern, subject, algo, count.only),
-        "naive-inexact"=.matchPattern.inexact(pattern, subject, algo,
-                                              max.mismatch, fixed, count.only),
-        "boyer-moore"=.matchPattern.exact(pattern, subject, algo, count.only),
-        "shift-or"=.matchPattern.inexact(pattern, subject, algo,
-                                         max.mismatch, fixed, count.only)
-    )
-    if (count.only)
+    if (.is.character.algo(algo)) {
+        if (!(max.mismatch == 0 && all(fixed)))
+            stop("this algorithm only supports exact matching ",
+                 "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
+        matches <- .character.matchPattern(pattern, subject, algo)
+        if (count.only)
+            matches <- length(matches)
         return(matches)
-    if (algo == "gregexpr" || algo == "gregexpr2")
+    } 
+    algos <- .valid.algos(pattern, max.mismatch, fixed)
+    if (algo == "auto")
+        algo <- algos[1]
+    else if (!(algo %in% algos))
+        stop("valid algos for your problem (best suited first): ",
+             paste(paste("\"", algos, "\"", sep=""), collapse=", "))
+    matches <- .Call("match_pattern",
+                     pattern, subject, algo,
+                     max.mismatch, fixed,
+                     count.only,
+                     PACKAGE="Biostrings")
+    if (count.only)
         return(matches)
     ans_width <- rep.int(nchar(pattern), length(matches))
     new("XStringViews", subject,
