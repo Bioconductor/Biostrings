@@ -63,7 +63,7 @@ views <- function(subject, start=NA, end=NA)
 adjacentViews <- function(subject, width, gapwidth=0)
 {
     ONE <- as.integer(1)
-    if (is.character(subject))
+    if (!is(subject, "XString"))
         subject <- BString(subject)
     if (!is.numeric(width) || !isTRUE(all(width >= ONE))) # NA-proof
         stop("'width' must be numerics >= 1")
