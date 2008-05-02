@@ -93,13 +93,8 @@ adjacentViews <- function(subject, width, gapwidth=0)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "XStringViews" generic and methods.
 ###
-
-setGeneric("XStringViews", signature="x",
-    function(x, subjectClass, collapse="") standardGeneric("XStringViews")
-)
-
-### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
-### "BString", "DNAString", "RNAString" or "AAString".
+### 'subjectClass' must be the name of one of the direct XString subtypes
+### i.e. "BString", "DNAString", "RNAString" or "AAString".
 ###
 ### Benchmarks:
 ###   n <- 40000
@@ -113,12 +108,18 @@ setGeneric("XStringViews", signature="x",
 ###   10000        0.51 s          16.29 s
 ###   20000        0.99 s          64.85 s
 ###   40000        1.69 s         488.43 s
-### The quadratic behaviour of "old" DNAString() was first reported
-### by Wolfgang.
+### The quadratic behaviour of "old" DNAString() (in Biostrings 1) was first
+### reported by Wolfgang.
+###
 
-### This is the "XStringViews" for "character" but we use the "ANY" signature
-### anyway. This because we've found some weird objects that look very much
-### like "character" vectors but break the dispatch mechanism.
+setGeneric("XStringViews", signature="x",
+    function(x, subjectClass, collapse="") standardGeneric("XStringViews")
+)
+
+### The main purpose of this "XStringViews" method is to work on a character
+### vector. However we use "ANY" instead of "character" for the signature
+### because we've found some weird objects that look very much like character
+### vectors but break the dispatch mechanism.
 ### For example:
 ###   library(hgu95av2probe)
 ###   x <- hgu95av2probe$sequence
@@ -138,8 +139,6 @@ setMethod("XStringViews", "ANY",
     }
 )
 
-### When not missing, 'subjectClass' must be the name of one of the direct
-### XString subtypes i.e. "BString", "DNAString", "RNAString" or "AAString".
 setMethod("XStringViews", "XString",
     function(x, subjectClass, collapse="")
     {
@@ -156,8 +155,6 @@ setMethod("XStringViews", "XString",
     }
 )
 
-### 'subjectClass' must be the name of one of the direct XString subtypes i.e.
-### "BString", "DNAString", "RNAString" or "AAString".
 ### The 'collapse' arg is ignored.
 setMethod("XStringViews", "XStringViews",
     function(x, subjectClass, collapse="")
