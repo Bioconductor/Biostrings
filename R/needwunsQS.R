@@ -137,12 +137,16 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    substmat, nrow(substmat), lkup,
                    as.integer(gappen), gap_code,
                    PACKAGE="Biostrings")
-    align1 <- new(class(s1), xdata=C_ans$al1, length=length(C_ans$al1))
-    align2 <- new(class(s2), xdata=C_ans$al2, length=length(C_ans$al2))
     new("XStringAlign",
-        align1=align1, align2=align2, quality1=BString(""), quality2=BString(""),
-        type="global", score=C_ans$score, constantMatrix=substmat,
-        gapOpening=0, gapExtension=gappen, endGap=TRUE)
+        string1 = new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1)),
+        string2 = new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2)),
+        quality1 = BString(""), quality2 = BString(""),
+        match1 = IRanges(start = 1, width = length(C_ans$al1)),
+        match2 = IRanges(start = 1, width = length(C_ans$al2)),
+        inserts1 = IRanges(start = numeric(0), width = numeric(0)),
+        inserts2 = IRanges(start = numeric(0), width = numeric(0)),
+        type = "global", score = C_ans$score, constantMatrix = substmat,
+        gapOpening = 0, gapExtension = gappen)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),

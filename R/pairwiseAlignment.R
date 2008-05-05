@@ -48,12 +48,10 @@ function(string1,
                unique(charToRaw(as.character(string2)))))
     alphabetToCodes <- as.integer(uniqueBases)
     names(alphabetToCodes) <- rawToChar(uniqueBases, multiple = TRUE)
-    gapCode <- charToRaw("-")
   } else {
     stringCodec <- codec(string1)
     alphabetToCodes <- stringCodec@codes
     names(alphabetToCodes) <- stringCodec@letters
-    gapCode <- as.raw(alphabetToCodes["-"])
   }
 
   ## Generate quality-based and constant substitution matrix information
@@ -129,7 +127,6 @@ function(string1,
                   string2,
                   quality1,
                   quality2,
-                  gapCode,
                   typeCode,
                   scoreOnly,
                   endGap,
@@ -146,25 +143,20 @@ function(string1,
   if (scoreOnly) {
     output <- answer[["score"]]
   } else {
-    align1 <-
-      new(class(string1),
-          xdata = answer[["align1"]],
-          length = length(answer[["align1"]]))
-    align2 <-
-      new(class(string2),
-          xdata = answer[["align2"]],
-          length = length(answer[["align2"]]))
     output <- new("XStringAlign",
-                  align1 = align1,
-                  align2 = align2,
+                  string1 = string1,
+                  string2 = string2,
                   quality1 = quality1,
                   quality2 = quality2,
+                  match1 = IRanges(end = answer[["endMatch1"]], width = answer[["widthMatch1"]]),
+                  match2 = IRanges(end = answer[["endMatch2"]], width = answer[["widthMatch2"]]),
+                  inserts1 = IRanges(end = answer[["endInserts1"]], width = answer[["widthInserts1"]]),
+                  inserts2 = IRanges(end = answer[["endInserts2"]], width = answer[["widthInserts2"]]),
                   type = type,
                   score = answer[["score"]],
                   constantMatrix = constantMatrix,
                   gapOpening = gapOpening,
-                  gapExtension = gapExtension,
-                  endGap = endGap)
+                  gapExtension = gapExtension)
   }
   return(output)
 }
