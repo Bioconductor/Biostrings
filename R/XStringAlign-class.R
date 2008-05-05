@@ -106,7 +106,7 @@ function(string, inserts)
     } else {
         gapStrings <- c("", sapply(widthInserts, function(x) paste(rep("-", x), collapse = "")))
         subdividedString <-
-          substring(as.character(string), c(1, endInserts + 1), c(endInserts, ncharString))
+          substring(as.character(string), c(1, startInserts), c(startInserts - 1, ncharString))
 		value <-
           XString(class(string), paste(gapStrings, subdividedString, sep = "", collapse = ""))
     }

@@ -148,10 +148,18 @@ function(string1,
                   string2 = string2,
                   quality1 = quality1,
                   quality2 = quality2,
-                  match1 = IRanges(end = answer[["endMatch1"]], width = answer[["widthMatch1"]]),
-                  match2 = IRanges(end = answer[["endMatch2"]], width = answer[["widthMatch2"]]),
-                  inserts1 = IRanges(end = answer[["endInserts1"]], width = answer[["widthInserts1"]]),
-                  inserts2 = IRanges(end = answer[["endInserts2"]], width = answer[["widthInserts2"]]),
+                  match1 =
+                  IRanges(start = answer[["startMatch1"]],
+                          width = answer[["widthMatch1"]]),
+                  match2 =
+                  IRanges(start = answer[["startMatch2"]],
+                          width = answer[["widthMatch2"]]),
+                  inserts1 =
+                  IRanges(start = answer[["startInserts1"]],
+                          width = answer[["widthInserts1"]]),
+                  inserts2 =
+                  IRanges(start = answer[["startInserts2"]],
+                          width = answer[["widthInserts2"]]),
                   type = type,
                   score = answer[["score"]],
                   constantMatrix = constantMatrix,
