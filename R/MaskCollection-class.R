@@ -6,11 +6,13 @@ setClass("MaskCollection",
     representation(
         nirlist="list",    # a list of NormalIRanges objects
         width="integer",
+        active="logical",
         NAMES="character"  # R doesn't like @names !!
     ),
     prototype(
         nirlist=list(),
         width=0L,
+        active=logical(0),
         NAMES=as.character(NA)
     )
 )
@@ -26,6 +28,22 @@ setMethod("nirlist", "MaskCollection", function(x) x@nirlist)
 setMethod("length", "MaskCollection", function(x) length(nirlist(x)))
 
 setMethod("width", "MaskCollection", function(x) x@width)
+
+setGeneric("active", function(x) standardGeneric("active"))
+setMethod("active", "MaskCollection", function(x) x@active)
+
+setGeneric("active<-", signature="x",
+    function(x, value) standardGeneric("active<-")
+)
+setReplaceMethod("active", "MaskCollection",
+    function(x, value)
+    {
+        if (!is.logical(value) || any(is.na(value)))
+            stop("'value' must be a logical vector with no NAs")
+        x@active[] <- value
+        x
+    }
+)
 
 setMethod("names", "MaskCollection",
     function(x)
@@ -70,6 +88,15 @@ setReplaceMethod("names", "MaskCollection",
     NULL
 }
 
+.valid.MaskCollection.active <- function(object)
+{
+    if (!is.logical(active(object)) || any(is.na(active(object))))
+        return("the 'active' slot must be a logical vector with no NAs")
+    if (length(active(object)) != length(object))
+        return("the length of the 'active' slot differs from the length of the object")
+    NULL
+}
+
 .valid.MaskCollection.names <- function(object)
 {
     if (!is.character(object@NAMES))
@@ -87,6 +114,7 @@ setReplaceMethod("names", "MaskCollection",
 {
     c(.valid.MaskCollection.width(object),
       .valid.MaskCollection.nirlist(object),
+      .valid.MaskCollection.active(object),
       .valid.MaskCollection.names(object))
 }
 
@@ -106,7 +134,9 @@ setValidity("MaskCollection",
 Mask <- function(mask.width, start=NULL, end=NULL, width=NULL)
 {
     nir <- asNormalIRanges(IRanges(start=start, end=end, width=width))
-    new("MaskCollection", nirlist=list(nir), width=numeric2integer(mask.width))
+    new("MaskCollection", nirlist=list(nir),
+                          width=numeric2integer(mask.width),
+                          active=TRUE)
 }
 
 
@@ -224,6 +254,7 @@ setMethod("[", "MaskCollection",
             stop("invalid subscript type")
         }
         slot(x, "nirlist", check=FALSE) <- nirlist(x)[i]
+        slot(x, "active", check=FALSE) <- active(x)[i]
         if (!is.null(names(x)))
             slot(x, "NAMES", check=FALSE) <- names(x)[i]
         x
@@ -254,6 +285,7 @@ setMethod("append", "MaskCollection",
         if (!isSingleNumber(after))
             stop("'after' must be a single number")
         x@nirlist <- append(nirlist(x), nirlist(values), after=after)
+        x@active <- append(active(x), active(values), after=after)
         nm1 <- names(x)
         nm2 <- names(values)
         if (is.null(nm1) && is.null(nm2))
@@ -348,6 +380,7 @@ MaskCollection.show_frame <- function(x)
         cat("\n")
         frame <- data.frame(maskedwidth=maskedwidth(x),
                             maskedratio=maskedratio(x),
+                            active=active(x),
                             check.names=FALSE)
         frame$names <- names(x)
         show(frame)
