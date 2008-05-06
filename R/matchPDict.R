@@ -940,7 +940,7 @@ setMethod("matchPDict", "MaskedXString",
     {
         if (any(active(masks(subject))))
             stop("\"matchPDict\" method for MaskedXString objects ",
-                 "with active masks not ready yet\nPlease complain!")
+                 "with active masks not ready yet\n  Please complain!")
         .matchPDict(pdict, unmasked(subject), algorithm, max.mismatch, fixed)
     }
 )
@@ -969,7 +969,7 @@ setMethod("countPDict", "MaskedXString",
     {
         if (any(active(masks(subject))))
             stop("\"countPDict\" method for MaskedXString objects ",
-                 "with active masks not ready yet\nPlease complain!")
+                 "with active masks not ready yet\n  Please complain!")
         .matchPDict(pdict, unmasked(subject), algorithm, max.mismatch, fixed, count.only=TRUE)
     }
 )

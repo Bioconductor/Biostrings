@@ -78,7 +78,7 @@ setMethod("chartr", "MaskedXString",
     {
         if (any(active(masks(x))))
             stop("\"chartr\" method for MaskedXString objects ",
-                 "with active masks not ready yet\nPlease complain!")
+                 "with active masks not ready yet\n  Please complain!")
         ans <- chartr(old, new, unmasked(x))
         masks(ans) <- masks(x)
         ans
