@@ -50,16 +50,22 @@
 }
 
 setGeneric("findPalindromes", signature="subject",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
         standardGeneric("findPalindromes")
 )
 setGeneric("findComplementedPalindromes", signature="subject",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
         standardGeneric("findComplementedPalindromes")
 )
 
 setMethod("findPalindromes", "XString",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
     {
         .find.palindromes(subject, min.armlength,
                           max.looplength, min.looplength,
@@ -67,7 +73,9 @@ setMethod("findPalindromes", "XString",
     }
 )
 setMethod("findComplementedPalindromes", "DNAString",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
     {
         .find.palindromes(subject, min.armlength,
                           max.looplength, min.looplength,
@@ -81,7 +89,9 @@ setMethod("findComplementedPalindromes", "DNAString",
 ### is guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
 ### a normal XStringViews object).
 setMethod("findPalindromes", "XStringViews",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
     {
         ans_start <- ans_width <- integer(0)
         for (i in seq_len(length(subject))) {
@@ -99,9 +109,11 @@ setMethod("findPalindromes", "XStringViews",
     }
 )
 setMethod("findPalindromes", "MaskedXString",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
     {
-        findPalindromes(as(subject, "XStringViews"),
+        findPalindromes(toXStringViewsOrXString(subject),
                         min.armlength=min.armlength,
                         max.looplength=max.looplength,
                         min.looplength=min.looplength,
@@ -109,7 +121,9 @@ setMethod("findPalindromes", "MaskedXString",
     }
 )
 setMethod("findComplementedPalindromes", "XStringViews",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
     {
         ans_start <- ans_width <- integer(0)
         for (i in seq_len(length(subject))) {
@@ -127,9 +141,11 @@ setMethod("findComplementedPalindromes", "XStringViews",
     }
 )
 setMethod("findComplementedPalindromes", "MaskedXString",
-    function(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
     {
-        findComplementedPalindromes(as(subject, "XStringViews"),
+        findComplementedPalindromes(toXStringViewsOrXString(subject),
                                     min.armlength=min.armlength,
                                     max.looplength=max.looplength,
                                     min.looplength=min.looplength,
@@ -144,10 +160,12 @@ setMethod("findComplementedPalindromes", "MaskedXString",
 ###
 
 setGeneric("palindromeArmLength", signature="x",
-    function(x, max.mismatch=0, ...) standardGeneric("palindromeArmLength")
+    function(x, max.mismatch=0, ...)
+        standardGeneric("palindromeArmLength")
 )
 setGeneric("complementedPalindromeArmLength", signature="x",
-    function(x, max.mismatch=0, ...) standardGeneric("complementedPalindromeArmLength")
+    function(x, max.mismatch=0, ...)
+        standardGeneric("complementedPalindromeArmLength")
 )
 
 setMethod("palindromeArmLength", "XString",
@@ -178,8 +196,10 @@ setMethod("palindromeArmLength", "XStringViews",
     {
         if (length(x) == 0)
             return(integer(0))
-        sapply(seq_len(length(x)), function(i)
-               palindromeArmLength(x[[i]], max.mismatch=max.mismatch, ...))
+        sapply(seq_len(length(x)),
+               function(i)
+                   palindromeArmLength(x[[i]],
+                       max.mismatch=max.mismatch, ...))
     }
 )
 setMethod("complementedPalindromeArmLength", "XStringViews",
@@ -187,8 +207,10 @@ setMethod("complementedPalindromeArmLength", "XStringViews",
     {
         if (length(x) == 0)
             return(integer(0))
-        sapply(seq_len(length(x)), function(i)
-               complementedPalindromeArmLength(x[[i]], max.mismatch=max.mismatch, ...))
+        sapply(seq_len(length(x)),
+               function(i)
+                   complementedPalindromeArmLength(x[[i]],
+                       max.mismatch=max.mismatch, ...))
     }
 )
 
@@ -199,22 +221,26 @@ setMethod("complementedPalindromeArmLength", "XStringViews",
 ###
 
 setGeneric("palindromeLeftArm", signature="x",
-    function(x, max.mismatch=0, ...) standardGeneric("palindromeLeftArm")
+    function(x, max.mismatch=0, ...)
+        standardGeneric("palindromeLeftArm")
 )
 setGeneric("complementedPalindromeLeftArm", signature="x",
-    function(x, max.mismatch=0, ...) standardGeneric("complementedPalindromeLeftArm")
+    function(x, max.mismatch=0, ...)
+        standardGeneric("complementedPalindromeLeftArm")
 )
 
 setMethod("palindromeLeftArm", "XString",
     function(x, max.mismatch=0, ...)
     {
-        XString.substr(x, 1L, palindromeArmLength(x, max.mismatch=max.mismatch, ...))
+        XString.substr(x, 1L,
+            palindromeArmLength(x, max.mismatch=max.mismatch, ...))
     }
 )
 setMethod("complementedPalindromeLeftArm", "DNAString",
     function(x, max.mismatch=0, ...)
     {
-        XString.substr(x, 1L, complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...))
+        XString.substr(x, 1L,
+            complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...))
     }
 )
 
@@ -231,7 +257,8 @@ setMethod("complementedPalindromeLeftArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
         ans_start <- start(x)
-        ans_width <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        ans_width <- complementedPalindromeArmLength(x,
+                         max.mismatch=max.mismatch, ...)
         new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
     }
@@ -244,23 +271,27 @@ setMethod("complementedPalindromeLeftArm", "XStringViews",
 ###
 
 setGeneric("palindromeRightArm", signature="x",
-    function(x, max.mismatch=0, ...) standardGeneric("palindromeRightArm")
+    function(x, max.mismatch=0, ...)
+        standardGeneric("palindromeRightArm")
 )
 setGeneric("complementedPalindromeRightArm", signature="x",
-    function(x, max.mismatch=0, ...) standardGeneric("complementedPalindromeRightArm")
+    function(x, max.mismatch=0, ...)
+        standardGeneric("complementedPalindromeRightArm")
 )
 
 setMethod("palindromeRightArm", "XString",
     function(x, max.mismatch=0, ...)
     {
-        start <- nchar(x) - palindromeArmLength(x, max.mismatch=max.mismatch, ...) + 1L
+        start <- nchar(x) - palindromeArmLength(x,
+                                max.mismatch=max.mismatch, ...) + 1L
         XString.substr(x, start, nchar(x))
     }
 )
 setMethod("complementedPalindromeRightArm", "DNAString",
     function(x, max.mismatch=0, ...)
     {
-        start <- nchar(x) - complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...) + 1L
+        start <- nchar(x) - complementedPalindromeArmLength(x,
+                                max.mismatch=max.mismatch, ...) + 1L
         XString.substr(x, start, nchar(x))
     }
 )
@@ -268,7 +299,8 @@ setMethod("complementedPalindromeRightArm", "DNAString",
 setMethod("palindromeRightArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
-        ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        ans_width <- palindromeArmLength(x,
+                         max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
         new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)
@@ -277,7 +309,8 @@ setMethod("palindromeRightArm", "XStringViews",
 setMethod("complementedPalindromeRightArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
-        ans_width <- complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        ans_width <- complementedPalindromeArmLength(x,
+                         max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
         new("XStringViews", subject(x),
             start=ans_start, width=ans_width, check=FALSE)

@@ -203,6 +203,17 @@ setAs("MaskedXString", "XStringViews",
     }
 )
 
+### NOT exported.
+toXStringViewsOrXString <- function(x)
+{
+    x0 <- unmasked(x)
+    mask1 <- reduce(masks(x))
+    if (isEmpty(mask1))
+        return(x0)
+    views <- gaps(mask1)[[1]]
+    new("XStringViews", x0, start=start(views), width=width(views), check=FALSE)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "nchar" method.

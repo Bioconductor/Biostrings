@@ -4,6 +4,7 @@
 \alias{chartr,XString-method}
 \alias{chartr,XStringSet-method}
 \alias{chartr,XStringViews-method}
+\alias{chartr,MaskedXString-method}
 
 
 \title{Translating letters of a sequence}
@@ -25,9 +26,9 @@
   }
   \item{x}{
     The sequence or set of sequences to translate.
-    If \code{x} is an \link{XString}, \link{XStringSet} or \link{XStringViews}
-    object then the appropriate \code{chartr} method is called,
-    otherwise the standard \code{\link[base]{chartr}} R function
+    If \code{x} is an \link{XString}, \link{XStringSet}, \link{XStringViews}
+    or \link{MaskedXString} object, then the appropriate \code{chartr} method
+    is called, otherwise the standard \code{\link[base]{chartr}} R function
     is called.
   }
 }
@@ -36,8 +37,9 @@
   See \code{?\link[base]{chartr}} for the details.
 
   Note that, unlike the standard \code{\link[base]{chartr}} R function,
-  the methods for \link{XString}, \link{XStringSet} and \link{XStringViews}
-  objects do NOT support character ranges in the specifications.
+  the methods for \link{XString}, \link{XStringSet}, \link{XStringViews}
+  and \link{MaskedXString} objects do NOT support character ranges in the
+  specifications.
 }
 
 \value{
@@ -49,6 +51,7 @@
   \link{XString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
+  \link{MaskedXString-class},
   \code{\link{alphabetFrequency}},
   \code{\link{matchPattern}}
   \code{\link{reverseComplement}},
@@ -58,9 +61,9 @@
   x <- BString("MiXeD cAsE 123")
   chartr("iXs", "why", x)
 
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## TRANSFORMING DNA WITH BISULFITE (AND SEARCHING IT...)
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   library(BSgenome.Celegans.UCSC.ce2)
   chrII <- Celegans[["chrII"]]

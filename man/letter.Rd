@@ -4,6 +4,7 @@
 \alias{letter,character-method}
 \alias{letter,XString-method}
 \alias{letter,XStringViews-method}
+\alias{letter,MaskedXString-method}
 
 
 \title{Subsetting a string}
@@ -19,11 +20,11 @@
 
 \arguments{
   \item{x}{
-    A character vector, an \link{XString} object
-    or an \link{XStringViews} object.
+    A character vector, or an \link{XString}, \link{XStringViews}
+    or \link{MaskedXString} object.
   }
   \item{i}{
-    An NA-free numeric vector.
+    An integer vector with no NAs.
   }
 }
 
@@ -33,8 +34,8 @@
 }
 
 \value{
-  A character vector of length 1 when \code{x} is
-  an \link{XString} object.
+  A character vector of length 1 when \code{x} is an \link{XString}
+  or \link{MaskedXString} object (the masks are ignored for the latter).
 
   A character vector of the same length as \code{x} when \code{x}
   is a character vector or an \link{XStringViews} object.
@@ -47,7 +48,8 @@
 \seealso{
   \code{\link{subXString}},
   \link{XString-class},
-  \link{XStringViews-class}
+  \link{XStringViews-class},
+  \link{MaskedXString-class}
 }
 
 \examples{

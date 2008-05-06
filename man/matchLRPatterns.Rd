@@ -3,6 +3,7 @@
 \alias{matchLRPatterns}
 \alias{matchLRPatterns,XString-method}
 \alias{matchLRPatterns,XStringViews-method}
+\alias{matchLRPatterns,MaskedXString-method}
 
 
 \title{Find patterns defined by a left and a right part in a sequence}
@@ -29,7 +30,7 @@
     and right parts of the pattern.
   }
   \item{subject}{
-    An \link{XString} object (or an \link{XStringViews} object)
+    An \link{XString}, \link{XStringViews} or \link{MaskedXString} object
     containing the target sequence.
   }
   \item{max.Lmismatch}{
@@ -75,7 +76,8 @@
   \code{\link{findPalindromes}},
   \code{\link{reverseComplement}},
   \link{XString-class},
-  \link{XStringViews-class}
+  \link{XStringViews-class},
+  \link{MaskedXString-class}
 }
 
 \examples{

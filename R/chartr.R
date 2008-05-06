@@ -73,3 +73,15 @@ setMethod("chartr", "XStringViews",
     }
 )
 
+setMethod("chartr", "MaskedXString",
+    function(old, new, x)
+    {
+        if (any(active(masks(x))))
+            stop("\"chartr\" method for MaskedXString objects ",
+                 "with active masks not ready yet\nPlease complain!")
+        ans <- chartr(old, new, unmasked(x))
+        masks(ans) <- masks(x)
+        ans
+    }
+)
+

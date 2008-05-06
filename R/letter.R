@@ -64,3 +64,9 @@ setMethod("letter", "XStringViews",
         sapply(seq_len(length(x)), function(n) XString.read(x[[n]], i))
     }
 )
+
+setMethod("letter", "MaskedXString",
+    function(x, i)
+        letter(unmasked(x), i)
+)
+

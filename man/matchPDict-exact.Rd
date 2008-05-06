@@ -46,8 +46,10 @@
 
 \alias{matchPDict}
 \alias{matchPDict,XString-method}
+\alias{matchPDict,MaskedXString-method}
 \alias{countPDict}
 \alias{countPDict,XString-method}
+\alias{countPDict,MaskedXString-method}
 
 % Functions:
 \alias{extractAllMatches}
@@ -155,9 +157,9 @@
 }
 
 \examples{
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## A. WITH UNNAMED PATTERNS
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   ## Creating the pattern dictionary
   library(drosophila2probe)
@@ -207,9 +209,9 @@
     plotCoverage(cov3R, 27600000, 27900000)
   }
 
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## B. WITH NAMED PATTERNS
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   dict1 <- dict0[8211:8236]            # The input dictionary.
   names(dict1) <- LETTERS
@@ -231,9 +233,9 @@
   length(unlist(mindex))               # Total number of matches.
   extractAllMatches(chr3R, mindex)
 
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## C. PERFORMANCE
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   ## If getting the number of matches is what matters only (without regarding
   ## their positions), then countPDict() will be faster, especially when there

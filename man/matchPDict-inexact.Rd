@@ -50,9 +50,9 @@
   ## BROKEN on the MIndex object returned by matchPDict() called on a
   ## TBdna_PDict object!
 
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## A. WITH UNNAMED PATTERNS
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   library(drosophila2probe)
   dict0 <- drosophila2probe$sequence  # The input dictionary.
@@ -71,9 +71,9 @@
   table(countPDict(pdict9, chr3R, max.mismatch=3))
   table(countPDict(pdict9, chr3R, max.mismatch=5))
 
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## B. COMPARISON WITH EXACT MATCHING
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   ## When the input dictionary is of constant width, using 'max.mismatch=0'
   ## on the Trusted Prefix dictionary is equivalent to (but much slower than)
@@ -83,9 +83,9 @@
   count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
   identical(count_tp9_mm0, count0)    # TRUE
   
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## C. VARIABLE WIDTH DICTIONARY
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.end=2)
   pdict

@@ -199,7 +199,7 @@ setMethod("alphabetFrequency", "XStringViews",
 setMethod("alphabetFrequency", "MaskedXString",
     function(x, baseOnly=FALSE, freq=FALSE, ...)
     {
-        y <- as(x, "XStringViews")
+        y <- toXStringViewsOrXString(x)
         .set.collapse.default(TRUE)
         ans <- alphabetFrequency(y, baseOnly=baseOnly, freq=freq, ...)
         .set.collapse.default(FALSE)
@@ -399,7 +399,7 @@ setMethod("oligonucleotideFrequency", "MaskedXString",
     function(x, width, freq=FALSE,
              fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
     {
-        y <- as(x, "XStringViews")
+        y <- toXStringViewsOrXString(x)
         .set.collapse.default(TRUE)
         ans <- oligonucleotideFrequency(y, width, freq=freq,
                                         fast.moving.side=fast.moving.side,

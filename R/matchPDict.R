@@ -928,9 +928,20 @@ setGeneric("matchPDict", signature="subject",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XString",
-    function(pdict, subject, algorithm, max.mismatch, fixed)
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
     {
 	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
+    }
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPDict", "MaskedXString",
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    {
+        if (any(active(masks(subject))))
+            stop("\"matchPDict\" method for MaskedXString objects ",
+                 "with active masks not ready yet\nPlease complain!")
+        .matchPDict(pdict, unmasked(subject), algorithm, max.mismatch, fixed)
     }
 )
 
@@ -946,9 +957,20 @@ setGeneric("countPDict", signature="subject",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XString",
-    function(pdict, subject, algorithm, max.mismatch, fixed)
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
     {
 	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
+    }
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPDict", "MaskedXString",
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    {
+        if (any(active(masks(subject))))
+            stop("\"countPDict\" method for MaskedXString objects ",
+                 "with active masks not ready yet\nPlease complain!")
+        .matchPDict(pdict, unmasked(subject), algorithm, max.mismatch, fixed, count.only=TRUE)
     }
 )
 

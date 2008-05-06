@@ -250,13 +250,13 @@ setGeneric("matchPattern", signature="subject",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "character",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         .XString.matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "XString",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         .XString.matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
 )
 
@@ -268,16 +268,16 @@ setMethod("matchPattern", "XString",
 ### a normal XStringViews object) and 'max.mismatch=0' (no "out of limits"
 ### matches).
 setMethod("matchPattern", "XStringViews",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         .XStringViews.matchPattern(pattern, subject, algorithm,
                                    max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "MaskedXString",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
-        matchPattern(pattern, as(subject, "XStringViews"),
-                     algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+        matchPattern(pattern, toXStringViewsOrXString(subject),
+                     algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
 )
 
 matchDNAPattern <- function(...) .Defunct("matchPattern")
@@ -304,29 +304,29 @@ setGeneric("countPattern", signature="subject",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "character",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         .XString.matchPattern(pattern, subject, algorithm,
                               max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XString",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         .XString.matchPattern(pattern, subject, algorithm,
                               max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XStringViews",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
         .XStringViews.matchPattern(pattern, subject, algorithm,
                                    max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "MaskedXString",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
-        countPattern(pattern, as(subject, "XStringViews"),
-                     algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+        countPattern(pattern, toXStringViewsOrXString(subject),
+                     algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
 )
 
