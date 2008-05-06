@@ -3,6 +3,7 @@
 \alias{matchPDict-exact}
 
 % Classes
+\alias{MIndex}
 \alias{class:MIndex}
 \alias{MIndex-class}
 \alias{class:ByPos_MIndex}

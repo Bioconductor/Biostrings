@@ -49,11 +49,14 @@
   \item{use.names}{
     \code{TRUE} or \code{FALSE}. Should names be preserved?
   }
+  \item{shift}{
+    A single integer.
+  }
   \item{start}{
-    A single number or \code{NA}.
+    A single integer or \code{NA}.
   }
   \item{end}{
-    A single number or \code{NA}.
+    A single integer or \code{NA}.
   }
   \item{keep.all.ranges}{
     \code{TRUE} or \code{FALSE}. Should ranges that become "out of limits"

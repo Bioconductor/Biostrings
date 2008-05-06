@@ -45,7 +45,10 @@
     An \link{XString} object containing the subject sequence,
   }
   \item{start}{
-    Integer vector specifying where to place the pattern relatively to the subject.
+    For \code{isMatching}: an integer vector specifying where to place the
+    pattern relatively to the subject.
+    For \code{coverage}: a single integer specifying the position in \code{x}
+    where to start the extraction of the coverage.
   }
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed.
@@ -77,9 +80,13 @@
     An \link{XStringViews} object for \code{mismatch} (typically, one returned
     by \code{matchPattern(pattern, subject)}).
 
-    Typically an \link{XStringViews} or \link{MIndex} object for \code{average}
+    Typically an \link{XStringViews} or \link{MIndex} object for \code{coverage}
     but \link{IRanges}, \link{MaskCollection} and \link{MaskedXString} objects
     are accepted too.
+  }
+  \item{end}{
+    A single integer specifying the position in \code{x}
+    where to end the extraction of the coverage.
   }
 }
 
