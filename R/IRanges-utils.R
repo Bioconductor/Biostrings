@@ -98,11 +98,11 @@ setGeneric("restrict", signature="x",
         if (keep.all.ranges) {
             ans_end[far_too_left] <- start - 1L
         } else {
-            keep <- !far_too_left
-            ans_start <- ans_start[keep]
-            ans_end <- ans_end[keep]
+            keep_it <- !far_too_left
+            ans_start <- ans_start[keep_it]
+            ans_end <- ans_end[keep_it]
             if (!is.null(ans_names))
-                ans_names <- ans_names[keep]
+                ans_names <- ans_names[keep_it]
         }
         ## "fix" ans_start
         too_left <- ans_start < start
@@ -113,11 +113,11 @@ setGeneric("restrict", signature="x",
         if (keep.all.ranges) {
             ans_start[far_too_right] <- end + 1L
         } else {
-            keep <- !far_too_right
-            ans_start <- ans_start[keep]
-            ans_end <- ans_end[keep]
+            keep_it <- !far_too_right
+            ans_start <- ans_start[keep_it]
+            ans_end <- ans_end[keep_it]
             if (!is.null(ans_names))
-                ans_names <- ans_names[keep]
+                ans_names <- ans_names[keep_it]
         }
         ## "fix" ans_end
         too_right <- end < ans_end

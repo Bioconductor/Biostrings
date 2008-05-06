@@ -271,10 +271,6 @@ setReplaceMethod("[", "MaskCollection",
 ### The "append" generic and method.
 ###
 
-#setGeneric("append", signature="x",
-#    function(x, values, after=length(x)) standardGeneric("append")
-#)
-
 setMethod("append", "MaskCollection",
     function(x, values, after=length(x))
     {
@@ -327,17 +323,22 @@ setMethod("narrow", "MaskCollection",
 setMethod("reduce", "MaskCollection",
     function(x, with.inframe.attrib=FALSE)
     {
+        keep_it <- active(x)
+        if (!all(keep_it))
+            x <- x[keep_it]
+        if (length(x) == 1)
+            return(x)
         nirlist <- nirlist(x)
         if (length(nirlist) == 0) {
             nir1 <- newEmptyNormalIRanges()
-        } else if (length(nirlist) == 1) {
-            return(x)
         } else {
             start1 <- unlist(lapply(nirlist, start))
             width1 <- unlist(lapply(nirlist, width))
-            nir1 <- toNormalIRanges(new("IRanges", start=start1, width=width1, check=FALSE))
+            ranges <- new("IRanges", start=start1, width=width1, check=FALSE)
+            nir1 <- toNormalIRanges(ranges)
         }
         x@nirlist <- list(nir1)
+        x@active <- TRUE
         x@NAMES <- as.character(NA)
         x
     }
@@ -385,12 +386,23 @@ MaskCollection.show_frame <- function(x)
         frame$names <- names(x)
         show(frame)
         if (lx >= 2) {
+            margin <- format("", width=nchar(as.character(lx)))
             cat("all masks together:\n")
-            mask0 <- reduce(x)
+            mask0 <- reduce(`active<-`(x, TRUE))
             frame <- data.frame(maskedwidth=maskedwidth(mask0),
                                 maskedratio=maskedratio(mask0),
                                 check.names=FALSE)
+            row.names(frame) <- margin
             show(frame)
+            if (sum(active(x)) < lx) {
+                cat("all active masks together:\n")
+                mask1 <- reduce(x)
+                frame <- data.frame(maskedwidth=maskedwidth(mask1),
+                                    maskedratio=maskedratio(mask1),
+                                    check.names=FALSE)
+                row.names(frame) <- margin
+                show(frame)
+            }
         }
     }
 }

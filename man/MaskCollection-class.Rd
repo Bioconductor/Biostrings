@@ -11,6 +11,8 @@
 \alias{nirlist,MaskCollection-method}
 \alias{length,MaskCollection-method}
 \alias{width,MaskCollection-method}
+\alias{active,MaskCollection-method}
+\alias{active<-,MaskCollection-method}
 \alias{names,MaskCollection-method}
 \alias{names<-,MaskCollection-method}
 
@@ -93,6 +95,11 @@
       "put on".
     }
     \item{}{
+      \code{active(x)}:
+      A logical vector of the same length as \code{x} where each
+      element indicates whether the corresponding mask is active or not.
+    }
+    \item{}{
       \code{names(x)}:
       \code{NULL} or a character vector of the same length as \code{x}.
     }
@@ -114,6 +121,7 @@
       \code{end} and \code{width}.
       See the \code{\link{IRanges}} constructor (\code{?\link{IRanges}})
       for how \code{start}, \code{end} and \code{width} can be specified.
+      Note that the returned mask is active and unnamed.
     }
   }
 }
@@ -182,7 +190,7 @@
     \item{}{
       \code{reduce(x)}:
       Return a MaskCollection object of length 1 made of the union
-      (or merging, or collapsing) of all the masks in \code{x}.
+      (or merging, or collapsing) of all the active masks in \code{x}.
     }
     \item{}{
       \code{gaps(x)}:
@@ -226,8 +234,13 @@
   x
   alphabetFrequency(x)
 
-  ## Some operations on the MaskCollection object itself:
+  ## Active/inactive masks:
   reduce(mymasks)
+  active(mymasks)[2] <- FALSE
+  mymasks
+  reduce(mymasks)
+
+  ## Other advanced operations:
   mymasks[[2]]
   length(mymasks[[2]])
   mymasks[[2]][-3]
