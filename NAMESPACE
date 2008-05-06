@@ -22,7 +22,7 @@ exportClasses(
 
 export(
     IRanges,
-    intToRanges, intToAdjacentRanges, restrict, narrow, reduce, toNormalIRanges, gaps,
+    intToRanges, intToAdjacentRanges, shift, restrict, narrow, reduce, toNormalIRanges, gaps,
     Mask,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
@@ -87,7 +87,7 @@ exportMethods(
     replaceLetterAtLoc,
 
     ## Others
-    isMatching, mismatch,
+    isMatching, mismatch, coverage,
     matchPattern, countPattern,
     matchLRPatterns,
     matchProbePair,

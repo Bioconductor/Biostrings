@@ -1094,6 +1094,20 @@ SEXP extract_endIndex(
 	SEXP all_names
 );
 
+SEXP ByPos_MIndex_coverage(
+	SEXP ends_list,
+	SEXP mindex_width,
+	SEXP start,
+	SEXP end
+);
+
+SEXP ByName_MIndex_coverage(
+	SEXP ends_envir,
+	SEXP mindex_width,
+	SEXP start,
+	SEXP end
+);
+
 
 /* match_TBdna.c */
 

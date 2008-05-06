@@ -184,7 +184,7 @@ trim <- function(x, use.names=TRUE)
 {
     if (!is(x, "XStringViews"))
         stop("'x' must be an XStringViews object")
-    y <- restrict(x, 1L, nchar(subject(x)), use.names=use.names)
+    y <- restrict(x, start=1L, end=nchar(subject(x)), use.names=use.names)
     if (length(y) != length(x))
         stop("some views are not overlapping with the subject, cannot trim them")
     y

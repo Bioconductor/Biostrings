@@ -79,6 +79,9 @@ o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
 
 UTILITIES
 
+o Added the coverage() generic function with methods for IRanges,
+  MaskCollection, XStringViews, MaskedXString and MIndex objects.
+
 o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is
   now prefered over read.XStringViews() for loading a FASTA file into R.
@@ -86,11 +89,11 @@ o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   XStringSetToFASTArecords().
 
 o Added the replaceLetterAtLoc() generic function with a method for DNAString
-  objects (methods for other types of objects will come later) for making
+  objects (methods for other types of objects might come later) for making
   a copy of a sequence where letters are replaced by new letters at some
   specified locations.
 
-o Added the chartr() generic function with a method for XString, XStringSet
+o Added the chartr() generic function with methods for XString, XStringSet
   and XStringViews objects.
 
 o Made the "show" methods for XString, XStringViews and XStringAlign objects
@@ -117,7 +120,7 @@ o Added a "duplicated" method for CWdna_PDict objects (will come later for
   TBdna_PDict objects).
 
 o Added "reverse" method for XStringSet objects, and "complement" and
-  "reverseComplement" methods method for DNAStringSet and RNAStringSet objects.
+  "reverseComplement" methods for DNAStringSet and RNAStringSet objects.
   They all preserve the names.
 
 o reverse(), complement() and reverseComplement() now preserve the names when

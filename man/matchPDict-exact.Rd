@@ -146,6 +146,7 @@
   \link{PDict},
   \link{matchPDict-inexact},
   \code{\link{isMatching}},
+  \code{\link{coverage}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
   \link{XStringViews-class},
@@ -186,6 +187,24 @@
   dict0[i0]                            # The pattern with most occurences.
   mindex[[i0]]                         # Its matches as a Views object.
   views(chr3R, start_index[[i0]], end_index[[i0]]) # And as an XStringViews object.
+
+  ## Get the coverage of the original subject
+  cov3R <- coverage(mindex, 1, length(chr3R))
+  max(cov3R)
+  mean(cov3R)
+  sum(cov3R != 0) / length(cov3R)      # Only 2.44% of chr3R is covered.
+  if (interactive()) {
+    plotCoverage <- function(coverage, start, end)
+    {
+      plot.new()
+      plot.window(c(start, end), c(0, 20))
+      axis(1)
+      axis(2)
+      axis(4)
+      lines(start:end, coverage[start:end], type="l")
+    }
+    plotCoverage(cov3R, 27600000, 27900000)
+  }
 
   ## -------------------------------------------------------------------------
   ## B. WITH NAMED PATTERNS

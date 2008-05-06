@@ -39,6 +39,31 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "shift" generic and methods.
+###
+### Shifting preserves normality.
+###
+
+setGeneric("shift", signature="x",
+    function(x, shift, use.names=TRUE) standardGeneric("shift")
+)
+
+.shift.IRanges <- function(x, shift, use.names=TRUE)
+{
+    if (!isSingleNumber(shift))
+        stop("'shift' must be a single integer")
+    if (!is.integer(shift))
+        shift <- as.integer(shift)
+    if (!normalize.use.names(use.names))
+        names(x) <- NULL
+    unsafe.start(x) <- start(x) + shift
+    x
+}
+
+setMethod("shift", "IRanges", .shift.IRanges)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "restrict" generic and methods.
 ###
 ### Note that when used with 'keep.all.ranges=FALSE', restrict() preserves
@@ -227,7 +252,7 @@ setGeneric("gaps", signature="x",
     ## result should always be exactly the same.
     ## Now which order is the most efficient? It depends...
     xx <- toNormalIRanges(x)
-    xx0 <- restrict(xx, start, end) # preserves normality
+    xx0 <- restrict(xx, start=start, end=end) # preserves normality
     ans_start <- ans_width <- integer(0)
     if (isEmpty(xx0)) {
         if (is.na(start) || is.na(end))

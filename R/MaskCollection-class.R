@@ -280,14 +280,9 @@ setMethod("narrow", "MaskCollection",
         start <- start(limits)
         end <- end(limits)
         width <- width(limits)
-        shift <- start(limits) - 1L
         x@nirlist <- lapply(nirlist(x),
                             function(nir)
-                            {
-                                ans <- restrict(nir, start=start, end=end)
-                                unsafe.start(ans) <- start(ans) - shift
-                                ans
-                            }
+                                shift(restrict(nir, start=start, end=end), 1L - start(limits))
                      )
         x@width <- width
         if (!normalize.use.names(use.names))
@@ -303,6 +298,8 @@ setMethod("reduce", "MaskCollection",
         nirlist <- nirlist(x)
         if (length(nirlist) == 0) {
             nir1 <- newEmptyNormalIRanges()
+        } else if (length(nirlist) == 1) {
+            return(x)
         } else {
             start1 <- unlist(lapply(nirlist, start))
             width1 <- unlist(lapply(nirlist, width))

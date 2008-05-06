@@ -196,7 +196,7 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 ### Canonical conversion from XStringViews to XStringSet
 XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
-    ranges <- restrict(as(x, "IRanges"), 1L, nchar(subject(x)),
+    ranges <- restrict(as(x, "IRanges"), start=1L, end=nchar(subject(x)),
                        keep.all.ranges=TRUE,
                        use.names=use.names)
     if (verbose && any(width(ranges) < width(x)))

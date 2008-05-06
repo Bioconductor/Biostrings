@@ -147,3 +147,115 @@ setMethod("mismatch", "XStringViews",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "coverage" generic and methods.
+###
+
+setGeneric("coverage", signature="x",
+    function(x, start=NA, end=NA) standardGeneric("coverage")
+)
+
+setMethod("coverage", "IRanges",
+    function(x, start=NA, end=NA)
+    {
+        if (!isSingleNumber(start))
+            stop("'start' must be a single integer")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumber(end))
+            stop("'end' must be a single integer")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        width <- end - start + 1L
+        if (width < 0)
+            stop("'end' must be >= 'start' - 1")
+        x1 <- shift(restrict(x, start=start, end=end), 1L - start)
+        ans <- integer(width)
+        for (i in seq_len(length(x1))) {
+            start1 <- start(x1)[i]
+            end1 <- end(x1)[i]
+            if (end1 < start1)
+                next
+            ii <- start1:end1
+            ans[ii] <- ans[ii] + 1L
+        }
+        ans
+    }
+)
+
+setMethod("coverage", "MaskCollection",
+    function(x, start=NA, end=NA)
+    {
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (is.na(start))
+            start <- 1L
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (is.na(end))
+            end <- width(x)
+        width <- end - start + 1L
+        if (width < 0)
+            stop("'end' must be >= 'start' - 1")
+        ans <- integer(width)
+        for (i in seq_len(length(x)))
+            ans <- ans + coverage(x[[i]], start=start, end=end)
+        ans
+    }
+)
+
+setMethod("coverage", "XStringViews",
+    function(x, start=NA, end=NA)
+    {
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (is.na(start))
+            start <- 1L
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (is.na(end))
+            end <- length(subject(x))
+        callNextMethod(x, start=start, end=end)
+    }
+)
+
+setMethod("coverage", "MaskedXString",
+    function(x, start=NA, end=NA)
+        coverage(masks(x), start=start, end=end)
+)
+
+setMethod("coverage", "MIndex",
+    function(x, start=NA, end=NA)
+    {
+        if (!isSingleNumber(start))
+            stop("'start' must be a single integer")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumber(end))
+            stop("'end' must be a single integer")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        width <- end - start + 1L
+        if (width < 0)
+            stop("'end' must be >= 'start' - 1")
+        if (is(x, "ByPos_MIndex"))
+            return(.Call("ByPos_MIndex_coverage",
+                         x@ends, x@width, start, end,
+                         PACKAGE="Biostrings"))
+        if (is(x, "ByName_MIndex"))
+            return(.Call("ByName_MIndex_coverage",
+                         x@length, x@ends_envir, x@width, start, end,
+                         PACKAGE="Biostrings"))
+        stop("Biostrings internal error: unknown MIndex subtype ", class(x))
+    }
+)
+

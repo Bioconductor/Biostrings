@@ -154,6 +154,8 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_MIndex_utils", (DL_FUNC) &debug_MIndex_utils, 0},
 	{"shiftListOfInts", (DL_FUNC) &shiftListOfInts, 2},
 	{"extract_endIndex", (DL_FUNC) &extract_endIndex, 4},
+	{"ByPos_MIndex_coverage", (DL_FUNC) &ByPos_MIndex_coverage, 4},
+	{"ByName_MIndex_coverage", (DL_FUNC) &ByName_MIndex_coverage, 4},
 
 /* match_TBdna.c */
 	{"debug_match_TBdna", (DL_FUNC) &debug_match_TBdna, 0},
