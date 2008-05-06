@@ -70,7 +70,7 @@ exportMethods(
     "start<-", "width<-", "end<-",
 
     ## MaskCollection objects
-    nirlist, active, "active<-", maskedwidth, maskedratio, append,
+    nir_list, active, "active<-", maskedwidth, maskedratio, append,
 
     ## XString, XStringViews, XStringList and MaskedXString objects
     XString, alphabet, subseq,

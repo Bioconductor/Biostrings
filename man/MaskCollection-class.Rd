@@ -7,11 +7,13 @@
 \alias{MaskCollection}
 
 % Basic accessor methods:
-\alias{nirlist}
-\alias{nirlist,MaskCollection-method}
+\alias{nir_list}
+\alias{nir_list,MaskCollection-method}
 \alias{length,MaskCollection-method}
 \alias{width,MaskCollection-method}
+\alias{active}
 \alias{active,MaskCollection-method}
+\alias{active<-}
 \alias{active<-,MaskCollection-method}
 \alias{names,MaskCollection-method}
 \alias{names<-,MaskCollection-method}
@@ -104,7 +106,7 @@
       \code{NULL} or a character vector of the same length as \code{x}.
     }
     \item{}{
-      \code{nirlist(x)}:
+      \code{nir_list(x)}:
       A list of the same length as \code{x}, where each element is
       a \link{NormalIRanges} object representing a mask in \code{x}.
     }

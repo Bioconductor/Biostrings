@@ -341,8 +341,9 @@ setReplaceMethod("masks", signature(x="MaskedXString", value="XString"),
         nir1 <- toNormalIRanges(matchPattern(value, x))
         name1 <- paste(as.character(value), "-blocks", sep="")
         masks(x) <- new("MaskCollection",
-                        nirlist=list(nir1),
+                        nir_list=list(nir1),
                         width=length(x),
+                        active=TRUE,
                         NAMES=name1)
         x
     }
