@@ -20,23 +20,20 @@ function(string1,
          substitutionMatrix = NULL,
          gapOpening = -10,
          gapExtension = -0.5,
-         endGap = TRUE,
          scoreOnly = FALSE)
 {
   ## Check arguments
   if (class(string1) != class(string2))
     stop("'string1' and 'string2' must have the same class")
-  type <- match.arg(tolower(type), c("global", "local", "overlap"))
-  typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
+  type <- match.arg(tolower(type), c("global", "local", "overlap", "overlap1", "overlap2"))
+  typeCode <-
+    c("global" = 1L, "local" = 2L, "overlap" = 3L, "overlap1" = 4L, "overlap2" = 5L)[[type]]
   gapOpening <- as.double(- abs(gapOpening))
   if (is.na(gapOpening) || length(gapOpening) != 1)
     stop("'gapOpening' must be a non-positive numeric vector of length 1")
   gapExtension <- as.double(- abs(gapExtension))
   if (is.na(gapExtension) || length(gapExtension) != 1)
     stop("'gapExtension' must be a non-positive numeric vector of length 1")
-  endGap <- as.logical(endGap)
-  if (length(endGap) != 1 || any(is.na(endGap)))
-    stop("'endGap' must be a non-missing logical value")
   scoreOnly <- as.logical(scoreOnly)
   if (length(scoreOnly) != 1 || any(is.na(scoreOnly)))
     stop("'scoreOnly' must be a non-missing logical value")
@@ -129,7 +126,6 @@ function(string1,
                   quality2,
                   typeCode,
                   scoreOnly,
-                  endGap,
                   gapOpening,
                   gapExtension,
                   qualityLookupTable,
@@ -160,8 +156,10 @@ function(string1,
                   inserts2 =
                   IRanges(start = answer[["startInserts2"]],
                           width = answer[["widthInserts2"]]),
-                  type = type,
+                  profile1 = answer[["profile1"]],
+                  profile2 = answer[["profile2"]],
                   score = answer[["score"]],
+                  type = type,
                   constantMatrix = constantMatrix,
                   gapOpening = gapOpening,
                   gapExtension = gapExtension)
@@ -174,7 +172,7 @@ setGeneric("pairwiseAlignment", signature = c("string1", "string2"),
            function(string1, string2, quality1 = 22L, quality2 = 22L,
                     type = "global", substitutionMatrix = NULL,
                     gapOpening = -10, gapExtension = -0.5,
-                    endGap = TRUE, scoreOnly = FALSE)
+                    scoreOnly = FALSE)
            standardGeneric("pairwiseAlignment"))
 
 setMethod("pairwiseAlignment",
@@ -182,7 +180,7 @@ setMethod("pairwiseAlignment",
           function(string1, string2, quality1 = 22L, quality2 = 22L,
                    type = "global", substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -0.5,
-                   endGap = TRUE, scoreOnly = FALSE)
+                   scoreOnly = FALSE)
           XString.pairwiseAlignment(BString(string1), BString(string2),
                                     quality1 = quality1,
                                     quality2 = quality2,
@@ -190,7 +188,6 @@ setMethod("pairwiseAlignment",
                                     substitutionMatrix = substitutionMatrix,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
-                                    endGap = endGap,
                                     scoreOnly = scoreOnly))
 
 setMethod("pairwiseAlignment",
@@ -198,7 +195,7 @@ setMethod("pairwiseAlignment",
           function(string1, string2, quality1 = 22L, quality2 = 22L,
                    type = "global", substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -0.5,
-                   endGap = TRUE, scoreOnly = FALSE)
+                   scoreOnly = FALSE)
           XString.pairwiseAlignment(XString(class(string2), string1), string2,
                                     quality1 = quality1,
                                     quality2 = quality2,
@@ -206,7 +203,6 @@ setMethod("pairwiseAlignment",
                                     substitutionMatrix = substitutionMatrix,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
-                                    endGap = endGap,
                                     scoreOnly = scoreOnly))
 
 setMethod("pairwiseAlignment",
@@ -214,7 +210,7 @@ setMethod("pairwiseAlignment",
           function(string1, string2, quality1 = 22L, quality2 = 22L,
                    type = "global", substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -0.5,
-                   endGap = TRUE, scoreOnly = FALSE)
+                   scoreOnly = FALSE)
           XString.pairwiseAlignment(string1, XString(class(string1), string2),
                                     quality1 = quality1,
                                     quality2 = quality2,
@@ -222,7 +218,6 @@ setMethod("pairwiseAlignment",
                                     substitutionMatrix = substitutionMatrix,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
-                                    endGap = endGap,
                                     scoreOnly = scoreOnly))
 
 setMethod("pairwiseAlignment",
@@ -230,7 +225,7 @@ setMethod("pairwiseAlignment",
           function(string1, string2, quality1 = 22L, quality2 = 22L,
                    type = "global", substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -0.5,
-                   endGap = TRUE, scoreOnly = FALSE)
+                   scoreOnly = FALSE)
           XString.pairwiseAlignment(string1, string2,
                                     quality1 = quality1,
                                     quality2 = quality2,
@@ -238,5 +233,4 @@ setMethod("pairwiseAlignment",
                                     substitutionMatrix = substitutionMatrix,
                                     gapExtension = gapExtension,
                                     gapOpening = gapOpening,
-                                    endGap = endGap,
                                     scoreOnly = scoreOnly))

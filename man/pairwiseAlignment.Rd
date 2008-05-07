@@ -13,7 +13,7 @@ Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignm
 \usage{
 pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, type = "global",
                   substitutionMatrix = NULL, gapOpening = -10, gapExtension = -0.5,
-                  endGap = TRUE, scoreOnly = FALSE)
+                  scoreOnly = FALSE)
 }
 \arguments{
   \item{string1, string2}{a character vector of length 1 or an \code{\link{XString}} object.}
@@ -24,14 +24,20 @@ pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, type = "glob
     quality measures by subtracting 33 from their ASCII decimal representation
     (e.g. ! = 0, " = 1, \# = 2, ...). These two arguments are ignored if
     \code{!is.null(substitutionMatrix)}.}
-  \item{type}{type of alignment (\code{"global"}, \code{"local"}, \code{"overlap"}).}
+  \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
+    \code{"overlap"}, \code{"overlap1"}, and \code{"overlap2"} where
+      \code{"global"} = align whole strings with end gap penalties,
+      \code{"local"} = align string fragments,
+      \code{"overlap"} = align whole strings without end gap penalties,
+      \code{"overlap1"} = align whole strings without end gap penalties on
+        \code{string1} and with end gap penalties on \code{string2},
+      \code{"overlap2"} = align whole strings with end gap penalties on
+        \code{string1} and without end gap penalties on \code{string2}.}
   \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
     use \code{substitutionMatrix} in conjunction with \code{quality1} and \code{quality2}
     arguments.}
   \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
-  \item{endGap}{logical to denote whether or not to penalize end gaps like internal gaps
-    when \code{type = "global"}. If \code{FALSE}, end/terminal gaps are not penalized.}
   \item{scoreOnly}{logical to denote whether or not to only return the scores of the
     optimal pairwise alignment. (See Value section below.)}
 }
@@ -46,6 +52,7 @@ If \code{scoreOnly == TRUE}, a numeric vector containing the scores for the opti
 pairwise alignments is returned.
 }
 \references{
+R. Durbin, S. Eddy, A. Krogh, G. Mitchison, Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.
 B. Haubold, T. Wiehe, Introduction to Computational Biology, Birkhauser Verlag 2006, Chapter 2.
 K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, Feb 23, 2008.
 }

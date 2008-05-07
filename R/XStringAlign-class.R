@@ -15,6 +15,8 @@ setClass("XStringAlign",
         match2="IRanges",
         inserts1="IRanges",
         inserts2="IRanges",
+        profile1="numeric",
+        profile2="numeric",
         type="character",
         score="numeric",
         constantMatrix="matrix",
@@ -30,13 +32,16 @@ setClass("XStringAlign",
 
 setMethod("initialize", "XStringAlign",
     function(.Object, string1, string2, quality1, quality2, match1, match2,
-             inserts1, inserts2, type, score, constantMatrix, gapOpening,
-             gapExtension, check = TRUE)
+             inserts1, inserts2, profile1, profile2, score, type, constantMatrix,
+             gapOpening, gapExtension, check = TRUE)
     {
         if (!identical(class(string1), class(string2)))
             stop("'string1' and 'string2' must be XString objects of the same subtype")
-        if (length(type) != 1 || !(type %in% c("global", "local", "overlap")))
-            stop("'type' must be one of 'global', 'local', or 'overlap'")
+        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
+            stop("'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
+        if ((length(profile1) > 0 && max(profile1) != score) ||
+            (length(profile2) > 0 && max(profile2) != score))
+            stop("'profile1' and 'profile2' must have a maximum of 'score'")
         gapOpening <- as.double(- abs(gapOpening))
         if (is.na(gapOpening) || length(gapOpening) != 1)
             stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -51,8 +56,10 @@ setMethod("initialize", "XStringAlign",
         slot(.Object, "match2", check = check) <- match2
         slot(.Object, "inserts1", check = check) <- inserts1
         slot(.Object, "inserts2", check = check) <- inserts2
-        slot(.Object, "type", check = check) <- type
+        slot(.Object, "profile1", check = check) <- profile1
+        slot(.Object, "profile2", check = check) <- profile2
         slot(.Object, "score", check = check) <- score
+        slot(.Object, "type", check = check) <- type
         slot(.Object, "constantMatrix", check = check) <- constantMatrix
         slot(.Object, "gapOpening", check = check) <- gapOpening
         slot(.Object, "gapExtension", check = check) <- gapExtension
@@ -70,8 +77,11 @@ setMethod("initialize", "XStringAlign",
     message <- character(0)
     if (!identical(class(object@string1), class(object@string2)))
         message <- c(message, "'string1' and 'string2' must be XString objects of the same subtype")
-    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap")))
-        message <- c(message, "'type' must be one of 'global', 'local', or 'overlap'")
+    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
+        message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
+    if ((length(profile1(object)) > 0 && max(profile1(object)) != score(object)) ||
+        (length(profile2(object)) > 0 && max(profile2(object)) != score(object)))
+        stop("'profile1' and 'profile2' must have a maximum of 'score'")
     if (is.na(object@gapOpening) || length(object@gapOpening) != 1)
         message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
     if (is.na(object@gapExtension) || length(object@gapExtension) != 1)
@@ -128,6 +138,12 @@ setMethod("type", "XStringAlign", function(x) x@type)
 
 setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "XStringAlign", function(x) x@score)
+
+setGeneric("profile1", function(x) standardGeneric("profile1"))
+setMethod("profile1", "XStringAlign", function(x) x@profile1)
+
+setGeneric("profile2", function(x) standardGeneric("profile2"))
+setMethod("profile2", "XStringAlign", function(x) x@profile2)
 
 setMethod("length", "XStringAlign", function(x) width(x@match1) + sum(width(x@inserts1)))
 setMethod("nchar", "XStringAlign", function(x, type="chars", allowNA=FALSE) length(x))

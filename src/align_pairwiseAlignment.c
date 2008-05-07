@@ -6,9 +6,11 @@
 
 #define NEGATIVE_INFINITY (- FLT_MAX)
 
-#define  GLOBAL_ALIGNMENT 1
-#define   LOCAL_ALIGNMENT 2
-#define OVERLAP_ALIGNMENT 3
+#define   GLOBAL_ALIGNMENT 1
+#define    LOCAL_ALIGNMENT 2
+#define  OVERLAP_ALIGNMENT 3
+#define OVERLAP1_ALIGNMENT 4
+#define OVERLAP2_ALIGNMENT 5
 
 #define SUBSTITUTION 'S'
 #define INSERTION    'I'
@@ -17,7 +19,6 @@
 #define F_MATRIX(i, j) (fMatrix[nCharString2Plus1 * i + j])
 #define H_MATRIX(i, j) (hMatrix[nCharString2Plus1 * i + j])
 #define V_MATRIX(i, j) (vMatrix[nCharString2Plus1 * i + j])
-#define TRACE_MATRIX(i, j) (traceMatrix[nCharString2Plus1 * i + j])
 
 #define SAFE_SUM(x, y) (x == NEGATIVE_INFINITY ? x : (x + y))
 
@@ -37,6 +38,7 @@ struct AlignInfo {
 	int* startInserts;
 	int* widthInserts;
 	int lengthInserts;
+	float* profile;
 };
 void function(struct AlignInfo *);
 
@@ -49,7 +51,6 @@ static float pairwiseAlignment(
 		RoSeq qualityElements2,
 		int typeCode,
 		int scoreOnly,
-		int endGap,
 		float gapOpening,
 		float gapExtension,
 		const int *qualityLookupTable,
@@ -65,54 +66,51 @@ static float pairwiseAlignment(
 		struct AlignInfo *align2InfoPtr)
 {
 	int i, j, iMinus1, jMinus1;
+	int endGap1 = (typeCode == GLOBAL_ALIGNMENT || typeCode == OVERLAP2_ALIGNMENT);
+	int endGap2 = (typeCode == GLOBAL_ALIGNMENT || typeCode == OVERLAP1_ALIGNMENT);
 
 	/* Step 1:  Get information on input XString objects */
 	int nCharString1 = stringElements1.nelt;
 	int nCharString2 = stringElements2.nelt;
 	int nCharString1Plus1 = nCharString1 + 1;
 	int nCharString2Plus1 = nCharString2 + 1;
+	int nCharString1Minus1 = nCharString1 - 1;
+	int nCharString2Minus1 = nCharString2 - 1;
+	int nCharStringMin = MIN(nCharString1, nCharString2);
 	int nQuality1 = qualityElements1.nelt;
 	int nQuality2 = qualityElements2.nelt;
 
 	/* Step 2:  Create objects for scores and traceback values */
-	float *fMatrix, *hMatrix, *vMatrix;
-	fMatrix = (float *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(float));
-	if (gapOpening == 0.0) {
-		hMatrix = fMatrix;
-		vMatrix = fMatrix;
-	} else {
-		hMatrix = (float *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(float));
-		vMatrix = (float *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(float));
-	}
-	if (typeCode == GLOBAL_ALIGNMENT && endGap) {
+	float *fMatrix = (float *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(float));
+	float *hMatrix = (float *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(float));
+	float *vMatrix = (float *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(float));
+	if (endGap1) {
 		for (i = 0; i <= nCharString1; i++)
 			H_MATRIX(i, 0) = gapOpening + i * gapExtension;
-		for (j = 0; j <= nCharString2; j++)
-			V_MATRIX(0, j) = gapOpening + j * gapExtension;
 	} else {
 		for (i = 0; i <= nCharString1; i++)
 			H_MATRIX(i, 0) = 0.0;
+	}
+	if (endGap2) {
+		for (j = 0; j <= nCharString2; j++)
+			V_MATRIX(0, j) = gapOpening + j * gapExtension;
+	} else {
 		for (j = 0; j <= nCharString2; j++)
 			V_MATRIX(0, j) = 0.0;
 	}
-	if (gapOpening < 0) {
-		F_MATRIX(0, 0) = 0;
-		for (i = 1; i <= nCharString1; i++) {
-			F_MATRIX(i, 0) = NEGATIVE_INFINITY;
-			V_MATRIX(i, 0) = NEGATIVE_INFINITY;
-		}
-		for (j = 1; j <= nCharString2; j++) {
-			F_MATRIX(0, j) = NEGATIVE_INFINITY;
-			H_MATRIX(0, j) = NEGATIVE_INFINITY;
-		}
+	F_MATRIX(0, 0) = 0.0;
+	for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+		F_MATRIX(i, 0) = NEGATIVE_INFINITY;
+		V_MATRIX(i, 0) = NEGATIVE_INFINITY;
+		align1InfoPtr->profile[iMinus1] = NEGATIVE_INFINITY;
 	}
-	char *traceMatrix = (char *) R_alloc((long) nCharString1Plus1 * nCharString2Plus1, sizeof(char));
-	for (i = 1; i <= nCharString1; i++)
-		TRACE_MATRIX(i, 0) = DELETION;
-	for (j = 1; j <= nCharString2; j++)
-		TRACE_MATRIX(0, j) = INSERTION;
+	for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+		F_MATRIX(0, j) = NEGATIVE_INFINITY;
+		H_MATRIX(0, j) = NEGATIVE_INFINITY;
+		align2InfoPtr->profile[jMinus1] = NEGATIVE_INFINITY;
+	}
 
-	/* Step 3:  Generate scores and traceback values */
+	/* Step 3:  Perform main alignment operations */
 	RoSeq sequence1, sequence2;
 	int scalar1, scalar2;
 	const int *lookupTable;
@@ -145,133 +143,155 @@ static float pairwiseAlignment(
 	align1InfoPtr->widthMatch = 0;
 	align2InfoPtr->widthMatch = 0;
 	int lookupValue, element1, element2, iElt, jElt;
-	float substitutionValue, score, maxScore = NEGATIVE_INFINITY;
-	if (gapOpening == 0) {
-		for (i = 1, iMinus1 = 0, iElt = nCharString1 - 1; i <= nCharString1; i++, iMinus1++, iElt--) {
-			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
-			element1 = lookupValue;
-			for (j = 1, jMinus1 = 0, jElt = nCharString2 - 1; j <= nCharString2; j++, jMinus1++, jElt--) {
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
-				element2 = lookupValue;
-				if (stringElements1.elts[iElt] == stringElements2.elts[jElt])
-					substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-				else
-					substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+	float substitutionValue, maxScore = NEGATIVE_INFINITY;
+	for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
+		SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+		element1 = lookupValue;
+		for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
+			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+			element2 = lookupValue;
+			if (stringElements1.elts[iElt] == stringElements2.elts[jElt])
+				substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
+			else
+				substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
 
-				float scoreSubstitution = F_MATRIX(iMinus1, jMinus1) + substitutionValue;
-				float scoreInsertion    = V_MATRIX(i, jMinus1) + gapExtension;
-				float scoreDeletion     = H_MATRIX(iMinus1, j) + gapExtension;
-				if (typeCode == LOCAL_ALIGNMENT) {
-					if (scoreSubstitution < 0.0)
-						scoreSubstitution = 0.0;
-					if (scoreSubstitution > maxScore) {
-						align1InfoPtr->startMatch = iElt + 1;
-						align2InfoPtr->startMatch = jElt + 1;
-						maxScore = scoreSubstitution;
-					}
+			/* Step 3a:  Generate substitution, insertion, and deletion scores */
+			F_MATRIX(i, j) =
+				SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
+				         substitutionValue);
+			H_MATRIX(i, j) = 
+				MAX(SAFE_SUM(F_MATRIX(iMinus1, j), gapOpening + gapExtension),
+				    SAFE_SUM(H_MATRIX(iMinus1, j), gapExtension));
+			V_MATRIX(i, j) =
+				MAX(SAFE_SUM(F_MATRIX(i, jMinus1), gapOpening + gapExtension),
+				    SAFE_SUM(V_MATRIX(i, jMinus1), gapExtension));
+
+			if (typeCode == LOCAL_ALIGNMENT) {
+				F_MATRIX(i, j) = MAX(F_MATRIX(i, j), 0.0);
+
+				/* Step 3b:  Generate profile scores for local alignments */
+				align1InfoPtr->profile[iElt] = MAX(F_MATRIX(i, j), align1InfoPtr->profile[iElt]);
+				align2InfoPtr->profile[jElt] = MAX(F_MATRIX(i, j), align2InfoPtr->profile[jElt]);
+
+				/* Step 3c:  Get the optimal score for local alignments */
+				if (F_MATRIX(i, j) > maxScore) {
+					align1InfoPtr->startMatch = iElt + 1;
+					align2InfoPtr->startMatch = jElt + 1;
+					maxScore = F_MATRIX(i, j);
 				}
-				if (scoreSubstitution >= MAX(scoreInsertion, scoreDeletion)) {
-					F_MATRIX(i, j) = scoreSubstitution;
-					TRACE_MATRIX(i, j) = SUBSTITUTION;
-				} else if (scoreInsertion >= scoreDeletion) {
-					F_MATRIX(i, j) = scoreInsertion;
-					TRACE_MATRIX(i, j) = INSERTION;
-				} else {
-					F_MATRIX(i, j) = scoreDeletion;
-					TRACE_MATRIX(i, j) = DELETION;
-				}
-			}
-		}
-	} else {
-		for (i = 1, iMinus1 = 0, iElt = nCharString1 - 1; i <= nCharString1; i++, iMinus1++, iElt--) {
-			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
-			element1 = lookupValue;
-			for (j = 1, jMinus1 = 0, jElt = nCharString2 - 1; j <= nCharString2; j++, jMinus1++, jElt--) {
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
-				element2 = lookupValue;
-				if (stringElements1.elts[iElt] == stringElements2.elts[jElt])
-					substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-				else
-					substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
-
-				F_MATRIX(i, j) =
-					SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
-					         substitutionValue);
-				if (typeCode == LOCAL_ALIGNMENT) {
-					if (F_MATRIX(i, j) < 0.0)
-						F_MATRIX(i, j) = 0.0;
-					if (F_MATRIX(i, j) > maxScore) {
-						align1InfoPtr->startMatch = iElt + 1;
-						align2InfoPtr->startMatch = jElt + 1;
-						maxScore = F_MATRIX(i, j);
-					}
-				}
-				H_MATRIX(i, j) = 
-					MAX(SAFE_SUM(F_MATRIX(iMinus1, j), gapOpening + gapExtension),
-					    SAFE_SUM(H_MATRIX(iMinus1, j), gapExtension));
-				V_MATRIX(i, j) =
-					MAX(SAFE_SUM(F_MATRIX(i, jMinus1), gapOpening + gapExtension),
-					    SAFE_SUM(V_MATRIX(i, jMinus1), gapExtension));
-
-				float scoreSubstitution = F_MATRIX(i, j);
-				float scoreInsertion    = V_MATRIX(i, j);
-				float scoreDeletion     = H_MATRIX(i, j);
-
-				if (scoreSubstitution >= MAX(scoreInsertion, scoreDeletion))
-					TRACE_MATRIX(i, j) = SUBSTITUTION;
-				else if (scoreInsertion >= scoreDeletion)
-					TRACE_MATRIX(i, j) = INSERTION;
-				else
-					TRACE_MATRIX(i, j) = DELETION;
+			} else {
+				if (j == nCharString2)
+					align1InfoPtr->profile[iElt] = substitutionValue;
+				if (i == nCharString1)
+					align2InfoPtr->profile[jElt] = substitutionValue;
 			}
 		}
 	}
-	if (typeCode == GLOBAL_ALIGNMENT) {
-		if (typeCode == GLOBAL_ALIGNMENT && endGap == 0) {
-			for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
-				if (H_MATRIX(i, nCharString2) < H_MATRIX(iMinus1, nCharString2)) {
-					H_MATRIX(i, nCharString2) = H_MATRIX(iMinus1, nCharString2);
-					if (H_MATRIX(i, nCharString2) >= MAX(F_MATRIX(i, nCharString2), V_MATRIX(i, nCharString2)))
-						TRACE_MATRIX(i, nCharString2) = DELETION;
+
+	if (typeCode != LOCAL_ALIGNMENT) {
+		if (scoreOnly == 0) {
+			/* Step 3d:  Generate profile scores for non-local alignments */
+			if (endGap1) {
+				align1InfoPtr->profile[0] +=
+					MAX(F_MATRIX(nCharString1Minus1, nCharString2Minus1),
+						MAX(H_MATRIX(nCharString1Minus1, nCharString2Minus1),
+							V_MATRIX(nCharString1Minus1, nCharString2Minus1)));
+				for (j = 1; j < nCharString2; j++) {
+					align1InfoPtr->profile[0] =
+						MAX(align1InfoPtr->profile[0],
+							MAX(SAFE_SUM(MAX(F_MATRIX(nCharString1, j),
+									         V_MATRIX(nCharString1, j)),
+									     gapOpening + (nCharString2 - j) * gapExtension),
+								SAFE_SUM(H_MATRIX(nCharString1, j), (nCharString2 - j) * gapExtension)));
+				}
+
+				for (iMinus1 = 0, iElt = nCharString1Minus1; iMinus1 < nCharString1Minus1; iMinus1++, iElt--) {
+					align1InfoPtr->profile[iElt] +=
+						MAX(SAFE_SUM(MAX(F_MATRIX(iMinus1, nCharString2Minus1),
+								         V_MATRIX(iMinus1, nCharString2Minus1)),
+								     gapOpening + iElt * gapExtension),
+							SAFE_SUM(H_MATRIX(iMinus1, nCharString2Minus1), iElt * gapExtension));
+				}
+			} else {
+				for (iMinus1 = 0, iElt = nCharString1Minus1; iMinus1 < nCharString1; iMinus1++, iElt--) {
+					align1InfoPtr->profile[iElt] +=
+						MAX(F_MATRIX(iMinus1, nCharString2Minus1),
+							MAX(H_MATRIX(iMinus1, nCharString2Minus1),
+								V_MATRIX(iMinus1, nCharString2Minus1)));
+				}
+
+				for (j = 1; j < nCharStringMin; j++) {
+					align1InfoPtr->profile[0] =
+						MAX(align1InfoPtr->profile[0],
+							MAX(F_MATRIX(nCharString1, j),
+								MAX(H_MATRIX(nCharString1, j),
+									V_MATRIX(nCharString1, j))));
 				}
 			}
-			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
-				if (V_MATRIX(nCharString1, j) < V_MATRIX(nCharString1, jMinus1)) {
-					V_MATRIX(nCharString1, j) = V_MATRIX(nCharString1, jMinus1);
-					if (V_MATRIX(nCharString1, j) >= MAX(F_MATRIX(nCharString1, j), H_MATRIX(nCharString1, j)))
-						TRACE_MATRIX(nCharString1, j) = INSERTION;
+
+			if (endGap2) {
+				align2InfoPtr->profile[0] +=
+					MAX(F_MATRIX(nCharString1Minus1, nCharString2Minus1),
+						MAX(H_MATRIX(nCharString1Minus1, nCharString2Minus1),
+							V_MATRIX(nCharString1Minus1, nCharString2Minus1)));
+				for (i = 1; i < nCharString1; i++) {
+					align2InfoPtr->profile[0] =
+						MAX(align2InfoPtr->profile[0],
+							MAX(SAFE_SUM(MAX(F_MATRIX(i, nCharString2),
+									         V_MATRIX(i, nCharString2)),
+									     gapOpening + (nCharString1 - i) * gapExtension),
+								SAFE_SUM(H_MATRIX(i, nCharString2), (nCharString1 - i) * gapExtension)));
+				}
+
+				for (jMinus1 = 0, jElt = nCharString2Minus1; jMinus1 < nCharString2Minus1; jMinus1++, jElt--) {
+					align2InfoPtr->profile[jElt] +=
+						MAX(SAFE_SUM(MAX(F_MATRIX(nCharString1Minus1, jMinus1),
+									     H_MATRIX(nCharString1Minus1, jMinus1)),
+									 gapOpening + jElt * gapExtension),
+							SAFE_SUM(V_MATRIX(nCharString1Minus1, jMinus1), jElt * gapExtension));
+				}
+			} else {
+				for (jMinus1 = 0, jElt = nCharString2Minus1; jMinus1 < nCharString2; jMinus1++, jElt--) {
+					align2InfoPtr->profile[jElt] +=
+						MAX(F_MATRIX(nCharString1Minus1, jMinus1),
+							MAX(H_MATRIX(nCharString1Minus1, jMinus1),
+								V_MATRIX(nCharString1Minus1, jMinus1)));
+				}
+
+				for (i = 1; i < nCharStringMin; i++) {
+					align2InfoPtr->profile[0] =
+						MAX(align2InfoPtr->profile[0],
+							MAX(F_MATRIX(i, nCharString2),
+								MAX(H_MATRIX(i, nCharString2),
+									V_MATRIX(i, nCharString2))));
 				}
 			}
 		}
+
+		/* Step 3e:  Adjust substitution, insertion, and deletion scores when no end gaps */
+		if (!endGap1) {
+			for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+				H_MATRIX(i, nCharString2) =
+					MAX(F_MATRIX(i, nCharString2),
+						MAX(H_MATRIX(i, nCharString2), H_MATRIX(iMinus1, nCharString2)));
+			}
+		}
+
+		if (!endGap2) {
+			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+				V_MATRIX(nCharString1, j) =
+					MAX(F_MATRIX(nCharString1, j),
+						MAX(V_MATRIX(nCharString1, j), V_MATRIX(nCharString1, jMinus1)));
+			}
+		}
+
+		/* Step 3f:  Get the optimal score for local alignments */
 		align1InfoPtr->startMatch = 1;
 		align2InfoPtr->startMatch = 1;
 		maxScore =
 			MAX(F_MATRIX(nCharString1, nCharString2),
 			MAX(H_MATRIX(nCharString1, nCharString2),
 			    V_MATRIX(nCharString1, nCharString2)));
-	} else if (typeCode == OVERLAP_ALIGNMENT) {
-		for (i = nCharString1; i >= 1; i--) {
-			score =
-				MAX(F_MATRIX(i, nCharString2),
-				MAX(H_MATRIX(i, nCharString2),
-				    V_MATRIX(i, nCharString2)));
-			if (score > maxScore) {
-				align1InfoPtr->startMatch = nCharString1Plus1 - i;
-				align2InfoPtr->startMatch = 1;
-				maxScore = score;
-			}
-	    }
-		for (j = nCharString2; j >= 1; j--) {
-			score =
-				MAX(F_MATRIX(nCharString1, j),
-				MAX(H_MATRIX(nCharString1, j),
-				    V_MATRIX(nCharString1, j)));
-			if (score > maxScore) {
-				align1InfoPtr->startMatch = 1;
-				align2InfoPtr->startMatch = nCharString2Plus1 - j;
-				maxScore = score;
-			}
-	    }
 	}
 
 	if (scoreOnly == 0) {
@@ -280,7 +300,17 @@ static float pairwiseAlignment(
 		i = nCharString1Plus1 - align1InfoPtr->startMatch;
 		j = nCharString2Plus1 - align2InfoPtr->startMatch;
 		while ((i > 0 && j > 0) && !(typeCode == LOCAL_ALIGNMENT && F_MATRIX(i, j) == 0)) {
-			char action = TRACE_MATRIX(i, j);
+			float scoreSubstitution = F_MATRIX(i, j);
+			float scoreInsertion    = V_MATRIX(i, j);
+			float scoreDeletion     = H_MATRIX(i, j);
+
+			char action;
+			if (scoreSubstitution >= MAX(scoreInsertion, scoreDeletion))
+				action = SUBSTITUTION;
+			else if (scoreInsertion >= scoreDeletion)
+				action = INSERTION;
+			else
+				action = DELETION;
 			switch (action) {
 		    	case DELETION:
 		    		if (j == nCharString2) {
@@ -345,12 +375,10 @@ static float pairwiseAlignment(
  * 'quality1', 'quality2':   left and right BString objects for quality scores
  * 'typeCode':               type of pairwise alignment
  *                           (integer vector of length 1;
- *                            1 = 'global', 2 = 'local', 3 = 'overlap')
+ *                            1 = 'global',   2 = 'local',    3 = 'overlap',
+ *                            4 = 'overlap1', 5 = 'overlap2')
  * 'scoreOnly':              denotes whether or not to only return the scores
  *                           of the optimal pairwise alignment
- *                           (logical vector of length 1)
- * 'endGap':                 denote whether or not to penalize end gaps like
- *                           internal gaps.
  *                           (logical vector of length 1)
  * 'gapOpening':             gap opening cost or penalty
  *                           (double vector of length 1)
@@ -384,7 +412,6 @@ SEXP align_pairwiseAlignment(
 		SEXP quality2,
 		SEXP typeCode,
 		SEXP scoreOnly,
-		SEXP endGap,
 		SEXP gapOpening,
 		SEXP gapExtension,
 		SEXP qualityLookupTable,
@@ -395,16 +422,25 @@ SEXP align_pairwiseAlignment(
 		SEXP constantMatrix,
 		SEXP constantMatrixDim)
 {
+	/* Get the strings for alignment */
 	RoSeq stringElements1 = _get_XString_asRoSeq(string1);
 	RoSeq stringElements2 = _get_XString_asRoSeq(string2);
 	RoSeq qualityElements1 = _get_XString_asRoSeq(quality1);
 	RoSeq qualityElements2 = _get_XString_asRoSeq(quality2);
+	int nCharString1 = stringElements1.nelt;
+	int nCharString2 = stringElements2.nelt;
+
+	/* Allocate memory for temporary buffers */
 	struct AlignInfo align1Info, align2Info;
-	int alignmentBufferSize = MIN(stringElements1.nelt, stringElements2.nelt) + 1;
+	int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
 	int* startInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 	int* startInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 	int* widthInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 	int* widthInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+	align1Info.profile = (float *) R_alloc((long) nCharString1, sizeof(float));
+	align2Info.profile = (float *) R_alloc((long) nCharString2, sizeof(float));
+
+	/* Initialize inserts values */
 	for(int i = 0; i < alignmentBufferSize; i++) {
 		startInserts1Buffer[i] = 0;
 		startInserts2Buffer[i] = 0;
@@ -417,6 +453,8 @@ SEXP align_pairwiseAlignment(
 	align2Info.startInserts = startInserts2Buffer + alignmentBufferSize;
 	align1Info.widthInserts = widthInserts1Buffer + alignmentBufferSize;
 	align2Info.widthInserts = widthInserts2Buffer + alignmentBufferSize;
+
+	/* Perform pairwise alignment */
 	float score = pairwiseAlignment(
 			stringElements1,
 			stringElements2,
@@ -424,7 +462,6 @@ SEXP align_pairwiseAlignment(
 			qualityElements2,
 			INTEGER(typeCode)[0],
 			LOGICAL(scoreOnly)[0],
-			LOGICAL(endGap)[0],
 			(float) REAL(gapOpening)[0],
 			(float) REAL(gapExtension)[0],
 			INTEGER(qualityLookupTable),
@@ -439,67 +476,85 @@ SEXP align_pairwiseAlignment(
 			&align1Info,
 			&align2Info);
 
-	SEXP answer, answerNames, answerElement1, answerElement2;
-	PROTECT(answer = NEW_LIST(9));
-	/* set the names */
-	PROTECT(answerNames = NEW_CHARACTER(9));
-	SET_STRING_ELT(answerNames, 0, mkChar("startMatch1"));
-	SET_STRING_ELT(answerNames, 1, mkChar("widthMatch1"));
-	SET_STRING_ELT(answerNames, 2, mkChar("startInserts1"));
-	SET_STRING_ELT(answerNames, 3, mkChar("widthInserts1"));
-	SET_STRING_ELT(answerNames, 4, mkChar("startMatch2"));
-	SET_STRING_ELT(answerNames, 5, mkChar("widthMatch2"));
-	SET_STRING_ELT(answerNames, 6, mkChar("startInserts2"));
-	SET_STRING_ELT(answerNames, 7, mkChar("widthInserts2"));
-	SET_STRING_ELT(answerNames, 8, mkChar("score"));
-	SET_NAMES(answer, answerNames);
+	/* Prepare the output */
+	SEXP output, outputNames, outputElement1, outputElement2;
+	PROTECT(output = NEW_LIST(11));
+	/* Set the names */
+	PROTECT(outputNames = NEW_CHARACTER(11));
+	SET_STRING_ELT(outputNames, 0, mkChar("startMatch1"));
+	SET_STRING_ELT(outputNames, 1, mkChar("widthMatch1"));
+	SET_STRING_ELT(outputNames, 2, mkChar("startInserts1"));
+	SET_STRING_ELT(outputNames, 3, mkChar("widthInserts1"));
+	SET_STRING_ELT(outputNames, 4, mkChar("profile1"));
+	SET_STRING_ELT(outputNames, 5, mkChar("startMatch2"));
+	SET_STRING_ELT(outputNames, 6, mkChar("widthMatch2"));
+	SET_STRING_ELT(outputNames, 7, mkChar("startInserts2"));
+	SET_STRING_ELT(outputNames, 8, mkChar("widthInserts2"));
+	SET_STRING_ELT(outputNames, 9, mkChar("profile2"));
+	SET_STRING_ELT(outputNames, 10, mkChar("score"));
+	SET_NAMES(output, outputNames);
 	UNPROTECT(1);
-	/* set the "startMatch1" element */
-	PROTECT(answerElement1 = NEW_INTEGER(1));
-	INTEGER(answerElement1)[0] = align1Info.startMatch;
-	SET_ELEMENT(answer, 0, answerElement1);
+	/* Set the "startMatch1" element */
+	PROTECT(outputElement1 = NEW_INTEGER(1));
+	INTEGER(outputElement1)[0] = align1Info.startMatch;
+	SET_ELEMENT(output, 0, outputElement1);
 	UNPROTECT(1);
-	/* set the "widthMatch1" element */
-	PROTECT(answerElement1 = NEW_INTEGER(1));
-	INTEGER(answerElement1)[0] = align1Info.widthMatch;
-	SET_ELEMENT(answer, 1, answerElement1);
+	/* Set the "widthMatch1" element */
+	PROTECT(outputElement1 = NEW_INTEGER(1));
+	INTEGER(outputElement1)[0] = align1Info.widthMatch;
+	SET_ELEMENT(output, 1, outputElement1);
 	UNPROTECT(1);
-	/* set the "startInserts1" and "widthInserts1" elements */
-	PROTECT(answerElement1 = NEW_INTEGER(align1Info.lengthInserts));
-	PROTECT(answerElement2 = NEW_INTEGER(align1Info.lengthInserts));
+	/* Set the "startInserts1" and "widthInserts1" elements */
+	PROTECT(outputElement1 = NEW_INTEGER(align1Info.lengthInserts));
+	PROTECT(outputElement2 = NEW_INTEGER(align1Info.lengthInserts));
 	for(int i = 0; i < align1Info.lengthInserts; i++) {
-		INTEGER(answerElement1)[i] = align1Info.startInserts[align1Info.lengthInserts - 1 - i];
-		INTEGER(answerElement2)[i] = align1Info.widthInserts[align1Info.lengthInserts - 1 - i];
+		INTEGER(outputElement1)[i] = align1Info.startInserts[align1Info.lengthInserts - 1 - i];
+		INTEGER(outputElement2)[i] = align1Info.widthInserts[align1Info.lengthInserts - 1 - i];
 	}
-	SET_ELEMENT(answer, 2, answerElement1);
-	SET_ELEMENT(answer, 3, answerElement2);
+	SET_ELEMENT(output, 2, outputElement1);
+	SET_ELEMENT(output, 3, outputElement2);
 	UNPROTECT(2);
-	/* set the "startMatch2" element */
-	PROTECT(answerElement1 = NEW_INTEGER(1));
-	INTEGER(answerElement1)[0] = align2Info.startMatch;
-	SET_ELEMENT(answer, 4, answerElement1);
+	/* Set the "profile1" element */
+	PROTECT(outputElement1 = NEW_NUMERIC(nCharString1));
+	for(int i = 0; i < nCharString1; i++) {
+		REAL(outputElement1)[i] = align1Info.profile[i];
+	}
+	SET_ELEMENT(output, 4, outputElement1);
 	UNPROTECT(1);
-	/* set the "widthMatch2" element */
-	PROTECT(answerElement1 = NEW_INTEGER(1));
-	INTEGER(answerElement1)[0] = align2Info.widthMatch;
-	SET_ELEMENT(answer, 5, answerElement1);
+	/* Set the "startMatch2" element */
+	PROTECT(outputElement1 = NEW_INTEGER(1));
+	INTEGER(outputElement1)[0] = align2Info.startMatch;
+	SET_ELEMENT(output, 5, outputElement1);
 	UNPROTECT(1);
-	/* set the "startInserts2" and "widthInserts2" elements */
-	PROTECT(answerElement1 = NEW_INTEGER(align2Info.lengthInserts));
-	PROTECT(answerElement2 = NEW_INTEGER(align2Info.lengthInserts));
+	/* Set the "widthMatch2" element */
+	PROTECT(outputElement1 = NEW_INTEGER(1));
+	INTEGER(outputElement1)[0] = align2Info.widthMatch;
+	SET_ELEMENT(output, 6, outputElement1);
+	UNPROTECT(1);
+	/* Set the "startInserts2" and "widthInserts2" elements */
+	PROTECT(outputElement1 = NEW_INTEGER(align2Info.lengthInserts));
+	PROTECT(outputElement2 = NEW_INTEGER(align2Info.lengthInserts));
 	for(int j = 0; j < align2Info.lengthInserts; j++) {
-		INTEGER(answerElement1)[j] = align2Info.startInserts[align2Info.lengthInserts - 1 - j];
-		INTEGER(answerElement2)[j] = align2Info.widthInserts[align2Info.lengthInserts - 1 - j];
+		INTEGER(outputElement1)[j] = align2Info.startInserts[align2Info.lengthInserts - 1 - j];
+		INTEGER(outputElement2)[j] = align2Info.widthInserts[align2Info.lengthInserts - 1 - j];
 	}
-	SET_ELEMENT(answer, 6, answerElement1);
-	SET_ELEMENT(answer, 7, answerElement2);
+	SET_ELEMENT(output, 7, outputElement1);
+	SET_ELEMENT(output, 8, outputElement2);
 	UNPROTECT(2);
-	/* set the "score" element */
-	PROTECT(answerElement1 = NEW_NUMERIC(1));
-	REAL(answerElement1)[0] = score;
-	SET_ELEMENT(answer, 8, answerElement1);
+	/* Set the "profile2" element */
+	PROTECT(outputElement1 = NEW_NUMERIC(nCharString2));
+	for(int j = 0; j < nCharString2; j++) {
+		REAL(outputElement1)[j] = align2Info.profile[j];
+	}
+	SET_ELEMENT(output, 9, outputElement1);
 	UNPROTECT(1);
-	/* answer is ready */
+	/* Set the "score" element */
+	PROTECT(outputElement1 = NEW_NUMERIC(1));
+	REAL(outputElement1)[0] = score;
+	SET_ELEMENT(output, 10, outputElement1);
 	UNPROTECT(1);
-	return answer;
+	/* Output is ready */
+	UNPROTECT(1);
+
+	return output;
 }
