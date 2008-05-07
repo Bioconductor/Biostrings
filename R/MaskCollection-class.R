@@ -280,17 +280,23 @@ setMethod("append", "MaskCollection",
             stop("'x' and 'values' must have the same width")
         if (!isSingleNumber(after))
             stop("'after' must be a single number")
-        x@nir_list <- append(nir_list(x), nir_list(values), after=after)
-        x@active <- append(active(x), active(values), after=after)
+        ans_nir_list <- append(nir_list(x), nir_list(values), after=after)
+        ans_active <- append(active(x), active(values), after=after)
         nm1 <- names(x)
         nm2 <- names(values)
-        if (is.null(nm1) && is.null(nm2))
-            return(x)
-        if (is.null(nm1))
-            nm1 <- rep.int("", length(x))
-        if (is.null(nm2))
-            nm2 <- rep.int("", length(values))
-        x@NAMES <- append(nm1, nm2, after=after)
+        if (is.null(nm1) && is.null(nm2)) {
+            ans_NAMES <- as.character(NA)
+        } else {
+            if (is.null(nm1))
+                nm1 <- rep.int("", length(x))
+            if (is.null(nm2))
+                nm2 <- rep.int("", length(values))
+            ans_NAMES <- append(nm1, nm2, after=after)
+        }
+        ## This transformation must be atomic
+        x@nir_list <- ans_nir_list
+        x@active <- ans_active
+        x@NAMES <- ans_NAMES
         x
     }
 )

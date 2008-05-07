@@ -344,28 +344,6 @@ setReplaceMethod("masks", signature(x="MaskedXString", value="MaskCollection"),
         x
     }
 )
-setReplaceMethod("masks", signature(x="MaskedXString", value="XString"),
-    function(x, value)
-    {
-        ## We need to remove the current masks before calling matchPattern()
-        masks(x) <- NULL
-        nir1 <- toNormalIRanges(matchPattern(value, x))
-        name1 <- paste(as.character(value), "-blocks", sep="")
-        masks(x) <- new("MaskCollection",
-                        nir_list=list(nir1),
-                        width=length(x),
-                        active=TRUE,
-                        NAMES=name1)
-        x
-    }
-)
-setReplaceMethod("masks", signature(x="MaskedXString", value="character"),
-    function(x, value)
-    {
-        masks(x) <- XString(baseXStringSubtype(x), value)
-        x
-    }
-)
 
 ### Setting the masks of an XString object...
 setReplaceMethod("masks", signature(x="XString", value="NULL"),

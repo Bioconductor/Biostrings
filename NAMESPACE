@@ -85,6 +85,7 @@ exportMethods(
     chartr,
     reverse, complement, reverseComplement,
     replaceLetterAtLoc,
+    maskMotif,
 
     ## Others
     isMatching, mismatch, coverage,

@@ -205,6 +205,7 @@
 
 \seealso{
   \link{MaskedXString-class},
+  \code{\link{maskMotif}},
   \code{\link{alphabetFrequency}},
   \code{\link{matchPattern}},
   \link{NormalIRanges-class}
@@ -221,7 +222,7 @@
   width(mymasks)
 
   ## Putting a MaskCollection object on a sequence:
-  x <- DNAString("ACTCAAACTAGGATAGNACTTNNCCAGGC")
+  x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")
   x
   length(x)  # same as width(mymasks)
   nchar(x)   # same as length(x)

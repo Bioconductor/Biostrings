@@ -133,10 +133,10 @@
 \author{H. Pages}
 
 \seealso{
+  \code{\link{maskMotif}},
   \code{\link{matchPattern}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
-  \code{\link{masks}},
   \link{XStringViews-class},
   \link{DNAString-class}
 }
@@ -147,8 +147,7 @@
 
   ## A real use case
   library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chrX <- Dmelanogaster[["X"]]
-  masks(chrX) <- "N"
+  chrX <- maskMotif(Dmelanogaster[["X"]], "N")
   chrX_pals <- findComplementedPalindromes(chrX, min.armlength=50, max.looplength=20)
   complementedPalindromeArmLength(chrX_pals) # 251
 
