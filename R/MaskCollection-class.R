@@ -293,7 +293,7 @@ setMethod("append", "MaskCollection",
                 nm2 <- rep.int("", length(values))
             ans_NAMES <- append(nm1, nm2, after=after)
         }
-        ## This transformation must be atomic
+        ## This transformation must be atomic.
         x@nir_list <- ans_nir_list
         x@active <- ans_active
         x@NAMES <- ans_NAMES
@@ -342,6 +342,7 @@ setMethod("reduce", "MaskCollection",
             ranges <- new("IRanges", start=start1, width=width1, check=FALSE)
             nir1 <- toNormalIRanges(ranges)
         }
+        ## This transformation must be atomic.
         x@nir_list <- list(nir1)
         x@active <- TRUE
         x@NAMES <- as.character(NA)

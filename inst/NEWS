@@ -84,6 +84,9 @@ o Added the coverage() generic function with methods for IRanges,
 
 o Added the maskMotif() generic function for masking a sequence by content.
 
+o Added the read.rmMask() and read.trfMask() functions for reading a mask from
+  a RepeatMasker .out file or from a Tandem Repeats Finder .bed file.
+
 o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is
   now prefered over read.XStringViews() for loading a FASTA file into R.

@@ -635,7 +635,7 @@ setMethod("[", "IRanges",
                 stop("subscript out of bounds")
             if (is(x, "NormalIRanges") && all(i >= 0)) {
                 i <- i[i != 0]
-                if (.Internal(is.unsorted(i)) || any(duplicated(i)))
+                if (isNotStrictlySorted(i))
                     stop("positive numeric subscript must be strictly increasing ",
                          "for NormalIRanges objects")
             }

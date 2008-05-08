@@ -22,6 +22,7 @@ Collate: 00datacache.R
 	IRanges-class.R
 	IRanges-utils.R
 	MaskCollection-class.R
+	read.Mask.R
 	readFASTA.R
 	IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
 	XStringCodec-class.R

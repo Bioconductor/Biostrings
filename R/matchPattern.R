@@ -110,7 +110,7 @@ gregexpr2 <- function(pattern, text)
         stop("this algorithm only supports exact matching ",
              "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
     if (!isTRUEorFALSE(count.only))
-        stop("'count.only' must be TRUE or FALSE")
+        stop("'count.only' must be 'TRUE' or 'FALSE'")
     matches <- switch(algo,
                       "gregexpr"=.matchPattern.gregexpr(pattern, subject),
                       "gregexpr2"=.matchPattern.gregexpr2(pattern, subject))
@@ -190,7 +190,7 @@ gregexpr2 <- function(pattern, text)
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject))
     if (!isTRUEorFALSE(count.only))
-        stop("'count.only' must be TRUE or FALSE")
+        stop("'count.only' must be 'TRUE' or 'FALSE'")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XString_match_pattern",
                      pattern, subject, algo,
@@ -216,7 +216,7 @@ gregexpr2 <- function(pattern, text)
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject(subject)))
     if (!isTRUEorFALSE(count.only))
-        stop("'count.only' must be TRUE or FALSE")
+        stop("'count.only' must be 'TRUE' or 'FALSE'")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XStringViews_match_pattern",
                      pattern,

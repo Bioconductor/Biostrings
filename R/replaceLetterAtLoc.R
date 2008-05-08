@@ -21,7 +21,7 @@ setMethod("replaceLetterAtLoc", "DNAString",
             stop("'if.not.extending' must be a single string")
         if.not.extending <- match.arg(if.not.extending, c("replace", "skip", "merge", "error"))
         if (!isTRUEorFALSE(verbose))
-            stop("'verbose' must be TRUE or FALSE")
+            stop("'verbose' must be 'TRUE' or 'FALSE'")
         .Call("XString_replace_locs_bySTRSXP",
               x, loc, letter, lkup, if.not.extending, verbose,
               PACKAGE="Biostrings")

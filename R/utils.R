@@ -56,12 +56,19 @@ recycleVector <- function(x, length)
     y
 }
 
-### Returns
+### Does NOT support NAs in 'x'.
+isNotStrictlySorted <- function(x)
+{
+    .Internal(is.unsorted(x)) || any(duplicated(x))
+}
+
+### Returns an integer vector.
 pow.int <- function(x, y)
 {
     if (!is.numeric(x))
         stop("'x' must be a numeric vector")
-    x <- as.integer(x)
+    if (!is.integer(x))
+        x <- as.integer(x)
     ans <- rep.int(1L, length(x))
     for (i in seq_len(y))
         ans <- ans * x
