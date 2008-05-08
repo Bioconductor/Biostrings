@@ -59,7 +59,9 @@ read.liftMask <- function(file, seqname=NA, width=NA)
         stop("when specified, 'width' must match the length found ",
              "in the file for sequence \"", seqname, "\"")
     contigs <- Mask(seqlen0, start=data$offset+1, width=data$width)
-    gaps(contigs)
+    ans <- gaps(contigs)
+    names(ans) <- "inter-contig gaps"
+    ans
 }
 
 read.rmMask <- function(file, width, use.IDs=FALSE)
