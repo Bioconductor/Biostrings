@@ -39,9 +39,12 @@ setMethod("initialize", "XStringAlign",
             stop("'string1' and 'string2' must be XString objects of the same subtype")
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
             stop("'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
-        if ((length(profile1) > 0 && max(profile1) != score) ||
-            (length(profile2) > 0 && max(profile2) != score))
+        if ((length(profile1) > 0 && abs(max(profile1) - score) > 1e-3) ||
+            (length(profile2) > 0 && abs(max(profile2) - score) > 1e-3))
             stop("'profile1' and 'profile2' must have a maximum of 'score'")
+        if ((length(profile1) > 0 && abs(profile1[start(match1)] - score) > 1e-3) ||
+            (length(profile2) > 0 && abs(profile2[start(match2)] - score) > 1e-3))
+            stop("'profile1[start(match1)]' and 'profile2[start(match2)]' must equal 'score'")
         gapOpening <- as.double(- abs(gapOpening))
         if (is.na(gapOpening) || length(gapOpening) != 1)
             stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -79,9 +82,12 @@ setMethod("initialize", "XStringAlign",
         message <- c(message, "'string1' and 'string2' must be XString objects of the same subtype")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
-    if ((length(profile1(object)) > 0 && max(profile1(object)) != score(object)) ||
-        (length(profile2(object)) > 0 && max(profile2(object)) != score(object)))
-        stop("'profile1' and 'profile2' must have a maximum of 'score'")
+    if ((length(profile1(object)) > 0 && abs(profile1(object) - score(object)) > 1e-3) ||
+        (length(profile2(object)) > 0 && abs(profile2(object) - score(object)) > 1e-3))
+        message <- c(message, "'profile1' and 'profile2' must have a maximum of 'score'")
+    if ((length(profile1) > 0 && abs(profile1[start(object@match1)] - score(object)) > 1e-3) ||
+        (length(profile2) > 0 && abs(profile2[start(object@match2)] - score(object)) > 1e-3))
+        message <- c(message, "'profile1[start(match1)]' and 'profile2[start(match2)]' must equal 'score'")
     if (is.na(object@gapOpening) || length(object@gapOpening) != 1)
         message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
     if (is.na(object@gapExtension) || length(object@gapExtension) != 1)
