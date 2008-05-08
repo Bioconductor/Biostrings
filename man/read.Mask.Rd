@@ -70,8 +70,7 @@
   mask2
 
   ## Put the 2 masks on chrM:
-  chrM <- NULL  # drop current masks (if any)
-  masks(chrM) <- mask1
+  masks(chrM) <- mask1  # this would drop all current masks, if any
   masks(chrM) <- append(masks(chrM), mask2)
   chrM
 }
