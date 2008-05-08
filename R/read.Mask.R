@@ -1,6 +1,6 @@
 ### =========================================================================
-### Reading a mask from a file
-### --------------------------
+### Read a mask from a file
+### -----------------------
 ###
 ### From a RepeatMasker .out file (for chrM in ce2):
 ###   library(BSgenome.Celegans.UCSC.ce2)
@@ -13,14 +13,14 @@
 ### -------------------------------------------------------------------------
 
 
-read.rmMask <- function(file, width, with.ID=FALSE)
+read.rmMask <- function(file, width, use.IDs=FALSE)
 {
     if (!isSingleNumber(width))
         stop("'width' must be a single integer")
     if (!is.integer(width))
         width <- as.integer(width)
-    if (!isTRUEorFALSE(with.ID))
-        stop("'with.ID' must be 'TRUE' or 'FALSE'")
+    if (!isTRUEorFALSE(use.IDs))
+        stop("'use.IDs' must be 'TRUE' or 'FALSE'")
     ALLCOLS <- c(
         `SW_score`="integer",
         `perc_div`="numeric",
@@ -46,7 +46,7 @@ read.rmMask <- function(file, width, with.ID=FALSE)
                        skip=3,
                        check.names=FALSE)
     ranges <- IRanges(start=data$begin_in_query, end=data$end_in_query)
-    if (with.ID) {
+    if (use.IDs) {
         names(ranges) <- data$ID
         if (isNotStrictlySorted(start(ranges)))
             ranges <- ranges[order(start(ranges))]

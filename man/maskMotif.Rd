@@ -31,6 +31,7 @@
 \author{H. Pages}
 
 \seealso{
+  \code{\link{read.Mask}},
   \link{XString-class},
   \link{MaskedXString-class},
   \link{XStringViews-class},
