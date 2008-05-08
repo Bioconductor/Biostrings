@@ -76,6 +76,8 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
         width <- as.integer(width)
     if (!isTRUEorFALSE(use.IDs))
         stop("'use.IDs' must be 'TRUE' or 'FALSE'")
+    ## For a description of RepeatMasker output format:
+    ##   http://www.repeatmasker.org/webrepeatmaskerhelp.html
     ALLCOLS <- c(
         `SW_score`="integer",
         `perc_div`="numeric",
@@ -85,7 +87,7 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
         `begin_in_query`="integer",
         `end_in_query`="integer",
         `left_in_query`="character",
-        `strand`="character",  # Looks like the strand but I'm not sure!
+        `C`="character", 
         `matching_repeat`="character",
         `repeat_class_or_family`="character",
         `begin_in_repeat`="integer",
@@ -93,21 +95,13 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
         `left_in_repeat`="character",
         `ID`="character"
     )
-    COLS <- c("begin_in_query", "end_in_query", "strand", "ID")
+    COLS <- c("begin_in_query", "end_in_query", "ID")
     ALLCOLS[!(names(ALLCOLS) %in% COLS)] <- "NULL"
     data <- read.table(file,
                        col.names=names(ALLCOLS),
                        colClasses=ALLCOLS,
                        skip=3,
                        check.names=FALSE)
-    strand_is_plus <- data$strand == "+"
-    if (!all(strand_is_plus)) {
-        unexpected_vals <- setdiff(unique(data$strand), "+")
-        unexpected_vals <- paste(unexpected_vals, collapse=", ")
-        warning("unexpected value(s) ", unexpected_vals, " in \"strand\" field, ",
-                "ignoring these lines")
-        data <- data[strand_is_plus, ]
-    }
     ranges <- IRanges(start=data$begin_in_query, end=data$end_in_query)
     if (use.IDs) {
         names(ranges) <- data$ID
