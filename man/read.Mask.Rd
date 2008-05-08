@@ -30,7 +30,7 @@
     The name of the sequence for which the mask of "inter-contig gaps" 
     must be extracted.
     If no sequence is specified (i.e. \code{seqname=NA}) then an error is
-    raised and the list of valid sequences is displayed.
+    raised and the sequence names found in the file are displayed.
     If the file doesn't contain any information for the specified sequence,
     then a warning is issued and an empty mask of width \code{width}
     is returned.
@@ -61,11 +61,44 @@
 }
 
 \examples{
-  ## Read the UCSC "lift" file for hg18 and extract the mask of 
-  ## "inter-contig gaps" for chr1:
+  ## ---------------------------------------------------------------------
+  ## A. Extract a mask of "inter-contig gaps" with read.liftMask()
+  ## ---------------------------------------------------------------------
+  ## Note: The hg18liftAll.lft file was obtained by downloading,
+  ## extracting and renaming the liftAll.zip file from
+  ##
+  ##   http://hgdownload.cse.ucsc.edu/goldenPath/hg18/bigZips/
+  ##     liftAll.zip             03-Feb-2006 11:35  5.5K
+  ##
+  ## on May 8, 2008.
+
   file1 <- system.file("extdata", "hg18liftAll.lft", package="Biostrings")
   mask1 <- read.liftMask(file1, seqname="chr1")
   mask1
+  if (interactive()) {
+      ## contigs 7 and 8 for chrY are adjacent
+      read.liftMask(file1, seqname="chrY")
+
+      ## displays the sequence names found in the file
+      read.liftMask(file1)
+
+      ## specify an unknown sequence name
+      read.liftMask(file1, seqname="chrZ", width=300)
+  }
+
+  ## ---------------------------------------------------------------------
+  ## B. Extract an "rm" or a "trf" mask with read.rmMask() or
+  ##    read.trfMask()
+  ## ---------------------------------------------------------------------
+  ## Note: The ce2chrM.fa.out and ce2chrM.bed files were obtained by
+  ## downloading, extracting and renaming the chromOut.zip and
+  ## chromTrf.zip files from
+  ##
+  ##   http://hgdownload.cse.ucsc.edu/goldenPath/ce2/bigZips/
+  ##     chromOut.zip            21-Apr-2004 09:05  2.6M
+  ##     chromTrf.zip            21-Apr-2004 09:07  182K
+  ##
+  ## on May 7, 2008.
 
   ## Before you can read a mask with read.rmMask() or read.trfMask(), you
   ## need to know the length of the sequence that you're going to put the

@@ -36,9 +36,9 @@ read.liftMask <- function(file, seqname=NA, width=NA)
                        colClasses=ALLCOLS,
                        check.names=FALSE)
     if (is.na(seqname)) {
-        valid_seqnames <- paste("\"", unique(data$seqname), "\"", sep="")
-        valid_seqnames <- paste(valid_seqnames, collapse=", ")
-        stop("valid seqnames for this file are ", valid_seqnames)
+        found_seqnames <- paste("\"", unique(data$seqname), "\"", sep="")
+        found_seqnames <- paste(found_seqnames, collapse=", ")
+        stop("seqnames found in this file: ", found_seqnames)
     }
     data <- data[data$seqname %in% seqname, ]
     if (nrow(data) == 0) {
