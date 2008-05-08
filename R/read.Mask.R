@@ -58,7 +58,11 @@ read.liftMask <- function(file, seqname=NA, width=NA)
     if (!is.na(width) && width != seqlen0)
         stop("when specified, 'width' must match the length found ",
              "in the file for sequence \"", seqname, "\"")
-    contigs <- Mask(seqlen0, start=data$offset+1, width=data$width)
+    contigs0 <- IRanges(start=data$offset+1, width=data$width)
+    contigs1 <- toNormalIRanges(contigs0)
+    if (length(contigs1) != length(contigs0))
+        warning("some contigs are adjacent or overlapping")
+    contigs <- Mask(seqlen0, start=start(contigs1), width=width(contigs1))
     ans <- gaps(contigs)
     names(ans) <- "inter-contig gaps"
     ans
