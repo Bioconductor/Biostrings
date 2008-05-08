@@ -23,7 +23,7 @@ exportClasses(
 export(
     IRanges,
     intToRanges, intToAdjacentRanges, shift, restrict, narrow, reduce, toNormalIRanges, gaps,
-    Mask, read.rmMask, read.trfMask,
+    Mask, read.liftMask, read.rmMask, read.trfMask,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, GENETIC_CODE,

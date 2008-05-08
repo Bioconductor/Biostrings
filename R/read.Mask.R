@@ -2,16 +2,65 @@
 ### Read a mask from a file
 ### -----------------------
 ###
+### From an UCSC "lift" file (for hg18):
+###   file1 <- system.file("extdata", "hg18liftAll.lft", package="Biostrings")
+###   mask1 <- read.liftMask(file1, "chr1")
 ### From a RepeatMasker .out file (for chrM in ce2):
 ###   library(BSgenome.Celegans.UCSC.ce2)
-###   file1 <- system.file("extdata", "ce2chrM.fa.out", package="Biostrings")
-###   mask1 <- read.rmMask(file1, width=length(Celegans$chrM)) 
+###   file2 <- system.file("extdata", "ce2chrM.fa.out", package="Biostrings")
+###   mask2 <- read.rmMask(file2, width=length(Celegans$chrM)) 
 ### From a Tandem Repeats Finder .bed file (for chrM in ce2):
-###   file2 <- system.file("extdata", "ce2chrM.bed", package="Biostrings")
-###   mask2 <- read.trfMask(file2, width=length(Celegans$chrM)) 
+###   file3 <- system.file("extdata", "ce2chrM.bed", package="Biostrings")
+###   mask3 <- read.trfMask(file3, width=length(Celegans$chrM)) 
 ###
 ### -------------------------------------------------------------------------
 
+
+read.liftMask <- function(file, seqname=NA, width=NA)
+{
+    if (!isSingleStringOrNA(seqname))
+        stop("'seqname' must be a single string or 'NA'")
+    if (!isSingleNumberOrNA(width))
+        stop("'width' must be a single integer or 'NA'")
+    if (!is.integer(width))
+        width <- as.integer(width)
+    ALLCOLS <- c(
+        `offset`="integer",
+        `xxxx`="NULL",  # not sure how to call this
+        `width`="integer",
+        `seqname`="character",
+        `seqlen`="integer"
+    )
+    data <- read.table(file,
+                       col.names=names(ALLCOLS),
+                       colClasses=ALLCOLS,
+                       check.names=FALSE)
+    if (is.na(seqname)) {
+        valid_seqnames <- paste("\"", unique(data$seqname), "\"", sep="")
+        valid_seqnames <- paste(valid_seqnames, collapse=", ")
+        stop("valid seqnames for this file are ", valid_seqnames)
+    }
+    data <- data[data$seqname %in% seqname, ]
+    if (nrow(data) == 0) {
+        if (is.na(width))
+            stop("unknown sequence \"", seqname, "\", ",
+                 "please specify the width of the empty mask to return")
+        warning("unknown sequence \"", seqname, "\", returning empty mask")
+        ans <- Mask(width, start=integer(0), width=integer(0))
+        names(ans) <- "inter-contig gaps (empty)"
+        return(ans)
+    }
+    ## Sanity checks
+    seqlen0 <- unique(data$seqlen)
+    if (length(seqlen0) != 1)
+        stop("broken \"lift\" file: contains different lengths ",
+             "for sequence \"", seqname, "\"")
+    if (!is.na(width) && width != seqlen0)
+        stop("when specified, 'width' must match the length found ",
+             "in the file for sequence \"", seqname, "\"")
+    contigs <- Mask(seqlen0, start=data$offset+1, width=data$width)
+    gaps(contigs)
+}
 
 read.rmMask <- function(file, width, use.IDs=FALSE)
 {
@@ -30,7 +79,7 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
         `begin_in_query`="integer",
         `end_in_query`="integer",
         `left_in_query`="character",
-        `strand`="character",           # Looks like the strand but I'm not sure!
+        `strand`="character",  # Looks like the strand but I'm not sure!
         `matching_repeat`="character",
         `repeat_class_or_family`="character",
         `begin_in_repeat`="integer",
@@ -38,13 +87,21 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
         `left_in_repeat`="character",
         `ID`="character"
     )
-    COLS <- c("begin_in_query", "end_in_query", "ID")
+    COLS <- c("begin_in_query", "end_in_query", "strand", "ID")
     ALLCOLS[!(names(ALLCOLS) %in% COLS)] <- "NULL"
     data <- read.table(file,
                        col.names=names(ALLCOLS),
                        colClasses=ALLCOLS,
                        skip=3,
                        check.names=FALSE)
+    strand_is_plus <- data$strand == "+"
+    if (!all(strand_is_plus)) {
+        unexpected_vals <- setdiff(unique(data$strand), "+")
+        unexpected_vals <- paste(unexpected_vals, collapse=", ")
+        warning("unexpected value(s) ", unexpected_vals, " in \"strand\" field, ",
+                "ignoring these lines")
+        data <- data[strand_is_plus, ]
+    }
     ranges <- IRanges(start=data$begin_in_query, end=data$end_in_query)
     if (use.IDs) {
         names(ranges) <- data$ID
@@ -52,7 +109,7 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
             ranges <- ranges[order(start(ranges))]
         if (!isNormal(ranges))
             stop("cannot keep the repeat IDs when some repeats overlap")
-        nir1 <- as(ranges, "NormalIRanges")
+        nir1 <- asNormalIRanges(ranges)
     } else {
         nir1 <- toNormalIRanges(ranges)
     }

@@ -30,6 +30,11 @@ isSingleString <- function(x)
     is.character(x) && length(x) == 1 && !is.na(x)
 }
 
+isSingleStringOrNA <- function(x)
+{
+    is.vector(x) && is.atomic(x) && length(x) == 1 && (is.character(x) || is.na(x))
+}
+
 numeric2integer <- function(x)
 {
     if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
