@@ -271,7 +271,7 @@ More precisely, here is the analysis we want to perform:
 
 Let's start by loading the input dictionary with:
 <<c1>>=
-ce2dict0_file <- system.file("extdata/ce2dict0.fa", package="Biostrings")
+ce2dict0_file <- system.file("extdata", "ce2dict0.fa", package="Biostrings")
 ce2dict0 <- read.DNAStringSet(ce2dict0_file, "fasta")
 ce2dict0
 @
