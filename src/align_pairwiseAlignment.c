@@ -235,21 +235,21 @@ static float pairwiseAlignment(
 			}
 		}
 
-		/* Step 3e:  Adjust substitution, insertion, and deletion scores when no end gaps */
+		/* Step 3e:  Adjust insertion and deletion scores when no end gaps */
 		if (!endGap1) {
-			for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+			for (i = 2, iMinus1 = 1; i <= nCharString1; i++, iMinus1++) {
 				H_MATRIX(i, nCharString2) =
-					MAX(F_MATRIX(i, nCharString2),
-					MAX(H_MATRIX(i, nCharString2),
-						H_MATRIX(iMinus1, nCharString2)));
+					MAX(F_MATRIX(iMinus1, nCharString2),
+					MAX(H_MATRIX(iMinus1, nCharString2),
+						V_MATRIX(iMinus1, nCharString2)));
 			}
 		}
 
 		if (!endGap2) {
-			for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+			for (j = 2, jMinus1 = 1; j <= nCharString2; j++, jMinus1++) {
 				V_MATRIX(nCharString1, j) =
-					MAX(F_MATRIX(nCharString1, j),
-					MAX(V_MATRIX(nCharString1, j),
+					MAX(F_MATRIX(nCharString1, jMinus1),
+					MAX(H_MATRIX(nCharString1, jMinus1),
 						V_MATRIX(nCharString1, jMinus1)));
 			}
 		}
