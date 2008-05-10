@@ -175,6 +175,7 @@ setMethod("show", "XStringAlign",
           format(paste("[", c(start(object@match1), start(object@match2)), "]", sep = ""),
                  justify = "right")
         cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
+                   "overlap1" = "Overlap1", "overlap2" = "Overlap2",
                    "local" = "Local"), "Pairwise Alignment\n")
         cat("align1:", alignStarts[1],
             toSeqSnippet(align1(object), getOption("width") - 8), "\n")
