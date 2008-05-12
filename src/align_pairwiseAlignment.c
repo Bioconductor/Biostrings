@@ -159,10 +159,10 @@ static float pairwiseAlignment(
 				SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
 				         substitutionValue);
 			H_MATRIX(i, j) = 
-				MAX(SAFE_SUM(F_MATRIX(iMinus1, j), gapOpening + gapExtension),
+				MAX(SAFE_SUM(MAX(F_MATRIX(iMinus1, j), V_MATRIX(iMinus1, j)), gapOpening + gapExtension),
 				    SAFE_SUM(H_MATRIX(iMinus1, j), gapExtension));
 			V_MATRIX(i, j) =
-				MAX(SAFE_SUM(F_MATRIX(i, jMinus1), gapOpening + gapExtension),
+				MAX(SAFE_SUM(MAX(F_MATRIX(i, jMinus1), H_MATRIX(i, jMinus1)), gapOpening + gapExtension),
 				    SAFE_SUM(V_MATRIX(i, jMinus1), gapExtension));
 
 			if (typeCode == LOCAL_ALIGNMENT) {
@@ -188,7 +188,8 @@ static float pairwiseAlignment(
 			for (i = 2, iMinus1 = 1; i <= nCharString1; i++, iMinus1++) {
 				H_MATRIX(i, nCharString2) =
 					MAX(F_MATRIX(iMinus1, nCharString2),
-						H_MATRIX(iMinus1, nCharString2));
+					MAX(H_MATRIX(iMinus1, nCharString2),
+						V_MATRIX(iMinus1, nCharString2)));
 			}
 		}
 
@@ -196,7 +197,8 @@ static float pairwiseAlignment(
 			for (j = 2, jMinus1 = 1; j <= nCharString2; j++, jMinus1++) {
 				V_MATRIX(nCharString1, j) =
 					MAX(F_MATRIX(nCharString1, jMinus1),
-						V_MATRIX(nCharString1, jMinus1));
+					MAX(H_MATRIX(nCharString1, jMinus1),
+						V_MATRIX(nCharString1, jMinus1)));
 			}
 		}
 
@@ -213,21 +215,23 @@ static float pairwiseAlignment(
 		if (typeCode != LOCAL_ALIGNMENT) {
 			/* Step 3f:  Generate profile scores for non-local alignments */
 			if (endGap1) {
-				align1InfoPtr->profile[0] = F_MATRIX(nCharString1, nCharString2);
+				align1InfoPtr->profile[0] =
+					MAX(F_MATRIX(nCharString1, nCharString2),
+						V_MATRIX(nCharString1, nCharString2));
 				for (i = 1, iElt = nCharString1Minus1; i < nCharString1; i++, iElt--) {
+					float fvScore = MAX(F_MATRIX(i, nCharString2), V_MATRIX(i, nCharString2));
 					align1InfoPtr->profile[iElt] =
-						SAFE_SUM(F_MATRIX(i, nCharString2),
-								 gapOpening + iElt * gapExtension);
-					if (F_MATRIX(i, nCharString2) >= H_MATRIX(i, nCharString2)) {
+						SAFE_SUM(fvScore, gapOpening + iElt * gapExtension);
+					if (fvScore >= H_MATRIX(i, nCharString2)) {
 						align1InfoPtr->profile[iElt] =
 							MAX(align1InfoPtr->profile[iElt],
-								SAFE_SUM(H_MATRIX(i, nCharString2),
-										 iElt * gapExtension));
+								SAFE_SUM(H_MATRIX(i, nCharString2), iElt * gapExtension));
 					}
 				}
 			} else {
 				for (i = 1, iElt = nCharString1Minus1; i <= nCharString1; i++, iElt--) {
-					align1InfoPtr->profile[iElt] = F_MATRIX(i, nCharString2);
+					align1InfoPtr->profile[iElt] =
+						MAX(F_MATRIX(i, nCharString2), V_MATRIX(i, nCharString2));
 				}
 			}
 			if (MAX(F_MATRIX(nCharString1, nCharString2),
@@ -237,12 +241,14 @@ static float pairwiseAlignment(
 			}
 
 			if (endGap2) {
-				align2InfoPtr->profile[0] = F_MATRIX(nCharString1, nCharString2);
+				align2InfoPtr->profile[0] =
+					MAX(F_MATRIX(nCharString1, nCharString2),
+						H_MATRIX(nCharString1, nCharString2));
 				for (j = 1, jElt = nCharString2Minus1; j < nCharString2; j++, jElt--) {
+					float fhScore = MAX(F_MATRIX(nCharString1, j), H_MATRIX(nCharString1, j));
 					align2InfoPtr->profile[jElt] =
-						SAFE_SUM(F_MATRIX(nCharString1, j),
-								 gapOpening + jElt * gapExtension);
-					if (F_MATRIX(nCharString1, j) >= V_MATRIX(nCharString1, j)) {
+						SAFE_SUM(fhScore, gapOpening + jElt * gapExtension);
+					if (fhScore >= V_MATRIX(nCharString1, j)) {
 						align2InfoPtr->profile[jElt] =
 							MAX(align2InfoPtr->profile[jElt],
 								SAFE_SUM(V_MATRIX(nCharString1, j),
@@ -251,7 +257,8 @@ static float pairwiseAlignment(
 				}
 			} else {
 				for (j = 1, jElt = nCharString2Minus1; j <= nCharString2; j++, jElt--) {
-					align2InfoPtr->profile[jElt] = F_MATRIX(nCharString1, j);
+					align2InfoPtr->profile[jElt] =
+						MAX(F_MATRIX(nCharString1, j), H_MATRIX(nCharString1, j));
 				}
 			}
 			if (MAX(F_MATRIX(nCharString1, nCharString2),
