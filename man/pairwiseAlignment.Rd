@@ -12,7 +12,7 @@ Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignm
 }
 \usage{
 pairwiseAlignment(string1, string2, quality1 = 22L, quality2 = 22L, type = "global",
-                  substitutionMatrix = NULL, gapOpening = -10, gapExtension = -0.5,
+                  substitutionMatrix = NULL, gapOpening = -10, gapExtension = -2,
                   scoreOnly = FALSE)
 }
 \arguments{

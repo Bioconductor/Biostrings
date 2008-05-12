@@ -143,6 +143,7 @@ static float pairwiseAlignment(
 	align2InfoPtr->widthMatch = 0;
 	int lookupValue, element1, element2, iElt, jElt;
 	float substitutionValue, maxScore = NEGATIVE_INFINITY;
+	float gapOpeningPlusExtension = gapOpening + gapExtension;
 	for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
 		SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 		element1 = lookupValue;
@@ -159,10 +160,10 @@ static float pairwiseAlignment(
 				SAFE_SUM(MAX(F_MATRIX(iMinus1, jMinus1), MAX(H_MATRIX(iMinus1, jMinus1), V_MATRIX(iMinus1, jMinus1))),
 				         substitutionValue);
 			H_MATRIX(i, j) = 
-				MAX(SAFE_SUM(MAX(F_MATRIX(iMinus1, j), V_MATRIX(iMinus1, j)), gapOpening + gapExtension),
+				MAX(SAFE_SUM(MAX(F_MATRIX(iMinus1, j), V_MATRIX(iMinus1, j)), gapOpeningPlusExtension),
 				    SAFE_SUM(H_MATRIX(iMinus1, j), gapExtension));
 			V_MATRIX(i, j) =
-				MAX(SAFE_SUM(MAX(F_MATRIX(i, jMinus1), H_MATRIX(i, jMinus1)), gapOpening + gapExtension),
+				MAX(SAFE_SUM(MAX(F_MATRIX(i, jMinus1), H_MATRIX(i, jMinus1)), gapOpeningPlusExtension),
 				    SAFE_SUM(V_MATRIX(i, jMinus1), gapExtension));
 
 			if (typeCode == LOCAL_ALIGNMENT) {
