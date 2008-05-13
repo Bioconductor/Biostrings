@@ -565,25 +565,71 @@ SEXP XInteger_memcmp(
 );
 
 SEXP XInteger_read_ints_from_i1i2(
-	SEXP src_xraw_xp,
+	SEXP src_xint_xp,
 	SEXP imin,
 	SEXP imax
 );
 
 SEXP XInteger_read_ints_from_subset(
-	SEXP src_xraw_xp,
+	SEXP src_xint_xp,
 	SEXP subset
 );
 
 SEXP XInteger_write_ints_to_i1i2(
-	SEXP dest_xraw_xp,
+	SEXP dest_xint_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP val
 );
 
 SEXP XInteger_write_ints_to_subset(
-	SEXP dest_xraw_xp,
+	SEXP dest_xint_xp,
+	SEXP subset,
+	SEXP val
+);
+
+
+/* XNumeric.c */
+
+SEXP debug_XNumeric();
+
+SEXP XNumeric_alloc(
+	SEXP xnum_xp,
+	SEXP length
+);
+
+SEXP XNumeric_get_show_string(SEXP xnum_xp);
+
+SEXP XNumeric_length(SEXP xnum_xp);
+
+SEXP XNumeric_memcmp(
+	SEXP xnum1_xp,
+	SEXP start1,
+	SEXP xnum2_xp,
+	SEXP start2,
+	SEXP width
+);
+
+SEXP XNumeric_read_nums_from_i1i2(
+	SEXP src_xnum_xp,
+	SEXP imin,
+	SEXP imax
+);
+
+SEXP XNumeric_read_nums_from_subset(
+	SEXP src_xnum_xp,
+	SEXP subset
+);
+
+SEXP XNumeric_write_nums_to_i1i2(
+	SEXP dest_xnum_xp,
+	SEXP imin,
+	SEXP imax,
+	SEXP val
+);
+
+SEXP XNumeric_write_nums_to_subset(
+	SEXP dest_xnum_xp,
 	SEXP subset,
 	SEXP val
 );

@@ -40,6 +40,11 @@ debug_XInteger <- function()
     invisible(.Call("debug_XInteger", PACKAGE="Biostrings"))
 }
 
+debug_XNumeric <- function()
+{
+	invisible(.Call("debug_XNumeric", PACKAGE="Biostrings"))
+}
+
 debug_XString_class <- function()
 {
     invisible(.Call("debug_XString_class", PACKAGE="Biostrings"))

@@ -7,7 +7,7 @@ import(utils) ## for the "head" and "tail" generics
 exportClasses(
     IRanges, UnlockedIRanges, Views, LockedIRanges, NormalIRanges,
     MaskCollection,
-    XRaw, XInteger,
+    XRaw, XInteger, XNumeric,
     XString, BString, DNAString, RNAString, AAString,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
     XStringViews,
@@ -28,7 +28,7 @@ export(
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
-    #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write,
+    #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write, XNumeric, XNumeric.read, XNumeric.write,
     BString, DNAString, RNAString, AAString,
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     views, adjacentViews, trim, subviews,
@@ -59,7 +59,7 @@ export(
 
 exportMethods(
     ## Generics defined elsewhere
-    #as.integer,
+    #as.integer, as.numeric,
     initialize, length, names, "[", "[[", show, "==", "!=", duplicated,
     coerce, as.data.frame, as.matrix, as.list,
     as.character, toString, as.complex, toComplex,

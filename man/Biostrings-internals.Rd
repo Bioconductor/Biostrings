@@ -37,6 +37,19 @@
 \alias{[,XInteger-method}
 \alias{[<-,XInteger-method}
 
+\alias{class:XNumeric}
+\alias{XNumeric-class}
+\alias{XNumeric}
+
+\alias{length,XNumeric-method}
+\alias{as.numeric,XNumeric-method}
+\alias{initialize,XNumeric-method}
+\alias{show,XNumeric-method}
+\alias{==,XNumeric,XNumeric-method}
+\alias{!=,XNumeric,XNumeric-method}
+\alias{[,XNumeric-method}
+\alias{[<-,XNumeric-method}
+
 \alias{class:XStringCodec}
 \alias{XStringCodec-class}
 \alias{XStringCodec}

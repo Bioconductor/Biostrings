@@ -73,6 +73,19 @@ static const R_CallMethodDef callMethods[] = {
 	{"XInteger_write_ints_to_i1i2", (DL_FUNC) &XInteger_write_ints_to_i1i2, 4},
 	{"XInteger_write_ints_to_subset", (DL_FUNC) &XInteger_write_ints_to_subset, 3},
 
+/* XNumeric.c */
+	{"debug_XNumeric", (DL_FUNC) &debug_XNumeric, 0},
+
+	{"XNumeric_alloc", (DL_FUNC) &XNumeric_alloc, 2},
+	{"XNumeric_get_show_string", (DL_FUNC) &XNumeric_get_show_string, 1},
+	{"XNumeric_length", (DL_FUNC) &XNumeric_length, 1},
+	{"XNumeric_memcmp", (DL_FUNC) &XNumeric_memcmp, 5},
+
+	{"XNumeric_read_nums_from_i1i2", (DL_FUNC) &XNumeric_read_nums_from_i1i2, 3},
+	{"XNumeric_read_nums_from_subset", (DL_FUNC) &XNumeric_read_nums_from_subset, 2},
+	{"XNumeric_write_nums_to_i1i2", (DL_FUNC) &XNumeric_write_nums_to_i1i2, 4},
+	{"XNumeric_write_nums_to_subset", (DL_FUNC) &XNumeric_write_nums_to_subset, 3},
+
 /* XString_class.c */
 	{"debug_XString_class", (DL_FUNC) &debug_XString_class, 0},
 	{"init_DNAlkups", (DL_FUNC) &init_DNAlkups, 2},
