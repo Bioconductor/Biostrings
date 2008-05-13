@@ -80,6 +80,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* XStringSet_class.c */
 	{"debug_XStringSet_class", (DL_FUNC) &debug_XStringSet_class, 0},
+	{"XStringSet_as_STRSXP", (DL_FUNC) &XStringSet_as_STRSXP, 2},
 	{"XStrings_to_nchars", (DL_FUNC) &XStrings_to_nchars, 1},
 
 /* seqs_to_seqs.c */

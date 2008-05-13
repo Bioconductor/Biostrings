@@ -274,7 +274,7 @@ void _write_RoSeq_to_XRaw(SEXP x, int offset, RoSeq seq, const int *chrtrtable)
  * FIXME: This has nothing to do with XRaw objects! Find another place for it
  */
 
-static SEXP _new_CHARSXP_from_RoSeq(RoSeq seq, SEXP lkup)
+SEXP _new_CHARSXP_from_RoSeq(RoSeq seq, SEXP lkup)
 {
 	// IMPORTANT: We use user-controlled memory for this private memory
 	// pool so it is persistent between calls to .Call().

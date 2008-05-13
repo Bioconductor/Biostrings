@@ -59,7 +59,7 @@ normalize.fixed <- function(fixed, subjectClass)
 .isMatching <- function(pattern, subject, start, max.mismatch, fixed)
 {
     if (!is(subject, "XString"))
-        subject <- BString(subject)
+        subject <- XString(NULL, subject)
     if (class(pattern) != class(subject))
         pattern <- XString(class(subject), pattern)
     if (!is.numeric(start))

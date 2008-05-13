@@ -37,6 +37,7 @@
 \alias{coerce,MaskedDNAString,DNAString-method}
 \alias{coerce,MaskedRNAString,RNAString-method}
 \alias{coerce,MaskedAAString,AAString-method}
+\alias{XString,MaskedXString-method}
 
 \alias{coerce,MaskedXString,MaskCollection-method}
 \alias{coerce,MaskedXString,NormalIRanges-method}

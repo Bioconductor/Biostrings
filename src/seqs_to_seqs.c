@@ -236,7 +236,7 @@ SEXP new_XRaw_from_XString(SEXP x, SEXP safe_starts, SEXP safe_widths, SEXP lkup
 
 
 /****************************************************************************
- * Converting a set of sequences into an XStringList object.
+ * Converting a list of sequences into an XStringList object.
  */
 
 static SEXP new_XStringList(const char *class, SEXP seqs)

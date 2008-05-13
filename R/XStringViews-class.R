@@ -428,15 +428,10 @@ setMethod("!=", signature(e1="character", e2="XStringViews"),
 setMethod("as.character", "XStringViews",
     function(x, use.names=TRUE, check.limits=TRUE)
     {
-        use.names <- normalize.use.names(use.names)
-        if (check.limits)
-            ans <- sapply(seq_len(length(x)), function(i) as.character(x[[i]]))
-        else
-            ans <- sapply(seq_len(length(x)),
-                          function(i) XStringViews.get_view(subject(x), start(x)[i], end(x)[i]))
-        if (use.names)
-            names(ans) <- names(x)
-        ans
+        if (!isTRUEorFALSE(check.limits))
+            stop("'check.limits' must be 'TRUE' or 'FALSE'")
+        y <- XStringViewsToSet(x, use.names, verbose=check.limits)
+        as.character(y)
     }
 )
 

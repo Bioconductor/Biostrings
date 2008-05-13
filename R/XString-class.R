@@ -236,7 +236,11 @@ setGeneric("XString", signature="x",
 
 setMethod("XString", "character",
     function(class, x, start=1, nchar=NA, check=TRUE)
+    {
+        if (is.null(class))
+            class <- "BString"
         charToXString(x, start=start, width=nchar, class=class, check=check)
+    }
 )
 
 ### Just because of the silly "AsIs" objects found in the probe packages
@@ -247,13 +251,17 @@ setMethod("XString", "AsIs",
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-        charToXString(x, start=start, width=nchar, class=class, check=check)
+        XString(class, x, start=start, nchar=nchar, check=check)
     }
 )
 
 setMethod("XString", "XString",
     function(class, x, start=1, nchar=NA, check=TRUE)
+    {
+        if (is.null(class))
+            class <- class(x)
         .XStringToXString(x, start, nchar, class, check)
+    }
 )
 
 BString <- function(x, start=1, nchar=NA, check=TRUE)

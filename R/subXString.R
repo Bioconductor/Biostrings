@@ -18,7 +18,7 @@ subXString <- function(x, start=NA, end=NA, length=NA)
     if (!is(x, "XString")) {
         if (!isSingleString(x))
             stop("'x' must be an XString object or a single string")
-        x <- BString(x)
+        x <- XString(NULL, x)
     }
     if (!isNumericOrNAs(start) || length(start) != 1)
         stop("'start' must be a single number")

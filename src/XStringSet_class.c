@@ -187,6 +187,32 @@ void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq, int encode)
 
 
 /****************************************************************************
+ * Coercion.
+ */
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
+{
+	SEXP ans;
+	int x_length, i;
+	CachedXStringSet cached_x;
+	RoSeq xx;
+
+	x_length = _get_XStringSet_length(x);
+	cached_x = _new_CachedXStringSet(x);
+	PROTECT(ans = NEW_CHARACTER(x_length));
+	for (i = 0; i < x_length; i++) {
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(xx, lkup));
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
  * Low-level manipulation of XStringList objects.
  */
 

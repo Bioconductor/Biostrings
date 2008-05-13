@@ -5,6 +5,8 @@
 
 #define CHRTRTABLE_LENGTH 256
 
+typedef int CharToIntTable[CHRTRTABLE_LENGTH];
+
 #define MAX_CHILDREN_PER_ACNODE 4
 typedef struct acnode {
 	int parent_id;
@@ -408,6 +410,11 @@ void _write_RoSeq_to_XRaw(
 	const int *chrtrtable
 );
 
+SEXP _new_CHARSXP_from_RoSeq(
+	RoSeq seq,
+	SEXP lkup
+);
+
 SEXP _new_STRSXP_from_RoSeqs(
 	RoSeqs seqs,
 	SEXP lkup
@@ -679,6 +686,11 @@ void _write_RoSeq_to_XStringSet_elt(
 	int i,
 	RoSeq seq,
 	int encode
+);
+
+SEXP XStringSet_as_STRSXP(
+	SEXP x,
+	SEXP lkup
 );
 
 int _get_XStringList_length(SEXP x);

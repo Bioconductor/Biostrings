@@ -184,7 +184,7 @@ gregexpr2 <- function(pattern, text)
         return(.character.matchPattern(pattern, subject, algo,
                                        max.mismatch, fixed, count.only))
     if (!is(subject, "XString"))
-        subject <- BString(subject)
+        subject <- XString(NULL, subject)
     if (class(pattern) != class(subject))
         pattern <- XString(class(subject), pattern)
     max.mismatch <- normalize.max.mismatch(max.mismatch)

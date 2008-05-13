@@ -182,6 +182,12 @@ setAs("MaskedAAString", "AAString",
     function(from) unmasked(from)
 )
 
+### Dispatch on 'x' (see generic in XString-class.R).
+setMethod("XString", "MaskedXString",
+    function(class, x, start=1, nchar=NA, check=TRUE)
+        XString(class, unmasked(x), start=start, nchar=nchar, check=check)
+)
+
 ### From a MaskedXString object to a MaskCollection object.
 setAs("MaskedXString", "MaskCollection",
     function(from) masks(from)
