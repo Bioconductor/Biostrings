@@ -84,7 +84,7 @@ setMethod("initialize", "XStringAlign",
         message <- c(message, "'string1' and 'string2' must be XString objects of the same subtype")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
-    if (sum(c(width(match1), width(inserts1))) != sum(c(width(match2), width(inserts2))))
+    if (sum(c(width(object@match1), width(object@inserts1))) != sum(c(width(object@match2), width(object@inserts2))))
         message <- c(message, "'width(match1)' and 'width(inserts1)' must sum to 'width(match1)' and 'width(inserts2)'")
     if ((length(profile1(object)) > 0 && abs(profile1(object) - score(object)) > 1e-3) ||
         (length(profile2(object)) > 0 && abs(profile2(object) - score(object)) > 1e-3))
