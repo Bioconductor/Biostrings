@@ -137,7 +137,7 @@ function(string1,
                   dim(constantMatrix),
                   PACKAGE="Biostrings")
   if (scoreOnly) {
-    output <- answer[["score"]]
+    output <- answer
   } else {
     output <- new("XStringAlign",
                   string1 = string1,
