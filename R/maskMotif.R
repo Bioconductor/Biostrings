@@ -18,7 +18,7 @@ setMethod("maskMotif", signature(x="MaskedXString", motif="XString"),
         name1 <- paste(as.character(motif), "-blocks", sep="")
         if (min.block.width > length(motif)) {
             nir1 <- nir1[width(nir1) >= min.block.width]
-            name1 <- paste(name1, " (width>=", min.block.width, ")", sep="")
+            name1 <- paste(name1, " [width>=", min.block.width, "]", sep="")
         }
         mask1 <- new("MaskCollection", nir_list=list(nir1),
                                        width=length(x),
