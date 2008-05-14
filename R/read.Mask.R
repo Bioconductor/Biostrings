@@ -29,7 +29,7 @@
     ans
 }
 
-read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types=TRUE)
+read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
 {
     if (!isSingleNumber(width))
         stop("'width' must be a single integer")
@@ -94,9 +94,16 @@ read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types
         stop("broken \"agp\" file: contains inconsistent ",
              "chr_start/chr_stop/gap_len values ",
              "for N-gaps in sequence \"", seqname, "\"")
-    nir1 <- asNormalIRanges(ranges)
-    if (use.gap.types)
-        names(nir1) <- data$gap_type
+    if (use.gap.types) {
+        names(ranges) <- data$gap_type
+        if (isNotStrictlySorted(start(ranges)))
+            ranges <- ranges[order(start(ranges))]
+        if (!isNormal(ranges))
+            stop("cannot use the N-gap types when some N-gaps are adjacent or overlap")
+        nir1 <- asNormalIRanges(ranges)
+    } else {
+        nir1 <- toNormalIRanges(ranges)
+    }
     new("MaskCollection", nir_list=list(nir1), width=width, active=TRUE, NAMES=mask_name)
 }
 
@@ -192,7 +199,7 @@ read.rmMask <- function(file, width, use.IDs=FALSE)
         if (isNotStrictlySorted(start(ranges)))
             ranges <- ranges[order(start(ranges))]
         if (!isNormal(ranges))
-            stop("cannot keep the repeat IDs when some repeats overlap")
+            stop("cannot use the repeat IDs when some repeats are adjacent or overlap")
         nir1 <- asNormalIRanges(ranges)
     } else {
         nir1 <- toNormalIRanges(ranges)

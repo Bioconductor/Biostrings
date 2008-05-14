@@ -18,7 +18,7 @@
 }
 
 \usage{
-  read.agpMask(file, width, seqname="?", gap.types=NULL, use.gap.types=TRUE)
+  read.agpMask(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
   read.liftMask(file, seqname="?", width=NA)
   read.rmMask(file, width, use.IDs=FALSE)
   read.trfMask(file, width)
@@ -91,7 +91,7 @@
   ## on May 9, 2008.
 
   file1 <- system.file("extdata", "hs_b36v3_chrY.agp", package="Biostrings")
-  mask1 <- read.agpMask(file1, 57772954, seqname="chrY")
+  mask1 <- read.agpMask(file1, 57772954, seqname="chrY", use.gap.types=TRUE)
   mask1
   mask1[[1]]
 
