@@ -42,7 +42,7 @@ struct AlignInfo {
 	int* startInserts;
 	int* widthInserts;
 	int lengthInserts;
-	float* profile;
+	double* profile;
 };
 void function(struct AlignInfo *);
 
@@ -129,7 +129,8 @@ static float pairwiseAlignment(
 	int notSwappedOrder = 1 - swappedOrder;
 	float gapOpeningPlusExtension = gapOpening + gapExtension;
 	float endGapAddend = (align1InfoPtr->endGap ? gapExtension : 0.0);
-	float *tempMatrix, substitutionValue, maxScore = NEGATIVE_INFINITY;
+	float *tempMatrix, substitutionValue;
+	double maxScore = NEGATIVE_INFINITY;
 	if (scoreOnly) {
 		/* Simplified calculations when only need the alignment score */
 		for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
@@ -202,7 +203,7 @@ static float pairwiseAlignment(
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++)
 			align1InfoPtr->profile[iMinus1] = NEGATIVE_INFINITY;
 
-		float scoreSubstitution = 0, scoreDeletion = 0, scoreInsertion = 0;
+		double scoreSubstitution = 0, scoreDeletion = 0, scoreInsertion = 0;
 		for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
 			tempMatrix = prevMatrix;
 			prevMatrix = currMatrix;
@@ -272,13 +273,15 @@ static float pairwiseAlignment(
 
 				/* Step 3d:  Generate profile scores for local alignments */
 				if (localAlignment) {
-					align1InfoPtr->profile[iElt] = MAX(scoreSubstitution, align1InfoPtr->profile[iElt]);
-					align2InfoPtr->profile[jElt] = MAX(scoreSubstitution, align2InfoPtr->profile[jElt]);
+					align1InfoPtr->profile[iElt] =
+						MAX(scoreSubstitution, align1InfoPtr->profile[iElt]);
+					align2InfoPtr->profile[jElt] =
+						MAX(scoreSubstitution, align2InfoPtr->profile[jElt]);
 				}
 			}
 
 			if (!localAlignment) {
-				float profile1Score = MAX(scoreSubstitution, scoreInsertion);
+				double profile1Score = MAX(scoreSubstitution, scoreInsertion);
 				if (!align1InfoPtr->endGap || i == nCharString1) {
 						align1InfoPtr->profile[iElt] = profile1Score;
 				} else {
@@ -304,17 +307,15 @@ static float pairwiseAlignment(
 
 			if (align2InfoPtr->endGap) {
 				align2InfoPtr->profile[0] =
-					MAX(CURR_MATRIX(0, nCharString2),
-						CURR_MATRIX(1, nCharString2));
+					MAX(CURR_MATRIX(0, nCharString2), CURR_MATRIX(1, nCharString2));
 				for (j = 1, jElt = nCharString2Minus1; j < nCharString2; j++, jElt--) {
-					float profile2Score = MAX(CURR_MATRIX(0, j), CURR_MATRIX(1, j));
+					double profile2Score = MAX(CURR_MATRIX(0, j), CURR_MATRIX(1, j));
 					align2InfoPtr->profile[jElt] =
 						SAFE_SUM(profile2Score, gapOpening + jElt * gapExtension);
 					if (profile2Score >= CURR_MATRIX(2, j)) {
 						align2InfoPtr->profile[jElt] =
 							MAX(align2InfoPtr->profile[jElt],
-								SAFE_SUM(CURR_MATRIX(2, j),
-										 jElt * gapExtension));
+								SAFE_SUM(CURR_MATRIX(2, j), jElt * gapExtension));
 					}
 				}
 			} else {
@@ -408,6 +409,8 @@ static float pairwiseAlignment(
  * INPUTS
  * 'string1', 'string2':     left and right XString objects for reads
  * 'quality1', 'quality2':   left and right BString objects for quality scores
+ * 'profile1', 'profile2':   left and right XNumeric objects for pairwise
+ *                           alignment profiles
  * 'typeCode':               type of pairwise alignment
  *                           (integer vector of length 1;
  *                            1 = 'global',   2 = 'local',    3 = 'overlap',
@@ -445,6 +448,8 @@ SEXP align_pairwiseAlignment(
 		SEXP string2,
 		SEXP quality1,
 		SEXP quality2,
+		SEXP profile1,
+		SEXP profile2,
 		SEXP typeCode,
 		SEXP scoreOnly,
 		SEXP gapOpening,
@@ -495,8 +500,8 @@ SEXP align_pairwiseAlignment(
 		int* startInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 		int* widthInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 		int* widthInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align1Info.profile = (float *) R_alloc((long) nCharString1, sizeof(float));
-		align2Info.profile = (float *) R_alloc((long) nCharString2, sizeof(float));
+		align1Info.profile = REAL(R_ExternalPtrTag(profile1));
+		align2Info.profile = REAL(R_ExternalPtrTag(profile2));
 
 		/* Initialize inserts values */
 		for(int i = 0; i < alignmentBufferSize; i++) {
@@ -514,7 +519,7 @@ SEXP align_pairwiseAlignment(
 	}
 
 	/* Perform pairwise alignment */
-	float score = pairwiseAlignment(
+	double score = pairwiseAlignment(
 			align1InfoPtr,
 			align2InfoPtr,
 			swappedOrder,
@@ -539,20 +544,18 @@ SEXP align_pairwiseAlignment(
 		REAL(output)[0] = score;
 		UNPROTECT(1);
 	} else {
-		PROTECT(output = NEW_LIST(11));
+		PROTECT(output = NEW_LIST(9));
 		/* Set the names */
-		PROTECT(outputNames = NEW_CHARACTER(11));
+		PROTECT(outputNames = NEW_CHARACTER(9));
 		SET_STRING_ELT(outputNames, 0, mkChar("startMatch1"));
 		SET_STRING_ELT(outputNames, 1, mkChar("widthMatch1"));
 		SET_STRING_ELT(outputNames, 2, mkChar("startInserts1"));
 		SET_STRING_ELT(outputNames, 3, mkChar("widthInserts1"));
-		SET_STRING_ELT(outputNames, 4, mkChar("profile1"));
-		SET_STRING_ELT(outputNames, 5, mkChar("startMatch2"));
-		SET_STRING_ELT(outputNames, 6, mkChar("widthMatch2"));
-		SET_STRING_ELT(outputNames, 7, mkChar("startInserts2"));
-		SET_STRING_ELT(outputNames, 8, mkChar("widthInserts2"));
-		SET_STRING_ELT(outputNames, 9, mkChar("profile2"));
-		SET_STRING_ELT(outputNames, 10, mkChar("score"));
+		SET_STRING_ELT(outputNames, 4, mkChar("startMatch2"));
+		SET_STRING_ELT(outputNames, 5, mkChar("widthMatch2"));
+		SET_STRING_ELT(outputNames, 6, mkChar("startInserts2"));
+		SET_STRING_ELT(outputNames, 7, mkChar("widthInserts2"));
+		SET_STRING_ELT(outputNames, 8, mkChar("score"));
 		SET_NAMES(output, outputNames);
 		UNPROTECT(1);
 		/* Set the "startMatch1" element */
@@ -575,22 +578,15 @@ SEXP align_pairwiseAlignment(
 		SET_ELEMENT(output, 2, outputElement1);
 		SET_ELEMENT(output, 3, outputElement2);
 		UNPROTECT(2);
-		/* Set the "profile1" element */
-		PROTECT(outputElement1 = NEW_NUMERIC(nCharString1));
-		for(int i = 0; i < nCharString1; i++) {
-			REAL(outputElement1)[i] = align1Info.profile[i];
-		}
-		SET_ELEMENT(output, 4, outputElement1);
-		UNPROTECT(1);
 		/* Set the "startMatch2" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
 		INTEGER(outputElement1)[0] = align2Info.startMatch;
-		SET_ELEMENT(output, 5, outputElement1);
+		SET_ELEMENT(output, 4, outputElement1);
 		UNPROTECT(1);
 		/* Set the "widthMatch2" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
 		INTEGER(outputElement1)[0] = align2Info.widthMatch;
-		SET_ELEMENT(output, 6, outputElement1);
+		SET_ELEMENT(output, 5, outputElement1);
 		UNPROTECT(1);
 		/* Set the "startInserts2" and "widthInserts2" elements */
 		PROTECT(outputElement1 = NEW_INTEGER(align2Info.lengthInserts));
@@ -599,20 +595,13 @@ SEXP align_pairwiseAlignment(
 			INTEGER(outputElement1)[j] = align2Info.startInserts[align2Info.lengthInserts - 1 - j];
 			INTEGER(outputElement2)[j] = align2Info.widthInserts[align2Info.lengthInserts - 1 - j];
 		}
-		SET_ELEMENT(output, 7, outputElement1);
-		SET_ELEMENT(output, 8, outputElement2);
+		SET_ELEMENT(output, 6, outputElement1);
+		SET_ELEMENT(output, 7, outputElement2);
 		UNPROTECT(2);
-		/* Set the "profile2" element */
-		PROTECT(outputElement1 = NEW_NUMERIC(nCharString2));
-		for(int j = 0; j < nCharString2; j++) {
-			REAL(outputElement1)[j] = align2Info.profile[j];
-		}
-		SET_ELEMENT(output, 9, outputElement1);
-		UNPROTECT(1);
 		/* Set the "score" element */
 		PROTECT(outputElement1 = NEW_NUMERIC(1));
 		REAL(outputElement1)[0] = score;
-		SET_ELEMENT(output, 10, outputElement1);
+		SET_ELEMENT(output, 8, outputElement1);
 		UNPROTECT(1);
 		/* Output is ready */
 		UNPROTECT(1);

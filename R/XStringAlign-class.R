@@ -15,8 +15,8 @@ setClass("XStringAlign",
         match2="IRanges",
         inserts1="IRanges",
         inserts2="IRanges",
-        profile1="numeric",
-        profile2="numeric",
+        profile1="XNumeric",
+        profile2="XNumeric",
         type="character",
         score="numeric",
         constantMatrix="matrix",
@@ -41,12 +41,6 @@ setMethod("initialize", "XStringAlign",
             stop("'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
         if (sum(c(width(match1), width(inserts1))) != sum(c(width(match2), width(inserts2))))
             stop("'width(match1)' and 'width(inserts1)' must sum to 'width(match1)' and 'width(inserts2)'")
-        if ((length(profile1) > 0 && abs(max(profile1) - score) > 1e-3) ||
-            (length(profile2) > 0 && abs(max(profile2) - score) > 1e-3))
-            stop("'profile1' and 'profile2' must have a maximum of 'score'")
-        if ((length(profile1) > 0 && abs(profile1[start(match1)] - score) > 1e-3) ||
-            (length(profile2) > 0 && abs(profile2[start(match2)] - score) > 1e-3))
-            stop("'profile1[start(match1)]' and 'profile2[start(match2)]' must equal 'score'")
         gapOpening <- as.double(- abs(gapOpening))
         if (is.na(gapOpening) || length(gapOpening) != 1)
             stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -86,12 +80,6 @@ setMethod("initialize", "XStringAlign",
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
     if (sum(c(width(object@match1), width(object@inserts1))) != sum(c(width(object@match2), width(object@inserts2))))
         message <- c(message, "'width(match1)' and 'width(inserts1)' must sum to 'width(match1)' and 'width(inserts2)'")
-    if ((length(profile1(object)) > 0 && abs(profile1(object) - score(object)) > 1e-3) ||
-        (length(profile2(object)) > 0 && abs(profile2(object) - score(object)) > 1e-3))
-        message <- c(message, "'profile1' and 'profile2' must have a maximum of 'score'")
-    if ((length(profile1) > 0 && abs(profile1[start(object@match1)] - score(object)) > 1e-3) ||
-        (length(profile2) > 0 && abs(profile2[start(object@match2)] - score(object)) > 1e-3))
-        message <- c(message, "'profile1[start(match1)]' and 'profile2[start(match2)]' must equal 'score'")
     if (is.na(object@gapOpening) || length(object@gapOpening) != 1)
         message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
     if (is.na(object@gapExtension) || length(object@gapExtension) != 1)
@@ -150,10 +138,10 @@ setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "XStringAlign", function(x) x@score)
 
 setGeneric("profile1", function(x) standardGeneric("profile1"))
-setMethod("profile1", "XStringAlign", function(x) x@profile1)
+setMethod("profile1", "XStringAlign", function(x) as.numeric(x@profile1))
 
 setGeneric("profile2", function(x) standardGeneric("profile2"))
-setMethod("profile2", "XStringAlign", function(x) x@profile2)
+setMethod("profile2", "XStringAlign", function(x) as.numeric(x@profile2))
 
 setMethod("length", "XStringAlign", function(x) width(x@match1) + sum(width(x@inserts1)))
 setMethod("nchar", "XStringAlign", function(x, type="chars", allowNA=FALSE) length(x))

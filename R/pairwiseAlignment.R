@@ -119,11 +119,15 @@ function(string1,
       buildLookupTable(alphabetToCodes[availableLetters],
                        0:(length(availableLetters) - 1))
   }
+  profile1 <- XNumeric(ifelse(scoreOnly, 0L, nchar(string1)))
+  profile2 <- XNumeric(ifelse(scoreOnly, 0L, nchar(string2)))
   answer <- .Call("align_pairwiseAlignment",
                   string1,
                   string2,
                   quality1,
                   quality2,
+                  profile1@xp,
+                  profile2@xp,
                   typeCode,
                   scoreOnly,
                   gapOpening,
@@ -156,8 +160,8 @@ function(string1,
                   inserts2 =
                   IRanges(start = answer[["startInserts2"]],
                           width = answer[["widthInserts2"]]),
-                  profile1 = answer[["profile1"]],
-                  profile2 = answer[["profile2"]],
+                  profile1 = profile1,
+                  profile2 = profile2,
                   score = answer[["score"]],
                   type = type,
                   constantMatrix = constantMatrix,

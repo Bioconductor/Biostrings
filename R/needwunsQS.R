@@ -145,7 +145,7 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
         match2 = IRanges(start = 1, width = length(C_ans$al2)),
         inserts1 = IRanges(start = numeric(0), width = numeric(0)),
         inserts2 = IRanges(start = numeric(0), width = numeric(0)),
-        profile1 = numeric(0), profile2 = numeric(0), score = C_ans$score,
+        profile1 = XNumeric(0), profile2 = XNumeric(0), score = C_ans$score,
         type = "global", constantMatrix = substmat, gapOpening = 0,
         gapExtension = gappen)
 }
