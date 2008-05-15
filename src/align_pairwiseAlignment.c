@@ -51,7 +51,6 @@ void function(struct AlignInfo *);
 static float pairwiseAlignment(
 		struct AlignInfo *align1InfoPtr,
 		struct AlignInfo *align2InfoPtr,
-		int swappedOrder,
 		int localAlignment,
 		int scoreOnly,
 		float gapOpening,
@@ -68,6 +67,14 @@ static float pairwiseAlignment(
 {
 	int i, j, iMinus1, jMinus1;
 
+	/* Step 0:  Make sure smaller strings are second for memory efficiencies */
+	int swappedOrder = align1InfoPtr->string.nelt < align2InfoPtr->string.nelt;
+	if (swappedOrder) {
+		struct AlignInfo *tempInfoPtr = align1InfoPtr;
+		align1InfoPtr = align2InfoPtr;
+		align2InfoPtr = tempInfoPtr;
+	}
+
 	/* Step 1:  Get information on input XString objects */
 	int nCharString1 = align1InfoPtr->string.nelt;
 	int nCharString2 = align2InfoPtr->string.nelt;
@@ -78,7 +85,7 @@ static float pairwiseAlignment(
 	int nQuality1 = align1InfoPtr->quality.nelt;
 	int nQuality2 = align2InfoPtr->quality.nelt;
 
-	/* Step 2:  Create objects for scores and traceback values */
+	/* Step 2:  Create objects for scores values */
 	/* Rows of currMatrix and prevMatrix = (0) substitution, (1) deletion, and (2) insertion */
 	float *currMatrix = (float *) R_alloc((long) (3 * nCharString2Plus1), sizeof(float));
 	float *prevMatrix = (float *) R_alloc((long) (3 * nCharString2Plus1), sizeof(float));
@@ -188,11 +195,32 @@ static float pairwiseAlignment(
 				    CURR_MATRIX(2, nCharString2)));
 		}
 	} else {
+		/* Step 3a:  Create objects for traceback values */
 		char *traceMatrix = (char *) R_alloc((long) (nCharString1Plus1 * nCharString2Plus1), sizeof(char));
 		for (i = 0; i <= nCharString1; i++)
 			TRACE_MATRIX(i, 0) = TERMINATION;
 		for (j = 0; j <= nCharString2; j++)
 			TRACE_MATRIX(0, j) = TERMINATION;
+
+		/* Step 3b:  Prepare the alignment info object for alignment */
+		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
+		int* startInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* startInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* widthInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* widthInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+
+		for(int i = 0; i < alignmentBufferSize; i++) {
+			startInserts1Buffer[i] = 0;
+			startInserts2Buffer[i] = 0;
+			widthInserts1Buffer[i] = 0;
+			widthInserts2Buffer[i] = 0;
+		}
+		align1InfoPtr->lengthInserts = 0;
+		align2InfoPtr->lengthInserts = 0;
+		align1InfoPtr->startInserts = startInserts1Buffer + alignmentBufferSize;
+		align2InfoPtr->startInserts = startInserts2Buffer + alignmentBufferSize;
+		align1InfoPtr->widthInserts = widthInserts1Buffer + alignmentBufferSize;
+		align2InfoPtr->widthInserts = widthInserts2Buffer + alignmentBufferSize;
 
 		align1InfoPtr->startMatch = -1;
 		align2InfoPtr->startMatch = -1;
@@ -223,7 +251,7 @@ static float pairwiseAlignment(
 				else
 					substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
-				/* Step 3a:  Generate (0) substitution, (1) deletion, and (2) insertion scores */
+				/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores */
 				CURR_MATRIX(0, j) =
 					SAFE_SUM(MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))),
 					         substitutionValue);
@@ -237,7 +265,7 @@ static float pairwiseAlignment(
 				if (localAlignment) {
 					CURR_MATRIX(0, j) = MAX(0.0, CURR_MATRIX(0, j));
 
-					/* Step 3b:  Get the optimal score for local alignments */
+					/* Step 3d:  Get the optimal score for local alignments */
 					if (CURR_MATRIX(0, j) > maxScore) {
 						align1InfoPtr->startMatch = iElt + 1;
 						align2InfoPtr->startMatch = jElt + 1;
@@ -257,7 +285,7 @@ static float pairwiseAlignment(
 								CURR_MATRIX(2, jMinus1)));
 				}
 
-				/* Step 3c:  Generate the traceback values */
+				/* Step 3e:  Generate the traceback values */
 				scoreSubstitution = CURR_MATRIX(0, j);
 				scoreDeletion     = CURR_MATRIX(1, j);
 				scoreInsertion    = CURR_MATRIX(2, j);
@@ -271,7 +299,7 @@ static float pairwiseAlignment(
 				else
 					TRACE_MATRIX(i, j) = DELETION;
 
-				/* Step 3d:  Generate profile scores for local alignments */
+				/* Step 3f:  Generate profile scores for local alignments */
 				if (localAlignment) {
 					align1InfoPtr->profile[iElt] =
 						MAX(scoreSubstitution, align1InfoPtr->profile[iElt]);
@@ -297,7 +325,7 @@ static float pairwiseAlignment(
 		}
 
 		if (!localAlignment) {
-			/* Step 3e:  Get the optimal score for non-local alignments */
+			/* Step 3g:  Get the optimal score for non-local alignments */
 			align1InfoPtr->startMatch = 1;
 			align2InfoPtr->startMatch = 1;
 			maxScore =
@@ -469,8 +497,6 @@ SEXP align_pairwiseAlignment(
 	RoSeq stringElements2 = _get_XString_asRoSeq(string2);
 	RoSeq qualityElements1 = _get_XString_asRoSeq(quality1);
 	RoSeq qualityElements2 = _get_XString_asRoSeq(quality2);
-	int nCharString1 = stringElements1.nelt;
-	int nCharString2 = stringElements2.nelt;
 
 	/* Create the alignment info objects */
 	struct AlignInfo align1Info, align2Info;
@@ -478,51 +504,17 @@ SEXP align_pairwiseAlignment(
 	align2Info.string = stringElements2;
 	align1Info.quality = qualityElements1;
 	align2Info.quality = qualityElements2;
+	align1Info.profile = REAL(R_ExternalPtrTag(profile1));
+	align2Info.profile = REAL(R_ExternalPtrTag(profile2));
 	align1Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == OVERLAP2_ALIGNMENT);
 	align2Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == OVERLAP1_ALIGNMENT);
 
-	struct AlignInfo *align1InfoPtr, *align2InfoPtr;
-	int swappedOrder = nCharString1 < nCharString2;
-	if (!swappedOrder) {
-		align1InfoPtr = &align1Info;
-		align2InfoPtr = &align2Info;
-	} else {
-		align1InfoPtr = &align2Info;
-		align2InfoPtr = &align1Info;
-	}
-
-	if (!scoreOnlyValue) {
-		/* Allocate memory for temporary buffers */
-		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
-		int* startInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* startInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* widthInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* widthInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align1Info.profile = REAL(R_ExternalPtrTag(profile1));
-		align2Info.profile = REAL(R_ExternalPtrTag(profile2));
-
-		/* Initialize inserts values */
-		for(int i = 0; i < alignmentBufferSize; i++) {
-			startInserts1Buffer[i] = 0;
-			startInserts2Buffer[i] = 0;
-			widthInserts1Buffer[i] = 0;
-			widthInserts2Buffer[i] = 0;
-		}
-		align1Info.lengthInserts = 0;
-		align2Info.lengthInserts = 0;
-		align1Info.startInserts = startInserts1Buffer + alignmentBufferSize;
-		align2Info.startInserts = startInserts2Buffer + alignmentBufferSize;
-		align1Info.widthInserts = widthInserts1Buffer + alignmentBufferSize;
-		align2Info.widthInserts = widthInserts2Buffer + alignmentBufferSize;
-	}
-
 	/* Perform pairwise alignment */
 	double score = pairwiseAlignment(
-			align1InfoPtr,
-			align2InfoPtr,
-			swappedOrder,
+			&align1Info,
+			&align2Info,
 			(INTEGER(typeCode)[0] == LOCAL_ALIGNMENT),
 			scoreOnlyValue,
 			(float) REAL(gapOpening)[0],
