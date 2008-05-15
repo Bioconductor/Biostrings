@@ -6,16 +6,24 @@
 ###   library(BSgenome.Hsapiens.NCBI.b36v3)
 ###   file1 <- system.file("extdata", "hs_b36v3_chrY.agp", package="Biostrings")
 ###   mask1 <- read.agpMask(file1, length(Hsapiens$chrY), seqname="chrY")
+###
+### From an UCSC "gap" file (for chrY in hg18):
+###   library(BSgenome.Hsapiens.UCSC.hg18)
+###   file2 <- system.file("extdata", "chrY_gap.txt", package="Biostrings")
+###   mask2 <- read.gapMask(file2, length(Hsapiens$chrY), seqname="chrY")
+###
 ### From an UCSC "lift" file (for hg18):
-###   file2 <- system.file("extdata", "hg18liftAll.lft", package="Biostrings")
-###   mask2 <- read.liftMask(file2, seqname="chr1")
+###   file3 <- system.file("extdata", "hg18liftAll.lft", package="Biostrings")
+###   mask3 <- read.liftMask(file3, seqname="chr1")
+###
 ### From a RepeatMasker .out file (for chrM in ce2):
 ###   library(BSgenome.Celegans.UCSC.ce2)
-###   file3 <- system.file("extdata", "ce2chrM.fa.out", package="Biostrings")
-###   mask3 <- read.rmMask(file3, length(Celegans$chrM)) 
+###   file4 <- system.file("extdata", "ce2chrM.fa.out", package="Biostrings")
+###   mask4 <- read.rmMask(file4, length(Celegans$chrM)) 
+###
 ### From a Tandem Repeats Finder .bed file (for chrM in ce2):
-###   file4 <- system.file("extdata", "ce2chrM.bed", package="Biostrings")
-###   mask4 <- read.trfMask(file4, length(Celegans$chrM)) 
+###   file5 <- system.file("extdata", "ce2chrM.bed", package="Biostrings")
+###   mask5 <- read.trfMask(file5, length(Celegans$chrM)) 
 ###
 ### -------------------------------------------------------------------------
 
@@ -29,7 +37,8 @@
     ans
 }
 
-read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
+.read.MaskFromAgpOrGap <- function(agp_or_gap, file, width, seqname,
+                                   gap.types, use.gap.types)
 {
     if (!isSingleNumber(width))
         stop("'width' must be a single integer")
@@ -44,17 +53,33 @@ read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types
              "with no NAs and no duplicated")
     if (!isTRUEorFALSE(use.gap.types))
         stop("'use.gap.types' must be 'TRUE' or 'FALSE'")
-    ALL_COLS <- c(
-        `chrom`="character",
-        `chr_start`="integer",
-        `chr_stop`="integer",
-        `part_no`="integer",
-        `part_type`="character",
-        `gap_len`="character",
-        `gap_type`="character",
-        `linkage`="character",
-        `empty`="character"
-    )
+    if (agp_or_gap == "agp") {
+        ALL_COLS <- c(
+            `chrom`="character",
+            `chr_start`="integer",
+            `chr_stop`="integer",
+            `part_no`="integer",
+            `part_type`="character",
+            `gap_len`="character",
+            `gap_type`="character",
+            `linkage`="character",
+            `empty`="character"
+        )
+    } else if (agp_or_gap == "gap") {
+        ALL_COLS <- c(
+            `bin`="integer",
+            `chrom`="character",
+            `chr_start`="integer",
+            `chr_stop`="integer",
+            `part_no`="integer",
+            `part_type`="character",
+            `gap_len`="integer",
+            `gap_type`="character",
+            `bridge`="character"
+        )
+    } else {
+        stop("Biostrings internal error: please report")
+    }
     COLS <- c(
         "chrom",
         "chr_start",
@@ -75,36 +100,56 @@ read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types
         found_seqnames <- paste(found_seqnames, collapse=", ")
         stop("seqnames found in this file: ", found_seqnames)
     }
-    data <- data[(data$chrom %in% seqname) & (data$part_type %in% "N"), ]
+    data <- data[data$chrom == seqname, ]
+    ii <- data$part_type == "N"
+    if (agp_or_gap == "agp") {
+        data <- data[ii, ]
+    } else if (!all(ii)) {
+        warning("gap file contains gaps with a part_type that is not N")
+    }
     if (length(gap.types) == 1 && gap.types == "?") {
         found_types <- paste("\"", unique(data$gap_type), "\"", sep="")
         found_types <- paste(found_types, collapse=", ")
         stop("gap types found in this file for sequence \"", seqname, "\": ", found_types)
     }
-    mask_name <- "N-gaps"
+    mask_name <- "assembly gaps"
     if (!is.null(gap.types)) {
         data <- data[data$gap_type %in% gap.types, ]
         mask_name <- paste(mask_name, " [type=", paste(gap.types, collapse="|"), "]", sep="")
     }
     if (nrow(data) == 0)
         return(.emptyMaskWithWarning(mask_name, seqname, width))
-    ranges <- IRanges(start=data$chr_start, width=as.integer(data$gap_len))
+    if (agp_or_gap == "agp")
+        ranges_start <- data$chr_start
+    else
+        ranges_start <- data$chr_start + 1L
+    ranges <- IRanges(start=ranges_start, width=as.integer(data$gap_len))
     ## Sanity check
     if (!identical(end(ranges), data$chr_stop))
-        stop("broken \"agp\" file: contains inconsistent ",
+        stop("broken \"", agp_or_gap, "\" file: contains inconsistent ",
              "chr_start/chr_stop/gap_len values ",
-             "for N-gaps in sequence \"", seqname, "\"")
+             "for assembly gaps in sequence \"", seqname, "\"")
     if (use.gap.types) {
         names(ranges) <- data$gap_type
         if (isNotStrictlySorted(start(ranges)))
             ranges <- ranges[order(start(ranges))]
         if (!isNormal(ranges))
-            stop("cannot use the N-gap types when some N-gaps are adjacent or overlap")
+            stop("cannot use the gap types when some gaps are adjacent or overlap")
         nir1 <- asNormalIRanges(ranges)
     } else {
         nir1 <- toNormalIRanges(ranges)
     }
     new("MaskCollection", nir_list=list(nir1), width=width, active=TRUE, NAMES=mask_name)
+}
+
+read.agpMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
+{
+    .read.MaskFromAgpOrGap("agp", file, width, seqname, gap.types, use.gap.types)
+}
+
+read.gapMask <- function(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
+{
+    .read.MaskFromAgpOrGap("gap", file, width, seqname, gap.types, use.gap.types)
 }
 
 read.liftMask <- function(file, seqname="?", width=NA)

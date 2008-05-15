@@ -84,9 +84,10 @@ o Added the coverage() generic function with methods for IRanges,
 
 o Added the maskMotif() generic function for masking a sequence by content.
 
-o Added the read.agpMask(), read.liftMask(), read.rmMask() and read.trfMask()
-  functions for extracting a mask from an NCBI "agp" file, an UCSC "lift" file,
-  a RepeatMasker .out file, or a Tandem Repeats Finder .bed file.
+o Added the read.agpMask(), read.gapMask(), read.liftMask(), read.rmMask() and
+  read.trfMask() functions for extracting a mask from an NCBI "agp" file, an
+  UCSC "gap" file, an UCSC "lift" file, a RepeatMasker .out file, or a Tandem
+  Repeats Finder .bed file.
 
 o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is

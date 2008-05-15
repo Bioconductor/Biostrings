@@ -2,6 +2,7 @@
 
 \alias{read.Mask}
 \alias{read.agpMask}
+\alias{read.gapMask}
 \alias{read.liftMask}
 \alias{read.rmMask}
 \alias{read.trfMask}
@@ -10,15 +11,16 @@
 \title{Read a mask from a file}
 
 \description{
-  Four functions -- \code{read.agpMask}, \code{read.liftMask},
-  \code{read.rmMask} and \code{read.trfMask} -- for extracting a mask from
-  an NCBI "agp" file, an UCSC "lift" file (i.e. a file containing offsets of
-  contigs within sequences), a RepeatMasker .out file, or a Tandem Repeats
-  Finder .bed file.
+  Five functions -- \code{read.agpMask}, \code{read.gapMask},
+  \code{read.liftMask}, \code{read.rmMask} and \code{read.trfMask} --
+  for extracting a mask from an NCBI "agp" file, an UCSC "gap" file,
+  an UCSC "lift" file (i.e. a file containing offsets of contigs within
+  sequences), a RepeatMasker .out file, or a Tandem Repeats Finder .bed file.
 }
 
 \usage{
   read.agpMask(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
+  read.gapMask(file, width, seqname="?", gap.types=NULL, use.gap.types=FALSE)
   read.liftMask(file, seqname="?", width=NA)
   read.rmMask(file, width, use.IDs=FALSE)
   read.trfMask(file, width)
@@ -44,17 +46,18 @@
   }
   \item{gap.types}{
     \code{NULL} or a character vector containing gap types.
-    Use this argument to filter the N-gaps that are to be extracted from
-    the "agp" file based on their type. Common types are \code{"contig"},
-    \code{"clone"}, \code{"centromere"} and \code{"heterochromatin"}.
-    With \code{gap.types=NULL}, all the N-gaps described in the file are
-    extracted.
+    Use this argument to filter the assembly gaps that are to be extracted
+    from the "agp" or "gap" file based on their type. Most common gap types
+    are \code{"contig"}, \code{"clone"}, \code{"centromere"}, \code{"telomere"},
+    \code{"heterochromatin"}, \code{"short_arm"} and \code{"fragment"}.
+    With \code{gap.types=NULL}, all the assembly gaps described in the file
+    are extracted.
     With \code{gap.types="?"}, an error is raised and the gap types found
     in the file for the specified sequence are displayed.
   }
   \item{use.gap.types}{
-    Whether or not the gap types provided in the "agp" file should be used
-    to name the ranges constituing the returned mask.
+    Whether or not the gap types provided in the "agp" or "gap" file should
+    be used to name the ranges constituing the returned mask.
     See \code{?`\link{IRanges-class}`} for more information about the
     names of an \link{IRanges} object.
   }
@@ -66,11 +69,6 @@
   }
 }
 
-\details{
-  Only NCBI "agp" file, UCSC "lift" files, RepeatMasker .out files, and
-  Tandem Repeats Finder .bed files are supported for now.
-}
-
 \seealso{
   \code{\link{maskMotif}},
   \link{MaskCollection-class},
@@ -80,7 +78,7 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## A. Extract a mask of "inter-contig gaps" with read.agpMask()
+  ## A. Extract a mask of "assembly gaps" with read.agpMask()
   ## ---------------------------------------------------------------------
   ## Note: The hs_b36v3_chrY.agp file was obtained by downloading,
   ## extracting and renaming the hs_ref_chrY.agp.gz file from
