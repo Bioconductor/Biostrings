@@ -11,8 +11,8 @@ setClass("XStringAlign",
         string2="XString",
         quality1="XString",
         quality2="XString",
-        match1="IRanges",
-        match2="IRanges",
+        align1="IRanges",
+        align2="IRanges",
         inserts1="IRanges",
         inserts2="IRanges",
         profile1="XNumeric",
@@ -31,7 +31,7 @@ setClass("XStringAlign",
 ###
 
 setMethod("initialize", "XStringAlign",
-    function(.Object, string1, string2, quality1, quality2, match1, match2,
+    function(.Object, string1, string2, quality1, quality2, align1, align2,
              inserts1, inserts2, profile1, profile2, score, type, constantMatrix,
              gapOpening, gapExtension, check = TRUE)
     {
@@ -39,8 +39,8 @@ setMethod("initialize", "XStringAlign",
             stop("'string1' and 'string2' must be XString objects of the same subtype")
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
             stop("'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
-        if (sum(c(width(match1), width(inserts1))) != sum(c(width(match2), width(inserts2))))
-            stop("'width(match1)' and 'width(inserts1)' must sum to 'width(match1)' and 'width(inserts2)'")
+        if (sum(c(width(align1), width(inserts1))) != sum(c(width(align2), width(inserts2))))
+            stop("'width(align1)' and 'width(inserts1)' must sum to 'width(align1)' and 'width(inserts2)'")
         gapOpening <- as.double(- abs(gapOpening))
         if (is.na(gapOpening) || length(gapOpening) != 1)
             stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -51,8 +51,8 @@ setMethod("initialize", "XStringAlign",
         slot(.Object, "string2", check = check) <- string2
         slot(.Object, "quality1", check = check) <- quality1
         slot(.Object, "quality2", check = check) <- quality2
-        slot(.Object, "match1", check = check) <- match1
-        slot(.Object, "match2", check = check) <- match2
+        slot(.Object, "align1", check = check) <- align1
+        slot(.Object, "align2", check = check) <- align2
         slot(.Object, "inserts1", check = check) <- inserts1
         slot(.Object, "inserts2", check = check) <- inserts2
         slot(.Object, "profile1", check = check) <- profile1
@@ -78,8 +78,8 @@ setMethod("initialize", "XStringAlign",
         message <- c(message, "'string1' and 'string2' must be XString objects of the same subtype")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "overlap1", "overlap2")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'overlap1', or 'overlap2'")
-    if (sum(c(width(object@match1), width(object@inserts1))) != sum(c(width(object@match2), width(object@inserts2))))
-        message <- c(message, "'width(match1)' and 'width(inserts1)' must sum to 'width(match1)' and 'width(inserts2)'")
+    if (sum(c(width(object@align1), width(object@inserts1))) != sum(c(width(object@align2), width(object@inserts2))))
+        message <- c(message, "'width(align1)' and 'width(inserts1)' must sum to 'width(align1)' and 'width(inserts2)'")
     if (is.na(object@gapOpening) || length(object@gapOpening) != 1)
         message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
     if (is.na(object@gapExtension) || length(object@gapExtension) != 1)
@@ -123,12 +123,12 @@ function(string, inserts)
 
 setGeneric("align1", function(x) standardGeneric("align1"))
 setMethod("align1", "XStringAlign",
-          function(x) .addInserts(subXString(x@string1, start(x@match1), end(x@match1)),
+          function(x) .addInserts(subXString(x@string1, start(x@align1), end(x@align1)),
                                   x@inserts1))
 
 setGeneric("align2", function(x) standardGeneric("align2"))
 setMethod("align2", "XStringAlign",
-          function(x) .addInserts(subXString(x@string2, start(x@match2), end(x@match2)),
+          function(x) .addInserts(subXString(x@string2, start(x@align2), end(x@align2)),
                                   x@inserts2))
 
 setGeneric("type", function(x) standardGeneric("type"))
@@ -143,7 +143,7 @@ setMethod("profile1", "XStringAlign", function(x) as.numeric(x@profile1))
 setGeneric("profile2", function(x) standardGeneric("profile2"))
 setMethod("profile2", "XStringAlign", function(x) as.numeric(x@profile2))
 
-setMethod("length", "XStringAlign", function(x) width(x@match1) + sum(width(x@inserts1)))
+setMethod("length", "XStringAlign", function(x) width(x@align1) + sum(width(x@inserts1)))
 setMethod("nchar", "XStringAlign", function(x, type="chars", allowNA=FALSE) length(x))
 
 setMethod("alphabet", "XStringAlign", function(x) alphabet(string1(x)))
@@ -160,7 +160,7 @@ setMethod("show", "XStringAlign",
     function(object)
     {
         alignStarts <-
-          format(paste("[", c(start(object@match1), start(object@match2)), "]", sep = ""),
+          format(paste("[", c(start(object@align1), start(object@align2)), "]", sep = ""),
                  justify = "right")
         cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
                    "overlap1" = "Overlap1", "overlap2" = "Overlap2",

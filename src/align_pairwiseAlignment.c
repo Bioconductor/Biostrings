@@ -37,8 +37,8 @@ struct AlignInfo {
 	RoSeq string;
 	RoSeq quality;
 	int endGap;
-	int startMatch;
-	int widthMatch;
+	int startAlign;
+	int widthAlign;
 	int* startInserts;
 	int* widthInserts;
 	int lengthInserts;
@@ -222,10 +222,10 @@ static float pairwiseAlignment(
 		align1InfoPtr->widthInserts = widthInserts1Buffer + alignmentBufferSize;
 		align2InfoPtr->widthInserts = widthInserts2Buffer + alignmentBufferSize;
 
-		align1InfoPtr->startMatch = -1;
-		align2InfoPtr->startMatch = -1;
-		align1InfoPtr->widthMatch = 0;
-		align2InfoPtr->widthMatch = 0;
+		align1InfoPtr->startAlign = -1;
+		align2InfoPtr->startAlign = -1;
+		align1InfoPtr->widthAlign = 0;
+		align2InfoPtr->widthAlign = 0;
 		for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++)
 			align2InfoPtr->profile[jMinus1] = NEGATIVE_INFINITY;
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++)
@@ -267,8 +267,8 @@ static float pairwiseAlignment(
 
 					/* Step 3d:  Get the optimal score for local alignments */
 					if (CURR_MATRIX(0, j) > maxScore) {
-						align1InfoPtr->startMatch = iElt + 1;
-						align2InfoPtr->startMatch = jElt + 1;
+						align1InfoPtr->startAlign = iElt + 1;
+						align2InfoPtr->startAlign = jElt + 1;
 						maxScore = CURR_MATRIX(0, j);
 					}
 				} else {
@@ -326,8 +326,8 @@ static float pairwiseAlignment(
 
 		if (!localAlignment) {
 			/* Step 3g:  Get the optimal score for non-local alignments */
-			align1InfoPtr->startMatch = 1;
-			align2InfoPtr->startMatch = 1;
+			align1InfoPtr->startAlign = 1;
+			align2InfoPtr->startAlign = 1;
 			maxScore =
 				MAX(CURR_MATRIX(0, nCharString2),
 				MAX(CURR_MATRIX(1, nCharString2),
@@ -367,16 +367,16 @@ static float pairwiseAlignment(
 
 		/* Step 4:  Traceback through the score matrix */
 		char previousAction = '?';
-		i = nCharString1Plus1 - align1InfoPtr->startMatch;
-		j = nCharString2Plus1 - align2InfoPtr->startMatch;
+		i = nCharString1Plus1 - align1InfoPtr->startAlign;
+		j = nCharString2Plus1 - align2InfoPtr->startAlign;
 		while (TRACE_MATRIX(i, j) != TERMINATION) {
 			char action = TRACE_MATRIX(i, j);
 			switch (action) {
 		    	case DELETION:
 		    		if (j == nCharString2) {
-		    			align1InfoPtr->startMatch++;
+		    			align1InfoPtr->startAlign++;
 		    		} else {
-		    			align1InfoPtr->widthMatch++;
+		    			align1InfoPtr->widthAlign++;
 			    		if (previousAction != DELETION) {
 							align2InfoPtr->startInserts--;
 							align2InfoPtr->widthInserts--;
@@ -389,9 +389,9 @@ static float pairwiseAlignment(
 		    		break;
 		    	case INSERTION:
 		    		if (i == nCharString1) {
-		    			align2InfoPtr->startMatch++;
+		    			align2InfoPtr->startAlign++;
 		    		} else {
-		    			align2InfoPtr->widthMatch++;
+		    			align2InfoPtr->widthAlign++;
 			    		if (previousAction != INSERTION) {
 							align1InfoPtr->startInserts--;
 							align1InfoPtr->widthInserts--;
@@ -403,8 +403,8 @@ static float pairwiseAlignment(
 		    		j--;
 		    		break;
 		    	case SUBSTITUTION:
-		    		align1InfoPtr->widthMatch++;
-		    		align2InfoPtr->widthMatch++;
+		    		align1InfoPtr->widthAlign++;
+		    		align2InfoPtr->widthAlign++;
 		    		i--;
 		    		j--;
 		    		break;
@@ -415,15 +415,15 @@ static float pairwiseAlignment(
 			previousAction = action;
 		}
 
-		align1InfoPtr->profile[align1InfoPtr->startMatch - 1] = maxScore;
-		align2InfoPtr->profile[align2InfoPtr->startMatch - 1] = maxScore;
+		align1InfoPtr->profile[align1InfoPtr->startAlign - 1] = maxScore;
+		align2InfoPtr->profile[align2InfoPtr->startAlign - 1] = maxScore;
 
-		int offset1 = align1InfoPtr->startMatch - 1;
+		int offset1 = align1InfoPtr->startAlign - 1;
 		if (offset1 > 0 && align1InfoPtr->lengthInserts > 0) {
 			for (i = 0; i < align1InfoPtr->lengthInserts; i++)
 				align1InfoPtr->startInserts[i] -= offset1;
 		}
-		int offset2 = align2InfoPtr->startMatch - 1;
+		int offset2 = align2InfoPtr->startAlign - 1;
 		if (offset2 > 0 && align2InfoPtr->lengthInserts > 0) {
 			for (j = 0; j < align2InfoPtr->lengthInserts; j++)
 				align2InfoPtr->startInserts[j] -= offset2;
@@ -539,25 +539,25 @@ SEXP align_pairwiseAlignment(
 		PROTECT(output = NEW_LIST(9));
 		/* Set the names */
 		PROTECT(outputNames = NEW_CHARACTER(9));
-		SET_STRING_ELT(outputNames, 0, mkChar("startMatch1"));
-		SET_STRING_ELT(outputNames, 1, mkChar("widthMatch1"));
+		SET_STRING_ELT(outputNames, 0, mkChar("startAlign1"));
+		SET_STRING_ELT(outputNames, 1, mkChar("widthAlign1"));
 		SET_STRING_ELT(outputNames, 2, mkChar("startInserts1"));
 		SET_STRING_ELT(outputNames, 3, mkChar("widthInserts1"));
-		SET_STRING_ELT(outputNames, 4, mkChar("startMatch2"));
-		SET_STRING_ELT(outputNames, 5, mkChar("widthMatch2"));
+		SET_STRING_ELT(outputNames, 4, mkChar("startAlign2"));
+		SET_STRING_ELT(outputNames, 5, mkChar("widthAlign2"));
 		SET_STRING_ELT(outputNames, 6, mkChar("startInserts2"));
 		SET_STRING_ELT(outputNames, 7, mkChar("widthInserts2"));
 		SET_STRING_ELT(outputNames, 8, mkChar("score"));
 		SET_NAMES(output, outputNames);
 		UNPROTECT(1);
-		/* Set the "startMatch1" element */
+		/* Set the "startAlign1" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align1Info.startMatch;
+		INTEGER(outputElement1)[0] = align1Info.startAlign;
 		SET_ELEMENT(output, 0, outputElement1);
 		UNPROTECT(1);
-		/* Set the "widthMatch1" element */
+		/* Set the "widthAlign1" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align1Info.widthMatch;
+		INTEGER(outputElement1)[0] = align1Info.widthAlign;
 		SET_ELEMENT(output, 1, outputElement1);
 		UNPROTECT(1);
 		/* Set the "startInserts1" and "widthInserts1" elements */
@@ -570,14 +570,14 @@ SEXP align_pairwiseAlignment(
 		SET_ELEMENT(output, 2, outputElement1);
 		SET_ELEMENT(output, 3, outputElement2);
 		UNPROTECT(2);
-		/* Set the "startMatch2" element */
+		/* Set the "startAlign2" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align2Info.startMatch;
+		INTEGER(outputElement1)[0] = align2Info.startAlign;
 		SET_ELEMENT(output, 4, outputElement1);
 		UNPROTECT(1);
-		/* Set the "widthMatch2" element */
+		/* Set the "widthAlign2" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align2Info.widthMatch;
+		INTEGER(outputElement1)[0] = align2Info.widthAlign;
 		SET_ELEMENT(output, 5, outputElement1);
 		UNPROTECT(1);
 		/* Set the "startInserts2" and "widthInserts2" elements */
