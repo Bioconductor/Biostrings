@@ -393,6 +393,11 @@ setReplaceMethod("[[", "XStringSet",
 ### Other methods.
 ###
 
+setMethod("codes", "XStringSet", function(x, ...) codes(super(x), ...))
+setMethod("codec", "XStringSet", function(x) codec(super(x)))
+setMethod("enc_lkup", "XStringSet", function(x) enc_lkup(super(x)))
+setMethod("dec_lkup", "XStringSet", function(x) dec_lkup(super(x)))
+
 setMethod("as.list", "XStringSet",
     function(x, ...)
     {
@@ -407,11 +412,10 @@ setMethod("as.character", "XStringSet",
     {
         use.names <- normalize.use.names(use.names)
         ans <- .Call("XStringSet_as_STRSXP",
-                     x, dec_lkup(super(x)),
+                     x, dec_lkup(x),
                      PACKAGE="Biostrings")
         if (use.names)
             names(ans) <- names(x)
         ans
     }
 )
-
