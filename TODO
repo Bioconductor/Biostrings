@@ -107,9 +107,6 @@ In 2.7
     subsets of matches of each input pattern. Of course, 2 matches are
     considered equal if their start/end are the same.
 
-  o Make matchPDict() work on XStringViews and MaskedXString objects. This is
-    in fact an important use case for combining MIndex objects (see above).
-
   o Make reverseComplement() work on a PDict object.
 
   o GenomeSearching.Rnw vignette: add section about inexact matching with

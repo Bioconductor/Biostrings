@@ -284,7 +284,7 @@ read.trfMask <- function(file, width)
                        check.names=FALSE)
     ranges <- IRanges(start=data$chromStart+1, end=data$chromEnd)
     nir1 <- toNormalIRanges(ranges)
-    #name1 <- "Tandem Repeats Finder (period<=12)"
+    #name1 <- "Tandem Repeats Finder [period<=12]"
     new("MaskCollection", nir_list=list(nir1), width=width, active=TRUE, NAMES="trf")
 }
 

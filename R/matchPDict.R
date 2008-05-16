@@ -762,13 +762,24 @@ extractAllMatches <- function(subject, mindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    C_ans <- .Call("XString_match_TBdna",
-                   actree@nodes@xp, actree@base_codes,
-                   pdict@dups, NULL, NULL,
-                   subject,
-                   0L, fixed,
-                   count.only, envir,
-                   PACKAGE="Biostrings")
+    if (is(subject, "DNAString"))
+        C_ans <- .Call("XString_match_TBdna",
+                       actree@nodes@xp, actree@base_codes,
+                       pdict@dups, NULL, NULL,
+                       subject,
+                       0L, fixed,
+                       count.only, envir,
+                       PACKAGE="Biostrings")
+    else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
+        C_ans <- .Call("XStringViews_match_TBdna",
+                       actree@nodes@xp, actree@base_codes,
+                       pdict@dups, NULL, NULL,
+                       subject(subject), start(subject), width(subject),
+                       0L, fixed,
+                       count.only, envir,
+                       PACKAGE="Biostrings")
+    else
+        stop("unsupported subject type")
     if (count.only)
         return(C_ans)
     if (is.null(names))
@@ -868,13 +879,24 @@ extractAllMatches <- function(subject, mindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    C_ans <- .Call("XString_match_TBdna",
-                   actree@nodes@xp, actree@base_codes,
-                   pdict@dups, pdict@head, pdict@tail,
-                   subject,
-                   max.mismatch, fixed,
-                   count.only, envir,
-                   PACKAGE="Biostrings")
+    if (is(subject, "DNAString"))
+        C_ans <- .Call("XString_match_TBdna",
+                       actree@nodes@xp, actree@base_codes,
+                       pdict@dups, pdict@head, pdict@tail,
+                       subject,
+                       max.mismatch, fixed,
+                       count.only, envir,
+                       PACKAGE="Biostrings")
+    else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
+        C_ans <- .Call("XStringViews_match_TBdna",
+                       actree@nodes@xp, actree@base_codes,
+                       pdict@dups, pdict@head, pdict@tail,
+                       subject(subject), start(subject), width(subject),
+                       max.mismatch, fixed,
+                       count.only, envir,
+                       PACKAGE="Biostrings")
+    else
+        stop("unsupported subject type")
     if (count.only)
         return(C_ans)
     if (is.null(names))
@@ -892,19 +914,42 @@ extractAllMatches <- function(subject, mindex)
 ### -------------------------------------------------------------------------
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .matchPDict()
+### .XString.matchPDict() and .XStringViews.matchPDict()
 ###
 
-.matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed, count.only=FALSE)
+.XString.matchPDict <- function(pdict, subject, algorithm,
+                                max.mismatch, fixed, count.only=FALSE)
 {
     if (!is(pdict, "CWdna_PDict"))
         stop("the pattern dictionary 'pdict' can only be a CWdna_PDict (or derived) object for now")
     if (!is(subject, "DNAString"))
-        stop("'subject' can only be a DNAString object for now")
+        stop("'subject' can only be a DNAString object (eventually masked) for now")
     if (!identical(algorithm, "auto"))
         stop("'algo' can only be '\"auto\"' for now")
     max.mismatch <- normalize.max.mismatch(max.mismatch)
     fixed <- normalize.fixed(fixed, class(subject))
+    if (is(pdict, "TBdna_PDict"))
+        return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
+    if (max.mismatch != 0)
+        stop("'max.mismatch' must be zero ",
+             "with this type of PDict object (", class(pdict), ")")
+    if (!fixed[1])
+        stop("IUPAC ambiguities in the patterns are not supported ",
+             "with this type of PDict object (", class(pdict), ")")
+    .match.CWdna_PDict.exact(pdict, subject, fixed, count.only)
+}
+
+.XStringViews.matchPDict <- function(pdict, subject, algorithm,
+                                     max.mismatch, fixed, count.only=FALSE)
+{
+    if (!is(pdict, "CWdna_PDict"))
+        stop("the pattern dictionary 'pdict' can only be a CWdna_PDict (or derived) object for now")
+    if (!is(subject(subject), "DNAString"))
+        stop("'subject' can only be a DNAString object (eventually masked) for now")
+    if (!identical(algorithm, "auto"))
+        stop("'algo' can only be '\"auto\"' for now")
+    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    fixed <- normalize.fixed(fixed, class(subject(subject)))
     if (is(pdict, "TBdna_PDict"))
         return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
     if (max.mismatch != 0)
@@ -929,20 +974,21 @@ setGeneric("matchPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XString",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-    {
-	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
-    }
+	.XString.matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPDict", "XStringViews",
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+        .XStringViews.matchPDict(pdict, subject, algorithm,
+                                 max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "MaskedXString",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-    {
-        if (any(active(masks(subject))))
-            stop("\"matchPDict\" method for MaskedXString objects ",
-                 "with active masks not ready yet\n  Please complain!")
-        .matchPDict(pdict, unmasked(subject), algorithm, max.mismatch, fixed)
-    }
+        matchPDict(pdict, toXStringViewsOrXString(subject),
+                   algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
 )
 
 
@@ -958,19 +1004,21 @@ setGeneric("countPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XString",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-    {
-	.matchPDict(pdict, subject, algorithm, max.mismatch, fixed, count.only=TRUE)
-    }
+	.XString.matchPDict(pdict, subject, algorithm,
+                            max.mismatch, fixed, count.only=TRUE)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPDict", "XStringViews",
+    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+        .XStringViews.matchPDict(pdict, subject, algorithm,
+                                 max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "MaskedXString",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-    {
-        if (any(active(masks(subject))))
-            stop("\"countPDict\" method for MaskedXString objects ",
-                 "with active masks not ready yet\n  Please complain!")
-        .matchPDict(pdict, unmasked(subject), algorithm, max.mismatch, fixed, count.only=TRUE)
-    }
+        countPDict(pdict, toXStringViewsOrXString(subject),
+                   algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
 )
 

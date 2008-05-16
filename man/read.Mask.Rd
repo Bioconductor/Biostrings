@@ -154,7 +154,7 @@
   file4 <- system.file("extdata", "ce2chrM.bed", package="Biostrings")
   mask4 <- read.trfMask(file4, mask_width)
   mask4
-  names(mask4) <- "Tandem Repeats Finder (period<=12)"
+  names(mask4) <- "Tandem Repeats Finder [period<=12]"
   mask4
 
   ## Put the 2 masks on chrM:

@@ -232,6 +232,7 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 
 	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
 	match_pattern(P, S, algo, max_mm, fixedP, fixedS);
+
 	if (is_count_only)
 		return _Biostrings_viewsbuf_count_asINTEGER();
 	return _Biostrings_viewsbuf_start_asINTEGER();
@@ -259,7 +260,8 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
-	     i++, view_start++, view_width++) {
+	     i++, view_start++, view_width++)
+	{
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || view_offset + *view_width > S.nelt)
 			error("'subject' has out of limits views");
@@ -268,6 +270,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		_set_match_shift(view_offset);
 		match_pattern(P, V, algo, max_mm, fixedP, fixedS);
 	}
+
 	if (is_count_only)
 		return _Biostrings_viewsbuf_count_asINTEGER();
 	return _Biostrings_viewsbuf_start_asINTEGER();

@@ -49,10 +49,18 @@ static int get_new_buflength(int buflength)
  * IntBuf functions
  */
 
+void _IntBuf_set_val(IntBuf *ibuf, int val)
+{
+	int i, *elt;
+
+	for (i = 0, elt = ibuf->elts; i < ibuf->nelt; i++, elt++)
+		*elt = val;
+	return;
+}
+
 IntBuf _new_IntBuf(int buflength, int nelt)
 {
 	IntBuf ibuf;
-	int *elt;
 
 	/* No memory leak here, because we use transient storage allocation */
 	if (buflength == 0)
@@ -60,14 +68,12 @@ IntBuf _new_IntBuf(int buflength, int nelt)
 	else
 		ibuf.elts = Salloc((long) buflength, int);
 	ibuf.buflength = buflength;
-	for (ibuf.nelt = 0, elt = ibuf.elts;
-	     ibuf.nelt < nelt;
-	     ibuf.nelt++, elt++)
-		*elt = 0;
+	ibuf.nelt = nelt;
+	_IntBuf_set_val(&ibuf, 0);
 	return ibuf;
 }
 
-static void _IntBuf_extend(IntBuf *ibuf)
+static void IntBuf_extend(IntBuf *ibuf)
 {
 	long new_buflength;
 
@@ -84,12 +90,25 @@ void _IntBuf_insert_at(IntBuf *ibuf, int at, int val)
 	int i1;
 
 	if (ibuf->nelt >= ibuf->buflength)
-		_IntBuf_extend(ibuf);
+		IntBuf_extend(ibuf);
 	elt2 = ibuf->elts + ibuf->nelt;
 	elt1 = elt2 - 1;
 	for (i1 = ibuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
 	*elt2 = val;
+	return;
+}
+
+void _IntBuf_append(IntBuf *ibuf, int *vals, int nval)
+{
+	int new_nelt, *dest;
+
+	new_nelt = ibuf->nelt + nval;
+	while (new_nelt > ibuf->buflength)
+		IntBuf_extend(ibuf);
+	dest = ibuf->elts + ibuf->nelt;
+	memcpy(dest, vals, nval * sizeof(int));
+	ibuf->nelt = new_nelt;
 	return;
 }
 
@@ -103,6 +122,30 @@ void _IntBuf_delete_at(IntBuf *ibuf, int at)
 	for (i2 = at + 1; i2 < ibuf->nelt; i2++)
 		*(elt1++) = *(elt2++);
 	ibuf->nelt--;
+	return;
+}
+
+void _IntBuf_sum_val(IntBuf *ibuf, int val)
+{
+	int i, *elt;
+
+	for (i = 0, elt = ibuf->elts; i < ibuf->nelt; i++, elt++)
+		*elt += val;
+	return;
+}
+
+/*
+ * Left and right IntBuf objects must have the same length. This is
+ * NOT checked!
+ */
+void _IntBuf_sum_IntBuf(IntBuf *ibuf1, IntBuf *ibuf2)
+{
+	int i, *elt1, *elt2;
+
+	for (i = 0, elt1 = ibuf1->elts, elt2 = ibuf2->elts;
+	     i < ibuf1->nelt;
+	     i++, elt1++, elt2++)
+		*elt1 += *elt2;
 	return;
 }
 
@@ -186,7 +229,7 @@ IntBBuf _new_IntBBuf(int buflength, int nelt)
 	return ibbuf;
 }
 
-static void _IntBBuf_extend(IntBBuf *ibbuf)
+static void IntBBuf_extend(IntBBuf *ibbuf)
 {
 	long new_buflength;
 
@@ -203,12 +246,38 @@ void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, IntBuf ibuf)
 	int i1;
 
 	if (ibbuf->nelt >= ibbuf->buflength)
-		_IntBBuf_extend(ibbuf);
+		IntBBuf_extend(ibbuf);
 	elt2 = ibbuf->elts + ibbuf->nelt;
 	elt1 = elt2 - 1;
 	for (i1 = ibbuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
 	*elt2 = ibuf;
+	return;
+}
+
+/*
+ * Left and right IntBBuf objects must have the same length. This is
+ * NOT checked!
+ */
+void _IntBBuf_eltwise_append(IntBBuf *ibbuf1, IntBBuf *ibbuf2)
+{
+	int i;
+	IntBuf *elt1, *elt2;
+
+	for (i = 0, elt1 = ibbuf1->elts, elt2 = ibbuf2->elts;
+	     i < ibbuf1->nelt;
+	     i++, elt1++, elt2++)
+		_IntBuf_append(elt1, elt2->elts, elt2->nelt);
+	return;
+}
+
+void _IntBBuf_sum_val(IntBBuf *ibbuf, int val)
+{
+	int i;
+	IntBuf *elt;
+
+	for (i = 0, elt = ibbuf->elts; i < ibbuf->nelt; i++, elt++)
+		_IntBuf_sum_val(elt, val);
 	return;
 }
 
@@ -365,7 +434,7 @@ CharBuf _new_CharBuf_from_string(const char *string)
 	return cbuf;
 }
 
-static void _CharBuf_extend(CharBuf *cbuf)
+static void CharBuf_extend(CharBuf *cbuf)
 {
 	long new_buflength;
 
@@ -382,7 +451,7 @@ void _CharBuf_insert_at(CharBuf *cbuf, int at, char c)
 	int i1;
 
 	if (cbuf->nelt >= cbuf->buflength)
-		_CharBuf_extend(cbuf);
+		CharBuf_extend(cbuf);
 	elt2 = cbuf->elts + cbuf->nelt;
 	elt1 = elt2 - 1;
 	for (i1 = cbuf->nelt++; i1 > at; i1--)
@@ -426,15 +495,15 @@ CharBBuf _new_CharBBuf(int buflength, int nelt)
 	return cbbuf;
 }
 
-static void _CharBBuf_extend(CharBBuf *cbbuf)
+static void CharBBuf_extend(CharBBuf *cbbuf)
 {
 	long new_buflength;
 
 	new_buflength = get_new_buflength(cbbuf->buflength);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _CharBBuf_extend(): BEGIN\n");
-		Rprintf("[DEBUG] _CharBBuf_extend(): "
+		Rprintf("[DEBUG] CharBBuf_extend(): BEGIN\n");
+		Rprintf("[DEBUG] CharBBuf_extend(): "
 			"cbbuf->elts=%p buflength=%d new_buflength=%d\n",
 			cbbuf->elts, cbbuf->buflength, new_buflength);
 	}
@@ -444,7 +513,7 @@ static void _CharBBuf_extend(CharBBuf *cbbuf)
 	cbbuf->buflength = new_buflength;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _CharBBuf_extend(): END (cbbuf->elts=%p)\n",
+		Rprintf("[DEBUG] CharBBuf_extend(): END (cbbuf->elts=%p)\n",
 			cbbuf->elts);
 	}
 #endif
@@ -462,7 +531,7 @@ void _CharBBuf_insert_at(CharBBuf *cbbuf, int at, CharBuf cbuf)
 	}
 #endif
 	if (cbbuf->nelt >= cbbuf->buflength)
-		_CharBBuf_extend(cbbuf);
+		CharBBuf_extend(cbbuf);
 	elt2 = cbbuf->elts + cbbuf->nelt;
 	elt1 = elt2 - 1;
 	for (i1 = cbbuf->nelt++; i1 > at; i1--)

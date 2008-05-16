@@ -29,13 +29,28 @@ static int match_reporting_mode; // 0, 1 or 2
 static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
 static IntBBuf ends_bbuf;  // used when mode >= 1
 
-static void init_match_reporting(int not_tail, int is_count_only, int length)
+static void init_match_reporting(int no_tail, int is_count_only, int length)
 {
-	match_reporting_mode = is_count_only ? (not_tail ? 0 : 2) : 1;
+	match_reporting_mode = is_count_only ? (no_tail ? 0 : 2) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
 		match_count = _new_IntBuf(length, length);
 	if (match_reporting_mode >= 1)
 		ends_bbuf = _new_IntBBuf(length, length);
+	return;
+}
+
+static void drop_current_matches()
+{
+	int poffset;
+	IntBuf *ends_buf;
+
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+		_IntBuf_set_val(&match_count, 0);
+	if (match_reporting_mode >= 1)
+		for (poffset = 0, ends_buf = ends_bbuf.elts;
+		     poffset < ends_bbuf.nelt;
+		     poffset++, ends_buf++)
+			ends_buf->nelt = 0;
 	return;
 }
 
@@ -52,15 +67,16 @@ static void report_match(int poffset, int end)
 	return;
 }
 
-static void report_matches_for_dups(const int *dups, int length)
+static void report_matches_for_dups(const int *dups)
 {
 	int poffset, *val;
 	IntBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
 		for (poffset = 0, val = match_count.elts;
-		     poffset < length;
-		     poffset++, val++, dups++) {
+		     poffset < match_count.nelt;
+		     poffset++, val++, dups++)
+		{
 			if (*dups == 0)
 				continue;
 			*val = *(match_count.elts + *dups - 1);
@@ -68,8 +84,9 @@ static void report_matches_for_dups(const int *dups, int length)
 		return;
 	}
 	for (poffset = 0, ends_buf = ends_bbuf.elts;
-	     poffset < length;
-	     poffset++, ends_buf++, dups++) {
+	     poffset < ends_bbuf.nelt;
+	     poffset++, ends_buf++, dups++)
+	{
 		if (*dups == 0)
 			continue;
 		*ends_buf = *(ends_bbuf.elts + *dups - 1);
@@ -382,26 +399,25 @@ static void TBdna_match_Ptail(RoSeq Ptail, RoSeq S,
 			continue;
 		/*
 		 * We need to shrink the buffer we are walking on! This is safe
-		 * because shrinking an IntBuf object should never trigger reallocation.
+		 * because shrinking an IntBuf object should never trigger
+		 * reallocation.
 		 */
 		_IntBuf_delete_at(ends_buf0, i--);
 	}
 	return;
 }
 
-static void TBdna_match_tail(SEXP tail, RoSeq S,
+static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
 		const int *dups, int dups_len,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int poffset;
-	CachedXStringSet cached_tail;
 	RoSeq Ptail;
 
-	cached_tail = _new_CachedXStringSet(tail);
 	// The duplicated must be treated BEFORE the first pattern they
 	// duplicate, hence we must walk from last to first.
 	for (poffset = dups_len - 1; poffset >= 0; poffset--) {
-		Ptail = _get_CachedXStringSet_elt_asRoSeq(&cached_tail, poffset);
+		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, poffset);
 		TBdna_match_Ptail(Ptail, S,
 			poffset, dups, dups_len,
 			max_mm, fixedP, fixedS, is_count_only);
@@ -411,20 +427,24 @@ static void TBdna_match_tail(SEXP tail, RoSeq S,
 
 static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 		const int *dups, int dups_len,
-		SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
+		SEXP pdict_head, SEXP pdict_tail,
 		RoSeq S,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
+	CachedXStringSet cached_tail;
+
 	if (fixedS)
 		CWdna_exact_search(actree_nodes, base_codes, S);
 	else
 		CWdna_exact_search_on_nonfixedS(actree_nodes, base_codes, S);
-	if (pdict_tail_XStringSet == R_NilValue)
-		report_matches_for_dups(dups, dups_len);
-	else 
-		TBdna_match_tail(pdict_tail_XStringSet, S,
+	if (pdict_tail == R_NilValue) {
+		report_matches_for_dups(dups);
+	} else {
+		cached_tail = _new_CachedXStringSet(pdict_tail);
+		match_TBdna_tail(&cached_tail, S,
 			dups, dups_len,
 			max_mm, fixedP, fixedS, is_count_only);
+	}
 	return;
 }
 
@@ -436,8 +456,8 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
  *   'actree_base_codes': uldna_pdict@actree@base_codes
  *   'pdict_dups': pdict@dups
- *   'pdict_head_XStringSet': pdict@head (can be NULL)
- *   'pdict_tail_XStringSet': pdict@tail (can be NULL)
+ *   'pdict_head': pdict@head (XStringSet or NULL)
+ *   'pdict_tail': pdict@tail (XStringSet or NULL)
  *   'subject': subject
  *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
  *   'fixed': logical vector of length 2
@@ -451,30 +471,32 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
  ****************************************************************************/
 
 SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_dups, SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
+		SEXP pdict_dups, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
 	RoSeq S;
-	int fixedP, fixedS, is_count_only, no_head, no_tail;
+	int dups_len, no_head, no_tail,
+	    fixedP, fixedS, is_count_only;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
+	dups_len = LENGTH(pdict_dups);
+	no_head = pdict_head == R_NilValue;
+	if (!no_head)
+		error("matchPDict() doesn't support PDict objects with "
+		      "a head yet, sorry!");
+	no_tail = pdict_tail == R_NilValue;
 	S = _get_XString_asRoSeq(subject);
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
-	no_head = pdict_head_XStringSet == R_NilValue;
-	no_tail = pdict_tail_XStringSet == R_NilValue;
 
-	if (!no_head)
-		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
-	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
-
+	init_match_reporting(no_tail, is_count_only, dups_len);
 	match_TBdna(actree_nodes, INTEGER(actree_base_codes),
-		INTEGER(pdict_dups), LENGTH(pdict_dups),
-		pdict_head_XStringSet, pdict_tail_XStringSet,
+		INTEGER(pdict_dups), dups_len,
+		pdict_head, pdict_tail,
 		S,
 		INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
 
@@ -486,11 +508,65 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 }
 
 SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_dups, SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
+		SEXP pdict_dups, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
-	return R_NilValue;
+	ACNode *actree_nodes;
+	RoSeq S, V;
+	int dups_len, no_head, no_tail,
+	    fixedP, fixedS, is_count_only,
+	    nviews, i, *view_start, *view_width, view_offset;
+	IntBuf global_match_count;
+	IntBBuf global_ends_bbuf;
+
+	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
+	dups_len = LENGTH(pdict_dups);
+	no_head = pdict_head == R_NilValue;
+	if (!no_head)
+		error("matchPDict() doesn't support PDict objects with "
+		      "a head yet, sorry!");
+	no_tail = pdict_tail == R_NilValue;
+	S = _get_XString_asRoSeq(subject);
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	is_count_only = LOGICAL(count_only)[0];
+
+	if (is_count_only)
+		global_match_count = _new_IntBuf(dups_len, dups_len);
+	else
+		global_ends_bbuf = _new_IntBBuf(dups_len, dups_len);
+	init_match_reporting(no_tail, is_count_only, dups_len);
+	nviews = LENGTH(views_start);
+	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
+	     i < nviews;
+	     i++, view_start++, view_width++)
+	{
+		view_offset = *view_start - 1;
+		if (view_offset < 0 || view_offset + *view_width > S.nelt)
+			error("'subject' has out of limits views");
+		V.elts = S.elts + view_offset;
+		V.nelt = *view_width;
+		drop_current_matches();
+		match_TBdna(actree_nodes, INTEGER(actree_base_codes),
+			INTEGER(pdict_dups), dups_len,
+			pdict_head, pdict_tail,
+			V,
+			INTEGER(max_mismatch)[0], fixedP, fixedS,
+			is_count_only);
+		if (is_count_only) {
+			_IntBuf_sum_IntBuf(&global_match_count, &match_count);
+		} else {
+			_IntBBuf_sum_val(&ends_bbuf, view_offset);
+			_IntBBuf_eltwise_append(&global_ends_bbuf, &ends_bbuf);
+		}
+	}
+
+	if (is_count_only)
+		return _IntBuf_asINTEGER(&global_match_count);
+	if (envir == R_NilValue)
+		return _IntBBuf_asLIST(&global_ends_bbuf, 1);
+	return _IntBBuf_toEnvir(&global_ends_bbuf, envir, 1);
 }
 

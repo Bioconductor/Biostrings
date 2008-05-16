@@ -8,6 +8,9 @@ STRING MATCHING
 o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
   vignette (still a work-in-progress).
 
+o Added "matchPDict" methods for XStringViews and MaskedXString objects
+  (only for a DNA input sequence).
+
 o Added support in matchPDict() for IUPAC ambiguities in the subject i.e. it
   will treat them as wildcards when called with 'fixed=FALSE' on a Trusted
   Band dict or with 'fixed=c(pattern=TRUE, subject=FALSE)' on any dict.

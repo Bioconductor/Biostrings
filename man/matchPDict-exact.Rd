@@ -46,9 +46,11 @@
 
 \alias{matchPDict}
 \alias{matchPDict,XString-method}
+\alias{matchPDict,XStringViews-method}
 \alias{matchPDict,MaskedXString-method}
 \alias{countPDict}
 \alias{countPDict,XString-method}
+\alias{countPDict,XStringViews-method}
 \alias{countPDict,MaskedXString-method}
 
 % Functions:
