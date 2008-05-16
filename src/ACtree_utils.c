@@ -243,7 +243,8 @@ SEXP debug_ACtree_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_TBdna.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'ACtree_utils.c'\n",
+		debug ? "on" : "off");
 	if (debug) {
 		Rprintf("[DEBUG] debug_ACtree_utils(): INTS_PER_ACNODE=%d\n",
 			INTS_PER_ACNODE);
@@ -251,7 +252,7 @@ SEXP debug_ACtree_utils()
 			MAX_ACNODEBUF_LENGTH);
 	}
 #else
-	Rprintf("Debug mode not available in 'match_TBdna.c'\n");
+	Rprintf("Debug mode not available in 'ACtree_utils.c'\n");
 #endif
 	return R_NilValue;
 }

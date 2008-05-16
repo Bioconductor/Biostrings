@@ -409,9 +409,28 @@ static void TBdna_match_tail(SEXP tail, RoSeq S,
 	return;
 }
 
+static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
+		const int *dups, int dups_len,
+		SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
+		RoSeq S,
+		int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	if (fixedS)
+		CWdna_exact_search(actree_nodes, base_codes, S);
+	else
+		CWdna_exact_search_on_nonfixedS(actree_nodes, base_codes, S);
+	if (pdict_tail_XStringSet == R_NilValue)
+		report_matches_for_dups(dups, dups_len);
+	else 
+		TBdna_match_tail(pdict_tail_XStringSet, S,
+			dups, dups_len,
+			max_mm, fixedP, fixedS, is_count_only);
+	return;
+}
+
 
 /****************************************************************************
- * .Call entry point: "match_TBdna"
+ * .Call entry point: "XString_match_TBdna" and "XStringViews_match_TBdna"
  *
  * Arguments:
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
@@ -419,7 +438,7 @@ static void TBdna_match_tail(SEXP tail, RoSeq S,
  *   'pdict_dups': pdict@dups
  *   'pdict_head_XStringSet': pdict@head (can be NULL)
  *   'pdict_tail_XStringSet': pdict@tail (can be NULL)
- *   'subject_XString': subject
+ *   'subject': subject
  *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
  *   'fixed': logical vector of length 2
  *   'count_only': TRUE or FALSE
@@ -431,9 +450,9 @@ static void TBdna_match_tail(SEXP tail, RoSeq S,
  *
  ****************************************************************************/
 
-SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
+SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP pdict_dups, SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
-		SEXP subject_XString,
+		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
@@ -442,7 +461,7 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	int fixedP, fixedS, is_count_only, no_head, no_tail;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	S = _get_XString_asRoSeq(subject_XString);
+	S = _get_XString_asRoSeq(subject);
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
@@ -452,24 +471,26 @@ SEXP match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (!no_head)
 		error("matchPDict() doesn't support PDict objects with a head yet, sorry!");
 	init_match_reporting(no_tail, is_count_only, LENGTH(pdict_dups));
-	if (fixedS)
-		CWdna_exact_search(actree_nodes,
-			INTEGER(actree_base_codes), S);
-	else
-		CWdna_exact_search_on_nonfixedS(actree_nodes,
-			INTEGER(actree_base_codes), S);
-	if (no_tail) {
-		report_matches_for_dups(INTEGER(pdict_dups), LENGTH(pdict_dups));
-	} else {
-		TBdna_match_tail(pdict_tail_XStringSet, S,
-			INTEGER(pdict_dups), LENGTH(pdict_dups),
-			INTEGER(max_mismatch)[0], fixedP, fixedS,
-			is_count_only);
-	}
+
+	match_TBdna(actree_nodes, INTEGER(actree_base_codes),
+		INTEGER(pdict_dups), LENGTH(pdict_dups),
+		pdict_head_XStringSet, pdict_tail_XStringSet,
+		S,
+		INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
+
 	if (is_count_only)
 		return _IntBuf_asINTEGER(&match_count);
 	if (envir == R_NilValue)
 		return _IntBBuf_asLIST(&ends_bbuf, 1);
 	return _IntBBuf_toEnvir(&ends_bbuf, envir, 1);
+}
+
+SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
+		SEXP pdict_dups, SEXP pdict_head_XStringSet, SEXP pdict_tail_XStringSet,
+		SEXP subject, SEXP views_start, SEXP views_width,
+		SEXP max_mismatch, SEXP fixed,
+		SEXP count_only, SEXP envir)
+{
+	return R_NilValue;
 }
 

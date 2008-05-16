@@ -1171,13 +1171,28 @@ SEXP ByName_MIndex_coverage(
 
 SEXP debug_match_TBdna();
 
-SEXP match_TBdna(
+SEXP XString_match_TBdna(
 	SEXP actree_nodes_xp,
 	SEXP actree_base_codes,
 	SEXP pdict_dups,
 	SEXP pdict_head_XStringSet,
 	SEXP pdict_tail_XStringSet,
-	SEXP subject_XString,
+	SEXP subject,
+	SEXP max_mismatch,
+	SEXP fixed,
+	SEXP count_only,
+	SEXP envir
+);
+
+SEXP XStringViews_match_TBdna(
+	SEXP actree_nodes_xp,
+	SEXP actree_base_codes,
+	SEXP pdict_dups,
+	SEXP pdict_head_XStringSet,
+	SEXP pdict_tail_XStringSet,
+	SEXP subject,
+	SEXP views_start,
+	SEXP views_width,
 	SEXP max_mismatch,
 	SEXP fixed,
 	SEXP count_only,
@@ -1240,3 +1255,4 @@ SEXP align_pairwiseAlignment(
 	SEXP constantMatrix,
 	SEXP constantMatrixDim
 );
+

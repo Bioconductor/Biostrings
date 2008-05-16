@@ -762,7 +762,7 @@ extractAllMatches <- function(subject, mindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    C_ans <- .Call("match_TBdna",
+    C_ans <- .Call("XString_match_TBdna",
                    actree@nodes@xp, actree@base_codes,
                    pdict@dups, NULL, NULL,
                    subject,
@@ -868,7 +868,7 @@ extractAllMatches <- function(subject, mindex)
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    C_ans <- .Call("match_TBdna",
+    C_ans <- .Call("XString_match_TBdna",
                    actree@nodes@xp, actree@base_codes,
                    pdict@dups, pdict@head, pdict@tail,
                    subject,
