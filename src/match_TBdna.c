@@ -427,24 +427,20 @@ static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
 
 static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 		const int *dups, int dups_len,
-		SEXP pdict_head, SEXP pdict_tail,
+		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		RoSeq S,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
-	CachedXStringSet cached_tail;
-
 	if (fixedS)
 		CWdna_exact_search(actree_nodes, base_codes, S);
 	else
 		CWdna_exact_search_on_nonfixedS(actree_nodes, base_codes, S);
-	if (pdict_tail == R_NilValue) {
+	if (cached_tail == NULL)
 		report_matches_for_dups(dups);
-	} else {
-		cached_tail = _new_CachedXStringSet(pdict_tail);
-		match_TBdna_tail(&cached_tail, S,
+	else
+		match_TBdna_tail(cached_tail, S,
 			dups, dups_len,
 			max_mm, fixedP, fixedS, is_count_only);
-	}
 	return;
 }
 
@@ -477,17 +473,26 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
+	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
 	int dups_len, no_head, no_tail,
 	    fixedP, fixedS, is_count_only;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	dups_len = LENGTH(pdict_dups);
+	pcached_head = pcached_tail = NULL;
 	no_head = pdict_head == R_NilValue;
-	if (!no_head)
+	if (!no_head) {
 		error("matchPDict() doesn't support PDict objects with "
 		      "a head yet, sorry!");
+		cached_head = _new_CachedXStringSet(pdict_head);
+		pcached_head = &cached_head;
+	}
 	no_tail = pdict_tail == R_NilValue;
+	if (!no_tail) {
+		cached_tail = _new_CachedXStringSet(pdict_tail);
+		pcached_tail = &cached_tail;
+	}
 	S = _get_XString_asRoSeq(subject);
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -496,7 +501,7 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	init_match_reporting(no_tail, is_count_only, dups_len);
 	match_TBdna(actree_nodes, INTEGER(actree_base_codes),
 		INTEGER(pdict_dups), dups_len,
-		pdict_head, pdict_tail,
+		pcached_head, pcached_tail,
 		S,
 		INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
 
@@ -514,6 +519,7 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		SEXP count_only, SEXP envir)
 {
 	ACNode *actree_nodes;
+	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S, V;
 	int dups_len, no_head, no_tail,
 	    fixedP, fixedS, is_count_only,
@@ -523,11 +529,19 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	dups_len = LENGTH(pdict_dups);
+	pcached_head = pcached_tail = NULL;
 	no_head = pdict_head == R_NilValue;
-	if (!no_head)
+	if (!no_head) {
 		error("matchPDict() doesn't support PDict objects with "
 		      "a head yet, sorry!");
+		cached_head = _new_CachedXStringSet(pdict_head);
+		pcached_head = &cached_head;
+	}
 	no_tail = pdict_tail == R_NilValue;
+	if (!no_tail) {
+		cached_tail = _new_CachedXStringSet(pdict_tail);
+		pcached_tail = &cached_tail;
+	}
 	S = _get_XString_asRoSeq(subject);
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -551,7 +565,7 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		drop_current_matches();
 		match_TBdna(actree_nodes, INTEGER(actree_base_codes),
 			INTEGER(pdict_dups), dups_len,
-			pdict_head, pdict_tail,
+			pcached_head, pcached_tail,
 			V,
 			INTEGER(max_mismatch)[0], fixedP, fixedS,
 			is_count_only);

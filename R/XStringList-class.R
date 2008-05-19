@@ -54,7 +54,9 @@ setClass("AAStringList", contains="XStringList")
 ###
 ### Like for XStringSet and XStringViews objects, the strict minimum of
 ### methods that must work with XStringList objects is:
-###   length, width, nchar, names
+###   alphabet, length, width, nchar, names
+###
+### NO "alphabet" method for now!
 ###
 
 setMethod("length", "XStringList", function(x) length(x@seqs))

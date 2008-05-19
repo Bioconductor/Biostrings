@@ -93,29 +93,36 @@ setClass("AAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Non exported accessor methods.
+###
+
+setGeneric("super", function(x) standardGeneric("super"))
+setMethod("super", "XStringSet", function(x) x@super)
+
+setMethod("baseXStringSubtype", "XStringSet",
+    function(x) baseXStringSubtype(super(x))
+)
+setMethod("codes", "XStringSet", function(x, ...) codes(super(x), ...))
+setMethod("codec", "XStringSet", function(x) codec(super(x)))
+setMethod("enc_lkup", "XStringSet", function(x) enc_lkup(super(x)))
+setMethod("dec_lkup", "XStringSet", function(x) dec_lkup(super(x)))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 ### Like for XStringList and XStringViews objects, the strict minimum of
 ### methods that must work with XStringSet objects is:
-###   length, width, nchar, names
+###   alphabet, length, width, nchar, names
 ### Note that XStringSet objects inherit the "length", "width" and "names"
 ### methods from the IRanges class.
 ###
 
-### NOT exported
-setGeneric("super", function(x) standardGeneric("super"))
-setMethod("super", "XStringSet", function(x) x@super)
+setMethod("alphabet", "XStringSet", function(x) alphabet(super(x)))
 
 setMethod("nchar", "XStringSet",
     function(x, type="chars", allowNA=FALSE) width(x)
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "alphabet" method.
-###
-
-setMethod("alphabet", "XStringSet", function(x) alphabet(super(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -392,11 +399,6 @@ setReplaceMethod("[[", "XStringSet",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other methods.
 ###
-
-setMethod("codes", "XStringSet", function(x, ...) codes(super(x), ...))
-setMethod("codec", "XStringSet", function(x) codec(super(x)))
-setMethod("enc_lkup", "XStringSet", function(x) enc_lkup(super(x)))
-setMethod("dec_lkup", "XStringSet", function(x) dec_lkup(super(x)))
 
 setMethod("as.list", "XStringSet",
     function(x, ...)
