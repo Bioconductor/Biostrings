@@ -383,8 +383,8 @@ static float pairwiseAlignment(
 							align2InfoPtr->lengthInserts++;
 							*align2InfoPtr->startInserts = nCharString2Plus1 - j;
 			    		}
+			    		*align2InfoPtr->widthInserts += 1;
 		    		}
-		    		*align2InfoPtr->widthInserts += 1;
 		    		i--;
 		    		break;
 		    	case INSERTION:
@@ -398,8 +398,8 @@ static float pairwiseAlignment(
 							align1InfoPtr->lengthInserts++;
 							*align1InfoPtr->startInserts = nCharString1Plus1 - i;
 			    		}
+			    		*align1InfoPtr->widthInserts += 1;
 		    		}
-		    		*align1InfoPtr->widthInserts += 1;
 		    		j--;
 		    		break;
 		    	case SUBSTITUTION:
@@ -561,8 +561,9 @@ SEXP XString_align_pairwiseAlignment(
 		PROTECT(outputElement1 = NEW_INTEGER(align1Info.lengthInserts));
 		PROTECT(outputElement2 = NEW_INTEGER(align1Info.lengthInserts));
 		for(int i = 0; i < align1Info.lengthInserts; i++) {
-			INTEGER(outputElement1)[i] = align1Info.startInserts[align1Info.lengthInserts - 1 - i];
-			INTEGER(outputElement2)[i] = align1Info.widthInserts[align1Info.lengthInserts - 1 - i];
+			int infoIndex = align1Info.lengthInserts - 1 - i;
+			INTEGER(outputElement1)[i] = align1Info.startInserts[infoIndex];
+			INTEGER(outputElement2)[i] = align1Info.widthInserts[infoIndex];
 		}
 		SET_ELEMENT(output, 2, outputElement1);
 		SET_ELEMENT(output, 3, outputElement2);
@@ -581,8 +582,9 @@ SEXP XString_align_pairwiseAlignment(
 		PROTECT(outputElement1 = NEW_INTEGER(align2Info.lengthInserts));
 		PROTECT(outputElement2 = NEW_INTEGER(align2Info.lengthInserts));
 		for(int j = 0; j < align2Info.lengthInserts; j++) {
-			INTEGER(outputElement1)[j] = align2Info.startInserts[align2Info.lengthInserts - 1 - j];
-			INTEGER(outputElement2)[j] = align2Info.widthInserts[align2Info.lengthInserts - 1 - j];
+			int infoIndex = align2Info.lengthInserts - 1 - j;
+			INTEGER(outputElement1)[j] = align2Info.startInserts[infoIndex];
+			INTEGER(outputElement2)[j] = align2Info.widthInserts[infoIndex];
 		}
 		SET_ELEMENT(output, 6, outputElement1);
 		SET_ELEMENT(output, 7, outputElement2);
