@@ -553,5 +553,167 @@ Now we can run this 2nd analysis and put the results in the
 runAnalysis2(ULce2dict0, outfile="ULce2dict0_ana2.txt")
 @
 
+
+% ---------------------------------------------------------------------------
+
+\section{Putting masks on the chromosome sequences}
+
+Starting with Bioconductor 2.2, some {\it BSgenome data packages} provide
+built-in masks for the chromosome sequences. 
+For example, each chromosome in \Rpackage{BSgenome.Hsapiens.UCSC.hg18}
+has 3 masks on it: the mask of inter-contig gaps, the mask of repeat
+regions that were determined by the RepeatMasker software, and the mask
+of repeat regions that were determined by the Tandem Repeats Finder
+software (where only repeats with period less than or equal to 12
+were kept).
+
+<<f1>>=
+library(BSgenome.Hsapiens.UCSC.hg18)
+chrY <- Hsapiens$chrY
+chrY
+@
+
+Note that the built-in masks are always inactive by default.
+When displaying a masked sequence (here a \Rclass{MaskedDNAString}
+object), the {\it masked width} and {\it masked ratio} are reported for
+each individual mask, for all the masks together, and for all
+the active masks together.
+The {\it masked width} is the total number of nucleotide positions
+that are masked and the {\it masked ratio} is the {\it masked width}
+divided by the length of the sequence.
+
+To activate a mask, use the \Rmethod{active} replacement method
+in conjonction with the \Rmethod{masks} method. For example, to
+activate the first mask (inter-contig gaps), do:
+<<f2>>=
+active(masks(chrY))[1] <- TRUE
+chrY
+@
+
+As you can see, the {\it masked width} for all the active masks
+together (i.e. the total number of nucleotide positions that are
+masked by at least one active mask) is now the same as for the
+first mask. This represents a {\it masked ratio} of about 55.6\%.
+
+Now when we use a {\it mask aware} functions like
+\Rfunction{alphabetFrequency}, the masked regions of the
+input sequence are ignored:
+<<f3>>=
+alphabetFrequency(unmasked(chrY))
+alphabetFrequency(chrY)
+@
+
+Note that not all functions that work with an \Rclass{XString}
+input are {\it mask aware} but more will be added in the near future.
+However, there is no plan to do this in a systematic way since
+the usefulness of supporting masks can vary a lot between
+functions.
+For example it's clear that making \Rfunction{dinucleotideFrequency}
+{\it mask aware} is going to provide a lot of convenience, but doing
+so for \Rfunction{reverseComplement} would not really make sense from
+a biological point of view. Or maybe it will, but we haven't
+seen any use case for this at the moment.
+Anyway, most of the times there is a systematic way to exclude some
+arbitrary regions from an analysis without having to use {\it mask aware}
+functions. This is described below in the {\it Filling the masked regions
+with the gap letter} section.
+
+When coercing a \Rclass{MaskedXString} object to an \Rclass{XStringViews}
+object, each non-masked region in the original sequence is converted into
+a view on the sequence:
+<<f4>>=
+as(chrY, "XStringViews")
+@
+
+This can be used in conjonction with the \Rmethod{gaps} method to
+see the gaps between the views i.e. the masked regions themselves:
+<<f5>>=
+gaps(as(chrY, "XStringViews"))
+@
+
+Not surprisingly, the inter-contig gaps are made of Ns.
+Note that, if applied directly to \Robject{chrY}, \Rmethod{gaps}
+returns a \Rclass{MaskedDNAString} object with just one mask masking
+the non-masked regions in the original object:
+<<f6>>=
+gaps(chrY)
+alphabetFrequency(gaps(chrY))
+active(masks(chrY)) <- TRUE
+alphabetFrequency(chrY)
+gaps(chrY)
+as(gaps(chrY), "XStringViews")
+alphabetFrequency(gaps(chrY))
+@
+
+Now let's compare three different ways to find all the occurences of
+the \Robject{"CANNGT"} consensus sequence in chrY. The Ns in this
+pattern need to be treated as wildcards i.e. they must match any
+letter in the subject.
+
+Without the mask feature, the first way to do it would be to use
+the \Robject{fixed=FALSE} option in the call to \Rfunction{matchPattern}
+(or \Rfunction{countPattern}):
+<<f7>>=
+Ebox <- "CANNGT"
+active(masks(chrY)) <- FALSE
+countPattern(Ebox, chrY, fixed=FALSE)
+@
+
+However, the problem with this method is that the Ns in the subject
+are also treated as wildcards hence the unexpected high number of
+matches.
+A better method is to specify the side of the matching problem
+where Ns should be treated as wildcards:
+<<f8>>=
+countPattern(Ebox, chrY, fixed=c(pattern=FALSE,subject=TRUE))
+@
+
+Finally, this can be achieved more efficiently by masking the
+inter-contig gaps:
+<<f9>>=
+active(masks(chrY))[1] <- TRUE
+countPattern(Ebox, chrY, fixed=FALSE)
+@
+
+Note that with chromosomes that have Ns outside the inter-contig
+gaps like chromosome 2, you need to use
+\Robject{fixed=c(pattern=FALSE,subject=TRUE)} even with the mask
+of inter-contig gaps activated:
+<<f10>>=
+chr2 <- Hsapiens$chr2
+active(masks(chr2))[1] <- TRUE
+alphabetFrequency(chr2)
+countPattern(Ebox, chr2, fixed=FALSE)
+countPattern(Ebox, chr2, fixed=c(pattern=FALSE,subject=TRUE))
+@
+
+or, alternatively, you could mask the Ns yourself:
+<<f11>>=
+chr2_noNs <- maskMotif(unmasked(chr2), "N")
+countPattern(Ebox, chr2_noNs, fixed=FALSE)
+@
+
+
+% ---------------------------------------------------------------------------
+\section{Injecting known SNPs in the chromosome sequences}
+
+coming soon...
+
+
+% ---------------------------------------------------------------------------
+
+\section{Filling the masked regions with the gap letter}
+
+coming soon...
+
+
+% ---------------------------------------------------------------------------
+
+\section{Session info}
+
+<<g1>>=
+sessionInfo()
+@
+
 \end{document}
 
