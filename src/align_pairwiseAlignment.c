@@ -6,11 +6,11 @@
 
 #define NEGATIVE_INFINITY (- FLT_MAX)
 
-#define   GLOBAL_ALIGNMENT 1
-#define    LOCAL_ALIGNMENT 2
-#define  OVERLAP_ALIGNMENT 3
-#define OVERLAP1_ALIGNMENT 4
-#define OVERLAP2_ALIGNMENT 5
+#define          GLOBAL_ALIGNMENT 1
+#define           LOCAL_ALIGNMENT 2
+#define         OVERLAP_ALIGNMENT 3
+#define PATTERN_OVERLAP_ALIGNMENT 4
+#define SUBJECT_OVERLAP_ALIGNMENT 5
 
 #define SUBSTITUTION 'S'
 #define INSERTION    'I'
@@ -37,8 +37,8 @@ struct AlignInfo {
 	RoSeq string;
 	RoSeq quality;
 	int endGap;
-	int startAlign;
-	int widthAlign;
+	int startRange;
+	int widthRange;
 	int* startInserts;
 	int* widthInserts;
 	int lengthInserts;
@@ -222,10 +222,10 @@ static float pairwiseAlignment(
 		align1InfoPtr->widthInserts = widthInserts1Buffer + alignmentBufferSize;
 		align2InfoPtr->widthInserts = widthInserts2Buffer + alignmentBufferSize;
 
-		align1InfoPtr->startAlign = -1;
-		align2InfoPtr->startAlign = -1;
-		align1InfoPtr->widthAlign = 0;
-		align2InfoPtr->widthAlign = 0;
+		align1InfoPtr->startRange = -1;
+		align2InfoPtr->startRange = -1;
+		align1InfoPtr->widthRange = 0;
+		align2InfoPtr->widthRange = 0;
 		for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++)
 			align2InfoPtr->profile[jMinus1] = NEGATIVE_INFINITY;
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++)
@@ -267,8 +267,8 @@ static float pairwiseAlignment(
 
 					/* Step 3d:  Get the optimal score for local alignments */
 					if (CURR_MATRIX(0, j) > maxScore) {
-						align1InfoPtr->startAlign = iElt + 1;
-						align2InfoPtr->startAlign = jElt + 1;
+						align1InfoPtr->startRange = iElt + 1;
+						align2InfoPtr->startRange = jElt + 1;
 						maxScore = CURR_MATRIX(0, j);
 					}
 				} else {
@@ -326,8 +326,8 @@ static float pairwiseAlignment(
 
 		if (!localAlignment) {
 			/* Step 3g:  Get the optimal score for non-local alignments */
-			align1InfoPtr->startAlign = 1;
-			align2InfoPtr->startAlign = 1;
+			align1InfoPtr->startRange = 1;
+			align2InfoPtr->startRange = 1;
 			maxScore =
 				MAX(CURR_MATRIX(0, nCharString2),
 				MAX(CURR_MATRIX(1, nCharString2),
@@ -367,16 +367,16 @@ static float pairwiseAlignment(
 
 		/* Step 4:  Traceback through the score matrix */
 		char previousAction = '?';
-		i = nCharString1Plus1 - align1InfoPtr->startAlign;
-		j = nCharString2Plus1 - align2InfoPtr->startAlign;
+		i = nCharString1Plus1 - align1InfoPtr->startRange;
+		j = nCharString2Plus1 - align2InfoPtr->startRange;
 		while (TRACE_MATRIX(i, j) != TERMINATION) {
 			char action = TRACE_MATRIX(i, j);
 			switch (action) {
 		    	case DELETION:
 		    		if (j == nCharString2) {
-		    			align1InfoPtr->startAlign++;
+		    			align1InfoPtr->startRange++;
 		    		} else {
-		    			align1InfoPtr->widthAlign++;
+		    			align1InfoPtr->widthRange++;
 			    		if (previousAction != DELETION) {
 							align2InfoPtr->startInserts--;
 							align2InfoPtr->widthInserts--;
@@ -389,9 +389,9 @@ static float pairwiseAlignment(
 		    		break;
 		    	case INSERTION:
 		    		if (i == nCharString1) {
-		    			align2InfoPtr->startAlign++;
+		    			align2InfoPtr->startRange++;
 		    		} else {
-		    			align2InfoPtr->widthAlign++;
+		    			align2InfoPtr->widthRange++;
 			    		if (previousAction != INSERTION) {
 							align1InfoPtr->startInserts--;
 							align1InfoPtr->widthInserts--;
@@ -403,8 +403,8 @@ static float pairwiseAlignment(
 		    		j--;
 		    		break;
 		    	case SUBSTITUTION:
-		    		align1InfoPtr->widthAlign++;
-		    		align2InfoPtr->widthAlign++;
+		    		align1InfoPtr->widthRange++;
+		    		align2InfoPtr->widthRange++;
 		    		i--;
 		    		j--;
 		    		break;
@@ -415,15 +415,15 @@ static float pairwiseAlignment(
 			previousAction = action;
 		}
 
-		align1InfoPtr->profile[align1InfoPtr->startAlign - 1] = maxScore;
-		align2InfoPtr->profile[align2InfoPtr->startAlign - 1] = maxScore;
+		align1InfoPtr->profile[align1InfoPtr->startRange - 1] = maxScore;
+		align2InfoPtr->profile[align2InfoPtr->startRange - 1] = maxScore;
 
-		int offset1 = align1InfoPtr->startAlign - 1;
+		int offset1 = align1InfoPtr->startRange - 1;
 		if (offset1 > 0 && align1InfoPtr->lengthInserts > 0) {
 			for (i = 0; i < align1InfoPtr->lengthInserts; i++)
 				align1InfoPtr->startInserts[i] -= offset1;
 		}
-		int offset2 = align2InfoPtr->startAlign - 1;
+		int offset2 = align2InfoPtr->startRange - 1;
 		if (offset2 > 0 && align2InfoPtr->lengthInserts > 0) {
 			for (j = 0; j < align2InfoPtr->lengthInserts; j++)
 				align2InfoPtr->startInserts[j] -= offset2;
@@ -435,10 +435,12 @@ static float pairwiseAlignment(
 
 /*
  * INPUTS
- * 'string1', 'string2':     left and right XString objects for reads
- * 'quality1', 'quality2':   left and right BString objects for quality scores
- * 'profile1', 'profile2':   left and right XNumeric objects for pairwise
- *                           alignment profiles
+ * 'pattern':                XString object for patterns
+ * 'subject':                XString object for subject
+ * 'patternQuality':         BString object for quality scores for pattern
+ * 'subjectQuality':         BString object for quality scores for subject
+ * 'patternProfile':         XNumeric object for profile of pattern
+ * 'subjectProfile':         XNumeric object for profile of subject
  * 'typeCode':               type of pairwise alignment
  *                           (integer vector of length 1;
  *                            1 = 'global',   2 = 'local',    3 = 'overlap',
@@ -471,13 +473,13 @@ static float pairwiseAlignment(
  * the alignments and 1 integer vector containing the alignment score.
  * Note that the 2 XString objects to align should contain no gaps.
  */
-SEXP align_pairwiseAlignment(
-		SEXP string1,
-		SEXP string2,
-		SEXP quality1,
-		SEXP quality2,
-		SEXP profile1,
-		SEXP profile2,
+SEXP XString_align_pairwiseAlignment(
+		SEXP pattern,
+		SEXP subject,
+		SEXP patternQuality,
+		SEXP subjectQuality,
+		SEXP patternProfile,
+		SEXP subjectProfile,
 		SEXP typeCode,
 		SEXP scoreOnly,
 		SEXP gapOpening,
@@ -492,24 +494,19 @@ SEXP align_pairwiseAlignment(
 {
 	int scoreOnlyValue = LOGICAL(scoreOnly)[0];
 
-	/* Get the strings for alignment */
-	RoSeq stringElements1 = _get_XString_asRoSeq(string1);
-	RoSeq stringElements2 = _get_XString_asRoSeq(string2);
-	RoSeq qualityElements1 = _get_XString_asRoSeq(quality1);
-	RoSeq qualityElements2 = _get_XString_asRoSeq(quality2);
-
 	/* Create the alignment info objects */
 	struct AlignInfo align1Info, align2Info;
-	align1Info.string = stringElements1;
-	align2Info.string = stringElements2;
-	align1Info.quality = qualityElements1;
-	align2Info.quality = qualityElements2;
-	align1Info.profile = REAL(R_ExternalPtrTag(profile1));
-	align2Info.profile = REAL(R_ExternalPtrTag(profile2));
+	align1Info.string = _get_XString_asRoSeq(pattern);
+	align1Info.quality = _get_XString_asRoSeq(patternQuality);
+	align1Info.profile = REAL(R_ExternalPtrTag(patternProfile));
 	align1Info.endGap =
-		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == OVERLAP2_ALIGNMENT);
+		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
+
+	align2Info.string = _get_XString_asRoSeq(subject);
+	align2Info.quality = _get_XString_asRoSeq(subjectQuality);
+	align2Info.profile = REAL(R_ExternalPtrTag(subjectProfile));
 	align2Info.endGap =
-		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == OVERLAP1_ALIGNMENT);
+		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
 
 	/* Perform pairwise alignment */
 	double score = pairwiseAlignment(
@@ -539,28 +536,28 @@ SEXP align_pairwiseAlignment(
 		PROTECT(output = NEW_LIST(9));
 		/* Set the names */
 		PROTECT(outputNames = NEW_CHARACTER(9));
-		SET_STRING_ELT(outputNames, 0, mkChar("startAlign1"));
-		SET_STRING_ELT(outputNames, 1, mkChar("widthAlign1"));
-		SET_STRING_ELT(outputNames, 2, mkChar("startInserts1"));
-		SET_STRING_ELT(outputNames, 3, mkChar("widthInserts1"));
-		SET_STRING_ELT(outputNames, 4, mkChar("startAlign2"));
-		SET_STRING_ELT(outputNames, 5, mkChar("widthAlign2"));
-		SET_STRING_ELT(outputNames, 6, mkChar("startInserts2"));
-		SET_STRING_ELT(outputNames, 7, mkChar("widthInserts2"));
+		SET_STRING_ELT(outputNames, 0, mkChar("startPatternRange"));
+		SET_STRING_ELT(outputNames, 1, mkChar("widthPatternRange"));
+		SET_STRING_ELT(outputNames, 2, mkChar("startPatternInserts"));
+		SET_STRING_ELT(outputNames, 3, mkChar("widthPatternInserts"));
+		SET_STRING_ELT(outputNames, 4, mkChar("startSubjectRange"));
+		SET_STRING_ELT(outputNames, 5, mkChar("widthSubjectRange"));
+		SET_STRING_ELT(outputNames, 6, mkChar("startSubjectInserts"));
+		SET_STRING_ELT(outputNames, 7, mkChar("widthSubjectInserts"));
 		SET_STRING_ELT(outputNames, 8, mkChar("score"));
 		SET_NAMES(output, outputNames);
 		UNPROTECT(1);
-		/* Set the "startAlign1" element */
+		/* Set the "startPatternRange" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align1Info.startAlign;
+		INTEGER(outputElement1)[0] = align1Info.startRange;
 		SET_ELEMENT(output, 0, outputElement1);
 		UNPROTECT(1);
-		/* Set the "widthAlign1" element */
+		/* Set the "widthPatternRange" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align1Info.widthAlign;
+		INTEGER(outputElement1)[0] = align1Info.widthRange;
 		SET_ELEMENT(output, 1, outputElement1);
 		UNPROTECT(1);
-		/* Set the "startInserts1" and "widthInserts1" elements */
+		/* Set the "startPatternInserts" and "widthPatternInserts" elements */
 		PROTECT(outputElement1 = NEW_INTEGER(align1Info.lengthInserts));
 		PROTECT(outputElement2 = NEW_INTEGER(align1Info.lengthInserts));
 		for(int i = 0; i < align1Info.lengthInserts; i++) {
@@ -570,17 +567,17 @@ SEXP align_pairwiseAlignment(
 		SET_ELEMENT(output, 2, outputElement1);
 		SET_ELEMENT(output, 3, outputElement2);
 		UNPROTECT(2);
-		/* Set the "startAlign2" element */
+		/* Set the "startSubjectRange" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align2Info.startAlign;
+		INTEGER(outputElement1)[0] = align2Info.startRange;
 		SET_ELEMENT(output, 4, outputElement1);
 		UNPROTECT(1);
-		/* Set the "widthAlign2" element */
+		/* Set the "widthSubjectRange" element */
 		PROTECT(outputElement1 = NEW_INTEGER(1));
-		INTEGER(outputElement1)[0] = align2Info.widthAlign;
+		INTEGER(outputElement1)[0] = align2Info.widthRange;
 		SET_ELEMENT(output, 5, outputElement1);
 		UNPROTECT(1);
-		/* Set the "startInserts2" and "widthInserts2" elements */
+		/* Set the "startSubjectInserts" and "widthSubjectInserts" elements */
 		PROTECT(outputElement1 = NEW_INTEGER(align2Info.lengthInserts));
 		PROTECT(outputElement2 = NEW_INTEGER(align2Info.lengthInserts));
 		for(int j = 0; j < align2Info.lengthInserts; j++) {
@@ -598,6 +595,70 @@ SEXP align_pairwiseAlignment(
 		/* Output is ready */
 		UNPROTECT(1);
 	}
+
+	return output;
+}
+
+
+
+SEXP XStringSet_align_pairwiseAlignment(
+		SEXP pattern,
+		SEXP subject,
+		SEXP patternQuality,
+		SEXP subjectQuality,
+		SEXP typeCode,
+		SEXP gapOpening,
+		SEXP gapExtension,
+		SEXP qualityLookupTable,
+		SEXP qualityMatchMatrix,
+		SEXP qualityMismatchMatrix,
+		SEXP qualityMatrixDim,
+		SEXP constantLookupTable,
+		SEXP constantMatrix,
+		SEXP constantMatrixDim)
+{
+	/* Create the alignment info objects */
+	struct AlignInfo align1Info, align2Info;
+	align2Info.string = _get_XString_asRoSeq(subject);
+	align2Info.quality = _get_XString_asRoSeq(subjectQuality);
+	align1Info.endGap =
+		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
+	align2Info.endGap =
+		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
+
+	int numberOfStrings = _get_XStringSet_length(pattern);
+	CachedXStringSet cachedPattern = _new_CachedXStringSet(pattern);
+	CachedXStringSet cachedPatternQuality = _new_CachedXStringSet(patternQuality);
+
+	SEXP output;
+	PROTECT(output = NEW_NUMERIC(numberOfStrings));
+	double *score = REAL(output);
+
+	int qualityIncrement = ((_get_XStringSet_length(patternQuality) < numberOfStrings) ? 0 : 1);
+	int qualityElement = 0;
+	for(int i = 0; i < numberOfStrings; i++) {
+		align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
+		align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
+		score[i] = pairwiseAlignment(
+				&align1Info,
+				&align2Info,
+				(INTEGER(typeCode)[0] == LOCAL_ALIGNMENT),
+				1,
+				(float) REAL(gapOpening)[0],
+				(float) REAL(gapExtension)[0],
+				INTEGER(qualityLookupTable),
+				LENGTH(qualityLookupTable),
+				REAL(qualityMatchMatrix),
+				REAL(qualityMismatchMatrix),
+				INTEGER(qualityMatrixDim),
+				INTEGER(constantLookupTable),
+				LENGTH(constantLookupTable),
+				REAL(constantMatrix),
+				INTEGER(constantMatrixDim));
+		qualityElement += qualityIncrement;
+	}
+
+	UNPROTECT(1);
 
 	return output;
 }

@@ -1,41 +1,36 @@
-\name{XStringAlign-class}
+\name{PairwiseAlignment-class}
 \docType{class}
 
 % Classes
-\alias{class:XStringAlign}
-\alias{XStringAlign-class}
-\alias{XStringAlign}
+\alias{class:PairwiseAlignment}
+\alias{PairwiseAlignment-class}
+\alias{PairwiseAlignment}
 
 % Constructor-like functions and generics:
-\alias{initialize,XStringAlign-method}
+\alias{initialize,PairwiseAlignment-method}
 
 % Accesor methods:
-\alias{align1}
-\alias{align1,XStringAlign-method}
-\alias{align2}
-\alias{align2,XStringAlign-method}
+\alias{pattern,PairwiseAlignment-method}
+\alias{subject,PairwiseAlignment-method}
 \alias{type}
-\alias{type,XStringAlign-method}
+\alias{type,PairwiseAlignment-method}
 \alias{score}
-\alias{score,XStringAlign-method}
-\alias{profile1}
-\alias{profile1,XStringAlign-method}
-\alias{profile2}
-\alias{profile2,XStringAlign-method}
-\alias{length,XStringAlign-method}
-\alias{nchar,XStringAlign-method}
-\alias{alphabet,XStringAlign-method}
+\alias{score,PairwiseAlignment-method}
+\alias{length,PairwiseAlignment-method}
+\alias{nchar,PairwiseAlignment-method}
+\alias{alphabet,PairwiseAlignment-method}
 
 % Standard generic methods:
-\alias{show,XStringAlign-method}
-\alias{as.character,XStringAlign-method}
+\alias{show,PairwiseAlignment-method}
+\alias{as.character,PairwiseAlignment-method}
+\alias{toString,PairwiseAlignment-method}
 
 
-\title{XStringAlign objects}
+\title{PairwiseAlignment objects}
 
 \description{
-  The \code{XStringAlign} class is a container for storing
-  an alignment between 2 \link{XString} objects of the same subtype.
+  The \code{PairwiseAlignment} class is a container for storing
+  an alignment.
 }
 
 \details{
@@ -75,66 +70,58 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a \code{XStringAlign} object.
+  \code{x} is a \code{PairwiseAlignment} object.
 
   \describe{
     \item{}{
-      \code{align1(x)} and \code{align2(x)}:
-      The "filled-with-gaps subsequences" of the original strings to align.
-      Note that \code{align1(x)} and \code{align2(x)} are \link{XString}
-      objects of the same subtype and length.
+      \code{pattern(x)}:
+      The \code{AlignedXString} object for the pattern.
+    }
+    \item{}{
+      \code{subject(x)}:
+      The \code{AlignedXString} object for the subject.
     }
     \item{}{
       \code{type(x)}:
       The type of the alignment (\code{"global"}, \code{"local"},
-      \code{"overlap"}, \code{"overlap1"}, or \code{"overlap2"}).
+      \code{"overlap"}, \code{"patternOverlap"}, or \code{"subjectOverlap"}).
     }
     \item{}{
       \code{score(x)}:
       The score of the alignment (integer).
     }
     \item{}{
-      \code{profile1(x)} and \code{profile2(x)}:
-      A numeric vector whose values are the maximum score that would result
-      by starting the alignment at the corresponding location of the original
-      string. Note that \code{length(profile1(x)) = nchar(string1)} and
-      \code{length(profile1(x)) = nchar(string1)}.
-    }
-    \item{}{
       \code{length(x)} or \code{nchar(x)}:
-      The length of the alignment i.e. the common length of \code{align1(x)}
-      and \code{align2(x)}.
+      The length of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
     }
     \item{}{
       \code{alphabet(x)}:
-      Equivalent to \code{alphabet(align1(x))} (or \code{alphabet(align2(x))}).
+      Equivalent to \code{alphabet(unaligned(subject(x)))}.
     }
     \item{}{
-      \code{as.character(x)}:
+      \code{as.character(x)} and \code{toString(x)}:
       Converts \code{x} to a named character vector of length 2.
     }
   }
 }
 
-\author{H. Pages}
+\author{P. Aboyoun and H. Pages}
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \link{XString-class}
+  \code{\link{AlignedXString-class}},
+  \code{\link{XString-class}}
 }
 
 \examples{
-  s1 <- AAString("LAND")
-  s2 <- AAString("LEAVES")
-  nw1 <- pairwiseAlignment(s1, s2, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+  pattern <- AAString("LAND")
+  subject <- AAString("LEAVES")
+  nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+  pattern(nw1)
+  subject(nw1)
+  as.character(nw1)
+  score(nw1)
   nw1
-  length(nw1)
-  nw0 <- pairwiseAlignment(s1, s2, substitutionMatrix = "BLOSUM50", gapOpening = 0, gapExtension = 0)
-  nw0
-  length(nw0)
-  ## Low gap penalties tend to produce longer alignments!
-
-  as.character(nw0)
 }
 
 \keyword{methods}

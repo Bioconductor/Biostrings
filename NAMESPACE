@@ -14,7 +14,7 @@ exportClasses(
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     XStringPartialMatches,
-    XStringAlign,
+    AlignedXString, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
     PDict, CWdna_PDict, TBdna_PDict,
     MIndex, ByPos_MIndex, ByName_MIndex
@@ -101,7 +101,7 @@ exportMethods(
     PDict, matchPDict, countPDict,
 
     subpatterns, pattern,
-    align1, align2, type, score, profile1, profile2,
+    unaligned, aligned, type, score, profile,
     consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, needwunsQS,

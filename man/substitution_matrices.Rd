@@ -60,7 +60,7 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \link{XStringAlign-class},
+  \link{PairwiseAlignment-class},
   \link{DNAString-class},
   \link{AAString-class}
 }

@@ -55,7 +55,7 @@ setMethod("consmat", "XStringViews",
     }
 )
 
-setMethod("consmat", "XStringAlign",
+setMethod("consmat", "AlignedXString",
     function(x, freq=TRUE)
     {
         consmat(as.character(x), freq=freq)

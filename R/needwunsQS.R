@@ -97,8 +97,8 @@ print.needwunsQS <- function(x, ...)
 ### align, this C version is 100 to 1000 times faster than the above
 ### .needwunsQS().
 ### 's1' and 's2' must be XString objects of the same subtype.
-### Return an XStringAlign object where the "al1" and "al2" slots contain the
-### aligned versions of 's1' and 's2'.
+### Return a PairwiseAlignment object where the "al1" and "al2" slots contain
+### the aligned versions of 's1' and 's2'.
 XString.needwunsQS <- function(s1, s2, substmat, gappen)
 {
     .Deprecated("pairwiseAlignment")
@@ -137,17 +137,23 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    substmat, nrow(substmat), lkup,
                    as.integer(gappen), gap_code,
                    PACKAGE="Biostrings")
-    new("XStringAlign",
-        string1 = new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1)),
-        string2 = new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2)),
-        quality1 = BString(""), quality2 = BString(""),
-        align1 = IRanges(start = 1, width = length(C_ans$al1)),
-        align2 = IRanges(start = 1, width = length(C_ans$al2)),
-        inserts1 = IRanges(start = numeric(0), width = numeric(0)),
-        inserts2 = IRanges(start = numeric(0), width = numeric(0)),
-        profile1 = XNumeric(0), profile2 = XNumeric(0), score = C_ans$score,
-        type = "global", constantMatrix = substmat, gapOpening = 0,
-        gapExtension = gappen)
+    new("PairwiseAlignment",
+        pattern =
+        new("AlignedXString",
+            unaligned = new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1)),
+            quality = BString(""),
+            range = IRanges(start = 1, width = length(C_ans$al1)),
+            inserts = IRanges(start = numeric(0), width = numeric(0)),
+            profile = XNumeric(0)),
+        subject =
+        new("AlignedXString",
+            unaligned = new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2)),
+            quality = BString(""),
+            range = IRanges(start = 1, width = length(C_ans$al2)),
+            inserts = IRanges(start = numeric(0), width = numeric(0)),
+            profile = XNumeric(0)),
+        score = C_ans$score, type = "global", constantMatrix = substmat,
+        gapOpening = 0, gapExtension = gappen)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),

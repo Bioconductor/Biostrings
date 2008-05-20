@@ -80,17 +80,17 @@ substitution scores and the gap penalties:
   within the two strings or be dependent on the qualities associated with those
   letters. When the scores are fixed by pairing, the \Rfunarg{substituionMatrix}
   argument takes a matrix with the appropriate alphabets as dimension names.
-  When the scores are quality-based, the \Rfunarg{quality1} and \Rfunarg{quality2}
-  arguments accept the equivalent of [0-99] numeric quality values for the respective
-  strings.
+  When the scores are quality-based, the \Rfunarg{patternQuality} and
+  \Rfunarg{subjectQuality} arguments accept the equivalent of [0-99] numeric
+  quality values for the respective strings.
   \item{Gap Penalties:  }
   Gaps have the potential to incur a cost when they are introduced and when they
   are extended in an optimal pairwise alignment. The former is regulated by the
   \Rfunarg{gapOpening} argument and the latter by the \Rfunarg{gapExtension}
   argument. For whole string alignments, end/terminal gaps can be ignored by
   setting the \Rfunarg{type} argument to \texttt{"overlap"} (ignore end gaps in
-  both strings), \texttt{"overlap1"} (ignore end gaps in \Rfunarg{string1}), or
-  \texttt{"overlap2"} (ignore end gaps in \Rfunarg{string2}).
+  both strings), \texttt{"patternOverlap"} (ignore end gaps in \Rfunarg{pattern}),
+  or \texttt{"subjectOverlap"} (ignore end gaps in \Rfunarg{subject}).
 \end{itemize}
 
 The \Rfunction{pairwiseAlignment} function uses memory and computation time

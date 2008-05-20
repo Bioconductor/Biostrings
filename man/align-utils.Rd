@@ -6,7 +6,7 @@
 \alias{consmat,list-method}
 \alias{consmat,XStringSet-method}
 \alias{consmat,XStringViews-method}
-\alias{consmat,XStringAlign-method}
+\alias{consmat,AlignedXString-method}
 
 
 \title{Utility functions related to sequence alignment}
@@ -27,7 +27,7 @@
 \arguments{
   \item{x}{
     A character vector, or an instance of either the BStringView, or the 
-   XStringAlign classes.
+   AlignedXString classes.
   }
   \item{freq}{
     If \code{TRUE} then letter frequencies (per position) are reported, 
@@ -36,7 +36,7 @@
 }
 
 \seealso{
-  \link{XStringViews-class}, \link{XStringAlign}
+  \link{XStringViews-class}, \link{AlignedXString}
 }
 
 \examples{

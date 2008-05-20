@@ -25,14 +25,14 @@ This function has been deprecated and is being replaced by
 \code{pairwiseAlignment}.
 }
 \value{
-An instance of class \code{"XStringAlign"}.
+An instance of class \code{"PairwiseAlignment"}.
 }
 \references{R. Durbin, S. Eddy, A. Krogh, G. Mitchison,
 Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.}
 \author{Vince Carey (\email{stvjc@channing.harvard.edu}) (original author) and H. Pages (current maintainer).}
 \seealso{
   \link{pairwiseAlignment},
-  \link{XStringAlign-class},
+  \link{PairwiseAlignment-class},
   \link{substitution.matrices}
 }
 \examples{
