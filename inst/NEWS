@@ -1,6 +1,25 @@
+**************************************************
+*              2.9 SERIES NEWS                   *
+**************************************************
+
+STRING ALIGNMENT
+
+o Renamed the XStringAlign class -> AlignedXString and added the
+  PairwiseAlignment class.
+
+STRING MATCHING
+
+UTILITIES
+
+C-LEVEL FACILITIES
+
+BASIC CONTAINERS
+
+MISCELLANEOUS
+
 
 **************************************************
-*	       2.7 SERIES NEWS			 *
+*	       2.8 SERIES NEWS			 *
 **************************************************
 
 STRING MATCHING
