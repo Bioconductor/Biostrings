@@ -292,6 +292,7 @@ static float pairwiseAlignment(
 					align2InfoPtr->profile[jElt] =
 						MAX(CURR_MATRIX(0, j), align2InfoPtr->profile[jElt]);
 				} else {
+
 					if (!align1InfoPtr->endGap && j == nCharString2) {
 						if (PREV_MATRIX(0, j) >= PREV_MATRIX(1, j)) {
 							D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
@@ -312,21 +313,19 @@ static float pairwiseAlignment(
 						}
 					}
 				}
-
 			}
 
 			if (!localAlignment) {
 				/* Step 3f:  Generate profile scores for non-local alignments */
-				double profile1Score = CURR_MATRIX(0, j);
 				if (!align1InfoPtr->endGap || i == nCharString1) {
-						align1InfoPtr->profile[iElt] = profile1Score;
+						align1InfoPtr->profile[iElt] = CURR_MATRIX(0, nCharString2);
 				} else {
 					align1InfoPtr->profile[iElt] =
-						SAFE_SUM(profile1Score, gapOpening + iElt * gapExtension);
-					if (profile1Score >= CURR_MATRIX(1, j)) {
+						SAFE_SUM(CURR_MATRIX(0, nCharString2), gapOpening + iElt * gapExtension);
+					if (CURR_MATRIX(0, nCharString2) >= CURR_MATRIX(1, nCharString2)) {
 						align1InfoPtr->profile[iElt] =
 							MAX(align1InfoPtr->profile[iElt],
-								SAFE_SUM(CURR_MATRIX(1, j), iElt * gapExtension));
+								SAFE_SUM(CURR_MATRIX(1, nCharString2), iElt * gapExtension));
 					}
 				}
 			}
@@ -357,10 +356,9 @@ static float pairwiseAlignment(
 			if (align2InfoPtr->endGap) {
 				align2InfoPtr->profile[0] = CURR_MATRIX(0, nCharString2);
 				for (j = 1, jElt = nCharString2Minus1; j < nCharString2; j++, jElt--) {
-					double profile2Score = CURR_MATRIX(0, j);
 					align2InfoPtr->profile[jElt] =
-						SAFE_SUM(profile2Score, gapOpening + jElt * gapExtension);
-					if (profile2Score >= CURR_MATRIX(2, j)) {
+						SAFE_SUM(CURR_MATRIX(0, j), gapOpening + jElt * gapExtension);
+					if (CURR_MATRIX(0, j) >= CURR_MATRIX(2, j)) {
 						align2InfoPtr->profile[jElt] =
 							MAX(align2InfoPtr->profile[jElt],
 								SAFE_SUM(CURR_MATRIX(2, j), jElt * gapExtension));
