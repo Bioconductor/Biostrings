@@ -87,6 +87,8 @@ setMethod("aligned", "AlignedXString",
 setMethod("start", "AlignedXString", function(x) if (width(x) == 0) NA else start(x@range))
 setMethod("end", "AlignedXString", function(x) if (width(x) == 0) NA else end(x@range))
 setMethod("width", "AlignedXString", function(x) width(x@range))
+setGeneric("inserts", function(x) standardGeneric("inserts"))
+setMethod("inserts", "AlignedXString", function(x) x@inserts)
 setMethod("profile", "AlignedXString", function(fitted, ...) as.numeric(fitted@profile))
 setMethod("length", "AlignedXString", function(x) width(x@range) + sum(width(x@inserts)))
 setMethod("nchar", "AlignedXString", function(x, type="chars", allowNA=FALSE) length(x))

@@ -17,6 +17,8 @@
 \alias{start,AlignedXString-method}
 \alias{end,AlignedXString-method}
 \alias{width,AlignedXString-method}
+\alias{inserts}
+\alias{inserts,AlignedXString-method}
 \alias{profile,AlignedXString-method}
 \alias{length,AlignedXString-method}
 \alias{nchar,AlignedXString-method}
@@ -94,6 +96,10 @@
     \item{}{
       \code{width(x)}:
       The width of the aligned substring, ignoring gaps.
+    }
+    \item{}{
+      \code{inserts(x)}:
+      The positions, in the form of an \code{IRanges} object, of the inserted gaps.
     }
     \item{}{
       \code{profile(fitted, \dots)}:
