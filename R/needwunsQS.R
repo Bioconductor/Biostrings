@@ -74,15 +74,13 @@
     ans
 }
 
-#alignScore <- function(x, ...) UseMethod("alignScore")
-#alignScore.needwunsQS <- function(x, ...) attr(x,"score")
 
-alignScore <- function(...) {.Deprecated("score"); score(...)}
+alignScore <- function(...) .Defunct("score")
 
 print.needwunsQS <- function(x, ...)
 {
     print(matrix(c(x["al1"], x["al2"]),ncol=1))
-    cat(paste("Score: ", alignScore(x), collapse=""),"\n")
+    cat(paste("Score: ", score(x), collapse=""),"\n")
     invisible(x)
 }
 
