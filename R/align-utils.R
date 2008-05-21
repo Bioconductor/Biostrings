@@ -1,3 +1,28 @@
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Compare strings
+###
+
+setGeneric("compareStrings", signature = c("pattern", "subject"),
+           function(pattern, subject)  standardGeneric("compareStrings"))
+setMethod("compareStrings", signature = c(pattern = "character", subject = "character"),
+          function(pattern, subject) {
+              if (nchar(pattern) != nchar(subject))
+                  stop("'pattern' and 'subject' must have the same number of characters")
+              patternCodes <- charToRaw(pattern)
+              subjectCodes <- charToRaw(subject)
+              nonGaps <- (patternCodes != charToRaw("-")) & (subjectCodes != charToRaw("-"))
+              matches <- sum(patternCodes[nonGaps] == subjectCodes[nonGaps])
+			  c(matches = matches, mismatches = sum(nonGaps) - matches)
+          })
+setMethod("compareStrings", signature = c(pattern = "AlignedXString", subject = "AlignedXString"),
+          function(pattern, subject) {
+              compareStrings(as.character(pattern), as.character(subject))
+          })
+setMethod("compareStrings", signature = c(pattern = "PairwiseAlignment", subject = "missing"),
+		  function(pattern, subject) {
+			  compareStrings(pattern@pattern, pattern@subject)
+		  })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Alignment consensus matrix

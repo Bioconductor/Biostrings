@@ -102,7 +102,7 @@ exportMethods(
 
     subpatterns, pattern,
     unaligned, aligned, type, score, inserts, profile,
-    consmat,
+    compareStrings, consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, needwunsQS,
 

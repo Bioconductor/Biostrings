@@ -1,5 +1,9 @@
 \name{align-utils}
 
+\alias{compareStrings}
+\alias{compareStrings,character,character-method}
+\alias{compareStrings,AlignedXString,AlignedXString-method}
+\alias{compareStrings,PairwiseAlignment,missing-method}
 \alias{consmat}
 \alias{consmat,character-method}
 \alias{consmat,matrix-method}
@@ -16,30 +20,44 @@
 }
 
 \usage{
+  compareStrings(pattern, subject)
   consmat(x, freq=TRUE)
 }
 
 \details{
-  \code{consmat} computes a consensus matrix for a set of equal-length strings
-  assumed to be aligned.
+  \code{compareStrings} computes the matches and mismatches between two equal-length
+  strings that are assumed to be aligned.
+
+  \code{consmat} computes a consensus matrix for a set of equal-length strings that
+  are assumed to be aligned.
 }
 
 \arguments{
+  \item{pattern, subject}{
+    The strings to compare. Can be of type \code{character}, \code{AlignedXString}, or,
+    in the case of \code{pattern}, \code{PairwiseAlignment}. If \code{pattern} is a
+    \code{PairwiseAlignment} object, then \code{subject} must be missing.
+  }
   \item{x}{
-    A character vector, or an instance of either the BStringView, or the 
-   AlignedXString classes.
+    A \code{character} vector, \code{XStringSet}, \code{XStringView}, \code{AlignedXString},
+    or \code{list} of FASTA records containing the equal-length strings.
   }
   \item{freq}{
-    If \code{TRUE} then letter frequencies (per position) are reported, 
-    otherwise counts.
+    If \code{TRUE}, then letter frequencies (per position) are reported, otherwise counts.
   }
 }
 
 \seealso{
-  \link{XStringViews-class}, \link{AlignedXString}
+  \link{XStringViews-class}, \link{AlignedXString-class}, \link{PairwiseAlignment-class}
 }
 
 \examples{
+  ## Compare two globally aligned strings
+  string1 <- "ACTTCACCAGCTCCCTGGCGGTAAGTTGATC---AAAGG---AAACGCAAAGTTTTCAAG"
+  string2 <- "GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC"
+  compareStrings(string1, string2)
+
+  ## Read in ORF data
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   orf <- read.DNAStringSet(file, "fasta")
 
