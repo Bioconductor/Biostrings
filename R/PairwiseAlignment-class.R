@@ -113,10 +113,15 @@ setMethod("show", "PairwiseAlignment",
         cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
                    "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
                    "local" = "Local"), "Pairwise Alignment\n")
-        patternSpaces <- floor(log10(start(subject(object)))) - floor(log10(start(pattern(object))))
-		subjectSpaces <- max(0, - patternSpaces)
-		patternSpaces <- max(0, patternSpaces)
-		cat(paste("pattern: ", rep(" ", patternSpaces), sep = "", collapse = ""))
+        if (width(pattern(object)) == 0 || width(subject(object)) == 0) {
+          patternSpaces <- 0
+          subjectSpaces <- 0
+        } else {
+          patternSpaces <- floor(log10(start(subject(object)))) - floor(log10(start(pattern(object))))
+		  subjectSpaces <- max(0, - patternSpaces)
+		  patternSpaces <- max(0, patternSpaces)
+        }
+        cat(paste("pattern: ", rep(" ", patternSpaces), sep = "", collapse = ""))
         show(pattern(object))
         cat(paste("subject: ", rep(" ", subjectSpaces), sep = "", collapse = ""))
         show(subject(object))

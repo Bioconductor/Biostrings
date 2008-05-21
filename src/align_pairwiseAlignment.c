@@ -13,13 +13,15 @@
 #define SUBJECT_OVERLAP_ALIGNMENT 5
 
 #define SUBSTITUTION 'S'
-#define INSERTION    'I'
 #define DELETION     'D'
+#define INSERTION    'I'
 #define TERMINATION  'T'
 
 #define CURR_MATRIX(i, j) (currMatrix[nCharString2Plus1 * i + j])
 #define PREV_MATRIX(i, j) (prevMatrix[nCharString2Plus1 * i + j])
-#define TRACE_MATRIX(i, j) (traceMatrix[nCharString2Plus1 * i + j])
+#define S_TRACE_MATRIX(i, j) (sTraceMatrix[nCharString2 * i + j])
+#define D_TRACE_MATRIX(i, j) (dTraceMatrix[nCharString2 * i + j])
+#define I_TRACE_MATRIX(i, j) (iTraceMatrix[nCharString2 * i + j])
 
 #define SAFE_SUM(x, y) (x == NEGATIVE_INFINITY ? x : (x + y))
 
@@ -78,7 +80,6 @@ static float pairwiseAlignment(
 	/* Step 1:  Get information on input XString objects */
 	int nCharString1 = align1InfoPtr->string.nelt;
 	int nCharString2 = align2InfoPtr->string.nelt;
-	int nCharString1Plus1 = nCharString1 + 1;
 	int nCharString2Plus1 = nCharString2 + 1;
 	int nCharString1Minus1 = nCharString1 - 1;
 	int nCharString2Minus1 = nCharString2 - 1;
@@ -163,10 +164,10 @@ static float pairwiseAlignment(
 					SAFE_SUM(MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))),
 					         substitutionValue);
 				CURR_MATRIX(1, j) = 
-					MAX(SAFE_SUM(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)), gapOpeningPlusExtension),
+					MAX(SAFE_SUM(PREV_MATRIX(0, j), gapOpeningPlusExtension),
 					    SAFE_SUM(PREV_MATRIX(1, j), gapExtension));
 				CURR_MATRIX(2, j) =
-					MAX(SAFE_SUM(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)), gapOpeningPlusExtension),
+					MAX(SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpeningPlusExtension),
 					    SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension));
 
 				if (localAlignment) {
@@ -174,16 +175,10 @@ static float pairwiseAlignment(
 					maxScore = MAX(CURR_MATRIX(0, j), maxScore);
 				} else {
 					if (!align1InfoPtr->endGap && j == nCharString2)
-						CURR_MATRIX(1, j) = 
-							MAX(PREV_MATRIX(0, j),
-							MAX(PREV_MATRIX(1, j),
-								PREV_MATRIX(2, j)));
+						CURR_MATRIX(1, j) = MAX(PREV_MATRIX(0, j), PREV_MATRIX(1, j));
 
 					if (!align2InfoPtr->endGap && i == nCharString1)
-						CURR_MATRIX(2, j) =
-							MAX(CURR_MATRIX(0, jMinus1),
-							MAX(CURR_MATRIX(1, jMinus1),
-								CURR_MATRIX(2, jMinus1)));
+						CURR_MATRIX(2, j) = MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(2, jMinus1));
 				}
 			}
 		}
@@ -196,11 +191,9 @@ static float pairwiseAlignment(
 		}
 	} else {
 		/* Step 3a:  Create objects for traceback values */
-		char *traceMatrix = (char *) R_alloc((long) (nCharString1Plus1 * nCharString2Plus1), sizeof(char));
-		for (i = 0; i <= nCharString1; i++)
-			TRACE_MATRIX(i, 0) = TERMINATION;
-		for (j = 0; j <= nCharString2; j++)
-			TRACE_MATRIX(0, j) = TERMINATION;
+		char *sTraceMatrix = (char *) R_alloc((long) nCharString1 * nCharString2, sizeof(char));
+		char *iTraceMatrix = (char *) R_alloc((long) nCharString1 * nCharString2, sizeof(char));
+		char *dTraceMatrix = (char *) R_alloc((long) nCharString1 * nCharString2, sizeof(char));
 
 		/* Step 3b:  Prepare the alignment info object for alignment */
 		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
@@ -231,7 +224,6 @@ static float pairwiseAlignment(
 		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++)
 			align1InfoPtr->profile[iMinus1] = NEGATIVE_INFINITY;
 
-		double scoreSubstitution = 0, scoreDeletion = 0, scoreInsertion = 0;
 		for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
 			tempMatrix = prevMatrix;
 			prevMatrix = currMatrix;
@@ -251,19 +243,41 @@ static float pairwiseAlignment(
 				else
 					substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
-				/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores */
-				CURR_MATRIX(0, j) =
-					SAFE_SUM(MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))),
-					         substitutionValue);
-				CURR_MATRIX(1, j) = 
-					MAX(SAFE_SUM(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)), gapOpeningPlusExtension),
-					    SAFE_SUM(PREV_MATRIX(1, j), gapExtension));
-				CURR_MATRIX(2, j) =
-					MAX(SAFE_SUM(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)), gapOpeningPlusExtension),
-					    SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension));
+				/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores 
+				 *           and traceback values 
+				 */
+				if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
+					S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+					CURR_MATRIX(0, j) = SAFE_SUM(PREV_MATRIX(0, jMinus1), substitutionValue);
+				} else if (PREV_MATRIX(2, jMinus1) >= PREV_MATRIX(1, jMinus1)) {
+					S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+					CURR_MATRIX(0, j) = SAFE_SUM(PREV_MATRIX(2, jMinus1), substitutionValue);
+				} else {
+					S_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+					CURR_MATRIX(0, j) = SAFE_SUM(PREV_MATRIX(1, jMinus1), substitutionValue);
+				}
+				if (SAFE_SUM(PREV_MATRIX(0, j), gapOpening) >= PREV_MATRIX(1, j)) {
+					D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(0, j), gapOpeningPlusExtension);
+				} else {
+					D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(1, j), gapExtension);
+				}
+				if (SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpening) >= CURR_MATRIX(2, jMinus1)) {
+					I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpeningPlusExtension);
+				} else {
+					I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension);
+				}
 
 				if (localAlignment) {
 					CURR_MATRIX(0, j) = MAX(0.0, CURR_MATRIX(0, j));
+					if (CURR_MATRIX(0, j) == 0.0) {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
+						D_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
+						I_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
+					}
 
 					/* Step 3d:  Get the optimal score for local alignments */
 					if (CURR_MATRIX(0, j) > maxScore) {
@@ -271,73 +285,79 @@ static float pairwiseAlignment(
 						align2InfoPtr->startRange = jElt + 1;
 						maxScore = CURR_MATRIX(0, j);
 					}
-				} else {
-					if (!align1InfoPtr->endGap && j == nCharString2)
-						CURR_MATRIX(1, j) = 
-							MAX(PREV_MATRIX(0, j),
-							MAX(PREV_MATRIX(1, j),
-								PREV_MATRIX(2, j)));
 
-					if (!align2InfoPtr->endGap && i == nCharString1)
-						CURR_MATRIX(2, j) =
-							MAX(CURR_MATRIX(0, jMinus1),
-							MAX(CURR_MATRIX(1, jMinus1),
-								CURR_MATRIX(2, jMinus1)));
-				}
-
-				/* Step 3e:  Generate the traceback values */
-				scoreSubstitution = CURR_MATRIX(0, j);
-				scoreDeletion     = CURR_MATRIX(1, j);
-				scoreInsertion    = CURR_MATRIX(2, j);
-
-				if (localAlignment && scoreSubstitution == 0.0)
-					TRACE_MATRIX(i, j) = TERMINATION;
-				else if (scoreSubstitution >= MAX(scoreInsertion, scoreDeletion))
-					TRACE_MATRIX(i, j) = SUBSTITUTION;
-				else if (scoreInsertion >= scoreDeletion)
-					TRACE_MATRIX(i, j) = INSERTION;
-				else
-					TRACE_MATRIX(i, j) = DELETION;
-
-				/* Step 3f:  Generate profile scores for local alignments */
-				if (localAlignment) {
+					/* Step 3e:  Generate profile scores for local alignments */
 					align1InfoPtr->profile[iElt] =
-						MAX(scoreSubstitution, align1InfoPtr->profile[iElt]);
+						MAX(CURR_MATRIX(0, j), align1InfoPtr->profile[iElt]);
 					align2InfoPtr->profile[jElt] =
-						MAX(scoreSubstitution, align2InfoPtr->profile[jElt]);
+						MAX(CURR_MATRIX(0, j), align2InfoPtr->profile[jElt]);
+				} else {
+					if (!align1InfoPtr->endGap && j == nCharString2) {
+						if (PREV_MATRIX(0, j) >= PREV_MATRIX(1, j)) {
+							D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+							CURR_MATRIX(1, j) = PREV_MATRIX(0, j);
+						} else {
+							D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+							CURR_MATRIX(1, j) = PREV_MATRIX(1, j);
+						}
+					}
+
+					if (!align2InfoPtr->endGap && i == nCharString1) {
+						if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(2, jMinus1)) {
+							I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+							CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1);
+						} else {
+							I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+							CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1);
+						}
+					}
 				}
+
 			}
 
 			if (!localAlignment) {
-				double profile1Score = MAX(scoreSubstitution, scoreInsertion);
+				/* Step 3f:  Generate profile scores for non-local alignments */
+				double profile1Score = CURR_MATRIX(0, j);
 				if (!align1InfoPtr->endGap || i == nCharString1) {
 						align1InfoPtr->profile[iElt] = profile1Score;
 				} else {
 					align1InfoPtr->profile[iElt] =
 						SAFE_SUM(profile1Score, gapOpening + iElt * gapExtension);
-					if (profile1Score >= scoreDeletion) {
+					if (profile1Score >= CURR_MATRIX(1, j)) {
 						align1InfoPtr->profile[iElt] =
 							MAX(align1InfoPtr->profile[iElt],
-								SAFE_SUM(scoreDeletion, iElt * gapExtension));
+								SAFE_SUM(CURR_MATRIX(1, j), iElt * gapExtension));
 					}
 				}
 			}
 		}
 
-		if (!localAlignment) {
+		char currTraceMatrix = '?';
+		if (localAlignment) {
+			if (maxScore == 0.0)
+				currTraceMatrix = TERMINATION;
+			else
+				currTraceMatrix = SUBSTITUTION;
+		} else {
 			/* Step 3g:  Get the optimal score for non-local alignments */
 			align1InfoPtr->startRange = 1;
 			align2InfoPtr->startRange = 1;
-			maxScore =
-				MAX(CURR_MATRIX(0, nCharString2),
-				MAX(CURR_MATRIX(1, nCharString2),
-				    CURR_MATRIX(2, nCharString2)));
+			if (CURR_MATRIX(0, nCharString2) >=
+					MAX(CURR_MATRIX(1, nCharString2), CURR_MATRIX(2, nCharString2))) {
+				currTraceMatrix = SUBSTITUTION;
+				maxScore = CURR_MATRIX(0, nCharString2);
+			} else if (CURR_MATRIX(2, nCharString2) >= CURR_MATRIX(1, nCharString2)) {
+				currTraceMatrix = INSERTION;
+				maxScore = CURR_MATRIX(2, nCharString2);
+			} else {
+				currTraceMatrix = DELETION;
+				maxScore = CURR_MATRIX(1, nCharString2);
+			}
 
 			if (align2InfoPtr->endGap) {
-				align2InfoPtr->profile[0] =
-					MAX(CURR_MATRIX(0, nCharString2), CURR_MATRIX(1, nCharString2));
+				align2InfoPtr->profile[0] = CURR_MATRIX(0, nCharString2);
 				for (j = 1, jElt = nCharString2Minus1; j < nCharString2; j++, jElt--) {
-					double profile2Score = MAX(CURR_MATRIX(0, j), CURR_MATRIX(1, j));
+					double profile2Score = CURR_MATRIX(0, j);
 					align2InfoPtr->profile[jElt] =
 						SAFE_SUM(profile2Score, gapOpening + jElt * gapExtension);
 					if (profile2Score >= CURR_MATRIX(2, j)) {
@@ -348,7 +368,7 @@ static float pairwiseAlignment(
 				}
 			} else {
 				for (j = 1, jElt = nCharString2Minus1; j <= nCharString2; j++, jElt--) {
-					align2InfoPtr->profile[jElt] = MAX(CURR_MATRIX(0, j), CURR_MATRIX(1, j));
+					align2InfoPtr->profile[jElt] = CURR_MATRIX(0, j);
 				}
 			}
 
@@ -365,54 +385,64 @@ static float pairwiseAlignment(
 			}
 		}
 
-		/* Step 4:  Traceback through the score matrix */
-		char previousAction = '?';
-		i = nCharString1Plus1 - align1InfoPtr->startRange;
-		j = nCharString2Plus1 - align2InfoPtr->startRange;
-		while (TRACE_MATRIX(i, j) != TERMINATION) {
-			char action = TRACE_MATRIX(i, j);
-			switch (action) {
-		    	case DELETION:
-		    		if (j == nCharString2) {
-		    			align1InfoPtr->startRange++;
-		    		} else {
+		/* Step 4:  Traceback through the score matrices */
+		i = nCharString1 - align1InfoPtr->startRange;
+		j = nCharString2 - align2InfoPtr->startRange;
+		char prevTraceMatrix = '?';
+		while (currTraceMatrix != TERMINATION && i >= 0 && j >= 0) {
+			switch (currTraceMatrix) {
+	    		case DELETION:
+	    			if (D_TRACE_MATRIX(i, j) != TERMINATION) {
+		    			if (j == nCharString2Minus1) {
+		    				align1InfoPtr->startRange++;
+		    			} else {
+		    				align1InfoPtr->widthRange++;
+		    				if (prevTraceMatrix != DELETION) {
+		    					align2InfoPtr->startInserts--;
+		    					align2InfoPtr->widthInserts--;
+		    					align2InfoPtr->lengthInserts++;
+		    					*align2InfoPtr->startInserts = nCharString2 - j;
+		    				}
+		    				*align2InfoPtr->widthInserts += 1;
+		    			}
+	    			}
+	    			prevTraceMatrix = currTraceMatrix;
+					currTraceMatrix = D_TRACE_MATRIX(i, j);
+	    			i--;
+	    			break;
+	    		case INSERTION:
+	    			if (I_TRACE_MATRIX(i, j) != TERMINATION) {
+		    			if (i == nCharString1Minus1) {
+		    				align2InfoPtr->startRange++;
+		    			} else {
+		    				align2InfoPtr->widthRange++;
+		    				if (prevTraceMatrix != INSERTION) {
+		    					align1InfoPtr->startInserts--;
+		    					align1InfoPtr->widthInserts--;
+		    					align1InfoPtr->lengthInserts++;
+		    					*align1InfoPtr->startInserts = nCharString1 - i;
+		    				}
+		    				*align1InfoPtr->widthInserts += 1;
+		    			}
+	    			}
+	    			prevTraceMatrix = currTraceMatrix;
+					currTraceMatrix = I_TRACE_MATRIX(i, j);
+	    			j--;
+	    			break;
+	    		case SUBSTITUTION:
+	    			if (S_TRACE_MATRIX(i, j) != TERMINATION) {
 		    			align1InfoPtr->widthRange++;
-			    		if (previousAction != DELETION) {
-							align2InfoPtr->startInserts--;
-							align2InfoPtr->widthInserts--;
-							align2InfoPtr->lengthInserts++;
-							*align2InfoPtr->startInserts = nCharString2Plus1 - j;
-			    		}
-			    		*align2InfoPtr->widthInserts += 1;
-		    		}
-		    		i--;
-		    		break;
-		    	case INSERTION:
-		    		if (i == nCharString1) {
-		    			align2InfoPtr->startRange++;
-		    		} else {
 		    			align2InfoPtr->widthRange++;
-			    		if (previousAction != INSERTION) {
-							align1InfoPtr->startInserts--;
-							align1InfoPtr->widthInserts--;
-							align1InfoPtr->lengthInserts++;
-							*align1InfoPtr->startInserts = nCharString1Plus1 - i;
-			    		}
-			    		*align1InfoPtr->widthInserts += 1;
-		    		}
-		    		j--;
-		    		break;
-		    	case SUBSTITUTION:
-		    		align1InfoPtr->widthRange++;
-		    		align2InfoPtr->widthRange++;
-		    		i--;
-		    		j--;
-		    		break;
-		    	default:
-		    		error("unknown traceback code %d", action);
-		    		break;
+	    			}
+	    			prevTraceMatrix = currTraceMatrix;
+					currTraceMatrix = S_TRACE_MATRIX(i, j);
+	    			i--;
+	    			j--;
+	    			break;
+	    		default:
+	    			error("unknown traceback code %d", currTraceMatrix);
+	    			break;
 			}
-			previousAction = action;
 		}
 
 		align1InfoPtr->profile[align1InfoPtr->startRange - 1] = maxScore;
