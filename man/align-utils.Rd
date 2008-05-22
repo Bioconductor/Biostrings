@@ -10,7 +10,7 @@
 \alias{consmat,list-method}
 \alias{consmat,XStringSet-method}
 \alias{consmat,XStringViews-method}
-\alias{consmat,AlignedXString-method}
+\alias{consmat,PairwiseAlignment-method}
 
 
 \title{Utility functions related to sequence alignment}
@@ -39,7 +39,7 @@
     \code{PairwiseAlignment} object, then \code{subject} must be missing.
   }
   \item{x}{
-    A \code{character} vector, \code{XStringSet}, \code{XStringView}, \code{AlignedXString},
+    A \code{character} vector, \code{XStringSet}, \code{XStringView}, \code{PairwiseAlignment},
     or \code{list} of FASTA records containing the equal-length strings.
   }
   \item{freq}{
@@ -48,7 +48,7 @@
 }
 
 \seealso{
-  \link{XStringViews-class}, \link{AlignedXString-class}, \link{PairwiseAlignment-class}
+  \link{XStringSet-class}, \link{XStringViews-class}, \link{PairwiseAlignment-class}
 }
 
 \examples{
