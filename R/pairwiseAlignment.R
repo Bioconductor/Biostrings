@@ -11,7 +11,7 @@
 ### -------------------------------------------------------------------------
 
 qualitySubstitutionMatrices <-
-function(alphabetLength = 4L, bitScale = 1/2) {
+function(alphabetLength = 4L, bitScale = 1) {
   errorProbs <- 10^seq(0, -9.9, by = -0.1)
   errorMatrix <-
     outer(errorProbs, errorProbs,
@@ -31,7 +31,7 @@ function(pattern,
          type = "global",
          substitutionMatrix = NULL,
          gapOpening = -10,
-         gapExtension = -2,
+         gapExtension = -4,
          scoreOnly = FALSE)
 {
   ## Check arguments
@@ -203,7 +203,7 @@ function(pattern,
          type = "global",
          substitutionMatrix = NULL,
          gapOpening = -10,
-         gapExtension = -2,
+         gapExtension = -4,
          scoreOnly = TRUE)
 {
   ## Check arguments
@@ -336,7 +336,7 @@ setGeneric("pairwiseAlignment", signature = c("pattern", "subject"),
            function(pattern, subject,
                     patternQuality = 22L, subjectQuality = 22L,
                     type = "global", substitutionMatrix = NULL,
-                    gapOpening = -10, gapExtension = -2,
+                    gapOpening = -10, gapExtension = -4,
                     scoreOnly = is(pattern, "XStringSet"))
            standardGeneric("pairwiseAlignment"))
 
@@ -344,7 +344,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "character"),
           function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
                    type = "global", substitutionMatrix = NULL,
-                   gapOpening = -10, gapExtension = -2,
+                   gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XString.pairwiseAlignment(pattern = BString(pattern),
                                     subject = BString(subject),
@@ -360,7 +360,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "XString"),
           function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
                    type = "global", substitutionMatrix = NULL,
-                   gapOpening = -10, gapExtension = -2,
+                   gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XString.pairwiseAlignment(pattern = XString(class(subject), pattern),
                                     subject = subject,
@@ -376,7 +376,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "character"),
           function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
                    type = "global", substitutionMatrix = NULL,
-                   gapOpening = -10, gapExtension = -2,
+                   gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XString.pairwiseAlignment(pattern = pattern,
                                     subject = XString(class(pattern), subject),
@@ -392,7 +392,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "XString"),
           function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
                    type = "global", substitutionMatrix = NULL,
-                   gapOpening = -10, gapExtension = -2,
+                   gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XString.pairwiseAlignment(pattern = pattern,
                                     subject = subject,
@@ -408,7 +408,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "character"),
           function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
                    type = "global", substitutionMatrix = NULL,
-                   gapOpening = -10, gapExtension = -2,
+                   gapOpening = -10, gapExtension = -4,
                    scoreOnly = TRUE)
           XStringSet.pairwiseAlignment(pattern = pattern,
                                        subject =
@@ -425,7 +425,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "XString"),
           function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
                    type = "global", substitutionMatrix = NULL,
-                   gapOpening = -10, gapExtension = -2,
+                   gapOpening = -10, gapExtension = -4,
                    scoreOnly = TRUE)
           XStringSet.pairwiseAlignment(pattern = pattern,
                                        subject = subject,

@@ -32,7 +32,7 @@
   data(PAM70)
   data(PAM120)
   data(PAM250)
-  qualitySubstitutionMatrices(alphabetLength = 4L, bitScale = 1/2)
+  qualitySubstitutionMatrices(alphabetLength = 4L, bitScale = 1)
 }
 
 \arguments{
@@ -40,8 +40,7 @@
     in the underlying string alphabet. For DNA and RNA, this would be 4L.
     For Amino Acids, this could be 20L.}
   \item{bitScale}{a numeric value to scale the quality-based substitution
-    matrices. By default, this is 1/2, representing scoring on the half-bit
-    scale.}
+    matrices. By default, this is 1, representing bit-scale scoring.}
 }
 
 \format{

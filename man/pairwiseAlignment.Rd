@@ -14,7 +14,7 @@ Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignm
 }
 \usage{
 pairwiseAlignment(pattern, subject, patternQuality = 22L, subjectQuality = 22L, type = "global",
-                  substitutionMatrix = NULL, gapOpening = -10, gapExtension = -2,
+                  substitutionMatrix = NULL, gapOpening = -10, gapExtension = -4,
                   scoreOnly = is(pattern, "XStringSet"))
 }
 \arguments{
