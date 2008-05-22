@@ -10,6 +10,18 @@
 ###
 ### -------------------------------------------------------------------------
 
+qualitySubstitutionMatrices <-
+function(alphabetLength = 4L, bitScale = 1/2) {
+  errorProbs <- 10^seq(0, -9.9, by = -0.1)
+  errorMatrix <-
+    outer(errorProbs, errorProbs,
+          function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
+          n = alphabetLength)
+  list(matchMatrix = bitScale * log2((1 - errorMatrix) * alphabetLength),
+       mismatchMatrix =
+         bitScale * log2(errorMatrix * (alphabetLength / (alphabetLength - 1))))
+}
+
 
 XString.pairwiseAlignment <-
 function(pattern,
@@ -81,20 +93,14 @@ function(pattern,
       stop(paste("'subjectQuality' must either be constant or",
                  "have the same length as 'subject'"))
 
-    nAlphabet <-
+    alphabetLength <-
       switch(class(pattern),
              DNAString =, RNAString = 4L,
              AAString = 20L,
              length(alphabetToCodes))
 
-    errorProbs <- 10^seq(0, -9.9, by = -0.1)
-    errorMatrix <-
-      outer(errorProbs, errorProbs,
-            function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
-            n = nAlphabet)
     qualityLookupTable <- buildLookupTable(33:(99 + 33), 0:99)
-    qualityMatchMatrix <- log2((1 - errorMatrix) * nAlphabet)
-    qualityMismatchMatrix <- log2(errorMatrix * (nAlphabet / (nAlphabet - 1)))
+    qualityMatrices <- qualitySubstitutionMatrices(alphabetLength = alphabetLength)
 
     constantLookupTable <- integer(0)
     constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
@@ -102,8 +108,9 @@ function(pattern,
     patternQuality <- BString("")
     subjectQuality <- BString("")
     qualityLookupTable <- integer(0)
-    qualityMatchMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
-    qualityMismatchMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
+    qualityMatrices <-
+      list(matchMatrix = matrix(numeric(0), nrow = 0, ncol = 0),
+           mismatchMatrix = matrix(numeric(0), nrow = 0, ncol = 0))
     if (is.character(substitutionMatrix)) {
       if (length(substitutionMatrix) != 1)
         stop("'substitutionMatrix' is a character vector of length != 1")
@@ -145,9 +152,9 @@ function(pattern,
                   gapOpening,
                   gapExtension,
                   qualityLookupTable,
-                  qualityMatchMatrix,
-                  qualityMismatchMatrix,
-                  dim(qualityMatchMatrix),
+                  qualityMatrices[["matchMatrix"]],
+                  qualityMatrices[["mismatchMatrix"]],
+                  dim(qualityMatrices[["matchMatrix"]]),
                   constantLookupTable,
                   constantMatrix,
                   dim(constantMatrix),
@@ -260,20 +267,14 @@ function(pattern,
       stop(paste("'subjectQuality' must either be constant or",
                  "have the same length as 'subject'"))
 	
-    nAlphabet <-
-      switch(class(subject),
+    alphabetLength <-
+      switch(class(pattern),
              DNAString =, RNAString = 4L,
              AAString = 20L,
              length(alphabetToCodes))
 
-    errorProbs <- 10^seq(0, -9.9, by = -0.1)
-    errorMatrix <-
-      outer(errorProbs, errorProbs,
-            function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
-            n = nAlphabet)
     qualityLookupTable <- buildLookupTable(33:(99 + 33), 0:99)
-    qualityMatchMatrix <- log2((1 - errorMatrix) * nAlphabet)
-    qualityMismatchMatrix <- log2(errorMatrix * (nAlphabet / (nAlphabet - 1)))
+    qualityMatrices <- qualitySubstitutionMatrices(alphabetLength = alphabetLength)
 
     constantLookupTable <- integer(0)
     constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
@@ -281,8 +282,9 @@ function(pattern,
     patternQuality <- BStringSet("")
     subjectQuality <- BString("")
     qualityLookupTable <- integer(0)
-    qualityMatchMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
-    qualityMismatchMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
+    qualityMatrices <-
+      list(matchMatrix = matrix(numeric(0), nrow = 0, ncol = 0),
+           mismatchMatrix = matrix(numeric(0), nrow = 0, ncol = 0))
     if (is.character(substitutionMatrix)) {
       if (length(substitutionMatrix) != 1)
         stop("'substitutionMatrix' is a character vector of length != 1")
@@ -319,9 +321,9 @@ function(pattern,
                   gapOpening,
                   gapExtension,
                   qualityLookupTable,
-                  qualityMatchMatrix,
-                  qualityMismatchMatrix,
-                  dim(qualityMatchMatrix),
+                  qualityMatrices[["matchMatrix"]],
+                  qualityMatrices[["mismatchMatrix"]],
+                  dim(qualityMatrices[["matchMatrix"]]),
                   constantLookupTable,
                   constantMatrix,
                   dim(constantMatrix),

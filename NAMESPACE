@@ -43,7 +43,7 @@ export(
     .inplaceReplaceLetterAtLoc,
     maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
-    alignScore,
+    qualitySubstitutionMatrices,
 
     ## Aliases
     desc, "desc<-",
@@ -54,7 +54,7 @@ export(
     read.BStringViews, write.BStringViews,
 
     ## Defunct
-    matchDNAPattern
+    matchDNAPattern, alignScore
 )
 
 exportMethods(
