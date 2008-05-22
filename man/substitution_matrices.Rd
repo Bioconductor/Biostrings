@@ -97,8 +97,8 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
 }
 
 \examples{
-  ## Examine quality-based match and mismatch scores for DNA/RNA strings
-  ## in pairwiseAlignment. By default patternQuality = 22L and
+  ## Examine quality-based match and mismatch bit scores for DNA/RNA
+  ## strings in pairwiseAlignment. By default patternQuality = 22L and
   ## subjectQuality = 22L.
   qualityMatrices <- qualitySubstitutionMatrices()
   qualityMatrices[["matchMatrix"]][23, 23]
