@@ -45,3 +45,25 @@ setMethod("maskMotif", signature(x="XString", motif="ANY"),
     }
 )
 
+### Used in Robert's book!
+### mask() was introduced at the time where only XStringViews objects were
+### available in Biostrings so it returns one instead of a MaskedXString
+### object.
+### Deprecate in Biostrings 2.9!
+mask <- function(x, start=NA, end=NA, pattern)
+{
+        if (!is(x, "XString"))
+            x <- XString(NULL, x)
+        if (missing(pattern)) {
+            if (isNumericOrNAs(start))
+                return(gaps(views(x, start, end)))
+            if (!missing(end))
+                stop("invalid 'start' argument")
+            pattern <- start
+        } else {
+            if (!missing(start) || !missing(end))
+                stop("can't give 'start' (or 'end') when 'pattern' is given")
+        }
+        as(maskMotif(x, pattern), "XStringViews")
+}
+

@@ -15,6 +15,7 @@
 \alias{trim}
 \alias{narrow,XStringViews-method}
 \alias{subviews}
+\alias{gaps,XStringViews-method}
 
 % Deprecated:
 \alias{BStringViews}
@@ -109,7 +110,8 @@
 
 \seealso{
   \link{XStringViews-class},
-  \link{XString-class}
+  \link{XString-class},
+  \code{\link{gaps}}
 }
 
 \examples{
@@ -130,6 +132,10 @@
   XStringViews(v12, subjectClass="RNAString")
   XStringViews(AAString("MARKSLEMSIR*"))
   XStringViews("abcdefghij", subjectClass="BString")
+
+  ## Applying gaps() to an XStringViews object
+  v2 <- views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
+  gaps(v2)
 }
 
 \keyword{methods}

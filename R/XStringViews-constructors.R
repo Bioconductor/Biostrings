@@ -214,6 +214,30 @@ subviews <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "gaps" method.
+###
+
+setMethod("gaps", "XStringViews",
+    function(x, start=NA, end=NA)
+    {
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (is.na(start))
+            start <- 1L
+        if (is.na(end))
+            end <- length(subject(x))
+        callNextMethod(x, start=start, end=end)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Deprecated generics and methods.
 ###
 

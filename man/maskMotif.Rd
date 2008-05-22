@@ -5,15 +5,18 @@
 \alias{maskMotif,MaskedXString,character-method}
 \alias{maskMotif,XString,ANY-method}
 
+\alias{mask}
 
-\title{Masking by content}
+
+\title{Masking by content (or by position)}
 
 \description{
-  Generic function for masking a sequence by content.
+  Functions for masking a sequence by content (or by position).
 }
 
 \usage{
   maskMotif(x, motif, min.block.width=1)
+  mask(x, start=NA, end=NA, pattern)
 }
 
 \arguments{
@@ -26,6 +29,22 @@
   \item{min.block.width}{
     The minimum width of the blocks to mask.
   }
+  \item{start}{
+    An integer vector containing the starting positions
+    of the regions to mask.
+  }
+  \item{end}{
+    An integer vector containing the ending positions
+    of the regions to mask.
+  }
+  \item{pattern}{
+    The motif to mask in the sequence.
+  }
+}
+
+\value{
+  A \link{MaskedXString} object for \code{maskMotif}
+  and an \link{XStringViews} object for \code{mask}.
 }
 
 \author{H. Pages}
@@ -88,6 +107,20 @@
   chrU
   as(chrU, "XStringViews")
   as(gaps(chrU), "XStringViews")
+
+  ## ---------------------------------------------------------------------
+  ## EXAMPLE 4
+  ## ---------------------------------------------------------------------
+  ## Note that unlike maskMotif(), mask() returns an XStringViews object!
+
+  ## masking "by position"
+  mask("AxyxyxBC", 2, 6)
+
+  ## masking "by content"
+  mask("AxyxyxBC", "xyx")
+  noN_chrU <- mask(chrU, "N")
+  noN_chrU
+  alphabetFrequency(noN_chrU, collapse=TRUE)
 }
 
 \keyword{methods}

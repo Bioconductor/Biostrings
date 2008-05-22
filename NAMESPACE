@@ -32,6 +32,7 @@ export(
     BString, DNAString, RNAString, AAString,
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     views, adjacentViews, trim, subviews,
+    mask,
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
     read.XStringViews,
