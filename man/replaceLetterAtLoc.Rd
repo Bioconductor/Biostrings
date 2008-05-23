@@ -82,6 +82,7 @@
 
 \seealso{
   \code{\link{chartr}},
+  \code{\link{injectHardMask}},
   \link{DNAString},
   \code{\link{IUPAC_CODE_MAP}},
   \code{\link[BSgenome]{injectSNPs}},
@@ -94,4 +95,4 @@
 }
 
 \keyword{utilities}
-
+\keyword{manip}

@@ -30,7 +30,7 @@ setMethod("injectHardMask", "XStringViews",
     }
 )
 
-setMethod("injectHardMask", "MaskedDNAString",
+setMethod("injectHardMask", "MaskedXString",
     function(x, letter="+")
     {
         y <- as(x, "XStringViews")

@@ -48,13 +48,14 @@
 
 \seealso{
   \code{\link[base]{chartr}},
+  \code{\link{replaceLetterAtLoc}},
   \link{XString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
   \link{MaskedXString-class},
   \code{\link{alphabetFrequency}},
-  \code{\link{matchPattern}}
-  \code{\link{reverseComplement}},
+  \code{\link{matchPattern}},
+  \code{\link{reverseComplement}}
 }
 
 \examples{

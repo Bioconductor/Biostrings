@@ -26,6 +26,7 @@
 \alias{masks,MaskedXString-method}
 \alias{alphabet,MaskedXString-method}
 \alias{length,MaskedXString-method}
+\alias{nchar,MaskedXString-method}
 
 % Coercion:
 \alias{coerce,BString,MaskedBString-method}
@@ -44,7 +45,6 @@
 \alias{coerce,MaskedXString,XStringViews-method}
 
 % Other methods:
-\alias{nchar,MaskedXString-method}
 \alias{reduce,MaskedXString-method}
 \alias{gaps,MaskedXString-method}
 \alias{subseq,MaskedXString-method}

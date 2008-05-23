@@ -104,6 +104,8 @@ UTILITIES
 o Added the coverage() generic function with methods for IRanges,
   MaskCollection, XStringViews, MaskedXString and MIndex objects.
 
+o Added the injectHardMask() generic function for "hard masking" a sequence.
+
 o Added the maskMotif() generic function for masking a sequence by content.
 
 o Added the read.agpMask(), read.gapMask(), read.liftMask(), read.rmMask() and

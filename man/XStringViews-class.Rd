@@ -11,6 +11,7 @@
 % Accesor methods:
 \alias{subject}
 \alias{subject,XStringViews-method}
+\alias{alphabet,XStringViews-method}
 \alias{width<-,XStringViews-method}
 \alias{nchar,XStringViews-method}
 
