@@ -87,6 +87,7 @@ exportMethods(
     reverse, complement, reverseComplement,
     replaceLetterAtLoc,
     maskMotif,
+    injectMasks,
 
     ## Others
     isMatching, mismatch, coverage,
