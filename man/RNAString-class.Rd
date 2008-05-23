@@ -41,7 +41,7 @@
   This alphabet contains all letters from the
   IUPAC Extended Genetic Alphabet (see \code{?\link{IUPAC_CODE_MAP}})
   where \code{"T"} is replaced by \code{"U"}
-  + the gap letter \code{"-"}.
+  + the gap (\code{"-"}) and the hard masking (\code{"+"}) letters.
   It is stored in the \code{RNA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
   \code{RNA_ALPHABET} when applied to an RNAString

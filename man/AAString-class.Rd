@@ -38,7 +38,8 @@
 \section{The Amino Acid alphabet}{
   This alphabet contains all letters from the
   Single-Letter Amino Acid Code (see \code{?\link{AMINO_ACID_CODE}})
-  + the stop letter \code{"*"}.
+  + the stop (\code{"*"}), the gap (\code{"-"}) and the hard masking
+  (\code{"+"}) letters.
   It is stored in the \code{AA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
   \code{AA_ALPHABET} when applied to an AAString

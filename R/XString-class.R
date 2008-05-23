@@ -38,24 +38,16 @@ newEmptyXString <- function(class) new(class, xdata=XRaw(0))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### The core XString API.
+###
+### The core XString API is the strict minimal set of methods that must work
+### for XString, XStringSet, XStringList, XStringViews and MaskedXString
+### objects. It currently consists of the following methods:
+###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
+###   o exported: alphabet, length, nchar
 ###
 
-setGeneric("alphabet", function(x) standardGeneric("alphabet"))
-setMethod("alphabet", "BString", function(x) NULL)
-setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
-setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
-setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
-
-setMethod("length", "XString", function(x) x@length)
-
-setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) x@length)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other non exported accessor methods.
-###
-
+### NOT exported
 setGeneric("baseXStringSubtype", function(x) standardGeneric("baseXStringSubtype"))
 setMethod("baseXStringSubtype", "BString",
     function(x) class(newEmptyXString("BString"))
@@ -97,6 +89,17 @@ setMethod("dec_lkup", "XString",
         if (is.null(codec)) NULL else codec@dec_lkup
     }
 )
+
+### exported
+setGeneric("alphabet", function(x) standardGeneric("alphabet"))
+setMethod("alphabet", "BString", function(x) NULL)
+setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
+setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
+setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
+
+setMethod("length", "XString", function(x) x@length)
+
+setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) length(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

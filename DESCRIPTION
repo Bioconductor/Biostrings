@@ -45,7 +45,7 @@ Collate: 00datacache.R
 	toComplex.R
 	replaceLetterAtLoc.R
 	maskMotif.R
-	injectMasks.R
+	injectHardMask.R
 	match-utils.R
 	matchPattern.R
 	matchPattern.BOC.R

@@ -16,11 +16,47 @@ setClass("XStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### The "subject" accessor method (exported).
 ###
 
 setGeneric("subject", function(x) standardGeneric("subject"))
 setMethod("subject", "XStringViews", function(x) x@subject)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The core XString API.
+###
+### The core XString API is the strict minimal set of methods that must work
+### for XString, XStringSet, XStringList, XStringViews and MaskedXString
+### objects. It currently consists of the following methods:
+###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
+###   o exported: alphabet, length, nchar
+###
+
+### NOT exported
+setMethod("baseXStringSubtype", "XStringViews",
+    function(x) baseXStringSubtype(subject(x))
+)
+setMethod("codes", "XStringViews", function(x, ...) codes(subject(x), ...))
+setMethod("codec", "XStringViews", function(x) codec(subject(x)))
+setMethod("enc_lkup", "XStringViews", function(x) enc_lkup(subject(x)))
+setMethod("dec_lkup", "XStringViews", function(x) dec_lkup(subject(x)))
+
+### exported
+setMethod("alphabet", "XStringViews", function(x) alphabet(subject(x)))
+
+setMethod("nchar", "XStringViews",
+    function(x, type="chars", allowNA=FALSE)
+    {
+        if (length(x) == 0)
+            return(integer(0))
+        start0 <- pmax.int(start(x), 1L)
+        end0 <- pmin.int(end(x), nchar(subject(x)))
+        ans <- end0 - start0 + 1L
+        ans[ans < 0L] <- 0L
+        ans
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,24 +94,6 @@ setMethod("initialize", "XStringViews",
         if (check)
             stopIfProblems(.valid.XStringViews(.Object))
         .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "nchar" method.
-###
-
-setMethod("nchar", "XStringViews",
-    function(x, type="chars", allowNA=FALSE)
-    {
-        if (length(x) == 0)
-            return(integer(0))
-        start0 <- pmax.int(start(x), 1L)
-        end0 <- pmin.int(end(x), nchar(subject(x)))
-        ans <- end0 - start0 + 1L
-        ans[ans < 0L] <- 0L
-        ans
     }
 )
 

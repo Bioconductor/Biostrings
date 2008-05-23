@@ -66,7 +66,7 @@ setClass("MaskedAAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### The "unmasked" and "masks" accessor methods (exported).
 ###
 
 setGeneric("unmasked", function(x) standardGeneric("unmasked"))
@@ -76,6 +76,27 @@ setGeneric("masks", function(x) standardGeneric("masks"))
 setMethod("masks", "XString", function(x) NULL)
 setMethod("masks", "MaskedXString", function(x) x@masks)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The core XString API.
+###
+### The core XString API is the strict minimal set of methods that must work
+### for XString, XStringSet, XStringList, XStringViews and MaskedXString
+### objects. It currently consists of the following methods:
+###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
+###   o exported: alphabet, length, nchar
+###
+
+### NOT exported
+setMethod("baseXStringSubtype", "MaskedXString",
+    function(x) baseXStringSubtype(unmasked(x))
+)
+setMethod("codes", "MaskedXString", function(x, ...) codes(unmasked(x), ...))
+setMethod("codec", "MaskedXString", function(x) codec(unmasked(x)))
+setMethod("enc_lkup", "MaskedXString", function(x) enc_lkup(unmasked(x)))
+setMethod("dec_lkup", "MaskedXString", function(x) dec_lkup(unmasked(x)))
+
+### exported
 setMethod("alphabet", "MaskedXString",
     function(x) alphabet(unmasked(x))
 )
@@ -84,13 +105,11 @@ setMethod("length", "MaskedXString",
     function(x) length(unmasked(x))
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other non exported accessor methods.
-###
-
-setMethod("baseXStringSubtype", "MaskedXString",
-    function(x) baseXStringSubtype(unmasked(x))
+setMethod("nchar", "MaskedXString",
+    function(x, type="chars", allowNA=FALSE)
+    {
+        length(x) - maskedwidth(reduce(masks(x)))
+    }
 )
 
 
@@ -219,18 +238,6 @@ toXStringViewsOrXString <- function(x)
     views <- gaps(mask1)[[1]]
     new("XStringViews", x0, start=start(views), width=width(views), check=FALSE)
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "nchar" method.
-###
-
-setMethod("nchar", "MaskedXString",
-    function(x, type="chars", allowNA=FALSE)
-    {
-        length(x) - maskedwidth(reduce(masks(x)))
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

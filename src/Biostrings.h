@@ -932,6 +932,16 @@ SEXP XString_inplace_replace_locs_bySTRSXP(
 );
 
 
+/* inject_code.c */
+
+SEXP inject_code(
+	SEXP x,
+	SEXP safe_starts,
+	SEXP safe_widths,
+	SEXP code
+);
+
+
 /* views_buffer.c */
 
 SEXP debug_views_buffer();

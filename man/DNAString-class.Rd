@@ -40,7 +40,7 @@
 \section{The DNA alphabet}{
   This alphabet contains all letters from the
   IUPAC Extended Genetic Alphabet (see \code{?\link{IUPAC_CODE_MAP}})
-  + the gap letter \code{"-"}.
+  + the gap (\code{"-"}) and the hard masking (\code{"+"}) letters.
   It is stored in the \code{DNA_ALPHABET} constant (character vector).
   The \code{alphabet} method also returns
   \code{DNA_ALPHABET} when applied to a DNAString

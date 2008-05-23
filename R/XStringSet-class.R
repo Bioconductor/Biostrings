@@ -93,12 +93,24 @@ setClass("AAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Non exported accessor methods.
+### The "super" accessor method (NOT exported).
 ###
 
 setGeneric("super", function(x) standardGeneric("super"))
 setMethod("super", "XStringSet", function(x) x@super)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The core XString API.
+###
+### The core XString API is the strict minimal set of methods that must work
+### for XString, XStringSet, XStringList, XStringViews and MaskedXString
+### objects. It currently consists of the following methods:
+###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
+###   o exported: alphabet, length, nchar
+###
+
+### NOT exported
 setMethod("baseXStringSubtype", "XStringSet",
     function(x) baseXStringSubtype(super(x))
 )
@@ -107,17 +119,7 @@ setMethod("codec", "XStringSet", function(x) codec(super(x)))
 setMethod("enc_lkup", "XStringSet", function(x) enc_lkup(super(x)))
 setMethod("dec_lkup", "XStringSet", function(x) dec_lkup(super(x)))
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
-###
-### Like for XStringList and XStringViews objects, the strict minimum of
-### methods that must work with XStringSet objects is:
-###   alphabet, length, width, nchar, names
-### Note that XStringSet objects inherit the "length", "width" and "names"
-### methods from the IRanges class.
-###
-
+### exported
 setMethod("alphabet", "XStringSet", function(x) alphabet(super(x)))
 
 setMethod("nchar", "XStringSet",
