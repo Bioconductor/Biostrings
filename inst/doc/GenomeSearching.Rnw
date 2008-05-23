@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{How to efficiently use matchPattern() and matchPDict() for fast genome searching}
+%\VignetteIndexEntry{Efficient genome searching with Biostrings and the BSgenome data packages}
 %\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
 %\VignettePackage{Biostrings}
 
@@ -38,8 +38,7 @@
 \begin{document}
 %\setkeys{Gin}{width=0.55\textwidth}
 
-\title{How to efficiently use \Rmethod{matchPattern} and \Rmethod{matchPDict}
-       for fast genome searching}
+\title{Efficient genome searching with Biostrings and the BSgenome data packages}
 \author{Herv\'e Pag\`es}
 \maketitle
 
