@@ -38,7 +38,7 @@ function(pattern,
   if (class(pattern) != class(subject))
     stop("'pattern' and 'subject' must have the same class")
   type <-
-    match.arg(tolower(type),
+    match.arg(type,
               c("global", "local", "overlap",
                 "patternOverlap", "subjectOverlap"))
   typeCode <-
@@ -210,7 +210,7 @@ function(pattern,
   if (class(super(pattern)) != class(subject))
     stop("'pattern' and 'subject' must store the same underlying string type")
   type <-
-    match.arg(tolower(type),
+    match.arg(type,
               c("global", "local", "overlap",
                 "patternOverlap", "subjectOverlap"))
   typeCode <-
