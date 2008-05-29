@@ -206,18 +206,18 @@ static void init_dups_buf(int length, SEXP dup2unq_env, SEXP unq2dup_env)
 
 static void report_dup(int poffset, int P_id)
 {
-	char symbol[11];
-	SEXP old_value, new_value;
+	SEXP symbol, old_value, new_value;
 	int old_length, new_length;
 
 	poffset++;
 	/* add a new entry to the 'dup2unq_env0' map */
-	snprintf(symbol, sizeof(symbol), "%010d", poffset);
+	PROTECT(symbol = _SparseList_int2symb(poffset));
 	PROTECT(new_value = ScalarInteger(P_id));
-	defineVar(install(symbol), new_value, dup2unq_env0);
-	UNPROTECT(1);
+	defineVar(install(translateChar(symbol)), new_value, dup2unq_env0);
+	UNPROTECT(2);
 	/* update the 'unq2dup_env0' map */
-	old_value = _get_val_from_SparseList(P_id, unq2dup_env0, 0);
+	PROTECT(symbol = _SparseList_int2symb(P_id));
+	old_value = _get_val_from_env(symbol, unq2dup_env0, 0);
 	if (old_value == R_UnboundValue) {
 		PROTECT(new_value = ScalarInteger(poffset));
 	} else {
@@ -227,8 +227,8 @@ static void report_dup(int poffset, int P_id)
 		memcpy(INTEGER(new_value), INTEGER(old_value), old_length * sizeof(int));
 		INTEGER(new_value)[old_length] = poffset;
 	}
-	defineVar(install(symbol), new_value, unq2dup_env0);
-	UNPROTECT(1);
+	defineVar(install(translateChar(symbol)), new_value, unq2dup_env0);
+	UNPROTECT(2);
 	return;
 }
 

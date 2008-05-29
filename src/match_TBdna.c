@@ -29,6 +29,7 @@ SEXP debug_match_TBdna()
 static int match_reporting_mode; // 0, 1 or 2
 static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
 static IntBBuf ends_bbuf;  // used when mode >= 1
+static IntBuf matching_poffsets;
 
 static void init_match_reporting(int no_tail, int is_count_only, int length)
 {
@@ -37,54 +38,69 @@ static void init_match_reporting(int no_tail, int is_count_only, int length)
 		match_count = _new_IntBuf(length, length);
 	if (match_reporting_mode >= 1)
 		ends_bbuf = _new_IntBBuf(length, length);
+	matching_poffsets = _new_IntBuf(0, 0);
 	return;
 }
 
 static void drop_current_matches()
 {
-	int poffset;
-	IntBuf *ends_buf;
+	int i, *poffset;
 
-	if (match_reporting_mode == 0 || match_reporting_mode == 2)
-		_IntBuf_set_val(&match_count, 0);
-	if (match_reporting_mode >= 1)
-		for (poffset = 0, ends_buf = ends_bbuf.elts;
-		     poffset < ends_bbuf.nelt;
-		     poffset++, ends_buf++)
-			ends_buf->nelt = 0;
+	for (i = 0, poffset = matching_poffsets.elts;
+	     i < matching_poffsets.nelt;
+	     i++, poffset++)
+	{
+		if (match_reporting_mode == 0 || match_reporting_mode == 2)
+			match_count.elts[*poffset] = 0;
+		if (match_reporting_mode >= 1)
+			ends_bbuf.elts[*poffset].nelt = 0;
+	}
+	matching_poffsets.nelt = 0;
 	return;
 }
 
 static void report_match(int poffset, int end)
 {
+	int poffset_is_new;
 	IntBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
-		match_count.elts[poffset]++;
-		return;
+		poffset_is_new = match_count.elts[poffset]++ == 0;
+	} else {
+		ends_buf = ends_bbuf.elts + poffset;
+		poffset_is_new = ends_buf->nelt == 0;
+		_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 	}
-	ends_buf = ends_bbuf.elts + poffset;
-	_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
+	if (poffset_is_new)
+		_IntBuf_insert_at(&matching_poffsets,
+				  matching_poffsets.nelt, poffset);
 	return;
 }
 
-static void report_matches_for_dups(SEXP dup2unq_env)
+static void report_matches_for_dups(SEXP unq2dup_env)
 {
-	SEXP symbols, symbol, value;
-	int i, j1, j2;
+	int i, *poffset, j, *dup, k1, k2;
+	SEXP dups;
 
-	PROTECT(symbols = R_lsInternal(dup2unq_env, 1));
-	for (i = 0; i < LENGTH(symbols); i++) {
-		symbol = STRING_ELT(symbols, i);
-		j1 = _SparseList_symbol_as_int(symbol) - 1;
-		value = _get_val_from_env(symbol, dup2unq_env, 1);
-		j2 = INTEGER(value)[0] - 1;
-		if (match_reporting_mode == 0)
-			match_count.elts[j1] = match_count.elts[j2];
-		else
-			ends_bbuf.elts[j1] = ends_bbuf.elts[j2];
+	//Rprintf("[DEBUG] report_matches_for_dups(): BEGIN\n");
+	for (i = 0, poffset = matching_poffsets.elts;
+	     i < matching_poffsets.nelt;
+	     i++, poffset++)
+	{
+		k1 = *poffset;
+		//Rprintf("matching_poffset=%d\n", k1);
+		dups = _get_val_from_SparseList(k1 + 1, unq2dup_env, 0);
+		if (dups == R_UnboundValue)
+			continue;
+		for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
+			k2 = *dup - 1;
+			if (match_reporting_mode == 0)
+				match_count.elts[k2] = match_count.elts[k1];
+			else
+				ends_bbuf.elts[k2] = ends_bbuf.elts[k1];
+		}
 	}
-	UNPROTECT(1);
+	//Rprintf("[DEBUG] report_matches_for_dups(): END\n");
 	return;
 }
 
@@ -432,7 +448,7 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 	else
 		CWdna_exact_search_on_nonfixedS(actree_nodes, base_codes, S);
 	if (cached_tail == NULL)
-		report_matches_for_dups(dup2unq_env);
+		report_matches_for_dups(unq2dup_env);
 	else
 		match_TBdna_tail(cached_tail, S,
 			pdict_len, dup2unq_env, unq2dup_env,

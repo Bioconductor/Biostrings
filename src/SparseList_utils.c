@@ -18,6 +18,22 @@ SEXP debug_SparseList_utils()
 	return R_NilValue;
 }
 
+SEXP _SparseList_int2symb(int i)
+{
+	char symbbuf[11];
+
+	snprintf(symbbuf, sizeof(symbbuf), "%010d", i);
+	return mkChar(symbbuf); /* UNPROTECTED! */
+}
+
+int _SparseList_symb2int(SEXP symbol)
+{
+	int symb_as_int;
+
+	sscanf(CHAR(symbol), "%d", &symb_as_int);
+	return symb_as_int;
+}
+
 /* 'symbol' must be a CHARSXP */
 SEXP _get_val_from_env(SEXP symbol, SEXP env, int error_on_unbound_value)
 {
@@ -42,11 +58,9 @@ SEXP _get_val_from_env(SEXP symbol, SEXP env, int error_on_unbound_value)
 
 SEXP _get_val_from_SparseList(int i, SEXP env, int error_on_unbound_value)
 {
-	char symbbuf[11];
 	SEXP symbol, ans;
 
-	snprintf(symbbuf, sizeof(symbbuf), "%010d", i);
-	PROTECT(symbol = mkChar(symbbuf));
+	PROTECT(symbol = _SparseList_int2symb(i));
 	ans = _get_val_from_env(symbol, env, error_on_unbound_value);
 	UNPROTECT(1);
 	return ans;
@@ -68,13 +82,5 @@ int _get_int_from_SparseList(int i, SEXP env)
 		error("Biostrings internal error in _get_int_from_SparseList(): "
 		      "value is NA");
 	return val;
-}
-
-int _SparseList_symbol_as_int(SEXP symbol)
-{
-	int symb_as_int;
-
-	sscanf(CHAR(symbol), "%d", &symb_as_int);
-	return symb_as_int;
 }
 

@@ -404,6 +404,10 @@ SEXP reduce_IRanges(
 
 SEXP debug_SparseList_utils();
 
+SEXP _SparseList_int2symb(int i);
+
+int _SparseList_symb2int(SEXP symbol);
+
 SEXP _get_val_from_env(
 	SEXP symbol,
 	SEXP env,
@@ -420,8 +424,6 @@ int _get_int_from_SparseList(
 	int i,
 	SEXP env
 );
-
-int _SparseList_symbol_as_int(SEXP symbol);
 
 
 /* XRaw_class.c */
