@@ -1,6 +1,15 @@
 \name{Biostrings internals}
 \docType{class}
 
+\alias{class:SparseList}
+\alias{SparseList-class}
+\alias{SparseList}
+
+\alias{length,SparseList-method}
+\alias{ls,SparseList-method}
+\alias{as.list,SparseList-method}
+\alias{[[,SparseList-method}
+
 \alias{show,externalptr-method}
 
 \alias{class:XRaw}

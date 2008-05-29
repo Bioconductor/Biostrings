@@ -7,6 +7,7 @@ import(utils) ## for the "head" and "tail" generics
 exportClasses(
     IRanges, UnlockedIRanges, Views, LockedIRanges, NormalIRanges,
     MaskCollection,
+    SparseList,
     XRaw, XInteger, XNumeric,
     XString, BString, DNAString, RNAString, AAString,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
@@ -72,6 +73,9 @@ exportMethods(
 
     ## MaskCollection objects
     nir_list, active, "active<-", maskedwidth, maskedratio, append,
+
+    ## SparseList objects
+    ls,
 
     ## XString, XStringViews, XStringList and MaskedXString objects
     XString, alphabet, subseq,
