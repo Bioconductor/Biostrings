@@ -21,6 +21,9 @@ static const R_CallMethodDef callMethods[] = {
 	{"int_to_adjacent_ranges", (DL_FUNC) &int_to_adjacent_ranges, 1},
 	{"reduce_IRanges", (DL_FUNC) &reduce_IRanges, 2},
 
+/* SparseList_utils.c */
+	{"debug_SparseList_utils", (DL_FUNC) &debug_SparseList_utils, 0},
+
 /* XRaw_class.c */
 	{"debug_XRaw_class", (DL_FUNC) &debug_XRaw_class, 0},
 
@@ -164,8 +167,8 @@ static const R_CallMethodDef callMethods[] = {
 /* ACtree_utils.c */
 	{"debug_ACtree_utils", (DL_FUNC) &debug_ACtree_utils, 0},
 	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
-	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 3},
-	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},
+	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 5},
+	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 5},
 
 /* MIndex_utils.c */
 	{"debug_MIndex_utils", (DL_FUNC) &debug_MIndex_utils, 0},

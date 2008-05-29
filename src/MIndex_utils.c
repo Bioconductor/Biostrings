@@ -18,24 +18,6 @@ SEXP debug_MIndex_utils()
 	return R_NilValue;
 }
 
-/* 'symbol' must be a CHARSXP */
-static SEXP getSymbolVal(SEXP symbol, SEXP envir)
-{
-	SEXP ans;
-
-	/* The following code was inspired by R's do_get() code.
-	 * Note that do_get() doesn't use PROTECT at all and so do we...
-	 */
-	ans = findVar(install(translateChar(symbol)), envir);
-	if (ans == R_UnboundValue)
-		error("Biostrings internal error in getSymbolVal(): unbound value");
-	if (TYPEOF(ans) == PROMSXP)
-		ans = eval(ans, envir);
-	if (ans != R_NilValue && NAMED(ans) == 0)
-		SET_NAMED(ans, 1);
-	return ans;
-}
-
 /*
  * 'e1' must be an INTSXP.
  * addInt() must ALWAYS duplicate 'e1', even when e2 = 0!
@@ -99,7 +81,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(names)));
 		for (i = 0; i < poffsets.nelt; i++) {
-			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
+			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir, 1);
 			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
 			SET_ELEMENT(ans, poffsets.elts[i], ans_elt);
 			UNPROTECT(1);
@@ -115,7 +97,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 		for (i = 0; i < poffsets.nelt; i++) {
 			//j = poffsets_order.elts[i];
 			j = i;
-			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir);
+			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir, 1);
 			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
 			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(names, poffsets.elts[j])));
 		}
@@ -191,7 +173,7 @@ SEXP ByName_MIndex_coverage(SEXP ends_envir, SEXP mindex_width, SEXP start, SEXP
 	memset(INTEGER(ans), 0, ans_length * sizeof(int));
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
 	for (i = 0; i < LENGTH(symbols); i++) {
-		ends = getSymbolVal(STRING_ELT(symbols, i), ends_envir);
+		ends = getSymbolVal(STRING_ELT(symbols, i), ends_envir, 1);
 		add_coverages(INTEGER(ans), ans_length, INTEGER(ends), LENGTH(ends), mwidth, start0);
 	}
 	UNPROTECT(2);

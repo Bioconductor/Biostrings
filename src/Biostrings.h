@@ -400,6 +400,17 @@ SEXP reduce_IRanges(
 );
 
 
+/* SparseList_utils.c */
+
+SEXP debug_SparseList_utils();
+
+SEXP getSymbolVal(
+	SEXP symbol,
+	SEXP envir,
+	int error_on_unbound_value
+);
+
+
 /* XRaw_class.c */
 
 SEXP debug_XRaw_class();
@@ -1167,13 +1178,17 @@ SEXP CWdna_free_actree_nodes_buf();
 SEXP CWdna_pp_STRSXP(
 	SEXP dict,
 	SEXP start,
-	SEXP end
+	SEXP end,
+	SEXP dup2unq_env,
+	SEXP unq2dup_env
 );
 
 SEXP CWdna_pp_XStringSet(
 	SEXP dict,
 	SEXP start,
-	SEXP end
+	SEXP end,
+	SEXP dup2unq_env,
+	SEXP unq2dup_env
 );
 
 

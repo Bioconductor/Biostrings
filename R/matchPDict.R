@@ -143,20 +143,25 @@ setClass("CWdna_PDict",
         length="integer",
         width="integer",
         actree="ACtree",
-        dups="integer",
+        dups="integer",        # remove when @dup2unq and @unq2dup slots are ready
+        dup2unq="SparseList",  # many-to-one integer mapping
+        unq2dup="SparseList",  # one-to-many integer mapping
+        NAMES="character",     # R doesn't like @names !!
         stats="list"
     )
 )
 
 ### Not intended to be used directly by the user.
 setMethod("initialize", "CWdna_PDict",
-    function(.Object, length, pp_Cans, names)
+    function(.Object, length, pp_Cans, dup2unq_env, unq2dup_env, names)
     {
         .Object@length <- length
         .Object@width <- pp_Cans$width
         .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, pp_Cans$actree_base_codes)
         .Object@dups <- pp_Cans$dups
-        names(.Object@dups) <- names
+        .Object@dup2unq <- new("SparseList", length=length, env=dup2unq_env)
+        .Object@unq2dup <- new("SparseList", length=length, env=unq2dup_env)
+        .Object@NAMES <- if (is.null(names)) as.character(NA) else names
         .Object@stats <- pp_Cans$stats
         .Object
     }
@@ -166,7 +171,10 @@ setMethod("length", "CWdna_PDict", function(x) x@length)
 
 setMethod("width", "CWdna_PDict", function(x) x@width)
 
-setMethod("names", "CWdna_PDict", function(x) names(x@dups))
+setMethod("names", "CWdna_PDict",
+    function(x)
+        if (length(x@NAMES) == 1 && is.na(x@NAMES)) NULL else x@NAMES
+)
 
 setMethod("show", "CWdna_PDict",
     function(object)
@@ -181,17 +189,20 @@ setMethod("show", "CWdna_PDict",
 
 setMethod("duplicated", "CWdna_PDict",
     function(x, incomparables=FALSE, ...)
-        x@dups != 0
+    {
+        ans <- logical(length(x@dup2unq))
+        ans[as.integer(ls(x@dup2unq))] <- TRUE
+        ans
+    }
 )
 
 setMethod("patternFrequency", "CWdna_PDict",
     function(x)
     {
-        ans <- rep.int(1L, x@length)
-        tb <- table(x@dups[x@dups != 0])
-        for (pos in names(tb)) {
-            i <- as.integer(pos)
-            ans[c(i, which(x@dups == i))] <- 1L + tb[pos][[1]]
+        ans <- rep.int(1L, length(x@unq2dup))
+        for (symb in ls(x@unq2dup)) {
+            ii <- as.integer(c(symb, x@unq2dup[[symb]]))
+            ans[ii] <- length(ii)
         }
         ans
     }
@@ -222,10 +233,8 @@ setClass("TBdna_PDict",
 
 ### Not intended to be used directly by the user.
 setMethod("initialize", "TBdna_PDict",
-    function(.Object, length, pp_Cans, names)
-    {
-        callNextMethod(.Object, length, pp_Cans, names)
-    }
+    function(.Object, length, pp_Cans, dup2unq_env, unq2dup_env, names)
+        callNextMethod(.Object, length, pp_Cans, dup2unq_env, unq2dup_env, names)
 )
 
 setMethod("head", "TBdna_PDict", function(x, ...) x@head)
@@ -289,15 +298,19 @@ setMethod("patternFrequency", "TBdna_PDict",
     if (!isTRUEorFALSE(drop.tail))
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
     on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
+    dup2unq_env <- new.env(hash=TRUE, parent=emptyenv())
+    unq2dup_env <- new.env(hash=TRUE, parent=emptyenv())
     if (is.character(dict)) {
         pp_Cans <- .Call("CWdna_pp_STRSXP",
                          dict,
                          tb.start, tb.end,
+                         dup2unq_env, unq2dup_env,
                          PACKAGE="Biostrings")
     } else if (is(dict, "DNAStringSet")) {
         pp_Cans <- .Call("CWdna_pp_XStringSet",
                          dict,
                          tb.start, tb.end,
+                         dup2unq_env, unq2dup_env,
                          PACKAGE="Biostrings")
     } else {
         stop("unsuported 'dict' type")
@@ -307,8 +320,8 @@ setMethod("patternFrequency", "TBdna_PDict",
     if (is.na(tb.end) || tb.end == -1L)
         drop.tail <- TRUE
     if (drop.head && drop.tail)
-        return(new("CWdna_PDict", length(dict), pp_Cans, names))
-    ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
+        return(new("CWdna_PDict", length(dict), pp_Cans, dup2unq_env, unq2dup_env, names))
+    ans <- new("TBdna_PDict", length(dict), pp_Cans, dup2unq_env, unq2dup_env, names)
     if (!drop.head) 
         ans@head <- DNAStringSet(dict, end=tb.start-1L)
     if (!drop.tail)

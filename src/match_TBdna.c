@@ -1,4 +1,5 @@
 /****************************************************************************
+ *                                                                          *
  *                    Fast matching of a DNA dictionary                     *
  *                           Author: Herve Pages                            *
  *                                                                          *

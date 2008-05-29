@@ -25,6 +25,11 @@ debug_IRanges_utils <- function()
     invisible(.Call("debug_IRanges_utils", PACKAGE="Biostrings"))
 }
 
+debug_SparseList_utils <- function()
+{
+    invisible(.Call("debug_SparseList_utils", PACKAGE="Biostrings"))
+}
+
 debug_XRaw_class <- function()
 {
     invisible(.Call("debug_XRaw_class", PACKAGE="Biostrings"))
