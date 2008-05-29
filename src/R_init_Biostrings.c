@@ -179,8 +179,8 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_TBdna.c */
 	{"debug_match_TBdna", (DL_FUNC) &debug_match_TBdna, 0},
-	{"XString_match_TBdna", (DL_FUNC) &XString_match_TBdna, 10},
-	{"XStringViews_match_TBdna", (DL_FUNC) &XStringViews_match_TBdna, 12},
+	{"XString_match_TBdna", (DL_FUNC) &XString_match_TBdna, 12},
+	{"XStringViews_match_TBdna", (DL_FUNC) &XStringViews_match_TBdna, 14},
 
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},

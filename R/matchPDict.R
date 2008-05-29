@@ -133,9 +133,6 @@ setMethod("initialize", "ACtree",
 ###
 ###   actree: the Aho-Corasick tree built from the input dictionary.
 ###
-###   dups: an integer vector of length L and containing the duplicate info.
-###       If unique pattern names were provided as part of the input dictionary,
-###       then they are used to name the elements of this vector.
 
 setClass("CWdna_PDict",
     contains="PDict",
@@ -143,7 +140,6 @@ setClass("CWdna_PDict",
         length="integer",
         width="integer",
         actree="ACtree",
-        dups="integer",        # remove when @dup2unq and @unq2dup slots are ready
         dup2unq="SparseList",  # many-to-one integer mapping
         unq2dup="SparseList",  # one-to-many integer mapping
         NAMES="character",     # R doesn't like @names !!
@@ -158,7 +154,6 @@ setMethod("initialize", "CWdna_PDict",
         .Object@length <- length
         .Object@width <- pp_Cans$width
         .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, pp_Cans$actree_base_codes)
-        .Object@dups <- pp_Cans$dups
         .Object@dup2unq <- new("SparseList", length=length, env=dup2unq_env)
         .Object@unq2dup <- new("SparseList", length=length, env=unq2dup_env)
         .Object@NAMES <- if (is.null(names)) as.character(NA) else names
@@ -778,7 +773,8 @@ extractAllMatches <- function(subject, mindex)
     if (is(subject, "DNAString"))
         C_ans <- .Call("XString_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       pdict@dups, NULL, NULL,
+                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       NULL, NULL,
                        subject,
                        0L, fixed,
                        count.only, envir,
@@ -786,7 +782,8 @@ extractAllMatches <- function(subject, mindex)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .Call("XStringViews_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       pdict@dups, NULL, NULL,
+                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       NULL, NULL,
                        subject(subject), start(subject), width(subject),
                        0L, fixed,
                        count.only, envir,
@@ -895,7 +892,8 @@ extractAllMatches <- function(subject, mindex)
     if (is(subject, "DNAString"))
         C_ans <- .Call("XString_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       pdict@dups, pdict@head, pdict@tail,
+                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       pdict@head, pdict@tail,
                        subject,
                        max.mismatch, fixed,
                        count.only, envir,
@@ -903,7 +901,8 @@ extractAllMatches <- function(subject, mindex)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .Call("XStringViews_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       pdict@dups, pdict@head, pdict@tail,
+                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       pdict@head, pdict@tail,
                        subject(subject), start(subject), width(subject),
                        max.mismatch, fixed,
                        count.only, envir,

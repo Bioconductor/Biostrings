@@ -68,30 +68,23 @@ static void report_match(int poffset, int end)
 	return;
 }
 
-static void report_matches_for_dups(const int *dups)
+static void report_matches_for_dups(SEXP dup2unq_env)
 {
-	int poffset, *val;
-	IntBuf *ends_buf;
+	SEXP symbols, symbol, value;
+	int i, j1, j2;
 
-	if (match_reporting_mode == 0) {
-		for (poffset = 0, val = match_count.elts;
-		     poffset < match_count.nelt;
-		     poffset++, val++, dups++)
-		{
-			if (*dups == 0)
-				continue;
-			*val = *(match_count.elts + *dups - 1);
-		}
-		return;
+	PROTECT(symbols = R_lsInternal(dup2unq_env, 1));
+	for (i = 0; i < LENGTH(symbols); i++) {
+		symbol = STRING_ELT(symbols, i);
+		j1 = _SparseList_symbol_as_int(symbol) - 1;
+		value = _get_val_from_env(symbol, dup2unq_env, 1);
+		j2 = INTEGER(value)[0] - 1;
+		if (match_reporting_mode == 0)
+			match_count.elts[j1] = match_count.elts[j2];
+		else
+			ends_bbuf.elts[j1] = ends_bbuf.elts[j2];
 	}
-	for (poffset = 0, ends_buf = ends_bbuf.elts;
-	     poffset < ends_bbuf.nelt;
-	     poffset++, ends_buf++, dups++)
-	{
-		if (*dups == 0)
-			continue;
-		*ends_buf = *(ends_bbuf.elts + *dups - 1);
-	}
+	UNPROTECT(1);
 	return;
 }
 
@@ -366,16 +359,17 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
  * =======================================================
  */
 
-static void TBdna_match_Ptail(RoSeq Ptail, RoSeq S,
-		int poffset, const int *dups, int dups_len,
+static void match_TBdna_Ptail(RoSeq Ptail, RoSeq S,
+		int poffset,
+		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int dup0, i, end;
 	IntBuf *ends_buf, *ends_buf0;
 
 	ends_buf = ends_buf0 = ends_bbuf.elts + poffset;
-	dup0 = dups[poffset];
-	if (dup0 != 0)
+	dup0 = _get_int_from_SparseList(poffset + 1, dup2unq_env);
+	if (dup0 != NA_INTEGER)
 		ends_buf0 = ends_bbuf.elts + dup0 - 1;
 	for (i = 0; i < ends_buf0->nelt; i++) {
 		end = ends_buf0->elts[i];
@@ -385,7 +379,7 @@ static void TBdna_match_Ptail(RoSeq Ptail, RoSeq S,
 				match_count.elts[poffset]++;
 				continue;
 			}
-			if (dup0 == 0) {
+			if (dup0 == NA_INTEGER) {
 				ends_buf0->elts[i] += Ptail.nelt;
 				continue;
 			}
@@ -396,7 +390,7 @@ static void TBdna_match_Ptail(RoSeq Ptail, RoSeq S,
 		/* Mismatch */
 		if (is_count_only)
 			continue;
-		if (dup0 != 0)
+		if (dup0 != NA_INTEGER)
 			continue;
 		/*
 		 * We need to shrink the buffer we are walking on! This is safe
@@ -409,7 +403,7 @@ static void TBdna_match_Ptail(RoSeq Ptail, RoSeq S,
 }
 
 static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
-		const int *dups, int dups_len,
+		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int poffset;
@@ -417,17 +411,18 @@ static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
 
 	// The duplicated must be treated BEFORE the first pattern they
 	// duplicate, hence we must walk from last to first.
-	for (poffset = dups_len - 1; poffset >= 0; poffset--) {
+	for (poffset = pdict_len - 1; poffset >= 0; poffset--) {
 		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, poffset);
-		TBdna_match_Ptail(Ptail, S,
-			poffset, dups, dups_len,
+		match_TBdna_Ptail(Ptail, S,
+			poffset,
+			pdict_len, dup2unq_env, unq2dup_env,
 			max_mm, fixedP, fixedS, is_count_only);
 	}
 	return;
 }
 
 static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
-		const int *dups, int dups_len,
+		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		RoSeq S,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
@@ -437,10 +432,10 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 	else
 		CWdna_exact_search_on_nonfixedS(actree_nodes, base_codes, S);
 	if (cached_tail == NULL)
-		report_matches_for_dups(dups);
+		report_matches_for_dups(dup2unq_env);
 	else
 		match_TBdna_tail(cached_tail, S,
-			dups, dups_len,
+			pdict_len, dup2unq_env, unq2dup_env,
 			max_mm, fixedP, fixedS, is_count_only);
 	return;
 }
@@ -452,7 +447,9 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
  * Arguments:
  *   'actree_nodes_xp': uldna_pdict@actree@nodes@xp
  *   'actree_base_codes': uldna_pdict@actree@base_codes
- *   'pdict_dups': pdict@dups
+ *   'pdict_length': length(pdict)
+ *   'pdict_dup2unq_env': pdict@dup2unq@env
+ *   'pdict_unq2dup_env': pdict@unq2dup@env
  *   'pdict_head': pdict@head (XStringSet or NULL)
  *   'pdict_tail': pdict@tail (XStringSet or NULL)
  *   'subject': subject
@@ -468,7 +465,8 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
  ****************************************************************************/
 
 SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_dups, SEXP pdict_head, SEXP pdict_tail,
+		SEXP pdict_length, SEXP pdict_dup2unq_env, SEXP pdict_unq2dup_env,
+		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
@@ -476,11 +474,11 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	ACNode *actree_nodes;
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
-	int dups_len, no_head, no_tail,
+	int pdict_len, no_head, no_tail,
 	    fixedP, fixedS, is_count_only;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	dups_len = LENGTH(pdict_dups);
+	pdict_len = INTEGER(pdict_length)[0];
 	pcached_head = pcached_tail = NULL;
 	no_head = pdict_head == R_NilValue;
 	if (!no_head) {
@@ -499,9 +497,9 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
-	init_match_reporting(no_tail, is_count_only, dups_len);
+	init_match_reporting(no_tail, is_count_only, pdict_len);
 	match_TBdna(actree_nodes, INTEGER(actree_base_codes),
-		INTEGER(pdict_dups), dups_len,
+		pdict_len, pdict_dup2unq_env, pdict_unq2dup_env,
 		pcached_head, pcached_tail,
 		S,
 		INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
@@ -514,7 +512,8 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 }
 
 SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_dups, SEXP pdict_head, SEXP pdict_tail,
+		SEXP pdict_length, SEXP pdict_dup2unq_env, SEXP pdict_unq2dup_env,
+		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
@@ -522,14 +521,14 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	ACNode *actree_nodes;
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S, V;
-	int dups_len, no_head, no_tail,
+	int pdict_len, no_head, no_tail,
 	    fixedP, fixedS, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
 	IntBuf global_match_count;
 	IntBBuf global_ends_bbuf;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	dups_len = LENGTH(pdict_dups);
+	pdict_len = INTEGER(pdict_length)[0];
 	pcached_head = pcached_tail = NULL;
 	no_head = pdict_head == R_NilValue;
 	if (!no_head) {
@@ -549,10 +548,10 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
-		global_match_count = _new_IntBuf(dups_len, dups_len);
+		global_match_count = _new_IntBuf(pdict_len, pdict_len);
 	else
-		global_ends_bbuf = _new_IntBBuf(dups_len, dups_len);
-	init_match_reporting(no_tail, is_count_only, dups_len);
+		global_ends_bbuf = _new_IntBBuf(pdict_len, pdict_len);
+	init_match_reporting(no_tail, is_count_only, pdict_len);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -565,7 +564,7 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		V.nelt = *view_width;
 		drop_current_matches();
 		match_TBdna(actree_nodes, INTEGER(actree_base_codes),
-			INTEGER(pdict_dups), dups_len,
+			pdict_len, pdict_dup2unq_env, pdict_unq2dup_env,
 			pcached_head, pcached_tail,
 			V,
 			INTEGER(max_mismatch)[0], fixedP, fixedS,

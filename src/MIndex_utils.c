@@ -81,7 +81,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(names)));
 		for (i = 0; i < poffsets.nelt; i++) {
-			end = getSymbolVal(STRING_ELT(symbols, i), ends_envir, 1);
+			end = _get_val_from_env(STRING_ELT(symbols, i), ends_envir, 1);
 			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
 			SET_ELEMENT(ans, poffsets.elts[i], ans_elt);
 			UNPROTECT(1);
@@ -97,7 +97,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 		for (i = 0; i < poffsets.nelt; i++) {
 			//j = poffsets_order.elts[i];
 			j = i;
-			end = getSymbolVal(STRING_ELT(symbols, j), ends_envir, 1);
+			end = _get_val_from_env(STRING_ELT(symbols, j), ends_envir, 1);
 			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
 			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(names, poffsets.elts[j])));
 		}
@@ -173,7 +173,7 @@ SEXP ByName_MIndex_coverage(SEXP ends_envir, SEXP mindex_width, SEXP start, SEXP
 	memset(INTEGER(ans), 0, ans_length * sizeof(int));
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
 	for (i = 0; i < LENGTH(symbols); i++) {
-		ends = getSymbolVal(STRING_ELT(symbols, i), ends_envir, 1);
+		ends = _get_val_from_env(STRING_ELT(symbols, i), ends_envir, 1);
 		add_coverages(INTEGER(ans), ans_length, INTEGER(ends), LENGTH(ends), mwidth, start0);
 	}
 	UNPROTECT(2);

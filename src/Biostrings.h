@@ -404,11 +404,24 @@ SEXP reduce_IRanges(
 
 SEXP debug_SparseList_utils();
 
-SEXP getSymbolVal(
+SEXP _get_val_from_env(
 	SEXP symbol,
-	SEXP envir,
+	SEXP env,
 	int error_on_unbound_value
 );
+
+SEXP _get_val_from_SparseList(
+	int i,
+	SEXP env,
+	int error_on_unbound_value
+);
+
+int _get_int_from_SparseList(
+	int i,
+	SEXP env
+);
+
+int _SparseList_symbol_as_int(SEXP symbol);
 
 
 /* XRaw_class.c */
@@ -1230,7 +1243,9 @@ SEXP debug_match_TBdna();
 SEXP XString_match_TBdna(
 	SEXP actree_nodes_xp,
 	SEXP actree_base_codes,
-	SEXP pdict_dups,
+	SEXP pdict_length,
+	SEXP pdict_dup2unq_env,
+	SEXP pdict_unq2dup_env,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,
@@ -1243,7 +1258,9 @@ SEXP XString_match_TBdna(
 SEXP XStringViews_match_TBdna(
 	SEXP actree_nodes_xp,
 	SEXP actree_base_codes,
-	SEXP pdict_dups,
+	SEXP pdict_length,
+	SEXP pdict_dup2unq_env,
+	SEXP pdict_unq2dup_env,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,

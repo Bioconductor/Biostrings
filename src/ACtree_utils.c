@@ -194,13 +194,11 @@ static void add_subpattern_to_input_uldict(int poffset,
  * Buffer of duplicates.
  */
 
-static IntBuf dups_buf;
 static SEXP dup2unq_env0;
 static SEXP unq2dup_env0;
 
 static void init_dups_buf(int length, SEXP dup2unq_env, SEXP unq2dup_env)
 {
-	dups_buf = _new_IntBuf(length, length);
 	dup2unq_env0 = dup2unq_env;
 	unq2dup_env0 = unq2dup_env;
 	return;
@@ -209,10 +207,9 @@ static void init_dups_buf(int length, SEXP dup2unq_env, SEXP unq2dup_env)
 static void report_dup(int poffset, int P_id)
 {
 	char symbol[11];
-	SEXP symb, old_value, new_value;
+	SEXP old_value, new_value;
 	int old_length, new_length;
 
-	dups_buf.elts[poffset] = P_id;
 	poffset++;
 	/* add a new entry to the 'dup2unq_env0' map */
 	snprintf(symbol, sizeof(symbol), "%010d", poffset);
@@ -220,10 +217,7 @@ static void report_dup(int poffset, int P_id)
 	defineVar(install(symbol), new_value, dup2unq_env0);
 	UNPROTECT(1);
 	/* update the 'unq2dup_env0' map */
-	snprintf(symbol, sizeof(symbol), "%010d", P_id);
-	PROTECT(symb = mkChar(symbol));
-	old_value = getSymbolVal(symb, unq2dup_env0, 0);
-	UNPROTECT(1);
+	old_value = _get_val_from_SparseList(P_id, unq2dup_env0, 0);
 	if (old_value == R_UnboundValue) {
 		PROTECT(new_value = ScalarInteger(poffset));
 	} else {
@@ -559,23 +553,20 @@ static SEXP stats_asLIST()
  *   - actree_base_codes: integer vector containing the MAX_CHILDREN_PER_ACNODE character
  *         codes (ASCII) attached to the MAX_CHILDREN_PER_ACNODE child slots of any
  *         node in the tree pointed by actree_nodes_xp;
- *   - dups: an integer vector of the same length as 'dict' containing the
- *         duplicate info;
  *   - stats: a list containing some stats about the input data.
  */
 static SEXP uldna_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
-	PROTECT(ans = NEW_LIST(5));
+	PROTECT(ans = NEW_LIST(4));
 
 	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(5));
+	PROTECT(ans_names = NEW_CHARACTER(4));
 	SET_STRING_ELT(ans_names, 0, mkChar("width"));
 	SET_STRING_ELT(ans_names, 1, mkChar("actree_nodes_xp"));
 	SET_STRING_ELT(ans_names, 2, mkChar("actree_base_codes"));
-	SET_STRING_ELT(ans_names, 3, mkChar("dups"));
-	SET_STRING_ELT(ans_names, 4, mkChar("stats"));
+	SET_STRING_ELT(ans_names, 3, mkChar("stats"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
@@ -594,14 +585,9 @@ static SEXP uldna_asLIST()
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 
-	/* set the "dups" element */
-	PROTECT(ans_elt = _IntBuf_asINTEGER(&dups_buf));
-	SET_ELEMENT(ans, 3, ans_elt);
-	UNPROTECT(1);
-
 	/* set the "stats" element */
 	PROTECT(ans_elt = stats_asLIST());
-	SET_ELEMENT(ans, 4, ans_elt);
+	SET_ELEMENT(ans, 3, ans_elt);
 	UNPROTECT(1);
 
 	UNPROTECT(1);
