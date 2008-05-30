@@ -375,78 +375,17 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
  * =======================================================
  */
 
-static void match_TBdna_Ptail(RoSeq Ptail, RoSeq S,
-		int poffset,
-		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
+static void match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
-	int dup0, i, end;
-	IntBuf *ends_buf, *ends_buf0;
-
-	ends_buf = ends_buf0 = ends_bbuf.elts + poffset;
-	dup0 = _get_int_from_SparseList(poffset + 1, dup2unq_env);
-	if (dup0 != NA_INTEGER)
-		ends_buf0 = ends_bbuf.elts + dup0 - 1;
-	for (i = 0; i < ends_buf0->nelt; i++) {
-		end = ends_buf0->elts[i];
-		if (_is_matching(Ptail, S, end, max_mm, fixedP, fixedS)) {
-			/* Match */
-			if (is_count_only) {
-				match_count.elts[poffset]++;
-				continue;
-			}
-			if (dup0 == NA_INTEGER) {
-				ends_buf0->elts[i] += Ptail.nelt;
-				continue;
-			}
-			end += Ptail.nelt;
-			_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
-			continue;
-		}
-		/* Mismatch */
-		if (is_count_only)
-			continue;
-		if (dup0 != NA_INTEGER)
-			continue;
-		/*
-		 * We need to shrink the buffer we are walking on! This is safe
-		 * because shrinking an IntBuf object should never trigger
-		 * reallocation.
-		 */
-		_IntBuf_delete_at(ends_buf0, i--);
-	}
-	return;
-}
-
-static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
-		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
-{
-	int poffset;
-	RoSeq Ptail;
-
-	// The duplicated must be treated BEFORE the first pattern they
-	// duplicate, hence we must walk from last to first.
-	for (poffset = pdict_len - 1; poffset >= 0; poffset--) {
-		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, poffset);
-		match_TBdna_Ptail(Ptail, S,
-			poffset,
-			pdict_len, dup2unq_env, unq2dup_env,
-			max_mm, fixedP, fixedS, is_count_only);
-	}
-	return;
-}
-
-static void match_TBdna_Ptail2(RoSeq Ptail, RoSeq S, int k1, int k2,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
-{
-	int i, *end1;
+	int i, end1;
 	IntBuf *ends_buf1, *ends_buf2;
 
 	ends_buf1 = ends_bbuf.elts + k1;
 	ends_buf2 = ends_bbuf.elts + k2;
-	for (i = 0, end1 = ends_buf1->elts; i < ends_buf1->nelt; i++, end1++) {
-		if (!_is_matching(Ptail, S, *end1, max_mm, fixedP, fixedS)) {
+	for (i = 0; i < ends_buf1->nelt; i++) {
+		end1 = ends_buf1->elts[i];
+		if (!_is_matching(Ptail, S, end1, max_mm, fixedP, fixedS)) {
 			/* Mismatch */
 			if (is_count_only)
 				continue;
@@ -457,7 +396,7 @@ static void match_TBdna_Ptail2(RoSeq Ptail, RoSeq S, int k1, int k2,
 			 * because shrinking an IntBuf object should never trigger
 			 * reallocation.
 			 */
-			_IntBuf_delete_at(ends_buf2, i--);
+			_IntBuf_delete_at(ends_buf1, i--);
 			continue;
 		}
 		/* Match */
@@ -466,15 +405,15 @@ static void match_TBdna_Ptail2(RoSeq Ptail, RoSeq S, int k1, int k2,
 			continue;
 		}
 		if (k1 == k2) {
-			*end1 += Ptail.nelt;
+			ends_buf1->elts[i] += Ptail.nelt;
 			continue;
 		}
-		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, *end1 + Ptail.nelt);
+		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end1 + Ptail.nelt);
 	}
 	return;
 }
 
-static void match_TBdna_tail2(CachedXStringSet *cached_tail, RoSeq S,
+static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
 		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
@@ -492,12 +431,12 @@ static void match_TBdna_tail2(CachedXStringSet *cached_tail, RoSeq S,
 			for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
 				k2 = *dup - 1;
 				Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k2);
-				match_TBdna_Ptail2(Ptail, S, k1, k2,
+				match_TBdna_Ptail(Ptail, S, k1, k2,
 					max_mm, fixedP, fixedS, is_count_only);
 			}
 		}
 		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k1);
-		match_TBdna_Ptail2(Ptail, S, k1, k1,
+		match_TBdna_Ptail(Ptail, S, k1, k1,
 			max_mm, fixedP, fixedS, is_count_only);
 	}
 	return;
@@ -516,7 +455,7 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 	if (cached_tail == NULL)
 		report_matches_for_dups(unq2dup_env);
 	else
-		match_TBdna_tail2(cached_tail, S,
+		match_TBdna_tail(cached_tail, S,
 			pdict_len, dup2unq_env, unq2dup_env,
 			max_mm, fixedP, fixedS, is_count_only);
 	return;
