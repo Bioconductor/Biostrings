@@ -61,17 +61,17 @@ static void drop_current_matches()
 
 static void report_match(int poffset, int end)
 {
-	int poffset_is_new;
+	int is_new_matching_poffset;
 	IntBuf *ends_buf;
 
 	if (match_reporting_mode == 0) {
-		poffset_is_new = match_count.elts[poffset]++ == 0;
+		is_new_matching_poffset = match_count.elts[poffset]++ == 0;
 	} else {
 		ends_buf = ends_bbuf.elts + poffset;
-		poffset_is_new = ends_buf->nelt == 0;
+		is_new_matching_poffset = ends_buf->nelt == 0;
 		_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 	}
-	if (poffset_is_new)
+	if (is_new_matching_poffset)
 		_IntBuf_insert_at(&matching_poffsets,
 				  matching_poffsets.nelt, poffset);
 	return;
@@ -79,16 +79,13 @@ static void report_match(int poffset, int end)
 
 static void report_matches_for_dups(SEXP unq2dup_env)
 {
-	int i, *poffset, j, *dup, k1, k2;
+	int n1, i, *poffset, j, *dup, k1, k2;
 	SEXP dups;
 
-	//Rprintf("[DEBUG] report_matches_for_dups(): BEGIN\n");
-	for (i = 0, poffset = matching_poffsets.elts;
-	     i < matching_poffsets.nelt;
-	     i++, poffset++)
-	{
+	/* The value of matching_poffsets.nelt can increase during the for loop! */
+	n1 = matching_poffsets.nelt;
+	for (i = 0, poffset = matching_poffsets.elts; i < n1; i++, poffset++) {
 		k1 = *poffset;
-		//Rprintf("matching_poffset=%d\n", k1);
 		dups = _get_val_from_SparseList(k1 + 1, unq2dup_env, 0);
 		if (dups == R_UnboundValue)
 			continue;
@@ -98,9 +95,10 @@ static void report_matches_for_dups(SEXP unq2dup_env)
 				match_count.elts[k2] = match_count.elts[k1];
 			else
 				ends_bbuf.elts[k2] = ends_bbuf.elts[k1];
+			_IntBuf_insert_at(&matching_poffsets,
+					  matching_poffsets.nelt, k2);
 		}
 	}
-	//Rprintf("[DEBUG] report_matches_for_dups(): END\n");
 	return;
 }
 
@@ -375,7 +373,7 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
  * =======================================================
  */
 
-static void match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
+static int match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
 	int i, end1;
@@ -405,39 +403,46 @@ static void match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
 			continue;
 		}
 		if (k1 == k2) {
-			ends_buf1->elts[i] += Ptail.nelt;
+			ends_buf2->elts[i] += Ptail.nelt;
 			continue;
 		}
 		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end1 + Ptail.nelt);
 	}
-	return;
+	return is_count_only ? match_count.elts[k2] : ends_buf2->nelt;
 }
 
 static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
 		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
 {
-	int i, *poffset, j, *dup, k1, k2;
+	int n1, i, j, *dup, k1, k2, nmatches;
 	SEXP dups;
 	RoSeq Ptail;
 
-	for (i = 0, poffset = matching_poffsets.elts;
-	     i < matching_poffsets.nelt;
-	     i++, poffset++)
-	{
-		k1 = *poffset;
+	/* The number of elements in matching_poffsets can increase or decrease
+	   during the for loop! */
+	n1 = matching_poffsets.nelt;
+	for (i = 0; i < n1; i++) {
+		k1 = matching_poffsets.elts[i];
 		dups = _get_val_from_SparseList(k1 + 1, unq2dup_env, 0);
 		if (dups != R_UnboundValue) {
 			for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
 				k2 = *dup - 1;
 				Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k2);
-				match_TBdna_Ptail(Ptail, S, k1, k2,
-					max_mm, fixedP, fixedS, is_count_only);
+				nmatches = match_TBdna_Ptail(Ptail, S, k1, k2,
+							     max_mm, fixedP, fixedS, is_count_only);
+				if (nmatches != 0)
+					_IntBuf_insert_at(&matching_poffsets,
+							  matching_poffsets.nelt, k2);
 			}
 		}
 		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k1);
-		match_TBdna_Ptail(Ptail, S, k1, k1,
-			max_mm, fixedP, fixedS, is_count_only);
+		nmatches = match_TBdna_Ptail(Ptail, S, k1, k1,
+					     max_mm, fixedP, fixedS, is_count_only);
+		if (nmatches == 0) {
+			_IntBuf_delete_at(&matching_poffsets, i--);
+			n1--;
+		}
 	}
 	return;
 }
