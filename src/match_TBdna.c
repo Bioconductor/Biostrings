@@ -437,6 +437,72 @@ static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
 	return;
 }
 
+static void match_TBdna_Ptail2(RoSeq Ptail, RoSeq S, int k1, int k2,
+		int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	int i, *end1;
+	IntBuf *ends_buf1, *ends_buf2;
+
+	ends_buf1 = ends_bbuf.elts + k1;
+	ends_buf2 = ends_bbuf.elts + k2;
+	for (i = 0, end1 = ends_buf1->elts; i < ends_buf1->nelt; i++, end1++) {
+		if (!_is_matching(Ptail, S, *end1, max_mm, fixedP, fixedS)) {
+			/* Mismatch */
+			if (is_count_only)
+				continue;
+			if (k1 != k2)
+				continue;
+			/*
+			 * We need to shrink the buffer we are walking on! This is safe
+			 * because shrinking an IntBuf object should never trigger
+			 * reallocation.
+			 */
+			_IntBuf_delete_at(ends_buf2, i--);
+			continue;
+		}
+		/* Match */
+		if (is_count_only) {
+			match_count.elts[k2]++;
+			continue;
+		}
+		if (k1 == k2) {
+			*end1 += Ptail.nelt;
+			continue;
+		}
+		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, *end1 + Ptail.nelt);
+	}
+	return;
+}
+
+static void match_TBdna_tail2(CachedXStringSet *cached_tail, RoSeq S,
+		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
+		int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	int i, *poffset, j, *dup, k1, k2;
+	SEXP dups;
+	RoSeq Ptail;
+
+	for (i = 0, poffset = matching_poffsets.elts;
+	     i < matching_poffsets.nelt;
+	     i++, poffset++)
+	{
+		k1 = *poffset;
+		dups = _get_val_from_SparseList(k1 + 1, unq2dup_env, 0);
+		if (dups != R_UnboundValue) {
+			for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
+				k2 = *dup - 1;
+				Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k2);
+				match_TBdna_Ptail2(Ptail, S, k1, k2,
+					max_mm, fixedP, fixedS, is_count_only);
+			}
+		}
+		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k1);
+		match_TBdna_Ptail2(Ptail, S, k1, k1,
+			max_mm, fixedP, fixedS, is_count_only);
+	}
+	return;
+}
+
 static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 		int pdict_len, SEXP dup2unq_env, SEXP unq2dup_env,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
@@ -450,7 +516,7 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
 	if (cached_tail == NULL)
 		report_matches_for_dups(unq2dup_env);
 	else
-		match_TBdna_tail(cached_tail, S,
+		match_TBdna_tail2(cached_tail, S,
 			pdict_len, dup2unq_env, unq2dup_env,
 			max_mm, fixedP, fixedS, is_count_only);
 	return;
