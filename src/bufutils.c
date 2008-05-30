@@ -99,15 +99,15 @@ void _IntBuf_insert_at(IntBuf *ibuf, int at, int val)
 	return;
 }
 
-void _IntBuf_append(IntBuf *ibuf, int *vals, int nval)
+void _IntBuf_append(IntBuf *ibuf, int *newvals, int nnewval)
 {
 	int new_nelt, *dest;
 
-	new_nelt = ibuf->nelt + nval;
-	while (new_nelt > ibuf->buflength)
+	new_nelt = ibuf->nelt + nnewval;
+	while (ibuf->buflength < new_nelt)
 		IntBuf_extend(ibuf);
 	dest = ibuf->elts + ibuf->nelt;
-	memcpy(dest, vals, nval * sizeof(int));
+	memcpy(dest, newvals, nnewval * sizeof(int));
 	ibuf->nelt = new_nelt;
 	return;
 }
@@ -131,6 +131,21 @@ void _IntBuf_sum_val(IntBuf *ibuf, int val)
 
 	for (i = 0, elt = ibuf->elts; i < ibuf->nelt; i++, elt++)
 		*elt += val;
+	return;
+}
+
+void _IntBuf_append_shifted_vals(IntBuf *ibuf, int *newvals, int nnewval, int shift)
+{
+	int new_nelt, i, *elt1, *elt2;
+
+	new_nelt = ibuf->nelt + nnewval;
+	while (ibuf->buflength < new_nelt)
+		IntBuf_extend(ibuf);
+	for (i = 0, elt1 = ibuf->elts + ibuf->nelt, elt2 = newvals;
+	     i < nnewval;
+	     i++, elt1++, elt2++)
+		*elt1 = *elt2 + shift;
+	ibuf->nelt = new_nelt;
 	return;
 }
 

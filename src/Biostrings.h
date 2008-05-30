@@ -236,8 +236,8 @@ void _IntBuf_insert_at(
 
 void _IntBuf_append(
 	IntBuf *ibuf,
-	int *vals,
-	int nval
+	int *newvals,
+	int nnewval
 );
 
 void _IntBuf_delete_at(
@@ -248,6 +248,13 @@ void _IntBuf_delete_at(
 void _IntBuf_sum_val(
 	IntBuf *ibuf,
 	int val
+);
+
+void _IntBuf_append_shifted_vals(
+	IntBuf *ibuf,
+	int *newvals,
+	int nnewval,
+	int shift
 );
 
 void _IntBuf_sum_IntBuf(

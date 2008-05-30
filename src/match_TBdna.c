@@ -91,37 +91,23 @@ static void merge_matches(IntBuf *global_match_count,
 	int i, *poffset;
 	IntBuf *ends_buf, *global_ends_buf;
 
-/*
-	Rprintf("BEGIN merge_matches()\n");
-	for (i = 0; i < match_count.nelt; i++) {
-		Rprintf("*poffset=%d match_count=%d match_count=%d\n",
-			i, match_count.elts[i], match_ends.elts[i].nelt);
-	}
-*/
 	for (i = 0, poffset = matching_poffsets.elts;
 	     i < matching_poffsets.nelt;
 	     i++, poffset++)
 	{
 		if (match_reporting_mode == 0 || match_reporting_mode == 2) {
-/*
-			Rprintf("*poffset=%d match_count=%d\n",
-				*poffset, match_count.elts[*poffset]);
-*/
 			global_match_count->elts[*poffset] += match_count.elts[*poffset];
 			match_count.elts[*poffset] = 0;
 		} else {
 			ends_buf = match_ends.elts + *poffset;
 			global_ends_buf = global_match_ends->elts + *poffset;
-			_IntBuf_sum_val(ends_buf, view_offset);
-			_IntBuf_append(global_ends_buf, ends_buf->elts, ends_buf->nelt);
+			_IntBuf_append_shifted_vals(global_ends_buf,
+				ends_buf->elts, ends_buf->nelt, view_offset);
 		}
 		if (match_reporting_mode >= 1)
 			match_ends.elts[*poffset].nelt = 0;
 	}
 	matching_poffsets.nelt = 0;
-/*
-	Rprintf("END merge_matches()\n");
-*/
 	return;
 }
 
