@@ -28,7 +28,7 @@ SEXP debug_match_TBdna()
 
 static int match_reporting_mode; // 0, 1 or 2
 static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
-static IntBBuf ends_bbuf;  // used when mode >= 1
+static IntBBuf match_ends;  // used when mode >= 1
 static IntBuf matching_poffsets;
 
 static void init_match_reporting(int no_tail, int is_count_only, int length)
@@ -37,25 +37,8 @@ static void init_match_reporting(int no_tail, int is_count_only, int length)
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
 		match_count = _new_IntBuf(length, length);
 	if (match_reporting_mode >= 1)
-		ends_bbuf = _new_IntBBuf(length, length);
+		match_ends = _new_IntBBuf(length, length);
 	matching_poffsets = _new_IntBuf(0, 0);
-	return;
-}
-
-static void drop_current_matches()
-{
-	int i, *poffset;
-
-	for (i = 0, poffset = matching_poffsets.elts;
-	     i < matching_poffsets.nelt;
-	     i++, poffset++)
-	{
-		if (match_reporting_mode == 0 || match_reporting_mode == 2)
-			match_count.elts[*poffset] = 0;
-		if (match_reporting_mode >= 1)
-			ends_bbuf.elts[*poffset].nelt = 0;
-	}
-	matching_poffsets.nelt = 0;
 	return;
 }
 
@@ -67,7 +50,7 @@ static void report_match(int poffset, int end)
 	if (match_reporting_mode == 0) {
 		is_new_matching_poffset = match_count.elts[poffset]++ == 0;
 	} else {
-		ends_buf = ends_bbuf.elts + poffset;
+		ends_buf = match_ends.elts + poffset;
 		is_new_matching_poffset = ends_buf->nelt == 0;
 		_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
 	}
@@ -94,11 +77,51 @@ static void report_matches_for_dups(SEXP unq2dup_env)
 			if (match_reporting_mode == 0)
 				match_count.elts[k2] = match_count.elts[k1];
 			else
-				ends_bbuf.elts[k2] = ends_bbuf.elts[k1];
+				match_ends.elts[k2] = match_ends.elts[k1];
 			_IntBuf_insert_at(&matching_poffsets,
 					  matching_poffsets.nelt, k2);
 		}
 	}
+	return;
+}
+
+static void merge_matches(IntBuf *global_match_count,
+		IntBBuf *global_match_ends, int view_offset)
+{
+	int i, *poffset;
+	IntBuf *ends_buf, *global_ends_buf;
+
+/*
+	Rprintf("BEGIN merge_matches()\n");
+	for (i = 0; i < match_count.nelt; i++) {
+		Rprintf("*poffset=%d match_count=%d match_count=%d\n",
+			i, match_count.elts[i], match_ends.elts[i].nelt);
+	}
+*/
+	for (i = 0, poffset = matching_poffsets.elts;
+	     i < matching_poffsets.nelt;
+	     i++, poffset++)
+	{
+		if (match_reporting_mode == 0 || match_reporting_mode == 2) {
+/*
+			Rprintf("*poffset=%d match_count=%d\n",
+				*poffset, match_count.elts[*poffset]);
+*/
+			global_match_count->elts[*poffset] += match_count.elts[*poffset];
+			match_count.elts[*poffset] = 0;
+		} else {
+			ends_buf = match_ends.elts + *poffset;
+			global_ends_buf = global_match_ends->elts + *poffset;
+			_IntBuf_sum_val(ends_buf, view_offset);
+			_IntBuf_append(global_ends_buf, ends_buf->elts, ends_buf->nelt);
+		}
+		if (match_reporting_mode >= 1)
+			match_ends.elts[*poffset].nelt = 0;
+	}
+	matching_poffsets.nelt = 0;
+/*
+	Rprintf("END merge_matches()\n");
+*/
 	return;
 }
 
@@ -379,13 +402,13 @@ static int match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
 	int i, end1;
 	IntBuf *ends_buf1, *ends_buf2;
 
-	ends_buf1 = ends_bbuf.elts + k1;
-	ends_buf2 = ends_bbuf.elts + k2;
+	ends_buf1 = match_ends.elts + k1;
+	ends_buf2 = match_ends.elts + k2;
 	for (i = 0; i < ends_buf1->nelt; i++) {
 		end1 = ends_buf1->elts[i];
 		if (!_is_matching(Ptail, S, end1, max_mm, fixedP, fixedS)) {
 			/* Mismatch */
-			if (is_count_only)
+			if (match_reporting_mode == 0)
 				continue;
 			if (k1 != k2)
 				continue;
@@ -400,13 +423,14 @@ static int match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
 		/* Match */
 		if (is_count_only) {
 			match_count.elts[k2]++;
-			continue;
+			if (match_reporting_mode == 0)
+				continue;
 		}
-		if (k1 == k2) {
+		if (k1 != k2) {
+			_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end1 + Ptail.nelt);
+		} else {
 			ends_buf2->elts[i] += Ptail.nelt;
-			continue;
 		}
-		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end1 + Ptail.nelt);
 	}
 	return is_count_only ? match_count.elts[k2] : ends_buf2->nelt;
 }
@@ -533,8 +557,8 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (is_count_only)
 		return _IntBuf_asINTEGER(&match_count);
 	if (envir == R_NilValue)
-		return _IntBBuf_asLIST(&ends_bbuf, 1);
-	return _IntBBuf_toEnvir(&ends_bbuf, envir, 1);
+		return _IntBBuf_asLIST(&match_ends, 1);
+	return _IntBBuf_toEnvir(&match_ends, envir, 1);
 }
 
 SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
@@ -551,7 +575,7 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	    fixedP, fixedS, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
 	IntBuf global_match_count;
-	IntBBuf global_ends_bbuf;
+	IntBBuf global_match_ends;
 
 	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
 	pdict_len = INTEGER(pdict_length)[0];
@@ -576,7 +600,7 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	if (is_count_only)
 		global_match_count = _new_IntBuf(pdict_len, pdict_len);
 	else
-		global_ends_bbuf = _new_IntBBuf(pdict_len, pdict_len);
+		global_match_ends = _new_IntBBuf(pdict_len, pdict_len);
 	init_match_reporting(no_tail, is_count_only, pdict_len);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
@@ -588,25 +612,19 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 			error("'subject' has out of limits views");
 		V.elts = S.elts + view_offset;
 		V.nelt = *view_width;
-		drop_current_matches();
 		match_TBdna(actree_nodes, INTEGER(actree_base_codes),
 			pdict_len, pdict_dup2unq_env, pdict_unq2dup_env,
 			pcached_head, pcached_tail,
 			V,
 			INTEGER(max_mismatch)[0], fixedP, fixedS,
 			is_count_only);
-		if (is_count_only) {
-			_IntBuf_sum_IntBuf(&global_match_count, &match_count);
-		} else {
-			_IntBBuf_sum_val(&ends_bbuf, view_offset);
-			_IntBBuf_eltwise_append(&global_ends_bbuf, &ends_bbuf);
-		}
+		merge_matches(&global_match_count, &global_match_ends, view_offset);
 	}
 
 	if (is_count_only)
 		return _IntBuf_asINTEGER(&global_match_count);
 	if (envir == R_NilValue)
-		return _IntBBuf_asLIST(&global_ends_bbuf, 1);
-	return _IntBBuf_toEnvir(&global_ends_bbuf, envir, 1);
+		return _IntBBuf_asLIST(&global_match_ends, 1);
+	return _IntBBuf_toEnvir(&global_match_ends, envir, 1);
 }
 
