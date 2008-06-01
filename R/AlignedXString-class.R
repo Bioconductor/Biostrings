@@ -9,7 +9,7 @@ setClass("AlignedXString",
         unaligned="XString",
         quality="XString",
         range="IRanges",
-        inserts="IRanges",
+        indels="IRanges",
         profile="XNumeric"
     )
 )
@@ -20,12 +20,12 @@ setClass("AlignedXString",
 ###
 
 setMethod("initialize", "AlignedXString",
-    function(.Object, unaligned, quality, range, inserts, profile, check = TRUE)
+    function(.Object, unaligned, quality, range, indels, profile, check = TRUE)
     {
         slot(.Object, "unaligned", check = check) <- unaligned
         slot(.Object, "quality", check = check) <- quality
         slot(.Object, "range", check = check) <- range
-        slot(.Object, "inserts", check = check) <- inserts
+        slot(.Object, "indels", check = check) <- indels
         slot(.Object, "profile", check = check) <- profile
         .Object
     }
@@ -67,16 +67,16 @@ setMethod("aligned", "AlignedXString",
               value <- XString("")
             } else {
               string <- subXString(unaligned(x), start(x), end(x))
-              startInserts <- start(x@inserts)
-              endInserts <- end(x@inserts)
-              widthInserts <- width(x@inserts)
+              startIndels <- start(x@indels)
+              endIndels <- end(x@indels)
+              widthIndels <- width(x@indels)
               ncharString <- nchar(string)
-              if (length(startInserts) == 0) {
+              if (length(startIndels) == 0) {
                 value <- string
               } else {
-                gapStrings <- c("", sapply(widthInserts, function(x) paste(rep("-", x), collapse = "")))
+                gapStrings <- c("", sapply(widthIndels, function(x) paste(rep("-", x), collapse = "")))
                 subdividedString <-
-                  substring(as.character(string), c(1, startInserts), c(startInserts - 1, ncharString))
+                  substring(as.character(string), c(1, startIndels), c(startIndels - 1, ncharString))
                 value <-
                   XString(class(unaligned(x)), paste(gapStrings, subdividedString, sep = "", collapse = ""))
               }
@@ -87,10 +87,10 @@ setMethod("aligned", "AlignedXString",
 setMethod("start", "AlignedXString", function(x) if (width(x) == 0) NA else start(x@range))
 setMethod("end", "AlignedXString", function(x) if (width(x) == 0) NA else end(x@range))
 setMethod("width", "AlignedXString", function(x) width(x@range))
-setGeneric("inserts", function(x) standardGeneric("inserts"))
-setMethod("inserts", "AlignedXString", function(x) x@inserts)
+setGeneric("indels", function(x) standardGeneric("indels"))
+setMethod("indels", "AlignedXString", function(x) x@indels)
 setMethod("profile", "AlignedXString", function(fitted, ...) as.numeric(fitted@profile))
-setMethod("length", "AlignedXString", function(x) width(x@range) + sum(width(x@inserts)))
+setMethod("length", "AlignedXString", function(x) width(x@range) + sum(width(x@indels)))
 setMethod("nchar", "AlignedXString", function(x, type="chars", allowNA=FALSE) length(x))
 setMethod("alphabet", "AlignedXString", function(x) alphabet(unaligned(x)))
 

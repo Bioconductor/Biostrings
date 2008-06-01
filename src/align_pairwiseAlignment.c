@@ -41,9 +41,9 @@ struct AlignInfo {
 	int endGap;
 	int startRange;
 	int widthRange;
-	int* startInserts;
-	int* widthInserts;
-	int lengthInserts;
+	int* startIndels;
+	int* widthIndels;
+	int lengthIndels;
 	double* profile;
 };
 void function(struct AlignInfo *);
@@ -197,23 +197,23 @@ static float pairwiseAlignment(
 
 		/* Step 3b:  Prepare the alignment info object for alignment */
 		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
-		int* startInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* startInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* widthInserts1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* widthInserts2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* startIndels1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* startIndels2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* widthIndels1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		int* widthIndels2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 
 		for(int i = 0; i < alignmentBufferSize; i++) {
-			startInserts1Buffer[i] = 0;
-			startInserts2Buffer[i] = 0;
-			widthInserts1Buffer[i] = 0;
-			widthInserts2Buffer[i] = 0;
+			startIndels1Buffer[i] = 0;
+			startIndels2Buffer[i] = 0;
+			widthIndels1Buffer[i] = 0;
+			widthIndels2Buffer[i] = 0;
 		}
-		align1InfoPtr->lengthInserts = 0;
-		align2InfoPtr->lengthInserts = 0;
-		align1InfoPtr->startInserts = startInserts1Buffer + alignmentBufferSize;
-		align2InfoPtr->startInserts = startInserts2Buffer + alignmentBufferSize;
-		align1InfoPtr->widthInserts = widthInserts1Buffer + alignmentBufferSize;
-		align2InfoPtr->widthInserts = widthInserts2Buffer + alignmentBufferSize;
+		align1InfoPtr->lengthIndels = 0;
+		align2InfoPtr->lengthIndels = 0;
+		align1InfoPtr->startIndels = startIndels1Buffer + alignmentBufferSize;
+		align2InfoPtr->startIndels = startIndels2Buffer + alignmentBufferSize;
+		align1InfoPtr->widthIndels = widthIndels1Buffer + alignmentBufferSize;
+		align2InfoPtr->widthIndels = widthIndels2Buffer + alignmentBufferSize;
 
 		align1InfoPtr->startRange = -1;
 		align2InfoPtr->startRange = -1;
@@ -396,12 +396,12 @@ static float pairwiseAlignment(
 		    			} else {
 		    				align1InfoPtr->widthRange++;
 		    				if (prevTraceMatrix != DELETION) {
-		    					align2InfoPtr->startInserts--;
-		    					align2InfoPtr->widthInserts--;
-		    					align2InfoPtr->lengthInserts++;
-		    					*align2InfoPtr->startInserts = nCharString2 - j;
+		    					align2InfoPtr->startIndels--;
+		    					align2InfoPtr->widthIndels--;
+		    					align2InfoPtr->lengthIndels++;
+		    					*align2InfoPtr->startIndels = nCharString2 - j;
 		    				}
-		    				*align2InfoPtr->widthInserts += 1;
+		    				*align2InfoPtr->widthIndels += 1;
 		    			}
 	    			}
 	    			prevTraceMatrix = currTraceMatrix;
@@ -415,12 +415,12 @@ static float pairwiseAlignment(
 		    			} else {
 		    				align2InfoPtr->widthRange++;
 		    				if (prevTraceMatrix != INSERTION) {
-		    					align1InfoPtr->startInserts--;
-		    					align1InfoPtr->widthInserts--;
-		    					align1InfoPtr->lengthInserts++;
-		    					*align1InfoPtr->startInserts = nCharString1 - i;
+		    					align1InfoPtr->startIndels--;
+		    					align1InfoPtr->widthIndels--;
+		    					align1InfoPtr->lengthIndels++;
+		    					*align1InfoPtr->startIndels = nCharString1 - i;
 		    				}
-		    				*align1InfoPtr->widthInserts += 1;
+		    				*align1InfoPtr->widthIndels += 1;
 		    			}
 	    			}
 	    			prevTraceMatrix = currTraceMatrix;
@@ -447,14 +447,14 @@ static float pairwiseAlignment(
 		align2InfoPtr->profile[align2InfoPtr->startRange - 1] = maxScore;
 
 		int offset1 = align1InfoPtr->startRange - 1;
-		if (offset1 > 0 && align1InfoPtr->lengthInserts > 0) {
-			for (i = 0; i < align1InfoPtr->lengthInserts; i++)
-				align1InfoPtr->startInserts[i] -= offset1;
+		if (offset1 > 0 && align1InfoPtr->lengthIndels > 0) {
+			for (i = 0; i < align1InfoPtr->lengthIndels; i++)
+				align1InfoPtr->startIndels[i] -= offset1;
 		}
 		int offset2 = align2InfoPtr->startRange - 1;
-		if (offset2 > 0 && align2InfoPtr->lengthInserts > 0) {
-			for (j = 0; j < align2InfoPtr->lengthInserts; j++)
-				align2InfoPtr->startInserts[j] -= offset2;
+		if (offset2 > 0 && align2InfoPtr->lengthIndels > 0) {
+			for (j = 0; j < align2InfoPtr->lengthIndels; j++)
+				align2InfoPtr->startIndels[j] -= offset2;
 		}
 	}
 
@@ -566,12 +566,12 @@ SEXP XString_align_pairwiseAlignment(
 		PROTECT(outputNames = NEW_CHARACTER(9));
 		SET_STRING_ELT(outputNames, 0, mkChar("startPatternRange"));
 		SET_STRING_ELT(outputNames, 1, mkChar("widthPatternRange"));
-		SET_STRING_ELT(outputNames, 2, mkChar("startPatternInserts"));
-		SET_STRING_ELT(outputNames, 3, mkChar("widthPatternInserts"));
+		SET_STRING_ELT(outputNames, 2, mkChar("startPatternIndels"));
+		SET_STRING_ELT(outputNames, 3, mkChar("widthPatternIndels"));
 		SET_STRING_ELT(outputNames, 4, mkChar("startSubjectRange"));
 		SET_STRING_ELT(outputNames, 5, mkChar("widthSubjectRange"));
-		SET_STRING_ELT(outputNames, 6, mkChar("startSubjectInserts"));
-		SET_STRING_ELT(outputNames, 7, mkChar("widthSubjectInserts"));
+		SET_STRING_ELT(outputNames, 6, mkChar("startSubjectIndels"));
+		SET_STRING_ELT(outputNames, 7, mkChar("widthSubjectIndels"));
 		SET_STRING_ELT(outputNames, 8, mkChar("score"));
 		SET_NAMES(output, outputNames);
 		UNPROTECT(1);
@@ -585,13 +585,13 @@ SEXP XString_align_pairwiseAlignment(
 		INTEGER(outputElement1)[0] = align1Info.widthRange;
 		SET_ELEMENT(output, 1, outputElement1);
 		UNPROTECT(1);
-		/* Set the "startPatternInserts" and "widthPatternInserts" elements */
-		PROTECT(outputElement1 = NEW_INTEGER(align1Info.lengthInserts));
-		PROTECT(outputElement2 = NEW_INTEGER(align1Info.lengthInserts));
-		for(int i = 0; i < align1Info.lengthInserts; i++) {
-			int infoIndex = align1Info.lengthInserts - 1 - i;
-			INTEGER(outputElement1)[i] = align1Info.startInserts[infoIndex];
-			INTEGER(outputElement2)[i] = align1Info.widthInserts[infoIndex];
+		/* Set the "startPatternIndels" and "widthPatternIndels" elements */
+		PROTECT(outputElement1 = NEW_INTEGER(align1Info.lengthIndels));
+		PROTECT(outputElement2 = NEW_INTEGER(align1Info.lengthIndels));
+		for(int i = 0; i < align1Info.lengthIndels; i++) {
+			int infoIndex = align1Info.lengthIndels - 1 - i;
+			INTEGER(outputElement1)[i] = align1Info.startIndels[infoIndex];
+			INTEGER(outputElement2)[i] = align1Info.widthIndels[infoIndex];
 		}
 		SET_ELEMENT(output, 2, outputElement1);
 		SET_ELEMENT(output, 3, outputElement2);
@@ -606,13 +606,13 @@ SEXP XString_align_pairwiseAlignment(
 		INTEGER(outputElement1)[0] = align2Info.widthRange;
 		SET_ELEMENT(output, 5, outputElement1);
 		UNPROTECT(1);
-		/* Set the "startSubjectInserts" and "widthSubjectInserts" elements */
-		PROTECT(outputElement1 = NEW_INTEGER(align2Info.lengthInserts));
-		PROTECT(outputElement2 = NEW_INTEGER(align2Info.lengthInserts));
-		for(int j = 0; j < align2Info.lengthInserts; j++) {
-			int infoIndex = align2Info.lengthInserts - 1 - j;
-			INTEGER(outputElement1)[j] = align2Info.startInserts[infoIndex];
-			INTEGER(outputElement2)[j] = align2Info.widthInserts[infoIndex];
+		/* Set the "startSubjectIndels" and "widthSubjectIndels" elements */
+		PROTECT(outputElement1 = NEW_INTEGER(align2Info.lengthIndels));
+		PROTECT(outputElement2 = NEW_INTEGER(align2Info.lengthIndels));
+		for(int j = 0; j < align2Info.lengthIndels; j++) {
+			int infoIndex = align2Info.lengthIndels - 1 - j;
+			INTEGER(outputElement1)[j] = align2Info.startIndels[infoIndex];
+			INTEGER(outputElement2)[j] = align2Info.widthIndels[infoIndex];
 		}
 		SET_ELEMENT(output, 6, outputElement1);
 		SET_ELEMENT(output, 7, outputElement2);

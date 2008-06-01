@@ -170,9 +170,9 @@ function(pattern,
                       range =
                       IRanges(start = answer[["startPatternRange"]],
                               width = answer[["widthPatternRange"]]),
-                      inserts =
-                      IRanges(start = answer[["startPatternInserts"]],
-                              width = answer[["widthPatternInserts"]]),
+                      indels =
+                      IRanges(start = answer[["startPatternIndels"]],
+                              width = answer[["widthPatternIndels"]]),
                       profile = patternProfile),
                   subject =
                   new("AlignedXString",
@@ -181,9 +181,9 @@ function(pattern,
                       range =
                       IRanges(start = answer[["startSubjectRange"]],
                               width = answer[["widthSubjectRange"]]),
-                      inserts =
-                      IRanges(start = answer[["startSubjectInserts"]],
-                              width = answer[["widthSubjectInserts"]]),
+                      indels =
+                      IRanges(start = answer[["startSubjectIndels"]],
+                              width = answer[["widthSubjectIndels"]]),
                       profile = subjectProfile),
                   score = answer[["score"]],
                   type = type,
