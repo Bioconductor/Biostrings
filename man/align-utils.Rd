@@ -25,8 +25,9 @@
 }
 
 \details{
-  \code{compareStrings} computes the matches and mismatches between two equal-length
-  strings that are assumed to be aligned.
+  \code{compareStrings} combines two equal-length strings that are assumed to be aligned
+  into a single character string containing that replaces mismatches with \code{"?"},
+  insertions with \code{"+"}, and deletions with \code{"-"}.
 
   \code{consmat} computes a consensus matrix for a set of equal-length strings that
   are assumed to be aligned.

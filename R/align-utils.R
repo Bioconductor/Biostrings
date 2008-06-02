@@ -10,9 +10,14 @@ setMethod("compareStrings", signature = c(pattern = "character", subject = "char
                   stop("'pattern' and 'subject' must have the same number of characters")
               patternCodes <- charToRaw(pattern)
               subjectCodes <- charToRaw(subject)
-              nonGaps <- (patternCodes != charToRaw("-")) & (subjectCodes != charToRaw("-"))
-              matches <- sum(patternCodes[nonGaps] == subjectCodes[nonGaps])
-			  c(matches = matches, mismatches = sum(nonGaps) - matches)
+              insertionLocations <- subjectCodes == charToRaw("-")
+              deletionLocations <- patternCodes == charToRaw("-")
+              nonIndels <- (!insertionLocations & !deletionLocations)
+              output <- rawToChar(subjectCodes, multiple = TRUE)
+              output[insertionLocations] <- "+"
+              output[deletionLocations] <- "-"
+              output[nonIndels & patternCodes != subjectCodes] <- "?"
+              paste(output, collapse = "")
           })
 setMethod("compareStrings", signature = c(pattern = "AlignedXString", subject = "AlignedXString"),
           function(pattern, subject) {
