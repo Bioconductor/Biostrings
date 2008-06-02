@@ -18,11 +18,11 @@ SEXP debug_SparseList_utils()
 	return R_NilValue;
 }
 
-SEXP _SparseList_int2symb(int i)
+SEXP _SparseList_int2symb(int symb_as_int)
 {
 	char symbbuf[11];
 
-	snprintf(symbbuf, sizeof(symbbuf), "%010d", i);
+	snprintf(symbbuf, sizeof(symbbuf), "%010d", symb_as_int);
 	return mkChar(symbbuf); /* UNPROTECTED! */
 }
 
@@ -56,22 +56,22 @@ SEXP _get_val_from_env(SEXP symbol, SEXP env, int error_on_unbound_value)
 	return ans;
 }
 
-SEXP _get_val_from_SparseList(int i, SEXP env, int error_on_unbound_value)
+SEXP _get_val_from_SparseList(int symb_as_int, SEXP env, int error_on_unbound_value)
 {
 	SEXP symbol, ans;
 
-	PROTECT(symbol = _SparseList_int2symb(i));
+	PROTECT(symbol = _SparseList_int2symb(symb_as_int));
 	ans = _get_val_from_env(symbol, env, error_on_unbound_value);
 	UNPROTECT(1);
 	return ans;
 }
 
-int _get_int_from_SparseList(int i, SEXP env)
+int _get_int_from_SparseList(int symb_as_int, SEXP env)
 {
 	SEXP value;
 	int val;
 
-	value = _get_val_from_SparseList(i, env, 0);
+	value = _get_val_from_SparseList(symb_as_int, env, 0);
 	if (value == R_UnboundValue)
 		return NA_INTEGER;
 	if (LENGTH(value) != 1)
@@ -82,5 +82,44 @@ int _get_int_from_SparseList(int i, SEXP env)
 		error("Biostrings internal error in _get_int_from_SparseList(): "
 		      "value is NA");
 	return val;
+}
+
+void _set_env_from_IntBuf(SEXP env, IntBuf *ibuf)
+{
+	int symb_as_int, *elt;
+	SEXP symbol, value;
+
+	for (symb_as_int = 1, elt = ibuf->elts;
+	     symb_as_int <= ibuf->nelt;
+	     symb_as_int++, elt++)
+	{
+		if (*elt == NA_INTEGER)
+			continue;
+		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
+		PROTECT(value = ScalarInteger(*elt));
+		defineVar(install(translateChar(symbol)), value, env);
+		UNPROTECT(2);
+	}
+	return;
+}
+
+void _set_env_from_IntBBuf(SEXP env, IntBBuf *ibbuf)
+{
+	int symb_as_int;
+	IntBuf *elt;
+	SEXP symbol, value;
+
+	for (symb_as_int = 1, elt = ibbuf->elts;
+	     symb_as_int <= ibbuf->nelt;
+	     symb_as_int++, elt++)
+	{
+		if (elt->nelt == 0)
+			continue;
+		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
+		PROTECT(value = _IntBuf_asINTEGER(elt));
+		defineVar(install(translateChar(symbol)), value, env);
+		UNPROTECT(2);
+	}
+	return;
 }
 

@@ -169,7 +169,7 @@ static void reduce_ranges(int length, const int *start, const int *width, int *i
 	int i, j;
 	IntBuf start_order;
 
-	start_order = _new_IntBuf(length, 0);
+	start_order = _new_IntBuf(length, 0, 0);
 	get_intorder(length, start, start_order.elts);
 	reduced_ranges = _new_RangeBuf(0, 0);
 	for (i = 0; i < length; i++) {

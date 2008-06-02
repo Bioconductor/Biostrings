@@ -225,7 +225,8 @@ void _IntBuf_set_val(
 
 IntBuf _new_IntBuf(
 	int buflength,
-	int nelt
+	int nelt,
+	int val
 );
 
 void _IntBuf_insert_at(
@@ -411,7 +412,7 @@ SEXP reduce_IRanges(
 
 SEXP debug_SparseList_utils();
 
-SEXP _SparseList_int2symb(int i);
+SEXP _SparseList_int2symb(int symb_as_int);
 
 int _SparseList_symb2int(SEXP symbol);
 
@@ -422,14 +423,24 @@ SEXP _get_val_from_env(
 );
 
 SEXP _get_val_from_SparseList(
-	int i,
+	int symb_as_int,
 	SEXP env,
 	int error_on_unbound_value
 );
 
 int _get_int_from_SparseList(
-	int i,
+	int symb_as_int,
 	SEXP env
+);
+
+void _set_env_from_IntBuf(
+	SEXP env,
+	IntBuf *ibuf
+);
+
+void _set_env_from_IntBBuf(
+	SEXP env,
+	IntBBuf *ibbuf
 );
 
 

@@ -191,44 +191,26 @@ static void add_subpattern_to_input_uldict(int poffset,
 
 
 /****************************************************************************
- * Buffer of duplicates.
+ * Buffers of duplicates.
  */
 
-static SEXP dup2unq_env0;
-static SEXP unq2dup_env0;
+static IntBuf dup2unq_buf;
+static IntBBuf unq2dup_bbuf;
 
-static void init_dups_buf(int length, SEXP dup2unq_env, SEXP unq2dup_env)
+static void init_dup_bufs(int length)
 {
-	dup2unq_env0 = dup2unq_env;
-	unq2dup_env0 = unq2dup_env;
+	dup2unq_buf = _new_IntBuf(length, length, NA_INTEGER);
+	unq2dup_bbuf = _new_IntBBuf(length, length);
 	return;
 }
 
 static void report_dup(int poffset, int P_id)
 {
-	SEXP symbol, old_value, new_value;
-	int old_length, new_length;
+	IntBuf *dups;
 
-	poffset++;
-	/* add a new entry to the 'dup2unq_env0' map */
-	PROTECT(symbol = _SparseList_int2symb(poffset));
-	PROTECT(new_value = ScalarInteger(P_id));
-	defineVar(install(translateChar(symbol)), new_value, dup2unq_env0);
-	UNPROTECT(2);
-	/* update the 'unq2dup_env0' map */
-	PROTECT(symbol = _SparseList_int2symb(P_id));
-	old_value = _get_val_from_env(symbol, unq2dup_env0, 0);
-	if (old_value == R_UnboundValue) {
-		PROTECT(new_value = ScalarInteger(poffset));
-	} else {
-		old_length = LENGTH(old_value);
-		new_length = old_length + 1;
-		PROTECT(new_value = NEW_INTEGER(new_length));
-		memcpy(INTEGER(new_value), INTEGER(old_value), old_length * sizeof(int));
-		INTEGER(new_value)[old_length] = poffset;
-	}
-	defineVar(install(translateChar(symbol)), new_value, unq2dup_env0);
-	UNPROTECT(2);
+	dup2unq_buf.elts[poffset] = P_id;
+	dups = unq2dup_bbuf.elts + P_id - 1;
+	_IntBuf_insert_at(dups, dups->nelt, poffset + 1);
 	return;
 }
 
@@ -438,11 +420,11 @@ static void pp_pattern(int poffset)
 	return;
 }
 
-static void build_actree(SEXP dup2unq_env, SEXP unq2dup_env)
+static void build_actree()
 {
 	int poffset;
 
-	init_dups_buf(input_uldict.length, dup2unq_env, unq2dup_env);
+	init_dup_bufs(input_uldict.length);
 	init_actree_base_codes_buf();
 	alloc_actree_nodes_buf(input_uldict.length, input_uldict.width);
 	append_acnode(0);
@@ -626,7 +608,9 @@ SEXP CWdna_pp_STRSXP(SEXP dict, SEXP start, SEXP end, SEXP dup2unq_env, SEXP unq
 			error("'dict' contains NAs");
 		add_subpattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
-	build_actree(dup2unq_env, unq2dup_env);
+	build_actree();
+	_set_env_from_IntBuf(dup2unq_env, &dup2unq_buf);
+	_set_env_from_IntBBuf(unq2dup_env, &unq2dup_bbuf);
 	return uldna_asLIST();
 }
 
@@ -653,7 +637,9 @@ SEXP CWdna_pp_XStringSet(SEXP dict, SEXP start, SEXP end, SEXP dup2unq_env, SEXP
 		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_dict, poffset);
 		add_subpattern_to_input_uldict(poffset, pattern.elts, pattern.nelt);
 	}
-	build_actree(dup2unq_env, unq2dup_env);
+	build_actree();
+	_set_env_from_IntBuf(dup2unq_env, &dup2unq_buf);
+	_set_env_from_IntBBuf(unq2dup_env, &unq2dup_bbuf);
 	return uldna_asLIST();
 }
 

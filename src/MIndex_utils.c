@@ -89,7 +89,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 		SET_NAMES(ans, duplicate(names));
 		UNPROTECT(1);
 	} else {
-		//poffsets_order = _new_IntBuf(poffsets.nelt, 0);
+		//poffsets_order = _new_IntBuf(poffsets.nelt, 0, 0);
 		//get_intorder(poffsets.nelt, poffsets.elts, poffsets_order.elts);
 		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
 		PROTECT(ans = NEW_LIST(poffsets.nelt));

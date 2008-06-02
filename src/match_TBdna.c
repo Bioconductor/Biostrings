@@ -35,10 +35,10 @@ static void init_match_reporting(int no_tail, int is_count_only, int length)
 {
 	match_reporting_mode = is_count_only ? (no_tail ? 0 : 2) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
-		match_count = _new_IntBuf(length, length);
+		match_count = _new_IntBuf(length, length, 0);
 	if (match_reporting_mode >= 1)
 		match_ends = _new_IntBBuf(length, length);
-	matching_poffsets = _new_IntBuf(0, 0);
+	matching_poffsets = _new_IntBuf(0, 0, 0);
 	return;
 }
 
@@ -332,7 +332,7 @@ static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
 	char c;
 
 	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
-	cnode_ids = _new_IntBuf(256, 0);
+	cnode_ids = _new_IntBuf(256, 0, 0);
 	_IntBuf_insert_at(&cnode_ids, 0, 0);
 	for (n = 1, Stail = S.elts; n <= S.nelt; n++, Stail++) {
 		c = *Stail;
@@ -584,7 +584,7 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
-		global_match_count = _new_IntBuf(pdict_len, pdict_len);
+		global_match_count = _new_IntBuf(pdict_len, pdict_len, 0);
 	else
 		global_match_ends = _new_IntBBuf(pdict_len, pdict_len);
 	init_match_reporting(no_tail, is_count_only, pdict_len);

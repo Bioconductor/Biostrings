@@ -58,7 +58,7 @@ void _IntBuf_set_val(IntBuf *ibuf, int val)
 	return;
 }
 
-IntBuf _new_IntBuf(int buflength, int nelt)
+IntBuf _new_IntBuf(int buflength, int nelt, int val)
 {
 	IntBuf ibuf;
 
@@ -69,7 +69,7 @@ IntBuf _new_IntBuf(int buflength, int nelt)
 		ibuf.elts = Salloc((long) buflength, int);
 	ibuf.buflength = buflength;
 	ibuf.nelt = nelt;
-	_IntBuf_set_val(&ibuf, 0);
+	_IntBuf_set_val(&ibuf, val);
 	return ibuf;
 }
 
@@ -178,7 +178,7 @@ IntBuf _INTEGER_asIntBuf(SEXP x)
 {
 	IntBuf ibuf;
 
-	ibuf = _new_IntBuf(LENGTH(x), 0);
+	ibuf = _new_IntBuf(LENGTH(x), 0, 0);
 	memcpy(ibuf.elts, INTEGER(x), sizeof(int) * LENGTH(x));
 	ibuf.nelt = ibuf.buflength;
 	return ibuf;
@@ -196,7 +196,7 @@ IntBuf _CHARACTER_asIntBuf(SEXP x, int keyshift)
 			LENGTH(x), keyshift);
 	}
 #endif
-	ibuf = _new_IntBuf(LENGTH(x), 0);
+	ibuf = _new_IntBuf(LENGTH(x), 0, 0);
 	for (ibuf.nelt = 0, elt = ibuf.elts;
 	     ibuf.nelt < ibuf.buflength;
 	     ibuf.nelt++, elt++) {
@@ -240,7 +240,7 @@ IntBBuf _new_IntBBuf(int buflength, int nelt)
 	for (ibbuf.nelt = 0, elt = ibbuf.elts;
 	     ibbuf.nelt < nelt;
 	     ibbuf.nelt++, elt++)
-		*elt = _new_IntBuf(0, 0);
+		*elt = _new_IntBuf(0, 0, 0);
 	return ibbuf;
 }
 
@@ -406,8 +406,8 @@ RangeBuf _new_RangeBuf(int buflength, int nelt)
 {
 	RangeBuf rangebuf;
 
-	rangebuf.start = _new_IntBuf(buflength, nelt);
-	rangebuf.width = _new_IntBuf(buflength, nelt);
+	rangebuf.start = _new_IntBuf(buflength, nelt, 0);
+	rangebuf.width = _new_IntBuf(buflength, nelt, 0);
 	return rangebuf;
 }
 

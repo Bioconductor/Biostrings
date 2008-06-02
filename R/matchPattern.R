@@ -330,3 +330,16 @@ setMethod("countPattern", "MaskedXString",
                      algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "vmatchPattern" and "vcountPattern" generic and methods.
+###
+### These are vectorized versions of matchPattern() and countPattern().
+### vmatchPattern() returns an MIndex object and vcountPattern() an integer
+### vector (like matchPDict() and countPDict() do).
+###
+
+# coming soon...
+# (methods for XStringViews and XStringSet objects only)
+
+
