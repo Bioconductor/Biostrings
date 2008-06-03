@@ -19,12 +19,12 @@ static int debug = 0;
 
 
 /****************************************************************************
- * The input_uldict object is used for storing the pointers to the patterns
+ * The input_cwdict object is used for storing the pointers to the patterns
  * contained in the input dictionary provided by the user.
  * These patterns can only be accessed for reading!
  */
 
-typedef struct uldict {
+typedef struct cwdict {
 	// 'start' and 'end' define the cropping operation
 	int start;
 	int end;
@@ -36,9 +36,9 @@ typedef struct uldict {
 	// the (const char *) array below (of length 'length')
 	const char **patterns;
 	int length;
-} ULdict;
+} CWdict;
 
-static ULdict input_uldict;
+static CWdict input_cwdict;
 
 /*
  * 'start' and 'end' are user-specified values that describe the cropping
@@ -98,25 +98,25 @@ static char cropping_type(int start, int end)
 	return start > 0 ? 'a' : 'b';
 }
 
-static void alloc_input_uldict(int length, int start, int end)
+static void alloc_input_cwdict(int length, int start, int end)
 {
-	input_uldict.cropping_type = cropping_type(start, end);
-	input_uldict.start = start;
-	input_uldict.end = end;
-	if (input_uldict.cropping_type == 'a') {
-		input_uldict.width = input_uldict.end - input_uldict.start + 1;
-		input_uldict.tail_min_width = input_uldict.tail_max_width = -1;
+	input_cwdict.cropping_type = cropping_type(start, end);
+	input_cwdict.start = start;
+	input_cwdict.end = end;
+	if (input_cwdict.cropping_type == 'a') {
+		input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
+		input_cwdict.tail_min_width = input_cwdict.tail_max_width = -1;
 	}
-	if (input_uldict.cropping_type == 'b') {
-		input_uldict.width = input_uldict.end - input_uldict.start + 1;
-		input_uldict.head_min_width = input_uldict.head_max_width = -1;
+	if (input_cwdict.cropping_type == 'b') {
+		input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
+		input_cwdict.head_min_width = input_cwdict.head_max_width = -1;
 	}
-	input_uldict.patterns = Salloc((long) length, const char *);
-	input_uldict.length = length;
+	input_cwdict.patterns = Salloc((long) length, const char *);
+	input_cwdict.length = length;
 	return;
 }
 
-static void add_subpattern_to_input_uldict(int poffset,
+static void add_subpattern_to_input_cwdict(int poffset,
 		const char *pattern, int pattern_length)
 {
 	int head_width, tail_width;
@@ -124,66 +124,66 @@ static void add_subpattern_to_input_uldict(int poffset,
 	if (pattern_length == 0)
 		error("'dict' contains empty patterns");
 
-	switch (input_uldict.cropping_type) {
+	switch (input_cwdict.cropping_type) {
 
 	    case 'a':
-		tail_width = pattern_length - input_uldict.end;
+		tail_width = pattern_length - input_cwdict.end;
 		if (tail_width < 0)
 			error("'dict' contains patterns with less than %d characters",
-			      input_uldict.end);
-		input_uldict.patterns[poffset] = pattern + input_uldict.start - 1;
-		if (input_uldict.tail_min_width == -1) {
-			input_uldict.tail_min_width = input_uldict.tail_max_width = tail_width;
+			      input_cwdict.end);
+		input_cwdict.patterns[poffset] = pattern + input_cwdict.start - 1;
+		if (input_cwdict.tail_min_width == -1) {
+			input_cwdict.tail_min_width = input_cwdict.tail_max_width = tail_width;
 			break;
 		}
-		if (tail_width < input_uldict.tail_min_width)
-			input_uldict.tail_min_width = tail_width;
-		if (tail_width > input_uldict.tail_max_width)
-			input_uldict.tail_max_width = tail_width;
+		if (tail_width < input_cwdict.tail_min_width)
+			input_cwdict.tail_min_width = tail_width;
+		if (tail_width > input_cwdict.tail_max_width)
+			input_cwdict.tail_max_width = tail_width;
 		break;
 
 	    case 'b':
-		head_width = pattern_length + input_uldict.start;
+		head_width = pattern_length + input_cwdict.start;
 		if (head_width < 0)
 			error("'dict' contains patterns with less than %d characters",
-			      -input_uldict.start);
-		input_uldict.patterns[poffset] = pattern + head_width;
-		if (input_uldict.head_min_width == -1) {
-			input_uldict.head_min_width = input_uldict.head_max_width = head_width;
+			      -input_cwdict.start);
+		input_cwdict.patterns[poffset] = pattern + head_width;
+		if (input_cwdict.head_min_width == -1) {
+			input_cwdict.head_min_width = input_cwdict.head_max_width = head_width;
 			break;
 		}
-		if (head_width < input_uldict.head_min_width)
-			input_uldict.head_min_width = head_width;
-		if (head_width > input_uldict.head_max_width)
-			input_uldict.head_max_width = head_width;
+		if (head_width < input_cwdict.head_min_width)
+			input_cwdict.head_min_width = head_width;
+		if (head_width > input_cwdict.head_max_width)
+			input_cwdict.head_max_width = head_width;
 		break;
 
 	    case 'c':
-		if (input_uldict.end == NA_INTEGER) {
-			input_uldict.end = pattern_length;
-			input_uldict.width = input_uldict.end - input_uldict.start + 1;
-			if (input_uldict.width < 1)
+		if (input_cwdict.end == NA_INTEGER) {
+			input_cwdict.end = pattern_length;
+			input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
+			if (input_cwdict.width < 1)
 				error("'dict' contains patterns with less than %d characters",
-				      input_uldict.start);
+				      input_cwdict.start);
 		} else {
-			if (pattern_length != input_uldict.end)
+			if (pattern_length != input_cwdict.end)
 				error("all patterns in 'dict' must have the same length");
 		}
-		input_uldict.patterns[poffset] = pattern + input_uldict.start - 1;
+		input_cwdict.patterns[poffset] = pattern + input_cwdict.start - 1;
 		break;
 
 	    case 'd':
-		if (input_uldict.start == NA_INTEGER) {
-			input_uldict.start = -pattern_length;
-			input_uldict.width = input_uldict.end - input_uldict.start + 1;
-			if (input_uldict.width < 1)
+		if (input_cwdict.start == NA_INTEGER) {
+			input_cwdict.start = -pattern_length;
+			input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
+			if (input_cwdict.width < 1)
 				error("'dict' contains patterns with less than %d characters",
-				      -input_uldict.end);
+				      -input_cwdict.end);
 		} else {
-			if (pattern_length != -input_uldict.start)
+			if (pattern_length != -input_cwdict.start)
 				error("all patterns in 'dict' must have the same length");
 		}
-		input_uldict.patterns[poffset] = pattern;
+		input_cwdict.patterns[poffset] = pattern;
 		break;
 	}
 	return;
@@ -191,26 +191,20 @@ static void add_subpattern_to_input_uldict(int poffset,
 
 
 /****************************************************************************
- * Buffers of duplicates.
+ * Buffer of duplicates.
  */
 
 static IntBuf dup2unq_buf;
-static IntBBuf unq2dup_bbuf;
 
-static void init_dup_bufs(int length)
+static void init_dup2unq_buf(int length)
 {
 	dup2unq_buf = _new_IntBuf(length, length, NA_INTEGER);
-	unq2dup_bbuf = _new_IntBBuf(length, length);
 	return;
 }
 
 static void report_dup(int poffset, int P_id)
 {
-	IntBuf *dups;
-
 	dup2unq_buf.elts[poffset] = P_id;
-	dups = unq2dup_bbuf.elts + P_id - 1;
-	_IntBuf_insert_at(dups, dups->nelt, poffset + 1);
 	return;
 }
 
@@ -401,8 +395,8 @@ static void pp_pattern(int poffset)
 	char c;
 	ACNode *node;
 
-	pattern = input_uldict.patterns[poffset];
-	for (n = 0, node_id = 0; n < input_uldict.width; n++, node_id = child_id) {
+	pattern = input_cwdict.patterns[poffset];
+	for (n = 0, node_id = 0; n < input_cwdict.width; n++, node_id = child_id) {
 		c = pattern[n];
 		for (childslot = 0; childslot < MAX_CHILDREN_PER_ACNODE; childslot++) {
 			child_id = try_moving_to_acnode_child(node_id, childslot, c);
@@ -424,11 +418,11 @@ static void build_actree()
 {
 	int poffset;
 
-	init_dup_bufs(input_uldict.length);
+	init_dup2unq_buf(input_cwdict.length);
 	init_actree_base_codes_buf();
-	alloc_actree_nodes_buf(input_uldict.length, input_uldict.width);
+	alloc_actree_nodes_buf(input_cwdict.length, input_cwdict.width);
 	append_acnode(0);
-	for (poffset = 0; poffset < input_uldict.length; poffset++)
+	for (poffset = 0; poffset < input_cwdict.length; poffset++)
 		pp_pattern(poffset);
 	return;
 }
@@ -490,19 +484,19 @@ static SEXP stats_asLIST()
 	const char *min_width_name, *max_width_name;
 	int min_width_val, max_width_val;
 
-	if (input_uldict.cropping_type != 'a' && input_uldict.cropping_type != 'b')
+	if (input_cwdict.cropping_type != 'a' && input_cwdict.cropping_type != 'b')
 		return NEW_LIST(0);
 
-	if (input_uldict.cropping_type == 'a') {
+	if (input_cwdict.cropping_type == 'a') {
 		min_width_name = "tail.min.width";
 		max_width_name = "tail.max.width";
-		min_width_val = input_uldict.tail_min_width;
-		max_width_val = input_uldict.tail_max_width;
+		min_width_val = input_cwdict.tail_min_width;
+		max_width_val = input_cwdict.tail_max_width;
 	} else {
 		min_width_name = "head.min.width";
 		max_width_name = "head.max.width";
-		min_width_val = input_uldict.head_min_width;
-		max_width_val = input_uldict.head_max_width;
+		min_width_val = input_cwdict.head_min_width;
+		max_width_val = input_cwdict.head_max_width;
 	}
 	PROTECT(ans = NEW_LIST(2));
 
@@ -535,25 +529,28 @@ static SEXP stats_asLIST()
  *   - actree_base_codes: integer vector containing the MAX_CHILDREN_PER_ACNODE character
  *         codes (ASCII) attached to the MAX_CHILDREN_PER_ACNODE child slots of any
  *         node in the tree pointed by actree_nodes_xp;
+ *   - dup2unq: an integer vector containing the mapping between duplicated and
+ *         primary reads;
  *   - stats: a list containing some stats about the input data.
  */
-static SEXP uldna_asLIST()
+static SEXP CWdna_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
-	PROTECT(ans = NEW_LIST(4));
+	PROTECT(ans = NEW_LIST(5));
 
 	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(4));
+	PROTECT(ans_names = NEW_CHARACTER(5));
 	SET_STRING_ELT(ans_names, 0, mkChar("width"));
 	SET_STRING_ELT(ans_names, 1, mkChar("actree_nodes_xp"));
 	SET_STRING_ELT(ans_names, 2, mkChar("actree_base_codes"));
-	SET_STRING_ELT(ans_names, 3, mkChar("stats"));
+	SET_STRING_ELT(ans_names, 3, mkChar("dup2unq"));
+	SET_STRING_ELT(ans_names, 4, mkChar("stats"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
 	/* set the "width" element */
-	PROTECT(ans_elt = oneint_asINTEGER(input_uldict.width));
+	PROTECT(ans_elt = oneint_asINTEGER(input_cwdict.width));
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
@@ -567,9 +564,14 @@ static SEXP uldna_asLIST()
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 
+	/* set the "dup2unq" element */
+	PROTECT(ans_elt = _IntBuf_asINTEGER(&dup2unq_buf));
+	SET_ELEMENT(ans, 3, ans_elt);
+	UNPROTECT(1);
+
 	/* set the "stats" element */
 	PROTECT(ans_elt = stats_asLIST());
-	SET_ELEMENT(ans, 3, ans_elt);
+	SET_ELEMENT(ans, 4, ans_elt);
 	UNPROTECT(1);
 
 	UNPROTECT(1);
@@ -590,28 +592,26 @@ static SEXP uldna_asLIST()
  * Argument:
  *   'dict': a string vector (aka character vector) containing the input
  *           sequences
- *   'start': single >= 1, <= -1 or NA integer
- *   'end': single >= 1, <= -1 or NA integer
+ *   'tb_start': single >= 1, <= -1 or NA integer
+ *   'tb_end': single >= 1, <= -1 or NA integer
  *
- * See uldna_asLIST() for a description of the returned SEXP.
+ * See CWdna_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_STRSXP(SEXP dict, SEXP start, SEXP end, SEXP dup2unq_env, SEXP unq2dup_env)
+SEXP CWdna_pp_STRSXP(SEXP dict, SEXP tb_start, SEXP tb_end)
 {
 	int dict_len, poffset;
 	SEXP dict_elt;
 
 	dict_len = LENGTH(dict);
-	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
+	alloc_input_cwdict(dict_len, INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
 	for (poffset = 0; poffset < dict_len; poffset++) {
 		dict_elt = STRING_ELT(dict, poffset);
 		if (dict_elt == NA_STRING)
 			error("'dict' contains NAs");
-		add_subpattern_to_input_uldict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
+		add_subpattern_to_input_cwdict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
 	}
 	build_actree();
-	_set_env_from_IntBuf(dup2unq_env, &dup2unq_buf);
-	_set_env_from_IntBBuf(unq2dup_env, &unq2dup_bbuf);
-	return uldna_asLIST();
+	return CWdna_asLIST();
 }
 
 /*
@@ -619,27 +619,25 @@ SEXP CWdna_pp_STRSXP(SEXP dict, SEXP start, SEXP end, SEXP dup2unq_env, SEXP unq
  *
  * Argument:
  *   'dict': a DNAStringSet object containing the input sequences
- *   'start': single >= 1, <= -1 or NA integer
- *   'end': single >= 1, <= -1 or NA integer
+ *   'tb_start': single >= 1, <= -1 or NA integer
+ *   'tb_end': single >= 1, <= -1 or NA integer
  *
- * See uldna_asLIST() for a description of the returned SEXP.
+ * See CWdna_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_XStringSet(SEXP dict, SEXP start, SEXP end, SEXP dup2unq_env, SEXP unq2dup_env)
+SEXP CWdna_pp_XStringSet(SEXP dict, SEXP tb_start, SEXP tb_end)
 {
 	int dict_len, poffset;
 	CachedXStringSet cached_dict;
 	RoSeq pattern;
 
 	dict_len = _get_XStringSet_length(dict);
-	alloc_input_uldict(dict_len, INTEGER(start)[0], INTEGER(end)[0]);
+	alloc_input_cwdict(dict_len, INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
 	cached_dict = _new_CachedXStringSet(dict);
 	for (poffset = 0; poffset < dict_len; poffset++) {
 		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_dict, poffset);
-		add_subpattern_to_input_uldict(poffset, pattern.elts, pattern.nelt);
+		add_subpattern_to_input_cwdict(poffset, pattern.elts, pattern.nelt);
 	}
 	build_actree();
-	_set_env_from_IntBuf(dup2unq_env, &dup2unq_buf);
-	_set_env_from_IntBBuf(unq2dup_env, &unq2dup_bbuf);
-	return uldna_asLIST();
+	return CWdna_asLIST();
 }
 

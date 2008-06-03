@@ -1210,18 +1210,14 @@ SEXP CWdna_free_actree_nodes_buf();
 
 SEXP CWdna_pp_STRSXP(
 	SEXP dict,
-	SEXP start,
-	SEXP end,
-	SEXP dup2unq_env,
-	SEXP unq2dup_env
+	SEXP tb_start,
+	SEXP tb_end
 );
 
 SEXP CWdna_pp_XStringSet(
 	SEXP dict,
-	SEXP start,
-	SEXP end,
-	SEXP dup2unq_env,
-	SEXP unq2dup_env
+	SEXP tb_start,
+	SEXP tb_end
 );
 
 
@@ -1264,8 +1260,7 @@ SEXP XString_match_TBdna(
 	SEXP actree_nodes_xp,
 	SEXP actree_base_codes,
 	SEXP pdict_length,
-	SEXP pdict_dup2unq_env,
-	SEXP pdict_unq2dup_env,
+	SEXP pdict_unq2dup,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,
@@ -1279,8 +1274,7 @@ SEXP XStringViews_match_TBdna(
 	SEXP actree_nodes_xp,
 	SEXP actree_base_codes,
 	SEXP pdict_length,
-	SEXP pdict_dup2unq_env,
-	SEXP pdict_unq2dup_env,
+	SEXP pdict_unq2dup,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,

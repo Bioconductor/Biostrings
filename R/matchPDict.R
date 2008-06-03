@@ -22,6 +22,8 @@
 
 setClass("PDict", representation("VIRTUAL"))
 
+setGeneric("dupFrequency", function(x) standardGeneric("dupFrequency"))
+
 setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
 
 
@@ -118,6 +120,76 @@ setMethod("initialize", "ACtree",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "Dups" class (NOT EXPORTED).
+###
+### A general container for storing the mapping between duplicated elements
+### of an arbitrary vector.
+
+setClass("Dups",
+    representation(
+        dup2unq="integer",  # many-to-one integer mapping
+        unq2dup="list"      # one-to-many integer mapping
+    )
+)
+
+.reverse.dup2unq <- function(dup2unq)
+{
+    ans <- vector(mode="list", length=length(dup2unq))
+    sparse_ans <- split(seq_along(dup2unq), dup2unq)
+    ans[as.integer(names(sparse_ans))] <- sparse_ans
+    ans
+}
+
+.valid.Dups <- function(object)
+{
+    if (!is.integer(object@dup2unq))
+        return("the 'dup2unq' slot must contain an integer vector")
+    if (!all(object@dup2unq >= 1L, na.rm=TRUE))
+        return("the 'dup2unq' slot must contain integer values >= 1")
+    if (!all(object@dup2unq < seq_along(object@dup2unq), na.rm=TRUE))
+        return("when mapped, values in the 'dup2unq' slot must be mapped to lower values")
+    if (!all(is.na(object@dup2unq[object@dup2unq])))
+        return("when mapped, values in the 'dup2unq' slot must be mapped to unmapped values")
+    if (!is.list(object@unq2dup))
+        return("the 'unq2dup' slot must contain a list")
+    if (length(object@dup2unq) != length(object@unq2dup))
+        return("the 'dup2unq' and 'unq2dup' slots must have the same length")
+    if (!identical(.reverse.dup2unq(object@dup2unq), object@unq2dup))
+        return("the 'unq2dup' slot must contain the reverse mapping of the 'dup2unq' slot")
+    NULL
+}
+setValidity("Dups",
+    function(object)
+    {
+        problems <- .valid.Dups(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
+
+Dups <- function(dup2unq)
+    new("Dups", dup2unq=dup2unq, unq2dup=.reverse.dup2unq(dup2unq))
+
+setMethod("length", "Dups", function(x) length(x@dup2unq))
+
+setMethod("duplicated", "Dups",
+    function(x, incomparables=FALSE, ...) !is.na(x@dup2unq)
+)
+
+setMethod("dupFrequency", "Dups",
+    function(x)
+    {
+        ans <- rep.int(1L, length(x@unq2dup))
+        mapped_unqs <- setdiff(unique(x@dup2unq), NA)
+        for (unq in mapped_unqs) {
+            ii <- as.integer(c(unq, x@unq2dup[[unq]]))
+            ans[ii] <- length(ii)
+        }
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "CWdna_PDict" class.
 ###
 ### A container for storing a preprocessed constant width dictionary (or set)
@@ -140,22 +212,20 @@ setClass("CWdna_PDict",
         length="integer",
         width="integer",
         actree="ACtree",
-        dup2unq="SparseList",  # many-to-one integer mapping
-        unq2dup="SparseList",  # one-to-many integer mapping
-        NAMES="character",     # R doesn't like @names !!
+        dups="Dups",
+        NAMES="character",  # R doesn't like @names !!
         stats="list"
     )
 )
 
 ### Not intended to be used directly by the user.
 setMethod("initialize", "CWdna_PDict",
-    function(.Object, length, pp_Cans, dup2unq_env, unq2dup_env, names)
+    function(.Object, length, pp_Cans, names)
     {
         .Object@length <- length
         .Object@width <- pp_Cans$width
         .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, pp_Cans$actree_base_codes)
-        .Object@dup2unq <- new("SparseList", length=length, env=dup2unq_env)
-        .Object@unq2dup <- new("SparseList", length=length, env=unq2dup_env)
+        .Object@dups <- Dups(pp_Cans$dup2unq)
         .Object@NAMES <- if (is.null(names)) as.character(NA) else names
         .Object@stats <- pp_Cans$stats
         .Object
@@ -183,24 +253,14 @@ setMethod("show", "CWdna_PDict",
 )
 
 setMethod("duplicated", "CWdna_PDict",
-    function(x, incomparables=FALSE, ...)
-    {
-        ans <- logical(length(x@dup2unq))
-        ans[as.integer(ls(x@dup2unq))] <- TRUE
-        ans
-    }
+    function(x, incomparables=FALSE, ...) duplicated(x@dups)
 )
 
+setMethod("dupFrequency", "CWdna_PDict",
+    function(x) dupFrequency(x@dups)
+)
 setMethod("patternFrequency", "CWdna_PDict",
-    function(x)
-    {
-        ans <- rep.int(1L, length(x@unq2dup))
-        for (symb in ls(x@unq2dup)) {
-            ii <- as.integer(c(symb, x@unq2dup[[symb]]))
-            ans[ii] <- length(ii)
-        }
-        ans
-    }
+    function(x) dupFrequency(x@dups)
 )
 
 
@@ -228,8 +288,8 @@ setClass("TBdna_PDict",
 
 ### Not intended to be used directly by the user.
 setMethod("initialize", "TBdna_PDict",
-    function(.Object, length, pp_Cans, dup2unq_env, unq2dup_env, names)
-        callNextMethod(.Object, length, pp_Cans, dup2unq_env, unq2dup_env, names)
+    function(.Object, length, pp_Cans, names)
+        callNextMethod(.Object, length, pp_Cans, names)
 )
 
 setMethod("head", "TBdna_PDict", function(x, ...) x@head)
@@ -293,19 +353,15 @@ setMethod("patternFrequency", "TBdna_PDict",
     if (!isTRUEorFALSE(drop.tail))
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
     on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
-    dup2unq_env <- new.env(hash=TRUE, parent=emptyenv())
-    unq2dup_env <- new.env(hash=TRUE, parent=emptyenv())
     if (is.character(dict)) {
         pp_Cans <- .Call("CWdna_pp_STRSXP",
                          dict,
                          tb.start, tb.end,
-                         dup2unq_env, unq2dup_env,
                          PACKAGE="Biostrings")
     } else if (is(dict, "DNAStringSet")) {
         pp_Cans <- .Call("CWdna_pp_XStringSet",
                          dict,
                          tb.start, tb.end,
-                         dup2unq_env, unq2dup_env,
                          PACKAGE="Biostrings")
     } else {
         stop("unsuported 'dict' type")
@@ -315,8 +371,8 @@ setMethod("patternFrequency", "TBdna_PDict",
     if (is.na(tb.end) || tb.end == -1L)
         drop.tail <- TRUE
     if (drop.head && drop.tail)
-        return(new("CWdna_PDict", length(dict), pp_Cans, dup2unq_env, unq2dup_env, names))
-    ans <- new("TBdna_PDict", length(dict), pp_Cans, dup2unq_env, unq2dup_env, names)
+        return(new("CWdna_PDict", length(dict), pp_Cans, names))
+    ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
     if (!drop.head) 
         ans@head <- DNAStringSet(dict, end=tb.start-1L)
     if (!drop.tail)
@@ -773,7 +829,7 @@ extractAllMatches <- function(subject, mindex)
     if (is(subject, "DNAString"))
         C_ans <- .Call("XString_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       length(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
                        subject,
                        0L, fixed,
@@ -782,7 +838,7 @@ extractAllMatches <- function(subject, mindex)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .Call("XStringViews_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       length(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
                        subject(subject), start(subject), width(subject),
                        0L, fixed,
@@ -892,7 +948,7 @@ extractAllMatches <- function(subject, mindex)
     if (is(subject, "DNAString"))
         C_ans <- .Call("XString_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       length(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
                        subject,
                        max.mismatch, fixed,
@@ -901,7 +957,7 @@ extractAllMatches <- function(subject, mindex)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .Call("XStringViews_match_TBdna",
                        actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dup2unq@env, pdict@unq2dup@env,
+                       length(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
                        subject(subject), start(subject), width(subject),
                        max.mismatch, fixed,
