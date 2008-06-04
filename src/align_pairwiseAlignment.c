@@ -85,6 +85,8 @@ static float pairwiseAlignment(
 	int nCharString2Minus1 = nCharString2 - 1;
 	int nQuality1 = align1InfoPtr->quality.nelt;
 	int nQuality2 = align2InfoPtr->quality.nelt;
+	if (nCharString1 < 1 || nCharString2 < 1)
+		return NA_REAL;
 
 	/* Step 2:  Create objects for scores values */
 	/* Rows of currMatrix and prevMatrix = (0) substitution, (1) deletion, and (2) insertion */
@@ -526,12 +528,14 @@ SEXP XString_align_pairwiseAlignment(
 	struct AlignInfo align1Info, align2Info;
 	align1Info.string = _get_XString_asRoSeq(pattern);
 	align1Info.quality = _get_XString_asRoSeq(patternQuality);
+	align1Info.lengthIndels = 0;
 	align1Info.profile = REAL(R_ExternalPtrTag(patternProfile));
 	align1Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
 
 	align2Info.string = _get_XString_asRoSeq(subject);
 	align2Info.quality = _get_XString_asRoSeq(subjectQuality);
+	align2Info.lengthIndels = 0;
 	align2Info.profile = REAL(R_ExternalPtrTag(subjectProfile));
 	align2Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
