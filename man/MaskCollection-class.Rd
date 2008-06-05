@@ -39,7 +39,8 @@
 % "append" method:
 \alias{append,MaskCollection-method}
 
-% Transforming methods:
+% Endomorphisms:
+\alias{reverse,MaskCollection-method}
 \alias{narrow,MaskCollection-method}
 \alias{reduce,MaskCollection-method}
 \alias{gaps,MaskCollection-method}
@@ -220,6 +221,9 @@
   mymasks
   length(mymasks)
   width(mymasks)
+  reverse(mymasks)
+  reduce(mymasks)
+  gaps(mymasks)
 
   ## Putting a MaskCollection object on a sequence:
   x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")

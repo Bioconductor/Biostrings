@@ -12,12 +12,6 @@
 \alias{ByName_MIndex-class}
 
 % Generics and methods:
-\alias{length,ACtree-method}
-\alias{show,ACtree-method}
-\alias{[,ACtree-method}
-\alias{as.matrix,ACtree-method}
-\alias{initialize,ACtree-method}
-
 \alias{startIndex}
 \alias{startIndex,MIndex-method}
 \alias{endIndex}

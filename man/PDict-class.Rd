@@ -1,25 +1,55 @@
 \name{PDict-class}
 \docType{class}
 
-% Classes:
+% ACtree class:
+\alias{class:ACtree}
+\alias{ACtree-class}
+\alias{ACtree}
+
+\alias{length,ACtree-method}
+\alias{show,ACtree-method}
+\alias{[,ACtree-method}
+\alias{as.matrix,ACtree-method}
+\alias{initialize,ACtree-method}
+
+% Dups class:
+\alias{class:Dups}
+\alias{Dups-class}
+\alias{Dups}
+
+\alias{length,Dups-method}
+\alias{duplicated,Dups-method}
+
+% PDict class:
 \alias{class:PDict}
 \alias{PDict-class}
+
+\alias{patternFrequency}
+
+% CWdna_PDict class:
 \alias{class:CWdna_PDict}
 \alias{CWdna_PDict-class}
 \alias{CWdna_PDict}
-\alias{class:TBdna_PDict}
-\alias{TBdna_PDict-class}
-\alias{TBdna_PDict}
 
-% Low level initialization and accessor methods:
 \alias{initialize,CWdna_PDict-method}
 \alias{length,CWdna_PDict-method}
 \alias{width,CWdna_PDict-method}
 \alias{names,CWdna_PDict-method}
+\alias{show,CWdna_PDict-method}
+\alias{duplicated,CWdna_PDict-method}
+\alias{patternFrequency,CWdna_PDict-method}
+
+% TBdna_PDict class:
+\alias{class:TBdna_PDict}
+\alias{TBdna_PDict-class}
+\alias{TBdna_PDict}
 
 \alias{initialize,TBdna_PDict-method}
 \alias{head,TBdna_PDict-method}
 \alias{tail,TBdna_PDict-method}
+\alias{show,TBdna_PDict-method}
+\alias{duplicated,TBdna_PDict-method}
+\alias{patternFrequency,TBdna_PDict-method}
 
 % User level constructor:
 \alias{PDict}
@@ -27,15 +57,6 @@
 \alias{PDict,DNAStringSet-method}
 \alias{PDict,XStringViews-method}
 \alias{PDict,AsIs-method}
-
-% Other generics and methods:
-\alias{show,CWdna_PDict-method}
-\alias{show,TBdna_PDict-method}
-\alias{duplicated,CWdna_PDict-method}
-\alias{duplicated,TBdna_PDict-method}
-\alias{patternFrequency}
-\alias{patternFrequency,CWdna_PDict-method}
-\alias{patternFrequency,TBdna_PDict-method}
 
 
 \title{PDict objects}

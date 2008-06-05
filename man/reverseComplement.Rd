@@ -4,18 +4,23 @@
 \alias{reverse,XString-method}
 \alias{reverse,XStringSet-method}
 \alias{reverse,XStringViews-method}
+\alias{reverse,MaskedXString-method}
 \alias{complement}
 \alias{complement,DNAString-method}
 \alias{complement,RNAString-method}
 \alias{complement,DNAStringSet-method}
 \alias{complement,RNAStringSet-method}
 \alias{complement,XStringViews-method}
+\alias{complement,MaskedDNAString-method}
+\alias{complement,MaskedRNAString-method}
 \alias{reverseComplement}
 \alias{reverseComplement,DNAString-method}
 \alias{reverseComplement,RNAString-method}
 \alias{reverseComplement,DNAStringSet-method}
 \alias{reverseComplement,RNAStringSet-method}
 \alias{reverseComplement,XStringViews-method}
+\alias{reverseComplement,MaskedDNAString-method}
+\alias{reverseComplement,MaskedRNAString-method}
 
 % Some convenience wrappers:
 \alias{transcribe}
@@ -129,4 +134,3 @@
 
 \keyword{methods}
 \keyword{manip}
-

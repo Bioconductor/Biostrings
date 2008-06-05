@@ -55,6 +55,7 @@ Collate: 00datacache.R
 	matchProbePair.R
 	matchPWM.R
 	findPalindromes.R
+	PDict-class.R
 	matchPDict.R
 	align-utils.R
 	pmatchPattern.R
