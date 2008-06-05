@@ -151,6 +151,8 @@ setMethod("duplicated", "Dups",
     function(x, incomparables=FALSE, ...) !is.na(x@dup2unq)
 )
 
+setGeneric("dupFrequency", function(x) standardGeneric("dupFrequency"))
+
 setMethod("dupFrequency", "Dups",
     function(x)
     {
@@ -172,8 +174,6 @@ setMethod("dupFrequency", "Dups",
 ###
 
 setClass("PDict", representation("VIRTUAL"))
-
-setGeneric("dupFrequency", function(x) standardGeneric("dupFrequency"))
 
 setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
 
