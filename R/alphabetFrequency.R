@@ -266,8 +266,8 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ### should be the same as alphabetFrequency(x, baseOnly=TRUE).
 ###
 ### Something else worth checking:
-###   library(BSgenome.Dmelanogaster.FlyBase.r51)
-###   chr3R <- Dmelanogaster[["3R"]]
+###   library(BSgenome.Dmelanogaster.UCSC.dm3)
+###   chr3R <- Dmelanogaster$chr3R
 ###   width <- 12
 ###   dict0 <- mkAllStrings(names(Biostrings:::DNAcodes(TRUE)), width)
 ###   names(dict0) <- dict0

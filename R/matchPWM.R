@@ -16,6 +16,18 @@
     pwm
 }
 
+.normargSubject <- function(subject)
+{
+    if (is(subject, "MaskedDNAString")) {
+        if (any(active(masks(subject))))
+            stop("active masks are not supported yet, please complain!")
+        subject <- unmasked(subject)
+    } else if (!is(subject, "DNAString"))
+        stop("'subject' must be a DNAString or MaskedDNAString object ",
+             "with no active masks")
+    subject
+}
+
 ### Utility function for getting the max weight for each position in the PWM
 maxWeights <- function(pwm)
 {
@@ -65,8 +77,7 @@ PWMscore <- function(pwm, subject, start=1)
     ## checking 'pwm'
     pwm <- .normargPwm(pwm)
     ## checking 'subject'
-    if (!is(subject, "DNAString"))
-        stop("'subject' must be a DNAString object")
+    subject <- .normargSubject(subject)
     ## checking 'start'
     if (!is.numeric(start))
         stop("'start' must be a vector of integers")
@@ -84,8 +95,7 @@ PWMscore <- function(pwm, subject, start=1)
     ## checking 'pwm'
     pwm <- .normargPwm(pwm)
     ## checking 'subject'
-    if (!is(subject, "DNAString"))
-        stop("'subject' must be a DNAString object")
+    subject <- .normargSubject(subject)
     ## checking 'min.score'
     min.score <- .normargMinScore(min.score, pwm)
     ## no need to check 'count.only' (not a user controlled argument)
@@ -95,7 +105,8 @@ PWMscore <- function(pwm, subject, start=1)
     if (count.only)
         return(ans_start)
     ans_width <- rep.int(ncol(pwm), length(ans_start))
-    new("XStringViews", subject=subject, start=ans_start, width=ans_width, check=FALSE)
+    new("XStringViews", subject=subject, start=ans_start, width=ans_width,
+                        check=FALSE)
 }
 
 ### 

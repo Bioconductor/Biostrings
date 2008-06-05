@@ -91,8 +91,8 @@
   ## EXAMPLE 3
   ## ---------------------------------------------------------------------
 
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chrU <- Dmelanogaster[["U"]]
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  chrU <- Dmelanogaster$chrU
   chrU
   alphabetFrequency(chrU)
   chrU <- maskMotif(chrU, "N")

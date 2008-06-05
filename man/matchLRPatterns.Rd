@@ -81,8 +81,8 @@
 }
 
 \examples{
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  subject <- Dmelanogaster[["3R"]]
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  subject <- Dmelanogaster$chr3R
   Lpattern <- "AGCTCCGAG"
   Rpattern <- "TTGTTCACA"
   matchLRPatterns(Lpattern, Rpattern, 500, subject) # 1 match

@@ -6,9 +6,6 @@
 \alias{intToAdjacentRanges}
 \alias{shift}
 \alias{shift,IRanges-method}
-\alias{reverse}
-\alias{reverse,IRanges-method}
-\alias{reverse,NormalIRanges-method}
 \alias{restrict}
 \alias{restrict,IRanges-method}
 \alias{narrow}
@@ -124,6 +121,7 @@
 \seealso{
   \link{IRanges-class},
   \link{MaskCollection-class},
+  \code{\link{reverse}}
   \code{\link{coverage}}
 }
 
@@ -132,7 +130,6 @@
   x <- intToAdjacentRanges(c(19, 5, 0, 8, 5))
   x
   shift(x, -3)
-  reverse(x, start=1, end=30)
   restrict(x, start=12, end=34)
   y <- x[width(x) != 0]
   narrow(y, start=4, end=-2)

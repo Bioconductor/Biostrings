@@ -303,20 +303,8 @@ setMethod("append", "MaskCollection",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some useful endomorphisms: "reverse", "narrow", "reduce" and "gaps".
+### Some useful endomorphisms: "narrow", "reduce" and "gaps".
 ###
-
-setMethod("reverse", "MaskCollection",
-    function(x, ...)
-    {
-        start <- 1L
-        end <- width(x)
-        x@nir_list <- lapply(nir_list(x),
-            function(nir) reverse(nir, start=start, end=end)
-        )
-        x
-    }
-)
 
 setMethod("narrow", "MaskCollection",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)

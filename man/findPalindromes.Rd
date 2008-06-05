@@ -146,8 +146,8 @@
   findComplementedPalindromes(DNAString("ACGTTNAACGT-ACGTTNAACGT"))
 
   ## A real use case
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chrX <- maskMotif(Dmelanogaster[["X"]], "N")
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  chrX <- maskMotif(Dmelanogaster$chrX, "N")
   chrX_pals <- findComplementedPalindromes(chrX, min.armlength=50, max.looplength=20)
   complementedPalindromeArmLength(chrX_pals) # 251
 

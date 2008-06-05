@@ -136,7 +136,7 @@
   length as the input dictionary: \code{startIndex} and \code{endIndex} return a
   list of integer vectors, and \code{countIndex} returns an integer vector.
 
-  \code{extractAllMatches} returns an \link{XStringViews} object.
+  \code{extractAllMatches} returns an \link{XStringViews} object with names.
 }
 
 \author{H. Pages}
@@ -165,8 +165,8 @@
                                        # PDict object (preprocessing).
 
   ## Using the pattern dictionary on chromosome 3R
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chr3R <- Dmelanogaster[["3R"]]       # Load chromosome 3R
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  chr3R <- Dmelanogaster$chr3R         # Load chromosome 3R
   chr3R
   mindex <- matchPDict(pdict0, chr3R)  # Search...
 
@@ -227,7 +227,9 @@
   countIndex(mindex)
   unlist(mindex)
   length(unlist(mindex))               # Total number of matches.
-  extractAllMatches(chr3R, mindex)
+  all_matches <- extractAllMatches(chr3R, mindex)
+  all_matches
+  names(all_matches)
 
   ## ---------------------------------------------------------------------
   ## C. PERFORMANCE

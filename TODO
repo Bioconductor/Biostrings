@@ -9,16 +9,15 @@ Some R problems that maybe worth reporting:
   an integer matrix.
 
 
-In 2.7
+In 2.9
 ======
 
-- Use subseq() instead of subXString(). Remove subXString.R file.
+CONTAINERS
+
+- Add "unique" method for IRanges objects.
 
 - Add "baseXStringSubtype" methods for XStringViews, XStringSet and XStringList
   objects and replace use of "baseClass" by use of "baseXStringSubtype".
-
-- Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
-  or RNA into AA.
 
 - XStringSet objects:
     o Fix validObject() for XStringSet objects (currently broken).
@@ -28,15 +27,7 @@ In 2.7
       for XStringViews objects (matchPattern, countPattern, etc...).
       Make them work in a vectorized fashion for XStringSet objects.
     o Add "==" method for XStringSet objects.
-
-- Add 'baseOnly' arg to consmat(). Rework the implementation (currently
-  very inefficient). Another approach to providing consmat()'s functionality
-  could be to add a 'bycol' (or by 'byCycle', or 'byPos") argument to
-  alphabetFrequency(). When 'x' is an XStringSet object,
-  alphabetFrequency(x, byCycle=TRUE) would return what Martin's
-  alphabetByCycle() function currently returns.
-
-- Try to speed up "show" method for XStringSet objects.
+    o Try to speed up "show" method for XStringSet objects.
 
 - XStringList objects:
     o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
@@ -49,11 +40,74 @@ In 2.7
       the BString()/BStringList() constructors and families.
     o Add read.XStringList/write.XStringList.
 
+- Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
+
+- Define a DNAorRNA class (or NucleotideString) that is the union of the
+  DNAString and RNAString classes (use a union class for this or "do it by
+  hand" by defining this as a virtual class and by having the DNAString
+  and RNAString classes derived from it). Then use it to simplify code like:
+    setMethod("alphabetFrequency", "DNAString", ...)
+    setMethod("alphabetFrequency", "RNAString", ...)
+  These 2 methods can be replaced by a single method:
+    setMethod("alphabetFrequency", "NucleotideString", ...)
+  Also this:
+    if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) ...
+  can be replaced by:
+    if (is(x@subject, "NucleotideString")) ...
+  Etc...
+
+C-LEVEL FACILITIES
+
+- Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
+  Biostrings_define.h instead of the current magic values used all over the
+  place.
+
+- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
+  an XString argument. This reduces the number of args that need to be passed
+  and makes the code much cleaner. See XString_match_pattern() for an example.
+
+UTILITIES
+
+- Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
+  or RNA into AA.
+
+- Use subseq() instead of subXString(). Remove subXString.R file.
+
+- Add 'baseOnly' arg to consmat(). Rework the implementation (currently
+  very inefficient). Another approach to providing consmat()'s functionality
+  could be to add a 'bycol' (or by 'byCycle', or 'byPos") argument to
+  alphabetFrequency(). When 'x' is an XStringSet object,
+  alphabetFrequency(x, byCycle=TRUE) would return what Martin's
+  alphabetByCycle() function currently returns.
+
+- Finish C implemntation of read.XStringViews()
+
+- Maybe make strrev() a "reverse" method for character objects.
+
+- Add a new generic that combines a subject and an IRanges (or IRanges-like)
+  object to return an XStringViews object. The IRanges-like object could be
+  MIndex object and the method for it would do as if it had received
+  unlist(MIndex). Currently my problem is that I can't come up with a good
+  name for such generic :-/ Maybe I could just use views(subject, x) for
+  this (dispatch would be on x, not subject). And the current views function
+  could be renamed (or maybe it's not needed at all, maybe a fancy
+  new("IRanges", ...) could replace it).
+
+STRING MATCHING
+
+- Add a no.match.length argument to gregexpr2() that is FALSE by
+  default so gregexpr(pattern, text, fixed=TRUE) is more interchangeable
+  with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
+  internal code.
+
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
   Correct Robert's RBioinf book reporting that the performance decrease
   significantly when max.mismatch becomes to large. Should not be the case
   anymore.
+
+- Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
+  curious user know which algos are available/used for a given search problem.
 
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
@@ -117,58 +171,15 @@ In 2.7
       Maq (http://maq.sourceforge.net/)
       MUMmer (http://mummer.sourceforge.net/)
 
-- Finish C implemntation of read.XStringViews()
+STRING ALIGNMENT
 
-- Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
-  curious user know which algos are available/used for a given search problem.
-
-- Maybe make strrev() a "reverse" method for character objects.
-
-- Define a DNAorRNA class (or NucleotideString) that is the union of the
-  DNAString and RNAString classes (use a union class for this or "do it by
-  hand" by defining this as a virtual class and by having the DNAString
-  and RNAString classes derived from it). Then use it to simplify code like:
-    setMethod("alphabetFrequency", "DNAString", ...)
-    setMethod("alphabetFrequency", "RNAString", ...)
-  These 2 methods can be replaced by a single method:
-    setMethod("alphabetFrequency", "NucleotideString", ...)
-  Also this:
-    if (is(x@subject, "DNAString") || is(x@subject, "RNAString")) ...
-  can be replaced by:
-    if (is(x@subject, "NucleotideString")) ...
-  Etc...
-
-- Add a new generic that combines a subject and an IRanges (or IRanges-like)
-  object to return an XStringViews object. The IRanges-like object could be
-  MIndex object and the method for it would do as if it had received
-  unlist(MIndex). Currently my problem is that I can't come up with a good
-  name for such generic :-/ Maybe I could just use views(subject, x) for
-  this (dispatch would be on x, not subject). And the current views function
-  could be renamed (or maybe it's not needed at all, maybe a fancy
-  new("IRanges", ...) could replace it).
-
-- Add "unique" method for IRanges objects.
-
-- Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
-
-- Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
-  Biostrings_define.h instead of the current magic values used all over the
-  place.
-
-- Add a no.match.length argument to gregexpr2() that is FALSE by
-  default so gregexpr(pattern, text, fixed=TRUE) is more interchangeable
-  with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
-  internal code.
-
-- Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
-  an XString argument. This reduces the number of args that need to be passed
-  and makes the code much cleaner. See XString_match_pattern() for an example.
+MISCELLANEOUS
 
 - Update the CHANGES file.
 
 
-In 2.9
-======
+In 2.11
+=======
 
 - Compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
   make sure no important feature has been lost.

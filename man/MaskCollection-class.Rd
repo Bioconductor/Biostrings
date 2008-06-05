@@ -40,7 +40,6 @@
 \alias{append,MaskCollection-method}
 
 % Endomorphisms:
-\alias{reverse,MaskCollection-method}
 \alias{narrow,MaskCollection-method}
 \alias{reduce,MaskCollection-method}
 \alias{gaps,MaskCollection-method}
@@ -208,6 +207,7 @@
   \link{MaskedXString-class},
   \code{\link{maskMotif}},
   \code{\link{alphabetFrequency}},
+  \code{\link{reverse}},
   \code{\link{matchPattern}},
   \link{NormalIRanges-class}
 }
@@ -221,7 +221,6 @@
   mymasks
   length(mymasks)
   width(mymasks)
-  reverse(mymasks)
   reduce(mymasks)
   gaps(mymasks)
 

@@ -64,8 +64,8 @@
   #sum(duplicated(pdict9)) # not ready yet!
   #table(patternFrequency(pdict9)) # not ready yet!
 
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chr3R <- Dmelanogaster[["3R"]]
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  chr3R <- Dmelanogaster$chr3R
   chr3R
   table(countPDict(pdict9, chr3R, max.mismatch=1))
   table(countPDict(pdict9, chr3R, max.mismatch=3))

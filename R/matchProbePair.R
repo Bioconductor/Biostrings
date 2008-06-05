@@ -136,3 +136,9 @@ setMethod("matchProbePair", "XStringViews",
     }
 )
 
+setMethod("matchProbePair", "MaskedDNAString",
+    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+        matchProbePair(Fprobe, Rprobe, toXStringViewsOrXString(subject),
+                       algorithm=algorithm, logfile=logfile, verbose=verbose)
+)
+

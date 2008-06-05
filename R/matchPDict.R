@@ -312,8 +312,10 @@ setMethod("unlist", "MIndex",
 
 extractAllMatches <- function(subject, mindex)
 {
-    if (!is(subject, "XString"))
-        stop("'subject' must be an XString object")
+    if (is(subject, "MaskedXString"))
+        subject <- unmasked(subject)
+    else if (!is(subject, "XString"))
+        stop("'subject' must be an XString or MaskedXString object")
     if (!is(mindex, "MIndex"))
         stop("'mindex' must be an MIndex object")
     if (is.null(names(mindex)))
@@ -472,8 +474,8 @@ extractAllMatches <- function(subject, mindex)
 ###      user  system elapsed
 ###    38.158   0.052  38.217
 ###
-###   > library(BSgenome.Dmelanogaster.FlyBase.r51)
-###   > chr3R <- Dmelanogaster[["3R"]]
+###   > library(BSgenome.Dmelanogaster.UCSC.dm3)
+###   > chr3R <- Dmelanogaster$chr3R
 ###   > system.time(mindex0 <- matchPDict(pdict0, chr3R))
 ###      user  system elapsed
 ###     1.352   0.000   1.352

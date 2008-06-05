@@ -74,6 +74,8 @@
 
 \seealso{
   \code{\link{maskMotif}},
+  \code{\link{alphabetFrequency}},
+  \code{\link{reverse}},
   \link{XString-class},
   \link{MaskCollection-class},
   \link{XStringViews-class},

@@ -83,8 +83,8 @@
   subject <- DNAString("AGTAAACAA")
   PWMscore(pwm, subject, c(2:1, NA))
 
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  chr3R <- Dmelanogaster[["3R"]]
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  chr3R <- Dmelanogaster$chr3R
   chr3R
 
   ## Match the plus strand

@@ -3,6 +3,7 @@
 \alias{matchProbePair}
 \alias{matchProbePair,DNAString-method}
 \alias{matchProbePair,XStringViews-method}
+\alias{matchProbePair,MaskedDNAString-method}
 
 
 \title{Find "theoretical amplicons" mapped to a probe pair}
@@ -71,8 +72,8 @@
 }
 
 \examples{
-  library(BSgenome.Dmelanogaster.FlyBase.r51)
-  subject <- Dmelanogaster[["3R"]]
+  library(BSgenome.Dmelanogaster.UCSC.dm3)
+  subject <- Dmelanogaster$chr3R
 
   ## With 20-nucleotide forward and reverse probes:
   Fprobe <- "AGCTCCGAGTTCCTGCAATA"

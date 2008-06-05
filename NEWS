@@ -1,0 +1,263 @@
+**************************************************
+*              2.9 SERIES NEWS                   *
+**************************************************
+
+CONTAINERS
+
+C-LEVEL FACILITIES
+
+UTILITIES
+
+STRING MATCHING
+
+STRING ALIGNMENT
+
+o Renamed the XStringAlign class -> AlignedXString and added the
+  PairwiseAlignment class.
+
+MISCELLANEOUS
+
+
+**************************************************
+*	       2.8 SERIES NEWS			 *
+**************************************************
+
+CONTAINERS
+
+o Added 2 containers for handling masked sequences:
+    - The MaskCollection container for storing a collection of masks that can
+      be used to mask regions in a sequence.
+    - The MaskedXString family of containers for storing masked sequences.
+
+o Added new containers for storing a big set of sequences:
+    - The XStringSet family: BStringSet, DNAStringSet, RNAStringSet and
+      AAStringSet (all direct XStringSet subtypes with no additional slots).
+    - The XStringList family: BStringList, DNAStringList, RNAStringList and
+      AAStringList (all direct XStringList subtypes with no additional slots).
+  The 2 families are almost the same from a user point of view, but the
+  internal representations and method implementations are very different.
+  The XStringList family was a first attempt to address the problem of storing
+  a big set of sequences in an efficent manner but its performance turned out
+  to be disappointing. So the XStringSet family was introduced as a response
+  to the poor performance of the XStringList container.
+  The XStringList family might be removed soon.
+
+o Added the trim() function for trimming the "out of limits" views of an
+  XStringViews object.
+
+o Added "restrict", "narrow", "reduce" and "gaps" generic functions with
+  methods for IRanges and XStringViews objects. These functions provide basic
+  transformations of an IRanges object into another IRanges object of the same
+  class. Also added the toNormalIRanges() function for normalizing an IRanges
+  object.
+
+o Added the "start<-", "width<-" and "end<-" generics with methods for
+  UnlockedIRanges and Views objects. Also added the "update" method for
+  UnlockedIRanges objects to provide a convenient way of combining multiple
+  modifications of an UnlockedIRanges object into one single call.
+
+o Added the intToRanges() and intToAdjacentRanges() utility functions
+  for creating an IRanges instance.
+
+o Added the IRanges, UnlockedIRanges, Views, LockedIRanges and NormalIRanges
+  classes for representing a set of integer ranges + the "isNormal" and
+  "whichFirstNotNormal" generic functions with methods for IRanges objects
+  (see ?IRanges for the details).
+  Changed the definition of the XStringViews class so now it derives from the
+  Views class.
+
+o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
+  to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of
+  trying to mimic transciption. This conversion is still performed without
+  copying the sequence data and thus remains very fast.
+  Also the semantic of comparing RNA with DNA has been changed to remain
+  consistent with the new semantic of RNAString() and DNAString() e.g.
+  RNAString("UUGAAAA-CUC-N") is considered equal to DNAString("TTGAAAA-CTC-N").
+
+o Added support for empty XString objects.
+
+o Added the XString() versatile constructor (it's a generic function with
+  methods for character and XString objects). The BString(), DNAString(),
+  RNAString() and AAString() constructors are now based on it.
+
+o Renamed subBString() -> subXString() and deprecated subBString().
+
+o Renamed the BStringViews class -> XStringViews.
+
+o Reorganized the hierarchy of the BString class and subclasses by adding the
+  XString virtual class: now the BString, DNAString, RNAString and AAString
+  classes are all direct XString subtypes with no additional slots.
+  Most importantly, they are all at the same level in the new hierarchy i.e.
+  DNAString, RNAString and AAString objects are NOT BString objects anymore.
+
+C-LEVEL FACILITIES
+
+o Started the Biostrings C interface (work-in-progress).
+  See inst/include/Biostrings_interface.h for how to use it in your package.
+
+UTILITIES
+
+o Added "reverse" methods for IRanges, NormalIRanges, MaskCollection and
+  MaskedXString objects, and "complement" and "reverseComplement" methods
+  for MaskedDNAString and MaskedRNAString objects.
+
+o Added the coverage() generic function with methods for IRanges,
+  MaskCollection, XStringViews, MaskedXString and MIndex objects.
+
+o Added the injectHardMask() generic function for "hard masking" a sequence.
+
+o Added the maskMotif() generic function for masking a sequence by content.
+
+o Added the read.agpMask(), read.gapMask(), read.liftMask(), read.rmMask() and
+  read.trfMask() functions for extracting a mask from an NCBI "agp" file, an
+  UCSC "gap" file, an UCSC "lift" file, a RepeatMasker .out file, or a Tandem
+  Repeats Finder .bed file.
+
+o Added the subseq() generic function with methods for XString and
+  MaskedXString objects.
+
+o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
+  read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is
+  now prefered over read.XStringViews() for loading a FASTA file into R.
+  Renamed helper function BStringViewsToFASTArecords() ->
+  XStringSetToFASTArecords().
+
+o Added the replaceLetterAtLoc() generic function with a method for DNAString
+  objects (methods for other types of objects might come later) for making
+  a copy of a sequence where letters are replaced by new letters at some
+  specified locations.
+
+o Added the chartr() generic function with methods for XString, XStringSet
+  and XStringViews objects.
+
+o Made the "show" methods for XString, XStringViews and XStringAlign objects
+  "getOption('width') aware" so that the user can control the width of the
+  output they produce.
+
+o Added the dinucleotideFrequency(), trinucleotideFrequency(),
+  oligonucleotideFrequency(), strrev() and mkAllStrings() functions.
+
+o Four changes in alphabetFrequency():
+  (1) when used with 'baseOnly=TRUE', the frequency of the gap letter ("-") is
+      not returned anymore (now it's treated as any 'other' letter i.e. any
+      non-base letter);
+  (2) added the 'freq' argument;
+  (3) added the 'collapse' argument;
+  (4) made it 1000x faster on XStringSet and XStringViews objects.
+
+o Added "as.character" and "consmat" methods for XStringAlign objects.
+
+o Added the patternFrequency() generic function with a method for CWdna_PDict
+  objects (will come later for TBdna_PDict objects).
+
+o Added a "duplicated" method for CWdna_PDict objects (will come later for
+  TBdna_PDict objects).
+
+o Added "reverse" method for XStringSet objects, and "complement" and
+  "reverseComplement" methods for DNAStringSet and RNAStringSet objects.
+  They all preserve the names.
+
+o reverse(), complement() and reverseComplement() now preserve the names when
+  applied to an XStringViews object.
+
+o By Robert: Added the dna2rna(), rna2dna(), transcribe() and cDNA() functions
+  + a "reverseComplement" method for RNAString objects.
+
+o Added the mergeIUPACLetters() utility function.
+
+STRING MATCHING
+
+o matchPattern.Rnw vignette replaced by much improved GenomeSearching.Rnw
+  vignette (still a work-in-progress).
+
+o Added "matchPDict" methods for XStringViews and MaskedXString objects
+  (only for a DNA input sequence).
+
+o Added support in matchPDict() for IUPAC ambiguities in the subject i.e. it
+  will treat them as wildcards when called with 'fixed=FALSE' on a Trusted
+  Band dict or with 'fixed=c(pattern=TRUE, subject=FALSE)' on any dict.
+
+o Added support in matchPDict() for inexact matching of a dictionary with
+  "trusted prefixes". See ?`matchPDict-inexact` for the details.
+
+o Implemented the "shortcut feature" to C function CWdna_exact_search().
+  With this patch, using matchPDict() to find all the matches of a
+  3.3M 32-mers dictionary in the full Human genome (+ and - strands of all
+  chromosomes) is about 2.5x faster than before (will take between 20 minutes
+  and 2 hours depending on your machine and the number of matches found).
+  This puts matchPDict() at the same level as the Vmatch software
+  (http://www.vmatch.de/) for a dictionary of this size. Memory footprint
+  for matchPDict() is about 2GB for the Aho-Corasick tree built from the
+  3.3M 32-mers dictionary. Building this tree is still very fast (2 or 3
+  minutes) (Vmatch needs 60G of disk space to build all its suffix arrays,
+  don't know how long it takes for this, don't know what's the memory
+  footprint either when they are loaded into memory but it looks like it
+  is several Gigas).
+  matchPDict() only works with a dictionary of DNA patterns where all the
+  patterns have the same number of nucleotides and it does only exact
+  matching for now (Vmatch doesn't have this kind of limitations).
+
+o matchPDict() now returns an MIndex object (new class) instead of a list
+  of integer vectors. The user can then extract the starts or the ends of
+  the matches with startIndex() or endIndex(), extract the number of matches
+  per pattern with countIndex(), extract the matches for a given pattern with
+  [[, put all the matches in a single IRanges object with unlist() or
+  convert this MIndex object into a set of views on the original subject
+  with extractAllMatches().
+  Other functions can be added later in order to provide a wider choice of
+  extraction/conversion tools if necessary.
+  WARNING: This is still a work-in-progress. Function names and semantics are
+  not yet stabilized!
+
+o Added the matchPDict() and countPDict() functions for efficiently finding
+  (or just counting) all occurences in a text (the subject) of any pattern
+  from a set of patterns (the dictionary). The types of pattern dictionaries
+  currently supported are constant width DNA dictionaries (CWdna_PDict
+  objects) and "Trusted Prefix" DNA dictionaries (a particular case of
+  "Trusted Band" DNA dictionaries, represented by TBdna_PDict objects).
+  See ?matchPDict for the details (especially the current limitations).
+
+o Added basic support for palindrome finding: it can be achieved with the
+  new findPalindromes() and findComplementedPalindromes() functions.
+  Also added related utility functions palindromeArmLength(),
+  palindromeLeftArm(), palindromeRightArm(), complementedPalindromeArmLength(),
+  complementedPalindromeLeftArm() and complementedPalindromeRightArm().
+
+o Added basic support for Position Weight Matrix matching thru the new
+  matchPWM() and countPWM() functions. Also added related utility functions
+  maxWeights(), maxScore() and PWMscore().
+
+o Added "matchLRPatterns" and "matchProbePair" methods for XStringViews
+  objects.
+
+o Added the isMatching() function.
+
+o Change in terminology to align with established practices: "fuzzy matching"
+  is now called "inexact matching". This change mostly affects the
+  documentation. The only place where it also affects the API is that now
+  'algo="naive-inexact"' must be used instead of 'algo="naive-fuzzy"' when
+  calling the matchPattern() function or any other function that has the 'algo'
+  argument.
+
+o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
+  matchLRPatterns() and matchPDict() functions.
+
+MISCELLANEOUS
+
+o Renamed some files in inst/extdata/ to use the same extension (.fa) for all
+  FASTA files.
+
+o Renamed Exfiles/ folder as extdata/ and put back fastaEx in it (from
+  Biostrings 1).
+
+o Changed license from LGPL to Artistic-2.0
+
+
+**************************************************
+*              2.6 SERIES NEWS                   *
+**************************************************
+
+o Added the matchLRPatterns() function for finding in a sequence patterns
+  that are defined by a left and a right part.
+  See ?matchLRPatterns for the details.
+
