@@ -64,7 +64,7 @@ setGeneric("aligned", function(x) standardGeneric("aligned"))
 setMethod("aligned", "AlignedXString",
           function(x) {
             if (width(x) == 0) {
-              value <- XString("")
+              value <- XString(class(unaligned(x)), "")
             } else {
               string <- subXString(unaligned(x), start(x), end(x))
               startIndels <- start(x@indels)
