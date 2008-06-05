@@ -145,8 +145,9 @@ function(pattern,
                   subject,
                   patternQuality,
                   subjectQuality,
-                  patternProfile@xp,
-                  subjectProfile@xp,
+                  patternProfile,
+                  subjectProfile,
+                  type,
                   typeCode,
                   scoreOnly,
                   gapOpening,
@@ -159,39 +160,7 @@ function(pattern,
                   constantMatrix,
                   dim(constantMatrix),
                   PACKAGE="Biostrings")
-  if (scoreOnly) {
-    output <- answer
-  } else {
-    output <- new("PairwiseAlignment",
-                  pattern =
-                  new("AlignedXString",
-                      unaligned = pattern,
-                      quality = patternQuality,
-                      range =
-                      IRanges(start = answer[["startPatternRange"]],
-                              width = answer[["widthPatternRange"]]),
-                      indels =
-                      IRanges(start = answer[["startPatternIndels"]],
-                              width = answer[["widthPatternIndels"]]),
-                      profile = patternProfile),
-                  subject =
-                  new("AlignedXString",
-                      unaligned = subject,
-                      quality = subjectQuality,
-                      range =
-                      IRanges(start = answer[["startSubjectRange"]],
-                              width = answer[["widthSubjectRange"]]),
-                      indels =
-                      IRanges(start = answer[["startSubjectIndels"]],
-                              width = answer[["widthSubjectIndels"]]),
-                      profile = subjectProfile),
-                  score = answer[["score"]],
-                  type = type,
-                  constantMatrix = constantMatrix,
-                  gapOpening = gapOpening,
-                  gapExtension = gapExtension)
-  }
-  return(output)
+  return(answer)
 }
 
 
@@ -317,6 +286,7 @@ function(pattern,
                   subject,
                   patternQuality,
                   subjectQuality,
+                  type,
                   typeCode,
                   gapOpening,
                   gapExtension,
