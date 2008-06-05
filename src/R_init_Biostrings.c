@@ -137,6 +137,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_match_pattern", (DL_FUNC) &debug_match_pattern, 0},
 	{"is_matching", (DL_FUNC) &is_matching, 5},
 	{"XString_match_pattern", (DL_FUNC) &XString_match_pattern, 6},
+	{"XStringSet_match_pattern", (DL_FUNC) &XStringSet_match_pattern, 6},
 	{"XStringViews_match_pattern", (DL_FUNC) &XStringViews_match_pattern, 8},
 
 /* match_pattern_boyermoore.c */

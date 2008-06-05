@@ -238,6 +238,48 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	return _Biostrings_viewsbuf_start_asINTEGER();
 }
 
+SEXP XStringSet_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
+		SEXP max_mismatch, SEXP fixed, SEXP count_only)
+{
+        RoSeq P;
+        CachedXStringSet S;
+	const char *algo;
+	int max_mm, fixedP, fixedS, is_count_only;
+
+	P = _get_XString_asRoSeq(pattern);
+	S = _new_CachedXStringSet(subject);
+	algo = CHAR(STRING_ELT(algorithm, 0));
+	max_mm = INTEGER(max_mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	is_count_only = LOGICAL(count_only)[0];
+
+	SEXP n_matches, counts;
+	int length = _get_XStringSet_length(subject), i;
+
+	if (is_count_only)
+	    PROTECT(counts = NEW_INTEGER(length));
+	else
+	    PROTECT(counts = NEW_LIST(length));
+
+	for (i = 0; i < length; ++i) {
+	    _Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
+	    match_pattern(P, _get_CachedXStringSet_elt_asRoSeq(&S, i), 
+			  algo, max_mm, fixedP, fixedS);
+	    if (is_count_only) {
+		n_matches = _Biostrings_viewsbuf_count_asINTEGER();
+		INTEGER(counts)[i] = INTEGER(n_matches)[0];
+	    } else {
+		PROTECT(n_matches = _Biostrings_viewsbuf_start_asINTEGER());
+		SET_VECTOR_ELT(counts, i, n_matches);
+		UNPROTECT(1);
+	    }
+	}
+
+	UNPROTECT(1);
+	return counts;
+}
+
 SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP algorithm, SEXP max_mismatch, SEXP fixed,

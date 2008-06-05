@@ -1063,6 +1063,15 @@ SEXP XString_match_pattern(
 	SEXP count_only
 );
 
+SEXP XStringSet_match_pattern(
+	SEXP pattern,
+	SEXP subject,
+	SEXP algorithm,
+	SEXP max_mismatch,
+	SEXP fixed,
+	SEXP count_only
+);
+
 SEXP XStringViews_match_pattern(
 	SEXP pattern,
 	SEXP subject,

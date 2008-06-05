@@ -96,6 +96,7 @@ exportMethods(
     ## Others
     isMatching, mismatch, coverage,
     matchPattern, countPattern,
+    vcountPattern,
     matchLRPatterns,
     matchProbePair,
     findPalindromes,

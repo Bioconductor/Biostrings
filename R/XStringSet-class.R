@@ -228,7 +228,11 @@ setGeneric("XStringSet", signature="x",
 )
 setMethod("XStringSet", "character",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        if (is.null(baseClass))
+            baseClass <- "BString"
         .charToXStringSet(x, start, end, width, use.names, baseClass)
+    }
 )
 ### Just because of the silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)

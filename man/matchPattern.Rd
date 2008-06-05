@@ -11,6 +11,10 @@
 \alias{countPattern,XStringViews-method}
 \alias{countPattern,MaskedXString-method}
 
+\alias{vcountPattern}
+\alias{vcountPattern,character-method}
+\alias{vcountPattern,XStringSet-method}
+
 \alias{matchDNAPattern}
 
 
@@ -23,6 +27,7 @@
 \usage{
   matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   countPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+  vcountPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
 }
 
 \arguments{
@@ -31,7 +36,10 @@
   }
   \item{subject}{
     An \link{XString} object containing the subject string,
-    or an \link{XStringViews} object.
+    or an \link{XStringViews} object, or a character vector
+    (converted to an \code{XString} or \code{XStringSet} object
+    internally) or (for \code{vcountPattern}) an \link{XStringSet}
+    object.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
@@ -67,6 +75,10 @@
   An \link{XStringViews} object for \code{matchPattern}.
 
   A single integer for \code{countPattern}.
+
+  An integer vector for \code{vcountPattern}, with each element in
+  the vector corresponding to the number of matches in the corresponding
+  element of \code{subject}.
 }
 
 \seealso{

@@ -339,7 +339,53 @@ setMethod("countPattern", "MaskedXString",
 ### vector (like matchPDict() and countPDict() do).
 ###
 
+.XStringSet.vmatchPattern <- function(pattern, subject,
+         algorithm="auto", max.mismatch=0L, fixed=TRUE,
+         count.only=FALSE)
+{
+    ## FIXME: allow count.only=TRUE with suitable return class
+    if (count.only==FALSE)
+        stop("'count.only=FALSE' not yet implemented")
+    if (!is(subject, "XStringSet"))
+        subject <- XStringSet(NULL, subject)
+    algo <- .normalize.algorithm(algorithm)
+    if (.is.character.algo(algo)) 
+        stop("'subject' must be a single (non-empty) string ", 
+             "for this algorithm")
+    if (class(pattern) != class(super(subject)))
+        pattern <- XString(class(super(subject)), pattern)
+    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    fixed <- normalize.fixed(fixed, class(super(subject)))
+    if (!isTRUEorFALSE(count.only)) 
+        stop("'count.only' must be 'TRUE' or 'FALSE'")
+    algo <- .select.algo(algo, pattern, max.mismatch, fixed)
+    matches <- .Call("XStringSet_match_pattern", pattern, subject,
+                     algo, max.mismatch, fixed, count.only,
+                     PACKAGE = "Biostrings")
+
+    if (count.only)
+        return(matches)
+##     ans_width <- rep.int(length(pattern), length(matches))
+##     new("XStringViews", subject, start = matches, width =
+##         ans_width, check = FALSE)
+}
+
+setGeneric("vcountPattern", signature="subject",
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+        standardGeneric("vcountPattern")
+)
+
+setMethod("vcountPattern", "character",
+    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+        .XStringSet.vmatchPattern(pattern, subject, algorithm,
+            max.mismatch, fixed, count.only=TRUE)
+)
+
+setMethod("vcountPattern", "XStringSet",
+    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+        .XStringSet.vmatchPattern(pattern, subject, algorithm,
+            max.mismatch, fixed, count.only=TRUE)
+)
+
 # coming soon...
 # (methods for XStringViews and XStringSet objects only)
-
-
