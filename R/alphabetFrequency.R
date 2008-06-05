@@ -8,7 +8,7 @@
 ### -------------------------------------------------------------------------
 
 
-.normalize.freq <- function(freq)
+.normargFreq <- function(freq)
 {
     if (!isTRUEorFALSE(freq))
         stop("'freq' must be 'TRUE' or 'FALSE'")
@@ -22,7 +22,7 @@
 
 .set.collapse.default(FALSE)
 
-.normalize.collapse <- function(collapse)
+.normargCollapse <- function(collapse)
 {
     if (is.null(collapse))
         return(get("collapse.default", envir=RTobjs))
@@ -31,7 +31,7 @@
     collapse
 }
 
-.normalize.width <- function(width)
+.normargWidth <- function(width)
 {
     if (!is.numeric(width) || length(width) != 1 || is.na(width))
         stop("'width' must be a single integer")
@@ -41,7 +41,7 @@
     width
 }
 
-.normalize.fast.moving.side <- function(fast.moving.side)
+.normargFastMovingSide <- function(fast.moving.side)
 {
     if (!is.character(fast.moving.side)
      || length(fast.moving.side) != 1
@@ -50,7 +50,7 @@
     match.arg(fast.moving.side, c("left", "right"))
 }
 
-.normalize.as.array <- function(as.array, fast.moving.side)
+.normargAsArray <- function(as.array, fast.moving.side)
 {
     if (!isTRUEorFALSE(as.array))
         stop("'as.array' must be 'TRUE' or 'FALSE'")
@@ -59,7 +59,7 @@
     as.array
 }
 
-.normalize.with.labels <- function(with.labels)
+.normargWithLabels <- function(with.labels)
 {
     if (!isTRUEorFALSE(with.labels))
         stop("'with.labels' must be 'TRUE' or 'FALSE'")
@@ -75,7 +75,7 @@
 
 .XString.char_frequency <- function(x, freq)
 {
-    freq <- .normalize.freq(freq)
+    freq <- .normargFreq(freq)
     ans <- .Call("XString_char_frequency",
                  x, NULL, FALSE,
                  PACKAGE="Biostrings")
@@ -87,7 +87,7 @@
 .XString.code_frequency <- function(x, baseOnly, freq)
 {
     codes <- codes(x, baseOnly=baseOnly)
-    freq <- .normalize.freq(freq)
+    freq <- .normargFreq(freq)
     ans <- .Call("XString_char_frequency",
                  x, codes, baseOnly,
                  PACKAGE="Biostrings")
@@ -98,13 +98,13 @@
 
 .XStringSet.char_frequency <- function(x, freq, ...)
 {
-    collapse <- .normalize.collapse(list(...)$collapse)
+    collapse <- .normargCollapse(list(...)$collapse)
     ## NO, we cannot use this shortcut when 'collapse' is TRUE because
     ## there is no guarantee that the elements in x cover super(x) entirely
     ## and don't overlap!
     #if (collapse)
     #    return(.XString.char_frequency(super(x), freq))
-    freq <- .normalize.freq(freq)
+    freq <- .normargFreq(freq)
     ans <- .Call("XStringSet_char_frequency",
                  x, NULL, FALSE, collapse,
                  PACKAGE="Biostrings")
@@ -119,14 +119,14 @@
 
 .XStringSet.code_frequency <- function(x, baseOnly, freq, ...)
 {
-    collapse <- .normalize.collapse(list(...)$collapse)
+    collapse <- .normargCollapse(list(...)$collapse)
     ## NO, we cannot use this shortcut when 'collapse' is TRUE because
     ## there is no guarantee that the elements in x cover super(x) entirely
     ## and don't overlap!
     #if (collapse)
     #    return(.XString.code_frequency(super(x), baseOnly, freq))
     codes <- codes(super(x), baseOnly=baseOnly)
-    freq <- .normalize.freq(freq)
+    freq <- .normargFreq(freq)
     ans <- .Call("XStringSet_char_frequency",
                  x, codes, baseOnly, collapse,
                  PACKAGE="Biostrings")
@@ -254,8 +254,8 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     if (!is.character(alphabet))
         stop("'alphabet' must be a character vector")
     .mkAllStrings(alphabet,
-                  .normalize.width(width),
-                  .normalize.fast.moving.side(fast.moving.side))
+                  .normargWidth(width),
+                  .normargFastMovingSide(fast.moving.side))
 }
 
 
@@ -300,11 +300,11 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 .oligonucleotideFrequency <- function(x, width, freq,
                                       fast.moving.side, as.array, with.labels)
 {
-    width <- .normalize.width(width)
-    freq <- .normalize.freq(freq)
-    fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
-    as.array <- .normalize.as.array(as.array, fast.moving.side)
-    with.labels <- .normalize.with.labels(with.labels)
+    width <- .normargWidth(width)
+    freq <- .normargFreq(freq)
+    fast.moving.side <- .normargFastMovingSide(fast.moving.side)
+    as.array <- .normargAsArray(as.array, fast.moving.side)
+    with.labels <- .normargWithLabels(with.labels)
     base_codes <- codes(x, baseOnly=TRUE)
     ans <- .Call("oligonucleotide_frequency",
                  x@xdata@xp, x@offset, x@length,
@@ -348,12 +348,12 @@ setMethod("oligonucleotideFrequency", "XStringSet",
     {
         if (missing(fast.moving.side) && !missing(as.array))
             fast.moving.side <- "left"
-        width <- .normalize.width(width)
-        freq <- .normalize.freq(freq)
-        fast.moving.side <- .normalize.fast.moving.side(fast.moving.side)
-        as.array <- .normalize.as.array(as.array, fast.moving.side)
-        with.labels <- .normalize.with.labels(with.labels)
-        collapse <- .normalize.collapse(list(...)$collapse)
+        width <- .normargWidth(width)
+        freq <- .normargFreq(freq)
+        fast.moving.side <- .normargFastMovingSide(fast.moving.side)
+        as.array <- .normargAsArray(as.array, fast.moving.side)
+        with.labels <- .normargWithLabels(with.labels)
+        collapse <- .normargCollapse(list(...)$collapse)
         base_codes <- codes(super(x), baseOnly=TRUE)
         ans <- integer(pow.int(4L, width))
         if (collapse) {

@@ -90,7 +90,7 @@ setMethod("initialize", "BStringList",
             if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "BString"))))
                 stop("'seqs' must be a list of BString objects")
         }
-        use.names <- normalize.use.names(use.names)
+        use.names <- normargUseNames(use.names)
         if (!use.names) names(seqs) <- NULL
         slot(.Object, "seqs", check=FALSE) <- seqs
         .Object
@@ -103,7 +103,7 @@ setMethod("initialize", "DNAStringList",
             if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "DNAString"))))
                 stop("'seqs' must be a list of DNAString objects")
         }
-        use.names <- normalize.use.names(use.names)
+        use.names <- normargUseNames(use.names)
         if (!use.names) names(seqs) <- NULL
         callNextMethod(.Object, seqs, check=FALSE)
     }
@@ -115,7 +115,7 @@ setMethod("initialize", "RNAStringList",
             if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "RNAString"))))
                 stop("'seqs' must be a list of RNAString objects")
         }
-        use.names <- normalize.use.names(use.names)
+        use.names <- normargUseNames(use.names)
         if (!use.names) names(seqs) <- NULL
         callNextMethod(.Object, seqs, check=FALSE)
     }
@@ -127,7 +127,7 @@ setMethod("initialize", "AAStringList",
             if (!is.list(seqs) || !all(sapply(seqs, function(x) is(x, "AAString"))))
                 stop("'seqs' must be a list of AAString objects")
         }
-        use.names <- normalize.use.names(use.names)
+        use.names <- normargUseNames(use.names)
         if (!use.names) names(seqs) <- NULL
         callNextMethod(.Object, seqs, check=FALSE)
     }
@@ -141,7 +141,7 @@ setMethod("initialize", "AAStringList",
 .charToXStringList <- function(x, start, end, width, use.names, baseClass, check)
 {
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
-    use.names <- normalize.use.names(use.names)
+    use.names <- normargUseNames(use.names)
     proto <- newEmptyXString(baseClass)
     xdata <- .Call("new_XRaw_from_STRSXP",
                    x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
@@ -157,7 +157,7 @@ setMethod("initialize", "AAStringList",
 .narrowXStringList <- function(x, start, end, width, use.names, baseClass, check)
 {
     safe_locs <- narrow(nchar(x), start, end, width)
-    use.names <- normalize.use.names(use.names)
+    use.names <- normargUseNames(use.names)
     class <- paste(baseClass, "List", sep="")
     if (class(x) == class)
         proto <- NULL
@@ -298,28 +298,28 @@ setMethod("AAStringList", "vector",
 ###     4.513   0.056   4.761 
 ###
 
-### Workaround for handling the "AsIs" objects found in the probe packages
-.normalize.x <- function(x)
+### Trick for handling the "AsIs" objects found in the probe packages
+.normarg.x <- function(x)
     if (is.character(x)) as.character(x) else as.list(x)
 
 setMethod("BStringList", "ANY",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        BStringList(.normalize.x(x), start=start, end=end, width=width,
+        BStringList(.normarg.x(x), start=start, end=end, width=width,
                     use.names=use.names, check=check)
 )
 setMethod("DNAStringList", "ANY",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        DNAStringList(.normalize.x(x), start=start, end=end, width=width,
+        DNAStringList(.normarg.x(x), start=start, end=end, width=width,
                       use.names=use.names, check=check)
 )
 setMethod("RNAStringList", "ANY",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        RNAStringList(.normalize.x(x), start=start, end=end, width=width,
+        RNAStringList(.normarg.x(x), start=start, end=end, width=width,
                       use.names=use.names, check=check)
 )
 setMethod("AAStringList", "ANY",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-        AAStringList(.normalize.x(x), start=start, end=end, width=width,
+        AAStringList(.normarg.x(x), start=start, end=end, width=width,
                      use.names=use.names, check=check)
 )
 

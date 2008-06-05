@@ -147,7 +147,7 @@ setMethod("initialize", "XStringSet",
 
 newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
 {
-    if (!normalize.use.names(use.names))
+    if (!normargUseNames(use.names))
         names <- NULL
     new(class, super, start(ranges), width(ranges), names)
 }
@@ -418,7 +418,7 @@ setMethod("as.list", "XStringSet",
 setMethod("as.character", "XStringSet",
     function(x, use.names=TRUE)
     {
-        use.names <- normalize.use.names(use.names)
+        use.names <- normargUseNames(use.names)
         ans <- .Call("XStringSet_as_STRSXP",
                      x, dec_lkup(x),
                      PACKAGE="Biostrings")

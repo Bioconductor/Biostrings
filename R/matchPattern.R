@@ -103,9 +103,9 @@ gregexpr2 <- function(pattern, text)
     if (!isSingleString(subject) || nchar(subject) == 0)
         stop("'subject' must be a single (non-empty) string ",
              "for this algorithm")
-    max.mismatch <- normalize.max.mismatch(max.mismatch)
-    ## We need to cheat on normalize.fixed()
-    fixed <- normalize.fixed(fixed, "DNAString")
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    ## We need to cheat on normargFixed()
+    fixed <- normargFixed(fixed, "DNAString")
     if (!(max.mismatch == 0 && all(fixed)))
         stop("this algorithm only supports exact matching ",
              "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
@@ -131,7 +131,7 @@ gregexpr2 <- function(pattern, text)
     .CHARACTER.ALGOS
 )
 
-.normalize.algorithm <- function(algorithm)
+.normargAlgorithm <- function(algorithm)
 {
     if (!isSingleString(algorithm))
         stop("'algorithm' must be a single string")
@@ -144,7 +144,7 @@ gregexpr2 <- function(pattern, text)
 ### Raise an error if the problem "doesn't make sense".
 ### Make sure that:
 ###   1. 'pattern' is of the same class as 'subject'
-###   2. 'max.mismatch' ans 'fixed' have been normalized
+###   2. the 'max.mismatch' ans 'fixed' args have been normalized
 ### before you call .valid.algos()
 .valid.algos <- function(pattern, max.mismatch, fixed)
 {
@@ -179,7 +179,7 @@ gregexpr2 <- function(pattern, text)
 .XString.matchPattern <- function(pattern, subject, algorithm,
                                   max.mismatch, fixed, count.only=FALSE)
 {
-    algo <- .normalize.algorithm(algorithm)
+    algo <- .normargAlgorithm(algorithm)
     if (.is.character.algo(algo))
         return(.character.matchPattern(pattern, subject, algo,
                                        max.mismatch, fixed, count.only))
@@ -187,8 +187,8 @@ gregexpr2 <- function(pattern, text)
         subject <- XString(NULL, subject)
     if (class(pattern) != class(subject))
         pattern <- XString(class(subject), pattern)
-    max.mismatch <- normalize.max.mismatch(max.mismatch)
-    fixed <- normalize.fixed(fixed, class(subject))
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    fixed <- normargFixed(fixed, class(subject))
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be 'TRUE' or 'FALSE'")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
@@ -207,14 +207,14 @@ gregexpr2 <- function(pattern, text)
 .XStringViews.matchPattern <- function(pattern, subject, algorithm,
                                        max.mismatch, fixed, count.only=FALSE)
 {
-    algo <- .normalize.algorithm(algorithm)
+    algo <- .normargAlgorithm(algorithm)
     if (.is.character.algo(algo))
         stop("'subject' must be a single (non-empty) string ",
              "for this algorithm")
     if (class(pattern) != class(subject(subject)))
         pattern <- XString(class(subject(subject)), pattern)
-    max.mismatch <- normalize.max.mismatch(max.mismatch)
-    fixed <- normalize.fixed(fixed, class(subject(subject)))
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    fixed <- normargFixed(fixed, class(subject(subject)))
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be 'TRUE' or 'FALSE'")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
@@ -348,14 +348,14 @@ setMethod("countPattern", "MaskedXString",
         stop("'count.only=FALSE' not yet implemented")
     if (!is(subject, "XStringSet"))
         subject <- XStringSet(NULL, subject)
-    algo <- .normalize.algorithm(algorithm)
+    algo <- .normargAlgorithm(algorithm)
     if (.is.character.algo(algo)) 
         stop("'subject' must be a single (non-empty) string ", 
              "for this algorithm")
     if (class(pattern) != class(super(subject)))
         pattern <- XString(class(super(subject)), pattern)
-    max.mismatch <- normalize.max.mismatch(max.mismatch)
-    fixed <- normalize.fixed(fixed, class(super(subject)))
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    fixed <- normargFixed(fixed, class(super(subject)))
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be 'TRUE' or 'FALSE'")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)

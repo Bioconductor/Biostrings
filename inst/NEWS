@@ -101,6 +101,10 @@ o Renamed the 'mismatch' arg -> 'max.mismatch' for the matchPattern(),
 
 UTILITIES
 
+o Added "reverse" methods for IRanges, NormalIRanges, MaskCollection and
+  MaskedXString objects, and "complement" and "reverseComplement" methods
+  for MaskedDNAString and MaskedRNAString objects.
+
 o Added the coverage() generic function with methods for IRanges,
   MaskCollection, XStringViews, MaskedXString and MIndex objects.
 

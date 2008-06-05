@@ -1,10 +1,6 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "reverse" generic function and methods.
+### The "reverse" methods.
 ###
-
-setGeneric("reverse", signature="x",
-    function(x, ...) standardGeneric("reverse")
-)
 
 setMethod("reverse", "XString",
     function(x, ...)
@@ -15,8 +11,7 @@ setMethod("reverse", "XStringSet",
     function(x, ...)
     {
         x@super <- reverse(super(x))
-        unsafe.start(x) <- nchar(super(x)) - end(x) + 1L
-        x
+        IRanges.reverse(x, start=1L, end=length(super(x)))
     }
 )
 
@@ -24,7 +19,15 @@ setMethod("reverse", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverse(subject(x))
-        start(x, check=FALSE) <- nchar(subject(x)) - end(x) + 1L
+        IRanges.reverse(x, start=1L, end=length(subject(x)))
+    }
+)
+
+setMethod("reverse", "MaskedXString",
+    function(x, ...)
+    {
+        x@unmasked <- reverse(unmasked(x))
+        x@masks <- reverse(masks(x))
         x
     }
 )
@@ -72,6 +75,22 @@ setMethod("complement", "XStringViews",
     }
 )
 
+setMethod("complement", "MaskedDNAString",
+    function(x, ...)
+    {
+        x@unmasked <- complement(unmasked(x))
+        x
+    }
+)
+
+setMethod("complement", "MaskedRNAString",
+    function(x, ...)
+    {
+        x@unmasked <- complement(unmasked(x))
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "reverseComplement" generic function and methods.
@@ -95,8 +114,7 @@ setMethod("reverseComplement", "DNAStringSet",
     function(x, ...)
     {
         x@super <- reverseComplement(super(x))
-        unsafe.start(x) <- nchar(super(x)) - end(x) + 1L
-        x
+        IRanges.reverse(x, start=1L, end=length(super(x)))
     }
 )
 
@@ -104,8 +122,7 @@ setMethod("reverseComplement", "RNAStringSet",
     function(x, ...)
     {
         x@super <- reverseComplement(super(x))
-        unsafe.start(x) <- nchar(super(x)) - end(x) + 1L
-        x
+        IRanges.reverse(x, start=1L, end=length(super(x)))
     }
 )
 
@@ -113,7 +130,24 @@ setMethod("reverseComplement", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverseComplement(subject(x))
-        start(x, check=FALSE) <- nchar(subject(x)) - end(x) + 1L
+        IRanges.reverse(x, start=1L, end=length(subject(x)))
+    }
+)
+
+setMethod("reverseComplement", "MaskedDNAString",
+    function(x, ...)
+    {
+        x@unmasked <- reverseComplement(unmasked(x))
+        x@masks <- reverse(masks(x))
+        x
+    }
+)
+
+setMethod("reverseComplement", "MaskedRNAString",
+    function(x, ...)
+    {
+        x@unmasked <- reverseComplement(unmasked(x))
+        x@masks <- reverse(masks(x))
         x
     }
 )

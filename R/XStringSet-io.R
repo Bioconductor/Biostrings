@@ -19,7 +19,7 @@
 
 FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
 {
-    use.names <- normalize.use.names(use.names)
+    use.names <- normargUseNames(use.names)
     ans <- sapply(FASTArecs, function(rec) rec$seq)
     if (use.names)
         names(ans) <- sapply(FASTArecs, function(rec) rec$desc)

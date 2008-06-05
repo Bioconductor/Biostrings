@@ -269,7 +269,7 @@ XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
 ### 2 convenience wrappers
 ###
 
-normalize.start <- function(start)
+normargStart <- function(start)
 {
     if (!isSingleNumber(start))
         stop("'start' must be a single integer")
@@ -280,7 +280,7 @@ normalize.start <- function(start)
     start
 }
 
-normalize.nchar <- function(start, nchar, seq_nchar)
+normargNchar <- function(start, nchar, seq_nchar)
 {
     if (!isSingleNumberOrNA(nchar))
         stop("'nchar' must be a single integer or NA")
@@ -311,8 +311,8 @@ charToXRaw <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, 
 copySubXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
 {
     if (check) {
-        start <- normalize.start(start)
-        nchar <- normalize.nchar(start, nchar, length(x))
+        start <- normargStart(start)
+        nchar <- normargNchar(start, nchar, length(x))
     }
     ans <- XRaw(nchar)
     XRaw.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)

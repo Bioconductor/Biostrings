@@ -460,7 +460,7 @@ setMethod("as.matrix", "XStringViews",
         if (!is.character(mode) || length(mode) != 1
          || !(mode %in% c("integer", "character")))
             stop("'mode' must be either \"integer\" or \"character\"")
-        use.names <- normalize.use.names(use.names)
+        use.names <- normargUseNames(use.names)
         if (mode == "integer")
             return(callNextMethod())
         nrow <- length(x)

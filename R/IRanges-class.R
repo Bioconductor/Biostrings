@@ -290,7 +290,7 @@ newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 ### The safe and user-friendly "IRanges" constructor.
 ###
 
-.IRanges.normalize.start_end_width <- function(start_end_width, argname)
+.IRanges.normargStartEndWidth <- function(start_end_width, argname)
 {
     if (is.null(start_end_width))
         return(start_end_width)
@@ -307,9 +307,9 @@ newEmptyNormalIRanges <- function() new("NormalIRanges", check=FALSE)
 
 IRanges <- function(start=NULL, end=NULL, width=NULL)
 {
-    start <- .IRanges.normalize.start_end_width(start, "start")
-    end <- .IRanges.normalize.start_end_width(end, "end")
-    width <- .IRanges.normalize.start_end_width(width, "width")
+    start <- .IRanges.normargStartEndWidth(start, "start")
+    end <- .IRanges.normargStartEndWidth(end, "end")
+    width <- .IRanges.normargStartEndWidth(width, "width")
     if (sum(!c(is.null(start), is.null(end), is.null(width))) != 2)
         stop("exactly two of the 'start', 'end' and 'width' arguments must be specified")
     if (is.null(width)) { 
@@ -456,19 +456,11 @@ setMethod("show", "IRanges",
     x
 }
 
-.update <- function(object, ...)
+unsafe.update <- function(object, ...)
 {
-    args <- list(...)
+    valid_argnames <- c("start", "end", "width", "names")
+    args <- extraArgsAsList(valid_argnames, ...)
     argnames <- names(args)
-    if (length(args) != 0
-        && (is.null(argnames) || any(argnames %in% c("", NA))))
-        stop("all extra arguments must be named")
-    valid_argnames <- c("start", "end", "width", "names", "check")
-    if (!all(argnames %in% valid_argnames))
-        stop("valid extra argument names are ",
-             paste("'", valid_argnames, "'", sep="", collapse=", "))
-    if (any(duplicated(argnames)))
-        stop("argument names must be unique")
     sew <- c("start", "end", "width")
     narg_in_sew <- sum(sew %in% argnames)
     if (narg_in_sew == 3)
@@ -600,7 +592,7 @@ setReplaceMethod("names", "IRanges",
 setMethod("update", "UnlockedIRanges",
     function(object, ...)
     {
-        object <- .update(object, ...)
+        object <- unsafe.update(object, ...)
         check <- list(...)$check
         if (is.null(check))
             check <- TRUE

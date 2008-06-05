@@ -36,7 +36,7 @@
     if (min.looplength >= 1)
         stop("'min.looplength' >= 1 not yet supported (will be very soon)")
     ## check max.mismatch
-    max.mismatch <- normalize.max.mismatch(max.mismatch)
+    max.mismatch <- normargMaxMismatch(max.mismatch)
     if (max.mismatch != 0)
         stop("'max.mismatch' != 0 not yet supported (will be very soon)")
     C_ans <- .Call("find_palindromes",
@@ -171,7 +171,7 @@ setGeneric("complementedPalindromeArmLength", signature="x",
 setMethod("palindromeArmLength", "XString",
     function(x, max.mismatch=0, ...)
     {
-        max.mismatch <- normalize.max.mismatch(max.mismatch)
+        max.mismatch <- normargMaxMismatch(max.mismatch)
         revx <- reverse(x)
         armlength <- lcprefix(x, revx)
         if (armlength == 0L)
@@ -182,7 +182,7 @@ setMethod("palindromeArmLength", "XString",
 setMethod("complementedPalindromeArmLength", "DNAString",
     function(x, max.mismatch=0, ...)
     {
-        max.mismatch <- normalize.max.mismatch(max.mismatch)
+        max.mismatch <- normargMaxMismatch(max.mismatch)
         revx <- reverseComplement(x)
         armlength <- lcprefix(x, revx)
         if (armlength == 0L)

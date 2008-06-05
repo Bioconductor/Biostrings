@@ -217,8 +217,8 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
 .XStringToXString <- function(x, start, nchar, class, check)
 {
     if (check) {
-        start <- normalize.start(start)
-        nchar <- normalize.nchar(start, nchar, nchar(x))
+        start <- normargStart(start)
+        nchar <- normargNchar(start, nchar, nchar(x))
     }
     start <- x@offset + start
     lkup <- getXStringSubtypeConversionLookup(class(x), class)

@@ -4,7 +4,7 @@
 ### their arguments.
 ###
 
-normalize.max.mismatch <- function(max.mismatch)
+normargMaxMismatch <- function(max.mismatch)
 {
     if (!isSingleNumber(max.mismatch))
         stop("'max.mismatch' must be a single integer")
@@ -15,7 +15,7 @@ normalize.max.mismatch <- function(max.mismatch)
 }
 
 ### Return a logical vector of length 2.
-normalize.fixed <- function(fixed, subjectClass)
+normargFixed <- function(fixed, subjectClass)
 {
     if (!is.logical(fixed) && !is.character(fixed))
         stop("'fixed' not a logical or character vector")
@@ -66,8 +66,8 @@ normalize.fixed <- function(fixed, subjectClass)
         stop("'start' must be a vector of integers")
     if (!is.integer(start))
         start <- as.integer(start)
-    max.mismatch <- normalize.max.mismatch(max.mismatch)
-    fixed <- normalize.fixed(fixed, class(subject))
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    fixed <- normargFixed(fixed, class(subject))
     .Call("is_matching", pattern, subject, start,
           max.mismatch, fixed,
           PACKAGE="Biostrings")

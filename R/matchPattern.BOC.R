@@ -153,9 +153,9 @@ setMethod("matchPattern", "BOC_SubjectString",
         pattern_length <- nchar(pattern)
         if (pattern_length != subject@pattern_length)
             stop("subject was preprocessed for patterns of length ", subject@pattern_length)
-        max.mismatch <- normalize.max.mismatch(max.mismatch)
+        max.mismatch <- normargMaxMismatch(max.mismatch)
         if (!missing(fixed)) {
-            fixed <- normalize.fixed(fixed, class(subject))
+            fixed <- normargFixed(fixed, class(subject))
             if (!all(fixed))
                 stop("only 'fixed=TRUE' can be used with a subject of class ", class(subject))
         }

@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 
 
-.normalize.pwm <- function(pwm)
+.normargPwm <- function(pwm)
 {
     if (!is.numeric(pwm) || !is.matrix(pwm))
         stop("'pwm' must be a numeric matrix")
@@ -19,7 +19,7 @@
 ### Utility function for getting the max weight for each position in the PWM
 maxWeights <- function(pwm)
 {
-    pwm <- .normalize.pwm(pwm)
+    pwm <- .normargPwm(pwm)
     #sapply(seq_len(ncol(pwm)), function(i) max(pwm[ , i]))
     ## This will be faster than the above on large matrices
     do.call("pmax", lapply(seq_len(nrow(pwm)), function(i) pwm[i, ]))
@@ -31,7 +31,7 @@ maxScore <- function(pwm)
     sum(maxWeights(pwm))
 }
 
-.normalize.min.score <- function(min.score, pwm)
+.normargMinScore <- function(min.score, pwm)
 {
     if (!(is.numeric(min.score) || is.character(min.score))
         || length(min.score) != 1 || is.na(min.score))
@@ -63,7 +63,7 @@ setMethod("reverseComplement", "matrix",
 PWMscore <- function(pwm, subject, start=1)
 {
     ## checking 'pwm'
-    pwm <- .normalize.pwm(pwm)
+    pwm <- .normargPwm(pwm)
     ## checking 'subject'
     if (!is(subject, "DNAString"))
         stop("'subject' must be a DNAString object")
@@ -82,12 +82,12 @@ PWMscore <- function(pwm, subject, start=1)
 .matchPWM <- function(pwm, subject, min.score, count.only=FALSE)
 {
     ## checking 'pwm'
-    pwm <- .normalize.pwm(pwm)
+    pwm <- .normargPwm(pwm)
     ## checking 'subject'
     if (!is(subject, "DNAString"))
         stop("'subject' must be a DNAString object")
     ## checking 'min.score'
-    min.score <- .normalize.min.score(min.score, pwm)
+    min.score <- .normargMinScore(min.score, pwm)
     ## no need to check 'count.only' (not a user controlled argument)
     ans_start <- .Call("match_PWM",
                        pwm, subject, min.score, count.only,
