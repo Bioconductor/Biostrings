@@ -149,26 +149,40 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## isMatching()
+  ## nmismatchStartingAt() / isMatching()
   ## ---------------------------------------------------------------------
   subject <- DNAString("GTATA")
-  ## Pattern "AT" matches subject "GTATA" at position 3
+
+  ## Pattern "AT" matches subject "GTATA" at position 3 (exact match)
+  nmismatchStartingAt("AT", subject, starting.at=3)
   isMatching("AT", subject, start=3)
-  ## No match at position 1
+
+  ## ... but not at position 1
+  nmismatchStartingAt("AT", subject)
   isMatching("AT", subject)
-  ## Match at position 1 if we allow 1 mismatching letter
+
+  ## ... unless we allow 1 mismatching letter (inexact match)
   isMatching("AT", subject, max.mismatch=1)
-  ## 3 matches in total if we allow 1 mismatching letter
+
+  ## Here we look at 6 different starting positions and find 3 matches if
+  ## we allow 1 mismatching letter
   isMatching("AT", subject, start=0:5, max.mismatch=1)
+
   ## No match
+  nmismatchStartingAt("NT", subject, starting.at=1:4)
   isMatching("NT", subject, start=1:4)
+
   ## 2 matches if N is interpreted as an ambiguity (fixed=FALSE)
+  nmismatchStartingAt("NT", subject, starting.at=1:4, fixed=FALSE)
   isMatching("NT", subject, start=1:4, fixed=FALSE)
+
   ## max.mismatch != 0 and fixed=FALSE can be used together
+  nmismatchStartingAt("NCA", subject, starting.at=0:5, fixed=FALSE)
   isMatching("NCA", subject, start=0:5, max.mismatch=1, fixed=FALSE)
 
   some_starts <- c(10:-10, NA, 6)
-  is_matching <- isMatching("CAT", DNAString("ACGTGCA"), start=some_starts, max.mismatch=1)
+  subject <- DNAString("ACGTGCA")
+  is_matching <- isMatching("CAT", subject, start=some_starts, max.mismatch=1)
   some_starts[is_matching]
 
   ## ---------------------------------------------------------------------
@@ -201,4 +215,3 @@
 }
 
 \keyword{methods}
-
