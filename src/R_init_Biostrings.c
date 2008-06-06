@@ -127,11 +127,8 @@ static const R_CallMethodDef callMethods[] = {
 /* inject_code.c */
 	{"inject_code", (DL_FUNC) &inject_code, 4},
 
-/* views_buffer.c */
-	{"debug_views_buffer", (DL_FUNC) &debug_views_buffer, 0},
-
-/* normalize_views.c */
-	{"Biostrings_normalize_views", (DL_FUNC) &Biostrings_normalize_views, 2},
+/* match_reporting.c */
+	{"debug_match_reporting", (DL_FUNC) &debug_match_reporting, 0},
 
 /* match_pattern.c */
 	{"debug_match_pattern", (DL_FUNC) &debug_match_pattern, 0},

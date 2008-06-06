@@ -65,7 +65,7 @@ static void naive_palindrome_search(const char *S, int nS, int armlen_min, int n
 					continue;
 				Rpos--;
 			}
-			_Biostrings_report_match(Lpos, Rpos);
+			_report_match(Lpos + 1, Rpos + 1);
 			break;
 		}
 	}
@@ -127,7 +127,7 @@ static void naive_antipalindrome_search(const char *S, int nS, int armlen_min, i
 					continue;
 				Rpos--;
 			}
-			_Biostrings_report_match(Lpos, Rpos);
+			_report_match(Lpos + 1, Rpos + 1);
 			break;
 		}
 	}

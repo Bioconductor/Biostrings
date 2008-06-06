@@ -285,7 +285,7 @@ static void BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 					goto continue0;
 		}
 */
-		_Biostrings_report_match(n1, 0);
+		_report_match(n1 + 1, 0);
 		continue0: ;
 	}
 #ifdef DEBUG_BIOSTRINGS

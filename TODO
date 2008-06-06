@@ -58,9 +58,8 @@ CONTAINERS
 
 C-LEVEL FACILITIES
 
-- Clean the views_buffer.c mess. Use the *_MRMODE codes defined in
-  Biostrings_define.h instead of the current magic values used all over the
-  place.
+- match_reporting.c: use the *_MRMODE codes defined in Biostrings_define.h
+  instead of the current magic values used all over the place.
 
 - Code cleaning: use _get_XString_asRoSeq() in every C routine that receives
   an XString argument. This reduces the number of args that need to be passed

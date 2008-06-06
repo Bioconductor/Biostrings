@@ -48,13 +48,13 @@ SEXP debug_match_pattern()
 /* Return the number of matches */
 static void match_naive_exact(RoSeq P, RoSeq S)
 {
-	int n1, n2;
+	int start, n2;
 
 	if (P.nelt <= 0)
 		error("empty pattern");
-	for (n1 = 0, n2 = P.nelt; n2 <= S.nelt; n1++, n2++, S.elts++) {
+	for (start = 1, n2 = P.nelt; n2 <= S.nelt; start++, n2++, S.elts++) {
 		if (memcmp(P.elts, S.elts, P.nelt) == 0)
-			_Biostrings_report_match(n1, 0);
+			_report_match(start, 0);
 	}
 	return;
 }
@@ -144,7 +144,7 @@ static void match_naive_inexact(RoSeq P, RoSeq S,
 	max_n2 = S.nelt - min_n1;
 	for (n1 = min_n1, n2 = min_n1 + P.nelt; n2 <= max_n2; n1++, n2++)
 		if (_is_matching(P, S, n1, max_mm, fixedP, fixedS))
-			_Biostrings_report_match(n1, 0);
+			_report_match(n1 + 1, 0);
 	return;
 }
 
@@ -289,13 +289,13 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
+	_init_match_reporting(is_count_only ? 1 : 2);
 	S_length = _get_XStringSet_length(subject);
 	if (is_count_only)
 		PROTECT(ans = NEW_INTEGER(S_length));
 	else
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
-		_init_match_reporting(is_count_only ? 1 : 2);
 		match_pattern(P, _get_CachedXStringSet_elt_asRoSeq(&S, i),
 			algo, max_mm, fixedP, fixedS);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
@@ -304,6 +304,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		else
 			SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
+		_drop_current_matches();
 	}
 	UNPROTECT(1);
 	return ans;

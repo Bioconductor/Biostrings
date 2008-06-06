@@ -986,23 +986,20 @@ SEXP inject_code(
 );
 
 
-/* views_buffer.c */
+/* match_reporting.c */
 
-SEXP debug_views_buffer();
+SEXP debug_match_reporting();
 
 void _init_match_reporting(int mrmode);
 
+void _drop_current_matches();
+
 void _set_match_shift(int shift);
 
-int _Biostrings_append_view(
+int _report_view(
 	int start,
 	int end,
-	const char *desc
-);
-
-int _Biostrings_report_match(
-	int Lpos,
-	int Rpos
+	const char *name
 );
 
 int _report_match(
@@ -1012,23 +1009,15 @@ int _report_match(
 
 SEXP _reported_match_count_asINTEGER();
 
-SEXP _reported_match_start_asINTEGER();
+SEXP _reported_match_starts_asINTEGER();
 
-SEXP _reported_match_end_asINTEGER();
+SEXP _reported_match_ends_asINTEGER();
 
-SEXP _viewsbuf_desc_asCHARACTER();
+SEXP _reported_view_names_asCHARACTER();
 
 SEXP _reported_matches_asLIST();
 
 SEXP _reported_matches_asSEXP();
-
-
-/* normalize_views.c */
-
-SEXP Biostrings_normalize_views(
-	SEXP start,
-	SEXP end
-);
 
 
 /* match_pattern.c */

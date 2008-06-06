@@ -599,7 +599,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 			error("file does not seem to be FASTA");
 		}
 		if (status == 2) {
-			_Biostrings_append_view(view_start, i1, desc);
+			_report_view(view_start, i1, desc);
 			if (gaplen != 0) {
 				i2 = i1 + gaplen - 1;
 				_Biostrings_memcpy_to_i1i2(i1, i2,
@@ -615,7 +615,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	fclose(infile);
 	if (status != 2)
 		error("file does not seem to be FASTA");
-	_Biostrings_append_view(view_start, i1, desc);
+	_report_view(view_start, i1, desc);
 
 	PROTECT(ans = NEW_LIST(4));
 	/* set the names */
@@ -632,15 +632,15 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 	/* set the "start" element */
-	PROTECT(ans_elt = _reported_match_start_asINTEGER());
+	PROTECT(ans_elt = _reported_match_starts_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 	/* set the "end" element */
-	PROTECT(ans_elt = _reported_match_end_asINTEGER());
+	PROTECT(ans_elt = _reported_match_ends_asINTEGER());
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 	/* set the "desc" element */
-	PROTECT(ans_elt = _viewsbuf_desc_asCHARACTER());
+	PROTECT(ans_elt = _reported_view_names_asCHARACTER());
 	SET_ELEMENT(ans, 3, ans_elt);
 	UNPROTECT(1);
 	/* ans is ready */

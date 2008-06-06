@@ -273,7 +273,7 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
 		if (ret == -1) {
 			break;
 		}
-		_Biostrings_report_match(Lpos - 1, 0);
+		_report_match(Lpos, 0);
 	}
 	/* No need to free PMmask, R does that for us */
 #ifdef DEBUG_BIOSTRINGS

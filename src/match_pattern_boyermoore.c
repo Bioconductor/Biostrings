@@ -414,7 +414,7 @@ void _match_pattern_boyermoore(RoSeq P, RoSeq S)
 		if (j2 == P.nelt) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
-				_Biostrings_report_match(i1, 0);
+				_report_match(i1 + 1, 0);
 				shift = P0buffer_shift0;
 			} else {
 				shift = get_VSGSshift(c, j1 - 1);

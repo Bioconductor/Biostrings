@@ -65,9 +65,9 @@ debug_seqs_to_seqs <- function()
     invisible(.Call("debug_seqs_to_seqs", PACKAGE="Biostrings"))
 }
 
-debug_views_buffer <- function()
+debug_match_reporting <- function()
 {
-    invisible(.Call("debug_views_buffer", PACKAGE="Biostrings"))
+    invisible(.Call("debug_match_reporting", PACKAGE="Biostrings"))
 }
 
 debug_match_pattern <- function()
