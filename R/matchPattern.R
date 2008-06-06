@@ -359,7 +359,7 @@ setMethod("countPattern", "MaskedXString",
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be 'TRUE' or 'FALSE'")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
-    matches <- .Call("XStringSet_match_pattern", pattern, subject,
+    matches <- .Call("XStringSet_vmatch_pattern", pattern, subject,
                      algo, max.mismatch, fixed, count.only,
                      PACKAGE = "Biostrings")
 

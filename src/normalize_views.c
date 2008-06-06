@@ -49,7 +49,7 @@ static void normalize_orderedbystartviews(const int *start, const int *end, int 
 {
         int i;
 
-	_Biostrings_reset_viewsbuf(4);
+	_init_match_reporting(4);
 	for (i = 0; i < nviews; i++)
 		_Biostrings_report_match(*(start++) - 1, *(end++) - 1);
         return;
@@ -66,7 +66,7 @@ static void normalize_views(const int *start, const int *end, int nviews)
 {
 	int i;
 
-	_Biostrings_reset_viewsbuf(5);
+	_init_match_reporting(5);
 	for (i = 0; i < nviews; i++)
 		_Biostrings_report_match(*(start++) - 1, *(end++) - 1);
 	return;
@@ -80,6 +80,6 @@ SEXP Biostrings_normalize_views(SEXP start, SEXP end)
 {
 	//normalize_orderedbystartviews(INTEGER(start), INTEGER(end), LENGTH(start));
 	normalize_views(INTEGER(start), INTEGER(end), LENGTH(start));
-	return _Biostrings_viewsbuf_asLIST();
+	return _reported_matches_asLIST();
 }
 

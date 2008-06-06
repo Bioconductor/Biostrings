@@ -214,9 +214,9 @@ SEXP is_matching(SEXP pattern, SEXP subject, SEXP start,
 	return ans;
 }
 
-SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
-		SEXP max_mismatch, SEXP fixed,
-		SEXP count_only)
+SEXP XString_match_pattern(SEXP pattern, SEXP subject,
+		SEXP algorithm,
+		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S;
 	const char *algo;
@@ -230,60 +230,15 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
-	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? 1 : 2);
 	match_pattern(P, S, algo, max_mm, fixedP, fixedS);
-
-	if (is_count_only)
-		return _Biostrings_viewsbuf_count_asINTEGER();
-	return _Biostrings_viewsbuf_start_asINTEGER();
-}
-
-SEXP XStringSet_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
-		SEXP max_mismatch, SEXP fixed, SEXP count_only)
-{
-        RoSeq P;
-        CachedXStringSet S;
-	const char *algo;
-	int max_mm, fixedP, fixedS, is_count_only;
-
-	P = _get_XString_asRoSeq(pattern);
-	S = _new_CachedXStringSet(subject);
-	algo = CHAR(STRING_ELT(algorithm, 0));
-	max_mm = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
-	is_count_only = LOGICAL(count_only)[0];
-
-	SEXP n_matches, counts;
-	int length = _get_XStringSet_length(subject), i;
-
-	if (is_count_only)
-	    PROTECT(counts = NEW_INTEGER(length));
-	else
-	    PROTECT(counts = NEW_LIST(length));
-
-	for (i = 0; i < length; ++i) {
-	    _Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
-	    match_pattern(P, _get_CachedXStringSet_elt_asRoSeq(&S, i), 
-			  algo, max_mm, fixedP, fixedS);
-	    if (is_count_only) {
-		n_matches = _Biostrings_viewsbuf_count_asINTEGER();
-		INTEGER(counts)[i] = INTEGER(n_matches)[0];
-	    } else {
-		PROTECT(n_matches = _Biostrings_viewsbuf_start_asINTEGER());
-		SET_VECTOR_ELT(counts, i, n_matches);
-		UNPROTECT(1);
-	    }
-	}
-
-	UNPROTECT(1);
-	return counts;
+	return _reported_matches_asSEXP();
 }
 
 SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
-		SEXP algorithm, SEXP max_mismatch, SEXP fixed,
-		SEXP count_only)
+		SEXP algorithm,
+		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S, V;
 	const char *algo;
@@ -298,7 +253,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
-	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? 1 : 2);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -312,9 +267,45 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		_set_match_shift(view_offset);
 		match_pattern(P, V, algo, max_mm, fixedP, fixedS);
 	}
+	return _reported_matches_asSEXP();
+}
 
+SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
+		SEXP algorithm,
+		SEXP max_mismatch, SEXP fixed, SEXP count_only)
+{
+	RoSeq P;
+	CachedXStringSet S;
+	const char *algo;
+	int max_mm, fixedP, fixedS, is_count_only,
+	    S_length, i;
+	SEXP ans, ans_elt;
+
+	P = _get_XString_asRoSeq(pattern);
+	S = _new_CachedXStringSet(subject);
+	algo = CHAR(STRING_ELT(algorithm, 0));
+	max_mm = INTEGER(max_mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	is_count_only = LOGICAL(count_only)[0];
+
+	S_length = _get_XStringSet_length(subject);
 	if (is_count_only)
-		return _Biostrings_viewsbuf_count_asINTEGER();
-	return _Biostrings_viewsbuf_start_asINTEGER();
+		PROTECT(ans = NEW_INTEGER(S_length));
+	else
+		PROTECT(ans = NEW_LIST(S_length));
+	for (i = 0; i < S_length; i++) {
+		_init_match_reporting(is_count_only ? 1 : 2);
+		match_pattern(P, _get_CachedXStringSet_elt_asRoSeq(&S, i),
+			algo, max_mm, fixedP, fixedS);
+		PROTECT(ans_elt = _reported_matches_asSEXP());
+		if (is_count_only)
+			INTEGER(ans)[i] = INTEGER(ans_elt)[0];
+		else
+			SET_ELEMENT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
 }
 

@@ -409,7 +409,7 @@ SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	int pat_offset, pat_length, subj_offset, subj_length,
 	    c1, c2, c3, c4, is_count_only;
 	const Rbyte *pat, *subj;
-	SEXP buf, ans;
+	SEXP buf;
 
 	pat_offset = INTEGER(p_offset)[0];
 	pat_length = INTEGER(p_length)[0];
@@ -424,7 +424,7 @@ SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	buf = R_ExternalPtrTag(buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_Biostrings_reset_viewsbuf(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? 1 : 2);
 	BOC2_exact_search(
 		(char *) pat, pat_length,
 		(char *) subj, subj_length,
@@ -435,11 +435,6 @@ SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 		INTEGER(VECTOR_ELT(stats, 2)),
 		INTEGER(VECTOR_ELT(stats, 3)),
 		INTEGER(VECTOR_ELT(stats, 4)));
-	if (is_count_only)
-		PROTECT(ans = _Biostrings_viewsbuf_count_asINTEGER());
-	else 
-		PROTECT(ans = _Biostrings_viewsbuf_start_asINTEGER());
-	UNPROTECT(1);
-	return ans;
+	return _reported_matches_asSEXP();
 }
 

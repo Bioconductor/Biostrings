@@ -562,7 +562,7 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 		error("cannot open file");
 	lineno = i1 = 0;
 	status = 0; /* 0: expecting desc; 1: expecting seq; 2: no expectation */
-	_Biostrings_reset_viewsbuf(0);
+	_init_match_reporting(0);
 	while ((line_len = fgets_rtrimmed(line, FASTALINE_MAX+1, infile)) != -1) {
 	/* while (fgets(line, FASTALINE_MAX+1, infile) != NULL) { */
 		lineno++;
@@ -632,15 +632,15 @@ SEXP XRaw_loadFASTA(SEXP xraw_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 	/* set the "start" element */
-	PROTECT(ans_elt = _Biostrings_viewsbuf_start_asINTEGER());
+	PROTECT(ans_elt = _reported_match_start_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 	/* set the "end" element */
-	PROTECT(ans_elt = _Biostrings_viewsbuf_end_asINTEGER());
+	PROTECT(ans_elt = _reported_match_end_asINTEGER());
 	SET_ELEMENT(ans, 2, ans_elt);
 	UNPROTECT(1);
 	/* set the "desc" element */
-	PROTECT(ans_elt = _Biostrings_viewsbuf_desc_asCHARACTER());
+	PROTECT(ans_elt = _viewsbuf_desc_asCHARACTER());
 	SET_ELEMENT(ans, 3, ans_elt);
 	UNPROTECT(1);
 	/* ans is ready */

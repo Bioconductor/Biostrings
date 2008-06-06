@@ -990,8 +990,6 @@ SEXP inject_code(
 
 SEXP debug_views_buffer();
 
-void _Biostrings_reset_viewsbuf(int mrmode);
-
 void _init_match_reporting(int mrmode);
 
 void _set_match_shift(int shift);
@@ -1012,15 +1010,15 @@ int _report_match(
 	int end
 );
 
-SEXP _Biostrings_viewsbuf_count_asINTEGER();
+SEXP _reported_match_count_asINTEGER();
 
-SEXP _Biostrings_viewsbuf_start_asINTEGER();
+SEXP _reported_match_start_asINTEGER();
 
-SEXP _Biostrings_viewsbuf_end_asINTEGER();
+SEXP _reported_match_end_asINTEGER();
 
-SEXP _Biostrings_viewsbuf_desc_asCHARACTER();
+SEXP _viewsbuf_desc_asCHARACTER();
 
-SEXP _Biostrings_viewsbuf_asLIST();
+SEXP _reported_matches_asLIST();
 
 SEXP _reported_matches_asSEXP();
 
@@ -1063,20 +1061,20 @@ SEXP XString_match_pattern(
 	SEXP count_only
 );
 
-SEXP XStringSet_match_pattern(
+SEXP XStringViews_match_pattern(
 	SEXP pattern,
 	SEXP subject,
+	SEXP views_start,
+	SEXP views_width,
 	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP fixed,
 	SEXP count_only
 );
 
-SEXP XStringViews_match_pattern(
+SEXP XStringSet_vmatch_pattern(
 	SEXP pattern,
 	SEXP subject,
-	SEXP views_start,
-	SEXP views_width,
 	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP fixed,

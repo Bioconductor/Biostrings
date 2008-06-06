@@ -58,7 +58,7 @@ static int new_view()
 }
 
 /*
- * Must be used in mrmode >= 2 (see _Biostrings_reset_viewsbuf() below).
+ * Must be used in mrmode >= 2 (see _init_match_reporting() below).
  */
 static void insert_view_at(int start, int end, int insert_at)
 {
@@ -78,7 +78,7 @@ static void insert_view_at(int start, int end, int insert_at)
 }
 
 /*
- * Used by mrmode 3 (see _Biostrings_reset_viewsbuf() below).
+ * Used by mrmode 3 (see _init_match_reporting() below).
  */
 static void insert_view_if_new(int start, int end)
 {
@@ -95,7 +95,7 @@ static void insert_view_if_new(int start, int end)
 }
 
 /*
- * Used by mrmode 4 (see _Biostrings_reset_viewsbuf() below).
+ * Used by mrmode 4 (see _init_match_reporting() below).
  */
 static void merge_with_last_view(int start, int end)
 {
@@ -116,7 +116,7 @@ static void merge_with_last_view(int start, int end)
 }
 
 /*
- * Used by mrmode 5 (see _Biostrings_reset_viewsbuf() below).
+ * Used by mrmode 5 (see _init_match_reporting() below).
  */
 static void merge_view(int start, int end)
 {
@@ -154,9 +154,7 @@ static void merge_view(int start, int end)
 }
 
 /*
- * Reset views buffer
- *
- * 6 valid "match reporting modes":
+ * _init_match_reporting() suports 6 valid "match reporting modes":
  *
  *   0: Views must be reported thru _Biostrings_append_view(start, end, desc).
  *      They are not reordered, nor checked for duplicated.
@@ -195,7 +193,8 @@ static void merge_view(int start, int end)
  *      too bad when the number of matches is small (< 10^5) or doesn't need
  *      too much reodering.
  */
-void _Biostrings_reset_viewsbuf(int mrmode)
+
+void _init_match_reporting(int mrmode)
 {
 	viewsbuf_mrmode = mrmode;
 	/* No memory leak here, because we use transient storage allocation */
@@ -204,12 +203,6 @@ void _Biostrings_reset_viewsbuf(int mrmode)
 	viewsbuf_maxcount = viewsbuf_count = 0;
 	match_shift = 0;
 	return;
-}
-
-// _init_match_reporting() is the replacement for _Biostrings_reset_viewsbuf()
-void _init_match_reporting(int mrmode)
-{
-	_Biostrings_reset_viewsbuf(mrmode);
 }
 
 void _set_match_shift(int shift)
@@ -290,7 +283,7 @@ int _report_match(int start, int end)
 	return _Biostrings_report_match(--start, --end);
 }
 
-SEXP _Biostrings_viewsbuf_count_asINTEGER()
+SEXP _reported_match_count_asINTEGER()
 {
 	SEXP ans;
 
@@ -300,37 +293,37 @@ SEXP _Biostrings_viewsbuf_count_asINTEGER()
 	return ans;
 }
 
-SEXP _Biostrings_viewsbuf_start_asINTEGER()
+SEXP _reported_match_start_asINTEGER()
 {
 	SEXP ans;
 
 	if (viewsbuf_mrmode == 1)
-		error("_Biostrings_viewsbuf_start_asINTEGER(): viewsbuf_mrmode == 1");
+		error("_reported_match_start_asINTEGER(): viewsbuf_mrmode == 1");
 	PROTECT(ans = NEW_INTEGER(viewsbuf_count));
 	memcpy(INTEGER(ans), viewsbuf_start, sizeof(int) * viewsbuf_count);
 	UNPROTECT(1);
 	return ans;
 }
 
-SEXP _Biostrings_viewsbuf_end_asINTEGER()
+SEXP _reported_match_end_asINTEGER()
 {
 	SEXP ans;
 
 	if (viewsbuf_mrmode == 1)
-		error("_Biostrings_viewsbuf_end_asINTEGER(): viewsbuf_mrmode == 1");
+		error("_reported_match_end_asINTEGER(): viewsbuf_mrmode == 1");
 	PROTECT(ans = NEW_INTEGER(viewsbuf_count));
 	memcpy(INTEGER(ans), viewsbuf_end, sizeof(int) * viewsbuf_count);
 	UNPROTECT(1);
 	return ans;
 }
 
-SEXP _Biostrings_viewsbuf_desc_asCHARACTER()
+SEXP _viewsbuf_desc_asCHARACTER()
 {
 	SEXP ans;
 	int i;
 
 	if (viewsbuf_mrmode != 0)
-		error("_Biostrings_viewsbuf_desc_asCHARACTER(): viewsbuf_mrmode != 0");
+		error("_viewsbuf_desc_asCHARACTER(): viewsbuf_mrmode != 0");
 	PROTECT(ans = NEW_CHARACTER(viewsbuf_count));
 	for (i = 0; i < viewsbuf_count; i++)
 		SET_STRING_ELT(ans, i, viewsbuf_desc[i] == NULL ? NA_STRING : mkChar(viewsbuf_desc[i]));
@@ -338,12 +331,12 @@ SEXP _Biostrings_viewsbuf_desc_asCHARACTER()
 	return ans;
 }
 
-SEXP _Biostrings_viewsbuf_asLIST()
+SEXP _reported_matches_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
 	if (viewsbuf_mrmode == 1)
-		error("_Biostrings_viewsbuf_asLIST(): viewsbuf_mrmode == 1");
+		error("_reported_matches_asLIST(): viewsbuf_mrmode == 1");
 	PROTECT(ans = NEW_LIST(2));
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
@@ -352,11 +345,11 @@ SEXP _Biostrings_viewsbuf_asLIST()
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 	/* set the "start" element */
-	PROTECT(ans_elt = _Biostrings_viewsbuf_start_asINTEGER());
+	PROTECT(ans_elt = _reported_match_start_asINTEGER());
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 	/* set the "end" element */
-	PROTECT(ans_elt = _Biostrings_viewsbuf_end_asINTEGER());
+	PROTECT(ans_elt = _reported_match_end_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 	/* ans is ready */
@@ -367,9 +360,9 @@ SEXP _Biostrings_viewsbuf_asLIST()
 SEXP _reported_matches_asSEXP()
 {
 	if (viewsbuf_mrmode == 1)
-		return _Biostrings_viewsbuf_count_asINTEGER();
+		return _reported_match_count_asINTEGER();
 	if (viewsbuf_mrmode == 2)
-		return _Biostrings_viewsbuf_start_asINTEGER();
+		return _reported_match_start_asINTEGER();
 	error("_reported_matches_asSEXP(): invalid mrmode %d", viewsbuf_mrmode);
 	return R_NilValue;
 }

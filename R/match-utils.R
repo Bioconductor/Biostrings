@@ -51,6 +51,46 @@ normargFixed <- function(fixed, subjectClass)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "nmismatchStartingAt" and "nmismatchEndingAt" generic and methods.
+###
+### 'starting.at' (or 'ending.at') must be integer vectors containing the
+### starting (or ending) positions of the pattern relatively to the subject.
+### The two functions must return an integer vector of the same length as
+### 'starting.at' (or 'ending.at').
+###
+
+setGeneric("nmismatchStartingAt", signature="subject",
+    function(pattern, subject, starting.at=1, fixed=TRUE)
+        standardGeneric("nmismatchStartingAt")
+)
+
+setGeneric("nmismatchEndingAt", signature="subject",
+    function(pattern, subject, ending.at=1, fixed=TRUE)
+        standardGeneric("nmismatchEndingAt")
+)
+
+### If 'starting=TRUE' then 'at' contains starting positions, otherwise it
+### contains ending positions.
+.nmismatchAt <- function(pattern, subject, starting, at, fixed)
+{
+    if (!is(subject, "XString"))
+        subject <- XString(NULL, subject)
+    if (class(pattern) != class(subject))
+        pattern <- XString(class(subject), pattern)
+    if (!is.numeric(at)) {
+        what <- if (starting) "starting.at" else "ending.at"
+        stop("'", what, "'  must be a vector of integers")
+    }
+    if (!is.integer(at))
+        at <- as.integer(at)
+    fixed <- normargFixed(fixed, class(subject))
+    .Call("nmismatch_at", pattern, subject,
+          starting, at, fixed,
+          PACKAGE="Biostrings")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "isMatching" generic and methods.
 ###
 ### Return a logical vector of the same length as 'start'.
