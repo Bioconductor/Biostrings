@@ -67,9 +67,9 @@ setMethod("aligned", "AlignedXString",
               value <- XString(class(unaligned(x)), "")
             } else {
               string <- subXString(unaligned(x), start(x), end(x))
-              startIndels <- start(x@indels)
-              endIndels <- end(x@indels)
-              widthIndels <- width(x@indels)
+              startIndels <- start(indels(x))
+              endIndels <- end(indels(x))
+              widthIndels <- width(indels(x))
               ncharString <- nchar(string)
               if (length(startIndels) == 0) {
                 value <- string
