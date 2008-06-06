@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-/****************************************************************************/
 static int debug = 0;
 
 SEXP debug_match_pattern()
@@ -64,73 +62,6 @@ static void match_naive_exact(RoSeq P, RoSeq S)
  * An implementation of the "naive" method for inexact matching.
  */
 
-/* 
- * max_mm must be >= 0 (not safe otherwise)
- */
-int _is_matching(RoSeq P, RoSeq S, int Pshift, int max_mm,
-		int fixedP, int fixedS)
-{
-	int min_pm, mm, pm, i, chars_match;
-
-	if (P.nelt <= max_mm)
-		return 1;
-	// 0 <= max_mm < P.nelt
-	if (Pshift < 0) {
-		max_mm += Pshift; // Pshift <= max_mm < P.nelt + Pshift < P.nelt
-		if (max_mm < 0)
-			return 0;
-		// -P.nelt < Pshift < 0
-		P.elts -= Pshift;
-		P.nelt += Pshift; // 0 < P.nelt
-	} else {
-		S.elts += Pshift;
-		S.nelt -= Pshift;
-	}
-	if (P.nelt > S.nelt) {
-		max_mm -= P.nelt - S.nelt;
-		if (max_mm < 0)
-			return 0;
-		P.nelt = S.nelt;
-	}
-	min_pm = P.nelt - max_mm;
-	mm = pm = 0;
-	// 0 = mm <= max_mm < P.nelt <= S.nelt
-	// 0 = pm < min_pm <= P.nelt <= S.nelt
-	// min_pm + max_mm = P.nelt
-	for (i = 0; i < P.nelt; i++, P.elts++, S.elts++) {
-		if (fixedP) {
-			if (fixedS) {
-				// *P.elts and *S.elts match iff they are equal
-				chars_match = *P.elts == *S.elts;
-			} else {
-				// *P.elts and *S.elts match iff bits at 1
-				// in *P.elts are are also at 1 in *S.elts
-				chars_match = (*P.elts & ~(*S.elts)) == 0;
-			}
-		} else {
-			if (fixedS) {
-				// *P.elts and *S.elts match iff bits at 1
-				// in *S.elts are also at 1 in *P.elts
-				chars_match = (~(*P.elts) & *S.elts) == 0;
-			} else {
-				// *P.elts and *S.elts match iff they share
-				// at least one bit at 1
-				chars_match = *P.elts & *S.elts;
-			}
-		}
-		if (chars_match) {
-			if (++pm >= min_pm)
-				return 1;
-		} else {
-			if (++mm > max_mm)
-				return 0;
-		}
-	}
-	error("Biostrings internal error in _is_matching(): "
-	      "we should never be here");
-	return -1;
-}
-
 static void match_naive_inexact(RoSeq P, RoSeq S,
 		int max_mm, int fixedP, int fixedS)
 {
@@ -174,45 +105,12 @@ static void match_pattern(RoSeq P, RoSeq S, const char *algo,
  *   'pattern': pattern
  *   'subject': subject
  *   'algorithm': algorithm
- *   'start': starting positions of the pattern relative to the subject
- *   'max_mismatch': the number of mismatches (integer vector of length 1)
+ *   'max_mismatch': the max number of mismatching letters
  *   'fixed': logical vector of length 2
  *   'count_only': single logical
  *
- * is_matching() returns a logical vector of the same length as 'start'.
- * XString_match_pattern() returns an integer vector containing the relative
- * pos of the matches.
  * All matches have the length of the pattern.
  */
-
-SEXP is_matching(SEXP pattern, SEXP subject, SEXP start,
-		SEXP max_mismatch, SEXP fixed)
-{
-	RoSeq P, S;
-	int start_len, max_mm, fixedP, fixedS, i, *start_elt, *ans_elt;
-	SEXP ans;
-
-	P = _get_XString_asRoSeq(pattern);
-	S = _get_XString_asRoSeq(subject);
-	start_len = LENGTH(start);
-	max_mm = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
-
-	PROTECT(ans = NEW_LOGICAL(start_len));
-	for (i = 0, start_elt = INTEGER(start), ans_elt = LOGICAL(ans);
-             i < start_len;
-             i++, start_elt++, ans_elt++) {
-		if (*start_elt == NA_INTEGER) {
-			*ans_elt = NA_LOGICAL;
-			continue;
-		}
- 		*ans_elt = _is_matching(P, S, *start_elt - 1, max_mm,
-				fixedP, fixedS);
-	}
-	UNPROTECT(1);
-	return ans;
-}
 
 SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 		SEXP algorithm,
@@ -277,8 +175,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 	RoSeq P;
 	CachedXStringSet S;
 	const char *algo;
-	int max_mm, fixedP, fixedS, is_count_only,
-	    S_length, i;
+	int max_mm, fixedP, fixedS, is_count_only, S_length, i;
 	SEXP ans, ans_elt;
 
 	P = _get_XString_asRoSeq(pattern);

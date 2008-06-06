@@ -2,11 +2,20 @@
 
 \alias{match-utils}
 
+\alias{nmismatchStartingAt}
+\alias{nmismatchEndingAt}
+\alias{nmismatchStartingAt,character-method}
+\alias{nmismatchEndingAt,character-method}
+\alias{nmismatchStartingAt,XString-method}
+\alias{nmismatchEndingAt,XString-method}
+
 \alias{isMatching}
 \alias{isMatching,character-method}
 \alias{isMatching,XString-method}
+
 \alias{mismatch}
 \alias{mismatch,XStringViews-method}
+
 \alias{coverage}
 \alias{coverage,IRanges-method}
 \alias{coverage,MaskCollection-method}
@@ -22,7 +31,8 @@
   ("exact match" or "inexact match") as understood by the various pattern
   matching functions available in the Biostrings package.
 
-  The \code{isMatching} function implements this concept.
+  The \code{nmismatchStartingAt}, \code{nmismatchEndingAt} and \code{isMatching}
+  functions implement this concept.
 
   Other utility functions related to pattern matching are described here:
   the \code{mismatch} function for getting the positions of the mismatching
@@ -32,6 +42,8 @@
 }
 
 \usage{
+  nmismatchStartingAt(pattern, subject, starting.at=1, fixed=TRUE)
+  nmismatchEndingAt(pattern, subject, ending.at=1, fixed=TRUE)
   isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
   coverage(x, start=NA, end=NA)
@@ -42,11 +54,20 @@
     The pattern string.
   }
   \item{subject}{
-    An \link{XString} object containing the subject sequence,
+    An \link{XString} object (or character vector) containing the subject
+    sequence,
+  }
+  \item{starting.at}{
+    An integer vector specifying the starting positions of the pattern
+    relatively to the subject.
+  }
+  \item{ending.at}{
+    An integer vector specifying the ending positions of the pattern
+    relatively to the subject.
   }
   \item{start}{
-    For \code{isMatching}: an integer vector specifying where to place the
-    pattern relatively to the subject.
+    For \code{isMatching}: an integer vector specifying the starting positions
+    of the pattern relatively to the subject.
     For \code{coverage}: a single integer specifying the position in \code{x}
     where to start the extraction of the coverage.
   }
@@ -91,6 +112,10 @@
 }
 
 \value{
+  \code{nmismatchStartingAt}, \code{nmismatchEndingAt}: an integer vector of
+  the same length as \code{starting.at} (or \code{ending.at}) reporting the
+  number of mismatching letters for each starting (or ending) position.
+
   A logical vector of the same length as \code{start} for \code{isMatching}.
 
   A list of integer vectors for \code{mismatch}.

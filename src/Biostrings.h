@@ -986,6 +986,36 @@ SEXP inject_code(
 );
 
 
+/* match_utils.c */
+
+SEXP debug_match_utils();
+
+SEXP nmismatch_at(
+	SEXP pattern,
+	SEXP subject,
+	SEXP starting,
+	SEXP at,
+	SEXP fixed
+);
+
+int _is_matching(
+	RoSeq P,
+	RoSeq S,
+	int Pshift,
+	int max_mm,
+	int fixedP,
+	int fixedS
+);
+
+SEXP is_matching(
+	SEXP pattern,
+	SEXP subject,
+	SEXP start,
+	SEXP max_mismatch,
+	SEXP fixed
+);
+
+
 /* match_reporting.c */
 
 SEXP debug_match_reporting();
@@ -1020,26 +1050,34 @@ SEXP _reported_matches_asLIST();
 SEXP _reported_matches_asSEXP();
 
 
-/* match_pattern.c */
+/* match_pattern_boyermoore.c */
 
-SEXP debug_match_pattern();
+SEXP debug_match_pattern_boyermoore();
 
-int _is_matching(
+void _match_pattern_boyermoore(
+	RoSeq P,
+	RoSeq S
+);
+
+
+/* match_pattern_shiftor.c */
+
+SEXP debug_match_pattern_shiftor();
+
+SEXP bits_per_long();
+
+void _match_pattern_shiftor(
 	RoSeq P,
 	RoSeq S,
-	int Pshift,
 	int max_mm,
 	int fixedP,
 	int fixedS
 );
 
-SEXP is_matching(
-	SEXP pattern,
-	SEXP subject,
-	SEXP start,
-	SEXP max_mismatch,
-	SEXP fixed
-);
+
+/* match_pattern.c */
+
+SEXP debug_match_pattern();
 
 SEXP XString_match_pattern(
 	SEXP pattern,
@@ -1068,31 +1106,6 @@ SEXP XStringSet_vmatch_pattern(
 	SEXP max_mismatch,
 	SEXP fixed,
 	SEXP count_only
-);
-
-
-/* match_pattern_boyermoore.c */
-
-SEXP debug_match_pattern_boyermoore();
-
-void _match_pattern_boyermoore(
-	RoSeq P,
-	RoSeq S
-);
-
-
-/* match_pattern_shiftor.c */
-
-SEXP debug_match_pattern_shiftor();
-
-SEXP bits_per_long();
-
-void _match_pattern_shiftor(
-	RoSeq P,
-	RoSeq S,
-	int max_mm,
-	int fixedP,
-	int fixedS
 );
 
 
@@ -1357,3 +1370,4 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP constantMatrix,
 	SEXP constantMatrixDim
 );
+

@@ -55,7 +55,7 @@ normargFixed <- function(fixed, subjectClass)
 ###
 ### 'starting.at' (or 'ending.at') must be integer vectors containing the
 ### starting (or ending) positions of the pattern relatively to the subject.
-### The two functions must return an integer vector of the same length as
+### The two functions return an integer vector of the same length as
 ### 'starting.at' (or 'ending.at').
 ###
 
@@ -89,12 +89,37 @@ setGeneric("nmismatchEndingAt", signature="subject",
           PACKAGE="Biostrings")
 }
 
+### Dispatch on 'subject' (see signature of generic).
+setMethod("nmismatchStartingAt", "character",
+    function(pattern, subject, starting.at=1, fixed=TRUE)
+        .nmismatchAt(pattern, subject, TRUE, starting.at, fixed)
+)
+setMethod("nmismatchEndingAt", "character",
+    function(pattern, subject, ending.at=1, fixed=TRUE)
+        .nmismatchAt(pattern, subject, FALSE, ending.at, fixed)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("nmismatchStartingAt", "XString",
+    function(pattern, subject, starting.at=1, fixed=TRUE)
+        .nmismatchAt(pattern, subject, TRUE, starting.at, fixed)
+)
+setMethod("nmismatchEndingAt", "XString",
+    function(pattern, subject, ending.at=1, fixed=TRUE)
+        .nmismatchAt(pattern, subject, FALSE, ending.at, fixed)
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "isMatching" generic and methods.
 ###
 ### Return a logical vector of the same length as 'start'.
 ###
+
+setGeneric("isMatching", signature="subject",
+    function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
+        standardGeneric("isMatching")
+)
 
 .isMatching <- function(pattern, subject, start, max.mismatch, fixed)
 {
@@ -113,25 +138,16 @@ setGeneric("nmismatchEndingAt", signature="subject",
           PACKAGE="Biostrings")
 }
 
-setGeneric("isMatching", signature="subject",
-    function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-        standardGeneric("isMatching")
-)
-
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("isMatching", "character",
     function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-    {
         .isMatching(pattern, subject, start, max.mismatch, fixed)
-    }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("isMatching", "XString",
     function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-    {
         .isMatching(pattern, subject, start, max.mismatch, fixed)
-    }
 )
 
 

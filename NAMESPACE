@@ -94,6 +94,7 @@ exportMethods(
     injectHardMask,
 
     ## Others
+    nmismatchStartingAt, nmismatchEndingAt,
     isMatching, mismatch, coverage,
     matchPattern, countPattern,
     vcountPattern,

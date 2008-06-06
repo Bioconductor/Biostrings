@@ -230,7 +230,8 @@ o Added basic support for Position Weight Matrix matching thru the new
 o Added "matchLRPatterns" and "matchProbePair" methods for XStringViews
   objects.
 
-o Added the isMatching() function.
+o Added the nmismatchStartingAt(), nmismatchEndingAt() and isMatching()
+  functions.
 
 o Change in terminology to align with established practices: "fuzzy matching"
   is now called "inexact matching". This change mostly affects the
