@@ -43,7 +43,6 @@ SEXP debug_match_pattern()
  * - To use as a reference when comparing performance.
  */
 
-/* Return the number of matches */
 static void match_naive_exact(RoSeq P, RoSeq S)
 {
 	int start, n2;
