@@ -19,7 +19,6 @@
 \alias{width,AlignedXString-method}
 \alias{indels}
 \alias{indels,AlignedXString-method}
-\alias{profile,AlignedXString-method}
 \alias{length,AlignedXString-method}
 \alias{nchar,AlignedXString-method}
 \alias{alphabet,AlignedXString-method}
@@ -103,12 +102,6 @@
       deletions (depending on what the \code{AlignedXString} object represents).
     }
     \item{}{
-      \code{profile(fitted, \dots)}:
-      A numeric vector whose values are the maximum score that would result
-      by starting the alignment at the corresponding location of the original
-      string. Note that \code{length(profile(x)) = nchar(unaligned(x))}.
-    }
-    \item{}{
       \code{length(x)} or \code{nchar(x)}:
       The length of the \code{aligned(x)}.
     }
@@ -138,7 +131,6 @@
   alignedPattern <- pattern(nw1)
   unaligned(alignedPattern)
   aligned(alignedPattern)
-  profile(alignedPattern)
   as.character(alignedPattern)
   length(alignedPattern)
 }

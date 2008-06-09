@@ -1337,8 +1337,6 @@ SEXP XString_align_pairwiseAlignment(
 	SEXP subject,
 	SEXP patternQuality,
 	SEXP subjectQuality,
-	SEXP patternProfile,
-	SEXP subjectProfile,
 	SEXP type,
 	SEXP typeCode,
 	SEXP scoreOnly,

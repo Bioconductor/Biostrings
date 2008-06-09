@@ -9,8 +9,7 @@ setClass("AlignedXString",
         unaligned="XString",
         quality="XString",
         range="IRanges",
-        indels="IRanges",
-        profile="XNumeric"
+        indels="IRanges"
     )
 )
 
@@ -20,13 +19,12 @@ setClass("AlignedXString",
 ###
 
 setMethod("initialize", "AlignedXString",
-    function(.Object, unaligned, quality, range, indels, profile, check = TRUE)
+    function(.Object, unaligned, quality, range, indels, check = TRUE)
     {
         slot(.Object, "unaligned", check = check) <- unaligned
         slot(.Object, "quality", check = check) <- quality
         slot(.Object, "range", check = check) <- range
         slot(.Object, "indels", check = check) <- indels
-        slot(.Object, "profile", check = check) <- profile
         .Object
     }
 )
@@ -89,7 +87,6 @@ setMethod("end", "AlignedXString", function(x) if (width(x) == 0) NA else end(x@
 setMethod("width", "AlignedXString", function(x) width(x@range))
 setGeneric("indels", function(x) standardGeneric("indels"))
 setMethod("indels", "AlignedXString", function(x) x@indels)
-setMethod("profile", "AlignedXString", function(fitted, ...) as.numeric(fitted@profile))
 setMethod("length", "AlignedXString", function(x) width(x@range) + sum(width(x@indels)))
 setMethod("nchar", "AlignedXString", function(x, type="chars", allowNA=FALSE) length(x))
 setMethod("alphabet", "AlignedXString", function(x) alphabet(unaligned(x)))

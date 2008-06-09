@@ -109,7 +109,7 @@ exportMethods(
     PDict, matchPDict, countPDict,
 
     subpatterns, pattern,
-    unaligned, aligned, type, score, indels, profile,
+    unaligned, aligned, type, score, indels,
     compareStrings, consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, needwunsQS,

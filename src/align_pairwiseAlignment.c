@@ -44,7 +44,6 @@ struct AlignInfo {
 	int* startIndels;
 	int* widthIndels;
 	int lengthIndels;
-	double* profile;
 };
 void function(struct AlignInfo *);
 
@@ -222,10 +221,6 @@ static double pairwiseAlignment(
 		align2InfoPtr->startRange = -1;
 		align1InfoPtr->widthRange = 0;
 		align2InfoPtr->widthRange = 0;
-		for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++)
-			align2InfoPtr->profile[jMinus1] = NEGATIVE_INFINITY;
-		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++)
-			align1InfoPtr->profile[iMinus1] = NEGATIVE_INFINITY;
 
 		for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
 			tempMatrix = prevMatrix;
@@ -288,12 +283,6 @@ static double pairwiseAlignment(
 						align2InfoPtr->startRange = jElt + 1;
 						maxScore = CURR_MATRIX(0, j);
 					}
-
-					/* Step 3e:  Generate profile scores for local alignments */
-					align1InfoPtr->profile[iElt] =
-						MAX(CURR_MATRIX(0, j), align1InfoPtr->profile[iElt]);
-					align2InfoPtr->profile[jElt] =
-						MAX(CURR_MATRIX(0, j), align2InfoPtr->profile[jElt]);
 				} else {
 
 					if (!align1InfoPtr->endGap && j == nCharString2) {
@@ -314,21 +303,6 @@ static double pairwiseAlignment(
 							I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 							CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1);
 						}
-					}
-				}
-			}
-
-			if (!localAlignment) {
-				/* Step 3f:  Generate profile scores for non-local alignments */
-				if (!align1InfoPtr->endGap || i == nCharString1) {
-						align1InfoPtr->profile[iElt] = CURR_MATRIX(0, nCharString2);
-				} else {
-					align1InfoPtr->profile[iElt] =
-						SAFE_SUM(CURR_MATRIX(0, nCharString2), gapOpening + iElt * gapExtension);
-					if (CURR_MATRIX(0, nCharString2) >= CURR_MATRIX(1, nCharString2)) {
-						align1InfoPtr->profile[iElt] =
-							MAX(align1InfoPtr->profile[iElt],
-								SAFE_SUM(CURR_MATRIX(1, nCharString2), iElt * gapExtension));
 					}
 				}
 			}
@@ -354,35 +328,6 @@ static double pairwiseAlignment(
 			} else {
 				currTraceMatrix = DELETION;
 				maxScore = CURR_MATRIX(1, nCharString2);
-			}
-
-			if (align2InfoPtr->endGap) {
-				align2InfoPtr->profile[0] = CURR_MATRIX(0, nCharString2);
-				for (j = 1, jElt = nCharString2Minus1; j < nCharString2; j++, jElt--) {
-					align2InfoPtr->profile[jElt] =
-						SAFE_SUM(CURR_MATRIX(0, j), gapOpening + jElt * gapExtension);
-					if (CURR_MATRIX(0, j) >= CURR_MATRIX(2, j)) {
-						align2InfoPtr->profile[jElt] =
-							MAX(align2InfoPtr->profile[jElt],
-								SAFE_SUM(CURR_MATRIX(2, j), jElt * gapExtension));
-					}
-				}
-			} else {
-				for (j = 1, jElt = nCharString2Minus1; j <= nCharString2; j++, jElt--) {
-					align2InfoPtr->profile[jElt] = CURR_MATRIX(0, j);
-				}
-			}
-
-			if (MAX(CURR_MATRIX(0, nCharString2),
-					CURR_MATRIX(2, nCharString2)) >=
-						CURR_MATRIX(1, nCharString2)) {
-				align1InfoPtr->profile[0] = maxScore;
-			}
-
-			if (MAX(CURR_MATRIX(0, nCharString2),
-					CURR_MATRIX(1, nCharString2)) >=
-						CURR_MATRIX(2, nCharString2)) {
-				align2InfoPtr->profile[0] = maxScore;
 			}
 		}
 
@@ -446,9 +391,6 @@ static double pairwiseAlignment(
 			}
 		}
 
-		align1InfoPtr->profile[align1InfoPtr->startRange - 1] = maxScore;
-		align2InfoPtr->profile[align2InfoPtr->startRange - 1] = maxScore;
-
 		int offset1 = align1InfoPtr->startRange - 1;
 		if (offset1 > 0 && align1InfoPtr->lengthIndels > 0) {
 			for (i = 0; i < align1InfoPtr->lengthIndels; i++)
@@ -470,8 +412,6 @@ static double pairwiseAlignment(
  * 'subject':                XString object for subject
  * 'patternQuality':         BString object for quality scores for pattern
  * 'subjectQuality':         BString object for quality scores for subject
- * 'patternProfile':         XNumeric object for profile of pattern
- * 'subjectProfile':         XNumeric object for profile of subject
  * 'type':                   type of pairwise alignment
  *                           (character vector of length 1;
  *                            'global', 'local', 'overlap',
@@ -513,8 +453,6 @@ SEXP XString_align_pairwiseAlignment(
 		SEXP subject,
 		SEXP patternQuality,
 		SEXP subjectQuality,
-		SEXP patternProfile,
-		SEXP subjectProfile,
 		SEXP type,
 		SEXP typeCode,
 		SEXP scoreOnly,
@@ -535,14 +473,12 @@ SEXP XString_align_pairwiseAlignment(
 	align1Info.string = _get_XString_asRoSeq(pattern);
 	align1Info.quality = _get_XString_asRoSeq(patternQuality);
 	align1Info.lengthIndels = 0;
-	align1Info.profile = REAL(R_ExternalPtrTag(GET_SLOT(patternProfile, install("xp"))));
 	align1Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
 
 	align2Info.string = _get_XString_asRoSeq(subject);
 	align2Info.quality = _get_XString_asRoSeq(subjectQuality);
 	align2Info.lengthIndels = 0;
-	align2Info.profile = REAL(R_ExternalPtrTag(GET_SLOT(subjectProfile, install("xp"))));
 	align2Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
 
@@ -581,7 +517,6 @@ SEXP XString_align_pairwiseAlignment(
 		PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXString")));
 		SET_SLOT(alignedPattern, mkChar("unaligned"), pattern);
 		SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
-		SET_SLOT(alignedPattern, mkChar("profile"), patternProfile);
 		/* Set the "range" sub-slot */
 		PROTECT(alignedPatternRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(outputElement1 = NEW_INTEGER(1));
@@ -612,7 +547,6 @@ SEXP XString_align_pairwiseAlignment(
 		PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXString")));
 		SET_SLOT(alignedSubject, mkChar("unaligned"), subject);
 		SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
-		SET_SLOT(alignedSubject, mkChar("profile"), subjectProfile);
 		/* Set the "range" sub-slot */
 		PROTECT(alignedSubjectRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(outputElement1 = NEW_INTEGER(1));

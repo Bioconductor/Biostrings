@@ -138,15 +138,11 @@ function(pattern,
       buildLookupTable(alphabetToCodes[availableLetters],
                        0:(length(availableLetters) - 1))
   }
-  patternProfile <- XNumeric(ifelse(scoreOnly, 0L, nchar(pattern)))
-  subjectProfile <- XNumeric(ifelse(scoreOnly, 0L, nchar(subject)))
   answer <- .Call("XString_align_pairwiseAlignment",
                   pattern,
                   subject,
                   patternQuality,
                   subjectQuality,
-                  patternProfile,
-                  subjectProfile,
                   type,
                   typeCode,
                   scoreOnly,
