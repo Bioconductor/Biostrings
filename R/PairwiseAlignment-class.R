@@ -7,8 +7,8 @@
 
 setClass("PairwiseAlignment",
     representation(
-        pattern="AlignedXString",
-        subject="AlignedXString",
+        pattern="AlignedXStringSet",
+        subject="AlignedXStringSet",
         type="character",
         score="numeric",
         constantMatrix="matrix",
@@ -95,7 +95,7 @@ setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "PairwiseAlignment", function(x) x@score)
 
 setMethod("length", "PairwiseAlignment", function(x) length(subject(x)))
-setMethod("nchar", "PairwiseAlignment", function(x, type="chars", allowNA=FALSE) length(x))
+setMethod("nchar", "PairwiseAlignment", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
 
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 
@@ -112,12 +112,12 @@ setMethod("show", "PairwiseAlignment",
     {
         cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
                    "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
-                   "local" = "Local"), "Pairwise Alignment\n")
-        if (width(pattern(object)) == 0 || width(subject(object)) == 0) {
+                   "local" = "Local"), " Pairwise Alignment (1 of ", length(object), ")\n", sep = "")
+        if (width(pattern(object))[1] == 0 || width(subject(object))[1] == 0) {
           patternSpaces <- 0
           subjectSpaces <- 0
         } else {
-          patternSpaces <- floor(log10(start(subject(object)))) - floor(log10(start(pattern(object))))
+          patternSpaces <- floor(log10(start(subject(object))[1])) - floor(log10(start(pattern(object))[1]))
 		  subjectSpaces <- max(0, - patternSpaces)
 		  patternSpaces <- max(0, patternSpaces)
         }
@@ -125,7 +125,7 @@ setMethod("show", "PairwiseAlignment",
         show(pattern(object))
         cat(paste(c("subject: ", rep(" ", subjectSpaces)), collapse = ""))
         show(subject(object))
-        cat("score:", score(object), "\n")
+        cat("score:", score(object)[1], "\n")
     }
 )
 

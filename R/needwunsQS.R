@@ -137,17 +137,17 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    PACKAGE="Biostrings")
     new("PairwiseAlignment",
         pattern =
-        new("AlignedXString",
-            unaligned = new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1)),
-            quality = BString(""),
+        new("AlignedXStringSet",
+            unaligned = XStringSet(class(s1), new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1))),
+            quality = BStringSet(""),
             range = IRanges(start = 1, width = length(C_ans$al1)),
-            indels = IRanges(start = numeric(0), width = numeric(0))),
+            indels = list(IRanges(start = numeric(0), width = numeric(0)))),
         subject =
-        new("AlignedXString",
-            unaligned = new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2)),
-            quality = BString(""),
+        new("AlignedXStringSet",
+            unaligned = XStringSet(class(s2), new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2))),
+            quality = BStringSet(""),
             range = IRanges(start = 1, width = length(C_ans$al2)),
-            indels = IRanges(start = numeric(0), width = numeric(0))),
+            indels = list(IRanges(start = numeric(0), width = numeric(0)))),
         score = C_ans$score, type = "global", constantMatrix = substmat,
         gapOpening = 0, gapExtension = gappen)
 }

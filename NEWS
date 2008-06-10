@@ -12,7 +12,7 @@ STRING MATCHING
 
 STRING ALIGNMENT
 
-o Renamed the XStringAlign class -> AlignedXString and added the
+o Renamed the XStringAlign class -> AlignedXStringSet and added the
   PairwiseAlignment class.
 
 MISCELLANEOUS

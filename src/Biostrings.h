@@ -1332,25 +1332,6 @@ SEXP align_needwunsQS(
 
 /* align_pairwiseAlignment.c */
 
-SEXP XString_align_pairwiseAlignment(
-	SEXP pattern,
-	SEXP subject,
-	SEXP patternQuality,
-	SEXP subjectQuality,
-	SEXP type,
-	SEXP typeCode,
-	SEXP scoreOnly,
-	SEXP gapOpening,
-	SEXP gapExtension,
-	SEXP qualityLookupTable,
-	SEXP qualityMatchMatrix,
-	SEXP qualityMismatchMatrix,
-	SEXP qualityMatrixDim,
-	SEXP constantLookupTable,
-	SEXP constantMatrix,
-	SEXP constantMatrixDim
-);
-
 SEXP XStringSet_align_pairwiseAlignment(
 	SEXP pattern,
 	SEXP subject,
@@ -1358,6 +1339,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP subjectQuality,
 	SEXP type,
 	SEXP typeCode,
+	SEXP scoreOnly,
 	SEXP gapOpening,
 	SEXP gapExtension,
 	SEXP qualityLookupTable,

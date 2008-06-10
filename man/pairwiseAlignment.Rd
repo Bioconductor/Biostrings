@@ -15,7 +15,7 @@ Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignm
 \usage{
 pairwiseAlignment(pattern, subject, patternQuality = 22L, subjectQuality = 22L, type = "global",
                   substitutionMatrix = NULL, gapOpening = -10, gapExtension = -4,
-                  scoreOnly = is(pattern, "XStringSet"))
+                  scoreOnly = FALSE)
 }
 \arguments{
   \item{pattern}{a character vector of length 1, an \code{\link{XString}}, or an
@@ -43,9 +43,8 @@ pairwiseAlignment(pattern, subject, patternQuality = 22L, subjectQuality = 22L, 
     \code{subjectQuality} arguments.}
   \item{gapOpening}{penalty for opening a gap in the alignment.}
   \item{gapExtension}{penalty for extending a gap in the alignment.}
-  \item{scoreOnly}{logical to denote whether or not to only return the scores of the
-    optimal pairwise alignment. \code{scoreOnly} must be \code{TRUE} if \code{pattern}
-    is an \code{XStringSet} object. (See Value section below.)}
+  \item{scoreOnly}{logical to denote whether or not to return just the scores of the
+    optimal pairwise alignment.}
 }
 \details{
 General implementation based on Chapter 2 of Haubold and Wiehe (2006).

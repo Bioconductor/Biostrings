@@ -2,7 +2,7 @@
 
 \alias{compareStrings}
 \alias{compareStrings,character,character-method}
-\alias{compareStrings,AlignedXString,AlignedXString-method}
+\alias{compareStrings,AlignedXStringSet,AlignedXStringSet-method}
 \alias{compareStrings,PairwiseAlignment,missing-method}
 \alias{consmat}
 \alias{consmat,character-method}
@@ -35,7 +35,7 @@
 
 \arguments{
   \item{pattern, subject}{
-    The strings to compare. Can be of type \code{character}, \code{AlignedXString}, or,
+    The strings to compare. Can be of type \code{character}, \code{AlignedXStringSet}, or,
     in the case of \code{pattern}, \code{PairwiseAlignment}. If \code{pattern} is a
     \code{PairwiseAlignment} object, then \code{subject} must be missing.
   }

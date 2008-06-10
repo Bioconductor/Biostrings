@@ -6,20 +6,26 @@ setGeneric("compareStrings", signature = c("pattern", "subject"),
            function(pattern, subject)  standardGeneric("compareStrings"))
 setMethod("compareStrings", signature = c(pattern = "character", subject = "character"),
           function(pattern, subject) {
-              if (nchar(pattern) != nchar(subject))
+              if (length(pattern) != length(subject))
+                  stop("'pattern' and 'subject' must have the same length")
+              if (any(nchar(pattern) != nchar(subject)))
                   stop("'pattern' and 'subject' must have the same number of characters")
-              patternCodes <- charToRaw(pattern)
-              subjectCodes <- charToRaw(subject)
-              insertionLocations <- subjectCodes == charToRaw("-")
-              deletionLocations <- patternCodes == charToRaw("-")
-              nonIndels <- (!insertionLocations & !deletionLocations)
-              output <- rawToChar(subjectCodes, multiple = TRUE)
-              output[insertionLocations] <- "+"
-              output[deletionLocations] <- "-"
-              output[nonIndels & patternCodes != subjectCodes] <- "?"
-              paste(output, collapse = "")
+              output <- rep("", length(pattern))
+              for (i in 1:length(pattern)) {
+                  patternCodes <- charToRaw(pattern[i])
+                  subjectCodes <- charToRaw(subject[i])
+                  insertionLocations <- subjectCodes == charToRaw("-")
+                  deletionLocations <- patternCodes == charToRaw("-")
+                  nonIndels <- (!insertionLocations & !deletionLocations)
+                  current <- rawToChar(subjectCodes, multiple = TRUE)
+                  current[insertionLocations] <- "+"
+                  current[deletionLocations] <- "-"
+                  current[nonIndels & patternCodes != subjectCodes] <- "?"
+                  output[i] <- paste(current, collapse = "")
+              }
+              output
           })
-setMethod("compareStrings", signature = c(pattern = "AlignedXString", subject = "AlignedXString"),
+setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject = "AlignedXStringSet"),
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })

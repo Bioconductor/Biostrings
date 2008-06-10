@@ -15,7 +15,7 @@ exportClasses(
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     XStringPartialMatches,
-    AlignedXString, PairwiseAlignment,
+    AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
     ACtree, Dups, PDict, CWdna_PDict, TBdna_PDict,
     MIndex, ByPos_MIndex, ByName_MIndex

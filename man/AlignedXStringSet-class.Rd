@@ -1,38 +1,40 @@
-\name{AlignedXString-class}
+\name{AlignedXStringSet-class}
 \docType{class}
 
 % Classes
-\alias{class:AlignedXString}
-\alias{AlignedXString-class}
-\alias{AlignedXString}
+\alias{class:AlignedXStringSet}
+\alias{AlignedXStringSet-class}
+\alias{AlignedXStringSet}
 
 % Constructor-like functions and generics:
-\alias{initialize,AlignedXString-method}
+\alias{initialize,AlignedXStringSet-method}
 
 % Accesor methods:
 \alias{unaligned}
-\alias{unaligned,AlignedXString-method}
+\alias{unaligned,AlignedXStringSet-method}
 \alias{aligned}
-\alias{aligned,AlignedXString-method}
-\alias{start,AlignedXString-method}
-\alias{end,AlignedXString-method}
-\alias{width,AlignedXString-method}
+\alias{aligned,AlignedXStringSet-method}
+\alias{start,AlignedXStringSet-method}
+\alias{end,AlignedXStringSet-method}
+\alias{width,AlignedXStringSet-method}
 \alias{indels}
-\alias{indels,AlignedXString-method}
-\alias{length,AlignedXString-method}
-\alias{nchar,AlignedXString-method}
-\alias{alphabet,AlignedXString-method}
+\alias{indels,AlignedXStringSet-method}
+\alias{length,AlignedXStringSet-method}
+\alias{nchar,AlignedXStringSet-method}
+\alias{alphabet,AlignedXStringSet-method}
 
 % Standard generic methods:
-\alias{show,AlignedXString-method}
-\alias{as.character,AlignedXString-method}
-\alias{toString,AlignedXString-method}
+\alias{show,AlignedXStringSet-method}
+\alias{as.character,AlignedXStringSet-method}
+\alias{toString,AlignedXStringSet-method}
+\alias{[,AlignedXStringSet-method}
+\alias{[<-,AlignedXStringSet-method}
 
 
-\title{AlignedXString objects}
+\title{AlignedXStringSet objects}
 
 \description{
-  The \code{AlignedXString} class is a container for storing
+  The \code{AlignedXStringSet} class is a container for storing
   an alignment.
 }
 
@@ -73,7 +75,7 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a \code{AlignedXString} object.
+  \code{x} is a \code{AlignedXStringSet} object.
 
   \describe{
     \item{}{
@@ -99,11 +101,15 @@
     \item{}{
       \code{indels(x)}:
       The positions, in the form of an \code{IRanges} object, of the insertions or
-      deletions (depending on what the \code{AlignedXString} object represents).
+      deletions (depending on what the \code{AlignedXStringSet} object represents).
     }
     \item{}{
-      \code{length(x)} or \code{nchar(x)}:
+      \code{length(x)}:
       The length of the \code{aligned(x)}.
+    }
+    \item{}{
+      \code{nchar(x)}:
+      The nchar of the \code{aligned(x)}.
     }
     \item{}{
       \code{alphabet(x)}:
@@ -116,12 +122,21 @@
   }
 }
 
+\section{Subsetting methods}{
+  \describe{
+    \item{}{
+      \code{x[i]}:
+      Returns a new \code{AlignedXStringSet} object made of the selected elements.
+    }
+  }
+}
+
 \author{P. Aboyoun and H. Pages}
 
 \seealso{
   \code{\link{pairwiseAlignment}},
   \code{\link{PairwiseAlignment-class}},
-  \code{\link{XString-class}}
+  \code{\link{XStringSet-class}}
 }
 
 \examples{
@@ -132,7 +147,7 @@
   unaligned(alignedPattern)
   aligned(alignedPattern)
   as.character(alignedPattern)
-  length(alignedPattern)
+  nchar(alignedPattern)
 }
 
 \keyword{methods}

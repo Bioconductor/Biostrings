@@ -75,11 +75,11 @@
   \describe{
     \item{}{
       \code{pattern(x)}:
-      The \code{AlignedXString} object for the pattern.
+      The \code{AlignedXStringSet} object for the pattern.
     }
     \item{}{
       \code{subject(x)}:
-      The \code{AlignedXString} object for the subject.
+      The \code{AlignedXStringSet} object for the subject.
     }
     \item{}{
       \code{type(x)}:
@@ -91,8 +91,12 @@
       The score of the alignment (integer).
     }
     \item{}{
-      \code{length(x)} or \code{nchar(x)}:
+      \code{length(x)}:
       The length of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
+    }
+    \item{}{
+      \code{nchar(x)}:
+      The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
     }
     \item{}{
       \code{alphabet(x)}:
@@ -109,7 +113,7 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \code{\link{AlignedXString-class}},
+  \code{\link{AlignedXStringSet-class}},
   \code{\link{XString-class}}
 }
 
@@ -120,6 +124,7 @@
   pattern(nw1)
   subject(nw1)
   as.character(nw1)
+  nchar(nw1)
   score(nw1)
   nw1
 }
