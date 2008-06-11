@@ -1351,3 +1351,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP constantMatrixDim
 );
 
+
+/* align_utils.c */
+
+SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet);
+SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode);

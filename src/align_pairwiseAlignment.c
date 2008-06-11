@@ -490,7 +490,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	if (scoreOnlyValue) {
 		PROTECT(output = NEW_NUMERIC(numberOfStrings));
 		score = REAL(output);
-		for(int i = 0; i < numberOfStrings; i++) {
+		for (int i = 0; i < numberOfStrings; i++) {
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
 			score[i] = pairwiseAlignment(
@@ -575,7 +575,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		/* Set the "gapExtension" slot */
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
-		for(int i = 0; i < numberOfStrings; i++) {
+		for (int i = 0; i < numberOfStrings; i++) {
 			align1Info.lengthIndels = 0;
 			align2Info.lengthIndels = 0;
 
@@ -603,7 +603,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 			PROTECT(alignedPatternIndelsRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 			PROTECT(alignedPatternIndelsRangeStart = NEW_INTEGER(align1Info.lengthIndels));
 			PROTECT(alignedPatternIndelsRangeWidth = NEW_INTEGER(align1Info.lengthIndels));
-			for(int j = 0; j < align1Info.lengthIndels; j++) {
+			for (int j = 0; j < align1Info.lengthIndels; j++) {
 				int infoIndex = align1Info.lengthIndels - 1 - j;
 				INTEGER(alignedPatternIndelsRangeStart)[j] = align1Info.startIndels[infoIndex];
 				INTEGER(alignedPatternIndelsRangeWidth)[j] = align1Info.widthIndels[infoIndex];
@@ -618,7 +618,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 			PROTECT(alignedSubjectIndelsRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 			PROTECT(alignedSubjectIndelsRangeStart = NEW_INTEGER(align2Info.lengthIndels));
 			PROTECT(alignedSubjectIndelsRangeWidth = NEW_INTEGER(align2Info.lengthIndels));
-			for(int j = 0; j < align2Info.lengthIndels; j++) {
+			for (int j = 0; j < align2Info.lengthIndels; j++) {
 				int infoIndex = align2Info.lengthIndels - 1 - j;
 				INTEGER(alignedSubjectIndelsRangeStart)[j] = align2Info.startIndels[infoIndex];
 				INTEGER(alignedSubjectIndelsRangeWidth)[j] = align2Info.widthIndels[infoIndex];

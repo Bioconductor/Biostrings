@@ -137,6 +137,6 @@ setMethod("show", "PairwiseAlignment",
 setMethod("as.character", "PairwiseAlignment",
     function(x)
     {
-        c(pattern = as.character(pattern(x)), subject = as.character(subject(x)))
+        rbind(pattern = as.character(pattern(x)), subject = as.character(subject(x)))
     }
 )

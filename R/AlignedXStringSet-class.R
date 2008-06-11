@@ -67,21 +67,15 @@ setMethod("unaligned", "AlignedXStringSet", function(x) x@unaligned)
 setGeneric("aligned", function(x) standardGeneric("aligned"))
 setMethod("aligned", "AlignedXStringSet",
           function(x) {
-              strings <- substring(as.character(unaligned(x)), start(x), end(x))
-              for (i in 1:length(strings)) {
-                  stringIndels <- indels(x)[[i]]
-                  startIndels <- start(stringIndels)
-                  endIndels <- end(stringIndels)
-                  widthIndels <- width(stringIndels)
-                  if (length(startIndels) > 0) {
-                      ncharString <- nchar(strings[i])
-                      gapStrings <- c("", sapply(widthIndels, function(x) paste(rep("-", x), collapse = "")))
-                      subdividedString <-
-                          substring(strings[i], c(1, startIndels), c(startIndels - 1, ncharString))
-                      strings[i] <- paste(gapStrings, subdividedString, sep = "", collapse = "")
-                  }
+              codecX <- codec(x)
+              if (is.null(codecX)) {
+                  gapCode <- charToRaw("-")
+              } else {
+                  letters2codes <- codecX@codes
+                  names(letters2codes) <- codecX@letters
+                  gapCode <- as.raw(letters2codes[["-"]])
               }
-              XStringSet(class(super(unaligned(x))), strings)
+              .Call("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
           })
 
 setMethod("start", "AlignedXStringSet", function(x) start(x@range))
@@ -91,8 +85,9 @@ setGeneric("indels", function(x) standardGeneric("indels"))
 setMethod("indels", "AlignedXStringSet", function(x) x@indels)
 setMethod("length", "AlignedXStringSet", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet",
-          function(x, type="chars", allowNA=FALSE) width(x) + sapply(indels(x), function(y) sum(width(y))))
+          function(x, type="chars", allowNA=FALSE) .Call("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("alphabet", "AlignedXStringSet", function(x) alphabet(unaligned(x)))
+setMethod("codec", "AlignedXStringSet", function(x) codec(unaligned(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

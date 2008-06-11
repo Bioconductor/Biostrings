@@ -194,6 +194,10 @@ static const R_CallMethodDef callMethods[] = {
 /* align_pairwiseAlignment.c */
 	{"XStringSet_align_pairwiseAlignment", (DL_FUNC) &XStringSet_align_pairwiseAlignment, 16},
 
+/* align_utils.c */
+	{"AlignedXStringSet_nchar", (DL_FUNC) &AlignedXStringSet_nchar, 1},
+	{"AlignedXStringSet_align_aligned", (DL_FUNC) &AlignedXStringSet_align_aligned, 2},
+
 	{NULL, NULL, 0}
 };
 

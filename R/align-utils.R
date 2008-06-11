@@ -10,20 +10,15 @@ setMethod("compareStrings", signature = c(pattern = "character", subject = "char
                   stop("'pattern' and 'subject' must have the same length")
               if (any(nchar(pattern) != nchar(subject)))
                   stop("'pattern' and 'subject' must have the same number of characters")
-              output <- rep("", length(pattern))
-              for (i in 1:length(pattern)) {
-                  patternCodes <- charToRaw(pattern[i])
-                  subjectCodes <- charToRaw(subject[i])
-                  insertionLocations <- subjectCodes == charToRaw("-")
-                  deletionLocations <- patternCodes == charToRaw("-")
-                  nonIndels <- (!insertionLocations & !deletionLocations)
-                  current <- rawToChar(subjectCodes, multiple = TRUE)
-                  current[insertionLocations] <- "+"
-                  current[deletionLocations] <- "-"
-                  current[nonIndels & patternCodes != subjectCodes] <- "?"
-                  output[i] <- paste(current, collapse = "")
-              }
-              output
+              patternCodes <- charToRaw(paste(pattern, collapse = "\001"))
+              subjectCodes <- charToRaw(paste(subject, collapse = "\001"))
+              insertionLocations <- subjectCodes == charToRaw("-")
+              deletionLocations <- patternCodes == charToRaw("-")
+              nonIndels <- (!insertionLocations & !deletionLocations)
+              output <- patternCodes
+              output[insertionLocations] <- charToRaw("+")
+              output[nonIndels & patternCodes != subjectCodes] <- charToRaw("?")
+              unlist(strsplit(rawToChar(output), "\001"))
           })
 setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject = "AlignedXStringSet"),
           function(pattern, subject) {
