@@ -129,5 +129,6 @@ void align_compareStrings(SEXP patternStrings, SEXP subjectStrings,
 				}
 			}
 		}
+		SET_STRING_ELT(patternStrings, i, mkChar(patternPtr));
 	}
 }
