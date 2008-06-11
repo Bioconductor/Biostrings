@@ -10,15 +10,9 @@ setMethod("compareStrings", signature = c(pattern = "character", subject = "char
                   stop("'pattern' and 'subject' must have the same length")
               if (any(nchar(pattern) != nchar(subject)))
                   stop("'pattern' and 'subject' must have the same number of characters")
-              patternCodes <- charToRaw(paste(pattern, collapse = "\001"))
-              subjectCodes <- charToRaw(paste(subject, collapse = "\001"))
-              insertionLocations <- subjectCodes == charToRaw("-")
-              deletionLocations <- patternCodes == charToRaw("-")
-              nonIndels <- (!insertionLocations & !deletionLocations)
-              output <- patternCodes
-              output[insertionLocations] <- charToRaw("+")
-              output[nonIndels & patternCodes != subjectCodes] <- charToRaw("?")
-              unlist(strsplit(rawToChar(output), "\001"))
+              output <- pattern
+              .Call("align_compareStrings", output, subject, "+", "-", "?", PACKAGE="Biostrings")
+              output
           })
 setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject = "AlignedXStringSet"),
           function(pattern, subject) {

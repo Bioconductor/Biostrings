@@ -107,3 +107,27 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 
 	return output;
 }
+
+
+void align_compareStrings(SEXP patternStrings, SEXP subjectStrings,
+                          SEXP insertionCode, SEXP deletionCode, SEXP mismatchCode)
+{
+	char insertionChar = CHAR(STRING_ELT(insertionCode, 0))[0];
+	char deletionChar = CHAR(STRING_ELT(deletionCode, 0))[0];
+	char mismatchChar = CHAR(STRING_ELT(mismatchCode, 0))[0];
+	int numberOfStrings = LENGTH(patternStrings);
+	for (int i = 0; i < numberOfStrings; i++) {
+		char *patternPtr = (char *) CHAR(STRING_ELT(patternStrings, i));
+		char *subjectPtr = (char *) CHAR(STRING_ELT(subjectStrings, i));
+		int numberOfChars = strlen(patternPtr);
+		for (int j = 0; j < numberOfChars; j++) {
+			if (patternPtr[j] != deletionChar) {
+				if (subjectPtr[j] == deletionChar) {
+					patternPtr[j] = insertionChar;
+				} else if (subjectPtr[j] != patternPtr[j]) {
+					patternPtr[j] = mismatchChar;
+				}
+			}
+		}
+	}
+}
