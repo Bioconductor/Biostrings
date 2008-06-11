@@ -19,6 +19,7 @@
 \alias{length,PairwiseAlignment-method}
 \alias{nchar,PairwiseAlignment-method}
 \alias{alphabet,PairwiseAlignment-method}
+\alias{coverage,PairwiseAlignment-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
@@ -104,7 +105,12 @@
     }
     \item{}{
       \code{as.character(x)} and \code{toString(x)}:
-      Converts \code{x} to a named character vector of length 2.
+      Converts \code{x} to a named two row matrix containing the results of
+      \code{as.character(pattern(x))} and \code{as.character(subject(x))}.
+    }
+    \item{}{
+      \code{coverage(x, start = NA, end = NA)}:
+      The coverage of the pairwise alignments along \code{unaligned(subject(x))}.
     }
   }
 }
@@ -114,7 +120,8 @@
 \seealso{
   \code{\link{pairwiseAlignment}},
   \code{\link{AlignedXStringSet-class}},
-  \code{\link{XString-class}}
+  \code{\link{XString-class}},
+  \code{\link{coverage}}
 }
 
 \examples{

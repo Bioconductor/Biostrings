@@ -98,6 +98,15 @@ setMethod("length", "PairwiseAlignment", function(x) length(subject(x)))
 setMethod("nchar", "PairwiseAlignment", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
 
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
+setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
+setMethod("coverage", "PairwiseAlignment", function(x, start = NA, end = NA)
+          {
+              if (is.na(start))
+                  start <- 1
+              if (is.na(end))
+                  end <- nchar(super(unaligned(subject(x))))
+              coverage(subject(x)@range, start, end)
+          })
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
