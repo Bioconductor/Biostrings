@@ -140,7 +140,7 @@ STRING MATCHING
     input would drop significantly.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
-    'match_count' in match_TBdna.c, store directly in the returned
+    'match_count' in match_pdict_TBdna.c, store directly in the returned
     INTEGER vector.
 
   o Fix this bug:

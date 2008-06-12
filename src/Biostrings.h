@@ -1272,9 +1272,9 @@ SEXP ByName_MIndex_coverage(
 );
 
 
-/* match_ACtree.c */
+/* match_pdict_ACtree.c */
 
-SEXP debug_match_ACtree();
+SEXP debug_match_pdict_ACtree();
 
 SEXP CWdna_free_actree_nodes_buf();
 
@@ -1290,22 +1290,18 @@ SEXP CWdna_pp_XStringSet(
 	SEXP tb_end
 );
 
-void _match_ACtree(
+void _match_pdict_ACtree(
 	SEXP pdict_data,
-	const RoSeq *S
-);
-
-void _match_ACtree_to_nonfixedS(
-	SEXP pdict_data,
-	const RoSeq *S
+	const RoSeq *S,
+	int fixedS
 );
 
 
-/* match_TBdna.c */
+/* match_pdict_TBdna.c */
 
-SEXP debug_match_TBdna();
+SEXP debug_match_pdict_TBdna();
 
-SEXP XString_match_TBdna(
+SEXP XString_match_pdict_TBdna(
 	SEXP pdict_data,
 	SEXP pdict_length,
 	SEXP pdict_width,
@@ -1319,7 +1315,7 @@ SEXP XString_match_TBdna(
 	SEXP envir
 );
 
-SEXP XStringViews_match_TBdna(
+SEXP XStringViews_match_pdict_TBdna(
 	SEXP pdict_data,
 	SEXP pdict_length,
 	SEXP pdict_width,

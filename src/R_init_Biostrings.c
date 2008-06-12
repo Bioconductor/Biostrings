@@ -173,16 +173,16 @@ static const R_CallMethodDef callMethods[] = {
 	{"ByPos_MIndex_coverage", (DL_FUNC) &ByPos_MIndex_coverage, 4},
 	{"ByName_MIndex_coverage", (DL_FUNC) &ByName_MIndex_coverage, 4},
 
-/* match_ACtree.c */
-	{"debug_match_ACtree", (DL_FUNC) &debug_match_ACtree, 0},
+/* match_pdict_ACtree.c */
+	{"debug_match_pdict_ACtree", (DL_FUNC) &debug_match_pdict_ACtree, 0},
 	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
 	{"CWdna_pp_STRSXP", (DL_FUNC) &CWdna_pp_STRSXP, 3},
 	{"CWdna_pp_XStringSet", (DL_FUNC) &CWdna_pp_XStringSet, 3},
 
-/* match_TBdna.c */
-	{"debug_match_TBdna", (DL_FUNC) &debug_match_TBdna, 0},
-	{"XString_match_TBdna", (DL_FUNC) &XString_match_TBdna, 11},
-	{"XStringViews_match_TBdna", (DL_FUNC) &XStringViews_match_TBdna, 13},
+/* match_pdict_TBdna.c */
+	{"debug_match_pdict_TBdna", (DL_FUNC) &debug_match_pdict_TBdna, 0},
+	{"XString_match_pdict_TBdna", (DL_FUNC) &XString_match_pdict_TBdna, 11},
+	{"XStringViews_match_pdict_TBdna", (DL_FUNC) &XStringViews_match_pdict_TBdna, 13},
 
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},

@@ -66,9 +66,9 @@ debug_find_palindromes <- function()
 debug_MIndex_utils <- function()
     invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))
 
-debug_match_ACtree <- function()
-    invisible(.Call("debug_match_ACtree", PACKAGE="Biostrings"))
+debug_match_pdict_ACtree <- function()
+    invisible(.Call("debug_match_pdict_ACtree", PACKAGE="Biostrings"))
 
-debug_match_TBdna <- function()
-    invisible(.Call("debug_match_TBdna", PACKAGE="Biostrings"))
+debug_match_pdict_TBdna <- function()
+    invisible(.Call("debug_match_pdict_TBdna", PACKAGE="Biostrings"))
 

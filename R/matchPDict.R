@@ -391,7 +391,7 @@ extractAllMatches <- function(subject, mindex)
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
-        C_ans <- .Call("XString_match_TBdna",
+        C_ans <- .Call("XString_match_pdict_TBdna",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
@@ -400,7 +400,7 @@ extractAllMatches <- function(subject, mindex)
                        count.only, envir,
                        PACKAGE="Biostrings")
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
-        C_ans <- .Call("XStringViews_match_TBdna",
+        C_ans <- .Call("XStringViews_match_pdict_TBdna",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
@@ -510,7 +510,7 @@ extractAllMatches <- function(subject, mindex)
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
-        C_ans <- .Call("XString_match_TBdna",
+        C_ans <- .Call("XString_match_pdict_TBdna",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
@@ -519,7 +519,7 @@ extractAllMatches <- function(subject, mindex)
                        count.only, envir,
                        PACKAGE="Biostrings")
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
-        C_ans <- .Call("XStringViews_match_TBdna",
+        C_ans <- .Call("XStringViews_match_pdict_TBdna",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,

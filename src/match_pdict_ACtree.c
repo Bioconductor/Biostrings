@@ -250,20 +250,20 @@ static int actree_base_codes_buf[MAX_CHILDREN_PER_ACNODE];
 static ACNode *actree_nodes_buf = NULL;
 static int actree_nodes_buf_count;
 
-SEXP debug_match_ACtree()
+SEXP debug_match_pdict_ACtree()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_ACtree.c'\n",
+	Rprintf("Debug mode turned %s in 'match_pdict_ACtree.c'\n",
 		debug ? "on" : "off");
 	if (debug) {
-		Rprintf("[DEBUG] debug_match_ACtree(): INTS_PER_ACNODE=%d\n",
-			INTS_PER_ACNODE);
-		Rprintf("[DEBUG] debug_match_ACtree(): MAX_ACNODEBUF_LENGTH=%d\n",
-			MAX_ACNODEBUF_LENGTH);
+		Rprintf("[DEBUG] debug_match_pdict_ACtree(): "
+			"INTS_PER_ACNODE=%d\n", INTS_PER_ACNODE);
+		Rprintf("[DEBUG] debug_match_pdict_ACtree(): "
+			"MAX_ACNODEBUF_LENGTH=%d\n", MAX_ACNODEBUF_LENGTH);
 	}
 #else
-	Rprintf("Debug mode not available in 'match_ACtree.c'\n");
+	Rprintf("Debug mode not available in 'match_pdict_ACtree.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -849,37 +849,14 @@ static int walk_string(ACNode *node0, const int *base_codes,
 	return basenode_id;
 }
 
-void _match_ACtree(SEXP pdict_data, const RoSeq *S)
+static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
+		const RoSeq *S)
 {
-	ACNode *node0;
-	const int *base_codes;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING _match_ACtree()\n");
-#endif
-	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_data, 0)));
-	base_codes = INTEGER(VECTOR_ELT(pdict_data, 1));
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
-	walk_string(node0, base_codes, S->elts, S->nelt);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING _match_ACtree()\n");
-#endif
-	return;
-}
-
-void _match_ACtree_to_nonfixedS(SEXP pdict_data, const RoSeq *S)
-{
-	ACNode *node0;
-	const int *base_codes;
 	IntBuf cnode_ids; // buffer of current node ids
 	int n, npointers, i, node_id, next_node_id, is_first, j, base, P_id;
 	const char *S_tail;
 	char c;
 
-	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_data, 0)));
-	base_codes = INTEGER(VECTOR_ELT(pdict_data, 1));
 	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
 	cnode_ids = _new_IntBuf(256, 0, 0);
 	_IntBuf_insert_at(&cnode_ids, 0, 0);
@@ -922,6 +899,29 @@ void _match_ACtree_to_nonfixedS(SEXP pdict_data, const RoSeq *S)
 		if (cnode_ids.nelt > 4096)
 			error("too many IUPAC ambiguity letters in 'subject'");
 	}
+	return;
+}
+
+void _match_pdict_ACtree(SEXP pdict_data, const RoSeq *S, int fixedS)
+{
+	ACNode *node0;
+	const int *base_codes;
+
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING _match_pdict_ACtree()\n");
+#endif
+	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_data, 0)));
+	base_codes = INTEGER(VECTOR_ELT(pdict_data, 1));
+	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
+	if (fixedS)
+		walk_string(node0, base_codes, S->elts, S->nelt);
+	else
+		walk_nonfixed_subject(node0, base_codes, S);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING _match_pdict_ACtree()\n");
+#endif
 	return;
 }
 
