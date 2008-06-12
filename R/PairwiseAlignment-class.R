@@ -108,6 +108,10 @@ setMethod("coverage", "PairwiseAlignment", function(x, start = NA, end = NA)
               coverage(subject(x)@range, start, end)
           })
 
+subjectViews <- function(x) {
+	views(super(unaligned(subject(x))), start(subject(x)@range), end(subject(x)@range))
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

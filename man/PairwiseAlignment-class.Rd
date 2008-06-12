@@ -20,6 +20,7 @@
 \alias{nchar,PairwiseAlignment-method}
 \alias{alphabet,PairwiseAlignment-method}
 \alias{coverage,PairwiseAlignment-method}
+\alias{subjectViews}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
@@ -109,6 +110,10 @@
       \code{as.character(pattern(x))} and \code{as.character(subject(x))}.
     }
     \item{}{
+      \code{subjectViews(x)}:
+      The \code{XStringViews} object that represents the pairwise alignments along \code{unaligned(subject(x))}.
+    }
+    \item{}{
       \code{coverage(x, start = NA, end = NA)}:
       The coverage of the pairwise alignments along \code{unaligned(subject(x))}.
     }
@@ -121,6 +126,7 @@
   \code{\link{pairwiseAlignment}},
   \code{\link{AlignedXStringSet-class}},
   \code{\link{XString-class}},
+  \code{\link{XStringViews-class}},
   \code{\link{coverage}}
 }
 

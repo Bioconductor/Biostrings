@@ -32,7 +32,7 @@ export(
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write, XNumeric, XNumeric.read, XNumeric.write,
     BString, DNAString, RNAString, AAString,
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
-    views, adjacentViews, trim, subviews,
+    views, adjacentViews, trim, subviews, subjectViews,
     mask,
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
