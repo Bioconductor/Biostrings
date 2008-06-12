@@ -1,6 +1,6 @@
 /****************************************************************************
  *                                                                          *
- *                    Fast matching of a DNA dictionary                     *
+ *        Inexact matching of a DNA dictionary using a Trusted Band         *
  *                           Author: Herve Pages                            *
  *                                                                          *
  ****************************************************************************/
@@ -22,457 +22,325 @@ SEXP debug_match_TBdna()
 
 
 /****************************************************************************
- * Match reporting
- * ===============
- */
-
-static int match_reporting_mode; // 0, 1 or 2
-static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
-static IntBBuf match_ends;  // used when mode >= 1
-static IntBuf matching_poffsets;
-
-static void init_match_reporting(int no_tail, int is_count_only, int length)
-{
-	match_reporting_mode = is_count_only ? (no_tail ? 0 : 2) : 1;
-	if (match_reporting_mode == 0 || match_reporting_mode == 2)
-		match_count = _new_IntBuf(length, length, 0);
-	if (match_reporting_mode >= 1)
-		match_ends = _new_IntBBuf(length, length);
-	matching_poffsets = _new_IntBuf(0, 0, 0);
-	return;
-}
-
-static void report_match(int poffset, int end)
-{
-	int is_new_matching_poffset;
-	IntBuf *ends_buf;
-
-	if (match_reporting_mode == 0) {
-		is_new_matching_poffset = match_count.elts[poffset]++ == 0;
-	} else {
-		ends_buf = match_ends.elts + poffset;
-		is_new_matching_poffset = ends_buf->nelt == 0;
-		_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
-	}
-	if (is_new_matching_poffset)
-		_IntBuf_insert_at(&matching_poffsets,
-				  matching_poffsets.nelt, poffset);
-	return;
-}
-
-static void report_matches_for_dups(SEXP unq2dup)
-{
-	int n1, i, *poffset, j, *dup, k1, k2;
-	SEXP dups;
-
-	/* The value of matching_poffsets.nelt can increase during the for loop! */
-	n1 = matching_poffsets.nelt;
-	for (i = 0, poffset = matching_poffsets.elts; i < n1; i++, poffset++) {
-		k1 = *poffset;
-		dups = VECTOR_ELT(unq2dup, k1);
-		if (dups == R_NilValue)
-			continue;
-		for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
-			k2 = *dup - 1;
-			if (match_reporting_mode == 0)
-				match_count.elts[k2] = match_count.elts[k1];
-			else
-				match_ends.elts[k2] = match_ends.elts[k1];
-			_IntBuf_insert_at(&matching_poffsets,
-					  matching_poffsets.nelt, k2);
-		}
-	}
-	return;
-}
-
-static void merge_matches(IntBuf *global_match_count,
-		IntBBuf *global_match_ends, int view_offset)
-{
-	int i, *poffset;
-	IntBuf *ends_buf, *global_ends_buf;
-
-	for (i = 0, poffset = matching_poffsets.elts;
-	     i < matching_poffsets.nelt;
-	     i++, poffset++)
-	{
-		if (match_reporting_mode == 0 || match_reporting_mode == 2) {
-			global_match_count->elts[*poffset] += match_count.elts[*poffset];
-			match_count.elts[*poffset] = 0;
-		} else {
-			ends_buf = match_ends.elts + *poffset;
-			global_ends_buf = global_match_ends->elts + *poffset;
-			_IntBuf_append_shifted_vals(global_ends_buf,
-				ends_buf->elts, ends_buf->nelt, view_offset);
-		}
-		if (match_reporting_mode >= 1)
-			match_ends.elts[*poffset].nelt = 0;
-	}
-	matching_poffsets.nelt = 0;
-	return;
-}
-
-
-/****************************************************************************
- * Exact matching
- * ==============
- */
-
-static int slotno_chrtrtable[CHRTRTABLE_LENGTH];
-
-static int get_child_node_id(const ACNode *node, char c)
-{
-	int slotno;
-
-	slotno = slotno_chrtrtable[(unsigned char) c];
-	if (slotno == -1)
-		return -1;
-	return node->child_id[slotno];
-}
-
-/*
- * We use the child slots for storing the shortcuts so it's important to
- * remember that a child slot doesn't necessary contain the ID of a child
- * node anymore: it can be any other node in the tree. In fact, it can't be
- * whatever other node either: its depth can't be greater than the depth of
- * the referring node. This property provides an efficient way to know whether
- * N1 -> N2 is a parent-to-child link or a shortcut:
- *   parent-to-child: depth(N2) == depth(N1) + 1
- *   shortcut: depth(N2) <= depth(N1)
- * Note that this trick is not needed by the current implementation of the
- * walk_string() function.
- */
-static void set_shortcut(ACNode *node, char c, int next_node_id)
-{
-	int slotno, *slot;
-
-	slotno = slotno_chrtrtable[(unsigned char) c];
-	if (slotno == -1)
-		return;
-	slot = node->child_id + slotno;
-	if (*slot == -1)
-		*slot = next_node_id;
-	return;
-}
-
-/*
- * We use indirect recursion for walking the Aho-Corasick tree.
- * This indirect recursion involves the 2 core functions path_to_node_id() and
- * get_next_node_id(): the latter calls the former which in turn calls the
- * latter.
- */
-static int get_next_node_id(ACNode *node0, const int *base_codes,
-		int node_id, const char *Stail, char c);
-
-static int path_to_node_id(ACNode *node0, const int *base_codes,
-		const char *path, int path_len)
-{
-	int node_id, n;
-	ACNode *node;
-
-	node_id = 0;
-	for (n = 0; n < path_len; n++, path++) {
-		node = node0 + node_id;
-		node_id = get_next_node_id(node0, base_codes,
-				node_id, path, *path);
-	}
-	return node_id;
-}
-
-/*
- * An important trick here is that the chars located _before_ 'Stail' will
- * always describe the path that goes from the root node to 'node_id'.
- * More precisely, if d is the depth of 'node_id', then this path is made
- * of the path[i] chars where path is 'Stail' - d and 0 <= i < d.
- */
-static int get_next_node_id(ACNode *node0, const int *base_codes,
-		int node_id, const char *Stail, char c)
-{
-	ACNode *node, *next_node;
-	int next_node_id, child_node_id, subpath_len;
-	const char *subpath;
-#ifdef DEBUG_BIOSTRINGS
-	static int rec_level = 0;
-	char format[20], pathbuf[2000];
-#endif
-
-	node = node0 + node_id;
-	next_node_id = node_id;
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] ENTERING get_next_node_id():");
-		sprintf(format, "%%%ds", 1 + 2*rec_level);
-		Rprintf(format, " ");
-		snprintf(pathbuf, node->depth + 1, "%s", Stail - node->depth);
-		Rprintf("node_id=%d path=%s c=%c\n",
-			node_id, pathbuf, c);
-	}
-#endif
-	while (1) {
-		next_node = node0 + next_node_id;
-		child_node_id = get_child_node_id(next_node, c);
-		if (child_node_id != -1) {
-			next_node_id = child_node_id;
-			break;
-		}
-		if (next_node_id == 0) {
-			//next_node->flink = 0;
-			break;
-		}
-		if (next_node->flink == -1) {
-			rec_level++;
-			subpath_len = next_node->depth - 1;
-			subpath = Stail - subpath_len;
-			next_node->flink = path_to_node_id(node0, base_codes,
-						subpath, subpath_len);
-			rec_level--;
-		}
-		next_node_id = next_node->flink;
-	}
-	set_shortcut(node, c, next_node_id);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] LEAVING get_next_node_id(): ");
-		Rprintf(format, " ");
-		Rprintf("next_node_id=%d\n", next_node_id);
-	}
-#endif
-	return next_node_id;
-}
-
-static int walk_string(ACNode *node0, const int *base_codes,
-		const char *S, int nS)
-{
-	int basenode_id, node_id, child_id, n, subwalk_nS;
-	ACNode *basenode, *node;
-	static int rec_level = 0;
-#ifdef DEBUG_BIOSTRINGS
-	char format[20], pathbuf[2000];
-#endif
-
-	basenode_id = 0;
-	basenode = node0;
-	for (n = 0; n < nS; n++, S++) {
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] walk_string():");
-			sprintf(format, "%%%ds", 1 + 2*rec_level);
-			Rprintf(format, " ");
-			snprintf(pathbuf, basenode->depth + 1, "%s", S - basenode->depth);
-			Rprintf("On basenode_id=%d (basepath=%s), reading S[%d]=%c\n", basenode_id, pathbuf, n, *S);
-		}
-#endif
-		node_id = basenode_id;
-		node = basenode;
-		while (1) {
-			child_id = get_child_node_id(node, *S);
-			if (child_id != -1) {
-				node_id = child_id;
-				node = node0 + node_id;
-				break;
-			}
-			if (node_id == 0) {
-				node = node0; /* node == node0 */
-				break;
-			}
-			if (node->flink == -1) {
-				rec_level++;
-				subwalk_nS = node->depth - 1;
-				node->flink = walk_string(node0, base_codes, S - subwalk_nS, subwalk_nS);
-				rec_level--;
-#ifdef DEBUG_BIOSTRINGS
-				if (debug) {
-					Rprintf("[DEBUG] walk_string():");
-					Rprintf(format, " ");
-					Rprintf("setting failure link %d -> %d\n", node_id, node->flink);
-				}
-#endif
-			}
-#ifdef DEBUG_BIOSTRINGS
-			if (debug) {
-				Rprintf("[DEBUG] walk_string():");
-				Rprintf(format, " ");
-				Rprintf("following failure link %d -> %d\n", node_id, node->flink);
-			}
-#endif
-			node_id = node->flink;
-			node = node0 + node_id;
-		}
-		set_shortcut(basenode, *S, node_id);
-		basenode_id = node_id;
-		basenode = node0 + basenode_id;
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] walk_string():");
-			Rprintf(format, " ");
-			Rprintf("moving to basenode %d\n", basenode_id);
-		}
-#endif
-		// Finding a match cannot happen during a nested call to walk_string()
-		// so there is no need to check that rec_level is 0
-		if (basenode->P_id != -1)
-			report_match(basenode->P_id - 1, n + 1);
-	}
-	return basenode_id;
-}
-
-static void CWdna_exact_search(ACNode *node0,
-		const int *base_codes, RoSeq S)
-{
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
-	walk_string(node0, base_codes, S.elts, S.nelt);
-	return;
-}
-
-static void CWdna_exact_search_on_nonfixedS(ACNode *node0,
-		const int *base_codes, RoSeq S)
-{
-	IntBuf cnode_ids; // buffer of current node ids
-	int n, npointers, i, node_id, next_node_id, is_first, j, base, P_id;
-	const char *Stail;
-	char c;
-
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
-	cnode_ids = _new_IntBuf(256, 0, 0);
-	_IntBuf_insert_at(&cnode_ids, 0, 0);
-	for (n = 1, Stail = S.elts; n <= S.nelt; n++, Stail++) {
-		c = *Stail;
-		npointers = cnode_ids.nelt;
-		// move and split pointers
-		for (i = 0; i < npointers; i++) {
-			node_id = cnode_ids.elts[i];
-			is_first = 1;
-			for (j = 0, base = 1; j < 4; j++, base *= 2) {
-				if ((((unsigned char) c) & base) != 0) {
-					next_node_id = get_next_node_id(node0,
-							base_codes,
-							node_id, Stail, base);
-					if (is_first) {
-						cnode_ids.elts[i] = next_node_id;
-						is_first = 0;
-					} else {
-						_IntBuf_insert_at(&cnode_ids,
-							cnode_ids.nelt, next_node_id);
-					}
-				}
-			}
-		}
-		// merge pointers and report matches
-		for (i = 0; i < cnode_ids.nelt; i++) {
-			node_id = cnode_ids.elts[i];
-			// FIXME: This merging algo is dumb and inefficient!
-			// There must be a way to do something better.
-			for (j = i + 1; j < cnode_ids.nelt; j++) {
-				if (cnode_ids.elts[j] == node_id)
-					_IntBuf_delete_at(&cnode_ids, j--);
-			}
-			P_id = node0[node_id].P_id;
-			if (P_id != -1)
-				report_match(P_id - 1, n);
-		}
-		// error if too many remaining pointers
-		if (cnode_ids.nelt > 4096)
-			error("too many IUPAC ambiguity letters in 'subject'");
-	}
-	return;
-}
-
-
-/****************************************************************************
  * Inexact matching on the tails of the TBdna_PDict object
  * =======================================================
  */
 
-static int match_TBdna_Ptail(RoSeq Ptail, RoSeq S, int k1, int k2,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+/* k1 must be < k2 */
+static int match_dup_tail(int k1, int k2, RoSeq *dup_tail,
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
 {
-	int i, end1;
-	IntBuf *ends_buf1, *ends_buf2;
+	int i, end1, end2, OK;
+	IntBuf *match_count, *ends_buf1, *ends_buf2;
 
-	ends_buf1 = match_ends.elts + k1;
-	ends_buf2 = match_ends.elts + k2;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] ENTERING match_dup_tail()\n");
+		Rprintf("[DEBUG] k1=%d k2=%d\n", k1, k2);
+	}
+#endif
+	match_count = _MIndex_get_match_count();
+	ends_buf1 = _MIndex_get_match_ends(k1);
+	ends_buf2 = _MIndex_get_match_ends(k2);
 	for (i = 0; i < ends_buf1->nelt; i++) {
 		end1 = ends_buf1->elts[i];
-		if (!_is_matching(Ptail, S, end1, max_mm, fixedP, fixedS)) {
-			/* Mismatch */
-			if (match_reporting_mode == 0)
+		OK = _is_matching_at_Pshift(dup_tail, S, end1,
+				max_mm, fixedP, fixedS);
+		if (!OK)
+			continue;
+		if (is_count_only) {
+			match_count->elts[k2]++;
+			if (_MIndex_get_match_reporting_mode() == 0)
 				continue;
-			if (k1 != k2)
+		}
+		end2 = end1 + dup_tail->nelt;
+		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end2);
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING match_dup_tail()\n");
+#endif
+	return is_count_only ? match_count->elts[k2] : ends_buf2->nelt;
+}
+
+/* k1 must be < k2 */
+static int match_dup_headtail(int k1, int k2,
+		int pdict_W, RoSeq *dup_head, RoSeq *dup_tail,
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	int i, end1, end2, nmismatch;
+	IntBuf *match_count, *ends_buf1, *ends_buf2;
+
+	match_count = _MIndex_get_match_count();
+	ends_buf1 = _MIndex_get_match_ends(k1);
+	ends_buf2 = _MIndex_get_match_ends(k2);
+	for (i = 0; i < ends_buf1->nelt; i++) {
+		end1 = ends_buf1->elts[i];
+		nmismatch = 0;
+		if (dup_head != NULL)
+			nmismatch += _nmismatch_at_Pshift(dup_head, S,
+					end1 - pdict_W - dup_head->nelt,
+					fixedP, fixedS);
+		if (dup_tail != NULL)
+			nmismatch += _nmismatch_at_Pshift(dup_tail, S,
+					end1,
+					fixedP, fixedS);
+		if (nmismatch > max_mm)
+			continue;
+		if (is_count_only) {
+			match_count->elts[k2]++;
+			if (_MIndex_get_match_reporting_mode() == 0)
 				continue;
-			/*
-			 * We need to shrink the buffer we are walking on! This is safe
-			 * because shrinking an IntBuf object should never trigger
-			 * reallocation.
-			 */
+		}
+		end2 = end1;
+		if (dup_tail != NULL)
+			end2 += dup_tail->nelt;
+		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end2);
+	}
+	return is_count_only ? match_count->elts[k2] : ends_buf2->nelt;
+}
+
+static int match_unq_tail(int k1, RoSeq *unq_tail,
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	int i, end1, OK;
+	IntBuf *match_count, *ends_buf1;
+
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG] ENTERING match_unq_tail()\n");
+		Rprintf("[DEBUG] k1=%d\n", k1);
+	}
+#endif
+	match_count = _MIndex_get_match_count();
+	ends_buf1 = _MIndex_get_match_ends(k1);
+	for (i = 0; i < ends_buf1->nelt; i++) {
+		end1 = ends_buf1->elts[i];
+#ifdef DEBUG_BIOSTRINGS
+		if (debug)
+			Rprintf("[DEBUG] i=%d end1=%d\n", i, end1);
+#endif
+		OK = _is_matching_at_Pshift(unq_tail, S, end1,
+				max_mm, fixedP, fixedS);
+		if (!OK) {
+#ifdef DEBUG_BIOSTRINGS
+			if (debug)
+				Rprintf("[DEBUG] mismatch\n");
+#endif
+			if (_MIndex_get_match_reporting_mode() == 0)
+				continue;
+			// We need to shrink the buffer we are walking on!
+			// This is safe because shrinking an IntBuf object
+			// should never trigger reallocation.
 			_IntBuf_delete_at(ends_buf1, i--);
 			continue;
 		}
-		/* Match */
+#ifdef DEBUG_BIOSTRINGS
+		if (debug)
+			Rprintf("[DEBUG] match\n");
+#endif
 		if (is_count_only) {
-			match_count.elts[k2]++;
-			if (match_reporting_mode == 0)
+			match_count->elts[k1]++;
+			if (_MIndex_get_match_reporting_mode() == 0)
 				continue;
 		}
-		if (k1 != k2) {
-			_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end1 + Ptail.nelt);
-		} else {
-			ends_buf2->elts[i] += Ptail.nelt;
-		}
+		ends_buf1->elts[i] += unq_tail->nelt;
 	}
-	return is_count_only ? match_count.elts[k2] : ends_buf2->nelt;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING match_unq_tail()\n");
+#endif
+	return is_count_only ? match_count->elts[k1] : ends_buf1->nelt;
 }
 
-static void match_TBdna_tail(CachedXStringSet *cached_tail, RoSeq S,
-		int pdict_len, SEXP unq2dup,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+static int match_unq_headtail(int k1,
+		int pdict_W, RoSeq *unq_head, RoSeq *unq_tail,
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
 {
+	int i, end1, nmismatch;
+	IntBuf *match_count, *ends_buf1;
+
+	match_count = _MIndex_get_match_count();
+	ends_buf1 = _MIndex_get_match_ends(k1);
+	for (i = 0; i < ends_buf1->nelt; i++) {
+		end1 = ends_buf1->elts[i];
+		nmismatch = 0;
+		if (unq_head != NULL)
+			nmismatch += _nmismatch_at_Pshift(unq_head, S,
+					end1 - pdict_W - unq_head->nelt,
+					fixedP, fixedS);
+		if (unq_tail != NULL)
+			nmismatch += _nmismatch_at_Pshift(unq_tail, S,
+					end1, fixedP, fixedS);
+		if (nmismatch > max_mm) {
+			if (_MIndex_get_match_reporting_mode() == 0)
+				continue;
+			// We need to shrink the buffer we are walking on!
+			// This is safe because shrinking an IntBuf object
+			// should never trigger reallocation.
+			_IntBuf_delete_at(ends_buf1, i--);
+			continue;
+		}
+		if (is_count_only) {
+			match_count->elts[k1]++;
+			if (_MIndex_get_match_reporting_mode() == 0)
+				continue;
+		}
+		if (unq_tail != NULL)
+			ends_buf1->elts[i] += unq_tail->nelt;
+	}
+	return is_count_only ? match_count->elts[k1] : ends_buf1->nelt;
+}
+
+static void match_TBdna_tail(SEXP unq2dup, CachedXStringSet *cached_tail,
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+	IntBuf *matching_keys;
 	int n1, i, j, *dup, k1, k2, nmatches;
 	SEXP dups;
 	RoSeq Ptail;
 
-	/* The number of elements in matching_poffsets can increase or decrease
-	   during the for loop! */
-	n1 = matching_poffsets.nelt;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING match_TBdna_tail()\n");
+#endif
+	matching_keys = _MIndex_get_matching_keys();
+	n1 = matching_keys->nelt;
+	// The number of elements in matching_keys can increase or decrease
+	// during the for loop!
 	for (i = 0; i < n1; i++) {
-		k1 = matching_poffsets.elts[i];
+		k1 = matching_keys->elts[i];
 		dups = VECTOR_ELT(unq2dup, k1);
 		if (dups != R_NilValue) {
-			for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
+			for (j = 0, dup = INTEGER(dups);
+			     j < LENGTH(dups);
+			     j++, dup++)
+			{
 				k2 = *dup - 1;
-				Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k2);
-				nmatches = match_TBdna_Ptail(Ptail, S, k1, k2,
-							     max_mm, fixedP, fixedS, is_count_only);
+				Ptail = _get_CachedXStringSet_elt_asRoSeq(
+						cached_tail, k2);
+				nmatches = match_dup_tail(k1, k2, &Ptail,
+						S, max_mm, fixedP, fixedS,
+						is_count_only);
 				if (nmatches != 0)
-					_IntBuf_insert_at(&matching_poffsets,
-							  matching_poffsets.nelt, k2);
+					_IntBuf_insert_at(matching_keys,
+							  matching_keys->nelt,
+							  k2);
 			}
 		}
 		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k1);
-		nmatches = match_TBdna_Ptail(Ptail, S, k1, k1,
-					     max_mm, fixedP, fixedS, is_count_only);
+		nmatches = match_unq_tail(k1, &Ptail,
+				S, max_mm, fixedP, fixedS, is_count_only);
 		if (nmatches == 0) {
-			_IntBuf_delete_at(&matching_poffsets, i--);
+			_IntBuf_delete_at(matching_keys, i--);
 			n1--;
 		}
 	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING match_TBdna_tail()\n");
+#endif
 	return;
 }
 
-static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
-		int pdict_len, SEXP unq2dup,
+static void match_TBdna_headtail(SEXP unq2dup, int pdict_W,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
-		RoSeq S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
 {
+	IntBuf *matching_keys;
+	int n1, i, j, *dup, k1, k2, nmatches;
+	SEXP dups;
+	RoSeq Phead, *pPhead, Ptail, *pPtail;
+
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING match_TBdna_headtail()\n");
+#endif
+	matching_keys = _MIndex_get_matching_keys();
+	n1 = matching_keys->nelt;
+	// The number of elements in matching_keys can increase or decrease
+	// during the for loop!
+	for (i = 0; i < n1; i++) {
+		k1 = matching_keys->elts[i];
+		dups = VECTOR_ELT(unq2dup, k1);
+		if (dups != R_NilValue) {
+			for (j = 0, dup = INTEGER(dups);
+			     j < LENGTH(dups);
+			     j++, dup++)
+			{
+				k2 = *dup - 1;
+				pPhead = pPtail = NULL;
+				if (cached_head != NULL) {
+				    Phead = _get_CachedXStringSet_elt_asRoSeq(
+						cached_head, k2);
+				    pPhead = &Phead;
+				}
+				if (cached_tail != NULL) {
+				    Ptail = _get_CachedXStringSet_elt_asRoSeq(
+						cached_tail, k2);
+				    pPtail = &Ptail;
+				}
+				nmatches = match_dup_headtail(k1, k2,
+						pdict_W, pPhead, pPtail,
+						S, max_mm, fixedP, fixedS,
+						is_count_only);
+				if (nmatches != 0)
+					_IntBuf_insert_at(matching_keys,
+							  matching_keys->nelt,
+							  k2);
+			}
+		}
+		pPhead = pPtail = NULL;
+		if (cached_head != NULL) {
+			Phead = _get_CachedXStringSet_elt_asRoSeq(
+					cached_head, k1);
+			pPhead = &Phead;
+		}
+		if (cached_tail != NULL) {
+			Ptail = _get_CachedXStringSet_elt_asRoSeq(
+					cached_tail, k1);
+			pPtail = &Ptail;
+		}
+		nmatches = match_unq_headtail(k1,
+				pdict_W, pPhead, pPtail,
+				S, max_mm, fixedP, fixedS, is_count_only);
+		if (nmatches == 0) {
+			_IntBuf_delete_at(matching_keys, i--);
+			n1--;
+		}
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING match_TBdna_headtail()\n");
+#endif
+	return;
+}
+
+static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
+		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
+		RoSeq *S, int max_mm, int fixedP, int fixedS, int is_count_only)
+{
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING match_TBdna()\n");
+#endif
 	if (fixedS)
-		CWdna_exact_search(actree_nodes, base_codes, S);
+		_match_ACtree(pdict_data, S);
 	else
-		CWdna_exact_search_on_nonfixedS(actree_nodes, base_codes, S);
-	if (cached_tail == NULL)
-		report_matches_for_dups(unq2dup);
+		_match_ACtree_to_nonfixedS(pdict_data, S);
+	if (cached_head == NULL && cached_tail == NULL)
+		_MIndex_report_matches_for_dups(unq2dup);
+	else if (cached_head == NULL)
+		match_TBdna_tail(unq2dup, cached_tail,
+			S, max_mm, fixedP, fixedS, is_count_only);
 	else
-		match_TBdna_tail(cached_tail, S,
-			pdict_len, unq2dup,
-			max_mm, fixedP, fixedS, is_count_only);
+		match_TBdna_headtail(unq2dup, pdict_W,
+			cached_head, cached_tail,
+			S, max_mm, fixedP, fixedS, is_count_only);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING match_TBdna()\n");
+#endif
 	return;
 }
 
@@ -481,9 +349,10 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
  * .Call entry point: "XString_match_TBdna" and "XStringViews_match_TBdna"
  *
  * Arguments:
- *   'actree_nodes_xp': pdict@actree@nodes@xp
- *   'actree_base_codes': pdict@actree@base_codes
+ *   'pdict_data': a 2-elt list containing pdict@actree@nodes@xp and
+ *                 pdict@actree@base_codes (in this order)
  *   'pdict_length': length(pdict)
+ *   'pdict_width': width(pdict)
  *   'pdict_unq2dup': pdict@dups@unq2dup
  *   'pdict_head': pdict@head (XStringSet or NULL)
  *   'pdict_tail': pdict@tail (XStringSet or NULL)
@@ -499,21 +368,24 @@ static void match_TBdna(ACNode *actree_nodes, const int *base_codes,
  *
  ****************************************************************************/
 
-SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_length, SEXP pdict_unq2dup,
+SEXP XString_match_TBdna(SEXP pdict_data,
+		SEXP pdict_length, SEXP pdict_width, SEXP pdict_unq2dup,
 		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
-	ACNode *actree_nodes;
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
-	int pdict_len, no_head, no_tail,
+	int pdict_L, pdict_W, no_head, no_tail,
 	    fixedP, fixedS, is_count_only;
 
-	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	pdict_len = INTEGER(pdict_length)[0];
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING XString_match_TBdna()\n");
+#endif
+	pdict_L = INTEGER(pdict_length)[0];
+	pdict_W = INTEGER(pdict_width)[0];
 	pcached_head = pcached_tail = NULL;
 	no_head = pdict_head == R_NilValue;
 	if (!no_head) {
@@ -532,38 +404,38 @@ SEXP XString_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
-	init_match_reporting(no_tail, is_count_only, pdict_len);
-	match_TBdna(actree_nodes, INTEGER(actree_base_codes),
-		pdict_len, pdict_unq2dup,
+	_MIndex_init_match_reporting(is_count_only, !no_head || !no_tail, pdict_L);
+	match_TBdna(pdict_data, pdict_unq2dup, pdict_W,
 		pcached_head, pcached_tail,
-		S,
-		INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
-
-	if (is_count_only)
-		return _IntBuf_asINTEGER(&match_count);
-	if (envir == R_NilValue)
-		return _IntBBuf_asLIST(&match_ends, 1);
-	return _IntBBuf_toEnvir(&match_ends, envir, 1);
+		&S, INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING XString_match_TBdna()\n");
+#endif
+	return _MIndex_reported_matches_asSEXP(envir);
 }
 
-SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
-		SEXP pdict_length, SEXP pdict_unq2dup,
+SEXP XStringViews_match_TBdna(SEXP pdict_data,
+		SEXP pdict_length, SEXP pdict_width, SEXP pdict_unq2dup,
 		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
-	ACNode *actree_nodes;
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
-	RoSeq S, V;
-	int pdict_len, no_head, no_tail,
+	RoSeq S, S_view;
+	int pdict_L, pdict_W, no_head, no_tail,
 	    fixedP, fixedS, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
 	IntBuf global_match_count;
 	IntBBuf global_match_ends;
 
-	actree_nodes = (ACNode *) INTEGER(R_ExternalPtrTag(actree_nodes_xp));
-	pdict_len = INTEGER(pdict_length)[0];
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING XStringViews_match_TBdna()\n");
+#endif
+	pdict_L = INTEGER(pdict_length)[0];
+	pdict_W = INTEGER(pdict_width)[0];
 	pcached_head = pcached_tail = NULL;
 	no_head = pdict_head == R_NilValue;
 	if (!no_head) {
@@ -583,10 +455,10 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
-		global_match_count = _new_IntBuf(pdict_len, pdict_len, 0);
+		global_match_count = _new_IntBuf(pdict_L, pdict_L, 0);
 	else
-		global_match_ends = _new_IntBBuf(pdict_len, pdict_len);
-	init_match_reporting(no_tail, is_count_only, pdict_len);
+		global_match_ends = _new_IntBBuf(pdict_L, pdict_L);
+	_MIndex_init_match_reporting(is_count_only, !no_head || !no_tail, pdict_L);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -595,17 +467,19 @@ SEXP XStringViews_match_TBdna(SEXP actree_nodes_xp, SEXP actree_base_codes,
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || view_offset + *view_width > S.nelt)
 			error("'subject' has out of limits views");
-		V.elts = S.elts + view_offset;
-		V.nelt = *view_width;
-		match_TBdna(actree_nodes, INTEGER(actree_base_codes),
-			pdict_len, pdict_unq2dup,
+		S_view.elts = S.elts + view_offset;
+		S_view.nelt = *view_width;
+		match_TBdna(pdict_data, pdict_unq2dup, pdict_W,
 			pcached_head, pcached_tail,
-			V,
-			INTEGER(max_mismatch)[0], fixedP, fixedS,
+			&S_view, INTEGER(max_mismatch)[0], fixedP, fixedS,
 			is_count_only);
-		merge_matches(&global_match_count, &global_match_ends, view_offset);
+		_MIndex_merge_matches(&global_match_count, &global_match_ends, view_offset);
 	}
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING XStringViews_match_TBdna()\n");
+#endif
 	if (is_count_only)
 		return _IntBuf_asINTEGER(&global_match_count);
 	if (envir == R_NilValue)

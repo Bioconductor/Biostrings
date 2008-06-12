@@ -7,15 +7,6 @@
 
 typedef int CharToIntTable[CHRTRTABLE_LENGTH];
 
-#define MAX_CHILDREN_PER_ACNODE 4
-typedef struct acnode {
-	int parent_id;
-	int depth;
-	int child_id[MAX_CHILDREN_PER_ACNODE];
-	int flink;
-	int P_id;
-} ACNode;
-
 
 /* copy_seq.c */
 
@@ -68,7 +59,9 @@ void _copy_seq_to_subset(
 
 SEXP debug_utils();
 
-char * _Biostrings_alloc_string(int n);
+char *_Biostrings_alloc_string(int n);
+
+const char *_RoSeq2str(const RoSeq *seq);
 
 int _Biostrings_memcmp(
 	const char *a,
@@ -481,12 +474,12 @@ SEXP _new_XRaw_from_RoSeqs(
 void _write_RoSeq_to_XRaw(
 	SEXP x,
 	int offset,
-	RoSeq seq,
+	const RoSeq *seq,
 	const int *chrtrtable
 );
 
 SEXP _new_CHARSXP_from_RoSeq(
-	RoSeq seq,
+	const RoSeq *seq,
 	SEXP lkup
 );
 
@@ -754,7 +747,7 @@ SEXP _alloc_XString(
 void _write_RoSeq_to_XString(
 	SEXP x,
 	int start,
-	RoSeq seq,
+	const RoSeq *seq,
 	int encode
 );
 
@@ -798,14 +791,14 @@ SEXP _alloc_XStringSet(
 void _write_RoSeq_to_CachedXStringSet_elt(
 	CachedXStringSet *x,
 	int i,
-	RoSeq seq,
+	const RoSeq *seq,
 	int encode
 );
 
 void _write_RoSeq_to_XStringSet_elt(
 	SEXP x,
 	int i,
-	RoSeq seq,
+	const RoSeq *seq,
 	int encode
 );
 
@@ -990,6 +983,14 @@ SEXP inject_code(
 
 SEXP debug_match_utils();
 
+int _nmismatch_at_Pshift(
+	const RoSeq *P,
+	const RoSeq *S,
+	int Pshift,
+	int fixedP,
+	int fixedS
+);
+
 SEXP nmismatch_at(
 	SEXP pattern,
 	SEXP subject,
@@ -998,9 +999,9 @@ SEXP nmismatch_at(
 	SEXP fixed
 );
 
-int _is_matching(
-	RoSeq P,
-	RoSeq S,
+int _is_matching_at_Pshift(
+	const RoSeq *P,
+	const RoSeq *S,
 	int Pshift,
 	int max_mm,
 	int fixedP,
@@ -1055,8 +1056,8 @@ SEXP _reported_matches_asSEXP();
 SEXP debug_match_pattern_boyermoore();
 
 void _match_pattern_boyermoore(
-	RoSeq P,
-	RoSeq S
+	const RoSeq *P,
+	const RoSeq *S
 );
 
 
@@ -1067,8 +1068,8 @@ SEXP debug_match_pattern_shiftor();
 SEXP bits_per_long();
 
 void _match_pattern_shiftor(
-	RoSeq P,
-	RoSeq S,
+	const RoSeq *P,
+	const RoSeq *S,
 	int max_mm,
 	int fixedP,
 	int fixedS
@@ -1211,28 +1212,38 @@ SEXP find_palindromes(
 );
 
 
-/* ACtree_utils.c */
-
-SEXP debug_ACtree_utils();
-
-SEXP CWdna_free_actree_nodes_buf();
-
-SEXP CWdna_pp_STRSXP(
-	SEXP dict,
-	SEXP tb_start,
-	SEXP tb_end
-);
-
-SEXP CWdna_pp_XStringSet(
-	SEXP dict,
-	SEXP tb_start,
-	SEXP tb_end
-);
-
-
 /* MIndex_utils.c */
 
 SEXP debug_MIndex_utils();
+
+void _MIndex_init_match_reporting(
+	int is_count_only,
+	int with_headtail,
+	int pdict_L
+);
+
+int _MIndex_get_match_reporting_mode();
+
+IntBuf *_MIndex_get_match_count();
+
+IntBuf *_MIndex_get_match_ends(int key);
+
+IntBuf *_MIndex_get_matching_keys();
+
+void _MIndex_report_match(
+	int key,
+	int end
+);
+
+void _MIndex_report_matches_for_dups(SEXP unq2dup);
+
+void _MIndex_merge_matches(
+	IntBuf *global_match_count,
+	IntBBuf *global_match_ends,
+	int view_offset
+);
+
+SEXP _MIndex_reported_matches_asSEXP(SEXP env);
 
 SEXP shiftListOfInts(
 	SEXP x,
@@ -1261,14 +1272,43 @@ SEXP ByName_MIndex_coverage(
 );
 
 
+/* match_ACtree.c */
+
+SEXP debug_match_ACtree();
+
+SEXP CWdna_free_actree_nodes_buf();
+
+SEXP CWdna_pp_STRSXP(
+	SEXP dict,
+	SEXP tb_start,
+	SEXP tb_end
+);
+
+SEXP CWdna_pp_XStringSet(
+	SEXP dict,
+	SEXP tb_start,
+	SEXP tb_end
+);
+
+void _match_ACtree(
+	SEXP pdict_data,
+	const RoSeq *S
+);
+
+void _match_ACtree_to_nonfixedS(
+	SEXP pdict_data,
+	const RoSeq *S
+);
+
+
 /* match_TBdna.c */
 
 SEXP debug_match_TBdna();
 
 SEXP XString_match_TBdna(
-	SEXP actree_nodes_xp,
-	SEXP actree_base_codes,
+	SEXP pdict_data,
 	SEXP pdict_length,
+	SEXP pdict_width,
 	SEXP pdict_unq2dup,
 	SEXP pdict_head,
 	SEXP pdict_tail,
@@ -1280,9 +1320,9 @@ SEXP XString_match_TBdna(
 );
 
 SEXP XStringViews_match_TBdna(
-	SEXP actree_nodes_xp,
-	SEXP actree_base_codes,
+	SEXP pdict_data,
 	SEXP pdict_length,
+	SEXP pdict_width,
 	SEXP pdict_unq2dup,
 	SEXP pdict_head,
 	SEXP pdict_tail,

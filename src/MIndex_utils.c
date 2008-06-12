@@ -18,6 +18,143 @@ SEXP debug_MIndex_utils()
 	return R_NilValue;
 }
 
+
+
+/****************************************************************************
+ * MATCH REPORTING FACILITIES FOR PATTERN MATCHING FUNCTIONS RETURNING AN
+ * MIndex OBJECT
+ */
+
+static int match_reporting_mode; // 0, 1 or 2
+static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
+static IntBBuf match_ends;  // used when mode >= 1
+static IntBuf matching_keys;
+
+void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
+		int pdict_L)
+{
+	match_reporting_mode = is_count_only ? (with_headtail ? 2 : 0) : 1;
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+		match_count = _new_IntBuf(pdict_L, pdict_L, 0);
+	if (match_reporting_mode >= 1)
+		match_ends = _new_IntBBuf(pdict_L, pdict_L);
+	matching_keys = _new_IntBuf(0, 0, 0);
+	return;
+}
+
+int _MIndex_get_match_reporting_mode()
+{
+	return match_reporting_mode;
+}
+
+IntBuf *_MIndex_get_match_count()
+{
+	return &match_count;
+}
+
+IntBuf *_MIndex_get_match_ends(int key)
+{
+	return match_ends.elts + key;
+}
+
+IntBuf *_MIndex_get_matching_keys()
+{
+	return &matching_keys;
+}
+
+void _MIndex_report_match(int key, int end)
+{
+	int is_new_matching_key;
+	IntBuf *ends_buf;
+
+	if (match_reporting_mode == 0) {
+		is_new_matching_key = match_count.elts[key]++ == 0;
+	} else {
+		ends_buf = match_ends.elts + key;
+		is_new_matching_key = ends_buf->nelt == 0;
+		_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
+	}
+	if (is_new_matching_key)
+		_IntBuf_insert_at(&matching_keys,
+				  matching_keys.nelt, key);
+	return;
+}
+
+void _MIndex_report_matches_for_dups(SEXP unq2dup)
+{
+	int n1, i, *key, j, *dup, k1, k2;
+	SEXP dups;
+
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING _MIndex_report_matches_for_dups()\n");
+#endif
+	// The value of matching_keys.nelt can increase during the
+	// for loop!
+	n1 = matching_keys.nelt;
+	for (i = 0, key = matching_keys.elts; i < n1; i++, key++) {
+		k1 = *key;
+		dups = VECTOR_ELT(unq2dup, k1);
+		if (dups == R_NilValue)
+			continue;
+		for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
+			k2 = *dup - 1;
+			if (match_reporting_mode == 0)
+				match_count.elts[k2] = match_count.elts[k1];
+			else
+				match_ends.elts[k2] = match_ends.elts[k1];
+			_IntBuf_insert_at(&matching_keys,
+					  matching_keys.nelt, k2);
+		}
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING _MIndex_report_matches_for_dups()\n");
+#endif
+	return;
+}
+
+void _MIndex_merge_matches(IntBuf *global_match_count,
+		IntBBuf *global_match_ends, int view_offset)
+{
+	int i, *key;
+	IntBuf *ends_buf, *global_ends_buf;
+
+	for (i = 0, key = matching_keys.elts;
+	     i < matching_keys.nelt;
+	     i++, key++)
+	{
+		if (match_reporting_mode == 0 || match_reporting_mode == 2) {
+			global_match_count->elts[*key] += match_count.elts[*key];
+			match_count.elts[*key] = 0;
+		} else {
+			ends_buf = match_ends.elts + *key;
+			global_ends_buf = global_match_ends->elts + *key;
+			_IntBuf_append_shifted_vals(global_ends_buf,
+				ends_buf->elts, ends_buf->nelt, view_offset);
+		}
+		if (match_reporting_mode >= 1)
+			match_ends.elts[*key].nelt = 0;
+	}
+	matching_keys.nelt = 0;
+	return;
+}
+
+SEXP _MIndex_reported_matches_asSEXP(SEXP env)
+{
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+		return _IntBuf_asINTEGER(&match_count);
+	if (env == R_NilValue)
+		return _IntBBuf_asLIST(&match_ends, 1);
+	return _IntBBuf_toEnvir(&match_ends, env, 1);
+}
+
+
+
+/****************************************************************************
+ * OTHER MIndex FACILITIES
+ */
+
 /*
  * 'e1' must be an INTSXP.
  * addInt() must ALWAYS duplicate 'e1', even when e2 = 0!

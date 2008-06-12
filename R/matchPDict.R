@@ -392,8 +392,8 @@ extractAllMatches <- function(subject, mindex)
         envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
         C_ans <- .Call("XString_match_TBdna",
-                       actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dups@unq2dup,
+                       list(actree@nodes@xp, actree@base_codes),
+                       length(pdict), width(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
                        subject,
                        0L, fixed,
@@ -401,8 +401,8 @@ extractAllMatches <- function(subject, mindex)
                        PACKAGE="Biostrings")
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .Call("XStringViews_match_TBdna",
-                       actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dups@unq2dup,
+                       list(actree@nodes@xp, actree@base_codes),
+                       length(pdict), width(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
                        subject(subject), start(subject), width(subject),
                        0L, fixed,
@@ -511,8 +511,8 @@ extractAllMatches <- function(subject, mindex)
         envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
         C_ans <- .Call("XString_match_TBdna",
-                       actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dups@unq2dup,
+                       list(actree@nodes@xp, actree@base_codes),
+                       length(pdict), width(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
                        subject,
                        max.mismatch, fixed,
@@ -520,8 +520,8 @@ extractAllMatches <- function(subject, mindex)
                        PACKAGE="Biostrings")
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .Call("XStringViews_match_TBdna",
-                       actree@nodes@xp, actree@base_codes,
-                       length(pdict), pdict@dups@unq2dup,
+                       list(actree@nodes@xp, actree@base_codes),
+                       length(pdict), width(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
                        subject(subject), start(subject), width(subject),
                        max.mismatch, fixed,

@@ -39,7 +39,7 @@
  
  In this complete rewrite of the "shift-or" algo, we use a more general
  version of the correct formula. The code doing this is in the
- _update_PMmasks() function:
+ update_PMmasks() function:
  
 	 for (e = 1; e < PMmask_length; e++) {
 	     PMmaskB = PMmaskA;
@@ -130,12 +130,11 @@ SEXP bits_per_long()
 
 /****************************************************************************/
 
-static void _set_pmaskmap(
+static void set_pmaskmap(
 		int is_fixed,
 		int pmaskmap_length,
 		ShiftOrWord_t *pmaskmap,
-		int nP,
-		const char *pat)
+		const RoSeq *P)
 {
 	ShiftOrWord_t pmask;
 	int nncode, i;
@@ -147,13 +146,13 @@ static void _set_pmaskmap(
 	*/
 	for (nncode = 0; nncode < pmaskmap_length; nncode++) {
 		pmask = 0LU;
-		for (i = 0; i < nP; i++) {
+		for (i = 0; i < P->nelt; i++) {
 			pmask <<= 1;
 			if (is_fixed) {
-				if (((unsigned char) pat[i]) != nncode)
+				if (((unsigned char) P->elts[i]) != nncode)
 					pmask |= 1UL;
 			} else {
-				if ((((unsigned char) pat[i]) & nncode) == 0)
+				if ((((unsigned char) P->elts[i]) & nncode) == 0)
 					pmask |= 1UL;
 			}
 		}
@@ -162,7 +161,7 @@ static void _set_pmaskmap(
 	return;
 }
 
-static void _update_PMmasks(
+static void update_PMmasks(
 		int PMmask_length,
 		ShiftOrWord_t *PMmask,
 		ShiftOrWord_t pmask)
@@ -174,7 +173,7 @@ static void _update_PMmasks(
 	PMmask[0] = PMmaskA | pmask;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _update_PMmasks(): PMmask[%d]=", 0);
+		Rprintf("[DEBUG] update_PMmasks(): PMmask[%d]=", 0);
 		debug_printULBits(PMmask[0]);
 	}
 #endif
@@ -184,7 +183,7 @@ static void _update_PMmasks(
 		PMmask[e] = (PMmaskA | pmask) & PMmaskB & PMmask[e-1];
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] _update_PMmasks(): PMmask[%d]=", e);
+			Rprintf("[DEBUG] update_PMmasks(): PMmask[%d]=", e);
 			debug_printULBits(PMmask[e]);
 		}
 #endif
@@ -196,11 +195,10 @@ static void _update_PMmasks(
  * Returns -1 if no match is found.
  * Returns nb of mismatches (>= 0) if an inexact match is found.
  */
-static int _next_match(
+static int next_match(
 		int *Lpos,
 		int *Rpos,
-		int nS,
-		const char *subj,
+		const RoSeq *S,
 		ShiftOrWord_t *pmaskmap,
 		int PMmask_length, /* PMmask_length = kerr+1 */
 		ShiftOrWord_t *PMmask)
@@ -209,13 +207,13 @@ static int _next_match(
 	static int nncode;
 	static int e;
 
-	while (*Lpos < nS) {
-		if (*Rpos < nS) {
-			nncode = (unsigned char) subj[*Rpos];
+	while (*Lpos < S->nelt) {
+		if (*Rpos < S->nelt) {
+			nncode = (unsigned char) S->elts[*Rpos];
 			pmask = pmaskmap[nncode];
 #ifdef DEBUG_BIOSTRINGS
 			if (debug) {
-				Rprintf("[DEBUG] _next_match(): ");
+				Rprintf("[DEBUG] next_match(): ");
 				Rprintf("pmaskmap[%d]=", nncode);
 				debug_printULBits(pmask);
 			}
@@ -223,7 +221,7 @@ static int _next_match(
 		} else {
 			pmask = ~0UL;
 		}
-		_update_PMmasks(PMmask_length, PMmask, pmask);
+		update_PMmasks(PMmask_length, PMmask, pmask);
 		(*Lpos)++;
 		(*Rpos)++;
 		for (e = 0; e < PMmask_length; e++) {
@@ -235,37 +233,35 @@ static int _next_match(
 	return -1;
 }
 
-static void _match_shiftor(const char *P, int nP, const char *S, int nS, 
-		int PMmask_length, int is_fixed)
+static void shiftor(const RoSeq *P, const RoSeq *S, int PMmask_length, int is_fixed)
 {
 	ShiftOrWord_t *PMmask, pmaskmap[256];
 	int i, e, Lpos, Rpos, ret;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _match_shiftor(): BEGIN\n");
+		Rprintf("[DEBUG] shiftor(): BEGIN\n");
 	}
 #endif
-	if (nP <= 0)
+	if (P->nelt <= 0)
 		error("empty pattern");
-	_set_pmaskmap(is_fixed, 256, pmaskmap, nP, P);
+	set_pmaskmap(is_fixed, 256, pmaskmap, P);
 	PMmask = (ShiftOrWord_t *)
 			R_alloc(PMmask_length, sizeof(ShiftOrWord_t));
 	PMmask[0] = 1UL;
-	for (i = 1; i < nP; i++) {
+	for (i = 1; i < P->nelt; i++) {
 		PMmask[0] <<= 1;
 		PMmask[0] |= 1UL;
 	}
 	for (e = 1; e < PMmask_length; e++) {
 		PMmask[e] = PMmask[e-1] >> 1;
 	}
-	Lpos = 1 - nP;
+	Lpos = 1 - P->nelt;
 	Rpos = 0;
 	while (1) {
-		ret = _next_match(
+		ret = next_match(
 			&Lpos,
 			&Rpos,
-			nS,
 			S,
 			pmaskmap,
 			PMmask_length,
@@ -278,19 +274,19 @@ static void _match_shiftor(const char *P, int nP, const char *S, int nS,
 	/* No need to free PMmask, R does that for us */
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _match_shiftor(): END\n");
+		Rprintf("[DEBUG] shiftor(): END\n");
 	}
 #endif
 	return;
 }
 
-void _match_pattern_shiftor(RoSeq P, RoSeq S,
+void _match_pattern_shiftor(const RoSeq *P, const RoSeq *S,
 		int max_mm, int fixedP, int fixedS)
 {
-	if (P.nelt > shiftor_maxbits)
+	if (P->nelt > shiftor_maxbits)
 		error("pattern is too long");
 	if (fixedP != fixedS)
 		error("fixedP != fixedS not supported by shift-or algo");
-	_match_shiftor(P.elts, P.nelt, S.elts, S.nelt, max_mm + 1, fixedP);
+	shiftor(P, S, max_mm + 1, fixedP);
 }
 

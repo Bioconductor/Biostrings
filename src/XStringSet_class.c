@@ -159,7 +159,7 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 }
 
 void _write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i,
-		RoSeq seq, int encode)
+		const RoSeq *seq, int encode)
 {
 	int new_start;
 	const int *chrtrtable;
@@ -170,13 +170,13 @@ void _write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i,
 		new_start = x->start[i - 1] + x->width[i - 1];
 	}
 	chrtrtable = encode ? x->enc_chrtrtable : NULL;
-	_copy_seq(x->super_elts + new_start - 1, seq.elts, seq.nelt, chrtrtable);
+	_copy_seq(x->super_elts + new_start - 1, seq->elts, seq->nelt, chrtrtable);
 	x->start[i] = new_start;
-	x->width[i] = seq.nelt;
+	x->width[i] = seq->nelt;
 	return;
 }
 
-void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq, int encode)
+void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, const RoSeq *seq, int encode)
 {
 	CachedXStringSet cached_x;
 
@@ -205,7 +205,7 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 	PROTECT(ans = NEW_CHARACTER(x_length));
 	for (i = 0; i < x_length; i++) {
 		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(xx, lkup));
+		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(&xx, lkup));
 	}
 	UNPROTECT(1);
 	return ans;

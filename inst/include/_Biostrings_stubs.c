@@ -168,8 +168,8 @@ SEXP alloc_XStringSet(const char *baseClass, int length, int super_length)
 	return fun(baseClass, length, super_length);
 }
 
-typedef void (*write_RoSeq_to_CachedXStringSet_elt_FUNTYPE)(CachedXStringSet *, int, RoSeq, int);
-void write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i, RoSeq seq, int encode)
+typedef void (*write_RoSeq_to_CachedXStringSet_elt_FUNTYPE)(CachedXStringSet *, int, const RoSeq *, int);
+void write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i, const RoSeq *seq, int encode)
 {
 	static write_RoSeq_to_CachedXStringSet_elt_FUNTYPE fun = NULL;
 
@@ -179,8 +179,8 @@ void write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i, RoSeq seq, 
 	return fun(x, i, seq, encode);
 }
 
-typedef void (*write_RoSeq_to_XStringSet_elt_FUNTYPE)(SEXP, int, RoSeq, int);
-void write_RoSeq_to_XStringSet_elt(SEXP x, int i, RoSeq seq, int encode)
+typedef void (*write_RoSeq_to_XStringSet_elt_FUNTYPE)(SEXP, int, const RoSeq *, int);
+void write_RoSeq_to_XStringSet_elt(SEXP x, int i, const RoSeq *seq, int encode)
 {
 	static write_RoSeq_to_XStringSet_elt_FUNTYPE fun = NULL;
 

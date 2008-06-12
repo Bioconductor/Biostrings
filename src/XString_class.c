@@ -206,7 +206,7 @@ SEXP _alloc_XString(const char *class, int length)
 	return ans;
 }
 
-void _write_RoSeq_to_XString(SEXP x, int start, RoSeq seq, int encode)
+void _write_RoSeq_to_XString(SEXP x, int start, const RoSeq *seq, int encode)
 {
 	int offset;
 	const int *enc_chrtrtable;

@@ -63,11 +63,11 @@ debug_match_BOC2 <- function()
 debug_find_palindromes <- function()
     invisible(.Call("debug_find_palindromes", PACKAGE="Biostrings"))
 
-debug_ACtree_utils <- function()
-    invisible(.Call("debug_ACtree_utils", PACKAGE="Biostrings"))
-
 debug_MIndex_utils <- function()
     invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))
+
+debug_match_ACtree <- function()
+    invisible(.Call("debug_match_ACtree", PACKAGE="Biostrings"))
 
 debug_match_TBdna <- function()
     invisible(.Call("debug_match_TBdna", PACKAGE="Biostrings"))

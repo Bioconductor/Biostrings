@@ -227,7 +227,7 @@ SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 {
 	SEXP tag, ans;
 	int tag_length, i;
-	RoSeq *seq;
+	const RoSeq *seq;
 	char *dest;
 
 	tag_length = 0;
@@ -258,12 +258,13 @@ SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
  * Writing an RoSeq object to an XRaw object.
  */
 
-void _write_RoSeq_to_XRaw(SEXP x, int offset, RoSeq seq, const int *chrtrtable)
+void _write_RoSeq_to_XRaw(SEXP x, int offset, const RoSeq *seq,
+		const int *chrtrtable)
 {
 	char *dest;
 
 	dest = (char *) RAW(_get_XRaw_tag(x)) + offset;
-	_copy_seq(dest, seq.elts, seq.nelt, chrtrtable);
+	_copy_seq(dest, seq->elts, seq->nelt, chrtrtable);
 	return;
 }
 
@@ -274,7 +275,7 @@ void _write_RoSeq_to_XRaw(SEXP x, int offset, RoSeq seq, const int *chrtrtable)
  * FIXME: This has nothing to do with XRaw objects! Find another place for it
  */
 
-SEXP _new_CHARSXP_from_RoSeq(RoSeq seq, SEXP lkup)
+SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
 {
 	// IMPORTANT: We use user-controlled memory for this private memory
 	// pool so it is persistent between calls to .Call().
@@ -285,7 +286,7 @@ SEXP _new_CHARSXP_from_RoSeq(RoSeq seq, SEXP lkup)
 	int new_bufsize;
 	char *new_buf;
 
-	new_bufsize = seq.nelt + 1;
+	new_bufsize = seq->nelt + 1;
 	if (new_bufsize > bufsize) {
 		new_buf = (char *) realloc(buf, new_bufsize);
 		if (new_buf == NULL)
@@ -295,16 +296,16 @@ SEXP _new_CHARSXP_from_RoSeq(RoSeq seq, SEXP lkup)
 		bufsize = new_bufsize;
 	}
 	if (lkup == R_NilValue) {
-		_Biostrings_memcpy_to_i1i2(0, seq.nelt - 1,
-			buf, seq.nelt,
-			seq.elts, seq.nelt, sizeof(char));
+		_Biostrings_memcpy_to_i1i2(0, seq->nelt - 1,
+			buf, seq->nelt,
+			seq->elts, seq->nelt, sizeof(char));
 	} else {
-		_Biostrings_translate_charcpy_to_i1i2(0, seq.nelt - 1,
-			buf, seq.nelt,
-			seq.elts, seq.nelt,
+		_Biostrings_translate_charcpy_to_i1i2(0, seq->nelt - 1,
+			buf, seq->nelt,
+			seq->elts, seq->nelt,
 			INTEGER(lkup), LENGTH(lkup));
 	}
-	buf[seq.nelt] = 0;
+	buf[seq->nelt] = 0;
 	return mkChar(buf);
 }
 
@@ -312,11 +313,11 @@ SEXP _new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 {
 	SEXP ans;
 	int i;
-	RoSeq *seq;
+	const RoSeq *seq;
 
 	PROTECT(ans = NEW_CHARACTER(seqs.nelt));
 	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++)
-		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(*seq, lkup));
+		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(seq, lkup));
 	UNPROTECT(1);
 	return ans;
 }

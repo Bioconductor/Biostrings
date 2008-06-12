@@ -43,14 +43,19 @@ SEXP debug_match_pattern()
  * - To use as a reference when comparing performance.
  */
 
-static void match_naive_exact(RoSeq P, RoSeq S)
+static void match_naive_exact(const RoSeq *P, const RoSeq *S)
 {
-	int start, n2;
+	const char *p, *s;
+	int plen, slen, start, n2;
 
-	if (P.nelt <= 0)
+	if (P->nelt <= 0)
 		error("empty pattern");
-	for (start = 1, n2 = P.nelt; n2 <= S.nelt; start++, n2++, S.elts++) {
-		if (memcmp(P.elts, S.elts, P.nelt) == 0)
+	p = P->elts;
+	plen = P->nelt;
+	s = S->elts;
+	slen = S->nelt;
+	for (start = 1, n2 = plen; n2 <= slen; start++, n2++, s++) {
+		if (memcmp(p, s, plen) == 0)
 			_report_match(start, 0);
 	}
 	return;
@@ -61,29 +66,29 @@ static void match_naive_exact(RoSeq P, RoSeq S)
  * An implementation of the "naive" method for inexact matching.
  */
 
-static void match_naive_inexact(RoSeq P, RoSeq S,
+static void match_naive_inexact(const RoSeq *P, const RoSeq *S,
 		int max_mm, int fixedP, int fixedS)
 {
 	int n1, // position of pattern left-most char relative to the subject
 	    n2, // 1 + position of pattern right-most char relative to the subject
 	    min_n1, max_n2;
 
-	if (P.nelt <= 0)
+	if (P->nelt <= 0)
 		error("empty pattern");
-	min_n1 = P.nelt <= max_mm ? 1 - P.nelt : -max_mm;
-	max_n2 = S.nelt - min_n1;
-	for (n1 = min_n1, n2 = min_n1 + P.nelt; n2 <= max_n2; n1++, n2++)
-		if (_is_matching(P, S, n1, max_mm, fixedP, fixedS))
+	min_n1 = P->nelt <= max_mm ? 1 - P->nelt : -max_mm;
+	max_n2 = S->nelt - min_n1;
+	for (n1 = min_n1, n2 = min_n1 + P->nelt; n2 <= max_n2; n1++, n2++)
+		if (_is_matching_at_Pshift(P, S, n1, max_mm, fixedP, fixedS))
 			_report_match(n1 + 1, 0);
 	return;
 }
 
-static void match_pattern(RoSeq P, RoSeq S, const char *algo,
+static void match_pattern(const RoSeq *P, const RoSeq *S, const char *algo,
 		int max_mm, int fixedP, int fixedS)
 {
-	if (P.nelt > max_mm + S.nelt)
+	if (P->nelt > max_mm + S->nelt)
 		return;
-	if (P.nelt <= max_mm || strcmp(algo, "naive-inexact") == 0)
+	if (P->nelt <= max_mm || strcmp(algo, "naive-inexact") == 0)
 		match_naive_inexact(P, S, max_mm, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
 		match_naive_exact(P, S);
@@ -128,7 +133,7 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? 1 : 2);
-	match_pattern(P, S, algo, max_mm, fixedP, fixedS);
+	match_pattern(&P, &S, algo, max_mm, fixedP, fixedS);
 	return _reported_matches_asSEXP();
 }
 
@@ -137,7 +142,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP algorithm,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
-	RoSeq P, S, V;
+	RoSeq P, S, S_view;
 	const char *algo;
 	int max_mm, fixedP, fixedS, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
@@ -159,10 +164,10 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || view_offset + *view_width > S.nelt)
 			error("'subject' has out of limits views");
-		V.elts = S.elts + view_offset;
-		V.nelt = *view_width;
+		S_view.elts = S.elts + view_offset;
+		S_view.nelt = *view_width;
 		_set_match_shift(view_offset);
-		match_pattern(P, V, algo, max_mm, fixedP, fixedS);
+		match_pattern(&P, &S_view, algo, max_mm, fixedP, fixedS);
 	}
 	return _reported_matches_asSEXP();
 }
@@ -171,7 +176,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		SEXP algorithm,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
-	RoSeq P;
+	RoSeq P, S_elt;
 	CachedXStringSet S;
 	const char *algo;
 	int max_mm, fixedP, fixedS, is_count_only, S_length, i;
@@ -192,8 +197,8 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 	else
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
-		match_pattern(P, _get_CachedXStringSet_elt_asRoSeq(&S, i),
-			algo, max_mm, fixedP, fixedS);
+		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
+		match_pattern(&P, &S_elt, algo, max_mm, fixedP, fixedS);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
 		if (is_count_only)
 			INTEGER(ans)[i] = INTEGER(ans_elt)[0];

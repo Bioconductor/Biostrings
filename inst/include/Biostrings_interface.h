@@ -163,14 +163,14 @@ SEXP alloc_XStringSet(
 void write_RoSeq_to_CachedXStringSet_elt(
 	CachedXStringSet *x,
 	int i,
-	RoSeq seq,
+	const RoSeq *seq,
 	int encode
 );
 
 void write_RoSeq_to_XStringSet_elt(
 	SEXP x,
 	int i,
-	RoSeq seq,
+	const RoSeq *seq,
 	int encode
 );
 

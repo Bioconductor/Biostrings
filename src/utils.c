@@ -31,13 +31,22 @@ SEXP debug_utils()
 
 
 /* Alloc memory for a string of length n */
-char * _Biostrings_alloc_string(int n)
+char *_Biostrings_alloc_string(int n)
 {
-	char * s;
+	char *s;
 
-	s = (char *) R_alloc((long) (n) + 1L, sizeof(char));
+	s = (char *) R_alloc((long) n + 1L, sizeof(char));
 	s[n] = (char) 0;
 	return s;
+}
+
+/* Doesn't work properly if 'seq' contains null bytes */
+const char *_RoSeq2str(const RoSeq *seq)
+{
+	char *s;
+
+	s = _Biostrings_alloc_string(seq->nelt);
+	return strncpy(s, seq->elts, seq->nelt);
 }
 
 

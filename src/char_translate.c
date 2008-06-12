@@ -109,7 +109,7 @@ SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 			xx.elts, xx.nelt,
 			INTEGER(lkup), LENGTH(lkup));
 		yy.nelt = xx.nelt;
-		_write_RoSeq_to_XString(ans, write_at, yy, 0);
+		_write_RoSeq_to_XString(ans, write_at, &yy, 0);
 		write_at += yy.nelt;
 	}
 	UNPROTECT(1);
