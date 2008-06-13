@@ -63,12 +63,18 @@ debug_match_BOC2 <- function()
 debug_find_palindromes <- function()
     invisible(.Call("debug_find_palindromes", PACKAGE="Biostrings"))
 
+debug_Pdict_class <- function()
+    invisible(.Call("debug_Pdict_class", PACKAGE="Biostrings"))
+
 debug_MIndex_utils <- function()
     invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))
+
+debug_match_pdict_Twobit <- function()
+    invisible(.Call("debug_match_pdict_Twobit", PACKAGE="Biostrings"))
 
 debug_match_pdict_ACtree <- function()
     invisible(.Call("debug_match_pdict_ACtree", PACKAGE="Biostrings"))
 
-debug_match_pdict_TBdna <- function()
-    invisible(.Call("debug_match_pdict_TBdna", PACKAGE="Biostrings"))
+debug_match_pdict <- function()
+    invisible(.Call("debug_match_pdict", PACKAGE="Biostrings"))
 

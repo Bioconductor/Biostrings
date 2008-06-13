@@ -18,27 +18,27 @@ static int nal = 0;
 static char *al1_buf, *al2_buf, *al1, *al2;
 
 /* Returns the score of the alignment */
-static int needwunsQS(RoSeq S1, RoSeq S2,
+static int needwunsQS(const RoSeq *S1, const RoSeq *S2,
 		const int *mat, int mat_nrow, const int *lkup, int lkup_length,
 		int gap_cost, char gap_code)
 {
 	int *sco, sc, n1, n2, i1, i2, j1, j2, al_buf_size;
 	char *tra, tr;
 
-	n1 = S1.nelt + 1;
-	n2 = S2.nelt + 1;
+	n1 = S1->nelt + 1;
+	n2 = S2->nelt + 1;
 	sco = (int *) R_alloc((long) n1 * n2, sizeof(int));
 	tra = (char *) R_alloc((long) n1 * n2, sizeof(char));
-	for (i1 = 0; i1 <= S1.nelt; i1++)
+	for (i1 = 0; i1 <= S1->nelt; i1++)
 		SCO(i1, 0) = - i1 * gap_cost;
-	for (i2 = 1; i2 <= S2.nelt; i2++)
+	for (i2 = 1; i2 <= S2->nelt; i2++)
 		SCO(0, i2) = - i2 * gap_cost;
-	for (i1 = 1, j1 = 0; i1 <= S1.nelt; i1++, j1++) {
-		for (i2 = 1, j2 = 0; i2 <= S2.nelt; i2++, j2++) {
+	for (i1 = 1, j1 = 0; i1 <= S1->nelt; i1++, j1++) {
+		for (i2 = 1, j2 = 0; i2 <= S2->nelt; i2++, j2++) {
 			int lkup_val, m1, m2, scR, scD, scI;
-			SET_LKUP_VAL_INT(lkup, lkup_length, S1.elts[j1]);
+			SET_LKUP_VAL_INT(lkup, lkup_length, S1->elts[j1]);
 			m1 = lkup_val;
-			SET_LKUP_VAL_INT(lkup, lkup_length, S2.elts[j2]);
+			SET_LKUP_VAL_INT(lkup, lkup_length, S2->elts[j2]);
 			m2 = lkup_val;
 			scR = SCO(j1, j2) + mat[mat_nrow * m1 + m2];
 			scD = SCO(j1, i2) - gap_cost;
@@ -61,28 +61,28 @@ static int needwunsQS(RoSeq S1, RoSeq S2,
 /*
 #ifdef DEBUG_BIOSTRINGS
 	Rprintf("sco:\n");
-	for (i1 = 0; i1 <= S1.nelt; i1++) {
-		for (i2 = 0; i2 <= S2.nelt; i2++) {
+	for (i1 = 0; i1 <= S1->nelt; i1++) {
+		for (i2 = 0; i2 <= S2->nelt; i2++) {
 			Rprintf("%4d", SCO(i1, i2));
 		}
 		Rprintf("\n");
 	}
 	Rprintf("tra:\n");
-	for (i1 = 1; i1 <= S1.nelt; i1++) {
-		for (i2 = 1; i2 <= S2.nelt; i2++) {
+	for (i1 = 1; i1 <= S1->nelt; i1++) {
+		for (i2 = 1; i2 <= S2->nelt; i2++) {
 			Rprintf(" %c", TRA(i1, i2));
 		}
 		Rprintf("\n");
 	}
 #endif
 */
-	al_buf_size = S1.nelt + S2.nelt;
+	al_buf_size = S1->nelt + S2->nelt;
 	al1_buf = (char *) R_alloc((long) al_buf_size, sizeof(char));
 	al2_buf = (char *) R_alloc((long) al_buf_size, sizeof(char));
 	nal = 0;
 	al1 = al1_buf + al_buf_size;
 	al2 = al2_buf + al_buf_size;
-	i1 = S1.nelt; i2 = S2.nelt;
+	i1 = S1->nelt; i2 = S2->nelt;
 	while (i1 >= 1 || i2 >= 1) {
 		nal++;
 		al1--;
@@ -97,18 +97,18 @@ static int needwunsQS(RoSeq S1, RoSeq S2,
 			tr = TRA(i1, i2);
 		switch (tr) {
 		    case 'D':
-			*al1 = S1.elts[j1];
+			*al1 = S1->elts[j1];
 			*al2 = gap_code;
 			i1--;
 			break;
 		    case 'I':
 			*al1 = gap_code;
-			*al2 = S2.elts[j2];
+			*al2 = S2->elts[j2];
 			i2--;
 			break;
 		    case 'R':
-			*al1 = S1.elts[j1];
-			*al2 = S2.elts[j2];
+			*al1 = S1->elts[j1];
+			*al2 = S2->elts[j2];
 			i1--;
 			i2--;
 			break;
@@ -142,7 +142,7 @@ SEXP align_needwunsQS(SEXP s1, SEXP s2,
 	S1 = _get_XString_asRoSeq(s1);
 	S2 = _get_XString_asRoSeq(s2);
 	nrow = INTEGER(mat_nrow)[0];
-	score = needwunsQS(S1, S2,
+	score = needwunsQS(&S1, &S2,
 		   INTEGER(mat), nrow, INTEGER(lkup), LENGTH(lkup),
 		   INTEGER(gap_cost)[0], (char) RAW(gap_code)[0]);
 

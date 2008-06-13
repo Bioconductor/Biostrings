@@ -10,6 +10,8 @@ UTILITIES
 
 STRING MATCHING
 
+o Renamed the CWdna_PDict class -> ACtree_PDict.
+
 STRING ALIGNMENT
 
 o Renamed the XStringAlign class -> AlignedXStringSet and added the

@@ -179,7 +179,7 @@ setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "CWdna_PDict" class.
+### The "ACtree_PDict" class.
 ###
 ### A container for storing a preprocessed constant width dictionary (or set)
 ### of DNA patterns.
@@ -195,7 +195,7 @@ setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
 ###   actree: the Aho-Corasick tree built from the input dictionary.
 ###
 
-setClass("CWdna_PDict",
+setClass("ACtree_PDict",
     contains="PDict",
     representation(
         length="integer",
@@ -203,34 +203,34 @@ setClass("CWdna_PDict",
         actree="ACtree",
         dups="Dups",
         NAMES="character",  # R doesn't like @names !!
-        stats="list"
+        geom="list"
     )
 )
 
 ### Not intended to be used directly by the user.
-setMethod("initialize", "CWdna_PDict",
+setMethod("initialize", "ACtree_PDict",
     function(.Object, length, pp_Cans, names)
     {
         .Object@length <- length
-        .Object@width <- pp_Cans$width
+        .Object@width <- pp_Cans$geom$width
         .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, pp_Cans$actree_base_codes)
         .Object@dups <- Dups(pp_Cans$dup2unq)
         .Object@NAMES <- if (is.null(names)) as.character(NA) else names
-        .Object@stats <- pp_Cans$stats
+        .Object@geom <- pp_Cans$geom
         .Object
     }
 )
 
-setMethod("length", "CWdna_PDict", function(x) x@length)
+setMethod("length", "ACtree_PDict", function(x) x@length)
 
-setMethod("width", "CWdna_PDict", function(x) x@width)
+setMethod("width", "ACtree_PDict", function(x) x@width)
 
-setMethod("names", "CWdna_PDict",
+setMethod("names", "ACtree_PDict",
     function(x)
         if (length(x@NAMES) == 1 && is.na(x@NAMES)) NULL else x@NAMES
 )
 
-setMethod("show", "CWdna_PDict",
+setMethod("show", "ACtree_PDict",
     function(object)
     {
         cat(length(object), "-pattern constant width PDict object of width ",
@@ -241,14 +241,14 @@ setMethod("show", "CWdna_PDict",
     }
 )
 
-setMethod("duplicated", "CWdna_PDict",
+setMethod("duplicated", "ACtree_PDict",
     function(x, incomparables=FALSE, ...) duplicated(x@dups)
 )
 
-setMethod("dupFrequency", "CWdna_PDict",
+setMethod("dupFrequency", "ACtree_PDict",
     function(x) dupFrequency(x@dups)
 )
-setMethod("patternFrequency", "CWdna_PDict",
+setMethod("patternFrequency", "ACtree_PDict",
     function(x) dupFrequency(x@dups)
 )
 
@@ -268,7 +268,7 @@ setMethod("patternFrequency", "CWdna_PDict",
 ### 'head' and 'tail' must be DNAStringSet objects of the same length.
 ### One of them can be NULL but they can't both be NULL at the same time.
 setClass("TBdna_PDict",
-    contains="CWdna_PDict",
+    contains="ACtree_PDict",
     representation(
         head="DNAStringSet", # can be NULL
         tail="DNAStringSet"  # can be NULL
@@ -343,12 +343,12 @@ setMethod("patternFrequency", "TBdna_PDict",
         stop("'drop.tail' must be 'TRUE' or 'FALSE'")
     on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
     if (is.character(dict)) {
-        pp_Cans <- .Call("CWdna_pp_STRSXP",
+        pp_Cans <- .Call("build_ACtree_PDict_from_CHARACTER",
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
     } else if (is(dict, "DNAStringSet")) {
-        pp_Cans <- .Call("CWdna_pp_XStringSet",
+        pp_Cans <- .Call("build_ACtree_PDict_from_XStringSet",
                          dict,
                          tb.start, tb.end,
                          PACKAGE="Biostrings")
@@ -360,7 +360,7 @@ setMethod("patternFrequency", "TBdna_PDict",
     if (is.na(tb.end) || tb.end == -1L)
         drop.tail <- TRUE
     if (drop.head && drop.tail)
-        return(new("CWdna_PDict", length(dict), pp_Cans, names))
+        return(new("ACtree_PDict", length(dict), pp_Cans, names))
     ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
     if (!drop.head) 
         ans@head <- DNAStringSet(dict, end=tb.start-1L)

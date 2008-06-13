@@ -257,7 +257,7 @@
         width=width,
         pptime=system.time(pdict <- PDict(dict0, tb.end=width, drop.tail=TRUE))[["elapsed"]],
         nnodes=length(pdict@actree),
-        nupatt=sum(pdict@dups == 0),
+        nupatt=sum(!duplicated(pdict)),
         matchtime=system.time(mindex <- matchPDict(pdict, subject))[["elapsed"]],
         totalcount=sum(countIndex(mindex))
       )

@@ -133,20 +133,20 @@ STRING MATCHING
     vector of size 5.2Gb).
 
   o Maybe: once DNAStringList() constructor is fast enough on character and
-    XStringViews input, simplify "initialize" method for CWdna_PDict:
+    XStringViews input, simplify "initialize" method for ACtree_PDict:
     convert character and XStringViews inputs with DNAStringList() and
     support only one type of input (DNAStringList) at the C level.
     Well, I'm not sure I want to do this anymore: performance on character
     input would drop significantly.
 
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
-    'match_count' in match_pdict_TBdna.c, store directly in the returned
+    'match_count' in match_pdict.c, store directly in the returned
     INTEGER vector.
 
   o Fix this bug:
     > pdict <- PDict(c("AA", "AC"))
     > matchPDict(pdict, DNAString("TAACAC"))
-    Error in .match.CWdna_PDict.exact(pdict, subject, count.only) : 
+    Error in .match.ACtree_PDict.exact(pdict, subject, count.only) : 
       Biostrings internal error in _init_chrtrtable(): invalid code
 
   o MIndex objects: at some point the user will want to be able to combine

@@ -107,7 +107,7 @@ setMethod("$", "MIndex", function(x, name) x[[name]])
 ###
 ###   width: temporary hack. In the future we will probably want to store the
 ###       starts of the matches when 'pdict' is a PDict other than an
-###       CWdna_PDict object. Another solution would be to keep the width slot
+###       ACtree_PDict object. Another solution would be to keep the width slot
 ###       and to make it the same length as the ends slot (it's currently of
 ###       length 1 only).
 ###
@@ -196,7 +196,7 @@ setMethod("endIndex", "ByPos_MIndex",
 ###       
 ###   width: temporary hack. In the future we will probably want to store the
 ###       starts of the matches when 'pdict' is a PDict other than an
-###       CWdna_PDict object. Another solution would be to keep the width slot
+###       ACtree_PDict object. Another solution would be to keep the width slot
 ###       and to make it the same length as the ends_envir slot (it's currently
 ###       of length 1 only).
 ###
@@ -382,7 +382,7 @@ extractAllMatches <- function(subject, mindex)
     actree
 }
 
-.match.CWdna_PDict.exact <- function(pdict, subject, fixed, count.only)
+.match.ACtree_PDict.exact <- function(pdict, subject, fixed, count.only)
 {
     actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
     names <- names(pdict)
@@ -391,7 +391,7 @@ extractAllMatches <- function(subject, mindex)
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
-        C_ans <- .Call("XString_match_pdict_TBdna",
+        C_ans <- .Call("XString_match_pdict",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
@@ -400,7 +400,7 @@ extractAllMatches <- function(subject, mindex)
                        count.only, envir,
                        PACKAGE="Biostrings")
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
-        C_ans <- .Call("XStringViews_match_pdict_TBdna",
+        C_ans <- .Call("XStringViews_match_pdict",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        NULL, NULL,
@@ -510,7 +510,7 @@ extractAllMatches <- function(subject, mindex)
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
-        C_ans <- .Call("XString_match_pdict_TBdna",
+        C_ans <- .Call("XString_match_pdict",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
@@ -519,7 +519,7 @@ extractAllMatches <- function(subject, mindex)
                        count.only, envir,
                        PACKAGE="Biostrings")
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
-        C_ans <- .Call("XStringViews_match_pdict_TBdna",
+        C_ans <- .Call("XStringViews_match_pdict",
                        list(actree@nodes@xp, actree@base_codes),
                        length(pdict), width(pdict), pdict@dups@unq2dup,
                        pdict@head, pdict@tail,
@@ -552,8 +552,8 @@ extractAllMatches <- function(subject, mindex)
 .XString.matchPDict <- function(pdict, subject, algorithm,
                                 max.mismatch, fixed, count.only=FALSE)
 {
-    if (!is(pdict, "CWdna_PDict"))
-        stop("the pattern dictionary 'pdict' can only be a CWdna_PDict (or derived) object for now")
+    if (!is(pdict, "ACtree_PDict"))
+        stop("the pattern dictionary 'pdict' can only be a ACtree_PDict (or derived) object for now")
     if (!is(subject, "DNAString"))
         stop("'subject' can only be a DNAString object (eventually masked) for now")
     if (!identical(algorithm, "auto"))
@@ -568,14 +568,14 @@ extractAllMatches <- function(subject, mindex)
     if (!fixed[1])
         stop("IUPAC ambiguities in the patterns are not supported ",
              "with this type of PDict object (", class(pdict), ")")
-    .match.CWdna_PDict.exact(pdict, subject, fixed, count.only)
+    .match.ACtree_PDict.exact(pdict, subject, fixed, count.only)
 }
 
 .XStringViews.matchPDict <- function(pdict, subject, algorithm,
                                      max.mismatch, fixed, count.only=FALSE)
 {
-    if (!is(pdict, "CWdna_PDict"))
-        stop("the pattern dictionary 'pdict' can only be a CWdna_PDict (or derived) object for now")
+    if (!is(pdict, "ACtree_PDict"))
+        stop("the pattern dictionary 'pdict' can only be a ACtree_PDict (or derived) object for now")
     if (!is(subject(subject), "DNAString"))
         stop("'subject' can only be a DNAString object (eventually masked) for now")
     if (!identical(algorithm, "auto"))
@@ -590,7 +590,7 @@ extractAllMatches <- function(subject, mindex)
     if (!fixed[1])
         stop("IUPAC ambiguities in the patterns are not supported ",
              "with this type of PDict object (", class(pdict), ")")
-    .match.CWdna_PDict.exact(pdict, subject, fixed, count.only)
+    .match.ACtree_PDict.exact(pdict, subject, fixed, count.only)
 }
 
 

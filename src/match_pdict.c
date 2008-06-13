@@ -8,14 +8,14 @@
 
 static int debug = 0;
 
-SEXP debug_match_pdict_TBdna()
+SEXP debug_match_pdict()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_pdict_TBdna.c'\n",
+	Rprintf("Debug mode turned %s in 'match_pdict.c'\n",
 		debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'match_pdict_TBdna.c'\n");
+	Rprintf("Debug mode not available in 'match_pdict.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -335,7 +335,7 @@ static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING match_TBdna()\n");
 #endif
-	_match_pdict_ACtree(pdict_data, S, fixedS);
+	_match_ACtree_PDict(pdict_data, S, fixedS);
 	if (cached_head == NULL && cached_tail == NULL)
 		_MIndex_report_matches_for_dups(unq2dup);
 	else if (cached_head == NULL)
@@ -354,8 +354,8 @@ static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
 
 
 /****************************************************************************
- * .Call entry point: XString_match_pdict_TBdna
- *                    XStringViews_match_pdict_TBdna
+ * .Call entry point: XString_match_pdict
+ *                    XStringViews_match_pdict
  *
  * Arguments:
  *   'pdict_data': a 2-elt list containing pdict@actree@nodes@xp and
@@ -377,7 +377,7 @@ static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
  *
  ****************************************************************************/
 
-SEXP XString_match_pdict_TBdna(SEXP pdict_data,
+SEXP XString_match_pdict(SEXP pdict_data,
 		SEXP pdict_length, SEXP pdict_width, SEXP pdict_unq2dup,
 		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
@@ -386,25 +386,23 @@ SEXP XString_match_pdict_TBdna(SEXP pdict_data,
 {
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
-	int pdict_L, pdict_W, no_head, no_tail,
+	int pdict_L, pdict_W, with_head, with_tail,
 	    fixedP, fixedS, is_count_only;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING XString_match_pdict_TBdna()\n");
+		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
 	pdict_L = INTEGER(pdict_length)[0];
 	pdict_W = INTEGER(pdict_width)[0];
 	pcached_head = pcached_tail = NULL;
-	no_head = pdict_head == R_NilValue;
-	if (!no_head) {
-		error("matchPDict() doesn't support PDict objects with "
-		      "a head yet, sorry!");
+	with_head = pdict_head != R_NilValue;
+	if (with_head) {
 		cached_head = _new_CachedXStringSet(pdict_head);
 		pcached_head = &cached_head;
 	}
-	no_tail = pdict_tail == R_NilValue;
-	if (!no_tail) {
+	with_tail = pdict_tail != R_NilValue;
+	if (with_tail) {
 		cached_tail = _new_CachedXStringSet(pdict_tail);
 		pcached_tail = &cached_tail;
 	}
@@ -413,18 +411,19 @@ SEXP XString_match_pdict_TBdna(SEXP pdict_data,
 	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
-	_MIndex_init_match_reporting(is_count_only, !no_head || !no_tail, pdict_L);
+	_MIndex_init_match_reporting(is_count_only, with_head || with_tail,
+		pdict_L);
 	match_TBdna(pdict_data, pdict_unq2dup, pdict_W,
 		pcached_head, pcached_tail,
 		&S, INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING XString_match_pdict_TBdna()\n");
+		Rprintf("[DEBUG] LEAVING XString_match_pdict()\n");
 #endif
 	return _MIndex_reported_matches_asSEXP(envir);
 }
 
-SEXP XStringViews_match_pdict_TBdna(SEXP pdict_data,
+SEXP XStringViews_match_pdict(SEXP pdict_data,
 		SEXP pdict_length, SEXP pdict_width, SEXP pdict_unq2dup,
 		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
@@ -433,7 +432,7 @@ SEXP XStringViews_match_pdict_TBdna(SEXP pdict_data,
 {
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S, S_view;
-	int pdict_L, pdict_W, no_head, no_tail,
+	int pdict_L, pdict_W, with_head, with_tail,
 	    fixedP, fixedS, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
 	IntBuf global_match_count;
@@ -441,20 +440,18 @@ SEXP XStringViews_match_pdict_TBdna(SEXP pdict_data,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict_TBdna()\n");
+		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
 	pdict_L = INTEGER(pdict_length)[0];
 	pdict_W = INTEGER(pdict_width)[0];
 	pcached_head = pcached_tail = NULL;
-	no_head = pdict_head == R_NilValue;
-	if (!no_head) {
-		error("matchPDict() doesn't support PDict objects with "
-		      "a head yet, sorry!");
+	with_head = pdict_head != R_NilValue;
+	if (with_head) {
 		cached_head = _new_CachedXStringSet(pdict_head);
 		pcached_head = &cached_head;
 	}
-	no_tail = pdict_tail == R_NilValue;
-	if (!no_tail) {
+	with_tail = pdict_tail != R_NilValue;
+	if (with_tail) {
 		cached_tail = _new_CachedXStringSet(pdict_tail);
 		pcached_tail = &cached_tail;
 	}
@@ -467,7 +464,8 @@ SEXP XStringViews_match_pdict_TBdna(SEXP pdict_data,
 		global_match_count = _new_IntBuf(pdict_L, pdict_L, 0);
 	else
 		global_match_ends = _new_IntBBuf(pdict_L, pdict_L);
-	_MIndex_init_match_reporting(is_count_only, !no_head || !no_tail, pdict_L);
+	_MIndex_init_match_reporting(is_count_only, with_head || with_tail,
+		pdict_L);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -487,7 +485,7 @@ SEXP XStringViews_match_pdict_TBdna(SEXP pdict_data,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING XStringViews_match_pdict_TBdna()\n");
+		Rprintf("[DEBUG] LEAVING XStringViews_match_pdict()\n");
 #endif
 	if (is_count_only)
 		return _IntBuf_asINTEGER(&global_match_count);

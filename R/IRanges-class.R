@@ -49,7 +49,7 @@ setMethod("length", "IRanges", function(x) length(x@start))
 ### The substr() function uses 'start' and 'stop'.
 ### The substring() function uses 'first' and 'last'.
 ### We use 'start' and 'end'.
-### Note that the "start" and "end" generic are defined in the stats package.
+### Note that the "start" and "end" generics are defined in the stats package.
 setMethod("start", "IRanges", function(x, ...) x@start)
 
 setGeneric("width", function(x) standardGeneric("width"))

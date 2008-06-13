@@ -26,18 +26,18 @@
 
 \alias{patternFrequency}
 
-% CWdna_PDict class:
-\alias{class:CWdna_PDict}
-\alias{CWdna_PDict-class}
-\alias{CWdna_PDict}
+% ACtree_PDict class:
+\alias{class:ACtree_PDict}
+\alias{ACtree_PDict-class}
+\alias{ACtree_PDict}
 
-\alias{initialize,CWdna_PDict-method}
-\alias{length,CWdna_PDict-method}
-\alias{width,CWdna_PDict-method}
-\alias{names,CWdna_PDict-method}
-\alias{show,CWdna_PDict-method}
-\alias{duplicated,CWdna_PDict-method}
-\alias{patternFrequency,CWdna_PDict-method}
+\alias{initialize,ACtree_PDict-method}
+\alias{length,ACtree_PDict-method}
+\alias{width,ACtree_PDict-method}
+\alias{names,ACtree_PDict-method}
+\alias{show,ACtree_PDict-method}
+\alias{duplicated,ACtree_PDict-method}
+\alias{patternFrequency,ACtree_PDict-method}
 
 % TBdna_PDict class:
 \alias{class:TBdna_PDict}

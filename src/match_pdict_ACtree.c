@@ -8,212 +8,33 @@
  * words of the same length.                                                *
  ****************************************************************************/
 #include "Biostrings.h"
-#include <S.h> /* for Salloc()/Srealloc() */
 
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
 
 static int debug = 0;
 
 
+#define MAX_CHILDREN_PER_ACNODE 4
+typedef struct acnode {
+	int parent_id;
+	int depth;
+	int child_id[MAX_CHILDREN_PER_ACNODE];
+	int flink;
+	int P_id;
+} ACNode;
 
-/****************************************************************************
- * PREPROCESSING
- *
- * The 'input_cwdict' object is used for storing the pointers to the patterns
- * contained in the input dictionary provided by the user.
- * These patterns can only be accessed for reading!
- */
-
-typedef struct cwdict {
-	// 'start' and 'end' define the cropping operation
-	int start;
-	int end;
-	int width;
-	char cropping_type; // 'a', 'b', 'c', 'd'
-	int head_min_width, head_max_width;
-	int tail_min_width, tail_max_width;
-	// subpatterns resulting from the cropping operation are stored in
-	// the (const char *) array below (of length 'length')
-	const char **patterns;
-	int length;
-} CWdict;
-
-static CWdict input_cwdict;
-
-/*
- * 'start' and 'end' are user-specified values that describe the cropping
- * operation that needs to be applied to an arbitrary set of input sequences
- * to turn it into a constant width dictionary. In the most general case, this
- * cropping operation consists of removing a prefix, a suffix or both from each
- * input sequence. The set of prefixes to remove is called "the head", and the
- * set of suffixes "the tail".
- * 'start' and 'end' must be integers (eventually NA) giving the relative
- * starting and ending position of the substring to extract from each input
- * sequence. Negative values indicate positions relative to the end of the
- * input sequences.
- * 4 types of cropping operations are supported:
- *   a) 1 <= start <= end:
- *        o the croppping operation will work on any variable width input
- *          where the shortest sequence has at least 'end' letters,
- *        o the head is rectangular (constant width),
- *        o the tail has a variable width (tail_min_width, tail_max_width);
- *   b) start <= end <= -1:
- *        o the croppping operation will work on any variable width input
- *          where the shortest sequence has at least '-start' letters,
- *        o the tail is rectangular (constant width),
- *        o the head has a variable width (head_min_width, head_max_width).
- *   c) 1 <= start and end == NA:
- *        o the set of input sequences must be already of constant width or
- *          the cropping operation will raise an error,
- *        o the head is rectangular (constant width),
- *        o no tail;
- *   d) start == NA and end <= -1:
- *        o the set of input sequences must be already of constant width or
- *          the cropping operation will raise an error,
- *        o the tail is rectangular (constant width),
- *        o no head;
- */
-static char cropping_type(int start, int end)
-{
-	if (start == NA_INTEGER && end == NA_INTEGER)
-		error("'start' and 'end' cannot both be NA");
-	if (start == 0)
-		error("'start' must be a single >= 1, <= -1 or NA integer");
-	if (end == 0)
-		error("'end' must be a single >= 1, <= -1 or NA integer");
-	if (end == NA_INTEGER) {
-		if (start < 0)
-			error("'start' must be positive when 'end' is NA");
-		return 'c';
-	}
-	if (start == NA_INTEGER) {
-		if (end > 0)
-			error("'end' must be negative when 'start' is NA");
-		return 'd';
-	}
-	if ((start > 0) != (end > 0))
-		error("'start' and 'end' must have the same sign");
-	if (end < start)
-		error("'end' must be >= 'start'");
-	return start > 0 ? 'a' : 'b';
-}
-
-static void alloc_input_cwdict(int length, int start, int end)
-{
-	input_cwdict.cropping_type = cropping_type(start, end);
-	input_cwdict.start = start;
-	input_cwdict.end = end;
-	if (input_cwdict.cropping_type == 'a') {
-		input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
-		input_cwdict.tail_min_width = input_cwdict.tail_max_width = -1;
-	}
-	if (input_cwdict.cropping_type == 'b') {
-		input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
-		input_cwdict.head_min_width = input_cwdict.head_max_width = -1;
-	}
-	input_cwdict.patterns = Salloc((long) length, const char *);
-	input_cwdict.length = length;
-	return;
-}
-
-static void add_subpattern_to_input_cwdict(int poffset,
-		const char *pattern, int pattern_length)
-{
-	int head_width, tail_width;
-
-	if (pattern_length == 0)
-		error("'dict' contains empty patterns");
-
-	switch (input_cwdict.cropping_type) {
-
-	    case 'a':
-		tail_width = pattern_length - input_cwdict.end;
-		if (tail_width < 0)
-			error("'dict' contains patterns with less than %d characters",
-			      input_cwdict.end);
-		input_cwdict.patterns[poffset] = pattern + input_cwdict.start - 1;
-		if (input_cwdict.tail_min_width == -1) {
-			input_cwdict.tail_min_width = input_cwdict.tail_max_width = tail_width;
-			break;
-		}
-		if (tail_width < input_cwdict.tail_min_width)
-			input_cwdict.tail_min_width = tail_width;
-		if (tail_width > input_cwdict.tail_max_width)
-			input_cwdict.tail_max_width = tail_width;
-		break;
-
-	    case 'b':
-		head_width = pattern_length + input_cwdict.start;
-		if (head_width < 0)
-			error("'dict' contains patterns with less than %d characters",
-			      -input_cwdict.start);
-		input_cwdict.patterns[poffset] = pattern + head_width;
-		if (input_cwdict.head_min_width == -1) {
-			input_cwdict.head_min_width = input_cwdict.head_max_width = head_width;
-			break;
-		}
-		if (head_width < input_cwdict.head_min_width)
-			input_cwdict.head_min_width = head_width;
-		if (head_width > input_cwdict.head_max_width)
-			input_cwdict.head_max_width = head_width;
-		break;
-
-	    case 'c':
-		if (input_cwdict.end == NA_INTEGER) {
-			input_cwdict.end = pattern_length;
-			input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
-			if (input_cwdict.width < 1)
-				error("'dict' contains patterns with less than %d characters",
-				      input_cwdict.start);
-		} else {
-			if (pattern_length != input_cwdict.end)
-				error("all patterns in 'dict' must have the same length");
-		}
-		input_cwdict.patterns[poffset] = pattern + input_cwdict.start - 1;
-		break;
-
-	    case 'd':
-		if (input_cwdict.start == NA_INTEGER) {
-			input_cwdict.start = -pattern_length;
-			input_cwdict.width = input_cwdict.end - input_cwdict.start + 1;
-			if (input_cwdict.width < 1)
-				error("'dict' contains patterns with less than %d characters",
-				      -input_cwdict.end);
-		} else {
-			if (pattern_length != -input_cwdict.start)
-				error("all patterns in 'dict' must have the same length");
-		}
-		input_cwdict.patterns[poffset] = pattern;
-		break;
-	}
-	return;
-}
 
 
 /****************************************************************************
- * Buffer of duplicates.
- */
-
-static IntBuf dup2unq_buf;
-
-static void init_dup2unq_buf(int length)
-{
-	dup2unq_buf = _new_IntBuf(length, length, NA_INTEGER);
-	return;
-}
-
-static void report_dup(int poffset, int P_id)
-{
-	dup2unq_buf.elts[poffset] = P_id;
-	return;
-}
-
+ *                                                                          *
+ *                             A. PREPROCESSING                             *
+ *                                                                          *
+ ****************************************************************************/
 
 /****************************************************************************
  * Building the Aho-Corasick 4-ary tree
- * ====================================
+ * ------------------------------------
  *
  * For this Aho-Corasick implementation, we take advantage of 2
  * important specifities of the dictionary (aka pattern set):
@@ -232,15 +53,6 @@ static void report_dup(int poffset, int P_id)
  *   - Easy to reallocate.
  * Note that the id of an ACNode element is just its offset in the array.
  */
-
-#define MAX_CHILDREN_PER_ACNODE 4
-typedef struct acnode {
-	int parent_id;
-	int depth;
-	int child_id[MAX_CHILDREN_PER_ACNODE];
-	int flink;
-	int P_id;
-} ACNode;
 
 static int actree_base_codes_buf[MAX_CHILDREN_PER_ACNODE];
 
@@ -401,13 +213,14 @@ static int try_moving_to_acnode_child(int node_id, int childslot, char c)
 
 static void pp_pattern(int poffset)
 {
+	int width, n, node_id, child_id, childslot;
 	const char *pattern;
-	int n, node_id, child_id, childslot;
 	char c;
 	ACNode *node;
 
-	pattern = input_cwdict.patterns[poffset];
-	for (n = 0, node_id = 0; n < input_cwdict.width; n++, node_id = child_id) {
+	width = _CroppedDict_width();
+	pattern = _CroppedDict_pattern(poffset);
+	for (n = 0, node_id = 0; n < width; n++, node_id = child_id) {
 		c = pattern[n];
 		for (childslot = 0; childslot < MAX_CHILDREN_PER_ACNODE; childslot++) {
 			child_id = try_moving_to_acnode_child(node_id, childslot, c);
@@ -425,37 +238,26 @@ static void pp_pattern(int poffset)
 	return;
 }
 
-static void build_actree()
+static void build_ACtree_PDict()
 {
-	int poffset;
+	int length, width, poffset;
 
-	init_dup2unq_buf(input_cwdict.length);
+	length = _CroppedDict_length();
+	width = _CroppedDict_width();
+	init_dup2unq_buf(length);
 	init_actree_base_codes_buf();
-	alloc_actree_nodes_buf(input_cwdict.length, input_cwdict.width);
+	alloc_actree_nodes_buf(length, width);
 	append_acnode(0);
-	for (poffset = 0; poffset < input_cwdict.length; poffset++)
+	for (poffset = 0; poffset < length; poffset++)
 		pp_pattern(poffset);
 	return;
 }
 
 
 /****************************************************************************
- * Turning our local data structures into R objects (SEXP)
- * =======================================================
+ * Turning our local data structures into an R list (SEXP)
+ * -------------------------------------------------------
  */
-
-/*
- * Turn the dictionary width into an R integer vector of length 1.
- */
-static SEXP oneint_asINTEGER(int oneint)
-{
-	SEXP ans;
-
-	PROTECT(ans = NEW_INTEGER(1));
-	INTEGER(ans)[0] = oneint;
-	UNPROTECT(1);
-	return ans;
-}
 
 /*
  * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an R eXternal
@@ -489,79 +291,34 @@ static SEXP actree_base_codes_buf_asINTEGER()
 	return ans;
 }
 
-static SEXP stats_asLIST()
-{
-	SEXP ans, ans_names, ans_elt;
-	const char *min_width_name, *max_width_name;
-	int min_width_val, max_width_val;
-
-	if (input_cwdict.cropping_type != 'a' && input_cwdict.cropping_type != 'b')
-		return NEW_LIST(0);
-
-	if (input_cwdict.cropping_type == 'a') {
-		min_width_name = "tail.min.width";
-		max_width_name = "tail.max.width";
-		min_width_val = input_cwdict.tail_min_width;
-		max_width_val = input_cwdict.tail_max_width;
-	} else {
-		min_width_name = "head.min.width";
-		max_width_name = "head.max.width";
-		min_width_val = input_cwdict.head_min_width;
-		max_width_val = input_cwdict.head_max_width;
-	}
-	PROTECT(ans = NEW_LIST(2));
-
-	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(2));
-	SET_STRING_ELT(ans_names, 0, mkChar(min_width_name));
-	SET_STRING_ELT(ans_names, 1, mkChar(max_width_name));
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-
-	/* set the "min.width" element */
-	PROTECT(ans_elt = oneint_asINTEGER(min_width_val));
-	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
-
-	/* set the "max.width" element */
-	PROTECT(ans_elt = oneint_asINTEGER(max_width_val));
-	SET_ELEMENT(ans, 1, ans_elt);
-	UNPROTECT(1);
-
-	UNPROTECT(1);
-	return ans;
-}
-
 /*
- * Return an R list with the following elements:
- *   - width: dictionary width (single integer);
+ * ACtree_PDict_asLIST() returns an R list with the following elements:
+ *   - geom: a list describing the geometry of the cropped dictionary;
  *   - actree_nodes_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
  *         tree built from 'dict';
  *   - actree_base_codes: integer vector containing the MAX_CHILDREN_PER_ACNODE character
  *         codes (ASCII) attached to the MAX_CHILDREN_PER_ACNODE child slots of any
  *         node in the tree pointed by actree_nodes_xp;
  *   - dup2unq: an integer vector containing the mapping between duplicated and
- *         primary reads;
- *   - stats: a list containing some stats about the input data.
+ *         primary reads.
  */
-static SEXP CWdna_asLIST()
+static SEXP ACtree_PDict_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
-	PROTECT(ans = NEW_LIST(5));
+	PROTECT(ans = NEW_LIST(4));
 
 	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(5));
-	SET_STRING_ELT(ans_names, 0, mkChar("width"));
+	PROTECT(ans_names = NEW_CHARACTER(4));
+	SET_STRING_ELT(ans_names, 0, mkChar("geom"));
 	SET_STRING_ELT(ans_names, 1, mkChar("actree_nodes_xp"));
 	SET_STRING_ELT(ans_names, 2, mkChar("actree_base_codes"));
 	SET_STRING_ELT(ans_names, 3, mkChar("dup2unq"));
-	SET_STRING_ELT(ans_names, 4, mkChar("stats"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
-	/* set the "width" element */
-	PROTECT(ans_elt = oneint_asINTEGER(input_cwdict.width));
+	/* set the "geom" element */
+	PROTECT(ans_elt = _CroppedDict_geom_asLIST());
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
@@ -576,79 +333,55 @@ static SEXP CWdna_asLIST()
 	UNPROTECT(1);
 
 	/* set the "dup2unq" element */
-	PROTECT(ans_elt = _IntBuf_asINTEGER(&dup2unq_buf));
+	PROTECT(ans_elt = _dup2unq_asINTEGER());
 	SET_ELEMENT(ans, 3, ans_elt);
-	UNPROTECT(1);
-
-	/* set the "stats" element */
-	PROTECT(ans_elt = stats_asLIST());
-	SET_ELEMENT(ans, 4, ans_elt);
 	UNPROTECT(1);
 
 	UNPROTECT(1);
 	return ans;
 }
 
-/*
- * .Call entry point: "CWdna_pp_STRSXP"
+
+/****************************************************************************
+ * .Call entry points for preprocessing
+ * ------------------------------------
  *
- * Argument:
- *   'dict': a string vector (aka character vector) containing the input
+ * Arguments:
+ *   'dict': a character vector or DNAStringSet object containing the input
  *           sequences
  *   'tb_start': single >= 1, <= -1 or NA integer
  *   'tb_end': single >= 1, <= -1 or NA integer
  *
- * See CWdna_asLIST() for a description of the returned SEXP.
+ * See ACtree_PDict_asLIST() for a description of the returned SEXP.
  */
-SEXP CWdna_pp_STRSXP(SEXP dict, SEXP tb_start, SEXP tb_end)
-{
-	int dict_len, poffset;
-	SEXP dict_elt;
 
-	dict_len = LENGTH(dict);
-	alloc_input_cwdict(dict_len, INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
-	for (poffset = 0; poffset < dict_len; poffset++) {
-		dict_elt = STRING_ELT(dict, poffset);
-		if (dict_elt == NA_STRING)
-			error("'dict' contains NAs");
-		add_subpattern_to_input_cwdict(poffset, CHAR(dict_elt), LENGTH(dict_elt));
-	}
-	build_actree();
-	return CWdna_asLIST();
+SEXP build_ACtree_PDict_from_CHARACTER(SEXP dict, SEXP tb_start, SEXP tb_end)
+{
+	int dict_len;
+
+	dict_len = _init_CroppedDict_with_CHARACTER(dict,
+				INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
+	build_ACtree_PDict();
+	return ACtree_PDict_asLIST();
 }
 
-/*
- * .Call entry point: "CWdna_pp_XStringSet"
- *
- * Argument:
- *   'dict': a DNAStringSet object containing the input sequences
- *   'tb_start': single >= 1, <= -1 or NA integer
- *   'tb_end': single >= 1, <= -1 or NA integer
- *
- * See CWdna_asLIST() for a description of the returned SEXP.
- */
-SEXP CWdna_pp_XStringSet(SEXP dict, SEXP tb_start, SEXP tb_end)
+SEXP build_ACtree_PDict_from_XStringSet(SEXP dict, SEXP tb_start, SEXP tb_end)
 {
-	int dict_len, poffset;
-	CachedXStringSet cached_dict;
-	RoSeq pattern;
+	int dict_len;
 
-	dict_len = _get_XStringSet_length(dict);
-	alloc_input_cwdict(dict_len, INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
-	cached_dict = _new_CachedXStringSet(dict);
-	for (poffset = 0; poffset < dict_len; poffset++) {
-		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_dict, poffset);
-		add_subpattern_to_input_cwdict(poffset, pattern.elts, pattern.nelt);
-	}
-	build_actree();
-	return CWdna_asLIST();
+	dict_len = _init_CroppedDict_with_XStringSet(dict,
+				INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
+	build_ACtree_PDict();
+	return ACtree_PDict_asLIST();
 }
 
 
 
 /****************************************************************************
- * MATCH FINDING
- */
+ *                                                                          *
+ *                             B. MATCH FINDING                             *
+ *                                                                          *
+ ****************************************************************************/
 
 static int slotno_chrtrtable[CHRTRTABLE_LENGTH];
 
@@ -857,7 +590,6 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	const char *S_tail;
 	char c;
 
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
 	cnode_ids = _new_IntBuf(256, 0, 0);
 	_IntBuf_insert_at(&cnode_ids, 0, 0);
 	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
@@ -902,14 +634,14 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_pdict_ACtree(SEXP pdict_data, const RoSeq *S, int fixedS)
+void _match_ACtree_PDict(SEXP pdict_data, const RoSeq *S, int fixedS)
 {
 	ACNode *node0;
 	const int *base_codes;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING _match_pdict_ACtree()\n");
+		Rprintf("[DEBUG] ENTERING _match_ACtree_PDict()\n");
 #endif
 	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_data, 0)));
 	base_codes = INTEGER(VECTOR_ELT(pdict_data, 1));
@@ -920,7 +652,7 @@ void _match_pdict_ACtree(SEXP pdict_data, const RoSeq *S, int fixedS)
 		walk_nonfixed_subject(node0, base_codes, S);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING _match_pdict_ACtree()\n");
+		Rprintf("[DEBUG] LEAVING _match_ACtree_PDict()\n");
 #endif
 	return;
 }

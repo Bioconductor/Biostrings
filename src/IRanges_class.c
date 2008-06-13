@@ -103,7 +103,7 @@ SEXP _new_IRanges(const char *class, SEXP start, SEXP width, SEXP names)
 
 SEXP _new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs)
 {
-	RoSeq *seq;
+	const RoSeq *seq;
 	SEXP start, width, ans;
 	int *start_elt, *width_elt, *start_prev_elt, i;
 

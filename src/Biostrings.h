@@ -1212,6 +1212,40 @@ SEXP find_palindromes(
 );
 
 
+/* Pdict_class.c */
+
+SEXP debug_Pdict_class();
+
+int _init_CroppedDict_with_CHARACTER(
+	SEXP dict,
+	int tb_start,
+	int tb_end
+);
+
+int _init_CroppedDict_with_XStringSet(
+	SEXP dict,
+	int tb_start,
+	int tb_end
+);
+
+int _CroppedDict_length();
+
+int _CroppedDict_width();
+
+const char *_CroppedDict_pattern(int poffset);
+
+void init_dup2unq_buf(int length);
+
+void report_dup(
+	int poffset,
+	int P_id
+);
+
+SEXP _CroppedDict_geom_asLIST();
+
+SEXP _dup2unq_asINTEGER();
+
+
 /* MIndex_utils.c */
 
 SEXP debug_MIndex_utils();
@@ -1272,36 +1306,59 @@ SEXP ByName_MIndex_coverage(
 );
 
 
-/* match_pdict_ACtree.c */
+/* match_pdict_Twobit.c */
 
-SEXP debug_match_pdict_ACtree();
+SEXP debug_match_pdict_Twobit();
 
-SEXP CWdna_free_actree_nodes_buf();
-
-SEXP CWdna_pp_STRSXP(
+SEXP build_Twobit_PDict_from_CHARACTER(
 	SEXP dict,
 	SEXP tb_start,
 	SEXP tb_end
 );
 
-SEXP CWdna_pp_XStringSet(
+SEXP build_Twobit_PDict_from_XStringSet(
 	SEXP dict,
 	SEXP tb_start,
 	SEXP tb_end
 );
 
-void _match_pdict_ACtree(
+void _match_Twobit_PDict(
 	SEXP pdict_data,
 	const RoSeq *S,
 	int fixedS
 );
 
 
-/* match_pdict_TBdna.c */
+/* match_pdict_ACtree.c */
 
-SEXP debug_match_pdict_TBdna();
+SEXP debug_match_pdict_ACtree();
 
-SEXP XString_match_pdict_TBdna(
+SEXP CWdna_free_actree_nodes_buf();
+
+SEXP build_ACtree_PDict_from_CHARACTER(
+	SEXP dict,
+	SEXP tb_start,
+	SEXP tb_end
+);
+
+SEXP build_ACtree_PDict_from_XStringSet(
+	SEXP dict,
+	SEXP tb_start,
+	SEXP tb_end
+);
+
+void _match_ACtree_PDict(
+	SEXP pdict_data,
+	const RoSeq *S,
+	int fixedS
+);
+
+
+/* match_pdict.c */
+
+SEXP debug_match_pdict();
+
+SEXP XString_match_pdict(
 	SEXP pdict_data,
 	SEXP pdict_length,
 	SEXP pdict_width,
@@ -1315,7 +1372,7 @@ SEXP XString_match_pdict_TBdna(
 	SEXP envir
 );
 
-SEXP XStringViews_match_pdict_TBdna(
+SEXP XStringViews_match_pdict(
 	SEXP pdict_data,
 	SEXP pdict_length,
 	SEXP pdict_width,
