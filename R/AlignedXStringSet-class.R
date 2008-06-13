@@ -146,7 +146,7 @@ setMethod("[", "AlignedXStringSet",
         new("AlignedXStringSet",
             unaligned = .safe.subset.XStringSet(x@unaligned, i),
             quality = .safe.subset.XStringSet(x@quality, i),
-            range = x@range[i,], indels = x@indels[i])
+            range = x@range[i,,drop = FALSE], indels = x@indels[i])
     }
 )
 

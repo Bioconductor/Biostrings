@@ -32,7 +32,7 @@ export(
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write, XNumeric, XNumeric.read, XNumeric.write,
     BString, DNAString, RNAString, AAString,
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
-    views, adjacentViews, trim, subviews, subjectViews,
+    adjacentViews, trim, subviews,
     mask,
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
@@ -79,7 +79,7 @@ exportMethods(
 
     ## XString, XStringViews, XStringList and MaskedXString objects
     XString, alphabet, subseq,
-    XStringViews, subject,
+    XStringViews, subject, views,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     unmasked, masks, "masks<-",
 

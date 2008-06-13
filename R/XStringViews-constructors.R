@@ -46,14 +46,21 @@
 ###   - add a 'width' arg (default to NA)
 ###   - add a 'check.limits' arg (default to TRUE) for raising an error if
 ###     some views are "out of limits"
-views <- function(subject, start=NA, end=NA)
-{
-    if (!is(subject, "XString"))
-        subject <- XString(NULL, subject)
-    ans <- new("XStringViews", subject, check=FALSE)
-    ranges <- .safeMakeViews(subject(ans), start, end)
-    update(ans, start=start(ranges), width=width(ranges))
-}
+setGeneric("views", signature = "subject",
+           function(subject, start=NA, end=NA) standardGeneric("views"))
+setMethod("views", signature = c(subject = "ANY"),
+          function(subject, start=NA, end=NA)
+          {
+              subject <- XString(NULL, subject)
+              views(subject, start = start, end = end)
+          })
+setMethod("views", signature = c(subject = "XString"),
+          function(subject, start=NA, end=NA)
+          {
+              ans <- new("XStringViews", subject, check=FALSE)
+              ranges <- .safeMakeViews(subject(ans), start, end)
+              update(ans, start=start(ranges), width=width(ranges))
+          })
 
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).

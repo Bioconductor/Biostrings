@@ -33,10 +33,10 @@ setMethod("initialize", "PairwiseAlignment",
         if (length(pattern) != length(subject))
             stop("'length(pattern)' must equal 'length(subject)'")
         gapOpening <- as.double(- abs(gapOpening))
-        if (is.na(gapOpening) || length(gapOpening) != 1)
+        if (length(gapOpening) != 1 || is.na(gapOpening))
             stop("'gapOpening' must be a non-positive numeric vector of length 1")
         gapExtension <- as.double(- abs(gapExtension))
-        if (is.na(gapExtension) || length(gapExtension) != 1)
+        if (length(gapExtension) != 1 || is.na(gapExtension))
             stop("'gapExtension' must be a non-positive numeric vector of length 1")
         slot(.Object, "pattern", check = check) <- pattern
         slot(.Object, "subject", check = check) <- subject
@@ -63,9 +63,9 @@ setMethod("initialize", "PairwiseAlignment",
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'patternOverlap', or 'subjectOverlap'")
     if (length(pattern) != length(subject))
         message <- c(message, "'length(pattern)' must equal 'length(subject)'")
-    if (is.na(object@gapOpening) || length(object@gapOpening) != 1)
+    if (length(object@gapOpening) != 1 || is.na(object@gapOpening))
         message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
-    if (is.na(object@gapExtension) || length(object@gapExtension) != 1)
+    if (length(object@gapExtension) != 1 || is.na(object@gapExtension))
         message <- c(message, "'gapExtension' must be a non-positive numeric vector of length 1")
     if (length(message) == 0)
         message <- NULL
@@ -101,16 +101,30 @@ setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
 setMethod("coverage", "PairwiseAlignment", function(x, start = NA, end = NA)
           {
-              if (is.na(start))
+              if (any(is.na(start)))
                   start <- 1
-              if (is.na(end))
+              if (any(is.na(end)))
                   end <- nchar(super(unaligned(subject(x))))
               coverage(subject(x)@range, start, end)
           })
 
-subjectViews <- function(x) {
-	views(super(unaligned(subject(x))), start(subject(x)@range), end(subject(x)@range))
-}
+setMethod("views", signature = c(subject = "PairwiseAlignment"),
+          function(subject, start=NA, end=NA)
+          {
+              if (all(is.na(start)))
+                  start <- start(subject(subject))
+              else if (!is.numeric(start) || length(start) > 1)
+                  stop("'start' must be either NA or an integer vector of length 1")
+              else
+                  start <- as.integer(start) + start(subject(subject))
+              if (all(is.na(end)))
+                  end <- end(subject(subject))
+              else if (!is.numeric(end) || length(end) > 1)
+                  stop("'end' must be either NA or an integer vector of length 1")
+              else
+                  end <- as.integer(end) + start(subject(subject))
+              views(super(unaligned(subject(subject))), start = start, end = end)
+          })
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

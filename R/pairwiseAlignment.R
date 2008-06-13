@@ -45,10 +45,10 @@ function(pattern,
     c("global" = 1L, "local" = 2L, "overlap" = 3L,
       "patternOverlap" = 4L, "subjectOverlap" = 5L)[[type]]
   gapOpening <- as.double(- abs(gapOpening))
-  if (is.na(gapOpening) || length(gapOpening) != 1)
+  if (length(gapOpening) != 1 || is.na(gapOpening))
     stop("'gapOpening' must be a non-positive numeric vector of length 1")
   gapExtension <- as.double(- abs(gapExtension))
-  if (is.na(gapExtension) || length(gapExtension) != 1)
+  if (length(gapExtension) != 1 || is.na(gapExtension))
     stop("'gapExtension' must be a non-positive numeric vector of length 1")
   scoreOnly <- as.logical(scoreOnly)
   if (length(scoreOnly) != 1 || any(is.na(scoreOnly)))

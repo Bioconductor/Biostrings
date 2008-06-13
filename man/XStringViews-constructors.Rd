@@ -3,6 +3,8 @@
 % Constructor-like functions and generics:
 \alias{XStringViews-constructors}
 \alias{views}
+\alias{views,ANY-method}
+\alias{views,XString-method}
 \alias{adjacentViews}
 \alias{XStringViews}
 \alias{XStringViews,ANY-method}
