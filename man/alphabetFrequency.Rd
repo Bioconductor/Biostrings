@@ -19,6 +19,7 @@
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
+\alias{oligonucleotideTransitions}
 
 \alias{strrev}
 \alias{mkAllStrings}
@@ -50,6 +51,7 @@
   dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, with.labels=TRUE, ...)
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
   oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+  oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
 
   ## Some related utility functions
   strrev(x)
@@ -97,6 +99,10 @@
     The number of nucleotides per oligonucleotide for
     \code{oligonucleotideFrequency}.
     The number of letters per string for \code{mkAllStrings}.
+  }
+  \item{left, right}{
+    The number of nucleotides per oligonucleotide for the rows and columns
+    respectively in the transition matrix created by \code{oligonucleotideTransitions}.
   }
   \item{alphabet}{
     The alphabet to use to make the strings.
@@ -176,6 +182,10 @@
   tri <- trinucleotideFrequency(yeast1, as.array=TRUE)
   tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
   tri["T", , ] # frequencies of trinucleotides starting with a "T"
+
+  ## Get nucleotide transition matrices for yeast1
+  oligonucleotideTransitions(yeast1)
+  oligonucleotideTransitions(yeast1, 2, freq=TRUE)
 
   ## Note that when dropping the dimensions of the 'tri' array, elements
   ## in the resulting vector are ordered as if they were obtained with
