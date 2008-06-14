@@ -258,21 +258,23 @@ static double pairwiseAlignment(
 					(PREV_MATRIX(0, j) >= PREV_MATRIX(2, j))) {
 					D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
 					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(0, j), gapOpeningPlusExtension);
+				} else if (SAFE_SUM(PREV_MATRIX(2, j), gapOpening) > PREV_MATRIX(1, j)) {
+					D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(2, j), gapOpeningPlusExtension);
 				} else {
 					D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(1, j) =
-						MAX(SAFE_SUM(PREV_MATRIX(1, j), gapExtension),
-							SAFE_SUM(PREV_MATRIX(2, j), gapOpeningPlusExtension));
+					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(1, j), gapExtension);
 				}
 				if ((SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpening) >= CURR_MATRIX(2, jMinus1)) &&
 					(CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(1, jMinus1))) {
 					I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
 					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpeningPlusExtension);
+				} else if (SAFE_SUM(CURR_MATRIX(1, jMinus1), gapOpening) > CURR_MATRIX(2, jMinus1)) {
+					I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(1, jMinus1), gapOpeningPlusExtension);
 				} else {
 					I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(2, j) =
-						MAX(SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension),
-							SAFE_SUM(CURR_MATRIX(1, jMinus1), gapOpeningPlusExtension));
+					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension);
 				}
 
 				if (localAlignment) {
