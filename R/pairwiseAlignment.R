@@ -95,8 +95,8 @@ function(pattern,
 	
     alphabetLength <-
       switch(class(pattern),
-             DNAString =, RNAString = 4L,
-             AAString = 20L,
+             DNAStringSet =, RNAStringSet = 4L,
+             AAStringSet = 20L,
              length(alphabetToCodes))
 
     qualityLookupTable <- buildLookupTable(33:(99 + 33), 0:99)
