@@ -166,10 +166,10 @@ static double pairwiseAlignment(
 					SAFE_SUM(MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))),
 					         substitutionValue);
 				CURR_MATRIX(1, j) = 
-					MAX(SAFE_SUM(PREV_MATRIX(0, j), gapOpeningPlusExtension),
+					MAX(SAFE_SUM(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)), gapOpeningPlusExtension),
 					    SAFE_SUM(PREV_MATRIX(1, j), gapExtension));
 				CURR_MATRIX(2, j) =
-					MAX(SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpeningPlusExtension),
+					MAX(SAFE_SUM(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)), gapOpeningPlusExtension),
 					    SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension));
 
 				if (localAlignment) {

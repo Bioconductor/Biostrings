@@ -5,6 +5,7 @@ test_pairwiseAlignment_emptyString <- function()
     alignment <- pairwiseAlignment(string1, string2)
     checkEquals(as.character(aligned(pattern(alignment))), "")
     checkEquals(score(alignment), as.numeric(NA))
+    checkEquals(pairwiseAlignment(string1, string2, scoreOnly = TRUE), as.numeric(NA))
 }
 
 
@@ -16,6 +17,23 @@ test_pairwiseAlignment_emptyLocalAlign <- function()
     checkEquals(as.character(aligned(pattern(alignment))), "")
     checkEquals(as.character(aligned(subject(alignment))), "")
     checkEquals(score(alignment), 0)
+    checkEquals(pairwiseAlignment(string1, string2, type = "local", scoreOnly = TRUE), 0)
+}
+
+
+test_pairwiseAlignment_backToBackIndel <- function()
+{
+    mat <- matrix(-10, nrow = 4, ncol = 4)
+    diag(mat) <- 1
+    rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
+    string1 <- DNAString("AC")
+    string2 <- DNAString("AT")
+    alignment <- pairwiseAlignment(string1, string2, gapOpening = 0, substitutionMatrix = mat)
+    alignmentScore <- pairwiseAlignment(string1, string2, gapOpening = 0, substitutionMatrix = mat, scoreOnly = TRUE)
+    checkEquals(as.character(aligned(pattern(alignment))), "A-")
+    checkEquals(as.character(aligned(subject(alignment))), "AT")
+    checkEquals(score(alignment), -7)
+    checkEquals(alignmentScore, -7)
 }
 
 
@@ -28,18 +46,56 @@ test_pairwiseAlignment_constantSubstitutionMatrix <- function()
     rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
     globalAlign <-
         pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+    globalAlignScore <-
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2, scoreOnly = TRUE)
     overlapAlign <-
         pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+    overlapAlignScore <-
+        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2,
+                          scoreOnly = TRUE)
     localAlign <-
         pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+    localAlignScore <-
+        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2,
+                          scoreOnly = TRUE)
     checkEquals(as.character(pattern(globalAlign)), "ACTTCACCAGCTCCCTGGCGGTAAGTTGATC---AAAGG---AAACGCAAAGTTTTCAAG")
     checkEquals(as.character(subject(globalAlign)), "GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
     checkEquals(compareStrings(globalAlign), "??TTCAC?A??TCC?T???GGTAAGT??AT?---AAA??---AAA???A?A?TTTTCA??")
     checkEquals(score(globalAlign), -52)
+	checkEquals(globalAlignScore, -52)
     checkEquals(as.character(pattern(overlapAlign)), "G")
     checkEquals(as.character(subject(overlapAlign)), "G")
     checkEquals(score(overlapAlign), 1)
+	checkEquals(overlapAlignScore, 1)
     checkEquals(as.character(pattern(localAlign)), "GGTAAGT")
     checkEquals(as.character(subject(localAlign)), "GGTAAGT")
     checkEquals(score(localAlign), 7)
+    checkEquals(localAlignScore, 7)
+}
+
+
+test_pairwiseAlignment_qualityScoring <- function()
+{
+    scoring <- sapply(qualitySubstitutionMatrices(), function(x) x[23,23])
+    string1 <- DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
+    string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+    globalAlign <- pairwiseAlignment(string1, string2)
+    globalAlignScore <- pairwiseAlignment(string1, string2, scoreOnly = TRUE)
+    overlapAlign <- pairwiseAlignment(string1, string2, type = "overlap")
+    overlapAlignScore <- pairwiseAlignment(string1, string2, type = "overlap", scoreOnly = TRUE)
+    localAlign <- pairwiseAlignment(string1, string2, type = "local")
+    localAlignScore <- pairwiseAlignment(string1, string2, type = "local", scoreOnly = TRUE)
+    checkEquals(as.character(pattern(globalAlign)), "ACTTCACCAGCTCCCTGGCGGTAAGTTGATC---AAAGG---AAACGCAAAGTTTTCAAG")
+    checkEquals(as.character(subject(globalAlign)), "GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+    checkEquals(compareStrings(globalAlign), "??TTCAC?A??TCC?T???GGTAAGT??AT?---AAA??---AAA???A?A?TTTTCA??")
+    checkEquals(score(globalAlign), sum(c(33, 21) * scoring) - 44, tolerance = 1e-6)
+    checkEquals(globalAlignScore, sum(c(33, 21) * scoring) - 44, tolerance = 1e-6)
+    checkEquals(as.character(pattern(overlapAlign)), "G")
+    checkEquals(as.character(subject(overlapAlign)), "G")
+    checkEquals(score(overlapAlign), scoring[[1]], tolerance = 1e-6)
+    checkEquals(overlapAlignScore, scoring[[1]], tolerance = 1e-6)
+    checkEquals(as.character(pattern(localAlign)), "GGTAAGT")
+    checkEquals(as.character(subject(localAlign)), "GGTAAGT")
+    checkEquals(score(localAlign), 7 * scoring[[1]], tolerance = 1e-6)
+    checkEquals(localAlignScore, 7 * scoring[[1]], tolerance = 1e-6)
 }
