@@ -26,6 +26,8 @@
 \alias{show,PairwiseAlignment-method}
 \alias{as.character,PairwiseAlignment-method}
 \alias{toString,PairwiseAlignment-method}
+\alias{[,PairwiseAlignment-method}
+\alias{[<-,PairwiseAlignment-method}
 
 
 \title{PairwiseAlignment objects}
@@ -118,6 +120,15 @@
     \item{}{
       \code{coverage(x, start = NA, end = NA)}:
       The coverage of the pairwise alignments along \code{unaligned(subject(x))}.
+    }
+  }
+}
+
+\section{Subsetting methods}{
+  \describe{
+    \item{}{
+      \code{x[i]}:
+      Returns a new \code{PairwiseAlignment} object made of the selected elements.
     }
   }
 }

@@ -167,3 +167,37 @@ setMethod("as.character", "PairwiseAlignment",
         rbind(pattern = as.character(pattern(x)), subject = as.character(subject(x)))
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
+###
+
+setMethod("[", "PairwiseAlignment",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        if (!is.numeric(i) || any(is.na(i)))
+            stop("invalid subsetting")
+        if (any(i < 1) || any(i > length(x)))
+            stop("subscript out of bounds")
+        new("PairwiseAlignment",
+            pattern = x@pattern[i],
+            subject = x@subject[i],
+            type = x@type,
+            score = x@score[i],
+            constantMatrix = x@constantMatrix,
+            gapOpening = x@gapOpening,
+            gapExtension = x@gapExtension)
+    }
+)
+
+setReplaceMethod("[", "PairwiseAlignment",
+    function(x, i, j,..., value)
+    {
+        stop("attempt to modify the value of a ", class(x), " instance")
+    }
+)
