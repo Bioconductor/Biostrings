@@ -22,8 +22,8 @@ SEXP debug_match_pdict()
 
 
 /****************************************************************************
- * Inexact matching on the tails of the TBdna_PDict object
- * =======================================================
+ * Inexact matching on the heads and tails of a PDict object
+ * =========================================================
  */
 
 /* k1 must be < k2 */
@@ -198,7 +198,7 @@ static int match_unq_headtail(int k1, int pdict_W,
 	return is_count_only ? match_count->elts[k1] : ends_buf1->nelt;
 }
 
-static void match_TBdna_tail(SEXP unq2dup,
+static void match_pdict_tail(SEXP unq2dup,
 		CachedXStringSet *cached_tail,
 		const RoSeq *S,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
@@ -210,7 +210,7 @@ static void match_TBdna_tail(SEXP unq2dup,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING match_TBdna_tail()\n");
+		Rprintf("[DEBUG] ENTERING match_pdict_tail()\n");
 #endif
 	matching_keys = _MIndex_get_matching_keys();
 	n1 = matching_keys->nelt;
@@ -246,12 +246,12 @@ static void match_TBdna_tail(SEXP unq2dup,
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING match_TBdna_tail()\n");
+		Rprintf("[DEBUG] LEAVING match_pdict_tail()\n");
 #endif
 	return;
 }
 
-static void match_TBdna_headtail(SEXP unq2dup, int pdict_W,
+static void match_pdict_headtail(SEXP unq2dup, int pdict_W,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
 		int max_mm, int fixedP, int fixedS, int is_count_only)
@@ -264,7 +264,7 @@ static void match_TBdna_headtail(SEXP unq2dup, int pdict_W,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING match_TBdna_headtail()\n");
+		Rprintf("[DEBUG] ENTERING match_pdict_headtail()\n");
 #endif
 	matching_keys = _MIndex_get_matching_keys();
 	n1 = matching_keys->nelt;
@@ -321,33 +321,46 @@ static void match_TBdna_headtail(SEXP unq2dup, int pdict_W,
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING match_TBdna_headtail()\n");
+		Rprintf("[DEBUG] LEAVING match_pdict_headtail()\n");
 #endif
 	return;
 }
 
-static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
+static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
+		SEXP unq2dup, int pdict_W,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+		SEXP max_mismatch, SEXP fixed, int is_count_only)
 {
+	const char *type;
+	int max_mm, fixedP, fixedS;
+
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING match_TBdna()\n");
+		Rprintf("[DEBUG] ENTERING match_pdict()\n");
 #endif
-	_match_ACtree_PDict(pdict_data, S, fixedS);
+	type = CHAR(STRING_ELT(pdict_type, 0));
+	max_mm = INTEGER(max_mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	if (strcmp(type, "Twobit") == 0)
+		_match_Twobit_PDict(pdict_pptb, S, fixedS);
+	else if (strcmp(type, "ACtree") == 0)
+		_match_ACtree_PDict(pdict_pptb, S, fixedS);
+	else
+		error("\"%s\": unknown PDict type", type);
 	if (cached_head == NULL && cached_tail == NULL)
 		_MIndex_report_matches_for_dups(unq2dup);
 	else if (cached_head == NULL)
-		match_TBdna_tail(unq2dup, cached_tail,
+		match_pdict_tail(unq2dup, cached_tail,
 			S, max_mm, fixedP, fixedS, is_count_only);
 	else
-		match_TBdna_headtail(unq2dup, pdict_W,
+		match_pdict_headtail(unq2dup, pdict_W,
 			cached_head, cached_tail,
 			S, max_mm, fixedP, fixedS, is_count_only);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING match_TBdna()\n");
+		Rprintf("[DEBUG] LEAVING match_pdict()\n");
 #endif
 	return;
 }
@@ -358,18 +371,19 @@ static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
  *                    XStringViews_match_pdict
  *
  * Arguments:
- *   'pdict_data': a 2-elt list containing pdict@actree@nodes@xp and
- *                 pdict@actree@base_codes (in this order)
- *   'pdict_length': length(pdict)
- *   'pdict_width': width(pdict)
- *   'pdict_unq2dup': pdict@dups@unq2dup
- *   'pdict_head': pdict@head (XStringSet or NULL)
- *   'pdict_tail': pdict@tail (XStringSet or NULL)
- *   'subject': subject
- *   'max_mismatch': max.mismatch (max nb of mismatches in the tail)
- *   'fixed': logical vector of length 2
- *   'count_only': TRUE or FALSE
- *   'envir': environment to be populated with the matches
+ *   pdict_type: a single string "Twobit" or "ACtree";
+ *   pdict_pptb: the preprocessed Trusted Band represented as a list (the
+ *               exact elements depend on the PDict type);
+ *   pdict_length: length(pdict);
+ *   pdict_tb_width: tb.width(pdict);
+ *   pdict_tb_unq2dup: pdict@tb.dups@unq2dup;
+ *   pdict_head: pdict@head (XStringSet or NULL);
+ *   pdict_tail: pdict@tail (XStringSet or NULL);
+ *   subject: subject;
+ *   max_mismatch: max.mismatch (max nb of mismatches in the tail);
+ *   fixed: logical vector of length 2;
+ *   count_only: TRUE or FALSE;
+ *   envir: environment to be populated with the matches.
  *
  * Return an R object that will be assigned to the 'ends' slot of the
  * MIndex object returned by matchPDict(). Refer to the description
@@ -377,8 +391,8 @@ static void match_TBdna(SEXP pdict_data, SEXP unq2dup, int pdict_W,
  *
  ****************************************************************************/
 
-SEXP XString_match_pdict(SEXP pdict_data,
-		SEXP pdict_length, SEXP pdict_width, SEXP pdict_unq2dup,
+SEXP XString_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
+		SEXP pdict_length, SEXP pdict_tb_width, SEXP pdict_tb_unq2dup,
 		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only,
@@ -386,15 +400,14 @@ SEXP XString_match_pdict(SEXP pdict_data,
 {
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
-	int pdict_L, pdict_W, with_head, with_tail,
-	    fixedP, fixedS, is_count_only;
+	int pdict_L, pdict_W, with_head, with_tail, is_count_only;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
 	pdict_L = INTEGER(pdict_length)[0];
-	pdict_W = INTEGER(pdict_width)[0];
+	pdict_W = INTEGER(pdict_tb_width)[0];
 	pcached_head = pcached_tail = NULL;
 	with_head = pdict_head != R_NilValue;
 	if (with_head) {
@@ -407,15 +420,13 @@ SEXP XString_match_pdict(SEXP pdict_data,
 		pcached_tail = &cached_tail;
 	}
 	S = _get_XString_asRoSeq(subject);
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_MIndex_init_match_reporting(is_count_only, with_head || with_tail,
 		pdict_L);
-	match_TBdna(pdict_data, pdict_unq2dup, pdict_W,
+	match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, pdict_W,
 		pcached_head, pcached_tail,
-		&S, INTEGER(max_mismatch)[0], fixedP, fixedS, is_count_only);
+		&S, max_mismatch, fixed, is_count_only);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING XString_match_pdict()\n");
@@ -423,8 +434,8 @@ SEXP XString_match_pdict(SEXP pdict_data,
 	return _MIndex_reported_matches_asSEXP(envir);
 }
 
-SEXP XStringViews_match_pdict(SEXP pdict_data,
-		SEXP pdict_length, SEXP pdict_width, SEXP pdict_unq2dup,
+SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
+		SEXP pdict_length, SEXP pdict_tb_width, SEXP pdict_tb_unq2dup,
 		SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP fixed,
@@ -432,8 +443,7 @@ SEXP XStringViews_match_pdict(SEXP pdict_data,
 {
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S, S_view;
-	int pdict_L, pdict_W, with_head, with_tail,
-	    fixedP, fixedS, is_count_only,
+	int pdict_L, pdict_W, with_head, with_tail, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
 	IntBuf global_match_count;
 	IntBBuf global_match_ends;
@@ -443,7 +453,7 @@ SEXP XStringViews_match_pdict(SEXP pdict_data,
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
 	pdict_L = INTEGER(pdict_length)[0];
-	pdict_W = INTEGER(pdict_width)[0];
+	pdict_W = INTEGER(pdict_tb_width)[0];
 	pcached_head = pcached_tail = NULL;
 	with_head = pdict_head != R_NilValue;
 	if (with_head) {
@@ -456,8 +466,6 @@ SEXP XStringViews_match_pdict(SEXP pdict_data,
 		pcached_tail = &cached_tail;
 	}
 	S = _get_XString_asRoSeq(subject);
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
@@ -476,10 +484,9 @@ SEXP XStringViews_match_pdict(SEXP pdict_data,
 			error("'subject' has out of limits views");
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
-		match_TBdna(pdict_data, pdict_unq2dup, pdict_W,
+		match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, pdict_W,
 			pcached_head, pcached_tail,
-			&S_view, INTEGER(max_mismatch)[0], fixedP, fixedS,
-			is_count_only);
+			&S_view, max_mismatch, fixed, is_count_only);
 		_MIndex_merge_matches(&global_match_count, &global_match_ends, view_offset);
 	}
 

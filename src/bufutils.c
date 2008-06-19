@@ -49,7 +49,7 @@ static int get_new_buflength(int buflength)
  * IntBuf functions
  */
 
-void _IntBuf_set_val(IntBuf *ibuf, int val)
+void _IntBuf_set_val(const IntBuf *ibuf, int val)
 {
 	int i, *elt;
 
@@ -125,7 +125,7 @@ void _IntBuf_delete_at(IntBuf *ibuf, int at)
 	return;
 }
 
-void _IntBuf_sum_val(IntBuf *ibuf, int val)
+void _IntBuf_sum_val(const IntBuf *ibuf, int val)
 {
 	int i, *elt;
 
@@ -153,7 +153,7 @@ void _IntBuf_append_shifted_vals(IntBuf *ibuf, int *newvals, int nnewval, int sh
  * Left and right IntBuf objects must have the same length. This is
  * NOT checked!
  */
-void _IntBuf_sum_IntBuf(IntBuf *ibuf1, IntBuf *ibuf2)
+void _IntBuf_sum_IntBuf(const IntBuf *ibuf1, const IntBuf *ibuf2)
 {
 	int i, *elt1, *elt2;
 
@@ -164,7 +164,7 @@ void _IntBuf_sum_IntBuf(IntBuf *ibuf1, IntBuf *ibuf2)
 	return;
 }
 
-SEXP _IntBuf_asINTEGER(IntBuf *ibuf)
+SEXP _IntBuf_asINTEGER(const IntBuf *ibuf)
 {
 	SEXP ans;
 
@@ -255,7 +255,7 @@ static void IntBBuf_extend(IntBBuf *ibbuf)
 	return;
 }
 
-void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, IntBuf ibuf)
+void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, const IntBuf *ibuf)
 {
 	IntBuf *elt1, *elt2;
 	int i1;
@@ -266,7 +266,7 @@ void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, IntBuf ibuf)
 	elt1 = elt2 - 1;
 	for (i1 = ibbuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
-	*elt2 = ibuf;
+	*elt2 = *ibuf;
 	return;
 }
 
@@ -274,7 +274,7 @@ void _IntBBuf_insert_at(IntBBuf *ibbuf, int at, IntBuf ibuf)
  * Left and right IntBBuf objects must have the same length. This is
  * NOT checked!
  */
-void _IntBBuf_eltwise_append(IntBBuf *ibbuf1, IntBBuf *ibbuf2)
+void _IntBBuf_eltwise_append(const IntBBuf *ibbuf1, const IntBBuf *ibbuf2)
 {
 	int i;
 	IntBuf *elt1, *elt2;
@@ -286,7 +286,7 @@ void _IntBBuf_eltwise_append(IntBBuf *ibbuf1, IntBBuf *ibbuf2)
 	return;
 }
 
-void _IntBBuf_sum_val(IntBBuf *ibbuf, int val)
+void _IntBBuf_sum_val(const IntBBuf *ibbuf, int val)
 {
 	int i;
 	IntBuf *elt;
@@ -299,7 +299,7 @@ void _IntBBuf_sum_val(IntBBuf *ibbuf, int val)
 /*
  * mode: 0 -> integer(0), 1-> NULL, 2 -> NA
  */
-SEXP _IntBBuf_asLIST(IntBBuf *ibbuf, int mode)
+SEXP _IntBBuf_asLIST(const IntBBuf *ibbuf, int mode)
 {
 	SEXP ans, ans_elt;
 	int i;
@@ -340,7 +340,7 @@ IntBBuf _LIST_asIntBBuf(SEXP x)
 	return ibbuf;
 }
 
-SEXP _IntBBuf_toEnvir(IntBBuf *ibbuf, SEXP envir, int keyshift)
+SEXP _IntBBuf_toEnvir(const IntBBuf *ibbuf, SEXP envir, int keyshift)
 {
 	int i;
 	IntBuf *elt;
@@ -475,7 +475,7 @@ void _CharBuf_insert_at(CharBuf *cbuf, int at, char c)
 	return;
 }
 
-SEXP _CharBuf_asRAW(CharBuf *cbuf)
+SEXP _CharBuf_asRAW(const CharBuf *cbuf)
 {
 	SEXP ans;
 
@@ -535,7 +535,7 @@ static void CharBBuf_extend(CharBBuf *cbbuf)
 	return;
 }
 
-void _CharBBuf_insert_at(CharBBuf *cbbuf, int at, CharBuf cbuf)
+void _CharBBuf_insert_at(CharBBuf *cbbuf, int at, const CharBuf *cbuf)
 {
 	CharBuf *elt1, *elt2;
 	int i1;
@@ -551,7 +551,7 @@ void _CharBBuf_insert_at(CharBBuf *cbbuf, int at, CharBuf cbuf)
 	elt1 = elt2 - 1;
 	for (i1 = cbbuf->nelt++; i1 > at; i1--)
 		*(elt2--) = *(elt1--);
-	*elt2 = cbuf;
+	*elt2 = *cbuf;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _CharBBuf_insert_at(): END\n");
@@ -565,7 +565,7 @@ void _append_string_to_CharBBuf(CharBBuf *cbbuf, const char *string)
 	CharBuf cbuf;
 
 	cbuf = _new_CharBuf_from_string(string);
-	_CharBBuf_insert_at(cbbuf, cbbuf->nelt, cbuf);
+	_CharBBuf_insert_at(cbbuf, cbbuf->nelt, &cbuf);
 	return;
 }
 

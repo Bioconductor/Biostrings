@@ -193,7 +193,7 @@
     }
     \item{}{
       \code{x[[i]]}:
-      Extract the i-th \code{\link{BString}} object from \code{x}.
+      Extract the i-th \code{\link{XString}} object from \code{x}.
     }
   }
 }

@@ -4,102 +4,11 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ACtree" class (NOT EXPORTED).
-###
-### A low-level container for storing the Aho-Corasick tree built from the
-### input dictionary (note that this tree is actually an oriented graph if we
-### consider the failure links). When the input is based on an alphabet of 4
-### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
-### base_codes slot is a vector of 4 integers that will be filled with the
-### internal codes (byte values) of the unique letters found in the input.
-### The number of integers needed to represent a tree node is the number of
-### letters in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
-### representation of the Aho-Corasick tree can only be used for input based
-### on a very small alphabet.
-###
-### Slot description:
-###
-###   nodes: an external integer vector (XInteger object) for the storage
-###       of the nodes.
-### 
-###   base_codes: an integer vector filled with the internal codes (byte
-###       values) of the unique letters found in the input dictionary during
-###       its preprocessing.
-
-setClass("ACtree",
-    representation(
-        nodes="XInteger",
-        base_codes="integer"
-    )
-)
-
-.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
-
-setMethod("length", "ACtree", function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x))
-
-setMethod("show", "ACtree",
-    function(object)
-    {
-        cat(length(object), "-node ", length(object@base_codes), "-ary Aho-Corasick tree\n", sep="")
-    }
-)
-
-### Implement the 0-based subsetting semantic (like in C).
-### Typical use:
-###   > pdict <- PDict(c("agg", "aca", "gag", "caa", "agt", "aca"))
-###   > pdict@actree[0:2] # look at the 3 first nodes
-###   > pdict@actree[] # look at all the nodes
-###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks0 # no failure link is set yet
-###   > end_index <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
-###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks1 # some failure links have been set
-### As you can see the 'pdict' object "learns" from being used!
-###   
-setMethod("[", "ACtree",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        lx <- length(x)
-        if (missing(i)) {
-            i <- 0:(lx-1)
-        } else {
-            if (!is.numeric(i))
-                stop("invalid subscript type")
-            if (any(is.na(i)))
-                stop("subscript contains NAs")
-            if (!is.integer(i))
-                i <- as.integer(i)
-        }
-        ints_per_acnode <- .ACtree.ints_per_acnode(x)
-        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
-        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
-        colnames(ans) <- c("parent_id", "depth", x@base_codes,
-                           "flink", "P_id")
-        rownames(ans) <- i
-        ans
-    }
-)
-
-setMethod("as.matrix", "ACtree", function(x) x[])
-
-setMethod("initialize", "ACtree",
-    function(.Object, xp, base_codes)
-    {
-        .Object@nodes <- XInteger(1)
-        .Object@nodes@xp <- xp
-        .Object@base_codes <- base_codes
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "Dups" class.
 ###
 ### A general container for storing the mapping between duplicated elements
 ### of an arbitrary vector.
+###
 
 setClass("Dups",
     representation(
@@ -166,152 +75,326 @@ setMethod("dupFrequency", "Dups",
     }
 )
 
+setMethod("show", "Dups",
+    function(object)
+    {
+        percentage <- 100 * sum(duplicated(object)) / length(object)
+        cat(class(object), " object of length ", length(object),
+            " (", percentage, "% of duplicates)\n", sep="")
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "PDict" class.
 ###
-### Very general container for any kind of preprocessed pattern dictionary.
+### A (virtual) container for storing a preprocessed dictionary of DNA
+### patterns that can later be passed to the matchPDict() function for fast
+### matching.
+### Derive this virtual class for each type of preprocessing that you want
+### to implement.
 ###
 
-setClass("PDict", representation("VIRTUAL"))
+setClass("PDict",
+    representation(
+        "VIRTUAL",
+        dict0="DNAStringSet",
+        head="DNAStringSet",
+        tb="DNAStringSet",    # the Trusted Band (always of constant width)
+        tail="DNAStringSet",
+        tb.dups="Dups"
+    )
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### PDict accessor methods.
+###
+
+setMethod("length", "PDict", function(x) length(x@dict0))
+
+setMethod("width", "PDict", function(x) width(x@dict0))
+
+setMethod("names", "PDict", function(x) names(x@dict0))
+
+setMethod("head", "PDict",
+    function(x, ...)
+    {
+        if (all(width(x@head) == 0L))
+            return(NULL)
+        x@head
+    }
+)
+
+setGeneric("tb", function(x) standardGeneric("tb"))
+setMethod("tb", "PDict", function(x) x@tb)
+
+setGeneric("tb.width", function(x) standardGeneric("tb.width"))
+setMethod("tb.width", "PDict", function(x) width(x@tb)[1])
+
+setMethod("tail", "PDict",
+    function(x, ...)
+    {
+        if (all(width(x@tail) == 0L))
+            return(NULL)
+        x@tail
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting a PDict object.
+###
+### Only the "[[" operator is provided for now.
+### Providing "[" sounds nice too but it has to return a PDict object of
+### the same type made of the selected patterns. For an ACtree_PDict object
+### this means that the @actree slot must be updated and this could cost
+### (in terms of amount of CPU and memory used) as much as preprocessing
+### again the entire set of selected patterns.
+### So in the end, "[" would not have much value (except some convenience)
+### over the solution that consists to ask the user to subset upstream i.e.
+### to subset the original dictionary before s/he passes it to PDict().
+### 
+
+### Extract the i-th element of a PDict object as DNAString object.
+setMethod("[[", "PDict",
+    function(x, i, j, ...)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (missing(i))
+            stop("subscript is missing")
+        x@dict0[[i]]
+    }
+)
+
+setReplaceMethod("[[", "PDict",
+    function(x, i, j,..., value)
+    {
+        stop("attempt to modify the value of a ", class(x), " instance")
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### PDict initialization.
+###
+
+### Not intended to be used directly by the user.
+setMethod("initialize", "PDict",
+    function(.Object, dict0, head, tb, tail, dup2unq)
+    {
+        .Object@dict0 <- dict0
+        .Object@head <- head
+        .Object@tb <- tb
+        .Object@tail <- tail
+        .Object@tb.dups <- Dups(dup2unq)
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The PDict "show" method.
+###
+
+setMethod("show", "PDict",
+    function(object)
+    {
+        cat(length(object), "-pattern PDict object", sep="")
+        head <- head(object)
+        tail <- tail(object)
+        if (is.null(head) && is.null(tail)) {
+             cat(" of width ", tb.width(object), "\n", sep="")
+             return(invisible(NULL))
+        }
+        cat(":\n")
+        if (is.null(head)) {
+            cat("  - with NO head")
+        } else {
+            cat("  - with a head of ")
+            min_width <- min(width(head))
+            max_width <- max(width(head))
+            if (min_width == max_width)
+                cat("constant width ", min_width, sep="")
+            else
+                cat("variable width (min=", min_width,
+                    " / max=", max_width, ")", sep="")
+        }
+        cat("\n")
+        cat("  - with a Trusted Band of width ", tb.width(object), sep="")
+        cat("\n")
+        if (is.null(tail)) {
+            cat("  - with NO tail")
+        } else {
+            cat("  - with a tail of ")
+            min_width <- min(width(tail))
+            max_width <- max(width(tail))
+            if (min_width == max_width)
+                cat("constant width ", min_width, sep="")
+            else
+                cat("variable width (min=", min_width,
+                    " / max=", max_width, ")", sep="")
+        }
+        cat("\n")
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### PDict other methods.
+###
+
+setMethod("duplicated", "PDict",
+    function(x, incomparables=FALSE, ...)
+    {
+        head <- head(x)
+        tail <- tail(x)
+        if (is.null(head) && is.null(tail))
+            return(duplicated(x@tb.dups))
+        stop("duplicated() is not yet working on a PDict object ",
+             "with a head or a tail, sorry!")
+    }
+)
+
+setMethod("dupFrequency", "PDict",
+    function(x)
+    {
+        head <- head(x)
+        tail <- tail(x)
+        if (is.null(head) && is.null(tail))
+            return(dupFrequency(x@tb.dups))
+        stop("dupFrequency() is not yet working on a PDict object ",
+             "with a head or a tail, sorry!")
+    }
+)
 
 setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
+
+setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ACtree" class (NOT EXPORTED).
+###
+### A low-level container for storing the Aho-Corasick tree built from the
+### input dictionary (note that this tree is actually an oriented graph if we
+### consider the failure links). When the input is based on an alphabet of 4
+### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
+### base_codes slot is a vector of 4 integers that will be filled with the
+### internal codes (byte values) of the unique letters found in the input.
+### The number of integers needed to represent a tree node is the number of
+### letters in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
+### representation of the Aho-Corasick tree can only be used for input based
+### on a very small alphabet.
+###
+### Slot description:
+###
+###   nodes: an external integer vector (XInteger object) for the storage
+###       of the nodes.
+### 
+###   base_codes: an integer vector filled with the internal codes (byte
+###       values) of the unique letters found in the input dictionary during
+###       its preprocessing.
+
+setClass("ACtree",
+    representation(
+        nodes="XInteger",
+        base_codes="integer"
+    )
+)
+
+.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
+
+setMethod("length", "ACtree",
+    function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x)
+)
+
+setMethod("show", "ACtree",
+    function(object)
+    {
+        cat(length(object), "-node ",
+            length(object@base_codes), "-ary Aho-Corasick tree\n",
+            sep="")
+    }
+)
+
+### Implement the 0-based subsetting semantic (like in C).
+### Typical use:
+###   > pdict <- PDict(c("agg", "aca", "gag", "caa", "agt", "aca"))
+###   > pdict@actree[0:2] # look at the 3 first nodes
+###   > pdict@actree[] # look at all the nodes
+###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks0 # no failure link is set yet
+###   > end_index <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
+###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks1 # some failure links have been set
+### As you can see the 'pdict' object "learns" from being used!
+###   
+setMethod("[", "ACtree",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        lx <- length(x)
+        if (missing(i)) {
+            i <- 0:(lx-1)
+        } else {
+            if (!is.numeric(i))
+                stop("invalid subscript type")
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
+            if (!is.integer(i))
+                i <- as.integer(i)
+        }
+        ints_per_acnode <- .ACtree.ints_per_acnode(x)
+        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
+        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
+        colnames(ans) <- c("parent_id", "depth", x@base_codes,
+                           "flink", "P_id")
+        rownames(ans) <- i
+        ans
+    }
+)
+
+setMethod("as.matrix", "ACtree", function(x) x[])
+
+setMethod("initialize", "ACtree",
+    function(.Object, nodes_xp, base_codes)
+    {
+        .Object@nodes <- XInteger(0)
+        .Object@nodes@xp <- nodes_xp
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree_PDict" class.
 ###
-### A container for storing a preprocessed constant width dictionary (or set)
-### of DNA patterns.
-###
-### Slot description:
-###
-###   length: the dictionary length L i.e. the number of patterns
-###       (e.g. L=10^6).
-###
-###   width: the dictionary width W i.e. the number of chars per pattern
-###       (e.g. W=25).
-###
-###   actree: the Aho-Corasick tree built from the input dictionary.
+### A specific PDict container where the Trusted Band is stored in an
+### ACtree object.
 ###
 
 setClass("ACtree_PDict",
     contains="PDict",
     representation(
-        length="integer",
-        width="integer",
-        actree="ACtree",
-        dups="Dups",
-        NAMES="character",  # R doesn't like @names !!
-        geom="list"
+        actree="ACtree"
     )
 )
 
 ### Not intended to be used directly by the user.
 setMethod("initialize", "ACtree_PDict",
-    function(.Object, length, pp_Cans, names)
+    function(.Object, dict0, head, tb, tail, base_codes)
     {
-        .Object@length <- length
-        .Object@width <- pp_Cans$geom$width
-        .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, pp_Cans$actree_base_codes)
-        .Object@dups <- Dups(pp_Cans$dup2unq)
-        .Object@NAMES <- if (is.null(names)) as.character(NA) else names
-        .Object@geom <- pp_Cans$geom
+        pp_Cans <- .Call("build_ACtree_PDict",
+                         tb, base_codes,
+                         PACKAGE="Biostrings")
+        .Object <- callNextMethod(.Object, dict0, head, tb, tail,
+                                  pp_Cans$dup2unq)
+        .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, base_codes)
         .Object
-    }
-)
-
-setMethod("length", "ACtree_PDict", function(x) x@length)
-
-setMethod("width", "ACtree_PDict", function(x) x@width)
-
-setMethod("names", "ACtree_PDict",
-    function(x)
-        if (length(x@NAMES) == 1 && is.na(x@NAMES)) NULL else x@NAMES
-)
-
-setMethod("show", "ACtree_PDict",
-    function(object)
-    {
-        cat(length(object), "-pattern constant width PDict object of width ",
-            width(object), sep="")
-        if (is.null(names(object)))
-            cat(" (patterns have no names)")
-        cat("\n")
-    }
-)
-
-setMethod("duplicated", "ACtree_PDict",
-    function(x, incomparables=FALSE, ...) duplicated(x@dups)
-)
-
-setMethod("dupFrequency", "ACtree_PDict",
-    function(x) dupFrequency(x@dups)
-)
-setMethod("patternFrequency", "ACtree_PDict",
-    function(x) dupFrequency(x@dups)
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "TBdna_PDict" class.
-###
-### A container for storing a preprocessed "Trusted Band" dictionary (or
-### set) of DNA patterns.
-### 2 important particular cases of "Trusted Band" dictionaries are:
-###   1) "Trusted Prefix": a "Trusted Prefix" dictionary is a "Trusted Band"
-###      dictionary with no head.
-###   2) "Trusted Suffix": a "Trusted Suffix" dictionary is a "Trusted Band"
-###      dictionary with no tail.
-###
-
-### 'head' and 'tail' must be DNAStringSet objects of the same length.
-### One of them can be NULL but they can't both be NULL at the same time.
-setClass("TBdna_PDict",
-    contains="ACtree_PDict",
-    representation(
-        head="DNAStringSet", # can be NULL
-        tail="DNAStringSet"  # can be NULL
-    )
-)
-
-### Not intended to be used directly by the user.
-setMethod("initialize", "TBdna_PDict",
-    function(.Object, length, pp_Cans, names)
-        callNextMethod(.Object, length, pp_Cans, names)
-)
-
-setMethod("head", "TBdna_PDict", function(x, ...) x@head)
-setMethod("tail", "TBdna_PDict", function(x, ...) x@tail)
-
-setMethod("show", "TBdna_PDict",
-    function(object)
-    {
-        if (is.null(object@head))
-            trusted_part <- "Prefix"
-        else if (is.null(object@tail))
-            trusted_part <- "Suffix"
-        else
-            trusted_part <- "Band"
-        cat(length(object), "-pattern PDict object with a Trusted ",
-            trusted_part, " of width ", width(object), sep="")
-        if (is.null(names(object)))
-            cat(" (patterns have no names)")
-        cat("\n")
-    }
-)
-
-setMethod("duplicated", "TBdna_PDict",
-    function(x, incomparables=FALSE, ...)
-    {
-        stop("not ready yet, sorry!")
-    }
-)
-
-setMethod("patternFrequency", "TBdna_PDict",
-    function(x)
-    {
-        stop("not ready yet, sorry!")
     }
 )
 
@@ -320,117 +403,72 @@ setMethod("patternFrequency", "TBdna_PDict",
 ### The PDict() constructor (user-friendly).
 ###
 
-.PDict <- function(dict, names, tb.start, tb.end,
-                   drop.head, drop.tail, skip.invalid.patterns)
+.PDict <- function(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
 {
+    if (!is(x, "DNAStringSet"))
+        x <- DNAStringSet(x)
+    if (length(x) == 0)
+        stop("'x' must contain at least one pattern")
+    names <- names(x)
     if (!is.null(names)) {
         if (any(names %in% c("", NA)))
-            stop("'dict' has invalid names")
+            stop("'x' has invalid names")
         if (any(duplicated(names)))
-            stop("'dict' has duplicated names")
+            stop("'x' has duplicated names")
     }
-    if (!isSingleNumberOrNA(tb.start))
-        stop("'tb.start' must be a single integer or NA")
-    if (!is.integer(tb.start))
-        tb.start <- as.integer(tb.start)
-    if (!isSingleNumberOrNA(tb.end))
-        stop("'tb.end' must be a single integer or NA")
-    if (!is.integer(tb.end))
-        tb.end <- as.integer(tb.end)
-    if (!isTRUEorFALSE(drop.head))
-        stop("'drop.head' must be 'TRUE' or 'FALSE'")
-    if (!isTRUEorFALSE(drop.tail))
-        stop("'drop.tail' must be 'TRUE' or 'FALSE'")
-    on.exit(.Call("CWdna_free_actree_nodes_buf", PACKAGE="Biostrings"))
-    if (is.character(dict)) {
-        pp_Cans <- .Call("build_ACtree_PDict_from_CHARACTER",
-                         dict,
-                         tb.start, tb.end,
-                         PACKAGE="Biostrings")
-    } else if (is(dict, "DNAStringSet")) {
-        pp_Cans <- .Call("build_ACtree_PDict_from_XStringSet",
-                         dict,
-                         tb.start, tb.end,
-                         PACKAGE="Biostrings")
+    tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
+                          use.names=FALSE)
+    head_start <- start(x)
+    head_width <- start(tb) - start(x)
+    head <- new("DNAStringSet", super(x), head_start, head_width, names=NULL)
+    tail_start <- end(tb) + 1L
+    tail_width <- end(x) - end(tb)
+    tail <- new("DNAStringSet", super(x), tail_start, tail_width, names=NULL)
+    base_codes <- codes(tb, baseOnly=TRUE)
+    if (type == "ACtree") {
+        on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
+        ans <- new("ACtree_PDict", x, head, tb, tail, base_codes)
+    } else if (type == "Twobit") {
+        stop("'type=\"Twobit\"' not ready yet, sorry")
     } else {
-        stop("unsuported 'dict' type")
+        stop("unknown type")
     }
-    if (is.na(tb.start) || tb.start == 1L)
-        drop.head <- TRUE
-    if (is.na(tb.end) || tb.end == -1L)
-        drop.tail <- TRUE
-    if (drop.head && drop.tail)
-        return(new("ACtree_PDict", length(dict), pp_Cans, names))
-    ans <- new("TBdna_PDict", length(dict), pp_Cans, names)
-    if (!drop.head) 
-        ans@head <- DNAStringSet(dict, end=tb.start-1L)
-    if (!drop.tail)
-        ans@tail <- DNAStringSet(dict, start=tb.end+1L)
     ans
 }
 
-### The input dictionary 'dict' must be:
-###   - of length >= 1
-### The supported types for the input dictionary are:
-###   - character vector
-###   - DNAStringSet object
-###   - XStringViews object
-### Typical use:
-###   > library(Biostrings)
-###   > dict <- c("abb", "aca", "bab", "caa", "abd", "aca")
-###   > pdict <- PDict(dict)
-###
-setGeneric("PDict", signature="dict",
-    function(dict, tb.start=1, tb.end=NA,
-             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
+setGeneric("PDict", signature="x",
+    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+                type="ACtree", skip.invalid.patterns=FALSE)
         standardGeneric("PDict")
 )
 
 setMethod("PDict", "character",
-    function(dict, tb.start=1, tb.end=NA,
-             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
-    {
-        if (length(dict) == 0)
-            stop("'dict' must contain at least one pattern")
-        .PDict(dict, names(dict), tb.start, tb.end,
-               drop.head, drop.tail, skip.invalid.patterns)
-    }
+    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+                type="ACtree", skip.invalid.patterns=FALSE)
+        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
 )
 
 setMethod("PDict", "DNAStringSet",
-    function(dict, tb.start=1, tb.end=NA,
-             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
-    {
-        if (length(dict) == 0)
-            stop("'dict' must contain at least one pattern")
-        .PDict(dict, names(dict), tb.start, tb.end,
-               drop.head, drop.tail, skip.invalid.patterns)
-    }
+    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+                type="ACtree", skip.invalid.patterns=FALSE)
+        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
 )
 
 setMethod("PDict", "XStringViews",
-    function(dict, tb.start=1, tb.end=NA,
-             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
+    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+                type="ACtree", skip.invalid.patterns=FALSE)
     {
-        dict <- DNAStringSet(dict)
-        PDict(dict, tb.start=tb.start, tb.end=tb.end,
-                    drop.head=drop.head, drop.tail=drop.tail,
-                    skip.invalid.patterns=skip.invalid.patterns)
+        if (!is(subject(x), "DNAString"))
+            stop("'subject(x)' must be a DNAString object")
+        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
     }
 )
 
 ### Just because of those silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("PDict", "AsIs",
-    function(dict, tb.start=1, tb.end=NA,
-             drop.head=FALSE, drop.tail=FALSE, skip.invalid.patterns=FALSE)
-    {
-        if (!is.character(dict))
-            stop("unsuported 'dict' type")
-        class(dict) <- "character" # keeps the names (unlike as.character())
-        PDict(dict, tb.start=tb.start, tb.end=tb.end,
-                    drop.head=drop.head, drop.tail=drop.tail,
-                    skip.invalid.patterns=skip.invalid.patterns)
-    }
+    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+                type="ACtree", skip.invalid.patterns=FALSE)
+        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
 )
 

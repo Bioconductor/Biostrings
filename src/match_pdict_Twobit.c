@@ -140,7 +140,7 @@ SEXP build_Twobit_PDict_from_XStringSet(SEXP dict, SEXP tb_start, SEXP tb_end)
  *                                                                          *
  ****************************************************************************/
 
-void _match_Twobit_PDict(SEXP pdict_data, const RoSeq *S, int fixedS)
+void _match_Twobit_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 {
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)

@@ -623,3 +623,48 @@ void _init_chrtrtable(const int *codes, int len, int *chrtrtable)
 	return;
 }
 
+/*
+ * Check that user-specified values '*start', '*end' and 'width' form a valid
+ * combination and solve '*start' and '*end' (i.e. replace any NA value by a
+ * non-NA value).
+ */
+void _normargs_startend(int *start, int *end, int width, const char *prefix)
+{
+	if (*start == 0)
+		error("'%sstart' must be a single >= 1, <= -1 "
+		      "or NA integer", prefix);
+	if (*end == 0)
+		error("'%send' must be a single >= 1, <= -1 "
+		      "or NA integer", prefix);
+	if (width == NA_INTEGER) {
+		if (*start == NA_INTEGER)
+			*start = 1;
+		if (*end == NA_INTEGER)
+			*end = -1;
+		if ((*end > 0 || *start < 0) && *end < *start)
+			error("invalid ('%sstart','%send') combination",
+			      prefix, prefix);
+	} else if (width < 0) {
+		error("'%swidth' must be a single >= 0 or NA integer", prefix);
+	} else if ((*start == NA_INTEGER) == (*end == NA_INTEGER)) {
+		error("either '%sstart' or '%send' (but not both) must be NA "
+		      "when '%swidth' is not NA", prefix, prefix, prefix);
+	} else if (*start == NA_INTEGER) {
+		// '*end' is not NA
+		if (0 < *end && *end < width)
+			error("invalid ('%send','%swidth') combination",
+			      prefix, prefix);
+		// '*start' will be 0 iff '*end' = -1 and 'width' = 0 
+		*start = *end - width + 1; 
+	} else {
+		// '*end' is NA
+		if (*start < 0 && -*start < width)
+			error("invalid ('%sstart','%swidth') combination",
+			      prefix, prefix);
+		// '*end' will be 0 iff '*start' = 1 and 'width' = 0
+		*end = *start + width - 1;
+	}
+	// '*start' and '*end' cannot be NA anymore!
+	return;
+}
+

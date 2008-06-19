@@ -48,7 +48,7 @@
   ## WARNING! THIS IS STILL WORK IN PROGRESS!!!
   ## A known issue is that the "startIndex", "[[" and "unlist" methods are
   ## BROKEN on the MIndex object returned by matchPDict() called on a
-  ## TBdna_PDict object!
+  ## PDict object with a head or a tail!
 
   ## ---------------------------------------------------------------------
   ## A. WITH UNNAMED PATTERNS

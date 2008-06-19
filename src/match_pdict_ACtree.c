@@ -54,8 +54,6 @@ typedef struct acnode {
  * Note that the id of an ACNode element is just its offset in the array.
  */
 
-static int actree_base_codes_buf[MAX_CHILDREN_PER_ACNODE];
-
 #define INTS_PER_ACNODE (sizeof(ACNode) / sizeof(int))
 #define MAX_ACNODEBUF_LENGTH (INT_MAX / INTS_PER_ACNODE)
 
@@ -80,21 +78,13 @@ SEXP debug_match_pdict_ACtree()
 	return R_NilValue;
 }
 
-static void init_actree_base_codes_buf()
-{
-	int childslot;
-
-	for (childslot = 0; childslot < MAX_CHILDREN_PER_ACNODE; childslot++)
-		actree_base_codes_buf[childslot] = -1;
-	return;
-}
-
-SEXP CWdna_free_actree_nodes_buf()
+SEXP free_actree_nodes_buf()
 {
 	if (actree_nodes_buf != NULL) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] CWdna_free_actree_nodes_buf(): freeing actree_nodes_buf ... ");
+			Rprintf("[DEBUG] free_actree_nodes_buf(): "
+				"freeing actree_nodes_buf ... ");
 		}
 #endif
 		free(actree_nodes_buf);
@@ -118,7 +108,7 @@ SEXP CWdna_free_actree_nodes_buf()
  *   A: length of the alphabet i.e. max number of children per node
  *   maxnodes: maximum number of nodes needed
  * Now here is how to get maxnodes:
- *   maxnodes = sum(from: i=0, to: i=W, of: min(A^i, L))
+ *   maxnodes = sum(from i=0; to i=W; of min(A^i, L))
  */
 static void alloc_actree_nodes_buf(int length, int width)
 {
@@ -126,11 +116,13 @@ static void alloc_actree_nodes_buf(int length, int width)
 	size_t bufsize;
 
 	if (actree_nodes_buf != NULL) {
-		// We use the on.exit() mechanism to call CWdna_free_actree_nodes_buf()
-		// to free the buffer so if this mechanism is reliable we should
-		// never come here. Anyway just in case...
-		warning("actree_nodes_buf was not previously freed, this is anormal, please report");
-		CWdna_free_actree_nodes_buf();
+		// We use the on.exit() mechanism to call
+		// free_actree_nodes_buf() to free the buffer so if this
+		// mechanism is reliable we should never come here.
+		// Anyway just in case...
+		warning("actree_nodes_buf was not previously freed, "
+			"this is anormal, please report");
+		free_actree_nodes_buf();
 	}
 	maxnodes = 0;
 	for (depth = 0, pow = 1; depth <= width; depth++) {
@@ -142,22 +134,25 @@ static void alloc_actree_nodes_buf(int length, int width)
 	maxnodes += (width - depth + 1) * length;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] alloc_actree_nodes_buf(): length=%d width=%d maxnodes=%d\n",
+		Rprintf("[DEBUG] alloc_actree_nodes_buf(): "
+			"length=%d width=%d maxnodes=%d\n",
 			length, width, maxnodes);
 	}
 #endif
 	if (maxnodes >= MAX_ACNODEBUF_LENGTH)
-		error("'dict' is too big");
+		error("the length or the width of the Trusted Band is too big");
 	bufsize = sizeof(ACNode) * maxnodes;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] alloc_actree_nodes_buf(): allocating actree_nodes_buf (bufsize=%lu) ... ",
+		Rprintf("[DEBUG] alloc_actree_nodes_buf(): "
+			"allocating actree_nodes_buf (bufsize=%lu) ... ",
 			bufsize);
 	}
 #endif
 	actree_nodes_buf = (ACNode *) malloc(bufsize);
 	if (actree_nodes_buf == NULL)
-		error("alloc_actree_nodes_buf(): failed to alloc actree_nodes_buf");
+		error("alloc_actree_nodes_buf(): "
+		      "failed to alloc actree_nodes_buf");
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("OK\n");
@@ -194,16 +189,13 @@ static int append_acnode(int parent_id)
 	return actree_nodes_buf_count++;
 }
 
-static int try_moving_to_acnode_child(int node_id, int childslot, char c)
+static int try_moving_to_acnode_child(int node_id, const int *base_codes,
+		int childslot, char c)
 {
 	int child_id;
 
-	if (actree_base_codes_buf[childslot] == -1) {
-		actree_base_codes_buf[childslot] = c;
-	} else {
-		if (c != actree_base_codes_buf[childslot])
-			return -1;
-	}
+	if (base_codes[childslot] != c)
+		return -1;
 	child_id = actree_nodes_buf[node_id].child_id[childslot];
 	if (child_id != -1)
 		return child_id;
@@ -211,45 +203,29 @@ static int try_moving_to_acnode_child(int node_id, int childslot, char c)
 	return actree_nodes_buf[node_id].child_id[childslot] = child_id;
 }
 
-static void pp_pattern(int poffset)
+static void pp_pattern(const RoSeq *pattern, const int *base_codes, int poffset)
 {
-	int width, n, node_id, child_id, childslot;
-	const char *pattern;
+	int n, node_id, child_id, childslot;
 	char c;
 	ACNode *node;
 
-	width = _CroppedDict_width();
-	pattern = _CroppedDict_pattern(poffset);
-	for (n = 0, node_id = 0; n < width; n++, node_id = child_id) {
-		c = pattern[n];
+	for (n = 0, node_id = 0; n < pattern->nelt; n++, node_id = child_id) {
+		c = pattern->elts[n];
 		for (childslot = 0; childslot < MAX_CHILDREN_PER_ACNODE; childslot++) {
-			child_id = try_moving_to_acnode_child(node_id, childslot, c);
+			child_id = try_moving_to_acnode_child(node_id,
+					base_codes, childslot, c);
 			if (child_id != -1)
 				break;
 		}
 		if (child_id == -1)
-			error("'dict' contains more than %d distinct letters", MAX_CHILDREN_PER_ACNODE);
+			error("non-base DNA letter found in Trusted Band "
+			      "for pattern %d", poffset + 1);
 	}
 	node = actree_nodes_buf + node_id;
 	if (node->P_id == -1)
 		node->P_id = poffset + 1;
 	else
 		report_dup(poffset, node->P_id);
-	return;
-}
-
-static void build_ACtree_PDict()
-{
-	int length, width, poffset;
-
-	length = _CroppedDict_length();
-	width = _CroppedDict_width();
-	init_dup2unq_buf(length);
-	init_actree_base_codes_buf();
-	alloc_actree_nodes_buf(length, width);
-	append_acnode(0);
-	for (poffset = 0; poffset < length; poffset++)
-		pp_pattern(poffset);
 	return;
 }
 
@@ -260,8 +236,8 @@ static void build_ACtree_PDict()
  */
 
 /*
- * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an R eXternal
- * Pointer.
+ * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an R
+ * eXternal Pointer.
  */
 static SEXP actree_nodes_buf_asXP()
 {
@@ -278,27 +254,9 @@ static SEXP actree_nodes_buf_asXP()
 }
 
 /*
- * Turn the actree_base_codes_buf array into an R integer vector of length
- * MAX_CHILDREN_PER_ACNODE.
- */
-static SEXP actree_base_codes_buf_asINTEGER()
-{
-	SEXP ans;
-
-	PROTECT(ans = NEW_INTEGER(MAX_CHILDREN_PER_ACNODE));
-	memcpy(INTEGER(ans), actree_base_codes_buf, MAX_CHILDREN_PER_ACNODE * sizeof(int));
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
  * ACtree_PDict_asLIST() returns an R list with the following elements:
- *   - geom: a list describing the geometry of the cropped dictionary;
  *   - actree_nodes_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
- *         tree built from 'dict';
- *   - actree_base_codes: integer vector containing the MAX_CHILDREN_PER_ACNODE character
- *         codes (ASCII) attached to the MAX_CHILDREN_PER_ACNODE child slots of any
- *         node in the tree pointed by actree_nodes_xp;
+ *         tree built from the Trusted Band;
  *   - dup2unq: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
@@ -306,35 +264,23 @@ static SEXP ACtree_PDict_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
-	PROTECT(ans = NEW_LIST(4));
+	PROTECT(ans = NEW_LIST(2));
 
 	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(4));
-	SET_STRING_ELT(ans_names, 0, mkChar("geom"));
-	SET_STRING_ELT(ans_names, 1, mkChar("actree_nodes_xp"));
-	SET_STRING_ELT(ans_names, 2, mkChar("actree_base_codes"));
-	SET_STRING_ELT(ans_names, 3, mkChar("dup2unq"));
+	PROTECT(ans_names = NEW_CHARACTER(2));
+	SET_STRING_ELT(ans_names, 0, mkChar("actree_nodes_xp"));
+	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
 	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-
-	/* set the "geom" element */
-	PROTECT(ans_elt = _CroppedDict_geom_asLIST());
-	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
 	/* set the "actree_nodes_xp" element */
 	PROTECT(ans_elt = actree_nodes_buf_asXP());
-	SET_ELEMENT(ans, 1, ans_elt);
-	UNPROTECT(1);
-
-	/* set the "actree_base_codes" element */
-	PROTECT(ans_elt = actree_base_codes_buf_asINTEGER());
-	SET_ELEMENT(ans, 2, ans_elt);
+	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
 	/* set the "dup2unq" element */
 	PROTECT(ans_elt = _dup2unq_asINTEGER());
-	SET_ELEMENT(ans, 3, ans_elt);
+	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
 	UNPROTECT(1);
@@ -343,35 +289,46 @@ static SEXP ACtree_PDict_asLIST()
 
 
 /****************************************************************************
- * .Call entry points for preprocessing
- * ------------------------------------
+ * .Call entry point for preprocessing
+ * -----------------------------------
  *
  * Arguments:
- *   'dict': a character vector or DNAStringSet object containing the input
- *           sequences
- *   'tb_start': single >= 1, <= -1 or NA integer
- *   'tb_end': single >= 1, <= -1 or NA integer
+ *   tb: the Trusted Band extracted from the original dictionary as a
+ *       DNAStringSet object;
+ *   base_codes: the internal codes for A, C, G and T.
  *
  * See ACtree_PDict_asLIST() for a description of the returned SEXP.
  */
 
-SEXP build_ACtree_PDict_from_CHARACTER(SEXP dict, SEXP tb_start, SEXP tb_end)
+SEXP build_ACtree_PDict(SEXP tb, SEXP base_codes)
 {
-	int dict_len;
+	int tb_length, tb_width, poffset;
+	CachedXStringSet cached_tb;
+	RoSeq pattern;
 
-	dict_len = _init_CroppedDict_with_CHARACTER(dict,
-				INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
-	build_ACtree_PDict();
-	return ACtree_PDict_asLIST();
-}
-
-SEXP build_ACtree_PDict_from_XStringSet(SEXP dict, SEXP tb_start, SEXP tb_end)
-{
-	int dict_len;
-
-	dict_len = _init_CroppedDict_with_XStringSet(dict,
-				INTEGER(tb_start)[0], INTEGER(tb_end)[0]);
-	build_ACtree_PDict();
+	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
+		error("Biostrings internal error in build_ACtree_PDict(): "
+		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
+	tb_length = _get_XStringSet_length(tb);
+	tb_width = -1;
+	cached_tb = _new_CachedXStringSet(tb);
+	for (poffset = 0; poffset < tb_length; poffset++) {
+		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_tb,
+				poffset);
+		if (pattern.nelt == 0)
+			error("empty trusted region for pattern %d",
+			      poffset + 1);
+		if (tb_width == -1) {
+			tb_width = pattern.nelt;
+			init_dup2unq_buf(tb_length);
+			alloc_actree_nodes_buf(tb_length, tb_width);
+			append_acnode(0);
+		} else if (pattern.nelt != tb_width) {
+			error("all the trusted regions must have "
+			      "the same length");
+		}
+		pp_pattern(&pattern, INTEGER(base_codes), poffset);
+	}
 	return ACtree_PDict_asLIST();
 }
 
@@ -634,22 +591,26 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_ACtree_PDict(SEXP pdict_data, const RoSeq *S, int fixedS)
+void _match_ACtree_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 {
 	ACNode *node0;
-	const int *base_codes;
+	SEXP base_codes;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] ENTERING _match_ACtree_PDict()\n");
 #endif
-	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_data, 0)));
-	base_codes = INTEGER(VECTOR_ELT(pdict_data, 1));
-	_init_chrtrtable(base_codes, MAX_CHILDREN_PER_ACNODE, slotno_chrtrtable);
+	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_pptb, 0)));
+	base_codes = VECTOR_ELT(pdict_pptb, 1);
+	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
+		error("Biostrings internal error in _match_ACtree_PDict(): "
+		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
+	_init_chrtrtable(INTEGER(base_codes), MAX_CHILDREN_PER_ACNODE,
+			 slotno_chrtrtable);
 	if (fixedS)
-		walk_string(node0, base_codes, S->elts, S->nelt);
+		walk_string(node0, INTEGER(base_codes), S->elts, S->nelt);
 	else
-		walk_nonfixed_subject(node0, base_codes, S);
+		walk_nonfixed_subject(node0, INTEGER(base_codes), S);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING _match_ACtree_PDict()\n");

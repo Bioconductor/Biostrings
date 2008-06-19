@@ -251,18 +251,21 @@
     ##   o nupatt: nb of unique truncated input sequences
     ##   o matchtime: time (in sec.) needed to find all the matches
     ##   o totalcount: total number of matches
-    getPDictStats <- function(dict0, width, subject)
+    getPDictStats <- function(dict0, subject)
     {
       list(
-        width=width,
-        pptime=system.time(pdict <- PDict(dict0, tb.end=width, drop.tail=TRUE))[["elapsed"]],
+        width=width(dict0[1]),
+        pptime=system.time(pdict <- PDict(dict0))[["elapsed"]],
         nnodes=length(pdict@actree),
         nupatt=sum(!duplicated(pdict)),
         matchtime=system.time(mindex <- matchPDict(pdict, subject))[["elapsed"]],
         totalcount=sum(countIndex(mindex))
       )
     }
-    stats <- lapply(6:25, function(width) getPDictStats(dict0, width, chr3R))
+    dict0 <- DNAStringSet(dict0)
+    stats <- lapply(6:25,
+                 function(width)
+                     getPDictStats(DNAStringSet(dict0, end=width), chr3R))
     stats <- data.frame(do.call(rbind, stats))
     stats
   }

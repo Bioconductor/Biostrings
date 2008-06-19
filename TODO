@@ -117,9 +117,9 @@ STRING MATCHING
     a PDict object from Solexa data that would contain Ns if he wants, reads
     with an N would just be skipped).
 
-  o Implement "duplicated" and "patternFrequency" methods for TBdna_PDict
-    objects. Add 'freq' arg (default FALSE) to patternFrequency() like
-    for alphabetFrequency().
+  o Implement "duplicated" and "patternFrequency" methods for PDict objects
+    with a head or a tail. Add 'freq' arg (default FALSE) to patternFrequency()
+    like for alphabetFrequency().
 
   o Added the all.names=TRUE arg to countPDict() with a warning when the
     user specifies it and the PDict object has no name.
@@ -127,7 +127,7 @@ STRING MATCHING
     countIndex(matchPDict(...), all.names)
 
   o startIndex() is broken on the MIndex object returned by a call to
-    matchPDict() on a TBdna_PDict object.
+    matchPDict() on a PDict object with a head or a tail.
 
   o extractAllMatches() fails on a very big MIndex object (can't allocate
     vector of size 5.2Gb).
@@ -142,12 +142,6 @@ STRING MATCHING
   o C code improvement: no need to use temporrary storage for 'dups_buf' and
     'match_count' in match_pdict.c, store directly in the returned
     INTEGER vector.
-
-  o Fix this bug:
-    > pdict <- PDict(c("AA", "AC"))
-    > matchPDict(pdict, DNAString("TAACAC"))
-    Error in .match.ACtree_PDict.exact(pdict, subject, count.only) : 
-      Biostrings internal error in _init_chrtrtable(): invalid code
 
   o MIndex objects: at some point the user will want to be able to combine
     "compatible" MIndex objects. 2 MIndex objects are "compatible" if they

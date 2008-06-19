@@ -206,13 +206,20 @@ void _init_chrtrtable(
 	int *chrtrtable
 );
 
+void _normargs_startend(
+	int *start,
+	int *end,
+	int width,
+	const char *prefix
+);
+
 
 /* bufutils.c */
 
 SEXP debug_bufutils();
 
 void _IntBuf_set_val(
-	IntBuf *ibuf,
+	const IntBuf *ibuf,
 	int val
 );
 
@@ -240,7 +247,7 @@ void _IntBuf_delete_at(
 );
 
 void _IntBuf_sum_val(
-	IntBuf *ibuf,
+	const IntBuf *ibuf,
 	int val
 );
 
@@ -252,11 +259,11 @@ void _IntBuf_append_shifted_vals(
 );
 
 void _IntBuf_sum_IntBuf(
-	IntBuf *ibuf1,
-	IntBuf *ibuf2
+	const IntBuf *ibuf1,
+	const IntBuf *ibuf2
 );
 
-SEXP _IntBuf_asINTEGER(IntBuf *ibuf);
+SEXP _IntBuf_asINTEGER(const IntBuf *ibuf);
 
 IntBuf _INTEGER_asIntBuf(SEXP x);
 
@@ -273,28 +280,28 @@ IntBBuf _new_IntBBuf(
 void _IntBBuf_insert_at(
 	IntBBuf *ibbuf,
 	int at,
-	IntBuf ibuf
+	const IntBuf *ibuf
 );
 
 void _IntBBuf_eltwise_append(
-	IntBBuf *ibbuf1,
-	IntBBuf *ibbuf2
+	const IntBBuf *ibbuf1,
+	const IntBBuf *ibbuf2
 );
 
 void _IntBBuf_sum_val(
-	IntBBuf *ibbuf,
+	const IntBBuf *ibbuf,
 	int val
 );
 
 SEXP _IntBBuf_asLIST(
-	IntBBuf *ibbuf,
+	const IntBBuf *ibbuf,
 	int mode
 );
 
 IntBBuf _LIST_asIntBBuf(SEXP x);
 
 SEXP _IntBBuf_toEnvir(
-	IntBBuf *ibbuf,
+	const IntBBuf *ibbuf,
 	SEXP envir,
 	int keyshift
 );
@@ -321,7 +328,7 @@ void _CharBuf_insert_at(
 	char c
 );
 
-SEXP _CharBuf_asRAW(CharBuf *cbuf);
+SEXP _CharBuf_asRAW(const CharBuf *cbuf);
 
 CharBBuf _new_CharBBuf(
 	int buflength,
@@ -331,7 +338,7 @@ CharBBuf _new_CharBBuf(
 void _CharBBuf_insert_at(
 	CharBBuf *cbbuf,
 	int at,
-	CharBuf cbuf
+	const CharBuf *cbuf
 );
 
 void _append_string_to_CharBBuf(
@@ -1212,9 +1219,9 @@ SEXP find_palindromes(
 );
 
 
-/* Pdict_class.c */
+/* PDict_utils.c */
 
-SEXP debug_Pdict_class();
+SEXP debug_PDict_utils();
 
 int _init_CroppedDict_with_CHARACTER(
 	SEXP dict,
@@ -1323,7 +1330,7 @@ SEXP build_Twobit_PDict_from_XStringSet(
 );
 
 void _match_Twobit_PDict(
-	SEXP pdict_data,
+	SEXP pdict_pptb,
 	const RoSeq *S,
 	int fixedS
 );
@@ -1333,22 +1340,15 @@ void _match_Twobit_PDict(
 
 SEXP debug_match_pdict_ACtree();
 
-SEXP CWdna_free_actree_nodes_buf();
+SEXP free_actree_nodes_buf();
 
-SEXP build_ACtree_PDict_from_CHARACTER(
-	SEXP dict,
-	SEXP tb_start,
-	SEXP tb_end
-);
-
-SEXP build_ACtree_PDict_from_XStringSet(
-	SEXP dict,
-	SEXP tb_start,
-	SEXP tb_end
+SEXP build_ACtree_PDict(
+	SEXP tb,
+	SEXP base_codes
 );
 
 void _match_ACtree_PDict(
-	SEXP pdict_data,
+	SEXP pdict_pptb,
 	const RoSeq *S,
 	int fixedS
 );
@@ -1359,10 +1359,11 @@ void _match_ACtree_PDict(
 SEXP debug_match_pdict();
 
 SEXP XString_match_pdict(
-	SEXP pdict_data,
+	SEXP pdict_type,
+	SEXP pdict_pptb,
 	SEXP pdict_length,
-	SEXP pdict_width,
-	SEXP pdict_unq2dup,
+	SEXP pdict_tb_width,
+	SEXP pdict_tb_unq2dup,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,
@@ -1373,10 +1374,11 @@ SEXP XString_match_pdict(
 );
 
 SEXP XStringViews_match_pdict(
-	SEXP pdict_data,
+	SEXP pdict_type,
+	SEXP pdict_pptb,
 	SEXP pdict_length,
-	SEXP pdict_width,
-	SEXP pdict_unq2dup,
+	SEXP pdict_tb_width,
+	SEXP pdict_tb_unq2dup,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,

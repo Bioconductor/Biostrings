@@ -83,11 +83,19 @@ static void match_naive_inexact(const RoSeq *P, const RoSeq *S,
 	return;
 }
 
-static void match_pattern(const RoSeq *P, const RoSeq *S, const char *algo,
-		int max_mm, int fixedP, int fixedS)
+static void match_pattern(const RoSeq *P, const RoSeq *S,
+		SEXP algorithm,
+		SEXP max_mismatch, SEXP fixed)
 {
+	const char *algo;
+	int max_mm, fixedP, fixedS;
+
+	max_mm = INTEGER(max_mismatch)[0];
 	if (P->nelt > max_mm + S->nelt)
 		return;
+	algo = CHAR(STRING_ELT(algorithm, 0));
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
 	if (P->nelt <= max_mm || strcmp(algo, "naive-inexact") == 0)
 		match_naive_inexact(P, S, max_mm, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
@@ -121,19 +129,14 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S;
-	const char *algo;
-	int max_mm, fixedP, fixedS, is_count_only;
+	int is_count_only;
 
 	P = _get_XString_asRoSeq(pattern);
 	S = _get_XString_asRoSeq(subject);
-	algo = CHAR(STRING_ELT(algorithm, 0));
-	max_mm = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? 1 : 2);
-	match_pattern(&P, &S, algo, max_mm, fixedP, fixedS);
+	match_pattern(&P, &S, algorithm, max_mismatch, fixed);
 	return _reported_matches_asSEXP();
 }
 
@@ -143,16 +146,10 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S, S_view;
-	const char *algo;
-	int max_mm, fixedP, fixedS, is_count_only,
-	    nviews, i, *view_start, *view_width, view_offset;
+	int is_count_only, nviews, i, *view_start, *view_width, view_offset;
 
 	P = _get_XString_asRoSeq(pattern);
 	S = _get_XString_asRoSeq(subject);
-	algo = CHAR(STRING_ELT(algorithm, 0));
-	max_mm = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? 1 : 2);
@@ -167,7 +164,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
 		_set_match_shift(view_offset);
-		match_pattern(&P, &S_view, algo, max_mm, fixedP, fixedS);
+		match_pattern(&P, &S_view, algorithm, max_mismatch, fixed);
 	}
 	return _reported_matches_asSEXP();
 }
@@ -178,16 +175,11 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 {
 	RoSeq P, S_elt;
 	CachedXStringSet S;
-	const char *algo;
-	int max_mm, fixedP, fixedS, is_count_only, S_length, i;
+	int is_count_only, S_length, i;
 	SEXP ans, ans_elt;
 
 	P = _get_XString_asRoSeq(pattern);
 	S = _new_CachedXStringSet(subject);
-	algo = CHAR(STRING_ELT(algorithm, 0));
-	max_mm = INTEGER(max_mismatch)[0];
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? 1 : 2);
@@ -198,7 +190,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
-		match_pattern(&P, &S_elt, algo, max_mm, fixedP, fixedS);
+		match_pattern(&P, &S_elt, algorithm, max_mismatch, fixed);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
 		if (is_count_only)
 			INTEGER(ans)[i] = INTEGER(ans_elt)[0];

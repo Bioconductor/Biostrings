@@ -166,8 +166,8 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_find_palindromes", (DL_FUNC) &debug_find_palindromes, 0},
 	{"find_palindromes", (DL_FUNC) &find_palindromes, 6},
 
-/* Pdict_class.c */
-	{"debug_Pdict_class", (DL_FUNC) &debug_Pdict_class, 0},
+/* PDict_utils.c */
+	{"debug_PDict_utils", (DL_FUNC) &debug_PDict_utils, 0},
 
 /* MIndex_utils.c */
 	{"debug_MIndex_utils", (DL_FUNC) &debug_MIndex_utils, 0},
@@ -183,14 +183,13 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_pdict_ACtree.c */
 	{"debug_match_pdict_ACtree", (DL_FUNC) &debug_match_pdict_ACtree, 0},
-	{"CWdna_free_actree_nodes_buf", (DL_FUNC) &CWdna_free_actree_nodes_buf, 0},
-	{"build_ACtree_PDict_from_CHARACTER", (DL_FUNC) &build_ACtree_PDict_from_CHARACTER, 3},
-	{"build_ACtree_PDict_from_XStringSet", (DL_FUNC) &build_ACtree_PDict_from_XStringSet, 3},
+	{"free_actree_nodes_buf", (DL_FUNC) &free_actree_nodes_buf, 0},
+	{"build_ACtree_PDict", (DL_FUNC) &build_ACtree_PDict, 2},
 
 /* match_pdict.c */
 	{"debug_match_pdict", (DL_FUNC) &debug_match_pdict, 0},
-	{"XString_match_pdict", (DL_FUNC) &XString_match_pdict, 11},
-	{"XStringViews_match_pdict", (DL_FUNC) &XStringViews_match_pdict, 13},
+	{"XString_match_pdict", (DL_FUNC) &XString_match_pdict, 12},
+	{"XStringViews_match_pdict", (DL_FUNC) &XStringViews_match_pdict, 14},
 
 /* pmatchPattern.c */
 	{"lcprefix", (DL_FUNC) &lcprefix, 6},

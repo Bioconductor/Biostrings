@@ -10,7 +10,14 @@ UTILITIES
 
 STRING MATCHING
 
-o Renamed the CWdna_PDict class -> ACtree_PDict.
+o Major rework of the PDict class, subclasses and the PDict() constructor:
+    - Merged the CWdna_PDict and TBdna_classes into the ACtree_PDict class,
+      a new subclass of the PDict class.
+    - The methods defined for PDict objects are now: length, width, names,
+      head, tb, tb.width, tail, [[, initialize, show, duplicated and
+      patternFrequency.
+    - Changed the signature of the PDict() constructor: no more 'drop.head'
+      and 'drop.tail' args, new 'tb.width' and 'type' args.
 
 STRING ALIGNMENT
 

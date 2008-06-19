@@ -1,5 +1,5 @@
 /****************************************************************************
- *                   Basic manipulation of PDict objects                    *
+ *                     PDict object utility functions                       *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -7,14 +7,14 @@
 
 static int debug = 0;
 
-SEXP debug_Pdict_class()
+SEXP debug_PDict_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'Pdict_class.c'\n",
+	Rprintf("Debug mode turned %s in 'PDict_utils.c'\n",
 		debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'Pdict_class.c'\n");
+	Rprintf("Debug mode not available in 'PDict_utils.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -33,7 +33,8 @@ typedef struct croppeddict {
 	int start;
 	int end;
 	int width;
-	char cropping_type; // 'a', 'b', 'c', 'd'
+	char cropping_type; // 'a', 'b', 'c'
+	int min_pattern_length;
 	int head_min_width, head_max_width;
 	int tail_min_width, tail_max_width;
 	// subpatterns resulting from the cropping operation are stored in
@@ -66,54 +67,43 @@ static CroppedDict cropped_dict;
  *          where the shortest sequence has at least '-start' letters,
  *        o the tail is rectangular (constant width),
  *        o the head has a variable width (head_min_width, head_max_width).
- *   c) 1 <= start and end == NA:
+ *   c) 1 <= start and end <= -1:
  *        o the set of input sequences must be already of constant width or
  *          the cropping operation will raise an error,
- *        o the head is rectangular (constant width),
- *        o no tail;
- *   d) start == NA and end <= -1:
- *        o the set of input sequences must be already of constant width or
- *          the cropping operation will raise an error,
- *        o the tail is rectangular (constant width),
- *        o no head;
+ *        o the head and tail are rectangular (constant width).
  */
-static char cropping_type(int start, int end)
+static char cropping_type(int *start, int *end)
 {
-	if (start == NA_INTEGER && end == NA_INTEGER)
-		error("'start' and 'end' cannot both be NA");
-	if (start == 0)
-		error("'start' must be a single >= 1, <= -1 or NA integer");
-	if (end == 0)
-		error("'end' must be a single >= 1, <= -1 or NA integer");
-	if (end == NA_INTEGER) {
-		if (start < 0)
-			error("'start' must be positive when 'end' is NA");
+	_normargs_startend(start, end, NA_INTEGER, "tb.");
+	if (*start > 0 && *end > 0)
+		return 'a';
+	if (*start < 0 && *end < 0)
+		return 'b';
+	if (*start > 0 && *end < 0)
 		return 'c';
-	}
-	if (start == NA_INTEGER) {
-		if (end > 0)
-			error("'end' must be negative when 'start' is NA");
-		return 'd';
-	}
-	if ((start > 0) != (end > 0))
-		error("'start' and 'end' must have the same sign");
-	if (end < start)
-		error("'end' must be >= 'start'");
-	return start > 0 ? 'a' : 'b';
+	error("using 'tb.start < 0' and 'tb.end > 0' is not supported");
+	return 'X'; // make gcc happy
 }
 
 static void alloc_cropped_dict(int length, int start, int end)
 {
-	cropped_dict.cropping_type = cropping_type(start, end);
+	cropped_dict.cropping_type = cropping_type(&start, &end);
 	cropped_dict.start = start;
 	cropped_dict.end = end;
 	if (cropped_dict.cropping_type == 'a') {
 		cropped_dict.width = cropped_dict.end - cropped_dict.start + 1;
+		cropped_dict.min_pattern_length = end;
 		cropped_dict.tail_min_width = cropped_dict.tail_max_width = -1;
 	}
 	if (cropped_dict.cropping_type == 'b') {
 		cropped_dict.width = cropped_dict.end - cropped_dict.start + 1;
+		cropped_dict.min_pattern_length = - cropped_dict.start;
 		cropped_dict.head_min_width = cropped_dict.head_max_width = -1;
+	}
+	if (cropped_dict.cropping_type == 'c') {
+		cropped_dict.width = NA_INTEGER;
+		cropped_dict.min_pattern_length = cropped_dict.start
+						- cropped_dict.end - 1;
 	}
 	cropped_dict.patterns = Salloc((long) length, const char *);
 	cropped_dict.length = length;
@@ -123,18 +113,18 @@ static void alloc_cropped_dict(int length, int start, int end)
 static void add_subpattern_to_cropped_dict(int poffset,
 		const char *pattern, int pattern_length)
 {
-	int head_width, tail_width;
+	int head_width, tail_width, tb_width;
 
 	if (pattern_length == 0)
 		error("'dict' contains empty patterns");
 
+	if (pattern_length < cropped_dict.min_pattern_length)
+		error("'dict' contains patterns with less than "
+		      "%d characters", cropped_dict.min_pattern_length);
 	switch (cropped_dict.cropping_type) {
 
 	    case 'a':
 		tail_width = pattern_length - cropped_dict.end;
-		if (tail_width < 0)
-			error("'dict' contains patterns with less than %d characters",
-			      cropped_dict.end);
 		cropped_dict.patterns[poffset] = pattern + cropped_dict.start - 1;
 		if (cropped_dict.tail_min_width == -1) {
 			cropped_dict.tail_min_width = cropped_dict.tail_max_width = tail_width;
@@ -148,9 +138,6 @@ static void add_subpattern_to_cropped_dict(int poffset,
 
 	    case 'b':
 		head_width = pattern_length + cropped_dict.start;
-		if (head_width < 0)
-			error("'dict' contains patterns with less than %d characters",
-			      -cropped_dict.start);
 		cropped_dict.patterns[poffset] = pattern + head_width;
 		if (cropped_dict.head_min_width == -1) {
 			cropped_dict.head_min_width = cropped_dict.head_max_width = head_width;
@@ -163,31 +150,15 @@ static void add_subpattern_to_cropped_dict(int poffset,
 		break;
 
 	    case 'c':
-		if (cropped_dict.end == NA_INTEGER) {
-			cropped_dict.end = pattern_length;
-			cropped_dict.width = cropped_dict.end - cropped_dict.start + 1;
-			if (cropped_dict.width < 1)
-				error("'dict' contains patterns with less than %d characters",
-				      cropped_dict.start);
-		} else {
-			if (pattern_length != cropped_dict.end)
-				error("all patterns in 'dict' must have the same length");
+		tb_width = pattern_length - cropped_dict.min_pattern_length + 1;
+		if (cropped_dict.width == NA_INTEGER)
+			cropped_dict.width = tb_width;
+		else if (tb_width != cropped_dict.width) {
+			error("%sall patterns in 'dict' must have the same length",
+			      (cropped_dict.start == 1 && cropped_dict.end == -1) ?
+			      "" : "with this Trusted Band, ");
 		}
 		cropped_dict.patterns[poffset] = pattern + cropped_dict.start - 1;
-		break;
-
-	    case 'd':
-		if (cropped_dict.start == NA_INTEGER) {
-			cropped_dict.start = -pattern_length;
-			cropped_dict.width = cropped_dict.end - cropped_dict.start + 1;
-			if (cropped_dict.width < 1)
-				error("'dict' contains patterns with less than %d characters",
-				      -cropped_dict.end);
-		} else {
-			if (pattern_length != -cropped_dict.start)
-				error("all patterns in 'dict' must have the same length");
-		}
-		cropped_dict.patterns[poffset] = pattern;
 		break;
 	}
 	return;
@@ -315,8 +286,8 @@ SEXP _CroppedDict_geom_asLIST()
 		UNPROTECT(1);
 	}
 
-	/* set the "width" element */
-	SET_STRING_ELT(ans_names, 0, mkChar("width"));
+	/* set the "tb.width" element */
+	SET_STRING_ELT(ans_names, 0, mkChar("tb.width"));
 	PROTECT(ans_elt = oneint_asINTEGER(cropped_dict.width));
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);

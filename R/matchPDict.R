@@ -54,7 +54,7 @@ setMethod("countIndex", "MIndex",
 setMethod("[[", "MIndex",
     function(x, i, j, ...)
     {
-        # 'x' is guaranteed to be a "MIndex" object (if it's not, then
+        # 'x' is guaranteed to be an MIndex object (if it's not, then
         # the method dispatch algo would not have called this method in the
         # first place), so nargs() is guaranteed to be >= 1
         if (nargs() >= 3)
@@ -127,7 +127,7 @@ setMethod("names", "ByPos_MIndex", function(x) NULL)
 setMethod("show", "ByPos_MIndex",
     function(object)
     {
-        cat(length(object), "-pattern \"MIndex\" object (patterns have no names)\n", sep="")
+        cat(length(object), "-pattern MIndex object\n", sep="")
     }
 )
 
@@ -136,7 +136,7 @@ setMethod("[[", "ByPos_MIndex",
     {
         key <- callNextMethod()
         if (is.character(key))
-            stop("\"MIndex\" object has no names")
+            stop("MIndex object has no names")
         ans_end <- x@ends[[key]]
         ans_width <- rep.int(x@width, length(ans_end))
         ans_start <- ans_end - ans_width + 1L
@@ -160,7 +160,7 @@ setMethod("startIndex", "ByPos_MIndex",
     function(x, all.names=FALSE)
     {
         if (!missing(all.names))
-            warning("'all.names' is ignored when patterns have no names")
+            warning("'all.names' is ignored when MIndex object has no names")
         .Call("shiftListOfInts", x@ends, 1L - x@width, PACKAGE="Biostrings")
     }
 )
@@ -168,7 +168,7 @@ setMethod("endIndex", "ByPos_MIndex",
     function(x, all.names=FALSE)
     {
         if (!missing(all.names))
-            warning("'all.names' is ignored when patterns have no names")
+            warning("'all.names' is ignored when MIndex object has no names")
         x@ends
     }
 )
@@ -220,7 +220,7 @@ setMethod("names", "ByName_MIndex", function(x) x@NAMES)
 setMethod("show", "ByName_MIndex",
     function(object)
     {
-        cat(length(object), "-pattern \"MIndex\" object\n", sep="")
+        cat(length(object), "-pattern sparse MIndex object\n", sep="")
     }
 )
 
@@ -330,20 +330,18 @@ extractAllMatches <- function(subject, mindex)
 
 
 ### =========================================================================
-### B. EXACT MATCHING
+### B. MATCH FINDING
 ### -------------------------------------------------------------------------
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Aho-Corasick
 ###
-### A real use-case:   
+### Some examples with an ACtree_PDict object:
+### TODO: All these examples need to go somewhere else!
+###
+### I. A real use-case
+### ------------------
 ###   > library(hgu95av2probe)
 ###   > dict <- hgu95av2probe$sequence # the input dictionary
 ###   > pdict <- PDict(dict)
-###   > length(pdict)
-###   [1] 201800
-###   > width(pdict)
-###   [1] 25
+###   > pdict
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
 ###   > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
@@ -360,73 +358,21 @@ extractAllMatches <- function(subject, mindex)
 ###   [1] TRUE
 ### For a more extensive validation:
 ###   > pidOK <- sapply(seq_len(length(end_index)),
-###                     function(pid) identical(end_index[[pid]],
-###                                             end(matchPattern(DNAString(dict[pid]), chr1))))
+###                     function(pid)
+###                         identical(end_index[[pid]],
+###                         end(matchPattern(DNAString(dict[pid]), chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
 ###
-
-### Temporary trick
-.ACtree.prepare_for_use_on_DNAString <- function(actree)
-{
-    ## Has 'actree' been generated from encoded input (DNAString views) or
-    ## not (character vector or BString views)?
-    is_used <- actree@base_codes != -1
-    used_codes <- actree@base_codes[is_used]
-    if (!all(used_codes %in% DNA_STRING_CODEC@codes)) {
-        used_codes <- DNA_STRING_CODEC@enc_lkup[used_codes + 1]
-        if (any(is.na(used_codes)) || any(duplicated(used_codes)))
-            stop("the pattern dictionary 'pdict' is incompatible with a DNAString subject")
-        actree@base_codes[is_used] <- used_codes
-    }
-    actree
-}
-
-.match.ACtree_PDict.exact <- function(pdict, subject, fixed, count.only)
-{
-    actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
-    names <- names(pdict)
-    if (is.null(names))
-        envir <- NULL
-    else
-        envir <- new.env(hash=TRUE, parent=emptyenv())
-    if (is(subject, "DNAString"))
-        C_ans <- .Call("XString_match_pdict",
-                       list(actree@nodes@xp, actree@base_codes),
-                       length(pdict), width(pdict), pdict@dups@unq2dup,
-                       NULL, NULL,
-                       subject,
-                       0L, fixed,
-                       count.only, envir,
-                       PACKAGE="Biostrings")
-    else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
-        C_ans <- .Call("XStringViews_match_pdict",
-                       list(actree@nodes@xp, actree@base_codes),
-                       length(pdict), width(pdict), pdict@dups@unq2dup,
-                       NULL, NULL,
-                       subject(subject), start(subject), width(subject),
-                       0L, fixed,
-                       count.only, envir,
-                       PACKAGE="Biostrings")
-    else
-        stop("unsupported subject type")
-    if (count.only)
-        return(C_ans)
-    if (is.null(names))
-        new("ByPos_MIndex", ends=C_ans, width=width(pdict))
-    else
-        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
-                             width=width(pdict), NAMES=names)
-}
-
-### With a big random dictionary, on george1:
-###
+### II. With a big random dictionary, on george1
+### --------------------------------------------
 ### 1. Trying to simulate Solexa data:
 ###      > library(Biostrings)
 ###      > dict_length <- 10^6
-###      > s <- DNAString(paste(sample(c("A", "C", "G", "T"), 36*dict_length, replace=TRUE), collapse=""))
+###      > s <- DNAString(paste(sample(c("A", "C", "G", "T"), 36*dict_length,
+###                                    replace=TRUE), collapse=""))
 ###      > views_start <- (0:(dict_length-1)) * 36 + 1
-###      > dict <- views(s, views_start, views_start + 35) # the input dictionary
+###      > dict <- views(s, views_start, views_start + 35) # the input dict
 ###
 ### 2. Building the Aho-Corasick 4-ary tree from the input dictionary:
 ###      > pdict <- PDict(dict)
@@ -449,22 +395,15 @@ extractAllMatches <- function(subject, mindex)
 ###      10M      36       56 sec   6724M     351 sec     200 sec            0
 ###      10M      12      7.5 sec    340M     227 sec     216 sec         100M
 ###      30M      12       27 sec    523M     491 sec           ? 
-
-
-
-
-### =========================================================================
-### C. INEXACT MATCHING
-### -------------------------------------------------------------------------
-
-### Example:
-###
+### 
+### III. Inexact matching
+### ---------------------
 ###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=0))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=1))
 ###   endIndex(matchPDict(pdict, DNAString("acggaccg"), max.mismatch=2))
 ###
-### At the moment, preprocessing a big TBdna_PDict object is very slow:
+### TODO: Rerun the benchmarks below on the entire dict0.
 ###   > library(drosophila2probe)
 ###   > dict0 <- drosophila2probe$sequence 
 ###   > system.time(pdict0 <- PDict(dict0[1:40000]))
@@ -501,96 +440,73 @@ extractAllMatches <- function(subject, mindex)
 ###   [[2]]
 ###   integer(0)
 
-.match.TBdna_PDict <- function(pdict, subject, max.mismatch, fixed, count.only)
+.matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed,
+                        count.only=FALSE)
 {
-    actree <- .ACtree.prepare_for_use_on_DNAString(pdict@actree)
+    if (is(pdict, "Twobit_PDict")) {
+        pdict_type <- "Twobit"
+        stop("support for Twobit_PDict objects not ready yet")
+        #pdic_data <- put something here
+    } else if (is(pdict, "ACtree_PDict")) {
+        pdict_type <- "ACtree"
+        pdict_pptb <- list(pdict@actree@nodes@xp, pdict@actree@base_codes)
+    } else {
+        stop("class of 'pdict' (\"", class(pdict), "\") is unsupported")
+    }
+    if (!identical(algorithm, "auto"))
+        stop("'algorithm' can only be '\"auto\"' for now")
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+
+    pdict_head <- head(pdict)
+    pdict_tail <- tail(pdict)
+    if (is.null(pdict_head) && is.null(pdict_tail) && max.mismatch != 0)
+        stop("'max.mismatch' must be 0 when there is no head and no tail")
     names <- names(pdict)
     if (is.null(names))
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    if (is(subject, "DNAString"))
+    if (is(subject, "DNAString")) {
+        fixed <- normargFixed(fixed, class(subject))
+        if (is.null(pdict_head) && is.null(pdict_tail) && !fixed[1])
+            warning("with this value of 'fixed', IUPAC extended letters in\n",
+                    "the patterns will be treated as ambiguities, even\n",
+                    "though the patterns don't contain such letters")
         C_ans <- .Call("XString_match_pdict",
-                       list(actree@nodes@xp, actree@base_codes),
-                       length(pdict), width(pdict), pdict@dups@unq2dup,
-                       pdict@head, pdict@tail,
+                       pdict_type, pdict_pptb,
+                       length(pdict), tb.width(pdict), pdict@tb.dups@unq2dup,
+                       pdict_head, pdict_tail,
                        subject,
                        max.mismatch, fixed,
                        count.only, envir,
                        PACKAGE="Biostrings")
-    else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
+    } else if (is(subject, "XStringViews")
+            && is(subject(subject), "DNAString")) {
+        fixed <- normargFixed(fixed, class(subject(subject)))
+        if (is.null(pdict_head) && is.null(pdict_tail) && !fixed[1])
+            warning("with this value of 'fixed', IUPAC extended letters in\n",
+                    "the patterns will be treated as ambiguities, even\n",
+                    "though the patterns don't contain such letters")
         C_ans <- .Call("XStringViews_match_pdict",
-                       list(actree@nodes@xp, actree@base_codes),
-                       length(pdict), width(pdict), pdict@dups@unq2dup,
-                       pdict@head, pdict@tail,
+                       pdict_type, pdict_pptb,
+                       length(pdict), tb.width(pdict), pdict@tb.dups@unq2dup,
+                       pdict_head, pdict_tail,
                        subject(subject), start(subject), width(subject),
                        max.mismatch, fixed,
                        count.only, envir,
                        PACKAGE="Biostrings")
-    else
-        stop("unsupported subject type")
+    } else {
+        stop("'subject' must be a DNAString object,\n",
+             "a MaskedDNAString object, or an XStringViews object\n",
+             "with a DNAString subject")
+    }
     if (count.only)
         return(C_ans)
     if (is.null(names))
-        new("ByPos_MIndex", ends=C_ans, width=width(pdict))
+        new("ByPos_MIndex", ends=C_ans, width=tb.width(pdict))
     else
         new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
-                             width=width(pdict), NAMES=names)
-}
-
-
-
-
-### =========================================================================
-### D. THE "matchPDict" AND "countPDict" GENERIC FUNCTION AND METHODS
-### -------------------------------------------------------------------------
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .XString.matchPDict() and .XStringViews.matchPDict()
-###
-
-.XString.matchPDict <- function(pdict, subject, algorithm,
-                                max.mismatch, fixed, count.only=FALSE)
-{
-    if (!is(pdict, "ACtree_PDict"))
-        stop("the pattern dictionary 'pdict' can only be a ACtree_PDict (or derived) object for now")
-    if (!is(subject, "DNAString"))
-        stop("'subject' can only be a DNAString object (eventually masked) for now")
-    if (!identical(algorithm, "auto"))
-        stop("'algo' can only be '\"auto\"' for now")
-    max.mismatch <- normargMaxMismatch(max.mismatch)
-    fixed <- normargFixed(fixed, class(subject))
-    if (is(pdict, "TBdna_PDict"))
-        return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
-    if (max.mismatch != 0)
-        stop("'max.mismatch' must be zero ",
-             "with this type of PDict object (", class(pdict), ")")
-    if (!fixed[1])
-        stop("IUPAC ambiguities in the patterns are not supported ",
-             "with this type of PDict object (", class(pdict), ")")
-    .match.ACtree_PDict.exact(pdict, subject, fixed, count.only)
-}
-
-.XStringViews.matchPDict <- function(pdict, subject, algorithm,
-                                     max.mismatch, fixed, count.only=FALSE)
-{
-    if (!is(pdict, "ACtree_PDict"))
-        stop("the pattern dictionary 'pdict' can only be a ACtree_PDict (or derived) object for now")
-    if (!is(subject(subject), "DNAString"))
-        stop("'subject' can only be a DNAString object (eventually masked) for now")
-    if (!identical(algorithm, "auto"))
-        stop("'algo' can only be '\"auto\"' for now")
-    max.mismatch <- normargMaxMismatch(max.mismatch)
-    fixed <- normargFixed(fixed, class(subject(subject)))
-    if (is(pdict, "TBdna_PDict"))
-        return(.match.TBdna_PDict(pdict, subject, max.mismatch, fixed, count.only))
-    if (max.mismatch != 0)
-        stop("'max.mismatch' must be zero ",
-             "with this type of PDict object (", class(pdict), ")")
-    if (!fixed[1])
-        stop("IUPAC ambiguities in the patterns are not supported ",
-             "with this type of PDict object (", class(pdict), ")")
-    .match.ACtree_PDict.exact(pdict, subject, fixed, count.only)
+                             width=tb.width(pdict), NAMES=names)
 }
 
 
@@ -606,14 +522,13 @@ setGeneric("matchPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XString",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-	.XString.matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
+        .matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XStringViews",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        .XStringViews.matchPDict(pdict, subject, algorithm,
-                                 max.mismatch, fixed)
+        .matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -636,15 +551,15 @@ setGeneric("countPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XString",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-	.XString.matchPDict(pdict, subject, algorithm,
-                            max.mismatch, fixed, count.only=TRUE)
+        .matchPDict(pdict, subject, algorithm,
+                    max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XStringViews",
     function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        .XStringViews.matchPDict(pdict, subject, algorithm,
-                                 max.mismatch, fixed, count.only=TRUE)
+        .matchPDict(pdict, subject, algorithm,
+                    max.mismatch, fixed, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).

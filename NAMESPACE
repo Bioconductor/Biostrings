@@ -17,7 +17,7 @@ exportClasses(
     XStringPartialMatches,
     AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
-    ACtree, Dups, PDict, ACtree_PDict, TBdna_PDict,
+    ACtree, Dups, PDict, ACtree_PDict,
     MIndex, ByPos_MIndex, ByName_MIndex
 )
 
@@ -106,7 +106,8 @@ exportMethods(
     findComplementedPalindromes,
     complementedPalindromeArmLength, complementedPalindromeLeftArm, complementedPalindromeRightArm,
 
-    patternFrequency, head, tail, startIndex, endIndex, countIndex, unlist,
+    head, tb, tb.width, tail, 
+    patternFrequency, startIndex, endIndex, countIndex, unlist,
     PDict, matchPDict, countPDict,
 
     subpatterns, pattern,
