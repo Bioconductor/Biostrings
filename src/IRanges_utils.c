@@ -176,3 +176,28 @@ SEXP reduce_IRanges(SEXP x, SEXP with_inframe_start)
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP IRanges_coverage(SEXP iranges_start, SEXP iranges_width, SEXP ans_length)
+{
+	SEXP ans;
+	const int *start_elt, *width_elt;
+	int i, j, n, start, width, *ans_elt;
+
+	start_elt = INTEGER(iranges_start);
+	width_elt = INTEGER(iranges_width);
+	PROTECT(ans = NEW_INTEGER(INTEGER(ans_length)[0]));
+	ans_elt = INTEGER(ans);
+	memset(INTEGER(ans), 0, INTEGER(ans_length)[0] * sizeof(int));
+	n = LENGTH(iranges_start);
+	for (i = 0; i < n; i++) {
+		start = start_elt[i] - 1;
+		width = width_elt[i];
+		for (j = 0; j < width; j++) {
+			ans_elt[start + j] += 1;
+		}
+	}
+	UNPROTECT(1);
+	return ans;
+}

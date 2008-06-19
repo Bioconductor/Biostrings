@@ -20,6 +20,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"narrow_IRanges", (DL_FUNC) &narrow_IRanges, 4},
 	{"int_to_adjacent_ranges", (DL_FUNC) &int_to_adjacent_ranges, 1},
 	{"reduce_IRanges", (DL_FUNC) &reduce_IRanges, 2},
+	{"IRanges_coverage", (DL_FUNC) &IRanges_coverage, 3},
 
 /* SparseList_utils.c */
 	{"debug_SparseList_utils", (DL_FUNC) &debug_SparseList_utils, 0},

@@ -407,6 +407,12 @@ SEXP reduce_IRanges(
 	SEXP with_inframe_start
 );
 
+SEXP IRanges_coverage(
+	SEXP iranges_start,
+	SEXP iranges_width,
+	SEXP ans_length
+);
+
 
 /* SparseList_utils.c */
 

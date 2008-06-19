@@ -227,16 +227,8 @@ setMethod("coverage", "IRanges",
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
         x1 <- shift(restrict(x, start=start, end=end), 1L - start)
-        ans <- integer(width)
-        for (i in seq_len(length(x1))) {
-            start1 <- start(x1)[i]
-            end1 <- end(x1)[i]
-            if (end1 < start1)
-                next
-            ii <- start1:end1
-            ans[ii] <- ans[ii] + 1L
-        }
-        ans
+        .Call("IRanges_coverage", start(x1), width(x1), width,
+              PACKAGE="Biostrings")
     }
 )
 
