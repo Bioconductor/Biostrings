@@ -307,8 +307,7 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     with.labels <- .normargWithLabels(with.labels)
     base_codes <- codes(x, baseOnly=TRUE)
     ans <- .Call("oligonucleotide_frequency",
-                 x@xdata@xp, x@offset, x@length,
-                 base_codes, width, fast.moving.side,
+                 x, base_codes, width, fast.moving.side,
                  PACKAGE="Biostrings")
     .formatFreqAnswer(ans, names(base_codes), width, freq,
                       fast.moving.side, as.array, with.labels)
@@ -360,8 +359,7 @@ setMethod("oligonucleotideFrequency", "XStringSet",
             for (i in seq_len(length(x))) {
                 xx <- x[[i]]
                 ans <- ans + .Call("oligonucleotide_frequency",
-                                   xx@xdata@xp, xx@offset, xx@length,
-                                   base_codes, width, fast.moving.side,
+                                   xx, base_codes, width, fast.moving.side,
                                    PACKAGE="Biostrings")
             }
             ans <- .formatFreqAnswer(ans, names(base_codes), width, freq,
@@ -371,8 +369,7 @@ setMethod("oligonucleotideFrequency", "XStringSet",
             for (i in seq_len(length(x))) {
                 xx <- x[[i]]
                 tmp <- .Call("oligonucleotide_frequency",
-                             xx@xdata@xp, xx@offset, xx@length,
-                             base_codes, width, fast.moving.side,
+                             xx, base_codes, width, fast.moving.side,
                              PACKAGE="Biostrings")
                 ans[[i]] <- .formatFreqAnswer(tmp, names(base_codes), width,
                                               freq, fast.moving.side, as.array,

@@ -33,6 +33,23 @@
 \alias{patternFrequency}
 \alias{patternFrequency,PDict-method}
 
+% Twobit class:
+\alias{class:Twobit}
+\alias{Twobit-class}
+\alias{Twobit}
+
+\alias{length,Twobit-method}
+\alias{width,Twobit-method}
+\alias{show,Twobit-method}
+\alias{initialize,Twobit-method}
+
+% Twobit_PDict class:
+\alias{class:Twobit_PDict}
+\alias{Twobit_PDict-class}
+\alias{Twobit_PDict}
+
+\alias{initialize,Twobit_PDict-method}
+
 % ACtree class:
 \alias{class:ACtree}
 \alias{ACtree-class}

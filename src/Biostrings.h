@@ -915,9 +915,7 @@ SEXP XStringSet_char_frequency(
 );
 
 SEXP oligonucleotide_frequency(
-	SEXP x_xp,
-	SEXP x_offset,
-	SEXP x_length,
+	SEXP x,
 	SEXP base_codes,
 	SEXP width,
 	SEXP fast_moving_side
@@ -1229,32 +1227,12 @@ SEXP find_palindromes(
 
 SEXP debug_PDict_utils();
 
-int _init_CroppedDict_with_CHARACTER(
-	SEXP dict,
-	int tb_start,
-	int tb_end
-);
+void _init_dup2unq_buf(int length);
 
-int _init_CroppedDict_with_XStringSet(
-	SEXP dict,
-	int tb_start,
-	int tb_end
-);
-
-int _CroppedDict_length();
-
-int _CroppedDict_width();
-
-const char *_CroppedDict_pattern(int poffset);
-
-void init_dup2unq_buf(int length);
-
-void report_dup(
+void _report_dup(
 	int poffset,
 	int P_id
 );
-
-SEXP _CroppedDict_geom_asLIST();
 
 SEXP _dup2unq_asINTEGER();
 
@@ -1323,16 +1301,9 @@ SEXP ByName_MIndex_coverage(
 
 SEXP debug_match_pdict_Twobit();
 
-SEXP build_Twobit_PDict_from_CHARACTER(
-	SEXP dict,
-	SEXP tb_start,
-	SEXP tb_end
-);
-
-SEXP build_Twobit_PDict_from_XStringSet(
-	SEXP dict,
-	SEXP tb_start,
-	SEXP tb_end
+SEXP build_Twobit_PDict(
+	SEXP tb,
+	SEXP base_codes
 );
 
 void _match_Twobit_PDict(

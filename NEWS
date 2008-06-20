@@ -13,6 +13,12 @@ STRING MATCHING
 o Major rework of the PDict class, subclasses and the PDict() constructor:
     - Merged the CWdna_PDict and TBdna_classes into the ACtree_PDict class,
       a new subclass of the PDict class.
+    - Added the Twobit and Twobit_PDict classes for supporting a new type
+      of preprocessing. For a Twobit_PDict object, the 2bit-per-letter
+      signature of each DNA sequence in the Trusted Band is preprocessed
+      and the mapping from the signatures to the position of the sequences
+      (in the Trusted Band) is stored in the object in a form that allows
+      very fast lookup.
     - The methods defined for PDict objects are now: length, width, names,
       head, tb, tb.width, tail, [[, initialize, show, duplicated and
       patternFrequency.

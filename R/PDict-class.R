@@ -6,8 +6,8 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "Dups" class.
 ###
-### A general container for storing the mapping between duplicated elements
-### of an arbitrary vector.
+### A general container for storing the direct and reverse mappings between
+### duplicated and unique elements of an arbitrary vector.
 ###
 
 setClass("Dups",
@@ -32,15 +32,18 @@ setClass("Dups",
     if (!all(object@dup2unq >= 1L, na.rm=TRUE))
         return("the 'dup2unq' slot must contain integer values >= 1")
     if (!all(object@dup2unq < seq_along(object@dup2unq), na.rm=TRUE))
-        return("when mapped, values in the 'dup2unq' slot must be mapped to lower values")
+        return("when mapped, values in the 'dup2unq' slot must be mapped ",
+               "to lower values")
     if (!all(is.na(object@dup2unq[object@dup2unq])))
-        return("when mapped, values in the 'dup2unq' slot must be mapped to unmapped values")
+        return("when mapped, values in the 'dup2unq' slot must be mapped ",
+               "to unmapped values")
     if (!is.list(object@unq2dup))
         return("the 'unq2dup' slot must contain a list")
     if (length(object@dup2unq) != length(object@unq2dup))
         return("the 'dup2unq' and 'unq2dup' slots must have the same length")
     if (!identical(.reverse.dup2unq(object@dup2unq), object@unq2dup))
-        return("the 'unq2dup' slot must contain the reverse mapping of the 'dup2unq' slot")
+        return("the 'unq2dup' slot must contain the reverse mapping ",
+               "of the 'dup2unq' slot")
     NULL
 }
 setValidity("Dups",
@@ -275,7 +278,85 @@ setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ACtree" class (NOT EXPORTED).
+### The "Twobit" class.
+###
+### A low-level container for storing the mapping from the 2bit-per-letter
+### signatures of a set of oligonucleotides of constant width to the 1-based
+### positions of these oligonucleotides in the set.
+###
+### Slots:
+###
+###   width:
+###
+###   sign2pos: XInteger object of length width^4
+### 
+###   base_codes:
+###
+
+setClass("Twobit",
+    representation(
+        width="integer",
+        sign2pos="XInteger",
+        base_codes="integer"
+    )
+)
+
+setMethod("length", "Twobit", function(x) length(x@sign2pos))
+
+setMethod("width", "Twobit", function(x) x@width)
+
+setMethod("show", "Twobit",
+    function(object)
+    {
+        cat(class(object), " object of width ", width(object),
+            " and length ", length(object), "\n", sep="")
+    }
+)
+
+setMethod("initialize", "Twobit",
+    function(.Object, width, sign2pos_xp, base_codes)
+    {
+        .Object@width <- width
+        .Object@sign2pos <- XInteger(0)
+        .Object@sign2pos@xp <- sign2pos_xp
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "Twobit_PDict" class.
+###
+### A specific PDict container where the Trusted Band is stored in a
+### Twobit object.
+###
+
+setClass("Twobit_PDict",
+    contains="PDict",
+    representation(
+        twobit="Twobit"
+    )
+)
+
+### Not intended to be used directly by the user.
+setMethod("initialize", "Twobit_PDict",
+    function(.Object, dict0, head, tb, tail, base_codes)
+    {
+        C_ans <- .Call("build_Twobit_PDict", tb, base_codes,
+                       PACKAGE="Biostrings")
+        .Object <- callNextMethod(.Object, dict0, head, tb, tail,
+                                           C_ans$dup2unq)
+        .Object@twobit <- new("Twobit", width(tb)[1],
+                                        C_ans$twobit_sign2pos_xp,
+                                        base_codes)
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ACtree" class.
 ###
 ### A low-level container for storing the Aho-Corasick tree built from the
 ### input dictionary (note that this tree is actually an oriented graph if we
@@ -284,7 +365,7 @@ setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
 ### base_codes slot is a vector of 4 integers that will be filled with the
 ### internal codes (byte values) of the unique letters found in the input.
 ### The number of integers needed to represent a tree node is the number of
-### letters in the alphabet plus 3 (i.e. 7 for DNA input) hence this internal
+### letters in the alphabet plus 4 (i.e. 4 for DNA input) hence this internal
 ### representation of the Aho-Corasick tree can only be used for input based
 ### on a very small alphabet.
 ###
@@ -296,6 +377,7 @@ setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
 ###   base_codes: an integer vector filled with the internal codes (byte
 ###       values) of the unique letters found in the input dictionary during
 ###       its preprocessing.
+###
 
 setClass("ACtree",
     representation(
@@ -388,12 +470,12 @@ setClass("ACtree_PDict",
 setMethod("initialize", "ACtree_PDict",
     function(.Object, dict0, head, tb, tail, base_codes)
     {
-        pp_Cans <- .Call("build_ACtree_PDict",
-                         tb, base_codes,
-                         PACKAGE="Biostrings")
+        on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
+        C_ans <- .Call("build_ACtree_PDict", tb, base_codes,
+                       PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, dict0, head, tb, tail,
-                                  pp_Cans$dup2unq)
-        .Object@actree <- new("ACtree", pp_Cans$actree_nodes_xp, base_codes)
+                                           C_ans$dup2unq)
+        .Object@actree <- new("ACtree", C_ans$actree_nodes_xp, base_codes)
         .Object
     }
 )
@@ -426,10 +508,9 @@ setMethod("initialize", "ACtree_PDict",
     tail <- new("DNAStringSet", super(x), tail_start, tail_width, names=NULL)
     base_codes <- codes(tb, baseOnly=TRUE)
     if (type == "ACtree") {
-        on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
         ans <- new("ACtree_PDict", x, head, tb, tail, base_codes)
     } else if (type == "Twobit") {
-        stop("'type=\"Twobit\"' not ready yet, sorry")
+        ans <- new("Twobit_PDict", x, head, tb, tail, base_codes)
     } else {
         stop("unknown type")
     }

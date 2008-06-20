@@ -445,11 +445,13 @@ extractAllMatches <- function(subject, mindex)
 {
     if (is(pdict, "Twobit_PDict")) {
         pdict_type <- "Twobit"
-        stop("support for Twobit_PDict objects not ready yet")
-        #pdic_data <- put something here
+        pdict_pptb <- list(pdict@twobit@width,
+                           pdict@twobit@sign2pos@xp,
+                           pdict@twobit@base_codes)
     } else if (is(pdict, "ACtree_PDict")) {
         pdict_type <- "ACtree"
-        pdict_pptb <- list(pdict@actree@nodes@xp, pdict@actree@base_codes)
+        pdict_pptb <- list(pdict@actree@nodes@xp,
+                           pdict@actree@base_codes)
     } else {
         stop("class of 'pdict' (\"", class(pdict), "\") is unsupported")
     }

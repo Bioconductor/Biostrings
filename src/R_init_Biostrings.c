@@ -112,7 +112,7 @@ static const R_CallMethodDef callMethods[] = {
 /* char_frequency.c */
 	{"XString_char_frequency", (DL_FUNC) &XString_char_frequency, 3},
 	{"XStringSet_char_frequency", (DL_FUNC) &XStringSet_char_frequency, 4},
-	{"oligonucleotide_frequency", (DL_FUNC) &oligonucleotide_frequency, 6},
+	{"oligonucleotide_frequency", (DL_FUNC) &oligonucleotide_frequency, 4},
 
 /* char_translate.c */
         {"XRaw_translate_copy_from_i1i2", (DL_FUNC) &XRaw_translate_copy_from_i1i2, 5},
@@ -179,8 +179,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_pdict_Twobit.c */
 	{"debug_match_pdict_Twobit", (DL_FUNC) &debug_match_pdict_Twobit, 0},
-	{"build_Twobit_PDict_from_CHARACTER", (DL_FUNC) &build_Twobit_PDict_from_CHARACTER, 3},
-	{"build_Twobit_PDict_from_XStringSet", (DL_FUNC) &build_Twobit_PDict_from_XStringSet, 3},
+	{"build_Twobit_PDict", (DL_FUNC) &build_Twobit_PDict, 2},
 
 /* match_pdict_ACtree.c */
 	{"debug_match_pdict_ACtree", (DL_FUNC) &debug_match_pdict_ACtree, 0},

@@ -225,7 +225,7 @@ static void pp_pattern(const RoSeq *pattern, const int *base_codes, int poffset)
 	if (node->P_id == -1)
 		node->P_id = poffset + 1;
 	else
-		report_dup(poffset, node->P_id);
+		_report_dup(poffset, node->P_id);
 	return;
 }
 
@@ -237,9 +237,9 @@ static void pp_pattern(const RoSeq *pattern, const int *base_codes, int poffset)
 
 /*
  * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an R
- * eXternal Pointer.
+ * external pointer (EXTPTRSXP).
  */
-static SEXP actree_nodes_buf_asXP()
+static SEXP new_ExternalPtr_from_actree_nodes_buf()
 {
 	SEXP ans, tag;
 	int tag_length;
@@ -274,7 +274,7 @@ static SEXP ACtree_PDict_asLIST()
 	UNPROTECT(1);
 
 	/* set the "actree_nodes_xp" element */
-	PROTECT(ans_elt = actree_nodes_buf_asXP());
+	PROTECT(ans_elt = new_ExternalPtr_from_actree_nodes_buf());
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
@@ -310,6 +310,7 @@ SEXP build_ACtree_PDict(SEXP tb, SEXP base_codes)
 		error("Biostrings internal error in build_ACtree_PDict(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
 	tb_length = _get_XStringSet_length(tb);
+	_init_dup2unq_buf(tb_length);
 	tb_width = -1;
 	cached_tb = _new_CachedXStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {
@@ -320,7 +321,6 @@ SEXP build_ACtree_PDict(SEXP tb, SEXP base_codes)
 			      poffset + 1);
 		if (tb_width == -1) {
 			tb_width = pattern.nelt;
-			init_dup2unq_buf(tb_length);
 			alloc_actree_nodes_buf(tb_length, tb_width);
 			append_acnode(0);
 		} else if (pattern.nelt != tb_width) {
@@ -362,7 +362,7 @@ static int get_child_node_id(const ACNode *node, char c)
  *   parent-to-child: depth(N2) == depth(N1) + 1
  *   shortcut: depth(N2) <= depth(N1)
  * Note that this trick is not needed by the current implementation of the
- * walk_string() function.
+ * walk_subject() function.
  */
 static void set_shortcut(ACNode *node, char c, int next_node_id)
 {
@@ -462,7 +462,7 @@ static int get_next_node_id(ACNode *node0, const int *base_codes,
 	return next_node_id;
 }
 
-static int walk_string(ACNode *node0, const int *base_codes,
+static int walk_subject(ACNode *node0, const int *base_codes,
 		const char *S, int nS)
 {
 	int basenode_id, node_id, child_id, n, subwalk_nS;
@@ -477,7 +477,7 @@ static int walk_string(ACNode *node0, const int *base_codes,
 	for (n = 0; n < nS; n++, S++) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] walk_string():");
+			Rprintf("[DEBUG] walk_subject():");
 			sprintf(format, "%%%ds", 1 + 2*rec_level);
 			Rprintf(format, " ");
 			snprintf(pathbuf, basenode->depth + 1, "%s", S - basenode->depth);
@@ -500,11 +500,11 @@ static int walk_string(ACNode *node0, const int *base_codes,
 			if (node->flink == -1) {
 				rec_level++;
 				subwalk_nS = node->depth - 1;
-				node->flink = walk_string(node0, base_codes, S - subwalk_nS, subwalk_nS);
+				node->flink = walk_subject(node0, base_codes, S - subwalk_nS, subwalk_nS);
 				rec_level--;
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
-					Rprintf("[DEBUG] walk_string():");
+					Rprintf("[DEBUG] walk_subject():");
 					Rprintf(format, " ");
 					Rprintf("setting failure link %d -> %d\n", node_id, node->flink);
 				}
@@ -512,7 +512,7 @@ static int walk_string(ACNode *node0, const int *base_codes,
 			}
 #ifdef DEBUG_BIOSTRINGS
 			if (debug) {
-				Rprintf("[DEBUG] walk_string():");
+				Rprintf("[DEBUG] walk_subject():");
 				Rprintf(format, " ");
 				Rprintf("following failure link %d -> %d\n", node_id, node->flink);
 			}
@@ -525,13 +525,13 @@ static int walk_string(ACNode *node0, const int *base_codes,
 		basenode = node0 + basenode_id;
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] walk_string():");
+			Rprintf("[DEBUG] walk_subject():");
 			Rprintf(format, " ");
 			Rprintf("moving to basenode %d\n", basenode_id);
 		}
 #endif
 		// Finding a match cannot happen during a nested call to
-		// walk_string() so there is no need to check that rec_level
+		// walk_subject() so there is no need to check that rec_level
 		// is 0
 		if (basenode->P_id != -1)
 			_MIndex_report_match(basenode->P_id - 1, n + 1);
@@ -608,7 +608,7 @@ void _match_ACtree_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	_init_chrtrtable(INTEGER(base_codes), MAX_CHILDREN_PER_ACNODE,
 			 slotno_chrtrtable);
 	if (fixedS)
-		walk_string(node0, INTEGER(base_codes), S->elts, S->nelt);
+		walk_subject(node0, INTEGER(base_codes), S->elts, S->nelt);
 	else
 		walk_nonfixed_subject(node0, INTEGER(base_codes), S);
 #ifdef DEBUG_BIOSTRINGS
