@@ -408,8 +408,7 @@ SEXP reduce_IRanges(
 );
 
 SEXP IRanges_coverage(
-	SEXP iranges_start,
-	SEXP iranges_width,
+	SEXP x,
 	SEXP ans_length
 );
 

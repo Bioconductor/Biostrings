@@ -227,8 +227,7 @@ setMethod("coverage", "IRanges",
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
         x1 <- shift(restrict(x, start=start, end=end), 1L - start)
-        .Call("IRanges_coverage", start(x1), width(x1), width,
-              PACKAGE="Biostrings")
+        .Call("IRanges_coverage", x1, width, PACKAGE="Biostrings")
     }
 )
 

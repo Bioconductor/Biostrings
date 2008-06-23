@@ -179,25 +179,29 @@ SEXP reduce_IRanges(SEXP x, SEXP with_inframe_start)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP IRanges_coverage(SEXP iranges_start, SEXP iranges_width, SEXP ans_length)
+SEXP IRanges_coverage(SEXP x, SEXP ans_length)
 {
+	int x_len, ans_len, *ans_elt, i, j;
+	const int *x_start, *x_width;
 	SEXP ans;
-	const int *start_elt, *width_elt;
-	int i, j, n, start, width, *ans_elt;
 
-	start_elt = INTEGER(iranges_start);
-	width_elt = INTEGER(iranges_width);
-	PROTECT(ans = NEW_INTEGER(INTEGER(ans_length)[0]));
-	ans_elt = INTEGER(ans);
-	memset(INTEGER(ans), 0, INTEGER(ans_length)[0] * sizeof(int));
-	n = LENGTH(iranges_start);
-	for (i = 0; i < n; i++) {
-		start = start_elt[i] - 1;
-		width = width_elt[i];
-		for (j = 0; j < width; j++) {
-			ans_elt[start + j] += 1;
+	ans_len = INTEGER(ans_length)[0];
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	memset(INTEGER(ans), 0, ans_len * sizeof(int));
+	x_len = _get_IRanges_length(x);
+	for (i = 0, x_start = _get_IRanges_start0(x),
+	            x_width = _get_IRanges_width0(x);
+	     i < x_len;
+	     i++, x_start++, x_width++)
+	{
+		for (j = 0, ans_elt = INTEGER(ans) + *x_start - 1;
+		     j < *x_width;
+		     j++, ans_elt++)
+		{
+			*ans_elt += 1;
 		}
 	}
 	UNPROTECT(1);
 	return ans;
 }
+
