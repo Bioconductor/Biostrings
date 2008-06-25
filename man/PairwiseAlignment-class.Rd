@@ -19,6 +19,7 @@
 \alias{length,PairwiseAlignment-method}
 \alias{nchar,PairwiseAlignment-method}
 \alias{alphabet,PairwiseAlignment-method}
+\alias{mismatch,PairwiseAlignment,missing-method}
 \alias{coverage,PairwiseAlignment-method}
 \alias{views,PairwiseAlignment-method}
 
@@ -120,6 +121,10 @@
     \item{}{
       \code{coverage(x, start = NA, end = NA)}:
       The coverage of the pairwise alignments along \code{unaligned(subject(x))}.
+    }
+    \item{}{
+      \code{mismatch(pattern, x, fixed = TRUE)}:
+      A data set containing the indices and codes of the mismatches for the \code{PairwiseAlignment}.
     }
   }
 }

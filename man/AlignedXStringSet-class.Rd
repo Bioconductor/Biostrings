@@ -17,8 +17,9 @@
 \alias{start,AlignedXStringSet-method}
 \alias{end,AlignedXStringSet-method}
 \alias{width,AlignedXStringSet-method}
-\alias{indels}
-\alias{indels,AlignedXStringSet-method}
+\alias{mismatch,AlignedXStringSet,missing-method}
+\alias{indel}
+\alias{indel,AlignedXStringSet-method}
 \alias{length,AlignedXStringSet-method}
 \alias{nchar,AlignedXStringSet-method}
 \alias{alphabet,AlignedXStringSet-method}
@@ -99,7 +100,11 @@
       The width of the aligned substring, ignoring gaps.
     }
     \item{}{
-      \code{indels(x)}:
+      \code{mismatch(pattern, x, fixed = TRUE)}:
+      The indices of the mismatches for the \code{AlignedXStringSet}.
+    }
+    \item{}{
+      \code{indel(x)}:
       The positions, in the form of an \code{IRanges} object, of the insertions or
       deletions (depending on what the \code{AlignedXStringSet} object represents).
     }

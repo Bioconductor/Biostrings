@@ -5,19 +5,19 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	int *rangeWidth = INTEGER(_get_IRanges_width(range));
-	SEXP indels = GET_SLOT(alignedXStringSet, install("indels"));
-	int numberOfAlignments = LENGTH(indels);
+	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
+	int numberOfAlignments = LENGTH(indel);
 
 	SEXP output;
 	PROTECT(output = NEW_INTEGER(numberOfAlignments));
 	int *outputPtr = INTEGER(output);
 	for (int i = 0; i < numberOfAlignments; i++) {
-		SEXP indelsElement = VECTOR_ELT(indels, i);
-		int numberOfIndels = LENGTH(_get_IRanges_width(indelsElement));
-		int *indelsWidth = INTEGER(_get_IRanges_width(indelsElement));
+		SEXP indelElement = VECTOR_ELT(indel, i);
+		int numberOfIndel = LENGTH(_get_IRanges_width(indelElement));
+		int *indelWidth = INTEGER(_get_IRanges_width(indelElement));
 		outputPtr[i] = rangeWidth[i];
-		for (int j = 0; j < numberOfIndels; j++) {
-			outputPtr[i] += indelsWidth[j];
+		for (int j = 0; j < numberOfIndel; j++) {
+			outputPtr[i] += indelWidth[j];
 		}
 	}
 	UNPROTECT(1);
@@ -35,13 +35,13 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	int *rangeStart = INTEGER(_get_IRanges_start(range));
 	int *rangeWidth = INTEGER(_get_IRanges_width(range));
-	SEXP indels = GET_SLOT(alignedXStringSet, install("indels"));
+	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
 
 	const char *stringSetClass = _get_class(unaligned);
 	const char *stringClass = _get_class(GET_SLOT(unaligned, install("super")));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
-	int numberOfAlignments = LENGTH(indels);
+	int numberOfAlignments = LENGTH(indel);
 
 	SEXP output;
 	PROTECT(output = NEW_OBJECT(MAKE_CLASS(stringSetClass)));
@@ -73,18 +73,18 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	for (int i = 0; i < numberOfAlignments; i++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (rangeStart[i] - 1));
-		SEXP indelsElement = VECTOR_ELT(indels, i);
-		int numberOfIndels = LENGTH(_get_IRanges_start(indelsElement));
-		int *indelsStart = INTEGER(_get_IRanges_start(indelsElement));
-		int *indelsWidth = INTEGER(_get_IRanges_width(indelsElement));
-		if (numberOfIndels == 0) {
+		SEXP indelElement = VECTOR_ELT(indel, i);
+		int numberOfIndel = LENGTH(_get_IRanges_start(indelElement));
+		int *indelStart = INTEGER(_get_IRanges_start(indelElement));
+		int *indelWidth = INTEGER(_get_IRanges_width(indelElement));
+		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, rangeWidth[i] * sizeof(char));
 			index += rangeWidth[i];
 		} else {
 			int prevStart = 0;
-			for (int j = 0; j < numberOfIndels; j++) {
-				int currStart = indelsStart[j] - 1;
-				int currWidth = indelsWidth[j];
+			for (int j = 0; j < numberOfIndel; j++) {
+				int currStart = indelStart[j] - 1;
+				int currWidth = indelWidth[j];
 				int copyElements = currStart - prevStart;
 				if (copyElements > 0) {
 					memcpy(&alignedStringPtr[index], origStringPtr, copyElements * sizeof(char));

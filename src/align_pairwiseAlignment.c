@@ -41,9 +41,11 @@ struct AlignInfo {
 	int endGap;
 	int startRange;
 	int widthRange;
-	int* startIndels;
-	int* widthIndels;
-	int lengthIndels;
+	int* mismatch;
+	int lengthMismatch;
+	int* startIndel;
+	int* widthIndel;
+	int lengthIndel;
 };
 void function(struct AlignInfo *);
 
@@ -137,6 +139,8 @@ static double pairwiseAlignment(
 	}
 	int lookupValue = 0, elements[2], iElt, jElt;
 	int notSwappedOrder = 1 - swappedOrder;
+	int noEndGap1 = !align1InfoPtr->endGap;
+	int noEndGap2 = !align2InfoPtr->endGap;
 	float gapOpeningPlusExtension = gapOpening + gapExtension;
 	float endGapAddend = (align1InfoPtr->endGap ? gapExtension : 0.0);
 	float *tempMatrix, substitutionValue;
@@ -176,10 +180,10 @@ static double pairwiseAlignment(
 					CURR_MATRIX(0, j) = MAX(0.0, CURR_MATRIX(0, j));
 					maxScore = MAX(CURR_MATRIX(0, j), maxScore);
 				} else {
-					if (!align1InfoPtr->endGap && j == nCharString2)
+					if (noEndGap1 && j == nCharString2)
 						CURR_MATRIX(1, j) = MAX(PREV_MATRIX(0, j), PREV_MATRIX(1, j));
 
-					if (!align2InfoPtr->endGap && i == nCharString1)
+					if (noEndGap2 && i == nCharString1)
 						CURR_MATRIX(2, j) = MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(2, jMinus1));
 				}
 			}
@@ -199,23 +203,24 @@ static double pairwiseAlignment(
 
 		/* Step 3b:  Prepare the alignment info object for alignment */
 		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
-		int* startIndels1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* startIndels2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* widthIndels1Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		int* widthIndels2Buffer = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1InfoPtr->mismatch  = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2InfoPtr->mismatch  = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1InfoPtr->startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2InfoPtr->startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1InfoPtr->widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2InfoPtr->widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 
-		for(int i = 0; i < alignmentBufferSize; i++) {
-			startIndels1Buffer[i] = 0;
-			startIndels2Buffer[i] = 0;
-			widthIndels1Buffer[i] = 0;
-			widthIndels2Buffer[i] = 0;
-		}
-		align1InfoPtr->lengthIndels = 0;
-		align2InfoPtr->lengthIndels = 0;
-		align1InfoPtr->startIndels = startIndels1Buffer + alignmentBufferSize;
-		align2InfoPtr->startIndels = startIndels2Buffer + alignmentBufferSize;
-		align1InfoPtr->widthIndels = widthIndels1Buffer + alignmentBufferSize;
-		align2InfoPtr->widthIndels = widthIndels2Buffer + alignmentBufferSize;
+		align1InfoPtr->lengthMismatch = 0;
+		align2InfoPtr->lengthMismatch = 0;
+		align1InfoPtr->lengthIndel = 0;
+		align2InfoPtr->lengthIndel = 0;
+
+		memset(align1InfoPtr->mismatch,  0, alignmentBufferSize * sizeof(int));
+		memset(align2InfoPtr->mismatch,  0, alignmentBufferSize * sizeof(int));
+		memset(align1InfoPtr->startIndel, 0, alignmentBufferSize * sizeof(int));
+		memset(align2InfoPtr->startIndel, 0, alignmentBufferSize * sizeof(int));
+		memset(align1InfoPtr->widthIndel, 0, alignmentBufferSize * sizeof(int));
+		memset(align2InfoPtr->widthIndel, 0, alignmentBufferSize * sizeof(int));
 
 		align1InfoPtr->startRange = -1;
 		align2InfoPtr->startRange = -1;
@@ -293,7 +298,7 @@ static double pairwiseAlignment(
 					}
 				} else {
 
-					if (!align1InfoPtr->endGap && j == nCharString2) {
+					if (noEndGap1 && j == nCharString2) {
 						if (PREV_MATRIX(0, j) >= PREV_MATRIX(1, j)) {
 							D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
 							CURR_MATRIX(1, j) = PREV_MATRIX(0, j);
@@ -303,7 +308,7 @@ static double pairwiseAlignment(
 						}
 					}
 
-					if (!align2InfoPtr->endGap && i == nCharString1) {
+					if (noEndGap2 && i == nCharString1) {
 						if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(2, jMinus1)) {
 							I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
 							CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1);
@@ -352,12 +357,10 @@ static double pairwiseAlignment(
 		    			} else {
 		    				align1InfoPtr->widthRange++;
 		    				if (prevTraceMatrix != DELETION) {
-		    					align2InfoPtr->startIndels--;
-		    					align2InfoPtr->widthIndels--;
-		    					align2InfoPtr->lengthIndels++;
-		    					*align2InfoPtr->startIndels = nCharString2 - j;
+		    					align2InfoPtr->startIndel[align2InfoPtr->lengthIndel] = nCharString2 - j;
+		    					align2InfoPtr->lengthIndel++;
 		    				}
-		    				*align2InfoPtr->widthIndels += 1;
+		    				align2InfoPtr->widthIndel[align2InfoPtr->lengthIndel - 1] += 1;
 		    			}
 	    			}
 	    			prevTraceMatrix = currTraceMatrix;
@@ -371,12 +374,10 @@ static double pairwiseAlignment(
 		    			} else {
 		    				align2InfoPtr->widthRange++;
 		    				if (prevTraceMatrix != INSERTION) {
-		    					align1InfoPtr->startIndels--;
-		    					align1InfoPtr->widthIndels--;
-		    					align1InfoPtr->lengthIndels++;
-		    					*align1InfoPtr->startIndels = nCharString1 - i;
+		    					align1InfoPtr->startIndel[align1InfoPtr->lengthIndel] = nCharString1 - i;
+		    					align1InfoPtr->lengthIndel++;
 		    				}
-		    				*align1InfoPtr->widthIndels += 1;
+		    				align1InfoPtr->widthIndel[align1InfoPtr->lengthIndel - 1] += 1;
 		    			}
 	    			}
 	    			prevTraceMatrix = currTraceMatrix;
@@ -390,7 +391,14 @@ static double pairwiseAlignment(
 	    			}
 	    			prevTraceMatrix = currTraceMatrix;
 					currTraceMatrix = S_TRACE_MATRIX(i, j);
-	    			i--;
+					if (align1InfoPtr->string.elts[nCharString1Minus1 - i] !=
+						align2InfoPtr->string.elts[nCharString2Minus1 - j]) {
+						align1InfoPtr->mismatch[align1InfoPtr->lengthMismatch] = nCharString1 - i;
+						align2InfoPtr->mismatch[align2InfoPtr->lengthMismatch] = nCharString2 - j;
+						align1InfoPtr->lengthMismatch++;
+						align2InfoPtr->lengthMismatch++;
+					}
+					i--;
 	    			j--;
 	    			break;
 	    		default:
@@ -400,14 +408,14 @@ static double pairwiseAlignment(
 		}
 
 		int offset1 = align1InfoPtr->startRange - 1;
-		if (offset1 > 0 && align1InfoPtr->lengthIndels > 0) {
-			for (i = 0; i < align1InfoPtr->lengthIndels; i++)
-				align1InfoPtr->startIndels[i] -= offset1;
+		if (offset1 > 0 && align1InfoPtr->lengthIndel > 0) {
+			for (i = 0; i < align1InfoPtr->lengthIndel; i++)
+				align1InfoPtr->startIndel[i] -= offset1;
 		}
 		int offset2 = align2InfoPtr->startRange - 1;
-		if (offset2 > 0 && align2InfoPtr->lengthIndels > 0) {
-			for (j = 0; j < align2InfoPtr->lengthIndels; j++)
-				align2InfoPtr->startIndels[j] -= offset2;
+		if (offset2 > 0 && align2InfoPtr->lengthIndel > 0) {
+			for (j = 0; j < align2InfoPtr->lengthIndel; j++)
+				align2InfoPtr->startIndel[j] -= offset2;
 		}
 	}
 
@@ -523,12 +531,14 @@ SEXP XStringSet_align_pairwiseAlignment(
 	} else {
 		SEXP alignedPattern;
 		SEXP alignedPatternRange, alignedPatternRangeStart, alignedPatternRangeWidth;
-		SEXP alignedPatternIndels, alignedPatternIndelsRange;
-		SEXP alignedPatternIndelsRangeStart, alignedPatternIndelsRangeWidth;
+		SEXP alignedPatternMismatch, alignedPatternMismatchElt;
+		SEXP alignedPatternIndel, alignedPatternIndelRange;
+		SEXP alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth;
 		SEXP alignedSubject;
 		SEXP alignedSubjectRange, alignedSubjectRangeStart, alignedSubjectRangeWidth;
-		SEXP alignedSubjectIndels, alignedSubjectIndelsRange;
-		SEXP alignedSubjectIndelsRangeStart, alignedSubjectIndelsRangeWidth;
+		SEXP alignedSubjectMismatch, alignedSubjectMismatchElt;
+		SEXP alignedSubjectIndel, alignedSubjectIndelRange;
+		SEXP alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth;
 		SEXP alignedScore;
 
 		PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignment")));
@@ -546,9 +556,12 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(alignedPatternRange, mkChar("start"), alignedPatternRangeStart);
 		SET_SLOT(alignedPatternRange, mkChar("width"), alignedPatternRangeWidth);
 		SET_SLOT(alignedPattern, mkChar("range"), alignedPatternRange);
-		/* Set the "indels" sub-slot */
-		PROTECT(alignedPatternIndels = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedPattern, mkChar("indels"), alignedPatternIndels);
+		/* Set the "mismatch" sub-slot */
+		PROTECT(alignedPatternMismatch = NEW_LIST(numberOfStrings));
+		SET_SLOT(alignedPattern, mkChar("mismatch"), alignedPatternMismatch);
+		/* Set the "indel" sub-slot */
+		PROTECT(alignedPatternIndel = NEW_LIST(numberOfStrings));
+		SET_SLOT(alignedPattern, mkChar("indel"), alignedPatternIndel);
 		SET_SLOT(output, mkChar("pattern"), alignedPattern);
 
 		/* Set the "subject" slot */
@@ -564,9 +577,12 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(alignedSubjectRange, mkChar("start"), alignedSubjectRangeStart);
 		SET_SLOT(alignedSubjectRange, mkChar("width"), alignedSubjectRangeWidth);
 		SET_SLOT(alignedSubject, mkChar("range"), alignedSubjectRange);
-		/* Set the "indels" sub-slot */
-		PROTECT(alignedSubjectIndels = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedSubject, mkChar("indels"), alignedSubjectIndels);
+		/* Set the "mismatch" sub-slot */
+		PROTECT(alignedSubjectMismatch = NEW_LIST(numberOfStrings));
+		SET_SLOT(alignedSubject, mkChar("mismatch"), alignedSubjectMismatch);
+		/* Set the "indel" sub-slot */
+		PROTECT(alignedSubjectIndel = NEW_LIST(numberOfStrings));
+		SET_SLOT(alignedSubject, mkChar("indel"), alignedSubjectIndel);
 		SET_SLOT(output, mkChar("subject"), alignedSubject);
 
 		/* Set the "score" slot */
@@ -584,9 +600,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		for (int i = 0; i < numberOfStrings; i++) {
-			align1Info.lengthIndels = 0;
-			align2Info.lengthIndels = 0;
-
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
 			score[i] = pairwiseAlignment(
@@ -606,41 +619,49 @@ SEXP XStringSet_align_pairwiseAlignment(
 					REAL(constantMatrix),
 					INTEGER(constantMatrixDim));
 
+			PROTECT(alignedPatternMismatchElt = NEW_INTEGER(align1Info.lengthMismatch));
+			PROTECT(alignedSubjectMismatchElt = NEW_INTEGER(align2Info.lengthMismatch));
+			memcpy(INTEGER(alignedPatternMismatchElt), align1Info.mismatch,
+			       align1Info.lengthMismatch * sizeof(int));
+			memcpy(INTEGER(alignedSubjectMismatchElt), align2Info.mismatch,
+			       align2Info.lengthMismatch * sizeof(int));
+		    SET_VECTOR_ELT(alignedPatternMismatch, i, alignedPatternMismatchElt);
+		    SET_VECTOR_ELT(alignedSubjectMismatch, i, alignedSubjectMismatchElt);
+			UNPROTECT(2);
+
 			align1RangeStart[i] = align1Info.startRange;
 			align1RangeWidth[i] = align1Info.widthRange;
-			PROTECT(alignedPatternIndelsRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
-			PROTECT(alignedPatternIndelsRangeStart = NEW_INTEGER(align1Info.lengthIndels));
-			PROTECT(alignedPatternIndelsRangeWidth = NEW_INTEGER(align1Info.lengthIndels));
-			for (int j = 0; j < align1Info.lengthIndels; j++) {
-				int infoIndex = align1Info.lengthIndels - 1 - j;
-				INTEGER(alignedPatternIndelsRangeStart)[j] = align1Info.startIndels[infoIndex];
-				INTEGER(alignedPatternIndelsRangeWidth)[j] = align1Info.widthIndels[infoIndex];
-			}
-			SET_SLOT(alignedPatternIndelsRange, mkChar("start"), alignedPatternIndelsRangeStart);
-			SET_SLOT(alignedPatternIndelsRange, mkChar("width"), alignedPatternIndelsRangeWidth);
-		    SET_VECTOR_ELT(alignedPatternIndels, i, alignedPatternIndelsRange);
+			PROTECT(alignedPatternIndelRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
+			PROTECT(alignedPatternIndelRangeStart = NEW_INTEGER(align1Info.lengthIndel));
+			PROTECT(alignedPatternIndelRangeWidth = NEW_INTEGER(align1Info.lengthIndel));
+			memcpy(INTEGER(alignedPatternIndelRangeStart), align1Info.startIndel,
+			       align1Info.lengthIndel * sizeof(int));
+			memcpy(INTEGER(alignedPatternIndelRangeWidth), align1Info.widthIndel,
+			       align1Info.lengthIndel * sizeof(int));
+			SET_SLOT(alignedPatternIndelRange, mkChar("start"), alignedPatternIndelRangeStart);
+			SET_SLOT(alignedPatternIndelRange, mkChar("width"), alignedPatternIndelRangeWidth);
+		    SET_VECTOR_ELT(alignedPatternIndel, i, alignedPatternIndelRange);
 		    UNPROTECT(3);
 
 			align2RangeStart[i] = align2Info.startRange;
 			align2RangeWidth[i] = align2Info.widthRange;
-			PROTECT(alignedSubjectIndelsRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
-			PROTECT(alignedSubjectIndelsRangeStart = NEW_INTEGER(align2Info.lengthIndels));
-			PROTECT(alignedSubjectIndelsRangeWidth = NEW_INTEGER(align2Info.lengthIndels));
-			for (int j = 0; j < align2Info.lengthIndels; j++) {
-				int infoIndex = align2Info.lengthIndels - 1 - j;
-				INTEGER(alignedSubjectIndelsRangeStart)[j] = align2Info.startIndels[infoIndex];
-				INTEGER(alignedSubjectIndelsRangeWidth)[j] = align2Info.widthIndels[infoIndex];
-			}
-			SET_SLOT(alignedSubjectIndelsRange, mkChar("start"), alignedSubjectIndelsRangeStart);
-			SET_SLOT(alignedSubjectIndelsRange, mkChar("width"), alignedSubjectIndelsRangeWidth);
-		    SET_VECTOR_ELT(alignedSubjectIndels, i, alignedSubjectIndelsRange);
+			PROTECT(alignedSubjectIndelRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
+			PROTECT(alignedSubjectIndelRangeStart = NEW_INTEGER(align2Info.lengthIndel));
+			PROTECT(alignedSubjectIndelRangeWidth = NEW_INTEGER(align2Info.lengthIndel));
+			memcpy(INTEGER(alignedSubjectIndelRangeStart), align2Info.startIndel,
+			       align2Info.lengthIndel * sizeof(int));
+			memcpy(INTEGER(alignedSubjectIndelRangeWidth), align2Info.widthIndel,
+			       align2Info.lengthIndel * sizeof(int));
+			SET_SLOT(alignedSubjectIndelRange, mkChar("start"), alignedSubjectIndelRangeStart);
+			SET_SLOT(alignedSubjectIndelRange, mkChar("width"), alignedSubjectIndelRangeWidth);
+		    SET_VECTOR_ELT(alignedSubjectIndel, i, alignedSubjectIndelRange);
 		    UNPROTECT(3);
 
 			qualityElement += qualityIncrement;
 		}
 
 		/* Output is ready */
-		UNPROTECT(12);
+		UNPROTECT(14);
 	}
 
 	return output;

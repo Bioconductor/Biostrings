@@ -9,7 +9,8 @@ setClass("AlignedXStringSet",
         unaligned="XStringSet",
         quality="XStringSet",
         range="IRanges",
-        indels="list"
+        mismatch = "list",
+        indel="list"
     )
 )
 
@@ -19,12 +20,13 @@ setClass("AlignedXStringSet",
 ###
 
 setMethod("initialize", "AlignedXStringSet",
-    function(.Object, unaligned, quality, range, indels, check = TRUE)
+    function(.Object, unaligned, quality, range, mismatch, indel, check = TRUE)
     {
         slot(.Object, "unaligned", check = check) <- unaligned
         slot(.Object, "quality", check = check) <- quality
         slot(.Object, "range", check = check) <- range
-        slot(.Object, "indels", check = check) <- indels
+        slot(.Object, "mismatch", check = check) <- mismatch
+        slot(.Object, "indel", check = check) <- indel
         .Object
     }
 )
@@ -37,8 +39,10 @@ setMethod("initialize", "AlignedXStringSet",
 .valid.AlignedXStringSet <- function(object)
 {
     message <- character(0)
-    if (length(object@range) != length(indels(object)))
-        message <- c(message, "length(range) != length(indels)")
+    if (length(object@range) != length(mismatch(object)))
+        message <- c(message, "length(range) != length(mismatch)")
+    if (length(mismatch(object)) != length(indel(object)))
+        message <- c(message, "length(mismatch) != length(indel)")
     if (!(length(object@unaligned) %in% c(1, length(object@range))))
         message <- c(message, "length(unaligned) != 1 or length(range)")
     if (!(length(object@quality) %in% c(1, length(object@range))))
@@ -81,8 +85,10 @@ setMethod("aligned", "AlignedXStringSet",
 setMethod("start", "AlignedXStringSet", function(x) start(x@range))
 setMethod("end", "AlignedXStringSet", function(x) end(x@range))
 setMethod("width", "AlignedXStringSet", function(x) width(x@range))
-setGeneric("indels", function(x) standardGeneric("indels"))
-setMethod("indels", "AlignedXStringSet", function(x) x@indels)
+setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
+          function(pattern, x, fixed) pattern@mismatch)
+setGeneric("indel", function(x) standardGeneric("indel"))
+setMethod("indel", "AlignedXStringSet", function(x) x@indel)
 setMethod("length", "AlignedXStringSet", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet",
           function(x, type="chars", allowNA=FALSE) .Call("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
@@ -146,7 +152,8 @@ setMethod("[", "AlignedXStringSet",
         new("AlignedXStringSet",
             unaligned = .safe.subset.XStringSet(x@unaligned, i),
             quality = .safe.subset.XStringSet(x@quality, i),
-            range = x@range[i,,drop = FALSE], indels = x@indels[i])
+            range = x@range[i,,drop = FALSE],
+            mismatch = x@mismatch[i], indel = x@indel[i])
     }
 )
 

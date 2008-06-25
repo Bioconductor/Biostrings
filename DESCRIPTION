@@ -55,12 +55,12 @@ Collate: 00datacache.R
 	findPalindromes.R
 	PDict-class.R
 	matchPDict.R
+	pmatchPattern.R
 	AlignedXStringSet-class.R
 	PairwiseAlignment-class.R
 	align-utils.R
-	pmatchPattern.R
-	needwunsQS.R
 	pairwiseAlignment.R
+	needwunsQS.R
 	debug.R
 	test.R
 	zzz.R

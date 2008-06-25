@@ -186,7 +186,7 @@ setMethod("isMatching", "XString",
            function(i) .bsMismatch(pattern, subject(x), start(x)[i], fixed))
 }
 
-setGeneric("mismatch", signature="x",
+setGeneric("mismatch", signature=c("pattern", "x"),
     function(pattern, x, fixed=TRUE) standardGeneric("mismatch")
 )
 
@@ -194,7 +194,7 @@ setGeneric("mismatch", signature="x",
 ###   mp <- matchPattern("TGA", DNAString("GTGACGTGCAT"), max.mismatch=2)
 ###   mismatch("TGA", mp)
 ### Dispatch on 'x' (see signature of generic).
-setMethod("mismatch", "XStringViews",
+setMethod("mismatch", c(pattern="ANY", x="XStringViews"),
     function(pattern, x, fixed)
     {
         if (class(pattern) != class(x@subject))

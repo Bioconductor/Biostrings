@@ -14,7 +14,7 @@
 \alias{isMatching,XString-method}
 
 \alias{mismatch}
-\alias{mismatch,XStringViews-method}
+\alias{mismatch,ANY,XStringViews-method}
 
 \alias{coverage}
 \alias{coverage,IRanges-method}
