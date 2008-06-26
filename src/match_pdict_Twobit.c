@@ -84,13 +84,13 @@ static SEXP new_ExternalPtr_from_twobit_sign2pos(SEXP twobit_sign2pos)
 }
 
 /*
- * Twobit_PDict_asLIST() returns an R list with the following elements:
+ * Twobit_asLIST() returns an R list with the following elements:
  *   - twobit_sign2pos_xp: 
  *   - dup2unq: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
 
-static SEXP Twobit_PDict_asLIST(SEXP twobit_sign2pos)
+static SEXP Twobit_asLIST(SEXP twobit_sign2pos)
 {
 	SEXP ans, ans_names, ans_elt;
 
@@ -127,10 +127,10 @@ static SEXP Twobit_PDict_asLIST(SEXP twobit_sign2pos)
  *       DNAStringSet object;
  *   base_codes: the internal codes for A, C, G and T.
  *
- * See Twobit_PDict_asLIST() for a description of the returned SEXP.
+ * See Twobit_asLIST() for a description of the returned SEXP.
  */
 
-SEXP build_Twobit_PDict(SEXP tb, SEXP base_codes)
+SEXP build_Twobit(SEXP tb, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset, twobit_len;
 	CachedXStringSet cached_tb;
@@ -138,7 +138,7 @@ SEXP build_Twobit_PDict(SEXP tb, SEXP base_codes)
 	SEXP ans, twobit_sign2pos;
 
 	if (LENGTH(base_codes) != 4)
-		error("Biostrings internal error in build_Twobit_PDict(): "
+		error("Biostrings internal error in build_Twobit(): "
 		      "'base_codes' must be of length 4");
 	_init_chrtrtable(INTEGER(base_codes), LENGTH(base_codes),
 			 eightbit2twobit_lkup);
@@ -171,7 +171,7 @@ SEXP build_Twobit_PDict(SEXP tb, SEXP base_codes)
 		}
 			
 	}
-	PROTECT(ans = Twobit_PDict_asLIST(twobit_sign2pos));
+	PROTECT(ans = Twobit_asLIST(twobit_sign2pos));
 	UNPROTECT(2);
 	return ans;
 }
@@ -213,7 +213,7 @@ void walk_subject(int tb_width, const int *twobit_sign2pos, const RoSeq *S)
 	return;
 }
 
-void _match_Twobit_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
+void _match_Twobit(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 {
 	int tb_width;
 	const int *twobit_sign2pos;
@@ -221,13 +221,13 @@ void _match_Twobit_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING _match_Twobit_PDict()\n");
+		Rprintf("[DEBUG] ENTERING _match_Twobit()\n");
 #endif
 	tb_width = INTEGER(VECTOR_ELT(pdict_pptb, 0))[0];
 	twobit_sign2pos = INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_pptb, 1)));
 	base_codes = VECTOR_ELT(pdict_pptb, 2);
 	if (LENGTH(base_codes) != 4)
-		error("Biostrings internal error in _match_Twobit_PDict(): "
+		error("Biostrings internal error in _match_Twobit(): "
 		      "'base_codes' must be of length 4");
 	_init_chrtrtable(INTEGER(base_codes), LENGTH(base_codes),
 			 eightbit2twobit_lkup);
@@ -238,7 +238,7 @@ void _match_Twobit_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	walk_subject(tb_width, twobit_sign2pos, S);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING _match_Twobit_PDict()\n");
+		Rprintf("[DEBUG] LEAVING _match_Twobit()\n");
 #endif
 	return;
 }

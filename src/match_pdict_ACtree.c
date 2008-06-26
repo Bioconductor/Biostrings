@@ -254,13 +254,13 @@ static SEXP new_ExternalPtr_from_actree_nodes_buf()
 }
 
 /*
- * ACtree_PDict_asLIST() returns an R list with the following elements:
+ * ACtree_asLIST() returns an R list with the following elements:
  *   - actree_nodes_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
  *         tree built from the Trusted Band;
  *   - dup2unq: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
-static SEXP ACtree_PDict_asLIST()
+static SEXP ACtree_asLIST()
 {
 	SEXP ans, ans_names, ans_elt;
 
@@ -297,17 +297,17 @@ static SEXP ACtree_PDict_asLIST()
  *       DNAStringSet object;
  *   base_codes: the internal codes for A, C, G and T.
  *
- * See ACtree_PDict_asLIST() for a description of the returned SEXP.
+ * See ACtree_asLIST() for a description of the returned SEXP.
  */
 
-SEXP build_ACtree_PDict(SEXP tb, SEXP base_codes)
+SEXP build_ACtree(SEXP tb, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset;
 	CachedXStringSet cached_tb;
 	RoSeq pattern;
 
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
-		error("Biostrings internal error in build_ACtree_PDict(): "
+		error("Biostrings internal error in build_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
 	tb_length = _get_XStringSet_length(tb);
 	_init_dup2unq_buf(tb_length);
@@ -329,7 +329,7 @@ SEXP build_ACtree_PDict(SEXP tb, SEXP base_codes)
 		}
 		pp_pattern(&pattern, INTEGER(base_codes), poffset);
 	}
-	return ACtree_PDict_asLIST();
+	return ACtree_asLIST();
 }
 
 
@@ -591,19 +591,19 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_ACtree_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
+void _match_ACtree(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 {
 	ACNode *node0;
 	SEXP base_codes;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] ENTERING _match_ACtree_PDict()\n");
+		Rprintf("[DEBUG] ENTERING _match_ACtree()\n");
 #endif
 	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_pptb, 0)));
 	base_codes = VECTOR_ELT(pdict_pptb, 1);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
-		error("Biostrings internal error in _match_ACtree_PDict(): "
+		error("Biostrings internal error in _match_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
 	_init_chrtrtable(INTEGER(base_codes), MAX_CHILDREN_PER_ACNODE,
 			 slotno_chrtrtable);
@@ -613,7 +613,7 @@ void _match_ACtree_PDict(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 		walk_nonfixed_subject(node0, INTEGER(base_codes), S);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
-		Rprintf("[DEBUG] LEAVING _match_ACtree_PDict()\n");
+		Rprintf("[DEBUG] LEAVING _match_ACtree()\n");
 #endif
 	return;
 }

@@ -89,38 +89,59 @@ setMethod("show", "Dups",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDict" class.
-###
-### A (virtual) container for storing a preprocessed dictionary of DNA
-### patterns that can later be passed to the matchPDict() function for fast
-### matching.
-### Derive this virtual class for each type of preprocessing that you want
-### to implement.
+### The "PreprocessedTB" and "PDict3Parts" classes.
 ###
 
-setClass("PDict",
+setClass("PreprocessedTB",
     representation(
         "VIRTUAL",
-        dict0="DNAStringSet",
-        head="DNAStringSet",
-        tb="DNAStringSet",    # the Trusted Band (always of constant width)
-        tail="DNAStringSet",
-        tb.dups="Dups"
+        tb="DNAStringSet",  # constant width
+        dups="Dups"
     )
 )
 
+setMethod("length", "PreprocessedTB", function(x) length(x@tb))
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### PDict accessor methods.
-###
+setMethod("width", "PreprocessedTB", function(x) width(x@tb))
 
-setMethod("length", "PDict", function(x) length(x@dict0))
+setGeneric("tb", function(x) standardGeneric("tb"))
+setMethod("tb", "PreprocessedTB", function(x) x@tb)
 
-setMethod("width", "PDict", function(x) width(x@dict0))
+setGeneric("tb.width", function(x) standardGeneric("tb.width"))
+setMethod("tb.width", "PreprocessedTB", function(x) width(x@tb)[1])
 
-setMethod("names", "PDict", function(x) names(x@dict0))
+setMethod("initialize", "PreprocessedTB",
+    function(.Object, tb, dup2unq)
+    {
+        .Object@tb <- tb
+        .Object@dups <- Dups(dup2unq)
+        .Object
+    }
+)
 
-setMethod("head", "PDict",
+setMethod("duplicated", "PreprocessedTB",
+    function(x, incomparables=FALSE, ...) duplicated(x@dups)
+)
+
+setMethod("dupFrequency", "PreprocessedTB",
+    function(x) dupFrequency(x@dups)
+)
+
+setClass("PDict3Parts",
+    representation(
+        head="DNAStringSet",
+        pptb="PreprocessedTB",
+        tail="DNAStringSet"
+    )
+)
+
+setMethod("length", "PDict3Parts", function(x) length(x@pptb))
+
+setMethod("width", "PDict3Parts",
+    function(x) { width(x@head) + width(x@pptb) + width(x@tail) }
+)
+
+setMethod("head", "PDict3Parts",
     function(x, ...)
     {
         if (all(width(x@head) == 0L))
@@ -129,13 +150,10 @@ setMethod("head", "PDict",
     }
 )
 
-setGeneric("tb", function(x) standardGeneric("tb"))
-setMethod("tb", "PDict", function(x) x@tb)
+setMethod("tb", "PDict3Parts", function(x) tb(x@pptb))
+setMethod("tb.width", "PDict3Parts", function(x) tb.width(x@pptb))
 
-setGeneric("tb.width", function(x) standardGeneric("tb.width"))
-setMethod("tb.width", "PDict", function(x) width(x@tb)[1])
-
-setMethod("tail", "PDict",
+setMethod("tail", "PDict3Parts",
     function(x, ...)
     {
         if (all(width(x@tail) == 0L))
@@ -144,22 +162,66 @@ setMethod("tail", "PDict",
     }
 )
 
+setMethod("duplicated", "PDict3Parts",
+    function(x, incomparables=FALSE, ...)
+    {
+        head <- head(x)
+        tail <- tail(x)
+        if (is.null(head) && is.null(tail))
+            return(duplicated(x@pptb))
+        stop("duplicated() is not yet working on a PDict object ",
+             "with a head or a tail, sorry!")
+    }
+)
+
+setMethod("dupFrequency", "PDict3Parts",
+    function(x)
+    {
+        head <- head(x)
+        tail <- tail(x)
+        if (is.null(head) && is.null(tail))
+            return(dupFrequency(x@pptb))
+        stop("dupFrequency() is not yet working on a PDict object ",
+             "with a head or a tail, sorry!")
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting a PDict object.
+### The "PDict" class (top level).
 ###
-### Only the "[[" operator is provided for now.
-### Providing "[" sounds nice too but it has to return a PDict object of
-### the same type made of the selected patterns. For an ACtree_PDict object
-### this means that the @actree slot must be updated and this could cost
-### (in terms of amount of CPU and memory used) as much as preprocessing
-### again the entire set of selected patterns.
-### So in the end, "[" would not have much value (except some convenience)
-### over the solution that consists to ask the user to subset upstream i.e.
-### to subset the original dictionary before s/he passes it to PDict().
-### 
+### A (virtual) container for storing a preprocessed dictionary of DNA
+### patterns that can later be passed to the matchPDict() function for fast
+### matching.
+###
+
+setClass("PDict",
+    representation(
+        "VIRTUAL",
+        dict0="DNAStringSet"
+    )
+)
+
+setMethod("length", "PDict", function(x) length(x@dict0))
+
+setMethod("width", "PDict", function(x) width(x@dict0))
+
+setMethod("names", "PDict", function(x) names(x@dict0))
 
 ### Extract the i-th element of a PDict object as DNAString object.
+### Note that only the "[[" operator is provided for now. Providing "[" sounds
+### like a nice feature too but 'x[i]' would have to return a PDict object of
+### the same PDict subtype as 'x' i.e. a preprocessed dictionary where the
+### preprocessed data structure reflects the subsetted dictionary.
+### For example if the preprocessed data structure is an Aho-Corasick tree,
+### then this tree needs to be updated so that it stays in sync with
+### 'x@dict0[i]'. This updating operation might be complex and expensive in
+### terms of CPU cycles and/or memory usage. It could even be that its cost is
+### in fact greater than preprocessing again 'x@dict0[i]' from scratch!
+### So in the end, "[" would not have much value (other than providing some
+### convenience) over the approach that consists to ask the user to do the
+### subsetting upstream i.e. to subset the original dictionary before s/he
+### passes it to PDict() again.
 setMethod("[[", "PDict",
     function(x, i, j, ...)
     {
@@ -173,42 +235,57 @@ setMethod("[[", "PDict",
 
 setReplaceMethod("[[", "PDict",
     function(x, i, j,..., value)
-    {
         stop("attempt to modify the value of a ", class(x), " instance")
-    }
 )
+
+### Just an alias for "dupFrequency".
+setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
+setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### PDict initialization.
+### The "TB_PDict" class.
+###
+### A container for storing a Trusted Band PDict object.
 ###
 
-### Not intended to be used directly by the user.
-setMethod("initialize", "PDict",
-    function(.Object, dict0, head, tb, tail, dup2unq)
-    {
-        .Object@dict0 <- dict0
-        .Object@head <- head
-        .Object@tb <- tb
-        .Object@tail <- tail
-        .Object@tb.dups <- Dups(dup2unq)
-        .Object
-    }
+setClass("TB_PDict",
+    contains="PDict",
+    representation(
+        threeparts="PDict3Parts"
+    )
 )
 
+setMethod("head", "TB_PDict", function(x, ...) head(x@threeparts))
+setMethod("tb", "TB_PDict", function(x) tb(x@threeparts))
+setMethod("tb.width", "TB_PDict", function(x) tb.width(x@threeparts))
+setMethod("tail", "TB_PDict", function(x, ...) tail(x@threeparts))
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The PDict "show" method.
-###
+setMethod("duplicated", "TB_PDict",
+    function(x, incomparables=FALSE, ...) duplicated(x@threeparts)
+)
 
-setMethod("show", "PDict",
+setMethod("dupFrequency", "TB_PDict",
+    function(x) dupFrequency(x@threeparts)
+)
+
+setMethod("show", "TB_PDict",
     function(object)
     {
-        cat(length(object), "-pattern PDict object", sep="")
+        pdict_type <- class(object@threeparts@pptb)
+        min_width <- min(width(object))
+        max_width <- max(width(object))
+        if (min_width == max_width)
+            width_info <- paste("width ", min_width, sep="")
+        else
+            width_info <- "variable width"
+        cat(class(object), " object of length ", length(object),
+            ", ", width_info,
+            " and type \"", pdict_type, "\"", sep="")
         head <- head(object)
         tail <- tail(object)
         if (is.null(head) && is.null(tail)) {
-             cat(" of width ", tb.width(object), "\n", sep="")
+             cat("\n", sep="")
              return(invisible(NULL))
         }
         cat(":\n")
@@ -219,7 +296,7 @@ setMethod("show", "PDict",
             min_width <- min(width(head))
             max_width <- max(width(head))
             if (min_width == max_width)
-                cat("constant width ", min_width, sep="")
+                cat("width ", min_width, sep="")
             else
                 cat("variable width (min=", min_width,
                     " / max=", max_width, ")", sep="")
@@ -234,7 +311,7 @@ setMethod("show", "PDict",
             min_width <- min(width(tail))
             max_width <- max(width(tail))
             if (min_width == max_width)
-                cat("constant width ", min_width, sep="")
+                cat("width ", min_width, sep="")
             else
                 cat("variable width (min=", min_width,
                     " / max=", max_width, ")", sep="")
@@ -245,111 +322,45 @@ setMethod("show", "PDict",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### PDict other methods.
-###
-
-setMethod("duplicated", "PDict",
-    function(x, incomparables=FALSE, ...)
-    {
-        head <- head(x)
-        tail <- tail(x)
-        if (is.null(head) && is.null(tail))
-            return(duplicated(x@tb.dups))
-        stop("duplicated() is not yet working on a PDict object ",
-             "with a head or a tail, sorry!")
-    }
-)
-
-setMethod("dupFrequency", "PDict",
-    function(x)
-    {
-        head <- head(x)
-        tail <- tail(x)
-        if (is.null(head) && is.null(tail))
-            return(dupFrequency(x@tb.dups))
-        stop("dupFrequency() is not yet working on a PDict object ",
-             "with a head or a tail, sorry!")
-    }
-)
-
-setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
-
-setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "Twobit" class.
 ###
-### A low-level container for storing the mapping from the 2bit-per-letter
-### signatures of a set of oligonucleotides of constant width to the 1-based
-### positions of these oligonucleotides in the set.
-###
-### Slots:
-###
-###   width:
-###
-###   sign2pos: XInteger object of length width^4
-### 
-###   base_codes:
+### A low-level container for storing a PreprocessedTB object (preprocessed
+### Trusted Band) of type "Twobit".
+### With this type of preprocessing, the 2-bit-per-letter signatures of all
+### the oligonucleotides in the Trusted Band are computed and the mapping
+### from these signatures to the 1-based position of the corresponding
+### oligonucleotide in the Trusted Band is stored in a way that allows very
+### fast lookup.
 ###
 
 setClass("Twobit",
+    contains="PreprocessedTB",
     representation(
-        width="integer",
-        sign2pos="XInteger",
+        sign2pos="XInteger",  # length(x@sign2pos) is tb.width(x)^4
         base_codes="integer"
     )
 )
 
-setMethod("length", "Twobit", function(x) length(x@sign2pos))
-
-setMethod("width", "Twobit", function(x) x@width)
-
 setMethod("show", "Twobit",
     function(object)
     {
-        cat(class(object), " object of width ", width(object),
-            " and length ", length(object), "\n", sep="")
+        cat("Preprocessed Trusted Band of length ", length(object),
+            ", width ", tb.width(object),
+            " and type \"", class(object), "\"\n", sep="")
+        cat("  (length of sign2pos lookup table is ",
+            length(object@sign2pos), ")\n", sep="")
     }
 )
 
 setMethod("initialize", "Twobit",
-    function(.Object, width, sign2pos_xp, base_codes)
+    function(.Object, tb, base_codes)
     {
-        .Object@width <- width
-        .Object@sign2pos <- XInteger(0)
-        .Object@sign2pos@xp <- sign2pos_xp
-        .Object@base_codes <- base_codes
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "Twobit_PDict" class.
-###
-### A specific PDict container where the Trusted Band is stored in a
-### Twobit object.
-###
-
-setClass("Twobit_PDict",
-    contains="PDict",
-    representation(
-        twobit="Twobit"
-    )
-)
-
-### Not intended to be used directly by the user.
-setMethod("initialize", "Twobit_PDict",
-    function(.Object, dict0, head, tb, tail, base_codes)
-    {
-        C_ans <- .Call("build_Twobit_PDict", tb, base_codes,
+        C_ans <- .Call("build_Twobit", tb, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, dict0, head, tb, tail,
-                                           C_ans$dup2unq)
-        .Object@twobit <- new("Twobit", width(tb)[1],
-                                        C_ans$twobit_sign2pos_xp,
-                                        base_codes)
+        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object@sign2pos <- XInteger(0)
+        .Object@sign2pos@xp <- C_ans$twobit_sign2pos_xp
+        .Object@base_codes <- base_codes
         .Object
     }
 )
@@ -358,28 +369,18 @@ setMethod("initialize", "Twobit_PDict",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree" class.
 ###
-### A low-level container for storing the Aho-Corasick tree built from the
-### input dictionary (note that this tree is actually an oriented graph if we
-### consider the failure links). When the input is based on an alphabet of 4
-### letters (DNA input) then the Aho-Corasick tree is a 4-ary tree and the
-### base_codes slot is a vector of 4 integers that will be filled with the
-### internal codes (byte values) of the unique letters found in the input.
+### A low-level container for storing a PreprocessedTB object (preprocessed
+### Trusted Band) of type "ACtree".
+### With this type of preprocessing, all the oligonucleotides in the Trusted
+### Band are stored in a 4-ary Aho-Corasick tree (note that this tree is in
+### fact an oriented graph if we consider the failure links or the shortcut
+### links).
 ### The number of integers needed to represent a tree node is the number of
-### letters in the alphabet plus 4 (i.e. 4 for DNA input) hence this internal
-### representation of the Aho-Corasick tree can only be used for input based
-### on a very small alphabet.
-###
-### Slot description:
-###
-###   nodes: an external integer vector (XInteger object) for the storage
-###       of the nodes.
-### 
-###   base_codes: an integer vector filled with the internal codes (byte
-###       values) of the unique letters found in the input dictionary during
-###       its preprocessing.
+### base letters in the DNA alphabet plus 4.
 ###
 
 setClass("ACtree",
+    contains="PreprocessedTB",
     representation(
         nodes="XInteger",
         base_codes="integer"
@@ -388,16 +389,15 @@ setClass("ACtree",
 
 .ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
 
-setMethod("length", "ACtree",
-    function(x) length(x@nodes) %/% .ACtree.ints_per_acnode(x)
-)
-
 setMethod("show", "ACtree",
     function(object)
     {
-        cat(length(object), "-node ",
-            length(object@base_codes), "-ary Aho-Corasick tree\n",
-            sep="")
+        cat("Preprocessed Trusted Band of length ", length(object),
+            ", width ", tb.width(object),
+            " and type \"", class(object), "\"\n", sep="")
+        nnodes <- length(object@nodes) %/% .ACtree.ints_per_acnode(object)
+        cat("  (number of nodes in the Aho-Corasick tree is ",
+            nnodes, ")\n", sep="")
     }
 )
 
@@ -418,9 +418,10 @@ setMethod("[", "ACtree",
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
-        lx <- length(x)
+        ints_per_acnode <- .ACtree.ints_per_acnode(x)
+        nnodes <- length(x@nodes) %/% ints_per_acnode
         if (missing(i)) {
-            i <- 0:(lx-1)
+            i <- 0:(nnodes-1)
         } else {
             if (!is.numeric(i))
                 stop("invalid subscript type")
@@ -429,8 +430,8 @@ setMethod("[", "ACtree",
             if (!is.integer(i))
                 i <- as.integer(i)
         }
-        ints_per_acnode <- .ACtree.ints_per_acnode(x)
-        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) + seq_len(ints_per_acnode)
+        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) +
+                          seq_len(ints_per_acnode)
         ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
         colnames(ans) <- c("parent_id", "depth", x@base_codes,
                            "flink", "P_id")
@@ -442,40 +443,15 @@ setMethod("[", "ACtree",
 setMethod("as.matrix", "ACtree", function(x) x[])
 
 setMethod("initialize", "ACtree",
-    function(.Object, nodes_xp, base_codes)
-    {
-        .Object@nodes <- XInteger(0)
-        .Object@nodes@xp <- nodes_xp
-        .Object@base_codes <- base_codes
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ACtree_PDict" class.
-###
-### A specific PDict container where the Trusted Band is stored in an
-### ACtree object.
-###
-
-setClass("ACtree_PDict",
-    contains="PDict",
-    representation(
-        actree="ACtree"
-    )
-)
-
-### Not intended to be used directly by the user.
-setMethod("initialize", "ACtree_PDict",
-    function(.Object, dict0, head, tb, tail, base_codes)
+    function(.Object, tb, base_codes)
     {
         on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
-        C_ans <- .Call("build_ACtree_PDict", tb, base_codes,
+        C_ans <- .Call("build_ACtree", tb, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, dict0, head, tb, tail,
-                                           C_ans$dup2unq)
-        .Object@actree <- new("ACtree", C_ans$actree_nodes_xp, base_codes)
+        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object@nodes <- XInteger(0)
+        .Object@nodes@xp <- C_ans$actree_nodes_xp
+        .Object@base_codes <- base_codes
         .Object
     }
 )
@@ -500,21 +476,16 @@ setMethod("initialize", "ACtree_PDict",
     }
     tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
                           use.names=FALSE)
+    base_codes <- codes(tb, baseOnly=TRUE)
+    pptb <- new(type, tb, base_codes)
     head_start <- start(x)
     head_width <- start(tb) - start(x)
     head <- new("DNAStringSet", super(x), head_start, head_width, names=NULL)
     tail_start <- end(tb) + 1L
     tail_width <- end(x) - end(tb)
     tail <- new("DNAStringSet", super(x), tail_start, tail_width, names=NULL)
-    base_codes <- codes(tb, baseOnly=TRUE)
-    if (type == "ACtree") {
-        ans <- new("ACtree_PDict", x, head, tb, tail, base_codes)
-    } else if (type == "Twobit") {
-        ans <- new("Twobit_PDict", x, head, tb, tail, base_codes)
-    } else {
-        stop("unknown type")
-    }
-    ans
+    threeparts <- new("PDict3Parts", head=head, pptb=pptb, tail=tail)
+    new("TB_PDict", dict0=x, threeparts=threeparts)
 }
 
 setGeneric("PDict", signature="x",

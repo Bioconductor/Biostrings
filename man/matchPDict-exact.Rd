@@ -51,24 +51,18 @@
 \alias{extractAllMatches}
 
 
-\title{Searching a sequence for patterns stored in a dictionary}
+\title{Searching a sequence for patterns stored in a preprocessed dictionary}
 
 \description{
-  \code{matchPDict} efficiently finds all occurences in a text (the
-  subject) of any pattern from a set of patterns (the dictionary).
-
-  The implementation of \code{matchPDict} is based on the Aho-Corasick
-  algorithm and is very fast.
-
-  Note that, for now, \code{matchPDict} only works with a dictionary
-  of DNA patterns.
+  The \code{matchPDict} function efficiently finds all occurences in a
+  text (the subject) of all patterns stored in a preprocessed dictionary.
 
   This man page shows how to use \code{matchPDict} for exact matching
   of a constant width dictionary i.e. a dictionary where all the
   patterns have the same length (same number of nucleotides).
 
-  See \link{matchPDict-inexact} for inexact matching (or for using a
-  variable width dictionary).
+  See \link{matchPDict-inexact} for how to use \code{matchPDict} for
+  inexact matching or when the original dictionary has a variable width.
 }
 
 \usage{
@@ -83,9 +77,21 @@
   extractAllMatches(subject, mindex)
 }
 
+\details{
+  In this man page, we assume that you know how to preprocess a dictionary
+  of DNA patterns that can then be used with \code{matchPDict}.
+  Please see \code{?\link{PDict}} if you don't.
+
+  When using \code{matchPDict} for exact matching of a constant width
+  dictionary, the standard way to preprocess the original dictionary
+  is by calling the \code{\link{PDict}} constructor on it with no extra
+  arguments. This returns the preprocessed dictionary in a \link{PDict}
+  object that can be used with \code{matchPDict}.
+}
+
 \arguments{
   \item{pdict}{
-    The preprocessed dictionary (see below for the details).
+    A \link{PDict} object containing the preprocessed dictionary.
   }
   \item{subject}{
     An \link{XString} object containing the subject string.
@@ -132,9 +138,10 @@
 
   \code{countPDict} returns an integer vector.
 
-  \code{startIndex}, \code{endIndex} and \code{countIndex} return vectors of the same
-  length as the input dictionary: \code{startIndex} and \code{endIndex} return a
-  list of integer vectors, and \code{countIndex} returns an integer vector.
+  \code{startIndex}, \code{endIndex} and \code{countIndex} return vectors of
+  the same length as the original dictionary: \code{startIndex} and
+  \code{endIndex} return a list of integer vectors, and \code{countIndex}
+  returns an integer vector.
 
   \code{extractAllMatches} returns an \link{XStringViews} object with names.
 }
@@ -159,10 +166,11 @@
 
   ## Creating the pattern dictionary
   library(drosophila2probe)
-  dict0 <- drosophila2probe$sequence   # The input dictionary.
+  dict0 <- DNAStringSet(drosophila2probe$sequence)
+  dict0                                # The original dictionary.
   length(dict0)                        # Hundreds of thousands of patterns.
-  pdict0 <- PDict(dict0)               # Store the input dictionary into a
-                                       # PDict object (preprocessing).
+  pdict0 <- PDict(dict0)               # Store the original dictionary in
+                                       # a PDict object (preprocessing).
 
   ## Using the pattern dictionary on chromosome 3R
   library(BSgenome.Dmelanogaster.UCSC.dm3)
@@ -172,7 +180,7 @@
 
   ## Looking at the matches
   start_index <- startIndex(mindex)    # Get the start index.
-  length(start_index)                  # Same as the input dictionary.
+  length(start_index)                  # Same as the original dictionary.
   start_index[[8220]]                  # Starts of the 8220th pattern.
   end_index <- endIndex(mindex)        # Get the end index.
   end_index[[8220]]                    # Ends of the 8220th pattern.
@@ -183,7 +191,7 @@
   sum(count_index)                     # Total number of matches.
   table(count_index)
   i0 <- which(count_index == max(count_index))
-  dict0[i0]                            # The pattern with most occurences.
+  pdict0[[i0]]                         # The pattern with most occurences.
   mindex[[i0]]                         # Its matches as a Views object.
   views(chr3R, start_index[[i0]], end_index[[i0]]) # And as an XStringViews object.
 
@@ -209,11 +217,12 @@
   ## B. WITH NAMED PATTERNS
   ## ---------------------------------------------------------------------
 
-  dict1 <- dict0[8211:8236]            # The input dictionary.
+  dict1 <- dict0[8211:8236]
   names(dict1) <- LETTERS
-  dict1[1:5]
+  dict1                                # The original dictionary.
   pdict1 <- PDict(dict1)
-  length(pdict1)                       # Same as the input dictionary.
+  
+  length(pdict1)                       # Same as the original dictionary.
   names(pdict1)                        # Same as names(dict1).
   mindex <- matchPDict(pdict1, chr3R)  # Search...
 
@@ -221,9 +230,10 @@
   names(mindex)                        # Same as names(dict1).
   start_index <- startIndex(mindex)
   start_index
-  length(start_index)                  # NOT the same as the input dictionary.
+  length(start_index)                  # NOT the same as the original
+                                       # dictionary.
   start_index <- startIndex(mindex, all.names=TRUE)
-  length(start_index)                  # Same as the input dictionary.
+  length(start_index)                  # Same as the original dictionary.
   countIndex(mindex)
   unlist(mindex)
   length(unlist(mindex))               # Total number of matches.
@@ -235,22 +245,24 @@
   ## C. PERFORMANCE
   ## ---------------------------------------------------------------------
 
-  ## If getting the number of matches is what matters only (without regarding
-  ## their positions), then countPDict() will be faster, especially when there
-  ## is a high number of matches
+  ## If getting the number of matches is what matters only (without
+  ## regarding their positions), then countPDict() will be faster,
+  ## especially when there is a high number of matches
   count_index1 <- countPDict(pdict1, chr3R)
   identical(count_index1, count_index) # TRUE
 
   if (interactive()) {
     ## What's the impact of the dictionary width on performance?
     ## Below is some code that can be used to figure out (will take a long
-    ## time to run). For different widths of the input dictionary, we look at:
-    ##   o pptime: preprocessing time (in sec.) i.e. time needed for building
-    ##             the PDict object from the truncated input sequences
-    ##   o nnodes: nb of nodes in the resulting Aho-Corasick tree
-    ##   o nupatt: nb of unique truncated input sequences
-    ##   o matchtime: time (in sec.) needed to find all the matches
-    ##   o totalcount: total number of matches
+    ## time to run). For different widths of the original dictionary, we
+    ## look at:
+    ##   o pptime: preprocessing time (in sec.) i.e. time needed for
+    ##             building the PDict object from the truncated input
+    ##             sequences;
+    ##   o nnodes: nb of nodes in the resulting Aho-Corasick tree;
+    ##   o nupatt: nb of unique truncated input sequences;
+    ##   o matchtime: time (in sec.) needed to find all the matches;
+    ##   o totalcount: total number of matches.
     getPDictStats <- function(dict0, subject)
     {
       list(
@@ -262,7 +274,6 @@
         totalcount=sum(countIndex(mindex))
       )
     }
-    dict0 <- DNAStringSet(dict0)
     stats <- lapply(6:25,
                  function(width)
                      getPDictStats(DNAStringSet(dict0, end=width), chr3R))
@@ -272,4 +283,3 @@
 }
 
 \keyword{methods}
-

@@ -179,12 +179,12 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_pdict_Twobit.c */
 	{"debug_match_pdict_Twobit", (DL_FUNC) &debug_match_pdict_Twobit, 0},
-	{"build_Twobit_PDict", (DL_FUNC) &build_Twobit_PDict, 2},
+	{"build_Twobit", (DL_FUNC) &build_Twobit, 2},
 
 /* match_pdict_ACtree.c */
 	{"debug_match_pdict_ACtree", (DL_FUNC) &debug_match_pdict_ACtree, 0},
 	{"free_actree_nodes_buf", (DL_FUNC) &free_actree_nodes_buf, 0},
-	{"build_ACtree_PDict", (DL_FUNC) &build_ACtree_PDict, 2},
+	{"build_ACtree", (DL_FUNC) &build_ACtree, 2},
 
 /* match_pdict.c */
 	{"debug_match_pdict", (DL_FUNC) &debug_match_pdict, 0},

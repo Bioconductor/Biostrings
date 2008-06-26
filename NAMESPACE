@@ -17,7 +17,7 @@ exportClasses(
     XStringPartialMatches,
     AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
-    Dups, PDict, Twobit, Twobit_PDict, ACtree, ACtree_PDict,
+    Dups, PreprocessedTB, PDict3Parts, PDict, TB_PDict, Twobit, ACtree,
     MIndex, ByPos_MIndex, ByName_MIndex
 )
 

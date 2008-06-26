@@ -344,9 +344,9 @@ static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (strcmp(type, "Twobit") == 0)
-		_match_Twobit_PDict(pdict_pptb, S, fixedS);
+		_match_Twobit(pdict_pptb, S, fixedS);
 	else if (strcmp(type, "ACtree") == 0)
-		_match_ACtree_PDict(pdict_pptb, S, fixedS);
+		_match_ACtree(pdict_pptb, S, fixedS);
 	else
 		error("\"%s\": unknown PDict type", type);
 	if (cached_head == NULL && cached_tail == NULL)

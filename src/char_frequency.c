@@ -158,7 +158,7 @@ SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	SEXP ans;
 	int ans_len, ans_offset_bitmask, ans_offset, width0, nbit_in_mask,
             right_moves_fastest, i, nb_valid_left_char, twobit;
-	char *c;
+	const char *c;
 
 	static int eightbit2twobit_lkup[256];
 

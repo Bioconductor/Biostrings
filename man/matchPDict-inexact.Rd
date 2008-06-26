@@ -6,35 +6,48 @@
 \title{Inexact matching with matchPDict()}
 
 \description{
-  The \code{matchPDict} function can be used for inexact matching.
+  The \code{matchPDict} function efficiently finds all occurences in a
+  text (the subject) of all patterns stored in a preprocessed dictionary.
 
-  For the moment, only one kind of inexact matching is provided where
-  the user must specify the length of the Trusted Prefix for each
-  pattern stored in the dictionary and the maximum number of mismatching
-  letters allowed in each pattern suffix (or "tail"). Please refer
-  to the \code{\link{PDict}} documentation for how to create a
-  Trusted Prefix DNA dictionary (preprocessing).
+  This man page shows how to use \code{matchPDict} for inexact matching
+  or when the original dictionary has a variable width.
 
-  The inexact matches are searched by using a 2-stage approach:
-  (1) use the Aho-Corasick algorithm for fast lookup of all the prefixes
-  in the subject, followed by
-  (2) comparison of each tail with the short substrings in the subject
-  located next to the positions found in (1).
-  Because performance will mostly depend on the number of positions found in
-  (1) it's important to minimize this number by keeping the length of the
-  Trusted Prefix as large as possible.
-  A simple empiric rule is: if TP is the length of the Trusted Prefix
-  and L the length of the subject, then L / (4**TP) should be as small as
-  possible, typically < 10 or 20.
+  See \link{matchPDict} for how to use \code{matchPDict} for exact matching
+  of a constant width dictionary i.e. a dictionary where all the
+  patterns have the same length (same number of nucleotides).
+}
 
-  Note that, when \code{matchPDict} is used for inexact matching,
-  variable width dictionaries (i.e. containing patterns of variable length)
-  are accepted.
-  In addition, when \code{fixed=FALSE}, then IUPAC extended letters placed
-  in the tail of the dictionary are interpreted as ambiguities.
+\details{
+  In this man page, we assume that you know how to preprocess a dictionary
+  of DNA patterns that can then be used with \code{matchPDict}.
+  Please see \code{?\link{PDict}} if you don't.
 
-  However, like in exact matching mode, it only works with a dictionary
-  of DNA patterns.
+  When using \code{matchPDict} for inexact matching or when the original
+  dictionary has a variable width, a Trusted Band must be defined during
+  the preprocessing step. This is done thru the \code{tb.start},
+  \code{tb.end} and \code{tb.width} arguments of the \code{\link{PDict}}
+  constructor (see \code{?\link{PDict}} for the details).
+
+  Then \code{matchPDict} can be called with a null or non-null
+  \code{max.mismatch} value and the search for exact or inexact matches
+  will use a 2-stage approach:
+  (1) find all the exact matches of all the elements in the Trusted Band;
+      then
+  (2) for each element in the Trusted Band that has at least one exact
+      match, compare the head and the tail corresponding to this element
+      with the flanking sequences of the match in the subject.
+  Because performance will mostly depend on the number of exact matches
+  found in (1) it's important to minimize this number by trying to
+  define a Trusted Band with the greatest possible width.
+  A simple empiric rule is: if TBW is the width of the Trusted Band
+  (\code{TBW <- tb.width(pdict)}) and L the number of letters in the
+  subject (\code{L <- nchar(subject)}), then \code{L / (4^TBW)} should
+  be kept as small as possible, typically < 10 or 20.
+
+  In addition, when a Trusted Band has been defined during preprocessing,
+  then \code{matchPDict} can be called with \code{fixed=FALSE}.
+  In this case, IUPAC extended letters in the head or the tail of the
+  \link{PDict} object are treated as ambiguities.
 }
 
 \author{H. Pages}
@@ -55,9 +68,11 @@
   ## ---------------------------------------------------------------------
 
   library(drosophila2probe)
-  dict0 <- drosophila2probe$sequence  # The input dictionary.
+  dict0 <- DNAStringSet(drosophila2probe$sequence)
+  dict0  # the original dictionary
 
-  ## Specify the length of the Trusted Prefix via the 'tb.end' argument
+  ## Preprocess the original dictionary and define a Trusted Band that
+  ## goes from the 1st to the 9h nucleotide of each of its elements.
   pdict9 <- PDict(dict0, tb.end=9)
   pdict9
   tail(pdict9)
@@ -75,9 +90,10 @@
   ## B. COMPARISON WITH EXACT MATCHING
   ## ---------------------------------------------------------------------
 
-  ## When the input dictionary is of constant width, using 'max.mismatch=0'
-  ## on the Trusted Prefix dictionary is equivalent to (but much slower than)
-  ## using the full dictionary.
+  ## When the original dictionary is of constant width, exact matching
+  ## (i.e. 'max.mismatch=0' and 'fixed=TRUE) will be more efficient with
+  ## a full-width Trusted Band (i.e. a Trusted Band that covers the entire
+  ## dictionary) than with a Trusted Band of width < width(dict0).
   pdict0 <- PDict(dict0)
   count0 <- countPDict(pdict0, chr3R)
   count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
@@ -108,4 +124,3 @@
 }
 
 \keyword{methods}
-

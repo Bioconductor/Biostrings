@@ -1300,12 +1300,12 @@ SEXP ByName_MIndex_coverage(
 
 SEXP debug_match_pdict_Twobit();
 
-SEXP build_Twobit_PDict(
+SEXP build_Twobit(
 	SEXP tb,
 	SEXP base_codes
 );
 
-void _match_Twobit_PDict(
+void _match_Twobit(
 	SEXP pdict_pptb,
 	const RoSeq *S,
 	int fixedS
@@ -1318,12 +1318,12 @@ SEXP debug_match_pdict_ACtree();
 
 SEXP free_actree_nodes_buf();
 
-SEXP build_ACtree_PDict(
+SEXP build_ACtree(
 	SEXP tb,
 	SEXP base_codes
 );
 
-void _match_ACtree_PDict(
+void _match_ACtree(
 	SEXP pdict_pptb,
 	const RoSeq *S,
 	int fixedS

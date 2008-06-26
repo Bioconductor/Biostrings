@@ -106,10 +106,10 @@ setMethod("$", "MIndex", function(x, name) x[[name]])
 ###   ends: a list of integer vectors.
 ###
 ###   width: temporary hack. In the future we will probably want to store the
-###       starts of the matches when 'pdict' is a PDict other than an
-###       ACtree_PDict object. Another solution would be to keep the width slot
-###       and to make it the same length as the ends slot (it's currently of
-###       length 1 only).
+###       starts of the matches when the original dictionary has a variable
+###       width. Another solution would be to keep the width slot and to make
+###       it the same length as the ends slot (it's currently of length 1
+###       only).
 ###
 
 setClass("ByPos_MIndex",
@@ -187,18 +187,18 @@ setMethod("endIndex", "ByPos_MIndex",
 ###
 ### Slot description:
 ###
-###   length: the length of the input dictionary.
+###   length: the length of the original dictionary.
 ###
 ###   ends_envir: a key-value list (environment) where the values are integer
-###       vectors containing the ending positions of the input pattern whose
-###       position in the input dictionary is given by the key (the keys are
+###       vectors containing the ending positions of the pattern whose
+###       position in the original dictionary is given by the key (the keys are
 ###       strings representing positive integers).
 ###       
 ###   width: temporary hack. In the future we will probably want to store the
-###       starts of the matches when 'pdict' is a PDict other than an
-###       ACtree_PDict object. Another solution would be to keep the width slot
-###       and to make it the same length as the ends_envir slot (it's currently
-###       of length 1 only).
+###       starts of the matches when the original dictionary has a variable
+###       width. Another solution would be to keep the width slot and to make
+###       it the same length as the ends_envir slot (it's currently of length
+###       1 only).
 ###
 ###   names: a character vector containing the _unique_ pattern names.
 ###
@@ -333,13 +333,13 @@ extractAllMatches <- function(subject, mindex)
 ### B. MATCH FINDING
 ### -------------------------------------------------------------------------
 ###
-### Some examples with an ACtree_PDict object:
+### Some examples below with a PDict object of type "ACtree".
 ### TODO: All these examples need to go somewhere else!
 ###
 ### I. A real use-case
 ### ------------------
 ###   > library(hgu95av2probe)
-###   > dict <- hgu95av2probe$sequence # the input dictionary
+###   > dict <- DNAStringSet(hgu95av2probe$sequence) # the original dict
 ###   > pdict <- PDict(dict)
 ###   > pdict
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
@@ -350,7 +350,7 @@ extractAllMatches <- function(subject, mindex)
 ###   > count_index <- sapply(end_index, length)
 ###   > table(count_index)
 ###   > id0 <- which(count_index == max(count_index))
-###   > p0 <- DNAString(dict[id0])
+###   > p0 <- pdict[[id0]]
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
@@ -360,7 +360,7 @@ extractAllMatches <- function(subject, mindex)
 ###   > pidOK <- sapply(seq_len(length(end_index)),
 ###                     function(pid)
 ###                         identical(end_index[[pid]],
-###                         end(matchPattern(DNAString(dict[pid]), chr1))))
+###                         end(matchPattern(pdict[[pid]], chr1))))
 ###   > all(pidOK)
 ### but be aware that THIS WILL TAKE THE WHOLE DAY!!! (20-24 hours)
 ###
@@ -372,9 +372,9 @@ extractAllMatches <- function(subject, mindex)
 ###      > s <- DNAString(paste(sample(c("A", "C", "G", "T"), 36*dict_length,
 ###                                    replace=TRUE), collapse=""))
 ###      > views_start <- (0:(dict_length-1)) * 36 + 1
-###      > dict <- views(s, views_start, views_start + 35) # the input dict
+###      > dict <- views(s, views_start, views_start + 35) # the original dict
 ###
-### 2. Building the Aho-Corasick 4-ary tree from the input dictionary:
+### 2. Building the Aho-Corasick 4-ary tree from the original dictionary:
 ###      > pdict <- PDict(dict)
 ###
 ### 3. Using pdict on Human chr1:
@@ -405,7 +405,7 @@ extractAllMatches <- function(subject, mindex)
 ###
 ### TODO: Rerun the benchmarks below on the entire dict0.
 ###   > library(drosophila2probe)
-###   > dict0 <- drosophila2probe$sequence 
+###   > dict0 <- DNAStringSet(drosophila2probe$sequence)
 ###   > system.time(pdict0 <- PDict(dict0[1:40000]))
 ###      user  system elapsed
 ###     0.040   0.032   0.072
@@ -433,7 +433,7 @@ extractAllMatches <- function(subject, mindex)
 ###   1  9381276  9381285    10
 ###   2 16070100 16070109    10
 ###   > v <- views(chr3R, start(mindex_mm6[[103]]), end(mindex_mm6[[103]])+15)
-###   > mismatch(dict0[103], v)
+###   > mismatch(dict0[[103]], v)
 ###   [[1]]
 ###   [1] 14 15 19 23 24 25
 ###
@@ -443,17 +443,17 @@ extractAllMatches <- function(subject, mindex)
 .matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed,
                         count.only=FALSE)
 {
-    if (is(pdict, "Twobit_PDict")) {
-        pdict_type <- "Twobit"
-        pdict_pptb <- list(pdict@twobit@width,
-                           pdict@twobit@sign2pos@xp,
-                           pdict@twobit@base_codes)
-    } else if (is(pdict, "ACtree_PDict")) {
-        pdict_type <- "ACtree"
-        pdict_pptb <- list(pdict@actree@nodes@xp,
-                           pdict@actree@base_codes)
+    pptb <- pdict@threeparts@pptb
+    pdict_type <- class(pptb)
+    if (pdict_type == "Twobit") {
+        pdict_pptb <- list(tb.width(pptb),
+                           pptb@sign2pos@xp,
+                           pptb@base_codes)
+    } else if (pdict_type == "ACtree") {
+        pdict_pptb <- list(pptb@nodes@xp,
+                           pptb@base_codes)
     } else {
-        stop("class of 'pdict' (\"", class(pdict), "\") is unsupported")
+        stop(pdict_type, ": unsupported type of PDict object for 'pdict'")
     }
     if (!identical(algorithm, "auto"))
         stop("'algorithm' can only be '\"auto\"' for now")
@@ -476,7 +476,7 @@ extractAllMatches <- function(subject, mindex)
                     "though the patterns don't contain such letters")
         C_ans <- .Call("XString_match_pdict",
                        pdict_type, pdict_pptb,
-                       length(pdict), tb.width(pdict), pdict@tb.dups@unq2dup,
+                       length(pdict), tb.width(pptb), pptb@dups@unq2dup,
                        pdict_head, pdict_tail,
                        subject,
                        max.mismatch, fixed,
@@ -491,7 +491,7 @@ extractAllMatches <- function(subject, mindex)
                     "though the patterns don't contain such letters")
         C_ans <- .Call("XStringViews_match_pdict",
                        pdict_type, pdict_pptb,
-                       length(pdict), tb.width(pdict), pdict@tb.dups@unq2dup,
+                       length(pdict), tb.width(pptb), pptb@dups@unq2dup,
                        pdict_head, pdict_tail,
                        subject(subject), start(subject), width(subject),
                        max.mismatch, fixed,
