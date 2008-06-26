@@ -87,6 +87,11 @@ setMethod("end", "AlignedXStringSet", function(x) end(x@range))
 setMethod("width", "AlignedXStringSet", function(x) width(x@range))
 setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
           function(pattern, x, fixed) pattern@mismatch)
+setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
+          function(pattern, x, fixed) {
+              mismatches <- mismatch(pattern)
+              .Call("Biostrings_length_vectors_in_list", mismatches)
+          })
 setGeneric("indel", function(x) standardGeneric("indel"))
 setMethod("indel", "AlignedXStringSet", function(x) x@indel)
 setMethod("length", "AlignedXStringSet", function(x) length(x@range))

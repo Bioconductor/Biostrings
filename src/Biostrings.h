@@ -59,6 +59,8 @@ void _copy_seq_to_subset(
 
 SEXP debug_utils();
 
+SEXP Biostrings_length_vectors_in_list(SEXP list);
+
 char *_Biostrings_alloc_string(int n);
 
 const char *_RoSeq2str(const RoSeq *seq);

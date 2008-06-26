@@ -96,7 +96,7 @@ exportMethods(
 
     ## Others
     nmismatchStartingAt, nmismatchEndingAt,
-    isMatching, mismatch, coverage,
+    isMatching, mismatch, nmismatch, coverage,
     matchPattern, countPattern,
     vcountPattern,
     matchLRPatterns,

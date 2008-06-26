@@ -7,6 +7,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* utils.c */
 	{"debug_utils", (DL_FUNC) &debug_utils, 0},
+	{"Biostrings_length_vectors_in_list", (DL_FUNC) &Biostrings_length_vectors_in_list, 1},
 
 /* bufutils.c */
 	{"debug_bufutils", (DL_FUNC) &debug_bufutils, 0},

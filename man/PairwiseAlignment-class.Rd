@@ -20,6 +20,7 @@
 \alias{nchar,PairwiseAlignment-method}
 \alias{alphabet,PairwiseAlignment-method}
 \alias{mismatch,PairwiseAlignment,missing-method}
+\alias{nmismatch,PairwiseAlignment,missing-method}
 \alias{coverage,PairwiseAlignment-method}
 \alias{views,PairwiseAlignment-method}
 
@@ -125,6 +126,10 @@
     \item{}{
       \code{mismatch(pattern, x, fixed = TRUE)}:
       A data set containing the indices and codes of the mismatches for the \code{PairwiseAlignment}.
+    }
+    \item{}{
+      \code{nmismatch(pattern, x, fixed = TRUE)}:
+      The number of the mismatches for the \code{PairwiseAlignment}.
     }
   }
 }

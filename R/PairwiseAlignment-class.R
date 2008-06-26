@@ -103,20 +103,22 @@ setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
 setMethod("mismatch", c(pattern = "PairwiseAlignment", x = "missing"),
           function(pattern, x, fixed)
           {
-              patternNMismatch <- unlist(lapply(mismatch(pattern(pattern)), length))
+              nMismatch <- nmismatch(pattern)
               patternOffsetIndices <-
-                rep.int(start(unaligned(pattern(pattern))) + start(pattern(pattern)@range) - 2L, patternNMismatch) +
+                rep.int(start(unaligned(pattern(pattern))) + start(pattern(pattern)@range) - 2L, nMismatch) +
                   unlist(mismatch(pattern(pattern)))
-              subjectNMismatch <- unlist(lapply(mismatch(subject(pattern)), length))
               subjectOffsetIndices <-
-                rep.int(start(unaligned(subject(pattern))) + start(subject(pattern)@range) - 2L, subjectNMismatch) +
+                rep.int(start(unaligned(subject(pattern))) + start(subject(pattern)@range) - 2L, nMismatch) +
 				  unlist(mismatch(subject(pattern)))
-              data.frame("PatternNumber" = rep.int(1:length(patternNMismatch), patternNMismatch),
+              data.frame("PatternNumber" = rep.int(1:length(nMismatch), nMismatch),
                          "PatternIndex" = unlist(mismatch(pattern(pattern))),
                          "SubjectIndex" = subjectOffsetIndices,
                          "PatternCharacter" = safeExplode(as.character(super(unaligned(pattern(pattern)))[patternOffsetIndices])),
                          "SubjectCharacter" = safeExplode(as.character(super(unaligned(subject(pattern)))[subjectOffsetIndices])))
           })
+
+setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
+          function(pattern, x, fixed) nmismatch(pattern(pattern)))
 
 setMethod("coverage", "PairwiseAlignment", function(x, start = NA, end = NA)
           {

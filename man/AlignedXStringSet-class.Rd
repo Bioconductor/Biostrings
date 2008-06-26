@@ -18,6 +18,7 @@
 \alias{end,AlignedXStringSet-method}
 \alias{width,AlignedXStringSet-method}
 \alias{mismatch,AlignedXStringSet,missing-method}
+\alias{nmismatch,AlignedXStringSet,missing-method}
 \alias{indel}
 \alias{indel,AlignedXStringSet-method}
 \alias{length,AlignedXStringSet-method}
@@ -102,6 +103,10 @@
     \item{}{
       \code{mismatch(pattern, x, fixed = TRUE)}:
       The indices of the mismatches for the \code{AlignedXStringSet}.
+    }
+    \item{}{
+      \code{nmismatch(pattern, x, fixed = TRUE)}:
+      The number of the mismatches for the \code{AlignedXStringSet}.
     }
     \item{}{
       \code{indel(x)}:

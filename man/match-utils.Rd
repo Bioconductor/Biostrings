@@ -15,6 +15,8 @@
 
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
+\alias{nmismatch}
+\alias{nmismatch,ANY,XStringViews-method}
 
 \alias{coverage}
 \alias{coverage,IRanges-method}
@@ -37,8 +39,10 @@
   Other utility functions related to pattern matching are described here:
   the \code{mismatch} function for getting the positions of the mismatching
   letters of a given pattern relatively to its matches in a given subject,
-  and the \code{coverage} function that can be used to get the "coverage"
-  of a subject by a given pattern or set of patterns.
+  the \code{nmismatch} function for getting the number of mismatching letters
+  produced by the \code{mismatch} function, and the \code{coverage} function
+  that can be used to get the "coverage" of a subject by a given pattern or
+  set of patterns.
 }
 
 \usage{
@@ -46,6 +50,7 @@
   nmismatchEndingAt(pattern, subject, ending.at=1, fixed=TRUE)
   isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
+  nmismatch(pattern, x, fixed=TRUE)
   coverage(x, start=NA, end=NA)
 }
 
@@ -119,6 +124,9 @@
   A logical vector of the same length as \code{start} for \code{isMatching}.
 
   A list of integer vectors for \code{mismatch}.
+  
+  A integer vector for \code{nmismatch} containing the length of the vectors
+  produced by \code{mismatch}.
 
   An integer vector indicating the coverage of \code{x} in the interval
   specified by the \code{start} and \code{end} arguments.
@@ -186,10 +194,11 @@
   some_starts[is_matching]
 
   ## ---------------------------------------------------------------------
-  ## mismatch()
+  ## mismatch() / nmismatch()
   ## ---------------------------------------------------------------------
   m <- matchPattern("NCA", subject, max.mismatch=1, fixed=FALSE)
   mismatch("NCA", m)
+  nmismatch("NCA", m)
 
   ## ---------------------------------------------------------------------
   ## coverage()
