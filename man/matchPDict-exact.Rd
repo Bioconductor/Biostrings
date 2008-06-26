@@ -61,8 +61,8 @@
   of a constant width dictionary i.e. a dictionary where all the
   patterns have the same length (same number of nucleotides).
 
-  See \link{matchPDict-inexact} for how to use \code{matchPDict} for
-  inexact matching or when the original dictionary has a variable width.
+  See \code{?`\link{matchPDict-inexact}`} for how to use \code{matchPDict}
+  for inexact matching or when the original dictionary has a variable width.
 }
 
 \usage{
@@ -103,17 +103,19 @@
   }
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed (see
-    \code{\link{isMatching}} for the details).
+    \code{?\link{isMatching}} for the details).
     When used on a constant width dictionary, \code{matchPDict} (and
     \code{countPDict}) only support exact matching so \code{max.mismatch}
-    must be zero. See \link{matchPDict-inexact} for inexact matching.
+    must be zero.
+    See \code{?`\link{matchPDict-inexact}`} for inexact matching.
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
-    (see \code{\link{isMatching}} for the details).
+    (see \code{?\link{isMatching}} for the details).
     When used on a constant width dictionary, \code{matchPDict} (and
     \code{countPDict}) only support exact matching so \code{fixed}
-    must be \code{TRUE}. See \link{matchPDict-inexact} for inexact matching.
+    must be \code{TRUE}.
+    See \code{?`\link{matchPDict-inexact}`} for inexact matching.
   }
   \item{x}{
     A PDict or MIndex object for \code{names}.

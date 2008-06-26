@@ -12,8 +12,8 @@
   This man page shows how to use \code{matchPDict} for inexact matching
   or when the original dictionary has a variable width.
 
-  See \link{matchPDict} for how to use \code{matchPDict} for exact matching
-  of a constant width dictionary i.e. a dictionary where all the
+  See \code{?\link{matchPDict}} for how to use \code{matchPDict} for exact
+  matching of a constant width dictionary i.e. a dictionary where all the
   patterns have the same length (same number of nucleotides).
 }
 
@@ -30,16 +30,17 @@
 
   Then \code{matchPDict} can be called with a null or non-null
   \code{max.mismatch} value and the search for exact or inexact matches
-  will use a 2-stage approach:
+  will happen in 2 steps:
   (1) find all the exact matches of all the elements in the Trusted Band;
       then
   (2) for each element in the Trusted Band that has at least one exact
       match, compare the head and the tail corresponding to this element
       with the flanking sequences of the match in the subject.
-  Because performance will mostly depend on the number of exact matches
-  found in (1) it's important to minimize this number by trying to
-  define a Trusted Band with the greatest possible width.
-  A simple empiric rule is: if TBW is the width of the Trusted Band
+
+  Note that the number of exact matches found in (1) will decrease
+  exponentially with the width of the Trusted Band.
+  Here is a simple guideline in order to get reasonably good
+  performance: if TBW is the width of the Trusted Band
   (\code{TBW <- tb.width(pdict)}) and L the number of letters in the
   subject (\code{L <- nchar(subject)}), then \code{L / (4^TBW)} should
   be kept as small as possible, typically < 10 or 20.
@@ -54,7 +55,7 @@
 
 \seealso{
   \link{PDict},
-  \link{matchPDict-exact}
+  \link{matchPDict}
 }
 
 \examples{
