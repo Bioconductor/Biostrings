@@ -213,7 +213,7 @@ setMethod("nmismatch", c(pattern="ANY", x="XStringViews"),
         funCall <- match.call()
         funCall[[1]] <- as.name("mismatch")
         mismatches <- eval(funCall, sys.parent())
-        .Call("Biostrings_length_vectors_in_list", mismatches)
+        .Call("Biostrings_length_vectors_in_list", mismatches, PACKAGE="Biostrings")
     }
 )
 
