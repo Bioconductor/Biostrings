@@ -104,16 +104,16 @@ setMethod("mismatch", c(pattern = "PairwiseAlignment", x = "missing"),
           function(pattern, x, fixed)
           {
               nMismatch <- nmismatch(pattern)
-              patternStrings <- as.character(unaligned(pattern(pattern)))
-              subjectString <- as.character(unaligned(subject(pattern)))
               patternIndices <- unlist(mismatch(pattern(pattern)))
               subjectIndices <- unlist(mismatch(subject(pattern)))
-              patternOffsets <- rep.int(c(0, cumsum(nchar(patternStrings)[-length(nMismatch)])), nMismatch)
+              patternOffsets <- rep.int(start(unaligned(pattern(pattern))) - 1, nMismatch)
+              patternCharacters <- letter(super(unaligned(pattern(pattern))), patternIndices + patternOffsets)
+              subjectCharacters <- letter(super(unaligned(subject(pattern))), subjectIndices)
               data.frame("PatternNumber" = rep.int(1:length(nMismatch), nMismatch),
                          "PatternIndex" = patternIndices,
                          "SubjectIndex" = subjectIndices,
-                         "PatternCharacter" = safeExplode(paste(patternStrings, collapse = ""))[patternIndices + patternOffsets],
-                         "SubjectCharacter" = safeExplode(subjectString)[subjectIndices])
+                         "PatternCharacter" = safeExplode(patternCharacters),
+                         "SubjectCharacter" = safeExplode(subjectCharacters))
           })
 
 setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
