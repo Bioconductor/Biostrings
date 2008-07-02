@@ -109,20 +109,20 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 }
 
 
-SEXP align_compareStrings(SEXP patternStrings, SEXP subjectStrings,
+SEXP align_compareStrings(SEXP patternStrings, SEXP subjectStrings, SEXP maxNChar,
                           SEXP insertionCode, SEXP deletionCode, SEXP mismatchCode)
 {
 	char insertionChar = CHAR(STRING_ELT(insertionCode, 0))[0];
 	char deletionChar = CHAR(STRING_ELT(deletionCode, 0))[0];
 	char mismatchChar = CHAR(STRING_ELT(mismatchCode, 0))[0];
 	int numberOfStrings = LENGTH(patternStrings);
+	char *outputPtr = (char *) R_alloc((long) (INTEGER(maxNChar)[0] + 1), sizeof(char));
 	SEXP output;
 	PROTECT(output = NEW_CHARACTER(numberOfStrings));
 	for (int i = 0; i < numberOfStrings; i++) {
 		char *patternPtr = (char *) CHAR(STRING_ELT(patternStrings, i));
 		char *subjectPtr = (char *) CHAR(STRING_ELT(subjectStrings, i));
 		int numberOfChars = strlen(patternPtr);
-		char *outputPtr = (char *) R_alloc((long) (numberOfChars+1), sizeof(char));
 		memcpy(outputPtr, patternPtr, numberOfChars * sizeof(char));
 		outputPtr[numberOfChars] = '\0';
 		for (int j = 0; j < numberOfChars; j++) {
