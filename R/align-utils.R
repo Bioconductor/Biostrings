@@ -10,9 +10,7 @@ setMethod("compareStrings", signature = c(pattern = "character", subject = "char
                   stop("'pattern' and 'subject' must have the same length")
               if (any(nchar(pattern) != nchar(subject)))
                   stop("'pattern' and 'subject' must have the same number of characters")
-              output <- pattern
-              .Call("align_compareStrings", output, subject, "+", "-", "?", PACKAGE="Biostrings")
-              output
+              .Call("align_compareStrings", pattern, subject, "+", "-", "?", PACKAGE="Biostrings")
           })
 setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject = "AlignedXStringSet"),
           function(pattern, subject) {

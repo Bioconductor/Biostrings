@@ -1429,5 +1429,5 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet);
 SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode);
-void align_compareStrings(SEXP patternStrings, SEXP subjectStrings,
+SEXP align_compareStrings(SEXP patternStrings, SEXP subjectStrings,
                           SEXP insertionCode, SEXP deletionCode, SEXP mismatchCode);
