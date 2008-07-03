@@ -115,7 +115,7 @@ setMethod("mismatchTable", "PairwiseAlignment",
               nMismatch <- nmismatch(x)
               patternNumber <- rep.int(1:length(nMismatch), nMismatch)
               patternSubset <- unaligned(pattern(x))[patternNumber]
-              subjectSubset <- unaligned(subject(x))[rep.int(1L, length(patternNumber))]
+              subjectSubset <- unaligned(subject(x))[[1]]
               patternPosition <- unlist(mismatch(pattern(x)))
               subjectPosition <- unlist(mismatch(subject(x)))
               if (shiftLeft == 0L) {
@@ -130,12 +130,12 @@ setMethod("mismatchTable", "PairwiseAlignment",
                   subjectEnd <- subjectPosition
               } else {
                   patternEnd <- pmin(patternPosition + shiftRight, width(patternSubset))
-                  subjectEnd <- pmin(subjectPosition + shiftRight, width(unaligned(subject(x))))
+                  subjectEnd <- pmin(subjectPosition + shiftRight, width(subjectSubset))
               }
               patternSubstring <-
                 narrow(patternSubset, start = patternStart, end = patternEnd)
               subjectSubstring <-
-                narrow(subjectSubset, start = subjectStart, end = subjectEnd)
+                views(subjectSubset, start = subjectStart, end = subjectEnd)
               if (length(x@constantMatrix) > 0) {
                   output <-
                     data.frame("PatternNumber" = patternNumber,
@@ -148,22 +148,19 @@ setMethod("mismatchTable", "PairwiseAlignment",
               } else {
                   if (length(pattern(x)@quality) == 1 && width(pattern(x)@quality) == 1)
                       patternQuality <-
-                        unlist(lapply(width(patternSubstring), function(times, x)
-                                      paste(rep(x, times), collapse = ""),
-                                      x = as.character(pattern(x)@quality)))
+                        views(pattern(x)@quality[[1]][rep.int(1L, max(patternEnd))],
+                              start = patternStart, end = patternEnd)
                   else
                       patternQuality <-
-                        as.character(narrow(pattern(x)@quality[patternNumber],
-                                            start = patternStart, end = patternEnd))
+                        narrow(pattern(x)@quality[patternNumber],
+                               start = patternStart, end = patternEnd)
                   if (length(subject(x)@quality) == 1 && width(subject(x)@quality) == 1)
                       subjectQuality <-
-                        unlist(lapply(width(subjectSubstring), function(times, x)
-                                      paste(rep(x, times), collapse = ""),
-                                      x = as.character(subject(x)@quality)))
-                  else
+                        views(subject(x)@quality[[1]][rep.int(1L, max(subjectEnd))],
+                              start = subjectStart, end = subjectEnd)
+				  else
                       subjectQuality <-
-                        as.character(narrow(subject(x)@quality[rep.int(1L, length(patternNumber))],
-                                            start = subjectStart, end = subjectEnd))
+                        views(subject(x)@quality[[1]], start = subjectStart, end = subjectEnd)
                   output <-
                     data.frame("PatternNumber" = patternNumber,
                                "PatternStart" = patternStart,
@@ -172,8 +169,8 @@ setMethod("mismatchTable", "PairwiseAlignment",
                                "SubjectEnd" = subjectEnd,
                                "PatternSubstring" = as.character(patternSubstring),
                                "SubjectSubstring" = as.character(subjectSubstring),
-                               "PatternQuality" = patternQuality,
-                               "SubjectQuality" = subjectQuality)
+                               "PatternQuality" = as.character(patternQuality),
+                               "SubjectQuality" = as.character(subjectQuality))
               }
               output
           })
