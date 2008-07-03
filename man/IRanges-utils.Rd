@@ -53,17 +53,20 @@
     A single integer.
   }
   \item{start}{
-    A single integer or \code{NA}.
+    A single integer or \code{NA}. The \code{narrow} function also excepts an
+    integer vector of \code{length(x)}.
   }
   \item{end}{
-    A single integer or \code{NA}.
+    A single integer or \code{NA}. The \code{narrow} function also excepts an
+    integer vector of \code{length(x)}.
   }
   \item{keep.all.ranges}{
     \code{TRUE} or \code{FALSE}. Should ranges that become "out of limits"
     after restriction be kept?
   }
   \item{width}{
-    A single number or \code{NA}.
+    A single number or \code{NA}. The \code{narrow} function also excepts an
+    integer vector of \code{length(x)}.
   }
   \item{with.inframe.attrib}{
     \code{TRUE} or \code{FALSE}. For internal use.

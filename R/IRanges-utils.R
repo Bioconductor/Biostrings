@@ -139,9 +139,18 @@ setGeneric("narrow", signature="x",
 setMethod("narrow", "IRanges",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        start <- normargSingleStartOrNA(start)
-        end <- normargSingleEndOrNA(end)
-        width <- normargSingleWidthOrNA(width)
+        start <- normargIntegerOrNA(start, "start")
+        end <- normargIntegerOrNA(end, "end")
+        width <- normargIntegerOrNA(width, "width")
+        lengthStart <- length(start)
+        lengthEnd <- length(end)
+        lengthWidth <- length(width)
+        maxLength <- max(lengthStart, lengthEnd, lengthWidth)
+        if (!all(c(lengthStart, lengthEnd, lengthWidth)) %in% c(1, length(x)))
+            stop("'start', 'end', and 'width' must have length of 1 or 'length(x)'")
+        start <- rep(start, length.out = maxLength)
+        end <- rep(end, length.out = maxLength)
+        width <- rep(width, length.out = maxLength)
         use.names <- normargUseNames(use.names)
 
         C_ans <- .Call("narrow_IRanges",

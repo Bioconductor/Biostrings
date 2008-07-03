@@ -23,38 +23,68 @@ SEXP debug_IRanges_utils()
  */
 SEXP narrow_IRanges(SEXP x, SEXP start, SEXP end, SEXP width)
 {
-	int start0, end0, x_length, i, *new_start, *new_width, shift1, shift2;
+	int start0, end0, x_length, i, *new_start, *new_width, shift1, shift2, start_length;
 	const int *old_start, *old_width;
 	SEXP ans_start, ans_width, ans, ans_names;
 
-	start0 = INTEGER(start)[0];
-	end0 = INTEGER(end)[0];
-	_normargs_startend(&start0, &end0, INTEGER(width)[0], "");
 	x_length = _get_IRanges_length(x);
 	PROTECT(ans_start = NEW_INTEGER(x_length));
 	PROTECT(ans_width = NEW_INTEGER(x_length));
-	for (i = 0, old_start = _get_IRanges_start0(x),
-		    old_width = _get_IRanges_width0(x),
-		    new_start = INTEGER(ans_start),
-		    new_width = INTEGER(ans_width);
-	     i < x_length;
-	     i++, old_start++, old_width++, new_start++, new_width++)
-	{
-		if (start0 > 0)
-			shift1 = start0 - 1;
-		else
-			shift1 = start0 + *old_width;
-		if (end0 < 0)
-			shift2 = end0 + 1;
-		else
-			shift2 = end0 - *old_width;
-		*new_width = *old_width - shift1 + shift2;
-		if (shift1 < 0 || shift2 > 0 || *new_width < 0) {
-			UNPROTECT(2);
-			error("width of range %d is too small (%d) for this narrowing",
-			      i + 1, *old_width);
+	start_length = LENGTH(start);
+	if (start_length == 1) {
+		start0 = INTEGER(start)[0];
+		end0 = INTEGER(end)[0];
+		_normargs_startend(&start0, &end0, INTEGER(width)[0], "");
+		for (i = 0, old_start = _get_IRanges_start0(x),
+			    old_width = _get_IRanges_width0(x),
+			    new_start = INTEGER(ans_start),
+			    new_width = INTEGER(ans_width);
+		     i < x_length;
+		     i++, old_start++, old_width++, new_start++, new_width++)
+		{
+			if (start0 > 0)
+				shift1 = start0 - 1;
+			else
+				shift1 = start0 + *old_width;
+			if (end0 < 0)
+				shift2 = end0 + 1;
+			else
+				shift2 = end0 - *old_width;
+			*new_width = *old_width - shift1 + shift2;
+			if (shift1 < 0 || shift2 > 0 || *new_width < 0) {
+				UNPROTECT(2);
+				error("width of range %d is too small (%d) for this narrowing",
+				      i + 1, *old_width);
+			}
+			*new_start = *old_start + shift1;
 		}
-		*new_start = *old_start + shift1;
+	} else {
+		for (i = 0, old_start = _get_IRanges_start0(x),
+			    old_width = _get_IRanges_width0(x),
+			    new_start = INTEGER(ans_start),
+			    new_width = INTEGER(ans_width);
+		     i < x_length;
+		     i++, old_start++, old_width++, new_start++, new_width++)
+		{
+			start0 = INTEGER(start)[i];
+			end0 = INTEGER(end)[i];
+			_normargs_startend(&start0, &end0, INTEGER(width)[i], "");
+			if (start0 > 0)
+				shift1 = start0 - 1;
+			else
+				shift1 = start0 + *old_width;
+			if (end0 < 0)
+				shift2 = end0 + 1;
+			else
+				shift2 = end0 - *old_width;
+			*new_width = *old_width - shift1 + shift2;
+			if (shift1 < 0 || shift2 > 0 || *new_width < 0) {
+				UNPROTECT(2);
+				error("width of range %d is too small (%d) for this narrowing",
+				      i + 1, *old_width);
+			}
+			*new_start = *old_start + shift1;
+		}
 	}
 	PROTECT(ans = NEW_LIST(2));
 	PROTECT(ans_names = NEW_CHARACTER(2));

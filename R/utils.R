@@ -60,6 +60,15 @@ stopIfProblems <- function(problems)
     if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
 }
 
+normargIntegerOrNA <- function(x, name)
+{
+    if (!isNumericOrNAs(x))
+        stop(paste("'", name, "' must be an integer vector", sep = ""))
+    if (!is.integer(x))
+        x <- as.integer(x)
+    x
+}
+
 normargSingleStart <- function(start)
 {
     if (!isSingleNumber(start))

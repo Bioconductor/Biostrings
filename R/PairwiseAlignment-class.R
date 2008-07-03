@@ -100,20 +100,49 @@ setMethod("nchar", "PairwiseAlignment", function(x, type="chars", allowNA=FALSE)
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
 
-setMethod("mismatch", c(pattern = "PairwiseAlignment", x = "missing"),
-          function(pattern, x, fixed)
+setGeneric("mismatchTable", signature = "x",
+           function(x, shiftLeft = 0L, shiftRight = 0L)
+           standardGeneric("mismatchTable"))
+setMethod("mismatchTable", "PairwiseAlignment",
+          function(x, shiftLeft = 0L, shiftRight = 0L)
           {
-              nMismatch <- nmismatch(pattern)
-              patternIndices <- unlist(mismatch(pattern(pattern)))
-              subjectIndices <- unlist(mismatch(subject(pattern)))
-              patternOffsets <- rep.int(start(unaligned(pattern(pattern))) - 1, nMismatch)
-              patternCharacters <- letter(super(unaligned(pattern(pattern))), patternIndices + patternOffsets)
-              subjectCharacters <- letter(super(unaligned(subject(pattern))), subjectIndices)
-              data.frame("PatternNumber" = rep.int(1:length(nMismatch), nMismatch),
-                         "PatternIndex" = patternIndices,
-                         "SubjectIndex" = subjectIndices,
-                         "PatternCharacter" = safeExplode(patternCharacters),
-                         "SubjectCharacter" = safeExplode(subjectCharacters))
+              if (!isSingleNumber(shiftLeft) || shiftLeft > 0)
+                  stop("'shiftLeft' must be a non-positive integer")
+              if (!isSingleNumber(shiftRight) || shiftRight < 0)
+                  stop("'shiftRight' must be a non-negative integer")
+              shiftLeft <- as.integer(shiftLeft)
+              shiftRight <- as.integer(shiftRight)
+              nMismatch <- nmismatch(x)
+              patternNumber <- rep.int(1:length(nMismatch), nMismatch)
+              patternSubset <- unaligned(pattern(x))[patternNumber]
+              subjectSubset <- unaligned(subject(x))[rep.int(1L, length(patternNumber))]
+              patternPosition <- unlist(mismatch(pattern(x)))
+              subjectPosition <- unlist(mismatch(subject(x)))
+              if (shiftLeft == 0L) {
+                  patternStart <- patternPosition
+                  subjectStart <- subjectPosition
+              } else {
+                  patternStart <- pmax(patternPosition + shiftLeft, 1L)
+                  subjectStart <- pmax(subjectPosition + shiftLeft, 1L)
+              }
+              if (shiftRight == 0L) {
+                  patternEnd <- patternPosition
+                  subjectEnd <- subjectPosition
+              } else {
+                  patternEnd <- pmin(patternPosition + shiftRight, width(patternSubset))
+                  subjectEnd <- pmin(subjectPosition + shiftRight, width(unaligned(subject(x))))
+              }
+              patternSubstring <-
+                narrow(patternSubset, start = patternStart, end = patternEnd)
+              subjectSubstring <-
+                narrow(subjectSubset, start = subjectStart, end = subjectEnd)
+              data.frame("PatternNumber" = patternNumber,
+                         "PatternStart" = patternStart,
+                         "PatternEnd" = patternEnd,
+                         "SubjectStart" = subjectStart,
+                         "SubjectEnd" = subjectEnd,
+                         "PatternSubstring" = as.character(patternSubstring),
+                         "SubjectSubstring" = as.character(subjectSubstring))
           })
 
 setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
