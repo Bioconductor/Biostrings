@@ -136,13 +136,46 @@ setMethod("mismatchTable", "PairwiseAlignment",
                 narrow(patternSubset, start = patternStart, end = patternEnd)
               subjectSubstring <-
                 narrow(subjectSubset, start = subjectStart, end = subjectEnd)
-              data.frame("PatternNumber" = patternNumber,
-                         "PatternStart" = patternStart,
-                         "PatternEnd" = patternEnd,
-                         "SubjectStart" = subjectStart,
-                         "SubjectEnd" = subjectEnd,
-                         "PatternSubstring" = as.character(patternSubstring),
-                         "SubjectSubstring" = as.character(subjectSubstring))
+              if (length(x@constantMatrix) > 0) {
+                  output <-
+                    data.frame("PatternNumber" = patternNumber,
+                               "PatternStart" = patternStart,
+                               "PatternEnd" = patternEnd,
+                               "SubjectStart" = subjectStart,
+                               "SubjectEnd" = subjectEnd,
+                               "PatternSubstring" = as.character(patternSubstring),
+                               "SubjectSubstring" = as.character(subjectSubstring))
+              } else {
+                  if (length(pattern(x)@quality) == 1 && width(pattern(x)@quality) == 1)
+                      patternQuality <-
+                        unlist(lapply(width(patternSubstring), function(times, x)
+                                      paste(rep(x, times), collapse = ""),
+                                      x = as.character(pattern(x)@quality)))
+                  else
+                      patternQuality <-
+                        as.character(narrow(pattern(x)@quality[patternNumber],
+                                            start = patternStart, end = patternEnd))
+                  if (length(subject(x)@quality) == 1 && width(subject(x)@quality) == 1)
+                      subjectQuality <-
+                        unlist(lapply(width(subjectSubstring), function(times, x)
+                                      paste(rep(x, times), collapse = ""),
+                                      x = as.character(subject(x)@quality)))
+                  else
+                      subjectQuality <-
+                        as.character(narrow(subject(x)@quality[rep.int(1L, length(patternNumber))],
+                                            start = subjectStart, end = subjectEnd))
+                  output <-
+                    data.frame("PatternNumber" = patternNumber,
+                               "PatternStart" = patternStart,
+                               "PatternEnd" = patternEnd,
+                               "SubjectStart" = subjectStart,
+                               "SubjectEnd" = subjectEnd,
+                               "PatternSubstring" = as.character(patternSubstring),
+                               "SubjectSubstring" = as.character(subjectSubstring),
+                               "PatternQuality" = patternQuality,
+                               "SubjectQuality" = subjectQuality)
+              }
+              output
           })
 
 setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
