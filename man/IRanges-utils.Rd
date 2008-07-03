@@ -96,10 +96,11 @@
   returned \link{IRanges} object is a subrange of the corresponding
   range in \code{x}. This subrange is determined by the \code{start},
   \code{end} and \code{width} arguments.
-  At least one of \code{start}, \code{end} and \code{width} must be
-  \code{NA} and the other ones must be single numeric values.
-  If at least two of them are \code{NA}s, then \code{start=NA} means
-  that the starts are unchanged and \code{end=NA} means that the ends
+  The \code{start}, \code{end}, and \code{width} arguments must be
+  numeric vectors of length 1 or \code{length(x)} with at least one of
+  the corresponding \code{start}, \code{end} and \code{width} values being
+  \code{NA}. If at least two of them are \code{NA}s, then \code{start=NA}
+  means that the starts are unchanged and \code{end=NA} means that the ends
   are unchanged.
   A positive \code{start} or \code{end} is interpreted relatively to the
   start of the original range whereas a negative \code{start} or \code{end}
@@ -138,6 +139,7 @@
   narrow(y, start=4, end=-2)
   narrow(y, start=-4, end=-2)
   narrow(y, end=5, width=3)
+  narrow(y, start = c(3, 4, 2, 3), end = c(12, 5, 7, 4))
 
   x <- IRanges(start=c(-2L, 6L, 9L, -4L, 1L, 0L, -6L, 10L),
                width=c( 5L, 0L, 6L,  1L, 4L, 3L,  2L,  3L))
