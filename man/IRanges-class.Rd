@@ -58,6 +58,7 @@
 % Subsetting:
 \alias{[,IRanges-method}
 \alias{[<-,IRanges-method}
+\alias{rep,IRanges-method}
 
 % "duplicated" method:
 \alias{duplicated,IRanges-method}
@@ -208,6 +209,10 @@
       a positive numeric subscript (i.e. a numeric vector of positive
       values), then \code{i} must be strictly increasing.
     }
+  }
+  \item{}{
+      \code{rep(x, times)}:
+      Return a new IRanges object made of the repeated elements.
   }
 }
 

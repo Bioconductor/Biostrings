@@ -652,6 +652,12 @@ setReplaceMethod("[", "IRanges",
         stop("attempt to modify the value of a ", class(x), " instance")
 )
 
+setMethod("rep", "IRanges",
+    function(x, times)
+    {
+        x[rep.int(1:length(x), times)]
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "duplicated" method.

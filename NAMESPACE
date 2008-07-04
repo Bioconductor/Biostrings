@@ -63,7 +63,7 @@ export(
 exportMethods(
     ## Generics defined elsewhere
     #as.integer, as.numeric,
-    initialize, length, names, "[", "[[", show, "==", "!=", duplicated,
+    initialize, length, names, "[", "[[", rep, show, "==", "!=", duplicated,
     coerce, as.data.frame, as.matrix, as.list,
     as.character, toString, as.complex, toComplex,
     nchar, update,
