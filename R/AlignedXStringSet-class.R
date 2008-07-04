@@ -170,3 +170,10 @@ setReplaceMethod("[", "AlignedXStringSet",
         stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
+
+setMethod("rep", "AlignedXStringSet",
+    function(x, times)
+    {
+        x[rep.int(1:length(x), times)]
+    }
+)

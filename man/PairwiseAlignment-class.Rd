@@ -31,6 +31,7 @@
 \alias{toString,PairwiseAlignment-method}
 \alias{[,PairwiseAlignment-method}
 \alias{[<-,PairwiseAlignment-method}
+\alias{rep,PairwiseAlignment-method}
 
 
 \title{PairwiseAlignment objects}
@@ -143,6 +144,10 @@
     \item{}{
       \code{x[i]}:
       Returns a new \code{PairwiseAlignment} object made of the selected elements.
+    }
+    \item{}{
+      \code{rep(x, times)}:
+      Returns a new \code{PairwiseAlignment} object made of the repeated elements.
     }
   }
 }

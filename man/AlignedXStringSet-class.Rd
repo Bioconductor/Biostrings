@@ -31,6 +31,7 @@
 \alias{toString,AlignedXStringSet-method}
 \alias{[,AlignedXStringSet-method}
 \alias{[<-,AlignedXStringSet-method}
+\alias{rep,AlignedXStringSet-method}
 
 
 \title{AlignedXStringSet objects}
@@ -137,6 +138,10 @@
     \item{}{
       \code{x[i]}:
       Returns a new \code{AlignedXStringSet} object made of the selected elements.
+    }
+    \item{}{
+      \code{rep(x, times)}:
+      Returns a new \code{AlignedXStringSet} object made of the repeated elements.
     }
   }
 }
