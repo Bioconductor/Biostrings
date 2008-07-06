@@ -4,7 +4,7 @@
 #define MAX(x, y) (x > y ? x : y)
 #define MIN(x, y) (x < y ? x : y)
 
-#define NEGATIVE_INFINITY (- FLT_MAX)
+#define NEGATIVE_INFINITY R_NegInf
 
 #define          GLOBAL_ALIGNMENT 1
 #define           LOCAL_ALIGNMENT 2
@@ -22,8 +22,6 @@
 #define S_TRACE_MATRIX(i, j) (sTraceMatrix[nCharString2 * i + j])
 #define D_TRACE_MATRIX(i, j) (dTraceMatrix[nCharString2 * i + j])
 #define I_TRACE_MATRIX(i, j) (iTraceMatrix[nCharString2 * i + j])
-
-#define SAFE_SUM(x, y) (x == NEGATIVE_INFINITY ? x : (x + y))
 
 #define SET_LOOKUP_VALUE(lookupTable, length, key) \
 { \
@@ -167,25 +165,23 @@ static double pairwiseAlignment(
 					substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
 				CURR_MATRIX(0, j) =
-					SAFE_SUM(MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))),
-					         substitutionValue);
+					MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue;
 				CURR_MATRIX(1, j) = 
-					MAX(SAFE_SUM(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)), gapOpeningPlusExtension),
-					    SAFE_SUM(PREV_MATRIX(1, j), gapExtension));
+					MAX(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpeningPlusExtension,
+					    PREV_MATRIX(1, j) + gapExtension);
 				CURR_MATRIX(2, j) =
-					MAX(SAFE_SUM(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)), gapOpeningPlusExtension),
-					    SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension));
+					MAX(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpeningPlusExtension,
+					    CURR_MATRIX(2, jMinus1) + gapExtension);
 
 				if (localAlignment) {
 					CURR_MATRIX(0, j) = MAX(0.0, CURR_MATRIX(0, j));
 					maxScore = MAX(CURR_MATRIX(0, j), maxScore);
-				} else {
-					if (noEndGap1 && j == nCharString2)
-						CURR_MATRIX(1, j) = MAX(PREV_MATRIX(0, j), PREV_MATRIX(1, j));
-
-					if (noEndGap2 && i == nCharString1)
-						CURR_MATRIX(2, j) = MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(2, jMinus1));
+				} else if (noEndGap2 && i == nCharString1) {
+					CURR_MATRIX(2, j) = MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(2, jMinus1));
 				}
+			}
+			if (noEndGap1) {
+				CURR_MATRIX(1, nCharString2) = MAX(PREV_MATRIX(0, nCharString2), PREV_MATRIX(1, nCharString2));
 			}
 		}
 
@@ -251,35 +247,35 @@ static double pairwiseAlignment(
 				 */
 				if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
 					S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-					CURR_MATRIX(0, j) = SAFE_SUM(PREV_MATRIX(0, jMinus1), substitutionValue);
+					CURR_MATRIX(0, j) = PREV_MATRIX(0, jMinus1) + substitutionValue;
 				} else if (PREV_MATRIX(2, jMinus1) >= PREV_MATRIX(1, jMinus1)) {
 					S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(0, j) = SAFE_SUM(PREV_MATRIX(2, jMinus1), substitutionValue);
+					CURR_MATRIX(0, j) = PREV_MATRIX(2, jMinus1) + substitutionValue;
 				} else {
 					S_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(0, j) = SAFE_SUM(PREV_MATRIX(1, jMinus1), substitutionValue);
+					CURR_MATRIX(0, j) = PREV_MATRIX(1, jMinus1) + substitutionValue;
 				}
-				if ((SAFE_SUM(PREV_MATRIX(0, j), gapOpening) >= PREV_MATRIX(1, j)) &&
+				if (((PREV_MATRIX(0, j) + gapOpening) >= PREV_MATRIX(1, j)) &&
 					(PREV_MATRIX(0, j) >= PREV_MATRIX(2, j))) {
 					D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(0, j), gapOpeningPlusExtension);
-				} else if (SAFE_SUM(PREV_MATRIX(2, j), gapOpening) > PREV_MATRIX(1, j)) {
+					CURR_MATRIX(1, j) = PREV_MATRIX(0, j) + gapOpeningPlusExtension;
+				} else if ((PREV_MATRIX(2, j) + gapOpening) > PREV_MATRIX(1, j)) {
 					D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(2, j), gapOpeningPlusExtension);
+					CURR_MATRIX(1, j) = PREV_MATRIX(2, j) + gapOpeningPlusExtension;
 				} else {
 					D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(1, j) = SAFE_SUM(PREV_MATRIX(1, j), gapExtension);
+					CURR_MATRIX(1, j) = PREV_MATRIX(1, j) + gapExtension;
 				}
-				if ((SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpening) >= CURR_MATRIX(2, jMinus1)) &&
+				if (((CURR_MATRIX(0, jMinus1) + gapOpening) >= CURR_MATRIX(2, jMinus1)) &&
 					(CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(1, jMinus1))) {
 					I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(0, jMinus1), gapOpeningPlusExtension);
-				} else if (SAFE_SUM(CURR_MATRIX(1, jMinus1), gapOpening) > CURR_MATRIX(2, jMinus1)) {
+					CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1) + gapOpeningPlusExtension;
+				} else if ((CURR_MATRIX(1, jMinus1) + gapOpening) > CURR_MATRIX(2, jMinus1)) {
 					I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(1, jMinus1), gapOpeningPlusExtension);
+					CURR_MATRIX(2, j) = CURR_MATRIX(1, jMinus1) + gapOpeningPlusExtension;
 				} else {
 					I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(2, j) = SAFE_SUM(CURR_MATRIX(2, jMinus1), gapExtension);
+					CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1) + gapExtension;
 				}
 
 				if (localAlignment) {
@@ -296,27 +292,24 @@ static double pairwiseAlignment(
 						align2InfoPtr->startRange = jElt + 1;
 						maxScore = CURR_MATRIX(0, j);
 					}
+				} else if (noEndGap2 && i == nCharString1) {
+					if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(2, jMinus1)) {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1);
+					} else {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1);
+					}
+				}
+			}
+
+			if (noEndGap1) {
+				if (PREV_MATRIX(0, nCharString2) >= PREV_MATRIX(1, nCharString2)) {
+					D_TRACE_MATRIX(iMinus1, nCharString2Minus1) = SUBSTITUTION;
+					CURR_MATRIX(1, nCharString2) = PREV_MATRIX(0, nCharString2);
 				} else {
-
-					if (noEndGap1 && j == nCharString2) {
-						if (PREV_MATRIX(0, j) >= PREV_MATRIX(1, j)) {
-							D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-							CURR_MATRIX(1, j) = PREV_MATRIX(0, j);
-						} else {
-							D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-							CURR_MATRIX(1, j) = PREV_MATRIX(1, j);
-						}
-					}
-
-					if (noEndGap2 && i == nCharString1) {
-						if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(2, jMinus1)) {
-							I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-							CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1);
-						} else {
-							I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-							CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1);
-						}
-					}
+					D_TRACE_MATRIX(iMinus1, nCharString2Minus1) = DELETION;
+					CURR_MATRIX(1, nCharString2) = PREV_MATRIX(1, nCharString2);
 				}
 			}
 		}
