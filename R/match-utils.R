@@ -223,11 +223,11 @@ setMethod("nmismatch", c(pattern="ANY", x="XStringViews"),
 ###
 
 setGeneric("coverage", signature="x",
-    function(x, start=NA, end=NA) standardGeneric("coverage")
+    function(x, start=NA, end=NA, weight=1L) standardGeneric("coverage")
 )
 
 setMethod("coverage", "IRanges",
-    function(x, start=NA, end=NA)
+    function(x, start=NA, end=NA, weight=1L)
     {
         if (!isSingleNumber(start))
             stop("'start' must be a single integer")
@@ -240,13 +240,18 @@ setMethod("coverage", "IRanges",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))) ||
+            any(is.na(weight)))
+            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.integer(weight))
+            weight <- as.integer(weight)
         x1 <- shift(restrict(x, start=start, end=end), 1L - start)
-        .Call("IRanges_coverage", x1, width, PACKAGE="Biostrings")
+        .Call("IRanges_coverage", x1, width, weight, PACKAGE="Biostrings")
     }
 )
 
 setMethod("coverage", "MaskCollection",
-    function(x, start=NA, end=NA)
+    function(x, start=NA, end=NA, weight=1L)
     {
         if (!isSingleNumberOrNA(start))
             stop("'start' must be a single integer or NA")
@@ -263,15 +268,20 @@ setMethod("coverage", "MaskCollection",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))) ||
+            any(is.na(weight)))
+            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.integer(weight))
+            weight <- as.integer(weight)
         ans <- integer(width)
         for (i in seq_len(length(x)))
-            ans <- ans + coverage(x[[i]], start=start, end=end)
+            ans <- ans + coverage(x[[i]], start=start, end=end, weight=weight)
         ans
     }
 )
 
 setMethod("coverage", "XStringViews",
-    function(x, start=NA, end=NA)
+    function(x, start=NA, end=NA, weight=1L)
     {
         if (!isSingleNumberOrNA(start))
             stop("'start' must be a single integer or NA")
@@ -285,17 +295,22 @@ setMethod("coverage", "XStringViews",
             end <- as.integer(end)
         if (is.na(end))
             end <- length(subject(x))
-        callNextMethod(x, start=start, end=end)
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))) ||
+            any(is.na(weight)))
+            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.integer(weight))
+            weight <- as.integer(weight)
+        callNextMethod(x, start=start, end=end, weight=weight)
     }
 )
 
 setMethod("coverage", "MaskedXString",
-    function(x, start=NA, end=NA)
-        coverage(masks(x), start=start, end=end)
+    function(x, start=NA, end=NA, weight=1L)
+        coverage(masks(x), start=start, end=end, weight=weight)
 )
 
 setMethod("coverage", "MIndex",
-    function(x, start=NA, end=NA)
+    function(x, start=NA, end=NA, weight=1L)
     {
         if (!isSingleNumber(start))
             stop("'start' must be a single integer")
@@ -308,6 +323,8 @@ setMethod("coverage", "MIndex",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
+        if (!all.equal(weight, 1L))
+            stop("'weight' argument not implemented for 'MIndex' objects")
         if (is(x, "ByPos_MIndex"))
             return(.Call("ByPos_MIndex_coverage",
                          x@ends, x@width, start, end,

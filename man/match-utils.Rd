@@ -51,7 +51,7 @@
   isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
-  coverage(x, start=NA, end=NA)
+  coverage(x, start=NA, end=NA, weight=1L)
 }
 
 \arguments{
@@ -113,6 +113,10 @@
   \item{end}{
     A single integer specifying the position in \code{x}
     where to end the extraction of the coverage.
+  }
+  \item{weight}{
+    An integer vector specifying how much each element in \code{x} counts when
+    calculating the coverage.
   }
 }
 

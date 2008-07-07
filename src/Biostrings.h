@@ -411,7 +411,8 @@ SEXP reduce_IRanges(
 
 SEXP IRanges_coverage(
 	SEXP x,
-	SEXP ans_length
+	SEXP ans_length,
+	SEXP weight
 );
 
 

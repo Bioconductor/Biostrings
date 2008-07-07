@@ -178,13 +178,13 @@ setMethod("mismatchTable", "PairwiseAlignment",
 setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
           function(pattern, x, fixed) nmismatch(pattern(pattern)))
 
-setMethod("coverage", "PairwiseAlignment", function(x, start = NA, end = NA)
+setMethod("coverage", "PairwiseAlignment", function(x, start = NA, end = NA, weight = 1L)
           {
               if (any(is.na(start)))
                   start <- 1
               if (any(is.na(end)))
                   end <- nchar(super(unaligned(subject(x))))
-              coverage(subject(x)@range, start, end)
+              coverage(subject(x)@range, start = start, end = end, weight = weight)
           })
 
 setMethod("views", signature = c(subject = "PairwiseAlignment"),

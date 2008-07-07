@@ -122,7 +122,7 @@
       denotes the offset from \code{start(subject(subject))}.
     }
     \item{}{
-      \code{coverage(x, start = NA, end = NA)}:
+      \code{coverage(x, start = NA, end = NA, weight = 1L)}:
       The coverage of the pairwise alignments along \code{unaligned(subject(x))}.
     }
     \item{}{
