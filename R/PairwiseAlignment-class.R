@@ -213,27 +213,47 @@ setMethod("views", signature = c(subject = "PairwiseAlignment"),
 ### TODO: Make the "show" method to format the alignment in a SGD fashion
 ### i.e. split in 60-letter blocks and use the "|" character to highlight
 ### exact matches.
-setMethod("show", "PairwiseAlignment",
-    function(object)
-    {
-        cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
-                   "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
-                   "local" = "Local"), " Pairwise Alignment (1 of ", length(object), ")\n", sep = "")
-        if (width(pattern(object))[1] == 0 || width(subject(object))[1] == 0) {
-          patternSpaces <- 0
-          subjectSpaces <- 0
-        } else {
-          patternSpaces <- floor(log10(start(subject(object))[1])) - floor(log10(start(pattern(object))[1]))
-		  subjectSpaces <- max(0, - patternSpaces)
-		  patternSpaces <- max(0, patternSpaces)
-        }
-        cat(paste(c("pattern: ", rep(" ", patternSpaces)), collapse = ""))
-        show(pattern(object))
-        cat(paste(c("subject: ", rep(" ", subjectSpaces)), collapse = ""))
-        show(subject(object))
-        cat("score:", score(object)[1], "\n")
-    }
-)
+setMethod("show", "PairwiseAlignment", function(object)
+          {
+              cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
+                         "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
+                         "local" = "Local"), " Pairwise Alignment (1 of ", length(object), ")\n", sep = "")
+              if (width(pattern(object))[1] == 0 || width(subject(object))[1] == 0) {
+                  patternSpaces <- 0
+                  subjectSpaces <- 0
+              } else {
+                  patternSpaces <-
+                    floor(log10(start(subject(object))[1])) - floor(log10(start(pattern(object))[1]))
+		          subjectSpaces <- max(0, - patternSpaces)
+		          patternSpaces <- max(0, patternSpaces)
+              }
+              cat(paste(c("pattern: ", rep(" ", patternSpaces)), collapse = ""))
+              show(pattern(object))
+              cat(paste(c("subject: ", rep(" ", subjectSpaces)), collapse = ""))
+              show(subject(object))
+              cat("score:", score(object)[1], "\n")
+          })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "summary" method.
+###
+
+setMethod("summary", "PairwiseAlignment", function(object, ...)
+          {
+              totalIndel <- function(object) {
+                  unlist(lapply(object, function(x) sum(width(x))))
+              }
+              cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
+                         "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
+                         "local" = "Local"), " Pairwise Alignment\n", sep = "")
+              cat("Number of Alignments:  ", length(object), "\n", sep = "")
+              cat("\nScores:\n")
+              print(summary(score(object)))
+              cat("\nNumber of matched characters:\n")
+              print(summary(nchar(object) - nmismatch(object) - totalIndel(indel(subject(object))) - 
+                            totalIndel(indel(pattern(object)))))
+          })
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

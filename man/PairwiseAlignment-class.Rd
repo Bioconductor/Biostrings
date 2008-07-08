@@ -27,6 +27,7 @@
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
+\alias{summary,PairwiseAlignment-method}
 \alias{as.character,PairwiseAlignment-method}
 \alias{toString,PairwiseAlignment-method}
 \alias{[,PairwiseAlignment-method}
@@ -109,6 +110,10 @@
     \item{}{
       \code{alphabet(x)}:
       Equivalent to \code{alphabet(unaligned(subject(x)))}.
+    }
+    \item{}{
+      \code{summary(object, ...)}:
+      Generates a summary for the \code{PairwiseAlignment}.
     }
     \item{}{
       \code{as.character(x)} and \code{toString(x)}:
