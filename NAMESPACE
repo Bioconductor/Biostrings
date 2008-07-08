@@ -113,7 +113,8 @@ exportMethods(
 
     subpatterns, pattern,
     unaligned, aligned, type, score, indel,
-    compareStrings, consmat, mismatchTable,
+    compareStrings, consmat,
+    mismatchTable, mismatchSummary,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, needwunsQS,
 

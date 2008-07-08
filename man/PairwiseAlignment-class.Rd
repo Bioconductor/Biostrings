@@ -24,6 +24,8 @@
 \alias{views,PairwiseAlignment-method}
 \alias{mismatchTable}
 \alias{mismatchTable,PairwiseAlignment-method}
+\alias{mismatchSummary}
+\alias{mismatchSummary,PairwiseAlignment-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
@@ -140,6 +142,11 @@
       The \code{shiftLeft} and \code{shiftRight} arguments take non-positive and non-negative integers
       respectively that specify how many preceding and succeeding characters to and from the mismatch
       position to include in the mismatch substrings.
+    }
+    \item{}{
+      \code{mismatchSummary(x)}:
+      A list object containing two elements \code{"pattern"} and \code{"subject"} that summaries the output
+      of \code{mismatchTable} along the pattern and subject dimensions.
     }
   }
 }

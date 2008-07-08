@@ -173,7 +173,5 @@ setReplaceMethod("[", "AlignedXStringSet",
 
 setMethod("rep", "AlignedXStringSet",
     function(x, times)
-    {
-        x[rep.int(1:length(x), times)]
-    }
+		x[rep.int(seq_len(length(x)), times)]
 )

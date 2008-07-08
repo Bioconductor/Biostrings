@@ -113,7 +113,7 @@ setMethod("mismatchTable", "PairwiseAlignment",
               shiftLeft <- as.integer(shiftLeft)
               shiftRight <- as.integer(shiftRight)
               nMismatch <- nmismatch(x)
-              patternNumber <- rep.int(1:length(nMismatch), nMismatch)
+              patternNumber <- rep.int(seq_len(length(nMismatch)), nMismatch)
               patternSubset <- unaligned(pattern(x))[patternNumber]
               subjectSubset <- unaligned(subject(x))[[1]]
               patternPosition <- unlist(mismatch(pattern(x)))
@@ -172,6 +172,33 @@ setMethod("mismatchTable", "PairwiseAlignment",
                                "PatternQuality" = as.character(patternQuality),
                                "SubjectQuality" = as.character(subjectQuality))
               }
+              output
+          })
+
+setGeneric("mismatchSummary", signature = "x", function(x) standardGeneric("mismatchSummary"))
+setMethod("mismatchSummary", "PairwiseAlignment", function(x)
+          {
+              tableX <- mismatchTable(x)
+              coverageX <- coverage(x)
+              patternEndTable <- table(tableX[["PatternEnd"]])
+              patternTable <- rep(0L, max(nchar(unaligned(pattern(x)))))
+              patternTable[as.integer(names(patternEndTable))] <- patternEndTable
+              subjectTable <- table(paste(tableX[["SubjectEnd"]], tableX[["PatternSubstring"]], sep = "\001"))
+              labelsX <- strsplit(names(subjectTable), split = "\001")
+              subjectPos <- as.integer(unlist(lapply(labelsX, "[", 1)))
+              output <-
+                list("pattern" =
+                     data.frame("Position" = seq_len(length(patternTable)),
+                                "Count" = patternTable,
+                                "Frequency" = patternTable / length(pattern)),
+                     "subject" =
+                     data.frame("SubjectPosition" = subjectPos,
+                                "Subject" = safeExplode(as.character(unaligned(subject(x))[[1]][subjectPos])),
+                                "Pattern" = unlist(lapply(labelsX, "[", 2)),
+                                "Count" = as.vector(subjectTable),
+                                "Frequency" = as.vector(subjectTable) / coverageX[subjectPos]))
+              output[["subject"]] <- output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
+              rownames(output[["subject"]]) <- as.character(seq_len(nrow(output[["subject"]])))
               output
           })
 
@@ -305,7 +332,5 @@ setReplaceMethod("[", "PairwiseAlignment",
 
 setMethod("rep", "PairwiseAlignment",
     function(x, times)
-    {
-        x[rep.int(1:length(x), times)]
-    }
+		x[rep.int(seq_len(length(x)), times)]
 )
