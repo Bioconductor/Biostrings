@@ -240,8 +240,7 @@ setMethod("coverage", "IRanges",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
-        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))) ||
-            any(is.na(weight)))
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
@@ -268,14 +267,18 @@ setMethod("coverage", "MaskCollection",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
-        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))) ||
-            any(is.na(weight)))
-            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.numeric(weight))
+            stop("'weight' must be an integer vector")
         if (!is.integer(weight))
             weight <- as.integer(weight)
+        if (length(weight) != length(x)) {
+            if (length(weight) < 1 || length(weight) > length(x))
+                stop("'length(weight)' must be >= 1 and <= 'length(x)'")
+            weight <- rep(weight, length.out=length(x))
+        }
         ans <- integer(width)
         for (i in seq_len(length(x)))
-            ans <- ans + coverage(x[[i]], start=start, end=end, weight=weight)
+            ans <- ans + coverage(x[[i]], start=start, end=end, weight=weight[i])
         ans
     }
 )
@@ -295,8 +298,7 @@ setMethod("coverage", "XStringViews",
             end <- as.integer(end)
         if (is.na(end))
             end <- length(subject(x))
-        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))) ||
-            any(is.na(weight)))
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
@@ -323,8 +325,8 @@ setMethod("coverage", "MIndex",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
-        if (!all.equal(weight, 1L))
-            stop("'weight' argument not implemented for 'MIndex' objects")
+        if (!all(weight == 1L))
+            stop("'weight' argument not yet implemented for 'MIndex' objects")
         if (is(x, "ByPos_MIndex"))
             return(.Call("ByPos_MIndex_coverage",
                          x@ends, x@width, start, end,

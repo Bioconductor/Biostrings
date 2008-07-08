@@ -654,10 +654,9 @@ setReplaceMethod("[", "IRanges",
 
 setMethod("rep", "IRanges",
     function(x, times)
-    {
-        x[rep.int(1:length(x), times)]
-    }
+        x[rep.int(seq_len(length(x)), times)]
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "duplicated" method.
