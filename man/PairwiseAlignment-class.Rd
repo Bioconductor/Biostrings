@@ -19,13 +19,7 @@
 \alias{length,PairwiseAlignment-method}
 \alias{nchar,PairwiseAlignment-method}
 \alias{alphabet,PairwiseAlignment-method}
-\alias{nmismatch,PairwiseAlignment,missing-method}
-\alias{coverage,PairwiseAlignment-method}
 \alias{views,PairwiseAlignment-method}
-\alias{mismatchTable}
-\alias{mismatchTable,PairwiseAlignment-method}
-\alias{mismatchSummary}
-\alias{mismatchSummary,PairwiseAlignment-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
@@ -128,26 +122,6 @@
       The \code{start} and \code{end} arguments must be either \code{NA} or an integer vector of length 1 that
       denotes the offset from \code{start(subject(subject))}.
     }
-    \item{}{
-      \code{coverage(x, start = NA, end = NA, weight = 1L)}:
-      The coverage of the pairwise alignments along \code{unaligned(subject(x))}.
-    }
-    \item{}{
-      \code{nmismatch(pattern, x, fixed = TRUE)}:
-      The number of the mismatches for the \code{PairwiseAlignment}.
-    }
-    \item{}{
-      \code{mismatchTable(x, shiftLeft = 0L, shiftRight = 0L)}:
-      A data set containing the positions and substrings of the mismatches for the \code{PairwiseAlignment}.
-      The \code{shiftLeft} and \code{shiftRight} arguments take non-positive and non-negative integers
-      respectively that specify how many preceding and succeeding characters to and from the mismatch
-      position to include in the mismatch substrings.
-    }
-    \item{}{
-      \code{mismatchSummary(x)}:
-      A list object containing two elements \code{"pattern"} and \code{"subject"} that summaries the output
-      of \code{mismatchTable} along the pattern and subject dimensions.
-    }
   }
 }
 
@@ -171,7 +145,7 @@
   \code{\link{AlignedXStringSet-class}},
   \code{\link{XString-class}},
   \code{\link{XStringViews-class}},
-  \code{\link{coverage}}
+  \code{\link{match-utils}}
 }
 
 \examples{

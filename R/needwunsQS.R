@@ -139,14 +139,12 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
         pattern =
         new("AlignedXStringSet",
             unaligned = XStringSet(class(s1), new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1))),
-            quality = BStringSet(""),
             range = IRanges(start = 1, width = length(C_ans$al1)),
             mismatch = list(integer(0)),
             indel = list(IRanges(start = numeric(0), width = numeric(0)))),
         subject =
         new("AlignedXStringSet",
             unaligned = XStringSet(class(s2), new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2))),
-            quality = BStringSet(""),
             range = IRanges(start = 1, width = length(C_ans$al2)),
             mismatch = list(integer(0)),
             indel = list(IRanges(start = numeric(0), width = numeric(0)))),

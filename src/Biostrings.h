@@ -1416,6 +1416,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP scoreOnly,
 	SEXP gapOpening,
 	SEXP gapExtension,
+	SEXP useQuality,
 	SEXP qualityLookupTable,
 	SEXP qualityMatchMatrix,
 	SEXP qualityMismatchMatrix,

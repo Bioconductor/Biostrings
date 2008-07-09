@@ -56,6 +56,7 @@ static double pairwiseAlignment(
 		int scoreOnly,
 		float gapOpening,
 		float gapExtension,
+		int useQuality,
 		const int *qualityLookupTable,
 		int qualityLookupTableLength,
 		const double *qualityMatchMatrix,
@@ -82,8 +83,6 @@ static double pairwiseAlignment(
 	int nCharString2Plus1 = nCharString2 + 1;
 	int nCharString1Minus1 = nCharString1 - 1;
 	int nCharString2Minus1 = nCharString2 - 1;
-	int nQuality1 = align1InfoPtr->quality.nelt;
-	int nQuality2 = align2InfoPtr->quality.nelt;
 
 	if (nCharString1 < 1 || nCharString2 < 1)
 		return NA_REAL;
@@ -114,7 +113,17 @@ static double pairwiseAlignment(
 	int lookupTableLength;
 	const double *matchMatrix, *mismatchMatrix;
 	const int *matrixDim;
-	if (nQuality1 == 0) {
+	if (useQuality) {
+		sequence1 = align1InfoPtr->quality;
+		sequence2 = align2InfoPtr->quality;
+		scalar1 = (align1InfoPtr->quality.nelt == 1);
+		scalar2 = (align2InfoPtr->quality.nelt == 1);
+		lookupTable = qualityLookupTable;
+		lookupTableLength = qualityLookupTableLength;
+		matchMatrix = qualityMatchMatrix;
+		mismatchMatrix = qualityMismatchMatrix;
+		matrixDim = qualityMatrixDim;
+	} else {
 		sequence1 = align1InfoPtr->string;
 		sequence2 = align2InfoPtr->string;
 		scalar1 = (nCharString1 == 1);
@@ -124,16 +133,6 @@ static double pairwiseAlignment(
 		matchMatrix = constantMatrix;
 		mismatchMatrix = constantMatrix;
 		matrixDim = constantMatrixDim;
-	} else {
-		sequence1 = align1InfoPtr->quality;
-		sequence2 = align2InfoPtr->quality;
-		scalar1 = (nQuality1 == 1);
-		scalar2 = (nQuality2 == 1);
-		lookupTable = qualityLookupTable;
-		lookupTableLength = qualityLookupTableLength;
-		matchMatrix = qualityMatchMatrix;
-		mismatchMatrix = qualityMismatchMatrix;
-		matrixDim = qualityMatrixDim;
 	}
 	int lookupValue = 0, elements[2], iElt, jElt;
 	int notSwappedOrder = 1 - swappedOrder;
@@ -434,6 +433,9 @@ static double pairwiseAlignment(
  *                           (double vector of length 1)
  * 'gapExtension':           gap extension cost or penalty
  *                           (double vector of length 1)
+ * 'useQuality':             denotes whether or not to use quality measures
+ *                           in the optimal pairwise alignment
+ *                           (logical vector of length 1)
  * 'qualityLookupTable':     lookup table for translating BString bytes to
  *                           quality-based scoring matrix indices
  *                           (integer vector)
@@ -466,6 +468,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP scoreOnly,
 		SEXP gapOpening,
 		SEXP gapExtension,
+		SEXP useQuality,
 		SEXP qualityLookupTable,
 		SEXP qualityMatchMatrix,
 		SEXP qualityMismatchMatrix,
@@ -475,6 +478,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP constantMatrixDim)
 {
 	int scoreOnlyValue = LOGICAL(scoreOnly)[0];
+	int useQualityValue = LOGICAL(useQuality)[0];
 
 	/* Create the alignment info objects */
 	struct AlignInfo align1Info, align2Info;
@@ -507,6 +511,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 					scoreOnlyValue,
 					(float) REAL(gapOpening)[0],
 					(float) REAL(gapExtension)[0],
+					useQualityValue,
 					INTEGER(qualityLookupTable),
 					LENGTH(qualityLookupTable),
 					REAL(qualityMatchMatrix),
@@ -535,9 +540,13 @@ SEXP XStringSet_align_pairwiseAlignment(
 		PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignment")));
 
 		/* Set the "pattern" slot */
-		PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
+		if (useQualityValue) {
+			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
+			SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
+		} else {
+			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
+		}
 		SET_SLOT(alignedPattern, mkChar("unaligned"), pattern);
-		SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
 		/* Set the "range" sub-slot */
 		PROTECT(alignedPatternRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
@@ -556,9 +565,13 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(output, mkChar("pattern"), alignedPattern);
 
 		/* Set the "subject" slot */
-		PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
+		if (useQualityValue) {
+			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
+			SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
+		} else {
+			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
+		}
 		SET_SLOT(alignedSubject, mkChar("unaligned"), subject);
-		SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
 		/* Set the "range" sub-slot */
 		PROTECT(alignedSubjectRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
@@ -600,6 +613,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 					scoreOnlyValue,
 					(float) REAL(gapOpening)[0],
 					(float) REAL(gapExtension)[0],
+					useQualityValue,
 					INTEGER(qualityLookupTable),
 					LENGTH(qualityLookupTable),
 					REAL(qualityMatchMatrix),

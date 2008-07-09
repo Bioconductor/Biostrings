@@ -5,20 +5,24 @@
 \alias{class:AlignedXStringSet}
 \alias{AlignedXStringSet-class}
 \alias{AlignedXStringSet}
+\alias{class:QualityAlignedXStringSet}
+\alias{QualityAlignedXStringSet-class}
+\alias{QualityAlignedXStringSet}
 
 % Constructor-like functions and generics:
 \alias{initialize,AlignedXStringSet-method}
+\alias{initialize,QualityAlignedXStringSet-method}
 
 % Accesor methods:
 \alias{unaligned}
 \alias{unaligned,AlignedXStringSet-method}
 \alias{aligned}
 \alias{aligned,AlignedXStringSet-method}
+\alias{quality}
+\alias{quality,QualityAlignedXStringSet-method}
 \alias{start,AlignedXStringSet-method}
 \alias{end,AlignedXStringSet-method}
 \alias{width,AlignedXStringSet-method}
-\alias{mismatch,AlignedXStringSet,missing-method}
-\alias{nmismatch,AlignedXStringSet,missing-method}
 \alias{indel}
 \alias{indel,AlignedXStringSet-method}
 \alias{length,AlignedXStringSet-method}
@@ -30,6 +34,7 @@
 \alias{as.character,AlignedXStringSet-method}
 \alias{toString,AlignedXStringSet-method}
 \alias{[,AlignedXStringSet-method}
+\alias{[,QualityAlignedXStringSet-method}
 \alias{[<-,AlignedXStringSet-method}
 \alias{rep,AlignedXStringSet-method}
 
@@ -90,6 +95,10 @@
       The "filled-with-gaps subsequence" representing the aligned substring.
     }
     \item{}{
+      \code{quality(x)}:
+      The quality of the original string.
+    }
+    \item{}{
       \code{start(x)}:
       The start of the aligned substring.
     }
@@ -100,14 +109,6 @@
     \item{}{
       \code{width(x)}:
       The width of the aligned substring, ignoring gaps.
-    }
-    \item{}{
-      \code{mismatch(pattern, x, fixed = TRUE)}:
-      The indices of the mismatches for the \code{AlignedXStringSet}.
-    }
-    \item{}{
-      \code{nmismatch(pattern, x, fixed = TRUE)}:
-      The number of the mismatches for the \code{AlignedXStringSet}.
     }
     \item{}{
       \code{indel(x)}:

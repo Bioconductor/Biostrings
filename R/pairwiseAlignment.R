@@ -69,6 +69,7 @@ function(pattern,
 
   ## Generate quality-based and constant substitution matrix information
   if (is.null(substitutionMatrix)) {
+    useQuality <- TRUE
     if (is.numeric(patternQuality)) {
       if (any(is.na(patternQuality)) ||
           any(patternQuality < 0 || patternQuality > 99))
@@ -105,6 +106,7 @@ function(pattern,
     constantLookupTable <- integer(0)
     constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
   } else {
+    useQuality <- FALSE
     patternQuality <- BStringSet("")
     subjectQuality <- BString("")
     qualityLookupTable <- integer(0)
@@ -148,6 +150,7 @@ function(pattern,
                   scoreOnly,
                   gapOpening,
                   gapExtension,
+                  useQuality,
                   qualityLookupTable,
                   qualityMatrices[["matchMatrix"]],
                   qualityMatrices[["mismatchMatrix"]],
@@ -158,7 +161,8 @@ function(pattern,
                   PACKAGE="Biostrings")
   if (!scoreOnly) {
     answer@subject@unaligned <- XStringSet(class(answer@subject@unaligned), answer@subject@unaligned)
-    answer@subject@quality <- XStringSet(class(answer@subject@quality), answer@subject@quality)
+    if (useQuality)
+      answer@subject@quality <- XStringSet(class(answer@subject@quality), answer@subject@quality)
   }
   return(answer)
 }

@@ -203,6 +203,11 @@ setMethod("mismatch", c(pattern="ANY", x="XStringViews"),
     }
 )
 
+setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
+    function(pattern, x, fixed)
+        pattern@mismatch
+)
+
 setGeneric("nmismatch", signature=c("pattern", "x"),
     function(pattern, x, fixed=TRUE) standardGeneric("nmismatch")
 )
@@ -214,6 +219,176 @@ setMethod("nmismatch", c(pattern="ANY", x="XStringViews"),
         funCall[[1]] <- as.name("mismatch")
         mismatches <- eval(funCall, sys.parent())
         .Call("Biostrings_length_vectors_in_list", mismatches, PACKAGE="Biostrings")
+    }
+)
+
+setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
+    function(pattern, x, fixed)
+    {
+        mismatches <- mismatch(pattern)
+        .Call("Biostrings_length_vectors_in_list", mismatches, PACKAGE="Biostrings")
+    }
+)
+
+setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
+    function(pattern, x, fixed)
+        nmismatch(pattern(pattern))
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "mismatchTable" generic and methods.
+###
+
+setGeneric("mismatchTable", signature = "x",
+    function(x, shiftLeft = 0L, shiftRight = 0L, ...)
+    standardGeneric("mismatchTable")
+)
+
+setMethod("mismatchTable", "AlignedXStringSet",
+    function(x, shiftLeft = 0L, shiftRight = 0L, prefixColNames = "")
+    {
+        if (!isSingleNumber(shiftLeft) || shiftLeft > 0)
+            stop("'shiftLeft' must be a non-positive integer")
+        if (!isSingleNumber(shiftRight) || shiftRight < 0)
+            stop("'shiftRight' must be a non-negative integer")
+        shiftLeft <- as.integer(shiftLeft)
+        shiftRight <- as.integer(shiftRight)
+        nMismatch <- nmismatch(x)
+        id <- rep.int(seq_len(length(nMismatch)), nMismatch)
+        singleString <- (length(unaligned(x)) == 1)
+        if (singleString)
+            subset <- unaligned(x)[[1]]
+        else
+            subset <- unaligned(x)[id]
+        position <- unlist(mismatch(x))
+        if (shiftLeft == 0L)
+            start <- position
+        else
+            start <- pmax(position + shiftLeft, 1L)
+        if (shiftRight == 0L)
+            end <- position
+        else
+            end <- pmin(position + shiftRight, width(subset))
+        if (singleString)
+            substring <- views(subset, start = start, end = end)
+        else
+            substring <- narrow(subset, start = start, end = end)
+        output <-
+          data.frame("Id" = id,
+                     "Start" = start,
+                     "End" = end,
+                     "Substring" = as.character(substring))
+        if (any(nchar(prefixColNames) > 0))
+            names(output) <- paste(prefixColNames, names(output), sep = "")
+        output
+    }
+)
+
+setMethod("mismatchTable", "QualityAlignedXStringSet",
+    function(x, shiftLeft = 0L, shiftRight = 0L, prefixColNames = "")
+    {
+        output <-
+          callNextMethod(x, shiftLeft = shiftLeft, shiftRight = shiftRight,
+                         prefixColNames = "")
+        if (length(quality(x)) == 1) {
+             if (width(quality(x)) == 1)
+                 quality <-
+                   views(quality(x)[[1]][rep.int(1L, max(output[["End"]]))],
+                         start = output[["Start"]], end = output[["End"]])
+             else
+                 quality <-
+                   views(quality(x)[[1]], start = output[["Start"]],
+                         end = output[["End"]])
+        }
+        else
+            quality <-
+              narrow(quality(x)[output[["Id"]]], start = output[["Start"]],
+                     end = output[["End"]])
+        output <- cbind(output, "Quality" = as.character(quality))
+        if (any(nchar(prefixColNames) > 0))
+            names(output) <- paste(prefixColNames, names(output), sep = "")
+        output
+    }
+)
+
+setMethod("mismatchTable", "PairwiseAlignment",
+    function(x, shiftLeft = 0L, shiftRight = 0L)
+    {
+        cbind(mismatchTable(pattern(x), shiftLeft = shiftLeft,
+                            shiftRight = shiftRight, prefixColNames = "Pattern"),
+              mismatchTable(subject(x), shiftLeft = shiftLeft,
+                            shiftRight = shiftRight, prefixColNames = "Subject")[,-1])
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "mismatchSummary" generic and methods.
+###
+
+setGeneric("mismatchSummary", signature = "x",
+    function(x, ...) standardGeneric("mismatchSummary")
+)
+
+setMethod("mismatchSummary", "AlignedXStringSet",
+    function(x)
+    {
+        coverageTable <- coverage(x)
+        n <- length(coverageTable)
+        endTable <- table(mismatchTable(x)[["End"]])
+        countTable <- rep(0L, n)
+        countTable[as.integer(names(endTable))] <- endTable
+        data.frame("Position" = seq_len(n),
+                   "Count" = countTable,
+                   "Frequency" = countTable / coverageTable)
+    }
+)
+
+setMethod("mismatchSummary", "QualityAlignedXStringSet",
+    function(x)
+    {
+        if ((length(quality(x)) == 1) && (nchar(quality(x)) == 1)) {
+            qualityAll <- alphabetFrequency(quality(x), collapse = TRUE)[34:133]
+            qualityAll <- qualityAll * sum(width(x))
+        } else {
+            qualityAll <-
+              alphabetFrequency(narrow(quality(x), start = start(x),
+                                end = end(x)), collapse = TRUE)[34:133]
+        }
+        names(qualityAll) <- sapply(as.raw(33:132), rawToChar)
+        qualityAll <- qualityAll[qualityAll > 0]
+        qualityTable <- table(mismatchTable(x)[["Quality"]])
+        qualityCounts <- rep(0L, length(qualityAll))
+        names(qualityCounts) <- names(qualityAll)
+        qualityCounts[names(qualityTable)] <- qualityTable
+        list("position" = callNextMethod(),
+             "quality" =
+             data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - 33L,
+                        "Count" = qualityCounts,
+                        "Frequency" = qualityCounts / qualityAll))
+    }
+)
+
+setMethod("mismatchSummary", "PairwiseAlignment",
+    function(x)
+    {
+        xTable <- mismatchTable(x)
+        subjectTable <-
+          unclass(table(paste(xTable[["SubjectEnd"]], xTable[["PatternSubstring"]], sep = "\001")))
+        subjectTableLabels <- strsplit(names(subjectTable), split = "\001")
+        subjectPosition <- as.integer(unlist(lapply(subjectTableLabels, "[", 1)))
+        output <-
+          list("pattern" = mismatchSummary(pattern(x)),
+               "subject" =
+               data.frame("SubjectPosition" = subjectPosition,
+                          "Subject" = safeExplode(as.character(unaligned(subject(x))[[1]][subjectPosition])),
+                          "Pattern" = unlist(lapply(subjectTableLabels, "[", 2)),
+                          "Count" = subjectTable,
+                          "Frequency" = subjectTable / coverage(subject(x))[subjectPosition]))
+        output[["subject"]] <- output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
+        rownames(output[["subject"]]) <- as.character(seq_len(nrow(output[["subject"]])))
+        output
     }
 )
 
@@ -339,3 +514,18 @@ setMethod("coverage", "MIndex",
     }
 )
 
+setMethod("coverage", "AlignedXStringSet",
+    function(x, start = NA, end = NA, weight = 1L)
+    {
+        if (any(is.na(start)))
+            start <- 1
+        if (any(is.na(end)))
+            end <- max(nchar(unaligned(x)))
+        coverage(x@range, start = start, end = end, weight = weight)
+    }
+)
+
+setMethod("coverage", "PairwiseAlignment",
+    function(x, start = NA, end = NA, weight = 1L)
+        coverage(subject(x), start = NA, end = NA, weight = 1L)
+)

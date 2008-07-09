@@ -15,8 +15,20 @@
 
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
+\alias{mismatch,AlignedXStringSet,missing-method}
 \alias{nmismatch}
 \alias{nmismatch,ANY,XStringViews-method}
+\alias{nmismatch,AlignedXStringSet,missing-method}
+\alias{nmismatch,PairwiseAlignment,missing-method}
+
+\alias{mismatchTable}
+\alias{mismatchTable,AlignedXStringSet-method}
+\alias{mismatchTable,QualityAlignedXStringSet-method}
+\alias{mismatchTable,PairwiseAlignment-method}
+\alias{mismatchSummary}
+\alias{mismatchSummary,AlignedXStringSet-method}
+\alias{mismatchSummary,QualityAlignedXStringSet-method}
+\alias{mismatchSummary,PairwiseAlignment-method}
 
 \alias{coverage}
 \alias{coverage,IRanges-method}
@@ -24,6 +36,8 @@
 \alias{coverage,XStringViews-method}
 \alias{coverage,MaskedXString-method}
 \alias{coverage,MIndex-method}
+\alias{coverage,AlignedXStringSet-method}
+\alias{coverage,PairwiseAlignment-method}
 
 
 \title{Utility functions related to pattern matching}
@@ -40,9 +54,12 @@
   the \code{mismatch} function for getting the positions of the mismatching
   letters of a given pattern relatively to its matches in a given subject,
   the \code{nmismatch} function for getting the number of mismatching letters
-  produced by the \code{mismatch} function, and the \code{coverage} function
-  that can be used to get the "coverage" of a subject by a given pattern or
-  set of patterns.
+  produced by the \code{mismatch} function, the \code{mismatchTable} function
+  for getting the more than just the mismatching positions, and the
+  \code{mismatchSummary} function for getting summaries of information produced
+  by the \code{mismatchTable} function, and the \code{coverage} function that
+  can be used to get the "coverage" of a subject by a given pattern or set of
+  patterns.
 }
 
 \usage{
@@ -51,6 +68,8 @@
   isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
+  mismatchTable(x, shiftLeft = 0L, shiftRight = 0L, \dots)
+  mismatchSummary(x, \dots)
   coverage(x, start=NA, end=NA, weight=1L)
 }
 
@@ -110,6 +129,11 @@
     but \link{IRanges}, \link{MaskCollection} and \link{MaskedXString} objects
     are accepted too.
   }
+  \item{shiftLeft, shiftRight}{
+    Non-positive and non-negative integers respectively that specify how many
+    preceding and succeeding characters to and from the mismatch position to
+    include in the mismatch substrings.
+  }
   \item{end}{
     A single integer specifying the position in \code{x}
     where to end the extraction of the coverage.
@@ -117,6 +141,9 @@
   \item{weight}{
     An integer vector specifying how much each element in \code{x} counts when
     calculating the coverage.
+  }
+  \item{\dots}{
+    Further arguments to be passed to or from other methods.
   }
 }
 
@@ -132,6 +159,13 @@
   A integer vector for \code{nmismatch} containing the length of the vectors
   produced by \code{mismatch}.
 
+  A data.frame containing the positions and substrings of the mismatches for
+  the \code{AlignedXStringSet} or \code{PairwiseAlignment} object.
+
+  A data.frame or list of data.frame objects containing counts and frequencies
+  of the mismatches for the \code{AlignedXStringSet} or \code{PairwiseAlignment}
+  object.
+
   An integer vector indicating the coverage of \code{x} in the interval
   specified by the \code{start} and \code{end} arguments.
   An integer value called the "coverage" can be associated to each position
@@ -144,7 +178,6 @@
   Note that the positions in the returned vector are to be interpreted as
   relative to the interval specified by the \code{start} and \code{end}
   arguments.
-
 }
 
 \seealso{
@@ -156,7 +189,9 @@
   \link{MIndex-class},
   \link{IRanges-class},
   \link{MaskCollection-class},
-  \link{MaskedXString-class}
+  \link{MaskedXString-class},
+  \link{AlignedXStringSet-class},
+  \link{PairwiseAlignment-class}
 }
 
 \examples{
