@@ -165,11 +165,7 @@ function(pattern,
 
 
 setGeneric("pairwiseAlignment", signature = c("pattern", "subject"),
-           function(pattern, subject,
-                    patternQuality = 22L, subjectQuality = 22L,
-                    type = "global", substitutionMatrix = NULL,
-                    gapOpening = -10, gapExtension = -4,
-                    scoreOnly = FALSE)
+           function(pattern, subject, ...)
            standardGeneric("pairwiseAlignment"))
 
 setMethod("pairwiseAlignment",

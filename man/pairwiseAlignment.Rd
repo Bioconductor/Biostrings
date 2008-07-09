@@ -13,7 +13,9 @@
 Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignment problems.
 }
 \usage{
-pairwiseAlignment(pattern, subject, patternQuality = 22L, subjectQuality = 22L, type = "global",
+pairwiseAlignment(pattern, subject, \dots)
+\S4method{pairwiseAlignment}{XStringSet,XString}(pattern, subject,
+                  patternQuality = 22L, subjectQuality = 22L, type = "global",
                   substitutionMatrix = NULL, gapOpening = -10, gapExtension = -4,
                   scoreOnly = FALSE)
 }
@@ -45,6 +47,7 @@ pairwiseAlignment(pattern, subject, patternQuality = 22L, subjectQuality = 22L, 
   \item{gapExtension}{penalty for extending a gap in the alignment.}
   \item{scoreOnly}{logical to denote whether or not to return just the scores of the
     optimal pairwise alignment.}
+  \item{\dots}{optional arguments to generic function to support additional methods.}
 }
 \details{
 General implementation based on Chapter 2 of Haubold and Wiehe (2006).
