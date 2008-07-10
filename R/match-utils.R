@@ -382,7 +382,7 @@ setMethod("mismatchSummary", "PairwiseAlignment",
           list("pattern" = mismatchSummary(pattern(x)),
                "subject" =
                data.frame("SubjectPosition" = subjectPosition,
-                          "Subject" = safeExplode(as.character(unaligned(subject(x))[[1]][subjectPosition])),
+                          "Subject" = safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
                           "Pattern" = unlist(lapply(subjectTableLabels, "[", 2)),
                           "Count" = subjectTable,
                           "Frequency" = subjectTable / coverage(subject(x))[subjectPosition]))
