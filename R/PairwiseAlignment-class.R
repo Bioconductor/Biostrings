@@ -1,7 +1,7 @@
 ### ==========================================================================
-### XStringPairwiseAlignment objects
+### PairwiseAlignment objects
 ### --------------------------------------------------------------------------
-### An XStringPairwiseAlignment object contains the result of the alignment of
+### An PairwiseAlignment object contains the result of the alignment of
 ### two XString objects of the same subtype.
 
 
@@ -14,6 +14,19 @@ setClass("PairwiseAlignment",
         constantMatrix="matrix",
         gapOpening="numeric",
         gapExtension="numeric"
+    )
+)
+
+setClass("PairwiseAlignmentSummary",
+    representation(
+        type="character",
+        score="numeric",
+        nmatch="numeric",
+        nmismatch="numeric",
+        ninsertion="matrix",
+        ndeletion="matrix",
+        coverage="numeric",
+        mismatchSummary="list"
     )
 )
 
@@ -90,12 +103,24 @@ setMethod("subject", "PairwiseAlignment", function(x) x@subject)
 
 setGeneric("type", function(x) standardGeneric("type"))
 setMethod("type", "PairwiseAlignment", function(x) x@type)
+setMethod("type", "PairwiseAlignmentSummary", function(x) x@type)
 
 setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "PairwiseAlignment", function(x) x@score)
+setMethod("score", "PairwiseAlignmentSummary", function(x) x@score)
 
-setMethod("length", "PairwiseAlignment", function(x) length(subject(x)))
+setMethod("nindel", "PairwiseAlignment",
+          function(x) new("InDel", insertion = nindel(subject(x)), deletion = nindel(pattern(x))))
+setMethod("nindel", "PairwiseAlignmentSummary",
+          function(x) new("InDel", insertion = x@ninsertion, deletion = x@ndeletion))
+
+setMethod("length", "PairwiseAlignment", function(x) length(score(x)))
+setMethod("length", "PairwiseAlignmentSummary", function(x) length(score(x)))
+
 setMethod("nchar", "PairwiseAlignment", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
+setMethod("nchar", "PairwiseAlignmentSummary", 
+          function(x, type="chars", allowNA=FALSE)
+          nmatch(x) + nmismatch(x) + x@ninsertion[,"WidthSum"] + x@ndeletion[,"WidthSum"])
 
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
@@ -152,18 +177,28 @@ setMethod("show", "PairwiseAlignment", function(object)
 ### The "summary" method.
 ###
 
-setMethod("summary", "PairwiseAlignment", function(object, ...)
+setMethod("summary", "PairwiseAlignment", function(object, weight=1L, ...)
           {
-              totalIndel <- function(object) {
-                  unlist(lapply(object, function(x) sum(width(x))))
-              }
+              new("PairwiseAlignmentSummary",
+                  type = type(object),
+                  score = score(object),
+                  nmatch = nmatch(object),
+                  nmismatch = nmismatch(object),
+                  ninsertion = nindel(subject(object)),
+                  ndeletion = nindel(pattern(object)),
+                  coverage = coverage(object, weight = weight),
+                  mismatchSummary = mismatchSummary(object, weight = weight))
+          })
+
+setMethod("show", "PairwiseAlignmentSummary", function(object)
+          {
               cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
                          "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
                          "local" = "Local"), " Pairwise Alignment\n", sep = "")
-              cat("Number of Alignments:  ", length(object), "\n", sep = "")
+              cat("Number of Alignments:  ", length(score(object)), "\n", sep = "")
               cat("\nScores:\n")
               print(summary(score(object)))
-              cat("\nNumber of matched characters:\n")
+              cat("\nNumber of matches:\n")
               print(summary(nmatch(object)))
           })
 

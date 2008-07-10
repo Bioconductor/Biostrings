@@ -228,6 +228,11 @@ setMethod("nmatch", c(pattern = "PairwiseAlignment", x = "missing"),
           nindel(subject(pattern))[,"WidthSum"])
 )
 
+setMethod("nmatch", c(pattern = "PairwiseAlignmentSummary", x = "missing"),
+    function(pattern, x, fixed)
+        pattern@nmatch
+)
+
 setGeneric("nmismatch", signature=c("pattern", "x"),
     function(pattern, x, fixed=TRUE) standardGeneric("nmismatch")
 )
@@ -253,6 +258,11 @@ setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
 setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
     function(pattern, x, fixed)
         nmismatch(pattern(pattern))
+)
+
+setMethod("nmismatch", c(pattern = "PairwiseAlignmentSummary", x = "missing"),
+    function(pattern, x, fixed)
+        pattern@nmismatch
 )
 
 
@@ -348,7 +358,7 @@ setMethod("mismatchTable", "PairwiseAlignment",
 ###
 
 setGeneric("mismatchSummary", signature = "x",
-    function(x, weight=1L, ...) standardGeneric("mismatchSummary")
+    function(x, ...) standardGeneric("mismatchSummary")
 )
 
 setMethod("mismatchSummary", "AlignedXStringSet",
@@ -440,13 +450,18 @@ setMethod("mismatchSummary", "PairwiseAlignment",
     }
 )
 
+setMethod("mismatchSummary", "PairwiseAlignmentSummary",
+    function(x)
+        x@mismatchSummary
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "coverage" generic and methods.
 ###
 
 setGeneric("coverage", signature="x",
-    function(x, start=NA, end=NA, weight=1L) standardGeneric("coverage")
+    function(x, start=NA, end=NA, ...) standardGeneric("coverage")
 )
 
 setMethod("coverage", "IRanges",
@@ -535,7 +550,7 @@ setMethod("coverage", "MaskedXString",
 )
 
 setMethod("coverage", "MIndex",
-    function(x, start=NA, end=NA, weight=1L)
+    function(x, start=NA, end=NA)
     {
         if (!isSingleNumber(start))
             stop("'start' must be a single integer")
@@ -548,8 +563,6 @@ setMethod("coverage", "MIndex",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
-        if (!all(weight == 1L))
-            stop("'weight' argument not yet implemented for 'MIndex' objects")
         if (is(x, "ByPos_MIndex"))
             return(.Call("ByPos_MIndex_coverage",
                          x@ends, x@width, start, end,
@@ -576,4 +589,15 @@ setMethod("coverage", "AlignedXStringSet",
 setMethod("coverage", "PairwiseAlignment",
     function(x, start = NA, end = NA, weight = 1L)
         coverage(subject(x), start = NA, end = NA, weight = 1L)
+)
+
+setMethod("coverage", "PairwiseAlignmentSummary",
+    function(x, start = NA, end = NA)
+    {
+        if (any(is.na(start)))
+            start <- 1
+        if (any(is.na(end)))
+            end <- length(x@coverage)
+        x@coverage[start:end]
+	}
 )

@@ -15,7 +15,7 @@ exportClasses(
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     BStringList, DNAStringList, RNAStringList, AAStringList,
     XStringPartialMatches,
-    AlignedXStringSet, PairwiseAlignment,
+    InDel, AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
     Dups, PreprocessedTB, PDict3Parts, PDict, TB_PDict, Twobit, ACtree,
     MIndex, ByPos_MIndex, ByName_MIndex
@@ -112,7 +112,7 @@ exportMethods(
     patternFrequency, startIndex, endIndex, countIndex, unlist,
     PDict, matchPDict, countPDict,
 
-    subpatterns, pattern,
+    subpatterns, pattern, insertion, deletion,
     unaligned, aligned, quality, type, score, indel, nindel,
     compareStrings, consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,

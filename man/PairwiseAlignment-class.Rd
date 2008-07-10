@@ -5,6 +5,9 @@
 \alias{class:PairwiseAlignment}
 \alias{PairwiseAlignment-class}
 \alias{PairwiseAlignment}
+\alias{class:PairwiseAlignmentSummary}
+\alias{PairwiseAlignmentSummary-class}
+\alias{PairwiseAlignmentSummary}
 
 % Constructor-like functions and generics:
 \alias{initialize,PairwiseAlignment-method}
@@ -14,15 +17,22 @@
 \alias{subject,PairwiseAlignment-method}
 \alias{type}
 \alias{type,PairwiseAlignment-method}
+\alias{type,PairwiseAlignmentSummary-method}
 \alias{score}
 \alias{score,PairwiseAlignment-method}
+\alias{score,PairwiseAlignmentSummary-method}
+\alias{nindel,PairwiseAlignment-method}
+\alias{nindel,PairwiseAlignmentSummary-method}
 \alias{length,PairwiseAlignment-method}
+\alias{length,PairwiseAlignmentSummary-method}
 \alias{nchar,PairwiseAlignment-method}
+\alias{nchar,PairwiseAlignmentSummary-method}
 \alias{alphabet,PairwiseAlignment-method}
 \alias{views,PairwiseAlignment-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
+\alias{show,PairwiseAlignmentSummary-method}
 \alias{summary,PairwiseAlignment-method}
 \alias{as.character,PairwiseAlignment-method}
 \alias{toString,PairwiseAlignment-method}
@@ -31,11 +41,12 @@
 \alias{rep,PairwiseAlignment-method}
 
 
-\title{PairwiseAlignment objects}
+\title{PairwiseAlignment and PairwiseAlignmentSummary objects}
 
 \description{
-  The \code{PairwiseAlignment} class is a container for storing
-  an alignment.
+  The \code{PairwiseAlignment} class is a container for storing an alignment.
+  The \code{PairwiseAlignmentSummary} class is a container for storing the
+  summary of an alignment.
 }
 
 \details{
@@ -75,7 +86,7 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignment} object.
+  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -90,18 +101,26 @@
       \code{type(x)}:
       The type of the alignment (\code{"global"}, \code{"local"},
       \code{"overlap"}, \code{"patternOverlap"}, or \code{"subjectOverlap"}).
+      There is a method for \code{PairwiseAlignmentSummary} as well.
     }
     \item{}{
       \code{score(x)}:
       The score of the alignment (integer).
+      There is a method for \code{PairwiseAlignmentSummary} as well.
+    }
+    \item{}{
+      \code{nindel(x)}:
+      An \code{InDel} object containing the number of insertions and deletions.
     }
     \item{}{
       \code{length(x)}:
       The length of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
+      There is a method for \code{PairwiseAlignmentSummary} as well.
     }
     \item{}{
       \code{nchar(x)}:
       The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
+      There is a method for \code{PairwiseAlignmentSummary} as well.
     }
     \item{}{
       \code{alphabet(x)}:

@@ -19,10 +19,12 @@
 \alias{nmatch}
 \alias{nmatch,ANY,XStringViews-method}
 \alias{nmatch,PairwiseAlignment,missing-method}
+\alias{nmatch,PairwiseAlignmentSummary,missing-method}
 \alias{nmismatch}
 \alias{nmismatch,ANY,XStringViews-method}
 \alias{nmismatch,AlignedXStringSet,missing-method}
 \alias{nmismatch,PairwiseAlignment,missing-method}
+\alias{nmismatch,PairwiseAlignmentSummary,missing-method}
 
 \alias{mismatchTable}
 \alias{mismatchTable,AlignedXStringSet-method}
@@ -32,6 +34,7 @@
 \alias{mismatchSummary,AlignedXStringSet-method}
 \alias{mismatchSummary,QualityAlignedXStringSet-method}
 \alias{mismatchSummary,PairwiseAlignment-method}
+\alias{mismatchSummary,PairwiseAlignmentSummary-method}
 
 \alias{coverage}
 \alias{coverage,IRanges-method}
@@ -41,6 +44,7 @@
 \alias{coverage,MIndex-method}
 \alias{coverage,AlignedXStringSet-method}
 \alias{coverage,PairwiseAlignment-method}
+\alias{coverage,PairwiseAlignmentSummary-method}
 
 
 \title{Utility functions related to pattern matching}
@@ -73,8 +77,10 @@
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
   mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
-  mismatchSummary(x, weight=1L, \dots)
-  coverage(x, start=NA, end=NA, weight=1L)
+  mismatchSummary(x, \dots)
+  \S4method{mismatchSummary}{PairwiseAlignment}(x, weight=1L)
+  coverage(x, start=NA, end=NA, ...)
+  \S4method{coverage}{IRanges}(x, start=NA, end=NA, weight=1L)
 }
 
 \arguments{
