@@ -39,11 +39,11 @@
 \alias{rep,AlignedXStringSet-method}
 
 
-\title{AlignedXStringSet objects}
+\title{AlignedXStringSet and QualityAlignedXStringSet objects}
 
 \description{
-  The \code{AlignedXStringSet} class is a container for storing
-  an alignment.
+  The \code{AlignedXStringSet} and \code{QualityAlignedXStringSet} classes are
+  containers for storing an aligned \code{XStringSet}.
 }
 
 \details{
@@ -96,7 +96,7 @@
     }
     \item{}{
       \code{quality(x)}:
-      The quality of the original string.
+      For \code{QualityAlignedXStringSet} objects, the quality of the original string.
     }
     \item{}{
       \code{start(x)}:
