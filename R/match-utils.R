@@ -376,9 +376,10 @@ setMethod("mismatchSummary", "AlignedXStringSet",
             endTable <- table(rep(mismatchTable[["End"]], weight[mismatchTable[["Id"]]]))
         countTable <- rep(0L, n)
         countTable[as.integer(names(endTable))] <- endTable
-        data.frame("Position" = seq_len(n),
-                   "Count" = countTable,
-                   "Frequency" = countTable / coverageTable)
+        list("position" =
+             data.frame("Position" = seq_len(n),
+                        "Count" = countTable,
+                        "Frequency" = countTable / coverageTable))
     }
 )
 
@@ -412,11 +413,11 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
         qualityCounts <- rep(0L, length(qualityAll))
         names(qualityCounts) <- names(qualityAll)
         qualityCounts[names(qualityTable)] <- qualityTable
-        list("position" = callNextMethod(x, weight = weight, mismatchTable = mismatchTable),
-             "quality" =
-             data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - 33L,
-                        "Count" = qualityCounts,
-                        "Frequency" = qualityCounts / qualityAll))
+        c(callNextMethod(x, weight = weight, mismatchTable = mismatchTable),
+          list("quality" =
+               data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - 33L,
+                          "Count" = qualityCounts,
+                          "Frequency" = qualityCounts / qualityAll)))
     }
 )
 

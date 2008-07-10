@@ -157,23 +157,24 @@
 }
 
 \value{
-  \code{nmismatchStartingAt}, \code{nmismatchEndingAt}: an integer vector of
+  \code{nmismatchStartingAt}, \code{nmismatchEndingAt}:  an integer vector of
   the same length as \code{starting.at} (or \code{ending.at}) reporting the
   number of mismatching letters for each starting (or ending) position.
 
-  A logical vector of the same length as \code{start} for \code{isMatching}.
+  \code{isMatching}:  a logical vector of the same length as \code{start}.
 
-  A list of integer vectors for \code{mismatch}.
+  \code{mismatch}:  a list of integer vectors.
   
-  A integer vector for \code{nmismatch} containing the length of the vectors
+  \code{nmismatch}:  an integer vector containing the length of the vectors
   produced by \code{mismatch}.
 
-  A data.frame containing the positions and substrings of the mismatches for
-  the \code{AlignedXStringSet} or \code{PairwiseAlignment} object.
-
-  A data.frame or list of data.frame objects containing counts and frequencies
+  \code{mismatchTable}:  a data.frame containing the positions and substrings
   of the mismatches for the \code{AlignedXStringSet} or \code{PairwiseAlignment}
   object.
+
+  \code{mismatchSummary}:  a list of data.frame objects containing counts and
+  frequencies of the mismatches for the \code{AlignedXStringSet} or
+  \code{PairwiseAlignment} object.
 
   An integer vector indicating the coverage of \code{x} in the interval
   specified by the \code{start} and \code{end} arguments.
