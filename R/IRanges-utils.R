@@ -271,3 +271,9 @@ setMethod("gaps", "IRanges",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "summaryIRangesList" function.
+###
+
+summaryIRangesList <- function(x) .Call("summary_IRanges_list", x, PACKAGE="Biostrings")

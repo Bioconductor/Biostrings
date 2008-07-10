@@ -164,8 +164,7 @@ setMethod("summary", "PairwiseAlignment", function(object, ...)
               cat("\nScores:\n")
               print(summary(score(object)))
               cat("\nNumber of matched characters:\n")
-              print(summary(nchar(object) - nmismatch(object) - totalIndel(indel(subject(object))) - 
-                            totalIndel(indel(pattern(object)))))
+              print(summary(nmatch(object)))
           })
 
 

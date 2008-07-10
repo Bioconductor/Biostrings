@@ -16,6 +16,9 @@
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
 \alias{mismatch,AlignedXStringSet,missing-method}
+\alias{nmatch}
+\alias{nmatch,ANY,XStringViews-method}
+\alias{nmatch,PairwiseAlignment,missing-method}
 \alias{nmismatch}
 \alias{nmismatch,ANY,XStringViews-method}
 \alias{nmismatch,AlignedXStringSet,missing-method}
@@ -53,13 +56,13 @@
   Other utility functions related to pattern matching are described here:
   the \code{mismatch} function for getting the positions of the mismatching
   letters of a given pattern relatively to its matches in a given subject,
-  the \code{nmismatch} function for getting the number of mismatching letters
-  produced by the \code{mismatch} function, the \code{mismatchTable} function
-  for getting the more than just the mismatching positions, and the
-  \code{mismatchSummary} function for getting summaries of information produced
-  by the \code{mismatchTable} function, and the \code{coverage} function that
-  can be used to get the "coverage" of a subject by a given pattern or set of
-  patterns.
+  the \code{nmatch} and \code{nmismatch} functions for getting the number of
+  matching and mismatching letters produced by the \code{mismatch} function,
+  the \code{mismatchTable} function for getting the more than just the mismatching
+  positions, and the \code{mismatchSummary} function for getting summaries of
+  information produced by the \code{mismatchTable} function, and the \code{coverage}
+  function that can be used to get the "coverage" of a subject by a given pattern or
+  set of patterns.
 }
 
 \usage{
@@ -67,6 +70,7 @@
   nmismatchEndingAt(pattern, subject, ending.at=1, fixed=TRUE)
   isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
+  nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
   mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
   mismatchSummary(x, weight=1L, \dots)

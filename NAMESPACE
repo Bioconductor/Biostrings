@@ -97,7 +97,7 @@ exportMethods(
 
     ## Others
     nmismatchStartingAt, nmismatchEndingAt,
-    isMatching, mismatch, nmismatch,
+    isMatching, mismatch, nmatch, nmismatch,
     mismatchTable, mismatchSummary, coverage,
     matchPattern, countPattern,
     vcountPattern,
@@ -113,7 +113,7 @@ exportMethods(
     PDict, matchPDict, countPDict,
 
     subpatterns, pattern,
-    unaligned, aligned, quality, type, score, indel,
+    unaligned, aligned, quality, type, score, indel, nindel,
     compareStrings, consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, needwunsQS,

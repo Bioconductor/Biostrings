@@ -415,6 +415,8 @@ SEXP IRanges_coverage(
 	SEXP weight
 );
 
+SEXP summary_IRanges_list(SEXP x);
+
 
 /* SparseList_utils.c */
 

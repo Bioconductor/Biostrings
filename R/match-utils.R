@@ -208,6 +208,26 @@ setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
         pattern@mismatch
 )
 
+setGeneric("nmatch", signature=c("pattern", "x"),
+    function(pattern, x, fixed=TRUE) standardGeneric("nmatch")
+)
+
+setMethod("nmatch", c(pattern="ANY", x="XStringViews"),
+    function(pattern, x, fixed)
+    {
+        funCall <- match.call()
+        funCall[[1]] <- as.name("nmismatch")
+        nchar(pattern) - eval(funCall, sys.parent())
+    }
+)
+
+setMethod("nmatch", c(pattern = "PairwiseAlignment", x = "missing"),
+    function(pattern, x, fixed)
+        nchar(pattern) - (nmismatch(pattern) +
+          nindel(pattern(pattern))[,"WidthSum"] +
+          nindel(subject(pattern))[,"WidthSum"])
+)
+
 setGeneric("nmismatch", signature=c("pattern", "x"),
     function(pattern, x, fixed=TRUE) standardGeneric("nmismatch")
 )

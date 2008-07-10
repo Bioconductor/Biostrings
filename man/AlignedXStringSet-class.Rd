@@ -25,6 +25,8 @@
 \alias{width,AlignedXStringSet-method}
 \alias{indel}
 \alias{indel,AlignedXStringSet-method}
+\alias{nindel}
+\alias{nindel,AlignedXStringSet-method}
 \alias{length,AlignedXStringSet-method}
 \alias{nchar,AlignedXStringSet-method}
 \alias{alphabet,AlignedXStringSet-method}
@@ -114,6 +116,11 @@
       \code{indel(x)}:
       The positions, in the form of an \code{IRanges} object, of the insertions or
       deletions (depending on what the \code{AlignedXStringSet} object represents).
+    }
+    \item{}{
+      \code{nindel(x)}:
+      A two-column matrix containing the length and sum of the widths for each of
+      the elements returned by \code{indel}.
     }
     \item{}{
       \code{length(x)}:
