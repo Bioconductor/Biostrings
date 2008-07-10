@@ -328,15 +328,22 @@ setMethod("mismatchTable", "PairwiseAlignment",
 ###
 
 setGeneric("mismatchSummary", signature = "x",
-    function(x, ...) standardGeneric("mismatchSummary")
+    function(x, weight=1L, ...) standardGeneric("mismatchSummary")
 )
 
 setMethod("mismatchSummary", "AlignedXStringSet",
-    function(x)
+    function(x, weight=1L, mismatchTable=mismatchTable(x))
     {
-        coverageTable <- coverage(x)
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
+            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.integer(weight))
+            weight <- as.integer(weight)
+        coverageTable <- coverage(x, weight = weight)
         n <- length(coverageTable)
-        endTable <- table(mismatchTable(x)[["End"]])
+        if (length(weight) == 1)
+            endTable <- weight * table(mismatchTable[["End"]])
+        else
+            endTable <- table(rep(mismatchTable[["End"]], weight[mismatchTable[["Id"]]]))
         countTable <- rep(0L, n)
         countTable[as.integer(names(endTable))] <- endTable
         data.frame("Position" = seq_len(n),
@@ -346,23 +353,36 @@ setMethod("mismatchSummary", "AlignedXStringSet",
 )
 
 setMethod("mismatchSummary", "QualityAlignedXStringSet",
-    function(x)
+    function(x, weight=1L, mismatchTable=mismatchTable(x))
     {
-        if ((length(quality(x)) == 1) && (nchar(quality(x)) == 1)) {
-            qualityAll <- alphabetFrequency(quality(x), collapse = TRUE)[34:133]
-            qualityAll <- qualityAll * sum(width(x))
-        } else {
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
+            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.integer(weight))
+            weight <- as.integer(weight)
+        if ((length(quality(x)) == 1) && (nchar(quality(x)) == 1))
             qualityAll <-
-              alphabetFrequency(narrow(quality(x), start = start(x),
-                                end = end(x)), collapse = TRUE)[34:133]
-        }
+              sum(weight * width(x)) * alphabetFrequency(quality(x), collapse = TRUE)[34:133]
+        else if (length(weight) == 1)
+            qualityAll <-
+              weight *
+                alphabetFrequency(narrow(quality(x), start = start(x), end = end(x)),
+                                  collapse = TRUE)[34:133]
+        else
+            qualityAll <-
+              colSums(weight *
+                      alphabetFrequency(narrow(quality(x), start = start(x),
+                                               end = end(x)))[, 34:133, drop=FALSE])
         names(qualityAll) <- sapply(as.raw(33:132), rawToChar)
         qualityAll <- qualityAll[qualityAll > 0]
-        qualityTable <- table(mismatchTable(x)[["Quality"]])
+        if (length(weight) == 1)
+            qualityTable <- weight * table(mismatchTable[["Quality"]])
+        else
+            qualityTable <-
+              table(rep(mismatchTable[["Quality"]], weight[mismatchTable[["Id"]]]))
         qualityCounts <- rep(0L, length(qualityAll))
         names(qualityCounts) <- names(qualityAll)
         qualityCounts[names(qualityTable)] <- qualityTable
-        list("position" = callNextMethod(),
+        list("position" = callNextMethod(x, weight = weight, mismatchTable = mismatchTable),
              "quality" =
              data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - 33L,
                         "Count" = qualityCounts,
@@ -371,21 +391,29 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
 )
 
 setMethod("mismatchSummary", "PairwiseAlignment",
-    function(x)
+    function(x, weight=1L)
     {
-        xTable <- mismatchTable(x)
-        subjectTable <-
-          unclass(table(paste(xTable[["SubjectEnd"]], xTable[["PatternSubstring"]], sep = "\001")))
+        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
+            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
+        if (!is.integer(weight))
+            weight <- as.integer(weight)
+        mismatchTable <- list("pattern" = mismatchTable(pattern(x)), "subject" = mismatchTable(subject(x)))
+        combinedInfo <-
+          paste(mismatchTable[["subject"]][["End"]], mismatchTable[["pattern"]][["Substring"]], sep = "\001")
+        if (length(weight) == 1)
+            subjectTable <- weight * table(combinedInfo)
+        else
+            subjectTable <- table(rep(combinedInfo, weight[mismatchTable[["pattern"]][["Id"]]]))
         subjectTableLabels <- strsplit(names(subjectTable), split = "\001")
         subjectPosition <- as.integer(unlist(lapply(subjectTableLabels, "[", 1)))
         output <-
-          list("pattern" = mismatchSummary(pattern(x)),
+          list("pattern" = mismatchSummary(pattern(x), weight = weight, mismatchTable = mismatchTable[["pattern"]]),
                "subject" =
                data.frame("SubjectPosition" = subjectPosition,
                           "Subject" = safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
                           "Pattern" = unlist(lapply(subjectTableLabels, "[", 2)),
-                          "Count" = subjectTable,
-                          "Frequency" = subjectTable / coverage(subject(x))[subjectPosition]))
+                          "Count" = as.vector(subjectTable),
+                          "Frequency" = as.vector(subjectTable) / coverage(subject(x), weight = weight)[subjectPosition]))
         output[["subject"]] <- output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
         rownames(output[["subject"]]) <- as.character(seq_len(nrow(output[["subject"]])))
         output

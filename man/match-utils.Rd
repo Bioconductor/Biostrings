@@ -68,8 +68,8 @@
   isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
   mismatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
-  mismatchTable(x, shiftLeft = 0L, shiftRight = 0L, \dots)
-  mismatchSummary(x, \dots)
+  mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
+  mismatchSummary(x, weight=1L, \dots)
   coverage(x, start=NA, end=NA, weight=1L)
 }
 
@@ -134,13 +134,12 @@
     preceding and succeeding characters to and from the mismatch position to
     include in the mismatch substrings.
   }
-  \item{end}{
-    A single integer specifying the position in \code{x}
-    where to end the extraction of the coverage.
-  }
   \item{weight}{
-    An integer vector specifying how much each element in \code{x} counts when
-    calculating the coverage.
+    An integer vector specifying how much each element in \code{x} counts.
+  }
+  \item{end}{
+    A single integer specifying the position in \code{x} where to end the
+    extraction of the coverage.
   }
   \item{\dots}{
     Further arguments to be passed to or from other methods.
