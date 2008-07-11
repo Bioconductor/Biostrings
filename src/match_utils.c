@@ -212,3 +212,27 @@ SEXP is_matching(SEXP pattern, SEXP subject, SEXP start,
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP nmatch_PairwiseAlignment(SEXP nchar, SEXP nmismatch, SEXP ninsertion,
+		SEXP ndeletion)
+{
+	int ans_len, i, *ans_elt;
+	const int *nchar_elt, *nmismatch_elt, *ninsertion_elt, *ndeletion_elt;
+	SEXP ans;
+
+	ans_len = LENGTH(nchar);
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	for (i = 0, nchar_elt = INTEGER(nchar), nmismatch_elt = INTEGER(nmismatch),
+             ninsertion_elt = INTEGER(ninsertion), ndeletion_elt = INTEGER(ndeletion),
+             ans_elt = INTEGER(ans);
+             i < ans_len;
+             i++, nchar_elt++, nmismatch_elt++, ninsertion_elt++, ndeletion_elt++, ans_elt++)
+	{
+ 		*ans_elt = *nchar_elt - *nmismatch_elt - *ninsertion_elt - *ndeletion_elt;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+

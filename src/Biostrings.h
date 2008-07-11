@@ -1031,6 +1031,13 @@ SEXP is_matching(
 	SEXP fixed
 );
 
+SEXP nmatch_PairwiseAlignment(
+	SEXP nchar,
+	SEXP nmismatch,
+	SEXP ninsertion,
+	SEXP ndeletion
+);
+
 
 /* match_reporting.c */
 

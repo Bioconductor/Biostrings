@@ -134,6 +134,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_match_utils", (DL_FUNC) &debug_match_utils, 0},
 	{"nmismatch_at", (DL_FUNC) &nmismatch_at, 5},
 	{"is_matching", (DL_FUNC) &is_matching, 5},
+	{"nmatch_PairwiseAlignment", (DL_FUNC) &nmatch_PairwiseAlignment, 4},
 
 /* match_reporting.c */
 	{"debug_match_reporting", (DL_FUNC) &debug_match_reporting, 0},

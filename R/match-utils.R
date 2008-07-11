@@ -223,9 +223,9 @@ setMethod("nmatch", c(pattern="ANY", x="XStringViews"),
 
 setMethod("nmatch", c(pattern = "PairwiseAlignment", x = "missing"),
     function(pattern, x, fixed)
-        nchar(pattern) - (nmismatch(pattern) +
-          nindel(pattern(pattern))[,"WidthSum"] +
-          nindel(subject(pattern))[,"WidthSum"])
+        .Call("nmatch_PairwiseAlignment", nchar(pattern), nmismatch(pattern),
+              nindel(subject(pattern))[,"WidthSum"], nindel(pattern(pattern))[,"WidthSum"],
+              PACKAGE="Biostrings")
 )
 
 setMethod("nmatch", c(pattern = "PairwiseAlignmentSummary", x = "missing"),
