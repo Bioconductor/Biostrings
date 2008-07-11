@@ -200,6 +200,12 @@ setMethod("show", "PairwiseAlignmentSummary", function(object)
               print(summary(score(object)))
               cat("\nNumber of matches:\n")
               print(summary(nmatch(object)))
+              n <- min(nrow(mismatchSummary(object)[["subject"]]), 10)
+              cat(paste("\nTop", n, "Mismatch Counts:\n"))
+              print(mismatchSummary(object)[["subject"]][
+                order(mismatchSummary(object)[["subject"]][["Count"]],
+                      mismatchSummary(object)[["subject"]][["Frequency"]],
+                      decreasing = TRUE)[seq_len(n)],,drop=FALSE])
           })
 
 
