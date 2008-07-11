@@ -595,10 +595,22 @@ setMethod("coverage", "PairwiseAlignment",
 setMethod("coverage", "PairwiseAlignmentSummary",
     function(x, start = NA, end = NA)
     {
-        if (any(is.na(start)))
-            start <- 1
-        if (any(is.na(end)))
+        if (!isSingleNumberOrNA(start))
+            stop("'start' must be a single integer or NA")
+        if (!is.integer(start))
+            start <- as.integer(start)
+        if (is.na(start))
+            start <- 1L
+        if (!isSingleNumberOrNA(end))
+            stop("'end' must be a single integer or NA")
+        if (!is.integer(end))
+            end <- as.integer(end)
+        if (is.na(end))
             end <- length(x@coverage)
-        x@coverage[start:end]
+        if (start > 1 || end < length(x@coverage))
+            ans <- x@coverage[start:end]
+        else
+            ans <- x@coverage
+        ans
 	}
 )
