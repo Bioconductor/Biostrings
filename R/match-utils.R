@@ -362,7 +362,7 @@ setGeneric("mismatchSummary", signature = "x",
 )
 
 setMethod("mismatchSummary", "AlignedXStringSet",
-    function(x, weight=1L, mismatchTable=mismatchTable(x))
+    function(x, weight=1L, .mismatchTable=mismatchTable(x))
     {
         if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
@@ -371,9 +371,9 @@ setMethod("mismatchSummary", "AlignedXStringSet",
         coverageTable <- coverage(x, weight = weight)
         n <- length(coverageTable)
         if (length(weight) == 1)
-            endTable <- weight * table(mismatchTable[["End"]])
+            endTable <- weight * table(.mismatchTable[["End"]])
         else
-            endTable <- table(rep(mismatchTable[["End"]], weight[mismatchTable[["Id"]]]))
+            endTable <- table(rep(.mismatchTable[["End"]], weight[.mismatchTable[["Id"]]]))
         countTable <- rep(0L, n)
         countTable[as.integer(names(endTable))] <- endTable
         list("position" =
@@ -384,7 +384,7 @@ setMethod("mismatchSummary", "AlignedXStringSet",
 )
 
 setMethod("mismatchSummary", "QualityAlignedXStringSet",
-    function(x, weight=1L, mismatchTable=mismatchTable(x))
+    function(x, weight=1L, .mismatchTable=mismatchTable(x))
     {
         if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
@@ -406,14 +406,14 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
         names(qualityAll) <- sapply(as.raw(33:132), rawToChar)
         qualityAll <- qualityAll[qualityAll > 0]
         if (length(weight) == 1)
-            qualityTable <- weight * table(mismatchTable[["Quality"]])
+            qualityTable <- weight * table(.mismatchTable[["Quality"]])
         else
             qualityTable <-
-              table(rep(mismatchTable[["Quality"]], weight[mismatchTable[["Id"]]]))
+              table(rep(.mismatchTable[["Quality"]], weight[.mismatchTable[["Id"]]]))
         qualityCounts <- rep(0L, length(qualityAll))
         names(qualityCounts) <- names(qualityAll)
         qualityCounts[names(qualityTable)] <- qualityTable
-        c(callNextMethod(x, weight = weight, mismatchTable = mismatchTable),
+        c(callNextMethod(x, weight = weight, .mismatchTable = .mismatchTable),
           list("quality" =
                data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - 33L,
                           "Count" = qualityCounts,
@@ -438,7 +438,7 @@ setMethod("mismatchSummary", "PairwiseAlignment",
         subjectTableLabels <- strsplit(names(subjectTable), split = "\001")
         subjectPosition <- as.integer(unlist(lapply(subjectTableLabels, "[", 1)))
         output <-
-          list("pattern" = mismatchSummary(pattern(x), weight = weight, mismatchTable = mismatchTable[["pattern"]]),
+          list("pattern" = mismatchSummary(pattern(x), weight = weight, .mismatchTable = mismatchTable[["pattern"]]),
                "subject" =
                data.frame("SubjectPosition" = subjectPosition,
                           "Subject" = safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
