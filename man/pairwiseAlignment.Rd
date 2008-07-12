@@ -16,8 +16,8 @@ Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignm
 pairwiseAlignment(pattern, subject, \dots)
 \S4method{pairwiseAlignment}{XStringSet,XString}(pattern, subject,
                   patternQuality = 22L, subjectQuality = 22L, type = "global",
-                  substitutionMatrix = NULL, gapOpening = -10, gapExtension = -4,
-                  scoreOnly = FALSE)
+                  qualityType = "Phred", substitutionMatrix = NULL, gapOpening = -10,
+                  gapExtension = -4, scoreOnly = FALSE)
 }
 \arguments{
   \item{pattern}{a character vector of length 1, an \code{\link{XString}}, or an
@@ -40,6 +40,8 @@ pairwiseAlignment(pattern, subject, \dots)
         \code{pattern} and with end gap penalties on \code{subject},
       \code{"subjectOverlap"} = align whole strings with end gap penalties on
         \code{pattern} and without end gap penalties on \code{subject}.}
+  \item{qualityType}{type of quality measure. Either of \code{"Phred"} or \code{"Solexa"}.
+    See \code{substitution.matrices} help page for more details.}
   \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
     use \code{substitutionMatrix} in conjunction with \code{patternQuality} and
     \code{subjectQuality} arguments.}

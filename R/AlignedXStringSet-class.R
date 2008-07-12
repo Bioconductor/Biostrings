@@ -14,7 +14,8 @@ setClass("AlignedXStringSet",
 )
 
 setClass("QualityAlignedXStringSet",
-         representation("AlignedXStringSet", quality="XStringSet"))
+         representation("AlignedXStringSet",
+                        quality="XStringSet", qualityType="character"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,10 +34,11 @@ setMethod("initialize", "AlignedXStringSet",
 )
 
 setMethod("initialize", "QualityAlignedXStringSet",
-    function(.Object, unaligned, quality, range, mismatch, indel, check = TRUE)
+    function(.Object, unaligned, quality, qualityType, range, mismatch, indel, check = TRUE)
     {
         slot(.Object, "unaligned", check = check) <- unaligned
         slot(.Object, "quality", check = check) <- quality
+        slot(.Object, "qualityType", check = check) <- qualityType
         slot(.Object, "range", check = check) <- range
         slot(.Object, "mismatch", check = check) <- mismatch
         slot(.Object, "indel", check = check) <- indel
@@ -74,6 +76,8 @@ setValidity("AlignedXStringSet",
 .valid.QualityAlignedXStringSet <- function(object)
 {
     message <- character(0)
+    if (length(object@qualityType) != 1 || !(object@qualityType %in% c("Phred", "Solexa")))
+        message <- c(message, "'qualityType' must be one of 'Phred' or 'Solexa'")
     if (length(object@range) != length(mismatch(object)))
         message <- c(message, "length(range) != length(mismatch)")
     if (length(mismatch(object)) != length(indel(object)))
@@ -211,6 +215,7 @@ setMethod("[", "QualityAlignedXStringSet",
         new("VariableQualityAlignedXStringSet",
             unaligned = .safe.subset.XStringSet(x@unaligned, i),
             quality = .safe.subset.XStringSet(x@quality, i),
+            qualityType = x@qualityType,
             range = x@range[i,,drop = FALSE],
             mismatch = x@mismatch[i], indel = x@indel[i])
     }

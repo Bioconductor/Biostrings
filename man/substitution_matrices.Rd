@@ -32,13 +32,15 @@
   data(PAM70)
   data(PAM120)
   data(PAM250)
-  qualitySubstitutionMatrices(alphabetLength = 4L, bitScale = 1)
+  qualitySubstitutionMatrices(alphabetLength = 4L, qualityType = "Phred", bitScale = 1)
 }
 
 \arguments{
   \item{alphabetLength}{an integer representing the number of letters
     in the underlying string alphabet. For DNA and RNA, this would be 4L.
     For Amino Acids, this could be 20L.}
+  \item{qualityType}{a character string of either \code{"Phred"} or
+    \code{"Solexa"}.}
   \item{bitScale}{a numeric value to scale the quality-based substitution
     matrices. By default, this is 1, representing bit-scale scoring.}
 }
@@ -71,8 +73,12 @@
 
 
   The quality matrices computed in \code{qualitySubstitutionMatrices} are
-  based on the paper by Ketil Malde. For quality measure \eqn{Q} in \eqn{[0, 99]},
-  the corresponding error probability is given by \eqn{\epsilon_i = 10^{-Q/10}}.
+  based on the paper by Ketil Malde. Let \eqn{\epsilon_i} be the probability
+  of an error in the base read. For \code{"Phred"} quality measures \eqn{Q}
+  in \eqn{[0, 99]}, these error probabilities are given by
+  \eqn{\epsilon_i = 10^{-Q/10}}. For \code{"Solexa"} quality measures
+  \eqn{Q} in \eqn{[-5, 94]}, they are given by
+  \eqn{\epsilon_i = 1 - 1/(1 + 10^{-Q/10}}.
   Assuming independence within and between base reads, the combined error
   probability of a mismatch when the underlying bases do match is
   \eqn{\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2},

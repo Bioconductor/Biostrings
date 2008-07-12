@@ -1422,6 +1422,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP subjectQuality,
 	SEXP type,
 	SEXP typeCode,
+	SEXP qualityType,
 	SEXP scoreOnly,
 	SEXP gapOpening,
 	SEXP gapExtension,

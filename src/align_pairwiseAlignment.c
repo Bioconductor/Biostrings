@@ -426,6 +426,8 @@ static double pairwiseAlignment(
  *                           (integer vector of length 1;
  *                            1 = 'global', 2 = 'local', 3 = 'overlap',
  *                            4 = 'patternOverlap', 5 = 'subjectOverlap')
+ * 'qualityType':            type of quality scores
+ *                           (character vector of length 1)
  * 'scoreOnly':              denotes whether or not to only return the scores
  *                           of the optimal pairwise alignment
  *                           (logical vector of length 1)
@@ -465,6 +467,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP subjectQuality,
 		SEXP type,
 		SEXP typeCode,
+		SEXP qualityType,
 		SEXP scoreOnly,
 		SEXP gapOpening,
 		SEXP gapExtension,
@@ -543,6 +546,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		if (useQualityValue) {
 			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
 			SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
+			SET_SLOT(alignedPattern, mkChar("qualityType"), qualityType);
 		} else {
 			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
 		}
@@ -568,6 +572,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		if (useQualityValue) {
 			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
 			SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
+			SET_SLOT(alignedSubject, mkChar("qualityType"), qualityType);
 		} else {
 			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
 		}
