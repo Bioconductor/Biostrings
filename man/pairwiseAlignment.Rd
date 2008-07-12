@@ -25,12 +25,18 @@ pairwiseAlignment(pattern, subject, \dots)
   \item{subject}{a character vector of length 1 or an \code{\link{XString}} object.}
   \item{patternQuality, subjectQuality}{respective quality scores for \code{pattern} and
     \code{subject} that are used in a quality-based method for generating a substitution
-    matrix. These scores must either be represented by [0 - 99] integer vectors, character
-    vectors, \code{\link{BString}}, or, in the case of \code{patternQuality},
-    \code{\link{BStringSet}} objects. Characters are interpreted as [0 - 99]
-    quality measures by subtracting 33 from their ASCII decimal representation
-    (e.g. ! = 0, " = 1, \# = 2, ...). These two arguments are ignored if
-    \code{!is.null(substitutionMatrix)}.}
+    matrix.
+    When \code{qualityType = "Phred"}, these scores must either be represented by [0 - 99]
+    integer vectors, character vectors, \code{\link{BString}}, or, in the case of
+    \code{patternQuality}, \code{\link{BStringSet}} objects. When \code{qualityType = "Phred"},
+    characters are interpreted as [0 - 99] quality measures by subtracting 33 from their ASCII
+    decimal representation (e.g. ! = 0, " = 1, \# = 2, ...).
+    When \code{qualityType = "Solexa"}, these scores must either be represented by [-5 - 94]
+    integer vectors, character vectors, \code{\link{BString}}, or, in the case of
+    \code{patternQuality}, \code{\link{BStringSet}} objects. When \code{qualityType = "Solexa"},
+    characters are interpreted as [-5 - 94] quality measures by subtracting 64 from their ASCII
+    decimal representation (e.g. ; = -5, < = -4, = = -3, ...).
+    These two arguments are ignored if \code{!is.null(substitutionMatrix)}.}
   \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
     \code{"overlap"}, \code{"patternOverlap"}, and \code{"subjectOverlap"} where
       \code{"global"} = align whole strings with end gap penalties,

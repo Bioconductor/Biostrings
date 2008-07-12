@@ -77,13 +77,17 @@ function(pattern,
   if (is.null(substitutionMatrix)) {
     useQuality <- TRUE
     if (is.numeric(patternQuality)) {
-      if (any(is.na(patternQuality)) ||
-          any(patternQuality < 0 || patternQuality > 99))
-        stop("integer 'patternQuality' values must be between 0 and 99")
-      if (qualityType == "Phred")
+      if (qualityType == "Phred") {
+        if (any(is.na(patternQuality)) ||
+            any(patternQuality < 0 || patternQuality > 99))
+          stop("integer 'patternQuality' values must be between 0 and 99 for qualityType 'Phred'")
         patternQuality <- rawToChar(as.raw(33L + as.integer(patternQuality)))
-      else
+      } else {
+        if (any(is.na(patternQuality)) ||
+            any(patternQuality < -5 || patternQuality > 94))
+          stop("integer 'patternQuality' values must be between -5 and 94 for qualityType 'Solexa'")
         patternQuality <- rawToChar(as.raw(64L + as.integer(patternQuality)))
+      }
     }
     if (!is(patternQuality, "XStringSet"))
       patternQuality <- BStringSet(patternQuality)
@@ -92,13 +96,17 @@ function(pattern,
                  "have the same length as 'pattern'"))
 
     if (is.numeric(subjectQuality)) {
-      if (any(is.na(subjectQuality)) ||
-          any(subjectQuality < 0 || subjectQuality > 99))
-        stop("integer 'subjectQuality' values must be between 0 and 99")
-      if (qualityType == "Phred")
+      if (qualityType == "Phred") {
+        if (any(is.na(subjectQuality)) ||
+            any(subjectQuality < 0 || subjectQuality > 99))
+          stop("integer 'subjectQuality' values must be between 0 and 99 for qualityType 'Phred'")
         subjectQuality <- rawToChar(as.raw(33L + as.integer(subjectQuality)))
-      else
+      } else {
+        if (any(is.na(subjectQuality)) ||
+            any(subjectQuality < -5 || subjectQuality > 94))
+          stop("integer 'subjectQuality' values must be between -5 and 94 for qualityType 'Solexa'")
         subjectQuality <- rawToChar(as.raw(64L + as.integer(subjectQuality)))
+      }
     }
     if (!is(subjectQuality, "XString"))
       subjectQuality <- BString(subjectQuality)
