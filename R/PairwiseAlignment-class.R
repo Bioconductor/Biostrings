@@ -179,15 +179,30 @@ setMethod("show", "PairwiseAlignment", function(object)
 
 setMethod("summary", "PairwiseAlignment", function(object, weight=1L, ...)
           {
-              new("PairwiseAlignmentSummary",
-                  type = type(object),
-                  score = score(object),
-                  nmatch = nmatch(object),
-                  nmismatch = nmismatch(object),
-                  ninsertion = nindel(subject(object)),
-                  ndeletion = nindel(pattern(object)),
-                  coverage = coverage(object, weight = weight),
-                  mismatchSummary = mismatchSummary(object, weight = weight))
+              if (!is.numeric(weight) || !(length(weight) %in% c(1, length(object))))
+                  stop("'weight' must be an integer vector with length 1 or 'length(object)'")
+              if (!is.integer(weight))
+                weight <- as.integer(weight)
+              if (all(weight == 1))
+                  new("PairwiseAlignmentSummary",
+                      type = type(object),
+                      score = score(object),
+                      nmatch = nmatch(object),
+                      nmismatch = nmismatch(object),
+                      ninsertion = nindel(subject(object)),
+                      ndeletion = nindel(pattern(object)),
+                      coverage = coverage(object),
+                      mismatchSummary = mismatchSummary(object))
+              else
+                  new("PairwiseAlignmentSummary",
+                      type = type(object),
+                      score = rep(score(object), weight),
+                      nmatch = rep(nmatch(object), weight),
+                      nmismatch = rep(nmismatch(object), weight),
+                      ninsertion = nindel(subject(object))[rep(seq_len(length(object)), weight), , drop = FALSE],
+                      ndeletion = nindel(pattern(object))[rep(seq_len(length(object)), weight), , drop = FALSE],
+                      coverage = coverage(object, weight = weight),
+                      mismatchSummary = mismatchSummary(object, weight = weight))
           })
 
 setMethod("show", "PairwiseAlignmentSummary", function(object)
