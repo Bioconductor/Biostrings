@@ -155,32 +155,55 @@ static double pairwiseAlignment(
 
 			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 			elements[swappedOrder] = lookupValue;
-			for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
-				elements[notSwappedOrder] = lookupValue;
-				if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-					substitutionValue = (float) matchMatrix[matrixDim[0] * elements[0] + elements[1]];
-				else
-					substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
+			if (localAlignment) {
+				for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
+					SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+					elements[notSwappedOrder] = lookupValue;
+					if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
+						substitutionValue = (float) matchMatrix[matrixDim[0] * elements[0] + elements[1]];
+					else
+						substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
-				CURR_MATRIX(0, j) =
-					MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue;
-				CURR_MATRIX(1, j) = 
-					MAX(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpeningPlusExtension,
-					    PREV_MATRIX(1, j) + gapExtension);
-				CURR_MATRIX(2, j) =
-					MAX(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpeningPlusExtension,
-					    CURR_MATRIX(2, jMinus1) + gapExtension);
+					CURR_MATRIX(0, j) =
+						MAX(0.0,
+							MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue);
+					CURR_MATRIX(1, j) =
+						MAX(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpeningPlusExtension,
+						    PREV_MATRIX(1, j) + gapExtension);
+					CURR_MATRIX(2, j) =
+						MAX(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpeningPlusExtension,
+						    CURR_MATRIX(2, jMinus1) + gapExtension);
 
-				if (localAlignment) {
-					CURR_MATRIX(0, j) = MAX(0.0, CURR_MATRIX(0, j));
 					maxScore = MAX(CURR_MATRIX(0, j), maxScore);
-				} else if (noEndGap2 && i == nCharString1) {
-					CURR_MATRIX(2, j) = MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(2, jMinus1));
 				}
-			}
-			if (noEndGap1) {
-				CURR_MATRIX(1, nCharString2) = MAX(PREV_MATRIX(0, nCharString2), PREV_MATRIX(1, nCharString2));
+			} else {
+				for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
+					SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+					elements[notSwappedOrder] = lookupValue;
+					if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
+						substitutionValue = (float) matchMatrix[matrixDim[0] * elements[0] + elements[1]];
+					else
+						substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
+
+					CURR_MATRIX(0, j) =
+						MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue;
+					CURR_MATRIX(1, j) =
+						MAX(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpeningPlusExtension,
+						    PREV_MATRIX(1, j) + gapExtension);
+					CURR_MATRIX(2, j) =
+						MAX(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpeningPlusExtension,
+						    CURR_MATRIX(2, jMinus1) + gapExtension);
+				}
+				if (noEndGap1) {
+					CURR_MATRIX(1, nCharString2) =
+						MAX(PREV_MATRIX(0, nCharString2), MAX(PREV_MATRIX(1, nCharString2), PREV_MATRIX(2, nCharString2)));
+				}
+				if (noEndGap2 && i == nCharString1) {
+					for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+						CURR_MATRIX(2, j) =
+							MAX(MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)), CURR_MATRIX(2, jMinus1));
+					}
+				}
 			}
 		}
 
@@ -233,49 +256,49 @@ static double pairwiseAlignment(
 
 			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 			elements[swappedOrder] = lookupValue;
-			for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
-				elements[notSwappedOrder] = lookupValue;
-				if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-					substitutionValue = (float) matchMatrix[matrixDim[0] * elements[0] + elements[1]];
-				else
-					substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
+			if (localAlignment) {
+				for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
+					SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+					elements[notSwappedOrder] = lookupValue;
+					if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
+						substitutionValue = (float) matchMatrix[matrixDim[0] * elements[0] + elements[1]];
+					else
+						substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
-				/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores 
-				 *           and traceback values 
-				 */
-				if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
-					S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-					CURR_MATRIX(0, j) = PREV_MATRIX(0, jMinus1) + substitutionValue;
-				} else if (PREV_MATRIX(2, jMinus1) >= PREV_MATRIX(1, jMinus1)) {
-					S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(0, j) = PREV_MATRIX(2, jMinus1) + substitutionValue;
-				} else {
-					S_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(0, j) = PREV_MATRIX(1, jMinus1) + substitutionValue;
-				}
-				if (PREV_MATRIX(1, j) >= (MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpening)) {
-					D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(1, j) = PREV_MATRIX(1, j) + gapExtension;
-				} else if (PREV_MATRIX(0, j) >= PREV_MATRIX(2, j)) {
-					D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-					CURR_MATRIX(1, j) = PREV_MATRIX(0, j) + gapOpeningPlusExtension;
-				} else {
-					D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(1, j) = PREV_MATRIX(2, j) + gapOpeningPlusExtension;
-				}
-				if (CURR_MATRIX(2, jMinus1) >= (MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpening)) {
-					I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-					CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1) + gapExtension;
-				} else if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(1, jMinus1)) {
-					I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-					CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1) + gapOpeningPlusExtension;
-				} else {
-					I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-					CURR_MATRIX(2, j) = CURR_MATRIX(1, jMinus1) + gapOpeningPlusExtension;
-				}
+					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores 
+					 *           and traceback values 
+					 */
+					if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(0, j) = PREV_MATRIX(0, jMinus1) + substitutionValue;
+					} else if (PREV_MATRIX(2, jMinus1) >= PREV_MATRIX(1, jMinus1)) {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(0, j) = PREV_MATRIX(2, jMinus1) + substitutionValue;
+					} else {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(0, j) = PREV_MATRIX(1, jMinus1) + substitutionValue;
+					}
+					if (PREV_MATRIX(1, j) >= (MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpening)) {
+						D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(1, j) = PREV_MATRIX(1, j) + gapExtension;
+					} else if (PREV_MATRIX(0, j) >= PREV_MATRIX(2, j)) {
+						D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(1, j) = PREV_MATRIX(0, j) + gapOpeningPlusExtension;
+					} else {
+						D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(1, j) = PREV_MATRIX(2, j) + gapOpeningPlusExtension;
+					}
+					if (CURR_MATRIX(2, jMinus1) >= (MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpening)) {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1) + gapExtension;
+					} else if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(1, jMinus1)) {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1) + gapOpeningPlusExtension;
+					} else {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(1, jMinus1) + gapOpeningPlusExtension;
+					}
 
-				if (localAlignment) {
 					CURR_MATRIX(0, j) = MAX(0.0, CURR_MATRIX(0, j));
 					if (CURR_MATRIX(0, j) == 0.0) {
 						S_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
@@ -289,24 +312,76 @@ static double pairwiseAlignment(
 						align2InfoPtr->startRange = jElt + 1;
 						maxScore = CURR_MATRIX(0, j);
 					}
-				} else if (noEndGap2 && i == nCharString1) {
-					if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(2, jMinus1)) {
-						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-						CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1);
+				}
+			} else {
+				for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
+					SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+					elements[notSwappedOrder] = lookupValue;
+					if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
+						substitutionValue = (float) matchMatrix[matrixDim[0] * elements[0] + elements[1]];
+					else
+						substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
+
+					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores 
+					 *           and traceback values 
+					 */
+					if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(0, j) = PREV_MATRIX(0, jMinus1) + substitutionValue;
+					} else if (PREV_MATRIX(2, jMinus1) >= PREV_MATRIX(1, jMinus1)) {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(0, j) = PREV_MATRIX(2, jMinus1) + substitutionValue;
 					} else {
+						S_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(0, j) = PREV_MATRIX(1, jMinus1) + substitutionValue;
+					}
+					if (PREV_MATRIX(1, j) >= (MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpening)) {
+						D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(1, j) = PREV_MATRIX(1, j) + gapExtension;
+					} else if (PREV_MATRIX(0, j) >= PREV_MATRIX(2, j)) {
+						D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(1, j) = PREV_MATRIX(0, j) + gapOpeningPlusExtension;
+					} else {
+						D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(1, j) = PREV_MATRIX(2, j) + gapOpeningPlusExtension;
+					}
+					if (CURR_MATRIX(2, jMinus1) >= (MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1)) + gapOpening)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-						CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1);
+						CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1) + gapExtension;
+					} else if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(1, jMinus1)) {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1) + gapOpeningPlusExtension;
+					} else {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(1, jMinus1) + gapOpeningPlusExtension;
 					}
 				}
 			}
 
 			if (noEndGap1) {
-				if (PREV_MATRIX(0, nCharString2) >= PREV_MATRIX(1, nCharString2)) {
+				if (PREV_MATRIX(1, nCharString2) >= MAX(PREV_MATRIX(0, nCharString2), PREV_MATRIX(2, nCharString2))) {
+					D_TRACE_MATRIX(iMinus1, nCharString2Minus1) = DELETION;
+					CURR_MATRIX(1, nCharString2) = PREV_MATRIX(1, nCharString2);
+				} else if (PREV_MATRIX(0, nCharString2) >= PREV_MATRIX(2, nCharString2)) {
 					D_TRACE_MATRIX(iMinus1, nCharString2Minus1) = SUBSTITUTION;
 					CURR_MATRIX(1, nCharString2) = PREV_MATRIX(0, nCharString2);
 				} else {
-					D_TRACE_MATRIX(iMinus1, nCharString2Minus1) = DELETION;
-					CURR_MATRIX(1, nCharString2) = PREV_MATRIX(1, nCharString2);
+					D_TRACE_MATRIX(iMinus1, nCharString2Minus1) = INSERTION;
+					CURR_MATRIX(1, nCharString2) = PREV_MATRIX(2, nCharString2);
+				}
+			}
+			if (noEndGap2 && i == nCharString1) {
+				for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
+					if (CURR_MATRIX(2, jMinus1) >= MAX(CURR_MATRIX(0, jMinus1), CURR_MATRIX(1, jMinus1))) {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(2, jMinus1);
+					} else if (CURR_MATRIX(0, jMinus1) >= CURR_MATRIX(1, jMinus1)) {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(0, jMinus1);
+					} else {
+						I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
+						CURR_MATRIX(2, j) = CURR_MATRIX(1, jMinus1);
+					}
 				}
 			}
 		}
@@ -498,16 +573,15 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 	SEXP output;
 
+	int i, qualityElement = 0;
 	int qualityIncrement = ((_get_XStringSet_length(patternQuality) < numberOfStrings) ? 0 : 1);
-	int qualityElement = 0;
 	double *score;
 	if (scoreOnlyValue) {
 		PROTECT(output = NEW_NUMERIC(numberOfStrings));
-		score = REAL(output);
-		for (int i = 0; i < numberOfStrings; i++) {
+		for (i = 0, score = REAL(output); i < numberOfStrings; i++, score++) {
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
-			score[i] = pairwiseAlignment(
+			*score = pairwiseAlignment(
 					&align1Info,
 					&align2Info,
 					(INTEGER(typeCode)[0] == LOCAL_ALIGNMENT),
@@ -555,8 +629,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		PROTECT(alignedPatternRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
-		int *align1RangeStart = INTEGER(alignedPatternRangeStart);
-		int *align1RangeWidth = INTEGER(alignedPatternRangeWidth);
 		SET_SLOT(alignedPatternRange, mkChar("start"), alignedPatternRangeStart);
 		SET_SLOT(alignedPatternRange, mkChar("width"), alignedPatternRangeWidth);
 		SET_SLOT(alignedPattern, mkChar("range"), alignedPatternRange);
@@ -581,8 +653,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		PROTECT(alignedSubjectRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectRangeWidth = NEW_INTEGER(numberOfStrings));
-		int *align2RangeStart = INTEGER(alignedSubjectRangeStart);
-		int *align2RangeWidth = INTEGER(alignedSubjectRangeWidth);
 		SET_SLOT(alignedSubjectRange, mkChar("start"), alignedSubjectRangeStart);
 		SET_SLOT(alignedSubjectRange, mkChar("width"), alignedSubjectRangeWidth);
 		SET_SLOT(alignedSubject, mkChar("range"), alignedSubjectRange);
@@ -596,7 +666,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 		/* Set the "score" slot */
 		PROTECT(alignedScore = NEW_NUMERIC(numberOfStrings));
-		score = REAL(alignedScore);
 		SET_SLOT(output, mkChar("score"), alignedScore);
 
 		/* Set the "type" slot */
@@ -608,10 +677,16 @@ SEXP XStringSet_align_pairwiseAlignment(
 		/* Set the "gapExtension" slot */
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
-		for (int i = 0; i < numberOfStrings; i++) {
+		int *align1RangeStart, *align1RangeWidth, *align2RangeStart, *align2RangeWidth;
+		for (i = 0, score = REAL(alignedScore),
+				align1RangeStart = INTEGER(alignedPatternRangeStart),
+				align1RangeWidth = INTEGER(alignedPatternRangeWidth),
+				align2RangeStart = INTEGER(alignedSubjectRangeStart),
+				align2RangeWidth = INTEGER(alignedSubjectRangeWidth); i < numberOfStrings;
+				i++, score++, align1RangeStart++, align1RangeWidth++, align2RangeStart++, align2RangeWidth++) {
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
-			score[i] = pairwiseAlignment(
+			*score = pairwiseAlignment(
 					&align1Info,
 					&align2Info,
 					(INTEGER(typeCode)[0] == LOCAL_ALIGNMENT),
@@ -639,8 +714,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 		    SET_VECTOR_ELT(alignedSubjectMismatch, i, alignedSubjectMismatchElt);
 			UNPROTECT(2);
 
-			align1RangeStart[i] = align1Info.startRange;
-			align1RangeWidth[i] = align1Info.widthRange;
+			*align1RangeStart = align1Info.startRange;
+			*align1RangeWidth = align1Info.widthRange;
 			PROTECT(alignedPatternIndelRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 			PROTECT(alignedPatternIndelRangeStart = NEW_INTEGER(align1Info.lengthIndel));
 			PROTECT(alignedPatternIndelRangeWidth = NEW_INTEGER(align1Info.lengthIndel));
@@ -653,8 +728,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 		    SET_VECTOR_ELT(alignedPatternIndel, i, alignedPatternIndelRange);
 		    UNPROTECT(3);
 
-			align2RangeStart[i] = align2Info.startRange;
-			align2RangeWidth[i] = align2Info.widthRange;
+			*align2RangeStart = align2Info.startRange;
+			*align2RangeWidth = align2Info.widthRange;
 			PROTECT(alignedSubjectIndelRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 			PROTECT(alignedSubjectIndelRangeStart = NEW_INTEGER(align2Info.lengthIndel));
 			PROTECT(alignedSubjectIndelRangeWidth = NEW_INTEGER(align2Info.lengthIndel));
