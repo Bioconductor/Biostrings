@@ -77,7 +77,7 @@
   of an error in the base read. For \code{"Phred"} quality measures \eqn{Q}
   in \eqn{[0, 99]}, these error probabilities are given by
   \eqn{\epsilon_i = 10^{-Q/10}}. For \code{"Solexa"} quality measures
-  \eqn{Q} in \eqn{[-5, 94]}, they are given by
+  \eqn{Q} in \eqn{[-5, 99]}, they are given by
   \eqn{\epsilon_i = 1 - 1/(1 + 10^{-Q/10}}.
   Assuming independence within and between base reads, the combined error
   probability of a mismatch when the underlying bases do match is

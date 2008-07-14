@@ -13,17 +13,23 @@
 qualitySubstitutionMatrices <-
 function(alphabetLength = 4L, qualityType = "Phred", bitScale = 1) {
   qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
-  if (qualityType == "Phred")
+  if (qualityType == "Phred") {
     errorProbs <- 10^seq(0, -9.9, by = -0.1)
-  else
-    errorProbs <- 1 - 1/(1 + 10^seq(0.5, -9.4, by = -0.1))
+    qualityLabels <- as.character(0:99)
+  } else {
+    errorProbs <- 1 - 1/(1 + 10^seq(0.5, -9.9, by = -0.1))
+    qualityLabels <- as.character(-5:99)
+  }
   errorMatrix <-
     outer(errorProbs, errorProbs,
           function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
           n = alphabetLength)
-  list(matchMatrix = bitScale * log2((1 - errorMatrix) * alphabetLength),
-       mismatchMatrix =
-         bitScale * log2(errorMatrix * (alphabetLength / (alphabetLength - 1))))
+  output <- 
+    lapply(list(matchMatrix = bitScale * log2((1 - errorMatrix) * alphabetLength),
+                mismatchMatrix =
+                bitScale * log2(errorMatrix * (alphabetLength / (alphabetLength - 1)))),
+           function(x) {dimnames(x) <- list(qualityLabels, qualityLabels); x})
+  output
 }
 
 
@@ -84,8 +90,8 @@ function(pattern,
         patternQuality <- rawToChar(as.raw(33L + as.integer(patternQuality)))
       } else {
         if (any(is.na(patternQuality)) ||
-            any(patternQuality < -5 || patternQuality > 94))
-          stop("integer 'patternQuality' values must be between -5 and 94 for qualityType 'Solexa'")
+            any(patternQuality < -5 || patternQuality > 99))
+          stop("integer 'patternQuality' values must be between -5 and 99 for qualityType 'Solexa'")
         patternQuality <- rawToChar(as.raw(64L + as.integer(patternQuality)))
       }
     }
@@ -103,8 +109,8 @@ function(pattern,
         subjectQuality <- rawToChar(as.raw(33L + as.integer(subjectQuality)))
       } else {
         if (any(is.na(subjectQuality)) ||
-            any(subjectQuality < -5 || subjectQuality > 94))
-          stop("integer 'subjectQuality' values must be between -5 and 94 for qualityType 'Solexa'")
+            any(subjectQuality < -5 || subjectQuality > 99))
+          stop("integer 'subjectQuality' values must be between -5 and 99 for qualityType 'Solexa'")
         subjectQuality <- rawToChar(as.raw(64L + as.integer(subjectQuality)))
       }
     }
@@ -121,9 +127,9 @@ function(pattern,
              length(alphabetToCodes))
 
     if (qualityType == "Phred")
-      qualityLookupTable <- buildLookupTable(33:(99 + 33), 0:99)
+      qualityLookupTable <- buildLookupTable(33:(33 + 99), 0:99)
     else
-      qualityLookupTable <- buildLookupTable(59:(99 + 59), 0:99)
+      qualityLookupTable <- buildLookupTable(59:(59 + 104), 0:104)
     qualityMatrices <-
       qualitySubstitutionMatrices(alphabetLength = alphabetLength,
                                   qualityType = qualityType)
