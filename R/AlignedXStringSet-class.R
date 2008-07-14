@@ -212,7 +212,7 @@ setMethod("[", "QualityAlignedXStringSet",
             stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        new("VariableQualityAlignedXStringSet",
+        new("QualityAlignedXStringSet",
             unaligned = .safe.subset.XStringSet(x@unaligned, i),
             quality = .safe.subset.XStringSet(x@quality, i),
             qualityType = x@qualityType,
