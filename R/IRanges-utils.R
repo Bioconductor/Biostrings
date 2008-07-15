@@ -59,12 +59,12 @@ slice <- function(x, lower=-Inf, upper=Inf, includeLower=TRUE, includeUpper=TRUE
     if (!is.numeric(x))
         stop("'x' must be a numeric vector")
     keep <- rep(TRUE, length(x))
-    if (lower > -Inf)
-        keep <-
-          keep & do.call(ifelse(includeLower, ">=", ">"), list(substitute(x), substitute(lower)))
-    if (upper < Inf)
-        keep <-
-          keep & do.call(ifelse(includeUpper, "<=", "<"), list(substitute(x), substitute(upper)))
+    lowerFun <- ifelse(includeLower, ">=", ">")
+    upperFun <- ifelse(includeUpper, "<=", "<")
+    if (do.call(lowerFun, list(lower, min(x))))
+        keep <- keep & do.call(lowerFun, list(substitute(x), lower))
+    if (do.call(upperFun, list(upper, max(x))))
+        keep <- keep & do.call(upperFun, list(substitute(x), upper))
     whichAsRanges(keep)
 }
 
