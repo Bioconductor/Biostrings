@@ -24,7 +24,7 @@ exportClasses(
 
 export(
     IRanges,
-    intToRanges, intToAdjacentRanges, whichRanges, shift, restrict, narrow, reduce, toNormalIRanges, gaps,
+    intToRanges, intToAdjacentRanges, whichAsRanges, shift, restrict, narrow, reduce, toNormalIRanges, gaps,
     Mask, read.gapMask, read.agpMask, read.liftMask, read.rmMask, read.trfMask,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,

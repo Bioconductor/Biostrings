@@ -39,14 +39,14 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "whichRanges" function.
+### The "whichAsRanges" function.
 ###
 
-whichRanges <- function(x)
+whichAsRanges <- function(x)
 {
 	if (!is.logical(x))
 		stop("'x' must be a logical vector")
-	.Call("which_ranges", x, PACKAGE="Biostrings")
+	.Call("which_as_ranges", x, PACKAGE="Biostrings")
 }
 
 

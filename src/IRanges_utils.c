@@ -124,7 +124,7 @@ SEXP int_to_adjacent_ranges(SEXP x)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP which_ranges(SEXP x)
+SEXP which_as_ranges(SEXP x)
 {
 	SEXP ans, start, width;
 	int i, x_length, ans_length, *x_elt, prev_elt, *start_elt, *width_elt;
