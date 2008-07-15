@@ -22,7 +22,6 @@
 \alias{tb.width}
 \alias{tb.width,PreprocessedTB-method}
 \alias{initialize,PreprocessedTB-method}
-\alias{duplicated,PreprocessedTB-method}
 
 % PDict3Parts class:
 \alias{class:PDict3Parts}
@@ -35,7 +34,6 @@
 \alias{tb,PDict3Parts-method}
 \alias{tb.width,PDict3Parts-method}
 \alias{tail,PDict3Parts-method}
-\alias{duplicated,PDict3Parts-method}
 
 % PDict class:
 \alias{class:PDict}
@@ -46,6 +44,7 @@
 \alias{names,PDict-method}
 \alias{[[,PDict-method}
 \alias{[[<-,PDict-method}
+\alias{duplicated,PDict-method}
 \alias{patternFrequency}
 \alias{patternFrequency,PDict-method}
 
@@ -58,7 +57,6 @@
 \alias{tb,TB_PDict-method}
 \alias{tb.width,TB_PDict-method}
 \alias{tail,TB_PDict-method}
-\alias{duplicated,TB_PDict-method}
 \alias{show,TB_PDict-method}
 
 % Twobit class:
@@ -79,6 +77,14 @@
 \alias{as.matrix,ACtree-method}
 \alias{initialize,ACtree-method}
 
+% MTB_PDict class:
+\alias{class:MTB_PDict}
+\alias{MTB_PDict-class}
+\alias{MTB_PDict}
+
+\alias{as.list,MTB_PDict-method}
+\alias{show,MTB_PDict-method}
+
 % PDict() constructor:
 \alias{PDict}
 \alias{PDict,character-method}
@@ -98,13 +104,17 @@
 }
 
 \usage{
-  PDict(x, tb.start=NA, tb.end=NA, tb.width=NA, type="ACtree", skip.invalid.patterns=FALSE)
+  PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
+           type="ACtree", skip.invalid.patterns=FALSE)
 }
 
 \arguments{
   \item{x}{
     A character vector, a \link{DNAStringSet} object or
     an \link{XStringViews} object with a \link{DNAString} subject.
+  }
+  \item{max.mismatch}{
+    [DOCUMENT ME]
   }
   \item{tb.start}{
     [DOCUMENT ME]

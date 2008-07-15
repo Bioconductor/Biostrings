@@ -46,6 +46,8 @@
 \alias{countPDict,XString-method}
 \alias{countPDict,XStringViews-method}
 \alias{countPDict,MaskedXString-method}
+\alias{whichPDict}
+\alias{whichPDict,XString-method}
 
 % Functions:
 \alias{extractAllMatches}
@@ -54,20 +56,32 @@
 \title{Searching a sequence for patterns stored in a preprocessed dictionary}
 
 \description{
-  The \code{matchPDict} function efficiently finds all occurences in a
-  text (the subject) of all patterns stored in a preprocessed dictionary.
+  The \code{matchPDict}, \code{countPDict} and \code{whichPDict} functions
+  efficiently find the occurrences in a text (the subject) of all patterns
+  stored in a preprocessed dictionary.
 
-  This man page shows how to use \code{matchPDict} for exact matching
-  of a constant width dictionary i.e. a dictionary where all the
+  The three functions differ in what they return: \code{matchPDict} returns
+  the "where" information i.e. the positions in the subject of all the
+  occurrences of every pattern; \code{countPDict} returns the "how many
+  times" information i.e. the number of occurrences for each pattern;
+  and \code{whichPDict} returns the "who" information i.e. which patterns
+  in the preprocessed dictionary have at least one match.
+
+  This man page shows how to use \code{matchPDict}/\code{countPDict}/\code{whichPDict}
+  for exact matching of a constant width dictionary i.e. a dictionary where all the
   patterns have the same length (same number of nucleotides).
 
-  See \code{?`\link{matchPDict-inexact}`} for how to use \code{matchPDict}
+  See \code{?`\link{matchPDict-inexact}`} for how to use these functions
   for inexact matching or when the original dictionary has a variable width.
 }
 
 \usage{
-  matchPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-  countPDict(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+  matchPDict(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+  countPDict(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+  whichPDict(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
 
   ## Manipulation of the MIndex object returned by matchPDict()
   startIndex(x, all.names=FALSE)
@@ -75,18 +89,6 @@
   countIndex(x, all.names=FALSE)
   unlist(x, recursive=TRUE, use.names=TRUE)
   extractAllMatches(subject, mindex)
-}
-
-\details{
-  In this man page, we assume that you know how to preprocess a dictionary
-  of DNA patterns that can then be used with \code{matchPDict}.
-  Please see \code{?\link{PDict}} if you don't.
-
-  When using \code{matchPDict} for exact matching of a constant width
-  dictionary, the standard way to preprocess the original dictionary
-  is by calling the \code{\link{PDict}} constructor on it with no extra
-  arguments. This returns the preprocessed dictionary in a \link{PDict}
-  object that can be used with \code{matchPDict}.
 }
 
 \arguments{
@@ -104,18 +106,21 @@
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed (see
     \code{?\link{isMatching}} for the details).
-    When used on a constant width dictionary, \code{matchPDict} (and
-    \code{countPDict}) only support exact matching so \code{max.mismatch}
-    must be zero.
+    When used on a constant width dictionary,
+    \code{matchPDict}/\code{countPDict}/\code{whichPDict}
+    only support exact matching so \code{max.mismatch} must be zero.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
     (see \code{?\link{isMatching}} for the details).
-    When used on a constant width dictionary, \code{matchPDict} (and
-    \code{countPDict}) only support exact matching so \code{fixed}
-    must be \code{TRUE}.
+    When used on a constant width dictionary,
+    \code{matchPDict}/\code{countPDict}/\code{whichPDict}
+    only support exact matching so \code{fixed} must be \code{TRUE}.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
+  }
+  \item{verbose}{
+    \code{TRUE} or \code{FALSE}.
   }
   \item{x}{
     A PDict or MIndex object for \code{names}.
@@ -135,10 +140,29 @@
   }
 }
 
-\value{
-  \code{matchPDict} returns an MIndex object.
+\details{
+  In this man page, we assume that you know how to preprocess a dictionary
+  of DNA patterns that can then be used with \code{matchPDict}, \code{countPDict}
+  or \code{whichPDict}.
+  Please see \code{?\link{PDict}} if you don't.
 
-  \code{countPDict} returns an integer vector.
+  When using \code{matchPDict}, \code{countPDict} or \code{whichPDict}
+  for exact matching of a constant width dictionary, the standard way to
+  preprocess the original dictionary is by calling the \code{\link{PDict}}
+  constructor on it with no extra arguments. This returns the preprocessed
+  dictionary in a \link{PDict} object that can be used with
+  \code{matchPDict}/\code{countPDict}/\code{whichPDict}.
+}
+
+\value{
+  \code{matchPDict} returns an MIndex object with \code{length} equal to the
+  number of patterns in the \code{pdict} argument.
+
+  \code{countPDict} returns an integer vector with \code{length} equal to the
+  number of patterns in the \code{pdict} argument.
+
+  \code{whichPDict} returns an integer vector made of the indices of the
+  patterns in the \code{pdict} argument that have at least one match.
 
   \code{startIndex}, \code{endIndex} and \code{countIndex} return vectors of
   the same length as the original dictionary: \code{startIndex} and
@@ -193,7 +217,7 @@
   sum(count_index)                     # Total number of matches.
   table(count_index)
   i0 <- which(count_index == max(count_index))
-  pdict0[[i0]]                         # The pattern with most occurences.
+  pdict0[[i0]]                         # The pattern with most occurrences.
   mindex[[i0]]                         # Its matches as a Views object.
   views(chr3R, start_index[[i0]], end_index[[i0]]) # And as an XStringViews object.
 

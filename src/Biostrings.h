@@ -239,7 +239,7 @@ void _IntBuf_insert_at(
 
 void _IntBuf_append(
 	IntBuf *ibuf,
-	int *newvals,
+	const int *newvals,
 	int nnewval
 );
 
@@ -255,7 +255,7 @@ void _IntBuf_sum_val(
 
 void _IntBuf_append_shifted_vals(
 	IntBuf *ibuf,
-	int *newvals,
+	const int *newvals,
 	int nnewval,
 	int shift
 );
@@ -264,6 +264,10 @@ void _IntBuf_sum_IntBuf(
 	const IntBuf *ibuf1,
 	const IntBuf *ibuf2
 );
+
+void _IntBuf_qsort(IntBuf *ibuf);
+
+void _IntBuf_delete_consecutiverepeats(IntBuf *ibuf);
 
 SEXP _IntBuf_asINTEGER(const IntBuf *ibuf);
 
@@ -998,10 +1002,14 @@ SEXP inject_code(
 
 SEXP debug_match_utils();
 
-int _nmismatch_at_Pshift(
+int (*_selected_nmismatch_at_Pshift_fun)(
 	const RoSeq *P,
 	const RoSeq *S,
 	int Pshift,
+	int max_mm
+);
+
+void _select_nmismatch_at_Pshift_fun(
 	int fixedP,
 	int fixedS
 );
@@ -1012,15 +1020,6 @@ SEXP nmismatch_at(
 	SEXP starting,
 	SEXP at,
 	SEXP fixed
-);
-
-int _is_matching_at_Pshift(
-	const RoSeq *P,
-	const RoSeq *S,
-	int Pshift,
-	int max_mm,
-	int fixedP,
-	int fixedS
 );
 
 SEXP is_matching(
@@ -1238,6 +1237,11 @@ SEXP find_palindromes(
 
 SEXP debug_PDict_utils();
 
+SEXP Dups_diff(
+	SEXP x_unq2dup,
+	SEXP y_dup2unq
+);
+
 void _init_dup2unq_buf(int length);
 
 void _report_dup(
@@ -1306,6 +1310,8 @@ SEXP ByName_MIndex_coverage(
 	SEXP start,
 	SEXP end
 );
+
+SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 
 /* match_pdict_Twobit.c */

@@ -10,12 +10,16 @@ UTILITIES
 
 STRING MATCHING
 
+o Added the "whichPDict" generic function with a method for XString objects.
+
 o Major rework of the PDict class, subclasses and the PDict() constructor:
-    - Merged the CWdna_PDict and TBdna_PDict classes into the TB_PDict class,
-      a new container for Trusted Band PDict objects (a subclass of the PDict
-      VIRTUAL class).
+    - Merged the CWdna_PDict and TBdna_PDict classes into the TB_PDict class
+      (subclass of the PDict VIRTUAL class), a new container for storing a
+      Trusted Band PDict object.
     - There are now 2 types of preprocessing: the "ACtree" type (the default)
       and the "Twobit" type.
+    - Added the MTB_PDict class (another subclass of the PDict VIRTUAL class),
+      a container for storing a Multiple Trusted Band PDict object.
     - The methods defined for PDict objects are now: length, width, names,
       [[, head, tb, tb.width, tail, show, duplicated and patternFrequency.
     - Changed the signature of the PDict() constructor: no more 'drop.head'

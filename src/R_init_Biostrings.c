@@ -172,6 +172,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* PDict_utils.c */
 	{"debug_PDict_utils", (DL_FUNC) &debug_PDict_utils, 0},
+	{"Dups_diff", (DL_FUNC) &Dups_diff, 2},
 
 /* MIndex_utils.c */
 	{"debug_MIndex_utils", (DL_FUNC) &debug_MIndex_utils, 0},
@@ -179,6 +180,7 @@ static const R_CallMethodDef callMethods[] = {
 	{"extract_endIndex", (DL_FUNC) &extract_endIndex, 4},
 	{"ByPos_MIndex_coverage", (DL_FUNC) &ByPos_MIndex_coverage, 4},
 	{"ByName_MIndex_coverage", (DL_FUNC) &ByName_MIndex_coverage, 4},
+	{"ByPos_MIndex_combine", (DL_FUNC) &ByPos_MIndex_combine, 1},
 
 /* match_pdict_Twobit.c */
 	{"debug_match_pdict_Twobit", (DL_FUNC) &debug_match_pdict_Twobit, 0},

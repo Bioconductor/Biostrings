@@ -1,0 +1,444 @@
+Some PDict()/matchPDict() benchmarks using Yi's second Solexa data set
+======================================================================
+
+"Yi's second data set" is originally available at:
+
+  lamprey:/mnt/fred/solexa/ycao/080623_HWI-EAS88_0001/
+
+Lane1. Myoblasts IPed with 7311 Antibody
+Lane2: Myotubes IPed with 7311 Antibody
+Lane3. Myoblasts IPed with 6975 Antibody
+Lane4: Myotubes IPed with 6975 Antibody
+Lane5: phiX control
+Lane6. Myoblasts IPed with 6196 Antibody
+Lane7: Myotubes IPed with 6196 Antibody
+Lane8: Myotubes IPed with preimmune serum
+
+
+===============================================================================
+On george1 (16G of RAM, 8 CPUs)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+8 lanes together
+----------------
+After cleaning, dict0 is 35567623 x 35.
+
+> library(ShortRead)
+> path0 <- "~/SolexaYi2"
+> list.files(path=path0, pattern="^s_._sequence.txt$")   # 8 lanes
+[1] "s_1_sequence.txt" "s_2_sequence.txt" "s_3_sequence.txt" "s_4_sequence.txt"
+[5] "s_5_sequence.txt" "s_6_sequence.txt" "s_7_sequence.txt" "s_8_sequence.txt"
+
+## Loading and cleaning
+> system.time(rfq <- readFastq(path0, pattern="^s_._sequence.txt$"))
+   user  system elapsed 
+382.303  21.193 414.080 
+> gc()
+            used   (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells    442339   23.7   83093856  4437.7  107396566  5735.6
+Vcells 528200241 4029.9 1715252697 13086.4 1704641212 13005.4
+> system.time(dict0 <- clean(sread(rfq)))
+   user  system elapsed 
+  5.892   0.804  31.320
+> gc()
+            used   (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells    445623   23.8   53180067  2840.2  107396566  5735.6
+Vcells 563768713 4301.3 1715252697 13086.4 1704641212 13005.4
+
+## Preprocessing
+> pdict0 <- PDict(dict0)  # ERROR: Trusted Band is too big!
+> pdict1 <- PDict(dict0, max.mismatch=1)  # takes forever (lots of swapping)
+
+lane 1 only
+-----------
+After cleaning, dict0 is 4469757 x 35.
+
+> library(ShortRead)
+> path0 <- "~/SolexaYi2"
+
+## Loading and cleaning
+> system.time(rfq <- readFastq(path0, pattern="s_1_sequence.txt"))
+   user  system elapsed 
+ 44.450   2.120  49.867 
+> gc()
+           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   442269  23.7   10798339  576.7  13860972  740.3
+Vcells 66506225 507.5  215613665 1645.1 214056559 1633.2
+> system.time(dict0 <- clean(sread(rfq)))
+   user  system elapsed 
+  0.793   0.000   0.791 
+> gc()
+           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   443715  23.7    6910936  369.1  13860972  740.3
+Vcells 70976449 541.6  215613665 1645.1 214056559 1633.2
+
+## Preprocessing for exact matching
+> system.time(pdict0 <- PDict(dict0))
+   user  system elapsed 
+ 14.520   2.856  17.385 
+> gc()
+            used   (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells    874117   46.7    2830718  151.2  13860972  740.3
+Vcells 442722844 3377.8  569051730 4341.6 515966682 3936.6
+## This shows that the size of pdict0 is about 2837 Mb (unreliable
+## object.size() reports 3448 Mb).
+
+## Preprocessing for max.mismatching=1
+> system.time(pdict1 <- PDict(dict0, max.mismatch=1))
+   user  system elapsed 
+ 26.966   2.164  29.130 
+> gc()
+            used   (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   1894849  101.2    4065505  217.2  13860972  740.3
+Vcells 684867192 5225.2 1023208512 7806.5 797303398 6083.0
+## This shows that the size of pdict1 is about 1848 Mb (unreliable
+## object.size() reports 2928 Mb).
+
+## Preprocessing for max.mismatching=2
+> system.time(pdict2 <- PDict(dict0, max.mismatch=2))
+   user  system elapsed 
+ 56.760   1.532  58.288 
+> gc()
+            used   (Mb) gc trigger    (Mb)  max used   (Mb)
+Ncells   4409170  235.5    9820776   524.5  13860972  740.3
+Vcells 815612649 6222.7 1371741416 10465.6 977847099 7460.4
+## This shows that the size of pdict2 is about 998 Mb (unreliable
+## object.size() reports 2582 Mb).
+
+## Preprocessing for max.mismatching=3
+> system.time(pdict3 <- PDict(dict0, max.mismatch=3))
+   user  system elapsed 
+ 29.694   2.656  32.349 
+Warning message:
+In .MTB_PDict(x, max.mismatch, type) :
+  given the characteristics of dictionary 'x', this value of 'max.mismatch' will give poor (or very poor) performance when you use this MTB_PDict with matchPDict() (it will of course depend on the length of the subject)
+> gc()
+            used   (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells   5555999  296.8   10351814   552.9   13860972   740.3
+Vcells 922524858 7038.4 1440408486 10989.5 1370974508 10459.8
+## This shows that the size of pdict3 is about 816 Mb (unreliable
+## object.size() reports 2800 Mb).
+
+## Loading Mouse chr1
+> library(BSgenome.Mmusculus.UCSC.mm9)
+> chr1 <- Mmusculus$chr1
+
+## Exact matching
+> system.time(m0 <- matchPDict(pdict0, chr1))
+   user  system elapsed 
+ 51.455   0.956  52.410 
+> object.size(m0)/1024/1024
+[1] 468.3648
+> system.time(cm0 <- countIndex(m0))
+   user  system elapsed 
+ 23.217   0.000  23.218 
+> sum(cm0)
+[1] 110578790
+
+## Matching with max.mismatch=1
+> system.time(m1 <- matchPDict(pdict1, chr1, max.mismatch=1))
+   user  system elapsed 
+641.280   4.552 649.840 
+> object.size(m1)/1024/1024
+[1] 1038.721
+> system.time(cm1 <- countIndex(m1))
+   user  system elapsed 
+ 11.412   0.072  13.297 
+> sum(cm1)
+[1] 258783032
+> sum(cm0 == 0 & cm1 != 0)
+[1] 118600
+
+## Matching with max.mismatch=2
+> system.time(m2 <- matchPDict(pdict2, chr1, max.mismatch=2))
+     user    system   elapsed 
+12290.748    42.695 12442.805
+> object.size(m2)/1024/1024
+[1] 2007.031
+> system.time(cm2 <- countIndex(m2))
+   user  system elapsed 
+  8.116   0.416  56.458 
+> sum(cm2)
+[1] 511651541
+
+
+## Some sanity checking
+m10 <- matchPDict(pdict1, chr1, max.mismatch=0)
+identical(m10, m0)
+m20 <- matchPDict(pdict2, chr1, max.mismatch=0)
+identical(m20, m0)
+m30 <- matchPDict(pdict3, chr1, max.mismatch=0)
+identical(m30, m0)
+
+m21 <- matchPDict(pdict2, chr1, max.mismatch=1)
+identical(m21, m1)
+m31 <- matchPDict(pdict3, chr1, max.mismatch=1)
+identical(m31, m1)
+
+m32 <- matchPDict(pdict3, chr1, max.mismatch=2)
+identical(m32, m2)
+
+
+> gc()
+             used    (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells    6776903   362.0   19227046  1026.9   19227046  1026.9
+Vcells 1413290587 10782.6 4217248080 32175.1 3591384996 27400.1
+## Max used was 27400.1 Mb so with only 16G of RAM there was a lot
+## of swapping!
+
+> sessionInfo()
+R version 2.8.0 Under development (unstable) (2008-06-17 r45946) 
+x86_64-unknown-linux-gnu 
+
+locale:
+LC_CTYPE=en_CA.UTF-8;LC_NUMERIC=C;LC_TIME=en_CA.UTF-8;LC_COLLATE=en_CA.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_CA.UTF-8;LC_PAPER=en_CA.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_CA.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] tools     stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] BSgenome.Mmusculus.UCSC.mm9_1.3.7 BSgenome_1.9.3                   
+[3] ShortRead_0.1.26                  lattice_0.17-8                   
+[5] Biobase_2.1.7                     Biostrings_2.9.31                
+
+loaded via a namespace (and not attached):
+[1] grid_2.8.0
+
+
+
+===============================================================================
+On lamprey (128G of RAM, 16 CPUs)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lane 1 only
+-----------
+After cleaning, dict0 is 4469757 x 35.
+
+> library(ShortRead)
+> path0 <- "."
+
+## Loading and cleaning
+> system.time(rfq <- readFastq(path0, pattern="s_1_sequence.txt"))
+   user  system elapsed 
+ 58.147   2.572  81.392 
+> gc()
+           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   428340  22.9   10798339  576.7  13844467  739.4
+Vcells 66500371 507.4  215606846 1645.0 214050084 1633.1
+> system.time(dict0 <- clean(sread(rfq)))
+   user  system elapsed 
+  0.788   0.000   0.789 
+> gc()
+           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   428828  23.0    6910936  369.1  13844467  739.4
+Vcells 70970334 541.5  215606846 1645.0 214050084 1633.1
+
+## Preprocessing for exact matching
+> system.time(pdict0 <- PDict(dict0))
+   user  system elapsed 
+ 17.834   2.688  20.520 
+> gc()
+            used   (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells    861818   46.1    2830718  151.2  13844467  739.4
+Vcells 442717290 3377.7  569044281 4341.5 515961030 3936.5
+## This shows that the size of pdict0 is about 2837 Mb (unreliable
+## object.size() reports 3448 Mb).
+
+## Preprocessing for max.mismatching=1
+> system.time(pdict1 <- PDict(dict0, max.mismatch=1))
+   user  system elapsed 
+ 32.982   1.960  34.945 
+> gc()
+            used   (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   1841306   98.4    3833815  204.8  13844467  739.4
+Vcells 684845356 5225.0  974395366 7434.1 797342043 6083.3
+## This shows that the size of pdict1 is about 1848 Mb (unreliable
+## object.size() reports 2928 Mb).
+
+## Preprocessing for max.mismatching=2
+> system.time(pdict2 <- PDict(dict0, max.mismatch=2))
+   user  system elapsed 
+ 73.860   1.760  75.619
+> gc()
+            used   (Mb) gc trigger    (Mb)  max used   (Mb)
+Ncells   4355627  232.7    9820776   524.5  13844467  739.4
+Vcells 815590813 6222.5 1371723488 10465.5 966735831 7375.7
+## This shows that the size of pdict2 is about 998 Mb (unreliable
+## object.size() reports 2582 Mb).
+
+## Preprocessing for max.mismatching=3
+> system.time(pdict3 <- PDict(dict0, max.mismatch=3))
+   user  system elapsed 
+ 34.590   3.068  37.657 
+Warning message:
+In .MTB_PDict(x, max.mismatch, type) :
+  given the characteristics of dictionary 'x', this value of 'max.mismatch' will give poor (or very poor) performance when you use this MTB_PDict with matchPDict() (it will of course depend on the length of the subject)
+> gc()
+            used   (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells   5502456  293.9    9820776   524.5   13844467   739.4
+Vcells 922503022 7038.2 1371723488 10465.5 1370952672 10459.6
+## This shows that the size of pdict3 is about 816 Mb (unreliable
+## object.size() reports 2800 Mb).
+
+## Loading Mouse chr1
+> library(BSgenome.Mmusculus.UCSC.mm9)
+> chr1 <- Mmusculus$chr1
+
+## Exact matching
+> system.time(m0 <- matchPDict(pdict0, chr1))
+   user  system elapsed 
+ 60.604   0.024  60.628 
+> object.size(m0)/1024/1024
+[1] 468.3648
+> system.time(cm0 <- countIndex(m0))
+   user  system elapsed 
+ 30.946   0.000  30.945 
+> sum(cm0)
+[1] 110578790
+
+## Matching with max.mismatch=1
+> system.time(m1 <- matchPDict(pdict1, chr1, max.mismatch=1))
+   user  system elapsed 
+643.588   3.665 647.242 
+> object.size(m1)/1024/1024
+[1] 1038.721
+> system.time(cm1 <- countIndex(m1))
+   user  system elapsed 
+ 12.153   0.024  12.180 
+> sum(cm1)
+[1] 258783032
+> sum(cm0 == 0 & cm1 != 0)
+[1] 118600
+
+## Matching with max.mismatch=2
+> system.time(m2 <- matchPDict(pdict2, chr1, max.mismatch=2))
+     user    system   elapsed 
+16388.369    14.624 16402.895 
+> object.size(m2)/1024/1024
+[1] 2007.031
+> system.time(cm2 <- countIndex(m2))
+   user  system elapsed 
+  9.944   0.028   9.973 
+> sum(cm2)
+[1] 511651541
+
+
+> gc()
+             used    (Mb) gc trigger    (Mb)   max used    (Mb)
+Ncells    6748852   360.5   19227046  1026.9   19227046  1026.9
+Vcells 1408812643 10748.4 4217175576 32174.5 3584563517 27348.1
+
+> sessionInfo()
+R version 2.8.0 Under development (unstable) (2008-05-13 r45683) 
+x86_64-unknown-linux-gnu 
+
+locale:
+LC_CTYPE=en_CA.UTF-8;LC_NUMERIC=C;LC_TIME=en_CA.UTF-8;LC_COLLATE=en_CA.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_CA.UTF-8;LC_PAPER=en_CA.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_CA.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] tools     stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] BSgenome.Mmusculus.UCSC.mm9_1.3.6 BSgenome_1.9.1                   
+[3] ShortRead_0.1.26                  lattice_0.17-7                   
+[5] Biobase_2.1.3                     Biostrings_2.9.31                
+
+loaded via a namespace (and not attached):
+[1] grid_2.8.0
+
+
+
+===============================================================================
+Summary for lane 1 / Mouse chr1+
+--------------------------------
+
+NM0 <- cm0
+NM1 <- cm1 - NM0
+NM2 <- cm2 - NM1
+
+==================================================
+ NM0 | NM1 | NM2 | NM3 | nb of reads | % of reads
+==================================================
+ > 1 |       any       |      186274        4.17%
+-----|-----------------|--------------------------
+ = 1 |       any       |      106373        2.38%
+-----|-----------------|--------------------------
+     | > 1 |    any    |       76754        1.72%
+     |-----|-----------|--------------------------
+     | = 1 |    any    |       41846        0.94%
+     |-----|-----------|--------------------------
+     |     | > 1 | any |       53419        1.20%
+     |     |-----|-----|--------------------------
+ = 0 |     | = 1 | any |       33474        0.75%
+     |     |-----|-----|--------------------------
+     | = 0 |     | > 1 |       
+     |     |     |-----|
+     |     | = 0 | = 1 |     3971617       88.86%
+     |     |     |-----|
+     |     |     | = 0 |
+-----------------------|--------------------------
+       T O T A L       |     4469757      100.00%
+==================================================
+
+
+===============================================================================
+More benchmarks
+---------------
+
+on george1:
+
+  library(BSgenome.Mmusculus.UCSC.mm9)
+  chr1 <- unmasked(Mmusculus$chr1)
+
+  library(ShortRead)
+  path0 <- "~hpages/SolexaYi2"
+  rfq <- readFastq(path0, pattern="s_1_sequence.txt")
+  dict0 <- clean(sread(rfq))
+
+  pdict10 <- PDict(dict0[1:1000])
+  pdict11 <- PDict(dict0[1:1000], max.mismatch=1)
+  pdict12 <- PDict(dict0[1:1000], max.mismatch=2)
+  pdict13 <- PDict(dict0[1:1000], max.mismatch=3)
+
+  pdict20 <- PDict(dict0[1:10000])
+  pdict21 <- PDict(dict0[1:10000], max.mismatch=1)
+  pdict22 <- PDict(dict0[1:10000], max.mismatch=2)
+  pdict23 <- PDict(dict0[1:10000], max.mismatch=3)
+
+  pdict30 <- PDict(dict0[1:100000])
+  pdict31 <- PDict(dict0[1:100000], max.mismatch=1)
+  pdict32 <- PDict(dict0[1:100000], max.mismatch=2)
+  pdict33 <- PDict(dict0[1:100000], max.mismatch=3)
+
+  pdict40 <- PDict(dict0[1:1000000])
+  pdict41 <- PDict(dict0[1:1000000], max.mismatch=1)
+  pdict42 <- PDict(dict0[1:1000000], max.mismatch=2)
+  pdict43 <- PDict(dict0[1:1000000], max.mismatch=3)
+
+                   |             |              |          |              |            | avg nb of matches
+                   |             |              |          |  nb of reads |   total nb |    for reads with
+  dict             | subject     | max.mismatch |    time  | with matches | of matches |           matches
+  --------------------------------------------------------------------------------------------------------
+  dict0[1:1000]    | Mouse chr1+ |            0 |    1.770 |           68 |       8273 |          121.6618
+                   |             |            1 |   13.058 |          111 |      24408 |          219.8919
+                   |             |            2 |   38.595 |          131 |      45897 |          350.3588
+                   |             |            3 |  158.394 |          151 |     105827 |          700.841
+  --------------------------------------------------------------------------------------------------------
+  dict0[1:10000]   | Mouse chr1+ |            0 |    2.524 |          645 |      85745 |          132.9380
+                   |             |            1 |   40.172 |          938 |     220686 |          235.2729
+                   |             |            2 |  137.168 |         1154 |     416988 |          361.3414
+                   |             |            3 |  494.440 |         1315 |     762942 |          580.184
+  --------------------------------------------------------------------------------------------------------
+  dict0[1:100000]  | Mouse chr1+ |            0 |   15.534 |         6448 |    1695089 |          262.886
+                   |             |            1 |   76.388 |         9220 |    4618443 |          500.9157
+                   |             |            2 |  224.011 |        11206 |    9319253 |          831.6306
+                   |             |            3 | 1204.326 |        13037 |   16226338 |         1244.637
+  --------------------------------------------------------------------------------------------------------
+  dict0[1:1000000] | Mouse chr1+ |            0 |   32.423 |        64249 |   20751467 |          322.9851
+                   |             |            1 |  148.992 |        90811 |   51550694 |          567.6702
+                   |             |            2 | 1120.742 |       110296 |  102207683 |          926.6672
+                   |             |            3 | 2457.180 |       127862 |  176974849 |         1384.108
+  --------------------------------------------------------------------------------------------------------
+

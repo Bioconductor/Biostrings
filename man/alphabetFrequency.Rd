@@ -197,7 +197,7 @@
   ## translation
   tri1 <- trinucleotideFrequency(yeast1)
   names(tri1) <- GENETIC_CODE[names(tri1)]
-  sapply(split(tri1, names(tri1)), sum) # 12512 occurences of the stop codon
+  sapply(split(tri1, names(tri1)), sum) # 12512 occurrences of the stop codon
 
   ## When the returned vector is very long (e.g. width >= 10), using
   ## 'with.labels=FALSE' will improve the performance considerably (100x, 1000x

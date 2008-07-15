@@ -3,6 +3,7 @@ useDynLib(Biostrings)
 import(methods)
 import(stats)
 import(utils) ## for the "head" and "tail" generics
+import(Biobase) ## for the "combine" generic
 
 exportClasses(
     IRanges, UnlockedIRanges, Views, LockedIRanges, NormalIRanges,
@@ -17,7 +18,7 @@ exportClasses(
     XStringPartialMatches,
     InDel, AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
-    Dups, PreprocessedTB, PDict3Parts, PDict, TB_PDict, Twobit, ACtree,
+    Dups, PreprocessedTB, PDict3Parts, PDict, TB_PDict, Twobit, ACtree, MTB_PDict,
     MIndex, ByPos_MIndex, ByName_MIndex
 )
 
@@ -109,8 +110,9 @@ exportMethods(
     complementedPalindromeArmLength, complementedPalindromeLeftArm, complementedPalindromeRightArm,
 
     head, tb, tb.width, tail, 
-    patternFrequency, startIndex, endIndex, countIndex, unlist,
-    PDict, matchPDict, countPDict,
+    patternFrequency,
+    startIndex, endIndex, countIndex, combine, unlist,
+    PDict, matchPDict, countPDict, whichPDict,
 
     subpatterns, pattern, insertion, deletion,
     unaligned, aligned, quality, type, score, indel, nindel,

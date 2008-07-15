@@ -86,7 +86,8 @@ static void IntBuf_extend(IntBuf *ibuf)
 
 void _IntBuf_insert_at(IntBuf *ibuf, int at, int val)
 {
-	int *elt1, *elt2;
+	const int *elt1;
+	int *elt2;
 	int i1;
 
 	if (ibuf->nelt >= ibuf->buflength)
@@ -99,7 +100,7 @@ void _IntBuf_insert_at(IntBuf *ibuf, int at, int val)
 	return;
 }
 
-void _IntBuf_append(IntBuf *ibuf, int *newvals, int nnewval)
+void _IntBuf_append(IntBuf *ibuf, const int *newvals, int nnewval)
 {
 	int new_nelt, *dest;
 
@@ -114,7 +115,8 @@ void _IntBuf_append(IntBuf *ibuf, int *newvals, int nnewval)
 
 void _IntBuf_delete_at(IntBuf *ibuf, int at)
 {
-	int *elt1, *elt2;
+	int *elt1;
+	const int *elt2;
 	int i2;
 
 	elt1 = ibuf->elts + at;
@@ -134,9 +136,10 @@ void _IntBuf_sum_val(const IntBuf *ibuf, int val)
 	return;
 }
 
-void _IntBuf_append_shifted_vals(IntBuf *ibuf, int *newvals, int nnewval, int shift)
+void _IntBuf_append_shifted_vals(IntBuf *ibuf, const int *newvals, int nnewval, int shift)
 {
-	int new_nelt, i, *elt1, *elt2;
+	int new_nelt, i, *elt1;
+	const int *elt2;
 
 	new_nelt = ibuf->nelt + nnewval;
 	while (ibuf->buflength < new_nelt)
@@ -161,6 +164,38 @@ void _IntBuf_sum_IntBuf(const IntBuf *ibuf1, const IntBuf *ibuf2)
 	     i < ibuf1->nelt;
 	     i++, elt1++, elt2++)
 		*elt1 += *elt2;
+	return;
+}
+
+static int cmpintp(const void *p1, const void *p2)
+{
+	return *((const int *) p1) - *((const int *) p2);
+}
+
+void _IntBuf_qsort(IntBuf *ibuf)
+{
+	qsort(ibuf->elts, ibuf->nelt, sizeof(int), cmpintp);
+	return;
+}
+
+void _IntBuf_delete_consecutiverepeats(IntBuf *ibuf)
+{
+	int *elt1;
+	const int *elt2;
+	int i2;
+
+	if (ibuf->nelt <= 1)
+		return;
+	elt1 = ibuf->elts;
+	elt2 = elt1 + 1;
+	for (i2 = 1; i2 < ibuf->nelt; i2++) {
+		if (*elt2 != *elt1) {
+			elt1++;
+			*elt1 = *elt2;
+		}
+		elt2++;
+	}
+	ibuf->nelt = elt1 - ibuf->elts + 1;
 	return;
 }
 

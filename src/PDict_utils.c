@@ -20,6 +20,34 @@ SEXP debug_PDict_utils()
 }
 
 
+SEXP Dups_diff(SEXP x_unq2dup, SEXP y_dup2unq)
+{
+	SEXP ans, ans_elt, dups;
+	int ans_length, i, j;
+	const int *dup;
+	IntBuf new_dups;
+
+	new_dups = _new_IntBuf(0, 0, 0);
+	ans_length = LENGTH(x_unq2dup);
+	PROTECT(ans = NEW_LIST(ans_length));
+	for (i = 0; i < ans_length; i++) {
+		dups = VECTOR_ELT(x_unq2dup, i);
+		if (dups == R_NilValue)
+			continue;
+		new_dups.nelt = 0;
+		for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
+			if (INTEGER(y_dup2unq)[*dup - 1] == NA_INTEGER)
+				_IntBuf_insert_at(&new_dups, new_dups.nelt, *dup);
+		}
+		PROTECT(ans_elt = _IntBuf_asINTEGER(&new_dups));
+		SET_ELEMENT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+
 /****************************************************************************
  * Buffer of duplicates.
  */

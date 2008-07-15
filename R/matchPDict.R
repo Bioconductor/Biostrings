@@ -173,6 +173,31 @@ setMethod("endIndex", "ByPos_MIndex",
     }
 )
 
+ByPos_MIndex.combine <- function(mi_list, ans_width)
+{
+    ends_listlist <- lapply(mi_list, function(mi) mi@ends)
+    #mergeEnds <- function(...)
+    #{
+    #    ans <- unlist(list(...), recursive=FALSE, use.names=FALSE)
+    #    if (is.null(ans))
+    #        return(NULL)
+    #    sort(unique(ans))
+    #}
+    #args <- c(list(FUN=mergeEnds), ends_listlist, list(SIMPLIFY=FALSE))
+    #ans_ends <- do.call(mapply, args)
+    ans_ends <- .Call("ByPos_MIndex_combine",
+                      ends_listlist,
+                      PACKAGE="Biostrings")
+    new("ByPos_MIndex", ends=ans_ends, width=ans_width)
+}
+
+setMethod("combine", signature(x="ByPos_MIndex", y="ByPos_MIndex"),
+    function(x, y, ...)
+    {
+        stop("not ready yet, sorry!")
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ByName_MIndex" class.
@@ -440,8 +465,8 @@ extractAllMatches <- function(subject, mindex)
 ###   [[2]]
 ###   integer(0)
 
-.matchPDict <- function(pdict, subject, algorithm, max.mismatch, fixed,
-                        count.only=FALSE)
+.matchTB_PDict <- function(pdict, subject, algorithm,
+                           max.mismatch, fixed, verbose, count.only)
 {
     pptb <- pdict@threeparts@pptb
     pdict_type <- class(pptb)
@@ -455,16 +480,17 @@ extractAllMatches <- function(subject, mindex)
     } else {
         stop(pdict_type, ": unsupported type of PDict object for 'pdict'")
     }
-    if (!identical(algorithm, "auto"))
-        stop("'algorithm' can only be '\"auto\"' for now")
-    max.mismatch <- normargMaxMismatch(max.mismatch)
 
     pdict_head <- head(pdict)
     pdict_tail <- tail(pdict)
     if (is.null(pdict_head) && is.null(pdict_tail) && max.mismatch != 0)
         stop("'max.mismatch' must be 0 when there is no head and no tail")
-    names <- names(pdict)
-    if (is.null(names))
+    #THIS IS NOT READY YET!
+    #clean_tb_unq2dup <- clean.tb.unq2dup(pdict)
+    #unq2dup <- if (!is.null(clean_tb_unq2dup)) clean_tb_unq2dup else dups(pptb)@unq2dup
+    unq2dup <- dups(pptb)@unq2dup
+    pdict_names <- names(pdict)
+    if (is.null(pdict_names))
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
@@ -476,7 +502,8 @@ extractAllMatches <- function(subject, mindex)
                     "though the patterns don't contain such letters")
         C_ans <- .Call("XString_match_pdict",
                        pdict_type, pdict_pptb,
-                       length(pdict), tb.width(pptb), pptb@dups@unq2dup,
+                       length(pdict), tb.width(pptb),
+                       unq2dup,
                        pdict_head, pdict_tail,
                        subject,
                        max.mismatch, fixed,
@@ -491,7 +518,8 @@ extractAllMatches <- function(subject, mindex)
                     "though the patterns don't contain such letters")
         C_ans <- .Call("XStringViews_match_pdict",
                        pdict_type, pdict_pptb,
-                       length(pdict), tb.width(pptb), pptb@dups@unq2dup,
+                       length(pdict), tb.width(pptb),
+                       unq2dup,
                        pdict_head, pdict_tail,
                        subject(subject), start(subject), width(subject),
                        max.mismatch, fixed,
@@ -499,16 +527,92 @@ extractAllMatches <- function(subject, mindex)
                        PACKAGE="Biostrings")
     } else {
         stop("'subject' must be a DNAString object,\n",
-             "a MaskedDNAString object, or an XStringViews object\n",
-             "with a DNAString subject")
+             "  a MaskedDNAString object,\n",
+             "  or an XStringViews object with a DNAString subject")
     }
-    if (count.only)
+    if (count.only %in% c(TRUE, NA))
         return(C_ans)
-    if (is.null(names))
+    if (is.null(pdict_names))
         new("ByPos_MIndex", ends=C_ans, width=tb.width(pdict))
     else
         new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
-                             width=tb.width(pdict), NAMES=names)
+                             width=tb.width(pdict), NAMES=pdict_names)
+}
+
+.matchMTB_PDict <- function(pdict, subject, algorithm,
+                            max.mismatch, fixed, verbose, count.only)
+{
+    pdict_names <- names(pdict)
+    if (!is.null(pdict_names))
+        stop("MTB_PDict objects with names are not supported yet")
+    tb_pdicts <- as.list(pdict)
+    NTB <- length(tb_pdicts)
+    max.mismatch0 <- NTB - 1L
+    if (max.mismatch > max.mismatch0)
+        stop("cannot use matchPDict()/countPDict()/whichPDict() ",
+             "with an MTB_PDict object that was preprocessed to be used ",
+             "with 'max.mismatch' <= ", max.mismatch0)
+    if (max.mismatch < max.mismatch0)
+        cat("WARNING: using 'max.mismatch=", max.mismatch, "' with an ",
+            "MTB_PDict object that was preprocessed for allowing up to ",
+            max.mismatch0, " mismatching letter(s) per match is not optimal\n",
+            sep="")
+    ans_parts <- lapply(seq_len(NTB),
+        function(i)
+        {
+            if (verbose)
+                cat("Getting results for TB_PDict component ",
+                    i, "/", NTB, " ...\n", sep="")
+            tb_pdict <- tb_pdicts[[i]]
+            st <- system.time(
+                {
+                    ans_part <- .matchTB_PDict(tb_pdict, subject, algorithm,
+                                               max.mismatch, fixed, verbose,
+                                               (if (is.na(count.only)) NA else FALSE))
+                }, gcFirst=TRUE)
+            if (verbose) {
+                print(st)
+                cat(sum(countIndex(ans_part)), " match(es) found\n", sep="")
+            }
+            ans_part
+        }
+    )
+    if (is.na(count.only))
+        return(unique(sort(unlist(ans_parts))))
+    if (is.null(pdict_names)) {
+        if (verbose)
+            cat("Combining the results obtained for ",
+                "each TB_PDict component...\n", sep="")
+        st <- system.time(
+            {
+                ans_width <- sum(sapply(tb_pdicts, tb.width))
+                ans <- ByPos_MIndex.combine(ans_parts, ans_width)
+            }, gcFirst=TRUE)
+        if (verbose)
+            print(st)
+    } else {
+        stop("not ready yet")
+    }
+    if (count.only)
+        return(countIndex(ans))
+    ans
+}
+
+.matchPDict <- function(pdict, subject, algorithm,
+                        max.mismatch, fixed, verbose, count.only=FALSE)
+{
+    if (!identical(algorithm, "auto"))
+        stop("'algorithm' can only be '\"auto\"' for now")
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    if (!isTRUEorFALSE(verbose))
+        stop("'verbose' must be 'TRUE' or 'FALSE'")
+    if (is(pdict, "TB_PDict"))
+        return(.matchTB_PDict(pdict, subject, algorithm,
+                              max.mismatch, fixed, verbose, count.only))
+    if (is(pdict, "MTB_PDict"))
+        return(.matchMTB_PDict(pdict, subject, algorithm,
+                               max.mismatch, fixed, verbose, count.only))
+    stop("'pdict' must be a PDict object")
 }
 
 
@@ -517,27 +621,31 @@ extractAllMatches <- function(subject, mindex)
 ###
 
 setGeneric("matchPDict", signature="subject",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
         standardGeneric("matchPDict")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XString",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        .matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        .matchPDict(pdict, subject, algorithm, max.mismatch, fixed, verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XStringViews",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        .matchPDict(pdict, subject, algorithm, max.mismatch, fixed)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        .matchPDict(pdict, subject, algorithm, max.mismatch, fixed, verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "MaskedXString",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        matchPDict(pdict, toXStringViewsOrXString(subject),
-                   algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        matchPDict(pdict, toXStringViewsOrXString(subject), algorithm=algorithm,
+                   max.mismatch=max.mismatch, fixed=fixed, verbose=verbose)
 )
 
 
@@ -546,28 +654,51 @@ setMethod("matchPDict", "MaskedXString",
 ###
 
 setGeneric("countPDict", signature="subject",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
         standardGeneric("countPDict")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XString",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .matchPDict(pdict, subject, algorithm,
-                    max.mismatch, fixed, count.only=TRUE)
+                    max.mismatch, fixed, verbose, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XStringViews",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .matchPDict(pdict, subject, algorithm,
-                    max.mismatch, fixed, count.only=TRUE)
+                    max.mismatch, fixed, verbose, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "MaskedXString",
-    function(pdict, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        countPDict(pdict, toXStringViewsOrXString(subject),
-                   algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        countPDict(pdict, toXStringViewsOrXString(subject), algorithm=algorithm,
+                   max.mismatch=max.mismatch, fixed=fixed, verbose=verbose)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "whichPDict" generic and methods.
+###
+
+setGeneric("whichPDict", signature="subject",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        standardGeneric("whichPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("whichPDict", "XString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        .matchPDict(pdict, subject, algorithm,
+                    max.mismatch, fixed, verbose, count.only=NA)
 )
 

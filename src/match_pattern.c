@@ -69,17 +69,18 @@ static void match_naive_exact(const RoSeq *P, const RoSeq *S)
 static void match_naive_inexact(const RoSeq *P, const RoSeq *S,
 		int max_mm, int fixedP, int fixedS)
 {
-	int n1, // position of pattern left-most char relative to the subject
+	int Pshift, // position of pattern left-most char relative to the subject
 	    n2, // 1 + position of pattern right-most char relative to the subject
-	    min_n1, max_n2;
+	    min_Pshift, max_n2;
 
 	if (P->nelt <= 0)
 		error("empty pattern");
-	min_n1 = P->nelt <= max_mm ? 1 - P->nelt : -max_mm;
-	max_n2 = S->nelt - min_n1;
-	for (n1 = min_n1, n2 = min_n1 + P->nelt; n2 <= max_n2; n1++, n2++)
-		if (_is_matching_at_Pshift(P, S, n1, max_mm, fixedP, fixedS))
-			_report_match(n1 + 1, 0);
+	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+	min_Pshift = P->nelt <= max_mm ? 1 - P->nelt : -max_mm;
+	max_n2 = S->nelt - min_Pshift;
+	for (Pshift = min_Pshift, n2 = min_Pshift + P->nelt; n2 <= max_n2; Pshift++, n2++)
+		if (_selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_mm) <= max_mm)
+			_report_match(Pshift + 1, 0);
 	return;
 }
 

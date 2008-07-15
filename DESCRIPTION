@@ -8,8 +8,8 @@ Version: 2.9.41
 Author: H. Pages, R. Gentleman, P. Aboyoun and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
-Depends: R (>= 2.7.0), methods, stats
-Imports: methods, stats
+Depends: R (>= 2.7.0), methods, stats, utils, Biobase
+Imports: methods, stats, utils, Biobase
 Suggests: BSgenome (>= 1.7.7),
 	BSgenome.Celegans.UCSC.ce2 (>= 1.3.4),
 	BSgenome.Dmelanogaster.UCSC.dm3 (>= 1.3.7),

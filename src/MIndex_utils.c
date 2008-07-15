@@ -26,6 +26,7 @@ SEXP debug_MIndex_utils()
  */
 
 static int match_reporting_mode; // 0, 1 or 2
+static int what_to_return; // 0: all matches; 1: match count; 2: matching elts
 static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
 static IntBBuf match_ends;  // used when mode >= 1
 static IntBuf matching_keys;
@@ -33,6 +34,14 @@ static IntBuf matching_keys;
 void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
 		int pdict_L)
 {
+	if (is_count_only == NA_LOGICAL) {
+		what_to_return = 2;
+		is_count_only = 1;
+	} else if (is_count_only) {
+		what_to_return = 1;
+	} else {
+		what_to_return = 0;
+	}
 	match_reporting_mode = is_count_only ? (with_headtail ? 2 : 0) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
 		match_count = _new_IntBuf(pdict_L, pdict_L, 0);
@@ -82,7 +91,8 @@ void _MIndex_report_match(int key, int end)
 
 void _MIndex_report_matches_for_dups(SEXP unq2dup)
 {
-	int n1, i, *key, j, *dup, k1, k2;
+	int n1, i, j, k1, k2;
+	const int *key, *dup;
 	SEXP dups;
 
 #ifdef DEBUG_BIOSTRINGS
@@ -117,7 +127,8 @@ void _MIndex_report_matches_for_dups(SEXP unq2dup)
 void _MIndex_merge_matches(IntBuf *global_match_count,
 		IntBBuf *global_match_ends, int view_offset)
 {
-	int i, *key;
+	int i;
+	const int *key;
 	IntBuf *ends_buf, *global_ends_buf;
 
 	for (i = 0, key = matching_keys.elts;
@@ -142,7 +153,11 @@ void _MIndex_merge_matches(IntBuf *global_match_count,
 
 SEXP _MIndex_reported_matches_asSEXP(SEXP env)
 {
-	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+	if (what_to_return == 2) {
+		_IntBuf_sum_val(&matching_keys, 1);
+		return _IntBuf_asINTEGER(&matching_keys);
+	}
+	if (what_to_return == 1)
 		return _IntBuf_asINTEGER(&match_count);
 	if (env == R_NilValue)
 		return _IntBBuf_asLIST(&match_ends, 1);
@@ -314,6 +329,44 @@ SEXP ByName_MIndex_coverage(SEXP ends_envir, SEXP mindex_width, SEXP start, SEXP
 		add_coverages(INTEGER(ans), ans_length, INTEGER(ends), LENGTH(ends), mwidth, start0);
 	}
 	UNPROTECT(2);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP ByPos_MIndex_combine(SEXP ends_listlist)
+{
+	int NTB, ans_length, i, j;
+	SEXP ans, ans_elt, ends;
+	IntBuf ends_buf;
+
+	NTB = LENGTH(ends_listlist);
+	if (NTB == 0)
+		error("nothing to combine");
+	ans_length = LENGTH(VECTOR_ELT(ends_listlist, 0));
+	for (j = 1; j < NTB; j++)
+		if (LENGTH(VECTOR_ELT(ends_listlist, j)) != ans_length)
+			error("cannot combine MIndex objects of different lengths");
+	ends_buf = _new_IntBuf(0, 0, 0);
+	PROTECT(ans = NEW_LIST(ans_length));
+	for (i = 0; i < ans_length; i++) {
+		ends_buf.nelt = 0;
+		for (j = 0; j < NTB; j++) {
+			ends = VECTOR_ELT(VECTOR_ELT(ends_listlist, j), i);
+			if (ends == R_NilValue)
+				continue;
+			_IntBuf_append(&ends_buf, INTEGER(ends), LENGTH(ends));
+		}
+		if (ends_buf.nelt == 0)
+			continue;
+		_IntBuf_qsort(&ends_buf);
+		_IntBuf_delete_consecutiverepeats(&ends_buf);
+		PROTECT(ans_elt = _IntBuf_asINTEGER(&ends_buf));
+		SET_ELEMENT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
 	return ans;
 }
 

@@ -22,72 +22,43 @@ SEXP debug_match_pdict()
 
 
 /****************************************************************************
- * Inexact matching on the heads and tails of a PDict object
- * =========================================================
+ * Inexact matching on the heads and tails of a TB_PDict object
+ * ============================================================
  */
 
-/* k1 must be < k2 */
-static int match_dup_tail(int k1, int k2,
-		const RoSeq *dup_tail,
-		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+// Return the number of mismatches in the pattern head and tail.
+static int nmismatch_in_headtail(const RoSeq *H, const RoSeq *T,
+		const RoSeq *S, int Hshift, int Tshift, int max_mm)
 {
-	int i, end1, end2, OK;
-	IntBuf *match_count, *ends_buf1, *ends_buf2;
+	int nmismatch;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] ENTERING match_dup_tail()\n");
-		Rprintf("[DEBUG] k1=%d k2=%d\n", k1, k2);
-	}
-#endif
-	match_count = _MIndex_get_match_count();
-	ends_buf1 = _MIndex_get_match_ends(k1);
-	ends_buf2 = _MIndex_get_match_ends(k2);
-	for (i = 0; i < ends_buf1->nelt; i++) {
-		end1 = ends_buf1->elts[i];
-		OK = _is_matching_at_Pshift(dup_tail, S, end1,
-				max_mm, fixedP, fixedS);
-		if (!OK)
-			continue;
-		if (is_count_only) {
-			match_count->elts[k2]++;
-			if (_MIndex_get_match_reporting_mode() == 0)
-				continue;
-		}
-		end2 = end1 + dup_tail->nelt;
-		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end2);
-	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING match_dup_tail()\n");
-#endif
-	return is_count_only ? match_count->elts[k2] : ends_buf2->nelt;
+	nmismatch = _selected_nmismatch_at_Pshift_fun(H, S, Hshift, max_mm);
+	if (nmismatch > max_mm)
+		return nmismatch;
+	max_mm -= nmismatch;
+	nmismatch += _selected_nmismatch_at_Pshift_fun(T, S, Tshift, max_mm);
+	return nmismatch;
 }
 
 /* k1 must be < k2 */
 static int match_dup_headtail(int k1, int k2,
-		int pdict_W, const RoSeq *dup_head, const RoSeq *dup_tail,
+		int tb_width, const RoSeq *dup_head, const RoSeq *dup_tail,
 		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+		int max_mm, int is_count_only)
 {
-	int i, end1, end2, nmismatch;
 	IntBuf *match_count, *ends_buf1, *ends_buf2;
+	int HTdeltashift, i, Tshift, nmismatch, end2;
 
 	match_count = _MIndex_get_match_count();
 	ends_buf1 = _MIndex_get_match_ends(k1);
 	ends_buf2 = _MIndex_get_match_ends(k2);
+	HTdeltashift = tb_width;
+	if (dup_head != NULL)
+		HTdeltashift += dup_head->nelt;
 	for (i = 0; i < ends_buf1->nelt; i++) {
-		end1 = ends_buf1->elts[i];
-		nmismatch = 0;
-		if (dup_head != NULL)
-			nmismatch += _nmismatch_at_Pshift(dup_head, S,
-					end1 - pdict_W - dup_head->nelt,
-					fixedP, fixedS);
-		if (dup_tail != NULL)
-			nmismatch += _nmismatch_at_Pshift(dup_tail, S,
-					end1,
-					fixedP, fixedS);
+		Tshift = ends_buf1->elts[i];
+		nmismatch = nmismatch_in_headtail(dup_head, dup_tail,
+				S, Tshift - HTdeltashift, Tshift, max_mm);
 		if (nmismatch > max_mm)
 			continue;
 		if (is_count_only) {
@@ -95,7 +66,7 @@ static int match_dup_headtail(int k1, int k2,
 			if (_MIndex_get_match_reporting_mode() == 0)
 				continue;
 		}
-		end2 = end1;
+		end2 = Tshift;
 		if (dup_tail != NULL)
 			end2 += dup_tail->nelt;
 		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end2);
@@ -103,81 +74,23 @@ static int match_dup_headtail(int k1, int k2,
 	return is_count_only ? match_count->elts[k2] : ends_buf2->nelt;
 }
 
-static int match_unq_tail(int k1,
-		const RoSeq *unq_tail,
-		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
-{
-	int i, end1, OK;
-	IntBuf *match_count, *ends_buf1;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] ENTERING match_unq_tail()\n");
-		Rprintf("[DEBUG] k1=%d\n", k1);
-	}
-#endif
-	match_count = _MIndex_get_match_count();
-	ends_buf1 = _MIndex_get_match_ends(k1);
-	for (i = 0; i < ends_buf1->nelt; i++) {
-		end1 = ends_buf1->elts[i];
-#ifdef DEBUG_BIOSTRINGS
-		if (debug)
-			Rprintf("[DEBUG] i=%d end1=%d\n", i, end1);
-#endif
-		OK = _is_matching_at_Pshift(unq_tail, S, end1,
-				max_mm, fixedP, fixedS);
-		if (!OK) {
-#ifdef DEBUG_BIOSTRINGS
-			if (debug)
-				Rprintf("[DEBUG] mismatch\n");
-#endif
-			if (_MIndex_get_match_reporting_mode() == 0)
-				continue;
-			// We need to shrink the buffer we are walking on!
-			// This is safe because shrinking an IntBuf object
-			// should never trigger reallocation.
-			_IntBuf_delete_at(ends_buf1, i--);
-			continue;
-		}
-#ifdef DEBUG_BIOSTRINGS
-		if (debug)
-			Rprintf("[DEBUG] match\n");
-#endif
-		if (is_count_only) {
-			match_count->elts[k1]++;
-			if (_MIndex_get_match_reporting_mode() == 0)
-				continue;
-		}
-		ends_buf1->elts[i] += unq_tail->nelt;
-	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING match_unq_tail()\n");
-#endif
-	return is_count_only ? match_count->elts[k1] : ends_buf1->nelt;
-}
-
-static int match_unq_headtail(int k1, int pdict_W,
+static int match_unq_headtail(int k1, int tb_width,
 		const RoSeq *unq_head, const RoSeq *unq_tail,
 		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+		int max_mm, int is_count_only)
 {
-	int i, end1, nmismatch;
 	IntBuf *match_count, *ends_buf1;
+	int HTdeltashift, i, Tshift, nmismatch;
 
 	match_count = _MIndex_get_match_count();
 	ends_buf1 = _MIndex_get_match_ends(k1);
+	HTdeltashift = tb_width;
+	if (unq_head != NULL)
+		HTdeltashift += unq_head->nelt;
 	for (i = 0; i < ends_buf1->nelt; i++) {
-		end1 = ends_buf1->elts[i];
-		nmismatch = 0;
-		if (unq_head != NULL)
-			nmismatch += _nmismatch_at_Pshift(unq_head, S,
-					end1 - pdict_W - unq_head->nelt,
-					fixedP, fixedS);
-		if (unq_tail != NULL)
-			nmismatch += _nmismatch_at_Pshift(unq_tail, S,
-					end1, fixedP, fixedS);
+		Tshift = ends_buf1->elts[i];
+		nmismatch = nmismatch_in_headtail(unq_head, unq_tail,
+				S, Tshift - HTdeltashift, Tshift, max_mm);
 		if (nmismatch > max_mm) {
 			if (_MIndex_get_match_reporting_mode() == 0)
 				continue;
@@ -198,69 +111,16 @@ static int match_unq_headtail(int k1, int pdict_W,
 	return is_count_only ? match_count->elts[k1] : ends_buf1->nelt;
 }
 
-static void match_pdict_tail(SEXP unq2dup,
-		CachedXStringSet *cached_tail,
-		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
-{
-	IntBuf *matching_keys;
-	int n1, i, j, *dup, k1, k2, nmatches;
-	SEXP dups;
-	RoSeq Ptail;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING match_pdict_tail()\n");
-#endif
-	matching_keys = _MIndex_get_matching_keys();
-	n1 = matching_keys->nelt;
-	// The number of elements in matching_keys can increase or decrease
-	// during the for loop!
-	for (i = 0; i < n1; i++) {
-		k1 = matching_keys->elts[i];
-		dups = VECTOR_ELT(unq2dup, k1);
-		if (dups != R_NilValue) {
-			for (j = 0, dup = INTEGER(dups);
-			     j < LENGTH(dups);
-			     j++, dup++)
-			{
-				k2 = *dup - 1;
-				Ptail = _get_CachedXStringSet_elt_asRoSeq(
-						cached_tail, k2);
-				nmatches = match_dup_tail(k1, k2, &Ptail,
-						S, max_mm, fixedP, fixedS,
-						is_count_only);
-				if (nmatches != 0)
-					_IntBuf_insert_at(matching_keys,
-							  matching_keys->nelt,
-							  k2);
-			}
-		}
-		Ptail = _get_CachedXStringSet_elt_asRoSeq(cached_tail, k1);
-		nmatches = match_unq_tail(k1, &Ptail,
-				S, max_mm, fixedP, fixedS, is_count_only);
-		if (nmatches == 0) {
-			_IntBuf_delete_at(matching_keys, i--);
-			n1--;
-		}
-	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING match_pdict_tail()\n");
-#endif
-	return;
-}
-
-static void match_pdict_headtail(SEXP unq2dup, int pdict_W,
+static void match_pdict_headtail(SEXP unq2dup, int tb_width,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
-		int max_mm, int fixedP, int fixedS, int is_count_only)
+		int max_mm, int is_count_only)
 {
 	IntBuf *matching_keys;
 	int n1, i, j, *dup, k1, k2, nmatches;
 	SEXP dups;
 	RoSeq Phead, Ptail;
-	const RoSeq *pPhead, *pPtail;
+	const RoSeq *H, *T;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -279,41 +139,40 @@ static void match_pdict_headtail(SEXP unq2dup, int pdict_W,
 			     j++, dup++)
 			{
 				k2 = *dup - 1;
-				pPhead = pPtail = NULL;
+				H = T = NULL;
 				if (cached_head != NULL) {
 				    Phead = _get_CachedXStringSet_elt_asRoSeq(
 						cached_head, k2);
-				    pPhead = &Phead;
+				    H = &Phead;
 				}
 				if (cached_tail != NULL) {
 				    Ptail = _get_CachedXStringSet_elt_asRoSeq(
 						cached_tail, k2);
-				    pPtail = &Ptail;
+				    T = &Ptail;
 				}
 				nmatches = match_dup_headtail(k1, k2,
-						pdict_W, pPhead, pPtail,
-						S, max_mm, fixedP, fixedS,
-						is_count_only);
+						tb_width, H, T,
+						S, max_mm, is_count_only);
 				if (nmatches != 0)
 					_IntBuf_insert_at(matching_keys,
 							  matching_keys->nelt,
 							  k2);
 			}
 		}
-		pPhead = pPtail = NULL;
+		H = T = NULL;
 		if (cached_head != NULL) {
 			Phead = _get_CachedXStringSet_elt_asRoSeq(
 					cached_head, k1);
-			pPhead = &Phead;
+			H = &Phead;
 		}
 		if (cached_tail != NULL) {
 			Ptail = _get_CachedXStringSet_elt_asRoSeq(
 					cached_tail, k1);
-			pPtail = &Ptail;
+			T = &Ptail;
 		}
 		nmatches = match_unq_headtail(k1,
-				pdict_W, pPhead, pPtail,
-				S, max_mm, fixedP, fixedS, is_count_only);
+				tb_width, H, T,
+				S, max_mm, is_count_only);
 		if (nmatches == 0) {
 			_IntBuf_delete_at(matching_keys, i--);
 			n1--;
@@ -327,7 +186,7 @@ static void match_pdict_headtail(SEXP unq2dup, int pdict_W,
 }
 
 static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
-		SEXP unq2dup, int pdict_W,
+		SEXP unq2dup, int tb_width,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
 		SEXP max_mismatch, SEXP fixed, int is_count_only)
@@ -349,15 +208,14 @@ static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 		_match_ACtree(pdict_pptb, S, fixedS);
 	else
 		error("\"%s\": unknown PDict type", type);
-	if (cached_head == NULL && cached_tail == NULL)
+	if (cached_head == NULL && cached_tail == NULL) {
 		_MIndex_report_matches_for_dups(unq2dup);
-	else if (cached_head == NULL)
-		match_pdict_tail(unq2dup, cached_tail,
-			S, max_mm, fixedP, fixedS, is_count_only);
-	else
-		match_pdict_headtail(unq2dup, pdict_W,
+	} else {
+		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+		match_pdict_headtail(unq2dup, tb_width,
 			cached_head, cached_tail,
-			S, max_mm, fixedP, fixedS, is_count_only);
+			S, max_mm, is_count_only);
+	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING match_pdict()\n");
@@ -382,7 +240,7 @@ static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
  *   subject: subject;
  *   max_mismatch: max.mismatch (max nb of mismatches in the tail);
  *   fixed: logical vector of length 2;
- *   count_only: TRUE or FALSE;
+ *   count_only: TRUE, FALSE or NA;
  *   envir: environment to be populated with the matches.
  *
  * Return an R object that will be assigned to the 'ends' slot of the
@@ -400,14 +258,14 @@ SEXP XString_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 {
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
-	int pdict_L, pdict_W, with_head, with_tail, is_count_only;
+	int pdict_L, tb_width, with_head, with_tail, is_count_only;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
 	pdict_L = INTEGER(pdict_length)[0];
-	pdict_W = INTEGER(pdict_tb_width)[0];
+	tb_width = INTEGER(pdict_tb_width)[0];
 	pcached_head = pcached_tail = NULL;
 	with_head = pdict_head != R_NilValue;
 	if (with_head) {
@@ -424,7 +282,9 @@ SEXP XString_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 
 	_MIndex_init_match_reporting(is_count_only, with_head || with_tail,
 		pdict_L);
-	match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, pdict_W,
+	if (is_count_only == NA_LOGICAL)
+		is_count_only = 1;
+	match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, tb_width,
 		pcached_head, pcached_tail,
 		&S, max_mismatch, fixed, is_count_only);
 #ifdef DEBUG_BIOSTRINGS
@@ -443,7 +303,7 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 {
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S, S_view;
-	int pdict_L, pdict_W, with_head, with_tail, is_count_only,
+	int pdict_L, tb_width, with_head, with_tail, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
 	IntBuf global_match_count;
 	IntBBuf global_match_ends;
@@ -453,7 +313,7 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
 	pdict_L = INTEGER(pdict_length)[0];
-	pdict_W = INTEGER(pdict_tb_width)[0];
+	tb_width = INTEGER(pdict_tb_width)[0];
 	pcached_head = pcached_tail = NULL;
 	with_head = pdict_head != R_NilValue;
 	if (with_head) {
@@ -474,6 +334,9 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 		global_match_ends = _new_IntBBuf(pdict_L, pdict_L);
 	_MIndex_init_match_reporting(is_count_only, with_head || with_tail,
 		pdict_L);
+	if (is_count_only == NA_LOGICAL)
+		error("Biostrings internal error in XStringViews_match_pdict(): "
+		      "'count_only=NA' not supported");
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -484,7 +347,7 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 			error("'subject' has out of limits views");
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
-		match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, pdict_W,
+		match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, tb_width,
 			pcached_head, pcached_tail,
 			&S_view, max_mismatch, fixed, is_count_only);
 		_MIndex_merge_matches(&global_match_count, &global_match_ends, view_offset);

@@ -87,6 +87,12 @@ setMethod("show", "Dups",
     }
 )
 
+### Returns the unq2dup map, not the full Dups object!
+.Dups.diff <- function(x, y)
+{
+    .Call("Dups_diff", x@unq2dup, y@dup2unq, PACKAGE="Biostrings")
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "PreprocessedTB" and "PDict3Parts" classes.
@@ -95,7 +101,7 @@ setMethod("show", "Dups",
 setClass("PreprocessedTB",
     representation(
         "VIRTUAL",
-        tb="DNAStringSet",  # constant width
+        tb="DNAStringSet",  # always constant width
         dups="Dups"
     )
 )
@@ -110,6 +116,9 @@ setMethod("tb", "PreprocessedTB", function(x) x@tb)
 setGeneric("tb.width", function(x) standardGeneric("tb.width"))
 setMethod("tb.width", "PreprocessedTB", function(x) width(x@tb)[1])
 
+setGeneric("dups", function(x) standardGeneric("dups"))
+setMethod("dups", "PreprocessedTB", function(x) x@dups)
+
 setMethod("initialize", "PreprocessedTB",
     function(.Object, tb, dup2unq)
     {
@@ -119,12 +128,19 @@ setMethod("initialize", "PreprocessedTB",
     }
 )
 
+.PreprocessedTB.showFirstLine <- function(x)
+{
+    cat("Preprocessed Trusted Band of length ", length(x),
+        ", width ", tb.width(x),
+        ", and type \"", class(x), "\"\n", sep="")
+}
+
 setMethod("duplicated", "PreprocessedTB",
-    function(x, incomparables=FALSE, ...) duplicated(x@dups)
+    function(x, incomparables=FALSE, ...) duplicated(dups(x))
 )
 
 setMethod("dupFrequency", "PreprocessedTB",
-    function(x) dupFrequency(x@dups)
+    function(x) dupFrequency(dups(x))
 )
 
 setClass("PDict3Parts",
@@ -151,6 +167,7 @@ setMethod("head", "PDict3Parts",
 )
 
 setMethod("tb", "PDict3Parts", function(x) tb(x@pptb))
+
 setMethod("tb.width", "PDict3Parts", function(x) tb.width(x@pptb))
 
 setMethod("tail", "PDict3Parts",
@@ -162,29 +179,25 @@ setMethod("tail", "PDict3Parts",
     }
 )
 
-setMethod("duplicated", "PDict3Parts",
-    function(x, incomparables=FALSE, ...)
-    {
-        head <- head(x)
-        tail <- tail(x)
-        if (is.null(head) && is.null(tail))
-            return(duplicated(x@pptb))
-        stop("duplicated() is not yet working on a PDict object ",
-             "with a head or a tail, sorry!")
-    }
+setMethod("dups", "PDict3Parts",
+    function(x)
+        if (is.null(head(x)) && is.null(tail(x))) dups(x@pptb) else NULL
 )
 
-setMethod("dupFrequency", "PDict3Parts",
-    function(x)
-    {
-        head <- head(x)
-        tail <- tail(x)
-        if (is.null(head) && is.null(tail))
-            return(dupFrequency(x@pptb))
-        stop("dupFrequency() is not yet working on a PDict object ",
-             "with a head or a tail, sorry!")
-    }
-)
+.PDict3Parts <- function(x, tb.start, tb.end, tb.width, type)
+{
+    tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
+                          use.names=FALSE)
+    base_codes <- codes(tb, baseOnly=TRUE)
+    pptb <- new(type, tb, base_codes)
+    head_start <- start(x)
+    head_width <- start(tb) - start(x)
+    head <- new("DNAStringSet", super(x), head_start, head_width, names=NULL)
+    tail_start <- end(tb) + 1L
+    tail_width <- end(x) - end(tb)
+    tail <- new("DNAStringSet", super(x), tail_start, tail_width, names=NULL)
+    new("PDict3Parts", head=head, pptb=pptb, tail=tail)
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,7 +211,9 @@ setMethod("dupFrequency", "PDict3Parts",
 setClass("PDict",
     representation(
         "VIRTUAL",
-        dict0="DNAStringSet"
+        dict0="DNAStringSet",
+        constant_width="logical",
+        dups0="Dups"
     )
 )
 
@@ -207,6 +222,10 @@ setMethod("length", "PDict", function(x) length(x@dict0))
 setMethod("width", "PDict", function(x) width(x@dict0))
 
 setMethod("names", "PDict", function(x) names(x@dict0))
+
+setMethod("dups", "PDict",
+    function(x) if (length(x@dups0) == 0) NULL else x@dups0
+)
 
 ### Extract the i-th element of a PDict object as DNAString object.
 ### Note that only the "[[" operator is provided for now. Providing "[" sounds
@@ -238,9 +257,42 @@ setReplaceMethod("[[", "PDict",
         stop("attempt to modify the value of a ", class(x), " instance")
 )
 
+setMethod("duplicated", "PDict",
+    function(x, incomparables=FALSE, ...)
+    {
+        if (is.null(dups(x)))
+            stop("duplicates information not available for this object")
+        duplicated(dups(x))
+    }
+)
+
+setMethod("dupFrequency", "PDict",
+    function(x)
+    {
+        if (is.null(dups(x)))
+            stop("duplicates information not available for this object")
+        dupFrequency(dups(x))
+    }
+)
+
 ### Just an alias for "dupFrequency".
 setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
 setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
+
+.PDict.showFirstLine <- function(x, type)
+{
+    cat(class(x), " object of length ", length(x), sep="")
+    if (x@constant_width) {
+        width <- width(x@dict0)[1]
+        width_info <- paste("width ", width, sep="")
+    } else {
+        width_info <- "variable width"
+    }
+    if (length(type) == 1)
+        cat(", ", width_info, ", and type \"", type, "\"", sep="")
+    else
+        cat(" and ", width_info, sep="")
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -261,33 +313,37 @@ setMethod("tb", "TB_PDict", function(x) tb(x@threeparts))
 setMethod("tb.width", "TB_PDict", function(x) tb.width(x@threeparts))
 setMethod("tail", "TB_PDict", function(x, ...) tail(x@threeparts))
 
-setMethod("duplicated", "TB_PDict",
-    function(x, incomparables=FALSE, ...) duplicated(x@threeparts)
+setMethod("dups", "TB_PDict",
+    function(x)
+    {
+        ans <- dups(x@threeparts)
+        if (!is.null(ans))
+            return(ans)
+        callNextMethod()
+    }
 )
 
-setMethod("dupFrequency", "TB_PDict",
-    function(x) dupFrequency(x@threeparts)
+setGeneric("clean.tb.unq2dup", function(x) standardGeneric("clean.tb.unq2dup"))
+setMethod("clean.tb.unq2dup", "TB_PDict",
+    function(x)
+    {
+        dups0 <- x@dups0
+        if (length(dups0) == 0)
+            return(NULL)
+        tb_dups <- dups(x@threeparts@pptb) # never NULL
+        .Dups.diff(tb_dups, dups0)
+    }
 )
 
 setMethod("show", "TB_PDict",
     function(object)
     {
         pdict_type <- class(object@threeparts@pptb)
-        min_width <- min(width(object))
-        max_width <- max(width(object))
-        if (min_width == max_width)
-            width_info <- paste("width ", min_width, sep="")
-        else
-            width_info <- "variable width"
-        cat(class(object), " object of length ", length(object),
-            ", ", width_info,
-            " and type \"", pdict_type, "\"", sep="")
+        .PDict.showFirstLine(object, pdict_type)
         head <- head(object)
         tail <- tail(object)
-        if (is.null(head) && is.null(tail)) {
-             cat("\n", sep="")
-             return(invisible(NULL))
-        }
+        if (is.null(head) && is.null(tail))
+             return(cat("\n", sep=""))
         cat(":\n")
         if (is.null(head)) {
             cat("  - with NO head")
@@ -320,6 +376,18 @@ setMethod("show", "TB_PDict",
     }
 )
 
+.TB_PDict <- function(x, tb.start, tb.end, tb.width, type)
+{
+    constant_width <- min(width(x)) == max(width(x))
+    threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, type)
+    ans <- new("TB_PDict", dict0=x,
+                           constant_width=constant_width,
+                           threeparts=threeparts)
+    if (is.null(dups(threeparts)) && constant_width)
+        ans@dups0 <- dups(.PDict3Parts(x, NA, NA, NA, "ACtree"))
+    ans
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "Twobit" class.
@@ -344,9 +412,7 @@ setClass("Twobit",
 setMethod("show", "Twobit",
     function(object)
     {
-        cat("Preprocessed Trusted Band of length ", length(object),
-            ", width ", tb.width(object),
-            " and type \"", class(object), "\"\n", sep="")
+        .PreprocessedTB.showFirstLine(object)
         cat("  (length of sign2pos lookup table is ",
             length(object@sign2pos), ")\n", sep="")
     }
@@ -392,9 +458,7 @@ setClass("ACtree",
 setMethod("show", "ACtree",
     function(object)
     {
-        cat("Preprocessed Trusted Band of length ", length(object),
-            ", width ", tb.width(object),
-            " and type \"", class(object), "\"\n", sep="")
+        .PreprocessedTB.showFirstLine(object)
         nnodes <- length(object@nodes) %/% .ACtree.ints_per_acnode(object)
         cat("  (number of nodes in the Aho-Corasick tree is ",
             nnodes, ")\n", sep="")
@@ -458,10 +522,91 @@ setMethod("initialize", "ACtree",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "MTB_PDict" class.
+###
+### A container for storing a Multiple Trusted Band PDict object.
+###
+
+setClass("MTB_PDict",
+    contains="PDict",
+    representation(
+        threeparts_list="list"
+    )
+)
+
+setMethod("as.list", "MTB_PDict",
+    function(x, ...)
+    {
+        lapply(x@threeparts_list,
+          function(threeparts)
+              new("TB_PDict", dict0=x@dict0,
+                              constant_width=x@constant_width,
+                              dups0=x@dups0,
+                              threeparts=threeparts)
+        )
+    }
+)
+
+setMethod("show", "MTB_PDict",
+    function(object)
+    {
+        cat("  ")
+        .PDict.showFirstLine(object, NULL)
+        cat("\nComponents:\n")
+        show(as.list(object))
+    }
+)
+
+### 'max.mismatch' is assumed to be an integer >= 1
+.MTB_PDict <- function(x, max.mismatch, type)
+{
+    min.TBW <- 3L
+    min_width <- min(width(x))
+    if (min_width < 2L * min.TBW)
+        stop("'max.mismatch >= 1' is supported only if the width ",
+             "of dictionary 'x' is >= ", 2L * min.TBW)
+    constant_width <- min_width == max(width(x))
+    NTB <- max.mismatch + 1L # nb of Trusted Bands
+    TBW0 <- min_width %/% NTB
+    if (TBW0 < min.TBW) {
+        max.max.mismatch <- min_width %/% min.TBW - 1L
+        stop("'max.mismatch' must be <= ", max.max.mismatch,
+             " given the width of dictionary 'x'")
+    }
+    all_tbw0 <- rep.int(TBW0, NTB - min_width %% NTB)
+    all_tbw1 <- rep.int(TBW0 + 1L, min_width %% NTB)
+    all_tbw <- c(all_tbw0, all_tbw1)
+    ## R1 is the average number of (perfect) matches that is expected
+    ## to be found during stage1 each time the sliding window is moved
+    ## to the next position.
+    R1 <- length(x) * sum(1/4^all_tbw)
+    if (R1 > 10)
+        warning("given the characteristics of dictionary 'x', ",
+                "this value of 'max.mismatch' will\n",
+                "  give poor performance when you call ",
+                "matchPDict() on this MTB_PDict object\n",
+                "  (it will of course depend ultimately on the ",
+                "length of the subject)")
+    all_headw <- diffinv(all_tbw)
+    threeparts_list <- lapply(seq_len(NTB),
+                         function(i)
+                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1], NA, type)
+                       )
+    ans <- new("MTB_PDict", dict0=x,
+                            constant_width=constant_width,
+                            threeparts_list=threeparts_list)
+    if (constant_width)
+        ans@dups0 <- dups(.PDict3Parts(x, NA, NA, NA, "ACtree"))
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The PDict() constructor (user-friendly).
 ###
 
-.PDict <- function(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
+.PDict <- function(x, max.mismatch, tb.start, tb.end, tb.width,
+                      type, skip.invalid.patterns)
 {
     if (!is(x, "DNAStringSet"))
         x <- DNAStringSet(x)
@@ -474,53 +619,70 @@ setMethod("initialize", "ACtree",
         if (any(duplicated(names)))
             stop("'x' has duplicated names")
     }
-    tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
-                          use.names=FALSE)
-    base_codes <- codes(tb, baseOnly=TRUE)
-    pptb <- new(type, tb, base_codes)
-    head_start <- start(x)
-    head_width <- start(tb) - start(x)
-    head <- new("DNAStringSet", super(x), head_start, head_width, names=NULL)
-    tail_start <- end(tb) + 1L
-    tail_width <- end(x) - end(tb)
-    tail <- new("DNAStringSet", super(x), tail_start, tail_width, names=NULL)
-    threeparts <- new("PDict3Parts", head=head, pptb=pptb, tail=tail)
-    new("TB_PDict", dict0=x, threeparts=threeparts)
+    if (!isSingleNumberOrNA(max.mismatch))
+        stop("'max.mismatch' must be a single integer or 'NA'")
+    if (!is.integer(max.mismatch))
+        max.mismatch <- as.integer(max.mismatch)
+    if (!isSingleNumberOrNA(tb.start))
+        stop("'tb.start' must be a single integer or 'NA'")
+    if (!isSingleNumberOrNA(tb.end))
+        stop("'tb.end' must be a single integer or 'NA'")
+    if (!isSingleNumberOrNA(tb.width))
+        stop("'tb.width' must be a single integer or 'NA'")
+    if (!is.character(type))
+        stop("'type' must be a character vector")
+    if (!identical(skip.invalid.patterns, FALSE))
+        stop("'skip.invalid.patterns' must be FALSE for now, sorry")
+    is_default_TB <- is.na(tb.start) && is.na(tb.end) && is.na(tb.width)
+    if (!is.na(max.mismatch) && !is_default_TB)
+            stop("'tb.start', 'tb.end' and 'tb.width' must be NAs ",
+                 "when 'max.mismatch' is not NA")
+    if (is.na(max.mismatch) || max.mismatch == 0) {
+        .TB_PDict(x, tb.start, tb.end, tb.width, type)
+    } else {
+        if (max.mismatch < 0)
+            stop("'max.mismatch' must be 'NA' or >= 0")
+        .MTB_PDict(x, max.mismatch, type)
+    }
 }
 
 setGeneric("PDict", signature="x",
-    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+    function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
                 type="ACtree", skip.invalid.patterns=FALSE)
         standardGeneric("PDict")
 )
 
 setMethod("PDict", "character",
-    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+    function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
                 type="ACtree", skip.invalid.patterns=FALSE)
-        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
+        .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
+                  type, skip.invalid.patterns)
 )
 
 setMethod("PDict", "DNAStringSet",
-    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+    function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
                 type="ACtree", skip.invalid.patterns=FALSE)
-        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
+        .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
+                  type, skip.invalid.patterns)
 )
 
 setMethod("PDict", "XStringViews",
-    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+    function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
                 type="ACtree", skip.invalid.patterns=FALSE)
     {
         if (!is(subject(x), "DNAString"))
             stop("'subject(x)' must be a DNAString object")
-        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
+        .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
+                  type, skip.invalid.patterns)
     }
 )
 
 ### Just because of those silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("PDict", "AsIs",
-    function(x, tb.start=NA, tb.end=NA, tb.width=NA,
+    function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
                 type="ACtree", skip.invalid.patterns=FALSE)
-        .PDict(x, tb.start, tb.end, tb.width, type, skip.invalid.patterns)
+        .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
+                  type, skip.invalid.patterns)
 )
 
