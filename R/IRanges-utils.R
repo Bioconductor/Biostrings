@@ -58,7 +58,7 @@ slice <- function(x, lower=-Inf, upper=Inf, includeLower=TRUE, includeUpper=TRUE
 {
     if (!is.numeric(x))
         stop("'x' must be a numeric vector")
-    keep <- TRUE
+    keep <- rep(TRUE, length(x))
     if (lower > -Inf)
         keep <-
           keep & do.call(ifelse(includeLower, ">=", ">"), list(substitute(x), substitute(lower)))
