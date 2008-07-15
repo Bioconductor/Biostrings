@@ -44,9 +44,28 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
 
 whichAsRanges <- function(x)
 {
-	if (!is.logical(x))
-		stop("'x' must be a logical vector")
-	.Call("which_as_ranges", x, PACKAGE="Biostrings")
+    if (!is.logical(x))
+        stop("'x' must be a logical vector")
+    .Call("which_as_ranges", x, PACKAGE="Biostrings")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "slice" function.
+###
+
+slice <- function(x, lower=-Inf, upper=Inf, includeLower=TRUE, includeUpper=TRUE)
+{
+    if (!is.numeric(x))
+        stop("'x' must be a numeric vector")
+    keep <- TRUE
+    if (lower > -Inf)
+        keep <-
+          keep & do.call(ifelse(includeLower, ">=", ">"), list(substitute(x), substitute(lower)))
+    if (upper < Inf)
+        keep <-
+          keep & do.call(ifelse(includeUpper, "<=", "<"), list(substitute(x), substitute(upper)))
+    whichAsRanges(keep)
 }
 
 
