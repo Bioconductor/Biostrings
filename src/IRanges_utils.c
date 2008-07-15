@@ -121,6 +121,49 @@ SEXP int_to_adjacent_ranges(SEXP x)
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP which_ranges(SEXP x)
+{
+	SEXP ans, start, width;
+	int i, x_length, ans_length, *x_elt, prev_elt, *start_elt, *width_elt;
+
+	x_length = LENGTH(x);
+	ans_length = 0;
+	prev_elt = 0;
+	for (i = 1, x_elt = LOGICAL(x); i <= x_length; i++, x_elt++) {
+		if (*x_elt && !prev_elt)
+			ans_length++;
+		prev_elt = *x_elt;
+	}
+
+	PROTECT(ans = NEW_OBJECT(MAKE_CLASS("IRanges")));
+	PROTECT(start = NEW_INTEGER(ans_length));
+	PROTECT(width = NEW_INTEGER(ans_length));
+	SET_SLOT(ans, mkChar("start"), start);
+	SET_SLOT(ans, mkChar("width"), width);
+	if (ans_length > 0) {
+		start_elt = INTEGER(start) - 1;
+		width_elt = INTEGER(width) - 1;
+		prev_elt = 0;
+		for (i = 1, x_elt = LOGICAL(x); i <= x_length; i++, x_elt++) {
+			if (*x_elt) {
+				if (prev_elt)
+					*width_elt += 1;
+				else {
+					start_elt++;
+					width_elt++;
+					*start_elt = i;
+					*width_elt = 1;
+				}
+			}
+			prev_elt = *x_elt;
+		}
+	}
+	UNPROTECT(3);
+	return ans;
+}
 
 /****************************************************************************
  * Reduction (aka extracting the frame)

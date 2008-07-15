@@ -4,6 +4,7 @@
 
 \alias{intToRanges}
 \alias{intToAdjacentRanges}
+\alias{whichRanges}
 \alias{shift}
 \alias{shift,IRanges-method}
 \alias{restrict}
@@ -29,6 +30,7 @@
   ## Create an IRanges object
   intToRanges(x, use.names=TRUE)
   intToAdjacentRanges(x, use.names=TRUE)
+  whichRanges(x)
   toNormalIRanges(x)
 
   ## Modify an IRanges object
@@ -41,7 +43,8 @@
 
 \arguments{
   \item{x}{
-    A vector of integers for \code{intToRanges} and \code{intToAdjacentRanges}.
+    An integer vector for \code{intToRanges} and \code{intToAdjacentRanges}.
+    A logical vector for \code{whichRanges}.
     An \link{IRanges} object for \code{shift}, \code{restrict}, \code{reduce},
     \code{toNormalIRanges} and \code{gaps}.
     An \link{IRanges} object or an integer vector for \code{narrow}.
@@ -82,6 +85,9 @@
   length as \code{x} where the ranges are adjacent and have the width of
   the corresponding integer in \code{x}. The first range in the returned
   \link{IRanges} object starts at 1.
+
+  \code{whichRanges} returns an \link{IRanges} object containing all of
+  the ranges where \code{x} is \code{TRUE}.
 
   \code{toNormalIRanges} first reduces \code{x}, then removes the
   empty ranges. The final result is returned as a \link{NormalIRanges}
@@ -130,8 +136,10 @@
 }
 
 \examples{
-  intToRanges(c(19, 5, 0, 8, 5))
-  x <- intToAdjacentRanges(c(19, 5, 0, 8, 5))
+  vec <- c(19, 5, 0, 8, 5)
+  intToRanges(vec)
+  whichRanges(vec >= 5)
+  x <- intToAdjacentRanges(vec)
   x
   shift(x, -3)
   restrict(x, start=12, end=34)

@@ -408,6 +408,8 @@ SEXP narrow_IRanges(
 
 SEXP int_to_adjacent_ranges(SEXP x);
 
+SEXP which_ranges(SEXP x);
+
 SEXP reduce_IRanges(
 	SEXP x,
 	SEXP with_inframe_start

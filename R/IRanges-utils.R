@@ -39,6 +39,18 @@ intToAdjacentRanges <- function(x, use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "whichRanges" function.
+###
+
+whichRanges <- function(x)
+{
+	if (!is.logical(x))
+		stop("'x' must be a logical vector")
+	.Call("which_ranges", x, PACKAGE="Biostrings")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "shift" generic and methods.
 ###
 ### Shifting preserves normality.
