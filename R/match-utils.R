@@ -390,20 +390,29 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
+        if (x@qualityType == "Phred") {
+            qualityValues <- 33:(33 + 99)
+            qualityZero <- 33
+        } else if (x@qualityType == "Solexa") {
+            qualityValues <- 59:(59 + 104)
+            qualityZero <- 64
+        } else
+            stop("unrecognized 'qualityType'")
         if ((length(quality(x)) == 1) && (nchar(quality(x)) == 1))
             qualityAll <-
-              sum(weight * width(x)) * alphabetFrequency(quality(x), collapse = TRUE)[34:133]
+              sum(as.numeric(weight) * width(x)) *
+                alphabetFrequency(quality(x), collapse = TRUE)[qualityValues + 1]
         else if (length(weight) == 1)
             qualityAll <-
-              weight *
+              as.numeric(weight) *
                 alphabetFrequency(narrow(quality(x), start = start(x), end = end(x)),
-                                  collapse = TRUE)[34:133]
+                                  collapse = TRUE)[qualityValues + 1]
         else
             qualityAll <-
-              colSums(weight *
+              colSums(as.numeric(weight) *
                       alphabetFrequency(narrow(quality(x), start = start(x),
-                                               end = end(x)))[, 34:133, drop=FALSE])
-        names(qualityAll) <- sapply(as.raw(33:132), rawToChar)
+                                               end = end(x)))[, qualityValues + 1, drop=FALSE])
+        names(qualityAll) <- sapply(as.raw(qualityValues), rawToChar)
         qualityAll <- qualityAll[qualityAll > 0]
         if (length(weight) == 1)
             qualityTable <- weight * table(.mismatchTable[["Quality"]])
@@ -415,7 +424,7 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
         qualityCounts[names(qualityTable)] <- qualityTable
         c(callNextMethod(x, weight = weight, .mismatchTable = .mismatchTable),
           list("quality" =
-               data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - 33L,
+               data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - qualityZero,
                           "Count" = qualityCounts,
                           "Frequency" = qualityCounts / qualityAll)))
     }
