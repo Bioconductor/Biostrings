@@ -45,7 +45,13 @@
 \section{Introduction}
 
 In this document we illustrate how to perform pairwise alignments using the
-Biostrings package.
+Biostrings package through the use of the \Rfunction{pairwiseAlignment}
+function. This function aligns a set of \Rfunarg{pattern} strings to a
+\Rfunarg{subject} string in a global, local, or overlap (ends-free) fashion
+with or without affine gaps using either a constant or quality-based
+substitution scoring scheme. This function's computation time is proportional
+to the product of the two string lengths being aligned.
+
 
 \section{Data import}
 \label{fastaread}
@@ -119,6 +125,9 @@ scheme, and gap penalties.
   \texttt{"Phred"} quality measures $Q \in [0, 99]$, the probability of an
   error in the base read is given by $10^{-Q/10}$ and for \texttt{"Solexa"}
   quality measures $Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$.
+  The \Rfunction{qualitySubstitutionMatrices} function maps the 
+  \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
+  mismatch penalties.
   \item{Gap Penalties:  }
   Gaps have the potential to incur a cost when they are introduced and when they
   are extended in an optimal pairwise alignment. The former is regulated by the
