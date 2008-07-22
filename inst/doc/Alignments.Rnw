@@ -117,7 +117,7 @@ scheme, and gap penalties.
   \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} arguments accept the
   equivalent of [0-99] numeric quality values for the respective strings. For
   \texttt{"Phred"} quality measures $Q \in [0, 99]$, the probability of an
-  error in the base read is given by $10^{-Q/10}$ and for \code{"Solexa"}
+  error in the base read is given by $10^{-Q/10}$ and for \texttt{"Solexa"}
   quality measures $Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$.
   \item{Gap Penalties:  }
   Gaps have the potential to incur a cost when they are introduced and when they
