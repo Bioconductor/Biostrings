@@ -78,7 +78,7 @@
   in \eqn{[0, 99]}, these error probabilities are given by
   \eqn{\epsilon_i = 10^{-Q/10}}. For \code{"Solexa"} quality measures
   \eqn{Q} in \eqn{[-5, 99]}, they are given by
-  \eqn{\epsilon_i = 1 - 1/(1 + 10^{-Q/10}}.
+  \eqn{\epsilon_i = 1 - 1/(1 + 10^{-Q/10})}.
   Assuming independence within and between base reads, the combined error
   probability of a mismatch when the underlying bases do match is
   \eqn{\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2},

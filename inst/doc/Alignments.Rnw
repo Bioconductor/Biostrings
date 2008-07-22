@@ -1,8 +1,6 @@
-
 %\VignetteIndexEntry{Some examples of sequence alignments}
 %\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment} 
 %\VignettePackage{Biostrings}
-
 
 %
 % NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
@@ -14,7 +12,6 @@
 \usepackage[authoryear,round]{natbib}
 \usepackage{hyperref}
 
-
 \textwidth=6.2in
 \textheight=8.5in
 %\parskip=.3cm
@@ -24,7 +21,6 @@
 
 \newcommand{\scscst}{\scriptscriptstyle}
 \newcommand{\scst}{\scriptstyle}
-
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -41,15 +37,15 @@
 %\setkeys{Gin}{width=0.55\textwidth}
 
 \title{Alignments}
-\author{VJC}
+\author{Patrick Aboyoun}
 \maketitle
 
 \tableofcontents
 
 \section{Introduction}
 
-In this document we illustrate import of FASTA files, simple alignments, and
-consensus matrix calculation.
+In this document we illustrate how to perform pairwise alignments using the
+Biostrings package.
 
 \section{Data import}
 \label{fastaread}
@@ -70,19 +66,59 @@ Note that some of the ORF sequences are represented in reverse complement form.
 \section{Optimal Pairwise Alignments}
 
 The function \Rfunction{pairwiseAlignment} solves the (Needleman-Wunsch) global,
-the (Smith-Waterman) local, and the overlap optimal pairwise alignment problems.
-The solution to each of these problems is dependent on the specified
-substitution scores and the gap penalties:
+the (Smith-Waterman) local, and overlap optimal pairwise alignment problems.
+These problems are described as follows. Let string $S_i$ have $n_i$ characters
+$c_{(i,j)}$ with $j \in \left\{1, \ldots, n_i\right\}$. A pairwise alignment is
+a mapping of strings $S_1$ and $S_2$ to "gapped" substrings ${S'}_1$ and ${S'}_2$
+that are defined by
 
-\begin{itemize}
+\begin{eqnarray*}
+{S'}_1 & = & g_{\left(1,a_1\right)}c_{\left(1,a_1\right)} \cdots g_{\left(1,b_1\right)}c_{\left(1,b_1\right)}g_{\left(1,b_1+1\right)}\\
+{S'}_2 & = & g_{\left(1,a_2\right)}c_{\left(1,a_2\right)} \cdots g_{\left(1,b_2\right)}c_{\left(1,b_2\right)}g_{\left(1,b_2+1\right)}
+\end{eqnarray*}
+\begin{tabbing}
+  where \= \\
+  \> $a_i, b_i \in \{1, \ldots, n_i\}$ with $a_i \leq b_i$ \\
+  \> $g_{(i,j)} = 0$ or more gaps at the specified position $j$ for aligned string $i$ \\
+  \> $length({S'}_1) = length({S'}_2)$
+\end{tabbing}
+
+The quality of a pairwise alignment is dependent on the distance, or
+\textit{score}, between two gapped substrings. The score is determined by the
+type of pairwise alignment, which sets the $[a_i, b_i]$ ranges for the
+substrings; the substitution scoring scheme, which sets the distance between
+aligned characters; and the gap penalties, which is divided into opening and
+extension components. The optimal pairwise alignment is the pairwise alignment
+with the largest score for the specified alignment type, substitution scoring
+scheme, and gap penalties.
+
+\begin{description}
+  \item{Pairwise Alignment Type:  }
+  The \Rfunarg{type} argument sets the ranges for the aligned substrings by
+  accepting one of \texttt{"global"}, \texttt{"local"}, \texttt{"overlap"},
+  \texttt{"subjectOverlap"}, and \texttt{"patternOverlap"}. The associated
+  ranges for these pairwise alignment types are:
+  \begin{description}
+    \item{Global - } $[a_1, b_1] = [1, n_1]$ and $[a_2, b_2] = [1, n_2]$
+    \item{Local - } $[a_1, b_1]$ and $[a_2, b_2]$
+    \item{Overlap - }
+      $\left\{[a_1, b_1] = [a_1, n_1], [a_2, b_2] = [1, b_2]\right\}$ or
+      $\left\{[a_1, b_1] = [1, b_1], [a_2, b_2] = [a_2, n_2]\right\}$
+    \item{Subject Overlap - } $[a_1, b_1] = [1, n_1]$ and $[a_2, b_2]$
+    \item{Pattern Overlap - } $[a_1, b_1]$ and $[a_2, b_2] = [1, n_2]$
+  \end{description}
   \item{Substitution Scores:  }
   The substitution scores can either be fixed for each pairing of letters
   within the two strings or be dependent on the qualities associated with those
   letters. When the scores are fixed by pairing, the \Rfunarg{substituionMatrix}
   argument takes a matrix with the appropriate alphabets as dimension names.
-  When the scores are quality-based, the \Rfunarg{patternQuality} and
-  \Rfunarg{subjectQuality} arguments accept the equivalent of [0-99] numeric
-  quality values for the respective strings.
+  When the scores are quality-based, the \Rfunarg{qualityType} sets the type
+  of quality score to use (\texttt{"Phred"} or \texttt{"Solexa"}) and the
+  \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} arguments accept the
+  equivalent of [0-99] numeric quality values for the respective strings. For
+  \texttt{"Phred"} quality measures $Q \in [0, 99]$, the probability of an
+  error in the base read is given by $10^{-Q/10}$ and for \code{"Solexa"}
+  quality measures $Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$.
   \item{Gap Penalties:  }
   Gaps have the potential to incur a cost when they are introduced and when they
   are extended in an optimal pairwise alignment. The former is regulated by the
@@ -91,7 +127,7 @@ substitution scores and the gap penalties:
   setting the \Rfunarg{type} argument to \texttt{"overlap"} (ignore end gaps in
   both strings), \texttt{"patternOverlap"} (ignore end gaps in \Rfunarg{pattern}),
   or \texttt{"subjectOverlap"} (ignore end gaps in \Rfunarg{subject}).
-\end{itemize}
+\end{description}
 
 The \Rfunction{pairwiseAlignment} function uses memory and computation time
 proportional to the product of the two string lengths.
