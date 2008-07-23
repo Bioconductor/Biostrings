@@ -10,7 +10,7 @@
 
 \title{Optimal Pairwise Alignment}
 \description{
-Solves the (Needleman-Wunsch) global alignment and (Smith-Waterman) local alignment problems.
+Solves (Needleman-Wunsch) global alignment, (Smith-Waterman) local alignment, and (ends-free) overlap alignment problems.
 }
 \usage{
 pairwiseAlignment(pattern, subject, \dots)
