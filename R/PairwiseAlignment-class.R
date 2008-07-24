@@ -235,6 +235,8 @@ setMethod("as.character", "PairwiseAlignment",
     }
 )
 
+setMethod("toString", "PairwiseAlignment", function(x, ...) as.character(x))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.

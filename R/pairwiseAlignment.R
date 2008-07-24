@@ -124,7 +124,7 @@ function(pattern,
       switch(class(pattern),
              DNAStringSet =, RNAStringSet = 4L,
              AAStringSet = 20L,
-             length(alphabetToCodes))
+             max(2, length(alphabetToCodes)))
 
     if (qualityType == "Phred")
       qualityLookupTable <- buildLookupTable(33:(33 + 99), 0:99)

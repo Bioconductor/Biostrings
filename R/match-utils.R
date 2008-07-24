@@ -321,21 +321,25 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
         output <-
           callNextMethod(x, shiftLeft = shiftLeft, shiftRight = shiftRight,
                          prefixColNames = "")
-        if (length(quality(x)) == 1) {
-             if (width(quality(x)) == 1)
-                 quality <-
-                   views(quality(x)[[1]][rep.int(1L, max(output[["End"]]))],
-                         start = output[["Start"]], end = output[["End"]])
-             else
-                 quality <-
-                   views(quality(x)[[1]], start = output[["Start"]],
+        if (nrow(output) == 0) {
+            output <- cbind(output, "Quality" = character(0))
+		} else {
+            if (length(quality(x)) == 1) {
+                if (width(quality(x)) == 1)
+                    quality <-
+                      views(quality(x)[[1]][rep.int(1L, max(output[["End"]]))],
+                            start = output[["Start"]], end = output[["End"]])
+                else
+                    quality <-
+                      views(quality(x)[[1]], start = output[["Start"]],
+                            end = output[["End"]])
+            }
+            else
+                quality <-
+                  narrow(quality(x)[output[["Id"]]], start = output[["Start"]],
                          end = output[["End"]])
+            output <- cbind(output, "Quality" = as.character(quality))
         }
-        else
-            quality <-
-              narrow(quality(x)[output[["Id"]]], start = output[["Start"]],
-                     end = output[["End"]])
-        output <- cbind(output, "Quality" = as.character(quality))
         if (any(nchar(prefixColNames) > 0))
             names(output) <- paste(prefixColNames, names(output), sep = "")
         output
@@ -444,8 +448,13 @@ setMethod("mismatchSummary", "PairwiseAlignment",
             subjectTable <- weight * table(combinedInfo)
         else
             subjectTable <- table(rep(combinedInfo, weight[mismatchTable[["pattern"]][["Id"]]]))
-        subjectTableLabels <- strsplit(names(subjectTable), split = "\001")
-        subjectPosition <- as.integer(unlist(lapply(subjectTableLabels, "[", 1)))
+        if (length(subjectTable) == 0) {
+            subjectTableLabels <- character(0)
+            subjectPosition <- integer(0)
+        } else {
+            subjectTableLabels <- strsplit(names(subjectTable), split = "\001")
+            subjectPosition <- as.integer(unlist(lapply(subjectTableLabels, "[", 1)))
+        }
         output <-
           list("pattern" = mismatchSummary(pattern(x), weight = weight, .mismatchTable = mismatchTable[["pattern"]]),
                "subject" =
