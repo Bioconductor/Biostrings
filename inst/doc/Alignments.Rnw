@@ -44,13 +44,13 @@
 
 \section{Introduction}
 
-In this document we illustrate how to perform pairwise alignments using the
-Biostrings package through the use of the \Rfunction{pairwiseAlignment}
-function. This function aligns a set of \Rfunarg{pattern} strings to a
-\Rfunarg{subject} string in a global, local, or overlap (ends-free) fashion
-with or without affine gaps using either a constant or quality-based
-substitution scoring scheme. This function's computation time is proportional
-to the product of the two string lengths being aligned.
+In this document we illustrate how to perform pairwise sequence alignments
+using the Biostrings package through the use of the
+\Rfunction{pairwiseAlignment} function. This function aligns a set of
+\Rfunarg{pattern} strings to a \Rfunarg{subject} string in a global, local, or
+overlap (ends-free) fashion with or without affine gaps using either a constant
+or quality-based substitution scoring scheme. This function's computation time
+is proportional to the product of the two string lengths being aligned.
 
 
 \section{Data import}
@@ -69,13 +69,13 @@ orf
 Note that some of the ORF sequences are represented in reverse complement form.
 
 
-\section{Optimal Pairwise Alignments}
+\section{Pairwise Sequence Alignment Problems}
 
-The function \Rfunction{pairwiseAlignment} solves the (Needleman-Wunsch) global,
-the (Smith-Waterman) local, and overlap optimal pairwise alignment problems.
-These problems are described as follows. Let string $S_i$ have $n_i$ characters
-$c_{(i,j)}$ with $j \in \left\{1, \ldots, n_i\right\}$. A pairwise alignment is
-a mapping of strings $S_1$ and $S_2$ to "gapped" substrings ${S'}_1$ and ${S'}_2$
+The (Needleman-Wunsch) global, the (Smith-Waterman) local, and (ends-free)
+overlap pairwise sequence alignment problems are described as follows. Let
+string $S_i$ have $n_i$ characters $c_{(i,j)}$ with
+$j \in \left\{1, \ldots, n_i\right\}$. A pairwise sequence alignment is a
+mapping of strings $S_1$ and $S_2$ to "gapped" substrings ${S'}_1$ and ${S'}_2$
 that are defined by
 
 \begin{eqnarray*}
@@ -89,21 +89,24 @@ that are defined by
   \> $length({S'}_1) = length({S'}_2)$
 \end{tabbing}
 
-The quality of a pairwise alignment is dependent on the distance, or
-\textit{score}, between two gapped substrings. The score is determined by the
-type of pairwise alignment, which sets the $[a_i, b_i]$ ranges for the
-substrings; the substitution scoring scheme, which sets the distance between
-aligned characters; and the gap penalties, which is divided into opening and
-extension components. The optimal pairwise alignment is the pairwise alignment
-with the largest score for the specified alignment type, substitution scoring
-scheme, and gap penalties.
+Each of these pairwise sequence alignment problems is solved by maximizing the
+alignment \textit{score}. An alignment score is determined by the type of
+pairwise sequence alignment (global, local, overlap), which sets the
+$[a_i, b_i]$ ranges for the substrings; the substitution scoring scheme, which
+sets the distance between aligned characters; and the gap penalties, which is
+divided into opening and extension components. The optimal pairwise sequence
+alignment is the pairwise sequence alignment with the largest score for the
+specified alignment type, substitution scoring scheme, and gap penalties.
+The pairwise sequence alignment types, substitution scoring schemes, and gap
+penalties influence alignment scores in the following manner:
 
 \begin{description}
-  \item{Pairwise Alignment Type:  }
-  The \Rfunarg{type} argument sets the ranges for the aligned substrings by
-  accepting one of \texttt{"global"}, \texttt{"local"}, \texttt{"overlap"},
-  \texttt{"subjectOverlap"}, and \texttt{"patternOverlap"}. The associated
-  ranges for these pairwise alignment types are:
+  \item{Pairwise Sequence Alignment Types:  }
+  The type of pairwise sequence alignment determines the substring ranges to
+  apply the substitution scoring and gap penalty schemes. For the three primary
+  (global, local, overlap) and two derivative (subject overlap, pattern overlap)
+  pairwise sequence alignment types, the resulting substring ranges are as
+  follows:
   \begin{description}
     \item{Global - } $[a_1, b_1] = [1, n_1]$ and $[a_2, b_2] = [1, n_2]$
     \item{Local - } $[a_1, b_1]$ and $[a_2, b_2]$
@@ -113,33 +116,85 @@ scheme, and gap penalties.
     \item{Subject Overlap - } $[a_1, b_1] = [1, n_1]$ and $[a_2, b_2]$
     \item{Pattern Overlap - } $[a_1, b_1]$ and $[a_2, b_2] = [1, n_2]$
   \end{description}
-  \item{Substitution Scores:  }
-  The substitution scores can either be fixed for each pairing of letters
-  within the two strings or be dependent on the qualities associated with those
-  letters. When the scores are fixed by pairing, the \Rfunarg{substituionMatrix}
-  argument takes a matrix with the appropriate alphabets as dimension names.
-  When the scores are quality-based, the \Rfunarg{qualityType} sets the type
-  of quality score to use (\texttt{"Phred"} or \texttt{"Solexa"}) and the
-  \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} arguments accept the
-  equivalent of [0-99] numeric quality values for the respective strings. For
-  \texttt{"Phred"} quality measures $Q \in [0, 99]$, the probability of an
-  error in the base read is given by $10^{-Q/10}$ and for \texttt{"Solexa"}
-  quality measures $Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$.
-  The \Rfunction{qualitySubstitutionMatrices} function maps the 
-  \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
-  mismatch penalties.
+  \item{Substitution Scoring Schemes:  }
+  The substitution scoring scheme sets the values for the aligned character
+  pairings within the substring ranges determined by the type of pairwise
+  sequence alignment. This scoring scheme can be constant for character
+  pairings or quality-dependent for character pairings. (Characters that align
+  with a gap are penalized according to the "Gap Penalty" framework.)
+  \begin{description}
+    \item{Constant substitution scoring - }
+    Constant substitution scoring schemes associate each aligned character
+    pairing with a value. These schemes are very common and include awarding
+    one value for a match and another for a mismatch, Point Accepted Mutation
+    (PAM) matrices, and Block Substitution Matrix (BLOSUM) matrices.
+    \item{Quality-based substitution scoring - }
+    Quality-based substitution scoring schemes derive the value for the aligned
+    character pairing based on the probabilities of character recording errors.
+    Let $\epsilon_i$ be the probability of a character recording error.
+    Assuming independence within and between recordings, the combined error
+    probability of a mismatch when the underlying characters do match is
+    $\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2$,
+    where $n$ is the number of characters in the underlying alphabet. Using
+    $\epsilon_c$, the substitution score when two characters match is given by
+    $b * \log_2((1 - \epsilon_c) * n)$ and the substitution score when two
+    characters don't match is given by $b * \log_2(\epsilon_c * (n/(n-1)))$,
+    where $b$ is the bit-scaling for the scoring.
+  \end{description}  
   \item{Gap Penalties:  }
-  Gaps have the potential to incur a cost when they are introduced and when they
-  are extended in an optimal pairwise alignment. The former is regulated by the
-  \Rfunarg{gapOpening} argument and the latter by the \Rfunarg{gapExtension}
-  argument. For whole string alignments, end/terminal gaps can be ignored by
-  setting the \Rfunarg{type} argument to \texttt{"overlap"} (ignore end gaps in
-  both strings), \texttt{"patternOverlap"} (ignore end gaps in \Rfunarg{pattern}),
-  or \texttt{"subjectOverlap"} (ignore end gaps in \Rfunarg{subject}).
+  Gap penalties are the values associated with the gaps within the substring
+  ranges determined by the type of pairwise sequence alignment. These penalties
+  are divided into \textit{gap opening} and \textit{gap extension} components,
+  where the gap opening penalty is the cost for adding a new gap and the gap
+  extension penalty is the incremental cost incurred along the length of the
+  gap. A \textit{constant gap penalty} occurs when there is a cost associated
+  with opening a gap, but no cost for the length of a gap (i.e. gap extension
+  is zero). A \textit{linear gap penalty} occurs when there is no cost
+  associated for opening a gap (i.e. gap opening is zero), but there is a cost
+  for the length of the gap. An \textit{affine gap penalty} occurs when both
+  the gap opening and gap extension have a non-zero associated cost.
 \end{description}
 
-The \Rfunction{pairwiseAlignment} function uses memory and computation time
-proportional to the product of the two string lengths.
+
+\section{Main Pairwise Sequence Alignment Function}
+
+The \Rfunction{pairwiseAlignment} function solves the pairwise sequence
+alignment problems mentioned above. It aligns one or more strings specified in
+the \Rfunarg{pattern} argument with a single string specified in the the
+\Rfunarg{subject} argument. The type of pairwise sequence alignment is set by
+specifying the \Rfunarg{type} argument to be one of \texttt{"global"},
+\texttt{"local"}, \texttt{"overlap"}, \texttt{"subjectOverlap"}, and
+\texttt{"patternOverlap"}. The gap penalties are regulated by the
+\Rfunarg{gapOpening} and \Rfunarg{gapExtension} arguments.
+
+The substitution scoring scheme is set using four arguments, three of which are
+quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality},
+\Rfunarg{qualityType}) and one is constant substitution related
+(\Rfunarg{substitutionMatrix}). When the substitution scores are fixed by
+pairing, the \Rfunarg{substituionMatrix} argument takes a matrix with the
+appropriate alphabets as dimension names. When the substitution scores are
+quality-based, the \Rfunarg{qualityType} sets the type of quality score to use
+(\texttt{"Phred"} or \texttt{"Solexa"}) and the \Rfunarg{patternQuality} and
+\Rfunarg{subjectQuality} arguments accept the equivalent of [0-99] numeric
+quality values for the respective strings. For \texttt{"Phred"} quality
+measures $Q \in [0, 99]$, the probability of an error in the base read is given
+by $10^{-Q/10}$ and for \texttt{"Solexa"} quality measures $Q \in [-5, 99]$,
+they are given by $1 - 1/(1 + 10^{-Q/10})$. The
+\Rfunction{qualitySubstitutionMatrices} function maps the
+\Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
+mismatch penalties.
+
+The \Rfunction{pairwiseAlignment} function uses a dynamic programming algorithm
+that consumes memory and computation time proportional to the product of the
+two string lengths.
+
+
+\section{Short Read Quality Assurances}
+
+
+\section{Edit Distances}
+
+
 
 The BLOSUM50 matrix is available in this package as a matrix:
 <<lkblo>>=
