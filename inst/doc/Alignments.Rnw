@@ -22,12 +22,15 @@
 \newcommand{\scscst}{\scriptscriptstyle}
 \newcommand{\scst}{\scriptstyle}
 
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
-\newcommand{\Robject}[1]{{\texttt{#1}}}
-\newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\Rmethod}[1]{{\texttt{#1}}}
-\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\R}{{\textsf{R}}}
+\newcommand{\code}[1]{{\texttt{#1}}}
+\newcommand{\term}[1]{{\emph{#1}}}
+\newcommand{\Rpackage}[1]{\textsf{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
 \newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\textit{#1}}}
+\newcommand{\Rfunarg}[1]{{\textit{#1}}}
 
 \textwidth=6.2in
 
@@ -45,28 +48,12 @@
 \section{Introduction}
 
 In this document we illustrate how to perform pairwise sequence alignments
-using the Biostrings package through the use of the
+using the \Rpackage{Biostrings} package through the use of the
 \Rfunction{pairwiseAlignment} function. This function aligns a set of
 \Rfunarg{pattern} strings to a \Rfunarg{subject} string in a global, local, or
 overlap (ends-free) fashion with or without affine gaps using either a constant
 or quality-based substitution scoring scheme. This function's computation time
 is proportional to the product of the two string lengths being aligned.
-
-
-\section{Data import}
-\label{fastaread}
-
-The \Rpackage{Biostrings} package includes FASTA files encoding the DNA sequence
-for Yeast chromosome I, along with some ORFs. Here we load the {\tt someORF.fa}
-file into a \Rclass{DNAStringSet} object by using the \Rfunction{read.DNAStringSet}
-function:
-<<gety>>=
-library(Biostrings)
-file <- system.file("extdata", "someORF.fa", package="Biostrings")
-orf <- read.DNAStringSet(file, "fasta")
-orf
-@
-Note that some of the ORF sequences are represented in reverse complement form.
 
 
 \section{Pairwise Sequence Alignment Problems}
@@ -75,7 +62,7 @@ The (Needleman-Wunsch) global, the (Smith-Waterman) local, and (ends-free)
 overlap pairwise sequence alignment problems are described as follows. Let
 string $S_i$ have $n_i$ characters $c_{(i,j)}$ with
 $j \in \left\{1, \ldots, n_i\right\}$. A pairwise sequence alignment is a
-mapping of strings $S_1$ and $S_2$ to "gapped" substrings ${S'}_1$ and ${S'}_2$
+mapping of strings $S_1$ and $S_2$ to ``gapped" substrings ${S'}_1$ and ${S'}_2$
 that are defined by
 
 \begin{eqnarray*}
@@ -121,7 +108,7 @@ penalties influence alignment scores in the following manner:
   pairings within the substring ranges determined by the type of pairwise
   sequence alignment. This scoring scheme can be constant for character
   pairings or quality-dependent for character pairings. (Characters that align
-  with a gap are penalized according to the "Gap Penalty" framework.)
+  with a gap are penalized according to the ``Gap Penalty" framework.)
   \begin{description}
     \item{Constant substitution scoring - }
     Constant substitution scoring schemes associate each aligned character
@@ -161,38 +148,278 @@ penalties influence alignment scores in the following manner:
 The \Rfunction{pairwiseAlignment} function solves the pairwise sequence
 alignment problems mentioned above. It aligns one or more strings specified in
 the \Rfunarg{pattern} argument with a single string specified in the the
-\Rfunarg{subject} argument. The type of pairwise sequence alignment is set by
-specifying the \Rfunarg{type} argument to be one of \texttt{"global"},
-\texttt{"local"}, \texttt{"overlap"}, \texttt{"subjectOverlap"}, and
-\texttt{"patternOverlap"}. The gap penalties are regulated by the
-\Rfunarg{gapOpening} and \Rfunarg{gapExtension} arguments.
+\Rfunarg{subject} argument.
+
+<<main1>>=
+library(Biostrings)
+pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol")
+@
+
+The type of pairwise sequence alignment is set by specifying the \Rfunarg{type}
+argument to be one of \texttt{"global"}, \texttt{"local"}, \texttt{"overlap"},
+\texttt{"subjectOverlap"}, and \texttt{"patternOverlap"}.
+
+<<main2>>=
+pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+                  type = "local")
+@
+
+The gap penalties are regulated by the \Rfunarg{gapOpening} and
+\Rfunarg{gapExtension} arguments.
+
+<<main3>>=
+pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+                  gapOpening = 0, gapExtension = -1)
+@
 
 The substitution scoring scheme is set using four arguments, three of which are
 quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality},
 \Rfunarg{qualityType}) and one is constant substitution related
 (\Rfunarg{substitutionMatrix}). When the substitution scores are fixed by
 pairing, the \Rfunarg{substituionMatrix} argument takes a matrix with the
-appropriate alphabets as dimension names. When the substitution scores are
-quality-based, the \Rfunarg{qualityType} sets the type of quality score to use
-(\texttt{"Phred"} or \texttt{"Solexa"}) and the \Rfunarg{patternQuality} and
-\Rfunarg{subjectQuality} arguments accept the equivalent of [0-99] numeric
-quality values for the respective strings. For \texttt{"Phred"} quality
-measures $Q \in [0, 99]$, the probability of an error in the base read is given
-by $10^{-Q/10}$ and for \texttt{"Solexa"} quality measures $Q \in [-5, 99]$,
-they are given by $1 - 1/(1 + 10^{-Q/10})$. The
+appropriate alphabets as dimension names.
+
+<<main4>>=
+submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+                  substitutionMatrix = submat,
+                  gapOpening = 0, gapExtension = -1)
+@
+
+When the substitution scores are quality-based, the \Rfunarg{qualityType} sets
+the type of quality score to use (\texttt{"Phred"} or \texttt{"Solexa"}) and
+the \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} arguments accept the
+equivalent of [0-99] numeric quality values for the respective strings. For
+\texttt{"Phred"} quality measures $Q \in [0, 99]$, the probability of an error
+in the base read is given by $10^{-Q/10}$ and for \texttt{"Solexa"} quality
+measures $Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$. The
 \Rfunction{qualitySubstitutionMatrices} function maps the
 \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
-mismatch penalties.
+mismatch penalties. These three arguments will be demonstrated in later
+sections.
 
-The \Rfunction{pairwiseAlignment} function uses a dynamic programming algorithm
-that consumes memory and computation time proportional to the product of the
-two string lengths.
+The final argument, \Rfunarg{scoreOnly}, to the \Rfunction{pairwiseAlignment}
+function accepts a logical value to specify whether or not to return just the
+pairwise sequence alignment score.
+
+<<main5>>=
+submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+                  substitutionMatrix = submat,
+                  gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+@
 
 
-\section{Short Read Quality Assurances}
+\section{Pairwise Sequence Alignment Classes}
+
+Following the design principles of Bioconductor and R, the pairwise sequence
+alignment functionality in the \Rpackage{Biostrings} package keeps the end-user
+close to their data through the use of four specialty classes:  
+\Rclass{PairwiseAlignment}, \Rclass{PairwiseAlignmentSummary},
+\Rclass{AlignedXStringSet}, and \Rclass{QualityAlignedXStringSet}. As the names
+suggest the \Rclass{PairwiseAlignment} class holds the results of a fit from
+the \Rfunction{pairwiseAlignment} function
+
+<<classes1>>=
+psa1 <- pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol")
+class(psa1)
+@
+
+and the \Rfunction{pairwiseAlignmentSummary} function holds the results of a
+summarized pairwise sequence alignment.
+
+<<classes2>>=
+summary(psa1)
+class(summary(psa1))
+@
+
+The \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} classes
+hold the ``gapped" ${S'}_i$ substrings with the former class holding the results
+when the pairwise sequence alignment is performed with a constant substituion
+scoring scheme and the latter class a quality-based scoring scheme.
+
+<<classes3>>=
+class(pattern(psa1))
+submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+psa2 <-
+  pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+                    substitutionMatrix = submat,
+                    gapOpening = 0, gapExtension = -1)
+class(pattern(psa2))
+@
+
+
+\section{Pairwise Sequence Alignment Helper Functions}
+
+Tables \ref{table:helperfuns} and \ref{table:alignfuns} show the functions for
+interacting with objects of class \Rclass{PairwiseAlignment} and
+\Rclass{AlignedXStringSet} repectively. These functions should be used in
+preference to slot extraction from the alignment objects.
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{l|l}
+\hline
+Function                    & Description \\
+\hline
+\Rfunction{[}               & Extracts the specified elements of the alignment object \\
+\Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
+\Rfunction{as.character}    & Converts the alignments to character strings \\
+\Rfunction{consmat}         & Computes a consensus matrix for the alignments \\
+\Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
+\Rfunction{coverage}        & Computes the alignment coverage along the subject \\
+\Rfunction{length}          & Extracts the number of patterns aligned \\
+\Rfunction{mismatchSummary} & Summarizes the information of the \Rfunction{mismatchTable} \\
+\Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
+\Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
+\Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
+\Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
+\Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
+\Rfunction{pattern}, \Rfunction{subject} & Extracts the aligned pattern/subject \\
+\Rfunction{rep}             & Replicates the elements of the alignment object \\
+\Rfunction{score}           & Extracts the pairwise sequence alignment scores \\
+\Rfunction{summary}         & Summarizes a pairwise sequence alignment \\
+\Rfunction{type}            & Extracts the type of pairwise sequence alignment \\
+\Rfunction{views}           & Extracts the alignment ranges for the subject \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Functions for \Rclass{PairwiseAlignment} objects.}
+\label{table:helperfuns}
+\end{table}
+
+The \Rfunction{score}, \Rfunction{nmatch}, \Rfunction{nmismatch}, and
+\Rfunction{nchar} functions return numeric vectors containing information
+on the pairwise sequence alignment score, number of matches, number of
+mismatches, and number of aligned characters respectively.
+
+<<helper1>>=
+submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+psa2 <-
+  pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+                    substitutionMatrix = submat,
+                    gapOpening = 0, gapExtension = -1)
+score(psa2)
+nmatch(psa2)
+nmismatch(psa2)
+nchar(psa2)
+@
+
+The \Rfunction{summary}, \Rfunction{mismatchTable}, and 
+\Rfunction{mismatchSummary} functions return various summaries of the
+pairwise sequence alignments.
+
+<<helper2>>=
+summary(psa2)
+mismatchTable(psa2)
+mismatchSummary(psa2)
+@
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{l|l}
+\hline
+Function                    & Description \\
+\hline
+\Rfunction{[}               & Extracts the specified elements of the alignment object \\
+\Rfunction{aligned}, \Rfunction{unaligned} & Extracts the aligned/unaligned strings \\
+\Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
+\Rfunction{as.character}, \Rfunction{toString} & Converts the alignments to character strings \\
+\Rfunction{coverage}        & Computes the alignment coverage \\
+\Rfunction{end}             & Extracts the ending index of the aligned range \\
+\Rfunction{indel}           & Extracts the insertion/deletion locations \\
+\Rfunction{length}          & Extracts the number of patterns aligned \\
+\Rfunction{mismatch}        & Extracts the position of the mismatches \\
+\Rfunction{mismatchSummary} & Summarizes the information of the \Rfunction{mismatchTable} \\
+\Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
+\Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
+\Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
+\Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
+\Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
+\Rfunction{quality}         & Extracts the quality scores for a \Rclass{QualityAlignedXString} \\
+\Rfunction{rep}             & Replicates the elements of the alignment object \\
+\Rfunction{start}           & Extracts the starting index of the aligned range \\
+\Rfunction{width}           & Extracts the width of the aligned range \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Functions for \Rclass{AlignedXString} and \Rclass{QualityAlignedXString} objects.}
+\label{table:alignfuns}
+\end{table}
+
+The \Rfunction{pattern} and \Rfunction{subject} functions extract the aligned
+strings for further analysis. Most of the actions that can be performed on
+\Rclass{PairwiseAnalysis} objects can also be performed on
+\Rclass{AlignedXString} and \Rclass{QualityAlignedXString} objects as well as
+operations including \Rfunction{start}, \Rfunction{end}, and \Rfunction{width}
+that extracts the start, end, and width of the alignment ranges.
+
+<<helper3>>=
+class(pattern(psa2))
+aligned(pattern(psa2))
+nindel(subject(psa2))
+start(subject(psa2))
+end(subject(psa2))
+@
 
 
 \section{Edit Distances}
+
+One of the earliest uses of pairwise sequence alignment is in the area of text
+analysis. In 1965 Vladimir Levenshtein considered a metric, now called the 
+\textit{Levenshtein edit distance}, that measures the similarity between two
+strings. This distance metric is equivalent to the negative of the score of a
+pairwise sequence alignment with a match cost of 0, a mismatch cost of -1, a
+gap opening penalty of 0, and a gap extension cost of -1. An implementation of
+approximate string matching using \textit{Levenshtein edit distance} is given
+in the \Rfunction{agrep} function of the \Rpackage{base} R package. As the
+following example shows, it is possible to replicate the \Rfunction{agrep}
+function using the \Rfunction{pairwiseAlignment} function.
+
+<<editdist1>>=
+agrepBioC <-
+function(pattern, x, ignore.case = FALSE, value = FALSE, max.distance = 0.1)
+{
+  if (!is.character(pattern)) pattern <- as.character(pattern)
+  if (!is.character(x)) x <- as.character(x)
+  if (max.distance < 1)
+    max.distance <- ceiling(max.distance / nchar(pattern))
+  characters <- sapply(32:126, intToUtf8)
+  if (ignore.case)
+    substitutionMatrix <-
+      outer(tolower(characters), tolower(characters), function(x,y) -as.numeric(x!=y))
+  else
+    substitutionMatrix <-
+      outer(characters, characters, function(x,y) -as.numeric(x!=y))
+  dimnames(substitutionMatrix) <- list(characters, characters)
+  distance <-
+    - pairwiseAlignment(pattern = x, subject = pattern,
+                        substitutionMatrix = substitutionMatrix,
+                        type = "patternOverlap",
+                        gapOpening = 0, gapExtension = -1,
+                        scoreOnly = TRUE)
+  whichClose <- which(distance <= max.distance)
+  if (value)
+    whichClose <- x[whichClose]
+  whichClose
+}
+cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, value = TRUE),
+      bioc = agrepBioC("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, value = TRUE))
+cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE),
+      bioc = agrepBioC("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE))
+@
+
+\section{DNA Short Read Quality Assurances}
+
+
+\section{Computation Profiling}
+The \Rfunction{pairwiseAlignment} function uses a dynamic programming algorithm
+that consumes memory and computation time proportional to the product of the
+two string lengths.
 
 
 
@@ -238,6 +465,9 @@ for a set of equal-length strings assumed to be aligned. To illustrate, the
 following application assumes the ORF data to be aligned for the first 10
 positions (patently false):
 <<doal>>=
+file <- system.file("extdata", "someORF.fa", package="Biostrings")
+orf <- read.DNAStringSet(file, "fasta")
+orf
 orf10 <- DNAStringSet(orf, end=10)
 consmat(orf10)
 @
