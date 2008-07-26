@@ -414,6 +414,35 @@ cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = T
 @
 
 
+\section{Application:  Using Evoluationary Models in Protein Alignments}
+
+When proteins are believed to decend from a common ancestor, evolutionary
+models can be used as a guide in pairwise sequence alignments. The two most
+common families evolutionary models of proteins used in pairwise sequence
+alignments are Point Accepted Mutation (PAM) matrices, which are based on
+explicit evolutionary models, and Block Substitution Matrix (BLOSUM) matrices,
+which are based on data-derived evolution models. The \Rpackage{Biostrings}
+package contains 5 PAM and 5 BLOSUM matrices (\Robject{PAM30} \Robject{PAM40},
+\Robject{PAM70}, \Robject{PAM120}, \Robject{PAM250}, \Robject{BLOSUM45},
+\Robject{BLOSUM50}, \Robject{BLOSUM62}, \Robject{BLOSUM80}, and
+\Robject{BLOSUM100}) that can be used in the \Rfunarg{substitutionMatrix}
+argument to the \Rfunction{pairwiseAlignment} function.
+
+Here is an example pairwise sequence alignment of amino acids from Durbin, Eddy
+et al being fit by the \Rfunction{pairwiseAlignment} function using the
+\Robject{BLOSUM50} matrix:
+
+<<lkblo>>=
+data(BLOSUM50)
+BLOSUM50[1:4,1:4]
+nwdemo <- 
+  pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM50,
+                    gapOpening = 0, gapExtension = -8)
+nwdemo
+compareStrings(nwdemo)
+@
+
+
 \section{Application:  Removing Adapters from Sequence Reads}
 
 Finding and removing uninteresting experiment process-related fragments like
@@ -577,6 +606,31 @@ cleanedStrings
 @
 
 
+\section{Application:  Quality Assurance in Sequencing Experiments}
+
+Due to its flexibility, the \Rfunction{pairwiseAlignment} function is able to
+diagnose issue of reads that the \Rfunction{matchPDict} function does not align
+to a target \Rfunarg{subject}.
+
+
+<<genome1>>=
+data(phiX174)
+nchar(phiX174)
+phiX174Substring <- substring(phiX174, 2793-34, 2811+34)
+
+data(srPhiX174)
+srPhiX174
+quPhiX174
+summary(wtPhiX174)
+
+alignPhiX174 <-
+  pairwiseAlignment(srPhiX174, phiX174Substring, patternQuality = quPhiX174,
+                    subjectQuality = 99L, qualityType = "Solexa",
+                    type = "subjectOverlap")
+summary(alignPhiX174, weight = wtPhiX174)
+@
+
+
 \section{Computation Profiling}
 The \Rfunction{pairwiseAlignment} function uses a dynamic programming algorithm
 based on the Needleman-Wunsch and Smith-Waterman algorithms for global and
@@ -585,12 +639,6 @@ and computation time proportional to the product of the length of the two
 strings being aligned.
 
 
-
-The BLOSUM50 matrix is available in this package as a matrix:
-<<lkblo>>=
-data(BLOSUM50)
-BLOSUM50[1:4,1:4]
-@
 A comparison of the three optimal pairwise alignments problems from Haubold and Wiehe:
 <<haubold>>=
 s1 <- 
@@ -607,17 +655,6 @@ localAlign <- pairwiseAlignment(s1, s2, type = "local", substitutionMatrix = mat
   gapOpening = -5, gapExtension = -2)
 overlapAlign <- pairwiseAlignment(s1, s2, type = "overlap",
   substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
-@
-A canonical global optimal pairwise alignment example from Durbin, Eddy et al:
-<<runnw>>=
-nwdemo <- 
-  pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM50,
-                    gapOpening = 0, gapExtension = -8)
-nwdemo
-@
-The score (final element of dynamic programming score matrix) can be accessed:
-<<lksc>>=
-score(nwdemo)
 @
 
 
