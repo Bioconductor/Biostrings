@@ -147,7 +147,7 @@ penalties influence alignment scores in the following manner:
 
 The \Rfunction{pairwiseAlignment} function solves the pairwise sequence
 alignment problems mentioned above. It aligns one or more strings specified in
-the \Rfunarg{pattern} argument with a single string specified in the the
+the \Rfunarg{pattern} argument with a single string specified in the
 \Rfunarg{subject} argument.
 
 <<main1>>=
@@ -237,7 +237,7 @@ class(summary(psa1))
 
 The \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} classes
 hold the ``gapped" ${S'}_i$ substrings with the former class holding the results
-when the pairwise sequence alignment is performed with a constant substituion
+when the pairwise sequence alignment is performed with a constant substitution
 scoring scheme and the latter class a quality-based scoring scheme.
 
 <<classes3>>=
@@ -256,7 +256,7 @@ class(pattern(psa2))
 
 Tables \ref{table:helperfuns} and \ref{table:alignfuns} show the functions for
 interacting with objects of class \Rclass{PairwiseAlignment} and
-\Rclass{AlignedXStringSet} repectively. These functions should be used in
+\Rclass{AlignedXStringSet} respectively. These functions should be used in
 preference to slot extraction from the alignment objects.
 
 \begin{table}[ht]
@@ -388,7 +388,7 @@ function(pattern, x, ignore.case = FALSE, value = FALSE, max.distance = 0.1)
   if (!is.character(x)) x <- as.character(x)
   if (max.distance < 1)
     max.distance <- ceiling(max.distance / nchar(pattern))
-  characters <- sapply(32:126, intToUtf8)
+  characters <- unique(unlist(strsplit(c(pattern, x), "", fixed = TRUE)))
   if (ignore.case)
     substitutionMatrix <-
       outer(tolower(characters), tolower(characters), function(x,y) -as.numeric(x!=y))
@@ -413,13 +413,176 @@ cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = T
       bioc = agrepBioC("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE))
 @
 
-\section{DNA Short Read Quality Assurances}
+
+\section{Application:  Removing Adapters from Sequence Reads}
+
+Finding and removing uninteresting experiment process-related fragments like
+adapters is a common problem in genetic sequencing and pairwise sequence
+alignment is well-suited to address this issue. When adapters are used to
+anchor or extend a sequence during the experiment process, they either
+intentionally or unintentionally become sequenced during the read process.
+The follow code simulates what sequences with adapter fragments at either end
+could look like during an experiment.
+
+<<adapter1>>=
+adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
+chars <- strsplit("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA", "")[[1]]
+set.seed(123)
+N <- 1000
+experiment <-
+  list(side = rbinom(N, 1, 0.5), width = sample(0:36, N, replace = TRUE))
+table(experiment[["side"]], experiment[["width"]])
+adapterStrings <-
+  sapply(seq_len(N), function(i, subrate = 0.01, gaprate = 0.001) {
+    width <- experiment[["width"]][i]
+    side <- experiment[["side"]][i]
+    randomLetters <-
+      function(n) sample(DNA_ALPHABET[1:4], n, replace = TRUE) 
+    randomLettersWithEmpty <-
+      function(n)
+      sample(c("", DNA_ALPHABET[1:4]), n, replace = TRUE,
+             prob = c(1 - gaprate, rep(gaprate/4, 4)))
+    nChars <- length(chars)
+    value <-
+      paste(ifelse(rbinom(nChars,1,subrate), randomLetters(nChars), chars),
+            randomLettersWithEmpty(nChars),
+            sep = "", collapse = "")
+    if (side)
+      value <-
+        paste(c(randomLetters(36 - width), substring(value, 1, width)),
+                sep = "", collapse = "")
+    else
+      value <-
+        paste(c(substring(value, 37 - width, 36), randomLetters(36 - width)),
+                sep = "", collapse = "")
+    value
+  })
+adapterStrings <- DNAStringSet(adapterStrings)
+adapterStrings
+@
+
+These simulated strings above have 0 to 36 characters from the adapters
+attached to either end. We can use completely random strings as a baseline for
+any pairwise sequence alignment methodology we develop to remove the adapter
+characters.
+
+<<adapter2>>=
+M <- 10000
+randomStrings <-
+  apply(matrix(sample(DNA_ALPHABET[1:4], 36 * M, replace = TRUE),
+               nrow = M), 1, paste, collapse = "")
+randomStrings <- DNAStringSet(randomStrings)
+randomStrings
+@
+
+Since edit distances are easy to explain, it serves as a good place to start
+for developing a adapter removal methodology. Unfortunately given that it is
+based on a global alignment, it only is useful for filtering out sequences that
+are derived primarily from the adapter.
+
+<<adapter3>>=
+## Method 1:  Use edit distance with an FDR of 1e-03
+submat1 <-
+  matrix(-1, nrow = 4, ncol = 4,
+         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
+diag(submat1) <- 0
+randomScores1 <-
+  pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat1,
+                    gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+quantile(randomScores1, seq(0.99, 1, by = 0.001))
+adapterAligns1 <-
+  pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat1,
+                    gapOpening = 0, gapExtension = -1)
+table(score(adapterAligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
+@
+
+One improvement to removing adapters is to look at consecutive matches anywhere
+within the sequence. This is more versatile than the edit distance method, but
+it requires a relatively large number of consecutive matches and is susceptible
+to issues related to error related substitutions and insertions/deletions.
+
+<<adapter4>>=
+## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
+submat2 <-
+  matrix(-Inf, nrow = 4, ncol = 4,
+         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
+diag(submat2) <- 1
+randomScores2 <-
+  pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat2,
+                    type = "local", gapOpening = 0, gapExtension = -Inf,
+                    scoreOnly = TRUE)
+quantile(randomScores2, seq(0.99, 1, by = 0.001))
+adapterAligns2 <-
+  pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat2,
+                    type = "local", gapOpening = 0, gapExtension = -Inf)
+table(score(adapterAligns2) > quantile(randomScores2, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(start(pattern(adapterAligns2)) > 37 - end(pattern(adapterAligns2)),
+      experiment[["side"]])
+@
+
+Limiting consecutive matches to the ends provides better results, but it
+doesn't revolve the issues related to substitutions and insertions/deletions
+errors.
+
+<<adapter5>>=
+## Method 3:  Use consecutive matches on the ends with an FDR of 1e-03
+submat3 <-
+  matrix(-Inf, nrow = 4, ncol = 4,
+         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
+diag(submat3) <- 1
+randomScores3 <-
+  pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat3,
+                    type = "overlap", gapOpening = 0, gapExtension = -Inf,
+                    scoreOnly = TRUE)
+quantile(randomScores3, seq(0.99, 1, by = 0.001))
+adapterAligns3 <-
+  pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat3,
+                    type = "overlap", gapOpening = 0, gapExtension = -Inf)
+table(score(adapterAligns3) > quantile(randomScores3, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(adapterAligns3)) == 36, experiment[["side"]])
+@
+
+Allowing for substitutions and insertions/deletions errors in the pairwise
+sequence alignments provides much better results for finding adapter fragments.
+
+<<adapter6>>=
+## Method 4:  Allow mismatches and indels on the ends with an FDR of 1e-03
+randomScores4 <-
+  pairwiseAlignment(randomStrings, adapter, type = "overlap", scoreOnly = TRUE)
+quantile(randomScores4, seq(0.99, 1, by = 0.001))
+adapterAligns4 <-
+  pairwiseAlignment(adapterStrings, adapter, type = "overlap")
+table(score(adapterAligns4) > quantile(randomScores4, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(adapterAligns4)) == 36, experiment[["side"]])
+@
+
+
+<<adapter6>>=
+## Method 4 continued:  Remove adapter fragments
+fragmentFound <- score(adapterAligns4) > quantile(randomScores4, 0.999)
+fragmentFoundAt1 <- fragmentFound & (start(pattern(adapterAligns4)) == 1)
+fragmentFoundAt36 <- fragmentFound & (end(pattern(adapterAligns4)) == 36)
+cleanedStrings <- as.character(adapterStrings)
+cleanedStrings[fragmentFoundAt1] <-
+  as.character(narrow(adapterStrings[fragmentFoundAt1], end = 36,
+         width = 36 - end(pattern(adapterAligns4[fragmentFoundAt1]))))
+cleanedStrings[fragmentFoundAt36] <-
+  as.character(narrow(adapterStrings[fragmentFoundAt36], start = 1,
+         width = start(pattern(adapterAligns4[fragmentFoundAt36])) - 1))
+cleanedStrings <- DNAStringSet(cleanedStrings)
+cleanedStrings
+@
 
 
 \section{Computation Profiling}
 The \Rfunction{pairwiseAlignment} function uses a dynamic programming algorithm
-that consumes memory and computation time proportional to the product of the
-two string lengths.
+based on the Needleman-Wunsch and Smith-Waterman algorithms for global and
+local pairwise sequence alignments respectively. The algorithm consumes memory
+and computation time proportional to the product of the length of the two
+strings being aligned.
 
 
 
