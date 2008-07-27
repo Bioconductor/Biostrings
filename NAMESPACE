@@ -47,7 +47,7 @@ export(
     .inplaceReplaceLetterAtLoc,
     maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
-    qualitySubstitutionMatrices,
+    errorSubstitutionMatrices, qualitySubstitutionMatrices,
 
     ## Aliases
     desc, "desc<-",

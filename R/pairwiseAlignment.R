@@ -10,26 +10,31 @@
 ###
 ### -------------------------------------------------------------------------
 
+errorSubstitutionMatrices <-
+function(prob, alphabetLength = 4L, bitScale = 1) {
+  errorMatrix <-
+    outer(prob, prob,
+          function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
+          n = alphabetLength)
+  output <- 
+    lapply(list(match = bitScale * log2((1 - errorMatrix) * alphabetLength),
+                mismatch =
+                bitScale * log2(errorMatrix * (alphabetLength / (alphabetLength - 1)))),
+                function(x) {dimnames(x) <- list(names(prob), names(prob)); x})
+  output
+}
+
 qualitySubstitutionMatrices <-
 function(alphabetLength = 4L, qualityType = "Phred", bitScale = 1) {
   qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
   if (qualityType == "Phred") {
-    errorProbs <- 10^seq(0, -9.9, by = -0.1)
-    qualityLabels <- as.character(0:99)
+    prob <- 10^seq(0, -9.9, by = -0.1)
+    names(prob) <- as.character(0:99)
   } else {
-    errorProbs <- 1 - 1/(1 + 10^seq(0.5, -9.9, by = -0.1))
-    qualityLabels <- as.character(-5:99)
+    prob <- 1 - 1/(1 + 10^seq(0.5, -9.9, by = -0.1))
+    names(prob) <- as.character(-5:99)
   }
-  errorMatrix <-
-    outer(errorProbs, errorProbs,
-          function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
-          n = alphabetLength)
-  output <- 
-    lapply(list(matchMatrix = bitScale * log2((1 - errorMatrix) * alphabetLength),
-                mismatchMatrix =
-                bitScale * log2(errorMatrix * (alphabetLength / (alphabetLength - 1)))),
-           function(x) {dimnames(x) <- list(qualityLabels, qualityLabels); x})
-  output
+  errorSubstitutionMatrices(prob, alphabetLength = alphabetLength, bitScale = bitScale)
 }
 
 
@@ -142,8 +147,8 @@ function(pattern,
     subjectQuality <- BString("")
     qualityLookupTable <- integer(0)
     qualityMatrices <-
-      list(matchMatrix = matrix(numeric(0), nrow = 0, ncol = 0),
-           mismatchMatrix = matrix(numeric(0), nrow = 0, ncol = 0))
+      list(match = matrix(numeric(0), nrow = 0, ncol = 0),
+           mismatch = matrix(numeric(0), nrow = 0, ncol = 0))
     if (is.character(substitutionMatrix)) {
       if (length(substitutionMatrix) != 1)
         stop("'substitutionMatrix' is a character vector of length != 1")
@@ -184,9 +189,9 @@ function(pattern,
                   gapExtension,
                   useQuality,
                   qualityLookupTable,
-                  qualityMatrices[["matchMatrix"]],
-                  qualityMatrices[["mismatchMatrix"]],
-                  dim(qualityMatrices[["matchMatrix"]]),
+                  qualityMatrices[["match"]],
+                  qualityMatrices[["mismatch"]],
+                  dim(qualityMatrices[["match"]]),
                   constantLookupTable,
                   constantMatrix,
                   dim(constantMatrix),

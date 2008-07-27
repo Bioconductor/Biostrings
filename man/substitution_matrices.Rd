@@ -13,6 +13,7 @@
 \alias{PAM120}
 \alias{PAM250}
 \alias{qualitySubstitutionMatrices}
+\alias{errorSubstitutionMatrices}
 
 
 \title{Scoring matrices}
@@ -32,10 +33,13 @@
   data(PAM70)
   data(PAM120)
   data(PAM250)
+  errorSubstitutionMatrices(prob, alphabetLength = 4L, bitScale = 1)
   qualitySubstitutionMatrices(alphabetLength = 4L, qualityType = "Phred", bitScale = 1)
 }
 
 \arguments{
+  \item{prob}{a named or unnamed numeric vector representing the error
+    probability.}
   \item{alphabetLength}{an integer representing the number of letters
     in the underlying string alphabet. For DNA and RNA, this would be 4L.
     For Amino Acids, this could be 20L.}
@@ -50,10 +54,11 @@
   coefficients, whose row and column names are identical and unique: each
   name is a single letter representing a nucleotide or an amino acid.
 
-  \code{qualitySubstitutionMatrices} produces a two element list of 100 x 100
-  numeric square symmetric matrices, one for matches and one for mismatches.
-  The rows and columns should be thought of as indexed from [0 - 99] to
-  correspond to the [0 - 99] range of quality measures.
+  \code{errorSubstitutionMatrices} produces a two element list of numeric
+  square symmetric matrices, one for matches and one for mismatches.
+
+  \code{qualitySubstitutionMatrices} produces the substitution matrices
+  for Phred or Solexa quality-based reads.
 }
 
 \details{
@@ -70,7 +75,6 @@
 
   The BLOSUM50, BLOSUM100, PAM40, PAM120 and PAM250 matrices were taken
   from ftp://ftp.ncbi.nih.gov/blast/matrices/
-
 
   The quality matrices computed in \code{qualitySubstitutionMatrices} are
   based on the paper by Ketil Malde. Let \eqn{\epsilon_i} be the probability
@@ -107,8 +111,8 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   ## strings in pairwiseAlignment. By default patternQuality = 22L and
   ## subjectQuality = 22L.
   qualityMatrices <- qualitySubstitutionMatrices()
-  qualityMatrices[["matchMatrix"]][23, 23]
-  qualityMatrices[["mismatchMatrix"]][23, 23]
+  qualityMatrices[["match"]]["22", "22"]
+  qualityMatrices[["mismatch"]]["22", "22"]
 
   s1 <- 
     DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
@@ -116,6 +120,13 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
     DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
   pairwiseAlignment(s1, s2)
 
+  ## Get the substitution scores when the error probability is 0.1
+  subscores <- errorSubstitutionMatrices(0.1)
+  submat <- matrix(subscores[["mismatch"]], 4, 4)
+  diag(submat) <- subscores[["match"]]
+  dimnames(submat) <- list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4])
+  submat
+  pairwiseAlignment(s1, s2, substitutionMatrix = submat)
 
   ## Align two amino acid sequences with the BLOSUM62 matrix
   aa1 <- AAString("HXBLVYMGCHFDCXVBEHIKQZ")
