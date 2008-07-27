@@ -414,9 +414,9 @@ cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = T
 @
 
 
-\section{Application:  Using Evoluationary Models in Protein Alignments}
+\section{Application:  Using Evolutionary Models in Protein Alignments}
 
-When proteins are believed to decend from a common ancestor, evolutionary
+When proteins are believed to descend from a common ancestor, evolutionary
 models can be used as a guide in pairwise sequence alignments. The two most
 common families evolutionary models of proteins used in pairwise sequence
 alignments are Point Accepted Mutation (PAM) matrices, which are based on
@@ -609,25 +609,64 @@ cleanedStrings
 \section{Application:  Quality Assurance in Sequencing Experiments}
 
 Due to its flexibility, the \Rfunction{pairwiseAlignment} function is able to
-diagnose issue of reads that the \Rfunction{matchPDict} function does not align
-to a target \Rfunarg{subject}.
-
+diagnose sequence matching-related issues that arise when the
+\Rfunction{matchPDict} and its related functions don't find a match when
+aligning sequence fragments to a target. This section contains an example
+involving a short read Solexa sequencing experiment of a Coliphage phiX174.
+This experiment contains slightly less than 5000 unique short reads in
+\Robject{srPhiX174}, with quality measures in \Robject{quPhiX174}, and
+frequency for those short reads in \Robject{wtPhiX174}.
 
 <<genome1>>=
 data(phiX174)
 nchar(phiX174)
-phiX174Substring <- substring(phiX174, 2793-34, 2811+34)
 
 data(srPhiX174)
 srPhiX174
 quPhiX174
 summary(wtPhiX174)
 
+fullShortReads <- rep(srPhiX174, wtPhiX174)
+srPDict <- PDict(fullShortReads)
+table(countPDict(srPDict, phiX174))
+@
+
+For these short reads, the \Rfunction{pairwiseAlignment} function finds that
+the reason for the small number of perfect matches is due to two locations
+on the Coliphage phiX174 genome.
+
+Unlike the \Rfunction{countPDict} function, the \Rfunction{pairwiseAlignment}
+function works off of the original strings, rather than \Rfunction{PDict}
+processed strings, and to be computationally efficient it is recommended that
+the unique sequences are supplied to the \Rfunction{pairwiseAlignment}
+function, and the frequencies of those sequences are supplied to the
+\Rfunarg{weight} argument of functions like \Rfunction{summary},
+\Rfunction{mismatchSummary}, and \Rfunction{coverage}. For the purposes of this
+exercise, a substring of the Coliphage phiX174 genome is supplied to the
+\Rfunarg{subject} argument of the \Rfunction{pairwiseAlignment} function to
+reduce the execution time.
+
+<<genome2>>=
+phiX174Substring <- substring(phiX174, 2793-34, 2811+34)
+
 alignPhiX174 <-
   pairwiseAlignment(srPhiX174, phiX174Substring, patternQuality = quPhiX174,
                     subjectQuality = 99L, qualityType = "Solexa",
                     type = "subjectOverlap")
 summary(alignPhiX174, weight = wtPhiX174)
+
+splitchars <- strsplit(as.character(phiX174), "")[[1]]
+splitchars[c(2793, 2811)] <- "T"
+phiX174Revised <- DNAString(paste(splitchars, collapse = ""))
+table(countPDict(srPDict, phiX174Revised))
+@
+
+The following plot shows the coverage of the aligned short reads along
+the substring of the Coliphage phiX174 genome.
+
+<<genome3, fig=TRUE>>=
+plot((2793-34):(2811+34), coverage(alignPhiX174, weight = wtPhiX174),
+     xlab = "Position", ylab = "Coverage", type = "l")
 @
 
 
