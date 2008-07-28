@@ -153,7 +153,7 @@ the \Rfunarg{pattern} argument with a single string specified in the
 
 <<main1>>=
 library(Biostrings)
-pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol")
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
 @
 
 The type of pairwise sequence alignment is set by specifying the \Rfunarg{type}
@@ -161,7 +161,7 @@ argument to be one of \texttt{"global"}, \texttt{"local"}, \texttt{"overlap"},
 \texttt{"subjectOverlap"}, and \texttt{"patternOverlap"}.
 
 <<main2>>=
-pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   type = "local")
 @
 
@@ -169,7 +169,7 @@ The gap penalties are regulated by the \Rfunarg{gapOpening} and
 \Rfunarg{gapExtension} arguments.
 
 <<main3>>=
-pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   gapOpening = 0, gapExtension = -1)
 @
 
@@ -183,7 +183,7 @@ appropriate alphabets as dimension names.
 <<main4>>=
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
-pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   substitutionMatrix = submat,
                   gapOpening = 0, gapExtension = -1)
 @
@@ -207,10 +207,20 @@ pairwise sequence alignment score.
 <<main5>>=
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
-pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   substitutionMatrix = submat,
                   gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
 @
+
+\subsection{Exercise 1}
+\begin{enumerate}
+\item Fit the global, local, and overlap pairwise alignment of the strings
+\Robject{"syzygy"} and \Robject{"zyzzyx"} using the default settings.
+\item Do any of the alignments change if the \Rfunarg{gapExtension} argument
+is set to \Robject{-Inf}?
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers1}.]
 
 
 \section{Pairwise Sequence Alignment Classes}
@@ -224,7 +234,7 @@ suggest the \Rclass{PairwiseAlignment} class holds the results of a fit from
 the \Rfunction{pairwiseAlignment} function
 
 <<classes1>>=
-psa1 <- pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol")
+psa1 <- pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
 class(psa1)
 @
 
@@ -237,20 +247,29 @@ class(summary(psa1))
 @
 
 The \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} classes
-hold the ``gapped" ${S'}_i$ substrings with the former class holding the results
-when the pairwise sequence alignment is performed with a constant substitution
-scoring scheme and the latter class a quality-based scoring scheme.
+hold the ``gapped" ${S'}_i$ substrings with the former class holding the
+results when the pairwise sequence alignment is performed with a constant
+substitution scoring scheme and the latter class a quality-based scoring
+scheme.
 
 <<classes3>>=
 class(pattern(psa1))
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 psa2 <-
-  pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+  pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                     substitutionMatrix = submat,
                     gapOpening = 0, gapExtension = -1)
 class(pattern(psa2))
 @
+
+\subsection{Exercise 2}
+\begin{enumerate}
+\item What is the primary benefit of formal summary classes like
+\Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users? 
+\end{enumerate}
+
+[Answer provided in section \ref{sec:Answers2}.]
 
 
 \section{Pairwise Sequence Alignment Helper Functions}
@@ -301,7 +320,7 @@ mismatches, and number of aligned characters respectively.
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 psa2 <-
-  pairwiseAlignment(pattern = c("glycerine", "glycerin"), subject = "glycerol",
+  pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                     substitutionMatrix = submat,
                     gapOpening = 0, gapExtension = -1)
 score(psa2)
@@ -737,6 +756,38 @@ infContent <- function(Lmers) {
 }
 infContent(orf10)
 @
+
+
+\section{Exercise Answers}
+
+\subsection{Exercise 1}
+\label{sec:Answers1}
+\begin{enumerate}
+\item Fit the global, local, and overlap pairwise alignment of the strings
+\Robject{"syzygy"} and \Robject{"zyzzyx"} using the default settings.
+<<ans1a>>=
+pairwiseAlignment("zyzzyx", "syzygy")
+pairwiseAlignment("zyzzyx", "syzygy", type = "local")
+pairwiseAlignment("zyzzyx", "syzygy", type = "overlap")
+@
+\item Do any of the alignments change if the \Rfunarg{gapExtension} argument
+is set to \Robject{-Inf}? Yes, the overlap pairwise sequence alignment changes.
+<<ans1b>>=
+pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
+@
+\end{enumerate}
+
+\subsection{Exercise 2}
+\label{sec:Answers2}
+\begin{enumerate}
+\item What is the primary benefit of formal summary classes like
+\Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users? These
+classes allow the end-user to extract the summary output for further operations.
+<<ans2a>>=
+alsum <- summary(pairwiseAlignment("zyzzyx", "syzygy"))
+nmatch(alsum) / nmismatch(alsum)
+@
+\end{enumerate}
 
 
 \begin{thebibliography}{}
