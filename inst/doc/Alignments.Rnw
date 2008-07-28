@@ -681,7 +681,7 @@ cleanedStrings
 with a \Rfunarg{substitutionRate} of 0.005 and \Rfunarg{gapRate} of 0.0005.
 How do the different pairwise sequence alignment methods compare?
 \item (Advanced) Modify the \Rfunction{simulateReads} function to accept
-different adapters on either side (left, right) of the reads. How would the
+different adapters on either side (left \& right) of the reads. How would the
 methods for trimming the reads change?
 \end{enumerate}
 
@@ -935,6 +935,7 @@ sdist(c("zyzzyx", "syzygy", "succeed", "precede", "supersede"))
 \end{enumerate}
 
 \subsection{Exercise 5}
+\label{sec:Answers5}
 \begin{enumerate}
 \item Repeat the alignment exercise above using \Robject{BLOSUM62}, a gap
 opening penalty of -12, and a gap extension penalty of -4.
@@ -945,6 +946,74 @@ pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatri
 @
 \item Explore to find out what caused the alignment to change.
 The sift in gap penalties favored infrequent long gaps to frequent short ones.
+\end{enumerate}
+
+
+\subsection{Exercise 6}
+\label{sec:Answers6}
+\begin{enumerate}
+\item Rerun the simulation time using the \Rfunction{simulateReads} function
+with a \Rfunarg{substitutionRate} of 0.005 and \Rfunarg{gapRate} of 0.0005.
+How do the different pairwise sequence alignment methods compare? The different
+methods are much more comprobable when the error rates are lower.
+<<ans6a>>=adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
+set.seed(123)
+N <- 1000
+experiment <-
+  list(side = rbinom(N, 1, 0.5), width = sample(0:36, N, replace = TRUE))
+table(experiment[["side"]], experiment[["width"]])
+ex6Strings <-
+  simulateReads(N, adapter, experiment, substitutionRate = 0.005, gapRate = 0.0005)
+ex6Strings <- DNAStringSet(ex6Strings)
+ex6Strings
+
+## Method 1:  Use edit distance with an FDR of 1e-03
+submat1 <-
+  matrix(-1, nrow = 4, ncol = 4,
+         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
+diag(submat1) <- 0
+quantile(randomScores1, seq(0.99, 1, by = 0.001))
+ex6Aligns1 <-
+  pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat1,
+                    gapOpening = 0, gapExtension = -1)
+table(score(ex6Aligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
+
+## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
+submat2 <-
+  matrix(-Inf, nrow = 4, ncol = 4,
+         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
+diag(submat2) <- 1
+quantile(randomScores2, seq(0.99, 1, by = 0.001))
+ex6Aligns2 <-
+  pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat2,
+                    type = "local", gapOpening = 0, gapExtension = -Inf)
+table(score(ex6Aligns2) > quantile(randomScores2, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(start(pattern(ex6Aligns2)) > 37 - end(pattern(ex6Aligns2)),
+      experiment[["side"]])
+
+## Method 3:  Use consecutive matches on the ends with an FDR of 1e-03
+submat3 <-
+  matrix(-Inf, nrow = 4, ncol = 4,
+         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
+diag(submat3) <- 1
+ex6Aligns3 <-
+  pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat3,
+                    type = "overlap", gapOpening = 0, gapExtension = -Inf)
+table(score(ex6Aligns3) > quantile(randomScores3, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(ex6Aligns3)) == 36, experiment[["side"]])
+
+## Method 4:  Allow mismatches and indels on the ends with an FDR of 1e-03
+quantile(randomScores4, seq(0.99, 1, by = 0.001))
+ex6Aligns4 <- pairwiseAlignment(ex6Strings, adapter, type = "overlap")
+table(score(ex6Aligns4) > quantile(randomScores4, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(ex6Aligns4)) == 36, experiment[["side"]])
+@
+\item (Advanced) Modify the \Rfunction{simulateReads} function to accept
+different adapters on either side (left \& right) of the reads. How would the
+methods for trimming the reads change?
 \end{enumerate}
 
 
