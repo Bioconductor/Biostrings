@@ -517,15 +517,10 @@ The follow code simulates what sequences with adapter fragments at either end
 could look like during an experiment.
 
 <<adapter1>>=
-adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
-chars <- strsplit("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA", "")[[1]]
-set.seed(123)
-N <- 1000
-experiment <-
-  list(side = rbinom(N, 1, 0.5), width = sample(0:36, N, replace = TRUE))
-table(experiment[["side"]], experiment[["width"]])
-adapterStrings <-
-  sapply(seq_len(N), function(i, subrate = 0.01, gaprate = 0.001) {
+simulateReads <-
+function(N, adapter, experiment, substitutionRate = 0.01, gapRate = 0.001) {
+  chars <- strsplit(as.character(adapter), "")[[1]]
+  sapply(seq_len(N), function(i, experiment, substitutionRate, gapRate) {
     width <- experiment[["width"]][i]
     side <- experiment[["side"]][i]
     randomLetters <-
@@ -533,10 +528,10 @@ adapterStrings <-
     randomLettersWithEmpty <-
       function(n)
       sample(c("", DNA_ALPHABET[1:4]), n, replace = TRUE,
-             prob = c(1 - gaprate, rep(gaprate/4, 4)))
+             prob = c(1 - gapRate, rep(gapRate/4, 4)))
     nChars <- length(chars)
     value <-
-      paste(ifelse(rbinom(nChars,1,subrate), randomLetters(nChars), chars),
+      paste(ifelse(rbinom(nChars,1,substitutionRate), randomLetters(nChars), chars),
             randomLettersWithEmpty(nChars),
             sep = "", collapse = "")
     if (side)
@@ -548,7 +543,17 @@ adapterStrings <-
         paste(c(substring(value, 37 - width, 36), randomLetters(36 - width)),
                 sep = "", collapse = "")
     value
-  })
+  }, experiment = experiment, substitutionRate = substitutionRate, gapRate = gapRate)
+}
+
+adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
+set.seed(123)
+N <- 1000
+experiment <-
+  list(side = rbinom(N, 1, 0.5), width = sample(0:36, N, replace = TRUE))
+table(experiment[["side"]], experiment[["width"]])
+adapterStrings <-
+  simulateReads(N, adapter, experiment, substitutionRate = 0.01, gapRate = 0.001)
 adapterStrings <- DNAStringSet(adapterStrings)
 adapterStrings
 @
@@ -669,6 +674,18 @@ cleanedStrings[fragmentFoundAt36] <-
 cleanedStrings <- DNAStringSet(cleanedStrings)
 cleanedStrings
 @
+
+\subsection{Exercise 6}
+\begin{enumerate}
+\item Rerun the simulation time using the \Rfunction{simulateReads} function
+with a \Rfunarg{substitutionRate} of 0.005 and \Rfunarg{gapRate} of 0.0005.
+How do the different pairwise sequence alignment methods compare?
+\item (Advanced) Modify the \Rfunction{simulateReads} function to accept
+different adapters on either side (left, right) of the reads. How would the
+methods for trimming the reads change?
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers6}.]
 
 
 \section{Application:  Quality Assurance in Sequencing Experiments}
