@@ -678,23 +678,35 @@ local pairwise sequence alignments respectively. The algorithm consumes memory
 and computation time proportional to the product of the length of the two
 strings being aligned.
 
+<<profiling1, fig=TRUE>>=
+N <- as.integer(seq(500, 5000, by = 500))
+timings <- rep(0, length(N))
+names(timings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  timings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global"))[["user.self"]]
+}
+timings
+coef(summary(lm(timings ~ poly(N, 2))))
+plot(N, timings, xlab = "String Size, Both Strings", ylab = "Timing (sec.)", type = "l",
+     main = "Global Pairwise Sequence Alignment Timings")
+@
 
-A comparison of the three optimal pairwise alignments problems from Haubold and Wiehe:
-<<haubold>>=
-s1 <- 
-  DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
-s2 <-
-  DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+When a problem only requires the pairwise sequence alignment score, setting the
+\Rfunarg{scoreOnly} argument to \Robject{TRUE} will more than halve the
+computation time.
 
-mat <- matrix(-3, nrow = 4, ncol = 4)
-diag(mat) <- 1
-rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
-globalAlign <- pairwiseAlignment(s1, s2, substitutionMatrix = mat,
-  gapOpening = -5, gapExtension = -2)
-localAlign <- pairwiseAlignment(s1, s2, type = "local", substitutionMatrix = mat,
-  gapOpening = -5, gapExtension = -2)
-overlapAlign <- pairwiseAlignment(s1, s2, type = "overlap",
-  substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+<<profiling2>>=
+scoreOnlyTimings <- rep(0, length(N))
+names(scoreOnlyTimings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  scoreOnlyTimings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global", scoreOnly = TRUE))[["user.self"]]
+}
+scoreOnlyTimings
+round((timings - scoreOnlyTimings) / timings, 2)
 @
 
 
@@ -714,12 +726,13 @@ consmat(orf10)
 
 The information content as defined by Hertz and Stormo 1995 is computed as
 follows:
-<<infco>>= 
+<<infco>>=
 infContent <- function(Lmers) {
  zlog <- function(x) ifelse(x==0,0,log(x))
  co <- consmat(Lmers, freq=TRUE)
  lets <- rownames(co)
- fr <- alphabetFrequency(Lmers)[lets]
+ fr <- colSums(alphabetFrequency(Lmers)[,lets])
+ fr <- fr / sum(fr)
  sum(co*zlog(co/fr))
 }
 infContent(orf10)
