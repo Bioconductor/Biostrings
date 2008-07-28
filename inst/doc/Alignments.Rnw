@@ -651,8 +651,10 @@ table(score(adapterAligns4) > quantile(randomScores4, 0.999), experiment[["width
 table(end(pattern(adapterAligns4)) == 36, experiment[["side"]])
 @
 
+Using the results that allow for substitutions and insertions/deletions errors,
+the cleaned sequence fragments can be generated as follows:
 
-<<adapter6>>=
+<<adapter7>>=
 ## Method 4 continued:  Remove adapter fragments
 fragmentFound <- score(adapterAligns4) > quantile(randomScores4, 0.999)
 fragmentFoundAt1 <- fragmentFound & (start(pattern(adapterAligns4)) == 1)
