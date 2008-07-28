@@ -214,8 +214,9 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
 
 \subsection{Exercise 1}
 \begin{enumerate}
-\item Fit the global, local, and overlap pairwise alignment of the strings
-\Robject{"syzygy"} and \Robject{"zyzzyx"} using the default settings.
+\item Using \Rfunction{pairwiseAlignment}, fit the global, local, and overlap
+pairwise sequence alignment of the strings \Robject{"syzygy"} and
+\Robject{"zyzzyx"} using the default settings.
 \item Do any of the alignments change if the \Rfunarg{gapExtension} argument
 is set to \Robject{-Inf}?
 \end{enumerate}
@@ -385,6 +386,26 @@ nindel(subject(psa2))
 start(subject(psa2))
 end(subject(psa2))
 @
+
+\subsection{Exercise 3}
+For the overlap pairwise sequence alignment of the strings \Robject{"syzygy"}
+and \Robject{"zyzzyx"} with the \Rfunction{pairwiseAlignment} default settings,
+perform the following operations:
+\begin{enumerate}
+\item Use \Rfunction{nmatch} and \Rfunction{nmismath} to extract the number
+of matches and mismatches respectively.
+\item Use the \Rfunction{compareStrings} function to get the symbolic
+representation of the alignment.
+\item Use the \Rfunction{as.character} function to the get the character string
+versions of the alignments.
+\item Use the \Rfunction{pattern} function to extract the aligned pattern and
+apply the \Rfunction{mismatch} function to it to find the locations of the
+mismatches.
+\item Use the \Rfunction{subject} function to extract the aligned subject and
+apply the \Rfunction{aligned} function to it to get the aligned strings.
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers3}.]
 
 
 \section{Edit Distances}
@@ -763,8 +784,9 @@ infContent(orf10)
 \subsection{Exercise 1}
 \label{sec:Answers1}
 \begin{enumerate}
-\item Fit the global, local, and overlap pairwise alignment of the strings
-\Robject{"syzygy"} and \Robject{"zyzzyx"} using the default settings.
+\item Using \Rfunction{pairwiseAlignment}, fit the global, local, and overlap
+pairwise sequence alignment of the strings \Robject{"syzygy"} and
+\Robject{"zyzzyx"} using the default settings.
 <<ans1a>>=
 pairwiseAlignment("zyzzyx", "syzygy")
 pairwiseAlignment("zyzzyx", "syzygy", type = "local")
@@ -784,8 +806,46 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
 \Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users? These
 classes allow the end-user to extract the summary output for further operations.
 <<ans2a>>=
-alsum <- summary(pairwiseAlignment("zyzzyx", "syzygy"))
-nmatch(alsum) / nmismatch(alsum)
+ex2 <- summary(pairwiseAlignment("zyzzyx", "syzygy"))
+nmatch(ex2) / nmismatch(ex2)
+@
+\end{enumerate}
+
+\subsection{Exercise 3}
+\label{sec:Answers3}
+For the overlap pairwise sequence alignment of the strings \Robject{"syzygy"}
+and \Robject{"zyzzyx"} with the \Rfunction{pairwiseAlignment} default settings,
+perform the following operations:
+<<ans3>>=
+ex3 <- pairwiseAlignment("zyzzyx", "syzygy", type = "overlap")
+@
+\begin{enumerate}
+\item Use \Rfunction{nmatch} and \Rfunction{nmismath} to extract the number
+of matches and mismatches respectively.
+<<ans3a>>=
+nmatch(ex3)
+nmismatch(ex3)
+@
+\item Use the \Rfunction{compareStrings} function to get the symbolic
+representation of the alignment.
+<<ans3b>>=
+compareStrings(ex3)
+@
+\item Use the \Rfunction{as.character} function to the get the character string
+versions of the alignments.
+<<ans3c>>=
+as.character(ex3)
+@
+\item Use the \Rfunction{pattern} function to extract the aligned pattern and
+apply the \Rfunction{mismatch} function to it to find the locations of the
+mismatches.
+<<ans3d>>=
+mismatch(pattern(ex3))
+@
+\item Use the \Rfunction{subject} function to extract the aligned subject and
+apply the \Rfunction{aligned} function to it to get the aligned strings.
+<<ans33>>=
+aligned(subject(ex3))
 @
 \end{enumerate}
 
