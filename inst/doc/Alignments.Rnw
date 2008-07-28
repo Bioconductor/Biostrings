@@ -496,6 +496,15 @@ nwdemo
 compareStrings(nwdemo)
 @
 
+\subsection{Exercise 5}
+\begin{enumerate}
+\item Repeat the alignment exercise above using \Robject{BLOSUM62}, a gap
+opening penalty of -12, and a gap extension penalty of -4.
+\item Explore to find out what caused the alignment to change.
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers5}.]
+
 
 \section{Application:  Removing Adapters from Sequence Reads}
 
@@ -904,6 +913,19 @@ sdist <- function(x) {
 <<ans4c>>=
 sdist(c("zyzzyx", "syzygy", "succeed", "precede", "supersede"))
 @
+\end{enumerate}
+
+\subsection{Exercise 5}
+\begin{enumerate}
+\item Repeat the alignment exercise above using \Robject{BLOSUM62}, a gap
+opening penalty of -12, and a gap extension penalty of -4.
+<<ans5a>>=
+data(BLOSUM62)
+pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM62,
+                  gapOpening = -12, gapExtension = -4)
+@
+\item Explore to find out what caused the alignment to change.
+The sift in gap penalties favored infrequent long gaps to frequent short ones.
 \end{enumerate}
 
 
