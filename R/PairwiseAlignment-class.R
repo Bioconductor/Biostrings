@@ -120,7 +120,7 @@ setMethod("length", "PairwiseAlignmentSummary", function(x) length(score(x)))
 setMethod("nchar", "PairwiseAlignment", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
 setMethod("nchar", "PairwiseAlignmentSummary", 
           function(x, type="chars", allowNA=FALSE)
-          nmatch(x) + nmismatch(x) + x@ninsertion[,"WidthSum"] + x@ndeletion[,"WidthSum"])
+          unname(nmatch(x) + nmismatch(x) + x@ninsertion[,"WidthSum"] + x@ndeletion[,"WidthSum"]))
 
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
