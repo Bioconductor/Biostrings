@@ -417,9 +417,9 @@ strings. This distance metric is equivalent to the negative of the score of a
 pairwise sequence alignment with a match cost of 0, a mismatch cost of -1, a
 gap opening penalty of 0, and a gap extension cost of -1. An implementation of
 approximate string matching using \textit{Levenshtein edit distance} is given
-in the \Rfunction{agrep} function of the \Rpackage{base} R package. As the
-following example shows, it is possible to replicate the \Rfunction{agrep}
-function using the \Rfunction{pairwiseAlignment} function.
+in the \Rfunction{agrep} (approximate grep) function of the \Rpackage{base} R
+package. As the following example shows, it is possible to replicate the
+\Rfunction{agrep} function using the \Rfunction{pairwiseAlignment} function.
 
 <<editdist1>>=
 agrepBioC <-
@@ -453,6 +453,19 @@ cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, value = TRUE),
 cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE),
       bioc = agrepBioC("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE))
 @
+
+\subsection{Exercise 4}
+\begin{enumerate}
+\item Use the \Rfunction{pairwiseAlignment} function to find the
+Levenshtein edit distance between \Robject{"syzygy"} and \Robject{"zyzzyx"}.
+\item (Advanced) Create a "string distance" function called \Rfunction{sdist}
+that takes a single argument \Rfunarg{x} that accepts a character vector or an
+\Rclass{XStringSet} object and returns a matrix of Levenshtein edit distances.
+\item Use your \Rfunction{sdist} function on the vector 
+\Robject{c("zyzzyx", "syzygy", "succeed", "precede", "supersede")}.
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers4}.]
 
 
 \section{Application:  Using Evolutionary Models in Protein Alignments}
@@ -844,8 +857,52 @@ mismatch(pattern(ex3))
 @
 \item Use the \Rfunction{subject} function to extract the aligned subject and
 apply the \Rfunction{aligned} function to it to get the aligned strings.
-<<ans33>>=
+<<ans3e>>=
 aligned(subject(ex3))
+@
+\end{enumerate}
+
+\subsection{Exercise 4}
+\label{sec:Answers4}
+\begin{enumerate}
+\item Use the \Rfunction{pairwiseAlignment} function to find the
+Levenshtein edit distance between \Robject{"syzygy"} and \Robject{"zyzzyx"}.
+<<ans4a>>=
+submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+- pairwiseAlignment("zyzzyx", "syzygy", substitutionMatrix = submat,
+                    gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+@
+\item (Advanced) Create a "string distance" function called \Rfunction{sdist}
+that takes a single argument \Rfunarg{x} that accepts a character vector or an
+\Rclass{XStringSet} object and returns a matrix of Levenshtein edit distances.
+<<ans4b>>=
+sdist <- function(x) {
+  n <- length(x)
+  characters <- sapply(32:126, intToUtf8)
+  substitutionMatrix <-
+    matrix(-1, nrow = length(characters), ncol = length(characters),
+           dimnames = list(characters, characters))
+  diag(substitutionMatrix) <- 0
+  dimnames(substitutionMatrix) <- list(characters, characters)
+  if (is.character(x))
+    x <- BStringSet(x)
+  output <- matrix(0, nrow = n, ncol = n)
+  output[lower.tri(output)] <-
+    unlist(lapply(seq_len(n - 1), function(i)
+           - pairwiseAlignment(pattern = x[(i+1):n], subject = x[[i]],
+                               substitutionMatrix = substitutionMatrix,
+                               type = "global",
+                               gapOpening = 0, gapExtension = -1,
+                               scoreOnly = TRUE)))
+  output <- output + t(output)
+  output
+}
+@
+\item Use your \Rfunction{sdist} function on the vector 
+\Robject{c("zyzzyx", "syzygy", "succeed", "precede", "supersede")}.
+<<ans4c>>=
+sdist(c("zyzzyx", "syzygy", "succeed", "precede", "supersede"))
 @
 \end{enumerate}
 
