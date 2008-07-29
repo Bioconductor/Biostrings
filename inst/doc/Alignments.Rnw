@@ -6,13 +6,13 @@
 % NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
 % likely to be overwritten.
 %
-\documentclass[12pt]{article}
+\documentclass[10pt]{article}
 
 \usepackage{amsmath,pstricks}
 \usepackage[authoryear,round]{natbib}
 \usepackage{hyperref}
 
-\textwidth=6.2in
+\textwidth=6.5in
 \textheight=8.5in
 %\parskip=.3cm
 \oddsidemargin=-.1in
@@ -154,7 +154,7 @@ the \Rfunarg{pattern} argument with a single string specified in the
 \Rfunarg{subject} argument.
 
 <<options,echo=FALSE>>=
-options(width=54)
+options(width=60)
 @ 
 
 <<main1>>=
@@ -183,8 +183,8 @@ The substitution scoring scheme is set using four arguments, three of which are
 quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality},
 \Rfunarg{qualityType}) and one is constant substitution related
 (\Rfunarg{substitutionMatrix}). When the substitution scores are fixed by
-pairing, the \Rfunarg{substituionMatrix} argument takes a matrix with the
-appropriate alphabets as dimension names.
+character pairing, the \Rfunarg{substituionMatrix} argument takes a matrix with
+the appropriate alphabets as dimension names.
 
 <<main4>>=
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
@@ -194,13 +194,14 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   gapOpening = 0, gapExtension = -1)
 @
 
-When the substitution scores are quality-based, the \Rfunarg{qualityType} sets
-the type of quality score to use (\texttt{"Phred"} or \texttt{"Solexa"}) and
-the \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} arguments accept the
-equivalent of [0-99] numeric quality values for the respective strings. For
-\texttt{"Phred"} quality measures $Q \in [0, 99]$, the probability of an error
-in the base read is given by $10^{-Q/10}$ and for \texttt{"Solexa"} quality
-measures $Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$. The
+When the substitution scores are quality-based, the \Rfunarg{qualityType}
+argument sets the type of quality score to use (\texttt{"Phred"} or
+\texttt{"Solexa"}) and the \Rfunarg{patternQuality} and
+\Rfunarg{subjectQuality} arguments accept the equivalent of $[x-99]$ numeric
+quality values for the respective strings. For \texttt{"Phred"} quality
+measures $Q \in [0, 99]$, the probability of an error in the base read is given
+by $10^{-Q/10}$ and for \texttt{"Solexa"} quality measures $Q \in [-5, 99]$,
+they are given by $1 - 1/(1 + 10^{-Q/10})$. The
 \Rfunction{qualitySubstitutionMatrices} function maps the
 \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
 mismatch penalties. These three arguments will be demonstrated in later
@@ -281,10 +282,10 @@ class(pattern(psa2))
 
 \section{Pairwise Sequence Alignment Helper Functions}
 
-Tables \ref{table:helperfuns} and \ref{table:alignfuns} show the functions for
-interacting with objects of class \Rclass{PairwiseAlignment} and
+Tables \ref{table:helperfuns} and \ref{table:alignfuns} show functions that
+interact with objects of class \Rclass{PairwiseAlignment} and
 \Rclass{AlignedXStringSet} respectively. These functions should be used in
-preference to slot extraction from the alignment objects.
+preference to direct slot extraction from the alignment objects.
 
 \begin{table}[ht]
 \begin{center}
@@ -379,8 +380,8 @@ Function                    & Description \\
 \end{table}
 
 The \Rfunction{pattern} and \Rfunction{subject} functions extract the aligned
-strings for further analysis. Most of the actions that can be performed on
-\Rclass{PairwiseAnalysis} objects can also be performed on
+pattern and subject objects for further analysis. Most of the actions that can
+be performed on \Rclass{PairwiseAnalysis} objects can also be performed on
 \Rclass{AlignedXString} and \Rclass{QualityAlignedXString} objects as well as
 operations including \Rfunction{start}, \Rfunction{end}, and \Rfunction{width}
 that extracts the start, end, and width of the alignment ranges.
@@ -515,12 +516,12 @@ opening penalty of -12, and a gap extension penalty of -4.
 \section{Application:  Removing Adapters from Sequence Reads}
 
 Finding and removing uninteresting experiment process-related fragments like
-adapters is a common problem in genetic sequencing and pairwise sequence
+adapters is a common problem in genetic sequencing, and pairwise sequence
 alignment is well-suited to address this issue. When adapters are used to
 anchor or extend a sequence during the experiment process, they either
 intentionally or unintentionally become sequenced during the read process.
-The follow code simulates what sequences with adapter fragments at either end
-could look like during an experiment.
+The following code simulates what sequences with adapter fragments at either
+end could look like during an experiment.
 
 <<adapter1>>=
 simulateReads <-
@@ -697,7 +698,7 @@ How would the methods for trimming the reads change?
 \section{Application:  Quality Assurance in Sequencing Experiments}
 
 Due to its flexibility, the \Rfunction{pairwiseAlignment} function is able to
-diagnose sequence matching-related issues that arise when the
+diagnose sequence matching-related issues that arise when
 \Rfunction{matchPDict} and its related functions don't find a match when
 aligning sequence fragments to a target. This section contains an example
 involving a short read Solexa sequencing experiment of a Coliphage phiX174.
@@ -720,8 +721,8 @@ table(countPDict(srPDict, phiX174))
 @
 
 For these short reads, the \Rfunction{pairwiseAlignment} function finds that
-the reason for the small number of perfect matches is due to two locations
-on the Coliphage phiX174 genome.
+the small number of perfect matches is due to two locations on the Coliphage
+phiX174 genome.
 
 Unlike the \Rfunction{countPDict} function, the \Rfunction{pairwiseAlignment}
 function works off of the original strings, rather than \Rfunction{PDict}
@@ -732,7 +733,7 @@ function, and the frequencies of those sequences are supplied to the
 \Rfunction{mismatchSummary}, and \Rfunction{coverage}. For the purposes of this
 exercise, a substring of the Coliphage phiX174 genome is supplied to the
 \Rfunarg{subject} argument of the \Rfunction{pairwiseAlignment} function to
-reduce the execution time.
+reduce the computation time.
 
 <<genome2>>=
 phiX174Substring <- substring(phiX174, 2793-34, 2811+34)
@@ -750,8 +751,9 @@ table(countPDict(srPDict, phiX174Revised))
 @
 
 The following plot shows the coverage of the aligned short reads along the
-substring of the Coliphage phiX174 genome. Applying \Rfunction{slice} function
-to the coverage shows the entire substring is covered by aligned short reads.
+substring of the Coliphage phiX174 genome. Applying the \Rfunction{slice}
+function to the coverage shows the entire substring is covered by aligned short
+reads.
 
 <<genome3, fig=TRUE>>=
 coveragePhiX174 <- coverage(alignPhiX174, weight = wtPhiX174)
@@ -766,8 +768,8 @@ slice(coveragePhiX174, 0, includeLower = FALSE)
 \item Rerun the ``Subject Overlap" alignment of the short reads against the
 entire genome. (This may take a few minutes.)
 \item Plot the coverage of these alignments and use the \Rfunction{slice}
-to find the ranges of alignment. Are there any alignments outside of the
-substring region that was used above?
+function to find the ranges of alignment. Are there any alignments outside of
+the substring region that was used above?
 \item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
 genome. Do any short reads have a higher alignment score on this new sequence
 than on the orignal sequence?
@@ -817,11 +819,12 @@ round((timings - scoreOnlyTimings) / timings, 2)
 \subsection{Exercise 8}
 \begin{enumerate}
 \item Rerun the first set of profiling code, but this time fix the number of
-characters in \Robject{string1} to 35. What is the computational order of this
-simulation exercise?
-\item Rerun the second set of profiling code based on the previous exercise
-with \Rfunarg{scoreOnly} argument set to \Robject{TRUE}. Is is still twice as
-fast? 
+characters in \Robject{string1} to 35 and have the number of characters in
+\Robject{string2} range from 5000, 50000, by increments of 5000. What is the
+computational order of this simulation exercise?
+\item Rerun the second set of profiling code using the simulations from the
+previous exercise with \Rfunarg{scoreOnly} argument set to \Robject{TRUE}. Is
+is still twice as fast? 
 \end{enumerate}
 
 [Answers provided in section \ref{sec:Answers8}.]
@@ -870,7 +873,8 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "local")
 pairwiseAlignment("zyzzyx", "syzygy", type = "overlap")
 @
 \item Do any of the alignments change if the \Rfunarg{gapExtension} argument
-is set to \Robject{-Inf}? Yes, the overlap pairwise sequence alignment changes.
+is set to \Robject{-Inf}? \textit{Yes, the overlap pairwise sequence alignment
+changes.}
 <<ans1b>>=
 pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
 @
@@ -880,8 +884,9 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
 \label{sec:Answers2}
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
-\Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users? These
-classes allow the end-user to extract the summary output for further operations.
+\Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users?
+\textit{These classes allow the end-user to extract the summary output for
+further operations.}
 <<ans2a>>=
 ex2 <- summary(pairwiseAlignment("zyzzyx", "syzygy"))
 nmatch(ex2) / nmismatch(ex2)
@@ -980,8 +985,8 @@ data(BLOSUM62)
 pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM62,
                   gapOpening = -12, gapExtension = -4)
 @
-\item Explore to find out what caused the alignment to change.
-The sift in gap penalties favored infrequent long gaps to frequent short ones.
+\item Explore to find out what caused the alignment to change. \textit{The sift
+in gap penalties favored infrequent long gaps to frequent short ones.}
 \end{enumerate}
 
 
@@ -990,8 +995,8 @@ The sift in gap penalties favored infrequent long gaps to frequent short ones.
 \begin{enumerate}
 \item Rerun the simulation time using the \Rfunction{simulateReads} function
 with a \Rfunarg{substitutionRate} of 0.005 and \Rfunarg{gapRate} of 0.0005.
-How do the different pairwise sequence alignment methods compare? The different
-methods are much more comprobable when the error rates are lower.
+How do the different pairwise sequence alignment methods compare? \textit{The
+different methods are much more comprobable when the error rates are lower.}
 <<ans6a>>=adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
 set.seed(123)
 N <- 1000
@@ -1118,9 +1123,9 @@ fullAlignPhiX174 <-
 summary(fullAlignPhiX174, weight = wtPhiX174)
 @
 \item Plot the coverage of these alignments and use the \Rfunction{slice}
-to find the ranges of alignment. Are there any alignments outside of the
-substring region that was used above? Yes, there are some alignments outside of
-the specified substring region.
+function to find the ranges of alignment. Are there any alignments outside of
+the substring region that was used above? \textit{Yes, there are some
+alignments outside of the specified substring region.}
 <<ans7b>>=
 fullCoveragePhiX174 <- coverage(fullAlignPhiX174, weight = wtPhiX174)
 plot(fullCoveragePhiX174, xlab = "Position", ylab = "Coverage", type = "l")
@@ -1128,8 +1133,8 @@ slice(fullCoveragePhiX174, 0, includeLower = FALSE)
 @
 \item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
 genome. Do any short reads have a higher alignment score on this new sequence
-than on the orignal sequence? Yes, there are some strings with a higher score
-on the new sequence.
+than on the orignal sequence? \textit{Yes, there are some strings with a higher
+score on the new sequence.}
 <<ans7c>>=
 fullAlignRevCompPhiX174 <-
   pairwiseAlignment(srPhiX174, reverseComplement(phiX174),
@@ -1143,10 +1148,12 @@ table(score(fullAlignRevCompPhiX174) > score(fullAlignPhiX174))
 \label{sec:Answers8}
 \begin{enumerate}
 \item Rerun the first set of profiling code, but this time fix the number of
-characters in \Robject{string1} to 35. What is the computational order of this
-simulation exercise? As expected, the growth in time is now linear.
+characters in \Robject{string1} to 35 and have the number of characters in
+\Robject{string2} range from 5000, 50000, by increments of 5000. What is the
+computational order of this simulation exercise? \textit{As expected, the
+growth in time is now linear.}
 <<ans8a, fig=TRUE>>=
-N <- as.integer(seq(500, 5000, by = 500))
+N <- as.integer(seq(5000, 50000, by = 5000))
 newTimings <- rep(0, length(N))
 names(newTimings) <- as.character(N)
 for (i in seq_len(length(N))) {
@@ -1159,9 +1166,9 @@ coef(summary(lm(newTimings ~ poly(N, 2))))
 plot(N, newTimings, xlab = "String Size, Both Strings", ylab = "Timing (sec.)",
      type = "l", main = "Global Pairwise Sequence Alignment Timings")
 @
-\item Rerun the second set of profiling code based on the previous exercise
-with \Rfunarg{scoreOnly} argument set to \Robject{TRUE}. Is is still twice as
-fast? Yes, it is still about twice as fast.
+\item Rerun the second set of profiling code using the simulations from the
+previous exercise with \Rfunarg{scoreOnly} argument set to \Robject{TRUE}. Is
+is still twice as fast? \textit{Yes, it is still over twice as fast.}
 <<ans8b>>=
 newScoreOnlyTimings <- rep(0, length(N))
 names(newScoreOnlyTimings) <- as.character(N)
@@ -1177,7 +1184,7 @@ round((newTimings - newScoreOnlyTimings) / newTimings, 2)
 
 
 \section{Session Information}
-All of the output in this vignette were produced under the following
+All of the output in this vignette was produced under the following
 conditions:
 
 <<sessinfo>>=
