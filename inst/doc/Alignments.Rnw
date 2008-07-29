@@ -15,8 +15,8 @@
 \textwidth=6.2in
 \textheight=8.5in
 %\parskip=.3cm
-\oddsidemargin=.1in
-\evensidemargin=.1in
+\oddsidemargin=-.1in
+\evensidemargin=-.1in
 \headheight=-.3in
 
 \newcommand{\scscst}{\scriptscriptstyle}
@@ -32,15 +32,17 @@
 \newcommand{\Rmethod}[1]{{\textit{#1}}}
 \newcommand{\Rfunarg}[1]{{\textit{#1}}}
 
-\textwidth=6.2in
-
 \bibliographystyle{plainnat} 
  
 \begin{document}
 %\setkeys{Gin}{width=0.55\textwidth}
 
-\title{Alignments}
-\author{Patrick Aboyoun}
+\title{Pairwise Sequence Alignments}
+\author{Patrick Aboyoun \\
+  Gentleman Lab \\
+  Fred Hutchinson Cancer Research Center \\
+  Seattle, WA}
+\date{\today}
 \maketitle
 
 \tableofcontents
@@ -150,6 +152,10 @@ The \Rfunction{pairwiseAlignment} function solves the pairwise sequence
 alignment problems mentioned above. It aligns one or more strings specified in
 the \Rfunarg{pattern} argument with a single string specified in the
 \Rfunarg{subject} argument.
+
+<<options,echo=FALSE>>=
+options(width=54)
+@ 
 
 <<main1>>=
 library(Biostrings)
@@ -681,8 +687,8 @@ cleanedStrings
 with a \Rfunarg{substitutionRate} of 0.005 and \Rfunarg{gapRate} of 0.0005.
 How do the different pairwise sequence alignment methods compare?
 \item (Advanced) Modify the \Rfunction{simulateReads} function to accept
-different adapters on either side (left \& right) of the reads. How would the
-methods for trimming the reads change?
+different equal length adapters on either side (left \& right) of the reads.
+How would the methods for trimming the reads change?
 \end{enumerate}
 
 [Answers provided in section \ref{sec:Answers6}.]
@@ -743,13 +749,31 @@ phiX174Revised <- DNAString(paste(splitchars, collapse = ""))
 table(countPDict(srPDict, phiX174Revised))
 @
 
-The following plot shows the coverage of the aligned short reads along
-the substring of the Coliphage phiX174 genome.
+The following plot shows the coverage of the aligned short reads along the
+substring of the Coliphage phiX174 genome. Applying \Rfunction{slice} function
+to the coverage shows the entire substring is covered by aligned short reads.
 
 <<genome3, fig=TRUE>>=
-plot((2793-34):(2811+34), coverage(alignPhiX174, weight = wtPhiX174),
-     xlab = "Position", ylab = "Coverage", type = "l")
+coveragePhiX174 <- coverage(alignPhiX174, weight = wtPhiX174)
+plot((2793-34):(2811+34), coveragePhiX174, xlab = "Position", ylab = "Coverage",
+     type = "l")
+nchar(phiX174Substring)
+slice(coveragePhiX174, 0, includeLower = FALSE)
 @
+
+\subsection{Exercise 7}
+\begin{enumerate}
+\item Rerun the ``Subject Overlap" alignment of the short reads against the
+entire genome. (This may take a few minutes.)
+\item Plot the coverage of these alignments and use the \Rfunction{slice}
+to find the ranges of alignment. Are there any alignments outside of the
+substring region that was used above?
+\item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
+genome. Do any short reads have a higher alignment score on this new sequence
+than on the orignal sequence?
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers7}.]
 
 
 \section{Computation Profiling}
@@ -789,6 +813,18 @@ for (i in seq_len(length(N))) {
 scoreOnlyTimings
 round((timings - scoreOnlyTimings) / timings, 2)
 @
+
+\subsection{Exercise 8}
+\begin{enumerate}
+\item Rerun the first set of profiling code, but this time fix the number of
+characters in \Robject{string1} to 35. What is the computational order of this
+simulation exercise?
+\item Rerun the second set of profiling code based on the previous exercise
+with \Rfunarg{scoreOnly} argument set to \Robject{TRUE}. Is is still twice as
+fast? 
+\end{enumerate}
+
+[Answers provided in section \ref{sec:Answers8}.]
 
 
 \section{Computing alignment consensus matrices}
@@ -1012,9 +1048,141 @@ table(score(ex6Aligns4) > quantile(randomScores4, 0.999), experiment[["width"]])
 table(end(pattern(ex6Aligns4)) == 36, experiment[["side"]])
 @
 \item (Advanced) Modify the \Rfunction{simulateReads} function to accept
-different adapters on either side (left \& right) of the reads. How would the
-methods for trimming the reads change?
+different equal length adapters on either side (left \& right) of the reads.
+How would the methods for trimming the reads change?
+<<ans6b>>=
+simulateReads <-
+function(N, left, right = left, experiment, substitutionRate = 0.01, gapRate = 0.001) {
+  leftChars <- strsplit(as.character(left), "")[[1]]
+  rightChars <- strsplit(as.character(right), "")[[1]]
+  if (length(leftChars) != length(rightChars))
+    stop("left and right adapters must have the same number of characters")
+  nChars <- length(leftChars)
+  sapply(seq_len(N), function(i) {
+    width <- experiment[["width"]][i]
+    side <- experiment[["side"]][i]
+    randomLetters <-
+      function(n) sample(DNA_ALPHABET[1:4], n, replace = TRUE) 
+    randomLettersWithEmpty <-
+      function(n)
+      sample(c("", DNA_ALPHABET[1:4]), n, replace = TRUE,
+             prob = c(1 - gapRate, rep(gapRate/4, 4)))
+    if (side) {
+      value <-
+        paste(ifelse(rbinom(nChars,1,substitutionRate), randomLetters(nChars), rightChars),
+              randomLettersWithEmpty(nChars),
+              sep = "", collapse = "")
+      value <-
+        paste(c(randomLetters(36 - width), substring(value, 1, width)),
+                sep = "", collapse = "")
+    } else {
+      value <-
+        paste(ifelse(rbinom(nChars,1,substitutionRate), randomLetters(nChars), leftChars),
+              randomLettersWithEmpty(nChars),
+              sep = "", collapse = "")
+      value <-
+        paste(c(substring(value, 37 - width, 36), randomLetters(36 - width)),
+                sep = "", collapse = "")
+    }
+    value
+  })
+}
+
+leftAdapter <- adapter
+rightAdapter <- reverseComplement(adapter)
+ex6LeftRightStrings <- simulateReads(N, leftAdapter, rightAdapter, experiment)
+ex6LeftAligns4 <- 
+  pairwiseAlignment(ex6LeftRightStrings, leftAdapter, type = "overlap")
+ex6RightAligns4 <- 
+  pairwiseAlignment(ex6LeftRightStrings, rightAdapter, type = "overlap")
+scoreCutoff <- quantile(randomScores4, 0.999)
+leftAligned <-
+  start(pattern(ex6LeftAligns4)) == 1 & score(ex6LeftAligns4) > pmax(scoreCutoff, score(ex6RightAligns4))
+rightAligned <-
+  end(pattern(ex6RightAligns4)) == 36 & score(ex6RightAligns4) > pmax(scoreCutoff, score(ex6LeftAligns4))
+table(leftAligned, rightAligned)
+table(leftAligned | rightAligned, experiment[["width"]])
+@
 \end{enumerate}
+
+\subsection{Exercise 7}
+\label{sec:Answers7}
+\begin{enumerate}
+\item Rerun the ``Subject Overlap" alignment of the short reads against the
+entire genome. (This may take a few minutes.)
+<<ans7a>>=
+fullAlignPhiX174 <-
+  pairwiseAlignment(srPhiX174, phiX174, patternQuality = quPhiX174,
+                    subjectQuality = 99L, qualityType = "Solexa",
+                    type = "subjectOverlap")
+summary(fullAlignPhiX174, weight = wtPhiX174)
+@
+\item Plot the coverage of these alignments and use the \Rfunction{slice}
+to find the ranges of alignment. Are there any alignments outside of the
+substring region that was used above? Yes, there are some alignments outside of
+the specified substring region.
+<<ans7b>>=
+fullCoveragePhiX174 <- coverage(fullAlignPhiX174, weight = wtPhiX174)
+plot(fullCoveragePhiX174, xlab = "Position", ylab = "Coverage", type = "l")
+slice(fullCoveragePhiX174, 0, includeLower = FALSE)
+@
+\item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
+genome. Do any short reads have a higher alignment score on this new sequence
+than on the orignal sequence? Yes, there are some strings with a higher score
+on the new sequence.
+<<ans7c>>=
+fullAlignRevCompPhiX174 <-
+  pairwiseAlignment(srPhiX174, reverseComplement(phiX174),
+                    patternQuality = quPhiX174, subjectQuality = 99L,
+                    qualityType = "Solexa", type = "subjectOverlap")
+table(score(fullAlignRevCompPhiX174) > score(fullAlignPhiX174))
+@
+\end{enumerate}
+
+\subsection{Exercise 8}
+\label{sec:Answers8}
+\begin{enumerate}
+\item Rerun the first set of profiling code, but this time fix the number of
+characters in \Robject{string1} to 35. What is the computational order of this
+simulation exercise? As expected, the growth in time is now linear.
+<<ans8a, fig=TRUE>>=
+N <- as.integer(seq(500, 5000, by = 500))
+newTimings <- rep(0, length(N))
+names(newTimings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 35, replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  newTimings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global"))[["user.self"]]
+}
+newTimings
+coef(summary(lm(newTimings ~ poly(N, 2))))
+plot(N, newTimings, xlab = "String Size, Both Strings", ylab = "Timing (sec.)",
+     type = "l", main = "Global Pairwise Sequence Alignment Timings")
+@
+\item Rerun the second set of profiling code based on the previous exercise
+with \Rfunarg{scoreOnly} argument set to \Robject{TRUE}. Is is still twice as
+fast? Yes, it is still about twice as fast.
+<<ans8b>>=
+newScoreOnlyTimings <- rep(0, length(N))
+names(newScoreOnlyTimings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 35, replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  newScoreOnlyTimings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global", scoreOnly = TRUE))[["user.self"]]
+}
+newScoreOnlyTimings
+round((newTimings - newScoreOnlyTimings) / newTimings, 2)
+@
+\end{enumerate}
+
+
+\section{Session Information}
+All of the output in this vignette were produced under the following
+conditions:
+
+<<sessinfo>>=
+sessionInfo()
+@
 
 
 \begin{thebibliography}{}
