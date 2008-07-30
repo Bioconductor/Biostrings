@@ -20,7 +20,7 @@ pairwiseAlignment(pattern, subject, \dots)
                   gapExtension = -4, scoreOnly = FALSE)
 }
 \arguments{
-  \item{pattern}{a character vector of length 1, an \code{\link{XString}}, or an
+  \item{pattern}{a character vector of any length, an \code{\link{XString}}, or an
     \code{\link{XStringSet}} object.}
   \item{subject}{a character vector of length 1 or an \code{\link{XString}} object.}
   \item{patternQuality, subjectQuality}{respective quality scores for \code{pattern} and

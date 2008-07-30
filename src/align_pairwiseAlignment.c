@@ -33,13 +33,6 @@
 	} \
 }
 
-#define CHECK_MALLOC(ptr, name) \
-{ \
-	if (ptr == NULL) { \
-		error("pairwiseAlignment():  could not allocate memory for %s", name); \
-	} \
-}
-
 
 /* Structure to hold alignment information */
 struct AlignInfo {
@@ -100,10 +93,8 @@ static double pairwiseAlignment(
 	/* Rows of currMatrix and prevMatrix = (0) substitution, (1) deletion, and (2) insertion */
 	float *currMatrix, *prevMatrix, *curr, *currMinus1, *prev, *prevMinus1;
 	if (scoreOnly && gapOpening == 0.0) {
-		currMatrix = (float *) malloc(nCharString2Plus1 * sizeof(float));
-		CHECK_MALLOC(currMatrix, "currMatrix");
-		prevMatrix = (float *) malloc(nCharString2Plus1 * sizeof(float));
-		CHECK_MALLOC(prevMatrix, "prevMatrix");
+		currMatrix = (float *) R_alloc((long) nCharString2Plus1, sizeof(float));
+		prevMatrix = (float *) R_alloc((long) nCharString2Plus1, sizeof(float));
 
 		if (align2InfoPtr->endGap) {
 			for (j = 0, curr = currMatrix; j <= nCharString2; j++, curr++)
@@ -113,10 +104,8 @@ static double pairwiseAlignment(
 				*curr = 0.0;
 		}
 	} else {
-		currMatrix = (float *) malloc((3 * nCharString2Plus1) * sizeof(float));
-		CHECK_MALLOC(currMatrix, "currMatrix");
-		prevMatrix = (float *) malloc((3 * nCharString2Plus1) * sizeof(float));
-		CHECK_MALLOC(prevMatrix, "prevMatrix");
+		currMatrix = (float *) R_alloc((long) 3 * nCharString2Plus1, sizeof(float));
+		prevMatrix = (float *) R_alloc((long) 3 * nCharString2Plus1, sizeof(float));
 
 		CURR_MATRIX(0, 0) = 0.0;
 		CURR_MATRIX(1, 0) = (align1InfoPtr->endGap ? gapOpening : 0.0);
@@ -306,27 +295,18 @@ static double pairwiseAlignment(
 		}
 	} else {
 		/* Step 3a:  Create objects for traceback values */
-		char *sTraceMatrix = (char *) malloc((nCharString1 * nCharString2) * sizeof(char));
-		CHECK_MALLOC(sTraceMatrix, "sTraceMatrix");
-		char *iTraceMatrix = (char *) malloc((nCharString1 * nCharString2) * sizeof(char));
-		CHECK_MALLOC(iTraceMatrix, "iTraceMatrix");
-		char *dTraceMatrix = (char *) malloc((nCharString1 * nCharString2) * sizeof(char));
-		CHECK_MALLOC(dTraceMatrix, "dTraceMatrix");
+		char *sTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
+		char *iTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
+		char *dTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
 
 		/* Step 3b:  Prepare the alignment info object for alignment */
 		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
-		align1InfoPtr->mismatch   = (int *) malloc(alignmentBufferSize * sizeof(int));
-		CHECK_MALLOC(align1InfoPtr->mismatch, "align1InfoPtr->mismatch");
-		align2InfoPtr->mismatch   = (int *) malloc(alignmentBufferSize * sizeof(int));
-		CHECK_MALLOC(align2InfoPtr->mismatch, "align2InfoPtr->mismatch");
-		align1InfoPtr->startIndel = (int *) malloc(alignmentBufferSize * sizeof(int));
-		CHECK_MALLOC(align1InfoPtr->startIndel, "align1InfoPtr->startIndel");
-		align2InfoPtr->startIndel = (int *) malloc(alignmentBufferSize * sizeof(int));
-		CHECK_MALLOC(align2InfoPtr->startIndel, "align2InfoPtr->startIndel");
-		align1InfoPtr->widthIndel = (int *) malloc(alignmentBufferSize * sizeof(int));
-		CHECK_MALLOC(align1InfoPtr->widthIndel, "align1InfoPtr->widthIndel");
-		align2InfoPtr->widthIndel = (int *) malloc(alignmentBufferSize * sizeof(int));
-		CHECK_MALLOC(align2InfoPtr->widthIndel, "align2InfoPtr->widthIndel");
+		align1InfoPtr->mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2InfoPtr->mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1InfoPtr->startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2InfoPtr->startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1InfoPtr->widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2InfoPtr->widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 
 		align1InfoPtr->lengthMismatch = 0;
 		align2InfoPtr->lengthMismatch = 0;
@@ -582,14 +562,7 @@ static double pairwiseAlignment(
 			for (j = 0; j < align2InfoPtr->lengthIndel; j++)
 				align2InfoPtr->startIndel[j] -= offset2;
 		}
-
-		free(sTraceMatrix);
-		free(iTraceMatrix);
-		free(dTraceMatrix);
 	}
-
-	free(currMatrix);
-	free(prevMatrix);
 
 	return (double) maxScore;
 }
@@ -857,14 +830,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		    UNPROTECT(3);
 
 			qualityElement += qualityIncrement;
-
-			/* Free the memory allocated in pairwiseAlignment */
-			free(align1Info.mismatch);
-			free(align2Info.mismatch);
-			free(align1Info.startIndel);
-			free(align2Info.startIndel);
-			free(align1Info.widthIndel);
-			free(align2Info.widthIndel);
 		}
 
 		/* Output is ready */
