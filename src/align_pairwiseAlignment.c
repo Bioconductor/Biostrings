@@ -47,7 +47,18 @@ struct AlignInfo {
 	int* widthIndel;
 	int lengthIndel;
 };
-void function(struct AlignInfo *);
+void function1(struct AlignInfo *);
+
+
+/* Structure to hold alignment buffers */
+struct AlignBuffer {
+	float *currMatrix;
+	float *prevMatrix;
+	char *sTraceMatrix;
+	char *iTraceMatrix;
+	char *dTraceMatrix;
+};
+void function2(struct AlignBuffer *);
 
 
 /* Returns the score of the optimal pairwise alignment */
@@ -67,7 +78,8 @@ static double pairwiseAlignment(
 		const int *constantLookupTable,
 		int constantLookupTableLength,
 		const double *constantMatrix,
-		const int *constantMatrixDim)
+		const int *constantMatrixDim,
+		struct AlignBuffer *alignBufferPtr)
 {
 	int i, j, iMinus1, jMinus1;
 
@@ -91,11 +103,10 @@ static double pairwiseAlignment(
 
 	/* Step 2:  Create objects for scores values */
 	/* Rows of currMatrix and prevMatrix = (0) substitution, (1) deletion, and (2) insertion */
-	float *currMatrix, *prevMatrix, *curr, *currMinus1, *prev, *prevMinus1;
+	float *currMatrix = alignBufferPtr->currMatrix;
+	float *prevMatrix = alignBufferPtr->prevMatrix;
+	float *curr, *currMinus1, *prev, *prevMinus1;
 	if (scoreOnly && gapOpening == 0.0) {
-		currMatrix = (float *) R_alloc((long) nCharString2Plus1, sizeof(float));
-		prevMatrix = (float *) R_alloc((long) nCharString2Plus1, sizeof(float));
-
 		if (align2InfoPtr->endGap) {
 			for (j = 0, curr = currMatrix; j <= nCharString2; j++, curr++)
 				*curr = j * gapExtension;
@@ -104,9 +115,6 @@ static double pairwiseAlignment(
 				*curr = 0.0;
 		}
 	} else {
-		currMatrix = (float *) R_alloc((long) 3 * nCharString2Plus1, sizeof(float));
-		prevMatrix = (float *) R_alloc((long) 3 * nCharString2Plus1, sizeof(float));
-
 		CURR_MATRIX(0, 0) = 0.0;
 		CURR_MATRIX(1, 0) = (align1InfoPtr->endGap ? gapOpening : 0.0);
 		for (j = 1, jMinus1 = 0; j <= nCharString2; j++, jMinus1++) {
@@ -295,18 +303,12 @@ static double pairwiseAlignment(
 		}
 	} else {
 		/* Step 3a:  Create objects for traceback values */
-		char *sTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
-		char *iTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
-		char *dTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
+		char *sTraceMatrix = alignBufferPtr->sTraceMatrix;
+		char *iTraceMatrix = alignBufferPtr->iTraceMatrix;
+		char *dTraceMatrix = alignBufferPtr->dTraceMatrix;
 
 		/* Step 3b:  Prepare the alignment info object for alignment */
 		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
-		align1InfoPtr->mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align2InfoPtr->mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align1InfoPtr->startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align2InfoPtr->startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align1InfoPtr->widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
-		align2InfoPtr->widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 
 		align1InfoPtr->lengthMismatch = 0;
 		align2InfoPtr->lengthMismatch = 0;
@@ -662,6 +664,34 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 	int i, qualityElement = 0;
 	int qualityIncrement = ((_get_XStringSet_length(patternQuality) < numberOfStrings) ? 0 : 1);
+
+	/* Create the alignment buffer object */
+	struct AlignBuffer alignBuffer;
+	int nCharString1 = 0;
+	int nCharString2 = _get_XString_asRoSeq(subject).nelt;
+	for (i = 0; i < numberOfStrings; i++) {
+		nCharString1 = MAX(nCharString1, _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i).nelt);
+	}
+	int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
+	if (scoreOnlyValue && gapOpeningValue == 0.0) {
+		alignBuffer.currMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
+		alignBuffer.prevMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
+	} else {
+		alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+		alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+	}
+	if (!scoreOnlyValue) {
+		align1Info.mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2Info.mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1Info.startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2Info.startIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align1Info.widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		align2Info.widthIndel = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
+		alignBuffer.sTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
+		alignBuffer.iTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
+		alignBuffer.dTraceMatrix = (char *) R_alloc((long) (nCharString1 * nCharString2), sizeof(char));
+	}
+
 	double *score;
 	if (scoreOnlyValue) {
 		PROTECT(output = NEW_NUMERIC(numberOfStrings));
@@ -684,7 +714,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 					INTEGER(constantLookupTable),
 					LENGTH(constantLookupTable),
 					REAL(constantMatrix),
-					INTEGER(constantMatrixDim));
+					INTEGER(constantMatrixDim),
+					&alignBuffer);
 			qualityElement += qualityIncrement;
 		}
 		UNPROTECT(1);
@@ -789,7 +820,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 					INTEGER(constantLookupTable),
 					LENGTH(constantLookupTable),
 					REAL(constantMatrix),
-					INTEGER(constantMatrixDim));
+					INTEGER(constantMatrixDim),
+					&alignBuffer);
 
 			PROTECT(alignedPatternMismatchElt = NEW_INTEGER(align1Info.lengthMismatch));
 			PROTECT(alignedSubjectMismatchElt = NEW_INTEGER(align2Info.lengthMismatch));
