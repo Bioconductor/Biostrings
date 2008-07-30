@@ -166,9 +166,9 @@ setMethod("show", "PairwiseAlignment", function(object)
 		          patternSpaces <- max(0, patternSpaces)
               }
               cat(paste(c("pattern: ", rep(" ", patternSpaces)), collapse = ""))
-              show(pattern(object))
+              show(pattern(object)[1])
               cat(paste(c("subject: ", rep(" ", subjectSpaces)), collapse = ""))
-              show(subject(object))
+              show(subject(object)[1])
               cat("score:", score(object)[1], "\n")
           })
 

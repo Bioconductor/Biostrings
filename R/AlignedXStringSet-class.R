@@ -147,6 +147,8 @@ setMethod("codec", "AlignedXStringSet", function(x) codec(unaligned(x)))
 setMethod("show", "AlignedXStringSet",
     function(object)
     {
+        if (length(object) > 1)
+          cat(class(object), " (1 of ", length(object), ")\n", sep = "")
         if (width(object)[1] == 0)
           cat("[1] \"\"\n")
         else
