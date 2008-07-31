@@ -1163,7 +1163,7 @@ for (i in seq_len(length(N))) {
 }
 newTimings
 coef(summary(lm(newTimings ~ poly(N, 2))))
-plot(N, newTimings, xlab = "String Size, Both Strings", ylab = "Timing (sec.)",
+plot(N, newTimings, xlab = "Larger String Size", ylab = "Timing (sec.)",
      type = "l", main = "Global Pairwise Sequence Alignment Timings")
 @
 \item Rerun the second set of profiling code using the simulations from the
