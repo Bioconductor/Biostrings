@@ -383,7 +383,7 @@ setMethod("mismatchSummary", "AlignedXStringSet",
         list("position" =
              data.frame("Position" = seq_len(n),
                         "Count" = countTable,
-                        "Frequency" = countTable / coverageTable))
+                        "Probability" = countTable / coverageTable))
     }
 )
 
@@ -433,7 +433,7 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
           list("quality" =
                data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - qualityZero,
                           "Count" = qualityCounts,
-                          "Frequency" = qualityCounts / qualityAll)))
+                          "Probability" = qualityCounts / qualityAll)))
     }
 )
 
@@ -465,7 +465,7 @@ setMethod("mismatchSummary", "PairwiseAlignment",
                           "Subject" = safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
                           "Pattern" = unlist(lapply(subjectTableLabels, "[", 2)),
                           "Count" = as.vector(subjectTable),
-                          "Frequency" = as.vector(subjectTable) / coverage(subject(x), weight = weight)[subjectPosition]))
+                          "Probability" = as.vector(subjectTable) / coverage(subject(x), weight = weight)[subjectPosition]))
         output[["subject"]] <- output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
         rownames(output[["subject"]]) <- as.character(seq_len(nrow(output[["subject"]])))
         output

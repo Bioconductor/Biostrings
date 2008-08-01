@@ -219,7 +219,7 @@ setMethod("show", "PairwiseAlignmentSummary", function(object)
               cat(paste("\nTop", n, "Mismatch Counts:\n"))
               print(mismatchSummary(object)[["subject"]][
                 order(mismatchSummary(object)[["subject"]][["Count"]],
-                      mismatchSummary(object)[["subject"]][["Frequency"]],
+                      mismatchSummary(object)[["subject"]][["Probability"]],
                       decreasing = TRUE)[seq_len(n)],,drop=FALSE])
           })
 
