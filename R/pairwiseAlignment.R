@@ -102,7 +102,7 @@ function(pattern,
     }
     if (!is(patternQuality, "XStringSet"))
       patternQuality <- BStringSet(patternQuality)
-    if (!(length(super(patternQuality)) %in% c(1, length(super(pattern)))))
+    if (!all(nchar(patternQuality) == 1 | nchar(patternQuality) == nchar(pattern)))
       stop(paste("'patternQuality' must either be constant or",
                  "have the same length as 'pattern'"))
 
