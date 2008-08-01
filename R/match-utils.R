@@ -406,16 +406,19 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
             qualityAll <-
               sum(as.numeric(weight) * width(x)) *
                 alphabetFrequency(quality(x), collapse = TRUE)[qualityValues + 1]
-        else if (length(weight) == 1)
-            qualityAll <-
-              as.numeric(weight) *
-                alphabetFrequency(narrow(quality(x), start = start(x), end = end(x)),
-                                  collapse = TRUE)[qualityValues + 1]
-        else
-            qualityAll <-
-              colSums(as.numeric(weight) *
-                      alphabetFrequency(narrow(quality(x), start = start(x),
-                                               end = end(x)))[, qualityValues + 1, drop=FALSE])
+        else {
+            nonEmptyAlignment <- (width(x) > 0)
+            if (length(weight) == 1)
+                qualityAll <-
+                  as.numeric(weight) *
+                    alphabetFrequency(narrow(quality(x)[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
+                                             end = end(x)[nonEmptyAlignment]), collapse = TRUE)[qualityValues + 1]
+            else
+                qualityAll <-
+                  colSums(as.numeric(weight)[nonEmptyAlignment] *
+                          alphabetFrequency(narrow(quality(x)[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
+                                                   end = end(x)[nonEmptyAlignment]))[, qualityValues + 1, drop=FALSE])
+        }
         names(qualityAll) <- sapply(as.raw(qualityValues), rawToChar)
         qualityAll <- qualityAll[qualityAll > 0]
         if (length(weight) == 1)
