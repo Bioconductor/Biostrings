@@ -147,13 +147,17 @@ setMethod("codec", "AlignedXStringSet", function(x) codec(unaligned(x)))
 setMethod("show", "AlignedXStringSet",
     function(object)
     {
-        if (length(object) > 1)
-          cat(class(object), " (1 of ", length(object), ")\n", sep = "")
-        if (width(object)[1] == 0)
-          cat("[1] \"\"\n")
-        else
-          cat(paste("[", start(object)[1], "]", sep = ""),
-              toSeqSnippet(aligned(object)[[1]], getOption("width") - 8), "\n")
+        if (length(object) == 0)
+            cat("Empty ", class(object), "\n", sep = "")
+        else {
+            if (length(object) > 1)
+                cat(class(object), " (1 of ", length(object), ")\n", sep = "")
+            if (width(object)[1] == 0)
+                cat("[1] \"\"\n")
+            else
+                cat(paste("[", start(object)[1], "]", sep = ""),
+                    toSeqSnippet(aligned(object)[[1]], getOption("width") - 8), "\n")
+        }
     }
 )
 
