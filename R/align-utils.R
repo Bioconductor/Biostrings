@@ -53,7 +53,7 @@ setMethod("consmat", "character",
 setMethod("consmat", "matrix",
     function(x, freq=TRUE)
     {
-        cat("coming soon...")
+        cat("coming soon...\n")
     }
 )
 
