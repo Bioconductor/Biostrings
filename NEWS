@@ -29,8 +29,23 @@ o Major rework of the PDict class, subclasses and the PDict() constructor:
 
 STRING ALIGNMENT
 
-o Renamed the XStringAlign class -> AlignedXStringSet and added the
-  PairwiseAlignment class.
+o Added support for character vectors of any length and XStringSet objects to
+  the pattern argument of the pairwiseAlignment function.
+
+o Added "subjectOverlap" and "patternOverlap" pairwise sequence alignments.
+
+o Added support for Solexa quality scores in pairwise sequence alignment
+  calculations.
+
+o Added a stringDist function to calculate the Levenshtein edit distance
+  between elements of a character vector or XStringSet.
+
+o Added many methods for pairwise alignment objects including compareStrings,
+  coverage, mismatchSummary, mismatchTable, nindel, nmatch, nmismatch, pattern,
+  rep, subject, summary, views.
+
+o Removed the XStringAlign class and added classes PairwiseAlignment,
+  AlignedXStringSet, QualityAlignedXStringSet, and PairwiseAlignmentSummary.
 
 MISCELLANEOUS
 
