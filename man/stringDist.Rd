@@ -27,27 +27,19 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
     where
       \code{"global"} = align whole strings with end gap penalties,
       \code{"local"} = align string fragments,
-      \code{"overlap"} = align whole strings without end gap penalties.}
+      \code{"overlap"} = align whole strings without end gap penalties.
+     This argument is ignored if \code{method == "levenshtein"}.}
   \item{quality}{quality scores for \code{x} that are used in a quality-based method for
-    generating a substitution matrix.
-    When \code{qualityType = "Phred"}, these scores must either be represented by [0 - 99]
-    integer vectors, character vectors, \code{\link{BString}}, or, in the case of
-    \code{patternQuality}, \code{\link{BStringSet}} objects. When \code{qualityType = "Phred"},
-    characters are interpreted as [0 - 99] quality measures by subtracting 33 from their ASCII
-    decimal representation (e.g. ! = 0, " = 1, \# = 2, ...).
-    When \code{qualityType = "Solexa"}, these scores must either be represented by [-5 - 99]
-    integer vectors, character vectors, \code{\link{BString}}, or, in the case of
-    \code{patternQuality}, \code{\link{BStringSet}} objects. When \code{qualityType = "Solexa"},
-    characters are interpreted as [-5 - 99] quality measures by subtracting 64 from their ASCII
-    decimal representation (e.g. ; = -5, < = -4, = = -3, ...).
-    These two arguments are ignored if \code{!is.null(substitutionMatrix)}.}
+    generating a substitution matrix. This argument is ignored if \code{method != "quality"}.}
   \item{qualityType}{type of quality measure. Either of \code{"Phred"} or \code{"Solexa"}.
-    See \code{substitution.matrices} help page for more details.}
-  \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
-    use \code{substitutionMatrix} in conjunction with \code{patternQuality} and
-    \code{subjectQuality} arguments.}
-  \item{gapOpening}{penalty for opening a gap in the alignment.}
-  \item{gapExtension}{penalty for extending a gap in the alignment.}
+    See \code{substitution.matrices} help page for more details. This argument is ignored if
+    \code{method != "quality"}.}
+  \item{substitutionMatrix}{symmetric substitution matrix for the alignment. This argument is
+    ignored if \code{method != "substitutionMatrix"}.}
+  \item{gapOpening}{penalty for opening a gap in the alignment. This argument is ignored if
+    \code{method == "levenshtein"}.}
+  \item{gapExtension}{penalty for extending a gap in the alignment. This argument is ignored if
+    \code{method == "levenshtein"}.}
   \item{\dots}{optional arguments to generic function to support additional methods.}
 }
 \details{

@@ -38,8 +38,10 @@ function(x,
     names(alphabetToCodes) <- stringCodec@letters
   }
 
-  ## Generate substitution matrix for Levenshtein method
+  ## Set parameters when method == "levenshtein"
   if (method == "levenshtein") {
+    type <- "global"
+    typeCode <- 1L
     gapOpening <- 0
     gapExtension <- -1
     if (ignoreCase)
@@ -111,6 +113,8 @@ function(x,
       stop("matrix 'substitutionMatrix' must have row and column names")
     if (any(duplicated(rownames(substitutionMatrix))))
       stop("matrix 'substitutionMatrix' has duplicated row names")
+    if (!isSymmetric(substitutionMatrix))
+      stop("'substitutionMatrix' must be a symmetric matrix")
     availableLetters <-
       intersect(names(alphabetToCodes), rownames(substitutionMatrix))
     constantMatrix <-
@@ -145,7 +149,6 @@ function(x,
   attr(answer, "Diag") <- diag
   attr(answer, "Upper") <- upper
   attr(answer, "method") <- method
-  attr(answer, "call") <- match.call()
   class(answer) <- "dist"
   return(answer)
 }
