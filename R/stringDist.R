@@ -5,7 +5,7 @@
 XStringSet.stringDist <-
 function(x,
          method = "levenshtein",
-         ignore.case = FALSE,
+         ignoreCase = FALSE,
          diag = FALSE,
          upper = FALSE,
          type = "global",
@@ -42,7 +42,7 @@ function(x,
   if (method == "levenshtein") {
     gapOpening <- 0
     gapExtension <- -1
-    if (ignore.case)
+    if (ignoreCase)
       caseAdjustedAlphabet <- tolower(names(alphabetToCodes))
     else
       caseAdjustedAlphabet <- names(alphabetToCodes)
@@ -152,17 +152,17 @@ function(x,
 
 
 setGeneric("stringDist", signature = "x",
-           function(x, method = "levenshtein", ignore.case = FALSE, diag = FALSE, upper = FALSE, ...)
+           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, ...)
            standardGeneric("stringDist"))
 
 setMethod("stringDist",
           signature(x = "character"),
-          function(x, method = "levenshtein", ignore.case = FALSE, diag = FALSE, upper = FALSE,
+          function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = 22L, qualityType = "Phred", substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
           XStringSet.stringDist(x = BStringSet(x),
                                 method = method,
-                                ignore.case = ignore.case,
+                                ignoreCase = ignoreCase,
                                 diag = diag,
                                 upper = upper,
                                 type = type,
@@ -174,12 +174,12 @@ setMethod("stringDist",
 
 setMethod("stringDist",
           signature(x = "XStringSet"),
-          function(x, method = "levenshtein", ignore.case = FALSE, diag = FALSE, upper = FALSE,
+          function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = 22L, qualityType = "Phred", substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
           XStringSet.stringDist(x = x,
                                 method = method,
-								ignore.case = ignore.case,
+								ignoreCase = ignoreCase,
 								diag = diag,
 								upper = upper,
 								type = type,

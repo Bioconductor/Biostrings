@@ -9,8 +9,8 @@
 Computes the Levenshtein edit distance or pairwise alignment score matrix for a set of strings.
 }
 \usage{
-stringDist(x, method = "levenshtein", ignore.case = FALSE, diag = FALSE, upper = FALSE, \dots)
-\S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignore.case = FALSE, diag = FALSE, upper = FALSE,
+stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, \dots)
+\S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = 22L, qualityType = "Phred", substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
 }
@@ -18,7 +18,7 @@ stringDist(x, method = "levenshtein", ignore.case = FALSE, diag = FALSE, upper =
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}
   \item{method}{calculation method. One of \code{"levenshtein"}, \code{"quality"}, or
     \code{"substitutionMatrix"}.}
-  \item{ignore.case}{logical value indicating whether to ignore case during scoring.}
+  \item{ignoreCase}{logical value indicating whether to ignore case during scoring.}
   \item{diag}{logical value indicating whether the diagonal of the matrix should be printed
     by \code{print.dist}.}
   \item{upper}{logical value indicating whether the diagonal of the matrix should be printed
@@ -65,7 +65,7 @@ Returns an object of class \code{"dist"}.
 }
 \examples{
   stringDist(c("lazy", "HaZy", "crAzY"))
-  stringDist(c("lazy", "HaZy", "crAzY"), ignore.case = TRUE)
+  stringDist(c("lazy", "HaZy", "crAzY"), ignoreCase = TRUE)
 
   data(srPhiX174)
   stringDist(srPhiX174[1:4])
