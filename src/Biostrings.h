@@ -1444,6 +1444,23 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP constantMatrixDim
 );
 
+SEXP XStringSet_align_distance(
+	SEXP string,
+	SEXP stringQuality,
+	SEXP type,
+	SEXP typeCode,
+	SEXP gapOpening,
+	SEXP gapExtension,
+	SEXP useQuality,
+	SEXP qualityLookupTable,
+	SEXP qualityMatchMatrix,
+	SEXP qualityMismatchMatrix,
+	SEXP qualityMatrixDim,
+	SEXP constantLookupTable,
+	SEXP constantMatrix,
+	SEXP constantMatrixDim
+);
+
 
 /* align_utils.c */
 

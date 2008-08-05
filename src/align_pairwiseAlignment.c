@@ -98,8 +98,16 @@ static double pairwiseAlignment(
 	int nCharString1Minus1 = nCharString1 - 1;
 	int nCharString2Minus1 = nCharString2 - 1;
 
-	if (nCharString1 < 1 || nCharString2 < 1)
-		return NA_REAL;
+	if (nCharString1 < 1 || nCharString2 < 1) {
+		int zeroCharScore;
+		if (nCharString2 >= 1 && align2InfoPtr->endGap)
+			zeroCharScore = gapOpening + nCharString2 * gapExtension;
+		else if (nCharString1 >= 1 && align1InfoPtr->endGap)
+			zeroCharScore = gapOpening + nCharString1 * gapExtension;
+		else
+			zeroCharScore = 0;
+		return zeroCharScore;
+	}
 
 	/* Step 2:  Create objects for scores values */
 	/* Rows of currMatrix and prevMatrix = (0) substitution, (1) deletion, and (2) insertion */
@@ -571,9 +579,9 @@ static double pairwiseAlignment(
 
 /*
  * INPUTS
- * 'pattern':                XString object for patterns
+ * 'pattern':                XStringSet object for patterns
  * 'subject':                XString object for subject
- * 'patternQuality':         BString object for quality scores for pattern
+ * 'patternQuality':         BStringSet object for quality scores for pattern
  * 'subjectQuality':         BString object for quality scores for subject
  * 'type':                   type of pairwise alignment
  *                           (character vector of length 1;
@@ -612,9 +620,8 @@ static double pairwiseAlignment(
  *                           (integer vector of length 2)
  * 
  * OUTPUT
- * Return a named list with 3 elements: 2 "externalptr" objects describing
- * the alignments and 1 integer vector containing the alignment score.
- * Note that the 2 XString objects to align should contain no gaps.
+ * If scoreOnly = TRUE, returns either a vector of scores
+ * If scoreOnly = FALSE, returns an S4 PairwiseAlignment object.
  */
 
 SEXP XStringSet_align_pairwiseAlignment(
@@ -867,6 +874,138 @@ SEXP XStringSet_align_pairwiseAlignment(
 		/* Output is ready */
 		UNPROTECT(14);
 	}
+
+	return output;
+}
+
+
+
+/*
+ * INPUTS
+ * 'string':                 XStringSet object for strings
+ * 'stringQuality':          BStringSet object for quality scores for strings
+ * 'type':                   type of pairwise alignment
+ *                           (character vector of length 1;
+ *                            'global', 'local', 'overlap')
+ * 'typeCode':               type of pairwise alignment
+ *                           (integer vector of length 1;
+ *                            1 = 'global', 2 = 'local', 3 = 'overlap')
+ * 'gapOpening':             gap opening cost or penalty
+ *                           (double vector of length 1)
+ * 'gapExtension':           gap extension cost or penalty
+ *                           (double vector of length 1)
+ * 'useQuality':             denotes whether or not to use quality measures
+ *                           in the optimal pairwise alignment
+ *                           (logical vector of length 1)
+ * 'qualityLookupTable':     lookup table for translating BString bytes to
+ *                           quality-based scoring matrix indices
+ *                           (integer vector)
+ * 'qualityMatchMatrix':     quality-based substitution matrix for matches
+ * 'qualityMismatchMatrix':  quality-based substitution matrix for matches
+ * 'qualityMatrixDim':       dimension of 'qualityMatchMatrix' and
+ *                           'qualityMismatchMatrix'
+ *                           (integer vector of lenth 2)
+ * 'constantLookupTable':    lookup table for translating XString bytes to scoring
+ *                           matrix indices
+ *                           (integer vector)
+ * 'constantMatrix':         constant substitution matrix for matches/mismatches
+ *                           (double matrix)
+ * 'constantMatrixDim':      dimension of 'constantMatrix'
+ *                           (integer vector of length 2)
+ * 
+ * OUTPUT
+ * Return a numeric vector containing the lower triangle of the score matrix.
+ */
+
+SEXP XStringSet_align_distance(
+		SEXP string,
+		SEXP stringQuality,
+		SEXP type,
+		SEXP typeCode,
+		SEXP gapOpening,
+		SEXP gapExtension,
+		SEXP useQuality,
+		SEXP qualityLookupTable,
+		SEXP qualityMatchMatrix,
+		SEXP qualityMismatchMatrix,
+		SEXP qualityMatrixDim,
+		SEXP constantLookupTable,
+		SEXP constantMatrix,
+		SEXP constantMatrixDim)
+{
+	int scoreOnlyValue = 1;
+	int useQualityValue = LOGICAL(useQuality)[0];
+	float gapOpeningValue = REAL(gapOpening)[0];
+	float gapExtensionValue = REAL(gapExtension)[0];
+	if (gapOpeningValue == NEGATIVE_INFINITY || gapExtensionValue == NEGATIVE_INFINITY) {
+		gapOpeningValue = 0.0;
+		gapExtensionValue = NEGATIVE_INFINITY;
+	}
+	int localAlignment = (INTEGER(typeCode)[0] == LOCAL_ALIGNMENT);
+
+	/* Create the alignment info objects */
+	struct AlignInfo align1Info, align2Info;
+	align1Info.endGap = (INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT);
+	align2Info.endGap = (INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT);
+
+	int numberOfStrings = _get_XStringSet_length(string);
+	CachedXStringSet cachedPattern = _new_CachedXStringSet(string);
+	CachedXStringSet cachedPatternQuality = _new_CachedXStringSet(stringQuality);
+
+	SEXP output;
+
+	int i, j, iQualityElement = 0, jQualityElement = 0;
+	int qualityIncrement = ((_get_XStringSet_length(stringQuality) < numberOfStrings) ? 0 : 1);
+
+	/* Create the alignment buffer object */
+	struct AlignBuffer alignBuffer;
+	int nCharString = 0;
+	for (i = 0; i < numberOfStrings; i++) {
+		nCharString = MAX(nCharString, _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i).nelt);
+	}
+	int alignmentBufferSize = nCharString + 1;
+	if (gapOpeningValue == 0.0) {
+		alignBuffer.currMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
+		alignBuffer.prevMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
+	} else {
+		alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+		alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+	}
+
+	double *score;
+	PROTECT(output = NEW_NUMERIC((numberOfStrings * (numberOfStrings - 1)) / 2));
+	score = REAL(output);
+	for (i = 0; i < numberOfStrings; i++) {
+		align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
+		align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, iQualityElement);
+		jQualityElement = iQualityElement + qualityIncrement;
+		for (j = i + 1; j < numberOfStrings; j++) {
+			align2Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, j);
+			align2Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, jQualityElement);
+			*score = pairwiseAlignment(
+					&align1Info,
+					&align2Info,
+					localAlignment,
+					scoreOnlyValue,
+					gapOpeningValue,
+					gapExtensionValue,
+					useQualityValue,
+					INTEGER(qualityLookupTable),
+					LENGTH(qualityLookupTable),
+					REAL(qualityMatchMatrix),
+					REAL(qualityMismatchMatrix),
+					INTEGER(qualityMatrixDim),
+					INTEGER(constantLookupTable),
+					LENGTH(constantLookupTable),
+					REAL(constantMatrix),
+					INTEGER(constantMatrixDim),
+					&alignBuffer);
+			jQualityElement += qualityIncrement;
+			score++;
+		}
+		iQualityElement += qualityIncrement;
+	}
+	UNPROTECT(1);
 
 	return output;
 }
