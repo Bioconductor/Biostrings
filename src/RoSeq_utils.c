@@ -43,7 +43,7 @@ SEXP _new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs)
 			*(start_elt++) = *(start_prev_elt++) + (seq++)->nelt;
 			*(width_elt++) = seq->nelt;
 		}
-	PROTECT(ans = _new_IRanges(class, start, width, R_NilValue));
+	PROTECT(ans = new_IRanges(class, start, width, R_NilValue));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): END\n");

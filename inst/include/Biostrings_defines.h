@@ -18,7 +18,44 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-#include "IRanges_defines.h"
+
+/*
+ * TODO: The Extendable buffer typedefs need to go away (they are now in the
+ *       IRanges package).
+ */
+#ifndef EXTENDABLE_BUFFERS
+#define EXTENDABLE_BUFFERS
+
+typedef struct ibuf {
+        int buflength;
+        int *elts;
+        int nelt;
+} IntBuf;
+
+typedef struct ibbuf {
+        int buflength;
+        IntBuf *elts;
+        int nelt;
+} IntBBuf;
+
+typedef struct rangebuf {
+        IntBuf start;
+        IntBuf width;
+} RangeBuf;
+
+typedef struct cbuf {
+        int buflength;
+        char *elts;
+        int nelt;
+} CharBuf;
+
+typedef struct cbbuf {
+        int buflength;
+        CharBuf *elts;
+        int nelt;
+} CharBBuf;
+
+#endif
 
 
 /*
