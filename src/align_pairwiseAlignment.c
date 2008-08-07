@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 #include <R_ext/Utils.h>        /* R_CheckUserInterrupt */
 
 #include <float.h>
@@ -743,68 +744,17 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth;
 		SEXP alignedScore;
 
-		PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignment")));
-
-		/* Set the "pattern" slot */
-		if (useQualityValue) {
-			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
-			SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
-			SET_SLOT(alignedPattern, mkChar("qualityType"), qualityType);
-		} else {
-			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
-		}
-		SET_SLOT(alignedPattern, mkChar("unaligned"), pattern);
-		/* Set the "range" sub-slot */
-		PROTECT(alignedPatternRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
-		SET_SLOT(alignedPatternRange, mkChar("start"), alignedPatternRangeStart);
-		SET_SLOT(alignedPatternRange, mkChar("width"), alignedPatternRangeWidth);
-		SET_SLOT(alignedPattern, mkChar("range"), alignedPatternRange);
-		/* Set the "mismatch" sub-slot */
 		PROTECT(alignedPatternMismatch = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedPattern, mkChar("mismatch"), alignedPatternMismatch);
-		/* Set the "indel" sub-slot */
 		PROTECT(alignedPatternIndel = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedPattern, mkChar("indel"), alignedPatternIndel);
-		SET_SLOT(output, mkChar("pattern"), alignedPattern);
 
-		/* Set the "subject" slot */
-		if (useQualityValue) {
-			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
-			SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
-			SET_SLOT(alignedSubject, mkChar("qualityType"), qualityType);
-		} else {
-			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
-		}
-		SET_SLOT(alignedSubject, mkChar("unaligned"), subject);
-		/* Set the "range" sub-slot */
-		PROTECT(alignedSubjectRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectRangeWidth = NEW_INTEGER(numberOfStrings));
-		SET_SLOT(alignedSubjectRange, mkChar("start"), alignedSubjectRangeStart);
-		SET_SLOT(alignedSubjectRange, mkChar("width"), alignedSubjectRangeWidth);
-		SET_SLOT(alignedSubject, mkChar("range"), alignedSubjectRange);
-		/* Set the "mismatch" sub-slot */
 		PROTECT(alignedSubjectMismatch = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedSubject, mkChar("mismatch"), alignedSubjectMismatch);
-		/* Set the "indel" sub-slot */
 		PROTECT(alignedSubjectIndel = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedSubject, mkChar("indel"), alignedSubjectIndel);
-		SET_SLOT(output, mkChar("subject"), alignedSubject);
 
-		/* Set the "score" slot */
 		PROTECT(alignedScore = NEW_NUMERIC(numberOfStrings));
-		SET_SLOT(output, mkChar("score"), alignedScore);
-
-		/* Set the "type" slot */
-		SET_SLOT(output, mkChar("type"), type);
-		/* Set the "constantMatrix" slot */
-		SET_SLOT(output, mkChar("constantMatrix"), constantMatrix);
-		/* Set the "gapOpening" slot */
-		SET_SLOT(output, mkChar("gapOpening"), gapOpening);
-		/* Set the "gapExtension" slot */
-		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		int *align1RangeStart, *align1RangeWidth, *align2RangeStart, *align2RangeWidth;
 		for (i = 0, score = REAL(alignedScore),
@@ -847,34 +797,85 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 			*align1RangeStart = align1Info.startRange;
 			*align1RangeWidth = align1Info.widthRange;
-			PROTECT(alignedPatternIndelRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 			PROTECT(alignedPatternIndelRangeStart = NEW_INTEGER(align1Info.lengthIndel));
 			PROTECT(alignedPatternIndelRangeWidth = NEW_INTEGER(align1Info.lengthIndel));
 			memcpy(INTEGER(alignedPatternIndelRangeStart), align1Info.startIndel,
 			       align1Info.lengthIndel * sizeof(int));
 			memcpy(INTEGER(alignedPatternIndelRangeWidth), align1Info.widthIndel,
 			       align1Info.lengthIndel * sizeof(int));
-			SET_SLOT(alignedPatternIndelRange, mkChar("start"), alignedPatternIndelRangeStart);
-			SET_SLOT(alignedPatternIndelRange, mkChar("width"), alignedPatternIndelRangeWidth);
+			PROTECT(alignedPatternIndelRange = 
+				new_IRanges("IRanges", alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth, R_NilValue));
 		    SET_VECTOR_ELT(alignedPatternIndel, i, alignedPatternIndelRange);
 		    UNPROTECT(3);
 
 			*align2RangeStart = align2Info.startRange;
 			*align2RangeWidth = align2Info.widthRange;
-			PROTECT(alignedSubjectIndelRange = NEW_OBJECT(MAKE_CLASS("IRanges")));
 			PROTECT(alignedSubjectIndelRangeStart = NEW_INTEGER(align2Info.lengthIndel));
 			PROTECT(alignedSubjectIndelRangeWidth = NEW_INTEGER(align2Info.lengthIndel));
 			memcpy(INTEGER(alignedSubjectIndelRangeStart), align2Info.startIndel,
 			       align2Info.lengthIndel * sizeof(int));
 			memcpy(INTEGER(alignedSubjectIndelRangeWidth), align2Info.widthIndel,
 			       align2Info.lengthIndel * sizeof(int));
-			SET_SLOT(alignedSubjectIndelRange, mkChar("start"), alignedSubjectIndelRangeStart);
-			SET_SLOT(alignedSubjectIndelRange, mkChar("width"), alignedSubjectIndelRangeWidth);
+			PROTECT(alignedSubjectIndelRange = 
+				new_IRanges("IRanges", alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth, R_NilValue));
 		    SET_VECTOR_ELT(alignedSubjectIndel, i, alignedSubjectIndelRange);
 		    UNPROTECT(3);
 
 			qualityElement += qualityIncrement;
 		}
+
+		/* Create the output object */
+		PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignment")));
+
+		/* Set the "pattern" slot */
+		if (useQualityValue) {
+			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
+			SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
+			SET_SLOT(alignedPattern, mkChar("qualityType"), qualityType);
+		} else {
+			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
+		}
+		SET_SLOT(alignedPattern, mkChar("unaligned"), pattern);
+		/* Set the "range" sub-slot */
+		PROTECT(alignedPatternRange =
+			new_IRanges("IRanges", alignedPatternRangeStart, alignedPatternRangeWidth, R_NilValue));
+		SET_SLOT(alignedPattern, mkChar("range"), alignedPatternRange);
+		/* Set the "mismatch" sub-slot */
+		SET_SLOT(alignedPattern, mkChar("mismatch"), alignedPatternMismatch);
+		/* Set the "indel" sub-slot */
+		SET_SLOT(alignedPattern, mkChar("indel"), alignedPatternIndel);
+		SET_SLOT(output, mkChar("pattern"), alignedPattern);
+
+		/* Set the "subject" slot */
+		if (useQualityValue) {
+			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
+			SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
+			SET_SLOT(alignedSubject, mkChar("qualityType"), qualityType);
+		} else {
+			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
+		}
+		SET_SLOT(alignedSubject, mkChar("unaligned"), subject);
+		/* Set the "range" sub-slot */
+		PROTECT(alignedSubjectRange =
+			new_IRanges("IRanges", alignedSubjectRangeStart, alignedSubjectRangeWidth, R_NilValue));
+		SET_SLOT(alignedSubject, mkChar("range"), alignedSubjectRange);
+		/* Set the "mismatch" sub-slot */
+		SET_SLOT(alignedSubject, mkChar("mismatch"), alignedSubjectMismatch);
+		/* Set the "indel" sub-slot */
+		SET_SLOT(alignedSubject, mkChar("indel"), alignedSubjectIndel);
+		SET_SLOT(output, mkChar("subject"), alignedSubject);
+
+		/* Set the "score" slot */
+		SET_SLOT(output, mkChar("score"), alignedScore);
+
+		/* Set the "type" slot */
+		SET_SLOT(output, mkChar("type"), type);
+		/* Set the "constantMatrix" slot */
+		SET_SLOT(output, mkChar("constantMatrix"), constantMatrix);
+		/* Set the "gapOpening" slot */
+		SET_SLOT(output, mkChar("gapOpening"), gapOpening);
+		/* Set the "gapExtension" slot */
+		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		/* Output is ready */
 		UNPROTECT(14);
