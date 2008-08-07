@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include <R_ext/Utils.h>        /* R_CheckUserInterrupt */
 
 #include <float.h>
 #include <stdlib.h>
@@ -705,6 +706,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	if (scoreOnlyValue) {
 		PROTECT(output = NEW_NUMERIC(numberOfStrings));
 		for (i = 0, score = REAL(output); i < numberOfStrings; i++, score++) {
+	        R_CheckUserInterrupt();
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
 			*score = pairwiseAlignment(
@@ -811,6 +813,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 				align2RangeStart = INTEGER(alignedSubjectRangeStart),
 				align2RangeWidth = INTEGER(alignedSubjectRangeWidth); i < numberOfStrings;
 				i++, score++, align1RangeStart++, align1RangeWidth++, align2RangeStart++, align2RangeWidth++) {
+	        R_CheckUserInterrupt();
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
 			*score = pairwiseAlignment(
@@ -978,6 +981,7 @@ SEXP XStringSet_align_distance(
 	PROTECT(output = NEW_NUMERIC((numberOfStrings * (numberOfStrings - 1)) / 2));
 	score = REAL(output);
 	for (i = 0; i < numberOfStrings; i++) {
+        R_CheckUserInterrupt();
 		align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 		align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, iQualityElement);
 		jQualityElement = iQualityElement + qualityIncrement;
