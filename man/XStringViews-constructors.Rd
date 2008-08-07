@@ -113,7 +113,7 @@
 \seealso{
   \link{XStringViews-class},
   \link{XString-class},
-  \code{\link{gaps}}
+  \code{\link[IRanges]{gaps}}
 }
 
 \examples{

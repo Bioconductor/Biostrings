@@ -12,6 +12,7 @@ setGeneric("reverse", signature="x",
 )
 
 ### This method does NOT preserve normality.
+### TODO: Move this function to the IRanges package.
 .IRanges.reverse <- function(x, ...)
 {
     args <- extraArgsAsList(NULL, ...)
@@ -23,21 +24,30 @@ setGeneric("reverse", signature="x",
     if (is.na(n2p[2]))
         stop("'end' must be specified for \"reverse\" method for IRanges objects")
     end <- normargSingleEnd(args[[n2p[2]]])
-    if (!is.na(n2p[3]) && !normargUseNames(args[[n2p[3]]]))
-        unsafe.names(x) <- NULL
-    unsafe.start(x) <- start + end - end(x)
+    if (!is.na(n2p[3]) && !normargUseNames(args[[n2p[3]]])) {
+        ## TEMPORARY WORKAROUND until .IRanges.reverse is moved to the IRanges package
+        #unsafe.names(x) <- NULL
+        x <- IRanges:::`unsafe.names<-`(x, NULL)
+    }
+    ## TEMPORARY WORKAROUND until .IRanges.reverse is moved to the IRanges package
+    #unsafe.start(x) <- start + end - end(x)
+    x <- IRanges:::`unsafe.start<-`(x, start + end - end(x))
     x
 }
 
+### TODO: Move this method to the IRanges package.
 setMethod("reverse", "IRanges", .IRanges.reverse)
 
+### TODO: Move this method to the IRanges package.
 setMethod("reverse", "NormalIRanges",
     function(x, ...)
     {
         ## callNextMethod() temporarily breaks 'x' as a NormalIRanges object
         ## because the returned ranges are ordered from right to left.
         x <- callNextMethod()
-        unsafe.update(x, start=rev(start(x)), width=rev(width(x)), names=rev(names(x)))
+        ## TEMPORARY WORKAROUND until this method is moved to the IRanges package
+        #unsafe.update(x, start=rev(start(x)), width=rev(width(x)), names=rev(names(x)))
+        IRanges:::unsafe.update(x, start=rev(start(x)), width=rev(width(x)), names=rev(names(x)))
     }
 )
 

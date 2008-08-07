@@ -505,7 +505,7 @@ setMethod("coverage", "IRanges",
         if (!is.integer(weight))
             weight <- as.integer(weight)
         x1 <- shift(restrict(x, start=start, end=end), 1L - start)
-        .Call("IRanges_coverage", x1, width, weight, PACKAGE="Biostrings")
+        .Call("IRanges_coverage", x1, width, weight, PACKAGE="IRanges")
     }
 )
 

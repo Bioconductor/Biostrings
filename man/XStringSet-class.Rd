@@ -149,11 +149,11 @@
 }
 
 \section{Accesor methods}{
-  The XStringSet class derives from the \link{IRanges} class hence
-  all the accessor methods defined for a \link{IRanges} object can also
-  be used on an XStringSet object. In particular, the following methods
-  are available (in the code snippets below, \code{x} is an XStringSet
-  object:
+  The XStringSet class derives from the \link[IRanges]{IRanges} class
+  hence all the accessor methods defined for a \link[IRanges]{IRanges}
+  object can also be used on an XStringSet object. In particular, the
+  following methods are available (in the code snippets below, \code{x}
+  is an XStringSet object:
 
   \describe{
     \item{}{
@@ -218,7 +218,7 @@
   \link{RNAString-class},
   \link{AAString-class},
   \link{XStringViews-class},
-  \link{IRanges}
+  \link[IRanges]{IRanges}
 }
 
 \examples{

@@ -1,5 +1,5 @@
 #include "Biostrings.h"
-
+#include "IRanges_interface.h"
 
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
@@ -11,12 +11,12 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 	PROTECT(output = NEW_INTEGER(numberOfAlignments));
 	int i, j, *outputPtr;
 	const int *rangeWidth, *indelWidth;
-	for (i = 0, rangeWidth = INTEGER(_get_IRanges_width(range)), outputPtr = INTEGER(output);
+	for (i = 0, rangeWidth = INTEGER(get_IRanges_width(range)), outputPtr = INTEGER(output);
 			i < numberOfAlignments; i++, rangeWidth++, outputPtr++) {
 		SEXP indelElement = VECTOR_ELT(indel, i);
-		int numberOfIndels = LENGTH(_get_IRanges_width(indelElement));
+		int numberOfIndels = LENGTH(get_IRanges_width(indelElement));
 		*outputPtr = *rangeWidth;
-		for (j = 0, indelWidth = INTEGER(_get_IRanges_width(indelElement));
+		for (j = 0, indelWidth = INTEGER(get_IRanges_width(indelElement));
 		     j < numberOfIndels; j++, indelWidth++) {
 			*outputPtr += *indelWidth;
 		}
@@ -75,20 +75,20 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	int stringIncrement = (numberOfStrings == 1 ? 0 : 1);
 	int index = 0, stringElement = 0;
 	const int *rangeStart, *rangeWidth;
-	for (i = 0, rangeStart = INTEGER(_get_IRanges_start(range)), rangeWidth = INTEGER(_get_IRanges_width(range));
+	for (i = 0, rangeStart = INTEGER(get_IRanges_start(range)), rangeWidth = INTEGER(get_IRanges_width(range));
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
 		SEXP indelElement = VECTOR_ELT(indel, i);
-		int numberOfIndel = LENGTH(_get_IRanges_start(indelElement));
+		int numberOfIndel = LENGTH(get_IRanges_start(indelElement));
 		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, *rangeWidth * sizeof(char));
 			index += *rangeWidth;
 		} else {
 			int prevStart = 0;
 			const int *indelStart, *indelWidth;
-			for (j = 0, indelStart = INTEGER(_get_IRanges_start(indelElement)),
-					indelWidth = INTEGER(_get_IRanges_width(indelElement));
+			for (j = 0, indelStart = INTEGER(get_IRanges_start(indelElement)),
+					indelWidth = INTEGER(get_IRanges_width(indelElement));
 			        j < numberOfIndel; j++, indelStart++, indelWidth++) {
 				int currStart = *indelStart - 1;
 				int currWidth = *indelWidth;

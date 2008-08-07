@@ -47,7 +47,7 @@
 
 \arguments{
   \item{x}{
-    An \link{IRanges}, \link{NormalIRanges}, \link{MaskCollection},
+    An \link[IRanges]{IRanges}, \link[IRanges]{NormalIRanges}, \link{MaskCollection},
     \link{XString}, \link{XStringSet}, \link{XStringViews}
     or \link{MaskedXString} object for \code{reverse}.
 
@@ -87,8 +87,8 @@
 }
 
 \seealso{
-  \link{IRanges-class},
-  \link{NormalIRanges-class},
+  \link[IRanges]{IRanges-class},
+  \link[IRanges]{NormalIRanges-class},
   \link{MaskCollection-class},
   \link{DNAString-class},
   \link{RNAString-class},

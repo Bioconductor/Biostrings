@@ -54,14 +54,20 @@ setMethod("names", "MaskCollection",
 setReplaceMethod("names", "MaskCollection",
     function(x, value)
     {
-        if (is.character(value)) {
-            ii <- is.na(value)
-            if (any(ii))
-                value[ii] <- ""
-        } else if (!is.null(value)) {
-            stop("'value' must be NULL or a character vector")
+        if (is.null(value)) {
+            x@NAMES <- as.character(NA)
+            return(x)
         }
-        unsafe.names(x) <- value
+        if (!is.character(value))
+            stop("'value' must be NULL or a character vector")
+        ii <- is.na(value)
+        if (any(ii))
+            value[ii] <- ""
+        if (length(value) > length(x))
+            stop("too many names")
+        if (length(value) < length(x))
+            value <- c(value, character(length(x) - length(value)))
+        x@NAMES <- value
         x
     }
 )

@@ -2,11 +2,21 @@
 \docType{class}
 
 % Classes:
+\alias{class:Views}
+\alias{Views-class}
+\alias{Views}
 \alias{class:XStringViews}
 \alias{XStringViews-class}
 
 % Constructor-like functions and generics:
+\alias{initialize,Views-method}
 \alias{initialize,XStringViews-method}
+
+% Coercion:
+\alias{coerce,Views,NormalIRanges-method}
+
+% Replacement methods:
+\alias{width<-,Views-method}
 
 % Accesor methods:
 \alias{subject}
@@ -52,9 +62,10 @@
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
-  An XStringViews object is in fact a particular case of an \link{IRanges} object
-  (the XStringViews class contains the \link{IRanges} class) so it can be
-  manipulated in the same way: see \link{IRanges} for more information.
+  An XStringViews object is in fact a particular case of an \link[IRanges]{IRanges}
+  object (the XStringViews class contains the \link[IRanges]{IRanges} class) so it
+  can be manipulated in a similar manner: see \code{?\link[IRanges]{IRanges}} for
+  more information.
   Note that two views can overlap and that a view can be "out of limits"
   i.e. it can start before the first letter of the subject or/and end
   after its last letter.
@@ -156,7 +167,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link{IRanges-class},
+  \link[IRanges]{IRanges-class},
   \link{XStringViews-constructors},
   \link{XString-class},
   \link{XStringSet-class},

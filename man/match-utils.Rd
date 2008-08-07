@@ -136,8 +136,8 @@
     by \code{matchPattern(pattern, subject)}).
 
     Typically an \link{XStringViews} or \link{MIndex} object for \code{coverage}
-    but \link{IRanges}, \link{MaskCollection} and \link{MaskedXString} objects
-    are accepted too.
+    but \link[IRanges]{IRanges}, \link{MaskCollection} and \link{MaskedXString}
+    objects are accepted too.
   }
   \item{shiftLeft, shiftRight}{
     Non-positive and non-negative integers respectively that specify how many
@@ -197,7 +197,7 @@
   \link{XString-class},
   \link{XStringViews-class},
   \link{MIndex-class},
-  \link{IRanges-class},
+  \link[IRanges]{IRanges-class},
   \link{MaskCollection-class},
   \link{MaskedXString-class},
   \link{AlignedXStringSet-class},

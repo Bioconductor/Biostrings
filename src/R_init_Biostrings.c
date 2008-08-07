@@ -12,19 +12,6 @@ static const R_CallMethodDef callMethods[] = {
 /* bufutils.c */
 	{"debug_bufutils", (DL_FUNC) &debug_bufutils, 0},
 
-/* IRanges_class.c */
-	{"debug_IRanges_class", (DL_FUNC) &debug_IRanges_class, 0},
-
-/* IRanges_utils.c */
-	{"debug_IRanges_utils", (DL_FUNC) &debug_IRanges_utils, 0},
-
-	{"narrow_IRanges", (DL_FUNC) &narrow_IRanges, 4},
-	{"int_to_adjacent_ranges", (DL_FUNC) &int_to_adjacent_ranges, 1},
-	{"which_as_ranges", (DL_FUNC) &which_as_ranges, 1},
-	{"reduce_IRanges", (DL_FUNC) &reduce_IRanges, 2},
-	{"IRanges_coverage", (DL_FUNC) &IRanges_coverage, 3},
-	{"summary_IRanges_list", (DL_FUNC) &summary_IRanges_list, 1},
-
 /* SparseList_utils.c */
 	{"debug_SparseList_utils", (DL_FUNC) &debug_SparseList_utils, 0},
 

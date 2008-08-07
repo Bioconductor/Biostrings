@@ -1009,3 +1009,4 @@ SEXP XStringSet_align_distance(
 
 	return output;
 }
+

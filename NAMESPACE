@@ -1,12 +1,12 @@
 useDynLib(Biostrings)
 
 import(methods)
-import(stats)
 import(utils) ## for the "head" and "tail" generics
+import(IRanges)
 import(Biobase) ## for the "combine" generic
 
 exportClasses(
-    IRanges, UnlockedIRanges, Views, LockedIRanges, NormalIRanges,
+    Views,
     MaskCollection,
     SparseList,
     XRaw, XInteger, XNumeric,
@@ -23,8 +23,6 @@ exportClasses(
 )
 
 export(
-    IRanges,
-    intToRanges, intToAdjacentRanges, whichAsRanges, slice, shift, restrict, narrow, reduce, toNormalIRanges, gaps,
     Mask, read.gapMask, read.agpMask, read.liftMask, read.rmMask, read.trfMask,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
@@ -49,9 +47,6 @@ export(
     extractAllMatches,
     errorSubstitutionMatrices, qualitySubstitutionMatrices,
 
-    ## Aliases
-    desc, "desc<-",
-
     ## Deprecated
     subBString,
     FASTArecordsToBStringViews,
@@ -66,13 +61,11 @@ exportMethods(
     #as.integer, as.numeric,
     initialize, length, names, "[", "[[", rep,
     show, summary, "==", "!=", duplicated,
-    coerce, as.data.frame, as.matrix, as.list,
+    coerce, as.matrix, as.list,
     as.character, toString, as.complex, toComplex,
-    nchar, update,
+    nchar,
 
-    ## IRanges objects
-    start, width, end, isNormal, whichFirstNotNormal, isEmpty, max, min,
-    "start<-", "width<-", "end<-",
+    start, width, "width<-", end, isEmpty, max, min,
 
     ## MaskCollection objects
     nir_list, active, "active<-", maskedwidth, maskedratio, append,
@@ -121,7 +114,6 @@ exportMethods(
     pairwiseAlignment, stringDist, needwunsQS,
 
     ## Deprecated
-    first, last,
     BStringViews
 )
 

@@ -79,7 +79,7 @@
   \link{XString-class},
   \link{MaskCollection-class},
   \link{XStringViews-class},
-  \link{IRanges-utils}
+  \link[IRanges]{IRanges-utils}
 }
 
 \examples{

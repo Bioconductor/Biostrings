@@ -58,14 +58,14 @@
   \item{use.gap.types}{
     Whether or not the gap types provided in the "agp" or "gap" file should
     be used to name the ranges constituing the returned mask.
-    See \code{?`\link{IRanges-class}`} for more information about the
-    names of an \link{IRanges} object.
+    See \code{?`\link[IRanges]{IRanges-class}`} for more information about the
+    names of an \link[IRanges]{IRanges} object.
   }
   \item{use.IDs}{
     Whether or not the repeat IDs provided in the RepeatMasker .out file
     should be used to name the ranges constituing the returned mask.
-    See \code{?`\link{IRanges-class}`} for more information about the
-    names of an \link{IRanges} object.
+    See \code{?`\link[IRanges]{IRanges-class}`} for more information about the
+    names of an \link[IRanges]{IRanges} object.
   }
 }
 
@@ -73,7 +73,7 @@
   \code{\link{maskMotif}},
   \link{MaskCollection-class},
   \link{MaskedXString-class},
-  \link{IRanges-class}
+  \link[IRanges]{IRanges-class}
 }
 
 \examples{

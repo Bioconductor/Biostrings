@@ -79,7 +79,8 @@
   integers that are >= 1 and <= \code{width(x)}.
   When "put on" a sequence, these integers indicate the positions of the
   letters to mask.
-  Internally, each mask is represented by a \link{NormalIRanges} object.
+  Internally, each mask is represented by a \link[IRanges]{NormalIRanges}
+  object.
 }
 
 \section{Basic accesor methods}{
@@ -108,7 +109,7 @@
     \item{}{
       \code{nir_list(x)}:
       A list of the same length as \code{x}, where each element is
-      a \link{NormalIRanges} object representing a mask in \code{x}.
+      a \link[IRanges]{NormalIRanges} object representing a mask in \code{x}.
     }
   }
 }
@@ -121,7 +122,7 @@
       of width \code{mask.width} (a single integer >= 1)
       and masking the ranges of positions specified by \code{start},
       \code{end} and \code{width}.
-      See the \code{\link{IRanges}} constructor (\code{?\link{IRanges}})
+      See the \code{\link[IRanges]{IRanges}} constructor (\code{?\link[IRanges]{IRanges}})
       for how \code{start}, \code{end} and \code{width} can be specified.
       Note that the returned mask is active and unnamed.
     }
@@ -176,7 +177,7 @@
     }
     \item{}{
       \code{x[[i]]}:
-      Extract the i-th mask as a \link{NormalIRanges} object.
+      Extract the i-th mask as a \link[IRanges]{NormalIRanges} object.
     }
   }
 }
@@ -209,7 +210,7 @@
   \code{\link{alphabetFrequency}},
   \code{\link{reverse}},
   \code{\link{matchPattern}},
-  \link{NormalIRanges-class}
+  \link[IRanges]{NormalIRanges-class}
 }
 
 \examples{

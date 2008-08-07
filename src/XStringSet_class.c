@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -30,7 +31,7 @@ const char *_get_XStringSet_baseClass(SEXP x)
 int _get_XStringSet_length(SEXP x)
 {
 	// Because an XStringSet object IS an IRanges object
-	return _get_IRanges_length(x);
+	return get_IRanges_length(x);
 }
 
 CachedXStringSet _new_CachedXStringSet(SEXP x)
@@ -39,8 +40,8 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	SEXP super, tag;
 	int offset;
 
-	cached_x.start = INTEGER(_get_IRanges_start(x));
-	cached_x.width = INTEGER(_get_IRanges_width(x));
+	cached_x.start = INTEGER(get_IRanges_start(x));
+	cached_x.width = INTEGER(get_IRanges_width(x));
 
 	super = get_XStringSet_super(x);
 	tag = _get_XRaw_tag(_get_XString_xdata(super));
@@ -85,7 +86,7 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
 	snprintf(classbuf, sizeof(classbuf), "%sSet", _get_class(super));
 	class_def = MAKE_CLASS(classbuf);
 	PROTECT(ans = NEW_OBJECT(class_def));
-	_copy_IRanges_slots(ans, ranges);
+	copy_IRanges_slots(ans, ranges);
 	SET_SLOT(ans, mkChar("super"), super);
 	UNPROTECT(1);
 	return ans;
@@ -103,7 +104,7 @@ SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
 		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): BEGIN\n");
 	}
 #endif
-	PROTECT(ranges = _new_IRanges_from_RoSeqs("LockedIRanges", seqs));
+	PROTECT(ranges = new_IRanges_from_RoSeqs("LockedIRanges", seqs));
 	PROTECT(super = _new_XString_from_RoSeqs(baseClass, seqs));
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(ranges, super));
 #ifdef DEBUG_BIOSTRINGS
@@ -120,7 +121,7 @@ SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
  */
 void _set_XStringSet_names(SEXP x, SEXP names)
 {
-	_set_IRanges_names(x, names);
+	set_IRanges_names(x, names);
 	return;
 }
 
@@ -146,7 +147,7 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 			baseClass, length, super_length);
 	}
 #endif
-	PROTECT(ranges = _alloc_IRanges("LockedIRanges", length));
+	PROTECT(ranges = alloc_IRanges("LockedIRanges", length));
 	PROTECT(super = _alloc_XString(baseClass, super_length));
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(ranges, super));
 #ifdef DEBUG_BIOSTRINGS
