@@ -65,18 +65,18 @@ void function2(struct AlignBuffer *);
 static double pairwiseAlignment(
 		struct AlignInfo *align1InfoPtr,
 		struct AlignInfo *align2InfoPtr,
-		int localAlignment,
-		int scoreOnly,
-		float gapOpening,
-		float gapExtension,
-		int useQuality,
+		const int localAlignment,
+		const int scoreOnly,
+		const float gapOpening,
+		const float gapExtension,
+		const int useQuality,
 		const int *qualityLookupTable,
-		int qualityLookupTableLength,
+		const int qualityLookupTableLength,
 		const double *qualityMatchMatrix,
 		const double *qualityMismatchMatrix,
 		const int *qualityMatrixDim,
 		const int *constantLookupTable,
-		int constantLookupTableLength,
+		const int constantLookupTableLength,
 		const double *constantMatrix,
 		const int *constantMatrixDim,
 		struct AlignBuffer *alignBufferPtr)
@@ -84,7 +84,7 @@ static double pairwiseAlignment(
 	int i, j, iMinus1, jMinus1;
 
 	/* Step 0:  Make sure smaller strings are second for memory efficiencies */
-	int swappedOrder = align1InfoPtr->string.nelt < align2InfoPtr->string.nelt;
+	const int swappedOrder = align1InfoPtr->string.nelt < align2InfoPtr->string.nelt;
 	if (swappedOrder) {
 		struct AlignInfo *tempInfoPtr = align1InfoPtr;
 		align1InfoPtr = align2InfoPtr;
@@ -92,11 +92,11 @@ static double pairwiseAlignment(
 	}
 
 	/* Step 1:  Get information on input XString objects */
-	int nCharString1 = align1InfoPtr->string.nelt;
-	int nCharString2 = align2InfoPtr->string.nelt;
-	int nCharString2Plus1 = nCharString2 + 1;
-	int nCharString1Minus1 = nCharString1 - 1;
-	int nCharString2Minus1 = nCharString2 - 1;
+	const int nCharString1 = align1InfoPtr->string.nelt;
+	const int nCharString2 = align2InfoPtr->string.nelt;
+	const int nCharString2Plus1 = nCharString2 + 1;
+	const int nCharString1Minus1 = nCharString1 - 1;
+	const int nCharString2Minus1 = nCharString2 - 1;
 
 	if (nCharString1 < 1 || nCharString2 < 1) {
 		int zeroCharScore;
@@ -167,11 +167,11 @@ static double pairwiseAlignment(
 		matrixDim = constantMatrixDim;
 	}
 	int lookupValue = 0, elements[2], iElt, jElt;
-	int notSwappedOrder = 1 - swappedOrder;
-	int noEndGap1 = !align1InfoPtr->endGap;
-	int noEndGap2 = !align2InfoPtr->endGap;
-	float gapOpeningPlusExtension = gapOpening + gapExtension;
-	float endGapAddend = (align1InfoPtr->endGap ? gapExtension : 0.0);
+	const int notSwappedOrder = 1 - swappedOrder;
+	const int noEndGap1 = !align1InfoPtr->endGap;
+	const int noEndGap2 = !align2InfoPtr->endGap;
+	const float gapOpeningPlusExtension = gapOpening + gapExtension;
+	const float endGapAddend = (align1InfoPtr->endGap ? gapExtension : 0.0);
 	float *tempMatrix, substitutionValue;
 	double maxScore = NEGATIVE_INFINITY;
 	if (scoreOnly) {
@@ -316,7 +316,7 @@ static double pairwiseAlignment(
 		char *dTraceMatrix = alignBufferPtr->dTraceMatrix;
 
 		/* Step 3b:  Prepare the alignment info object for alignment */
-		int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
+		const int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
 
 		align1InfoPtr->lengthMismatch = 0;
 		align2InfoPtr->lengthMismatch = 0;
@@ -562,12 +562,12 @@ static double pairwiseAlignment(
 			}
 		}
 
-		int offset1 = align1InfoPtr->startRange - 1;
+		const int offset1 = align1InfoPtr->startRange - 1;
 		if (offset1 > 0 && align1InfoPtr->lengthIndel > 0) {
 			for (i = 0; i < align1InfoPtr->lengthIndel; i++)
 				align1InfoPtr->startIndel[i] -= offset1;
 		}
-		int offset2 = align2InfoPtr->startRange - 1;
+		const int offset2 = align2InfoPtr->startRange - 1;
 		if (offset2 > 0 && align2InfoPtr->lengthIndel > 0) {
 			for (j = 0; j < align2InfoPtr->lengthIndel; j++)
 				align2InfoPtr->startIndel[j] -= offset2;
@@ -644,15 +644,15 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP constantMatrix,
 		SEXP constantMatrixDim)
 {
-	int scoreOnlyValue = LOGICAL(scoreOnly)[0];
-	int useQualityValue = LOGICAL(useQuality)[0];
+	const int scoreOnlyValue = LOGICAL(scoreOnly)[0];
+	const int useQualityValue = LOGICAL(useQuality)[0];
+	const int localAlignment = (INTEGER(typeCode)[0] == LOCAL_ALIGNMENT);
 	float gapOpeningValue = REAL(gapOpening)[0];
 	float gapExtensionValue = REAL(gapExtension)[0];
 	if (gapOpeningValue == NEGATIVE_INFINITY || gapExtensionValue == NEGATIVE_INFINITY) {
 		gapOpeningValue = 0.0;
 		gapExtensionValue = NEGATIVE_INFINITY;
 	}
-	int localAlignment = (INTEGER(typeCode)[0] == LOCAL_ALIGNMENT);
 
 	/* Create the alignment info objects */
 	struct AlignInfo align1Info, align2Info;
@@ -663,14 +663,14 @@ SEXP XStringSet_align_pairwiseAlignment(
 	align2Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
 
-	int numberOfStrings = _get_XStringSet_length(pattern);
+	const int numberOfStrings = _get_XStringSet_length(pattern);
 	CachedXStringSet cachedPattern = _new_CachedXStringSet(pattern);
 	CachedXStringSet cachedPatternQuality = _new_CachedXStringSet(patternQuality);
 
 	SEXP output;
 
 	int i, qualityElement = 0;
-	int qualityIncrement = ((_get_XStringSet_length(patternQuality) < numberOfStrings) ? 0 : 1);
+	const int qualityIncrement = ((_get_XStringSet_length(patternQuality) < numberOfStrings) ? 0 : 1);
 
 	/* Create the alignment buffer object */
 	struct AlignBuffer alignBuffer;
@@ -679,7 +679,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	for (i = 0; i < numberOfStrings; i++) {
 		nCharString1 = MAX(nCharString1, _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i).nelt);
 	}
-	int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
+	const int alignmentBufferSize = MIN(nCharString1, nCharString2) + 1;
 	if (scoreOnlyValue && gapOpeningValue == 0.0) {
 		alignBuffer.currMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
 		alignBuffer.prevMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
