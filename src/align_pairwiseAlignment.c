@@ -99,13 +99,13 @@ static double pairwiseAlignment(
 	const int nCharString2Minus1 = nCharString2 - 1;
 
 	if (nCharString1 < 1 || nCharString2 < 1) {
-		int zeroCharScore;
+		double zeroCharScore;
 		if (nCharString2 >= 1 && align2InfoPtr->endGap)
 			zeroCharScore = gapOpening + nCharString2 * gapExtension;
 		else if (nCharString1 >= 1 && align1InfoPtr->endGap)
 			zeroCharScore = gapOpening + nCharString1 * gapExtension;
 		else
-			zeroCharScore = 0;
+			zeroCharScore = 0.0;
 		return zeroCharScore;
 	}
 
@@ -261,7 +261,8 @@ static double pairwiseAlignment(
 
 						CURR_MATRIX(0, j) =
 							MAX(0.0,
-								MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue);
+								MAX(PREV_MATRIX(0, jMinus1),
+								MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue);
 						CURR_MATRIX(1, j) =
 							MAX(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpeningPlusExtension,
 							    PREV_MATRIX(1, j) + gapExtension);
@@ -281,7 +282,8 @@ static double pairwiseAlignment(
 							substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
 						CURR_MATRIX(0, j) =
-							MAX(PREV_MATRIX(0, jMinus1), MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue;
+							MAX(PREV_MATRIX(0, jMinus1),
+							MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) + substitutionValue;
 						CURR_MATRIX(1, j) =
 							MAX(MAX(PREV_MATRIX(0, j), PREV_MATRIX(2, j)) + gapOpeningPlusExtension,
 							    PREV_MATRIX(1, j) + gapExtension);
