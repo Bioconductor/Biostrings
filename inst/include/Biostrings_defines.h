@@ -22,10 +22,28 @@
 
 
 /*
+ * Two structures for holding pointers to read-only non null-terminated
+ * sequences of chars:
+ *
+ *   o RoSeq:  array of const chars (think of this as a pointer to a non
+ *             null-terminated sequence of chars);
+ *   o RoSeqs: array of arrays of const chars;
+ */
+typedef struct roseq {
+	const char *elts;
+	int nelt;
+} RoSeq;
+
+typedef struct roseqs {
+	RoSeq *elts;
+	int nelt;
+} RoSeqs;
+
+
+/*
  * Use the CachedXStringSet struct for fast extraction of the elements of
  * an XStringSet object in a loop.
  */
-
 typedef struct cachedxstringset {
 	int *start;
 	int *width;

@@ -9,6 +9,9 @@ debug_utils <- function()
 debug_bufutils <- function()
     invisible(.Call("debug_bufutils", PACKAGE="Biostrings"))
 
+debug_RoSeq_utils <- function()
+    invisible(.Call("debug_RoSeq_utils", PACKAGE="Biostrings"))
+
 debug_SparseList_utils <- function()
     invisible(.Call("debug_SparseList_utils", PACKAGE="Biostrings"))
 

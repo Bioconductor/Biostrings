@@ -116,6 +116,13 @@ void append_string_to_CharBBuf(
 
 
 /*
+ * Creates an IRanges object from a set of sequences (only the lengths of the
+ * sequences are used).
+ */
+SEXP new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs);
+
+
+/*
  * Low-level manipulation of XString and XStringSet objects.
  */
 char DNAencode(char c);

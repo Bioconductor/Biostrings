@@ -33,6 +33,17 @@ void append_string_to_CharBBuf(CharBBuf *cbbuf, const char *string)
 	return fun(cbbuf, string);
 }
 
+typedef SEXP (*new_IRanges_from_RoSeqs_FUNTYPE)(const char *class, RoSeqs seqs);
+SEXP new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs)
+{
+	static new_IRanges_from_RoSeqs_FUNTYPE fun = NULL;
+
+	if (fun == NULL)
+		fun = (new_IRanges_from_RoSeqs_FUNTYPE)
+			R_GetCCallable("Biostrings", "_new_IRanges_from_RoSeqs");
+	return fun(class, seqs);
+}
+
 char DNAencode(char c)
 {
 	static char (*fun)(char) = NULL;

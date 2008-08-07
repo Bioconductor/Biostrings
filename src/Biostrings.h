@@ -352,6 +352,14 @@ void _append_string_to_CharBBuf(
 	const char *string
 );
 
+/* RoSeq_utils.c */
+
+SEXP debug_RoSeq_utils();
+
+SEXP _new_IRanges_from_RoSeqs(
+	const char *class,
+	RoSeqs seqs
+);
 
 /* SparseList_utils.c */
 

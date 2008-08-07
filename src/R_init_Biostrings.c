@@ -12,6 +12,9 @@ static const R_CallMethodDef callMethods[] = {
 /* bufutils.c */
 	{"debug_bufutils", (DL_FUNC) &debug_bufutils, 0},
 
+/* RoSeq_utils.c */
+	{"debug_RoSeq_utils", (DL_FUNC) &debug_RoSeq_utils, 0},
+
 /* SparseList_utils.c */
 	{"debug_SparseList_utils", (DL_FUNC) &debug_SparseList_utils, 0},
 
@@ -212,6 +215,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_new_CharBuf_from_string", (DL_FUNC) &_new_CharBuf_from_string);
 	R_RegisterCCallable("Biostrings", "_new_CharBBuf", (DL_FUNC) &_new_CharBBuf);
 	R_RegisterCCallable("Biostrings", "_append_string_to_CharBBuf", (DL_FUNC) &_append_string_to_CharBBuf);
+	R_RegisterCCallable("Biostrings", "_new_IRanges_from_RoSeqs", (DL_FUNC) &_new_IRanges_from_RoSeqs);
 	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
 	R_RegisterCCallable("Biostrings", "_RNAencode", (DL_FUNC) &_RNAencode);

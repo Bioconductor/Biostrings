@@ -104,7 +104,7 @@ SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
 		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): BEGIN\n");
 	}
 #endif
-	PROTECT(ranges = new_IRanges_from_RoSeqs("LockedIRanges", seqs));
+	PROTECT(ranges = _new_IRanges_from_RoSeqs("LockedIRanges", seqs));
 	PROTECT(super = _new_XString_from_RoSeqs(baseClass, seqs));
 	PROTECT(ans = new_XStringSet_from_IRanges_and_super(ranges, super));
 #ifdef DEBUG_BIOSTRINGS
