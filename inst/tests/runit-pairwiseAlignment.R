@@ -4,8 +4,8 @@ test_pairwiseAlignment_emptyString <- function()
     string2 <- DNAString("ACGT")
     alignment <- pairwiseAlignment(string1, string2)
     checkEquals(as.character(aligned(pattern(alignment))), "")
-    checkEquals(score(alignment), as.numeric(NA))
-    checkEquals(pairwiseAlignment(string1, string2, scoreOnly = TRUE), as.numeric(NA))
+    checkEquals(score(alignment), -26)
+    checkEquals(pairwiseAlignment(string1, string2, scoreOnly = TRUE), -26)
 }
 
 
