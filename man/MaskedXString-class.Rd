@@ -26,6 +26,10 @@
 \alias{masks,MaskedXString-method}
 \alias{alphabet,MaskedXString-method}
 \alias{length,MaskedXString-method}
+
+% "maskedwidth" and related methods:
+\alias{maskedwidth,MaskedXString-method}
+\alias{maskedratio,MaskedXString-method}
 \alias{nchar,MaskedXString-method}
 
 % Coercion:
@@ -68,6 +72,59 @@
 
 \details{
   [TODO]
+}
+
+\section{Accesor methods}{
+  In the code snippets below, \code{x} is a MaskedXString object.
+
+  \describe{
+    \item{}{
+      \code{unmasked(x)}:
+      Turns \code{x} into an \link{XString} object by dropping the masks.
+    }
+    \item{}{
+      \code{masks(x)}:
+      Turns \code{x} into a \link{MaskCollection} object by dropping the sequence.
+    }
+    \item{}{
+      \code{alphabet(x)}:
+      Equivalent to \code{alphabet(unmasked(x))}.
+      See \code{?\link{alphabet}} for more information.
+    }
+    \item{}{
+      \code{length(x)}:
+      Equivalent to \code{length(unmasked(x))}.
+      See \code{?`\link[Biostrings]{length},XString-method`} for more information.
+    }
+  }
+}
+
+\section{"maskedwidth" and related methods}{
+  In the code snippets below, \code{x} is a MaskedXString object.
+
+  \describe{
+    \item{}{
+      \code{maskedwidth(x)}:
+      Get the number of masked letters in \code{x}. A letter is considered
+      masked iff it's masked by at least one active mask.
+    }
+    \item{}{
+      \code{maskedratio(x)}:
+      Equivalent to \code{maskedwidth(x) / length(x)}.
+    }
+    \item{}{
+      \code{nchar(x)}:
+      Equivalent to \code{length(x) - maskedwidth(x)}.
+    }
+  }
+}
+
+\section{Coercion}{
+  TODO
+}
+
+\section{Other methods}{
+  TODO
 }
 
 \author{H. Pages}

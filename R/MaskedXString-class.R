@@ -105,10 +105,19 @@ setMethod("length", "MaskedXString",
     function(x) length(unmasked(x))
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "maskedwidth", "maskedratio" and "nchar" methods.
+###
+
+setMethod("maskedwidth", "MaskedXString", function(x) maskedwidth(reduce(masks(x))))
+
+setMethod("maskedratio", "MaskedXString", function(x) maskedratio(reduce(masks(x))))
+
 setMethod("nchar", "MaskedXString",
     function(x, type="chars", allowNA=FALSE)
     {
-        length(x) - maskedwidth(reduce(masks(x)))
+        length(x) - maskedwidth(x)
     }
 )
 
