@@ -65,9 +65,11 @@ exportMethods(
     as.character, toString, as.complex, toComplex,
     nchar,
 
+    ## Methods for objects implementing an IRanges-like interface
     start, width, "width<-", end, isEmpty, max, min,
+    narrow, reduce, gaps,
 
-    ## MaskCollection objects
+    ## MaskCollection specific methods
     nir_list, active, "active<-", maskedwidth, maskedratio, append,
 
     ## SparseList objects
