@@ -58,9 +58,6 @@ CONTAINERS
 
 C-LEVEL FACILITIES
 
-- Remove local bufutils.c and use the bufutils stuff from the IRanges pkg
-  instead.
-
 - match_reporting.c: use the *_MRMODE codes defined in Biostrings_define.h
   instead of the current magic values used all over the place.
 

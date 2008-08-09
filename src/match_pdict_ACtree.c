@@ -8,6 +8,7 @@
  * words of the same length.                                                *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -542,13 +543,13 @@ static int walk_subject(ACNode *node0, const int *base_codes,
 static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 		const RoSeq *S)
 {
-	IntBuf cnode_ids; // buffer of current node ids
+	IntAE cnode_ids; // buffer of current node ids
 	int n, npointers, i, node_id, next_node_id, is_first, j, base, P_id;
 	const char *S_tail;
 	char c;
 
-	cnode_ids = _new_IntBuf(256, 0, 0);
-	_IntBuf_insert_at(&cnode_ids, 0, 0);
+	cnode_ids = new_IntAE(256, 0, 0);
+	IntAE_insert_at(&cnode_ids, 0, 0);
 	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
 		c = *S_tail;
 		npointers = cnode_ids.nelt;
@@ -565,7 +566,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 						cnode_ids.elts[i] = next_node_id;
 						is_first = 0;
 					} else {
-						_IntBuf_insert_at(&cnode_ids,
+						IntAE_insert_at(&cnode_ids,
 							cnode_ids.nelt, next_node_id);
 					}
 				}
@@ -578,7 +579,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 			// There must be a way to do something better.
 			for (j = i + 1; j < cnode_ids.nelt; j++) {
 				if (cnode_ids.elts[j] == node_id)
-					_IntBuf_delete_at(&cnode_ids, j--);
+					IntAE_delete_at(&cnode_ids, j--);
 			}
 			P_id = node0[node_id].P_id;
 			if (P_id != -1)

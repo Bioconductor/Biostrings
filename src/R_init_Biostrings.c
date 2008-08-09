@@ -9,9 +9,6 @@ static const R_CallMethodDef callMethods[] = {
 	{"debug_utils", (DL_FUNC) &debug_utils, 0},
 	{"Biostrings_length_vectors_in_list", (DL_FUNC) &Biostrings_length_vectors_in_list, 1},
 
-/* bufutils.c */
-	{"debug_bufutils", (DL_FUNC) &debug_bufutils, 0},
-
 /* RoSeq_utils.c */
 	{"debug_RoSeq_utils", (DL_FUNC) &debug_RoSeq_utils, 0},
 
@@ -212,9 +209,6 @@ void R_init_Biostrings(DllInfo *info)
 	if (sizeof(Rbyte) != sizeof(char))
 		error("sizeof(Rbyte) != sizeof(char)");
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
-	R_RegisterCCallable("Biostrings", "_new_CharBuf_from_string", (DL_FUNC) &_new_CharBuf_from_string);
-	R_RegisterCCallable("Biostrings", "_new_CharBBuf", (DL_FUNC) &_new_CharBBuf);
-	R_RegisterCCallable("Biostrings", "_append_string_to_CharBBuf", (DL_FUNC) &_append_string_to_CharBBuf);
 	R_RegisterCCallable("Biostrings", "_new_IRanges_from_RoSeqs", (DL_FUNC) &_new_IRanges_from_RoSeqs);
 	R_RegisterCCallable("Biostrings", "_DNAencode", (DL_FUNC) &_DNAencode);
 	R_RegisterCCallable("Biostrings", "_DNAdecode", (DL_FUNC) &_DNAdecode);
@@ -231,7 +225,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_RegisterCCallable("Biostrings", "_alloc_XStringSet", (DL_FUNC) &_alloc_XStringSet);
 	R_RegisterCCallable("Biostrings", "_write_RoSeq_to_CachedXStringSet_elt", (DL_FUNC) &_write_RoSeq_to_CachedXStringSet_elt);
 	R_RegisterCCallable("Biostrings", "_write_RoSeq_to_XStringSet_elt", (DL_FUNC) &_write_RoSeq_to_XStringSet_elt);
-	R_RegisterCCallable("Biostrings", "_new_RoSeqs_from_BBuf", (DL_FUNC) &_new_RoSeqs_from_BBuf);
+	R_RegisterCCallable("Biostrings", "_new_RoSeqs_from_CharAEAE", (DL_FUNC) &_new_RoSeqs_from_CharAEAE);
 	R_RegisterCCallable("Biostrings", "_new_STRSXP_from_RoSeqs", (DL_FUNC) &_new_STRSXP_from_RoSeqs);
 	R_RegisterCCallable("Biostrings", "_init_match_reporting", (DL_FUNC) &_init_match_reporting);
 	R_RegisterCCallable("Biostrings", "_report_match", (DL_FUNC) &_report_match);

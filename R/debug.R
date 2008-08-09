@@ -6,9 +6,6 @@ debug_copy_seq <- function()
 debug_utils <- function()
     invisible(.Call("debug_utils", PACKAGE="Biostrings"))
 
-debug_bufutils <- function()
-    invisible(.Call("debug_bufutils", PACKAGE="Biostrings"))
-
 debug_RoSeq_utils <- function()
     invisible(.Call("debug_RoSeq_utils", PACKAGE="Biostrings"))
 

@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -27,9 +28,9 @@ SEXP debug_MIndex_utils()
 
 static int match_reporting_mode; // 0, 1 or 2
 static int what_to_return; // 0: all matches; 1: match count; 2: matching elts
-static IntBuf match_count; // used when mode == 0 and initialized when mode == 2
-static IntBBuf match_ends;  // used when mode >= 1
-static IntBuf matching_keys;
+static IntAE match_count; // used when mode == 0 and initialized when mode == 2
+static IntAEAE match_ends;  // used when mode >= 1
+static IntAE matching_keys;
 
 void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
 		int pdict_L)
@@ -44,10 +45,10 @@ void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
 	}
 	match_reporting_mode = is_count_only ? (with_headtail ? 2 : 0) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
-		match_count = _new_IntBuf(pdict_L, pdict_L, 0);
+		match_count = new_IntAE(pdict_L, pdict_L, 0);
 	if (match_reporting_mode >= 1)
-		match_ends = _new_IntBBuf(pdict_L, pdict_L);
-	matching_keys = _new_IntBuf(0, 0, 0);
+		match_ends = new_IntAEAE(pdict_L, pdict_L);
+	matching_keys = new_IntAE(0, 0, 0);
 	return;
 }
 
@@ -56,17 +57,17 @@ int _MIndex_get_match_reporting_mode()
 	return match_reporting_mode;
 }
 
-IntBuf *_MIndex_get_match_count()
+IntAE *_MIndex_get_match_count()
 {
 	return &match_count;
 }
 
-IntBuf *_MIndex_get_match_ends(int key)
+IntAE *_MIndex_get_match_ends(int key)
 {
 	return match_ends.elts + key;
 }
 
-IntBuf *_MIndex_get_matching_keys()
+IntAE *_MIndex_get_matching_keys()
 {
 	return &matching_keys;
 }
@@ -74,18 +75,18 @@ IntBuf *_MIndex_get_matching_keys()
 void _MIndex_report_match(int key, int end)
 {
 	int is_new_matching_key;
-	IntBuf *ends_buf;
+	IntAE *ends_buf;
 
 	if (match_reporting_mode == 0) {
 		is_new_matching_key = match_count.elts[key]++ == 0;
 	} else {
 		ends_buf = match_ends.elts + key;
 		is_new_matching_key = ends_buf->nelt == 0;
-		_IntBuf_insert_at(ends_buf, ends_buf->nelt, end);
+		IntAE_insert_at(ends_buf, ends_buf->nelt, end);
 	}
 	if (is_new_matching_key)
-		_IntBuf_insert_at(&matching_keys,
-				  matching_keys.nelt, key);
+		IntAE_insert_at(&matching_keys,
+				matching_keys.nelt, key);
 	return;
 }
 
@@ -113,8 +114,8 @@ void _MIndex_report_matches_for_dups(SEXP unq2dup)
 				match_count.elts[k2] = match_count.elts[k1];
 			else
 				match_ends.elts[k2] = match_ends.elts[k1];
-			_IntBuf_insert_at(&matching_keys,
-					  matching_keys.nelt, k2);
+			IntAE_insert_at(&matching_keys,
+					matching_keys.nelt, k2);
 		}
 	}
 #ifdef DEBUG_BIOSTRINGS
@@ -124,12 +125,12 @@ void _MIndex_report_matches_for_dups(SEXP unq2dup)
 	return;
 }
 
-void _MIndex_merge_matches(IntBuf *global_match_count,
-		IntBBuf *global_match_ends, int view_offset)
+void _MIndex_merge_matches(IntAE *global_match_count,
+		IntAEAE *global_match_ends, int view_offset)
 {
 	int i;
 	const int *key;
-	IntBuf *ends_buf, *global_ends_buf;
+	IntAE *ends_buf, *global_ends_buf;
 
 	for (i = 0, key = matching_keys.elts;
 	     i < matching_keys.nelt;
@@ -141,7 +142,7 @@ void _MIndex_merge_matches(IntBuf *global_match_count,
 		} else {
 			ends_buf = match_ends.elts + *key;
 			global_ends_buf = global_match_ends->elts + *key;
-			_IntBuf_append_shifted_vals(global_ends_buf,
+			IntAE_append_shifted_vals(global_ends_buf,
 				ends_buf->elts, ends_buf->nelt, view_offset);
 		}
 		if (match_reporting_mode >= 1)
@@ -154,14 +155,14 @@ void _MIndex_merge_matches(IntBuf *global_match_count,
 SEXP _MIndex_reported_matches_asSEXP(SEXP env)
 {
 	if (what_to_return == 2) {
-		_IntBuf_sum_val(&matching_keys, 1);
-		return _IntBuf_asINTEGER(&matching_keys);
+		IntAE_sum_val(&matching_keys, 1);
+		return IntAE_asINTEGER(&matching_keys);
 	}
 	if (what_to_return == 1)
-		return _IntBuf_asINTEGER(&match_count);
+		return IntAE_asINTEGER(&match_count);
 	if (env == R_NilValue)
-		return _IntBBuf_asLIST(&match_ends, 1);
-	return _IntBBuf_toEnvir(&match_ends, env, 1);
+		return IntAEAE_asLIST(&match_ends, 1);
+	return IntAEAE_toEnvir(&match_ends, env, 1);
 }
 
 
@@ -226,10 +227,10 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;
-	IntBuf poffsets, poffsets_order;
+	IntAE poffsets, poffsets_order;
 
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
-	poffsets = _CHARACTER_asIntBuf(symbols, -1);
+	poffsets = CHARACTER_asIntAE(symbols, -1);
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(names)));
 		for (i = 0; i < poffsets.nelt; i++) {
@@ -241,7 +242,7 @@ SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 		SET_NAMES(ans, duplicate(names));
 		UNPROTECT(1);
 	} else {
-		//poffsets_order = _new_IntBuf(poffsets.nelt, 0, 0);
+		//poffsets_order = new_IntAE(poffsets.nelt, 0, 0);
 		//get_intorder(poffsets.nelt, poffsets.elts, poffsets_order.elts);
 		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
 		PROTECT(ans = NEW_LIST(poffsets.nelt));
@@ -339,7 +340,7 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 {
 	int NTB, ans_length, i, j;
 	SEXP ans, ans_elt, ends;
-	IntBuf ends_buf;
+	IntAE ends_buf;
 
 	NTB = LENGTH(ends_listlist);
 	if (NTB == 0)
@@ -348,7 +349,7 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 	for (j = 1; j < NTB; j++)
 		if (LENGTH(VECTOR_ELT(ends_listlist, j)) != ans_length)
 			error("cannot combine MIndex objects of different lengths");
-	ends_buf = _new_IntBuf(0, 0, 0);
+	ends_buf = new_IntAE(0, 0, 0);
 	PROTECT(ans = NEW_LIST(ans_length));
 	for (i = 0; i < ans_length; i++) {
 		ends_buf.nelt = 0;
@@ -356,13 +357,13 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 			ends = VECTOR_ELT(VECTOR_ELT(ends_listlist, j), i);
 			if (ends == R_NilValue)
 				continue;
-			_IntBuf_append(&ends_buf, INTEGER(ends), LENGTH(ends));
+			IntAE_append(&ends_buf, INTEGER(ends), LENGTH(ends));
 		}
 		if (ends_buf.nelt == 0)
 			continue;
-		_IntBuf_qsort(&ends_buf);
-		_IntBuf_delete_consecutiverepeats(&ends_buf);
-		PROTECT(ans_elt = _IntBuf_asINTEGER(&ends_buf));
+		IntAE_qsort(&ends_buf);
+		IntAE_delete_adjdups(&ends_buf);
+		PROTECT(ans_elt = IntAE_asINTEGER(&ends_buf));
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}

@@ -97,25 +97,6 @@
 
 
 /*
- * Low-level manipulation of the extendable buffers.
- */
-
-CharBuf new_CharBuf_from_string(
-	const char *string
-);
-
-CharBBuf new_CharBBuf(
-	int buflength,
-	int nelt
-);
-
-void append_string_to_CharBBuf(
-	CharBBuf *cbbuf,
-	const char *string
-);
-
-
-/*
  * Creates an IRanges object from a set of sequences (only the lengths of the
  * sequences are used).
  */
@@ -186,7 +167,7 @@ void write_RoSeq_to_XStringSet_elt(
  * Converting a set of sequences from one internal representation into another.
  */
 
-RoSeqs new_RoSeqs_from_BBuf(CharBBuf cbbuf);
+RoSeqs new_RoSeqs_from_CharAEAE(CharAEAE char_aeae);
 
 SEXP new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup);
 

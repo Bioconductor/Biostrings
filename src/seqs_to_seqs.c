@@ -81,25 +81,25 @@ void narrow_RoSeqs(RoSeqs *seqs,
  * 'nelt' elements. Same for 'safe_widths'.
  */
 
-RoSeqs _new_RoSeqs_from_BBuf(CharBBuf cbbuf)
+RoSeqs _new_RoSeqs_from_CharAEAE(CharAEAE char_aeae)
 {
 	RoSeqs seqs;
 	RoSeq *elt1;
-	CharBuf *elt2;
+	CharAE *elt2;
 	int i;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _new_RoSeqs_from_BBuf(): BEGIN\n");
+		Rprintf("[DEBUG] _new_RoSeqs_from_CharAEAE(): BEGIN\n");
 	}
 #endif
-	seqs = new_RoSeqs(cbbuf.nelt);
-	for (i = 0, elt1 = seqs.elts, elt2 = cbbuf.elts;
-	     i < cbbuf.nelt;
+	seqs = new_RoSeqs(char_aeae.nelt);
+	for (i = 0, elt1 = seqs.elts, elt2 = char_aeae.elts;
+	     i < char_aeae.nelt;
 	     i++, elt1++, elt2++) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
-			Rprintf("[DEBUG] _new_RoSeqs_from_BBuf(): i=%d\n", i);
+			Rprintf("[DEBUG] _new_RoSeqs_from_CharAEAE(): i=%d\n", i);
 		}
 #endif
 		elt1->elts = elt2->elts;
@@ -107,7 +107,7 @@ RoSeqs _new_RoSeqs_from_BBuf(CharBBuf cbbuf)
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _new_RoSeqs_from_BBuf(): END\n");
+		Rprintf("[DEBUG] _new_RoSeqs_from_CharAEAE(): END\n");
 	}
 #endif
 	return seqs;

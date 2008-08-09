@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -84,13 +85,13 @@ int _get_int_from_SparseList(int symb_as_int, SEXP env)
 	return val;
 }
 
-void _set_env_from_IntBuf(SEXP env, IntBuf *ibuf)
+void _set_env_from_IntAE(SEXP env, IntAE *int_ae)
 {
 	int symb_as_int, *elt;
 	SEXP symbol, value;
 
-	for (symb_as_int = 1, elt = ibuf->elts;
-	     symb_as_int <= ibuf->nelt;
+	for (symb_as_int = 1, elt = int_ae->elts;
+	     symb_as_int <= int_ae->nelt;
 	     symb_as_int++, elt++)
 	{
 		if (*elt == NA_INTEGER)
@@ -103,20 +104,20 @@ void _set_env_from_IntBuf(SEXP env, IntBuf *ibuf)
 	return;
 }
 
-void _set_env_from_IntBBuf(SEXP env, IntBBuf *ibbuf)
+void _set_env_from_IntAEAE(SEXP env, IntAEAE *int_aeae)
 {
 	int symb_as_int;
-	IntBuf *elt;
+	IntAE *elt;
 	SEXP symbol, value;
 
-	for (symb_as_int = 1, elt = ibbuf->elts;
-	     symb_as_int <= ibbuf->nelt;
+	for (symb_as_int = 1, elt = int_aeae->elts;
+	     symb_as_int <= int_aeae->nelt;
 	     symb_as_int++, elt++)
 	{
 		if (elt->nelt == 0)
 			continue;
 		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
-		PROTECT(value = _IntBuf_asINTEGER(elt));
+		PROTECT(value = IntAE_asINTEGER(elt));
 		defineVar(install(translateChar(symbol)), value, env);
 		UNPROTECT(2);
 	}

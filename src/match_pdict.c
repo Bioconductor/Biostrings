@@ -5,6 +5,7 @@
  *                                                                          *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -46,7 +47,7 @@ static int match_dup_headtail(int k1, int k2,
 		const RoSeq *S,
 		int max_mm, int is_count_only)
 {
-	IntBuf *match_count, *ends_buf1, *ends_buf2;
+	IntAE *match_count, *ends_buf1, *ends_buf2;
 	int HTdeltashift, i, Tshift, nmismatch, end2;
 
 	match_count = _MIndex_get_match_count();
@@ -69,7 +70,7 @@ static int match_dup_headtail(int k1, int k2,
 		end2 = Tshift;
 		if (dup_tail != NULL)
 			end2 += dup_tail->nelt;
-		_IntBuf_insert_at(ends_buf2, ends_buf2->nelt, end2);
+		IntAE_insert_at(ends_buf2, ends_buf2->nelt, end2);
 	}
 	return is_count_only ? match_count->elts[k2] : ends_buf2->nelt;
 }
@@ -79,7 +80,7 @@ static int match_unq_headtail(int k1, int tb_width,
 		const RoSeq *S,
 		int max_mm, int is_count_only)
 {
-	IntBuf *match_count, *ends_buf1;
+	IntAE *match_count, *ends_buf1;
 	int HTdeltashift, i, Tshift, nmismatch;
 
 	match_count = _MIndex_get_match_count();
@@ -95,9 +96,9 @@ static int match_unq_headtail(int k1, int tb_width,
 			if (_MIndex_get_match_reporting_mode() == 0)
 				continue;
 			// We need to shrink the buffer we are walking on!
-			// This is safe because shrinking an IntBuf object
+			// This is safe because shrinking an IntAE object
 			// should never trigger reallocation.
-			_IntBuf_delete_at(ends_buf1, i--);
+			IntAE_delete_at(ends_buf1, i--);
 			continue;
 		}
 		if (is_count_only) {
@@ -116,7 +117,7 @@ static void match_pdict_headtail(SEXP unq2dup, int tb_width,
 		const RoSeq *S,
 		int max_mm, int is_count_only)
 {
-	IntBuf *matching_keys;
+	IntAE *matching_keys;
 	int n1, i, j, *dup, k1, k2, nmatches;
 	SEXP dups;
 	RoSeq Phead, Ptail;
@@ -154,9 +155,9 @@ static void match_pdict_headtail(SEXP unq2dup, int tb_width,
 						tb_width, H, T,
 						S, max_mm, is_count_only);
 				if (nmatches != 0)
-					_IntBuf_insert_at(matching_keys,
-							  matching_keys->nelt,
-							  k2);
+					IntAE_insert_at(matching_keys,
+							matching_keys->nelt,
+							k2);
 			}
 		}
 		H = T = NULL;
@@ -174,7 +175,7 @@ static void match_pdict_headtail(SEXP unq2dup, int tb_width,
 				tb_width, H, T,
 				S, max_mm, is_count_only);
 		if (nmatches == 0) {
-			_IntBuf_delete_at(matching_keys, i--);
+			IntAE_delete_at(matching_keys, i--);
 			n1--;
 		}
 	}
@@ -305,8 +306,8 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 	RoSeq S, S_view;
 	int pdict_L, tb_width, with_head, with_tail, is_count_only,
 	    nviews, i, *view_start, *view_width, view_offset;
-	IntBuf global_match_count;
-	IntBBuf global_match_ends;
+	IntAE global_match_count;
+	IntAEAE global_match_ends;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -329,9 +330,9 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
-		global_match_count = _new_IntBuf(pdict_L, pdict_L, 0);
+		global_match_count = new_IntAE(pdict_L, pdict_L, 0);
 	else
-		global_match_ends = _new_IntBBuf(pdict_L, pdict_L);
+		global_match_ends = new_IntAEAE(pdict_L, pdict_L);
 	_MIndex_init_match_reporting(is_count_only, with_head || with_tail,
 		pdict_L);
 	if (is_count_only == NA_LOGICAL)
@@ -358,9 +359,9 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 		Rprintf("[DEBUG] LEAVING XStringViews_match_pdict()\n");
 #endif
 	if (is_count_only)
-		return _IntBuf_asINTEGER(&global_match_count);
+		return IntAE_asINTEGER(&global_match_count);
 	if (envir == R_NilValue)
-		return _IntBBuf_asLIST(&global_match_ends, 1);
-	return _IntBBuf_toEnvir(&global_match_ends, envir, 1);
+		return IntAEAE_asLIST(&global_match_ends, 1);
+	return IntAEAE_toEnvir(&global_match_ends, envir, 1);
 }
 

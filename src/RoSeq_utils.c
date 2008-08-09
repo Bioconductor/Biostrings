@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
