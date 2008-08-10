@@ -31,8 +31,9 @@
 ###
 ### Long story short: THE "HAS A" APPROACH IS MUCH SAFER. Nothing works
 ### out-of-the-box (which is in fact a good thing), and new methods are added
-### when the need raises. This way we have full control on the entire
-### XStringList API (which should stay reasonably small), I we can make it safe.
+### when the need arises. This way we have full control on the entire
+### XStringList API (which should stay reasonably small), and we can make it
+### safe.
 ###
 
 setClass("XStringList",

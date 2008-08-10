@@ -19,32 +19,9 @@
 \alias{AAStringSet-class}
 \alias{AAStringSet}
 
-\alias{class:XStringList}
-\alias{XStringList-class}
-\alias{XStringList}
-
-\alias{class:BStringList}
-\alias{BStringList-class}
-\alias{BStringList}
-\alias{class:DNAStringList}
-\alias{DNAStringList-class}
-\alias{DNAStringList}
-\alias{class:RNAStringList}
-\alias{RNAStringList-class}
-\alias{RNAStringList}
-\alias{class:AAStringList}
-\alias{AAStringList-class}
-\alias{AAStringList}
-
 % Accesor methods:
 \alias{nchar,XStringSet-method}
 \alias{alphabet,XStringSet-method}
-
-\alias{length,XStringList-method}
-\alias{nchar,XStringList-method}
-\alias{width,XStringList-method}
-\alias{names,XStringList-method}
-\alias{names<-,XStringList-method}
 
 % Constructor-like functions and generics:
 \alias{initialize,XStringSet-method}
@@ -59,40 +36,12 @@
 \alias{RNAStringSet}
 \alias{AAStringSet}
 
-\alias{initialize,BStringList-method}
-\alias{initialize,DNAStringList-method}
-\alias{initialize,RNAStringList-method}
-\alias{initialize,AAStringList-method}
-\alias{BStringList,character-method}
-\alias{DNAStringList,character-method}
-\alias{RNAStringList,character-method}
-\alias{AAStringList,character-method}
-\alias{BStringList,XStringList-method}
-\alias{DNAStringList,XStringList-method}
-\alias{RNAStringList,XStringList-method}
-\alias{AAStringList,XStringList-method}
-\alias{BStringList,vector-method}
-\alias{DNAStringList,vector-method}
-\alias{RNAStringList,vector-method}
-\alias{AAStringList,vector-method}
-\alias{BStringList,ANY-method}
-\alias{DNAStringList,ANY-method}
-\alias{RNAStringList,ANY-method}
-\alias{AAStringList,ANY-method}
-
 % Other methods:
 \alias{show,XStringSet-method}
 \alias{[[,XStringSet-method}
 \alias{[[<-,XStringSet-method}
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
-
-\alias{show,XStringList-method}
-\alias{[,XStringList-method}
-\alias{[<-,XStringList-method}
-\alias{[[,XStringList-method}
-\alias{[[<-,XStringList-method}
-\alias{as.list,XStringList-method}
 
 
 \title{BStringSet, DNAStringSet, RNAStringSet and AAStringSet objects}
@@ -103,10 +52,6 @@
   Similarly, the DNAStringSet (or RNAStringSet, or AAStringSet) class is
   a container for storing a set of \code{\link{DNAString}}
   (or \code{\link{RNAString}}, or \code{\link{AAString}}) objects.
-
-  The BStringList class (and family) is equivalent to the BStringSet family.
-  It was a first attempt to address the problem of storing a large set of
-  sequences but it has been superseded by the BStringSet family.
 }
 
 \usage{
@@ -114,13 +59,6 @@
   DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
-
-  ## The BStringList family has been superseded by the more efficient
-  ## BStringSet family
-  BStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-  DNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-  RNAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
-  AAStringList(x, start=NA, end=NA, width=NA, use.names=TRUE, check=TRUE)
 }
 
 \arguments{

@@ -93,7 +93,6 @@ static const R_CallMethodDef callMethods[] = {
 /* XStringSet_class.c */
 	CALLMETHOD_DEF(debug_XStringSet_class, 0),
 	CALLMETHOD_DEF(XStringSet_as_STRSXP, 2),
-	CALLMETHOD_DEF(XStrings_to_nchars, 1),
 
 /* seqs_to_seqs.c */
 	CALLMETHOD_DEF(debug_seqs_to_seqs,0),
@@ -101,9 +100,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(copy_subXRaw, 4),
 	CALLMETHOD_DEF(new_XRaw_from_STRSXP, 5),
 	CALLMETHOD_DEF(new_XRaw_from_XString, 4),
-	CALLMETHOD_DEF(new_XStringList_from_XRaw, 4),
-	CALLMETHOD_DEF(narrow_XStringList, 4),
-        
+
 /* char_frequency.c */
 	CALLMETHOD_DEF(XString_char_frequency, 3),
 	CALLMETHOD_DEF(XStringSet_char_frequency, 4),

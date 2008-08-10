@@ -100,7 +100,7 @@
  * Creates an IRanges object from a set of sequences (only the lengths of the
  * sequences are used).
  */
-SEXP new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs);
+SEXP new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs);
 
 
 /*
@@ -134,7 +134,7 @@ RoSeq get_XStringSet_elt_asRoSeq(
 
 SEXP new_XStringSet_from_RoSeqs(
 	const char *baseClass,
-	RoSeqs seqs
+	const RoSeqs *seqs
 );
 
 void set_XStringSet_names(
@@ -167,9 +167,9 @@ void write_RoSeq_to_XStringSet_elt(
  * Converting a set of sequences from one internal representation into another.
  */
 
-RoSeqs new_RoSeqs_from_CharAEAE(CharAEAE char_aeae);
+SEXP new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup);
 
-SEXP new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup);
+RoSeqs new_RoSeqs_from_CharAEAE(CharAEAE *char_aeae);
 
 
 /*

@@ -95,7 +95,7 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
 /*
  * Assume that the sequences in 'seqs' are NOT already encoded.
  */
-SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, RoSeqs seqs)
+SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, const RoSeqs *seqs)
 {
 	SEXP ranges, super, ans;
 
@@ -207,46 +207,6 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 	for (i = 0; i < x_length; i++) {
 		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
 		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(&xx, lkup));
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-
-/****************************************************************************
- * Low-level manipulation of XStringList objects.
- */
-
-int _get_XStringList_length(SEXP x)
-{
-	return LENGTH(GET_SLOT(x, install("seqs")));
-}
-
-RoSeq _get_XStringList_elt_asRoSeq(SEXP x, int i)
-{
-	SEXP seqs;
-
-	seqs = GET_SLOT(x, install("seqs"));
-	return _get_XString_asRoSeq(VECTOR_ELT(seqs, i));
-}
-
-/*
- * --- .Call ENTRY POINT ---
- * 'x_seqs' must be the list, NOT the XStringList object!
- * TODO: make this work directly on the XStringList object and use the
- * 2 helper functions above to simplify the code.
- */
-SEXP XStrings_to_nchars(SEXP x_seqs)
-{
-	SEXP ans;
-	int nseq, i, *ans_elt;
-	RoSeq seq;
-
-	nseq = LENGTH(x_seqs);
-	PROTECT(ans = NEW_INTEGER(nseq));
-	for (i = 0, ans_elt = INTEGER(ans); i < nseq; i++, ans_elt++) {
-		seq = _get_XString_asRoSeq(VECTOR_ELT(x_seqs, i));
-		*ans_elt = seq.nelt;
 	}
 	UNPROTECT(1);
 	return ans;

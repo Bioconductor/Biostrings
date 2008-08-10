@@ -16,8 +16,9 @@ CONTAINERS
 
 - Add "unique" method for IRanges objects.
 
-- Add "baseXStringSubtype" methods for XStringViews, XStringSet and XStringList
-  objects and replace use of "baseClass" by use of "baseXStringSubtype".
+- Add "baseXStringSubtype" methods for XStringViews, XStringSet and
+  MaskedXString objects and replace use of "baseClass" by use of
+  "baseXStringSubtype".
 
 - XStringSet objects:
     o Fix validObject() for XStringSet objects (currently broken).
@@ -28,17 +29,6 @@ CONTAINERS
       Make them work in a vectorized fashion for XStringSet objects.
     o Add "==" method for XStringSet objects.
     o Try to speed up "show" method for XStringSet objects.
-
-- XStringList objects:
-    o Pb with DNAStringList(DNAStringList(dict0), 6) being very very slow.
-      I suspect there is something wrong with C routine narrow_XStringList()
-      when proto is NULL.
-    o Improve speed of BStringList() and family when the input is an XStringList
-      or XStringViews object (i.e. XRaw input).
-      For XRaw input, implement C routine copy_subXRaw() and use it for
-      copySubXRaw(). Add copySubXString() and copySubXStrings() and use them in
-      the BString()/BStringList() constructors and families.
-    o Add read.XStringList/write.XStringList.
 
 - Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
 

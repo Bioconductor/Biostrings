@@ -223,7 +223,7 @@ SEXP _new_XRaw(SEXP tag)
         return ans;
 }
 
-SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
+SEXP _new_XRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
 	SEXP tag, ans;
 	int tag_length, i;
@@ -231,11 +231,11 @@ SEXP _new_XRaw_from_RoSeqs(RoSeqs seqs, SEXP lkup)
 	char *dest;
 
 	tag_length = 0;
-	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++)
+	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
 		tag_length += seq->nelt;
 	PROTECT(tag = NEW_RAW(tag_length));
 	dest = (char *) RAW(tag);
-	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++) {
+	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
 		if (lkup == R_NilValue) {
 			_Biostrings_memcpy_to_i1i2(0, seq->nelt - 1,
 				dest, seq->nelt,
@@ -309,14 +309,14 @@ SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
 	return mkChar(buf);
 }
 
-SEXP _new_STRSXP_from_RoSeqs(RoSeqs seqs, SEXP lkup)
+SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
 	SEXP ans;
 	int i;
 	const RoSeq *seq;
 
-	PROTECT(ans = NEW_CHARACTER(seqs.nelt));
-	for (i = 0, seq = seqs.elts; i < seqs.nelt; i++, seq++)
+	PROTECT(ans = NEW_CHARACTER(seqs->nelt));
+	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
 		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(seq, lkup));
 	UNPROTECT(1);
 	return ans;

@@ -163,7 +163,7 @@ SEXP _new_XString(const char *class, SEXP xdata, int offset, int length)
 	return ans;
 }
 
-SEXP _new_XString_from_RoSeqs(const char *class, RoSeqs seqs)
+SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
 {
 	const int *enc_lkup;
         SEXP lkup, xdata, ans;

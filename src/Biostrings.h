@@ -1,5 +1,4 @@
 #include "../inst/include/Biostrings_defines.h"
-#include "IRanges_defines.h"
 #include <string.h>
 
 #define DEBUG_BIOSTRINGS 1
@@ -223,7 +222,7 @@ SEXP debug_RoSeq_utils();
 
 SEXP _new_IRanges_from_RoSeqs(
 	const char *class,
-	RoSeqs seqs
+	const RoSeqs *seqs
 );
 
 
@@ -293,7 +292,7 @@ SEXP Biostrings_XRaw_length(SEXP xraw_xp);
 SEXP _new_XRaw(SEXP tag);
 
 SEXP _new_XRaw_from_RoSeqs(
-	RoSeqs seqs,
+	const RoSeqs *seqs,
 	SEXP lkup
 );
 
@@ -310,7 +309,7 @@ SEXP _new_CHARSXP_from_RoSeq(
 );
 
 SEXP _new_STRSXP_from_RoSeqs(
-	RoSeqs seqs,
+	const RoSeqs *seqs,
 	SEXP lkup
 );
 
@@ -562,7 +561,7 @@ SEXP _new_XString(
 
 SEXP _new_XString_from_RoSeqs(
 	const char *class,
-	RoSeqs seqs
+	const RoSeqs *seqs
 );
 
 SEXP _alloc_XString(
@@ -600,7 +599,7 @@ RoSeq _get_XStringSet_elt_asRoSeq(
 
 SEXP _new_XStringSet_from_RoSeqs(
 	const char *baseClass,
-	RoSeqs seqs
+	const RoSeqs *seqs
 );
 
 void _set_XStringSet_names(
@@ -633,25 +632,10 @@ SEXP XStringSet_as_STRSXP(
 	SEXP lkup
 );
 
-int _get_XStringList_length(SEXP x);
-
-RoSeq _get_XStringList_elt_asRoSeq(
-	SEXP x,
-	int i
-);
-
-SEXP XStrings_to_nchars(SEXP x_seqs);
-
 
 /* seqs_to_seqs.c */
 
 SEXP debug_seqs_to_seqs();
-
-void narrow_RoSeqs(
-	RoSeqs *seqs,
-	const int *safe_starts,
-	const int *safe_widths
-);
 
 RoSeqs _new_RoSeqs_from_CharAEAE(CharAEAE char_aeae);
 
@@ -666,11 +650,6 @@ RoSeqs _new_RoSeqs_from_XString(
 );
 
 RoSeqs _new_RoSeqs_from_XStringSet(
-	int nseq,
-	SEXP x
-);
-
-RoSeqs _new_RoSeqs_from_XStringList(
 	int nseq,
 	SEXP x
 );
@@ -695,20 +674,6 @@ SEXP new_XRaw_from_XString(
 	SEXP safe_starts,
 	SEXP safe_widths,
 	SEXP lkup
-);
-
-SEXP new_XStringList_from_XRaw(
-	SEXP x,
-	SEXP safe_starts,
-	SEXP safe_widths,
-	SEXP proto
-);
-
-SEXP narrow_XStringList(
-	SEXP x,
-	SEXP safe_starts,
-	SEXP safe_widths,
-	SEXP proto
 );
 
 

@@ -4,6 +4,8 @@
 
 CONTAINERS
 
+o Removed the XStringList class and family.
+
 C-LEVEL FACILITIES
 
 UTILITIES

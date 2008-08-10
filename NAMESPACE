@@ -14,7 +14,6 @@ exportClasses(
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
     XStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
-    BStringList, DNAStringList, RNAStringList, AAStringList,
     XStringPartialMatches,
     InDel, AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
@@ -75,10 +74,9 @@ exportMethods(
     ## SparseList objects
     ls,
 
-    ## XString, XStringViews, XStringList and MaskedXString objects
+    ## XString, XStringViews and MaskedXString objects
     XString, alphabet, subseq,
     XStringViews, subject, views,
-    BStringList, DNAStringList, RNAStringList, AAStringList,
     unmasked, masks, "masks<-",
 
     ## Utilities

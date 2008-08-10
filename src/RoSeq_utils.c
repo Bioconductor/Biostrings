@@ -19,7 +19,7 @@ SEXP debug_RoSeq_utils()
 	return R_NilValue;
 }
 
-SEXP _new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs)
+SEXP _new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs)
 {
 	const RoSeq *seq;
 	SEXP start, width, ans;
@@ -30,17 +30,17 @@ SEXP _new_IRanges_from_RoSeqs(const char *class, RoSeqs seqs)
 		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): BEGIN\n");
 	}
 #endif
-	seq = seqs.elts;
-	PROTECT(start = NEW_INTEGER(seqs.nelt));
-	PROTECT(width = NEW_INTEGER(seqs.nelt));
+	seq = seqs->elts;
+	PROTECT(start = NEW_INTEGER(seqs->nelt));
+	PROTECT(width = NEW_INTEGER(seqs->nelt));
 	start_elt = INTEGER(start);
 	width_elt = INTEGER(width);
-	if (seqs.nelt >= 1) {
+	if (seqs->nelt >= 1) {
 		*(start_elt++) = 1;
 		*(width_elt++) = seq->nelt;
 	}
-	if (seqs.nelt >= 2)
-		for (i = 1, start_prev_elt = INTEGER(start); i < seqs.nelt; i++) {
+	if (seqs->nelt >= 2)
+		for (i = 1, start_prev_elt = INTEGER(start); i < seqs->nelt; i++) {
 			*(start_elt++) = *(start_prev_elt++) + (seq++)->nelt;
 			*(width_elt++) = seq->nelt;
 		}

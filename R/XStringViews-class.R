@@ -80,8 +80,8 @@ setMethod("subject", "XStringViews", function(x) x@subject)
 ### The core XString API.
 ###
 ### The core XString API is the strict minimal set of methods that must work
-### for XString, XStringSet, XStringList, XStringViews and MaskedXString
-### objects. It currently consists of the following methods:
+### for XString, XStringSet, XStringViews and MaskedXString objects.
+### It currently consists of the following methods:
 ###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
 ###   o exported: alphabet, length, nchar
 ###

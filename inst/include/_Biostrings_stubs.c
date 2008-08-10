@@ -15,8 +15,8 @@ retT stubname Targs \
  */
 
 DEFINE_CCALLABLE_STUB(SEXP, new_IRanges_from_RoSeqs,
-	(const char *class, RoSeqs seqs),
-	(            class,        seqs)
+	(const char *class, const RoSeqs *seqs),
+	(            class,               seqs)
 );
 
 
@@ -80,8 +80,8 @@ DEFINE_CCALLABLE_STUB(RoSeq, get_XStringSet_elt_asRoSeq,
 );
 
 DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
-	(const char *baseClass, RoSeqs seqs),
-	(            baseClass,        seqs)
+	(const char *baseClass, const RoSeqs *seqs),
+	(            baseClass,               seqs)
 );
 
 DEFINE_CCALLABLE_STUB(void, set_XStringSet_names,
@@ -115,8 +115,8 @@ DEFINE_CCALLABLE_STUB(RoSeqs, new_RoSeqs_from_CharAEAE,
 );
 
 DEFINE_CCALLABLE_STUB(SEXP, new_STRSXP_from_RoSeqs,
-	(RoSeqs seqs, SEXP lkup),
-	(       seqs,      lkup)
+	(const RoSeqs *seqs, SEXP lkup),
+	(              seqs,      lkup)
 );
 
 
