@@ -126,7 +126,7 @@ void _MIndex_report_matches_for_dups(SEXP unq2dup)
 }
 
 void _MIndex_merge_matches(IntAE *global_match_count,
-		IntAEAE *global_match_ends, int view_offset)
+		const IntAEAE *global_match_ends, int view_offset)
 {
 	int i;
 	const int *key;

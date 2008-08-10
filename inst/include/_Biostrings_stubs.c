@@ -110,8 +110,8 @@ DEFINE_CCALLABLE_STUB(void, write_RoSeq_to_XStringSet_elt,
  */
 
 DEFINE_CCALLABLE_STUB(RoSeqs, new_RoSeqs_from_CharAEAE,
-	(CharAEAE char_aeae),
-	(         char_aeae)
+	(const CharAEAE *char_aeae),
+	(                char_aeae)
 );
 
 DEFINE_CCALLABLE_STUB(SEXP, new_STRSXP_from_RoSeqs,

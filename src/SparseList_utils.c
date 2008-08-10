@@ -85,7 +85,7 @@ int _get_int_from_SparseList(int symb_as_int, SEXP env)
 	return val;
 }
 
-void _set_env_from_IntAE(SEXP env, IntAE *int_ae)
+void _set_env_from_IntAE(SEXP env, const IntAE *int_ae)
 {
 	int symb_as_int, *elt;
 	SEXP symbol, value;
@@ -104,7 +104,7 @@ void _set_env_from_IntAE(SEXP env, IntAE *int_ae)
 	return;
 }
 
-void _set_env_from_IntAEAE(SEXP env, IntAEAE *int_aeae)
+void _set_env_from_IntAEAE(SEXP env, const IntAEAE *int_aeae)
 {
 	int symb_as_int;
 	IntAE *elt;

@@ -81,7 +81,7 @@ static void narrow_RoSeqs(RoSeqs *seqs,
  * 'nelt' elements. Same for 'safe_widths'.
  */
 
-RoSeqs _new_RoSeqs_from_CharAEAE(CharAEAE char_aeae)
+RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae)
 {
 	RoSeqs seqs;
 	RoSeq *elt1;
@@ -93,9 +93,9 @@ RoSeqs _new_RoSeqs_from_CharAEAE(CharAEAE char_aeae)
 		Rprintf("[DEBUG] _new_RoSeqs_from_CharAEAE(): BEGIN\n");
 	}
 #endif
-	seqs = new_RoSeqs(char_aeae.nelt);
-	for (i = 0, elt1 = seqs.elts, elt2 = char_aeae.elts;
-	     i < char_aeae.nelt;
+	seqs = new_RoSeqs(char_aeae->nelt);
+	for (i = 0, elt1 = seqs.elts, elt2 = char_aeae->elts;
+	     i < char_aeae->nelt;
 	     i++, elt1++, elt2++) {
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {

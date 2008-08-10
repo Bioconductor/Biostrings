@@ -253,12 +253,12 @@ int _get_int_from_SparseList(
 
 void _set_env_from_IntAE(
 	SEXP env,
-	IntAE *int_ae
+	const IntAE *int_ae
 );
 
 void _set_env_from_IntAEAE(
 	SEXP env,
-	IntAEAE *int_aeae
+	const IntAEAE *int_aeae
 );
 
 
@@ -637,7 +637,7 @@ SEXP XStringSet_as_STRSXP(
 
 SEXP debug_seqs_to_seqs();
 
-RoSeqs _new_RoSeqs_from_CharAEAE(CharAEAE char_aeae);
+RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 
 RoSeqs _new_RoSeqs_from_STRSXP(
 	int nseq,
@@ -1049,7 +1049,7 @@ void _MIndex_report_matches_for_dups(SEXP unq2dup);
 
 void _MIndex_merge_matches(
 	IntAE *global_match_count,
-	IntAEAE *global_match_ends,
+	const IntAEAE *global_match_ends,
 	int view_offset
 );
 

@@ -169,7 +169,7 @@ void write_RoSeq_to_XStringSet_elt(
 
 SEXP new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup);
 
-RoSeqs new_RoSeqs_from_CharAEAE(CharAEAE *char_aeae);
+RoSeqs new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 
 
 /*
