@@ -6,7 +6,7 @@ retT stubname Targs \
 	static retT (*fun)Targs = NULL; \
 	if (fun == NULL) \
 		fun = (retT (*)Targs) R_GetCCallable("Biostrings", "_" #stubname); \
-	return stubname args; \
+	return fun args; \
 }
 
 
@@ -138,3 +138,4 @@ DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,
 	(),
 	()
 );
+
