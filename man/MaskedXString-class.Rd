@@ -84,7 +84,7 @@
     }
     \item{}{
       \code{masks(x)}:
-      Turns \code{x} into a \link{MaskCollection} object by dropping the sequence.
+      Turns \code{x} into a \link[IRanges]{MaskCollection} object by dropping the sequence.
     }
     \item{}{
       \code{alphabet(x)}:
@@ -134,19 +134,54 @@
   \code{\link{alphabetFrequency}},
   \code{\link{reverse}},
   \link{XString-class},
-  \link{MaskCollection-class},
+  \link[IRanges]{MaskCollection-class},
   \link{XStringViews-class},
   \link[IRanges]{IRanges-utils}
 }
 
 \examples{
-  ## Masking by position
+  ## ---------------------------------------------------------------------
+  ## A. MASKING BY POSITION
+  ## ---------------------------------------------------------------------
   mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))
   x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")
+  length(x)  # same as width(mask0)
+  nchar(x)   # same as length(x)
   masks(x) <- mask0
   x
+  length(x)  # has not changed
+  nchar(x)   # has changed
   gaps(x)
 
+  ## Prepare a MaskCollection object of 3 masks by running the examples in
+  ## the man page for these objects:
+  example(MaskCollection, package="IRanges")
+
+  ## Put it on 'x':
+  masks(x) <- mymasks
+  x
+  alphabetFrequency(x)
+
+  ## Deactivate all masks:
+  active(masks(x)) <- FALSE
+  x
+
+  ## Activate mask 3:
+  active(masks(x))[3] <- FALSE
+  x
+
+  ## Turn MaskedXString object into an XStringViews object:
+  as(x, "XStringViews")
+
+  ## Drop the masks:
+  masks(x) <- NULL
+  x
+  alphabetFrequency(x)
+
+
+  ## ---------------------------------------------------------------------
+  ## B. MASKING BY CONTENT
+  ## ---------------------------------------------------------------------
   ## See ?maskMotif for masking by content
 }
 

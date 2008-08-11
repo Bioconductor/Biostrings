@@ -50,11 +50,11 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link{read.Mask}},
+  \code{\link[IRanges]{read.Mask}},
   \link{XString-class},
   \link{MaskedXString-class},
   \link{XStringViews-class},
-  \link{MaskCollection-class}
+  \link[IRanges]{MaskCollection-class}
 }
 
 \examples{

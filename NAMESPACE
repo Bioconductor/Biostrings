@@ -7,7 +7,6 @@ import(Biobase) ## for the "combine" generic
 
 exportClasses(
     Views,
-    MaskCollection,
     SparseList,
     XRaw, XInteger, XNumeric,
     XString, BString, DNAString, RNAString, AAString,
@@ -22,7 +21,6 @@ exportClasses(
 )
 
 export(
-    Mask, read.gapMask, read.agpMask, read.liftMask, read.rmMask, read.trfMask,
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, GENETIC_CODE,
@@ -68,8 +66,8 @@ exportMethods(
     start, width, "width<-", end, isEmpty, max, min,
     narrow, reduce, gaps,
 
-    ## MaskCollection specific methods
-    nir_list, active, "active<-", maskedwidth, maskedratio, append,
+    ## MaskedXString objects
+    maskedwidth, maskedratio, 
 
     ## SparseList objects
     ls,

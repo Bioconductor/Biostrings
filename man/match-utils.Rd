@@ -136,7 +136,7 @@
     by \code{matchPattern(pattern, subject)}).
 
     Typically an \link{XStringViews} or \link{MIndex} object for \code{coverage}
-    but \link[IRanges]{IRanges}, \link{MaskCollection} and \link{MaskedXString}
+    but \link[IRanges]{IRanges}, \link[IRanges]{MaskCollection} and \link{MaskedXString}
     objects are accepted too.
   }
   \item{shiftLeft, shiftRight}{
@@ -198,7 +198,7 @@
   \link{XStringViews-class},
   \link{MIndex-class},
   \link[IRanges]{IRanges-class},
-  \link{MaskCollection-class},
+  \link[IRanges]{MaskCollection-class},
   \link{MaskedXString-class},
   \link{AlignedXStringSet-class},
   \link{PairwiseAlignment-class}
