@@ -14,7 +14,7 @@ setMethod("maskMotif", signature(x="MaskedXString", motif="XString"),
             stop("'min.block.width' must be a single integer")
         if (!is.integer(min.block.width))
             min.block.width <- as.integer(min.block.width)
-        nir1 <- toNormalIRanges(matchPattern(motif, unmasked(x)))
+        nir1 <- toNormalIRanges(matchPattern(motif, x))
         name1 <- paste(as.character(motif), "-blocks", sep="")
         if (min.block.width > length(motif)) {
             nir1 <- nir1[width(nir1) >= min.block.width]
