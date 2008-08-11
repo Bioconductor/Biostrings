@@ -77,9 +77,6 @@
   \item{use.names}{
     [TODO]
   }
-  \item{check}{
-    [TODO]
-  }
 }
 
 \details{
