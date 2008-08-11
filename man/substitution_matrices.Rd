@@ -12,6 +12,7 @@
 \alias{PAM70}
 \alias{PAM120}
 \alias{PAM250}
+\alias{nucleotideSubstitutionMatrix}
 \alias{qualitySubstitutionMatrices}
 \alias{errorSubstitutionMatrices}
 
@@ -33,11 +34,17 @@
   data(PAM70)
   data(PAM120)
   data(PAM250)
+  nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
   errorSubstitutionMatrices(prob, alphabetLength = 4L, bitScale = 1)
   qualitySubstitutionMatrices(alphabetLength = 4L, qualityType = "Phred", bitScale = 1)
 }
 
 \arguments{
+  \item{match}{the scoring for a nucleotide match.}
+  \item{mismatch}{the scoring for a nucleotide mismatch.}
+  \item{baseOnly}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, only
+    uses the letters in the "base" alphabet i.e. "A", "C", "G", "T".}
+  \item{type}{either "DNA" or "RNA".}
   \item{prob}{a named or unnamed numeric vector representing the error
     probability.}
   \item{alphabetLength}{an integer representing the number of letters
@@ -53,6 +60,9 @@
   The BLOSUM and PAM matrices are square symmetric matrices with integer
   coefficients, whose row and column names are identical and unique: each
   name is a single letter representing a nucleotide or an amino acid.
+
+  \code{nucleotideSubstitutionMatrix} produces a substitution matrix for all IUPAC
+  nucleic acid codes based upon match and mismatch parameters.
 
   \code{errorSubstitutionMatrices} produces a two element list of numeric
   square symmetric matrices, one for matches and one for mismatches.
@@ -107,6 +117,16 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
 }
 
 \examples{
+  s1 <- 
+    DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
+  s2 <-
+    DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+
+  ## Fit a global pairwise alignment using edit distance scoring
+  pairwiseAlignment(s1, s2,
+                    substitutionMatrix = nucleotideSubstitutionMatrix(0, -1, TRUE),
+                    gapOpening = 0, gapExtension = -1)
+
   ## Examine quality-based match and mismatch bit scores for DNA/RNA
   ## strings in pairwiseAlignment. By default patternQuality = 22L and
   ## subjectQuality = 22L.
@@ -114,10 +134,6 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   qualityMatrices[["match"]]["22", "22"]
   qualityMatrices[["mismatch"]]["22", "22"]
 
-  s1 <- 
-    DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
-  s2 <-
-    DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
   pairwiseAlignment(s1, s2)
 
   ## Get the substitution scores when the error probability is 0.1

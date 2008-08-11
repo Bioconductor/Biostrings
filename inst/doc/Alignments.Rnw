@@ -184,7 +184,9 @@ quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality},
 \Rfunarg{qualityType}) and one is constant substitution related
 (\Rfunarg{substitutionMatrix}). When the substitution scores are fixed by
 character pairing, the \Rfunarg{substituionMatrix} argument takes a matrix with
-the appropriate alphabets as dimension names.
+the appropriate alphabets as dimension names. The
+\Rfunction{nucleotideSubstitutionMatrix} function tranlates simple match and
+mismatch scores to the full spectrum of IUPAC nucleotide codes.
 
 <<main4>>=
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
@@ -590,10 +592,7 @@ are derived primarily from the adapter.
 
 <<adapter3>>=
 ## Method 1:  Use edit distance with an FDR of 1e-03
-submat1 <-
-  matrix(-1, nrow = 4, ncol = 4,
-         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
-diag(submat1) <- 0
+submat1 <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRUE)
 randomScores1 <-
   pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat1,
                     gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
@@ -611,10 +610,7 @@ to issues related to error related substitutions and insertions/deletions.
 
 <<adapter4>>=
 ## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
-submat2 <-
-  matrix(-Inf, nrow = 4, ncol = 4,
-         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
-diag(submat2) <- 1
+submat2 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 randomScores2 <-
   pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat2,
                     type = "local", gapOpening = 0, gapExtension = -Inf,
@@ -635,10 +631,7 @@ errors.
 
 <<adapter5>>=
 ## Method 3:  Use consecutive matches on the ends with an FDR of 1e-03
-submat3 <-
-  matrix(-Inf, nrow = 4, ncol = 4,
-         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
-diag(submat3) <- 1
+submat3 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 randomScores3 <-
   pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat3,
                     type = "overlap", gapOpening = 0, gapExtension = -Inf,
@@ -988,10 +981,7 @@ ex6Strings <- DNAStringSet(ex6Strings)
 ex6Strings
 
 ## Method 1:  Use edit distance with an FDR of 1e-03
-submat1 <-
-  matrix(-1, nrow = 4, ncol = 4,
-         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
-diag(submat1) <- 0
+submat1 <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRUE)
 quantile(randomScores1, seq(0.99, 1, by = 0.001))
 ex6Aligns1 <-
   pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat1,
@@ -999,10 +989,7 @@ ex6Aligns1 <-
 table(score(ex6Aligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
 
 ## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
-submat2 <-
-  matrix(-Inf, nrow = 4, ncol = 4,
-         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
-diag(submat2) <- 1
+submat2 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 quantile(randomScores2, seq(0.99, 1, by = 0.001))
 ex6Aligns2 <-
   pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat2,
@@ -1013,10 +1000,7 @@ table(start(pattern(ex6Aligns2)) > 37 - end(pattern(ex6Aligns2)),
       experiment[["side"]])
 
 ## Method 3:  Use consecutive matches on the ends with an FDR of 1e-03
-submat3 <-
-  matrix(-Inf, nrow = 4, ncol = 4,
-         dimnames = list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4]))
-diag(submat3) <- 1
+submat3 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 ex6Aligns3 <-
   pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat3,
                     type = "overlap", gapOpening = 0, gapExtension = -Inf)

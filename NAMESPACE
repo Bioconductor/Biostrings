@@ -42,7 +42,7 @@ export(
     .inplaceReplaceLetterAtLoc,
     maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
-    errorSubstitutionMatrices, qualitySubstitutionMatrices,
+    nucleotideSubstitutionMatrix, errorSubstitutionMatrices, qualitySubstitutionMatrices,
 
     ## Deprecated
     subBString,

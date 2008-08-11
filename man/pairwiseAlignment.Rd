@@ -74,6 +74,7 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics 2
 }
 \author{P. Aboyoun and H. Pages}
 \seealso{
+  \link{stringDist},
   \link{PairwiseAlignment-class},
   \link{substitution.matrices}
 }
@@ -85,9 +86,7 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics 2
     DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
 
   # First use a constant substitution matrix
-  mat <- matrix(-3, nrow = 4, ncol = 4)
-  diag(mat) <- 1
-  rownames(mat) <- colnames(mat) <- DNA_ALPHABET[1:4]
+  mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -3, baseOnly = TRUE)
   globalAlign <-
     pairwiseAlignment(s1, s2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
   localAlign <-
