@@ -587,7 +587,7 @@ setMethod("coverage", "MIndex",
             stop("'end' must be >= 'start' - 1")
         if (is(x, "ByPos_MIndex"))
             return(.Call("ByPos_MIndex_coverage",
-                         x@ends, x@width, start, end,
+                         endIndex(x), x@width, start, end,
                          PACKAGE="Biostrings"))
         if (is(x, "ByName_MIndex"))
             return(.Call("ByName_MIndex_coverage",

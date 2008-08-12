@@ -7,6 +7,7 @@ import(Biobase) ## for the "combine" generic
 
 exportClasses(
     Views,
+    Dups,
     SparseList,
     XRaw, XInteger, XNumeric,
     XString, BString, DNAString, RNAString, AAString,
@@ -16,7 +17,7 @@ exportClasses(
     XStringPartialMatches,
     InDel, AlignedXStringSet, PairwiseAlignment,
     BOC_SubjectString, BOC2_SubjectString,
-    Dups, PreprocessedTB, PDict3Parts, PDict, TB_PDict, Twobit, ACtree, MTB_PDict,
+    PreprocessedTB, Twobit, ACtree, PDict3Parts, PDict, TB_PDict, MTB_PDict,
     MIndex, ByPos_MIndex, ByName_MIndex
 )
 
@@ -66,11 +67,11 @@ exportMethods(
     start, width, "width<-", end, isEmpty, max, min,
     narrow, reduce, gaps,
 
-    ## MaskedXString objects
-    maskedwidth, maskedratio, 
-
     ## SparseList objects
     ls,
+
+    ## MaskedXString objects
+    maskedwidth, maskedratio, 
 
     ## XString, XStringViews and MaskedXString objects
     XString, alphabet, subseq,

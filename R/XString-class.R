@@ -125,7 +125,7 @@ compatibleXStringSubtypes <- function(class1, class2)
 getXStringSubtypeConversionLookup <- function(from_class, to_class)
 {
     if (!compatibleXStringSubtypes(from_class, to_class))
-        stop("incompatible XString subtypes")
+        stop("incompatible XString/XStringSet subtypes")
     from_nucleo <- extends(from_class, "DNAString") || extends(from_class, "RNAString")
     to_nucleo <- extends(to_class, "DNAString") || extends(to_class, "RNAString")
     if (from_nucleo == to_nucleo)
@@ -185,6 +185,22 @@ XString.write <- function(x, i, imax=integer(0), value)
     XRaw.write(x@xdata, x@offset + i, x@offset + imax, value=value,
                        enc_lkup=enc_lkup(x))
     x
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "XString.append" function.
+### NOT exported!
+###
+
+XString.append <- function(x, y)
+{
+    ans_class <- baseXStringSubtype(x)
+    if (baseXStringSubtype(y) != ans_class)
+        stop("'x' and 'y' must be XString objects of the same subtype")
+    ans_xdata <- XRaw.append(x@xdata, x@offset + 1L, x@length,
+                             y@xdata, y@offset + 1L, y@length)
+    new(ans_class, xdata=ans_xdata, length=length(ans_xdata))
 }
 
 
@@ -408,8 +424,7 @@ setReplaceMethod("[", "XString",
 {
     if (x@length != y@length)
         return(FALSE)
-    one <- as.integer(1)
-    ans <- !XRaw.compare(x@xdata, x@offset + one, y@xdata, y@offset + one, x@length)
+    ans <- !XRaw.compare(x@xdata, x@offset + 1L, y@xdata, y@offset + 1L, x@length)
     as.logical(ans)
 }
 

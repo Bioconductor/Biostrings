@@ -17,6 +17,10 @@ static const R_CallMethodDef callMethods[] = {
 /* RoSeq_utils.c */
 	CALLMETHOD_DEF(debug_RoSeq_utils, 0),
 
+/* Dups_utils.c */
+	{"debug_Dups_utils", (DL_FUNC) &debug_Dups_utils, 0},
+	{"Dups_diff", (DL_FUNC) &Dups_diff, 2},
+
 /* SparseList_utils.c */
 	CALLMETHOD_DEF(debug_SparseList_utils, 0),
 
@@ -35,7 +39,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_XRaw_utils, 0),
 
 	CALLMETHOD_DEF(Biostrings_XRaw_memcmp, 5),
-
 	CALLMETHOD_DEF(Biostrings_XRaw_copy_from_i1i2, 4),
 	CALLMETHOD_DEF(Biostrings_XRaw_copy_from_subset, 3),
 
@@ -160,26 +163,22 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_find_palindromes, 0),
 	CALLMETHOD_DEF(find_palindromes, 6),
 
-/* PDict_utils.c */
-	CALLMETHOD_DEF(debug_PDict_utils, 0),
-	CALLMETHOD_DEF(Dups_diff, 2),
-
 /* MIndex_utils.c */
 	CALLMETHOD_DEF(debug_MIndex_utils, 0),
-	CALLMETHOD_DEF(shiftListOfInts, 2),
-	CALLMETHOD_DEF(extract_endIndex, 4),
+	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
+	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_coverage, 4),
 	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
 /* match_pdict_Twobit.c */
 	CALLMETHOD_DEF(debug_match_pdict_Twobit, 0),
-	CALLMETHOD_DEF(build_Twobit, 2),
+	CALLMETHOD_DEF(build_Twobit, 3),
 
 /* match_pdict_ACtree.c */
 	CALLMETHOD_DEF(debug_match_pdict_ACtree, 0),
 	CALLMETHOD_DEF(free_actree_nodes_buf, 0),
-	CALLMETHOD_DEF(build_ACtree, 2),
+	CALLMETHOD_DEF(build_ACtree, 3),
 
 /* match_pdict.c */
 	CALLMETHOD_DEF(debug_match_pdict, 0),

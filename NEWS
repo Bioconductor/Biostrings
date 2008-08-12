@@ -17,6 +17,12 @@ o Moved the utility functions for importing a mask (read.agpMask(),
   read.gapMask(), read.liftMask(), read.rmMask() and read.trfMask() functions)
   to the new IRanges package.
 
+o Added an "append" method for XStringSet objects.
+
+o Added a set of "coerce" methods for turning an arbitrary XStringSet object
+  into a BStringSet, DNAStringSet, RNAStringSet or AAStringSet instance (via
+  the as() function).
+
 STRING MATCHING
 
 o Added the "whichPDict" generic function with a method for XString objects.

@@ -1,6 +1,16 @@
 \name{Biostrings internals}
 \docType{class}
 
+% Dups class and methods:
+\alias{class:Dups}
+\alias{Dups-class}
+\alias{Dups}
+
+\alias{length,Dups-method}
+\alias{duplicated,Dups-method}
+\alias{show,Dups-method}
+
+% SparseList class and methods:
 \alias{class:SparseList}
 \alias{SparseList-class}
 \alias{SparseList}
@@ -10,6 +20,7 @@
 \alias{as.list,SparseList-method}
 \alias{[[,SparseList-method}
 
+% XRaw class and methods:
 \alias{show,externalptr-method}
 
 \alias{class:XRaw}
@@ -33,6 +44,7 @@
 \alias{show,PrintableXRaw-method}
 \alias{[,PrintableXRaw-method}
 
+% XInteger class and methods:
 \alias{class:XInteger}
 \alias{XInteger-class}
 \alias{XInteger}
@@ -46,6 +58,7 @@
 \alias{[,XInteger-method}
 \alias{[<-,XInteger-method}
 
+% XNumeric class and methods:
 \alias{class:XNumeric}
 \alias{XNumeric-class}
 \alias{XNumeric}
@@ -59,12 +72,12 @@
 \alias{[,XNumeric-method}
 \alias{[<-,XNumeric-method}
 
+%XStringCodec class and methods:
 \alias{class:XStringCodec}
 \alias{XStringCodec-class}
 \alias{XStringCodec}
 
 \alias{initialize,XStringCodec-method}
-
 \alias{alphabet,XStringCodec-method}
 
 

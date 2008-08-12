@@ -1,15 +1,6 @@
 \name{PDict-class}
 \docType{class}
 
-% Dups class:
-\alias{class:Dups}
-\alias{Dups-class}
-\alias{Dups}
-
-\alias{length,Dups-method}
-\alias{duplicated,Dups-method}
-\alias{show,Dups-method}
-
 % PreprocessedTB class:
 \alias{class:PreprocessedTB}
 \alias{PreprocessedTB-class}
@@ -22,6 +13,24 @@
 \alias{tb.width}
 \alias{tb.width,PreprocessedTB-method}
 \alias{initialize,PreprocessedTB-method}
+
+% Twobit class:
+\alias{class:Twobit}
+\alias{Twobit-class}
+\alias{Twobit}
+
+\alias{show,Twobit-method}
+\alias{initialize,Twobit-method}
+
+% ACtree class:
+\alias{class:ACtree}
+\alias{ACtree-class}
+\alias{ACtree}
+
+\alias{show,ACtree-method}
+\alias{[,ACtree-method}
+\alias{as.matrix,ACtree-method}
+\alias{initialize,ACtree-method}
 
 % PDict3Parts class:
 \alias{class:PDict3Parts}
@@ -58,24 +67,6 @@
 \alias{tb.width,TB_PDict-method}
 \alias{tail,TB_PDict-method}
 \alias{show,TB_PDict-method}
-
-% Twobit class:
-\alias{class:Twobit}
-\alias{Twobit-class}
-\alias{Twobit}
-
-\alias{show,Twobit-method}
-\alias{initialize,Twobit-method}
-
-% ACtree class:
-\alias{class:ACtree}
-\alias{ACtree-class}
-\alias{ACtree}
-
-\alias{show,ACtree-method}
-\alias{[,ACtree-method}
-\alias{as.matrix,ACtree-method}
-\alias{initialize,ACtree-method}
 
 % MTB_PDict class:
 \alias{class:MTB_PDict}

@@ -294,14 +294,17 @@ static SEXP ACtree_asLIST()
  * -----------------------------------
  *
  * Arguments:
- *   tb: the Trusted Band extracted from the original dictionary as a
- *       DNAStringSet object;
+ *   tb:         the Trusted Band extracted from the original dictionary as a
+ *               DNAStringSet object;
+ *   dup2unq0:   NULL or an integer vector of the same length as 'tb'
+ *               containing the mapping from duplicated to unique patterns in
+ *               the original dictionary;
  *   base_codes: the internal codes for A, C, G and T.
  *
  * See ACtree_asLIST() for a description of the returned SEXP.
  */
 
-SEXP build_ACtree(SEXP tb, SEXP base_codes)
+SEXP build_ACtree(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset;
 	CachedXStringSet cached_tb;
@@ -315,6 +318,10 @@ SEXP build_ACtree(SEXP tb, SEXP base_codes)
 	tb_width = -1;
 	cached_tb = _new_CachedXStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {
+		/* Skip duplicated patterns */
+		if (dup2unq0 != R_NilValue
+		 && INTEGER(dup2unq0)[poffset] != NA_INTEGER)
+			continue;
 		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_tb,
 				poffset);
 		if (pattern.nelt == 0)

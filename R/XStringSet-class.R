@@ -142,7 +142,8 @@ setMethod("initialize", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions used by the versatile constructors below.
+### Helper functions (NOT exported) used by the coercion methods and
+### versatile (and user friendly) constructors below.
 ###
 
 newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
@@ -151,6 +152,75 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
         names <- NULL
     new(class, super, start(ranges), width(ranges), names)
 }
+
+### This is an endomorphism iff 'baseClass' is NULL, otherwise it is NOT!
+compactXStringSet <- function(x, baseClass=NULL)
+{
+    from_baseClass <- baseXStringSubtype(x)
+    if (is.null(baseClass))
+        to_baseClass <- from_baseClass
+    else
+        to_baseClass <- baseClass
+    lkup <- getXStringSubtypeConversionLookup(from_baseClass, to_baseClass)
+    ## The frame is the strict minimal set of regions in 'super(x)' that need
+    ## to be copied. Hence compacting 'x' returns an XStringSet object 'y'
+    ## where 'length(super(y))' can be significantly smaller than
+    ## 'length(super(x))' especially if the elements in 'x' cover a small part
+    ## of 'super(x)'.
+    frame <- reduce(x, with.inframe.attrib=TRUE)
+    xdata <- .Call("new_XRaw_from_XString",
+                   super(x), start(frame), width(frame), lkup,
+                   PACKAGE="Biostrings")
+    ans_super <- new(to_baseClass, xdata=xdata, length=length(xdata))
+    ans_ranges <- attr(frame, "inframe")
+    if (is.null(baseClass)) {
+        ## Endomorphism
+        x@super <- ans_super
+        unsafe.update(x, start=start(ans_ranges), width=width(ans_ranges))
+    } else {
+        ## NOT an endomorphism
+        ans_class <- paste(to_baseClass, "Set", sep="")
+        newXStringSet(ans_class, ans_super, ans_ranges, use.names=TRUE, names=names(x))
+    }
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+.as.from_XStringSet_to_XStringSet <- function(x, baseClass)
+{
+    from_baseClass <- baseXStringSubtype(x)
+    lkup <- getXStringSubtypeConversionLookup(from_baseClass, baseClass)
+    if (!is.null(lkup))
+        return(compactXStringSet(x, baseClass=baseClass))
+    ans_class <- paste(baseClass, "Set", sep="")
+    if (is(x, ans_class))
+        ans_super <- super(x)
+    else
+        ans_super <- XString(baseClass, super(x))
+    new(ans_class, ans_super, start(x), width(x), names(x))
+}
+
+setAs("XStringSet", "BStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "BString")
+)
+setAs("XStringSet", "DNAStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "DNAString")
+)
+setAs("XStringSet", "RNAStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "RNAString")
+)
+setAs("XStringSet", "AAStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "AAString")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### More helper functions used by the versatile (and user friendly)
+### constructors below.
+###
 
 .charToXString <- function(x, safe_locs, class)
 {
@@ -178,28 +248,10 @@ newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
     newXStringSet(class, super, ranges)
 }
 
-.narrowXStringSet <- function(x, start, end, width, use.names, baseClass)
+.narrowAndCoerceXStringSet <- function(x, start, end, width, use.names, baseClass)
 {
-    class <- paste(baseClass, "Set", sep="")
-    lkup <- getXStringSubtypeConversionLookup(class(super(x)), baseClass)
-    if (!is.null(lkup)) {
-        ## The frame is the strict minimal region of the original data that
-        ## needs to be copied.
-        ## This will be paticularly useful (and will significantly reduce the
-        ## memory footprint) when the sequences in 'x' point to regions in
-        ## 'super(x)' that have a lot of overlapping.
-        safe_locs <- narrow(x, start, end, width)
-        frame <- reduce(safe_locs, with.inframe.attrib=TRUE)
-        xdata <- .Call("new_XRaw_from_XString",
-                       super(x), start(frame), width(frame), lkup,
-                       PACKAGE="Biostrings")
-        super <- new(baseClass, xdata=xdata, length=length(xdata))
-        ranges <- attr(frame, "inframe")
-    } else {
-        super <- XString(baseClass, super(x))
-        ranges <- narrow(x, start, end, width)
-    }
-    newXStringSet(class, super, ranges, use.names=use.names, names=names(x))
+    y <- narrow(x, start=start, end=end, width=width, use.names=use.names)
+    .as.from_XStringSet_to_XStringSet(y, baseClass)
 }
 
 ### Canonical conversion from XStringViews to XStringSet
@@ -251,12 +303,12 @@ setMethod("XStringSet", "XString",
 )
 setMethod("XStringSet", "XStringSet",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowXStringSet(x, start, end, width, use.names, baseClass)
+        .narrowAndCoerceXStringSet(x, start, end, width, use.names, baseClass)
 )
 setMethod("XStringSet", "XStringViews",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowXStringSet(XStringViewsToSet(x, use.names),
-                          start, end, width, TRUE, baseClass)
+        .narrowAndCoerceXStringSet(XStringViewsToSet(x, use.names),
+                                   start, end, width, TRUE, baseClass)
 )
 
 BStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -395,6 +447,38 @@ setReplaceMethod("[[", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "append" method.
+###
+### TODO: The current version performs too many copies of the sequence data!
+###       This will change with the redesign of the XStringSet class (see
+###       long comment at the beginning of this file).
+###
+
+setMethod("append", "XStringSet",
+    function(x, values, after=length(x))
+    {
+        if (!is(values, "XStringSet"))
+            stop("'values' must be an XStringSet object")
+        baseClass <- baseXStringSubtype(x)
+        if (baseXStringSubtype(values) != baseClass)
+            stop("'x' and 'values' must be XStringSet objects of the same subtype")
+        if (!isSingleNumber(after))
+            stop("'after' must be a single number")
+        if (after != length(x))
+            stop("'after != length(x)' is not supported for XStringSet objects, sorry!")
+        ans_class <- paste(baseClass, "Set", sep="")
+        cx <- compactXStringSet(x)
+        cvalues <- compactXStringSet(values, baseClass=baseClass)
+        ans_super <- XString.append(super(cx), super(cvalues))
+        ans_start <- c(start(cx), start(cvalues) + length(super(cx)))
+        ans_width <- c(width(cx), width(cvalues))
+        ans_names <- c(names(cx), names(cvalues))
+        new(ans_class, ans_super, ans_start, ans_width, ans_names)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality.
 ###
 
@@ -427,3 +511,4 @@ setMethod("as.character", "XStringSet",
         ans
     }
 )
+

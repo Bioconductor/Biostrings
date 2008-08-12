@@ -201,7 +201,7 @@ XRaw.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
 XRaw.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
     if (class(src) != "XRaw")
-        stop("'src' is not a \"XRaw\" object")
+        stop("'src' is not an XRaw object")
     if (!is.integer(i))
         i <- as.integer(i)
     if (length(i) == 1) {
@@ -230,7 +230,7 @@ XRaw.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 XRaw.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
     if (class(src) != "XRaw")
-        stop("'src' is not a \"XRaw\" object")
+        stop("'src' is not an XRaw object")
     if (length(i) != 1)
         stop("'i' must be a single integer")
     if (!is.integer(i))
@@ -262,6 +262,40 @@ XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
         .Call("XRaw_read_complexes_from_subset",
               x@xp, i, lkup, PACKAGE="Biostrings")
     }
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "XRaw.append" function.
+###
+
+XRaw.append <- function(x1, start1, width1, x2, start2, width2)
+{
+    if (!isSingleNumber(start1))
+        stop("'start1' must be a single integer")
+    if (!is.integer(start1))
+        start1 <- as.integer(start1)
+    if (!isSingleNumber(width1))
+        stop("'width1' must be a single integer")
+    if (!is.integer(width1))
+        width1 <- as.integer(width1)
+
+    if (!isSingleNumber(start2))
+        stop("'start2' must be a single integer")
+    if (!is.integer(start2))
+        start2 <- as.integer(start2)
+    if (!isSingleNumber(width2))
+        stop("'width2' must be a single integer")
+    if (!is.integer(width2))
+        width2 <- as.integer(width2)
+
+    ans_len <- width1 + width2
+    ans <- XRaw(ans_len)
+    .Call("Biostrings_XRaw_memcpy",
+          ans@xp, 1L, x1@xp, start1, width1, PACKAGE="Biostrings")
+    .Call("Biostrings_XRaw_memcpy",
+          ans@xp, 1L + width1, x2@xp, start2, width2, PACKAGE="Biostrings")
+    ans
 }
 
 
@@ -461,7 +495,7 @@ setMethod("!=", signature(e1="XRaw", e2="XRaw"),
 
 ### A wrapper to the very fast memcmp() C-function.
 ### Arguments MUST be the following or it will crash R:
-###   x1, x2: "XRaw" objects
+###   x1, x2: XRaw objects
 ###   start1, start2, width: single integers
 ### In addition: 1 <= start1 <= start1+width-1 <= length(x1)
 ###              1 <= start2 <= start2+width-1 <= length(x2)

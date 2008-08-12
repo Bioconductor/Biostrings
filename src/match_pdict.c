@@ -209,9 +209,7 @@ static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 		_match_ACtree(pdict_pptb, S, fixedS);
 	else
 		error("\"%s\": unknown PDict type", type);
-	if (cached_head == NULL && cached_tail == NULL) {
-		_MIndex_report_matches_for_dups(unq2dup);
-	} else {
+	if (cached_head != NULL || cached_tail != NULL) {
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 		match_pdict_headtail(unq2dup, tb_width,
 			cached_head, cached_tail,

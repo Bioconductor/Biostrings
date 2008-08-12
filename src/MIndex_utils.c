@@ -90,41 +90,6 @@ void _MIndex_report_match(int key, int end)
 	return;
 }
 
-void _MIndex_report_matches_for_dups(SEXP unq2dup)
-{
-	int n1, i, j, k1, k2;
-	const int *key, *dup;
-	SEXP dups;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING _MIndex_report_matches_for_dups()\n");
-#endif
-	// The value of matching_keys.nelt can increase during the
-	// for loop!
-	n1 = matching_keys.nelt;
-	for (i = 0, key = matching_keys.elts; i < n1; i++, key++) {
-		k1 = *key;
-		dups = VECTOR_ELT(unq2dup, k1);
-		if (dups == R_NilValue)
-			continue;
-		for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
-			k2 = *dup - 1;
-			if (match_reporting_mode == 0)
-				match_count.elts[k2] = match_count.elts[k1];
-			else
-				match_ends.elts[k2] = match_ends.elts[k1];
-			IntAE_insert_at(&matching_keys,
-					matching_keys.nelt, k2);
-		}
-	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING _MIndex_report_matches_for_dups()\n");
-#endif
-	return;
-}
-
 void _MIndex_merge_matches(IntAE *global_match_count,
 		const IntAEAE *global_match_ends, int view_offset)
 {
@@ -189,21 +154,32 @@ static SEXP addInt(SEXP e1, int e2)
 
 /*
  * --- .Call ENTRY POINT ---
- * Only elements in 'x' that are integer vectors are shifted.
+ * Only elements in 'x_ends' that are integer vectors are shifted.
  */
-SEXP shiftListOfInts(SEXP x, SEXP shift)
+SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP shift)
 {
 	SEXP ans, ans_elt;
-	int shiftval, i, j, *val;
+	int shift0, i, k1, j, *val;
 
-	PROTECT(ans = duplicate(x));
-	shiftval = INTEGER(shift)[0];
+	shift0 = INTEGER(shift)[0];
+	PROTECT(ans = duplicate(x_ends));
 	for (i = 0; i < LENGTH(ans); i++) {
+		if (LENGTH(x_dup2unq) != 0
+		 && (k1 = INTEGER(x_dup2unq)[i]) != NA_INTEGER) {
+			PROTECT(ans_elt = duplicate(VECTOR_ELT(ans, k1 - 1)));
+			SET_ELEMENT(ans, i, ans_elt);
+			UNPROTECT(1);
+			continue;
+		}
 		ans_elt = VECTOR_ELT(ans, i);
 		if (!IS_INTEGER(ans_elt))
 			continue;
-		for (j = 0, val = INTEGER(ans_elt); j < LENGTH(ans_elt); j++, val++)
-			*val += shiftval;
+		for (j = 0, val = INTEGER(ans_elt);
+		     j < LENGTH(ans_elt);
+		     j++, val++)
+		{
+			*val += shift0;
+		}
 	}
 	UNPROTECT(1);
 	return ans;
@@ -217,13 +193,13 @@ SEXP shiftListOfInts(SEXP x, SEXP shift)
      ends_envir <- new.env(parent = emptyenv())
      ends_envir[['0000000010']] <- -2:1
      ends_envir[['0000000004']] <- 9:6
-     .Call("extract_endIndex", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
-     .Call("extract_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+     .Call("ByName_MIndex_endIndex", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
+     .Call("ByName_MIndex_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
  * but this doesn't:
      ends_envir[['3']] <- 33L
-     .Call("extract_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+     .Call("ByName_MIndex_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
  */
-SEXP extract_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
+SEXP ByName_MIndex_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;

@@ -171,7 +171,8 @@
   \link{XStringViews-constructors},
   \link{XString-class},
   \link{XStringSet-class},
-  \code{\link{letter}}
+  \code{\link{letter}},
+  \link{MIndex-class}
 }
 
 \examples{

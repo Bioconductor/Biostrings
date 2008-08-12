@@ -9,6 +9,9 @@ debug_utils <- function()
 debug_RoSeq_utils <- function()
     invisible(.Call("debug_RoSeq_utils", PACKAGE="Biostrings"))
 
+debug_Dups_utils <- function()
+    invisible(.Call("debug_Dups_utils", PACKAGE="Biostrings"))
+
 debug_SparseList_utils <- function()
     invisible(.Call("debug_SparseList_utils", PACKAGE="Biostrings"))
 
@@ -22,7 +25,7 @@ debug_XInteger <- function()
     invisible(.Call("debug_XInteger", PACKAGE="Biostrings"))
 
 debug_XNumeric <- function()
-	invisible(.Call("debug_XNumeric", PACKAGE="Biostrings"))
+    invisible(.Call("debug_XNumeric", PACKAGE="Biostrings"))
 
 debug_XString_class <- function()
     invisible(.Call("debug_XString_class", PACKAGE="Biostrings"))
@@ -56,9 +59,6 @@ debug_match_BOC2 <- function()
 
 debug_find_palindromes <- function()
     invisible(.Call("debug_find_palindromes", PACKAGE="Biostrings"))
-
-debug_PDict_utils <- function()
-    invisible(.Call("debug_PDict_utils", PACKAGE="Biostrings"))
 
 debug_MIndex_utils <- function()
     invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))

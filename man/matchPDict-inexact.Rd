@@ -19,9 +19,9 @@
 }
 
 \details{
-  In this man page, we assume that you know how to preprocess a dictionary
-  of DNA patterns that can then be used with \code{matchPDict}, \code{countPDict}
-  or \code{\code{whichPDict}}.
+  In this man page, we assume that you know how to preprocess
+  a dictionary of DNA patterns that can then be used with
+  \code{matchPDict}, \code{countPDict} or \code{\code{whichPDict}}.
   Please see \code{?\link{PDict}} if you don't.
 
   When using \code{matchPDict}, \code{countPDict} or \code{whichPDict}
@@ -37,8 +37,8 @@
   (1) find all the exact matches of all the elements in the Trusted Band;
       then
   (2) for each element in the Trusted Band that has at least one exact
-      match, compare the head and the tail corresponding to this element
-      with the flanking sequences of the match in the subject.
+      match, compare the head and the tail of this element
+      with the flanking sequences of the matches found in (1).
 
   Note that the number of exact matches found in (1) will decrease
   exponentially with the width of the Trusted Band.
@@ -57,7 +57,8 @@
 \author{H. Pages}
 
 \seealso{
-  \link{PDict},
+  \link{PDict-class},
+  \link{MIndex-class},
   \link{matchPDict}
 }
 
@@ -119,9 +120,9 @@
   mindex[[1]]                         # CURRENTLY BROKEN!
   unlist(mindex)                      # CURRENTLY BROKEN!
 
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
   ## D. WITH AMBIGUITIES IN THE TAIL
-  ## -------------------------------------------------------------------------
+  ## ---------------------------------------------------------------------
 
   ## Ambiguities (IUPAC extended letters) are supported in the tail only:
   endIndex(matchPDict(pdict, DNAString("ACGGACCG"), fixed=FALSE))

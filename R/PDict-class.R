@@ -4,98 +4,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "Dups" class.
-###
-### A general container for storing the direct and reverse mappings between
-### duplicated and unique elements of an arbitrary vector.
-###
-
-setClass("Dups",
-    representation(
-        dup2unq="integer",  # many-to-one integer mapping
-        unq2dup="list"      # one-to-many integer mapping
-    )
-)
-
-.reverse.dup2unq <- function(dup2unq)
-{
-    ans <- vector(mode="list", length=length(dup2unq))
-    sparse_ans <- split(seq_along(dup2unq), dup2unq)
-    ans[as.integer(names(sparse_ans))] <- sparse_ans
-    ans
-}
-
-.valid.Dups <- function(object)
-{
-    if (!is.integer(object@dup2unq))
-        return("the 'dup2unq' slot must contain an integer vector")
-    if (!all(object@dup2unq >= 1L, na.rm=TRUE))
-        return("the 'dup2unq' slot must contain integer values >= 1")
-    if (!all(object@dup2unq < seq_along(object@dup2unq), na.rm=TRUE))
-        return("when mapped, values in the 'dup2unq' slot must be mapped ",
-               "to lower values")
-    if (!all(is.na(object@dup2unq[object@dup2unq])))
-        return("when mapped, values in the 'dup2unq' slot must be mapped ",
-               "to unmapped values")
-    if (!is.list(object@unq2dup))
-        return("the 'unq2dup' slot must contain a list")
-    if (length(object@dup2unq) != length(object@unq2dup))
-        return("the 'dup2unq' and 'unq2dup' slots must have the same length")
-    if (!identical(.reverse.dup2unq(object@dup2unq), object@unq2dup))
-        return("the 'unq2dup' slot must contain the reverse mapping ",
-               "of the 'dup2unq' slot")
-    NULL
-}
-setValidity("Dups",
-    function(object)
-    {
-        problems <- .valid.Dups(object)
-        if (is.null(problems)) TRUE else problems
-    }
-)
-
-Dups <- function(dup2unq)
-    new("Dups", dup2unq=dup2unq, unq2dup=.reverse.dup2unq(dup2unq))
-
-setMethod("length", "Dups", function(x) length(x@dup2unq))
-
-setMethod("duplicated", "Dups",
-    function(x, incomparables=FALSE, ...) !is.na(x@dup2unq)
-)
-
-setGeneric("dupFrequency", function(x) standardGeneric("dupFrequency"))
-
-setMethod("dupFrequency", "Dups",
-    function(x)
-    {
-        ans <- rep.int(1L, length(x@unq2dup))
-        mapped_unqs <- setdiff(unique(x@dup2unq), NA)
-        for (unq in mapped_unqs) {
-            ii <- as.integer(c(unq, x@unq2dup[[unq]]))
-            ans[ii] <- length(ii)
-        }
-        ans
-    }
-)
-
-setMethod("show", "Dups",
-    function(object)
-    {
-        percentage <- 100 * sum(duplicated(object)) / length(object)
-        cat(class(object), " object of length ", length(object),
-            " (", percentage, "% of duplicates)\n", sep="")
-    }
-)
-
-### Returns the unq2dup map, not the full Dups object!
-.Dups.diff <- function(x, y)
-{
-    .Call("Dups_diff", x@unq2dup, y@dup2unq, PACKAGE="Biostrings")
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PreprocessedTB" and "PDict3Parts" classes.
+### The "PreprocessedTB" VIRTUAL class.
 ###
 
 setClass("PreprocessedTB",
@@ -143,6 +52,145 @@ setMethod("dupFrequency", "PreprocessedTB",
     function(x) dupFrequency(dups(x))
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "Twobit" class.
+###
+### A low-level container for storing a PreprocessedTB object (preprocessed
+### Trusted Band) of type "Twobit".
+### With this type of preprocessing, the 2-bit-per-letter signatures of all
+### the oligonucleotides in the Trusted Band are computed and the mapping
+### from these signatures to the 1-based position of the corresponding
+### oligonucleotide in the Trusted Band is stored in a way that allows very
+### fast lookup.
+###
+
+setClass("Twobit",
+    contains="PreprocessedTB",
+    representation(
+        sign2pos="XInteger",  # length(x@sign2pos) is tb.width(x)^4
+        base_codes="integer"
+    )
+)
+
+setMethod("show", "Twobit",
+    function(object)
+    {
+        .PreprocessedTB.showFirstLine(object)
+        cat("  (length of sign2pos lookup table is ",
+            length(object@sign2pos), ")\n", sep="")
+    }
+)
+
+setMethod("initialize", "Twobit",
+    function(.Object, tb, dup2unq0)
+    {
+        base_codes <- codes(tb, baseOnly=TRUE)
+        C_ans <- .Call("build_Twobit", tb, dup2unq0, base_codes,
+                       PACKAGE="Biostrings")
+        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object@sign2pos <- XInteger(0)
+        .Object@sign2pos@xp <- C_ans$twobit_sign2pos_xp
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ACtree" class.
+###
+### A low-level container for storing a PreprocessedTB object (preprocessed
+### Trusted Band) of type "ACtree".
+### With this type of preprocessing, all the oligonucleotides in the Trusted
+### Band are stored in a 4-ary Aho-Corasick tree (note that this tree is in
+### fact an oriented graph if we consider the failure links or the shortcut
+### links).
+### The number of integers needed to represent a tree node is the number of
+### base letters in the DNA alphabet plus 4.
+###
+
+setClass("ACtree",
+    contains="PreprocessedTB",
+    representation(
+        nodes="XInteger",
+        base_codes="integer"
+    )
+)
+
+.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
+
+setMethod("show", "ACtree",
+    function(object)
+    {
+        .PreprocessedTB.showFirstLine(object)
+        nnodes <- length(object@nodes) %/% .ACtree.ints_per_acnode(object)
+        cat("  (number of nodes in the Aho-Corasick tree is ",
+            nnodes, ")\n", sep="")
+    }
+)
+
+### Implement the 0-based subsetting semantic (like in C).
+### Typical use:
+###   > pdict <- PDict(c("agg", "aca", "gag", "caa", "agt", "aca"))
+###   > pdict@actree[0:2] # look at the 3 first nodes
+###   > pdict@actree[] # look at all the nodes
+###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks0 # no failure link is set yet
+###   > end_index <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
+###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
+###   > flinks1 # some failure links have been set
+### As you can see the 'pdict' object "learns" from being used!
+###   
+setMethod("[", "ACtree",
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        ints_per_acnode <- .ACtree.ints_per_acnode(x)
+        nnodes <- length(x@nodes) %/% ints_per_acnode
+        if (missing(i)) {
+            i <- 0:(nnodes-1)
+        } else {
+            if (!is.numeric(i))
+                stop("invalid subscript type")
+            if (any(is.na(i)))
+                stop("subscript contains NAs")
+            if (!is.integer(i))
+                i <- as.integer(i)
+        }
+        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) +
+                          seq_len(ints_per_acnode)
+        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
+        colnames(ans) <- c("parent_id", "depth", x@base_codes,
+                           "flink", "P_id")
+        rownames(ans) <- i
+        ans
+    }
+)
+
+setMethod("as.matrix", "ACtree", function(x) x[])
+
+setMethod("initialize", "ACtree",
+    function(.Object, tb, dup2unq0)
+    {
+        base_codes <- codes(tb, baseOnly=TRUE)
+        on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
+        C_ans <- .Call("build_ACtree", tb, dup2unq0, base_codes,
+                       PACKAGE="Biostrings")
+        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object@nodes <- XInteger(0)
+        .Object@nodes@xp <- C_ans$actree_nodes_xp
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PDict3Parts" class.
+###
+
 setClass("PDict3Parts",
     representation(
         head="DNAStringSet",
@@ -184,24 +232,34 @@ setMethod("dups", "PDict3Parts",
         if (is.null(head(x)) && is.null(tail(x))) dups(x@pptb) else NULL
 )
 
-.PDict3Parts <- function(x, tb.start, tb.end, tb.width, type)
+.PDict3Parts <- function(x, tb.start, tb.end, tb.width, type, pptb0)
 {
     tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
                           use.names=FALSE)
-    base_codes <- codes(tb, baseOnly=TRUE)
-    pptb <- new(type, tb, base_codes)
     head_start <- start(x)
     head_width <- start(tb) - start(x)
     head <- new("DNAStringSet", super(x), head_start, head_width, names=NULL)
     tail_start <- end(tb) + 1L
     tail_width <- end(x) - end(tb)
     tail <- new("DNAStringSet", super(x), tail_start, tail_width, names=NULL)
+    use_pptb0 <- !is.null(pptb0) &&
+                     all(head_width == 0L) && all(tail_width == 0L) &&
+                     type == "ACtree"
+    if (use_pptb0) {
+        pptb <- pptb0
+    } else {
+        if (is.null(pptb0))
+            dup2unq0 <- NULL
+        else
+            dup2unq0 <- dups(pptb0)@dup2unq
+        pptb <- new(type, tb, dup2unq0)
+    }
     new("PDict3Parts", head=head, pptb=pptb, tail=tail)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PDict" class (top level).
+### The "PDict" VIRTUAL class (top level).
 ###
 ### A (virtual) container for storing a preprocessed dictionary of DNA
 ### patterns that can later be passed to the matchPDict() function for fast
@@ -323,18 +381,6 @@ setMethod("dups", "TB_PDict",
     }
 )
 
-setGeneric("clean.tb.unq2dup", function(x) standardGeneric("clean.tb.unq2dup"))
-setMethod("clean.tb.unq2dup", "TB_PDict",
-    function(x)
-    {
-        dups0 <- x@dups0
-        if (length(dups0) == 0)
-            return(NULL)
-        tb_dups <- dups(x@threeparts@pptb) # never NULL
-        .Dups.diff(tb_dups, dups0)
-    }
-)
-
 setMethod("show", "TB_PDict",
     function(object)
     {
@@ -379,146 +425,18 @@ setMethod("show", "TB_PDict",
 .TB_PDict <- function(x, tb.start, tb.end, tb.width, type)
 {
     constant_width <- min(width(x)) == max(width(x))
-    threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, type)
+    if (constant_width)
+        pptb0 <- new("ACtree", x, NULL)
+    else
+        pptb0 <- NULL
+    threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, type, pptb0)
     ans <- new("TB_PDict", dict0=x,
                            constant_width=constant_width,
                            threeparts=threeparts)
-    if (is.null(dups(threeparts)) && constant_width)
-        ans@dups0 <- dups(.PDict3Parts(x, NA, NA, NA, "ACtree"))
+    if (is.null(dups(threeparts)) && !is.null(pptb0))
+        ans@dups0 <- dups(pptb0)
     ans
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "Twobit" class.
-###
-### A low-level container for storing a PreprocessedTB object (preprocessed
-### Trusted Band) of type "Twobit".
-### With this type of preprocessing, the 2-bit-per-letter signatures of all
-### the oligonucleotides in the Trusted Band are computed and the mapping
-### from these signatures to the 1-based position of the corresponding
-### oligonucleotide in the Trusted Band is stored in a way that allows very
-### fast lookup.
-###
-
-setClass("Twobit",
-    contains="PreprocessedTB",
-    representation(
-        sign2pos="XInteger",  # length(x@sign2pos) is tb.width(x)^4
-        base_codes="integer"
-    )
-)
-
-setMethod("show", "Twobit",
-    function(object)
-    {
-        .PreprocessedTB.showFirstLine(object)
-        cat("  (length of sign2pos lookup table is ",
-            length(object@sign2pos), ")\n", sep="")
-    }
-)
-
-setMethod("initialize", "Twobit",
-    function(.Object, tb, base_codes)
-    {
-        C_ans <- .Call("build_Twobit", tb, base_codes,
-                       PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
-        .Object@sign2pos <- XInteger(0)
-        .Object@sign2pos@xp <- C_ans$twobit_sign2pos_xp
-        .Object@base_codes <- base_codes
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ACtree" class.
-###
-### A low-level container for storing a PreprocessedTB object (preprocessed
-### Trusted Band) of type "ACtree".
-### With this type of preprocessing, all the oligonucleotides in the Trusted
-### Band are stored in a 4-ary Aho-Corasick tree (note that this tree is in
-### fact an oriented graph if we consider the failure links or the shortcut
-### links).
-### The number of integers needed to represent a tree node is the number of
-### base letters in the DNA alphabet plus 4.
-###
-
-setClass("ACtree",
-    contains="PreprocessedTB",
-    representation(
-        nodes="XInteger",
-        base_codes="integer"
-    )
-)
-
-.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
-
-setMethod("show", "ACtree",
-    function(object)
-    {
-        .PreprocessedTB.showFirstLine(object)
-        nnodes <- length(object@nodes) %/% .ACtree.ints_per_acnode(object)
-        cat("  (number of nodes in the Aho-Corasick tree is ",
-            nnodes, ")\n", sep="")
-    }
-)
-
-### Implement the 0-based subsetting semantic (like in C).
-### Typical use:
-###   > pdict <- PDict(c("agg", "aca", "gag", "caa", "agt", "aca"))
-###   > pdict@actree[0:2] # look at the 3 first nodes
-###   > pdict@actree[] # look at all the nodes
-###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks0 # no failure link is set yet
-###   > end_index <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
-###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks1 # some failure links have been set
-### As you can see the 'pdict' object "learns" from being used!
-###   
-setMethod("[", "ACtree",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        ints_per_acnode <- .ACtree.ints_per_acnode(x)
-        nnodes <- length(x@nodes) %/% ints_per_acnode
-        if (missing(i)) {
-            i <- 0:(nnodes-1)
-        } else {
-            if (!is.numeric(i))
-                stop("invalid subscript type")
-            if (any(is.na(i)))
-                stop("subscript contains NAs")
-            if (!is.integer(i))
-                i <- as.integer(i)
-        }
-        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) +
-                          seq_len(ints_per_acnode)
-        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
-        colnames(ans) <- c("parent_id", "depth", x@base_codes,
-                           "flink", "P_id")
-        rownames(ans) <- i
-        ans
-    }
-)
-
-setMethod("as.matrix", "ACtree", function(x) x[])
-
-setMethod("initialize", "ACtree",
-    function(.Object, tb, base_codes)
-    {
-        on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
-        C_ans <- .Call("build_ACtree", tb, base_codes,
-                       PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
-        .Object@nodes <- XInteger(0)
-        .Object@nodes@xp <- C_ans$actree_nodes_xp
-        .Object@base_codes <- base_codes
-        .Object
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -588,15 +506,19 @@ setMethod("show", "MTB_PDict",
                 "  (it will of course depend ultimately on the ",
                 "length of the subject)")
     all_headw <- diffinv(all_tbw)
+    if (constant_width)
+        pptb0 <- new("ACtree", x, NULL)
+    else
+        pptb0 <- NULL
     threeparts_list <- lapply(seq_len(NTB),
                          function(i)
-                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1], NA, type)
+                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1], NA, type, pptb0)
                        )
     ans <- new("MTB_PDict", dict0=x,
                             constant_width=constant_width,
                             threeparts_list=threeparts_list)
-    if (constant_width)
-        ans@dups0 <- dups(.PDict3Parts(x, NA, NA, NA, "ACtree"))
+    if (!is.null(pptb0))
+        ans@dups0 <- dups(pptb0)
     ans
 }
 

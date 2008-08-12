@@ -226,6 +226,25 @@ SEXP _new_IRanges_from_RoSeqs(
 );
 
 
+/* Dups_utils.c */
+
+SEXP debug_Dups_utils();
+
+SEXP Dups_diff(
+	SEXP x_unq2dup,
+	SEXP y_dup2unq
+);
+
+void _init_dup2unq_buf(int length);
+
+void _report_dup(
+	int poffset,
+	int P_id
+);
+
+SEXP _dup2unq_asINTEGER();
+
+
 /* SparseList_utils.c */
 
 SEXP debug_SparseList_utils();
@@ -323,6 +342,14 @@ SEXP Biostrings_XRaw_memcmp(
 	SEXP start1,
 	SEXP xraw2_xp,
 	SEXP start2,
+	SEXP width
+);
+
+SEXP Biostrings_XRaw_memcpy(
+	SEXP dest_xraw_xp,
+	SEXP dest_start,
+	SEXP src_xraw_xp,
+	SEXP src_start,
 	SEXP width
 );
 
@@ -1003,25 +1030,6 @@ SEXP find_palindromes(
 );
 
 
-/* PDict_utils.c */
-
-SEXP debug_PDict_utils();
-
-SEXP Dups_diff(
-	SEXP x_unq2dup,
-	SEXP y_dup2unq
-);
-
-void _init_dup2unq_buf(int length);
-
-void _report_dup(
-	int poffset,
-	int P_id
-);
-
-SEXP _dup2unq_asINTEGER();
-
-
 /* MIndex_utils.c */
 
 SEXP debug_MIndex_utils();
@@ -1045,8 +1053,6 @@ void _MIndex_report_match(
 	int end
 );
 
-void _MIndex_report_matches_for_dups(SEXP unq2dup);
-
 void _MIndex_merge_matches(
 	IntAE *global_match_count,
 	const IntAEAE *global_match_ends,
@@ -1055,12 +1061,13 @@ void _MIndex_merge_matches(
 
 SEXP _MIndex_reported_matches_asSEXP(SEXP env);
 
-SEXP shiftListOfInts(
-	SEXP x,
+SEXP ByPos_MIndex_endIndex(
+	SEXP x_dup2unq,
+	SEXP x_ends,
 	SEXP shift
 );
 
-SEXP extract_endIndex(
+SEXP ByName_MIndex_endIndex(
 	SEXP ends_envir,
 	SEXP shift,
 	SEXP names,
@@ -1090,6 +1097,7 @@ SEXP debug_match_pdict_Twobit();
 
 SEXP build_Twobit(
 	SEXP tb,
+	SEXP dup2unq0,
 	SEXP base_codes
 );
 
@@ -1108,6 +1116,7 @@ SEXP free_actree_nodes_buf();
 
 SEXP build_ACtree(
 	SEXP tb,
+	SEXP dup2unq0,
 	SEXP base_codes
 );
 

@@ -28,7 +28,7 @@ SEXP debug_XRaw_utils()
  */
 
 SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
-		 SEXP xraw2_xp, SEXP start2, SEXP width)
+		SEXP xraw2_xp, SEXP start2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
 	int i1, i2, n;
@@ -69,8 +69,8 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
  * READ/WRITE functions
  * ====================
  *
- * The functions in this section implement the read/write operations to a
- * "XRaw" object. The user can choose between 2 interfaces for each
+ * The functions in this section implement the read/write operations to an
+ * XRaw object. The user can choose between 2 interfaces for each
  * read or write operation:
  *
  *   1. The "i1i2" interface: the chars to access are specified by 2
@@ -82,7 +82,7 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
  * integer vector containing their positions in the buffer.
  *
  * The "subset" interface is intended to be used by the subsetting
- * operator [ defined at the R level for "XRaw" objects.
+ * operator [ defined at the R level for XRaw objects.
  * R subsetting operator [ can be used to read values from, or write values
  * to an object that contains a collection of values, like a character
  * vector, an integer vector or a logical vector.
@@ -113,10 +113,30 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 
 
 /* ==========================================================================
- * Copy bytes from a "XRaw" to another "XRaw" object.
+ * Copy bytes from an XRaw object to another XRaw object.
  * --------------------------------------------------------------------------
  */
 
+/* Bold version (no recycling) */
+SEXP Biostrings_XRaw_memcpy(SEXP dest_xraw_xp, SEXP dest_start,
+		SEXP src_xraw_xp, SEXP src_start, SEXP width)
+{
+	SEXP dest, src;
+	int i, j, n;
+
+	dest = R_ExternalPtrTag(dest_xraw_xp);
+	i = INTEGER(dest_start)[0] - 1;
+	src = R_ExternalPtrTag(src_xraw_xp);
+	j = INTEGER(src_start)[0] - 1;
+	n = INTEGER(width)[0];
+	if (i < 0 || i + n > LENGTH(dest)
+	 || j < 0 || j + n > LENGTH(src))
+		error("subscripts out of bounds");
+	memcpy(RAW(dest) + i, RAW(src) + j, n * sizeof(Rbyte));
+	return dest_xraw_xp;
+}
+
+/* Cyclic writing in 'dest_xraw_xp' */
 SEXP Biostrings_XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
@@ -132,6 +152,7 @@ SEXP Biostrings_XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP im
 	return dest_xraw_xp;
 }
 
+/* Cyclic writing in 'dest_xraw_xp' */
 SEXP Biostrings_XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
 {
 	SEXP dest, src;
@@ -146,7 +167,7 @@ SEXP Biostrings_XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP 
 
 
 /* ==========================================================================
- * Read/write chars from/to a "XRaw" object.
+ * Read/write chars from/to an XRaw object.
  * All the functions in this group assume that sizeof(Rbyte) == sizeof(char).
  * --------------------------------------------------------------------------
  */
@@ -232,7 +253,7 @@ SEXP Biostrings_XRaw_write_chars_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP 
 
 
 /* ==========================================================================
- * Read/write integers from/to a "XRaw" object
+ * Read/write integers from/to an XRaw object
  * --------------------------------------------------------------------------
  */
 
@@ -358,7 +379,7 @@ SEXP XRaw_write_ints_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP val)
 
 
 /* ==========================================================================
- * Read/write encoded chars from/to a "XRaw" object
+ * Read/write encoded chars from/to an XRaw object
  * --------------------------------------------------------------------------
  */
 
@@ -443,7 +464,7 @@ SEXP XRaw_write_enc_chars_to_subset(SEXP dest_xraw_xp, SEXP subset,
 
 
 /* ==========================================================================
- * Read chars from a "XRaw" object and convert them to a vector
+ * Read chars from an XRaw object and convert them to a vector
  * of complexes.
  * --------------------------------------------------------------------------
  */

@@ -23,8 +23,16 @@
 \alias{nchar,XStringSet-method}
 \alias{alphabet,XStringSet-method}
 
-% Constructor-like functions and generics:
+% Initialization:
 \alias{initialize,XStringSet-method}
+
+% Coercion:
+\alias{coerce,XStringSet,BStringSet-method}
+\alias{coerce,XStringSet,DNAStringSet-method}
+\alias{coerce,XStringSet,RNAStringSet-method}
+\alias{coerce,XStringSet,AAStringSet-method}
+
+% Constructor-like functions and generics:
 \alias{XStringSet,character-method}
 \alias{XStringSet,AsIs-method}
 \alias{XStringSet,XString-method}
@@ -36,10 +44,15 @@
 \alias{RNAStringSet}
 \alias{AAStringSet}
 
-% Other methods:
+% "show" method:
 \alias{show,XStringSet-method}
+
+% Subsetting and appending:
 \alias{[[,XStringSet-method}
 \alias{[[<-,XStringSet-method}
+\alias{append,XStringSet-method}
+
+% Other methods:
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
 
@@ -116,9 +129,9 @@
   }
 }
 
-\section{Subsetting methods}{
+\section{Subsetting and appending}{
   In the code snippets below,
-  \code{x} is an XStringSet object,
+  \code{x} and \code{values} are XStringSet objects,
   and \code{i} should be an index specifying the elements to extract.
 
   \describe{
@@ -129,6 +142,10 @@
     \item{}{
       \code{x[[i]]}:
       Extract the i-th \code{\link{XString}} object from \code{x}.
+    }
+    \item{}{
+      \code{append(x, values, after=length(x))}:
+      Add sequences in \code{values} to \code{x}.
     }
   }
 }
