@@ -97,7 +97,7 @@
   \describe{
     \item{}{
       \code{x[[i]]}:
-      Extract the matches for the i-th pattern as an \link{IRanges} object.
+      Extract the matches for the i-th pattern as an \link[IRanges]{IRanges} object.
     }
   }
 }
@@ -111,7 +111,7 @@
   \describe{
     \item{}{
       \code{unlist(x, recursive=TRUE, use.names=TRUE)}:
-      Return all the matches in a single \link{IRanges} object.
+      Return all the matches in a single \link[IRanges]{IRanges} object.
       \code{recursive} and \code{use.names} are ignored.
     }
     \item{}{
@@ -126,7 +126,7 @@
 \seealso{
   \code{\link{matchPDict}},
   \link{PDict-class},
-  \link{IRanges-class},
+  \link[IRanges]{IRanges-class},
   \link{XStringViews-class}
 }
 

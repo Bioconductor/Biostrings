@@ -18,8 +18,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_RoSeq_utils, 0),
 
 /* Dups_utils.c */
-	{"debug_Dups_utils", (DL_FUNC) &debug_Dups_utils, 0},
-	{"Dups_diff", (DL_FUNC) &Dups_diff, 2},
+	CALLMETHOD_DEF(debug_Dups_utils, 0),
+	CALLMETHOD_DEF(Dups_diff, 2),
 
 /* SparseList_utils.c */
 	CALLMETHOD_DEF(debug_SparseList_utils, 0),

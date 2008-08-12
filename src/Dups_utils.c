@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -24,9 +25,9 @@ SEXP Dups_diff(SEXP x_unq2dup, SEXP y_dup2unq)
 	SEXP ans, ans_elt, dups;
 	int ans_length, i, j;
 	const int *dup;
-	IntBuf new_dups;
+	IntAE new_dups;
 
-	new_dups = _new_IntBuf(0, 0, 0);
+	new_dups = new_IntAE(0, 0, 0);
 	ans_length = LENGTH(x_unq2dup);
 	PROTECT(ans = NEW_LIST(ans_length));
 	for (i = 0; i < ans_length; i++) {
@@ -36,9 +37,9 @@ SEXP Dups_diff(SEXP x_unq2dup, SEXP y_dup2unq)
 		new_dups.nelt = 0;
 		for (j = 0, dup = INTEGER(dups); j < LENGTH(dups); j++, dup++) {
 			if (INTEGER(y_dup2unq)[*dup - 1] == NA_INTEGER)
-				_IntBuf_insert_at(&new_dups, new_dups.nelt, *dup);
+				IntAE_insert_at(&new_dups, new_dups.nelt, *dup);
 		}
-		PROTECT(ans_elt = _IntBuf_asINTEGER(&new_dups));
+		PROTECT(ans_elt = IntAE_asINTEGER(&new_dups));
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}
@@ -51,11 +52,11 @@ SEXP Dups_diff(SEXP x_unq2dup, SEXP y_dup2unq)
  * Buffer of duplicates.
  */
 
-static IntBuf dup2unq_buf;
+static IntAE dup2unq_buf;
 
 void _init_dup2unq_buf(int length)
 {
-	dup2unq_buf = _new_IntBuf(length, length, NA_INTEGER);
+	dup2unq_buf = new_IntAE(length, length, NA_INTEGER);
 	return;
 }
 
@@ -75,6 +76,6 @@ void _report_dup(int poffset, int P_id)
 /* NOT a .Call() entry point! */
 SEXP _dup2unq_asINTEGER()
 {
-	return _IntBuf_asINTEGER(&dup2unq_buf);
+	return IntAE_asINTEGER(&dup2unq_buf);
 }
 

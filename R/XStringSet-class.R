@@ -176,7 +176,7 @@ compactXStringSet <- function(x, baseClass=NULL)
     if (is.null(baseClass)) {
         ## Endomorphism
         x@super <- ans_super
-        unsafe.update(x, start=start(ans_ranges), width=width(ans_ranges))
+        IRanges:::unsafe.update(x, start=start(ans_ranges), width=width(ans_ranges))
     } else {
         ## NOT an endomorphism
         ans_class <- paste(to_baseClass, "Set", sep="")
