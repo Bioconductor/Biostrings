@@ -62,12 +62,18 @@
 \description{
   The BStringSet class is a container for storing a set of \code{\link{BString}}
   objects and for making its manipulation easy and efficient.
+
   Similarly, the DNAStringSet (or RNAStringSet, or AAStringSet) class is
   a container for storing a set of \code{\link{DNAString}}
   (or \code{\link{RNAString}}, or \code{\link{AAString}}) objects.
+
+  All those containers derive directly (and with no additional slots)
+  from the XStringSet virtual class. They are also said to be XStringSet
+  subtypes.
 }
 
 \usage{
+  ## Constructors:
   BStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -76,24 +82,60 @@
 
 \arguments{
   \item{x}{
-    [TODO]
+    Either a character vector, or an \link{XString}, \link{XStringSet}
+    or \link{XStringViews} object.
   }
   \item{start}{
-    [TODO]
+    Either \code{NA}, a single integer, or an integer vector of the same
+    length as \code{x} specifying how \code{x} should be "narrowed"
+    (see \code{?\link[IRanges]{narrow}} for the details).
   }
   \item{end}{
-    [TODO]
+    Either \code{NA}, a single integer, or an integer vector of the same
+    length as \code{x} specifying how \code{x} should be "narrowed"
+    (see \code{?\link[IRanges]{narrow}} for the details).
   }
   \item{width}{
-    [TODO]
+    Either \code{NA}, a single integer, or an integer vector of the same
+    length as \code{x} specifying how \code{x} should be "narrowed"
+    (see \code{?\link[IRanges]{narrow}} for the details).
   }
   \item{use.names}{
-    [TODO]
+    \code{TRUE} or \code{FALSE}. Should names be preserved?
   }
 }
 
 \details{
-  [TODO]
+  The \code{BStringSet}, \code{DNAStringSet}, \code{RNAStringSet} and
+  \code{AAStringSet} functions are constructors that can be used to
+  "naturally" turn \code{x} into an XStringSet object of the desired
+  subtype.
+
+  They also allow the user to "narrow" the sequences contained in \code{x}
+  via proper use of the \code{start}, \code{end} and/or \code{width}
+  arguments. In this context, "narrowing" means dropping unwanted parts
+  of \code{x} located at the beginning (prefix) or end (suffix) of each
+  sequence in \code{x}.
+
+  The \code{\link[IRanges]{narrow}} function is a generic function
+  (defined in the IRanges package) with a method for narrowing
+  \link[IRanges]{IRanges} objects. Because XStringSet objects are
+  a particular kind of \link[IRanges]{IRanges} objects (the XStringSet
+  class is a subclass of the \link[IRanges]{IRanges} class), an XStringSet
+  object \code{y} can be narrowed with \code{narrow(y)}.
+  Therefore the two following expressions are equivalent:
+  \describe{
+    \item{}{
+      \code{DNAStringSet(x, start=s, end=e, width=w)}
+    }
+    \item{}{
+      \code{narrow(DNAStringSet(x), start=s, end=e, width=w)}
+    }
+  }
+  but, besides being more convenient, the former is also more memory
+  efficient on character vectors and would work even if the dropped
+  parts contained letters that are not in the DNA alphabet (see
+  \code{?\link{DNA_ALPHABET}}).
 }
 
 \section{Accesor methods}{
@@ -170,11 +212,13 @@
   \link{RNAString-class},
   \link{AAString-class},
   \link{XStringViews-class},
-  \link[IRanges]{IRanges}
+  \code{\link[IRanges]{narrow}},
+  \code{\link{DNA_ALPHABET}}
 }
 
 \examples{
-  x1 <- DNAStringSet(c("TTGA", "-CTC-N"))
+  x0 <- c("#TTGA", "#-CTC-N")
+  x1 <- DNAStringSet(x0, start=2)
   x1
   names(x1)
   names(x1)[2] <- "seqB"
@@ -184,7 +228,7 @@
   x2 <- DNAStringSet(drosophila2probe$sequence)
   x2
 
-  RNAStringSet(x2, start=2, end=-5)
+  RNAStringSet(x2, start=2, end=-5)  # does NOT copy the sequence data!
 }
 
 \keyword{methods}
