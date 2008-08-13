@@ -8,6 +8,13 @@ o Added a set of "coerce" methods for turning an arbitrary XStringSet object
   into a BStringSet, DNAStringSet, RNAStringSet or AAStringSet instance (via
   the as() function).
 
+o Added an "append" method for XStringSet objects. An important use case for
+  this is to put together a set of short reads and their reverse complements
+  in a single DNAStringSet object and then to turn this object into a single
+  PDict object (dual PDict object). Then this dual PDict object can be used
+  to walk each reference sequence only once (instead of twice) in order to
+  get the hits in both strands (+ and -).
+
 o Removed the XStringList class and family.
 
 o Moved the IRanges, UnlockedIRanges, LockedIRanges, NormalIRanges and
@@ -17,16 +24,11 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
+o Added predefined 'RNA_GENETIC_CODE' object.
+
 o Moved the utility functions for importing a mask (read.agpMask(),
   read.gapMask(), read.liftMask(), read.rmMask() and read.trfMask() functions)
   to the new IRanges package.
-
-o Added an "append" method for XStringSet objects. An important use case for
-  this is to put together a set of short reads and their reverse complements
-  in a single DNAStringSet object and then to turn this object into a single
-  PDict object (dual PDict object). Then this dual PDict object can be used
-  to walk each reference sequence only once (instead of twice) in order to
-  get the hits in both strands (+ and -).
 
 STRING MATCHING
 

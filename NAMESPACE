@@ -24,7 +24,7 @@ exportClasses(
 export(
     readFASTA, writeFASTA, gregexpr2,
     IUPAC_CODE_MAP, mergeIUPACLetters,
-    AMINO_ACID_CODE, GENETIC_CODE,
+    AMINO_ACID_CODE, GENETIC_CODE, RNA_GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
     #XRaw, XRaw.copy, XInteger, XInteger.read, XInteger.write, XNumeric, XNumeric.read, XNumeric.write,
     BString, DNAString, RNAString, AAString,
