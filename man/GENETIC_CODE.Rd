@@ -16,8 +16,8 @@
 }
 
 \details{
-  Formally, a genetic code is a mapping between tri-nucleotide sequences called
-  codons, and amino acids.
+  Formally, a genetic code is a mapping between tri-nucleotide sequences
+  called codons, and amino acids.
 
   The Standard Genetic Code (aka The Canonical Genetic Code, or simply The
   Genetic Code) is the particular mapping that encodes the vast majority of
@@ -30,7 +30,8 @@
 \value{
   \code{GENETIC_CODE} and \code{RNA_GENETIC_CODE} are both named character
   vectors of length 64 (the number of all possible tri-nucleotide sequences)
-  where each element is a single letter representing an amino acid.
+  where each element is a single letter representing either an amino acid
+  or the stop codon \code{"*"} (aka termination codon).
 
   The names of the \code{GENETIC_CODE} vector are the DNA codons i.e. the
   tri-nucleotide sequences (directed 5' to 3') that are assumed to belong
@@ -41,10 +42,10 @@
   tri-nucleotide sequences (directed 5' to 3') that are assumed to belong
   to the mRNA of the gene.
 
-  Note that the values in \code{GENETIC_CODE} and \code{RNA_GENETIC_CODE}
-  are the same, only their names are different. The names of
-  \code{RNA_GENETIC_CODE} are the names of \code{GENETIC_CODE} where
-  all occurences of T (thymine) have been replaced by U (uracil).
+  Note that the values in the \code{GENETIC_CODE} and \code{RNA_GENETIC_CODE}
+  vectors are the same, only their names are different. The names of the
+  latter are those of the former where all occurences of T (thymine) have
+  been replaced by U (uracil).
 }
 
 \author{H. Pages}

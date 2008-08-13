@@ -131,6 +131,7 @@
 
 \seealso{
   \code{\link{maskMotif}},
+  \code{\link{injectHardMask}},
   \code{\link{alphabetFrequency}},
   \code{\link{reverse}},
   \link{XString-class},
