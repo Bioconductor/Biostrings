@@ -231,15 +231,25 @@ if (FALSE) {
     ##   o nupatt: nb of unique truncated input sequences;
     ##   o matchtime: time (in sec.) needed to find all the matches;
     ##   o totalcount: total number of matches.
-    getPDictStats <- function(dict0, subject)
+    getPDictStats <- function(dict, subject)
     {
+      ans_width <- width(dict[1])
+      ans_pptime <- system.time(pdict <- PDict(dict))[["elapsed"]]
+      pptb <- pdict@threeparts@pptb
+      ans_nnodes <- length(pptb@nodes) %/%
+                    Biostrings:::.ACtree.ints_per_acnode(pptb)
+      ans_nupatt <- sum(!duplicated(pdict))
+      ans_matchtime <- system.time(
+                         mindex <- matchPDict(pdict, subject)
+                       )[["elapsed"]]
+      ans_totalcount <- sum(countIndex(mindex))
       list(
-        width=width(dict0[1]),
-        pptime=system.time(pdict <- PDict(dict0))[["elapsed"]],
-        nnodes=length(pdict@actree),
-        nupatt=sum(!duplicated(pdict)),
-        matchtime=system.time(mindex <- matchPDict(pdict, subject))[["elapsed"]],
-        totalcount=sum(countIndex(mindex))
+        width=ans_width,
+        pptime=ans_pptime,
+        nnodes=ans_nnodes,
+        nupatt=ans_nupatt,
+        matchtime=ans_matchtime,
+        totalcount=ans_totalcount
       )
     }
     stats <- lapply(6:25,

@@ -7,6 +7,9 @@
 \title{The IUPAC Extended Genetic Alphabet}
 
 \description{
+  IUPAC nucleotide ambiguity codes are used for representing
+  sequences of nucleotides where 
+
   [TODO]
 }
 
@@ -26,6 +29,11 @@
 }
 
 \author{H. Pages}
+
+\references{
+  IUPAC-IUB SYMBOLS FOR NUCLEOTIDE NOMENCLATURE:
+  Cornish-Bowden (1985) \emph{Nucl. Acids Res.} 13: 3021-3030.
+}
 
 \seealso{
   \code{\link{DNAString}}, \code{\link{RNAString}}

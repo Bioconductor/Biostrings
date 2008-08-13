@@ -84,7 +84,7 @@
   PWMscore(pwm, subject, c(2:1, NA))
 
   library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chr3R <- Dmelanogaster$chr3R
+  chr3R <- unmasked(Dmelanogaster$chr3R)
   chr3R
 
   ## Match the plus strand
