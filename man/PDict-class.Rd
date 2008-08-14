@@ -105,22 +105,24 @@
     an \link{XStringViews} object with a \link{DNAString} subject.
   }
   \item{max.mismatch}{
-    [DOCUMENT ME]
+    A single non-negative integer or \code{NA}. See the "Allowing
+    a small number of mismatching letters" section below.
   }
   \item{tb.start}{
-    [DOCUMENT ME]
+    A single integer or \code{NA}. See the "Trusted Band" section below.
   }
   \item{tb.end}{
-    [DOCUMENT ME]
+    A single integer or \code{NA}. See the "Trusted Band" section below.
   }
   \item{tb.width}{
-    [DOCUMENT ME]
+    A single integer or \code{NA}. See the "Trusted Band" section below.
   }
   \item{type}{
-    [DOCUMENT ME]
+    \code{"ACtree"} or \code{"Twobit"}
   }
   \item{skip.invalid.patterns}{
-    [DOCUMENT ME]
+    This argument is not supported yet (and might in fact be replaced
+    by the \code{filter} argument very soon).
   }
 }
 
@@ -132,15 +134,21 @@
   then the \code{PDict} constructor will first try to turn it
   into a \link{DNAStringSet} object.
 
-  By default (i.e. if \code{PDict} is called with \code{tb.start=NA},
-  \code{tb.end=NA} and \code{tb.width=NA}) the following limitations
-  apply: (1) the original dictionary can only contain As, Cs, Gs and Ts
-  (no IUPAC extended letters); (2) all the patterns in the dictionary must
-  have the same length ("constant width" dictionary); and (3) later
-  \code{matchPdict} can only be used with \code{max.mismatch=0}.
+  By default (i.e. if \code{PDict} is called with \code{max.mismatch=NA},
+  \code{tb.start=NA}, \code{tb.end=NA} and \code{tb.width=NA})
+  the following limitations apply: (1) the original dictionary can only
+  contain As, Cs, Gs and Ts (no IUPAC extended letters); (2) all the
+  patterns in the dictionary must have the same length ("constant width"
+  dictionary); and (3) later \code{matchPdict} can only be used with
+  \code{max.mismatch=0}.
 
-  A Trusted Band can be used in order to relax these limitations (more
-  on this below).
+  A Trusted Band can be used in order to relax these limitations (see
+  the "Trusted Band" section below).
+
+  If you are planning to use the resulting \code{PDict} object in order
+  to do inexact matching where valid hits are allowed to have a small
+  number of mismatching letters, then see the "Allowing a small number
+  of mismatching letters" section below.
 
   Two types of preprocessing are currently supported: \code{type="ACtree"}
   (the default) and \code{type="Twobit"}. With the \code{"ACtree"} type,
@@ -211,6 +219,10 @@
   a Trusted Band that covers the entire dictionary (no head and no tail).
 }
 
+\section{Allowing a small number of mismatching letters}{
+  [TODO]
+}
+
 \section{Accesor methods}{
   In the code snippets below,
   \code{x} is a PDict object.
@@ -271,11 +283,11 @@
   \describe{
     \item{}{
       \code{duplicated(x)}:
-      [DOCUMENT ME]
+      [TODO]
     }
     \item{}{
       \code{patternFrequency(x)}:
-      [DOCUMENT ME]
+      [TODO]
     }
   }
 }

@@ -64,12 +64,16 @@
 }
 
 \value{
-  [TODO]
+  An \link{XString} object of the same subtype as \code{x} for
+  \code{subXString}.
+
+  A character vector for \code{substr} and \code{substring}.
 }
 
 \author{H. Pages}
 
 \seealso{
+  \code{\link{subseq}},
   \code{\link{letter}},
   \code{\link{views}},
   \link{XString-class},

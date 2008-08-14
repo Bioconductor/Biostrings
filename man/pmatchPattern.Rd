@@ -30,7 +30,7 @@
   Functions for searching the Longest Common Prefix/Suffix/Substring
   of two strings.
 
-  WARNING: These functions are currently under development and might
+  WARNING: These functions are experimental and might
   not work properly! Full documentation will come later.
 
   Please send questions/comments to hpages@fhcrc.org
@@ -64,23 +64,10 @@
   }
 }
 
-\details{
-  [TODO]
-}
-
-\value{
-  [TODO]
-}
-
 \seealso{
   \link{matchPattern},
   \link{XStringViews-class},
   \link{XString-class}
 }
 
-\examples{
-  ## [TODO]
-}
-
 \keyword{methods}
-

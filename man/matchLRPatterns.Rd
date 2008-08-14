@@ -6,10 +6,12 @@
 \alias{matchLRPatterns,MaskedXString-method}
 
 
-\title{Find patterns defined by a left and a right part in a sequence}
+\title{Find paired matches in a sequence}
 
 \description{
-  [TODO]
+  The \code{matchLRPatterns} function finds paired matches in a sequence
+  i.e. matches specified by a left pattern, a right pattern and a maximum
+  distance between the left pattern and the right pattern.
 }
 
 \usage{
@@ -57,9 +59,6 @@
   \item{Rfixed}{
     Same as \code{Lfixed} but for the right part of the pattern.
   }
-}
-
-\details{
 }
 
 \value{

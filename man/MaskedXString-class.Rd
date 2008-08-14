@@ -67,15 +67,38 @@
 \title{MaskedXString objects}
 
 \description{
-  The MaskedXString class is a container for storing a masked sequence.
+  The MaskedBString, MaskedDNAString, MaskedRNAString and MaskedAAString
+  classes are containers for storing masked sequences.
+
+  All those containers derive directly (and with no additional slots)
+  from the MaskedXString virtual class. They are also said to be
+  MaskedXString subtypes.
 }
 
 \details{
-  [TODO]
+  In Biostrings, a pile of masks can be put on top of a sequence.
+  A pile of masks is represented by a \link[IRanges]{MaskCollection}
+  object and the sequence by an \link{XString} object.
+  A MaskedXString object is the result of bundling them together in a
+  single object.
+
+  Note that, no matter what masks are put on top of it, the original
+  sequence is always stored unmodified in a MaskedXString object.
+  This allows the user to activate/deactivate masks without having to
+  worry about losing the information stored in the masked/unmasked
+  regions.
+  Also this allows efficient memory management since the original
+  sequence never needs to be copied (modifying it would require to
+  make a copy of it first - sequences cannot and should never be modified
+  in place in Biostrings), even when the set of active/inactive masks
+  changes.
 }
 
 \section{Accesor methods}{
   In the code snippets below, \code{x} is a MaskedXString object.
+  For \code{masks(x)} and \code{masks(x) <- y}, it can also be
+  an \link{XString} object and \code{y} must be \code{NULL} or
+  a \link[IRanges]{MaskCollection} object.
 
   \describe{
     \item{}{
@@ -84,7 +107,25 @@
     }
     \item{}{
       \code{masks(x)}:
-      Turns \code{x} into a \link[IRanges]{MaskCollection} object by dropping the sequence.
+      Turns \code{x} into a \link[IRanges]{MaskCollection} object by
+      dropping the sequence.
+    }
+    \item{}{
+      \code{masks(x) <- y}:
+      If \code{x} is an \link{XString} object and \code{y} is \code{NULL},
+      then this doesn't do anything.
+
+      If \code{x} is an \link{XString} object and \code{y} is a
+      \link[IRanges]{MaskCollection} object, then this turns \code{x}
+      into a MaskedXString object by putting the masks in \code{y} on top
+      of it.
+
+      If \code{x} is a MaskedXString object and \code{y} is \code{NULL},
+      then this is equivalent to \code{x <- unmasked(x)}.
+
+      If \code{x} is a MaskedXString object and \code{y} is a
+      \link[IRanges]{MaskCollection} object, then this replaces
+      the masks currently on top of \code{x} by the masks in \code{y}.
     }
     \item{}{
       \code{alphabet(x)}:
@@ -94,7 +135,8 @@
     \item{}{
       \code{length(x)}:
       Equivalent to \code{length(unmasked(x))}.
-      See \code{?`\link[Biostrings]{length},XString-method`} for more information.
+      See \code{?`\link[Biostrings]{length},XString-method`} for more
+      information.
     }
   }
 }
@@ -120,11 +162,34 @@
 }
 
 \section{Coercion}{
-  TODO
+  In the code snippets below, \code{x} is a MaskedXString object.
+
+  \describe{
+    \item{}{
+      \code{as(x, "XStringViews")}:
+      Turns \code{x} into an \link{XStringViews} object where the
+      views are the unmasked regions of the original sequence
+      ("unmasked" means not masked by at least one active mask).
+    }
+  }
 }
 
 \section{Other methods}{
-  TODO
+  In the code snippets below, \code{x} is a MaskedXString object.
+
+  \describe{
+    \item{}{
+      \code{reduce(x)}:
+      Reduce the set of masks in \code{x} to a single mask made of
+      all active masks.
+    }
+    \item{}{
+      \code{gaps(x)}:
+      Reverses all the masks i.e. each mask is replaced by a mask
+      where previously unmasked regions are now masked and
+      previously masked regions are now unmasked.
+    }
+  }
 }
 
 \author{H. Pages}

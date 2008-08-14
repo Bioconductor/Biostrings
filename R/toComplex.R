@@ -13,11 +13,17 @@ setGeneric("toComplex",
 setMethod("toComplex", "DNAString",
     function(x, baseValues)
     {
-        letters <- names(baseValues)
-        # dirty trick, need to find something better
-        codes <- DNAString(paste(letters, collapse=""))@xdata[]
-        lkup <- buildLookupTable(codes, baseValues)
-        XRaw.readComplexes(x@xdata, x@offset + 1, x@offset + x@length, lkup)
+        if (is.null(names(baseValues)))
+            stop("'baseValues' must have names")
+        if (any(duplicated(names(baseValues))))
+            stop("'baseValues' must have unique names")
+        base_codes <- codes(x)
+        if (!all(names(baseValues) %in% names(base_codes)))
+            stop("'baseValues' names must be valid DNA letters")
+        if (!is.complex(baseValues))
+            class(baseValues) <- "complex" # as.complex() would drop the names!
+        lkup <- buildLookupTable(base_codes[names(baseValues)], baseValues)
+        XRaw.readComplexes(x@xdata, x@offset + 1L, x@offset + x@length, lkup)
     }
 )
 

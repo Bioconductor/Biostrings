@@ -6,10 +6,11 @@
 \alias{as.complex,DNAString-method}
 
 
-\title{Converting a DNAString to a vector of complexes}
+\title{Turning a DNA sequence into a vector of complex numbers}
 
 \description{
-  [TODO]
+  The \code{toComplex} utility function turns a \link{DNAString} object
+  into a complex vector.
 }
 
 \usage{
@@ -18,16 +19,17 @@
 
 \arguments{
   \item{x}{
-    A \code{\link{DNAString}} object.
+    A \link{DNAString} object.
   }
   \item{baseValues}{
     A named complex vector containing the values associated
     to each base e.g.
-      \code{c("A"=1+0i, "G"=0+1i, "T"=-1+0i, "C"=0-1i)}
+      \code{c(A=1+0i, G=0+1i, T=-1+0i, C=0-1i)}
   }
 }
 
-\details{
+\value{
+  A complex vector of the same length as \code{x}.
 }
 
 \author{H. Pages}
@@ -37,7 +39,14 @@
 }
 
 \examples{
+  seq <- DNAString("accacctgaccattgtcct")
+  baseValues1 <- c(A=1+0i, G=0+1i, T=-1+0i, C=0-1i)
+  toComplex(seq, baseValues1)
+
+  ## GC content:
+  baseValues2 <- c(A=0, C=1, G=1, T=0)
+  sum(as.integer(toComplex(seq, baseValues2)))
+  ## Note that there are better ways to do this (see ?alphabetFrequency)
 }
 
 \keyword{methods}
-

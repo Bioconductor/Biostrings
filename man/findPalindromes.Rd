@@ -38,14 +38,15 @@
 \title{Searching a sequence for palindromes or complemented palindromes}
 
 \description{
-  The \code{findPalindromes} function finds palindromic substrings in a subject
-  string. The palindromes that can be searched for are either strict palindromes
-  or 2-arm palindromes (the former being a particular case of the latter) i.e.
-  palindromes where the 2 arms are separated by an arbitrary sequence called
-  "the loop".
-  Use the \code{findComplementedPalindromes} function to find complemented
-  palindromic substrings in a \link{DNAString} subject (in a complemented
-  palindrome the 2 arms are reverse-complementary sequences).
+  The \code{findPalindromes} and \code{findComplementedPalindromes}
+  functions can be used to find palindromic or complemented palindromic
+  regions in a sequence.
+
+  \code{palindromeArmLength}, \code{palindromeLeftArm},
+  \code{palindromeRightArm},
+  \code{complementedPalindromeArmLength}, \code{complementedPalindromeLeftArm}
+  and \code{complementedPalindromeRightArm} are utility functions for
+  operating on palindromic or complemented palindromic sequences.
 }
 
 \usage{
@@ -95,6 +96,15 @@
 }
 
 \details{
+  The \code{findPalindromes} function finds palindromic substrings in a subject
+  string. The palindromes that can be searched for are either strict palindromes
+  or 2-arm palindromes (the former being a particular case of the latter) i.e.
+  palindromes where the 2 arms are separated by an arbitrary sequence called
+  "the loop".
+
+  Use the \code{findComplementedPalindromes} function to find complemented
+  palindromic substrings in a \link{DNAString} subject (in a complemented
+  palindrome the 2 arms are reverse-complementary sequences).
 }
 
 \value{
@@ -162,4 +172,3 @@
 }
 
 \keyword{methods}
-

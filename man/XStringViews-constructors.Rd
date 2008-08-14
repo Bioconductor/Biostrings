@@ -73,7 +73,7 @@
     \link{XStringViews} object created and returned by the function.
   }
   \item{use.names}{
-    [TODO]
+    \code{TRUE} or \code{FALSE}. Should names be preserved?
   }
 }
 
