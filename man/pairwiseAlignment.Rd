@@ -51,8 +51,8 @@ pairwiseAlignment(pattern, subject, \dots)
   \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
     use \code{substitutionMatrix} in conjunction with \code{patternQuality} and
     \code{subjectQuality} arguments.}
-  \item{gapOpening}{penalty for opening a gap in the alignment.}
-  \item{gapExtension}{penalty for extending a gap in the alignment.}
+  \item{gapOpening}{the cost for opening a gap in the alignment.}
+  \item{gapExtension}{the incremental cost incurred along the length of the gap in the alignment.}
   \item{scoreOnly}{logical to denote whether or not to return just the scores of the
     optimal pairwise alignment.}
   \item{\dots}{optional arguments to generic function to support additional methods.}
