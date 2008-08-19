@@ -36,9 +36,6 @@
 \alias{mismatchSummary,PairwiseAlignment-method}
 \alias{mismatchSummary,PairwiseAlignmentSummary-method}
 
-\alias{coverage}
-\alias{coverage,IRanges-method}
-\alias{coverage,MaskCollection-method}
 \alias{coverage,XStringViews-method}
 \alias{coverage,MaskedXString-method}
 \alias{coverage,MIndex-method}
@@ -79,8 +76,11 @@
   mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
   mismatchSummary(x, \dots)
   \S4method{mismatchSummary}{PairwiseAlignment}(x, weight=1L)
-  coverage(x, start=NA, end=NA, ...)
-  \S4method{coverage}{IRanges}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{MIndex}(x, start=NA, end=NA)
+  \S4method{coverage}{XStringViews}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{MaskedXString}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{AlignedXStringSet}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{PairwiseAlignment}(x, start=NA, end=NA, weight=1L)
 }
 
 \arguments{
@@ -176,8 +176,8 @@
   frequencies of the mismatches for the \code{AlignedXStringSet} or
   \code{PairwiseAlignment} object.
 
-  An integer vector indicating the coverage of \code{x} in the interval
-  specified by the \code{start} and \code{end} arguments.
+  \code{coverage}:  an integer vector indicating the coverage of \code{x} in the
+  interval specified by the \code{start} and \code{end} arguments.
   An integer value called the "coverage" can be associated to each position
   in \code{x}, indicating how many times this position is covered by the views
   or matches stored in \code{x}. For example, if \code{x} is an
@@ -197,6 +197,7 @@
   \link{XString-class},
   \link{XStringViews-class},
   \link{MIndex-class},
+  \link[IRanges]{coverage},
   \link[IRanges]{IRanges-class},
   \link[IRanges]{MaskCollection-class},
   \link{MaskedXString-class},
@@ -253,21 +254,6 @@
   ## coverage()
   ## ---------------------------------------------------------------------
   coverage(m)
-
-  x <- IRanges(start=c(-2L, 6L, 9L, -4L, 1L, 0L, -6L, 10L),
-               width=c( 5L, 0L, 6L,  1L, 4L, 3L,  2L,  3L))
-  coverage(x, start=-6, end=20)  # 'start' and 'end' must be specified for
-                                 # an IRanges object.
-  coverage(shift(x, 2), start=-6, end=20)
-  coverage(restrict(x, 1, 10), start=-6, end=20)
-  coverage(reduce(x), start=-6, end=20)
-  coverage(gaps(x, start=-6, end=20), start=-6, end=20)
-
-  mask1 <- Mask(mask.width=29, start=c(11, 25, 28), width=c(5, 2, 2))
-  mask2 <- Mask(mask.width=29, start=c(3, 10, 27), width=c(5, 8, 1))
-  mask3 <- Mask(mask.width=29, start=c(7, 12), width=c(2, 4))
-  mymasks <- append(append(mask1, mask2), mask3)
-  coverage(mymasks)
 
   ## See ?matchPDict for examples of using coverage() on an MIndex object...
 }

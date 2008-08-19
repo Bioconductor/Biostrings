@@ -113,7 +113,7 @@
   \link{MIndex-class},
   \link{matchPDict-inexact},
   \code{\link{isMatching}},
-  \code{\link{coverage}},
+  \code{\link{coverage,MIndex-method}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
   \link{XStringViews-class},
