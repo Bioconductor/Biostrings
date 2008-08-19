@@ -15,7 +15,8 @@ exportClasses(
     XStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringPartialMatches,
-    InDel, AlignedXStringSet, PairwiseAlignment,
+    InDel, AlignedXStringSet, QualityAlignedXStringSet,
+    PairwiseAlignment, PairwiseAlignmentSummary,
     BOC_SubjectString, BOC2_SubjectString,
     PreprocessedTB, Twobit, ACtree, PDict3Parts, PDict, TB_PDict, MTB_PDict,
     MIndex, ByPos_MIndex, ByName_MIndex
