@@ -1,9 +1,5 @@
 \name{reverseComplement}
 
-\alias{reverse}
-\alias{reverse,IRanges-method}
-\alias{reverse,NormalIRanges-method}
-\alias{reverse,MaskCollection-method}
 \alias{reverse,XString-method}
 \alias{reverse,XStringSet-method}
 \alias{reverse,XStringViews-method}
@@ -40,9 +36,9 @@
 }
 
 \usage{
-  reverse(x, ...)
-  complement(x, ...)
-  reverseComplement(x, ...)
+  \S4method{reverse}{XString}(x, \dots)
+  complement(x, \dots)
+  reverseComplement(x, \dots)
 }
 
 \arguments{
@@ -57,7 +53,7 @@
     \link{MaskedDNAString} or \link{MaskedRNAString} object
     for \code{complement} and \code{reverseComplement}.
   }
-  \item{...}{
+  \item{\dots}{
     Additional arguments to be passed to or from methods.
   }
 }

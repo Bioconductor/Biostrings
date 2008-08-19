@@ -149,7 +149,7 @@
   \link{XStringSet-class},
   \link{XStringViews-class},
   \link{MaskedXString-class},
-  \code{\link{reverse}},
+  \code{\link{reverse,XString-method}},
   \code{\link{rev}},
   \code{\link{strsplit}},
   \code{\link{GENETIC_CODE}},

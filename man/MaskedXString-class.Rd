@@ -198,7 +198,7 @@
   \code{\link{maskMotif}},
   \code{\link{injectHardMask}},
   \code{\link{alphabetFrequency}},
-  \code{\link{reverse}},
+  \code{\link{reverse,MaskedXString-method}},
   \link{XString-class},
   \link[IRanges]{MaskCollection-class},
   \link{XStringViews-class},

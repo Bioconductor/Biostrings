@@ -196,7 +196,7 @@
   \link{AAString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
-  \code{\link{reverse}}
+  \code{\link{reverse,XString-method}}
 }
 
 \examples{
