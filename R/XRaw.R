@@ -14,24 +14,6 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-### Return the hexadecimal address of any R object in a string.
-address <- function(x)
-{
-    .Call("Biostrings_sexp_address", x, PACKAGE="Biostrings")
-}
-
-### Helper function (for debugging purpose).
-### Print some obscure info about an "externalptr" object.
-### Typical use:
-###   show(new("externalptr"))
-setMethod("show", "externalptr",
-    function(object)
-    {
-        .Call("Biostrings_xp_show", object, PACKAGE="Biostrings")
-    }
-)
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "XRaw" class.
 ### Note: instead of defining the "XRaw" class with just one slot of type
@@ -483,13 +465,13 @@ setReplaceMethod("[", "XRaw",
 setMethod("==", signature(e1="XRaw", e2="XRaw"),
     function(e1, e2)
     {
-        address(e1@xp) == address(e2@xp)
+        IRanges:::address(e1@xp) == IRanges:::address(e2@xp)
     }
 )
 setMethod("!=", signature(e1="XRaw", e2="XRaw"),
     function(e1, e2)
     {
-        address(e1@xp) != address(e2@xp)
+        IRanges:::address(e1@xp) != IRanges:::address(e2@xp)
     }
 )
 

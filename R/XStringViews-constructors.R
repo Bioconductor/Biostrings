@@ -11,25 +11,6 @@
 ###   - They return an XStringViews object whose 'subject' slot is the object
 ###     passed in the 'subject' argument.
 
-.safeMakeViews <- function(subject, start, end)
-{
-    if (!isNumericOrNAs(start) || !isNumericOrNAs(end))
-        stop("'start' and 'end' must be numerics")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    start[is.na(start)] <- as.integer(1)
-    if (!is.integer(end))
-        end <- as.integer(end)
-    end[is.na(end)] <- subject@length
-    if (length(start) < length(end))
-        start <- recycleVector(start, length(end))
-    else if (length(end) < length(start))
-        end <- recycleVector(end, length(start))
-    if (!all(start <= end))
-        stop("'start' and 'end' must verify 'start <= end'")
-    new("Views", start=start, width=end-start+1L, check=FALSE)
-}
-
 ### Typical use:
 ###   dna <- DNAString("AA-CC-GG-TT")
 ### Just one view:
@@ -46,9 +27,13 @@
 ###   - add a 'width' arg (default to NA)
 ###   - add a 'check.limits' arg (default to TRUE) for raising an error if
 ###     some views are "out of limits"
-setGeneric("views", signature = "subject",
-           function(subject, start=NA, end=NA) standardGeneric("views"))
-setMethod("views", signature = c(subject = "ANY"),
+setMethod("views", signature = c(subject = "character"),
+          function(subject, start=NA, end=NA)
+          {
+              subject <- XString(NULL, subject)
+              views(subject, start = start, end = end)
+          })
+setMethod("views", signature = c(subject = "MaskedXString"),
           function(subject, start=NA, end=NA)
           {
               subject <- XString(NULL, subject)
@@ -58,7 +43,7 @@ setMethod("views", signature = c(subject = "XString"),
           function(subject, start=NA, end=NA)
           {
               ans <- new("XStringViews", subject, check=FALSE)
-              ranges <- .safeMakeViews(subject(ans), start, end)
+              ranges <- IRanges:::.safeMakeViews(subject(ans), start, end)
               update(ans, start=start(ranges), width=width(ranges))
           })
 
@@ -187,15 +172,15 @@ setMethod("restrict", "XStringViews",
     }
 )
 
-trim <- function(x, use.names=TRUE)
-{
-    if (!is(x, "XStringViews"))
-        stop("'x' must be an XStringViews object")
-    y <- restrict(x, start=1L, end=nchar(subject(x)), use.names=use.names)
-    if (length(y) != length(x))
-        stop("some views are not overlapping with the subject, cannot trim them")
-    y
-}
+setMethod("trim", "XStringViews",
+    function(x, use.names=TRUE)
+    {
+        y <- restrict(x, start=1L, end=length(subject(x)), use.names=use.names)
+        if (length(y) != length(x))
+            stop("some views are not overlapping with the subject, cannot trim them")
+        y
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -212,12 +197,12 @@ setMethod("narrow", "XStringViews",
     }
 )
 
-subviews <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-{
-    if (!is(x, "XStringViews"))
-        stop("'x' must be an XStringViews object")
-    narrow(x, start=start, end=end, width=width, use.names=use.names)
-}
+setMethod("subviews", "XStringViews",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        narrow(x, start=start, end=end, width=width, use.names=use.names)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

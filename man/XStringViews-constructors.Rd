@@ -2,8 +2,8 @@
 
 % Constructor-like functions and generics:
 \alias{XStringViews-constructors}
-\alias{views}
-\alias{views,ANY-method}
+\alias{views,character-method}
+\alias{views,MaskedXString-method}
 \alias{views,XString-method}
 \alias{adjacentViews}
 \alias{XStringViews}
@@ -14,9 +14,9 @@
 
 % Other functions:
 \alias{restrict,XStringViews-method}
-\alias{trim}
+\alias{trim,XStringViews-method}
 \alias{narrow,XStringViews-method}
-\alias{subviews}
+\alias{subviews,XStringViews-method}
 \alias{gaps,XStringViews-method}
 
 % Deprecated:
@@ -34,11 +34,11 @@
 }
 
 \usage{
-  views(subject, start=NA, end=NA)
+  \S4method{views}{XString}(subject, start=NA, end=NA)
   adjacentViews(subject, width, gapwidth=0)
   XStringViews(x, subjectClass, collapse="")
-  trim(x, use.names=TRUE)
-  subviews(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  \S4method{trim}{XStringViews}(x, use.names=TRUE)
+  \S4method{subviews}{XStringViews}(x, start=NA, end=NA, width=NA, use.names=TRUE)
 }
 
 \arguments{

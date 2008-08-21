@@ -287,11 +287,7 @@ SEXP debug_XRaw_class();
 
 const char *_get_class(SEXP x);
 
-SEXP Biostrings_sexp_address(SEXP s);
-
 SEXP Biostrings_safe_explode(SEXP s);
-
-SEXP Biostrings_xp_show(SEXP xp);
 
 SEXP Biostrings_xp_new();
 
@@ -460,98 +456,6 @@ SEXP XRaw_loadFASTA(
 	SEXP filepath,
 	SEXP collapse,
 	SEXP lkup
-);
-
-
-/* XInteger.c */
-
-SEXP debug_XInteger();
-
-SEXP XInteger_alloc(
-	SEXP xint_xp,
-	SEXP length
-);
-
-SEXP XInteger_get_show_string(SEXP xint_xp);
-
-SEXP XInteger_length(SEXP xint_xp);
-
-SEXP XInteger_memcmp(
-	SEXP xint1_xp,
-	SEXP start1,
-	SEXP xint2_xp,
-	SEXP start2,
-	SEXP width
-);
-
-SEXP XInteger_read_ints_from_i1i2(
-	SEXP src_xint_xp,
-	SEXP imin,
-	SEXP imax
-);
-
-SEXP XInteger_read_ints_from_subset(
-	SEXP src_xint_xp,
-	SEXP subset
-);
-
-SEXP XInteger_write_ints_to_i1i2(
-	SEXP dest_xint_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP val
-);
-
-SEXP XInteger_write_ints_to_subset(
-	SEXP dest_xint_xp,
-	SEXP subset,
-	SEXP val
-);
-
-
-/* XNumeric.c */
-
-SEXP debug_XNumeric();
-
-SEXP XNumeric_alloc(
-	SEXP xnum_xp,
-	SEXP length
-);
-
-SEXP XNumeric_get_show_string(SEXP xnum_xp);
-
-SEXP XNumeric_length(SEXP xnum_xp);
-
-SEXP XNumeric_memcmp(
-	SEXP xnum1_xp,
-	SEXP start1,
-	SEXP xnum2_xp,
-	SEXP start2,
-	SEXP width
-);
-
-SEXP XNumeric_read_nums_from_i1i2(
-	SEXP src_xnum_xp,
-	SEXP imin,
-	SEXP imax
-);
-
-SEXP XNumeric_read_nums_from_subset(
-	SEXP src_xnum_xp,
-	SEXP subset
-);
-
-SEXP XNumeric_write_nums_to_i1i2(
-	SEXP dest_xnum_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP val
-);
-
-SEXP XNumeric_write_nums_to_subset(
-	SEXP dest_xnum_xp,
-	SEXP subset,
-	SEXP val
 );
 
 

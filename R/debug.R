@@ -21,12 +21,6 @@ debug_XRaw_class <- function()
 debug_XRaw_utils <- function()
     invisible(.Call("debug_XRaw_utils", PACKAGE="Biostrings"))
 
-debug_XInteger <- function()
-    invisible(.Call("debug_XInteger", PACKAGE="Biostrings"))
-
-debug_XNumeric <- function()
-    invisible(.Call("debug_XNumeric", PACKAGE="Biostrings"))
-
 debug_XString_class <- function()
     invisible(.Call("debug_XString_class", PACKAGE="Biostrings"))
 

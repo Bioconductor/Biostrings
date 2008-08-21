@@ -30,23 +30,6 @@ const char *_get_class(SEXP x)
 }
 
 /*
- * From R:
- *   .Call("Biostrings_sexp_address", 6:4, PACKAGE="Biostrings")
- *   .Call("Biostrings_sexp_address", new("externalptr"), PACKAGE="Biostrings")
- */
-SEXP Biostrings_sexp_address(SEXP s)
-{
-	SEXP ans;
-	char buf[40]; /* should be enough, even for 128-bit addresses */
-
-	snprintf(buf, sizeof(buf), "%p", s);
-	PROTECT(ans = NEW_CHARACTER(1));
-	SET_STRING_ELT(ans, 0, mkChar(buf));
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
  * We can't rely on the strsplit() R function to split a string into single
  * characters when the string contains junk. For example:
  *   > r <- as.raw(c(10, 255))
@@ -76,29 +59,6 @@ SEXP Biostrings_safe_explode(SEXP s)
 	}
 	UNPROTECT(1);
 	return ans;
-}
-
-/*
- * Print some obscure info about an "externalptr" object.
- * From R:
- *   .Call("Biostrings_xp_show", new("externalptr"), PACKAGE="Biostrings")
- */
-SEXP Biostrings_xp_show(SEXP xp)
-{
-	SEXP s;
-	void *p;
-
-	Rprintf("Object of class 'externalptr':\n");
-	Rprintf("  xp adress: %p\n", xp);
-	p = R_ExternalPtrAddr(xp);
-	Rprintf("  R_ExternalPtrAddr(xp): %p\n", p);
-	s = R_ExternalPtrTag(xp);
-	Rprintf("  R_ExternalPtrTag(xp): %p", s);
-	Rprintf("%s\n", TYPEOF(s) == NILSXP ? " (NILSXP)" : "");
-	s = R_ExternalPtrProtected(xp);
-	Rprintf("  R_ExternalPtrProtected(xp): %p", s);
-	Rprintf("%s\n", TYPEOF(s) == NILSXP ? " (NILSXP)" : "");
-	return R_NilValue;
 }
 
 /*

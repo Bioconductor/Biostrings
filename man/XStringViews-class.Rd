@@ -19,7 +19,6 @@
 \alias{width<-,Views-method}
 
 % Accesor methods:
-\alias{subject}
 \alias{subject,XStringViews-method}
 \alias{alphabet,XStringViews-method}
 \alias{width<-,XStringViews-method}
@@ -136,7 +135,7 @@
     }
     \item{}{
       \code{as.matrix(x, mode, use.names, check.limits)}:
-      Depending on what \code{mode} is choosen (\code{"integer"} or
+      Depending on what \code{mode} is chosen (\code{"integer"} or
       \code{"character"}), return either a 2-column integer matrix containing
       \code{start(x)} and \code{end(x)} or a character matrix containing the
       "exploded" representation of the views.

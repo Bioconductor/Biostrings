@@ -44,34 +44,6 @@
 \alias{show,PrintableXRaw-method}
 \alias{[,PrintableXRaw-method}
 
-% XInteger class and methods:
-\alias{class:XInteger}
-\alias{XInteger-class}
-\alias{XInteger}
-
-\alias{length,XInteger-method}
-\alias{as.integer,XInteger-method}
-\alias{initialize,XInteger-method}
-\alias{show,XInteger-method}
-\alias{==,XInteger,XInteger-method}
-\alias{!=,XInteger,XInteger-method}
-\alias{[,XInteger-method}
-\alias{[<-,XInteger-method}
-
-% XNumeric class and methods:
-\alias{class:XNumeric}
-\alias{XNumeric-class}
-\alias{XNumeric}
-
-\alias{length,XNumeric-method}
-\alias{as.numeric,XNumeric-method}
-\alias{initialize,XNumeric-method}
-\alias{show,XNumeric-method}
-\alias{==,XNumeric,XNumeric-method}
-\alias{!=,XNumeric,XNumeric-method}
-\alias{[,XNumeric-method}
-\alias{[<-,XNumeric-method}
-
 %XStringCodec class and methods:
 \alias{class:XStringCodec}
 \alias{XStringCodec-class}

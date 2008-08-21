@@ -75,7 +75,7 @@
 \seealso{
   \code{\link{subseq}},
   \code{\link{letter}},
-  \code{\link{views}},
+  \code{\link{views,XString-method}},
   \link{XString-class},
   \link{XStringViews-class}
 }

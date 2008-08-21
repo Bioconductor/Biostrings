@@ -27,9 +27,7 @@ static const R_CallMethodDef callMethods[] = {
 /* XRaw_class.c */
 	CALLMETHOD_DEF(debug_XRaw_class, 0),
 
-	CALLMETHOD_DEF(Biostrings_sexp_address, 1),
 	CALLMETHOD_DEF(Biostrings_safe_explode, 1),
-	CALLMETHOD_DEF(Biostrings_xp_show, 1),
 	CALLMETHOD_DEF(Biostrings_xp_new, 0),
 	CALLMETHOD_DEF(Biostrings_XRaw_alloc, 2),
 	CALLMETHOD_DEF(Biostrings_XRaw_get_show_string, 1),
@@ -61,32 +59,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XRaw_read_complexes_from_subset, 3),
 
 	CALLMETHOD_DEF(XRaw_loadFASTA, 4),
-
-/* XInteger.c */
-	CALLMETHOD_DEF(debug_XInteger, 0),
-
-	CALLMETHOD_DEF(XInteger_alloc, 2),
-	CALLMETHOD_DEF(XInteger_get_show_string, 1),
-	CALLMETHOD_DEF(XInteger_length, 1),
-	CALLMETHOD_DEF(XInteger_memcmp, 5),
-
-	CALLMETHOD_DEF(XInteger_read_ints_from_i1i2, 3),
-	CALLMETHOD_DEF(XInteger_read_ints_from_subset, 2),
-	CALLMETHOD_DEF(XInteger_write_ints_to_i1i2, 4),
-	CALLMETHOD_DEF(XInteger_write_ints_to_subset, 3),
-
-/* XNumeric.c */
-	CALLMETHOD_DEF(debug_XNumeric, 0),
-
-	CALLMETHOD_DEF(XNumeric_alloc, 2),
-	CALLMETHOD_DEF(XNumeric_get_show_string, 1),
-	CALLMETHOD_DEF(XNumeric_length, 1),
-	CALLMETHOD_DEF(XNumeric_memcmp, 5),
-
-	CALLMETHOD_DEF(XNumeric_read_nums_from_i1i2, 3),
-	CALLMETHOD_DEF(XNumeric_read_nums_from_subset, 2),
-	CALLMETHOD_DEF(XNumeric_write_nums_to_i1i2, 4),
-	CALLMETHOD_DEF(XNumeric_write_nums_to_subset, 3),
 
 /* XString_class.c */
 	CALLMETHOD_DEF(debug_XString_class, 0),
