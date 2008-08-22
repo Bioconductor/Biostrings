@@ -978,18 +978,18 @@ SEXP ByName_MIndex_endIndex(
 	SEXP all_names
 );
 
-SEXP ByPos_MIndex_coverage(
+void ByPos_MIndex_coverage(
 	SEXP ends_list,
 	SEXP mindex_width,
 	SEXP start,
-	SEXP end
+	SEXP ans_xp
 );
 
-SEXP ByName_MIndex_coverage(
+void ByName_MIndex_coverage(
 	SEXP ends_envir,
 	SEXP mindex_width,
 	SEXP start,
-	SEXP end
+	SEXP ans_xp
 );
 
 SEXP ByPos_MIndex_combine(SEXP ends_listlist);

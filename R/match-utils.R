@@ -524,15 +524,18 @@ setMethod("coverage", "MIndex",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
+		ans <- XInteger(end - start + 1L, initialize = TRUE)
         if (is(x, "ByPos_MIndex"))
-            return(.Call("ByPos_MIndex_coverage",
-                         endIndex(x), x@width, start, end,
-                         PACKAGE="Biostrings"))
-        if (is(x, "ByName_MIndex"))
-            return(.Call("ByName_MIndex_coverage",
-                         x@length, x@ends_envir, x@width, start, end,
-                         PACKAGE="Biostrings"))
-        stop("Biostrings internal error: unknown MIndex subtype ", class(x))
+            .Call("ByPos_MIndex_coverage",
+                  endIndex(x), x@width, start, ans@xp,
+                  PACKAGE="Biostrings")
+        else if (is(x, "ByName_MIndex"))
+            .Call("ByName_MIndex_coverage",
+                  x@ends_envir, x@width, start, ans@xp,
+                  PACKAGE="Biostrings")
+        else
+            stop("Biostrings internal error: unknown MIndex subtype ", class(x))
+        ans
     }
 )
 

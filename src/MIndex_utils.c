@@ -265,48 +265,41 @@ static void add_coverages(int *x, int x_nelt, int *ends, int ends_nelt, int widt
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP ByPos_MIndex_coverage(SEXP ends_list, SEXP mindex_width, SEXP start, SEXP end)
+void ByPos_MIndex_coverage(SEXP ends_list, SEXP mindex_width, SEXP start, SEXP ans_xp)
 {
 	SEXP ans, ends;
-	int mwidth, start0, end0, ans_length, i;
+	int mwidth, start0, ans_length, i;
 
 	mwidth = INTEGER(mindex_width)[0];
 	start0 = INTEGER(start)[0];
-	end0 = INTEGER(end)[0];
-	ans_length = end0 - start0 + 1;
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	memset(INTEGER(ans), 0, ans_length * sizeof(int));
+	ans = R_ExternalPtrTag(ans_xp);
+	ans_length = LENGTH(ans);
 	for (i = 0; i < LENGTH(ends_list); i++) {
 		ends = VECTOR_ELT(ends_list, i);
 		if (ends == R_NilValue)
 			continue;
 		add_coverages(INTEGER(ans), ans_length, INTEGER(ends), LENGTH(ends), mwidth, start0);
 	}
-	UNPROTECT(1);
-	return ans;
 }
 
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP ByName_MIndex_coverage(SEXP ends_envir, SEXP mindex_width, SEXP start, SEXP end)
+void ByName_MIndex_coverage(SEXP ends_envir, SEXP mindex_width, SEXP start, SEXP ans_xp)
 {
 	SEXP ans, symbols, ends;
-	int mwidth, start0, end0, ans_length, i;
+	int mwidth, start0, ans_length, i;
 
 	mwidth = INTEGER(mindex_width)[0];
 	start0 = INTEGER(start)[0];
-	end0 = INTEGER(end)[0];
-	ans_length = end0 - start0 + 1;
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	memset(INTEGER(ans), 0, ans_length * sizeof(int));
+	ans = R_ExternalPtrTag(ans_xp);
+	ans_length = LENGTH(ans);
 	PROTECT(symbols = R_lsInternal(ends_envir, 1));
 	for (i = 0; i < LENGTH(symbols); i++) {
 		ends = _get_val_from_env(STRING_ELT(symbols, i), ends_envir, 1);
 		add_coverages(INTEGER(ans), ans_length, INTEGER(ends), LENGTH(ends), mwidth, start0);
 	}
-	UNPROTECT(2);
-	return ans;
+	UNPROTECT(1);
 }
 
 /*
