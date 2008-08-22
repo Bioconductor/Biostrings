@@ -17,8 +17,9 @@ o Added an "append" method for XStringSet objects. An important use case for
 
 o Removed the XStringList class and family.
 
-o Moved the IRanges, UnlockedIRanges, LockedIRanges, NormalIRanges and
-  MaskCollection classes and their methods to the new IRanges package.
+o Moved the IRanges, UnlockedIRanges, LockedIRanges, NormalIRanges,
+  MaskCollection, Views, and XInteger classes and their methods to the new
+  IRanges package.
 
 C-LEVEL FACILITIES
 
@@ -29,6 +30,10 @@ o Added predefined 'RNA_GENETIC_CODE' object.
 o Moved the utility functions for importing a mask (read.agpMask(),
   read.gapMask(), read.liftMask(), read.rmMask() and read.trfMask() functions)
   to the new IRanges package.
+
+o Moved the generic functions for width(), shift(), restrict(), narrow(),
+  reduce(), gaps(), reverse(), coverage(), subject(), views(), trim(), and
+  subviews() to new IRanges package.
 
 STRING MATCHING
 
