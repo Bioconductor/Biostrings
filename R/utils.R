@@ -123,13 +123,6 @@ normargUseNames <- function(use.names)
     use.names
 }
 
-recycleVector <- function(x, length)
-{
-    y <- vector(storage.mode(x), length)
-    y[] <- x
-    y
-}
-
 ### Does NOT support NAs in 'x'.
 isNotStrictlySorted <- function(x)
 {
