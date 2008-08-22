@@ -157,7 +157,7 @@
   views(chr3R, start_index[[i0]], end_index[[i0]]) # And as an XStringViews object.
 
   ## Get the coverage of the original subject
-  cov3R <- coverage(mindex, 1, length(chr3R))
+  cov3R <- as.integer(coverage(mindex, 1, length(chr3R)))
   max(cov3R)
   mean(cov3R)
   sum(cov3R != 0) / length(cov3R)      # Only 2.44% of chr3R is covered.

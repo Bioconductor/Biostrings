@@ -372,7 +372,7 @@ setMethod("mismatchSummary", "AlignedXStringSet",
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
-        coverageTable <- coverage(x, weight = weight)
+        coverageTable <- as.integer(coverage(x, weight = weight))
         n <- length(coverageTable)
         if (length(weight) == 1)
             endTable <- weight * table(.mismatchTable[["End"]])
@@ -568,7 +568,7 @@ setMethod("coverage", "PairwiseAlignmentSummary",
         if (is.na(end))
             end <- length(x@coverage)
         if (start > 1 || end < length(x@coverage))
-            ans <- x@coverage[start:end]
+            ans <- XInteger(x@coverage[start:end])
         else
             ans <- x@coverage
         ans

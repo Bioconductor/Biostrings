@@ -754,7 +754,7 @@ reads.
 
 <<genome3, fig=TRUE>>=
 coveragePhiX174 <- coverage(alignPhiX174, weight = wtPhiX174)
-plot((2793-34):(2811+34), coveragePhiX174, xlab = "Position", ylab = "Coverage",
+plot((2793-34):(2811+34), as.integer(coveragePhiX174), xlab = "Position", ylab = "Coverage",
      type = "l")
 nchar(phiX174Substring)
 slice(coveragePhiX174, 0, includeLower = FALSE)
@@ -1091,7 +1091,7 @@ the substring region that was used above? \textit{Yes, there are some
 alignments outside of the specified substring region.}
 <<ans7b>>=
 fullCoveragePhiX174 <- coverage(fullAlignPhiX174, weight = wtPhiX174)
-plot(fullCoveragePhiX174, xlab = "Position", ylab = "Coverage", type = "l")
+plot(as.integer(fullCoveragePhiX174), xlab = "Position", ylab = "Coverage", type = "l")
 slice(fullCoveragePhiX174, 0, includeLower = FALSE)
 @
 \item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
