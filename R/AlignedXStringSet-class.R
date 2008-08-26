@@ -120,7 +120,7 @@ setMethod("aligned", "AlignedXStringSet",
               .Call("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
           })
 
-setGeneric("quality", function(x) standardGeneric("quality"), useAsDefault = function(x) x@quality)
+setGeneric("quality", function(x, ...) standardGeneric("quality"), useAsDefault = function(x, ...) x@quality)
 setMethod("quality", "QualityAlignedXStringSet", function(x) x@quality)
 
 setMethod("start", "AlignedXStringSet", function(x) start(x@range))

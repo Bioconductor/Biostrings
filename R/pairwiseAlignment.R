@@ -12,6 +12,20 @@
 ###
 ### -------------------------------------------------------------------------
 
+setMethod("quality", "numeric",
+          function(x, qualityType = "Phred") {
+            if (any(is.na(x)) || any(x < 0) || any(x > 1))
+              stop("'x' must be numbers between 0 and 1 inclusive")
+            x[x < 1e-12] <- 1e-12
+            qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
+            if (qualityType == "Phred") {
+              output <- BString(rawToChar(as.raw(33L + pmin(99L, as.integer(round(-10 * log10(x)))))))
+            } else {
+              output <- BString(rawToChar(as.raw(64L + pmax(-5L, pmin(99L, as.integer(round(-10 * log10(x/(1-x)))))))))
+            }
+            output
+          })
+
 nucleotideSubstitutionMatrix <- function(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
 {
   "%safemult%" <- function(x, y) ifelse(is.infinite(x) & y == 0, 0, x * y)

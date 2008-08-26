@@ -15,6 +15,7 @@
 \alias{nucleotideSubstitutionMatrix}
 \alias{qualitySubstitutionMatrices}
 \alias{errorSubstitutionMatrices}
+\alias{quality,numeric-method}
 
 
 \title{Scoring matrices}
@@ -37,6 +38,7 @@
   nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
   errorSubstitutionMatrices(prob, alphabetLength = 4L, bitScale = 1)
   qualitySubstitutionMatrices(alphabetLength = 4L, qualityType = "Phred", bitScale = 1)
+   \S4method{quality}{numeric}(x, qualityType = "Phred")
 }
 
 \arguments{
@@ -54,6 +56,7 @@
     \code{"Solexa"}.}
   \item{bitScale}{a numeric value to scale the quality-based substitution
     matrices. By default, this is 1, representing bit-scale scoring.}
+  \item{x}{a numeric vector of error probabilities.}
 }
 
 \format{
@@ -126,6 +129,10 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   pairwiseAlignment(s1, s2,
                     substitutionMatrix = nucleotideSubstitutionMatrix(0, -1, TRUE),
                     gapOpening = 0, gapExtension = -1)
+
+  ## Convert error probabilities to quality scores
+  quality(10^(-(0:40)/10))
+  quality(1 - 1/(1+10^(-(0:26)/10)), qualityType = "Solexa")
 
   ## Examine quality-based match and mismatch bit scores for DNA/RNA
   ## strings in pairwiseAlignment. By default patternQuality = 22L and
