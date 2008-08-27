@@ -15,6 +15,7 @@ exportClasses(
     XStringViews,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringPartialMatches,
+    XStringQuality, PhredQuality, SolexaQuality,
     InDel, AlignedXStringSet, QualityAlignedXStringSet,
     PairwiseAlignment, PairwiseAlignmentSummary,
     BOC_SubjectString, BOC2_SubjectString,
@@ -45,6 +46,7 @@ export(
     .inplaceReplaceLetterAtLoc,
     maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
+    PhredQuality, SolexaQuality,
     nucleotideSubstitutionMatrix, errorSubstitutionMatrices, qualitySubstitutionMatrices,
 
     ## Deprecated

@@ -9,8 +9,7 @@ function(x,
          diag = FALSE,
          upper = FALSE,
          type = "global",
-         quality = 22L,
-         qualityType = "Phred",
+         quality = PhredQuality(22L),
          substitutionMatrix = NULL,
          gapOpening = 0,
          gapExtension = -1)
@@ -19,7 +18,6 @@ function(x,
   method <- match.arg(method, c("levenshtein", "quality", "substitutionMatrix"))
   type <- match.arg(type, c("global", "local", "overlap"))
   typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
-  qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
   gapOpening <- as.double(- abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
     stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -56,21 +54,8 @@ function(x,
   ## Generate quality-based and constant substitution matrix information
   if (method == "quality") {
     useQuality <- TRUE
-    if (is.numeric(quality)) {
-      if (qualityType == "Phred") {
-        if (any(is.na(quality)) ||
-            any(quality < 0 || quality > 99))
-          stop("integer 'quality' values must be between 0 and 99 for qualityType 'Phred'")
-        quality <- rawToChar(as.raw(33L + as.integer(quality)))
-      } else {
-        if (any(is.na(quality)) ||
-            any(quality < -5 || quality > 99))
-          stop("integer 'quality' values must be between -5 and 99 for qualityType 'Solexa'")
-        quality <- rawToChar(as.raw(64L + as.integer(quality)))
-      }
-    }
-    if (!is(quality, "XStringSet"))
-      quality <- BStringSet(quality)
+    if (!is(quality, "XStringQuality"))
+        stop("'quality' must be of class 'XStringSet'")
     if (!all(nchar(quality) == 1 | nchar(quality) == nchar(x)))
       stop("'quality' must either be constant or have the same length as 'x'")
 	
@@ -80,13 +65,13 @@ function(x,
              AAStringSet = 20L,
              256L)
 
-    if (qualityType == "Phred")
+    if (is(quality, "PhredQuality"))
       qualityLookupTable <- buildLookupTable(33:(33 + 99), 0:99)
     else
       qualityLookupTable <- buildLookupTable(59:(59 + 104), 0:104)
     qualityMatrices <-
       qualitySubstitutionMatrices(alphabetLength = alphabetLength,
-                                  qualityType = qualityType)
+                                  qualityClass = class(quality))
 
     constantLookupTable <- integer(0)
     constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
@@ -161,7 +146,7 @@ setGeneric("stringDist", signature = "x",
 setMethod("stringDist",
           signature(x = "character"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", quality = 22L, qualityType = "Phred", substitutionMatrix = NULL,
+                   type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
           XStringSet.stringDist(x = BStringSet(x),
                                 method = method,
@@ -170,7 +155,6 @@ setMethod("stringDist",
                                 upper = upper,
                                 type = type,
                                 quality = quality,
-                                qualityType = qualityType,
                                 substitutionMatrix = substitutionMatrix,
                                 gapExtension = gapExtension,
                                 gapOpening = gapOpening))
@@ -178,7 +162,7 @@ setMethod("stringDist",
 setMethod("stringDist",
           signature(x = "XStringSet"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", quality = 22L, qualityType = "Phred", substitutionMatrix = NULL,
+                   type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
           XStringSet.stringDist(x = x,
                                 method = method,
@@ -187,7 +171,6 @@ setMethod("stringDist",
 								upper = upper,
 								type = type,
 								quality = quality,
-								qualityType = qualityType,
 								substitutionMatrix = substitutionMatrix,
 								gapExtension = gapExtension,
 								gapOpening = gapOpening))

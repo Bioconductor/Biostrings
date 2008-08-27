@@ -585,8 +585,8 @@ static double pairwiseAlignment(
  * INPUTS
  * 'pattern':                XStringSet object for patterns
  * 'subject':                XString object for subject
- * 'patternQuality':         BStringSet object for quality scores for pattern
- * 'subjectQuality':         BString object for quality scores for subject
+ * 'patternQuality':         XStringQuality object for quality scores for pattern
+ * 'subjectQuality':         XStringQuality object for quality scores for subject
  * 'type':                   type of pairwise alignment
  *                           (character vector of length 1;
  *                            'global', 'local', 'overlap',
@@ -595,8 +595,6 @@ static double pairwiseAlignment(
  *                           (integer vector of length 1;
  *                            1 = 'global', 2 = 'local', 3 = 'overlap',
  *                            4 = 'patternOverlap', 5 = 'subjectOverlap')
- * 'qualityType':            type of quality scores
- *                           (character vector of length 1)
  * 'scoreOnly':              denotes whether or not to only return the scores
  *                           of the optimal pairwise alignment
  *                           (logical vector of length 1)
@@ -635,7 +633,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP subjectQuality,
 		SEXP type,
 		SEXP typeCode,
-		SEXP qualityType,
 		SEXP scoreOnly,
 		SEXP gapOpening,
 		SEXP gapExtension,
@@ -661,7 +658,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 	/* Create the alignment info objects */
 	struct AlignInfo align1Info, align2Info;
 	align2Info.string = _get_XString_asRoSeq(subject);
-	align2Info.quality = _get_XString_asRoSeq(subjectQuality);
+	align2Info.quality = _get_XStringSet_elt_asRoSeq(subjectQuality, 0);
 	align1Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
 	align2Info.endGap =
@@ -831,7 +828,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		if (useQualityValue) {
 			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
 			SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
-			SET_SLOT(alignedPattern, mkChar("qualityType"), qualityType);
 		} else {
 			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
 		}
@@ -850,7 +846,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		if (useQualityValue) {
 			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
 			SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
-			SET_SLOT(alignedSubject, mkChar("qualityType"), qualityType);
 		} else {
 			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
 		}

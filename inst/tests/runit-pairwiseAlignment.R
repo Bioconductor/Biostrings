@@ -126,14 +126,21 @@ test_pairwiseAlignment_qualityScoring <- function()
 {
     string1 <- DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
     string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
-    for (qualityType in c("Phred", "Solexa")) {
-        scoring <- sapply(qualitySubstitutionMatrices(qualityType = qualityType), function(x) x["22", "22"])
-        globalAlign <- pairwiseAlignment(string1, string2, qualityType = qualityType)
-        globalAlignScore <- pairwiseAlignment(string1, string2, scoreOnly = TRUE, qualityType = qualityType)
-        overlapAlign <- pairwiseAlignment(string1, string2, type = "overlap", qualityType = qualityType)
-        overlapAlignScore <- pairwiseAlignment(string1, string2, type = "overlap", scoreOnly = TRUE, qualityType = qualityType)
-        localAlign <- pairwiseAlignment(string1, string2, type = "local", qualityType = qualityType)
-        localAlignScore <- pairwiseAlignment(string1, string2, type = "local", scoreOnly = TRUE, qualityType = qualityType)
+    for (qualityClass in c("PhredQuality", "SolexaQuality")) {
+        scoring <- sapply(qualitySubstitutionMatrices(qualityClass = qualityClass), function(x) x["22", "22"])
+        stringQuality <- do.call(qualityClass, list(22L))
+        globalAlign <-
+          pairwiseAlignment(string1, string2, patternQuality = stringQuality, subjectQuality = stringQuality)
+        globalAlignScore <-
+          pairwiseAlignment(string1, string2, scoreOnly = TRUE, patternQuality = stringQuality, subjectQuality = stringQuality)
+        overlapAlign <-
+          pairwiseAlignment(string1, string2, type = "overlap", patternQuality = stringQuality, subjectQuality = stringQuality)
+        overlapAlignScore <-
+          pairwiseAlignment(string1, string2, type = "overlap", scoreOnly = TRUE, patternQuality = stringQuality, subjectQuality = stringQuality)
+        localAlign <-
+          pairwiseAlignment(string1, string2, type = "local", patternQuality = stringQuality, subjectQuality = stringQuality)
+        localAlignScore <-
+          pairwiseAlignment(string1, string2, type = "local", scoreOnly = TRUE, patternQuality = stringQuality, subjectQuality = stringQuality)
         checkEquals(as.character(pattern(globalAlign)), "ACTTCACCAGCTCCCTGGCGGTAAGTTGATC---AAAGG---AAACGCAAAGTTTTCAAG")
         checkEquals(as.character(subject(globalAlign)), "GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
         checkEquals(compareStrings(globalAlign), "??TTCAC?A??TCC?T???GGTAAGT??AT?---AAA??---AAA???A?A?TTTTCA??")

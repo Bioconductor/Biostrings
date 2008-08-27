@@ -11,7 +11,7 @@ Computes the Levenshtein edit distance or pairwise alignment score matrix for a 
 \usage{
 stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, \dots)
 \S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", quality = 22L, qualityType = "Phred", substitutionMatrix = NULL,
+                   type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
 }
 \arguments{
@@ -29,11 +29,9 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
       \code{"local"} = align string fragments,
       \code{"overlap"} = align whole strings without end gap penalties.
      This argument is ignored if \code{method == "levenshtein"}.}
-  \item{quality}{quality scores for \code{x} that are used in a quality-based method for
-    generating a substitution matrix. This argument is ignored if \code{method != "quality"}.}
-  \item{qualityType}{type of quality measure. Either of \code{"Phred"} or \code{"Solexa"}.
-    See \code{substitution.matrices} help page for more details. This argument is ignored if
-    \code{method != "quality"}.}
+  \item{quality}{object of class \code{\link{XStringQuality}} representing the quality scores
+    for \code{x} that are used in a quality-based method for generating a substitution matrix.
+    This argument is ignored if \code{method != "quality"}.}
   \item{substitutionMatrix}{symmetric substitution matrix for the alignment. This argument is
     ignored if \code{method != "substitutionMatrix"}.}
   \item{gapOpening}{penalty for opening a gap in the alignment. This argument is ignored if
@@ -61,7 +59,8 @@ Returns an object of class \code{"dist"}.
 
   data(srPhiX174)
   stringDist(srPhiX174[1:4])
-  stringDist(srPhiX174[1:4], method = "quality", quality = quPhiX174[1:4],
+  stringDist(srPhiX174[1:4], method = "quality",
+             quality = SolexaQuality(quPhiX174[1:4]),
              gapOpening = -10, gapExtension = -4)
 }
 \keyword{character}

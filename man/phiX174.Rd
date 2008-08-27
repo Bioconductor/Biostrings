@@ -36,8 +36,9 @@ quPhiX174
 summary(wtPhiX174)
 
 alignPhiX174 <-
-  pairwiseAlignment(srPhiX174, phiX174Substring, patternQuality = quPhiX174,
-                    subjectQuality = 99L, qualityType = "Solexa",
+  pairwiseAlignment(srPhiX174, phiX174Substring,
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
                     type = "subjectOverlap")
 summary(alignPhiX174, weight = wtPhiX174)
 }

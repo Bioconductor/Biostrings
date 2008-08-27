@@ -12,19 +12,6 @@
 ###
 ### -------------------------------------------------------------------------
 
-setMethod("quality", "numeric",
-          function(x, qualityType = "Phred") {
-            if (any(is.na(x)) || any(x < 0) || any(x > 1))
-              stop("'x' must be numbers between 0 and 1 inclusive")
-            x[x < 1e-12] <- 1e-12
-            qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
-            if (qualityType == "Phred") {
-              output <- BString(rawToChar(as.raw(33L + pmin(99L, as.integer(round(-10 * log10(x)))))))
-            } else {
-              output <- BString(rawToChar(as.raw(64L + pmax(-5L, pmin(99L, as.integer(round(-10 * log10(x/(1-x)))))))))
-            }
-            output
-          })
 
 nucleotideSubstitutionMatrix <- function(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
 {
@@ -62,9 +49,9 @@ function(prob, alphabetLength = 4L, bitScale = 1) {
 }
 
 qualitySubstitutionMatrices <-
-function(alphabetLength = 4L, qualityType = "Phred", bitScale = 1) {
-  qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
-  if (qualityType == "Phred") {
+function(alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1) {
+  qualityClass <- match.arg(qualityClass, c("PhredQuality", "SolexaQuality"))
+  if (qualityClass == "PhredQuality") {
     prob <- 10^seq(0, -9.9, by = -0.1)
     names(prob) <- as.character(0:99)
   } else {
@@ -78,10 +65,9 @@ function(alphabetLength = 4L, qualityType = "Phred", bitScale = 1) {
 XStringSet.pairwiseAlignment <-
 function(pattern,
          subject,
-         patternQuality = 22L,
-         subjectQuality = 22L,
+         patternQuality = PhredQuality(22L),
+         subjectQuality = PhredQuality(22L),
          type = "global",
-         qualityType = "Phred",
          substitutionMatrix = NULL,
          gapOpening = -10,
          gapExtension = -4,
@@ -97,7 +83,6 @@ function(pattern,
   typeCode <-
     c("global" = 1L, "local" = 2L, "overlap" = 3L,
       "patternOverlap" = 4L, "subjectOverlap" = 5L)[[type]]
-  qualityType <- match.arg(qualityType, c("Phred", "Solexa"))
   gapOpening <- as.double(- abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
     stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -124,64 +109,38 @@ function(pattern,
   ## Generate quality-based and constant substitution matrix information
   if (is.null(substitutionMatrix)) {
     useQuality <- TRUE
-    if (is.numeric(patternQuality)) {
-      if (qualityType == "Phred") {
-        if (any(is.na(patternQuality)) ||
-            any(patternQuality < 0 || patternQuality > 99))
-          stop("integer 'patternQuality' values must be between 0 and 99 for qualityType 'Phred'")
-        patternQuality <- rawToChar(as.raw(33L + as.integer(patternQuality)))
-      } else {
-        if (any(is.na(patternQuality)) ||
-            any(patternQuality < -5 || patternQuality > 99))
-          stop("integer 'patternQuality' values must be between -5 and 99 for qualityType 'Solexa'")
-        patternQuality <- rawToChar(as.raw(64L + as.integer(patternQuality)))
-      }
-    }
-    if (!is(patternQuality, "XStringSet"))
-      patternQuality <- BStringSet(patternQuality)
+    if (!is(patternQuality, "XStringQuality"))
+      stop("'patternQuality' must be of class 'XStringSet'")
     if (!all(nchar(patternQuality) == 1 | nchar(patternQuality) == nchar(pattern)))
       stop(paste("'patternQuality' must either be constant or",
                  "have the same length as 'pattern'"))
 
-    if (is.numeric(subjectQuality)) {
-      if (qualityType == "Phred") {
-        if (any(is.na(subjectQuality)) ||
-            any(subjectQuality < 0 || subjectQuality > 99))
-          stop("integer 'subjectQuality' values must be between 0 and 99 for qualityType 'Phred'")
-        subjectQuality <- rawToChar(as.raw(33L + as.integer(subjectQuality)))
-      } else {
-        if (any(is.na(subjectQuality)) ||
-            any(subjectQuality < -5 || subjectQuality > 99))
-          stop("integer 'subjectQuality' values must be between -5 and 99 for qualityType 'Solexa'")
-        subjectQuality <- rawToChar(as.raw(64L + as.integer(subjectQuality)))
-      }
-    }
-    if (!is(subjectQuality, "XString"))
-      subjectQuality <- BString(subjectQuality)
+    if (!is(subjectQuality, "XStringQuality"))
+      stop("'subjectQuality' must be of class 'XStringSet'")
     if (!(length(subjectQuality) %in% c(1, length(subject))))
       stop(paste("'subjectQuality' must either be constant or",
                  "have the same length as 'subject'"))
-	
+
     alphabetLength <-
       switch(class(pattern),
              DNAStringSet =, RNAStringSet = 4L,
              AAStringSet = 20L,
              256L)
 
-    if (qualityType == "Phred")
+    if (is(patternQuality, "PhredQuality"))
       qualityLookupTable <- buildLookupTable(33:(33 + 99), 0:99)
     else
       qualityLookupTable <- buildLookupTable(59:(59 + 104), 0:104)
     qualityMatrices <-
       qualitySubstitutionMatrices(alphabetLength = alphabetLength,
-                                  qualityType = qualityType)
+                                  qualityClass = class(patternQuality))
 
     constantLookupTable <- integer(0)
     constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
   } else {
     useQuality <- FALSE
-    patternQuality <- BStringSet("")
-    subjectQuality <- BString("")
+    patternQuality <- PhredQuality("")
+    subjectQuality <- PhredQuality("")
     qualityLookupTable <- integer(0)
     qualityMatrices <-
       list(match = matrix(numeric(0), nrow = 0, ncol = 0),
@@ -220,7 +179,6 @@ function(pattern,
                   subjectQuality,
                   type,
                   typeCode,
-                  qualityType,
                   scoreOnly,
                   gapOpening,
                   gapExtension,
@@ -235,8 +193,6 @@ function(pattern,
                   PACKAGE="Biostrings")
   if (!scoreOnly) {
     answer@subject@unaligned <- XStringSet(class(answer@subject@unaligned), answer@subject@unaligned)
-    if (useQuality)
-      answer@subject@quality <- XStringSet(class(answer@subject@quality), answer@subject@quality)
   }
   return(answer)
 }
@@ -248,8 +204,9 @@ setGeneric("pairwiseAlignment", signature = c("pattern", "subject"),
 
 setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "character"),
-          function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
-                   type = "global", qualityType = "Phred", substitutionMatrix = NULL,
+          function(pattern, subject, patternQuality = PhredQuality(22L),
+                   subjectQuality = PhredQuality(22L), type = "global",
+                   substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XStringSet.pairwiseAlignment(pattern = BStringSet(pattern),
@@ -257,7 +214,6 @@ setMethod("pairwiseAlignment",
                                        patternQuality = patternQuality,
                                        subjectQuality = subjectQuality,
                                        type = type,
-                                       qualityType = qualityType,
                                        substitutionMatrix = substitutionMatrix,
                                        gapExtension = gapExtension,
                                        gapOpening = gapOpening,
@@ -265,8 +221,9 @@ setMethod("pairwiseAlignment",
 
 setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "XString"),
-          function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
-                   type = "global", qualityType = "Phred", substitutionMatrix = NULL,
+          function(pattern, subject, patternQuality = PhredQuality(22L),
+                   subjectQuality = PhredQuality(22L), type = "global",
+                   substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XStringSet.pairwiseAlignment(pattern = XStringSet(class(subject), pattern),
@@ -274,7 +231,6 @@ setMethod("pairwiseAlignment",
                                        patternQuality = patternQuality,
                                        subjectQuality = subjectQuality,
                                        type = type,
-                                       qualityType = qualityType,
                                        substitutionMatrix = substitutionMatrix,
                                        gapExtension = gapExtension,
                                        gapOpening = gapOpening,
@@ -282,8 +238,9 @@ setMethod("pairwiseAlignment",
 
 setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "character"),
-          function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
-                   type = "global", qualityType = "Phred", substitutionMatrix = NULL,
+          function(pattern, subject, patternQuality = PhredQuality(22L),
+                   subjectQuality = PhredQuality(22L), type = "global",
+                   substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
@@ -291,7 +248,6 @@ setMethod("pairwiseAlignment",
                                        patternQuality = patternQuality,
                                        subjectQuality = subjectQuality,
                                        type = type,
-                                       qualityType = qualityType,
                                        substitutionMatrix = substitutionMatrix,
                                        gapExtension = gapExtension,
                                        gapOpening = gapOpening,
@@ -299,8 +255,9 @@ setMethod("pairwiseAlignment",
 
 setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "XString"),
-          function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
-                   type = "global", qualityType = "Phred", substitutionMatrix = NULL,
+          function(pattern, subject, patternQuality = PhredQuality(22L),
+                   subjectQuality = PhredQuality(22L), type = "global",
+                   substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
@@ -308,7 +265,6 @@ setMethod("pairwiseAlignment",
                                        patternQuality = patternQuality,
                                        subjectQuality = subjectQuality,
                                        type = type,
-                                       qualityType = qualityType,
                                        substitutionMatrix = substitutionMatrix,
                                        gapExtension = gapExtension,
                                        gapOpening = gapOpening,
@@ -316,8 +272,9 @@ setMethod("pairwiseAlignment",
 
 setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "character"),
-          function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
-                   type = "global", qualityType = "Phred", substitutionMatrix = NULL,
+          function(pattern, subject, patternQuality = PhredQuality(22L),
+                   subjectQuality = PhredQuality(22L), type = "global",
+                   substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XStringSet.pairwiseAlignment(pattern = pattern,
@@ -326,7 +283,6 @@ setMethod("pairwiseAlignment",
                                        patternQuality = patternQuality,
                                        subjectQuality = subjectQuality,
                                        type = type,
-                                       qualityType = qualityType,
                                        substitutionMatrix = substitutionMatrix,
                                        gapExtension = gapExtension,
                                        gapOpening = gapOpening,
@@ -334,8 +290,9 @@ setMethod("pairwiseAlignment",
 
 setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "XString"),
-          function(pattern, subject, patternQuality = 22L, subjectQuality = 22L,
-                   type = "global", qualityType = "Phred", substitutionMatrix = NULL,
+          function(pattern, subject, patternQuality = PhredQuality(22L),
+                   subjectQuality = PhredQuality(22L), type = "global",
+                   substitutionMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE)
           XStringSet.pairwiseAlignment(pattern = pattern,
@@ -343,7 +300,6 @@ setMethod("pairwiseAlignment",
                                        patternQuality = patternQuality,
                                        subjectQuality = subjectQuality,
                                        type = type,
-                                       qualityType = qualityType,
                                        substitutionMatrix = substitutionMatrix,
                                        gapExtension = gapExtension,
                                        gapOpening = gapOpening,

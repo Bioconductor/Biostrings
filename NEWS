@@ -86,7 +86,8 @@ o Added many methods for pairwise alignment objects including compareStrings,
   rep, subject, summary, views.
 
 o Removed the XStringAlign class and added classes PairwiseAlignment,
-  AlignedXStringSet, QualityAlignedXStringSet, and PairwiseAlignmentSummary.
+  AlignedXStringSet, QualityAlignedXStringSet, XStringQuality, PhredQuality,
+  SolexaQuality, and PairwiseAlignmentSummary.
 
 MISCELLANEOUS
 

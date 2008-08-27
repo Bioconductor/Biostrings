@@ -179,14 +179,14 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   gapOpening = 0, gapExtension = -1)
 @
 
-The substitution scoring scheme is set using four arguments, three of which are
-quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality},
-\Rfunarg{qualityType}) and one is constant substitution related
-(\Rfunarg{substitutionMatrix}). When the substitution scores are fixed by
-character pairing, the \Rfunarg{substituionMatrix} argument takes a matrix with
-the appropriate alphabets as dimension names. The
-\Rfunction{nucleotideSubstitutionMatrix} function tranlates simple match and
-mismatch scores to the full spectrum of IUPAC nucleotide codes.
+The substitution scoring scheme is set using three arguments, two of which are
+quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality}) and
+one is constant substitution related (\Rfunarg{substitutionMatrix}). When the
+substitution scores are fixed by character pairing, the
+\Rfunarg{substituionMatrix} argument takes a matrix with the appropriate
+alphabets as dimension names. The \Rfunction{nucleotideSubstitutionMatrix}
+function tranlates simple match and mismatch scores to the full spectrum of
+IUPAC nucleotide codes.
 
 <<main4>>=
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
@@ -196,13 +196,12 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   gapOpening = 0, gapExtension = -1)
 @
 
-When the substitution scores are quality-based, the \Rfunarg{qualityType}
-argument sets the type of quality score to use (\texttt{"Phred"} or
-\texttt{"Solexa"}) and the \Rfunarg{patternQuality} and
-\Rfunarg{subjectQuality} arguments accept the equivalent of $[x-99]$ numeric
-quality values for the respective strings. For \texttt{"Phred"} quality
-measures $Q \in [0, 99]$, the probability of an error in the base read is given
-by $10^{-Q/10}$ and for \texttt{"Solexa"} quality measures $Q \in [-5, 99]$,
+When the substitution scores are quality-based, the \Rfunarg{patternQuality}
+and \Rfunarg{subjectQuality} arguments (of class \Rclass{PhredQuality} or
+\Rclass{SolexaQuality}) represent the equivalent of $[x-99]$ numeric quality
+values for the respective strings. For \Rclass{PhredQuality} measures
+$Q \in [0, 99]$, the probability of an error in the base read is given
+by $10^{-Q/10}$ and for \Rclass{SolexaQuality} measures $Q \in [-5, 99]$,
 they are given by $1 - 1/(1 + 10^{-Q/10})$. The
 \Rfunction{qualitySubstitutionMatrices} function maps the
 \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
@@ -736,8 +735,9 @@ reduce the computation time.
 phiX174Substring <- substring(phiX174, 2793-34, 2811+34)
 
 alignPhiX174 <-
-  pairwiseAlignment(srPhiX174, phiX174Substring, patternQuality = quPhiX174,
-                    subjectQuality = 99L, qualityType = "Solexa",
+  pairwiseAlignment(srPhiX174, phiX174Substring,
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
                     type = "subjectOverlap")
 summary(alignPhiX174, weight = wtPhiX174)
 
@@ -1080,8 +1080,9 @@ table(leftAligned | rightAligned, experiment[["width"]])
 entire genome. (This may take a few minutes.)
 <<ans7a>>=
 fullAlignPhiX174 <-
-  pairwiseAlignment(srPhiX174, phiX174, patternQuality = quPhiX174,
-                    subjectQuality = 99L, qualityType = "Solexa",
+  pairwiseAlignment(srPhiX174, phiX174,
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
                     type = "subjectOverlap")
 summary(fullAlignPhiX174, weight = wtPhiX174)
 @
@@ -1101,8 +1102,9 @@ score on the new sequence.}
 <<ans7c>>=
 fullAlignRevCompPhiX174 <-
   pairwiseAlignment(srPhiX174, reverseComplement(phiX174),
-                    patternQuality = quPhiX174, subjectQuality = 99L,
-                    qualityType = "Solexa", type = "subjectOverlap")
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
+                    type = "subjectOverlap")
 table(score(fullAlignRevCompPhiX174) > score(fullAlignPhiX174))
 @
 \end{enumerate}
