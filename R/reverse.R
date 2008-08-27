@@ -118,7 +118,7 @@ setMethod("reverseComplement", "RNAString",
 setMethod("reverseComplement", "DNAStringSet",
     function(x, ...)
     {
-        x@super <- reverseComplement(super(x))
+        x@super <- complement(super(x))
 		reverse(x, start=1L, end=length(super(x)))
     }
 )
@@ -126,7 +126,7 @@ setMethod("reverseComplement", "DNAStringSet",
 setMethod("reverseComplement", "RNAStringSet",
     function(x, ...)
     {
-        x@super <- reverseComplement(super(x))
+        x@super <- complement(super(x))
 		reverse(x, start=1L, end=length(super(x)))
     }
 )
@@ -134,7 +134,7 @@ setMethod("reverseComplement", "RNAStringSet",
 setMethod("reverseComplement", "XStringViews",
     function(x, ...)
     {
-        x@subject <- reverseComplement(subject(x))
+        x@subject <- complement(subject(x))
 		reverse(x, start=1L, end=length(subject(x)))
     }
 )
