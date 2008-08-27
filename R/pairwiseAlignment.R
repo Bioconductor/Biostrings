@@ -109,6 +109,9 @@ function(pattern,
   ## Generate quality-based and constant substitution matrix information
   if (is.null(substitutionMatrix)) {
     useQuality <- TRUE
+    if (class(patternQuality) != class(subjectQuality))
+      stop("'patternQuality' and 'subjectQuality' must be of the same 'XStringSet' class")
+
     if (!is(patternQuality, "XStringQuality"))
       stop("'patternQuality' must be of class 'XStringSet'")
     if (!all(nchar(patternQuality) == 1 | nchar(patternQuality) == nchar(pattern)))
