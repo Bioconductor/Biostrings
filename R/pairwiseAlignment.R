@@ -110,14 +110,18 @@ function(pattern,
   if (is.null(substitutionMatrix)) {
     useQuality <- TRUE
     if (class(patternQuality) != class(subjectQuality))
-      stop("'patternQuality' and 'subjectQuality' must be of the same 'XStringSet' class")
+      stop("'patternQuality' and 'subjectQuality' must be of the same class")
 
+    if (class(patternQuality) %in% c("integer", "numeric", "BString", "BStringSet"))
+        patternQuality <- PhredQuality(patternQuality)
     if (!is(patternQuality, "XStringQuality"))
       stop("'patternQuality' must be of class 'XStringSet'")
     if (!all(nchar(patternQuality) == 1 | nchar(patternQuality) == nchar(pattern)))
       stop(paste("'patternQuality' must either be constant or",
                  "have the same length as 'pattern'"))
 
+    if (class(subjectQuality) %in% c("integer", "numeric", "BString", "BStringSet"))
+      subjectQuality <- PhredQuality(subjectQuality)
     if (!is(subjectQuality, "XStringQuality"))
       stop("'subjectQuality' must be of class 'XStringSet'")
     if (!(length(subjectQuality) %in% c(1, length(subject))))
