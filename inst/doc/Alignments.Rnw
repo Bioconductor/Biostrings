@@ -741,9 +741,8 @@ alignPhiX174 <-
                     type = "subjectOverlap")
 summary(alignPhiX174, weight = wtPhiX174)
 
-splitchars <- strsplit(as.character(phiX174), "")[[1]]
-splitchars[c(2793, 2811)] <- "T"
-phiX174Revised <- DNAString(paste(splitchars, collapse = ""))
+phiX174Revised <-
+  replaceLetterAtLoc(phiX174, c(2793, 2811), "TT")
 table(countPDict(srPDict, phiX174Revised))
 @
 
