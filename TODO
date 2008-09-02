@@ -21,6 +21,9 @@ CONTAINERS
   "baseXStringSubtype".
 
 - XStringSet objects:
+    o Support this: DNAStringSet(x, start=c(1,5), end=c(3,7)) when x is a
+      single string (character or XString). The result should be a DNAStringSet
+      object of the length of 'start' (or 'end').
     o Fix validObject() for XStringSet objects (currently broken).
     o DNAStringSet(x) should not do anything when x is already a DNAStringSet
       _instance_ (class(x) == "DNAStringSet").
@@ -29,8 +32,6 @@ CONTAINERS
       Make them work in a vectorized fashion for XStringSet objects.
     o Add "==" method for XStringSet objects.
     o Try to speed up "show" method for XStringSet objects.
-
-- Add "duplicated" and "unique" methods for XStringSet and XStringViews objects.
 
 - Define a DNAorRNA class (or NucleotideString) that is the union of the
   DNAString and RNAString classes (use a union class for this or "do it by
@@ -57,8 +58,21 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
-- Fix GENETIC_CODE object (replace T by U). Add functions for translating DNA
-  or RNA into AA.
+- Add "duplicated", "patternFrequency", "unique" and "sort" methods for
+  XStringSet and XStringViews objects.
+
+- Add an xsmatch() function that would behave like standard base::match()
+  but on XString objects (2nd arg 'table' must be an XStringSet object).
+  When 'x' is a single string, 'xsmatch(x, table)' would return:
+
+    ii <- nchar(x) == width(table) &
+          isMatching(x, Biostrings:::super(table), start(table))
+    which(ii)[1]
+
+  although this is not optimal because isMatching() is doing too many
+  comparisons when it could in fact bail out early.
+
+- Add functions for translating DNA or RNA into AA.
 
 - Use subseq() instead of subXString(). Remove subXString.R file.
 
