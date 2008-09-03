@@ -575,39 +575,6 @@ int fgets_rtrimmed(char *s, int size, FILE *stream)
 	return line_len;
 }
 
-
-/*
- * Get the order of an array of ints.
- */
-static int cmpintpp(const void *p1, const void *p2)
-{
-	int *i1, *i2;
-
-	i1 = *((int **) p1);
-	i2 = *((int **) p2);
-	if (*i1 < *i2)
-		return -1;
-	if (*i1 > *i2)
-		return 1;
-        return 0;
-}
-void get_intorder(int len, const int *in, int *out)
-{
-	const int **inp, *tmp0, **tmp1;
-	int k, *tmp2;
-
-	inp = (const int **) malloc(len * sizeof(const int *));
-	if (inp == NULL)
-		error("Biostrings internal error in intorder(): malloc failed");
-	for (k = 0, tmp0 = in, tmp1 = inp; k < len; k++, tmp0++, tmp1++)
-		*tmp1 = tmp0;
-	qsort(inp, len, sizeof(int *), cmpintpp);
-	for (k = 0, tmp1 = inp, tmp2 = out; k < len; k++, tmp1++, tmp2++)
-		*tmp2 = *tmp1 - in;
-	free(inp);
-	return;
-}
-
 /*
  * Values in 'codes' must represent byte values i.e. values >= 0 and < 256.
  * Output is written to 'chrtrtable' which must be a writable int array of

@@ -196,12 +196,6 @@ int fgets_rtrimmed(
 	FILE *stream
 );
 
-void get_intorder(
-	int len,
-	const int *in,
-	int *out
-);
-
 void _init_chrtrtable(
 	const int *codes,
 	int len,

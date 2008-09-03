@@ -219,7 +219,7 @@ SEXP ByName_MIndex_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_na
 		UNPROTECT(1);
 	} else {
 		//poffsets_order = new_IntAE(poffsets.nelt, 0, 0);
-		//get_intorder(poffsets.nelt, poffsets.elts, poffsets_order.elts);
+		//get_int_array_order(poffsets.elts, poffsets.nelt, poffsets_order.elts);
 		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
 		PROTECT(ans = NEW_LIST(poffsets.nelt));
 		PROTECT(ans_names = NEW_CHARACTER(poffsets.nelt));
