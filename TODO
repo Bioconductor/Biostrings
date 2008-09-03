@@ -61,6 +61,22 @@ UTILITIES
 - Add "duplicated", "patternFrequency", "unique" and "sort" methods for
   XStringSet and XStringViews objects. Also, for completeness, the "<=",
   ">=", "<" and ">" operators between XString objects should be provided.
+  Note that Martin's srsort() from the ShortRead package is much faster
+  than sortDNAString() from the old Biostrings 1 package:
+
+    library(drosophila2probe)
+    dict0 <- DNAString(drosophila2probe$sequence[1:100000])
+
+  On george1:
+
+    sortDNAString(dict0) # 1.053 sec. (R-2.7.1 + Biostrings 1.4.0)
+
+    srsort(dict0) # 0.097 sec. (R-2.8 + Biostrings 2.9 + ShortRead 0.1)
+
+  srsort() uses standard C qsort() internally.
+  It might be possible to be even faster by building a prefix tree (like
+  for the Aho-Corasick algo) but that will probably be at the cost of
+  using much more memory.
 
 - Add an xsmatch() function that would behave like standard base::match()
   but on XString objects (2nd arg 'table' must be an XStringSet object).
