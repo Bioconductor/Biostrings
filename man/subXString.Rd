@@ -5,8 +5,10 @@
 
 \alias{substr}
 \alias{substr,XString-method}
+\alias{substr,MaskedXString-method}
 \alias{substring}
 \alias{substring,XString-method}
+\alias{substring,MaskedXString-method}
 
 
 \title{Fast substring extraction}
@@ -24,8 +26,8 @@
 \arguments{
   \item{x}{
     An \link{XString} object for \code{subXString}.
-    A character vector, an \link{XStringViews} or an \link{XString}
-    object for \code{substr} or \code{substring}.
+    A character vector, an \link{XStringViews}, \link{XString},
+    or \link{MaskedXString} object for \code{substr} or \code{substring}.
   }
   \item{start}{
     A numeric vector.
