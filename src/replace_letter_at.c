@@ -41,17 +41,17 @@ static void init_chrtrtable_with_lkup(SEXP lkup)
 	return;
 }
 
-static int replace_locs(char *dest, int dest_length,
-		const int *loc, int loc_length, const char *src, int use_chrtrtable)
+static int replace_letter_at(char *dest, int dest_length,
+		const int *at, int at_length, const char *src, int use_chrtrtable)
 {
 	int i, j, trkey, are_IUPAC;
 	char old_letter, new_letter;
 
-	for (j = 0; j < loc_length; j++) {
-		i = loc[j] - 1;
+	for (j = 0; j < at_length; j++) {
+		i = at[j] - 1;
 		if (i == NA_INTEGER || i < 0 || i >= dest_length) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "'loc' contains NAs or out of limits locations");
+				 "'at' contains NAs or out of limits locations");
 			return -1;
 		}
 		new_letter = src[j];
@@ -102,18 +102,18 @@ static int replace_locs(char *dest, int dest_length,
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
+SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		SEXP if_not_extending, SEXP verbose)
 {
 	const char *x_class;
 	RoSeq x_seq;
 	SEXP tag, letter_elt, xdata, ans;
-	int loc_length, letter_length, letter_elt_length, letter_ncharsum, i;
-	const int *loc_p;
+	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
+	const int *at_p;
 
 	x_class = _get_class(x);
 	x_seq = _get_XString_asRoSeq(x);
-	loc_length = LENGTH(loc);
+	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
 		init_chrtrtable_with_lkup(lkup);
@@ -122,7 +122,7 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 	PROTECT(tag = NEW_RAW(x_seq.nelt));
 	memcpy((char *) RAW(tag), x_seq.elts, x_seq.nelt);
 	skip_or_merge_count = letter_ncharsum = 0;
-	loc_p = INTEGER(loc);
+	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {
 		letter_elt = STRING_ELT(letter, i);
 		if (letter_elt == NA_STRING) {
@@ -130,17 +130,17 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 			error("'letter' contains NAs");
 		}
 		letter_ncharsum += letter_elt_length = LENGTH(letter_elt);
-		if (letter_ncharsum > loc_length)
+		if (letter_ncharsum > at_length)
 			break;
-		if (replace_locs((char *) RAW(tag), LENGTH(tag),
-                		 loc_p, letter_elt_length, CHAR(letter_elt),
-				 lkup != R_NilValue) != 0) {
+		if (replace_letter_at((char *) RAW(tag), LENGTH(tag),
+				      at_p, letter_elt_length, CHAR(letter_elt),
+				      lkup != R_NilValue) != 0) {
 			UNPROTECT(1);
 			error("%s", errmsg_buf);
 		}
-		loc_p += letter_elt_length;
+		at_p += letter_elt_length;
 	}
-	if (letter_ncharsum != loc_length) {
+	if (letter_ncharsum != at_length) {
 		UNPROTECT(1);
 		error("total nb of letters in 'letter' must be the same as nb of locations");
 	}
@@ -159,13 +159,13 @@ SEXP XString_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup,
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XString_inplace_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP lkup)
+SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 {
 	SEXP tag, letter_elt;
-	int loc_length, letter_length, letter_elt_length, letter_ncharsum, i;
-	const int *loc_p;
+	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
+	const int *at_p;
 
-	loc_length = LENGTH(loc);
+	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
 		init_chrtrtable_with_lkup(lkup);
@@ -173,22 +173,22 @@ SEXP XString_inplace_replace_locs_bySTRSXP(SEXP x, SEXP loc, SEXP letter, SEXP l
 
 	tag = _get_XRaw_tag(_get_XString_xdata(x));
 	skip_or_merge_count = letter_ncharsum = 0;
-	loc_p = INTEGER(loc);
+	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {
 		letter_elt = STRING_ELT(letter, i);
 		if (letter_elt == NA_STRING)
 			error("'letter' contains NAs");
 		letter_ncharsum += letter_elt_length = LENGTH(letter_elt);
-		if (letter_ncharsum > loc_length)
+		if (letter_ncharsum > at_length)
 			break;
-		if (replace_locs((char *) RAW(tag), LENGTH(tag),
-                		 loc_p, letter_elt_length, CHAR(letter_elt),
-				 lkup != R_NilValue) != 0) {
+		if (replace_letter_at((char *) RAW(tag), LENGTH(tag),
+				      at_p, letter_elt_length, CHAR(letter_elt),
+				      lkup != R_NilValue) != 0) {
 			error("%s", errmsg_buf);
 		}
-		loc_p += letter_elt_length;
+		at_p += letter_elt_length;
 	}
-	if (letter_ncharsum != loc_length)
+	if (letter_ncharsum != at_length)
 		error("total nb of letters in 'letter' must be the same as nb of locations");
 	return x;
 }

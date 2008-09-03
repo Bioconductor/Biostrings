@@ -43,7 +43,7 @@ export(
     strrev, mkAllStrings,
     dinucleotideFrequency, trinucleotideFrequency, oligonucleotideTransitions,
     transcribe, cDNA, dna2rna, rna2dna,
-    .inplaceReplaceLetterAtLoc,
+    .inplaceReplaceLetterAt,
     maxWeights, maxScore, PWMscore, matchPWM, countPWM,
     extractAllMatches,
     PhredQuality, SolexaQuality,
@@ -53,6 +53,7 @@ export(
     subBString,
     FASTArecordsToBStringViews,
     read.BStringViews, write.BStringViews,
+    replaceLetterAtLoc,
 
     ## Defunct
     matchDNAPattern, alignScore
@@ -88,7 +89,7 @@ exportMethods(
     alphabetFrequency, oligonucleotideFrequency,
     chartr,
     reverse, complement, reverseComplement,
-    replaceLetterAtLoc,
+    replaceLetterAt,
     maskMotif,
     injectHardMask,
 

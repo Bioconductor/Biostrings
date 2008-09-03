@@ -48,7 +48,7 @@
 
 \seealso{
   \code{\link[base]{chartr}},
-  \code{\link{replaceLetterAtLoc}},
+  \code{\link{replaceLetterAt}},
   \link{XString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},

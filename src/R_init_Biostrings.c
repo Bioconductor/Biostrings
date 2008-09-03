@@ -88,9 +88,9 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XRaw_reverse_translate_copy_from_i1i2, 5),
 	CALLMETHOD_DEF(XStringSet_char_translate, 3),
 
-/* replace_locs.c */
-	CALLMETHOD_DEF(XString_replace_locs_bySTRSXP, 6),
-	CALLMETHOD_DEF(XString_inplace_replace_locs_bySTRSXP, 4),
+/* replace_letter_at.c */
+	CALLMETHOD_DEF(XString_replace_letter_at, 6),
+	CALLMETHOD_DEF(XString_inplace_replace_letter_at, 4),
 
 /* inject_code.c */
 	CALLMETHOD_DEF(inject_code, 4),

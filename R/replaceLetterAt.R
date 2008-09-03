@@ -1,19 +1,19 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "replaceLetterAtLoc" generic function and methods.
+### The "replaceLetterAt" generic function and methods.
 ###
 
-setGeneric("replaceLetterAtLoc", signature="x",
-    function(x, loc, letter, if.not.extending="replace", verbose=FALSE)
-        standardGeneric("replaceLetterAtLoc")
+setGeneric("replaceLetterAt", signature="x",
+    function(x, at, letter, if.not.extending="replace", verbose=FALSE)
+        standardGeneric("replaceLetterAt")
 )
 
-setMethod("replaceLetterAtLoc", "DNAString",
-    function(x, loc, letter, if.not.extending="replace", verbose=FALSE)
+setMethod("replaceLetterAt", "DNAString",
+    function(x, at, letter, if.not.extending="replace", verbose=FALSE)
     {
-        if (!is.numeric(loc))
-            stop("'loc' must be a vector of integers")
-        if (!is.integer(loc))
-            loc <- as.integer(loc)
+        if (!is.numeric(at))
+            stop("'at' must be a vector of integers")
+        if (!is.integer(at))
+            at <- as.integer(at)
         if (!is.character(letter))
             stop("'letter' must be a character vector")
         lkup <- getXStringSubtypeConversionLookup("BString", class(x))
@@ -22,26 +22,32 @@ setMethod("replaceLetterAtLoc", "DNAString",
         if.not.extending <- match.arg(if.not.extending, c("replace", "skip", "merge", "error"))
         if (!isTRUEorFALSE(verbose))
             stop("'verbose' must be 'TRUE' or 'FALSE'")
-        .Call("XString_replace_locs_bySTRSXP",
-              x, loc, letter, lkup, if.not.extending, verbose,
+        .Call("XString_replace_letter_at",
+              x, at, letter, lkup, if.not.extending, verbose,
               PACKAGE="Biostrings")
     }
 )
 
+replaceLetterAtLoc <- function(x, loc, letter, if.not.extending="replace", verbose=FALSE)
+{
+    .Deprecated("replaceLetterAt")
+    replaceLetterAt(x, loc, letter, if.not.extending=if.not.extending, verbose=verbose)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The ".inplaceReplaceLetterAtLoc" function.
+### The ".inplaceReplaceLetterAt" function.
 ###
 ### The user should NEVER use this function!
 ### This function is used by the BSgenome package for injecting SNPs into the
 ### sequences of a BSgenome object at sequence-load time.
 ###
 
-.inplaceReplaceLetterAtLoc <- function(x, loc, letter)
+.inplaceReplaceLetterAt <- function(x, at, letter)
 {
     lkup <- getXStringSubtypeConversionLookup("BString", class(x))
-    .Call("XString_inplace_replace_locs_bySTRSXP",
-          x, loc, letter, lkup,
+    .Call("XString_inplace_replace_letter_at",
+          x, at, letter, lkup,
           PACKAGE="Biostrings")
 }
 

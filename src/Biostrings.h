@@ -670,20 +670,20 @@ SEXP XStringSet_char_translate(
 );
 
 
-/* replace_locs.c */
+/* replace_letter_at.c */
 
-SEXP XString_replace_locs_bySTRSXP(
+SEXP XString_replace_letter_at(
 	SEXP x,
-	SEXP loc,
+	SEXP at,
 	SEXP letter,
 	SEXP lkup,
 	SEXP if_not_extending,
 	SEXP verbose
 );
 
-SEXP XString_inplace_replace_locs_bySTRSXP(
+SEXP XString_inplace_replace_letter_at(
 	SEXP x,
-	SEXP loc,
+	SEXP at,
 	SEXP letter,
 	SEXP lkup
 );

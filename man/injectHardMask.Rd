@@ -86,7 +86,7 @@
 \seealso{
   \code{\link{maskMotif}},
   \link{MaskedXString-class},
-  \code{\link{replaceLetterAtLoc}},
+  \code{\link{replaceLetterAt}},
   \code{\link{chartr}},
   \link{XString},
   \link{XStringViews-class}
