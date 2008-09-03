@@ -4,26 +4,17 @@
 ###
 ### The XStringSet class is a container for storing a set of XString objects
 ### of the same subtype (e.g. all elements are BString objects or they are
-### all DNAString objects).
+### all DNAString objects etc).
 ###
 ### The current implementation only allows for storage of a set of strings
 ### that belong to the same XRaw object i.e. all the elements of an XStringSet
 ### object must be substrings of a common string called the "super string".
-### So for storing XString objects that point to different XRaw objects, the
-### user must use an XStringList container.
-### There are 3 problems with this:
-###   1. It's not user-friendly. The responsability of choosing between
-###      XStringSet and XStringList based on such an obscure criteria ("are
-###      my XString objects sharing the same XRaw object?") should not be left
-###      to the user.
-###   2. It's currently not possible to add new elements to an existing
-###      XStringSet object. Well, in fact it can be done, but only if the new
-###      elements belong to the XRaw object shared by the existing elements.
-###      Such restriction would not make sense from a user point of view.
-###   3. The XStringList container is not as efficient as the XStringSet
-###      container.
-### This could be changed (and maybe this will show up in the 2.9 series) by
-### using something like this for the XStringSet class:
+### The old XStringList container (Biostrings 2.8) didn't have this limitation:
+### it could hold XString objects that pointed to different XRaw objects but
+### it was so slow that I decided to replace it by the much more efficient
+### XStringSet container.
+### Maybe the best of both world, or at least a good enough trade-off, could be
+### obtained by defining the XStringSet class like this:
 ###
 ###   setClass("XRawViews",
 ###     contains="LockedIRanges",
@@ -48,9 +39,10 @@
 ###     start <- start(xrv)[x@weak[i]]
 ###     width <- width(xrv)[x@weak[i]]
 ###     new(baseClass, xdata=xrv@subject, offset=start-1L, length=width)
-### This new XStringSet container would combine the efficiency of the old one
-### and the flexibility of the XStringList container (which can then be
-### removed).
+### This new XStringSet container would still be almost as efficient as the old
+### one (at least for the restricted set of use cases that the old one was
+### supporting i.e. when x@xrvlist holds a list of length 1) and the
+### flexibility of the old XStringList container.
 ###
 ### Some notable differences between XStringSet and XStringViews objects:
 ###   - the "show" methods produce different output
