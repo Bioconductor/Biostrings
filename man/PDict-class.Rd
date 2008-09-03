@@ -13,6 +13,7 @@
 \alias{tb.width}
 \alias{tb.width,PreprocessedTB-method}
 \alias{initialize,PreprocessedTB-method}
+\alias{duplicated,PreprocessedTB-method}
 
 % Twobit class:
 \alias{class:Twobit}

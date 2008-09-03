@@ -108,7 +108,7 @@ exportMethods(
 
     head, tb, tb.width, tail, 
     patternFrequency,
-    startIndex, endIndex, countIndex, combine, unlist,
+    startIndex, endIndex, countIndex, unlist,
     PDict, matchPDict, countPDict, whichPDict,
 
     subpatterns, pattern, insertion, deletion,
