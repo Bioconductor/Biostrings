@@ -27,9 +27,6 @@ debug_XString_class <- function()
 debug_XStringSet_class <- function()
     invisible(.Call("debug_XStringSet_class", PACKAGE="Biostrings"))
 
-debug_seqs_to_seqs <- function()
-    invisible(.Call("debug_seqs_to_seqs", PACKAGE="Biostrings"))
-
 debug_match_utils <- function()
     invisible(.Call("debug_match_utils", PACKAGE="Biostrings"))
 

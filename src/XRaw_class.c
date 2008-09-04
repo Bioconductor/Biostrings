@@ -213,6 +213,38 @@ SEXP _new_XRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ * Arguments:
+ *   x: a character vector;
+ *   start/width: integer vectors of the same length as 'x' and describing a
+ *                valid "narrowing" of 'x';
+ *   lkup: lookup table for encoding the letters in 'x';
+ *   collapse: not yet supported.
+ * TODO: Support the 'collapse' argument
+ */
+SEXP new_XRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
+		SEXP collapse, SEXP lkup)
+{
+	int nseq;
+	RoSeqs seqs;
+
+	nseq = LENGTH(start);
+	if (collapse == R_NilValue) {
+		if (nseq != 1)
+			error("'collapse' must be specified when the number "
+			      "of input sequences is not exactly 1");
+	} else {
+		if (LENGTH(collapse) != 1
+		 || LENGTH(STRING_ELT(collapse, 0)) != 0)
+			error("'collapse' can only be NULL "
+			      "or the empty string for now");
+	}
+	seqs = _new_RoSeqs_from_STRSXP(nseq, x);
+	_narrow_RoSeqs(&seqs, start, width);
+	return _new_XRaw_from_RoSeqs(&seqs, lkup);
+}
+
 
 /****************************************************************************
  * Writing an RoSeq object to an XRaw object.
@@ -226,59 +258,5 @@ void _write_RoSeq_to_XRaw(SEXP x, int offset, const RoSeq *seq,
 	dest = (char *) RAW(_get_XRaw_tag(x)) + offset;
 	_copy_seq(dest, seq->elts, seq->nelt, chrtrtable);
 	return;
-}
-
-
-/****************************************************************************
- * Converting an RoSeqs struct (array of arrays of const chars) into a set
- * of sequences.
- * FIXME: This has nothing to do with XRaw objects! Find another place for it
- */
-
-SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
-{
-	// IMPORTANT: We use user-controlled memory for this private memory
-	// pool so it is persistent between calls to .Call().
-	// It will last until the end of the R session and can only grow
-	// during the session. It is NOT a memory leak!
-	static int bufsize = 0;
-	static char *buf = NULL;
-	int new_bufsize;
-	char *new_buf;
-
-	new_bufsize = seq->nelt + 1;
-	if (new_bufsize > bufsize) {
-		new_buf = (char *) realloc(buf, new_bufsize);
-		if (new_buf == NULL)
-			error("_new_CHARSXP_from_RoSeq(): "
-			      "call to realloc() failed");
-		buf = new_buf;
-		bufsize = new_bufsize;
-	}
-	if (lkup == R_NilValue) {
-		_Biostrings_memcpy_to_i1i2(0, seq->nelt - 1,
-			buf, seq->nelt,
-			seq->elts, seq->nelt, sizeof(char));
-	} else {
-		_Biostrings_translate_charcpy_to_i1i2(0, seq->nelt - 1,
-			buf, seq->nelt,
-			seq->elts, seq->nelt,
-			INTEGER(lkup), LENGTH(lkup));
-	}
-	buf[seq->nelt] = 0;
-	return mkChar(buf);
-}
-
-SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
-{
-	SEXP ans;
-	int i;
-	const RoSeq *seq;
-
-	PROTECT(ans = NEW_CHARACTER(seqs->nelt));
-	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
-		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(seq, lkup));
-	UNPROTECT(1);
-	return ans;
 }
 

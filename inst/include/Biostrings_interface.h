@@ -97,15 +97,27 @@
 
 
 /*
- * Creates an IRanges object from a set of sequences (only the lengths of the
- * sequences are used).
+ * RoSeq/RoSeqs low-level utilities.
+ * (see RoSeq_utils.c)
  */
-SEXP new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs);
+
+SEXP new_STRSXP_from_RoSeqs(
+	const RoSeqs *seqs,
+	SEXP lkup
+);
+
+RoSeqs new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
+
+SEXP new_IRanges_from_RoSeqs(
+	const char *class,
+	const RoSeqs *seqs
+);
 
 
 /*
  * Low-level manipulation of XString and XStringSet objects.
  */
+
 char DNAencode(char c);
 
 char DNAdecode(char code);
@@ -161,15 +173,6 @@ void write_RoSeq_to_XStringSet_elt(
 	const RoSeq *seq,
 	int encode
 );
-
-
-/*
- * Converting a set of sequences from one internal representation into another.
- */
-
-SEXP new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup);
-
-RoSeqs new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 
 
 /*

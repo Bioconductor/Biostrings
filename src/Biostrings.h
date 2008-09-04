@@ -63,8 +63,6 @@ SEXP Biostrings_length_vectors_in_list(SEXP list);
 
 char *_Biostrings_alloc_string(int n);
 
-const char *_RoSeq2str(const RoSeq *seq);
-
 int _Biostrings_memcmp(
 	const char *a,
 	int ia,
@@ -214,6 +212,31 @@ void _normargs_startend(
 
 SEXP debug_RoSeq_utils();
 
+void _narrow_RoSeqs(
+	RoSeqs *seqs,
+	SEXP start,
+	SEXP width
+);
+
+RoSeqs _alloc_RoSeqs(int nelt);
+
+SEXP _new_CHARSXP_from_RoSeq(
+	const RoSeq *seq,
+	SEXP lkup
+);
+
+RoSeqs _new_RoSeqs_from_STRSXP(
+	int nelt,
+	SEXP x
+);
+
+SEXP _new_STRSXP_from_RoSeqs(
+	const RoSeqs *seqs,
+	SEXP lkup
+);
+
+RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
+
 SEXP _new_IRanges_from_RoSeqs(
 	const char *class,
 	const RoSeqs *seqs
@@ -305,21 +328,19 @@ SEXP _new_XRaw_from_RoSeqs(
 	SEXP lkup
 );
 
+SEXP new_XRaw_from_STRSXP(
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP collapse,
+	SEXP lkup
+);
+
 void _write_RoSeq_to_XRaw(
 	SEXP x,
 	int offset,
 	const RoSeq *seq,
 	const int *chrtrtable
-);
-
-SEXP _new_CHARSXP_from_RoSeq(
-	const RoSeq *seq,
-	SEXP lkup
-);
-
-SEXP _new_STRSXP_from_RoSeqs(
-	const RoSeqs *seqs,
-	SEXP lkup
 );
 
 
@@ -477,6 +498,13 @@ SEXP _get_XString_xdata(SEXP x);
 
 RoSeq _get_XString_asRoSeq(SEXP x);
 
+SEXP new_XRaw_from_XString(
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP lkup
+);
+
 SEXP _new_XString(
 	const char *class,
 	SEXP xdata,
@@ -522,6 +550,11 @@ RoSeq _get_XStringSet_elt_asRoSeq(
 	int i
 );
 
+RoSeqs _new_RoSeqs_from_XStringSet(
+	int nelt,
+	SEXP x
+);
+
 SEXP _new_XStringSet_from_RoSeqs(
 	const char *baseClass,
 	const RoSeqs *seqs
@@ -554,50 +587,6 @@ void _write_RoSeq_to_XStringSet_elt(
 
 SEXP XStringSet_as_STRSXP(
 	SEXP x,
-	SEXP lkup
-);
-
-
-/* seqs_to_seqs.c */
-
-SEXP debug_seqs_to_seqs();
-
-RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
-
-RoSeqs _new_RoSeqs_from_STRSXP(
-	int nseq,
-	SEXP x
-);
-
-RoSeqs _new_RoSeqs_from_XString(
-	int nseq,
-	SEXP x
-);
-
-RoSeqs _new_RoSeqs_from_XStringSet(
-	int nseq,
-	SEXP x
-);
-
-SEXP copy_subXRaw(
-	SEXP x,
-	SEXP start,
-	SEXP nchar,
-	SEXP lkup
-);
-
-SEXP new_XRaw_from_STRSXP(
-	SEXP x,
-	SEXP safe_starts,
-	SEXP safe_widths,
-	SEXP collapse,
-	SEXP lkup
-);
-
-SEXP new_XRaw_from_XString(
-	SEXP x,
-	SEXP safe_starts,
-	SEXP safe_widths,
 	SEXP lkup
 );
 
@@ -687,8 +676,8 @@ SEXP XString_inplace_replace_letter_at(
 
 SEXP inject_code(
 	SEXP x,
-	SEXP safe_starts,
-	SEXP safe_widths,
+	SEXP start,
+	SEXP width,
 	SEXP code
 );
 

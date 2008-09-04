@@ -146,7 +146,41 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 }
 
 /*
- * Never try to make this a .Call() entry point!
+ * Creating a set of sequences (RoSeqs struct) from an XString object.
+ */
+static RoSeqs new_RoSeqs_from_XString(int nelt, SEXP x)
+{
+	RoSeqs seqs;
+	RoSeq *elt1;
+	int i;
+
+	seqs = _alloc_RoSeqs(nelt);
+	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++)
+		*elt1 = _get_XString_asRoSeq(x);
+	return seqs;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ * Arguments:
+ *   x: an XString object;
+ *   start/width: integer vectors of the same length as 'x' and describing a
+ *                set of valid ranges in 'x';
+ *   lkup: lookup table for (re)encoding the letters in 'x'.
+ */
+SEXP new_XRaw_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
+{
+	int nseq;
+	RoSeqs seqs;
+
+	nseq = LENGTH(start);
+	seqs = new_RoSeqs_from_XString(nseq, x);
+	_narrow_RoSeqs(&seqs, start, width);
+	return _new_XRaw_from_RoSeqs(&seqs, lkup);
+}
+
+/*
+ * Do NOT try to make this a .Call() entry point!
  * Its arguments are NOT duplicated so it would be a disaster if they were
  * coming from the user space.
  */
@@ -163,6 +197,10 @@ SEXP _new_XString(const char *class, SEXP xdata, int offset, int length)
 	return ans;
 }
 
+/*
+ * Making an XString object from the sequences referenced by a RoSeqs struct.
+ * Assume that these sequences are NOT already encoded.
+ */
 SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
 {
 	const int *enc_lkup;

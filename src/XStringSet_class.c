@@ -74,6 +74,26 @@ RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
 }
 
 /*
+ * Creating a set of sequences (RoSeqs struct) from an XStringSet object.
+ */
+RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
+{
+	RoSeqs seqs;
+	CachedXStringSet cached_x;
+	RoSeq *elt1;
+	int i;
+
+	if (nelt > _get_XStringSet_length(x))
+		error("_new_RoSeqs_from_XStringSet(): "
+		      "'nelt' must be <= '_get_XStringSet_length(x)'");
+	seqs = _alloc_RoSeqs(nelt);
+	cached_x = _new_CachedXStringSet(x);
+	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++)
+		*elt1 = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+	return seqs;
+}
+
+/*
  * Do NOT try to make this a .Call() entry point!
  * Its arguments are NOT duplicated so it would be a disaster if they were
  * coming from the user space.
@@ -93,7 +113,8 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
 }
 
 /*
- * Assume that the sequences in 'seqs' are NOT already encoded.
+ * Making an XStringSet object from the sequences referenced by a RoSeqs struct.
+ * Assume that these sequences are NOT already encoded.
  */
 SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, const RoSeqs *seqs)
 {

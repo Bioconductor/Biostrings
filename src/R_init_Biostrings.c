@@ -32,6 +32,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Biostrings_XRaw_alloc, 2),
 	CALLMETHOD_DEF(Biostrings_XRaw_get_show_string, 1),
 	CALLMETHOD_DEF(Biostrings_XRaw_length, 1),
+	CALLMETHOD_DEF(new_XRaw_from_STRSXP, 5),
 
 /* XRaw_utils.c */
 	CALLMETHOD_DEF(debug_XRaw_utils, 0),
@@ -64,17 +65,11 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_XString_class, 0),
 	CALLMETHOD_DEF(init_DNAlkups, 2),
 	CALLMETHOD_DEF(init_RNAlkups, 2),
+	CALLMETHOD_DEF(new_XRaw_from_XString, 4),
 
 /* XStringSet_class.c */
 	CALLMETHOD_DEF(debug_XStringSet_class, 0),
 	CALLMETHOD_DEF(XStringSet_as_STRSXP, 2),
-
-/* seqs_to_seqs.c */
-	CALLMETHOD_DEF(debug_seqs_to_seqs,0),
-
-	CALLMETHOD_DEF(copy_subXRaw, 4),
-	CALLMETHOD_DEF(new_XRaw_from_STRSXP, 5),
-	CALLMETHOD_DEF(new_XRaw_from_XString, 4),
 
 /* char_frequency.c */
 	CALLMETHOD_DEF(XString_char_frequency, 3),
@@ -184,10 +179,9 @@ void R_init_Biostrings(DllInfo *info)
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 
 /* RoSeq_utils.c */
-	REGISTER_CCALLABLE(_new_IRanges_from_RoSeqs);
-
-/* XRaw_class.c */
 	REGISTER_CCALLABLE(_new_STRSXP_from_RoSeqs);
+	REGISTER_CCALLABLE(_new_RoSeqs_from_CharAEAE);
+	REGISTER_CCALLABLE(_new_IRanges_from_RoSeqs);
 
 /* XString_class.c */
 	REGISTER_CCALLABLE(_DNAencode);
@@ -207,9 +201,6 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_alloc_XStringSet);
 	REGISTER_CCALLABLE(_write_RoSeq_to_CachedXStringSet_elt);
 	REGISTER_CCALLABLE(_write_RoSeq_to_XStringSet_elt);
-
-/* seqs_to_seqs.c */
-	REGISTER_CCALLABLE(_new_RoSeqs_from_CharAEAE);
 
 /* match_reporting.c */
 	REGISTER_CCALLABLE(_init_match_reporting);

@@ -54,15 +54,6 @@ char *_Biostrings_alloc_string(int n)
 	return s;
 }
 
-/* Doesn't work properly if 'seq' contains null bytes */
-const char *_RoSeq2str(const RoSeq *seq)
-{
-	char *s;
-
-	s = _Biostrings_alloc_string(seq->nelt);
-	return strncpy(s, seq->elts, seq->nelt);
-}
-
 
 /* ==========================================================================
  * Memory comparison
