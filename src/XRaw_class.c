@@ -87,7 +87,7 @@ SEXP Biostrings_xp_new()
  * Alloc an RAWSXP vector of length 'length' and point 'xraw_xp' to it.
  * Does NOT initialize the allocated memory!
  */
-SEXP Biostrings_XRaw_alloc(SEXP xraw_xp, SEXP length)
+SEXP XRaw_alloc(SEXP xraw_xp, SEXP length)
 {
 	SEXP tag;
 	int tag_length;
@@ -124,9 +124,9 @@ int _get_XRaw_length(SEXP x)
  * 'xraw_xp' must be the 'xp' slot of a "XRaw" object.
  * From R:
  *   xr <- XRaw(30)
- *   .Call("Biostrings_XRaw_get_show_string", xr@xp, PACKAGE="Biostrings")
+ *   .Call("XRaw_get_show_string", xr@xp, PACKAGE="Biostrings")
  */
-SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp)
+SEXP XRaw_get_show_string(SEXP xraw_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
@@ -146,10 +146,10 @@ SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp)
  * Return length of R string pointed by 'xraw_xp'.
  * From R:
  *   xr <- XRaw(30)
- *   .Call("Biostrings_XRaw_length", xr@xp, PACKAGE="Biostrings")
+ *   .Call("XRaw_length", xr@xp, PACKAGE="Biostrings")
  * Called by method length() for "XRaw" objects.
  */
-SEXP Biostrings_XRaw_length(SEXP xraw_xp)
+SEXP XRaw_length(SEXP xraw_xp)
 {
 	SEXP tag, ans;
 	int tag_length;

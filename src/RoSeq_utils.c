@@ -20,15 +20,6 @@ SEXP debug_RoSeq_utils()
 	return R_NilValue;
 }
 
-/* Doesn't work properly if 'seq' contains null bytes */
-static const char *RoSeq2str(const RoSeq *seq)
-{
-	char *s;
-
-	s = _Biostrings_alloc_string(seq->nelt);
-	return strncpy(s, seq->elts, seq->nelt);
-}
-
 void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
 {
 	int i, s, w;

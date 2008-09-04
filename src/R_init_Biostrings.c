@@ -12,7 +12,6 @@ static const R_CallMethodDef callMethods[] = {
 
 /* utils.c */
 	CALLMETHOD_DEF(debug_utils, 0),
-	CALLMETHOD_DEF(Biostrings_length_vectors_in_list, 1),
 
 /* RoSeq_utils.c */
 	CALLMETHOD_DEF(debug_RoSeq_utils, 0),
@@ -29,22 +28,24 @@ static const R_CallMethodDef callMethods[] = {
 
 	CALLMETHOD_DEF(Biostrings_safe_explode, 1),
 	CALLMETHOD_DEF(Biostrings_xp_new, 0),
-	CALLMETHOD_DEF(Biostrings_XRaw_alloc, 2),
-	CALLMETHOD_DEF(Biostrings_XRaw_get_show_string, 1),
-	CALLMETHOD_DEF(Biostrings_XRaw_length, 1),
+	CALLMETHOD_DEF(XRaw_alloc, 2),
+	CALLMETHOD_DEF(XRaw_get_show_string, 1),
+	CALLMETHOD_DEF(XRaw_length, 1),
 	CALLMETHOD_DEF(new_XRaw_from_STRSXP, 5),
 
 /* XRaw_utils.c */
 	CALLMETHOD_DEF(debug_XRaw_utils, 0),
 
-	CALLMETHOD_DEF(Biostrings_XRaw_memcmp, 5),
-	CALLMETHOD_DEF(Biostrings_XRaw_copy_from_i1i2, 4),
-	CALLMETHOD_DEF(Biostrings_XRaw_copy_from_subset, 3),
+	CALLMETHOD_DEF(XRaw_memcmp, 5),
 
-	CALLMETHOD_DEF(Biostrings_XRaw_read_chars_from_i1i2, 3),
-	CALLMETHOD_DEF(Biostrings_XRaw_read_chars_from_subset, 2),
-	CALLMETHOD_DEF(Biostrings_XRaw_write_chars_to_i1i2, 4),
-	CALLMETHOD_DEF(Biostrings_XRaw_write_chars_to_subset, 3),
+	CALLMETHOD_DEF(XRaw_memcpy, 5),
+	CALLMETHOD_DEF(XRaw_copy_from_i1i2, 4),
+	CALLMETHOD_DEF(XRaw_copy_from_subset, 3),
+
+	CALLMETHOD_DEF(XRaw_read_chars_from_i1i2, 3),
+	CALLMETHOD_DEF(XRaw_read_chars_from_subset, 2),
+	CALLMETHOD_DEF(XRaw_write_chars_to_i1i2, 4),
+	CALLMETHOD_DEF(XRaw_write_chars_to_subset, 3),
 
 	CALLMETHOD_DEF(XRaw_read_ints_from_i1i2, 3),
 	CALLMETHOD_DEF(XRaw_read_ints_from_subset, 2),

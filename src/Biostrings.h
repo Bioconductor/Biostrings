@@ -59,10 +59,6 @@ void _copy_seq_to_subset(
 
 SEXP debug_utils();
 
-SEXP Biostrings_length_vectors_in_list(SEXP list);
-
-char *_Biostrings_alloc_string(int n);
-
 int _Biostrings_memcmp(
 	const char *a,
 	int ia,
@@ -308,7 +304,7 @@ SEXP Biostrings_safe_explode(SEXP s);
 
 SEXP Biostrings_xp_new();
 
-SEXP Biostrings_XRaw_alloc(
+SEXP XRaw_alloc(
 	SEXP xraw_xp,
 	SEXP length
 );
@@ -317,9 +313,9 @@ SEXP _get_XRaw_tag(SEXP x);
 
 int _get_XRaw_length(SEXP x);
 
-SEXP Biostrings_XRaw_get_show_string(SEXP xraw_xp);
+SEXP XRaw_get_show_string(SEXP xraw_xp);
 
-SEXP Biostrings_XRaw_length(SEXP xraw_xp);
+SEXP XRaw_length(SEXP xraw_xp);
 
 SEXP _new_XRaw(SEXP tag);
 
@@ -348,7 +344,7 @@ void _write_RoSeq_to_XRaw(
 
 SEXP debug_XRaw_utils();
 
-SEXP Biostrings_XRaw_memcmp(
+SEXP XRaw_memcmp(
 	SEXP xraw1_xp,
 	SEXP start1,
 	SEXP xraw2_xp,
@@ -356,7 +352,7 @@ SEXP Biostrings_XRaw_memcmp(
 	SEXP width
 );
 
-SEXP Biostrings_XRaw_memcpy(
+SEXP XRaw_memcpy(
 	SEXP dest_xraw_xp,
 	SEXP dest_start,
 	SEXP src_xraw_xp,
@@ -364,38 +360,38 @@ SEXP Biostrings_XRaw_memcpy(
 	SEXP width
 );
 
-SEXP Biostrings_XRaw_copy_from_i1i2(
+SEXP XRaw_copy_from_i1i2(
 	SEXP dest_xraw_xp,
 	SEXP src_xraw_xp,
 	SEXP imin,
 	SEXP imax
 );
 
-SEXP Biostrings_XRaw_copy_from_subset(
+SEXP XRaw_copy_from_subset(
 	SEXP dest_xraw_xp,
 	SEXP src_xraw_xp,
 	SEXP subset
 );
 
-SEXP Biostrings_XRaw_read_chars_from_i1i2(
+SEXP XRaw_read_chars_from_i1i2(
 	SEXP src_xraw_xp,
 	SEXP imin,
 	SEXP imax
 );
 
-SEXP Biostrings_XRaw_read_chars_from_subset(
+SEXP XRaw_read_chars_from_subset(
 	SEXP src_xraw_xp,
 	SEXP subset
 );
 
-SEXP Biostrings_XRaw_write_chars_to_i1i2(
+SEXP XRaw_write_chars_to_i1i2(
 	SEXP dest_xraw_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP string
 );
 
-SEXP Biostrings_XRaw_write_chars_to_subset(
+SEXP XRaw_write_chars_to_subset(
 	SEXP dest_xraw_xp,
 	SEXP subset,
 	SEXP string

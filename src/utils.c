@@ -17,21 +17,6 @@ SEXP debug_utils()
 }
 
 
-/* This function gets the length of vectors in a list. */
-SEXP Biostrings_length_vectors_in_list(SEXP list)
-{
-	int n = LENGTH(list);
-	SEXP element_lengths;
-	PROTECT(element_lengths = NEW_INTEGER(n));
-	for (int i = 0; i < n; i++) {
-		INTEGER(element_lengths)[i] = LENGTH(VECTOR_ELT(list, i));
-	}
-	UNPROTECT(1);
-	return element_lengths;
-}
-
-
-
 /****************************************************************************
  Functions defined below are NOT .Call methods: they are low level routines
  used by .Call methods. They are almost "R independent" (i.e. except for the
@@ -42,17 +27,6 @@ SEXP Biostrings_length_vectors_in_list(SEXP list)
  symbols found in libc (before "_memcmp" was renamed "_Biostrings_memcmp" it
  was clashing with "_memcmp" from libc on churchill).
  ****************************************************************************/
-
-
-/* Alloc memory for a string of length n */
-char *_Biostrings_alloc_string(int n)
-{
-	char *s;
-
-	s = (char *) R_alloc((long) n + 1L, sizeof(char));
-	s[n] = (char) 0;
-	return s;
-}
 
 
 /* ==========================================================================

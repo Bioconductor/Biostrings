@@ -2,8 +2,8 @@
  *                           Fast XRaw utilities                            *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
-
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -24,10 +24,10 @@ SEXP debug_XRaw_utils()
  *
  * From R:
  *   xr <- XRaw(30)
- *   .Call("Biostrings_XRaw_memcmp", xr@xp, 1:1, xr@xp, 10:10, 21:21, PACKAGE="Biostrings")
+ *   .Call("XRaw_memcmp", xr@xp, 1L, xr@xp, 10L, 21L, PACKAGE="Biostrings")
  */
 
-SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
+SEXP XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 		SEXP xraw2_xp, SEXP start2, SEXP width)
 {
 	SEXP tag1, tag2, ans;
@@ -35,7 +35,7 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] Biostrings_XRaw_memcmp(): BEGIN\n");
+		Rprintf("[DEBUG] XRaw_memcmp(): BEGIN\n");
 	}
 #endif
 	tag1 = R_ExternalPtrTag(xraw1_xp);
@@ -46,7 +46,7 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] Biostrings_XRaw_memcmp(): ");
+		Rprintf("[DEBUG] XRaw_memcmp(): ");
 		Rprintf("RAW(tag1)=%p i1=%d RAW(tag2)=%p i2=%d n=%d\n",
 			RAW(tag1), i1, RAW(tag2), i2, n);
 	}
@@ -57,7 +57,7 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
 					n, sizeof(Rbyte));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] Biostrings_XRaw_memcmp(): END\n");
+		Rprintf("[DEBUG] XRaw_memcmp(): END\n");
 	}
 #endif
 	UNPROTECT(1);
@@ -118,7 +118,7 @@ SEXP Biostrings_XRaw_memcmp(SEXP xraw1_xp, SEXP start1,
  */
 
 /* Bold version (no recycling) */
-SEXP Biostrings_XRaw_memcpy(SEXP dest_xraw_xp, SEXP dest_start,
+SEXP XRaw_memcpy(SEXP dest_xraw_xp, SEXP dest_start,
 		SEXP src_xraw_xp, SEXP src_start, SEXP width)
 {
 	SEXP dest, src;
@@ -137,7 +137,7 @@ SEXP Biostrings_XRaw_memcpy(SEXP dest_xraw_xp, SEXP dest_start,
 }
 
 /* Cyclic writing in 'dest_xraw_xp' */
-SEXP Biostrings_XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP imax)
+SEXP XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -153,7 +153,7 @@ SEXP Biostrings_XRaw_copy_from_i1i2(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP im
 }
 
 /* Cyclic writing in 'dest_xraw_xp' */
-SEXP Biostrings_XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
+SEXP XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP subset)
 {
 	SEXP dest, src;
 
@@ -177,52 +177,48 @@ SEXP Biostrings_XRaw_copy_from_subset(SEXP dest_xraw_xp, SEXP src_xraw_xp, SEXP 
  * From R:
  *   xr <- XRaw(15)
  *   xr[] < "Hello"
- *   .Call("Biostrings_XRaw_read_chars_from_i1i2", xr@xp, 2:2, 4:4, PACKAGE="Biostrings")
+ *   .Call("XRaw_read_chars_from_i1i2", xr@xp, 2:2, 4:4, PACKAGE="Biostrings")
  */
-SEXP Biostrings_XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
+SEXP XRaw_read_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax)
 {
-	SEXP src, ans;
+	SEXP src;
 	int i1, i2, n;
-	char *dest;
+	CharAE dest;
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	dest = _Biostrings_alloc_string(n);
+	dest = new_CharAE(n + 1);
+	dest.elts[n] = '\0';
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
 	_Biostrings_memcpy_from_i1i2(i1, i2,
-			dest, n, (char *) RAW(src), LENGTH(src),
+			dest.elts, n, (char *) RAW(src), LENGTH(src),
 			sizeof(char));
-	PROTECT(ans = NEW_CHARACTER(1));
-	SET_STRING_ELT(ans, 0, mkChar(dest));
-	UNPROTECT(1);
-	return ans;
+	return mkString(dest.elts);
 }
 
-SEXP Biostrings_XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
+SEXP XRaw_read_chars_from_subset(SEXP src_xraw_xp, SEXP subset)
 {
-	SEXP src, ans;
+	SEXP src;
 	int n;
-	char *dest;
+	CharAE dest;
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	dest = _Biostrings_alloc_string(n);
+	dest = new_CharAE(n + 1);
+	dest.elts[n] = '\0';
 	/* assumes that sizeof(Rbyte) == sizeof(char) */
 	_Biostrings_memcpy_from_subset(INTEGER(subset), n,
-			dest, n, (char *) RAW(src), LENGTH(src),
+			dest.elts, n, (char *) RAW(src), LENGTH(src),
 			sizeof(char));
-	PROTECT(ans = NEW_CHARACTER(1));
-	SET_STRING_ELT(ans, 0, mkChar(dest));
-	UNPROTECT(1);
-	return ans;
+	return mkString(dest.elts);
 }
 
 /*
  * 'string' must be a non-empty single string (character vector of length 1).
  */
-SEXP Biostrings_XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax, SEXP string)
+SEXP XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax, SEXP string)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -238,7 +234,7 @@ SEXP Biostrings_XRaw_write_chars_to_i1i2(SEXP dest_xraw_xp, SEXP imin, SEXP imax
 	return dest_xraw_xp;
 }
 
-SEXP Biostrings_XRaw_write_chars_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP string)
+SEXP XRaw_write_chars_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP string)
 {
 	SEXP dest, src;
 
@@ -388,40 +384,36 @@ SEXP XRaw_write_ints_to_subset(SEXP dest_xraw_xp, SEXP subset, SEXP val)
  */
 SEXP XRaw_read_enc_chars_from_i1i2(SEXP src_xraw_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
-	SEXP src, ans;
+	SEXP src;
 	int i1, i2, n;
-	char *dest;
+	CharAE dest;
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	n = i2 - i1 + 1;
-	dest = _Biostrings_alloc_string(n);
+	dest = new_CharAE(n + 1);
+	dest.elts[n] = '\0';
 	_Biostrings_translate_charcpy_from_i1i2(i1, i2,
-			dest, n, (char *) RAW(src), LENGTH(src),
+			dest.elts, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
-	PROTECT(ans = NEW_CHARACTER(1));
-	SET_STRING_ELT(ans, 0, mkChar(dest));
-	UNPROTECT(1);
-	return ans;
+	return mkString(dest.elts);
 }
 
 SEXP XRaw_read_enc_chars_from_subset(SEXP src_xraw_xp, SEXP subset, SEXP lkup)
 {
-	SEXP src, ans;
+	SEXP src;
 	int n;
-	char *dest;
+	CharAE dest;
 
 	src = R_ExternalPtrTag(src_xraw_xp);
 	n = LENGTH(subset);
-	dest = _Biostrings_alloc_string(n);
+	dest = new_CharAE(n + 1);
+	dest.elts[n] = '\0';
 	_Biostrings_translate_charcpy_from_subset(INTEGER(subset), n,
-			dest, n, (char *) RAW(src), LENGTH(src),
+			dest.elts, n, (char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
-	PROTECT(ans = NEW_CHARACTER(1));
-	SET_STRING_ELT(ans, 0, mkChar(dest));
-	UNPROTECT(1);
-	return ans;
+	return mkString(dest.elts);
 }
 
 /*
