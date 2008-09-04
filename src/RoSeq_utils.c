@@ -208,9 +208,10 @@ void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
 /*****************************************************************************
  * Getting the order of a RoSeqs struct.
  *
- * The implementation below uses a zero-copy approach for optimal performance.
- * This is achieved at the (modest) cost of using the 'base_seq' static
- * variable.
+ * The implementation below tries to optimize performance and memory footprint
+ * by using a zero-copy approach. This is achieved at the (modest) cost of
+ * using the 'base_seq' static variable. Would that be a problem in a
+ * multithreading context?
  */
 
 static int cmp_RoSeq(const void *p1, const void *p2)
@@ -220,10 +221,7 @@ static int cmp_RoSeq(const void *p1, const void *p2)
 
 	seq1 = (const RoSeq *) p1;
 	seq2 = (const RoSeq *) p2;
-	if (seq1->nelt <= seq2->nelt)
-		min_nelt = seq1->nelt;
-	else
-		min_nelt = seq2->nelt;
+	min_nelt = seq1->nelt <= seq2->nelt ? seq1->nelt : seq2->nelt;
 	ret = memcmp(seq1->elts, seq2->elts, min_nelt);
 	return ret != 0 ? ret : seq1->nelt - seq2->nelt;
 }
