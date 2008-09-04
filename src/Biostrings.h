@@ -76,12 +76,6 @@ void _init_chrtrtable(
 
 SEXP debug_RoSeq_utils();
 
-void _narrow_RoSeqs(
-	RoSeqs *seqs,
-	SEXP start,
-	SEXP width
-);
-
 RoSeqs _alloc_RoSeqs(int nelt);
 
 SEXP _new_CHARSXP_from_RoSeq(
@@ -104,6 +98,17 @@ RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 SEXP _new_IRanges_from_RoSeqs(
 	const char *class,
 	const RoSeqs *seqs
+);
+
+void _narrow_RoSeqs(
+	RoSeqs *seqs,
+	SEXP start,
+	SEXP width
+);
+
+void _get_RoSeqs_order(
+	const RoSeqs *seqs,
+	int *order
 );
 
 
@@ -453,6 +458,8 @@ SEXP XStringSet_as_STRSXP(
 	SEXP x,
 	SEXP lkup
 );
+
+SEXP XStringSet_order(SEXP x);
 
 
 /* char_frequency.c */

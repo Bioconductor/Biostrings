@@ -71,6 +71,7 @@ static const R_CallMethodDef callMethods[] = {
 /* XStringSet_class.c */
 	CALLMETHOD_DEF(debug_XStringSet_class, 0),
 	CALLMETHOD_DEF(XStringSet_as_STRSXP, 2),
+	CALLMETHOD_DEF(XStringSet_order, 1),
 
 /* char_frequency.c */
 	CALLMETHOD_DEF(XString_char_frequency, 3),

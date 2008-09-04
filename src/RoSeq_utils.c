@@ -20,34 +20,6 @@ SEXP debug_RoSeq_utils()
 	return R_NilValue;
 }
 
-void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
-{
-	int i, s, w;
-	const int *s_p, *w_p;
-	RoSeq *seq;
-
-	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
-		error("Biostrings internal error in _narrow_RoSeqs(): "
-		      "'start' and 'width' must have the same length as 'seqs'");
-	for (i = 0, seq = seqs->elts, s_p = INTEGER(start), w_p = INTEGER(width);
-	     i < seqs->nelt;
-	     i++, seq++, s_p++, w_p++)
-	{
-		s = *s_p;
-		w = *w_p;
-		if (s == NA_INTEGER || w == NA_INTEGER)
-			error("Biostrings internal error in _narrow_RoSeqs():"
-			      "NAs in 'start' or 'width' are not supported");
-		s--; // 0-based start (offset)
-		if (s < 0 || w < 0 || s + w > seq->nelt)
-			error("Biostrings internal error in _narrow_RoSeqs():"
-			      "invalid narrowing");
-		seq->elts += s;
-		seq->nelt = w;
-	}
-	return;
-}
-
 RoSeqs _alloc_RoSeqs(int nelt)
 {
 	RoSeqs seqs;
@@ -197,5 +169,84 @@ SEXP _new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs)
 #endif
 	UNPROTECT(3);
 	return ans;
+}
+
+
+/*****************************************************************************
+ * "Narrowing" a RoSeqs struct.
+ */
+
+void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
+{
+	int i, s, w;
+	const int *s_p, *w_p;
+	RoSeq *seq;
+
+	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
+		error("Biostrings internal error in _narrow_RoSeqs(): "
+		      "'start' and 'width' must have the same length as 'seqs'");
+	for (i = 0, seq = seqs->elts, s_p = INTEGER(start), w_p = INTEGER(width);
+	     i < seqs->nelt;
+	     i++, seq++, s_p++, w_p++)
+	{
+		s = *s_p;
+		w = *w_p;
+		if (s == NA_INTEGER || w == NA_INTEGER)
+			error("Biostrings internal error in _narrow_RoSeqs():"
+			      "NAs in 'start' or 'width' are not supported");
+		s--; // 0-based start (offset)
+		if (s < 0 || w < 0 || s + w > seq->nelt)
+			error("Biostrings internal error in _narrow_RoSeqs():"
+			      "invalid narrowing");
+		seq->elts += s;
+		seq->nelt = w;
+	}
+	return;
+}
+
+
+/*****************************************************************************
+ * Getting the order of a RoSeqs struct.
+ *
+ * The implementation below uses a zero-copy approach for optimal performance.
+ * This is achieved at the (modest) cost of using the 'base_seq' static
+ * variable.
+ */
+
+static int cmp_RoSeq(const void *p1, const void *p2)
+{
+	const RoSeq *seq1, *seq2;
+	int min_nelt, ret;
+
+	seq1 = (const RoSeq *) p1;
+	seq2 = (const RoSeq *) p2;
+	if (seq1->nelt <= seq2->nelt)
+		min_nelt = seq1->nelt;
+	else
+		min_nelt = seq2->nelt;
+	ret = memcmp(seq1->elts, seq2->elts, min_nelt);
+	return ret != 0 ? ret : seq1->nelt - seq2->nelt;
+}
+
+static const RoSeq *base_seq;
+
+static int cmp_RoSeq_indices(const void *p1, const void *p2)
+{
+	int i1, i2;
+
+	i1 = *((const int *) p1);
+	i2 = *((const int *) p2);
+	return cmp_RoSeq(base_seq + i1, base_seq + i2);
+}
+
+void _get_RoSeqs_order(const RoSeqs *seqs, int *order)
+{
+	int i;
+
+	base_seq = seqs->elts - 1; // because we will sort 1-based indices
+	for (i = 0; i < seqs->nelt; i++)
+		order[i] = i + 1; // 1-based indices
+	qsort(order, seqs->nelt, sizeof(int), cmp_RoSeq_indices);
+	return;
 }
 

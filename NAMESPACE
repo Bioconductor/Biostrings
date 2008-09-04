@@ -63,7 +63,8 @@ exportMethods(
     ## Generics defined elsewhere
     #as.integer, as.numeric,
     initialize, length, names, "[", "[[", rep,
-    show, summary, "==", "!=", duplicated,
+    show, summary,
+    "==", "!=", duplicated, sort,
     coerce, as.matrix, as.list,
     as.character, toString, as.complex, toComplex,
     nchar,

@@ -479,7 +479,7 @@ setMethod("append", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other methods.
+### Other coercion methods.
 ###
 
 setMethod("as.list", "XStringSet",
@@ -501,6 +501,25 @@ setMethod("as.character", "XStringSet",
         if (use.names)
             names(ans) <- names(x)
         ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Ordering and related methods.
+###
+
+.XStringSet.order <- function(x)
+{
+    .Call("XStringSet_order", x, PACKAGE="Biostrings")
+}
+
+setMethod("sort", "XStringSet",
+    function (x, decreasing=FALSE, ...)
+    {
+        if (!missing(decreasing))
+            stop("'decreasing' is not supported yet, sorry!")
+        x[.XStringSet.order(x)]
     }
 )
 

@@ -233,3 +233,25 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 	return ans;
 }
 
+
+/****************************************************************************
+ * Getting the order of an XStringSet object.
+ */
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_order(SEXP x)
+{
+	SEXP ans;
+	int x_length;
+	RoSeqs seqs;
+
+	x_length = _get_XStringSet_length(x);
+	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	PROTECT(ans = NEW_INTEGER(x_length));
+	_get_RoSeqs_order(&seqs, INTEGER(ans));
+	UNPROTECT(1);
+	return ans;
+}
+
