@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 #include <S.h> /* for Salloc() */
 
 /*
@@ -13,7 +14,7 @@ SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP im
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	src = R_ExternalPtrTag(src_xp);
-	_Biostrings_translate_charcpy_from_i1i2(i1, i2,
+	IRanges_charcpy_from_i1i2_with_lkup(i1, i2,
 			(char *) RAW(dest), LENGTH(dest),
 			(char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
@@ -29,7 +30,7 @@ SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEX
 
 	dest = R_ExternalPtrTag(dest_xp);
 	src = R_ExternalPtrTag(src_xp);
-	_Biostrings_translate_charcpy_from_subset(INTEGER(subset), LENGTH(subset),
+	IRanges_charcpy_from_subset_with_lkup(INTEGER(subset), LENGTH(subset),
 			(char *) RAW(dest), LENGTH(dest),
 			(char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
@@ -48,7 +49,7 @@ SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	src = R_ExternalPtrTag(src_xp);
-	_Biostrings_reverse_memcpy_from_i1i2(i1, i2,
+	IRanges_reverse_memcpy_from_i1i2(i1, i2,
 			(char *) RAW(dest), LENGTH(dest),
 			(char *) RAW(src), LENGTH(src), sizeof(char));
 	return dest_xp;
@@ -66,7 +67,7 @@ SEXP XRaw_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin,
 	i1 = INTEGER(imin)[0] - 1;
 	i2 = INTEGER(imax)[0] - 1;
 	src = R_ExternalPtrTag(src_xp);
-	_Biostrings_reverse_translate_charcpy_from_i1i2(i1, i2,
+	IRanges_reverse_charcpy_from_i1i2_with_lkup(i1, i2,
 			(char *) RAW(dest), LENGTH(dest),
 			(char *) RAW(src), LENGTH(src),
 			INTEGER(lkup), LENGTH(lkup));
@@ -104,7 +105,7 @@ SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 	write_at = 1;
 	for (i = 0; i < x_length; i++) {
 		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		_Biostrings_translate_charcpy_from_i1i2(0, xx.nelt - 1,
+		IRanges_charcpy_from_i1i2_with_lkup(0, xx.nelt - 1,
 			buf, xx.nelt,
 			xx.elts, xx.nelt,
 			INTEGER(lkup), LENGTH(lkup));

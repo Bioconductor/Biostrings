@@ -83,11 +83,11 @@ SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
 		bufsize = new_bufsize;
 	}
 	if (lkup == R_NilValue) {
-		_Biostrings_memcpy_to_i1i2(0, seq->nelt - 1,
+		IRanges_memcpy_to_i1i2(0, seq->nelt - 1,
 			buf, seq->nelt,
 			seq->elts, seq->nelt, sizeof(char));
 	} else {
-		_Biostrings_translate_charcpy_to_i1i2(0, seq->nelt - 1,
+		IRanges_charcpy_to_i1i2_with_lkup(0, seq->nelt - 1,
 			buf, seq->nelt,
 			seq->elts, seq->nelt,
 			INTEGER(lkup), LENGTH(lkup));

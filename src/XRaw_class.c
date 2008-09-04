@@ -3,7 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
-#include <stdlib.h> /* for realloc() */
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -197,11 +197,11 @@ SEXP _new_XRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 	dest = (char *) RAW(tag);
 	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
 		if (lkup == R_NilValue) {
-			_Biostrings_memcpy_to_i1i2(0, seq->nelt - 1,
+			IRanges_memcpy_to_i1i2(0, seq->nelt - 1,
 				dest, seq->nelt,
 				seq->elts, seq->nelt, sizeof(char));
 		} else {
-			_Biostrings_translate_charcpy_to_i1i2(0, seq->nelt - 1,
+			IRanges_charcpy_to_i1i2_with_lkup(0, seq->nelt - 1,
 				dest, seq->nelt,
 				seq->elts, seq->nelt,
 				INTEGER(lkup), LENGTH(lkup));
