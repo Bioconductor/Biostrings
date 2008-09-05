@@ -24,7 +24,7 @@ setMethod("reverse", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverse(subject(x))
-		callNextMethod(x, start=1L, end=length(subject(x)))
+        callNextMethod(x, start=1L, end=length(subject(x)))
     }
 )
 
@@ -100,6 +100,14 @@ setMethod("complement", "MaskedRNAString",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "reverseComplement" generic and methods.
 ###
+### Why don't we just do this:
+###   reverseComplement <- function(x) reverse(complement(x))
+### Because we want to perform only 1 copy of the sequence data!
+### With the above definition, reverseComplement(x) would copy the sequence
+### data in 'x' twice: a first (temporary) copy to get the complement,
+### followed by a second (final) copy to reverse it. Remember that the
+### sequence data can be very big e.g. 250MB for Human chr1!
+###
 
 setGeneric("reverseComplement", signature="x",
     function(x, ...) standardGeneric("reverseComplement")
@@ -115,27 +123,39 @@ setMethod("reverseComplement", "RNAString",
         XString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
 )
 
+### For the following methods, doing this:
+###   x@super <- reverseComplement(super(x))
+###   .IRanges.reverse(x, start=1L, end=length(super(x)))
+### achieves our 1-copy goal and therefore is twice more efficient than doing
+### this:
+###   reverse(complement(x))
+### or this:
+###   x@super <- complement(super(x))
+###   reverse(x, start=1L, end=length(super(x)))
+
+.IRanges.reverse <- selectMethod("reverse", "IRanges")
+
 setMethod("reverseComplement", "DNAStringSet",
     function(x, ...)
     {
-        x@super <- complement(super(x))
-		reverse(x, start=1L, end=length(super(x)))
+        x@super <- reverseComplement(super(x))
+        .IRanges.reverse(x, start=1L, end=length(super(x)))
     }
 )
 
 setMethod("reverseComplement", "RNAStringSet",
     function(x, ...)
     {
-        x@super <- complement(super(x))
-		reverse(x, start=1L, end=length(super(x)))
+        x@super <- reverseComplement(super(x))
+        .IRanges.reverse(x, start=1L, end=length(super(x)))
     }
 )
 
 setMethod("reverseComplement", "XStringViews",
     function(x, ...)
     {
-        x@subject <- complement(subject(x))
-		reverse(x, start=1L, end=length(subject(x)))
+        x@subject <- reverseComplement(subject(x))
+        .IRanges.reverse(x, start=1L, end=length(subject(x)))
     }
 )
 
