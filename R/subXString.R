@@ -64,9 +64,6 @@ setGeneric("substr", signature="x",
 setMethod("substr", "XString",
     function(x, start=NA, stop=NA) subXString(x, start, stop)
 )
-setMethod("substr", "MaskedXString",
-    function(x, start=NA, stop=NA) subXString(unmasked(x), start, stop)
-)
 
 setGeneric("substring", signature="text",
     function(text, first=NA, last=NA) standardGeneric("substring")
@@ -74,6 +71,4 @@ setGeneric("substring", signature="text",
 setMethod("substring", "XString",
     function(text, first=NA, last=NA) subXString(text, first, last)
 )
-setMethod("substring", "MaskedXString",
-    function(text, first=NA, last=NA) subXString(unmasked(text), first, last)
-)
+

@@ -509,17 +509,38 @@ setMethod("as.character", "XStringSet",
 ### Ordering and related methods.
 ###
 
-.XStringSet.order <- function(x)
-{
-    .Call("XStringSet_order", x, PACKAGE="Biostrings")
-}
+### We want to dispatch on ... (only possible starting with R 2.8.0).
+### The implicit generic in package "base" would dispatch on the (na.last,
+### decreasing) arguments which is of course not what we want.
+setGeneric("order", signature="...",
+    function (..., na.last=TRUE, decreasing=FALSE) standardGeneric("order")
+)
+
+setMethod("order", "XStringSet",
+    function(..., na.last=TRUE, decreasing=FALSE)
+    {
+        if (!missing(na.last) && !isTRUE(na.last))
+            warning("argument 'na.last' is ignored when ordering XStringSet objects")
+        if (!isTRUEorFALSE(decreasing))
+            stop("'decreasing' must be TRUE or FALSE")
+        if (decreasing)
+            stop("'decreasing=TRUE' is not supported yet, sorry!")
+        args <- list(...)
+        ## All the arguments are guaranteed to be XStringSet objects
+        if (length(args) != 1)
+            return(callNextMethod())
+        .Call("XStringSet_order", args[[1]], PACKAGE="Biostrings")
+    }
+)
 
 setMethod("sort", "XStringSet",
     function (x, decreasing=FALSE, ...)
     {
-        if (!missing(decreasing))
-            stop("'decreasing' is not supported yet, sorry!")
-        x[.XStringSet.order(x)]
+        if (!isTRUEorFALSE(decreasing))
+            stop("'decreasing' must be TRUE or FALSE")
+        if (decreasing)
+            stop("'decreasing=TRUE' is not supported yet, sorry!")
+        x[order(x)]
     }
 )
 

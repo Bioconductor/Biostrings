@@ -2,51 +2,6 @@
 ### Constructor-like functions and generics for XStringViews objects
 ### -------------------------------------------------------------------------
 
-### The "views" and "adjacentViews" functions below share the following
-### properties:
-###   - They are exported (and safe).
-###   - First argument is 'subject'. It must be a character vector or an
-###     XString object.
-###   - Passing something else to 'subject' provokes an error.
-###   - They return an XStringViews object whose 'subject' slot is the object
-###     passed in the 'subject' argument.
-
-### Typical use:
-###   dna <- DNAString("AA-CC-GG-TT")
-### Just one view:
-###   dnav1 <- views(dna, 2, 7)
-### 9 views, 3 are out of limits:
-###   dnav2 <- views(dna, 6:-2, 6:14)
-### 5 out of limits views, all have a width of 6:
-###   dnav3 <- views(dna, -5:-1, 0:4)
-### Same as doing views(dna, 1, length(dna)):
-###   dnav4 <- views(dna)
-### An XStringViews object with no view:
-###   dnav5 <- views(dna, integer(0), integer(0))
-### TODO: Use same args for this function as for the "subviews" function i.e.:
-###   - add a 'width' arg (default to NA)
-###   - add a 'check.limits' arg (default to TRUE) for raising an error if
-###     some views are "out of limits"
-setMethod("views", signature = c(subject = "character"),
-          function(subject, start=NA, end=NA)
-          {
-              subject <- XString(NULL, subject)
-              views(subject, start = start, end = end)
-          })
-setMethod("views", signature = c(subject = "MaskedXString"),
-          function(subject, start=NA, end=NA)
-          {
-              subject <- XString(NULL, subject)
-              views(subject, start = start, end = end)
-          })
-setMethod("views", signature = c(subject = "XString"),
-          function(subject, start=NA, end=NA)
-          {
-              ans <- new("XStringViews", subject, check=FALSE)
-              ranges <- IRanges:::.safeMakeViews(subject(ans), start, end)
-              update(ans, start=start(ranges), width=width(ranges))
-          })
-
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).
 ### TODO: Use intToAdjacentRanges() in adjacentViews(), this
@@ -63,7 +18,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         stop("'gapwidth' must be numerics >= 0")
     lw <- length(width)
     if (lw == 0)
-        return(new("XStringViews", subject, check=FALSE))
+        return(new("XStringViews", subject))
     if (!is.integer(width))
         width <- as.integer(width)
     lg <- length(gapwidth)
@@ -78,7 +33,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    new("XStringViews", subject, start=ans_start, width=width, check=FALSE)
+    new("XStringViews", subject, start=ans_start, end=ans_start+width-1)
 }
 
 
@@ -143,7 +98,7 @@ setMethod("XStringViews", "XString",
         }
         if (!missing(subjectClass) && subjectClass != class(x))
             x <- XString(subjectClass, x)
-        new("XStringViews", x, start=1L, width=nchar(x), check=FALSE)
+        new("XStringViews", x, start=1L, end=nchar(x))
     }
 )
 
@@ -155,76 +110,6 @@ setMethod("XStringViews", "XStringViews",
             stop("'collapse' not supported when 'x' is an XStringViews object")
         x@subject <- XString(subjectClass, subject(x))
         x
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "restrict" method and the "trim" function.
-###
-
-setMethod("restrict", "XStringViews",
-    function(x, start, end, keep.all.ranges=FALSE, use.names=TRUE)
-    {
-        if (!missing(keep.all.ranges))
-            stop("'keep.all.ranges' is not supported for XStringViews objects")
-        callNextMethod(x, start, end, use.names=use.names)
-    }
-)
-
-setMethod("trim", "XStringViews",
-    function(x, use.names=TRUE)
-    {
-        y <- restrict(x, start=1L, end=length(subject(x)), use.names=use.names)
-        if (length(y) != length(x))
-            stop("some views are not overlapping with the subject, cannot trim them")
-        y
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "narrow" method and the "subviews" function.
-###
-
-setMethod("narrow", "XStringViews",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        y <- callNextMethod()
-        if (any(width(y) == 0))
-            stop("some views would have a null width after narrowing")
-        y
-    }
-)
-
-setMethod("subviews", "XStringViews",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        narrow(x, start=start, end=end, width=width, use.names=use.names)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "gaps" method.
-###
-
-setMethod("gaps", "XStringViews",
-    function(x, start=NA, end=NA)
-    {
-        if (!isSingleNumberOrNA(start))
-            stop("'start' must be a single integer")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumberOrNA(end))
-            stop("'end' must be a single integer")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        if (is.na(start))
-            start <- 1L
-        if (is.na(end))
-            end <- length(subject(x))
-        callNextMethod(x, start=start, end=end)
     }
 )
 

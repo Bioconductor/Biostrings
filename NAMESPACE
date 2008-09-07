@@ -64,14 +64,13 @@ exportMethods(
     #as.integer, as.numeric,
     initialize, length, names, "[", "[[", rep,
     show, summary,
-    "==", "!=", duplicated, sort,
+    "==", "!=", duplicated, order, sort,
     coerce, as.matrix, as.list,
     as.character, toString, as.complex, toComplex,
     nchar,
 
     ## Methods for objects implementing an IRanges-like interface
-    start, width, "width<-", end, isEmpty, max, min,
-    narrow, reduce, gaps,
+    start, width, end, reduce, gaps,
 
     ## SparseList objects
     ls,
@@ -81,7 +80,7 @@ exportMethods(
 
     ## XString, XStringViews and MaskedXString objects
     XString, alphabet, subseq,
-    XStringViews, subject, views, subviews, trim,
+    Views,
     unmasked, masks, "masks<-",
 
     ## Utilities

@@ -16,10 +16,21 @@ setClass("XStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "subject" accessor method (exported).
+### User-friendly constructor.
 ###
 
-setMethod("subject", "XStringViews", function(x) x@subject)
+setMethod("Views", "character",
+    function(subject, start=NA, end=NA, names=NULL)
+    {
+        xsubject <- XString(NULL, subject)
+        Views(xsubject, start=start, end=end)
+    }
+)
+
+setMethod("Views", "XString",
+    function(subject, start=NA, end=NA, names=NULL)
+        new("XStringViews", subject, start=start, end=end, names=names)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -223,10 +234,10 @@ setMethod("show", "XStringViews",
 ### Return an XString object of the same subtype as subject(x).
 ### Example:
 ###   bs <- BString("ABCD-1234-abcd")
-###   bsv <- views(bs, 1:7, 13:7)
+###   bsv <- Views(bs, start=1:7, end=13:7)
 ###   bsv[[3]]
 ###   bsv[[0]] # Return bs, same as subject(bsv)
-###   views(bs)[[1]] # Returns bs too!
+###   Views(bs)[[1]] # Returns bs too!
 ###
 ### Supported 'i' types: numeric vector of length 1.
 setMethod("[[", "XStringViews",
@@ -360,10 +371,10 @@ XStringViews.equal <- function(x, y)
 ### be called if one side is an XStringViews object and the other side
 ### is an XString object.
 ### Typical use:
-###   v <- views(DNAString("TAATAATG"), -2:9, 0:11)
+###   v <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
 ###   v == v[4]
 ###   v == v[1]
-###   v2 <- views(DNAString("G"), 1, 3)
+###   v2 <- Views(DNAString("G"), start=1, end=3)
 ###   v == v2
 ### Also works if one side is an XString object:
 ###   v == DNAString("ATG")

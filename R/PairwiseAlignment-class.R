@@ -125,8 +125,8 @@ setMethod("nchar", "PairwiseAlignmentSummary",
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
 
-setMethod("views", signature = c(subject = "PairwiseAlignment"),
-          function(subject, start=NA, end=NA)
+setMethod("Views", signature = c(subject = "PairwiseAlignment"),
+          function(subject, start=NA, end=NA, names=NULL)
           {
               if (all(is.na(start)))
                   start <- start(subject(subject))
@@ -140,7 +140,7 @@ setMethod("views", signature = c(subject = "PairwiseAlignment"),
                   stop("'end' must be either NA or an integer vector of length 1")
               else
                   end <- as.integer(end) + start(subject(subject))
-              views(super(unaligned(subject(subject))), start = start, end = end)
+              Views(super(unaligned(subject(subject))), start=start, end=end, names=names)
           })
 
 
