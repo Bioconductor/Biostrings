@@ -31,7 +31,11 @@ setAs("BString", "PhredQuality",
 
 setAs("BStringSet", "PhredQuality",
       function(from)
-      new("PhredQuality", super(from), start(from), width(from), names(from))
+      {
+          ans <- new("PhredQuality", super=super(from), start=start(from), width=width(from))
+          names(ans) <- names(from)
+          ans
+      }
 )
 
 setAs("integer", "PhredQuality",
@@ -40,9 +44,8 @@ setAs("integer", "PhredQuality",
               stop("'from' must be integers between 0 and 99 inclusive")
           new("PhredQuality",
               super = BString(rawToChar(as.raw(33L + from))),
-              start = 1,
-              width = length(from),
-              names = NULL)
+              start = 1L,
+              width = length(from))
       }
 )
 
@@ -80,7 +83,11 @@ setAs("BString", "SolexaQuality",
 
 setAs("BStringSet", "SolexaQuality",
       function(from)
-      new("SolexaQuality", super(from), start(from), width(from), names(from))
+      {
+          ans <- new("SolexaQuality", super=super(from), start=start(from), width=width(from))
+          names(ans) <- names(from)
+          ans
+      }
 )
 
 setAs("integer", "SolexaQuality",
@@ -90,8 +97,7 @@ setAs("integer", "SolexaQuality",
           new("SolexaQuality",
               super = BString(rawToChar(as.raw(64L + pmax(-5L, from)))),
               start = 1,
-              width = length(from),
-              names = NULL)
+              width = length(from))
       }
 )
 
