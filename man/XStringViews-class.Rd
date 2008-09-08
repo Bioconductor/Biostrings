@@ -2,22 +2,15 @@
 \docType{class}
 
 % Classes:
-\alias{class:Views}
-\alias{Views-class}
-\alias{Views}
 \alias{class:XStringViews}
 \alias{XStringViews-class}
 
-% Replacement methods:
-\alias{width<-,Views-method}
+% Methods:
+\alias{Views,character-method}
+\alias{Views,XString-method}
 
-% Accesor methods:
-\alias{subject,XStringViews-method}
 \alias{alphabet,XStringViews-method}
-\alias{width<-,XStringViews-method}
 \alias{nchar,XStringViews-method}
-
-% Other methods:
 
 \alias{show,XStringViews-method}
 \alias{[[,XStringViews-method}
@@ -160,6 +153,7 @@
 
 \seealso{
   \link[IRanges]{IRanges-class},
+  \code{\link[IRanges]{gaps}},
   \link{XStringViews-constructors},
   \link{XString-class},
   \link{XStringSet-class},
@@ -168,9 +162,10 @@
 }
 
 \examples{
-
   ## One standard way to create an XStringViews object is to use
-  ## the "views" constructor:
+  ## the Views() constructor.
+
+  ## Views on a DNAString object:
   s <- DNAString("-CTC-N")
   v4 <- Views(s, start=3:0, end=5:8)
   v4
@@ -205,6 +200,15 @@
 
   ## Here the first view doesn't even overlap with the subject:
   Views(BString("aaa--b"), start=-3:4, end=-3:4 + c(3:6, 6:3))
+
+  ## 'start' and 'end' are recycled
+  Views("abcdefghij", start=2:1, end=4)
+  Views("abcdefghij", start=5:7)
+  Views("abcdefghij", end=5:7)
+
+  ## Applying gaps() to an XStringViews object
+  v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
+  gaps(v2)
 }
 
 \keyword{methods}

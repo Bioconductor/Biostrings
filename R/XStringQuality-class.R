@@ -96,7 +96,7 @@ setAs("integer", "SolexaQuality",
               stop("'from' must be integers between -5 and 99 inclusive")
           new("SolexaQuality",
               super = BString(rawToChar(as.raw(64L + pmax(-5L, from)))),
-              start = 1,
+              start = 1L,
               width = length(from))
       }
 )

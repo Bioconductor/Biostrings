@@ -6,7 +6,6 @@ import(IRanges)
 import(Biobase) ## for the "combine" generic
 
 exportClasses(
-    Views,
     Dups,
     SparseList,
     XRaw,
@@ -80,7 +79,7 @@ exportMethods(
 
     ## XString, XStringViews and MaskedXString objects
     XString, alphabet, subseq,
-    Views,
+    Views, XStringViews,
     unmasked, masks, "masks<-",
 
     ## Utilities

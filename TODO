@@ -58,6 +58,9 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
+- Move adjacentViews() to the IRanges package: this function can operate on
+  any kind of Views object.
+
 - Add "order", "sort", "duplicated", "unique" and "patternFrequency" methods
   for XStringSet and XStringViews objects. Also, for completeness, the "<=",
   ">=", "<" and ">" operators between XString objects should be provided.

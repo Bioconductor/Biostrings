@@ -420,7 +420,7 @@ setMethod("!=", signature(e1="character", e2="XStringViews"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other standard generic methods.
+### Other methods.
 ###
 
 setMethod("as.character", "XStringViews",

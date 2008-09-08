@@ -28,7 +28,7 @@
 \alias{nchar,PairwiseAlignment-method}
 \alias{nchar,PairwiseAlignmentSummary-method}
 \alias{alphabet,PairwiseAlignment-method}
-\alias{views,PairwiseAlignment-method}
+\alias{Views,PairwiseAlignment-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignment-method}
