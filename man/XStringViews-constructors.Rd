@@ -88,9 +88,9 @@
 }
 
 \examples{
-  ## Creating adjacent views
-  v3 <- adjacentViews("abcdefghij", 4:2, gapwidth=1)
+  adjacentViews("abcdefghij", 4:2, gapwidth=1)
 
+  v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
   XStringViews(v12, subjectClass="RNAString")
   XStringViews(AAString("MARKSLEMSIR*"))
   XStringViews("abcdefghij", subjectClass="BString")
