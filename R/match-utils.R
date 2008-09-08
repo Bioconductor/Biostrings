@@ -301,9 +301,9 @@ setMethod("mismatchTable", "AlignedXStringSet",
         else
             end <- pmin(position + shiftRight, width(subset))
         if (singleString)
-            substring <- views(subset, start = start, end = end)
+            substring <- Views(subset, start=start, end=end)
         else
-            substring <- narrow(subset, start = start, end = end)
+            substring <- narrow(subset, start=start, end=end)
         output <-
           data.frame("Id" = id,
                      "Start" = start,
@@ -327,11 +327,11 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
             if (length(quality(x)) == 1) {
                 if (width(quality(x)) == 1)
                     quality <-
-                      views(quality(x)[[1]][rep.int(1L, max(output[["End"]]))],
+                      Views(quality(x)[[1]][rep.int(1L, max(output[["End"]]))],
                             start = output[["Start"]], end = output[["End"]])
                 else
                     quality <-
-                      views(quality(x)[[1]], start = output[["Start"]],
+                      Views(quality(x)[[1]], start = output[["Start"]],
                             end = output[["End"]])
             }
             else

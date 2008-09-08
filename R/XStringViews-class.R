@@ -2,17 +2,26 @@
 ### XStringViews objects
 ### -------------------------------------------------------------------------
 ###
-
-
 ### The XStringViews class is the basic container for storing a set of views
 ### (start/end locations) on the same XString object, called the "subject"
 ### string.
+###
+
 setClass("XStringViews",
     contains="Views",
     representation(
         subject="XString"
     )
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Unsafe constructor (not exported). Use only when 'start' and 'width' are
+### guaranted to be valid.
+###
+
+unsafe.XStringViews <- function(subject, start, width)
+    new2("XStringViews", subject=subject, start=start, width=width, check=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,13 +32,13 @@ setMethod("Views", "character",
     function(subject, start=NA, end=NA, names=NULL)
     {
         xsubject <- XString(NULL, subject)
-        Views(xsubject, start=start, end=end)
+        Views(xsubject, start=start, end=end, names=names)
     }
 )
 
 setMethod("Views", "XString",
     function(subject, start=NA, end=NA, names=NULL)
-        new("XStringViews", subject, start=start, end=end, names=names)
+        as(callNextMethod(), "XStringViews")
 )
 
 
@@ -65,45 +74,6 @@ setMethod("nchar", "XStringViews",
         ans <- end0 - start0 + 1L
         ans[ans < 0L] <- 0L
         ans
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
-###
-
-.valid.XStringViews <- function(object)
-{
-    if (!is(subject(object), "XString"))
-        return("the subject must be an XString object")
-    NULL
-}
-
-setValidity("XStringViews",
-    function(object)
-    {
-        problems <- .valid.XStringViews(object)
-        if (is.null(problems)) TRUE else problems
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization and coercion.
-###
-
-### Not intended to be used directly by the user.
-setMethod("initialize", "XStringViews",
-    function(.Object, subject, start=integer(0), width=integer(0),
-                               names=NULL, check=TRUE)
-    {
-        .Object <- callNextMethod(.Object, start=start, width=width,
-                                           names=names, check=check)
-        slot(.Object, "subject", check=FALSE) <- subject
-        if (check)
-            stopIfProblems(.valid.XStringViews(.Object))
-        .Object
     }
 )
 

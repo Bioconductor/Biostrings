@@ -41,7 +41,7 @@
 ###      > s <- DNAString(paste(sample(c("A", "C", "G", "T"), 36*dict_length,
 ###                                    replace=TRUE), collapse=""))
 ###      > views_start <- (0:(dict_length-1)) * 36 + 1
-###      > dict <- views(s, views_start, views_start + 35) # the original dict
+###      > dict <- Views(s, start=views_start, end=views_start + 35) # the original dict
 ###
 ### 2. Building the Aho-Corasick 4-ary tree from the original dictionary:
 ###      > pdict <- PDict(dict)
@@ -101,7 +101,7 @@
 ###        start      end width
 ###   1  9381276  9381285    10
 ###   2 16070100 16070109    10
-###   > v <- views(chr3R, start(mindex_mm6[[103]]), end(mindex_mm6[[103]])+15)
+###   > v <- Views(chr3R, start=start(mindex_mm6[[103]]), end=end(mindex_mm6[[103]])+15)
 ###   > mismatch(dict0[[103]], v)
 ###   [[1]]
 ###   [1] 14 15 19 23 24 25

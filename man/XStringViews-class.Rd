@@ -8,13 +8,6 @@
 \alias{class:XStringViews}
 \alias{XStringViews-class}
 
-% Constructor-like functions and generics:
-\alias{initialize,Views-method}
-\alias{initialize,XStringViews-method}
-
-% Coercion:
-\alias{coerce,Views,NormalIRanges-method}
-
 % Replacement methods:
 \alias{width<-,Views-method}
 
@@ -179,7 +172,7 @@
   ## One standard way to create an XStringViews object is to use
   ## the "views" constructor:
   s <- DNAString("-CTC-N")
-  v4 <- views(s, 3:0, 5:8)
+  v4 <- Views(s, start=3:0, end=5:8)
   v4
   subject(v4)
   length(v4)
@@ -204,14 +197,14 @@
   ## It is an error to try to extract an "out of limits" view:
   #v4[[3]] # Error!
 
-  v12 <- views(DNAString("TAATAATG"), -2:9, 0:11)
+  v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
   v12 == DNAString("TAA")
   v12[v12 == v12[4]]
   v12[v12 == v12[1]]
-  v12[3] == views(RNAString("AU"), 0, 2)
+  v12[3] == Views(RNAString("AU"), start=0, end=2)
 
   ## Here the first view doesn't even overlap with the subject:
-  views(BString("aaa--b"), -3:4, -3:4 + c(3:6, 6:3))
+  Views(BString("aaa--b"), start=-3:4, end=-3:4 + c(3:6, 6:3))
 }
 
 \keyword{methods}

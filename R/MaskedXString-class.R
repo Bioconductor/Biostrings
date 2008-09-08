@@ -231,9 +231,7 @@ setAs("MaskedXString", "XStringViews",
     function(from)
     {
         views <- gaps(reduce(masks(from)))[[1]]
-        ans_start <- start(views)
-        ans_width <- width(views)
-        new("XStringViews", unmasked(from), start=ans_start, width=ans_width, check=FALSE)
+        unsafe.XStringViews(unmasked(from), start(views), width(views))
     }
 )
 
@@ -245,7 +243,7 @@ toXStringViewsOrXString <- function(x)
     if (isEmpty(mask1))
         return(x0)
     views <- gaps(mask1)[[1]]
-    new("XStringViews", x0, start=start(views), width=width(views), check=FALSE)
+    unsafe.XStringViews(x0, start(views), width(views))
 }
 
 
@@ -301,7 +299,7 @@ MaskedXString.substr <- function(x, start, end)
 setMethod("subseq", "MaskedXString",
     function(x, start=NA, end=NA, width=NA)
     {
-        limits <- new("IRanges", start=1L, width=length(x), check=FALSE)
+        limits <- new2("IRanges", start=1L, width=length(x), check=FALSE)
         limits <- narrow(limits, start=start, end=end, width=width)
         MaskedXString.substr(x, start(limits), end(limits))
     }

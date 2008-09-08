@@ -99,7 +99,7 @@ setMethod("matchProbePair", "DNAString",
         }
 
         matches0 <- reduceProbePairMatches(c(Fp_hits, Rp_hits), c(Fm_hits, Rm_hits))
-        ans <- views(subject, matches0$start, matches0$end)
+        ans <- Views(subject, start=matches0$start, end=matches0$end)
 
         if (!is.null(logfile)) {
             nFp <- length(Fp_hits)
@@ -131,8 +131,7 @@ setMethod("matchProbePair", "XStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        new("XStringViews", subject(subject),
-            start=ans_start, width=ans_width, check=FALSE)
+        unsafe.XStringViews(subject(subject), ans_start, ans_width)
     }
 )
 

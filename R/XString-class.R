@@ -409,9 +409,9 @@ setReplaceMethod("[", "XString",
 ###   library(BSgenome.Hsapiens.UCSC.hg18)
 ###   dna <- Hsapiens$chr1
 ###   dna != Hsapiens$chr1 # FALSE
-###   dnav <- views(dna, 1:7, 101:107)
+###   dnav <- Views(dna, start=1:7, end=101:107)
 ###   dnav[[1]] == dnav[[7]] # TRUE
-###   dnav <- views(dna, 1:7, (length(dna)-6):length(dna))
+###   dnav <- Views(dna, start=1:7, end=(length(dna)-6):length(dna))
 ### This is fast:
 ###   dnav[[1]] == dnav[[7]] # FALSE
 ### But this would have killed your machine:

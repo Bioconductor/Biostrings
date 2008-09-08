@@ -105,8 +105,7 @@ PWMscore <- function(pwm, subject, start=1)
     if (count.only)
         return(ans_start)
     ans_width <- rep.int(ncol(pwm), length(ans_start))
-    new("XStringViews", subject=subject, start=ans_start, width=ans_width,
-                        check=FALSE)
+    unsafe.XStringViews(subject, ans_start, ans_width)
 }
 
 ### 

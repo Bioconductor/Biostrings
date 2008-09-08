@@ -154,7 +154,7 @@
   i0 <- which(count_index == max(count_index))
   pdict0[[i0]]                         # The pattern with most occurrences.
   mindex[[i0]]                         # Its matches as a Views object.
-  views(chr3R, start_index[[i0]], end_index[[i0]]) # And as an XStringViews object.
+  Views(chr3R, start=start_index[[i0]], end=end_index[[i0]]) # And as an XStringViews object.
 
   ## Get the coverage of the original subject
   cov3R <- as.integer(coverage(mindex, 1, length(chr3R)))

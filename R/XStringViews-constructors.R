@@ -18,7 +18,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         stop("'gapwidth' must be numerics >= 0")
     lw <- length(width)
     if (lw == 0)
-        return(new("XStringViews", subject))
+        return(new("XStringViews", subject=subject))
     if (!is.integer(width))
         width <- as.integer(width)
     lg <- length(gapwidth)
@@ -33,7 +33,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    new("XStringViews", subject, start=ans_start, end=ans_start+width-1)
+    unsafe.XStringViews(subject, ans_start, width)
 }
 
 
@@ -98,7 +98,7 @@ setMethod("XStringViews", "XString",
         }
         if (!missing(subjectClass) && subjectClass != class(x))
             x <- XString(subjectClass, x)
-        new("XStringViews", x, start=1L, end=nchar(x))
+        unsafe.XStringViews(x, 1L, nchar(x))
     }
 )
 

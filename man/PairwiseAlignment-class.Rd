@@ -136,7 +136,7 @@
       \code{as.character(pattern(x))} and \code{as.character(subject(x))}.
     }
     \item{}{
-      \code{views(subject, start = NA, end = NA))}:
+      \code{Views(subject, start=NA, end=NA, names=NULL)}:
       The \code{XStringViews} object that represents the pairwise alignments along \code{unaligned(subject(subject))}.
       The \code{start} and \code{end} arguments must be either \code{NA} or an integer vector of length 1 that
       denotes the offset from \code{start(subject(subject))}.

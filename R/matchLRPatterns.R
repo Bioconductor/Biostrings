@@ -30,7 +30,8 @@ setMethod("matchLRPatterns", "XString",
                 }
             }
         }
-        views(subject, ans_start, ans_end)
+        ans_width <- ans_end - ans_start + 1L
+        unsafe.XStringViews(subject, ans_start, ans_width)
     }
 )
 
@@ -56,8 +57,7 @@ setMethod("matchLRPatterns", "XStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        new("XStringViews", subject(subject),
-            start=ans_start, width=ans_width, check=FALSE)
+        unsafe.XStringViews(subject(subject), ans_start, ans_width)
     }
 )
 

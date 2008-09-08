@@ -200,8 +200,7 @@ gregexpr2 <- function(pattern, text)
     if (count.only)
         return(matches)
     ans_width <- rep.int(length(pattern), length(matches))
-    new("XStringViews", subject,
-        start=matches, width=ans_width, check=FALSE)
+    unsafe.XStringViews(subject, matches, ans_width)
 }
 
 .XStringViews.matchPattern <- function(pattern, subject, algorithm,
@@ -227,8 +226,7 @@ gregexpr2 <- function(pattern, text)
     if (count.only)
         return(matches)
     ans_width <- rep.int(length(pattern), length(matches))
-    new("XStringViews", subject(subject),
-        start=matches, width=ans_width, check=FALSE)
+    unsafe.XStringViews(subject(subject), matches, ans_width)
 }
 
 
@@ -366,8 +364,7 @@ setMethod("countPattern", "MaskedXString",
     if (count.only)
         return(matches)
 ##     ans_width <- rep.int(length(pattern), length(matches))
-##     new("XStringViews", subject, start = matches, width =
-##         ans_width, check = FALSE)
+##     unsafe.XStringViews(subject, matches, ans_width)
 }
 
 setGeneric("vcountPattern", signature="subject",

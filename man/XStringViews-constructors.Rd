@@ -118,15 +118,15 @@
 
 \examples{
   ## 'start' and 'end' are recycled
-  views("abcdefghij", 2:1, 4)
-  views("abcdefghij", 5:7, )
-  views("abcdefghij", , 5:7)
+  Views("abcdefghij", start=2:1, end=4)
+  Views("abcdefghij", start=5:7)
+  Views("abcdefghij", end=5:7)
 
   ## Views can be "out of limits"
-  views("abcdefghij", 2:0, 4)
+  Views("abcdefghij", start=2:0, end=4)
 
   ## Views on a DNAString object
-  v12 <- views(DNAString("TAATAATG"), -2:9, 0:11)
+  v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
 
   ## Creating adjacent views
   v3 <- adjacentViews("abcdefghij", 4:2, gapwidth=1)
@@ -136,7 +136,7 @@
   XStringViews("abcdefghij", subjectClass="BString")
 
   ## Applying gaps() to an XStringViews object
-  v2 <- views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
+  v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
   gaps(v2)
 }
 

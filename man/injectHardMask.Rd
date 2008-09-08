@@ -96,7 +96,7 @@
   ## ---------------------------------------------------------------------
   ## A. WITH AN XStringViews OBJECT
   ## ---------------------------------------------------------------------
-  v2 <- views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
+  v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
   injectHardMask(v2)
   injectHardMask(v2, letter="=")
 

@@ -90,12 +90,12 @@
   subXString(s, , 7, 3)
   identical(subXString(s), s) # TRUE
 
-  v <- views(s, c(6, 4,-1, NA), c(7, 6, 1, 1))
+  v <- Views(s, start=c(6, 4,-1, NA), end=c(7, 6, 1, 1))
   ## 2 equivalent ways of keeping the last letter of each view
-  views(subject(v), end(v), end(v))
+  Views(subject(v), start=end(v), end=end(v))
 
   ## 2 equivalent ways of making the views wider
-  views(subject(v), start(v)-3, end(v)+3)
+  Views(subject(v), start=start(v)-3, end=end(v)+3)
 }
 
 \keyword{methods}
