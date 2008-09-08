@@ -154,7 +154,7 @@ the \Rfunarg{pattern} argument with a single string specified in the
 \Rfunarg{subject} argument.
 
 <<options,echo=FALSE>>=
-options(width=60)
+options(width=72)
 @ 
 
 <<main1>>=
@@ -189,7 +189,8 @@ function tranlates simple match and mismatch scores to the full spectrum of
 IUPAC nucleotide codes.
 
 <<main4>>=
-submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   substitutionMatrix = submat,
@@ -213,7 +214,8 @@ function accepts a logical value to specify whether or not to return just the
 pairwise sequence alignment score.
 
 <<main5>>=
-submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   substitutionMatrix = submat,
@@ -263,7 +265,8 @@ scheme.
 
 <<classes3>>=
 class(pattern(psa1))
-submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 psa2 <-
   pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
@@ -326,7 +329,8 @@ on the pairwise sequence alignment score, number of matches, number of
 mismatches, and number of aligned characters respectively.
 
 <<helper1>>=
-submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 psa2 <-
   pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
@@ -664,9 +668,12 @@ the cleaned sequence fragments can be generated as follows:
 
 <<adapter7>>=
 ## Method 4 continued:  Remove adapter fragments
-fragmentFound <- score(adapterAligns4) > quantile(randomScores4, 0.999)
-fragmentFoundAt1 <- fragmentFound & (start(pattern(adapterAligns4)) == 1)
-fragmentFoundAt36 <- fragmentFound & (end(pattern(adapterAligns4)) == 36)
+fragmentFound <-
+  score(adapterAligns4) > quantile(randomScores4, 0.999)
+fragmentFoundAt1 <-
+  fragmentFound & (start(pattern(adapterAligns4)) == 1)
+fragmentFoundAt36 <-
+  fragmentFound & (end(pattern(adapterAligns4)) == 36)
 cleanedStrings <- as.character(adapterStrings)
 cleanedStrings[fragmentFoundAt1] <-
   as.character(narrow(adapterStrings[fragmentFoundAt1], end = 36,
