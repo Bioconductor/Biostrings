@@ -327,7 +327,7 @@ setGeneric("subseq", signature="x",
 setMethod("subseq", "XString",
     function(x, start=NA, end=NA, width=NA)
     {
-        limits <- new("IRanges", start=1L, width=length(x), check=FALSE)
+        limits <- new2("IRanges", start=1L, width=length(x), check=FALSE)
         limits <- narrow(limits, start=start, end=end, width=width)
         XString.substr(x, start(limits), end(limits))
     }

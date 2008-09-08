@@ -36,7 +36,7 @@ XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)
                    frame, lkup, reverse,
                    PACKAGE="Biostrings")
     ranges <- attr(frame, "inframe")
-    newXStringSet(class(x), super, ranges, use.names=use.names, names=names(x))
+    unsafe.XStringSet(class(x), super, ranges, use.names=use.names, names=names(x))
 }
 
 ### This setGeneric() statement will unfortunately cause the following message

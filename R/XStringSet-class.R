@@ -93,6 +93,22 @@ setMethod("super", "XStringSet", function(x) x@super)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Unsafe constructor (not exported). Use only when 'ranges' is guaranted
+### to contain valid ranges on 'super' i.e. ranges that are within the limits
+### of 'super'.
+###
+
+unsafe.XStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
+{
+    ans <- new2(class, super=super,
+                start=start(ranges), width=width(ranges), check=FALSE)
+    if (normargUseNames(use.names))
+        names(ans) <- names
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The core XString API.
 ###
 ### The core XString API is the strict minimal set of methods that must work
@@ -120,30 +136,9 @@ setMethod("nchar", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization (not intended to be used directly by the user).
-###
-
-setMethod("initialize", "XStringSet",
-    function(.Object, super, start, width, names)
-    {
-        .Object <- callNextMethod(.Object, start, width, names)
-        .Object@super <- super
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions (NOT exported) used by the coercion methods and
 ### versatile (and user friendly) constructors below.
 ###
-
-newXStringSet <- function(class, super, ranges, use.names=FALSE, names=NULL)
-{
-    if (!normargUseNames(use.names))
-        names <- NULL
-    new(class, super, start(ranges), width(ranges), names)
-}
 
 ### This is an endomorphism iff 'baseClass' is NULL, otherwise it is NOT!
 compactXStringSet <- function(x, baseClass=NULL)
@@ -172,7 +167,7 @@ compactXStringSet <- function(x, baseClass=NULL)
     } else {
         ## NOT an endomorphism
         ans_class <- paste(to_baseClass, "Set", sep="")
-        newXStringSet(ans_class, ans_super, ans_ranges, use.names=TRUE, names=names(x))
+        unsafe.XStringSet(ans_class, ans_super, ans_ranges, use.names=TRUE, names=names(x))
     }
 }
 
@@ -192,7 +187,7 @@ compactXStringSet <- function(x, baseClass=NULL)
         ans_super <- super(x)
     else
         ans_super <- XString(baseClass, super(x))
-    new(ans_class, ans_super, start(x), width(x), names(x))
+    unsafe.XStringSet(ans_class, ans_super, x, use.names=TRUE, names=names(x))
 }
 
 setAs("XStringSet", "BStringSet",
@@ -229,15 +224,15 @@ setAs("XStringSet", "AAStringSet",
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     super <- .charToXString(x, safe_locs, baseClass)
     ranges <- intToAdjacentRanges(width(safe_locs))
-    newXStringSet(class, super, ranges, use.names=use.names, names=names(x))
+    unsafe.XStringSet(class, super, ranges, use.names=use.names, names=names(x))
 }
 
 .XStringToXStringSet <- function(x, start, end, width, use.names, baseClass)
 {
     class <- paste(baseClass, "Set", sep="")
     super <- subseq(x, start=start, end=end, width=width)
-    ranges <- new("LockedIRanges", start=1L, width=length(super), check=FALSE)
-    newXStringSet(class, super, ranges)
+    ranges <- new2("LockedIRanges", start=1L, width=length(super), check=FALSE)
+    unsafe.XStringSet(class, super, ranges)
 }
 
 .narrowAndCoerceXStringSet <- function(x, start, end, width, use.names, baseClass)
@@ -255,7 +250,7 @@ XStringViewsToSet <- function(x, use.names, verbose=TRUE)
     if (verbose && any(width(ranges) < width(x)))
         warning("trimming \"out of limits\" views")
     class <- paste(class(subject(x)), "Set", sep="")
-    new(class, subject(x), start(ranges), width(ranges), names(ranges))
+    unsafe.XStringSet(class, subject(x), ranges, use.names=TRUE, names=names(ranges))
 }
 
 
@@ -402,7 +397,7 @@ setMethod("show", "XStringSet",
 ### Return an XString object of the same subtype as super(x).
 ### Example:
 ###   bs <- BString("ABCD-1234-abcd")
-###   bset <- new("BStringSet", bs, 1:8, 2L*(7:0))
+###   bset <- new("BStringSet", super=bs, start=1:8, width=2L*(7:0))
 ###   bset[[3]]
 ### Supported 'i' types: numeric vector of length 1.
 setMethod("[[", "XStringSet",
@@ -464,8 +459,9 @@ setMethod("append", "XStringSet",
         ans_super <- XString.append(super(cx), super(cvalues))
         ans_start <- c(start(cx), start(cvalues) + length(super(cx)))
         ans_width <- c(width(cx), width(cvalues))
-        ans_names <- c(names(cx), names(cvalues))
-        new(ans_class, ans_super, ans_start, ans_width, ans_names)
+        ans <- new(ans_class, super=ans_super, start=ans_start, width=ans_width)
+        names(ans) <- c(names(cx), names(cvalues))
+        ans
     }
 )
 

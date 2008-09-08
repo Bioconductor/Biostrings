@@ -23,9 +23,6 @@
 \alias{nchar,XStringSet-method}
 \alias{alphabet,XStringSet-method}
 
-% Initialization:
-\alias{initialize,XStringSet-method}
-
 % Coercion:
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}
