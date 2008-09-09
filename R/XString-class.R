@@ -5,12 +5,12 @@
 setClass("XString",
     representation(
         "VIRTUAL",
-        xdata="XRaw",       # contains the sequence data (external)
+        xdata="RawPtr",       # contains the sequence data (external)
         offset="integer",   # a single integer
         length="integer"    # a single integer
     ),
     prototype(
-        #xdata=XRaw(0),     # see newEmptyXString() below for why this doesn't
+        #xdata=RawPtr(0),     # see newEmptyXString() below for why this doesn't
                             # work
         offset=0L,
         length=0L
@@ -30,11 +30,11 @@ setClass("AAString", contains="XString")
 ###
 ### Note that this cannot be made the prototype part of the XString class
 ### definition (and trying to do so will cause an error at installation time)
-### because the DLL of the package needs to be loaded before XRaw() can be
+### because the DLL of the package needs to be loaded before RawPtr() can be
 ### called.
 ###
 
-newEmptyXString <- function(class) new(class, xdata=XRaw(0))
+newEmptyXString <- function(class) new(class, xdata=RawPtr(0))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -156,13 +156,13 @@ comparableXStrings <- function(x1, x2)
 
 XString.read <- function(x, i, imax=integer(0))
 {
-    XRaw.read(x@xdata, x@offset + i, x@offset + imax,
+    RawPtr.read(x@xdata, x@offset + i, x@offset + imax,
                       dec_lkup=dec_lkup(x))
 }
 
 XString.readCodes <- function(x, i, imax=integer(0))
 {
-    XRaw.readInts(x@xdata, x@offset + i, x@offset + imax)
+    RawPtr.readInts(x@xdata, x@offset + i, x@offset + imax)
 }
 
 ### Only used at initialization time! (XString objects are immutable.)
@@ -173,16 +173,16 @@ XString.write <- function(x, i, imax=integer(0), value)
         nbytes <- nchar(value, type="bytes")
         if (nbytes == 0)
             return(x)
-        ## Write data starting immediately after the last byte in XRaw object
+        ## Write data starting immediately after the last byte in RawPtr object
         ## 'x@xdata' that belongs to the sequence XString object 'x' is
         ## pointing at.
-        ## This is safe because XRaw.write() is protected against subscripts
+        ## This is safe because RawPtr.write() is protected against subscripts
         ## 'i' and 'imax' being "out of bounds".
         i <- x@length + 1L
         imax <- x@length <- x@length + nbytes
     }
     #cat(x@offset + i, " -- ", x@offset + imax, "\n", sep="")
-    XRaw.write(x@xdata, x@offset + i, x@offset + imax, value=value,
+    RawPtr.write(x@xdata, x@offset + i, x@offset + imax, value=value,
                        enc_lkup=enc_lkup(x))
     x
 }
@@ -198,7 +198,7 @@ XString.append <- function(x, y)
     ans_class <- baseXStringSubtype(x)
     if (baseXStringSubtype(y) != ans_class)
         stop("'x' and 'y' must be XString objects of the same subtype")
-    ans_xdata <- XRaw.append(x@xdata, x@offset + 1L, x@length,
+    ans_xdata <- RawPtr.append(x@xdata, x@offset + 1L, x@length,
                              y@xdata, y@offset + 1L, y@length)
     new(ans_class, xdata=ans_xdata, length=length(ans_xdata))
 }
@@ -226,7 +226,7 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
             stop("more than one input sequence")
     }
     lkup <- enc_lkup(newEmptyXString(class))
-    xdata <- charToXRaw(x, start=start, end=end, width=width, lkup=lkup, check=check)
+    xdata <- charToRawPtr(x, start=start, end=end, width=width, lkup=lkup, check=check)
     new(class, xdata=xdata, length=length(xdata))
 }
 
@@ -240,7 +240,7 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
     lkup <- getXStringSubtypeConversionLookup(class(x), class)
     if (is.null(lkup))
         return(new(class, xdata=x@xdata, offset=start-1L, length=nchar))
-    xdata <- copySubXRaw(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+    xdata <- copySubRawPtr(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
     new(class, xdata=xdata, length=length(xdata))
 }
 
@@ -382,8 +382,8 @@ setMethod("[", "XString",
             stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        xdata <- XRaw(length(i))
-        XRaw.copy(xdata, x@offset + i, src=x@xdata)
+        xdata <- RawPtr(length(i))
+        RawPtr.copy(xdata, x@offset + i, src=x@xdata)
         new(class(x), xdata=xdata, length=length(xdata))
     }
 )
@@ -424,7 +424,7 @@ setReplaceMethod("[", "XString",
 {
     if (x@length != y@length)
         return(FALSE)
-    ans <- !XRaw.compare(x@xdata, x@offset + 1L, y@xdata, y@offset + 1L, x@length)
+    ans <- !RawPtr.compare(x@xdata, x@offset + 1L, y@xdata, y@offset + 1L, x@length)
     as.logical(ans)
 }
 

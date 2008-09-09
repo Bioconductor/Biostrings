@@ -83,8 +83,8 @@ XStringSetToFASTArecords <- function(x)
 ### Attempt to implement a _fast_ version of the above .read.fasta() by:
 ###   - shortcutting the use of readFASTA()
 ###   - use readLines to read the FASTA file line by line
-###   - call XRaw.write() on each line + XRaw() and XRaw.copy() when it's
-###     time to reallocate a biggest XRaw object.
+###   - call RawPtr.write() on each line + RawPtr() and RawPtr.copy() when it's
+###     time to reallocate a biggest RawPtr object.
 ###
 ### 'file' must be a character string or connection.
 ### If 'file' is a connection, then 'type' is ignored.
@@ -139,11 +139,11 @@ XStringSetToFASTArecords <- function(x)
         stop(file, ": file is too big")
     file <- file(file, "r")
     on.exit(close(file))
-    xdata <- XRaw(filesize)
+    xdata <- RawPtr(filesize)
     subject <- new(subjectClass, xdata=xdata, length=length(xdata))
     subject@length <- 0L
 
-    #ans <- XRaw.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))
+    #ans <- RawPtr.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))
 
 #-- implement this in C, from here
     width <- integer(0)

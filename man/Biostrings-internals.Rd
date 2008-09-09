@@ -20,29 +20,29 @@
 \alias{as.list,SparseList-method}
 \alias{[[,SparseList-method}
 
-% XRaw class and methods:
+% RawPtr class and methods:
 \alias{show,externalptr-method}
 
-\alias{class:XRaw}
-\alias{XRaw-class}
-\alias{XRaw}
+\alias{class:RawPtr}
+\alias{RawPtr-class}
+\alias{RawPtr}
 
-\alias{length,XRaw-method}
-\alias{as.integer,XRaw-method}
-\alias{toString,XRaw-method}
-\alias{initialize,XRaw-method}
-\alias{show,XRaw-method}
-\alias{==,XRaw,XRaw-method}
-\alias{!=,XRaw,XRaw-method}
-\alias{[,XRaw-method}
-\alias{[<-,XRaw-method}
+\alias{length,RawPtr-method}
+\alias{as.integer,RawPtr-method}
+\alias{toString,RawPtr-method}
+\alias{initialize,RawPtr-method}
+\alias{show,RawPtr-method}
+\alias{==,RawPtr,RawPtr-method}
+\alias{!=,RawPtr,RawPtr-method}
+\alias{[,RawPtr-method}
+\alias{[<-,RawPtr-method}
 
-\alias{class:PrintableXRaw}
-\alias{PrintableXRaw-class}
-\alias{PrintableXRaw}
+\alias{class:PrintableRawPtr}
+\alias{PrintableRawPtr-class}
+\alias{PrintableRawPtr}
 
-\alias{show,PrintableXRaw-method}
-\alias{[,PrintableXRaw-method}
+\alias{show,PrintableRawPtr-method}
+\alias{[,PrintableRawPtr-method}
 
 %XStringCodec class and methods:
 \alias{class:XStringCodec}

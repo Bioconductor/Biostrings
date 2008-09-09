@@ -1,5 +1,5 @@
 /****************************************************************************
- *                    Basic manipulation of XRaw objects                    *
+ *                   Basic manipulation of RawPtr objects                   *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -7,20 +7,20 @@
 
 static int debug = 0;
 
-SEXP debug_XRaw_class()
+SEXP debug_RawPtr_class()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'XRaw_class.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in 'RawPtr_class.c'\n", debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'XRaw_class.c'\n");
+	Rprintf("Debug mode not available in 'RawPtr_class.c'\n");
 #endif
 	return R_NilValue;
 }
 
 
 /****************************************************************************
- * Things in this section are not necessarily directly related to XRaw
+ * Things in this section are not necessarily directly related to RawPtr
  * objects but they needed to go somewhere so here they are...
  */
 
@@ -74,20 +74,20 @@ SEXP Biostrings_xp_new()
 
 
 /****************************************************************************
- * Allocating memory for an XRaw object.
+ * Allocating memory for an RawPtr object.
  *
- * An XRaw object stores its data in an "external" raw vector (RAWSXP
+ * An RawPtr object stores its data in an "external" raw vector (RAWSXP
  * vector). A RAWSXP vector itself stores its data in a char-array.
  * The "R types" of the argument passed to these functions must be:
- *   'xraw_xp': externalptr
+ *   'rawptr_xp': externalptr
  *   'length': single integer
  */
 
 /*
- * Alloc an RAWSXP vector of length 'length' and point 'xraw_xp' to it.
+ * Alloc an RAWSXP vector of length 'length' and point 'rawptr_xp' to it.
  * Does NOT initialize the allocated memory!
  */
-SEXP XRaw_alloc(SEXP xraw_xp, SEXP length)
+SEXP RawPtr_alloc(SEXP rawptr_xp, SEXP length)
 {
 	SEXP tag;
 	int tag_length;
@@ -96,45 +96,45 @@ SEXP XRaw_alloc(SEXP xraw_xp, SEXP length)
 
 	PROTECT(tag = NEW_RAW(tag_length));
 	/*
-	Rprintf("Memory successfully allocated for %d-byte XRaw object (data starting at memory address %p)\n",
+	Rprintf("Memory successfully allocated for %d-byte RawPtr object (data starting at memory address %p)\n",
 		tag_length, RAW(tag));
 	*/
-	R_SetExternalPtrTag(xraw_xp, tag);
+	R_SetExternalPtrTag(rawptr_xp, tag);
 	UNPROTECT(1);
-	return xraw_xp;
+	return rawptr_xp;
 }
 
 
 /****************************************************************************
- * Getting information about an XRaw object.
+ * Getting information about an RawPtr object.
  */
 
-SEXP _get_XRaw_tag(SEXP x)
+SEXP _get_RawPtr_tag(SEXP x)
 {
 	return R_ExternalPtrTag(GET_SLOT(x, install("xp")));
 }
 
-int _get_XRaw_length(SEXP x)
+int _get_RawPtr_length(SEXP x)
 {
-	return LENGTH(_get_XRaw_tag(x));
+	return LENGTH(_get_RawPtr_tag(x));
 }
 
 /*
- * Return the single string printed by the show method for "XRaw" objects.
- * 'xraw_xp' must be the 'xp' slot of a "XRaw" object.
+ * Return the single string printed by the show method for "RawPtr" objects.
+ * 'rawptr_xp' must be the 'xp' slot of a "RawPtr" object.
  * From R:
- *   xr <- XRaw(30)
- *   .Call("XRaw_get_show_string", xr@xp, PACKAGE="Biostrings")
+ *   xr <- RawPtr(30)
+ *   .Call("RawPtr_get_show_string", xr@xp, PACKAGE="Biostrings")
  */
-SEXP XRaw_get_show_string(SEXP xraw_xp)
+SEXP RawPtr_get_show_string(SEXP rawptr_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
 	char buf[100]; /* should be enough... */
 
-	tag = R_ExternalPtrTag(xraw_xp);
+	tag = R_ExternalPtrTag(rawptr_xp);
 	tag_length = LENGTH(tag);
-	snprintf(buf, sizeof(buf), "%d-byte XRaw object (data starting at memory address %p)",
+	snprintf(buf, sizeof(buf), "%d-byte RawPtr object (data starting at memory address %p)",
 		 tag_length, RAW(tag));
 	PROTECT(ans = NEW_CHARACTER(1));
 	SET_STRING_ELT(ans, 0, mkChar(buf));
@@ -143,18 +143,18 @@ SEXP XRaw_get_show_string(SEXP xraw_xp)
 }
 
 /*
- * Return length of R string pointed by 'xraw_xp'.
+ * Return length of R string pointed by 'rawptr_xp'.
  * From R:
- *   xr <- XRaw(30)
- *   .Call("XRaw_length", xr@xp, PACKAGE="Biostrings")
- * Called by method length() for "XRaw" objects.
+ *   xr <- RawPtr(30)
+ *   .Call("RawPtr_length", xr@xp, PACKAGE="Biostrings")
+ * Called by method length() for "RawPtr" objects.
  */
-SEXP XRaw_length(SEXP xraw_xp)
+SEXP RawPtr_length(SEXP rawptr_xp)
 {
 	SEXP tag, ans;
 	int tag_length;
 
-	tag = R_ExternalPtrTag(xraw_xp);
+	tag = R_ExternalPtrTag(rawptr_xp);
 	tag_length = LENGTH(tag);
 
 	PROTECT(ans = NEW_INTEGER(1));
@@ -165,7 +165,7 @@ SEXP XRaw_length(SEXP xraw_xp)
 
 
 /****************************************************************************
- * Making new XRaw objects.
+ * Making new RawPtr objects.
  */
 
 /*
@@ -173,17 +173,17 @@ SEXP XRaw_length(SEXP xraw_xp)
  * Its argument is NOT duplicated so it would be a disaster if it was
  * coming from the user space.
  */
-SEXP _new_XRaw(SEXP tag)
+SEXP _new_RawPtr(SEXP tag)
 {
 	SEXP ans;
 
-	PROTECT(ans = NEW_OBJECT(MAKE_CLASS("XRaw")));
+	PROTECT(ans = NEW_OBJECT(MAKE_CLASS("RawPtr")));
 	SET_SLOT(ans, mkChar("xp"), R_MakeExternalPtr(NULL, tag, R_NilValue));
 	UNPROTECT(1);
         return ans;
 }
 
-SEXP _new_XRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
+SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
 	SEXP tag, ans;
 	int tag_length, i;
@@ -208,7 +208,7 @@ SEXP _new_XRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 		}
 		dest += seq->nelt;
 	}
-	PROTECT(ans = _new_XRaw(tag));
+	PROTECT(ans = _new_RawPtr(tag));
 	UNPROTECT(2);
 	return ans;
 }
@@ -223,7 +223,7 @@ SEXP _new_XRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
  *   collapse: not yet supported.
  * TODO: Support the 'collapse' argument
  */
-SEXP new_XRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
+SEXP new_RawPtr_from_STRSXP(SEXP x, SEXP start, SEXP width,
 		SEXP collapse, SEXP lkup)
 {
 	int nseq;
@@ -242,20 +242,20 @@ SEXP new_XRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
 	}
 	seqs = _new_RoSeqs_from_STRSXP(nseq, x);
 	_narrow_RoSeqs(&seqs, start, width);
-	return _new_XRaw_from_RoSeqs(&seqs, lkup);
+	return _new_RawPtr_from_RoSeqs(&seqs, lkup);
 }
 
 
 /****************************************************************************
- * Writing an RoSeq object to an XRaw object.
+ * Writing an RoSeq object to an RawPtr object.
  */
 
-void _write_RoSeq_to_XRaw(SEXP x, int offset, const RoSeq *seq,
+void _write_RoSeq_to_RawPtr(SEXP x, int offset, const RoSeq *seq,
 		const int *chrtrtable)
 {
 	char *dest;
 
-	dest = (char *) RAW(_get_XRaw_tag(x)) + offset;
+	dest = (char *) RAW(_get_RawPtr_tag(x)) + offset;
 	_copy_seq(dest, seq->elts, seq->nelt, chrtrtable);
 	return;
 }

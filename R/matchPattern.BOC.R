@@ -12,10 +12,10 @@ setClass("BOC_SubjectString",
         base2_code="integer",
         base3_code="integer",
         base4_code="integer",
-        base1_OCbuffer="XRaw",      # all buffers must be of length nchar(subject) - pattern_length + 1
-        base2_OCbuffer="XRaw",
-        base3_OCbuffer="XRaw",
-	pre4buffer="XRaw",
+        base1_OCbuffer="RawPtr",      # all buffers must be of length nchar(subject) - pattern_length + 1
+        base2_OCbuffer="RawPtr",
+        base3_OCbuffer="RawPtr",
+	pre4buffer="RawPtr",
         ## The "stats" slot is a named list with the following elements:
         ##   means: vector of 4 doubles
         ##   table1, table2, table3, table4: vectors of (pattern_length + 1) integers
@@ -47,10 +47,10 @@ setMethod("initialize", "BOC_SubjectString",
         code2 <- DNA_BASE_CODES[base_letters[2]]
         code3 <- DNA_BASE_CODES[base_letters[3]]
         code4 <- DNA_BASE_CODES[setdiff(names(DNA_BASE_CODES), base_letters)]
-        buf1 <- XRaw(buf_length)
-        buf2 <- XRaw(buf_length)
-        buf3 <- XRaw(buf_length)
-        pre4buf <- XRaw(buf_length)
+        buf1 <- RawPtr(buf_length)
+        buf2 <- RawPtr(buf_length)
+        buf3 <- RawPtr(buf_length)
+        pre4buf <- RawPtr(buf_length)
         stats <- .Call("match_BOC_preprocess",
               subject@xdata@xp, subject@offset, subject@length,
               pattern_length,

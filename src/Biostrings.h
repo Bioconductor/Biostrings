@@ -167,9 +167,9 @@ void _set_env_from_IntAEAE(
 );
 
 
-/* XRaw_class.c */
+/* RawPtr_class.c */
 
-SEXP debug_XRaw_class();
+SEXP debug_RawPtr_class();
 
 const char *_get_class(SEXP x);
 
@@ -177,27 +177,27 @@ SEXP Biostrings_safe_explode(SEXP s);
 
 SEXP Biostrings_xp_new();
 
-SEXP XRaw_alloc(
-	SEXP xraw_xp,
+SEXP RawPtr_alloc(
+	SEXP rawptr_xp,
 	SEXP length
 );
 
-SEXP _get_XRaw_tag(SEXP x);
+SEXP _get_RawPtr_tag(SEXP x);
 
-int _get_XRaw_length(SEXP x);
+int _get_RawPtr_length(SEXP x);
 
-SEXP XRaw_get_show_string(SEXP xraw_xp);
+SEXP RawPtr_get_show_string(SEXP rawptr_xp);
 
-SEXP XRaw_length(SEXP xraw_xp);
+SEXP RawPtr_length(SEXP rawptr_xp);
 
-SEXP _new_XRaw(SEXP tag);
+SEXP _new_RawPtr(SEXP tag);
 
-SEXP _new_XRaw_from_RoSeqs(
+SEXP _new_RawPtr_from_RoSeqs(
 	const RoSeqs *seqs,
 	SEXP lkup
 );
 
-SEXP new_XRaw_from_STRSXP(
+SEXP new_RawPtr_from_STRSXP(
 	SEXP x,
 	SEXP start,
 	SEXP width,
@@ -205,7 +205,7 @@ SEXP new_XRaw_from_STRSXP(
 	SEXP lkup
 );
 
-void _write_RoSeq_to_XRaw(
+void _write_RoSeq_to_RawPtr(
 	SEXP x,
 	int offset,
 	const RoSeq *seq,
@@ -213,130 +213,130 @@ void _write_RoSeq_to_XRaw(
 );
 
 
-/* XRaw_utils.c */
+/* RawPtr_utils.c */
 
-SEXP debug_XRaw_utils();
+SEXP debug_RawPtr_utils();
 
-SEXP XRaw_memcmp(
-	SEXP xraw1_xp,
+SEXP RawPtr_memcmp(
+	SEXP rawptr1_xp,
 	SEXP start1,
-	SEXP xraw2_xp,
+	SEXP rawptr2_xp,
 	SEXP start2,
 	SEXP width
 );
 
-SEXP XRaw_memcpy(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_memcpy(
+	SEXP dest_rawptr_xp,
 	SEXP dest_start,
-	SEXP src_xraw_xp,
+	SEXP src_rawptr_xp,
 	SEXP src_start,
 	SEXP width
 );
 
-SEXP XRaw_copy_from_i1i2(
-	SEXP dest_xraw_xp,
-	SEXP src_xraw_xp,
+SEXP RawPtr_copy_from_i1i2(
+	SEXP dest_rawptr_xp,
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax
 );
 
-SEXP XRaw_copy_from_subset(
-	SEXP dest_xraw_xp,
-	SEXP src_xraw_xp,
+SEXP RawPtr_copy_from_subset(
+	SEXP dest_rawptr_xp,
+	SEXP src_rawptr_xp,
 	SEXP subset
 );
 
-SEXP XRaw_read_chars_from_i1i2(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_chars_from_i1i2(
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax
 );
 
-SEXP XRaw_read_chars_from_subset(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_chars_from_subset(
+	SEXP src_rawptr_xp,
 	SEXP subset
 );
 
-SEXP XRaw_write_chars_to_i1i2(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_write_chars_to_i1i2(
+	SEXP dest_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP string
 );
 
-SEXP XRaw_write_chars_to_subset(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_write_chars_to_subset(
+	SEXP dest_rawptr_xp,
 	SEXP subset,
 	SEXP string
 );
 
-SEXP XRaw_read_ints_from_i1i2(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_ints_from_i1i2(
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax
 );
 
-SEXP XRaw_read_ints_from_subset(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_ints_from_subset(
+	SEXP src_rawptr_xp,
 	SEXP subset
 );
 
-SEXP XRaw_write_ints_to_i1i2(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_write_ints_to_i1i2(
+	SEXP dest_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP val
 );
 
-SEXP XRaw_write_ints_to_subset(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_write_ints_to_subset(
+	SEXP dest_rawptr_xp,
 	SEXP subset,
 	SEXP val
 );
 
-SEXP XRaw_read_enc_chars_from_i1i2(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_enc_chars_from_i1i2(
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP lkup
 );
 
-SEXP XRaw_read_enc_chars_from_subset(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_enc_chars_from_subset(
+	SEXP src_rawptr_xp,
 	SEXP subset,
 	SEXP lkup
 );
 
-SEXP XRaw_write_enc_chars_to_i1i2(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_write_enc_chars_to_i1i2(
+	SEXP dest_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP string,
 	SEXP lkup
 );
 
-SEXP XRaw_write_enc_chars_to_subset(
-	SEXP dest_xraw_xp,
+SEXP RawPtr_write_enc_chars_to_subset(
+	SEXP dest_rawptr_xp,
 	SEXP subset,
 	SEXP string,
 	SEXP lkup
 );
 
-SEXP XRaw_read_complexes_from_i1i2(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_complexes_from_i1i2(
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP lkup
 );
 
-SEXP XRaw_read_complexes_from_subset(
-	SEXP src_xraw_xp,
+SEXP RawPtr_read_complexes_from_subset(
+	SEXP src_rawptr_xp,
 	SEXP subset,
 	SEXP lkup
 );
 
-SEXP XRaw_loadFASTA(
-	SEXP xraw_xp,
+SEXP RawPtr_loadFASTA(
+	SEXP rawptr_xp,
 	SEXP filepath,
 	SEXP collapse,
 	SEXP lkup
@@ -367,7 +367,7 @@ SEXP _get_XString_xdata(SEXP x);
 
 RoSeq _get_XString_asRoSeq(SEXP x);
 
-SEXP new_XRaw_from_XString(
+SEXP new_RawPtr_from_XString(
 	SEXP x,
 	SEXP start,
 	SEXP width,
@@ -487,31 +487,31 @@ SEXP oligonucleotide_frequency(
 
 /* char_translate.c */
 
-SEXP XRaw_translate_copy_from_i1i2(
-	SEXP dest_xraw_xp,
-	SEXP src_xraw_xp,
+SEXP RawPtr_translate_copy_from_i1i2(
+	SEXP dest_rawptr_xp,
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP lkup
 );
 
-SEXP XRaw_translate_copy_from_subset(
-	SEXP dest_xraw_xp,
-	SEXP src_xraw_xp,
+SEXP RawPtr_translate_copy_from_subset(
+	SEXP dest_rawptr_xp,
+	SEXP src_rawptr_xp,
 	SEXP subset,
 	SEXP lkup
 );
 
-SEXP XRaw_reverse_copy_from_i1i2(
-	SEXP dest_xraw_xp,
-	SEXP src_xraw_xp,
+SEXP RawPtr_reverse_copy_from_i1i2(
+	SEXP dest_rawptr_xp,
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax
 );
 
-SEXP XRaw_reverse_translate_copy_from_i1i2(
-	SEXP dest_xraw_xp,
-	SEXP src_xraw_xp,
+SEXP RawPtr_reverse_translate_copy_from_i1i2(
+	SEXP dest_rawptr_xp,
+	SEXP src_rawptr_xp,
 	SEXP imin,
 	SEXP imax,
 	SEXP lkup

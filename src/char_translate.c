@@ -3,9 +3,9 @@
 #include <S.h> /* for Salloc() */
 
 /*
- * See XRaw_copy_from_i1i2() in XRaw_utils.c for a description of the first 4 arguments.
+ * See RawPtr_copy_from_i1i2() in RawPtr_utils.c for a description of the first 4 arguments.
  */
-SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
+SEXP RawPtr_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -22,9 +22,9 @@ SEXP XRaw_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP im
 }
 
 /*
- * See XRaw_copy_from_subset() in XRaw_utils.c for a description of the first 3 arguments.
+ * See RawPtr_copy_from_subset() in RawPtr_utils.c for a description of the first 3 arguments.
  */
-SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup)
+SEXP RawPtr_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEXP lkup)
 {
 	SEXP dest, src;
 
@@ -38,9 +38,9 @@ SEXP XRaw_translate_copy_from_subset(SEXP dest_xp, SEXP src_xp, SEXP subset, SEX
 }
 
 /*
- * See XRaw_copy_from_i1i2() in XRaw_utils.c for a description of the arguments.
+ * See RawPtr_copy_from_i1i2() in RawPtr_utils.c for a description of the arguments.
  */
-SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
+SEXP RawPtr_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax)
 {
 	SEXP dest, src;
 	int i1, i2;
@@ -56,9 +56,9 @@ SEXP XRaw_reverse_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax
 }
 
 /*
- * See XRaw_copy_from_i1i2() in XRaw_utils.c for a description of the first 4 arguments.
+ * See RawPtr_copy_from_i1i2() in RawPtr_utils.c for a description of the first 4 arguments.
  */
-SEXP XRaw_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
+SEXP RawPtr_reverse_translate_copy_from_i1i2(SEXP dest_xp, SEXP src_xp, SEXP imin, SEXP imax, SEXP lkup)
 {
 	SEXP dest, src;
 	int i1, i2;

@@ -20,11 +20,11 @@
 XString.tr <- function(x, lkup=NULL, reverse=FALSE)
 {
     lx <- length(x)
-    xdata <- XRaw(lx)
+    xdata <- RawPtr(lx)
     if (reverse) {
-        XRaw.reverseCopy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
+        RawPtr.reverseCopy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
     } else {
-        XRaw.copy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
+        RawPtr.copy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
     }
     new(class(x), xdata=xdata, length=length(xdata))
 }

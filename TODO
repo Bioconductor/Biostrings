@@ -14,6 +14,9 @@ In 2.9
 
 CONTAINERS
 
+- Remove the XRaw class when all the BSgenome data packages have been rebuilt
+  to use the new RawPtr class.
+
 - Add "unique" method for IRanges objects.
 
 - Add "baseXStringSubtype" methods for XStringViews, XStringSet and

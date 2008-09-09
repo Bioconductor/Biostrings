@@ -138,7 +138,7 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 	SEXP tag;
 	int offset;
 
-	tag = _get_XRaw_tag(_get_XString_xdata(x));
+	tag = _get_RawPtr_tag(_get_XString_xdata(x));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	seq.elts = (const char *) (RAW(tag) + offset);
 	seq.nelt = INTEGER(GET_SLOT(x, install("length")))[0];
@@ -168,7 +168,7 @@ static RoSeqs new_RoSeqs_from_XString(int nelt, SEXP x)
  *                set of valid ranges in 'x';
  *   lkup: lookup table for (re)encoding the letters in 'x'.
  */
-SEXP new_XRaw_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
+SEXP new_RawPtr_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
 {
 	int nseq;
 	RoSeqs seqs;
@@ -176,7 +176,7 @@ SEXP new_XRaw_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
 	nseq = LENGTH(start);
 	seqs = new_RoSeqs_from_XString(nseq, x);
 	_narrow_RoSeqs(&seqs, start, width);
-	return _new_XRaw_from_RoSeqs(&seqs, lkup);
+	return _new_RawPtr_from_RoSeqs(&seqs, lkup);
 }
 
 /*
@@ -214,8 +214,8 @@ SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
 		copy_lkup(enc_lkup, CHRTRTABLE_LENGTH,
 			  INTEGER(lkup), LENGTH(lkup));
 	}
-	PROTECT(xdata = _new_XRaw_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = _new_XString(class, xdata, 0, _get_XRaw_length(xdata)));
+	PROTECT(xdata = _new_RawPtr_from_RoSeqs(seqs, lkup));
+	PROTECT(ans = _new_XString(class, xdata, 0, _get_RawPtr_length(xdata)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
 	else
@@ -238,7 +238,7 @@ SEXP _alloc_XString(const char *class, int length)
 	SEXP tag, xdata, ans;
 
 	PROTECT(tag = NEW_RAW(length));
-	PROTECT(xdata = _new_XRaw(tag));
+	PROTECT(xdata = _new_RawPtr(tag));
 	PROTECT(ans = _new_XString(class, xdata, 0, length));
 	UNPROTECT(3);
 	return ans;
@@ -251,7 +251,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, const RoSeq *seq, int encode)
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	enc_chrtrtable = encode ? get_enc_chrtrtable(_get_class(x)) : NULL;
-	_write_RoSeq_to_XRaw(_get_XString_xdata(x), offset + start - 1, seq, enc_chrtrtable);
+	_write_RoSeq_to_RawPtr(_get_XString_xdata(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }
 

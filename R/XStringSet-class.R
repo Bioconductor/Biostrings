@@ -7,26 +7,26 @@
 ### all DNAString objects etc).
 ###
 ### The current implementation only allows for storage of a set of strings
-### that belong to the same XRaw object i.e. all the elements of an XStringSet
+### that belong to the same RawPtr object i.e. all the elements of an XStringSet
 ### object must be substrings of a common string called the "super string".
 ### The old XStringList container (Biostrings 2.8) didn't have this limitation:
-### it could hold XString objects that pointed to different XRaw objects but
+### it could hold XString objects that pointed to different RawPtr objects but
 ### it was so slow that I decided to replace it by the much more efficient
 ### XStringSet container.
 ### Maybe the best of both world, or at least a good enough trade-off, could be
 ### obtained by defining the XStringSet class like this:
 ###
-###   setClass("XRawViews",
+###   setClass("RawPtrViews",
 ###     contains="LockedIRanges",
 ###     representation(
-###         subject="XRaw"
+###         subject="RawPtr"
 ###     )
 ###   )
 ###
 ###   setClass("XStringSet",
 ###     representation(
 ###         "VIRTUAL",
-###         xrvlist="list",   # a list of XRawViews objects
+###         xrvlist="list",   # a list of RawPtrViews objects
 ###         strong="integer",
 ###         weak="integer"
 ###     )
@@ -155,7 +155,7 @@ compactXStringSet <- function(x, baseClass=NULL)
     ## 'length(super(x))' especially if the elements in 'x' cover a small part
     ## of 'super(x)'.
     frame <- reduce(x, with.inframe.attrib=TRUE)
-    xdata <- .Call("new_XRaw_from_XString",
+    xdata <- .Call("new_RawPtr_from_XString",
                    super(x), start(frame), width(frame), lkup,
                    PACKAGE="Biostrings")
     ans_super <- new(to_baseClass, xdata=xdata, length=length(xdata))
@@ -212,7 +212,7 @@ setAs("XStringSet", "AAStringSet",
 .charToXString <- function(x, safe_locs, class)
 {
     proto <- newEmptyXString(class)
-    xdata <- .Call("new_XRaw_from_STRSXP",
+    xdata <- .Call("new_RawPtr_from_STRSXP",
                    x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
                    PACKAGE="Biostrings")
     new(class, xdata=xdata, length=length(xdata))

@@ -1,8 +1,8 @@
 ### =========================================================================
-### External raw vectors: the "XRaw" class
+### External pointer to a raw vector: the "RawPtr" class
 ### -------------------------------------------------------------------------
 ###
-### An "XRaw" object is a chunk of memory that:
+### An "RawPtr" object is a chunk of memory that:
 ###   a. Contains bytes (char at the C level).
 ###   b. Is readable and writable.
 ###   c. Has a passed by address semantic i.e. the data it contains are not
@@ -15,30 +15,36 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "XRaw" class.
-### Note: instead of defining the "XRaw" class with just one slot of type
+### The "RawPtr" class.
+### Note: instead of defining the "RawPtr" class with just one slot of type
 ### "externalptr" (it HAS an "externalptr", and nothing else), an alternative
 ### would be to simply extend the "externalptr" type.
-### After all, a "XRaw" object IS an "externalptr" object.
+### After all, a "RawPtr" object IS an "externalptr" object.
 ### However, I tried this but was not able to implement the "initialize" method
-### in such a way that it returns a new instance of the "XRaw" class (the
+### in such a way that it returns a new instance of the "RawPtr" class (the
 ### returned object was ALWAYS the same instance everytime the method was
 ### called, I found no workaround).
 ###
 
-setClass("XRaw", representation(xp="externalptr"))
+setClass("RawPtr", representation(xp="externalptr"))
+
+### A temporary "redirection" of the XRaw class to the RawPtr class. Only
+### during the time needed to migrate all the BSgenome data packages to the
+### new RawPtr class.
+### TODO: Remove the XRaw class when all the BSgenome data packages are fixed.
+setClass("XRaw", contains="RawPtr")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization.
 ###
-### Note that unlike raw vectors, XRaw objects are not initialized with 0's.
+### Note that unlike raw vectors, RawPtr objects are not initialized with 0's.
 ###
 
 ### This:
-###   xr <- XRaw(30)
+###   xr <- RawPtr(30)
 ### will call this "initialize" method.
-setMethod("initialize", "XRaw",
+setMethod("initialize", "RawPtr",
     function(.Object, length, verbose=FALSE)
     {
         if (!isSingleNumber(length))
@@ -49,10 +55,10 @@ setMethod("initialize", "XRaw",
         xp <- .Call("Biostrings_xp_new", PACKAGE="Biostrings")
         if (verbose)
             cat("Allocating memory for new", class(.Object), "object...")
-        .Call("XRaw_alloc", xp, length, PACKAGE="Biostrings")
+        .Call("RawPtr_alloc", xp, length, PACKAGE="Biostrings")
         if (verbose) {
             cat(" OK\n")
-            show_string <- .Call("XRaw_get_show_string", xp, PACKAGE="Biostrings")
+            show_string <- .Call("RawPtr_get_show_string", xp, PACKAGE="Biostrings")
             cat("New", show_string, "successfully created\n")
         }
         .Object@xp <- xp
@@ -60,15 +66,15 @@ setMethod("initialize", "XRaw",
     }
 )
 
-XRaw <- function(...)
+RawPtr <- function(...)
 {
-    new("XRaw", ...)
+    new("RawPtr", ...)
 }
 
-setMethod("show", "XRaw",
+setMethod("show", "RawPtr",
     function(object)
     {
-        show_string <- .Call("XRaw_get_show_string", object@xp, PACKAGE="Biostrings")
+        show_string <- .Call("RawPtr_get_show_string", object@xp, PACKAGE="Biostrings")
         cat(show_string, "\n", sep="")
         ## What is correct here? The documentation (?show) says that 'show'
         ## should return an invisible 'NULL' but, on the other hand, the 'show'
@@ -77,10 +83,10 @@ setMethod("show", "XRaw",
     }
 )
 
-setMethod("length", "XRaw",
+setMethod("length", "RawPtr",
     function(x)
     {
-        .Call("XRaw_length", x@xp, PACKAGE="Biostrings")
+        .Call("RawPtr_length", x@xp, PACKAGE="Biostrings")
     }
 )
 
@@ -91,7 +97,7 @@ setMethod("length", "XRaw",
 ### If length(i) == 0 then the read functions return an empty vector
 ### and the write functions don't do anything.
 
-XRaw.readInts <- function(x, i, imax=integer(0))
+RawPtr.readInts <- function(x, i, imax=integer(0))
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -100,16 +106,16 @@ XRaw.readInts <- function(x, i, imax=integer(0))
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("XRaw_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
+        .Call("RawPtr_read_ints_from_i1i2", x@xp, i, imax, PACKAGE="Biostrings")
     } else {
-        .Call("XRaw_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
+        .Call("RawPtr_read_ints_from_subset", x@xp, i, PACKAGE="Biostrings")
     }
 }
 
-XRaw.writeInts <- function(x, i, imax=integer(0), value)
+RawPtr.writeInts <- function(x, i, imax=integer(0), value)
 {
     if (!is.integer(value))
-        stop("'value' is not an integer vector")
+        stop("'value' must be an integer vector")
     if (!is.integer(i))
         i <- as.integer(i)
     if (length(i) == 1) {
@@ -117,15 +123,15 @@ XRaw.writeInts <- function(x, i, imax=integer(0), value)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("XRaw_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
+        .Call("RawPtr_write_ints_to_i1i2", x@xp, i, imax, value, PACKAGE="Biostrings")
     } else {
-        .Call("XRaw_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
+        .Call("RawPtr_write_ints_to_subset", x@xp, i, value, PACKAGE="Biostrings")
     }
     x
 }
 
 ### 'dec_lkup' must be NULL or a vector of integers
-XRaw.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
+RawPtr.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -135,23 +141,23 @@ XRaw.read <- function(x, i, imax=integer(0), dec_lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(dec_lkup))
-            .Call("XRaw_read_chars_from_i1i2",
+            .Call("RawPtr_read_chars_from_i1i2",
                   x@xp, i, imax, PACKAGE="Biostrings")
         else
-            .Call("XRaw_read_enc_chars_from_i1i2",
+            .Call("RawPtr_read_enc_chars_from_i1i2",
                   x@xp, i, imax, dec_lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(dec_lkup))
-            .Call("XRaw_read_chars_from_subset",
+            .Call("RawPtr_read_chars_from_subset",
                   x@xp, i, PACKAGE="Biostrings")
         else
-            .Call("XRaw_read_enc_chars_from_subset",
+            .Call("RawPtr_read_enc_chars_from_subset",
                   x@xp, i, dec_lkup, PACKAGE="Biostrings")
     }
 }
 
 ### 'enc_lkup' must be NULL or a vector of integers
-XRaw.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
+RawPtr.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
 {
     if (!isSingleString(value))
         stop("'value' must be a single string")
@@ -163,27 +169,27 @@ XRaw.write <- function(x, i, imax=integer(0), value, enc_lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(enc_lkup))
-            .Call("XRaw_write_chars_to_i1i2",
+            .Call("RawPtr_write_chars_to_i1i2",
                   x@xp, i, imax, value, PACKAGE="Biostrings")
         else
-            .Call("XRaw_write_enc_chars_to_i1i2",
+            .Call("RawPtr_write_enc_chars_to_i1i2",
                   x@xp, i, imax, value, enc_lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(enc_lkup))
-            .Call("XRaw_write_chars_to_subset",
+            .Call("RawPtr_write_chars_to_subset",
                   x@xp, i, value, PACKAGE="Biostrings")
         else
-            .Call("XRaw_write_enc_chars_to_subset",
+            .Call("RawPtr_write_enc_chars_to_subset",
                   x@xp, i, value, enc_lkup, PACKAGE="Biostrings")
     }
     x
 }
 
 ### 'lkup' must be NULL or a vector of integers
-XRaw.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
+RawPtr.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
-    if (class(src) != "XRaw")
-        stop("'src' is not an XRaw object")
+    if (!is(src, "RawPtr"))
+        stop("'src' must be an RawPtr object")
     if (!is.integer(i))
         i <- as.integer(i)
     if (length(i) == 1) {
@@ -192,27 +198,27 @@ XRaw.copy <- function(dest, i, imax=integer(0), src, lkup=NULL)
         else
             imax <- as.integer(imax)
         if (is.null(lkup))
-            .Call("XRaw_copy_from_i1i2", dest@xp, src@xp,
+            .Call("RawPtr_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, PACKAGE="Biostrings")
         else
-            .Call("XRaw_translate_copy_from_i1i2", dest@xp, src@xp,
+            .Call("RawPtr_translate_copy_from_i1i2", dest@xp, src@xp,
                   i, imax, lkup, PACKAGE="Biostrings")
     } else {
         if (is.null(lkup))
-            .Call("XRaw_copy_from_subset", dest@xp, src@xp,
+            .Call("RawPtr_copy_from_subset", dest@xp, src@xp,
                   i, PACKAGE="Biostrings")
         else
-            .Call("XRaw_translate_copy_from_subset", dest@xp, src@xp,
+            .Call("RawPtr_translate_copy_from_subset", dest@xp, src@xp,
                   i, lkup, PACKAGE="Biostrings")
     }
     dest
 }
 
 ### 'lkup' must be NULL or a vector of integers
-XRaw.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
+RawPtr.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
 {
-    if (class(src) != "XRaw")
-        stop("'src' is not an XRaw object")
+    if (!is(src, "RawPtr"))
+        stop("'src' must be an RawPtr object")
     if (length(i) != 1)
         stop("'i' must be a single integer")
     if (!is.integer(i))
@@ -222,14 +228,14 @@ XRaw.reverseCopy <- function(dest, i, imax=integer(0), src, lkup=NULL)
     else
         imax <- as.integer(imax)
     if (is.null(lkup))
-        .Call("XRaw_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
+        .Call("RawPtr_reverse_copy_from_i1i2", dest@xp, src@xp, i, imax, PACKAGE="Biostrings")
     else
-        .Call("XRaw_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, lkup, PACKAGE="Biostrings")
+        .Call("RawPtr_reverse_translate_copy_from_i1i2", dest@xp, src@xp, i, imax, lkup, PACKAGE="Biostrings")
     dest
 }
 
 ### 'lkup' must be a vector of complexes
-XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
+RawPtr.readComplexes <- function(x, i, imax=integer(0), lkup)
 {
     if (!is.integer(i))
         i <- as.integer(i)
@@ -238,20 +244,20 @@ XRaw.readComplexes <- function(x, i, imax=integer(0), lkup)
             imax <- i
         else
             imax <- as.integer(imax)
-        .Call("XRaw_read_complexes_from_i1i2",
+        .Call("RawPtr_read_complexes_from_i1i2",
               x@xp, i, imax, lkup, PACKAGE="Biostrings")
     } else {
-        .Call("XRaw_read_complexes_from_subset",
+        .Call("RawPtr_read_complexes_from_subset",
               x@xp, i, lkup, PACKAGE="Biostrings")
     }
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "XRaw.append" function.
+### The "RawPtr.append" function.
 ###
 
-XRaw.append <- function(x1, start1, width1, x2, start2, width2)
+RawPtr.append <- function(x1, start1, width1, x2, start2, width2)
 {
     if (!isSingleNumber(start1))
         stop("'start1' must be a single integer")
@@ -272,10 +278,10 @@ XRaw.append <- function(x1, start1, width1, x2, start2, width2)
         width2 <- as.integer(width2)
 
     ans_len <- width1 + width2
-    ans <- XRaw(ans_len)
-    .Call("XRaw_memcpy",
+    ans <- RawPtr(ans_len)
+    .Call("RawPtr_memcpy",
           ans@xp, 1L, x1@xp, start1, width1, PACKAGE="Biostrings")
-    .Call("XRaw_memcpy",
+    .Call("RawPtr_memcpy",
           ans@xp, 1L + width1, x2@xp, start2, width2, PACKAGE="Biostrings")
     ans
 }
@@ -316,40 +322,40 @@ normargNchar <- function(start, nchar, seq_nchar)
     nchar
 }
 
-charToXRaw <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
+charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
 {
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
-    .Call("new_XRaw_from_STRSXP",
+    .Call("new_RawPtr_from_STRSXP",
           x, start(safe_locs), width(safe_locs), collapse, lkup,
           PACKAGE="Biostrings")
 }
 
-copySubXRaw <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
+copySubRawPtr <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
 {
     if (check) {
         start <- normargStart(start)
         nchar <- normargNchar(start, nchar, length(x))
     }
-    ans <- XRaw(nchar)
-    XRaw.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
+    ans <- RawPtr(nchar)
+    RawPtr.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### XRaw IO
+### RawPtr IO
 ###
 
-XRaw.saveFASTA <- function(x, filepath, dec_lkup=NULL)
+RawPtr.saveFASTA <- function(x, filepath, dec_lkup=NULL)
 {
     stop("not ready yet, sorry!")
 }
 
-### Return a list of 4 elements (see comments for XRaw_loadFASTA() in
-### src/XRaw_utils.c for the details).
+### Return a list of 4 elements (see comments for RawPtr_loadFASTA() in
+### src/RawPtr_utils.c for the details).
 ### 'filepath' must a path to an uncompressed FASTA file. Note that,
 ### unlike with the file() function, it cannot an URL, '""', '"stdin"'
 ### or '"clipboard"'.
-XRaw.loadFASTA <- function(x, filepath, collapse="", enc_lkup=NULL)
+RawPtr.loadFASTA <- function(x, filepath, collapse="", enc_lkup=NULL)
 {
     if (!isSingleString(filepath))
         stop("'filepath' must be a single string")
@@ -358,7 +364,7 @@ XRaw.loadFASTA <- function(x, filepath, collapse="", enc_lkup=NULL)
     if (!is.null(enc_lkup) && !is.integer(enc_lkup))
         stop("'enc_lkup' must be an integer vector")
     filepath <- path.expand(filepath)
-    .Call("XRaw_loadFASTA",
+    .Call("RawPtr_loadFASTA",
           x@xp, filepath, collapse, enc_lkup, PACKAGE="Biostrings")
 }
 
@@ -366,27 +372,27 @@ XRaw.loadFASTA <- function(x, filepath, collapse="", enc_lkup=NULL)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### length(as.integer(xr)) is equivalent to length(xr)
 ### but the latter is MUCH faster!
-setMethod("as.integer", "XRaw",
+setMethod("as.integer", "RawPtr",
     function(x)
     {
-        XRaw.readInts(x, 1, length(x))
+        RawPtr.readInts(x, 1, length(x))
     }
 )
 
 ### Typical use:
-###   xr <- XRaw(15)
+###   xr <- RawPtr(15)
 ###   xr[] <- 65
 ###   toString(xr)
 ###   xr[] <- "Hello"
 ###   toString(xr)
-### So this should always rewrite the content of a "XRaw" object
+### So this should always rewrite the content of a "RawPtr" object
 ### to itself, without any modification:
 ###   xr[] <- toString(xr)
 ### whatever the content of xr is!
-setMethod("toString", "XRaw",
+setMethod("toString", "RawPtr",
     function(x, ...)
     {
-        XRaw.read(x, 1, length(x))
+        RawPtr.read(x, 1, length(x))
     }
 )
 
@@ -395,33 +401,33 @@ setMethod("toString", "XRaw",
 ### Subsetting
 ###
 
-### Select bytes from a "XRaw" object.
+### Select bytes from a "RawPtr" object.
 ### Typical use:
-###   xr <- XRaw(30)
+###   xr <- RawPtr(30)
 ###   xr[25:20]
 ###   xr[25:31] # subscript out of bounds
 ### Note: xr[] can be used as a shortcut for as.integer(xr)
-setMethod("[", "XRaw",
+setMethod("[", "RawPtr",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
             stop("invalid subsetting")
         if (missing(i))
             return(as.integer(x))
-        XRaw.readInts(x, i)
+        RawPtr.readInts(x, i)
     }
 )
 
-### Replace bytes in a "XRaw" object.
+### Replace bytes in a "RawPtr" object.
 ### Typical use:
-###   xr <- XRaw(30)
+###   xr <- RawPtr(30)
 ###   xr[] <- 12 # fill with 12
 ###   xr[3:10] <- 1:-2
 ###   xr[3:10] <- "Ab"
 ###   xr[0] <- 4 # subscript out of bounds
 ###   xr[31] <- 4 # subscript out of bounds
 ###   xr[3] <- -12 # subscript out of bounds
-setReplaceMethod("[", "XRaw",
+setReplaceMethod("[", "RawPtr",
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -430,8 +436,8 @@ setReplaceMethod("[", "XRaw",
         ## 'value' is a string
         if (is.character(value)) {
             if (missing(i))
-                return(XRaw.write(x, 1, length(x), value=value))
-            return(XRaw.write(x, i, value=value))
+                return(RawPtr.write(x, 1, length(x), value=value))
+            return(RawPtr.write(x, i, value=value))
         }
 
         ## We want to allow this: xr[3] <- 4, even if storage.mode(value)
@@ -442,12 +448,12 @@ setReplaceMethod("[", "XRaw",
             tmp <- value
             value <- as.integer(value)
             if (value != tmp)
-                stop("'value' is not an integer")
+                stop("'value' must be an integer")
         }
         ## Now 'value' is an integer vector
         if (missing(i))
-            return(XRaw.writeInts(x, 1, length(x), value=value))
-        XRaw.writeInts(x, i, value=value)
+            return(RawPtr.writeInts(x, 1, length(x), value=value))
+        RawPtr.writeInts(x, i, value=value)
     }
 )
 
@@ -457,18 +463,18 @@ setReplaceMethod("[", "XRaw",
 ###
 
 ### Be careful to the semantic of the "==" operator:
-###   2 "XRaw" objects are equals if their @xp slot is the
+###   2 "RawPtr" objects are equals if their @xp slot is the
 ###   same "externalptr" instance (then they obviously have
 ###   the same length and contain the same data).
-### With this definition, xr1 and xr2 can be 2 different "XRaw" objects
+### With this definition, xr1 and xr2 can be 2 different "RawPtr" objects
 ### (xr1 != xr2) and contain the same data.
-setMethod("==", signature(e1="XRaw", e2="XRaw"),
+setMethod("==", signature(e1="RawPtr", e2="RawPtr"),
     function(e1, e2)
     {
         IRanges:::address(e1@xp) == IRanges:::address(e2@xp)
     }
 )
-setMethod("!=", signature(e1="XRaw", e2="XRaw"),
+setMethod("!=", signature(e1="RawPtr", e2="RawPtr"),
     function(e1, e2)
     {
         IRanges:::address(e1@xp) != IRanges:::address(e2@xp)
@@ -477,25 +483,25 @@ setMethod("!=", signature(e1="XRaw", e2="XRaw"),
 
 ### A wrapper to the very fast memcmp() C-function.
 ### Arguments MUST be the following or it will crash R:
-###   x1, x2: XRaw objects
+###   x1, x2: RawPtr objects
 ###   start1, start2, width: single integers
 ### In addition: 1 <= start1 <= start1+width-1 <= length(x1)
 ###              1 <= start2 <= start2+width-1 <= length(x2)
 ### WARNING: This function is voluntarly unsafe (it doesn't check its
 ### arguments) because we want it to be the fastest possible!
-XRaw.compare <- function(x1, start1, x2, start2, width)
+RawPtr.compare <- function(x1, start1, x2, start2, width)
 {
-    .Call("XRaw_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
+    .Call("RawPtr_memcmp", x1@xp, start1, x2@xp, start2, width, PACKAGE="Biostrings")
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "PrintableXRaw" class is a simple extention of the "XRaw"
+### The "PrintableRawPtr" class is a simple extention of the "RawPtr"
 ### class (no additional slots)
 
-setClass("PrintableXRaw", representation("XRaw"))
+setClass("PrintableRawPtr", representation("RawPtr"))
 
-setMethod("show", "PrintableXRaw",
+setMethod("show", "PrintableRawPtr",
     function(object)
     {
         print(toString(object))
@@ -510,10 +516,10 @@ safeExplode <- function(x)
     .Call("Biostrings_safe_explode", x, PACKAGE="Biostrings")
 }
 
-### pxr <- new("PrintableXRaw", 10)
+### pxr <- new("PrintableRawPtr", 10)
 ### pxr[] <- "ab-C."
 ### pxr[] == strsplit(toString(pxr), NULL, fixed=TRUE)[[1]]
-setMethod("[", "PrintableXRaw",
+setMethod("[", "PrintableRawPtr",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -521,7 +527,7 @@ setMethod("[", "PrintableXRaw",
         if (missing(i))
             s <- toString(x)
         else
-            s <- XRaw.read(x, i)
+            s <- RawPtr.read(x, i)
         safeExplode(s)
     }
 )
