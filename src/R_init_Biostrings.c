@@ -15,6 +15,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* RoSeq_utils.c */
 	CALLMETHOD_DEF(debug_RoSeq_utils, 0),
+	CALLMETHOD_DEF(new_RawPtr_from_STRSXP, 5),
 
 /* Dups_utils.c */
 	CALLMETHOD_DEF(debug_Dups_utils, 0),
@@ -23,43 +24,8 @@ static const R_CallMethodDef callMethods[] = {
 /* SparseList_utils.c */
 	CALLMETHOD_DEF(debug_SparseList_utils, 0),
 
-/* RawPtr_class.c */
-	CALLMETHOD_DEF(debug_RawPtr_class, 0),
-
-	CALLMETHOD_DEF(Biostrings_safe_explode, 1),
-	CALLMETHOD_DEF(Biostrings_xp_new, 0),
-	CALLMETHOD_DEF(RawPtr_alloc, 2),
-	CALLMETHOD_DEF(RawPtr_get_show_string, 1),
-	CALLMETHOD_DEF(RawPtr_length, 1),
-	CALLMETHOD_DEF(new_RawPtr_from_STRSXP, 5),
-
-/* RawPtr_utils.c */
-	CALLMETHOD_DEF(debug_RawPtr_utils, 0),
-
-	CALLMETHOD_DEF(RawPtr_memcmp, 5),
-
-	CALLMETHOD_DEF(RawPtr_memcpy, 5),
-	CALLMETHOD_DEF(RawPtr_copy_from_i1i2, 4),
-	CALLMETHOD_DEF(RawPtr_copy_from_subset, 3),
-
-	CALLMETHOD_DEF(RawPtr_read_chars_from_i1i2, 3),
-	CALLMETHOD_DEF(RawPtr_read_chars_from_subset, 2),
-	CALLMETHOD_DEF(RawPtr_write_chars_to_i1i2, 4),
-	CALLMETHOD_DEF(RawPtr_write_chars_to_subset, 3),
-
-	CALLMETHOD_DEF(RawPtr_read_ints_from_i1i2, 3),
-	CALLMETHOD_DEF(RawPtr_read_ints_from_subset, 2),
-	CALLMETHOD_DEF(RawPtr_write_ints_to_i1i2, 4),
-	CALLMETHOD_DEF(RawPtr_write_ints_to_subset, 3),
-
-	CALLMETHOD_DEF(RawPtr_read_enc_chars_from_i1i2, 4),
-	CALLMETHOD_DEF(RawPtr_read_enc_chars_from_subset, 3),
-	CALLMETHOD_DEF(RawPtr_write_enc_chars_to_i1i2, 5),
-	CALLMETHOD_DEF(RawPtr_write_enc_chars_to_subset, 4),
-
-	CALLMETHOD_DEF(RawPtr_read_complexes_from_i1i2, 4),
-	CALLMETHOD_DEF(RawPtr_read_complexes_from_subset, 3),
-
+/* fasta_io.c */
+	CALLMETHOD_DEF(debug_fasta_io, 0),
 	CALLMETHOD_DEF(RawPtr_loadFASTA, 4),
 
 /* XString_class.c */
@@ -79,10 +45,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(oligonucleotide_frequency, 4),
 
 /* char_translate.c */
-	CALLMETHOD_DEF(RawPtr_translate_copy_from_i1i2, 5),
-	CALLMETHOD_DEF(RawPtr_translate_copy_from_subset, 4),
-	CALLMETHOD_DEF(RawPtr_reverse_copy_from_i1i2, 4),
-	CALLMETHOD_DEF(RawPtr_reverse_translate_copy_from_i1i2, 5),
 	CALLMETHOD_DEF(XStringSet_char_translate, 3),
 
 /* replace_letter_at.c */

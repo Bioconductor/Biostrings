@@ -25,7 +25,6 @@ Collate: 00datacache.R
 	readFASTA.R
 	IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
 	XStringCodec-class.R
-	RawPtr-class.R
 	XString-class.R
 	XStringViews-class.R
 	XStringViews-constructors.R

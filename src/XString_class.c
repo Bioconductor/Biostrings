@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -138,7 +139,7 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 	SEXP tag;
 	int offset;
 
-	tag = _get_RawPtr_tag(_get_XString_xdata(x));
+	tag = get_VectorPtr_tag(_get_XString_xdata(x));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	seq.elts = (const char *) (RAW(tag) + offset);
 	seq.nelt = INTEGER(GET_SLOT(x, install("length")))[0];
@@ -215,7 +216,7 @@ SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(xdata = _new_RawPtr_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = _new_XString(class, xdata, 0, _get_RawPtr_length(xdata)));
+	PROTECT(ans = _new_XString(class, xdata, 0, get_VectorPtr_length(xdata)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
 	else
@@ -238,7 +239,7 @@ SEXP _alloc_XString(const char *class, int length)
 	SEXP tag, xdata, ans;
 
 	PROTECT(tag = NEW_RAW(length));
-	PROTECT(xdata = _new_RawPtr(tag));
+	PROTECT(xdata = new_VectorPtr("RawPtr", tag));
 	PROTECT(ans = _new_XString(class, xdata, 0, length));
 	UNPROTECT(3);
 	return ans;
@@ -250,7 +251,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, const RoSeq *seq, int encode)
 	const int *enc_chrtrtable;
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
-	enc_chrtrtable = encode ? get_enc_chrtrtable(_get_class(x)) : NULL;
+	enc_chrtrtable = encode ? get_enc_chrtrtable(get_class(x)) : NULL;
 	_write_RoSeq_to_RawPtr(_get_XString_xdata(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }

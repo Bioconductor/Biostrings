@@ -31,6 +31,39 @@ RoSeqs _alloc_RoSeqs(int nelt)
 
 
 /*****************************************************************************
+ * "Narrowing" a RoSeqs struct.
+ */
+
+void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
+{
+	int i, s, w;
+	const int *s_p, *w_p;
+	RoSeq *seq;
+
+	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
+		error("Biostrings internal error in _narrow_RoSeqs(): "
+		      "'start' and 'width' must have the same length as 'seqs'");
+	for (i = 0, seq = seqs->elts, s_p = INTEGER(start), w_p = INTEGER(width);
+	     i < seqs->nelt;
+	     i++, seq++, s_p++, w_p++)
+	{
+		s = *s_p;
+		w = *w_p;
+		if (s == NA_INTEGER || w == NA_INTEGER)
+			error("Biostrings internal error in _narrow_RoSeqs():"
+			      "NAs in 'start' or 'width' are not supported");
+		s--; // 0-based start (offset)
+		if (s < 0 || w < 0 || s + w > seq->nelt)
+			error("Biostrings internal error in _narrow_RoSeqs():"
+			      "invalid narrowing");
+		seq->elts += s;
+		seq->nelt = w;
+	}
+	return;
+}
+
+
+/*****************************************************************************
  * From a RoSeq struct to a character string.
  */
 
@@ -109,6 +142,77 @@ SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 
 
 /*****************************************************************************
+ * From a RoSeqs struct to a RawPtr object.
+ */
+
+SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
+{
+        SEXP tag, ans;
+        int tag_length, i;
+        const RoSeq *seq;
+        char *dest;
+
+        tag_length = 0;
+        for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
+                tag_length += seq->nelt;
+        PROTECT(tag = NEW_RAW(tag_length));
+        dest = (char *) RAW(tag);
+        for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
+                if (lkup == R_NilValue) {
+                        IRanges_memcpy_to_i1i2(0, seq->nelt - 1,
+                                dest, seq->nelt,
+                                seq->elts, seq->nelt, sizeof(char));
+                } else {
+                        IRanges_charcpy_to_i1i2_with_lkup(0, seq->nelt - 1,
+                                dest, seq->nelt,
+                                seq->elts, seq->nelt,
+                                INTEGER(lkup), LENGTH(lkup));
+                }
+                dest += seq->nelt;
+        }
+        PROTECT(ans = new_VectorPtr("RawPtr", tag));
+        UNPROTECT(2);
+        return ans;
+}
+
+
+/*****************************************************************************
+ * From a character vector to a RawPtr object.
+ *
+ * --- .Call ENTRY POINT ---
+ * Arguments:
+ *   x: a character vector;
+ *   start/width: integer vectors of the same length as 'x' and describing a
+ *                valid "narrowing" of 'x';
+ *   lkup: lookup table for encoding the letters in 'x';
+ *   collapse: not yet supported.
+ * TODO: Support the 'collapse' argument
+ */
+
+SEXP new_RawPtr_from_STRSXP(SEXP x, SEXP start, SEXP width,
+                SEXP collapse, SEXP lkup)
+{
+        int nseq;
+        RoSeqs seqs;
+
+        nseq = LENGTH(start);
+        if (collapse == R_NilValue) {
+                if (nseq != 1)
+                        error("'collapse' must be specified when the number "
+                              "of input sequences is not exactly 1");
+        } else {
+                if (LENGTH(collapse) != 1
+                 || LENGTH(STRING_ELT(collapse, 0)) != 0)
+                        error("'collapse' can only be NULL "
+                              "or the empty string for now");
+        }
+        seqs = _new_RoSeqs_from_STRSXP(nseq, x);
+        _narrow_RoSeqs(&seqs, start, width);
+        return _new_RawPtr_from_RoSeqs(&seqs, lkup);
+}
+
+
+/*****************************************************************************
  * From a CharAEAE buffer to a RoSeqs struct.
  */
 
@@ -172,36 +276,18 @@ SEXP _new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs)
 }
 
 
-/*****************************************************************************
- * "Narrowing" a RoSeqs struct.
+/****************************************************************************
+ * Writing a RoSeq object to a RawPtr object.
  */
 
-void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
+void _write_RoSeq_to_RawPtr(SEXP x, int offset, const RoSeq *seq,
+                const int *chrtrtable)
 {
-	int i, s, w;
-	const int *s_p, *w_p;
-	RoSeq *seq;
+        char *dest;
 
-	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
-		error("Biostrings internal error in _narrow_RoSeqs(): "
-		      "'start' and 'width' must have the same length as 'seqs'");
-	for (i = 0, seq = seqs->elts, s_p = INTEGER(start), w_p = INTEGER(width);
-	     i < seqs->nelt;
-	     i++, seq++, s_p++, w_p++)
-	{
-		s = *s_p;
-		w = *w_p;
-		if (s == NA_INTEGER || w == NA_INTEGER)
-			error("Biostrings internal error in _narrow_RoSeqs():"
-			      "NAs in 'start' or 'width' are not supported");
-		s--; // 0-based start (offset)
-		if (s < 0 || w < 0 || s + w > seq->nelt)
-			error("Biostrings internal error in _narrow_RoSeqs():"
-			      "invalid narrowing");
-		seq->elts += s;
-		seq->nelt = w;
-	}
-	return;
+        dest = (char *) RAW(get_VectorPtr_tag(x)) + offset;
+        _copy_seq(dest, seq->elts, seq->nelt, chrtrtable);
+        return;
 }
 
 

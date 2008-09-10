@@ -37,8 +37,8 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
 
-	const char *stringSetClass = _get_class(unaligned);
-	const char *stringClass = _get_class(GET_SLOT(unaligned, install("super")));
+	const char *stringSetClass = get_class(unaligned);
+	const char *stringClass = get_class(GET_SLOT(unaligned, install("super")));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
 	int numberOfAlignments = LENGTH(indel);
@@ -65,7 +65,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	}
 	SEXP alignedStringTag, alignedStringXData;
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
-	PROTECT(alignedStringXData = _new_RawPtr(alignedStringTag));
+	PROTECT(alignedStringXData = new_VectorPtr("RawPtr", alignedStringTag));
 	PROTECT(alignedString = _new_XString(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
 	SET_SLOT(output, mkChar("super"), alignedString);

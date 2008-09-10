@@ -5,12 +5,12 @@
 setClass("XString",
     representation(
         "VIRTUAL",
-        xdata="RawPtr",       # contains the sequence data (external)
+        xdata="RawPtr",     # contains the sequence data (external)
         offset="integer",   # a single integer
         length="integer"    # a single integer
     ),
     prototype(
-        #xdata=RawPtr(0),     # see newEmptyXString() below for why this doesn't
+        #xdata=RawPtr(0),   # see newEmptyXString() below for why this doesn't
                             # work
         offset=0L,
         length=0L
@@ -217,6 +217,24 @@ setMethod("toString", "XString", function(x, ...) as.character(x))
 ### Helper functions used by the versatile constructors below.
 ###
 
+.charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
+{
+    safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
+    .Call("new_RawPtr_from_STRSXP",
+          x, start(safe_locs), width(safe_locs), collapse, lkup,
+          PACKAGE="Biostrings")
+}
+
+.copySubRawPtr <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
+{
+    if (check) {
+        start <- normargStart(start)
+        nchar <- normargNchar(start, nchar, length(x))
+    }
+    ans <- RawPtr(nchar)
+    RawPtr.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
+}
+
 charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=TRUE)
 {
     if (check) {
@@ -226,7 +244,7 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
             stop("more than one input sequence")
     }
     lkup <- enc_lkup(newEmptyXString(class))
-    xdata <- charToRawPtr(x, start=start, end=end, width=width, lkup=lkup, check=check)
+    xdata <- .charToRawPtr(x, start=start, end=end, width=width, lkup=lkup, check=check)
     new(class, xdata=xdata, length=length(xdata))
 }
 
@@ -240,7 +258,7 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
     lkup <- getXStringSubtypeConversionLookup(class(x), class)
     if (is.null(lkup))
         return(new(class, xdata=x@xdata, offset=start-1L, length=nchar))
-    xdata <- copySubRawPtr(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
+    xdata <- .copySubRawPtr(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
     new(class, xdata=xdata, length=length(xdata))
 }
 

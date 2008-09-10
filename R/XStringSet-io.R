@@ -12,6 +12,30 @@
 ### -------------------------------------------------------------------------
 
 
+.RawPtr.saveFASTA <- function(x, filepath, dec_lkup=NULL)
+{
+    stop("not ready yet, sorry!")
+}
+
+### Return a list of 4 elements (see comments for .RawPtr_loadFASTA() in
+### src/RawPtr_utils.c for the details).
+### 'filepath' must a path to an uncompressed FASTA file. Note that,
+### unlike with the file() function, it cannot an URL, '""', '"stdin"'
+### or '"clipboard"'.
+.RawPtr.loadFASTA <- function(x, filepath, collapse="", enc_lkup=NULL)
+{
+    if (!isSingleString(filepath))
+        stop("'filepath' must be a single string")
+    if (!isSingleString(collapse))
+        stop("'collapse' must be a single string")
+    if (!is.null(enc_lkup) && !is.integer(enc_lkup))
+        stop("'enc_lkup' must be an integer vector")
+    filepath <- path.expand(filepath)
+    .Call("RawPtr_loadFASTA",
+          x@xp, filepath, collapse, enc_lkup, PACKAGE="Biostrings")
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Conversion between a list of FASTA records (as one returned by
 ### readFASTA) and a named character vector.
@@ -143,7 +167,7 @@ XStringSetToFASTArecords <- function(x)
     subject <- new(subjectClass, xdata=xdata, length=length(xdata))
     subject@length <- 0L
 
-    #ans <- RawPtr.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))
+    #ans <- .RawPtr.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))
 
 #-- implement this in C, from here
     width <- integer(0)

@@ -78,6 +78,12 @@ SEXP debug_RoSeq_utils();
 
 RoSeqs _alloc_RoSeqs(int nelt);
 
+void _narrow_RoSeqs(
+	RoSeqs *seqs,
+	SEXP start,
+	SEXP width
+);
+
 SEXP _new_CHARSXP_from_RoSeq(
 	const RoSeq *seq,
 	SEXP lkup
@@ -93,6 +99,19 @@ SEXP _new_STRSXP_from_RoSeqs(
 	SEXP lkup
 );
 
+SEXP _new_RawPtr_from_RoSeqs(
+	const RoSeqs *seqs,
+	SEXP lkup
+);
+
+SEXP new_RawPtr_from_STRSXP(
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP collapse,
+	SEXP lkup
+);
+
 RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 
 SEXP _new_IRanges_from_RoSeqs(
@@ -100,10 +119,11 @@ SEXP _new_IRanges_from_RoSeqs(
 	const RoSeqs *seqs
 );
 
-void _narrow_RoSeqs(
-	RoSeqs *seqs,
-	SEXP start,
-	SEXP width
+void _write_RoSeq_to_RawPtr(
+	SEXP x,
+	int offset,
+	const RoSeq *seq,
+	const int *chrtrtable
 );
 
 void _get_RoSeqs_order(
@@ -167,173 +187,9 @@ void _set_env_from_IntAEAE(
 );
 
 
-/* RawPtr_class.c */
+/* fasta_io.c */
 
-SEXP debug_RawPtr_class();
-
-const char *_get_class(SEXP x);
-
-SEXP Biostrings_safe_explode(SEXP s);
-
-SEXP Biostrings_xp_new();
-
-SEXP RawPtr_alloc(
-	SEXP rawptr_xp,
-	SEXP length
-);
-
-SEXP _get_RawPtr_tag(SEXP x);
-
-int _get_RawPtr_length(SEXP x);
-
-SEXP RawPtr_get_show_string(SEXP rawptr_xp);
-
-SEXP RawPtr_length(SEXP rawptr_xp);
-
-SEXP _new_RawPtr(SEXP tag);
-
-SEXP _new_RawPtr_from_RoSeqs(
-	const RoSeqs *seqs,
-	SEXP lkup
-);
-
-SEXP new_RawPtr_from_STRSXP(
-	SEXP x,
-	SEXP start,
-	SEXP width,
-	SEXP collapse,
-	SEXP lkup
-);
-
-void _write_RoSeq_to_RawPtr(
-	SEXP x,
-	int offset,
-	const RoSeq *seq,
-	const int *chrtrtable
-);
-
-
-/* RawPtr_utils.c */
-
-SEXP debug_RawPtr_utils();
-
-SEXP RawPtr_memcmp(
-	SEXP rawptr1_xp,
-	SEXP start1,
-	SEXP rawptr2_xp,
-	SEXP start2,
-	SEXP width
-);
-
-SEXP RawPtr_memcpy(
-	SEXP dest_rawptr_xp,
-	SEXP dest_start,
-	SEXP src_rawptr_xp,
-	SEXP src_start,
-	SEXP width
-);
-
-SEXP RawPtr_copy_from_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax
-);
-
-SEXP RawPtr_copy_from_subset(
-	SEXP dest_rawptr_xp,
-	SEXP src_rawptr_xp,
-	SEXP subset
-);
-
-SEXP RawPtr_read_chars_from_i1i2(
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax
-);
-
-SEXP RawPtr_read_chars_from_subset(
-	SEXP src_rawptr_xp,
-	SEXP subset
-);
-
-SEXP RawPtr_write_chars_to_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP string
-);
-
-SEXP RawPtr_write_chars_to_subset(
-	SEXP dest_rawptr_xp,
-	SEXP subset,
-	SEXP string
-);
-
-SEXP RawPtr_read_ints_from_i1i2(
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax
-);
-
-SEXP RawPtr_read_ints_from_subset(
-	SEXP src_rawptr_xp,
-	SEXP subset
-);
-
-SEXP RawPtr_write_ints_to_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP val
-);
-
-SEXP RawPtr_write_ints_to_subset(
-	SEXP dest_rawptr_xp,
-	SEXP subset,
-	SEXP val
-);
-
-SEXP RawPtr_read_enc_chars_from_i1i2(
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP lkup
-);
-
-SEXP RawPtr_read_enc_chars_from_subset(
-	SEXP src_rawptr_xp,
-	SEXP subset,
-	SEXP lkup
-);
-
-SEXP RawPtr_write_enc_chars_to_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP string,
-	SEXP lkup
-);
-
-SEXP RawPtr_write_enc_chars_to_subset(
-	SEXP dest_rawptr_xp,
-	SEXP subset,
-	SEXP string,
-	SEXP lkup
-);
-
-SEXP RawPtr_read_complexes_from_i1i2(
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP lkup
-);
-
-SEXP RawPtr_read_complexes_from_subset(
-	SEXP src_rawptr_xp,
-	SEXP subset,
-	SEXP lkup
-);
+SEXP debug_fasta_io();
 
 SEXP RawPtr_loadFASTA(
 	SEXP rawptr_xp,
@@ -486,36 +342,6 @@ SEXP oligonucleotide_frequency(
 
 
 /* char_translate.c */
-
-SEXP RawPtr_translate_copy_from_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP lkup
-);
-
-SEXP RawPtr_translate_copy_from_subset(
-	SEXP dest_rawptr_xp,
-	SEXP src_rawptr_xp,
-	SEXP subset,
-	SEXP lkup
-);
-
-SEXP RawPtr_reverse_copy_from_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax
-);
-
-SEXP RawPtr_reverse_translate_copy_from_i1i2(
-	SEXP dest_rawptr_xp,
-	SEXP src_rawptr_xp,
-	SEXP imin,
-	SEXP imax,
-	SEXP lkup
-);
 
 SEXP XStringSet_char_translate(
 	SEXP x,

@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 /*
  * --- .Call ENTRY POINT ---
@@ -12,7 +13,7 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 	const int *s_p, *w_p;
 	SEXP tag, xdata, ans;
 
-	x_class = _get_class(x);
+	x_class = get_class(x);
 	x_seq = _get_XString_asRoSeq(x);
 	nranges = LENGTH(start); /* must be == LENGTH(width) */
 	PROTECT(tag = NEW_RAW(x_seq.nelt));
@@ -32,7 +33,7 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 			      "invalid start/width values");
 		memset(RAW(tag) + s, INTEGER(code)[0], w);
 	}
-	PROTECT(xdata = _new_RawPtr(tag));
+	PROTECT(xdata = new_VectorPtr("RawPtr", tag));
 	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;

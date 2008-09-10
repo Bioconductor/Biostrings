@@ -25,7 +25,7 @@ static SEXP get_XStringSet_super(SEXP x)
 
 const char *_get_XStringSet_baseClass(SEXP x)
 {
-	return _get_class(get_XStringSet_super(x));
+	return get_class(get_XStringSet_super(x));
 }
 
 int _get_XStringSet_length(SEXP x)
@@ -44,12 +44,12 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	cached_x.width = INTEGER(get_IRanges_width(x));
 
 	super = get_XStringSet_super(x);
-	tag = _get_RawPtr_tag(_get_XString_xdata(super));
+	tag = get_VectorPtr_tag(_get_XString_xdata(super));
 	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
 	cached_x.super_elts = (char *) RAW(tag) + offset;
 	cached_x.super_nelt = INTEGER(GET_SLOT(super, install("length")))[0];
 
-	cached_x.baseClass = _get_class(super);
+	cached_x.baseClass = get_class(super);
 	cached_x.enc_chrtrtable = get_enc_chrtrtable(cached_x.baseClass);
 	cached_x.dec_chrtrtable = get_dec_chrtrtable(cached_x.baseClass);
 
@@ -103,7 +103,7 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
 	char classbuf[80]; // longest string will be "DNAStringSet"
 	SEXP class_def, ans;
 
-	snprintf(classbuf, sizeof(classbuf), "%sSet", _get_class(super));
+	snprintf(classbuf, sizeof(classbuf), "%sSet", get_class(super));
 	class_def = MAKE_CLASS(classbuf);
 	PROTECT(ans = NEW_OBJECT(class_def));
 	copy_IRanges_slots(ans, ranges);

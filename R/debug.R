@@ -15,11 +15,8 @@ debug_Dups_utils <- function()
 debug_SparseList_utils <- function()
     invisible(.Call("debug_SparseList_utils", PACKAGE="Biostrings"))
 
-debug_RawPtr_class <- function()
-    invisible(.Call("debug_RawPtr_class", PACKAGE="Biostrings"))
-
-debug_RawPtr_utils <- function()
-    invisible(.Call("debug_RawPtr_utils", PACKAGE="Biostrings"))
+debug_fasta_io <- function()
+    invisible(.Call("debug_fasta_io", PACKAGE="Biostrings"))
 
 debug_XString_class <- function()
     invisible(.Call("debug_XString_class", PACKAGE="Biostrings"))

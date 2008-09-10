@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 #include <stdio.h>
 
@@ -157,13 +158,13 @@ SEXP align_needwunsQS(SEXP s1, SEXP s2,
 	/* set the "al1" element */
 	PROTECT(tag = NEW_RAW(nal));
 	memcpy((char *) RAW(tag), al1, nal * sizeof(char));
-	PROTECT(ans_elt = _new_RawPtr(tag));
+	PROTECT(ans_elt = new_VectorPtr("RawPtr", tag));
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(2);
 	/* set the "al2" element */
 	PROTECT(tag = NEW_RAW(nal));
 	memcpy((char *) RAW(tag), al2, nal * sizeof(char));
-	PROTECT(ans_elt = _new_RawPtr(tag));
+	PROTECT(ans_elt = new_VectorPtr("RawPtr", tag));
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(2);
 	/* set the "score" element */

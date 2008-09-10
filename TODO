@@ -12,6 +12,9 @@ Some R problems that maybe worth reporting:
 In 2.9
 ======
 
+Reduce the depenencies by suggesting 1 genome only (not 2) or even better
+by putting a single sequence in the data folder.
+
 CONTAINERS
 
 - Remove the XRaw class when all the BSgenome data packages have been rebuilt

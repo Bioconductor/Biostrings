@@ -8,7 +8,6 @@ import(Biobase) ## for the "combine" generic
 exportClasses(
     Dups,
     SparseList,
-    RawPtr,
     XString, BString, DNAString, RNAString, AAString,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
     XStringViews,
@@ -27,8 +26,6 @@ export(
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, GENETIC_CODE, RNA_GENETIC_CODE,
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
-    #RawPtr.copy,
-    RawPtr,
     BString, DNAString, RNAString, AAString,
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     adjacentViews,

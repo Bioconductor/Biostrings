@@ -1,5 +1,7 @@
 ### Some low-level (not exported) helper functions
 
+### TODO: Clean this file (some stuff is not needed anymore).
+
 extraArgsAsList <- function(.valid.argnames, ...)
 {
     args <- list(...)
@@ -112,6 +114,37 @@ normargSingleWidthOrNA <- function(width)
     if (!is.integer(width))    
         width <- as.integer(width)
     width
+}
+
+normargStart <- function(start)
+{
+    if (!isSingleNumber(start))
+        stop("'start' must be a single integer")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    if (start < 1L)
+        stop("'start' must be >= 1")
+    start
+}
+
+normargNchar <- function(start, nchar, seq_nchar)
+{
+    if (!isSingleNumberOrNA(nchar))
+        stop("'nchar' must be a single integer or NA")
+    if (is.na(nchar)) {
+        nchar <- seq_nchar - start + 1L
+        if (nchar < 0L)
+            stop("cannot read a negative number of letters")
+        return(nchar)
+    }
+    if (!is.integer(nchar))
+        nchar <- as.integer(nchar)
+    if (nchar < 0L)
+        stop("cannot read a negative number of letters")
+    end <- start + nchar - 1L
+    if (end > seq_nchar)
+        stop("cannot read beyond the end of 'seq'")
+    nchar
 }
 
 normargUseNames <- function(use.names)

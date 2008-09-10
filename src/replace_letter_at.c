@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 #define REPLACE_IFNOTEXTEND	1
 #define SKIP_IFNOTEXTEND	2
@@ -111,7 +112,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
 	const int *at_p;
 
-	x_class = _get_class(x);
+	x_class = get_class(x);
 	x_seq = _get_XString_asRoSeq(x);
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
@@ -150,7 +151,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		warning("%s %d letter(s)",
 			notextend_action == SKIP_IFNOTEXTEND ? "skipped" : "merged",
 			skip_or_merge_count);
-	PROTECT(xdata = _new_RawPtr(tag));
+	PROTECT(xdata = new_VectorPtr("RawPtr", tag));
 	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
@@ -171,7 +172,7 @@ SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 		init_chrtrtable_with_lkup(lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
-	tag = _get_RawPtr_tag(_get_XString_xdata(x));
+	tag = get_VectorPtr_tag(_get_XString_xdata(x));
 	skip_or_merge_count = letter_ncharsum = 0;
 	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {
