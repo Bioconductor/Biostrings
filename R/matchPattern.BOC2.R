@@ -49,7 +49,7 @@ setMethod("initialize", "BOC2_SubjectString",
               subject@xdata@xp, subject@offset, subject@length,
               pattern_length,
               code1, code2, code3, code4,
-              buf@xp,
+              buf@xdata@xp,
               PACKAGE="Biostrings")
         .Object@base1_code <- code1
         .Object@base2_code <- code2
@@ -120,7 +120,7 @@ plotBOC2 <- function(x, main)
           boc_subject@base2_code,
           boc_subject@base3_code,
           boc_subject@base4_code,
-          boc_subject@buffer@xp,
+          boc_subject@buffer@xdata@xp,
           boc_subject@stats, count.only,
           PACKAGE="Biostrings")
 }

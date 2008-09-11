@@ -116,10 +116,10 @@
     pdict_type <- class(pptb)
     if (pdict_type == "Twobit") {
         pdict_pptb <- list(tb.width(pptb),
-                           pptb@sign2pos@xp,
+                           pptb@sign2pos@xdata@xp,
                            pptb@base_codes)
     } else if (pdict_type == "ACtree") {
-        pdict_pptb <- list(pptb@nodes@xp,
+        pdict_pptb <- list(pptb@nodes@xdata@xp,
                            pptb@base_codes)
     } else {
         stop(pdict_type, ": unsupported type of PDict object for 'pdict'")
