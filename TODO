@@ -107,7 +107,7 @@ UTILITIES
   alphabetFrequency(x, byCycle=TRUE) would return what Martin's
   alphabetByCycle() function currently returns.
 
-- Finish C implemntation of read.XStringViews()
+- Finish C implementation of read.XStringViews()
 
 - Maybe make strrev() a "reverse" method for character objects.
 
@@ -172,7 +172,7 @@ STRING MATCHING
   o extractAllMatches() fails on a very big MIndex object (can't allocate
     vector of size 5.2Gb).
 
-  o C code improvement: no need to use temporrary storage for 'dups_buf' and
+  o C code improvement: no need to use temporary storage for 'dups_buf' and
     'match_count' in match_pdict.c, store directly in the returned
     INTEGER vector.
 
@@ -192,7 +192,7 @@ STRING MATCHING
   o GenomeSearching.Rnw vignette: add section about inexact matching with
     matchPDict().
 
-  o Compare with other software for fast alignement and assembly:
+  o Compare with other software for fast alignment and assembly:
       Vmatch (http://www.vmatch.de/)
       Maq (http://maq.sourceforge.net/)
       MUMmer (http://mummer.sourceforge.net/)
