@@ -44,7 +44,7 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	cached_x.width = INTEGER(get_IRanges_width(x));
 
 	super = get_XStringSet_super(x);
-	tag = get_VectorPtr_tag(_get_XString_xdata(super));
+	tag = get_SequencePtr_tag(_get_XString_xdata(super));
 	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
 	cached_x.super_elts = (char *) RAW(tag) + offset;
 	cached_x.super_nelt = INTEGER(GET_SLOT(super, install("length")))[0];

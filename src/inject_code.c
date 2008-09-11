@@ -33,7 +33,7 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 			      "invalid start/width values");
 		memset(RAW(tag) + s, INTEGER(code)[0], w);
 	}
-	PROTECT(xdata = new_VectorPtr("RawPtr", tag));
+	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
 	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;

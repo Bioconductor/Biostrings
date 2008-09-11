@@ -170,7 +170,7 @@ SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
                 }
                 dest += seq->nelt;
         }
-        PROTECT(ans = new_VectorPtr("RawPtr", tag));
+        PROTECT(ans = new_SequencePtr("RawPtr", tag));
         UNPROTECT(2);
         return ans;
 }
@@ -285,7 +285,7 @@ void _write_RoSeq_to_RawPtr(SEXP x, int offset, const RoSeq *seq,
 {
         char *dest;
 
-        dest = (char *) RAW(get_VectorPtr_tag(x)) + offset;
+        dest = (char *) RAW(get_SequencePtr_tag(x)) + offset;
         _copy_seq(dest, seq->elts, seq->nelt, chrtrtable);
         return;
 }

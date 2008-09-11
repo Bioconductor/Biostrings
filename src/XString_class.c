@@ -139,7 +139,7 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 	SEXP tag;
 	int offset;
 
-	tag = get_VectorPtr_tag(_get_XString_xdata(x));
+	tag = get_SequencePtr_tag(_get_XString_xdata(x));
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
 	seq.elts = (const char *) (RAW(tag) + offset);
 	seq.nelt = INTEGER(GET_SLOT(x, install("length")))[0];
@@ -216,7 +216,7 @@ SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(xdata = _new_RawPtr_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = _new_XString(class, xdata, 0, get_VectorPtr_length(xdata)));
+	PROTECT(ans = _new_XString(class, xdata, 0, get_SequencePtr_length(xdata)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
 	else
@@ -239,7 +239,7 @@ SEXP _alloc_XString(const char *class, int length)
 	SEXP tag, xdata, ans;
 
 	PROTECT(tag = NEW_RAW(length));
-	PROTECT(xdata = new_VectorPtr("RawPtr", tag));
+	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
 	PROTECT(ans = _new_XString(class, xdata, 0, length));
 	UNPROTECT(3);
 	return ans;

@@ -65,7 +65,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	}
 	SEXP alignedStringTag, alignedStringXData;
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
-	PROTECT(alignedStringXData = new_VectorPtr("RawPtr", alignedStringTag));
+	PROTECT(alignedStringXData = new_SequencePtr("RawPtr", alignedStringTag));
 	PROTECT(alignedString = _new_XString(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
 	SET_SLOT(output, mkChar("super"), alignedString);

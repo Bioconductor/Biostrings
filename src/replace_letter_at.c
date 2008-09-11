@@ -151,7 +151,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		warning("%s %d letter(s)",
 			notextend_action == SKIP_IFNOTEXTEND ? "skipped" : "merged",
 			skip_or_merge_count);
-	PROTECT(xdata = new_VectorPtr("RawPtr", tag));
+	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
 	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
@@ -172,7 +172,7 @@ SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 		init_chrtrtable_with_lkup(lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
-	tag = get_VectorPtr_tag(_get_XString_xdata(x));
+	tag = get_SequencePtr_tag(_get_XString_xdata(x));
 	skip_or_merge_count = letter_ncharsum = 0;
 	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {
