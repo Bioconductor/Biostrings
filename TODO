@@ -143,6 +143,10 @@ STRING MATCHING
 
 - matchPDict()/countPDict()/whichPDict():
 
+  o Harris suggestion: treat a max.mismatch value that is strictly between 0
+    and 1 like an error rate (so that the actual max number of mismatches
+    adjust to the length of each pattern).
+
   o _match_ACtree() doesn't need to walk until the end of the subject: it could
     stop when the number of remaining chars to read is < to the difference
     between the depth of the AC tree (i.e. the width of the Trusted Band) and

@@ -20,30 +20,6 @@
 \alias{as.list,SparseList-method}
 \alias{[[,SparseList-method}
 
-% RawPtr class and methods:
-\alias{show,externalptr-method}
-
-\alias{class:RawPtr}
-\alias{RawPtr-class}
-\alias{RawPtr}
-
-\alias{length,RawPtr-method}
-\alias{as.integer,RawPtr-method}
-\alias{toString,RawPtr-method}
-\alias{initialize,RawPtr-method}
-\alias{show,RawPtr-method}
-\alias{==,RawPtr,RawPtr-method}
-\alias{!=,RawPtr,RawPtr-method}
-\alias{[,RawPtr-method}
-\alias{[<-,RawPtr-method}
-
-\alias{class:PrintableRawPtr}
-\alias{PrintableRawPtr-class}
-\alias{PrintableRawPtr}
-
-\alias{show,PrintableRawPtr-method}
-\alias{[,PrintableRawPtr-method}
-
 %XStringCodec class and methods:
 \alias{class:XStringCodec}
 \alias{XStringCodec-class}

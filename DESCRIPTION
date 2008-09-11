@@ -4,11 +4,11 @@ Title: String objects representing biological sequences, and matching
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or set of sequences.
-Version: 2.9.71
+Version: 2.9.72
 Author: H. Pages, R. Gentleman, P. Aboyoun and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
-Depends: R (>= 2.8.0), methods, utils, IRanges (>= 0.99.10), Biobase
+Depends: R (>= 2.8.0), methods, utils, IRanges (>= 0.99.11), Biobase
 Imports: methods, utils, IRanges, Biobase
 LinkingTo: IRanges
 Suggests: BSgenome (>= 1.9.10),
