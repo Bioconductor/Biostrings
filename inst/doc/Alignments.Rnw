@@ -211,7 +211,15 @@ sections.
 
 The final argument, \Rfunarg{scoreOnly}, to the \Rfunction{pairwiseAlignment}
 function accepts a logical value to specify whether or not to return just the
-pairwise sequence alignment score.
+pairwise sequence alignment score. If \Rfunarg{scoreOnly} is \Robject{FALSE},
+the pairwise alignment with the maximum alignment score is returned. If more
+than one pairwise alignment has the maximum alignment score exists, the first
+alignment along the subject is returned. If there are multiple pairwise
+alignments with the maximum alignment score at the chosen subject location,
+then at each location along the alignment mismatches are given preference to
+insertions/deletions. For example, \code{pattern: [1] ATTA; subject: [1] AT-A}
+is chosen above \code{pattern: [1] ATTA; subject: [1] A-TA} if they both have
+the maximum alignment score.
 
 <<main5>>=
 submat <-

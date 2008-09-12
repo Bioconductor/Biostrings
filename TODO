@@ -244,6 +244,9 @@ In 2.11
 Later
 =====
 
+- Extend pairwiseAlignment to return the set of maximum alignments, rather
+  than just one element from that set.
+
 - Why doesn't sapply or lapply work for an XStringViews object (it didn't
   work either for BioString objects). Isn't it enough that these objects
   are subsettable?
