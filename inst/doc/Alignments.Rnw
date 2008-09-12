@@ -437,7 +437,9 @@ There is also an implementation of approximate string matching using
 Levenshtein edit distance in the \Rfunction{agrep} (approximate grep) function
 of the \Rpackage{base} R package. As the following example shows, it is
 possible to replicate the \Rfunction{agrep} function using the
-\Rfunction{pairwiseAlignment} function.
+\Rfunction{pairwiseAlignment} function. Since the \Rfunction{agrep} function is
+vectorized in \Rfunarg{x} rather than \Rfunarg{pattern}, these arguments are
+flipped in the call to \Rfunction{pairwiseAlignment}.
 
 <<editdist1>>=
 agrepBioC <-
