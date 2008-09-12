@@ -421,7 +421,7 @@ setMethod("[[", "XStringSet",
             stop("subscript out of bounds")
         start <- start(x)[i]
         end <- end(x)[i]
-        XString.substr(super(x), start, end)
+        subseq(super(x), start=start, end=end)
     }
 )
 

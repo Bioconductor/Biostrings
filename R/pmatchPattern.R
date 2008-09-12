@@ -112,8 +112,8 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     }
     ## Split 'pattern' in 2 parts
     Lnc <- nchar(pattern) %/% 2L
-    Lpattern <- XString.substr(pattern, 1L, Lnc)
-    Rpattern <- XString.substr(pattern, Lnc+1L, nchar(pattern))
+    Lpattern <- subseq(pattern, start=1L, end=Lnc)
+    Rpattern <- subseq(pattern, start=Lnc+1L, end=nchar(pattern))
     ## Recursive call on the left part
     Lpm <- .pmatchPattern.rec(Lpattern, subject, maxlength.out)
     Lpm_start <- start(Lpm)
@@ -123,7 +123,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     Lindex <- which((Lpv_end == nchar(Lpattern)) & (Lpm_end < nchar(subject)))
     Loverlapping <- integer(0)
     for (i in Lindex) {
-        overlap <- XString.lcprefix(Rpattern, XString.substr(subject, Lpm_end[i]+1L, nchar(subject)))
+        overlap <- XString.lcprefix(Rpattern, subseq(subject, start=Lpm_end[i]+1L, end=nchar(subject)))
         if (overlap == 0L)
             next
         Loverlapping <- c(Loverlapping, i)
@@ -140,7 +140,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     Rindex <- which((Rpv_start == 1L) & (Rpm_start > 1L))
     Roverlapping <- integer(0)
     for (i in Rindex) {
-        overlap <- XString.lcsuffix(Lpattern, XString.substr(subject, 1L, Rpm_start[i]-1L))
+        overlap <- XString.lcsuffix(Lpattern, subseq(subject, start=1L, end=Rpm_start[i]-1L))
         if (overlap == 0L)
             next
         Roverlapping <- c(Roverlapping, i)

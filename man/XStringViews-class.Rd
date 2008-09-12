@@ -13,8 +13,6 @@
 \alias{nchar,XStringViews-method}
 
 \alias{show,XStringViews-method}
-\alias{[[,XStringViews-method}
-\alias{[[<-,XStringViews-method}
 
 \alias{==,XStringViews,XStringViews-method}
 \alias{==,XStringViews,XString-method}
@@ -82,14 +80,6 @@
   and \code{i} can be a numeric or logical vector.
 
   \describe{
-    \item{}{
-      \code{x[[i]]}:
-      Extract a view as an \link{XString} object.
-      \code{i} must be a single numeric value (a numeric vector of length 1).
-      Can't be used for extracting a view that is "out of limits" (raise an
-      error). The returned object has the same \link{XString} subtype as
-      \code{subject(x)}.
-    }
     \item{}{
       \code{e1 == e2}:
       A vector of logicals indicating the result of the view by
@@ -186,7 +176,7 @@
 
   ## Two equivalent ways to extract a view as an XString object:
   s2a <- v4[[2]]
-  s2b <- subXString(subject(v4), start(v4)[2], end(v4)[2])
+  s2b <- subseq(subject(v4), start=start(v4)[2], end=end(v4)[2])
   identical(s2a, s2b) # TRUE
 
   ## It is an error to try to extract an "out of limits" view:

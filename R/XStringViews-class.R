@@ -197,57 +197,6 @@ setMethod("show", "XStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-### Extract the i-th views of an XStringViews object as an XString object.
-### Return an XString object of the same subtype as subject(x).
-### Example:
-###   bs <- BString("ABCD-1234-abcd")
-###   bsv <- Views(bs, start=1:7, end=13:7)
-###   bsv[[3]]
-###   bsv[[0]] # Return bs, same as subject(bsv)
-###   Views(bs)[[1]] # Returns bs too!
-###
-### Supported 'i' types: numeric vector of length 1.
-setMethod("[[", "XStringViews",
-    function(x, i, j, ...)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            stop("subscript is missing")
-        if (is.character(i))
-            stop("cannot subset a ", class(x), " object by names")
-        if (!is.numeric(i))
-            stop("invalid subscript type")
-        if (length(i) < 1L)
-            stop("attempt to select less than one element")
-        if (length(i) > 1L)
-            stop("attempt to select more than one element")
-        if (is.na(i))
-            stop("subscript cannot be NA")
-        if (i == 0)
-            return(subject(x))
-        if (i < 1L || i > length(x))
-            stop("subscript out of bounds")
-        start <- start(x)[i]
-        end <- end(x)[i]
-        if (start < 1L || end > length(subject(x)))
-            stop("view is out of limits")
-        XString.substr(subject(x), start, end)
-    }
-)
-
-setReplaceMethod("[[", "XStringViews",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", class(x), " instance")
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality.
 ###
 
@@ -297,9 +246,8 @@ XStringViews.view1_equal_view2 <- function(x1, start1, end1, x2, start2, end2)
     }
 
     # At this point, we can trust that 1 <= start1 <= end1 <= lx1
-    # and that 1 <= start2 <= end2 <= lx2 so we can call unsafe
-    # function XString.substr() with no fear...
-    XString.substr(x1, start1, end1) == XString.substr(x2, start2, end2)
+    # and that 1 <= start2 <= end2 <= lx2.
+    subseq(x1, start=start1, end=end1) == subseq(x2, start=start2, end=end2)
 }
 
 ### 'x' and 'y' must be XStringViews objects.

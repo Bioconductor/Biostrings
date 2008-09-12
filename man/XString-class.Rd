@@ -27,11 +27,8 @@
 % "show" method:
 \alias{show,XString-method}
 
-% "subseq" method and subsetting:
-\alias{subseq}
-\alias{subseq,XString-method}
+% Subsetting:
 \alias{[,XString-method}
-\alias{[<-,XString-method}
 
 % Equality:
 \alias{==,XString,XString-method}
@@ -119,34 +116,10 @@
   }
 }
 
-\section{Subsequence extraction and subsetting}{
+\section{Subsetting}{
   In the code snippets below, \code{x} is an XString object.
 
   \describe{
-    \item{}{
-      \code{subseq(x, start=NA, end=NA, width=NA)}:
-      Extract the subsequence from \code{x} specified by \code{start},
-      \code{end} and \code{width}.
-      At least one of \code{start}, \code{end} and \code{width} must be
-      \code{NA} and the other ones must be single numeric values.
-      If at least two of them are \code{NA}s, then \code{start=NA} is
-      interpreted as \code{start=1} and \code{end=NA} is interpreted as
-      \code{end=length(x)}.
-      A negative value for \code{start} or \code{end} is interpreted
-      relatively to the end of \code{x} e.g. \code{start=-1} is equivalent
-      to \code{start=length(x)}.
-      Finally, if \code{width} is not \code{NA}, then \code{start} and
-      \code{end} cannot be both \code{NA}s.
-     
-      A note about performance: \code{subseq} does NOT copy the sequence data,
-      hence it's very efficient and is the recommended way to extract a
-      subsequence (i.e. a set of consecutive letters) from an XString object.
-      For example, extracting a 100Mb subsequence from Human chromosome 1
-      (250Mb) with \code{subseq} is (almost) instantaneous and has (almost)
-      no memory footprint (the cost in time and memory does not depend on the
-      length of the original sequence or on the length of the subsequence to
-      extract).
-    }
     \item{}{
       \code{x[i]}:
       Return a new XString object made of the selected letters (subscript
@@ -190,6 +163,7 @@
 \author{H. Pages}
 
 \seealso{
+  \code{\link[IRanges]{subseq}},
   \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},
@@ -204,7 +178,7 @@
   b
   length(b)
 
-  ## Subsequence extraction
+  ## Extracting a linear subsequence 
   subseq(b)
   subseq(b, start=3)
   subseq(b, start=-3)

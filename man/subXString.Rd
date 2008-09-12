@@ -54,15 +54,7 @@
 }
 
 \details{
-  \code{subXString} provides a very efficient way to extract a substring
-  from an \link{XString} object.
-  For example, extracting a 100Mb substring from Human chromosome 1 (250Mb)
-  with \code{subXString} is almost instantaneous and has almost no memory
-  footprint. In fact, the cost in time and memory of a call to \code{subXString}
-  doesn't depend on the length of the original object or on the length of
-  the extracted object.
-  The "trick" behind this "feature" is very simple: \code{subXString}
-  does NOT copy the sequence data.
+  \code{subXString} is deprecated in favor of \code{\link[IRanges]{subseq}}.
 }
 
 \value{
@@ -72,30 +64,11 @@
   A character vector for \code{substr} and \code{substring}.
 }
 
-\author{H. Pages}
-
 \seealso{
-  \code{\link{subseq}},
+  \code{\link[IRanges]{subseq}},
   \code{\link{letter}},
-  \code{\link{Views,XString-method}},
   \link{XString-class},
   \link{XStringViews-class}
-}
-
-\examples{
-  subXString("AxyxyxBC", 7)
-  s <- BString("AxyxyxBC")
-  subXString(s, 7)  # same as subXString("AxyxyxBC", 7)
-  subXString(s, , 7)
-  subXString(s, , 7, 3)
-  identical(subXString(s), s) # TRUE
-
-  v <- Views(s, start=c(6, 4,-1, NA), end=c(7, 6, 1, 1))
-  ## 2 equivalent ways of keeping the last letter of each view
-  Views(subject(v), start=end(v), end=end(v))
-
-  ## 2 equivalent ways of making the views wider
-  Views(subject(v), start=start(v)-3, end=end(v)+3)
 }
 
 \keyword{methods}

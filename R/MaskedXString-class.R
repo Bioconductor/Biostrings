@@ -13,7 +13,7 @@
 ### MaskedXString objects are considered XString objects, then these methods
 ### need to be overwritten and call stop() so that they fail on MaskedXString
 ### objects. By not making the MaskedXString class an extension of the XString
-### class, we don't have to do this.
+### class, we avoid all this mess.
 ###
 
 ### Not good (MaskedXString extends XString).
@@ -271,37 +271,18 @@ setMethod("gaps", "MaskedXString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "MaskedXString.substr" function (NOT exported).
-###
-### Return a MaskedXString object (not vectorized).
-### Like for XString.substr(), 'start' and 'end' must be single integers
-### verifying:
-###   1 <= start AND end <= length(x) AND start <= end + 1
-### WARNING: This function is voluntarly unsafe (it doesn't check its
-### arguments) because we want it to be the fastest possible!
-###
-
-MaskedXString.substr <- function(x, start, end)
-{
-    ## The "narrow" method for MaskCollection objects does actually check
-    ## that 'start' and 'end' are safe.
-    x@masks <- narrow(masks(x), start=start, end=end)
-    x@unmasked <- XString.substr(unmasked(x), start, end)
-    x
-}
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "subseq" method for MaskedXString objects.
 ###
-
 ### This method is used by the toSeqSnippet() function when called
 ### on a MaskedXString object.
+###
+
 setMethod("subseq", "MaskedXString",
     function(x, start=NA, end=NA, width=NA)
     {
-        limits <- new2("IRanges", start=1L, width=length(x), check=FALSE)
-        limits <- narrow(limits, start=start, end=end, width=width)
-        MaskedXString.substr(x, start(limits), end(limits))
+        x@unmasked <- subseq(unmasked(x), start=start, end=end, width=width)
+        x@masks <- narrow(masks(x), start=start, end=end, width=width)
+        x
     }
 )
 

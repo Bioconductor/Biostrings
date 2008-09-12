@@ -228,17 +228,17 @@ setGeneric("complementedPalindromeLeftArm", signature="x",
 
 setMethod("palindromeLeftArm", "XString",
     function(x, max.mismatch=0, ...)
-    {
-        XString.substr(x, 1L,
-            palindromeArmLength(x, max.mismatch=max.mismatch, ...))
-    }
+        subseq(x,
+            start=1L,
+            end=palindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        )
 )
 setMethod("complementedPalindromeLeftArm", "DNAString",
     function(x, max.mismatch=0, ...)
-    {
-        XString.substr(x, 1L,
-            complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...))
-    }
+        subseq(x,
+            start=1L,
+            end=complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        )
 )
 
 setMethod("palindromeLeftArm", "XStringViews",
@@ -279,7 +279,7 @@ setMethod("palindromeRightArm", "XString",
     {
         start <- nchar(x) - palindromeArmLength(x,
                                 max.mismatch=max.mismatch, ...) + 1L
-        XString.substr(x, start, nchar(x))
+        subseq(x, start=start, end=nchar(x))
     }
 )
 setMethod("complementedPalindromeRightArm", "DNAString",
@@ -287,7 +287,7 @@ setMethod("complementedPalindromeRightArm", "DNAString",
     {
         start <- nchar(x) - complementedPalindromeArmLength(x,
                                 max.mismatch=max.mismatch, ...) + 1L
-        XString.substr(x, start, nchar(x))
+        subseq(x, start=start, end=nchar(x))
     }
 )
 

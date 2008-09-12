@@ -23,7 +23,7 @@
 ###   > p0
 ###     25-letter "DNAString" instance
 ###   Value: CTGTAATCCCAGCACTTTGGGAGGC
-###   > subXString(chr1, end_index[[id0]][1]-24, end_index[[id0]][1]) == p0
+###   > subseq(chr1, start=end_index[[id0]][1]-24, end=end_index[[id0]][1]) == p0
 ###   [1] TRUE
 ### For a more extensive validation:
 ###   > pidOK <- sapply(seq_len(length(end_index)),

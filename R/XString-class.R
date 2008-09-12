@@ -1,20 +1,17 @@
 ### =========================================================================
 ### XString objects
 ### -------------------------------------------------------------------------
+###
+### The XSequence class is a general container for storing an "external
+### string".
+###
 
 setClass("XString",
-    representation(
+     contains="XSequence",
+     representation(
         "VIRTUAL",
-        xdata="RawPtr",     # contains the sequence data (external)
-        offset="integer",   # a single integer
-        length="integer"    # a single integer
-    ),
-    prototype(
-        #xdata=RawPtr(0),   # see newEmptyXString() below for why this doesn't
-                            # work
-        offset=0L,
-        length=0L
-    )
+         xdata="RawPtr"
+     )
 )
 
 ### XString subtypes (direct "XString" derivations with no additional slots)
@@ -315,44 +312,6 @@ AAString <- function(x, start=1, nchar=NA, check=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "XString.substr" function (NOT exported).
-###
-### The "XString.substr" function is very fast because it does not copy
-### the sequence data. Return an XString object (not vectorized).
-### 'start' and 'end' must be single integers verifying:
-###   1 <= start AND end <= length(x) AND start <= end + 1
-### WARNING: This function is voluntarly unsafe (it doesn't check its
-### arguments) because we want it to be the fastest possible!
-### The safe (and exported) version of "XString.substr" is the "subseq"
-### method for XString objects below.
-###
-
-XString.substr <- function(x, start, end)
-{
-    shift <- start - 1L
-    new(class(x), xdata=x@xdata, offset=x@offset+shift, length=end-shift)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "subseq" generic and method for XString objects.
-###
-
-setGeneric("subseq", signature="x",
-    function(x, start=NA, end=NA, width=NA) standardGeneric("subseq")
-)
-
-setMethod("subseq", "XString",
-    function(x, start=NA, end=NA, width=NA)
-    {
-        limits <- new2("IRanges", start=1L, width=length(x), check=FALSE)
-        limits <- narrow(limits, start=start, end=end, width=width)
-        XString.substr(x, start(limits), end(limits))
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 
@@ -402,19 +361,11 @@ setMethod("[", "XString",
             stop("subscript out of bounds")
         xdata <- RawPtr(length(i))
         RawPtr.copy(xdata, x@offset + i, src=x@xdata)
-        new(class(x), xdata=xdata, length=length(xdata))
+        x@xdata <- xdata
+        x@offset <- 0L
+        x@length <- length(xdata)
+        x
     }
-)
-
-### The only reason for defining the replacement version of the "[" operator
-### is to let the user know that he can't use it:
-###   bs <- BString("AbnbIU")
-###   bs[2] <- "X" # provokes an error
-### If we don't define it, then the user can type the above and believe that
-### it actually did something but it didn't.
-setReplaceMethod("[", "XString",
-    function(x, i, j,..., value)
-        stop("attempt to modify the value of a ", class(x), " instance")
 )
 
 

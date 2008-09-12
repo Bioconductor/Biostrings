@@ -167,7 +167,7 @@ setMethod("isMatching", "XString",
         if (j < 1 || j > length(subject)) {
             mm <- c(mm, i)
         } else {
-            l <- XString.substr(pattern, i, i)
+            l <- subseq(pattern, start=i, end=i)
             cp <- isMatching(l, subject, j, max.mismatch=0, fixed=fixed)
             if (cp == 0)
                 mm <- c(mm, i)
@@ -524,7 +524,7 @@ setMethod("coverage", "MIndex",
         width <- end - start + 1L
         if (width < 0)
             stop("'end' must be >= 'start' - 1")
-		ans <- XInteger(end - start + 1L, initialize = TRUE)
+		ans <- XInteger(end - start + 1L, 0L)
         if (is(x, "ByPos_MIndex"))
             .Call("ByPos_MIndex_coverage",
                   endIndex(x), x@width, start, ans@xdata@xp,
@@ -557,23 +557,6 @@ setMethod("coverage", "PairwiseAlignment",
 
 setMethod("coverage", "PairwiseAlignmentSummary",
     function(x, start = NA, end = NA)
-    {
-        if (!isSingleNumberOrNA(start))
-            stop("'start' must be a single integer or NA")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (is.na(start))
-            start <- 1L
-        if (!isSingleNumberOrNA(end))
-            stop("'end' must be a single integer or NA")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        if (is.na(end))
-            end <- length(x@coverage)
-        if (start > 1 || end < length(x@coverage))
-            ans <- XInteger(x@coverage[start:end])
-        else
-            ans <- x@coverage
-        ans
-	}
+        subseq(x@coverage, start=start, end=end)
 )
+

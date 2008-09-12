@@ -65,7 +65,7 @@ SEXP debug_fasta_io()
      filesize <- as.integer(filesize)
      if (is.na(filesize))
          stop(filepath, ": file is too big")
-     rawptr <- Biostrings:::RawPtr(filesize)
+     rawptr <- RawPtr(filesize)
 
      # Takes < 1 second on lamb1!
      .Call("RawPtr_loadFASTA", rawptr@xp, filepath, "", NULL, PACKAGE="Biostrings")
