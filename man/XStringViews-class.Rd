@@ -8,6 +8,7 @@
 % Methods:
 \alias{Views,character-method}
 \alias{Views,XString-method}
+\alias{Views,MaskedXString-method}
 
 \alias{alphabet,XStringViews-method}
 \alias{nchar,XStringViews-method}
@@ -39,15 +40,35 @@
   (start/end locations) on the same sequence (an \link{XString} object).
 }
 
+\usage{
+  ## Constructors:
+
+  \S4method{Views}{character}(subject, start=NA, end=NA, names=NULL)
+  \S4method{Views}{XString}(subject, start=NA, end=NA, names=NULL)
+  \S4method{Views}{MaskedXString}(subject, start=NA, end=NA, names=NULL)
+}
+
+\arguments{
+  \item{subject}{
+    The subject sequence.
+  }
+  \item{start, end}{
+    Integer vectors specifying the starting and ending positions of each view.
+  }
+  \item{names}{
+    If not \code{NULL}, the names to assign to each view.
+  }
+}
+
 \details{
   An XStringViews object contains a set of views (start/end locations) on the
   same \link{XString} object called "the subject string"
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
-  An XStringViews object is in fact a particular case of an \link[IRanges]{IRanges}
-  object (the XStringViews class contains the \link[IRanges]{IRanges} class) so it
-  can be manipulated in a similar manner: see \code{?\link[IRanges]{IRanges}} for
+  An XStringViews object is in fact a particular case of an \link[IRanges]{Views}
+  object (the XStringViews class contains the \link[IRanges]{Views} class) so it
+  can be manipulated in a similar manner: see \code{?\link[IRanges]{Views}} for
   more information.
   Note that two views can overlap and that a view can be "out of limits"
   i.e. it can start before the first letter of the subject or/and end
@@ -142,7 +163,7 @@
 \author{H. Pages}
 
 \seealso{
-  \link[IRanges]{IRanges-class},
+  \link[IRanges]{Views-class},
   \code{\link[IRanges]{gaps}},
   \link{XStringViews-constructors},
   \link{XString-class},

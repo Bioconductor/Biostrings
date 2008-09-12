@@ -41,6 +41,14 @@ setMethod("Views", "XString",
         as(callNextMethod(), "XStringViews")
 )
 
+setMethod("Views", "MaskedXString",
+    function(subject, start=NA, end=NA, names=NULL)
+    {
+        warning("masks were dropped")
+        Views(unmasked(xsubject), start=start, end=end, names=names)
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The core XString API.
