@@ -62,8 +62,12 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
-- Move adjacentViews() to the IRanges package: this function can operate on
-  any kind of Views object.
+- Deprecate adjacentViews() in favor of successiveViews() from the IRanges
+  package. Use successiveIRanges()/successiveViews() internally instead of
+  deprecated intToAdjacentRanges()/adjacentViews().
+
+- Clean the mess in R/XStringViews-constructors.R. This file should go away
+  or be renamed something like R/XStringViews-old.R
 
 - Add "order", "sort", "duplicated", "unique" and "patternFrequency" methods
   for XStringSet and XStringViews objects. Also, for completeness, the "<=",
