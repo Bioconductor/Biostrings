@@ -67,7 +67,9 @@ pairwise alignments is returned.
 }
 \references{
 R. Durbin, S. Eddy, A. Krogh, G. Mitchison, Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.
+
 B. Haubold, T. Wiehe, Introduction to Computational Biology, Birkhauser Verlag 2006, Chapter 2.
+
 K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics 2008 24(7):897-900.
 }
 \author{P. Aboyoun and H. Pages}
