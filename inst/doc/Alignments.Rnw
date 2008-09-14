@@ -319,6 +319,7 @@ Function                    & Description \\
 \Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
 \Rfunction{pattern}, \Rfunction{subject} & Extracts the aligned pattern/subject \\
+\Rfunction{pid}             & Computes the percent sequence identity \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
 \Rfunction{score}           & Extracts the pairwise sequence alignment scores \\
 \Rfunction{summary}         & Summarizes a pairwise sequence alignment \\
@@ -520,6 +521,7 @@ nwdemo <-
                     gapOpening = 0, gapExtension = -8)
 nwdemo
 compareStrings(nwdemo)
+pid(nwdemo)
 @
 
 \subsection{Exercise 5}

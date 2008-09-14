@@ -111,7 +111,7 @@ exportMethods(
     unaligned, aligned, quality, type, score, indel, nindel,
     compareStrings, consmat,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
-    pairwiseAlignment, stringDist, needwunsQS,
+    pairwiseAlignment, stringDist, needwunsQS, pid,
 
     ## Deprecated
     BStringViews

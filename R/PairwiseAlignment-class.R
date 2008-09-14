@@ -125,6 +125,19 @@ setMethod("nchar", "PairwiseAlignmentSummary",
 setMethod("alphabet", "PairwiseAlignment", function(x) alphabet(subject(x)))
 setMethod("codec", "PairwiseAlignment", function(x) codec(subject(x)))
 
+setGeneric("pid", signature="x", function(x, type="PID1") standardGeneric("pid"))
+setMethod("pid", "PairwiseAlignment",
+          function(x, type="PID1") {
+              type <- match.arg(type, c("PID1", "PID2", "PID3", "PID4"))
+              denom <-
+                switch(type,
+                       "PID1" = nchar(x),
+                       "PID2" = nmatch(x) + nmismatch(x),
+                       "PID3" = pmin(nchar(unaligned(pattern(x))), nchar(unaligned(subject(x)))),
+                       "PID4" = (nchar(unaligned(pattern(x))) + nchar(unaligned(subject(x)))) / 2)
+              100 * nmatch(x)/denom
+		  })
+
 setMethod("Views", signature = c(subject = "PairwiseAlignment"),
           function(subject, start=NA, end=NA, names=NULL)
           {
