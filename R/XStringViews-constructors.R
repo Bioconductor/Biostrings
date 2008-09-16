@@ -4,8 +4,8 @@
 
 ### 'width' is the vector of view widths.
 ### 'gapwidth' is the vector of inter-view widths (recycled).
-### TODO: Use intToAdjacentRanges() in adjacentViews(), this
-### will be MUCH faster (intToAdjacentRanges() is written in C).
+### TODO: Use successiveIRanges() in adjacentViews(), this
+### will be MUCH faster (successiveIRanges() is written in C).
 ### But first, the 'gapwidth' arg must be added to it...
 adjacentViews <- function(subject, width, gapwidth=0)
 {

@@ -223,7 +223,7 @@ setAs("XStringSet", "AAStringSet",
     class <- paste(baseClass, "Set", sep="")
     safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
     super <- .charToXString(x, safe_locs, baseClass)
-    ranges <- intToAdjacentRanges(width(safe_locs))
+    ranges <- successiveIRanges(width(safe_locs))
     unsafe.XStringSet(class, super, ranges, use.names=use.names, names=names(x))
 }
 
