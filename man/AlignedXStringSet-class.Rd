@@ -18,7 +18,6 @@
 \alias{unaligned,AlignedXStringSet-method}
 \alias{aligned}
 \alias{aligned,AlignedXStringSet-method}
-\alias{quality}
 \alias{quality,QualityAlignedXStringSet-method}
 \alias{start,AlignedXStringSet-method}
 \alias{end,AlignedXStringSet-method}
@@ -98,7 +97,7 @@
     }
     \item{}{
       \code{quality(x)}:
-      For \code{QualityAlignedXStringSet} objects, the quality of the original string.
+      The quality of the original string.
     }
     \item{}{
       \code{start(x)}:
