@@ -55,7 +55,7 @@ function(x,
   if (method == "quality") {
     useQuality <- TRUE
     if (!is(quality, "XStringQuality"))
-        stop("'quality' must be of class 'XStringSet'")
+        stop("'quality' must be of class 'XStringQuality'")
     if (!all(nchar(quality) == 1 | nchar(quality) == nchar(x)))
       stop("'quality' must either be constant or have the same length as 'x'")
 	
@@ -65,10 +65,10 @@ function(x,
              AAStringSet = 20L,
              256L)
 
-    if (is(quality, "PhredQuality"))
-      qualityLookupTable <- buildLookupTable(33:(33 + 99), 0:99)
-    else
-      qualityLookupTable <- buildLookupTable(59:(59 + 104), 0:104)
+    qualityLookupTable <-
+      buildLookupTable((minQuality(quality) + offset(quality)):
+                       (maxQuality(quality) + offset(quality)),
+                       0:(maxQuality(quality) - minQuality(quality)))
     qualityMatrices <-
       qualitySubstitutionMatrices(alphabetLength = alphabetLength,
                                   qualityClass = class(quality))

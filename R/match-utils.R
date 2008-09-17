@@ -394,14 +394,8 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
-        if (is(quality(x), "PhredQuality")) {
-            qualityValues <- 33:(33 + 99)
-            qualityZero <- 33
-        } else if (is(quality(x), "SolexaQuality")) {
-            qualityValues <- 59:(59 + 104)
-            qualityZero <- 64
-        } else
-            stop("unrecognized quality class")
+        qualityValues <- (minQuality(quality(x)) + offset(quality(x))):(maxQuality(quality(x)) + offset(quality(x)))
+        qualityZero <- offset(quality(x))
         if ((length(quality(x)) == 1) && (nchar(quality(x)) == 1))
             qualityAll <-
               sum(as.numeric(weight) * width(x)) *

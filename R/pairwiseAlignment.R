@@ -50,14 +50,11 @@ function(prob, alphabetLength = 4L, bitScale = 1) {
 
 qualitySubstitutionMatrices <-
 function(alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1) {
-  qualityClass <- match.arg(qualityClass, c("PhredQuality", "SolexaQuality"))
-  if (qualityClass == "PhredQuality") {
-    prob <- 10^seq(0, -9.9, by = -0.1)
-    names(prob) <- as.character(0:99)
-  } else {
-    prob <- 1 - 1/(1 + 10^seq(0.5, -9.9, by = -0.1))
-    names(prob) <- as.character(-5:99)
-  }
+  if (!is(new(qualityClass), "XStringQuality"))
+    stop("'qualityClass' must be one of the 'XStringQuality' classes")
+  qualityIntegers <- minQuality(new(qualityClass)):maxQuality(new(qualityClass))
+  prob <- qualityConverter(qualityIntegers, qualityClass, "numeric")
+  names(prob) <- as.character(qualityIntegers)
   errorSubstitutionMatrices(prob, alphabetLength = alphabetLength, bitScale = bitScale)
 }
 
@@ -115,7 +112,7 @@ function(pattern,
     if (class(patternQuality) %in% c("integer", "numeric", "BString", "BStringSet"))
         patternQuality <- PhredQuality(patternQuality)
     if (!is(patternQuality, "XStringQuality"))
-      stop("'patternQuality' must be of class 'XStringSet'")
+      stop("'patternQuality' must be of class 'XStringQuality'")
     if (!all(nchar(patternQuality) == 1 | nchar(patternQuality) == nchar(pattern)))
       stop(paste("'patternQuality' must either be constant or",
                  "have the same length as 'pattern'"))
@@ -123,7 +120,7 @@ function(pattern,
     if (class(subjectQuality) %in% c("integer", "numeric", "BString", "BStringSet"))
       subjectQuality <- PhredQuality(subjectQuality)
     if (!is(subjectQuality, "XStringQuality"))
-      stop("'subjectQuality' must be of class 'XStringSet'")
+      stop("'subjectQuality' must be of class 'XStringQuality'")
     if (!(length(subjectQuality) %in% c(1, length(subject))))
       stop(paste("'subjectQuality' must either be constant or",
                  "have the same length as 'subject'"))
@@ -134,10 +131,10 @@ function(pattern,
              AAStringSet = 20L,
              256L)
 
-    if (is(patternQuality, "PhredQuality"))
-      qualityLookupTable <- buildLookupTable(33:(33 + 99), 0:99)
-    else
-      qualityLookupTable <- buildLookupTable(59:(59 + 104), 0:104)
+    qualityLookupTable <-
+      buildLookupTable((minQuality(patternQuality) + offset(patternQuality)):
+                       (maxQuality(patternQuality) + offset(patternQuality)),
+                       0:(maxQuality(patternQuality) - minQuality(patternQuality)))
     qualityMatrices <-
       qualitySubstitutionMatrices(alphabetLength = alphabetLength,
                                   qualityClass = class(patternQuality))
