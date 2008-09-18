@@ -4,7 +4,7 @@
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
+	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("range_list"));
 	int numberOfAlignments = LENGTH(indel);
 
 	SEXP output;
@@ -35,7 +35,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP unaligned = GET_SLOT(alignedXStringSet, install("unaligned"));
 	CachedXStringSet cachedAlignedXStringSet = _new_CachedXStringSet(unaligned);
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
+	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("range_list"));
 
 	const char *stringSetClass = get_class(unaligned);
 	const char *stringClass = get_class(GET_SLOT(unaligned, install("super")));
@@ -51,7 +51,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	PROTECT(alignedStart = NEW_INTEGER(LENGTH(alignedWidth)));
 	int totalNChars = 0;
 	const int *width_i, *start_i;
-	int *start_iPlus1; 
+	int *start_iPlus1;
 	for (i = 0, width_i = INTEGER(alignedWidth); i < LENGTH(alignedWidth); i++, width_i++) {
 		totalNChars += *width_i;
 	}

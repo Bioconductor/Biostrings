@@ -359,8 +359,8 @@ static double pairwiseAlignment(
 					else
 						substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
-					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores 
-					 *           and traceback values 
+					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores
+					 *           and traceback values
 					 */
 					if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
 						S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
@@ -416,8 +416,8 @@ static double pairwiseAlignment(
 					else
 						substitutionValue = (float) mismatchMatrix[matrixDim[0] * elements[0] + elements[1]];
 
-					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores 
-					 *           and traceback values 
+					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores
+					 *           and traceback values
 					 */
 					if (PREV_MATRIX(0, jMinus1) >= MAX(PREV_MATRIX(1, jMinus1), PREV_MATRIX(2, jMinus1))) {
 						S_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
@@ -620,7 +620,7 @@ static double pairwiseAlignment(
  *                           (double matrix)
  * 'constantMatrixDim':      dimension of 'constantMatrix'
  *                           (integer vector of length 2)
- * 
+ *
  * OUTPUT
  * If scoreOnly = TRUE, returns either a vector of scores
  * If scoreOnly = FALSE, returns an S4 PairwiseAlignment object.
@@ -732,24 +732,28 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP alignedPattern;
 		SEXP alignedPatternRange, alignedPatternRangeStart, alignedPatternRangeWidth;
 		SEXP alignedPatternMismatch, alignedPatternMismatchElt;
-		SEXP alignedPatternIndel, alignedPatternIndelRange;
+		SEXP alignedPatternIndel, alignedPatternIndelList, alignedPatternIndelRange;
 		SEXP alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth;
 		SEXP alignedSubject;
 		SEXP alignedSubjectRange, alignedSubjectRangeStart, alignedSubjectRangeWidth;
 		SEXP alignedSubjectMismatch, alignedSubjectMismatchElt;
-		SEXP alignedSubjectIndel, alignedSubjectIndelRange;
+		SEXP alignedSubjectIndel, alignedSubjectIndelList, alignedSubjectIndelRange;
 		SEXP alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth;
 		SEXP alignedScore;
 
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternMismatch = NEW_LIST(numberOfStrings));
-		PROTECT(alignedPatternIndel = NEW_LIST(numberOfStrings));
+		PROTECT(alignedPatternIndel = NEW_OBJECT(MAKE_CLASS("RangesCollection")));
+		PROTECT(alignedPatternIndelList = NEW_LIST(numberOfStrings));
+		SET_SLOT(alignedPatternIndel, mkChar("range_list"), alignedPatternIndelList);
 
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectMismatch = NEW_LIST(numberOfStrings));
-		PROTECT(alignedSubjectIndel = NEW_LIST(numberOfStrings));
+		PROTECT(alignedSubjectIndel = NEW_OBJECT(MAKE_CLASS("RangesCollection")));
+		PROTECT(alignedSubjectIndelList = NEW_LIST(numberOfStrings));
+		SET_SLOT(alignedSubjectIndel, mkChar("range_list"), alignedSubjectIndelList);
 
 		PROTECT(alignedScore = NEW_NUMERIC(numberOfStrings));
 
@@ -800,9 +804,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 			       align1Info.lengthIndel * sizeof(int));
 			memcpy(INTEGER(alignedPatternIndelRangeWidth), align1Info.widthIndel,
 			       align1Info.lengthIndel * sizeof(int));
-			PROTECT(alignedPatternIndelRange = 
+			PROTECT(alignedPatternIndelRange =
 				new_IRanges("IRanges", alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth, R_NilValue));
-		    SET_VECTOR_ELT(alignedPatternIndel, i, alignedPatternIndelRange);
+		    SET_VECTOR_ELT(alignedPatternIndelList, i, alignedPatternIndelRange);
 		    UNPROTECT(3);
 
 			*align2RangeStart = align2Info.startRange;
@@ -813,9 +817,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 			       align2Info.lengthIndel * sizeof(int));
 			memcpy(INTEGER(alignedSubjectIndelRangeWidth), align2Info.widthIndel,
 			       align2Info.lengthIndel * sizeof(int));
-			PROTECT(alignedSubjectIndelRange = 
+			PROTECT(alignedSubjectIndelRange =
 				new_IRanges("IRanges", alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth, R_NilValue));
-		    SET_VECTOR_ELT(alignedSubjectIndel, i, alignedSubjectIndelRange);
+		    SET_VECTOR_ELT(alignedSubjectIndelList, i, alignedSubjectIndelRange);
 		    UNPROTECT(3);
 
 			qualityElement += qualityIncrement;
@@ -873,7 +877,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		/* Output is ready */
-		UNPROTECT(14);
+		UNPROTECT(16);
 	}
 
 	return output;
@@ -913,7 +917,7 @@ SEXP XStringSet_align_pairwiseAlignment(
  *                           (double matrix)
  * 'constantMatrixDim':      dimension of 'constantMatrix'
  *                           (integer vector of length 2)
- * 
+ *
  * OUTPUT
  * Return a numeric vector containing the lower triangle of the score matrix.
  */

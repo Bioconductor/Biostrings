@@ -9,7 +9,7 @@ setClass("AlignedXStringSet",
         unaligned="XStringSet",
         range="IRanges",
         mismatch = "list",
-        indel="list"
+        indel="RangesCollection"
     )
 )
 
@@ -125,7 +125,7 @@ setMethod("width", "AlignedXStringSet", function(x) width(x@range))
 setGeneric("indel", function(x) standardGeneric("indel"))
 setMethod("indel", "AlignedXStringSet", function(x) x@indel)
 setGeneric("nindel", function(x) standardGeneric("nindel"))
-setMethod("nindel", "AlignedXStringSet", function(x) summaryIRangesList(indel(x)))
+setMethod("nindel", "AlignedXStringSet", function(x) summaryIRangesList(range_list(indel(x))))
 setMethod("length", "AlignedXStringSet", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet",
           function(x, type="chars", allowNA=FALSE) .Call("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
