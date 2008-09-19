@@ -324,19 +324,19 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
         if (nrow(output) == 0) {
             output <- cbind(output, "Quality" = character(0))
 		} else {
-            if (length(quality(x)) == 1) {
-                if (width(quality(x)) == 1)
+            if (length(quality(unaligned(x))) == 1) {
+                if (width(quality(unaligned(x))) == 1)
                     quality <-
-                      Views(quality(x)[[1]][rep.int(1L, max(output[["End"]]))],
+                      Views(quality(unaligned(x))[[1]][rep.int(1L, max(output[["End"]]))],
                             start = output[["Start"]], end = output[["End"]])
                 else
                     quality <-
-                      Views(quality(x)[[1]], start = output[["Start"]],
+                      Views(quality(unaligned(x))[[1]], start = output[["Start"]],
                             end = output[["End"]])
             }
             else
                 quality <-
-                  narrow(quality(x)[output[["Id"]]], start = output[["Start"]],
+                  narrow(quality(unaligned(x))[output[["Id"]]], start = output[["Start"]],
                          end = output[["End"]])
             output <- cbind(output, "Quality" = as.character(quality))
         }
@@ -394,23 +394,25 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
-        qualityValues <- (minQuality(quality(x)) + offset(quality(x))):(maxQuality(quality(x)) + offset(quality(x)))
-        qualityZero <- offset(quality(x))
-        if ((length(quality(x)) == 1) && (nchar(quality(x)) == 1))
+        qualityValues <-
+          (minQuality(quality(unaligned(x))) + offset(quality(unaligned(x)))):
+          (maxQuality(quality(unaligned(x))) + offset(quality(unaligned(x))))
+        qualityZero <- offset(quality(unaligned(x)))
+        if ((length(quality(unaligned(x))) == 1) && (nchar(quality(unaligned(x))) == 1))
             qualityAll <-
               sum(as.numeric(weight) * width(x)) *
-                alphabetFrequency(quality(x), collapse = TRUE)[qualityValues + 1]
+                alphabetFrequency(quality(unaligned(x)), collapse = TRUE)[qualityValues + 1]
         else {
             nonEmptyAlignment <- (width(x) > 0)
             if (length(weight) == 1)
                 qualityAll <-
                   as.numeric(weight) *
-                    alphabetFrequency(narrow(quality(x)[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
+                    alphabetFrequency(narrow(quality(unaligned(x))[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
                                              end = end(x)[nonEmptyAlignment]), collapse = TRUE)[qualityValues + 1]
             else
                 qualityAll <-
                   colSums(as.numeric(weight)[nonEmptyAlignment] *
-                          alphabetFrequency(narrow(quality(x)[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
+                          alphabetFrequency(narrow(quality(unaligned(x))[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
                                                    end = end(x)[nonEmptyAlignment]))[, qualityValues + 1, drop=FALSE])
         }
         names(qualityAll) <- sapply(as.raw(qualityValues), rawToChar)

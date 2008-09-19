@@ -3,10 +3,20 @@
 
 \alias{pairwiseAlignment,character,character-method}
 \alias{pairwiseAlignment,character,XString-method}
+\alias{pairwiseAlignment,character,XStringSet-method}
+\alias{pairwiseAlignment,character,QualityScaledXStringSet-method}
 \alias{pairwiseAlignment,XString,character-method}
 \alias{pairwiseAlignment,XString,XString-method}
+\alias{pairwiseAlignment,XString,XStringSet-method}
+\alias{pairwiseAlignment,XString,QualityScaledXStringSet-method}
 \alias{pairwiseAlignment,XStringSet,character-method}
 \alias{pairwiseAlignment,XStringSet,XString-method}
+\alias{pairwiseAlignment,XStringSet,XStringSet-method}
+\alias{pairwiseAlignment,XStringSet,QualityScaledXStringSet-method}
+\alias{pairwiseAlignment,QualityScaledXStringSet,character-method}
+\alias{pairwiseAlignment,QualityScaledXStringSet,XString-method}
+\alias{pairwiseAlignment,QualityScaledXStringSet,XStringSet-method}
+\alias{pairwiseAlignment,QualityScaledXStringSet,QualityScaledXStringSet-method}
 
 \title{Optimal Pairwise Alignment}
 \description{
@@ -14,8 +24,11 @@ Solves (Needleman-Wunsch) global alignment, (Smith-Waterman) local alignment, an
 }
 \usage{
 pairwiseAlignment(pattern, subject, \dots)
-\S4method{pairwiseAlignment}{XStringSet,XString}(pattern, subject,
+\S4method{pairwiseAlignment}{XStringSet,XStringSet}(pattern, subject,
                   patternQuality = PhredQuality(22L), subjectQuality = PhredQuality(22L),
+                  type = "global", substitutionMatrix = NULL, gapOpening = -10,
+                  gapExtension = -4, scoreOnly = FALSE)
+\S4method{pairwiseAlignment}{QualityScaledXStringSet,QualityScaledXStringSet}(pattern, subject,
                   type = "global", substitutionMatrix = NULL, gapOpening = -10,
                   gapExtension = -4, scoreOnly = FALSE)
 }
@@ -27,7 +40,8 @@ pairwiseAlignment(pattern, subject, \dots)
     \code{\link{XStringQuality}} representing the respective quality scores for \code{pattern} and
     \code{subject} that are used in a quality-based method for generating a substitution
     matrix.
-    These two arguments are ignored if \code{!is.null(substitutionMatrix)}.}
+    These two arguments are ignored if \code{!is.null(substitutionMatrix)} or if its respective
+    string set (\code{pattern}, \code{subject}) is of class \code{\link{QualityScaledXStringSet}}.}
   \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
     \code{"overlap"}, \code{"patternOverlap"}, and \code{"subjectOverlap"} where
       \code{"global"} = align whole strings with end gap penalties,

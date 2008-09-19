@@ -382,7 +382,6 @@ Function                    & Description \\
 \Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
 \Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
-\Rfunction{quality}         & Extracts the quality scores for a \Rclass{QualityAlignedXString} \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
 \Rfunction{start}           & Extracts the starting index of the aligned range \\
 \Rfunction{width}           & Extracts the width of the aligned range \\

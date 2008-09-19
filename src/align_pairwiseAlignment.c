@@ -583,10 +583,8 @@ static double pairwiseAlignment(
 
 /*
  * INPUTS
- * 'pattern':                XStringSet object for patterns
- * 'subject':                XString object for subject
- * 'patternQuality':         XStringQuality object for quality scores for pattern
- * 'subjectQuality':         XStringQuality object for quality scores for subject
+ * 'pattern':                XStringSet or QualityScaledXStringSet object for patterns
+ * 'subject':                XStringSet or QualityScaledXStringSet object for subject
  * 'type':                   type of pairwise alignment
  *                           (character vector of length 1;
  *                            'global', 'local', 'overlap',
@@ -629,8 +627,6 @@ static double pairwiseAlignment(
 SEXP XStringSet_align_pairwiseAlignment(
 		SEXP pattern,
 		SEXP subject,
-		SEXP patternQuality,
-		SEXP subjectQuality,
 		SEXP type,
 		SEXP typeCode,
 		SEXP scoreOnly,
@@ -655,28 +651,42 @@ SEXP XStringSet_align_pairwiseAlignment(
 		gapExtensionValue = NEGATIVE_INFINITY;
 	}
 
+	const int numberOfStrings = _get_XStringSet_length(pattern);
+	int lengthOfPatternQualitySet = 0;
+
+	CachedXStringSet cachedPattern = _new_CachedXStringSet(pattern);
+
+	SEXP patternQuality, subjectQuality;
+	CachedXStringSet cachedPatternQuality;
+	if (useQualityValue) {
+		patternQuality = GET_SLOT(pattern, install("quality"));
+		subjectQuality = GET_SLOT(subject, install("quality"));
+		cachedPatternQuality = _new_CachedXStringSet(patternQuality);
+		lengthOfPatternQualitySet = _get_XStringSet_length(patternQuality);
+	} else {
+		patternQuality = R_NilValue;
+		subjectQuality = R_NilValue;
+	}
+
 	/* Create the alignment info objects */
 	struct AlignInfo align1Info, align2Info;
-	align2Info.string = _get_XString_asRoSeq(subject);
-	align2Info.quality = _get_XStringSet_elt_asRoSeq(subjectQuality, 0);
+	align2Info.string = _get_XStringSet_elt_asRoSeq(subject, 0);
+	if (useQualityValue)
+		align2Info.quality = _get_XStringSet_elt_asRoSeq(subjectQuality, 0);
 	align1Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
 	align2Info.endGap =
 		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
 
-	const int numberOfStrings = _get_XStringSet_length(pattern);
-	CachedXStringSet cachedPattern = _new_CachedXStringSet(pattern);
-	CachedXStringSet cachedPatternQuality = _new_CachedXStringSet(patternQuality);
-
 	SEXP output;
 
 	int i, qualityElement = 0;
-	const int qualityIncrement = ((_get_XStringSet_length(patternQuality) < numberOfStrings) ? 0 : 1);
+	const int qualityIncrement = ((lengthOfPatternQualitySet < numberOfStrings) ? 0 : 1);
 
 	/* Create the alignment buffer object */
 	struct AlignBuffer alignBuffer;
 	int nCharString1 = 0;
-	int nCharString2 = _get_XString_asRoSeq(subject).nelt;
+	int nCharString2 = align2Info.string.nelt;
 	for (i = 0; i < numberOfStrings; i++) {
 		nCharString1 = MAX(nCharString1, _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i).nelt);
 	}
@@ -706,7 +716,10 @@ SEXP XStringSet_align_pairwiseAlignment(
 		for (i = 0, score = REAL(output); i < numberOfStrings; i++, score++) {
 	        R_CheckUserInterrupt();
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
-			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
+			if (useQualityValue) {
+				align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
+				qualityElement += qualityIncrement;
+			}
 			*score = pairwiseAlignment(
 					&align1Info,
 					&align2Info,
@@ -725,7 +738,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 					REAL(constantMatrix),
 					INTEGER(constantMatrixDim),
 					&alignBuffer);
-			qualityElement += qualityIncrement;
 		}
 		UNPROTECT(1);
 	} else {
@@ -766,7 +778,10 @@ SEXP XStringSet_align_pairwiseAlignment(
 				i++, score++, align1RangeStart++, align1RangeWidth++, align2RangeStart++, align2RangeWidth++) {
 	        R_CheckUserInterrupt();
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
-			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
+			if (useQualityValue) {
+				align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, qualityElement);
+				qualityElement += qualityIncrement;
+			}
 			*score = pairwiseAlignment(
 					&align1Info,
 					&align2Info,
@@ -821,8 +836,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 				new_IRanges("IRanges", alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth, R_NilValue));
 		    SET_VECTOR_ELT(alignedSubjectIndelList, i, alignedSubjectIndelRange);
 		    UNPROTECT(3);
-
-			qualityElement += qualityIncrement;
 		}
 
 		/* Create the output object */
@@ -831,7 +844,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		/* Set the "pattern" slot */
 		if (useQualityValue) {
 			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
-			SET_SLOT(alignedPattern, mkChar("quality"), patternQuality);
 		} else {
 			PROTECT(alignedPattern = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
 		}
@@ -849,7 +861,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 		/* Set the "subject" slot */
 		if (useQualityValue) {
 			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("QualityAlignedXStringSet")));
-			SET_SLOT(alignedSubject, mkChar("quality"), subjectQuality);
 		} else {
 			PROTECT(alignedSubject = NEW_OBJECT(MAKE_CLASS("AlignedXStringSet")));
 		}
@@ -888,7 +899,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 /*
  * INPUTS
  * 'string':                 XStringSet object for strings
- * 'stringQuality':          BStringSet object for quality scores for strings
  * 'type':                   type of pairwise alignment
  *                           (character vector of length 1;
  *                            'global', 'local', 'overlap')
@@ -924,7 +934,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 SEXP XStringSet_align_distance(
 		SEXP string,
-		SEXP stringQuality,
 		SEXP type,
 		SEXP typeCode,
 		SEXP gapOpening,
@@ -954,19 +963,27 @@ SEXP XStringSet_align_distance(
 	align2Info.endGap = (INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT);
 
 	int numberOfStrings = _get_XStringSet_length(string);
-	CachedXStringSet cachedPattern = _new_CachedXStringSet(string);
-	CachedXStringSet cachedPatternQuality = _new_CachedXStringSet(stringQuality);
+	int lengthOfStringQualitySet = 0;
+
+	SEXP stringQuality = R_NilValue;
+	CachedXStringSet cachedString = _new_CachedXStringSet(string);
+	CachedXStringSet cachedStringQuality;
+	if (useQualityValue) {
+		stringQuality = GET_SLOT(string, install("quality"));
+		cachedStringQuality = _new_CachedXStringSet(stringQuality);
+		lengthOfStringQualitySet = _get_XStringSet_length(stringQuality);
+	}
 
 	SEXP output;
 
 	int i, j, iQualityElement = 0, jQualityElement = 0;
-	int qualityIncrement = ((_get_XStringSet_length(stringQuality) < numberOfStrings) ? 0 : 1);
+	int qualityIncrement = ((lengthOfStringQualitySet < numberOfStrings) ? 0 : 1);
 
 	/* Create the alignment buffer object */
 	struct AlignBuffer alignBuffer;
 	int nCharString = 0;
 	for (i = 0; i < numberOfStrings; i++) {
-		nCharString = MAX(nCharString, _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i).nelt);
+		nCharString = MAX(nCharString, _get_CachedXStringSet_elt_asRoSeq(&cachedString, i).nelt);
 	}
 	int alignmentBufferSize = nCharString + 1;
 	if (gapOpeningValue == 0.0) {
@@ -980,39 +997,67 @@ SEXP XStringSet_align_distance(
 	double *score;
 	PROTECT(output = NEW_NUMERIC((numberOfStrings * (numberOfStrings - 1)) / 2));
 	score = REAL(output);
-	for (i = 0; i < numberOfStrings; i++) {
-        R_CheckUserInterrupt();
-		align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
-		align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, iQualityElement);
-		jQualityElement = iQualityElement + qualityIncrement;
-		for (j = i + 1; j < numberOfStrings; j++) {
-			align2Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, j);
-			align2Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedPatternQuality, jQualityElement);
-			*score = pairwiseAlignment(
-					&align1Info,
-					&align2Info,
-					localAlignment,
-					scoreOnlyValue,
-					gapOpeningValue,
-					gapExtensionValue,
-					useQualityValue,
-					INTEGER(qualityLookupTable),
-					LENGTH(qualityLookupTable),
-					REAL(qualityMatchMatrix),
-					REAL(qualityMismatchMatrix),
-					INTEGER(qualityMatrixDim),
-					INTEGER(constantLookupTable),
-					LENGTH(constantLookupTable),
-					REAL(constantMatrix),
-					INTEGER(constantMatrixDim),
-					&alignBuffer);
-			jQualityElement += qualityIncrement;
-			score++;
+	if (!useQualityValue) {
+		for (i = 0; i < numberOfStrings; i++) {
+	        R_CheckUserInterrupt();
+			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedString, i);
+			for (j = i + 1; j < numberOfStrings; j++) {
+				align2Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedString, j);
+				*score = pairwiseAlignment(
+						&align1Info,
+						&align2Info,
+						localAlignment,
+						scoreOnlyValue,
+						gapOpeningValue,
+						gapExtensionValue,
+						useQualityValue,
+						INTEGER(qualityLookupTable),
+						LENGTH(qualityLookupTable),
+						REAL(qualityMatchMatrix),
+						REAL(qualityMismatchMatrix),
+						INTEGER(qualityMatrixDim),
+						INTEGER(constantLookupTable),
+						LENGTH(constantLookupTable),
+						REAL(constantMatrix),
+						INTEGER(constantMatrixDim),
+						&alignBuffer);
+				score++;
+			}
 		}
-		iQualityElement += qualityIncrement;
+	} else {
+		for (i = 0; i < numberOfStrings; i++) {
+	        R_CheckUserInterrupt();
+			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedString, i);
+			align1Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedStringQuality, iQualityElement);
+			jQualityElement = iQualityElement + qualityIncrement;
+			iQualityElement += qualityIncrement;
+			for (j = i + 1; j < numberOfStrings; j++) {
+				align2Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedString, j);
+				align2Info.quality = _get_CachedXStringSet_elt_asRoSeq(&cachedStringQuality, jQualityElement);
+				jQualityElement += qualityIncrement;
+				*score = pairwiseAlignment(
+						&align1Info,
+						&align2Info,
+						localAlignment,
+						scoreOnlyValue,
+						gapOpeningValue,
+						gapExtensionValue,
+						useQualityValue,
+						INTEGER(qualityLookupTable),
+						LENGTH(qualityLookupTable),
+						REAL(qualityMatchMatrix),
+						REAL(qualityMismatchMatrix),
+						INTEGER(qualityMatrixDim),
+						INTEGER(constantLookupTable),
+						LENGTH(constantLookupTable),
+						REAL(constantMatrix),
+						INTEGER(constantMatrixDim),
+						&alignBuffer);
+				score++;
+			}
+		}
 	}
 	UNPROTECT(1);
 
 	return output;
 }
-

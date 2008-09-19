@@ -787,8 +787,6 @@ SEXP align_needwunsQS(
 SEXP XStringSet_align_pairwiseAlignment(
 	SEXP pattern,
 	SEXP subject,
-	SEXP patternQuality,
-	SEXP subjectQuality,
 	SEXP type,
 	SEXP typeCode,
 	SEXP scoreOnly,
@@ -806,7 +804,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 SEXP XStringSet_align_distance(
 	SEXP string,
-	SEXP stringQuality,
 	SEXP type,
 	SEXP typeCode,
 	SEXP gapOpening,

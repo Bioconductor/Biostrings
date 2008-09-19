@@ -26,6 +26,31 @@ setClass("QualityScaledAAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity.
+###
+
+.valid.QualityScaledXStringSet <- function(object)
+{
+    message <- character(0)
+    if (!(length(object@quality) %in% c(1, length(object))))
+        message <- c(message, "'length(quality)' != 1 or length of 'XStringSet'")
+    if (!all(nchar(object@quality) == 1 | nchar(object@quality) == nchar(object)))
+        message <- c(message, "'nchar(quality)' must equal 1 or nchar of 'XStringSet'")
+    if (length(message) == 0)
+        message <- NULL
+    message
+}
+
+setValidity("QualityScaledXStringSet",
+    function(object)
+    {
+        problems <- .valid.QualityAlignedXStringSet(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
@@ -43,6 +68,8 @@ QualityScaledXStringSet <- function(x, quality) {
         stop("'quality' must be of class 'XStringQuality'")
     if (!(length(quality) %in% c(1, length(x))))
         stop("'length(quality)' must equal 1 or 'length(x)'")
+    if (!all(nchar(quality) == 1 | nchar(quality) == nchar(x)))
+        stop("'nchar(quality)' must equal 1 or 'nchar(x)'")
     output <- as(x, paste("QualityScaled", class(x), sep=""))
     slot(output, "quality", check=FALSE) <- quality
     output
@@ -75,11 +102,25 @@ setMethod("show", "QualityScaledXStringSet",
 ### Subsetting.
 ###
 
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
+.safe.subset.XStringSet <- function(x, i)
+{
+    if (length(x) == 1) x else x[i]
+}
+
 setMethod("[", "QualityScaledXStringSet",
     function(x, i, j, ..., drop)
     {
-        slot(x, "quality", check=FALSE) <- quality(x)[i]
-        x[i]
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (missing(i) || (is.logical(i) && all(i)))
+            return(x)
+        if (is.logical(i))
+            i <- which(i)
+        if (!is.numeric(i) || any(is.na(i)))
+            stop("invalid subsetting")
+        if (any(i < 1) || any(i > length(x)))
+            stop("subscript out of bounds")
+		slot(x, "quality", check=FALSE) <- .safe.subset.XStringSet(quality(x), i)
+        selectMethod("[", "XStringSet")(x, i)
     }
 )

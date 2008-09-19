@@ -18,7 +18,6 @@
 \alias{unaligned,AlignedXStringSet-method}
 \alias{aligned}
 \alias{aligned,AlignedXStringSet-method}
-\alias{quality,QualityAlignedXStringSet-method}
 \alias{start,AlignedXStringSet-method}
 \alias{end,AlignedXStringSet-method}
 \alias{width,AlignedXStringSet-method}
@@ -94,10 +93,6 @@
     \item{}{
       \code{aligned(x)}:
       The "filled-with-gaps subsequence" representing the aligned substring.
-    }
-    \item{}{
-      \code{quality(x)}:
-      The quality of the original string.
     }
     \item{}{
       \code{start(x)}:

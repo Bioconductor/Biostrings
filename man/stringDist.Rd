@@ -3,6 +3,7 @@
 
 \alias{stringDist,character-method}
 \alias{stringDist,XStringSet-method}
+\alias{stringDist,QualityScaledXStringSet-method}
 
 \title{String Distance/Alignment Score Matrix}
 \description{
@@ -13,6 +14,8 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
 \S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
                    gapOpening = 0, gapExtension = -1)
+\S4method{stringDist}{QualityScaledXStringSet}(x, method = "quality", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
+                   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
 }
 \arguments{
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}

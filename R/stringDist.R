@@ -9,7 +9,6 @@ function(x,
          diag = FALSE,
          upper = FALSE,
          type = "global",
-         quality = PhredQuality(22L),
          substitutionMatrix = NULL,
          gapOpening = 0,
          gapExtension = -1)
@@ -51,69 +50,42 @@ function(x,
     dimnames(substitutionMatrix) <- list(names(alphabetToCodes), names(alphabetToCodes))
   }
 
-  ## Generate quality-based and constant substitution matrix information
-  if (method == "quality") {
-    useQuality <- TRUE
-    if (!is(quality, "XStringQuality"))
-        stop("'quality' must be of class 'XStringQuality'")
-    if (!all(nchar(quality) == 1 | nchar(quality) == nchar(x)))
-      stop("'quality' must either be constant or have the same length as 'x'")
-	
-    alphabetLength <-
-      switch(class(x),
-             DNAStringSet =, RNAStringSet = 4L,
-             AAStringSet = 20L,
-             256L)
-
-    qualityLookupTable <-
-      buildLookupTable((minQuality(quality) + offset(quality)):
-                       (maxQuality(quality) + offset(quality)),
-                       0:(maxQuality(quality) - minQuality(quality)))
-    qualityMatrices <-
-      qualitySubstitutionMatrices(alphabetLength = alphabetLength,
-                                  qualityClass = class(quality))
-
-    constantLookupTable <- integer(0)
-    constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
-  } else {
-    useQuality <- FALSE
-    quality <- BStringSet("")
-    qualityLookupTable <- integer(0)
-    qualityMatrices <-
-      list(match = matrix(numeric(0), nrow = 0, ncol = 0),
-           mismatch = matrix(numeric(0), nrow = 0, ncol = 0))
-    if (is.character(substitutionMatrix)) {
-      if (length(substitutionMatrix) != 1)
-        stop("'substitutionMatrix' is a character vector of length != 1")
-      tempMatrix <- substitutionMatrix
-      substitutionMatrix <- try(getdata(tempMatrix), silent = TRUE)
-      if (is(substitutionMatrix, "try-error"))
-        stop("unknown scoring matrix \"", tempMatrix, "\"")
-    }
-    if (!is.matrix(substitutionMatrix) || !is.numeric(substitutionMatrix))
-      stop("'substitutionMatrix' must be a numeric matrix")
-    if (!identical(rownames(substitutionMatrix), colnames(substitutionMatrix)))
-      stop("row and column names differ for matrix 'substitutionMatrix'")
-    if (is.null(rownames(substitutionMatrix)))
-      stop("matrix 'substitutionMatrix' must have row and column names")
-    if (any(duplicated(rownames(substitutionMatrix))))
-      stop("matrix 'substitutionMatrix' has duplicated row names")
-    if (!isSymmetric(substitutionMatrix))
-      stop("'substitutionMatrix' must be a symmetric matrix")
-    availableLetters <-
-      intersect(names(alphabetToCodes), rownames(substitutionMatrix))
-    constantMatrix <-
-      matrix(as.double(substitutionMatrix[availableLetters, availableLetters]),
-             nrow = length(availableLetters),
-             ncol = length(availableLetters),
-             dimnames = list(availableLetters, availableLetters))
-    constantLookupTable <-
-      buildLookupTable(alphabetToCodes[availableLetters],
-                       0:(length(availableLetters) - 1))
+  useQuality <- FALSE
+  qualityLookupTable <- integer(0)
+  qualityMatrices <-
+    list(match = matrix(numeric(0), nrow = 0, ncol = 0),
+         mismatch = matrix(numeric(0), nrow = 0, ncol = 0))
+  if (is.character(substitutionMatrix)) {
+    if (length(substitutionMatrix) != 1)
+      stop("'substitutionMatrix' is a character vector of length != 1")
+    tempMatrix <- substitutionMatrix
+    substitutionMatrix <- try(getdata(tempMatrix), silent = TRUE)
+    if (is(substitutionMatrix, "try-error"))
+      stop("unknown scoring matrix \"", tempMatrix, "\"")
   }
+  if (!is.matrix(substitutionMatrix) || !is.numeric(substitutionMatrix))
+    stop("'substitutionMatrix' must be a numeric matrix")
+  if (!identical(rownames(substitutionMatrix), colnames(substitutionMatrix)))
+    stop("row and column names differ for matrix 'substitutionMatrix'")
+  if (is.null(rownames(substitutionMatrix)))
+    stop("matrix 'substitutionMatrix' must have row and column names")
+  if (any(duplicated(rownames(substitutionMatrix))))
+    stop("matrix 'substitutionMatrix' has duplicated row names")
+  if (!isSymmetric(substitutionMatrix))
+    stop("'substitutionMatrix' must be a symmetric matrix")
+  availableLetters <-
+    intersect(names(alphabetToCodes), rownames(substitutionMatrix))
+  constantMatrix <-
+    matrix(as.double(substitutionMatrix[availableLetters, availableLetters]),
+           nrow = length(availableLetters),
+           ncol = length(availableLetters),
+           dimnames = list(availableLetters, availableLetters))
+  constantLookupTable <-
+    buildLookupTable(alphabetToCodes[availableLetters],
+                     0:(length(availableLetters) - 1))
+
   answer <- .Call("XStringSet_align_distance",
                   x,
-                  quality,
                   type,
                   typeCode,
                   gapOpening,
@@ -139,6 +111,80 @@ function(x,
 }
 
 
+QualityScaledXStringSet.stringDist <-
+function(x,
+         ignoreCase = FALSE,
+         diag = FALSE,
+         upper = FALSE,
+         type = "global",
+         quality = PhredQuality(22L),
+         gapOpening = 0,
+         gapExtension = -1)
+{
+  ## Check arguments
+  type <- match.arg(type, c("global", "local", "overlap"))
+  typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
+  gapOpening <- as.double(- abs(gapOpening))
+  if (length(gapOpening) != 1 || is.na(gapOpening))
+    stop("'gapOpening' must be a non-positive numeric vector of length 1")
+  gapExtension <- as.double(- abs(gapExtension))
+  if (length(gapExtension) != 1 || is.na(gapExtension))
+    stop("'gapExtension' must be a non-positive numeric vector of length 1")
+
+  ## Process string information
+  if (is.null(codec(x))) {
+    uniqueBases <- unique(unique(charToRaw(as.character(super(x)))))
+    alphabetToCodes <- as.integer(uniqueBases)
+    names(alphabetToCodes) <- rawToChar(uniqueBases, multiple = TRUE)
+  } else {
+    stringCodec <- codec(x)
+    alphabetToCodes <- stringCodec@codes
+    names(alphabetToCodes) <- stringCodec@letters
+  }
+
+  useQuality <- TRUE
+  alphabetLength <-
+    switch(class(x),
+           QualityScaledDNAStringSet =, QualityScaledRNAStringSet = 4L,
+           QualityScaledAAStringSet = 20L,
+           256L)
+
+  qualityLookupTable <-
+    buildLookupTable((minQuality(quality(x)) + offset(quality(x))):
+                     (maxQuality(quality(x)) + offset(quality(x))),
+                     0:(maxQuality(quality(x)) - minQuality(quality(x))))
+  qualityMatrices <-
+    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
+                                qualityClass = class(quality(x)))
+
+  constantLookupTable <- integer(0)
+  constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
+
+  answer <- .Call("XStringSet_align_distance",
+                  x,
+                  type,
+                  typeCode,
+                  gapOpening,
+                  gapExtension,
+                  useQuality,
+                  qualityLookupTable,
+                  qualityMatrices[["match"]],
+                  qualityMatrices[["mismatch"]],
+                  dim(qualityMatrices[["match"]]),
+                  constantLookupTable,
+                  constantMatrix,
+                  dim(constantMatrix),
+                  PACKAGE="Biostrings")
+  attr(answer, "Size") <- length(x)
+  attr(answer, "Labels") <- names(x)
+  attr(answer, "Diag") <- diag
+  attr(answer, "Upper") <- upper
+  attr(answer, "method") <- "quality"
+  class(answer) <- "dist"
+  return(answer)
+}
+
+
 setGeneric("stringDist", signature = "x",
            function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, ...)
            standardGeneric("stringDist"))
@@ -147,30 +193,72 @@ setMethod("stringDist",
           signature(x = "character"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1)
-          XStringSet.stringDist(x = BStringSet(x),
-                                method = method,
-                                ignoreCase = ignoreCase,
-                                diag = diag,
-                                upper = upper,
-                                type = type,
-                                quality = quality,
-                                substitutionMatrix = substitutionMatrix,
-                                gapExtension = gapExtension,
-                                gapOpening = gapOpening))
+                   gapOpening = 0, gapExtension = -1) {
+            if (method != "quality") {
+              XStringSet.stringDist(x = BStringSet(x),
+                                    method = method,
+                                    ignoreCase = ignoreCase,
+                                    diag = diag,
+                                    upper = upper,
+                                    type = type,
+                                    substitutionMatrix = substitutionMatrix,
+                                    gapExtension = gapExtension,
+                                    gapOpening = gapOpening)
+            } else {
+              QualityScaledXStringSet.stringDist(x = QualityScaledBStringSet(x, quality),
+                                                 ignoreCase = ignoreCase,
+                                                 diag = diag,
+                                                 upper = upper,
+                                                 type = type,
+                                                 gapExtension = gapExtension,
+                                                 gapOpening = gapOpening)
+          }})
 
 setMethod("stringDist",
           signature(x = "XStringSet"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1)
-          XStringSet.stringDist(x = x,
-                                method = method,
-								ignoreCase = ignoreCase,
-								diag = diag,
-								upper = upper,
-								type = type,
-								quality = quality,
-								substitutionMatrix = substitutionMatrix,
-								gapExtension = gapExtension,
-								gapOpening = gapOpening))
+                   gapOpening = 0, gapExtension = -1) {
+            if (method != "quality") {
+              XStringSet.stringDist(x = x,
+                                    method = method,
+                                    ignoreCase = ignoreCase,
+                                    diag = diag,
+                                    upper = upper,
+                                    type = type,
+                                    substitutionMatrix = substitutionMatrix,
+                                    gapExtension = gapExtension,
+                                    gapOpening = gapOpening)
+             } else {
+               QualityScaledXStringSet.stringDist(x = QualityScaledXStringSet(x, quality),
+                                                  ignoreCase = ignoreCase,
+                                                  diag = diag,
+                                                  upper = upper,
+                                                  type = type,
+                                                  gapExtension = gapExtension,
+                                                  gapOpening = gapOpening)
+          }})
+
+setMethod("stringDist",
+          signature(x = "QualityScaledXStringSet"),
+          function(x, method = "quality", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
+                   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1) {
+            if (method != "quality") {
+              XStringSet.stringDist(x = as(x, "XStringSet"),
+                                   method = method,
+                                   ignoreCase = ignoreCase,
+                                   diag = diag,
+                                   upper = upper,
+                                   type = type,
+                                   substitutionMatrix = substitutionMatrix,
+                                   gapExtension = gapExtension,
+                                   gapOpening = gapOpening)
+            } else {
+              QualityScaledXStringSet.stringDist(x = x,
+                                                 ignoreCase = ignoreCase,
+                                                 diag = diag,
+                                                 upper = upper,
+                                                 type = type,
+                                                 gapExtension = gapExtension,
+                                                 gapOpening = gapOpening)
+            }})
