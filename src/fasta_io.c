@@ -1,9 +1,10 @@
 /****************************************************************************
- *                          Fast RawPtr utilities                           *
+ *                          Read/write fasta files                          *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include <ctype.h> /* for isspace() */
 
 static int debug = 0;
 
@@ -11,19 +12,171 @@ SEXP debug_fasta_io()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'fasta_io.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in file %s\n",
+		debug ? "on" : "off", __FILE__);
 #else
-	Rprintf("Debug mode not available in 'fasta_io.c'\n");
+	Rprintf("Debug mode not available in file %s\n", __FILE__);
 #endif
 	return R_NilValue;
 }
 
+#define LINEBUF_SIZE 20001
+static char errmsg_buf[200];
 
-/****************************************************************************
- * I/O functions
- * =============
- *
+/*
+ * Even if the standard FASTA markup is made of 1-letter sympols, we want to
+ * be able to eventually support longer sympols.
  */
+static const char *comment_markup = ";", *desc_markup = ">";
+
+/*
+ * Return the number of chars that remain in the buffer after we've removed
+ * the right spaces ('\n', '\r', '\t', ' ', etc...).
+ */
+static int rtrim(char *linebuf)
+{
+	int i;
+
+	i = strlen(linebuf) - 1;
+	while (i >= 0 && isspace(linebuf[i])) i--;
+	linebuf[++i] = 0;
+	return i;
+}
+
+/*
+ * The LENGTHONLY storage handlers keep only the lengths of the description
+ * lines and the sequences.
+ */
+
+static IntAE desc_lengths, seq_lengths;
+
+static void store_desc_LENGTHONLY(int seqno, const RoSeq *dataline)
+{
+	IntAE_insert_at(&desc_lengths, desc_lengths.nelt, dataline->nelt);
+	return;
+}
+
+static void new_seq_LENGTHONLY(int seqno)
+{
+	IntAE_insert_at(&seq_lengths, seq_lengths.nelt, 0);
+	return;
+}
+
+static void update_current_seq_LENGTHONLY(const RoSeq *dataline)
+{
+	seq_lengths.elts[seq_lengths.nelt - 1] += dataline->nelt;
+	return;
+}
+
+static void store_current_seq_LENGTHONLY()
+{
+	return;
+}
+
+/*
+ * The CharAEAE storage handlers use 2 Auto-Extending buffers to keep all the
+ * data coming from the FASTA file in a single pass. The downside is that
+ * the content of the 2 Auto-Extending buffers must then be turned into an
+ * SEXP before it can be returned to the user.
+ */
+
+static CharAEAE descs, seqs;
+
+static void store_desc_CharAEAE(int seqno, const RoSeq *dataline)
+{
+	// This works only because dataline->elts is nul-terminated!
+	append_string_to_CharAEAE(&descs, dataline->elts);
+	return;
+}
+
+static void new_seq_CharAEAE(int seqno)
+{
+	append_string_to_CharAEAE(&seqs, "");
+	return;
+}
+
+static void update_current_seq_CharAEAE(const RoSeq *dataline)
+{
+	// This works only because dataline->elts is nul-terminated!
+	append_string_to_CharAE(seqs.elts + seqs.nelt - 1, dataline->elts);
+	return;
+}
+
+static void store_current_seq_CharAEAE()
+{
+	return;
+}
+
+
+/*
+ * Other storage handlers.
+ */
+
+static SEXP ans_names;
+
+static void store_desc1(int seqno, const RoSeq *dataline)
+{
+	// This works only because dataline->elts is nul-terminated!
+	SET_STRING_ELT(ans_names, seqno, mkChar(dataline->elts));
+	return;
+}
+
+/*
+ * Return the number of sequences in the file (>= 0) or -1 if an error occured.
+ * Ignore empty lines and lines starting with 'comment_markup' like
+ * in the original Pearson FASTA format.
+ * This function is agnostic about how the data that are read are stored in
+ * memory, how they will be returned to the user and how they will look to him.
+ * This is delegated to 4 storage handlers: store_desc(), new_seq(),
+ * update_current_seq() and store_current_seq().
+ */
+static int read_fasta_file(FILE *stream,
+		void (*store_desc)(int seqno, const RoSeq *dataline),
+		void (*new_seq)(int seqno),
+		void (*update_current_seq)(const RoSeq *dataline),
+		void (*store_current_seq)(void))
+{
+	int comment_markup_length, desc_markup_length, lineno, seqno;
+	char linebuf[LINEBUF_SIZE];
+	RoSeq dataline;
+
+	comment_markup_length = strlen(comment_markup);
+	desc_markup_length = strlen(desc_markup);
+	lineno = seqno = 0;
+	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
+		lineno++;
+		dataline.nelt = rtrim(linebuf);
+		if (dataline.nelt >= LINEBUF_SIZE - 1) { // > should never happen
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "cannot read line %d, line is too long", lineno);
+			return -1;
+		}
+		if (dataline.nelt == 0)
+			continue; // we ignore empty lines
+		if (strncmp(linebuf, comment_markup, comment_markup_length) == 0)
+			continue; // we ignore comment lines
+		dataline.elts = linebuf;
+		if (strncmp(linebuf, desc_markup, desc_markup_length) == 0) {
+			if (seqno != 0)
+				store_current_seq();
+			dataline.elts += desc_markup_length;
+			dataline.nelt -= desc_markup_length;
+			store_desc(seqno, &dataline);
+			new_seq(seqno);
+			seqno++;
+		} else {
+			if (seqno == 0) {
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+					 "\"%s\" expected at beginning of line %d",
+					 desc_markup, lineno);
+				return -1;
+			}
+			update_current_seq(&dataline);
+		}
+	}
+	return seqno;
+}
+
 
 #define FASTALINE_MAX 20000
 
