@@ -70,7 +70,7 @@
 
   ## For the character matrix containing the "exploded" representation
   ## of the strings, do:
-  as.matrix(orf10)
+  as.matrix(orf10, use.names=FALSE)
 }
 
 \keyword{methods}
