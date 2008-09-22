@@ -98,7 +98,7 @@ XStringSetToFASTArecords <- function(x)
 
 .read.fasta <- function(file, subjectClass, collapse)
 {
-    FASTArecs <- readFASTA(file, strip.desc=TRUE)
+    FASTArecs <- readFASTA(file, strip.descs=TRUE)
     FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse)
 }
 
@@ -153,8 +153,8 @@ XStringSetToFASTArecords <- function(x)
 ### 'file' must be a filesystem path (character string) to an uncompressed FASTA file.
 .read.uncompressed_fasta_file <- function(file, subjectClass, collapse)
 {
-    if (!is.character(file) || length(file) != 1 || is.na(file))
-        stop("'file' must be a non-NA character string")
+    if (!isSingleString(file))
+        stop("'file' must be a single string")
     filesize <- file.info(file)$size
     if (is.na(filesize))
         stop(file, ": file not found")
@@ -217,12 +217,12 @@ read.XStringViews <- function(file, format, subjectClass, collapse="")
 {
     if (missing(file))
         stop("'file' must be specified")
-    if (!is.character(format) || length(format) != 1 || is.na(format))
+    if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta"))
-    if (!is.character(subjectClass) || length(subjectClass) != 1 || is.na(subjectClass))
+    if (!isSingleString(subjectClass))
         stop("'subjectClass' must be a single string")
-    if (!is.character(collapse) || length(collapse) != 1 || is.na(collapse))
+    if (!isSingleString(collapse))
         stop("'collapse' must be a single string")
     switch(format,
         "fasta"=.read.fasta(file, subjectClass, collapse)

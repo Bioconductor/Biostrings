@@ -1,4 +1,6 @@
 \name{readFASTA}
+
+\alias{fasta.info}
 \alias{readFASTA}
 \alias{writeFASTA}
 
@@ -9,7 +11,8 @@ contain one or more sequences, for each sequence there is a description
 line which begins with a \code{>}.
 }
 \usage{
-  readFASTA(file, checkComments=TRUE, strip.desc=TRUE)
+  fasta.info(file, use.descs=TRUE)
+  readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
   writeFASTA(x, file="", width=80)
 }
 \arguments{
@@ -20,11 +23,16 @@ line which begins with a \code{>}.
     then the function writes to the standard output connection (the console)
     unless redirected by \code{sink}.
   }
+  \item{use.descs}{
+    \code{TRUE} or \code{FALSE}. Whether or not the description lines should
+    be used to name the elements of the returned integer vector.
+    
+  }
   \item{checkComments}{
     Whether or not comments, lines beginning with a semi-colon
     should be found and removed.
   }
-  \item{strip.desc}{
+  \item{strip.descs}{
     Whether or not the ">" marking the beginning of the description
     lines should be removed. Note that this argument is new
     in Biostrings >= 2.8. In previous versions \code{readFASTA}
@@ -38,22 +46,25 @@ line which begins with a \code{>}.
   }
 }
 \details{
- FASTA is a widely used format in biology. It is a relatively simple markup.
- I am not aware of a standard. It might be nice to check to see if the 
- data that were parsed are sequences of some appropriate type, but without
- a standard that does not seem possible.
+  FASTA is a widely used format in biology. It is a relatively simple markup.
+  I am not aware of a standard. It might be nice to check to see if the 
+  data that were parsed are sequences of some appropriate type, but without
+  a standard that does not seem possible.
 
- There are many other packages that provide similar, but different 
- capabilities.  The one in the package seqinr seems most similar but they
- separate the biological sequence into single character strings, which
- is too inefficient for large problems.
+  There are many other packages that provide similar, but different 
+  capabilities.  The one in the package seqinr seems most similar but they
+  separate the biological sequence into single character strings, which
+  is too inefficient for large problems.
 }
+
 \value{
- A list with one element for each sequence in the file. The elements 
-are in two parts, one the description and the second a character string
-of the biological sequence.
+  An integer vector (for \code{fasta.info}) or a list (for \code{readFASTA})
+  with one element for each sequence in the file.
+  For \code{readFASTA}, the elements are in two parts, one the description
+  and the second a character string of the biological sequence.
 }
-\author{ R. Gentleman }
+
+\author{R. Gentleman, H. Pages}
 
 \seealso{
   \code{\link{read.BStringSet}},
@@ -67,12 +78,14 @@ of the biological sequence.
 }
 
 \examples{
-f1 <- system.file("extdata", "someORF.fa", package="Biostrings")
-ff <- readFASTA(f1, strip.desc=TRUE)
-desc <- sapply(ff, function(x) x$desc)
-## Keep the "reverse complement" sequences only
-ff2 <- ff[grep("reverse complement", desc, fixed=TRUE)]
-writeFASTA(ff2, file.path(tempdir(), "someORF2.fa"))
+  f1 <- system.file("extdata", "someORF.fa", package="Biostrings")
+  file.info(f1)
+  ff <- readFASTA(f1, strip.descs=TRUE)
+  desc <- sapply(ff, function(x) x$desc)
+  ## Keep the "reverse complement" sequences only
+  ff2 <- ff[grep("reverse complement", desc, fixed=TRUE)]
+  writeFASTA(ff2, file.path(tempdir(), "someORF2.fa"))
 }
-\keyword{ manip}
 
+\keyword{utilities}
+\keyword{manip}

@@ -110,6 +110,7 @@
 }
 
 \seealso{
+  \code{\link{fasta.info}},
   \code{\link{readFASTA}},
   \code{\link{writeFASTA}},
   \link{XStringSet-class},
@@ -133,4 +134,5 @@
   x2 <- FASTArecordsToCharacter(x1) # same as 'as.character(x)'
 }
 
+\keyword{utilities}
 \keyword{manip}

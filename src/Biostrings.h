@@ -191,6 +191,11 @@ void _set_env_from_IntAEAE(
 
 SEXP debug_fasta_io();
 
+SEXP fasta_info(
+	SEXP filepath,
+	SEXP use_descs
+);
+
 SEXP RawPtr_loadFASTA(
 	SEXP rawptr_xp,
 	SEXP filepath,

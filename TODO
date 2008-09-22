@@ -234,7 +234,7 @@ In 2.11
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- readFASTA(): remove warning when strip.desc is missing.
+- readFASTA(): remove warning when strip.descs is missing.
 
 - Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
   alignment algo) into Biostrings.

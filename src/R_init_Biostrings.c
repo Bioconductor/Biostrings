@@ -26,6 +26,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* fasta_io.c */
 	CALLMETHOD_DEF(debug_fasta_io, 0),
+	CALLMETHOD_DEF(fasta_info, 2),
 	CALLMETHOD_DEF(RawPtr_loadFASTA, 4),
 
 /* XString_class.c */

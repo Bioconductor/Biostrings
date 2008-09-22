@@ -25,6 +25,10 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
+o Added fasta.info() for fast extraction of the descriptions and lengths of
+  the sequences stored in a FASTA file. Also renamed the 'strip.desc' argument
+  of readFASTA() -> 'strip.descs'.
+
 o Renamed replaceLetterAtLoc() -> replaceLetterAt() and renamed its 'loc'
   argument -> 'at'. Deprecated replaceLetterAtLoc().
 

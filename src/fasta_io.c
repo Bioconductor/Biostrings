@@ -48,62 +48,53 @@ static int rtrim(char *linebuf)
  * lines and the sequences.
  */
 
-static IntAE desc_lengths, seq_lengths;
+static IntAE desc_lengths_buf, seq_lengths_buf;
 
-static void store_desc_LENGTHONLY(int seqno, const RoSeq *dataline)
+static void add_desc_LENGTHONLY(int seqno, const RoSeq *dataline)
 {
-	IntAE_insert_at(&desc_lengths, desc_lengths.nelt, dataline->nelt);
+	IntAE_insert_at(&desc_lengths_buf, desc_lengths_buf.nelt, dataline->nelt);
 	return;
 }
 
-static void new_seq_LENGTHONLY(int seqno)
+static void add_empty_seq_LENGTHONLY(int seqno)
 {
-	IntAE_insert_at(&seq_lengths, seq_lengths.nelt, 0);
+	IntAE_insert_at(&seq_lengths_buf, seq_lengths_buf.nelt, 0);
 	return;
 }
 
-static void update_current_seq_LENGTHONLY(const RoSeq *dataline)
+static void append_to_last_seq_LENGTHONLY(const RoSeq *dataline)
 {
-	seq_lengths.elts[seq_lengths.nelt - 1] += dataline->nelt;
+	seq_lengths_buf.elts[seq_lengths_buf.nelt - 1] += dataline->nelt;
 	return;
 }
 
-static void store_current_seq_LENGTHONLY()
-{
-	return;
-}
 
 /*
- * The CharAEAE storage handlers use 2 Auto-Extending buffers to keep all the
+ * The CHARAEAE storage handlers use 2 Auto-Extending buffers to keep all the
  * data coming from the FASTA file in a single pass. The downside is that
  * the content of the 2 Auto-Extending buffers must then be turned into an
  * SEXP before it can be returned to the user.
  */
 
-static CharAEAE descs, seqs;
+static CharAEAE descs_buf, seqs_buf;
 
-static void store_desc_CharAEAE(int seqno, const RoSeq *dataline)
+static void add_desc_CHARAEAE(int seqno, const RoSeq *dataline)
 {
 	// This works only because dataline->elts is nul-terminated!
-	append_string_to_CharAEAE(&descs, dataline->elts);
+	append_string_to_CharAEAE(&descs_buf, dataline->elts);
 	return;
 }
 
-static void new_seq_CharAEAE(int seqno)
+static void add_empty_seq_CHARAEAE(int seqno)
 {
-	append_string_to_CharAEAE(&seqs, "");
+	append_string_to_CharAEAE(&seqs_buf, "");
 	return;
 }
 
-static void update_current_seq_CharAEAE(const RoSeq *dataline)
+static void append_to_last_seq_CHARAEAE(const RoSeq *dataline)
 {
 	// This works only because dataline->elts is nul-terminated!
-	append_string_to_CharAE(seqs.elts + seqs.nelt - 1, dataline->elts);
-	return;
-}
-
-static void store_current_seq_CharAEAE()
-{
+	append_string_to_CharAE(seqs_buf.elts + seqs_buf.nelt - 1, dataline->elts);
 	return;
 }
 
@@ -114,7 +105,7 @@ static void store_current_seq_CharAEAE()
 
 static SEXP ans_names;
 
-static void store_desc1(int seqno, const RoSeq *dataline)
+static void add_desc1(int seqno, const RoSeq *dataline)
 {
 	// This works only because dataline->elts is nul-terminated!
 	SET_STRING_ELT(ans_names, seqno, mkChar(dataline->elts));
@@ -127,14 +118,13 @@ static void store_desc1(int seqno, const RoSeq *dataline)
  * in the original Pearson FASTA format.
  * This function is agnostic about how the data that are read are stored in
  * memory, how they will be returned to the user and how they will look to him.
- * This is delegated to 4 storage handlers: store_desc(), new_seq(),
- * update_current_seq() and store_current_seq().
+ * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
+ * append_to_last_seq().
  */
 static int read_fasta_file(FILE *stream,
-		void (*store_desc)(int seqno, const RoSeq *dataline),
-		void (*new_seq)(int seqno),
-		void (*update_current_seq)(const RoSeq *dataline),
-		void (*store_current_seq)(void))
+		void (*add_desc)(int seqno, const RoSeq *dataline),
+		void (*add_empty_seq)(int seqno),
+		void (*append_to_last_seq)(const RoSeq *dataline))
 {
 	int comment_markup_length, desc_markup_length, lineno, seqno;
 	char linebuf[LINEBUF_SIZE];
@@ -146,7 +136,8 @@ static int read_fasta_file(FILE *stream,
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
 		dataline.nelt = rtrim(linebuf);
-		if (dataline.nelt >= LINEBUF_SIZE - 1) { // > should never happen
+		// dataline.nelt > LINEBUF_SIZE - 1 should never happen
+		if (dataline.nelt >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long", lineno);
 			return -1;
@@ -157,12 +148,13 @@ static int read_fasta_file(FILE *stream,
 			continue; // we ignore comment lines
 		dataline.elts = linebuf;
 		if (strncmp(linebuf, desc_markup, desc_markup_length) == 0) {
-			if (seqno != 0)
-				store_current_seq();
-			dataline.elts += desc_markup_length;
-			dataline.nelt -= desc_markup_length;
-			store_desc(seqno, &dataline);
-			new_seq(seqno);
+			if (add_desc != NULL) {
+				dataline.elts += desc_markup_length;
+				dataline.nelt -= desc_markup_length;
+				add_desc(seqno, &dataline);
+			}
+			if (add_empty_seq != NULL)
+				add_empty_seq(seqno);
 			seqno++;
 		} else {
 			if (seqno == 0) {
@@ -171,10 +163,49 @@ static int read_fasta_file(FILE *stream,
 					 desc_markup, lineno);
 				return -1;
 			}
-			update_current_seq(&dataline);
+			if (append_to_last_seq != NULL)
+				append_to_last_seq(&dataline);
 		}
 	}
 	return seqno;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP fasta_info(SEXP filepath, SEXP use_descs)
+{
+	const char *path;
+	FILE *stream;
+	void (*add_desc)(int seqno, const RoSeq *dataline);
+	RoSeqs descs;
+	SEXP ans, ans_names;
+
+	path = translateChar(STRING_ELT(filepath, 0));
+	if ((stream = fopen(path, "r")) == NULL)
+		error("cannot open file '%s'", path);
+	if (LOGICAL(use_descs)[0]) {
+		add_desc = &add_desc_CHARAEAE;
+		descs_buf = new_CharAEAE(0, 0);
+	} else {
+		add_desc = NULL;
+	}
+	seq_lengths_buf = new_IntAE(0, 0, 0);
+	if (read_fasta_file(stream, add_desc,
+			&add_empty_seq_LENGTHONLY,
+			&append_to_last_seq_LENGTHONLY) < 0)
+	{
+		error("%s", errmsg_buf);
+	}
+	PROTECT(ans = IntAE_asINTEGER(&seq_lengths_buf));
+	if (LOGICAL(use_descs)[0]) {
+		descs = _new_RoSeqs_from_CharAEAE(&descs_buf);
+		PROTECT(ans_names = _new_STRSXP_from_RoSeqs(&descs, R_NilValue));
+		SET_NAMES(ans, ans_names);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
 }
 
 

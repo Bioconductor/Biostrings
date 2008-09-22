@@ -1,9 +1,17 @@
-### Robert contribution
-readFASTA <- function(file, checkComments=TRUE, strip.desc=TRUE)
+fasta.info <- function(file, use.descs=TRUE)
 {
-    if (missing(strip.desc))
-        warning("use 'strip.desc=FALSE' for compatibility with old version\n",
-                "  of readFASTA(), or 'strip.desc=TRUE' to remove the \">\"\n",
+    if (!isSingleString(file))
+        stop("'file' must be a single string")
+    use.descs <- normargUseNames(use.descs)
+    .Call("fasta_info", file, use.descs, PACKAGE="Biostrings")
+}
+
+### Robert's contribution
+readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
+{
+    if (missing(strip.descs))
+        warning("use 'strip.descs=FALSE' for compatibility with old version\n",
+                "  of readFASTA(), or 'strip.descs=TRUE' to remove the \">\"\n",
                 "  at the beginning of the description lines and to get\n",
                 "  rid of this warning (see '?readFASTA' for more details)")
     if (is.character(file)) {
@@ -37,7 +45,7 @@ readFASTA <- function(file, checkComments=TRUE, strip.desc=TRUE)
            function(i)
            {
                desc <- s1[descriptions[i]]
-               if (strip.desc)
+               if (strip.descs)
                    desc <- substr(desc, 2L, nchar(desc))
                seq <- paste(s1[dp[i]:end[i]], collapse="")
                list(desc=desc, seq=seq)
