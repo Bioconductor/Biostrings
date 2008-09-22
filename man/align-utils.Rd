@@ -69,8 +69,8 @@
   consmat(orf10)
 
   ## For the character matrix containing the "exploded" representation
-  ## of the views, do:
-  as.matrix(orf10, mode="character")
+  ## of the strings, do:
+  as.matrix(orf10)
 }
 
 \keyword{methods}

@@ -500,6 +500,26 @@ setMethod("as.character", "XStringSet",
     }
 )
 
+setMethod("as.matrix", "XStringSet",
+    function(x, use.names=TRUE)
+    {
+        use.names <- normargUseNames(use.names)
+        nrow <- length(x)
+        if (nrow == 0)
+            stop("'x' must contain at least 1 string")
+        widths <- width(x)
+        ncol <- widths[1]
+        if (!all(widths == ncol))
+            stop("'x' strings are not equal-width")
+        y <- as.character(x, use.names=FALSE)
+        y <- unlist(strsplit(y, NULL), recursive=FALSE, use.names=FALSE)
+        m <- matrix(y, nrow=nrow, byrow=TRUE)
+        if (use.names)
+            rownames(m) <- names(x)
+        m
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Ordering and related methods.
