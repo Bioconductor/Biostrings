@@ -173,7 +173,7 @@ setMethod("as.character", "AlignedXStringSet",
     }
 )
 
-setMethod("toString", "AlignedXStringSet", function(x, ...) as.character(x))
+setMethod("toString", "AlignedXStringSet", function(x, ...) toString(as.character(x), ...))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

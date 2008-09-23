@@ -138,7 +138,7 @@
       without insertions. This operation ``aligns" the alignments.
     }
     \item{}{
-      \code{as.character(x)} and \code{toString(x)}:
+      \code{as.character(x)}:
       Converts \code{aligned(x)} to a character vector.
     }
     \item{}{
@@ -151,6 +151,10 @@
       along \code{unaligned(subject(subject))}. The \code{start} and \code{end}
       arguments must be either \code{NA} or an integer vector of length 1 that
       denotes the offset from \code{start(subject(subject))}.
+    }
+    \item{}{
+      \code{toString(x)}:
+      Equivalent to \code{toString(as.character(x))}.
     }
   }
 }

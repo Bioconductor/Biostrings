@@ -308,7 +308,7 @@ Function                    & Description \\
 \Rfunction{[}               & Extracts the specified elements of the alignment object \\
 \Rfunction{aligned}         & Creates \Rclass{XStringSet} alignments without insertions \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
-\Rfunction{as.character}, \Rfunction{toString} & Creates a character vector version of \Rfunction{aligned} \\
+\Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
 \Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
 \Rfunction{consmat}         & Computes a consensus matrix for the alignments \\
 \Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
@@ -325,6 +325,7 @@ Function                    & Description \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
 \Rfunction{score}           & Extracts the pairwise sequence alignment scores \\
 \Rfunction{summary}         & Summarizes a pairwise sequence alignment \\
+\Rfunction{toString}        & Creates a concatenated string version of \Rfunction{aligned} \\
 \Rfunction{type}            & Extracts the type of pairwise sequence alignment \\
 \Rfunction{views}           & Extracts the alignment ranges for the subject \\
 \hline
@@ -390,6 +391,7 @@ Function                    & Description \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
 \Rfunction{start}           & Extracts the starting index of the aligned range \\
+\Rfunction{toString}        & Creates a concatenated string containing the alignments \\
 \Rfunction{width}           & Extracts the width of the aligned range \\
 \hline
 \end{tabular}

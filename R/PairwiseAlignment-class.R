@@ -264,7 +264,7 @@ setMethod("as.character", "PairwiseAlignment",
               as.character(aligned(x))
           })
 
-setMethod("toString", "PairwiseAlignment", function(x, ...) as.character(x))
+setMethod("toString", "PairwiseAlignment", function(x, ...) toString(as.character(x), ...))
 
 setMethod("as.matrix", "PairwiseAlignment",
           function(x) {

@@ -203,10 +203,6 @@
       used to set the names of the returned vector (default is \code{TRUE}).
     }
     \item{}{
-      \code{toString(x)}:
-      Equivalent to \code{as.character(x)}.
-    }
-    \item{}{
       \code{as.matrix(x, use.names)}:
       Returns a character matrix containing the "exploded" representation of
       the strings. This can only be used on an XStringSet object with
@@ -217,6 +213,10 @@
     \item{}{
       \code{as.list(x)}:
       Return the elements in \code{x} as a standard R list.
+    }
+    \item{}{
+      \code{toString(x)}:
+      Equivalent to \code{toString(as.character(x))}.
     }
   }
 }

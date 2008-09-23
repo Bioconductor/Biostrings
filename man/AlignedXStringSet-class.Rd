@@ -129,8 +129,12 @@
       Equivalent to \code{alphabet(unaligned(x))}.
     }
     \item{}{
-      \code{as.character(x)} and \code{toString(x)}:
+      \code{as.character(x)}:
       Converts \code{aligned(x)} to a character vector.
+    }
+    \item{}{
+      \code{toString(x)}:
+      Equivalent to \code{toString(as.character(x))}.
     }
   }
 }
