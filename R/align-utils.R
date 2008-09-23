@@ -89,7 +89,10 @@ setMethod("consmat", "AlignedXStringSet",
 setMethod("consmat", "PairwiseAlignment",
     function(x, freq=TRUE)
     {
-        consmat(as.character(x), freq=freq)
+        pos <- rep.int(seq_len(nchar(unaligned(subject(x)))), length(x))
+        ans <- table(letter=t(as.matrix(x)), pos=pos)
+        if (freq)
+            ans <- ans / length(x)
+        ans
     }
 )
-

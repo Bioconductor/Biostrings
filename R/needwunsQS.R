@@ -141,13 +141,13 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
             unaligned = XStringSet(class(s1), new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1))),
             range = IRanges(start = 1, width = length(C_ans$al1)),
             mismatch = list(integer(0)),
-            indel = RangesCollection(IRanges(start = numeric(0), width = numeric(0)))),
+            indel = RangesList(IRanges(start = numeric(0), width = numeric(0)))),
         subject =
         new("AlignedXStringSet",
             unaligned = XStringSet(class(s2), new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2))),
             range = IRanges(start = 1, width = length(C_ans$al2)),
             mismatch = list(integer(0)),
-            indel = RangesCollection(IRanges(start = numeric(0), width = numeric(0)))),
+            indel = RangesList(IRanges(start = numeric(0), width = numeric(0)))),
         score = C_ans$score, type = "global", constantMatrix = substmat,
         gapOpening = 0, gapExtension = gappen)
 }

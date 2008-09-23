@@ -36,6 +36,7 @@
 \alias{summary,PairwiseAlignment-method}
 \alias{as.character,PairwiseAlignment-method}
 \alias{toString,PairwiseAlignment-method}
+\alias{as.matrix,PairwiseAlignment-method}
 \alias{[,PairwiseAlignment-method}
 \alias{[<-,PairwiseAlignment-method}
 \alias{rep,PairwiseAlignment-method}
@@ -136,6 +137,12 @@
       \code{as.character(pattern(x))} and \code{as.character(subject(x))}.
     }
     \item{}{
+      \code{as.matrix(x)}:
+      Returns a character matrix with \code{nrow = length(x)} and
+      \code{ncol = nchar(unaligned(subject(x)))} containing the "exploded"
+      representation of the aligned patterns. This operation ignores insertions.
+    }
+    \item{}{
       \code{Views(subject, start=NA, end=NA, names=NULL)}:
       The \code{XStringViews} object that represents the pairwise alignments along \code{unaligned(subject(subject))}.
       The \code{start} and \code{end} arguments must be either \code{NA} or an integer vector of length 1 that
@@ -168,12 +175,13 @@
 }
 
 \examples{
-  pattern <- AAString("LAND")
-  subject <- AAString("LEAVES")
+  pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
+  subject <- AAString("SMDDTEKMSMKL")
   nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
   pattern(nw1)
   subject(nw1)
   as.character(nw1)
+  as.matrix(nw1)
   nchar(nw1)
   score(nw1)
   nw1

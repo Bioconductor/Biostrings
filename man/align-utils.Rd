@@ -59,6 +59,12 @@
   string2 <- "GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC"
   compareStrings(string1, string2)
 
+  ## Create a consensus matrix
+  nw1 <-
+    pairwiseAlignment(AAStringSet(c("HLDNLKGTF", "HVDDMPNAL")), AAString("SMDDTEKMSMKL"),
+      substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+  consmat(nw1, freq=FALSE)
+
   ## Read in ORF data
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   orf <- read.DNAStringSet(file, "fasta")

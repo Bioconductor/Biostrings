@@ -254,6 +254,19 @@ setMethod("as.character", "PairwiseAlignment",
 
 setMethod("toString", "PairwiseAlignment", function(x, ...) as.character(x))
 
+setMethod("as.matrix", "PairwiseAlignment",
+          function(x) {
+              codecX <- codec(x)
+              if (is.null(codecX)) {
+                  gapCode <- charToRaw("-")
+              } else {
+                  letters2codes <- codecX@codes
+                  names(letters2codes) <- codecX@letters
+                  gapCode <- as.raw(letters2codes[["-"]])
+              }
+              as.matrix(.Call("PairwiseAlignment_patternMapping", x, gapCode, PACKAGE="Biostrings"))
+          })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.

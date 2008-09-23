@@ -4,7 +4,7 @@
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("range_list"));
+	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("elements"));
 	int numberOfAlignments = LENGTH(indel);
 
 	SEXP output;
@@ -35,7 +35,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP unaligned = GET_SLOT(alignedXStringSet, install("unaligned"));
 	CachedXStringSet cachedAlignedXStringSet = _new_CachedXStringSet(unaligned);
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("range_list"));
+	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("elements"));
 
 	const char *stringSetClass = get_class(unaligned);
 	const char *stringClass = get_class(GET_SLOT(unaligned, install("super")));
@@ -113,6 +113,118 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	UNPROTECT(6);
 
 	return output;
+}
+
+
+SEXP PairwiseAlignment_patternMapping(SEXP alignment, SEXP gapCode)
+{
+	int i, j;
+	char gapCodeValue = (char) RAW(gapCode)[0];
+
+	SEXP pattern = GET_SLOT(alignment, install("pattern"));
+	SEXP unalignedPattern = GET_SLOT(pattern, install("unaligned"));
+	CachedXStringSet cachedUnalignedPattern = _new_CachedXStringSet(unalignedPattern);
+	SEXP rangePattern = GET_SLOT(pattern, install("range"));
+	SEXP indelPattern = GET_SLOT(GET_SLOT(pattern, install("indel")), install("elements"));
+
+	SEXP subject = GET_SLOT(alignment, install("subject"));
+	SEXP rangeSubject = GET_SLOT(subject, install("range"));
+	SEXP indelSubject = GET_SLOT(GET_SLOT(subject, install("indel")), install("elements"));
+
+	const char *stringSetClass = get_class(unalignedPattern);
+	const char *stringClass = get_class(GET_SLOT(unalignedPattern, install("super")));
+
+	int numberOfAlignments = LENGTH(indelPattern);
+	int numberOfChars = INTEGER(GET_SLOT(GET_SLOT(subject, install("unaligned")), install("width")))[0];
+
+	SEXP output;
+	PROTECT(output = NEW_OBJECT(MAKE_CLASS(stringSetClass)));
+
+	SEXP mappedString, mappedStart, mappedWidth;
+	PROTECT(mappedWidth = NEW_INTEGER(numberOfAlignments));
+	PROTECT(mappedStart = NEW_INTEGER(numberOfAlignments));
+	int totalNChars = numberOfAlignments * numberOfChars;
+	int *width_i, *start_i;
+	if (totalNChars > 0) {
+		for (i = 0, start_i = INTEGER(mappedStart), width_i = INTEGER(mappedWidth);
+				i < numberOfAlignments; i++, start_i++, width_i++) {
+			*start_i = i * numberOfChars + 1;
+			*width_i = numberOfChars;
+		}
+	}
+	SEXP mappedStringTag, mappedStringXData;
+	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
+	PROTECT(mappedStringXData = new_SequencePtr("RawPtr", mappedStringTag));
+	PROTECT(mappedString = _new_XString(stringClass, mappedStringXData, 0, LENGTH(mappedStringTag)));
+	char *mappedStringPtr = (char *) RAW(mappedStringTag);
+	SET_SLOT(output, mkChar("super"), mappedString);
+	SET_SLOT(output, mkChar("start"), mappedStart);
+	SET_SLOT(output, mkChar("width"), mappedWidth);
+
+	int index = 0;
+	const int *rangeStartPattern, *rangeWidthPattern, *rangeStartSubject, *rangeWidthSubject;
+	for (i = 0,
+			rangeStartPattern = INTEGER(get_IRanges_start(rangePattern)),
+			rangeWidthPattern = INTEGER(get_IRanges_width(rangePattern)),
+			rangeStartSubject = INTEGER(get_IRanges_start(rangeSubject)),
+			rangeWidthSubject = INTEGER(get_IRanges_width(rangeSubject));
+	         i < numberOfAlignments;
+	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
+		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
+		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
+		SEXP indelElementPattern = VECTOR_ELT(indelPattern, i);
+		SEXP indelElementSubject = VECTOR_ELT(indelSubject, i);
+		int numberOfIndelPattern = LENGTH(get_IRanges_start(indelElementPattern));
+		int numberOfIndelSubject = LENGTH(get_IRanges_start(indelElementSubject));
+
+		for (j = 0; j < *rangeStartSubject - 1; j++) {
+			mappedStringPtr[index] = gapCodeValue;
+			index++;
+		}
+		int jPattern = 1;
+		const int *indelStartPattern, *indelWidthPattern, *indelStartSubject, *indelWidthSubject;
+		if (numberOfIndelPattern > 0) {
+			indelStartPattern = INTEGER(get_IRanges_start(indelElementPattern));
+			indelWidthPattern = INTEGER(get_IRanges_width(indelElementPattern));
+		}
+		if (numberOfIndelSubject > 0) {
+			indelStartSubject = INTEGER(get_IRanges_start(indelElementSubject));
+			indelWidthSubject = INTEGER(get_IRanges_width(indelElementSubject));
+		}
+		for (j = 1; j <= *rangeWidthSubject; j++) {
+			if ((numberOfIndelSubject == 0) || (j < *indelStartSubject)) {
+				if ((numberOfIndelPattern == 0) || (jPattern < *indelStartPattern)) {
+					mappedStringPtr[index] = *origStringPtr;
+					index++;
+					origStringPtr++;
+					jPattern++;
+				} else {
+					for (int k = 0; k < *indelWidthPattern; k++) {
+						mappedStringPtr[index] = gapCodeValue;
+						index++;
+					}
+					j += *indelWidthPattern - 1;
+					indelStartPattern++;
+					indelWidthPattern++;
+					numberOfIndelPattern--;
+				}
+			} else {
+				origStringPtr += *indelWidthSubject;
+				jPattern += *indelWidthSubject;
+				j--;
+				indelStartSubject++;
+				indelWidthSubject++;
+				numberOfIndelSubject--;
+			}
+		}
+		for (j = *rangeStartSubject + (*rangeWidthSubject - 1); j < numberOfChars; j++) {
+			mappedStringPtr[index] = gapCodeValue;
+			index++;
+		}
+	}
+	UNPROTECT(6);
+
+	return(output);
 }
 
 
