@@ -53,7 +53,11 @@ setMethod("consmat", "character",
 setMethod("consmat", "matrix",
     function(x, freq=TRUE)
     {
-        cat("coming soon...\n")
+        pos <- rep.int(seq_len(ncol(x)), nrow(x))
+        ans <- table(letter=t(x), pos=pos)
+        if (freq)
+            ans <- ans / nrow(x)
+        ans
     }
 )
 
@@ -89,10 +93,6 @@ setMethod("consmat", "AlignedXStringSet",
 setMethod("consmat", "PairwiseAlignment",
     function(x, freq=TRUE)
     {
-        pos <- rep.int(seq_len(nchar(unaligned(subject(x)))), length(x))
-        ans <- table(letter=t(as.matrix(x)), pos=pos)
-        if (freq)
-            ans <- ans / length(x)
-        ans
+        consmat(as.matrix(x), freq=freq)
     }
 )
