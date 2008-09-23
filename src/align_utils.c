@@ -116,7 +116,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 }
 
 
-SEXP PairwiseAlignment_patternMapping(SEXP alignment, SEXP gapCode)
+SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 {
 	int i, j;
 	char gapCodeValue = (char) RAW(gapCode)[0];

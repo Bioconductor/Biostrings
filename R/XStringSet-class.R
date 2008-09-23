@@ -500,6 +500,8 @@ setMethod("as.character", "XStringSet",
     }
 )
 
+setMethod("toString", "XStringSet", function(x, ...) as.character(x))
+
 setMethod("as.matrix", "XStringSet",
     function(x, use.names=TRUE)
     {

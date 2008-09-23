@@ -52,6 +52,7 @@
 % Other methods:
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
+\alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}
 
 
@@ -200,6 +201,10 @@
       Convert \code{x} to a character vector of the same length as \code{x}.
       \code{use.names} controls whether or not \code{desc(x)} should be
       used to set the names of the returned vector (default is \code{TRUE}).
+    }
+    \item{}{
+      \code{toString(x)}:
+      Equivalent to \code{as.character(x)}.
     }
     \item{}{
       \code{as.matrix(x, use.names)}:

@@ -828,6 +828,6 @@ SEXP XStringSet_align_distance(
 
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet);
 SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode);
-SEXP PairwiseAlignment_patternMapping(SEXP alignment, SEXP gapCode);
+SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode);
 SEXP align_compareStrings(SEXP patternStrings, SEXP subjectStrings, SEXP maxNChar,
                           SEXP insertionCode, SEXP deletionCode, SEXP mismatchCode);

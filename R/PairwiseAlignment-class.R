@@ -245,16 +245,7 @@ setMethod("show", "PairwiseAlignmentSummary", function(object)
 ### The "as.character" method.
 ###
 
-setMethod("as.character", "PairwiseAlignment",
-    function(x)
-    {
-        rbind(pattern = as.character(pattern(x)), subject = as.character(subject(x)))
-    }
-)
-
-setMethod("toString", "PairwiseAlignment", function(x, ...) as.character(x))
-
-setMethod("as.matrix", "PairwiseAlignment",
+setMethod("aligned", "PairwiseAlignment",
           function(x) {
               codecX <- codec(x)
               if (is.null(codecX)) {
@@ -264,7 +255,20 @@ setMethod("as.matrix", "PairwiseAlignment",
                   names(letters2codes) <- codecX@letters
                   gapCode <- as.raw(letters2codes[["-"]])
               }
-              as.matrix(.Call("PairwiseAlignment_patternMapping", x, gapCode, PACKAGE="Biostrings"))
+              .Call("PairwiseAlignment_align_aligned", x, gapCode, PACKAGE="Biostrings")
+          })
+
+setMethod("as.character", "PairwiseAlignment",
+          function(x)
+          {
+              as.character(aligned(x))
+          })
+
+setMethod("toString", "PairwiseAlignment", function(x, ...) as.character(x))
+
+setMethod("as.matrix", "PairwiseAlignment",
+          function(x) {
+              as.matrix(aligned(x))
           })
 
 

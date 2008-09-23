@@ -28,6 +28,7 @@
 \alias{nchar,PairwiseAlignment-method}
 \alias{nchar,PairwiseAlignmentSummary-method}
 \alias{alphabet,PairwiseAlignment-method}
+\alias{aligned,PairwiseAlignment-method}
 \alias{Views,PairwiseAlignment-method}
 
 % Standard generic methods:
@@ -132,20 +133,23 @@
       Generates a summary for the \code{PairwiseAlignment}.
     }
     \item{}{
+      \code{aligned(x)}:
+      Returns an \code{XStringSet} object containing the aligned patterns
+      without insertions. This operation ``aligns" the alignments.
+    }
+    \item{}{
       \code{as.character(x)} and \code{toString(x)}:
-      Converts \code{x} to a named two row matrix containing the results of
-      \code{as.character(pattern(x))} and \code{as.character(subject(x))}.
+      Converts \code{aligned(x)} to a character vector.
     }
     \item{}{
       \code{as.matrix(x)}:
-      Returns a character matrix with \code{nrow = length(x)} and
-      \code{ncol = nchar(unaligned(subject(x)))} containing the "exploded"
-      representation of the aligned patterns. This operation ignores insertions.
+      Returns an "exploded" character matrix representation of \code{aligned(x)}.
     }
     \item{}{
       \code{Views(subject, start=NA, end=NA, names=NULL)}:
-      The \code{XStringViews} object that represents the pairwise alignments along \code{unaligned(subject(subject))}.
-      The \code{start} and \code{end} arguments must be either \code{NA} or an integer vector of length 1 that
+      The \code{XStringViews} object that represents the pairwise alignments
+      along \code{unaligned(subject(subject))}. The \code{start} and \code{end}
+      arguments must be either \code{NA} or an integer vector of length 1 that
       denotes the offset from \code{start(subject(subject))}.
     }
   }
@@ -180,6 +184,7 @@
   nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
   pattern(nw1)
   subject(nw1)
+  aligned(nw1)
   as.character(nw1)
   as.matrix(nw1)
   nchar(nw1)

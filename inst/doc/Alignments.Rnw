@@ -306,9 +306,10 @@ preference to direct slot extraction from the alignment objects.
 Function                    & Description \\
 \hline
 \Rfunction{[}               & Extracts the specified elements of the alignment object \\
+\Rfunction{aligned}         & Creates \Rclass{XStringSet} alignments without insertions \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
-\Rfunction{as.character}    & Converts the alignments to character strings \\
-\Rfunction{as.matrix}       & Converts the alignments to an ``exploded" character matrix \\
+\Rfunction{as.character}, \Rfunction{toString} & Creates a character vector version of \Rfunction{aligned} \\
+\Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
 \Rfunction{consmat}         & Computes a consensus matrix for the alignments \\
 \Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
 \Rfunction{coverage}        & Computes the alignment coverage along the subject \\
@@ -350,6 +351,7 @@ score(psa2)
 nmatch(psa2)
 nmismatch(psa2)
 nchar(psa2)
+aligned(psa2)
 as.character(psa2)
 as.matrix(psa2)
 consmat(psa2, freq=FALSE)
