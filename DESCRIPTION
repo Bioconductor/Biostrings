@@ -8,12 +8,12 @@ Version: 2.9.78
 Author: H. Pages, R. Gentleman, P. Aboyoun and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
-Depends: R (>= 2.8.0), methods, utils, IRanges (>= 0.99.14), Biobase
+Depends: R (>= 2.8.0), methods, utils, IRanges (>= 0.99.15), Biobase
 Imports: methods, utils, IRanges, Biobase
 LinkingTo: IRanges
 Suggests: BSgenome (>= 1.9.10),
-	BSgenome.Celegans.UCSC.ce2 (>= 1.3.4),
-	BSgenome.Dmelanogaster.UCSC.dm3 (>= 1.3.7),
+	BSgenome.Celegans.UCSC.ce2 (>= 1.3.9),
+	BSgenome.Dmelanogaster.UCSC.dm3 (>= 1.3.9),
 	drosophila2probe, hgu95av2probe,
 	RUnit
 License: Artistic-2.0
