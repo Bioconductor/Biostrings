@@ -10,7 +10,6 @@
 \alias{consmat,list-method}
 \alias{consmat,XStringSet-method}
 \alias{consmat,XStringViews-method}
-\alias{consmat,AlignedXStringSet-method}
 \alias{consmat,PairwiseAlignment-method}
 
 
@@ -43,8 +42,9 @@
     \code{PairwiseAlignment} object, then \code{subject} must be missing.
   }
   \item{x}{
-    A \code{character} vector, \code{XStringSet}, \code{XStringView}, \code{AlignedXStringSet},
-    \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length strings.
+    A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
+    \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length
+    strings.
   }
   \item{\dots}{
     Further arguments to be passed to or from other methods.

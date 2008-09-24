@@ -82,13 +82,6 @@ setMethod("consmat", "XStringViews",
     }
 )
 
-setMethod("consmat", "AlignedXStringSet",
-    function(x, freq=FALSE)
-    {
-        consmat(aligned(x), freq=freq)
-    }
-)
-
 setMethod("consmat", "PairwiseAlignment",
     function(x, freq=FALSE)
     {
