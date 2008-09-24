@@ -83,8 +83,8 @@ setMethod("consmat", "XStringViews",
 )
 
 setMethod("consmat", "PairwiseAlignment",
-    function(x, freq=FALSE)
+    function(x, baseOnly=FALSE, freq=FALSE)
     {
-        consmat(aligned(x), freq=freq)
+        consmat(aligned(x), baseOnly=baseOnly, freq=freq)
     }
 )
