@@ -355,7 +355,7 @@ nchar(psa2)
 aligned(psa2)
 as.character(psa2)
 as.matrix(psa2)
-consmat(psa2, freq=FALSE)
+consmat(psa2)
 @
 
 The \Rfunction{summary}, \Rfunction{mismatchTable}, and 
@@ -863,21 +863,21 @@ file <- system.file("extdata", "someORF.fa", package="Biostrings")
 orf <- read.DNAStringSet(file, "fasta")
 orf
 orf10 <- DNAStringSet(orf, end=10)
-consmat(orf10)
+consmat(orf10, baseOnly=TRUE, freq=TRUE)
 @
 
 The information content as defined by Hertz and Stormo 1995 is computed as
 follows:
 <<infco>>=
-infContent <- function(Lmers) {
+informationContent <- function(Lmers) {
  zlog <- function(x) ifelse(x==0,0,log(x))
  co <- consmat(Lmers, freq=TRUE)
  lets <- rownames(co)
- fr <- colSums(alphabetFrequency(Lmers)[,lets])
+ fr <- alphabetFrequency(Lmers, collapse=TRUE)[lets]
  fr <- fr / sum(fr)
- sum(co*zlog(co/fr))
+ sum(co*zlog(co/fr), na.rm=TRUE)
 }
-infContent(orf10)
+informationContent(orf10)
 @
 
 

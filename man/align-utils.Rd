@@ -22,7 +22,9 @@
 
 \usage{
   compareStrings(pattern, subject)
-  consmat(x, freq=TRUE)
+  consmat(x, \dots)
+  \S4method{consmat}{character}(x, freq=FALSE)
+  \S4method{consmat}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
 }
 
 \details{
@@ -44,6 +46,18 @@
     A \code{character} vector, \code{XStringSet}, \code{XStringView}, \code{AlignedXStringSet},
     \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length strings.
   }
+  \item{\dots}{
+    Further arguments to be passed to or from other methods.
+  }
+  \item{baseOnly}{
+    \code{TRUE} or \code{FALSE}.
+    If \code{TRUE}, the returned vector only contains frequencies for the
+    letters in the "base" alphabet i.e. "A", "C", "G", "T" if \code{x}
+    is a "DNA input", and "A", "C", "G", "U" if \code{x} is "RNA input".
+    When \code{x} is a \link{BString} object (or an \link{XStringViews}
+    object with a \link{BString} subject, or a \link{BStringSet} object),
+    then the \code{baseOnly} argument is ignored.
+  }
   \item{freq}{
     If \code{TRUE}, then letter frequencies (per position) are reported, otherwise counts.
   }
@@ -63,7 +77,7 @@
   nw1 <-
     pairwiseAlignment(AAStringSet(c("HLDNLKGTF", "HVDDMPNAL")), AAString("SMDDTEKMSMKL"),
       substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
-  consmat(nw1, freq=FALSE)
+  consmat(nw1)
 
   ## Read in ORF data
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
@@ -72,7 +86,7 @@
   ## To illustrate, the following example assumes the ORF data
   ## to be aligned for the first 10 positions (patently false):
   orf10 <- DNAStringSet(orf, end=10)
-  consmat(orf10)
+  consmat(orf10, baseOnly=TRUE, freq=TRUE)
 
   ## For the character matrix containing the "exploded" representation
   ## of the strings, do:

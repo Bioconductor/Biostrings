@@ -338,6 +338,12 @@ SEXP XStringSet_char_frequency(
 	SEXP collapse
 );
 
+SEXP XStringSet_char_frequency_by_pos(
+	SEXP x,
+	SEXP codes,
+	SEXP with_other
+);
+
 SEXP oligonucleotide_frequency(
 	SEXP x,
 	SEXP base_codes,

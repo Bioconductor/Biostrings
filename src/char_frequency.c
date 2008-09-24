@@ -28,12 +28,29 @@ static void add_freqs(RoSeq X, SEXP codes, int *freqs)
 	if (codes == R_NilValue)
 		for (i = 0; i < X.nelt; i++, X.elts++)
 			freqs[((unsigned char) *X.elts)]++;
-	else 
+	else
 		for (i = 0; i < X.nelt; i++, X.elts++) {
 			offset = code2offset[(unsigned char) *X.elts];
-			if (offset == -1) 
+			if (offset == -1)
 				continue;
 			freqs[offset]++;
+		}
+	return;
+}
+
+static void add_freqs_by_pos(RoSeq X, SEXP codes, int nrow, int *freqs)
+{
+	static int i, offset;
+
+	if (codes == R_NilValue)
+		for (i = 0; i < X.nelt; i++, X.elts++)
+			freqs[(i * nrow) + ((unsigned char) *X.elts)]++;
+	else
+		for (i = 0; i < X.nelt; i++, X.elts++) {
+			offset = code2offset[(unsigned char) *X.elts];
+			if (offset == -1)
+				continue;
+			freqs[(i * nrow) + offset]++;
 		}
 	return;
 }
@@ -67,7 +84,7 @@ static SEXP append_other_to_names(SEXP codes)
 	return names;
 }
 
-static void set_names(SEXP x, SEXP codes, int with_other, int collapse)
+static void set_names(SEXP x, SEXP codes, int with_other, int collapse, int which_names)
 {
 	SEXP names, codes_names, dim_names;
 
@@ -83,8 +100,8 @@ static void set_names(SEXP x, SEXP codes, int with_other, int collapse)
 		SET_NAMES(x, names);
 	} else {
 		PROTECT(dim_names = NEW_LIST(2));
-		SET_ELEMENT(dim_names, 0, R_NilValue);
-		SET_ELEMENT(dim_names, 1, names);
+		SET_ELEMENT(dim_names, 1 - which_names, R_NilValue);
+		SET_ELEMENT(dim_names, which_names, names);
 		SET_DIMNAMES(x, dim_names);
 		UNPROTECT(1);
 	}
@@ -107,7 +124,7 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 	memset(freqs, 0, ans_length * sizeof(int));
 	X = _get_XString_asRoSeq(x);
 	add_freqs(X, codes, freqs);
-	set_names(ans, codes, LOGICAL(with_other)[0], 1);
+	set_names(ans, codes, LOGICAL(with_other)[0], 1, 1);
 	UNPROTECT(1);
 	return ans;
 }
@@ -143,7 +160,39 @@ SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 			copy_rowbuf_to_row0_in_matrix(freqs, x_length, ans_width);
 		}
 	}
-	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0]);
+	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0], 1);
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_char_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other)
+{
+	SEXP ans;
+	int ans_nrow, ans_ncol, ans_width, x_length, *freqs, i;
+	CachedXStringSet cached_x;
+	RoSeq xx;
+
+	x_length = _get_XStringSet_length(x);
+	cached_x = _new_CachedXStringSet(x);
+	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
+	ans_ncol = 0;
+	for (i = 0; i < x_length; i++) {
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		if (ans_ncol < xx.nelt)
+			ans_ncol = xx.nelt;
+	}
+	ans_width = ans_nrow * ans_ncol;
+	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
+	freqs = INTEGER(ans);
+	memset(freqs, 0, ans_width * sizeof(int));
+	for (i = 0; i < x_length; i++) {
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		add_freqs_by_pos(xx, codes, ans_nrow, freqs);
+	}
+	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
 	UNPROTECT(1);
 	return ans;
 }

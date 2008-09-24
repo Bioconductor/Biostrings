@@ -27,72 +27,71 @@ setMethod("compareStrings", signature = c(pattern = "PairwiseAlignment", subject
 ### Alignment consensus matrix
 ###
 
-setGeneric("consmat", signature="x", function(x, freq=TRUE)  standardGeneric("consmat"))
+setGeneric("consmat", signature="x", function(x, ...)  standardGeneric("consmat"))
 
 setMethod("consmat", "character",
-    function(x, freq=TRUE)
+    function(x, freq=FALSE)
     {
-        nrow <- length(x)
-        if (nrow == 0)
-            stop("'x' must contain at least 1 string")
-        if (any(is.na(x)))
-            stop("NAs are not allowed in 'x'")
-        nchars <- nchar(x)
-        ncol <- nchars[1]
-        if (!all(nchars == ncol))
-            stop("'x' elements are not equal-length strings")
-        allletters <- unlist(strsplit(x, NULL))
-        pos <- rep.int(seq_len(ncol), nrow)
-        ans <- table(letter=allletters, pos=pos)
-        if (freq)
-            ans <- ans / nrow
-        ans
+        consmat(BStringSet(x), freq=freq)
     }
 )
 
 setMethod("consmat", "matrix",
-    function(x, freq=TRUE)
+    function(x, freq=FALSE)
     {
-        pos <- rep.int(seq_len(ncol(x)), nrow(x))
-        ans <- table(letter=t(x), pos=pos)
-        if (freq)
-            ans <- ans / nrow(x)
-        ans
+        consmat(BStringSet(apply(x, 1, paste, collapse="")), freq=freq)
     }
 )
 
 ### 'x' must be a list of FASTA records as one returned by readFASTA()
 setMethod("consmat", "list",
-    function(x, freq=TRUE)
+    function(x, freq=FALSE)
     {
-        consmat(FASTArecordsToCharacter(x, use.names=FALSE), freq=freq)
+        consmat(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)), freq=freq)
     }
 )
 
 setMethod("consmat", "XStringSet",
-    function(x, freq=TRUE)
+    function(x, baseOnly=FALSE, freq=FALSE)
     {
-        consmat(as.character(x, use.names=FALSE), freq=freq)
+        codes <- codes(super(x), baseOnly=baseOnly)
+        if (is.null(names(codes))) {
+            names(codes) <- intToUtf8(codes, multiple = TRUE)
+            removeUnused <- TRUE
+        } else {
+            removeUnused <- FALSE
+        }
+        freq <- .normargFreq(freq)
+        ans <- .Call("XStringSet_char_frequency_by_pos",
+                x, codes, baseOnly, PACKAGE="Biostrings")
+        if (removeUnused) {
+            ans <- ans[rowSums(ans) > 0, , drop=FALSE]
+        }
+        if (freq) {
+            ans <- t(t(ans) / colSums(ans))
+        }
+        ans
     }
 )
 
 setMethod("consmat", "XStringViews",
-    function(x, freq=TRUE)
+    function(x, baseOnly=FALSE, freq=FALSE)
     {
-        consmat(as.character(x, use.names=FALSE), freq=freq)
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        consmat(y, baseOnly=baseOnly, freq=freq)
     }
 )
 
 setMethod("consmat", "AlignedXStringSet",
-    function(x, freq=TRUE)
+    function(x, freq=FALSE)
     {
-        consmat(as.character(x), freq=freq)
+        consmat(aligned(x), freq=freq)
     }
 )
 
 setMethod("consmat", "PairwiseAlignment",
-    function(x, freq=TRUE)
+    function(x, freq=FALSE)
     {
-        consmat(as.matrix(x), freq=freq)
+        consmat(aligned(x), freq=freq)
     }
 )
