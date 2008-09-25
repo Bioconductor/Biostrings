@@ -11,6 +11,8 @@
 \alias{consensusMatrix,XStringSet-method}
 \alias{consensusMatrix,XStringViews-method}
 \alias{consensusMatrix,PairwiseAlignment-method}
+\alias{consensusString}
+\alias{consensusString,ANY-method}
 
 % Deprecated:
 \alias{consmat}
@@ -25,9 +27,9 @@
 
 \usage{
   compareStrings(pattern, subject)
-  consensusMatrix(x, \dots)
   \S4method{consensusMatrix}{character}(x, freq=FALSE)
   \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
+  consensusString(x)
 }
 
 \details{
@@ -37,6 +39,9 @@
 
   \code{consensusMatrix} computes a consensus matrix for a set of equal-length strings that
   are assumed to be aligned.
+
+  \code{consensusString} creates the string based on a 50\% + 1 vote from the consensus
+  matrix with unknowns labeled with \code{"?"}.
 }
 
 \arguments{
@@ -49,9 +54,6 @@
     A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
     \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length
     strings.
-  }
-  \item{\dots}{
-    Further arguments to be passed to or from other methods.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
@@ -91,6 +93,7 @@
   ## to be aligned for the first 10 positions (patently false):
   orf10 <- DNAStringSet(orf, end=10)
   consensusMatrix(orf10, baseOnly=TRUE, freq=TRUE)
+  consensusString(sort(orf10)[1:5])
 
   ## For the character matrix containing the "exploded" representation
   ## of the strings, do:
