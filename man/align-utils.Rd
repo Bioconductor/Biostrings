@@ -4,13 +4,17 @@
 \alias{compareStrings,character,character-method}
 \alias{compareStrings,AlignedXStringSet,AlignedXStringSet-method}
 \alias{compareStrings,PairwiseAlignment,missing-method}
+\alias{consensusMatrix}
+\alias{consensusMatrix,character-method}
+\alias{consensusMatrix,matrix-method}
+\alias{consensusMatrix,list-method}
+\alias{consensusMatrix,XStringSet-method}
+\alias{consensusMatrix,XStringViews-method}
+\alias{consensusMatrix,PairwiseAlignment-method}
+
+% Deprecated:
 \alias{consmat}
-\alias{consmat,character-method}
-\alias{consmat,matrix-method}
-\alias{consmat,list-method}
-\alias{consmat,XStringSet-method}
-\alias{consmat,XStringViews-method}
-\alias{consmat,PairwiseAlignment-method}
+\alias{consmat,ANY-method}
 
 
 \title{Utility functions related to sequence alignment}
@@ -21,9 +25,9 @@
 
 \usage{
   compareStrings(pattern, subject)
-  consmat(x, \dots)
-  \S4method{consmat}{character}(x, freq=FALSE)
-  \S4method{consmat}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
+  consensusMatrix(x, \dots)
+  \S4method{consensusMatrix}{character}(x, freq=FALSE)
+  \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
 }
 
 \details{
@@ -31,7 +35,7 @@
   into a single character string containing that replaces mismatches with \code{"?"},
   insertions with \code{"+"}, and deletions with \code{"-"}.
 
-  \code{consmat} computes a consensus matrix for a set of equal-length strings that
+  \code{consensusMatrix} computes a consensus matrix for a set of equal-length strings that
   are assumed to be aligned.
 }
 
@@ -77,7 +81,7 @@
   nw1 <-
     pairwiseAlignment(AAStringSet(c("HLDNLKGTF", "HVDDMPNAL")), AAString("SMDDTEKMSMKL"),
       substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
-  consmat(nw1)
+  consensusMatrix(nw1)
 
   ## Read in ORF data
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
@@ -86,7 +90,7 @@
   ## To illustrate, the following example assumes the ORF data
   ## to be aligned for the first 10 positions (patently false):
   orf10 <- DNAStringSet(orf, end=10)
-  consmat(orf10, baseOnly=TRUE, freq=TRUE)
+  consensusMatrix(orf10, baseOnly=TRUE, freq=TRUE)
 
   ## For the character matrix containing the "exploded" representation
   ## of the strings, do:

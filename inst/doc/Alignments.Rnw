@@ -310,7 +310,7 @@ Function                    & Description \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
 \Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
 \Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
-\Rfunction{consmat}         & Computes a consensus matrix for the alignments \\
+\Rfunction{consensusMatrix}         & Computes a consensus matrix for the alignments \\
 \Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
 \Rfunction{coverage}        & Computes the alignment coverage along the subject \\
 \Rfunction{length}          & Extracts the number of patterns aligned \\
@@ -355,7 +355,7 @@ nchar(psa2)
 aligned(psa2)
 as.character(psa2)
 as.matrix(psa2)
-consmat(psa2)
+consensusMatrix(psa2)
 @
 
 The \Rfunction{summary}, \Rfunction{mismatchTable}, and 
@@ -854,7 +854,7 @@ is still twice as fast?
 
 \section{Computing alignment consensus matrices}
 
-The \Rfunction{consmat} function is provided for computing a consensus matrix
+The \Rfunction{consensusMatrix} function is provided for computing a consensus matrix
 for a set of equal-length strings assumed to be aligned. To illustrate, the
 following application assumes the ORF data to be aligned for the first 10
 positions (patently false):
@@ -863,7 +863,7 @@ file <- system.file("extdata", "someORF.fa", package="Biostrings")
 orf <- read.DNAStringSet(file, "fasta")
 orf
 orf10 <- DNAStringSet(orf, end=10)
-consmat(orf10, baseOnly=TRUE, freq=TRUE)
+consensusMatrix(orf10, baseOnly=TRUE, freq=TRUE)
 @
 
 The information content as defined by Hertz and Stormo 1995 is computed as
@@ -871,7 +871,7 @@ follows:
 <<infco>>=
 informationContent <- function(Lmers) {
  zlog <- function(x) ifelse(x==0,0,log(x))
- co <- consmat(Lmers, freq=TRUE)
+ co <- consensusMatrix(Lmers, freq=TRUE)
  lets <- rownames(co)
  fr <- alphabetFrequency(Lmers, collapse=TRUE)[lets]
  fr <- fr / sum(fr)

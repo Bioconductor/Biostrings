@@ -29,29 +29,39 @@ setMethod("compareStrings", signature = c(pattern = "PairwiseAlignment", subject
 
 setGeneric("consmat", signature="x", function(x, ...)  standardGeneric("consmat"))
 
-setMethod("consmat", "character",
+setMethod("consmat", "ANY",
+          function(x, ...)
+          {
+              .Deprecated("consensusMatrix")
+              consensusMatrix(x, ...)
+          })
+
+
+setGeneric("consensusMatrix", signature="x", function(x, ...)  standardGeneric("consensusMatrix"))
+
+setMethod("consensusMatrix", "character",
     function(x, freq=FALSE)
     {
-        consmat(BStringSet(x), freq=freq)
+        consensusMatrix(BStringSet(x), freq=freq)
     }
 )
 
-setMethod("consmat", "matrix",
+setMethod("consensusMatrix", "matrix",
     function(x, freq=FALSE)
     {
-        consmat(BStringSet(apply(x, 1, paste, collapse="")), freq=freq)
+        consensusMatrix(BStringSet(apply(x, 1, paste, collapse="")), freq=freq)
     }
 )
 
 ### 'x' must be a list of FASTA records as one returned by readFASTA()
-setMethod("consmat", "list",
+setMethod("consensusMatrix", "list",
     function(x, freq=FALSE)
     {
-        consmat(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)), freq=freq)
+        consensusMatrix(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)), freq=freq)
     }
 )
 
-setMethod("consmat", "XStringSet",
+setMethod("consensusMatrix", "XStringSet",
     function(x, baseOnly=FALSE, freq=FALSE)
     {
         codes <- codes(super(x), baseOnly=baseOnly)
@@ -74,17 +84,17 @@ setMethod("consmat", "XStringSet",
     }
 )
 
-setMethod("consmat", "XStringViews",
+setMethod("consensusMatrix", "XStringViews",
     function(x, baseOnly=FALSE, freq=FALSE)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-        consmat(y, baseOnly=baseOnly, freq=freq)
+        consensusMatrix(y, baseOnly=baseOnly, freq=freq)
     }
 )
 
-setMethod("consmat", "PairwiseAlignment",
+setMethod("consensusMatrix", "PairwiseAlignment",
     function(x, baseOnly=FALSE, freq=FALSE)
     {
-        consmat(aligned(x), baseOnly=baseOnly, freq=freq)
+        consensusMatrix(aligned(x), baseOnly=baseOnly, freq=freq)
     }
 )

@@ -104,13 +104,6 @@ UTILITIES
 
 - Use subseq() instead of subXString(). Remove subXString.R file.
 
-- Add 'baseOnly' arg to consmat(). Rework the implementation (currently
-  very inefficient). Another approach to providing consmat()'s functionality
-  could be to add a 'bycol' (or by 'byCycle', or 'byPos") argument to
-  alphabetFrequency(). When 'x' is an XStringSet object,
-  alphabetFrequency(x, byCycle=TRUE) would return what Martin's
-  alphabetByCycle() function currently returns.
-
 - Finish C implementation of read.XStringViews()
 
 - Maybe make strrev() a "reverse" method for character objects.
