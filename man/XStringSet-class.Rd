@@ -199,7 +199,7 @@
     \item{}{
       \code{as.character(x, use.names)}:
       Convert \code{x} to a character vector of the same length as \code{x}.
-      \code{use.names} controls whether or not \code{desc(x)} should be
+      \code{use.names} controls whether or not \code{names(x)} should be
       used to set the names of the returned vector (default is \code{TRUE}).
     }
     \item{}{
@@ -207,7 +207,7 @@
       Returns a character matrix containing the "exploded" representation of
       the strings. This can only be used on an XStringSet object with
       equal-width strings.
-      \code{use.names} controls whether or not \code{desc(x)} should be used
+      \code{use.names} controls whether or not \code{names(x)} should be used
       to set the row names of the returned matrix (default is \code{TRUE}).
     }
     \item{}{

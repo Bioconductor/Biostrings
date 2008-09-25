@@ -209,7 +209,7 @@ XStringSetToFASTArecords <- function(x)
         width <- c(width, current_width)
 #--- to here
     ans <- adjacentViews(subject, width, gapwidth=nchar(collapse, type="bytes"))
-    desc(ans) <- desc
+    names(ans) <- desc
     ans
 }
 

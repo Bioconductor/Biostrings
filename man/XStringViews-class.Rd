@@ -123,7 +123,7 @@
     \item{}{
       \code{as.character(x, use.names, check.limits)}:
       Convert \code{x} to a character vector of the same length as \code{x}.
-      \code{use.names} controls whether or not \code{desc(x)} should be
+      \code{use.names} controls whether or not \code{names(x)} should be
       used to set the names of the returned vector (default is \code{TRUE}).
       \code{check.limits} controls whether or not an error should be raised
       if \code{x} contains "out of limit" views (default is \code{TRUE}).
@@ -141,7 +141,7 @@
       Arguments \code{use.names} and \code{check.limits} are ignored with
       \code{mode="integer"}.
       With \code{mode="character"}, \code{use.names} controls
-      whether or not \code{desc(x)} should be used to set the row names
+      whether or not \code{names(x)} should be used to set the row names
       of the returned matrix (default is \code{TRUE}),
       and \code{check.limits} controls whether or not an error should be raised
       if \code{x} contains "out of limit" views (default is \code{TRUE}).
@@ -187,13 +187,13 @@
   width(v4)
 
   ## Attach a comment to views #3 and #4:
-  desc(v4)[3:4] <- "out of limits"
-  desc(v4)
+  names(v4)[3:4] <- "out of limits"
+  names(v4)
 
   ## A more programatical way to "tag" the "out of limits" views:
-  desc(v4)[start(v4) < 1 | nchar(subject(v4)) < end(v4)] <- "out of limits"
+  names(v4)[start(v4) < 1 | nchar(subject(v4)) < end(v4)] <- "out of limits"
   ## or just:
-  desc(v4)[nchar(v4) < width(v4)] <- "out of limits"
+  names(v4)[nchar(v4) < width(v4)] <- "out of limits"
 
   ## Two equivalent ways to extract a view as an XString object:
   s2a <- v4[[2]]
