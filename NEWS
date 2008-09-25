@@ -88,9 +88,9 @@ o Added support for Solexa quality scores in pairwise sequence alignment
 o Added a stringDist function to calculate the Levenshtein edit distance
   between elements of a character vector or XStringSet.
 
-o Added many methods for pairwise alignment objects including compareStrings,
-  coverage, mismatchSummary, mismatchTable, nindel, nmatch, nmismatch, pattern,
-  rep, subject, summary, views.
+o Added many methods for pairwise alignment objects including as.matrix,
+  compareStrings, consensusMatrix, consensusString, coverage, mismatchSummary,
+  mismatchTable, nindel, nmatch, nmismatch, pattern, rep, subject, summary, views.
 
 o Removed the XStringAlign class and added classes PairwiseAlignment,
   AlignedXStringSet, QualityAlignedXStringSet, XStringQuality, PhredQuality,
