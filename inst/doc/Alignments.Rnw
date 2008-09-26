@@ -310,9 +310,9 @@ Function                    & Description \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
 \Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
 \Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
+\Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
 \Rfunction{consensusMatrix} & Computes a consensus matrix for the alignments \\
 \Rfunction{consensusString} & Creates the string based on a 50\% + 1 vote from the consensus matrix \\
-\Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
 \Rfunction{coverage}        & Computes the alignment coverage along the subject \\
 \Rfunction{length}          & Extracts the number of patterns aligned \\
 \Rfunction{mismatchSummary} & Summarizes the information of the \Rfunction{mismatchTable} \\

@@ -90,11 +90,14 @@ o Added a stringDist function to calculate the Levenshtein edit distance
 
 o Added many methods for pairwise alignment objects including as.matrix,
   compareStrings, consensusMatrix, consensusString, coverage, mismatchSummary,
-  mismatchTable, nindel, nmatch, nmismatch, pattern, rep, subject, summary, views.
+  mismatchTable, nindel, nmatch, nmismatch, pattern, pid, rep, subject, summary,
+  toString, Views.
 
 o Removed the XStringAlign class and added classes PairwiseAlignment,
-  AlignedXStringSet, QualityAlignedXStringSet, XStringQuality, PhredQuality,
-  SolexaQuality, and PairwiseAlignmentSummary.
+  PairwiseAlignmentSummary, AlignedXStringSet, QualityAlignedXStringSet,
+  QualityScaledXStringSet, QualityScaledBStringSet, QualityScaledDNAStringSet,
+  QualityScaledRNAStringSet, QualityScaledAAStringSet, XStringQuality,
+  PhredQuality, and SolexaQuality.
 
 MISCELLANEOUS
 
