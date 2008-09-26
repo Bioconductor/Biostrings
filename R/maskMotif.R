@@ -15,15 +15,16 @@ setMethod("maskMotif", signature(x="MaskedXString", motif="XString"),
         if (!is.integer(min.block.width))
             min.block.width <- as.integer(min.block.width)
         nir1 <- asNormalIRanges(matchPattern(motif, x), force=TRUE)
-        name1 <- paste(as.character(motif), "-blocks", sep="")
+        desc1 <- paste(as.character(motif), "-blocks", sep="")
         if (min.block.width > length(motif)) {
             nir1 <- nir1[width(nir1) >= min.block.width]
-            name1 <- paste(name1, " [width>=", min.block.width, "]", sep="")
+            desc1 <- paste(desc1, " [width>=", min.block.width, "]", sep="")
         }
-        mask1 <- new("MaskCollection", nir_list=list(nir1),
-                                       width=length(x),
-                                       active=TRUE,
-                                       NAMES=name1)
+        mask1 <- new2("MaskCollection", nir_list=list(nir1),
+                                        width=length(x),
+                                        active=TRUE,
+                                        desc=desc1,
+                                        check=FALSE)
         masks(x) <- append(masks(x), mask1)
         x
     }

@@ -219,8 +219,8 @@
   nchar(x)   # has changed
   gaps(x)
 
-  ## Prepare a MaskCollection object of 3 masks by running the examples in
-  ## the man page for these objects:
+  ## Prepare a MaskCollection object of 3 masks ('mymasks') by running the
+  ## examples in the man page for these objects:
   example(MaskCollection, package="IRanges")
 
   ## Put it on 'x':
@@ -232,8 +232,8 @@
   active(masks(x)) <- FALSE
   x
 
-  ## Activate mask 3:
-  active(masks(x))[3] <- FALSE
+  ## Activate mask "C":
+  active(masks(x))["C"] <- TRUE
   x
 
   ## Turn MaskedXString object into an XStringViews object:

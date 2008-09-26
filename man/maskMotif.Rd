@@ -62,7 +62,27 @@
   ## EXAMPLE 1
   ## ---------------------------------------------------------------------
 
-  maskMotif(BString("AbcbcbDE"), "bcb")
+  maskMotif(BString("AbcbbcbEEE"), "bcb")
+  maskMotif(BString("AbcbcbEEE"), "bcb")
+
+  ## maskMotif() can be used in an incremental way to mask more than 1
+  ## motif. Note that maskMotif() does not try to mask again what's
+  ## already masked (i.e. the new mask will never overlaps with the
+  ## previous masks) so the order in which the motifs are masked actually
+  ## matters as it will affect the total set of masked positions.
+  x0 <- BString("AbcbEEEEEbcbbEEEcbbcbc")
+  x1 <- maskMotif(x0, "E")
+  x1
+  x2 <- maskMotif(x1, "bcb")
+  x2
+  x3 <- maskMotif(x2, "b")
+  x3
+  ## Note that inverting the order in which "b" and "bcb" are masked would
+  ## lead to a different final set of masked positions.
+  ## Also note that the order doesn't matter if the motifs to mask don't
+  ## overlap (we assume that the motifs are unique) i.e. if the prefix of
+  ## each motif is not the suffix of any other motif. This is of course
+  ## the case when all the motifs have only 1 letter.
 
   ## ---------------------------------------------------------------------
   ## EXAMPLE 2

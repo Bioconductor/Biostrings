@@ -122,19 +122,12 @@
 
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chrX <- Dmelanogaster$chrX
-  chrX
-  alphabetFrequency(chrX)  # 90100 N's
-
-  ## Activate "assembly gaps" and "RepeatMasker" masks:
-  active(masks(chrX))[1:2] <- TRUE
-  chrX
-  alphabetFrequency(chrX)  # no more N's
-
   pattern <- DNAString("ACCAACNNGGTTG")
   matchPattern(pattern, chrX, fixed=FALSE)  # 3 hits on strand +
   rcpattern <- reverseComplement(pattern)
   rcpattern
-  m0 <- matchPattern(rcpattern, chrX, fixed=FALSE) # 5 hits on strand -
+  m0 <- matchPattern(rcpattern, chrX, fixed=FALSE)
+  m0  # 5 hits on strand -
 
   ## Applying reverseComplement() to the subject instead of the pattern is not
   ## a good idea for 2 reasons:
