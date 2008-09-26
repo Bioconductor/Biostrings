@@ -328,7 +328,7 @@ Function                    & Description \\
 \Rfunction{summary}         & Summarizes a pairwise sequence alignment \\
 \Rfunction{toString}        & Creates a concatenated string version of \Rfunction{aligned} \\
 \Rfunction{type}            & Extracts the type of pairwise sequence alignment \\
-\Rfunction{views}           & Extracts the alignment ranges for the subject \\
+\Rfunction{Views}           & Extracts the alignment ranges for the subject \\
 \hline
 \end{tabular}
 \end{center}
