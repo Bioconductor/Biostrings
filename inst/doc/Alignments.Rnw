@@ -724,14 +724,20 @@ Due to its flexibility, the \Rfunction{pairwiseAlignment} function is able to
 diagnose sequence matching-related issues that arise when
 \Rfunction{matchPDict} and its related functions don't find a match when
 aligning sequence fragments to a target. This section contains an example
-involving a short read Solexa sequencing experiment of a Coliphage phiX174.
-This experiment contains slightly less than 5000 unique short reads in
-\Robject{srPhiX174}, with quality measures in \Robject{quPhiX174}, and
-frequency for those short reads in \Robject{wtPhiX174}.
+involving a short read Solexa sequencing experiment of bacteriophage $\phi$
+X174 DNA produced by New England BioLabs (NEB). This experiment contains
+slightly less than 5000 unique short reads in \Robject{srPhiX174}, with quality
+measures in \Robject{quPhiX174}, and frequency for those short reads in
+\Robject{wtPhiX174}.
+
+In order to demonstrate how to find sequence differences in the target, these
+short reads will be compared against the bacteriophage $\phi$ X174 genome
+NC\_001422 from the GenBank database.
 
 <<genome1>>=
-data(phiX174)
-nchar(phiX174)
+data(phiX174Phage)
+genBankPhage <- phiX174Phage[[1]]
+nchar(genBankPhage)
 
 data(srPhiX174)
 srPhiX174
@@ -740,12 +746,12 @@ summary(wtPhiX174)
 
 fullShortReads <- rep(srPhiX174, wtPhiX174)
 srPDict <- PDict(fullShortReads)
-table(countPDict(srPDict, phiX174))
+table(countPDict(srPDict, genBankPhage))
 @
 
 For these short reads, the \Rfunction{pairwiseAlignment} function finds that
-the small number of perfect matches is due to two locations on the Coliphage
-phiX174 genome.
+the small number of perfect matches is due to two locations on the
+bacteriophage $\phi$ X174 genome.
 
 Unlike the \Rfunction{countPDict} function, the \Rfunction{pairwiseAlignment}
 function works off of the original strings, rather than \Rfunction{PDict}
@@ -754,36 +760,36 @@ the unique sequences are supplied to the \Rfunction{pairwiseAlignment}
 function, and the frequencies of those sequences are supplied to the
 \Rfunarg{weight} argument of functions like \Rfunction{summary},
 \Rfunction{mismatchSummary}, and \Rfunction{coverage}. For the purposes of this
-exercise, a substring of the Coliphage phiX174 genome is supplied to the
-\Rfunarg{subject} argument of the \Rfunction{pairwiseAlignment} function to
-reduce the computation time.
+exercise, a substring of the GenBank bacteriophage $\phi$ X174 genome is
+supplied to the \Rfunarg{subject} argument of the \Rfunction{pairwiseAlignment}
+function to reduce the computation time.
 
 <<genome2>>=
-phiX174Substring <- substring(phiX174, 2793-34, 2811+34)
+genBankSubstring <- substring(genBankPhage, 2793-34, 2811+34)
 
-alignPhiX174 <-
-  pairwiseAlignment(srPhiX174, phiX174Substring,
+genBankAlign <-
+  pairwiseAlignment(srPhiX174, genBankSubstring,
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
                     type = "subjectOverlap")
-summary(alignPhiX174, weight = wtPhiX174)
+summary(genBankAlign, weight = wtPhiX174)
 
-phiX174Revised <-
-  replaceLetterAt(phiX174, c(2793, 2811), "TT")
-table(countPDict(srPDict, phiX174Revised))
+revisedPhage <-
+  replaceLetterAt(genBankPhage, c(2793, 2811), "TT")
+table(countPDict(srPDict, revisedPhage))
 @
 
 The following plot shows the coverage of the aligned short reads along the
-substring of the Coliphage phiX174 genome. Applying the \Rfunction{slice}
-function to the coverage shows the entire substring is covered by aligned short
-reads.
+substring of the bacteriophage $\phi$ X174 genome. Applying the
+\Rfunction{slice} function to the coverage shows the entire substring is
+covered by aligned short reads.
 
 <<genome3, fig=TRUE>>=
-coveragePhiX174 <- coverage(alignPhiX174, weight = wtPhiX174)
-plot((2793-34):(2811+34), as.integer(coveragePhiX174), xlab = "Position", ylab = "Coverage",
+genBankCoverage <- coverage(genBankAlign, weight = wtPhiX174)
+plot((2793-34):(2811+34), as.integer(genBankCoverage), xlab = "Position", ylab = "Coverage",
      type = "l")
-nchar(phiX174Substring)
-slice(coveragePhiX174, 0, includeLower = FALSE)
+nchar(genBankSubstring)
+slice(genBankCoverage, 0, includeLower = FALSE)
 @
 
 \subsection{Exercise 7}
@@ -793,9 +799,9 @@ entire genome. (This may take a few minutes.)
 \item Plot the coverage of these alignments and use the \Rfunction{slice}
 function to find the ranges of alignment. Are there any alignments outside of
 the substring region that was used above?
-\item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
-genome. Do any short reads have a higher alignment score on this new sequence
-than on the orignal sequence?
+\item Use the \Rfunction{reverseComplement} function on the bacteriophage
+$\phi$ X174 genome. Do any short reads have a higher alignment score on this
+new sequence than on the orignal sequence?
 \end{enumerate}
 
 [Answers provided in section \ref{sec:Answers7}.]
@@ -1105,33 +1111,33 @@ table(leftAligned | rightAligned, experiment[["width"]])
 \item Rerun the ``Subject Overlap" alignment of the short reads against the
 entire genome. (This may take a few minutes.)
 <<ans7a>>=
-fullAlignPhiX174 <-
-  pairwiseAlignment(srPhiX174, phiX174,
+genBankFullAlign <-
+  pairwiseAlignment(srPhiX174, genBankPhage,
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
                     type = "subjectOverlap")
-summary(fullAlignPhiX174, weight = wtPhiX174)
+summary(genBankFullAlign, weight = wtPhiX174)
 @
 \item Plot the coverage of these alignments and use the \Rfunction{slice}
 function to find the ranges of alignment. Are there any alignments outside of
 the substring region that was used above? \textit{Yes, there are some
 alignments outside of the specified substring region.}
 <<ans7b>>=
-fullCoveragePhiX174 <- coverage(fullAlignPhiX174, weight = wtPhiX174)
-plot(as.integer(fullCoveragePhiX174), xlab = "Position", ylab = "Coverage", type = "l")
-slice(fullCoveragePhiX174, 0, includeLower = FALSE)
+genBankFullCoverage <- coverage(genBankFullAlign, weight = wtPhiX174)
+plot(as.integer(genBankFullCoverage), xlab = "Position", ylab = "Coverage", type = "l")
+slice(genBankFullCoverage, 0, includeLower = FALSE)
 @
-\item Use the \Rfunction{reverseComplement} function on the Coliphage phiX174
-genome. Do any short reads have a higher alignment score on this new sequence
-than on the orignal sequence? \textit{Yes, there are some strings with a higher
-score on the new sequence.}
+\item Use the \Rfunction{reverseComplement} function on the bacteriophage
+$\phi$ X174 genome. Do any short reads have a higher alignment score on this
+new sequence than on the orignal sequence? \textit{Yes, there are some strings
+with a higher score on the new sequence.}
 <<ans7c>>=
-fullAlignRevCompPhiX174 <-
-  pairwiseAlignment(srPhiX174, reverseComplement(phiX174),
+genBankFullAlignRevComp <-
+  pairwiseAlignment(srPhiX174, reverseComplement(genBankPhage),
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
                     type = "subjectOverlap")
-table(score(fullAlignRevCompPhiX174) > score(fullAlignPhiX174))
+table(score(genBankFullAlignRevComp) > score(genBankFullAlign))
 @
 \end{enumerate}
 
@@ -1199,6 +1205,11 @@ sessionInfo()
 {Malde, K.}
 \newblock The effect of sequence quality on sequence alignment.
 \newblock {\em Bioinformatics}, 24(7):897-900, 2008.
+
+\bibitem{Smith:2003}
+{Smith, H.}; {Hutchison, C.}; {Pfannkoch, C.}; and {Venter, C.}
+\newblock Generating a synthetic genome by whole genome assembly: \{phi\}X174 bacteriophage from synthetic oligonucleotides.
+\newblock {\em Proceedings of the National Academy of Sciences}, 100(26): 15440-15445, 2003.
 
 \end{thebibliography}
 

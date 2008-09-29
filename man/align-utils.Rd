@@ -85,6 +85,13 @@
       substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
   consensusMatrix(nw1)
 
+  ## Examine the consensus between the bacteriophage phi X174 genomes
+  data(phiX174Phage)
+  phageConsmat <- consensusMatrix(phiX174Phage, baseOnly = TRUE)
+  phageDiffs <- which(apply(phageConsmat, 2, max) < length(phiX174Phage))
+  phageDiffs
+  phageConsmat[,phageDiffs]
+
   ## Read in ORF data
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   orf <- read.DNAStringSet(file, "fasta")

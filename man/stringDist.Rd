@@ -60,6 +60,9 @@ Returns an object of class \code{"dist"}.
   stringDist(c("lazy", "HaZy", "crAzY"))
   stringDist(c("lazy", "HaZy", "crAzY"), ignoreCase = TRUE)
 
+  data(phiX174Phage)
+  plot(hclust(stringDist(phiX174Phage), method = "single"))
+
   data(srPhiX174)
   stringDist(srPhiX174[1:4])
   stringDist(srPhiX174[1:4], method = "quality",
