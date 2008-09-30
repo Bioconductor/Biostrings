@@ -764,7 +764,6 @@ exercise, a substring of the GenBank bacteriophage $\phi$ X174 genome is
 supplied to the \Rfunarg{subject} argument of the \Rfunction{pairwiseAlignment}
 function to reduce the computation time.
 
-% The call to summary() below takes a very long time (4 or 5 minutes)!
 <<genome2>>=
 genBankSubstring <- substring(genBankPhage, 2793-34, 2811+34)
 
