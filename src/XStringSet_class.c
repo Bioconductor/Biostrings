@@ -18,36 +18,46 @@ SEXP debug_XStringSet_class()
 	return R_NilValue;
 }
 
-static SEXP get_XStringSet_super(SEXP x)
+SEXP _get_XStringSet_super(SEXP x)
 {
-        return GET_SLOT(x, install("super"));
+	return GET_SLOT(x, install("super"));
 }
 
 const char *_get_XStringSet_baseClass(SEXP x)
 {
-	return get_class(get_XStringSet_super(x));
+	return get_class(_get_XStringSet_super(x));
+}
+
+SEXP _get_XStringSet_ranges(SEXP x)
+{
+	return GET_SLOT(x, install("ranges"));
 }
 
 int _get_XStringSet_length(SEXP x)
 {
-	// Because an XStringSet object IS an IRanges object
-	return get_IRanges_length(x);
+	return get_IRanges_length(_get_XStringSet_ranges(x));
+}
+
+SEXP _get_XStringSet_width(SEXP x)
+{
+	return get_IRanges_width(_get_XStringSet_ranges(x));
 }
 
 CachedXStringSet _new_CachedXStringSet(SEXP x)
 {
 	CachedXStringSet cached_x;
-	SEXP super, tag;
-	int offset;
+	SEXP super, ranges;
+	RoSeq seq;
 
-	cached_x.start = INTEGER(get_IRanges_start(x));
-	cached_x.width = INTEGER(get_IRanges_width(x));
+	super = _get_XStringSet_super(x);
+	seq = _get_XString_asRoSeq(super);
+	// We need to discard the const qualifier
+	cached_x.super_elts = (char *) seq.elts;
+	cached_x.super_nelt = seq.nelt;
 
-	super = get_XStringSet_super(x);
-	tag = get_SequencePtr_tag(_get_XString_xdata(super));
-	offset = INTEGER(GET_SLOT(super, install("offset")))[0];
-	cached_x.super_elts = (char *) RAW(tag) + offset;
-	cached_x.super_nelt = INTEGER(GET_SLOT(super, install("length")))[0];
+	ranges = _get_XStringSet_ranges(x);
+	cached_x.start = INTEGER(get_IRanges_start(ranges));
+	cached_x.width = INTEGER(get_IRanges_width(ranges));
 
 	cached_x.baseClass = get_class(super);
 	cached_x.enc_chrtrtable = get_enc_chrtrtable(cached_x.baseClass);
@@ -98,16 +108,19 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
  * Its arguments are NOT duplicated so it would be a disaster if they were
  * coming from the user space.
  */
-static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
+SEXP _new_XStringSet(const char *class, SEXP super, SEXP ranges)
 {
 	char classbuf[80]; // longest string will be "DNAStringSet"
 	SEXP class_def, ans;
 
-	snprintf(classbuf, sizeof(classbuf), "%sSet", get_class(super));
-	class_def = MAKE_CLASS(classbuf);
+	if (class == NULL) {
+		snprintf(classbuf, sizeof(classbuf), "%sSet", get_class(super));
+		class = classbuf;
+	}
+	class_def = MAKE_CLASS(class);
 	PROTECT(ans = NEW_OBJECT(class_def));
-	copy_IRanges_slots(ans, ranges);
 	SET_SLOT(ans, mkChar("super"), super);
+	SET_SLOT(ans, mkChar("ranges"), ranges);
 	UNPROTECT(1);
 	return ans;
 }
@@ -118,16 +131,16 @@ static SEXP new_XStringSet_from_IRanges_and_super(SEXP ranges, SEXP super)
  */
 SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, const RoSeqs *seqs)
 {
-	SEXP ranges, super, ans;
+	SEXP super, ranges, ans;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): BEGIN\n");
 	}
 #endif
-	PROTECT(ranges = _new_IRanges_from_RoSeqs("LockedIRanges", seqs));
 	PROTECT(super = _new_XString_from_RoSeqs(baseClass, seqs));
-	PROTECT(ans = new_XStringSet_from_IRanges_and_super(ranges, super));
+	PROTECT(ranges = _new_IRanges_from_RoSeqs("IRanges", seqs));
+	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): END\n");
@@ -138,11 +151,14 @@ SEXP _new_XStringSet_from_RoSeqs(const char *baseClass, const RoSeqs *seqs)
 }
 
 /*
- * Does NOT duplicate 'x'. The @NAMES slot is modified in place!
+ * x@ranges@NAMES is modified in place!
  */
 void _set_XStringSet_names(SEXP x, SEXP names)
 {
-	set_IRanges_names(x, names);
+	SEXP ranges;
+
+	ranges = GET_SLOT(x, install("ranges"));
+	set_IRanges_names(ranges, names);
 	return;
 }
 
@@ -153,12 +169,12 @@ void _set_XStringSet_names(SEXP x, SEXP names)
  */
 
 /*
- * Allocate only. The 'start', 'width' and 'super' slots are not initialized
- * (they contain junk, or zeros).
+ * Allocate only. The 'ranges' and 'super' slots are not initialized (they
+ * contain junk, or zeros).
  */
 SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 {
-	SEXP ranges, super, ans;
+	SEXP super, ranges, ans;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
@@ -168,9 +184,9 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 			baseClass, length, super_length);
 	}
 #endif
-	PROTECT(ranges = alloc_IRanges("LockedIRanges", length));
 	PROTECT(super = _alloc_XString(baseClass, super_length));
-	PROTECT(ans = new_XStringSet_from_IRanges_and_super(ranges, super));
+	PROTECT(ranges = alloc_IRanges("IRanges", length));
+	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _alloc_XStringSet(): END\n");

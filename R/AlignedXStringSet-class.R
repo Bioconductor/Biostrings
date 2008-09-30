@@ -13,8 +13,7 @@ setClass("AlignedXStringSet",
     )
 )
 
-setClass("QualityAlignedXStringSet",
-         representation("AlignedXStringSet"))
+setClass("QualityAlignedXStringSet", contains="AlignedXStringSet")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

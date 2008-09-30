@@ -17,10 +17,10 @@ setClass("XStringViews",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Unsafe constructor (not exported). Use only when 'start' and 'width' are
-### guaranted to be valid.
+### guaranteed to be valid.
 ###
 
-unsafe.XStringViews <- function(subject, start, width)
+unsafe.newXStringViews <- function(subject, start, width)
     new2("XStringViews", subject=subject, start=start, width=width, check=FALSE)
 
 

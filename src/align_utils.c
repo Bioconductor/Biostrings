@@ -38,15 +38,14 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("elements"));
 
 	const char *stringSetClass = get_class(unaligned);
-	const char *stringClass = get_class(GET_SLOT(unaligned, install("super")));
+	const char *stringClass = get_class(_get_XStringSet_super(unaligned));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
 	int numberOfAlignments = LENGTH(indel);
 
 	SEXP output;
-	PROTECT(output = NEW_OBJECT(MAKE_CLASS(stringSetClass)));
 
-	SEXP alignedString, alignedStart, alignedWidth;
+	SEXP alignedString, alignedRanges, alignedStart, alignedWidth;
 	PROTECT(alignedWidth = AlignedXStringSet_nchar(alignedXStringSet));
 	PROTECT(alignedStart = NEW_INTEGER(LENGTH(alignedWidth)));
 	int totalNChars = 0;
@@ -67,10 +66,9 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
 	PROTECT(alignedStringXData = new_SequencePtr("RawPtr", alignedStringTag));
 	PROTECT(alignedString = _new_XString(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
+	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, NULL));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
-	SET_SLOT(output, mkChar("super"), alignedString);
-	SET_SLOT(output, mkChar("start"), alignedStart);
-	SET_SLOT(output, mkChar("width"), alignedWidth);
+	PROTECT(output = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
 
 	int stringIncrement = (numberOfStrings == 1 ? 0 : 1);
 	int index = 0, stringElement = 0;
@@ -110,7 +108,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 		}
 		stringElement += stringIncrement;
 	}
-	UNPROTECT(6);
+	UNPROTECT(7);
 
 	return output;
 }
@@ -132,15 +130,14 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 	SEXP indelSubject = GET_SLOT(GET_SLOT(subject, install("indel")), install("elements"));
 
 	const char *stringSetClass = get_class(unalignedPattern);
-	const char *stringClass = get_class(GET_SLOT(unalignedPattern, install("super")));
+	const char *stringClass = get_class(_get_XStringSet_super(unalignedPattern));
 
 	int numberOfAlignments = LENGTH(indelPattern);
-	int numberOfChars = INTEGER(GET_SLOT(GET_SLOT(subject, install("unaligned")), install("width")))[0];
+	int numberOfChars = INTEGER(_get_XStringSet_width(GET_SLOT(subject, install("unaligned"))))[0];
 
 	SEXP output;
-	PROTECT(output = NEW_OBJECT(MAKE_CLASS(stringSetClass)));
 
-	SEXP mappedString, mappedStart, mappedWidth;
+	SEXP mappedString, mappedRanges, mappedStart, mappedWidth;
 	PROTECT(mappedWidth = NEW_INTEGER(numberOfAlignments));
 	PROTECT(mappedStart = NEW_INTEGER(numberOfAlignments));
 	int totalNChars = numberOfAlignments * numberOfChars;
@@ -156,10 +153,9 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
 	PROTECT(mappedStringXData = new_SequencePtr("RawPtr", mappedStringTag));
 	PROTECT(mappedString = _new_XString(stringClass, mappedStringXData, 0, LENGTH(mappedStringTag)));
+	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, NULL));
 	char *mappedStringPtr = (char *) RAW(mappedStringTag);
-	SET_SLOT(output, mkChar("super"), mappedString);
-	SET_SLOT(output, mkChar("start"), mappedStart);
-	SET_SLOT(output, mkChar("width"), mappedWidth);
+	PROTECT(output = _new_XStringSet(stringSetClass, mappedString, mappedRanges));
 
 	int index = 0;
 	const int *rangeStartPattern, *rangeWidthPattern, *rangeStartSubject, *rangeWidthSubject;
@@ -222,7 +218,7 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 			index++;
 		}
 	}
-	UNPROTECT(6);
+	UNPROTECT(7);
 
 	return(output);
 }

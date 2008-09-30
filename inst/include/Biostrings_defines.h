@@ -47,6 +47,8 @@ typedef struct roseqs {
 typedef struct cachedxstringset {
 	int *start;
 	int *width;
+	// cannot use const char * here because of function
+	// _write_RoSeq_to_CachedXStringSet_elt()
 	char *super_elts;
 	int super_nelt;
 	const char *baseClass;

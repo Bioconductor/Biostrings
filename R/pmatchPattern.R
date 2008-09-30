@@ -103,9 +103,9 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     if (nchar(pattern) <= 20000) {
         sv <- matchPattern(pattern, subject)
         if (length(sv) >= maxlength.out || nchar(pattern) < 2L) {
-            pv <- unsafe.XStringViews(pattern,
-                                      rep.int(1L, length(sv)),
-                                      rep.int(nchar(pattern), length(sv)))
+            pv <- unsafe.newXStringViews(pattern,
+                                         rep.int(1L, length(sv)),
+                                         rep.int(nchar(pattern), length(sv)))
             ans <- new("XStringPartialMatches", sv, subpatterns=pv)
             return(ans)
         }
@@ -174,10 +174,10 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     ## Merge left results with right results
     sv_start <- c(Lpm_start, Rpm_start)
     sv_width <- c(Lpm_end, Rpm_end) - sv_start + 1L
-    sv <- unsafe.XStringViews(subject, sv_start, sv_width)
+    sv <- unsafe.newXStringViews(subject, sv_start, sv_width)
     pv_start <- c(Lpv_start, Rpv_start)
     pv_width <- c(Lpv_end, Rpv_end) - pv_start + 1L
-    pv <- unsafe.XStringViews(pattern, pv_start, pv_width)
+    pv <- unsafe.newXStringViews(pattern, pv_start, pv_width)
     ans <- new("XStringPartialMatches", sv, subpatterns=pv)
     ii <- order(width(ans), -start(ans), decreasing=TRUE)
     minwidth <- width(ans)[ii[1]] %/% 2

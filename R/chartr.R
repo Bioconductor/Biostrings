@@ -31,12 +31,13 @@ XString.tr <- function(x, lkup=NULL, reverse=FALSE)
 
 XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)
 {
-    frame <- reduce(x, with.inframe.attrib=TRUE)
-    super <- .Call("XStringSet_char_translate",
-                   frame, lkup, reverse,
-                   PACKAGE="Biostrings")
-    ranges <- attr(frame, "inframe")
-    unsafe.XStringSet(class(x), super, ranges, use.names=use.names, names=names(x))
+    x@ranges <- reduce(x@ranges, with.inframe.attrib=TRUE)
+    ans_super <- .Call("XStringSet_char_translate",
+                       x, lkup, reverse,
+                       PACKAGE="Biostrings")
+    ans_ranges <- attr(x@ranges, "inframe")
+    unsafe.newXStringSet(class(x), ans_super, ans_ranges,
+                         use.names=use.names, names=names(x))
 }
 
 ### This setGeneric() statement will unfortunately cause the following message

@@ -236,12 +236,14 @@ setMethod("dups", "PDict3Parts",
 {
     tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
                           use.names=FALSE)
-    head_start <- start(x)
-    head_width <- start(tb) - start(x)
-    head <- new("DNAStringSet", super=super(x), start=head_start, width=head_width)
-    tail_start <- end(tb) + 1L
-    tail_width <- end(x) - end(tb)
-    tail <- new("DNAStringSet", super=super(x), start=tail_start, width=tail_width)
+    head_start <- start(x@ranges)
+    head_width <- start(tb@ranges) - start(x@ranges)
+    head_ranges <- new2("IRanges", start=head_start, width=head_width, check=FALSE)
+    head <- new("DNAStringSet", super=super(x), ranges=head_ranges)
+    tail_start <- end(tb@ranges) + 1L
+    tail_width <- end(x@ranges) - end(tb@ranges)
+    tail_ranges <- new2("IRanges", start=tail_start, width=tail_width, check=FALSE)
+    tail <- new("DNAStringSet", super=super(x), ranges=tail_ranges)
     use_pptb0 <- !is.null(pptb0) &&
                      all(head_width == 0L) && all(tail_width == 0L) &&
                      type == "ACtree"

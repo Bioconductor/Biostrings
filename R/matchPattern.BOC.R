@@ -164,7 +164,7 @@ setMethod("matchPattern", "BOC_SubjectString",
         else
             matches <- .match.BOC.inexact(pattern, subject, max.mismatch, count.only=FALSE)
         ans_width <- rep.int(pattern_length, length(matches))
-        unsafe.XStringViews(subject@subject, matches, ans_width)
+        unsafe.newXStringViews(subject@subject, matches, ans_width)
     }
 )
 

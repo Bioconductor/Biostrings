@@ -131,7 +131,7 @@ setMethod("matchProbePair", "XStringViews",
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
         }
-        unsafe.XStringViews(subject(subject), ans_start, ans_width)
+        unsafe.newXStringViews(subject(subject), ans_start, ans_width)
     }
 )
 

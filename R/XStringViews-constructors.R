@@ -33,7 +33,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
         ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
         if (j < lg) j <- j + ONE else j <- ONE
     }
-    unsafe.XStringViews(subject, ans_start, width)
+    unsafe.newXStringViews(subject, ans_start, width)
 }
 
 
@@ -98,7 +98,7 @@ setMethod("XStringViews", "XString",
         }
         if (!missing(subjectClass) && subjectClass != class(x))
             x <- XString(subjectClass, x)
-        unsafe.XStringViews(x, 1L, nchar(x))
+        unsafe.newXStringViews(x, 1L, nchar(x))
     }
 )
 

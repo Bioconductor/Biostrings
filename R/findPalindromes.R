@@ -45,7 +45,7 @@
                    PACKAGE="Biostrings")
     ans_start <- C_ans$start
     ans_width <- C_ans$end - ans_start + 1L
-    unsafe.XStringViews(subject, ans_start, ans_width)
+    unsafe.newXStringViews(subject, ans_start, ans_width)
 }
 
 setGeneric("findPalindromes", signature="subject",
@@ -103,7 +103,7 @@ setMethod("findPalindromes", "XStringViews",
             ans_start <- c(ans_start, offset + start(pals))
             ans_width <- c(ans_width, width(pals))
         }
-        unsafe.XStringViews(subject(subject), ans_start, ans_width)
+        unsafe.newXStringViews(subject(subject), ans_start, ans_width)
     }
 )
 setMethod("findPalindromes", "MaskedXString",
@@ -134,7 +134,7 @@ setMethod("findComplementedPalindromes", "XStringViews",
             ans_start <- c(ans_start, offset + start(pals))
             ans_width <- c(ans_width, width(pals))
         }
-        unsafe.XStringViews(subject(subject), ans_start, ans_width)
+        unsafe.newXStringViews(subject(subject), ans_start, ans_width)
     }
 )
 setMethod("findComplementedPalindromes", "MaskedXString",
@@ -246,7 +246,7 @@ setMethod("palindromeLeftArm", "XStringViews",
     {
         ans_start <- start(x)
         ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        unsafe.XStringViews(subject(x), ans_start, ans_width)
+        unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
 setMethod("complementedPalindromeLeftArm", "XStringViews",
@@ -255,7 +255,7 @@ setMethod("complementedPalindromeLeftArm", "XStringViews",
         ans_start <- start(x)
         ans_width <- complementedPalindromeArmLength(x,
                          max.mismatch=max.mismatch, ...)
-        unsafe.XStringViews(subject(x), ans_start, ans_width)
+        unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
 
@@ -297,7 +297,7 @@ setMethod("palindromeRightArm", "XStringViews",
         ans_width <- palindromeArmLength(x,
                          max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
-        unsafe.XStringViews(subject(x), ans_start, ans_width)
+        unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
 setMethod("complementedPalindromeRightArm", "XStringViews",
@@ -306,7 +306,7 @@ setMethod("complementedPalindromeRightArm", "XStringViews",
         ans_width <- complementedPalindromeArmLength(x,
                          max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L
-        unsafe.XStringViews(subject(x), ans_start, ans_width)
+        unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
 

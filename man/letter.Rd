@@ -41,7 +41,7 @@
   is a character vector or an \link{XStringViews} object.
 
   Note that, because \code{i} must contain valid positions,
-  all non-NA elements in the result are guaranted to have exactly
+  all non-NA elements in the result are guaranteed to have exactly
   \code{length(i)} characters.
 }
 

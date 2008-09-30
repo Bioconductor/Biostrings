@@ -264,9 +264,15 @@ void _write_RoSeq_to_XString(
 
 SEXP debug_XStringSet_class();
 
+SEXP _get_XStringSet_super(SEXP x);
+
 const char *_get_XStringSet_baseClass(SEXP x);
 
+SEXP _get_XStringSet_ranges(SEXP x);
+
 int _get_XStringSet_length(SEXP x);
+
+SEXP _get_XStringSet_width(SEXP x);
 
 CachedXStringSet _new_CachedXStringSet(SEXP x);
 
@@ -283,6 +289,12 @@ RoSeq _get_XStringSet_elt_asRoSeq(
 RoSeqs _new_RoSeqs_from_XStringSet(
 	int nelt,
 	SEXP x
+);
+
+SEXP _new_XStringSet(
+	const char *class,
+	SEXP super,
+	SEXP ranges
 );
 
 SEXP _new_XStringSet_from_RoSeqs(

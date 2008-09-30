@@ -70,7 +70,7 @@ exportMethods(
     nchar,
 
     ## Methods for objects implementing an IRanges-like interface
-    start, width, end, reduce, gaps,
+    start, width, end, narrow, reduce, gaps,
 
     ## SparseList objects
     ls,

@@ -341,7 +341,7 @@ extractAllMatches <- function(subject, mindex)
     if (is.null(names(mindex)))
         stop("extractAllMatches() works only with a \"MIndex\" object with names")
     allviews <- unlist(mindex)
-    ans <- unsafe.XStringViews(subject, start(allviews), width(allviews))
+    ans <- unsafe.newXStringViews(subject, start(allviews), width(allviews))
     names(ans) <- names(allviews)
     ans
 }

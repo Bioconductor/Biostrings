@@ -231,7 +231,7 @@ setAs("MaskedXString", "XStringViews",
     function(from)
     {
         views <- gaps(reduce(masks(from)))[[1]]
-        unsafe.XStringViews(unmasked(from), start(views), width(views))
+        unsafe.newXStringViews(unmasked(from), start(views), width(views))
     }
 )
 
@@ -243,7 +243,7 @@ toXStringViewsOrXString <- function(x)
     if (isEmpty(mask1))
         return(x0)
     views <- gaps(mask1)[[1]]
-    unsafe.XStringViews(x0, start(views), width(views))
+    unsafe.newXStringViews(x0, start(views), width(views))
 }
 
 

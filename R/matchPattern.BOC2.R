@@ -149,7 +149,7 @@ plotBOC2 <- function(x, main)
     if (count.only)
         return(matches)
     ans_width <- rep.int(nchar(pattern), length(matches))
-    unsafe.XStringViews(boc_subject@subject, matches, ans_width)
+    unsafe.newXStringViews(boc_subject@subject, matches, ans_width)
 }
 
 ### Dispatch on 'subject' (see signature of generic).
