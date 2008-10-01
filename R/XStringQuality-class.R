@@ -96,9 +96,9 @@ qualityConverter <- function(x, qualityClass, outputType) {
 .numericToXStringQuality <- function(from, qualityClass)
     as(qualityConverter(from, qualityClass, "BStringSet"), qualityClass)
 .XStringQualityToInteger <- function(from, qualityClass)
-	as(qualityConverter(from, qualityClass, "integer"), qualityClass)
+	qualityConverter(BStringSet(from), qualityClass, "integer")
 .XStringQualityToNumeric <- function(from, qualityClass)
-	as(qualityConverter(from, qualityClass, "numeric"), qualityClass)
+	qualityConverter(BStringSet(from), qualityClass, "numeric")
 
 setAs("character", "PhredQuality", function(from) .characterToXStringQuality(from, "PhredQuality"))
 setAs("BString", "PhredQuality", function(from) .BStringToXStringQuality(from, "PhredQuality"))
