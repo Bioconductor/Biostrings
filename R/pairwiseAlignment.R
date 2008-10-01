@@ -69,12 +69,8 @@ function(pattern,
          scoreOnly = FALSE)
 {
   ## Check arguments
-  #Herve - Sept 30, 2008 - The test below is probably too stringent. It will
-  #reject a pattern or a subject that both extend DNAStringSet for example.
-  #Testing whether baseXStringSubtype(pattern) != baseXStringSubtype(subject)
-  #should be enough.
-  if (class(pattern) != class(subject))
-    stop("'pattern' and 'subject' must be of the same class")
+  if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
+    stop("'pattern' and 'subject' must have the same XString base subtype")
   if (length(subject) != 1)
     stop("'subject' must be of length 1")
   type <-
@@ -96,30 +92,23 @@ function(pattern,
 
   ## Process string information
   if (is.null(codec(pattern))) {
-    #Herve - Sept 30, 2008 - Never assume that the elements of an XStringSet
-    #object 'x' cover 'super(x)' entirely! It's not true in general. For example
-    #when 'x' is the result of the coercion of an XStringViews object where the
-    #views don't cover the subject entirely. Or when 'x' has is the result of a
-    #narrowing operation with DNAStringSet(x0, start=4, end=-4).
-    #It's always better to try to remain agnostic about the internals of an
-    #XStringSet object e.g. you should avoid to use 'super(x)' (the internals
-    #of the XStringSet container will change and the slot @super will go away).
-    #For uniqueBases you could do:
-    #  afp <- alphabetFrequency(pattern, collapse=TRUE)
-    #  afs <- alphabetFrequency(subject, collapse=TRUE)
-    #  unique_letters <- unique(c(names(afp)[afp != 0], names(afs)[afs != 0]))
-    #  alphabetToCodes <- as.integer(charToRaw(paste(unique_letters, collapse="")))
-    #  names(alphabetToCodes) <- unique_letters
-    #It does the right thing, whether 'super(pattern)' is entirely covered or not.
-    #It's up to 20x faster and much more memory efficient (calls to as.character()
-    #should be avoided at all cost, there are almost always better ways).
-    #It won't break when the internals of the XStringSet container change.
-    uniqueBases <-
-      unique(c(unique(charToRaw(as.character(super(pattern)))),
-               unique(charToRaw(as.character(subject)))))
-    alphabetToCodes <- as.integer(uniqueBases)
-    names(alphabetToCodes) <- rawToChar(uniqueBases, multiple = TRUE)
-  } else {
+    patternAlphaFreq <- alphabetFrequency(pattern, collapse = TRUE)
+    subjectAlphaFreq <- alphabetFrequency(subject, collapse = TRUE)
+    oldWarn <- options()[["warn"]]
+    options(warn = -1)
+    if (is.null(names(patternAlphaFreq)))
+      names(patternAlphaFreq) <-
+        intToUtf8(0:(length(patternAlphaFreq) - 1), multiple = TRUE)
+    if (is.null(names(subjectAlphaFreq)))
+      names(subjectAlphaFreq) <-
+        intToUtf8(0:(length(subjectAlphaFreq) - 1), multiple = TRUE)
+    options(warn = oldWarn)
+    uniqueLetters <-
+      unique(c(names(patternAlphaFreq)[patternAlphaFreq != 0],
+               names(subjectAlphaFreq)[subjectAlphaFreq != 0]))
+    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
+    names(alphabetToCodes) <- uniqueLetters
+} else {
     stringCodec <- codec(pattern)
     alphabetToCodes <- stringCodec@codes
     names(alphabetToCodes) <- stringCodec@letters
@@ -211,11 +200,22 @@ function(pattern,
 
   ## Process string information
   if (is.null(codec(pattern))) {
-    uniqueBases <-
-      unique(c(unique(charToRaw(as.character(super(pattern)))),
-               unique(charToRaw(as.character(subject)))))
-    alphabetToCodes <- as.integer(uniqueBases)
-    names(alphabetToCodes) <- rawToChar(uniqueBases, multiple = TRUE)
+    patternAlphaFreq <- alphabetFrequency(pattern, collapse = TRUE)
+    subjectAlphaFreq <- alphabetFrequency(subject, collapse = TRUE)
+    oldWarn <- options()[["warn"]]
+    options(warn = -1)
+    if (is.null(names(patternAlphaFreq)))
+      names(patternAlphaFreq) <-
+        intToUtf8(0:(length(patternAlphaFreq) - 1), multiple = TRUE)
+    if (is.null(names(subjectAlphaFreq)))
+      names(subjectAlphaFreq) <-
+        intToUtf8(0:(length(subjectAlphaFreq) - 1), multiple = TRUE)
+    options(warn = oldWarn)
+    uniqueLetters <-
+      unique(c(names(patternAlphaFreq)[patternAlphaFreq != 0],
+               names(subjectAlphaFreq)[subjectAlphaFreq != 0]))
+    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
+    names(alphabetToCodes) <- uniqueLetters
   } else {
     stringCodec <- codec(pattern)
     alphabetToCodes <- stringCodec@codes

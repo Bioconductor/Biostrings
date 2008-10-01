@@ -26,9 +26,16 @@ function(x,
 
   ## Process string information
   if (is.null(codec(x))) {
-    uniqueBases <- unique(unique(charToRaw(as.character(super(x)))))
-    alphabetToCodes <- as.integer(uniqueBases)
-    names(alphabetToCodes) <- rawToChar(uniqueBases, multiple = TRUE)
+    xAlphaFreq <- alphabetFrequency(x, collapse = TRUE)
+    if (is.null(names(xAlphaFreq))) {
+      oldWarn <- options()[["warn"]]
+      options(warn = -1)
+      names(xAlphaFreq) <- intToUtf8(0:(length(xAlphaFreq) - 1), multiple = TRUE)
+      options(warn = oldWarn)
+    }
+    uniqueLetters <- names(xAlphaFreq)[xAlphaFreq != 0]
+    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
+    names(alphabetToCodes) <- uniqueLetters
   } else {
     stringCodec <- codec(x)
     alphabetToCodes <- stringCodec@codes
@@ -133,9 +140,16 @@ function(x,
 
   ## Process string information
   if (is.null(codec(x))) {
-    uniqueBases <- unique(unique(charToRaw(as.character(super(x)))))
-    alphabetToCodes <- as.integer(uniqueBases)
-    names(alphabetToCodes) <- rawToChar(uniqueBases, multiple = TRUE)
+    xAlphaFreq <- alphabetFrequency(x, collapse = TRUE)
+    if (is.null(names(xAlphaFreq))) {
+      oldWarn <- options()[["warn"]]
+      options(warn = -1)
+      names(xAlphaFreq) <- intToUtf8(0:(length(xAlphaFreq) - 1), multiple = TRUE)
+      options(warn = oldWarn)
+    }
+    uniqueLetters <- names(xAlphaFreq)[xAlphaFreq != 0]
+    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
+    names(alphabetToCodes) <- uniqueLetters
   } else {
     stringCodec <- codec(x)
     alphabetToCodes <- stringCodec@codes
