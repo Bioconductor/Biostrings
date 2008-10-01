@@ -108,7 +108,7 @@ function(pattern,
                names(subjectAlphaFreq)[subjectAlphaFreq != 0]))
     alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
     names(alphabetToCodes) <- uniqueLetters
-} else {
+  } else {
     stringCodec <- codec(pattern)
     alphabetToCodes <- stringCodec@codes
     names(alphabetToCodes) <- stringCodec@letters
