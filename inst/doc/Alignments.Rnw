@@ -411,7 +411,7 @@ that extracts the start, end, and width of the alignment ranges.
 <<helper3>>=
 class(pattern(psa2))
 aligned(pattern(psa2))
-nindel(subject(psa2))
+nindel(pattern(psa2))
 start(subject(psa2))
 end(subject(psa2))
 @
