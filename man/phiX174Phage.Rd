@@ -3,7 +3,7 @@
 \alias{srPhiX174}
 \alias{quPhiX174}
 \alias{wtPhiX174}
-\title{Versions of bacteriophage \eqn{\phi} X174 complete genome and sample short reads}
+\title{Versions of bacteriophage phiX174 complete genome and sample short reads}
 \description{
 Six versions of the complete genome for bacteriophage \eqn{\phi} X174 as well
 as a small number of Solexa short reads, qualities associated with those short
