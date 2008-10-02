@@ -356,7 +356,7 @@ static double pairwiseAlignment(
 						S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 0) = PREV_MATRIX(iMinus1, 2) + substitutionValue;
 					}
-					if (PREV_MATRIX(i, 1) >= (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpening)) {
+					if (PREV_MATRIX(i, 1) > (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpening)) {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
 						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 1) + gapExtension;
 					} else if (PREV_MATRIX(i, 0) >= PREV_MATRIX(i, 2)) {
@@ -366,7 +366,7 @@ static double pairwiseAlignment(
 						D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 2) + gapOpeningPlusExtension;
 					}
-					if (CURR_MATRIX(iMinus1, 2) >= (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpening)) {
+					if (CURR_MATRIX(iMinus1, 2) > (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpening)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 2) + gapExtension;
 					} else if (CURR_MATRIX(iMinus1, 0) >= CURR_MATRIX(iMinus1, 1)) {
@@ -385,7 +385,7 @@ static double pairwiseAlignment(
 					}
 
 					/* Step 3d:  Get the optimal score for local alignments */
-					if (CURR_MATRIX(i, 0) > maxScore) {
+					if (CURR_MATRIX(i, 0) >= maxScore) {
 						align1InfoPtr->startRange = iElt + 1;
 						align2InfoPtr->startRange = jElt + 1;
 						maxScore = CURR_MATRIX(i, 0);
@@ -413,7 +413,7 @@ static double pairwiseAlignment(
 						S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 0) = PREV_MATRIX(iMinus1, 2) + substitutionValue;
 					}
-					if (PREV_MATRIX(i, 1) >= (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpening)) {
+					if (PREV_MATRIX(i, 1) > (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpening)) {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
 						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 1) + gapExtension;
 					} else if (PREV_MATRIX(i, 0) >= PREV_MATRIX(i, 2)) {
@@ -423,7 +423,7 @@ static double pairwiseAlignment(
 						D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 2) + gapOpeningPlusExtension;
 					}
-					if (CURR_MATRIX(iMinus1, 2) >= (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpening)) {
+					if (CURR_MATRIX(iMinus1, 2) > (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpening)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 2) + gapExtension;
 					} else if (CURR_MATRIX(iMinus1, 0) >= CURR_MATRIX(iMinus1, 1)) {
