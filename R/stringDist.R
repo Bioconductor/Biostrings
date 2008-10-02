@@ -90,11 +90,11 @@ function(x,
   substitutionLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters],
                      0:(length(availableLetters) - 1))
-  mappingMatrix <-
+  ambiguityMatrix <-
     matrix(0L, length(availableLetters), length(availableLetters),
            dimnames = list(availableLetters, availableLetters))
-  diag(mappingMatrix) <- 1L
-  mappingLookupTable <-
+  diag(ambiguityMatrix) <- 1L
+  ambiguityLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
 
   answer <- .Call("XStringSet_align_distance",
@@ -107,9 +107,9 @@ function(x,
                   substitutionArray,
                   dim(substitutionArray),
                   substitutionLookupTable,
-                  mappingMatrix,
-                  dim(mappingMatrix),
-                  mappingLookupTable,
+                  ambiguityMatrix,
+                  dim(ambiguityMatrix),
+                  ambiguityLookupTable,
                   PACKAGE="Biostrings")
   if (method == "levenshtein")
     answer <- -answer
@@ -175,11 +175,11 @@ function(x,
     buildLookupTable((minQuality(quality(x)) + offset(quality(x))):
                      (maxQuality(quality(x)) + offset(quality(x))),
                      0:(maxQuality(quality(x)) - minQuality(quality(x))))
-  mappingMatrix <-
+  ambiguityMatrix <-
     matrix(0L, length(alphabetToCodes), length(alphabetToCodes),
            dimnames = list(names(alphabetToCodes), names(alphabetToCodes)))
-  diag(mappingMatrix) <- 1L
-  mappingLookupTable <-
+  diag(ambiguityMatrix) <- 1L
+  ambiguityLookupTable <-
     buildLookupTable(alphabetToCodes, 0:(length(alphabetToCodes) - 1))
 
   answer <- .Call("XStringSet_align_distance",
@@ -192,9 +192,9 @@ function(x,
                   substitutionArray,
                   dim(substitutionArray),
                   substitutionLookupTable,
-                  mappingMatrix,
-                  dim(mappingMatrix),
-                  mappingLookupTable,
+                  ambiguityMatrix,
+                  dim(ambiguityMatrix),
+                  ambiguityLookupTable,
                   PACKAGE="Biostrings")
   attr(answer, "Size") <- length(x)
   attr(answer, "Labels") <- names(x)

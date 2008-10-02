@@ -158,11 +158,11 @@ function(pattern,
   substitutionLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters],
                      0:(length(availableLetters) - 1))
-  mappingMatrix <-
+  ambiguityMatrix <-
     matrix(0L, length(availableLetters), length(availableLetters),
            dimnames = list(availableLetters, availableLetters))
-  diag(mappingMatrix) <- 1L
-  mappingLookupTable <-
+  diag(ambiguityMatrix) <- 1L
+  ambiguityLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
 
   .Call("XStringSet_align_pairwiseAlignment",
@@ -177,9 +177,9 @@ function(pattern,
         substitutionArray,
         dim(substitutionArray),
         substitutionLookupTable,
-        mappingMatrix,
-        dim(mappingMatrix),
-        mappingLookupTable,
+        ambiguityMatrix,
+        dim(ambiguityMatrix),
+        ambiguityLookupTable,
         PACKAGE="Biostrings")
 }
 
@@ -254,11 +254,11 @@ function(pattern,
     buildLookupTable((minQuality(quality(pattern)) + offset(quality(pattern))):
                      (maxQuality(quality(pattern)) + offset(quality(pattern))),
                      0:(maxQuality(quality(pattern)) - minQuality(quality(pattern))))
-  mappingMatrix <-
+  ambiguityMatrix <-
     matrix(0L, length(alphabetToCodes), length(alphabetToCodes),
            dimnames = list(names(alphabetToCodes), names(alphabetToCodes)))
-  diag(mappingMatrix) <- 1L
-  mappingLookupTable <-
+  diag(ambiguityMatrix) <- 1L
+  ambiguityLookupTable <-
     buildLookupTable(alphabetToCodes, 0:(length(alphabetToCodes) - 1))
 
   .Call("XStringSet_align_pairwiseAlignment",
@@ -273,9 +273,9 @@ function(pattern,
         substitutionArray,
         dim(substitutionArray),
         substitutionLookupTable,
-        mappingMatrix,
-        dim(mappingMatrix),
-        mappingLookupTable,
+        ambiguityMatrix,
+        dim(ambiguityMatrix),
+        ambiguityLookupTable,
         PACKAGE="Biostrings")
 }
 
