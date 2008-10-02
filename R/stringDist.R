@@ -58,10 +58,6 @@ function(x,
   }
 
   useQuality <- FALSE
-  qualityLookupTable <- integer(0)
-  qualityMatrices <-
-    list(match = matrix(numeric(0), nrow = 0, ncol = 0),
-         mismatch = matrix(numeric(0), nrow = 0, ncol = 0))
   if (is.character(substitutionMatrix)) {
     if (length(substitutionMatrix) != 1)
       stop("'substitutionMatrix' is a character vector of length != 1")
@@ -82,14 +78,24 @@ function(x,
     stop("'substitutionMatrix' must be a symmetric matrix")
   availableLetters <-
     intersect(names(alphabetToCodes), rownames(substitutionMatrix))
-  constantMatrix <-
+
+  substitutionMatrix <-
     matrix(as.double(substitutionMatrix[availableLetters, availableLetters]),
            nrow = length(availableLetters),
            ncol = length(availableLetters),
            dimnames = list(availableLetters, availableLetters))
-  constantLookupTable <-
+  substitutionArray <-
+    array(unlist(substitutionMatrix, substitutionMatrix), dim = c(dim(substitutionMatrix), 2),
+          dimnames = list(availableLetters, availableLetters, c("0", "1")))
+  substitutionLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters],
                      0:(length(availableLetters) - 1))
+  mappingMatrix <-
+    matrix(0L, length(availableLetters), length(availableLetters),
+           dimnames = list(availableLetters, availableLetters))
+  diag(mappingMatrix) <- 1L
+  mappingLookupTable <-
+    buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
 
   answer <- .Call("XStringSet_align_distance",
                   x,
@@ -98,13 +104,12 @@ function(x,
                   gapOpening,
                   gapExtension,
                   useQuality,
-                  qualityLookupTable,
-                  qualityMatrices[["match"]],
-                  qualityMatrices[["mismatch"]],
-                  dim(qualityMatrices[["match"]]),
-                  constantLookupTable,
-                  constantMatrix,
-                  dim(constantMatrix),
+                  substitutionArray,
+                  dim(substitutionArray),
+                  substitutionLookupTable,
+                  mappingMatrix,
+                  dim(mappingMatrix),
+                  mappingLookupTable,
                   PACKAGE="Biostrings")
   if (method == "levenshtein")
     answer <- -answer
@@ -163,16 +168,19 @@ function(x,
            QualityScaledAAStringSet = 20L,
            256L)
 
-  qualityLookupTable <-
+  substitutionArray <-
+    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
+                                qualityClass = class(quality(x)))
+  substitutionLookupTable <-
     buildLookupTable((minQuality(quality(x)) + offset(quality(x))):
                      (maxQuality(quality(x)) + offset(quality(x))),
                      0:(maxQuality(quality(x)) - minQuality(quality(x))))
-  qualityMatrices <-
-    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
-                                qualityClass = class(quality(x)))
-
-  constantLookupTable <- integer(0)
-  constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
+  mappingMatrix <-
+    matrix(0L, length(alphabetToCodes), length(alphabetToCodes),
+           dimnames = list(names(alphabetToCodes), names(alphabetToCodes)))
+  diag(mappingMatrix) <- 1L
+  mappingLookupTable <-
+    buildLookupTable(alphabetToCodes, 0:(length(alphabetToCodes) - 1))
 
   answer <- .Call("XStringSet_align_distance",
                   x,
@@ -181,13 +189,12 @@ function(x,
                   gapOpening,
                   gapExtension,
                   useQuality,
-                  qualityLookupTable,
-                  qualityMatrices[["match"]],
-                  qualityMatrices[["mismatch"]],
-                  dim(qualityMatrices[["match"]]),
-                  constantLookupTable,
-                  constantMatrix,
-                  dim(constantMatrix),
+                  substitutionArray,
+                  dim(substitutionArray),
+                  substitutionLookupTable,
+                  mappingMatrix,
+                  dim(mappingMatrix),
+                  mappingLookupTable,
                   PACKAGE="Biostrings")
   attr(answer, "Size") <- length(x)
   attr(answer, "Labels") <- names(x)

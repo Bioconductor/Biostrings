@@ -35,8 +35,8 @@
   data(PAM120)
   data(PAM250)
   nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
-  errorSubstitutionMatrices(prob, alphabetLength = 4L, bitScale = 1)
-  qualitySubstitutionMatrices(alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
+  qualitySubstitutionMatrices(matchAmbiguity = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
+  errorSubstitutionMatrices(errorProbability, matchAmbiguity = c(0, 1), alphabetLength = 4L, bitScale = 1)
 }
 
 \arguments{
@@ -45,7 +45,9 @@
   \item{baseOnly}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, only
     uses the letters in the "base" alphabet i.e. "A", "C", "G", "T".}
   \item{type}{either "DNA" or "RNA".}
-  \item{prob}{a named or unnamed numeric vector representing the error
+  \item{matchAmbiguity}{a named or unnamed numeric vector representing the base
+    match probability.}
+  \item{errorProbability}{a named or unnamed numeric vector representing the error
     probability.}
   \item{alphabetLength}{an integer representing the number of letters
     in the underlying string alphabet. For DNA and RNA, this would be 4L.
@@ -97,10 +99,13 @@
   probability of a mismatch when the underlying bases do match is
   \eqn{\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2},
   where \eqn{n} is the number of letters in the underlying alphabet. Using
-  \eqn{\epsilon_c}, the substitution score when two bases match is given by
-  \eqn{b * \log_2((1 - \epsilon_c) * n)} and the substitution score when two bases
-  don't match is given by \eqn{b * \log_2(\epsilon_c * (n/(n-1)))}, where \eqn{b}
-  is the bit-scaling for the scoring.
+  \eqn{\epsilon_c}, the substitution score is given by when two bases match is given by
+  \eqn{b * \log_2(\gamma_{x,y} * (1 - \epsilon_c) * n + (1 - \gamma_{x,y}) * \epsilon_c * (n/(n-1)))},
+  where \eqn{b} is the bit-scaling for the scoring and \eqn{\gamma_{x,y}} is the
+  probability that characters \eqn{x} and \eqn{y} represents the same underlying
+  information (e.g. using IUPAC, \eqn{\gamma_{A,A} = 1} and \eqn{\gamma_{A,N} = 1/4}.
+  In the arguments listed above \code{matchAmbiguity} represents \eqn{\gamma_{x,y}}
+  and \code{errorProbability} represents \eqn{\epsilon_i}.
 }
 
 \references{
@@ -133,15 +138,15 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   ## strings in pairwiseAlignment.
   ## By default patternQuality and subjectQuality are PhredQuality(22L).
   qualityMatrices <- qualitySubstitutionMatrices()
-  qualityMatrices[["match"]]["22", "22"]
-  qualityMatrices[["mismatch"]]["22", "22"]
+  qualityMatrices["22", "22", "1"]
+  qualityMatrices["22", "22", "0"]
 
   pairwiseAlignment(s1, s2)
 
   ## Get the substitution scores when the error probability is 0.1
-  subscores <- errorSubstitutionMatrices(0.1)
-  submat <- matrix(subscores[["mismatch"]], 4, 4)
-  diag(submat) <- subscores[["match"]]
+  subscores <- errorSubstitutionMatrices(errorProbability = 0.1)
+  submat <- matrix(subscores[,,"0"], 4, 4)
+  diag(submat) <- subscores[,,"1"]
   dimnames(submat) <- list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4])
   submat
   pairwiseAlignment(s1, s2, substitutionMatrix = submat)

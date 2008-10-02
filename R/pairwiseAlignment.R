@@ -35,27 +35,40 @@ nucleotideSubstitutionMatrix <- function(match = 1, mismatch = 0, baseOnly = FAL
 }
 
 errorSubstitutionMatrices <-
-function(prob, alphabetLength = 4L, bitScale = 1) {
+function(errorProbability, matchAmbiguity = c(0, 1), alphabetLength = 4L, bitScale = 1) {
+  if (!is.numeric(errorProbability) || !all(!is.na(errorProbability) & errorProbability >= 0 & errorProbability <= 1))
+    stop("'errorProbability' must be a numeric vector with values between 0 and 1 inclusive")
+  if (!is.numeric(matchAmbiguity) || !all(!is.na(matchAmbiguity) & matchAmbiguity >= 0 & matchAmbiguity <= 1))
+    stop("'matchAmbiguity' must be a numeric vector with values between 0 and 1 inclusive")
   errorMatrix <-
-    outer(prob, prob,
+    outer(errorProbability, errorProbability,
           function(e1,e2,n) e1 + e2 - (n/(n - 1)) * e1 * e2,
           n = alphabetLength)
-  output <- 
-    lapply(list(match = bitScale * log2((1 - errorMatrix) * alphabetLength),
-                mismatch =
-                bitScale * log2(errorMatrix * (alphabetLength / (alphabetLength - 1)))),
-                function(x) {dimnames(x) <- list(names(prob), names(prob)); x})
+  adjMatchProbs <-
+    lapply(list(match = (1 - errorMatrix) * alphabetLength,
+                mismatch = errorMatrix * (alphabetLength / (alphabetLength - 1))),
+                function(x) {dimnames(x) <- list(names(errorProbability), names(errorProbability)); x})
+  output <-
+    array(NA_real_, dim = c(length(errorProbability), length(errorProbability), length(matchAmbiguity)),
+          dimnames = list(names(errorProbability), names(errorProbability), as.character(matchAmbiguity)))
+  for (i in seq_len(length(matchAmbiguity))) {
+    output[,,i] <-
+      bitScale *
+        log2(matchAmbiguity[i] * adjMatchProbs[["match"]] + (1 - matchAmbiguity[i]) * adjMatchProbs[["mismatch"]])
+  }
   output
 }
 
 qualitySubstitutionMatrices <-
-function(alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1) {
+function(matchAmbiguity = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1) {
+  if (!is.numeric(matchAmbiguity) || !all(!is.na(matchAmbiguity) & matchAmbiguity >= 0 & matchAmbiguity <= 1))
+    stop("'matchAmbiguity' must be a numeric vector with values between 0 and 1 inclusive")
   if (!is(new(qualityClass), "XStringQuality"))
     stop("'qualityClass' must be one of the 'XStringQuality' classes")
   qualityIntegers <- minQuality(new(qualityClass)):maxQuality(new(qualityClass))
-  prob <- qualityConverter(qualityIntegers, qualityClass, "numeric")
-  names(prob) <- as.character(qualityIntegers)
-  errorSubstitutionMatrices(prob, alphabetLength = alphabetLength, bitScale = bitScale)
+  errorProbability <- qualityConverter(qualityIntegers, qualityClass, "numeric")
+  names(errorProbability) <- as.character(qualityIntegers)
+  errorSubstitutionMatrices(errorProbability, matchAmbiguity, alphabetLength = alphabetLength, bitScale = bitScale)
 }
 
 
@@ -115,10 +128,6 @@ function(pattern,
   }
 
   useQuality <- FALSE
-  qualityLookupTable <- integer(0)
-  qualityMatrices <-
-    list(match = matrix(numeric(0), nrow = 0, ncol = 0),
-         mismatch = matrix(numeric(0), nrow = 0, ncol = 0))
   if (is.character(substitutionMatrix)) {
     if (length(substitutionMatrix) != 1)
       stop("'substitutionMatrix' is a character vector of length != 1")
@@ -137,14 +146,24 @@ function(pattern,
     stop("matrix 'substitutionMatrix' has duplicated row names")
   availableLetters <-
     intersect(names(alphabetToCodes), rownames(substitutionMatrix))
-  constantMatrix <-
+
+  substitutionMatrix <-
     matrix(as.double(substitutionMatrix[availableLetters, availableLetters]),
            nrow = length(availableLetters),
            ncol = length(availableLetters),
            dimnames = list(availableLetters, availableLetters))
-  constantLookupTable <-
+  substitutionArray <-
+    array(unlist(substitutionMatrix, substitutionMatrix), dim = c(dim(substitutionMatrix), 2),
+          dimnames = list(availableLetters, availableLetters, c("0", "1")))
+  substitutionLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters],
                      0:(length(availableLetters) - 1))
+  mappingMatrix <-
+    matrix(0L, length(availableLetters), length(availableLetters),
+           dimnames = list(availableLetters, availableLetters))
+  diag(mappingMatrix) <- 1L
+  mappingLookupTable <-
+    buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
 
   .Call("XStringSet_align_pairwiseAlignment",
         pattern,
@@ -155,13 +174,12 @@ function(pattern,
         gapOpening,
         gapExtension,
         useQuality,
-        qualityLookupTable,
-        qualityMatrices[["match"]],
-        qualityMatrices[["mismatch"]],
-        dim(qualityMatrices[["match"]]),
-        constantLookupTable,
-        constantMatrix,
-        dim(constantMatrix),
+        substitutionArray,
+        dim(substitutionArray),
+        substitutionLookupTable,
+        mappingMatrix,
+        dim(mappingMatrix),
+        mappingLookupTable,
         PACKAGE="Biostrings")
 }
 
@@ -229,16 +247,19 @@ function(pattern,
            QualityScaledAAStringSet = 20L,
            256L)
 
-  qualityLookupTable <-
+  substitutionArray <-
+    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
+                                qualityClass = class(quality(pattern)))
+  substitutionLookupTable <-
     buildLookupTable((minQuality(quality(pattern)) + offset(quality(pattern))):
                      (maxQuality(quality(pattern)) + offset(quality(pattern))),
                      0:(maxQuality(quality(pattern)) - minQuality(quality(pattern))))
-  qualityMatrices <-
-    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
-                                qualityClass = class(quality(pattern)))
-
-  constantLookupTable <- integer(0)
-  constantMatrix <- matrix(numeric(0), nrow = 0, ncol = 0)
+  mappingMatrix <-
+    matrix(0L, length(alphabetToCodes), length(alphabetToCodes),
+           dimnames = list(names(alphabetToCodes), names(alphabetToCodes)))
+  diag(mappingMatrix) <- 1L
+  mappingLookupTable <-
+    buildLookupTable(alphabetToCodes, 0:(length(alphabetToCodes) - 1))
 
   .Call("XStringSet_align_pairwiseAlignment",
         pattern,
@@ -249,13 +270,12 @@ function(pattern,
         gapOpening,
         gapExtension,
         useQuality,
-        qualityLookupTable,
-        qualityMatrices[["match"]],
-        qualityMatrices[["mismatch"]],
-        dim(qualityMatrices[["match"]]),
-        constantLookupTable,
-        constantMatrix,
-        dim(constantMatrix),
+        substitutionArray,
+        dim(substitutionArray),
+        substitutionLookupTable,
+        mappingMatrix,
+        dim(mappingMatrix),
+        mappingLookupTable,
         PACKAGE="Biostrings")
 }
 

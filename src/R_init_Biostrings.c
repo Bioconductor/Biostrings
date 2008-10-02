@@ -126,8 +126,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(align_needwunsQS, 7),
 
 /* align_pairwiseAlignment.c */
-	CALLMETHOD_DEF(XStringSet_align_pairwiseAlignment, 15),
-	CALLMETHOD_DEF(XStringSet_align_distance, 13),
+	CALLMETHOD_DEF(XStringSet_align_pairwiseAlignment, 14),
+	CALLMETHOD_DEF(XStringSet_align_distance, 12),
 
 /* align_utils.c */
 	CALLMETHOD_DEF(AlignedXStringSet_nchar, 1),

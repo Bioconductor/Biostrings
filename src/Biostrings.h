@@ -816,13 +816,12 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP gapOpening,
 	SEXP gapExtension,
 	SEXP useQuality,
-	SEXP qualityLookupTable,
-	SEXP qualityMatchMatrix,
-	SEXP qualityMismatchMatrix,
-	SEXP qualityMatrixDim,
-	SEXP constantLookupTable,
-	SEXP constantMatrix,
-	SEXP constantMatrixDim
+	SEXP substitutionArray,
+	SEXP substitutionArrayDim,
+	SEXP substitutionLookupTable,
+	SEXP mappingMatrix,
+	SEXP mappingMatrixDim,
+	SEXP mappingLookupTable
 );
 
 SEXP XStringSet_align_distance(
@@ -832,13 +831,12 @@ SEXP XStringSet_align_distance(
 	SEXP gapOpening,
 	SEXP gapExtension,
 	SEXP useQuality,
-	SEXP qualityLookupTable,
-	SEXP qualityMatchMatrix,
-	SEXP qualityMismatchMatrix,
-	SEXP qualityMatrixDim,
-	SEXP constantLookupTable,
-	SEXP constantMatrix,
-	SEXP constantMatrixDim
+	SEXP substitutionArray,
+	SEXP substitutionArrayDim,
+	SEXP substitutionLookupTable,
+	SEXP mappingMatrix,
+	SEXP mappingMatrixDim,
+	SEXP mappingLookupTable
 );
 
 

@@ -21,11 +21,13 @@
 #define INSERTION    'I'
 #define TERMINATION  'T'
 
-#define CURR_MATRIX(i, j) (currMatrix[nCharString1Plus1 * j + i])
-#define PREV_MATRIX(i, j) (prevMatrix[nCharString1Plus1 * j + i])
-#define S_TRACE_MATRIX(i, j) (sTraceMatrix[nCharString2 * i + j])
-#define D_TRACE_MATRIX(i, j) (dTraceMatrix[nCharString2 * i + j])
-#define I_TRACE_MATRIX(i, j) (iTraceMatrix[nCharString2 * i + j])
+#define CURR_MATRIX(i, j) (currMatrix[i + nCharString1Plus1 * j])
+#define PREV_MATRIX(i, j) (prevMatrix[i + nCharString1Plus1 * j])
+#define S_TRACE_MATRIX(i, j) (sTraceMatrix[i + nCharString1 * j])
+#define D_TRACE_MATRIX(i, j) (dTraceMatrix[i + nCharString1 * j])
+#define I_TRACE_MATRIX(i, j) (iTraceMatrix[i + nCharString1 * j])
+#define MAPPING_MATRIX(i, j) (mappingMatrix[i + mappingMatrixDim[0] * j])
+#define SUBSTITUTION_ARRAY(i, j, k) (substitutionArray[i + substitutionArrayDim[0] * (j + substitutionArrayDim[1] * k)])
 
 #define SET_LOOKUP_VALUE(lookupTable, length, key) \
 { \
@@ -72,15 +74,14 @@ static double pairwiseAlignment(
 		const float gapOpening,
 		const float gapExtension,
 		const int useQuality,
-		const int *qualityLookupTable,
-		const int qualityLookupTableLength,
-		const double *qualityMatchMatrix,
-		const double *qualityMismatchMatrix,
-		const int *qualityMatrixDim,
-		const int *constantLookupTable,
-		const int constantLookupTableLength,
-		const double *constantMatrix,
-		const int *constantMatrixDim,
+		const double *substitutionArray,
+		const int *substitutionArrayDim,
+		const int *substitutionLookupTable,
+		const int substitutionLookupTableLength,
+		const int *mappingMatrix,
+		const int *mappingMatrixDim,
+		const int *mappingLookupTable,
+		const int mappingLookupTableLength,
 		struct AlignBuffer *alignBufferPtr)
 {
 	int i, j, iMinus1, jMinus1;
@@ -135,32 +136,18 @@ static double pairwiseAlignment(
 	/* Step 3:  Perform main alignment operations */
 	RoSeq sequence1, sequence2;
 	int scalar1, scalar2;
-	const int *lookupTable;
-	int lookupTableLength;
-	const double *matchMatrix, *mismatchMatrix;
-	const int *matrixDim;
 	if (useQuality) {
 		sequence1 = align1InfoPtr->quality;
 		sequence2 = align2InfoPtr->quality;
 		scalar1 = (align1InfoPtr->quality.nelt == 1);
 		scalar2 = (align2InfoPtr->quality.nelt == 1);
-		lookupTable = qualityLookupTable;
-		lookupTableLength = qualityLookupTableLength;
-		matchMatrix = qualityMatchMatrix;
-		mismatchMatrix = qualityMismatchMatrix;
-		matrixDim = qualityMatrixDim;
 	} else {
 		sequence1 = align1InfoPtr->string;
 		sequence2 = align2InfoPtr->string;
 		scalar1 = (nCharString1 == 1);
 		scalar2 = (nCharString2 == 1);
-		lookupTable = constantLookupTable;
-		lookupTableLength = constantLookupTableLength;
-		matchMatrix = constantMatrix;
-		mismatchMatrix = constantMatrix;
-		matrixDim = constantMatrixDim;
 	}
-	int lookupValue = 0, element1, element2, iElt, jElt;
+	int lookupValue = 0, element1, element2, stringElt1, stringElt2, mapping, iElt, jElt;
 	const int noEndGap1 = !align1InfoPtr->endGap;
 	const int noEndGap2 = !align2InfoPtr->endGap;
 	const float gapOpeningPlusExtension = gapOpening + gapExtension;
@@ -177,19 +164,21 @@ static double pairwiseAlignment(
 
 				CURR_MATRIX(0, 0) = PREV_MATRIX(0, 0) + endGapAddend;
 
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+				SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align2InfoPtr->string.elts[jElt]);
+				stringElt2 = lookupValue;
+				SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
 				element2 = lookupValue;
 				if (localAlignment) {
 					for (i = 1, iElt = nCharString1Minus1,
 							curr = (currMatrix+1), currMinus1 = currMatrix,
 							prev = (prevMatrix+1), prevMinus1 = prevMatrix;
 							i <= nCharString1; i++, iElt--, curr++, currMinus1++, prev++, prevMinus1++) {
-						SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+						SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						stringElt1 = lookupValue;
+						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-							substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-						else
-							substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+						mapping = MAPPING_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, mapping);
 
 						*curr =
 							MAX(0.0,
@@ -203,12 +192,12 @@ static double pairwiseAlignment(
 							curr = (currMatrix+1), currMinus1 = currMatrix,
 							prev = (prevMatrix+1), prevMinus1 = prevMatrix;
 							i <= nCharString1; i++, iElt--, curr++, currMinus1++, prev++, prevMinus1++) {
-						SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+						SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						stringElt1 = lookupValue;
+						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-							substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-						else
-							substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+						mapping = MAPPING_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, mapping);
 
 						*curr =
 							MAX(*prevMinus1 + substitutionValue,
@@ -241,16 +230,18 @@ static double pairwiseAlignment(
 				CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
 				CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-				SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+				SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align2InfoPtr->string.elts[jElt]);
+				stringElt2 = lookupValue;
+				SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
 				element2 = lookupValue;
 				if (localAlignment) {
 					for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-						SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+						SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						stringElt1 = lookupValue;
+						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-							substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-						else
-							substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+						mapping = MAPPING_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, mapping);
 
 						CURR_MATRIX(i, 0) =
 							MAX(0.0,
@@ -267,12 +258,12 @@ static double pairwiseAlignment(
 					}
 				} else {
 					for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-						SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+						SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						stringElt1 = lookupValue;
+						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-							substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-						else
-							substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+						mapping = MAPPING_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, mapping);
 
 						CURR_MATRIX(i, 0) =
 							MAX(PREV_MATRIX(iMinus1, 0),
@@ -339,16 +330,18 @@ static double pairwiseAlignment(
 			CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
 			CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-			SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+			SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align2InfoPtr->string.elts[jElt]);
+			stringElt2 = lookupValue;
+			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
 			element2 = lookupValue;
 			if (localAlignment) {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					stringElt1 = lookupValue;
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
-					if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-						substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-					else
-						substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+					mapping = MAPPING_MATRIX(stringElt1, stringElt2);
+					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, mapping);
 
 					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores
 					 *           and traceback values
@@ -400,12 +393,12 @@ static double pairwiseAlignment(
 				}
 			} else {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(lookupTable, lookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					SET_LOOKUP_VALUE(mappingLookupTable, mappingLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					stringElt1 = lookupValue;
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
-					if (align1InfoPtr->string.elts[iElt] == align2InfoPtr->string.elts[jElt])
-						substitutionValue = (float) matchMatrix[matrixDim[0] * element1 + element2];
-					else
-						substitutionValue = (float) mismatchMatrix[matrixDim[0] * element1 + element2];
+					mapping = MAPPING_MATRIX(stringElt1, stringElt2);
+					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, mapping);
 
 					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores
 					 *           and traceback values
@@ -594,9 +587,6 @@ static double pairwiseAlignment(
  * 'useQuality':             denotes whether or not to use quality measures
  *                           in the optimal pairwise alignment
  *                           (logical vector of length 1)
- * 'qualityLookupTable':     lookup table for translating BString bytes to
- *                           quality-based scoring matrix indices
- *                           (integer vector)
  * 'qualityMatchMatrix':     quality-based substitution matrix for matches
  * 'qualityMismatchMatrix':  quality-based substitution matrix for matches
  * 'qualityMatrixDim':       dimension of 'qualityMatchMatrix' and
@@ -624,13 +614,12 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP gapOpening,
 		SEXP gapExtension,
 		SEXP useQuality,
-		SEXP qualityLookupTable,
-		SEXP qualityMatchMatrix,
-		SEXP qualityMismatchMatrix,
-		SEXP qualityMatrixDim,
-		SEXP constantLookupTable,
-		SEXP constantMatrix,
-		SEXP constantMatrixDim)
+		SEXP substitutionArray,
+		SEXP substitutionArrayDim,
+		SEXP substitutionLookupTable,
+		SEXP mappingMatrix,
+		SEXP mappingMatrixDim,
+		SEXP mappingLookupTable)
 {
 	const int scoreOnlyValue = LOGICAL(scoreOnly)[0];
 	const int useQualityValue = LOGICAL(useQuality)[0];
@@ -719,15 +708,14 @@ SEXP XStringSet_align_pairwiseAlignment(
 					gapOpeningValue,
 					gapExtensionValue,
 					useQualityValue,
-					INTEGER(qualityLookupTable),
-					LENGTH(qualityLookupTable),
-					REAL(qualityMatchMatrix),
-					REAL(qualityMismatchMatrix),
-					INTEGER(qualityMatrixDim),
-					INTEGER(constantLookupTable),
-					LENGTH(constantLookupTable),
-					REAL(constantMatrix),
-					INTEGER(constantMatrixDim),
+					REAL(substitutionArray),
+					INTEGER(substitutionArrayDim),
+					INTEGER(substitutionLookupTable),
+					LENGTH(substitutionLookupTable),
+					INTEGER(mappingMatrix),
+					INTEGER(mappingMatrixDim),
+					INTEGER(mappingLookupTable),
+					LENGTH(mappingLookupTable),
 					&alignBuffer);
 		}
 		UNPROTECT(1);
@@ -781,15 +769,14 @@ SEXP XStringSet_align_pairwiseAlignment(
 					gapOpeningValue,
 					gapExtensionValue,
 					useQualityValue,
-					INTEGER(qualityLookupTable),
-					LENGTH(qualityLookupTable),
-					REAL(qualityMatchMatrix),
-					REAL(qualityMismatchMatrix),
-					INTEGER(qualityMatrixDim),
-					INTEGER(constantLookupTable),
-					LENGTH(constantLookupTable),
-					REAL(constantMatrix),
-					INTEGER(constantMatrixDim),
+					REAL(substitutionArray),
+					INTEGER(substitutionArrayDim),
+					INTEGER(substitutionLookupTable),
+					LENGTH(substitutionLookupTable),
+					INTEGER(mappingMatrix),
+					INTEGER(mappingMatrixDim),
+					INTEGER(mappingLookupTable),
+					LENGTH(mappingLookupTable),
 					&alignBuffer);
 
 			PROTECT(alignedPatternMismatchElt = NEW_INTEGER(align1Info.lengthMismatch));
@@ -871,8 +858,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 		/* Set the "type" slot */
 		SET_SLOT(output, mkChar("type"), type);
-		/* Set the "constantMatrix" slot */
-		SET_SLOT(output, mkChar("constantMatrix"), constantMatrix);
+		/* Set the "substitutionArray" slot */
+		SET_SLOT(output, mkChar("substitutionArray"), substitutionArray);
 		/* Set the "gapOpening" slot */
 		SET_SLOT(output, mkChar("gapOpening"), gapOpening);
 		/* Set the "gapExtension" slot */
@@ -903,9 +890,6 @@ SEXP XStringSet_align_pairwiseAlignment(
  * 'useQuality':             denotes whether or not to use quality measures
  *                           in the optimal pairwise alignment
  *                           (logical vector of length 1)
- * 'qualityLookupTable':     lookup table for translating BString bytes to
- *                           quality-based scoring matrix indices
- *                           (integer vector)
  * 'qualityMatchMatrix':     quality-based substitution matrix for matches
  * 'qualityMismatchMatrix':  quality-based substitution matrix for matches
  * 'qualityMatrixDim':       dimension of 'qualityMatchMatrix' and
@@ -930,13 +914,12 @@ SEXP XStringSet_align_distance(
 		SEXP gapOpening,
 		SEXP gapExtension,
 		SEXP useQuality,
-		SEXP qualityLookupTable,
-		SEXP qualityMatchMatrix,
-		SEXP qualityMismatchMatrix,
-		SEXP qualityMatrixDim,
-		SEXP constantLookupTable,
-		SEXP constantMatrix,
-		SEXP constantMatrixDim)
+		SEXP substitutionArray,
+		SEXP substitutionArrayDim,
+		SEXP substitutionLookupTable,
+		SEXP mappingMatrix,
+		SEXP mappingMatrixDim,
+		SEXP mappingLookupTable)
 {
 	int scoreOnlyValue = 1;
 	int useQualityValue = LOGICAL(useQuality)[0];
@@ -1002,15 +985,14 @@ SEXP XStringSet_align_distance(
 						gapOpeningValue,
 						gapExtensionValue,
 						useQualityValue,
-						INTEGER(qualityLookupTable),
-						LENGTH(qualityLookupTable),
-						REAL(qualityMatchMatrix),
-						REAL(qualityMismatchMatrix),
-						INTEGER(qualityMatrixDim),
-						INTEGER(constantLookupTable),
-						LENGTH(constantLookupTable),
-						REAL(constantMatrix),
-						INTEGER(constantMatrixDim),
+						REAL(substitutionArray),
+						INTEGER(substitutionArrayDim),
+						INTEGER(substitutionLookupTable),
+						LENGTH(substitutionLookupTable),
+						INTEGER(mappingMatrix),
+						INTEGER(mappingMatrixDim),
+						INTEGER(mappingLookupTable),
+						LENGTH(mappingLookupTable),
 						&alignBuffer);
 				score++;
 			}
@@ -1034,15 +1016,14 @@ SEXP XStringSet_align_distance(
 						gapOpeningValue,
 						gapExtensionValue,
 						useQualityValue,
-						INTEGER(qualityLookupTable),
-						LENGTH(qualityLookupTable),
-						REAL(qualityMatchMatrix),
-						REAL(qualityMismatchMatrix),
-						INTEGER(qualityMatrixDim),
-						INTEGER(constantLookupTable),
-						LENGTH(constantLookupTable),
-						REAL(constantMatrix),
-						INTEGER(constantMatrixDim),
+						REAL(substitutionArray),
+						INTEGER(substitutionArrayDim),
+						INTEGER(substitutionLookupTable),
+						LENGTH(substitutionLookupTable),
+						INTEGER(mappingMatrix),
+						INTEGER(mappingMatrixDim),
+						INTEGER(mappingLookupTable),
+						LENGTH(mappingLookupTable),
 						&alignBuffer);
 				score++;
 			}

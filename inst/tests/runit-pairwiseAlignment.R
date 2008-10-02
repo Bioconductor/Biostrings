@@ -127,7 +127,7 @@ test_pairwiseAlignment_qualityScoring <- function()
     string1 <- DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
     string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
     for (qualityClass in c("PhredQuality", "SolexaQuality")) {
-        scoring <- sapply(qualitySubstitutionMatrices(qualityClass = qualityClass), function(x) x["22", "22"])
+        scoring <- qualitySubstitutionMatrices(qualityClass = qualityClass)["22", "22", c("1", "0")]
         stringQuality <- do.call(qualityClass, list(22L))
         globalAlign <-
           pairwiseAlignment(string1, string2, patternQuality = stringQuality, subjectQuality = stringQuality)

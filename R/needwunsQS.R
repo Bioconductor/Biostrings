@@ -148,7 +148,10 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
             range = IRanges(start = 1, width = length(C_ans$al2)),
             mismatch = list(integer(0)),
             indel = RangesList(IRanges(start = numeric(0), width = numeric(0)))),
-        score = C_ans$score, type = "global", constantMatrix = substmat,
+        score = C_ans$score, type = "global",
+        substitutionArray =
+        array(unlist(list(substmat,substmat)), dim = c(dim(substmat), 2),
+              dimnames = c(dimnames(substmat), list(c("0", "1")))),
         gapOpening = 0, gapExtension = gappen)
 }
 

@@ -11,7 +11,7 @@ setClass("PairwiseAlignment",
         subject="AlignedXStringSet",
         type="character",
         score="numeric",
-        constantMatrix="matrix",
+        substitutionArray="array",
         gapOpening="numeric",
         gapExtension="numeric"
     )
@@ -36,7 +36,7 @@ setClass("PairwiseAlignmentSummary",
 ###
 
 setMethod("initialize", "PairwiseAlignment",
-    function(.Object, pattern, subject, type, score, constantMatrix,
+    function(.Object, pattern, subject, type, score, substitutionArray,
              gapOpening, gapExtension, check = TRUE)
     {
         if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
@@ -55,7 +55,7 @@ setMethod("initialize", "PairwiseAlignment",
         slot(.Object, "subject", check = check) <- subject
         slot(.Object, "type", check = check) <- type
         slot(.Object, "score", check = check) <- score
-        slot(.Object, "constantMatrix", check = check) <- constantMatrix
+        slot(.Object, "substitutionArray", check = check) <- substitutionArray
         slot(.Object, "gapOpening", check = check) <- gapOpening
         slot(.Object, "gapExtension", check = check) <- gapExtension
         .Object
@@ -294,7 +294,7 @@ setMethod("[", "PairwiseAlignment",
             subject = x@subject[i],
             type = x@type,
             score = x@score[i],
-            constantMatrix = x@constantMatrix,
+            substitutionArray = x@substitutionArray,
             gapOpening = x@gapOpening,
             gapExtension = x@gapExtension)
     }
