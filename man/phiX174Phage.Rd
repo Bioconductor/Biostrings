@@ -3,25 +3,25 @@
 \alias{srPhiX174}
 \alias{quPhiX174}
 \alias{wtPhiX174}
-\title{Versions of bacteriophage $\phi$ X174 complete genome and sample short reads}
+\title{Versions of bacteriophage \eqn{\phi} X174 complete genome and sample short reads}
 \description{
-Six versions of the complete genome for bacteriophage $\phi$ X174 as well as a small
-number of Solexa short reads, qualities associated with those short reads, and
-counts for the number times those short reads occurred.
+Six versions of the complete genome for bacteriophage \eqn{\phi} X174 as well
+as a small number of Solexa short reads, qualities associated with those short
+reads, and counts for the number times those short reads occurred.
 }
 \details{
 The \code{phiX174Phage} object is a \code{DNAStringSet} containing the
-following six naturally occurring versions of the bacteriophage $\phi$ X174
+following six naturally occurring versions of the bacteriophage \eqn{\phi} X174
 genome cited in Smith et al.:
 
 \describe{
   \item{Genbank:}{The version of the genome from GenBank (NC\_001422.1, GI:9626372).}
-  \item{RF70s:}{A preparation of $\phi$ X double-stranded replicative form (RF) of DNA
+  \item{RF70s:}{A preparation of \eqn{\phi} X double-stranded replicative form (RF) of DNA
     by Clyde A. Hutchison III from the late 1970s.}
-  \item{SS78:}{A preparation of $\phi$ X virion single-stranded DNA from 1978.}
-  \item{Bull:}{The sequence of wild-type $\phi$ X used by Bull et al.}
-  \item{G'97:}{The $\phi$ X replicative form (RF) of DNA from Bull et al.}
-  \item{NEB'03:}{A $\phi$ X replicative form (RF) of DNA from New England BioLabs (NEB).}  
+  \item{SS78:}{A preparation of \eqn{\phi} X virion single-stranded DNA from 1978.}
+  \item{Bull:}{The sequence of wild-type \eqn{\phi} X used by Bull et al.}
+  \item{G'97:}{The \eqn{\phi} X replicative form (RF) of DNA from Bull et al.}
+  \item{NEB'03:}{A \eqn{\phi} X replicative form (RF) of DNA from New England BioLabs (NEB).}  
 }
 
 The \code{srPhiX174} object is a \code{DNAStringSet} containing short reads
