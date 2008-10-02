@@ -39,8 +39,9 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
     This argument is ignored if \code{method != "quality"}.}
   \item{substitutionMatrix}{symmetric substitution matrix for a non-quality based alignment.
     This argument is ignored if \code{method != "substitutionMatrix"}.}
-  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignment. It takes
-    values between 0 and 1.}
+  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignments. It takes
+    values between 0 and 1; where 0 is an unambiguous mismatch, 1 is an unambiguous
+    match, and values in between represent a fraction of "matchiness".}
   \item{gapOpening}{penalty for opening a gap in the alignment. This argument is ignored if
     \code{method == "levenshtein"}.}
   \item{gapExtension}{penalty for extending a gap in the alignment. This argument is ignored if

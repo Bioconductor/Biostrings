@@ -54,8 +54,9 @@ pairwiseAlignment(pattern, subject, \dots)
   \item{substitutionMatrix}{substitution matrix for a non-quality based alignment.
     It cannot be used in conjunction with \code{patternQuality} and
     \code{subjectQuality} arguments.}
-  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignment. It takes
-    values between 0 and 1.}
+  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignments. It takes
+    values between 0 and 1; where 0 is an unambiguous mismatch, 1 is an unambiguous
+    match, and values in between represent a fraction of "matchiness".}
   \item{gapOpening}{the cost for opening a gap in the alignment.}
   \item{gapExtension}{the incremental cost incurred along the length of the gap in the alignment.}
   \item{scoreOnly}{logical to denote whether or not to return just the scores of the
