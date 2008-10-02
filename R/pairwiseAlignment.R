@@ -105,26 +105,12 @@ function(pattern,
 
   ## Process string information
   if (is.null(codec(pattern))) {
-    patternAlphaFreq <- alphabetFrequency(pattern, collapse = TRUE)
-    subjectAlphaFreq <- alphabetFrequency(subject, collapse = TRUE)
-    oldWarn <- options()[["warn"]]
-    options(warn = -1)
-    if (is.null(names(patternAlphaFreq)))
-      names(patternAlphaFreq) <-
-        intToUtf8(0:(length(patternAlphaFreq) - 1), multiple = TRUE)
-    if (is.null(names(subjectAlphaFreq)))
-      names(subjectAlphaFreq) <-
-        intToUtf8(0:(length(subjectAlphaFreq) - 1), multiple = TRUE)
-    options(warn = oldWarn)
-    uniqueLetters <-
-      unique(c(names(patternAlphaFreq)[patternAlphaFreq != 0],
-               names(subjectAlphaFreq)[subjectAlphaFreq != 0]))
-    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
-    names(alphabetToCodes) <- uniqueLetters
+    unique_letters <- unique(c(uniqueLetters(pattern), uniqueLetters(subject)))
+    #Even if safeLettersToInt() will deal properly with embedded nuls, I
+    #suspect bad things will happen downstream in case there are any.
+    alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
   } else {
-    stringCodec <- codec(pattern)
-    alphabetToCodes <- stringCodec@codes
-    names(alphabetToCodes) <- stringCodec@letters
+    alphabetToCodes <- codes(pattern)
   }
 
   useQuality <- FALSE
@@ -219,26 +205,12 @@ function(pattern,
 
   ## Process string information
   if (is.null(codec(pattern))) {
-    patternAlphaFreq <- alphabetFrequency(pattern, collapse = TRUE)
-    subjectAlphaFreq <- alphabetFrequency(subject, collapse = TRUE)
-    oldWarn <- options()[["warn"]]
-    options(warn = -1)
-    if (is.null(names(patternAlphaFreq)))
-      names(patternAlphaFreq) <-
-        intToUtf8(0:(length(patternAlphaFreq) - 1), multiple = TRUE)
-    if (is.null(names(subjectAlphaFreq)))
-      names(subjectAlphaFreq) <-
-        intToUtf8(0:(length(subjectAlphaFreq) - 1), multiple = TRUE)
-    options(warn = oldWarn)
-    uniqueLetters <-
-      unique(c(names(patternAlphaFreq)[patternAlphaFreq != 0],
-               names(subjectAlphaFreq)[subjectAlphaFreq != 0]))
-    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
-    names(alphabetToCodes) <- uniqueLetters
+    unique_letters <- unique(c(uniqueLetters(pattern), uniqueLetters(subject)))
+    #Even if safeLettersToInt() will deal properly with embedded nuls, I
+    #suspect bad things will happen downstream in case there are any.
+    alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
   } else {
-    stringCodec <- codec(pattern)
-    alphabetToCodes <- stringCodec@codes
-    names(alphabetToCodes) <- stringCodec@letters
+    alphabetToCodes <- codes(pattern)
   }
 
   useQuality <- TRUE

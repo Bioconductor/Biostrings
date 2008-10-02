@@ -209,6 +209,75 @@ setMethod("alphabetFrequency", "MaskedXString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "uniqueLetters" generic and methods.
+###
+
+.alphabetFrequencyToUniqueLetters <- function(x_af, x_codes)
+{
+    if (!is.null(names(x_af)))
+        return(names(x_af)[x_af != 0])
+    if (!identical(x_codes, 0:255))
+        stop("Biostrings internal anomaly: cannot infer names of ",
+             "vector returned by 'alphabetFrequency(x)'")
+    x_codes <- x_codes[x_af != 0]
+    if (min(x_codes) == 0)
+        warning("'x' contains embedded nuls")
+    intToUtf8(x_codes, multiple=TRUE)
+}
+
+setGeneric("uniqueLetters", function(x) standardGeneric("uniqueLetters"))
+
+setMethod("uniqueLetters", "XString",
+    function(x)
+    {
+        x_af <- alphabetFrequency(x)
+        .alphabetFrequencyToUniqueLetters(x_af, codes(x))
+    }
+)
+
+setMethod("uniqueLetters", "XStringSet",
+    function(x)
+    {
+        x_af <- alphabetFrequency(x, collapse=TRUE)
+        .alphabetFrequencyToUniqueLetters(x_af, codes(x))
+    }
+)
+
+setMethod("uniqueLetters", "XStringViews",
+    function(x)
+    {
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        uniqueLetters(y)
+    }
+)
+
+setMethod("uniqueLetters", "MaskedXString",
+    function(x)
+    {
+        y <- toXStringViewsOrXString(x)
+        uniqueLetters(y)
+    }
+)
+
+### We need to be able to map *any* character whose UTF8 code is between 0 and
+### 255 to its code, even the nul character.
+### 'x' represents the set of characters to map: it must be a vector of 1-letter
+### or empty strings, the empty string being used to represent the nul character.
+### Typically, 'x' will be what was returned by uniqueLetters().
+### For internal use only (not exported).
+safeLettersToInt <- function(x, letters.as.names=FALSE)
+{
+    ii <- which(x == "")
+    ans <- utf8ToInt(paste(x, collapse=""))
+    for (i in ii)
+        ans <- append(ans, 0, after=i-1)
+    if (letters.as.names)
+        names(ans) <- x
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "strrev" function.
 ###
 

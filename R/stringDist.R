@@ -26,20 +26,12 @@ function(x,
 
   ## Process string information
   if (is.null(codec(x))) {
-    xAlphaFreq <- alphabetFrequency(x, collapse = TRUE)
-    if (is.null(names(xAlphaFreq))) {
-      oldWarn <- options()[["warn"]]
-      options(warn = -1)
-      names(xAlphaFreq) <- intToUtf8(0:(length(xAlphaFreq) - 1), multiple = TRUE)
-      options(warn = oldWarn)
-    }
-    uniqueLetters <- names(xAlphaFreq)[xAlphaFreq != 0]
-    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
-    names(alphabetToCodes) <- uniqueLetters
+    unique_letters <- uniqueLetters(x)
+    #Even if safeLettersToInt() will deal properly with embedded nuls, I
+    #suspect bad things will happen downstream in case there are any.
+    alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
   } else {
-    stringCodec <- codec(x)
-    alphabetToCodes <- stringCodec@codes
-    names(alphabetToCodes) <- stringCodec@letters
+    alphabetToCodes <- codes(x)
   }
 
   ## Set parameters when method == "levenshtein"
@@ -145,20 +137,12 @@ function(x,
 
   ## Process string information
   if (is.null(codec(x))) {
-    xAlphaFreq <- alphabetFrequency(x, collapse = TRUE)
-    if (is.null(names(xAlphaFreq))) {
-      oldWarn <- options()[["warn"]]
-      options(warn = -1)
-      names(xAlphaFreq) <- intToUtf8(0:(length(xAlphaFreq) - 1), multiple = TRUE)
-      options(warn = oldWarn)
-    }
-    uniqueLetters <- names(xAlphaFreq)[xAlphaFreq != 0]
-    alphabetToCodes <- as.integer(charToRaw(paste(uniqueLetters, collapse="")))
-    names(alphabetToCodes) <- uniqueLetters
+    unique_letters <- uniqueLetters(x)
+    #Even if safeLettersToInt() will deal properly with embedded nuls, I
+    #suspect bad things will happen downstream in case there are any.
+    alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
   } else {
-    stringCodec <- codec(x)
-    alphabetToCodes <- stringCodec@codes
-    names(alphabetToCodes) <- stringCodec@letters
+    alphabetToCodes <- codes(x)
   }
 
   useQuality <- TRUE

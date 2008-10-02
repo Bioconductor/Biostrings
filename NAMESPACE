@@ -86,7 +86,7 @@ exportMethods(
     ## Utilities
     letter,
     substr, substring,
-    alphabetFrequency, oligonucleotideFrequency,
+    alphabetFrequency, uniqueLetters, oligonucleotideFrequency,
     chartr,
     reverse, complement, reverseComplement,
     replaceLetterAt,

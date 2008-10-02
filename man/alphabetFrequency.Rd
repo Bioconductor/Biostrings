@@ -10,6 +10,12 @@
 \alias{alphabetFrequency,XStringViews-method}
 \alias{alphabetFrequency,MaskedXString-method}
 
+\alias{uniqueLetters}
+\alias{uniqueLetters,XString-method}
+\alias{uniqueLetters,XStringSet-method}
+\alias{uniqueLetters,XStringViews-method}
+\alias{uniqueLetters,MaskedXString-method}
+
 \alias{oligonucleotideFrequency}
 \alias{oligonucleotideFrequency,DNAString-method}
 \alias{oligonucleotideFrequency,RNAString-method}
@@ -48,9 +54,14 @@
 
 \usage{
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE, ...)
-  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.matrix=FALSE, with.labels=TRUE, ...)
-  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
-  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+  uniqueLetters(x)
+
+  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
+                        as.matrix=FALSE, with.labels=TRUE, ...)
+  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
+                         as.array=FALSE, with.labels=TRUE, ...)
+  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right",
+                           as.array=FALSE, with.labels=TRUE, ...)
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
 
   ## Some related utility functions
@@ -61,7 +72,8 @@
 \arguments{
   \item{x}{
     An \link{XString}, \link{XStringSet}, \link{XStringViews}
-    or \link{MaskedXString} object for all the \code{*Frequency} functions.
+    or \link{MaskedXString} object for the \code{*Frequency} and
+    \code{uniqueLetters} functions.
     A character vector for \code{strrev}.
   }
   \item{baseOnly}{
@@ -110,8 +122,8 @@
 }
 
 \details{
-  \code{alphabetFrequency} and \code{oligonucleotideFrequency} are generic
-  functions with methods in the Biostrings package defined for
+  \code{alphabetFrequency}  and \code{oligonucleotideFrequency} are generic
+  functions defined in the Biostrings package with methods defined for
   \link{BString}, \link{DNAString}, \link{RNAString}, \link{XStringViews}
   and \link{XStringSet} objects.
 }
@@ -139,6 +151,11 @@
   with the same number of rows (or elements) as \code{x} unless \code{collapse=TRUE}
   is specified. In that case the returned vector (or array) contains the frequencies
   cumulated across all sequences in \code{x}.
+
+  \code{uniqueLetters} returns a vector of 1-letter or empty strings. The empty
+  string is used to represent the nul character if \code{x} happens to contain
+  any. Note that this can only happen if \link{XString} base subtype of \code{x}
+  is \link{BString}.
 }
 
 \author{H. Pages}
@@ -162,6 +179,7 @@
 
   alphabetFrequency(yeast1)
   alphabetFrequency(yeast1, baseOnly=TRUE)
+  uniqueLetters(yeast1)
 
   dinucleotideFrequency(yeast1)
   trinucleotideFrequency(yeast1)
