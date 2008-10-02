@@ -476,8 +476,8 @@ setMethod("[[", "XStringSet",
         if (i < 1L || i > length(x))
             stop("subscript out of bounds")
         start <- start(x@ranges)[i]
-        end <- end(x@ranges)[i]
-        subseq(super(x), start=start, end=end)
+        width <- width(x@ranges)[i]
+        subseq(super(x), start=start, width=width)
     }
 )
 
