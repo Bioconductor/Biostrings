@@ -85,6 +85,9 @@ o Added "subjectOverlap" and "patternOverlap" pairwise sequence alignments.
 o Added support for Solexa quality scores in pairwise sequence alignment
   calculations.
 
+o Added support for ambiguity mappings in quality-based pairwise sequence
+  alignments.
+
 o Added a stringDist function to calculate the Levenshtein edit distance
   between elements of a character vector or XStringSet.
 

@@ -129,7 +129,7 @@ function(x,
          diag = FALSE,
          upper = FALSE,
          type = "global",
-         quality = PhredQuality(22L),
+         ambiguityMatrix = NULL,
          gapOpening = 0,
          gapExtension = -1)
 {
@@ -162,6 +162,32 @@ function(x,
   }
 
   useQuality <- TRUE
+  if (is.null(ambiguityMatrix)) {
+    ambiguityMatrix <- diag(length(alphabetToCodes))
+    dimnames(ambiguityMatrix) <- list(names(alphabetToCodes), names(alphabetToCodes))
+  } else {
+    if (!is.matrix(ambiguityMatrix) || !is.numeric(ambiguityMatrix) ||
+        any(is.na(ambiguityMatrix)) || any(ambiguityMatrix < 0) || any(ambiguityMatrix > 1))
+      stop("'ambiguityMatrix' must be a numeric matrix with values between 0 and 1 inclusive")
+    if (!identical(rownames(ambiguityMatrix), colnames(ambiguityMatrix)))
+      stop("row and column names differ for matrix 'ambiguityMatrix'")
+    if (is.null(rownames(ambiguityMatrix)))
+      stop("matrix 'ambiguityMatrix' must have row and column names")
+    if (any(duplicated(rownames(ambiguityMatrix))))
+      stop("matrix 'ambiguityMatrix' has duplicated row names")    
+  }
+  availableLetters <-
+    intersect(names(alphabetToCodes), rownames(ambiguityMatrix))
+  
+  ambiguityMatrix <- ambiguityMatrix[availableLetters, availableLetters]
+  uniqueAmbiguities <- sort(unique(ambiguityMatrix))
+  ambiguityReferenceMatrix <-
+    matrix(match(ambiguityMatrix, uniqueAmbiguities) - 1L,
+           nrow = nrow(ambiguityMatrix), ncol = ncol(ambiguityMatrix),
+           dimnames = dimnames(ambiguityMatrix))
+  ambiguityLookupTable <-
+    buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
+  
   alphabetLength <-
     switch(class(x),
            QualityScaledDNAStringSet =, QualityScaledRNAStringSet = 4L,
@@ -169,18 +195,13 @@ function(x,
            256L)
 
   substitutionArray <-
-    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
+    qualitySubstitutionMatrices(matchAmbiguity = uniqueAmbiguities,
+                                alphabetLength = alphabetLength,
                                 qualityClass = class(quality(x)))
   substitutionLookupTable <-
     buildLookupTable((minQuality(quality(x)) + offset(quality(x))):
                      (maxQuality(quality(x)) + offset(quality(x))),
                      0:(maxQuality(quality(x)) - minQuality(quality(x))))
-  ambiguityMatrix <-
-    matrix(0L, length(alphabetToCodes), length(alphabetToCodes),
-           dimnames = list(names(alphabetToCodes), names(alphabetToCodes)))
-  diag(ambiguityMatrix) <- 1L
-  ambiguityLookupTable <-
-    buildLookupTable(alphabetToCodes, 0:(length(alphabetToCodes) - 1))
 
   answer <- .Call("XStringSet_align_distance",
                   x,
@@ -192,8 +213,8 @@ function(x,
                   substitutionArray,
                   dim(substitutionArray),
                   substitutionLookupTable,
-                  ambiguityMatrix,
-                  dim(ambiguityMatrix),
+                  ambiguityReferenceMatrix,
+                  dim(ambiguityReferenceMatrix),
                   ambiguityLookupTable,
                   PACKAGE="Biostrings")
   attr(answer, "Size") <- length(x)
@@ -214,7 +235,7 @@ setMethod("stringDist",
           signature(x = "character"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1) {
+                   ambiguityMatrix = NULL, gapOpening = 0, gapExtension = -1) {
             if (method != "quality") {
               XStringSet.stringDist(x = BStringSet(x),
                                     method = method,
@@ -231,6 +252,7 @@ setMethod("stringDist",
                                                  diag = diag,
                                                  upper = upper,
                                                  type = type,
+                                                 ambiguityMatrix = ambiguityMatrix,
                                                  gapExtension = gapExtension,
                                                  gapOpening = gapOpening)
           }})
@@ -239,7 +261,7 @@ setMethod("stringDist",
           signature(x = "XStringSet"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1) {
+                   ambiguityMatrix = NULL, gapOpening = 0, gapExtension = -1) {
             if (method != "quality") {
               XStringSet.stringDist(x = x,
                                     method = method,
@@ -256,6 +278,7 @@ setMethod("stringDist",
                                                   diag = diag,
                                                   upper = upper,
                                                   type = type,
+                                                  ambiguityMatrix = ambiguityMatrix,
                                                   gapExtension = gapExtension,
                                                   gapOpening = gapOpening)
           }})
@@ -263,7 +286,8 @@ setMethod("stringDist",
 setMethod("stringDist",
           signature(x = "QualityScaledXStringSet"),
           function(x, method = "quality", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1) {
+                   type = "global", substitutionMatrix = NULL, ambiguityMatrix = NULL,
+                   gapOpening = 0, gapExtension = -1) {
             if (method != "quality") {
               XStringSet.stringDist(x = as(x, "XStringSet"),
                                    method = method,
@@ -280,6 +304,7 @@ setMethod("stringDist",
                                                  diag = diag,
                                                  upper = upper,
                                                  type = type,
+                                                 ambiguityMatrix = ambiguityMatrix,
                                                  gapExtension = gapExtension,
                                                  gapOpening = gapOpening)
             }})

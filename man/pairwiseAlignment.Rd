@@ -26,22 +26,22 @@ Solves (Needleman-Wunsch) global alignment, (Smith-Waterman) local alignment, an
 pairwiseAlignment(pattern, subject, \dots)
 \S4method{pairwiseAlignment}{XStringSet,XStringSet}(pattern, subject,
                   patternQuality = PhredQuality(22L), subjectQuality = PhredQuality(22L),
-                  type = "global", substitutionMatrix = NULL, gapOpening = -10,
-                  gapExtension = -4, scoreOnly = FALSE)
+                  type = "global", substitutionMatrix = NULL, ambiguityMatrix = NULL,
+                  gapOpening = -10, gapExtension = -4, scoreOnly = FALSE)
 \S4method{pairwiseAlignment}{QualityScaledXStringSet,QualityScaledXStringSet}(pattern, subject,
-                  type = "global", substitutionMatrix = NULL, gapOpening = -10,
-                  gapExtension = -4, scoreOnly = FALSE)
+                  type = "global", substitutionMatrix = NULL, ambiguityMatrix = NULL, 
+                  gapOpening = -10, gapExtension = -4, scoreOnly = FALSE)
 }
 \arguments{
   \item{pattern}{a character vector of any length, an \code{\link{XString}}, or an
     \code{\link{XStringSet}} object.}
   \item{subject}{a character vector of length 1 or an \code{\link{XString}} object.}
-  \item{patternQuality, subjectQuality}{objects of class
-    \code{\link{XStringQuality}} representing the respective quality scores for \code{pattern} and
-    \code{subject} that are used in a quality-based method for generating a substitution
-    matrix.
-    These two arguments are ignored if \code{!is.null(substitutionMatrix)} or if its respective
-    string set (\code{pattern}, \code{subject}) is of class \code{\link{QualityScaledXStringSet}}.}
+  \item{patternQuality, subjectQuality}{objects of class \code{\link{XStringQuality}}
+    representing the respective quality scores for \code{pattern} and \code{subject}
+    that are used in a quality-based method for generating a substitution matrix.
+    These two arguments are ignored if \code{!is.null(substitutionMatrix)} or if its
+    respective string set (\code{pattern}, \code{subject}) is of class
+    \code{\link{QualityScaledXStringSet}}.}
   \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
     \code{"overlap"}, \code{"patternOverlap"}, and \code{"subjectOverlap"} where
       \code{"global"} = align whole strings with end gap penalties,
@@ -51,9 +51,11 @@ pairwiseAlignment(pattern, subject, \dots)
         \code{pattern} and with end gap penalties on \code{subject},
       \code{"subjectOverlap"} = align whole strings with end gap penalties on
         \code{pattern} and without end gap penalties on \code{subject}.}
-  \item{substitutionMatrix}{constant substitution matrix for the alignment. Do not
-    use \code{substitutionMatrix} in conjunction with \code{patternQuality} and
+  \item{substitutionMatrix}{substitution matrix for a non-quality based alignment.
+    It cannot be used in conjunction with \code{patternQuality} and
     \code{subjectQuality} arguments.}
+  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignment. It takes
+    values between 0 and 1.}
   \item{gapOpening}{the cost for opening a gap in the alignment.}
   \item{gapExtension}{the incremental cost incurred along the length of the gap in the alignment.}
   \item{scoreOnly}{logical to denote whether or not to return just the scores of the

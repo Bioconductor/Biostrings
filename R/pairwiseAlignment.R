@@ -188,6 +188,7 @@ QualityScaledXStringSet.pairwiseAlignment <-
 function(pattern,
          subject,
          type = "global",
+         ambiguityMatrix = NULL,
          gapOpening = -10,
          gapExtension = -4,
          scoreOnly = FALSE)
@@ -241,6 +242,32 @@ function(pattern,
   }
 
   useQuality <- TRUE
+  if (is.null(ambiguityMatrix)) {
+      ambiguityMatrix <- diag(length(alphabetToCodes))
+      dimnames(ambiguityMatrix) <- list(names(alphabetToCodes), names(alphabetToCodes))
+  } else {
+    if (!is.matrix(ambiguityMatrix) || !is.numeric(ambiguityMatrix) ||
+        any(is.na(ambiguityMatrix)) || any(ambiguityMatrix < 0) || any(ambiguityMatrix > 1))
+      stop("'ambiguityMatrix' must be a numeric matrix with values between 0 and 1 inclusive")
+    if (!identical(rownames(ambiguityMatrix), colnames(ambiguityMatrix)))
+      stop("row and column names differ for matrix 'ambiguityMatrix'")
+    if (is.null(rownames(ambiguityMatrix)))
+      stop("matrix 'ambiguityMatrix' must have row and column names")
+    if (any(duplicated(rownames(ambiguityMatrix))))
+      stop("matrix 'ambiguityMatrix' has duplicated row names")    
+  }
+  availableLetters <-
+    intersect(names(alphabetToCodes), rownames(ambiguityMatrix))
+
+  ambiguityMatrix <- ambiguityMatrix[availableLetters, availableLetters]
+  uniqueAmbiguities <- sort(unique(ambiguityMatrix))
+  ambiguityReferenceMatrix <-
+    matrix(match(ambiguityMatrix, uniqueAmbiguities) - 1L,
+           nrow = nrow(ambiguityMatrix), ncol = ncol(ambiguityMatrix),
+           dimnames = dimnames(ambiguityMatrix))
+  ambiguityLookupTable <-
+    buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
+
   alphabetLength <-
     switch(class(pattern),
            QualityScaledDNAStringSet =, QualityScaledRNAStringSet = 4L,
@@ -248,18 +275,13 @@ function(pattern,
            256L)
 
   substitutionArray <-
-    qualitySubstitutionMatrices(alphabetLength = alphabetLength,
+    qualitySubstitutionMatrices(matchAmbiguity = uniqueAmbiguities,
+                                alphabetLength = alphabetLength,
                                 qualityClass = class(quality(pattern)))
   substitutionLookupTable <-
     buildLookupTable((minQuality(quality(pattern)) + offset(quality(pattern))):
                      (maxQuality(quality(pattern)) + offset(quality(pattern))),
                      0:(maxQuality(quality(pattern)) - minQuality(quality(pattern))))
-  ambiguityMatrix <-
-    matrix(0L, length(alphabetToCodes), length(alphabetToCodes),
-           dimnames = list(names(alphabetToCodes), names(alphabetToCodes)))
-  diag(ambiguityMatrix) <- 1L
-  ambiguityLookupTable <-
-    buildLookupTable(alphabetToCodes, 0:(length(alphabetToCodes) - 1))
 
   .Call("XStringSet_align_pairwiseAlignment",
         pattern,
@@ -273,8 +295,8 @@ function(pattern,
         substitutionArray,
         dim(substitutionArray),
         substitutionLookupTable,
-        ambiguityMatrix,
-        dim(ambiguityMatrix),
+        ambiguityReferenceMatrix,
+        dim(ambiguityReferenceMatrix),
         ambiguityLookupTable,
         PACKAGE="Biostrings")
 }
@@ -288,7 +310,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "character"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -304,6 +326,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledBStringSet(BStringSet(pattern), patternQuality),
                   subject = QualityScaledBStringSet(BStringSet(subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -313,7 +336,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "XString"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -329,6 +352,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(class(subject), pattern), patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -338,7 +362,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "XStringSet"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -354,6 +378,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject), pattern), patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -362,7 +387,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "character", subject = "QualityScaledXStringSet"),
           function(pattern, subject, patternQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -378,6 +403,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject), pattern), patternQuality),
                   subject = subject,
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -387,7 +413,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "character"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -403,6 +429,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(pattern), subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -412,7 +439,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "XString"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -428,6 +455,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -437,7 +465,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "XStringSet"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -453,6 +481,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -461,7 +490,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "XString", subject = "QualityScaledXStringSet"),
           function(pattern, subject, patternQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -477,6 +506,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = subject,
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -486,7 +516,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "character"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
           if (!is.null(substitutionMatrix)) {
@@ -502,6 +532,7 @@ setMethod("pairwiseAlignment",
                 pattern = QualityScaledXStringSet(pattern, patternQuality),
                 subject = QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern), subject), subjectQuality),
                 type = type,
+                ambiguityMatrix = ambiguityMatrix,
                 gapExtension = gapExtension,
                 gapOpening = gapOpening,
                 scoreOnly = scoreOnly)
@@ -511,7 +542,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "XString"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -527,6 +558,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -536,7 +568,7 @@ setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "XStringSet"),
           function(pattern, subject, patternQuality = PhredQuality(22L),
                    subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -552,6 +584,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -560,7 +593,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "XStringSet", subject = "QualityScaledXStringSet"),
           function(pattern, subject, patternQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -576,6 +609,7 @@ setMethod("pairwiseAlignment",
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
                   subject = subject,
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -584,7 +618,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "QualityScaledXStringSet", subject = "character"),
           function(pattern, subject, subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -600,6 +634,7 @@ setMethod("pairwiseAlignment",
                   pattern = pattern,
                   subject = QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern), subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -608,7 +643,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "QualityScaledXStringSet", subject = "XString"),
           function(pattern, subject, subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -624,6 +659,7 @@ setMethod("pairwiseAlignment",
                   pattern = pattern,
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -632,7 +668,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "QualityScaledXStringSet", subject = "XStringSet"),
           function(pattern, subject, subjectQuality = PhredQuality(22L), type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -648,6 +684,7 @@ setMethod("pairwiseAlignment",
                   pattern = pattern,
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)
@@ -656,7 +693,7 @@ setMethod("pairwiseAlignment",
 setMethod("pairwiseAlignment",
           signature(pattern = "QualityScaledXStringSet", subject = "QualityScaledXStringSet"),
           function(pattern, subject, type = "global",
-                   substitutionMatrix = NULL,
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL,
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
@@ -672,6 +709,7 @@ setMethod("pairwiseAlignment",
                   pattern = pattern,
                   subject = subject,
                   type = type,
+                  ambiguityMatrix = ambiguityMatrix,
                   gapExtension = gapExtension,
                   gapOpening = gapOpening,
                   scoreOnly = scoreOnly)

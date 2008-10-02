@@ -11,11 +11,13 @@ Computes the Levenshtein edit distance or pairwise alignment score matrix for a 
 }
 \usage{
 stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, \dots)
-\S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1)
-\S4method{stringDist}{QualityScaledXStringSet}(x, method = "quality", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+\S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE,
+                   upper = FALSE, type = "global", quality = PhredQuality(22L),
+                   substitutionMatrix = NULL, ambiguityMatrix = NULL, gapOpening = 0,
+                   gapExtension = -1)
+\S4method{stringDist}{QualityScaledXStringSet}(x, method = "quality", ignoreCase = FALSE,
+                   diag = FALSE, upper = FALSE, type = "global", substitutionMatrix = NULL,
+                   ambiguityMatrix = NULL, gapOpening = 0, gapExtension = -1)
 }
 \arguments{
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}
@@ -35,8 +37,10 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
   \item{quality}{object of class \code{\link{XStringQuality}} representing the quality scores
     for \code{x} that are used in a quality-based method for generating a substitution matrix.
     This argument is ignored if \code{method != "quality"}.}
-  \item{substitutionMatrix}{symmetric substitution matrix for the alignment. This argument is
-    ignored if \code{method != "substitutionMatrix"}.}
+  \item{substitutionMatrix}{symmetric substitution matrix for a non-quality based alignment.
+    This argument is ignored if \code{method != "substitutionMatrix"}.}
+  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignment. It takes
+    values between 0 and 1.}
   \item{gapOpening}{penalty for opening a gap in the alignment. This argument is ignored if
     \code{method == "levenshtein"}.}
   \item{gapExtension}{penalty for extending a gap in the alignment. This argument is ignored if
