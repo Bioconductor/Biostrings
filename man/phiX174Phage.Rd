@@ -40,7 +40,7 @@ Bull, J. J., Badgett, M. R., Wichman, H. A., Huelsenbeck, Hillis, D. M., Gulati,
 (1997) Genetics 147 , 1497Ð1507.
 
 Smith, Hamilton O.; Clyde A. Hutchison, Cynthia Pfannkoch, J. Craig Venter (2003-12-23).
-"Generating a synthetic genome by whole genome assembly: {phi}X174 bacteriophage from synthetic oligonucleotides".
+"Generating a synthetic genome by whole genome assembly: \{phi\}X174 bacteriophage from synthetic oligonucleotides".
 Proceedings of the National Academy of Sciences 100 (26): 15440-15445. doi:10.1073/pnas.2237126100.
 }
 \examples{
