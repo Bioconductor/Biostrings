@@ -37,7 +37,7 @@ with \code{srPhiX174}.
 \url{http://www.genome.jp/dbget-bin/www_bget?refseq+NC_001422}
 
 Bull, J. J., Badgett, M. R., Wichman, H. A., Huelsenbeck, Hillis, D. M., Gulati, A., Ho, C. & Molineux, J.
-(1997) Genetics 147 , 1497Ð1507.
+(1997) Genetics 147, 1497Ð1507.
 
 Smith, Hamilton O.; Clyde A. Hutchison, Cynthia Pfannkoch, J. Craig Venter (2003-12-23).
 "Generating a synthetic genome by whole genome assembly: \{phi\}X174 bacteriophage from synthetic oligonucleotides".
