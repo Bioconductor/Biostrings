@@ -216,7 +216,7 @@ setMethod("toString", "XString", function(x, ...) as.character(x))
 
 .charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
 {
-    safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
+    safe_locs <- narrow(ncharAsIRanges(x), start=start, end=end, width=width)
     .Call("new_RawPtr_from_STRSXP",
           x, start(safe_locs), width(safe_locs), collapse, lkup,
           PACKAGE="Biostrings")

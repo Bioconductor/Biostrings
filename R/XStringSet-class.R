@@ -255,7 +255,7 @@ setAs("XStringSet", "AAStringSet",
 .charToXStringSet <- function(x, start, end, width, use.names, baseClass)
 {
     class <- paste(baseClass, "Set", sep="")
-    safe_locs <- narrow(nchar(x, type="bytes"), start, end, width)
+    safe_locs <- narrow(ncharAsIRanges(x), start=start, end=end, width=width)
     ans_super <- .charToXString(x, safe_locs, baseClass)
     ans_ranges <- successiveIRanges(width(safe_locs))
     unsafe.newXStringSet(class, ans_super, ans_ranges,
