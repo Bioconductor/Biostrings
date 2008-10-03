@@ -126,10 +126,11 @@ penalties influence alignment scores in the following manner:
     probability of a mismatch when the underlying characters do match is
     $\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2$,
     where $n$ is the number of characters in the underlying alphabet. Using
-    $\epsilon_c$, the substitution score when two characters match is given by
-    $b * \log_2((1 - \epsilon_c) * n)$ and the substitution score when two
-    characters don't match is given by $b * \log_2(\epsilon_c * (n/(n-1)))$,
-    where $b$ is the bit-scaling for the scoring.
+    $\epsilon_c$, the substitution score is given by
+    $b * \log_2(\gamma_{(x,y)} * (1 - \epsilon_c) * n + (1 - \gamma_{(x,y)}) * \epsilon_c * (n/(n-1)))$,
+    where $b$ is the bit-scaling for the scoring and $\gamma_{(x,y)}$ is the
+    probability that characters $x$ and $y$ represents the same underlying
+    information (e.g. using IUPAC, $\gamma_{(A,A)} = 1$ and $\gamma_{(A,N)} = 1/4$).
   \end{description}  
   \item{Gap Penalties:  }
   Gap penalties are the values associated with the gaps within the substring
@@ -198,12 +199,15 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
 @
 
 When the substitution scores are quality-based, the \Rfunarg{patternQuality}
-and \Rfunarg{subjectQuality} arguments (of class \Rclass{PhredQuality} or
-\Rclass{SolexaQuality}) represent the equivalent of $[x-99]$ numeric quality
-values for the respective strings. For \Rclass{PhredQuality} measures
-$Q \in [0, 99]$, the probability of an error in the base read is given
-by $10^{-Q/10}$ and for \Rclass{SolexaQuality} measures $Q \in [-5, 99]$,
-they are given by $1 - 1/(1 + 10^{-Q/10})$. The
+and \Rfunarg{subjectQuality} arguments represent the equivalent of $[x-99]$
+numeric quality values for the respective strings, and the optional
+\Rfunarg{ambiguityMatrix} argument represents how the closely two characters
+match on a $[0,1]$ scale. The \Rfunarg{patternQuality} and
+\Rfunarg{subjectQuality} arguments accept quality measures in either a
+\Rclass{PhredQuality} or \Rclass{SolexaQuality} scaling. For
+\Rclass{PhredQuality} measures $Q \in [0, 99]$, the probability of an error in
+the base read is given by $10^{-Q/10}$ and for \Rclass{SolexaQuality} measures
+$Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$. The
 \Rfunction{qualitySubstitutionMatrices} function maps the
 \Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
 mismatch penalties. These three arguments will be demonstrated in later
