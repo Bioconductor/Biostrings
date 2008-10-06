@@ -13,6 +13,14 @@ setMethod("compareStrings", signature = c(pattern = "character", subject = "char
                   stop("'pattern' and 'subject' must have the same number of characters")
               .Call("align_compareStrings", pattern, subject, max(ncharPattern), "+", "-", "?", PACKAGE="Biostrings")
           })
+setMethod("compareStrings", signature = c(pattern = "XString", subject = "XString"),
+          function(pattern, subject) {
+              compareStrings(as.character(pattern), as.character(subject))
+          })
+setMethod("compareStrings", signature = c(pattern = "XStringSet", subject = "XStringSet"),
+          function(pattern, subject) {
+              compareStrings(as.character(pattern), as.character(subject))
+          })
 setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject = "AlignedXStringSet"),
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))

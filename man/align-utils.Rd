@@ -2,6 +2,8 @@
 
 \alias{compareStrings}
 \alias{compareStrings,character,character-method}
+\alias{compareStrings,XString,XString-method}
+\alias{compareStrings,XStringSet,XStringSet-method}
 \alias{compareStrings,AlignedXStringSet,AlignedXStringSet-method}
 \alias{compareStrings,PairwiseAlignment,missing-method}
 \alias{consensusMatrix}
@@ -46,8 +48,9 @@
 
 \arguments{
   \item{pattern, subject}{
-    The strings to compare. Can be of type \code{character}, \code{AlignedXStringSet}, or,
-    in the case of \code{pattern}, \code{PairwiseAlignment}. If \code{pattern} is a
+    The strings to compare. Can be of type \code{character}, \code{XString},
+    \code{XStringSet}, \code{AlignedXStringSet}, or, in the case of
+    \code{pattern}, \code{PairwiseAlignment}. If \code{pattern} is a
     \code{PairwiseAlignment} object, then \code{subject} must be missing.
   }
   \item{x}{
@@ -70,7 +73,8 @@
 }
 
 \seealso{
-  \link{XStringSet-class}, \link{XStringViews-class}, \link{PairwiseAlignment-class}
+  \link{XString-class}, \link{XStringSet-class}, \link{XStringViews-class}, 
+  \link{AlignedXStringSet-class}, \link{PairwiseAlignment-class}
 }
 
 \examples{
