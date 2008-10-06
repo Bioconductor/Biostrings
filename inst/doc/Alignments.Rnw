@@ -793,7 +793,7 @@ genBankCoverage <- coverage(genBankAlign, weight = wtPhiX174)
 plot((2793-34):(2811+34), as.integer(genBankCoverage), xlab = "Position", ylab = "Coverage",
      type = "l")
 nchar(genBankSubstring)
-slice(genBankCoverage, 0, includeLower = FALSE)
+slice(genBankCoverage, lower = 1)
 @
 
 \subsection{Exercise 7}
@@ -1129,7 +1129,7 @@ alignments outside of the specified substring region.}
 <<ans7b>>=
 genBankFullCoverage <- coverage(genBankFullAlign, weight = wtPhiX174)
 plot(as.integer(genBankFullCoverage), xlab = "Position", ylab = "Coverage", type = "l")
-slice(genBankFullCoverage, 0, includeLower = FALSE)
+slice(genBankFullCoverage, lower = 1)
 @
 \item Use the \Rfunction{reverseComplement} function on the bacteriophage
 $\phi$ X174 genome. Do any short reads have a higher alignment score on this
