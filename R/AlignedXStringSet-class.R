@@ -9,7 +9,7 @@ setClass("AlignedXStringSet",
         unaligned="XStringSet",
         range="IRanges",
         mismatch = "list",
-        indel="RangesList"
+        indel="IRangesList"
     )
 )
 

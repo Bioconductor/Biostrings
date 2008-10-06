@@ -735,14 +735,14 @@ SEXP XStringSet_align_pairwiseAlignment(
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternMismatch = NEW_LIST(numberOfStrings));
-		PROTECT(alignedPatternIndel = NEW_OBJECT(MAKE_CLASS("RangesList")));
+		PROTECT(alignedPatternIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
 		PROTECT(alignedPatternIndelList = NEW_LIST(numberOfStrings));
 		SET_SLOT(alignedPatternIndel, mkChar("elements"), alignedPatternIndelList);
 
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectMismatch = NEW_LIST(numberOfStrings));
-		PROTECT(alignedSubjectIndel = NEW_OBJECT(MAKE_CLASS("RangesList")));
+		PROTECT(alignedSubjectIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
 		PROTECT(alignedSubjectIndelList = NEW_LIST(numberOfStrings));
 		SET_SLOT(alignedSubjectIndel, mkChar("elements"), alignedSubjectIndelList);
 
