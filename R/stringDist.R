@@ -82,11 +82,11 @@ function(x,
   substitutionLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters],
                      0:(length(availableLetters) - 1))
-  ambiguityMatrix <-
+  fuzzyMatrix <-
     matrix(0L, length(availableLetters), length(availableLetters),
            dimnames = list(availableLetters, availableLetters))
-  diag(ambiguityMatrix) <- 1L
-  ambiguityLookupTable <-
+  diag(fuzzyMatrix) <- 1L
+  fuzzyLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
 
   answer <- .Call("XStringSet_align_distance",
@@ -99,9 +99,9 @@ function(x,
                   substitutionArray,
                   dim(substitutionArray),
                   substitutionLookupTable,
-                  ambiguityMatrix,
-                  dim(ambiguityMatrix),
-                  ambiguityLookupTable,
+                  fuzzyMatrix,
+                  dim(fuzzyMatrix),
+                  fuzzyLookupTable,
                   PACKAGE="Biostrings")
   if (method == "levenshtein")
     answer <- -answer
@@ -121,7 +121,7 @@ function(x,
          diag = FALSE,
          upper = FALSE,
          type = "global",
-         ambiguityMatrix = NULL,
+         fuzzyMatrix = NULL,
          gapOpening = 0,
          gapExtension = -1)
 {
@@ -146,30 +146,30 @@ function(x,
   }
 
   useQuality <- TRUE
-  if (is.null(ambiguityMatrix)) {
-    ambiguityMatrix <- diag(length(alphabetToCodes))
-    dimnames(ambiguityMatrix) <- list(names(alphabetToCodes), names(alphabetToCodes))
+  if (is.null(fuzzyMatrix)) {
+    fuzzyMatrix <- diag(length(alphabetToCodes))
+    dimnames(fuzzyMatrix) <- list(names(alphabetToCodes), names(alphabetToCodes))
   } else {
-    if (!is.matrix(ambiguityMatrix) || !is.numeric(ambiguityMatrix) ||
-        any(is.na(ambiguityMatrix)) || any(ambiguityMatrix < 0) || any(ambiguityMatrix > 1))
-      stop("'ambiguityMatrix' must be a numeric matrix with values between 0 and 1 inclusive")
-    if (!identical(rownames(ambiguityMatrix), colnames(ambiguityMatrix)))
-      stop("row and column names differ for matrix 'ambiguityMatrix'")
-    if (is.null(rownames(ambiguityMatrix)))
-      stop("matrix 'ambiguityMatrix' must have row and column names")
-    if (any(duplicated(rownames(ambiguityMatrix))))
-      stop("matrix 'ambiguityMatrix' has duplicated row names")    
+    if (!is.matrix(fuzzyMatrix) || !is.numeric(fuzzyMatrix) ||
+        any(is.na(fuzzyMatrix)) || any(fuzzyMatrix < 0) || any(fuzzyMatrix > 1))
+      stop("'fuzzyMatrix' must be a numeric matrix with values between 0 and 1 inclusive")
+    if (!identical(rownames(fuzzyMatrix), colnames(fuzzyMatrix)))
+      stop("row and column names differ for matrix 'fuzzyMatrix'")
+    if (is.null(rownames(fuzzyMatrix)))
+      stop("matrix 'fuzzyMatrix' must have row and column names")
+    if (any(duplicated(rownames(fuzzyMatrix))))
+      stop("matrix 'fuzzyMatrix' has duplicated row names")    
   }
   availableLetters <-
-    intersect(names(alphabetToCodes), rownames(ambiguityMatrix))
+    intersect(names(alphabetToCodes), rownames(fuzzyMatrix))
   
-  ambiguityMatrix <- ambiguityMatrix[availableLetters, availableLetters]
-  uniqueAmbiguities <- sort(unique(ambiguityMatrix))
-  ambiguityReferenceMatrix <-
-    matrix(match(ambiguityMatrix, uniqueAmbiguities) - 1L,
-           nrow = nrow(ambiguityMatrix), ncol = ncol(ambiguityMatrix),
-           dimnames = dimnames(ambiguityMatrix))
-  ambiguityLookupTable <-
+  fuzzyMatrix <- fuzzyMatrix[availableLetters, availableLetters]
+  uniqueFuzzyValues <- sort(unique(fuzzyMatrix))
+  fuzzyReferenceMatrix <-
+    matrix(match(fuzzyMatrix, uniqueFuzzyValues) - 1L,
+           nrow = nrow(fuzzyMatrix), ncol = ncol(fuzzyMatrix),
+           dimnames = dimnames(fuzzyMatrix))
+  fuzzyLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
   
   alphabetLength <-
@@ -179,7 +179,7 @@ function(x,
            256L)
 
   substitutionArray <-
-    qualitySubstitutionMatrices(matchAmbiguity = uniqueAmbiguities,
+    qualitySubstitutionMatrices(fuzzyMatch = uniqueFuzzyValues,
                                 alphabetLength = alphabetLength,
                                 qualityClass = class(quality(x)))
   substitutionLookupTable <-
@@ -197,9 +197,9 @@ function(x,
                   substitutionArray,
                   dim(substitutionArray),
                   substitutionLookupTable,
-                  ambiguityReferenceMatrix,
-                  dim(ambiguityReferenceMatrix),
-                  ambiguityLookupTable,
+                  fuzzyReferenceMatrix,
+                  dim(fuzzyReferenceMatrix),
+                  fuzzyLookupTable,
                   PACKAGE="Biostrings")
   attr(answer, "Size") <- length(x)
   attr(answer, "Labels") <- names(x)
@@ -219,7 +219,7 @@ setMethod("stringDist",
           signature(x = "character"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   ambiguityMatrix = NULL, gapOpening = 0, gapExtension = -1) {
+                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = -1) {
             if (method != "quality") {
               XStringSet.stringDist(x = BStringSet(x),
                                     method = method,
@@ -236,7 +236,7 @@ setMethod("stringDist",
                                                  diag = diag,
                                                  upper = upper,
                                                  type = type,
-                                                 ambiguityMatrix = ambiguityMatrix,
+                                                 fuzzyMatrix = fuzzyMatrix,
                                                  gapExtension = gapExtension,
                                                  gapOpening = gapOpening)
           }})
@@ -245,7 +245,7 @@ setMethod("stringDist",
           signature(x = "XStringSet"),
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
                    type = "global", quality = PhredQuality(22L), substitutionMatrix = NULL,
-                   ambiguityMatrix = NULL, gapOpening = 0, gapExtension = -1) {
+                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = -1) {
             if (method != "quality") {
               XStringSet.stringDist(x = x,
                                     method = method,
@@ -262,7 +262,7 @@ setMethod("stringDist",
                                                   diag = diag,
                                                   upper = upper,
                                                   type = type,
-                                                  ambiguityMatrix = ambiguityMatrix,
+                                                  fuzzyMatrix = fuzzyMatrix,
                                                   gapExtension = gapExtension,
                                                   gapOpening = gapOpening)
           }})
@@ -270,7 +270,7 @@ setMethod("stringDist",
 setMethod("stringDist",
           signature(x = "QualityScaledXStringSet"),
           function(x, method = "quality", ignoreCase = FALSE, diag = FALSE, upper = FALSE,
-                   type = "global", substitutionMatrix = NULL, ambiguityMatrix = NULL,
+                   type = "global", substitutionMatrix = NULL, fuzzyMatrix = NULL,
                    gapOpening = 0, gapExtension = -1) {
             if (method != "quality") {
               XStringSet.stringDist(x = as(x, "XStringSet"),
@@ -288,7 +288,7 @@ setMethod("stringDist",
                                                  diag = diag,
                                                  upper = upper,
                                                  type = type,
-                                                 ambiguityMatrix = ambiguityMatrix,
+                                                 fuzzyMatrix = fuzzyMatrix,
                                                  gapExtension = gapExtension,
                                                  gapOpening = gapOpening)
             }})

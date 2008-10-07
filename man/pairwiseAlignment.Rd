@@ -26,10 +26,10 @@ Solves (Needleman-Wunsch) global alignment, (Smith-Waterman) local alignment, an
 pairwiseAlignment(pattern, subject, \dots)
 \S4method{pairwiseAlignment}{XStringSet,XStringSet}(pattern, subject,
                   patternQuality = PhredQuality(22L), subjectQuality = PhredQuality(22L),
-                  type = "global", substitutionMatrix = NULL, ambiguityMatrix = NULL,
+                  type = "global", substitutionMatrix = NULL, fuzzyMatrix = NULL,
                   gapOpening = -10, gapExtension = -4, scoreOnly = FALSE)
 \S4method{pairwiseAlignment}{QualityScaledXStringSet,QualityScaledXStringSet}(pattern, subject,
-                  type = "global", substitutionMatrix = NULL, ambiguityMatrix = NULL, 
+                  type = "global", substitutionMatrix = NULL, fuzzyMatrix = NULL, 
                   gapOpening = -10, gapExtension = -4, scoreOnly = FALSE)
 }
 \arguments{
@@ -54,7 +54,7 @@ pairwiseAlignment(pattern, subject, \dots)
   \item{substitutionMatrix}{substitution matrix for a non-quality based alignment.
     It cannot be used in conjunction with \code{patternQuality} and
     \code{subjectQuality} arguments.}
-  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignments. It takes
+  \item{fuzzyMatrix}{fuzzy match matrix for quality-based alignments. It takes
     values between 0 and 1; where 0 is an unambiguous mismatch, 1 is an unambiguous
     match, and values in between represent a fraction of "matchiness".}
   \item{gapOpening}{the cost for opening a gap in the alignment.}

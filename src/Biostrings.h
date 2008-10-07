@@ -819,9 +819,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 	SEXP substitutionArray,
 	SEXP substitutionArrayDim,
 	SEXP substitutionLookupTable,
-	SEXP ambiguityMatrix,
-	SEXP ambiguityMatrixDim,
-	SEXP ambiguityLookupTable
+	SEXP fuzzyMatrix,
+	SEXP fuzzyMatrixDim,
+	SEXP fuzzyLookupTable
 );
 
 SEXP XStringSet_align_distance(
@@ -834,9 +834,9 @@ SEXP XStringSet_align_distance(
 	SEXP substitutionArray,
 	SEXP substitutionArrayDim,
 	SEXP substitutionLookupTable,
-	SEXP ambiguityMatrix,
-	SEXP ambiguityMatrixDim,
-	SEXP ambiguityLookupTable
+	SEXP fuzzyMatrix,
+	SEXP fuzzyMatrixDim,
+	SEXP fuzzyLookupTable
 );
 
 

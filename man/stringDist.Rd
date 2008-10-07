@@ -13,11 +13,11 @@ Computes the Levenshtein edit distance or pairwise alignment score matrix for a 
 stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, \dots)
 \S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE,
                    upper = FALSE, type = "global", quality = PhredQuality(22L),
-                   substitutionMatrix = NULL, ambiguityMatrix = NULL, gapOpening = 0,
+                   substitutionMatrix = NULL, fuzzyMatrix = NULL, gapOpening = 0,
                    gapExtension = -1)
 \S4method{stringDist}{QualityScaledXStringSet}(x, method = "quality", ignoreCase = FALSE,
                    diag = FALSE, upper = FALSE, type = "global", substitutionMatrix = NULL,
-                   ambiguityMatrix = NULL, gapOpening = 0, gapExtension = -1)
+                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = -1)
 }
 \arguments{
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}
@@ -39,7 +39,7 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
     This argument is ignored if \code{method != "quality"}.}
   \item{substitutionMatrix}{symmetric substitution matrix for a non-quality based alignment.
     This argument is ignored if \code{method != "substitutionMatrix"}.}
-  \item{ambiguityMatrix}{ambiguity matrix for quality-based alignments. It takes
+  \item{fuzzyMatrix}{fuzzy match matrix for quality-based alignments. It takes
     values between 0 and 1; where 0 is an unambiguous mismatch, 1 is an unambiguous
     match, and values in between represent a fraction of "matchiness".}
   \item{gapOpening}{penalty for opening a gap in the alignment. This argument is ignored if

@@ -26,7 +26,7 @@
 #define S_TRACE_MATRIX(i, j) (sTraceMatrix[i + nCharString1 * j])
 #define D_TRACE_MATRIX(i, j) (dTraceMatrix[i + nCharString1 * j])
 #define I_TRACE_MATRIX(i, j) (iTraceMatrix[i + nCharString1 * j])
-#define AMBIGUITY_MATRIX(i, j) (ambiguityMatrix[i + ambiguityMatrixDim[0] * j])
+#define FUZZY_MATRIX(i, j) (fuzzyMatrix[i + fuzzyMatrixDim[0] * j])
 #define SUBSTITUTION_ARRAY(i, j, k) (substitutionArray[i + substitutionArrayDim[0] * (j + substitutionArrayDim[1] * k)])
 
 #define SET_LOOKUP_VALUE(lookupTable, length, key) \
@@ -78,10 +78,10 @@ static double pairwiseAlignment(
 		const int *substitutionArrayDim,
 		const int *substitutionLookupTable,
 		const int substitutionLookupTableLength,
-		const int *ambiguityMatrix,
-		const int *ambiguityMatrixDim,
-		const int *ambiguityLookupTable,
-		const int ambiguityLookupTableLength,
+		const int *fuzzyMatrix,
+		const int *fuzzyMatrixDim,
+		const int *fuzzyLookupTable,
+		const int fuzzyLookupTableLength,
 		struct AlignBuffer *alignBufferPtr)
 {
 	int i, j, iMinus1, jMinus1;
@@ -147,7 +147,7 @@ static double pairwiseAlignment(
 		scalar1 = (nCharString1 == 1);
 		scalar2 = (nCharString2 == 1);
 	}
-	int lookupValue = 0, element1, element2, stringElt1, stringElt2, ambiguity, iElt, jElt;
+	int lookupValue = 0, element1, element2, stringElt1, stringElt2, fuzzy, iElt, jElt;
 	const int noEndGap1 = !align1InfoPtr->endGap;
 	const int noEndGap2 = !align2InfoPtr->endGap;
 	const float gapOpeningPlusExtension = gapOpening + gapExtension;
@@ -164,7 +164,7 @@ static double pairwiseAlignment(
 
 				CURR_MATRIX(0, 0) = PREV_MATRIX(0, 0) + endGapAddend;
 
-				SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align2InfoPtr->string.elts[jElt]);
+				SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
 				stringElt2 = lookupValue;
 				SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
 				element2 = lookupValue;
@@ -173,12 +173,12 @@ static double pairwiseAlignment(
 							curr = (currMatrix+1), currMinus1 = currMatrix,
 							prev = (prevMatrix+1), prevMinus1 = prevMatrix;
 							i <= nCharString1; i++, iElt--, curr++, currMinus1++, prev++, prevMinus1++) {
-						SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
 						stringElt1 = lookupValue;
 						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						ambiguity = AMBIGUITY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, ambiguity);
+						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
 						*curr =
 							MAX(0.0,
@@ -192,12 +192,12 @@ static double pairwiseAlignment(
 							curr = (currMatrix+1), currMinus1 = currMatrix,
 							prev = (prevMatrix+1), prevMinus1 = prevMatrix;
 							i <= nCharString1; i++, iElt--, curr++, currMinus1++, prev++, prevMinus1++) {
-						SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
 						stringElt1 = lookupValue;
 						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						ambiguity = AMBIGUITY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, ambiguity);
+						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
 						*curr =
 							MAX(*prevMinus1 + substitutionValue,
@@ -230,18 +230,18 @@ static double pairwiseAlignment(
 				CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
 				CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-				SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align2InfoPtr->string.elts[jElt]);
+				SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
 				stringElt2 = lookupValue;
 				SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
 				element2 = lookupValue;
 				if (localAlignment) {
 					for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-						SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
 						stringElt1 = lookupValue;
 						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						ambiguity = AMBIGUITY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, ambiguity);
+						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
 						CURR_MATRIX(i, 0) =
 							MAX(0.0,
@@ -258,12 +258,12 @@ static double pairwiseAlignment(
 					}
 				} else {
 					for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-						SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align1InfoPtr->string.elts[iElt]);
+						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
 						stringElt1 = lookupValue;
 						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 						element1 = lookupValue;
-						ambiguity = AMBIGUITY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, ambiguity);
+						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
 						CURR_MATRIX(i, 0) =
 							MAX(PREV_MATRIX(iMinus1, 0),
@@ -330,18 +330,18 @@ static double pairwiseAlignment(
 			CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
 			CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-			SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align2InfoPtr->string.elts[jElt]);
+			SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
 			stringElt2 = lookupValue;
 			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
 			element2 = lookupValue;
 			if (localAlignment) {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
 					stringElt1 = lookupValue;
 					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
-					ambiguity = AMBIGUITY_MATRIX(stringElt1, stringElt2);
-					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, ambiguity);
+					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
 					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores
 					 *           and traceback values
@@ -393,12 +393,12 @@ static double pairwiseAlignment(
 				}
 			} else {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(ambiguityLookupTable, ambiguityLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
 					stringElt1 = lookupValue;
 					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
-					ambiguity = AMBIGUITY_MATRIX(stringElt1, stringElt2);
-					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, ambiguity);
+					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
 					/* Step 3c:  Generate (0) substitution, (1) deletion, and (2) insertion scores
 					 *           and traceback values
@@ -587,18 +587,21 @@ static double pairwiseAlignment(
  * 'useQuality':             denotes whether or not to use quality measures
  *                           in the optimal pairwise alignment
  *                           (logical vector of length 1)
- * 'qualityMatchMatrix':     quality-based substitution matrix for matches
- * 'qualityMismatchMatrix':  quality-based substitution matrix for matches
- * 'qualityMatrixDim':       dimension of 'qualityMatchMatrix' and
- *                           'qualityMismatchMatrix'
- *                           (integer vector of lenth 2)
- * 'constantLookupTable':    lookup table for translating XString bytes to scoring
- *                           matrix indices
- *                           (integer vector)
- * 'constantMatrix':         constant substitution matrix for matches/mismatches
- *                           (double matrix)
- * 'constantMatrixDim':      dimension of 'constantMatrix'
- *                           (integer vector of length 2)
+ * 'substitutionArray':        a three-dimensional double array where the first two
+ *                             dimensions are for substitutions and the
+ *                             third is for fuzziness of matches
+ * 'substitutionArrayDim':     dimension of 'substitutionArray'
+ *                             (integer vector of length 3)
+ * 'substitutionLookupTable':  lookup table for translating XString bytes to
+ *                             substitution indices
+ *                             (integer vector)
+ * 'fuzzyMatrix':              fuzzy matrix for matches
+ *                             (double matrix)
+ * 'fuzzyMatrixDim':           dimension of 'fuzzyMatrix'
+ *                             (integer vector of length 2)
+ * 'fuzzyLookupTable':         lookup table for translating XString bytes to
+ *                             fuzzy indices
+ *                             (integer vector)
  *
  * OUTPUT
  * If scoreOnly = TRUE, returns either a vector of scores
@@ -617,9 +620,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP substitutionArray,
 		SEXP substitutionArrayDim,
 		SEXP substitutionLookupTable,
-		SEXP ambiguityMatrix,
-		SEXP ambiguityMatrixDim,
-		SEXP ambiguityLookupTable)
+		SEXP fuzzyMatrix,
+		SEXP fuzzyMatrixDim,
+		SEXP fuzzyLookupTable)
 {
 	const int scoreOnlyValue = LOGICAL(scoreOnly)[0];
 	const int useQualityValue = LOGICAL(useQuality)[0];
@@ -712,10 +715,10 @@ SEXP XStringSet_align_pairwiseAlignment(
 					INTEGER(substitutionArrayDim),
 					INTEGER(substitutionLookupTable),
 					LENGTH(substitutionLookupTable),
-					INTEGER(ambiguityMatrix),
-					INTEGER(ambiguityMatrixDim),
-					INTEGER(ambiguityLookupTable),
-					LENGTH(ambiguityLookupTable),
+					INTEGER(fuzzyMatrix),
+					INTEGER(fuzzyMatrixDim),
+					INTEGER(fuzzyLookupTable),
+					LENGTH(fuzzyLookupTable),
 					&alignBuffer);
 		}
 		UNPROTECT(1);
@@ -773,10 +776,10 @@ SEXP XStringSet_align_pairwiseAlignment(
 					INTEGER(substitutionArrayDim),
 					INTEGER(substitutionLookupTable),
 					LENGTH(substitutionLookupTable),
-					INTEGER(ambiguityMatrix),
-					INTEGER(ambiguityMatrixDim),
-					INTEGER(ambiguityLookupTable),
-					LENGTH(ambiguityLookupTable),
+					INTEGER(fuzzyMatrix),
+					INTEGER(fuzzyMatrixDim),
+					INTEGER(fuzzyLookupTable),
+					LENGTH(fuzzyLookupTable),
 					&alignBuffer);
 
 			PROTECT(alignedPatternMismatchElt = NEW_INTEGER(align1Info.lengthMismatch));
@@ -876,32 +879,35 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 /*
  * INPUTS
- * 'string':                 XStringSet object for strings
- * 'type':                   type of pairwise alignment
- *                           (character vector of length 1;
- *                            'global', 'local', 'overlap')
- * 'typeCode':               type of pairwise alignment
- *                           (integer vector of length 1;
- *                            1 = 'global', 2 = 'local', 3 = 'overlap')
- * 'gapOpening':             gap opening cost or penalty
- *                           (double vector of length 1)
- * 'gapExtension':           gap extension cost or penalty
- *                           (double vector of length 1)
- * 'useQuality':             denotes whether or not to use quality measures
- *                           in the optimal pairwise alignment
- *                           (logical vector of length 1)
- * 'qualityMatchMatrix':     quality-based substitution matrix for matches
- * 'qualityMismatchMatrix':  quality-based substitution matrix for matches
- * 'qualityMatrixDim':       dimension of 'qualityMatchMatrix' and
- *                           'qualityMismatchMatrix'
- *                           (integer vector of lenth 2)
- * 'constantLookupTable':    lookup table for translating XString bytes to scoring
- *                           matrix indices
- *                           (integer vector)
- * 'constantMatrix':         constant substitution matrix for matches/mismatches
- *                           (double matrix)
- * 'constantMatrixDim':      dimension of 'constantMatrix'
- *                           (integer vector of length 2)
+ * 'string':                   XStringSet object for strings
+ * 'type':                     type of pairwise alignment
+ *                             (character vector of length 1;
+ *                              'global', 'local', 'overlap')
+ * 'typeCode':                 type of pairwise alignment
+ *                             (integer vector of length 1;
+ *                              1 = 'global', 2 = 'local', 3 = 'overlap')
+ * 'gapOpening':               gap opening cost or penalty
+ *                             (double vector of length 1)
+ * 'gapExtension':             gap extension cost or penalty
+ *                             (double vector of length 1)
+ * 'useQuality':               denotes whether or not to use quality measures
+ *                             in the optimal pairwise alignment
+ *                             (logical vector of length 1)
+ * 'substitutionArray':        a three-dimensional double array where the first two
+ *                             dimensions are for substitutions and the
+ *                             third is for fuzziness of matches
+ * 'substitutionArrayDim':     dimension of 'substitutionArray'
+ *                             (integer vector of length 3)
+ * 'substitutionLookupTable':  lookup table for translating XString bytes to
+ *                             substitution indices
+ *                             (integer vector)
+ * 'fuzzyMatrix':              fuzzy matrix for matches
+ *                             (double matrix)
+ * 'fuzzyMatrixDim':           dimension of 'fuzzyMatrix'
+ *                             (integer vector of length 2)
+ * 'fuzzyLookupTable':         lookup table for translating XString bytes to
+ *                             fuzzy indices
+ *                             (integer vector)
  *
  * OUTPUT
  * Return a numeric vector containing the lower triangle of the score matrix.
@@ -917,9 +923,9 @@ SEXP XStringSet_align_distance(
 		SEXP substitutionArray,
 		SEXP substitutionArrayDim,
 		SEXP substitutionLookupTable,
-		SEXP ambiguityMatrix,
-		SEXP ambiguityMatrixDim,
-		SEXP ambiguityLookupTable)
+		SEXP fuzzyMatrix,
+		SEXP fuzzyMatrixDim,
+		SEXP fuzzyLookupTable)
 {
 	int scoreOnlyValue = 1;
 	int useQualityValue = LOGICAL(useQuality)[0];
@@ -989,10 +995,10 @@ SEXP XStringSet_align_distance(
 						INTEGER(substitutionArrayDim),
 						INTEGER(substitutionLookupTable),
 						LENGTH(substitutionLookupTable),
-						INTEGER(ambiguityMatrix),
-						INTEGER(ambiguityMatrixDim),
-						INTEGER(ambiguityLookupTable),
-						LENGTH(ambiguityLookupTable),
+						INTEGER(fuzzyMatrix),
+						INTEGER(fuzzyMatrixDim),
+						INTEGER(fuzzyLookupTable),
+						LENGTH(fuzzyLookupTable),
 						&alignBuffer);
 				score++;
 			}
@@ -1020,10 +1026,10 @@ SEXP XStringSet_align_distance(
 						INTEGER(substitutionArrayDim),
 						INTEGER(substitutionLookupTable),
 						LENGTH(substitutionLookupTable),
-						INTEGER(ambiguityMatrix),
-						INTEGER(ambiguityMatrixDim),
-						INTEGER(ambiguityLookupTable),
-						LENGTH(ambiguityLookupTable),
+						INTEGER(fuzzyMatrix),
+						INTEGER(fuzzyMatrixDim),
+						INTEGER(fuzzyLookupTable),
+						LENGTH(fuzzyLookupTable),
 						&alignBuffer);
 				score++;
 			}

@@ -35,8 +35,8 @@
   data(PAM120)
   data(PAM250)
   nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
-  qualitySubstitutionMatrices(matchAmbiguity = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
-  errorSubstitutionMatrices(errorProbability, matchAmbiguity = c(0, 1), alphabetLength = 4L, bitScale = 1)
+  qualitySubstitutionMatrices(fuzzyMatch = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
+  errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength = 4L, bitScale = 1)
 }
 
 \arguments{
@@ -45,7 +45,7 @@
   \item{baseOnly}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, only
     uses the letters in the "base" alphabet i.e. "A", "C", "G", "T".}
   \item{type}{either "DNA" or "RNA".}
-  \item{matchAmbiguity}{a named or unnamed numeric vector representing the base
+  \item{fuzzyMatch}{a named or unnamed numeric vector representing the base
     match probability.}
   \item{errorProbability}{a named or unnamed numeric vector representing the error
     probability.}
@@ -104,7 +104,7 @@
   where \eqn{b} is the bit-scaling for the scoring and \eqn{\gamma_{x,y}} is the
   probability that characters \eqn{x} and \eqn{y} represents the same underlying
   information (e.g. using IUPAC, \eqn{\gamma_{A,A} = 1} and \eqn{\gamma_{A,N} = 1/4}.
-  In the arguments listed above \code{matchAmbiguity} represents \eqn{\gamma_{x,y}}
+  In the arguments listed above \code{fuzzyMatch} represents \eqn{\gamma_{x,y}}
   and \code{errorProbability} represents \eqn{\epsilon_i}.
 }
 

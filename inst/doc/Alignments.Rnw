@@ -201,7 +201,7 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
 When the substitution scores are quality-based, the \Rfunarg{patternQuality}
 and \Rfunarg{subjectQuality} arguments represent the equivalent of $[x-99]$
 numeric quality values for the respective strings, and the optional
-\Rfunarg{ambiguityMatrix} argument represents how the closely two characters
+\Rfunarg{fuzzyMatrix} argument represents how the closely two characters
 match on a $[0,1]$ scale. The \Rfunarg{patternQuality} and
 \Rfunarg{subjectQuality} arguments accept quality measures in either a
 \Rclass{PhredQuality} or \Rclass{SolexaQuality} scaling. For
