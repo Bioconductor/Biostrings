@@ -38,8 +38,8 @@
 \alias{as.character,PairwiseAlignment-method}
 \alias{toString,PairwiseAlignment-method}
 \alias{as.matrix,PairwiseAlignment-method}
-\alias{[,PairwiseAlignment-method}
-\alias{[<-,PairwiseAlignment-method}
+\alias{[,PairwiseAlignment,ANY,ANY,ANY-method}
+\alias{[<-,PairwiseAlignment,ANY,ANY,ANY-method}
 \alias{rep,PairwiseAlignment-method}
 
 

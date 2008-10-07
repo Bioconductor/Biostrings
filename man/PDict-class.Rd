@@ -29,7 +29,7 @@
 \alias{ACtree}
 
 \alias{show,ACtree-method}
-\alias{[,ACtree-method}
+\alias{[,ACtree,ANY,ANY,ANY-method}
 \alias{as.matrix,ACtree-method}
 \alias{initialize,ACtree-method}
 

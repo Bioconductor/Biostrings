@@ -28,7 +28,7 @@
 \alias{show,XString-method}
 
 % Subsetting:
-\alias{[,XString-method}
+\alias{[,XString,ANY,ANY,ANY-method}
 
 % Equality:
 \alias{==,XString,XString-method}

@@ -25,7 +25,7 @@
 
 % Standard generic methods:
 \alias{show,QualityScaledXStringSet-method}
-\alias{[,QualityScaledXStringSet-method}
+\alias{[,QualityScaledXStringSet,ANY,ANY,ANY-method}
 
 
 \title{QualityScaledBStringSet, QualityScaledDNAStringSet, QualityScaledRNAStringSet and QualityScaledAAStringSet objects}
