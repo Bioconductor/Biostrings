@@ -6,8 +6,8 @@
 \alias{XStringViews-class}
 
 % Methods:
-\alias{Views,character-method}
 \alias{Views,XString-method}
+\alias{Views,character-method}
 \alias{Views,MaskedXString-method}
 
 \alias{alphabet,XStringViews-method}

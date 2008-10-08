@@ -28,17 +28,18 @@ unsafe.newXStringViews <- function(subject, start, width)
 ### User-friendly constructor.
 ###
 
+setMethod("Views", "XString",
+    function(subject, start=NA, end=NA, names=NULL)
+        newViews(subject, start=start, end=end, names=names,
+                 Class="XStringViews")
+)
+
 setMethod("Views", "character",
     function(subject, start=NA, end=NA, names=NULL)
     {
         xsubject <- XString(NULL, subject)
         Views(xsubject, start=start, end=end, names=names)
     }
-)
-
-setMethod("Views", "XString",
-    function(subject, start=NA, end=NA, names=NULL)
-        as(callNextMethod(), "XStringViews")
 )
 
 setMethod("Views", "MaskedXString",
