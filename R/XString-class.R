@@ -216,9 +216,10 @@ setMethod("toString", "XString", function(x, ...) as.character(x))
 
 .charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
 {
-    safe_locs <- narrow(ncharAsIRanges(x), start=start, end=end, width=width)
+    solved_SEW <- solveUserSEW(nchar(x, type="bytes"),
+                               start=start, end=end, width=width)
     .Call("new_RawPtr_from_STRSXP",
-          x, start(safe_locs), width(safe_locs), collapse, lkup,
+          x, start(solved_SEW), width(solved_SEW), collapse, lkup,
           PACKAGE="Biostrings")
 }
 

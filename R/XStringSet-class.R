@@ -243,11 +243,11 @@ setAs("XStringSet", "AAStringSet",
 ### constructors below.
 ###
 
-.charToXString <- function(x, safe_locs, class)
+.charToXString <- function(x, solved_SEW, class)
 {
     proto <- newEmptyXString(class)
     xdata <- .Call("new_RawPtr_from_STRSXP",
-                   x, start(safe_locs), width(safe_locs), "", enc_lkup(proto),
+                   x, start(solved_SEW), width(solved_SEW), "", enc_lkup(proto),
                    PACKAGE="Biostrings")
     new(class, xdata=xdata, length=length(xdata))
 }
@@ -255,9 +255,10 @@ setAs("XStringSet", "AAStringSet",
 .charToXStringSet <- function(x, start, end, width, use.names, baseClass)
 {
     class <- paste(baseClass, "Set", sep="")
-    safe_locs <- narrow(ncharAsIRanges(x), start=start, end=end, width=width)
-    ans_super <- .charToXString(x, safe_locs, baseClass)
-    ans_ranges <- successiveIRanges(width(safe_locs))
+    solved_SEW <- solveUserSEW(nchar(x, type="bytes"),
+                               start=start, end=end, width=width)
+    ans_super <- .charToXString(x, solved_SEW, baseClass)
+    ans_ranges <- successiveIRanges(width(solved_SEW))
     unsafe.newXStringSet(class, ans_super, ans_ranges,
                          use.names=use.names, names=names(x))
 }
