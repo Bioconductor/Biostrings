@@ -176,7 +176,7 @@
   frequencies of the mismatches for the \code{AlignedXStringSet} or
   \code{PairwiseAlignment} object.
 
-  \code{coverage}:  an \link[IRanges]{XInteger} object indicating the coverage
+  \code{coverage}:  an \link[IRanges]{XRleInteger} object indicating the coverage
   of \code{x} in the interval specified by the \code{start} and \code{end}
   arguments.
   An integer value called the "coverage" can be associated to each position
@@ -186,7 +186,7 @@
   the number of views it belongs to.
   If \code{x} is an \link{MIndex} object, the coverage of a given position
   in \code{x} is the number of matches (or hits) it belongs to.
-  Note that the positions in the returned \link[IRanges]{XInteger} object are
+  Note that the positions in the returned \link[IRanges]{XRleInteger} object are
   to be interpreted as relative to the interval specified by the \code{start}
   and \code{end} arguments.
 }

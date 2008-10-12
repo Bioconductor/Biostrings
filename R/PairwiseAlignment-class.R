@@ -25,7 +25,7 @@ setClass("PairwiseAlignmentSummary",
         nmismatch="numeric",
         ninsertion="matrix",
         ndeletion="matrix",
-        coverage="XInteger",
+        coverage="XRleInteger",
         mismatchSummary="list"
     )
 )
