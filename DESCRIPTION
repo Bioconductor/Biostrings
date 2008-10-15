@@ -26,16 +26,18 @@ Collate: 00datacache.R
 	IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
 	XStringCodec-class.R
 	XString-class.R
+	MaskedXString-class.R
 	XStringViews-class.R
 	XStringViews-constructors.R
 	XStringSet-class.R
-	MaskedXString-class.R
 	XStringPartialMatches-class.R
 	XStringQuality-class.R
 	QualityScaledXStringSet.R
 	InDel-class.R
 	AlignedXStringSet-class.R
 	PairwiseAlignment-class.R
+	PDict-class.R
+	MIndex-class.R
 	XStringSet-io.R
 	letter.R
 	subXString.R
@@ -54,8 +56,6 @@ Collate: 00datacache.R
 	matchProbePair.R
 	matchPWM.R
 	findPalindromes.R
-	PDict-class.R
-	MIndex-class.R
 	matchPDict.R
 	pmatchPattern.R
 	align-utils.R

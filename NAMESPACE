@@ -3,7 +3,7 @@ useDynLib(Biostrings)
 import(methods)
 import(utils) ## for the "head" and "tail" generics
 import(IRanges)
-import(Biobase) ## for the "combine" generic
+importFrom(Biobase, combine) ## for the "combine" generic
 
 exportClasses(
     Dups,

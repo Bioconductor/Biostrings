@@ -226,15 +226,6 @@ setAs("MaskedXString", "NormalIRanges",
     function(from) as(masks(from), "NormalIRanges")
 )
 
-### From a MaskedXString object to an XStringViews object.
-setAs("MaskedXString", "XStringViews",
-    function(from)
-    {
-        views <- gaps(reduce(masks(from)))[[1]]
-        unsafe.newXStringViews(unmasked(from), start(views), width(views))
-    }
-)
-
 ### NOT exported.
 toXStringViewsOrXString <- function(x)
 {
