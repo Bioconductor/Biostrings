@@ -184,13 +184,6 @@ ByPos_MIndex.combine <- function(mi_list, ans_width)
     new("ByPos_MIndex", ends=ans_ends, width=ans_width)
 }
 
-setMethod("combine", signature(x="ByPos_MIndex", y="ByPos_MIndex"),
-    function(x, y, ...)
-    {
-        stop("not ready yet, sorry!")
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ByName_MIndex" class.
