@@ -604,7 +604,7 @@ any pairwise sequence alignment methodology we develop to remove the adapter
 characters.
 
 <<adapter2>>=
-M <- 10000
+M <- 5000
 randomStrings <-
   apply(matrix(sample(DNA_ALPHABET[1:4], 36 * M, replace = TRUE),
                nrow = M), 1, paste, collapse = "")
@@ -1005,7 +1005,8 @@ in gap penalties favored infrequent long gaps to frequent short ones.}
 with a \Rfunarg{substitutionRate} of 0.005 and \Rfunarg{gapRate} of 0.0005.
 How do the different pairwise sequence alignment methods compare? \textit{The
 different methods are much more comprobable when the error rates are lower.}
-<<ans6a>>=adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
+<<ans6a>>=
+adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
 set.seed(123)
 N <- 1000
 experiment <-
