@@ -66,7 +66,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
 	PROTECT(alignedStringXData = new_SequencePtr("RawPtr", alignedStringTag));
 	PROTECT(alignedString = _new_XString(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
-	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, NULL));
+	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, R_NilValue));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
 	PROTECT(output = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
 
@@ -123,6 +123,7 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 	SEXP unalignedPattern = GET_SLOT(pattern, install("unaligned"));
 	CachedXStringSet cachedUnalignedPattern = _new_CachedXStringSet(unalignedPattern);
 	SEXP rangePattern = GET_SLOT(pattern, install("range"));
+	SEXP namesPattern = get_IRanges_names(rangePattern);
 	SEXP indelPattern = GET_SLOT(GET_SLOT(pattern, install("indel")), install("elements"));
 
 	SEXP subject = GET_SLOT(alignment, install("subject"));
@@ -153,7 +154,7 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
 	PROTECT(mappedStringXData = new_SequencePtr("RawPtr", mappedStringTag));
 	PROTECT(mappedString = _new_XString(stringClass, mappedStringXData, 0, LENGTH(mappedStringTag)));
-	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, NULL));
+	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, namesPattern));
 	char *mappedStringPtr = (char *) RAW(mappedStringTag);
 	PROTECT(output = _new_XStringSet(stringSetClass, mappedString, mappedRanges));
 
