@@ -19,17 +19,19 @@
 \alias{AAStringSet-class}
 \alias{AAStringSet}
 
-% Accesor methods:
-\alias{nchar,XStringSet-method}
+% Methods:
+\alias{length,XStringSet-method}
+\alias{width,XStringSet-method}
+\alias{names,XStringSet-method}
+\alias{names<-,XStringSet-method}
+\alias{narrow,XStringSet-method}
 \alias{alphabet,XStringSet-method}
+\alias{nchar,XStringSet-method}
 
-% Coercion:
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}
 \alias{coerce,XStringSet,RNAStringSet-method}
 \alias{coerce,XStringSet,AAStringSet-method}
-
-% Constructor-like functions and generics:
 \alias{XStringSet,character-method}
 \alias{XStringSet,AsIs-method}
 \alias{XStringSet,XString-method}
@@ -41,19 +43,22 @@
 \alias{RNAStringSet}
 \alias{AAStringSet}
 
-% "show" method:
 \alias{show,XStringSet-method}
 
-% Subsetting and appending:
+\alias{[,XStringSet,ANY,ANY,ANY-method}
 \alias{[[,XStringSet-method}
 \alias{[[<-,XStringSet-method}
+
 \alias{append,XStringSet-method}
 
-% Other methods:
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
 \alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}
+
+\alias{order}
+\alias{order,XStringSet-method}
+\alias{sort,XStringSet-method}
 
 
 \title{BStringSet, DNAStringSet, RNAStringSet and AAStringSet objects}
@@ -204,7 +209,7 @@
     }
     \item{}{
       \code{as.matrix(x, use.names)}:
-      Returns a character matrix containing the "exploded" representation of
+      Return a character matrix containing the "exploded" representation of
       the strings. This can only be used on an XStringSet object with
       equal-width strings.
       \code{use.names} controls whether or not \code{names(x)} should be used
@@ -217,6 +222,23 @@
     \item{}{
       \code{toString(x)}:
       Equivalent to \code{toString(as.character(x))}.
+    }
+  }
+}
+
+\section{Ordering and related methods}{
+  In the code snippets below,
+  \code{x} is an XStringSet object.
+
+  \describe{
+    \item{}{
+      \code{order(x)}:
+      Return a permutation which rearranges \code{x} into ascending or
+      descending order.
+    }
+    \item{}{
+      \code{sort(x)}:
+      Sort \code{x} into ascending order (equivalent to \code{x[order(x)]}).
     }
   }
 }
