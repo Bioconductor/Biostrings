@@ -115,7 +115,7 @@ SEXP new_RawPtr_from_STRSXP(
 RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 
 SEXP _new_IRanges_from_RoSeqs(
-	const char *class,
+	const char *classname,
 	const RoSeqs *seqs
 );
 
@@ -208,9 +208,9 @@ SEXP RawPtr_loadFASTA(
 
 SEXP debug_XString_class();
 
-const int *get_enc_chrtrtable(const char *class);
+const int *get_enc_chrtrtable(const char *classname);
 
-const int *get_dec_chrtrtable(const char *class);
+const int *get_dec_chrtrtable(const char *classname);
 
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup);
 
@@ -236,19 +236,19 @@ SEXP new_RawPtr_from_XString(
 );
 
 SEXP _new_XString(
-	const char *class,
+	const char *classname,
 	SEXP xdata,
 	int offset,
 	int length
 );
 
 SEXP _new_XString_from_RoSeqs(
-	const char *class,
+	const char *classname,
 	const RoSeqs *seqs
 );
 
 SEXP _alloc_XString(
-	const char *class,
+	const char *classname,
 	int length
 );
 
@@ -292,7 +292,7 @@ RoSeqs _new_RoSeqs_from_XStringSet(
 );
 
 SEXP _new_XStringSet(
-	const char *class,
+	const char *classname,
 	SEXP super,
 	SEXP ranges
 );

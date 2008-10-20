@@ -28,20 +28,20 @@ static int DNA_enc_chrtrtable[CHRTRTABLE_LENGTH],
 	   RNA_enc_chrtrtable[CHRTRTABLE_LENGTH],
 	   RNA_dec_chrtrtable[CHRTRTABLE_LENGTH];
 
-const int *get_enc_chrtrtable(const char *class)
+const int *get_enc_chrtrtable(const char *classname)
 {
-	if (strcmp(class, "DNAString") == 0)
+	if (strcmp(classname, "DNAString") == 0)
 		return DNA_enc_chrtrtable;
-	else if (strcmp(class, "RNAString") == 0)
+	else if (strcmp(classname, "RNAString") == 0)
 		return RNA_enc_chrtrtable;
 	return NULL;
 }
 
-const int *get_dec_chrtrtable(const char *class)
+const int *get_dec_chrtrtable(const char *classname)
 {
-	if (strcmp(class, "DNAString") == 0)
+	if (strcmp(classname, "DNAString") == 0)
 		return DNA_dec_chrtrtable;
-	else if (strcmp(class, "RNAString") == 0)
+	else if (strcmp(classname, "RNAString") == 0)
 		return RNA_dec_chrtrtable;
 	return NULL;
 }
@@ -185,12 +185,12 @@ SEXP new_RawPtr_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
  * Its arguments are NOT duplicated so it would be a disaster if they were
  * coming from the user space.
  */
-SEXP _new_XString(const char *class, SEXP xdata, int offset, int length)
+SEXP _new_XString(const char *classname, SEXP xdata, int offset, int length)
 {
-	SEXP class_def, ans;
+	SEXP classdef, ans;
 
-	class_def = MAKE_CLASS(class);
-	PROTECT(ans = NEW_OBJECT(class_def));
+	classdef = MAKE_CLASS(classname);
+	PROTECT(ans = NEW_OBJECT(classdef));
 	SET_SLOT(ans, mkChar("xdata"), xdata);
 	SET_SLOT(ans, mkChar("offset"), ScalarInteger(offset));
 	SET_SLOT(ans, mkChar("length"), ScalarInteger(length));
@@ -202,12 +202,12 @@ SEXP _new_XString(const char *class, SEXP xdata, int offset, int length)
  * Making an XString object from the sequences referenced by a RoSeqs struct.
  * Assume that these sequences are NOT already encoded.
  */
-SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
+SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 {
 	const int *enc_lkup;
         SEXP lkup, xdata, ans;
 
-	enc_lkup = get_enc_chrtrtable(class);
+	enc_lkup = get_enc_chrtrtable(classname);
 	if (enc_lkup == NULL) {
 		lkup = R_NilValue;
 	} else {
@@ -216,7 +216,7 @@ SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(xdata = _new_RawPtr_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = _new_XString(class, xdata, 0, get_SequencePtr_length(xdata)));
+	PROTECT(ans = _new_XString(classname, xdata, 0, get_SequencePtr_length(xdata)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
 	else
@@ -234,13 +234,13 @@ SEXP _new_XString_from_RoSeqs(const char *class, const RoSeqs *seqs)
  * Allocate only. The 'xdata' slot is not initialized (it contains junk,
  * or zeros).
  */
-SEXP _alloc_XString(const char *class, int length)
+SEXP _alloc_XString(const char *classname, int length)
 {
 	SEXP tag, xdata, ans;
 
 	PROTECT(tag = NEW_RAW(length));
 	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = _new_XString(class, xdata, 0, length));
+	PROTECT(ans = _new_XString(classname, xdata, 0, length));
 	UNPROTECT(3);
 	return ans;
 }
@@ -251,7 +251,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, const RoSeq *seq, int encode)
 	const int *enc_chrtrtable;
 
 	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
-	enc_chrtrtable = encode ? get_enc_chrtrtable(get_class(x)) : NULL;
+	enc_chrtrtable = encode ? get_enc_chrtrtable(get_classname(x)) : NULL;
 	_write_RoSeq_to_RawPtr(_get_XString_xdata(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }

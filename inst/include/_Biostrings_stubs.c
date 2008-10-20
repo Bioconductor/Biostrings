@@ -25,8 +25,8 @@ DEFINE_CCALLABLE_STUB(RoSeqs, new_RoSeqs_from_CharAEAE,
 );
 
 DEFINE_CCALLABLE_STUB(SEXP, new_IRanges_from_RoSeqs,
-	(const char *class, const RoSeqs *seqs),
-	(            class,               seqs)
+	(const char *classname, const RoSeqs *seqs),
+	(            classname,               seqs)
 );
 
 

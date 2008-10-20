@@ -106,13 +106,13 @@ static int replace_letter_at(char *dest, int dest_length,
 SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		SEXP if_not_extending, SEXP verbose)
 {
-	const char *x_class;
+	const char *x_classname;
 	RoSeq x_seq;
 	SEXP tag, letter_elt, xdata, ans;
 	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
 	const int *at_p;
 
-	x_class = get_class(x);
+	x_classname = get_classname(x);
 	x_seq = _get_XString_asRoSeq(x);
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
@@ -152,7 +152,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 			notextend_action == SKIP_IFNOTEXTEND ? "skipped" : "merged",
 			skip_or_merge_count);
 	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
+	PROTECT(ans = _new_XString(x_classname, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
 }

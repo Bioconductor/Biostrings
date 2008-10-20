@@ -240,7 +240,7 @@ RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae)
  * Only the lengths of the sequences holded by RoSeqs are considered.
  */
 
-SEXP _new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs)
+SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 {
 	const RoSeq *seq;
 	SEXP start, width, ans;
@@ -265,7 +265,7 @@ SEXP _new_IRanges_from_RoSeqs(const char *class, const RoSeqs *seqs)
 			*(start_elt++) = *(start_prev_elt++) + (seq++)->nelt;
 			*(width_elt++) = seq->nelt;
 		}
-	PROTECT(ans = new_IRanges(class, start, width, R_NilValue));
+	PROTECT(ans = new_IRanges(classname, start, width, R_NilValue));
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): END\n");

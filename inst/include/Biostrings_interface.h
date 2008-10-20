@@ -109,7 +109,7 @@ SEXP new_STRSXP_from_RoSeqs(
 RoSeqs new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 
 SEXP new_IRanges_from_RoSeqs(
-	const char *class,
+	const char *classname,
 	const RoSeqs *seqs
 );
 

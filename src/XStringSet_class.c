@@ -25,7 +25,7 @@ SEXP _get_XStringSet_super(SEXP x)
 
 const char *_get_XStringSet_baseClass(SEXP x)
 {
-	return get_class(_get_XStringSet_super(x));
+	return get_classname(_get_XStringSet_super(x));
 }
 
 SEXP _get_XStringSet_ranges(SEXP x)
@@ -59,7 +59,7 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	cached_x.start = INTEGER(get_IRanges_start(ranges));
 	cached_x.width = INTEGER(get_IRanges_width(ranges));
 
-	cached_x.baseClass = get_class(super);
+	cached_x.baseClass = get_classname(super);
 	cached_x.enc_chrtrtable = get_enc_chrtrtable(cached_x.baseClass);
 	cached_x.dec_chrtrtable = get_dec_chrtrtable(cached_x.baseClass);
 
@@ -108,17 +108,17 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
  * Its arguments are NOT duplicated so it would be a disaster if they were
  * coming from the user space.
  */
-SEXP _new_XStringSet(const char *class, SEXP super, SEXP ranges)
+SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 {
-	char classbuf[80]; // longest string will be "DNAStringSet"
-	SEXP class_def, ans;
+	char classname_buf[80]; // longest string will be "DNAStringSet"
+	SEXP classdef, ans;
 
-	if (class == NULL) {
-		snprintf(classbuf, sizeof(classbuf), "%sSet", get_class(super));
-		class = classbuf;
+	if (classname == NULL) {
+		snprintf(classname_buf, sizeof(classname_buf), "%sSet", get_classname(super));
+		classname = classname_buf;
 	}
-	class_def = MAKE_CLASS(class);
-	PROTECT(ans = NEW_OBJECT(class_def));
+	classdef = MAKE_CLASS(classname);
+	PROTECT(ans = NEW_OBJECT(classdef));
 	SET_SLOT(ans, mkChar("super"), super);
 	SET_SLOT(ans, mkChar("ranges"), ranges);
 	UNPROTECT(1);

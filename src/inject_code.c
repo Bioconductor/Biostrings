@@ -7,13 +7,13 @@
  */
 SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 {
-	const char *x_class;
+	const char *x_classname;
 	RoSeq x_seq;
 	int nranges, i, s, w;
 	const int *s_p, *w_p;
 	SEXP tag, xdata, ans;
 
-	x_class = get_class(x);
+	x_classname = get_classname(x);
 	x_seq = _get_XString_asRoSeq(x);
 	nranges = LENGTH(start); /* must be == LENGTH(width) */
 	PROTECT(tag = NEW_RAW(x_seq.nelt));
@@ -34,7 +34,7 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 		memset(RAW(tag) + s, INTEGER(code)[0], w);
 	}
 	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = _new_XString(x_class, xdata, 0, LENGTH(tag)));
+	PROTECT(ans = _new_XString(x_classname, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
 }
