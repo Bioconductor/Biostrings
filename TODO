@@ -1,4 +1,5 @@
-Some R problems that maybe worth reporting:
+Some R problems that maybe worth reporting
+------------------------------------------
 
 - Loading a serialized XStringViews object without prior loading the Biostrings
   package seems to have problems: the object loads, but, when I try to display
@@ -9,22 +10,27 @@ Some R problems that maybe worth reporting:
   an integer matrix.
 
 
-In 2.9
-======
-
-Robert wants the depenencies to be reduced to 1 BSgenome pkg only (not 2), or,
-even better, to 0 BSgenome pkg. The examples would then use a single sequence
-stored in the data folder.
+Immediate TODO list
+-------------------
 
 CONTAINERS
 
-- Add "unique" method for IRanges objects.
+- Fix the MIndex container. It must support storage of hits for patterns of
+  variable width. Make sure to make startIndex() work properly on the MIndex
+  object returned by a call to matchPDict() on a PDict object with a head or
+  a tail (it's currently broken). It should also support storage of the nb of
+  mismatches for each hit. No need to store the locations of those mismatches
+  though: this would require a huge amount of memory and there are other ways
+  to retrieve these locations on user demand so maybe it's not worth it.
 
 - Add "baseXStringSubtype" methods for XStringViews, XStringSet and
   MaskedXString objects and replace use of "baseClass" by use of
   "baseXStringSubtype".
 
 - XStringSet objects:
+    o Modify the internals of the XStringSet containers to support efficient
+      replacement of elements (without reallocation and data copy). See long
+      comment at the beginning of R/XStringSet-class.R for the details.
     o Support this: DNAStringSet(x, start=c(1,5), end=c(3,7)) when x is a
       single string (character or XString). The result should be a DNAStringSet
       object of the length of 'start' (or 'end').
@@ -87,7 +93,9 @@ UTILITIES
   srsort() uses standard C qsort() internally.
   It might be possible to be even faster by building a prefix tree (like
   for the Aho-Corasick algo) but that will probably be at the cost of
-  using much more memory.
+  using much more memory. Also it might be relatively easy do reuse the
+  current Aho-Corasick code for a DNAStringSet object but it will require
+  much more work to do this for a BStringSet or AAStringSet object.
 
 - Add an xsmatch() function that would behave like standard base::match()
   but on XString objects (2nd arg 'table' must be an XStringSet object).
@@ -119,6 +127,10 @@ UTILITIES
 
 STRING MATCHING
 
+- Add a Biostrings.Rnw vignette with a short overview of the string
+  matching/aligning capabilities and a "how to choose the right string
+  matching/aligning function" diagram.
+
 - Add a no.match.length argument to gregexpr2() that is FALSE by
   default so gregexpr(pattern, text, fixed=TRUE) is more interchangeable
   with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
@@ -136,7 +148,13 @@ STRING MATCHING
 - Rework findPalindromes() (and findComplementedPalindromes()) so that they
   return maximum palindromes only.
 
-- matchPDict()/countPDict()/whichPDict():
+- PDict()/matchPDict()/countPDict()/whichPDict():
+
+  o Document the "allow mismacthes anywhere in the patterns" feature (activated
+    via the 'max.mismatch' argument of PDict()).
+
+  o Support IUPAC ambiguity letters in the DNAStringSet object passed to
+    PDict().
 
   o Harris suggestion: treat a max.mismatch value that is strictly between 0
     and 1 like an error rate (so that the actual max number of mismatches
@@ -169,9 +187,6 @@ STRING MATCHING
     With this countPDict(..., all.names) should be exactly equivalent to
     countIndex(matchPDict(...), all.names)
 
-  o startIndex() is broken on the MIndex object returned by a call to
-    matchPDict() on a PDict object with a head or a tail.
-
   o extractAllMatches() fails on a very big MIndex object (can't allocate
     vector of size 5.2Gb).
 
@@ -192,9 +207,6 @@ STRING MATCHING
 
   o Make reverseComplement() work on a PDict object.
 
-  o GenomeSearching.Rnw vignette: add section about inexact matching with
-    matchPDict().
-
   o Compare with other software for fast alignment and assembly:
       Vmatch (http://www.vmatch.de/)
       Maq (http://maq.sourceforge.net/)
@@ -204,16 +216,21 @@ STRING ALIGNMENT
 
 MISCELLANEOUS
 
+- Port DNASuffixArray() and related functions from Biostrings 1.
+
+- Robert wants the dependencies to be reduced to 1 BSgenome pkg only (not 2),
+  or, even better, to 0 BSgenome pkg. The examples would then use a single
+  sequence stored in the data folder.
+
+- Remove the Biostrings 1 subdir. But first compare NAMESPACE + list of aliases
+  in Rd files from Biostrings 1 and 2 make sure no important feature has been
+  lost.
+
 - Update the CHANGES file.
 
 
-In 2.11
-=======
-
-- Compare NAMESPACE + list of aliases in Rd files from Biostrings 1 and 2
-  make sure no important feature has been lost.
-
-- Remove the Biostrings 1 subdir.
+Long term TODO list
+-------------------
 
 - Look at apse.c in R/src/main for Levenshtein. It's coming from
     http://search.cpan.org/dist/String-Approx/
@@ -243,10 +260,6 @@ In 2.11
   so, what the differences are between the packages (also some notion of speed
   and size, how well do they work on different inputs)".
 
-
-Later
-=====
-
 - Extend pairwiseAlignment to return the set of maximum alignments, rather
   than just one element from that set.
 
@@ -264,5 +277,6 @@ Later
   of limits" views with a warning (we keep issuing an error only when the
   view is all blank).
 
-- Merge SuffixTree package from Robert.
+- Start adding suffix tree capabilities: maybe merge SuffixTree package from
+  Robert?
 
