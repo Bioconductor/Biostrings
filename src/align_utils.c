@@ -65,7 +65,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP alignedStringTag, alignedStringXData;
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
 	PROTECT(alignedStringXData = new_SequencePtr("RawPtr", alignedStringTag));
-	PROTECT(alignedString = _new_XString(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
+	PROTECT(alignedString = new_XSequence(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
 	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, R_NilValue));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
 	PROTECT(output = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
@@ -153,7 +153,7 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 	SEXP mappedStringTag, mappedStringXData;
 	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
 	PROTECT(mappedStringXData = new_SequencePtr("RawPtr", mappedStringTag));
-	PROTECT(mappedString = _new_XString(stringClass, mappedStringXData, 0, LENGTH(mappedStringTag)));
+	PROTECT(mappedString = new_XSequence(stringClass, mappedStringXData, 0, LENGTH(mappedStringTag)));
 	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, namesPattern));
 	char *mappedStringPtr = (char *) RAW(mappedStringTag);
 	PROTECT(output = _new_XStringSet(stringSetClass, mappedString, mappedRanges));

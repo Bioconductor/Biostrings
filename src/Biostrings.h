@@ -224,8 +224,6 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-SEXP _get_XString_xdata(SEXP x);
-
 RoSeq _get_XString_asRoSeq(SEXP x);
 
 SEXP new_RawPtr_from_XString(
@@ -233,13 +231,6 @@ SEXP new_RawPtr_from_XString(
 	SEXP start,
 	SEXP width,
 	SEXP lkup
-);
-
-SEXP _new_XString(
-	const char *classname,
-	SEXP xdata,
-	int offset,
-	int length
 );
 
 SEXP _new_XString_from_RoSeqs(

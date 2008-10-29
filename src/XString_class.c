@@ -128,21 +128,16 @@ char _RNAdecode(char code)
  * Low-level manipulation of XString objects.
  */
 
-SEXP _get_XString_xdata(SEXP x)
-{
-	return GET_SLOT(x, install("xdata"));
-}
-
 RoSeq _get_XString_asRoSeq(SEXP x)
 {
 	RoSeq seq;
 	SEXP tag;
 	int offset;
 
-	tag = get_SequencePtr_tag(_get_XString_xdata(x));
-	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
+	tag = get_SequencePtr_tag(get_XSequence_xdata(x));
+	offset = INTEGER(get_XSequence_offset(x))[0];
 	seq.elts = (const char *) (RAW(tag) + offset);
-	seq.nelt = INTEGER(GET_SLOT(x, install("length")))[0];
+	seq.nelt = INTEGER(get_XSequence_length(x))[0];
 	return seq;
 }
 
@@ -181,24 +176,6 @@ SEXP new_RawPtr_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
 }
 
 /*
- * Do NOT try to make this a .Call() entry point!
- * Its arguments are NOT duplicated so it would be a disaster if they were
- * coming from the user space.
- */
-SEXP _new_XString(const char *classname, SEXP xdata, int offset, int length)
-{
-	SEXP classdef, ans;
-
-	classdef = MAKE_CLASS(classname);
-	PROTECT(ans = NEW_OBJECT(classdef));
-	SET_SLOT(ans, mkChar("xdata"), xdata);
-	SET_SLOT(ans, mkChar("offset"), ScalarInteger(offset));
-	SET_SLOT(ans, mkChar("length"), ScalarInteger(length));
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
  * Making an XString object from the sequences referenced by a RoSeqs struct.
  * Assume that these sequences are NOT already encoded.
  */
@@ -216,7 +193,7 @@ SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 			  INTEGER(lkup), LENGTH(lkup));
 	}
 	PROTECT(xdata = _new_RawPtr_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = _new_XString(classname, xdata, 0, get_SequencePtr_length(xdata)));
+	PROTECT(ans = new_XSequence(classname, xdata, 0, get_SequencePtr_length(xdata)));
 	if (enc_lkup == NULL)
 		UNPROTECT(2);
 	else
@@ -240,7 +217,7 @@ SEXP _alloc_XString(const char *classname, int length)
 
 	PROTECT(tag = NEW_RAW(length));
 	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = _new_XString(classname, xdata, 0, length));
+	PROTECT(ans = new_XSequence(classname, xdata, 0, length));
 	UNPROTECT(3);
 	return ans;
 }
@@ -250,9 +227,9 @@ void _write_RoSeq_to_XString(SEXP x, int start, const RoSeq *seq, int encode)
 	int offset;
 	const int *enc_chrtrtable;
 
-	offset = INTEGER(GET_SLOT(x, install("offset")))[0];
+	offset = INTEGER(get_XSequence_offset(x))[0];
 	enc_chrtrtable = encode ? get_enc_chrtrtable(get_classname(x)) : NULL;
-	_write_RoSeq_to_RawPtr(_get_XString_xdata(x), offset + start - 1, seq, enc_chrtrtable);
+	_write_RoSeq_to_RawPtr(get_XSequence_xdata(x), offset + start - 1, seq, enc_chrtrtable);
 	return;
 }
 

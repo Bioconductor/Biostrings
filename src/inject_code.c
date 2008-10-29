@@ -34,7 +34,7 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 		memset(RAW(tag) + s, INTEGER(code)[0], w);
 	}
 	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = _new_XString(x_classname, xdata, 0, LENGTH(tag)));
+	PROTECT(ans = new_XSequence(x_classname, xdata, 0, LENGTH(tag)));
 	UNPROTECT(3);
 	return ans;
 }
