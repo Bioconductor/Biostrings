@@ -399,7 +399,7 @@ setMethod("as.character", "XStringViews",
     function(x, use.names=TRUE, check.limits=TRUE)
     {
         if (!isTRUEorFALSE(check.limits))
-            stop("'check.limits' must be 'TRUE' or 'FALSE'")
+            stop("'check.limits' must be TRUE or FALSE")
         y <- XStringViewsToSet(x, use.names, verbose=check.limits)
         as.character(y)
     }

@@ -116,7 +116,7 @@ RNA_BASE_CODES <- c(A=1L, C=2L, G=4L, U=8L)
 .DNAorRNAcodes <- function(baseCodes, baseOnly)
 {
     if (!isTRUEorFALSE(baseOnly))
-        stop("'baseOnly' must be 'TRUE' or 'FALSE'")
+        stop("'baseOnly' must be TRUE or FALSE")
     codes <- .IUPACcodes(baseCodes)
     if (baseOnly)
         codes[names(codes) %in% names(baseCodes)]

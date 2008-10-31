@@ -184,7 +184,7 @@ export(
     isMatching, mismatch, nmatch, nmismatch,
 
     ## matchPattern.R
-    gregexpr2, matchPattern, countPattern, vcountPattern,
+    gregexpr2, matchPattern, countPattern, vmatchPattern, vcountPattern,
 
     ## maskMotif.R
     maskMotif, mask,

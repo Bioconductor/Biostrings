@@ -11,7 +11,7 @@
 .normargFreq <- function(freq)
 {
     if (!isTRUEorFALSE(freq))
-        stop("'freq' must be 'TRUE' or 'FALSE'")
+        stop("'freq' must be TRUE or FALSE")
     freq
 }
 
@@ -27,7 +27,7 @@
     if (is.null(collapse))
         return(get("collapse.default", envir=RTobjs))
     if (!isTRUEorFALSE(collapse))
-        stop("'collapse' must be 'TRUE' or 'FALSE'")
+        stop("'collapse' must be TRUE or FALSE")
     collapse
 }
 
@@ -53,16 +53,16 @@
 .normargAsArray <- function(as.array, fast.moving.side)
 {
     if (!isTRUEorFALSE(as.array))
-        stop("'as.array' must be 'TRUE' or 'FALSE'")
+        stop("'as.array' must be TRUE or FALSE")
     if (as.array && fast.moving.side != "left")
-        stop("'fast.moving.side' must be \"left\" when 'as.array' is 'TRUE'")
+        stop("'fast.moving.side' must be \"left\" when 'as.array' is TRUE")
     as.array
 }
 
 .normargWithLabels <- function(with.labels)
 {
     if (!isTRUEorFALSE(with.labels))
-        stop("'with.labels' must be 'TRUE' or 'FALSE'")
+        stop("'with.labels' must be TRUE or FALSE")
     with.labels
 }
 

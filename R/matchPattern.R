@@ -110,7 +110,7 @@ gregexpr2 <- function(pattern, text)
         stop("this algorithm only supports exact matching ",
              "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
     if (!isTRUEorFALSE(count.only))
-        stop("'count.only' must be 'TRUE' or 'FALSE'")
+        stop("'count.only' must be TRUE or FALSE")
     matches <- switch(algo,
                       "gregexpr"=.matchPattern.gregexpr(pattern, subject),
                       "gregexpr2"=.matchPattern.gregexpr2(pattern, subject))
@@ -190,7 +190,7 @@ gregexpr2 <- function(pattern, text)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     fixed <- normargFixed(fixed, class(subject))
     if (!isTRUEorFALSE(count.only))
-        stop("'count.only' must be 'TRUE' or 'FALSE'")
+        stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XString_match_pattern",
                      pattern, subject, algo,
@@ -215,7 +215,7 @@ gregexpr2 <- function(pattern, text)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     fixed <- normargFixed(fixed, class(subject(subject)))
     if (!isTRUEorFALSE(count.only))
-        stop("'count.only' must be 'TRUE' or 'FALSE'")
+        stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XStringViews_match_pattern",
                      pattern,
@@ -337,13 +337,10 @@ setMethod("countPattern", "MaskedXString",
 ### vector (like matchPDict() and countPDict() do).
 ###
 
-.XStringSet.vmatchPattern <- function(pattern, subject,
-         algorithm="auto", max.mismatch=0L, fixed=TRUE,
-         count.only=FALSE)
+.XStringSet.vmatchPattern <- function(pattern, subject, algorithm,
+                                      max.mismatch, fixed,
+                                      count.only=FALSE)
 {
-    ## FIXME: allow count.only=TRUE with suitable return class
-    if (count.only==FALSE)
-        stop("'count.only=FALSE' not yet implemented")
     if (!is(subject, "XStringSet"))
         subject <- XStringSet(NULL, subject)
     algo <- .normargAlgorithm(algorithm)
@@ -355,17 +352,34 @@ setMethod("countPattern", "MaskedXString",
     max.mismatch <- normargMaxMismatch(max.mismatch)
     fixed <- normargFixed(fixed, class(super(subject)))
     if (!isTRUEorFALSE(count.only)) 
-        stop("'count.only' must be 'TRUE' or 'FALSE'")
+        stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XStringSet_vmatch_pattern", pattern, subject,
                      algo, max.mismatch, fixed, count.only,
                      PACKAGE = "Biostrings")
-
     if (count.only)
         return(matches)
-##     ans_width <- rep.int(length(pattern), length(matches))
-##     unsafe.newXStringViews(subject, matches, ans_width)
+    new("ByPos_MIndex", ends=matches, width=length(pattern))
 }
+
+setGeneric("vmatchPattern", signature="subject",
+    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+        standardGeneric("vmatchPattern")
+)
+
+setMethod("vmatchPattern", "character",
+    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+        .XStringSet.vmatchPattern(pattern, subject, algorithm,
+                                  max.mismatch, fixed)
+)
+
+setMethod("vmatchPattern", "XStringSet",
+    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+        .XStringSet.vmatchPattern(pattern, subject, algorithm,
+                                  max.mismatch, fixed)
+)
+
+# TODO: Add method for XStringViews.
 
 setGeneric("vcountPattern", signature="subject",
     function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
@@ -375,14 +389,14 @@ setGeneric("vcountPattern", signature="subject",
 setMethod("vcountPattern", "character",
     function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
         .XStringSet.vmatchPattern(pattern, subject, algorithm,
-            max.mismatch, fixed, count.only=TRUE)
+                                  max.mismatch, fixed, count.only=TRUE)
 )
 
 setMethod("vcountPattern", "XStringSet",
     function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
         .XStringSet.vmatchPattern(pattern, subject, algorithm,
-            max.mismatch, fixed, count.only=TRUE)
+                                  max.mismatch, fixed, count.only=TRUE)
 )
 
-# coming soon...
-# (methods for XStringViews and XStringSet objects only)
+# TODO: Add method for XStringViews.
+

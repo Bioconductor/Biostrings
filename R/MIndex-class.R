@@ -277,7 +277,7 @@ setMethod("startIndex", "ByName_MIndex",
     function(x, all.names=FALSE)
     {
         if (!isTRUEorFALSE(all.names))
-            stop("'all.names' must be 'TRUE' or 'FALSE'")
+            stop("'all.names' must be TRUE or FALSE")
         .Call("ByName_MIndex_endIndex", x@ends_envir, 1L - x@width, x@NAMES, all.names, PACKAGE="Biostrings")
     }
 )
@@ -285,7 +285,7 @@ setMethod("endIndex", "ByName_MIndex",
     function(x, all.names=FALSE)
     {
         if (!isTRUEorFALSE(all.names))
-            stop("'all.names' must be 'TRUE' or 'FALSE'")
+            stop("'all.names' must be TRUE or FALSE")
         .Call("ByName_MIndex_endIndex", x@ends_envir, 0L, x@NAMES, all.names, PACKAGE="Biostrings")
     }
 )

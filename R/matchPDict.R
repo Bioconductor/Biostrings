@@ -248,7 +248,7 @@
         stop("'algorithm' can only be '\"auto\"' for now")
     max.mismatch <- normargMaxMismatch(max.mismatch)
     if (!isTRUEorFALSE(verbose))
-        stop("'verbose' must be 'TRUE' or 'FALSE'")
+        stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
         ans <- .matchTB_PDict(pdict, subject, algorithm,
                               max.mismatch, fixed, verbose, count.only)

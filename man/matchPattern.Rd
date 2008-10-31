@@ -11,6 +11,9 @@
 \alias{countPattern,XStringViews-method}
 \alias{countPattern,MaskedXString-method}
 
+\alias{vmatchPattern}
+\alias{vmatchPattern,character-method}
+\alias{vmatchPattern,XStringSet-method}
 \alias{vcountPattern}
 \alias{vcountPattern,character-method}
 \alias{vcountPattern,XStringSet-method}
@@ -27,6 +30,7 @@
 \usage{
   matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   countPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+  vmatchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
   vcountPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
 }
 
@@ -35,10 +39,12 @@
     The pattern string.
   }
   \item{subject}{
-    An \link{XString} object containing the subject string,
-    or an \link{XStringViews} object, or a character vector
-    (converted to an \code{XString} or \code{XStringSet} object
-    internally) or (for \code{vcountPattern}) an \link{XStringSet}
+    For \code{matchPattern} and \code{countPattern}:
+    an \link{XString}, \link{XStringViews} or \link{MaskedXString}
+    object.
+
+    For \code{vmatchPattern} and \code{vcountPattern}:
+    an \link{XStringSet} or \link{XStringViews}
     object.
   }
   \item{algorithm}{
@@ -76,6 +82,8 @@
 
   A single integer for \code{countPattern}.
 
+  An \link{MIndex} object for \code{vmatchPattern}.
+
   An integer vector for \code{vcountPattern}, with each element in
   the vector corresponding to the number of matches in the corresponding
   element of \code{subject}.
@@ -90,10 +98,14 @@
   \code{\link{maskMotif}},
   \code{\link{alphabetFrequency}},
   \link{XStringViews-class},
-  \link{XString-class}
+  \link{MIndex-class}
 }
 
 \examples{
+  ## ---------------------------------------------------------------------
+  ## A. matchPattern()/countPattern()
+  ## ---------------------------------------------------------------------
+
   ## A simple inexact matching example with a short subject
   x <- DNAString("AAGCGCGATATG")
   m1 <- matchPattern("GCNNNAT", x)
@@ -125,6 +137,24 @@
   ## Can also be achieved with no mask
   masks(chrX) <- NULL
   matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
+
+  ## ---------------------------------------------------------------------
+  ## B. vmatchPattern()/vcountPattern()
+  ## ---------------------------------------------------------------------
+
+  Ebox <- DNAString("CANNTG")
+  subject <- Celegans$upstream5000
+  mindex <- vmatchPattern(Ebox, subject, fixed=FALSE)
+  count_index <- countIndex(mindex)    # Get the number of matches per
+                                       # subject element.
+  sum(count_index)                     # Total number of matches.
+  table(count_index)
+  i0 <- which(count_index == max(count_index))
+  subject[i0]                          # The subject element with most
+                                       # occurrences.
+  mindex[[i0]]                         # Its matches as an IRanges object.
+  Views(subject[[i0]], start=start(mindex[[i0]]), end=end(mindex[[i0]])) # And
+                                       # as an XStringViews object.
 }
 
 \keyword{methods}
