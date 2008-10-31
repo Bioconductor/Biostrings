@@ -520,13 +520,6 @@ SEXP is_matching(
 	SEXP fixed
 );
 
-SEXP nmatch_PairwiseAlignment(
-	SEXP nchar,
-	SEXP nmismatch,
-	SEXP ninsertion,
-	SEXP ndeletion
-);
-
 
 /* match_pattern_boyermoore.c */
 
@@ -763,6 +756,13 @@ SEXP XStringViews_match_pdict(
 
 
 /* align_utils.c */
+
+SEXP PairwiseAlignment_nmatch(
+	SEXP nchar,
+	SEXP nmismatch,
+	SEXP ninsertion,
+	SEXP ndeletion
+);
 
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet);
 

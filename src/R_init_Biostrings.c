@@ -17,18 +17,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_RoSeq_utils, 0),
 	CALLMETHOD_DEF(new_RawPtr_from_STRSXP, 5),
 
-/* Dups_utils.c */
-	CALLMETHOD_DEF(debug_Dups_utils, 0),
-	CALLMETHOD_DEF(Dups_diff, 2),
-
-/* SparseList_utils.c */
-	CALLMETHOD_DEF(debug_SparseList_utils, 0),
-
-/* fasta_io.c */
-	CALLMETHOD_DEF(debug_fasta_io, 0),
-	CALLMETHOD_DEF(fasta_info, 2),
-	CALLMETHOD_DEF(RawPtr_loadFASTA, 4),
-
 /* XString_class.c */
 	CALLMETHOD_DEF(debug_XString_class, 0),
 	CALLMETHOD_DEF(init_DNAlkups, 2),
@@ -40,16 +28,10 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_as_STRSXP, 2),
 	CALLMETHOD_DEF(XStringSet_order, 1),
 
-/* match_reporting.c */
-	CALLMETHOD_DEF(debug_match_reporting, 0),
-
-/* MIndex_utils.c */
-	CALLMETHOD_DEF(debug_MIndex_utils, 0),
-	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
-	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
-	CALLMETHOD_DEF(ByPos_MIndex_coverage, 4),
-	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
-	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
+/* fasta_io.c */
+	CALLMETHOD_DEF(debug_fasta_io, 0),
+	CALLMETHOD_DEF(fasta_info, 2),
+	CALLMETHOD_DEF(RawPtr_loadFASTA, 4),
 
 /* char_frequency.c */
 	CALLMETHOD_DEF(XString_char_frequency, 3),
@@ -67,11 +49,28 @@ static const R_CallMethodDef callMethods[] = {
 /* inject_code.c */
 	CALLMETHOD_DEF(inject_code, 4),
 
+/* SparseList_utils.c */
+	CALLMETHOD_DEF(debug_SparseList_utils, 0),
+
+/* Dups_utils.c */
+	CALLMETHOD_DEF(debug_Dups_utils, 0),
+	CALLMETHOD_DEF(Dups_diff, 2),
+
+/* match_reporting.c */
+	CALLMETHOD_DEF(debug_match_reporting, 0),
+
+/* MIndex_utils.c */
+	CALLMETHOD_DEF(debug_MIndex_utils, 0),
+	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
+	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
+	CALLMETHOD_DEF(ByPos_MIndex_coverage, 4),
+	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
+	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
+
 /* match_utils.c */
 	CALLMETHOD_DEF(debug_match_utils, 0),
 	CALLMETHOD_DEF(nmismatch_at, 5),
 	CALLMETHOD_DEF(is_matching, 5),
-	CALLMETHOD_DEF(nmatch_PairwiseAlignment, 4),
 
 /* match_pattern_boyermoore.c */
 	CALLMETHOD_DEF(debug_match_pattern_boyermoore, 0),
@@ -118,22 +117,23 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XString_match_pdict, 12),
 	CALLMETHOD_DEF(XStringViews_match_pdict, 14),
 
+/* align_utils.c */
+	CALLMETHOD_DEF(PairwiseAlignment_nmatch, 4),
+	CALLMETHOD_DEF(AlignedXStringSet_nchar, 1),
+	CALLMETHOD_DEF(AlignedXStringSet_align_aligned, 2),
+	CALLMETHOD_DEF(PairwiseAlignment_align_aligned, 2),
+	CALLMETHOD_DEF(align_compareStrings, 6),
+
 /* pmatchPattern.c */
 	CALLMETHOD_DEF(lcprefix, 6),
 	CALLMETHOD_DEF(lcsuffix, 6),
-
-/* align_needwunsQS.c */
-	CALLMETHOD_DEF(align_needwunsQS, 7),
 
 /* align_pairwiseAlignment.c */
 	CALLMETHOD_DEF(XStringSet_align_pairwiseAlignment, 14),
 	CALLMETHOD_DEF(XStringSet_align_distance, 12),
 
-/* align_utils.c */
-	CALLMETHOD_DEF(AlignedXStringSet_nchar, 1),
-	CALLMETHOD_DEF(AlignedXStringSet_align_aligned, 2),
-	CALLMETHOD_DEF(PairwiseAlignment_align_aligned, 2),
-	CALLMETHOD_DEF(align_compareStrings, 6),
+/* align_needwunsQS.c */
+	CALLMETHOD_DEF(align_needwunsQS, 7),
 
 	{NULL, NULL, 0}
 };

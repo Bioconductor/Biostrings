@@ -9,7 +9,7 @@ setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
 
 setMethod("nmatch", c(pattern = "PairwiseAlignment", x = "missing"),
     function(pattern, x, fixed)
-        .Call("nmatch_PairwiseAlignment", nchar(pattern), nmismatch(pattern),
+        .Call("PairwiseAlignment_nmatch", nchar(pattern), nmismatch(pattern),
               nindel(subject(pattern))[,"WidthSum"], nindel(pattern(pattern))[,"WidthSum"],
               PACKAGE="Biostrings")
 )
