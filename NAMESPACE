@@ -8,7 +8,6 @@ import(IRanges)
 ### ==========================================================================
 ### BASIC CONTAINERS
 ### --------------------------------------------------------------------------
-###   SparseList-class.R
 ###   IUPAC_CODE_MAP.R
 ###   AMINO_ACID_CODE.R
 ###   GENETIC_CODE.R
@@ -20,7 +19,6 @@ import(IRanges)
 ###   MaskedXString-class.R
 
 exportClasses(
-    #SparseList,
     XString, BString, DNAString, RNAString, AAString,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringViews,
@@ -131,9 +129,6 @@ exportMethods(
     ## Methods for objects implementing an IRanges-like interface
     start, width, end, narrow, reduce, gaps,
 
-    ## SparseList objects
-    ls,
-
     ## XString, XStringViews and MaskedXString objects
     XString, subseq,
     Views, XStringViews,
@@ -157,6 +152,7 @@ exportMethods(
 ### ==========================================================================
 ### STRING MATCHING
 ### --------------------------------------------------------------------------
+###   SparseList-class.R
 ###   Dups-class.R
 ###   MIndex-class.R
 ###   match-utils.R
@@ -171,6 +167,7 @@ exportMethods(
 ###   matchPDict.R
 
 exportClasses(
+    #SparseList,
     Dups,
     MIndex, ByPos_MIndex, ByName_MIndex,
     BOC_SubjectString, BOC2_SubjectString,
@@ -217,6 +214,7 @@ export(
 )
 
 exportMethods(
+    ls,
     startIndex, endIndex, countIndex, unlist,
     nmismatchStartingAt, nmismatchEndingAt,
     isMatching, mismatch, nmatch, nmismatch,

@@ -20,7 +20,6 @@ License: Artistic-2.0
 LazyLoad: yes
 Collate: 00datacache.R
 	utils.R
-	SparseList-class.R
 	IUPAC_CODE_MAP.R
 	AMINO_ACID_CODE.R
 	GENETIC_CODE.R
@@ -40,6 +39,7 @@ Collate: 00datacache.R
 	toComplex.R
 	replaceLetterAt.R
 	injectHardMask.R
+	SparseList-class.R
 	Dups-class.R
 	MIndex-class.R
 	match-utils.R
