@@ -326,6 +326,101 @@ SEXP XStringSet_as_STRSXP(
 SEXP XStringSet_order(SEXP x);
 
 
+/* match_reporting.c */
+
+SEXP debug_match_reporting();
+
+void _init_match_reporting(int mrmode);
+
+void _drop_current_matches();
+
+void _set_match_shift(int shift);
+
+int _report_view(
+	int start,
+	int end,
+	const char *name
+);
+
+int _report_match(
+	int start,
+	int end
+);
+
+SEXP _reported_match_count_asINTEGER();
+
+SEXP _reported_match_starts_asINTEGER();
+
+SEXP _reported_match_ends_asINTEGER();
+
+SEXP _reported_view_names_asCHARACTER();
+
+SEXP _reported_matches_asLIST();
+
+SEXP _reported_matches_asSEXP();
+
+
+/* MIndex_utils.c */
+
+SEXP debug_MIndex_utils();
+
+void _MIndex_init_match_reporting(
+	int is_count_only,
+	int with_headtail,
+	int pdict_L
+);
+
+int _MIndex_get_match_reporting_mode();
+
+IntAE *_MIndex_get_match_count();
+
+IntAE *_MIndex_get_match_ends(int key);
+
+IntAE *_MIndex_get_matching_keys();
+
+void _MIndex_report_match(
+	int key,
+	int end
+);
+
+void _MIndex_merge_matches(
+	IntAE *global_match_count,
+	const IntAEAE *global_match_ends,
+	int view_offset
+);
+
+SEXP _MIndex_reported_matches_asSEXP(SEXP env);
+
+SEXP ByPos_MIndex_endIndex(
+	SEXP x_dup2unq,
+	SEXP x_ends,
+	SEXP shift
+);
+
+SEXP ByName_MIndex_endIndex(
+	SEXP ends_envir,
+	SEXP shift,
+	SEXP names,
+	SEXP all_names
+);
+
+void ByPos_MIndex_coverage(
+	SEXP ends_list,
+	SEXP mindex_width,
+	SEXP start,
+	SEXP ans_xp
+);
+
+void ByName_MIndex_coverage(
+	SEXP ends_envir,
+	SEXP mindex_width,
+	SEXP start,
+	SEXP ans_xp
+);
+
+SEXP ByPos_MIndex_combine(SEXP ends_listlist);
+
+
 /* char_frequency.c */
 
 SEXP XString_char_frequency(
@@ -431,40 +526,6 @@ SEXP nmatch_PairwiseAlignment(
 	SEXP ninsertion,
 	SEXP ndeletion
 );
-
-
-/* match_reporting.c */
-
-SEXP debug_match_reporting();
-
-void _init_match_reporting(int mrmode);
-
-void _drop_current_matches();
-
-void _set_match_shift(int shift);
-
-int _report_view(
-	int start,
-	int end,
-	const char *name
-);
-
-int _report_match(
-	int start,
-	int end
-);
-
-SEXP _reported_match_count_asINTEGER();
-
-SEXP _reported_match_starts_asINTEGER();
-
-SEXP _reported_match_ends_asINTEGER();
-
-SEXP _reported_view_names_asCHARACTER();
-
-SEXP _reported_matches_asLIST();
-
-SEXP _reported_matches_asSEXP();
 
 
 /* match_pattern_boyermoore.c */
@@ -626,67 +687,6 @@ SEXP find_palindromes(
 	SEXP max_ngaps,
 	SEXP L2R_lkup
 );
-
-
-/* MIndex_utils.c */
-
-SEXP debug_MIndex_utils();
-
-void _MIndex_init_match_reporting(
-	int is_count_only,
-	int with_headtail,
-	int pdict_L
-);
-
-int _MIndex_get_match_reporting_mode();
-
-IntAE *_MIndex_get_match_count();
-
-IntAE *_MIndex_get_match_ends(int key);
-
-IntAE *_MIndex_get_matching_keys();
-
-void _MIndex_report_match(
-	int key,
-	int end
-);
-
-void _MIndex_merge_matches(
-	IntAE *global_match_count,
-	const IntAEAE *global_match_ends,
-	int view_offset
-);
-
-SEXP _MIndex_reported_matches_asSEXP(SEXP env);
-
-SEXP ByPos_MIndex_endIndex(
-	SEXP x_dup2unq,
-	SEXP x_ends,
-	SEXP shift
-);
-
-SEXP ByName_MIndex_endIndex(
-	SEXP ends_envir,
-	SEXP shift,
-	SEXP names,
-	SEXP all_names
-);
-
-void ByPos_MIndex_coverage(
-	SEXP ends_list,
-	SEXP mindex_width,
-	SEXP start,
-	SEXP ans_xp
-);
-
-void ByName_MIndex_coverage(
-	SEXP ends_envir,
-	SEXP mindex_width,
-	SEXP start,
-	SEXP ans_xp
-);
-
-SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 
 /* match_pdict_Twobit.c */

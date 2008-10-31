@@ -20,24 +20,17 @@ License: Artistic-2.0
 LazyLoad: yes
 Collate: 00datacache.R
 	utils.R
-	Dups-class.R
 	SparseList-class.R
-	readFASTA.R
-	IUPAC_CODE_MAP.R AMINO_ACID_CODE.R GENETIC_CODE.R
+	IUPAC_CODE_MAP.R
+	AMINO_ACID_CODE.R
+	GENETIC_CODE.R
 	XStringCodec-class.R
 	XString-class.R
-	MaskedXString-class.R
+	XStringSet-class.R
 	XStringViews-class.R
 	XStringViews-constructors.R
-	XStringSet-class.R
-	XStringPartialMatches-class.R
-	XStringQuality-class.R
-	QualityScaledXStringSet.R
-	InDel-class.R
-	AlignedXStringSet-class.R
-	PairwiseAlignment-class.R
-	PDict-class.R
-	MIndex-class.R
+	MaskedXString-class.R
+	readFASTA.R
 	XStringSet-io.R
 	letter.R
 	subXString.R
@@ -46,19 +39,28 @@ Collate: 00datacache.R
 	reverse.R
 	toComplex.R
 	replaceLetterAt.R
-	maskMotif.R
 	injectHardMask.R
+	Dups-class.R
+	MIndex-class.R
 	match-utils.R
 	matchPattern.R
+	maskMotif.R
 	matchPattern.BOC.R
 	matchPattern.BOC2.R
 	matchLRPatterns.R
 	matchProbePair.R
 	matchPWM.R
 	findPalindromes.R
+	PDict-class.R
 	matchPDict.R
-	pmatchPattern.R
+	XStringPartialMatches-class.R
+	XStringQuality-class.R
+	QualityScaledXStringSet.R
+	InDel-class.R
+	AlignedXStringSet-class.R
+	PairwiseAlignment-class.R
 	align-utils.R
+	pmatchPattern.R
 	pairwiseAlignment.R
 	stringDist.R
 	needwunsQS.R

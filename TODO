@@ -13,7 +13,7 @@ Some R problems that maybe worth reporting
 Immediate TODO list
 -------------------
 
-CONTAINERS
+BASIC CONTAINERS
 
 - Fix the MIndex container. It must support storage of hits for patterns of
   variable width. Make sure to make startIndex() work properly on the MIndex
@@ -72,6 +72,10 @@ UTILITIES
   package. Use successiveIRanges()/successiveViews() internally instead of
   deprecated intToAdjacentRanges()/adjacentViews().
 
+- Move lcprefix()/lcsuffix() out of pmatchPattern.R to a file of their own.
+  (This stuff needs to belong to the UTILITIES component of the package, not
+  to the STRING ALIGNMENT component.)
+
 - Clean the mess in R/XStringViews-constructors.R. This file should go away
   or be renamed something like R/XStringViews-old.R
 
@@ -126,6 +130,10 @@ UTILITIES
   new("IRanges", ...) could replace it).
 
 STRING MATCHING
+
+- Move consensusMatrix()/consensusString() from align-utils.R to match-utils.R
+  (This stuff needs to belong to the STRING MATCHING component of the package,
+  not to the STRING ALIGNMENT component.)
 
 - Add a Biostrings.Rnw vignette with a short overview of the string
   matching/aligning capabilities and a "how to choose the right string

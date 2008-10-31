@@ -2,7 +2,7 @@
 *              2.9 SERIES NEWS                   *
 **************************************************
 
-CONTAINERS
+BASIC CONTAINERS
 
 o Added a set of "coerce" methods for turning an arbitrary XStringSet object
   into a BStringSet, DNAStringSet, RNAStringSet or AAStringSet instance (via
@@ -112,7 +112,7 @@ MISCELLANEOUS
 *	       2.8 SERIES NEWS			 *
 **************************************************
 
-CONTAINERS
+BASIC CONTAINERS
 
 o Added 2 containers for handling masked sequences:
     - The MaskCollection container for storing a collection of masks that can

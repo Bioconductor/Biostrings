@@ -42,28 +42,6 @@ setMethod("Views", "character",
     }
 )
 
-setMethod("Views", "MaskedXString",
-    function(subject, start=NA, end=NA, names=NULL)
-    {
-        warning("masks were dropped")
-        Views(unmasked(subject), start=start, end=end, names=names)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-### From a MaskedXString object to an XStringViews object.
-setAs("MaskedXString", "XStringViews",
-        function(from)
-        {
-            views <- gaps(reduce(masks(from)))[[1]]
-            unsafe.newXStringViews(unmasked(from), start(views), width(views))
-        }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The core XString API.
@@ -98,6 +76,29 @@ setMethod("nchar", "XStringViews",
         ans[ans < 0L] <- 0L
         ans
     }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+XStringViewsToSet <- function(x, use.names, verbose=TRUE)
+{
+    ans_ranges <- restrict(as(x, "IRanges"), start=1L, end=nchar(subject(x)),
+                           keep.all.ranges=TRUE,
+                           use.names=use.names)
+    if (verbose && any(width(ans_ranges) < width(x)))
+        warning("trimming \"out of limits\" views")
+    class <- paste(class(subject(x)), "Set", sep="")
+    unsafe.newXStringSet(class, subject(x), ans_ranges,
+                         use.names=TRUE, names=names(ans_ranges))
+}
+
+setMethod("XStringSet", "XStringViews",
+    function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(baseClass, XStringViewsToSet(x, use.names),
+                   start=start, end=end, width=width, TRUE)
 )
 
 

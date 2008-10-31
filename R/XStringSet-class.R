@@ -277,19 +277,6 @@ setAs("XStringSet", "AAStringSet",
     .as.from_XStringSet_to_XStringSet(y, baseClass)
 }
 
-### Canonical conversion from XStringViews to XStringSet
-XStringViewsToSet <- function(x, use.names, verbose=TRUE)
-{
-    ans_ranges <- restrict(as(x, "IRanges"), start=1L, end=nchar(subject(x)),
-                           keep.all.ranges=TRUE,
-                           use.names=use.names)
-    if (verbose && any(width(ans_ranges) < width(x)))
-        warning("trimming \"out of limits\" views")
-    class <- paste(class(subject(x)), "Set", sep="")
-    unsafe.newXStringSet(class, subject(x), ans_ranges,
-                         use.names=TRUE, names=names(ans_ranges))
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The user-friendly versatile constructors.
@@ -328,11 +315,6 @@ setMethod("XStringSet", "XString",
 setMethod("XStringSet", "XStringSet",
     function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
         .narrowAndCoerceXStringSet(x, start, end, width, use.names, baseClass)
-)
-setMethod("XStringSet", "XStringViews",
-    function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowAndCoerceXStringSet(XStringViewsToSet(x, use.names),
-                                   start, end, width, TRUE, baseClass)
 )
 
 BStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)

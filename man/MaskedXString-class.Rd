@@ -63,6 +63,9 @@
 \alias{masks<-,XString,NULL-method}
 \alias{masks<-,XString,ANY-method}
 
+% "Views" method:
+\alias{Views,MaskedXString-method}
+
 
 \title{MaskedXString objects}
 

@@ -50,7 +50,7 @@
 \alias{[[,XStringSet-method}
 \alias{[[<-,XStringSet-method}
 
-\alias{append,XStringSet-method}
+\alias{append,XStringSet,XStringSet-method}
 
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}

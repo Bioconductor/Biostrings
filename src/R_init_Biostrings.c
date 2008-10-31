@@ -40,6 +40,17 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_as_STRSXP, 2),
 	CALLMETHOD_DEF(XStringSet_order, 1),
 
+/* match_reporting.c */
+	CALLMETHOD_DEF(debug_match_reporting, 0),
+
+/* MIndex_utils.c */
+	CALLMETHOD_DEF(debug_MIndex_utils, 0),
+	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
+	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
+	CALLMETHOD_DEF(ByPos_MIndex_coverage, 4),
+	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
+	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
+
 /* char_frequency.c */
 	CALLMETHOD_DEF(XString_char_frequency, 3),
 	CALLMETHOD_DEF(XStringSet_char_frequency, 4),
@@ -61,9 +72,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(nmismatch_at, 5),
 	CALLMETHOD_DEF(is_matching, 5),
 	CALLMETHOD_DEF(nmatch_PairwiseAlignment, 4),
-
-/* match_reporting.c */
-	CALLMETHOD_DEF(debug_match_reporting, 0),
 
 /* match_pattern_boyermoore.c */
 	CALLMETHOD_DEF(debug_match_pattern_boyermoore, 0),
@@ -95,14 +103,6 @@ static const R_CallMethodDef callMethods[] = {
 /* find_palindromes.c */
 	CALLMETHOD_DEF(debug_find_palindromes, 0),
 	CALLMETHOD_DEF(find_palindromes, 6),
-
-/* MIndex_utils.c */
-	CALLMETHOD_DEF(debug_MIndex_utils, 0),
-	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
-	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
-	CALLMETHOD_DEF(ByPos_MIndex_coverage, 4),
-	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
-	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
 /* match_pdict_Twobit.c */
 	CALLMETHOD_DEF(debug_match_pdict_Twobit, 0),

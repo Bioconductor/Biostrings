@@ -15,33 +15,14 @@
 
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
-\alias{mismatch,AlignedXStringSet,missing-method}
 \alias{nmatch}
 \alias{nmatch,ANY,XStringViews-method}
-\alias{nmatch,PairwiseAlignment,missing-method}
-\alias{nmatch,PairwiseAlignmentSummary,missing-method}
 \alias{nmismatch}
 \alias{nmismatch,ANY,XStringViews-method}
-\alias{nmismatch,AlignedXStringSet,missing-method}
-\alias{nmismatch,PairwiseAlignment,missing-method}
-\alias{nmismatch,PairwiseAlignmentSummary,missing-method}
-
-\alias{mismatchTable}
-\alias{mismatchTable,AlignedXStringSet-method}
-\alias{mismatchTable,QualityAlignedXStringSet-method}
-\alias{mismatchTable,PairwiseAlignment-method}
-\alias{mismatchSummary}
-\alias{mismatchSummary,AlignedXStringSet-method}
-\alias{mismatchSummary,QualityAlignedXStringSet-method}
-\alias{mismatchSummary,PairwiseAlignment-method}
-\alias{mismatchSummary,PairwiseAlignmentSummary-method}
 
 \alias{coverage,XStringViews-method}
 \alias{coverage,MaskedXString-method}
 \alias{coverage,MIndex-method}
-\alias{coverage,AlignedXStringSet-method}
-\alias{coverage,PairwiseAlignment-method}
-\alias{coverage,PairwiseAlignmentSummary-method}
 
 
 \title{Utility functions related to pattern matching}
@@ -59,11 +40,8 @@
   letters of a given pattern relatively to its matches in a given subject,
   the \code{nmatch} and \code{nmismatch} functions for getting the number of
   matching and mismatching letters produced by the \code{mismatch} function,
-  the \code{mismatchTable} function for getting the more than just the mismatching
-  positions, and the \code{mismatchSummary} function for getting summaries of
-  information produced by the \code{mismatchTable} function, and the \code{coverage}
-  function that can be used to get the "coverage" of a subject by a given pattern or
-  set of patterns.
+  and the \code{coverage} function that can be used to get the "coverage" of
+  a subject by a given pattern or set of patterns.
 }
 
 \usage{
@@ -73,14 +51,9 @@
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
-  mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
-  mismatchSummary(x, \dots)
-  \S4method{mismatchSummary}{PairwiseAlignment}(x, weight=1L)
   \S4method{coverage}{MIndex}(x, start=NA, end=NA)
   \S4method{coverage}{XStringViews}(x, start=NA, end=NA, weight=1L)
   \S4method{coverage}{MaskedXString}(x, start=NA, end=NA, weight=1L)
-  \S4method{coverage}{AlignedXStringSet}(x, start=NA, end=NA, weight=1L)
-  \S4method{coverage}{PairwiseAlignment}(x, start=NA, end=NA, weight=1L)
 }
 
 \arguments{
@@ -139,20 +112,12 @@
     but \link[IRanges]{IRanges}, \link[IRanges]{MaskCollection} and \link{MaskedXString}
     objects are accepted too.
   }
-  \item{shiftLeft, shiftRight}{
-    Non-positive and non-negative integers respectively that specify how many
-    preceding and succeeding characters to and from the mismatch position to
-    include in the mismatch substrings.
-  }
   \item{weight}{
     An integer vector specifying how much each element in \code{x} counts.
   }
   \item{end}{
     A single integer specifying the position in \code{x} where to end the
     extraction of the coverage.
-  }
-  \item{\dots}{
-    Further arguments to be passed to or from other methods.
   }
 }
 
@@ -167,14 +132,6 @@
   
   \code{nmismatch}:  an integer vector containing the length of the vectors
   produced by \code{mismatch}.
-
-  \code{mismatchTable}:  a data.frame containing the positions and substrings
-  of the mismatches for the \code{AlignedXStringSet} or \code{PairwiseAlignment}
-  object.
-
-  \code{mismatchSummary}:  a list of data.frame objects containing counts and
-  frequencies of the mismatches for the \code{AlignedXStringSet} or
-  \code{PairwiseAlignment} object.
 
   \code{coverage}:  an \link[IRanges]{XRleInteger} object indicating the coverage
   of \code{x} in the interval specified by the \code{start} and \code{end}
@@ -202,8 +159,7 @@
   \link[IRanges]{IRanges-class},
   \link[IRanges]{MaskCollection-class},
   \link{MaskedXString-class},
-  \link{AlignedXStringSet-class},
-  \link{PairwiseAlignment-class}
+  \link{align-utils}
 }
 
 \examples{

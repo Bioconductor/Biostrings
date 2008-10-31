@@ -1,5 +1,28 @@
 \name{align-utils}
 
+\alias{align-utils}
+
+\alias{mismatch,AlignedXStringSet,missing-method}
+\alias{nmatch,PairwiseAlignment,missing-method}
+\alias{nmatch,PairwiseAlignmentSummary,missing-method}
+\alias{nmismatch,AlignedXStringSet,missing-method}
+\alias{nmismatch,PairwiseAlignment,missing-method}
+\alias{nmismatch,PairwiseAlignmentSummary,missing-method}
+
+\alias{mismatchTable}
+\alias{mismatchTable,AlignedXStringSet-method}
+\alias{mismatchTable,QualityAlignedXStringSet-method}
+\alias{mismatchTable,PairwiseAlignment-method}
+\alias{mismatchSummary}
+\alias{mismatchSummary,AlignedXStringSet-method}
+\alias{mismatchSummary,QualityAlignedXStringSet-method}
+\alias{mismatchSummary,PairwiseAlignment-method}
+\alias{mismatchSummary,PairwiseAlignmentSummary-method}
+
+\alias{coverage,AlignedXStringSet-method}
+\alias{coverage,PairwiseAlignment-method}
+\alias{coverage,PairwiseAlignmentSummary-method}
+
 \alias{compareStrings}
 \alias{compareStrings,character,character-method}
 \alias{compareStrings,XString,XString-method}
@@ -28,6 +51,10 @@
 }
 
 \usage{
+  mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
+  mismatchSummary(x, \dots)
+  \S4method{coverage}{AlignedXStringSet}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{PairwiseAlignment}(x, start=NA, end=NA, weight=1L)
   compareStrings(pattern, subject)
   \S4method{consensusMatrix}{character}(x, freq=FALSE)
   \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
@@ -35,6 +62,14 @@
 }
 
 \details{
+  \code{mismatchTable}:  a data.frame containing the positions and substrings
+  of the mismatches for the \code{AlignedXStringSet} or \code{PairwiseAlignment}
+  object.
+
+  \code{mismatchSummary}:  a list of data.frame objects containing counts and
+  frequencies of the mismatches for the \code{AlignedXStringSet} or
+  \code{PairwiseAlignment} object.
+
   \code{compareStrings} combines two equal-length strings that are assumed to be aligned
   into a single character string containing that replaces mismatches with \code{"?"},
   insertions with \code{"+"}, and deletions with \code{"-"}.
@@ -47,16 +82,30 @@
 }
 
 \arguments{
+  \item{x}{
+    A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
+    \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length
+    strings.
+  }
+  \item{shiftLeft, shiftRight}{
+    Non-positive and non-negative integers respectively that specify how many
+    preceding and succeeding characters to and from the mismatch position to
+    include in the mismatch substrings.
+  }
+  \item{\dots}{
+    Further arguments to be passed to or from other methods.
+  }
+  \item{start, end}{
+    See \code{?\link[IRanges]{coverage}}.
+  }
+  \item{weight}{
+    An integer vector specifying how much each element in \code{x} counts.
+  }
   \item{pattern, subject}{
     The strings to compare. Can be of type \code{character}, \code{XString},
     \code{XStringSet}, \code{AlignedXStringSet}, or, in the case of
     \code{pattern}, \code{PairwiseAlignment}. If \code{pattern} is a
     \code{PairwiseAlignment} object, then \code{subject} must be missing.
-  }
-  \item{x}{
-    A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
-    \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length
-    strings.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
@@ -73,8 +122,10 @@
 }
 
 \seealso{
-  \link{XString-class}, \link{XStringSet-class}, \link{XStringViews-class}, 
-  \link{AlignedXStringSet-class}, \link{PairwiseAlignment-class}
+  \code{\link{pairwiseAlignment}},
+  \link{XString-class}, \link{XStringSet-class}, \link{XStringViews-class},
+  \link{AlignedXStringSet-class}, \link{PairwiseAlignment-class},
+  \link{match-utils}
 }
 
 \examples{

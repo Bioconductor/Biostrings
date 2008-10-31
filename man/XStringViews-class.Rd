@@ -8,7 +8,6 @@
 % Methods:
 \alias{Views,XString-method}
 \alias{Views,character-method}
-\alias{Views,MaskedXString-method}
 
 \alias{alphabet,XStringViews-method}
 \alias{nchar,XStringViews-method}
@@ -45,7 +44,6 @@
 
   \S4method{Views}{character}(subject, start=NA, end=NA, names=NULL)
   \S4method{Views}{XString}(subject, start=NA, end=NA, names=NULL)
-  \S4method{Views}{MaskedXString}(subject, start=NA, end=NA, names=NULL)
 }
 
 \arguments{
