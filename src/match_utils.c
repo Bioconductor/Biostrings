@@ -167,7 +167,6 @@ SEXP nmismatch_at(SEXP pattern, SEXP subject, SEXP starting, SEXP at, SEXP fixed
 			*ans_elt = NA_INTEGER;
 			continue;
 		}
-		Pshift = *at_elt - 1;
 		if (is_start)
 			Pshift = *at_elt - 1;
 		else

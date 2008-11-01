@@ -755,6 +755,18 @@ SEXP XStringViews_match_pdict(
 );
 
 
+/* nedit_at.c */
+
+SEXP debug_nedit_at();
+
+SEXP nedit_starting_at(
+	SEXP pattern,
+	SEXP subject,
+	SEXP at,
+	SEXP fixed
+);
+
+
 /* align_utils.c */
 
 SEXP PairwiseAlignment_nmatch(
