@@ -276,7 +276,7 @@ write.XStringViews <- function(x, file="", format, width=80)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Deprecated functions.
+### Old stuff (Defunct or Deprecated).
 ###
 
 FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")

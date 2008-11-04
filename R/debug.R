@@ -30,8 +30,8 @@ debug_match_reporting <- function()
 debug_MIndex_utils <- function()
     invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))
 
-debug_match_utils <- function()
-    invisible(.Call("debug_match_utils", PACKAGE="Biostrings"))
+debug_match_pattern_at <- function()
+    invisible(.Call("debug_match_pattern_at", PACKAGE="Biostrings"))
 
 debug_match_pattern_boyermoore <- function()
     invisible(.Call("debug_match_pattern_boyermoore", PACKAGE="Biostrings"))

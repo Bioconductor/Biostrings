@@ -67,8 +67,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
-/* match_utils.c */
-	CALLMETHOD_DEF(debug_match_utils, 0),
+/* match_pattern_at.c */
+	CALLMETHOD_DEF(debug_match_pattern_at, 0),
 	CALLMETHOD_DEF(match_pattern_at, 8),
 
 /* match_pattern_boyermoore.c */

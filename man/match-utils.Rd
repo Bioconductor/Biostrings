@@ -2,16 +2,20 @@
 
 \alias{match-utils}
 
-\alias{nmismatchStartingAt}
-\alias{nmismatchEndingAt}
-\alias{nmismatchStartingAt,character-method}
-\alias{nmismatchEndingAt,character-method}
-\alias{nmismatchStartingAt,XString-method}
-\alias{nmismatchEndingAt,XString-method}
-
-\alias{isMatching}
-\alias{isMatching,character-method}
-\alias{isMatching,XString-method}
+\alias{neditStartingAt}
+\alias{neditEndingAt}
+\alias{neditAt}
+\alias{isMatchingStartingAt}
+\alias{isMatchingEndingAt}
+\alias{isMatchingAt}
+\alias{neditStartingAt,character-method}
+\alias{neditStartingAt,XString-method}
+\alias{neditEndingAt,character-method}
+\alias{neditEndingAt,XString-method}
+\alias{isMatchingStartingAt,character-method}
+\alias{isMatchingStartingAt,XString-method}
+\alias{isMatchingEndingAt,character-method}
+\alias{isMatchingEndingAt,XString-method}
 
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
@@ -24,16 +28,25 @@
 \alias{coverage,MaskedXString-method}
 \alias{coverage,MIndex-method}
 
+% Old stuff:
+\alias{nmismatchStartingAt}
+\alias{nmismatchEndingAt}
+\alias{isMatching}
+
 
 \title{Utility functions related to pattern matching}
 
 \description{
-  This man page gives some background information about the concept of "match"
-  ("exact match" or "inexact match") as understood by the various pattern
-  matching functions available in the Biostrings package.
+  In this man page we define precisely and illustrate what a "match" of a
+  pattern P in a subject S is in the context of the Biostrings package.
+  This definition of a "match" is central to most pattern matching functions
+  available in this package: unless specified otherwise, most of them will
+  adhere to the definition provided here.
 
-  The \code{nmismatchStartingAt}, \code{nmismatchEndingAt} and \code{isMatching}
-  functions implement this concept.
+  \code{neditStartingAt}, \code{neditEndingAt}, \code{isMatchingStartingAt}
+  and \code{isMatchingEndingAt} are low-level functions that implement
+  some basic concepts. Once these concepts are understood, we can use them
+  to provide a simple and concise definition of a "match".
 
   Other utility functions related to pattern matching are described here:
   the \code{mismatch} function for getting the positions of the mismatching
@@ -45,9 +58,17 @@
 }
 
 \usage{
-  nmismatchStartingAt(pattern, subject, starting.at=1, fixed=TRUE)
-  nmismatchEndingAt(pattern, subject, ending.at=1, fixed=TRUE)
-  isMatching(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
+  neditStartingAt(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
+  neditEndingAt(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
+  neditAt(pattern, subject, at=1, with.indels=FALSE, fixed=TRUE)
+
+  isMatchingStartingAt(pattern, subject, starting.at=1,
+                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  isMatchingEndingAt(pattern, subject, ending.at=1,
+                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  isMatchingAt(pattern, subject, at=1,
+                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
@@ -64,26 +85,15 @@
     An \link{XString} object (or character vector) containing the subject
     sequence,
   }
-  \item{starting.at}{
-    An integer vector specifying the starting positions of the pattern
-    relatively to the subject.
-  }
-  \item{ending.at}{
-    An integer vector specifying the ending positions of the pattern
-    relatively to the subject.
-  }
-  \item{start}{
-    For \code{isMatching}: an integer vector specifying the starting positions
-    of the pattern relatively to the subject.
-    For \code{coverage}: a single integer specifying the position in \code{x}
-    where to start the extraction of the coverage.
+  \item{starting.at, ending.at, at}{
+    An integer vector specifying the starting (for \code{starting.at} or \code{at})
+    or ending (for \code{ending.at}) positions of the pattern relatively to the subject.
   }
   \item{max.mismatch}{
-    The maximum number of mismatching letters allowed.
-    Note that \code{isMatching} doesn't support the kind of inexact matching
-    where a given number of insertions or deletions are allowed.
-    Therefore all the "matches" (i.e. the substrings in the subject that match
-    the pattern) have the length of the pattern.
+    See details below.
+  }
+  \item{with.indels}{
+    See details below.
   }
   \item{fixed}{
     Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
@@ -112,21 +122,51 @@
     but \link[IRanges]{IRanges}, \link[IRanges]{MaskCollection} and \link{MaskedXString}
     objects are accepted too.
   }
+  \item{start, end}{
+    Two single integers specifying where to start and end the extraction of the
+    coverage in \code{x}.
+  }
   \item{weight}{
     An integer vector specifying how much each element in \code{x} counts.
   }
-  \item{end}{
-    A single integer specifying the position in \code{x} where to end the
-    extraction of the coverage.
-  }
+}
+
+\details{
+  A "match" of pattern P in subject S is a substring S' of S that is considered
+  similar enough to P according to some distance (or metric) specified by the user.
+  2 distances are supported by most pattern matching functions in the Biostrings
+  package. The simplest one is called "number of mismatching letters" and is
+  defined only when the 2 strings to compare have the same length. So when this
+  distance is used, only matches that have the same number of letters as P are
+  considered.
+  The second distance is the "edit distance" (or Levenshtein distance): it's the
+  minimum number of operations needed to transform P into S', where an operation
+  is an insertion, deletion, or substitution of a single letter.
+  When this metric is used, matches can have a different number of letters than P.
+
+  \code{neditStartingAt} and \code{neditEndingAt} implement these distance.
+  If \code{with.indels} is \code{FALSE} (the default) then the first distance is
+  used i.e. they return the "number of mismatching letters" between the pattern P
+  and the substring S' of S starting (or ending) at the positions specified in
+  \code{starting.at} (or \code{ending.at}) (the functions are vectorized so long
+  vectors of integers can be passed thru these arguments).
+  If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is used:
+  For each position specified in \code{starting.at} (or \code{ending.at}),
+  P is compared to all the substrings S' of S starting (or ending) at this
+  position and the distance to the closest on is returned. Note that only
+  only substrings of length <= 2*length(P) need to be compared with P.
 }
 
 \value{
-  \code{nmismatchStartingAt}, \code{nmismatchEndingAt}:  an integer vector of
-  the same length as \code{starting.at} (or \code{ending.at}) reporting the
-  number of mismatching letters for each starting (or ending) position.
+  \code{neditStartingAt} and \code{neditEndingAt}: an integer vector of the same
+  length as \code{starting.at} (or \code{ending.at}).
 
-  \code{isMatching}:  a logical vector of the same length as \code{start}.
+  \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}: the logical
+  vector defined by \code{neditStartingAt(...) <= max.mismatch}
+  or \code{neditEndingAt(...) <= max.mismatch}, respectively.
+
+  \code{neditAt} and \code{isMatchingAt} are conveniency wrappers for
+  \code{neditStartingAt} and \code{isMatchingStartingAt}, respectively.
 
   \code{mismatch}:  a list of integer vectors.
   
@@ -164,40 +204,40 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## nmismatchStartingAt() / isMatching()
+  ## neditAt() / isMatchingAt()
   ## ---------------------------------------------------------------------
   subject <- DNAString("GTATA")
 
   ## Pattern "AT" matches subject "GTATA" at position 3 (exact match)
-  nmismatchStartingAt("AT", subject, starting.at=3)
-  isMatching("AT", subject, start=3)
+  neditAt("AT", subject, at=3)
+  isMatchingAt("AT", subject, at=3)
 
   ## ... but not at position 1
-  nmismatchStartingAt("AT", subject)
-  isMatching("AT", subject)
+  neditAt("AT", subject)
+  isMatchingAt("AT", subject)
 
   ## ... unless we allow 1 mismatching letter (inexact match)
-  isMatching("AT", subject, max.mismatch=1)
+  isMatchingAt("AT", subject, max.mismatch=1)
 
   ## Here we look at 6 different starting positions and find 3 matches if
   ## we allow 1 mismatching letter
-  isMatching("AT", subject, start=0:5, max.mismatch=1)
+  isMatchingAt("AT", subject, at=0:5, max.mismatch=1)
 
   ## No match
-  nmismatchStartingAt("NT", subject, starting.at=1:4)
-  isMatching("NT", subject, start=1:4)
+  neditAt("NT", subject, at=1:4)
+  isMatchingAt("NT", subject, at=1:4)
 
   ## 2 matches if N is interpreted as an ambiguity (fixed=FALSE)
-  nmismatchStartingAt("NT", subject, starting.at=1:4, fixed=FALSE)
-  isMatching("NT", subject, start=1:4, fixed=FALSE)
+  neditAt("NT", subject, at=1:4, fixed=FALSE)
+  isMatchingAt("NT", subject, at=1:4, fixed=FALSE)
 
   ## max.mismatch != 0 and fixed=FALSE can be used together
-  nmismatchStartingAt("NCA", subject, starting.at=0:5, fixed=FALSE)
-  isMatching("NCA", subject, start=0:5, max.mismatch=1, fixed=FALSE)
+  neditAt("NCA", subject, at=0:5, fixed=FALSE)
+  isMatchingAt("NCA", subject, at=0:5, max.mismatch=1, fixed=FALSE)
 
   some_starts <- c(10:-10, NA, 6)
   subject <- DNAString("ACGTGCA")
-  is_matching <- isMatching("CAT", subject, start=some_starts, max.mismatch=1)
+  is_matching <- isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
   some_starts[is_matching]
 
   ## ---------------------------------------------------------------------

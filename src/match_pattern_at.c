@@ -6,7 +6,7 @@
 
 static int debug = 0;
 
-SEXP debug_match_utils()
+SEXP debug_match_pattern_at()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
@@ -284,7 +284,7 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 		if (debug) print_curr_row(curr_row, 0, row_length);
 #endif
 		if (min_nedit >= max_nedit_plus1) // should never be min_nedit > max_nedit_plus1
-		break; // bailout
+			break; // bailout
 	}
 	return min_nedit;
 }
@@ -296,6 +296,7 @@ int _nedit_for_Proffset(const RoSeq *P, const RoSeq *S, int Proffset,
 	    B, b, i, iplus1, jmin, j, min_nedit;
 	char Pc;
 
+	min_nedit = 0;
 	error("_nedit_for_Proffset() is not ready yet, sorry!");
 	return min_nedit;
 }

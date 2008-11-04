@@ -14,6 +14,13 @@ normargMaxMismatch <- function(max.mismatch)
     max.mismatch
 }
 
+normargWithIndels <- function(with.indels)
+{
+    if (!isTRUEorFALSE(with.indels))
+        stop("'with.indels' must be TRUE or FALSE")
+    with.indels
+}
+
 ### Return a logical vector of length 2.
 normargFixed <- function(fixed, subjectClass)
 {
@@ -51,27 +58,58 @@ normargFixed <- function(fixed, subjectClass)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "nmismatchStartingAt" and "nmismatchEndingAt" generic and methods.
+### The "neditStartingAt", "neditEndingAt", "isMatchingStartingAt" and
+### "isMatchingEndingAt" generic and methods.
 ###
 ### 'starting.at' (or 'ending.at') must be integer vectors containing the
 ### starting (or ending) positions of the pattern relatively to the subject.
-### The two functions return an integer vector of the same length as
-### 'starting.at' (or 'ending.at').
+### All these functions return a vector of the same length as 'starting.at'
+### (or 'ending.at'): the first 2 functions return an integer vector and the
+### last 2 functions return a logical vector.
 ###
 
-setGeneric("nmismatchStartingAt", signature="subject",
-    function(pattern, subject, starting.at=1, fixed=TRUE)
-        standardGeneric("nmismatchStartingAt")
+setGeneric("neditStartingAt", signature="subject",
+    function(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("neditStartingAt")
 )
 
-setGeneric("nmismatchEndingAt", signature="subject",
-    function(pattern, subject, ending.at=1, fixed=TRUE)
-        standardGeneric("nmismatchEndingAt")
+setGeneric("neditEndingAt", signature="subject",
+    function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("neditEndingAt")
 )
+
+neditAt <- function(pattern, subject, at=1, with.indels=FALSE, fixed=TRUE)
+{
+    if (!is.numeric(at))
+        stop("'at' must be a vector of integers")
+    neditStartingAt(pattern, subject, starting.at=at, with.indels=with.indels, fixed=fixed)
+}
+
+setGeneric("isMatchingStartingAt", signature="subject",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("isMatchingStartingAt")
+)
+
+setGeneric("isMatchingEndingAt", signature="subject",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("isMatchingEndingAt")
+)
+
+isMatchingAt <- function(pattern, subject, at=1,
+                         max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+{
+    if (!is.numeric(at))
+        stop("'at' must be a vector of integers")
+    isMatchingStartingAt(pattern, subject, starting.at=at,
+                         max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
+}
 
 ### If 'at.type == 0' then 'at' contains starting positions, otherwise it
 ### contains ending positions.
-.nmismatchAt <- function(pattern, subject, at, at.type, fixed)
+.matchPatternAt <- function(pattern, subject, at, at.type,
+                            max.mismatch, with.indels, fixed, ans.type)
 {
     if (!is(subject, "XString"))
         subject <- XString(NULL, subject)
@@ -83,71 +121,70 @@ setGeneric("nmismatchEndingAt", signature="subject",
     }
     if (!is.integer(at))
         at <- as.integer(at)
+    if (ans.type == 0)
+        max.mismatch <- normargMaxMismatch(max.mismatch)
+    else
+        max.mismatch <- length(pattern)
+    with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, class(subject))
-    .Call("match_pattern_at", pattern, subject, at, at.type,
-          length(pattern), FALSE, fixed, 1L,
+    .Call("match_pattern_at",
+          pattern, subject, at, at.type,
+          max.mismatch, with.indels, fixed, ans.type,
           PACKAGE="Biostrings")
 }
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("nmismatchStartingAt", "character",
-    function(pattern, subject, starting.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, starting.at, 0L, fixed)
-)
-setMethod("nmismatchEndingAt", "character",
-    function(pattern, subject, ending.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, ending.at, 1L, fixed)
+
+setMethod("neditStartingAt", "character",
+    function(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, starting.at, 0L,
+                        NA, with.indels, fixed, 1L)
 )
 
-### Dispatch on 'subject' (see signature of generic).
-setMethod("nmismatchStartingAt", "XString",
-    function(pattern, subject, starting.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, starting.at, 0L, fixed)
-)
-setMethod("nmismatchEndingAt", "XString",
-    function(pattern, subject, ending.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, ending.at, 1L, fixed)
+setMethod("neditStartingAt", "XString",
+    function(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, starting.at, 0L,
+                        NA, with.indels, fixed, 1L)
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "isMatching" generic and methods.
-###
-### Return a logical vector of the same length as 'start'.
-###
-
-setGeneric("isMatching", signature="subject",
-    function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-        standardGeneric("isMatching")
+setMethod("neditEndingAt", "character",
+    function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, ending.at, 1L,
+                        NA, with.indels, fixed, 1L)
 )
 
-.isMatching <- function(pattern, subject, start, max.mismatch, fixed)
-{
-    if (!is(subject, "XString"))
-        subject <- XString(NULL, subject)
-    if (class(pattern) != class(subject))
-        pattern <- XString(class(subject), pattern)
-    if (!is.numeric(start))
-        stop("'start' must be a vector of integers")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    max.mismatch <- normargMaxMismatch(max.mismatch)
-    fixed <- normargFixed(fixed, class(subject))
-    .Call("match_pattern_at", pattern, subject, start, 0L,
-          max.mismatch, FALSE, fixed, 0L,
-          PACKAGE="Biostrings")
-}
-
-### Dispatch on 'subject' (see signature of generic).
-setMethod("isMatching", "character",
-    function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-        .isMatching(pattern, subject, start, max.mismatch, fixed)
+setMethod("neditEndingAt", "XString",
+    function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, ending.at, 1L,
+                        NA, with.indels, fixed, 1L)
 )
 
-### Dispatch on 'subject' (see signature of generic).
-setMethod("isMatching", "XString",
-    function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-        .isMatching(pattern, subject, start, max.mismatch, fixed)
+setMethod("isMatchingStartingAt", "character",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, starting.at, 0L,
+                        max.mismatch, with.indels, fixed, 0L)
+)
+
+setMethod("isMatchingStartingAt", "XString",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, starting.at, 0L,
+                        max.mismatch, with.indels, fixed, 0L)
+)
+
+setMethod("isMatchingEndingAt", "character",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, ending.at, 1L,
+                        max.mismatch, with.indels, fixed, 0L)
+)
+
+setMethod("isMatchingEndingAt", "XString",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, ending.at, 1L,
+                        max.mismatch, with.indels, fixed, 0L)
 )
 
 
@@ -168,7 +205,7 @@ setMethod("isMatching", "XString",
             mm <- c(mm, i)
         } else {
             l <- subseq(pattern, start=i, end=i)
-            cp <- isMatching(l, subject, j, max.mismatch=0, fixed=fixed)
+            cp <- isMatchingAt(l, subject, at=j, fixed=fixed)
             if (cp == 0)
                 mm <- c(mm, i)
         }
@@ -181,7 +218,7 @@ setMethod("isMatching", "XString",
     if (length(x) == 0)
         return(list())
     if (any(width(x) != length(pattern)))
-        warning("views in 'x' don't have a width equal to pattern length")
+        warning("some views in 'x' have a width that differs from 'length(pattern)'")
     lapply(1:length(x),
            function(i) .bsMismatch(pattern, subject(x), start(x)[i], fixed))
 }
@@ -291,4 +328,27 @@ setMethod("coverage", "MIndex",
         ans
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+nmismatchStartingAt <- function(pattern, subject, starting.at=1, fixed=TRUE)
+{
+    .Deprecated("neditStartingAt")
+    neditStartingAt(pattern, subject, starting.at=starting.at, with.indels=FALSE, fixed=fixed)
+}
+
+nmismatchEndingAt <- function(pattern, subject, ending.at=1, fixed=TRUE)
+{
+    .Deprecated("neditEndingAt")
+    neditEndingAt(pattern, subject, ending.at=ending.at, with.indels=FALSE, fixed=fixed)
+}
+
+isMatching <- function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
+{
+    .Deprecated("isMatchingAt")
+    isMatchingAt(pattern, subject, at=start, max.mismatch=max.mismatch, with.indels=FALSE, fixed=fixed)
+}
 

@@ -488,9 +488,9 @@ void ByName_MIndex_coverage(
 SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 
-/* match_utils.c */
+/* match_pattern_at.c */
 
-SEXP debug_match_utils();
+SEXP debug_match_pattern_at();
 
 int (*_selected_nmismatch_at_Pshift_fun)(
 	const RoSeq *P,

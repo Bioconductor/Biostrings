@@ -180,8 +180,9 @@ export(
     extractAllMatches,
 
     ## match-utils.R
-    nmismatchStartingAt, nmismatchEndingAt,
-    isMatching, mismatch, nmatch, nmismatch,
+    neditStartingAt, neditEndingAt, neditAt,
+    isMatchingStartingAt, isMatchingEndingAt, isMatchingAt,
+    mismatch, nmatch, nmismatch,
 
     ## matchPattern.R
     gregexpr2, matchPattern, countPattern, vmatchPattern, vcountPattern,
@@ -210,14 +211,16 @@ export(
     matchPDict, countPDict, whichPDict,
  
     ## Old stuff (Defunct or Deprecated):
+    nmismatchStartingAt, nmismatchEndingAt, isMatching,
     matchDNAPattern
 )
 
 exportMethods(
     ls,
     startIndex, endIndex, countIndex, unlist,
-    nmismatchStartingAt, nmismatchEndingAt,
-    isMatching, mismatch, nmatch, nmismatch,
+    neditStartingAt, neditEndingAt,
+    isMatchingStartingAt, isMatchingEndingAt,
+    mismatch, nmatch, nmismatch,
     coverage,
     matchPattern, countPattern, vcountPattern,
     matchLRPatterns,
@@ -310,7 +313,8 @@ exportMethods(
     insertion, deletion,
     unaligned, aligned, indel, nindel,
     type, score, pid,
-    mismatch, nmatch, nmismatch, mismatchTable, mismatchSummary, coverage,
+    mismatch, nmatch, nmismatch,
+    mismatchTable, mismatchSummary, coverage,
     compareStrings, consensusMatrix, consensusString,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, stringDist,
