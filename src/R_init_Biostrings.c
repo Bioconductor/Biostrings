@@ -69,8 +69,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_utils.c */
 	CALLMETHOD_DEF(debug_match_utils, 0),
-	CALLMETHOD_DEF(nmismatch_at, 5),
-	CALLMETHOD_DEF(is_matching, 5),
+	CALLMETHOD_DEF(match_pattern_at, 8),
 
 /* match_pattern_boyermoore.c */
 	CALLMETHOD_DEF(debug_match_pattern_boyermoore, 0),
@@ -116,10 +115,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_match_pdict, 0),
 	CALLMETHOD_DEF(XString_match_pdict, 12),
 	CALLMETHOD_DEF(XStringViews_match_pdict, 14),
-
-/* nedit_at.c */
-	CALLMETHOD_DEF(debug_nedit_at, 0),
-	CALLMETHOD_DEF(nedit_starting_at, 4),
 
 /* align_utils.c */
 	CALLMETHOD_DEF(PairwiseAlignment_nmatch, 4),

@@ -69,44 +69,44 @@ setGeneric("nmismatchEndingAt", signature="subject",
         standardGeneric("nmismatchEndingAt")
 )
 
-### If 'starting=TRUE' then 'at' contains starting positions, otherwise it
+### If 'at.type == 0' then 'at' contains starting positions, otherwise it
 ### contains ending positions.
-.nmismatchAt <- function(pattern, subject, starting, at, fixed)
+.nmismatchAt <- function(pattern, subject, at, at.type, fixed)
 {
     if (!is(subject, "XString"))
         subject <- XString(NULL, subject)
     if (class(pattern) != class(subject))
         pattern <- XString(class(subject), pattern)
     if (!is.numeric(at)) {
-        what <- if (starting) "starting.at" else "ending.at"
+        what <- if (at.type == 0) "starting.at" else "ending.at"
         stop("'", what, "'  must be a vector of integers")
     }
     if (!is.integer(at))
         at <- as.integer(at)
     fixed <- normargFixed(fixed, class(subject))
-    .Call("nmismatch_at", pattern, subject,
-          starting, at, fixed,
+    .Call("match_pattern_at", pattern, subject, at, at.type,
+          length(pattern), FALSE, fixed, 1L,
           PACKAGE="Biostrings")
 }
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("nmismatchStartingAt", "character",
     function(pattern, subject, starting.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, TRUE, starting.at, fixed)
+        .nmismatchAt(pattern, subject, starting.at, 0L, fixed)
 )
 setMethod("nmismatchEndingAt", "character",
     function(pattern, subject, ending.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, FALSE, ending.at, fixed)
+        .nmismatchAt(pattern, subject, ending.at, 1L, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("nmismatchStartingAt", "XString",
     function(pattern, subject, starting.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, TRUE, starting.at, fixed)
+        .nmismatchAt(pattern, subject, starting.at, 0L, fixed)
 )
 setMethod("nmismatchEndingAt", "XString",
     function(pattern, subject, ending.at=1, fixed=TRUE)
-        .nmismatchAt(pattern, subject, FALSE, ending.at, fixed)
+        .nmismatchAt(pattern, subject, ending.at, 1L, fixed)
 )
 
 
@@ -133,8 +133,8 @@ setGeneric("isMatching", signature="subject",
         start <- as.integer(start)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     fixed <- normargFixed(fixed, class(subject))
-    .Call("is_matching", pattern, subject, start,
-          max.mismatch, fixed,
+    .Call("match_pattern_at", pattern, subject, start, 0L,
+          max.mismatch, FALSE, fixed, 0L,
           PACKAGE="Biostrings")
 }
 

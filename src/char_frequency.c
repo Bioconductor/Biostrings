@@ -1,5 +1,4 @@
 #include "Biostrings.h"
-#include <string.h>
 
 static int code2offset[CHRTRTABLE_LENGTH];
 static int rowbuf[256];

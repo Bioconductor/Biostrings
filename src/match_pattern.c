@@ -4,10 +4,6 @@
  ****************************************************************************/
 #include "Biostrings.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 static int debug = 0;
 
 SEXP debug_match_pattern()

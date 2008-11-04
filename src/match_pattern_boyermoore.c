@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 /* I've turned off the "MWshift feature". Doesn't seem to give very good
  * results :-( To turned it on, set MWSHIFT_NPMAX to a positive integer

@@ -504,20 +504,33 @@ void _select_nmismatch_at_Pshift_fun(
 	int fixedS
 );
 
-SEXP nmismatch_at(
-	SEXP pattern,
-	SEXP subject,
-	SEXP starting,
-	SEXP at,
-	SEXP fixed
+int _nedit_for_Ploffset(
+	const RoSeq *P,
+	const RoSeq *S,
+	int Ploffset,
+	int max_nedit,
+	int loose_Ploffset,
+	int *min_width
 );
 
-SEXP is_matching(
+int _nedit_for_Proffset(
+	const RoSeq *P,
+	const RoSeq *S,
+	int Proffset,
+	int max_nedit,
+	int loose_Proffset,
+	int *min_width
+);
+
+SEXP match_pattern_at(
 	SEXP pattern,
 	SEXP subject,
-	SEXP start,
+	SEXP at,
+	SEXP at_type,
 	SEXP max_mismatch,
-	SEXP fixed
+	SEXP with_indels,
+	SEXP fixed,
+	SEXP ans_type
 );
 
 
@@ -752,18 +765,6 @@ SEXP XStringViews_match_pdict(
 	SEXP fixed,
 	SEXP count_only,
 	SEXP envir
-);
-
-
-/* nedit_at.c */
-
-SEXP debug_nedit_at();
-
-SEXP nedit_starting_at(
-	SEXP pattern,
-	SEXP subject,
-	SEXP at,
-	SEXP fixed
 );
 
 

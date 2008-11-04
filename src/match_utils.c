@@ -4,20 +4,16 @@
  ****************************************************************************/
 #include "Biostrings.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 static int debug = 0;
 
 SEXP debug_match_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_utils.c'\n",
-                 debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in file %s\n",
+		debug ? "on" : "off", __FILE__);
 #else
-	Rprintf("Debug mode not available in 'match_utils.c'\n");
+	Rprintf("Debug mode not available in file %s\n", __FILE__);
 #endif
 	return R_NilValue;
 }
@@ -141,84 +137,232 @@ void _select_nmismatch_at_Pshift_fun(int fixedP, int fixedS)
 	return;
 }
 
-/*
- * --- .Call ENTRY POINT ---
+
+/****************************************************************************
+ * An edit distance implementation with early bailout.
  */
-SEXP nmismatch_at(SEXP pattern, SEXP subject, SEXP starting, SEXP at, SEXP fixed)
+
+/*
+ * TODO: (maybe) replace static alloc of buffers by dynamic alloc.
+ */
+#define MAX_NEDIT 20
+#define MAX_ROW_LENGTH (2*MAX_NEDIT+1)
+
+static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
+
+#define SWAP_NEDIT_BUFS(prev_row, curr_row) \
+{ \
+	int *tmp; \
+	tmp = (prev_row); \
+	(prev_row) = (curr_row); \
+	(curr_row) = tmp; \
+}
+
+#define PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length) \
+{ \
+	int nedit, B2, nedit2; \
+	nedit = (prev_row)[(B)] + ((j) < 0 || (j) >= (S)->nelt || (S)->elts[(j)] != (Pc)); \
+	if ((B2 = (B) - 1) >= 0 && (nedit2 = (curr_row)[B2] + 1) < nedit) \
+		nedit = nedit2; \
+	if ((B2 = (B) + 1) < (row_length) && (nedit2 = (prev_row)[B2] + 1) < nedit) \
+		nedit = nedit2; \
+	(curr_row)[(B)] = nedit; \
+}
+
+#ifdef DEBUG_BIOSTRINGS
+static void print_curr_row(const int *curr_row, int Bmin, int row_length)
 {
-	RoSeq P, S;
-	int is_start, at_len, fixedP, fixedS, i, *at_elt, *ans_elt, Pshift;
-	SEXP ans;
+	int B;
 
-	P = _get_XString_asRoSeq(pattern);
-	S = _get_XString_asRoSeq(subject);
-	is_start = LOGICAL(starting)[0];
-	at_len = LENGTH(at);
-	fixedP = LOGICAL(fixed)[0];
-	fixedS = LOGICAL(fixed)[1];
-	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
-
-	PROTECT(ans = NEW_INTEGER(at_len));
-	for (i = 0, at_elt = INTEGER(at), ans_elt = INTEGER(ans);
-             i < at_len;
-             i++, at_elt++, ans_elt++)
-	{
-		if (*at_elt == NA_INTEGER) {
-			*ans_elt = NA_INTEGER;
-			continue;
-		}
-		if (is_start)
-			Pshift = *at_elt - 1;
+	for (B = 0; B < row_length; B++) {
+		if (B < Bmin)
+			Rprintf("%3s", "");
 		else
-			Pshift = *at_elt - P.nelt;
- 		*ans_elt = _selected_nmismatch_at_Pshift_fun(&P, &S, Pshift, P.nelt);
+			Rprintf("%3d", curr_row[B]);
 	}
-	UNPROTECT(1);
-	return ans;
+	Rprintf("\n");
+	return;
+}
+#endif
+
+/*
+ * P left-offset (Ploffset) is the offset of P's first letter in S.
+ * P right-offset (Proffset) is the offset of P's last letter in S.
+ * The min width (min_width) is the length of the shortest substring S'
+ * of S starting at Ploffset (or ending at Proffset) for which nedit(P, S')
+ * is minimal.
+ * TODO: Implement the 'loose_Ploffset' feature (allowing or not an indel
+ * on the first letter of the local alignement).
+ */
+int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
+		int max_nedit, int loose_Ploffset, int *min_width)
+{
+	int max_nedit_plus1, *prev_row, *curr_row, row_length,
+	    B, b, i, iplus1, jmin, j, min_nedit;
+	char Pc;
+
+	if (P == NULL || P->nelt == 0)
+		return 0;
+	max_nedit_plus1 = max_nedit + 1;
+	if (max_nedit > P->nelt)
+		max_nedit = P->nelt;
+	// from now max_nedit <= P->nelt
+	if (max_nedit > MAX_NEDIT)
+		error("'max.nedit' too big");
+	prev_row = row1_buf;
+	curr_row = row2_buf;
+	row_length = 2 * max_nedit + 1;
+	jmin = Ploffset;
+
+	// STAGE 0:
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE0\n");
+#endif
+	for (B = max_nedit, b = 0; B < row_length; B++, b++)
+		curr_row[B] = b;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) print_curr_row(curr_row, max_nedit, row_length);
+#endif
+
+	// STAGE 1 (1st for() loop): no attempt is made to bailout during
+	// this stage because the smallest value in curr_row is guaranteed
+	// to be <= iplus1 < max_nedit.
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE1\n");
+#endif
+	for (iplus1 = 1, i = 0; iplus1 < max_nedit; iplus1++, i++) {
+		Pc = P->elts[i]; // i < iplus1 < max_nedit <= P->nelt
+		SWAP_NEDIT_BUFS(prev_row, curr_row);
+		B = max_nedit - iplus1;
+		curr_row[B++] = iplus1;
+		for (j = jmin; B < row_length; B++, j++)
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) print_curr_row(curr_row, max_nedit - iplus1, row_length);
+#endif
+	}
+
+	// STAGE 2: no attempt is made to bailout during this stage either.
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE2\n");
+#endif
+	Pc = P->elts[i];
+	SWAP_NEDIT_BUFS(prev_row, curr_row);
+	B = 0;
+	curr_row[B++] = min_nedit = iplus1;
+	*min_width = 0;
+	for (j = jmin; B < row_length; B++, j++) {
+		PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
+		if (curr_row[B] < min_nedit) {
+			min_nedit = curr_row[B];
+			*min_width = j - Ploffset;
+		}
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) print_curr_row(curr_row, 0, row_length);
+#endif
+	iplus1++;
+	i++;
+
+	// STAGE 3 (2nd for() loop): with attempt to bailout.
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE3\n");
+#endif
+	for ( ; i < P->nelt; i++, iplus1++, jmin++) {
+		Pc = P->elts[i];
+		SWAP_NEDIT_BUFS(prev_row, curr_row);
+		min_nedit = iplus1;
+		*min_width = 0;
+		for (B = 0, j = jmin; B < row_length; B++, j++) {
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
+			if (curr_row[B] < min_nedit) {
+				min_nedit = curr_row[B];
+				*min_width = j - Ploffset;
+			}
+		}
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) print_curr_row(curr_row, 0, row_length);
+#endif
+		if (min_nedit >= max_nedit_plus1) // should never be min_nedit > max_nedit_plus1
+		break; // bailout
+	}
+	return min_nedit;
+}
+
+int _nedit_for_Proffset(const RoSeq *P, const RoSeq *S, int Proffset,
+		int max_nedit, int loose_Proffset, int *min_width)
+{
+	int max_nedit_plus1, *prev_row, *curr_row, row_length,
+	    B, b, i, iplus1, jmin, j, min_nedit;
+	char Pc;
+
+	error("_nedit_for_Proffset() is not ready yet, sorry!");
+	return min_nedit;
 }
 
 
 /****************************************************************************
- * is_matching()
- */
-
-/*
  * --- .Call ENTRY POINT ---
- * is_matching() arguments are assumed to be:
- *   pattern: pattern
- *   subject: subject
- *   algorithm: algorithm
- *   start: starting positions of the pattern relative to the subject
- *   max_mismatch: the max number of mismatching letters
- *   fixed: logical vector of length 2
- * Return a logical vector of the same length as 'start'.
+ * Arguments:
+ *   pattern
+ *   subject
+ *   at: positions of P's first or last letter in S;
+ *   at_type: 0 if 'at' contains the positions of P's first letter in S,
+ *            1 if 'at' contains the positions of P's last letter in S;
+ *   max_mismatch:
+ *   ans_type: 0 for a logical vector indicating whether there is a match or
+ *             not at the specified positions, 1 for an integer vector giving
+ *             the number of mismatches at the specified positions;
  */
-SEXP is_matching(SEXP pattern, SEXP subject, SEXP start,
-		SEXP max_mismatch, SEXP fixed)
+SEXP match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
+		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
 	RoSeq P, S;
-	int start_len, max_mm, fixedP, fixedS, i, *start_elt, *ans_elt;
+	int at_length, at_type0, max_mm, indels, fixedP, fixedS, ans_type0,
+	    i, *at_elt, *ans_elt, offset, nmismatch, min_width;
 	SEXP ans;
 
 	P = _get_XString_asRoSeq(pattern);
 	S = _get_XString_asRoSeq(subject);
-	start_len = LENGTH(start);
+	at_length = LENGTH(at);
+	at_type0 = INTEGER(at_type)[0];
 	max_mm = INTEGER(max_mismatch)[0];
+	indels = LOGICAL(with_indels)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
-	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+	if (indels && !(fixedP && fixedS))
+		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
+	ans_type0 = INTEGER(ans_type)[0];
+	if (ans_type0) {
+		PROTECT(ans = NEW_INTEGER(at_length));
+		ans_elt = INTEGER(ans);
+	} else {
+		PROTECT(ans = NEW_LOGICAL(at_length));
+		ans_elt = LOGICAL(ans);
+	}
+	if (!indels)
+		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
-	PROTECT(ans = NEW_LOGICAL(start_len));
-	for (i = 0, start_elt = INTEGER(start), ans_elt = LOGICAL(ans);
-             i < start_len;
-             i++, start_elt++, ans_elt++)
+	for (i = 0, at_elt = INTEGER(at); i < at_length; i++, at_elt++, ans_elt++)
 	{
-		if (*start_elt == NA_INTEGER) {
-			*ans_elt = NA_LOGICAL;
+		if (*at_elt == NA_INTEGER) {
+			*ans_elt = ans_type0 ? NA_INTEGER : NA_LOGICAL;
 			continue;
 		}
- 		*ans_elt = _selected_nmismatch_at_Pshift_fun(&P, &S,
-				*start_elt - 1, max_mm) <= max_mm;
+		if (indels) {
+			offset = *at_elt - 1;
+			if (at_type0 == 0)
+				nmismatch = _nedit_for_Ploffset(&P, &S, offset, max_mm, 1, &min_width);
+			else
+				nmismatch = _nedit_for_Proffset(&P, &S, offset, max_mm, 1, &min_width);
+		} else {
+			if (at_type0 == 0)
+				offset = *at_elt - 1;
+			else
+				offset = *at_elt - P.nelt;
+			nmismatch = _selected_nmismatch_at_Pshift_fun(&P, &S, offset, max_mm);
+		}
+		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
 	}
 	UNPROTECT(1);
 	return ans;
