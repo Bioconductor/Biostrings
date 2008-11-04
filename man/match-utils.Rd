@@ -86,8 +86,9 @@
     sequence,
   }
   \item{starting.at, ending.at, at}{
-    An integer vector specifying the starting (for \code{starting.at} or \code{at})
-    or ending (for \code{ending.at}) positions of the pattern relatively to the subject.
+    An integer vector specifying the starting (for \code{starting.at}
+    and \code{at}) or ending (for \code{ending.at}) positions of the
+    pattern relatively to the subject.
   }
   \item{max.mismatch}{
     See details below.
@@ -119,8 +120,8 @@
     by \code{matchPattern(pattern, subject)}).
 
     Typically an \link{XStringViews} or \link{MIndex} object for \code{coverage}
-    but \link[IRanges]{IRanges}, \link[IRanges]{MaskCollection} and \link{MaskedXString}
-    objects are accepted too.
+    but \link[IRanges]{IRanges}, \link[IRanges]{MaskCollection} and
+    \link{MaskedXString} objects are accepted too.
   }
   \item{start, end}{
     Two single integers specifying where to start and end the extraction of the
@@ -133,36 +134,39 @@
 
 \details{
   A "match" of pattern P in subject S is a substring S' of S that is considered
-  similar enough to P according to some distance (or metric) specified by the user.
-  2 distances are supported by most pattern matching functions in the Biostrings
-  package. The simplest one is called "number of mismatching letters" and is
-  defined only when the 2 strings to compare have the same length. So when this
-  distance is used, only matches that have the same number of letters as P are
-  considered.
-  The second distance is the "edit distance" (or Levenshtein distance): it's the
-  minimum number of operations needed to transform P into S', where an operation
-  is an insertion, deletion, or substitution of a single letter.
-  When this metric is used, matches can have a different number of letters than P.
+  similar enough to P according to some distance (or metric) specified by the
+  user. 2 distances are supported by most pattern matching functions in the
+  Biostrings package. The simplest one is called "number of mismatching
+  letters" and is defined only when the 2 strings to compare have the same
+  length. So when this distance is used, only matches that have the same number
+  of letters as P are considered.
+  The second distance is the "edit distance" (or Levenshtein distance): it's
+  the minimum number of operations needed to transform P into S', where an
+  operation is an insertion, deletion, or substitution of a single letter.
+  When this metric is used, matches can have a different number of letters
+  than P.
 
-  \code{neditStartingAt} and \code{neditEndingAt} implement these distance.
-  If \code{with.indels} is \code{FALSE} (the default) then the first distance is
-  used i.e. they return the "number of mismatching letters" between the pattern P
-  and the substring S' of S starting (or ending) at the positions specified in
-  \code{starting.at} (or \code{ending.at}) (the functions are vectorized so long
-  vectors of integers can be passed thru these arguments).
-  If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is used:
-  For each position specified in \code{starting.at} (or \code{ending.at}),
-  P is compared to all the substrings S' of S starting (or ending) at this
-  position and the distance to the closest on is returned. Note that only
-  only substrings of length <= 2*length(P) need to be compared with P.
+  The \code{neditStartingAt} (and \code{neditEndingAt}) function implements
+  these 2 distances.
+  If \code{with.indels} is \code{FALSE} (the default) then the first distance
+  is used i.e. \code{neditStartingAt} returns the "number of mismatching
+  letters" between the pattern P and the substring S' of S starting at the
+  positions specified in \code{starting.at} (\code{neditStartingAt} and
+  \code{neditEndingAt} are vectorized so long vectors of integers can be
+  passed thru the \code{starting.at} or \code{ending.at} arguments).
+  If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is
+  used: for each position specified in \code{starting.at}, P is compared to
+  all the substrings S' of S starting at this position and the distance to the
+  closest one is returned. Note that no substrings of length > 2*length(P)
+  needs to be compared with P.
 }
 
 \value{
-  \code{neditStartingAt} and \code{neditEndingAt}: an integer vector of the same
-  length as \code{starting.at} (or \code{ending.at}).
+  \code{neditStartingAt} and \code{neditEndingAt}: an integer vector of the
+  same length as \code{starting.at} (or \code{ending.at}).
 
-  \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}: the logical
-  vector defined by \code{neditStartingAt(...) <= max.mismatch}
+  \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}: the
+  logical vector defined by \code{neditStartingAt(...) <= max.mismatch}
   or \code{neditEndingAt(...) <= max.mismatch}, respectively.
 
   \code{neditAt} and \code{isMatchingAt} are conveniency wrappers for
@@ -173,9 +177,9 @@
   \code{nmismatch}:  an integer vector containing the length of the vectors
   produced by \code{mismatch}.
 
-  \code{coverage}:  an \link[IRanges]{XRleInteger} object indicating the coverage
-  of \code{x} in the interval specified by the \code{start} and \code{end}
-  arguments.
+  \code{coverage}:  an \link[IRanges]{XRleInteger} object indicating the
+  coverage of \code{x} in the interval specified by the \code{start} and
+  \code{end} arguments.
   An integer value called the "coverage" can be associated to each position
   in \code{x}, indicating how many times this position is covered by the views
   or matches stored in \code{x}. For example, if \code{x} is an
