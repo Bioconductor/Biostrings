@@ -32,7 +32,7 @@ SEXP debug_match_pdict_Twobit()
  *                                                                          *
  ****************************************************************************/
 
-static int eightbit2twobit_lkup[256];
+static ByteTrTable eightbit2twobit;
 
 static void init_twobit_sign2pos(SEXP twobit_sign2pos, int val0)
 {
@@ -51,9 +51,9 @@ static int pp_pattern(SEXP twobit_sign2pos, const RoSeq *pattern, int poffset)
 	twobit_sign = 0;
 	//printf("poffset=%d: ", poffset);
 	for (i = 0, c = pattern->elts; i < pattern->nelt; i++, c++) {
-		twobit = eightbit2twobit_lkup[(unsigned char) *c];
+		twobit = eightbit2twobit[(unsigned char) *c];
 		//printf("(%d %d) ", *c, twobit);
-		if (twobit == -1)
+		if (twobit == NA_INTEGER)
 			return -1;
 		twobit_sign <<= 2;
 		twobit_sign += twobit;
@@ -143,8 +143,8 @@ SEXP build_Twobit(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in build_Twobit(): "
 		      "'base_codes' must be of length 4");
-	_init_chrtrtable(INTEGER(base_codes), LENGTH(base_codes),
-			 eightbit2twobit_lkup);
+	_init_ByteTrTable_with_offsets(eightbit2twobit,
+			INTEGER(base_codes), LENGTH(base_codes));
 	tb_length = _get_XStringSet_length(tb);
 	_init_dup2unq_buf(tb_length);
 	tb_width = -1;
@@ -201,8 +201,8 @@ void walk_subject(int tb_width, const int *twobit_sign2pos, const RoSeq *S)
 	bitmask = (1 << bitwindow_width) - 1;
 	nb_valid_left_char = 0;
 	for (n = 1, s = S->elts; n <= S->nelt; n++, s++) {
-		twobit = eightbit2twobit_lkup[(unsigned char) *s];
-		if (twobit == -1) {
+		twobit = eightbit2twobit[(unsigned char) *s];
+		if (twobit == NA_INTEGER) {
 			nb_valid_left_char = 0;
 			continue;
 		}
@@ -236,8 +236,8 @@ void _match_Twobit(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in _match_Twobit(): "
 		      "'base_codes' must be of length 4");
-	_init_chrtrtable(INTEGER(base_codes), LENGTH(base_codes),
-			 eightbit2twobit_lkup);
+	_init_ByteTrTable_with_offsets(eightbit2twobit,
+			INTEGER(base_codes), LENGTH(base_codes));
 	if (!fixedS)
 		error("cannot treat IUPAC extended letters in the subject "
 		      "as ambiguities when 'pdict' is a PDict object of "

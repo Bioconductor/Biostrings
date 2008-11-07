@@ -9,7 +9,7 @@
 static int notextend_action;
 static int skip_or_merge_count;
 static char errmsg_buf[200];
-static int chrtrtable[CHRTRTABLE_LENGTH];
+static ByteTrTable byte2code;
 
 static void set_notextend_action(const char *if_not_extending)
 {
@@ -26,26 +26,10 @@ static void set_notextend_action(const char *if_not_extending)
 	return;
 }
 
-static void init_chrtrtable_with_lkup(SEXP lkup)
-{
-	int trkey, trval;
-
-	if (LENGTH(lkup) > CHRTRTABLE_LENGTH)
-		error("Biostrings internal error in init_chrtrtable_with_lkup(): "
-		      "LENGTH(lkup) > CHRTRTABLE_LENGTH");
-	for (trkey = 0; trkey < LENGTH(lkup); trkey++) {
-		trval = INTEGER(lkup)[trkey];
-		chrtrtable[trkey] = trval == NA_INTEGER ? -1 : trval;
-	}
-	for ( ; trkey < CHRTRTABLE_LENGTH; trkey++)
-		chrtrtable[trkey] = -1;
-	return;
-}
-
 static int replace_letter_at(char *dest, int dest_length,
-		const int *at, int at_length, const char *src, int use_chrtrtable)
+		const int *at, int at_length, const char *src, int use_byte2code)
 {
-	int i, j, trkey, are_IUPAC;
+	int i, j, byte, are_IUPAC;
 	char old_letter, new_letter;
 
 	for (j = 0; j < at_length; j++) {
@@ -56,13 +40,13 @@ static int replace_letter_at(char *dest, int dest_length,
 			return -1;
 		}
 		new_letter = src[j];
-		if (use_chrtrtable) {
-			trkey = (unsigned char) new_letter;
-			if ((new_letter = chrtrtable[trkey]) == -1) {
+		if (use_byte2code) {
+			byte = (unsigned char) new_letter;
+			if ((new_letter = byte2code[byte]) == NA_INTEGER) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "'letter' contains invalid letters "
 					 "(first found has code %d)",
-					 trkey);
+					 byte);
 				return -1;
 			}
 		}
@@ -117,7 +101,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
-		init_chrtrtable_with_lkup(lkup);
+		_init_ByteTrTable_with_lkup(byte2code, lkup);
 	set_notextend_action(CHAR(STRING_ELT(if_not_extending, 0)));
 
 	PROTECT(tag = NEW_RAW(x_seq.nelt));
@@ -169,7 +153,7 @@ SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
-		init_chrtrtable_with_lkup(lkup);
+		_init_ByteTrTable_with_lkup(byte2code, lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
 	tag = get_SequencePtr_tag(get_XSequence_xdata(x));

@@ -3,57 +3,6 @@
 
 #define DEBUG_BIOSTRINGS 1
 
-#define CHRTRTABLE_LENGTH 256
-
-typedef int CharToIntTable[CHRTRTABLE_LENGTH];
-
-
-/* copy_seq.c */
-
-SEXP debug_copy_seq();
-
-void _copy_seq(
-	char *dest,
-	const char *src,
-	size_t n,
-	const int *chrtrtable
-);
-
-void _revcopy_seq(
-	char *dest,
-	const char *src,
-	size_t n,
-	const int *chrtrtable
-);
-
-void _copy_seq_from_i1i2(
-	int i1, int i2,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const int *chrtrtable
-);
-
-void _copy_seq_to_i1i2(
-	int i1, int i2,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const int *chrtrtable
-);
-
-void _copy_seq_from_subset(
-	const int *subset, int n,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const int *chrtrtable
-);
-
-void _copy_seq_to_subset(
-	const int *subset, int n,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const int *chrtrtable
-);
-
 
 /* utils.c */
 
@@ -65,10 +14,64 @@ int fgets_rtrimmed(
 	FILE *stream
 );
 
-void _init_chrtrtable(
-	const int *codes,
-	int len,
-	int *chrtrtable
+void _init_ByteTrTable_with_lkup(
+	ByteTrTable byte2code,
+	SEXP lkup
+);
+
+SEXP _new_lkup_from_ByteTrTable(const ByteTrTable *byte2code);
+
+void _init_ByteTrTable_with_offsets(
+	ByteTrTable byte2offset,
+	const int *bytes,
+	int nbytes
+);
+
+
+/* copy_seq.c */
+
+SEXP debug_copy_seq();
+
+void _copy_seq(
+	char *dest,
+	const char *src,
+	size_t n,
+	const ByteTrTable *byte2code
+);
+
+void _revcopy_seq(
+	char *dest,
+	const char *src,
+	size_t n,
+	const ByteTrTable *byte2code
+);
+
+void _copy_seq_from_i1i2(
+	int i1, int i2,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const ByteTrTable *byte2code
+);
+
+void _copy_seq_to_i1i2(
+	int i1, int i2,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const ByteTrTable *byte2code
+);
+
+void _copy_seq_from_subset(
+	const int *subset, int n,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const ByteTrTable *byte2code
+);
+
+void _copy_seq_to_subset(
+	const int *subset, int n,
+	char *dest, int dest_length,
+	const char *src, int src_length,
+	const ByteTrTable *byte2code
 );
 
 
@@ -123,7 +126,7 @@ void _write_RoSeq_to_RawPtr(
 	SEXP x,
 	int offset,
 	const RoSeq *seq,
-	const int *chrtrtable
+	const ByteTrTable *byte2code
 );
 
 void _get_RoSeqs_order(
@@ -136,9 +139,9 @@ void _get_RoSeqs_order(
 
 SEXP debug_XString_class();
 
-const int *get_enc_chrtrtable(const char *classname);
+const ByteTrTable *get_enc_byte2code(const char *classname);
 
-const int *get_dec_chrtrtable(const char *classname);
+const ByteTrTable *get_dec_byte2code(const char *classname);
 
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup);
 

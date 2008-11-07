@@ -138,7 +138,7 @@
     \item{}{
       \code{length(x)}:
       Equivalent to \code{length(unmasked(x))}.
-      See \code{?`\link[Biostrings]{length},XString-method`} for more
+      See \code{?`\link[Biostrings]{length,XString-method}`} for more
       information.
     }
   }

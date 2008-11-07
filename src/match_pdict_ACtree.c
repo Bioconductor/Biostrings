@@ -48,7 +48,7 @@ typedef struct acnode {
  *     memory usage is no optimal, there will be a lot of unused space in the
  *     array, this would need to be quantified though).
  *   - Can be stored in an integer vector in R: this is because the size of
- *     a node (ACNode struct) is a multiple of the size of an int (1 node = 6
+ *     a node (ACNode struct) is a multiple of the size of an int (1 node = 8
  *     ints). If this was not the case, we could still use a raw vector.
  *   - Easy to serialize.
  *   - Easy to reallocate.
@@ -348,14 +348,14 @@ SEXP build_ACtree(SEXP tb, SEXP dup2unq0, SEXP base_codes)
  *                                                                          *
  ****************************************************************************/
 
-static int slotno_chrtrtable[CHRTRTABLE_LENGTH];
+static ByteTrTable byte2slotno;
 
 static int get_child_node_id(const ACNode *node, char c)
 {
 	int slotno;
 
-	slotno = slotno_chrtrtable[(unsigned char) c];
-	if (slotno == -1)
+	slotno = byte2slotno[(unsigned char) c];
+	if (slotno == NA_INTEGER)
 		return -1;
 	return node->child_id[slotno];
 }
@@ -376,8 +376,8 @@ static void set_shortcut(ACNode *node, char c, int next_node_id)
 {
 	int slotno, *slot;
 
-	slotno = slotno_chrtrtable[(unsigned char) c];
-	if (slotno == -1)
+	slotno = byte2slotno[(unsigned char) c];
+	if (slotno == NA_INTEGER)
 		return;
 	slot = node->child_id + slotno;
 	if (*slot == -1)
@@ -613,8 +613,8 @@ void _match_ACtree(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
 		error("Biostrings internal error in _match_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
-	_init_chrtrtable(INTEGER(base_codes), MAX_CHILDREN_PER_ACNODE,
-			 slotno_chrtrtable);
+	_init_ByteTrTable_with_offsets(byte2slotno,
+			INTEGER(base_codes), MAX_CHILDREN_PER_ACNODE);
 	if (fixedS)
 		walk_subject(node0, INTEGER(base_codes), S->elts, S->nelt);
 	else

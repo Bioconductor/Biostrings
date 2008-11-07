@@ -1,10 +1,10 @@
 ###
 
-debug_copy_seq <- function()
-    invisible(.Call("debug_copy_seq", PACKAGE="Biostrings"))
-
 debug_utils <- function()
     invisible(.Call("debug_utils", PACKAGE="Biostrings"))
+
+debug_copy_seq <- function()
+    invisible(.Call("debug_copy_seq", PACKAGE="Biostrings"))
 
 debug_RoSeq_utils <- function()
     invisible(.Call("debug_RoSeq_utils", PACKAGE="Biostrings"))

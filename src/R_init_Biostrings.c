@@ -7,11 +7,11 @@
 
 static const R_CallMethodDef callMethods[] = {
 
-/* copy_seq.c */
-	CALLMETHOD_DEF(debug_copy_seq, 0),
-
 /* utils.c */
 	CALLMETHOD_DEF(debug_utils, 0),
+
+/* copy_seq.c */
+	CALLMETHOD_DEF(debug_copy_seq, 0),
 
 /* RoSeq_utils.c */
 	CALLMETHOD_DEF(debug_RoSeq_utils, 0),

@@ -7,20 +7,20 @@
 /*
  * Table used for fast look up between A, C, G, T internal codes and the
  * corresponding 0-based row indice (the row offset) in the PWM:
- *   A internal code     ->  0
- *   C internal code     ->  1
- *   G internal code     ->  2
- *   T internal code     ->  3
- *   other internal code -> -1
+ *   A internal code     -> 0
+ *   C internal code     -> 1
+ *   G internal code     -> 2
+ *   T internal code     -> 3
+ *   other internal code -> NA_INTEGER
  */
-static int DNAcode2PWMrowoffset[256];
+static ByteTrTable DNAcode2PWMrowoffset;
 
 static void init_DNAcode2PWMrowoffset()
 {
 	int i;
 
-	for (i = 0; i < 256; i++)
-		DNAcode2PWMrowoffset[i] = -1;
+	for (i = 0; i < BYTETRTABLE_LENGTH; i++)
+		DNAcode2PWMrowoffset[i] = NA_INTEGER;
 	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('A')] = 0;
 	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('C')] = 1;
 	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('G')] = 2;
@@ -39,7 +39,7 @@ static int compute_score(const int *pwm, int pwm_ncol, const char *S, int nS, in
 	score = 0;
 	for (i = 0; i < pwm_ncol; i++, pwm += 4, S++) {
 		rowoffset = DNAcode2PWMrowoffset[(unsigned char) *S];
-		if (rowoffset == -1)
+		if (rowoffset == NA_INTEGER)
 			continue;
 		score += pwm[rowoffset];
 	}

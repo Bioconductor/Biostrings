@@ -1,6 +1,6 @@
 #include "Biostrings.h"
 
-static int code2offset[CHRTRTABLE_LENGTH];
+static ByteTrTable byte2offset;
 static int rowbuf[256];
 
 static int get_ans_width(SEXP codes, int with_other)
@@ -10,11 +10,11 @@ static int get_ans_width(SEXP codes, int with_other)
 	if (codes == R_NilValue)
 		return 256;
 	width = LENGTH(codes);
-	_init_chrtrtable(INTEGER(codes), width, code2offset);
+	_init_ByteTrTable_with_offsets(byte2offset, INTEGER(codes), width);
 	if (with_other) {
-		for (i = 0; i < CHRTRTABLE_LENGTH; i++)
-			if (code2offset[i] == -1)
-				code2offset[i] = width;
+		for (i = 0; i < BYTETRTABLE_LENGTH; i++)
+			if (byte2offset[i] == NA_INTEGER)
+				byte2offset[i] = width;
 		width++;
 	}
 	return width;
@@ -29,8 +29,8 @@ static void add_freqs(RoSeq X, SEXP codes, int *freqs)
 			freqs[((unsigned char) *X.elts)]++;
 	else
 		for (i = 0; i < X.nelt; i++, X.elts++) {
-			offset = code2offset[(unsigned char) *X.elts];
-			if (offset == -1)
+			offset = byte2offset[(unsigned char) *X.elts];
+			if (offset == NA_INTEGER)
 				continue;
 			freqs[offset]++;
 		}
@@ -46,8 +46,8 @@ static void add_freqs_by_pos(RoSeq X, SEXP codes, int nrow, int *freqs)
 			freqs[(i * nrow) + ((unsigned char) *X.elts)]++;
 	else
 		for (i = 0; i < X.nelt; i++, X.elts++) {
-			offset = code2offset[(unsigned char) *X.elts];
-			if (offset == -1)
+			offset = byte2offset[(unsigned char) *X.elts];
+			if (offset == NA_INTEGER)
 				continue;
 			freqs[(i * nrow) + offset]++;
 		}
@@ -205,16 +205,16 @@ SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	RoSeq X;
 	SEXP ans;
 	int ans_len, ans_offset_bitmask, ans_offset, width0, nbit_in_mask,
-            right_moves_fastest, i, nb_valid_left_char, twobit;
+	    right_moves_fastest, i, nb_valid_left_char, twobit;
 	const char *c;
 
-	static int eightbit2twobit_lkup[256];
+	static ByteTrTable eightbit2twobit;
 
 	X = _get_XString_asRoSeq(x);
 	if (LENGTH(base_codes) != 4)
 		error("'base_codes' must be of length 4");
-	_init_chrtrtable(INTEGER(base_codes), LENGTH(base_codes),
-			 eightbit2twobit_lkup);
+	_init_ByteTrTable_with_offsets(eightbit2twobit,
+			INTEGER(base_codes), LENGTH(base_codes));
 	width0 = INTEGER(width)[0];
 	if (width0 < 1 || width0 > 12)
 		error("'width' must be >=1 and <= 12");
@@ -228,8 +228,8 @@ SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
 	nb_valid_left_char = 0;
 	for (i = 0, c = X.elts; i < X.nelt; i++, c++) {
-		twobit = eightbit2twobit_lkup[(unsigned char) *c];
-		if (twobit == -1) {
+		twobit = eightbit2twobit[(unsigned char) *c];
+		if (twobit == NA_INTEGER) {
 			nb_valid_left_char = 0;
 			continue;
 		}

@@ -60,8 +60,8 @@ CachedXStringSet _new_CachedXStringSet(SEXP x)
 	cached_x.width = INTEGER(get_IRanges_width(ranges));
 
 	cached_x.baseClass = get_classname(super);
-	cached_x.enc_chrtrtable = get_enc_chrtrtable(cached_x.baseClass);
-	cached_x.dec_chrtrtable = get_dec_chrtrtable(cached_x.baseClass);
+	cached_x.enc_byte2code = get_enc_byte2code(cached_x.baseClass);
+	cached_x.dec_byte2code = get_dec_byte2code(cached_x.baseClass);
 
 	return cached_x;
 }
@@ -200,15 +200,15 @@ void _write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i,
 		const RoSeq *seq, int encode)
 {
 	int new_start;
-	const int *chrtrtable;
+	const ByteTrTable *byte2code;
 
 	if (i == 0) {
 		new_start = 1;
 	} else {
 		new_start = x->start[i - 1] + x->width[i - 1];
 	}
-	chrtrtable = encode ? x->enc_chrtrtable : NULL;
-	_copy_seq(x->super_elts + new_start - 1, seq->elts, seq->nelt, chrtrtable);
+	byte2code = encode ? x->enc_byte2code : NULL;
+	_copy_seq(x->super_elts + new_start - 1, seq->elts, seq->nelt, byte2code);
 	x->start[i] = new_start;
 	x->width[i] = seq->nelt;
 	return;

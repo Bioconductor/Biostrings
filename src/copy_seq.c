@@ -18,39 +18,39 @@ SEXP debug_copy_seq()
  * Linear copy and linear reverse copy (eventually with translation).
  */
 
-void _copy_seq(char *dest, const char *src, size_t n, const int *chrtrtable)
+void _copy_seq(char *dest, const char *src, size_t n, const ByteTrTable *byte2code)
 {
-	int i, trkey, trval;
+	int i, byte, code;
 
-	if (chrtrtable == NULL) {
+	if (byte2code == NULL) {
 		memcpy(dest, src, n);
 	} else {
 		for (i = 0; i < n; i++, dest++, src++) {
-			trkey = (unsigned char) *src;
-			if ((trval = chrtrtable[trkey]) == -1)
+			byte = (unsigned char) *src;
+			if ((code = (*byte2code)[byte]) == NA_INTEGER)
 				error("sequence contains invalid code %d",
-				      trkey);
-			*dest = (char) trval;
+				      byte);
+			*dest = (char) code;
 		}
 	}
 	return;
 }
 
-void _revcopy_seq(char *dest, const char *src, size_t n, const int *chrtrtable)
+void _revcopy_seq(char *dest, const char *src, size_t n, const ByteTrTable *byte2code)
 {
-	int i, trkey, trval;
+	int i, byte, code;
 
 	src += n - 1;
-	if (chrtrtable == NULL) {
+	if (byte2code == NULL) {
 		for (i = 0; i < n; i++, dest++, src--)
 			*dest = *src;
 	} else {
 		for (i = 0; i < n; i++, dest++, src--) {
-			trkey = (unsigned char) *src;
-			if ((trval = chrtrtable[trkey]) == -1)
+			byte = (unsigned char) *src;
+			if ((code = (*byte2code)[byte]) == NA_INTEGER)
 				error("sequence contains invalid code %d",
-				      trkey);
-			*dest = (char) trval;
+				      byte);
+			*dest = (char) code;
 		}
 	}
 	return;
@@ -68,7 +68,7 @@ void _revcopy_seq(char *dest, const char *src, size_t n, const int *chrtrtable)
 void _copy_seq_from_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		const int *chrtrtable)
+		const ByteTrTable *byte2code)
 {
 	int nic; // nb of (remaining) items to copy
 
@@ -81,12 +81,12 @@ void _copy_seq_from_i1i2(int i1, int i2,
 	src += i1;
 	nic = i2 - i1 + 1;
 	while (nic >= dest_length) {
-		_copy_seq(dest, src, dest_length, chrtrtable);
+		_copy_seq(dest, src, dest_length, byte2code);
 		src += dest_length;
 		nic -= dest_length;
 	}
 	if (nic > 0) {
-		_copy_seq(dest, src, nic, chrtrtable);
+		_copy_seq(dest, src, nic, byte2code);
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	}
@@ -105,7 +105,7 @@ void _copy_seq_from_i1i2(int i1, int i2,
 void _copy_seq_to_i1i2(int i1, int i2,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		const int *chrtrtable)
+		const ByteTrTable *byte2code)
 {
 	int nic; // nb of (remaining) items to copy
 
@@ -118,12 +118,12 @@ void _copy_seq_to_i1i2(int i1, int i2,
 	dest += i1;
 	nic = i2 - i1 + 1;
 	while (nic >= src_length) {
-		_copy_seq(dest, src, src_length, chrtrtable);
+		_copy_seq(dest, src, src_length, byte2code);
 		dest += src_length;
 		nic -= src_length;
 	}
 	if (nic > 0) {
-		_copy_seq(dest, src, nic, chrtrtable);
+		_copy_seq(dest, src, nic, byte2code);
 		warning("number of items to replace is not a multiple "
 			"of replacement length");
 	}
@@ -141,13 +141,13 @@ void _copy_seq_to_i1i2(int i1, int i2,
 void _copy_seq_from_subset(const int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		const int *chrtrtable)
+		const ByteTrTable *byte2code)
 {
-	int i, j, k, trkey, trval;
+	int i, j, k, byte, code;
 
 	if (dest_length == 0 && n != 0)
 		error("no destination to copy to");
-	if (chrtrtable == NULL) {
+	if (byte2code == NULL) {
 		for (k = i = 0; k < n; k++, i++) {
 			j = subset[k] - 1;
 			if (j < 0 || j >= src_length)
@@ -161,13 +161,13 @@ void _copy_seq_from_subset(const int *subset, int n,
 			j = subset[k] - 1;
 			if (j < 0 || j >= src_length)
 				error("subscript out of bounds");
-			trkey = (unsigned char) src[j];
-			if ((trval = chrtrtable[trkey]) == -1)
+			byte = (unsigned char) src[j];
+			if ((code = (*byte2code)[byte]) == NA_INTEGER)
 				error("sequence contains invalid code %d",
-				      trkey);
+				      byte);
 			if (i >= dest_length)
 				i = 0; /* recycle */
-			dest[i] = (char) trval;
+			dest[i] = (char) code;
 		}
 	}
 	if (i < dest_length)
@@ -187,13 +187,13 @@ void _copy_seq_from_subset(const int *subset, int n,
 void _copy_seq_to_subset(const int *subset, int n,
 		char *dest, int dest_length,
 		const char *src, int src_length,
-		const int *chrtrtable)
+		const ByteTrTable *byte2code)
 {
-	int i, j, k, trkey, trval;
+	int i, j, k, byte, code;
 
 	if (src_length == 0 && n != 0)
 		error("no value provided");
-	if (chrtrtable == NULL) {
+	if (byte2code == NULL) {
 		for (k = j = 0; k < n; k++, j++) {
 			i = subset[k] - 1;
 			if (i < 0 || i >= dest_length)
@@ -209,11 +209,11 @@ void _copy_seq_to_subset(const int *subset, int n,
 				error("subscript out of bounds");
 			if (j >= src_length)
 				j = 0; /* recycle */
-			trkey = (unsigned char) src[j];
-			if ((trval = chrtrtable[trkey]) == -1)
+			byte = (unsigned char) src[j];
+			if ((code = (*byte2code)[byte]) == NA_INTEGER)
 				error("sequence contains invalid code %d",
-				      trkey);
-			dest[i] = (char) trval;
+				      byte);
+			dest[i] = (char) code;
 		}
 	}
 	if (j < src_length)

@@ -22,6 +22,15 @@
 
 
 /*
+ * A simple typedef for representing a fast translation table from bytes to
+ * integer values. Always put value NA_INTEGER in the table for bytes that are
+ * not mapped.
+ */
+#define BYTETRTABLE_LENGTH 256
+typedef int ByteTrTable[BYTETRTABLE_LENGTH];
+
+
+/*
  * Two structures for holding pointers to read-only non null-terminated
  * sequences of chars:
  *
@@ -52,8 +61,8 @@ typedef struct cachedxstringset {
 	char *super_elts;
 	int super_nelt;
 	const char *baseClass;
-	const int *enc_chrtrtable;
-	const int *dec_chrtrtable;
+	const ByteTrTable *enc_byte2code;
+	const ByteTrTable *dec_byte2code;
 } CachedXStringSet;
 
 

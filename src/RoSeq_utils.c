@@ -281,12 +281,12 @@ SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
  */
 
 void _write_RoSeq_to_RawPtr(SEXP x, int offset, const RoSeq *seq,
-                const int *chrtrtable)
+		const ByteTrTable *byte2code)
 {
         char *dest;
 
         dest = (char *) RAW(get_SequencePtr_tag(x)) + offset;
-        _copy_seq(dest, seq->elts, seq->nelt, chrtrtable);
+        _copy_seq(dest, seq->elts, seq->nelt, byte2code);
         return;
 }
 
