@@ -49,10 +49,22 @@ int fgets_rtrimmed(char *s, int size, FILE *stream)
 #ifdef DEBUG_BIOSTRINGS
 void print_ByteTrTable(const ByteTrTable byte2code)
 {
-	int byte;
+	int byte, code;
 
-	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
-		Rprintf("[DEBUG]   byte=%d offset=%d\n", byte, byte2code[byte]);
+	Rprintf("[DEBUG]   Byte Translation Table:\n");
+	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++) {
+		Rprintf("[DEBUG]     byte=%d ", byte);
+		if (32 <= byte && byte < 128)
+			Rprintf("['%c']", byte);
+		else
+			Rprintf("     ");
+		Rprintf(" -> code=");
+		code = byte2code[byte];
+		if (code == NA_INTEGER)
+			Rprintf("NA\n");
+		else
+			Rprintf("%d\n", code);
+	}
 	return;
 }
 #endif
