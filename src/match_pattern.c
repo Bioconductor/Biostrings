@@ -80,9 +80,8 @@ static void match_naive_inexact(const RoSeq *P, const RoSeq *S,
 	return;
 }
 
-static void match_pattern(const RoSeq *P, const RoSeq *S,
-		SEXP algorithm,
-		SEXP max_mismatch, SEXP fixed)
+static void match_pattern(const RoSeq *P, const RoSeq *S, SEXP algorithm,
+		SEXP max_mismatch, SEXP with_indels, SEXP fixed)
 {
 	const char *algo;
 	int max_mm, fixedP, fixedS;
@@ -101,6 +100,8 @@ static void match_pattern(const RoSeq *P, const RoSeq *S,
 		_match_pattern_boyermoore(P, S);
 	else if (strcmp(algo, "shift-or") == 0)
 		_match_pattern_shiftor(P, S, max_mm, fixedP, fixedS);
+	else if (strcmp(algo, "indels") == 0)
+		_match_pattern_indels(P, S, max_mm, fixedP, fixedS);
 	else
 		error("\"%s\": unknown algorithm", algo);
 	return;
@@ -111,19 +112,20 @@ static void match_pattern(const RoSeq *P, const RoSeq *S,
  * --- .Call ENTRY POINTS ---
  *
  * Arguments:
- *   'pattern': pattern
- *   'subject': subject
- *   'algorithm': algorithm
- *   'max_mismatch': the max number of mismatching letters
- *   'fixed': logical vector of length 2
- *   'count_only': single logical
+ *   pattern, subject: XString objects;
+ *   algorithm: single string;
+ *   max_mismatch: (single integer) the max number of mismatching letters;
+ *   with_indels: single logical;
+ *   fixed: logical vector of length 2;
+ *   count_only: single logical.
  *
- * All matches have the length of the pattern.
+ * If with_indels is FALSE: all matches have the length of the pattern.
+ * Otherwise, matches are of variable length (>= length(pattern) - max_mismatch
+ * and <= length(pattern) + max_mismatch).
  */
 
-SEXP XString_match_pattern(SEXP pattern, SEXP subject,
-		SEXP algorithm,
-		SEXP max_mismatch, SEXP fixed, SEXP count_only)
+SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
+		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S;
 	int is_count_only;
@@ -133,14 +135,19 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? 1 : 2);
-	match_pattern(&P, &S, algorithm, max_mismatch, fixed);
+	match_pattern(&P, &S, algorithm, max_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
 }
 
+/*
+ * Arguments are the same as for XString_match_pattern() except for:
+ *   subject: XString object;
+ *   views_start, views_width: 2 integer vectors describing views on 'subject'.
+ */
 SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP algorithm,
-		SEXP max_mismatch, SEXP fixed, SEXP count_only)
+		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S, S_view;
 	int is_count_only, nviews, i, *view_start, *view_width, view_offset;
@@ -161,14 +168,17 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
 		_set_match_shift(view_offset);
-		match_pattern(&P, &S_view, algorithm, max_mismatch, fixed);
+		match_pattern(&P, &S_view, algorithm, max_mismatch, with_indels, fixed);
 	}
 	return _reported_matches_asSEXP();
 }
 
-SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
-		SEXP algorithm,
-		SEXP max_mismatch, SEXP fixed, SEXP count_only)
+/*
+ * Arguments are the same as for XString_match_pattern() except for:
+ *   subject: XStringSet object.
+ */
+SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
+		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S_elt;
 	CachedXStringSet S;
@@ -187,7 +197,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
-		match_pattern(&P, &S_elt, algorithm, max_mismatch, fixed);
+		match_pattern(&P, &S_elt, algorithm, max_mismatch, with_indels, fixed);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
 		if (is_count_only) {
 			INTEGER(ans)[i] = INTEGER(ans_elt)[0];

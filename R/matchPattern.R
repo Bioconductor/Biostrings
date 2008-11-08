@@ -194,7 +194,7 @@ gregexpr2 <- function(pattern, text)
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XString_match_pattern",
                      pattern, subject, algo,
-                     max.mismatch, fixed,
+                     max.mismatch, FALSE, fixed,
                      count.only,
                      PACKAGE="Biostrings")
     if (count.only)
@@ -220,7 +220,7 @@ gregexpr2 <- function(pattern, text)
     matches <- .Call("XStringViews_match_pattern",
                      pattern,
                      subject(subject), start(subject), width(subject),
-                     algo, max.mismatch, fixed,
+                     algo, max.mismatch, FALSE, fixed,
                      count.only,
                      PACKAGE="Biostrings")
     if (count.only)
@@ -355,7 +355,7 @@ setMethod("countPattern", "MaskedXString",
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
     matches <- .Call("XStringSet_vmatch_pattern", pattern, subject,
-                     algo, max.mismatch, fixed, count.only,
+                     algo, max.mismatch, FALSE, fixed, count.only,
                      PACKAGE = "Biostrings")
     if (count.only)
         return(matches)
