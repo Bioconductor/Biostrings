@@ -21,10 +21,16 @@ void _init_ByteTrTable_with_lkup(
 
 SEXP _new_lkup_from_ByteTrTable(const ByteTrTable *byte2code);
 
-void _init_ByteTrTable_with_offsets(
+void _init_byte2offset_with_INTEGER(
 	ByteTrTable byte2offset,
-	const int *bytes,
-	int nbytes
+	SEXP bytes,
+	int error_on_dup
+);
+
+void _init_byte2offset_with_RoSeq(
+	ByteTrTable byte2offset,
+	const RoSeq *seq,
+	int error_on_dup
 );
 
 
@@ -554,6 +560,19 @@ SEXP debug_match_pattern_shiftor();
 SEXP bits_per_long();
 
 void _match_pattern_shiftor(
+	const RoSeq *P,
+	const RoSeq *S,
+	int max_mm,
+	int fixedP,
+	int fixedS
+);
+
+
+/* match_pattern_indels.c */
+
+SEXP debug_match_pattern_indels();
+
+void _match_pattern_indels(
 	const RoSeq *P,
 	const RoSeq *S,
 	int max_mm,

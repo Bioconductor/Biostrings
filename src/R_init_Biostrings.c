@@ -78,6 +78,9 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_match_pattern_shiftor, 0),
 	CALLMETHOD_DEF(bits_per_long, 0),
 
+/* match_pattern_indels.c */
+	CALLMETHOD_DEF(debug_match_pattern_indels, 0),
+
 /* match_pattern.c */
 	CALLMETHOD_DEF(debug_match_pattern, 0),
 	CALLMETHOD_DEF(XString_match_pattern, 6),

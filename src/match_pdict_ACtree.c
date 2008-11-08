@@ -613,8 +613,7 @@ void _match_ACtree(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
 		error("Biostrings internal error in _match_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
-	_init_ByteTrTable_with_offsets(byte2slotno,
-			INTEGER(base_codes), MAX_CHILDREN_PER_ACNODE);
+	_init_byte2offset_with_INTEGER(byte2slotno, base_codes, 1);
 	if (fixedS)
 		walk_subject(node0, INTEGER(base_codes), S->elts, S->nelt);
 	else

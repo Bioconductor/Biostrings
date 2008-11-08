@@ -9,8 +9,8 @@ static int get_ans_width(SEXP codes, int with_other)
 
 	if (codes == R_NilValue)
 		return 256;
+	_init_byte2offset_with_INTEGER(byte2offset, codes, 1);
 	width = LENGTH(codes);
-	_init_ByteTrTable_with_offsets(byte2offset, INTEGER(codes), width);
 	if (with_other) {
 		for (i = 0; i < BYTETRTABLE_LENGTH; i++)
 			if (byte2offset[i] == NA_INTEGER)
@@ -213,8 +213,7 @@ SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	X = _get_XString_asRoSeq(x);
 	if (LENGTH(base_codes) != 4)
 		error("'base_codes' must be of length 4");
-	_init_ByteTrTable_with_offsets(eightbit2twobit,
-			INTEGER(base_codes), LENGTH(base_codes));
+	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
 	width0 = INTEGER(width)[0];
 	if (width0 < 1 || width0 > 12)
 		error("'width' must be >=1 and <= 12");

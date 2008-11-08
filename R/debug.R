@@ -39,6 +39,9 @@ debug_match_pattern_boyermoore <- function()
 debug_match_pattern_shiftor <- function()
     invisible(.Call("debug_match_pattern_shiftor", PACKAGE="Biostrings"))
 
+debug_match_pattern_indels <- function()
+    invisible(.Call("debug_match_pattern_indels", PACKAGE="Biostrings"))
+
 debug_match_pattern <- function()
     invisible(.Call("debug_match_pattern", PACKAGE="Biostrings"))
 

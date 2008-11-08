@@ -143,8 +143,7 @@ SEXP build_Twobit(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in build_Twobit(): "
 		      "'base_codes' must be of length 4");
-	_init_ByteTrTable_with_offsets(eightbit2twobit,
-			INTEGER(base_codes), LENGTH(base_codes));
+	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
 	tb_length = _get_XStringSet_length(tb);
 	_init_dup2unq_buf(tb_length);
 	tb_width = -1;
@@ -236,8 +235,7 @@ void _match_Twobit(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in _match_Twobit(): "
 		      "'base_codes' must be of length 4");
-	_init_ByteTrTable_with_offsets(eightbit2twobit,
-			INTEGER(base_codes), LENGTH(base_codes));
+	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
 	if (!fixedS)
 		error("cannot treat IUPAC extended letters in the subject "
 		      "as ambiguities when 'pdict' is a PDict object of "
