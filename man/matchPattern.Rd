@@ -155,7 +155,27 @@
   mindex[[i0]]                         # Its matches as an IRanges object.
   Views(subject[[i0]], start=start(mindex[[i0]]), end=end(mindex[[i0]])) # And
                                        # as an XStringViews object.
+
+  ## ---------------------------------------------------------------------
+  ## C. With indels (WORK-IN-PROGRESS, DO NOT USE YET!!!)
+  ## ---------------------------------------------------------------------
+  library(BSgenome.Celegans.UCSC.ce2)
+  pattern <- DNAString("ACGGACCTAATGTTATC")
+  subject <- Celegans$chrI
+
+  ## Allowing up to 2 mismatching letters doesn't give any match
+  matchPattern(pattern, subject, max.mismatch=2)
+
+  ## But allowing up to 2 edit operations gives 4 matches
+  system.time(m <- .Call("XString_match_pattern", pattern, subject, "indels",
+                         2L, TRUE, c(TRUE, TRUE), FALSE, PACKAGE="Biostrings"))
+  Views(subject, start=m, end=m+length(pattern)-c(2,3,2,3))
+
+  ## pairwiseAlignment() returns the (first) best match only
+  mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
+  system.time(pwa <- pairwiseAlignment(pattern, subject, type="local",
+                       substitutionMatrix=mat, gapOpening=0, gapExtension=1))
+  pwa
 }
 
 \keyword{methods}
-

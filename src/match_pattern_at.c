@@ -170,10 +170,11 @@ static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
 }
 
 #ifdef DEBUG_BIOSTRINGS
-static void print_curr_row(const int *curr_row, int Bmin, int row_length)
+static void print_curr_row(const char* margin, const int *curr_row, int Bmin, int row_length)
 {
 	int B;
 
+	Rprintf("[DEBUG]   %s: ", margin);
 	for (B = 0; B < row_length; B++) {
 		if (B < Bmin)
 			Rprintf("%3s", "");
@@ -201,8 +202,14 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 	    B, b, i, iplus1, jmin, j, min_nedit;
 	char Pc;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset():\n");
+#endif
 	if (P == NULL || P->nelt == 0)
 		return 0;
+	if (max_nedit == 0)
+		error("Biostrings internal error in _nedit_for_Ploffset(): ",
+		      "use _selected_nmismatch_at_Pshift_fun() when 'max_nedit' is 0");
 	max_nedit_plus1 = max_nedit + 1;
 	if (max_nedit > P->nelt)
 		max_nedit = P->nelt;
@@ -215,21 +222,15 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 	jmin = Ploffset;
 
 	// STAGE 0:
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE0\n");
-#endif
 	for (B = max_nedit, b = 0; B < row_length; B++, b++)
 		curr_row[B] = b;
 #ifdef DEBUG_BIOSTRINGS
-	if (debug) print_curr_row(curr_row, max_nedit, row_length);
+	if (debug) print_curr_row("STAGE0", curr_row, max_nedit, row_length);
 #endif
 
 	// STAGE 1 (1st for() loop): no attempt is made to bailout during
 	// this stage because the smallest value in curr_row is guaranteed
 	// to be <= iplus1 < max_nedit.
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE1\n");
-#endif
 	for (iplus1 = 1, i = 0; iplus1 < max_nedit; iplus1++, i++) {
 		Pc = P->elts[i]; // i < iplus1 < max_nedit <= P->nelt
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
@@ -238,14 +239,11 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 		for (j = jmin; B < row_length; B++, j++)
 			PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
 #ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row(curr_row, max_nedit - iplus1, row_length);
+		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - iplus1, row_length);
 #endif
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE2\n");
-#endif
 	Pc = P->elts[i];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
@@ -255,19 +253,16 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 		PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
 		if (curr_row[B] < min_nedit) {
 			min_nedit = curr_row[B];
-			*min_width = j - Ploffset;
+			*min_width = j - Ploffset + 1;
 		}
 	}
 #ifdef DEBUG_BIOSTRINGS
-	if (debug) print_curr_row(curr_row, 0, row_length);
+	if (debug) print_curr_row("STAGE2", curr_row, 0, row_length);
 #endif
 	iplus1++;
 	i++;
 
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset(): STAGE3\n");
-#endif
 	for ( ; i < P->nelt; i++, iplus1++, jmin++) {
 		Pc = P->elts[i];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
@@ -277,11 +272,11 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 			PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
 			if (curr_row[B] < min_nedit) {
 				min_nedit = curr_row[B];
-				*min_width = j - Ploffset;
+				*min_width = j - Ploffset + 1;
 			}
 		}
 #ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row(curr_row, 0, row_length);
+		if (debug) print_curr_row("STAGE3", curr_row, 0, row_length);
 #endif
 		if (min_nedit >= max_nedit_plus1) // should never be min_nedit > max_nedit_plus1
 			break; // bailout
@@ -328,7 +323,7 @@ SEXP match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	max_mm = INTEGER(max_mismatch)[0];
-	indels = LOGICAL(with_indels)[0];
+	indels = LOGICAL(with_indels)[0] && max_mm != 0;
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (indels && !(fixedP && fixedS))
