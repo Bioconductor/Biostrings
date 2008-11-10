@@ -157,9 +157,9 @@
 
   ## A real use case
   library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chrX <- maskMotif(Dmelanogaster$chrX, "N")
+  chrX <- Dmelanogaster$chrX
   chrX_pals <- findComplementedPalindromes(chrX, min.armlength=50, max.looplength=20)
-  complementedPalindromeArmLength(chrX_pals) # 251
+  complementedPalindromeArmLength(chrX_pals)  # 251
 
   ## Of course, whitespaces matter
   palindromeArmLength(BString("was it a car or a cat I saw"))
