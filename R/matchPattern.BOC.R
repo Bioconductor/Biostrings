@@ -144,7 +144,8 @@ plotBOC <- function(x, main)
 ### Dispatch on 'subject' (see signature of generic).
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC_SubjectString",
-    function(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
     {
         if (class(pattern) != class(subject@subject))
             pattern <- XString(class(subject@subject), pattern)

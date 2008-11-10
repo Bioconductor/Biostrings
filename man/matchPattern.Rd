@@ -28,10 +28,10 @@
 }
 
 \usage{
-  matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-  countPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-  vmatchPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-  vcountPattern(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+  matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  countPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  vmatchPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  vcountPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
 }
 
 \arguments{
@@ -49,12 +49,16 @@
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
-    \code{"naive-inexact"}, \code{"boyer-moore"} or \code{"shift-or"}.
+    \code{"naive-inexact"}, \code{"boyer-moore"}, \code{"shift-or"}
+    or \code{"indels"}.
   }
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed (see
     \code{\link{isMatching}} for the details).
     If non-zero, an inexact matching algorithm is used.
+  }
+  \item{with.indels}{
+    [DOCUMENT ME]
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
@@ -166,10 +170,10 @@
   ## Allowing up to 2 mismatching letters doesn't give any match
   matchPattern(pattern, subject, max.mismatch=2)
 
-  ## But allowing up to 2 edit operations gives 4 matches
-  system.time(m <- .Call("XString_match_pattern", pattern, subject, "indels",
-                         2L, TRUE, c(TRUE, TRUE), FALSE, PACKAGE="Biostrings"))
-  Views(subject, start=start(m), end=end(m))
+  ## But allowing up to 2 edit operations gives 3 matches (matches 3 and 4
+  ## can be considered the same and need to be merged)
+  system.time(m <- matchPattern(pattern, subject, max.mismatch=2, with.indels=TRUE))
+  m
 
   ## pairwiseAlignment() returns the (first) best match only
   mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)

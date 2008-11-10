@@ -128,6 +128,7 @@ gregexpr2 <- function(pattern, text)
     "naive-inexact",
     "boyer-moore",
     "shift-or",
+    "indels",
     .CHARACTER.ALGOS
 )
 
@@ -139,19 +140,21 @@ gregexpr2 <- function(pattern, text)
 }
 
 ### Return a character vector containing the valid algos (best suited first)
-### for the given problem (problem is described by the values of 'pattern',
-### 'max.mismatch' and 'fixed').
+### for the given search criteria (the search criteria is described by the
+### values of 'pattern', 'max.mismatch', 'with.indels' and 'fixed').
 ### Raise an error if the problem "doesn't make sense".
 ### Make sure that:
 ###   1. 'pattern' is of the same class as 'subject'
-###   2. the 'max.mismatch' ans 'fixed' args have been normalized
-### before you call .valid.algos()
-.valid.algos <- function(pattern, max.mismatch, fixed)
+###   2. the 'max.mismatch', 'with.indels' and 'fixed' args have been
+### normalized before you call .valid.algos()
+.valid.algos <- function(pattern, max.mismatch, with.indels, fixed)
 {
     if (length(pattern) == 0)
         stop("empty pattern")
     if (length(pattern) > 20000)
         stop("patterns with more than 20000 letters are not supported, sorry")
+    if (max.mismatch != 0 && with.indels)
+        return("indels")
     algos <- character(0)
     if (max.mismatch == 0 && all(fixed)) {
         algos <- c(algos, "boyer-moore")
@@ -165,9 +168,9 @@ gregexpr2 <- function(pattern, text)
     c(algos, "naive-inexact") # "naive-inexact" is universal but slow
 }
 
-.select.algo <- function(algo, pattern, max.mismatch, fixed)
+.select.algo <- function(algo, pattern, max.mismatch, with.indels, fixed)
 {
-    algos <- .valid.algos(pattern, max.mismatch, fixed)
+    algos <- .valid.algos(pattern, max.mismatch, with.indels, fixed)
     if (algo == "auto")
         return(algos[1])
     if (!(algo %in% algos))
@@ -177,7 +180,8 @@ gregexpr2 <- function(pattern, text)
 }
 
 .XString.matchPattern <- function(pattern, subject, algorithm,
-                                  max.mismatch, fixed, count.only=FALSE)
+                                  max.mismatch, with.indels, fixed,
+                                  count.only=FALSE)
 {
     algo <- .normargAlgorithm(algorithm)
     if (.is.character.algo(algo))
@@ -188,13 +192,14 @@ gregexpr2 <- function(pattern, text)
     if (class(pattern) != class(subject))
         pattern <- XString(class(subject), pattern)
     max.mismatch <- normargMaxMismatch(max.mismatch)
+    with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, class(subject))
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    algo <- .select.algo(algo, pattern, max.mismatch, fixed)
+    algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)
     C_ans <- .Call("XString_match_pattern",
                    pattern, subject, algo,
-                   max.mismatch, FALSE, fixed,
+                   max.mismatch, with.indels, fixed,
                    count.only,
                    PACKAGE="Biostrings")
     if (count.only)
@@ -203,7 +208,8 @@ gregexpr2 <- function(pattern, text)
 }
 
 .XStringViews.matchPattern <- function(pattern, subject, algorithm,
-                                       max.mismatch, fixed, count.only=FALSE)
+                                       max.mismatch, with.indels, fixed,
+                                       count.only=FALSE)
 {
     algo <- .normargAlgorithm(algorithm)
     if (.is.character.algo(algo))
@@ -212,14 +218,16 @@ gregexpr2 <- function(pattern, text)
     if (class(pattern) != class(subject(subject)))
         pattern <- XString(class(subject(subject)), pattern)
     max.mismatch <- normargMaxMismatch(max.mismatch)
+    with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, class(subject(subject)))
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    algo <- .select.algo(algo, pattern, max.mismatch, fixed)
+    algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)
     C_ans <- .Call("XStringViews_match_pattern",
                    pattern,
                    subject(subject), start(subject), width(subject),
-                   algo, max.mismatch, FALSE, fixed,
+                   algo,
+                   max.mismatch, with.indels, fixed,
                    count.only,
                    PACKAGE="Biostrings")
     if (count.only)
@@ -240,20 +248,25 @@ gregexpr2 <- function(pattern, text)
 ###
 
 setGeneric("matchPattern", signature="subject",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         standardGeneric("matchPattern")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "character",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        .XString.matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .XString.matchPattern(pattern, subject, algorithm,
+                              max.mismatch, with.indels, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "XString",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        .XString.matchPattern(pattern, subject, algorithm, max.mismatch, fixed)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .XString.matchPattern(pattern, subject, algorithm,
+                              max.mismatch, with.indels, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -264,16 +277,18 @@ setMethod("matchPattern", "XString",
 ### a normal XStringViews object) and 'max.mismatch=0' (no "out of limits"
 ### matches).
 setMethod("matchPattern", "XStringViews",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         .XStringViews.matchPattern(pattern, subject, algorithm,
-                                   max.mismatch, fixed)
+                                   max.mismatch, with.indels, fixed)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPattern", "MaskedXString",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        matchPattern(pattern, toXStringViewsOrXString(subject),
-                     algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        matchPattern(pattern, toXStringViewsOrXString(subject), algorithm=algorithm,
+                     max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
 )
 
 matchDNAPattern <- function(...) .Defunct("matchPattern")
@@ -294,36 +309,44 @@ matchDNAPattern <- function(...) .Defunct("matchPattern")
 ###
 
 setGeneric("countPattern", signature="subject",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         standardGeneric("countPattern")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "character",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         .XString.matchPattern(pattern, subject, algorithm,
-                              max.mismatch, fixed, count.only=TRUE)
+                              max.mismatch, with.indels, fixed,
+                              count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XString",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         .XString.matchPattern(pattern, subject, algorithm,
-                              max.mismatch, fixed, count.only=TRUE)
+                              max.mismatch, with.indels, fixed,
+                              count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XStringViews",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         .XStringViews.matchPattern(pattern, subject, algorithm,
-                                   max.mismatch, fixed, count.only=TRUE)
+                                   max.mismatch, with.indels, fixed,
+                                   count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "MaskedXString",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
-        countPattern(pattern, toXStringViewsOrXString(subject),
-                     algorithm=algorithm, max.mismatch=max.mismatch, fixed=fixed)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        countPattern(pattern, toXStringViewsOrXString(subject), algorithm=algorithm,
+                     max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
 )
 
 
@@ -336,7 +359,7 @@ setMethod("countPattern", "MaskedXString",
 ###
 
 .XStringSet.vmatchPattern <- function(pattern, subject, algorithm,
-                                      max.mismatch, fixed,
+                                      max.mismatch, with.indels, fixed,
                                       count.only=FALSE)
 {
     if (!is(subject, "XStringSet"))
@@ -348,12 +371,15 @@ setMethod("countPattern", "MaskedXString",
     if (class(pattern) != class(super(subject)))
         pattern <- XString(class(super(subject)), pattern)
     max.mismatch <- normargMaxMismatch(max.mismatch)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels)
+        stop("vmatchPattern() and vcountPattern() do not support indels yet")
     fixed <- normargFixed(fixed, class(super(subject)))
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be TRUE or FALSE")
-    algo <- .select.algo(algo, pattern, max.mismatch, fixed)
+    algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)
     C_ans <- .Call("XStringSet_vmatch_pattern", pattern, subject,
-                   algo, max.mismatch, FALSE, fixed, count.only,
+                   algo, max.mismatch, with.indels, fixed, count.only,
                    PACKAGE = "Biostrings")
     if (count.only)
         return(C_ans)
@@ -361,39 +387,47 @@ setMethod("countPattern", "MaskedXString",
 }
 
 setGeneric("vmatchPattern", signature="subject",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         standardGeneric("vmatchPattern")
 )
 
 setMethod("vmatchPattern", "character",
-    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
         .XStringSet.vmatchPattern(pattern, subject, algorithm,
-                                  max.mismatch, fixed)
+                                  max.mismatch, with.indels, fixed)
 )
 
 setMethod("vmatchPattern", "XStringSet",
-    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
         .XStringSet.vmatchPattern(pattern, subject, algorithm,
-                                  max.mismatch, fixed)
+                                  max.mismatch, with.indels, fixed)
 )
 
 # TODO: Add method for XStringViews.
 
 setGeneric("vcountPattern", signature="subject",
-    function(pattern, subject, algorithm="auto", max.mismatch=0, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         standardGeneric("vcountPattern")
 )
 
 setMethod("vcountPattern", "character",
-    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
         .XStringSet.vmatchPattern(pattern, subject, algorithm,
-                                  max.mismatch, fixed, count.only=TRUE)
+                                  max.mismatch, with.indels, fixed,
+                                  count.only=TRUE)
 )
 
 setMethod("vcountPattern", "XStringSet",
-    function(pattern, subject, algorithm="auto", max.mismatch=0L, fixed=TRUE)
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
         .XStringSet.vmatchPattern(pattern, subject, algorithm,
-                                  max.mismatch, fixed, count.only=TRUE)
+                                  max.mismatch, with.indels, fixed,
+                                  count.only=TRUE)
 )
 
 # TODO: Add method for XStringViews.

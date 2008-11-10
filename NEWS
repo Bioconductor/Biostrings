@@ -47,6 +47,8 @@ o Moved the generic functions for width(), shift(), restrict(), narrow(),
 
 STRING MATCHING
 
+o Added support for indels to matchPattern() and countPattern().
+
 o Added the vmatchPattern() and vcountPattern() generic functions with
   methods for XStringSet objects. They are the vectorized versions of
   matchPattern()/countPattern() i.e. the subject must be an XStringSet
