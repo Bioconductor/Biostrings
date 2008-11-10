@@ -406,32 +406,13 @@ SEXP _dup2unq_asINTEGER();
 
 SEXP debug_match_reporting();
 
-void _init_match_reporting(int mrmode);
+void _init_match_reporting(SEXP mode);
 
-void _drop_current_matches();
+void _drop_reported_matches();
 
-void _set_match_shift(int shift);
+void _shift_match_on_reporting(int shift);
 
-int _report_view(
-	int start,
-	int end,
-	const char *name
-);
-
-int _report_match(
-	int start,
-	int end
-);
-
-SEXP _reported_match_count_asINTEGER();
-
-SEXP _reported_match_starts_asINTEGER();
-
-SEXP _reported_match_ends_asINTEGER();
-
-SEXP _reported_view_names_asCHARACTER();
-
-SEXP _reported_matches_asLIST();
+void _report_match(int start, int width);
 
 SEXP _reported_matches_asSEXP();
 

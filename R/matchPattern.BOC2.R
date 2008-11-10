@@ -110,7 +110,6 @@ plotBOC2 <- function(x, main)
 ### See next section below for detailed benchmarks.
 ###   
 
-### Must return an integer vector.
 .match.BOC2.exact <- function(pattern, boc_subject, count.only)
 {
     .Call("match_BOC2_exact",
@@ -125,7 +124,6 @@ plotBOC2 <- function(x, main)
           PACKAGE="Biostrings")
 }
 
-### Must return an integer vector.
 .match.BOC2.inexact <- function(pattern, boc_subject, max.mismatch, count.only)
 {
     stop("NOT READY YET!")
@@ -143,13 +141,12 @@ plotBOC2 <- function(x, main)
     if (!all(fixed))
         stop("only 'fixed=TRUE' can be used with a subject of class ", class(boc_subject))
     if (max.mismatch == 0)
-        matches <- .match.BOC2.exact(pattern, boc_subject, count.only)
+        C_ans <- .match.BOC2.exact(pattern, boc_subject, count.only)
     else
-        matches <- .match.BOC2.inexact(pattern, boc_subject, max.mismatch, count.only)
+        C_ans <- .match.BOC2.inexact(pattern, boc_subject, max.mismatch, count.only)
     if (count.only)
-        return(matches)
-    ans_width <- rep.int(nchar(pattern), length(matches))
-    unsafe.newXStringViews(boc_subject@subject, matches, ans_width)
+        return(C_ans)
+    unsafe.newXStringViews(boc_subject@subject, start(C_ans), width(C_ans))
 }
 
 ### Dispatch on 'subject' (see signature of generic).

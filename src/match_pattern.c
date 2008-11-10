@@ -52,7 +52,7 @@ static void match_naive_exact(const RoSeq *P, const RoSeq *S)
 	slen = S->nelt;
 	for (start = 1, n2 = plen; n2 <= slen; start++, n2++, s++) {
 		if (memcmp(p, s, plen) == 0)
-			_report_match(start, 0);
+			_report_match(start, P->nelt);
 	}
 	return;
 }
@@ -76,7 +76,7 @@ static void match_naive_inexact(const RoSeq *P, const RoSeq *S,
 	max_n2 = S->nelt - min_Pshift;
 	for (Pshift = min_Pshift, n2 = min_Pshift + P->nelt; n2 <= max_n2; Pshift++, n2++)
 		if (_selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_mm) <= max_mm)
-			_report_match(Pshift + 1, 0);
+			_report_match(Pshift + 1, P->nelt);
 	return;
 }
 
@@ -134,7 +134,7 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	S = _get_XString_asRoSeq(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	match_pattern(&P, &S, algorithm, max_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
 }
@@ -156,7 +156,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	S = _get_XString_asRoSeq(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -167,7 +167,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 			error("'subject' has out of limits views");
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
-		_set_match_shift(view_offset);
+		_shift_match_on_reporting(view_offset);
 		match_pattern(&P, &S_view, algorithm, max_mismatch, with_indels, fixed);
 	}
 	return _reported_matches_asSEXP();
@@ -189,7 +189,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	S = _new_CachedXStringSet(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	S_length = _get_XStringSet_length(subject);
 	if (is_count_only)
 		PROTECT(ans = NEW_INTEGER(S_length));
@@ -207,7 +207,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 			SET_ELEMENT(ans, i, ans_elt);
 		}
 		UNPROTECT(1);
-		_drop_current_matches();
+		_drop_reported_matches();
 	}
 	UNPROTECT(1);
 	return ans;

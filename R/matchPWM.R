@@ -99,13 +99,12 @@ PWMscore <- function(pwm, subject, start=1)
     ## checking 'min.score'
     min.score <- .normargMinScore(min.score, pwm)
     ## no need to check 'count.only' (not a user controlled argument)
-    ans_start <- .Call("match_PWM",
-                       pwm, subject, min.score, count.only,
-                       PACKAGE="Biostrings")
+    C_ans <- .Call("match_PWM",
+                   pwm, subject, min.score, count.only,
+                   PACKAGE="Biostrings")
     if (count.only)
-        return(ans_start)
-    ans_width <- rep.int(ncol(pwm), length(ans_start))
-    unsafe.newXStringViews(subject, ans_start, ans_width)
+        return(C_ans)
+    unsafe.newXStringViews(subject, start(C_ans), width(C_ans))
 }
 
 ### 

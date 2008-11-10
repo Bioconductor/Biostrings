@@ -98,13 +98,10 @@ SEXP match_PWM(SEXP pwm, SEXP subject, SEXP min_score, SEXP count_only)
 	minscore = INTEGER(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
 	init_DNAcode2PWMrowoffset();	
-	_init_match_reporting(is_count_only ? COUNT_MRMODE : START_MRMODE);
+	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	for (n1 = 0, n2 = pwm_ncol; n2 <= S.nelt; n1++, n2++) {
-		if (compute_score(INTEGER(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore) {
-			// The second arg (end) is ignored in match reporting
-			// modes COUNT_MRMODE and START_MRMODE
-			_report_match(n1 + 1, -1);
-		}
+		if (compute_score(INTEGER(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
+			_report_match(n1 + 1, pwm_ncol);
 	}
 	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
 	// but you don't have to PROTECT it here since you are returning it

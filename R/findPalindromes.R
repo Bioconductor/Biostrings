@@ -43,9 +43,9 @@
                    subject@xdata@xp, subject@offset, subject@length,
                    min.armlength, max.looplength, L2R_lkup,
                    PACKAGE="Biostrings")
-    ans_start <- C_ans$start
-    ans_width <- C_ans$end - ans_start + 1L
-    unsafe.newXStringViews(subject, ans_start, ans_width)
+    ## sort matches from left to right and remove duplicates
+    df <- unique(as.data.frame(C_ans[order(start(C_ans), end(C_ans))]))
+    unsafe.newXStringViews(subject, df$start, df$width)
 }
 
 setGeneric("findPalindromes", signature="subject",

@@ -27,7 +27,7 @@ SEXP debug_match_pattern_indels()
 	Rprintf("Debug mode turned %s in file %s\n",
 		debug ? "on" : "off", __FILE__);
 	if (debug == 1) {
-		_init_match_reporting(2);
+		_init_match_reporting(mkString("DEVNULL"));
 		test_match_pattern_indels(p, s, 0, "30:34");
 		test_match_pattern_indels(p, s, 1, "1:4, 14:18, 30:34");
 		test_match_pattern_indels(p, s, 2, "1:4, 6:10, 14:18, 21:25, 30:34");
@@ -84,7 +84,7 @@ void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
 				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1, max_mm1, 1, &width1);
 			}
 			if (nedit1 <= max_mm1) {
-				_report_match(j0 + 1, 0);
+				_report_match(j0 + 1, width1 + 1);
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
 					int start, end, width, nedit0, width0;

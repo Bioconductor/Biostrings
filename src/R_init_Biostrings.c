@@ -173,6 +173,8 @@ void R_init_Biostrings(DllInfo *info)
 
 /* match_reporting.c */
 	REGISTER_CCALLABLE(_init_match_reporting);
+	REGISTER_CCALLABLE(_drop_reported_matches);
+	REGISTER_CCALLABLE(_shift_match_on_reporting);
 	REGISTER_CCALLABLE(_report_match);
 	REGISTER_CCALLABLE(_reported_matches_asSEXP);
 

@@ -169,7 +169,7 @@
   ## But allowing up to 2 edit operations gives 4 matches
   system.time(m <- .Call("XString_match_pattern", pattern, subject, "indels",
                          2L, TRUE, c(TRUE, TRUE), FALSE, PACKAGE="Biostrings"))
-  Views(subject, start=m, end=m+length(pattern)-c(2,3,2,3))
+  Views(subject, start=start(m), end=end(m))
 
   ## pairwiseAlignment() returns the (first) best match only
   mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)

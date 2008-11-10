@@ -192,15 +192,14 @@ gregexpr2 <- function(pattern, text)
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
-    matches <- .Call("XString_match_pattern",
-                     pattern, subject, algo,
-                     max.mismatch, FALSE, fixed,
-                     count.only,
-                     PACKAGE="Biostrings")
+    C_ans <- .Call("XString_match_pattern",
+                   pattern, subject, algo,
+                   max.mismatch, FALSE, fixed,
+                   count.only,
+                   PACKAGE="Biostrings")
     if (count.only)
-        return(matches)
-    ans_width <- rep.int(length(pattern), length(matches))
-    unsafe.newXStringViews(subject, matches, ans_width)
+        return(C_ans)
+    unsafe.newXStringViews(subject, start(C_ans), width(C_ans))
 }
 
 .XStringViews.matchPattern <- function(pattern, subject, algorithm,
@@ -217,16 +216,15 @@ gregexpr2 <- function(pattern, text)
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
-    matches <- .Call("XStringViews_match_pattern",
-                     pattern,
-                     subject(subject), start(subject), width(subject),
-                     algo, max.mismatch, FALSE, fixed,
-                     count.only,
-                     PACKAGE="Biostrings")
+    C_ans <- .Call("XStringViews_match_pattern",
+                   pattern,
+                   subject(subject), start(subject), width(subject),
+                   algo, max.mismatch, FALSE, fixed,
+                   count.only,
+                   PACKAGE="Biostrings")
     if (count.only)
-        return(matches)
-    ans_width <- rep.int(length(pattern), length(matches))
-    unsafe.newXStringViews(subject(subject), matches, ans_width)
+        return(C_ans)
+    unsafe.newXStringViews(subject(subject), start(C_ans), width(C_ans))
 }
 
 
@@ -354,12 +352,12 @@ setMethod("countPattern", "MaskedXString",
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, fixed)
-    matches <- .Call("XStringSet_vmatch_pattern", pattern, subject,
-                     algo, max.mismatch, FALSE, fixed, count.only,
-                     PACKAGE = "Biostrings")
+    C_ans <- .Call("XStringSet_vmatch_pattern", pattern, subject,
+                   algo, max.mismatch, FALSE, fixed, count.only,
+                   PACKAGE = "Biostrings")
     if (count.only)
-        return(matches)
-    new("ByPos_MIndex", ends=matches, width=length(pattern))
+        return(C_ans)
+    new("ByPos_MIndex", ends=lapply(C_ans, end), width=length(pattern))
 }
 
 setGeneric("vmatchPattern", signature="subject",

@@ -416,7 +416,7 @@ void _match_pattern_boyermoore(const RoSeq *P, const RoSeq *S)
 		if (j2 == P->nelt) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
-				_report_match(i1 + 1, 0);
+				_report_match(i1 + 1, P->nelt);
 				shift = P0buffer_shift0;
 			} else {
 				shift = get_VSGSshift(c, j1 - 1);

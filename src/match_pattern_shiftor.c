@@ -269,7 +269,7 @@ static void shiftor(const RoSeq *P, const RoSeq *S, int PMmask_length, int is_fi
 		if (ret == -1) {
 			break;
 		}
-		_report_match(Lpos, 0);
+		_report_match(Lpos, P->nelt);
 	}
 	/* No need to free PMmask, R does that for us */
 #ifdef DEBUG_BIOSTRINGS

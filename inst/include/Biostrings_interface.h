@@ -177,25 +177,15 @@ void write_RoSeq_to_XStringSet_elt(
 
 /*
  * Match reporting facilities.
- *
- * init_match_reporting():
- *   Look at Biostrings_defines.h in this folder for the valid values of the
- *   'mrmode' arg (the match reporting mode).
- *
- * report_match():
- *   In mode COUNT_MRMODE, it ignores the values of its 'start' and 'end' args.
- *   In mode START_MRMODE, it ignores the value of its 'end' arg.
- *   So yes, for now, the 'end' arg is always ignored, but modes that look at
- *   this argument will be added in the future.
- *
- * reported_matches_asSEXP():
- *   The SEXP returned by reported_matches_asSEXP() is an integer vector
- *   of length 1 in mode COUNT_MRMODE and of length the number of matches
- *   in mode START_MRMODE. IMPORTANT: It is returned UNPROTECTED!
  */
-void init_match_reporting(int mrmode);
 
-int report_match(int start, int end);
+void init_match_reporting(SEXP mode);
+
+void drop_reported_matches();
+
+void shift_match_on_reporting(int shift);
+
+void report_match(int start, int width);
 
 SEXP reported_matches_asSEXP();
 

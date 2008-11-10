@@ -327,7 +327,7 @@ static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
 					goto continue0;
 		}
 */
-		_report_match(n1 + 1, 0);
+		_report_match(n1 + 1, nP);
 		continue0: ;
 	}
 #ifdef DEBUG_BIOSTRINGS
@@ -478,7 +478,7 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	pre4buf = R_ExternalPtrTag(pre4buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? 1 : 2);
+	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	BOC_exact_search(
 		(char *) pat, pat_length,
 		(char *) subj, subj_length,

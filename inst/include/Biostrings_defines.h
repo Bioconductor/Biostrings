@@ -66,11 +66,4 @@ typedef struct cachedxstringset {
 } CachedXStringSet;
 
 
-/*
- * Match reporting modes (more modes will be added soon...)
- */
-#define COUNT_MRMODE	1
-#define START_MRMODE	2
-
-
 #endif

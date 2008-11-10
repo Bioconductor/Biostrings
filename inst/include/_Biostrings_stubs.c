@@ -120,13 +120,23 @@ DEFINE_CCALLABLE_STUB(void, write_RoSeq_to_XStringSet_elt,
  */
 
 DEFINE_CCALLABLE_STUB(void, init_match_reporting,
-	(int mrmode),
-	(    mrmode)
+	(SEXP mode),
+	(     mode)
 );
 
-DEFINE_CCALLABLE_STUB(int, report_match,
-	(int start, int end),
-	(    start,     end)
+DEFINE_CCALLABLE_STUB(void, drop_reported_matches,
+	(),
+	()
+);
+
+DEFINE_CCALLABLE_STUB(void, shift_match_on_reporting,
+	(int shift),
+	(    shift)
+);
+
+DEFINE_CCALLABLE_STUB(void, report_match,
+	(int start, int width),
+	(    start,     width)
 );
 
 DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,

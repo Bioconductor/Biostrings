@@ -119,7 +119,6 @@ plotBOC <- function(x, main)
 ###   #--> takes about 111 seconds on lamb1
 ###   
 
-### Must return an integer vector.
 .match.BOC.exact <- function(pattern, boc_subject, count.only)
 {
     .Call("match_BOC_exact",
@@ -137,7 +136,6 @@ plotBOC <- function(x, main)
           PACKAGE="Biostrings")
 }
 
-### Must return an integer vector.
 .match.BOC.inexact <- function(pattern, boc_subject, max.mismatch, count.only)
 {
     stop("NOT READY YET!")
@@ -160,11 +158,10 @@ setMethod("matchPattern", "BOC_SubjectString",
                 stop("only 'fixed=TRUE' can be used with a subject of class ", class(subject))
         }
         if (max.mismatch == 0)
-            matches <- .match.BOC.exact(pattern, subject, count.only=FALSE)
+            C_ans <- .match.BOC.exact(pattern, subject, count.only=FALSE)
         else
-            matches <- .match.BOC.inexact(pattern, subject, max.mismatch, count.only=FALSE)
-        ans_width <- rep.int(pattern_length, length(matches))
-        unsafe.newXStringViews(subject@subject, matches, ans_width)
+            C_ans <- .match.BOC.inexact(pattern, subject, max.mismatch, count.only=FALSE)
+        unsafe.newXStringViews(subject@subject, start(C_ans), width(C_ans))
     }
 )
 

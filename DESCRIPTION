@@ -8,7 +8,7 @@ Version: 2.11.2
 Author: H. Pages, R. Gentleman, P. Aboyoun and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
-Depends: R (>= 2.8.0), methods, utils, IRanges (>= 1.1.2)
+Depends: R (>= 2.8.0), methods, utils, IRanges (>= 1.1.3)
 Imports: methods, utils, IRanges
 LinkingTo: IRanges
 Suggests: BSgenome,
