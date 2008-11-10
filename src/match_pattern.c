@@ -199,13 +199,10 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
 		match_pattern(&P, &S_elt, algorithm, max_mismatch, with_indels, fixed);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
-		if (is_count_only) {
+		if (is_count_only)
 			INTEGER(ans)[i] = INTEGER(ans_elt)[0];
-		} else {
-			for (j = 0; j < LENGTH(ans_elt); j++)
-				INTEGER(ans_elt)[j] += P.nelt - 1;
+		else
 			SET_ELEMENT(ans, i, ans_elt);
-		}
 		UNPROTECT(1);
 		_drop_reported_matches();
 	}

@@ -270,6 +270,13 @@ setMethod("matchPattern", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPattern", "XStringSet",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        stop("use vmatchPattern() when 'subject' is an XStringSet object")
+)
+
+### Dispatch on 'subject' (see signature of generic).
 ### WARNING: Unlike the other "matchPattern" methods, the XStringViews object
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
@@ -333,6 +340,13 @@ setMethod("countPattern", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
+setMethod("countPattern", "XStringSet",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        stop("use vcountPattern() when 'subject' is an XStringSet object")
+)
+
+### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "XStringViews",
     function(pattern, subject, algorithm="auto",
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
@@ -372,17 +386,19 @@ setMethod("countPattern", "MaskedXString",
         pattern <- XString(class(super(subject)), pattern)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     with.indels <- normargWithIndels(with.indels)
-    if (with.indels)
-        stop("vmatchPattern() and vcountPattern() do not support indels yet")
     fixed <- normargFixed(fixed, class(super(subject)))
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)
+    # because MIndex objects do not support variable-width matches yet
+    if (algo == "indels" && !count.only)
+        stop("vmatchPattern() does not support indels yet")
     C_ans <- .Call("XStringSet_vmatch_pattern", pattern, subject,
                    algo, max.mismatch, with.indels, fixed, count.only,
                    PACKAGE = "Biostrings")
     if (count.only)
         return(C_ans)
+    # C_ans is a list of IRanges objects
     new("ByPos_MIndex", ends=lapply(C_ans, end), width=length(pattern))
 }
 
@@ -406,7 +422,7 @@ setMethod("vmatchPattern", "XStringSet",
                                   max.mismatch, with.indels, fixed)
 )
 
-# TODO: Add method for XStringViews.
+# TODO: (Maybe) add a "vmatchPattern" method for XStringViews objects.
 
 setGeneric("vcountPattern", signature="subject",
     function(pattern, subject, algorithm="auto",
@@ -430,5 +446,5 @@ setMethod("vcountPattern", "XStringSet",
                                   count.only=TRUE)
 )
 
-# TODO: Add method for XStringViews.
+# TODO: (Maybe) add a "vcountPattern" method for XStringViews objects.
 
