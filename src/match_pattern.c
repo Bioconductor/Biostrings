@@ -182,7 +182,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 {
 	RoSeq P, S_elt;
 	CachedXStringSet S;
-	int is_count_only, S_length, i, j;
+	int is_count_only, S_length, i;
 	SEXP ans, ans_elt;
 
 	P = _get_XString_asRoSeq(pattern);

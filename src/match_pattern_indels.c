@@ -30,12 +30,64 @@ SEXP debug_match_pattern_indels()
 		_init_match_reporting(mkString("DEVNULL"));
 		test_match_pattern_indels(p, s, 0, "30:34");
 		test_match_pattern_indels(p, s, 1, "1:4, 14:18, 30:34");
-		test_match_pattern_indels(p, s, 2, "1:4, 6:10, 14:18, 21:25, 30:34");
+		test_match_pattern_indels(p, s, 2, "1:4, 8:10, 14:18, 21:23, 30:34");
 	}
 #else
 	Rprintf("Debug mode not available in file %s\n", __FILE__);
 #endif
 	return R_NilValue;
+}
+
+#ifdef DEBUG_BIOSTRINGS
+static void print_match(int start, int width, const RoSeq *P, const RoSeq *S)
+{
+	int end, j0, nedit0, width0;
+	char mbuf[1001];
+
+	if (width >= sizeof(mbuf))
+		error("sizeof(mbuf) too small");
+	j0 = start - 1;
+	end = j0 + width;
+	snprintf(mbuf, width + 1, "%s", S->elts + j0);
+	nedit0 = _nedit_for_Ploffset(P, S, j0, P->nelt, 1, &width0);
+	Rprintf("start=%d end=%d (%s) nedit0=%d\n", start, end, mbuf, nedit0);
+	return;
+}
+#endif
+
+/*
+ * In order to avoid pollution by redundant matches, we report only the "best
+ * local matches". A substring S' of S is a best local match iff:
+ *   (a) nedit(P, S') <= max_mm
+ *   (b) for every substring S1 of S', nedit(P, S1) > nedit(P, S')
+ *   (c) for every substring S2 of S that contains S', nedit(P, S2) <= nedit(P, S')
+ * One nice property of best local matches is that their first and last letters
+ * are guaranteed to match letters in P.
+ * The report_provisory_match() function will store a provisory match and will
+ * hold it until it is replaced by a better one or until it's guaranteed to be 
+ * a best local match (then it's reported as a match).
+ */
+static int provisory_match_start, provisory_match_end, provisory_match_width,
+	   provisory_match_nedit;
+
+static void report_provisory_match(int start, int width, int nedit)
+{
+	int end;
+
+	end = start + width - 1;
+	if (provisory_match_nedit != -1) {
+		// Given how we walk on S, 'start' is always guaranteed to be >
+		// 'provisory_match_start'.
+		if (end > provisory_match_end)
+			_report_match(provisory_match_start, provisory_match_width);
+		else if (nedit > provisory_match_nedit)
+			return;
+	}
+	provisory_match_start = start;
+	provisory_match_end = end;
+	provisory_match_width = width;
+	provisory_match_nedit = nedit;
+	return;
 }
 
 static ByteTrTable byte2offset;
@@ -56,6 +108,7 @@ void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
 	// _match_pattern_indels(), we need to support them in
 	// _init_byte2offset_with_RoSeq() and _nedit_for_Ploffset().
 	_init_byte2offset_with_RoSeq(byte2offset, P, 0);
+	provisory_match_nedit = -1; // means no provisory match yet
 	j0 = 0;
 	while (j0 < S->nelt) {
 		while (1) {
@@ -63,7 +116,7 @@ void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
 			i0 = byte2offset[(unsigned char) c0];
 			if (i0 != NA_INTEGER) break;
 			j0++;
-			if (j0 >= S->nelt) return;
+			if (j0 >= S->nelt) goto done;
 		}
 		P1.elts = P->elts + i0 + 1;
 		P1.nelt = P->nelt - i0 - 1;
@@ -84,27 +137,21 @@ void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
 				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1, max_mm1, 1, &width1);
 			}
 			if (nedit1 <= max_mm1) {
-				_report_match(j0 + 1, width1 + 1);
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
-					int start, end, width, nedit0, width0;
-					char mbuf[1001];
-
-					width = width1 + 1;
-					if (width >= sizeof(mbuf))
-						error("sizeof(mbuf) too small");
-					start = j0 + 1; // because j0 is 0-based
-					end = start + width - 1;
-					snprintf(mbuf, width + 1, "%s", S->elts + j0);
-					nedit0 = _nedit_for_Ploffset(P, S, j0, P->nelt, 1, &width0);
-					Rprintf("[DEBUG] _match_pattern_indels(): match at "
-						"start=%d end=%d (%s) nedit0=%d\n", start, end, mbuf, nedit0);
+					Rprintf("[DEBUG] _match_pattern_indels(): "
+						"provisory match found at ");
+					print_match(j0 + 1, width1 + 1, P, S);
 				}
 #endif
+				report_provisory_match(j0 + 1, width1 + 1, nedit1 + i0);
 			}
 		}
 		j0++;
 	}
+	done:
+	if (provisory_match_nedit != -1)
+		_report_match(provisory_match_start, provisory_match_width);
 	return;
 }
 

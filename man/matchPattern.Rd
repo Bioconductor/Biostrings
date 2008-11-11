@@ -60,7 +60,20 @@
     If non-zero, an inexact matching algorithm is used.
   }
   \item{with.indels}{
-    [DOCUMENT ME]
+    If \code{TRUE} then indels are allowed. In that case \code{max.mismatch}
+    is interpreted as the maximum "edit distance" allowed between the pattern
+    and a match. Note that in order to avoid pollution by redundant matches,
+    only the "best local matches" are returned.
+    Roughly speaking, a "best local match" is a match that is the
+    closest possible to the pattern P and also the shortest possible one.
+    More precisely, a substring S' of the subject S is a "best local match" iff:
+    \preformatted{
+       (a) nedit(P, S') <= max_mm
+       (b) for every substring S1 of S', nedit(P, S1) > nedit(P, S')
+       (c) for every substring S2 of S that contains S', nedit(P, S2) <= nedit(P, S')
+    }
+    One nice property of "best local matches" is that their first and last letters
+    are guaranteed to match letters in P.
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
@@ -163,7 +176,7 @@
                                        # as an XStringViews object.
 
   ## ---------------------------------------------------------------------
-  ## C. With indels (WORK-IN-PROGRESS, DO NOT USE YET!!!)
+  ## C. With indels
   ## ---------------------------------------------------------------------
   library(BSgenome.Celegans.UCSC.ce2)
   pattern <- DNAString("ACGGACCTAATGTTATC")
@@ -172,8 +185,7 @@
   ## Allowing up to 2 mismatching letters doesn't give any match
   matchPattern(pattern, subject, max.mismatch=2)
 
-  ## But allowing up to 2 edit operations gives 3 matches (matches 3 and 4
-  ## can be considered the same and need to be merged)
+  ## But allowing up to 2 edit operations gives 3 matches
   system.time(m <- matchPattern(pattern, subject, max.mismatch=2, with.indels=TRUE))
   m
 
@@ -182,6 +194,21 @@
   system.time(pwa <- pairwiseAlignment(pattern, subject, type="local",
                        substitutionMatrix=mat, gapOpening=0, gapExtension=1))
   pwa
+
+  ## Only "best local matches" are reported
+  ##   - with deletions in the subject
+  subject <- BString("ACDEFxxxCDEFxxxABCE")
+  matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
+  matchPattern("ABCDEF", subject, max.mismatch=2)
+  ##   - with insertions in the subject
+  subject <- BString("AxBCDxEFxxxABCDxxFxxxAxBCDEF")
+  matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
+  matchPattern("ABCDEF", subject, max.mismatch=2)
+  ##   - with substitutions (note that the "best local matches" can introduce
+  ##     indels and therefore bet shorter than 6)
+  subject <- BString("AxCDEFxxxABDCEFxxxBACDEFxxxABCEDF")
+  matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
+  matchPattern("ABCDEF", subject, max.mismatch=2)
 }
 
 \keyword{methods}

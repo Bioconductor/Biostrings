@@ -47,7 +47,7 @@ int fgets_rtrimmed(char *s, int size, FILE *stream)
 }
 
 #ifdef DEBUG_BIOSTRINGS
-void print_ByteTrTable(const ByteTrTable byte2code)
+static void print_ByteTrTable(const ByteTrTable byte2code)
 {
 	int byte, code;
 

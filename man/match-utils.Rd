@@ -136,11 +136,11 @@
   A "match" of pattern P in subject S is a substring S' of S that is considered
   similar enough to P according to some distance (or metric) specified by the
   user. 2 distances are supported by most pattern matching functions in the
-  Biostrings package. The simplest one is called "number of mismatching
-  letters" and is defined only when the 2 strings to compare have the same
-  length. So when this distance is used, only matches that have the same number
+  Biostrings package. The first (and simplest) one is the "number of mismatching
+  letters". It is defined only when the 2 strings to compare have the same
+  length, so when this distance is used, only matches that have the same number
   of letters as P are considered.
-  The second distance is the "edit distance" (or Levenshtein distance): it's
+  The second one is the "edit distance" (aka Levenshtein distance): it's
   the minimum number of operations needed to transform P into S', where an
   operation is an insertion, deletion, or substitution of a single letter.
   When this metric is used, matches can have a different number of letters
@@ -148,17 +148,19 @@
 
   The \code{neditStartingAt} (and \code{neditEndingAt}) function implements
   these 2 distances.
-  If \code{with.indels} is \code{FALSE} (the default) then the first distance
+  If \code{with.indels} is \code{FALSE} (the default), then the first distance
   is used i.e. \code{neditStartingAt} returns the "number of mismatching
   letters" between the pattern P and the substring S' of S starting at the
-  positions specified in \code{starting.at} (\code{neditStartingAt} and
-  \code{neditEndingAt} are vectorized so long vectors of integers can be
+  positions specified in \code{starting.at} (note that \code{neditStartingAt}
+  and \code{neditEndingAt} are vectorized so long vectors of integers can be
   passed thru the \code{starting.at} or \code{ending.at} arguments).
   If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is
   used: for each position specified in \code{starting.at}, P is compared to
-  all the substrings S' of S starting at this position and the distance to the
-  closest one is returned. Note that no substrings of length > 2*length(P)
-  needs to be compared with P.
+  all the substrings S' of S starting at this position and the smallest
+  distance is returned. Note that this distance is guaranteed to be reached
+  for a substrings of length < 2*length(P) so, of course, in practise,
+  P only needs to be compared to a small number of substrings for every
+  starting position.
 }
 
 \value{
