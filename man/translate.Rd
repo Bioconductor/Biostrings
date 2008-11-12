@@ -53,10 +53,35 @@
   }
 }
 
+\details{
+  \code{transcribe} reproduces the biological process of DNA
+  transcription that occurs in the cell.
+  
+  \code{cDNA} reproduces the process of synthesizing complementary DNA
+  from a mature mRNA template.
+
+  \code{translate} reproduces the biological process of RNA
+  translation that occurs in the cell.
+  The input of the function can be either RNA or coding DNA.
+  The Standard Genetic Code (see \code{?\link{GENETIC_CODE}}) is
+  used to translate codons into amino acids.
+  \code{codons} is a utility for extracting the codons involved
+  in this translation without translating them. 
+
+  \code{dna2rna} and \code{rna2dna} are low-level utilities for
+  converting sequences from DNA to RNA and vice-versa.
+  All what this converstion does is to replace each occurence of T
+  by a U and vice-versa.
+}
+
 \value{
   An \link{RNAString} object for \code{transcribe} and \code{dna2rna}.
 
   A \link{DNAString} object for \code{cDNA} and \code{rna2dna}.
+
+  Note that if the sequence passed to \code{transcribe} or \code{cDNA}
+  is considered to be oriented 5'-3', then the returned sequence is
+  oriented 3'-5'.
 
   An \link{XStringViews} object with 1 view per codon for \code{codons}.
   When \code{x} is a \link{MaskedDNAString} or \link{MaskedRNAString}
@@ -75,9 +100,9 @@
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
-  \link{DNAStringSet-class},
-  \link{RNAStringSet-class},
-  \link{XStringViews-class}
+  \link{XStringSet-class},
+  \link{XStringViews-class},
+  \link{MaskedXString-class}
 }
 
 \examples{
