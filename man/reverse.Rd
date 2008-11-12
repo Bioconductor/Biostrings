@@ -21,12 +21,6 @@
 \alias{reverseComplement,MaskedDNAString-method}
 \alias{reverseComplement,MaskedRNAString-method}
 
-% Some convenience wrappers:
-\alias{transcribe}
-\alias{cDNA}
-\alias{dna2rna}
-\alias{rna2dna}
-
 
 \title{Sequence reversing and complementing}
 

@@ -180,33 +180,3 @@ setMethod("reverseComplement", "MaskedRNAString",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some convenience wrappers for different kinds of DNA <-> RNA
-### transformations.
-###
-
-transcribe <- function(x)
-{
-    if (!is(x, "DNAString")) stop("transcribe() only works on DNA input")
-    RNAString(complement(x))
-}
-
-cDNA <- function(x)
-{
-    if (!is(x, "RNAString")) stop("cDNA() only works on RNA input")
-    DNAString(complement(x))
-}
-
-dna2rna <- function(x)
-{
-    if (!is(x, "DNAString")) stop("dna2rna() only works on DNA input")
-    RNAString(x)
-}
- 
-rna2dna <- function(x)
-{
-    if (!is(x, "RNAString")) stop("rna2dna() only works on RNA input")
-    DNAString(x)
-}
-

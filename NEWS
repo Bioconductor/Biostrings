@@ -25,6 +25,10 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
+o Added the codons() and translate() generic functions with methods for
+  DNAString, RNAString, DNAStringSet, RNAStringSet, MaskedDNAString and
+  MaskedRNAString objects.
+
 o Added the uniqueLetters() generic function with methods for XString,
   XStringSet, XStringViews and MaskedXString objects.
 

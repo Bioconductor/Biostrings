@@ -69,6 +69,7 @@ exportMethods(
 ###   alphabetFrequency.R
 ###   chartr.R
 ###   reverse.R
+###   translate.R
 ###   toComplex.R
 ###   replaceLetterAt.R
 ###   injectHardMask.R
@@ -102,7 +103,10 @@ export(
 
     ## reverse.R:
     complement, reverseComplement,
+
+    ## translate.R:
     transcribe, cDNA, dna2rna, rna2dna,
+    codons, translate,
 
     ## toComplex.R:
     toComplex,
@@ -140,6 +144,7 @@ exportMethods(
     alphabetFrequency, uniqueLetters, oligonucleotideFrequency,
     chartr,
     reverse, complement, reverseComplement,
+    codons, translate,
     replaceLetterAt,
     maskMotif,
     injectHardMask,
