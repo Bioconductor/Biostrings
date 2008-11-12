@@ -130,6 +130,8 @@ setMethod("[[", "ByPos_MIndex",
         if (length(x@dups0) != 0 && !is.na(key2 <- x@dups0@dup2unq[key]))
             key <- key2
         ans_end <- x@ends[[key]]
+        if (is.null(ans_end))
+            ans_end <- integer(0)
         ans_width <- rep.int(x@width, length(ans_end))
         ans_start <- ans_end - ans_width + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
