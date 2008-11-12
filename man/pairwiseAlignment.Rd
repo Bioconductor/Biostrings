@@ -89,12 +89,21 @@ B. Haubold, T. Wiehe, Introduction to Computational Biology, Birkhauser Verlag 2
 
 K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics 2008 24(7):897-900.
 }
+\note{
+Use \code{\link{matchPattern}} or \code{\link{vmatchPattern}} if you need to
+find all the occurences (eventually with indels) of a given pattern in a
+reference sequence or set of sequences.
+
+Use \code{\link{matchPDict}} if you need to match a (big) set of patterns
+against a reference sequence.
+}
 \author{P. Aboyoun and H. Pages}
 \seealso{
-  \link{stringDist},
+  \code{\link{stringDist}},
   \link{PairwiseAlignment-class},
   \link{XStringQuality-class},
-  \link{substitution.matrices}
+  \link{substitution.matrices},
+  \code{\link{matchPattern}}
 }
 \examples{
   ## Nucleotide global, local, and overlap alignments

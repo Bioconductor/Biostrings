@@ -26,14 +26,20 @@
 \title{String searching functions}
 
 \description{
-  Generic that finds all matches of a pattern in a sequence (an XString object).
+  A set of functions for finding all the occurences (aka "matches" or "hits")
+  of a given pattern (typically short) in a (typically long) reference sequence
+  or set of sequences (aka the subject)
 }
 
 \usage{
-  matchPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  countPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  vmatchPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  vcountPattern(pattern, subject, algorithm="auto", max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  matchPattern(pattern, subject, algorithm="auto",
+               max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  countPattern(pattern, subject, algorithm="auto",
+               max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  vmatchPattern(pattern, subject, algorithm="auto",
+                max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  vcountPattern(pattern, subject, algorithm="auto",
+                max.mismatch=0, with.indels=FALSE, fixed=TRUE)
 }
 
 \arguments{
@@ -41,13 +47,11 @@
     The pattern string.
   }
   \item{subject}{
-    For \code{matchPattern} and \code{countPattern}:
-    an \link{XString}, \link{XStringViews} or \link{MaskedXString}
-    object.
+    An \link{XString}, \link{XStringViews} or \link{MaskedXString}
+    object for \code{matchPattern} and \code{countPattern}.
 
-    For \code{vmatchPattern} and \code{vcountPattern}:
-    an \link{XStringSet} or \link{XStringViews}
-    object.
+    An \link{XStringSet} or \link{XStringViews} object for
+    \code{vmatchPattern} and \code{vcountPattern}.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
@@ -56,7 +60,7 @@
   }
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed (see
-    \code{\link{isMatching}} for the details).
+    \code{\link{isMatchingAt}} for the details).
     If non-zero, an inexact matching algorithm is used.
   }
   \item{with.indels}{
@@ -64,36 +68,44 @@
     is interpreted as the maximum "edit distance" allowed between the pattern
     and a match. Note that in order to avoid pollution by redundant matches,
     only the "best local matches" are returned.
-    Roughly speaking, a "best local match" is a match that is the
-    closest possible to the pattern P and also the shortest possible one.
+    Roughly speaking, a "best local match" is a match that is locally
+    both the closest (to the pattern P) and the shortest.
     More precisely, a substring S' of the subject S is a "best local match" iff:
     \preformatted{
-       (a) nedit(P, S') <= max_mm
-       (b) for every substring S1 of S', nedit(P, S1) > nedit(P, S')
-       (c) for every substring S2 of S that contains S', nedit(P, S2) <= nedit(P, S')
+       (a) nedit(P, S') <= max.mismatch
+       (b) for every substring S1 of S':
+               nedit(P, S1) > nedit(P, S')
+       (c) for every substring S2 of S that contains S':
+               nedit(P, S2) <= nedit(P, S')
     }
-    One nice property of "best local matches" is that their first and last letters
-    are guaranteed to match letters in P.
+    One nice property of "best local matches" is that their first and last
+    letters are guaranteed to be aligned with letters in P (i.e. they match
+    letters in P).
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
-    (see \code{\link{isMatching}} for the details).
+    (see \code{\link{isMatchingAt}} for the details).
   }
 }
 
 \details{
   Available algorithms are: ``naive exact'', ``naive inexact'',
-  ``Boyer-Moore-like'' and ``shift-or''. Not all of them can be
-  used in all situations: restrictions depend on the length of
-  the pattern, the class of the subject and the values of
-  \code{max.mismatch} and \code{fixed}.
+  ``Boyer-Moore-like'', ``shift-or'' and ``indels''.
+  Not all of them can be used in all situations: restrictions
+  depend on the length of the pattern, the class of the subject,
+  and the values of \code{max.mismatch}, \code{with.indels}
+  and \code{fixed}. All those parameters form the search criteria.
 
-  When 2 different algorithms can be used for a given task,
-  then choosing one or the other only affects the performance,
-  not the result, so there is no "wrong choice" (strictly speaking).
-  In short, it is better to just use \code{algorithm="auto"} (the default):
-  this way \code{matchPattern} will choose the algo that is best suited
-  for the task.
+  Note that the choice of an algorithm is not part of the search criteria.
+  This is because algorithms are interchangeable, that is, if 2 different
+  algorithms are compatible with a given search criteria, then choosing
+  one over the other will not affect the result (but will most likely
+  affect the performance). So there is no "wrong choice" of algorithm
+  (strictly speaking).
+
+  Using \code{algorithm="auto"} is recommended because then the fastest
+  algorithm will automatically be picked up among the set of compatible
+  algorithms (if there is more than one).
 }
 
 \value{
@@ -108,10 +120,20 @@
   element of \code{subject}.
 }
 
+\note{
+  Use \code{\link{matchPDict}} if you need to match a (big) set of patterns
+  against a reference sequence.
+
+  Use \code{\link{pairwiseAlignment}} if you need to solve a (Needleman-Wunsch)
+  global alignment, a (Smith-Waterman) local alignment, or an (ends-free)
+  overlap alignment problem.
+}
+
 \seealso{
-  \code{\link{isMatching}},
-  \code{\link{mismatch}},
   \code{\link{matchPDict}},
+  \code{\link{pairwiseAlignment}},
+  \code{\link{isMatchingAt}},
+  \code{\link{mismatch}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},
   \code{\link{maskMotif}},
