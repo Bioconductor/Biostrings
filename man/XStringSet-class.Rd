@@ -52,6 +52,11 @@
 
 \alias{append,XStringSet,XStringSet-method}
 
+\alias{union,XStringSet,XStringSet-method}
+\alias{intersect,XStringSet,XStringSet-method}
+\alias{setdiff,XStringSet,XStringSet-method}
+\alias{setequal,XStringSet,XStringSet-method}
+
 \alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
 \alias{toString,XStringSet-method}
@@ -193,6 +198,30 @@
     \item{}{
       \code{append(x, values, after=length(x))}:
       Add sequences in \code{values} to \code{x}.
+    }
+  }
+}
+
+\section{Set Operations}{
+  In the code snippets below,
+  \code{x} and \code{y} are XStringSet objects
+
+  \describe{
+    \item{}{
+      \code{union(x, y)}:
+      Union of \code{x} and \code{y}.
+    }
+    \item{}{
+      \code{intersect(x, y)}:
+      Intersection of \code{x} and \code{y}.
+    }
+    \item{}{
+      \code{setdiff(x, y)}:
+      Asymmetric set difference of \code{x} and \code{y}.
+    }
+    \item{}{
+     \code{setequal(x, y)}:
+      Set equality of \code{x} to \code{y}.
     }
   }
 }

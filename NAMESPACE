@@ -51,6 +51,7 @@ exportMethods(
     initialize, length,
     alphabet,
     names, "[", "[[", rep, append,
+    union, intersect, setdiff, setequal,
     show,
     "==", "!=", duplicated, order, sort,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
