@@ -72,7 +72,9 @@ setMethod("mismatchTable", "AlignedXStringSet",
             end <- position
         else
             end <- pmin(position + shiftRight, nchar(subset))
-        if (singleString)
+        if (length(subset) == 0)
+            substring <- character(0)
+        else if (singleString)
             substring <- Views(subset, start=start, end=end)
         else
             substring <- narrow(subset, start=start, end=end)
