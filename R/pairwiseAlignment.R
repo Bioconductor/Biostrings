@@ -231,7 +231,7 @@ function(pattern,
   availableLetters <-
     intersect(names(alphabetToCodes), rownames(fuzzyMatrix))
 
-  fuzzyMatrix <- fuzzyMatrix[availableLetters, availableLetters]
+  fuzzyMatrix <- fuzzyMatrix[availableLetters, availableLetters, drop = FALSE]
   uniqueFuzzyValues <- sort(unique(fuzzyMatrix))
   fuzzyReferenceMatrix <-
     matrix(match(fuzzyMatrix, uniqueFuzzyValues) - 1L,
