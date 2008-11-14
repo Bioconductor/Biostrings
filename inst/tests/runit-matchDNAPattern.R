@@ -4,16 +4,15 @@
 ## are the expected ones.
 ##   subject: BioString object of length 1
 ##   expected_roffsets: matrix of the expected relative offsets of the matches
-##   matches: BioString object returned by matchDNAPattern("findme", subject)
+##   matches: BioString object returned by matchPattern("findme", subject)
 checkBioStringMatches <- function(subject, expected_roffsets, matches)
 {
-    expected_aoffsets <- expected_roffsets + subject@offsets[1,1] - 1
-    checkEquals(expected_aoffsets, matches@offsets)
+    checkEquals(expected_roffsets[, 1], start(matches))
     ## We need to check for this particular case because surprinsingly,
     ## substring() doesn't work with 'first' and 'last' of zero length
     if (dim(expected_roffsets)[1] != 0) {
-        first <- expected_roffsets[,1]
-        last <- expected_roffsets[,2]
+        first <- expected_roffsets[, 1]
+        last <- expected_roffsets[, 2]
         expected_substrings <- substring(as.character(subject), first, last)
         checkEquals(expected_substrings, as.character(matches))
     }
@@ -21,7 +20,7 @@ checkBioStringMatches <- function(subject, expected_roffsets, matches)
 
 checkExactMatches <- function(pattern, subject, expected_pos=numeric(0))
 {
-    matches <- matchDNAPattern(pattern, subject)
+    matches <- matchPattern(pattern, subject)
     expected_roffsets <- cbind(expected_pos, expected_pos+nchar(pattern)-1, deparse.level=0)
     checkBioStringMatches(subject, expected_roffsets, matches)
     expected_length <- length(expected_pos)
@@ -56,7 +55,7 @@ test_ShiftOr_matchInternal_A1 <- function()
     pattern <- DNAString("CAG")
     subject <- DNAString("CAGTTT")
     expected_roffsets <- rbind(c(1, 3))
-    matches <- matchDNAPattern(pattern, subject, mis=1)
+    matches <- matchPattern(pattern, subject, max.mismatch=1)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -65,7 +64,7 @@ test_ShiftOr_matchInternal_A2 <- function()
     pattern <- DNAString("AKADAKA")
     subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(7, 13))
-    matches <- matchDNAPattern(pattern, subject, mis=0)
+    matches <- matchPattern(pattern, subject, max.mismatch=0)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -75,7 +74,7 @@ test_ShiftOr_matchInternal_A3 <- function()
     subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(3, 9),
                                c(7, 13))
-    matches <- matchDNAPattern(pattern, subject, mis=1)
+    matches <- matchPattern(pattern, subject, max.mismatch=1)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -86,7 +85,7 @@ test_ShiftOr_matchInternal_A4 <- function()
     expected_roffsets <- rbind(c(1,7),
                                c(3, 9),
                                c(7, 13))
-    matches <- matchDNAPattern(pattern, subject, mis=2)
+    matches <- matchPattern(pattern, subject, max.mismatch=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -99,7 +98,7 @@ test_ShiftOr_matchInternal_B1 <- function()
                                c( 1, 4),
                                c( 2, 5),
                                c( 3, 6))
-    matches <- matchDNAPattern(pattern, subject, mis=2)
+    matches <- matchPattern(pattern, subject, max.mismatch=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -113,7 +112,7 @@ test_ShiftOr_matchInternal_B2 <- function()
                                c( 5, 7),
                                c( 6, 8),
                                c( 9, 11))
-    matches <- matchDNAPattern(pattern, subject, mis=2)
+    matches <- matchPattern(pattern, subject, max.mismatch=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -129,7 +128,7 @@ test_ShiftOr_matchInternal_B3 <- function()
                                c( 3, 6),
                                c( 4, 7))
     ## Provoques an error
-    matches <- matchDNAPattern(pattern, subject, mis=3)
+    matches <- matchPattern(pattern, subject, max.mismatch=3)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -149,7 +148,7 @@ test_ShiftOr_matchInternal_B4 <- function()
                                c( 3, 6),
                                c( 4, 7),
                                c( 5, 8))
-    matches <- matchDNAPattern(pattern, subject, mis=4)
+    matches <- matchPattern(pattern, subject, max.mismatch=4)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -176,7 +175,7 @@ test_ShiftOr_matchInternal_C1 <- function()
                                c(8491898, 8491918),
                                c(8491899, 8491919),
                                c(9233437, 9233457))
-    matches <- matchDNAPattern(pattern, subject, mis=5)
+    matches <- matchPattern(pattern, subject, max.mismatch=5)
     checkBioStringMatches(subject, expected_roffsets, matches)
 
     ## With a 32 char long pattern, mis=10
@@ -184,14 +183,14 @@ test_ShiftOr_matchInternal_C1 <- function()
     expected_roffsets <- rbind(c(1,32),
                                c(3807182, 3807213),
                                c(9926155, 9926186))
-    matches <- matchDNAPattern(pattern32, subject, mis=10)
+    matches <- matchPattern(pattern32, subject, max.mismatch=10)
     checkBioStringMatches(subject, expected_roffsets, matches)
 
     ## With a 64 char long pattern (works on 64-bit platforms only)
     pattern64 <- DNAString(substr(big, 1, 64)) #substr(subject, 1, 64)
     expected_roffsets <- rbind(c(1,64),
                                c(1049302, 1049365))
-    matches <- matchDNAPattern(pattern64, subject, mis=24)
+    matches <- matchPattern(pattern64, subject, max.mismatch=24)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -203,11 +202,11 @@ test_openbug1 <- function()
 {
     pattern <- DNAString("CAG")
     subject <- DNAString("GTTCA")
-    matches <- matchDNAPattern(pattern, subject, mis=2)
+    matches <- matchPattern(pattern, subject, max.mismatch=2)
 
     multi <- DNAString(c("TTT", "GTTCA", "TT"))
     subject2 <- multi[2]
-    matches2 <- matchDNAPattern(pattern, subject2, mis=2)
+    matches2 <- matchPattern(pattern, subject2, max.mismatch=2)
 
     checkEquals(as.character(matches), as.character(matches2))
 }

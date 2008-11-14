@@ -285,3 +285,10 @@ Long term TODO list
 - Start adding suffix tree capabilities: maybe merge SuffixTree package from
   Robert?
 
+
+Unsorted incoming TODO items
+----------------------------
+
+- Unify the way to get strings length (strlen() in R, length or width
+   with Biostrings data structures. -Laurent
+
