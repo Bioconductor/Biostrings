@@ -147,7 +147,6 @@ test_matchVariableWidth <- function()
     checkEquals(W, width(res[[i]]))
     checkEquals(m_start + W - 1, end(res[[i]]))  # mostly a sanity check
   }
-  
-  
+    
 }
 

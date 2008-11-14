@@ -20,7 +20,7 @@ checkBioStringMatches <- function(subject, expected_roffsets, matches)
 
 checkExactMatches <- function(pattern, subject, expected_pos=numeric(0))
 {
-    matches <- matchPattern(pattern, subject)
+    matches <- vmatchPattern(pattern, subject)
     expected_roffsets <- cbind(expected_pos, expected_pos+nchar(pattern)-1, deparse.level=0)
     checkBioStringMatches(subject, expected_roffsets, matches)
     expected_length <- length(expected_pos)
@@ -37,7 +37,7 @@ checkExactMatches <- function(pattern, subject, expected_pos=numeric(0))
 test_matchIndexToBioString <- function()
 {
     seq <- c("CCCC", "TTAATT")
-    subject <- DNAString(seq)[2]
+    subject <- DNAStringSet(seq)[2]
 
     ## CASE 'nmatch == 0'
     checkExactMatches("AAA", subject)
@@ -211,14 +211,3 @@ test_openbug1 <- function()
     checkEquals(as.character(matches), as.character(matches2))
 }
    
-# TODO: Move this test to another file. Has nothing to do
-# with testing the matchDNAPattern() function...
-# Not sure this one is a bug. Are we supposed to always
-# be allowed to change a value in a matrix? What "says" R?
-test_openbug2 <- function()
-{
-    s <- DNAString("ACGT")
-    s@offsets[1,1] <- 2
-    ## Provoques an error
-    show(s)
-}
