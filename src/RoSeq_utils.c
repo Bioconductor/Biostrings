@@ -347,11 +347,12 @@ void _get_RoSeqs_duplicated(const RoSeqs *seqs, int *duplicated)
 	order = (int *) R_alloc(seqs->nelt, sizeof(int));
 	_get_RoSeqs_order(seqs, order, 0);
 
-	duplicated[order[0]] = 0;
-    for (i = 1; i < seqs->nelt; i++)
-        duplicated[order[i]] =
-        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0);
-
+	if (seqs->nelt > 1) {
+		duplicated[order[0]] = 0;
+	    for (i = 1; i < seqs->nelt; i++)
+	        duplicated[order[i]] =
+	        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0);
+	}
     return;
 }
 
@@ -362,10 +363,11 @@ void _get_RoSeqs_not_duplicated(const RoSeqs *seqs, int *not_duplicated)
 	order = (int *) R_alloc(seqs->nelt, sizeof(int));
 	_get_RoSeqs_order(seqs, order, 0);
 
-	not_duplicated[order[0]] = 1;
-    for (i = 1; i < seqs->nelt; i++)
-        not_duplicated[order[i]] =
-        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) != 0);
-
+	if (seqs->nelt > 1) {
+		not_duplicated[order[0]] = 1;
+	    for (i = 1; i < seqs->nelt; i++)
+	        not_duplicated[order[i]] =
+	        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) != 0);
+	}
     return;
 }
