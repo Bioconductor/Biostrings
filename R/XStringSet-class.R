@@ -625,7 +625,7 @@ setMethod("order", "XStringSet",
 )
 
 setMethod("sort", "XStringSet",
-    function (x, decreasing=FALSE, ...)
+    function(x, decreasing=FALSE, ...)
     {
         if (!isTRUEorFALSE(decreasing))
             stop("'decreasing' must be TRUE or FALSE")
@@ -635,6 +635,16 @@ setMethod("sort", "XStringSet",
     }
 )
 
+setMethod("rank", "XStringSet",
+    function(x, na.last = TRUE,
+             ties.method = c("average", "first", "random", "max", "min")) {
+         if (!missing(na.last) && !isTRUE(na.last))
+             warning("argument 'na.last' is ignored when ordering XStringSet objects")
+         if (!missing(ties.method) && ties.method != "min")
+             stop("only the 'min' option to the 'ties.method' argument is supported")
+         .Call("XStringSet_rank", x, PACKAGE="Biostrings")
+     }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

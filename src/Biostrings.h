@@ -141,6 +141,11 @@ void _get_RoSeqs_order(
 	int base1
 );
 
+void _get_RoSeqs_rank(
+	const RoSeqs *seqs,
+	int *rank
+);
+
 void _get_RoSeqs_duplicated(
 	const RoSeqs *seqs,
 	int *duplicated
@@ -272,6 +277,8 @@ SEXP XStringSet_as_STRSXP(
 );
 
 SEXP XStringSet_order(SEXP x);
+
+SEXP XStringSet_rank(SEXP x);
 
 SEXP XStringSet_duplicated(SEXP x);
 

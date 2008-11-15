@@ -340,6 +340,25 @@ void _get_RoSeqs_order(const RoSeqs *seqs, int *order, int base1)
 	return;
 }
 
+void _get_RoSeqs_rank(const RoSeqs *seqs, int *rank)
+{
+	int i, *order;
+
+	order = (int *) R_alloc(seqs->nelt, sizeof(int));
+	_get_RoSeqs_order(seqs, order, 0);
+
+    rank[order[0]] = 1;
+    for (i = 1; i < seqs->nelt; ++i) {
+        if (cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0) {
+            rank[order[i]] = rank[order[i-1]];
+        } else {
+        	rank[order[i]] = i + 1;
+        }
+    }
+    return;
+}
+
+
 void _get_RoSeqs_duplicated(const RoSeqs *seqs, int *duplicated)
 {
     int i, *order;

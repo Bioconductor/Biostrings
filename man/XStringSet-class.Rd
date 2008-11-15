@@ -65,6 +65,7 @@
 \alias{order}
 \alias{order,XStringSet-method}
 \alias{sort,XStringSet-method}
+\alias{rank,XStringSet-method}
 
 \alias{duplicated,XStringSet-method}
 \alias{unique,XStringSet-method}
@@ -218,6 +219,10 @@
     \item{}{
       \code{sort(x)}:
       Sort \code{x} into ascending order (equivalent to \code{x[order(x)]}).
+    }
+    \item{}{
+      \code{rank(x)}:
+      Rank \code{x} in ascending order.
     }
   }
 }
