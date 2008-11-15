@@ -137,7 +137,18 @@ void _write_RoSeq_to_RawPtr(
 
 void _get_RoSeqs_order(
 	const RoSeqs *seqs,
-	int *order
+	int *order,
+	int base1
+);
+
+void _get_RoSeqs_duplicated(
+	const RoSeqs *seqs,
+	int *duplicated
+);
+
+void _get_RoSeqs_not_duplicated(
+	const RoSeqs *seqs,
+	int *not_duplicated
 );
 
 
@@ -261,6 +272,10 @@ SEXP XStringSet_as_STRSXP(
 );
 
 SEXP XStringSet_order(SEXP x);
+
+SEXP XStringSet_duplicated(SEXP x);
+
+SEXP XStringSet_not_duplicated(SEXP x);
 
 
 /* fasta_io.c */

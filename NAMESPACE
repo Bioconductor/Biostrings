@@ -53,7 +53,7 @@ exportMethods(
     names, "[", "[[", rep, append,
     union, intersect, setdiff, setequal,
     show,
-    "==", "!=", duplicated, order, sort,
+    "==", "!=", duplicated, unique, order, sort,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
     nchar,
     width, narrow, reduce, gaps
@@ -127,7 +127,7 @@ export(
 exportMethods(
     initialize, length, names, "[", "[[", rep,
     show,
-    "==", "!=", duplicated, order, sort,
+    "==", "!=", duplicated, unique, order, sort,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
     nchar,
 

@@ -27,6 +27,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_XStringSet_class, 0),
 	CALLMETHOD_DEF(XStringSet_as_STRSXP, 2),
 	CALLMETHOD_DEF(XStringSet_order, 1),
+	CALLMETHOD_DEF(XStringSet_duplicated, 1),
+	CALLMETHOD_DEF(XStringSet_not_duplicated, 1),
 
 /* fasta_io.c */
 	CALLMETHOD_DEF(debug_fasta_io, 0),

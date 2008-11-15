@@ -266,8 +266,43 @@ SEXP XStringSet_order(SEXP x)
 	x_length = _get_XStringSet_length(x);
 	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
 	PROTECT(ans = NEW_INTEGER(x_length));
-	_get_RoSeqs_order(&seqs, INTEGER(ans));
+	_get_RoSeqs_order(&seqs, INTEGER(ans), 1);
 	UNPROTECT(1);
 	return ans;
 }
 
+
+/****************************************************************************
+ * Getting the duplicates of an XStringSet object.
+ */
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_duplicated(SEXP x)
+{
+	SEXP ans;
+	int x_length;
+	RoSeqs seqs;
+
+	x_length = _get_XStringSet_length(x);
+	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	PROTECT(ans = NEW_LOGICAL(x_length));
+	_get_RoSeqs_duplicated(&seqs, INTEGER(ans));
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP XStringSet_not_duplicated(SEXP x)
+{
+	SEXP ans;
+	int x_length;
+	RoSeqs seqs;
+
+	x_length = _get_XStringSet_length(x);
+	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	PROTECT(ans = NEW_LOGICAL(x_length));
+	_get_RoSeqs_not_duplicated(&seqs, INTEGER(ans));
+	UNPROTECT(1);
+	return ans;
+}

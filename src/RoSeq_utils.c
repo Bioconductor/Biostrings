@@ -323,14 +323,49 @@ static int cmp_RoSeq_indices(const void *p1, const void *p2)
 	return cmp_RoSeq(base_seq + i1, base_seq + i2);
 }
 
-void _get_RoSeqs_order(const RoSeqs *seqs, int *order)
+void _get_RoSeqs_order(const RoSeqs *seqs, int *order, int base1)
 {
 	int i;
 
-	base_seq = seqs->elts - 1; // because we will sort 1-based indices
-	for (i = 0; i < seqs->nelt; i++)
-		order[i] = i + 1; // 1-based indices
+	if (base1 == 0) {
+		base_seq = seqs->elts;
+		for (i = 0; i < seqs->nelt; i++)
+			order[i] = i;
+	} else {
+		base_seq = seqs->elts - 1; // because we will sort 1-based indices
+		for (i = 0; i < seqs->nelt; i++)
+			order[i] = i + 1; // 1-based indices
+	}
 	qsort(order, seqs->nelt, sizeof(int), cmp_RoSeq_indices);
 	return;
 }
 
+void _get_RoSeqs_duplicated(const RoSeqs *seqs, int *duplicated)
+{
+    int i, *order;
+
+	order = (int *) R_alloc(seqs->nelt, sizeof(int));
+	_get_RoSeqs_order(seqs, order, 0);
+
+	duplicated[order[0]] = 0;
+    for (i = 1; i < seqs->nelt; i++)
+        duplicated[order[i]] =
+        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0);
+
+    return;
+}
+
+void _get_RoSeqs_not_duplicated(const RoSeqs *seqs, int *not_duplicated)
+{
+    int i, *order;
+
+	order = (int *) R_alloc(seqs->nelt, sizeof(int));
+	_get_RoSeqs_order(seqs, order, 0);
+
+	not_duplicated[order[0]] = 1;
+    for (i = 1; i < seqs->nelt; i++)
+        not_duplicated[order[i]] =
+        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) != 0);
+
+    return;
+}

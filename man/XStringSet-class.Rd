@@ -66,6 +66,9 @@
 \alias{order,XStringSet-method}
 \alias{sort,XStringSet-method}
 
+\alias{duplicated,XStringSet-method}
+\alias{unique,XStringSet-method}
+
 
 \title{BStringSet, DNAStringSet, RNAStringSet and AAStringSet objects}
 
@@ -202,6 +205,39 @@
   }
 }
 
+\section{Ordering and related methods}{
+  In the code snippets below,
+  \code{x} is an XStringSet object.
+
+  \describe{
+    \item{}{
+      \code{order(x)}:
+      Return a permutation which rearranges \code{x} into ascending or
+      descending order.
+    }
+    \item{}{
+      \code{sort(x)}:
+      Sort \code{x} into ascending order (equivalent to \code{x[order(x)]}).
+    }
+  }
+}
+
+\section{Duplicated and unique methods}{
+  In the code snippets below,
+  \code{x} is an XStringSet object.
+
+  \describe{
+    \item{}{
+      \code{duplicated(x)}:
+      Return a logical vector whose elements denotes duplicates in \code{x}.
+    }
+    \item{}{
+      \code{unique(x)}:
+      Return an XStringSet containing the unique values in \code{x}.
+    }
+  }
+}
+
 \section{Set Operations}{
   In the code snippets below,
   \code{x} and \code{y} are XStringSet objects
@@ -252,23 +288,6 @@
     \item{}{
       \code{toString(x)}:
       Equivalent to \code{toString(as.character(x))}.
-    }
-  }
-}
-
-\section{Ordering and related methods}{
-  In the code snippets below,
-  \code{x} is an XStringSet object.
-
-  \describe{
-    \item{}{
-      \code{order(x)}:
-      Return a permutation which rearranges \code{x} into ascending or
-      descending order.
-    }
-    \item{}{
-      \code{sort(x)}:
-      Sort \code{x} into ascending order (equivalent to \code{x[order(x)]}).
     }
   }
 }
