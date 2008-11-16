@@ -66,7 +66,7 @@ test_comparison <- function()
 test_subseq <- function()
 {
   bs <- BString("ACGTA")
-  checkEquals("GTA", subseq(bs, start = 3)) # comparison between "character"
+  checkEquals("GTA", subseq(bs, start = 3)) # test "==" between "character"
                                             # and "BString" done elsewhere
   checkEquals("TA", subseq(bs, start = -2))
   
