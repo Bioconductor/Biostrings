@@ -4,15 +4,16 @@
 ## are the expected ones.
 ##   subject: BioString object of length 1
 ##   expected_roffsets: matrix of the expected relative offsets of the matches
-##   matches: BioString object returned by matchPattern("findme", subject)
+##   matches: BioString object returned by matchDNAPattern("findme", subject)
 checkBioStringMatches <- function(subject, expected_roffsets, matches)
 {
-    checkEquals(expected_roffsets[, 1], start(matches))
+    expected_aoffsets <- expected_roffsets + subject@offsets[1,1] - 1
+    checkEquals(expected_aoffsets, matches@offsets)
     ## We need to check for this particular case because surprinsingly,
     ## substring() doesn't work with 'first' and 'last' of zero length
     if (dim(expected_roffsets)[1] != 0) {
-        first <- expected_roffsets[, 1]
-        last <- expected_roffsets[, 2]
+        first <- expected_roffsets[,1]
+        last <- expected_roffsets[,2]
         expected_substrings <- substring(as.character(subject), first, last)
         checkEquals(expected_substrings, as.character(matches))
     }
@@ -20,7 +21,7 @@ checkBioStringMatches <- function(subject, expected_roffsets, matches)
 
 checkExactMatches <- function(pattern, subject, expected_pos=numeric(0))
 {
-    matches <- vmatchPattern(pattern, subject)
+    matches <- matchDNAPattern(pattern, subject)
     expected_roffsets <- cbind(expected_pos, expected_pos+nchar(pattern)-1, deparse.level=0)
     checkBioStringMatches(subject, expected_roffsets, matches)
     expected_length <- length(expected_pos)
@@ -37,7 +38,7 @@ checkExactMatches <- function(pattern, subject, expected_pos=numeric(0))
 test_matchIndexToBioString <- function()
 {
     seq <- c("CCCC", "TTAATT")
-    subject <- DNAStringSet(seq)[2]
+    subject <- DNAString(seq)[2]
 
     ## CASE 'nmatch == 0'
     checkExactMatches("AAA", subject)
@@ -55,7 +56,7 @@ test_ShiftOr_matchInternal_A1 <- function()
     pattern <- DNAString("CAG")
     subject <- DNAString("CAGTTT")
     expected_roffsets <- rbind(c(1, 3))
-    matches <- matchPattern(pattern, subject, max.mismatch=1)
+    matches <- matchDNAPattern(pattern, subject, mis=1)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -64,7 +65,7 @@ test_ShiftOr_matchInternal_A2 <- function()
     pattern <- DNAString("AKADAKA")
     subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(7, 13))
-    matches <- matchPattern(pattern, subject, max.mismatch=0)
+    matches <- matchDNAPattern(pattern, subject, mis=0)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -74,7 +75,7 @@ test_ShiftOr_matchInternal_A3 <- function()
     subject <- DNAString("ATATGAATAAAGA")
     expected_roffsets <- rbind(c(3, 9),
                                c(7, 13))
-    matches <- matchPattern(pattern, subject, max.mismatch=1)
+    matches <- matchDNAPattern(pattern, subject, mis=1)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -85,7 +86,7 @@ test_ShiftOr_matchInternal_A4 <- function()
     expected_roffsets <- rbind(c(1,7),
                                c(3, 9),
                                c(7, 13))
-    matches <- matchPattern(pattern, subject, max.mismatch=2)
+    matches <- matchDNAPattern(pattern, subject, mis=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -98,7 +99,7 @@ test_ShiftOr_matchInternal_B1 <- function()
                                c( 1, 4),
                                c( 2, 5),
                                c( 3, 6))
-    matches <- matchPattern(pattern, subject, max.mismatch=2)
+    matches <- matchDNAPattern(pattern, subject, mis=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -112,7 +113,7 @@ test_ShiftOr_matchInternal_B2 <- function()
                                c( 5, 7),
                                c( 6, 8),
                                c( 9, 11))
-    matches <- matchPattern(pattern, subject, max.mismatch=2)
+    matches <- matchDNAPattern(pattern, subject, mis=2)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -128,7 +129,7 @@ test_ShiftOr_matchInternal_B3 <- function()
                                c( 3, 6),
                                c( 4, 7))
     ## Provoques an error
-    matches <- matchPattern(pattern, subject, max.mismatch=3)
+    matches <- matchDNAPattern(pattern, subject, mis=3)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -148,7 +149,7 @@ test_ShiftOr_matchInternal_B4 <- function()
                                c( 3, 6),
                                c( 4, 7),
                                c( 5, 8))
-    matches <- matchPattern(pattern, subject, max.mismatch=4)
+    matches <- matchDNAPattern(pattern, subject, mis=4)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -175,7 +176,7 @@ test_ShiftOr_matchInternal_C1 <- function()
                                c(8491898, 8491918),
                                c(8491899, 8491919),
                                c(9233437, 9233457))
-    matches <- matchPattern(pattern, subject, max.mismatch=5)
+    matches <- matchDNAPattern(pattern, subject, mis=5)
     checkBioStringMatches(subject, expected_roffsets, matches)
 
     ## With a 32 char long pattern, mis=10
@@ -183,14 +184,14 @@ test_ShiftOr_matchInternal_C1 <- function()
     expected_roffsets <- rbind(c(1,32),
                                c(3807182, 3807213),
                                c(9926155, 9926186))
-    matches <- matchPattern(pattern32, subject, max.mismatch=10)
+    matches <- matchDNAPattern(pattern32, subject, mis=10)
     checkBioStringMatches(subject, expected_roffsets, matches)
 
     ## With a 64 char long pattern (works on 64-bit platforms only)
     pattern64 <- DNAString(substr(big, 1, 64)) #substr(subject, 1, 64)
     expected_roffsets <- rbind(c(1,64),
                                c(1049302, 1049365))
-    matches <- matchPattern(pattern64, subject, max.mismatch=24)
+    matches <- matchDNAPattern(pattern64, subject, mis=24)
     checkBioStringMatches(subject, expected_roffsets, matches)
 }
 
@@ -202,12 +203,23 @@ test_openbug1 <- function()
 {
     pattern <- DNAString("CAG")
     subject <- DNAString("GTTCA")
-    matches <- matchPattern(pattern, subject, max.mismatch=2)
+    matches <- matchDNAPattern(pattern, subject, mis=2)
 
     multi <- DNAString(c("TTT", "GTTCA", "TT"))
     subject2 <- multi[2]
-    matches2 <- matchPattern(pattern, subject2, max.mismatch=2)
+    matches2 <- matchDNAPattern(pattern, subject2, mis=2)
 
     checkEquals(as.character(matches), as.character(matches2))
 }
    
+# TODO: Move this test to another file. Has nothing to do
+# with testing the matchDNAPattern() function...
+# Not sure this one is a bug. Are we supposed to always
+# be allowed to change a value in a matrix? What "says" R?
+test_openbug2 <- function()
+{
+    s <- DNAString("ACGT")
+    s@offsets[1,1] <- 2
+    ## Provoques an error
+    show(s)
+}
