@@ -138,7 +138,8 @@
   By default (i.e. if \code{PDict} is called with \code{max.mismatch=NA},
   \code{tb.start=NA}, \code{tb.end=NA} and \code{tb.width=NA})
   the following limitations apply: (1) the original dictionary can only
-  contain As, Cs, Gs and Ts (no IUPAC extended letters); (2) all the
+  contain base letters (i.e. only As, Cs, Gs and Ts), therefore IUPAC
+  extended letters are not allowed; (2) all the
   patterns in the dictionary must have the same length ("constant width"
   dictionary); and (3) later \code{matchPdict} can only be used with
   \code{max.mismatch=0}.

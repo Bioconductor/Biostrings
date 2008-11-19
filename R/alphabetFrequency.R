@@ -209,6 +209,55 @@ setMethod("alphabetFrequency", "MaskedXString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "hasOnlyBaseLetters" generic and methods.
+###
+
+setGeneric("hasOnlyBaseLetters", function(x) standardGeneric("hasOnlyBaseLetters"))
+
+setMethod("hasOnlyBaseLetters", "DNAString",
+    function(x)
+        alphabetFrequency(x, baseOnly=TRUE)[["other"]] == 0
+)
+
+setMethod("hasOnlyBaseLetters", "RNAString",
+    function(x) hasOnlyBaseLetters(DNAString(x))
+)
+
+setMethod("hasOnlyBaseLetters", "DNAStringSet",
+    function(x)
+        alphabetFrequency(x, baseOnly=TRUE, collapse=TRUE)[["other"]] == 0
+)
+
+setMethod("hasOnlyBaseLetters", "RNAStringSet",
+    function(x) hasOnlyBaseLetters(DNAStringSet(x))
+)
+
+setMethod("hasOnlyBaseLetters", "XStringViews",
+    function(x)
+    {
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        hasOnlyBaseLetters(y)
+    }
+)
+
+setMethod("hasOnlyBaseLetters", "MaskedDNAString",
+    function(x)
+    {
+        y <- toXStringViewsOrXString(x)
+        hasOnlyBaseLetters(y)
+    }
+)
+
+setMethod("hasOnlyBaseLetters", "MaskedRNAString",
+    function(x)
+    {
+        y <- toXStringViewsOrXString(x)
+        hasOnlyBaseLetters(y)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "uniqueLetters" generic and methods.
 ###
 

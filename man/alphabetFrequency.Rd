@@ -10,6 +10,15 @@
 \alias{alphabetFrequency,XStringViews-method}
 \alias{alphabetFrequency,MaskedXString-method}
 
+\alias{hasOnlyBaseLetters}
+\alias{hasOnlyBaseLetters,DNAString-method}
+\alias{hasOnlyBaseLetters,DNAStringSet-method}
+\alias{hasOnlyBaseLetters,RNAString-method}
+\alias{hasOnlyBaseLetters,RNAStringSet-method}
+\alias{hasOnlyBaseLetters,XStringViews-method}
+\alias{hasOnlyBaseLetters,MaskedDNAString-method}
+\alias{hasOnlyBaseLetters,MaskedRNAString-method}
+
 \alias{uniqueLetters}
 \alias{uniqueLetters,XString-method}
 \alias{uniqueLetters,XStringSet-method}
@@ -31,7 +40,8 @@
 \alias{mkAllStrings}
 
 
-\title{Functions to calculate the frequency of letters in a biological sequence}
+\title{Function to calculate the frequency of letters in a biological
+sequence and related functions}
 
 \description{
   Given a biological sequence, the \code{alphabetFrequency} function will
@@ -54,6 +64,7 @@
 
 \usage{
   alphabetFrequency(x, baseOnly=FALSE, freq=FALSE, ...)
+  hasOnlyBaseLetters(x)
   uniqueLetters(x)
 
   dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
@@ -74,6 +85,9 @@
     An \link{XString}, \link{XStringSet}, \link{XStringViews}
     or \link{MaskedXString} object for the \code{*Frequency} and
     \code{uniqueLetters} functions.
+
+    "DNA or RNA input" for \code{hasOnlyBaseLetters}.
+
     A character vector for \code{strrev}.
   }
   \item{baseOnly}{
@@ -152,6 +166,10 @@
   is specified. In that case the returned vector (or array) contains the frequencies
   cumulated across all sequences in \code{x}.
 
+  \code{hasOnlyBaseLetters} returns \code{TRUE} or \code{FALSE} indicating
+  whether or not \code{x} contains only base letters (i.e. As, Cs, Gs and Ts
+  for "DNA input" and As, Cs, Gs and Us for "RNA input").
+
   \code{uniqueLetters} returns a vector of 1-letter or empty strings. The empty
   string is used to represent the nul character if \code{x} happens to contain
   any. Note that this can only happen if \link{XString} base subtype of \code{x}
@@ -179,6 +197,7 @@
 
   alphabetFrequency(yeast1)
   alphabetFrequency(yeast1, baseOnly=TRUE)
+  hasOnlyBaseLetters(yeast1)
   uniqueLetters(yeast1)
 
   dinucleotideFrequency(yeast1)
