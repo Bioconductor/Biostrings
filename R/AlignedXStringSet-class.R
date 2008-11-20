@@ -108,18 +108,30 @@ setValidity("QualityAlignedXStringSet",
 setGeneric("unaligned", function(x) standardGeneric("unaligned"))
 setMethod("unaligned", "AlignedXStringSet", function(x) x@unaligned)
 
-setGeneric("aligned", function(x) standardGeneric("aligned"))
+setGeneric("aligned", function(x, ...) standardGeneric("aligned"))
 setMethod("aligned", "AlignedXStringSet",
-          function(x) {
-              codecX <- codec(x)
-              if (is.null(codecX)) {
-                  gapCode <- charToRaw("-")
+          function(x, degap = FALSE) {
+              if (degap) {
+                  if (length(unaligned(x)) == 1) {
+                      value <-
+                        Views(unaligned(x)[[1]], start=start(x@range), end=end(x@range))
+                  } else {
+                      value <-
+                        narrow(as(unaligned(x), "XStringSet"), start=start(x@range), end=end(x@range))
+                  }
               } else {
-                  letters2codes <- codecX@codes
-                  names(letters2codes) <- codecX@letters
-                  gapCode <- as.raw(letters2codes[["-"]])
+                  codecX <- codec(x)
+                  if (is.null(codecX)) {
+                      gapCode <- charToRaw("-")
+                  } else {
+                      letters2codes <- codecX@codes
+                      names(letters2codes) <- codecX@letters
+                      gapCode <- as.raw(letters2codes[["-"]])
+                  }
+                  value <- 
+                    .Call("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
               }
-              .Call("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
+              value
           })
 
 setMethod("start", "AlignedXStringSet", function(x) start(x@range))

@@ -91,8 +91,10 @@
       The original string.
     }
     \item{}{
-      \code{aligned(x)}:
-      The "filled-with-gaps subsequence" representing the aligned substring.
+      \code{aligned(x, degap = FALSE)}:
+      If \code{degap = FALSE}, the "filled-with-gaps subsequence" representing
+      the aligned substring. If \code{degap = TRUE}, the "gap-less subsequence"
+      representing the aligned substring.
     }
     \item{}{
       \code{start(x)}:
