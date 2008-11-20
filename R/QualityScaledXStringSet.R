@@ -64,7 +64,7 @@ setGeneric("quality", function(x) standardGeneric("quality"), useAsDefault = fun
 QualityScaledXStringSet <- function(x, quality) {
     if (!is(x, "XStringSet"))
         stop("'x' must be of class 'XStringSet'")
-    if (!is(x, "XStringSet"))
+    if (!is(quality, "XStringQuality"))
         stop("'quality' must be of class 'XStringQuality'")
     if (!(length(quality) %in% c(1, length(x))))
         stop("'length(quality)' must equal 1 or 'length(x)'")
@@ -79,6 +79,35 @@ QualityScaledBStringSet <- function(x, quality) QualityScaledXStringSet(BStringS
 QualityScaledDNAStringSet <- function(x, quality) QualityScaledXStringSet(DNAStringSet(x), quality)
 QualityScaledRNAStringSet <- function(x, quality) QualityScaledXStringSet(RNAStringSet(x), quality)
 QualityScaledAAStringSet <- function(x, quality) QualityScaledXStringSet(AAStringSet(x), quality)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Inherited methods.
+###
+
+setMethod("narrow", "QualityScaledXStringSet",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        x@ranges <-
+          narrow(x@ranges, start=start, end=end, width=width,
+                 use.names=use.names)
+        if (all(width(x@quality@ranges) > 1)) {
+            x@quality@ranges <-
+              narrow(x@quality@ranges, start=start, end=end, width=width,
+                     use.names=use.names)
+        }
+        x
+    }
+)
+
+
+setMethod("append", c("QualityScaledXStringSet", "QualityScaledXStringSet"),
+    function(x, values, after=length(x))
+    {
+        QualityScaledXStringSet(append(as(x, "XStringSet"), as(values, "XStringSet"), after=after),
+                                as(append(x@quality, values@quality, after=after), class(x@quality)))
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

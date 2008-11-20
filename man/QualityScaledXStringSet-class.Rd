@@ -23,6 +23,10 @@
 \alias{quality}
 \alias{quality,QualityScaledXStringSet-method}
 
+% Inherited method:
+\alias{narrow,QualityScaledXStringSet-method}
+\alias{append,QualityScaledXStringSet,QualityScaledXStringSet-method}
+
 % Standard generic methods:
 \alias{show,QualityScaledXStringSet-method}
 \alias{[,QualityScaledXStringSet,ANY,ANY,ANY-method}
