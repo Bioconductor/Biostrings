@@ -1,6 +1,24 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
+
+const char* get_qualityless_classname(SEXP object)
+{
+	const char *classname = get_classname(object);
+	const char *outputClassname;
+	if (strcmp(classname, "QualityScaledBStringSet") == 0) {
+		outputClassname = "BStringSet";
+	} else if (strcmp(classname, "QualityScaledDNAStringSet") == 0) {
+		outputClassname = "DNAStringSet";
+	} else if (strcmp(classname, "QualityScaledRNAStringSet") == 0) {
+		outputClassname = "RNAStringSet";
+	} else {
+		outputClassname = classname;
+	}
+	return outputClassname;
+}
+
+
 /*
  * --- .Call ENTRY POINT ---
  */
@@ -61,7 +79,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("elements"));
 
-	const char *stringSetClass = get_classname(unaligned);
+	const char *stringSetClass = get_qualityless_classname(unaligned);
 	const char *stringClass = get_classname(_get_XStringSet_super(unaligned));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
@@ -154,7 +172,7 @@ SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
 	SEXP rangeSubject = GET_SLOT(subject, install("range"));
 	SEXP indelSubject = GET_SLOT(GET_SLOT(subject, install("indel")), install("elements"));
 
-	const char *stringSetClass = get_classname(unalignedPattern);
+	const char *stringSetClass = get_qualityless_classname(unalignedPattern);
 	const char *stringClass = get_classname(_get_XStringSet_super(unalignedPattern));
 
 	int numberOfAlignments = LENGTH(indelPattern);
