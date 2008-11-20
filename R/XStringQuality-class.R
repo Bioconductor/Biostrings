@@ -55,15 +55,32 @@ setMethod("p2q", "PhredQuality", function(x) function(p) -10 * log10(p))
 setMethod("p2q", "SolexaQuality", function(x) function(p) -10 * log10(p/(1 - p)))
 
 qualityConverter <- function(x, qualityClass, outputType) {
-    .BStringSet2integer <- function(x, scale)
-        as.integer(charToRaw(as.character(x))) - offset(scale)
-    .integer2BStringSet <- function(x, scale)
-        BStringSet(rawToChar(as.raw(pmax.int(minQuality(scale), pmin.int(maxQuality(scale), x)) + offset(scale))))
+    .BStringSet2integer <- function(x, scale) {
+        if (length(x) == 0)
+            value <- integer(0)
+        else
+            value <- as.integer(charToRaw(as.character(x))) - offset(scale)
+        value
+    }
+    .integer2BStringSet <- function(x, scale) {
+        if (length(x) == 0)
+            value <- BStringSet(character(0))
+        else
+            value <-
+              BStringSet(rawToChar(as.raw(pmax.int(minQuality(scale),
+                                          pmin.int(maxQuality(scale), x)) + offset(scale))))
+        value
+    }
     .numeric2BStringSet <- function(x, scale) {
-        if (any(is.na(x)) || any(x < 0) || any(x > 1))
+        if (length(x) == 0) {
+            value <- BStringSet(character(0))
+        } else if (any(is.na(x)) || any(x < 0) || any(x > 1)) {
             stop("'x' must be numbers between 0 and 1 inclusive")
-        x[x < 1e-12] <- 1e-12
-        .integer2BStringSet(as.integer(round(p2q(scale)(x))), scale)
+        } else {
+            x[x < 1e-12] <- 1e-12
+            value <- .integer2BStringSet(as.integer(round(p2q(scale)(x))), scale)
+        }
+        value
     }
     scale <- new(qualityClass)
     outputType <- match.arg(outputType, c("BStringSet", "integer", "numeric"))
