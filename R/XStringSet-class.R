@@ -516,7 +516,7 @@ setMethod("append", c("XStringSet", "XStringSet"),
     if (baseXStringSubtype(y) != baseClass)
         stop("'x' and 'y' must be XStringSet objects of the same subtype")
     ans_class <- paste(baseClass, "Set", sep="")
-    XStringSet(baseClass, FUN(as.character(x), as.character(y)))
+    XStringSet(baseClass, FUN(as.character(unique(x)), as.character(unique(y))))
 }
 
 setMethod("union", c("XStringSet", "XStringSet"),
@@ -534,7 +534,7 @@ setMethod("setequal", c("XStringSet", "XStringSet"),
         if (baseXStringSubtype(y) != baseClass)
             stop("'x' and 'y' must be XStringSet objects of the same subtype")
         ans_class <- paste(baseClass, "Set", sep="")
-        setequal(as.character(x), as.character(y))
+        setequal(as.character(unique(x)), as.character(unique(y)))
     }
 )
 
