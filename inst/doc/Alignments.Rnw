@@ -125,12 +125,12 @@ penalties influence alignment scores in the following manner:
     Assuming independence within and between recordings, the combined error
     probability of a mismatch when the underlying characters do match is
     $\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2$,
-    where $n$ is the number of characters in the underlying alphabet. Using
-    $\epsilon_c$, the substitution score is given by
+    where $n$ is the number of characters in the underlying alphabet (e.g. in
+    DNA and RNA, $n = 4$). Using $\epsilon_c$, the substitution score is given by
     $b * \log_2(\gamma_{(x,y)} * (1 - \epsilon_c) * n + (1 - \gamma_{(x,y)}) * \epsilon_c * (n/(n-1)))$,
     where $b$ is the bit-scaling for the scoring and $\gamma_{(x,y)}$ is the
     probability that characters $x$ and $y$ represents the same underlying
-    information (e.g. using IUPAC, $\gamma_{(A,A)} = 1$ and $\gamma_{(A,N)} = 1/4$).
+    letters (e.g. using IUPAC, $\gamma_{(A,A)} = 1$ and $\gamma_{(A,N)} = 1/4$).
   \end{description}  
   \item{Gap Penalties:  }
   Gap penalties are the values associated with the gaps within the substring
