@@ -133,9 +133,11 @@
       Generates a summary for the \code{PairwiseAlignment}.
     }
     \item{}{
-      \code{aligned(x)}:
-      Returns an \code{XStringSet} object containing the aligned patterns
-      without insertions. This operation ``aligns" the alignments.
+      \code{aligned(x, degap = FALSE)}:
+      If \code{degap = FALSE}, ``align" the alignments by returning an
+      \code{XStringSet} object containing the aligned patterns without
+      insertions. If \code{degap = TRUE}, returns
+      \code{aligned(pattern(x), degap=TRUE)}.
     }
     \item{}{
       \code{as.character(x)}:

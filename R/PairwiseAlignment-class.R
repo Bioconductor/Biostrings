@@ -246,16 +246,22 @@ setMethod("show", "PairwiseAlignmentSummary", function(object)
 ###
 
 setMethod("aligned", "PairwiseAlignment",
-          function(x) {
-              codecX <- codec(x)
-              if (is.null(codecX)) {
-                  gapCode <- charToRaw("-")
+          function(x, degap = FALSE) {
+              if (degap) {
+                  value <- aligned(pattern(x), degap = degap)
               } else {
-                  letters2codes <- codecX@codes
-                  names(letters2codes) <- codecX@letters
-                  gapCode <- as.raw(letters2codes[["-"]])
+                  codecX <- codec(x)
+                  if (is.null(codecX)) {
+                      gapCode <- charToRaw("-")
+                  } else {
+                      letters2codes <- codecX@codes
+                      names(letters2codes) <- codecX@letters
+                      gapCode <- as.raw(letters2codes[["-"]])
+                  }
+                  value <-
+                    .Call("PairwiseAlignment_align_aligned", x, gapCode, PACKAGE="Biostrings")
               }
-              .Call("PairwiseAlignment_align_aligned", x, gapCode, PACKAGE="Biostrings")
+              value
           })
 
 setMethod("as.character", "PairwiseAlignment",
