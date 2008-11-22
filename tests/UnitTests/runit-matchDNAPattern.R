@@ -1,6 +1,6 @@
 ## ============================ Utility functions ============================
 
-## Check that the offsets and substrings in BioString object 'matches'
+## Check that the offsets and substrings in Biostring object 'matches'
 ## are the expected ones.
 ##   subject: BioString object of length 1
 ##   expected_roffsets: matrix of the expected relative offsets of the matches

@@ -15,10 +15,7 @@ Immediate TODO list
 
 BASIC CONTAINERS
 
-- Fix the MIndex container. It must support storage of hits for patterns of
-  variable width. Make sure to make startIndex() work properly on the MIndex
-  object returned by a call to matchPDict() on a PDict object with a head or
-  a tail (it's currently broken). It should also support storage of the nb of
+- Improve the MIndex container. It needs to support storage of the nb of
   mismatches for each hit. No need to store the locations of those mismatches
   though: this would require a huge amount of memory and there are other ways
   to retrieve these locations on user demand so maybe it's not worth it.

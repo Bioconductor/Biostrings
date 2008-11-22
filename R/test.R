@@ -1,26 +1,11 @@
-## Defined for testing purpose only.
-
-setGeneric("eq",
-    function(bs1, bs2) standardGeneric("eq")
-)
-
-setMethod("eq", signature(bs1="BioString", bs2="BioString"),
-    function (bs1, bs2)
-    {
-        ok <- as.character(bs1) == as.character(bs2)
-        ok <- ok && bs1@offsets == bs2@offsets
-        return(ok)
-    }
-)
-
 testBiostrings <- function()
 {
     require("RUnit", quietly=TRUE) || stop("RUnit package not found")
-    testDirs <- system.file("tests", package="Biostrings")
+    dirs <- file.path(system.file("tests", package="Biostrings"), "UnitTests")
     testFileRegexp <- "^runit.+\\.[rR]$"
-    testSuite <- defineTestSuite(name="BioStrings Test Suite",
-                                 dirs=testDirs,
+    testsuite <- defineTestSuite("Biotrings Test Suite", dirs,
                                  testFileRegexp=testFileRegexp)
-    testData <- runTestSuite(testSuite)
-    printTextProtocol(testData, showDetails=FALSE)
+    testresult <- runTestSuite(testsuite)
+    printTextProtocol(testresult, showDetails=FALSE)
 }
+
