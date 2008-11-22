@@ -124,7 +124,7 @@ test_matchVariableWidth <- function()
   L <- 6
   n_cut <- sample(0:5, L, replace=TRUE)
   ir <- successiveIRanges(rep(W, L) - n_cut, gapwidth = 1 + n_cut[-length(n_cut)])
-  short_sequences <- msubseq(target, ir)
+  short_sequences <- msubseq(dna_target, ir)
   # shuffle the sequences (they are not in consecutive order)
   o <- sample(seq(along=short_sequences))
   
@@ -141,11 +141,11 @@ test_matchVariableWidth <- function()
   # mostly a sanity check
   checkEquals(L, length(res))
   
+  iro <- ir[o]
   for (i in seq(along=res)) {
-    m_start <- ir[o][i]@start
-    checkEquals(m_start, start(res[[i]]))
-    checkEquals(W, width(res[[i]]))
-    checkEquals(m_start + W - 1, end(res[[i]]))  # mostly a sanity check
+    checkEquals(start(iro)[i], start(res[[i]]))
+    checkEquals(width(iro)[i], width(res[[i]]))
+    checkEquals(end(iro)[i], end(res[[i]]))  # mostly a sanity check
   }
     
 }

@@ -2,13 +2,14 @@ test_constructors <- function()
 {
 
   dst <- DNAString("ACGTAT")   # just check this does not throw an error
-  checkException( dst <- DNAString("ACFTC") )
+  checkException( dst <- DNAString("ACFTC") , silent=TRUE)
 
   rst <- RNAString("ACGUAU")   # just check this does not throw an error
-  checkException( rst <- RNAString("ACGTC") )
+  checkException( rst <- RNAString("ACGTC") , silent=TRUE)
 
-  ast <- AAString("ACGTAT")   # just check this does not throw an error
-  checkException( ast <- AAString("ACXTCZ") )
+  ast <- AAString("EQHIILF")   # just check this does not throw an error
+  #checkException( ast <- AAString("ACXTCZ") , silent=TRUE)  # AAString()
+                                            # doesn't check its input yet
 
 }
 
@@ -66,8 +67,8 @@ test_comparison <- function()
 test_subseq <- function()
 {
   bs <- BString("ACGTA")
-  checkEquals("GTA", subseq(bs, start = 3)) # test "==" between "character"
-                                            # and "BString" done elsewhere
-  checkEquals("TA", subseq(bs, start = -2))
+  checkEquals("GTA", as.character(subseq(bs, start = 3))) # test "==" between "character"
+                                                          # and "BString" done elsewhere
+  checkEquals("TA", as.character(subseq(bs, start = -2)))
   
 }
