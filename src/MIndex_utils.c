@@ -137,31 +137,29 @@ SEXP _MIndex_reported_matches_asSEXP(SEXP env)
  */
 
 /*
- * 'e1' must be an INTSXP.
- * addInt() must ALWAYS duplicate 'e1', even when e2 = 0!
+ * Does *inplace* addition of 'val' to all the elements in 'x' (INTSXP).
+ * Never use it if 'x' is coming from the user space!
  */
-static SEXP addInt(SEXP e1, int e2)
+static void add_val_to_INTEGER(SEXP x, int val)
 {
-	SEXP ans;
-	int i, *val;
+	int i, *x_elt;
 
-	PROTECT(ans = duplicate(e1));
-	for (i = 0, val = INTEGER(ans); i < LENGTH(ans); i++, val++)
-		*val += e2;
-	UNPROTECT(1);
-	return ans;
+	for (i = 0, x_elt = INTEGER(x); i < LENGTH(x); i++, x_elt++)
+		*x_elt += val;
+	return;
 }
 
 /*
  * --- .Call ENTRY POINT ---
- * Only elements in 'x_ends' that are integer vectors are shifted.
+ * If 'x_width' is NULL => returns the endIndex (list).
+ * Otherwise 'x_width' must be an integer vector of same length as the
+ * 'x_ends' list and the startIndex is returned.
  */
-SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP shift)
+SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP x_width)
 {
 	SEXP ans, ans_elt;
-	int shift0, i, k1, j, *val;
+	int i, k1;
 
-	shift0 = INTEGER(shift)[0];
 	PROTECT(ans = duplicate(x_ends));
 	for (i = 0; i < LENGTH(ans); i++) {
 		if (LENGTH(x_dup2unq) != 0
@@ -171,15 +169,12 @@ SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP shift)
 			UNPROTECT(1);
 			continue;
 		}
-		ans_elt = VECTOR_ELT(ans, i);
-		if (!IS_INTEGER(ans_elt))
+		if (x_width == R_NilValue)
 			continue;
-		for (j = 0, val = INTEGER(ans_elt);
-		     j < LENGTH(ans_elt);
-		     j++, val++)
-		{
-			*val += shift0;
-		}
+		ans_elt = VECTOR_ELT(ans, i);
+		if (!IS_INTEGER(ans_elt)) // could be NULL
+			continue;
+		add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width)[i]);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -187,35 +182,44 @@ SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP shift)
 
 /*
  * --- .Call ENTRY POINT ---
- * All the keys in ends_envir must be representing integers left-padded with 0s
+ * All the keys in 'x_ends_envir' must be representing integers left-padded with 0s
  * so they have the same length. This works properly:
      library(Biostrings)
-     ends_envir <- new.env(parent = emptyenv())
+     ends_envir <- new.env(parent=emptyenv())
      ends_envir[['0000000010']] <- -2:1
      ends_envir[['0000000004']] <- 9:6
-     .Call("ByName_MIndex_endIndex", ends_envir, 0L, letters[1:10], TRUE, PACKAGE="Biostrings")
-     .Call("ByName_MIndex_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+     .Call("ByName_MIndex_endIndex",
+           ends_envir, NULL, letters[1:10], TRUE,
+           PACKAGE="Biostrings")
+     .Call("ByName_MIndex_endIndex",
+           ends_envir, NULL, letters[1:10], FALSE,
+           PACKAGE="Biostrings")
  * but this doesn't:
      ends_envir[['3']] <- 33L
-     .Call("ByName_MIndex_endIndex", ends_envir, 0L, letters[1:10], FALSE, PACKAGE="Biostrings")
+     .Call("ByName_MIndex_endIndex",
+           ends_envir, NULL, letters[1:10], FALSE,
+           PACKAGE="Biostrings")
  */
-SEXP ByName_MIndex_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_names)
+SEXP ByName_MIndex_endIndex(SEXP x_ends_envir, SEXP x_width, SEXP x_names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;
 	IntAE poffsets, poffsets_order;
 
-	PROTECT(symbols = R_lsInternal(ends_envir, 1));
+	PROTECT(symbols = R_lsInternal(x_ends_envir, 1));
 	poffsets = CHARACTER_asIntAE(symbols, -1);
 	if (LOGICAL(all_names)[0]) {
-		PROTECT(ans = NEW_LIST(LENGTH(names)));
+		PROTECT(ans = NEW_LIST(LENGTH(x_names)));
 		for (i = 0; i < poffsets.nelt; i++) {
-			end = _get_val_from_env(STRING_ELT(symbols, i), ends_envir, 1);
-			PROTECT(ans_elt = addInt(end, INTEGER(shift)[0]));
-			SET_ELEMENT(ans, poffsets.elts[i], ans_elt);
+			j = poffsets.elts[i];
+			end = _get_val_from_env(STRING_ELT(symbols, i), x_ends_envir, 1);
+			PROTECT(ans_elt = duplicate(end));
+			if (x_width != R_NilValue)
+				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width)[j]);
+			SET_ELEMENT(ans, j, ans_elt);
 			UNPROTECT(1);
 		}
-		SET_NAMES(ans, duplicate(names));
+		SET_NAMES(ans, duplicate(x_names));
 		UNPROTECT(1);
 	} else {
 		//poffsets_order = new_IntAE(poffsets.nelt, 0, 0);
@@ -226,9 +230,13 @@ SEXP ByName_MIndex_endIndex(SEXP ends_envir, SEXP shift, SEXP names, SEXP all_na
 		for (i = 0; i < poffsets.nelt; i++) {
 			//j = poffsets_order.elts[i];
 			j = i;
-			end = _get_val_from_env(STRING_ELT(symbols, j), ends_envir, 1);
-			SET_ELEMENT(ans, i, addInt(end, INTEGER(shift)[0]));
-			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(names, poffsets.elts[j])));
+			end = _get_val_from_env(STRING_ELT(symbols, j), x_ends_envir, 1);
+			PROTECT(ans_elt = duplicate(end));
+			if (x_width != R_NilValue)
+				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width)[i]);
+			SET_ELEMENT(ans, i, ans_elt);
+			UNPROTECT(1);
+			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(x_names, poffsets.elts[j])));
 		}
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(2);

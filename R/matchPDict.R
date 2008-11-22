@@ -175,10 +175,10 @@
         return(C_ans)
     # matchPDict()
     if (is.null(pdict_names))
-        new("ByPos_MIndex", ends=C_ans, width=tb.width(pdict))
+        new("ByPos_MIndex", ends=C_ans, width=width(pdict))
     else
         new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
-                             width=tb.width(pdict), NAMES=pdict_names)
+                             width=width(pdict), NAMES=pdict_names)
 }
 
 .matchMTB_PDict <- function(pdict, subject, algorithm,
@@ -225,11 +225,7 @@
         if (verbose)
             cat("Combining the results obtained for ",
                 "each TB_PDict component...\n", sep="")
-        st <- system.time(
-            {
-                ans_width <- sum(sapply(tb_pdicts, tb.width))
-                ans <- ByPos_MIndex.combine(ans_parts, ans_width)
-            }, gcFirst=TRUE)
+        st <- system.time(ans <- ByPos_MIndex.combine(ans_parts), gcFirst=TRUE)
         if (verbose)
             print(st)
     } else {

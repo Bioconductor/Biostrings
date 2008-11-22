@@ -473,13 +473,13 @@ SEXP _MIndex_reported_matches_asSEXP(SEXP env);
 SEXP ByPos_MIndex_endIndex(
 	SEXP x_dup2unq,
 	SEXP x_ends,
-	SEXP shift
+	SEXP x_width
 );
 
 SEXP ByName_MIndex_endIndex(
-	SEXP ends_envir,
-	SEXP shift,
-	SEXP names,
+	SEXP x_ends_envir,
+	SEXP x_width,
+	SEXP x_names,
 	SEXP all_names
 );
 

@@ -186,16 +186,17 @@
   Ebox <- DNAString("CANNTG")
   subject <- Celegans$upstream5000
   mindex <- vmatchPattern(Ebox, subject, fixed=FALSE)
-  count_index <- countIndex(mindex)    # Get the number of matches per
-                                       # subject element.
-  sum(count_index)                     # Total number of matches.
+  count_index <- countIndex(mindex)  # Get the number of matches per
+                                     # subject element.
+  sum(count_index)  # Total number of matches.
   table(count_index)
   i0 <- which(count_index == max(count_index))
-  subject[i0]                          # The subject element with most
-                                       # occurrences.
-  mindex[[i0]]                         # Its matches as an IRanges object.
-  Views(subject[[i0]], start=start(mindex[[i0]]), end=end(mindex[[i0]])) # And
-                                       # as an XStringViews object.
+  subject[i0]  # The subject element with most matches.
+
+  ## The matches in 'subject[i0]' as an IRanges object:
+  mindex[[i0]]
+  ## The matches in 'subject[i0]' as an XStringViews object:
+  Views(subject[[i0]], start=start(mindex[[i0]]), end=end(mindex[[i0]]))
 
   ## ---------------------------------------------------------------------
   ## C. With indels

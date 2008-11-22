@@ -9,8 +9,14 @@
 ### An API for manipulating the match container returned by matchPDict().
 ###
 
-setClass("MIndex", representation("VIRTUAL"))
+setClass("MIndex",
+    representation(
+        "VIRTUAL",
+        width="integer"
+    )
+)
 
+setMethod("length", "MIndex", function(x) length(x@width))
 
 setGeneric("startIndex", signature="x",
     function(x, all.names=FALSE) standardGeneric("startIndex"))
@@ -85,39 +91,26 @@ setMethod("$", "MIndex", function(x, name) x[[name]])
 ### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
 ### returns the matches in a ByPos_MIndex object.
 ###
-### Note that in normal operations the user NEVER needs to create a
+### Note that in normal operations the user never needs to create a
 ### ByPos_MIndex object explicitely or to modify an existing one:
 ### ByPos_MIndex objects are created by the matchPDict() function
 ### and have a read-only semantic.
-###
-### Slot description:
-###
-###   ends: a list of integer vectors.
-###
-###   width: temporary hack. In the future we will probably want to store the
-###       starts of the matches when the original dictionary has a variable
-###       width. Another solution would be to keep the width slot and to make
-###       it the same length as the ends slot (it's currently of length 1
-###       only).
 ###
 
 setClass("ByPos_MIndex",
     contains="MIndex",
     representation(
         dups0="Dups",
-        ends="list",
-        width="integer"
+        ends="list"  # same length as the "width" slot
     )
 )
-
-setMethod("length", "ByPos_MIndex", function(x) length(x@ends))
 
 setMethod("names", "ByPos_MIndex", function(x) NULL)
 
 setMethod("show", "ByPos_MIndex",
     function(object)
     {
-        cat(length(object), "-pattern MIndex object\n", sep="")
+        cat("MIndex object of length ", length(object), "\n", sep="")
     }
 )
 
@@ -132,18 +125,19 @@ setMethod("[[", "ByPos_MIndex",
         ans_end <- x@ends[[key]]
         if (is.null(ans_end))
             ans_end <- integer(0)
-        ans_width <- rep.int(x@width, length(ans_end))
-        ans_start <- ans_end - ans_width + 1L
+        ans_width <- rep.int(x@width[key], length(ans_end))
+        ans_start <- ans_end - x@width[key] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
 ### An example of a ByPos_MIndex object of length 5 where only the
 ### 2nd and 5th pattern have matches:
+###   > width <- c(9L, 10L, 8L, 4L, 10L)
 ###   > dups0 <- Biostrings:::Dups(c(NA, NA, NA, NA, 2L))
 ###   > ends <- vector(mode="list", length=5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > mindex <- new("ByPos_MIndex", dups0=dups0, ends=ends, width=10L)
+###   > mindex <- new("ByPos_MIndex", width=width, dups0=dups0, ends=ends)
 ###   > mindex[[1]]
 ###   > mindex[[2]]
 ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
@@ -156,7 +150,9 @@ setMethod("startIndex", "ByPos_MIndex",
     {
         if (!missing(all.names))
             warning("'all.names' is ignored when MIndex object has no names")
-        .Call("ByPos_MIndex_endIndex", x@dups0@dup2unq, x@ends, 1L - x@width, PACKAGE="Biostrings")
+        .Call("ByPos_MIndex_endIndex",
+              x@dups0@dup2unq, x@ends, x@width,
+              PACKAGE="Biostrings")
     }
 )
 setMethod("endIndex", "ByPos_MIndex",
@@ -164,12 +160,17 @@ setMethod("endIndex", "ByPos_MIndex",
     {
         if (!missing(all.names))
             warning("'all.names' is ignored when MIndex object has no names")
-        .Call("ByPos_MIndex_endIndex", x@dups0@dup2unq, x@ends, 0L, PACKAGE="Biostrings")
+        .Call("ByPos_MIndex_endIndex",
+              x@dups0@dup2unq, x@ends, NULL,
+              PACKAGE="Biostrings")
     }
 )
 
-ByPos_MIndex.combine <- function(mi_list, ans_width)
+ByPos_MIndex.combine <- function(mi_list)
 {
+    if (length(mi_list) == 0)
+        stop("cannot combine an empty list of MIndex objects")
+    ans_width <- mi_list[[1]]@width  # all 'mi_list[[i]]@width' should be the same!
     ends_listlist <- lapply(mi_list, function(mi) mi@ends)
     #mergeEnds <- function(...)
     #{
@@ -183,7 +184,7 @@ ByPos_MIndex.combine <- function(mi_list, ans_width)
     ans_ends <- .Call("ByPos_MIndex_combine",
                       ends_listlist,
                       PACKAGE="Biostrings")
-    new("ByPos_MIndex", ends=ans_ends, width=ans_width)
+    new("ByPos_MIndex", width=ans_width, ends=ans_ends)
 }
 
 
@@ -200,40 +201,28 @@ ByPos_MIndex.combine <- function(mi_list, ans_width)
 ###
 ### Slot description:
 ###
-###   length: the length of the original dictionary.
-###
 ###   ends_envir: a key-value list (environment) where the values are integer
 ###       vectors containing the ending positions of the pattern whose
 ###       position in the original dictionary is given by the key (the keys are
 ###       strings representing positive integers).
 ###       
-###   width: temporary hack. In the future we will probably want to store the
-###       starts of the matches when the original dictionary has a variable
-###       width. Another solution would be to keep the width slot and to make
-###       it the same length as the ends_envir slot (it's currently of length
-###       1 only).
-###
 ###   names: a character vector containing the _unique_ pattern names.
 ###
 
 setClass("ByName_MIndex",
     contains="MIndex",
     representation(
-        length="integer",
         ends_envir="environment",
-        width="integer",
-        NAMES="character" # R doesn't like @names !!
+        NAMES="character"  # R doesn't like @names !!
     )
 )
-
-setMethod("length", "ByName_MIndex", function(x) x@length)
 
 setMethod("names", "ByName_MIndex", function(x) x@NAMES)
 
 setMethod("show", "ByName_MIndex",
     function(object)
     {
-        cat(length(object), "-pattern sparse MIndex object\n", sep="")
+        cat("Sparse MIndex object of length ", length(object), "\n", sep="")
     }
 )
 
@@ -250,17 +239,18 @@ setMethod("[[", "ByName_MIndex",
         ans_end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
         if (is.null(ans_end))
             ans_end <- integer(0)
-        ans_width <- rep.int(x@width, length(ans_end))
-        ans_start <- ans_end - ans_width + 1L
+        ans_width <- rep.int(x@width[key], length(ans_end))
+        ans_start <- ans_end - x@width[key] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
 ### An example of a ByName_MIndex object of length 5 where only the
 ### 2nd pattern has matches:
+###   > width <- c(9L, 10L, 8L, 4L, 10L)
 ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends_envir[['0000000002']] <- c(199L, 402L)
-###   > mindex <- new("ByName_MIndex", length=5L, ends_envir=ends_envir, width=10L, NAMES=letters[1:5])
+###   > mindex <- new("ByName_MIndex", width=width, ends_envir=ends_envir, NAMES=letters[1:5])
 ###   > mindex[[1]]
 ###   > mindex[[2]]
 ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
@@ -280,7 +270,9 @@ setMethod("startIndex", "ByName_MIndex",
     {
         if (!isTRUEorFALSE(all.names))
             stop("'all.names' must be TRUE or FALSE")
-        .Call("ByName_MIndex_endIndex", x@ends_envir, 1L - x@width, x@NAMES, all.names, PACKAGE="Biostrings")
+        .Call("ByName_MIndex_endIndex",
+              x@ends_envir, x@width, x@NAMES, all.names,
+              PACKAGE="Biostrings")
     }
 )
 setMethod("endIndex", "ByName_MIndex",
@@ -288,7 +280,9 @@ setMethod("endIndex", "ByName_MIndex",
     {
         if (!isTRUEorFALSE(all.names))
             stop("'all.names' must be TRUE or FALSE")
-        .Call("ByName_MIndex_endIndex", x@ends_envir, 0L, x@NAMES, all.names, PACKAGE="Biostrings")
+        .Call("ByName_MIndex_endIndex",
+              x@ends_envir, NULL, x@NAMES, all.names,
+              PACKAGE="Biostrings")
     }
 )
 

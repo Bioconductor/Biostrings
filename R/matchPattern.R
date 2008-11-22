@@ -369,7 +369,7 @@ setMethod("countPattern", "MaskedXString",
 ###
 ### These are vectorized versions of matchPattern() and countPattern().
 ### vmatchPattern() returns an MIndex object and vcountPattern() an integer
-### vector (like matchPDict() and countPDict() do).
+### vector (like matchPDict() and countPDict(), respectively).
 ###
 
 .XStringSet.vmatchPattern <- function(pattern, subject, algorithm,
@@ -399,7 +399,8 @@ setMethod("countPattern", "MaskedXString",
     if (count.only)
         return(C_ans)
     # C_ans is a list of IRanges objects
-    new("ByPos_MIndex", ends=lapply(C_ans, end), width=length(pattern))
+    ans_width <- rep.int(length(pattern), length(subject))
+    new("ByPos_MIndex", ends=lapply(C_ans, end), width=ans_width)
 }
 
 setGeneric("vmatchPattern", signature="subject",

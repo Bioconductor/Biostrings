@@ -427,7 +427,7 @@ setMethod("show", "TB_PDict",
 .TB_PDict <- function(x, tb.start, tb.end, tb.width, type)
 {
     constant_width <- min(width(x)) == max(width(x))
-    if (constant_width)
+    if (constant_width && hasOnlyBaseLetters(x))
         pptb0 <- new("ACtree", x, NULL)
     else
         pptb0 <- NULL

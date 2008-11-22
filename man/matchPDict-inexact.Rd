@@ -63,21 +63,16 @@
 }
 
 \examples{
-  ## WARNING! THIS IS STILL WORK IN PROGRESS!!!
-  ## A known issue is that the "startIndex", "[[" and "unlist" methods are
-  ## BROKEN on the MIndex object returned by matchPDict() called on a
-  ## PDict object with a head or a tail!
-
   ## ---------------------------------------------------------------------
-  ## A. WITH UNNAMED PATTERNS
+  ## A. USING AN EXPLICIT TRUSTED BAND FOR EXACT OR INEXACT MATCHING
   ## ---------------------------------------------------------------------
 
   library(drosophila2probe)
   dict0 <- DNAStringSet(drosophila2probe$sequence)
   dict0  # the original dictionary
 
-  ## Preprocess the original dictionary and define a Trusted Band that
-  ## goes from the 1st to the 9h nucleotide of each of its elements.
+  ## Preprocess the original dictionary by defining a Trusted Band that
+  ## spans nucleotides 1 to 9 of each pattern.
   pdict9 <- PDict(dict0, tb.end=9)
   pdict9
   tail(pdict9)
@@ -101,31 +96,63 @@
   ## dictionary) than with a Trusted Band of width < width(dict0).
   pdict0 <- PDict(dict0)
   count0 <- countPDict(pdict0, chr3R)
-  count_tp9_mm0 <- countPDict(pdict9, chr3R, max.mismatch=0)
-  identical(count_tp9_mm0, count0)    # TRUE
+  count0b <- countPDict(pdict9, chr3R, max.mismatch=0)
+  identical(count0b, count0)  # TRUE
   
   ## ---------------------------------------------------------------------
-  ## C. VARIABLE WIDTH DICTIONARY
+  ## C. USING AN EXPLICIT TRUSTED BAND TO HANDLE A VARIABLE WIDTH
+  ##    DICTIONARY
   ## ---------------------------------------------------------------------
 
-  pdict <- PDict(c("ACNG", "GT", "CGT", "AC"), tb.end=2)
-  pdict
-  tail(pdict) 
-  endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=0))
-  endIndex(matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=1))
-  mindex <- matchPDict(pdict, DNAString("ACGGACCG"), max.mismatch=2)
-  endIndex(mindex)
+  ## Here is a small variable width dictionary that contains IUPAC
+  ## ambiguities (pattern 1 and 3 contain an N):
+  dict0 <- DNAStringSet(c("TACCNG", "TAGT", "CGGNT", "AGTAG", "TAGT"))
+  ## (Note that pattern 2 and 5 are identical.)
 
-  startIndex(mindex)                  # CURRENTLY BROKEN!
-  mindex[[1]]                         # CURRENTLY BROKEN!
-  unlist(mindex)                      # CURRENTLY BROKEN!
+  ## If we only want to do exact matching, then it is recommended to use
+  ## the widest possible Trusted Band i.e. to set its width to
+  ## 'min(width(dict0))' because this is what will give the best
+  ## performance. However, when 'dict0' contains IUPAC ambiguities (like
+  ## in our case), it could be that one of them is falling into the
+  ## Trusted Band so we get an error (only base letters can go in the
+  ## Trusted Band for now):
+  \dontrun{
+    PDict(dict0, tb.end=min(width(dict0)))  # Error!
+  }
 
-  ## ---------------------------------------------------------------------
-  ## D. WITH AMBIGUITIES IN THE TAIL
-  ## ---------------------------------------------------------------------
+  ## In our case, the Trusted Band cannot be wider than 3:
+  pdict <- PDict(dict0, tb.end=3)
+  tail(pdict)
 
-  ## Ambiguities (IUPAC extended letters) are supported in the tail only:
-  endIndex(matchPDict(pdict, DNAString("ACGGACCG"), fixed=FALSE))
+  subject <- DNAString("TAGTACCAGTTTCGGG")
+
+  m <- matchPDict(pdict, subject)
+  countIndex(m)  # pattern 2 and 5 have 1 exact match
+  m[[2]]
+
+  ## We can take advantage of the fact that our Trusted Band doesn't cover
+  ## the entire dictionary to allow inexact matching on the uncovered parts
+  ## (the tail in our case):
+
+  m <- matchPDict(pdict, subject, fixed=FALSE)
+  countIndex(m)  # now pattern 1 has 1 match too
+  m[[1]]
+
+  m <- matchPDict(pdict, subject, max.mismatch=1)
+  countIndex(m)  # now pattern 4 has 1 match too
+  m[[4]]
+
+  m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
+  countIndex(m)  # now pattern 3 has 1 match too
+  m[[3]]  # note that this match is "out of limit"
+  Views(subject, start=start(m[[3]]), end=end(m[[3]]))
+
+  m <- matchPDict(pdict, subject, max.mismatch=2)
+  countIndex(m)  # pattern 4 gets 1 additional match
+  m[[4]]
+
+  ## Unlist all matches:
+  unlist(m)
 }
 
 \keyword{methods}

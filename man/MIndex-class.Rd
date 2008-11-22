@@ -11,6 +11,7 @@
 \alias{ByName_MIndex-class}
 
 % Generics and methods:
+\alias{length,MIndex-method}
 \alias{startIndex}
 \alias{startIndex,MIndex-method}
 \alias{endIndex}
@@ -21,7 +22,6 @@
 \alias{unlist}
 \alias{unlist,MIndex-method}
 
-\alias{length,ByPos_MIndex-method}
 \alias{names,ByPos_MIndex-method}
 \alias{show,ByPos_MIndex-method}
 \alias{[[,ByPos_MIndex-method}
@@ -29,7 +29,6 @@
 \alias{endIndex,ByPos_MIndex-method}
 \alias{countIndex,ByPos_MIndex-method}
 
-\alias{length,ByName_MIndex-method}
 \alias{names,ByName_MIndex-method}
 \alias{show,ByName_MIndex-method}
 \alias{[[,ByName_MIndex-method}
