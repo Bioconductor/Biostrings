@@ -27,7 +27,7 @@ readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
     }
 
     s1 <- scan(file=file, what="", sep="\n",
-               quote="", allowEscapes=FALSE);
+               quote="", allowEscapes=FALSE, quiet=TRUE)
     if (checkComments) {
         ##comments are supposedly lines beginning with semi-colons
         comments <- grep("^;", s1)
