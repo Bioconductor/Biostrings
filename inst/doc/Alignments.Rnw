@@ -1190,7 +1190,7 @@ All of the output in this vignette was produced under the following
 conditions:
 
 <<sessinfo>>=
-sessionInfo()
+toLatex(sessionInfo())
 @
 
 
