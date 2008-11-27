@@ -32,6 +32,192 @@ setClass("PairwiseAlignmentSummary",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructors.
+###
+
+setGeneric("PairwiseAlignment",
+    function(pattern, subject, type = "global", substitutionMatrix = NULL,
+             gapOpening = 0, gapExtension = -1, ...)
+    standardGeneric("PairwiseAlignment"))
+setMethod("PairwiseAlignment", signature(pattern = "XString", subject = "XString"),
+    function(pattern, subject, type = "global", substitutionMatrix = NULL,
+             gapOpening = 0, gapExtension = -1) {
+        if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
+            stop("'pattern' and 'subject' must have the same XString base subtype")
+        PairwiseAlignment(as.character(pattern), as.character(subject),
+                          type = type, substitutionMatrix = substitutionMatrix,
+                          gapOpening = gapOpening, gapExtension = gapExtension,
+                          baseClass = baseXStringSubtype(pattern))
+    }
+)
+
+setMethod("PairwiseAlignment", signature(pattern = "XStringSet", subject = "missing"),
+    function(pattern, subject, type = "global", substitutionMatrix = NULL,
+             gapOpening = 0, gapExtension = -1) {
+        if (length(pattern) != 2)
+            stop("'pattern' must be of length 2 when 'subject' is missing")
+        if (diff(nchar(pattern)) != 0)
+            stop("'pattern' elements must have the same number of characters")
+        PairwiseAlignment(as.character(pattern[1]), as.character(pattern[2]),
+                          type = type, substitutionMatrix = substitutionMatrix,
+                          gapOpening = gapOpening, gapExtension = gapExtension,
+                          baseClass = baseXStringSubtype(pattern))
+    }
+)
+
+setMethod("PairwiseAlignment", signature(pattern = "character", subject = "missing"),
+    function(pattern, subject, type = "global", substitutionMatrix = NULL,
+             gapOpening = 0, gapExtension = -1, baseClass = "BString") {
+        if (length(pattern) != 2)
+            stop("'pattern' must be of length 2 when 'subject' is missing")
+        if (diff(nchar(pattern)) != 0)
+            stop("'pattern' elements must have the same number of characters")
+        PairwiseAlignment(pattern[1], pattern[2],
+                          type = type, substitutionMatrix = substitutionMatrix,
+                          gapOpening = gapOpening, gapExtension = gapExtension,
+                          baseClass = baseClass)
+    }
+)
+
+setMethod("PairwiseAlignment", signature(pattern = "character", subject = "character"),
+    function(pattern, subject, type = "global", substitutionMatrix = NULL,
+             gapOpening = 0, gapExtension = -1, baseClass = "BString") {
+        getMismatches <- function(x) {
+            whichMismatches <- which(x[["values"]] == "?")
+            if (length(whichMismatches) == 0) {
+                value <- numeric(0)
+            } else {
+                start <- cumsum(x[["lengths"]])[whichMismatches]
+                end <- start + x[["lengths"]][whichMismatches]
+                value <-
+                  eval(parse(text =
+                             paste("c(", paste(start, ":", end, sep = "", collapse = ", "), ")")
+                             ))
+            }
+            list(value)
+        }
+        getRange <- function(x) {
+            if (!(x[["values"]][1] %in% c("-", "+"))) {
+                start <- 1
+            } else if (length(x[["values"]]) == 1) {
+                start <- numeric(0)
+            } else {
+                start <- x[["lengths"]][1] + 1
+            }
+            if (!(x[["values"]][length(x[["values"]])] %in% c("-", "+"))) {
+                end <- sum(x[["lengths"]])
+            } else if (length(x[["values"]]) == 1) {
+                end <- numeric(0)
+            } else {
+                end <- sum(x[["lengths"]][-length(x[["lengths"]])])
+            }
+            IRanges(start = start, end = end)
+        }
+        getIndels <- function(x) {
+            if (x[["values"]][1] %in% c("-", "+")) {
+                x[["values"]] <- x[["values"]][-1]
+                x[["lengths"]] <- x[["lengths"]][-1]
+            }
+            if (x[["values"]][length(x[["values"]])] %in% c("-", "+")) {
+                x[["values"]] <- x[["values"]][-length(x[["values"]])]
+                x[["lengths"]] <- x[["lengths"]][-length(x[["lengths"]])]
+            }
+            isIndels <- (x[["values"]] %in% c("-", "+"))
+            if (!any(isIndels))
+                IRangesList(IRanges(numeric(0), numeric(0)))
+            else
+                IRangesList(IRanges(
+                  cumsum(c(1, ifelse(isIndels, 0, x[["lengths"]])[-length(x[["lengths"]])]))[isIndels],
+                                    width = x[["lengths"]][isIndels]))
+        }
+        if (length(pattern) != 1 || length(subject) != 1)
+            stop("'pattern' and 'subject' must both be of length 1")
+        if (nchar(pattern) != nchar(subject))
+            stop("'pattern' and 'subject' must have the same number of characters")
+        type <-
+          match.arg(type,
+                    c("global", "local", "overlap", "patternOverlap", "subjectOverlap"))
+        gapOpening <- as.double(- abs(gapOpening))
+        if (length(gapOpening) != 1 || is.na(gapOpening))
+            stop("'gapOpening' must be a non-positive numeric vector of length 1")
+        gapExtension <- as.double(- abs(gapExtension))
+        if (length(gapExtension) != 1 || is.na(gapExtension))
+            stop("'gapExtension' must be a non-positive numeric vector of length 1")
+
+        explodedPattern <- safeExplode(pattern)
+        explodedSubject <- safeExplode(subject)
+        degappedPattern <- explodedPattern[explodedPattern != "-"]
+        degappedSubject <- explodedSubject[explodedSubject != "-"]
+        availableLetters <-
+          sort(unique(c(unique(degappedPattern), unique(degappedSubject))))
+        if (is.null(substitutionMatrix)) {
+            substitutionMatrix <- diag(length(availableLetters)) - 1
+            dimnames(substitutionMatrix) <- list(availableLetters, availableLetters)
+        } else if (is.character(substitutionMatrix)) {
+            if (length(substitutionMatrix) != 1)
+                stop("'substitutionMatrix' is a character vector of length != 1")
+            tempMatrix <- substitutionMatrix
+            substitutionMatrix <- try(getdata(tempMatrix), silent = TRUE)
+            if (is(substitutionMatrix, "try-error"))
+                stop("unknown scoring matrix \"", tempMatrix, "\"")
+        }
+        if (!is.matrix(substitutionMatrix) || !is.numeric(substitutionMatrix))
+            stop("'substitutionMatrix' must be a numeric matrix")
+        if (!identical(rownames(substitutionMatrix), colnames(substitutionMatrix)))
+            stop("row and column names differ for matrix 'substitutionMatrix'")
+        if (is.null(rownames(substitutionMatrix)))
+            stop("matrix 'substitutionMatrix' must have row and column names")
+        if (any(duplicated(rownames(substitutionMatrix))))
+            stop("matrix 'substitutionMatrix' has duplicated row names")
+        availableLetters <-
+          intersect(availableLetters, rownames(substitutionMatrix))
+        
+        substitutionMatrix <-
+          matrix(as.double(substitutionMatrix[availableLetters, availableLetters]),
+                 nrow = length(availableLetters),
+                 ncol = length(availableLetters),
+                 dimnames = list(availableLetters, availableLetters))
+        substitutionArray <-
+          array(unlist(substitutionMatrix, substitutionMatrix), dim = c(dim(substitutionMatrix), 2),
+                dimnames = list(availableLetters, availableLetters, c("0", "1")))
+
+        comparison <- rle(safeExplode(compareStrings(pattern, subject)))
+        whichPattern <- which(comparison[["values"]] != "-")
+        patternRle <-
+          structure(list(lengths = comparison[["lengths"]][whichPattern],
+                         values = comparison[["values"]][whichPattern]),
+                    class = "rle")
+        whichSubject <- which(comparison[["values"]] != "+")
+        subjectRle <-
+          structure(list(lengths = comparison[["lengths"]][whichSubject],
+                         values = comparison[["values"]][whichSubject]),
+                    class = "rle")
+        substitutionIndices <- (explodedPattern != "-") & (explodedSubject != "-")
+        new("PairwiseAlignment",
+            pattern =
+            new("AlignedXStringSet",
+                unaligned = XStringSet(baseClass, paste(degappedPattern, collapse = "")),
+                range = getRange(patternRle), mismatch = getMismatches(patternRle),
+                indel = getIndels(subjectRle)),
+            subject =
+            new("AlignedXStringSet",
+                unaligned = XStringSet(baseClass, paste(degappedSubject, collapse = "")),
+                range = getRange(subjectRle), mismatch = getMismatches(subjectRle),
+                indel = getIndels(patternRle)),
+            type = type,
+            score =
+              sum(substitutionMatrix[
+                    match(explodedPattern[substitutionIndices], availableLetters) +
+                      length(availableLetters) *
+                        (match(explodedSubject[substitutionIndices], availableLetters) - 1)]) +
+              gapOpening * sum(comparison[["values"]] %in% c("+", "-")) +
+              gapExtension * sum(comparison[["lengths"]][comparison[["values"]] %in% c("+", "-")]),
+            substitutionArray = substitutionArray, gapOpening = gapOpening, gapExtension = gapExtension)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Initialization.
 ###
 

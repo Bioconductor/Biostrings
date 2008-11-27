@@ -11,6 +11,10 @@
 
 % Constructor-like functions and generics:
 \alias{initialize,PairwiseAlignment-method}
+\alias{PairwiseAlignment,XString,XString-method}
+\alias{PairwiseAlignment,XStringSet,missing-method}
+\alias{PairwiseAlignment,character,missing-method}
+\alias{PairwiseAlignment,character,character-method}
 
 % Accesor methods:
 \alias{pattern,PairwiseAlignment-method}
@@ -49,6 +53,39 @@
   The \code{PairwiseAlignment} class is a container for storing an alignment.
   The \code{PairwiseAlignmentSummary} class is a container for storing the
   summary of an alignment.
+}
+
+\usage{
+  ## Constructors:
+  ## When subject is missing, pattern must be of length 2
+  \S4method{PairwiseAlignment}{XString,XString}(pattern, subject, type = "global",
+    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+  \S4method{PairwiseAlignment}{XStringSet,missing}(pattern, subject, type = "global",
+    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+  \S4method{PairwiseAlignment}{character,character}(pattern, subject, type = "global",
+    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1, baseClass = "BString")
+  \S4method{PairwiseAlignment}{character,missing}(pattern, subject, type = "global",
+    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1, baseClass = "BString")
+}
+
+\arguments{
+  \item{pattern}{a character vector of length 1 or 2, an \code{\link{XString}}, or an
+    \code{\link{XStringSet}} object of length 1 or 2.}
+  \item{subject}{a character vector of length 1 or an \code{\link{XString}} object.}
+  \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
+    \code{"overlap"}, \code{"patternOverlap"}, and \code{"subjectOverlap"} where
+      \code{"global"} = align whole strings with end gap penalties,
+      \code{"local"} = align string fragments,
+      \code{"overlap"} = align whole strings without end gap penalties,
+      \code{"patternOverlap"} = align whole strings without end gap penalties on
+        \code{pattern} and with end gap penalties on \code{subject},
+      \code{"subjectOverlap"} = align whole strings with end gap penalties on
+        \code{pattern} and without end gap penalties on \code{subject}.}
+  \item{substitutionMatrix}{substitution matrix for the alignment. If NULL,
+     the diagonal values and off-diagonal values are set to 0 and 1 respectively.}
+  \item{gapOpening}{the cost for opening a gap in the alignment.}
+  \item{gapExtension}{the incremental cost incurred along the length of the gap in the alignment.}
+  \item{baseClass}{the base \code{\link{XString}} class to use in the alignment.}
 }
 
 \details{

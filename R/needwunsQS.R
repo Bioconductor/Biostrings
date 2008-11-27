@@ -135,24 +135,10 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    substmat, nrow(substmat), lkup,
                    as.integer(gappen), gap_code,
                    PACKAGE="Biostrings")
-    new("PairwiseAlignment",
-        pattern =
-        new("AlignedXStringSet",
-            unaligned = XStringSet(class(s1), new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1))),
-            range = IRanges(start = 1, width = length(C_ans$al1)),
-            mismatch = list(integer(0)),
-            indel = IRangesList(IRanges(start = numeric(0), width = numeric(0)))),
-        subject =
-        new("AlignedXStringSet",
-            unaligned = XStringSet(class(s2), new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2))),
-            range = IRanges(start = 1, width = length(C_ans$al2)),
-            mismatch = list(integer(0)),
-            indel = IRangesList(IRanges(start = numeric(0), width = numeric(0)))),
-        score = C_ans$score, type = "global",
-        substitutionArray =
-        array(unlist(list(substmat,substmat)), dim = c(dim(substmat), 2),
-              dimnames = c(dimnames(substmat), list(c("0", "1")))),
-        gapOpening = 0, gapExtension = gappen)
+    PairwiseAlignment(new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1)), 
+                      new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2)),
+                      type = "global", substitutionMatrix = substmat,
+                      gapOpening = 0, gapExtension = gappen)
 }
 
 setGeneric("needwunsQS", signature=c("s1", "s2"),
