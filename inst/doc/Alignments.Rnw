@@ -310,7 +310,8 @@ preference to direct slot extraction from the alignment objects.
 Function                    & Description \\
 \hline
 \Rfunction{[}               & Extracts the specified elements of the alignment object \\
-\Rfunction{aligned}         & Creates \Rclass{XStringSet} alignments without insertions \\
+\Rfunction{aligned}         & Creates an \Rclass{XStringSet} containing either ``filled-with-gaps" or
+                              degapped aligned strings \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
 \Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
 \Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
@@ -332,7 +333,7 @@ Function                    & Description \\
 \Rfunction{summary}         & Summarizes a pairwise sequence alignment \\
 \Rfunction{toString}        & Creates a concatenated string version of \Rfunction{aligned} \\
 \Rfunction{type}            & Extracts the type of pairwise sequence alignment \\
-\Rfunction{Views}           & Extracts the alignment ranges for the subject \\
+\Rfunction{Views}           & Creates an \Rclass{XStringViews} representing the aligned region along the subject \\
 \hline
 \end{tabular}
 \end{center}
