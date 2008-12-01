@@ -222,6 +222,7 @@
 }
 
 \examples{
+  PairwiseAlignment("-PA--W-HEAE", "HEAGAWGHE-E")
   pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
   subject <- AAString("SMDDTEKMSMKL")
   nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
