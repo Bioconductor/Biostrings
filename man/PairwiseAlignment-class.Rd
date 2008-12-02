@@ -123,7 +123,7 @@
   highest score, i.e. with the lower total cost in terms of basic operations.
 }
 
-\section{Accesor methods}{
+\section{Object extraction methods}{
   In the code snippets below,
   \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
 
@@ -137,19 +137,19 @@
       The \code{AlignedXStringSet} object for the subject.
     }
     \item{}{
-      \code{type(x)}:
-      The type of the alignment (\code{"global"}, \code{"local"},
-      \code{"overlap"}, \code{"patternOverlap"}, or \code{"subjectOverlap"}).
-      There is a method for \code{PairwiseAlignmentSummary} as well.
+      \code{summary(object, ...)}:
+      Generates a summary for the \code{PairwiseAlignment}.
     }
+  }
+}
+\section{General information methods}{
+  In the code snippets below,
+  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+
+  \describe{
     \item{}{
-      \code{score(x)}:
-      The score of the alignment (integer).
-      There is a method for \code{PairwiseAlignmentSummary} as well.
-    }
-    \item{}{
-      \code{nindel(x)}:
-      An \code{InDel} object containing the number of insertions and deletions.
+      \code{alphabet(x)}:
+      Equivalent to \code{alphabet(unaligned(subject(x)))}.
     }
     \item{}{
       \code{length(x)}:
@@ -157,18 +157,18 @@
       There is a method for \code{PairwiseAlignmentSummary} as well.
     }
     \item{}{
-      \code{nchar(x)}:
-      The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
+      \code{type(x)}:
+      The type of the alignment (\code{"global"}, \code{"local"},
+      \code{"overlap"}, \code{"patternOverlap"}, or \code{"subjectOverlap"}).
       There is a method for \code{PairwiseAlignmentSummary} as well.
     }
-    \item{}{
-      \code{alphabet(x)}:
-      Equivalent to \code{alphabet(unaligned(subject(x)))}.
-    }
-    \item{}{
-      \code{summary(object, ...)}:
-      Generates a summary for the \code{PairwiseAlignment}.
-    }
+  }
+}
+\section{Aligned sequence methods}{
+  In the code snippets below,
+  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+
+  \describe{
     \item{}{
       \code{aligned(x, degap = FALSE)}:
       If \code{degap = FALSE}, ``align" the alignments by returning an
@@ -185,15 +185,55 @@
       Returns an "exploded" character matrix representation of \code{aligned(x)}.
     }
     \item{}{
+      \code{toString(x)}:
+      Equivalent to \code{toString(as.character(x))}.
+    }
+  }
+}
+\section{Subject position methods}{
+  In the code snippets below,
+  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+
+  \describe{
+    \item{}{
+      \code{consensusMatrix(x, baseOnly=FALSE, freq=FALSE)}
+      See `\link{consensusMatrix}` for more information.
+    }
+    \item{}{
+      \code{consensusString(x)}
+      See `\link{consensusString}` for more information.
+    }
+    \item{}{
+      \code{coverage(x, start=NA, end=NA, weight=1L)}
+      See `\link{coverage,PairwiseAlignment-method}` for more information.
+    }
+    \item{}{
       \code{Views(subject, start=NA, end=NA, names=NULL)}:
       The \code{XStringViews} object that represents the pairwise alignments
       along \code{unaligned(subject(subject))}. The \code{start} and \code{end}
       arguments must be either \code{NA} or an integer vector of length 1 that
       denotes the offset from \code{start(subject(subject))}.
     }
+  }
+}
+\section{Numeric summary methods}{
+  In the code snippets below,
+  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+
+  \describe{
     \item{}{
-      \code{toString(x)}:
-      Equivalent to \code{toString(as.character(x))}.
+      \code{nchar(x)}:
+      The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
+      There is a method for \code{PairwiseAlignmentSummary} as well.
+    }
+    \item{}{
+      \code{nindel(x)}:
+      An \code{InDel} object containing the number of insertions and deletions.
+    }
+    \item{}{
+      \code{score(x)}:
+      The score of the alignment.
+      There is a method for \code{PairwiseAlignmentSummary} as well.
     }
   }
 }
@@ -211,14 +251,15 @@
   }
 }
 
-\author{P. Aboyoun and H. Pages}
+\author{P. Aboyoun}
 
 \seealso{
   \code{\link{pairwiseAlignment}},
   \code{\link{AlignedXStringSet-class}},
   \code{\link{XString-class}},
   \code{\link{XStringViews-class}},
-  \code{\link{match-utils}}
+  \code{\link{align-utils}},
+  \code{\link{pid}}
 }
 
 \examples{
