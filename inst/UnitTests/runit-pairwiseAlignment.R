@@ -87,7 +87,7 @@ test_pairwiseAlignment_zeroOpening <- function()
 }
 
 
-test_pairwiseAlignment_constantSubstitutionMatrix <- function()
+test_pairwiseAlignment_fixedSubstitutionMatrix <- function()
 {
     string1 <- DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
     string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")

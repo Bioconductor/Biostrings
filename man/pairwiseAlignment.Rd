@@ -112,7 +112,7 @@ against a reference sequence.
   s2 <-
     DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
 
-  # First use a constant substitution matrix
+  # First use a fixed substitution matrix
   mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -3, baseOnly = TRUE)
   globalAlign <-
     pairwiseAlignment(s1, s2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)

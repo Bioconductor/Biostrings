@@ -53,7 +53,7 @@ In this document we illustrate how to perform pairwise sequence alignments
 using the \Rpackage{Biostrings} package through the use of the
 \Rfunction{pairwiseAlignment} function. This function aligns a set of
 \Rfunarg{pattern} strings to a \Rfunarg{subject} string in a global, local, or
-overlap (ends-free) fashion with or without affine gaps using either a constant
+overlap (ends-free) fashion with or without affine gaps using either a fixed
 or quality-based substitution scoring scheme. This function's computation time
 is proportional to the product of the two string lengths being aligned.
 
@@ -108,12 +108,12 @@ penalties influence alignment scores in the following manner:
   \item{Substitution Scoring Schemes:  }
   The substitution scoring scheme sets the values for the aligned character
   pairings within the substring ranges determined by the type of pairwise
-  sequence alignment. This scoring scheme can be constant for character
+  sequence alignment. This scoring scheme can be fixed for character
   pairings or quality-dependent for character pairings. (Characters that align
   with a gap are penalized according to the ``Gap Penalty" framework.)
   \begin{description}
-    \item{Constant substitution scoring - }
-    Constant substitution scoring schemes associate each aligned character
+    \item{Fixed substitution scoring - }
+    Fixed substitution scoring schemes associate each aligned character
     pairing with a value. These schemes are very common and include awarding
     one value for a match and another for a mismatch, Point Accepted Mutation
     (PAM) matrices, and Block Substitution Matrix (BLOSUM) matrices.
@@ -182,7 +182,7 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
 
 The substitution scoring scheme is set using three arguments, two of which are
 quality-based related (\Rfunarg{patternQuality}, \Rfunarg{subjectQuality}) and
-one is constant substitution related (\Rfunarg{substitutionMatrix}). When the
+one is fixed substitution related (\Rfunarg{substitutionMatrix}). When the
 substitution scores are fixed by character pairing, the
 \Rfunarg{substituionMatrix} argument takes a matrix with the appropriate
 alphabets as dimension names. The \Rfunction{nucleotideSubstitutionMatrix}
@@ -271,7 +271,7 @@ class(summary(psa1))
 
 The \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} classes
 hold the ``gapped" ${S'}_i$ substrings with the former class holding the
-results when the pairwise sequence alignment is performed with a constant
+results when the pairwise sequence alignment is performed with a fixed
 substitution scoring scheme and the latter class a quality-based scoring
 scheme.
 
