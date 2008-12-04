@@ -314,29 +314,35 @@ function(pattern,
   }
   if (useMpi) {
     perNode <- n %/% k
-    indices <- vector("list", k)
-    for (i in seq_len(k-1)) {
-        indices[[i]] <- ((i-1)*perNode+1):(i*perNode)
+    subsets <- vector("list", k)
+    for (i in seq_len(k)) {
+      indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
+      subsets[[i]] <-
+        XStringSet(baseXStringSubtype(pattern), as.character(pattern[indices]))
     }
-    indices[[k]] <- ((k-1)*perNode+1):n
 
     mpi.remote.exec(library(Biostrings), ret = FALSE)
     mpiOutput <-
-      mpi.parLapply(indices,
-          function(i, pattern, subject,
+      mpi.parLapply(subsets,
+          function(x, subject,
                    type = "global",
                    substitutionMatrix = NULL,
                    gapOpening = -10,
                    gapExtension = -4,
-                   scoreOnly = FALSE)
-          Biostrings:::XStringSet.pairwiseAlignment(pattern = pattern[i],
-                                       subject = subject,
-                                       type = type,
-                                       substitutionMatrix = substitutionMatrix,
-                                       gapOpening = gapOpening,
-                                       gapExtension = gapExtension,
-                                       scoreOnly = scoreOnly),
-          pattern = pattern, subject = subject,
+                   scoreOnly = FALSE) {
+            output <-
+              Biostrings:::XStringSet.pairwiseAlignment(pattern = x,
+                        subject = subject,
+                        type = type,
+                        substitutionMatrix = substitutionMatrix,
+                        gapOpening = gapOpening,
+                        gapExtension = gapExtension,
+                        scoreOnly = scoreOnly)
+            output@pattern@unaligned <- BStringSet("")
+            output@subject@unaligned <- BStringSet("")
+            output
+          },
+          subject = subject,
           type = type,
           substitutionMatrix = substitutionMatrix,
           gapOpening = gapOpening,
@@ -383,29 +389,38 @@ function(pattern,
   }
   if (useMpi) {
     perNode <- n %/% k
-    indices <- vector("list", k)
-    for (i in seq_len(k-1)) {
-      indices[[i]] <- ((i-1)*perNode+1):(i*perNode)
+    subsets <- vector("list", k)
+    for (i in seq_len(k)) {
+      indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
+      subsets[[i]] <-
+        QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern),
+                                           as.character(pattern[indices])),
+                                do.call(class(quality(pattern)),
+                                        list(as.character(quality(pattern[indices])))))
     }
-    indices[[k]] <- ((k-1)*perNode+1):n
 
     mpi.remote.exec(library(Biostrings), ret = FALSE)
     mpiOutput <-
-      mpi.parLapply(indices,
-                    function(i, pattern, subject,
+      mpi.parLapply(subsets,
+                    function(x, subject,
                              type = "global",
                              fuzzyMatrix = NULL,
                              gapOpening = -10,
                              gapExtension = -4,
-                             scoreOnly = FALSE)
-                    Biostrings:::QualityScaledXStringSet.pairwiseAlignment(pattern = pattern[i],
-                                       subject = subject,
-                                       type = type,
-                                       fuzzyMatrix = fuzzyMatrix,
-                                       gapOpening = gapOpening,
-                                       gapExtension = gapExtension,
-                                       scoreOnly = scoreOnly),
-                    pattern = pattern, subject = subject,
+                             scoreOnly = FALSE) {
+                      output <-
+                        Biostrings:::QualityScaledXStringSet.pairwiseAlignment(pattern = x,
+                                  subject = subject,
+                                  type = type,
+                                  fuzzyMatrix = fuzzyMatrix,
+                                  gapOpening = gapOpening,
+                                  gapExtension = gapExtension,
+                                  scoreOnly = scoreOnly)
+                      output@pattern@unaligned <- BStringSet("")
+                      output@subject@unaligned <- BStringSet("")
+                      output
+                    },
+                    subject = subject,
                     type = type,
                     fuzzyMatrix = fuzzyMatrix,
                     gapOpening = gapOpening,
