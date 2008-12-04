@@ -367,7 +367,8 @@ setReplaceMethod("masks", signature(x="XString", value="ANY"),
 setMethod("Views", "MaskedXString",
     function(subject, start=NA, end=NA, names=NULL)
     {
-        warning("masks were dropped")
+        if (any(active(masks(subject))))
+            warning("masks were dropped")
         Views(unmasked(subject), start=start, end=end, names=names)
     }
 )
