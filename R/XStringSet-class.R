@@ -603,10 +603,6 @@ setMethod("as.matrix", "XStringSet",
 ### We want to dispatch on ... (only possible starting with R 2.8.0).
 ### The implicit generic in package "base" would dispatch on the (na.last,
 ### decreasing) arguments which is of course not what we want.
-setGeneric("order", signature="...",
-    function (..., na.last=TRUE, decreasing=FALSE) standardGeneric("order")
-)
-
 setMethod("order", "XStringSet",
     function(..., na.last=TRUE, decreasing=FALSE)
     {

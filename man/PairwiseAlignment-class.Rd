@@ -22,7 +22,6 @@
 \alias{type}
 \alias{type,PairwiseAlignment-method}
 \alias{type,PairwiseAlignmentSummary-method}
-\alias{score}
 \alias{score,PairwiseAlignment-method}
 \alias{score,PairwiseAlignmentSummary-method}
 \alias{nindel,PairwiseAlignment-method}

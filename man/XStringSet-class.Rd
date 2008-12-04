@@ -62,7 +62,6 @@
 \alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}
 
-\alias{order}
 \alias{order,XStringSet-method}
 \alias{sort,XStringSet-method}
 \alias{rank,XStringSet-method}

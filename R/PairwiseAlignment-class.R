@@ -291,7 +291,6 @@ setGeneric("type", function(x) standardGeneric("type"))
 setMethod("type", "PairwiseAlignment", function(x) x@type)
 setMethod("type", "PairwiseAlignmentSummary", function(x) x@type)
 
-setGeneric("score", function(x) standardGeneric("score"))
 setMethod("score", "PairwiseAlignment", function(x) x@score)
 setMethod("score", "PairwiseAlignmentSummary", function(x) x@score)
 
