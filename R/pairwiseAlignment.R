@@ -273,6 +273,161 @@ function(pattern,
         PACKAGE="Biostrings")
 }
 
+mpi.collate.pairwiseAlignment <-
+function(mpiOutput, pattern, subject) {
+  value <- mpiOutput[[1]]
+  value@score <- unlist(lapply(mpiOutput, score))
+
+  value@pattern@unaligned <- pattern
+  value@pattern@range <- do.call("c", lapply(mpiOutput, function(x) x@pattern@range))
+  value@pattern@mismatch <- do.call("c", lapply(mpiOutput, function(x) x@pattern@mismatch))
+  value@pattern@indel <- do.call("c", lapply(mpiOutput, function(x) x@pattern@indel))
+
+  value@subject@unaligned <- subject
+  value@subject@range <- do.call("c", lapply(mpiOutput, function(x) x@subject@range))
+  value@subject@mismatch <- do.call("c", lapply(mpiOutput, function(x) x@subject@mismatch))
+  value@subject@indel <- do.call("c", lapply(mpiOutput, function(x) x@subject@indel))
+
+  value
+}
+
+mpi.XStringSet.pairwiseAlignment <-
+function(pattern,
+         subject,
+         type = "global",
+         substitutionMatrix = NULL,
+         gapOpening = -10,
+         gapExtension = -4,
+         scoreOnly = FALSE)
+{
+  n <- length(pattern)
+  if (n > 1 && is.loaded("mpi_comm_size")) {
+      ## 'get()' are to quieten R CMD check, and for no other reason
+      mpi.comm.size <- get("mpi.comm.size", mode="function")
+      mpi.remote.exec <- get("mpi.remote.exec", mode="function")
+      mpi.parLapply <- get("mpi.parLapply", mode="function")
+
+      k <- min(mpi.comm.size() - 1, n)
+      useMpi <- (k > 1)
+  } else {
+      useMpi <- FALSE
+  }
+  if (useMpi) {
+    perNode <- n %/% k
+    indices <- vector("list", k)
+    for (i in seq_len(k-1)) {
+        indices[[i]] <- ((i-1)*perNode+1):(i*perNode)
+    }
+    indices[[k]] <- ((k-1)*perNode+1):n
+
+    mpi.remote.exec(library(Biostrings), ret = FALSE)
+    mpiOutput <-
+      mpi.parLapply(indices,
+          function(i, pattern, subject,
+                   type = "global",
+                   substitutionMatrix = NULL,
+                   gapOpening = -10,
+                   gapExtension = -4,
+                   scoreOnly = FALSE)
+          Biostrings:::XStringSet.pairwiseAlignment(pattern = pattern[i],
+                                       subject = subject,
+                                       type = type,
+                                       substitutionMatrix = substitutionMatrix,
+                                       gapOpening = gapOpening,
+                                       gapExtension = gapExtension,
+                                       scoreOnly = scoreOnly),
+          pattern = pattern, subject = subject,
+          type = type,
+          substitutionMatrix = substitutionMatrix,
+          gapOpening = gapOpening,
+          gapExtension = gapExtension,
+          scoreOnly = scoreOnly)
+    if (scoreOnly) {
+      value <- unlist(mpiOutput)
+    } else {
+      value <- mpi.collate.pairwiseAlignment(mpiOutput, pattern, subject)
+    }
+  } else {
+    value <- 
+      XStringSet.pairwiseAlignment(pattern = pattern,
+                                   subject = subject,
+                                   type = type,
+                                   substitutionMatrix = substitutionMatrix,
+                                   gapOpening = gapOpening,
+                                   gapExtension = gapExtension,
+                                   scoreOnly = scoreOnly)
+  }
+  value
+}
+
+mpi.QualityScaledXStringSet.pairwiseAlignment <-
+function(pattern,
+         subject,
+         type = "global",
+         fuzzyMatrix = NULL,
+         gapOpening = -10,
+         gapExtension = -4,
+         scoreOnly = FALSE)
+{
+  n <- length(pattern)
+  if (n > 1 && is.loaded("mpi_comm_size")) {
+    ## 'get()' are to quieten R CMD check, and for no other reason
+    mpi.comm.size <- get("mpi.comm.size", mode="function")
+    mpi.remote.exec <- get("mpi.remote.exec", mode="function")
+    mpi.parLapply <- get("mpi.parLapply", mode="function")
+
+    k <- min(mpi.comm.size() - 1, n)
+    useMpi <- (k > 1)
+  } else {
+    useMpi <- FALSE
+  }
+  if (useMpi) {
+    perNode <- n %/% k
+    indices <- vector("list", k)
+    for (i in seq_len(k-1)) {
+      indices[[i]] <- ((i-1)*perNode+1):(i*perNode)
+    }
+    indices[[k]] <- ((k-1)*perNode+1):n
+
+    mpi.remote.exec(library(Biostrings), ret = FALSE)
+    mpiOutput <-
+      mpi.parLapply(indices,
+                    function(i, pattern, subject,
+                             type = "global",
+                             fuzzyMatrix = NULL,
+                             gapOpening = -10,
+                             gapExtension = -4,
+                             scoreOnly = FALSE)
+                    Biostrings:::QualityScaledXStringSet.pairwiseAlignment(pattern = pattern[i],
+                                       subject = subject,
+                                       type = type,
+                                       fuzzyMatrix = fuzzyMatrix,
+                                       gapOpening = gapOpening,
+                                       gapExtension = gapExtension,
+                                       scoreOnly = scoreOnly),
+                    pattern = pattern, subject = subject,
+                    type = type,
+                    fuzzyMatrix = fuzzyMatrix,
+                    gapOpening = gapOpening,
+                    gapExtension = gapExtension,
+                    scoreOnly = scoreOnly)
+    if (scoreOnly) {
+      value <- unlist(mpiOutput)
+    } else {
+      value <- mpi.collate.pairwiseAlignment(mpiOutput, pattern, subject)
+    }
+  } else {
+    value <- 
+      QualityScaledXStringSet.pairwiseAlignment(pattern = pattern,
+                                                subject = subject,
+                                                type = type,
+                                                fuzzyMatrix = fuzzyMatrix,
+                                                gapOpening = gapOpening,
+                                                gapExtension = gapExtension,
+                                                scoreOnly = scoreOnly)
+  }
+  value
+}
 
 setGeneric("pairwiseAlignment", signature = c("pattern", "subject"),
            function(pattern, subject, ...)
@@ -286,15 +441,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = BStringSet(pattern),
-                                           subject = BStringSet(subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = BStringSet(pattern),
+                                               subject = BStringSet(subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledBStringSet(BStringSet(pattern), patternQuality),
                   subject = QualityScaledBStringSet(BStringSet(subject), subjectQuality),
                   type = type,
@@ -312,15 +467,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(class(subject), pattern),
-                                           subject = XStringSet(class(subject), subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(subject), pattern),
+                                               subject = XStringSet(class(subject), subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(class(subject), pattern), patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
@@ -338,15 +493,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(baseXStringSubtype(subject), pattern),
-                                           subject = subject,
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(baseXStringSubtype(subject), pattern),
+                                               subject = subject,
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject), pattern), patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
@@ -363,15 +518,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(baseXStringSubtype(subject), pattern),
-                                           subject = as(subject, "XStringSet"),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(baseXStringSubtype(subject), pattern),
+                                               subject = as(subject, "XStringSet"),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject), pattern), patternQuality),
                   subject = subject,
                   type = type,
@@ -389,15 +544,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
-                                           subject = XStringSet(class(pattern), subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
+                                               subject = XStringSet(class(pattern), subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(pattern), subject), subjectQuality),
                   type = type,
@@ -415,15 +570,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
-                                           subject = XStringSet(class(subject), subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
+                                               subject = XStringSet(class(subject), subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
@@ -441,15 +596,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
-                                           subject = subject,
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
+                                               subject = subject,
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
@@ -466,15 +621,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
-                                           subject = as(subject, "XStringSet"),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
+                                               subject = as(subject, "XStringSet"),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
                   subject = subject,
                   type = type,
@@ -492,15 +647,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
           if (!is.null(substitutionMatrix)) {
-            XStringSet.pairwiseAlignment(pattern = pattern,
-                                         subject = XStringSet(baseXStringSubtype(pattern), subject),
-                                         type = type,
-                                         substitutionMatrix = substitutionMatrix,
-                                         gapExtension = gapExtension,
-                                         gapOpening = gapOpening,
-                                         scoreOnly = scoreOnly)
+            mpi.XStringSet.pairwiseAlignment(pattern = pattern,
+                                             subject = XStringSet(baseXStringSubtype(pattern), subject),
+                                             type = type,
+                                             substitutionMatrix = substitutionMatrix,
+                                             gapExtension = gapExtension,
+                                             gapOpening = gapOpening,
+                                             scoreOnly = scoreOnly)
           } else {
-            QualityScaledXStringSet.pairwiseAlignment(
+            mpi.QualityScaledXStringSet.pairwiseAlignment(
                 pattern = QualityScaledXStringSet(pattern, patternQuality),
                 subject = QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern), subject), subjectQuality),
                 type = type,
@@ -518,15 +673,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = pattern,
-                                           subject = XStringSet(class(subject), subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = pattern,
+                                               subject = XStringSet(class(subject), subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
@@ -544,15 +699,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = pattern,
-                                           subject = subject,
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = pattern,
+                                               subject = subject,
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
@@ -569,15 +724,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = pattern,
-                                           subject = as(subject, "XStringSet"),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = pattern,
+                                               subject = as(subject, "XStringSet"),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
                   subject = subject,
                   type = type,
@@ -594,15 +749,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
-                                           subject = XStringSet(baseXStringSubtype(pattern), subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
+                                               subject = XStringSet(baseXStringSubtype(pattern), subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = pattern,
                   subject = QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern), subject), subjectQuality),
                   type = type,
@@ -619,15 +774,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
-                                           subject = XStringSet(class(subject), subject),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
+                                               subject = XStringSet(class(subject), subject),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = pattern,
                   subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
                   type = type,
@@ -644,15 +799,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
-                                           subject = subject,
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
+                                               subject = subject,
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = pattern,
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
@@ -669,15 +824,15 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
-                                           subject = as(subject, "XStringSet"),
-                                           type = type,
-                                           substitutionMatrix = substitutionMatrix,
-                                           gapExtension = gapExtension,
-                                           gapOpening = gapOpening,
-                                           scoreOnly = scoreOnly)
+              mpi.XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
+                                               subject = as(subject, "XStringSet"),
+                                               type = type,
+                                               substitutionMatrix = substitutionMatrix,
+                                               gapExtension = gapExtension,
+                                               gapOpening = gapOpening,
+                                               scoreOnly = scoreOnly)
             } else {
-              QualityScaledXStringSet.pairwiseAlignment(
+              mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = pattern,
                   subject = subject,
                   type = type,
