@@ -109,6 +109,14 @@
 ###   [[2]]
 ###   integer(0)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Convenience wrappers to .Call().
+###
+
+### IMPORTANT: Be aware that the elements in the returned list are accessed
+### by position at the C level! So NEVER change the order of these elements
+### without making the corresponding changes at the C level.
 .pptbComponents <- function(pptb)
 {
     type <- class(pptb)
@@ -140,7 +148,7 @@
                                 max.mismatch, fixed,
                                 count.only, envir)
 {
-    fixed <- normargFixed(fixed, class(subject))
+    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
@@ -156,7 +164,7 @@
                                      max.mismatch, fixed,
                                      count.only, envir)
 {
-    fixed <- normargFixed(fixed, class(subject(subject)))
+    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
@@ -167,6 +175,27 @@
           count.only, envir,
           PACKAGE="Biostrings")
 }
+
+.XStringSet.vmatchPDict <- function(pdict, subject,
+                                    max.mismatch, fixed,
+                                    count.only, envir)
+{
+    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
+    if (is.null(head(pdict)) && is.null(tail(pdict)))
+        .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
+    pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
+    .Call("XStringSet_vmatch_pdict",
+          pptb_comps, head(pdict), tail(pdict),
+          subject,
+          max.mismatch, fixed,
+          count.only, envir,
+          PACKAGE="Biostrings")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### .matchPDict()
+###
 
 .matchTB_PDict <- function(pdict, subject, algorithm,
                            max.mismatch, fixed, verbose, count.only)
@@ -291,6 +320,57 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### .vmatchPDict()
+###
+
+.vmatchTB_PDict <- function(pdict, subject, algorithm,
+                            max.mismatch, fixed, verbose, count.only)
+{
+    if (!count.only)
+        stop("'count.only' must be TRUE (other values are not supported yet, sorry)")
+    pdict_names <- names(pdict)
+    if (is.null(pdict_names))
+        envir <- NULL
+    else
+        envir <- new.env(hash=TRUE, parent=emptyenv())
+    if (is(subject, "DNAStringSet"))
+        C_ans <- .XStringSet.vmatchPDict(pdict, subject,
+                                         max.mismatch, fixed,
+                                         count.only, envir)
+    else
+        stop("'subject' must be a DNAStringSet object")
+    C_ans
+}
+
+.vmatchPDict <- function(pdict, subject, algorithm,
+                         max.mismatch, fixed, verbose, count.only=FALSE)
+{
+    if (!count.only)
+        stop("'count.only' must be TRUE (other values are not supported yet, sorry)")
+    if (!identical(algorithm, "auto"))
+        stop("'algorithm' can only be '\"auto\"' for now")
+    max.mismatch <- normargMaxMismatch(max.mismatch)
+    if (!isTRUEorFALSE(verbose))
+        stop("'verbose' must be TRUE or FALSE")
+    if (is(pdict, "TB_PDict"))
+        ans <- .vmatchTB_PDict(pdict, subject, algorithm,
+                               max.mismatch, fixed, verbose, count.only)
+    else if (is(pdict, "MTB_PDict"))
+        stop("MTB_PDict objects are not supported yet, sorry")
+    else
+        stop("'pdict' must be a PDict object")
+    if (is.null(dups(pdict)))
+        return(ans)
+    if (count.only) { # countPDict()
+        which_is_dup <- which(duplicated(pdict))
+        ans[which_is_dup] <- ans[dups(pdict)@dup2unq[which_is_dup]]
+        return(ans)
+    }
+    stop("internal problem")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "matchPDict" generic and methods.
 ###
 
@@ -375,4 +455,31 @@ setMethod("whichPDict", "XString",
         .matchPDict(pdict, subject, algorithm,
                     max.mismatch, fixed, verbose, count.only=NA)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "vmatchPDict", "vcountPDict" and "vwhichPDict" generic and methods.
+###
+### These are vectorized versions of matchPDict(), countPDict() and
+### whichPDict().
+### ONLY vcountPDict() is supported for now. It returns a M x N matrix of
+### integers where M is the number of patterns (length(pdict)) and N the
+### number of sequences in the subject (length(subject)).
+###
+
+setGeneric("vcountPDict", signature="subject",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        standardGeneric("vcountPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vcountPDict", "XStringSet",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        .vmatchPDict(pdict, subject, algorithm,
+                     max.mismatch, fixed, verbose, count.only=TRUE)
+)
+
+# TODO: (Maybe) add a "vcountPDict" method for XStringViews objects.
 

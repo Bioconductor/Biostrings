@@ -15,6 +15,9 @@
 \alias{whichPDict}
 \alias{whichPDict,XString-method}
 
+\alias{vcountPDict}
+\alias{vcountPDict,XStringSet-method}
+
 % Functions:
 \alias{extractAllMatches}
 
@@ -48,6 +51,9 @@
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
   whichPDict(pdict, subject, algorithm="auto",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
+
+  vcountPDict(pdict, subject, algorithm="auto",
+              max.mismatch = 0, fixed=TRUE, verbose=FALSE)
 }
 
 \arguments{
@@ -257,6 +263,32 @@ if (FALSE) {
                      getPDictStats(DNAStringSet(dict0, end=width), chr3R))
     stats <- data.frame(do.call(rbind, stats))
     stats
+  }
+
+  ## ---------------------------------------------------------------------
+  ## D. vcountPDict()
+  ## ---------------------------------------------------------------------
+  subject <- Dmelanogaster$upstream1000[1:200]
+  mat1 <- vcountPDict(pdict0, subject)
+  dim(mat1)  # length(pdict0) x length(subject)
+  nhit_per_probe <- rowSums(mat1)
+  table(nhit_per_probe)
+
+  ## Without vcountPDict(), 'mat1' could have been computed with:
+  mat2 <- sapply(seq_len(length(subject)),
+                 function(i) countPDict(pdict0, subject[[i]]))
+  identical(mat1, mat2)  # TRUE
+  ## but using vcountPDict() is faster (10x or more, depending of the
+  ## average length of the sequences in 'subject').
+
+  if (interactive()) {
+    ## This will fail (with message "allocMatrix: too many elements
+    ## specified") because, on most platforms, vectors and matrices in R
+    ## cannot have more than 2^31 elements:
+    subject <- Dmelanogaster$upstream1000
+    vcountPDict(pdict0, subject)
+    length(pdict0) * length(Dmelanogaster$upstream1000)
+    1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
   }
 }
 

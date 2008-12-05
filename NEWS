@@ -51,6 +51,10 @@ o Moved the generic functions for width(), shift(), restrict(), narrow(),
 
 STRING MATCHING
 
+o Added the vcountPDict() generic functions with a method for XStringSet
+  objects. It is the vectorized version of countPDict() i.e. the subject must
+  be an XStringSet object.
+
 o Added support for indels to matchPattern(), countPattern() and vcountPattern()
   (vmatchPattern() will follow as soon as MIndex objects support variable-width
   matches).

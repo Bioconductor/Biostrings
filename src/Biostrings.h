@@ -449,6 +449,8 @@ void _MIndex_init_match_reporting(
 	int pdict_L
 );
 
+void _MIndex_drop_reported_matches();
+
 int _MIndex_get_match_reporting_mode();
 
 IntAE *_MIndex_get_match_count();
@@ -781,6 +783,17 @@ SEXP XStringViews_match_pdict(
 	SEXP subject,
 	SEXP views_start,
 	SEXP views_width,
+	SEXP max_mismatch,
+	SEXP fixed,
+	SEXP count_only,
+	SEXP envir
+);
+
+SEXP XStringSet_vmatch_pdict(
+	SEXP pptb_comps,
+	SEXP pdict_head,
+	SEXP pdict_tail,
+	SEXP subject,
 	SEXP max_mismatch,
 	SEXP fixed,
 	SEXP count_only,

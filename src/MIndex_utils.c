@@ -52,6 +52,19 @@ void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
 	return;
 }
 
+void _MIndex_drop_reported_matches()
+{
+	int i;
+
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+		IntAE_set_val(&match_count, 0);
+	if (match_reporting_mode >= 1)
+		for (i = 0; i < match_ends.nelt; i++)
+			match_ends.elts[i].nelt = 0;
+	matching_keys.nelt = 0;
+	return;
+}
+
 int _MIndex_get_match_reporting_mode()
 {
 	return match_reporting_mode;
