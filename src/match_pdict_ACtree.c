@@ -599,7 +599,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_ACtree(SEXP pdict_pptb, const RoSeq *S, int fixedS)
+void _match_ACtree(SEXP pptb_comps, const RoSeq *S, int fixedS)
 {
 	ACNode *node0;
 	SEXP base_codes;
@@ -608,8 +608,8 @@ void _match_ACtree(SEXP pdict_pptb, const RoSeq *S, int fixedS)
 	if (debug)
 		Rprintf("[DEBUG] ENTERING _match_ACtree()\n");
 #endif
-	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pdict_pptb, 0)));
-	base_codes = VECTOR_ELT(pdict_pptb, 1);
+	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pptb_comps, 4)));
+	base_codes = VECTOR_ELT(pptb_comps, 5);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
 		error("Biostrings internal error in _match_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");

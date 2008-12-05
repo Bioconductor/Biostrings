@@ -186,29 +186,31 @@ static void match_pdict_headtail(SEXP unq2dup, int tb_width,
 	return;
 }
 
-static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
-		SEXP unq2dup, int tb_width,
+static void match_pdict(SEXP pptb_comps,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
 		SEXP max_mismatch, SEXP fixed, int is_count_only)
 {
+	int tb_width, max_mm, fixedP, fixedS;
+	SEXP unq2dup;
 	const char *type;
-	int max_mm, fixedP, fixedS;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] ENTERING match_pdict()\n");
 #endif
-	type = CHAR(STRING_ELT(pdict_type, 0));
+	tb_width = INTEGER(VECTOR_ELT(pptb_comps, 1))[0];
+	unq2dup = VECTOR_ELT(pptb_comps, 2);
+	type = CHAR(STRING_ELT(VECTOR_ELT(pptb_comps, 3), 0));
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (strcmp(type, "Twobit") == 0)
-		_match_Twobit(pdict_pptb, S, fixedS);
+		_match_Twobit(pptb_comps, S, fixedS);
 	else if (strcmp(type, "ACtree") == 0)
-		_match_ACtree(pdict_pptb, S, fixedS);
+		_match_ACtree(pptb_comps, S, fixedS);
 	else
-		error("\"%s\": unknown PDict type", type);
+		error("%s: unsupported Trusted Band type in 'pdict'", type);
 	if (cached_head != NULL || cached_tail != NULL) {
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 		match_pdict_headtail(unq2dup, tb_width,
@@ -228,16 +230,13 @@ static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
  *                    XStringViews_match_pdict
  *
  * Arguments:
- *   pdict_type: a single string "Twobit" or "ACtree";
- *   pdict_pptb: the preprocessed Trusted Band represented as a list (the
- *               exact elements depend on the PDict type);
- *   pdict_length: length(pdict);
- *   pdict_tb_width: tb.width(pdict);
- *   pdict_tb_unq2dup: pdict@tb.dups@unq2dup;
- *   pdict_head: pdict@head (XStringSet or NULL);
- *   pdict_tail: pdict@tail (XStringSet or NULL);
+ *   pptb_comps: a list of elements describing the Preprocessed Trusted Band.
+ *       The exact components depend on the type of the TB (see R function
+ *       .pptbComponents() in R/matchPDict.R for the details);
+ *   pdict_head: head(pdict) (XStringSet or NULL);
+ *   pdict_tail: tail(pdict) (XStringSet or NULL);
  *   subject: subject;
- *   max_mismatch: max.mismatch (max nb of mismatches in the tail);
+ *   max_mismatch: max.mismatch (max nb of mismatches out of the TB);
  *   fixed: logical vector of length 2;
  *   count_only: TRUE, FALSE or NA;
  *   envir: environment to be populated with the matches.
@@ -248,23 +247,20 @@ static void match_pdict(SEXP pdict_type, SEXP pdict_pptb,
  *
  ****************************************************************************/
 
-SEXP XString_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
-		SEXP pdict_length, SEXP pdict_tb_width, SEXP pdict_tb_unq2dup,
-		SEXP pdict_head, SEXP pdict_tail,
+SEXP XString_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only,
 		SEXP envir)
 {
+	int pdict_L, with_head, with_tail, is_count_only;
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S;
-	int pdict_L, tb_width, with_head, with_tail, is_count_only;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
-	pdict_L = INTEGER(pdict_length)[0];
-	tb_width = INTEGER(pdict_tb_width)[0];
+	pdict_L = INTEGER(VECTOR_ELT(pptb_comps, 0))[0];
 	pcached_head = pcached_tail = NULL;
 	with_head = pdict_head != R_NilValue;
 	if (with_head) {
@@ -283,8 +279,7 @@ SEXP XString_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 		pdict_L);
 	if (is_count_only == NA_LOGICAL)
 		is_count_only = 1;
-	match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, tb_width,
-		pcached_head, pcached_tail,
+	match_pdict(pptb_comps, pcached_head, pcached_tail,
 		&S, max_mismatch, fixed, is_count_only);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -293,26 +288,23 @@ SEXP XString_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 	return _MIndex_reported_matches_asSEXP(envir);
 }
 
-SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
-		SEXP pdict_length, SEXP pdict_tb_width, SEXP pdict_tb_unq2dup,
-		SEXP pdict_head, SEXP pdict_tail,
+SEXP XStringViews_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
+	int pdict_L, with_head, with_tail, is_count_only;
 	CachedXStringSet cached_head, *pcached_head, cached_tail, *pcached_tail;
 	RoSeq S, S_view;
-	int pdict_L, tb_width, with_head, with_tail, is_count_only,
-	    nviews, i, *view_start, *view_width, view_offset;
 	IntAE global_match_count;
 	IntAEAE global_match_ends;
+	int nviews, i, *view_start, *view_width, view_offset;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
-	pdict_L = INTEGER(pdict_length)[0];
-	tb_width = INTEGER(pdict_tb_width)[0];
+	pdict_L = INTEGER(VECTOR_ELT(pptb_comps, 0))[0];
 	pcached_head = pcached_tail = NULL;
 	with_head = pdict_head != R_NilValue;
 	if (with_head) {
@@ -346,7 +338,7 @@ SEXP XStringViews_match_pdict(SEXP pdict_type, SEXP pdict_pptb,
 			error("'subject' has out of limits views");
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
-		match_pdict(pdict_type, pdict_pptb, pdict_tb_unq2dup, tb_width,
+		match_pdict(pptb_comps,
 			pcached_head, pcached_tail,
 			&S_view, max_mismatch, fixed, is_count_only);
 		_MIndex_merge_matches(&global_match_count, &global_match_ends, view_offset);

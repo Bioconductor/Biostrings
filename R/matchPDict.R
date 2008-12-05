@@ -109,69 +109,86 @@
 ###   [[2]]
 ###   integer(0)
 
+.pptbComponents <- function(pptb)
+{
+    type <- class(pptb)
+    ans <- list(length=length(pptb), width=tb.width(pptb), unq2dup=dups(pptb)@unq2dup, type=type)
+    if (type == "Twobit") {
+        ans$sign2pos_xdata_xp <- pptb@sign2pos@xdata@xp
+        ans$base_codes <- pptb@base_codes
+    } else if (type == "ACtree") {
+        ans$nodes_xdata_xp <- pptb@nodes@xdata@xp
+        ans$base_codes <- pptb@base_codes
+    } else {
+        stop(type, ": unsupported Trusted Band type in 'pdict'")
+    }
+    ans
+}
+
+.checkUserArgsWhenTrustedBandIsFull <- function(max.mismatch, fixed)
+{
+    if (max.mismatch != 0)
+        stop("'max.mismatch' must be 0 when there is no head and no tail")
+    if (!fixed[1])
+        warning("the value you specified for 'fixed' means that IUPAC extended\n",
+                "letters in the patterns should be treated as ambiguities, but\n",
+                "this has no effect because the patterns don't contain such\n",
+                "letters")
+}
+
+.XString.matchPDict <- function(pdict, subject,
+                                max.mismatch, fixed,
+                                count.only, envir)
+{
+    fixed <- normargFixed(fixed, class(subject))
+    if (is.null(head(pdict)) && is.null(tail(pdict)))
+        .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
+    pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
+    .Call("XString_match_pdict",
+          pptb_comps, head(pdict), tail(pdict),
+          subject,
+          max.mismatch, fixed,
+          count.only, envir,
+          PACKAGE="Biostrings")
+}
+
+.XStringViews.matchPDict <- function(pdict, subject,
+                                     max.mismatch, fixed,
+                                     count.only, envir)
+{
+    fixed <- normargFixed(fixed, class(subject(subject)))
+    if (is.null(head(pdict)) && is.null(tail(pdict)))
+        .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
+    pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
+    .Call("XStringViews_match_pdict",
+          pptb_comps, head(pdict), tail(pdict),
+          subject(subject), start(subject), width(subject),
+          max.mismatch, fixed,
+          count.only, envir,
+          PACKAGE="Biostrings")
+}
+
 .matchTB_PDict <- function(pdict, subject, algorithm,
                            max.mismatch, fixed, verbose, count.only)
 {
-    pptb <- pdict@threeparts@pptb
-    pdict_type <- class(pptb)
-    if (pdict_type == "Twobit") {
-        pdict_pptb <- list(tb.width(pptb),
-                           pptb@sign2pos@xdata@xp,
-                           pptb@base_codes)
-    } else if (pdict_type == "ACtree") {
-        pdict_pptb <- list(pptb@nodes@xdata@xp,
-                           pptb@base_codes)
-    } else {
-        stop(pdict_type, ": unsupported type of PDict object for 'pdict'")
-    }
-
-    pdict_head <- head(pdict)
-    pdict_tail <- tail(pdict)
-    if (is.null(pdict_head) && is.null(pdict_tail) && max.mismatch != 0)
-        stop("'max.mismatch' must be 0 when there is no head and no tail")
-    unq2dup <- dups(pptb)@unq2dup
     pdict_names <- names(pdict)
     if (is.null(pdict_names))
         envir <- NULL
     else
         envir <- new.env(hash=TRUE, parent=emptyenv())
-    if (is(subject, "DNAString")) {
-        fixed <- normargFixed(fixed, class(subject))
-        if (is.null(pdict_head) && is.null(pdict_tail) && !fixed[1])
-            warning("with this value of 'fixed', IUPAC extended letters in\n",
-                    "the patterns will be treated as ambiguities, even\n",
-                    "though the patterns don't contain such letters")
-        C_ans <- .Call("XString_match_pdict",
-                       pdict_type, pdict_pptb,
-                       length(pdict), tb.width(pptb),
-                       unq2dup,
-                       pdict_head, pdict_tail,
-                       subject,
-                       max.mismatch, fixed,
-                       count.only, envir,
-                       PACKAGE="Biostrings")
-    } else if (is(subject, "XStringViews")
-            && is(subject(subject), "DNAString")) {
-        fixed <- normargFixed(fixed, class(subject(subject)))
-        if (is.null(pdict_head) && is.null(pdict_tail) && !fixed[1])
-            warning("with this value of 'fixed', IUPAC extended letters in\n",
-                    "the patterns will be treated as ambiguities, even\n",
-                    "though the patterns don't contain such letters")
-        C_ans <- .Call("XStringViews_match_pdict",
-                       pdict_type, pdict_pptb,
-                       length(pdict), tb.width(pptb),
-                       unq2dup,
-                       pdict_head, pdict_tail,
-                       subject(subject), start(subject), width(subject),
-                       max.mismatch, fixed,
-                       count.only, envir,
-                       PACKAGE="Biostrings")
-    } else {
+    if (is(subject, "DNAString"))
+        C_ans <- .XString.matchPDict(pdict, subject,
+                                     max.mismatch, fixed,
+                                     count.only, envir)
+    else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
+        C_ans <- .XStringViews.matchPDict(pdict, subject,
+                                          max.mismatch, fixed,
+                                          count.only, envir)
+    else
         stop("'subject' must be a DNAString object,\n",
              "  a MaskedDNAString object,\n",
              "  or an XStringViews object with a DNAString subject")
-    }
-    if (count.only %in% c(TRUE, NA)) # whichPDict() or countPDict()
+    if (count.only %in% c(TRUE, NA))  # whichPDict() or countPDict()
         return(C_ans)
     # matchPDict()
     if (is.null(pdict_names))
