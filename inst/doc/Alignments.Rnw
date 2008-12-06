@@ -250,11 +250,15 @@ is set to \Robject{-Inf}?
 
 Following the design principles of Bioconductor and R, the pairwise sequence
 alignment functionality in the \Rpackage{Biostrings} package keeps the end-user
-close to their data through the use of four specialty classes:  
-\Rclass{PairwiseAlignment}, \Rclass{PairwiseAlignmentSummary},
-\Rclass{AlignedXStringSet}, and \Rclass{QualityAlignedXStringSet}. As the names
-suggest the \Rclass{PairwiseAlignment} class holds the results of a fit from
-the \Rfunction{pairwiseAlignment} function
+close to their data through the use of five specialty classes:  
+\Rclass{PairwiseAlignedXStringSet}, \Rclass{PairwiseAlignedFixedSubject},
+\Rclass{PairwiseAlignedFixedSubjectSummary}, \Rclass{AlignedXStringSet}, and
+\Rclass{QualityAlignedXStringSet}. The \Rclass{PairwiseAlignedFixedSubject} class
+inherits from the \Rclass{PairwiseAlignedXStringSet} class and they both hold the
+results of a fit from the \Rfunction{pairwiseAlignment} function, with the former
+class being used to represent all patterns aligning to a single subject and the
+latter being used to represent elementwise alignments between a set of patterns
+and a set of subjects.
 
 <<classes1>>=
 psa1 <- pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
@@ -290,7 +294,7 @@ class(pattern(psa2))
 \subsection{Exercise 2}
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
-\Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users? 
+\Rclass{PairwiseAlignedFixedSubjectSummary} and \Rclass{summary.lm} to end-users? 
 \end{enumerate}
 
 [Answer provided in section \ref{sec:Answers2}.]
@@ -298,10 +302,11 @@ class(pattern(psa2))
 
 \section{Pairwise Sequence Alignment Helper Functions}
 
-Tables \ref{table:helperfuns} and \ref{table:alignfuns} show functions that
-interact with objects of class \Rclass{PairwiseAlignment} and
-\Rclass{AlignedXStringSet} respectively. These functions should be used in
-preference to direct slot extraction from the alignment objects.
+Tables \ref{table:helperfuns1}, \ref{table:helperfuns1} and
+\ref{table:alignfuns} show functions that interact with objects of class
+\Rclass{PairwiseAlignedXStringSet}, \Rclass{PairwiseAlignedFixedSubject}, and
+\Rclass{AlignedXStringSet}. These functions should be used in preference to
+direct slot extraction from the alignment objects.
 
 \begin{table}[ht]
 \begin{center}
@@ -310,17 +315,9 @@ preference to direct slot extraction from the alignment objects.
 Function                    & Description \\
 \hline
 \Rfunction{[}               & Extracts the specified elements of the alignment object \\
-\Rfunction{aligned}         & Creates an \Rclass{XStringSet} containing either ``filled-with-gaps" or
-                              degapped aligned strings \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
-\Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
-\Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
 \Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
-\Rfunction{consensusMatrix} & Computes a consensus matrix for the alignments \\
-\Rfunction{consensusString} & Creates the string based on a 50\% + 1 vote from the consensus matrix \\
-\Rfunction{coverage}        & Computes the alignment coverage along the subject \\
 \Rfunction{length}          & Extracts the number of patterns aligned \\
-\Rfunction{mismatchSummary} & Summarizes the information of the \Rfunction{mismatchTable} \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
 \Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
 \Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
@@ -330,15 +327,37 @@ Function                    & Description \\
 \Rfunction{pid}             & Computes the percent sequence identity \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
 \Rfunction{score}           & Extracts the pairwise sequence alignment scores \\
+\Rfunction{type}            & Extracts the type of pairwise sequence alignment \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Functions for \Rclass{PairwiseAlignedXStringSet} and \Rclass{PairwiseAlignmentFixedSubject}
+  objects.}
+\label{table:helperfuns1}
+\end{table}
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{l|l}
+\hline
+Function                    & Description \\
+\hline
+\Rfunction{aligned}         & Creates an \Rclass{XStringSet} containing either ``filled-with-gaps" or
+                              degapped aligned strings \\
+\Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
+\Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
+\Rfunction{consensusMatrix} & Computes a consensus matrix for the alignments \\
+\Rfunction{consensusString} & Creates the string based on a 50\% + 1 vote from the consensus matrix \\
+\Rfunction{coverage}        & Computes the alignment coverage along the subject \\
+\Rfunction{mismatchSummary} & Summarizes the information of the \Rfunction{mismatchTable} \\
 \Rfunction{summary}         & Summarizes a pairwise sequence alignment \\
 \Rfunction{toString}        & Creates a concatenated string version of \Rfunction{aligned} \\
-\Rfunction{type}            & Extracts the type of pairwise sequence alignment \\
 \Rfunction{Views}           & Creates an \Rclass{XStringViews} representing the aligned region along the subject \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Functions for \Rclass{PairwiseAlignment} objects.}
-\label{table:helperfuns}
+\caption{Additional functions for \Rclass{PairwiseAlignedFixedSubject} objects.}
+\label{table:helperfuns2}
 \end{table}
 
 The \Rfunction{score}, \Rfunction{nmatch}, \Rfunction{nmismatch}, and
@@ -408,10 +427,10 @@ Function                    & Description \\
 
 The \Rfunction{pattern} and \Rfunction{subject} functions extract the aligned
 pattern and subject objects for further analysis. Most of the actions that can
-be performed on \Rclass{PairwiseAnalysis} objects can also be performed on
-\Rclass{AlignedXString} and \Rclass{QualityAlignedXString} objects as well as
-operations including \Rfunction{start}, \Rfunction{end}, and \Rfunction{width}
-that extracts the start, end, and width of the alignment ranges.
+be performed on \Rclass{PairwiseAlignedXStringSet} objects can also be
+performed on \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet}
+objects as well as operations including \Rfunction{start}, \Rfunction{end}, and
+\Rfunction{width} that extracts the start, end, and width of the alignment ranges.
 
 <<helper3>>=
 class(pattern(psa2))
@@ -918,7 +937,7 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
 \label{sec:Answers2}
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
-\Rclass{PairwiseAlignmentSummary} and \Rclass{summary.lm} to end-users?
+\Rclass{PairwiseAlignedFixedSubjectSummary} and \Rclass{summary.lm} to end-users?
 \textit{These classes allow the end-user to extract the summary output for
 further operations.}
 <<ans2a>>=

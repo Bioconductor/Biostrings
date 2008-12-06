@@ -78,7 +78,8 @@ Quality-based method for generating a substitution matrix based on the Bioinform
 article by Ketil Malde given below.
 }
 \value{
-If \code{scoreOnly == FALSE}, an instance of class \code{\link{PairwiseAlignment}} is returned.
+If \code{scoreOnly == FALSE}, an instance of class \code{\link{PairwiseAlignedXStringSet}}
+or \code{\link{PairwiseAlignedFixedSubject}} is returned.
 If \code{scoreOnly == TRUE}, a numeric vector containing the scores for the optimal
 pairwise alignments is returned.
 }
@@ -100,7 +101,7 @@ against a reference sequence.
 \author{P. Aboyoun and H. Pages}
 \seealso{
   \code{\link{stringDist}},
-  \link{PairwiseAlignment-class},
+  \link{PairwiseAlignedXStringSet-class},
   \link{XStringQuality-class},
   \link{substitution.matrices},
   \code{\link{matchPattern}}

@@ -60,7 +60,8 @@ Collate: 00datacache.R
 	QualityScaledXStringSet.R
 	InDel-class.R
 	AlignedXStringSet-class.R
-	PairwiseAlignment-class.R
+	PairwiseAlignedXStringSet-class.R
+	PairwiseAlignedFixedSubject-class.R
 	align-utils.R
 	pmatchPattern.R
 	pairwiseAlignment.R

@@ -22,8 +22,8 @@ const char* get_qualityless_classname(SEXP object)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP PairwiseAlignment_nmatch(SEXP nchar, SEXP nmismatch, SEXP ninsertion,
-                SEXP ndeletion)
+SEXP PairwiseAlignedXStringSet_nmatch(SEXP nchar, SEXP nmismatch, SEXP ninsertion,
+                                      SEXP ndeletion)
 {
 	int ans_len, i, *ans_elt;
 	const int *nchar_elt, *nmismatch_elt, *ninsertion_elt, *ndeletion_elt;
@@ -156,7 +156,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 }
 
 
-SEXP PairwiseAlignment_align_aligned(SEXP alignment, SEXP gapCode)
+SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 {
 	int i, j;
 	char gapCodeValue = (char) RAW(gapCode)[0];

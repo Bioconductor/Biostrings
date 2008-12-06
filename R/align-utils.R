@@ -7,14 +7,14 @@ setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
         pattern@mismatch
 )
 
-setMethod("nmatch", c(pattern = "PairwiseAlignment", x = "missing"),
+setMethod("nmatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
     function(pattern, x, fixed)
-        .Call("PairwiseAlignment_nmatch", nchar(pattern), nmismatch(pattern),
+        .Call("PairwiseAlignedXStringSet_nmatch", nchar(pattern), nmismatch(pattern),
               nindel(subject(pattern))[,"WidthSum"], nindel(pattern(pattern))[,"WidthSum"],
               PACKAGE="Biostrings")
 )
 
-setMethod("nmatch", c(pattern = "PairwiseAlignmentSummary", x = "missing"),
+setMethod("nmatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missing"),
     function(pattern, x, fixed)
         pattern@nmatch
 )
@@ -27,12 +27,12 @@ setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
     }
 )
 
-setMethod("nmismatch", c(pattern = "PairwiseAlignment", x = "missing"),
+setMethod("nmismatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
     function(pattern, x, fixed)
         nmismatch(pattern(pattern))
 )
 
-setMethod("nmismatch", c(pattern = "PairwiseAlignmentSummary", x = "missing"),
+setMethod("nmismatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missing"),
     function(pattern, x, fixed)
         pattern@nmismatch
 )
@@ -120,7 +120,7 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
     }
 )
 
-setMethod("mismatchTable", "PairwiseAlignment",
+setMethod("mismatchTable", "PairwiseAlignedXStringSet",
     function(x, shiftLeft = 0L, shiftRight = 0L)
     {
         cbind(mismatchTable(pattern(x), shiftLeft = shiftLeft,
@@ -207,7 +207,7 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
     }
 )
 
-setMethod("mismatchSummary", "PairwiseAlignment",
+setMethod("mismatchSummary", "PairwiseAlignedFixedSubject",
     function(x, weight=1L)
     {
         if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
@@ -242,7 +242,7 @@ setMethod("mismatchSummary", "PairwiseAlignment",
     }
 )
 
-setMethod("mismatchSummary", "PairwiseAlignmentSummary",
+setMethod("mismatchSummary", "PairwiseAlignedFixedSubjectSummary",
     function(x)
         x@mismatchSummary
 )
@@ -263,12 +263,12 @@ setMethod("coverage", "AlignedXStringSet",
     }
 )
 
-setMethod("coverage", "PairwiseAlignment",
+setMethod("coverage", "PairwiseAlignedFixedSubject",
     function(x, start = NA, end = NA, weight = 1L)
         coverage(subject(x), start = NA, end = NA, weight = 1L)
 )
 
-setMethod("coverage", "PairwiseAlignmentSummary",
+setMethod("coverage", "PairwiseAlignedFixedSubjectSummary",
     function(x, start = NA, end = NA)
         subseq(x@coverage, start=start, end=end)
 )
@@ -301,7 +301,7 @@ setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })
-setMethod("compareStrings", signature = c(pattern = "PairwiseAlignment", subject = "missing"),
+setMethod("compareStrings", signature = c(pattern = "PairwiseAlignedXStringSet", subject = "missing"),
 		  function(pattern, subject) {
 			  compareStrings(pattern@pattern, pattern@subject)
 		  })
@@ -371,7 +371,7 @@ setMethod("consensusMatrix", "XStringViews",
               consensusMatrix(y, baseOnly=baseOnly, freq=freq)
           })
 
-setMethod("consensusMatrix", "PairwiseAlignment",
+setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
           function(x, baseOnly=FALSE, freq=FALSE)
           {
               consensusMatrix(aligned(x), baseOnly=baseOnly, freq=freq)

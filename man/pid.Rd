@@ -1,7 +1,7 @@
 \name{pid}
 \alias{pid}
 
-\alias{pid,PairwiseAlignment-method}
+\alias{pid,PairwiseAlignedXStringSet-method}
 
 \title{Percent Sequence Identity}
 \description{
@@ -11,7 +11,7 @@ Calculates the percent sequence identity for a pairwise sequence alignment.
 pid(x, type="PID1")
 }
 \arguments{
-  \item{x}{a \code{\link{PairwiseAlignment}} object.}
+  \item{x}{a \code{\link{PairwiseAlignedXStringSet}} object.}
   \item{type}{one of percent sequence identity. One of \code{"PID1"}, \code{"PID2"},
     \code{"PID3"}, and \code{"PID4"}. See Details for more information.}
 }
@@ -45,7 +45,7 @@ identity for protein sequence alignments, BMC Bioinformatics 2006, 7:415.
 \author{P. Aboyoun}
 \seealso{
   \link{pairwiseAlignment},
-  \link{PairwiseAlignment-class},
+  \link{PairwiseAlignedXStringSet-class},
   \link{match-utils}
 }
 \examples{

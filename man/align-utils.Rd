@@ -3,39 +3,39 @@
 \alias{align-utils}
 
 \alias{mismatch,AlignedXStringSet,missing-method}
-\alias{nmatch,PairwiseAlignment,missing-method}
-\alias{nmatch,PairwiseAlignmentSummary,missing-method}
+\alias{nmatch,PairwiseAlignedXStringSet,missing-method}
+\alias{nmatch,PairwiseAlignedFixedSubjectSummary,missing-method}
 \alias{nmismatch,AlignedXStringSet,missing-method}
-\alias{nmismatch,PairwiseAlignment,missing-method}
-\alias{nmismatch,PairwiseAlignmentSummary,missing-method}
+\alias{nmismatch,PairwiseAlignedXStringSet,missing-method}
+\alias{nmismatch,PairwiseAlignedFixedSubjectSummary,missing-method}
 
 \alias{mismatchTable}
 \alias{mismatchTable,AlignedXStringSet-method}
 \alias{mismatchTable,QualityAlignedXStringSet-method}
-\alias{mismatchTable,PairwiseAlignment-method}
+\alias{mismatchTable,PairwiseAlignedXStringSet-method}
 \alias{mismatchSummary}
 \alias{mismatchSummary,AlignedXStringSet-method}
 \alias{mismatchSummary,QualityAlignedXStringSet-method}
-\alias{mismatchSummary,PairwiseAlignment-method}
-\alias{mismatchSummary,PairwiseAlignmentSummary-method}
+\alias{mismatchSummary,PairwiseAlignedFixedSubject-method}
+\alias{mismatchSummary,PairwiseAlignedFixedSubjectSummary-method}
 
 \alias{coverage,AlignedXStringSet-method}
-\alias{coverage,PairwiseAlignment-method}
-\alias{coverage,PairwiseAlignmentSummary-method}
+\alias{coverage,PairwiseAlignedFixedSubject-method}
+\alias{coverage,PairwiseAlignedFixedSubjectSummary-method}
 
 \alias{compareStrings}
 \alias{compareStrings,character,character-method}
 \alias{compareStrings,XString,XString-method}
 \alias{compareStrings,XStringSet,XStringSet-method}
 \alias{compareStrings,AlignedXStringSet,AlignedXStringSet-method}
-\alias{compareStrings,PairwiseAlignment,missing-method}
+\alias{compareStrings,PairwiseAlignedXStringSet,missing-method}
 \alias{consensusMatrix}
 \alias{consensusMatrix,character-method}
 \alias{consensusMatrix,matrix-method}
 \alias{consensusMatrix,list-method}
 \alias{consensusMatrix,XStringSet-method}
 \alias{consensusMatrix,XStringViews-method}
-\alias{consensusMatrix,PairwiseAlignment-method}
+\alias{consensusMatrix,PairwiseAlignedFixedSubject-method}
 \alias{consensusString}
 \alias{consensusString,ANY-method}
 
@@ -54,7 +54,7 @@
   mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
   mismatchSummary(x, \dots)
   \S4method{coverage}{AlignedXStringSet}(x, start=NA, end=NA, weight=1L)
-  \S4method{coverage}{PairwiseAlignment}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{PairwiseAlignedFixedSubject}(x, start=NA, end=NA, weight=1L)
   compareStrings(pattern, subject)
   \S4method{consensusMatrix}{character}(x, freq=FALSE)
   \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
@@ -63,12 +63,12 @@
 
 \details{
   \code{mismatchTable}:  a data.frame containing the positions and substrings
-  of the mismatches for the \code{AlignedXStringSet} or \code{PairwiseAlignment}
-  object.
+  of the mismatches for the \code{AlignedXStringSet} or
+  \code{PairwiseAlignedXStringSet} object.
 
   \code{mismatchSummary}:  a list of data.frame objects containing counts and
   frequencies of the mismatches for the \code{AlignedXStringSet} or
-  \code{PairwiseAlignment} object.
+  \code{PairwiseAlignedFixedSubject} object.
 
   \code{compareStrings} combines two equal-length strings that are assumed to be aligned
   into a single character string containing that replaces mismatches with \code{"?"},
@@ -84,8 +84,8 @@
 \arguments{
   \item{x}{
     A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
-    \code{PairwiseAlignment}, or \code{list} of FASTA records containing the equal-length
-    strings.
+    \code{PairwiseAlignedXStringSet}, or \code{list} of FASTA records containing the
+    equal-length strings.
   }
   \item{shiftLeft, shiftRight}{
     Non-positive and non-negative integers respectively that specify how many
@@ -104,8 +104,8 @@
   \item{pattern, subject}{
     The strings to compare. Can be of type \code{character}, \code{XString},
     \code{XStringSet}, \code{AlignedXStringSet}, or, in the case of
-    \code{pattern}, \code{PairwiseAlignment}. If \code{pattern} is a
-    \code{PairwiseAlignment} object, then \code{subject} must be missing.
+    \code{pattern}, \code{PairwiseAlignedXStringSet}. If \code{pattern} is a
+    \code{PairwiseAlignedXStringSet} object, then \code{subject} must be missing.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
@@ -124,7 +124,7 @@
 \seealso{
   \code{\link{pairwiseAlignment}},
   \link{XString-class}, \link{XStringSet-class}, \link{XStringViews-class},
-  \link{AlignedXStringSet-class}, \link{PairwiseAlignment-class},
+  \link{AlignedXStringSet-class}, \link{PairwiseAlignedXStringSet-class},
   \link{match-utils}
 }
 

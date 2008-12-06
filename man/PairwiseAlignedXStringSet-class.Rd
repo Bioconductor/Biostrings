@@ -1,69 +1,85 @@
-\name{PairwiseAlignment-class}
+\name{PairwiseAlignedXStringSet-class}
 \docType{class}
 
 % Classes
-\alias{class:PairwiseAlignment}
-\alias{PairwiseAlignment-class}
-\alias{PairwiseAlignment}
-\alias{class:PairwiseAlignmentSummary}
-\alias{PairwiseAlignmentSummary-class}
-\alias{PairwiseAlignmentSummary}
+\alias{class:PairwiseAlignedXStringSet}
+\alias{PairwiseAlignedXStringSet-class}
+\alias{PairwiseAlignedXStringSet}
+\alias{class:PairwiseAlignedFixedSubject}
+\alias{PairwiseAlignedFixedSubject-class}
+\alias{PairwiseAlignedFixedSubject}
+\alias{class:PairwiseAlignedFixedSubjectSummary}
+\alias{PairwiseAlignedFixedSubjectSummary-class}
+\alias{PairwiseAlignedFixedSubjectSummary}
 
 % Constructor-like functions and generics:
-\alias{initialize,PairwiseAlignment-method}
-\alias{PairwiseAlignment,XString,XString-method}
-\alias{PairwiseAlignment,XStringSet,missing-method}
-\alias{PairwiseAlignment,character,missing-method}
-\alias{PairwiseAlignment,character,character-method}
+\alias{initialize,PairwiseAlignedXStringSet-method}
+\alias{PairwiseAlignedXStringSet,XString,XString-method}
+\alias{PairwiseAlignedXStringSet,XStringSet,missing-method}
+\alias{PairwiseAlignedXStringSet,character,missing-method}
+\alias{PairwiseAlignedXStringSet,character,character-method}
+\alias{initialize,PairwiseAlignedFixedSubject-method}
+\alias{PairwiseAlignedFixedSubject,XString,XString-method}
+\alias{PairwiseAlignedFixedSubject,XStringSet,missing-method}
+\alias{PairwiseAlignedFixedSubject,character,missing-method}
+\alias{PairwiseAlignedFixedSubject,character,character-method}
 
 % Accesor methods:
-\alias{pattern,PairwiseAlignment-method}
-\alias{subject,PairwiseAlignment-method}
+\alias{pattern,PairwiseAlignedXStringSet-method}
+\alias{subject,PairwiseAlignedXStringSet-method}
 \alias{type}
-\alias{type,PairwiseAlignment-method}
-\alias{type,PairwiseAlignmentSummary-method}
-\alias{score,PairwiseAlignment-method}
-\alias{score,PairwiseAlignmentSummary-method}
-\alias{nindel,PairwiseAlignment-method}
-\alias{nindel,PairwiseAlignmentSummary-method}
-\alias{length,PairwiseAlignment-method}
-\alias{length,PairwiseAlignmentSummary-method}
-\alias{nchar,PairwiseAlignment-method}
-\alias{nchar,PairwiseAlignmentSummary-method}
-\alias{alphabet,PairwiseAlignment-method}
-\alias{aligned,PairwiseAlignment-method}
-\alias{Views,PairwiseAlignment-method}
+\alias{type,PairwiseAlignedXStringSet-method}
+\alias{score,PairwiseAlignedXStringSet-method}
+\alias{nindel,PairwiseAlignedXStringSet-method}
+\alias{length,PairwiseAlignedXStringSet-method}
+\alias{nchar,PairwiseAlignedXStringSet-method}
+\alias{alphabet,PairwiseAlignedXStringSet-method}
 
 % Standard generic methods:
-\alias{show,PairwiseAlignment-method}
-\alias{show,PairwiseAlignmentSummary-method}
-\alias{summary,PairwiseAlignment-method}
-\alias{as.character,PairwiseAlignment-method}
-\alias{toString,PairwiseAlignment-method}
-\alias{as.matrix,PairwiseAlignment-method}
-\alias{[,PairwiseAlignment,ANY,ANY,ANY-method}
-\alias{[<-,PairwiseAlignment,ANY,ANY,ANY-method}
-\alias{rep,PairwiseAlignment-method}
+\alias{show,PairwiseAlignedXStringSet-method}
+\alias{[,PairwiseAlignedXStringSet,ANY,ANY,ANY-method}
+\alias{[<-,PairwiseAlignedXStringSet,ANY,ANY,ANY-method}
+\alias{rep,PairwiseAlignedXStringSet-method}
+
+% Methods for PairwiseAlignedFixedSubject:
+\alias{summary,PairwiseAlignedFixedSubject-method}
+\alias{Views,PairwiseAlignedFixedSubject-method}
+\alias{aligned,PairwiseAlignedFixedSubject-method}
+\alias{as.character,PairwiseAlignedFixedSubject-method}
+\alias{toString,PairwiseAlignedFixedSubject-method}
+\alias{as.matrix,PairwiseAlignedFixedSubject-method}
+
+% Methods for PairwiseAlignedFixedSubjectSummary:
+\alias{type,PairwiseAlignedFixedSubjectSummary-method}
+\alias{score,PairwiseAlignedFixedSubjectSummary-method}
+\alias{nindel,PairwiseAlignedFixedSubjectSummary-method}
+\alias{length,PairwiseAlignedFixedSubjectSummary-method}
+\alias{nchar,PairwiseAlignedFixedSubjectSummary-method}
+\alias{show,PairwiseAlignedFixedSubjectSummary-method}
 
 
-\title{PairwiseAlignment and PairwiseAlignmentSummary objects}
+\title{PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject, and
+  PairwiseAlignedFixedSubjectSummary objects}
 
 \description{
-  The \code{PairwiseAlignment} class is a container for storing an alignment.
-  The \code{PairwiseAlignmentSummary} class is a container for storing the
+  The \code{PairwiseAlignedXStringSet} class is a container for storing an elementwise
+  pairwise alignment.
+  The \code{PairwiseAlignedFixedSubject} class is a container for storing a pairwise
+  alignment with a single subject.
+  The \code{PairwiseAlignedFixedSubjectSummary} class is a container for storing the
   summary of an alignment.
 }
 
 \usage{
   ## Constructors:
   ## When subject is missing, pattern must be of length 2
-  \S4method{PairwiseAlignment}{XString,XString}(pattern, subject, type = "global",
+  \S4method{PairwiseAlignedXStringSet}{XString,XString}(pattern, subject, type = "global",
     substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-  \S4method{PairwiseAlignment}{XStringSet,missing}(pattern, subject, type = "global",
+  \S4method{PairwiseAlignedXStringSet}{XStringSet,missing}(pattern, subject, type = "global",
     substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-  \S4method{PairwiseAlignment}{character,character}(pattern, subject, type = "global",
+  \S4method{PairwiseAlignedXStringSet}{character,character}(pattern, subject, type = "global",
     substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1, baseClass = "BString")
-  \S4method{PairwiseAlignment}{character,missing}(pattern, subject, type = "global",
+  \S4method{PairwiseAlignedXStringSet}{character,missing}(pattern, subject, type = "global",
     substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1, baseClass = "BString")
 }
 
@@ -124,7 +140,7 @@
 
 \section{Object extraction methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignedXStringSet} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -137,13 +153,13 @@
     }
     \item{}{
       \code{summary(object, ...)}:
-      Generates a summary for the \code{PairwiseAlignment}.
+      Generates a summary for the \code{PairwiseAlignedXStringSet}.
     }
   }
 }
 \section{General information methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignedXStringSet} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -153,19 +169,19 @@
     \item{}{
       \code{length(x)}:
       The length of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
-      There is a method for \code{PairwiseAlignmentSummary} as well.
+      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
     }
     \item{}{
       \code{type(x)}:
       The type of the alignment (\code{"global"}, \code{"local"},
       \code{"overlap"}, \code{"patternOverlap"}, or \code{"subjectOverlap"}).
-      There is a method for \code{PairwiseAlignmentSummary} as well.
+      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
     }
   }
 }
 \section{Aligned sequence methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignedFixedSubject} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -191,7 +207,7 @@
 }
 \section{Subject position methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignedFixedSubject} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -204,7 +220,7 @@
     }
     \item{}{
       \code{coverage(x, start=NA, end=NA, weight=1L)}
-      See `\link{coverage,PairwiseAlignment-method}` for more information.
+      See `\link{coverage,PairwiseAlignedFixedSubject-method}` for more information.
     }
     \item{}{
       \code{Views(subject, start=NA, end=NA, names=NULL)}:
@@ -217,13 +233,13 @@
 }
 \section{Numeric summary methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignment} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignedXStringSet} object, except otherwise noted.
 
   \describe{
     \item{}{
       \code{nchar(x)}:
       The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
-      There is a method for \code{PairwiseAlignmentSummary} as well.
+      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
     }
     \item{}{
       \code{nindel(x)}:
@@ -232,7 +248,7 @@
     \item{}{
       \code{score(x)}:
       The score of the alignment.
-      There is a method for \code{PairwiseAlignmentSummary} as well.
+      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
     }
   }
 }
@@ -241,11 +257,11 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new \code{PairwiseAlignment} object made of the selected elements.
+      Returns a new \code{PairwiseAlignedXStringSet} object made of the selected elements.
     }
     \item{}{
       \code{rep(x, times)}:
-      Returns a new \code{PairwiseAlignment} object made of the repeated elements.
+      Returns a new \code{PairwiseAlignedXStringSet} object made of the repeated elements.
     }
   }
 }
@@ -262,7 +278,7 @@
 }
 
 \examples{
-  PairwiseAlignment("-PA--W-HEAE", "HEAGAWGHE-E")
+  PairwiseAlignedXStringSet("-PA--W-HEAE", "HEAGAWGHE-E")
   pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
   subject <- AAString("SMDDTEKMSMKL")
   nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)

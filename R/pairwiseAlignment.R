@@ -84,8 +84,8 @@ function(pattern,
   ## Check arguments
   if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
     stop("'pattern' and 'subject' must have the same XString base subtype")
-  if (length(subject) != 1)
-    stop("'subject' must be of length 1")
+  if (!(length(subject) %in% c(1, length(pattern))))
+    stop("'length(subject)' must equal 1 or 'length(pattern)'")
   type <-
     match.arg(type,
               c("global", "local", "overlap",
@@ -182,8 +182,8 @@ function(pattern,
   ## Check arguments
   if (class(pattern) != class(subject))
     stop("'pattern' and 'subject' must be of the same class")
-  if (length(subject) != 1)
-    stop("'subject' must be of length 1")
+  if (!(length(subject) %in% c(1, length(pattern))))
+    stop("'length(subject)' must equal 1 or 'length(pattern)'")
   type <-
     match.arg(type,
               c("global", "local", "overlap",
@@ -317,22 +317,29 @@ function(pattern,
     subsets <- vector("list", k)
     for (i in seq_len(k)) {
       indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
-      subsets[[i]] <-
-        XStringSet(baseXStringSubtype(pattern), as.character(pattern[indices]))
+      if (length(subject) == 1) {
+          subsets[[i]] <-
+            list(pattern = XStringSet(baseXStringSubtype(pattern), as.character(pattern[indices])),
+                 subject = subject)
+      } else {
+          subsets[[i]] <-
+            list(pattern = XStringSet(baseXStringSubtype(pattern), as.character(pattern[indices])),
+                 subject = XStringSet(baseXStringSubtype(subject), as.character(subject[indices])))
+      }
     }
 
     mpi.remote.exec(library(Biostrings), ret = FALSE)
     mpiOutput <-
       mpi.parLapply(subsets,
-          function(x, subject,
+          function(x,
                    type = "global",
                    substitutionMatrix = NULL,
                    gapOpening = -10,
                    gapExtension = -4,
                    scoreOnly = FALSE) {
             output <-
-              Biostrings:::XStringSet.pairwiseAlignment(pattern = x,
-                        subject = subject,
+              Biostrings:::XStringSet.pairwiseAlignment(pattern = x$pattern,
+                        subject = x$subject,
                         type = type,
                         substitutionMatrix = substitutionMatrix,
                         gapOpening = gapOpening,
@@ -342,7 +349,6 @@ function(pattern,
             output@subject@unaligned <- BStringSet("")
             output
           },
-          subject = subject,
           type = type,
           substitutionMatrix = substitutionMatrix,
           gapOpening = gapOpening,
@@ -392,25 +398,41 @@ function(pattern,
     subsets <- vector("list", k)
     for (i in seq_len(k)) {
       indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
-      subsets[[i]] <-
-        QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern),
-                                           as.character(pattern[indices])),
-                                do.call(class(quality(pattern)),
-                                        list(as.character(quality(pattern[indices])))))
+      if (length(subject) == 1) {
+        subsets[[i]] <-
+          list(pattern =
+               QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern),
+                 as.character(pattern[indices])),
+                   do.call(class(quality(pattern)),
+                     list(as.character(quality(pattern[indices]))))),
+               subject = subject)
+      } else {
+        subsets[[i]] <-
+          list(pattern =
+               QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern),
+                 as.character(pattern[indices])),
+                   do.call(class(quality(pattern)),
+                     list(as.character(quality(pattern[indices]))))),
+               subject =
+               QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject),
+                 as.character(subject[indices])),
+                   do.call(class(quality(subject)),
+                     list(as.character(quality(subject[indices]))))))
+      }
     }
 
     mpi.remote.exec(library(Biostrings), ret = FALSE)
     mpiOutput <-
       mpi.parLapply(subsets,
-                    function(x, subject,
+                    function(x,
                              type = "global",
                              fuzzyMatrix = NULL,
                              gapOpening = -10,
                              gapExtension = -4,
                              scoreOnly = FALSE) {
                       output <-
-                        Biostrings:::QualityScaledXStringSet.pairwiseAlignment(pattern = x,
-                                  subject = subject,
+                        Biostrings:::QualityScaledXStringSet.pairwiseAlignment(pattern = x$pattern,
+                                  subject = x$subject,
                                   type = type,
                                   fuzzyMatrix = fuzzyMatrix,
                                   gapOpening = gapOpening,
@@ -420,7 +442,6 @@ function(pattern,
                       output@subject@unaligned <- BStringSet("")
                       output
                     },
-                    subject = subject,
                     type = type,
                     fuzzyMatrix = fuzzyMatrix,
                     gapOpening = gapOpening,

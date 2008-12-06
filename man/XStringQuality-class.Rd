@@ -68,7 +68,7 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \link{PairwiseAlignment-class},
+  \link{PairwiseAlignedXStringSet-class},
   \link{DNAString-class},
   \link{BStringSet-class}
 }
