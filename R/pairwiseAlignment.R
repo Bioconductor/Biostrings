@@ -345,8 +345,10 @@ function(pattern,
                         gapOpening = gapOpening,
                         gapExtension = gapExtension,
                         scoreOnly = scoreOnly)
-            output@pattern@unaligned <- BStringSet("")
-            output@subject@unaligned <- BStringSet("")
+            if (!scoreOnly) {
+              output@pattern@unaligned <- BStringSet("")
+              output@subject@unaligned <- BStringSet("")
+            }
             output
           },
           type = type,
@@ -438,8 +440,10 @@ function(pattern,
                                   gapOpening = gapOpening,
                                   gapExtension = gapExtension,
                                   scoreOnly = scoreOnly)
-                      output@pattern@unaligned <- BStringSet("")
-                      output@subject@unaligned <- BStringSet("")
+                      if (!scoreOnly) {
+                        output@pattern@unaligned <- BStringSet("")
+                        output@subject@unaligned <- BStringSet("")
+                      }
                       output
                     },
                     type = type,
