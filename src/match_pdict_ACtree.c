@@ -344,7 +344,19 @@ SEXP build_ACtree(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 
 /****************************************************************************
  *                                                                          *
- *                             B. MATCH FINDING                             *
+ *          B. MANIPULATING A PreprocessedTB OBJECT OF TYPE ACtree          *
+ *                                                                          *
+ ****************************************************************************/
+
+SEXP ACtree_summary(SEXP pptb)
+{
+	return R_NilValue;
+}
+
+
+/****************************************************************************
+ *                                                                          *
+ *                             C. MATCH FINDING                             *
  *                                                                          *
  ****************************************************************************/
 
@@ -599,7 +611,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_ACtree(SEXP pptb_comps, const RoSeq *S, int fixedS)
+void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS)
 {
 	ACNode *node0;
 	SEXP base_codes;
@@ -608,8 +620,8 @@ void _match_ACtree(SEXP pptb_comps, const RoSeq *S, int fixedS)
 	if (debug)
 		Rprintf("[DEBUG] ENTERING _match_ACtree()\n");
 #endif
-	node0 = (ACNode *) INTEGER(R_ExternalPtrTag(VECTOR_ELT(pptb_comps, 4)));
-	base_codes = VECTOR_ELT(pptb_comps, 5);
+	node0 = (ACNode *) INTEGER(_get_ACtree_nodes_tag(pptb));
+	base_codes = _get_ACtree_base_codes(pptb);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
 		error("Biostrings internal error in _match_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");

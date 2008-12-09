@@ -11,9 +11,10 @@ SEXP debug_XString_class()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'XString_class.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in file %s\n",
+		debug ? "on" : "off", __FILE__);
 #else
-	Rprintf("Debug mode not available in 'XString_class.c'\n");
+	Rprintf("Debug mode not available in file %s\n", __FILE__);
 #endif
 	return R_NilValue;
 }

@@ -725,6 +725,25 @@ SEXP find_palindromes(
 );
 
 
+/* PreprocessedTB_class.c */
+
+SEXP debug_PreprocessedTB_class();
+
+int _get_PreprocessedTB_length(SEXP x);
+
+int _get_PreprocessedTB_width(SEXP x);
+
+SEXP _get_PreprocessedTB_unq2dup(SEXP x);
+
+SEXP _get_Twobit_sign2pos_tag(SEXP x);
+
+SEXP _get_Twobit_base_codes(SEXP x);
+
+SEXP _get_ACtree_nodes_tag(SEXP x);
+
+SEXP _get_ACtree_base_codes(SEXP x);
+
+
 /* match_pdict_Twobit.c */
 
 SEXP debug_match_pdict_Twobit();
@@ -736,7 +755,7 @@ SEXP build_Twobit(
 );
 
 void _match_Twobit(
-	SEXP pptb_comps,
+	SEXP pptb,
 	const RoSeq *S,
 	int fixedS
 );
@@ -754,8 +773,10 @@ SEXP build_ACtree(
 	SEXP base_codes
 );
 
+SEXP ACtree_summary(SEXP pptb);
+
 void _match_ACtree(
-	SEXP pptb_comps,
+	SEXP pptb,
 	const RoSeq *S,
 	int fixedS
 );
@@ -766,7 +787,7 @@ void _match_ACtree(
 SEXP debug_match_pdict();
 
 SEXP XString_match_pdict(
-	SEXP pptb_comps,
+	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,
@@ -777,7 +798,7 @@ SEXP XString_match_pdict(
 );
 
 SEXP XStringViews_match_pdict(
-	SEXP pptb_comps,
+	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,
@@ -790,7 +811,7 @@ SEXP XStringViews_match_pdict(
 );
 
 SEXP XStringSet_vmatch_pdict(
-	SEXP pptb_comps,
+	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP subject,

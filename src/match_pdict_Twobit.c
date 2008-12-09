@@ -219,7 +219,7 @@ void walk_subject(int tb_width, const int *twobit_sign2pos, const RoSeq *S)
 	return;
 }
 
-void _match_Twobit(SEXP pptb_comps, const RoSeq *S, int fixedS)
+void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS)
 {
 	int tb_width;
 	const int *twobit_sign2pos;
@@ -229,9 +229,9 @@ void _match_Twobit(SEXP pptb_comps, const RoSeq *S, int fixedS)
 	if (debug)
 		Rprintf("[DEBUG] ENTERING _match_Twobit()\n");
 #endif
-	tb_width = INTEGER(VECTOR_ELT(pptb_comps, 1))[0];
-	twobit_sign2pos = INTEGER(R_ExternalPtrTag(VECTOR_ELT(pptb_comps, 4)));
-	base_codes = VECTOR_ELT(pptb_comps, 5);
+	tb_width = _get_PreprocessedTB_width(pptb);
+	twobit_sign2pos = INTEGER(_get_Twobit_sign2pos_tag(pptb));
+	base_codes = _get_Twobit_base_codes(pptb);
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in _match_Twobit(): "
 		      "'base_codes' must be of length 4");

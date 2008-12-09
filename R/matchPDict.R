@@ -114,25 +114,6 @@
 ### Convenience wrappers to .Call().
 ###
 
-### IMPORTANT: Be aware that the elements in the returned list are accessed
-### by position at the C level! So NEVER change the order of these elements
-### without making the corresponding changes at the C level.
-.pptbComponents <- function(pptb)
-{
-    type <- class(pptb)
-    ans <- list(length=length(pptb), width=tb.width(pptb), unq2dup=dups(pptb)@unq2dup, type=type)
-    if (type == "Twobit") {
-        ans$sign2pos_xdata_xp <- pptb@sign2pos@xdata@xp
-        ans$base_codes <- pptb@base_codes
-    } else if (type == "ACtree") {
-        ans$nodes_xdata_xp <- pptb@nodes@xdata@xp
-        ans$base_codes <- pptb@base_codes
-    } else {
-        stop(type, ": unsupported Trusted Band type in 'pdict'")
-    }
-    ans
-}
-
 .checkUserArgsWhenTrustedBandIsFull <- function(max.mismatch, fixed)
 {
     if (max.mismatch != 0)
@@ -151,9 +132,8 @@
     fixed <- normargFixed(fixed, baseXStringSubtype(subject))
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
     .Call("XString_match_pdict",
-          pptb_comps, head(pdict), tail(pdict),
+          pdict@threeparts@pptb, head(pdict), tail(pdict),
           subject,
           max.mismatch, fixed,
           count.only, envir,
@@ -167,9 +147,8 @@
     fixed <- normargFixed(fixed, baseXStringSubtype(subject))
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
     .Call("XStringViews_match_pdict",
-          pptb_comps, head(pdict), tail(pdict),
+          pdict@threeparts@pptb, head(pdict), tail(pdict),
           subject(subject), start(subject), width(subject),
           max.mismatch, fixed,
           count.only, envir,
@@ -183,9 +162,8 @@
     fixed <- normargFixed(fixed, baseXStringSubtype(subject))
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    pptb_comps <- .pptbComponents(pdict@threeparts@pptb)
     .Call("XStringSet_vmatch_pdict",
-          pptb_comps, head(pdict), tail(pdict),
+          pdict@threeparts@pptb, head(pdict), tail(pdict),
           subject,
           max.mismatch, fixed,
           count.only, envir,

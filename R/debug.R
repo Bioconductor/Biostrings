@@ -54,6 +54,9 @@ debug_match_BOC2 <- function()
 debug_find_palindromes <- function()
     invisible(.Call("debug_find_palindromes", PACKAGE="Biostrings"))
 
+debug_PreprocessedTB_class <- function()
+    invisible(.Call("debug_PreprocessedTB_class", PACKAGE="Biostrings"))
+
 debug_match_pdict_Twobit <- function()
     invisible(.Call("debug_match_pdict_Twobit", PACKAGE="Biostrings"))
 

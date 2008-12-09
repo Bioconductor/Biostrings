@@ -197,7 +197,7 @@ static void match_pdict_headtail(SEXP unq2dup, int tb_width,
 	return;
 }
 
-static void match_pdict(SEXP pptb_comps,
+static void match_pdict(SEXP pptb,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
 		SEXP max_mismatch, SEXP fixed, int is_count_only)
@@ -210,16 +210,16 @@ static void match_pdict(SEXP pptb_comps,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING match_pdict()\n");
 #endif
-	tb_width = INTEGER(VECTOR_ELT(pptb_comps, 1))[0];
-	unq2dup = VECTOR_ELT(pptb_comps, 2);
-	type = CHAR(STRING_ELT(VECTOR_ELT(pptb_comps, 3), 0));
+	tb_width = _get_PreprocessedTB_width(pptb);
+	unq2dup = _get_PreprocessedTB_unq2dup(pptb);
+	type = get_classname(pptb);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (strcmp(type, "Twobit") == 0)
-		_match_Twobit(pptb_comps, S, fixedS);
+		_match_Twobit(pptb, S, fixedS);
 	else if (strcmp(type, "ACtree") == 0)
-		_match_ACtree(pptb_comps, S, fixedS);
+		_match_ACtree(pptb, S, fixedS);
 	else
 		error("%s: unsupported Trusted Band type in 'pdict'", type);
 	if (cached_head != NULL || cached_tail != NULL) {
@@ -241,9 +241,7 @@ static void match_pdict(SEXP pptb_comps,
  *                    XStringViews_match_pdict
  *
  * Arguments:
- *   pptb_comps: a list of elements describing the Preprocessed Trusted Band.
- *       The exact components depend on the type of the TB (see R function
- *       .pptbComponents() in R/matchPDict.R for the details);
+ *   pptb: a PreprocessedTB object;
  *   pdict_head: head(pdict) (XStringSet or NULL);
  *   pdict_tail: tail(pdict) (XStringSet or NULL);
  *   subject: subject;
@@ -258,12 +256,12 @@ static void match_pdict(SEXP pptb_comps,
  *
  ****************************************************************************/
 
-SEXP XString_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
+SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed, SEXP count_only,
 		SEXP envir)
 {
-	int pdict_L, is_count_only;
+	int tb_length, is_count_only;
 	CachedXStringSet *cached_head, *cached_tail;
 	RoSeq S;
 
@@ -271,7 +269,7 @@ SEXP XString_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
-	pdict_L = INTEGER(VECTOR_ELT(pptb_comps, 0))[0];
+	tb_length = _get_PreprocessedTB_length(pptb);
 	cached_head = get_CachedXStringSet_ptr(pdict_head);
 	cached_tail = get_CachedXStringSet_ptr(pdict_tail);
 	S = _get_XString_asRoSeq(subject);
@@ -279,10 +277,10 @@ SEXP XString_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 
 	_MIndex_init_match_reporting(is_count_only,
 		pdict_head != R_NilValue || pdict_tail != R_NilValue,
-		pdict_L);
+		tb_length);
 	if (is_count_only == NA_LOGICAL)
 		is_count_only = 1;
-	match_pdict(pptb_comps, cached_head, cached_tail,
+	match_pdict(pptb, cached_head, cached_tail,
 		&S, max_mismatch, fixed, is_count_only);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -291,12 +289,12 @@ SEXP XString_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 	return _MIndex_reported_matches_asSEXP(envir);
 }
 
-SEXP XStringViews_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
+SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
-	int pdict_L, is_count_only;
+	int tb_length, is_count_only;
 	CachedXStringSet *cached_head, *cached_tail;
 	RoSeq S, S_view;
 	IntAE global_match_count;
@@ -307,19 +305,19 @@ SEXP XStringViews_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
-	pdict_L = INTEGER(VECTOR_ELT(pptb_comps, 0))[0];
+	tb_length = _get_PreprocessedTB_length(pptb);
 	cached_head = get_CachedXStringSet_ptr(pdict_head);
 	cached_tail = get_CachedXStringSet_ptr(pdict_tail);
 	S = _get_XString_asRoSeq(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
-		global_match_count = new_IntAE(pdict_L, pdict_L, 0);
+		global_match_count = new_IntAE(tb_length, tb_length, 0);
 	else
-		global_match_ends = new_IntAEAE(pdict_L, pdict_L);
+		global_match_ends = new_IntAEAE(tb_length, tb_length);
 	_MIndex_init_match_reporting(is_count_only,
 		pdict_head != R_NilValue || pdict_tail != R_NilValue,
-		pdict_L);
+		tb_length);
 	if (is_count_only == NA_LOGICAL)
 		error("Biostrings internal error in XStringViews_match_pdict(): "
 		      "'count_only=NA' not supported");
@@ -333,7 +331,7 @@ SEXP XStringViews_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 			error("'subject' has out of limits views");
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
-		match_pdict(pptb_comps, cached_head, cached_tail,
+		match_pdict(pptb, cached_head, cached_tail,
 			&S_view, max_mismatch, fixed, is_count_only);
 		_MIndex_merge_matches(&global_match_count, &global_match_ends, view_offset);
 	}
@@ -349,12 +347,12 @@ SEXP XStringViews_match_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 	return IntAEAE_toEnvir(&global_match_ends, envir, 1);
 }
 
-SEXP XStringSet_vmatch_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
+SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP count_only, SEXP envir)
 {
-	int pdict_L, S_length, is_count_only;
+	int tb_length, S_length, is_count_only;
 	CachedXStringSet *cached_head, *cached_tail, S;
 	SEXP ans;
 	RoSeq S_elt;
@@ -365,7 +363,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XStringSet_vmatch_pdict()\n");
 #endif
-	pdict_L = INTEGER(VECTOR_ELT(pptb_comps, 0))[0];
+	tb_length = _get_PreprocessedTB_length(pptb);
 	cached_head = get_CachedXStringSet_ptr(pdict_head);
 	cached_tail = get_CachedXStringSet_ptr(pdict_tail);
 	S = _new_CachedXStringSet(subject);
@@ -373,16 +371,19 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb_comps, SEXP pdict_head, SEXP pdict_tail,
 	is_count_only = LOGICAL(count_only)[0];
 
 	if (is_count_only)
-		PROTECT(ans = allocMatrix(INTSXP, pdict_L, S_length));
+		PROTECT(ans = allocMatrix(INTSXP, tb_length, S_length));
 	else
 		error("only vcountPDict() is supported for now, sorry");
 
 	_MIndex_init_match_reporting(is_count_only,
 		pdict_head != R_NilValue || pdict_tail != R_NilValue,
-		pdict_L);
-	for (i = 0, current_col = INTEGER(ans); i < S_length; i++, current_col += pdict_L) {
+		tb_length);
+	for (i = 0, current_col = INTEGER(ans);
+	     i < S_length;
+	     i++, current_col += tb_length)
+	{
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
-		match_pdict(pptb_comps, cached_head, cached_tail,
+		match_pdict(pptb, cached_head, cached_tail,
 			&S_elt, max_mismatch, fixed, is_count_only);
 		match_count = _MIndex_get_match_count();
 		memcpy(current_col, match_count->elts, sizeof(int) * match_count->nelt);
