@@ -1,0 +1,99 @@
+WORK-IN-PROGRESS**WORK-IN-PROGRESS**WORK-IN-PROGRESS**WORK-IN-PROGRESS
+
+The purpose of the ACtree2 class is to replace the current ACtree
+class used internally to store the Aho-Corasick tree used in PDict
+objects.
+The design of the ACtree2 class attempts to address the problem of
+the size of PDict objects by using a more compact representation
+of the AC tree in memory.
+Note that unlike ACtree objects, an ACtree2 object will grow while
+being used.
+
+
+EXAMPLE 1: 265400 x 25 PDict
+============================
+
+library(Biostrings)
+library(drosophila2probe)
+dict0 <- DNAStringSet(drosophila2probe$sequence)
+pdict0 <- PDict(dict0)
+.Call("ACtree_summary", pdict0@threeparts@pptb, PACKAGE="Biostrings")
+
+Total nb of nodes = 4369049
+  - 264919 nodes with 0 links  <---- nb of unique reads
+  - 3936676 nodes with 1 links
+  - 100626 nodes with 2 links
+  - 36192 nodes with 3 links
+  - 30636 nodes with 4 links
+  - 0 nodes with 5 links
+
+  => Size of ACtree is 133.33 MB, size of ACtree2 is 36.53 MB.
+
+After run along Dmelanogaster$chr3R:
+
+Total nb of nodes = 4369049
+  - 233150 nodes with 0 links
+  - 3151792 nodes with 1 links
+  - 37125 nodes with 2 links
+  - 236078 nodes with 3 links
+  - 205314 nodes with 4 links
+  - 505590 nodes with 5 links
+
+  => Size of ACtree is unchanged (133.33 MB), size of ACtree2 is 52.10 MB.
+
+After run along all Dmelanogaster chromosomes:
+
+Total nb of nodes = 4369049
+  - 139352 nodes with 0 links
+  - 2873668 nodes with 1 links
+  - 127646 nodes with 2 links
+  - 243409 nodes with 3 links
+  - 209713 nodes with 4 links
+  - 775261 nodes with 5 links
+
+  => Size of ACtree is unchanged (133.33 MB), size of ACtree2 is 59.2 MB.
+
+
+EXAMPLE 2: 4469757 x 35 PDict
+=============================
+
+library(ShortRead)
+path0 <- "~/SolexaYi2"
+rfq <- readFastq(path0, pattern="s_1_sequence.txt")
+dict0 <- clean(sread(rfq))
+pdict0 <- PDict(dict0)
+
+Total nb of nodes = 86597549
+  - 3700715 nodes with 0 links  <---- nb of unique reads
+  - 80442364 nodes with 1 links
+  - 1587411 nodes with 2 links
+  - 487874 nodes with 3 links
+  - 379185 nodes with 4 links
+  - 0 nodes with 5 links
+
+  => Size of ACtree is 2643 MB, size of ACtree2 is 707.5 MB.
+
+After run along Mmusculus$chr1:
+
+Total nb of nodes = 86597549
+  - 3519597 nodes with 0 links
+  - 70406127 nodes with 1 links
+  - 1009987 nodes with 2 links
+  - 3816665 nodes with 3 links
+  - 3161382 nodes with 4 links
+  - 4683791 nodes with 5 links
+
+  => Size of ACtree is unchanged (2643 MB), size of ACtree2 is 902.4 MB.
+
+After run along all Mmusculus chromosomes (22):
+
+Total nb of nodes = 86597549
+  - 2508346 nodes with 0 links
+  - 62462888 nodes with 1 links
+  - 1812094 nodes with 2 links
+  - 4558733 nodes with 3 links
+  - 3771852 nodes with 4 links
+  - 11483636 nodes with 5 links
+
+  => Size of ACtree is unchanged (2643 MB), size of ACtree2 is 1073.2 MB.
+
