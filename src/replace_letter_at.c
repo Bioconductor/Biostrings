@@ -92,7 +92,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 {
 	const char *x_classname;
 	RoSeq x_seq;
-	SEXP tag, letter_elt, xdata, ans;
+	SEXP tag, letter_elt, ans;
 	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
 	const int *at_p;
 
@@ -135,9 +135,8 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		warning("%s %d letter(s)",
 			notextend_action == SKIP_IFNOTEXTEND ? "skipped" : "merged",
 			skip_or_merge_count);
-	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = new_XSequence(x_classname, xdata, 0, LENGTH(tag)));
-	UNPROTECT(3);
+	PROTECT(ans = new_XRaw_from_tag(x_classname, tag));
+	UNPROTECT(2);
 	return ans;
 }
 
@@ -156,7 +155,7 @@ SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 		_init_ByteTrTable_with_lkup(byte2code, lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
-	tag = get_SequencePtr_tag(get_XSequence_xdata(x));
+	tag = get_XSequence_tag(x);
 	skip_or_merge_count = letter_ncharsum = 0;
 	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {

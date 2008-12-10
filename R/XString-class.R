@@ -6,13 +6,7 @@
 ### string".
 ###
 
-setClass("XString",
-     contains="XSequence",
-     representation(
-        "VIRTUAL",
-         xdata="RawPtr"
-     )
-)
+setClass("XString", contains="XRaw", representation("VIRTUAL"))
 
 ### XString subtypes (direct "XString" derivations with no additional slots)
 setClass("BString", contains="XString")

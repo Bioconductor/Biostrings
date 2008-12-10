@@ -116,7 +116,7 @@ RoSeq _get_XString_asRoSeq(SEXP x)
 	SEXP tag;
 	int offset;
 
-	tag = get_SequencePtr_tag(get_XSequence_xdata(x));
+	tag = get_XSequence_tag(x);
 	offset = INTEGER(get_XSequence_offset(x))[0];
 	seq.elts = (const char *) (RAW(tag) + offset);
 	seq.nelt = INTEGER(get_XSequence_length(x))[0];
@@ -181,17 +181,16 @@ SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
  */
 
 /*
- * Allocate only. The 'xdata' slot is not initialized (it contains junk,
- * or zeros).
+ * Allocate only. The sequence data are not initialized (they are whatever
+ * junk is in memory at the time NEW_RAW() is called).
  */
 SEXP _alloc_XString(const char *classname, int length)
 {
-	SEXP tag, xdata, ans;
+	SEXP tag, ans;
 
 	PROTECT(tag = NEW_RAW(length));
-	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = new_XSequence(classname, xdata, 0, length));
-	UNPROTECT(3);
+	PROTECT(ans = new_XRaw_from_tag(classname, tag));
+	UNPROTECT(2);
 	return ans;
 }
 

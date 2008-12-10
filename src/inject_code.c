@@ -11,7 +11,7 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 	RoSeq x_seq;
 	int nranges, i, s, w;
 	const int *s_p, *w_p;
-	SEXP tag, xdata, ans;
+	SEXP tag, ans;
 
 	x_classname = get_classname(x);
 	x_seq = _get_XString_asRoSeq(x);
@@ -33,9 +33,8 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 			      "invalid start/width values");
 		memset(RAW(tag) + s, INTEGER(code)[0], w);
 	}
-	PROTECT(xdata = new_SequencePtr("RawPtr", tag));
-	PROTECT(ans = new_XSequence(x_classname, xdata, 0, LENGTH(tag)));
-	UNPROTECT(3);
+	PROTECT(ans = new_XRaw_from_tag(x_classname, tag));
+	UNPROTECT(2);
 	return ans;
 }
 

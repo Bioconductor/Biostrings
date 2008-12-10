@@ -104,10 +104,9 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 			*start_iPlus1 = *start_i + *width_i;
 		}
 	}
-	SEXP alignedStringTag, alignedStringXData;
+	SEXP alignedStringTag;
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
-	PROTECT(alignedStringXData = new_SequencePtr("RawPtr", alignedStringTag));
-	PROTECT(alignedString = new_XSequence(stringClass, alignedStringXData, 0, LENGTH(alignedStringTag)));
+	PROTECT(alignedString = new_XRaw_from_tag(stringClass, alignedStringTag));
 	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, R_NilValue));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
 	PROTECT(output = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
@@ -150,7 +149,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 		}
 		stringElement += stringIncrement;
 	}
-	UNPROTECT(7);
+	UNPROTECT(6);
 
 	return output;
 }
@@ -192,10 +191,9 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 			*width_i = numberOfChars;
 		}
 	}
-	SEXP mappedStringTag, mappedStringXData;
+	SEXP mappedStringTag;
 	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
-	PROTECT(mappedStringXData = new_SequencePtr("RawPtr", mappedStringTag));
-	PROTECT(mappedString = new_XSequence(stringClass, mappedStringXData, 0, LENGTH(mappedStringTag)));
+	PROTECT(mappedString = new_XRaw_from_tag(stringClass, mappedStringTag));
 	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, namesPattern));
 	char *mappedStringPtr = (char *) RAW(mappedStringTag);
 	PROTECT(output = _new_XStringSet(stringSetClass, mappedString, mappedRanges));
@@ -261,7 +259,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 			index++;
 		}
 	}
-	UNPROTECT(7);
+	UNPROTECT(6);
 
 	return(output);
 }
