@@ -8,6 +8,7 @@
  * words of the same length.                                                *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -73,19 +74,9 @@ static int pp_pattern(SEXP twobit_sign2pos, const RoSeq *pattern, int poffset)
  * -------------------------------------------------------
  */
 
-static SEXP new_ExternalPtr_from_twobit_sign2pos(SEXP twobit_sign2pos)
-{
-	SEXP ans;
-
-	PROTECT(ans = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
-	R_SetExternalPtrTag(ans, twobit_sign2pos);
-	UNPROTECT(1);
-	return ans;
-}
-
 /*
  * Twobit_asLIST() returns an R list with the following elements:
- *   - twobit_sign2pos_xp: 
+ *   - sign2pos: XInteger object;
  *   - dup2unq: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
@@ -98,13 +89,13 @@ static SEXP Twobit_asLIST(SEXP twobit_sign2pos)
 
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
-	SET_STRING_ELT(ans_names, 0, mkChar("twobit_sign2pos_xp"));
+	SET_STRING_ELT(ans_names, 0, mkChar("sign2pos"));
 	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
-	/* set the "twobit_sign2pos_xp" element */
-	PROTECT(ans_elt = new_ExternalPtr_from_twobit_sign2pos(twobit_sign2pos));
+	/* set the "sign2pos" element */
+	PROTECT(ans_elt = new_XInteger_from_tag("XInteger", twobit_sign2pos));
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 

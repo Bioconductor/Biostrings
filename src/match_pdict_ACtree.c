@@ -237,27 +237,26 @@ static void pp_pattern(const RoSeq *pattern, const int *base_codes, int poffset)
  */
 
 /*
- * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an R
- * external pointer (EXTPTRSXP).
+ * Turn the Aho-Corasick 4-ary tree stored in actree_nodes_buf into an XInteger
+ * object.
  */
-static SEXP new_ExternalPtr_from_actree_nodes_buf()
+static SEXP actree_nodes_buf_asXInteger()
 {
 	SEXP ans, tag;
 	int tag_length;
 
-	PROTECT(ans = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue));
 	tag_length = actree_nodes_buf_count * INTS_PER_ACNODE;
 	PROTECT(tag = NEW_INTEGER(tag_length));
 	memcpy(INTEGER(tag), actree_nodes_buf, tag_length * sizeof(int));
-	R_SetExternalPtrTag(ans, tag);
+	PROTECT(ans = new_XInteger_from_tag("XInteger", tag));
 	UNPROTECT(2);
 	return ans;
 }
 
 /*
  * ACtree_asLIST() returns an R list with the following elements:
- *   - actree_nodes_xp: "externalptr" object pointing to the Aho-Corasick 4-ary
- *         tree built from the Trusted Band;
+ *   - nodes: XInteger object pointing to the Aho-Corasick 4-ary tree built
+ *         from the Trusted Band;
  *   - dup2unq: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
@@ -269,13 +268,13 @@ static SEXP ACtree_asLIST()
 
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
-	SET_STRING_ELT(ans_names, 0, mkChar("actree_nodes_xp"));
+	SET_STRING_ELT(ans_names, 0, mkChar("nodes"));
 	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
-	/* set the "actree_nodes_xp" element */
-	PROTECT(ans_elt = new_ExternalPtr_from_actree_nodes_buf());
+	/* set the "nodes" element */
+	PROTECT(ans_elt = actree_nodes_buf_asXInteger());
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
@@ -350,8 +349,32 @@ SEXP build_ACtree(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 
 SEXP ACtree_summary(SEXP pptb)
 {
+	SEXP tag;
+	ACNode *node0, *node;
+	int nnodes, i, j, nlinks, nlinks_table[6], nnodes_with_P_id;
+
+	tag = _get_ACtree_nodes_tag(pptb);
+	node0 = (ACNode *) INTEGER(tag);
+	nnodes = LENGTH(tag) / INTS_PER_ACNODE;
+	Rprintf("Total nb of nodes = %d\n", nnodes);
+	for (j = 0; j < 6; j++)
+		nlinks_table[j] = 0;
+	nnodes_with_P_id = 0;
+	for (i = 0, node = node0; i < nnodes; i++, node++) {
+		nlinks = node->flink != -1 ? 1 : 0;
+		for (j = 0; j < MAX_CHILDREN_PER_ACNODE; j++)
+			if (node->child_id[j] != -1)
+				nlinks++;
+		nlinks_table[nlinks]++;
+		if (node->P_id != -1)
+			nnodes_with_P_id++;
+	}
+	for (j = 0; j < 6; j++)
+		Rprintf("  - %d nodes with %d links\n", nlinks_table[j], j);
+	Rprintf("Nb of leaf nodes = %d\n", nnodes_with_P_id);
 	return R_NilValue;
 }
+
 
 
 /****************************************************************************

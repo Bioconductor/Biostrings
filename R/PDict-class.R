@@ -89,8 +89,7 @@ setMethod("initialize", "Twobit",
         C_ans <- .Call("build_Twobit", tb, dup2unq0, base_codes,
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
-        .Object@sign2pos <- XInteger(0)
-        .Object@sign2pos@xdata@xp <- C_ans$twobit_sign2pos_xp
+        .Object@sign2pos <- C_ans$sign2pos
         .Object@base_codes <- base_codes
         .Object
     }
@@ -179,8 +178,7 @@ setMethod("initialize", "ACtree",
         C_ans <- .Call("build_ACtree", tb, dup2unq0, base_codes,
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
-        .Object@nodes <- XInteger(0)
-        .Object@nodes@xdata@xp <- C_ans$actree_nodes_xp
+        .Object@nodes <- C_ans$nodes
         .Object@base_codes <- base_codes
         .Object
     }
