@@ -63,6 +63,9 @@ debug_match_pdict_Twobit <- function()
 debug_match_pdict_ACtree <- function()
     invisible(.Call("debug_match_pdict_ACtree", PACKAGE="Biostrings"))
 
+debug_match_pdict_ACtree2 <- function()
+    invisible(.Call("debug_match_pdict_ACtree2", PACKAGE="Biostrings"))
+
 debug_match_pdict <- function()
     invisible(.Call("debug_match_pdict", PACKAGE="Biostrings"))
 

@@ -782,6 +782,17 @@ void _match_ACtree(
 );
 
 
+/* match_pdict_ACtree2.c */
+
+SEXP debug_match_pdict_ACtree2();
+
+SEXP build_ACtree2(
+	SEXP tb,
+	SEXP dup2unq0,
+	SEXP base_codes
+);
+
+
 /* match_pdict.c */
 
 SEXP debug_match_pdict();
