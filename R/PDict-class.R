@@ -123,9 +123,7 @@ setMethod("show", "ACtree",
     function(object)
     {
         .PreprocessedTB.showFirstLine(object)
-        nnodes <- length(object@nodes) %/% .ACtree.ints_per_acnode(object)
-        cat("  (number of nodes in the Aho-Corasick tree is ",
-            nnodes, ")\n", sep="")
+	invisible(.Call("ACtree_summary", object, PACKAGE="Biostrings"))
     }
 )
 
@@ -179,6 +177,51 @@ setMethod("initialize", "ACtree",
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
         .Object@nodes <- C_ans$nodes
+        .Object@base_codes <- base_codes
+        .Object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "ACtree2" class.
+###
+### A more memory efficient version of the "ACtree" container: a node can
+### occupy either 8 bytes (2 ints) or 28 bytes (7 ints) in memory, depending
+### on whether it's extended or not. Some testing with real data shows that
+### less than 10% of the nodes are typically extended right after
+### preprocessing (i.e. before any use of the PDict object), and that less
+### than 30% or 40% get extended during the typical life of the PDict object
+### (i.e. after it has been used on a full genome).
+###
+
+setClass("ACtree2",
+    contains="PreprocessedTB",
+    representation(
+        nodes="XInteger",       # 2 ints per node
+        extensions="XInteger",  # 5 ints per extension
+        base_codes="integer"
+    )
+)
+
+setMethod("show", "ACtree2",
+    function(object)
+    {
+        .PreprocessedTB.showFirstLine(object)
+	invisible(.Call("ACtree2_summary", object, PACKAGE="Biostrings"))
+    }
+)
+
+setMethod("initialize", "ACtree2",
+    function(.Object, tb, dup2unq0)
+    {
+        base_codes <- codes(tb, baseOnly=TRUE)
+        #on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
+        C_ans <- .Call("ACtree2_build", tb, dup2unq0, base_codes,
+                       PACKAGE="Biostrings")
+        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object@nodes <- C_ans$ACtree$nodes
+        .Object@extensions <- C_ans$ACtree$extensions
         .Object@base_codes <- base_codes
         .Object
     }

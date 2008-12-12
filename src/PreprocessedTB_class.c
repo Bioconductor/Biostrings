@@ -86,3 +86,27 @@ SEXP _get_ACtree_base_codes(SEXP x)
 	return GET_SLOT(x, install("base_codes"));
 }
 
+
+/****************************************************************************
+ * Accessor functions for ACtree2 objects.
+ *
+ * Be careful that these functions do NOT copy the returned slot! (this
+ * prevents them from being made .Call() entry points)
+ */
+
+SEXP _get_ACtree2_nodes_tag(SEXP x)
+{
+	return get_XSequence_tag(GET_SLOT(x, install("nodes")));
+}
+
+SEXP _get_ACtree2_extensions_tag(SEXP x)
+{
+	return get_XSequence_tag(GET_SLOT(x, install("extensions")));
+}
+
+SEXP _get_ACtree2_base_codes(SEXP x)
+{
+	return GET_SLOT(x, install("base_codes"));
+}
+
+

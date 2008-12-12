@@ -69,6 +69,8 @@ typedef struct actree {
 	ByteTrTable char2linktag;
 } ACtree;
 
+#define TREE_DEPTH(tree) ((tree)->depth)
+#define TREE_NNODES(tree) ((tree)->nnodes)
 #define GET_NODE(tree, nid) ((tree)->nodes + (nid))
 #define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
 
@@ -145,8 +147,8 @@ static int new_ACnode(ACtree *tree, int depth)
 	ACnode *node;
 	int nid;
 
-	if (depth >= tree->depth)
-		error("new_ACnode(): depth >= tree->depth");
+	if (depth >= TREE_DEPTH(tree))
+		error("new_ACnode(): depth >= TREE_DEPTH(tree)");
 	if (tree->nnodes >= tree->nodes_buflength)
 		extend_nodes_buffer(tree);
 	nid = tree->nnodes++;
@@ -172,7 +174,7 @@ static int new_leafACnode(ACtree *tree, int P_id)
 	return nid;
 }
 
-static int get_ACnode_link_nid(ACtree *tree, ACnode *node, int linktag)
+static int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 {
 	ACnodeExtension *extension;
 
@@ -186,12 +188,6 @@ static int get_ACnode_link_nid(ACtree *tree, ACnode *node, int linktag)
 	if (linktag == (node->attribs >> LINKTAG_BITSHIFT))
 		return node->nid_or_eid;
 	return -1;
-}
-
-static void set_ACnode_flink(ACtree *tree, ACnode *node, int nid)
-{
-	error("set_ACnode_flink(): implement me");
-	return;
 }
 
 /* on a leaf node, set_ACnode_flink() should always have been called first
@@ -213,6 +209,22 @@ static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, int nid)
 	}
 	extension = tree->extensions + node->nid_or_eid;
 	extension->link_nid[linktag] = nid;
+	return;
+}
+
+static int get_ACnode_flink(ACtree *tree, ACnode *node)
+{
+	ACnodeExtension *extension;
+
+	if (!ISEXTENDED(node))
+		return -1;
+	extension = tree->extensions + node->nid_or_eid;
+	return extension->flink_nid;
+}
+
+static void set_ACnode_flink(ACtree *tree, ACnode *node, int nid)
+{
+	error("set_ACnode_flink(): implement me");
 	return;
 }
 
@@ -249,13 +261,12 @@ static SEXP ACtree_asLIST(ACtree *tree)
 {
 	SEXP ans, ans_names, ans_elt;
 
-	PROTECT(ans = NEW_LIST(3));
+	PROTECT(ans = NEW_LIST(2));
 
 	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(3));
+	PROTECT(ans_names = NEW_CHARACTER(2));
 	SET_STRING_ELT(ans_names, 0, mkChar("nodes"));
 	SET_STRING_ELT(ans_names, 1, mkChar("extensions"));
-	SET_STRING_ELT(ans_names, 2, mkChar("dup2unq"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
@@ -269,19 +280,100 @@ static SEXP ACtree_asLIST(ACtree *tree)
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
-	/* set the "dup2unq" element */
-	PROTECT(ans_elt = _dup2unq_asINTEGER());
-	SET_ELEMENT(ans, 2, ans_elt);
-	UNPROTECT(1);
-
 	UNPROTECT(1);
 	return ans;
+}
+
+static ACtree pptb_asACtree(SEXP pptb)
+{
+	ACtree tree;
+	SEXP tag, base_codes;
+
+	tree.depth = _get_PreprocessedTB_width(pptb);
+	tag = _get_ACtree2_nodes_tag(pptb);
+	tree.nodes = (ACnode *) INTEGER(tag);
+	tree.nnodes = LENGTH(tag) / INTS_PER_NODE;
+	tree.nodes_buflength = -1;
+	tag = _get_ACtree2_extensions_tag(pptb);
+	tree.extensions = (ACnodeExtension *) INTEGER(tag);
+	tree.nextensions = LENGTH(tag) / INTS_PER_EXTENSION;
+	tree.extensions_buflength = -1;
+	base_codes = _get_ACtree2_base_codes(pptb);
+	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
+	return tree;
+}
+
+static void print_ACnode(ACtree *tree, ACnode *node)
+{
+	error("print_ACnode(): implement me");
+	return;
+}
+
+static int get_ACnode_nlinks(ACtree *tree, ACnode *node)
+{
+	int nlinks, linktag;
+
+	nlinks = get_ACnode_flink(tree, node) != -1 ? 1 : 0;
+	for (linktag = 0; linktag < MAX_CHILDREN_PER_NODE; linktag++)
+		if (get_ACnode_link(tree, node, linktag) != -1)
+			nlinks++;
+	return nlinks;
 }
 
 
 
 /****************************************************************************
- *                             C. PREPROCESSING                             *
+ *                       C. STATS AND DEBUG UTILITIES                       *
+ ****************************************************************************/
+
+SEXP ACtree2_print_nodes(SEXP pptb)
+{
+	ACtree tree;
+	ACnode *node;
+	int nnodes, nid;
+
+	tree = pptb_asACtree(pptb);
+	nnodes = TREE_NNODES(&tree);
+	for (nid = 0; nid < nnodes; nid++) {
+		node = GET_NODE(&tree, nid);
+		print_ACnode(&tree, node);
+	}
+	return R_NilValue;
+}
+
+SEXP ACtree2_summary(SEXP pptb)
+{
+	ACtree tree;
+	ACnode *node;
+	int nnodes, nlinks_table[MAX_CHILDREN_PER_NODE+2], nleaves,
+	    i, nid, nlinks;
+
+	tree = pptb_asACtree(pptb);
+	nnodes = TREE_NNODES(&tree);
+	Rprintf("  Total nb of nodes = %d\n", nnodes);
+	for (i = 0; i < MAX_CHILDREN_PER_NODE+2; i++)
+		nlinks_table[i] = 0;
+	nleaves = 0;
+	for (nid = 0; nid < nnodes; nid++) {
+		node = GET_NODE(&tree, nid);
+		nlinks = get_ACnode_nlinks(&tree, node);
+		nlinks_table[nlinks]++;
+		if (ISLEAF(node))
+			nleaves++;
+	}
+	for (i = 0; i < MAX_CHILDREN_PER_NODE+2; i++)
+		Rprintf("  - %d nodes (%.2f%) with %d links\n",
+			nlinks_table[i],
+			100.00 * nlinks_table[i] / nnodes,
+			i);
+	Rprintf("  Nb of leaf nodes = %d\n", nleaves);
+	return R_NilValue;
+}
+
+
+
+/****************************************************************************
+ *                             D. PREPROCESSING                             *
  ****************************************************************************/
 
 static int max_needed_nodes(int tb_length, int tb_width)
@@ -304,14 +396,14 @@ static void pp_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 	ACnode *node1, *node2;
 
 	P_id = P_offset + 1;
-	dmax = tree->depth - 1;
+	dmax = TREE_DEPTH(tree) - 1;
 	for (depth = 0, nid1 = 0; depth <= dmax; depth++, nid1 = nid2) {
 		node1 = GET_NODE(tree, nid1);
 		linktag = CHAR2LINKTAG(tree, P->elts[depth]);
 		if (linktag == NA_INTEGER)
 			error("non base DNA letter found in Trusted Band "
 			      "for pattern %d", P_id);
-		nid2 = get_ACnode_link_nid(tree, node1, linktag);
+		nid2 = get_ACnode_link(tree, node1, linktag);
 		if (depth < dmax) {
 			if (nid2 != -1)
 				continue;
@@ -345,12 +437,13 @@ static void pp_pattern(ACtree *tree, const RoSeq *P, int P_offset)
  * See ACtree_asLIST() for a description of the returned SEXP.
  */
 
-SEXP build_ACtree2(SEXP tb, SEXP dup2unq0, SEXP base_codes)
+SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 {
 	ACtree tree;
 	int tb_length, tb_width, P_offset, m;
 	CachedXStringSet cached_tb;
 	RoSeq P;
+	SEXP ans, ans_names, ans_elt;
 
 	tb_length = _get_XStringSet_length(tb);
 	if (tb_length == 0)
@@ -380,12 +473,33 @@ SEXP build_ACtree2(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 		}
 		pp_pattern(&tree, &P, P_offset);
 	}
-	return ACtree_asLIST(&tree);
+
+	PROTECT(ans = NEW_LIST(2));
+
+	/* set the names */
+	PROTECT(ans_names = NEW_CHARACTER(2));
+	SET_STRING_ELT(ans_names, 0, mkChar("ACtree"));
+	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(1);
+
+	/* set the "ACtree" element */
+	PROTECT(ans_elt = ACtree_asLIST(&tree));
+	SET_ELEMENT(ans, 0, ans_elt);
+	UNPROTECT(1);
+
+	/* set the "dup2unq" element */
+	PROTECT(ans_elt = _dup2unq_asINTEGER());
+	SET_ELEMENT(ans, 1, ans_elt);
+	UNPROTECT(1);
+
+	UNPROTECT(1);
+	return ans;
 }
 
 
 
 /****************************************************************************
- *                             D. MATCH FINDING                             *
+ *                             E. MATCH FINDING                             *
  ****************************************************************************/
 
