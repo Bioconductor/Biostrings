@@ -279,14 +279,14 @@ function(mpiOutput, pattern, subject) {
   value@score <- unlist(lapply(mpiOutput, score))
 
   value@pattern@unaligned <- pattern
-  value@pattern@range <- do.call("c", lapply(mpiOutput, function(x) x@pattern@range))
-  value@pattern@mismatch <- do.call("c", lapply(mpiOutput, function(x) x@pattern@mismatch))
-  value@pattern@indel <- do.call("c", lapply(mpiOutput, function(x) x@pattern@indel))
+  value@pattern@range <- do.call(c, lapply(mpiOutput, function(x) x@pattern@range))
+  value@pattern@mismatch <- do.call(c, lapply(mpiOutput, function(x) x@pattern@mismatch))
+  value@pattern@indel <- do.call(c, lapply(mpiOutput, function(x) x@pattern@indel))
 
   value@subject@unaligned <- subject
-  value@subject@range <- do.call("c", lapply(mpiOutput, function(x) x@subject@range))
-  value@subject@mismatch <- do.call("c", lapply(mpiOutput, function(x) x@subject@mismatch))
-  value@subject@indel <- do.call("c", lapply(mpiOutput, function(x) x@subject@indel))
+  value@subject@range <- do.call(c, lapply(mpiOutput, function(x) x@subject@range))
+  value@subject@mismatch <- do.call(c, lapply(mpiOutput, function(x) x@subject@mismatch))
+  value@subject@indel <- do.call(c, lapply(mpiOutput, function(x) x@subject@indel))
 
   value
 }

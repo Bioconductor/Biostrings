@@ -26,7 +26,7 @@ setMethod("letter", "character",
         ## on noNA_x with substring? It depends...
         if (length(x) >= length(i)) {
             tmp <- lapply(i, function(i1) substr(noNA_x, i1, i1))
-            x[!is.na(x)] <- do.call("paste", c(tmp, sep=""))
+            x[!is.na(x)] <- do.call(paste, c(tmp, sep=""))
         } else {
             x[!is.na(x)] <- sapply(
                                 noNA_x,

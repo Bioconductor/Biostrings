@@ -34,7 +34,7 @@ maxWeights <- function(pwm)
     pwm <- .normargPwm(pwm)
     #sapply(seq_len(ncol(pwm)), function(i) max(pwm[ , i]))
     ## This will be faster than the above on large matrices
-    do.call("pmax", lapply(seq_len(nrow(pwm)), function(i) pwm[i, ]))
+    do.call(pmax, lapply(seq_len(nrow(pwm)), function(i) pwm[i, ]))
 }
 
 ### Utility function for getting the highest possible score
