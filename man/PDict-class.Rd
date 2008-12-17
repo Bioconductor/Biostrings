@@ -33,6 +33,14 @@
 \alias{as.matrix,ACtree-method}
 \alias{initialize,ACtree-method}
 
+% ACtree2 class:
+\alias{class:ACtree2}
+\alias{ACtree2-class}
+\alias{ACtree2}
+
+\alias{show,ACtree2-method}
+\alias{initialize,ACtree2-method}
+
 % PDict3Parts class:
 \alias{class:PDict3Parts}
 \alias{PDict3Parts-class}

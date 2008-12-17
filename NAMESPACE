@@ -178,7 +178,8 @@ exportClasses(
     Dups,
     MIndex, ByPos_MIndex, ByName_MIndex,
     BOC_SubjectString, BOC2_SubjectString,
-    PreprocessedTB, Twobit, ACtree, PDict3Parts, PDict, TB_PDict, MTB_PDict
+    PreprocessedTB, Twobit, ACtree, ACtree2,
+    PDict3Parts, PDict, TB_PDict, MTB_PDict
 )
 
 export(

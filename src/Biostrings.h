@@ -747,6 +747,8 @@ SEXP _get_ACtree2_nodes_tag(SEXP x);
 
 SEXP _get_ACtree2_extensions_tag(SEXP x);
 
+int _get_ACtree2_nextensions(SEXP x);
+
 SEXP _get_ACtree2_base_codes(SEXP x);
 
 

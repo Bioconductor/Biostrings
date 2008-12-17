@@ -198,8 +198,9 @@ setMethod("initialize", "ACtree",
 setClass("ACtree2",
     contains="PreprocessedTB",
     representation(
-        nodes="XInteger",       # 2 ints per node
-        extensions="XInteger",  # 5 ints per extension
+        nodes="XInteger",        # 2 ints per node
+        extensions="XInteger",   # 5 ints per extension
+        nextensions="XInteger",  # a single int
         base_codes="integer"
     )
 )
@@ -222,6 +223,7 @@ setMethod("initialize", "ACtree2",
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
         .Object@nodes <- C_ans$ACtree$nodes
         .Object@extensions <- C_ans$ACtree$extensions
+        .Object@nextensions <- C_ans$ACtree$nextensions
         .Object@base_codes <- base_codes
         .Object
     }
@@ -287,7 +289,7 @@ setMethod("dups", "PDict3Parts",
     tail <- new("DNAStringSet", super=super(x), ranges=tail_ranges)
     use_pptb0 <- !is.null(pptb0) &&
                      all(head_width == 0L) && all(tail_width == 0L) &&
-                     type == "ACtree"
+                     type == class(pptb0)
     if (use_pptb0) {
         pptb <- pptb0
     } else {
@@ -469,7 +471,7 @@ setMethod("show", "TB_PDict",
 {
     constant_width <- min(width(x)) == max(width(x))
     if (constant_width && hasOnlyBaseLetters(x))
-        pptb0 <- new("ACtree", x, NULL)
+        pptb0 <- new(type, x, NULL)
     else
         pptb0 <- NULL
     threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, type, pptb0)
@@ -550,7 +552,7 @@ setMethod("show", "MTB_PDict",
                 "length of the subject)")
     all_headw <- diffinv(all_tbw)
     if (constant_width)
-        pptb0 <- new("ACtree", x, NULL)
+        pptb0 <- new(type, x, NULL)
     else
         pptb0 <- NULL
     threeparts_list <- lapply(seq_len(NTB),

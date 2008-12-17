@@ -37,7 +37,7 @@ int _get_PreprocessedTB_width(SEXP x)
 	SEXP tb;
 
 	tb = GET_SLOT(x, install("tb"));
-	return INTEGER(get_IRanges_start(_get_XStringSet_ranges(tb)))[0];
+	return INTEGER(get_IRanges_width(_get_XStringSet_ranges(tb)))[0];
 }
 
 /* Be careful that this function does NOT copy the returned slot! (this
@@ -102,6 +102,11 @@ SEXP _get_ACtree2_nodes_tag(SEXP x)
 SEXP _get_ACtree2_extensions_tag(SEXP x)
 {
 	return get_XSequence_tag(GET_SLOT(x, install("extensions")));
+}
+
+int _get_ACtree2_nextensions(SEXP x)
+{
+	return INTEGER(get_XSequence_tag(GET_SLOT(x, install("nextensions"))))[0];
 }
 
 SEXP _get_ACtree2_base_codes(SEXP x)
