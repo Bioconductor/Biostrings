@@ -8,7 +8,7 @@ setClass("AlignedXStringSet",
     representation(
         unaligned="XStringSet",
         range="IRanges",
-        mismatch = "list",
+        mismatch = "IntegerList",
         indel="IRangesList"
     )
 )

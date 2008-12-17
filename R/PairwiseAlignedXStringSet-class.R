@@ -26,36 +26,40 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
          gapOpening = 0, gapExtension = -1,
          baseClass = "BString", pwaClass = "PairwiseAlignedXStringSet") {
     getMismatches <- function(x) {
+        if (x[["values"]][1] %in% c("-", "+")) {
+            x[["values"]] <- x[["values"]][-1]
+            x[["lengths"]] <- x[["lengths"]][-1]
+        }
         whichMismatches <- which(x[["values"]] == "?")
         if (length(whichMismatches) == 0) {
-            value <- numeric(0)
+            value <- integer(0)
         } else {
             start <- cumsum(x[["lengths"]])[whichMismatches]
-            end <- start + x[["lengths"]][whichMismatches]
+            end <- start + (x[["lengths"]][whichMismatches] - 1L)
             value <-
               eval(parse(text =
                    paste("c(", paste(start, ":", end, sep = "", collapse = ", "), ")")))
         }
-        list(value)
+        IntegerList(value)
     }
     getRange <- function(x) {
         if (!(x[["values"]][1] %in% c("-", "+"))) {
-            start <- 1
+            start <- 1L
         } else if (length(x[["values"]]) == 1) {
-            start <- numeric(0)
+            start <- integer(0)
         } else {
-            start <- x[["lengths"]][1] + 1
+            start <- x[["lengths"]][1] + 1L
         }
         if (!(x[["values"]][length(x[["values"]])] %in% c("-", "+"))) {
             end <- sum(x[["lengths"]])
         } else if (length(x[["values"]]) == 1) {
-            end <- numeric(0)
+            end <- integer(0)
         } else {
             end <- sum(x[["lengths"]][-length(x[["lengths"]])])
         }
         IRanges(start = start, end = end)
     }
-    getIndels <- function(x) {
+    getIndels <- function(x, indelChar) {
         if (x[["values"]][1] %in% c("-", "+")) {
             x[["values"]] <- x[["values"]][-1]
             x[["lengths"]] <- x[["lengths"]][-1]
@@ -64,12 +68,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
             x[["values"]] <- x[["values"]][-length(x[["values"]])]
             x[["lengths"]] <- x[["lengths"]][-length(x[["lengths"]])]
         }
-        isIndels <- (x[["values"]] %in% c("-", "+"))
+        isIndels <- (x[["values"]] == indelChar)
         if (!any(isIndels))
-            IRangesList(IRanges(numeric(0), numeric(0)))
+            IRangesList(IRanges(integer(0), integer(0)))
         else
             IRangesList(IRanges(
-                            cumsum(c(1, ifelse(isIndels, 0, x[["lengths"]])[-length(x[["lengths"]])]))[isIndels],
+                            cumsum(c(1L, ifelse(isIndels, 0L, x[["lengths"]])[-length(x[["lengths"]])]))[isIndels],
                             width = x[["lengths"]][isIndels]))
     }
     if (length(pattern) != 1 || length(subject) != 1)
@@ -122,7 +126,7 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
     substitutionArray <-
       array(unlist(substitutionMatrix, substitutionMatrix), dim = c(dim(substitutionMatrix), 2),
             dimnames = list(availableLetters, availableLetters, c("0", "1")))
-    
+
     comparison <- rle(safeExplode(compareStrings(pattern, subject)))
     whichPattern <- which(comparison[["values"]] != "-")
     patternRle <-
@@ -140,12 +144,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
           new("AlignedXStringSet",
               unaligned = XStringSet(baseClass, paste(degappedPattern, collapse = "")),
               range = getRange(patternRle), mismatch = getMismatches(patternRle),
-              indel = getIndels(subjectRle)),
+              indel = getIndels(comparison, "-")),
         subject =
           new("AlignedXStringSet",
               unaligned = XStringSet(baseClass, paste(degappedSubject, collapse = "")),
               range = getRange(subjectRle), mismatch = getMismatches(subjectRle),
-              indel = getIndels(patternRle)),
+              indel = getIndels(comparison, "+")),
         type = type,
         score =
           sum(substitutionMatrix[

@@ -22,8 +22,7 @@ setMethod("nmatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missi
 setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
     function(pattern, x, fixed)
     {
-        mismatches <- mismatch(pattern)
-        sapplyLength(mismatches)
+        elementLengths(mismatch(pattern))
     }
 )
 

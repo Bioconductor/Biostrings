@@ -9,6 +9,7 @@
 #define MIN(x, y) (x < y ? x : y)
 
 #define NEGATIVE_INFINITY R_NegInf
+#define MAX_BUF_SIZE      1048576
 
 #define          GLOBAL_ALIGNMENT 1
 #define           LOCAL_ALIGNMENT 2
@@ -63,6 +64,26 @@ struct AlignBuffer {
 	char *dTraceMatrix;
 };
 void function2(struct AlignBuffer *);
+
+
+/* Structure to hold mismatch buffers */
+struct MismatchBuffer {
+	int *pattern;
+	int *subject;
+	int usedSpace;
+	int totalSpace;
+};
+void function3(struct MismatchBuffer *);
+
+
+/* Structure to hold indel buffers */
+struct IndelBuffer {
+	int *start;
+	int *width;
+	int usedSpace;
+	int totalSpace;
+};
+void function4(struct IndelBuffer *);
 
 
 /* Returns the score of the optimal pairwise alignment */
@@ -704,6 +725,10 @@ SEXP XStringSet_align_pairwiseAlignment(
 		alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
 		alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
 	}
+	struct MismatchBuffer mismatchBuffer;
+	struct IndelBuffer indel1Buffer;
+	struct IndelBuffer indel2Buffer;
+	int mismatchBufferSize = 0, indelBufferSize = 0;
 	if (!scoreOnlyValue) {
 		align1Info.mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
 		align2Info.mismatch   = (int *) R_alloc((long) alignmentBufferSize, sizeof(int));
@@ -714,6 +739,22 @@ SEXP XStringSet_align_pairwiseAlignment(
 		alignBuffer.sTraceMatrix = (char *) R_alloc((long) nCharProduct, sizeof(char));
 		alignBuffer.iTraceMatrix = (char *) R_alloc((long) nCharProduct, sizeof(char));
 		alignBuffer.dTraceMatrix = (char *) R_alloc((long) nCharProduct, sizeof(char));
+
+		mismatchBufferSize = MIN(MAX_BUF_SIZE, alignmentBufferSize + numberOfStrings * (alignmentBufferSize/4));
+		mismatchBuffer.pattern = (int *) R_alloc((long) mismatchBufferSize, sizeof(int));
+		mismatchBuffer.subject = (int *) R_alloc((long) mismatchBufferSize, sizeof(int));
+		mismatchBuffer.usedSpace = 0;
+		mismatchBuffer.totalSpace = mismatchBufferSize;
+
+		indelBufferSize = MIN(MAX_BUF_SIZE, alignmentBufferSize + numberOfStrings * (alignmentBufferSize/12));
+		indel1Buffer.start = (int *) R_alloc((long) indelBufferSize, sizeof(int));
+		indel1Buffer.width = (int *) R_alloc((long) indelBufferSize, sizeof(int));
+		indel1Buffer.usedSpace = 0;
+		indel1Buffer.totalSpace = indelBufferSize;
+		indel2Buffer.start = (int *) R_alloc((long) indelBufferSize, sizeof(int));
+		indel2Buffer.width = (int *) R_alloc((long) indelBufferSize, sizeof(int));
+		indel2Buffer.usedSpace = 0;
+		indel2Buffer.totalSpace = indelBufferSize;
 	}
 
 	double *score;
@@ -755,39 +796,83 @@ SEXP XStringSet_align_pairwiseAlignment(
 	} else {
 		SEXP alignedPattern;
 		SEXP alignedPatternRange, alignedPatternRangeStart, alignedPatternRangeWidth;
-		SEXP alignedPatternMismatch, alignedPatternMismatchElt;
-		SEXP alignedPatternIndel, alignedPatternIndelList, alignedPatternIndelRange;
+		SEXP alignedPatternMismatch;
+		SEXP alignedPatternMismatchElements, alignedPatternMismatchValues;
+		SEXP alignedPatternMismatchCumLengths, alignedPatternMismatchCompressedIndices;
+		SEXP alignedPatternIndel;
+		SEXP alignedPatternIndelElements, alignedPatternIndelRange;
 		SEXP alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth;
+		SEXP alignedPatternIndelCumLengths, alignedPatternIndelCompressedIndices;
+
 		SEXP alignedSubject;
 		SEXP alignedSubjectRange, alignedSubjectRangeStart, alignedSubjectRangeWidth;
-		SEXP alignedSubjectMismatch, alignedSubjectMismatchElt;
-		SEXP alignedSubjectIndel, alignedSubjectIndelList, alignedSubjectIndelRange;
+		SEXP alignedSubjectMismatch;
+		SEXP alignedSubjectMismatchElements, alignedSubjectMismatchValues;
+		SEXP alignedSubjectMismatchCumLengths, alignedSubjectMismatchCompressedIndices;
+		SEXP alignedSubjectIndel;
+		SEXP alignedSubjectIndelElements, alignedSubjectIndelRange;
 		SEXP alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth;
+		SEXP alignedSubjectIndelCumLengths, alignedSubjectIndelCompressedIndices;
+
 		SEXP alignedScore;
 
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
-		PROTECT(alignedPatternMismatch = NEW_LIST(numberOfStrings));
-		PROTECT(alignedPatternIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
-		PROTECT(alignedPatternIndelList = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedPatternIndel, mkChar("elements"), alignedPatternIndelList);
+		PROTECT(alignedPatternMismatchCumLengths = NEW_INTEGER(numberOfStrings + 1));
+		PROTECT(alignedPatternIndelCumLengths = NEW_INTEGER(numberOfStrings + 1));
+		INTEGER(alignedPatternMismatchCumLengths)[0] = 1;
+		INTEGER(alignedPatternIndelCumLengths)[0] = 1;
+		if (numberOfStrings == 0) {
+			PROTECT(alignedPatternMismatchCompressedIndices = NEW_INTEGER(1));
+			PROTECT(alignedPatternIndelCompressedIndices = NEW_INTEGER(1));
+			INTEGER(alignedPatternMismatchCompressedIndices)[0] = 1;
+			INTEGER(alignedPatternIndelCompressedIndices)[0] = 1;
+		} else {
+			PROTECT(alignedPatternMismatchCompressedIndices = NEW_INTEGER(2));
+			PROTECT(alignedPatternIndelCompressedIndices = NEW_INTEGER(2));
+			INTEGER(alignedPatternMismatchCompressedIndices)[0] = 1;
+			INTEGER(alignedPatternMismatchCompressedIndices)[1] = numberOfStrings + 1;
+			INTEGER(alignedPatternIndelCompressedIndices)[0] = 1;
+			INTEGER(alignedPatternIndelCompressedIndices)[1] = numberOfStrings + 1;
+		}
 
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectRangeWidth = NEW_INTEGER(numberOfStrings));
-		PROTECT(alignedSubjectMismatch = NEW_LIST(numberOfStrings));
-		PROTECT(alignedSubjectIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
-		PROTECT(alignedSubjectIndelList = NEW_LIST(numberOfStrings));
-		SET_SLOT(alignedSubjectIndel, mkChar("elements"), alignedSubjectIndelList);
+		PROTECT(alignedSubjectMismatchCumLengths = NEW_INTEGER(numberOfStrings + 1));
+		PROTECT(alignedSubjectIndelCumLengths = NEW_INTEGER(numberOfStrings + 1));
+		INTEGER(alignedSubjectMismatchCumLengths)[0] = 1;
+		INTEGER(alignedSubjectIndelCumLengths)[0] = 1;
+		if (numberOfStrings == 0) {
+			PROTECT(alignedSubjectMismatchCompressedIndices = NEW_INTEGER(1));
+			PROTECT(alignedSubjectIndelCompressedIndices = NEW_INTEGER(1));
+			INTEGER(alignedSubjectMismatchCompressedIndices)[0] = 1;
+			INTEGER(alignedSubjectIndelCompressedIndices)[0] = 1;
+		} else {
+			PROTECT(alignedSubjectMismatchCompressedIndices = NEW_INTEGER(2));
+			PROTECT(alignedSubjectIndelCompressedIndices = NEW_INTEGER(2));
+			INTEGER(alignedSubjectMismatchCompressedIndices)[0] = 1;
+			INTEGER(alignedSubjectMismatchCompressedIndices)[1] = numberOfStrings + 1;
+			INTEGER(alignedSubjectIndelCompressedIndices)[0] = 1;
+			INTEGER(alignedSubjectIndelCompressedIndices)[1] = numberOfStrings + 1;
+		}
 
 		PROTECT(alignedScore = NEW_NUMERIC(numberOfStrings));
 
-		int *align1RangeStart, *align1RangeWidth, *align2RangeStart, *align2RangeWidth;
+		int *tempIntPtr;
+		int *align1RangeStart, *align1RangeWidth, *align1MismatchCumLengths, *align1IndelCumLengths;
+		int *align2RangeStart, *align2RangeWidth, *align2MismatchCumLengths, *align2IndelCumLengths;
 		for (i = 0, score = REAL(alignedScore),
 				align1RangeStart = INTEGER(alignedPatternRangeStart),
 				align1RangeWidth = INTEGER(alignedPatternRangeWidth),
+				align1MismatchCumLengths = INTEGER(alignedPatternMismatchCumLengths),
+				align1IndelCumLengths = INTEGER(alignedPatternIndelCumLengths),
 				align2RangeStart = INTEGER(alignedSubjectRangeStart),
-				align2RangeWidth = INTEGER(alignedSubjectRangeWidth); i < numberOfStrings;
-				i++, score++, align1RangeStart++, align1RangeWidth++, align2RangeStart++, align2RangeWidth++) {
+				align2RangeWidth = INTEGER(alignedSubjectRangeWidth),
+				align2MismatchCumLengths = INTEGER(alignedSubjectMismatchCumLengths),
+				align2IndelCumLengths = INTEGER(alignedSubjectIndelCumLengths);
+		        i < numberOfStrings; i++, score++,
+				align1RangeStart++, align1RangeWidth++, align1MismatchCumLengths++, align1IndelCumLengths++,
+				align2RangeStart++, align2RangeWidth++, align2MismatchCumLengths++, align2IndelCumLengths++) {
 	        R_CheckUserInterrupt();
 			align1Info.string = _get_CachedXStringSet_elt_asRoSeq(&cachedPattern, i);
 			if (useQualityValue) {
@@ -819,41 +904,75 @@ SEXP XStringSet_align_pairwiseAlignment(
 					LENGTH(fuzzyLookupTable),
 					&alignBuffer);
 
-			PROTECT(alignedPatternMismatchElt = NEW_INTEGER(align1Info.lengthMismatch));
-			PROTECT(alignedSubjectMismatchElt = NEW_INTEGER(align2Info.lengthMismatch));
-			memcpy(INTEGER(alignedPatternMismatchElt), align1Info.mismatch,
-			       align1Info.lengthMismatch * sizeof(int));
-			memcpy(INTEGER(alignedSubjectMismatchElt), align2Info.mismatch,
-			       align2Info.lengthMismatch * sizeof(int));
-		    SET_VECTOR_ELT(alignedPatternMismatch, i, alignedPatternMismatchElt);
-		    SET_VECTOR_ELT(alignedSubjectMismatch, i, alignedSubjectMismatchElt);
-			UNPROTECT(2);
+			align1MismatchCumLengths[1] = align1MismatchCumLengths[0] + align1Info.lengthMismatch;
+			align2MismatchCumLengths[1] = align2MismatchCumLengths[0] + align2Info.lengthMismatch;
+			if (align1Info.lengthMismatch > 0) {
+				if ((mismatchBuffer.usedSpace + align1Info.lengthMismatch) > mismatchBuffer.totalSpace) {
+					mismatchBuffer.totalSpace =
+						mismatchBuffer.totalSpace +
+							MIN(MAX_BUF_SIZE,
+							    alignmentBufferSize + (numberOfStrings - (i+1)) * (alignmentBufferSize/4));
+					tempIntPtr = (int *) R_alloc((long) mismatchBuffer.totalSpace, sizeof(int));
+					memcpy(tempIntPtr, mismatchBuffer.pattern, mismatchBuffer.usedSpace * sizeof(int));
+					mismatchBuffer.pattern = tempIntPtr;
+					tempIntPtr = (int *) R_alloc((long) mismatchBuffer.totalSpace, sizeof(int));
+					memcpy(tempIntPtr, mismatchBuffer.subject, mismatchBuffer.usedSpace * sizeof(int));
+					mismatchBuffer.subject = tempIntPtr;
+				}
+
+				memcpy(&mismatchBuffer.pattern[mismatchBuffer.usedSpace], align1Info.mismatch,
+					   align1Info.lengthMismatch * sizeof(int));
+
+				memcpy(&mismatchBuffer.subject[mismatchBuffer.usedSpace], align2Info.mismatch,
+					   align1Info.lengthMismatch * sizeof(int));
+				mismatchBuffer.usedSpace = mismatchBuffer.usedSpace + align1Info.lengthMismatch;
+			}
 
 			*align1RangeStart = align1Info.startRange;
 			*align1RangeWidth = align1Info.widthRange;
-			PROTECT(alignedPatternIndelRangeStart = NEW_INTEGER(align1Info.lengthIndel));
-			PROTECT(alignedPatternIndelRangeWidth = NEW_INTEGER(align1Info.lengthIndel));
-			memcpy(INTEGER(alignedPatternIndelRangeStart), align1Info.startIndel,
-			       align1Info.lengthIndel * sizeof(int));
-			memcpy(INTEGER(alignedPatternIndelRangeWidth), align1Info.widthIndel,
-			       align1Info.lengthIndel * sizeof(int));
-			PROTECT(alignedPatternIndelRange =
-				new_IRanges("IRanges", alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth, R_NilValue));
-		    SET_VECTOR_ELT(alignedPatternIndelList, i, alignedPatternIndelRange);
-		    UNPROTECT(3);
+			align1IndelCumLengths[1] = align1IndelCumLengths[0] + align1Info.lengthIndel;
+			if (align1Info.lengthIndel > 0) {
+				if ((indel1Buffer.usedSpace + align1Info.lengthIndel) > indel1Buffer.totalSpace) {
+					indel1Buffer.totalSpace =
+						indel1Buffer.totalSpace +
+							MIN(MAX_BUF_SIZE,
+							    alignmentBufferSize + (numberOfStrings - (i+1)) * (alignmentBufferSize/12));
+					tempIntPtr = (int *) R_alloc((long) indel1Buffer.totalSpace, sizeof(int));
+					memcpy(tempIntPtr, indel1Buffer.start, indel1Buffer.usedSpace * sizeof(int));
+					indel1Buffer.start = tempIntPtr;
+					tempIntPtr = (int *) R_alloc((long) indel1Buffer.totalSpace, sizeof(int));
+					memcpy(tempIntPtr, indel1Buffer.width, indel1Buffer.usedSpace * sizeof(int));
+					indel1Buffer.width = tempIntPtr;
+				}
+				memcpy(&indel1Buffer.start[indel1Buffer.usedSpace], align1Info.startIndel,
+					   align1Info.lengthIndel * sizeof(int));
+				memcpy(&indel1Buffer.width[indel1Buffer.usedSpace], align1Info.widthIndel,
+					   align1Info.lengthIndel * sizeof(int));
+				indel1Buffer.usedSpace = indel1Buffer.usedSpace + align1Info.lengthIndel;
+			}
 
 			*align2RangeStart = align2Info.startRange;
 			*align2RangeWidth = align2Info.widthRange;
-			PROTECT(alignedSubjectIndelRangeStart = NEW_INTEGER(align2Info.lengthIndel));
-			PROTECT(alignedSubjectIndelRangeWidth = NEW_INTEGER(align2Info.lengthIndel));
-			memcpy(INTEGER(alignedSubjectIndelRangeStart), align2Info.startIndel,
-			       align2Info.lengthIndel * sizeof(int));
-			memcpy(INTEGER(alignedSubjectIndelRangeWidth), align2Info.widthIndel,
-			       align2Info.lengthIndel * sizeof(int));
-			PROTECT(alignedSubjectIndelRange =
-				new_IRanges("IRanges", alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth, R_NilValue));
-		    SET_VECTOR_ELT(alignedSubjectIndelList, i, alignedSubjectIndelRange);
-		    UNPROTECT(3);
+			align2IndelCumLengths[1] = align2IndelCumLengths[0] + align2Info.lengthIndel;
+			if (align2Info.lengthIndel > 0) {
+				if ((indel2Buffer.usedSpace + align2Info.lengthIndel) > indel2Buffer.totalSpace) {
+					indel2Buffer.totalSpace =
+						indel2Buffer.totalSpace +
+							MIN(MAX_BUF_SIZE,
+							    alignmentBufferSize + (numberOfStrings - (i+1)) * (alignmentBufferSize/12));
+					tempIntPtr = (int *) R_alloc((long) indel2Buffer.totalSpace, sizeof(int));
+					memcpy(tempIntPtr, indel2Buffer.start, indel2Buffer.usedSpace * sizeof(int));
+					indel2Buffer.start = tempIntPtr;
+					tempIntPtr = (int *) R_alloc((long) indel2Buffer.totalSpace, sizeof(int));
+					memcpy(tempIntPtr, indel2Buffer.width, indel2Buffer.usedSpace * sizeof(int));
+					indel2Buffer.width = tempIntPtr;
+				}
+				memcpy(&indel2Buffer.start[indel2Buffer.usedSpace], align2Info.startIndel,
+					   align2Info.lengthIndel * sizeof(int));
+				memcpy(&indel2Buffer.width[indel2Buffer.usedSpace], align2Info.widthIndel,
+					   align2Info.lengthIndel * sizeof(int));
+				indel2Buffer.usedSpace = indel2Buffer.usedSpace + align2Info.lengthIndel;
+			}
 		}
 
 		/* Create the output object */
@@ -875,8 +994,31 @@ SEXP XStringSet_align_pairwiseAlignment(
 			new_IRanges("IRanges", alignedPatternRangeStart, alignedPatternRangeWidth, R_NilValue));
 		SET_SLOT(alignedPattern, mkChar("range"), alignedPatternRange);
 		/* Set the "mismatch" sub-slot */
+		PROTECT(alignedPatternMismatch = NEW_OBJECT(MAKE_CLASS("IntegerList")));
+		PROTECT(alignedPatternMismatchElements = NEW_LIST(1));
+		PROTECT(alignedPatternMismatchValues = NEW_INTEGER(mismatchBuffer.usedSpace));
+		memcpy(INTEGER(alignedPatternMismatchValues), mismatchBuffer.pattern,
+			   mismatchBuffer.usedSpace * sizeof(int));
+	    SET_VECTOR_ELT(alignedPatternMismatchElements, 0, alignedPatternMismatchValues);
+		SET_SLOT(alignedPatternMismatch, mkChar("elements"), alignedPatternMismatchElements);
+		SET_SLOT(alignedPatternMismatch, mkChar("elementCumLengths"), alignedPatternMismatchCumLengths);
+		SET_SLOT(alignedPatternMismatch, mkChar("compressedIndices"), alignedPatternMismatchCompressedIndices);
 		SET_SLOT(alignedPattern, mkChar("mismatch"), alignedPatternMismatch);
 		/* Set the "indel" sub-slot */
+		PROTECT(alignedPatternIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
+		PROTECT(alignedPatternIndelElements = NEW_LIST(1));
+		PROTECT(alignedPatternIndelRangeStart = NEW_INTEGER(indel1Buffer.usedSpace));
+		PROTECT(alignedPatternIndelRangeWidth = NEW_INTEGER(indel1Buffer.usedSpace));
+		memcpy(INTEGER(alignedPatternIndelRangeStart), indel1Buffer.start,
+			   indel1Buffer.usedSpace * sizeof(int));
+		memcpy(INTEGER(alignedPatternIndelRangeWidth), indel1Buffer.width,
+			   indel1Buffer.usedSpace * sizeof(int));
+		PROTECT(alignedPatternIndelRange =
+			new_IRanges("IRanges", alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth, R_NilValue));
+	    SET_VECTOR_ELT(alignedPatternIndelElements, 0, alignedPatternIndelRange);
+		SET_SLOT(alignedPatternIndel, mkChar("elements"), alignedPatternIndelElements);
+		SET_SLOT(alignedPatternIndel, mkChar("elementCumLengths"), alignedPatternIndelCumLengths);
+		SET_SLOT(alignedPatternIndel, mkChar("compressedIndices"), alignedPatternIndelCompressedIndices);
 		SET_SLOT(alignedPattern, mkChar("indel"), alignedPatternIndel);
 		SET_SLOT(output, mkChar("pattern"), alignedPattern);
 
@@ -892,8 +1034,31 @@ SEXP XStringSet_align_pairwiseAlignment(
 			new_IRanges("IRanges", alignedSubjectRangeStart, alignedSubjectRangeWidth, R_NilValue));
 		SET_SLOT(alignedSubject, mkChar("range"), alignedSubjectRange);
 		/* Set the "mismatch" sub-slot */
+		PROTECT(alignedSubjectMismatch = NEW_OBJECT(MAKE_CLASS("IntegerList")));
+		PROTECT(alignedSubjectMismatchElements = NEW_LIST(1));
+		PROTECT(alignedSubjectMismatchValues = NEW_INTEGER(mismatchBuffer.usedSpace));
+		memcpy(INTEGER(alignedSubjectMismatchValues), mismatchBuffer.subject,
+			   mismatchBuffer.usedSpace * sizeof(int));
+	    SET_VECTOR_ELT(alignedSubjectMismatchElements, 0, alignedSubjectMismatchValues);
+		SET_SLOT(alignedSubjectMismatch, mkChar("elements"), alignedSubjectMismatchElements);
+		SET_SLOT(alignedSubjectMismatch, mkChar("elementCumLengths"), alignedSubjectMismatchCumLengths);
+		SET_SLOT(alignedSubjectMismatch, mkChar("compressedIndices"), alignedSubjectMismatchCompressedIndices);
 		SET_SLOT(alignedSubject, mkChar("mismatch"), alignedSubjectMismatch);
 		/* Set the "indel" sub-slot */
+		PROTECT(alignedSubjectIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
+		PROTECT(alignedSubjectIndelElements = NEW_LIST(1));
+		PROTECT(alignedSubjectIndelRangeStart = NEW_INTEGER(indel2Buffer.usedSpace));
+		PROTECT(alignedSubjectIndelRangeWidth = NEW_INTEGER(indel2Buffer.usedSpace));
+		memcpy(INTEGER(alignedSubjectIndelRangeStart), indel2Buffer.start,
+			   indel2Buffer.usedSpace * sizeof(int));
+		memcpy(INTEGER(alignedSubjectIndelRangeWidth), indel2Buffer.width,
+			   indel2Buffer.usedSpace * sizeof(int));
+		PROTECT(alignedSubjectIndelRange =
+			new_IRanges("IRanges", alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth, R_NilValue));
+	    SET_VECTOR_ELT(alignedSubjectIndelElements, 0, alignedSubjectIndelRange);
+		SET_SLOT(alignedSubjectIndel, mkChar("elements"), alignedSubjectIndelElements);
+		SET_SLOT(alignedSubjectIndel, mkChar("elementCumLengths"), alignedSubjectIndelCumLengths);
+		SET_SLOT(alignedSubjectIndel, mkChar("compressedIndices"), alignedSubjectIndelCompressedIndices);
 		SET_SLOT(alignedSubject, mkChar("indel"), alignedSubjectIndel);
 		SET_SLOT(output, mkChar("subject"), alignedSubject);
 
@@ -910,7 +1075,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		/* Output is ready */
-		UNPROTECT(16);
+		UNPROTECT(34);
 	}
 
 	return output;

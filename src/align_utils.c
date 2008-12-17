@@ -46,8 +46,8 @@ SEXP PairwiseAlignedXStringSet_nmatch(SEXP nchar, SEXP nmismatch, SEXP ninsertio
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("elements"));
-	int numberOfAlignments = LENGTH(indel);
+	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
+	int numberOfAlignments = LENGTH(GET_SLOT(range, install("start")));
 
 	SEXP output;
 	PROTECT(output = NEW_INTEGER(numberOfAlignments));
@@ -55,7 +55,7 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 	const int *rangeWidth, *indelWidth;
 	for (i = 0, rangeWidth = INTEGER(get_IRanges_width(range)), outputPtr = INTEGER(output);
 			i < numberOfAlignments; i++, rangeWidth++, outputPtr++) {
-		SEXP indelElement = VECTOR_ELT(indel, i);
+		SEXP indelElement = get_IRangesList_elt(indel, i);
 		int numberOfIndels = LENGTH(get_IRanges_width(indelElement));
 		*outputPtr = *rangeWidth;
 		for (j = 0, indelWidth = INTEGER(get_IRanges_width(indelElement));
@@ -77,13 +77,13 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	SEXP unaligned = GET_SLOT(alignedXStringSet, install("unaligned"));
 	CachedXStringSet cachedAlignedXStringSet = _new_CachedXStringSet(unaligned);
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(GET_SLOT(alignedXStringSet, install("indel")), install("elements"));
+	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
 
 	const char *stringSetClass = get_qualityless_classname(unaligned);
 	const char *stringClass = get_classname(_get_XStringSet_super(unaligned));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
-	int numberOfAlignments = LENGTH(indel);
+	int numberOfAlignments = LENGTH(GET_SLOT(range, install("start")));
 
 	SEXP output;
 
@@ -118,7 +118,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
-		SEXP indelElement = VECTOR_ELT(indel, i);
+		SEXP indelElement = get_IRangesList_elt(indel, i);
 		int numberOfIndel = LENGTH(get_IRanges_start(indelElement));
 		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, *rangeWidth * sizeof(char));
@@ -165,16 +165,16 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 	CachedXStringSet cachedUnalignedPattern = _new_CachedXStringSet(unalignedPattern);
 	SEXP rangePattern = GET_SLOT(pattern, install("range"));
 	SEXP namesPattern = get_IRanges_names(rangePattern);
-	SEXP indelPattern = GET_SLOT(GET_SLOT(pattern, install("indel")), install("elements"));
+	SEXP indelPattern = GET_SLOT(pattern, install("indel"));
 
 	SEXP subject = GET_SLOT(alignment, install("subject"));
 	SEXP rangeSubject = GET_SLOT(subject, install("range"));
-	SEXP indelSubject = GET_SLOT(GET_SLOT(subject, install("indel")), install("elements"));
+	SEXP indelSubject = GET_SLOT(subject, install("indel"));
 
 	const char *stringSetClass = get_qualityless_classname(unalignedPattern);
 	const char *stringClass = get_classname(_get_XStringSet_super(unalignedPattern));
 
-	int numberOfAlignments = LENGTH(indelPattern);
+	int numberOfAlignments = LENGTH(GET_SLOT(rangePattern, install("start")));
 	int numberOfChars = INTEGER(_get_XStringSet_width(GET_SLOT(subject, install("unaligned"))))[0];
 
 	SEXP output;
@@ -209,8 +209,8 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
-		SEXP indelElementPattern = VECTOR_ELT(indelPattern, i);
-		SEXP indelElementSubject = VECTOR_ELT(indelSubject, i);
+		SEXP indelElementPattern = get_IRangesList_elt(indelPattern, i);
+		SEXP indelElementSubject = get_IRangesList_elt(indelSubject, i);
 		int numberOfIndelPattern = LENGTH(get_IRanges_start(indelElementPattern));
 		int numberOfIndelSubject = LENGTH(get_IRanges_start(indelElementSubject));
 
