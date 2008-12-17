@@ -26,10 +26,6 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
          gapOpening = 0, gapExtension = -1,
          baseClass = "BString", pwaClass = "PairwiseAlignedXStringSet") {
     getMismatches <- function(x) {
-        if (x[["values"]][1] %in% c("-", "+")) {
-            x[["values"]] <- x[["values"]][-1]
-            x[["lengths"]] <- x[["lengths"]][-1]
-        }
         whichMismatches <- which(x[["values"]] == "?")
         if (length(whichMismatches) == 0) {
             value <- integer(0)
