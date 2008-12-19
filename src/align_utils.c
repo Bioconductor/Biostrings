@@ -47,7 +47,7 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
-	int numberOfAlignments = LENGTH(GET_SLOT(range, install("start")));
+	int numberOfAlignments = get_IRanges_length(range);
 
 	SEXP output;
 	PROTECT(output = NEW_INTEGER(numberOfAlignments));
@@ -83,7 +83,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	const char *stringClass = get_classname(_get_XStringSet_super(unaligned));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
-	int numberOfAlignments = LENGTH(GET_SLOT(range, install("start")));
+	int numberOfAlignments = get_IRanges_length(range);
 
 	SEXP output;
 
@@ -174,7 +174,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 	const char *stringSetClass = get_qualityless_classname(unalignedPattern);
 	const char *stringClass = get_classname(_get_XStringSet_super(unalignedPattern));
 
-	int numberOfAlignments = LENGTH(GET_SLOT(rangePattern, install("start")));
+	int numberOfAlignments = get_IRanges_length(rangePattern);
 	int numberOfChars = INTEGER(_get_XStringSet_width(GET_SLOT(subject, install("unaligned"))))[0];
 
 	SEXP output;
