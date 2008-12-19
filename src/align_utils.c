@@ -55,13 +55,14 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 	const int *rangeWidth, *indelWidth;
 	for (i = 0, rangeWidth = INTEGER(get_IRanges_width(range)), outputPtr = INTEGER(output);
 			i < numberOfAlignments; i++, rangeWidth++, outputPtr++) {
-		SEXP indelElement = get_IRangesList_elt(indel, i);
+		SEXP indelElement = PROTECT(get_IRangesList_elt(indel, i));
 		int numberOfIndels = LENGTH(get_IRanges_width(indelElement));
 		*outputPtr = *rangeWidth;
 		for (j = 0, indelWidth = INTEGER(get_IRanges_width(indelElement));
 		     j < numberOfIndels; j++, indelWidth++) {
 			*outputPtr += *indelWidth;
 		}
+		UNPROTECT(1);
 	}
 	UNPROTECT(1);
 
@@ -118,7 +119,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
-		SEXP indelElement = get_IRangesList_elt(indel, i);
+		SEXP indelElement = PROTECT(get_IRangesList_elt(indel, i));
 		int numberOfIndel = LENGTH(get_IRanges_start(indelElement));
 		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, *rangeWidth * sizeof(char));
@@ -148,6 +149,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 			index += copyElements;
 		}
 		stringElement += stringIncrement;
+		UNPROTECT(1);
 	}
 	UNPROTECT(6);
 
@@ -209,8 +211,8 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
-		SEXP indelElementPattern = get_IRangesList_elt(indelPattern, i);
-		SEXP indelElementSubject = get_IRangesList_elt(indelSubject, i);
+		SEXP indelElementPattern = PROTECT(get_IRangesList_elt(indelPattern, i));
+		SEXP indelElementSubject = PROTECT(get_IRangesList_elt(indelSubject, i));
 		int numberOfIndelPattern = LENGTH(get_IRanges_start(indelElementPattern));
 		int numberOfIndelSubject = LENGTH(get_IRanges_start(indelElementSubject));
 
@@ -258,6 +260,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 			mappedStringPtr[index] = gapCodeValue;
 			index++;
 		}
+		UNPROTECT(2);
 	}
 	UNPROTECT(6);
 
