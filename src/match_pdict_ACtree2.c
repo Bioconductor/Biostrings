@@ -16,13 +16,130 @@
 
 static int debug = 0;
 
+#define MAX_CHILDREN_PER_NODE 4
+
 
 
 /****************************************************************************
- *                                A. DEFINES                                *
+ *    A. GENERAL UTILITIES FOR COMPUTING THE NB OF NODES AND EXTENSIONS     *
  ****************************************************************************/
 
-#define MAX_CHILDREN_PER_NODE 4
+/*
+ * nleaves = number of leaves in the tree (it's also the number of unique
+ *           patterns so 'nleaves' <= 'tb_length');
+ * depth = depth of the tree (it's also the length of each pattern so 'depth'
+ *           = 'tb_width').
+ */
+static int get_max_needed_nnodes(int nleaves, int depth)
+{
+	int max_nn, nnodes_inc, d;
+
+	max_nn = 0;
+	nnodes_inc = 1;
+	for (d = 0; d <= depth; d++) {
+		if (nnodes_inc >= nleaves)
+			return max_nn + (depth + 1 - d) * nleaves;
+		max_nn += nnodes_inc;
+		nnodes_inc *= MAX_CHILDREN_PER_NODE;
+	}
+	return max_nn;
+}
+
+static int get_min_needed_nnodes(int nleaves, int depth)
+{
+	int min_nn, nnodes_inc, d;
+	div_t q;
+
+	min_nn = 0;
+	nnodes_inc = nleaves;
+	for (d = depth; d >= 0; d--) {
+		if (nnodes_inc == 1)
+			return min_nn + d + 1;
+		min_nn += nnodes_inc;
+		q = div(nnodes_inc, MAX_CHILDREN_PER_NODE);
+		nnodes_inc = q.quot;
+		if (q.rem != 0)
+			nnodes_inc++;
+	}
+	return min_nn;
+}
+
+/*
+ * OptMaxNN: Optimistic Max Needed nb of Nodes.
+ * get_OptMaxNN() is a decreasing function of 'max_needed_nnodes' bounded by
+ * 'max_nn' and 'min_nn2' (max_nn >= get_OptMaxNN() > min_nn2).
+ */
+static int get_OptMaxNN(int max_needed_nnodes, int min_needed_nnodes)
+{
+	double max_nn, min_nn2, x;
+
+	max_nn = max_needed_nnodes;
+	min_nn2 = min_needed_nnodes + 0.70 * (max_nn - min_needed_nnodes);
+	x = max_needed_nnodes / 300000000.00;
+	return (int) min_nn2 + (max_nn - min_nn2) / (1.00 + x);
+}
+
+/*
+ * nleaves = number of leaves in the tree (it's also the number of unique
+ *           patterns so 'nleaves' <= 'tb_length');
+ * depth = depth of the tree (it's also the length of each pattern so 'depth'
+ *           = 'tb_width').
+ */
+static int get_max_needed_nextensions_at_pp_time(int nleaves, int depth)
+{
+	int nextensions, d;
+
+	nextensions = 1;
+	for (d = 0; d < depth; d++) {
+		if (nextensions > nleaves)
+			break;
+		nextensions *= 2;
+	}
+	return nextensions - 1;
+}
+
+/*
+ * MEER (Maximum Expected Extension Ratio) is the maximum nextensions/nnodes
+ * ratio that is expected during the lifetime of an ACtree2 object.
+ * The nextensions/nnodes ratio can only increase during the lifetime of an
+ * ACtree2 object (more precisely, it can only increase when the object is
+ * used to walk on new subjects). Since the cost of reallocating is high, we
+ * want to preallocate the buffer of extensions (stored in the 'extensions'
+ * slot of the object) once for all with the hope that its length will be
+ * enough for the entire lifetime of the object. The current approach is to
+ * set its length to 'nnodes * MEER'. Some simulations with real data tend to
+ * indicate that most of the times this will be enough.
+ * Note that when 'extensions_buflength == 0.4 * nnodes', the 'extensions'
+ * slot of the ACtree2 object has the same size as its 'nodes' slot. Therefore
+ * the total size for these 2 slots ('nodes' + 'extensions') is half the size
+ * of the 'nodes' slot of the corresponding old ACtree object.
+ * We define MEER as an increasing function of the number of nodes ('nnodes').
+ */
+static double nnodes2MEER(int nnodes)
+{
+	double x;
+
+	x = nnodes / 1000000.00;
+	if (x <= 1)
+		return 1.00;
+	if (x <= 5)
+		return 0.75;
+	if (x <= 25)
+		return 0.60;
+	if (x <= 50)
+		return 0.50;
+	if (x <= 150)
+		return 0.50 - 0.10 * (x / 50 - 1);
+	if (x <= 300)
+		return 0.30 - 0.05  * (x / 150 - 1);
+	return 0.25;
+}
+
+
+
+/****************************************************************************
+ *                                B. DEFINES                                *
+ ****************************************************************************/
 
 typedef struct acnode {
 	int attribs;
@@ -101,27 +218,8 @@ typedef struct actree {
 
 
 /****************************************************************************
- *                          B. LOW-LEVEL UTILITIES                          *
+ *                          C. LOW-LEVEL UTILITIES                          *
  ****************************************************************************/
-
-/*
- * nleaves = number of leaves in the tree (it's also the number of unique
- *           patterns so 'nleaves' <= 'tb_length');
- * depth = depth of the tree (it's also the length of each pattern so 'depth'
- *           = 'tb_width').
- */
-static int get_max_needed_nextensions_at_pp_time(int nleaves, int depth)
-{
-	int nextensions, d;
-
-	nextensions = 1;
-	for (d = 0; d < depth; d++) {
-		if (nextensions > nleaves)
-			break;
-		nextensions *= 2;
-	}
-	return nextensions - 1;
-}
 
 /* extends the 'nodes' slot */
 static void extend_nodes_buffer(ACtree *tree)
@@ -176,49 +274,13 @@ static SEXP ACtree_nodes_asXInteger(ACtree *tree)
 	return ans;
 }
 
-/*
- * EER (Expected Extension Ratio) is the expected maximum nextensions/nnodes
- * ratio in the lifetime of an ACtree2 object.
- * The nextensions/nnodes ratio can only increase during the lifetime of an
- * ACtree2 object (more precisely, it can only increase when the object is
- * used to walk on new subjects). Since the cost of reallocating is high, we
- * want to preallocate the buffer of extensions (stored in the 'extensions'
- * slot of the object) once for all with the hope that its length will be
- * enough for the entire lifetime of the object. The current approach is to
- * set its length to 'nnodes * EER'. Some simulations with real data tend to
- * indicate that most of the times this will be enough.
- * Note that when 'extensions_buflength == 0.4 * nnodes', the 'extensions'
- * slot of the ACtree2 object has the same size as its 'nodes' slot. Therefore
- * the total size for these 2 slots ('nodes' + 'extensions') is half the size
- * of the 'nodes' slot of the corresponding old ACtree object.
- * We define EER as an increasing function of the number of nodes ('nnodes').
- */
-static double nnodes2EER(int nnodes)
-{
-	double x;
-
-	x = (double) nnodes / 1000000;
-	if (x <= 1)
-		return 1.00;
-	if (x <= 5)
-		return 0.75;
-	if (x <= 25)
-		return 0.60;
-	if (x <= 50)
-		return 0.50;
-	if (x <= 150)
-		return 0.50 - 0.10 * (x / 50 - 1);
-	if (x <= 300)
-		return 0.30 - 0.05  * (x / 150 - 1);
-	return 0.25;
-}
-
 static SEXP ACtree_extensions_asXInteger(ACtree *tree)
 {
 	int extensions_buflength, tag_length;
 	SEXP ans, tag;
 
-	extensions_buflength = TREE_NNODES(tree) * nnodes2EER(TREE_NNODES(tree));
+	extensions_buflength = TREE_NNODES(tree)
+			     * nnodes2MEER(TREE_NNODES(tree));
 	/* very unlikely to happen */
 	if (extensions_buflength < TREE_NEXTENSIONS(tree))
 		extensions_buflength = TREE_NEXTENSIONS(tree);
@@ -244,7 +306,7 @@ static SEXP ACtree_nextensions_asXInteger(ACtree *tree)
 
 
 /****************************************************************************
- *                           C. Aho-Corasick tree API                       *
+ *                           D. Aho-Corasick tree API                       *
  ****************************************************************************/
 
 static int new_ACnode(ACtree *tree, int depth)
@@ -341,26 +403,25 @@ static void set_ACnode_flink(ACtree *tree, ACnode *node, int nid)
 	return;
 }
 
-static ACtree new_ACtree(int tb_length, int tb_width,
-		int max_needed_nnodes, SEXP base_codes)
+static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes)
 {
 	ACtree tree;
-	int n1, n2;
+	int max_nn, min_nn, n1, n2;
 
-	/* we speculate that the nb of nodes that will actually be needed
-	   won't be more than 80% of the theoretical max needed nb of nodes
-	   (this is based on some empirical observations on real data) */
-	//n1 = max_needed_nnodes * 0.8;
-	n1 = max_needed_nnodes;
+	max_nn = get_max_needed_nnodes(tb_length, tb_width);
+	min_nn = get_min_needed_nnodes(tb_length, tb_width);
+	n1 = get_OptMaxNN(max_nn, min_nn);
 	n2 = get_max_needed_nextensions_at_pp_time(tb_length, tb_width);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] new_ACtree():\n"
 			"  tb_length=%d tb_width=%d\n"
-			"  nodes_buflength=%d (max_needed_nnodes=%d)\n"
+			"  max_needed_nnodes=%d min_needed_nnodes=%d\n"
+			"  nodes_buflength=%d (=OptMaxNN)\n"
 			"  extensions_buflength=%d (=max_needed_nextensions)\n",
 			tb_length, tb_width,
-			n1, max_needed_nnodes,
+			max_nn, min_nn,
+			n1,
 			n2);
 	}
 #endif
@@ -464,48 +525,8 @@ static int get_ACnode_nlinks(ACtree *tree, ACnode *node)
 
 
 /****************************************************************************
- *                       D. STATS AND DEBUG UTILITIES                       *
+ *                       E. STATS AND DEBUG UTILITIES                       *
  ****************************************************************************/
-
-/*
- * nleaves = number of leaves in the tree (it's also the number of unique
- *           patterns so 'nleaves' <= 'tb_length');
- * depth = depth of the tree (it's also the length of each pattern so 'depth'
- *           = 'tb_width').
- */
-static int get_max_needed_nnodes(int nleaves, int depth)
-{
-	int nnodes, nnodes_inc, d;
-
-	nnodes = 0;
-	nnodes_inc = 1;
-	for (d = 0; d <= depth; d++) {
-		if (nnodes_inc >= nleaves)
-			return nnodes + (depth + 1 - d) * nleaves;
-		nnodes += nnodes_inc;
-		nnodes_inc *= MAX_CHILDREN_PER_NODE;
-	}
-	return nnodes;
-}
-
-static int get_min_needed_nnodes(int nleaves, int depth)
-{
-	int nnodes, nnodes_inc, d;
-	div_t q;
-
-	nnodes = 0;
-	nnodes_inc = nleaves;
-	for (d = depth; d >= 0; d--) {
-		if (nnodes_inc == 1)
-			return nnodes + d + 1;
-		nnodes += nnodes_inc;
-		q = div(nnodes_inc, MAX_CHILDREN_PER_NODE);
-		nnodes_inc = q.quot;
-		if (q.rem != 0)
-			nnodes_inc++;
-	}
-	return nnodes;
-}
 
 SEXP ACtree2_print_nodes(SEXP pptb)
 {
@@ -527,8 +548,7 @@ SEXP ACtree2_summary(SEXP pptb)
 	ACtree tree;
 	ACnode *node;
 	int nnodes, nlinks_table[MAX_CHILDREN_PER_NODE+2], nleaves,
-	    max_needed_nnodes, min_needed_nnodes,
-	    i, nid, nlinks;
+	    max_nn, min_nn, n1, i, nid, nlinks;
 
 	tree = pptb_asACtree(pptb);
 	nnodes = TREE_NNODES(&tree);
@@ -549,19 +569,19 @@ SEXP ACtree2_summary(SEXP pptb)
 			100.00 * nlinks_table[i] / nnodes,
 			i);
 	Rprintf("  Nb of leaf nodes (nleaves) = %d\n", nleaves);
-	max_needed_nnodes = get_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
-	min_needed_nnodes = get_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
-	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %d\n",
-		max_needed_nnodes);
-	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %d\n",
-		min_needed_nnodes);
+	max_nn = get_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
+	min_nn = get_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
+	n1 = get_OptMaxNN(max_nn, min_nn);
+	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %d\n", max_nn);
+	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %d\n", min_nn);
+	Rprintf("  - OptMaxNN(nleaves, TREE_DEPTH) = %d\n", n1);
 	return R_NilValue;
 }
 
 
 
 /****************************************************************************
- *                             E. PREPROCESSING                             *
+ *                             F. PREPROCESSING                             *
  ****************************************************************************/
 
 static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
@@ -614,7 +634,7 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 {
 	ACtree tree;
-	int tb_length, tb_width, P_offset, n;
+	int tb_length, tb_width, P_offset;
 	CachedXStringSet cached_tb;
 	RoSeq P;
 	SEXP ans, ans_names, ans_elt;
@@ -636,8 +656,7 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 				error("first element in Trusted Band "
 				      "is of length 0");
 			tb_width = P.nelt;
-			n = get_max_needed_nnodes(tb_length, tb_width);
-			tree = new_ACtree(tb_length, tb_width, n, base_codes);
+			tree = new_ACtree(tb_length, tb_width, base_codes);
 		} else if (P.nelt != tb_width) {
 			error("element %d in Trusted Band has a different "
 			      "length than first element", P_offset + 1);
@@ -671,7 +690,7 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 
 
 /****************************************************************************
- *                             F. MATCH FINDING                             *
+ *                             G. MATCH FINDING                             *
  ****************************************************************************/
 
 /*
