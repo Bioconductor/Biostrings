@@ -220,6 +220,8 @@ static void match_pdict(SEXP pptb,
 		_match_Twobit(pptb, S, fixedS);
 	else if (strcmp(type, "ACtree") == 0)
 		_match_ACtree(pptb, S, fixedS);
+	else if (strcmp(type, "ACtree2") == 0)
+		_match_ACtree2(pptb, S, fixedS);
 	else
 		error("%s: unsupported Trusted Band type in 'pdict'", type);
 	if (cached_head != NULL || cached_tail != NULL) {

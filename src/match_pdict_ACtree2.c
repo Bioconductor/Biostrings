@@ -76,15 +76,13 @@ SEXP debug_match_pdict_ACtree2()
 
 #define ISEXTENDED(node) ((node)->attribs & ISEXTENDED_BIT)
 #define ISLEAF(node) ((node)->attribs & ISLEAF_BIT)
-#define GET_DEPTH(node) ((node)->attribs & MAX_DEPTH)
-#define GET_P_ID(node) ((node)->attribs & MAX_P_ID)
 
 typedef struct actree {
 	int depth;  /* this is the depth of all leaf nodes */
 	ACnode *nodes;
 	int nodes_buflength, nnodes;
 	ACnodeExtension *extensions;
-	int extensions_buflength, nextensions;
+	int extensions_buflength, nextensions, *pptb_nextensions;
 	ByteTrTable char2linktag;
 } ACtree;
 
@@ -94,6 +92,11 @@ typedef struct actree {
 #define TREE_NEXTENSIONS(tree) ((tree)->nextensions)
 #define GET_EXTENSION(tree, eid) ((tree)->extensions + (eid))
 #define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
+
+#define NODE_DEPTH(tree, node) \
+	(ISLEAF(node) ? TREE_DEPTH(tree) : ((node)->attribs & MAX_DEPTH))
+/* result of NODE_P_ID() is undefined on a non-leaf node */
+#define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
 
 
 
@@ -142,6 +145,8 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 	if (TREE_NEXTENSIONS(tree) >= tree->extensions_buflength)
 		extend_extensions_buffer(tree);
 	eid = tree->nextensions++;
+	if (tree->pptb_nextensions != NULL)
+		(*(tree->pptb_nextensions))++;
 	extension = GET_EXTENSION(tree, eid);
 	for (i = 0; i < MAX_CHILDREN_PER_NODE; i++)
 		extension->link_nid[i] = -1;
@@ -171,26 +176,52 @@ static SEXP ACtree_nodes_asXInteger(ACtree *tree)
 	return ans;
 }
 
+/*
+ * EER (Expected Extension Ratio) is the expected maximum nextensions/nnodes
+ * ratio in the lifetime of an ACtree2 object.
+ * The nextensions/nnodes ratio can only increase during the lifetime of an
+ * ACtree2 object (more precisely, it can only increase when the object is
+ * used to walk on new subjects). Since the cost of reallocating is high, we
+ * want to preallocate the buffer of extensions (stored in the 'extensions'
+ * slot of the object) once for all with the hope that its length will be
+ * enough for the entire lifetime of the object. The current approach is to
+ * set its length to 'nnodes * EER'. Some simulations with real data tend to
+ * indicate that most of the times this will be enough.
+ * Note that when 'extensions_buflength == 0.4 * nnodes', the 'extensions'
+ * slot of the ACtree2 object has the same size as its 'nodes' slot. Therefore
+ * the total size for these 2 slots ('nodes' + 'extensions') is half the size
+ * of the 'nodes' slot of the corresponding old ACtree object.
+ * We define EER as an increasing function of the number of nodes ('nnodes').
+ */
+static double nnodes2EER(int nnodes)
+{
+	double x;
+
+	x = (double) nnodes / 1000000;
+	if (x <= 1)
+		return 1.00;
+	if (x <= 5)
+		return 0.75;
+	if (x <= 25)
+		return 0.60;
+	if (x <= 50)
+		return 0.50;
+	if (x <= 150)
+		return 0.50 - 0.10 * (x / 50 - 1);
+	if (x <= 300)
+		return 0.30 - 0.05  * (x / 150 - 1);
+	return 0.25;
+}
+
 static SEXP ACtree_extensions_asXInteger(ACtree *tree)
 {
 	int extensions_buflength, tag_length;
 	SEXP ans, tag;
 
-	/* Having a nb of preallocated extensions being 40% of the nb of
-	   nodes makes the buffer of extensions (stored in the 'extensions'
-	   slot of the resulting "ACtree2" object) of the same size as the
-	   'nodes' slot. Therefore the total size for these 2 slots ('nodes'
-	   + 'extensions') is half the size of the 'nodes' slot of the
-	   corresponding old "ACtree" object.
-	   Note that there is no guarantee that choosing this size for the
-	   buffer of extensions will always save us from having to reallocate
-	   during the typical life cycle of the PDict object (e.g. after it
-	   has been used on a full genome), but some simulations with real
-	   data tend to show that most of the times it will. */
-	extensions_buflength = (int) (TREE_NNODES(tree) * 0.4);
-	if (TREE_NEXTENSIONS(tree) > extensions_buflength)
-		error("ACtree_extensions_asXInteger(): "
-		      "TREE_NEXTENSIONS(tree) > extensions_buflength");
+	extensions_buflength = TREE_NNODES(tree) * nnodes2EER(TREE_NNODES(tree));
+	/* very unlikely to happen */
+	if (extensions_buflength < TREE_NEXTENSIONS(tree))
+		extensions_buflength = TREE_NEXTENSIONS(tree);
 	tag_length = extensions_buflength * INTS_PER_EXTENSION;
 	PROTECT(tag = NEW_INTEGER(tag_length));
 	memcpy(INTEGER(tag), tree->extensions,
@@ -264,15 +295,18 @@ static int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 	return -1;
 }
 
-/* on a leaf node, set_ACnode_flink() should always have been called first
-   so we can assume that the node is already extended */
+/*
+ * set_ACnode_flink() should always have been called before set_ACnode_link()
+ * on a leaf node. So we can assume that, if set_ACnode_link() is called on a
+ * leaf node, then this node is already extended.
+ */
 static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, int nid)
 {
 	ACnodeExtension *extension;
 
 	if (node->nid_or_eid == -1) {
-		/* cannot a leaf node (see assumption above) and
-                   no need to extend it */
+		/* cannot be a leaf node (see assumption above) and
+		   no need to extend it */
 		node->attribs |= linktag << LINKTAG_BITSHIFT;
 		node->nid_or_eid = nid;
 		return;
@@ -298,7 +332,12 @@ static int get_ACnode_flink(ACtree *tree, ACnode *node)
 
 static void set_ACnode_flink(ACtree *tree, ACnode *node, int nid)
 {
-	error("set_ACnode_flink(): implement me");
+	ACnodeExtension *extension;
+
+	if (!ISEXTENDED(node))
+		extend_ACnode(tree, node);
+	extension = GET_EXTENSION(tree, node->nid_or_eid);
+	extension->flink_nid = nid;
 	return;
 }
 
@@ -332,6 +371,9 @@ static ACtree new_ACtree(int tb_length, int tb_width,
 	if (n1 >= MAX_NNODES || n2 >= MAX_NEXTENSIONS)
 		error("Trusted Band is too big (please reduce its "
 		      "width or its length)");
+	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
+		error("Biostrings internal error in new_ACtree(): "
+		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");
 
 	tree.depth = tb_width;
 	tree.nodes = Salloc((long) n1, ACnode);
@@ -340,7 +382,7 @@ static ACtree new_ACtree(int tb_length, int tb_width,
 	tree.extensions = Salloc((long) n2, ACnodeExtension);
 	tree.extensions_buflength = n2;
 	tree.nextensions = 0;
-
+	tree.pptb_nextensions = NULL;
 	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
 	new_ACnode(&tree, 0);  /* create the root node */
 	return tree;
@@ -392,8 +434,12 @@ static ACtree pptb_asACtree(SEXP pptb)
 	tag = _get_ACtree2_extensions_tag(pptb);
 	tree.extensions = (ACnodeExtension *) INTEGER(tag);
 	tree.extensions_buflength = LENGTH(tag) / INTS_PER_EXTENSION;
-	tree.nextensions = _get_ACtree2_nextensions(pptb);
+	tree.pptb_nextensions = _get_ACtree2_nextensions(pptb);
+	tree.nextensions = *(tree.pptb_nextensions);
 	base_codes = _get_ACtree2_base_codes(pptb);
+	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
+		error("Biostrings internal error in pptb_asACtree(): "
+		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");
 	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
 	return tree;
 }
@@ -541,13 +587,13 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 		}
 		if (nid2 != -1) {
 			node2 = GET_NODE(tree, nid2);
-			_report_dup(P_offset, GET_P_ID(node2));
+			_report_dup(P_offset, NODE_P_ID(node2));
 		} else {
 			nid2 = new_leafACnode(tree, P_id);
 			set_ACnode_link(tree, node1, linktag, nid2);
 		}
-        }
-        return;
+	}
+	return;
 }
 
 /****************************************************************************
@@ -576,9 +622,6 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 	tb_length = _get_XStringSet_length(tb);
 	if (tb_length == 0)
 		error("Trusted Band is empty");
-	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
-		error("Biostrings internal error in build_ACtree2(): "
-		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");
 	_init_dup2unq_buf(tb_length);
 	tb_width = -1;
 	cached_tb = _new_CachedXStringSet(tb);
@@ -631,25 +674,147 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
  *                             F. MATCH FINDING                             *
  ****************************************************************************/
 
-static int transition(ACtree *tree, int nid, const char *Stail, int linktag);
+/*
+ * We use indirect recursion for walking a sequence.
+ * This indirect recursion involves the 2 core functions walk_shortseq() and
+ * transition(): the former calls the latter which in turn calls the former.
+ */
+static int walk_shortseq(ACtree *tree, const char *seq, int seq_len);
 
-static int follow_path(ACtree *tree, const char *path, int path_len)
+/*
+ * A trick is to have the path from the root node to the current node 'node'
+ * stored at *negative* indices in 'seq_tail' i.e., if d is the depth of
+ * 'node', then the path is seq_tail[-d], seq_tail[-d+1], seq_tail[-d+2], ...,
+ * seq_tail[-1].
+ */
+static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_tail)
+{
+	int link, flink, newpath_len;
+	const char *newpath;
+#ifdef DEBUG_BIOSTRINGS
+	static int rec_level = -1;
+	int node_depth;
+	char format[20], pathbuf[2000];
+
+	rec_level++;
+	if (debug) {
+		Rprintf("[DEBUG] ENTERING transition():");
+		sprintf(format, "%%%ds", 1 + 2*rec_level);
+		Rprintf(format, " ");
+		node_depth = NODE_DEPTH(tree, node);
+		snprintf(pathbuf, node_depth + 1, "%s", seq_tail - node_depth);
+		Rprintf("nid=%d node_depth=%d linktag=%d path=%s\n",
+			node - tree->nodes, node_depth, linktag, pathbuf);
+	}
+#endif
+
+	if (linktag == NA_INTEGER) {
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG]  LEAVING transition():");
+			Rprintf(format, " ");
+			Rprintf("link=%d\n", 0);
+		}
+		rec_level--;
+#endif
+		return 0;
+	}
+	link = get_ACnode_link(tree, node, linktag);
+	if (link != -1) {
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG]  LEAVING transition():");
+			Rprintf(format, " ");
+			Rprintf("link=%d\n", link);
+		}
+		rec_level--;
+#endif
+		return link;
+	}
+	if (node == tree->nodes) {
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) {
+			Rprintf("[DEBUG]  LEAVING transition():");
+			Rprintf(format, " ");
+			Rprintf("link=%d\n", 0);
+		}
+		rec_level--;
+#endif
+		return 0;
+	}
+	flink = get_ACnode_flink(tree, node);
+	if (flink == -1) {
+		newpath_len = NODE_DEPTH(tree, node) - 1;
+		newpath = seq_tail - newpath_len;
+		flink = walk_shortseq(tree, newpath, newpath_len);
+		set_ACnode_flink(tree, node, flink);
+	}
+	link = transition(tree, GET_NODE(tree, flink), linktag, seq_tail);
+	set_ACnode_link(tree, node, linktag, link); /* sets a shortcut */
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) {
+		Rprintf("[DEBUG]  LEAVING transition():");
+		Rprintf(format, " ");
+		Rprintf("link=%d\n", link);
+	}
+	rec_level--;
+#endif
+	return link;
+}
+
+/*
+ * Does NOT report matches. Would not find matches anyway because it's used
+ * to walk short sequences i.e. sequences with a length < TREE_DEPTH(tree).
+ */
+static int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 {
 	int n, nid, linktag;
+	const char *seq_tail;
 	ACnode *node;
 
-	for (n = 0, nid = 0; n < path_len; n++) {
+	for (n = 0, seq_tail = seq, nid = 0; n < seq_len; n++, seq_tail++) {
 		node = GET_NODE(tree, nid);
-		linktag = CHAR2LINKTAG(tree, *path);
-		nid = transition(tree, nid, path, linktag);
-		path++;
+		linktag = CHAR2LINKTAG(tree, *seq_tail);
+		nid = transition(tree, node, linktag, seq_tail);
 	}
 	return nid;
 }
 
-static int transition(ACtree *tree, int nid, const char *Stail, int linktag)
+/* Does report matches */
+static void walk_subject(ACtree *tree, const RoSeq *S)
 {
-	return 0;
+	ACnode *node;
+	int n, linktag, nid;
+	const char *S_tail;
+
+	node = GET_NODE(tree, 0);
+	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
+		linktag = CHAR2LINKTAG(tree, *S_tail);
+		nid = transition(tree, node, linktag, S_tail);
+		node = GET_NODE(tree, nid);
+		if (ISLEAF(node))
+			_MIndex_report_match(NODE_P_ID(node) - 1, n);
+	}
+	return;
 }
 
+/* Does report matches */
+static void walk_nonfixed_subject(ACtree *tree, const RoSeq *S)
+{
+	error("walk_nonfixed_subject(): implement me");
+	return;
+}
+
+/* Entry point for the MATCH FINDING section */
+void _match_ACtree2(SEXP pptb, const RoSeq *S, int fixedS)
+{
+	ACtree tree;
+
+	tree = pptb_asACtree(pptb);
+	if (fixedS)
+		walk_subject(&tree, S);
+	else
+		walk_nonfixed_subject(&tree, S);
+	return;
+}
 

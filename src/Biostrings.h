@@ -747,7 +747,7 @@ SEXP _get_ACtree2_nodes_tag(SEXP x);
 
 SEXP _get_ACtree2_extensions_tag(SEXP x);
 
-int _get_ACtree2_nextensions(SEXP x);
+int *_get_ACtree2_nextensions(SEXP x);
 
 SEXP _get_ACtree2_base_codes(SEXP x);
 
@@ -802,6 +802,12 @@ SEXP ACtree2_build(
 	SEXP tb,
 	SEXP dup2unq0,
 	SEXP base_codes
+);
+
+void _match_ACtree2(
+	SEXP pptb,
+	const RoSeq *S,
+	int fixedS
 );
 
 
