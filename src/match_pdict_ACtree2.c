@@ -199,14 +199,14 @@ typedef struct actree {
 	ACnode *nodes;
 	int nodes_buflength, nnodes;
 	ACnodeExtension *extensions;
-	int extensions_buflength, nextensions, *pptb_nextensions;
+	int extensions_buflength, nextensions, *nextensions_ptr;
 	ByteTrTable char2linktag;
 } ACtree;
 
 #define TREE_DEPTH(tree) ((tree)->depth)
 #define TREE_NNODES(tree) ((tree)->nnodes)
 #define GET_NODE(tree, nid) ((tree)->nodes + (nid))
-#define TREE_NEXTENSIONS(tree) ((tree)->nextensions)
+#define TREE_NEXTENSIONS(tree) (*((tree)->nextensions_ptr))
 #define GET_EXTENSION(tree, eid) ((tree)->extensions + (eid))
 #define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
 
@@ -242,9 +242,7 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 
 	if (TREE_NEXTENSIONS(tree) >= tree->extensions_buflength)
 		extend_extensions_buffer(tree);
-	eid = tree->nextensions++;
-	if (tree->pptb_nextensions != NULL)
-		(*(tree->pptb_nextensions))++;
+	eid = TREE_NEXTENSIONS(tree)++;
 	extension = GET_EXTENSION(tree, eid);
 	for (i = 0; i < MAX_CHILDREN_PER_NODE; i++)
 		extension->link_nid[i] = -1;
@@ -443,7 +441,7 @@ static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes)
 	tree.extensions = Salloc((long) n2, ACnodeExtension);
 	tree.extensions_buflength = n2;
 	tree.nextensions = 0;
-	tree.pptb_nextensions = NULL;
+	tree.nextensions_ptr = &(tree.nextensions);
 	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
 	new_ACnode(&tree, 0);  /* create the root node */
 	return tree;
@@ -495,8 +493,8 @@ static ACtree pptb_asACtree(SEXP pptb)
 	tag = _get_ACtree2_extensions_tag(pptb);
 	tree.extensions = (ACnodeExtension *) INTEGER(tag);
 	tree.extensions_buflength = LENGTH(tag) / INTS_PER_EXTENSION;
-	tree.pptb_nextensions = _get_ACtree2_nextensions(pptb);
-	tree.nextensions = *(tree.pptb_nextensions);
+	// tree.nextensions is not set because it's not used
+	tree.nextensions_ptr = _get_ACtree2_nextensions(pptb);
 	base_codes = _get_ACtree2_base_codes(pptb);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
 		error("Biostrings internal error in pptb_asACtree(): "
@@ -710,6 +708,7 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 {
 	int link, flink, newpath_len;
 	const char *newpath;
+/*
 #ifdef DEBUG_BIOSTRINGS
 	static int rec_level = -1;
 	int node_depth;
@@ -726,8 +725,10 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 			node - tree->nodes, node_depth, linktag, pathbuf);
 	}
 #endif
+*/
 
 	if (linktag == NA_INTEGER) {
+/*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG]  LEAVING transition():");
@@ -736,10 +737,12 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 		}
 		rec_level--;
 #endif
+*/
 		return 0;
 	}
 	link = get_ACnode_link(tree, node, linktag);
 	if (link != -1) {
+/*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG]  LEAVING transition():");
@@ -748,9 +751,11 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 		}
 		rec_level--;
 #endif
+*/
 		return link;
 	}
 	if (node == tree->nodes) {
+/*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG]  LEAVING transition():");
@@ -759,6 +764,7 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 		}
 		rec_level--;
 #endif
+*/
 		return 0;
 	}
 	flink = get_ACnode_flink(tree, node);
@@ -770,6 +776,7 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 	}
 	link = transition(tree, GET_NODE(tree, flink), linktag, seq_tail);
 	set_ACnode_link(tree, node, linktag, link); /* sets a shortcut */
+/*
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG]  LEAVING transition():");
@@ -778,23 +785,25 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 	}
 	rec_level--;
 #endif
+*/
 	return link;
 }
 
 /*
  * Does NOT report matches. Would not find matches anyway because it's used
- * to walk short sequences i.e. sequences with a length < TREE_DEPTH(tree).
+ * to walk on short sequences i.e. sequences with a length < TREE_DEPTH(tree).
  */
 static int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 {
-	int n, nid, linktag;
-	const char *seq_tail;
 	ACnode *node;
+	int n, linktag, nid;
+	const char *seq_tail;
 
-	for (n = 0, seq_tail = seq, nid = 0; n < seq_len; n++, seq_tail++) {
-		node = GET_NODE(tree, nid);
+	node = GET_NODE(tree, 0);
+	for (n = 0, seq_tail = seq; n < seq_len; n++, seq_tail++) {
 		linktag = CHAR2LINKTAG(tree, *seq_tail);
 		nid = transition(tree, node, linktag, seq_tail);
+		node = GET_NODE(tree, nid);
 	}
 	return nid;
 }
