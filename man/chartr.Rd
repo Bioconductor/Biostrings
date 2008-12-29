@@ -1,10 +1,9 @@
 \name{chartr}
 
-\alias{chartr}
-\alias{chartr,XString-method}
-\alias{chartr,XStringSet-method}
-\alias{chartr,XStringViews-method}
-\alias{chartr,MaskedXString-method}
+\alias{chartr,ANY,ANY,XString-method}
+\alias{chartr,ANY,ANY,XStringSet-method}
+\alias{chartr,ANY,ANY,XStringViews-method}
+\alias{chartr,ANY,ANY,MaskedXString-method}
 
 
 \title{Translating letters of a sequence}
@@ -14,7 +13,7 @@
 }
 
 \usage{
-  chartr(old, new, x)
+  \S4method{chartr}{ANY,ANY,XString}(old, new, x)
 }
 
 \arguments{

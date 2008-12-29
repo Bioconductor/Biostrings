@@ -29,7 +29,7 @@
 }
 
 \details{
-  Unlike with the \code{\link{substr}} or \code{\link{substring}} functions,
+  Unlike with the \code{substr} or \code{substring} functions,
   \code{i} must contain valid positions.
 }
 

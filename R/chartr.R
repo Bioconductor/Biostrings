@@ -40,17 +40,7 @@ XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)
                          use.names=use.names, names=names(x))
 }
 
-### This setGeneric() statement will unfortunately cause the following message
-### at installation time:
-###   New generic for "chartr" does not agree with implicit generic from
-###   package "base"; a new generic will be assigned with package "Biostrings"
-### But we need this setGeneric() statement anyway otherwise the dispatch would
-### happen on the 'old' argument and not on the 'x' argument.
-setGeneric("chartr", signature="x",
-    function(old, new, x) standardGeneric("chartr")
-)
-
-setMethod("chartr", "XString",
+setMethod("chartr", c(old = "ANY", new = "ANY", x = "XString"),
     function(old, new, x)
     {
         lkup <- .mkOldToNewLkup(old, new, x)
@@ -58,7 +48,7 @@ setMethod("chartr", "XString",
     }
 )
 
-setMethod("chartr", "XStringSet",
+setMethod("chartr", c(old = "ANY", new = "ANY", x = "XStringSet"),
     function(old, new, x)
     {
         lkup <- .mkOldToNewLkup(old, new, super(x))
@@ -66,7 +56,7 @@ setMethod("chartr", "XStringSet",
     }
 )
 
-setMethod("chartr", "XStringViews",
+setMethod("chartr", c(old = "ANY", new = "ANY", x = "XStringViews"),
     function(old, new, x)
     {
         x@subject <- chartr(old, new, subject(x))
@@ -74,7 +64,7 @@ setMethod("chartr", "XStringViews",
     }
 )
 
-setMethod("chartr", "MaskedXString",
+setMethod("chartr", c(old = "ANY", new = "ANY", x = "MaskedXString"),
     function(old, new, x)
     {
         if (any(active(masks(x))))
@@ -85,4 +75,3 @@ setMethod("chartr", "MaskedXString",
         ans
     }
 )
-

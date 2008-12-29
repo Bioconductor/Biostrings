@@ -3,10 +3,8 @@
 \alias{subXString}
 \alias{subBString}
 
-\alias{substr}
 \alias{substr,XString-method}
 \alias{substr,MaskedXString-method}
-\alias{substring}
 \alias{substring,XString-method}
 \alias{substring,MaskedXString-method}
 
@@ -19,8 +17,8 @@
 
 \usage{
   subXString(x, start=NA, end=NA, length=NA)
-  substr(x, start=NA, stop=NA)
-  substring(text, first=NA, last=NA)
+  \S4method{substr}{XString}(x, start=NA, stop=NA)
+  \S4method{substring}{XString}(text, first=NA, last=NA)
 }
 
 \arguments{

@@ -89,18 +89,12 @@ export(
     ## letter.R:
     letter,
 
-    ## subXString.R:
-    substr, substring,
-
     ## alphabetFrequency.R:
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,
     strrev, mkAllStrings,
     oligonucleotideFrequency,
     dinucleotideFrequency, trinucleotideFrequency,
     oligonucleotideTransitions,
-
-    ## chartr.R:
-    chartr,
 
     ## reverse.R:
     complement, reverseComplement,
