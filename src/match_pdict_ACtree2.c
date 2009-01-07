@@ -32,36 +32,57 @@ static int debug = 0;
  */
 static int get_max_needed_nnodes(int nleaves, int depth)
 {
-	int max_nn, nnodes_inc, d;
+	int max_nn, inc, d;
 
 	max_nn = 0;
-	nnodes_inc = 1;
+	inc = 1;
 	for (d = 0; d <= depth; d++) {
-		if (nnodes_inc >= nleaves)
+		if (inc >= nleaves)
 			return max_nn + (depth + 1 - d) * nleaves;
-		max_nn += nnodes_inc;
-		nnodes_inc *= MAX_CHILDREN_PER_NODE;
+		max_nn += inc;
+		inc *= MAX_CHILDREN_PER_NODE;
 	}
 	return max_nn;
 }
 
 static int get_min_needed_nnodes(int nleaves, int depth)
 {
-	int min_nn, nnodes_inc, d;
+	int min_nn, inc, d;
 	div_t q;
 
 	min_nn = 0;
-	nnodes_inc = nleaves;
+	inc = nleaves;
 	for (d = depth; d >= 0; d--) {
-		if (nnodes_inc == 1)
+		if (inc == 1)
 			return min_nn + d + 1;
-		min_nn += nnodes_inc;
-		q = div(nnodes_inc, MAX_CHILDREN_PER_NODE);
-		nnodes_inc = q.quot;
+		min_nn += inc;
+		q = div(inc, MAX_CHILDREN_PER_NODE);
+		inc = q.quot;
 		if (q.rem != 0)
-			nnodes_inc++;
+			inc++;
 	}
 	return min_nn;
+}
+
+static int get_max_needed_nextensions_at_pp_time(int nleaves, int depth)
+{
+	int nextensions, inc, d, four_power_d;
+	div_t q;
+
+	nextensions = 0;
+	for (d = depth - 1; d >= 0; d--) {
+		q = div(nleaves, 2);
+		inc = q.quot;
+		nleaves = inc + q.rem;
+		if (d < 16) {
+			/* a fast way to compute MAX_CHILDREN_PER_NODE^d */
+			four_power_d = 1 << (2*d);
+			if (nleaves > four_power_d)
+				nleaves = inc = four_power_d;
+		}
+		nextensions += inc;
+	}
+	return nextensions;
 }
 
 /*
@@ -77,25 +98,6 @@ static int get_OptMaxNN(int max_needed_nnodes, int min_needed_nnodes)
 	min_nn2 = min_needed_nnodes + 0.70 * (max_nn - min_needed_nnodes);
 	x = max_needed_nnodes / 300000000.00;
 	return (int) min_nn2 + (max_nn - min_nn2) / (1.00 + x);
-}
-
-/*
- * nleaves = number of leaves in the tree (it's also the number of unique
- *           patterns so 'nleaves' <= 'tb_length');
- * depth = depth of the tree (it's also the length of each pattern so 'depth'
- *           = 'tb_width').
- */
-static int get_max_needed_nextensions_at_pp_time(int nleaves, int depth)
-{
-	int nextensions, d;
-
-	nextensions = 1;
-	for (d = 0; d < depth; d++) {
-		if (nextensions > nleaves)
-			break;
-		nextensions *= 2;
-	}
-	return nextensions - 1;
 }
 
 /*
@@ -171,6 +173,7 @@ SEXP debug_match_pdict_ACtree2()
 	Rprintf("Debug mode turned %s in file %s\n",
 		debug ? "on" : "off", __FILE__);
 	if (debug) {
+		int i, j, n2;
 		Rprintf("[DEBUG] debug_match_pdict_ACtree2():\n"
 			"  INTS_PER_NODE=%d MAX_NNODES=%d\n"
 			"  INTS_PER_EXTENSION=%d MAX_NEXTENSIONS=%d\n"
@@ -184,6 +187,12 @@ SEXP debug_match_pdict_ACtree2()
 			MAX_DEPTH,
 			ISLEAF_BIT, ISEXTENDED_BIT,
 			MAX_P_ID);
+		for (i = 1; i <= 20; i++)
+			for (j = 1; j <= 4; j++) {
+				n2 = get_max_needed_nextensions_at_pp_time(i, j);
+				Rprintf("  nleaves=%d depth=%d --> n2=%d\n", i, j, n2);
+			}
+		
 	}
 #else
 	Rprintf("Debug mode not available in file %s\n", __FILE__);
@@ -799,11 +808,11 @@ static int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 	int n, linktag, nid;
 	const char *seq_tail;
 
-	node = GET_NODE(tree, 0);
+	nid = 0;
 	for (n = 0, seq_tail = seq; n < seq_len; n++, seq_tail++) {
+		node = GET_NODE(tree, nid);
 		linktag = CHAR2LINKTAG(tree, *seq_tail);
 		nid = transition(tree, node, linktag, seq_tail);
-		node = GET_NODE(tree, nid);
 	}
 	return nid;
 }
