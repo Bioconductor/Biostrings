@@ -19,7 +19,7 @@ setClass("PairwiseAlignedFixedSubjectSummary",
         nmismatch="numeric",
         ninsertion="matrix",
         ndeletion="matrix",
-        coverage="XRleInteger",
+        coverage="Rle",
         mismatchSummary="list"
     )
 )

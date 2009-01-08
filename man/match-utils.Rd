@@ -179,9 +179,9 @@
   \code{nmismatch}:  an integer vector containing the length of the vectors
   produced by \code{mismatch}.
 
-  \code{coverage}:  an \link[IRanges]{XRleInteger} object indicating the
-  coverage of \code{x} in the interval specified by the \code{start} and
-  \code{end} arguments.
+  \code{coverage}:  an \link[IRanges]{Rle} object indicating the coverage of
+  \code{x} in the interval specified by the \code{start} and \code{end}
+  arguments.
   An integer value called the "coverage" can be associated to each position
   in \code{x}, indicating how many times this position is covered by the views
   or matches stored in \code{x}. For example, if \code{x} is an
@@ -189,9 +189,9 @@
   the number of views it belongs to.
   If \code{x} is an \link{MIndex} object, the coverage of a given position
   in \code{x} is the number of matches (or hits) it belongs to.
-  Note that the positions in the returned \link[IRanges]{XRleInteger} object are
-  to be interpreted as relative to the interval specified by the \code{start}
-  and \code{end} arguments.
+  Note that the positions in the returned \link[IRanges]{Rle} object are to be
+  interpreted as relative to the interval specified by the \code{start} and
+  \code{end} arguments.
 }
 
 \seealso{

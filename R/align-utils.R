@@ -145,7 +145,7 @@ setMethod("mismatchSummary", "AlignedXStringSet",
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
-        coverageTable <- as.integer(coverage(x, weight = weight))
+        coverageTable <- as.vector(coverage(x, weight = weight))
         n <- length(coverageTable)
         if (length(weight) == 1)
             endTable <- weight * table(.mismatchTable[["End"]])
@@ -234,7 +234,9 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubject",
                           "Subject" = safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
                           "Pattern" = unlist(lapply(subjectTableLabels, "[", 2)),
                           "Count" = as.vector(subjectTable),
-                          "Probability" = as.vector(subjectTable) / coverage(subject(x), weight = weight)[subjectPosition]))
+                          "Probability" =
+                           as.vector(subjectTable) /
+                             coverage(subject(x), weight = weight)[subjectPosition, drop = TRUE]))
         output[["subject"]] <- output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
         rownames(output[["subject"]]) <- as.character(seq_len(nrow(output[["subject"]])))
         output
