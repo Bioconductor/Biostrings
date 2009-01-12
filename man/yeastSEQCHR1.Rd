@@ -2,7 +2,8 @@
 \alias{yeastSEQCHR1}
 \title{An annotation data file for CHR1 in the yeastSEQ package}
 \description{
-This is a single character string containing DNA sequence of yeast chromosome number 1.  The data were obtained from the Saccharomyces Genome Database(url{ftp://genome-ftp.stanford.edu/pub/yeast/data\_download/sequence/genomic\_sequence/chromosomes/fasta/}).
+This is a single character string containing DNA sequence of yeast chromosome number 1.  The data were obtained from the Saccharomyces Genome Database
+(\url{ftp://genome-ftp.stanford.edu/pub/yeast/data\_download/sequence/genomic\_sequence/chromosomes/fasta/}).
 }
 \details{
 Annotation based on data provided by Yeast Genome project.
