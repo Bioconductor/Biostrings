@@ -21,9 +21,7 @@ setMethod("nmatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missi
 
 setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
     function(pattern, x, fixed)
-    {
         elementLengths(mismatch(pattern))
-    }
 )
 
 setMethod("nmismatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
@@ -34,6 +32,18 @@ setMethod("nmismatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
 setMethod("nmismatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missing"),
     function(pattern, x, fixed)
         pattern@nmismatch
+)
+
+setGeneric("nedit", function(x) standardGeneric("nedit"))
+
+setMethod("nedit", "PairwiseAlignedXStringSet",
+    function(x)
+        nmismatch(x) + unname(nindel(subject(x))[,"WidthSum"]) + unname(nindel(pattern(x))[,"WidthSum"])
+)
+
+setMethod("nedit", "PairwiseAlignedFixedSubjectSummary",
+    function(x)
+        nmismatch(x) + unname(insertion(nindel(x))[,"WidthSum"]) + unname(deletion(nindel(x))[,"WidthSum"])
 )
 
 

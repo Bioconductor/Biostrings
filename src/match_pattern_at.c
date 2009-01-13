@@ -364,3 +364,70 @@ SEXP match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	return ans;
 }
 
+
+/*
+ * Arguments are the same as for match_pattern_at() except for:
+ *   subject: XStringSet object.
+ */
+SEXP vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
+		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
+{
+	RoSeq P, S_elt;
+	CachedXStringSet S;
+	int at_length, at_type0, max_mm, indels, fixedP, fixedS, ans_type0,
+	    S_length, i, j, *at_elt, *ans_elt, offset, nmismatch, min_width;
+	SEXP ans;
+
+	P = _get_XString_asRoSeq(pattern);
+	S = _new_CachedXStringSet(subject);
+	at_length = LENGTH(at);
+	at_type0 = INTEGER(at_type)[0];
+	max_mm = INTEGER(max_mismatch)[0];
+	indels = LOGICAL(with_indels)[0] && max_mm != 0;
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
+	if (indels && !(fixedP && fixedS))
+		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
+	ans_type0 = INTEGER(ans_type)[0];
+	S_length = _get_XStringSet_length(subject);
+	if (ans_type0) {
+		PROTECT(ans = allocMatrix(INTSXP, S_length, at_length));
+	} else {
+		PROTECT(ans = allocMatrix(LGLSXP, S_length, at_length));
+	}
+	if (!indels)
+		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+
+	for (i = 0; i < S_length; i++) {
+		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
+		if (ans_type0) {
+			ans_elt = INTEGER(ans) + i;
+		} else {
+			ans_elt = LOGICAL(ans) + i;
+		}
+		for (j = 0, at_elt = INTEGER(at); j < at_length; j++, at_elt++)
+		{
+			if (*at_elt == NA_INTEGER) {
+				*ans_elt = ans_type0 ? NA_INTEGER : NA_LOGICAL;
+			} else {
+				if (indels) {
+					offset = *at_elt - 1;
+					if (at_type0 == 0)
+						nmismatch = _nedit_for_Ploffset(&P, &S_elt, offset, max_mm, 1, &min_width);
+					else
+						nmismatch = _nedit_for_Proffset(&P, &S_elt, offset, max_mm, 1, &min_width);
+				} else {
+					if (at_type0 == 0)
+						offset = *at_elt - 1;
+					else
+						offset = *at_elt - P.nelt;
+					nmismatch = _selected_nmismatch_at_Pshift_fun(&P, &S_elt, offset, max_mm);
+				}
+				*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
+			}
+			ans_elt = ans_elt + S_length;
+		}
+	}
+	UNPROTECT(1);
+	return ans;
+}

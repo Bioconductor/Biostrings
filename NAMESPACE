@@ -290,6 +290,7 @@ export(
     PairwiseAlignedFixedSubject,
 
     ## align-utils.R:
+    nedit,
     mismatchTable, mismatchSummary,
     compareStrings, consensusMatrix, consensusString,
 
@@ -321,7 +322,7 @@ exportMethods(
     unaligned, aligned, indel, nindel,
     type, score, pid,
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
-    mismatch, nmatch, nmismatch,
+    mismatch, nmatch, nmismatch, nedit,
     mismatchTable, mismatchSummary, coverage,
     compareStrings, consensusMatrix, consensusString,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,

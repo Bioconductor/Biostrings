@@ -10,12 +10,16 @@
 \alias{isMatchingAt}
 \alias{neditStartingAt,character-method}
 \alias{neditStartingAt,XString-method}
+\alias{neditStartingAt,XStringSet-method}
 \alias{neditEndingAt,character-method}
 \alias{neditEndingAt,XString-method}
+\alias{neditEndingAt,XStringSet-method}
 \alias{isMatchingStartingAt,character-method}
 \alias{isMatchingStartingAt,XString-method}
+\alias{isMatchingStartingAt,XStringSet-method}
 \alias{isMatchingEndingAt,character-method}
 \alias{isMatchingEndingAt,XString-method}
+\alias{isMatchingEndingAt,XStringSet-method}
 
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
@@ -82,8 +86,8 @@
     The pattern string.
   }
   \item{subject}{
-    An \link{XString} object (or character vector) containing the subject
-    sequence,
+    An \link{XString}, \link{XStringSet} object, or character vector
+    containing the subject sequence.
   }
   \item{starting.at, ending.at, at}{
     An integer vector specifying the starting (for \code{starting.at}
@@ -97,8 +101,8 @@
     See details below.
   }
   \item{fixed}{
-    Only with a \link{DNAString} or \link{RNAString} subject can a \code{fixed}
-    value other than the default (\code{TRUE}) be used.
+    Only with a \link{DNAString} or \link{RNAString}-based subject can a
+    \code{fixed} value other than the default (\code{TRUE}) be used.
 
     With \code{fixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
     Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
@@ -164,13 +168,20 @@
 }
 
 \value{
-  \code{neditStartingAt} and \code{neditEndingAt}: an integer vector of the
-  same length as \code{starting.at} (or \code{ending.at}).
+  \code{neditStartingAt} and \code{neditEndingAt}: If \code{subject} is an
+  \link{XString}, then returns an integer vector of the same length as
+  \code{starting.at} (or \code{ending.at}). If \code{subject} is an
+  \link{XStringSet}, then returns an integer matrix with
+  \code{length(subject)} rows and \code{length(starting.at)}
+  (or \code{length(ending.at)}) columns.
 
-  \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}: the
-  logical vector defined by \code{neditStartingAt(...) <= max.mismatch}
-  or \code{neditEndingAt(...) <= max.mismatch}, respectively.
-
+  \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}:
+  If \code{subject} is an \link{XString}, then returns a logical vector
+  defined by \code{neditStartingAt(...) <= max.mismatch} or
+  \code{neditEndingAt(...) <= max.mismatch}, respectively.
+  If \code{subject} is an \link{XStringSet}, then returns a logical matrix
+  with \code{length(subject)} rows and \code{length(starting.at)}
+  (or \code{length(ending.at)}) columns.
   \code{neditAt} and \code{isMatchingAt} are conveniency wrappers for
   \code{neditStartingAt} and \code{isMatchingStartingAt}, respectively.
 

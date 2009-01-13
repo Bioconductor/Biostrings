@@ -547,6 +547,17 @@ SEXP match_pattern_at(
 	SEXP ans_type
 );
 
+SEXP vmatch_pattern_at(
+	SEXP pattern,
+	SEXP subject,
+	SEXP at,
+	SEXP at_type,
+	SEXP max_mismatch,
+	SEXP with_indels,
+	SEXP fixed,
+	SEXP ans_type
+);
+
 
 /* match_pattern_boyermoore.c */
 

@@ -72,6 +72,7 @@ static const R_CallMethodDef callMethods[] = {
 /* match_pattern_at.c */
 	CALLMETHOD_DEF(debug_match_pattern_at, 0),
 	CALLMETHOD_DEF(match_pattern_at, 8),
+	CALLMETHOD_DEF(vmatch_pattern_at, 8),
 
 /* match_pattern_boyermoore.c */
 	CALLMETHOD_DEF(debug_match_pattern_boyermoore, 0),

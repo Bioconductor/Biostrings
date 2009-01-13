@@ -133,6 +133,31 @@ isMatchingAt <- function(pattern, subject, at=1,
           PACKAGE="Biostrings")
 }
 
+.vmatchPatternAt <- function(pattern, subject, at, at.type,
+                             max.mismatch, with.indels, fixed, ans.type)
+{
+    if (!is(subject, "XStringSet"))
+        subject <- XStringSet(NULL, subject)
+    if (class(pattern) != baseXStringSubtype(subject))
+        pattern <- XString(baseXStringSubtype(subject), pattern)
+    if (!is.numeric(at)) {
+        what <- if (at.type == 0) "starting.at" else "ending.at"
+        stop("'", what, "'  must be a vector of integers")
+    }
+    if (!is.integer(at))
+        at <- as.integer(at)
+    if (ans.type == 0)
+        max.mismatch <- normargMaxMismatch(max.mismatch)
+    else
+        max.mismatch <- length(pattern)
+    with.indels <- normargWithIndels(with.indels)
+    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
+    .Call("vmatch_pattern_at",
+          pattern, subject, at, at.type,
+          max.mismatch, with.indels, fixed, ans.type,
+          PACKAGE="Biostrings")
+}
+
 ### Dispatch on 'subject' (see signature of generic).
 
 setMethod("neditStartingAt", "character",
@@ -147,6 +172,12 @@ setMethod("neditStartingAt", "XString",
                         NA, with.indels, fixed, 1L)
 )
 
+setMethod("neditStartingAt", "XStringSet",
+    function(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
+        .vmatchPatternAt(pattern, subject, starting.at, 0L,
+                         NA, with.indels, fixed, 1L)
+)
+
 setMethod("neditEndingAt", "character",
     function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
         .matchPatternAt(pattern, subject, ending.at, 1L,
@@ -157,6 +188,12 @@ setMethod("neditEndingAt", "XString",
     function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
         .matchPatternAt(pattern, subject, ending.at, 1L,
                         NA, with.indels, fixed, 1L)
+)
+
+setMethod("neditEndingAt", "XStringSet",
+    function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
+        .vmatchPatternAt(pattern, subject, ending.at, 1L,
+                         NA, with.indels, fixed, 1L)
 )
 
 setMethod("isMatchingStartingAt", "character",
@@ -173,6 +210,13 @@ setMethod("isMatchingStartingAt", "XString",
                         max.mismatch, with.indels, fixed, 0L)
 )
 
+setMethod("isMatchingStartingAt", "XStringSet",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .vmatchPatternAt(pattern, subject, starting.at, 0L,
+                         max.mismatch, with.indels, fixed, 0L)
+)
+
 setMethod("isMatchingEndingAt", "character",
     function(pattern, subject, ending.at=1,
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
@@ -185,6 +229,13 @@ setMethod("isMatchingEndingAt", "XString",
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         .matchPatternAt(pattern, subject, ending.at, 1L,
                         max.mismatch, with.indels, fixed, 0L)
+)
+
+setMethod("isMatchingEndingAt", "XStringSet",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .vmatchPatternAt(pattern, subject, ending.at, 1L,
+                         max.mismatch, with.indels, fixed, 0L)
 )
 
 

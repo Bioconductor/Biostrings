@@ -8,6 +8,9 @@
 \alias{nmismatch,AlignedXStringSet,missing-method}
 \alias{nmismatch,PairwiseAlignedXStringSet,missing-method}
 \alias{nmismatch,PairwiseAlignedFixedSubjectSummary,missing-method}
+\alias{nedit}
+\alias{nedit,PairwiseAlignedXStringSet-method}
+\alias{nedit,PairwiseAlignedFixedSubjectSummary-method}
 
 \alias{mismatchTable}
 \alias{mismatchTable,AlignedXStringSet-method}
@@ -51,6 +54,8 @@
 }
 
 \usage{
+  nedit(x) # also nmatch and nmismatch
+
   mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
   mismatchSummary(x, \dots)
   \S4method{coverage}{AlignedXStringSet}(x, start=NA, end=NA, weight=1L)

@@ -321,6 +321,7 @@ Function                    & Description \\
 \Rfunction{length}          & Extracts the number of patterns aligned \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
 \Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
+\Rfunction{nedit}           & Computes the Levenshtein edit distance of the alignments \\
 \Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
 \Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
@@ -361,10 +362,10 @@ Function                    & Description \\
 \label{table:helperfuns2}
 \end{table}
 
-The \Rfunction{score}, \Rfunction{nmatch}, \Rfunction{nmismatch}, and
-\Rfunction{nchar} functions return numeric vectors containing information
-on the pairwise sequence alignment score, number of matches, number of
-mismatches, and number of aligned characters respectively.
+The \Rfunction{score}, \Rfunction{nedit}, \Rfunction{nmatch},
+\Rfunction{nmismatch}, and \Rfunction{nchar} functions return numeric vectors
+containing information on the pairwise sequence alignment score, number of
+matches, number of mismatches, and number of aligned characters respectively.
 
 <<helper1>>=
 submat <-
@@ -375,6 +376,7 @@ psa2 <-
                     substitutionMatrix = submat,
                     gapOpening = 0, gapExtension = -1)
 score(psa2)
+nedit(psa2)
 nmatch(psa2)
 nmismatch(psa2)
 nchar(psa2)
@@ -413,7 +415,6 @@ Function                    & Description \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
 \Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
 \Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
-\Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
 \Rfunction{start}           & Extracts the starting index of the aligned range \\
