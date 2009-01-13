@@ -489,14 +489,14 @@ void ByPos_MIndex_coverage(
 	SEXP ends_list,
 	SEXP mindex_width,
 	SEXP start,
-	SEXP ans_xp
+	SEXP ans
 );
 
 void ByName_MIndex_coverage(
 	SEXP ends_envir,
 	SEXP mindex_width,
 	SEXP start,
-	SEXP ans_xp
+	SEXP ans
 );
 
 SEXP ByPos_MIndex_combine(SEXP ends_listlist);
