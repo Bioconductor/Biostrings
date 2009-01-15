@@ -161,6 +161,7 @@ exportMethods(
 ###   matchPattern.BOC.R
 ###   matchPattern.BOC2.R
 ###   matchLRPatterns.R
+###   trimLRPatterns.R
 ###   matchProbePair.R
 ###   matchPWM.R
 ###   findPalindromes.R
@@ -195,6 +196,9 @@ export(
     ## matchLRPatterns.R
     matchLRPatterns,
 
+    ## trimLRPatterns.R
+    trimLRPatterns,
+
     ## matchProbePair.R
     matchProbePair,
 
@@ -225,7 +229,7 @@ exportMethods(
     mismatch, nmatch, nmismatch,
     coverage,
     matchPattern, countPattern, vcountPattern,
-    matchLRPatterns,
+    matchLRPatterns, trimLRPatterns,
     matchProbePair,
     findPalindromes, findComplementedPalindromes,
     palindromeArmLength, complementedPalindromeArmLength,

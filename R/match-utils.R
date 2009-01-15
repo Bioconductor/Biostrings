@@ -4,54 +4,54 @@
 ### their arguments.
 ###
 
-normargMaxMismatch <- function(max.mismatch)
+normargMaxMismatch <- function(max.mismatch, name = "max.mismatch")
 {
     if (!isSingleNumber(max.mismatch))
-        stop("'max.mismatch' must be a single integer")
+        stop("'", name, "' must be a single integer")
     max.mismatch <- as.integer(max.mismatch)
     if (max.mismatch < 0)
-        stop("'max.mismatch' must be a non-negative integer")
+        stop("'", name, "' must be a non-negative integer")
     max.mismatch
 }
 
-normargWithIndels <- function(with.indels)
+normargWithIndels <- function(with.indels, name = "with.indels")
 {
     if (!isTRUEorFALSE(with.indels))
-        stop("'with.indels' must be TRUE or FALSE")
+        stop("'", name, "' must be TRUE or FALSE")
     with.indels
 }
 
 ### Return a logical vector of length 2.
-normargFixed <- function(fixed, subjectClass)
+normargFixed <- function(fixed, subjectClass, name = "fixed")
 {
     if (!is.logical(fixed) && !is.character(fixed))
-        stop("'fixed' not a logical or character vector")
+        stop("'", name, "' not a logical or character vector")
     if (is.logical(fixed)) {
         if (any(is.na(fixed)))
-            stop("'fixed' has NAs")
+            stop("'", name, "' has NAs")
         fixed_names <- names(fixed)
         if (is.null(fixed_names)) {
             if (!(length(fixed) %in% 1:2))
-                stop("when an unnamed logical vector, ",
-                     "'fixed' fixed must be of length 1 or 2")
+                stop("when an unnamed logical vector, '", name,
+                     "' fixed must be of length 1 or 2")
             if (length(fixed) == 1)
                 fixed <- c(fixed, fixed)
         } else {
             if (length(fixed) != 2)
-                stop("when a named logical vector, 'fixed' must be of length 2")
+                stop("when a named logical vector, '", name, "' must be of length 2")
             if (!setequal(fixed_names, c("pattern", "subject")))
-                stop("'fixed' names must be \"pattern\" and \"subject\"")
+                stop("'", name, "' names must be \"pattern\" and \"subject\"")
             fixed <- c(fixed["pattern"], fixed["subject"])
         }
     } else if (is.character(fixed)) {
         if (any(duplicated(fixed)) || !all(fixed %in% c("pattern", "subject")))
-            stop("when a character vector, 'fixed' must be ",
+            stop("when a character vector, '", name, "' must be ",
                  "a subset of 'c(\"pattern\", \"subject\")' ",
                  "with no duplicated")
         fixed <- c("pattern" %in% fixed, "subject" %in% fixed)
     }
     if (!all(fixed) && !extends(subjectClass, "DNAString") && !extends(subjectClass, "RNAString"))
-        stop("'fixed' value only supported for a DNAString or RNAString subject ",
+        stop("'", name, "' value only supported for a DNAString or RNAString subject ",
              "(you can only use 'fixed=TRUE' with your subject)")
     fixed
 }

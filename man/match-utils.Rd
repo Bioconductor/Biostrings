@@ -208,6 +208,8 @@
 \seealso{
   \code{\link{matchPattern}},
   \code{\link{matchPDict}},
+  \code{\link{matchLRPatterns}},
+  \code{\link{trimLRPatterns}},
   \code{\link{IUPAC_CODE_MAP}},
   \link{XString-class},
   \link{XStringViews-class},
