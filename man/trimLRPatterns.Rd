@@ -34,19 +34,29 @@
     sequence(s).
   }
   \item{max.Lmismatch}{
-    A vector representing the maximum number of mismatching letters allowed in
-    the left part of the pattern as it 'slides' from left to right across
-    \code{subject}, i.e. the i-th element represents the maximum number of
-    mismatching letters when \code{Lpattern} overlaps \code{subject} by i.
+    A non-decreasing integer vector of length \code{nLp = nchar(Lpattern)}
+    whose elements \code{max.Lmismatch[i]} represent the maximum number of
+    acceptable mismatching letters when aligning
+    \code{substring(Lpattern, nLp - i + 1, nLp)} with
+    \code{substring(subject, 1, i)}.
+    Negative numbers are used to prevent trimming at the i-th location.
+    If \code{length(max.Lmismatch) < nLp}, then \code{max.Lmismatch} will be
+    augmented with enough -1's at the beginning of the vector to bring it up to
+    length \code{nLp}.
 
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).
   }
   \item{max.Rmismatch}{
-    A vector representing the maximum number of mismatching letters allowed in
-    the right part of the pattern as it 'slides' from right to left across
-    \code{subject}, i.e. the i-th element represents the maximum number of
-    mismatching letters when \code{Rpattern} overlaps \code{subject} by i.
+    A non-decreasing integer vector of length \code{nRp = nchar(Rpattern)}
+    whose elements \code{max.Rmismatch[i]} represent the maximum number of
+    acceptable mismatching letters when aligning
+    \code{substring(Rpattern, 1, i)} with
+    \code{substring(subject, nchar(subject) - i + 1, nchar(subject))}.
+    Negative numbers are used to prevent trimming at the i-th location.
+    If \code{length(max.Rmismatch) < nRp}, then \code{max.Rmismatch} will be
+    augmented with enough -1's at the beginning of the vector to bring it up to
+    length \code{nRp}.
 
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).

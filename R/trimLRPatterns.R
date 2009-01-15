@@ -22,6 +22,10 @@ function(Lpattern = "", Rpattern = "", subject,
         trim.end <- nchar(subject)
     } else {
         max.Rmismatch <- as.integer(max.Rmismatch)
+        if (length(max.Rmismatch) < nchar(Rpattern)) {
+            max.Rmismatch <-
+              c(rep.int(-1L, nchar(Rpattern) - length(max.Rmismatch)), max.Rmismatch)
+        }
         if (any(is.na(max.Rmismatch)) || is.unsorted(max.Rmismatch) ||
             length(max.Rmismatch) != nchar(Rpattern))
             stop("'max.Rmismatch' must be a non-decreasing vector of length 'nchar(Rpattern)'")
@@ -52,6 +56,10 @@ function(Lpattern = "", Rpattern = "", subject,
         trim.start <- min(1L, nchar(subject))
     } else {
         max.Lmismatch <- as.integer(max.Lmismatch)
+        if (length(max.Lmismatch) < nchar(Lpattern)) {
+            max.Lmismatch <-
+              c(rep.int(-1L, nchar(Lpattern) - length(max.Lmismatch)), max.Lmismatch)
+        }
         if (any(is.na(max.Lmismatch)) || is.unsorted(max.Lmismatch) ||
             length(max.Lmismatch) != nchar(Lpattern))
             stop("'max.Lmismatch' must be a non-decreasing vector of length 'nchar(Lpattern)'")
