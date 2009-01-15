@@ -13,8 +13,9 @@
 }
 
 \usage{
-  trimLRPatterns(Lpattern = NULL, Rpattern = NULL, subject,
-                 max.Lmismatch = 0, max.Rmismatch = 0,
+  trimLRPatterns(Lpattern = "", Rpattern = "", subject,
+                 max.Lmismatch = rep.int(c(-1, 0), c(nchar(Lpattern) - 1, 1)),
+                 max.Rmismatch = rep.int(c(-1, 0), c(nchar(Rpattern) - 1, 1)),
                  with.Lindels = FALSE, with.Rindels = FALSE,
                  Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
 }
@@ -33,13 +34,22 @@
     sequence(s).
   }
   \item{max.Lmismatch}{
-    The maximum number of mismatching letters allowed in the left part of the
-    pattern.
+    A vector representing the maximum number of mismatching letters allowed in
+    the left part of the pattern as it 'slides' from left to right across
+    \code{subject}, i.e. the i-th element represents the maximum number of
+    mismatching letters when \code{Lpattern} overlaps \code{subject} by i.
+
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).
   }
   \item{max.Rmismatch}{
-    Same as \code{max.Lmismatch} but for the right part of the pattern.
+    A vector representing the maximum number of mismatching letters allowed in
+    the right part of the pattern as it 'slides' from right to left across
+    \code{subject}, i.e. the i-th element represents the maximum number of
+    mismatching letters when \code{Rpattern} overlaps \code{subject} by i.
+
+    If non-zero, an inexact matching algorithm is used (see the
+    \code{\link{matchPattern}} function for more information).
   }
   \item{with.Lindels}{
     If \code{TRUE} then indels are allowed in the left part of the pattern.
@@ -93,14 +103,22 @@
   Rpattern <- "GATCGGAAG"
   subject <- DNAString("TTCTGCTTGACGTGATCGGA")
   subjectSet <- DNAStringSet(c("TGCTTGACGGCAGATCGG", "TTCTGCTTGGATCGGAAG"))
+
+  ## Only allow for perfect matches on the flanks
   trimLRPatterns(Lpattern = Lpattern, subject = subject)
-  trimLRPatterns(Rpattern = Rpattern, subject = subject, max.Rmismatch = 2)
-  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject)
-  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
-                 max.Lmismatch = 2, max.Rmismatch = 2)
-  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
-                 max.Lmismatch = 2, max.Rmismatch = 2, ranges = TRUE)
+  trimLRPatterns(Rpattern = Rpattern, subject = subject)
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet)
+
+  ## Allow for mismatches on the flanks
+  maxMismatches <- rep(-1:2, c(2,1,3,3))
+  maxMismatches
+  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
+                 max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches)
+
+  ## Produce ranges that can be an input into other functions
+  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
+                 max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches,
+                 ranges = TRUE)
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
                  ranges = TRUE)
 }
