@@ -14,8 +14,7 @@
 
 \usage{
   trimLRPatterns(Lpattern = "", Rpattern = "", subject,
-                 max.Lmismatch = rep.int(c(-1, 0), c(nchar(Lpattern) - 1, 1)),
-                 max.Rmismatch = rep.int(c(-1, 0), c(nchar(Rpattern) - 1, 1)),
+                 max.Lmismatch = 0, max.Rmismatch = 0,
                  with.Lindels = FALSE, with.Rindels = FALSE,
                  Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
 }
@@ -34,13 +33,15 @@
     sequence(s).
   }
   \item{max.Lmismatch}{
-    A non-decreasing integer vector of length \code{nLp = nchar(Lpattern)}
-    whose elements \code{max.Lmismatch[i]} represent the maximum number of
-    acceptable mismatching letters when aligning
-    \code{substring(Lpattern, nLp - i + 1, nLp)} with
-    \code{substring(subject, 1, i)}.
-    Negative numbers are used to prevent trimming at the i-th location.
-    If \code{length(max.Lmismatch) < nLp}, then \code{max.Lmismatch} will be
+    Either a non-decreasing integer vector of length
+    \code{nLp = nchar(Lpattern)} whose elements \code{max.Lmismatch[i]}
+    represent the maximum number of acceptable mismatching letters when
+    aligning \code{substring(Lpattern, nLp - i + 1, nLp)} with
+    \code{substring(subject, 1, i)} or a single numeric value in \code{(0, 1)}
+    that represents a constant maximum mismatch rate for each of the \code{nL}
+    alignments. Negative numbers in integer vector inputs are used to prevent
+    trimming at the i-th location. If an integer vector input has
+    \code{length(max.Lmismatch) < nLp}, then \code{max.Lmismatch} will be
     augmented with enough -1's at the beginning of the vector to bring it up to
     length \code{nLp}.
 
@@ -48,13 +49,15 @@
     \code{\link{matchPattern}} function for more information).
   }
   \item{max.Rmismatch}{
-    A non-decreasing integer vector of length \code{nRp = nchar(Rpattern)}
-    whose elements \code{max.Rmismatch[i]} represent the maximum number of
-    acceptable mismatching letters when aligning
-    \code{substring(Rpattern, 1, i)} with
-    \code{substring(subject, nchar(subject) - i + 1, nchar(subject))}.
-    Negative numbers are used to prevent trimming at the i-th location.
-    If \code{length(max.Rmismatch) < nRp}, then \code{max.Rmismatch} will be
+    Either a non-decreasing integer vector of length
+    \code{nRp = nchar(Rpattern)} whose elements \code{max.Rmismatch[i]}
+    represent the maximum number of acceptable mismatching letters when
+    aligning \code{substring(Rpattern, nRp - i + 1, nRp)} with
+    \code{substring(subject, 1, i)} or a single numeric value in \code{(0, 1)}
+    that represents a constant maximum mismatch rate for each of the \code{nR}
+    alignments. Negative numbers in integer vector inputs are used to prevent
+    trimming at the i-th location. If an integer vector input has
+    \code{length(max.Rmismatch) < nRp}, then \code{max.Rmismatch} will be
     augmented with enough -1's at the beginning of the vector to bring it up to
     length \code{nRp}.
 
@@ -120,16 +123,18 @@
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet)
 
   ## Allow for mismatches on the flanks
+  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
+                 max.Lmismatch = 0.2, max.Rmismatch = 0.2)
   maxMismatches <- rep(-1:2, c(2,1,3,3))
   maxMismatches
-  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
+  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
                  max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches)
 
   ## Produce ranges that can be an input into other functions
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
-                 max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches,
-                 ranges = TRUE)
+                 max.Lmismatch = 0.2, max.Rmismatch = 0.2, ranges = TRUE)
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
+                 max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches,
                  ranges = TRUE)
 }
 

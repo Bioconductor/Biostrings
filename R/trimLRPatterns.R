@@ -4,8 +4,7 @@
 
 setGeneric("trimLRPatterns", signature = "subject",
     function(Lpattern = "", Rpattern = "", subject,
-             max.Lmismatch = rep.int(c(-1, 0), c(nchar(Lpattern) - 1, 1)),
-             max.Rmismatch = rep.int(c(-1, 0), c(nchar(Rpattern) - 1, 1)),
+             max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
              Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
         standardGeneric("trimLRPatterns")
@@ -13,21 +12,24 @@ setGeneric("trimLRPatterns", signature = "subject",
 
 .XString.XStringSet.trimLRPatterns <- 
 function(Lpattern = "", Rpattern = "", subject,
-         max.Lmismatch = rep.int(c(-1, 0), c(nchar(Lpattern) - 1, 1)),
-         max.Rmismatch = rep.int(c(-1, 0), c(nchar(Rpattern) - 1, 1)),
+         max.Lmismatch = 0, max.Rmismatch = 0,
          with.Lindels = FALSE, with.Rindels = FALSE,
          Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
 {
     if (nchar(Rpattern) == 0) {
         trim.end <- nchar(subject)
     } else {
+        ncharRpattern <- nchar(Rpattern)
+        if (length(max.Rmismatch) == 1 && max.Rmismatch > 0 && max.Rmismatch < 1) {
+            max.Rmismatch <- max.Rmismatch * seq_len(ncharRpattern)
+        }
         max.Rmismatch <- as.integer(max.Rmismatch)
-        if (length(max.Rmismatch) < nchar(Rpattern)) {
+        if (length(max.Rmismatch) < ncharRpattern) {
             max.Rmismatch <-
-              c(rep.int(-1L, nchar(Rpattern) - length(max.Rmismatch)), max.Rmismatch)
+              c(rep.int(-1L, ncharRpattern - length(max.Rmismatch)), max.Rmismatch)
         }
         if (any(is.na(max.Rmismatch)) || is.unsorted(max.Rmismatch) ||
-            length(max.Rmismatch) != nchar(Rpattern))
+            length(max.Rmismatch) != ncharRpattern)
             stop("'max.Rmismatch' must be a non-decreasing vector of length 'nchar(Rpattern)'")
         with.Rindels <- normargWithIndels(with.Rindels, name = "with.Rindels")
         Rfixed <- normargFixed(Rfixed, class(subject), name = "Rfixed")
@@ -35,7 +37,6 @@ function(Lpattern = "", Rpattern = "", subject,
         if (length(unique(nchar(subject))) != 1)
             stop("'Rpattern' can only be used with equal length 'subject' strings")
         ncharSubject <- nchar(subject)[1]
-        ncharRpattern <- nchar(Rpattern)
         Rstarting.at <- ncharSubject:(ncharSubject - ncharRpattern + 1L)
         Rcandidate <-
           t(t(neditStartingAt(Rpattern, subject, starting.at = Rstarting.at,
@@ -55,18 +56,21 @@ function(Lpattern = "", Rpattern = "", subject,
     if (nchar(Lpattern) == 0) {
         trim.start <- min(1L, nchar(subject))
     } else {
+        ncharLpattern <- nchar(Lpattern)
+        if (length(max.Lmismatch) == 1 && max.Lmismatch > 0 && max.Lmismatch < 1) {
+            max.Lmismatch <- max.Lmismatch * seq_len(ncharLpattern)
+        }
         max.Lmismatch <- as.integer(max.Lmismatch)
-        if (length(max.Lmismatch) < nchar(Lpattern)) {
+        if (length(max.Lmismatch) < ncharLpattern) {
             max.Lmismatch <-
-              c(rep.int(-1L, nchar(Lpattern) - length(max.Lmismatch)), max.Lmismatch)
+              c(rep.int(-1L, ncharLpattern - length(max.Lmismatch)), max.Lmismatch)
         }
         if (any(is.na(max.Lmismatch)) || is.unsorted(max.Lmismatch) ||
-            length(max.Lmismatch) != nchar(Lpattern))
+            length(max.Lmismatch) != ncharLpattern)
             stop("'max.Lmismatch' must be a non-decreasing vector of length 'nchar(Lpattern)'")
         with.Lindels <- normargWithIndels(with.Lindels, name = "with.Lindels")
         Lfixed <- normargFixed(Lfixed, class(subject), name = "Lfixed")
         
-        ncharLpattern <- nchar(Lpattern)
         Lending.at <- seq_len(ncharLpattern)
         Lcandidate <-
           t(t(neditEndingAt(Lpattern, subject, ending.at = Lending.at,
@@ -94,8 +98,7 @@ function(Lpattern = "", Rpattern = "", subject,
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("trimLRPatterns", "XString", 
     function(Lpattern = "", Rpattern = "", subject,
-             max.Lmismatch = rep.int(c(-1, 0), c(nchar(Lpattern) - 1, 1)),
-             max.Rmismatch = rep.int(c(-1, 0), c(nchar(Rpattern) - 1, 1)),
+             max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
              Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
     .XString.XStringSet.trimLRPatterns(Lpattern = Lpattern,
@@ -112,8 +115,7 @@ setMethod("trimLRPatterns", "XString",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("trimLRPatterns", "XStringSet", 
     function(Lpattern = "", Rpattern = "", subject,
-             max.Lmismatch = rep.int(c(-1, 0), c(nchar(Lpattern) - 1, 1)),
-             max.Rmismatch = rep.int(c(-1, 0), c(nchar(Rpattern) - 1, 1)),
+             max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
              Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
     .XString.XStringSet.trimLRPatterns(Lpattern = Lpattern,
