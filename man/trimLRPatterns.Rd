@@ -21,22 +21,20 @@
 
 \arguments{
   \item{Lpattern}{
-    The left part of the pattern. The \code{Lpattern} adds no restrictions on
-    the \code{subject} argument.
+    The left part of the pattern.
   }
   \item{Rpattern}{
-    The right part of the pattern. When \code{subject} is an \link{XStringSet},
-    the the strings must be of the same length to use \code{Rpattern}.
+    The right part of the pattern.
   }
   \item{subject}{
     An \link{XString} or \link{XStringSet} object containing the target
     sequence(s).
   }
   \item{max.Lmismatch}{
-    Either a non-decreasing integer vector of length
-    \code{nLp = nchar(Lpattern)} whose elements \code{max.Lmismatch[i]}
-    represent the maximum number of acceptable mismatching letters when
-    aligning \code{substring(Lpattern, nLp - i + 1, nLp)} with
+    Either an integer vector of length \code{nLp = nchar(Lpattern)} whose
+    elements \code{max.Lmismatch[i]} represent the maximum number of acceptable
+    mismatching letters when aligning
+    \code{substring(Lpattern, nLp - i + 1, nLp)} with
     \code{substring(subject, 1, i)} or a single numeric value in \code{(0, 1)}
     that represents a constant maximum mismatch rate for each of the \code{nL}
     alignments. Negative numbers in integer vector inputs are used to prevent
@@ -49,10 +47,10 @@
     \code{\link{matchPattern}} function for more information).
   }
   \item{max.Rmismatch}{
-    Either a non-decreasing integer vector of length
-    \code{nRp = nchar(Rpattern)} whose elements \code{max.Rmismatch[i]}
-    represent the maximum number of acceptable mismatching letters when
-    aligning \code{substring(Rpattern, nRp - i + 1, nRp)} with
+    Either an integer vector of length \code{nRp = nchar(Rpattern)} whose
+    elements \code{max.Rmismatch[i]} represent the maximum number of acceptable
+    mismatching letters when aligning
+    \code{substring(Rpattern, nRp - i + 1, nRp)} with
     \code{substring(subject, 1, i)} or a single numeric value in \code{(0, 1)}
     that represents a constant maximum mismatch rate for each of the \code{nR}
     alignments. Negative numbers in integer vector inputs are used to prevent

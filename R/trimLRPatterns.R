@@ -16,8 +16,23 @@ function(Lpattern = "", Rpattern = "", subject,
          with.Lindels = FALSE, with.Rindels = FALSE,
          Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
 {
+    if (is(subject, "XString")) {
+        subjectStringClass <- class(subject)
+    } else {
+        subjectStringClass <- baseXStringSubtype(subject)
+    }
     if (nchar(Rpattern) == 0) {
         trim.end <- nchar(subject)
+    } else if (length(unique(nchar(subject))) != 1) {
+        if (class(Rpattern) != class(super(subject)))
+            Rpattern <- XString(subjectStringClass, Rpattern)
+        reversed.ranges <- 
+          .XString.XStringSet.trimLRPatterns(Lpattern = reverse(Rpattern),
+                                             subject = reverse(subject),
+                                             max.Lmismatch = max.Rmismatch,
+                                             with.Lindels = with.Rindels,
+                                             Lfixed = Rfixed, ranges = TRUE)
+        trim.end <- nchar(subject) - start(reversed.ranges) + 1L
     } else {
         ncharRpattern <- nchar(Rpattern)
         if (length(max.Rmismatch) == 1 && max.Rmismatch > 0 && max.Rmismatch < 1) {
@@ -28,14 +43,11 @@ function(Lpattern = "", Rpattern = "", subject,
             max.Rmismatch <-
               c(rep.int(-1L, ncharRpattern - length(max.Rmismatch)), max.Rmismatch)
         }
-        if (any(is.na(max.Rmismatch)) || is.unsorted(max.Rmismatch) ||
-            length(max.Rmismatch) != ncharRpattern)
-            stop("'max.Rmismatch' must be a non-decreasing vector of length 'nchar(Rpattern)'")
+        if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != ncharRpattern)
+            stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
         with.Rindels <- normargWithIndels(with.Rindels, name = "with.Rindels")
-        Rfixed <- normargFixed(Rfixed, class(subject), name = "Rfixed")
+        Rfixed <- normargFixed(Rfixed, subjectStringClass, name = "Rfixed")
 
-        if (length(unique(nchar(subject))) != 1)
-            stop("'Rpattern' can only be used with equal length 'subject' strings")
         ncharSubject <- nchar(subject)[1]
         Rstarting.at <- ncharSubject:(ncharSubject - ncharRpattern + 1L)
         Rcandidate <-
@@ -54,7 +66,7 @@ function(Lpattern = "", Rpattern = "", subject,
     }
 
     if (nchar(Lpattern) == 0) {
-        trim.start <- min(1L, nchar(subject))
+        trim.start <- pmin(1L, nchar(subject))
     } else {
         ncharLpattern <- nchar(Lpattern)
         if (length(max.Lmismatch) == 1 && max.Lmismatch > 0 && max.Lmismatch < 1) {
@@ -65,11 +77,10 @@ function(Lpattern = "", Rpattern = "", subject,
             max.Lmismatch <-
               c(rep.int(-1L, ncharLpattern - length(max.Lmismatch)), max.Lmismatch)
         }
-        if (any(is.na(max.Lmismatch)) || is.unsorted(max.Lmismatch) ||
-            length(max.Lmismatch) != ncharLpattern)
-            stop("'max.Lmismatch' must be a non-decreasing vector of length 'nchar(Lpattern)'")
+        if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != ncharLpattern)
+            stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
         with.Lindels <- normargWithIndels(with.Lindels, name = "with.Lindels")
-        Lfixed <- normargFixed(Lfixed, class(subject), name = "Lfixed")
+        Lfixed <- normargFixed(Lfixed, subjectStringClass, name = "Lfixed")
         
         Lending.at <- seq_len(ncharLpattern)
         Lcandidate <-
@@ -86,6 +97,8 @@ function(Lpattern = "", Rpattern = "", subject,
         trim.start <-
           ifelse(Lwhich.trim, Lwhich.candidate + 1L, min(1L, nchar(subject)))
     }
+    trim.start <- ifelse(trim.end >= 1L, trim.start, 2L)
+    trim.end <- ifelse(trim.end >= trim.start, trim.end, trim.start - 1L)
     if (ranges) {
         IRanges(start = trim.start, end = trim.end)
     } else if (is(subject, "XString")) {
