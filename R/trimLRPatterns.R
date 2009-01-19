@@ -55,12 +55,10 @@ function(Lpattern = "", Rpattern = "", subject,
                               with.indels = with.Rindels, fixed = Rfixed)) <=
             max.Rmismatch)
         if (is(subject, "XString")) {
-            Rwhich.candidate <- which.max(Rcandidate)
-            Rwhich.trim <- any(Rcandidate)
-        } else {
-            Rwhich.candidate <- max.col(Rcandidate, ties.method = "first")
-            Rwhich.trim <- rowSums(Rcandidate) > 0
+            Rwhich.candidate <- matrix(Rcandidate, nrow = 1)
         }
+        Rwhich.candidate <- max.col(Rcandidate, ties.method = "last")
+        Rwhich.trim <- rowSums(Rcandidate) > 0
         trim.end <-
           ifelse(Rwhich.trim, ncharSubject - Rwhich.candidate, nchar(subject))
     }
@@ -88,12 +86,10 @@ function(Lpattern = "", Rpattern = "", subject,
                             with.indels = with.Lindels, fixed = Lfixed)) <=
             max.Lmismatch)
         if (is(subject, "XString")) {
-            Lwhich.candidate <- which.max(Lcandidate)
-            Lwhich.trim <- any(Lcandidate)
-        } else {
-            Lwhich.candidate <- max.col(Lcandidate, ties.method = "first")
-            Lwhich.trim <- rowSums(Lcandidate) > 0
+            Lwhich.candidate <- matrix(Lcandidate, nrow = 1)
         }
+        Lwhich.candidate <- max.col(Lcandidate, ties.method = "last")
+        Lwhich.trim <- rowSums(Lcandidate) > 0
         trim.start <-
           ifelse(Lwhich.trim, Lwhich.candidate + 1L, min(1L, nchar(subject)))
     }
