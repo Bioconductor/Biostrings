@@ -55,7 +55,7 @@ function(Lpattern = "", Rpattern = "", subject,
                               with.indels = with.Rindels, fixed = Rfixed)) <=
             max.Rmismatch)
         if (is(subject, "XString")) {
-            Rwhich.candidate <- matrix(Rcandidate, nrow = 1)
+            Rcandidate <- matrix(Rcandidate, nrow = 1)
         }
         Rwhich.candidate <- max.col(Rcandidate, ties.method = "last")
         Rwhich.trim <- rowSums(Rcandidate) > 0
@@ -86,7 +86,7 @@ function(Lpattern = "", Rpattern = "", subject,
                             with.indels = with.Lindels, fixed = Lfixed)) <=
             max.Lmismatch)
         if (is(subject, "XString")) {
-            Lwhich.candidate <- matrix(Lcandidate, nrow = 1)
+            Lcandidate <- matrix(Lcandidate, nrow = 1)
         }
         Lwhich.candidate <- max.col(Lcandidate, ties.method = "last")
         Lwhich.trim <- rowSums(Lcandidate) > 0
