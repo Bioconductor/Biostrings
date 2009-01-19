@@ -45,6 +45,7 @@ function(Lpattern = "", Rpattern = "", subject,
         }
         if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != ncharRpattern)
             stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
+        max.Rmismatch <- max.Rmismatch + (ncharRpattern - 1):0
         with.Rindels <- normargWithIndels(with.Rindels, name = "with.Rindels")
         Rfixed <- normargFixed(Rfixed, subjectStringClass, name = "Rfixed")
 
@@ -77,6 +78,7 @@ function(Lpattern = "", Rpattern = "", subject,
         }
         if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != ncharLpattern)
             stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
+        max.Lmismatch <- max.Lmismatch + (ncharLpattern - 1):0
         with.Lindels <- normargWithIndels(with.Lindels, name = "with.Lindels")
         Lfixed <- normargFixed(Lfixed, subjectStringClass, name = "Lfixed")
         

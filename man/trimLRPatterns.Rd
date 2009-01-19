@@ -120,20 +120,24 @@
   trimLRPatterns(Rpattern = Rpattern, subject = subject)
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet)
 
+  ## Allow for perfect matches on the flanking overlaps
+  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
+                 max.Lmismatch = rep(0, 9), max.Rmismatch = rep(0, 9))
+
   ## Allow for mismatches on the flanks
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
                  max.Lmismatch = 0.2, max.Rmismatch = 0.2)
-  maxMismatches <- rep(-1:2, c(2,1,3,3))
+  maxMismatches <- as.integer(0.2 * 1:9)
   maxMismatches
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
                  max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches)
 
   ## Produce ranges that can be an input into other functions
+  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
+                 max.Lmismatch = rep(0, 9), max.Rmismatch = rep(0, 9),
+                 ranges = TRUE)
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
                  max.Lmismatch = 0.2, max.Rmismatch = 0.2, ranges = TRUE)
-  trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
-                 max.Lmismatch = maxMismatches, max.Rmismatch = maxMismatches,
-                 ranges = TRUE)
 }
 
 \keyword{methods}
