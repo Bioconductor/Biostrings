@@ -98,8 +98,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
 ###   102.910   2.460 105.689
 .pmatchPattern.rec <- function(pattern, subject, maxlength.out)
 {
-    if (class(pattern) != class(subject))
-        pattern <- XString(class(subject), pattern)
+    pattern <- normargPattern(pattern, subject)
     if (nchar(pattern) <= 20000) {
         sv <- matchPattern(pattern, subject)
         if (length(sv) >= maxlength.out || nchar(pattern) < 2L) {

@@ -16,16 +16,10 @@ function(Lpattern = "", Rpattern = "", subject,
          with.Lindels = FALSE, with.Rindels = FALSE,
          Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
 {
-    if (is(subject, "XString")) {
-        subjectStringClass <- class(subject)
-    } else {
-        subjectStringClass <- baseXStringSubtype(subject)
-    }
     if (nchar(Rpattern) == 0) {
         trim.end <- nchar(subject)
     } else if (length(unique(nchar(subject))) != 1) {
-        if (class(Rpattern) != class(super(subject)))
-            Rpattern <- XString(subjectStringClass, Rpattern)
+        Rpattern <- normargPattern(Rpattern, subject, argname = "Rpattern")
         reversed.ranges <- 
           .XString.XStringSet.trimLRPatterns(Lpattern = reverse(Rpattern),
                                              subject = reverse(subject),
@@ -46,8 +40,8 @@ function(Lpattern = "", Rpattern = "", subject,
         if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != ncharRpattern)
             stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
         max.Rmismatch <- max.Rmismatch + (ncharRpattern - 1):0
-        with.Rindels <- normargWithIndels(with.Rindels, name = "with.Rindels")
-        Rfixed <- normargFixed(Rfixed, subjectStringClass, name = "Rfixed")
+        with.Rindels <- normargWithIndels(with.Rindels, argname = "with.Rindels")
+        Rfixed <- normargFixed(Rfixed, subject, argname = "Rfixed")
 
         ncharSubject <- nchar(subject)[1]
         Rstarting.at <- ncharSubject:(ncharSubject - ncharRpattern + 1L)
@@ -79,8 +73,8 @@ function(Lpattern = "", Rpattern = "", subject,
         if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != ncharLpattern)
             stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
         max.Lmismatch <- max.Lmismatch + (ncharLpattern - 1):0
-        with.Lindels <- normargWithIndels(with.Lindels, name = "with.Lindels")
-        Lfixed <- normargFixed(Lfixed, subjectStringClass, name = "Lfixed")
+        with.Lindels <- normargWithIndels(with.Lindels, argname = "with.Lindels")
+        Lfixed <- normargFixed(Lfixed, subject, argname = "Lfixed")
         
         Lending.at <- seq_len(ncharLpattern)
         Lcandidate <-

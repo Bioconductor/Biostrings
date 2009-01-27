@@ -83,7 +83,7 @@ function(pattern,
 {
   ## Check arguments
   if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
-    stop("'pattern' and 'subject' must have the same XString base subtype")
+    stop("'pattern' and 'subject' must have the same base XString subtype")
   if (!(length(subject) %in% c(1, length(pattern))))
     stop("'length(subject)' must equal 1 or 'length(pattern)'")
   type <-

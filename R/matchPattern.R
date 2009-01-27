@@ -104,8 +104,8 @@ gregexpr2 <- function(pattern, text)
         stop("'subject' must be a single (non-empty) string ",
              "for this algorithm")
     max.mismatch <- normargMaxMismatch(max.mismatch)
-    ## We need to cheat on normargFixed()
-    fixed <- normargFixed(fixed, "DNAString")
+    ## we cheat on normargFixed() to keep it quiet
+    fixed <- normargFixed(fixed, DNAString(""))
     if (!(max.mismatch == 0 && all(fixed)))
         stop("this algorithm only supports exact matching ",
              "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")
@@ -143,10 +143,8 @@ gregexpr2 <- function(pattern, text)
 ### for the given search criteria (the search criteria is described by the
 ### values of 'pattern', 'max.mismatch', 'with.indels' and 'fixed').
 ### Raise an error if the problem "doesn't make sense".
-### Make sure that:
-###   1. 'pattern' is of the same class as 'subject'
-###   2. the 'max.mismatch', 'with.indels' and 'fixed' args have been
-### normalized before you call .valid.algos()
+### All its arguments must have been normalized (thru the normarg*() functions)
+### before they are passed to .valid.algos().
 .valid.algos <- function(pattern, max.mismatch, with.indels, fixed)
 {
     if (length(pattern) == 0)
@@ -189,11 +187,10 @@ gregexpr2 <- function(pattern, text)
                                        max.mismatch, fixed, count.only))
     if (!is(subject, "XString"))
         subject <- XString(NULL, subject)
-    if (class(pattern) != class(subject))
-        pattern <- XString(class(subject), pattern)
+    pattern <- normargPattern(pattern, subject)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     with.indels <- normargWithIndels(with.indels)
-    fixed <- normargFixed(fixed, class(subject))
+    fixed <- normargFixed(fixed, subject)
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)
@@ -215,11 +212,10 @@ gregexpr2 <- function(pattern, text)
     if (.is.character.algo(algo))
         stop("'subject' must be a single (non-empty) string ",
              "for this algorithm")
-    if (class(pattern) != class(subject(subject)))
-        pattern <- XString(class(subject(subject)), pattern)
+    pattern <- normargPattern(pattern, subject)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     with.indels <- normargWithIndels(with.indels)
-    fixed <- normargFixed(fixed, class(subject(subject)))
+    fixed <- normargFixed(fixed, subject)
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)
@@ -382,11 +378,10 @@ setMethod("countPattern", "MaskedXString",
     if (.is.character.algo(algo)) 
         stop("'subject' must be a single (non-empty) string ", 
              "for this algorithm")
-    if (class(pattern) != class(super(subject)))
-        pattern <- XString(class(super(subject)), pattern)
+    pattern <- normargPattern(pattern, subject)
     max.mismatch <- normargMaxMismatch(max.mismatch)
     with.indels <- normargWithIndels(with.indels)
-    fixed <- normargFixed(fixed, class(super(subject)))
+    fixed <- normargFixed(fixed, subject)
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be TRUE or FALSE")
     algo <- .select.algo(algo, pattern, max.mismatch, with.indels, fixed)

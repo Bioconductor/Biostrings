@@ -20,10 +20,6 @@ BASIC CONTAINERS
   though: this would require a huge amount of memory and there are other ways
   to retrieve these locations on user demand so maybe it's not worth it.
 
-- Add "baseXStringSubtype" methods for XStringViews, XStringSet and
-  MaskedXString objects and replace use of "baseClass" by use of
-  "baseXStringSubtype".
-
 - XStringSet objects:
     o Modify the internals of the XStringSet containers to support efficient
       replacement of elements (without reallocation and data copy). See long

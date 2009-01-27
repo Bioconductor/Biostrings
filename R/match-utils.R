@@ -4,54 +4,68 @@
 ### their arguments.
 ###
 
-normargMaxMismatch <- function(max.mismatch, name = "max.mismatch")
+normargPattern <- function(pattern, subject, argname="pattern")
+{
+    subjectXStringSubtype <- baseXStringSubtype(subject)
+    if (is(pattern, "XString")) {
+        if (baseXStringSubtype(pattern) == subjectXStringSubtype)
+            return(pattern)
+    } else if (!isSingleString(pattern))
+        stop("'", argname, "' must be a single string or an XString object")
+    pattern <- try(XString(subjectXStringSubtype, pattern))
+    if (is(pattern, "try-error"))
+        stop("could not turn '", argname, "' into a ", subjectXStringSubtype, " instance")
+    pattern
+}
+
+normargMaxMismatch <- function(max.mismatch, argname="max.mismatch")
 {
     if (!isSingleNumber(max.mismatch))
-        stop("'", name, "' must be a single integer")
+        stop("'", argname, "' must be a single integer")
     max.mismatch <- as.integer(max.mismatch)
     if (max.mismatch < 0)
-        stop("'", name, "' must be a non-negative integer")
+        stop("'", argname, "' must be a non-negative integer")
     max.mismatch
 }
 
-normargWithIndels <- function(with.indels, name = "with.indels")
+normargWithIndels <- function(with.indels, argname="with.indels")
 {
     if (!isTRUEorFALSE(with.indels))
-        stop("'", name, "' must be TRUE or FALSE")
+        stop("'", argname, "' must be TRUE or FALSE")
     with.indels
 }
 
 ### Return a logical vector of length 2.
-normargFixed <- function(fixed, subjectClass, name = "fixed")
+normargFixed <- function(fixed, subject, argname="fixed")
 {
     if (!is.logical(fixed) && !is.character(fixed))
-        stop("'", name, "' not a logical or character vector")
+        stop("'", argname, "' not a logical or character vector")
     if (is.logical(fixed)) {
         if (any(is.na(fixed)))
-            stop("'", name, "' has NAs")
+            stop("'", argname, "' has NAs")
         fixed_names <- names(fixed)
         if (is.null(fixed_names)) {
             if (!(length(fixed) %in% 1:2))
-                stop("when an unnamed logical vector, '", name,
+                stop("when an unnamed logical vector, '", argname,
                      "' fixed must be of length 1 or 2")
             if (length(fixed) == 1)
                 fixed <- c(fixed, fixed)
         } else {
             if (length(fixed) != 2)
-                stop("when a named logical vector, '", name, "' must be of length 2")
+                stop("when a named logical vector, '", argname, "' must be of length 2")
             if (!setequal(fixed_names, c("pattern", "subject")))
-                stop("'", name, "' names must be \"pattern\" and \"subject\"")
+                stop("'", argname, "' names must be \"pattern\" and \"subject\"")
             fixed <- c(fixed["pattern"], fixed["subject"])
         }
     } else if (is.character(fixed)) {
         if (any(duplicated(fixed)) || !all(fixed %in% c("pattern", "subject")))
-            stop("when a character vector, '", name, "' must be ",
+            stop("when a character vector, '", argname, "' must be ",
                  "a subset of 'c(\"pattern\", \"subject\")' ",
                  "with no duplicated")
         fixed <- c("pattern" %in% fixed, "subject" %in% fixed)
     }
-    if (!all(fixed) && !extends(subjectClass, "DNAString") && !extends(subjectClass, "RNAString"))
-        stop("'", name, "' value only supported for a DNAString or RNAString subject ",
+    if (!all(fixed) && !(baseXStringSubtype(subject) %in% c("DNAString", "RNAString")))
+        stop("'", argname, "' value only supported for a DNA or RNA subject ",
              "(you can only use 'fixed=TRUE' with your subject)")
     fixed
 }
@@ -113,8 +127,7 @@ isMatchingAt <- function(pattern, subject, at=1,
 {
     if (!is(subject, "XString"))
         subject <- XString(NULL, subject)
-    if (class(pattern) != class(subject))
-        pattern <- XString(class(subject), pattern)
+    pattern <- normargPattern(pattern, subject)
     if (!is.numeric(at)) {
         what <- if (at.type == 0) "starting.at" else "ending.at"
         stop("'", what, "'  must be a vector of integers")
@@ -126,7 +139,7 @@ isMatchingAt <- function(pattern, subject, at=1,
     else
         max.mismatch <- length(pattern)
     with.indels <- normargWithIndels(with.indels)
-    fixed <- normargFixed(fixed, class(subject))
+    fixed <- normargFixed(fixed, subject)
     .Call("match_pattern_at",
           pattern, subject, at, at.type,
           max.mismatch, with.indels, fixed, ans.type,
@@ -138,8 +151,7 @@ isMatchingAt <- function(pattern, subject, at=1,
 {
     if (!is(subject, "XStringSet"))
         subject <- XStringSet(NULL, subject)
-    if (class(pattern) != baseXStringSubtype(subject))
-        pattern <- XString(baseXStringSubtype(subject), pattern)
+    pattern <- normargPattern(pattern, subject)
     if (!is.numeric(at)) {
         what <- if (at.type == 0) "starting.at" else "ending.at"
         stop("'", what, "'  must be a vector of integers")
@@ -151,7 +163,7 @@ isMatchingAt <- function(pattern, subject, at=1,
     else
         max.mismatch <- length(pattern)
     with.indels <- normargWithIndels(with.indels)
-    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
+    fixed <- normargFixed(fixed, subject)
     .Call("vmatch_pattern_at",
           pattern, subject, at, at.type,
           max.mismatch, with.indels, fixed, ans.type,
@@ -285,8 +297,7 @@ setGeneric("mismatch", signature=c("pattern", "x"),
 setMethod("mismatch", c(pattern="ANY", x="XStringViews"),
     function(pattern, x, fixed)
     {
-        if (class(pattern) != class(x@subject))
-            pattern <- XString(class(x@subject), pattern)
+        pattern <- normargPattern(pattern, subject)
         .mismatch(pattern, x, fixed)
     }
 )

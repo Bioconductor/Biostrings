@@ -147,14 +147,13 @@ setMethod("matchPattern", "BOC_SubjectString",
     function(pattern, subject, algorithm="auto",
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
     {
-        if (class(pattern) != class(subject@subject))
-            pattern <- XString(class(subject@subject), pattern)
+        pattern <- normargPattern(pattern, subject@subject)
         pattern_length <- nchar(pattern)
         if (pattern_length != subject@pattern_length)
             stop("subject was preprocessed for patterns of length ", subject@pattern_length)
         max.mismatch <- normargMaxMismatch(max.mismatch)
         if (!missing(fixed)) {
-            fixed <- normargFixed(fixed, class(subject))
+            fixed <- normargFixed(fixed, subject@subject)
             if (!all(fixed))
                 stop("only 'fixed=TRUE' can be used with a subject of class ", class(subject))
         }

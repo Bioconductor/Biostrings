@@ -37,7 +37,7 @@ setMethod("PairwiseAlignedFixedSubject", signature(pattern = "XString", subject 
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
         if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
-            stop("'pattern' and 'subject' must have the same XString base subtype")
+            stop("'pattern' and 'subject' must have the same base XString subtype")
         PairwiseAlignedFixedSubject(as.character(pattern), as.character(subject),
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,

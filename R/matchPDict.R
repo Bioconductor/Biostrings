@@ -129,7 +129,7 @@
                                 max.mismatch, fixed,
                                 count.only, envir)
 {
-    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
+    fixed <- normargFixed(fixed, subject)
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("XString_match_pdict",
@@ -144,7 +144,7 @@
                                      max.mismatch, fixed,
                                      count.only, envir)
 {
-    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
+    fixed <- normargFixed(fixed, subject)
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("XStringViews_match_pdict",
@@ -159,7 +159,7 @@
                                     max.mismatch, fixed,
                                     count.only, envir)
 {
-    fixed <- normargFixed(fixed, baseXStringSubtype(subject))
+    fixed <- normargFixed(fixed, subject)
     if (is.null(head(pdict)) && is.null(tail(pdict)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("XStringSet_vmatch_pdict",
