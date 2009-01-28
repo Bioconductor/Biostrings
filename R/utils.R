@@ -62,51 +62,6 @@ stopIfProblems <- function(problems)
     if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
 }
 
-normargSingleStart <- function(start)
-{
-    if (!isSingleNumber(start))
-        stop("'start' must be a single integer")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    start
-}
-
-normargSingleEnd <- function(end)
-{
-    if (!isSingleNumber(end))
-        stop("'end' must be a single integer")
-    if (!is.integer(end))
-        end <- as.integer(end)
-    end
-}
-
-normargSingleStartOrNA <- function(start)
-{
-    if (!isSingleNumberOrNA(start))
-        stop("'start' must be a single integer or NA")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    start
-}
-
-normargSingleEndOrNA <- function(end)
-{
-    if (!isSingleNumberOrNA(end))
-        stop("'end' must be a single integer or NA")
-    if (!is.integer(end)) 
-        end <- as.integer(end)
-    end
-}
-
-normargSingleWidthOrNA <- function(width)
-{
-    if (!isSingleNumberOrNA(width))
-        stop("'width' must be a single integer or NA")
-    if (!is.integer(width))    
-        width <- as.integer(width)
-    width
-}
-
 normargStart <- function(start)
 {
     if (!isSingleNumber(start))
