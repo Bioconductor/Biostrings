@@ -56,7 +56,7 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 	for (i = 0, rangeWidth = INTEGER(get_IRanges_width(range)), outputPtr = INTEGER(output);
 			i < numberOfAlignments; i++, rangeWidth++, outputPtr++) {
 		SEXP indelElement = PROTECT(get_IRangesList_elt(indel, i));
-		int numberOfIndels = LENGTH(get_IRanges_width(indelElement));
+		int numberOfIndels = get_IRanges_length(indelElement);
 		*outputPtr = *rangeWidth;
 		for (j = 0, indelWidth = INTEGER(get_IRanges_width(indelElement));
 		     j < numberOfIndels; j++, indelWidth++) {
@@ -120,7 +120,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
 		SEXP indelElement = PROTECT(get_IRangesList_elt(indel, i));
-		int numberOfIndel = LENGTH(get_IRanges_start(indelElement));
+		int numberOfIndel = get_IRanges_length(indelElement);
 		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, *rangeWidth * sizeof(char));
 			index += *rangeWidth;
@@ -213,8 +213,8 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
 		SEXP indelElementPattern = PROTECT(get_IRangesList_elt(indelPattern, i));
 		SEXP indelElementSubject = PROTECT(get_IRangesList_elt(indelSubject, i));
-		int numberOfIndelPattern = LENGTH(get_IRanges_start(indelElementPattern));
-		int numberOfIndelSubject = LENGTH(get_IRanges_start(indelElementSubject));
+		int numberOfIndelPattern = get_IRanges_length(indelElementPattern);
+		int numberOfIndelSubject = get_IRanges_length(indelElementSubject);
 
 		for (j = 0; j < *rangeStartSubject - 1; j++) {
 			mappedStringPtr[index] = gapCodeValue;
