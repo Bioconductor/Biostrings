@@ -297,7 +297,7 @@ setGeneric("mismatch", signature=c("pattern", "x"),
 setMethod("mismatch", c(pattern="ANY", x="XStringViews"),
     function(pattern, x, fixed)
     {
-        pattern <- normargPattern(pattern, subject)
+        pattern <- normargPattern(pattern, x)
         .mismatch(pattern, x, fixed)
     }
 )
