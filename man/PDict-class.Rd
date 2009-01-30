@@ -304,6 +304,12 @@
 
 \author{H. Pages}
 
+\references{
+  Aho, Alfred V.; Margaret J. Corasick (June 1975). "Efficient string
+  matching: An aid to bibliographic search".
+  Communications of the ACM 18 (6): 333–340.
+}
+
 \seealso{
   \code{\link{matchPDict}},
   \code{\link{DNA_ALPHABET}},
