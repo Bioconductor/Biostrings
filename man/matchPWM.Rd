@@ -20,6 +20,7 @@
 \usage{
   matchPWM(pwm, subject, min.score="80\%")
   countPWM(pwm, subject, min.score="80\%")
+  PWMscore(pwm, subject, start = 1)
 
   ## Utility functions for basic manipulation of the Position Weight Matrix
   maxWeights(pwm)
@@ -39,6 +40,9 @@
     Can be given as a percentage (e.g. \code{"85\%"}) of the highest possible
     score or as an integer.
   }
+  \item{start}{
+    A vector of integers indicating the subject start position.
+  }
 %  \item{x}{
 %    A Position Weight Matrix.
 %  }
@@ -52,6 +56,9 @@
   An \link{XStringViews} object for \code{matchPWM}.
 
   A single integer for \code{countPWM}.
+
+  An integer vector containing the Position Weight Matrix-based scores
+  for \code{PWMscore}.
 
   An integer vector containing the max weight for each position in \code{pwm}
   for \code{maxWeights}.
