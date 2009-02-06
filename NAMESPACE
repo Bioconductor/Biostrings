@@ -336,3 +336,26 @@ exportMethods(
     consmat, needwunsQS
 )
 
+
+### ==========================================================================
+### STUFF THAT BELONGED ORIGINALLY TO OLD matchprobes PACKAGE AND IS NOW
+### SUPERSEDED BY SOME NATIVE Biostrings FUNCTIONALITY
+### --------------------------------------------------------------------------
+###   matchprobes.R
+
+export(
+    ## Used in ecolitk, arrayQualityMetrics (vignette only),
+    ## Ringo (just mentioned in a \seealso section),
+    ## ITALICS and tilingArray (in a Sweave document only).
+    ## (makePlatformDesign and oligo define their own basecontent)
+    basecontent,
+
+    countbases,
+    complementSeq,
+    reverseSeq,
+    revcompDNA,
+    revcompRNA,
+    longestConsecutive,
+    matchprobes
+)
+
