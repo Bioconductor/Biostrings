@@ -277,19 +277,13 @@ setMethod("dups", "PDict3Parts",
 
 .PDict3Parts <- function(x, tb.start, tb.end, tb.width, type, pptb0)
 {
-    tb <- DNAStringSet(x, start=tb.start, end=tb.end, width=tb.width,
-                          use.names=FALSE)
-    head_start <- start(x@ranges)
-    head_width <- start(tb@ranges) - start(x@ranges)
-    head_ranges <- new2("IRanges", start=head_start, width=head_width, check=FALSE)
-    head <- new("DNAStringSet", super=super(x), ranges=head_ranges)
-    tail_start <- end(tb@ranges) + 1L
-    tail_width <- end(x@ranges) - end(tb@ranges)
-    tail_ranges <- new2("IRanges", start=tail_start, width=tail_width, check=FALSE)
-    tail <- new("DNAStringSet", super=super(x), ranges=tail_ranges)
+    threeparts <- threebands(x, start=tb.start, end=tb.end, width=tb.width)
+    head <- threeparts$left
+    tb <- threeparts$middle
+    tail <- threeparts$right
     use_pptb0 <- !is.null(pptb0) &&
-                     all(head_width == 0L) && all(tail_width == 0L) &&
-                     type == class(pptb0)
+                 all(width(head) == 0L) && all(width(tail) == 0L) &&
+                 type == class(pptb0)
     if (use_pptb0) {
         pptb <- pptb0
     } else {

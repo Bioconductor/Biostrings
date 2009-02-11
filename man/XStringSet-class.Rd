@@ -21,12 +21,16 @@
 
 % Methods:
 \alias{length,XStringSet-method}
+\alias{width,character-method}
 \alias{width,XStringSet-method}
 \alias{names,XStringSet-method}
 \alias{names<-,XStringSet-method}
-\alias{narrow,XStringSet-method}
 \alias{alphabet,XStringSet-method}
 \alias{nchar,XStringSet-method}
+\alias{narrow,character-method}
+\alias{narrow,XStringSet-method}
+\alias{threebands,character-method}
+\alias{threebands,XStringSet-method}
 
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}
@@ -37,11 +41,6 @@
 \alias{XStringSet,XString-method}
 \alias{XStringSet,XStringSet-method}
 \alias{XStringSet,XStringViews-method}
-
-\alias{BStringSet}
-\alias{DNAStringSet}
-\alias{RNAStringSet}
-\alias{AAStringSet}
 
 \alias{show,XStringSet-method}
 
@@ -91,12 +90,26 @@
   DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
   AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
+
+  ## Accessor-like methods:
+  \S4method{length}{XStringSet}(x)
+  \S4method{width}{character}(x)
+  \S4method{width}{XStringSet}(x)
+  \S4method{names}{XStringSet}(x)
+  \S4method{alphabet}{XStringSet}(x)
+  \S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
+
+  ## Narrowing:
+  \S4method{narrow}{character}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  \S4method{narrow}{XStringSet}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+
+  ## ... and more (see below)
 }
 
 \arguments{
   \item{x}{
-    Either a character vector, or an \link{XString}, \link{XStringSet}
-    or \link{XStringViews} object.
+    Either a character vector (with no NAs), or an \link{XString},
+    XStringSet or \link{XStringViews} object.
   }
   \item{start}{
     Either \code{NA}, a single integer, or an integer vector of the same
@@ -116,6 +129,9 @@
   \item{use.names}{
     \code{TRUE} or \code{FALSE}. Should names be preserved?
   }
+  \item{type,allowNA}{
+    Ignored.
+  }
 }
 
 \details{
@@ -129,34 +145,28 @@
   arguments. In this context, "narrowing" means dropping unwanted parts
   of \code{x} located at the beginning (prefix) or end (suffix) of each
   sequence in \code{x}.
-
-  The \code{\link[IRanges]{narrow}} function is a generic function
-  (defined in the IRanges package) with a method for narrowing
-  \link[IRanges]{IRanges} objects. Because XStringSet objects are
-  a particular kind of \link[IRanges]{IRanges} objects (the XStringSet
-  class is a subclass of the \link[IRanges]{IRanges} class), an XStringSet
-  object \code{y} can be narrowed with \code{narrow(y)}.
-  Therefore the two following expressions are equivalent:
+  The "narrowing" capabilities of these constructors can be illustrated
+  by the following property: if \code{x} is a character vector
+  (with no NAs), or an XStringSet or \link{XStringViews} object,
+  then the 3 following transformations are equivalent:
   \describe{
     \item{}{
-      \code{DNAStringSet(x, start=s, end=e, width=w)}
+      \code{BStringSet(x, start=mystart, end=myend, width=mywidth)}
     }
     \item{}{
-      \code{narrow(DNAStringSet(x), start=s, end=e, width=w)}
+      \code{narrow(BStringSet(x), start=mystart, end=myend, width=mywidth)}
+    }
+    \item{}{
+      \code{BStringSet(narrow(x, start=mystart, end=myend, width=mywidth))}
     }
   }
-  but, besides being more convenient, the former is also more memory
-  efficient on character vectors and would work even if the dropped
-  parts contained letters that are not in the DNA alphabet (see
-  \code{?\link{DNA_ALPHABET}}).
+  Note that, besides being more convenient, the first form is also more
+  efficient on character vectors.
 }
 
-\section{Accesor methods}{
-  The XStringSet class derives from the \link[IRanges]{IRanges} class
-  hence all the accessor methods defined for a \link[IRanges]{IRanges}
-  object can also be used on an XStringSet object. In particular, the
-  following methods are available (in the code snippets below, \code{x}
-  is an XStringSet object:
+\section{Accessor-like methods}{
+  In the code snippets below,
+  \code{x} is an XStringSet object.
 
   \describe{
     \item{}{
@@ -167,10 +177,8 @@
       \code{width(x)}:
       A vector of non-negative integers containing the number
       of letters for each element in \code{x}.
-    }
-    \item{}{
-      \code{nchar(x)}:
-      The same as \code{width(x)}.
+      Note that \code{width(x)} is also defined for a character vector
+      with no NAs and is equivalent to \code{nchar(x, type="bytes")}.
     }
     \item{}{
       \code{names(x)}:
@@ -180,6 +188,56 @@
       be changed by the user. All the other data are immutable!
       As a general recommendation, the user should never try to modify
       an object by accessing its slots directly.
+    }
+    \item{}{
+      \code{alphabet(x)}:
+      Return \code{NULL}, \code{\link{DNA_ALPHABET}}, \code{\link{RNA_ALPHABET}} or
+      \code{\link{AA_ALPHABET}} depending on whether \code{x} is a BStringSet,
+      DNAStringSet, RNAStringSet or AAStringSet object.
+    }
+    \item{}{
+      \code{nchar(x)}:
+      The same as \code{width(x)}.
+    }
+  }
+}
+
+\section{Narrowing and related transformations}{
+  In the code snippets below,
+  \code{x} is a character vector (with no NAs),
+  or an XStringSet (or \link{XStringViews}) object.
+
+  \describe{
+    \item{}{
+      \code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:
+      Narrows the set of sequences in \code{x} by extracting the set of
+      subsequences described by the supplied start/end/width values.
+      Like with the \code{\link[IRanges]{narrow}} method for
+      \link[IRanges]{IRanges} objects, the supplied start/end/width values
+      are solved internally by calling
+      \code{solveUserSEW(width(x), start=start, end=end, width=width)}
+      and therefore must be compliant with the rules of the SEW
+      (Start/End/Width) interface (see \code{?solveUserSEW} for the details).
+
+      Note that this narrowing transformation is similar to what
+      \code{\link{substr}} does on a character vector. However some
+      noticeable differences are: (1) the names of the arguments (\code{start}
+      and \code{stop} for \code{\link{substr}}), (2) the richer SEW interface
+      for \code{narrow} (e.g. support for negative start or end values),
+      and (3) strict checking of valid start/end/width values for \code{narrow}
+      (unlike \code{\link{substr}}, \code{narrow} will throw an error if
+      the specified start/end/width values define "out of limits" subsequences
+      or subsequences with a negative width).
+    }
+    \item{}{
+      \code{threebands(x, start=NA, end=NA, width=NA)}:
+      Like the method for \link[IRanges]{IRanges} objects, the
+      \code{threebands} methods for character vectors and XStringSet
+      objects extend the capability of \code{narrow} by returning the 3
+      set of subsequences (the left, middle and right subsequences)
+      associated to the narrowing operation.
+      See \code{?\link[IRanges]{threebands}} in the IRanges package for
+      the details.
     }
   }
 }
@@ -304,25 +362,33 @@
   \link{RNAString-class},
   \link{AAString-class},
   \link{XStringViews-class},
-  \code{\link[IRanges]{narrow}},
-  \code{\link{DNA_ALPHABET}}
+  \code{\link{substr}},
+  \code{\link[IRanges]{narrow}}
 }
 
 \examples{
-  x0 <- c("#TTGA", "#-CTC-N")
-  x1 <- DNAStringSet(x0, start=2)
+  x0 <- c("#CTC-NACCAGTAT", "#TTGA", "TACCTAGAG")
+  width(x0)
+  x1 <- BStringSet(x0)
   x1
-  names(x1)
-  names(x1)[2] <- "seqB"
-  x1
+
+  ## 3 equivalent ways to obtain the same BStringSet object:
+  BStringSet(x0, start=4, end=-3)
+  narrow(x1, start=4, end=-3)
+  BStringSet(narrow(x0, start=4, end=-3))
+
+  dna0 <- DNAStringSet(x0, start=4, end=-3)
+  dna0
+  names(dna0)
+  names(dna0)[2] <- "seqB"
+  dna0
 
   library(drosophila2probe)
-  x2 <- DNAStringSet(drosophila2probe$sequence)
-  x2
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes
 
-  RNAStringSet(x2, start=2, end=-5)  # does NOT copy the sequence data!
+  RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
 }
 
 \keyword{methods}
 \keyword{classes}
-

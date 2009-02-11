@@ -56,7 +56,7 @@ exportMethods(
     "==", "!=", duplicated, unique, order, sort, rank,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
     nchar,
-    width, narrow, reduce, gaps
+    width, narrow, threebands, reduce, gaps
 )
 
 

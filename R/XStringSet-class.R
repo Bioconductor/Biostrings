@@ -94,6 +94,14 @@ setMethod("length", "XStringSet", function(x) length(x@ranges))
 setGeneric("super", function(x) standardGeneric("super"))
 setMethod("super", "XStringSet", function(x) x@super)
 
+setMethod("width", "character",
+    function(x)
+    {
+        if (any(is.na(x)))
+            stop("NAs in 'x' are not supported")
+        nchar(x, type="bytes")
+    }
+)
 setMethod("width", "XStringSet", function(x) width(x@ranges))
 
 setMethod("names", "XStringSet", function(x) names(x@ranges))
@@ -108,8 +116,19 @@ setReplaceMethod("names", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "narrow" endomorphism.
+### The "narrow" (endomorphism) and related transformations.
 ###
+
+setMethod("narrow", "character",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        if (!normargUseNames(use.names))
+            names(x) <- NULL
+        wx <- width(x)
+        solved_SEW <- solveUserSEW(wx, start=start, end=end, width=width)
+        substr(x, start=start(solved_SEW), stop=end(solved_SEW))
+    }
+)
 
 setMethod("narrow", "XStringSet",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -117,6 +136,31 @@ setMethod("narrow", "XStringSet",
         x@ranges <- narrow(x@ranges, start=start, end=end, width=width,
                            use.names=use.names)
         x
+    }
+)
+
+setMethod("threebands", "character",
+    function(x, start=NA, end=NA, width=NA)
+    {
+        names(x) <- NULL
+        wx <- width(x)
+        solved_SEW <- solveUserSEW(wx, start=start, end=end, width=width)
+        left <- substr(x, start=1L, stop=start(solved_SEW)-1L)
+        middle <- substr(x, start=start(solved_SEW), stop=end(solved_SEW))
+        right <- substr(x, start=end(solved_SEW)+1L, stop=wx)
+        list(left=left, middle=middle, right=right)
+    }
+)
+
+setMethod("threebands", "XStringSet",
+    function(x, start=NA, end=NA, width=NA)
+    {
+        threeranges <- threebands(x@ranges, start=start, end=end, width=width)
+        left <- right <- x
+        left@ranges <- threeranges$left
+        x@ranges <- threeranges$middle
+        right@ranges <- threeranges$right
+        list(left=left, middle=x, right=right)
     }
 )
 
@@ -255,8 +299,7 @@ setAs("XStringSet", "AAStringSet",
 .charToXStringSet <- function(x, start, end, width, use.names, baseClass)
 {
     class <- paste(baseClass, "Set", sep="")
-    solved_SEW <- solveUserSEW(nchar(x, type="bytes"),
-                               start=start, end=end, width=width)
+    solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
     ans_super <- .charToXString(x, solved_SEW, baseClass)
     ans_ranges <- successiveIRanges(width(solved_SEW))
     unsafe.newXStringSet(class, ans_super, ans_ranges,
