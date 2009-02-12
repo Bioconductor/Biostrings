@@ -57,12 +57,17 @@
 \seealso{
   \code{\link{AA_ALPHABET}},
   \code{\link{AMINO_ACID_CODE}},
+  \code{\link{translate}},
   \code{\link{trinucleotideFrequency}},
   \code{\link{DNAString}}, \code{\link{RNAString}}, \code{\link{AAString}}
 }
 
 \examples{
   GENETIC_CODE
+  GENETIC_CODE[["ATG"]]  # codon ATG is translated into M (Methionine)
+  sort(table(GENETIC_CODE))  # the same amino acid can be encoded by 1
+                             # to 6 different codons
+
   RNA_GENETIC_CODE
   all(GENETIC_CODE == RNA_GENETIC_CODE)  # TRUE
 }
