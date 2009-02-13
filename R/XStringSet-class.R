@@ -209,8 +209,8 @@ setMethod("nchar", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions (NOT exported) used by the coercion methods and
-### versatile (and user friendly) constructors below.
+### Helper functions (NOT exported) used by the versatile (and user friendly)
+### constructors and coercion methods below.
 ###
 
 ### This is an endomorphism iff 'baseClass' is NULL, otherwise it is NOT!
@@ -248,45 +248,6 @@ compactXStringSet <- function(x, baseClass=NULL)
     }
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-.as.from_XStringSet_to_XStringSet <- function(x, baseClass)
-{
-    from_baseClass <- baseXStringSubtype(x)
-    lkup <- getXStringSubtypeConversionLookup(from_baseClass, baseClass)
-    if (!is.null(lkup))
-        return(compactXStringSet(x, baseClass=baseClass))
-    ans_class <- paste(baseClass, "Set", sep="")
-    if (is(x, ans_class))
-        ans_super <- super(x)
-    else
-        ans_super <- XString(baseClass, super(x))
-    unsafe.newXStringSet(ans_class, ans_super, x@ranges,
-                         use.names=TRUE, names=names(x))
-}
-
-setAs("XStringSet", "BStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "BString")
-)
-setAs("XStringSet", "DNAStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "DNAString")
-)
-setAs("XStringSet", "RNAStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "RNAString")
-)
-setAs("XStringSet", "AAStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "AAString")
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### More helper functions used by the versatile (and user friendly)
-### constructors below.
-###
-
 .charToXString <- function(x, solved_SEW, class)
 {
     proto <- newEmptyXString(class)
@@ -312,6 +273,21 @@ setAs("XStringSet", "AAStringSet",
     ans_super <- subseq(x, start=start, end=end, width=width)
     ans_ranges <- new2("IRanges", start=1L, width=length(ans_super), check=FALSE)
     unsafe.newXStringSet(class, ans_super, ans_ranges)
+}
+
+.as.from_XStringSet_to_XStringSet <- function(x, baseClass)
+{
+    from_baseClass <- baseXStringSubtype(x)
+    lkup <- getXStringSubtypeConversionLookup(from_baseClass, baseClass)
+    if (!is.null(lkup))
+        return(compactXStringSet(x, baseClass=baseClass))
+    ans_class <- paste(baseClass, "Set", sep="")
+    if (is(x, ans_class))
+        ans_super <- super(x)
+    else
+        ans_super <- XString(baseClass, super(x))
+    unsafe.newXStringSet(ans_class, ans_super, x@ranges,
+                         use.names=TRUE, names=names(x))
 }
 
 .narrowAndCoerceXStringSet <- function(x, start, end, width, use.names, baseClass)
@@ -372,6 +348,29 @@ RNAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 AAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     XStringSet("AAString", x, start=start, end=end, width=width,
                               use.names=use.names)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+setAs("XStringSet", "BStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "BString")
+)
+setAs("XStringSet", "DNAStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "DNAString")
+)
+setAs("XStringSet", "RNAStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "RNAString")
+)
+setAs("XStringSet", "AAStringSet",
+    function(from) .as.from_XStringSet_to_XStringSet(from, "AAString")
+)
+
+setAs("character", "BStringSet", function(from) BStringSet(from))
+setAs("character", "DNAStringSet", function(from) DNAStringSet(from))
+setAs("character", "RNAStringSet", function(from) RNAStringSet(from))
+setAs("character", "AAStringSet", function(from) AAStringSet(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

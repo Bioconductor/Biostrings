@@ -30,6 +30,7 @@ Collate: 00datacache.R
 	XStringViews-class.R
 	XStringViews-constructors.R
 	MaskedXString-class.R
+	xscat.R
 	readFASTA.R
 	XStringSet-io.R
 	letter.R

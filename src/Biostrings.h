@@ -285,6 +285,13 @@ SEXP XStringSet_duplicated(SEXP x);
 SEXP XStringSet_not_duplicated(SEXP x);
 
 
+/* xscat.c */
+
+SEXP XString_xscat(SEXP args);
+
+SEXP XStringSet_xscat(SEXP args);
+
+
 /* fasta_io.c */
 
 SEXP debug_fasta_io();

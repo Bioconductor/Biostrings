@@ -32,15 +32,20 @@
 \alias{threebands,character-method}
 \alias{threebands,XStringSet-method}
 
-\alias{coerce,XStringSet,BStringSet-method}
-\alias{coerce,XStringSet,DNAStringSet-method}
-\alias{coerce,XStringSet,RNAStringSet-method}
-\alias{coerce,XStringSet,AAStringSet-method}
 \alias{XStringSet,character-method}
 \alias{XStringSet,AsIs-method}
 \alias{XStringSet,XString-method}
 \alias{XStringSet,XStringSet-method}
 \alias{XStringSet,XStringViews-method}
+
+\alias{coerce,XStringSet,BStringSet-method}
+\alias{coerce,XStringSet,DNAStringSet-method}
+\alias{coerce,XStringSet,RNAStringSet-method}
+\alias{coerce,XStringSet,AAStringSet-method}
+\alias{coerce,character,BStringSet-method}
+\alias{coerce,character,DNAStringSet-method}
+\alias{coerce,character,RNAStringSet-method}
+\alias{coerce,character,AAStringSet-method}
 
 \alias{show,XStringSet-method}
 

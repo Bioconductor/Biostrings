@@ -43,6 +43,9 @@ export(
     ## XStringViews-constructors.R:
     adjacentViews, XStringViews,
 
+    ## xscat.R:
+    xscat,
+
     ## Old stuff (Defunct or Deprecated):
     BStringViews
 )

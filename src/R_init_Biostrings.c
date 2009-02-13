@@ -30,6 +30,10 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_duplicated, 1),
 	CALLMETHOD_DEF(XStringSet_not_duplicated, 1),
 
+/* xscat.c */
+	CALLMETHOD_DEF(XString_xscat, 1),
+	CALLMETHOD_DEF(XStringSet_xscat, 1),
+
 /* fasta_io.c */
 	CALLMETHOD_DEF(debug_fasta_io, 0),
 	CALLMETHOD_DEF(fasta_info, 2),
