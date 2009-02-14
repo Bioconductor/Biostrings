@@ -341,7 +341,7 @@
         return(ans)
     if (count.only) { # countPDict()
         which_is_dup <- which(duplicated(pdict))
-        ans[which_is_dup] <- ans[dups(pdict)@dup2unq[which_is_dup]]
+        ans[which_is_dup, ] <- ans[dups(pdict)@dup2unq[which_is_dup], ]
         return(ans)
     }
     stop("internal problem")
