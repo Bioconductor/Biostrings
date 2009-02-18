@@ -3,6 +3,7 @@ useDynLib(Biostrings)
 import(methods)
 importFrom(utils, "head", "tail")
 import(IRanges)
+importFrom(Biobase, "addVigs2WinMenu")
 
 
 ### ==========================================================================

@@ -44,27 +44,43 @@ complementSeq(seq, start=1, stop=0)
 \seealso{\code{\link{alphabetFrequency}}, \code{\link{reverseComplement}}}
 
 \examples{
- seq <- c("AAACT", "GGGTT")
- if (interactive()) {
-   complementSeq(seq)  # deprecated (inefficient on large vectors)
- }
- complement(DNAStringSet(seq))  # more efficient
- 
- seq <- c("CGACTGAGACCAAGACCTACAACAG", "CCCGCATCATCTTTCCTGTGCTCTT")
- if (interactive()) {
-   complementSeq(seq, start=13, stop=13)
- }
+  ## ---------------------------------------------------------------------
+  ## EXAMPLE 1
+  ## ---------------------------------------------------------------------
+  seq <- c("AAACT", "GGGTT")
 
- ## Transforming only a subregion of a DNAString or DNAStringSet object
- ## is not supported yet. Please complain on the Bioconductor mailing
- ## list if you need this feature (http://bioconductor.org/docs/mailList.html).
+  ## Don't do this anymore (deprecated):
+  if (interactive()) {
+    complementSeq(seq)  # inefficient on large vectors
+  }
+  ## But do this instead:
+  complement(DNAStringSet(seq))  # more efficient
 
- ## Comparing efficiencies:
- if (interactive()) {
-   library(hgu95av2probe)
-   system.time(y1 <- complementSeq(hgu95av2probe$sequence))
-   x <- DNAStringSet(hgu95av2probe$sequence)
-   system.time(y2 <- complement(x))
- }
+  ## ---------------------------------------------------------------------
+  ## EXAMPLE 2
+  ## ---------------------------------------------------------------------
+  seq <- c("CGACTGAGACCAAGACCTACAACAG", "CCCGCATCATCTTTCCTGTGCTCTT")
+
+  ## Don't do this anymore (deprecated):
+  if (interactive()) {
+    complementSeq(seq, start=13, stop=13)
+  }
+  ## But do this instead:
+  pm2mm <- function(probes)
+  {
+      parts <- threebands(DNAStringSet(probes), start=13, end=13)
+      xscat(parts$left, complement(parts$middle), parts$right)
+  }
+  pm2mm(seq) 
+
+  ## ---------------------------------------------------------------------
+  ## SPEED OF complementSeq() VS complement()
+  ## ---------------------------------------------------------------------
+  if (interactive()) {
+    library(hgu95av2probe)
+    system.time(y1 <- complementSeq(hgu95av2probe$sequence))
+    probes <- DNAStringSet(hgu95av2probe$sequence)
+    system.time(y2 <- complement(probes))
+  }
 }
 \keyword{manip}

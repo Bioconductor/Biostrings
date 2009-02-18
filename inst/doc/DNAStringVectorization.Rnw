@@ -106,13 +106,6 @@ v
 \section{Performance}
 
 The following example was provided by Wolfgang:
-%the hgu95av2probe package can be installed with
-%install.packages("matchprobes",
-%                 repos="http://bioconductor.org/packages/bioc/1.8",
-%                 dep=TRUE)
-%install.packages("hgu95av2probe",
-%                 repos="http://bioconductor.org/packages/data/annotation/1.8",
-%                 dep=TRUE)
 <<c1,results=hide>>=
 library(hgu95av2probe)
 @

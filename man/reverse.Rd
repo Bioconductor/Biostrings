@@ -25,8 +25,8 @@
 \title{Sequence reversing and complementing}
 
 \description{
-  Use these functions for reversing a sequence and/or complementing a DNA
-  sequence.
+  Use these functions for reversing sequences and/or complementing DNA
+  or RNA sequences.
 }
 
 \usage{
@@ -37,8 +37,7 @@
 
 \arguments{
   \item{x}{
-    An \link[IRanges]{IRanges}, \link[IRanges]{NormalIRanges}, \link[IRanges]{MaskCollection},
-    \link{XString}, \link{XStringSet}, \link{XStringViews}
+    An \link{XString}, \link{XStringSet}, \link{XStringViews}
     or \link{MaskedXString} object for \code{reverse}.
 
     A \link{DNAString}, \link{RNAString},
@@ -77,9 +76,6 @@
 }
 
 \seealso{
-  \link[IRanges]{IRanges-class},
-  \link[IRanges]{NormalIRanges-class},
-  \link[IRanges]{MaskCollection-class},
   \link{DNAString-class},
   \link{RNAString-class},
   \link{DNAStringSet-class},
@@ -93,26 +89,39 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## A. SIMPLE EXAMPLES
+  ## A. SOME SIMPLE EXAMPLES
   ## ---------------------------------------------------------------------
 
   x <- DNAString("ACGT-YN-")
   reverseComplement(x)
 
   library(drosophila2probe)
-  x <- DNAStringSet(drosophila2probe$sequence)
-  x
-  alphabetFrequency(x, collapse=TRUE)
-  rcx <- reverseComplement(x)
-  rcx
-  alphabetFrequency(rcx, collapse=TRUE)
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes
+  alphabetFrequency(probes, collapse=TRUE)
+  rcprobes <- reverseComplement(probes)
+  rcprobes
+  alphabetFrequency(rcprobes, collapse=TRUE)
 
   ## ---------------------------------------------------------------------
-  ## B. SEARCHING THE REVERSE STRAND OF A CHROMOSOME
+  ## B. OBTAINING THE MISMATCH PROBES OF A CHIP
+  ## ---------------------------------------------------------------------
+
+  pm2mm <- function(probes)
+  {
+      parts <- threebands(DNAStringSet(probes), start=13, end=13)
+      xscat(parts$left, complement(parts$middle), parts$right)
+  }
+  mmprobes <- pm2mm(probes)
+  mmprobes
+  alphabetFrequency(mmprobes, collapse=TRUE)
+
+  ## ---------------------------------------------------------------------
+  ## C. SEARCHING THE MINUS STRAND OF A CHROMOSOME
   ## ---------------------------------------------------------------------
   ## Applying reverseComplement() to the pattern before calling
-  ## matchPattern() is the recommended way to search hits on the reverse
-  ## strand of a chromosome.
+  ## matchPattern() is the recommended way of searching hits on the
+  ## minus strand of a chromosome.
 
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chrX <- Dmelanogaster$chrX

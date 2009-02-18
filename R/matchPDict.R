@@ -339,7 +339,7 @@
         stop("'pdict' must be a PDict object")
     if (is.null(dups(pdict)))
         return(ans)
-    if (count.only) { # countPDict()
+    if (count.only) { # vcountPDict()
         which_is_dup <- which(duplicated(pdict))
         ans[which_is_dup, ] <- ans[dups(pdict)@dup2unq[which_is_dup], ]
         return(ans)

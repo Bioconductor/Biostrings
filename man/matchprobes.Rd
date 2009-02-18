@@ -13,7 +13,7 @@
   times \code{length(records)}!
 
   See \code{\link{matchPattern}}, \code{\link{vmatchPattern}} and
-  \code{\link{matchPDict}} for more efficient sequence matching.
+  \code{\link{matchPDict}} for more efficient sequence matching functions.
 }
 \usage{
   matchprobes(query, records, probepos=FALSE)
