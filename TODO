@@ -232,6 +232,23 @@ MISCELLANEOUS
 - Update the CHANGES file.
 
 
+
+2.13 series (BioC 2.5)
+----------------------
+
+- Defunct old matchprobes functions: complementSeq(), reverseSeq(),
+  revcompDNA(), revcompRNA(), matchprobes().
+
+
+
+2.15 series (BioC 2.6)
+----------------------
+
+- Remove old matchprobes functions: complementSeq(), reverseSeq(),
+  revcompDNA(), revcompRNA(), matchprobes().
+
+
+
 Long term TODO list
 -------------------
 
@@ -282,6 +299,7 @@ Long term TODO list
 
 - Start adding suffix tree capabilities: maybe merge SuffixTree package from
   Robert?
+
 
 
 Unsorted incoming TODO items
