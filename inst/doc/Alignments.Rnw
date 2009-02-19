@@ -166,7 +166,7 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
 
 The type of pairwise sequence alignment is set by specifying the \Rfunarg{type}
 argument to be one of \texttt{"global"}, \texttt{"local"}, \texttt{"overlap"},
-\texttt{"subjectOverlap"}, and \texttt{"patternOverlap"}.
+\texttt{"global-local"}, and \texttt{"local-global"}.
 
 <<main2>>=
 pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
@@ -503,7 +503,7 @@ function(pattern, x, ignore.case = FALSE, value = FALSE, max.distance = 0.1)
   distance <-
     - pairwiseAlignment(pattern = x, subject = pattern,
                         substitutionMatrix = substitutionMatrix,
-                        type = "patternOverlap",
+                        type = "local-global",
                         gapOpening = 0, gapExtension = -1,
                         scoreOnly = TRUE)
   whichClose <- which(distance <= max.distance)
@@ -797,7 +797,7 @@ genBankAlign <-
   pairwiseAlignment(srPhiX174, genBankSubstring,
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
-                    type = "subjectOverlap")
+                    type = "global-local")
 summary(genBankAlign, weight = wtPhiX174)
 
 revisedPhage <-
@@ -1142,7 +1142,7 @@ genBankFullAlign <-
   pairwiseAlignment(srPhiX174, genBankPhage,
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
-                    type = "subjectOverlap")
+                    type = "global-local")
 summary(genBankFullAlign, weight = wtPhiX174)
 @
 \item Plot the coverage of these alignments and use the \Rfunction{slice}
@@ -1163,7 +1163,7 @@ genBankFullAlignRevComp <-
   pairwiseAlignment(srPhiX174, reverseComplement(genBankPhage),
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
-                    type = "subjectOverlap")
+                    type = "global-local")
 table(score(genBankFullAlignRevComp) > score(genBankFullAlign))
 @
 \end{enumerate}

@@ -58,7 +58,7 @@ alignPhiX174 <-
   pairwiseAlignment(srPhiX174, genBankSubstring,
                     patternQuality = SolexaQuality(quPhiX174),
                     subjectQuality = SolexaQuality(99L),
-                    type = "subjectOverlap")
+                    type = "global-local")
 summary(alignPhiX174, weight = wtPhiX174)
 }
 \keyword{datasets}

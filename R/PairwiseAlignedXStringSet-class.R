@@ -78,7 +78,16 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
         stop("'pattern' and 'subject' must have the same number of characters")
     type <-
       match.arg(type,
-                c("global", "local", "overlap", "patternOverlap", "subjectOverlap"))
+                c("global", "local", "overlap", "global-local", "local-global",
+                  "subjectOverlap", "patternOverlap"))
+    if (type == "subjectOverlap") {
+      warning("type = 'subjectOverlap' has been renamed type = 'global-local'")
+      type <- "global-local"
+    }
+    if (type == "patternOverlap") {
+      warning("type = 'patternOverlap' has been renamed type = 'local-global'")
+      type <- "local-global"
+    }
     gapOpening <- as.double(- abs(gapOpening))
     if (length(gapOpening) != 1 || is.na(gapOpening))
         stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -223,8 +232,8 @@ setMethod("initialize", "PairwiseAlignedXStringSet",
     {
         if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
             stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
-        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "patternOverlap", "subjectOverlap")))
-            stop("'type' must be one of 'global', 'local', 'overlap', 'patternOverlap', or 'subjectOverlap'")
+        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "global-local", "local-global")))
+            stop("'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
         if (length(pattern) != length(subject))
             stop("'length(pattern)' must equal 'length(subject)'")
         gapOpening <- as.double(- abs(gapOpening))
@@ -254,8 +263,8 @@ setMethod("initialize", "PairwiseAlignedXStringSet",
     message <- character(0)
     if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
         message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
-    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "patternOverlap", "subjectOverlap")))
-        message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'patternOverlap', or 'subjectOverlap'")
+    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
+        message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
     if (length(pattern) != length(subject))
         message <- c(message, "'length(pattern)' must equal 'length(subject)'")
     if (length(object@gapOpening) != 1 || is.na(object@gapOpening))
@@ -318,8 +327,9 @@ setMethod("show", "PairwiseAlignedXStringSet",
             cat("Empty Pairwise Alignment\n")
         else {
             cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
-                "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
-                "local" = "Local"), " ", class(object), " (1 of ", length(object), ")\n", sep = "")
+                       "local" = "Local", "global-local" = "Global-Local",
+                       "local-global" = "Local-Global"),
+                " ", class(object), " (1 of ", length(object), ")\n", sep = "")
             if (width(pattern(object))[1] == 0 || width(subject(object))[1] == 0) {
                 patternSpaces <- 0
                 subjectSpaces <- 0

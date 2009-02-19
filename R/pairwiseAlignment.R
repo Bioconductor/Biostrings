@@ -88,11 +88,19 @@ function(pattern,
     stop("'length(subject)' must equal 1 or 'length(pattern)'")
   type <-
     match.arg(type,
-              c("global", "local", "overlap",
-                "patternOverlap", "subjectOverlap"))
+              c("global", "local", "overlap", "global-local", "local-global",
+                "subjectOverlap", "patternOverlap"))
+  if (type == "subjectOverlap") {
+    warning("type = 'subjectOverlap' has been renamed type = 'global-local'")
+    type <- "global-local"
+  }
+  if (type == "patternOverlap") {
+    warning("type = 'patternOverlap' has been renamed type = 'local-global'")
+    type <- "local-global"
+  }
   typeCode <-
-    c("global" = 1L, "local" = 2L, "overlap" = 3L,
-      "patternOverlap" = 4L, "subjectOverlap" = 5L)[[type]]
+    c("global" = 1L, "local" = 2L, "overlap" = 3L, "global-local" = 4L,
+      "local-global" = 5L)[[type]]
   gapOpening <- as.double(- abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
     stop("'gapOpening' must be a non-positive numeric vector of length 1")
@@ -186,11 +194,19 @@ function(pattern,
     stop("'length(subject)' must equal 1 or 'length(pattern)'")
   type <-
     match.arg(type,
-              c("global", "local", "overlap",
-                "patternOverlap", "subjectOverlap"))
+              c("global", "local", "overlap", "global-local", "local-global",
+                "subjectOverlap", "patternOverlap"))
+  if (type == "subjectOverlap") {
+    warning("type = 'subjectOverlap' has been renamed type = 'global-local'")
+    type <- "global-local"
+  }
+  if (type == "patternOverlap") {
+    warning("type = 'patternOverlap' has been renamed type = 'local-global'")
+    type <- "local-global"
+  }
   typeCode <-
-    c("global" = 1L, "local" = 2L, "overlap" = 3L,
-      "patternOverlap" = 4L, "subjectOverlap" = 5L)[[type]]
+    c("global" = 1L, "local" = 2L, "overlap" = 3L, "global-local" = 4L,
+      "local-global" = 5L)[[type]]
   gapOpening <- as.double(- abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
     stop("'gapOpening' must be a non-positive numeric vector of length 1")

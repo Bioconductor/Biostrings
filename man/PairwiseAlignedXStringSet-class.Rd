@@ -90,14 +90,14 @@
     or an \code{\link{XStringSet}} object of length 1 or 2.}
   \item{subject}{a character vector of length 1 or an \code{\link{XString}} object.}
   \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
-    \code{"overlap"}, \code{"patternOverlap"}, and \code{"subjectOverlap"} where
+    \code{"overlap"}, \code{"global-local"}, and \code{"local-global"} where
       \code{"global"} = align whole strings with end gap penalties,
       \code{"local"} = align string fragments,
       \code{"overlap"} = align whole strings without end gap penalties,
-      \code{"patternOverlap"} = align whole strings without end gap penalties on
-        \code{pattern} and with end gap penalties on \code{subject},
-      \code{"subjectOverlap"} = align whole strings with end gap penalties on
-        \code{pattern} and without end gap penalties on \code{subject}.}
+      \code{"global-local"} = align whole strings with end gap penalties on
+        \code{pattern} and without end gap penalties on \code{subject}.
+      \code{"local-global"} = align whole strings without end gap penalties on
+        \code{pattern} and with end gap penalties on \code{subject}.}
   \item{substitutionMatrix}{substitution matrix for the alignment. If NULL,
      the diagonal values and off-diagonal values are set to 0 and 1 respectively.}
   \item{gapOpening}{the cost for opening a gap in the alignment.}
@@ -177,7 +177,7 @@
     \item{}{
       \code{type(x)}:
       The type of the alignment (\code{"global"}, \code{"local"},
-      \code{"overlap"}, \code{"patternOverlap"}, or \code{"subjectOverlap"}).
+      \code{"overlap"}, \code{"global-local"}, or \code{"local-global"}).
       There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
     }
   }

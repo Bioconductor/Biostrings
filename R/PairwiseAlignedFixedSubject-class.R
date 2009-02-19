@@ -94,8 +94,8 @@ setMethod("initialize", "PairwiseAlignedFixedSubject",
     {
         if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
             stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
-        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "patternOverlap", "subjectOverlap")))
-            stop("'type' must be one of 'global', 'local', 'overlap', 'patternOverlap', or 'subjectOverlap'")
+        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "global-local", "local-global")))
+            stop("'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
         if (length(pattern) != length(subject))
             stop("'length(pattern)' must equal 'length(subject)'")
         gapOpening <- as.double(- abs(gapOpening))
@@ -125,8 +125,8 @@ setMethod("initialize", "PairwiseAlignedFixedSubject",
     message <- character(0)
     if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
         message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
-    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "patternOverlap", "subjectOverlap")))
-        message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'patternOverlap', or 'subjectOverlap'")
+    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
+        message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
     if (length(pattern) != length(subject))
         message <- c(message, "'length(pattern)' must equal 'length(subject)'")
     if (length(object@gapOpening) != 1 || is.na(object@gapOpening))
@@ -205,8 +205,9 @@ setMethod("summary", "PairwiseAlignedFixedSubject", function(object, weight=1L, 
 setMethod("show", "PairwiseAlignedFixedSubjectSummary", function(object)
           {
               cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
-                         "patternOverlap" = "Pattern Overlap", "subjectOverlap" = "Subject Overlap",
-                         "local" = "Local"), " Fixed Subject Pairwise Alignment\n", sep = "")
+                         "local" = "Local", "global-local" = "Global-Local",
+                         "local-global" = "Local-Global"),
+                  " Fixed Subject Pairwise Alignment\n", sep = "")
               cat("Number of Alignments:  ", length(score(object)), "\n", sep = "")
               cat("\nScores:\n")
               print(summary(score(object)))

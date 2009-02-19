@@ -144,7 +144,7 @@ o Added new containers for storing a big set of sequences:
   The 2 families are almost the same from a user point of view, but the
   internal representations and method implementations are very different.
   The XStringList family was a first attempt to address the problem of storing
-  a big set of sequences in an efficent manner but its performance turned out
+  a big set of sequences in an efficient manner but its performance turned out
   to be disappointing. So the XStringSet family was introduced as a response
   to the poor performance of the XStringList container.
   The XStringList family might be removed soon.
@@ -175,7 +175,7 @@ o Added the IRanges, UnlockedIRanges, Views, LockedIRanges and NormalIRanges
 
 o Versatile constructor RNAString() (resp. DNAString()) now converts from DNA
   to RNA (resp. RNA to DNA) by replacing T by U (resp. U by T) instead of
-  trying to mimic transciption. This conversion is still performed without
+  trying to mimic transcription. This conversion is still performed without
   copying the sequence data and thus remains very fast.
   Also the semantic of comparing RNA with DNA has been changed to remain
   consistent with the new semantic of RNAString() and DNAString() e.g.
@@ -227,7 +227,7 @@ o Added the subseq() generic function with methods for XString and
 
 o Added functions read.BStringSet(), read.DNAStringSet(), read.RNAStringSet(),
   read.AAStringSet() and write.XStringSet(). read.BStringSet() and family is
-  now prefered over read.XStringViews() for loading a FASTA file into R.
+  now preferred over read.XStringViews() for loading a FASTA file into R.
   Renamed helper function BStringViewsToFASTArecords() ->
   XStringSetToFASTArecords().
 
@@ -301,7 +301,7 @@ o Implemented the "shortcut feature" to C function CWdna_exact_search().
   minutes) (Vmatch needs 60G of disk space to build all its suffix arrays,
   don't know how long it takes for this, don't know what's the memory
   footprint either when they are loaded into memory but it looks like it
-  is several Gigas).
+  is several gigabytes).
   matchPDict() only works with a dictionary of DNA patterns where all the
   patterns have the same number of nucleotides and it does only exact
   matching for now (Vmatch doesn't have this kind of limitations).
@@ -319,7 +319,7 @@ o matchPDict() now returns an MIndex object (new class) instead of a list
   not yet stabilized!
 
 o Added the matchPDict() and countPDict() functions for efficiently finding
-  (or just counting) all occurences in a text (the subject) of any pattern
+  (or just counting) all occurrences in a text (the subject) of any pattern
   from a set of patterns (the dictionary). The types of pattern dictionaries
   currently supported are constant width DNA dictionaries (CWdna_PDict
   objects) and "Trusted Prefix" DNA dictionaries (a particular case of
@@ -370,4 +370,3 @@ o Changed license from LGPL to Artistic-2.0
 o Added the matchLRPatterns() function for finding in a sequence patterns
   that are defined by a left and a right part.
   See ?matchLRPatterns for the details.
-

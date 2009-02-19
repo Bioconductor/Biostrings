@@ -11,11 +11,11 @@
 #define NEGATIVE_INFINITY R_NegInf
 #define MAX_BUF_SIZE      1048576
 
-#define          GLOBAL_ALIGNMENT 1
-#define           LOCAL_ALIGNMENT 2
-#define         OVERLAP_ALIGNMENT 3
-#define PATTERN_OVERLAP_ALIGNMENT 4
-#define SUBJECT_OVERLAP_ALIGNMENT 5
+#define       GLOBAL_ALIGNMENT 1
+#define        LOCAL_ALIGNMENT 2
+#define      OVERLAP_ALIGNMENT 3
+#define GLOBAL_LOCAL_ALIGNMENT 4
+#define LOCAL_GLOBAL_ALIGNMENT 5
 
 #define SUBSTITUTION 'S'
 #define DELETION     'D'
@@ -592,12 +592,12 @@ static double pairwiseAlignment(
  * 'subject':                XStringSet or QualityScaledXStringSet object for subject
  * 'type':                   type of pairwise alignment
  *                           (character vector of length 1;
- *                            'global', 'local', 'overlap',
- *                            'patternOverlap', 'subjectOverlap')
+ *                            'global', 'local', 'overlap', 'global-local',
+ *                            'local-global')
  * 'typeCode':               type of pairwise alignment
  *                           (integer vector of length 1;
  *                            1 = 'global', 2 = 'local', 3 = 'overlap',
- *                            4 = 'patternOverlap', 5 = 'subjectOverlap')
+ *                            4 = 'global-local', 5 = 'local-global')
  * 'scoreOnly':              denotes whether or not to only return the scores
  *                           of the optimal pairwise alignment
  *                           (logical vector of length 1)
@@ -689,9 +689,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 	if (useQualityValue)
 		align2Info.quality = _get_XStringSet_elt_asRoSeq(subjectQuality, 0);
 	align1Info.endGap =
-		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == SUBJECT_OVERLAP_ALIGNMENT);
+		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == GLOBAL_LOCAL_ALIGNMENT);
 	align2Info.endGap =
-		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == PATTERN_OVERLAP_ALIGNMENT);
+		(INTEGER(typeCode)[0] == GLOBAL_ALIGNMENT || INTEGER(typeCode)[0] == LOCAL_GLOBAL_ALIGNMENT);
 
 	SEXP output;
 
