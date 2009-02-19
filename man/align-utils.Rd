@@ -64,7 +64,7 @@
   \S4method{consensusMatrix}{character}(x, freq=FALSE)
   \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
   \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x, baseOnly=FALSE, freq=FALSE,
-                                                          gapCode="-", endgapCode="-")
+                  gapCode="-", endgapCode="-")
   consensusString(x)
 }
 
