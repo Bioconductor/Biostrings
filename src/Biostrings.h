@@ -701,10 +701,10 @@ SEXP match_BOC2_exact(
 
 /* match_PWM.c */
 
-SEXP PWM_score(
+SEXP PWM_score_starting_at(
 	SEXP pwm,
 	SEXP subject,
-	SEXP start
+	SEXP starting_at
 );
 
 SEXP match_PWM(

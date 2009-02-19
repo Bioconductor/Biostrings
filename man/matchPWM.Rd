@@ -2,11 +2,14 @@
 
 \alias{maxWeights}
 \alias{maxScore}
-\alias{PWMscore}
+\alias{PWMscoreStartingAt}
 \alias{matchPWM}
 \alias{countPWM}
 
 \alias{reverseComplement,matrix-method}
+
+% Deprecated:
+\alias{PWMscore}
 
 
 \title{A simple PWM matching function and related utilities}
@@ -20,7 +23,7 @@
 \usage{
   matchPWM(pwm, subject, min.score="80\%")
   countPWM(pwm, subject, min.score="80\%")
-  PWMscore(pwm, subject, start = 1)
+  PWMscoreStartingAt(pwm, subject, starting.at=1)
 
   ## Utility functions for basic manipulation of the Position Weight Matrix
   maxWeights(pwm)
@@ -58,7 +61,7 @@
   A single integer for \code{countPWM}.
 
   An integer vector containing the Position Weight Matrix-based scores
-  for \code{PWMscore}.
+  for \code{PWMscoreStartingAt}.
 
   An integer vector containing the max weight for each position in \code{pwm}
   for \code{maxWeights}.
@@ -88,7 +91,7 @@
   reverseComplement(pwm)
 
   subject <- DNAString("AGTAAACAA")
-  PWMscore(pwm, subject, c(2:1, NA))
+  PWMscoreStartingAt(pwm, subject, starting.at=c(2:1, NA))
 
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chr3R <- unmasked(Dmelanogaster$chr3R)

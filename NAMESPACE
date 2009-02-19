@@ -208,7 +208,7 @@ export(
 
     ## matchPWM.R
     maxWeights, maxScore,
-    PWMscore, matchPWM, countPWM,
+    PWMscoreStartingAt, matchPWM, countPWM,
 
     ## findPalindromes.R
     findPalindromes, findComplementedPalindromes,
@@ -222,7 +222,8 @@ export(
  
     ## Old stuff (Defunct or Deprecated):
     nmismatchStartingAt, nmismatchEndingAt, isMatching,
-    matchDNAPattern
+    matchDNAPattern,
+    PWMscore
 )
 
 exportMethods(

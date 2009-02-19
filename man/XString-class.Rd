@@ -1,7 +1,7 @@
 \name{XString-class}
 \docType{class}
 
-% Classes
+% Classes:
 \alias{class:XString}
 \alias{XString-class}
 \alias{class:BString}

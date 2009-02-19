@@ -72,18 +72,24 @@ setMethod("reverseComplement", "matrix",
     }
 )
 
-PWMscore <- function(pwm, subject, start=1)
+PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
 {
     ## checking 'pwm'
     pwm <- .normargPwm(pwm)
     ## checking 'subject'
     subject <- .normargSubject(subject)
-    ## checking 'start'
-    if (!is.numeric(start))
-        stop("'start' must be a vector of integers")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    .Call("PWM_score", pwm, subject, start, PACKAGE="Biostrings")
+    ## checking 'starting.at'
+    if (!is.numeric(starting.at))
+        stop("'starting.at' must be a vector of integers")
+    if (!is.integer(starting.at))
+        starting.at <- as.integer(starting.at)
+    .Call("PWM_score_starting_at", pwm, subject, starting.at, PACKAGE="Biostrings")
+}
+
+PWMscore <- function(pwm, subject, start=1)
+{
+    .Deprecated('PWMscoreStartingAt')
+    PWMscoreStartingAt(pwm, subject, starting.at=start)
 }
 
 ### pwm: the Position Weight Matrix (integer matrix with row names A, C, G and T)

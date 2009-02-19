@@ -48,12 +48,12 @@ static int compute_score(const int *pwm, int pwm_ncol, const char *S, int nS, in
 
 /*
  * --- .Call ENTRY POINT ---
- * PWM_score() arguments are assumed to be:
+ * PWM_score_starting_at() arguments are assumed to be:
  *   pwm: the Position Weight Matrix (integer matrix with row names A, C, G and T)
  *   subject: a DNAString object containing the subject sequence
- *   start: an integer vector of arbitrary length (NAs accepted)
+ *   starting_at: an integer vector of arbitrary length (NAs accepted)
  */
-SEXP PWM_score(SEXP pwm, SEXP subject, SEXP start)
+SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at)
 {
 	RoSeq S;
 	int pwm_ncol, i, *start_elt, *ans_elt;
@@ -64,9 +64,9 @@ SEXP PWM_score(SEXP pwm, SEXP subject, SEXP start)
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
 	S = _get_XString_asRoSeq(subject);
 	init_DNAcode2PWMrowoffset();
-	PROTECT(ans = NEW_INTEGER(LENGTH(start)));
-	for (i = 0, start_elt = INTEGER(start), ans_elt = INTEGER(ans);
-	     i < LENGTH(start);
+	PROTECT(ans = NEW_INTEGER(LENGTH(starting_at)));
+	for (i = 0, start_elt = INTEGER(starting_at), ans_elt = INTEGER(ans);
+	     i < LENGTH(starting_at);
 	     i++, start_elt++, ans_elt++) {
 		if (*start_elt == NA_INTEGER) {
 			*ans_elt = NA_INTEGER;
