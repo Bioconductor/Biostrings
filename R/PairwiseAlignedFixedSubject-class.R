@@ -234,20 +234,22 @@ setMethod("nchar", "PairwiseAlignedFixedSubjectSummary",
 ###
 
 setMethod("aligned", "PairwiseAlignedFixedSubject",
-          function(x, degap = FALSE) {
+          function(x, degap=FALSE, gapCode="-", endgapCode="-") {
               if (degap) {
                   value <- aligned(pattern(x), degap = degap)
               } else {
                   codecX <- codec(x)
                   if (is.null(codecX)) {
-                      gapCode <- charToRaw("-")
+                      gapCode <- charToRaw(gapCode)
+                      endgapCode <- charToRaw(endgapCode)
                   } else {
                       letters2codes <- codecX@codes
                       names(letters2codes) <- codecX@letters
-                      gapCode <- as.raw(letters2codes[["-"]])
+                      gapCode <- as.raw(letters2codes[[gapCode]])
+                      endgapCode <- as.raw(letters2codes[[endgapCode]])
                   }
                   value <-
-                    .Call("PairwiseAlignedFixedSubject_align_aligned", x, gapCode, PACKAGE="Biostrings")
+                    .Call("PairwiseAlignedFixedSubject_align_aligned", x, gapCode, endgapCode, PACKAGE="Biostrings")
               }
               value
           })

@@ -76,7 +76,7 @@
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
-  \S4method{coverage}{MIndex}(x, start=NA, end=NA)
+  \S4method{coverage}{MIndex}(x, start=NA, end=NA, weight=1L)
   \S4method{coverage}{XStringViews}(x, start=NA, end=NA, weight=1L)
   \S4method{coverage}{MaskedXString}(x, start=NA, end=NA, weight=1L)
 }
@@ -162,7 +162,7 @@
   used: for each position specified in \code{starting.at}, P is compared to
   all the substrings S' of S starting at this position and the smallest
   distance is returned. Note that this distance is guaranteed to be reached
-  for a substrings of length < 2*length(P) so, of course, in practise,
+  for a substrings of length < 2*length(P) so, of course, in practice,
   P only needs to be compared to a small number of substrings for every
   starting position.
 }
@@ -182,7 +182,7 @@
   If \code{subject} is an \link{XStringSet}, then returns a logical matrix
   with \code{length(subject)} rows and \code{length(starting.at)}
   (or \code{length(ending.at)}) columns.
-  \code{neditAt} and \code{isMatchingAt} are conveniency wrappers for
+  \code{neditAt} and \code{isMatchingAt} are convenience wrappers for
   \code{neditStartingAt} and \code{isMatchingStartingAt}, respectively.
 
   \code{mismatch}:  a list of integer vectors.

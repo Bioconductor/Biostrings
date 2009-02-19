@@ -157,10 +157,11 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 }
 
 
-SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
+SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEXP endgapCode)
 {
 	int i, j;
 	char gapCodeValue = (char) RAW(gapCode)[0];
+	char endgapCodeValue = (char) RAW(endgapCode)[0];
 
 	SEXP pattern = GET_SLOT(alignment, install("pattern"));
 	SEXP unalignedPattern = GET_SLOT(pattern, install("unaligned"));
@@ -217,7 +218,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 		int numberOfIndelSubject = get_IRanges_length(indelElementSubject);
 
 		for (j = 0; j < *rangeStartSubject - 1; j++) {
-			mappedStringPtr[index] = gapCodeValue;
+			mappedStringPtr[index] = endgapCodeValue;
 			index++;
 		}
 		int jPattern = 1;
@@ -257,7 +258,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode)
 			}
 		}
 		for (j = *rangeStartSubject + (*rangeWidthSubject - 1); j < numberOfChars; j++) {
-			mappedStringPtr[index] = gapCodeValue;
+			mappedStringPtr[index] = endgapCodeValue;
 			index++;
 		}
 		UNPROTECT(2);

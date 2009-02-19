@@ -62,30 +62,32 @@
   PairwiseAlignedFixedSubjectSummary objects}
 
 \description{
-  The \code{PairwiseAlignedXStringSet} class is a container for storing an elementwise
-  pairwise alignment.
-  The \code{PairwiseAlignedFixedSubject} class is a container for storing a pairwise
-  alignment with a single subject.
-  The \code{PairwiseAlignedFixedSubjectSummary} class is a container for storing the
-  summary of an alignment.
+  The \code{PairwiseAlignedXStringSet} class is a container for storing an
+  elementwise pairwise alignment.
+  The \code{PairwiseAlignedFixedSubject} class is a container for storing a
+  pairwise alignment with a single subject.
+  The \code{PairwiseAlignedFixedSubjectSummary} class is a container for storing
+  the summary of an alignment.
 }
 
 \usage{
   ## Constructors:
   ## When subject is missing, pattern must be of length 2
-  \S4method{PairwiseAlignedXStringSet}{XString,XString}(pattern, subject, type = "global",
-    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-  \S4method{PairwiseAlignedXStringSet}{XStringSet,missing}(pattern, subject, type = "global",
-    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-  \S4method{PairwiseAlignedXStringSet}{character,character}(pattern, subject, type = "global",
-    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1, baseClass = "BString")
-  \S4method{PairwiseAlignedXStringSet}{character,missing}(pattern, subject, type = "global",
-    substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1, baseClass = "BString")
+  \S4method{PairwiseAlignedXStringSet}{XString,XString}(pattern, subject,
+    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+  \S4method{PairwiseAlignedXStringSet}{XStringSet,missing}(pattern, subject,
+    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+  \S4method{PairwiseAlignedXStringSet}{character,character}(pattern, subject,
+    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
+    baseClass = "BString")
+  \S4method{PairwiseAlignedXStringSet}{character,missing}(pattern, subject,
+    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
+    baseClass = "BString")
 }
 
 \arguments{
-  \item{pattern}{a character vector of length 1 or 2, an \code{\link{XString}}, or an
-    \code{\link{XStringSet}} object of length 1 or 2.}
+  \item{pattern}{a character vector of length 1 or 2, an \code{\link{XString}},
+    or an \code{\link{XStringSet}} object of length 1 or 2.}
   \item{subject}{a character vector of length 1 or an \code{\link{XString}} object.}
   \item{type}{type of alignment. One of \code{"global"}, \code{"local"},
     \code{"overlap"}, \code{"patternOverlap"}, and \code{"subjectOverlap"} where
@@ -99,7 +101,8 @@
   \item{substitutionMatrix}{substitution matrix for the alignment. If NULL,
      the diagonal values and off-diagonal values are set to 0 and 1 respectively.}
   \item{gapOpening}{the cost for opening a gap in the alignment.}
-  \item{gapExtension}{the incremental cost incurred along the length of the gap in the alignment.}
+  \item{gapExtension}{the incremental cost incurred along the length of the gap
+     in the alignment.}
   \item{baseClass}{the base \code{\link{XString}} class to use in the alignment.}
 }
 
@@ -185,11 +188,13 @@
 
   \describe{
     \item{}{
-      \code{aligned(x, degap = FALSE)}:
+      \code{aligned(x, degap = FALSE, gapCode="-", endgapCode="-")}:
       If \code{degap = FALSE}, ``align" the alignments by returning an
       \code{XStringSet} object containing the aligned patterns without
       insertions. If \code{degap = TRUE}, returns
       \code{aligned(pattern(x), degap=TRUE)}.
+      The \code{gapCode} and \code{endgapCode} arguments denote the code in the
+      appropriate \code{\link{alphabet}} to use for the internal and end gaps.
     }
     \item{}{
       \code{as.character(x)}:
@@ -211,7 +216,8 @@
 
   \describe{
     \item{}{
-      \code{consensusMatrix(x, baseOnly=FALSE, freq=FALSE)}
+      \code{consensusMatrix(x, baseOnly=FALSE, freq=FALSE, gapCode="-",
+        endgapCode="-")}
       See `\link{consensusMatrix}` for more information.
     }
     \item{}{
@@ -220,7 +226,8 @@
     }
     \item{}{
       \code{coverage(x, start=NA, end=NA, weight=1L)}
-      See `\link{coverage,PairwiseAlignedFixedSubject-method}` for more information.
+      See `\link{coverage,PairwiseAlignedFixedSubject-method}` for more
+      information.
     }
     \item{}{
       \code{Views(subject, start=NA, end=NA, names=NULL)}:
@@ -257,11 +264,13 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new \code{PairwiseAlignedXStringSet} object made of the selected elements.
+      Returns a new \code{PairwiseAlignedXStringSet} object made of the selected
+      elements.
     }
     \item{}{
       \code{rep(x, times)}:
-      Returns a new \code{PairwiseAlignedXStringSet} object made of the repeated elements.
+      Returns a new \code{PairwiseAlignedXStringSet} object made of the repeated
+      elements.
     }
   }
 }
@@ -281,7 +290,8 @@
   PairwiseAlignedXStringSet("-PA--W-HEAE", "HEAGAWGHE-E")
   pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
   subject <- AAString("SMDDTEKMSMKL")
-  nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+  nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50",
+    gapOpening = -3, gapExtension = -1)
   pattern(nw1)
   subject(nw1)
   aligned(nw1)

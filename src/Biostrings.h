@@ -492,20 +492,6 @@ SEXP ByName_MIndex_endIndex(
 	SEXP all_names
 );
 
-void ByPos_MIndex_coverage(
-	SEXP ends_list,
-	SEXP mindex_width,
-	SEXP start,
-	SEXP ans
-);
-
-void ByName_MIndex_coverage(
-	SEXP ends_envir,
-	SEXP mindex_width,
-	SEXP start,
-	SEXP ans
-);
-
 SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 
@@ -887,7 +873,8 @@ SEXP AlignedXStringSet_align_aligned(
 
 SEXP PairwiseAlignedFixedSubject_align_aligned(
 	SEXP alignment,
-	SEXP gapCode
+	SEXP gapCode,
+	SEXP endgapCode
 );
 
 SEXP align_compareStrings(

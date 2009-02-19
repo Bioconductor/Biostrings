@@ -363,32 +363,8 @@ setMethod("coverage", "MaskedXString",
 )
 
 setMethod("coverage", "MIndex",
-    function(x, start=NA, end=NA)
-    {
-        if (!isSingleNumber(start))
-            stop("'start' must be a single integer")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (!isSingleNumber(end))
-            stop("'end' must be a single integer")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        width <- end - start + 1L
-        if (width < 0)
-            stop("'end' must be >= 'start' - 1")
-		ans <- rep.int(0L, end - start + 1L)
-        if (is(x, "ByPos_MIndex"))
-            .Call("ByPos_MIndex_coverage",
-                  endIndex(x), x@width, start, ans,
-                  PACKAGE="Biostrings")
-        else if (is(x, "ByName_MIndex"))
-            .Call("ByName_MIndex_coverage",
-                  x@ends_envir, x@width, start, ans,
-                  PACKAGE="Biostrings")
-        else
-            stop("Biostrings internal error: unknown MIndex subtype ", class(x))
-        Rle(ans)
-    }
+    function(x, start=NA, end=NA, weight=1L)
+        coverage(unlist(x), start=start, end=end, weight=weight)
 )
 
 

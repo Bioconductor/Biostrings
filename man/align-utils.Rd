@@ -63,6 +63,8 @@
   compareStrings(pattern, subject)
   \S4method{consensusMatrix}{character}(x, freq=FALSE)
   \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
+  \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x, baseOnly=FALSE, freq=FALSE,
+                                                          gapCode="-", endgapCode="-")
   consensusString(x)
 }
 
@@ -75,22 +77,22 @@
   frequencies of the mismatches for the \code{AlignedXStringSet} or
   \code{PairwiseAlignedFixedSubject} object.
 
-  \code{compareStrings} combines two equal-length strings that are assumed to be aligned
-  into a single character string containing that replaces mismatches with \code{"?"},
-  insertions with \code{"+"}, and deletions with \code{"-"}.
+  \code{compareStrings} combines two equal-length strings that are assumed to be
+  aligned into a single character string containing that replaces mismatches
+  with \code{"?"}, insertions with \code{"+"}, and deletions with \code{"-"}.
 
-  \code{consensusMatrix} computes a consensus matrix for a set of equal-length strings that
-  are assumed to be aligned.
+  \code{consensusMatrix} computes a consensus matrix for a set of equal-length
+  strings that are assumed to be aligned.
 
-  \code{consensusString} creates the string based on a 50\% + 1 vote from the consensus
-  matrix with unknowns labeled with \code{"?"}.
+  \code{consensusString} creates the string based on a 50\% + 1 vote from the
+  consensus matrix with unknowns labeled with \code{"?"}.
 }
 
 \arguments{
   \item{x}{
     A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
-    \code{PairwiseAlignedXStringSet}, or \code{list} of FASTA records containing the
-    equal-length strings.
+    \code{PairwiseAlignedXStringSet}, or \code{list} of FASTA records containing
+    the equal-length strings.
   }
   \item{shiftLeft, shiftRight}{
     Non-positive and non-negative integers respectively that specify how many
@@ -110,7 +112,8 @@
     The strings to compare. Can be of type \code{character}, \code{XString},
     \code{XStringSet}, \code{AlignedXStringSet}, or, in the case of
     \code{pattern}, \code{PairwiseAlignedXStringSet}. If \code{pattern} is a
-    \code{PairwiseAlignedXStringSet} object, then \code{subject} must be missing.
+    \code{PairwiseAlignedXStringSet} object, then \code{subject} must be
+    missing.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
@@ -122,7 +125,12 @@
     then the \code{baseOnly} argument is ignored.
   }
   \item{freq}{
-    If \code{TRUE}, then letter frequencies (per position) are reported, otherwise counts.
+    If \code{TRUE}, then letter frequencies (per position) are reported,
+    otherwise counts.
+  }
+  \item{gapCode, endgapCode}{
+    The codes in the appropriate \code{\link{alphabet}} to use for the internal
+    and end gaps.
   }
 }
 
@@ -168,4 +176,3 @@
 }
 
 \keyword{methods}
-

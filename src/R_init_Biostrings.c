@@ -69,8 +69,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_MIndex_utils, 0),
 	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
 	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
-	CALLMETHOD_DEF(ByPos_MIndex_coverage, 4),
-	CALLMETHOD_DEF(ByName_MIndex_coverage, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
 /* match_pattern_at.c */
@@ -141,7 +139,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(PairwiseAlignedXStringSet_nmatch, 4),
 	CALLMETHOD_DEF(AlignedXStringSet_nchar, 1),
 	CALLMETHOD_DEF(AlignedXStringSet_align_aligned, 2),
-	CALLMETHOD_DEF(PairwiseAlignedFixedSubject_align_aligned, 2),
+	CALLMETHOD_DEF(PairwiseAlignedFixedSubject_align_aligned, 3),
 	CALLMETHOD_DEF(align_compareStrings, 6),
 
 /* pmatchPattern.c */

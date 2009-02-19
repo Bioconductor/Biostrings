@@ -383,9 +383,10 @@ setMethod("consensusMatrix", "XStringViews",
           })
 
 setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
-          function(x, baseOnly=FALSE, freq=FALSE)
+          function(x, baseOnly=FALSE, freq=FALSE, gapCode="-", endgapCode="-")
           {
-              consensusMatrix(aligned(x), baseOnly=baseOnly, freq=freq)
+              consensusMatrix(aligned(x, gapCode=gapCode, endgapCode=endgapCode),
+                              baseOnly=baseOnly, freq=freq)
           })
 
 setGeneric("consensusString", signature = "x", function(x)  standardGeneric("consensusString"))
