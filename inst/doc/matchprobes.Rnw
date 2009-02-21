@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Handling probe sequence information}
-%\VignetteDepends{Biostrings, hgu95av2probe, hgu95av2cdf, affy}
+%\VignetteDepends{Biostrings, hgu95av2probe, hgu95av2cdf, affy, affydata}
 %\VignetteKeywords{Expression Analysis}
 %\VignettePackage{Biostrings}
 
@@ -71,9 +71,9 @@ First, let us load the \Rpackage{Biostrings} package and some other packages
 we will use.
 %
 <<startup,results=hide>>=
-library("Biostrings")
-library("hgu95av2probe")
-library("hgu95av2cdf")
+library(Biostrings)
+library(hgu95av2probe)
+library(hgu95av2cdf)
 @
 
 %------------------------------------------------------------
@@ -127,12 +127,13 @@ DNA sequences can be reversed and/or complemented with the
 \subsubsection{Matching sets of probes against each other}
 <<matchprobes>>=
 pm <- DNAStringSet(hgu95av2probe$sequence)
-pdict <- PDict(pm)
-subject <- pm[3001:4000]
-m <- vcountPDict(pdict, subject)
-table(colSums(m))
-which(colSums(m) == 3)
-ii <- which(m[ , 877] != 0)
+dict <- pm[3801:4000]
+pdict <- PDict(dict)
+m <- vcountPDict(pdict, pm)
+dim(m)
+table(rowSums(m))
+which(rowSums(m) == 3)
+ii <- which(m[77, ] != 0)
 pm[ii]
 @
 
@@ -173,7 +174,7 @@ $x$ and $y$--coordinates. Let us construct a vector \Robject{abseq}
 that aligns with the rows of an \textit{hgu95av2} \Rclass{AffyBatch}
 and fill in the sequences:
 <<>>=
-library("affy")
+library(affy)
 abseq = rep(as.character(NA), nr*nc) 
 ipm = with(hgu95av2probe, xy2indices(x, y, nr=nr))
 any(duplicated(ipm))  # just a sanity check
@@ -234,12 +235,10 @@ GC = ordered(bc[,"G"] + bc[,"C"])
 colores = rainbow(nlevels(GC))
 @
 
-And let us create an \Rclass{AffyBatch} object. (WARNING:
-\Rpackage{matchprobes} is deprecated so CL2001032020AA.cel
-will be moved to a new home soon!)
+And let us create an \Rclass{AffyBatch} object.
 <<abatch>>=
-library(matchprobes)
-f <- system.file("extdata", "CL2001032020AA.cel", package="matchprobes")
+library(affydata)
+f <- system.file("celfiles", "CL2001032020AA.cel", package="affydata")
 pd <- new("AnnotatedDataFrame", data=data.frame(fromFile=I(f), row.names="f"))
 abatch <- read.affybatch(filenames=f, compress=TRUE, phenoData=pd)
 @

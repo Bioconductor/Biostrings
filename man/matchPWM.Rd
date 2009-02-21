@@ -28,11 +28,11 @@
   ## Utility functions for basic manipulation of the Position Weight Matrix
   maxWeights(pwm)
   maxScore(pwm)
-  #reverseComplement(x, ...) # S4 method for matrix objects
+  \S4method{reverseComplement}{matrix}(x, ...)
 }
 
 \arguments{
-  \item{pwm}{
+  \item{pwm, x}{
     A Position Weight Matrix (integer matrix with row names A, C, G and T).
   }
   \item{subject}{
@@ -43,16 +43,14 @@
     Can be given as a percentage (e.g. \code{"85\%"}) of the highest possible
     score or as an integer.
   }
-  \item{start}{
-    A vector of integers indicating the subject start position.
+  \item{starting.at}{
+    An integer vector specifying the starting positions of the
+    Position Weight Matrix relatively to the subject.
   }
-%  \item{x}{
-%    A Position Weight Matrix.
-%  }
-%  \item{...}{
-%    Additional arguments are currently ignored by the \code{reverseComplement}
-%    method for matrix objects.
-%  }
+  \item{...}{
+    Additional arguments are currently ignored by the \code{reverseComplement}
+    method for matrix objects.
+  }
 }
 
 \value{
@@ -108,4 +106,3 @@
 \keyword{methods}
 \keyword{manip}
 \keyword{utilities}
-
