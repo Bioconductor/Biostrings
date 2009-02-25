@@ -29,7 +29,7 @@
 \alias{ACtree}
 
 \alias{show,ACtree-method}
-\alias{[,ACtree,ANY,ANY,ANY-method}
+\alias{[,ACtree-method}
 \alias{as.matrix,ACtree-method}
 \alias{initialize,ACtree-method}
 
@@ -307,7 +307,7 @@
 \references{
   Aho, Alfred V.; Margaret J. Corasick (June 1975). "Efficient string
   matching: An aid to bibliographic search".
-  Communications of the ACM 18 (6): 333–340.
+  Communications of the ACM 18 (6): 333-340.
 }
 
 \seealso{

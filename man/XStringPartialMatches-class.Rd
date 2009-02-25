@@ -13,7 +13,7 @@
 
 % Standard generic methods:
 \alias{show,XStringPartialMatches-method}
-\alias{[,XStringPartialMatches,ANY,ANY,ANY-method}
+\alias{[,XStringPartialMatches-method}
 
 \title{XStringPartialMatches objects}
 

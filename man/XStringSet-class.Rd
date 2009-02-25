@@ -49,7 +49,7 @@
 
 \alias{show,XStringSet-method}
 
-\alias{[,XStringSet,ANY,ANY,ANY-method}
+\alias{[,XStringSet-method}
 \alias{rep,XStringSet-method}
 \alias{[[,XStringSet-method}
 \alias{[[<-,XStringSet-method}

@@ -37,8 +37,8 @@
 
 % Standard generic methods:
 \alias{show,PairwiseAlignedXStringSet-method}
-\alias{[,PairwiseAlignedXStringSet,ANY,ANY,ANY-method}
-\alias{[<-,PairwiseAlignedXStringSet,ANY,ANY,ANY-method}
+\alias{[,PairwiseAlignedXStringSet-method}
+\alias{[<-,PairwiseAlignedXStringSet-method}
 \alias{rep,PairwiseAlignedXStringSet-method}
 
 % Methods for PairwiseAlignedFixedSubject:

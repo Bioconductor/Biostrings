@@ -33,9 +33,9 @@
 \alias{show,AlignedXStringSet-method}
 \alias{as.character,AlignedXStringSet-method}
 \alias{toString,AlignedXStringSet-method}
-\alias{[,AlignedXStringSet,ANY,ANY,ANY-method}
-\alias{[,QualityAlignedXStringSet,ANY,ANY,ANY-method}
-\alias{[<-,AlignedXStringSet,ANY,ANY,ANY-method}
+\alias{[,AlignedXStringSet-method}
+\alias{[,QualityAlignedXStringSet-method}
+\alias{[<-,AlignedXStringSet-method}
 \alias{rep,AlignedXStringSet-method}
 
 
