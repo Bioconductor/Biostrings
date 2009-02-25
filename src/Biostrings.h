@@ -529,7 +529,7 @@ int _nedit_for_Proffset(
 	int *min_width
 );
 
-SEXP match_pattern_at(
+SEXP XString_match_pattern_at(
 	SEXP pattern,
 	SEXP subject,
 	SEXP at,
@@ -540,7 +540,7 @@ SEXP match_pattern_at(
 	SEXP ans_type
 );
 
-SEXP vmatch_pattern_at(
+SEXP XStringSet_vmatch_pattern_at(
 	SEXP pattern,
 	SEXP subject,
 	SEXP at,

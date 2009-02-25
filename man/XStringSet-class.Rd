@@ -61,7 +61,6 @@
 \alias{setdiff,XStringSet,XStringSet-method}
 \alias{setequal,XStringSet,XStringSet-method}
 
-\alias{as.list,XStringSet-method}
 \alias{as.character,XStringSet-method}
 \alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}
@@ -347,10 +346,6 @@
       equal-width strings.
       \code{use.names} controls whether or not \code{names(x)} should be used
       to set the row names of the returned matrix (default is \code{TRUE}).
-    }
-    \item{}{
-      \code{as.list(x)}:
-      Return the elements in \code{x} as a standard R list.
     }
     \item{}{
       \code{toString(x)}:

@@ -281,8 +281,7 @@ if (FALSE) {
   table(nhit_per_probe)
 
   ## Without vcountPDict(), 'mat1' could have been computed with:
-  mat2 <- sapply(seq_len(length(subject)),
-                 function(i) countPDict(pdict0, subject[[i]]))
+  mat2 <- sapply(unname(subject), function(x) countPDict(pdict0, x))
   identical(mat1, mat2)  # TRUE
   ## but using vcountPDict() is faster (10x or more, depending of the
   ## average length of the sequences in 'subject').
@@ -290,12 +289,20 @@ if (FALSE) {
   if (interactive()) {
     ## This will fail (with message "allocMatrix: too many elements
     ## specified") because, on most platforms, vectors and matrices in R
-    ## cannot have more than 2^31 elements:
+    ## are limited to 2^31 elements:
     subject <- Dmelanogaster$upstream1000
     vcountPDict(pdict0, subject)
     length(pdict0) * length(Dmelanogaster$upstream1000)
     1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
   }
+
+  ATtriplets <- DNAStringSet(mkAllStrings(c("A", "T"), 3))
+  subject <- xscat(ATtriplets, ATtriplets)
+  dict <- append(ATtriplets, rev(ATtriplets))
+  pdict <- PDict(dict)
+  mat3 <- vcountPDict(pdict, subject)
+  mat4 <- sapply(subject, function(x) countPDict(pdict, x))
+  identical(mat3, mat4)  # TRUE
 }
 
 \keyword{methods}

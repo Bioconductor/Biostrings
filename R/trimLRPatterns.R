@@ -46,8 +46,8 @@ function(Lpattern = "", Rpattern = "", subject,
         ncharSubject <- nchar(subject)[1]
         Rstarting.at <- ncharSubject:(ncharSubject - ncharRpattern + 1L)
         Rcandidate <-
-          t(t(neditStartingAt(Rpattern, subject, starting.at = Rstarting.at,
-                              with.indels = with.Rindels, fixed = Rfixed)) <=
+          t(neditStartingAt(Rpattern, subject, starting.at = Rstarting.at,
+                              with.indels = with.Rindels, fixed = Rfixed) <=
             max.Rmismatch)
         if (is(subject, "XString")) {
             Rcandidate <- matrix(Rcandidate, nrow = 1)
@@ -78,8 +78,8 @@ function(Lpattern = "", Rpattern = "", subject,
         
         Lending.at <- seq_len(ncharLpattern)
         Lcandidate <-
-          t(t(neditEndingAt(Lpattern, subject, ending.at = Lending.at,
-                            with.indels = with.Lindels, fixed = Lfixed)) <=
+          t(neditEndingAt(Lpattern, subject, ending.at = Lending.at,
+                            with.indels = with.Lindels, fixed = Lfixed) <=
             max.Lmismatch)
         if (is(subject, "XString")) {
             Lcandidate <- matrix(Lcandidate, nrow = 1)

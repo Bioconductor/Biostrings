@@ -28,7 +28,6 @@
 
 \alias{as.character,XStringViews-method}
 \alias{as.matrix,XStringViews-method}
-\alias{as.list,XStringViews-method}
 \alias{toString,XStringViews-method}
 
 
@@ -145,11 +144,6 @@
       if \code{x} contains "out of limit" views (default is \code{TRUE}).
       With \code{check.limits=FALSE} then "out of limit" views are padded
       with spaces.
-    }
-    \item{}{
-      \code{as.list(x)}:
-      Convert \code{x} to a list of \link{XString} objects.
-      Can't be used if \code{x} has "out of limits" views (raise an error).
     }
     \item{}{
       \code{toString(x)}:

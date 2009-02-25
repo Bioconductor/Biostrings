@@ -10,6 +10,7 @@
 ###
 
 setClass("MIndex",
+    contains="ListLike",
     representation(
         "VIRTUAL",
         width="integer"

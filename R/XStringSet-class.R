@@ -24,6 +24,7 @@
 ###   )
 ###
 ###   setClass("XStringSet",
+###     contains="ListLike",
 ###     representation(
 ###         "VIRTUAL",
 ###         xrvlist="list",   # a list of RawPtrViews objects
@@ -51,6 +52,7 @@
 ###
 
 setClass("XStringSet",
+    contains="ListLike",
     representation(
         "VIRTUAL",
         super="XString",
@@ -590,15 +592,6 @@ setMethod("setequal", c("XStringSet", "XStringSet"),
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other coercion methods.
 ###
-
-setMethod("as.list", "XStringSet",
-    function(x, ...)
-    {
-        ans <- lapply(seq_len(length(x)), function(i) x[[i]])
-        names(ans) <- names(x)
-        ans
-    }
-)
 
 setMethod("as.character", "XStringSet",
     function(x, use.names=TRUE)

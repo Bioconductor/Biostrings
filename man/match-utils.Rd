@@ -87,7 +87,7 @@
   }
   \item{subject}{
     An \link{XString}, \link{XStringSet} object, or character vector
-    containing the subject sequence.
+    containing the subject sequence(s).
   }
   \item{starting.at, ending.at, at}{
     An integer vector specifying the starting (for \code{starting.at}
@@ -169,19 +169,30 @@
 
 \value{
   \code{neditStartingAt} and \code{neditEndingAt}: If \code{subject} is an
-  \link{XString}, then returns an integer vector of the same length as
+  \link{XString} object, then return an integer vector of the same length as
   \code{starting.at} (or \code{ending.at}). If \code{subject} is an
-  \link{XStringSet}, then returns an integer matrix with
-  \code{length(subject)} rows and \code{length(starting.at)}
-  (or \code{length(ending.at)}) columns.
+  \link{XStringSet} object, then return the integer matrix with
+  \code{length(starting.at)} (or \code{length(ending.at)}) rows
+  and \code{length(subject)} columns defined by (in the case of
+  \code{neditStartingAt}):
+  \preformatted{
+    sapply(unname(subject),
+           function(x) neditStartingAt(pattern, x, ...))
+  }
 
   \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}:
-  If \code{subject} is an \link{XString}, then returns a logical vector
-  defined by \code{neditStartingAt(...) <= max.mismatch} or
+  If \code{subject} is an \link{XString} object, then return the logical
+  vector defined by \code{neditStartingAt(...) <= max.mismatch} or
   \code{neditEndingAt(...) <= max.mismatch}, respectively.
-  If \code{subject} is an \link{XStringSet}, then returns a logical matrix
-  with \code{length(subject)} rows and \code{length(starting.at)}
-  (or \code{length(ending.at)}) columns.
+  If \code{subject} is an \link{XStringSet} object, then return the logical
+  matrix with \code{length(starting.at)} (or \code{length(ending.at)}) rows
+  and \code{length(subject)} columns defined by (in the case of
+  \code{isMatchingStartingAt}):
+  \preformatted{
+    sapply(unname(subject),
+           function(x) isMatchingStartingAt(pattern, x, ...))
+  }
+
   \code{neditAt} and \code{isMatchingAt} are convenience wrappers for
   \code{neditStartingAt} and \code{isMatchingStartingAt}, respectively.
 

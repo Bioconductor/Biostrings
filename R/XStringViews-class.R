@@ -431,20 +431,6 @@ setMethod("as.matrix", "XStringViews",
     }
 )
 
-### This overrides the "as.list" method for IRanges objects with a
-### totally different semantic!
-setMethod("as.list", "XStringViews",
-    function(x)
-    {
-        lx <- length(x)
-        ans <- vector("list", lx)
-        for (i in 1:lx) {
-            ans[[i]] <- x[[i]]
-        }
-        ans
-    }
-)
-
 setMethod("toString", "XStringViews",
     function(x, ...)
     {

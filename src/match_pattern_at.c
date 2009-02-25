@@ -298,6 +298,41 @@ int _nedit_for_Proffset(const RoSeq *P, const RoSeq *S, int Proffset,
 
 
 /****************************************************************************
+ * match_pattern_at()
+ */
+
+static void match_pattern_at(const RoSeq *P, const RoSeq *S, SEXP at, int at_type0,
+		int max_mm, int indels, int ans_type0, int *ans_elt)
+{
+	int at_length, i, *at_elt, offset, nmismatch, min_width;
+
+	at_length = LENGTH(at);
+	for (i = 0, at_elt = INTEGER(at); i < at_length; i++, at_elt++, ans_elt++)
+	{
+		if (*at_elt == NA_INTEGER) {
+			*ans_elt = ans_type0 ? NA_INTEGER : NA_LOGICAL;
+			continue;
+		}
+		if (indels) {
+			offset = *at_elt - 1;
+			if (at_type0 == 0)
+				nmismatch = _nedit_for_Ploffset(P, S, offset, max_mm, 1, &min_width);
+			else
+				nmismatch = _nedit_for_Proffset(P, S, offset, max_mm, 1, &min_width);
+		} else {
+			if (at_type0 == 0)
+				offset = *at_elt - 1;
+			else
+				offset = *at_elt - P->nelt;
+			nmismatch = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mm);
+		}
+		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
+	}
+	return;
+}
+
+
+/****************************************************************************
  * --- .Call ENTRY POINT ---
  * Arguments:
  *   pattern
@@ -310,12 +345,12 @@ int _nedit_for_Proffset(const RoSeq *P, const RoSeq *S, int Proffset,
  *             not at the specified positions, 1 for an integer vector giving
  *             the number of mismatches at the specified positions;
  */
-SEXP match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
+SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
 	RoSeq P, S;
-	int at_length, at_type0, max_mm, indels, fixedP, fixedS, ans_type0,
-	    i, *at_elt, *ans_elt, offset, nmismatch, min_width;
+	int at_length, at_type0, max_mm, indels, fixedP, fixedS,
+	    ans_type0, *ans_elt;
 	SEXP ans;
 
 	P = _get_XString_asRoSeq(pattern);
@@ -339,47 +374,28 @@ SEXP match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	if (!indels)
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
-	for (i = 0, at_elt = INTEGER(at); i < at_length; i++, at_elt++, ans_elt++)
-	{
-		if (*at_elt == NA_INTEGER) {
-			*ans_elt = ans_type0 ? NA_INTEGER : NA_LOGICAL;
-			continue;
-		}
-		if (indels) {
-			offset = *at_elt - 1;
-			if (at_type0 == 0)
-				nmismatch = _nedit_for_Ploffset(&P, &S, offset, max_mm, 1, &min_width);
-			else
-				nmismatch = _nedit_for_Proffset(&P, &S, offset, max_mm, 1, &min_width);
-		} else {
-			if (at_type0 == 0)
-				offset = *at_elt - 1;
-			else
-				offset = *at_elt - P.nelt;
-			nmismatch = _selected_nmismatch_at_Pshift_fun(&P, &S, offset, max_mm);
-		}
-		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
-	}
+	match_pattern_at(&P, &S, at, at_type0, max_mm, indels, ans_type0, ans_elt);
 	UNPROTECT(1);
 	return ans;
 }
 
 
 /*
- * Arguments are the same as for match_pattern_at() except for:
+ * Arguments are the same as for XString_match_pattern_at() except for:
  *   subject: XStringSet object.
  */
-SEXP vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
+SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
 	RoSeq P, S_elt;
 	CachedXStringSet S;
-	int at_length, at_type0, max_mm, indels, fixedP, fixedS, ans_type0,
-	    S_length, i, j, *at_elt, *ans_elt, offset, nmismatch, min_width;
+	int S_length, at_length, at_type0, max_mm, indels, fixedP, fixedS,
+	    ans_type0, *ans_elt, i;
 	SEXP ans;
 
 	P = _get_XString_asRoSeq(pattern);
 	S = _new_CachedXStringSet(subject);
+	S_length = _get_XStringSet_length(subject);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	max_mm = INTEGER(max_mismatch)[0];
@@ -389,45 +405,21 @@ SEXP vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	if (indels && !(fixedP && fixedS))
 		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
 	ans_type0 = INTEGER(ans_type)[0];
-	S_length = _get_XStringSet_length(subject);
 	if (ans_type0) {
-		PROTECT(ans = allocMatrix(INTSXP, S_length, at_length));
+		PROTECT(ans = allocMatrix(INTSXP, at_length, S_length));
+		ans_elt = INTEGER(ans);
 	} else {
-		PROTECT(ans = allocMatrix(LGLSXP, S_length, at_length));
+		PROTECT(ans = allocMatrix(LGLSXP, at_length, S_length));
+		ans_elt = LOGICAL(ans);
 	}
 	if (!indels)
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
-	for (i = 0; i < S_length; i++) {
+	for (i = 0; i < S_length; i++, ans_elt += at_length) {
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
-		if (ans_type0) {
-			ans_elt = INTEGER(ans) + i;
-		} else {
-			ans_elt = LOGICAL(ans) + i;
-		}
-		for (j = 0, at_elt = INTEGER(at); j < at_length; j++, at_elt++)
-		{
-			if (*at_elt == NA_INTEGER) {
-				*ans_elt = ans_type0 ? NA_INTEGER : NA_LOGICAL;
-			} else {
-				if (indels) {
-					offset = *at_elt - 1;
-					if (at_type0 == 0)
-						nmismatch = _nedit_for_Ploffset(&P, &S_elt, offset, max_mm, 1, &min_width);
-					else
-						nmismatch = _nedit_for_Proffset(&P, &S_elt, offset, max_mm, 1, &min_width);
-				} else {
-					if (at_type0 == 0)
-						offset = *at_elt - 1;
-					else
-						offset = *at_elt - P.nelt;
-					nmismatch = _selected_nmismatch_at_Pshift_fun(&P, &S_elt, offset, max_mm);
-				}
-				*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
-			}
-			ans_elt = ans_elt + S_length;
-		}
+		match_pattern_at(&P, &S_elt, at, at_type0, max_mm, indels, ans_type0, ans_elt);
 	}
 	UNPROTECT(1);
 	return ans;
 }
+

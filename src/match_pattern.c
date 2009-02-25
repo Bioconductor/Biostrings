@@ -80,6 +80,11 @@ static void match_naive_inexact(const RoSeq *P, const RoSeq *S,
 	return;
 }
 
+
+/****************************************************************************
+ * match_pattern()
+ */
+
 static void match_pattern(const RoSeq *P, const RoSeq *S, SEXP algorithm,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed)
 {

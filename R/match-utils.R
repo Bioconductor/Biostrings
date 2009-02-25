@@ -140,7 +140,7 @@ isMatchingAt <- function(pattern, subject, at=1,
         max.mismatch <- length(pattern)
     with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, subject)
-    .Call("match_pattern_at",
+    .Call("XString_match_pattern_at",
           pattern, subject, at, at.type,
           max.mismatch, with.indels, fixed, ans.type,
           PACKAGE="Biostrings")
@@ -164,7 +164,7 @@ isMatchingAt <- function(pattern, subject, at=1,
         max.mismatch <- length(pattern)
     with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, subject)
-    .Call("vmatch_pattern_at",
+    .Call("XStringSet_vmatch_pattern_at",
           pattern, subject, at, at.type,
           max.mismatch, with.indels, fixed, ans.type,
           PACKAGE="Biostrings")

@@ -147,7 +147,7 @@
   ## A. matchPattern()/countPattern()
   ## ---------------------------------------------------------------------
 
-  ## A simple inexact matching example with a short subject
+  ## A simple inexact matching example with a short subject:
   x <- DNAString("AAGCGCGATATG")
   m1 <- matchPattern("GCNNNAT", x)
   m1
@@ -155,14 +155,14 @@
   m2
   as.matrix(m2)
 
-  ## With DNA sequence of yeast chromosome number 1
+  ## With DNA sequence of yeast chromosome number 1:
   data(yeastSEQCHR1)
   yeast1 <- DNAString(yeastSEQCHR1)
   PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
   match1.PpiI <- matchPattern(PpiI, yeast1, fixed=FALSE)
   match2.PpiI <- matchPattern(PpiI, yeast1, max.mismatch=1, fixed=FALSE)
 
-  ## With a genome containing isolated Ns
+  ## With a genome containing isolated Ns:
   library(BSgenome.Celegans.UCSC.ce2)
   chrII <- Celegans[["chrII"]]
   alphabetFrequency(chrII)
@@ -170,12 +170,12 @@
   matchPattern("TGGGTGTCTTT", chrII) # no match
   matchPattern("TGGGTGTCTTT", chrII, fixed=FALSE) # 1 match
 
-  ## Using wildcards ("N") in the pattern on a genome containing N-blocks
+  ## Using wildcards ("N") in the pattern on a genome containing N-blocks:
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chrX <- maskMotif(Dmelanogaster$chrX, "N")
   as(chrX, "XStringViews") # 4 non masked regions
   matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
-  ## Can also be achieved with no mask
+  ## Can also be achieved with no mask:
   masks(chrX) <- NULL
   matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
 
@@ -205,31 +205,31 @@
   pattern <- DNAString("ACGGACCTAATGTTATC")
   subject <- Celegans$chrI
 
-  ## Allowing up to 2 mismatching letters doesn't give any match
+  ## Allowing up to 2 mismatching letters doesn't give any match:
   matchPattern(pattern, subject, max.mismatch=2)
 
-  ## But allowing up to 2 edit operations gives 3 matches
+  ## But allowing up to 2 edit operations gives 3 matches:
   system.time(m <- matchPattern(pattern, subject, max.mismatch=2, with.indels=TRUE))
   m
 
-  ## pairwiseAlignment() returns the (first) best match only
+  ## pairwiseAlignment() returns the (first) best match only:
   mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
   system.time(pwa <- pairwiseAlignment(pattern, subject, type="local",
                        substitutionMatrix=mat, gapOpening=0, gapExtension=1))
   pwa
 
-  ## Only "best local matches" are reported
-  ##   - with deletions in the subject
+  ## Only "best local matches" are reported:
+    ## - with deletions in the subject
   subject <- BString("ACDEFxxxCDEFxxxABCE")
   matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
   matchPattern("ABCDEF", subject, max.mismatch=2)
-  ##   - with insertions in the subject
-  subject <- BString("AxBCDxEFxxxABCDxxFxxxAxBCDEF")
+    ## - with insertions in the subject
+  subject <- BString("AiBCDiEFxxxABCDiiFxxxAiBCDEFxxxABCiDEF")
   matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
   matchPattern("ABCDEF", subject, max.mismatch=2)
-  ##   - with substitutions (note that the "best local matches" can introduce
-  ##     indels and therefore bet shorter than 6)
-  subject <- BString("AxCDEFxxxABDCEFxxxBACDEFxxxABCEDF")
+    ## - with substitutions (note that the "best local matches" can introduce
+    ##   indels and therefore be shorter than 6)
+  subject <- BString("AsCDEFxxxABDCEFxxxBACDEFxxxABCEDF")
   matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
   matchPattern("ABCDEF", subject, max.mismatch=2)
 }
