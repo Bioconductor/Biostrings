@@ -798,21 +798,21 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP alignedPatternRange, alignedPatternRangeStart, alignedPatternRangeWidth;
 		SEXP alignedPatternMismatch;
 		SEXP alignedPatternMismatchElements, alignedPatternMismatchValues;
-		SEXP alignedPatternMismatchLengths, alignedPatternMismatchCompressedIndices;
+		SEXP alignedPatternMismatchLengths;
 		SEXP alignedPatternIndel;
 		SEXP alignedPatternIndelElements, alignedPatternIndelRange;
 		SEXP alignedPatternIndelRangeStart, alignedPatternIndelRangeWidth;
-		SEXP alignedPatternIndelLengths, alignedPatternIndelCompressedIndices;
+		SEXP alignedPatternIndelLengths;
 
 		SEXP alignedSubject;
 		SEXP alignedSubjectRange, alignedSubjectRangeStart, alignedSubjectRangeWidth;
 		SEXP alignedSubjectMismatch;
 		SEXP alignedSubjectMismatchElements, alignedSubjectMismatchValues;
-		SEXP alignedSubjectMismatchLengths, alignedSubjectMismatchCompressedIndices;
+		SEXP alignedSubjectMismatchLengths;
 		SEXP alignedSubjectIndel;
 		SEXP alignedSubjectIndelElements, alignedSubjectIndelRange;
 		SEXP alignedSubjectIndelRangeStart, alignedSubjectIndelRangeWidth;
-		SEXP alignedSubjectIndelLengths, alignedSubjectIndelCompressedIndices;
+		SEXP alignedSubjectIndelLengths;
 
 		SEXP alignedScore;
 
@@ -820,37 +820,11 @@ SEXP XStringSet_align_pairwiseAlignment(
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternMismatchLengths = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternIndelLengths = NEW_INTEGER(numberOfStrings));
-		if (numberOfStrings == 0) {
-			PROTECT(alignedPatternMismatchCompressedIndices = NEW_INTEGER(1));
-			PROTECT(alignedPatternIndelCompressedIndices = NEW_INTEGER(1));
-			INTEGER(alignedPatternMismatchCompressedIndices)[0] = 1;
-			INTEGER(alignedPatternIndelCompressedIndices)[0] = 1;
-		} else {
-			PROTECT(alignedPatternMismatchCompressedIndices = NEW_INTEGER(2));
-			PROTECT(alignedPatternIndelCompressedIndices = NEW_INTEGER(2));
-			INTEGER(alignedPatternMismatchCompressedIndices)[0] = 1;
-			INTEGER(alignedPatternMismatchCompressedIndices)[1] = numberOfStrings + 1;
-			INTEGER(alignedPatternIndelCompressedIndices)[0] = 1;
-			INTEGER(alignedPatternIndelCompressedIndices)[1] = numberOfStrings + 1;
-		}
 
 		PROTECT(alignedSubjectRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectMismatchLengths = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedSubjectIndelLengths = NEW_INTEGER(numberOfStrings));
-		if (numberOfStrings == 0) {
-			PROTECT(alignedSubjectMismatchCompressedIndices = NEW_INTEGER(1));
-			PROTECT(alignedSubjectIndelCompressedIndices = NEW_INTEGER(1));
-			INTEGER(alignedSubjectMismatchCompressedIndices)[0] = 1;
-			INTEGER(alignedSubjectIndelCompressedIndices)[0] = 1;
-		} else {
-			PROTECT(alignedSubjectMismatchCompressedIndices = NEW_INTEGER(2));
-			PROTECT(alignedSubjectIndelCompressedIndices = NEW_INTEGER(2));
-			INTEGER(alignedSubjectMismatchCompressedIndices)[0] = 1;
-			INTEGER(alignedSubjectMismatchCompressedIndices)[1] = numberOfStrings + 1;
-			INTEGER(alignedSubjectIndelCompressedIndices)[0] = 1;
-			INTEGER(alignedSubjectIndelCompressedIndices)[1] = numberOfStrings + 1;
-		}
 
 		PROTECT(alignedScore = NEW_NUMERIC(numberOfStrings));
 
@@ -998,7 +972,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 	    SET_VECTOR_ELT(alignedPatternMismatchElements, 0, alignedPatternMismatchValues);
 		SET_SLOT(alignedPatternMismatch, mkChar("elements"), alignedPatternMismatchElements);
 		SET_SLOT(alignedPatternMismatch, mkChar("elementLengths"), alignedPatternMismatchLengths);
-		SET_SLOT(alignedPatternMismatch, mkChar("compressedIndices"), alignedPatternMismatchCompressedIndices);
 		SET_SLOT(alignedPattern, mkChar("mismatch"), alignedPatternMismatch);
 		/* Set the "indel" sub-slot */
 		PROTECT(alignedPatternIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
@@ -1014,7 +987,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 	    SET_VECTOR_ELT(alignedPatternIndelElements, 0, alignedPatternIndelRange);
 		SET_SLOT(alignedPatternIndel, mkChar("elements"), alignedPatternIndelElements);
 		SET_SLOT(alignedPatternIndel, mkChar("elementLengths"), alignedPatternIndelLengths);
-		SET_SLOT(alignedPatternIndel, mkChar("compressedIndices"), alignedPatternIndelCompressedIndices);
 		SET_SLOT(alignedPattern, mkChar("indel"), alignedPatternIndel);
 		SET_SLOT(output, mkChar("pattern"), alignedPattern);
 
@@ -1038,7 +1010,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 	    SET_VECTOR_ELT(alignedSubjectMismatchElements, 0, alignedSubjectMismatchValues);
 		SET_SLOT(alignedSubjectMismatch, mkChar("elements"), alignedSubjectMismatchElements);
 		SET_SLOT(alignedSubjectMismatch, mkChar("elementLengths"), alignedSubjectMismatchLengths);
-		SET_SLOT(alignedSubjectMismatch, mkChar("compressedIndices"), alignedSubjectMismatchCompressedIndices);
 		SET_SLOT(alignedSubject, mkChar("mismatch"), alignedSubjectMismatch);
 		/* Set the "indel" sub-slot */
 		PROTECT(alignedSubjectIndel = NEW_OBJECT(MAKE_CLASS("IRangesList")));
@@ -1054,7 +1025,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 	    SET_VECTOR_ELT(alignedSubjectIndelElements, 0, alignedSubjectIndelRange);
 		SET_SLOT(alignedSubjectIndel, mkChar("elements"), alignedSubjectIndelElements);
 		SET_SLOT(alignedSubjectIndel, mkChar("elementLengths"), alignedSubjectIndelLengths);
-		SET_SLOT(alignedSubjectIndel, mkChar("compressedIndices"), alignedSubjectIndelCompressedIndices);
 		SET_SLOT(alignedSubject, mkChar("indel"), alignedSubjectIndel);
 		SET_SLOT(output, mkChar("subject"), alignedSubject);
 
@@ -1071,7 +1041,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		/* Output is ready */
-		UNPROTECT(34);
+		UNPROTECT(30);
 	}
 
 	return output;
