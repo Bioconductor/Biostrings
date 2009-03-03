@@ -187,49 +187,15 @@
   }
 
   ## ---------------------------------------------------------------------
-  ## B. WITH NAMED PATTERNS
-  ## ---------------------------------------------------------------------
-
-## Currently broken, sorry!
-if (FALSE) {
-  dict1 <- dict0[8211:8236]
-  names(dict1) <- LETTERS
-  dict1                                # The original dictionary.
-  pdict1 <- PDict(dict1)
-  
-  length(pdict1)                       # Same as the original dictionary.
-  names(pdict1)                        # Same as names(dict1).
-  mindex <- matchPDict(pdict1, chr3R)  # Search...
-
-  ## Looking at the matches
-  names(mindex)                        # Same as names(dict1).
-  start_index <- startIndex(mindex)
-  start_index
-  length(start_index)                  # NOT the same as the original
-                                       # dictionary.
-  start_index <- startIndex(mindex, all.names=TRUE)
-  length(start_index)                  # Same as the original dictionary.
-  countIndex(mindex)
-  unlist(mindex)
-  length(unlist(mindex))               # Total number of matches.
-  all_matches <- extractAllMatches(chr3R, mindex)
-  all_matches
-  names(all_matches)
-}
-
-  ## ---------------------------------------------------------------------
-  ## C. PERFORMANCE
+  ## B. PERFORMANCE
   ## ---------------------------------------------------------------------
 
   ## If getting the number of matches is what matters only (without
   ## regarding their positions), then countPDict() will be faster,
   ## especially when there is a high number of matches
 
-## Currently broken, sorry!
-if (FALSE) {
-  count_index1 <- countPDict(pdict1, chr3R)
-  identical(count_index1, count_index) # TRUE
-}
+  count_index0 <- countPDict(pdict0, chr3R)
+  identical(count_index0, count_index)  # TRUE
 
   if (interactive()) {
     ## What's the impact of the dictionary width on performance?

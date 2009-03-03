@@ -178,19 +178,14 @@
 .matchTB_PDict <- function(pdict, subject, algorithm,
                            max.mismatch, fixed, verbose, count.only)
 {
-    pdict_names <- names(pdict)
-    if (is.null(pdict_names))
-        envir <- NULL
-    else
-        envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAString"))
         C_ans <- .XString.matchPDict(pdict, subject,
                                      max.mismatch, fixed,
-                                     count.only, envir)
+                                     count.only, NULL)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .XStringViews.matchPDict(pdict, subject,
                                           max.mismatch, fixed,
-                                          count.only, envir)
+                                          count.only, NULL)
     else
         stop("'subject' must be a DNAString object,\n",
              "  a MaskedDNAString object,\n",
@@ -198,19 +193,12 @@
     if (count.only %in% c(TRUE, NA))  # whichPDict() or countPDict()
         return(C_ans)
     # matchPDict()
-    if (is.null(pdict_names))
-        new("ByPos_MIndex", ends=C_ans, width=width(pdict))
-    else
-        new("ByName_MIndex", length=length(pdict), ends_envir=C_ans,
-                             width=width(pdict), NAMES=pdict_names)
+    new("ByPos_MIndex", ends=C_ans, width=width(pdict))
 }
 
 .matchMTB_PDict <- function(pdict, subject, algorithm,
                             max.mismatch, fixed, verbose, count.only)
 {
-    pdict_names <- names(pdict)
-    if (!is.null(pdict_names))
-        stop("MTB_PDict objects with names are not supported yet")
     tb_pdicts <- as.list(pdict)
     NTB <- length(tb_pdicts)
     max.mismatch0 <- NTB - 1L
@@ -245,16 +233,12 @@
     )
     if (is.na(count.only)) # whichPDict()
         return(unique(sort(unlist(ans_parts))))
-    if (is.null(pdict_names)) {
-        if (verbose)
-            cat("Combining the results obtained for ",
-                "each TB_PDict component...\n", sep="")
-        st <- system.time(ans <- ByPos_MIndex.combine(ans_parts), gcFirst=TRUE)
-        if (verbose)
-            print(st)
-    } else {
-        stop("not ready yet")
-    }
+    if (verbose)
+        cat("Combining the results obtained for ",
+            "each TB_PDict component...\n", sep="")
+    st <- system.time(ans <- ByPos_MIndex.combine(ans_parts), gcFirst=TRUE)
+    if (verbose)
+        print(st)
     if (count.only) # countPDict()
         return(countIndex(ans))
     # matchPDict()
@@ -306,15 +290,10 @@
 {
     if (!count.only)
         stop("'count.only' must be TRUE (other values are not supported yet, sorry)")
-    pdict_names <- names(pdict)
-    if (is.null(pdict_names))
-        envir <- NULL
-    else
-        envir <- new.env(hash=TRUE, parent=emptyenv())
     if (is(subject, "DNAStringSet"))
         C_ans <- .XStringSet.vmatchPDict(pdict, subject,
                                          max.mismatch, fixed,
-                                         count.only, envir)
+                                         count.only, NULL)
     else
         stop("'subject' must be a DNAStringSet object")
     C_ans
