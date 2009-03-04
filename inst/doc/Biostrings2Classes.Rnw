@@ -209,15 +209,9 @@ vectors and \Robject{i} is a {\it single} integer,
 \Robject{Views(b, start, end)[[i]]}
 is equivalent to \Robject{subseq(b, start[i], end[i])}.
 
-The following is the same as doing \Robject{subject(v4)}
-(provided as a convenience):
-<<c7>>=
-v4[[0]]
-@
-
 Subsetting also works with negative or logical values with the expected
 semantic (the same as for R built-in vectors):
-<<c8>>=
+<<c7>>=
 v4[-3]
 v4[c(TRUE, FALSE)]
 @
