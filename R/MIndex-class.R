@@ -19,6 +19,11 @@ setClass("MIndex",
 
 setMethod("length", "MIndex", function(x) length(x@width))
 
+setReplaceMethod("names", "MIndex",
+    function(x, value)
+        stop("attempt to modify the names of a ", class(x), " instance")
+)
+
 setGeneric("startIndex", signature="x",
     function(x, all.names=FALSE) standardGeneric("startIndex"))
 
@@ -45,45 +50,6 @@ setMethod("countIndex", "MIndex",
         sapply(end_index, length)
     }
 )
-
-### Return a single integer or string (not NA).
-setMethod("[[", "MIndex",
-    function(x, i, j, ...)
-    {
-        # 'x' is guaranteed to be an MIndex object (if it's not, then
-        # the method dispatch algo would not have called this method in the
-        # first place), so nargs() is guaranteed to be >= 1
-        if (nargs() >= 3)
-            stop("too many subscripts")
-        subscripts <- list(...)
-        if (!missing(i))
-            subscripts$i <- i
-        if (!missing(j))
-            subscripts$j <- j
-        # At this point, 'subscripts' should be guaranteed
-        # to be of length <= 1
-        if (length(subscripts) == 0)
-            stop("no index specified")
-        key <- subscripts[[1]]
-        if (!is.character(key) && !is.numeric(key))
-            stop("wrong argument for subsetting an object of class \"MIndex\"")
-        if (length(key) < 1)
-            stop("attempt to select less than one element")
-        if (length(key) > 1)
-            stop("attempt to select more than one element")
-        if (is.na(key))
-            stop("subsetting an object of class \"MIndex\" with NA is not supported")
-        if (is.numeric(key)) {
-            if (!is.integer(key))
-                key <- as.integer(key)
-            if (key < 1 || length(x) < key)
-                stop("subscript out of bounds")
-        }
-        key
-    }
-)
-
-setMethod("$", "MIndex", function(x, name) x[[name]])
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,16 +84,14 @@ setMethod("show", "ByPos_MIndex",
 setMethod("[[", "ByPos_MIndex",
     function(x, i, j, ...)
     {
-        key <- callNextMethod()
-        if (is.character(key))
-            stop("MIndex object has no names")
-        if (length(x@dups0) != 0 && !is.na(key2 <- x@dups0@dup2unq[key]))
-            key <- key2
-        ans_end <- x@ends[[key]]
+        i <- callNextMethod()
+        if (length(x@dups0) != 0 && !is.na(i2 <- x@dups0@dup2unq[i]))
+            i <- i2
+        ans_end <- x@ends[[i]]
         if (is.null(ans_end))
             ans_end <- integer(0)
-        ans_width <- rep.int(x@width[key], length(ans_end))
-        ans_start <- ans_end - x@width[key] + 1L
+        ans_width <- rep.int(x@width[i], length(ans_end))
+        ans_start <- ans_end - x@width[i] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )
@@ -230,18 +194,12 @@ setMethod("show", "ByName_MIndex",
 setMethod("[[", "ByName_MIndex",
     function(x, i, j, ...)
     {
-        key <- callNextMethod()
-        if (is.character(key)) {
-            pos <- match(key, names(x))
-            if (is.na(pos))
-                stop("pattern name \"", key, "\" not found")
-            key <- pos
-        } 
-        ans_end <- x@ends_envir[[formatC(key, width=10, format="d", flag="0")]]
+        i <- callNextMethod()
+        ans_end <- x@ends_envir[[formatC(i, width=10, format="d", flag="0")]]
         if (is.null(ans_end))
             ans_end <- integer(0)
-        ans_width <- rep.int(x@width[key], length(ans_end))
-        ans_start <- ans_end - x@width[key] + 1L
+        ans_width <- rep.int(x@width[i], length(ans_end))
+        ans_start <- ans_end - x@width[i] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )

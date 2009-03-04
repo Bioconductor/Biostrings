@@ -476,32 +476,15 @@ setMethod("rep", "XStringSet",
         x[rep.int(seq_len(length(x)), times)]
 )
 
-### Extract the i-th element of an XStringSet object as an XString object.
 ### Return an XString object of the same subtype as super(x).
 ### Example:
 ###   bs <- BString("ABCD-1234-abcd")
 ###   bset <- new("BStringSet", super=bs, start=1:8, width=2L*(7:0))
 ###   bset[[3]]
-### Supported 'i' types: numeric vector of length 1.
 setMethod("[[", "XStringSet",
     function(x, i, j, ...)
     {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            stop("subscript is missing")
-        if (is.character(i))
-            stop("cannot subset a ", class(x), " object by names")
-        if (!is.numeric(i))
-            stop("invalid subscript type")
-        if (length(i) < 1L)
-            stop("attempt to select less than one element")
-        if (length(i) > 1L)
-            stop("attempt to select more than one element")
-        if (is.na(i))
-            stop("subscript cannot be NA")
-        if (i < 1L || i > length(x))
-            stop("subscript out of bounds")
+        i <- callNextMethod()
         start <- start(x@ranges)[i]
         width <- width(x@ranges)[i]
         subseq(super(x), start=start, width=width)

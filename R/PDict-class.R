@@ -306,6 +306,7 @@ setMethod("dups", "PDict3Parts",
 ###
 
 setClass("PDict",
+    contains="ListLike",
     representation(
         "VIRTUAL",
         dict0="DNAStringSet",
@@ -319,6 +320,11 @@ setMethod("length", "PDict", function(x) length(x@dict0))
 setMethod("width", "PDict", function(x) width(x@dict0))
 
 setMethod("names", "PDict", function(x) names(x@dict0))
+
+setReplaceMethod("names", "PDict",
+    function(x, value)
+        stop("attempt to modify the names of a ", class(x), " instance")
+)
 
 setMethod("dups", "PDict",
     function(x) if (length(x@dups0) == 0) NULL else x@dups0
@@ -341,17 +347,9 @@ setMethod("dups", "PDict",
 setMethod("[[", "PDict",
     function(x, i, j, ...)
     {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            stop("subscript is missing")
+        i <- callNextMethod()
         x@dict0[[i]]
     }
-)
-
-setReplaceMethod("[[", "PDict",
-    function(x, i, j,..., value)
-        stop("attempt to modify the value of a ", class(x), " instance")
 )
 
 setMethod("duplicated", "PDict",

@@ -12,13 +12,12 @@
 
 % Generics and methods:
 \alias{length,MIndex-method}
+\alias{names<-,MIndex-method}
 \alias{startIndex}
 \alias{startIndex,MIndex-method}
 \alias{endIndex}
 \alias{countIndex}
 \alias{countIndex,MIndex-method}
-\alias{[[,MIndex-method}
-\alias{$,MIndex-method}
 \alias{unlist}
 \alias{unlist,MIndex-method}
 

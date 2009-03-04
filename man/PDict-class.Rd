@@ -60,8 +60,8 @@
 \alias{length,PDict-method}
 \alias{width,PDict-method}
 \alias{names,PDict-method}
+\alias{names<-,PDict-method}
 \alias{[[,PDict-method}
-\alias{[[<-,PDict-method}
 \alias{duplicated,PDict-method}
 \alias{patternFrequency}
 \alias{patternFrequency,PDict-method}
