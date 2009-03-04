@@ -238,7 +238,7 @@ colores = rainbow(nlevels(GC))
 And let us create an \Rclass{AffyBatch} object.
 <<abatch>>=
 library(affydata)
-f <- system.file("celfiles", "CL2001032020AA.cel", package="affydata")
+f <- system.file("extracelfiles", "CL2001032020AA.cel", package="affydata")
 pd <- new("AnnotatedDataFrame", data=data.frame(fromFile=I(f), row.names="f"))
 abatch <- read.affybatch(filenames=f, compress=TRUE, phenoData=pd)
 @

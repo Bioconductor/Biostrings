@@ -16,7 +16,7 @@ Suggests: BSgenome,
 	BSgenome.Celegans.UCSC.ce2 (>= 1.3.11),
 	BSgenome.Dmelanogaster.UCSC.dm3 (>= 1.3.11),
 	drosophila2probe, hgu95av2probe,
-	hgu95av2cdf, affy, affydata (>= 1.11.4),
+	hgu95av2cdf, affy, affydata (>= 1.11.5),
 	RUnit
 License: Artistic-2.0
 LazyLoad: yes
