@@ -66,7 +66,7 @@
   The \code{QualityScaledBStringSet}, \code{QualityScaledDNAStringSet},
   \code{QualityScaledRNAStringSet} and \code{QualityScaledAAStringSet}
   functions are constructors that can be used to "naturally" turn
-  \code{x} into an QualityScaledXStringSet object of the desired subtype.
+  \code{x} into an QualityScaledXStringSet object of the desired base type.
 }
 
 \section{Accesor methods}{

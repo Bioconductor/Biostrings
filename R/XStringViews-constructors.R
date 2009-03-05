@@ -40,7 +40,7 @@ adjacentViews <- function(subject, width, gapwidth=0)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "XStringViews" generic and methods.
 ###
-### 'subjectClass' must be the name of one of the direct XString subtypes
+### 'subjectClass' must be the name of one of the direct XString subclasses
 ### i.e. "BString", "DNAString", "RNAString" or "AAString".
 ###
 ### Benchmarks:

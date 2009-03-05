@@ -83,24 +83,14 @@ setMethod("masks", "MaskedXString", function(x) x@masks)
 ### The core XString API is the strict minimal set of methods that must work
 ### for XString, XStringSet, XStringViews and MaskedXString objects.
 ### It currently consists of the following methods:
-###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
-###   o exported: alphabet, length, nchar
+###   o NOT exported: xsbasetype
+###   o exported: length, nchar
 ###
 
 ### NOT exported
-setMethod("baseXStringSubtype", "MaskedXString",
-    function(x) baseXStringSubtype(unmasked(x))
-)
-setMethod("codes", "MaskedXString", function(x, ...) codes(unmasked(x), ...))
-setMethod("codec", "MaskedXString", function(x) codec(unmasked(x)))
-setMethod("enc_lkup", "MaskedXString", function(x) enc_lkup(unmasked(x)))
-setMethod("dec_lkup", "MaskedXString", function(x) dec_lkup(unmasked(x)))
+setMethod("xsbasetype", "MaskedXString", function(x) xsbasetype(unmasked(x)))
 
 ### exported
-setMethod("alphabet", "MaskedXString",
-    function(x) alphabet(unmasked(x))
-)
-
 setMethod("length", "MaskedXString",
     function(x) length(unmasked(x))
 )
@@ -130,8 +120,8 @@ setMethod("nchar", "MaskedXString",
 {
     if (!is(unmasked(object), "XString"))
         return("the 'unmasked' slot must contain an XString object")
-    if (!is(object, paste("Masked", baseXStringSubtype(object), sep="")))
-        return("bad XString subtype for the unmasked sequence")
+    if (!is(object, paste("Masked", xsbaseclass(object), sep="")))
+        return("bad XString base type for the unmasked sequence")
     if (length(object) != width(masks(object)))
         return("the length of the object and the width of the mask collection differ")
     NULL
@@ -353,7 +343,7 @@ setReplaceMethod("masks", signature(x="XString", value="NULL"),
 setReplaceMethod("masks", signature(x="XString", value="ANY"),
     function(x, value)
     {
-        x <- as(x, paste("Masked", baseXStringSubtype(x), sep=""))
+        x <- as(x, paste("Masked", xsbaseclass(x), sep=""))
         masks(x) <- value
         x
     }

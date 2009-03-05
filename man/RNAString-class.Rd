@@ -11,9 +11,6 @@
 % Constructor-like functions and generics:
 \alias{RNAString}
 
-% Other functions and generics:
-\alias{alphabet,RNAString-method}
-
 
 \title{RNAString objects}
 
@@ -23,7 +20,7 @@
 }
 
 \details{
-  The RNAString class is a direct \link{XString} subtype
+  The RNAString class is a direct \link{XString} subclass
   (with no additional slot).
   Therefore all functions and methods described in the
   \link{XString} man page also work

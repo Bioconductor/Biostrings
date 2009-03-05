@@ -27,7 +27,6 @@
 \alias{nindel,AlignedXStringSet-method}
 \alias{length,AlignedXStringSet-method}
 \alias{nchar,AlignedXStringSet-method}
-\alias{alphabet,AlignedXStringSet-method}
 
 % Standard generic methods:
 \alias{show,AlignedXStringSet-method}

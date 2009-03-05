@@ -16,7 +16,6 @@
 
 % Accessor methods:
 \alias{alphabet}
-\alias{alphabet,BString-method}
 \alias{length,XString-method}
 \alias{nchar,XString-method}
 
@@ -53,8 +52,7 @@
   or a sequence of amino acids (\link{AAString}).
 
   All those containers derive directly (and with no additional slots)
-  from the XString virtual class. They are also said to be XString
-  subtypes.
+  from the XString virtual class.
 }
 
 \details{
@@ -125,8 +123,7 @@
       Return a new XString object made of the selected letters (subscript
       \code{i} must be an NA-free numeric vector specifying the positions of
       the letters to select).
-      The returned object belongs to the same class (i.e. same XString
-      subtype) as \code{x}.
+      The returned object belongs to the same class as \code{x}.
 
       Note that, unlike \code{subseq}, \code{x[i]} does copy the sequence
       data and therefore will be very inefficient for extracting a big number
@@ -144,7 +141,7 @@
       \code{TRUE} if \code{e1} is equal to \code{e2}.
       \code{FALSE} otherwise.
 
-      Comparison between two XString objects of different subtypes (e.g.
+      Comparison between two XString objects of different base types (e.g.
       a BString object and a \link{DNAString} object) is not supported
       with one exception: a \link{DNAString} object and an \link{RNAString}
       object can be compared (see \link{RNAString-class} for more details

@@ -44,7 +44,7 @@
   \item{subjectClass}{
     The class to be given to the subject of the \link{XStringViews} object
     created and returned by the function.
-    Must be the name of one of the direct XString subtypes i.e.
+    Must be the name of one of the direct XString subclasses i.e.
     \code{"BString"}, \code{"DNAString"}, \code{"RNAString"}
     or \code{"AAString"}.
   }

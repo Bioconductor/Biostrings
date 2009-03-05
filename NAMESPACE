@@ -13,6 +13,7 @@ importFrom(Biobase, "addVigs2WinMenu")
 ###   AMINO_ACID_CODE.R
 ###   GENETIC_CODE.R
 ###   XStringCodec-class.R
+###   xsbasetype.R
 ###   XString-class.R
 ###   XStringSet-class.R
 ###   XStringViews-class.R
@@ -36,8 +37,11 @@ export(
     ## XStringCodec-class.R:
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
 
+    ## xsbasetype.R:
+    alphabet,
+
     ## XString-class.R:
-    BString, DNAString, RNAString, AAString, alphabet,
+    BString, DNAString, RNAString, AAString,
 
     ## XStringSet-class.R:
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
@@ -54,7 +58,6 @@ export(
 
 exportMethods(
     initialize, length,
-    alphabet,
     names, "[", "[[", rep, append,
     union, intersect, setdiff, setequal,
     show,

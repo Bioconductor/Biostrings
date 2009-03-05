@@ -6,15 +6,15 @@
 
 normargPattern <- function(pattern, subject, argname="pattern")
 {
-    subjectXStringSubtype <- baseXStringSubtype(subject)
+    subject_baseclass <- xsbaseclass(subject)
     if (is(pattern, "XString")) {
-        if (baseXStringSubtype(pattern) == subjectXStringSubtype)
+        if (xsbaseclass(pattern) == subject_baseclass)
             return(pattern)
     } else if (!isSingleString(pattern))
         stop("'", argname, "' must be a single string or an XString object")
-    pattern <- try(XString(subjectXStringSubtype, pattern))
+    pattern <- try(XString(subject_baseclass, pattern))
     if (is(pattern, "try-error"))
-        stop("could not turn '", argname, "' into a ", subjectXStringSubtype, " instance")
+        stop("could not turn '", argname, "' into a ", subject_baseclass, " instance")
     pattern
 }
 
@@ -64,7 +64,7 @@ normargFixed <- function(fixed, subject, argname="fixed")
                  "with no duplicated")
         fixed <- c("pattern" %in% fixed, "subject" %in% fixed)
     }
-    if (!all(fixed) && !(baseXStringSubtype(subject) %in% c("DNAString", "RNAString")))
+    if (!all(fixed) && !(xsbasetype(subject) %in% c("DNA", "RNA")))
         stop("'", argname, "' value only supported for a DNA or RNA subject ",
              "(you can only use 'fixed=TRUE' with your subject)")
     fixed

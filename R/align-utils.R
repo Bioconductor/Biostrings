@@ -356,7 +356,7 @@ setMethod("consensusMatrix", "list",
 setMethod("consensusMatrix", "XStringSet",
           function(x, baseOnly=FALSE, freq=FALSE)
           {
-              codes <- codes(super(x), baseOnly=baseOnly)
+              codes <- xscodes(x, baseOnly=baseOnly)
               if (is.null(names(codes))) {
                   names(codes) <- intToUtf8(codes, multiple = TRUE)
                   removeUnused <- TRUE

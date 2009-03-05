@@ -11,9 +11,6 @@
 % Constructor-like functions and generics:
 \alias{DNAString}
 
-% Other functions and generics:
-\alias{alphabet,DNAString-method}
-
 
 \title{DNAString objects}
 
@@ -23,7 +20,7 @@
 }
 
 \details{
-  The DNAString class is a direct \link{XString} subtype
+  The DNAString class is a direct \link{XString} subclass
   (with no additional slot).
   Therefore all functions and methods described in the
   \link{XString} man page also work

@@ -9,7 +9,6 @@
 \alias{Views,XString-method}
 \alias{Views,character-method}
 
-\alias{alphabet,XStringViews-method}
 \alias{nchar,XStringViews-method}
 
 \alias{show,XStringViews-method}

@@ -85,7 +85,7 @@ setMethod("show", "Twobit",
 setMethod("initialize", "Twobit",
     function(.Object, tb, dup2unq0)
     {
-        base_codes <- codes(tb, baseOnly=TRUE)
+        base_codes <- xscodes(tb, baseOnly=TRUE)
         C_ans <- .Call("build_Twobit", tb, dup2unq0, base_codes,
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
@@ -171,7 +171,7 @@ setMethod("as.matrix", "ACtree", function(x) x[])
 setMethod("initialize", "ACtree",
     function(.Object, tb, dup2unq0)
     {
-        base_codes <- codes(tb, baseOnly=TRUE)
+        base_codes <- xscodes(tb, baseOnly=TRUE)
         on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
         C_ans <- .Call("build_ACtree", tb, dup2unq0, base_codes,
                        PACKAGE="Biostrings")
@@ -216,7 +216,7 @@ setMethod("show", "ACtree2",
 setMethod("initialize", "ACtree2",
     function(.Object, tb, dup2unq0)
     {
-        base_codes <- codes(tb, baseOnly=TRUE)
+        base_codes <- xscodes(tb, baseOnly=TRUE)
         #on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
         C_ans <- .Call("ACtree2_build", tb, dup2unq0, base_codes,
                        PACKAGE="Biostrings")

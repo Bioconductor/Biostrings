@@ -12,7 +12,7 @@
         stop("'old' and 'new' must have the same length")
     old_codes <- XString.readCodes(old, 1, nchar(old))
     new_codes <- XString.readCodes(new, 1, nchar(new))
-    lkup <- buildLookupTable(codes(x), codes(x))
+    lkup <- buildLookupTable(xscodes(x), xscodes(x))
     lkup[1 + old_codes] <- new_codes
     lkup
 }

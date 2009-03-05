@@ -82,8 +82,8 @@ function(pattern,
          scoreOnly = FALSE)
 {
   ## Check arguments
-  if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
-    stop("'pattern' and 'subject' must have the same base XString subtype")
+  if (xsbasetype(pattern) != xsbasetype(subject))
+    stop("'pattern' and 'subject' must have the same XString base type")
   if (!(length(subject) %in% c(1, length(pattern))))
     stop("'length(subject)' must equal 1 or 'length(pattern)'")
   type <-
@@ -112,13 +112,13 @@ function(pattern,
     stop("'scoreOnly' must be a non-missing logical value")
 
   ## Process string information
-  if (is.null(codec(pattern))) {
+  if (is.null(xscodec(pattern))) {
     unique_letters <- unique(c(uniqueLetters(pattern), uniqueLetters(subject)))
     #Even if safeLettersToInt() will deal properly with embedded nuls, I
     #suspect bad things will happen downstream in case there are any.
     alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
   } else {
-    alphabetToCodes <- codes(pattern)
+    alphabetToCodes <- xscodes(pattern)
   }
 
   useQuality <- FALSE
@@ -220,13 +220,13 @@ function(pattern,
     stop("'quality(pattern)' and 'quality(subject)' must be of the same class")
 
   ## Process string information
-  if (is.null(codec(pattern))) {
+  if (is.null(xscodec(pattern))) {
     unique_letters <- unique(c(uniqueLetters(pattern), uniqueLetters(subject)))
     #Even if safeLettersToInt() will deal properly with embedded nuls, I
     #suspect bad things will happen downstream in case there are any.
     alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
   } else {
-    alphabetToCodes <- codes(pattern)
+    alphabetToCodes <- xscodes(pattern)
   }
 
   useQuality <- TRUE
@@ -335,12 +335,12 @@ function(pattern,
       indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
       if (length(subject) == 1) {
           subsets[[i]] <-
-            list(pattern = XStringSet(baseXStringSubtype(pattern), as.character(pattern[indices])),
+            list(pattern = XStringSet(xsbasetype(pattern), as.character(pattern[indices])),
                  subject = subject)
       } else {
           subsets[[i]] <-
-            list(pattern = XStringSet(baseXStringSubtype(pattern), as.character(pattern[indices])),
-                 subject = XStringSet(baseXStringSubtype(subject), as.character(subject[indices])))
+            list(pattern = XStringSet(xsbasetype(pattern), as.character(pattern[indices])),
+                 subject = XStringSet(xsbasetype(subject), as.character(subject[indices])))
       }
     }
 
@@ -419,7 +419,7 @@ function(pattern,
       if (length(subject) == 1) {
         subsets[[i]] <-
           list(pattern =
-               QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern),
+               QualityScaledXStringSet(XStringSet(xsbasetype(pattern),
                  as.character(pattern[indices])),
                    do.call(class(quality(pattern)),
                      list(as.character(quality(pattern[indices]))))),
@@ -427,12 +427,12 @@ function(pattern,
       } else {
         subsets[[i]] <-
           list(pattern =
-               QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern),
+               QualityScaledXStringSet(XStringSet(xsbasetype(pattern),
                  as.character(pattern[indices])),
                    do.call(class(quality(pattern)),
                      list(as.character(quality(pattern[indices]))))),
                subject =
-               QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject),
+               QualityScaledXStringSet(XStringSet(xsbasetype(subject),
                  as.character(subject[indices])),
                    do.call(class(quality(subject)),
                      list(as.character(quality(subject[indices]))))))
@@ -523,8 +523,8 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(subject), pattern),
-                                               subject = XStringSet(class(subject), subject),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(subject), pattern),
+                                               subject = XStringSet(xsbasetype(subject), subject),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
                                                gapExtension = gapExtension,
@@ -532,8 +532,8 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(class(subject), pattern), patternQuality),
-                  subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(subject), pattern), patternQuality),
+                  subject = QualityScaledXStringSet(XStringSet(xsbasetype(subject), subject), subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
                   gapExtension = gapExtension,
@@ -549,7 +549,7 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(baseXStringSubtype(subject), pattern),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(subject), pattern),
                                                subject = subject,
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
@@ -558,7 +558,7 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject), pattern), patternQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(subject), pattern), patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
@@ -574,7 +574,7 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(baseXStringSubtype(subject), pattern),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(subject), pattern),
                                                subject = as(subject, "XStringSet"),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
@@ -583,7 +583,7 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(baseXStringSubtype(subject), pattern), patternQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(subject), pattern), patternQuality),
                   subject = subject,
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
@@ -600,8 +600,8 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
-                                               subject = XStringSet(class(pattern), subject),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(pattern), pattern),
+                                               subject = XStringSet(xsbasetype(pattern), subject),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
                                                gapExtension = gapExtension,
@@ -609,8 +609,8 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
-                  subject = QualityScaledXStringSet(XStringSet(class(pattern), subject), subjectQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), pattern), patternQuality),
+                  subject = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), subject), subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
                   gapExtension = gapExtension,
@@ -626,8 +626,8 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
-                                               subject = XStringSet(class(subject), subject),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(pattern), pattern),
+                                               subject = XStringSet(xsbasetype(subject), subject),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
                                                gapExtension = gapExtension,
@@ -635,8 +635,8 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
-                  subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), pattern), patternQuality),
+                  subject = QualityScaledXStringSet(XStringSet(xsbasetype(subject), subject), subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
                   gapExtension = gapExtension,
@@ -652,7 +652,7 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(pattern), pattern),
                                                subject = subject,
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
@@ -661,7 +661,7 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), pattern), patternQuality),
                   subject = QualityScaledXStringSet(subject, subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
@@ -677,7 +677,7 @@ setMethod("pairwiseAlignment",
                    gapOpening = -10, gapExtension = -4,
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
-              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(class(pattern), pattern),
+              mpi.XStringSet.pairwiseAlignment(pattern = XStringSet(xsbasetype(pattern), pattern),
                                                subject = as(subject, "XStringSet"),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
@@ -686,7 +686,7 @@ setMethod("pairwiseAlignment",
                                                scoreOnly = scoreOnly)
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
-                  pattern = QualityScaledXStringSet(XStringSet(class(pattern), pattern), patternQuality),
+                  pattern = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), pattern), patternQuality),
                   subject = subject,
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
@@ -704,7 +704,7 @@ setMethod("pairwiseAlignment",
                    scoreOnly = FALSE) {
           if (!is.null(substitutionMatrix)) {
             mpi.XStringSet.pairwiseAlignment(pattern = pattern,
-                                             subject = XStringSet(baseXStringSubtype(pattern), subject),
+                                             subject = XStringSet(xsbasetype(pattern), subject),
                                              type = type,
                                              substitutionMatrix = substitutionMatrix,
                                              gapExtension = gapExtension,
@@ -713,7 +713,7 @@ setMethod("pairwiseAlignment",
           } else {
             mpi.QualityScaledXStringSet.pairwiseAlignment(
                 pattern = QualityScaledXStringSet(pattern, patternQuality),
-                subject = QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern), subject), subjectQuality),
+                subject = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), subject), subjectQuality),
                 type = type,
                 fuzzyMatrix = fuzzyMatrix,
                 gapExtension = gapExtension,
@@ -730,7 +730,7 @@ setMethod("pairwiseAlignment",
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
               mpi.XStringSet.pairwiseAlignment(pattern = pattern,
-                                               subject = XStringSet(class(subject), subject),
+                                               subject = XStringSet(xsbasetype(subject), subject),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
                                                gapExtension = gapExtension,
@@ -739,7 +739,7 @@ setMethod("pairwiseAlignment",
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = QualityScaledXStringSet(pattern, patternQuality),
-                  subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
+                  subject = QualityScaledXStringSet(XStringSet(xsbasetype(subject), subject), subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
                   gapExtension = gapExtension,
@@ -806,7 +806,7 @@ setMethod("pairwiseAlignment",
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
               mpi.XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
-                                               subject = XStringSet(baseXStringSubtype(pattern), subject),
+                                               subject = XStringSet(xsbasetype(pattern), subject),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
                                                gapExtension = gapExtension,
@@ -815,7 +815,7 @@ setMethod("pairwiseAlignment",
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = pattern,
-                  subject = QualityScaledXStringSet(XStringSet(baseXStringSubtype(pattern), subject), subjectQuality),
+                  subject = QualityScaledXStringSet(XStringSet(xsbasetype(pattern), subject), subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
                   gapExtension = gapExtension,
@@ -831,7 +831,7 @@ setMethod("pairwiseAlignment",
                    scoreOnly = FALSE) {
             if (!is.null(substitutionMatrix)) {
               mpi.XStringSet.pairwiseAlignment(pattern = as(pattern, "XStringSet"),
-                                               subject = XStringSet(class(subject), subject),
+                                               subject = XStringSet(xsbasetype(subject), subject),
                                                type = type,
                                                substitutionMatrix = substitutionMatrix,
                                                gapExtension = gapExtension,
@@ -840,7 +840,7 @@ setMethod("pairwiseAlignment",
             } else {
               mpi.QualityScaledXStringSet.pairwiseAlignment(
                   pattern = pattern,
-                  subject = QualityScaledXStringSet(XStringSet(class(subject), subject), subjectQuality),
+                  subject = QualityScaledXStringSet(XStringSet(xsbasetype(subject), subject), subjectQuality),
                   type = type,
                   fuzzyMatrix = fuzzyMatrix,
                   gapExtension = gapExtension,

@@ -53,7 +53,7 @@
 
 \details{
   Given an \link{XString} object \code{x}, \code{reverse(x)} returns
-  an object of the same \link{XString} subtype as \code{x} where letters
+  an object of the same \link{XString} base type as \code{x} where letters
   in \code{x} have been reordered in the reverse order.
 
   If \code{x} is a \link{DNAString} or \link{RNAString} object,

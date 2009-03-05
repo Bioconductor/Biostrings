@@ -36,12 +36,12 @@ setGeneric("PairwiseAlignedFixedSubject",
 setMethod("PairwiseAlignedFixedSubject", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
-        if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
-            stop("'pattern' and 'subject' must have the same base XString subtype")
+        if (xsbasetype(pattern) != xsbasetype(subject))
+            stop("'pattern' and 'subject' must have the same XString base type")
         PairwiseAlignedFixedSubject(as.character(pattern), as.character(subject),
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,
-                                    baseClass = baseXStringSubtype(pattern))
+                                    baseClass = xsbaseclass(pattern))
     }
 )
 
@@ -55,7 +55,7 @@ setMethod("PairwiseAlignedFixedSubject", signature(pattern = "XStringSet", subje
         PairwiseAlignedFixedSubject(as.character(pattern[1]), as.character(pattern[2]),
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,
-                                    baseClass = baseXStringSubtype(pattern))
+                                    baseClass = xsbaseclass(pattern))
     }
 )
 
@@ -93,7 +93,7 @@ setMethod("initialize", "PairwiseAlignedFixedSubject",
              gapOpening, gapExtension, check = TRUE)
     {
         if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
-            stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
+            stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "global-local", "local-global")))
             stop("'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
         if (length(pattern) != length(subject))
@@ -124,7 +124,7 @@ setMethod("initialize", "PairwiseAlignedFixedSubject",
 {
     message <- character(0)
     if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
-        message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
+        message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
     if (length(pattern) != length(subject))
@@ -239,7 +239,7 @@ setMethod("aligned", "PairwiseAlignedFixedSubject",
               if (degap) {
                   value <- aligned(pattern(x), degap = degap)
               } else {
-                  codecX <- codec(x)
+                  codecX <- xscodec(x)
                   if (is.null(codecX)) {
                       gapCode <- charToRaw(gapCode)
                       endgapCode <- charToRaw(endgapCode)

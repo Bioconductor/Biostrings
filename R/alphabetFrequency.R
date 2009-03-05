@@ -86,7 +86,7 @@
 
 .XString.code_frequency <- function(x, baseOnly, freq)
 {
-    codes <- codes(x, baseOnly=baseOnly)
+    codes <- xscodes(x, baseOnly=baseOnly)
     freq <- .normargFreq(freq)
     ans <- .Call("XString_char_frequency",
                  x, codes, baseOnly,
@@ -125,7 +125,7 @@
     ## and don't overlap!
     #if (collapse)
     #    return(.XString.code_frequency(super(x), baseOnly, freq))
-    codes <- codes(super(x), baseOnly=baseOnly)
+    codes <- xscodes(x, baseOnly=baseOnly)
     freq <- .normargFreq(freq)
     ans <- .Call("XStringSet_char_frequency",
                  x, codes, baseOnly, collapse,
@@ -280,7 +280,7 @@ setMethod("uniqueLetters", "XString",
     function(x)
     {
         x_af <- alphabetFrequency(x)
-        .alphabetFrequencyToUniqueLetters(x_af, codes(x))
+        .alphabetFrequencyToUniqueLetters(x_af, xscodes(x))
     }
 )
 
@@ -288,7 +288,7 @@ setMethod("uniqueLetters", "XStringSet",
     function(x)
     {
         x_af <- alphabetFrequency(x, collapse=TRUE)
-        .alphabetFrequencyToUniqueLetters(x_af, codes(x))
+        .alphabetFrequencyToUniqueLetters(x_af, xscodes(x))
     }
 )
 
@@ -423,7 +423,7 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     fast.moving.side <- .normargFastMovingSide(fast.moving.side)
     as.array <- .normargAsArray(as.array, fast.moving.side)
     with.labels <- .normargWithLabels(with.labels)
-    base_codes <- codes(x, baseOnly=TRUE)
+    base_codes <- xscodes(x, baseOnly=TRUE)
     ans <- .Call("oligonucleotide_frequency",
                  x, base_codes, width, fast.moving.side,
                  PACKAGE="Biostrings")
@@ -471,7 +471,7 @@ setMethod("oligonucleotideFrequency", "XStringSet",
         as.array <- .normargAsArray(as.array, fast.moving.side)
         with.labels <- .normargWithLabels(with.labels)
         collapse <- .normargCollapse(list(...)$collapse)
-        base_codes <- codes(super(x), baseOnly=TRUE)
+        base_codes <- xscodes(x, baseOnly=TRUE)
         ans <- integer(pow.int(4L, width))
         if (collapse) {
             for (i in seq_len(length(x))) {

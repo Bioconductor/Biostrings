@@ -10,7 +10,7 @@
     {
         if (is.character(arg))
             return("BString")
-        subtype <- try(baseXStringSubtype(arg), silent=TRUE)
+        subtype <- try(xsbaseclass(arg), silent=TRUE)
         if (is(subtype, "try-error"))
             stop("all xscat() arguments must be character data i.e. character ",
                  "vectors or XString/XStringSet/XStringViews/MaskedXString ",

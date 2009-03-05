@@ -24,7 +24,6 @@
 \alias{masks}
 \alias{masks,XString-method}
 \alias{masks,MaskedXString-method}
-\alias{alphabet,MaskedXString-method}
 \alias{length,MaskedXString-method}
 
 % "maskedwidth" and related methods:
@@ -74,8 +73,7 @@
   classes are containers for storing masked sequences.
 
   All those containers derive directly (and with no additional slots)
-  from the MaskedXString virtual class. They are also said to be
-  MaskedXString subtypes.
+  from the MaskedXString virtual class.
 }
 
 \details{

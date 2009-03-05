@@ -10,7 +10,7 @@ setClass("QualityScaledXStringSet",
     )
 )
 
-### QualityScaledXStringSet subtypes
+### QualityScaledXStringSet subclasses
 setClass("QualityScaledBStringSet",
     contains=c("BStringSet", "QualityScaledXStringSet")
 )

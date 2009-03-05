@@ -8,7 +8,7 @@
 
 setClass("XString", contains="XRaw", representation("VIRTUAL"))
 
-### XString subtypes (direct "XString" derivations with no additional slots)
+### XString subclasses (no additional slots)
 setClass("BString", contains="XString")
 setClass("DNAString", contains="XString")
 setClass("RNAString", contains="XString")
@@ -34,110 +34,20 @@ newEmptyXString <- function(class) new(class, xdata=RawPtr(0))
 ### The core XString API is the strict minimal set of methods that must work
 ### for XString, XStringSet, XStringViews and MaskedXString objects.
 ### It currently consists of the following methods:
-###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
-###   o exported: alphabet, length, nchar
+###   o NOT exported: xsbasetype
+###   o exported: length, nchar
 ###
 
 ### NOT exported
-setGeneric("baseXStringSubtype", function(x) standardGeneric("baseXStringSubtype"))
-setMethod("baseXStringSubtype", "BString",
-    function(x) class(newEmptyXString("BString"))
-)
-setMethod("baseXStringSubtype", "DNAString",
-    function(x) class(newEmptyXString("DNAString"))
-)
-setMethod("baseXStringSubtype", "RNAString",
-    function(x) class(newEmptyXString("RNAString"))
-)
-setMethod("baseXStringSubtype", "AAString",
-    function(x) class(newEmptyXString("AAString"))
-)
-
-setGeneric("codes", signature="x", function(x, ...) standardGeneric("codes"))
-setMethod("codes", "XString", function(x, ...) 0:255)
-setMethod("codes", "DNAString", function(x, baseOnly=FALSE) DNAcodes(baseOnly))
-setMethod("codes", "RNAString", function(x, baseOnly=FALSE) RNAcodes(baseOnly))
-
-setGeneric("codec", function(x) standardGeneric("codec"))
-setMethod("codec", "XString", function(x) NULL)
-setMethod("codec", "DNAString", function(x) DNA_STRING_CODEC)
-setMethod("codec", "RNAString", function(x) RNA_STRING_CODEC)
-
-setGeneric("enc_lkup", function(x) standardGeneric("enc_lkup"))
-setMethod("enc_lkup", "XString",
-    function(x)
-    {
-        codec <- codec(x)
-        if (is.null(codec)) NULL else codec@enc_lkup
-    }
-)
-
-setGeneric("dec_lkup", function(x) standardGeneric("dec_lkup"))
-setMethod("dec_lkup", "XString",
-    function(x)
-    {
-        codec <- codec(x)
-        if (is.null(codec)) NULL else codec@dec_lkup
-    }
-)
+setMethod("xsbasetype", "BString", function(x) "B")
+setMethod("xsbasetype", "DNAString", function(x) "DNA")
+setMethod("xsbasetype", "RNAString", function(x) "RNA")
+setMethod("xsbasetype", "AAString", function(x) "AA")
 
 ### exported
-setGeneric("alphabet", function(x) standardGeneric("alphabet"))
-setMethod("alphabet", "BString", function(x) NULL)
-setMethod("alphabet", "DNAString", function(x) DNA_ALPHABET)
-setMethod("alphabet", "RNAString", function(x) RNA_ALPHABET)
-setMethod("alphabet", "AAString", function(x) AA_ALPHABET)
-
 setMethod("length", "XString", function(x) x@length)
 
 setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) length(x))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some restrictions apply for converting from an XString subtype to
-### another or for comparing XString objects of different subtypes. This is
-### due to the fact that different XString subtypes can use different
-### encodings for their data (or no encoding at all) or simply to the fact
-### that the conversion or comparison doesn't make sense from a biological
-### perspective.
-### The helper functions below are used internally (they are NOT exported) to
-### determine those restrictions.
-###
-
-compatibleXStringSubtypes <- function(class1, class2)
-{
-    if (extends(class1, "DNAString") || extends(class1, "RNAString"))
-        return(!extends(class2, "AAString"))
-    if (extends(class1, "AAString"))
-        return(!(extends(class2, "DNAString") || extends(class2, "RNAString")))
-    TRUE
-}
-
-getXStringSubtypeConversionLookup <- function(from_class, to_class)
-{
-    if (!compatibleXStringSubtypes(from_class, to_class))
-        stop("incompatible XString/XStringSet subtypes")
-    from_nucleo <- extends(from_class, "DNAString") || extends(from_class, "RNAString")
-    to_nucleo <- extends(to_class, "DNAString") || extends(to_class, "RNAString")
-    if (from_nucleo == to_nucleo)
-        return(NULL)
-    if (extends(to_class, "DNAString"))
-        return(DNA_STRING_CODEC@enc_lkup)
-    if (extends(to_class, "RNAString"))
-        return(RNA_STRING_CODEC@enc_lkup)
-    if (extends(from_class, "DNAString"))
-        return(DNA_STRING_CODEC@dec_lkup)
-    if (extends(from_class, "RNAString"))
-        return(RNA_STRING_CODEC@dec_lkup)
-    stop("Biostrings internal error, please report") # should never happen
-}
-
-comparableXStrings <- function(x1, x2)
-{
-    is_nucleo1 <- is(x1, "DNAString") || is(x1, "RNAString")
-    is_nucleo2 <- is(x2, "DNAString") || is(x2, "RNAString")
-    is_nucleo1 == is_nucleo2
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -148,7 +58,7 @@ comparableXStrings <- function(x1, x2)
 XString.read <- function(x, i, imax=integer(0))
 {
     RawPtr.read(x@xdata, x@offset + i, x@offset + imax,
-                      dec_lkup=dec_lkup(x))
+                      dec_lkup=xs_dec_lkup(x))
 }
 
 XString.readCodes <- function(x, i, imax=integer(0))
@@ -174,7 +84,7 @@ XString.write <- function(x, i, imax=integer(0), value)
     }
     #cat(x@offset + i, " -- ", x@offset + imax, "\n", sep="")
     RawPtr.write(x@xdata, x@offset + i, x@offset + imax, value=value,
-                       enc_lkup=enc_lkup(x))
+                       enc_lkup=xs_enc_lkup(x))
     x
 }
 
@@ -186,11 +96,12 @@ XString.write <- function(x, i, imax=integer(0), value)
 
 XString.append <- function(x, y)
 {
-    ans_class <- baseXStringSubtype(x)
-    if (baseXStringSubtype(y) != ans_class)
-        stop("'x' and 'y' must be XString objects of the same subtype")
+    ans_basetype <- xsbasetype(x)
+    if (xsbasetype(y) != ans_basetype)
+        stop("'x' and 'y' must be XString objects of the same base type")
+    ans_class <- paste(ans_basetype, "String", sep="")
     ans_xdata <- RawPtr.append(x@xdata, x@offset + 1L, x@length,
-                             y@xdata, y@offset + 1L, y@length)
+                               y@xdata, y@offset + 1L, y@length)
     new(ans_class, xdata=ans_xdata, length=length(ans_xdata))
 }
 
@@ -235,7 +146,7 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
         if (length(x) > 1)
             stop("more than one input sequence")
     }
-    lkup <- enc_lkup(newEmptyXString(class))
+    lkup <- xs_enc_lkup(newEmptyXString(class))
     xdata <- .charToRawPtr(x, start=start, end=end, width=width, lkup=lkup, check=check)
     new(class, xdata=xdata, length=length(xdata))
 }
@@ -247,7 +158,8 @@ charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=
         nchar <- normargNchar(start, nchar, nchar(x))
     }
     start <- x@offset + start
-    lkup <- getXStringSubtypeConversionLookup(class(x), class)
+    to_basetype <- substr(class, 1, nchar(class)-6)  # remove "String" suffix
+    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), to_basetype)
     if (is.null(lkup))
         return(new(class, xdata=x@xdata, offset=start-1L, length=nchar))
     xdata <- .copySubRawPtr(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
@@ -395,7 +307,7 @@ setMethod("[", "XString",
 setMethod("==", signature(e1="XString", e2="XString"),
     function(e1, e2)
     {
-        if (!comparableXStrings(e1, e2)) {
+        if (!comparable_xsbasetypes(xsbasetype(e1), xsbasetype(e2))) {
             class1 <- class(e1)
             class2 <- class(e2)
             stop("comparison between a \"", class1, "\" instance ",

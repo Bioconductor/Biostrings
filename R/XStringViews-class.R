@@ -49,22 +49,14 @@ setMethod("Views", "character",
 ### The core XString API is the strict minimal set of methods that must work
 ### for XString, XStringSet, XStringViews and MaskedXString objects.
 ### It currently consists of the following methods:
-###   o NOT exported: baseXStringSubtype, codes, codec, enc_lkup, dec_lkup
-###   o exported: alphabet, length, nchar
+###   o NOT exported: xsbasetype
+###   o exported: length, nchar
 ###
 
 ### NOT exported
-setMethod("baseXStringSubtype", "XStringViews",
-    function(x) baseXStringSubtype(subject(x))
-)
-setMethod("codes", "XStringViews", function(x, ...) codes(subject(x), ...))
-setMethod("codec", "XStringViews", function(x) codec(subject(x)))
-setMethod("enc_lkup", "XStringViews", function(x) enc_lkup(subject(x)))
-setMethod("dec_lkup", "XStringViews", function(x) dec_lkup(subject(x)))
+setMethod("xsbasetype", "XStringViews", function(x) xsbasetype(subject(x)))
 
 ### exported
-setMethod("alphabet", "XStringViews", function(x) alphabet(subject(x)))
-
 setMethod("nchar", "XStringViews",
     function(x, type="chars", allowNA=FALSE)
     {
@@ -96,8 +88,8 @@ XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 }
 
 setMethod("XStringSet", "XStringViews",
-    function(baseClass, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(baseClass, XStringViewsToSet(x, use.names),
+    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(basetype, XStringViewsToSet(x, use.names),
                    start=start, end=end, width=width, TRUE)
 )
 
@@ -330,7 +322,7 @@ XStringViews.equal <- function(x, y)
 setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
     function(e1, e2)
     {
-        if (!comparableXStrings(subject(e1), subject(e2))) {
+        if (!comparable_xsbasetypes(xsbasetype(e1), xsbasetype(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(subject(e2))
             stop("comparison between XStringViews objects with subjects of ",
@@ -343,7 +335,7 @@ setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
 setMethod("==", signature(e1="XStringViews", e2="XString"),
     function(e1, e2)
     {
-        if (!comparableXStrings(subject(e1), e2)) {
+        if (!comparable_xsbasetypes(xsbasetype(e1), xsbasetype(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(e2)
             stop("comparison between an XStringViews object with a subject of ",

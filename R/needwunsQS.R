@@ -94,7 +94,7 @@ print.needwunsQS <- function(x, ...)
 ### Some quick testing shows that, depending on the size of the strings to
 ### align, this C version is 100 to 1000 times faster than the above
 ### .needwunsQS().
-### 's1' and 's2' must be XString objects of the same subtype.
+### 's1' and 's2' must be XString objects of the same base type.
 ### Return a PairwiseAlignedXStringSet object where the "al1" and "al2" slots
 ### contain the aligned versions of 's1' and 's2'.
 XString.needwunsQS <- function(s1, s2, substmat, gappen)
@@ -118,14 +118,14 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
         stop("matrix 'substmat' must have row and column names")
     if (any(duplicated(rownames(substmat))))
         stop("matrix 'substmat' has duplicated row names")
-    if (is.null(codec(s1))) {
+    if (is.null(xscodec(s1))) {
         codes <- as.integer(charToRaw(paste(rownames(substmat), collapse="")))
         gap_code <- charToRaw("-")
     } else {
         if (!all(rownames(substmat) %in% alphabet(s1)))
             stop("matrix 'substmat' is incompatible with 's1' alphabet")
-        letters2codes <- codec(s1)@codes
-        names(letters2codes) <- codec(s1)@letters
+        letters2codes <- xscodec(s1)@codes
+        names(letters2codes) <- xscodec(s1)@letters
         codes <- letters2codes[rownames(substmat)]
         gap_code <- as.raw(letters2codes[["-"]])
     }

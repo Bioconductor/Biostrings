@@ -62,7 +62,7 @@
   }
   \item{subject}{
     An \link{XString} object containing the subject string.
-    For now, only \link{XString} subjects of subtype \link{DNAString}
+    For now, only \link{XString} subjects of base class \link{DNAString}
     are supported.
   }
   \item{algorithm}{

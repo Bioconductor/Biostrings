@@ -26,6 +26,7 @@ Collate: 00datacache.R
 	AMINO_ACID_CODE.R
 	GENETIC_CODE.R
 	XStringCodec-class.R
+	xsbasetype.R
 	XString-class.R
 	XStringSet-class.R
 	XStringViews-class.R

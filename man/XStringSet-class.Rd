@@ -25,7 +25,6 @@
 \alias{width,XStringSet-method}
 \alias{names,XStringSet-method}
 \alias{names<-,XStringSet-method}
-\alias{alphabet,XStringSet-method}
 \alias{nchar,XStringSet-method}
 \alias{narrow,character-method}
 \alias{narrow,XStringSet-method}
@@ -84,8 +83,7 @@
   (or \code{\link{RNAString}}, or \code{\link{AAString}}) objects.
 
   All those containers derive directly (and with no additional slots)
-  from the XStringSet virtual class. They are also said to be XStringSet
-  subtypes.
+  from the XStringSet virtual class.
 }
 
 \usage{
@@ -100,7 +98,6 @@
   \S4method{width}{character}(x)
   \S4method{width}{XStringSet}(x)
   \S4method{names}{XStringSet}(x)
-  \S4method{alphabet}{XStringSet}(x)
   \S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
 
   ## Narrowing:
@@ -142,7 +139,7 @@
   The \code{BStringSet}, \code{DNAStringSet}, \code{RNAStringSet} and
   \code{AAStringSet} functions are constructors that can be used to
   "naturally" turn \code{x} into an XStringSet object of the desired
-  subtype.
+  base type.
 
   They also allow the user to "narrow" the sequences contained in \code{x}
   via proper use of the \code{start}, \code{end} and/or \code{width}

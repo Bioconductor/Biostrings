@@ -26,7 +26,6 @@
 \alias{XStringCodec}
 
 \alias{initialize,XStringCodec-method}
-\alias{alphabet,XStringCodec-method}
 
 
 \title{Biostrings internals}

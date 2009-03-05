@@ -56,7 +56,7 @@
 }
 
 \value{
-  An \link{XString} object of the same subtype as \code{x} for
+  An \link{XString} object of the same base type as \code{x} for
   \code{subXString}.
 
   A character vector for \code{substr} and \code{substring}.

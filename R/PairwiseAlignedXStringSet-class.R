@@ -25,6 +25,7 @@ newPairwiseAlignedXStringSet <-
 function(pattern, subject, type = "global", substitutionMatrix = NULL,
          gapOpening = 0, gapExtension = -1,
          baseClass = "BString", pwaClass = "PairwiseAlignedXStringSet") {
+    basetype <- substr(baseClass, 1, nchar(baseClass) - 6)  # remove "String" suffix
     getMismatches <- function(x) {
         whichMismatches <- which(x[["values"]] == "?")
         if (length(whichMismatches) == 0) {
@@ -147,12 +148,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
     new(pwaClass,
         pattern =
           new("AlignedXStringSet",
-              unaligned = XStringSet(baseClass, paste(degappedPattern, collapse = "")),
+              unaligned = XStringSet(basetype, paste(degappedPattern, collapse = "")),
               range = getRange(patternRle), mismatch = getMismatches(patternRle),
               indel = getIndels(comparison, "-")),
         subject =
           new("AlignedXStringSet",
-              unaligned = XStringSet(baseClass, paste(degappedSubject, collapse = "")),
+              unaligned = XStringSet(basetype, paste(degappedSubject, collapse = "")),
               range = getRange(subjectRle), mismatch = getMismatches(subjectRle),
               indel = getIndels(comparison, "+")),
         type = type,
@@ -174,12 +175,12 @@ setGeneric("PairwiseAlignedXStringSet",
 setMethod("PairwiseAlignedXStringSet", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
-        if (baseXStringSubtype(pattern) != baseXStringSubtype(subject))
-            stop("'pattern' and 'subject' must have the same base XString subtype")
+        if (xsbasetype(pattern) != xsbasetype(subject))
+            stop("'pattern' and 'subject' must have the same XString base type")
         PairwiseAlignedXStringSet(as.character(pattern), as.character(subject),
                                   type = type, substitutionMatrix = substitutionMatrix,
                                   gapOpening = gapOpening, gapExtension = gapExtension,
-                                  baseClass = baseXStringSubtype(pattern))
+                                  baseClass = xsbaseclass(pattern))
     }
 )
 
@@ -193,7 +194,7 @@ setMethod("PairwiseAlignedXStringSet", signature(pattern = "XStringSet", subject
         PairwiseAlignedXStringSet(as.character(pattern[1]), as.character(pattern[2]),
                                   type = type, substitutionMatrix = substitutionMatrix,
                                   gapOpening = gapOpening, gapExtension = gapExtension,
-                                  baseClass = baseXStringSubtype(pattern))
+                                  baseClass = xsbaseclass(pattern))
     }
 )
 
@@ -231,7 +232,7 @@ setMethod("initialize", "PairwiseAlignedXStringSet",
              gapOpening, gapExtension, check = TRUE)
     {
         if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
-            stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
+            stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
         if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "global-local", "local-global")))
             stop("'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
         if (length(pattern) != length(subject))
@@ -262,7 +263,7 @@ setMethod("initialize", "PairwiseAlignedXStringSet",
 {
     message <- character(0)
     if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
-        message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same subtype")
+        message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
     if (length(pattern) != length(subject))
@@ -298,8 +299,7 @@ setMethod("nindel", "PairwiseAlignedXStringSet",
           function(x) new("InDel", insertion = nindel(subject(x)), deletion = nindel(pattern(x))))
 setMethod("length", "PairwiseAlignedXStringSet", function(x) length(score(x)))
 setMethod("nchar", "PairwiseAlignedXStringSet", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
-setMethod("alphabet", "PairwiseAlignedXStringSet", function(x) alphabet(subject(x)))
-setMethod("codec", "PairwiseAlignedXStringSet", function(x) codec(subject(x)))
+setMethod("xsbasetype", "PairwiseAlignedXStringSet", function(x) xsbasetype(subject(x)))
 setGeneric("pid", signature="x", function(x, type="PID1") standardGeneric("pid"))
 setMethod("pid", "PairwiseAlignedXStringSet",
           function(x, type="PID1") {

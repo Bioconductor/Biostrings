@@ -7,7 +7,7 @@
 ### Longest Common Prefix: the "lcprefix" new generic
 ###
 
-### 's1' and 's2' must be XString objects of the same subtype.
+### 's1' and 's2' must be XString objects of the same base type.
 ### Return the length (integer) of the Longest Common Prefix.
 XString.lcprefix <- function(s1, s2)
 {
@@ -35,7 +35,7 @@ setMethod("lcprefix", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
         if (class(s1) != class(s2))
-            stop("'s1' and 's2' must have the same XString subtype")
+            stop("'s1' and 's2' must have the same XString base type")
         XString.lcprefix(s1, s2)
     }
 )
@@ -45,7 +45,7 @@ setMethod("lcprefix", signature(s1="XString", s2="XString"),
 ### Longest Common Suffix: the "lcsuffix" new generic
 ###
 
-### 's1' and 's2' must be XString objects of the same subtype.
+### 's1' and 's2' must be XString objects of the same base type.
 ### Return the length (integer) of the Longest Common Suffix.
 XString.lcsuffix <- function(s1, s2)
 {
@@ -73,7 +73,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
         if (class(s1) != class(s2))
-            stop("'s1' and 's2' must have the same XString subtype")
+            stop("'s1' and 's2' must have the same XString base type")
         XString.lcsuffix(s1, s2)
     }
 )
@@ -257,7 +257,7 @@ setMethod("lcsubstr", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
         if (class(s1) != class(s2))
-            stop("'s1' and 's2' must have the same XString subtype")
+            stop("'s1' and 's2' must have the same XString base type")
         XString.lcsubstr(s1, s2)
     }
 )

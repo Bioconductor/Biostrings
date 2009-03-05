@@ -167,7 +167,7 @@ XStringSetToFASTArecords <- function(x)
     subject <- new(subjectClass, xdata=xdata, length=length(xdata))
     subject@length <- 0L
 
-    #ans <- .RawPtr.loadFASTA(subject@xdata, file, collapse, enc_lkup=enc_lkup(x))
+    #ans <- .RawPtr.loadFASTA(subject@xdata, file, collapse, enc_lkup=xs_enc_lkup(x))
 
 #-- implement this in C, from here
     width <- integer(0)

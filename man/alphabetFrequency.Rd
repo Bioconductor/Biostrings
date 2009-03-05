@@ -172,7 +172,7 @@ sequence and related functions}
 
   \code{uniqueLetters} returns a vector of 1-letter or empty strings. The empty
   string is used to represent the nul character if \code{x} happens to contain
-  any. Note that this can only happen if \link{XString} base subtype of \code{x}
+  any. Note that this can only happen if the base class of \code{x}
   is \link{BString}.
 }
 

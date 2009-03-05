@@ -120,7 +120,7 @@ setMethod("aligned", "AlignedXStringSet",
                         narrow(as(unaligned(x), "XStringSet"), start=start(x@range), end=end(x@range))
                   }
               } else {
-                  codecX <- codec(x)
+                  codecX <- xscodec(x)
                   if (is.null(codecX)) {
                       gapCode <- charToRaw("-")
                   } else {
@@ -144,8 +144,7 @@ setMethod("nindel", "AlignedXStringSet", function(x) summary(indel(x)))
 setMethod("length", "AlignedXStringSet", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet",
           function(x, type="chars", allowNA=FALSE) .Call("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
-setMethod("alphabet", "AlignedXStringSet", function(x) alphabet(unaligned(x)))
-setMethod("codec", "AlignedXStringSet", function(x) codec(unaligned(x)))
+setMethod("xsbasetype", "AlignedXStringSet", function(x) xsbasetype(unaligned(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

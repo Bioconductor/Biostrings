@@ -17,7 +17,7 @@ setMethod("toComplex", "DNAString",
             stop("'baseValues' must have names")
         if (any(duplicated(names(baseValues))))
             stop("'baseValues' must have unique names")
-        base_codes <- codes(x)
+        base_codes <- xscodes(x)
         if (!all(names(baseValues) %in% names(base_codes)))
             stop("'baseValues' names must be valid DNA letters")
         if (!is.complex(baseValues))
