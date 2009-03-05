@@ -83,7 +83,8 @@ compatible_xsbasetypes <- function(basetype1, basetype2)
 get_xsbasetypes_conversion_lookup <- function(from_basetype, to_basetype)
 {
     if (!compatible_xsbasetypes(from_basetype, to_basetype))
-        stop("incompatible XString base types")
+        stop("incompatible XString base types \"",
+             from_basetype, "\" and \"", to_basetype, "\"")
     from_nucleo <- from_basetype %in% c("DNA", "RNA")
     to_nucleo <- to_basetype %in% c("DNA", "RNA")
     if (from_nucleo == to_nucleo)
