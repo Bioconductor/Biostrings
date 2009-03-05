@@ -212,10 +212,12 @@ compactXStringSet <- function(x, basetype=NULL)
 {
     from_basetype <- xsbasetype(x)
     from_baseclass <- paste(from_basetype, "String", sep="")
-    if (is.null(basetype))
-        to_baseclass <- from_baseclass
-    else
-        to_baseclass <- paste(basetype, "String", sep="")
+    if (is.null(basetype)) {
+        basetype <- from_basetype
+        baseclass <- from_baseclass
+    } else {
+        baseclass <- paste(basetype, "String", sep="")
+    }
     lkup <- get_xsbasetypes_conversion_lookup(from_basetype, basetype)
     ## The frame is the strict minimal set of regions in 'super(x)' that need
     ## to be copied. Hence compacting 'x' returns an XStringSet object 'y'
@@ -226,7 +228,7 @@ compactXStringSet <- function(x, basetype=NULL)
     xdata <- .Call("new_RawPtr_from_XString",
                    super(x), start(frame), width(frame), lkup,
                    PACKAGE="Biostrings")
-    ans_super <- new(to_baseclass, xdata=xdata, length=length(xdata))
+    ans_super <- new(baseclass, xdata=xdata, length=length(xdata))
     ans_ranges <- attr(frame, "inframe")
     if (is.null(basetype)) {
         ## Endomorphism
@@ -237,7 +239,7 @@ compactXStringSet <- function(x, basetype=NULL)
         x
     } else {
         ## NOT an endomorphism
-        ans_class <- paste(to_baseclass, "Set", sep="")
+        ans_class <- paste(baseclass, "Set", sep="")
         unsafe.newXStringSet(ans_class, ans_super, ans_ranges,
                              use.names=TRUE, names=names(x))
     }
@@ -281,8 +283,8 @@ compactXStringSet <- function(x, basetype=NULL)
     if (is(x, ans_class)) {
         ans_super <- super(x)
     } else {
-        to_baseclass <- paste(basetype, "String", sep="")
-        ans_super <- XString(to_baseclass, super(x))
+        baseclass <- paste(basetype, "String", sep="")
+        ans_super <- XString(baseclass, super(x))
     }
     unsafe.newXStringSet(ans_class, ans_super, x@ranges,
                          use.names=TRUE, names=names(x))
