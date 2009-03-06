@@ -150,11 +150,11 @@ setMethod("needwunsQS", signature(s1="character", s2="character"),
 )
 setMethod("needwunsQS", signature(s1="character", s2="XString"),
     function(s1, s2, substmat, gappen)
-        XString.needwunsQS(XString(class(s2), s1), s2, substmat, gappen)
+        XString.needwunsQS(XString(xsbasetype(s2), s1), s2, substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="XString", s2="character"),
     function(s1, s2, substmat, gappen)
-        XString.needwunsQS(s1, XString(class(s1), s2), substmat, gappen)
+        XString.needwunsQS(s1, XString(xsbasetype(s1), s2), substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="XString", s2="XString"),
     function(s1, s2, substmat, gappen)

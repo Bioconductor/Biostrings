@@ -12,7 +12,7 @@ normargPattern <- function(pattern, subject, argname="pattern")
             return(pattern)
     } else if (!isSingleString(pattern))
         stop("'", argname, "' must be a single string or an XString object")
-    pattern <- try(XString(subject_baseclass, pattern))
+    pattern <- try(XString(xsbasetype(subject), pattern))
     if (is(pattern, "try-error"))
         stop("could not turn '", argname, "' into a ", subject_baseclass, " instance")
     pattern

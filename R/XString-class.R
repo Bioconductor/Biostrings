@@ -29,25 +29,38 @@ newEmptyXString <- function(class) new(class, xdata=RawPtr(0))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The core XString API.
-###
-### The core XString API is the strict minimal set of methods that must work
-### for XString, XStringSet, XStringViews and MaskedXString objects.
-### It currently consists of the following methods:
-###   o NOT exported: xsbasetype
-###   o exported: length, nchar
+### Accessor-like methods.
 ###
 
-### NOT exported
+setMethod("length", "XString", function(x) x@length)
+
+setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) length(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "xsbasetype" and "xsbasetype<-" methods.
+###
+
 setMethod("xsbasetype", "BString", function(x) "B")
 setMethod("xsbasetype", "DNAString", function(x) "DNA")
 setMethod("xsbasetype", "RNAString", function(x) "RNA")
 setMethod("xsbasetype", "AAString", function(x) "AA")
 
-### exported
-setMethod("length", "XString", function(x) x@length)
-
-setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) length(x))
+### Downgrades 'x' to a B/DNA/RNA/AAString instance!
+setReplaceMethod("xsbasetype", "XString",
+    function(x, value)
+    {
+        from_basetype <- xsbasetype(x)
+        to_basetype <- value
+        ans_class <- paste(to_basetype, "String", sep="")
+        lkup <- get_xsbasetypes_conversion_lookup(from_basetype, to_basetype)
+        if (is.null(lkup))
+            return(new(ans_class, xdata=x@xdata, offset=x@offset, length=x@length))
+        xdata <- .copySubRawPtr(x@xdata, start=x@offset+1L, nchar=x@length,
+                                lkup=lkup, check=FALSE)
+        new(ans_class, xdata=xdata, length=length(xdata))
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -119,7 +132,7 @@ setMethod("toString", "XString", function(x, ...) as.character(x))
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL, check=TRUE)
+.charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL)
 {
     solved_SEW <- solveUserSEW(nchar(x, type="bytes"),
                                start=start, end=end, width=width)
@@ -138,84 +151,69 @@ setMethod("toString", "XString", function(x, ...) as.character(x))
     RawPtr.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
 }
 
-charToXString <- function(x, start=NA, end=NA, width=NA, class="BString", check=TRUE)
-{
-    if (check) {
-        if (length(x) == 0)
-            stop("no input sequence")
-        if (length(x) > 1)
-            stop("more than one input sequence")
-    }
-    lkup <- xs_enc_lkup(newEmptyXString(class))
-    xdata <- .charToRawPtr(x, start=start, end=end, width=width, lkup=lkup, check=check)
-    new(class, xdata=xdata, length=length(xdata))
-}
-
-.XStringToXString <- function(x, start, nchar, class, check)
-{
-    if (check) {
-        start <- normargStart(start)
-        nchar <- normargNchar(start, nchar, nchar(x))
-    }
-    start <- x@offset + start
-    to_basetype <- substr(class, 1, nchar(class)-6)  # remove "String" suffix
-    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), to_basetype)
-    if (is.null(lkup))
-        return(new(class, xdata=x@xdata, offset=start-1L, length=nchar))
-    xdata <- .copySubRawPtr(x@xdata, start=start, nchar=nchar, lkup=lkup, check=FALSE)
-    new(class, xdata=xdata, length=length(xdata))
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The user-friendly versatile constructors.
 ###
 
 setGeneric("XString", signature="x",
-    function(class, x, start=1, nchar=NA, check=TRUE) standardGeneric("XString")
+    function(basetype, x, start=NA, end=NA, width=NA)
+        standardGeneric("XString")
 )
 
 setMethod("XString", "character",
-    function(class, x, start=1, nchar=NA, check=TRUE)
+    function(basetype, x, start=NA, end=NA, width=NA)
     {
-        if (is.null(class))
-            class <- "BString"
-        charToXString(x, start=start, width=nchar, class=class, check=check)
+        if (is.null(basetype))
+            basetype <- "B"
+        if (length(x) == 0)
+            stop("no input sequence")
+        if (length(x) > 1)
+            stop("more than one input sequence")
+        ans_class <- paste(basetype, "String", sep="")
+        lkup <- xs_enc_lkup(newEmptyXString(ans_class))
+        xdata <- .charToRawPtr(x, start=start, end=end, width=width, lkup=lkup)
+        new(ans_class, xdata=xdata, length=length(xdata))
     }
 )
 
 ### Just because of the silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("XString", "AsIs",
-    function(class, x, start=1, nchar=NA, check=TRUE)
+    function(basetype, x, start=NA, end=NA, width=NA)
     {
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-        XString(class, x, start=start, nchar=nchar, check=check)
+        XString(basetype, x, start=start, end=end, width=width)
     }
 )
 
 setMethod("XString", "XString",
-    function(class, x, start=1, nchar=NA, check=TRUE)
+    function(basetype, x, start=NA, end=NA, width=NA)
     {
-        if (is.null(class))
-            class <- class(x)
-        .XStringToXString(x, start, nchar, class, check)
+        ans <- subseq(x, start=start, end=end, width=width)
+        ## `xsbasetype<-` must be called even when user supplied 'basetype' is
+        ## NULL because we want to enforce downgrade to a B/DNA/RNA/AAString
+        ## instance
+        if (is.null(basetype))
+            basetype <- xsbasetype(x)
+        xsbasetype(ans) <- basetype
+        ans
     }
 )
 
-BString <- function(x, start=1, nchar=NA, check=TRUE)
-    XString("BString", x, start=start, nchar=nchar, check=check)
+BString <- function(x, start=1, nchar=NA)
+    XString("B", x, start=start, width=nchar)
 
-DNAString <- function(x, start=1, nchar=NA, check=TRUE)
-    XString("DNAString", x, start=start, nchar=nchar, check=check)
+DNAString <- function(x, start=1, nchar=NA)
+    XString("DNA", x, start=start, width=nchar)
 
-RNAString <- function(x, start=1, nchar=NA, check=TRUE)
-    XString("RNAString", x, start=start, nchar=nchar, check=check)
+RNAString <- function(x, start=1, nchar=NA)
+    XString("RNA", x, start=start, width=nchar)
 
-AAString <- function(x, start=1, nchar=NA, check=TRUE)
-    XString("AAString", x, start=start, nchar=nchar, check=check)
+AAString <- function(x, start=1, nchar=NA)
+    XString("AA", x, start=start, width=nchar)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

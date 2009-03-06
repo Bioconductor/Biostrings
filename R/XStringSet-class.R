@@ -87,14 +87,16 @@ setClass("AAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "length" and accessor methods.
+### Accessor-like methods.
 ###
+
+### super() must remain for internal use only. Do not export!
+setGeneric("super", function(x) standardGeneric("super"))
+setMethod("super", "XStringSet", function(x) x@super)
 
 setMethod("length", "XStringSet", function(x) length(x@ranges))
 
-### "super" is NOT exported
-setGeneric("super", function(x) standardGeneric("super"))
-setMethod("super", "XStringSet", function(x) x@super)
+setMethod("width", "XStringSet", function(x) width(x@ranges))
 
 setMethod("width", "character",
     function(x)
@@ -104,7 +106,10 @@ setMethod("width", "character",
         nchar(x, type="bytes")
     }
 )
-setMethod("width", "XStringSet", function(x) width(x@ranges))
+
+setMethod("nchar", "XStringSet",
+    function(x, type="chars", allowNA=FALSE) width(x)
+)
 
 setMethod("names", "XStringSet", function(x) names(x@ranges))
 
@@ -184,28 +189,10 @@ unsafe.newXStringSet <- function(class, super, ranges,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The core XString API.
-###
-### The core XString API is the strict minimal set of methods that must work
-### for XString, XStringSet, XStringViews and MaskedXString objects.
-### It currently consists of the following methods:
-###   o NOT exported: xsbasetype
-###   o exported: length, nchar
+### The "xsbasetype" and "xsbasetype<-" methods.
 ###
 
-### NOT exported
 setMethod("xsbasetype", "XStringSet", function(x) xsbasetype(super(x)))
-
-### exported
-setMethod("nchar", "XStringSet",
-    function(x, type="chars", allowNA=FALSE) width(x)
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions (NOT exported) used by the versatile (and user friendly)
-### constructors and coercion methods below.
-###
 
 ### This is an endomorphism iff 'basetype' is NULL, otherwise it is NOT!
 compactXStringSet <- function(x, basetype=NULL)
@@ -236,14 +223,39 @@ compactXStringSet <- function(x, basetype=NULL)
         x@ranges <- IRanges:::unsafe.update(x@ranges,
                                             start=start(ans_ranges),
                                             width=width(ans_ranges))
-        x
-    } else {
-        ## NOT an endomorphism
-        ans_class <- paste(baseclass, "Set", sep="")
-        unsafe.newXStringSet(ans_class, ans_super, ans_ranges,
+        return(x)
+    }
+    ## NOT an endomorphism! (downgrades 'x' to a B/DNA/RNA/AAStringSet instance)
+    ans_class <- paste(baseclass, "Set", sep="")
+    unsafe.newXStringSet(ans_class, ans_super, ans_ranges,
+                         use.names=TRUE, names=names(x))
+}
+
+### Downgrades 'x' to a B/DNA/RNA/AAStringSet instance!
+setReplaceMethod("xsbasetype", "XStringSet",
+    function(x, value)
+    {
+        from_basetype <- xsbasetype(x)
+        to_basetype <- value
+        lkup <- get_xsbasetypes_conversion_lookup(from_basetype, to_basetype)
+        if (!is.null(lkup))
+            return(compactXStringSet(x, basetype=to_basetype))
+        ans_class <- paste(to_basetype, "StringSet", sep="")
+        if (is(x, ans_class)) {
+            ans_super <- super(x)
+        } else {
+            ans_super <- XString(to_basetype, super(x))
+        }
+        unsafe.newXStringSet(ans_class, ans_super, x@ranges,
                              use.names=TRUE, names=names(x))
     }
-}
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions (NOT exported) used by the versatile (and user friendly)
+### constructors and coercion methods below.
+###
 
 .charToXString <- function(x, solved_SEW, basetype)
 {
@@ -271,29 +283,6 @@ compactXStringSet <- function(x, basetype=NULL)
     ans_super <- subseq(x, start=start, end=end, width=width)
     ans_ranges <- new2("IRanges", start=1L, width=length(ans_super), check=FALSE)
     unsafe.newXStringSet(class, ans_super, ans_ranges)
-}
-
-.as.from_XStringSet_to_XStringSet <- function(x, basetype)
-{
-    from_basetype <- xsbasetype(x)
-    lkup <- get_xsbasetypes_conversion_lookup(from_basetype, basetype)
-    if (!is.null(lkup))
-        return(compactXStringSet(x, basetype=basetype))
-    ans_class <- paste(basetype, "StringSet", sep="")
-    if (is(x, ans_class)) {
-        ans_super <- super(x)
-    } else {
-        baseclass <- paste(basetype, "String", sep="")
-        ans_super <- XString(baseclass, super(x))
-    }
-    unsafe.newXStringSet(ans_class, ans_super, x@ranges,
-                         use.names=TRUE, names=names(x))
-}
-
-.narrowAndCoerceXStringSet <- function(x, start, end, width, use.names, basetype)
-{
-    y <- narrow(x, start=start, end=end, width=width, use.names=use.names)
-    .as.from_XStringSet_to_XStringSet(y, basetype)
 }
 
 
@@ -333,7 +322,16 @@ setMethod("XStringSet", "XString",
 )
 setMethod("XStringSet", "XStringSet",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowAndCoerceXStringSet(x, start, end, width, use.names, basetype)
+    {
+        ans <- narrow(x, start=start, end=end, width=width, use.names=use.names)
+        ## `xsbasetype<-` must be called even when user supplied 'basetype' is
+        ## NULL because we want to enforce downgrade to a B/DNA/RNA/AAStringSet
+        ## instance
+        if (is.null(basetype))
+            basetype <- xsbasetype(x)
+        xsbasetype(ans) <- basetype
+        ans
+    }
 )
 
 BStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -355,16 +353,16 @@ AAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
 ###
 
 setAs("XStringSet", "BStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "B")
+    function(from) {xsbasetype(from) <- "B"; from}
 )
 setAs("XStringSet", "DNAStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "DNA")
+    function(from) {xsbasetype(from) <- "DNA"; from}
 )
 setAs("XStringSet", "RNAStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "RNA")
+    function(from) {xsbasetype(from) <- "RNA"; from}
 )
 setAs("XStringSet", "AAStringSet",
-    function(from) .as.from_XStringSet_to_XStringSet(from, "AA")
+    function(from) {xsbasetype(from) <- "AA"; from}
 )
 
 setAs("character", "BStringSet", function(from) BStringSet(from))
@@ -675,3 +673,4 @@ setMethod("unique", "XStringSet",
             x[.XStringSet_not_duplicated(x, incomparables=incomparables, ...)]
         }
 )
+

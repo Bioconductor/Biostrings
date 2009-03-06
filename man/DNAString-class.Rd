@@ -51,7 +51,7 @@
 
   \describe{
     \item{}{
-      \code{DNAString(x, start=1, nchar=NA, check=TRUE)}:
+      \code{DNAString(x, start=1, nchar=NA)}:
       Tries to convert \code{x} into a DNAString object by reading
       \code{nchar} letters starting at position \code{start} in \code{x}.
     }

@@ -78,21 +78,29 @@ setMethod("masks", "MaskedXString", function(x) x@masks)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The core XString API.
-###
-### The core XString API is the strict minimal set of methods that must work
-### for XString, XStringSet, XStringViews and MaskedXString objects.
-### It currently consists of the following methods:
-###   o NOT exported: xsbasetype
-###   o exported: length, nchar
+### Accessor-like methods.
 ###
 
-### NOT exported
+setMethod("length", "MaskedXString", function(x) length(unmasked(x)))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "xsbasetype" and "xsbasetype<-" methods.
+###
+
 setMethod("xsbasetype", "MaskedXString", function(x) xsbasetype(unmasked(x)))
 
-### exported
-setMethod("length", "MaskedXString",
-    function(x) length(unmasked(x))
+### Downgrades 'x' to a MaskedB/DNA/RNA/AAString instance!
+setReplaceMethod("xsbasetype", "MaskedXString",
+    function(x, value)
+    {
+        ## could be done with 'xsbasetype(unmasked(x)) <- value'
+        ## if `unmasked<-` was available
+        unmasked <- unmasked(x)
+        xsbasetype(unmasked) <- value
+        ans_class <- paste("Masked", value, "String", sep="")
+        new(ans_class, unmasked=unmasked, masks=masks(x))
+    }
 )
 
 
@@ -156,6 +164,20 @@ setValidity("MaskedXString",
 ### Coercion.
 ###
 
+### From MaskedXString objects to MaskedXString objects.
+setAs("MaskedXString", "MaskedBString",
+    function(from) {xsbasetype(from) <- "B"; from}
+)
+setAs("MaskedXString", "MaskedDNAString",
+    function(from) {xsbasetype(from) <- "DNA"; from}
+)
+setAs("MaskedXString", "MaskedRNAString",
+    function(from) {xsbasetype(from) <- "RNA"; from}
+)
+setAs("MaskedXString", "MaskedAAString",
+    function(from) {xsbasetype(from) <- "AA"; from}
+)
+
 ### From XString objects to MaskedXString objects.
 setAs("BString", "MaskedBString",
     function(from)
@@ -202,8 +224,8 @@ setAs("MaskedAAString", "AAString",
 
 ### Dispatch on 'x' (see generic in XString-class.R).
 setMethod("XString", "MaskedXString",
-    function(class, x, start=1, nchar=NA, check=TRUE)
-        XString(class, unmasked(x), start=start, nchar=nchar, check=check)
+    function(basetype, x, start=NA, end=NA, width=NA)
+        XString(basetype, unmasked(x), start=start, end=end, width=width)
 )
 
 ### From a MaskedXString object to a MaskCollection object.

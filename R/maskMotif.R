@@ -33,7 +33,7 @@ setMethod("maskMotif", signature(x="MaskedXString", motif="XString"),
 setMethod("maskMotif", signature(x="MaskedXString", motif="character"),
     function(x, motif, min.block.width=1)
     {
-        motif <- XString(xsbaseclass(x), motif)
+        motif <- XString(xsbasetype(x), motif)
         maskMotif(x, motif, min.block.width=min.block.width)
     }
 )

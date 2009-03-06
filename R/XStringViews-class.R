@@ -44,19 +44,9 @@ setMethod("Views", "character",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The core XString API.
-###
-### The core XString API is the strict minimal set of methods that must work
-### for XString, XStringSet, XStringViews and MaskedXString objects.
-### It currently consists of the following methods:
-###   o NOT exported: xsbasetype
-###   o exported: length, nchar
+### Accessor-like methods.
 ###
 
-### NOT exported
-setMethod("xsbasetype", "XStringViews", function(x) xsbasetype(subject(x)))
-
-### exported
 setMethod("nchar", "XStringViews",
     function(x, type="chars", allowNA=FALSE)
     {
@@ -67,6 +57,26 @@ setMethod("nchar", "XStringViews",
         ans <- end0 - start0 + 1L
         ans[ans < 0L] <- 0L
         ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "xsbasetype" and "xsbasetype<-" methods.
+###
+
+setMethod("xsbasetype", "XStringViews", function(x) xsbasetype(subject(x)))
+
+### Does NOT downgrade 'x' to an XStringViews instance! (endomorphism)
+setReplaceMethod("xsbasetype", "XStringViews",
+    function(x, value)
+    {
+        ## could be done with 'xsbasetype(subject(x)) <- value'
+        ## if `subject<-` was available
+        subject <- subject(x)
+        xsbasetype(subject) <- value
+        x@subject <- subject
+        x
     }
 )
 

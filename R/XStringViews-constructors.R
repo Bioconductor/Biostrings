@@ -79,7 +79,9 @@ setMethod("XStringViews", "ANY",
         if (!is.character(collapse))
             collapse <- toString(collapse)
         seq <- paste(x, collapse=collapse)
-        subject <- XString(subjectClass, seq)
+        ## drop the "String" suffix
+        subject_basetype <- substr(subjectClass, 1, nchar(subjectClass)-6)
+        subject <- XString(subject_basetype, seq)
         ans <- adjacentViews(subject, nchar(x), gapwidth=nchar(collapse))
         names(ans) <- names(x)
         ans
@@ -96,8 +98,11 @@ setMethod("XStringViews", "XString",
             #return(!normalize(matchPattern(collapse, b, fixed=TRUE)))
             stop("'collapse' not yet supported when 'x' is an XString object")
         }
-        if (!missing(subjectClass) && subjectClass != class(x))
-            x <- XString(subjectClass, x)
+        if (!missing(subjectClass) && subjectClass != class(x)) {
+            ## drop the "String" suffix
+            subject_basetype <- substr(subjectClass, 1, nchar(subjectClass)-6)
+            x <- XString(subject_basetype, x)
+        }
         unsafe.newXStringViews(x, 1L, nchar(x))
     }
 )
@@ -108,7 +113,9 @@ setMethod("XStringViews", "XStringViews",
     {
         if (!missing(collapse))
             stop("'collapse' not supported when 'x' is an XStringViews object")
-        x@subject <- XString(subjectClass, subject(x))
+        ## drop the "String" suffix
+        subject_basetype <- substr(subjectClass, 1, nchar(subjectClass)-6)
+        x@subject <- XString(subject_basetype, subject(x))
         x
     }
 )

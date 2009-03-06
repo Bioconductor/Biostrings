@@ -25,11 +25,11 @@ setMethod("lcprefix", signature(s1="character", s2="character"),
 )
 setMethod("lcprefix", signature(s1="character", s2="XString"),
     function(s1, s2)
-        XString.lcprefix(XString(class(s2), s1), s2)
+        XString.lcprefix(XString(xsbasetype(s2), s1), s2)
 )
 setMethod("lcprefix", signature(s1="XString", s2="character"),
     function(s1, s2)
-        XString.lcprefix(s1, XString(class(s1), s2))
+        XString.lcprefix(s1, XString(xsbasetype(s1), s2))
 )
 setMethod("lcprefix", signature(s1="XString", s2="XString"),
     function(s1, s2)
@@ -63,11 +63,11 @@ setMethod("lcsuffix", signature(s1="character", s2="character"),
 )
 setMethod("lcsuffix", signature(s1="character", s2="XString"),
     function(s1, s2)
-        XString.lcsuffix(XString(class(s2), s1), s2)
+        XString.lcsuffix(XString(xsbasetype(s2), s1), s2)
 )
 setMethod("lcsuffix", signature(s1="XString", s2="character"),
     function(s1, s2)
-        XString.lcsuffix(s1, XString(class(s1), s2))
+        XString.lcsuffix(s1, XString(xsbasetype(s1), s2))
 )
 setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     function(s1, s2)
@@ -247,11 +247,11 @@ setMethod("lcsubstr", signature(s1="character", s2="character"),
 )
 setMethod("lcsubstr", signature(s1="character", s2="XString"),
     function(s1, s2)
-        XString.lcsubstr(XString(class(s2), s1), s2)
+        XString.lcsubstr(XString(xsbasetype(s2), s1), s2)
 )
 setMethod("lcsubstr", signature(s1="XString", s2="character"),
     function(s1, s2)
-        XString.lcsubstr(s1, XString(class(s1), s2))
+        XString.lcsubstr(s1, XString(xsbasetype(s1), s2))
 )
 setMethod("lcsubstr", signature(s1="XString", s2="XString"),
     function(s1, s2)

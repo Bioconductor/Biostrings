@@ -15,9 +15,6 @@
 ###
 ### xsbasetype() returns that base type. For example 'xsbasetype(AAString(""))'
 ### returns "AA".
-### xsbasetype() has methods defined for the 4 basic string containers:
-### XString (single sequence), XStringSet (multiple sequences), XStringViews
-### (multiple sequences) and MaskedXString (single sequence).
 ###   
 
 
@@ -25,7 +22,16 @@
 ### NON exported functions.
 ###
 
-setGeneric("xsbasetype", function(x) standardGeneric("xsbasetype"))
+### xsbasetype() and `xsbasetype<-`() have methods defined for the 4 basic
+### string containers: XString (single sequence), XStringSet (multiple
+### sequences), XStringViews (multiple sequences) and MaskedXString (single
+### sequence).
+setGeneric("xsbasetype",
+    function(x) standardGeneric("xsbasetype")
+)
+setGeneric("xsbasetype<-", signature="x",
+    function(x, value) standardGeneric("xsbasetype<-")
+)
 
 xsbaseclass <- function(x) paste(xsbasetype(x), "String", sep="")
 

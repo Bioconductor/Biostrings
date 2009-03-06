@@ -18,7 +18,7 @@
 \alias{MaskedAAString-class}
 \alias{MaskedAAString}
 
-% Accesor methods:
+% Accesor-like methods:
 \alias{unmasked}
 \alias{unmasked,MaskedXString-method}
 \alias{masks}
@@ -32,6 +32,11 @@
 \alias{nchar,MaskedXString-method}
 
 % Coercion:
+\alias{coerce,MaskedXString,MaskedBString-method}
+\alias{coerce,MaskedXString,MaskedDNAString-method}
+\alias{coerce,MaskedXString,MaskedRNAString-method}
+\alias{coerce,MaskedXString,MaskedAAString-method}
+
 \alias{coerce,BString,MaskedBString-method}
 \alias{coerce,DNAString,MaskedDNAString-method}
 \alias{coerce,RNAString,MaskedRNAString-method}
