@@ -137,7 +137,7 @@ exportMethods(
     start, width, end, narrow, reduce, gaps,
 
     ## XString, XStringViews and MaskedXString objects
-    XString, subseq,
+    subseq,
     Views, XStringViews,
     unmasked, masks, "masks<-", maskedwidth, maskedratio,
 

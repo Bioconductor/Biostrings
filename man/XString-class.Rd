@@ -9,9 +9,6 @@
 
 % Constructor-like functions and generics:
 \alias{XString}
-\alias{XString,character-method}
-\alias{XString,AsIs-method}
-\alias{XString,XString-method}
 \alias{BString}
 
 % Accessor methods:

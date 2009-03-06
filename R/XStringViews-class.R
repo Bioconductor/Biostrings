@@ -92,16 +92,25 @@ XStringViewsToSet <- function(x, use.names, verbose=TRUE)
                            use.names=use.names)
     if (verbose && any(width(ans_ranges) < width(x)))
         warning("trimming \"out of limits\" views")
-    class <- paste(class(subject(x)), "Set", sep="")
+    class <- paste(xsbasetype(x), "StringSet", sep="")
     unsafe.newXStringSet(class, subject(x), ans_ranges,
                          use.names=TRUE, names=names(ans_ranges))
 }
 
+### We need this so that B/DNA/RNA/AAStringSet() used below work on an
+### XStringViews object.
 setMethod("XStringSet", "XStringViews",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
         XStringSet(basetype, XStringViewsToSet(x, use.names),
-                   start=start, end=end, width=width, TRUE)
+                   start=start, end=end, width=width, use.names=TRUE)
 )
+
+setAs("XStringViews", "XStringSet", function(from) XStringViewsToSet(from, TRUE))
+
+setAs("XStringViews", "BStringSet", function(from) BStringSet(from))
+setAs("XStringViews", "DNAStringSet", function(from) DNAStringSet(from))
+setAs("XStringViews", "RNAStringSet", function(from) RNAStringSet(from))
+setAs("XStringViews", "AAStringSet", function(from) AAStringSet(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

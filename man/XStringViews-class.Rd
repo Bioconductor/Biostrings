@@ -11,6 +11,12 @@
 
 \alias{nchar,XStringViews-method}
 
+\alias{coerce,XStringViews,XStringSet-method}
+\alias{coerce,XStringViews,BStringSet-method}
+\alias{coerce,XStringViews,DNAStringSet-method}
+\alias{coerce,XStringViews,RNAStringSet-method}
+\alias{coerce,XStringViews,AAStringSet-method}
+
 \alias{show,XStringViews-method}
 
 \alias{==,XStringViews,XStringViews-method}
@@ -203,14 +209,18 @@
   ## Here the first view doesn't even overlap with the subject:
   Views(BString("aaa--b"), start=-3:4, end=-3:4 + c(3:6, 6:3))
 
-  ## 'start' and 'end' are recycled
+  ## 'start' and 'end' are recycled:
   Views("abcdefghij", start=2:1, end=4)
   Views("abcdefghij", start=5:7)
   Views("abcdefghij", end=5:7)
 
-  ## Applying gaps() to an XStringViews object
+  ## Applying gaps() to an XStringViews object:
   v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
   gaps(v2)
+
+  ## Coercion:
+  as(v12, "XStringSet")  # same as 'as(v12, "DNAStringSet")'
+  as(v12, "RNAStringSet")
 }
 
 \keyword{methods}
