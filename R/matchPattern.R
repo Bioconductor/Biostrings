@@ -269,7 +269,7 @@ setMethod("matchPattern", "XString",
 setMethod("matchPattern", "XStringSet",
     function(pattern, subject, algorithm="auto",
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-        stop("use vmatchPattern() when 'subject' is an XStringSet object")
+        stop("please use vmatchPattern() when 'subject' is an XStringSet object (multiple sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -339,7 +339,7 @@ setMethod("countPattern", "XString",
 setMethod("countPattern", "XStringSet",
     function(pattern, subject, algorithm="auto",
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-        stop("use vcountPattern() when 'subject' is an XStringSet object")
+        stop("please use vcountPattern() when 'subject' is an XStringSet object (multiple sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -411,6 +411,12 @@ setMethod("vmatchPattern", "character",
                                   max.mismatch, with.indels, fixed)
 )
 
+setMethod("vmatchPattern", "XString",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
+        stop("please use matchPattern() when 'subject' is an XString object (single sequence)")
+)
+
 setMethod("vmatchPattern", "XStringSet",
     function(pattern, subject, algorithm="auto",
              max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
@@ -418,7 +424,20 @@ setMethod("vmatchPattern", "XStringSet",
                                   max.mismatch, with.indels, fixed)
 )
 
-# TODO: (Maybe) add a "vmatchPattern" method for XStringViews objects.
+# TODO: Add a "vmatchPattern" method for XStringViews objects.
+# Note that the start/end of the matches need to be returned as relative
+# to subject(subject).
+setMethod("vmatchPattern", "XStringViews",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
+        stop("XStringViews objects are not supported yet, sorry")
+)
+
+setMethod("vmatchPattern", "MaskedXString",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
+        stop("please use matchPattern() when 'subject' is a MaskedXString object (single sequence)")
+)
 
 setGeneric("vcountPattern", signature="subject",
     function(pattern, subject, algorithm="auto",
@@ -434,6 +453,12 @@ setMethod("vcountPattern", "character",
                                   count.only=TRUE)
 )
 
+setMethod("vcountPattern", "XString",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
+        stop("please use countPattern() when 'subject' is an XString object (single sequence)")
+)
+
 setMethod("vcountPattern", "XStringSet",
     function(pattern, subject, algorithm="auto",
              max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
@@ -442,5 +467,17 @@ setMethod("vcountPattern", "XStringSet",
                                   count.only=TRUE)
 )
 
-# TODO: (Maybe) add a "vcountPattern" method for XStringViews objects.
+setMethod("vcountPattern", "XStringViews",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
+        vcountPattern(pattern, XStringViewsToSet(subject, FALSE, verbose=FALSE),
+                      algorithm=algorithm,
+                      max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
+)
+
+setMethod("vcountPattern", "MaskedXString",
+    function(pattern, subject, algorithm="auto",
+             max.mismatch=0L, with.indels=FALSE, fixed=TRUE)
+        stop("please use countPattern() when 'subject' is a MaskedXString object (single sequence)")
+)
 

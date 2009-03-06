@@ -4,19 +4,29 @@
 
 \alias{matchPDict}
 \alias{matchPDict,XString-method}
+\alias{matchPDict,XStringSet-method}
 \alias{matchPDict,XStringViews-method}
 \alias{matchPDict,MaskedXString-method}
 
 \alias{countPDict}
 \alias{countPDict,XString-method}
+\alias{countPDict,XStringSet-method}
 \alias{countPDict,XStringViews-method}
 \alias{countPDict,MaskedXString-method}
 
 \alias{whichPDict}
 \alias{whichPDict,XString-method}
 
+\alias{vmatchPDict}
+\alias{vmatchPDict,ANY-method}
+\alias{vmatchPDict,XString-method}
+\alias{vmatchPDict,MaskedXString-method}
+
 \alias{vcountPDict}
+\alias{vcountPDict,XString-method}
 \alias{vcountPDict,XStringSet-method}
+\alias{vcountPDict,XStringViews-method}
+\alias{vcountPDict,MaskedXString-method}
 
 % Functions:
 \alias{extractAllMatches}

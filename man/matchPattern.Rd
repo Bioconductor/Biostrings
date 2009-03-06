@@ -15,10 +15,16 @@
 
 \alias{vmatchPattern}
 \alias{vmatchPattern,character-method}
+\alias{vmatchPattern,XString-method}
 \alias{vmatchPattern,XStringSet-method}
+\alias{vmatchPattern,XStringViews-method}
+\alias{vmatchPattern,MaskedXString-method}
 \alias{vcountPattern}
 \alias{vcountPattern,character-method}
+\alias{vcountPattern,XString-method}
 \alias{vcountPattern,XStringSet-method}
+\alias{vcountPattern,XStringViews-method}
+\alias{vcountPattern,MaskedXString-method}
 
 \alias{matchDNAPattern}
 

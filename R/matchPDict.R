@@ -345,6 +345,13 @@ setMethod("matchPDict", "XString",
 )
 
 ### Dispatch on 'subject' (see signature of generic).
+setMethod("matchPDict", "XStringSet",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use vmatchPDict() when 'subject' is an XStringSet object (multiple sequence)")
+)
+
+### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XStringViews",
     function(pdict, subject, algorithm="auto",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
@@ -376,6 +383,13 @@ setMethod("countPDict", "XString",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .matchPDict(pdict, subject, algorithm,
                     max.mismatch, fixed, verbose, count.only=TRUE)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("countPDict", "XStringSet",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use vcountPDict() when 'subject' is an XStringSet object (multiple sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -419,15 +433,49 @@ setMethod("whichPDict", "XString",
 ###
 ### These are vectorized versions of matchPDict(), countPDict() and
 ### whichPDict().
-### ONLY vcountPDict() is supported for now. It returns a M x N matrix of
+### ONLY vcountPDict() is supported for now. It returns an M x N matrix of
 ### integers where M is the number of patterns (length(pdict)) and N the
 ### number of sequences in the subject (length(subject)).
 ###
+
+setGeneric("vmatchPDict", signature="subject",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        standardGeneric("vmatchPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vmatchPDict", "ANY",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("vmatchPDict() is not ready yet, sorry")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vmatchPDict", "XString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use matchPDict() when 'subject' is an XString object (single sequence)")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vmatchPDict", "MaskedXString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use matchPDict() when 'subject' is a MaskedXString object (single sequence)")
+)
 
 setGeneric("vcountPDict", signature="subject",
     function(pdict, subject, algorithm="auto",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
         standardGeneric("vcountPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vcountPDict", "XString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use countPDict() when 'subject' is an XString object (single sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -438,5 +486,20 @@ setMethod("vcountPDict", "XStringSet",
                      max.mismatch, fixed, verbose, count.only=TRUE)
 )
 
-# TODO: (Maybe) add a "vcountPDict" method for XStringViews objects.
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vcountPDict", "XStringViews",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        vcountPDict(pdict, XStringViewsToSet(subject, FALSE, verbose=FALSE),
+                    algorithm=algorithm,
+                    max.mismatch=max.mismatch, fixed=fixed,
+                    verbose=verbose)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vcountPDict", "MaskedXString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use countPDict() when 'subject' is a MaskedXString object (single sequence)")
+)
 
