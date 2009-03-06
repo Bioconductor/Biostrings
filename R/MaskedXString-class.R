@@ -66,7 +66,7 @@ setClass("MaskedAAString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "unmasked" and "masks" accessor methods (exported).
+### Accessor-like methods.
 ###
 
 setGeneric("unmasked", function(x) standardGeneric("unmasked"))
@@ -76,37 +76,7 @@ setGeneric("masks", function(x) standardGeneric("masks"))
 setMethod("masks", "XString", function(x) NULL)
 setMethod("masks", "MaskedXString", function(x) x@masks)
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor-like methods.
-###
-
 setMethod("length", "MaskedXString", function(x) length(unmasked(x)))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" methods.
-###
-
-setMethod("xsbasetype", "MaskedXString", function(x) xsbasetype(unmasked(x)))
-
-### Downgrades 'x' to a MaskedB/DNA/RNA/AAString instance!
-setReplaceMethod("xsbasetype", "MaskedXString",
-    function(x, value)
-    {
-        ## could be done with 'xsbasetype(unmasked(x)) <- value'
-        ## if `unmasked<-` was available
-        unmasked <- unmasked(x)
-        xsbasetype(unmasked) <- value
-        ans_class <- paste("Masked", value, "String", sep="")
-        new(ans_class, unmasked=unmasked, masks=masks(x))
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "maskedwidth", "maskedratio" and "nchar" methods.
-###
 
 setMethod("maskedwidth", "MaskedXString", function(x) maskedwidth(reduce(masks(x))))
 
@@ -156,6 +126,26 @@ setValidity("MaskedXString",
     {
         problems <- .valid.MaskedXString(object)
         if (is.null(problems)) TRUE else problems
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "xsbasetype" and "xsbasetype<-" methods.
+###
+
+setMethod("xsbasetype", "MaskedXString", function(x) xsbasetype(unmasked(x)))
+
+### Downgrades 'x' to a MaskedB/DNA/RNA/AAString instance!
+setReplaceMethod("xsbasetype", "MaskedXString",
+    function(x, value)
+    {
+        ## could be done with 'xsbasetype(unmasked(x)) <- value'
+        ## if `unmasked<-` was available
+        unmasked <- unmasked(x)
+        xsbasetype(unmasked) <- value
+        ans_class <- paste("Masked", value, "String", sep="")
+        new(ans_class, unmasked=unmasked, masks=masks(x))
     }
 )
 

@@ -20,12 +20,16 @@
 \alias{as.list,SparseList-method}
 \alias{[[,SparseList-method}
 
-%XStringCodec class and methods:
+% XStringCodec class and methods:
 \alias{class:XStringCodec}
 \alias{XStringCodec-class}
 \alias{XStringCodec}
 
 \alias{initialize,XStringCodec-method}
+
+% xsbasetype.R (put aliases for specific methods in corresponding man pages):
+\alias{xsbasetype}
+\alias{xsbasetype<-}
 
 
 \title{Biostrings internals}

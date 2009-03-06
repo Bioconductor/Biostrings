@@ -25,13 +25,14 @@
 \alias{masks,XString-method}
 \alias{masks,MaskedXString-method}
 \alias{length,MaskedXString-method}
-
-% "maskedwidth" and related methods:
 \alias{maskedwidth,MaskedXString-method}
 \alias{maskedratio,MaskedXString-method}
 \alias{nchar,MaskedXString-method}
 
 % Coercion:
+\alias{xsbasetype,MaskedXString-method}
+\alias{xsbasetype<-,MaskedXString-method}
+
 \alias{coerce,MaskedXString,MaskedBString-method}
 \alias{coerce,MaskedXString,MaskedDNAString-method}
 \alias{coerce,MaskedXString,MaskedRNAString-method}

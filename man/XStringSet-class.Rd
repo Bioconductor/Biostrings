@@ -31,6 +31,9 @@
 \alias{threebands,character-method}
 \alias{threebands,XStringSet-method}
 
+\alias{xsbasetype,XStringSet-method}
+\alias{xsbasetype<-,XStringSet-method}
+
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}
 \alias{coerce,XStringSet,RNAStringSet-method}

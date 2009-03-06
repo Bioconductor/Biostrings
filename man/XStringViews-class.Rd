@@ -11,6 +11,9 @@
 
 \alias{nchar,XStringViews-method}
 
+\alias{xsbasetype,XStringViews-method}
+\alias{xsbasetype<-,XStringViews-method}
+
 \alias{coerce,XStringViews,XStringSet-method}
 \alias{coerce,XStringViews,BStringSet-method}
 \alias{coerce,XStringViews,DNAStringSet-method}

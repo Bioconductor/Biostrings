@@ -38,7 +38,7 @@ export(
     DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
 
     ## xsbasetype.R:
-    alphabet,
+    xsbasetype, "xsbasetype<-", alphabet,
 
     ## XString-class.R:
     BString, DNAString, RNAString, AAString,
@@ -58,6 +58,7 @@ export(
 
 exportMethods(
     initialize, length,
+    xsbasetype, "xsbasetype<-",
     names, "[", "[[", rep, append,
     union, intersect, setdiff, setequal,
     show,

@@ -17,6 +17,11 @@
 \alias{nchar,XString-method}
 
 % Coercion:
+\alias{xsbasetype,BString-method}
+\alias{xsbasetype,DNAString-method}
+\alias{xsbasetype,RNAString-method}
+\alias{xsbasetype,AAString-method}
+\alias{xsbasetype<-,XString-method}
 \alias{as.character,XString-method}
 \alias{toString,XString-method}
 
