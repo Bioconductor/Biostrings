@@ -13,6 +13,7 @@
 
 % Accessor methods:
 \alias{alphabet}
+\alias{alphabet,ANY-method}
 \alias{length,XString-method}
 \alias{nchar,XString-method}
 

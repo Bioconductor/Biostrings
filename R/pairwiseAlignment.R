@@ -20,7 +20,7 @@ nucleotideSubstitutionMatrix <- function(match = 1, mismatch = 0, baseOnly = FAL
   if (!isSingleNumber(match) || !isSingleNumber(mismatch))
     stop("'match' and 'mismatch' must be non-missing numbers")
   if (baseOnly)
-    letters <- IUPAC_CODE_MAP[c("A", "C", "G", "T")]
+    letters <- IUPAC_CODE_MAP[DNA_BASES]
   else
     letters <- IUPAC_CODE_MAP
   if (type == "RNA")

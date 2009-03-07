@@ -35,7 +35,7 @@ export(
     RNA_GENETIC_CODE,
 
     ## XStringCodec-class.R:
-    DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
+    DNA_BASES, RNA_BASES, DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
 
     ## xsbasetype.R:
     xsbasetype, "xsbasetype<-", alphabet,
@@ -58,7 +58,7 @@ export(
 
 exportMethods(
     initialize, length,
-    xsbasetype, "xsbasetype<-",
+    xsbasetype, "xsbasetype<-", alphabet,
     names, "[", "[[", rep, append,
     union, intersect, setdiff, setequal,
     show,

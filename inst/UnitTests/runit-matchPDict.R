@@ -3,7 +3,7 @@
 # --- to be included in an upcoming biocDatasets package
 randomDNASequences <- function(n, w)
 {
-  alphabet <- c("A", "T", "G", "C")
+  alphabet <- DNA_BASES
   w <- rep(w, length=n)
   sequences <- sapply(seq(1, n, length=n),
                       function(x) {

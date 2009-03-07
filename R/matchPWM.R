@@ -7,8 +7,8 @@
 {
     if (!is.numeric(pwm) || !is.matrix(pwm))
         stop("'pwm' must be a numeric matrix")
-    if (!identical(rownames(pwm), c("A", "C", "G", "T")))
-        stop("'rownames(pwm)' must be 'c(\"A\", \"C\", \"G\", \"T\")'")
+    if (!identical(rownames(pwm), DNA_BASES))
+        stop("'rownames(pwm)' must be the DNA bases ('DNA_BASES')")
     if (!is.integer(pwm))
         storage.mode(pwm) <- "integer"
     if (any(is.na(pwm)))

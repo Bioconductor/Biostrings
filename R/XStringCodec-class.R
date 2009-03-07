@@ -127,14 +127,20 @@ RNA_BASE_CODES <- c(A=1L, C=2L, G=4L, U=8L)
 DNAcodes <- function(baseOnly) .DNAorRNAcodes(DNA_BASE_CODES, baseOnly)
 RNAcodes <- function(baseOnly) .DNAorRNAcodes(RNA_BASE_CODES, baseOnly)
 
-### DNA and RNA alphabets
+### DNA and RNA alphabets.
 .DNA_CODES <- DNAcodes(FALSE)
 .RNA_CODES <- RNAcodes(FALSE)
 DNA_ALPHABET <- names(.DNA_CODES)
 RNA_ALPHABET <- names(.RNA_CODES)
 
+### DNA_BASES could be defined more simply as being 'names(DNA_BASE_CODES)'
+### but calling DNAcodes() gives us the guarantee that the order of the
+### bases will be consistent with DNA_ALPHABET.
+DNA_BASES <- names(DNAcodes(TRUE))
+RNA_BASES <- names(RNAcodes(TRUE))
 
-### DNA and RNA codecs
+
+### DNA and RNA codecs.
 .XStringCodec.DNAorRNA <- function(codes)
 {
     letters <- names(codes)

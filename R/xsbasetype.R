@@ -15,23 +15,30 @@
 ###
 ### xsbasetype() returns that base type. For example 'xsbasetype(AAString(""))'
 ### returns "AA".
-###   
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### NON exported functions.
+### The "xsbasetype" and "xsbasetype<-" generics.
 ###
-
 ### xsbasetype() and `xsbasetype<-`() have methods defined for the 4 basic
 ### string containers: XString (single sequence), XStringSet (multiple
 ### sequences), XStringViews (multiple sequences) and MaskedXString (single
 ### sequence).
+###   
+
 setGeneric("xsbasetype",
     function(x) standardGeneric("xsbasetype")
 )
+
 setGeneric("xsbasetype<-", signature="x",
     function(x, value) standardGeneric("xsbasetype<-")
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions for which the returned value depends on 'xsbasetype(x)',
+### not on what particular data are in 'x'. Not exported.
+### 
 
 xsbaseclass <- function(x) paste(xsbasetype(x), "String", sep="")
 
@@ -118,13 +125,22 @@ comparable_xsbasetypes <- function(basetype1, basetype2)
 ### Exported functions.
 ###
 
-alphabet <- function(x)
-{
-    switch(xsbasetype(x),
-        DNA=DNA_ALPHABET,
-        RNA=RNA_ALPHABET,
-        AA=AA_ALPHABET,
-        NULL
-    )
-}
+### Could be made just a regular function but that would cause problems to
+### people wanting to redefine alphabet() for their own objects (this is the
+### case at least in the ShortRead package).
+setGeneric("alphabet", function(x, ...) standardGeneric("alphabet"))
+
+setMethod("alphabet", "ANY",
+    function(x, baseOnly=FALSE)
+    {
+        if (!isTRUEorFALSE(baseOnly))
+            stop("'baseOnly' must be TRUE or FALSE")
+        switch(xsbasetype(x),
+            DNA=if (baseOnly) DNA_BASES else DNA_ALPHABET,
+            RNA=if (baseOnly) RNA_BASES else RNA_ALPHABET,
+            AA=AA_ALPHABET,
+            NULL
+        )
+    }
+)
 
