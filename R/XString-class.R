@@ -56,8 +56,7 @@ setReplaceMethod("xsbasetype", "XString",
         lkup <- get_xsbasetypes_conversion_lookup(from_basetype, to_basetype)
         if (is.null(lkup))
             return(new(ans_class, xdata=x@xdata, offset=x@offset, length=x@length))
-        xdata <- .copySubRawPtr(x@xdata, start=x@offset+1L, nchar=x@length,
-                                lkup=lkup, check=FALSE)
+        xdata <- .copySubRawPtr(x@xdata, start=x@offset+1L, nchar=x@length, lkup=lkup)
         new(ans_class, xdata=xdata, length=length(xdata))
     }
 )
@@ -141,12 +140,8 @@ setMethod("toString", "XString", function(x, ...) as.character(x))
           PACKAGE="Biostrings")
 }
 
-.copySubRawPtr <- function(x, start=1, nchar=NA, lkup=NULL, check=TRUE)
+.copySubRawPtr <- function(x, start=1, nchar=NA, lkup=NULL)
 {
-    if (check) {
-        start <- normargStart(start)
-        nchar <- normargNchar(start, nchar, length(x))
-    }
     ans <- RawPtr(nchar)
     RawPtr.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
 }
