@@ -185,11 +185,6 @@ STRING MATCHING
     with a head or a tail. Add 'freq' arg (default FALSE) to patternFrequency()
     like for alphabetFrequency().
 
-  o Added the all.names=TRUE arg to countPDict() with a warning when the
-    user specifies it and the PDict object has no name.
-    With this countPDict(..., all.names) should be exactly equivalent to
-    countIndex(matchPDict(...), all.names)
-
   o extractAllMatches() fails on a very big MIndex object (can't allocate
     vector of size 5.2Gb).
 
