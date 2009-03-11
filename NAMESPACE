@@ -180,7 +180,7 @@ exportMethods(
 exportClasses(
     #SparseList,
     Dups,
-    MIndex, ByPos_MIndex, ByName_MIndex,
+    MIndex, ByPos_MIndex,
     BOC_SubjectString, BOC2_SubjectString,
     PreprocessedTB, Twobit, ACtree, ACtree2,
     PDict3Parts, PDict, TB_PDict, MTB_PDict

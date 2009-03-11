@@ -193,7 +193,7 @@
     if (count.only %in% c(TRUE, NA))  # whichPDict() or countPDict()
         return(C_ans)
     # matchPDict()
-    new("ByPos_MIndex", ends=C_ans, width=width(pdict))
+    new("ByPos_MIndex", width=width(pdict), NAMES=names(pdict), ends=C_ans)
 }
 
 .matchMTB_PDict <- function(pdict, subject, algorithm,
@@ -275,7 +275,7 @@
         ans@dups0 <- dups(pdict)
     } else {
         stop("don't know how to store the dup info in a ",
-             class(ans), " object yet")
+             class(ans), " object")
     }
     ans
 }

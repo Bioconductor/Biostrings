@@ -13,11 +13,14 @@ setClass("MIndex",
     contains="ListLike",
     representation(
         "VIRTUAL",
-        width="integer"
+        width="integer",
+        NAMES="characterORNULL"
     )
 )
 
 setMethod("length", "MIndex", function(x) length(x@width))
+
+setMethod("names", "MIndex", function(x) x@NAMES)
 
 setReplaceMethod("names", "MIndex",
     function(x, value)
@@ -25,25 +28,17 @@ setReplaceMethod("names", "MIndex",
 )
 
 setGeneric("startIndex", signature="x",
-    function(x, all.names=FALSE) standardGeneric("startIndex"))
+    function(x) standardGeneric("startIndex"))
 
 setGeneric("endIndex", signature="x",
-    function(x, all.names=FALSE) standardGeneric("endIndex"))
+    function(x) standardGeneric("endIndex"))
 
 setGeneric("countIndex", signature="x",
-    function(x, all.names=FALSE) standardGeneric("countIndex"))
+    function(x) standardGeneric("countIndex"))
 
 setMethod("countIndex", "MIndex",
-    function(x, all.names=FALSE)
+    function(x)
     {
-        if (!is.null(names(x))) {
-            end_index <- endIndex(x, all.names=all.names)
-            if (length(end_index) == 0)
-                return(integer(0))
-            return(sapply(end_index, length))
-        }
-        if (!missing(all.names))
-            warning("'all.names' is ignored when patterns have no names")
         end_index <- endIndex(x)
         if (length(end_index) == 0)
             return(integer(0))
@@ -51,13 +46,52 @@ setMethod("countIndex", "MIndex",
     }
 )
 
+setMethod("unlist", "MIndex",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        use.names <- normargUseNames(use.names)
+        start_index <- startIndex(x)
+        if (length(start_index) == 0)
+            ans_start <- integer(0)
+        else
+            ans_start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
+        end_index <- endIndex(x)
+        if (length(end_index) == 0)
+            ans_end <- integer(0)
+        else
+            ans_end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
+        if (use.names) {
+            ans_names <- names(x)
+            if (!is.null(ans_names))
+                ans_names <- rep.int(ans_names, times=sapply(end_index, length))
+        } else {
+            ans_names <- NULL
+        }
+        ans_width <- ans_end - ans_start + 1L
+        ans <- new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
+        names(ans) <- ans_names
+        ans
+    }
+)
+
+extractAllMatches <- function(subject, mindex)
+{
+    if (is(subject, "MaskedXString"))
+        subject <- unmasked(subject)
+    else if (!is(subject, "XString"))
+        stop("'subject' must be an XString or MaskedXString object")
+    if (!is(mindex, "MIndex"))
+        stop("'mindex' must be an MIndex object")
+    allviews <- unlist(mindex)
+    ans <- unsafe.newXStringViews(subject, start(allviews), width(allviews))
+    names(ans) <- names(allviews)
+    ans
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ByPos_MIndex" class.
 ### 
-### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
-### returns the matches in a ByPos_MIndex object.
-###
 ### Note that in normal operations the user never needs to create a
 ### ByPos_MIndex object explicitely or to modify an existing one:
 ### ByPos_MIndex objects are created by the matchPDict() function
@@ -71,8 +105,6 @@ setClass("ByPos_MIndex",
         ends="list"  # same length as the "width" slot
     )
 )
-
-setMethod("names", "ByPos_MIndex", function(x) NULL)
 
 setMethod("show", "ByPos_MIndex",
     function(object)
@@ -102,7 +134,7 @@ setMethod("[[", "ByPos_MIndex",
 ###   > dups0 <- Biostrings:::Dups(c(NA, NA, NA, NA, 2L))
 ###   > ends <- vector(mode="list", length=5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > mindex <- new("ByPos_MIndex", width=width, dups0=dups0, ends=ends)
+###   > mindex <- new("ByPos_MIndex", width=width, NAMES=letters[1:5], dups0=dups0, ends=ends)
 ###   > mindex[[1]]
 ###   > mindex[[2]]
 ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
@@ -111,20 +143,16 @@ setMethod("[[", "ByPos_MIndex",
 ###   > countIndex(mindex)
 ###
 setMethod("startIndex", "ByPos_MIndex",
-    function(x, all.names=FALSE)
+    function(x)
     {
-        if (!missing(all.names))
-            warning("'all.names' is ignored when MIndex object has no names")
         .Call("ByPos_MIndex_endIndex",
               x@dups0@dup2unq, x@ends, x@width,
               PACKAGE="Biostrings")
     }
 )
 setMethod("endIndex", "ByPos_MIndex",
-    function(x, all.names=FALSE)
+    function(x)
     {
-        if (!missing(all.names))
-            warning("'all.names' is ignored when MIndex object has no names")
         .Call("ByPos_MIndex_endIndex",
               x@dups0@dup2unq, x@ends, NULL,
               PACKAGE="Biostrings")
@@ -156,10 +184,7 @@ ByPos_MIndex.combine <- function(mi_list)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ByName_MIndex" class.
 ### 
-### When 'pdict' is a PDict object with no names then matchPDict(pdict, ...)
-### returns the matches in a ByName_MIndex object.
-###
-### Note that in normal operations the user NEVER needs to create a
+### Note that in normal operations the user never needs to create a
 ### ByName_MIndex object explicitely or to modify an existing one:
 ### ByName_MIndex objects are created by the matchPDict() function
 ### and have a read-only semantic.
@@ -170,19 +195,14 @@ ByPos_MIndex.combine <- function(mi_list)
 ###       vectors containing the ending positions of the pattern whose
 ###       position in the original dictionary is given by the key (the keys are
 ###       strings representing positive integers).
-###       
-###   names: a character vector containing the _unique_ pattern names.
-###
+### 
 
 setClass("ByName_MIndex",
     contains="MIndex",
     representation(
-        ends_envir="environment",
-        NAMES="character"  # R doesn't like @names !!
+        ends_envir="environment"
     )
 )
-
-setMethod("names", "ByName_MIndex", function(x) x@NAMES)
 
 setMethod("show", "ByName_MIndex",
     function(object)
@@ -209,7 +229,7 @@ setMethod("[[", "ByName_MIndex",
 ###   > width <- c(9L, 10L, 8L, 4L, 10L)
 ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
 ###   > ends_envir[['0000000002']] <- c(199L, 402L)
-###   > mindex <- new("ByName_MIndex", width=width, ends_envir=ends_envir, NAMES=letters[1:5])
+###   > mindex <- new("ByName_MIndex", width=width, NAMES=letters[1:5], ends_envir=ends_envir)
 ###   > mindex[[1]]
 ###   > mindex[[2]]
 ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
@@ -218,79 +238,25 @@ setMethod("[[", "ByName_MIndex",
 ###   > mindex[["b"]]
 ###   > mindex[["aa"]] # Error in mindex[["aa"]] : pattern name ‘aa’ not found
 ###   > startIndex(mindex)
-###   > startIndex(mindex, all.names=TRUE)
 ###   > endIndex(mindex)
-###   > endIndex(mindex, all.names=TRUE)
 ###   > countIndex(mindex)
-###   > countIndex(mindex, all.names=TRUE)
 ###
 setMethod("startIndex", "ByName_MIndex",
-    function(x, all.names=FALSE)
+    function(x)
     {
-        if (!isTRUEorFALSE(all.names))
-            stop("'all.names' must be TRUE or FALSE")
+        all.names <- TRUE
         .Call("ByName_MIndex_endIndex",
               x@ends_envir, x@width, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }
 )
 setMethod("endIndex", "ByName_MIndex",
-    function(x, all.names=FALSE)
+    function(x)
     {
-        if (!isTRUEorFALSE(all.names))
-            stop("'all.names' must be TRUE or FALSE")
+        all.names <- TRUE
         .Call("ByName_MIndex_endIndex",
               x@ends_envir, NULL, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "unlist" method and the "extractAllMatches" function.
-###
-
-setMethod("unlist", "MIndex",
-    function(x, recursive=TRUE, use.names=TRUE)
-    {
-        use.names <- normargUseNames(use.names)
-        start_index <- startIndex(x)
-        if (length(start_index) == 0)
-            ans_start <- integer(0)
-        else
-            ans_start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
-        end_index <- endIndex(x)
-        if (length(end_index) == 0)
-            ans_end <- integer(0)
-        else
-            ans_end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
-        if (use.names) {
-            ans_names <- names(end_index)
-            if (!is.null(ans_names))
-                ans_names <- rep.int(ans_names, times=sapply(end_index, length))
-        } else {
-            ans_names <- NULL
-        }
-        ans_width <- ans_end - ans_start + 1L
-        ans <- new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
-        names(ans) <- ans_names
-        ans
-    }
-)
-
-extractAllMatches <- function(subject, mindex)
-{
-    if (is(subject, "MaskedXString"))
-        subject <- unmasked(subject)
-    else if (!is(subject, "XString"))
-        stop("'subject' must be an XString or MaskedXString object")
-    if (!is(mindex, "MIndex"))
-        stop("'mindex' must be an MIndex object")
-    if (is.null(names(mindex)))
-        stop("extractAllMatches() works only with a \"MIndex\" object with names")
-    allviews <- unlist(mindex)
-    ans <- unsafe.newXStringViews(subject, start(allviews), width(allviews))
-    names(ans) <- names(allviews)
-    ans
-}
 

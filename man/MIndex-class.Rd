@@ -7,33 +7,22 @@
 \alias{MIndex-class}
 \alias{class:ByPos_MIndex}
 \alias{ByPos_MIndex-class}
-\alias{class:ByName_MIndex}
-\alias{ByName_MIndex-class}
 
 % Generics and methods:
 \alias{length,MIndex-method}
+\alias{names,MIndex-method}
 \alias{names<-,MIndex-method}
 \alias{startIndex}
-\alias{startIndex,MIndex-method}
 \alias{endIndex}
 \alias{countIndex}
 \alias{countIndex,MIndex-method}
-\alias{unlist}
 \alias{unlist,MIndex-method}
 
-\alias{names,ByPos_MIndex-method}
 \alias{show,ByPos_MIndex-method}
 \alias{[[,ByPos_MIndex-method}
 \alias{startIndex,ByPos_MIndex-method}
 \alias{endIndex,ByPos_MIndex-method}
 \alias{countIndex,ByPos_MIndex-method}
-
-\alias{names,ByName_MIndex-method}
-\alias{show,ByName_MIndex-method}
-\alias{[[,ByName_MIndex-method}
-\alias{startIndex,ByName_MIndex-method}
-\alias{endIndex,ByName_MIndex-method}
-\alias{countIndex,ByName_MIndex-method}
 
 
 \title{MIndex objects}
@@ -57,9 +46,7 @@
 }
 
 \section{Accesor methods}{
-  In the code snippets below,
-  \code{x} is an MIndex object
-  and \code{all.names} must be \code{TRUE} or \code{FALSE}.
+  In the code snippets below, \code{x} is an MIndex object.
 
   \describe{
     \item{}{
@@ -71,17 +58,17 @@
       The names of the patterns that matches are stored for.
     }
     \item{}{
-      \code{startIndex(x, all.names=FALSE)}:
+      \code{startIndex(x)}:
       A list containing the starting positions of the matches
       for each pattern.
     }
     \item{}{
-      \code{endIndex(x, all.names=FALSE)}:
+      \code{endIndex(x)}:
       A list containing the ending positions of the matches
       for each pattern.
     }
     \item{}{
-      \code{countIndex(x, all.names=FALSE)}:
+      \code{countIndex(x)}:
       An integer vector containing the number of matches
       for each pattern.
     }

@@ -144,10 +144,10 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## A. WITH UNNAMED PATTERNS
+  ## A. A SIMPLE EXAMPLE OF EXACT MATCHING
   ## ---------------------------------------------------------------------
 
-  ## Creating the pattern dictionary
+  ## Creating the pattern dictionary:
   library(drosophila2probe)
   dict0 <- DNAStringSet(drosophila2probe$sequence)
   dict0                                # The original dictionary.
@@ -155,31 +155,31 @@
   pdict0 <- PDict(dict0)               # Store the original dictionary in
                                        # a PDict object (preprocessing).
 
-  ## Using the pattern dictionary on chromosome 3R
+  ## Using the pattern dictionary on chromosome 3R:
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chr3R <- Dmelanogaster$chr3R         # Load chromosome 3R
   chr3R
-  mindex <- matchPDict(pdict0, chr3R)  # Search...
+  mi0 <- matchPDict(pdict0, chr3R)     # Search...
 
-  ## Looking at the matches
-  start_index <- startIndex(mindex)    # Get the start index.
+  ## Looking at the matches:
+  start_index <- startIndex(mi0)       # Get the start index.
   length(start_index)                  # Same as the original dictionary.
   start_index[[8220]]                  # Starts of the 8220th pattern.
-  end_index <- endIndex(mindex)        # Get the end index.
+  end_index <- endIndex(mi0)           # Get the end index.
   end_index[[8220]]                    # Ends of the 8220th pattern.
-  count_index <- countIndex(mindex)    # Get the number of matches per pattern.
+  count_index <- countIndex(mi0)       # Get the number of matches per pattern.
   count_index[[8220]]
-  mindex[[8220]]                       # Get the matches for the 8220th pattern.
-  start(mindex[[8220]])                # Equivalent to startIndex(mindex)[[8220]].
+  mi0[[8220]]                          # Get the matches for the 8220th pattern.
+  start(mi0[[8220]])                   # Equivalent to startIndex(mi0)[[8220]].
   sum(count_index)                     # Total number of matches.
   table(count_index)
   i0 <- which(count_index == max(count_index))
   pdict0[[i0]]                         # The pattern with most occurrences.
-  mindex[[i0]]                         # Its matches as an IRanges object.
+  mi0[[i0]]                            # Its matches as an IRanges object.
   Views(chr3R, start=start_index[[i0]], end=end_index[[i0]]) # And as an XStringViews object.
 
-  ## Get the coverage of the original subject
-  cov3R <- as.integer(coverage(mindex, 1, length(chr3R)))
+  ## Get the coverage of the original subject:
+  cov3R <- as.integer(coverage(mi0, 1, length(chr3R)))
   max(cov3R)
   mean(cov3R)
   sum(cov3R != 0) / length(cov3R)      # Only 2.44% of chr3R is covered.
@@ -197,12 +197,32 @@
   }
 
   ## ---------------------------------------------------------------------
-  ## B. PERFORMANCE
+  ## B. NAMING THE PATTERNS
+  ## ---------------------------------------------------------------------
+
+  ## The names of the original patterns, if any, are propagated to the
+  ## PDict and MIndex objects:
+  names(dict0) <- mkAllStrings(letters, 4)[seq_len(length(dict0))]
+  dict0
+  dict0[["abcd"]]
+  pdict0n <- PDict(dict0)
+  names(pdict0n)[1:30]
+  pdict0n[["abcd"]]
+  mi0n <- matchPDict(pdict0n, chr3R)
+  names(mi0n)[1:30]
+  mi0n[["abcd"]]
+
+  ## This is particularly useful when unlisting an MIndex object:
+  unlist(mi0)[1:10]
+  unlist(mi0n)[1:10]  # keep track of where the matches are coming from
+
+  ## ---------------------------------------------------------------------
+  ## C. PERFORMANCE
   ## ---------------------------------------------------------------------
 
   ## If getting the number of matches is what matters only (without
   ## regarding their positions), then countPDict() will be faster,
-  ## especially when there is a high number of matches
+  ## especially when there is a high number of matches:
 
   count_index0 <- countPDict(pdict0, chr3R)
   identical(count_index0, count_index)  # TRUE
@@ -228,9 +248,9 @@
                     Biostrings:::.ACtree.ints_per_acnode(pptb)
       ans_nupatt <- sum(!duplicated(pdict))
       ans_matchtime <- system.time(
-                         mindex <- matchPDict(pdict, subject)
+                         mi0 <- matchPDict(pdict, subject)
                        )[["elapsed"]]
-      ans_totalcount <- sum(countIndex(mindex))
+      ans_totalcount <- sum(countIndex(mi0))
       list(
         width=ans_width,
         pptime=ans_pptime,
@@ -248,8 +268,9 @@
   }
 
   ## ---------------------------------------------------------------------
-  ## C. vcountPDict()
+  ## D. vcountPDict()
   ## ---------------------------------------------------------------------
+
   subject <- Dmelanogaster$upstream1000[1:200]
   mat1 <- vcountPDict(pdict0, subject)
   dim(mat1)  # length(pdict0) x length(subject)
