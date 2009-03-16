@@ -675,7 +675,7 @@ table(start(pattern(adapterAligns2)) > 37 - end(pattern(adapterAligns2)),
 @
 
 Limiting consecutive matches to the ends provides better results, but it
-doesn't revolve the issues related to substitutions and insertions/deletions
+doesn't resolve the issues related to substitutions and insertions/deletions
 errors.
 
 <<adapter5>>=
