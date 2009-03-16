@@ -64,12 +64,12 @@ The (Needleman-Wunsch) global, the (Smith-Waterman) local, and (ends-free)
 overlap pairwise sequence alignment problems are described as follows. Let
 string $S_i$ have $n_i$ characters $c_{(i,j)}$ with
 $j \in \left\{1, \ldots, n_i\right\}$. A pairwise sequence alignment is a
-mapping of strings $S_1$ and $S_2$ to ``gapped" substrings ${S'}_1$ and ${S'}_2$
+mapping of strings $S_1$ and $S_2$ to gapped substrings ${S'}_1$ and ${S'}_2$
 that are defined by
 
 \begin{eqnarray*}
 {S'}_1 & = & g_{\left(1,a_1\right)}c_{\left(1,a_1\right)} \cdots g_{\left(1,b_1\right)}c_{\left(1,b_1\right)}g_{\left(1,b_1+1\right)}\\
-{S'}_2 & = & g_{\left(1,a_2\right)}c_{\left(1,a_2\right)} \cdots g_{\left(1,b_2\right)}c_{\left(1,b_2\right)}g_{\left(1,b_2+1\right)}
+{S'}_2 & = & g_{\left(2,a_2\right)}c_{\left(2,a_2\right)} \cdots g_{\left(2,b_2\right)}c_{\left(2,b_2\right)}g_{\left(2,b_2+1\right)}
 \end{eqnarray*}
 \begin{tabbing}
   where \= \\

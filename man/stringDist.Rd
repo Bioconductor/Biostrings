@@ -7,7 +7,8 @@
 
 \title{String Distance/Alignment Score Matrix}
 \description{
-Computes the Levenshtein edit distance or pairwise alignment score matrix for a set of strings.
+Computes the Levenshtein edit distance or pairwise alignment score matrix for a
+set of strings.
 }
 \usage{
 stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = FALSE, \dots)
@@ -21,35 +22,45 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
 }
 \arguments{
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}
-  \item{method}{calculation method. One of \code{"levenshtein"}, \code{"quality"}, or
-    \code{"substitutionMatrix"}.}
-  \item{ignoreCase}{logical value indicating whether to ignore case during scoring.}
-  \item{diag}{logical value indicating whether the diagonal of the matrix should be printed
-    by \code{print.dist}.}
-  \item{upper}{logical value indicating whether the diagonal of the matrix should be printed
-    by \code{print.dist}.}
-  \item{type}{type of alignment. One of \code{"global"}, \code{"local"}, and \code{"overlap"},
-    where
+  \item{method}{calculation method. One of \code{"levenshtein"},
+    \code{"quality"}, or \code{"substitutionMatrix"}.}
+  \item{ignoreCase}{logical value indicating whether to ignore case during
+    scoring.}
+  \item{diag}{logical value indicating whether the diagonal of the matrix
+    should be printed by \code{print.dist}.}
+  \item{upper}{logical value indicating whether the diagonal of the matrix
+    should be printed by \code{print.dist}.}
+  \item{type}{(applicable when \code{method = "quality"} or
+    \code{method = "substitutionMatrix"}).
+    type of alignment. One of \code{"global"}, \code{"local"}, and
+    \code{"overlap"}, where
       \code{"global"} = align whole strings with end gap penalties,
       \code{"local"} = align string fragments,
-      \code{"overlap"} = align whole strings without end gap penalties.
-     This argument is ignored if \code{method == "levenshtein"}.}
-  \item{quality}{object of class \code{\link{XStringQuality}} representing the quality scores
-    for \code{x} that are used in a quality-based method for generating a substitution matrix.
-    This argument is ignored if \code{method != "quality"}.}
-  \item{substitutionMatrix}{symmetric substitution matrix for a non-quality based alignment.
-    This argument is ignored if \code{method != "substitutionMatrix"}.}
-  \item{fuzzyMatrix}{fuzzy match matrix for quality-based alignments. It takes
-    values between 0 and 1; where 0 is an unambiguous mismatch, 1 is an unambiguous
-    match, and values in between represent a fraction of "matchiness".}
-  \item{gapOpening}{penalty for opening a gap in the alignment. This argument is ignored if
-    \code{method == "levenshtein"}.}
-  \item{gapExtension}{penalty for extending a gap in the alignment. This argument is ignored if
-    \code{method == "levenshtein"}.}
-  \item{\dots}{optional arguments to generic function to support additional methods.}
+      \code{"overlap"} = align whole strings without end gap penalties.}
+  \item{quality}{(applicable when \code{method = "quality"}).
+    object of class \code{\link{XStringQuality}} representing the quality scores
+    for \code{x} that are used in a quality-based method for generating a
+    substitution matrix.}
+  \item{substitutionMatrix}{(applicable when
+    \code{method = "substitutionMatrix"}).
+    symmetric matrix representing the fixed substitution scores for an
+    alignment.}
+  \item{fuzzyMatrix}{(applicable when \code{method = "quality"}).
+    fuzzy match matrix for quality-based alignments. It takes values between 0
+    and 1; where 0 is an unambiguous mismatch, 1 is an unambiguous match, and
+    values in between represent a fraction of "matchiness".}
+  \item{gapOpening}{(applicable when \code{method = "quality"} or
+    \code{method = "substitutionMatrix"}).
+    penalty for opening a gap in the alignment.}
+  \item{gapExtension}{(applicable when \code{method = "quality"} or
+    \code{method = "substitutionMatrix"}).
+    penalty for extending a gap in the alignment}
+  \item{\dots}{optional arguments to generic function to support additional
+    methods.}
 }
 \details{
-Uses the underlying pairwiseAlignment code to compute the distance/alignment score matrix.
+Uses the underlying pairwiseAlignment code to compute the distance/alignment
+score matrix.
 }
 \value{
 Returns an object of class \code{"dist"}.
