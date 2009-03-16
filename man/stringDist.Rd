@@ -43,7 +43,7 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
     substitution matrix.}
   \item{substitutionMatrix}{(applicable when
     \code{method = "substitutionMatrix"}).
-    symmetric matrix representing the fixed substitution scores for an
+    symmetric matrix representing the fixed substitution scores in the
     alignment.}
   \item{fuzzyMatrix}{(applicable when \code{method = "quality"}).
     fuzzy match matrix for quality-based alignments. It takes values between 0
