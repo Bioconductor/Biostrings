@@ -1233,10 +1233,21 @@ toLatex(sessionInfo())
 \newblock The effect of sequence quality on sequence alignment.
 \newblock {\em Bioinformatics}, 24(7):897-900, 2008.
 
+\bibitem{NeedWun:1970}
+{Needleman,S.} and {Wunsch,C.}
+\newblock A general method applicable to the search for similarities in the
+  amino acid sequence of two proteins.
+\newblock {\em Journal of Molecular Biology}, 48, 443-453, 1970.
+
 \bibitem{Smith:2003}
 {Smith, H.}; {Hutchison, C.}; {Pfannkoch, C.}; and {Venter, C.}
 \newblock Generating a synthetic genome by whole genome assembly: \{phi\}X174 bacteriophage from synthetic oligonucleotides.
 \newblock {\em Proceedings of the National Academy of Sciences}, 100(26): 15440-15445, 2003.
+
+\bibitem{SmithWater:1981}
+{Smith,T.F.} and {Waterman,M.S.}
+\newblock Identification of common molecular subsequences.
+\newblock {\em Journal of Molecular Biology}, 147, 195-197, 1981.
 
 \end{thebibliography}
 
