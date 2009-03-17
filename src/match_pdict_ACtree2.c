@@ -16,7 +16,7 @@
 
 static int debug = 0;
 
-#define MAX_CHILDREN_PER_NODE 4
+#define MAX_CHILDREN_PER_NODE 4 // do NOT change this
 
 
 
@@ -29,61 +29,96 @@ static int debug = 0;
  *           patterns so 'nleaves' <= 'tb_length');
  * depth = depth of the tree (it's also the length of each pattern so 'depth'
  *           = 'tb_width').
+ * 'nleaves' is assumed to be '<= 4^depth'. The functions below do not check
+ * this and will return invalid results if this is not true.
  */
-static int get_max_needed_nnodes(int nleaves, int depth)
+static int count_max_needed_nnodes(int nleaves, int depth)
 {
-	int max_nn, inc, d;
+	int res, inc, d;
 
-	max_nn = 0;
+	res = 0;
 	inc = 1;
 	for (d = 0; d <= depth; d++) {
-		if (inc >= nleaves)
-			return max_nn + (depth + 1 - d) * nleaves;
-		max_nn += inc;
+		if (inc >= nleaves) {
+			res += (depth + 1 - d) * nleaves;
+			break;
+		}
+		res += inc;
 		inc *= MAX_CHILDREN_PER_NODE;
 	}
-	return max_nn;
+	return res;
 }
 
-static int get_min_needed_nnodes(int nleaves, int depth)
+static int count_min_needed_nnodes(int nleaves, int depth)
 {
-	int min_nn, inc, d;
+	int res, inc, d;
 	div_t q;
 
-	min_nn = 0;
+	res = 0;
 	inc = nleaves;
 	for (d = depth; d >= 0; d--) {
-		if (inc == 1)
-			return min_nn + d + 1;
-		min_nn += inc;
+		if (inc == 1) {
+			res += d + 1;
+			break;
+		}
+		res += inc;
 		q = div(inc, MAX_CHILDREN_PER_NODE);
 		inc = q.quot;
 		if (q.rem != 0)
 			inc++;
 	}
-	return min_nn;
+	return res;
 }
 
-static int get_max_needed_nextensions_at_pp_time(int nleaves, int depth)
+static int count_max_needed_nextensions_at_pp_time(int nleaves, int depth)
 {
-	int nextensions, inc, d, four_power_d;
+	int res, inc, d, four_power_d;
 	div_t q;
 
-	nextensions = 0;
+	res = 0;
 	for (d = depth - 1; d >= 0; d--) {
 		q = div(nleaves, 2);
 		inc = q.quot;
 		nleaves = inc + q.rem;
-		if (d < 16) {
-			/* a fast way to compute MAX_CHILDREN_PER_NODE^d */
-			four_power_d = 1 << (2*d);
-			if (nleaves > four_power_d)
-				nleaves = inc = four_power_d;
+		if (d >= 16) {
+			res += inc;
+			continue;
 		}
-		nextensions += inc;
+		four_power_d = 1 << (2*d); // = MAX_CHILDREN_PER_NODE ^ d
+		if (nleaves <= four_power_d) {
+			res += inc;
+			continue;
+		}
+		res += count_max_needed_nnodes(four_power_d, d);
+		break;
 	}
-	return nextensions;
+	return res;
 }
+
+#ifdef DEBUG_BIOSTRINGS
+/* I've checked by hand the output of this function up to depth=3 nleaves=17
+ * and it looked correct... pfff :-b */
+static void debug_node_counting_functions(int maxdepth)
+{
+	int depth, nleaves, four_power_d, max_nn, min_nn, n2, delta;
+
+	Rprintf("[DEBUG] debug_node_counting_functions():\n");
+	for (depth = 1; depth <= maxdepth; depth++) {
+		four_power_d = 1 << (2*depth); // = MAX_CHILDREN_PER_NODE ^ depth
+		for (nleaves = 1; nleaves <= four_power_d; nleaves++) {
+			max_nn = count_max_needed_nnodes(nleaves, depth);
+			min_nn = count_min_needed_nnodes(nleaves, depth);
+			n2 = count_max_needed_nextensions_at_pp_time(nleaves, depth);
+			delta = max_nn - nleaves - n2; // should be always >= 0
+			Rprintf("  depth=%d nleaves=%d --> max_nn=%d min_nn=%d n2=%d max_nn-nleaves-n2=%d\n",
+				depth, nleaves, max_nn, min_nn, n2, delta);
+			if (delta < 0)
+				error("max_nn-nleaves-n2 < 0");
+		}
+	}
+	return;
+}
+#endif
 
 /*
  * OptMaxNN: Optimistic Max Needed nb of Nodes.
@@ -173,7 +208,6 @@ SEXP debug_match_pdict_ACtree2()
 	Rprintf("Debug mode turned %s in file %s\n",
 		debug ? "on" : "off", __FILE__);
 	if (debug) {
-		int i, j, n2;
 		Rprintf("[DEBUG] debug_match_pdict_ACtree2():\n"
 			"  INTS_PER_NODE=%d MAX_NNODES=%d\n"
 			"  INTS_PER_EXTENSION=%d MAX_NEXTENSIONS=%d\n"
@@ -187,12 +221,7 @@ SEXP debug_match_pdict_ACtree2()
 			MAX_DEPTH,
 			ISLEAF_BIT, ISEXTENDED_BIT,
 			MAX_P_ID);
-		for (i = 1; i <= 20; i++)
-			for (j = 1; j <= 4; j++) {
-				n2 = get_max_needed_nextensions_at_pp_time(i, j);
-				Rprintf("  nleaves=%d depth=%d --> n2=%d\n", i, j, n2);
-			}
-		
+		debug_node_counting_functions(4);
 	}
 #else
 	Rprintf("Debug mode not available in file %s\n", __FILE__);
@@ -415,10 +444,10 @@ static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes)
 	ACtree tree;
 	int max_nn, min_nn, n1, n2;
 
-	max_nn = get_max_needed_nnodes(tb_length, tb_width);
-	min_nn = get_min_needed_nnodes(tb_length, tb_width);
+	max_nn = count_max_needed_nnodes(tb_length, tb_width);
+	min_nn = count_min_needed_nnodes(tb_length, tb_width);
 	n1 = get_OptMaxNN(max_nn, min_nn);
-	n2 = get_max_needed_nextensions_at_pp_time(tb_length, tb_width);
+	n2 = count_max_needed_nextensions_at_pp_time(tb_length, tb_width);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] new_ACtree():\n"
@@ -576,8 +605,8 @@ SEXP ACtree2_summary(SEXP pptb)
 			100.00 * nlinks_table[i] / nnodes,
 			i);
 	Rprintf("  Nb of leaf nodes (nleaves) = %d\n", nleaves);
-	max_nn = get_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
-	min_nn = get_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
+	max_nn = count_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
+	min_nn = count_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
 	n1 = get_OptMaxNN(max_nn, min_nn);
 	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %d\n", max_nn);
 	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %d\n", min_nn);
