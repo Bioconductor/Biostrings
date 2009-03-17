@@ -254,12 +254,12 @@ alignment functionality in the \Rpackage{Biostrings} package keeps the end-user
 close to their data through the use of five specialty classes:  
 \Rclass{PairwiseAlignedXStringSet}, \Rclass{PairwiseAlignedFixedSubject},
 \Rclass{PairwiseAlignedFixedSubjectSummary}, \Rclass{AlignedXStringSet}, and
-\Rclass{QualityAlignedXStringSet}. The \Rclass{PairwiseAlignedFixedSubject} class
-inherits from the \Rclass{PairwiseAlignedXStringSet} class and they both hold the
-results of a fit from the \Rfunction{pairwiseAlignment} function, with the former
-class being used to represent all patterns aligning to a single subject and the
-latter being used to represent elementwise alignments between a set of patterns
-and a set of subjects.
+\Rclass{QualityAlignedXStringSet}. The \Rclass{PairwiseAlignedFixedSubject}
+class inherits from the \Rclass{PairwiseAlignedXStringSet} class and they both
+hold the results of a fit from the \Rfunction{pairwiseAlignment} function, with
+the former class being used to represent all patterns aligning to a single
+subject and the latter being used to represent elementwise alignments between a
+set of patterns and a set of subjects.
 
 <<classes1>>=
 psa1 <- pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
@@ -386,9 +386,9 @@ as.matrix(psa2)
 consensusMatrix(psa2)
 @
 
-The \Rfunction{summary}, \Rfunction{mismatchTable}, and 
-\Rfunction{mismatchSummary} functions return various summaries of the
-pairwise sequence alignments.
+The \Rfunction{summary}, \Rfunction{mismatchTable}, and
+\Rfunction{mismatchSummary} functions return various summaries of the pairwise
+sequence alignments.
 
 <<helper2>>=
 summary(psa2)
@@ -429,10 +429,11 @@ Function                    & Description \\
 
 The \Rfunction{pattern} and \Rfunction{subject} functions extract the aligned
 pattern and subject objects for further analysis. Most of the actions that can
-be performed on \Rclass{PairwiseAlignedXStringSet} objects can also be
-performed on \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet}
-objects as well as operations including \Rfunction{start}, \Rfunction{end}, and
-\Rfunction{width} that extracts the start, end, and width of the alignment ranges.
+be performed on \Rclass{PairwiseAlignedXStringSet} objects can also be performed
+on \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} objects as
+well as operations including \Rfunction{start}, \Rfunction{end}, and
+\Rfunction{width} that extracts the start, end, and width of the alignment
+ranges.
 
 <<helper3>>=
 class(pattern(psa2))
@@ -617,7 +618,6 @@ table(experiment[["side"]], experiment[["width"]])
 adapterStrings <-
   simulateReads(N, adapter, experiment, substitutionRate = 0.01, gapRate = 0.001)
 adapterStrings <- DNAStringSet(adapterStrings)
-adapterStrings
 @
 
 These simulated strings above have 0 to 36 characters from the adapters
@@ -631,7 +631,6 @@ randomStrings <-
   apply(matrix(sample(DNA_ALPHABET[1:4], 36 * M, replace = TRUE),
                nrow = M), 1, paste, collapse = "")
 randomStrings <- DNAStringSet(randomStrings)
-randomStrings
 @
 
 Since edit distances are easy to explain, it serves as a good place to start
@@ -748,13 +747,12 @@ How would the methods for trimming the reads change?
 
 Due to its flexibility, the \Rfunction{pairwiseAlignment} function is able to
 diagnose sequence matching-related issues that arise when
-\Rfunction{matchPDict} and its related functions don't find a match when
-aligning sequence fragments to a target. This section contains an example
-involving a short read Solexa sequencing experiment of bacteriophage $\phi$
-X174 DNA produced by New England BioLabs (NEB). This experiment contains
-slightly less than 5000 unique short reads in \Robject{srPhiX174}, with quality
-measures in \Robject{quPhiX174}, and frequency for those short reads in
-\Robject{wtPhiX174}.
+\Rfunction{matchPDict} and its related functions don't find a match. This
+section contains an example involving a short read Solexa sequencing experiment
+of bacteriophage $\phi$ X174 DNA produced by New England BioLabs (NEB). This
+experiment contains slightly less than 5000 unique short reads in
+\Robject{srPhiX174}, with quality measures in \Robject{quPhiX174}, and frequency
+for those short reads in \Robject{wtPhiX174}.
 
 In order to demonstrate how to find sequence differences in the target, these
 short reads will be compared against the bacteriophage $\phi$ X174 genome
@@ -776,8 +774,8 @@ table(countPDict(srPDict, genBankPhage))
 @
 
 For these short reads, the \Rfunction{pairwiseAlignment} function finds that
-the small number of perfect matches is due to two locations on the
-bacteriophage $\phi$ X174 genome.
+the small number of perfect matches is due to two locations on the bacteriophage
+$\phi$ X174 genome.
 
 Unlike the \Rfunction{countPDict} function, the \Rfunction{pairwiseAlignment}
 function works off of the original strings, rather than \Rfunction{PDict}
@@ -820,14 +818,14 @@ slice(genBankCoverage, lower = 1)
 
 \subsection{Exercise 7}
 \begin{enumerate}
-\item Rerun the ``Subject Overlap" alignment of the short reads against the
-entire genome. (This may take a few minutes.)
+\item Rerun the global-local alignment of the short reads against the entire
+genome. (This may take a few minutes.)
 \item Plot the coverage of these alignments and use the \Rfunction{slice}
 function to find the ranges of alignment. Are there any alignments outside of
 the substring region that was used above?
 \item Use the \Rfunction{reverseComplement} function on the bacteriophage
 $\phi$ X174 genome. Do any short reads have a higher alignment score on this
-new sequence than on the orignal sequence?
+new sequence than on the original sequence?
 \end{enumerate}
 
 [Answers provided in section \ref{sec:Answers7}.]
@@ -1135,8 +1133,8 @@ table(leftAligned | rightAligned, experiment[["width"]])
 \subsection{Exercise 7}
 \label{sec:Answers7}
 \begin{enumerate}
-\item Rerun the ``Subject Overlap" alignment of the short reads against the
-entire genome. (This may take a few minutes.)
+\item Rerun the global-local alignment of the short reads against the entire
+genome. (This may take a few minutes.)
 <<ans7a>>=
 genBankFullAlign <-
   pairwiseAlignment(srPhiX174, genBankPhage,
@@ -1156,7 +1154,7 @@ slice(genBankFullCoverage, lower = 1)
 @
 \item Use the \Rfunction{reverseComplement} function on the bacteriophage
 $\phi$ X174 genome. Do any short reads have a higher alignment score on this
-new sequence than on the orignal sequence? \textit{Yes, there are some strings
+new sequence than on the original sequence? \textit{Yes, there are some strings
 with a higher score on the new sequence.}
 <<ans7c>>=
 genBankFullAlignRevComp <-
