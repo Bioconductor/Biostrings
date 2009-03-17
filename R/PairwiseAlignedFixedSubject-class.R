@@ -215,10 +215,13 @@ setMethod("show", "PairwiseAlignedFixedSubjectSummary", function(object)
               print(summary(nmatch(object)))
               n <- min(nrow(mismatchSummary(object)[["subject"]]), 10)
               cat(paste("\nTop", n, "Mismatch Counts:\n"))
-              print(mismatchSummary(object)[["subject"]][
-                order(mismatchSummary(object)[["subject"]][["Count"]],
-                      mismatchSummary(object)[["subject"]][["Probability"]],
-                      decreasing = TRUE)[seq_len(n)],,drop=FALSE])
+              mmtable <- 
+                mismatchSummary(object)[["subject"]][
+                  order(mismatchSummary(object)[["subject"]][["Count"]],
+                        mismatchSummary(object)[["subject"]][["Probability"]],
+                        decreasing = TRUE)[seq_len(n)],,drop=FALSE]
+              rownames(mmtable) <- NULL
+              print(mmtable)
           })
 
 setMethod("type", "PairwiseAlignedFixedSubjectSummary", function(x) x@type)
