@@ -99,9 +99,9 @@ SEXP _get_ACtree2_nodebuf_ptr(SEXP x)
 	return GET_SLOT(x, install("nodebuf_ptr"));
 }
 
-SEXP _get_ACtree2_extbuf_ptr(SEXP x)
+SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x)
 {
-	return GET_SLOT(x, install("extbuf_ptr"));
+	return GET_SLOT(x, install("nodeextbuf_ptr"));
 }
 
 SEXP _get_ACtree2_base_codes(SEXP x)
