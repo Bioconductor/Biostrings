@@ -131,20 +131,6 @@ static void debug_node_counting_functions(int maxdepth)
  *                         B. ACnode AND ACnodeBuf                          *
  ****************************************************************************/
 
-#define LINKTAG_BITSHIFT 28
-#define MAX_DEPTH ((1 << LINKTAG_BITSHIFT) - 1)
-#define ISLEAF_BIT (1 << 30)
-#define ISEXTENDED_BIT (ISLEAF_BIT << 1) /* strongest bit for 32-bit integers */
-#define MAX_P_ID (ISLEAF_BIT - 1)  /* P_id values are encoded on 30 bits */
-
-#define ISEXTENDED(node) ((node)->attribs & ISEXTENDED_BIT)
-#define ISLEAF(node) ((node)->attribs & ISLEAF_BIT)
-#define _NODE_DEPTH(node) ((node)->attribs & MAX_DEPTH)
-/* result of NODE_P_ID() is undefined on a non-leaf node */
-#define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
-
-#define NULLNODE UINT_MAX
-
 /*
  * A node id (nid) is represented by an unsigned int. The ANSI C standard only
  * guarantees that an (unsigned) int will take at least 2 bytes in memory i.e.
@@ -180,7 +166,7 @@ typedef struct acnodebuf {
 	ACnode *block[ACNODEBUF_MAX_NBLOCK];
 } ACnodeBuf;
 
-#define ISROOT(node, nodebuf) ((node) == (nodebuf)->block[0])
+#define _ISROOT(nodebuf, node) ((nodebuf)->block[0] == (node))
 
 SEXP ACtree2_nodebuf_max_nblock()
 {
@@ -227,7 +213,7 @@ static ACnodeBuf new_ACnodeBuf(SEXP bab)
 	return nodebuf;
 }
 
-static void extend_nodebuf(ACnodeBuf *nodebuf)
+static void extend_ACnodeBuf(ACnodeBuf *nodebuf)
 {
 	int length;
 	SEXP bab_block;
@@ -237,6 +223,17 @@ static void extend_nodebuf(ACnodeBuf *nodebuf)
 	/* sync 'nodebuf->block' with 'nodebuf->bab' */
 	nodebuf->block[*(nodebuf->nblock) - 1] = (ACnode *) INTEGER(bab_block);
 	return;
+}
+
+static unsigned int new_nid(ACnodeBuf *nodebuf)
+{
+	unsigned int nid;
+
+	nid = get_ACnodeBuf_nelt(nodebuf);
+	if (nid >= get_ACnodeBuf_length(nodebuf))
+		extend_ACnodeBuf(nodebuf);
+	(*(nodebuf->lastblock_nelt))++;
+	return nid;
 }
 
 
@@ -314,7 +311,7 @@ static ACnodeExtBuf new_ACnodeExtBuf(SEXP bab)
 	return extbuf;
 }
 
-static void extend_extbuf(ACnodeExtBuf *extbuf)
+static void extend_ACnodeExtBuf(ACnodeExtBuf *extbuf)
 {
 	int length;
 	SEXP bab_block;
@@ -326,11 +323,35 @@ static void extend_extbuf(ACnodeExtBuf *extbuf)
 	return;
 }
 
+static unsigned int new_eid(ACnodeExtBuf *extbuf)
+{
+	unsigned int eid;
+
+	eid = get_ACnodeExtBuf_nelt(extbuf);
+	if (eid >= get_ACnodeExtBuf_length(extbuf))
+		extend_ACnodeExtBuf(extbuf);
+	(*(extbuf->lastblock_nelt))++;
+	return eid;
+}
+
 
 
 /****************************************************************************
  *                                 D. ACtree                                *
  ****************************************************************************/
+
+#define LINKTAG_BITSHIFT 28
+#define MAX_DEPTH ((1 << LINKTAG_BITSHIFT) - 1)
+#define ISLEAF_BIT (1 << 30)
+#define ISEXTENDED_BIT (ISLEAF_BIT << 1) /* strongest bit for 32-bit integers */
+#define MAX_P_ID (ISLEAF_BIT - 1)  /* P_id values are encoded on 30 bits */
+
+#define ISEXTENDED(node) ((node)->attribs & ISEXTENDED_BIT)
+#define _NODE_DEPTH(node) ((node)->attribs & MAX_DEPTH)
+/* result of NODE_P_ID() is undefined on a non-leaf node */
+#define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
+
+#define NOT_AN_ID UINT_MAX
 
 SEXP debug_match_pdict_ACtree2()
 {
@@ -371,46 +392,7 @@ typedef struct actree {
 	ByteTrTable char2linktag;
 } ACtree;
 
-#define TREE_DEPTH(tree) ((tree)->depth)
-#define NODE_DEPTH(tree, node) (ISLEAF(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
-
-#define NODEBUF_LENGTH(tree) get_ACnodeBuf_length(&((tree)->nodebuf))
-#define NODEBUF_NELT(tree) get_ACnodeBuf_nelt(&((tree)->nodebuf))
-#define GET_NODE(tree, nid) get_node_from_buf(&((tree)->nodebuf), nid)
-
-#define EXTBUF_LENGTH(tree) get_ACnodeExtBuf_length(&((tree)->extbuf))
-#define EXTBUF_NELT(tree) get_ACnodeExtBuf_nelt(&((tree)->extbuf))
 #define GET_EXTENSION(tree, eid) get_extension_from_buf(&((tree)->extbuf), eid)
-
-#define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
-
-
-
-/****************************************************************************
- *                          E. LOW-LEVEL UTILITIES                          *
- ****************************************************************************/
-
-static unsigned int new_nid(ACtree *tree)
-{
-	unsigned int nid;
-
-	nid = NODEBUF_NELT(tree);
-	if (nid >= NODEBUF_LENGTH(tree))
-		extend_nodebuf(&(tree->nodebuf));
-	(*(tree->nodebuf.lastblock_nelt))++;
-	return nid;
-}
-
-static unsigned int new_eid(ACtree *tree)
-{
-	unsigned int eid;
-
-	eid = EXTBUF_NELT(tree);
-	if (eid >= EXTBUF_LENGTH(tree))
-		extend_extbuf(&(tree->extbuf));
-	(*(tree->extbuf.lastblock_nelt))++;
-	return eid;
-}
 
 static void extend_ACnode(ACtree *tree, ACnode *node)
 {
@@ -418,12 +400,12 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 	unsigned int eid;
 	int i, linktag;
 
-	eid = new_eid(tree);
+	eid = new_eid(&(tree->extbuf));
 	extension = GET_EXTENSION(tree, eid);
 	for (i = 0; i < MAX_CHILDREN_PER_NODE; i++)
-		extension->link_nid[i] = NULLNODE;
-	extension->flink_nid = NULLNODE;
-	if (node->nid_or_eid != NULLNODE) {
+		extension->link_nid[i] = NOT_AN_ID;
+	extension->flink_nid = NOT_AN_ID;
+	if (node->nid_or_eid != NOT_AN_ID) {
 		/* this is correct because 'node' cannot be a leaf node */
 		linktag = node->attribs >> LINKTAG_BITSHIFT;
 		extension->link_nid[linktag] = node->nid_or_eid;
@@ -437,34 +419,59 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 
 
 /****************************************************************************
- *                           F. Aho-Corasick tree API                       *
+ *                           E. Aho-Corasick tree API                       *
  ****************************************************************************/
+
+/*
+ * Formal API
+ */
+
+#define ISROOT(tree, node) _ISROOT(&((tree)->nodebuf), node)
+#define ISLEAF(node) ((node)->attribs & ISLEAF_BIT)
+#define TREE_DEPTH(tree) ((tree)->depth)
+#define NODE_DEPTH(tree, node) (ISLEAF(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
+#define GET_NODE(tree, nid) get_node_from_buf(&((tree)->nodebuf), nid)
+#define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
+#define NEW_NODE(tree, depth) new_ACnode(tree, depth)
+#define NEW_LEAFNODE(tree, P_id) new_leafACnode(tree, P_id)
+#define GET_NODE_LINK(tree, node, linktag) get_ACnode_link(tree, node, linktag)
+#define SET_NODE_LINK(tree, node, linktag, nid) set_ACnode_link(tree, node, linktag, nid)
+#define GET_NODE_FLINK(tree, node) get_ACnode_flink(tree, node)
+#define SET_NODE_FLINK(tree, node, nid) set_ACnode_flink(tree, node, nid)
+
+/*
+ * API implementation
+ */
 
 static unsigned int new_ACnode(ACtree *tree, int depth)
 {
+	ACnodeBuf *nodebuf;
 	unsigned int nid;
 	ACnode *node;
 
 	if (depth >= TREE_DEPTH(tree))
 		error("new_ACnode(): depth >= TREE_DEPTH(tree)");
-	nid = new_nid(tree);
-	node = GET_NODE(tree, nid);
+	nodebuf = &(tree->nodebuf);
+	nid = new_nid(nodebuf);
+	node = get_node_from_buf(nodebuf, nid);
 	/* this sets the "ISEXTENDED" and "ISLEAF" bits to 0 */
 	node->attribs = depth;
-	node->nid_or_eid = NULLNODE;
+	node->nid_or_eid = NOT_AN_ID;
 	return nid;
 }
 
 static unsigned int new_leafACnode(ACtree *tree, int P_id)
 {
+	ACnodeBuf *nodebuf;
 	unsigned int nid;
 	ACnode *node;
 
-	nid = new_nid(tree);
-	node = GET_NODE(tree, nid);
+	nodebuf = &(tree->nodebuf);
+	nid = new_nid(nodebuf);
+	node = get_node_from_buf(nodebuf, nid);
 	/* this sets the "ISEXTENDED" bit to 0 and "ISLEAF" bit to 1 */
 	node->attribs = ISLEAF_BIT | P_id;
-	node->nid_or_eid = NULLNODE;
+	node->nid_or_eid = NOT_AN_ID;
 	return nid;
 }
 
@@ -472,8 +479,8 @@ static unsigned int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 {
 	ACnodeExt *extension;
 
-	if (node->nid_or_eid == NULLNODE)
-		return NULLNODE;
+	if (node->nid_or_eid == NOT_AN_ID)
+		return NOT_AN_ID;
 	if (ISEXTENDED(node)) {
 		extension = GET_EXTENSION(tree, node->nid_or_eid);
 		return extension->link_nid[linktag];
@@ -481,7 +488,7 @@ static unsigned int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 	/* the node has no extension and is not a leaf node */
 	if (linktag == (node->attribs >> LINKTAG_BITSHIFT))
 		return node->nid_or_eid;
-	return NULLNODE;
+	return NOT_AN_ID;
 }
 
 /*
@@ -493,7 +500,7 @@ static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, unsigned in
 {
 	ACnodeExt *extension;
 
-	if (node->nid_or_eid == NULLNODE) {
+	if (node->nid_or_eid == NOT_AN_ID) {
 		/* cannot be a leaf node (see assumption above) and
 		   no need to extend it */
 		node->attribs |= linktag << LINKTAG_BITSHIFT;
@@ -514,7 +521,7 @@ static unsigned int get_ACnode_flink(ACtree *tree, ACnode *node)
 	ACnodeExt *extension;
 
 	if (!ISEXTENDED(node))
-		return NULLNODE;
+		return NOT_AN_ID;
 	extension = GET_EXTENSION(tree, node->nid_or_eid);
 	return extension->flink_nid;
 }
@@ -529,6 +536,10 @@ static void set_ACnode_flink(ACtree *tree, ACnode *node, unsigned int nid)
 	extension->flink_nid = nid;
 	return;
 }
+
+/*
+ * Not part of the API
+ */
 
 static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes,
 		SEXP nodebuf_ptr, SEXP extbuf_ptr)
@@ -574,6 +585,12 @@ static ACtree pptb_asACtree(SEXP pptb)
 	return tree;
 }
 
+
+
+/****************************************************************************
+ *                       F. STATS AND DEBUG UTILITIES                       *
+ ****************************************************************************/
+
 static void print_ACnode(ACtree *tree, ACnode *node)
 {
 	error("print_ACnode(): implement me");
@@ -584,29 +601,25 @@ static int get_ACnode_nlink(ACtree *tree, ACnode *node)
 {
 	int nlink, linktag;
 
-	nlink = get_ACnode_flink(tree, node) != NULLNODE;
+	nlink = get_ACnode_flink(tree, node) != NOT_AN_ID;
 	for (linktag = 0; linktag < MAX_CHILDREN_PER_NODE; linktag++)
-		if (get_ACnode_link(tree, node, linktag) != NULLNODE)
+		if (get_ACnode_link(tree, node, linktag) != NOT_AN_ID)
 			nlink++;
 	return nlink;
 }
 
-
-
-/****************************************************************************
- *                       G. STATS AND DEBUG UTILITIES                       *
- ****************************************************************************/
-
 SEXP ACtree2_print_nodes(SEXP pptb)
 {
 	ACtree tree;
+	ACnodeBuf *nodebuf;
 	ACnode *node;
 	unsigned int nnodes, nid;
 
 	tree = pptb_asACtree(pptb);
-	nnodes = NODEBUF_NELT(&tree);
+	nodebuf = &(tree.nodebuf);
+	nnodes = get_ACnodeBuf_nelt(nodebuf);
 	for (nid = 0U; nid < nnodes; nid++) {
-		node = GET_NODE(&tree, nid);
+		node = get_node_from_buf(nodebuf, nid);
 		print_ACnode(&tree, node);
 	}
 	return R_NilValue;
@@ -615,19 +628,21 @@ SEXP ACtree2_print_nodes(SEXP pptb)
 SEXP ACtree2_summary(SEXP pptb)
 {
 	ACtree tree;
+	ACnodeBuf *nodebuf;
 	ACnode *node;
 	unsigned int nnodes, nlink_table[MAX_CHILDREN_PER_NODE+2],
 		     nid, max_nn, min_nn;
 	int nleaves, nlink;
 
 	tree = pptb_asACtree(pptb);
-	nnodes = NODEBUF_NELT(&tree);
+	nodebuf = &(tree.nodebuf);
+	nnodes = get_ACnodeBuf_nelt(nodebuf);
 	Rprintf("  Total nb of nodes = %u\n", nnodes);
 	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
 		nlink_table[nlink] = 0U;
 	nleaves = 0;
 	for (nid = 0U; nid < nnodes; nid++) {
-		node = GET_NODE(&tree, nid);
+		node = get_node_from_buf(nodebuf, nid);
 		nlink = get_ACnode_nlink(&tree, node);
 		nlink_table[nlink]++;
 		if (ISLEAF(node))
@@ -649,7 +664,7 @@ SEXP ACtree2_summary(SEXP pptb)
 
 
 /****************************************************************************
- *                             H. PREPROCESSING                             *
+ *                             G. PREPROCESSING                             *
  ****************************************************************************/
 
 static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
@@ -666,20 +681,20 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 		if (linktag == NA_INTEGER)
 			error("non base DNA letter found in Trusted Band "
 			      "for pattern %d", P_id);
-		nid2 = get_ACnode_link(tree, node1, linktag);
+		nid2 = GET_NODE_LINK(tree, node1, linktag);
 		if (depth < dmax) {
-			if (nid2 != NULLNODE)
+			if (nid2 != NOT_AN_ID)
 				continue;
-			nid2 = new_ACnode(tree, depth + 1);
-			set_ACnode_link(tree, node1, linktag, nid2);
+			nid2 = NEW_NODE(tree, depth + 1);
+			SET_NODE_LINK(tree, node1, linktag, nid2);
 			continue;
 		}
-		if (nid2 != NULLNODE) {
+		if (nid2 != NOT_AN_ID) {
 			node2 = GET_NODE(tree, nid2);
 			_report_dup(P_offset, NODE_P_ID(node2));
 		} else {
-			nid2 = new_leafACnode(tree, P_id);
-			set_ACnode_link(tree, node1, linktag, nid2);
+			nid2 = NEW_LEAFNODE(tree, P_id);
+			SET_NODE_LINK(tree, node1, linktag, nid2);
 		}
 	}
 	return;
@@ -757,7 +772,7 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes,
 
 
 /****************************************************************************
- *                             I. MATCH FINDING                             *
+ *                             H. MATCH FINDING                             *
  ****************************************************************************/
 
 /*
@@ -791,8 +806,8 @@ static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const ch
 		Rprintf(format, " ");
 		node_depth = NODE_DEPTH(tree, node);
 		snprintf(pathbuf, node_depth + 1, "%s", seq_tail - node_depth);
-		Rprintf("nid=%u node_depth=%d linktag=%d path=%s\n",
-			node - tree->nodes, node_depth, linktag, pathbuf);
+		Rprintf("node_depth=%d linktag=%d path=%s\n",
+			node_depth, linktag, pathbuf);
 	}
 #endif
 */
@@ -810,8 +825,8 @@ static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const ch
 */
 		return 0U;
 	}
-	link = get_ACnode_link(tree, node, linktag);
-	if (link != NULLNODE) {
+	link = GET_NODE_LINK(tree, node, linktag);
+	if (link != NOT_AN_ID) {
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
@@ -824,7 +839,7 @@ static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const ch
 */
 		return link;
 	}
-	if (ISROOT(node, &(tree->nodebuf))) {
+	if (ISROOT(tree, node)) {
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
@@ -837,15 +852,15 @@ static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const ch
 */
 		return 0U;
 	}
-	flink = get_ACnode_flink(tree, node);
-	if (flink == NULLNODE) {
+	flink = GET_NODE_FLINK(tree, node);
+	if (flink == NOT_AN_ID) {
 		newpath_len = NODE_DEPTH(tree, node) - 1;
 		newpath = seq_tail - newpath_len;
 		flink = walk_shortseq(tree, newpath, newpath_len);
-		set_ACnode_flink(tree, node, flink);
+		SET_NODE_FLINK(tree, node, flink);
 	}
 	link = transition(tree, GET_NODE(tree, flink), linktag, seq_tail);
-	set_ACnode_link(tree, node, linktag, link); /* sets a shortcut */
+	SET_NODE_LINK(tree, node, linktag, link); /* sets a shortcut */
 /*
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
@@ -887,7 +902,7 @@ static void walk_subject(ACtree *tree, const RoSeq *S)
 	unsigned int nid;
 	const char *S_tail;
 
-	node = GET_NODE(tree, 0);
+	node = GET_NODE(tree, 0U);
 	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
 		linktag = CHAR2LINKTAG(tree, *S_tail);
 		nid = transition(tree, node, linktag, S_tail);
