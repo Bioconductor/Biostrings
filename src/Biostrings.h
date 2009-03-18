@@ -747,11 +747,9 @@ SEXP _get_ACtree_nodes_tag(SEXP x);
 
 SEXP _get_ACtree_base_codes(SEXP x);
 
-SEXP _get_ACtree2_nodes_tag(SEXP x);
+SEXP _get_ACtree2_nodebuf_ptr(SEXP x);
 
-SEXP _get_ACtree2_extensions_tag(SEXP x);
-
-int *_get_ACtree2_nextensions(SEXP x);
+SEXP _get_ACtree2_extbuf_ptr(SEXP x);
 
 SEXP _get_ACtree2_base_codes(SEXP x);
 
@@ -794,9 +792,31 @@ void _match_ACtree(
 );
 
 
+/* BAB_class.c */
+
+SEXP debug_BAB_class();
+
+SEXP IntegerBAB_new(SEXP max_nblock);
+
+int *_get_BAB_nblock_ptr(SEXP x);
+
+int *_get_BAB_lastblock_nelt_ptr(SEXP x);
+
+SEXP _get_BAB_blocks(SEXP x);
+
+SEXP _IntegerBAB_addblock(
+	SEXP x,
+	int block_length
+);
+
+
 /* match_pdict_ACtree2.c */
 
 SEXP debug_match_pdict_ACtree2();
+
+SEXP ACtree2_nodebuf_max_nblock();
+
+SEXP ACtree2_extbuf_max_nblock();
 
 SEXP ACtree2_print_nodes(SEXP pptb);
 
@@ -805,7 +825,9 @@ SEXP ACtree2_summary(SEXP pptb);
 SEXP ACtree2_build(
 	SEXP tb,
 	SEXP dup2unq0,
-	SEXP base_codes
+	SEXP base_codes,
+	SEXP nodebuf_ptr,
+	SEXP extbuf_ptr
 );
 
 void _match_ACtree2(

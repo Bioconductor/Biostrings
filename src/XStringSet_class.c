@@ -117,11 +117,11 @@ SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 		snprintf(classname_buf, sizeof(classname_buf), "%sSet", get_classname(super));
 		classname = classname_buf;
 	}
-	classdef = MAKE_CLASS(classname);
+	PROTECT(classdef = MAKE_CLASS(classname));
 	PROTECT(ans = NEW_OBJECT(classdef));
 	SET_SLOT(ans, mkChar("super"), super);
 	SET_SLOT(ans, mkChar("ranges"), ranges);
-	UNPROTECT(1);
+	UNPROTECT(2);
 	return ans;
 }
 

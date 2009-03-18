@@ -195,12 +195,14 @@ setMethod("initialize", "ACtree",
 ### (i.e. after it has been used on a full genome).
 ###
 
+### Big Atomic Buffer of integers.
+setClass("IntegerBAB", representation(xp="externalptr"))
+
 setClass("ACtree2",
     contains="PreprocessedTB",
     representation(
-        nodes="XInteger",        # 2 ints per node
-        extensions="XInteger",   # 5 ints per extension
-        nextensions="XInteger",  # a single int
+        nodebuf_ptr="IntegerBAB",
+        extbuf_ptr="IntegerBAB",
         base_codes="integer"
     )
 )
@@ -217,13 +219,21 @@ setMethod("initialize", "ACtree2",
     function(.Object, tb, dup2unq0)
     {
         base_codes <- xscodes(tb, baseOnly=TRUE)
-        #on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
-        C_ans <- .Call("ACtree2_build", tb, dup2unq0, base_codes,
+        nodebuf_max_nblock <- .Call("ACtree2_nodebuf_max_nblock",
+                                    PACKAGE="Biostrings")
+        nodebuf_ptr <- .Call("IntegerBAB_new", nodebuf_max_nblock,
+                             PACKAGE="Biostrings")
+        extbuf_max_nblock <- .Call("ACtree2_extbuf_max_nblock",
+                                   PACKAGE="Biostrings")
+        extbuf_ptr <- .Call("IntegerBAB_new", extbuf_max_nblock,
+                            PACKAGE="Biostrings")
+        C_ans <- .Call("ACtree2_build",
+                       tb, dup2unq0, base_codes,
+                       nodebuf_ptr, extbuf_ptr,
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
-        .Object@nodes <- C_ans$ACtree$nodes
-        .Object@extensions <- C_ans$ACtree$extensions
-        .Object@nextensions <- C_ans$ACtree$nextensions
+        .Object@nodebuf_ptr <- C_ans$ACtree$nodebuf_ptr
+        .Object@extbuf_ptr <- C_ans$ACtree$extbuf_ptr
         .Object@base_codes <- base_codes
         .Object
     }

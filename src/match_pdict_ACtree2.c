@@ -16,7 +16,7 @@
 
 static int debug = 0;
 
-#define MAX_CHILDREN_PER_NODE 4 // do NOT change this
+#define MAX_CHILDREN_PER_NODE 4  /* do NOT change this */
 
 
 
@@ -32,36 +32,38 @@ static int debug = 0;
  * 'nleaves' is assumed to be '<= 4^depth'. The functions below do not check
  * this and will return invalid results if this is not true.
  */
-static int count_max_needed_nnodes(int nleaves, int depth)
+static unsigned int count_max_needed_nnodes(int nleaves, int depth)
 {
-	int res, inc, d;
+	unsigned int res;
+	int inc, d;
 
-	res = 0;
+	res = 0U;
 	inc = 1;
 	for (d = 0; d <= depth; d++) {
 		if (inc >= nleaves) {
-			res += (depth + 1 - d) * nleaves;
+			res += (unsigned int) (depth + 1 - d) * nleaves;
 			break;
 		}
-		res += inc;
+		res += (unsigned int) inc;
 		inc *= MAX_CHILDREN_PER_NODE;
 	}
 	return res;
 }
 
-static int count_min_needed_nnodes(int nleaves, int depth)
+static unsigned int count_min_needed_nnodes(int nleaves, int depth)
 {
-	int res, inc, d;
+	unsigned int res;
+	int inc, d;
 	div_t q;
 
-	res = 0;
+	res = 0U;
 	inc = nleaves;
 	for (d = depth; d >= 0; d--) {
 		if (inc == 1) {
-			res += d + 1;
+			res += (unsigned int) (d + 1);
 			break;
 		}
-		res += inc;
+		res += (unsigned int) inc;
 		q = div(inc, MAX_CHILDREN_PER_NODE);
 		inc = q.quot;
 		if (q.rem != 0)
@@ -70,23 +72,24 @@ static int count_min_needed_nnodes(int nleaves, int depth)
 	return res;
 }
 
-static int count_max_needed_nextensions_at_pp_time(int nleaves, int depth)
+static unsigned int count_max_needed_nextensions_at_pp_time(int nleaves, int depth)
 {
-	int res, inc, d, four_power_d;
+	unsigned int res;
+	int inc, d, four_power_d;
 	div_t q;
 
-	res = 0;
+	res = 0U;
 	for (d = depth - 1; d >= 0; d--) {
 		q = div(nleaves, 2);
 		inc = q.quot;
 		nleaves = inc + q.rem;
 		if (d >= 16) {
-			res += inc;
+			res += (unsigned int) inc;
 			continue;
 		}
-		four_power_d = 1 << (2*d); // = MAX_CHILDREN_PER_NODE ^ d
+		four_power_d = 1 << (2 * d);  /* = MAX_CHILDREN_PER_NODE ^ d */
 		if (nleaves <= four_power_d) {
-			res += inc;
+			res += (unsigned int) inc;
 			continue;
 		}
 		res += count_max_needed_nnodes(four_power_d, d);
@@ -100,18 +103,20 @@ static int count_max_needed_nextensions_at_pp_time(int nleaves, int depth)
  * and it looked correct... pfff :-b */
 static void debug_node_counting_functions(int maxdepth)
 {
-	int depth, nleaves, four_power_d, max_nn, min_nn, n2, delta;
+	int depth, four_power_d, nleaves, delta;
+	unsigned int max_nn, min_nn, n2;
 
 	Rprintf("[DEBUG] debug_node_counting_functions():\n");
 	for (depth = 1; depth <= maxdepth; depth++) {
-		four_power_d = 1 << (2*depth); // = MAX_CHILDREN_PER_NODE ^ depth
+		four_power_d = 1 << (2 * depth);  /* = MAX_CHILDREN_PER_NODE ^ depth */
 		for (nleaves = 1; nleaves <= four_power_d; nleaves++) {
 			max_nn = count_max_needed_nnodes(nleaves, depth);
 			min_nn = count_min_needed_nnodes(nleaves, depth);
 			n2 = count_max_needed_nextensions_at_pp_time(nleaves, depth);
-			delta = max_nn - nleaves - n2; // should be always >= 0
-			Rprintf("  depth=%d nleaves=%d --> max_nn=%d min_nn=%d n2=%d max_nn-nleaves-n2=%d\n",
-				depth, nleaves, max_nn, min_nn, n2, delta);
+			delta = max_nn - nleaves - n2;  /* should always be >= 0 */
+			Rprintf("  depth=%d nleaves=%d --> ", depth, nleaves);
+			Rprintf("max_nn=%u min_nn=%u n2=%u max_nn-nleaves-n2=%d\n",
+				max_nn, min_nn, n2, delta);
 			if (delta < 0)
 				error("max_nn-nleaves-n2 < 0");
 		}
@@ -125,14 +130,15 @@ static void debug_node_counting_functions(int maxdepth)
  * get_OptMaxNN() is a decreasing function of 'max_needed_nnodes' bounded by
  * 'max_nn' and 'min_nn2' (max_nn >= get_OptMaxNN() > min_nn2).
  */
-static int get_OptMaxNN(int max_needed_nnodes, int min_needed_nnodes)
+static unsigned int get_OptMaxNN(unsigned int max_needed_nnodes,
+		unsigned int min_needed_nnodes)
 {
 	double max_nn, min_nn2, x;
 
 	max_nn = max_needed_nnodes;
 	min_nn2 = min_needed_nnodes + 0.70 * (max_nn - min_needed_nnodes);
 	x = max_needed_nnodes / 300000000.00;
-	return (int) min_nn2 + (max_nn - min_nn2) / (1.00 + x);
+	return (unsigned int) (min_nn2 + (max_nn - min_nn2) / (1.00 + x));
 }
 
 /*
@@ -146,7 +152,7 @@ static int get_OptMaxNN(int max_needed_nnodes, int min_needed_nnodes)
  * enough for the entire lifetime of the object. The current approach is to
  * set its length to 'nnodes * MEER'. Some simulations with real data tend to
  * indicate that most of the times this will be enough.
- * Note that when 'extensions_buflength == 0.4 * nnodes', the 'extensions'
+ * Note that when 'extbuf_length == 0.4 * nodebuf_nelt', the 'extensions'
  * slot of the ACtree2 object has the same size as its 'nodes' slot. Therefore
  * the total size for these 2 slots ('nodes' + 'extensions') is half the size
  * of the 'nodes' slot of the corresponding old ACtree object.
@@ -175,31 +181,209 @@ static double nnodes2MEER(int nnodes)
 
 
 /****************************************************************************
- *                                B. DEFINES                                *
+ *                         B. ACnode AND ACnodeBuf                          *
  ****************************************************************************/
 
-typedef struct acnode {
-	int attribs;
-	int nid_or_eid;
-} ACnode;
-
-typedef struct acnode_extension {
-	int link_nid[MAX_CHILDREN_PER_NODE];
-	int flink_nid;
-} ACnodeExtension;
-
-#define INTS_PER_NODE (sizeof(ACnode) / sizeof(int))
-#define MAX_NNODES (INT_MAX / INTS_PER_NODE)
-
-#define INTS_PER_EXTENSION (sizeof(ACnodeExtension) / sizeof(int))
-#define MAX_NEXTENSIONS (INT_MAX / INTS_PER_EXTENSION)
-
 #define LINKTAG_BITSHIFT 28
-#define LINKTAG_BITMASK (3 << LINKTAG_BITSHIFT)
 #define MAX_DEPTH ((1 << LINKTAG_BITSHIFT) - 1)
 #define ISLEAF_BIT (1 << 30)
 #define ISEXTENDED_BIT (ISLEAF_BIT << 1) /* strongest bit for 32-bit integers */
 #define MAX_P_ID (ISLEAF_BIT - 1)  /* P_id values are encoded on 30 bits */
+
+#define ISEXTENDED(node) ((node)->attribs & ISEXTENDED_BIT)
+#define ISLEAF(node) ((node)->attribs & ISLEAF_BIT)
+#define _NODE_DEPTH(node) ((node)->attribs & MAX_DEPTH)
+/* result of NODE_P_ID() is undefined on a non-leaf node */
+#define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
+
+#define NULLNODE UINT_MAX
+
+/*
+ * A node id (nid) is represented by an unsigned int. The ANSI C standard only
+ * guarantees that an (unsigned) int will take at least 2 bytes in memory i.e.
+ * that UINT_MAX will always be >= 2^16-1 even though, on most modern
+ * platforms (including PC and Mac), an int will take at least 4 bytes in
+ * memory i.e. UINT_MAX will be 2^32-1 or more.
+ * The same apply to extension ids (eid).
+ */
+typedef struct acnode {
+	int attribs;
+	unsigned int nid_or_eid;
+} ACnode;
+
+#define INTS_PER_NODE (sizeof(ACnode) / sizeof(int))
+
+/*
+ * We must have:
+ *   (a) ACNODEBUF_MAX_NBLOCK * ACNODEBUF_MAX_NELT_PER_BLOCK <= UINT_MAX + 1
+ *   (b) ACNODEBUF_MAX_NELT_PER_BLOCK * INTS_PER_NODE <= INT_MAX
+ * On 64-bit Unix/Linux (4 bytes per int):
+ *   UINT_MAX = 2^32-1 = 4294967295U
+ *   INT_MAX = 2^31-1 = 2147483647
+ * The following settings are assuming UINT_MAX >= 2^32-1 and
+ * INT_MAX >= 2^31-1. They result in blocks of size 32 MB.
+ */
+#define ACNODEBUF_MAX_NBLOCK 1024  /* = 2^10 */
+#define ACNODEBUF_MAX_NELT_PER_BLOCK 4194304U  /* = 2^22 */
+
+typedef struct acnodebuf {
+	SEXP bab;  /* Big Atomic Buffer */
+	int *nblock;
+	int *lastblock_nelt;
+	ACnode *block[ACNODEBUF_MAX_NBLOCK];
+} ACnodeBuf;
+
+#define ISROOT(node, nodebuf) ((node) == (nodebuf)->block[0])
+
+SEXP ACtree2_nodebuf_max_nblock()
+{
+	return ScalarInteger(ACNODEBUF_MAX_NBLOCK);
+}
+
+static ACnode *get_node_from_buf(ACnodeBuf *nodebuf, unsigned int nid)
+{
+	unsigned int b, i;
+
+	b = nid >> 22U;
+	i = nid & (ACNODEBUF_MAX_NELT_PER_BLOCK - 1U);
+	return nodebuf->block[b] + i;
+}
+
+static unsigned int get_ACnodeBuf_length(ACnodeBuf *nodebuf)
+{
+	return (unsigned int) *(nodebuf->nblock) * ACNODEBUF_MAX_NELT_PER_BLOCK;
+}
+
+static unsigned int get_ACnodeBuf_nelt(ACnodeBuf *nodebuf)
+{
+	int nblock;
+
+	nblock = *(nodebuf->nblock);
+	if (nblock == 0)
+		return 0U;
+	return (unsigned int) (nblock - 1) * ACNODEBUF_MAX_NELT_PER_BLOCK
+	       + *(nodebuf->lastblock_nelt);
+}
+
+static ACnodeBuf new_ACnodeBuf(SEXP bab)
+{
+	ACnodeBuf nodebuf;
+	SEXP bab_blocks;
+	int nblock, b;
+
+	nodebuf.bab = bab;
+	nblock = *(nodebuf.nblock = _get_BAB_nblock_ptr(bab));
+	nodebuf.lastblock_nelt = _get_BAB_lastblock_nelt_ptr(bab);
+	bab_blocks = _get_BAB_blocks(bab);
+	for (b = 0; b < nblock; b++)
+		nodebuf.block[b] = (ACnode *) INTEGER(VECTOR_ELT(bab_blocks, b));
+	return nodebuf;
+}
+
+static void extend_nodebuf(ACnodeBuf *nodebuf)
+{
+	int length;
+	SEXP bab_block;
+
+	length = ACNODEBUF_MAX_NELT_PER_BLOCK * INTS_PER_NODE;
+	bab_block = _IntegerBAB_addblock(nodebuf->bab, length);
+	/* sync 'nodebuf->block' with 'nodebuf->bab' */
+	nodebuf->block[*(nodebuf->nblock) - 1] = (ACnode *) INTEGER(bab_block);
+	return;
+}
+
+
+
+/****************************************************************************
+ *                       C. ACnodeExt AND ACnodeExtBuf                      *
+ ****************************************************************************/
+
+typedef struct acnodeext {
+	unsigned int link_nid[MAX_CHILDREN_PER_NODE];
+	unsigned int flink_nid;
+} ACnodeExt;
+
+#define INTS_PER_EXTENSION (sizeof(ACnodeExt) / sizeof(int))
+
+/*
+ * We must have:
+ *   (a) ACNODEEXTBUF_MAX_NBLOCK * ACNODEEXTBUF_MAX_NELT_PER_BLOCK <= UINT_MAX + 1
+ *   (b) ACNODEEXTBUF_MAX_NELT_PER_BLOCK * INTS_PER_EXTENSION <= INT_MAX
+ * The following settings are assuming UINT_MAX >= 2^32-1 and
+ * INT_MAX >= 2^31-1. They result in blocks of size 80 MB.
+ */
+#define ACNODEEXTBUF_MAX_NBLOCK 1024  /* = 2^10 */
+#define ACNODEEXTBUF_MAX_NELT_PER_BLOCK 4194304U  /* = 2^22 */
+
+typedef struct acnodeextbuf {
+	SEXP bab;  /* Big Atomic Buffer */
+	int *nblock;
+	int *lastblock_nelt;
+	ACnodeExt *block[ACNODEEXTBUF_MAX_NBLOCK];
+} ACnodeExtBuf;
+
+SEXP ACtree2_extbuf_max_nblock()
+{
+	return ScalarInteger(ACNODEEXTBUF_MAX_NBLOCK);
+}
+
+static ACnodeExt *get_extension_from_buf(ACnodeExtBuf *extbuf, unsigned int eid)
+{
+	unsigned int b, i;
+
+	b = eid >> 22U;
+	i = eid & (ACNODEEXTBUF_MAX_NELT_PER_BLOCK - 1U);
+	return extbuf->block[b] + i;
+}
+
+static unsigned int get_ACnodeExtBuf_length(ACnodeExtBuf *extbuf)
+{
+	return (unsigned int) *(extbuf->nblock) * ACNODEEXTBUF_MAX_NELT_PER_BLOCK;
+}
+
+static unsigned int get_ACnodeExtBuf_nelt(ACnodeExtBuf *extbuf)
+{
+	int nblock;
+
+	nblock = *(extbuf->nblock);
+	if (nblock == 0)
+		return 0U;
+	return (unsigned int) (nblock - 1) * ACNODEEXTBUF_MAX_NELT_PER_BLOCK
+	       + *(extbuf->lastblock_nelt);
+}
+
+static ACnodeExtBuf new_ACnodeExtBuf(SEXP bab)
+{
+	ACnodeExtBuf extbuf;
+	SEXP bab_blocks;
+	int nblock, b;
+
+	extbuf.bab = bab;
+	nblock = *(extbuf.nblock = _get_BAB_nblock_ptr(bab));
+	extbuf.lastblock_nelt = _get_BAB_lastblock_nelt_ptr(bab);
+	bab_blocks = _get_BAB_blocks(bab);
+	for (b = 0; b < nblock; b++)
+		extbuf.block[b] = (ACnodeExt *) INTEGER(VECTOR_ELT(bab_blocks, b));
+	return extbuf;
+}
+
+static void extend_extbuf(ACnodeExtBuf *extbuf)
+{
+	int length;
+	SEXP bab_block;
+
+	length = ACNODEEXTBUF_MAX_NELT_PER_BLOCK * INTS_PER_EXTENSION;
+	bab_block = _IntegerBAB_addblock(extbuf->bab, length);
+	/* sync 'extbuf->block' with 'extbuf->bab' */
+	extbuf->block[*(extbuf->nblock) - 1] = (ACnodeExt *) INTEGER(bab_block);
+	return;
+}
+
+
+
+/****************************************************************************
+ *                                 D. ACtree                                *
+ ****************************************************************************/
 
 SEXP debug_match_pdict_ACtree2()
 {
@@ -208,20 +392,24 @@ SEXP debug_match_pdict_ACtree2()
 	Rprintf("Debug mode turned %s in file %s\n",
 		debug ? "on" : "off", __FILE__);
 	if (debug) {
-		Rprintf("[DEBUG] debug_match_pdict_ACtree2():\n"
-			"  INTS_PER_NODE=%d MAX_NNODES=%d\n"
-			"  INTS_PER_EXTENSION=%d MAX_NEXTENSIONS=%d\n"
-			"  LINKTAG_BITSHIFT=%d LINKTAG_BITMASK=%d\n"
+		Rprintf("[DEBUG] debug_match_pdict_ACtree2():\n");
+/*
+		Rprintf("  INTS_PER_NODE=%d MAX_NNODES=%d\n"
+			"  INTS_PER_EXTENSION=%d MAX_NEXTENSIONS=%d\n",
+			INTS_PER_NODE, MAX_NNODES,
+			INTS_PER_EXTENSION, MAX_NEXTENSIONS);
+*/
+		Rprintf("  INTS_PER_NODE=%d INTS_PER_EXTENSION=%d\n",
+			INTS_PER_NODE, INTS_PER_EXTENSION);
+		Rprintf("  LINKTAG_BITSHIFT=%d\n"
 			"  MAX_DEPTH=%d\n"
 			"  ISLEAF_BIT=%d ISEXTENDED_BIT=%d\n"
 			"  MAX_P_ID=%d\n",
-			INTS_PER_NODE, MAX_NNODES,
-			INTS_PER_EXTENSION, MAX_NEXTENSIONS,
-			LINKTAG_BITSHIFT, LINKTAG_BITMASK,
+			LINKTAG_BITSHIFT,
 			MAX_DEPTH,
 			ISLEAF_BIT, ISEXTENDED_BIT,
 			MAX_P_ID);
-		debug_node_counting_functions(4);
+		debug_node_counting_functions(3);
 	}
 #else
 	Rprintf("Debug mode not available in file %s\n", __FILE__);
@@ -229,63 +417,66 @@ SEXP debug_match_pdict_ACtree2()
 	return R_NilValue;
 }
 
-#define ISEXTENDED(node) ((node)->attribs & ISEXTENDED_BIT)
-#define ISLEAF(node) ((node)->attribs & ISLEAF_BIT)
-
 typedef struct actree {
 	int depth;  /* this is the depth of all leaf nodes */
-	ACnode *nodes;
-	int nodes_buflength, nnodes;
-	ACnodeExtension *extensions;
-	int extensions_buflength, nextensions, *nextensions_ptr;
+	ACnodeBuf nodebuf;
+	ACnodeExtBuf extbuf;
 	ByteTrTable char2linktag;
 } ACtree;
 
 #define TREE_DEPTH(tree) ((tree)->depth)
-#define TREE_NNODES(tree) ((tree)->nnodes)
-#define GET_NODE(tree, nid) ((tree)->nodes + (nid))
-#define TREE_NEXTENSIONS(tree) (*((tree)->nextensions_ptr))
-#define GET_EXTENSION(tree, eid) ((tree)->extensions + (eid))
-#define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
+#define NODE_DEPTH(tree, node) (ISLEAF(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
 
-#define NODE_DEPTH(tree, node) \
-	(ISLEAF(node) ? TREE_DEPTH(tree) : ((node)->attribs & MAX_DEPTH))
-/* result of NODE_P_ID() is undefined on a non-leaf node */
-#define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
+#define NODEBUF_LENGTH(tree) get_ACnodeBuf_length(&((tree)->nodebuf))
+#define NODEBUF_NELT(tree) get_ACnodeBuf_nelt(&((tree)->nodebuf))
+#define GET_NODE(tree, nid) get_node_from_buf(&((tree)->nodebuf), nid)
+
+#define EXTBUF_LENGTH(tree) get_ACnodeExtBuf_length(&((tree)->extbuf))
+#define EXTBUF_NELT(tree) get_ACnodeExtBuf_nelt(&((tree)->extbuf))
+#define GET_EXTENSION(tree, eid) get_extension_from_buf(&((tree)->extbuf), eid)
+
+#define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
 
 
 
 /****************************************************************************
- *                          C. LOW-LEVEL UTILITIES                          *
+ *                          E. LOW-LEVEL UTILITIES                          *
  ****************************************************************************/
 
-/* extends the 'nodes' slot */
-static void extend_nodes_buffer(ACtree *tree)
+static unsigned int new_nid(ACtree *tree)
 {
-	error("extend_nodes_buffer(): implement me");
-	return;
+	unsigned int nid;
+
+	nid = NODEBUF_NELT(tree);
+	if (nid >= NODEBUF_LENGTH(tree))
+		extend_nodebuf(&(tree->nodebuf));
+	(*(tree->nodebuf.lastblock_nelt))++;
+	return nid;
 }
 
-/* extends the 'extensions' slot */
-static void extend_extensions_buffer(ACtree *tree)
+static unsigned int new_eid(ACtree *tree)
 {
-	error("extend_extensions_buffer(): implement me");
-	return;
+	unsigned int eid;
+
+	eid = EXTBUF_NELT(tree);
+	if (eid >= EXTBUF_LENGTH(tree))
+		extend_extbuf(&(tree->extbuf));
+	(*(tree->extbuf.lastblock_nelt))++;
+	return eid;
 }
 
 static void extend_ACnode(ACtree *tree, ACnode *node)
 {
-	ACnodeExtension *extension;
-	int eid, i, linktag;
+	ACnodeExt *extension;
+	unsigned int eid;
+	int i, linktag;
 
-	if (TREE_NEXTENSIONS(tree) >= tree->extensions_buflength)
-		extend_extensions_buffer(tree);
-	eid = TREE_NEXTENSIONS(tree)++;
+	eid = new_eid(tree);
 	extension = GET_EXTENSION(tree, eid);
 	for (i = 0; i < MAX_CHILDREN_PER_NODE; i++)
-		extension->link_nid[i] = -1;
-	extension->flink_nid = -1;
-	if (node->nid_or_eid != -1) {
+		extension->link_nid[i] = NULLNODE;
+	extension->flink_nid = NULLNODE;
+	if (node->nid_or_eid != NULLNODE) {
 		/* this is correct because 'node' cannot be a leaf node */
 		linktag = node->attribs >> LINKTAG_BITSHIFT;
 		extension->link_nid[linktag] = node->nid_or_eid;
@@ -296,93 +487,46 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 	return;
 }
 
-static SEXP ACtree_nodes_asXInteger(ACtree *tree)
-{
-	int tag_length;
-	SEXP ans, tag;
-
-	tag_length = TREE_NNODES(tree) * INTS_PER_NODE;
-	PROTECT(tag = NEW_INTEGER(tag_length));
-	memcpy(INTEGER(tag), tree->nodes,
-			TREE_NNODES(tree) * sizeof(ACnode));
-	PROTECT(ans = new_XInteger_from_tag("XInteger", tag));
-	UNPROTECT(2);
-	return ans;
-}
-
-static SEXP ACtree_extensions_asXInteger(ACtree *tree)
-{
-	int extensions_buflength, tag_length;
-	SEXP ans, tag;
-
-	extensions_buflength = TREE_NNODES(tree)
-			     * nnodes2MEER(TREE_NNODES(tree));
-	/* very unlikely to happen */
-	if (extensions_buflength < TREE_NEXTENSIONS(tree))
-		extensions_buflength = TREE_NEXTENSIONS(tree);
-	tag_length = extensions_buflength * INTS_PER_EXTENSION;
-	PROTECT(tag = NEW_INTEGER(tag_length));
-	memcpy(INTEGER(tag), tree->extensions,
-			TREE_NEXTENSIONS(tree) * sizeof(ACnodeExtension));
-	PROTECT(ans = new_XInteger_from_tag("XInteger", tag));
-	UNPROTECT(2);
-	return ans;
-}
-
-static SEXP ACtree_nextensions_asXInteger(ACtree *tree)
-{
-	SEXP ans, tag;
-
-	PROTECT(tag = ScalarInteger(TREE_NEXTENSIONS(tree)));
-	PROTECT(ans = new_XInteger_from_tag("XInteger", tag));
-	UNPROTECT(2);
-	return ans;
-}
-
 
 
 /****************************************************************************
- *                           D. Aho-Corasick tree API                       *
+ *                           F. Aho-Corasick tree API                       *
  ****************************************************************************/
 
-static int new_ACnode(ACtree *tree, int depth)
+static unsigned int new_ACnode(ACtree *tree, int depth)
 {
+	unsigned int nid;
 	ACnode *node;
-	int nid;
 
 	if (depth >= TREE_DEPTH(tree))
 		error("new_ACnode(): depth >= TREE_DEPTH(tree)");
-	if (TREE_NNODES(tree) >= tree->nodes_buflength)
-		extend_nodes_buffer(tree);
-	nid = tree->nnodes++;
+	nid = new_nid(tree);
 	node = GET_NODE(tree, nid);
 	/* this sets the "ISEXTENDED" and "ISLEAF" bits to 0 */
 	node->attribs = depth;
-	node->nid_or_eid = -1;
+	node->nid_or_eid = NULLNODE;
 	return nid;
 }
 
-static int new_leafACnode(ACtree *tree, int P_id)
+static unsigned int new_leafACnode(ACtree *tree, int P_id)
 {
+	unsigned int nid;
 	ACnode *node;
-	int nid;
 
-	if (TREE_NNODES(tree) >= tree->nodes_buflength)
-		extend_nodes_buffer(tree);
-	nid = tree->nnodes++;
+	nid = new_nid(tree);
 	node = GET_NODE(tree, nid);
 	/* this sets the "ISEXTENDED" bit to 0 and "ISLEAF" bit to 1 */
 	node->attribs = ISLEAF_BIT | P_id;
-	node->nid_or_eid = -1;
+	node->nid_or_eid = NULLNODE;
 	return nid;
 }
 
-static int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
+static unsigned int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 {
-	ACnodeExtension *extension;
+	ACnodeExt *extension;
 
-	if (node->nid_or_eid == -1)
-		return -1;
+	if (node->nid_or_eid == NULLNODE)
+		return NULLNODE;
 	if (ISEXTENDED(node)) {
 		extension = GET_EXTENSION(tree, node->nid_or_eid);
 		return extension->link_nid[linktag];
@@ -390,7 +534,7 @@ static int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 	/* the node has no extension and is not a leaf node */
 	if (linktag == (node->attribs >> LINKTAG_BITSHIFT))
 		return node->nid_or_eid;
-	return -1;
+	return NULLNODE;
 }
 
 /*
@@ -398,11 +542,11 @@ static int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
  * on a leaf node. So we can assume that, if set_ACnode_link() is called on a
  * leaf node, then this node is already extended.
  */
-static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, int nid)
+static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, unsigned int nid)
 {
-	ACnodeExtension *extension;
+	ACnodeExt *extension;
 
-	if (node->nid_or_eid == -1) {
+	if (node->nid_or_eid == NULLNODE) {
 		/* cannot be a leaf node (see assumption above) and
 		   no need to extend it */
 		node->attribs |= linktag << LINKTAG_BITSHIFT;
@@ -418,19 +562,19 @@ static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, int nid)
 	return;
 }
 
-static int get_ACnode_flink(ACtree *tree, ACnode *node)
+static unsigned int get_ACnode_flink(ACtree *tree, ACnode *node)
 {
-	ACnodeExtension *extension;
+	ACnodeExt *extension;
 
 	if (!ISEXTENDED(node))
-		return -1;
+		return NULLNODE;
 	extension = GET_EXTENSION(tree, node->nid_or_eid);
 	return extension->flink_nid;
 }
 
-static void set_ACnode_flink(ACtree *tree, ACnode *node, int nid)
+static void set_ACnode_flink(ACtree *tree, ACnode *node, unsigned int nid)
 {
-	ACnodeExtension *extension;
+	ACnodeExt *extension;
 
 	if (!ISEXTENDED(node))
 		extend_ACnode(tree, node);
@@ -439,100 +583,42 @@ static void set_ACnode_flink(ACtree *tree, ACnode *node, int nid)
 	return;
 }
 
-static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes)
+static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes,
+		SEXP nodebuf_ptr, SEXP extbuf_ptr)
 {
 	ACtree tree;
-	int max_nn, min_nn, n1, n2;
 
-	max_nn = count_max_needed_nnodes(tb_length, tb_width);
-	min_nn = count_min_needed_nnodes(tb_length, tb_width);
-	n1 = get_OptMaxNN(max_nn, min_nn);
-	n2 = count_max_needed_nextensions_at_pp_time(tb_length, tb_width);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] new_ACtree():\n"
-			"  tb_length=%d tb_width=%d\n"
-			"  max_needed_nnodes=%d min_needed_nnodes=%d\n"
-			"  nodes_buflength=%d (=OptMaxNN)\n"
-			"  extensions_buflength=%d (=max_needed_nextensions)\n",
-			tb_length, tb_width,
-			max_nn, min_nn,
-			n1,
-			n2);
+			"  tb_length=%d tb_width=%d\n",
+			tb_length, tb_width);
 	}
 #endif
 	if (tb_length > MAX_P_ID)
 		error("new_ACtree(): tb_length > MAX_P_ID");
 	if (tb_width > MAX_DEPTH)
 		error("new_ACtree(): tb_width > MAX_DEPTH");
-	if (n1 >= MAX_NNODES || n2 >= MAX_NEXTENSIONS)
-		error("Trusted Band is too big (please reduce its "
-		      "width or its length)");
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
 		error("Biostrings internal error in new_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");
 
 	tree.depth = tb_width;
-	tree.nodes = Salloc((long) n1, ACnode);
-	tree.nodes_buflength = n1;
-	tree.nnodes = 0;
-	tree.extensions = Salloc((long) n2, ACnodeExtension);
-	tree.extensions_buflength = n2;
-	tree.nextensions = 0;
-	tree.nextensions_ptr = &(tree.nextensions);
+	tree.nodebuf = new_ACnodeBuf(nodebuf_ptr);
+	tree.extbuf = new_ACnodeExtBuf(extbuf_ptr);
 	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
 	new_ACnode(&tree, 0);  /* create the root node */
 	return tree;
 }
 
-static SEXP ACtree_asLIST(ACtree *tree)
-{
-	SEXP ans, ans_names, ans_elt;
-
-	PROTECT(ans = NEW_LIST(3));
-
-	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(3));
-	SET_STRING_ELT(ans_names, 0, mkChar("nodes"));
-	SET_STRING_ELT(ans_names, 1, mkChar("extensions"));
-	SET_STRING_ELT(ans_names, 2, mkChar("nextensions"));
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-
-	/* set the "nodes" element */
-	PROTECT(ans_elt = ACtree_nodes_asXInteger(tree));
-	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
-
-	/* set the "extensions" element */
-	PROTECT(ans_elt = ACtree_extensions_asXInteger(tree));
-	SET_ELEMENT(ans, 1, ans_elt);
-	UNPROTECT(1);
-
-	/* set the "nextensions" element */
-	PROTECT(ans_elt = ACtree_nextensions_asXInteger(tree));
-	SET_ELEMENT(ans, 2, ans_elt);
-	UNPROTECT(1);
-
-	UNPROTECT(1);
-	return ans;
-}
-
 static ACtree pptb_asACtree(SEXP pptb)
 {
 	ACtree tree;
-	SEXP tag, base_codes;
+	SEXP base_codes;
 
 	tree.depth = _get_PreprocessedTB_width(pptb);
-	tag = _get_ACtree2_nodes_tag(pptb);
-	tree.nodes = (ACnode *) INTEGER(tag);
-	tree.nodes_buflength = LENGTH(tag) / INTS_PER_NODE;
-	tree.nnodes = tree.nodes_buflength;
-	tag = _get_ACtree2_extensions_tag(pptb);
-	tree.extensions = (ACnodeExtension *) INTEGER(tag);
-	tree.extensions_buflength = LENGTH(tag) / INTS_PER_EXTENSION;
-	// tree.nextensions is not set because it's not used
-	tree.nextensions_ptr = _get_ACtree2_nextensions(pptb);
+	tree.nodebuf = new_ACnodeBuf(_get_ACtree2_nodebuf_ptr(pptb));
+	tree.extbuf = new_ACnodeExtBuf(_get_ACtree2_extbuf_ptr(pptb));
 	base_codes = _get_ACtree2_base_codes(pptb);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
 		error("Biostrings internal error in pptb_asACtree(): "
@@ -547,32 +633,32 @@ static void print_ACnode(ACtree *tree, ACnode *node)
 	return;
 }
 
-static int get_ACnode_nlinks(ACtree *tree, ACnode *node)
+static int get_ACnode_nlink(ACtree *tree, ACnode *node)
 {
-	int nlinks, linktag;
+	int nlink, linktag;
 
-	nlinks = get_ACnode_flink(tree, node) != -1 ? 1 : 0;
+	nlink = get_ACnode_flink(tree, node) != NULLNODE;
 	for (linktag = 0; linktag < MAX_CHILDREN_PER_NODE; linktag++)
-		if (get_ACnode_link(tree, node, linktag) != -1)
-			nlinks++;
-	return nlinks;
+		if (get_ACnode_link(tree, node, linktag) != NULLNODE)
+			nlink++;
+	return nlink;
 }
 
 
 
 /****************************************************************************
- *                       E. STATS AND DEBUG UTILITIES                       *
+ *                       G. STATS AND DEBUG UTILITIES                       *
  ****************************************************************************/
 
 SEXP ACtree2_print_nodes(SEXP pptb)
 {
 	ACtree tree;
 	ACnode *node;
-	int nnodes, nid;
+	unsigned int nnodes, nid;
 
 	tree = pptb_asACtree(pptb);
-	nnodes = TREE_NNODES(&tree);
-	for (nid = 0; nid < nnodes; nid++) {
+	nnodes = NODEBUF_NELT(&tree);
+	for (nid = 0U; nid < nnodes; nid++) {
 		node = GET_NODE(&tree, nid);
 		print_ACnode(&tree, node);
 	}
@@ -583,51 +669,53 @@ SEXP ACtree2_summary(SEXP pptb)
 {
 	ACtree tree;
 	ACnode *node;
-	int nnodes, nlinks_table[MAX_CHILDREN_PER_NODE+2], nleaves,
-	    max_nn, min_nn, n1, i, nid, nlinks;
+	unsigned int nnodes, nlink_table[MAX_CHILDREN_PER_NODE+2],
+		     nid, max_nn, min_nn, n1;
+	int nleaves, nlink;
 
 	tree = pptb_asACtree(pptb);
-	nnodes = TREE_NNODES(&tree);
-	Rprintf("  Total nb of nodes = %d\n", nnodes);
-	for (i = 0; i < MAX_CHILDREN_PER_NODE+2; i++)
-		nlinks_table[i] = 0;
+	nnodes = NODEBUF_NELT(&tree);
+	Rprintf("  Total nb of nodes = %u\n", nnodes);
+	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
+		nlink_table[nlink] = 0U;
 	nleaves = 0;
-	for (nid = 0; nid < nnodes; nid++) {
+	for (nid = 0U; nid < nnodes; nid++) {
 		node = GET_NODE(&tree, nid);
-		nlinks = get_ACnode_nlinks(&tree, node);
-		nlinks_table[nlinks]++;
+		nlink = get_ACnode_nlink(&tree, node);
+		nlink_table[nlink]++;
 		if (ISLEAF(node))
 			nleaves++;
 	}
-	for (i = 0; i < MAX_CHILDREN_PER_NODE+2; i++)
-		Rprintf("  - %d nodes (%.2f%) with %d links\n",
-			nlinks_table[i],
-			100.00 * nlinks_table[i] / nnodes,
-			i);
+	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
+		Rprintf("  - %u nodes (%.2f%) with %d links\n",
+			nlink_table[nlink],
+			100.00 * nlink_table[nlink] / nnodes,
+			nlink);
 	Rprintf("  Nb of leaf nodes (nleaves) = %d\n", nleaves);
 	max_nn = count_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
 	min_nn = count_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
 	n1 = get_OptMaxNN(max_nn, min_nn);
-	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %d\n", max_nn);
-	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %d\n", min_nn);
-	Rprintf("  - OptMaxNN(nleaves, TREE_DEPTH) = %d\n", n1);
+	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", max_nn);
+	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", min_nn);
+	Rprintf("  - OptMaxNN(nleaves, TREE_DEPTH) = %u\n", n1);
 	return R_NilValue;
 }
 
 
 
 /****************************************************************************
- *                             F. PREPROCESSING                             *
+ *                             H. PREPROCESSING                             *
  ****************************************************************************/
 
 static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 {
-	int P_id, depth, dmax, nid1, nid2, linktag;
+	int P_id, depth, dmax, linktag;
+	unsigned int nid1, nid2;
 	ACnode *node1, *node2;
 
 	P_id = P_offset + 1;
 	dmax = TREE_DEPTH(tree) - 1;
-	for (depth = 0, nid1 = 0; depth <= dmax; depth++, nid1 = nid2) {
+	for (depth = 0, nid1 = 0U; depth <= dmax; depth++, nid1 = nid2) {
 		node1 = GET_NODE(tree, nid1);
 		linktag = CHAR2LINKTAG(tree, P->elts[depth]);
 		if (linktag == NA_INTEGER)
@@ -635,13 +723,13 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 			      "for pattern %d", P_id);
 		nid2 = get_ACnode_link(tree, node1, linktag);
 		if (depth < dmax) {
-			if (nid2 != -1)
+			if (nid2 != NULLNODE)
 				continue;
 			nid2 = new_ACnode(tree, depth + 1);
 			set_ACnode_link(tree, node1, linktag, nid2);
 			continue;
 		}
-		if (nid2 != -1) {
+		if (nid2 != NULLNODE) {
 			node2 = GET_NODE(tree, nid2);
 			_report_dup(P_offset, NODE_P_ID(node2));
 		} else {
@@ -663,11 +751,10 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
  *               containing the mapping from duplicated to unique patterns in
  *               the original dictionary;
  *   base_codes: the internal codes for A, C, G and T.
- *
- * See ACtree_asLIST() for a description of the returned SEXP.
  */
 
-SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
+SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes,
+		SEXP nodebuf_ptr, SEXP extbuf_ptr)
 {
 	ACtree tree;
 	int tb_length, tb_width, P_offset;
@@ -692,7 +779,8 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 				error("first element in Trusted Band "
 				      "is of length 0");
 			tb_width = P.nelt;
-			tree = new_ACtree(tb_length, tb_width, base_codes);
+			tree = new_ACtree(tb_length, tb_width, base_codes,
+					nodebuf_ptr, extbuf_ptr);
 		} else if (P.nelt != tb_width) {
 			error("element %d in Trusted Band has a different "
 			      "length than first element", P_offset + 1);
@@ -710,9 +798,7 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 	UNPROTECT(1);
 
 	/* set the "ACtree" element */
-	PROTECT(ans_elt = ACtree_asLIST(&tree));
-	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
+	SET_ELEMENT(ans, 0, R_NilValue);
 
 	/* set the "dup2unq" element */
 	PROTECT(ans_elt = _dup2unq_asINTEGER());
@@ -726,7 +812,7 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 
 
 /****************************************************************************
- *                             G. MATCH FINDING                             *
+ *                             I. MATCH FINDING                             *
  ****************************************************************************/
 
 /*
@@ -734,7 +820,7 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes)
  * This indirect recursion involves the 2 core functions walk_shortseq() and
  * transition(): the former calls the latter which in turn calls the former.
  */
-static int walk_shortseq(ACtree *tree, const char *seq, int seq_len);
+static unsigned int walk_shortseq(ACtree *tree, const char *seq, int seq_len);
 
 /*
  * A trick is to have the path from the root node to the current node 'node'
@@ -742,9 +828,10 @@ static int walk_shortseq(ACtree *tree, const char *seq, int seq_len);
  * 'node', then the path is seq_tail[-d], seq_tail[-d+1], seq_tail[-d+2], ...,
  * seq_tail[-1].
  */
-static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_tail)
+static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_tail)
 {
-	int link, flink, newpath_len;
+	unsigned int link, flink;
+	int newpath_len;
 	const char *newpath;
 /*
 #ifdef DEBUG_BIOSTRINGS
@@ -759,7 +846,7 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 		Rprintf(format, " ");
 		node_depth = NODE_DEPTH(tree, node);
 		snprintf(pathbuf, node_depth + 1, "%s", seq_tail - node_depth);
-		Rprintf("nid=%d node_depth=%d linktag=%d path=%s\n",
+		Rprintf("nid=%u node_depth=%d linktag=%d path=%s\n",
 			node - tree->nodes, node_depth, linktag, pathbuf);
 	}
 #endif
@@ -771,42 +858,42 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 		if (debug) {
 			Rprintf("[DEBUG]  LEAVING transition():");
 			Rprintf(format, " ");
-			Rprintf("link=%d\n", 0);
+			Rprintf("link=%u\n", 0U);
 		}
 		rec_level--;
 #endif
 */
-		return 0;
+		return 0U;
 	}
 	link = get_ACnode_link(tree, node, linktag);
-	if (link != -1) {
+	if (link != NULLNODE) {
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG]  LEAVING transition():");
 			Rprintf(format, " ");
-			Rprintf("link=%d\n", link);
+			Rprintf("link=%u\n", link);
 		}
 		rec_level--;
 #endif
 */
 		return link;
 	}
-	if (node == tree->nodes) {
+	if (ISROOT(node, &(tree->nodebuf))) {
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG]  LEAVING transition():");
 			Rprintf(format, " ");
-			Rprintf("link=%d\n", 0);
+			Rprintf("link=%u\n", 0U);
 		}
 		rec_level--;
 #endif
 */
-		return 0;
+		return 0U;
 	}
 	flink = get_ACnode_flink(tree, node);
-	if (flink == -1) {
+	if (flink == NULLNODE) {
 		newpath_len = NODE_DEPTH(tree, node) - 1;
 		newpath = seq_tail - newpath_len;
 		flink = walk_shortseq(tree, newpath, newpath_len);
@@ -819,7 +906,7 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
 	if (debug) {
 		Rprintf("[DEBUG]  LEAVING transition():");
 		Rprintf(format, " ");
-		Rprintf("link=%d\n", link);
+		Rprintf("link=%u\n", link);
 	}
 	rec_level--;
 #endif
@@ -831,13 +918,14 @@ static int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_t
  * Does NOT report matches. Would not find matches anyway because it's used
  * to walk on short sequences i.e. sequences with a length < TREE_DEPTH(tree).
  */
-static int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
+static unsigned int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 {
 	ACnode *node;
-	int n, linktag, nid;
+	int n, linktag;
+	unsigned int nid;
 	const char *seq_tail;
 
-	nid = 0;
+	nid = 0U;
 	for (n = 0, seq_tail = seq; n < seq_len; n++, seq_tail++) {
 		node = GET_NODE(tree, nid);
 		linktag = CHAR2LINKTAG(tree, *seq_tail);
@@ -850,7 +938,8 @@ static int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 static void walk_subject(ACtree *tree, const RoSeq *S)
 {
 	ACnode *node;
-	int n, linktag, nid;
+	int n, linktag;
+	unsigned int nid;
 	const char *S_tail;
 
 	node = GET_NODE(tree, 0);
