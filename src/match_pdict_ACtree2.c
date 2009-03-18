@@ -125,59 +125,6 @@ static void debug_node_counting_functions(int maxdepth)
 }
 #endif
 
-/*
- * OptMaxNN: Optimistic Max Needed nb of Nodes.
- * get_OptMaxNN() is a decreasing function of 'max_needed_nnodes' bounded by
- * 'max_nn' and 'min_nn2' (max_nn >= get_OptMaxNN() > min_nn2).
- */
-static unsigned int get_OptMaxNN(unsigned int max_needed_nnodes,
-		unsigned int min_needed_nnodes)
-{
-	double max_nn, min_nn2, x;
-
-	max_nn = max_needed_nnodes;
-	min_nn2 = min_needed_nnodes + 0.70 * (max_nn - min_needed_nnodes);
-	x = max_needed_nnodes / 300000000.00;
-	return (unsigned int) (min_nn2 + (max_nn - min_nn2) / (1.00 + x));
-}
-
-/*
- * MEER (Maximum Expected Extension Ratio) is the maximum nextensions/nnodes
- * ratio that is expected during the lifetime of an ACtree2 object.
- * The nextensions/nnodes ratio can only increase during the lifetime of an
- * ACtree2 object (more precisely, it can only increase when the object is
- * used to walk on new subjects). Since the cost of reallocating is high, we
- * want to preallocate the buffer of extensions (stored in the 'extensions'
- * slot of the object) once for all with the hope that its length will be
- * enough for the entire lifetime of the object. The current approach is to
- * set its length to 'nnodes * MEER'. Some simulations with real data tend to
- * indicate that most of the times this will be enough.
- * Note that when 'extbuf_length == 0.4 * nodebuf_nelt', the 'extensions'
- * slot of the ACtree2 object has the same size as its 'nodes' slot. Therefore
- * the total size for these 2 slots ('nodes' + 'extensions') is half the size
- * of the 'nodes' slot of the corresponding old ACtree object.
- * We define MEER as an increasing function of the number of nodes ('nnodes').
- */
-static double nnodes2MEER(int nnodes)
-{
-	double x;
-
-	x = nnodes / 1000000.00;
-	if (x <= 1)
-		return 1.00;
-	if (x <= 5)
-		return 0.75;
-	if (x <= 25)
-		return 0.60;
-	if (x <= 50)
-		return 0.50;
-	if (x <= 150)
-		return 0.50 - 0.10 * (x / 50 - 1);
-	if (x <= 300)
-		return 0.30 - 0.05  * (x / 150 - 1);
-	return 0.25;
-}
-
 
 
 /****************************************************************************
@@ -670,7 +617,7 @@ SEXP ACtree2_summary(SEXP pptb)
 	ACtree tree;
 	ACnode *node;
 	unsigned int nnodes, nlink_table[MAX_CHILDREN_PER_NODE+2],
-		     nid, max_nn, min_nn, n1;
+		     nid, max_nn, min_nn;
 	int nleaves, nlink;
 
 	tree = pptb_asACtree(pptb);
@@ -694,10 +641,8 @@ SEXP ACtree2_summary(SEXP pptb)
 	Rprintf("  Nb of leaf nodes (nleaves) = %d\n", nleaves);
 	max_nn = count_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
 	min_nn = count_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
-	n1 = get_OptMaxNN(max_nn, min_nn);
 	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", max_nn);
 	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", min_nn);
-	Rprintf("  - OptMaxNN(nleaves, TREE_DEPTH) = %u\n", n1);
 	return R_NilValue;
 }
 

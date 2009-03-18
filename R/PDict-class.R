@@ -218,7 +218,6 @@ setMethod("show", "ACtree2",
 setMethod("initialize", "ACtree2",
     function(.Object, tb, dup2unq0)
     {
-        base_codes <- xscodes(tb, baseOnly=TRUE)
         nodebuf_max_nblock <- .Call("ACtree2_nodebuf_max_nblock",
                                     PACKAGE="Biostrings")
         nodebuf_ptr <- .Call("IntegerBAB_new", nodebuf_max_nblock,
@@ -227,13 +226,14 @@ setMethod("initialize", "ACtree2",
                                    PACKAGE="Biostrings")
         extbuf_ptr <- .Call("IntegerBAB_new", extbuf_max_nblock,
                             PACKAGE="Biostrings")
+        base_codes <- xscodes(tb, baseOnly=TRUE)
         C_ans <- .Call("ACtree2_build",
                        tb, dup2unq0, base_codes,
                        nodebuf_ptr, extbuf_ptr,
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
-        .Object@nodebuf_ptr <- C_ans$ACtree$nodebuf_ptr
-        .Object@extbuf_ptr <- C_ans$ACtree$extbuf_ptr
+        .Object@nodebuf_ptr <- nodebuf_ptr
+        .Object@extbuf_ptr <- extbuf_ptr
         .Object@base_codes <- base_codes
         .Object
     }
