@@ -634,7 +634,7 @@ SEXP ACtree2_summary(SEXP pptb)
 	tree = pptb_asACtree(pptb);
 	nodebuf = &(tree.nodebuf);
 	nnodes = get_ACnodeBuf_nelt(nodebuf);
-	Rprintf("  Total nb of nodes = %u\n", nnodes);
+	Rprintf("| Total nb of nodes = %u\n", nnodes);
 	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
 		nlink_table[nlink] = 0U;
 	nleaves = 0;
@@ -646,15 +646,15 @@ SEXP ACtree2_summary(SEXP pptb)
 			nleaves++;
 	}
 	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
-		Rprintf("  - %u nodes (%.2f%) with %d links\n",
+		Rprintf("| - %u nodes (%.2f%) with %d links\n",
 			nlink_table[nlink],
 			100.00 * nlink_table[nlink] / nnodes,
 			nlink);
-	Rprintf("  Nb of leaf nodes (nleaves) = %d\n", nleaves);
+	Rprintf("| Nb of leaf nodes (nleaves) = %d\n", nleaves);
 	max_nn = count_max_needed_nnodes(nleaves, TREE_DEPTH(&tree));
 	min_nn = count_min_needed_nnodes(nleaves, TREE_DEPTH(&tree));
-	Rprintf("  - max_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", max_nn);
-	Rprintf("  - min_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", min_nn);
+	Rprintf("| - max_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", max_nn);
+	Rprintf("| - min_needed_nnodes(nleaves, TREE_DEPTH) = %u\n", min_nn);
 	return R_NilValue;
 }
 

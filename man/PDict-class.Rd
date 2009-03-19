@@ -98,14 +98,14 @@
 \description{
   The PDict class is a container for storing a preprocessed dictionary of DNA
   patterns that can later be passed to the \code{\link{matchPDict}} function
-  for fast matching.
+  for fast matching against a reference sequence (the subject).
 
   \code{PDict} is the constructor function for creating new PDict objects.
 }
 
 \usage{
   PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-           type="ACtree", skip.invalid.patterns=FALSE)
+           algorithm="ACtree2", skip.invalid.patterns=FALSE)
 }
 
 \arguments{
@@ -117,17 +117,11 @@
     A single non-negative integer or \code{NA}. See the "Allowing
     a small number of mismatching letters" section below.
   }
-  \item{tb.start}{
+  \item{tb.start,tb.end,tb.width}{
     A single integer or \code{NA}. See the "Trusted Band" section below.
   }
-  \item{tb.end}{
-    A single integer or \code{NA}. See the "Trusted Band" section below.
-  }
-  \item{tb.width}{
-    A single integer or \code{NA}. See the "Trusted Band" section below.
-  }
-  \item{type}{
-    \code{"ACtree"} or \code{"Twobit"}
+  \item{algorithm}{
+    \code{"ACtree2"} (the default), \code{"ACtree"} or \code{"Twobit"}.
   }
   \item{skip.invalid.patterns}{
     This argument is not supported yet (and might in fact be replaced
@@ -160,18 +154,21 @@
   number of mismatching letters, then see the "Allowing a small number
   of mismatching letters" section below.
 
-  Two types of preprocessing are currently supported: \code{type="ACtree"}
-  (the default) and \code{type="Twobit"}. With the \code{"ACtree"} type,
-  all the oligonucleotides in the Trusted Band are stored in a 4-ary
-  Aho-Corasick tree. With the \code{"Twobit"} type, the 2-bit-per-letter
+  Three preprocessing algorithms are currently supported:
+  \code{algorithm="ACtree2"} (the default), \code{algorithm="ACtree"} and
+  \code{algorithm="Twobit"}.
+  With the \code{"ACtree2"} and \code{"ACtree"} algorithms, all the
+  oligonucleotides in the Trusted Band are stored in a 4-ary Aho-Corasick
+  tree. With the \code{"Twobit"} algorithm, the 2-bit-per-letter
   signatures of all the oligonucleotides in the Trusted Band are computed
   and the mapping from these signatures to the 1-based position of the
   corresponding oligonucleotide in the Trusted Band is stored in a way that
   allows very fast lookup.
-  Only with PDict objects of type \code{"ACtree"} can \code{matchPdict} then
-  be called with \code{fixed="pattern"} (instead of \code{fixed=TRUE}, the
-  default) so that IUPAC extended letters in the subject are treated as
-  ambiguities. PDict objects of type \code{"Twobit"} don't allow this.
+  Only with PDict objects obtained with the \code{"ACtree2"} or \code{"ACtree"}
+  algos can \code{matchPdict} then be called with \code{fixed="pattern"}
+  (instead of \code{fixed=TRUE}, the default) so that IUPAC extended letters
+  in the subject are treated as ambiguities. PDict objects obtained with the
+  \code{"Twobit"} algo don't allow this.
 }
 
 \section{Trusted Band}{

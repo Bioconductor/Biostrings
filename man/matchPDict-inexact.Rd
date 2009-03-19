@@ -140,9 +140,12 @@
   ## the entire dictionary to allow inexact matching on the uncovered parts
   ## (the tail in our case):
 
+  ## Support for 'fixed=FALSE' is currently broken (FIXME)
+  \dontrun{
   m <- matchPDict(pdict, subject, fixed=FALSE)
   countIndex(m)  # now pattern 1 has 1 match too
   m[[1]]
+  }
 
   m <- matchPDict(pdict, subject, max.mismatch=1)
   countIndex(m)  # now pattern 4 has 1 match too

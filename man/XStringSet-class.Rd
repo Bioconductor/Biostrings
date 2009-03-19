@@ -109,17 +109,7 @@
     Either a character vector (with no NAs), or an \link{XString},
     XStringSet or \link{XStringViews} object.
   }
-  \item{start}{
-    Either \code{NA}, a single integer, or an integer vector of the same
-    length as \code{x} specifying how \code{x} should be "narrowed"
-    (see \code{?\link[IRanges]{narrow}} for the details).
-  }
-  \item{end}{
-    Either \code{NA}, a single integer, or an integer vector of the same
-    length as \code{x} specifying how \code{x} should be "narrowed"
-    (see \code{?\link[IRanges]{narrow}} for the details).
-  }
-  \item{width}{
+  \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
     length as \code{x} specifying how \code{x} should be "narrowed"
     (see \code{?\link[IRanges]{narrow}} for the details).

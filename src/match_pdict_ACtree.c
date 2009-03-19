@@ -356,7 +356,7 @@ SEXP ACtree_summary(SEXP pptb)
 	tag = _get_ACtree_nodes_tag(pptb);
 	node0 = (ACNode *) INTEGER(tag);
 	nnodes = LENGTH(tag) / INTS_PER_ACNODE;
-	Rprintf("Total nb of nodes = %d\n", nnodes);
+	Rprintf("| Total nb of nodes = %d\n", nnodes);
 	for (j = 0; j < 6; j++)
 		nlinks_table[j] = 0;
 	nnodes_with_P_id = 0;
@@ -370,8 +370,8 @@ SEXP ACtree_summary(SEXP pptb)
 			nnodes_with_P_id++;
 	}
 	for (j = 0; j < 6; j++)
-		Rprintf("  - %d nodes with %d links\n", nlinks_table[j], j);
-	Rprintf("Nb of leaf nodes = %d\n", nnodes_with_P_id);
+		Rprintf("| - %d nodes with %d links\n", nlinks_table[j], j);
+	Rprintf("| Nb of leaf nodes = %d\n", nnodes_with_P_id);
 	return R_NilValue;
 }
 

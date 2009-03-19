@@ -39,9 +39,9 @@ setMethod("initialize", "PreprocessedTB",
 
 .PreprocessedTB.showFirstLine <- function(x)
 {
-    cat("Preprocessed Trusted Band of length ", length(x),
-        ", width ", tb.width(x),
-        ", and type \"", class(x), "\"\n", sep="")
+    cat("Preprocessed Trusted Band\n")
+    cat("| length x width = ", length(x), " x ", tb.width(x), "\n", sep="")
+    cat("| algorithm = \"", class(x), "\"\n", sep="")
 }
 
 setMethod("duplicated", "PreprocessedTB",
@@ -56,9 +56,9 @@ setMethod("dupFrequency", "PreprocessedTB",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "Twobit" class.
 ###
-### A low-level container for storing a PreprocessedTB object (preprocessed
-### Trusted Band) of type "Twobit".
-### With this type of preprocessing, the 2-bit-per-letter signatures of all
+### A low-level container for storing the PreprocessedTB object (preprocessed
+### Trusted Band) obtained with the "Twobit" algo.
+### With this algo, the 2-bit-per-letter signatures of all
 ### the oligonucleotides in the Trusted Band are computed and the mapping
 ### from these signatures to the 1-based position of the corresponding
 ### oligonucleotide in the Trusted Band is stored in a way that allows very
@@ -77,8 +77,8 @@ setMethod("show", "Twobit",
     function(object)
     {
         .PreprocessedTB.showFirstLine(object)
-        cat("  (length of sign2pos lookup table is ",
-            length(object@sign2pos), ")\n", sep="")
+        cat("| length of sign2pos lookup table = ",
+            length(object@sign2pos), "\n", sep="")
     }
 )
 
@@ -99,9 +99,9 @@ setMethod("initialize", "Twobit",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree" class.
 ###
-### A low-level container for storing a PreprocessedTB object (preprocessed
-### Trusted Band) of type "ACtree".
-### With this type of preprocessing, all the oligonucleotides in the Trusted
+### A low-level container for storing the PreprocessedTB object (preprocessed
+### Trusted Band) obtained with the "ACtree" algo.
+### With this algo, all the oligonucleotides in the Trusted
 ### Band are stored in a 4-ary Aho-Corasick tree (note that this tree is in
 ### fact an oriented graph if we consider the failure links or the shortcut
 ### links).
@@ -186,13 +186,21 @@ setMethod("initialize", "ACtree",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree2" class.
 ###
-### A more memory efficient version of the "ACtree" container: a node can
-### occupy either 8 bytes (2 ints) or 28 bytes (7 ints) in memory, depending
-### on whether it's extended or not. Some testing with real data shows that
-### less than 10% of the nodes are typically extended right after
-### preprocessing (i.e. before any use of the PDict object), and that less
-### than 30% or 40% get extended during the typical life of the PDict object
-### (i.e. after it has been used on a full genome).
+### A low-level container for storing the PreprocessedTB object (preprocessed
+### Trusted Band) obtained with the "ACtree2" algo.
+### The "ACtree2" algo is basically the same as the "ACtree" algo but the
+### "ACtree2" container is more memory efficient than the "ACtree" container.
+### With "ACtree2" a node can occupy either 8 bytes (2 ints) or 28 bytes (7
+### ints) in memory, depending on whether it's extended or not. Some testing
+### with real data shows that less than 10% of the nodes are typically
+### extended right after preprocessing (i.e. before any use of the PDict
+### object), and that less than 30% or 40% get extended during the typical
+### life of the PDict object (i.e. after it has been used on a full genome).
+### Other advantages of "ACtree2" over "ACtree":
+###   - can store up 2^32-1 nodes (2^28 nodes for "ACtree");
+###   - nodes and node extensions are stored in buffers that can be made
+###     bigger as the need arises without reallocating/copying their current
+###     content.
 ###
 
 ### Big Atomic Buffer of integers.
@@ -285,7 +293,7 @@ setMethod("dups", "PDict3Parts",
         if (is.null(head(x)) && is.null(tail(x))) dups(x@pptb) else NULL
 )
 
-.PDict3Parts <- function(x, tb.start, tb.end, tb.width, type, pptb0)
+.PDict3Parts <- function(x, tb.start, tb.end, tb.width, algo, pptb0)
 {
     threeparts <- threebands(x, start=tb.start, end=tb.end, width=tb.width)
     head <- threeparts$left
@@ -293,7 +301,7 @@ setMethod("dups", "PDict3Parts",
     tail <- threeparts$right
     use_pptb0 <- !is.null(pptb0) &&
                  all(width(head) == 0L) && all(width(tail) == 0L) &&
-                 type == class(pptb0)
+                 algo == class(pptb0)
     if (use_pptb0) {
         pptb <- pptb0
     } else {
@@ -301,7 +309,7 @@ setMethod("dups", "PDict3Parts",
             dup2unq0 <- NULL
         else
             dup2unq0 <- dups(pptb0)@dup2unq
-        pptb <- new(type, tb, dup2unq0)
+        pptb <- new(algo, tb, dup2unq0)
     }
     new("PDict3Parts", head=head, pptb=pptb, tail=tail)
 }
@@ -384,7 +392,7 @@ setMethod("dupFrequency", "PDict",
 setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
 setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
 
-.PDict.showFirstLine <- function(x, type)
+.PDict.showFirstLine <- function(x, algo)
 {
     cat(class(x), " object of length ", length(x), sep="")
     if (x@constant_width) {
@@ -393,10 +401,9 @@ setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
     } else {
         width_info <- "variable width"
     }
-    if (length(type) == 1)
-        cat(", ", width_info, ", and type \"", type, "\"", sep="")
-    else
-        cat(" and ", width_info, sep="")
+    cat(" and ", width_info, sep="")
+    if (!is.null(algo))
+        cat(" (preprocessing algo=\"", algo, "\")", sep="")
 }
 
 
@@ -431,8 +438,8 @@ setMethod("dups", "TB_PDict",
 setMethod("show", "TB_PDict",
     function(object)
     {
-        pdict_type <- class(object@threeparts@pptb)
-        .PDict.showFirstLine(object, pdict_type)
+        algo <- class(object@threeparts@pptb)
+        .PDict.showFirstLine(object, algo)
         head <- head(object)
         tail <- tail(object)
         if (is.null(head) && is.null(tail))
@@ -469,14 +476,14 @@ setMethod("show", "TB_PDict",
     }
 )
 
-.TB_PDict <- function(x, tb.start, tb.end, tb.width, type)
+.TB_PDict <- function(x, tb.start, tb.end, tb.width, algo)
 {
     constant_width <- min(width(x)) == max(width(x))
     if (constant_width && hasOnlyBaseLetters(x))
-        pptb0 <- new(type, x, NULL)
+        pptb0 <- new(algo, x, NULL)
     else
         pptb0 <- NULL
-    threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, type, pptb0)
+    threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, algo, pptb0)
     ans <- new("TB_PDict", dict0=x,
                            constant_width=constant_width,
                            threeparts=threeparts)
@@ -523,7 +530,7 @@ setMethod("show", "MTB_PDict",
 )
 
 ### 'max.mismatch' is assumed to be an integer >= 1
-.MTB_PDict <- function(x, max.mismatch, type)
+.MTB_PDict <- function(x, max.mismatch, algo)
 {
     min.TBW <- 3L
     min_width <- min(width(x))
@@ -554,12 +561,12 @@ setMethod("show", "MTB_PDict",
                 "length of the subject)")
     all_headw <- diffinv(all_tbw)
     if (constant_width)
-        pptb0 <- new(type, x, NULL)
+        pptb0 <- new(algo, x, NULL)
     else
         pptb0 <- NULL
     threeparts_list <- lapply(seq_len(NTB),
                          function(i)
-                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1], NA, type, pptb0)
+                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1], NA, algo, pptb0)
                        )
     ans <- new("MTB_PDict", dict0=x,
                             constant_width=constant_width,
@@ -575,7 +582,7 @@ setMethod("show", "MTB_PDict",
 ###
 
 .PDict <- function(x, max.mismatch, tb.start, tb.end, tb.width,
-                      type, skip.invalid.patterns)
+                      algo, skip.invalid.patterns)
 {
     if (!is(x, "DNAStringSet"))
         x <- DNAStringSet(x)
@@ -598,8 +605,8 @@ setMethod("show", "MTB_PDict",
         stop("'tb.end' must be a single integer or 'NA'")
     if (!isSingleNumberOrNA(tb.width))
         stop("'tb.width' must be a single integer or 'NA'")
-    if (!is.character(type))
-        stop("'type' must be a character vector")
+    if (!is.character(algo))
+        stop("'algorithm' must be a character vector")
     if (!identical(skip.invalid.patterns, FALSE))
         stop("'skip.invalid.patterns' must be FALSE for now, sorry")
     is_default_TB <- is.na(tb.start) && is.na(tb.end) && is.na(tb.width)
@@ -607,42 +614,42 @@ setMethod("show", "MTB_PDict",
             stop("'tb.start', 'tb.end' and 'tb.width' must be NAs ",
                  "when 'max.mismatch' is not NA")
     if (is.na(max.mismatch) || max.mismatch == 0) {
-        .TB_PDict(x, tb.start, tb.end, tb.width, type)
+        .TB_PDict(x, tb.start, tb.end, tb.width, algo)
     } else {
         if (max.mismatch < 0)
             stop("'max.mismatch' must be 'NA' or >= 0")
-        .MTB_PDict(x, max.mismatch, type)
+        .MTB_PDict(x, max.mismatch, algo)
     }
 }
 
 setGeneric("PDict", signature="x",
     function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-                type="ACtree", skip.invalid.patterns=FALSE)
+                algorithm="ACtree2", skip.invalid.patterns=FALSE)
         standardGeneric("PDict")
 )
 
 setMethod("PDict", "character",
     function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-                type="ACtree", skip.invalid.patterns=FALSE)
+                algorithm="ACtree2", skip.invalid.patterns=FALSE)
         .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
-                  type, skip.invalid.patterns)
+                  algorithm, skip.invalid.patterns)
 )
 
 setMethod("PDict", "DNAStringSet",
     function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-                type="ACtree", skip.invalid.patterns=FALSE)
+                algorithm="ACtree2", skip.invalid.patterns=FALSE)
         .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
-                  type, skip.invalid.patterns)
+                  algorithm, skip.invalid.patterns)
 )
 
 setMethod("PDict", "XStringViews",
     function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-                type="ACtree", skip.invalid.patterns=FALSE)
+                algorithm="ACtree2", skip.invalid.patterns=FALSE)
     {
         if (!is(subject(x), "DNAString"))
             stop("'subject(x)' must be a DNAString object")
         .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
-                  type, skip.invalid.patterns)
+                  algorithm, skip.invalid.patterns)
     }
 )
 
@@ -650,8 +657,8 @@ setMethod("PDict", "XStringViews",
 ### (e.g. drosophila2probe$sequence)
 setMethod("PDict", "AsIs",
     function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-                type="ACtree", skip.invalid.patterns=FALSE)
+                algorithm="ACtree2", skip.invalid.patterns=FALSE)
         .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
-                  type, skip.invalid.patterns)
+                  algorithm, skip.invalid.patterns)
 )
 
