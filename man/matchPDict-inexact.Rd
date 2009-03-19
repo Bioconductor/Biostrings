@@ -140,7 +140,7 @@
   ## the entire dictionary to allow inexact matching on the uncovered parts
   ## (the tail in our case):
 
-  ## Support for 'fixed=FALSE' is currently broken (FIXME)
+  ## WARNING: Support for 'fixed=FALSE' is currently broken (FIXME)
   \dontrun{
   m <- matchPDict(pdict, subject, fixed=FALSE)
   countIndex(m)  # now pattern 1 has 1 match too
@@ -151,10 +151,13 @@
   countIndex(m)  # now pattern 4 has 1 match too
   m[[4]]
 
+  ## WARNING: Support for 'fixed=FALSE' is currently broken (FIXME)
+  \dontrun{
   m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
   countIndex(m)  # now pattern 3 has 1 match too
   m[[3]]  # note that this match is "out of limit"
   Views(subject, start=start(m[[3]]), end=end(m[[3]]))
+  }
 
   m <- matchPDict(pdict, subject, max.mismatch=2)
   countIndex(m)  # pattern 4 gets 1 additional match

@@ -167,7 +167,7 @@ typedef struct acnodebuf {
 	ACnode *block[ACNODEBUF_MAX_NBLOCK];
 } ACnodeBuf;
 
-#define _ISROOT(nodebuf, node) ((nodebuf)->block[0] == (node))
+#define _IS_ROOTNODE(nodebuf, node) ((nodebuf)->block[0] == (node))
 
 static ACnode *get_node_from_buf(ACnodeBuf *buf, unsigned int nid)
 {
@@ -351,7 +351,7 @@ static unsigned int new_eid(ACnodeextBuf *buf)
 #define ISEXTENDED_BIT (ISLEAF_BIT << 1) /* strongest bit for 32-bit integers */
 #define MAX_P_ID (ISLEAF_BIT - 1)  /* P_id values are encoded on 30 bits */
 
-#define ISEXTENDED(node) ((node)->attribs & ISEXTENDED_BIT)
+#define IS_EXTENDEDNODE(node) ((node)->attribs & ISEXTENDED_BIT)
 #define _NODE_DEPTH(node) ((node)->attribs & MAX_DEPTH)
 /* result of NODE_P_ID() is undefined on a non-leaf node */
 #define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
@@ -382,11 +382,17 @@ SEXP debug_match_pdict_ACtree2()
 	return R_NilValue;
 }
 
+/*
+ * Always set 'max_nodeextbuf_nelt' to 0U (no max) and 'dont_extend_nodes' to
+ * 0 during preprocessing.
+ */
 typedef struct actree {
 	int depth;  /* this is the depth of all leaf nodes */
 	ACnodeBuf nodebuf;
 	ACnodeextBuf nodeextbuf;
 	ByteTrTable char2linktag;
+	unsigned int max_nodeextbuf_nelt;  /* 0U means "no max" */
+	int dont_extend_nodes;  /* always at 0 during preprocessing */
 } ACtree;
 
 #define GET_NODEEXT(tree, eid) get_nodeext_from_buf(&((tree)->nodeextbuf), eid)
@@ -398,6 +404,14 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 	int i, linktag;
 
 	eid = new_eid(&(tree->nodeextbuf));
+	if (eid + 1U == tree->max_nodeextbuf_nelt) {
+		tree->dont_extend_nodes = 1;
+		warning("Reached max nb of node extensions (%u) so I will\n"
+			"stop extending the nodes of this ACtree2 object.\n"
+			"As a consequence not all new links and failure links will be\n"
+			"set. This might (slightly) affect speed but not the results.",
+			tree->max_nodeextbuf_nelt);
+	}
 	nodeext = GET_NODEEXT(tree, eid);
 	for (i = 0; i < MAX_CHILDREN_PER_NODE; i++)
 		nodeext->link_nid[i] = NOT_AN_ID;
@@ -408,7 +422,7 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 		nodeext->link_nid[linktag] = node->nid_or_eid;
 	}
 	node->nid_or_eid = eid;
-	/* sets the "ISEXTENDED" bit to 1 */
+	/* sets the ISEXTENDED_BIT bit to 1 */
 	node->attribs |= ISEXTENDED_BIT;
 	return;
 }
@@ -423,10 +437,10 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
  * Formal API
  */
 
-#define ISROOT(tree, node) _ISROOT(&((tree)->nodebuf), node)
-#define ISLEAF(node) ((node)->attribs & ISLEAF_BIT)
+#define IS_ROOTNODE(tree, node) _IS_ROOTNODE(&((tree)->nodebuf), node)
+#define IS_LEAFNODE(node) ((node)->attribs & ISLEAF_BIT)
 #define TREE_DEPTH(tree) ((tree)->depth)
-#define NODE_DEPTH(tree, node) (ISLEAF(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
+#define NODE_DEPTH(tree, node) (IS_LEAFNODE(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
 #define GET_NODE(tree, nid) get_node_from_buf(&((tree)->nodebuf), nid)
 #define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
 #define NEW_NODE(tree, depth) new_ACnode(tree, depth)
@@ -451,7 +465,7 @@ static unsigned int new_ACnode(ACtree *tree, int depth)
 	nodebuf = &(tree->nodebuf);
 	nid = new_nid(nodebuf);
 	node = get_node_from_buf(nodebuf, nid);
-	/* this sets the "ISEXTENDED" and "ISLEAF" bits to 0 */
+	/* this sets the ISEXTENDED_BIT and ISLEAF_BIT bits to 0 */
 	node->attribs = depth;
 	node->nid_or_eid = NOT_AN_ID;
 	return nid;
@@ -466,7 +480,7 @@ static unsigned int new_leafACnode(ACtree *tree, int P_id)
 	nodebuf = &(tree->nodebuf);
 	nid = new_nid(nodebuf);
 	node = get_node_from_buf(nodebuf, nid);
-	/* this sets the "ISEXTENDED" bit to 0 and "ISLEAF" bit to 1 */
+	/* this sets the ISEXTENDED_BIT bit to 0 and ISLEAF_BIT bit to 1 */
 	node->attribs = ISLEAF_BIT | P_id;
 	node->nid_or_eid = NOT_AN_ID;
 	return nid;
@@ -478,7 +492,7 @@ static unsigned int get_ACnode_link(ACtree *tree, ACnode *node, int linktag)
 
 	if (node->nid_or_eid == NOT_AN_ID)
 		return NOT_AN_ID;
-	if (ISEXTENDED(node)) {
+	if (IS_EXTENDEDNODE(node)) {
 		nodeext = GET_NODEEXT(tree, node->nid_or_eid);
 		return nodeext->link_nid[linktag];
 	}
@@ -504,7 +518,11 @@ static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, unsigned in
 		node->nid_or_eid = nid;
 		return;
 	}
-	if (!ISEXTENDED(node)) {
+	if (!IS_EXTENDEDNODE(node)) {
+		if (tree->dont_extend_nodes) {
+			/* NEVER during preprocessing */
+			return;
+		}
 		/* again, cannot be a leaf node (see assumption above) */
 		extend_ACnode(tree, node);
 	}
@@ -517,7 +535,7 @@ static unsigned int get_ACnode_flink(ACtree *tree, ACnode *node)
 {
 	ACnodeext *nodeext;
 
-	if (!ISEXTENDED(node))
+	if (!IS_EXTENDEDNODE(node))
 		return NOT_AN_ID;
 	nodeext = GET_NODEEXT(tree, node->nid_or_eid);
 	return nodeext->flink_nid;
@@ -527,8 +545,11 @@ static void set_ACnode_flink(ACtree *tree, ACnode *node, unsigned int nid)
 {
 	ACnodeext *nodeext;
 
-	if (!ISEXTENDED(node))
+	if (!IS_EXTENDEDNODE(node)) {
+		if (tree->dont_extend_nodes)
+			return;
 		extend_ACnode(tree, node);
+	}
 	nodeext = GET_NODEEXT(tree, node->nid_or_eid);
 	nodeext->flink_nid = nid;
 	return;
@@ -562,14 +583,32 @@ static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes,
 	tree.nodebuf = new_ACnodeBuf(nodebuf_ptr);
 	tree.nodeextbuf = new_ACnodeextBuf(nodeextbuf_ptr);
 	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
-	new_ACnode(&tree, 0);  /* create the root node */
+	tree.max_nodeextbuf_nelt = 0U;
+	tree.dont_extend_nodes = 0;
+	NEW_NODE(&tree, 0);  /* create the root node */
 	return tree;
+}
+
+static unsigned int a_nice_max_nodeextbuf_nelt(int nnodes)
+{
+	unsigned int n, rem;
+
+	/* when nb of nodeexts has reached 0.40 * nb of nodes, then the size
+	   in memory of the 2 buffers (nodebuf and nodeextbuf) is about the same */
+	n = (unsigned int) (0.40 * nnodes);
+	/* then we round up to the closer multiple of ACNODEBUF_MAX_NELT_PER_BLOCK
+           so we don't waste space in the last block */
+	rem = n % ACNODEBUF_MAX_NELT_PER_BLOCK;
+	if (rem != 0U)
+		n += ACNODEBUF_MAX_NELT_PER_BLOCK - rem;
+	return n;
 }
 
 static ACtree pptb_asACtree(SEXP pptb)
 {
 	ACtree tree;
 	SEXP base_codes;
+	unsigned int max_nelt, nelt;
 
 	tree.depth = _get_PreprocessedTB_width(pptb);
 	tree.nodebuf = new_ACnodeBuf(_get_ACtree2_nodebuf_ptr(pptb));
@@ -579,6 +618,27 @@ static ACtree pptb_asACtree(SEXP pptb)
 		error("Biostrings internal error in pptb_asACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");
 	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
+/*
+  Using max_nelt = 0U will turn off the "dont_extend_nodes" feature
+  for now. Seems like having dont_extend_nodes at 1 causes segfaults.
+  To reproduce, put
+    tree.dont_extend_nodes = 1;
+  just before the return statement below and reinstall (i.e. recompile)
+  Biostrings. Then run the following code:
+    library(Biostrings)
+    dict0 <- DNAStringSet(c("TACCNG", "TAGT", "CGGNT", "AGTAG", "TAGT"))
+    pdict <- PDict(dict0, tb.end=3)
+    subject <- DNAString("TAGTACCAGTTTCGGG")
+    m0 <- matchPDict(pdict, subject)
+    m1 <- matchPDict(pdict, subject, max.mismatch=1)
+  Is the "dont_extend_nodes" feature reasonable i.e. is it safe to
+  not set all new links and failure links? Still need to think about it.
+*/
+	//max_nelt = a_nice_max_nodeextbuf_nelt(get_ACnodeBuf_nelt(&(tree.nodebuf)));
+	max_nelt = 0U;
+	tree.max_nodeextbuf_nelt = max_nelt;
+	nelt = get_ACnodeextBuf_nelt(&(tree.nodeextbuf));
+	tree.dont_extend_nodes = max_nelt != 0U && nelt >= max_nelt;
 	return tree;
 }
 
@@ -642,7 +702,7 @@ SEXP ACtree2_summary(SEXP pptb)
 		node = get_node_from_buf(nodebuf, nid);
 		nlink = get_ACnode_nlink(&tree, node);
 		nlink_table[nlink]++;
-		if (ISLEAF(node))
+		if (IS_LEAFNODE(node))
 			nleaves++;
 	}
 	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
@@ -836,7 +896,7 @@ static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const ch
 */
 		return link;
 	}
-	if (ISROOT(tree, node)) {
+	if (IS_ROOTNODE(tree, node)) {
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
@@ -904,7 +964,7 @@ static void walk_subject(ACtree *tree, const RoSeq *S)
 		linktag = CHAR2LINKTAG(tree, *S_tail);
 		nid = transition(tree, node, linktag, S_tail);
 		node = GET_NODE(tree, nid);
-		if (ISLEAF(node))
+		if (IS_LEAFNODE(node))
 			_MIndex_report_match(NODE_P_ID(node) - 1, n);
 	}
 	return;
