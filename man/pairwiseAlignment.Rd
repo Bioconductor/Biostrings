@@ -55,12 +55,12 @@ pairwiseAlignment(pattern, subject, \dots)
       \code{"local-global"} = align whole strings without end gap penalties on
         \code{pattern} and with end gap penalties on \code{subject}.}
   \item{substitutionMatrix}{substitution matrix representing the fixed
-    substitution scores for an alignment.. It cannot be used in conjunction with
+    substitution scores for an alignment. It cannot be used in conjunction with
     \code{patternQuality} and \code{subjectQuality} arguments.}
   \item{fuzzyMatrix}{fuzzy match matrix for quality-based alignments. It takes
     values between 0 and 1; where 0 is an unambiguous mismatch, 1 is an
     unambiguous match, and values in between represent a fraction of
-    "matchiness".}
+    "matchiness". (See details section below.)}
   \item{gapOpening}{the cost for opening a gap in the alignment.}
   \item{gapExtension}{the incremental cost incurred along the length of the gap
     in the alignment.}
@@ -70,6 +70,25 @@ pairwiseAlignment(pattern, subject, \dots)
     methods.}
 }
 \details{
+Quality-based alignments are based on the paper the Bioinformatics article by
+Ketil Malde listed in the Reference section below. Let \eqn{\epsilon_i} be the
+probability of an error in the base read. For \code{"Phred"} quality measures
+\eqn{Q} in \eqn{[0, 99]}, these error probabilities are given by
+\eqn{\epsilon_i = 10^{-Q/10}}. For \code{"Solexa"} quality measures \eqn{Q} in
+\eqn{[-5, 99]}, they are given by \eqn{\epsilon_i = 1 - 1/(1 + 10^{-Q/10})}.
+Assuming independence within and between base reads, the combined error
+probability of a mismatch when the underlying bases do match is
+\eqn{\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2},
+where \eqn{n} is the number of letters in the underlying alphabet. Using
+\eqn{\epsilon_c}, the substitution score is given by when two bases match is given by
+\eqn{b * \log_2(\gamma_{x,y} * (1 - \epsilon_c) * n + (1 - \gamma_{x,y}) * \epsilon_c * (n/(n-1)))},
+where \eqn{b} is the bit-scaling for the scoring and \eqn{\gamma_{x,y}} is the
+probability that characters \eqn{x} and \eqn{y} represents the same underlying
+information (e.g. using IUPAC, \eqn{\gamma_{A,A} = 1} and \eqn{\gamma_{A,N} = 1/4}.
+In the arguments listed above \code{fuzzyMatch} represents \eqn{\gamma_{x,y}}
+and \code{patternQuality} and \code{subjectQuality} represents \eqn{\epsilon_1}
+and \eqn{\epsilon_2} respectively.
+
 If \code{scoreOnly == FALSE}, the pairwise alignment with the maximum alignment
 score is returned. If more than one pairwise alignment has the maximum alignment
 score exists, the first alignment along the subject is returned. If there are
@@ -78,10 +97,6 @@ subject location, then at each location along the alignment mismatches are given
 preference to insertions/deletions. For example, \code{pattern: [1] ATTA;
 subject: [1] AT-A} is chosen above \code{pattern: [1] ATTA; subject: [1] A-TA}
 if they both have the maximum alignment score.
-
-General implementation based on Chapter 2 of Haubold and Wiehe (2006).
-Quality-based method for generating a substitution matrix based on the
-Bioinformatics article by Ketil Malde given below.
 }
 \value{
 If \code{scoreOnly == FALSE}, an instance of class
@@ -99,7 +114,7 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics 2
 }
 \note{
 Use \code{\link{matchPattern}} or \code{\link{vmatchPattern}} if you need to
-find all the occurences (eventually with indels) of a given pattern in a
+find all the occurrences (eventually with indels) of a given pattern in a
 reference sequence or set of sequences.
 
 Use \code{\link{matchPDict}} if you need to match a (big) set of patterns
@@ -135,6 +150,20 @@ against a reference sequence.
                     subjectQuality = SolexaQuality(rep(c(22L, 12L), times = c(40, 20))),
                     scoreOnly = TRUE)
 
+  # Now assume can't distinguish between C/T and G/A
+  pairwiseAlignment(s1, s2,
+                    patternQuality = SolexaQuality(rep(c(22L, 12L), times = c(36, 18))),
+                    subjectQuality = SolexaQuality(rep(c(22L, 12L), times = c(40, 20))),
+                    type = "local")
+  mapping <- diag(4)
+  dimnames(mapping) <- list(DNA_BASES, DNA_BASES)
+  mapping["C", "T"] <- mapping["T", "C"] <- 1
+  mapping["G", "A"] <- mapping["A", "G"] <- 1
+  pairwiseAlignment(s1, s2,
+                    patternQuality = SolexaQuality(rep(c(22L, 12L), times = c(36, 18))),
+                    subjectQuality = SolexaQuality(rep(c(22L, 12L), times = c(40, 20))),
+                    fuzzyMatrix = mapping,
+                    type = "local")
 
   ## Amino acid global alignment
   pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = "BLOSUM50",
