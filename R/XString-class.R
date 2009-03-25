@@ -119,15 +119,6 @@ XString.append <- function(x, y)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
-
-setMethod("toString", "XString", function(x, ...) as.character(x))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions used by the versatile constructors below.
 ###
 
@@ -209,6 +200,33 @@ RNAString <- function(x, start=1, nchar=NA)
 
 AAString <- function(x, start=1, nchar=NA)
     XString("AA", x, start=start, width=nchar)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+setAs("XString", "BString",
+    function(from) {xsbasetype(from) <- "B"; from}
+)
+setAs("XString", "DNAString",
+    function(from) {xsbasetype(from) <- "DNA"; from}
+)
+setAs("XString", "RNAString",
+    function(from) {xsbasetype(from) <- "RNA"; from}
+)
+setAs("XString", "AAString",
+    function(from) {xsbasetype(from) <- "AA"; from}
+)
+
+setAs("character", "BString", function(from) BString(from))
+setAs("character", "DNAString", function(from) DNAString(from))
+setAs("character", "RNAString", function(from) RNAString(from))
+setAs("character", "AAString", function(from) AAString(from))
+
+setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
+
+setMethod("toString", "XString", function(x, ...) as.character(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

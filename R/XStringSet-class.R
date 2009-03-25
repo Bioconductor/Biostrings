@@ -280,7 +280,7 @@ setReplaceMethod("xsbasetype", "XStringSet",
 .XStringToXStringSet <- function(x, start, end, width, use.names, basetype)
 {
     class <- paste(basetype, "StringSet", sep="")
-    ans_super <- subseq(x, start=start, end=end, width=width)
+    ans_super <- XString(basetype, x, start=start, end=end, width=width)
     ans_ranges <- new2("IRanges", start=1L, width=length(ans_super), check=FALSE)
     unsafe.newXStringSet(class, ans_super, ans_ranges)
 }
@@ -369,6 +369,11 @@ setAs("character", "BStringSet", function(from) BStringSet(from))
 setAs("character", "DNAStringSet", function(from) DNAStringSet(from))
 setAs("character", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("character", "AAStringSet", function(from) AAStringSet(from))
+
+setAs("XString", "BStringSet", function(from) BStringSet(from))
+setAs("XString", "DNAStringSet", function(from) DNAStringSet(from))
+setAs("XString", "RNAStringSet", function(from) RNAStringSet(from))
+setAs("XString", "AAStringSet", function(from) AAStringSet(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

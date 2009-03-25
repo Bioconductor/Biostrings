@@ -53,9 +53,6 @@
     return(2)
 }
 
-### TODO: Calls to as() below will fail because some coercion methods are
-### missing! In particular, methods for coercing any subtype of XString
-### to any subtype of XStringSet are missing. FIXME: add these methods!
 xscat <- function(...)
 {
     if (length(list(...)) == 0)

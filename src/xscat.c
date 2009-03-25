@@ -5,15 +5,51 @@
 
 /*
  * --- .Call ENTRY POINT ---
+ * Arguments:
+ *   args: a non-empty list of XString objects of the same XString base type
+ *         (see R/xsbasetype.R).
  */
 SEXP XString_xscat(SEXP args)
 {
-	error("IMPLEMENT ME!");
-	return R_NilValue;
+	int nargs, ans_length, write_start, j;
+	SEXP arg, ans;
+	const char *ans_classname;
+	RoSeq seq;
+
+	nargs = LENGTH(args);
+	if (nargs == 0)
+		error("XString_xscat(): no arg provided");
+
+	/* 1st pass: determine 'ans_classname' and 'ans_length' */
+	for (j = 0; j < nargs; j++) {
+		arg = VECTOR_ELT(args, j);
+		seq = _get_XString_asRoSeq(arg);
+		if (j == 0) {
+			ans_length = seq.nelt;
+			ans_classname = get_classname(arg);
+		} else {
+			ans_length += seq.nelt;
+		}
+	}
+	PROTECT(ans = _alloc_XString(ans_classname, ans_length));
+
+	/* 2nd pass: fill 'ans' */
+	write_start = 1;
+	for (j = 0; j < nargs; j++) {
+		arg = VECTOR_ELT(args, j);
+		seq = _get_XString_asRoSeq(arg);
+		_write_RoSeq_to_XString(ans, write_start, &seq, 0);
+		write_start += seq.nelt;
+	}
+	UNPROTECT(1);
+	return ans;
 }
 
 /*
  * --- .Call ENTRY POINT ---
+ * Arguments:
+ *   args: a non-empty list of XStringSet objects of the same XString base
+ *         type (see R/xsbasetype.R).
  */
 SEXP XStringSet_xscat(SEXP args)
 {
@@ -25,9 +61,13 @@ SEXP XStringSet_xscat(SEXP args)
 	RoSeq seq;
 
 	nargs = LENGTH(args);
+	if (nargs == 0)
+		error("XStringSet_xscat(): no arg provided");
 	cached_args = Salloc((long) nargs, CachedXStringSet);
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
+
+	/* 1st pass: determine 'ans_length', 'ans_classname' and 'ans_baseClass' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
 		cached_args[j] = _new_CachedXStringSet(arg);
@@ -43,6 +83,9 @@ SEXP XStringSet_xscat(SEXP args)
 	}
 	PROTECT(ans_ranges_start = NEW_INTEGER(ans_length));
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
+
+	/* 2nd pass: fill 'ans_ranges_start' and 'ans_width'
+	             and determine 'ans_super_length' */
 	ans_super_length = 0;
 	for (j = 0; j < nargs; j++)
 		ii[j] = 0;
@@ -62,6 +105,8 @@ SEXP XStringSet_xscat(SEXP args)
 		ans_super_length += *width;
 	}
 	PROTECT(ans_super = _alloc_XString(ans_baseClass, ans_super_length));
+
+	/* 3rd pass: fill 'ans_super' */
 	write_start = 1;
 	for (j = 0; j < nargs; j++)
 		ii[j] = 0;
@@ -75,6 +120,8 @@ SEXP XStringSet_xscat(SEXP args)
 			ii[j]++;
 		}
 	}
+
+	/* Put 'ans' pieces together */
 	PROTECT(ans_ranges = new_IRanges("IRanges",
 				ans_ranges_start,
 				ans_width,

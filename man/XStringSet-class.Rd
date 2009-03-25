@@ -42,6 +42,10 @@
 \alias{coerce,character,DNAStringSet-method}
 \alias{coerce,character,RNAStringSet-method}
 \alias{coerce,character,AAStringSet-method}
+\alias{coerce,XString,BStringSet-method}
+\alias{coerce,XString,DNAStringSet-method}
+\alias{coerce,XString,RNAStringSet-method}
+\alias{coerce,XString,AAStringSet-method}
 
 \alias{show,XStringSet-method}
 

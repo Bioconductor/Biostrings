@@ -23,6 +23,14 @@
 \alias{xsbasetype,RNAString-method}
 \alias{xsbasetype,AAString-method}
 \alias{xsbasetype<-,XString-method}
+\alias{coerce,XString,BString-method}
+\alias{coerce,XString,DNAString-method}
+\alias{coerce,XString,RNAString-method}
+\alias{coerce,XString,AAString-method}
+\alias{coerce,character,BString-method}
+\alias{coerce,character,DNAString-method}
+\alias{coerce,character,RNAString-method}
+\alias{coerce,character,AAString-method}
 \alias{as.character,XString-method}
 \alias{toString,XString-method}
 
