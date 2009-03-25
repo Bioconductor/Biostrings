@@ -3,11 +3,13 @@
 \alias{xscat}
 
 
-\title{Concatenate sequences contained in XString and/or XStringSet objects}
+\title{Concatenate sequences contained in XString, XStringSet
+  and/or XStringViews objects}
 
 \description{
   This function mimics the semantic of \code{paste(..., sep="")}
-  but for \link{XString} or \link{XStringSet} objects.
+  but accepts \link{XString}, \link{XStringSet} or \link{XStringViews}
+  arguments and returns an \link{XString} or \link{XStringSet} object.
 }
 
 \usage{
@@ -16,20 +18,40 @@
 
 \arguments{
   \item{\dots}{
-    One or more \link{XString} and/or \link{XStringSet} objects.
+    One or more character vectors (with no NAs), \link{XString},
+    \link{XStringSet} or \link{XStringViews} objects.
   }
+}
+
+\value{
+  An \link{XString} object if all the arguments are either \link{XString}
+  objects or character strings.
+  An \link{XStringSet} object otherwise.
 }
 
 \seealso{
   \link{XString-class},
   \link{XStringSet-class},
+  \link{XStringViews-class},
   \code{\link[base]{paste}}
 }
 
 \examples{
-  ## Arguments are recycled to the length of the longest argument:
-  xscat("a", LETTERS, c("1", "12", "123")) 
+  ## Return a BString object:
+  xscat(BString("abc"), BString("EF"))
+  xscat(BString("abc"), "EF")
+  xscat("abc", "EF")
 
+  ## Return a BStringSet object:
+  xscat(BStringSet("abc"), "EF")
+
+  ## Return a DNAStringSet object:
+  xscat(c("t", "a"), DNAString("N"))
+
+  ## Arguments are recycled to the length of the longest argument:
+  xscat("x", LETTERS, c("3", "44", "555")) 
+
+  ## Concatenating big XStringSet objects:
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe$sequence)
   mm <- complement(narrow(probes, start=13, end=13))

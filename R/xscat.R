@@ -1,73 +1,75 @@
 ### =========================================================================
 ### The xscat() function
 ### -------------------------------------------------------------------------
+###
 
-### All args must be character data i.e. character vectors (with no NAs)
-### or XString/XStringSet/XStringViews/MaskedXString objects.
-.get_xscat_ans_subtype <- function(...)
-{
-    getSubtype <- function(arg)
-    {
-        if (is.character(arg))
-            return("BString")
-        subtype <- try(xsbaseclass(arg), silent=TRUE)
-        if (is(subtype, "try-error"))
-            stop("all xscat() arguments must be character data i.e. character ",
-                 "vectors or XString/XStringSet/XStringViews/MaskedXString ",
-                 "objects")
-        subtype
-    }
-    subtypes <- unique(sapply(list(...), getSubtype))
-    ans_subtype <- setdiff(subtypes, "BString")
-    if (length(ans_subtype) >= 2)
-        stop("xscat() cannot mix ", ans_subtype[1],
-             " and ", ans_subtype[2], " input")
-    if (length(ans_subtype) == 0)
-        ans_subtype <- "BString"
-    ans_subtype
-}
-
-### Determine the cardinality of the answer:
+### Check the types of the arguments and determine the cardinality of the
+### answer:
 ###   if 0 => empty XStringSet
 ###   if 1 => XString
 ###   if >= 2 => XStringSet
 .get_xscat_ans_cardinality <- function(...)
 {
-    getcard <- function(arg)
+    get_arg_cardinality <- function(arg)
     {
         if (is.character(arg))
             return(length(arg))
-        if (is(arg, "XString") || is(arg, "MaskedXString"))
-            return(1)
-        ## from here, arg is either XStringSet or XStringViews
-        if (length(arg) == 0) 0 else 2  # yes return 2, even if length(arg) == 1
+        if (is(arg, "XString"))
+            return(1L)
+        if (is(arg, "XStringSet") || is(arg, "XStringViews")) {
+            if (length(arg) == 0L)
+                return(0L)
+            return(2L)  # yes return 2, even if length(arg) == 1
+        }
+        stop("xscat() arguments must be character vectors (with no NAs) ",
+             "or XString/XStringSet/XStringViews objects")
     }
-    cards <- sapply(list(...), getcard)
-    if (all(cards == 0))
-        return(0)
-    if (any(cards == 0))
+    arg_cards <- sapply(list(...), get_arg_cardinality)
+    if (all(arg_cards == 0L))
+        return(0L)
+    if (any(arg_cards == 0L))
         stop("xscat() cannot mix arguments made of 0 sequence with arguments ",
              "made of 1 or more sequences")
-    if (all(cards == 1))
-        return(1)
-    return(2)
+    if (all(arg_cards == 1L))
+        return(1L)
+    return(2L)
+}
+
+.get_xscat_ans_basetype <- function(...)
+{
+    get_arg_basetype <- function(arg)
+    {
+        if (is.character(arg)) "B" else xsbasetype(arg)
+    }
+    arg_basetypes <- unique(sapply(list(...), get_arg_basetype))
+    ans_basetype <- setdiff(arg_basetypes, "B")
+    if (length(ans_basetype) >= 2)
+        stop("xscat() cannot mix ", ans_basetype[1],
+             " and ", ans_basetype[2], " input")
+    if (length(ans_basetype) == 0)
+        ans_basetype <- "B"
+    ans_basetype
 }
 
 xscat <- function(...)
 {
     if (length(list(...)) == 0)
         stop("no input")
-    ans_type <- .get_xscat_ans_subtype(...)
     ans_card <- .get_xscat_ans_cardinality(...)
-    if (ans_card != 1) {
-        ans_type <- paste(ans_type, "Set", sep="")
-        if (ans_card == 0)
-            return(as(character(0), ans_type))
+    ans_basetype <- .get_xscat_ans_basetype(...)
+    if (ans_card == 1L) {
+        ans_class <- paste(ans_basetype, "String", sep="")
+    } else {
+        ans_class <- paste(ans_basetype, "StringSet", sep="")
+        if (ans_card == 0L)
+            return(as(character(0), ans_class))
     }
     args <- lapply(list(...),
                    function(arg)
-                       if (is(arg, ans_type)) arg else as(arg, ans_type))
-    if (ans_card == 1) {
+                   {
+                       if (is(arg, ans_class)) arg else as(arg, ans_class)
+                   })
+    if (ans_card == 1L) {
         .Call("XString_xscat", args, PACKAGE="Biostrings")
     } else {
         .Call("XStringSet_xscat", args, PACKAGE="Biostrings")

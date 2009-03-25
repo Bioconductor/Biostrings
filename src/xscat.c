@@ -18,7 +18,7 @@ SEXP XString_xscat(SEXP args)
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
-		error("XString_xscat(): no arg provided");
+		error("XString_xscat(): no input");
 
 	/* 1st pass: determine 'ans_classname' and 'ans_length' */
 	for (j = 0; j < nargs; j++) {
@@ -62,7 +62,7 @@ SEXP XStringSet_xscat(SEXP args)
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
-		error("XStringSet_xscat(): no arg provided");
+		error("XStringSet_xscat(): no input");
 	cached_args = Salloc((long) nargs, CachedXStringSet);
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
