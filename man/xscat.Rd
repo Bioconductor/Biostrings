@@ -64,7 +64,9 @@
   ## Collapsing an XStringSet (or XStringViews) object with a small
   ## number of elements:
   probes1000 <- as.list(probes[1:1000])
-  do.call(xscat, probes1000)
+  y1 <- do.call(xscat, probes1000)
+  y2 <- do.call(c, probes1000)  # slightly faster than the above
+  y1 == y2  # TRUE
   ## Note that this method won't be efficient when the number of
   ## elements to collapse is big (> 10000) so we need to provide a
   ## collapse() (or xscollapse()) function in Biostrings that will
