@@ -29,6 +29,8 @@
   An \link{XStringSet} object otherwise.
 }
 
+\author{H. Pages}
+
 \seealso{
   \link{XString-class},
   \link{XStringSet-class},
