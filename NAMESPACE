@@ -275,7 +275,7 @@ exportClasses(
     QualityScaledBStringSet, QualityScaledDNAStringSet,
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     InDel,
-    AlignedXStringSet, QualityAlignedXStringSet,
+    AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
     PairwiseAlignedFixedSubjectSummary
 )

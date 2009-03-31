@@ -2,48 +2,29 @@
 ### AlignedXStringSet objects
 ### -------------------------------------------------------------------------
 ### An AlignedXStringSet object contains an alignment.
+###
+### NOTE: Because the 'unaligned' slot of an AlignedXStringSet object
+### must not be a QualityScaledXStringSet object (see Validity below), then
+### the QualityAlignedXStringSet class cannot contain the AlignedXStringSet
+### class. Otherwise, any QualityAlignedXStringSet object would be invalid!
 
-
-setClass("AlignedXStringSet",
+setClass("AlignedXStringSet0",
     representation(
+        "VIRTUAL",
         unaligned="XStringSet",
         range="IRanges",
-        mismatch = "IntegerList",
+        mismatch="IntegerList",
         indel="IRangesList"
     )
 )
 
-setClass("QualityAlignedXStringSet", contains="AlignedXStringSet")
+setClass("AlignedXStringSet", contains="AlignedXStringSet0")
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
-###
-
-setMethod("initialize", "AlignedXStringSet",
-    function(.Object, unaligned, range, mismatch, indel, check = TRUE)
-    {
-        if (is(unaligned, "QualityScaledXStringSet"))
-            stop("'unaligned' must not be of class 'QualityScaledXStringSet'")
-        slot(.Object, "unaligned", check = check) <- unaligned
-        slot(.Object, "range", check = check) <- range
-        slot(.Object, "mismatch", check = check) <- mismatch
-        slot(.Object, "indel", check = check) <- indel
-        .Object
-    }
-)
-
-setMethod("initialize", "QualityAlignedXStringSet",
-    function(.Object, unaligned, range, mismatch, indel, check = TRUE)
-    {
-        if (!is(unaligned, "QualityScaledXStringSet"))
-            stop("'unaligned' must be of class 'QualityScaledXStringSet'")
-        slot(.Object, "unaligned", check = check) <- unaligned
-        slot(.Object, "range", check = check) <- range
-        slot(.Object, "mismatch", check = check) <- mismatch
-        slot(.Object, "indel", check = check) <- indel
-        .Object
-    }
+setClass("QualityAlignedXStringSet",
+    contains="AlignedXStringSet0",
+    representation(
+        unaligned="QualityScaledXStringSet"
+    )
 )
 
 
@@ -51,19 +32,31 @@ setMethod("initialize", "QualityAlignedXStringSet",
 ### Validity.
 ###
 
-.valid.AlignedXStringSet <- function(object)
+.valid.AlignedXStringSet0 <- function(object)
 {
-    message <- character(0)
+    message <- NULL
     if (length(object@range) != length(mismatch(object)))
         message <- c(message, "length(range) != length(mismatch)")
     if (length(mismatch(object)) != length(indel(object)))
         message <- c(message, "length(mismatch) != length(indel)")
     if (!(length(object@unaligned) %in% c(1, length(object@range))))
         message <- c(message, "length(unaligned) != 1 or length(range)")
+    message
+}
+
+setValidity("AlignedXStringSet0",
+    function(object)
+    {
+        problems <- .valid.AlignedXStringSet0(object)
+        if (is.null(problems)) TRUE else problems
+    }
+)
+
+.valid.AlignedXStringSet <- function(object)
+{
+    message <- NULL
     if (is(object@unaligned, "QualityScaledXStringSet"))
-        message <- c(message, "'unaligned' must not be of class 'QualityScaledXStringSet'")
-    if (length(message) == 0)
-        message <- NULL
+        message <- c(message, "'unaligned' must not be a QualityScaledXStringSet object")
     message
 }
 
@@ -77,19 +70,11 @@ setValidity("AlignedXStringSet",
 
 .valid.QualityAlignedXStringSet <- function(object)
 {
-    message <- character(0)
-    if (length(object@range) != length(mismatch(object)))
-        message <- c(message, "length(range) != length(mismatch)")
-    if (length(mismatch(object)) != length(indel(object)))
-        message <- c(message, "length(mismatch) != length(indel)")
-    if (!(length(object@unaligned) %in% c(1, length(object@range))))
-        message <- c(message, "length(unaligned) != 1 or length(range)")
-    if (!(length(object@quality) %in% c(1, length(object@range))))
-        message <- c(message, "length(quality) != 1 or length(range)")
-    if (!is(object@unaligned, "QualityScaledXStringSet"))
-        message <- c(message, "'unaligned' must be of class 'QualityScaledXStringSet'")
-    if (length(message) == 0)
-        message <- NULL
+    message <- NULL
+    ## FIXME: surely something different is meant here because the
+    ## QualityAlignedXStringSet class has no 'quality' slot!
+    #if (!(length(object@quality) %in% c(1, length(object@range))))
+    #    message <- c(message, "length(quality) != 1 or length(range)")
     message
 }
 
@@ -101,15 +86,16 @@ setValidity("QualityAlignedXStringSet",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
 setGeneric("unaligned", function(x) standardGeneric("unaligned"))
-setMethod("unaligned", "AlignedXStringSet", function(x) x@unaligned)
+setMethod("unaligned", "AlignedXStringSet0", function(x) x@unaligned)
 
 setGeneric("aligned", function(x, ...) standardGeneric("aligned"))
-setMethod("aligned", "AlignedXStringSet",
+setMethod("aligned", "AlignedXStringSet0",
           function(x, degap = FALSE) {
               if (degap) {
                   if (length(unaligned(x)) == 1) {
@@ -134,17 +120,17 @@ setMethod("aligned", "AlignedXStringSet",
               value
           })
 
-setMethod("start", "AlignedXStringSet", function(x) start(x@range))
-setMethod("end", "AlignedXStringSet", function(x) end(x@range))
-setMethod("width", "AlignedXStringSet", function(x) width(x@range))
+setMethod("start", "AlignedXStringSet0", function(x) start(x@range))
+setMethod("end", "AlignedXStringSet0", function(x) end(x@range))
+setMethod("width", "AlignedXStringSet0", function(x) width(x@range))
 setGeneric("indel", function(x) standardGeneric("indel"))
-setMethod("indel", "AlignedXStringSet", function(x) x@indel)
+setMethod("indel", "AlignedXStringSet0", function(x) x@indel)
 setGeneric("nindel", function(x) standardGeneric("nindel"))
-setMethod("nindel", "AlignedXStringSet", function(x) summary(indel(x)))
-setMethod("length", "AlignedXStringSet", function(x) length(x@range))
-setMethod("nchar", "AlignedXStringSet",
+setMethod("nindel", "AlignedXStringSet0", function(x) summary(indel(x)))
+setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
+setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
-setMethod("xsbasetype", "AlignedXStringSet", function(x) xsbasetype(unaligned(x)))
+setMethod("xsbasetype", "AlignedXStringSet0", function(x) xsbasetype(unaligned(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -154,7 +140,7 @@ setMethod("xsbasetype", "AlignedXStringSet", function(x) xsbasetype(unaligned(x)
 ### TODO: Make the "show" method to format the alignment in a SGD fashion
 ### i.e. split in 60-letter blocks and use the "|" character to highlight
 ### exact matches.
-setMethod("show", "AlignedXStringSet",
+setMethod("show", "AlignedXStringSet0",
     function(object)
     {
         if (length(object) == 0)
@@ -176,21 +162,21 @@ setMethod("show", "AlignedXStringSet",
 ### The "as.character" method.
 ###
 
-setMethod("as.character", "AlignedXStringSet",
+setMethod("as.character", "AlignedXStringSet0",
     function(x)
     {
         as.character(aligned(x))
     }
 )
 
-setMethod("toString", "AlignedXStringSet", function(x, ...) toString(as.character(x), ...))
+setMethod("toString", "AlignedXStringSet0", function(x, ...) toString(as.character(x), ...))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
 
-setMethod("[", "AlignedXStringSet",
+setMethod("[", "AlignedXStringSet0",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -203,41 +189,21 @@ setMethod("[", "AlignedXStringSet",
             stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        new("AlignedXStringSet",
+        new(class(x),
             unaligned = .safe.subset.XStringSet(x@unaligned, i),
             range = x@range[i,,drop = FALSE],
             mismatch = x@mismatch[i], indel = x@indel[i])
     }
 )
 
-setMethod("[", "QualityAlignedXStringSet",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i) || (is.logical(i) && all(i)))
-            return(x)
-        if (is.logical(i))
-            i <- which(i)
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("invalid subsetting")
-        if (any(i < 1) || any(i > length(x)))
-            stop("subscript out of bounds")
-        new("QualityAlignedXStringSet",
-            unaligned = .safe.subset.XStringSet(x@unaligned, i),
-            range = x@range[i,,drop = FALSE],
-            mismatch = x@mismatch[i], indel = x@indel[i])
-    }
-)
-
-setReplaceMethod("[", "AlignedXStringSet",
+setReplaceMethod("[", "AlignedXStringSet0",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
 
-setMethod("rep", "AlignedXStringSet",
+setMethod("rep", "AlignedXStringSet0",
     function(x, times)
 		x[rep.int(seq_len(length(x)), times)]
 )

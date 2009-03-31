@@ -6,8 +6,8 @@
 
 setClass("PairwiseAlignedXStringSet",
     representation(
-        pattern="AlignedXStringSet",
-        subject="AlignedXStringSet",
+        pattern="AlignedXStringSet0",
+        subject="AlignedXStringSet0",
         type="character",
         score="numeric",
         substitutionArray="array",
@@ -224,56 +224,22 @@ setMethod("PairwiseAlignedXStringSet", signature(pattern = "character", subject 
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
-###
-
-setMethod("initialize", "PairwiseAlignedXStringSet",
-    function(.Object, pattern, subject, type, score, substitutionArray,
-             gapOpening, gapExtension, check = TRUE)
-    {
-        if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
-            stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
-        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "global-local", "local-global")))
-            stop("'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
-        if (length(pattern) != length(subject))
-            stop("'length(pattern)' must equal 'length(subject)'")
-        gapOpening <- as.double(- abs(gapOpening))
-        if (length(gapOpening) != 1 || is.na(gapOpening))
-            stop("'gapOpening' must be a non-positive numeric vector of length 1")
-        gapExtension <- as.double(- abs(gapExtension))
-        if (length(gapExtension) != 1 || is.na(gapExtension))
-            stop("'gapExtension' must be a non-positive numeric vector of length 1")
-        slot(.Object, "pattern", check = check) <- pattern
-        slot(.Object, "subject", check = check) <- subject
-        slot(.Object, "type", check = check) <- type
-        slot(.Object, "score", check = check) <- score
-        slot(.Object, "substitutionArray", check = check) <- substitutionArray
-        slot(.Object, "gapOpening", check = check) <- gapOpening
-        slot(.Object, "gapExtension", check = check) <- gapExtension
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
 
 .valid.PairwiseAlignedXStringSet <- function(object)
 {
-    message <- character(0)
+    message <- NULL
     if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
         message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
     if (length(pattern) != length(subject))
         message <- c(message, "'length(pattern)' must equal 'length(subject)'")
-    if (length(object@gapOpening) != 1 || is.na(object@gapOpening))
+    if (!isSingleNumber(object@gapOpening) || object@gapOpening > 0)
         message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
-    if (length(object@gapExtension) != 1 || is.na(object@gapExtension))
+    if (!isSingleNumber(object@gapExtension) || object@gapExtension > 0)
         message <- c(message, "'gapExtension' must be a non-positive numeric vector of length 1")
-    if (length(message) == 0)
-        message <- NULL
     message
 }
 

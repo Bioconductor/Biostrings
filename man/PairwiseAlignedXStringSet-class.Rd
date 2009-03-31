@@ -13,12 +13,10 @@
 \alias{PairwiseAlignedFixedSubjectSummary}
 
 % Constructor-like functions and generics:
-\alias{initialize,PairwiseAlignedXStringSet-method}
 \alias{PairwiseAlignedXStringSet,XString,XString-method}
 \alias{PairwiseAlignedXStringSet,XStringSet,missing-method}
 \alias{PairwiseAlignedXStringSet,character,missing-method}
 \alias{PairwiseAlignedXStringSet,character,character-method}
-\alias{initialize,PairwiseAlignedFixedSubject-method}
 \alias{PairwiseAlignedFixedSubject,XString,XString-method}
 \alias{PairwiseAlignedFixedSubject,XStringSet,missing-method}
 \alias{PairwiseAlignedFixedSubject,character,missing-method}

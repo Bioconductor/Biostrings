@@ -2,6 +2,9 @@
 \docType{class}
 
 % Classes
+\alias{class:AlignedXStringSet0}
+\alias{AlignedXStringSet0-class}
+\alias{AlignedXStringSet0}
 \alias{class:AlignedXStringSet}
 \alias{AlignedXStringSet-class}
 \alias{AlignedXStringSet}
@@ -9,34 +12,29 @@
 \alias{QualityAlignedXStringSet-class}
 \alias{QualityAlignedXStringSet}
 
-% Constructor-like functions and generics:
-\alias{initialize,AlignedXStringSet-method}
-\alias{initialize,QualityAlignedXStringSet-method}
-
 % Accesor methods:
 \alias{unaligned}
-\alias{unaligned,AlignedXStringSet-method}
+\alias{unaligned,AlignedXStringSet0-method}
 \alias{aligned}
-\alias{aligned,AlignedXStringSet-method}
-\alias{start,AlignedXStringSet-method}
-\alias{end,AlignedXStringSet-method}
-\alias{width,AlignedXStringSet-method}
+\alias{aligned,AlignedXStringSet0-method}
+\alias{start,AlignedXStringSet0-method}
+\alias{end,AlignedXStringSet0-method}
+\alias{width,AlignedXStringSet0-method}
 \alias{indel}
-\alias{indel,AlignedXStringSet-method}
+\alias{indel,AlignedXStringSet0-method}
 \alias{nindel}
-\alias{nindel,AlignedXStringSet-method}
-\alias{length,AlignedXStringSet-method}
-\alias{nchar,AlignedXStringSet-method}
-\alias{xsbasetype,AlignedXStringSet-method}
+\alias{nindel,AlignedXStringSet0-method}
+\alias{length,AlignedXStringSet0-method}
+\alias{nchar,AlignedXStringSet0-method}
+\alias{xsbasetype,AlignedXStringSet0-method}
 
 % Standard generic methods:
-\alias{show,AlignedXStringSet-method}
-\alias{as.character,AlignedXStringSet-method}
-\alias{toString,AlignedXStringSet-method}
-\alias{[,AlignedXStringSet-method}
-\alias{[,QualityAlignedXStringSet-method}
-\alias{[<-,AlignedXStringSet-method}
-\alias{rep,AlignedXStringSet-method}
+\alias{show,AlignedXStringSet0-method}
+\alias{as.character,AlignedXStringSet0-method}
+\alias{toString,AlignedXStringSet0-method}
+\alias{[,AlignedXStringSet0-method}
+\alias{[<-,AlignedXStringSet0-method}
+\alias{rep,AlignedXStringSet0-method}
 
 
 \title{AlignedXStringSet and QualityAlignedXStringSet objects}
@@ -83,7 +81,7 @@
 
 \section{Accesor methods}{
   In the code snippets below,
-  \code{x} is a \code{AlignedXStringSet} object.
+  \code{x} is a \code{AlignedXStringSet} or \code{QualityAlignedXStringSet} object.
 
   \describe{
     \item{}{
@@ -111,7 +109,7 @@
     \item{}{
       \code{indel(x)}:
       The positions, in the form of an \code{IRanges} object, of the insertions or
-      deletions (depending on what the \code{AlignedXStringSet} object represents).
+      deletions (depending on what \code{x} represents).
     }
     \item{}{
       \code{nindel(x)}:
@@ -145,11 +143,13 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new \code{AlignedXStringSet} object made of the selected elements.
+      Returns a new \code{AlignedXStringSet} or \code{QualityAlignedXStringSet}
+      object made of the selected elements.
     }
     \item{}{
       \code{rep(x, times)}:
-      Returns a new \code{AlignedXStringSet} object made of the repeated elements.
+      Returns a new \code{AlignedXStringSet} or \code{QualityAlignedXStringSet}
+      object made of the repeated elements.
     }
   }
 }

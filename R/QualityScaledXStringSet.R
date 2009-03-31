@@ -4,6 +4,7 @@
 ###
 
 setClass("QualityScaledXStringSet",
+    contains="XStringSet",
     representation(
         "VIRTUAL",
         quality = "XStringQuality"
@@ -31,20 +32,18 @@ setClass("QualityScaledAAStringSet",
 
 .valid.QualityScaledXStringSet <- function(object)
 {
-    message <- character(0)
+    message <- NULL
     if (!(length(object@quality) %in% c(1, length(object))))
         message <- c(message, "'length(quality)' != 1 or length of 'XStringSet'")
     if (!all(nchar(object@quality) == 1 | nchar(object@quality) == nchar(object)))
         message <- c(message, "'nchar(quality)' must equal 1 or nchar of 'XStringSet'")
-    if (length(message) == 0)
-        message <- NULL
     message
 }
 
 setValidity("QualityScaledXStringSet",
     function(object)
     {
-        problems <- .valid.QualityAlignedXStringSet(object)
+        problems <- .valid.QualityScaledXStringSet(object)
         if (is.null(problems)) TRUE else problems
     }
 )

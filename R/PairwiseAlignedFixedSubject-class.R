@@ -3,12 +3,15 @@
 ### --------------------------------------------------------------------------
 ### A PairwiseAlignedFixedSubject object contains the result of the pairwise
 ### alignment of many patterns to one subject.
-
+###
+### FIXME: The name of this class is confusing. In the Biostrings context, a
+### "fixed subject" (or "fixed pattern") is a subject (or pattern) in which
+### the IUPAC ambiguity letters are interpreted literally. See the 'fixed'
+### argument of neditStartingAt(), isMatchingStartingAt(), matchPattern(),
+### matchPDict(), etc... for the details.
 
 setClass("PairwiseAlignedFixedSubject",
-    representation(
-        "PairwiseAlignedXStringSet"
-    )
+    contains="PairwiseAlignedXStringSet"
 )
 
 setClass("PairwiseAlignedFixedSubjectSummary",
@@ -80,69 +83,6 @@ setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subjec
                                      substitutionMatrix = substitutionMatrix,
                                      gapOpening = gapOpening, gapExtension = gapExtension,
                                      baseClass = baseClass, pwaClass = "PairwiseAlignedFixedSubject")
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Initialization.
-###
-
-setMethod("initialize", "PairwiseAlignedFixedSubject",
-    function(.Object, pattern, subject, type, score, substitutionArray,
-             gapOpening, gapExtension, check = TRUE)
-    {
-        if (!identical(class(unaligned(pattern)), class(unaligned(subject))))
-            stop("'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
-        if (length(type) != 1 || !(type %in% c("global", "local", "overlap", "global-local", "local-global")))
-            stop("'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
-        if (length(pattern) != length(subject))
-            stop("'length(pattern)' must equal 'length(subject)'")
-        gapOpening <- as.double(- abs(gapOpening))
-        if (length(gapOpening) != 1 || is.na(gapOpening))
-            stop("'gapOpening' must be a non-positive numeric vector of length 1")
-        gapExtension <- as.double(- abs(gapExtension))
-        if (length(gapExtension) != 1 || is.na(gapExtension))
-            stop("'gapExtension' must be a non-positive numeric vector of length 1")
-        slot(.Object, "pattern", check = check) <- pattern
-        slot(.Object, "subject", check = check) <- subject
-        slot(.Object, "type", check = check) <- type
-        slot(.Object, "score", check = check) <- score
-        slot(.Object, "substitutionArray", check = check) <- substitutionArray
-        slot(.Object, "gapOpening", check = check) <- gapOpening
-        slot(.Object, "gapExtension", check = check) <- gapExtension
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
-###
-
-.valid.PairwiseAlignedFixedSubject <- function(object)
-{
-    message <- character(0)
-    if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
-        message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
-    if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
-        message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
-    if (length(pattern) != length(subject))
-        message <- c(message, "'length(pattern)' must equal 'length(subject)'")
-    if (length(object@gapOpening) != 1 || is.na(object@gapOpening))
-        message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
-    if (length(object@gapExtension) != 1 || is.na(object@gapExtension))
-        message <- c(message, "'gapExtension' must be a non-positive numeric vector of length 1")
-    if (length(message) == 0)
-        message <- NULL
-    message
-}
-
-setValidity("PairwiseAlignedFixedSubject",
-    function(object)
-    {
-        problems <- .valid.PairwiseAlignedFixedSubject(object)
-        if (is.null(problems)) TRUE else problems
     }
 )
 

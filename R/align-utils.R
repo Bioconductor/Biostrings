@@ -2,7 +2,7 @@
 ### The "mismatch", "nmatch" and "nmismatch" methods.
 ###
 
-setMethod("mismatch", c(pattern = "AlignedXStringSet", x = "missing"),
+setMethod("mismatch", c(pattern = "AlignedXStringSet0", x = "missing"),
     function(pattern, x, fixed)
         pattern@mismatch
 )
@@ -19,7 +19,7 @@ setMethod("nmatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missi
         pattern@nmatch
 )
 
-setMethod("nmismatch", c(pattern = "AlignedXStringSet", x = "missing"),
+setMethod("nmismatch", c(pattern = "AlignedXStringSet0", x = "missing"),
     function(pattern, x, fixed)
         elementLengths(mismatch(pattern))
 )
@@ -56,7 +56,7 @@ setGeneric("mismatchTable", signature = "x",
     standardGeneric("mismatchTable")
 )
 
-setMethod("mismatchTable", "AlignedXStringSet",
+setMethod("mismatchTable", "AlignedXStringSet0",
     function(x, shiftLeft = 0L, shiftRight = 0L, prefixColNames = "")
     {
         if (!isSingleNumber(shiftLeft) || shiftLeft > 0)
@@ -148,7 +148,7 @@ setGeneric("mismatchSummary", signature = "x",
     function(x, ...) standardGeneric("mismatchSummary")
 )   
 
-setMethod("mismatchSummary", "AlignedXStringSet",
+setMethod("mismatchSummary", "AlignedXStringSet0",
     function(x, weight=1L, .mismatchTable=mismatchTable(x))
     {
         if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
@@ -263,7 +263,7 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubjectSummary",
 ### The "coverage" methods.
 ###
 
-setMethod("coverage", "AlignedXStringSet",
+setMethod("coverage", "AlignedXStringSet0",
     function(x, start = NA, end = NA, weight = 1L)
     {
         if (any(is.na(start)))
@@ -308,7 +308,7 @@ setMethod("compareStrings", signature = c(pattern = "XStringSet", subject = "XSt
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })
-setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet", subject = "AlignedXStringSet"),
+setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet0", subject = "AlignedXStringSet0"),
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })
