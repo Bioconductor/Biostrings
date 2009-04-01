@@ -389,12 +389,40 @@ setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
                               baseOnly=baseOnly, freq=freq)
           })
 
-setGeneric("consensusString", signature = "x", function(x)  standardGeneric("consensusString"))
+setGeneric("consensusString", function(x) standardGeneric("consensusString"))
+
+setMethod("consensusString", "matrix",
+    function(x)
+    {
+        err_msg <- c("Please make sure 'x' was obtained by a ",
+                     "call to consensusMatrix(..., freq=TRUE)")
+        all_letters <- rownames(x)
+        if (is.null(all_letters))
+            stop("invalid consensus matrix 'x' (has no row names).\n",
+                 "  ", err_msg)
+        if (is.integer(x))
+            return(consensusString(x / rep(colSums(x), each=nrow(x))))
+        consensusLetter <- function(col)
+        {
+            i <- which.max(col)
+            if (length(i) == 0L)  # 'i' is an integer(0)
+                stop("invalid consensus matrix 'x' (has 0 rows or contains NAs/NaNs).\n",
+                     "  ", err_msg)
+            if (col[i] > 1)
+                stop("invalid consensus matrix 'x' (contains values > 1).\n",
+                     "  ", err_msg)
+            if (col[i] > 0.5)
+                return(all_letters[i])
+            if (col[i] < 0)
+                stop("invalid consensus matrix 'x' (contains values < 0).\n",
+                     "  ", err_msg)
+            return("?")
+        }
+        paste(apply(x, 2, consensusLetter))
+    }
+)
 
 setMethod("consensusString", "ANY",
-          function(x)
-          {
-              mat <- consensusMatrix(x, freq=TRUE)
-              letters <- rownames(mat)
-              paste(apply(mat, 2, function(y) if(any(y > 0.5)) letters[which.max(y)] else "?"), collapse="")
-          })
+    function(x) consensusString(consensusMatrix(x, freq=TRUE))
+)
+

@@ -40,6 +40,7 @@
 \alias{consensusMatrix,XStringViews-method}
 \alias{consensusMatrix,PairwiseAlignedFixedSubject-method}
 \alias{consensusString}
+\alias{consensusString,matrix-method}
 \alias{consensusString,ANY-method}
 
 % Deprecated:
