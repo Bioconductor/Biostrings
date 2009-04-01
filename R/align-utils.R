@@ -400,8 +400,11 @@ setMethod("consensusString", "matrix",
         if (is.null(all_letters))
             stop("invalid consensus matrix 'x' (has no row names).\n",
                  "  ", err_msg)
-        if (is.integer(x))
-            return(consensusString(x / rep(colSums(x), each=nrow(x))))
+        if (is.integer(x)) {
+            col_sums <- colSums(x)
+            col_sums[col_sums == 0] <- 1  # to avoid division by 0
+            x <- x / rep(col_sums, each=nrow(x))
+        }
         consensusLetter <- function(col)
         {
             i <- which.max(col)
@@ -413,12 +416,9 @@ setMethod("consensusString", "matrix",
                      "  ", err_msg)
             if (col[i] > 0.5)
                 return(all_letters[i])
-            if (col[i] < 0)
-                stop("invalid consensus matrix 'x' (contains values < 0).\n",
-                     "  ", err_msg)
             return("?")
         }
-        paste(apply(x, 2, consensusLetter))
+        paste(apply(x, 2, consensusLetter), collapse="")
     }
 )
 
