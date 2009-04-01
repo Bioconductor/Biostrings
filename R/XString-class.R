@@ -192,14 +192,14 @@ setMethod("XString", "XString",
 BString <- function(x="", start=1, nchar=NA)
     XString("B", x, start=start, width=nchar)
 
-DNAString <- function(x, start=1, nchar=NA)
-    XString("DNA", x="", start=start, width=nchar)
+DNAString <- function(x="", start=1, nchar=NA)
+    XString("DNA", x, start=start, width=nchar)
 
-RNAString <- function(x, start=1, nchar=NA)
-    XString("RNA", x="", start=start, width=nchar)
+RNAString <- function(x="", start=1, nchar=NA)
+    XString("RNA", x, start=start, width=nchar)
 
-AAString <- function(x, start=1, nchar=NA)
-    XString("AA", x="", start=start, width=nchar)
+AAString <- function(x="", start=1, nchar=NA)
+    XString("AA", x, start=start, width=nchar)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
