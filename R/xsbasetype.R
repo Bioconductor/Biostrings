@@ -13,7 +13,7 @@
 ###   "RNA"     | RNA sequence(s)           | RNA_ALPHABET | yes
 ###   "AA"      | amino acid sequence(s)    | AA_ALPHABET  | no
 ###
-### xsbasetype() returns that base type. For example 'xsbasetype(AAString(""))'
+### xsbasetype() returns that base type. For example 'xsbasetype(AAString())'
 ### returns "AA".
 
 

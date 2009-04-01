@@ -105,7 +105,7 @@ gregexpr2 <- function(pattern, text)
              "for this algorithm")
     max.mismatch <- normargMaxMismatch(max.mismatch)
     ## we cheat on normargFixed() to keep it quiet
-    fixed <- normargFixed(fixed, DNAString(""))
+    fixed <- normargFixed(fixed, DNAString())
     if (!(max.mismatch == 0 && all(fixed)))
         stop("this algorithm only supports exact matching ",
              "(i.e. 'max.mismatch=0' and 'fixed=TRUE')")

@@ -334,16 +334,16 @@ setMethod("XStringSet", "XStringSet",
     }
 )
 
-BStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+BStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     XStringSet("B", x, start=start, end=end, width=width,
                              use.names=use.names)
-DNAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+DNAStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     XStringSet("DNA", x, start=start, end=end, width=width,
                                use.names=use.names)
-RNAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+RNAStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     XStringSet("RNA", x, start=start, end=end, width=width,
                                use.names=use.names)
-AAStringSet <- function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+AAStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     XStringSet("AA", x, start=start, end=end, width=width,
                               use.names=use.names)
 

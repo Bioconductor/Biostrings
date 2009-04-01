@@ -89,10 +89,10 @@
 
 \usage{
   ## Constructors:
-  BStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
-  DNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
-  RNAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
-  AAStringSet(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  BStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+  DNAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+  RNAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+  AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
   ## Accessor-like methods:
   \S4method{length}{XStringSet}(x)

@@ -1,6 +1,6 @@
 test_pairwiseAlignment_emptyString <- function()
 {
-    string1 <- DNAString("")
+    string1 <- DNAString()
     string2 <- DNAString("ACGT")
     alignment <- pairwiseAlignment(string1, string2)
     checkEquals(as.character(aligned(pattern(alignment))), "")

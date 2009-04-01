@@ -64,7 +64,7 @@ qualityConverter <- function(x, qualityClass, outputType) {
     }
     .integer2BStringSet <- function(x, scale) {
         if (length(x) == 0)
-            value <- BStringSet(character(0))
+            value <- BStringSet()
         else
             value <-
               BStringSet(rawToChar(as.raw(pmax.int(minQuality(scale),
@@ -73,7 +73,7 @@ qualityConverter <- function(x, qualityClass, outputType) {
     }
     .numeric2BStringSet <- function(x, scale) {
         if (length(x) == 0) {
-            value <- BStringSet(character(0))
+            value <- BStringSet()
         } else if (any(is.na(x)) || any(x < 0) || any(x > 1)) {
             stop("'x' must be numbers between 0 and 1 inclusive")
         } else {

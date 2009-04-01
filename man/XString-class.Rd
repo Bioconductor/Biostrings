@@ -86,7 +86,7 @@
 
   \describe{
     \item{}{
-      \code{BString(x, start=1, nchar=NA)}:
+      \code{BString(x="", start=1, nchar=NA)}:
       Tries to convert \code{x} into a BString object by reading
       \code{nchar} letters starting at position \code{start} in \code{x}.
     }
