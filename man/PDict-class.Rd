@@ -230,7 +230,7 @@
   [TODO]
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   In the code snippets below,
   \code{x} is a PDict object.
 

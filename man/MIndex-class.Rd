@@ -45,7 +45,7 @@
   MORE TO COME SOON...
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   In the code snippets below, \code{x} is an MIndex object.
 
   \describe{

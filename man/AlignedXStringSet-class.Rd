@@ -12,7 +12,7 @@
 \alias{QualityAlignedXStringSet-class}
 \alias{QualityAlignedXStringSet}
 
-% Accesor methods:
+% Accessor methods:
 \alias{unaligned}
 \alias{unaligned,AlignedXStringSet0-method}
 \alias{aligned}
@@ -79,7 +79,7 @@
   highest score, i.e. with the lower total cost in terms of basic operations.
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   In the code snippets below,
   \code{x} is a \code{AlignedXStringSet} or \code{QualityAlignedXStringSet} object.
 

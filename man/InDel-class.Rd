@@ -6,7 +6,7 @@
 \alias{InDel-class}
 \alias{InDel}
 
-% Accesor methods:
+% Accessor methods:
 \alias{insertion}
 \alias{insertion,InDel-method}
 \alias{deletion}
@@ -24,7 +24,7 @@
   This is a generic class that stores any insertion and deletion information.
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   In the code snippets below,
   \code{x} is a \code{InDel} object.
 

@@ -19,7 +19,7 @@
 \alias{QualityScaledAAStringSet-class}
 \alias{QualityScaledAAStringSet}
 
-% Accesor methods:
+% Accessor methods:
 \alias{quality}
 \alias{quality,QualityScaledXStringSet-method}
 
@@ -69,7 +69,7 @@
   \code{x} into an QualityScaledXStringSet object of the desired base type.
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   The QualityScaledXStringSet class derives from the \link{XStringSet}
   class hence all the accessor methods defined for an \link{XStringSet}
   object can also be used on an QualityScaledXStringSet object. Common

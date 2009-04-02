@@ -22,7 +22,7 @@
 \alias{PairwiseAlignedFixedSubject,character,missing-method}
 \alias{PairwiseAlignedFixedSubject,character,character-method}
 
-% Accesor methods:
+% Accessor methods:
 \alias{pattern,PairwiseAlignedXStringSet-method}
 \alias{subject,PairwiseAlignedXStringSet-method}
 \alias{type}

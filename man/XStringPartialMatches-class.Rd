@@ -5,7 +5,7 @@
 \alias{class:XStringPartialMatches}
 \alias{XStringPartialMatches-class}
 
-% Accesor methods:
+% Accessor methods:
 \alias{subpatterns}
 \alias{subpatterns,XStringPartialMatches-method}
 \alias{pattern}
@@ -24,7 +24,7 @@
   Please DO NOT TRY TO USE it for now. Thanks for your comprehension!
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   In the code snippets below,
   \code{x} is an XStringPartialMatches object.
 

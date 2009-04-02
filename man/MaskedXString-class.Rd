@@ -18,7 +18,7 @@
 \alias{MaskedAAString-class}
 \alias{MaskedAAString}
 
-% Accesor-like methods:
+% Accessor-like methods:
 \alias{unmasked}
 \alias{unmasked,MaskedXString-method}
 \alias{masks}
@@ -100,7 +100,7 @@
   changes.
 }
 
-\section{Accesor methods}{
+\section{Accessor methods}{
   In the code snippets below, \code{x} is a MaskedXString object.
   For \code{masks(x)} and \code{masks(x) <- y}, it can also be
   an \link{XString} object and \code{y} must be \code{NULL} or
