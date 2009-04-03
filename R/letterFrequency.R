@@ -676,6 +676,11 @@ setMethod("consensusString", "XStringSet",
         consensusString(consensusMatrix(x, freq=TRUE, shift=shift, width=width))
 )
 
+setMethod("consensusString", "XStringViews",
+    function(x, shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, freq=TRUE, shift=shift, width=width))
+)
+
 setMethod("consensusString", "ANY",
     function(x) consensusString(consensusMatrix(x, freq=TRUE))
 )

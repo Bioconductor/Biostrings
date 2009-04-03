@@ -49,6 +49,8 @@
 \alias{consensusMatrix,XStringViews-method}
 \alias{consensusString}
 \alias{consensusString,matrix-method}
+\alias{consensusString,XStringSet-method}
+\alias{consensusString,XStringViews-method}
 \alias{consensusString,ANY-method}
 
 % Deprecated:

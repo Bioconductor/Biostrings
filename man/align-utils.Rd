@@ -2,10 +2,10 @@
 
 \alias{align-utils}
 
-\alias{mismatch,AlignedXStringSet,missing-method}
+\alias{mismatch,AlignedXStringSet0,missing-method}
 \alias{nmatch,PairwiseAlignedXStringSet,missing-method}
 \alias{nmatch,PairwiseAlignedFixedSubjectSummary,missing-method}
-\alias{nmismatch,AlignedXStringSet,missing-method}
+\alias{nmismatch,AlignedXStringSet0,missing-method}
 \alias{nmismatch,PairwiseAlignedXStringSet,missing-method}
 \alias{nmismatch,PairwiseAlignedFixedSubjectSummary,missing-method}
 \alias{nedit}
@@ -13,16 +13,16 @@
 \alias{nedit,PairwiseAlignedFixedSubjectSummary-method}
 
 \alias{mismatchTable}
-\alias{mismatchTable,AlignedXStringSet-method}
+\alias{mismatchTable,AlignedXStringSet0-method}
 \alias{mismatchTable,QualityAlignedXStringSet-method}
 \alias{mismatchTable,PairwiseAlignedXStringSet-method}
 \alias{mismatchSummary}
-\alias{mismatchSummary,AlignedXStringSet-method}
+\alias{mismatchSummary,AlignedXStringSet0-method}
 \alias{mismatchSummary,QualityAlignedXStringSet-method}
 \alias{mismatchSummary,PairwiseAlignedFixedSubject-method}
 \alias{mismatchSummary,PairwiseAlignedFixedSubjectSummary-method}
 
-\alias{coverage,AlignedXStringSet-method}
+\alias{coverage,AlignedXStringSet0-method}
 \alias{coverage,PairwiseAlignedFixedSubject-method}
 \alias{coverage,PairwiseAlignedFixedSubjectSummary-method}
 
@@ -30,7 +30,7 @@
 \alias{compareStrings,character,character-method}
 \alias{compareStrings,XString,XString-method}
 \alias{compareStrings,XStringSet,XStringSet-method}
-\alias{compareStrings,AlignedXStringSet,AlignedXStringSet-method}
+\alias{compareStrings,AlignedXStringSet0,AlignedXStringSet0-method}
 \alias{compareStrings,PairwiseAlignedXStringSet,missing-method}
 \alias{consensusMatrix,PairwiseAlignedFixedSubject-method}
 
