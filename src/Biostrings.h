@@ -309,25 +309,27 @@ SEXP RawPtr_loadFASTA(
 );
 
 
-/* char_frequency.c */
+/* letter_frequency.c */
 
-SEXP XString_char_frequency(
+SEXP XString_letter_frequency(
 	SEXP x,
 	SEXP codes,
 	SEXP with_other
 );
 
-SEXP XStringSet_char_frequency(
+SEXP XStringSet_letter_frequency(
 	SEXP x,
 	SEXP codes,
 	SEXP with_other,
 	SEXP collapse
 );
 
-SEXP XStringSet_char_frequency_by_pos(
+SEXP XStringSet_letter_frequency_by_pos(
 	SEXP x,
 	SEXP codes,
-	SEXP with_other
+	SEXP with_other,
+	SEXP shift,
+	SEXP width
 );
 
 SEXP oligonucleotide_frequency(

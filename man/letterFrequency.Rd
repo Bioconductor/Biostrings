@@ -1,4 +1,6 @@
-\name{alphabetFrequency}
+\name{letterFrequency}
+
+\alias{letterFrequency}
 
 \alias{alphabetFrequency}
 \alias{alphabetFrequency,XString-method}
@@ -39,20 +41,41 @@
 \alias{strrev}
 \alias{mkAllStrings}
 
+\alias{consensusMatrix}
+\alias{consensusMatrix,character-method}
+\alias{consensusMatrix,matrix-method}
+\alias{consensusMatrix,list-method}
+\alias{consensusMatrix,XStringSet-method}
+\alias{consensusMatrix,XStringViews-method}
+\alias{consensusString}
+\alias{consensusString,matrix-method}
+\alias{consensusString,ANY-method}
 
-\title{Function to calculate the frequency of letters in a biological
-sequence and related functions}
+% Deprecated:
+\alias{consmat}
+\alias{consmat,ANY-method}
+
+
+\title{Functions to calculate the frequency of letters in a biological
+sequence and other related functions}
 
 \description{
-  Given a biological sequence, the \code{alphabetFrequency} function will
-  calculate the frequency of each letter in the (base) alphabet,
-  the \code{dinucleotideFrequency} function the frequency of all possible
-  dinucleotides and the \code{trinucleotideFrequency} function the frequency
+  Given a biological sequence (or a set of biological sequences),
+  the \code{alphabetFrequency} function computes the frequency of each
+  letter in the (base) alphabet,
+  the \code{dinucleotideFrequency} function the frequency of all
+  possible dinucleotides,
+  and the \code{trinucleotideFrequency} function the frequency
   of all possible trinucleotides.
 
-  More generally, the \code{oligonucleotideFrequency} function will
-  calculate the frequency of all possible oligonucleotides of a given
+  More generally, the \code{oligonucleotideFrequency} function
+  computes the frequency of all possible oligonucleotides of a given
   length (called the "width" in this particular context).
+
+  The \code{consensusMatrix} function computes the consensus matrix
+  of a set of sequences, and the \code{consensusString} function creates
+  the consensus sequence based on a 50\% + 1 vote from the consensus
+  matrix (using the \code{"?"} letter to represent the lack of consensus).
 
   In this man page we call "DNA input" a \link{DNAString} object,
   or a \link{DNAStringSet} object, or an \link{XStringViews} object
@@ -78,6 +101,13 @@ sequence and related functions}
   ## Some related utility functions
   strrev(x)
   mkAllStrings(alphabet, width, fast.moving.side="right")
+
+  \S4method{consensusMatrix}{character}(x, freq=FALSE)
+  \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE, shift=0L, width=NULL)
+
+  \S4method{consensusString}{matrix}(x)
+  \S4method{consensusString}{XStringSet}(x, shift=0L, width=NULL)
+  \S4method{consensusString}{ANY}(x)
 }
 
 \arguments{
@@ -125,6 +155,10 @@ sequence and related functions}
     The number of nucleotides per oligonucleotide for
     \code{oligonucleotideFrequency}.
     The number of letters per string for \code{mkAllStrings}.
+    The number of columns of the returned matrix for the \code{consensusMatrix}
+    method for \link{XStringSet} objects.
+    The length of the returned sequence for the \code{consensusString}
+    method for \link{XStringSet} objects.
   }
   \item{left, right}{
     The number of nucleotides per oligonucleotide for the rows and columns
@@ -132,6 +166,8 @@ sequence and related functions}
   }
   \item{alphabet}{
     The alphabet to use to make the strings.
+  }
+  \item{shift}{
   }
 }
 
@@ -176,7 +212,7 @@ sequence and related functions}
   is \link{BString}.
 }
 
-\author{H. Pages}
+\author{H. Pages and P. Aboyoun}
 
 \seealso{
   \code{\link{countPDict}},
@@ -192,6 +228,9 @@ sequence and related functions}
 }
 
 \examples{
+  ## ---------------------------------------------------------------------
+  ## A. BASIC *Frequency() EXAMPLES
+  ## ---------------------------------------------------------------------
   data(yeastSEQCHR1)
   yeast1 <- DNAString(yeastSEQCHR1)
 
@@ -220,10 +259,16 @@ sequence and related functions}
   tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
   tri["T", , ] # frequencies of trinucleotides starting with a "T"
 
+  ## ---------------------------------------------------------------------
+  ## B. oligonucleotideTransitions()
+  ## ---------------------------------------------------------------------
   ## Get nucleotide transition matrices for yeast1
   oligonucleotideTransitions(yeast1)
   oligonucleotideTransitions(yeast1, 2, freq=TRUE)
 
+  ## ---------------------------------------------------------------------
+  ## C. ADVANCED *Frequency() EXAMPLES
+  ## ---------------------------------------------------------------------
   ## Note that when dropping the dimensions of the 'tri' array, elements
   ## in the resulting vector are ordered as if they were obtained with
   ## 'fast.moving.side="left"':
@@ -245,6 +290,49 @@ sequence and related functions}
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
   dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
   identical(strrev(dict1), dict2) # TRUE 
+
+  ## ---------------------------------------------------------------------
+  ## D. consensus*() EXAMPLES
+  ## ---------------------------------------------------------------------
+  ## Read in ORF data
+  file <- system.file("extdata", "someORF.fa", package="Biostrings")
+  orf <- read.DNAStringSet(file, "fasta")
+
+  ## To illustrate, the following example assumes the ORF data
+  ## to be aligned for the first 10 positions (patently false):
+  orf10 <- DNAStringSet(orf, end=10)
+  consensusMatrix(orf10, baseOnly=TRUE)
+
+  ## This assumes the first 10 positions to be aligned after some
+  ## incremental shifting to the rigth (patently false):
+  consensusMatrix(orf10, baseOnly=TRUE, shift=0:6)
+  consensusMatrix(orf10, baseOnly=TRUE, shift=0:6, width=10)
+
+  ## For the character matrix containing the "exploded" representation
+  ## of the strings, do:
+  as.matrix(orf10, use.names=FALSE)
+
+  ## consensusMatrix() can be used to just compute the alphabet frequency
+  ## for each position in the input sequences:
+  library(drosophila2probe)
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  consensusMatrix(probes, baseOnly=TRUE)
+
+  ## After sorting, the first 5 probes might look similar (at least on
+  ## their first bases):
+  consensusString(sort(probes)[1:5])
+
+  ## ---------------------------------------------------------------------
+  ## E. RELATIONSHIP BETWEEN consensusMatrix() AND coverage()
+  ## ---------------------------------------------------------------------
+  ## Applying colSums() on a consensus matrix gives the coverage that
+  ## would be obtained by piling up (after shifting) the input sequences
+  ## on top of an (imaginary) reference sequence:
+  cm <- consensusMatrix(orf10, shift=0:6, width=10)
+  colSums(cm)
+
+  ## Note that this coverage can also be obtained with:
+  as.integer(coverage(IRanges(start=1+0:6, width=width(orf10)), start=1, end=10))
 }
 
 \keyword{category}

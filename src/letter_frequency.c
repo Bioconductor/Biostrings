@@ -1,4 +1,5 @@
 #include "Biostrings.h"
+#include <stdlib.h> /* for abs() */
 
 static ByteTrTable byte2offset;
 static int rowbuf[256];
@@ -20,16 +21,18 @@ static int get_ans_width(SEXP codes, int with_other)
 	return width;
 }
 
-static void add_freqs(RoSeq X, SEXP codes, int *freqs)
+static void update_freqs(int *freqs, const RoSeq *X, SEXP codes)
 {
+	const char *x;
 	static int i, offset;
 
+	x = X->elts;
 	if (codes == R_NilValue)
-		for (i = 0; i < X.nelt; i++, X.elts++)
-			freqs[((unsigned char) *X.elts)]++;
+		for (i = 0; i < X->nelt; i++, x++)
+			freqs[((unsigned char) *x)]++;
 	else
-		for (i = 0; i < X.nelt; i++, X.elts++) {
-			offset = byte2offset[(unsigned char) *X.elts];
+		for (i = 0; i < X->nelt; i++, x++) {
+			offset = byte2offset[(unsigned char) *x];
 			if (offset == NA_INTEGER)
 				continue;
 			freqs[offset]++;
@@ -37,19 +40,44 @@ static void add_freqs(RoSeq X, SEXP codes, int *freqs)
 	return;
 }
 
-static void add_freqs_by_pos(RoSeq X, SEXP codes, int nrow, int *freqs)
+/* Note that calling update_freqs2() with shift = 0, nrow = 0 and
+   ncol = X->nelt is equivalent to calling update_freqs() */
+static void update_freqs2(int *freqs, const RoSeq *X, SEXP codes,
+		int shift, int nrow, int ncol)
 {
-	static int i, offset;
+	const char *x;
+	static int i1, i2, j1, j2, i, offset;
 
+	if (abs(shift) >= ncol)
+		return;
+	/* i1, i2 are 0-based indices in X->elts
+	   (range i1 <= i < i2 must be safe) */
+	i1 = 0;
+	i2 = X->nelt;
+	/* j1, j2 are 0-based column indices in the freqs matrix
+	   (range j1 <= j < j2 must be safe) */
+	j1 = i1 + shift;
+	j2 = i2 + shift;
+	if (j1 < 0) {
+		i1 -= j1;
+		j1 = 0;
+	}
+	if (j2 > ncol) {
+		i2 -= j2 - ncol;
+		/* j2 = ncol; not needed */
+	}
+	x = X->elts + i1;
+	freqs += j1 * nrow;
 	if (codes == R_NilValue)
-		for (i = 0; i < X.nelt; i++, X.elts++)
-			freqs[(i * nrow) + ((unsigned char) *X.elts)]++;
+		for (i = i1; i < i2; i++, x++, freqs += nrow) {
+			freqs[(unsigned char) *x]++;
+		}
 	else
-		for (i = 0; i < X.nelt; i++, X.elts++) {
-			offset = byte2offset[(unsigned char) *X.elts];
+		for (i = i1; i < i2; i++, x++, freqs += nrow) {
+			offset = byte2offset[(unsigned char) *x];
 			if (offset == NA_INTEGER)
 				continue;
-			freqs[(i * nrow) + offset]++;
+			freqs[offset]++;
 		}
 	return;
 }
@@ -111,7 +139,7 @@ static void set_names(SEXP x, SEXP codes, int with_other, int collapse, int whic
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
+SEXP XString_letter_frequency(SEXP x, SEXP codes, SEXP with_other)
 {
 	SEXP ans;
 	int ans_length, *freqs;
@@ -122,7 +150,7 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 	freqs = INTEGER(ans);
 	memset(freqs, 0, ans_length * sizeof(int));
 	X = _get_XString_asRoSeq(x);
-	add_freqs(X, codes, freqs);
+	update_freqs(freqs, &X, codes);
 	set_names(ans, codes, LOGICAL(with_other)[0], 1, 1);
 	UNPROTECT(1);
 	return ans;
@@ -131,13 +159,13 @@ SEXP XString_char_frequency(SEXP x, SEXP codes, SEXP with_other)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
+SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
 	SEXP ans;
 	int ans_width, x_length, *freqs, i;
 	CachedXStringSet cached_x;
-	RoSeq xx;
+	RoSeq X;
 
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
@@ -147,15 +175,15 @@ SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 		freqs = INTEGER(ans);
 		memset(freqs, 0, ans_width * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			add_freqs(xx, codes, freqs);
+			X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			update_freqs(freqs, &X, codes);
 		}
 	} else {
 		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
 		for (i = 0, freqs = INTEGER(ans); i < x_length; i++, freqs++) {
-			xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
 			memset(rowbuf, 0, ans_width * sizeof(int));
-			add_freqs(xx, codes, rowbuf);
+			update_freqs(rowbuf, &X, codes);
 			copy_rowbuf_to_row0_in_matrix(freqs, x_length, ans_width);
 		}
 	}
@@ -167,29 +195,51 @@ SEXP XStringSet_char_frequency(SEXP x, SEXP codes, SEXP with_other,
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XStringSet_char_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other)
+SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
+		SEXP shift, SEXP width)
 {
 	SEXP ans;
-	int ans_nrow, ans_ncol, ans_width, x_length, *freqs, i;
+	int ans_nrow, ans_ncol, ans_length, x_length, *freqs, i, k, s, X_end;
 	CachedXStringSet cached_x;
-	RoSeq xx;
+	RoSeq X;
 
+	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
 	cached_x = _new_CachedXStringSet(x);
-	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
-	ans_ncol = 0;
-	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		if (ans_ncol < xx.nelt)
-			ans_ncol = xx.nelt;
+	if (width == R_NilValue) {
+		if (x_length == 0)
+			error("'x' has no element and 'width' is NULL");
+		if (LENGTH(shift) == 0)
+			error("'shift' has no element");
+		ans_ncol = 0;
+		for (i = k = 0; i < x_length; i++, k++) {
+			if (k >= LENGTH(shift))
+				k = 0; /* recycle */
+			s = INTEGER(shift)[k];
+			if (s == NA_INTEGER)
+				error("'shift' contains NAs");
+			X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			X_end = X.nelt + s;
+			if (X_end > ans_ncol)
+				ans_ncol = X_end;
+		}
+	} else {
+		if (x_length != 0 && LENGTH(shift) == 0)
+			error("'shift' has no element");
+		ans_ncol = INTEGER(width)[0];
 	}
-	ans_width = ans_nrow * ans_ncol;
+	ans_length = ans_nrow * ans_ncol;
 	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
 	freqs = INTEGER(ans);
-	memset(freqs, 0, ans_width * sizeof(int));
-	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		add_freqs_by_pos(xx, codes, ans_nrow, freqs);
+	memset(freqs, 0, ans_length * sizeof(int));
+	for (i = k = 0; i < x_length; i++, k++) {
+		if (k >= LENGTH(shift))
+			k = 0; /* recycle */
+		s = INTEGER(shift)[k];
+		if (s == NA_INTEGER)
+			error("'shift' contains NAs");
+		X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		update_freqs2(freqs, &X, codes, s, ans_nrow, ans_ncol);
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
 	UNPROTECT(1);

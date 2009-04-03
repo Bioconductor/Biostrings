@@ -32,20 +32,7 @@
 \alias{compareStrings,XStringSet,XStringSet-method}
 \alias{compareStrings,AlignedXStringSet,AlignedXStringSet-method}
 \alias{compareStrings,PairwiseAlignedXStringSet,missing-method}
-\alias{consensusMatrix}
-\alias{consensusMatrix,character-method}
-\alias{consensusMatrix,matrix-method}
-\alias{consensusMatrix,list-method}
-\alias{consensusMatrix,XStringSet-method}
-\alias{consensusMatrix,XStringViews-method}
 \alias{consensusMatrix,PairwiseAlignedFixedSubject-method}
-\alias{consensusString}
-\alias{consensusString,matrix-method}
-\alias{consensusString,ANY-method}
-
-% Deprecated:
-\alias{consmat}
-\alias{consmat,ANY-method}
 
 
 \title{Utility functions related to sequence alignment}
@@ -62,11 +49,8 @@
   \S4method{coverage}{AlignedXStringSet}(x, start=NA, end=NA, weight=1L)
   \S4method{coverage}{PairwiseAlignedFixedSubject}(x, start=NA, end=NA, weight=1L)
   compareStrings(pattern, subject)
-  \S4method{consensusMatrix}{character}(x, freq=FALSE)
-  \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE)
   \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x, baseOnly=FALSE, freq=FALSE,
                   gapCode="-", endgapCode="-")
-  consensusString(x)
 }
 
 \details{
@@ -81,12 +65,6 @@
   \code{compareStrings} combines two equal-length strings that are assumed to be
   aligned into a single character string containing that replaces mismatches
   with \code{"?"}, insertions with \code{"+"}, and deletions with \code{"-"}.
-
-  \code{consensusMatrix} computes a consensus matrix for a set of equal-length
-  strings that are assumed to be aligned.
-
-  \code{consensusString} creates the string based on a 50\% + 1 vote from the
-  consensus matrix with unknowns labeled with \code{"?"}.
 }
 
 \arguments{
@@ -137,6 +115,7 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
+  \code{\link{consensusMatrix}},
   \link{XString-class}, \link{XStringSet-class}, \link{XStringViews-class},
   \link{AlignedXStringSet-class}, \link{PairwiseAlignedXStringSet-class},
   \link{match-utils}
@@ -160,20 +139,6 @@
   phageDiffs <- which(apply(phageConsmat, 2, max) < length(phiX174Phage))
   phageDiffs
   phageConsmat[,phageDiffs]
-
-  ## Read in ORF data
-  file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  orf <- read.DNAStringSet(file, "fasta")
-
-  ## To illustrate, the following example assumes the ORF data
-  ## to be aligned for the first 10 positions (patently false):
-  orf10 <- DNAStringSet(orf, end=10)
-  consensusMatrix(orf10, baseOnly=TRUE, freq=TRUE)
-  consensusString(sort(orf10)[1:5])
-
-  ## For the character matrix containing the "exploded" representation
-  ## of the strings, do:
-  as.matrix(orf10, use.names=FALSE)
 }
 
 \keyword{methods}

@@ -76,7 +76,7 @@ exportMethods(
 ###   XStringSet-io.R
 ###   letter.R
 ###   subXString.R
-###   alphabetFrequency.R
+###   letterFrequency.R
 ###   chartr.R
 ###   reverse.R
 ###   translate.R
@@ -98,7 +98,7 @@ export(
     ## letter.R:
     letter,
 
-    ## alphabetFrequency.R:
+    ## letterFrequency.R:
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,
     strrev, mkAllStrings,
     oligonucleotideFrequency,

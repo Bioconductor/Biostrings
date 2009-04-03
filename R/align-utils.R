@@ -319,68 +319,8 @@ setMethod("compareStrings", signature = c(pattern = "PairwiseAlignedXStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Alignment consensus matrix
+### "consensusMatrix" method for PairwiseAlignedFixedSubject objects.
 ###
-
-setGeneric("consmat", signature="x", function(x, ...)  standardGeneric("consmat"))
-
-setMethod("consmat", "ANY",
-          function(x, ...)
-          {
-              .Deprecated("consensusMatrix")
-              consensusMatrix(x, ...)
-          })
-
-
-setGeneric("consensusMatrix", signature="x", function(x, ...)  standardGeneric("consensusMatrix"))
-
-setMethod("consensusMatrix", "character",
-          function(x, freq=FALSE)
-          {
-              consensusMatrix(BStringSet(x), freq=freq)
-          })
-
-setMethod("consensusMatrix", "matrix",
-          function(x, freq=FALSE)
-          {
-              consensusMatrix(BStringSet(apply(x, 1, paste, collapse="")), freq=freq)
-          })
-
-### 'x' must be a list of FASTA records as one returned by readFASTA()
-setMethod("consensusMatrix", "list",
-          function(x, freq=FALSE)
-          {
-              consensusMatrix(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)), freq=freq)
-          })
-
-setMethod("consensusMatrix", "XStringSet",
-          function(x, baseOnly=FALSE, freq=FALSE)
-          {
-              codes <- xscodes(x, baseOnly=baseOnly)
-              if (is.null(names(codes))) {
-                  names(codes) <- intToUtf8(codes, multiple = TRUE)
-                  removeUnused <- TRUE
-              } else {
-                  removeUnused <- FALSE
-              }
-              freq <- .normargFreq(freq)
-              ans <- .Call("XStringSet_char_frequency_by_pos",
-                      x, codes, baseOnly, PACKAGE="Biostrings")
-              if (removeUnused) {
-                  ans <- ans[rowSums(ans) > 0, , drop=FALSE]
-              }
-              if (freq) {
-                  ans <- t(t(ans) / colSums(ans))
-              }
-              ans
-          })
-
-setMethod("consensusMatrix", "XStringViews",
-          function(x, baseOnly=FALSE, freq=FALSE)
-          {
-              y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-              consensusMatrix(y, baseOnly=baseOnly, freq=freq)
-          })
 
 setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
           function(x, baseOnly=FALSE, freq=FALSE, gapCode="-", endgapCode="-")
@@ -388,41 +328,4 @@ setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
               consensusMatrix(aligned(x, gapCode=gapCode, endgapCode=endgapCode),
                               baseOnly=baseOnly, freq=freq)
           })
-
-setGeneric("consensusString", function(x) standardGeneric("consensusString"))
-
-setMethod("consensusString", "matrix",
-    function(x)
-    {
-        err_msg <- c("Please make sure 'x' was obtained by a ",
-                     "call to consensusMatrix(..., freq=TRUE)")
-        all_letters <- rownames(x)
-        if (is.null(all_letters))
-            stop("invalid consensus matrix 'x' (has no row names).\n",
-                 "  ", err_msg)
-        if (is.integer(x)) {
-            col_sums <- colSums(x)
-            col_sums[col_sums == 0] <- 1  # to avoid division by 0
-            x <- x / rep(col_sums, each=nrow(x))
-        }
-        consensusLetter <- function(col)
-        {
-            i <- which.max(col)
-            if (length(i) == 0L)  # 'i' is an integer(0)
-                stop("invalid consensus matrix 'x' (has 0 rows or contains NAs/NaNs).\n",
-                     "  ", err_msg)
-            if (col[i] > 1)
-                stop("invalid consensus matrix 'x' (contains values > 1).\n",
-                     "  ", err_msg)
-            if (col[i] > 0.5)
-                return(all_letters[i])
-            return("?")
-        }
-        paste(apply(x, 2, consensusLetter), collapse="")
-    }
-)
-
-setMethod("consensusString", "ANY",
-    function(x) consensusString(consensusMatrix(x, freq=TRUE))
-)
 

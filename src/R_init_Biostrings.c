@@ -39,10 +39,10 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(fasta_info, 2),
 	CALLMETHOD_DEF(RawPtr_loadFASTA, 4),
 
-/* char_frequency.c */
-	CALLMETHOD_DEF(XString_char_frequency, 3),
-	CALLMETHOD_DEF(XStringSet_char_frequency, 4),
-	CALLMETHOD_DEF(XStringSet_char_frequency_by_pos, 3),
+/* letter_frequency.c */
+	CALLMETHOD_DEF(XString_letter_frequency, 3),
+	CALLMETHOD_DEF(XStringSet_letter_frequency, 4),
+	CALLMETHOD_DEF(XStringSet_letter_frequency_by_pos, 5),
 	CALLMETHOD_DEF(oligonucleotide_frequency, 4),
 
 /* char_translate.c */

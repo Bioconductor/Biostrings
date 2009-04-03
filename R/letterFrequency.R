@@ -5,6 +5,7 @@
 ### oligonucleotideFrequency()
 ### dinucleotideFrequency()
 ### trinucleotideFrequency()
+### consensusMatrix() and consensusString()
 ### -------------------------------------------------------------------------
 
 
@@ -73,10 +74,10 @@
 ### sum(alphabetFrequency(x)) should always be exactly nchar(x)
 ###
 
-.XString.char_frequency <- function(x, freq)
+.XString.letter_frequency <- function(x, freq)
 {
     freq <- .normargFreq(freq)
-    ans <- .Call("XString_char_frequency",
+    ans <- .Call("XString_letter_frequency",
                  x, NULL, FALSE,
                  PACKAGE="Biostrings")
     if (freq)
@@ -88,7 +89,7 @@
 {
     codes <- xscodes(x, baseOnly=baseOnly)
     freq <- .normargFreq(freq)
-    ans <- .Call("XString_char_frequency",
+    ans <- .Call("XString_letter_frequency",
                  x, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (freq)
@@ -96,16 +97,16 @@
     ans
 }
 
-.XStringSet.char_frequency <- function(x, freq, ...)
+.XStringSet.letter_frequency <- function(x, freq, ...)
 {
     collapse <- .normargCollapse(list(...)$collapse)
     ## NO, we cannot use this shortcut when 'collapse' is TRUE because
     ## there is no guarantee that the elements in x cover super(x) entirely
     ## and don't overlap!
     #if (collapse)
-    #    return(.XString.char_frequency(super(x), freq))
+    #    return(.XString.letter_frequency(super(x), freq))
     freq <- .normargFreq(freq)
-    ans <- .Call("XStringSet_char_frequency",
+    ans <- .Call("XStringSet_letter_frequency",
                  x, NULL, FALSE, collapse,
                  PACKAGE="Biostrings")
     if (freq) {
@@ -127,7 +128,7 @@
     #    return(.XString.code_frequency(super(x), baseOnly, freq))
     codes <- xscodes(x, baseOnly=baseOnly)
     freq <- .normargFreq(freq)
-    ans <- .Call("XStringSet_char_frequency",
+    ans <- .Call("XStringSet_letter_frequency",
                  x, codes, baseOnly, collapse,
                  PACKAGE="Biostrings")
     if (freq) {
@@ -149,7 +150,7 @@ setMethod("alphabetFrequency", "XString",
     {
         if (!missing(baseOnly))
             warning("'baseOnly' is ignored for a non DNA or RNA sequence")
-        .XString.char_frequency(x, freq)
+        .XString.letter_frequency(x, freq)
     }
 )
 
@@ -168,7 +169,7 @@ setMethod("alphabetFrequency", "XStringSet",
     {
         if (!missing(baseOnly))
             warning("'baseOnly' is ignored for a non DNA or RNA sequence")
-        .XStringSet.char_frequency(x, freq, ...)
+        .XStringSet.letter_frequency(x, freq, ...)
     }
 )
 
@@ -566,3 +567,131 @@ oligonucleotideTransitions <- function(x, left=1, right=1, freq=FALSE)
         transitions <- transitions / rowSums(transitions)
     transitions
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### consensusMatrix() and consensusString().
+###
+
+setGeneric("consensusMatrix", function(x, ...) standardGeneric("consensusMatrix"))
+
+setMethod("consensusMatrix", "character",
+    function(x, freq=FALSE)
+        consensusMatrix(BStringSet(x), freq=freq)
+)
+
+setMethod("consensusMatrix", "matrix",
+    function(x, freq=FALSE)
+        consensusMatrix(BStringSet(apply(x, 1, paste, collapse="")), freq=freq)
+)
+
+### 'x' must be a list of FASTA records as one returned by readFASTA()
+setMethod("consensusMatrix", "list",
+    function(x, freq=FALSE)
+        consensusMatrix(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)), freq=freq)
+)
+
+setMethod("consensusMatrix", "XStringSet",
+    function(x, baseOnly=FALSE, freq=FALSE, shift=0L, width=NULL)
+    {
+        if (!is.integer(shift))
+            shift <- as.integer(shift)
+        if (length(x) != 0 && length(shift) > length(x))
+            stop("'shift' has more elements than 'x'")
+        if (!is.null(width)) {
+            if (!isSingleNumber(width) || width < 0)
+                stop("'width' must be NULL or a single non-negative integer")
+            if (!is.integer(width))
+                width <- as.integer(width)
+        }
+        codes <- xscodes(x, baseOnly=baseOnly)
+        if (is.null(names(codes))) {
+            names(codes) <- intToUtf8(codes, multiple = TRUE)
+            removeUnused <- TRUE
+        } else {
+            removeUnused <- FALSE
+        }
+        freq <- .normargFreq(freq)
+        ans <- .Call("XStringSet_letter_frequency_by_pos",
+                     x, codes, baseOnly, shift, width,
+                     PACKAGE="Biostrings")
+        if (removeUnused) {
+            ans <- ans[rowSums(ans) > 0, , drop=FALSE]
+        }
+        if (freq) {
+            col_sums <- colSums(ans)
+            col_sums[col_sums == 0] <- 1  # to avoid division by 0
+            ans <- ans / rep(col_sums, each=nrow(ans))
+        }
+        ans
+    }
+)
+
+setMethod("consensusMatrix", "XStringViews",
+    function(x, baseOnly=FALSE, freq=FALSE, shift=0L, width=NULL)
+    {
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        consensusMatrix(y, baseOnly=baseOnly, freq=freq, shift=shift, width=width)
+    }
+)
+
+setGeneric("consensusString", function(x, ...) standardGeneric("consensusString"))
+
+setMethod("consensusString", "matrix",
+    function(x)
+    {
+        err_msg <- c("Please make sure 'x' was obtained by a ",
+                     "call to consensusMatrix(..., freq=TRUE)")
+        all_letters <- rownames(x)
+        if (is.null(all_letters))
+            stop("invalid consensus matrix 'x' (has no row names).\n",
+                 "  ", err_msg)
+        if (!all(nchar(all_letters) == 1))
+            stop("invalid consensus matrix 'x' (row names must be single letters).\n",
+                 "  ", err_msg)
+        if (is.integer(x)) {
+            col_sums <- colSums(x)
+            col_sums[col_sums == 0] <- 1  # to avoid division by 0
+            x <- x / rep(col_sums, each=nrow(x))
+        }
+        consensusLetter <- function(col)
+        {
+            i <- which.max(col)
+            if (length(i) == 0L)  # 'i' is an integer(0)
+                stop("invalid consensus matrix 'x' (has 0 rows or contains NAs/NaNs).\n",
+                     "  ", err_msg)
+            if (col[i] > 1)
+                stop("invalid consensus matrix 'x' (contains values > 1).\n",
+                     "  ", err_msg)
+            if (col[i] > 0.5)
+                return(all_letters[i])
+            return("?")
+        }
+        paste(apply(x, 2, consensusLetter), collapse="")
+    }
+)
+
+setMethod("consensusString", "XStringSet",
+    function(x, shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, freq=TRUE, shift=shift, width=width))
+)
+
+setMethod("consensusString", "ANY",
+    function(x) consensusString(consensusMatrix(x, freq=TRUE))
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+setGeneric("consmat", function(x, ...) standardGeneric("consmat"))
+
+setMethod("consmat", "ANY",
+    function(x, ...)
+    {
+        .Deprecated("consensusMatrix")
+        consensusMatrix(x, ...)
+    }
+)
+
