@@ -104,8 +104,8 @@ SEXP XStringSet_xscat(SEXP args)
 		}
 		ans_super_length += *width;
 		if (ans_super_length > INT_MAX)
-			error("XStringSet_xscat(): reached the maximum number ",
-			      "of letters an XStringSet object can hold (%d), ",
+			error("XStringSet_xscat(): reached the maximum number "
+			      "of letters an XStringSet object can hold (%d), "
 			      "sorry!", INT_MAX);
 	}
 	PROTECT(ans_super = _alloc_XString(ans_baseClass, ans_super_length));
