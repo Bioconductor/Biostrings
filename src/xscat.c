@@ -54,8 +54,8 @@ SEXP XString_xscat(SEXP args)
 SEXP XStringSet_xscat(SEXP args)
 {
 	CachedXStringSet *cached_args;
-	int nargs, *arg_lengths, *ii, ans_length, ans_super_length, write_start,
-	    i, j, *start, *width;
+	int nargs, *arg_lengths, *ii, ans_length, write_start, i, j, *start, *width;
+	unsigned int ans_super_length;
 	SEXP arg, ans_ranges_start, ans_width, ans_super, ans_ranges, ans;
 	const char *ans_classname, *ans_baseClass;
 	RoSeq seq;
@@ -86,14 +86,14 @@ SEXP XStringSet_xscat(SEXP args)
 
 	/* 2nd pass: fill 'ans_ranges_start' and 'ans_width'
 	             and determine 'ans_super_length' */
-	ans_super_length = 0;
+	ans_super_length = 0U;
 	for (j = 0; j < nargs; j++)
 		ii[j] = 0;
 	for (i = 0, start = INTEGER(ans_ranges_start), width = INTEGER(ans_width);
 	     i < ans_length;
 	     i++, start++, width++)
 	{
-		*start = ans_super_length + 1;
+		*start = ans_super_length + 1U;
 		*width = 0;
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
@@ -103,6 +103,10 @@ SEXP XStringSet_xscat(SEXP args)
 			ii[j]++;
 		}
 		ans_super_length += *width;
+		if (ans_super_length > INT_MAX)
+			error("XStringSet_xscat(): reached the maximum number ",
+			      "of letters an XStringSet object can hold (%d), ",
+			      "sorry!", INT_MAX);
 	}
 	PROTECT(ans_super = _alloc_XString(ans_baseClass, ans_super_length));
 
