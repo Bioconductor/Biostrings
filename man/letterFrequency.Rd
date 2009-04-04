@@ -121,15 +121,22 @@ sequence and other related functions}
     "DNA or RNA input" for \code{hasOnlyBaseLetters}.
 
     A character vector for \code{strrev}.
+
+    A character vector, \link{XStringSet} or \link{XStringViews}
+    object for \code{consensusMatrix}.
+
+    A consensus matrix (as returned by \code{consensusMatrix}),
+    or an \link{XStringSet} or \link{XStringViews} object
+    for \code{consensusString}.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
-    If \code{TRUE}, the returned vector only contains frequencies for the
-    letters in the "base" alphabet i.e. "A", "C", "G", "T" if \code{x}
-    is a "DNA input", and "A", "C", "G", "U" if \code{x} is "RNA input".
-    When \code{x} is a \link{BString} object (or an \link{XStringViews}
-    object with a \link{BString} subject, or a \link{BStringSet} object),
-    then the \code{baseOnly} argument is ignored.
+    If \code{TRUE}, the returned vector (or matrix) only contains the
+    frequencies of the letters that belong to the "base" alphabet
+    of \code{x} i.e. to the alphabet returned by
+    \code{alphabet(x, baseOnly=TRUE)}.
+    Note that when \code{x} is not a "DNA or RNA input", then
+    specifying \code{baseOnly} has no effect.
   }
   \item{freq}{
     If \code{TRUE} then frequencies are reported, otherwise counts.
@@ -170,6 +177,19 @@ sequence and other related functions}
     The alphabet to use to make the strings.
   }
   \item{shift}{
+    An integer vector specifying how each sequence in \code{x} should
+    be (horizontally) shifted with respect to the first column of the
+    consensus matrix to be returned.
+    By default (\code{shift=0}), each sequence in \code{x} has its
+    first letter aligned with the first column of the matrix.
+    A positive \code{shift} value means that the corresponding sequence
+    must be shifted to the right, and a negative \code{shift} value
+    that it must be shifted to the left.
+    For example, a shift of 5 means that it must be shifted 5 positions
+    to the right (i.e. the first letter in the sequence must be aligned
+    with the 6th column of the matrix), and a shift of -3 means that
+    it must be shifted 3 positions to the left (i.e. the 4th letter in
+    the sequence must be aligned with the first column of the matrix).
   }
 }
 
@@ -212,13 +232,16 @@ sequence and other related functions}
   string is used to represent the nul character if \code{x} happens to contain
   any. Note that this can only happen if the base class of \code{x}
   is \link{BString}.
+
+  An integer matrix with letters as row names for \code{consensusMatrix}.
+
+  A standard character string for \code{consensusString}.
 }
 
 \author{H. Pages and P. Aboyoun}
 
 \seealso{
-  \code{\link{countPDict}},
-  \link{XString-class},
+  \link{alphabet},
   \link{XStringSet-class},
   \link{XStringViews-class},
   \link{MaskedXString-class},
@@ -227,6 +250,7 @@ sequence and other related functions}
   \code{\link{strsplit}},
   \code{\link{GENETIC_CODE}},
   \code{\link{AMINO_ACID_CODE}}
+  \code{\link{countPDict}}
 }
 
 \examples{
@@ -305,8 +329,8 @@ sequence and other related functions}
   orf10 <- DNAStringSet(orf, end=10)
   consensusMatrix(orf10, baseOnly=TRUE)
 
-  ## This assumes the first 10 positions to be aligned after some
-  ## incremental shifting to the rigth (patently false):
+  ## The following example assumes the first 10 positions to be aligned
+  ## after some incremental shifting to the right (patently false):
   consensusMatrix(orf10, baseOnly=TRUE, shift=0:6)
   consensusMatrix(orf10, baseOnly=TRUE, shift=0:6, width=10)
 
@@ -337,4 +361,5 @@ sequence and other related functions}
   as.integer(coverage(IRanges(start=1+0:6, width=width(orf10)), start=1, end=10))
 }
 
-\keyword{category}
+\keyword{methods}
+\keyword{manip}
