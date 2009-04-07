@@ -179,19 +179,19 @@
   Views(chr3R, start=start_index[[i0]], end=end_index[[i0]]) # And as an XStringViews object.
 
   ## Get the coverage of the original subject:
-  cov3R <- as.integer(coverage(mi0, 1, length(chr3R)))
+  cov3R <- as.integer(coverage(mi0, width=length(chr3R)))
   max(cov3R)
   mean(cov3R)
   sum(cov3R != 0) / length(cov3R)      # Only 2.44% of chr3R is covered.
   if (interactive()) {
-    plotCoverage <- function(coverage, start, end)
+    plotCoverage <- function(cx, start, end)
     {
       plot.new()
       plot.window(c(start, end), c(0, 20))
       axis(1)
       axis(2)
       axis(4)
-      lines(start:end, coverage[start:end], type="l")
+      lines(start:end, cx[start:end], type="l")
     }
     plotCoverage(cov3R, 27600000, 27900000)
   }

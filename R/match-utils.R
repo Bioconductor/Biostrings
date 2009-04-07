@@ -334,37 +334,14 @@ setMethod("nmismatch", c(pattern="ANY", x="XStringViews"),
 ### The "coverage" methods.
 ###
 
-setMethod("coverage", "XStringViews",
-    function(x, start=NA, end=NA, weight=1L)
-    {
-        if (!isSingleNumberOrNA(start))
-            stop("'start' must be a single integer or NA")
-        if (!is.integer(start))
-            start <- as.integer(start)
-        if (is.na(start))
-            start <- 1L
-        if (!isSingleNumberOrNA(end))
-            stop("'end' must be a single integer or NA")
-        if (!is.integer(end))
-            end <- as.integer(end)
-        if (is.na(end))
-            end <- length(subject(x))
-        if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
-            stop("'weight' must be an integer vector with length 1 or 'length(x)'")
-        if (!is.integer(weight))
-            weight <- as.integer(weight)
-        callNextMethod(x, start=start, end=end, weight=weight)
-    }
-)
-
 setMethod("coverage", "MaskedXString",
-    function(x, start=NA, end=NA, weight=1L)
-        coverage(masks(x), start=start, end=end, weight=weight)
+    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+        coverage(masks(x), start=start, end=end, shift=shift, width=width, weight=weight)
 )
 
 setMethod("coverage", "MIndex",
-    function(x, start=NA, end=NA, weight=1L)
-        coverage(unlist(x), start=start, end=end, weight=weight)
+    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+        coverage(unlist(x), start=start, end=end, shift=shift, width=width, weight=weight)
 )
 
 

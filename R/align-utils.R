@@ -264,24 +264,27 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubjectSummary",
 ###
 
 setMethod("coverage", "AlignedXStringSet0",
-    function(x, start = NA, end = NA, weight = 1L)
+    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
     {
-        if (any(is.na(start)))
-            start <- 1
-        if (any(is.na(end)))
-            end <- max(nchar(unaligned(x)))
-        coverage(x@range, start = start, end = end, weight = weight)
+        if (coverage.isCalledWithStartEndInterface(start, end, shift, width)) {
+            ## From here, 'start' and 'end' cannot be single NAs
+            shift <- coverage.getShift0FromStartEnd(start)
+        }
+        shift <- normargShift(shift, length(x@range))
+        if (is.null(width))
+            width <- max(nchar(unaligned(x))) + max(shift)
+        coverage(x@range, start=start, end=end, shift=shift, width=width, weight=weight)
     }
 )
 
 setMethod("coverage", "PairwiseAlignedFixedSubject",
-    function(x, start = NA, end = NA, weight = 1L)
-        coverage(subject(x), start = NA, end = NA, weight = 1L)
+    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+        coverage(subject(x), start=start, end=end, shift=shift, width=width, weight=weight)
 )
 
 setMethod("coverage", "PairwiseAlignedFixedSubjectSummary",
-    function(x, start = NA, end = NA)
-        subseq(x@coverage, start=start, end=end)
+    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+        subseq(x@coverage, start=start, end=end, shift=shift, width=width, weight=weight)
 )
 
 

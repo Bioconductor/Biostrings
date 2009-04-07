@@ -241,7 +241,8 @@ sequence and other related functions}
 \author{H. Pages and P. Aboyoun}
 
 \seealso{
-  \link{alphabet},
+  \code{\link{alphabet}},
+  \code{\link[IRanges]{coverage}},
   \link{XStringSet-class},
   \link{XStringViews-class},
   \link{MaskedXString-class},
@@ -358,7 +359,7 @@ sequence and other related functions}
   colSums(cm)
 
   ## Note that this coverage can also be obtained with:
-  as.integer(coverage(IRanges(start=1+0:6, width=width(orf10)), start=1, end=10))
+  as.integer(coverage(IRanges(rep(1, length(orf)), width(orf)), shift=0:6, width=10))
 }
 
 \keyword{methods}

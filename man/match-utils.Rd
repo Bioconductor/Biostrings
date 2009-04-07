@@ -28,7 +28,6 @@
 \alias{nmismatch}
 \alias{nmismatch,ANY,XStringViews-method}
 
-\alias{coverage,XStringViews-method}
 \alias{coverage,MaskedXString-method}
 \alias{coverage,MIndex-method}
 
@@ -76,9 +75,8 @@
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
-  \S4method{coverage}{MIndex}(x, start=NA, end=NA, weight=1L)
-  \S4method{coverage}{XStringViews}(x, start=NA, end=NA, weight=1L)
-  \S4method{coverage}{MaskedXString}(x, start=NA, end=NA, weight=1L)
+  \S4method{coverage}{MIndex}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+  \S4method{coverage}{MaskedXString}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
 }
 
 \arguments{
@@ -123,13 +121,11 @@
     An \link{XStringViews} object for \code{mismatch} (typically, one returned
     by \code{matchPattern(pattern, subject)}).
 
-    Typically an \link{XStringViews} or \link{MIndex} object for \code{coverage}
-    but \link[IRanges]{IRanges}, \link[IRanges]{MaskCollection} and
-    \link{MaskedXString} objects are accepted too.
+    An \link{MIndex} object for \code{coverage}, or any object for
+    which a \code{coverage} method is defined. See \code{?\link[IRanges]{coverage}}.
   }
-  \item{start, end}{
-    Two single integers specifying where to start and end the extraction of the
-    coverage in \code{x}.
+  \item{start, end, shift, width}{
+    See \code{?\link[IRanges]{coverage}}.
   }
   \item{weight}{
     An integer vector specifying how much each element in \code{x} counts.
@@ -202,18 +198,10 @@
   produced by \code{mismatch}.
 
   \code{coverage}:  an \link[IRanges]{Rle} object indicating the coverage of
-  \code{x} in the interval specified by the \code{start} and \code{end}
-  arguments.
-  An integer value called the "coverage" can be associated to each position
-  in \code{x}, indicating how many times this position is covered by the views
-  or matches stored in \code{x}. For example, if \code{x} is an
-  \link{XStringViews} object, the coverage of a given position in \code{x} is
-  the number of views it belongs to.
+  \code{x}. See \code{?\link[IRanges]{coverage}} for the details.
   If \code{x} is an \link{MIndex} object, the coverage of a given position
-  in \code{x} is the number of matches (or hits) it belongs to.
-  Note that the positions in the returned \link[IRanges]{Rle} object are to be
-  interpreted as relative to the interval specified by the \code{start} and
-  \code{end} arguments.
+  in the underlying sequence (typically the subject used during the search
+  that returned \code{x}) is the number of matches (or hits) it belongs to.
 }
 
 \seealso{
