@@ -177,9 +177,9 @@ sequence and other related functions}
     The alphabet to use to make the strings.
   }
   \item{shift}{
-    An integer vector specifying how each sequence in \code{x} should
-    be (horizontally) shifted with respect to the first column of the
-    consensus matrix to be returned.
+    An integer vector (recycled to the length of \code{x}) specifying how
+    each sequence in \code{x} should be (horizontally) shifted with respect
+    to the first column of the consensus matrix to be returned.
     By default (\code{shift=0}), each sequence in \code{x} has its
     first letter aligned with the first column of the matrix.
     A positive \code{shift} value means that the corresponding sequence
