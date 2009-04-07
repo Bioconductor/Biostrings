@@ -163,9 +163,18 @@ sequence and other related functions}
   \item{width}{
     The number of nucleotides per oligonucleotide for
     \code{oligonucleotideFrequency}.
+
     The number of letters per string for \code{mkAllStrings}.
+
     The number of columns of the returned matrix for the \code{consensusMatrix}
     method for \link{XStringSet} objects.
+    When \code{width=NULL} (the default), then this method returns a matrix
+    that has just enough columns to have its last column aligned
+    with the rightmost letter of all the sequences in \code{x} after
+    those sequences have been shifted (see the \code{shift} argument below).
+    This ensures that any wider consensus matrix would be a "padded with zeros"
+    version of the matrix returned when \code{width=NULL}.
+    
     The length of the returned sequence for the \code{consensusString}
     method for \link{XStringSet} objects.
   }
