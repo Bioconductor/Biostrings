@@ -1,7 +1,7 @@
 useDynLib(Biostrings)
 
 import(methods)
-importFrom(utils, "head", "tail")
+#importFrom(utils, "head", "tail")  # already imported from IRanges
 import(IRanges)
 importFrom(Biobase, "addVigs2WinMenu")
 

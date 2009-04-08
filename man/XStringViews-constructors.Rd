@@ -39,7 +39,6 @@
   }
   \item{x}{
     An \link{XString} object or a character vector for \code{XStringViews}.
-    An XStringViews object for \code{trim} and \code{subviews}.
   }
   \item{subjectClass}{
     The class to be given to the subject of the \link{XStringViews} object
