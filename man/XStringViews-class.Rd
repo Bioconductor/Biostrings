@@ -46,25 +46,6 @@
   (start/end locations) on the same sequence (an \link{XString} object).
 }
 
-\usage{
-  ## Constructors:
-
-  \S4method{Views}{character}(subject, start=NULL, end=NULL, width=NULL, names=NULL)
-  \S4method{Views}{XString}(subject, start=NULL, end=NULL, width=NULL, names=NULL)
-}
-
-\arguments{
-  \item{subject}{
-    The subject sequence.
-  }
-  \item{start, end}{
-    Integer vectors specifying the starting and ending positions of each view.
-  }
-  \item{names}{
-    If not \code{NULL}, the names to assign to each view.
-  }
-}
-
 \details{
   An XStringViews object contains a set of views (start/end locations) on the
   same \link{XString} object called "the subject string"
@@ -80,16 +61,22 @@
   after its last letter.
 }
 
-\section{Accessor methods}{
-  In the code snippets below,
-  \code{x} is an XStringViews object.
-
+\section{Constructor}{
   \describe{
     \item{}{
-      \code{subject(x)}:
-      The subject of \code{x}. This is always an \link{XString}
-      object.
+      \code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:
+      See \code{?\link[IRanges]{Views}} in the IRanges package for the
+      details.
     }
+  }
+}
+
+\section{Accessor-like methods}{
+  All the accessor-like methods defined for \code{Views} objects
+  work on XStringViews objects. In addition, the following accessors are defined
+  for XStringViews objects:
+
+  \describe{
     \item{}{
       \code{nchar(x)}:
       A vector of non-negative integers containing the number
