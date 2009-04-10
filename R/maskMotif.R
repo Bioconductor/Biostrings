@@ -57,9 +57,9 @@ mask <- function(x, start=NA, end=NA, pattern)
         x <- XString(NULL, x)
     if (missing(pattern)) {
         if (isNumericOrNAs(start)) {
-            if (is.length(start) == 1L && is.na(start))
+            if (length(start) == 1L && is.na(start))
                 start <- 1L
-            if (is.length(end) == 1L && is.na(end))
+            if (length(end) == 1L && is.na(end))
                 end <- length(x)
             return(gaps(Views(x, start=start, end=end)))
         }
