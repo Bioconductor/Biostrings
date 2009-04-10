@@ -29,16 +29,17 @@ unsafe.newXStringViews <- function(subject, start, width)
 ###
 
 setMethod("Views", "XString",
-    function(subject, start=NA, end=NA, names=NULL)
-        newViews(subject, start=start, end=end, names=names,
+    function(subject, start=NULL, end=NULL, width=NULL, names=NULL)
+        newViews(subject,
+                 start=start, end=end, width=width, names=names,
                  Class="XStringViews")
 )
 
 setMethod("Views", "character",
-    function(subject, start=NA, end=NA, names=NULL)
+    function(subject, start=NULL, end=NULL, width=NULL, names=NULL)
     {
         xsubject <- XString(NULL, subject)
-        Views(xsubject, start=start, end=end, names=names)
+        Views(xsubject, start=start, end=end, width=width, names=names)
     }
 )
 

@@ -91,15 +91,23 @@ setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subjec
 ### Accessor methods.
 ###
 
+### TODO: Support the 'width' argument.
 setMethod("Views", signature = c(subject = "PairwiseAlignedFixedSubject"),
-          function(subject, start=NA, end=NA, names=NULL)
+          function(subject, start=NULL, end=NULL, width=NULL, names=NULL)
           {
+              if (!is.null(width))
+                  stop("\"Views\" method for PairwiseAlignedFixedSubject objects ",
+                       "does not support the 'width' argument yet, sorry!")
+              if (is.null(start))
+                  start <- NA
               if (all(is.na(start)))
                   start <- start(subject(subject))
               else if (!is.numeric(start) || length(start) > 1)
                   stop("'start' must be either NA or an integer vector of length 1")
               else
                   start <- as.integer(start) + start(subject(subject))
+              if (is.null(end))
+                  end <- NA
               if (all(is.na(end)))
                   end <- end(subject(subject))
               else if (!is.numeric(end) || length(end) > 1)

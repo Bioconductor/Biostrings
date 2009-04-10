@@ -53,18 +53,23 @@ setMethod("maskMotif", signature(x="XString", motif="ANY"),
 ### Deprecate in Biostrings 2.9!
 mask <- function(x, start=NA, end=NA, pattern)
 {
-        if (!is(x, "XString"))
-            x <- XString(NULL, x)
-        if (missing(pattern)) {
-            if (isNumericOrNAs(start))
-                return(gaps(Views(x, start=start, end=end)))
-            if (!missing(end))
-                stop("invalid 'start' argument")
-            pattern <- start
-        } else {
-            if (!missing(start) || !missing(end))
-                stop("can't give 'start' (or 'end') when 'pattern' is given")
+    if (!is(x, "XString"))
+        x <- XString(NULL, x)
+    if (missing(pattern)) {
+        if (isNumericOrNAs(start)) {
+            if (is.length(start) == 1L && is.na(start))
+                start <- 1L
+            if (is.length(end) == 1L && is.na(end))
+                end <- length(x)
+            return(gaps(Views(x, start=start, end=end)))
         }
-        as(maskMotif(x, pattern), "XStringViews")
+        if (!missing(end))
+            stop("invalid 'start' argument")
+        pattern <- start
+    } else {
+        if (!missing(start) || !missing(end))
+            stop("can't give 'start' (or 'end') when 'pattern' is given")
+    }
+    as(maskMotif(x, pattern), "XStringViews")
 }
 

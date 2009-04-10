@@ -156,7 +156,7 @@
   m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
   countIndex(m)  # now pattern 3 has 1 match too
   m[[3]]  # note that this match is "out of limit"
-  Views(subject, start=start(m[[3]]), end=end(m[[3]]))
+  Views(subject, m[[3]])
   }
 
   m <- matchPDict(pdict, subject, max.mismatch=2)

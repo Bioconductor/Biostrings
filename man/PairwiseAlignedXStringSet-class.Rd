@@ -223,16 +223,16 @@
       See `\link{consensusString}` for more information.
     }
     \item{}{
-      \code{coverage(x, start=NA, end=NA, weight=1L)}
+      \code{coverage(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)}
       See `\link{coverage,PairwiseAlignedFixedSubject-method}` for more
       information.
     }
     \item{}{
-      \code{Views(subject, start=NA, end=NA, names=NULL)}:
+      \code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:
       The \code{XStringViews} object that represents the pairwise alignments
       along \code{unaligned(subject(subject))}. The \code{start} and \code{end}
-      arguments must be either \code{NA} or an integer vector of length 1 that
-      denotes the offset from \code{start(subject(subject))}.
+      arguments must be either \code{NULL}/\code{NA} or an integer vector
+      of length 1 that denotes the offset from \code{start(subject(subject))}.
     }
   }
 }

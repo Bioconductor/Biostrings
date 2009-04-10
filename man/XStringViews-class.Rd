@@ -213,9 +213,10 @@
   Views(BString("aaa--b"), start=-3:4, end=-3:4 + c(3:6, 6:3))
 
   ## 'start' and 'end' are recycled:
-  Views("abcdefghij", start=2:1, end=4)
-  Views("abcdefghij", start=5:7)
-  Views("abcdefghij", end=5:7)
+  subject <- "abcdefghij"
+  Views(subject, start=2:1, end=4)
+  Views(subject, start=5:7, end=length(subject))
+  Views(subject, start=1, end=5:7)
 
   ## Applying gaps() to an XStringViews object:
   v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))

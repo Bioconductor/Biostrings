@@ -202,7 +202,7 @@
   ## The matches in 'subject[i0]' as an IRanges object:
   mindex[[i0]]
   ## The matches in 'subject[i0]' as an XStringViews object:
-  Views(subject[[i0]], start=start(mindex[[i0]]), end=end(mindex[[i0]]))
+  Views(subject[[i0]], mindex[[i0]])
 
   ## ---------------------------------------------------------------------
   ## C. With indels
