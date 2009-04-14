@@ -175,8 +175,10 @@
   \code{\link{coverage,MIndex-method}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
+  \link{DNAString-class},
+  \link{DNAStringSet-class},
   \link{XStringViews-class},
-  \link{DNAString-class}
+  \link{MaskedDNAString-class}
 }
 
 \examples{
@@ -219,7 +221,7 @@
   cov3R <- as.integer(coverage(mi0, width=length(chr3R)))
   max(cov3R)
   mean(cov3R)
-  sum(cov3R != 0) / length(cov3R)      # Only 2.44% of chr3R is covered.
+  sum(cov3R != 0) / length(cov3R)      # Only 2.44\% of chr3R is covered.
   if (interactive()) {
     plotCoverage <- function(cx, start, end)
     {
@@ -281,7 +283,7 @@
       ans_width <- width(dict[1])
       ans_pptime <- system.time(pdict <- PDict(dict))[["elapsed"]]
       pptb <- pdict@threeparts@pptb
-      ans_nnodes <- length(pptb@nodes) %/%
+      ans_nnodes <- length(pptb@nodes) \%/\%
                     Biostrings:::.ACtree.ints_per_acnode(pptb)
       ans_nupatt <- sum(!duplicated(pdict))
       ans_matchtime <- system.time(
@@ -307,8 +309,8 @@
   ## ---------------------------------------------------------------------
   ## D. vcountPDict()
   ## ---------------------------------------------------------------------
-
   subject <- Dmelanogaster$upstream1000[1:200]
+  subject
   mat1 <- vcountPDict(pdict0, subject)
   dim(mat1)  # length(pdict0) x length(subject)
   nhit_per_probe <- rowSums(mat1)
@@ -329,20 +331,39 @@
     length(pdict0) * length(Dmelanogaster$upstream1000)
     1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
     ## But this will work:
-    nhits_per_seq <- vcountPDict(pdict0, subject, collapse=2)
-    sum(nhits_per_seq >= 1)  # nb of subject sequences with at least 1 hit
-    table(nhits_per_seq)
-    which(nhits_per_seq == 37)  # 603
+    nhit_per_seq <- vcountPDict(pdict0, subject, collapse=2)
+    sum(nhit_per_seq >= 1)  # nb of subject sequences with at least 1 hit
+    table(nhit_per_seq)
+    which(nhit_per_seq == 37)  # 603
     sum(countPDict(pdict0, subject[[603]]))  # 37
   }
 
-  ATtriplets <- DNAStringSet(mkAllStrings(c("A", "T"), 3))
-  subject <- xscat(ATtriplets, ATtriplets)
-  dict <- append(ATtriplets, rev(ATtriplets))
-  pdict <- PDict(dict)
-  mat3 <- vcountPDict(pdict, subject)
-  mat4 <- sapply(subject, function(x) countPDict(pdict, x))
-  identical(mat3, mat4)  # TRUE
+  ## ---------------------------------------------------------------------
+  ## E. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
+  ## vcountPattern()
+  ## ---------------------------------------------------------------------
+  dict3 <- DNAStringSet(mkAllStrings(DNA_BASES, 3))  # all trinucleotides
+  dict3
+  pdict3 <- PDict(dict3)
+  subject <- Dmelanogaster$upstream1000
+  subject
+
+  ## The 3 following calls are equivalent (from faster to slower):
+  mat3a <- vcountPDict(pdict3, subject)
+  mat3b <- sapply(dict3, function(pattern) vcountPattern(pattern, subject))
+  mat3c <- sapply(unname(subject), function(x) countPDict(pdict3, x))
+  stopifnot(identical(mat3a, t(mat3b)))
+  stopifnot(identical(mat3a, mat3c))
+
+  ## The 2 following calls are equivalent (from faster to slower):
+  nhitpp3a <- vcountPDict(pdict3, subject, collapse=1)  # rowSums(mat3a)
+  nhitpp3b <- sapply(dict3, function(pattern) sum(vcountPattern(pattern, subject)))
+  stopifnot(identical(nhitpp3a, nhitpp3b))
+
+  ## The 2 following calls are equivalent (from faster to slower):
+  nhitps3a <- vcountPDict(pdict3, subject, collapse=2)  # colSums(mat3a)
+  nhitps3b <- sapply(unname(subject), function(x) sum(countPDict(pdict3, x)))
+  stopifnot(identical(nhitps3a, nhitps3b))
 }
 
 \keyword{methods}
