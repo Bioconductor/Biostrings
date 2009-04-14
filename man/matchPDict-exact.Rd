@@ -35,19 +35,21 @@
 \title{Searching a sequence for patterns stored in a preprocessed dictionary}
 
 \description{
-  The \code{matchPDict}, \code{countPDict} and \code{whichPDict} functions
-  efficiently find the occurrences in a text (the subject) of all patterns
-  stored in a preprocessed dictionary.
+  A set of functions for finding all the occurences (aka "matches" or "hits")
+  of a set of patterns (aka the dictionary) in a reference
+  sequence or set of reference sequences (aka the subject)
 
-  The three functions differ in what they return: \code{matchPDict} returns
-  the "where" information i.e. the positions in the subject of all the
+  The following functions differ in what they return: \code{matchPDict}
+  returns the "where" information i.e. the positions in the subject of all the
   occurrences of every pattern; \code{countPDict} returns the "how many
   times" information i.e. the number of occurrences for each pattern;
   and \code{whichPDict} returns the "who" information i.e. which patterns
   in the preprocessed dictionary have at least one match.
+  \code{vcountPDict} is similar to \code{countPDict} but it works on
+  a set of reference sequences in a vectorized fashion.
 
-  This man page shows how to use \code{matchPDict}/\code{countPDict}/\code{whichPDict}
-  for exact matching of a constant width dictionary i.e. a dictionary where all the
+  This man page shows how to use these functions for exact matching
+  of a constant width dictionary i.e. a dictionary where all the
   patterns have the same length (same number of nucleotides).
 
   See \code{?`\link{matchPDict-inexact}`} for how to use these functions

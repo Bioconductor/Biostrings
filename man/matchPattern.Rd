@@ -34,7 +34,7 @@
 \description{
   A set of functions for finding all the occurences (aka "matches" or "hits")
   of a given pattern (typically short) in a (typically long) reference sequence
-  or set of sequences (aka the subject)
+  or set of reference sequences (aka the subject)
 }
 
 \usage{
