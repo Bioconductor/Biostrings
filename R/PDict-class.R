@@ -11,6 +11,7 @@ setClass("PreprocessedTB",
     representation(
         "VIRTUAL",
         tb="DNAStringSet",  # always constant width
+        exclude_dups0="logical",
         dups="Dups"
     )
 )
@@ -29,9 +30,10 @@ setGeneric("dups", function(x) standardGeneric("dups"))
 setMethod("dups", "PreprocessedTB", function(x) x@dups)
 
 setMethod("initialize", "PreprocessedTB",
-    function(.Object, tb, dup2unq)
+    function(.Object, tb, pp_exclude, dup2unq)
     {
         .Object@tb <- tb
+        .Object@exclude_dups0 <- !is.null(pp_exclude)
         .Object@dups <- Dups(dup2unq)
         .Object
     }
@@ -83,12 +85,12 @@ setMethod("show", "Twobit",
 )
 
 setMethod("initialize", "Twobit",
-    function(.Object, tb, dup2unq0)
+    function(.Object, tb, pp_exclude)
     {
         base_codes <- xscodes(tb, baseOnly=TRUE)
-        C_ans <- .Call("build_Twobit", tb, dup2unq0, base_codes,
+        C_ans <- .Call("build_Twobit", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$dup2unq)
         .Object@sign2pos <- C_ans$sign2pos
         .Object@base_codes <- base_codes
         .Object
@@ -169,13 +171,13 @@ setMethod("[", "ACtree",
 setMethod("as.matrix", "ACtree", function(x) x[])
 
 setMethod("initialize", "ACtree",
-    function(.Object, tb, dup2unq0)
+    function(.Object, tb, pp_exclude)
     {
         base_codes <- xscodes(tb, baseOnly=TRUE)
         on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
-        C_ans <- .Call("build_ACtree", tb, dup2unq0, base_codes,
+        C_ans <- .Call("build_ACtree", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$dup2unq)
         .Object@nodes <- C_ans$nodes
         .Object@base_codes <- base_codes
         .Object
@@ -224,7 +226,7 @@ setMethod("show", "ACtree2",
 )
 
 setMethod("initialize", "ACtree2",
-    function(.Object, tb, dup2unq0)
+    function(.Object, tb, pp_exclude)
     {
         nodebuf_max_nblock <- .Call("ACtree2_nodebuf_max_nblock",
                                     PACKAGE="Biostrings")
@@ -236,10 +238,10 @@ setMethod("initialize", "ACtree2",
                                 PACKAGE="Biostrings")
         base_codes <- xscodes(tb, baseOnly=TRUE)
         C_ans <- .Call("ACtree2_build",
-                       tb, dup2unq0, base_codes,
+                       tb, pp_exclude, base_codes,
                        nodebuf_ptr, nodeextbuf_ptr,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, C_ans$dup2unq)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$dup2unq)
         .Object@nodebuf_ptr <- nodebuf_ptr
         .Object@nodeextbuf_ptr <- nodeextbuf_ptr
         .Object@base_codes <- base_codes
@@ -288,28 +290,27 @@ setMethod("tail", "PDict3Parts",
     }
 )
 
-setMethod("dups", "PDict3Parts",
-    function(x)
-        if (is.null(head(x)) && is.null(tail(x))) dups(x@pptb) else NULL
-)
-
 .PDict3Parts <- function(x, tb.start, tb.end, tb.width, algo, pptb0)
 {
     threeparts <- threebands(x, start=tb.start, end=tb.end, width=tb.width)
     head <- threeparts$left
     tb <- threeparts$middle
     tail <- threeparts$right
-    use_pptb0 <- !is.null(pptb0) &&
-                 all(width(head) == 0L) && all(width(tail) == 0L) &&
-                 algo == class(pptb0)
-    if (use_pptb0) {
-        pptb <- pptb0
+    if (is.null(pptb0)) {
+        pptb <- new(algo, tb, NULL)
     } else {
-        if (is.null(pptb0))
-            dup2unq0 <- NULL
-        else
-            dup2unq0 <- dups(pptb0)@dup2unq
-        pptb <- new(algo, tb, dup2unq0)
+        use_pptb0 <- algo == class(pptb0) &&
+                     all(width(head) == 0L) && all(width(tail) == 0L)
+        if (use_pptb0) {
+            ## We can avoid to do the expensive preprocessing again by
+            ## making the 'pptb' that would be returned by
+            ## 'new(algo, tb, dups(pptb0)@dup2unq)':
+            pptb <- pptb0
+            pptb@dups <- Dups(rep.int(as.integer(NA), length(pptb)))
+            pptb@exclude_dups0 <- TRUE
+        } else {
+            pptb <- new(algo, tb, dups(pptb0)@dup2unq)
+        }
     }
     new("PDict3Parts", head=head, pptb=pptb, tail=tail)
 }
@@ -425,16 +426,6 @@ setMethod("tb", "TB_PDict", function(x) tb(x@threeparts))
 setMethod("tb.width", "TB_PDict", function(x) tb.width(x@threeparts))
 setMethod("tail", "TB_PDict", function(x, ...) tail(x@threeparts))
 
-setMethod("dups", "TB_PDict",
-    function(x)
-    {
-        ans <- dups(x@threeparts)
-        if (!is.null(ans))
-            return(ans)
-        callNextMethod()
-    }
-)
-
 setMethod("show", "TB_PDict",
     function(object)
     {
@@ -478,16 +469,17 @@ setMethod("show", "TB_PDict",
 
 .TB_PDict <- function(x, tb.start, tb.end, tb.width, algo)
 {
-    constant_width <- min(width(x)) == max(width(x))
+    constant_width <- isConstant(width(x))
     if (constant_width && hasOnlyBaseLetters(x))
-        pptb0 <- new(algo, x, NULL)
+        pptb0 <- new("ACtree2", x, NULL)  # because ACtree2 supports big input
     else
         pptb0 <- NULL
     threeparts <- .PDict3Parts(x, tb.start, tb.end, tb.width, algo, pptb0)
     ans <- new("TB_PDict", dict0=x,
                            constant_width=constant_width,
                            threeparts=threeparts)
-    if (is.null(dups(threeparts)) && !is.null(pptb0))
+    ## '!is.null(pptb0)' should be the same as 'threeparts@pptb@exclude_dups0'
+    if (!is.null(pptb0))
         ans@dups0 <- dups(pptb0)
     ans
 }
@@ -537,7 +529,7 @@ setMethod("show", "MTB_PDict",
     if (min_width < 2L * min.TBW)
         stop("'max.mismatch >= 1' is supported only if the width ",
              "of dictionary 'x' is >= ", 2L * min.TBW)
-    constant_width <- min_width == max(width(x))
+    constant_width <- isConstant(width(x))
     NTB <- max.mismatch + 1L # nb of Trusted Bands
     TBW0 <- min_width %/% NTB
     if (TBW0 < min.TBW) {
@@ -561,12 +553,12 @@ setMethod("show", "MTB_PDict",
                 "length of the subject)")
     all_headw <- diffinv(all_tbw)
     if (constant_width)
-        pptb0 <- new(algo, x, NULL)
+        pptb0 <- new("ACtree2", x, NULL)  # because ACtree2 supports big input
     else
         pptb0 <- NULL
     threeparts_list <- lapply(seq_len(NTB),
                          function(i)
-                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1], NA, algo, pptb0)
+                           .PDict3Parts(x, all_headw[i]+1L, all_headw[i+1L], NA, algo, pptb0)
                        )
     ans <- new("MTB_PDict", dict0=x,
                             constant_width=constant_width,

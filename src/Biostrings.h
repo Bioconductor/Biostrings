@@ -454,7 +454,7 @@ SEXP debug_MIndex_utils();
 
 void _MIndex_init_match_reporting(
 	int is_count_only,
-	int with_headtail,
+	int with_matching_keys,
 	int pdict_L
 );
 
@@ -762,7 +762,7 @@ SEXP debug_match_pdict_Twobit();
 
 SEXP build_Twobit(
 	SEXP tb,
-	SEXP dup2unq0,
+	SEXP pp_exclude,
 	SEXP base_codes
 );
 
@@ -781,7 +781,7 @@ SEXP free_actree_nodes_buf();
 
 SEXP build_ACtree(
 	SEXP tb,
-	SEXP dup2unq0,
+	SEXP pp_exclude,
 	SEXP base_codes
 );
 
@@ -826,7 +826,7 @@ SEXP ACtree2_summary(SEXP pptb);
 
 SEXP ACtree2_build(
 	SEXP tb,
-	SEXP dup2unq0,
+	SEXP pp_exclude,
 	SEXP base_codes,
 	SEXP nodebuf_ptr,
 	SEXP nodeextbuf_ptr
@@ -874,6 +874,8 @@ SEXP XStringSet_vmatch_pdict(
 	SEXP subject,
 	SEXP max_mismatch,
 	SEXP fixed,
+	SEXP collapse,
+	SEXP weight,
 	SEXP count_only,
 	SEXP envir
 );

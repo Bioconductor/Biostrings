@@ -116,15 +116,15 @@ static SEXP Twobit_asLIST(SEXP twobit_sign2pos)
  * Arguments:
  *   tb:         the Trusted Band extracted from the original dictionary as a
  *               DNAStringSet object;
- *   dup2unq0:   NULL or an integer vector of the same length as 'tb'
- *               containing the mapping from duplicated to unique patterns in
- *               the original dictionary;
+ *   pp_exclude: NULL or an integer vector of the same length as 'tb' where
+ *               non-NA values indicate the elements to exclude from
+ *               preprocessing;
  *   base_codes: the internal codes for A, C, G and T.
  *
  * See Twobit_asLIST() for a description of the returned SEXP.
  */
 
-SEXP build_Twobit(SEXP tb, SEXP dup2unq0, SEXP base_codes)
+SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset, twobit_len;
 	CachedXStringSet cached_tb;
@@ -141,8 +141,8 @@ SEXP build_Twobit(SEXP tb, SEXP dup2unq0, SEXP base_codes)
 	cached_tb = _new_CachedXStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {
 		/* Skip duplicated patterns */
-		if (dup2unq0 != R_NilValue
-		 && INTEGER(dup2unq0)[poffset] != NA_INTEGER)
+		if (pp_exclude != R_NilValue
+		 && INTEGER(pp_exclude)[poffset] != NA_INTEGER)
 			continue;
 		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_tb,
 				poffset);

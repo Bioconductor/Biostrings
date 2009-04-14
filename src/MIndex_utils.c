@@ -27,12 +27,12 @@ SEXP debug_MIndex_utils()
  */
 
 static int match_reporting_mode; // 0, 1 or 2
-static int what_to_return; // 0: all matches; 1: match count; 2: matching elts
+static int what_to_return; // 0: all matches; 1: match count; 2: matching keys
 static IntAE match_count; // used when mode == 0 and initialized when mode == 2
 static IntAEAE match_ends;  // used when mode >= 1
 static IntAE matching_keys;
 
-void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
+void _MIndex_init_match_reporting(int is_count_only, int with_matching_keys,
 		int pdict_L)
 {
 	if (is_count_only == NA_LOGICAL) {
@@ -43,7 +43,7 @@ void _MIndex_init_match_reporting(int is_count_only, int with_headtail,
 	} else {
 		what_to_return = 0;
 	}
-	match_reporting_mode = is_count_only ? (with_headtail ? 2 : 0) : 1;
+	match_reporting_mode = is_count_only ? (with_matching_keys ? 2 : 0) : 1;
 	if (match_reporting_mode == 0 || match_reporting_mode == 2)
 		match_count = new_IntAE(pdict_L, pdict_L, 0);
 	if (match_reporting_mode >= 1)

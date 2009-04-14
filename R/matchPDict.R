@@ -125,47 +125,51 @@
                 "letters")
 }
 
-.XString.matchPDict <- function(pdict, subject,
-                                max.mismatch, fixed,
-                                count.only, envir)
+### 'threeparts' is a PDict3Parts object.
+.match.PDict3Parts.XString <- function(threeparts, subject,
+                                       max.mismatch, fixed,
+                                       count.only, envir)
 {
     fixed <- normargFixed(fixed, subject)
-    if (is.null(head(pdict)) && is.null(tail(pdict)))
+    if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("XString_match_pdict",
-          pdict@threeparts@pptb, head(pdict), tail(pdict),
+          threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, fixed,
           count.only, envir,
           PACKAGE="Biostrings")
 }
 
-.XStringViews.matchPDict <- function(pdict, subject,
-                                     max.mismatch, fixed,
-                                     count.only, envir)
+### 'threeparts' is a PDict3Parts object.
+.match.PDict3Parts.XStringViews <- function(threeparts, subject,
+                                            max.mismatch, fixed,
+                                            count.only, envir)
 {
     fixed <- normargFixed(fixed, subject)
-    if (is.null(head(pdict)) && is.null(tail(pdict)))
+    if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("XStringViews_match_pdict",
-          pdict@threeparts@pptb, head(pdict), tail(pdict),
+          threeparts@pptb, head(threeparts), tail(threeparts),
           subject(subject), start(subject), width(subject),
           max.mismatch, fixed,
           count.only, envir,
           PACKAGE="Biostrings")
 }
 
-.XStringSet.vmatchPDict <- function(pdict, subject,
-                                    max.mismatch, fixed,
-                                    count.only, envir)
+### 'threeparts' is a PDict3Parts object.
+.vmatch.PDict3Parts.XStringSet <- function(threeparts, subject,
+                                           max.mismatch, fixed,
+                                           collapse, weight, count.only, envir)
 {
     fixed <- normargFixed(fixed, subject)
-    if (is.null(head(pdict)) && is.null(tail(pdict)))
+    if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("XStringSet_vmatch_pdict",
-          pdict@threeparts@pptb, head(pdict), tail(pdict),
+          threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, fixed,
+          collapse, weight,
           count.only, envir,
           PACKAGE="Biostrings")
 }
@@ -175,17 +179,17 @@
 ### .matchPDict()
 ###
 
-.matchTB_PDict <- function(pdict, subject, algorithm,
-                           max.mismatch, fixed, verbose, count.only)
+.match.TB_PDict <- function(pdict, subject, algorithm,
+                            max.mismatch, fixed, verbose, count.only)
 {
     if (is(subject, "DNAString"))
-        C_ans <- .XString.matchPDict(pdict, subject,
-                                     max.mismatch, fixed,
-                                     count.only, NULL)
+        C_ans <- .match.PDict3Parts.XString(pdict@threeparts, subject,
+                                            max.mismatch, fixed,
+                                            count.only, NULL)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
-        C_ans <- .XStringViews.matchPDict(pdict, subject,
-                                          max.mismatch, fixed,
-                                          count.only, NULL)
+        C_ans <- .match.PDict3Parts.XStringViews(pdict@threeparts, subject,
+                                                 max.mismatch, fixed,
+                                                 count.only, NULL)
     else
         stop("'subject' must be a DNAString object,\n",
              "  a MaskedDNAString object,\n",
@@ -196,8 +200,8 @@
     new("ByPos_MIndex", width=width(pdict), NAMES=names(pdict), ends=C_ans)
 }
 
-.matchMTB_PDict <- function(pdict, subject, algorithm,
-                            max.mismatch, fixed, verbose, count.only)
+.match.MTB_PDict <- function(pdict, subject, algorithm,
+                             max.mismatch, fixed, verbose, count.only)
 {
     tb_pdicts <- as.list(pdict)
     NTB <- length(tb_pdicts)
@@ -220,9 +224,9 @@
             tb_pdict <- tb_pdicts[[i]]
             st <- system.time(
                 {
-                    ans_part <- .matchTB_PDict(tb_pdict, subject, algorithm,
-                                               max.mismatch, fixed, verbose,
-                                               (if (is.na(count.only)) NA else FALSE))
+                    ans_part <- .match.TB_PDict(tb_pdict, subject, algorithm,
+                                                max.mismatch, fixed, verbose,
+                                                (if (is.na(count.only)) NA else FALSE))
                 }, gcFirst=TRUE)
             if (verbose) {
                 print(st)
@@ -248,31 +252,34 @@
 .matchPDict <- function(pdict, subject, algorithm,
                         max.mismatch, fixed, verbose, count.only=FALSE)
 {
+    which_pp_excluded <- NULL
+    dups0 <- dups(pdict)
+    if (!is.null(dups0))
+        which_pp_excluded <- which(duplicated(dups0))
     if (!identical(algorithm, "auto"))
         stop("'algorithm' can only be '\"auto\"' for now")
     max.mismatch <- normargMaxMismatch(max.mismatch)
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
-        ans <- .matchTB_PDict(pdict, subject, algorithm,
-                              max.mismatch, fixed, verbose, count.only)
-    else if (is(pdict, "MTB_PDict"))
-        ans <- .matchMTB_PDict(pdict, subject, algorithm,
+        ans <- .match.TB_PDict(pdict, subject, algorithm,
                                max.mismatch, fixed, verbose, count.only)
+    else if (is(pdict, "MTB_PDict"))
+        ans <- .match.MTB_PDict(pdict, subject, algorithm,
+                                max.mismatch, fixed, verbose, count.only)
     else
         stop("'pdict' must be a PDict object")
-    if (is.null(dups(pdict)))
+    if (length(which_pp_excluded) == 0L)
         return(ans)
     if (is.na(count.only)) # whichPDict()
-        return(sort(c(ans, unlist(dups(pdict)@unq2dup[ans]))))
+        return(sort(c(ans, unlist(dups0@unq2dup[ans]))))
     if (count.only) { # countPDict()
-        which_is_dup <- which(duplicated(pdict))
-        ans[which_is_dup] <- ans[dups(pdict)@dup2unq[which_is_dup]]
+        ans[which_pp_excluded] <- ans[dups0@dup2unq[which_pp_excluded]]
         return(ans)
     }
     # matchPDict()
     if (is(ans, "ByPos_MIndex")) {
-        ans@dups0 <- dups(pdict)
+        ans@dups0 <- dups0
     } else {
         stop("don't know how to store the dup info in a ",
              class(ans), " object")
@@ -285,45 +292,61 @@
 ### .vmatchPDict()
 ###
 
-.vmatchTB_PDict <- function(pdict, subject, algorithm,
-                            max.mismatch, fixed, verbose, count.only)
-{
-    if (!count.only)
-        stop("'count.only' must be TRUE (other values are not supported yet, sorry)")
-    if (is(subject, "DNAStringSet"))
-        C_ans <- .XStringSet.vmatchPDict(pdict, subject,
-                                         max.mismatch, fixed,
-                                         count.only, NULL)
-    else
-        stop("'subject' must be a DNAStringSet object")
-    C_ans
-}
-
 .vmatchPDict <- function(pdict, subject, algorithm,
-                         max.mismatch, fixed, verbose, count.only=FALSE)
+                         max.mismatch, fixed,
+                         collapse, weight, verbose, count.only=FALSE)
 {
-    if (!count.only)
-        stop("'count.only' must be TRUE (other values are not supported yet, sorry)")
+    if (!isTRUE(count.only))
+        stop("vmatchPDict() is not supported yet, sorry")
+    which_pp_excluded <- NULL
+    dups0 <- dups(pdict)
+    if (!is.null(dups0))
+        which_pp_excluded <- which(duplicated(dups0))
+    if (!is(subject, "DNAStringSet"))
+        stop("'subject' must be a DNAStringSet object")
     if (!identical(algorithm, "auto"))
         stop("'algorithm' can only be '\"auto\"' for now")
     max.mismatch <- normargMaxMismatch(max.mismatch)
+    if (count.only) {
+        collapse <- normargCollapse(collapse)
+        if (collapse) {
+            if (collapse == 1L) {
+                weight <- normargWeight(weight, length(subject))
+            } else {
+                weight <- normargWeight(weight, length(pdict))
+                if (length(which_pp_excluded) != 0L) {
+                    ## Collapse weights of duplicates.
+                    ## TODO: Implement this in C.
+                    which_is_not_unique <- which(!sapply(dups0@unq2dup, is.null))
+                    weight[which_is_not_unique] <-
+                        weight[which_is_not_unique] +
+                        sapply(which_is_not_unique,
+                               function(i) sum(weight[dups0@unq2dup[[i]]]))
+                }
+            }
+        } else {
+            if (!identical(weight, 1L))
+                warning("'weight' is ignored when 'collapse=FALSE'")
+        }
+    }
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
-        ans <- .vmatchTB_PDict(pdict, subject, algorithm,
-                               max.mismatch, fixed, verbose, count.only)
+        ans <- .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
+                                              max.mismatch, fixed,
+                                              collapse, weight, count.only, NULL)
     else if (is(pdict, "MTB_PDict"))
         stop("MTB_PDict objects are not supported yet, sorry")
     else
         stop("'pdict' must be a PDict object")
-    if (is.null(dups(pdict)))
+    if (length(which_pp_excluded) == 0L)
         return(ans)
-    if (count.only) { # vcountPDict()
-        which_is_dup <- which(duplicated(pdict))
-        ans[which_is_dup, ] <- ans[dups(pdict)@dup2unq[which_is_dup], ]
-        return(ans)
+    if (collapse == 0L) {
+        ans[which_pp_excluded, ] <- ans[dups0@dup2unq[which_pp_excluded], ]
+    } else if (collapse == 1L) {
+        ans[which_pp_excluded] <- ans[dups0@dup2unq[which_pp_excluded]]
     }
-    stop("internal problem")
+    return(ans)
 }
 
 
@@ -467,39 +490,45 @@ setMethod("vmatchPDict", "MaskedXString",
 
 setGeneric("vcountPDict", signature="subject",
     function(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, fixed=TRUE,
+             collapse=FALSE, weight=1L, verbose=FALSE)
         standardGeneric("vcountPDict")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "XString",
     function(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, fixed=TRUE,
+             collapse=FALSE, weight=1L, verbose=FALSE)
         stop("please use countPDict() when 'subject' is an XString object (single sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "XStringSet",
     function(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, fixed=TRUE,
+             collapse=FALSE, weight=1L, verbose=FALSE)
         .vmatchPDict(pdict, subject, algorithm,
-                     max.mismatch, fixed, verbose, count.only=TRUE)
+                     max.mismatch, fixed,
+                     collapse, weight, verbose, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "XStringViews",
     function(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, fixed=TRUE,
+             collapse=FALSE, weight=1L, verbose=FALSE)
         vcountPDict(pdict, XStringViewsToSet(subject, FALSE, verbose=FALSE),
                     algorithm=algorithm,
                     max.mismatch=max.mismatch, fixed=fixed,
-                    verbose=verbose)
+                    collapse=collapse, weight=weight, verbose=verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "MaskedXString",
     function(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, fixed=TRUE,
+             collapse=FALSE, weight=1L, verbose=FALSE)
         stop("please use countPDict() when 'subject' is a MaskedXString object (single sequence)")
 )
 

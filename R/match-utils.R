@@ -70,6 +70,15 @@ normargFixed <- function(fixed, subject, argname="fixed")
     fixed
 }
 
+normargCollapse <- function(collapse)
+{
+    if (identical(collapse, FALSE))
+        return(0L)
+    if (!isSingleNumber(collapse) || !(collapse %in% 0:2))
+        stop("'collapse' must be FALSE, 1 or 2")
+    as.integer(collapse)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "neditStartingAt", "neditEndingAt", "isMatchingStartingAt" and

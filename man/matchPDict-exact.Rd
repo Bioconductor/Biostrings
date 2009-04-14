@@ -63,7 +63,8 @@
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
 
   vcountPDict(pdict, subject, algorithm="auto",
-              max.mismatch = 0, fixed=TRUE, verbose=FALSE)
+              max.mismatch=0, fixed=TRUE,
+              collapse=FALSE, weight=1L, verbose=FALSE)
 }
 
 \arguments{
@@ -71,9 +72,13 @@
     A \link{PDict} object containing the preprocessed dictionary.
   }
   \item{subject}{
-    An \link{XString} object containing the subject string.
-    For now, only \link{XString} subjects of base class \link{DNAString}
-    are supported.
+    An \link{XString} or \link{MaskedXString} object containing the
+    subject sequence for \code{matchPDict}, \code{countPDict} and \code{whichPDict}.
+
+    An \link{XStringSet} object containing the subject sequences
+    for \code{vcountPDict}.
+
+    For now, only subjects of base class \link{DNAString} are supported.
   }
   \item{algorithm}{
     Not supported yet.
@@ -95,31 +100,61 @@
   \item{verbose}{
     \code{TRUE} or \code{FALSE}.
   }
+  \item{collapse,weight}{
+    \code{collapse} must be \code{FALSE}, \code{1}, or \code{2}.
+
+    If \code{collapse=FALSE} (the default), then \code{weight} is ignored
+    and \code{vcountPDict} returns the full matrix of counts (\code{M0}).
+    If \code{collapse=1}, then \code{M0} is collapsed "horizontally"
+    i.e. it is turned into a vector with \code{length} equal to
+    \code{length(pdict)}.
+    If \code{weight=1L} (the default), then this vector is defined by
+    \code{rowSums(M0)}.
+    If \code{collapse=2}, then \code{M0} is collapsed "vertically"
+    i.e. it is turned into a vector with \code{length} equal to
+    \code{length(subject)}.
+    If \code{weight=1L} (the default), then this vector is defined by
+    \code{colSums(M0)}.
+
+    If \code{collapse=1} or \code{collapse=2}, then the elements in
+    \code{subject} (\code{collapse=1}) or in \code{pdict} (\code{collapse=2})
+    can be weighted thru the \code{weight} argument.
+    In that case, the returned vector is defined by
+    \code{M0 %*% rep(weight, length.out=length(subject))}
+    and \code{rep(weight, length.out=length(pdict)) %*% M0},
+    respectively.
+  }
 }
 
 \details{
-  In this man page, we assume that you know how to preprocess
-  a dictionary of DNA patterns that can then be used with
-  \code{matchPDict}, \code{countPDict} or \code{whichPDict}.
+  In this man page, we assume that you know how to preprocess a dictionary
+  of DNA patterns that can then be used with \code{matchPDict},
+  \code{countPDict}, \code{whichPDict} or \code{vcountPDict}.
   Please see \code{?\link{PDict}} if you don't.
 
-  When using \code{matchPDict}, \code{countPDict} or \code{whichPDict}
-  for exact matching of a constant width dictionary, the standard way to
-  preprocess the original dictionary is by calling the \code{\link{PDict}}
-  constructor on it with no extra arguments. This returns the preprocessed
-  dictionary in a \link{PDict} object that can be used with
-  \code{matchPDict}/\code{countPDict}/\code{whichPDict}.
+  When using \code{matchPDict}, \code{countPDict}, \code{whichPDict}
+  or \code{vcountPDict} for exact matching of a constant width dictionary,
+  the standard way to preprocess the original dictionary is by calling
+  the \code{\link{PDict}} constructor on it with no extra arguments.
+  This returns the preprocessed dictionary in a \link{PDict} object
+  that can be used with any of the functions described here.
 }
 
 \value{
-  \code{matchPDict} returns an \link{MIndex} object with \code{length}
-  equal to the number of patterns in the \code{pdict} argument.
-
-  \code{countPDict} returns an integer vector with \code{length}
-  equal to the number of patterns in the \code{pdict} argument.
+  If \code{M} denotes the number of patterns in the \code{pdict}
+  argument (\code{M <- length(pdict)}), then \code{matchPDict} returns
+  an \link{MIndex} object of length \code{M},
+  and \code{countPDict} an integer vector of length \code{M}.
 
   \code{whichPDict} returns an integer vector made of the indices of the
   patterns in the \code{pdict} argument that have at least one match.
+
+  If \code{N} denotes the number of sequences in the \code{subject}
+  argument (\code{N <- length(subject)}), then \code{vcountPDict}
+  returns an integer matrix with \code{M} rows and \code{N} columns,
+  unless the \code{collapse} argument is used. In that case, depending
+  on the type of \code{weight}, an integer or numeric vector is returned
+  (see above for the details).
 }
 
 \author{H. Pages}
@@ -291,6 +326,12 @@
     vcountPDict(pdict0, subject)
     length(pdict0) * length(Dmelanogaster$upstream1000)
     1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
+    ## But this will work:
+    nhits_per_seq <- vcountPDict(pdict0, subject, collapse=2)
+    sum(nhits_per_seq >= 1)  # nb of subject sequences with at least 1 hit
+    table(nhits_per_seq)
+    which(nhits_per_seq == 37)  # 603
+    sum(countPDict(pdict0, subject[[603]]))  # 37
   }
 
   ATtriplets <- DNAStringSet(mkAllStrings(c("A", "T"), 3))

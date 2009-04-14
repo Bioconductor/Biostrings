@@ -764,13 +764,13 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
  * Arguments:
  *   tb:         the Trusted Band extracted from the original dictionary as a
  *               constant width DNAStringSet object;
- *   dup2unq0:   NULL or an integer vector of the same length as 'tb'
- *               containing the mapping from duplicated to unique patterns in
- *               the original dictionary;
+ *   pp_exclude: NULL or an integer vector of the same length as 'tb' where
+ *               non-NA values indicate the elements to exclude from
+ *               preprocessing;
  *   base_codes: the internal codes for A, C, G and T.
  */
 
-SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes,
+SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 		SEXP nodebuf_ptr, SEXP nodeextbuf_ptr)
 {
 	ACtree tree;
@@ -787,8 +787,8 @@ SEXP ACtree2_build(SEXP tb, SEXP dup2unq0, SEXP base_codes,
 	cached_tb = _new_CachedXStringSet(tb);
 	for (P_offset = 0; P_offset < tb_length; P_offset++) {
 		/* skip duplicated patterns */
-		if (dup2unq0 != R_NilValue
-		 && INTEGER(dup2unq0)[P_offset] != NA_INTEGER)
+		if (pp_exclude != R_NilValue
+		 && INTEGER(pp_exclude)[P_offset] != NA_INTEGER)
 			continue;
 		P = _get_CachedXStringSet_elt_asRoSeq(&cached_tb, P_offset);
 		if (tb_width == -1) {
