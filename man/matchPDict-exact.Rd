@@ -120,8 +120,8 @@
     \code{subject} (\code{collapse=1}) or in \code{pdict} (\code{collapse=2})
     can be weighted thru the \code{weight} argument.
     In that case, the returned vector is defined by
-    \code{M0 %*% rep(weight, length.out=length(subject))}
-    and \code{rep(weight, length.out=length(pdict)) %*% M0},
+    \code{M0 \%*\% rep(weight, length.out=length(subject))}
+    and \code{rep(weight, length.out=length(pdict)) \%*\% M0},
     respectively.
   }
 }
