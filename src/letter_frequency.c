@@ -214,59 +214,6 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
-		SEXP shift, SEXP width)
-{
-	SEXP ans;
-	int ans_nrow, ans_ncol, ans_length, x_length, i, k, s, X_end;
-	CachedXStringSet cached_x;
-	RoSeq X;
-
-	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
-	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
-	if (width == R_NilValue) {
-		if (x_length == 0)
-			error("'x' has no element and 'width' is NULL");
-		if (LENGTH(shift) == 0)
-			error("'shift' has no element");
-		ans_ncol = 0;
-		for (i = k = 0; i < x_length; i++, k++) {
-			if (k >= LENGTH(shift))
-				k = 0; /* recycle */
-			s = INTEGER(shift)[k];
-			if (s == NA_INTEGER)
-				error("'shift' contains NAs");
-			X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			X_end = X.nelt + s;
-			if (X_end > ans_ncol)
-				ans_ncol = X_end;
-		}
-	} else {
-		if (x_length != 0 && LENGTH(shift) == 0)
-			error("'shift' has no element");
-		ans_ncol = INTEGER(width)[0];
-	}
-	ans_length = ans_nrow * ans_ncol;
-	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
-	memset(INTEGER(ans), 0, ans_length * sizeof(int));
-	for (i = k = 0; i < x_length; i++, k++) {
-		if (k >= LENGTH(shift))
-			k = 0; /* recycle */
-		s = INTEGER(shift)[k];
-		if (s == NA_INTEGER)
-			error("'shift' contains NAs");
-		X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		update_letter_freqs2(INTEGER(ans), &X, codes, s, ans_nrow, ans_ncol);
-	}
-	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP XString_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP fast_moving_side)
 {
@@ -290,6 +237,9 @@ SEXP XString_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	return ans;
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ */
 SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP fast_moving_side, SEXP collapse)
 {
@@ -327,6 +277,59 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 						invert_twobit_order, &x_elt);
 		}
 	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
+		SEXP shift, SEXP width)
+{
+	SEXP ans;
+	int ans_nrow, ans_ncol, ans_length, x_length, i, k, s, x_elt_end;
+	CachedXStringSet cached_x;
+	RoSeq x_elt;
+
+	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
+	x_length = _get_XStringSet_length(x);
+	cached_x = _new_CachedXStringSet(x);
+	if (width == R_NilValue) {
+		if (x_length == 0)
+			error("'x' has no element and 'width' is NULL");
+		if (LENGTH(shift) == 0)
+			error("'shift' has no element");
+		ans_ncol = 0;
+		for (i = k = 0; i < x_length; i++, k++) {
+			if (k >= LENGTH(shift))
+				k = 0; /* recycle */
+			s = INTEGER(shift)[k];
+			if (s == NA_INTEGER)
+				error("'shift' contains NAs");
+			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			x_elt_end = x_elt.nelt + s;
+			if (x_elt_end > ans_ncol)
+				ans_ncol = x_elt_end;
+		}
+	} else {
+		if (x_length != 0 && LENGTH(shift) == 0)
+			error("'shift' has no element");
+		ans_ncol = INTEGER(width)[0];
+	}
+	ans_length = ans_nrow * ans_ncol;
+	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
+	memset(INTEGER(ans), 0, ans_length * sizeof(int));
+	for (i = k = 0; i < x_length; i++, k++) {
+		if (k >= LENGTH(shift))
+			k = 0; /* recycle */
+		s = INTEGER(shift)[k];
+		if (s == NA_INTEGER)
+			error("'shift' contains NAs");
+		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		update_letter_freqs2(INTEGER(ans), &x_elt, codes, s, ans_nrow, ans_ncol);
+	}
+	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
 	UNPROTECT(1);
 	return ans;
 }

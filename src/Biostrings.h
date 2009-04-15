@@ -324,14 +324,6 @@ SEXP XStringSet_letter_frequency(
 	SEXP collapse
 );
 
-SEXP XStringSet_letter_frequency_by_pos(
-	SEXP x,
-	SEXP codes,
-	SEXP with_other,
-	SEXP shift,
-	SEXP width
-);
-
 SEXP XString_oligonucleotide_frequency(
 	SEXP x,
 	SEXP base_codes,
@@ -345,6 +337,14 @@ SEXP XStringSet_oligonucleotide_frequency(
 	SEXP width,
 	SEXP fast_moving_side,
 	SEXP collapse
+);
+
+SEXP XStringSet_letter_frequency_by_pos(
+	SEXP x,
+	SEXP codes,
+	SEXP with_other,
+	SEXP shift,
+	SEXP width
 );
 
 
