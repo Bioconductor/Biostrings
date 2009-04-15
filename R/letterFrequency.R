@@ -51,13 +51,14 @@
     match.arg(fast.moving.side, c("left", "right"))
 }
 
-.normargAsArray <- function(as.array, fast.moving.side)
+.normargAs <- function(as, fast.moving.side)
 {
-    if (!isTRUEorFALSE(as.array))
-        stop("'as.array' must be TRUE or FALSE")
-    if (as.array && fast.moving.side != "left")
-        stop("'fast.moving.side' must be \"left\" when 'as.array' is TRUE")
-    as.array
+    if (!isSingleString(as))
+        stop("'as' must be a single string")
+    as <- match.arg(as, c("atomic", "list", "array"))
+    if (as == "array" && fast.moving.side != "left")
+        stop("'fast.moving.side' must be \"left\" when 'as' is \"array\"")
+    as
 }
 
 .normargWithLabels <- function(with.labels)
@@ -399,12 +400,12 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ### not require preprocessing, and uses much less memory.
 ###
 
-.formatFreqAnswer <- function(ans, alphabet, width, freq,
-                              fast.moving.side, as.array, with.labels)
+.formatFreqVector <- function(ans, alphabet, width, freq,
+                              fast.moving.side, as, with.labels)
 {
     if (freq)
         ans <- ans / sum(ans)
-    if (as.array) {
+    if (as == "array") {
         if (with.labels)
             dimnames <- rep(list(alphabet), each=width)
         else
@@ -416,111 +417,121 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     ans
 }
 
+.formatFreqMatrix <- function(ans, alphabet, width, freq,
+                              fast.moving.side, with.labels)
+{
+    if (freq)
+        ans <- ans / rowSums(ans)
+    if (with.labels) 
+        colnames(ans) <- .mkAllStrings(alphabet, width, fast.moving.side)
+    ans
+}
+
 .oligonucleotideFrequency <- function(x, width, freq,
-                                      fast.moving.side, as.array, with.labels)
+                                      fast.moving.side, as, with.labels)
 {
     width <- .normargWidth(width)
     freq <- .normargFreq(freq)
     fast.moving.side <- .normargFastMovingSide(fast.moving.side)
-    as.array <- .normargAsArray(as.array, fast.moving.side)
+    as <- .normargAs(as, fast.moving.side)
+    if (as == "list")
+        stop("'as' cannot be \"list\" when 'x' is a DNAString or RNAString object")
     with.labels <- .normargWithLabels(with.labels)
     base_codes <- xscodes(x, baseOnly=TRUE)
-    ans <- .Call("oligonucleotide_frequency",
+    ans <- .Call("XString_oligonucleotide_frequency",
                  x, base_codes, width, fast.moving.side,
                  PACKAGE="Biostrings")
-    .formatFreqAnswer(ans, names(base_codes), width, freq,
-                      fast.moving.side, as.array, with.labels)
+    .formatFreqVector(ans, names(base_codes), width, freq,
+                      fast.moving.side, as, with.labels)
 }
 
 setGeneric("oligonucleotideFrequency", signature="x",
     function(x, width, freq=FALSE,
-             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+             fast.moving.side="right", as="atomic", with.labels=TRUE, ...)
         standardGeneric("oligonucleotideFrequency")
 )
 
 setMethod("oligonucleotideFrequency", "DNAString",
     function(x, width, freq=FALSE,
-             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+             fast.moving.side="right", as="atomic", with.labels=TRUE, ...)
     {
-        if (missing(fast.moving.side) && !missing(as.array))
-            fast.moving.side <- "left"
         .oligonucleotideFrequency(x, width, freq,
-                                  fast.moving.side, as.array, with.labels)
+                                  fast.moving.side, as, with.labels)
     }
 )
 
 setMethod("oligonucleotideFrequency", "RNAString",
     function(x, width, freq=FALSE,
-             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+             fast.moving.side="right", as="atomic", with.labels=TRUE, ...)
     {
-        if (missing(fast.moving.side) && !missing(as.array))
-            fast.moving.side <- "left"
         .oligonucleotideFrequency(x, width, freq,
-                                  fast.moving.side, as.array, with.labels)
+                                  fast.moving.side, as, with.labels)
     }
 )
 
 setMethod("oligonucleotideFrequency", "XStringSet",
     function(x, width, freq=FALSE,
-             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+             fast.moving.side="right", as="atomic", with.labels=TRUE, ...)
     {
-        if (missing(fast.moving.side) && !missing(as.array))
-            fast.moving.side <- "left"
+        if (!(xsbasetype(x) %in% c("DNA", "RNA")))
+            stop("'x' must be of base type DNA or RNA")
         width <- .normargWidth(width)
         freq <- .normargFreq(freq)
         fast.moving.side <- .normargFastMovingSide(fast.moving.side)
-        as.array <- .normargAsArray(as.array, fast.moving.side)
+        as <- .normargAs(as, fast.moving.side)
         with.labels <- .normargWithLabels(with.labels)
         collapse <- .normargCollapse(list(...)$collapse)
+        if (collapse && as == "list")
+            stop("'as' cannot be \"list\" when 'collapse' is TRUE")
         base_codes <- xscodes(x, baseOnly=TRUE)
-        ans <- integer(pow.int(4L, width))
-        if (collapse) {
+        if (as != "atomic" && !collapse) {
+            if (as == "list")
+                as <- "atomic"
+            ans <- rep.int(list(NULL), length(x))
             for (i in seq_len(length(x))) {
                 xx <- x[[i]]
-                ans <- ans + .Call("oligonucleotide_frequency",
-                                   xx, base_codes, width, fast.moving.side,
-                                   PACKAGE="Biostrings")
-            }
-            ans <- .formatFreqAnswer(ans, names(base_codes), width, freq,
-                                     fast.moving.side, as.array, with.labels)
-        } else {
-            ans <- rep.int(list(ans), length(x))
-            for (i in seq_len(length(x))) {
-                xx <- x[[i]]
-                tmp <- .Call("oligonucleotide_frequency",
+                tmp <- .Call("XString_oligonucleotide_frequency",
                              xx, base_codes, width, fast.moving.side,
                              PACKAGE="Biostrings")
-                ans[[i]] <- .formatFreqAnswer(tmp, names(base_codes), width,
-                                              freq, fast.moving.side, as.array,
+                ans[[i]] <- .formatFreqVector(tmp, names(base_codes), width,
+                                              freq, fast.moving.side, as,
                                               with.labels)
             }
+            return(ans)
         }
+        C_ans <- .Call("XStringSet_oligonucleotide_frequency",
+                       x, base_codes, width, fast.moving.side, collapse,
+                       PACKAGE="Biostrings")
+        if (collapse)
+            ans <- .formatFreqVector(C_ans, names(base_codes), width, freq,
+                                     fast.moving.side, as, with.labels)
+        else
+            ans <- .formatFreqMatrix(C_ans, names(base_codes), width, freq,
+                                     fast.moving.side, with.labels)
         ans
     }
 )
 
 setMethod("oligonucleotideFrequency", "XStringViews",
     function(x, width, freq=FALSE,
-             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+             fast.moving.side="right", as="atomic", with.labels=TRUE, ...)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
         oligonucleotideFrequency(y, width, freq=freq,
                                  fast.moving.side=fast.moving.side,
-                                 as.array=as.array,
-                                 with.labels=with.labels, ...)
+                                 as=as, with.labels=with.labels, ...)
     }
 )
 
 setMethod("oligonucleotideFrequency", "MaskedXString",
     function(x, width, freq=FALSE,
-             fast.moving.side="right", as.array=FALSE, with.labels=TRUE, ...)
+             fast.moving.side="right", as="atomic", with.labels=TRUE, ...)
     {
         y <- toXStringViewsOrXString(x)
         .set.collapse.default(TRUE)
         ans <- oligonucleotideFrequency(y, width, freq=freq,
                                         fast.moving.side=fast.moving.side,
-                                        as.array=as.array,
-                                        with.labels=with.labels, ...)
+                                        as=as, with.labels=with.labels, ...)
         .set.collapse.default(FALSE)
         ans
     }
@@ -536,23 +547,26 @@ dinucleotideFrequency <- function(x, freq=FALSE,
                                   fast.moving.side="right",
                                   as.matrix=FALSE, with.labels=TRUE, ...)
 {
-    if (missing(fast.moving.side) && !missing(as.matrix))
-        fast.moving.side <- "left"
+    if (isTRUE(as.matrix))
+        as <- "array"
+    else
+        as <- "atomic"
     oligonucleotideFrequency(x, 2, freq=freq,
                              fast.moving.side=fast.moving.side,
-                             as.array=as.matrix,
-                             with.labels=with.labels, ...)
+                             as=as, with.labels=with.labels, ...)
 }
 
 trinucleotideFrequency <- function(x, freq=FALSE,
                                    fast.moving.side="right",
                                    as.array=FALSE, with.labels=TRUE, ...)
 {
-    if (missing(fast.moving.side) && !missing(as.array))
-        fast.moving.side <- "left"
+    if (isTRUE(as.array))
+        as <- "array"
+    else
+        as <- "atomic"
     oligonucleotideFrequency(x, 3, freq=freq,
                              fast.moving.side=fast.moving.side,
-                             as.array=as.array,
+                             as=as,
                              with.labels=with.labels, ...)
 }
 

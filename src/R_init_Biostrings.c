@@ -43,7 +43,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XString_letter_frequency, 3),
 	CALLMETHOD_DEF(XStringSet_letter_frequency, 4),
 	CALLMETHOD_DEF(XStringSet_letter_frequency_by_pos, 5),
-	CALLMETHOD_DEF(oligonucleotide_frequency, 4),
+	CALLMETHOD_DEF(XString_oligonucleotide_frequency, 4),
+	CALLMETHOD_DEF(XStringSet_oligonucleotide_frequency, 5),
 
 /* char_translate.c */
 	CALLMETHOD_DEF(XStringSet_char_translate, 3),

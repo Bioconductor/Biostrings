@@ -97,7 +97,7 @@ sequence and other related functions}
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
                          as.array=FALSE, with.labels=TRUE, ...)
   oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right",
-                           as.array=FALSE, with.labels=TRUE, ...)
+                           as="atomic", with.labels=TRUE, ...)
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
 
   ## Some related utility functions
@@ -153,9 +153,12 @@ sequence and other related functions}
     If \code{TRUE} then return a numeric matrix, otherwise a numeric
     vector with no dim attribute.
   }
-  \item{as.array}{
-    If \code{TRUE} then return a numeric array, otherwise a numeric
+  \item{as.matrix}{
+    If \code{TRUE} then return a numeric matrix, otherwise a numeric
     vector with no dim attribute.
+  }
+  \item{as}{
+    Must be \code{"atomic"}, \code{"list"} or \code{"array"}.
   }
   \item{with.labels}{
     If \code{TRUE} then return a named vector (or array).

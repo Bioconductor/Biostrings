@@ -24,7 +24,7 @@ static int get_ans_width(SEXP codes, int with_other)
 static void update_freqs(int *freqs, const RoSeq *X, SEXP codes)
 {
 	const char *x;
-	static int i, offset;
+	int i, offset;
 
 	x = X->elts;
 	if (codes == R_NilValue)
@@ -46,7 +46,7 @@ static void update_freqs2(int *freqs, const RoSeq *X, SEXP codes,
 		int shift, int nrow, int ncol)
 {
 	const char *x;
-	static int i1, i2, j1, j2, i, offset;
+	int i1, i2, j1, j2, i, offset;
 
 	if (abs(shift) >= ncol)
 		return;
@@ -80,6 +80,39 @@ static void update_freqs2(int *freqs, const RoSeq *X, SEXP codes,
 			freqs[offset]++;
 		}
 	return;
+}
+
+static void update_oligo_freqs(int *freqs, int freqs_nrow, int width,
+		int invert_twobit_order, const RoSeq *X)
+{
+	int nbit_in_mask, twobit_mask, nb_valid_left_char,
+	    i, twobit_c, twobit_oligo;
+	const char *c;
+
+	nbit_in_mask = (width - 1) * 2;
+	twobit_mask = (1 << nbit_in_mask) - 1;
+	if (invert_twobit_order)
+		twobit_mask <<= 2;
+	nb_valid_left_char = 0;
+	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
+		twobit_c = byte2offset[(unsigned char) *c];
+		if (twobit_c == NA_INTEGER) {
+			nb_valid_left_char = 0;
+			continue;
+		}
+		nb_valid_left_char++;
+		twobit_oligo &= twobit_mask;
+		if (invert_twobit_order) {
+			twobit_oligo >>= 2;
+			twobit_c <<= nbit_in_mask;
+		} else {
+			twobit_oligo <<= 2;
+		}
+		twobit_oligo += twobit_c;
+		if (nb_valid_left_char < width)
+			continue;
+		freqs[twobit_oligo * freqs_nrow]++;
+	}
 }
 
 static void copy_rowbuf_to_row0_in_matrix(int *matrix, int nrow, int ncol)
@@ -249,7 +282,7 @@ SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
+SEXP XString_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP fast_moving_side)
 {
 	RoSeq X;
@@ -260,9 +293,9 @@ SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 
 	static ByteTrTable eightbit2twobit;
 
-	X = _get_XString_asRoSeq(x);
 	if (LENGTH(base_codes) != 4)
 		error("'base_codes' must be of length 4");
+	X = _get_XString_asRoSeq(x);
 	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
 	width0 = INTEGER(width)[0];
 	if (width0 < 1 || width0 > 12)
@@ -294,6 +327,47 @@ SEXP oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		if (nb_valid_left_char < width0)
 			continue;
 		INTEGER(ans)[ans_offset]++;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
+		SEXP fast_moving_side, SEXP collapse)
+{
+	SEXP ans;
+	int width0, invert_twobit_order, ans_width, x_length, *freqs, i;
+	CachedXStringSet cached_x;
+	RoSeq x_elt;
+
+	if (LENGTH(base_codes) != 4)
+		error("'base_codes' must be of length 4");
+	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
+	width0 = INTEGER(width)[0];
+	if (width0 < 1 || width0 > 12)
+		error("'width' must be >=1 and <= 12");
+	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
+	ans_width = 1 << (width0 * 2);
+	x_length = _get_XStringSet_length(x);
+	cached_x = _new_CachedXStringSet(x);
+	if (LOGICAL(collapse)[0]) {
+		PROTECT(ans = NEW_INTEGER(ans_width));
+		freqs = INTEGER(ans);
+		memset(freqs, 0, LENGTH(ans) * sizeof(int));
+		for (i = 0; i < x_length; i++) {
+			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			update_oligo_freqs(freqs, 1, width0,
+						invert_twobit_order, &x_elt);
+		}
+	} else {
+		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
+		freqs = INTEGER(ans);
+		memset(freqs, 0, LENGTH(ans) * sizeof(int));
+		for (i = 0; i < x_length; i++, freqs++) {
+			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			update_oligo_freqs(freqs, x_length, width0,
+						invert_twobit_order, &x_elt);
+		}
 	}
 	UNPROTECT(1);
 	return ans;
