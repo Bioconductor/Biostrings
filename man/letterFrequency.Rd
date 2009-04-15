@@ -96,16 +96,23 @@ sequence and other related functions}
                         as.matrix=FALSE, with.labels=TRUE, ...)
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
                          as.array=FALSE, with.labels=TRUE, ...)
+
   oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right",
-                           as="atomic", with.labels=TRUE, ...)
+                           as.array=FALSE, with.labels=TRUE, ...)
+
+  \S4method{oligonucleotideFrequency}{XStringSet}(x,
+      width, freq=FALSE, fast.moving.side="right",
+      as.array=FALSE, with.labels=TRUE, simplify.as="matrix")
+
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
 
-  ## Some related utility functions
+  ## Other related utility functions:
   strrev(x)
   mkAllStrings(alphabet, width, fast.moving.side="right")
 
   \S4method{consensusMatrix}{character}(x, freq=FALSE)
-  \S4method{consensusMatrix}{XStringSet}(x, baseOnly=FALSE, freq=FALSE, shift=0L, width=NULL)
+  \S4method{consensusMatrix}{XStringSet}(x,
+      baseOnly=FALSE, freq=FALSE, shift=0L, width=NULL)
 
   \S4method{consensusString}{matrix}(x)
   \S4method{consensusString}{XStringSet}(x, shift=0L, width=NULL)
@@ -149,16 +156,9 @@ sequence and other related functions}
   \item{fast.moving.side}{
     Which side of the strings should move fastest?
   }
-  \item{as.matrix}{
-    If \code{TRUE} then return a numeric matrix, otherwise a numeric
-    vector with no dim attribute.
-  }
-  \item{as.matrix}{
-    If \code{TRUE} then return a numeric matrix, otherwise a numeric
-    vector with no dim attribute.
-  }
-  \item{as}{
-    Must be \code{"atomic"}, \code{"list"} or \code{"array"}.
+  \item{as.matrix,as.array}{
+    If \code{TRUE} then return a numeric matrix (or array),
+    otherwise a numeric vector with no dim attribute.
   }
   \item{with.labels}{
     If \code{TRUE} then return a named vector (or array).
@@ -180,6 +180,9 @@ sequence and other related functions}
     
     The length of the returned sequence for the \code{consensusString}
     method for \link{XStringSet} objects.
+  }
+  \item{simplify.as}{
+    Must be \code{"matrix"}, \code{"list"} or \code{"collapsed"}.
   }
   \item{left, right}{
     The number of nucleotides per oligonucleotide for the rows and columns
