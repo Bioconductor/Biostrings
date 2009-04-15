@@ -2,7 +2,6 @@
 #include <stdlib.h> /* for abs() */
 
 static ByteTrTable byte2offset;
-static int rowbuf[256];
 
 static int get_ans_width(SEXP codes, int with_other)
 {
@@ -21,32 +20,30 @@ static int get_ans_width(SEXP codes, int with_other)
 	return width;
 }
 
-static void update_freqs(int *freqs, const RoSeq *X, SEXP codes)
+static void update_letter_freqs(int *row, int nrow, const RoSeq *X, SEXP codes)
 {
-	const char *x;
 	int i, offset;
+	const char *c;
 
-	x = X->elts;
-	if (codes == R_NilValue)
-		for (i = 0; i < X->nelt; i++, x++)
-			freqs[((unsigned char) *x)]++;
-	else
-		for (i = 0; i < X->nelt; i++, x++) {
-			offset = byte2offset[(unsigned char) *x];
+	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
+		offset = (unsigned char) *c;
+		if (codes != R_NilValue) {
+			offset = byte2offset[offset];
 			if (offset == NA_INTEGER)
 				continue;
-			freqs[offset]++;
 		}
+		row[offset * nrow]++;
+	}
 	return;
 }
 
-/* Note that calling update_freqs2() with shift = 0, nrow = 0 and
-   ncol = X->nelt is equivalent to calling update_freqs() */
-static void update_freqs2(int *freqs, const RoSeq *X, SEXP codes,
+/* Note that calling update_letter_freqs2() with shift = 0, nrow = 0 and
+   ncol = X->nelt is equivalent to calling update_letter_freqs() */
+static void update_letter_freqs2(int *mat, const RoSeq *X, SEXP codes,
 		int shift, int nrow, int ncol)
 {
-	const char *x;
-	int i1, i2, j1, j2, i, offset;
+	int i1, i2, j1, j2, *col, i, offset;
+	const char *c;
 
 	if (abs(shift) >= ncol)
 		return;
@@ -66,62 +63,52 @@ static void update_freqs2(int *freqs, const RoSeq *X, SEXP codes,
 		i2 -= j2 - ncol;
 		/* j2 = ncol; not needed */
 	}
-	x = X->elts + i1;
-	freqs += j1 * nrow;
-	if (codes == R_NilValue)
-		for (i = i1; i < i2; i++, x++, freqs += nrow) {
-			freqs[(unsigned char) *x]++;
-		}
-	else
-		for (i = i1; i < i2; i++, x++, freqs += nrow) {
-			offset = byte2offset[(unsigned char) *x];
+	c = X->elts + i1;
+	col = mat + j1 * nrow;
+	for (i = i1; i < i2; i++, c++, col += nrow) {
+		offset = (unsigned char) *c;
+		if (codes != R_NilValue) {
+			offset = byte2offset[offset];
 			if (offset == NA_INTEGER)
 				continue;
-			freqs[offset]++;
 		}
+		col[offset]++;
+	}
 	return;
 }
 
-static void update_oligo_freqs(int *freqs, int freqs_nrow, int width,
+static void update_oligo_freqs(int *row, int nrow, int width,
 		int invert_twobit_order, const RoSeq *X)
 {
 	int nbit_in_mask, twobit_mask, nb_valid_left_char,
-	    i, twobit_c, twobit_oligo;
+	    i, twobit_offset, offset;
 	const char *c;
 
+	offset = 0; /* just to keep 'gcc -Wall' quiet */
 	nbit_in_mask = (width - 1) * 2;
 	twobit_mask = (1 << nbit_in_mask) - 1;
 	if (invert_twobit_order)
 		twobit_mask <<= 2;
 	nb_valid_left_char = 0;
 	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
-		twobit_c = byte2offset[(unsigned char) *c];
-		if (twobit_c == NA_INTEGER) {
+		twobit_offset = byte2offset[(unsigned char) *c];
+		if (twobit_offset == NA_INTEGER) {
 			nb_valid_left_char = 0;
 			continue;
 		}
 		nb_valid_left_char++;
-		twobit_oligo &= twobit_mask;
+		offset &= twobit_mask;
 		if (invert_twobit_order) {
-			twobit_oligo >>= 2;
-			twobit_c <<= nbit_in_mask;
+			offset >>= 2;
+			twobit_offset <<= nbit_in_mask;
 		} else {
-			twobit_oligo <<= 2;
+			offset <<= 2;
 		}
-		twobit_oligo += twobit_c;
+		offset += twobit_offset;
 		if (nb_valid_left_char < width)
 			continue;
-		freqs[twobit_oligo * freqs_nrow]++;
+		row[offset * nrow]++;
 	}
-}
-
-static void copy_rowbuf_to_row0_in_matrix(int *matrix, int nrow, int ncol)
-{
-	static int i;
-
-	for (i = 0; i < ncol; i++)
-		matrix[i * nrow] = rowbuf[i];
-	return;
 }
 
 static SEXP append_other_to_names(SEXP codes)
@@ -175,15 +162,14 @@ static void set_names(SEXP x, SEXP codes, int with_other, int collapse, int whic
 SEXP XString_letter_frequency(SEXP x, SEXP codes, SEXP with_other)
 {
 	SEXP ans;
-	int ans_length, *freqs;
+	int ans_width;
 	RoSeq X;
 
-	ans_length = get_ans_width(codes, LOGICAL(with_other)[0]);
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	freqs = INTEGER(ans);
-	memset(freqs, 0, ans_length * sizeof(int));
+	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
+	PROTECT(ans = NEW_INTEGER(ans_width));
+	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
 	X = _get_XString_asRoSeq(x);
-	update_freqs(freqs, &X, codes);
+	update_letter_freqs(INTEGER(ans), 1, &X, codes);
 	set_names(ans, codes, LOGICAL(with_other)[0], 1, 1);
 	UNPROTECT(1);
 	return ans;
@@ -196,28 +182,28 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
 	SEXP ans;
-	int ans_width, x_length, *freqs, i;
+	int ans_width, x_length, *ans_row, i;
 	CachedXStringSet cached_x;
-	RoSeq X;
+	RoSeq x_elt;
 
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
 	cached_x = _new_CachedXStringSet(x);
 	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_width));
-		freqs = INTEGER(ans);
-		memset(freqs, 0, ans_width * sizeof(int));
+		ans_row = INTEGER(ans);
+		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			update_freqs(freqs, &X, codes);
+			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			update_letter_freqs(ans_row, 1, &x_elt, codes);
 		}
 	} else {
 		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
-		for (i = 0, freqs = INTEGER(ans); i < x_length; i++, freqs++) {
-			X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			memset(rowbuf, 0, ans_width * sizeof(int));
-			update_freqs(rowbuf, &X, codes);
-			copy_rowbuf_to_row0_in_matrix(freqs, x_length, ans_width);
+		ans_row = INTEGER(ans);
+		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
+		for (i = 0; i < x_length; i++, ans_row++) {
+			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			update_letter_freqs(ans_row, x_length, &x_elt, codes);
 		}
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0], 1);
@@ -232,7 +218,7 @@ SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
 		SEXP shift, SEXP width)
 {
 	SEXP ans;
-	int ans_nrow, ans_ncol, ans_length, x_length, *freqs, i, k, s, X_end;
+	int ans_nrow, ans_ncol, ans_length, x_length, i, k, s, X_end;
 	CachedXStringSet cached_x;
 	RoSeq X;
 
@@ -263,8 +249,7 @@ SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
 	}
 	ans_length = ans_nrow * ans_ncol;
 	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_ncol));
-	freqs = INTEGER(ans);
-	memset(freqs, 0, ans_length * sizeof(int));
+	memset(INTEGER(ans), 0, ans_length * sizeof(int));
 	for (i = k = 0; i < x_length; i++, k++) {
 		if (k >= LENGTH(shift))
 			k = 0; /* recycle */
@@ -272,7 +257,7 @@ SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
 		if (s == NA_INTEGER)
 			error("'shift' contains NAs");
 		X = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		update_freqs2(freqs, &X, codes, s, ans_nrow, ans_ncol);
+		update_letter_freqs2(INTEGER(ans), &X, codes, s, ans_nrow, ans_ncol);
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
 	UNPROTECT(1);
@@ -285,49 +270,22 @@ SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
 SEXP XString_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP fast_moving_side)
 {
-	RoSeq X;
 	SEXP ans;
-	int ans_len, ans_offset_bitmask, ans_offset, width0, nbit_in_mask,
-	    right_moves_fastest, i, nb_valid_left_char, twobit;
-	const char *c;
-
-	static ByteTrTable eightbit2twobit;
+	int width0, invert_twobit_order, ans_width;
+	RoSeq X;
 
 	if (LENGTH(base_codes) != 4)
 		error("'base_codes' must be of length 4");
-	X = _get_XString_asRoSeq(x);
-	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
+	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	width0 = INTEGER(width)[0];
 	if (width0 < 1 || width0 > 12)
 		error("'width' must be >=1 and <= 12");
-	right_moves_fastest = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") == 0;
-	ans_len = 1 << (width0 * 2);
-	nbit_in_mask = (width0 - 1) * 2;
-	ans_offset_bitmask = (1 << nbit_in_mask) - 1;
-	if (!right_moves_fastest)
-		ans_offset_bitmask <<= 2;
-	PROTECT(ans = NEW_INTEGER(ans_len));
+	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
+	ans_width = 1 << (width0 * 2);
+	PROTECT(ans = NEW_INTEGER(ans_width));
 	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	nb_valid_left_char = 0;
-	for (i = 0, c = X.elts; i < X.nelt; i++, c++) {
-		twobit = eightbit2twobit[(unsigned char) *c];
-		if (twobit == NA_INTEGER) {
-			nb_valid_left_char = 0;
-			continue;
-		}
-		nb_valid_left_char++;
-		ans_offset &= ans_offset_bitmask;
-		if (right_moves_fastest) {
-			ans_offset <<= 2;
-		} else {
-			ans_offset >>= 2;
-			twobit <<= nbit_in_mask;
-		}
-		ans_offset += twobit;
-		if (nb_valid_left_char < width0)
-			continue;
-		INTEGER(ans)[ans_offset]++;
-	}
+	X = _get_XString_asRoSeq(x);
+	update_oligo_freqs(INTEGER(ans), 1, width0, invert_twobit_order, &X);
 	UNPROTECT(1);
 	return ans;
 }
@@ -336,7 +294,7 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP fast_moving_side, SEXP collapse)
 {
 	SEXP ans;
-	int width0, invert_twobit_order, ans_width, x_length, *freqs, i;
+	int width0, invert_twobit_order, ans_width, x_length, *ans_row, i;
 	CachedXStringSet cached_x;
 	RoSeq x_elt;
 
@@ -352,20 +310,20 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	cached_x = _new_CachedXStringSet(x);
 	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_width));
-		freqs = INTEGER(ans);
-		memset(freqs, 0, LENGTH(ans) * sizeof(int));
+		ans_row = INTEGER(ans);
+		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++) {
 			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			update_oligo_freqs(freqs, 1, width0,
+			update_oligo_freqs(ans_row, 1, width0,
 						invert_twobit_order, &x_elt);
 		}
 	} else {
 		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
-		freqs = INTEGER(ans);
-		memset(freqs, 0, LENGTH(ans) * sizeof(int));
-		for (i = 0; i < x_length; i++, freqs++) {
+		ans_row = INTEGER(ans);
+		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
+		for (i = 0; i < x_length; i++, ans_row++) {
 			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			update_oligo_freqs(freqs, x_length, width0,
+			update_oligo_freqs(ans_row, x_length, width0,
 						invert_twobit_order, &x_elt);
 		}
 	}
