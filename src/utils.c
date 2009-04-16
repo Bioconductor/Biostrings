@@ -170,53 +170,53 @@ void _init_byte2offset_with_RoSeq(ByteTrTable byte2offset, const RoSeq *seq, int
 	return;
 }
 
-TwobitOligoMapper _new_TwobitOligoMapper(SEXP base_codes, int oligo_width, int endianness)
+TwobitEncodingBuffer _new_TwobitEncodingBuffer(SEXP base_codes, int buflength, int endianness)
 {
-	TwobitOligoMapper tom;
+	TwobitEncodingBuffer teb;
 
 	if (LENGTH(base_codes) != 4)
-		error("_new_TwobitOligoMapper(): 'base_codes' must be of length 4");
-	if (oligo_width < 1 || oligo_width > 15)
-		error("_new_TwobitOligoMapper(): 'oligo_width' must be >=1 and <= 15");
-	_init_byte2offset_with_INTEGER(tom.eightbit2twobit, base_codes, 1);
-	tom.oligo_width = oligo_width;
-	tom.endianness = endianness;
-	tom.nbit_in_mask = (oligo_width - 1) * 2;
-	tom.twobit_mask = (1 << tom.nbit_in_mask) - 1;
+		error("_new_TwobitEncodingBuffer(): 'base_codes' must be of length 4");
+	if (buflength < 1 || buflength > 15)
+		error("_new_TwobitEncodingBuffer(): 'buflength' must be >=1 and <= 15");
+	_init_byte2offset_with_INTEGER(teb.eightbit2twobit, base_codes, 1);
+	teb.buflength = buflength;
+	teb.endianness = endianness;
+	teb.nbit_in_mask = (buflength - 1) * 2;
+	teb.twobit_mask = (1 << teb.nbit_in_mask) - 1;
 	if (endianness == 1)
-		tom.twobit_mask <<= 2;
-	tom.nb_valid_prev_char = 0;
-	tom.current_signature = 0;
-	return tom;
+		teb.twobit_mask <<= 2;
+	teb.nb_valid_prev_char = 0;
+	teb.current_signature = 0;
+	return teb;
 }
 
-void _reset_twobit_signature(TwobitOligoMapper *tom)
+void _reset_twobit_signature(TwobitEncodingBuffer *teb)
 {
-	tom->nb_valid_prev_char = 0;
-	tom->current_signature = 0;
+	teb->nb_valid_prev_char = 0;
+	teb->current_signature = 0;
 	return;
 }
 
-int _next_twobit_signature(TwobitOligoMapper *tom, const char *c)
+int _next_twobit_signature(TwobitEncodingBuffer *teb, const char *c)
 {
 	int c_as_twobit;
 
-	c_as_twobit = tom->eightbit2twobit[(unsigned char) *c];
+	c_as_twobit = teb->eightbit2twobit[(unsigned char) *c];
 	if (c_as_twobit == NA_INTEGER) {
-		tom->nb_valid_prev_char = 0;
+		teb->nb_valid_prev_char = 0;
 		return NA_INTEGER;
 	}
-	tom->nb_valid_prev_char++;
-	tom->current_signature &= tom->twobit_mask;
-	if (tom->endianness == 1) {
-		tom->current_signature >>= 2;
-		c_as_twobit <<= tom->nbit_in_mask;
+	teb->nb_valid_prev_char++;
+	teb->current_signature &= teb->twobit_mask;
+	if (teb->endianness == 1) {
+		teb->current_signature >>= 2;
+		c_as_twobit <<= teb->nbit_in_mask;
 	} else {
-		tom->current_signature <<= 2;
+		teb->current_signature <<= 2;
 	}
-	tom->current_signature += c_as_twobit;
-	if (tom->nb_valid_prev_char < tom->oligo_width)
+	teb->current_signature += c_as_twobit;
+	if (teb->nb_valid_prev_char < teb->buflength)
 		return NA_INTEGER;
-	return tom->current_signature;
+	return teb->current_signature;
 }
 

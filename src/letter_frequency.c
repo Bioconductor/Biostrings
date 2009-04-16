@@ -115,14 +115,14 @@ static void update_letter_freqs2(int *mat, const RoSeq *X, SEXP codes,
 }
 
 static void update_oligo_freqs_as_integer(int *row, int nrow,
-		TwobitOligoMapper *tom, const RoSeq *X)
+		TwobitEncodingBuffer *teb, const RoSeq *X)
 {
 	int i, offset;
 	const char *c;
 
-	_reset_twobit_signature(tom);
+	_reset_twobit_signature(teb);
 	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
-		offset = _next_twobit_signature(tom, c);
+		offset = _next_twobit_signature(teb, c);
 		if (offset == NA_INTEGER)
 			continue;
 		row[offset * nrow]++;
@@ -131,14 +131,14 @@ static void update_oligo_freqs_as_integer(int *row, int nrow,
 }
 
 static void update_oligo_freqs_as_double(double *row, int nrow,
-		TwobitOligoMapper *tom, const RoSeq *X)
+		TwobitEncodingBuffer *teb, const RoSeq *X)
 {
 	int i, offset;
 	const char *c;
 
-	_reset_twobit_signature(tom);
+	_reset_twobit_signature(teb);
 	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
-		offset = _next_twobit_signature(tom, c);
+		offset = _next_twobit_signature(teb, c);
 		if (offset == NA_INTEGER)
 			continue;
 		row[offset * nrow] += 1.00;
@@ -147,14 +147,14 @@ static void update_oligo_freqs_as_double(double *row, int nrow,
 }
 
 static void update_oligo_freqs(SEXP mat, int row, int nrow,
-		TwobitOligoMapper *tom, const RoSeq *X)
+		TwobitEncodingBuffer *teb, const RoSeq *X)
 {
 	switch (TYPEOF(mat)) {
 	    case INTSXP:
-		update_oligo_freqs_as_integer(INTEGER(mat) + row, nrow, tom, X);
+		update_oligo_freqs_as_integer(INTEGER(mat) + row, nrow, teb, X);
 		return;
 	    case REALSXP:
-		update_oligo_freqs_as_double(REAL(mat) + row, nrow, tom, X);
+		update_oligo_freqs_as_double(REAL(mat) + row, nrow, teb, X);
 		return;
 	}
 	return;
@@ -282,18 +282,18 @@ SEXP XString_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP as_array, SEXP with_labels)
 {
 	SEXP ans;
-	TwobitOligoMapper tom;
+	TwobitEncodingBuffer teb;
 	int width0, as_double, invert_twobit_order, ans_width;
 	RoSeq X;
 
 	width0 = INTEGER(width)[0];
 	as_double = LOGICAL(freq)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
-	tom = _new_TwobitOligoMapper(base_codes, width0, invert_twobit_order);
+	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
 	ans_width = 1 << (width0 * 2);
 	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_double));
 	X = _get_XString_asRoSeq(x);
-	update_oligo_freqs(ans, 0, 1, &tom, &X);
+	update_oligo_freqs(ans, 0, 1, &teb, &X);
 	if (as_double)
 		normalize_oligo_freqs(ans, 1, ans_width);
 	UNPROTECT(1);
@@ -305,7 +305,7 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		SEXP as_array, SEXP with_labels, SEXP simplify_as)
 {
 	SEXP ans;
-	TwobitOligoMapper tom;
+	TwobitEncodingBuffer teb;
 	int width0, as_double, invert_twobit_order, ans_width, x_length, i;
 	const char *simplify_as0;
 	CachedXStringSet cached_x;
@@ -315,7 +315,7 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	as_double = LOGICAL(freq)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
 	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
-	tom = _new_TwobitOligoMapper(base_codes, width0, invert_twobit_order);
+	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
 	ans_width = 1 << (width0 * 2);
 	x_length = _get_XStringSet_length(x);
 	cached_x = _new_CachedXStringSet(x);
@@ -323,7 +323,7 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 		PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_double));
 		for (i = 0; i < x_length; i++) {
 			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			update_oligo_freqs(ans, 0, 1, &tom, &x_elt);
+			update_oligo_freqs(ans, 0, 1, &teb, &x_elt);
 		}
 		if (as_double)
 			normalize_oligo_freqs(ans, 1, ans_width);
@@ -333,7 +333,7 @@ SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
 	PROTECT(ans = init_numeric_matrix(x_length, ans_width, 0.00, as_double));
 	for (i = 0; i < x_length; i++) {
 		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-		update_oligo_freqs(ans, i, x_length, &tom, &x_elt);
+		update_oligo_freqs(ans, i, x_length, &teb, &x_elt);
 	}
 	if (as_double)
 		normalize_oligo_freqs(ans, x_length, ans_width);

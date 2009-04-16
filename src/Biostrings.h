@@ -33,16 +33,16 @@ void _init_byte2offset_with_RoSeq(
 	int error_on_dup
 );
 
-TwobitOligoMapper _new_TwobitOligoMapper(
+TwobitEncodingBuffer _new_TwobitEncodingBuffer(
 	SEXP base_codes,
-	int oligo_width,
+	int buflength,
 	int endianness
 );
 
-void _reset_twobit_signature(TwobitOligoMapper *tom);
+void _reset_twobit_signature(TwobitEncodingBuffer *teb);
 
 int _next_twobit_signature(
-	TwobitOligoMapper *tom,
+	TwobitEncodingBuffer *teb,
 	const char *c
 );
 
