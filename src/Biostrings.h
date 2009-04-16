@@ -337,7 +337,7 @@ SEXP XStringSet_letter_frequency(
 	SEXP collapse
 );
 
-SEXP XString_oligonucleotide_frequency(
+SEXP XString_oligo_frequency(
 	SEXP x,
 	SEXP base_codes,
 	SEXP width,
@@ -347,7 +347,7 @@ SEXP XString_oligonucleotide_frequency(
 	SEXP with_labels
 );
 
-SEXP XStringSet_oligonucleotide_frequency(
+SEXP XStringSet_oligo_frequency(
 	SEXP x,
 	SEXP base_codes,
 	SEXP width,

@@ -28,8 +28,7 @@
 \alias{uniqueLetters,MaskedXString-method}
 
 \alias{oligonucleotideFrequency}
-\alias{oligonucleotideFrequency,DNAString-method}
-\alias{oligonucleotideFrequency,RNAString-method}
+\alias{oligonucleotideFrequency,XString-method}
 \alias{oligonucleotideFrequency,XStringSet-method}
 \alias{oligonucleotideFrequency,XStringViews-method}
 \alias{oligonucleotideFrequency,MaskedXString-method}
