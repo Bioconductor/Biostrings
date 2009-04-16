@@ -33,8 +33,6 @@ SEXP debug_match_pdict_Twobit()
  *                                                                          *
  ****************************************************************************/
 
-static ByteTrTable eightbit2twobit;
-
 static void init_twobit_sign2pos(SEXP twobit_sign2pos, int val0)
 {
 	int i;
@@ -44,21 +42,18 @@ static void init_twobit_sign2pos(SEXP twobit_sign2pos, int val0)
 	return;
 }
 
-static int pp_pattern(SEXP twobit_sign2pos, const RoSeq *pattern, int poffset)
+static int pp_pattern(SEXP twobit_sign2pos, TwobitOligoMapper *tom,
+		const RoSeq *pattern, int poffset)
 {
-	int twobit_sign, i, twobit, *pos0;
+	int i, twobit_sign, *pos0;
 	const char *c;
 
-	twobit_sign = 0;
+	_reset_twobit_signature(tom);
 	//printf("poffset=%d: ", poffset);
-	for (i = 0, c = pattern->elts; i < pattern->nelt; i++, c++) {
-		twobit = eightbit2twobit[(unsigned char) *c];
-		//printf("(%d %d) ", *c, twobit);
-		if (twobit == NA_INTEGER)
-			return -1;
-		twobit_sign <<= 2;
-		twobit_sign += twobit;
-	}
+	for (i = 0, c = pattern->elts; i < pattern->nelt; i++, c++)
+		twobit_sign = _next_twobit_signature(tom, c);
+	if (twobit_sign == NA_INTEGER)
+		return -1;
 	//printf("twobit_sign=%d\n", twobit_sign);
 	pos0 = INTEGER(twobit_sign2pos) + twobit_sign;
 	if (*pos0 == NA_INTEGER)
@@ -129,12 +124,9 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 	int tb_length, tb_width, poffset, twobit_len;
 	CachedXStringSet cached_tb;
 	RoSeq pattern;
+	TwobitOligoMapper tom;
 	SEXP ans, twobit_sign2pos;
 
-	if (LENGTH(base_codes) != 4)
-		error("Biostrings internal error in build_Twobit(): "
-		      "'base_codes' must be of length 4");
-	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
 	tb_length = _get_XStringSet_length(tb);
 	_init_dup2unq_buf(tb_length);
 	tb_width = -1;
@@ -154,6 +146,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 			if (tb_width > 14)
 				error("the width of the Trusted Band must "
 				      "be <= 14 when 'type=\"Twobit\"'");
+			tom = _new_TwobitOligoMapper(base_codes, tb_width, 0);
 			twobit_len = 1 << (tb_width * 2); // 4^tb_width
 			PROTECT(twobit_sign2pos = NEW_INTEGER(twobit_len));
 			init_twobit_sign2pos(twobit_sign2pos, NA_INTEGER);
@@ -161,7 +154,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 			error("all the trusted regions must have "
 			      "the same length");
 		}
-		if (pp_pattern(twobit_sign2pos, &pattern, poffset) != 0) {
+		if (pp_pattern(twobit_sign2pos, &tom, &pattern, poffset) != 0) {
 			UNPROTECT(1);
 			error("non-base DNA letter found in Trusted Band "
 			      "for pattern %d", poffset + 1);
@@ -181,26 +174,15 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
  *                                                                          *
  ****************************************************************************/
 
-void walk_subject(int tb_width, const int *twobit_sign2pos, const RoSeq *S)
+void walk_subject(const int *twobit_sign2pos, TwobitOligoMapper *tom, const RoSeq *S)
 {
-	int bitwindow_width, bitmask, nb_valid_left_char,
-	    n, twobit, twobit_sign, P_id;
+	int n, twobit_sign, P_id;
 	const char *s;
 
-	bitwindow_width = (tb_width - 1) * 2;
-	bitmask = (1 << bitwindow_width) - 1;
-	nb_valid_left_char = 0;
+	_reset_twobit_signature(tom);
 	for (n = 1, s = S->elts; n <= S->nelt; n++, s++) {
-		twobit = eightbit2twobit[(unsigned char) *s];
-		if (twobit == NA_INTEGER) {
-			nb_valid_left_char = 0;
-			continue;
-		}
-		nb_valid_left_char++;
-		twobit_sign &= bitmask;
-		twobit_sign <<= 2;
-		twobit_sign += twobit;
-		if (nb_valid_left_char < tb_width)
+		twobit_sign = _next_twobit_signature(tom, s);
+		if (twobit_sign == NA_INTEGER)
 			continue;
 		P_id = twobit_sign2pos[twobit_sign];
 		if (P_id == NA_INTEGER)
@@ -215,6 +197,7 @@ void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS)
 	int tb_width;
 	const int *twobit_sign2pos;
 	SEXP base_codes;
+	TwobitOligoMapper tom;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -223,15 +206,12 @@ void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS)
 	tb_width = _get_PreprocessedTB_width(pptb);
 	twobit_sign2pos = INTEGER(_get_Twobit_sign2pos_tag(pptb));
 	base_codes = _get_Twobit_base_codes(pptb);
-	if (LENGTH(base_codes) != 4)
-		error("Biostrings internal error in _match_Twobit(): "
-		      "'base_codes' must be of length 4");
-	_init_byte2offset_with_INTEGER(eightbit2twobit, base_codes, 1);
+	tom = _new_TwobitOligoMapper(base_codes, tb_width, 0);
 	if (!fixedS)
 		error("cannot treat IUPAC extended letters in the subject "
 		      "as ambiguities when 'pdict' is a PDict object of "
 		      "the \"Twobit\" type");
-	walk_subject(tb_width, twobit_sign2pos, S);
+	walk_subject(twobit_sign2pos, &tom, S);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING _match_Twobit()\n");
