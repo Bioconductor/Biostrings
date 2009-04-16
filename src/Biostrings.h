@@ -33,6 +33,19 @@ void _init_byte2offset_with_RoSeq(
 	int error_on_dup
 );
 
+TwobitOligoMapper _new_TwobitOligoMapper(
+	SEXP base_codes,
+	int oligo_width,
+	int endianness
+);
+
+void _reset_twobit_signature(TwobitOligoMapper *tom);
+
+int _next_twobit_signature(
+	TwobitOligoMapper *tom,
+	const char *c
+);
+
 
 /* copy_seq.c */
 
@@ -328,15 +341,21 @@ SEXP XString_oligonucleotide_frequency(
 	SEXP x,
 	SEXP base_codes,
 	SEXP width,
-	SEXP fast_moving_side
+	SEXP freq,
+	SEXP fast_moving_side,
+	SEXP as_array,
+	SEXP with_labels
 );
 
 SEXP XStringSet_oligonucleotide_frequency(
 	SEXP x,
 	SEXP base_codes,
 	SEXP width,
+	SEXP freq,
 	SEXP fast_moving_side,
-	SEXP collapse
+	SEXP as_array,
+	SEXP with_labels,
+	SEXP simplify_as
 );
 
 SEXP XStringSet_letter_frequency_by_pos(

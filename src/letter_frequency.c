@@ -3,6 +3,43 @@
 
 static ByteTrTable byte2offset;
 
+static SEXP init_numeric_vector(int n, double val, int as_double)
+{
+	SEXP ans;
+	int i;
+
+	if (as_double) {
+		PROTECT(ans = NEW_NUMERIC(n));
+		for (i = 0; i < n; i++)
+			REAL(ans)[i] = val;
+	} else {
+		PROTECT(ans = NEW_INTEGER(n));
+		for (i = 0; i < n; i++)
+			INTEGER(ans)[i] = (int) val;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+static SEXP init_numeric_matrix(int nrow, int ncol, double val, int as_double)
+{
+	SEXP ans;
+	int i, n;
+
+	n = nrow * ncol;
+	if (as_double) {
+		PROTECT(ans = allocMatrix(REALSXP, nrow, ncol));
+		for (i = 0; i < n; i++)
+			REAL(ans)[i] = val;
+	} else {
+		PROTECT(ans = allocMatrix(INTSXP, nrow, ncol));
+		for (i = 0; i < n; i++)
+			INTEGER(ans)[i] = (int) val;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
 static int get_ans_width(SEXP codes, int with_other)
 {
 	int width, i;
@@ -77,38 +114,67 @@ static void update_letter_freqs2(int *mat, const RoSeq *X, SEXP codes,
 	return;
 }
 
-static void update_oligo_freqs(int *row, int nrow, int width,
-		int invert_twobit_order, const RoSeq *X)
+static void update_oligo_freqs_as_integer(int *row, int nrow,
+		TwobitOligoMapper *tom, const RoSeq *X)
 {
-	int nbit_in_mask, twobit_mask, nb_valid_left_char,
-	    i, twobit_offset, offset;
+	int i, offset;
 	const char *c;
 
-	offset = 0; /* just to keep 'gcc -Wall' quiet */
-	nbit_in_mask = (width - 1) * 2;
-	twobit_mask = (1 << nbit_in_mask) - 1;
-	if (invert_twobit_order)
-		twobit_mask <<= 2;
-	nb_valid_left_char = 0;
+	_reset_twobit_signature(tom);
 	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
-		twobit_offset = byte2offset[(unsigned char) *c];
-		if (twobit_offset == NA_INTEGER) {
-			nb_valid_left_char = 0;
-			continue;
-		}
-		nb_valid_left_char++;
-		offset &= twobit_mask;
-		if (invert_twobit_order) {
-			offset >>= 2;
-			twobit_offset <<= nbit_in_mask;
-		} else {
-			offset <<= 2;
-		}
-		offset += twobit_offset;
-		if (nb_valid_left_char < width)
+		offset = _next_twobit_signature(tom, c);
+		if (offset == NA_INTEGER)
 			continue;
 		row[offset * nrow]++;
 	}
+	return;
+}
+
+static void update_oligo_freqs_as_double(double *row, int nrow,
+		TwobitOligoMapper *tom, const RoSeq *X)
+{
+	int i, offset;
+	const char *c;
+
+	_reset_twobit_signature(tom);
+	for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
+		offset = _next_twobit_signature(tom, c);
+		if (offset == NA_INTEGER)
+			continue;
+		row[offset * nrow] += 1.00;
+	}
+	return;
+}
+
+static void update_oligo_freqs(SEXP mat, int row, int nrow,
+		TwobitOligoMapper *tom, const RoSeq *X)
+{
+	switch (TYPEOF(mat)) {
+	    case INTSXP:
+		update_oligo_freqs_as_integer(INTEGER(mat) + row, nrow, tom, X);
+		return;
+	    case REALSXP:
+		update_oligo_freqs_as_double(REAL(mat) + row, nrow, tom, X);
+		return;
+	}
+	return;
+}
+
+static void normalize_oligo_freqs(SEXP mat, int nrow, int ncol)
+{
+	int i, j;
+	double sum;
+
+	for (i = 0; i < nrow; i++) {
+		sum = 0.00;
+		for (j = 0; j < ncol; j++)
+			sum += REAL(mat)[i + j * nrow];
+		if (sum == 0.00)
+			continue;
+		for (j = 0; j < ncol; j++)
+			REAL(mat)[i + j * nrow] /= sum;
+	}
+	return;
 }
 
 static SEXP append_other_to_names(SEXP codes)
@@ -156,9 +222,12 @@ static void set_names(SEXP x, SEXP codes, int with_other, int collapse, int whic
 	return;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+
+
+/****************************************************************************
+ *                        --- .Call ENTRY POINTS ---                        *
+ ****************************************************************************/
+
 SEXP XString_letter_frequency(SEXP x, SEXP codes, SEXP with_other)
 {
 	SEXP ans;
@@ -175,9 +244,6 @@ SEXP XString_letter_frequency(SEXP x, SEXP codes, SEXP with_other)
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 		SEXP collapse)
 {
@@ -211,79 +277,70 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP XString_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
-		SEXP fast_moving_side)
+		SEXP freq, SEXP fast_moving_side,
+		SEXP as_array, SEXP with_labels)
 {
 	SEXP ans;
-	int width0, invert_twobit_order, ans_width;
+	TwobitOligoMapper tom;
+	int width0, as_double, invert_twobit_order, ans_width;
 	RoSeq X;
 
-	if (LENGTH(base_codes) != 4)
-		error("'base_codes' must be of length 4");
-	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	width0 = INTEGER(width)[0];
-	if (width0 < 1 || width0 > 12)
-		error("'width' must be >=1 and <= 12");
+	as_double = LOGICAL(freq)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
+	tom = _new_TwobitOligoMapper(base_codes, width0, invert_twobit_order);
 	ans_width = 1 << (width0 * 2);
-	PROTECT(ans = NEW_INTEGER(ans_width));
-	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
+	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_double));
 	X = _get_XString_asRoSeq(x);
-	update_oligo_freqs(INTEGER(ans), 1, width0, invert_twobit_order, &X);
+	update_oligo_freqs(ans, 0, 1, &tom, &X);
+	if (as_double)
+		normalize_oligo_freqs(ans, 1, ans_width);
 	UNPROTECT(1);
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP XStringSet_oligonucleotide_frequency(SEXP x, SEXP base_codes, SEXP width,
-		SEXP fast_moving_side, SEXP collapse)
+		SEXP freq, SEXP fast_moving_side,
+		SEXP as_array, SEXP with_labels, SEXP simplify_as)
 {
 	SEXP ans;
-	int width0, invert_twobit_order, ans_width, x_length, *ans_row, i;
+	TwobitOligoMapper tom;
+	int width0, as_double, invert_twobit_order, ans_width, x_length, i;
+	const char *simplify_as0;
 	CachedXStringSet cached_x;
 	RoSeq x_elt;
 
-	if (LENGTH(base_codes) != 4)
-		error("'base_codes' must be of length 4");
-	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	width0 = INTEGER(width)[0];
-	if (width0 < 1 || width0 > 12)
-		error("'width' must be >=1 and <= 12");
+	as_double = LOGICAL(freq)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
+	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
+	tom = _new_TwobitOligoMapper(base_codes, width0, invert_twobit_order);
 	ans_width = 1 << (width0 * 2);
 	x_length = _get_XStringSet_length(x);
 	cached_x = _new_CachedXStringSet(x);
-	if (LOGICAL(collapse)[0]) {
-		PROTECT(ans = NEW_INTEGER(ans_width));
-		ans_row = INTEGER(ans);
-		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
+	if (strcmp(simplify_as0, "collapsed") == 0) {
+		PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_double));
 		for (i = 0; i < x_length; i++) {
 			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			update_oligo_freqs(ans_row, 1, width0,
-						invert_twobit_order, &x_elt);
+			update_oligo_freqs(ans, 0, 1, &tom, &x_elt);
 		}
-	} else {
-		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
-		ans_row = INTEGER(ans);
-		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
-		for (i = 0; i < x_length; i++, ans_row++) {
-			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-			update_oligo_freqs(ans_row, x_length, width0,
-						invert_twobit_order, &x_elt);
-		}
+		if (as_double)
+			normalize_oligo_freqs(ans, 1, ans_width);
+		UNPROTECT(1);
+		return ans;
 	}
+	PROTECT(ans = init_numeric_matrix(x_length, ans_width, 0.00, as_double));
+	for (i = 0; i < x_length; i++) {
+		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		update_oligo_freqs(ans, i, x_length, &tom, &x_elt);
+	}
+	if (as_double)
+		normalize_oligo_freqs(ans, x_length, ans_width);
 	UNPROTECT(1);
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
 		SEXP shift, SEXP width)
 {

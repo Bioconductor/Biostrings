@@ -170,3 +170,53 @@ void _init_byte2offset_with_RoSeq(ByteTrTable byte2offset, const RoSeq *seq, int
 	return;
 }
 
+TwobitOligoMapper _new_TwobitOligoMapper(SEXP base_codes, int oligo_width, int endianness)
+{
+	TwobitOligoMapper tom;
+
+	if (LENGTH(base_codes) != 4)
+		error("_new_TwobitOligoMapper(): 'base_codes' must be of length 4");
+	if (oligo_width < 1 || oligo_width > 15)
+		error("_new_TwobitOligoMapper(): 'oligo_width' must be >=1 and <= 15");
+	_init_byte2offset_with_INTEGER(tom.eightbit2twobit, base_codes, 1);
+	tom.oligo_width = oligo_width;
+	tom.endianness = endianness;
+	tom.nbit_in_mask = (oligo_width - 1) * 2;
+	tom.twobit_mask = (1 << tom.nbit_in_mask) - 1;
+	if (endianness == 1)
+		tom.twobit_mask <<= 2;
+	tom.nb_valid_prev_char = 0;
+	tom.current_signature = 0;
+	return tom;
+}
+
+void _reset_twobit_signature(TwobitOligoMapper *tom)
+{
+	tom->nb_valid_prev_char = 0;
+	tom->current_signature = 0;
+	return;
+}
+
+int _next_twobit_signature(TwobitOligoMapper *tom, const char *c)
+{
+	int c_as_twobit;
+
+	c_as_twobit = tom->eightbit2twobit[(unsigned char) *c];
+	if (c_as_twobit == NA_INTEGER) {
+		tom->nb_valid_prev_char = 0;
+		return NA_INTEGER;
+	}
+	tom->nb_valid_prev_char++;
+	tom->current_signature &= tom->twobit_mask;
+	if (tom->endianness == 1) {
+		tom->current_signature >>= 2;
+		c_as_twobit <<= tom->nbit_in_mask;
+	} else {
+		tom->current_signature <<= 2;
+	}
+	tom->current_signature += c_as_twobit;
+	if (tom->nb_valid_prev_char < tom->oligo_width)
+		return NA_INTEGER;
+	return tom->current_signature;
+}
+

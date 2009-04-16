@@ -407,11 +407,9 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ### not require preprocessing, and uses much less memory.
 ###
 
-.formatFreqVector <- function(ans, alphabet, width, freq,
+.formatFreqVector <- function(ans, alphabet, width,
                               fast.moving.side, as.array, with.labels)
 {
-    if (freq)
-        ans <- ans / sum(ans)
     if (as.array) {
         if (with.labels)
             dimnames <- rep.int(list(alphabet), width)
@@ -424,11 +422,9 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     ans
 }
 
-.formatFreqMatrix <- function(ans, alphabet, width, freq,
+.formatFreqMatrix <- function(ans, alphabet, width,
                               fast.moving.side, with.labels)
 {
-    if (freq)
-        ans <- ans / rowSums(ans)
     if (with.labels) 
         colnames(ans) <- .mkAllStrings(alphabet, width, fast.moving.side)
     ans
@@ -444,9 +440,11 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     with.labels <- .normargWithLabels(with.labels)
     base_codes <- xscodes(x, baseOnly=TRUE)
     ans <- .Call("XString_oligonucleotide_frequency",
-                 x, base_codes, width, fast.moving.side,
+                 x, base_codes, width,
+                 freq, fast.moving.side,
+                 as.array, with.labels,
                  PACKAGE="Biostrings")
-    .formatFreqVector(ans, names(base_codes), width, freq,
+    .formatFreqVector(ans, names(base_codes), width,
                       fast.moving.side, as.array, with.labels)
 }
 
@@ -492,22 +490,25 @@ setMethod("oligonucleotideFrequency", "XStringSet",
             ans <- rep.int(list(NULL), length(x))
             for (i in seq_len(length(x))) {
                 ans_elt <- .Call("XString_oligonucleotide_frequency",
-                                 x[[i]], base_codes, width, fast.moving.side,
+                                 x[[i]], base_codes, width,
+                                 freq, fast.moving.side,
+                                 as.array, with.labels,
                                  PACKAGE="Biostrings")
-                ans[[i]] <- .formatFreqVector(ans_elt, names(base_codes), width, freq,
+                ans[[i]] <- .formatFreqVector(ans_elt, names(base_codes), width,
                                               fast.moving.side, as.array, with.labels)
             }
             return(ans)
         }
         C_ans <- .Call("XStringSet_oligonucleotide_frequency",
-                       x, base_codes, width, fast.moving.side,
-                       simplify.as == "collapsed",
+                       x, base_codes, width,
+                       freq, fast.moving.side,
+                       as.array, with.labels, simplify.as,
                        PACKAGE="Biostrings")
         if (simplify.as == "collapsed")
-            ans <- .formatFreqVector(C_ans, names(base_codes), width, freq,
+            ans <- .formatFreqVector(C_ans, names(base_codes), width,
                                      fast.moving.side, as.array, with.labels)
         else
-            ans <- .formatFreqMatrix(C_ans, names(base_codes), width, freq,
+            ans <- .formatFreqMatrix(C_ans, names(base_codes), width,
                                      fast.moving.side, with.labels)
         ans
     }

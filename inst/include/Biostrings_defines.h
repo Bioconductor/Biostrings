@@ -29,6 +29,16 @@
 #define BYTETRTABLE_LENGTH 256
 typedef int ByteTrTable[BYTETRTABLE_LENGTH];
 
+typedef struct tom {
+	ByteTrTable eightbit2twobit;
+	int oligo_width;
+	int endianness;  /* move bits to the left if 0, to the right if 1 */
+	int nbit_in_mask;
+	int twobit_mask;
+	int nb_valid_prev_char;
+	int current_signature;
+} TwobitOligoMapper;
+
 
 /*
  * Two structures for holding pointers to read-only non null-terminated
