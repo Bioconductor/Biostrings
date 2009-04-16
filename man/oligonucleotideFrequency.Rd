@@ -13,6 +13,7 @@
 
 \alias{oligonucleotideTransitions}
 \alias{mkAllStrings}
+\alias{strrev}
 
 
 \title{Functions to calculate the frequency of letters in a biological
@@ -49,11 +50,14 @@ sequence and other related functions}
   ## Related utility functions:
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
   mkAllStrings(alphabet, width, fast.moving.side="right")
+  strrev(x)
 }
 
 \arguments{
   \item{x}{
-    DNA or RNA input.
+    DNA or RNA input for the \code{*Frequency} functions.
+
+    A character vector for \code{strrev}.
   }
   \item{width}{
     The number of nucleotides per oligonucleotide for
@@ -135,7 +139,9 @@ sequence and other related functions}
   \link{XStringViews-class},
   \link{MaskedXString-class},
   \code{\link{GENETIC_CODE}},
-  \code{\link{AMINO_ACID_CODE}}
+  \code{\link{AMINO_ACID_CODE}},
+  \code{\link{reverse,XString-method}},
+  \code{\link{rev}}
 }
 
 \examples{
@@ -158,7 +164,7 @@ sequence and other related functions}
   f6[f6 == min(f6)]
   f6[f6 == max(f6)]
 
-  ## Get the result as an array
+  ## Get the result as an array:
   tri <- trinucleotideFrequency(yeast1, as.array=TRUE)
   tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
   tri["T", , ] # frequencies of trinucleotides starting with a "T"
@@ -179,18 +185,17 @@ sequence and other related functions}
   triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
   all(as.vector(tri) == triL) # TRUE
 
-  ## Convert the trinucleotide frequency into the amino acid frequency based on
-  ## translation
+  ## Convert the trinucleotide frequency into the amino acid frequency
+  ## based on translation:
   tri1 <- trinucleotideFrequency(yeast1)
   names(tri1) <- GENETIC_CODE[names(tri1)]
   sapply(split(tri1, names(tri1)), sum) # 12512 occurrences of the stop codon
 
   ## When the returned vector is very long (e.g. width >= 10), using
-  ## 'with.labels=FALSE' will improve the performance considerably (100x, 1000x
-  ## or more):
+  ## 'with.labels=FALSE' should improve performance significantly:
   f12 <- oligonucleotideFrequency(yeast1, 12, with.labels=FALSE) # very fast!
 
-  ## Some related utility functions
+  ## Some related utility functions:
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
   dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
   identical(strrev(dict1), dict2) # TRUE 

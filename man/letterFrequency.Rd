@@ -27,8 +27,6 @@
 \alias{uniqueLetters,XStringViews-method}
 \alias{uniqueLetters,MaskedXString-method}
 
-\alias{strrev}
-
 \alias{consensusMatrix}
 \alias{consensusMatrix,character-method}
 \alias{consensusMatrix,matrix-method}
@@ -76,9 +74,6 @@ sequence and other related functions}
   \S4method{consensusString}{matrix}(x)
   \S4method{consensusString}{XStringSet}(x, shift=0L, width=NULL)
   \S4method{consensusString}{ANY}(x)
-
-  ## Other (not really) related utility function:
-  strrev(x)
 }
 
 \arguments{
@@ -95,8 +90,6 @@ sequence and other related functions}
     A consensus matrix (as returned by \code{consensusMatrix}),
     or an \link{XStringSet} or \link{XStringViews} object
     for \code{consensusString}.
-
-    A character vector for \code{strrev}.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
@@ -187,8 +180,6 @@ sequence and other related functions}
   \link{XStringSet-class},
   \link{XStringViews-class},
   \link{MaskedXString-class},
-  \code{\link{reverse,XString-method}},
-  \code{\link{rev}},
   \code{\link{strsplit}}
 }
 
@@ -213,7 +204,7 @@ sequence and other related functions}
   ## ---------------------------------------------------------------------
   ## B. consensus*() EXAMPLES
   ## ---------------------------------------------------------------------
-  ## Read in ORF data
+  ## Read in ORF data:
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   orf <- read.DNAStringSet(file, "fasta")
 
