@@ -342,8 +342,8 @@ SEXP XString_oligo_frequency(
 	SEXP base_codes,
 	SEXP width,
 	SEXP freq,
-	SEXP fast_moving_side,
 	SEXP as_array,
+	SEXP fast_moving_side,
 	SEXP with_labels
 );
 
@@ -352,8 +352,8 @@ SEXP XStringSet_oligo_frequency(
 	SEXP base_codes,
 	SEXP width,
 	SEXP freq,
-	SEXP fast_moving_side,
 	SEXP as_array,
+	SEXP fast_moving_side,
 	SEXP with_labels,
 	SEXP simplify_as
 );

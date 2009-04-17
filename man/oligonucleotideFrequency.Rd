@@ -34,17 +34,17 @@ or RNA sequence, plus some related functions}
 }
 
 \usage{
-  oligonucleotideFrequency(x, width, freq=FALSE, fast.moving.side="right",
-                           as.array=FALSE, with.labels=TRUE, ...)
+  oligonucleotideFrequency(x, width, freq=FALSE, as.array=FALSE,
+                           fast.moving.side="right", with.labels=TRUE, ...)
 
   \S4method{oligonucleotideFrequency}{XStringSet}(x,
-      width, freq=FALSE, fast.moving.side="right",
-      as.array=FALSE, with.labels=TRUE, simplify.as="matrix")
+      width, freq=FALSE, as.array=FALSE,
+      fast.moving.side="right", with.labels=TRUE, simplify.as="matrix")
 
-  dinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
-                        as.matrix=FALSE, with.labels=TRUE, ...)
-  trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
-                         as.array=FALSE, with.labels=TRUE, ...)
+  dinucleotideFrequency(x, freq=FALSE, as.matrix=FALSE,
+                        fast.moving.side="right", with.labels=TRUE, ...)
+  trinucleotideFrequency(x, freq=FALSE, as.array=FALSE,
+                         fast.moving.side="right", with.labels=TRUE, ...)
 
   ## Some related functions:
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
@@ -65,14 +65,16 @@ or RNA sequence, plus some related functions}
     If \code{TRUE} then relative frequencies are reported,
     otherwise counts (the default).
   }
-  \item{fast.moving.side}{
-    Which side of the strings should move fastest?
-  }
   \item{as.array,as.matrix}{
     Controls the "shape" of the returned object.
     If \code{TRUE} then it's a numeric matrix (or array),
     otherwise it's just a "flat" numeric vector i.e. a
     vector with no dim attribute (the default).
+  }
+  \item{fast.moving.side}{
+    Which side of the strings should move fastest?
+    Note that, when \code{as.array} is TRUE, then the supplied value
+    is ignored and the effective value is \code{"left"}.
   }
   \item{with.labels}{
     If \code{TRUE} then the returned object is named.

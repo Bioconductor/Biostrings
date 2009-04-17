@@ -363,19 +363,19 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 }
 
 SEXP XString_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
-		SEXP freq, SEXP fast_moving_side,
-		SEXP as_array, SEXP with_labels)
+		SEXP freq, SEXP as_array,
+		SEXP fast_moving_side, SEXP with_labels)
 {
 	SEXP ans, base_labels;
 	TwobitEncodingBuffer teb;
-	int width0, as_integer, invert_twobit_order, as_array0, ans_width;
+	int width0, as_integer, as_array0, invert_twobit_order, ans_width;
 	RoSeq X;
 
 	width0 = INTEGER(width)[0];
 	as_integer = !LOGICAL(freq)[0];
+	as_array0 = LOGICAL(as_array)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
 	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
-	as_array0 = LOGICAL(as_array)[0];
 	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
@@ -389,23 +389,23 @@ SEXP XString_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
 }
 
 SEXP XStringSet_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
-		SEXP freq, SEXP fast_moving_side,
-		SEXP as_array, SEXP with_labels, SEXP simplify_as)
+		SEXP freq, SEXP as_array,
+		SEXP fast_moving_side, SEXP with_labels, SEXP simplify_as)
 {
 	SEXP ans, base_labels, ans_elt;
 	TwobitEncodingBuffer teb;
-	int width0, as_integer, invert_twobit_order, as_array0, ans_width, x_length, i;
+	int width0, as_integer, as_array0, invert_twobit_order, ans_width, x_length, i;
 	const char *simplify_as0;
 	CachedXStringSet cached_x;
 	RoSeq x_elt;
 
 	width0 = INTEGER(width)[0];
 	as_integer = !LOGICAL(freq)[0];
-	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
-	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
-	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
 	as_array0 = LOGICAL(as_array)[0];
+	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
+	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
 	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
+	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	x_length = _get_XStringSet_length(x);
 	cached_x = _new_CachedXStringSet(x);
