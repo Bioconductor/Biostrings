@@ -31,6 +31,7 @@
 \alias{coerce,character,DNAString-method}
 \alias{coerce,character,RNAString-method}
 \alias{coerce,character,AAString-method}
+\alias{coerce,character,XString-method}
 \alias{as.character,XString-method}
 \alias{toString,XString-method}
 

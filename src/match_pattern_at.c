@@ -332,18 +332,32 @@ static void match_pattern_at(const RoSeq *P, const RoSeq *S, SEXP at, int at_typ
 }
 
 
+
 /****************************************************************************
- * --- .Call ENTRY POINT ---
- * Arguments:
- *   pattern
- *   subject
- *   at: positions of P's first or last letter in S;
- *   at_type: 0 if 'at' contains the positions of P's first letter in S,
- *            1 if 'at' contains the positions of P's last letter in S;
- *   max_mismatch:
+ *                        --- .Call ENTRY POINTS ---                        *
+ ****************************************************************************/
+
+/*
+ * XString_match_pattern_at() arguments:
+ *   pattern: XString object of same base type as 'subject'.
+ *   subject: XString object.
+ *   at: the 1-based positions of 'pattern' with respect to 'subject'.
+ *   at_type: how to interpret the positions in 'at'. If 0, then they are
+ *            those of the first letter of 'pattern'. If 1, then they are
+ *            those of its last letter.
+ *   max_mismatch: if the number of effective mismatches is <= 'max_mismatch',
+ *            then it is reported accurately. Otherwise any number >
+ *            'max_mismatch' could be reported. This is to allow the matching
+ *            functions used as backends to which XString_match_pattern_at()
+ *            delegates to implement early bail out strategies.
+ *   with_indels: TRUE or FALSE. If TRUE, then the "number of mismatches" at
+ *            a given position means the smallest edit distance between the
+ *            'pattern' and all the substrings in 'subject' that start (if
+ *            'at_type' is 0) or end (if 'at_type' is 1) at this position.
+ *   fixed: a logical of length 2.
  *   ans_type: 0 for a logical vector indicating whether there is a match or
- *             not at the specified positions, 1 for an integer vector giving
- *             the number of mismatches at the specified positions;
+ *            not at the specified positions, 1 for an integer vector giving
+ *            the number of mismatches at the specified positions.
  */
 SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
@@ -381,7 +395,8 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 
 
 /*
- * Arguments are the same as for XString_match_pattern_at() except for:
+ * XStringSet_vmatch_pattern_at() arguments are the same as for
+ * XString_match_pattern_at() except for:
  *   subject: XStringSet object.
  */
 SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,

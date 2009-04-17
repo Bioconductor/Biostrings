@@ -21,6 +21,8 @@
 \alias{isMatchingEndingAt,XString-method}
 \alias{isMatchingEndingAt,XStringSet-method}
 
+\alias{hasLetterAt}
+
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
 \alias{nmatch}
@@ -46,10 +48,12 @@
   available in this package: unless specified otherwise, most of them will
   adhere to the definition provided here.
 
+  \code{hasLetterAt} checks whether a sequence or set of sequences has the
+  specified letters at the specified positions.
+  
   \code{neditStartingAt}, \code{neditEndingAt}, \code{isMatchingStartingAt}
-  and \code{isMatchingEndingAt} are low-level functions that implement
-  some basic concepts. Once these concepts are understood, we can use them
-  to provide a simple and concise definition of a "match".
+  and \code{isMatchingEndingAt} are low-level matching functions that only
+  check for matches at the specified positions.
 
   Other utility functions related to pattern matching are described here:
   the \code{mismatch} function for getting the positions of the mismatching
@@ -61,6 +65,8 @@
 }
 
 \usage{
+  hasLetterAt(x, letter, at, fixed=TRUE)
+
   neditStartingAt(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
   neditEndingAt(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
   neditAt(pattern, subject, at=1, with.indels=FALSE, fixed=TRUE)
@@ -80,17 +86,34 @@
 }
 
 \arguments{
+  \item{x}{
+    A character vector, or an \link{XString} or \link{XStringSet}
+    object for \code{hasLetterAt}.
+
+    An \link{XStringViews} object for \code{mismatch} (typically, one returned
+    by \code{matchPattern(pattern, subject)}).
+
+    An \link{MIndex} object for \code{coverage}, or any object for
+    which a \code{coverage} method is defined. See \code{?\link[IRanges]{coverage}}.
+  }
+  \item{letter}{
+    A character string or an \link{XString} object containing the letters
+    to check.
+  }
+  \item{at, starting.at, ending.at}{
+    An integer vector specifying the starting (for \code{starting.at}
+    and \code{at}) or ending (for \code{ending.at}) positions of the
+    pattern relatively to the subject.
+
+    For the \code{hasLetterAt} function, \code{letter} and \code{at}
+    must have the same length.
+  }
   \item{pattern}{
     The pattern string.
   }
   \item{subject}{
     An \link{XString}, \link{XStringSet} object, or character vector
     containing the subject sequence(s).
-  }
-  \item{starting.at, ending.at, at}{
-    An integer vector specifying the starting (for \code{starting.at}
-    and \code{at}) or ending (for \code{ending.at}) positions of the
-    pattern relatively to the subject.
   }
   \item{max.mismatch}{
     See details below.
@@ -116,13 +139,6 @@
     are interpreted as wildcards.
     With \code{fixed="pattern"}, ambiguities in the subject only
     are interpreted as wildcards.
-  }
-  \item{x}{
-    An \link{XStringViews} object for \code{mismatch} (typically, one returned
-    by \code{matchPattern(pattern, subject)}).
-
-    An \link{MIndex} object for \code{coverage}, or any object for
-    which a \code{coverage} method is defined. See \code{?\link[IRanges]{coverage}}.
   }
   \item{start, end, shift, width}{
     See \code{?\link[IRanges]{coverage}}.
@@ -164,6 +180,11 @@
 }
 
 \value{
+  \code{hasLetterAt}: A logical matrix with one row per element in \code{x}
+  and one column per letter/position to check. When a specified position
+  is invalid with respect to an element in \code{x} then the corresponding
+  matrix element is set to NA.
+
   \code{neditStartingAt} and \code{neditEndingAt}: If \code{subject} is an
   \link{XString} object, then return an integer vector of the same length as
   \code{starting.at} (or \code{ending.at}). If \code{subject} is an
@@ -221,6 +242,33 @@
 }
 
 \examples{
+  ## ---------------------------------------------------------------------
+  ## hasLetterAt()
+  ## ---------------------------------------------------------------------
+  x <- DNAStringSet(c("AAACGT", "AACGT", "ACGT", "TAGGA"))
+  hasLetterAt(x, "AAAAAA", 1:6)
+
+  ## hasLetterAt() can be used to answer questions like: "which elements
+  ## in 'x' have an A at position 2 and a G at position 4?"
+  q1 <- hasLetterAt(x, "AG", c(2, 4))
+  which(rowSums(q1) == 2)
+
+  ## or "how many probes in the drosophila2 chip have T, G, T, A at
+  ## position 2, 4, 13 and 20, respectively?"
+  library(drosophila2probe)
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  q2 <- hasLetterAt(probes, "TGTA", c(2, 4, 13, 20))
+  sum(rowSums(q2) == 4)
+  ## or "what's the probability to have an A at position 25 if there is
+  ## one at position 13?"
+  q3 <- hasLetterAt(probes, "AACGT", c(13, 25, 25, 25, 25))
+  sum(q3[ , 1] & q3[ , 2]) / sum(q3[ , 1])
+  ## Probabilities to have other bases at position 25 if there is an A
+  ## at position 13:
+  sum(q3[ , 1] & q3[ , 3]) / sum(q3[ , 1])  # C
+  sum(q3[ , 1] & q3[ , 4]) / sum(q3[ , 1])  # G
+  sum(q3[ , 1] & q3[ , 5]) / sum(q3[ , 1])  # T
+
   ## ---------------------------------------------------------------------
   ## neditAt() / isMatchingAt()
   ## ---------------------------------------------------------------------

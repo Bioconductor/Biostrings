@@ -135,7 +135,7 @@ isMatchingAt <- function(pattern, subject, at=1,
                             max.mismatch, with.indels, fixed, ans.type)
 {
     if (!is(subject, "XString"))
-        subject <- XString(NULL, subject)
+        subject <- as(subject, "XString")
     pattern <- normargPattern(pattern, subject)
     if (!is.numeric(at)) {
         what <- if (at.type == 0) "starting.at" else "ending.at"
@@ -159,7 +159,7 @@ isMatchingAt <- function(pattern, subject, at=1,
                              max.mismatch, with.indels, fixed, ans.type)
 {
     if (!is(subject, "XStringSet"))
-        subject <- XStringSet(NULL, subject)
+        subject <- as(subject, "XStringSet")
     pattern <- normargPattern(pattern, subject)
     if (!is.numeric(at)) {
         what <- if (at.type == 0) "starting.at" else "ending.at"
@@ -258,6 +258,50 @@ setMethod("isMatchingEndingAt", "XStringSet",
         .vmatchPatternAt(pattern, subject, ending.at, 1L,
                          max.mismatch, with.indels, fixed, 0L)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### hasLetterAt()
+###
+
+hasLetterAt <- function(x, letter, at, fixed=TRUE)
+{
+    if (!is(x, "XStringSet")) {
+        if (!is.character(x) && !is(x, "XString"))
+            stop("'x' must be a character vector, or an XString or XStringSet object")
+        x <- as(x, "XStringSet")
+    }
+    if (!is(letter, "XString")) {
+        if (!isSingleString(letter))
+            stop("'letter' must be a character string or an XString object")
+        letter <- XString(xsbasetype(x), letter)
+    } else {
+        if (xsbasetype(letter) != xsbasetype(x))
+            stop("'x' and 'letter' must have the same XString base type")
+    }
+    if (!is.numeric(at))
+        stop("'at' must be a vector of integers")
+    if (length(at) != length(letter))
+        stop("'letter' and 'at' must have the same length")
+    if (!is.integer(at))
+        at <- as.integer(at)
+    if (any(is.na(at)))
+        stop("'at' cannot contain NAs")
+    fixed <- normargFixed(fixed, x)
+
+    .hasLetterAt1 <- function(x, l1, at1)
+    {
+        ans <- .Call("XStringSet_vmatch_pattern_at",
+                     l1, x, at1, 0L,
+                     0L, FALSE, fixed, 0L,
+                     PACKAGE="Biostrings")
+        ans[at1 < 1 | at1 > width(x)] <- NA
+        ans
+    }
+    sapply(seq_len(length(letter)),
+           function(i)
+               .hasLetterAt1(x, subseq(letter, start=i, width=1L), at[i]))
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

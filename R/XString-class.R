@@ -223,6 +223,7 @@ setAs("character", "BString", function(from) BString(from))
 setAs("character", "DNAString", function(from) DNAString(from))
 setAs("character", "RNAString", function(from) RNAString(from))
 setAs("character", "AAString", function(from) AAString(from))
+setAs("character", "XString", function(from) BString(from))
 
 setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
 

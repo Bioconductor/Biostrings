@@ -199,6 +199,7 @@ export(
     ## match-utils.R
     neditStartingAt, neditEndingAt, neditAt,
     isMatchingStartingAt, isMatchingEndingAt, isMatchingAt,
+    hasLetterAt,
     mismatch, nmatch, nmismatch,
 
     ## matchPattern.R

@@ -369,11 +369,13 @@ setAs("character", "BStringSet", function(from) BStringSet(from))
 setAs("character", "DNAStringSet", function(from) DNAStringSet(from))
 setAs("character", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("character", "AAStringSet", function(from) AAStringSet(from))
+setAs("character", "XStringSet", function(from) BStringSet(from))
 
 setAs("XString", "BStringSet", function(from) BStringSet(from))
 setAs("XString", "DNAStringSet", function(from) DNAStringSet(from))
 setAs("XString", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("XString", "AAStringSet", function(from) AAStringSet(from))
+setAs("XString", "XStringSet", function(from) XStringSet(xsbasetype(from), from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
