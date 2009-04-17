@@ -15,8 +15,8 @@
 \alias{mkAllStrings}
 
 
-\title{Functions to calculate the frequency of letters in a biological
-sequence and other related functions}
+\title{Calculate the frequency of oligonucleotides in a DNA
+or RNA sequence, plus some related functions}
 
 \description{
   Given a biological sequence (or a set of biological sequences),
@@ -46,7 +46,7 @@ sequence and other related functions}
   trinucleotideFrequency(x, freq=FALSE, fast.moving.side="right",
                          as.array=FALSE, with.labels=TRUE, ...)
 
-  ## Related utility functions:
+  ## Some related functions:
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
   mkAllStrings(alphabet, width, fast.moving.side="right")
 }
@@ -192,7 +192,7 @@ sequence and other related functions}
   ## Here for example, the observed speed up is between 25x and 500x:
   f12 <- oligonucleotideFrequency(yeast1, 12, with.labels=FALSE) # very fast!
 
-  ## Some related utility functions:
+  ## Spome related functions:
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
   dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
   identical(reverse(dict1), dict2) # TRUE 

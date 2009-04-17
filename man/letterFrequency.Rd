@@ -44,8 +44,8 @@
 \alias{consmat,ANY-method}
 
 
-\title{Functions to calculate the frequency of letters in a biological
-sequence and other related functions}
+\title{Calculate the frequency of letters in a biological
+sequence, or the consensus matrix of a set of sequences}
 
 \description{
   Given a biological sequence (or a set of biological sequences),
