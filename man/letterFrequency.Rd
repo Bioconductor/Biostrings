@@ -39,7 +39,7 @@
 \alias{consensusString,XStringViews-method}
 \alias{consensusString,ANY-method}
 
-% Deprecated:
+% Old stuff:
 \alias{consmat}
 \alias{consmat,ANY-method}
 

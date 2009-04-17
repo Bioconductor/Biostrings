@@ -113,8 +113,6 @@ UTILITIES
 
 - Finish C implementation of read.XStringViews()
 
-- Maybe make strrev() a "reverse" method for character objects.
-
 - Add a new generic that combines a subject and an IRanges (or IRanges-like)
   object to return an XStringViews object. The IRanges-like object could be
   MIndex object and the method for it would do as if it had received

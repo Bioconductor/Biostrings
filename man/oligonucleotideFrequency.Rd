@@ -13,7 +13,6 @@
 
 \alias{oligonucleotideTransitions}
 \alias{mkAllStrings}
-\alias{strrev}
 
 
 \title{Functions to calculate the frequency of letters in a biological
@@ -50,14 +49,11 @@ sequence and other related functions}
   ## Related utility functions:
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
   mkAllStrings(alphabet, width, fast.moving.side="right")
-  strrev(x)
 }
 
 \arguments{
   \item{x}{
     DNA or RNA input for the \code{*Frequency} functions.
-
-    A character vector for \code{strrev}.
   }
   \item{width}{
     The number of nucleotides per oligonucleotide for
@@ -192,13 +188,14 @@ sequence and other related functions}
   sapply(split(tri1, names(tri1)), sum) # 12512 occurrences of the stop codon
 
   ## When the returned vector is very long (e.g. width >= 10), using
-  ## 'with.labels=FALSE' should improve performance significantly:
+  ## 'with.labels=FALSE' can improve performance significantly.
+  ## Here for example, the observed speed up is between 25x and 500x:
   f12 <- oligonucleotideFrequency(yeast1, 12, with.labels=FALSE) # very fast!
 
   ## Some related utility functions:
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
   dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
-  identical(strrev(dict1), dict2) # TRUE 
+  identical(reverse(dict1), dict2) # TRUE 
 }
 
 \keyword{methods}

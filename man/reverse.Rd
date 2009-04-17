@@ -1,5 +1,6 @@
 \name{reverseComplement}
 
+\alias{reverse,character-method}
 \alias{reverse,XString-method}
 \alias{reverse,XStringSet-method}
 \alias{reverse,XStringViews-method}
@@ -21,6 +22,9 @@
 \alias{reverseComplement,MaskedDNAString-method}
 \alias{reverseComplement,MaskedRNAString-method}
 
+% Old stuff:
+\alias{strrev}
+
 
 \title{Sequence reversing and complementing}
 
@@ -30,6 +34,7 @@
 }
 
 \usage{
+  \S4method{reverse}{character}(x, \dots)
   \S4method{reverse}{XString}(x, \dots)
   complement(x, \dots)
   reverseComplement(x, \dots)
@@ -37,8 +42,8 @@
 
 \arguments{
   \item{x}{
-    An \link{XString}, \link{XStringSet}, \link{XStringViews}
-    or \link{MaskedXString} object for \code{reverse}.
+    A character vector, or an \link{XString}, \link{XStringSet},
+    \link{XStringViews} or \link{MaskedXString} object for \code{reverse}.
 
     A \link{DNAString}, \link{RNAString},
     \link{DNAStringSet}, \link{RNAStringSet},
@@ -82,7 +87,6 @@
   \link{RNAStringSet-class},
   \link{XStringViews-class},
   \link{MaskedXString-class},
-  \code{\link{strrev}},
   \code{\link{chartr}},
   \code{\link{findPalindromes}}
 }

@@ -7,6 +7,16 @@
 ### The "reverse" methods.
 ###
 
+setMethod("reverse", "character",
+    function(x, ...)
+    {       
+        if (length(x) == 0)
+            return(x)
+        sapply(strsplit(x, NULL, fixed=TRUE),
+               function(xx) paste(rev(xx), collapse=""))
+    }
+)
+
 setMethod("reverse", "XString",
     function(x, ...)
         XString.tr(x, reverse=TRUE)
@@ -179,4 +189,15 @@ setMethod("reverseComplement", "MaskedRNAString",
         x
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+strrev <- function(x)
+{
+    .Deprecated("reverse")
+    reverse(x)
+}
 

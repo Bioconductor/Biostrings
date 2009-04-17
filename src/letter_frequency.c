@@ -232,25 +232,41 @@ static SEXP mk_all_oligos(int width, SEXP base_letters, int invert_twobit_order)
 {
 	SEXP ans;
 	int ans_length, i, j, k, twobit_sign;
-	char ans_elt_buf[16], c;
+	char ans_elt_buf[16];
 
 	if (width >= sizeof(ans_elt_buf))
 		error("mk_all_oligos(): width >= sizeof(ans_elt_buf))");
 	if (LENGTH(base_letters) != 4)
 		error("mk_all_oligos(): 'base_letters' must be of length 4");
 	ans_length = 1 << (width * 2); /* 4^width */
+/*
+   Disabled since this trick doesn't seem to make any significant
+   difference.
+	if (width != 0) {
+		// This is an attempt to get the memory early and in a more
+		// efficient way than if we let R grow the pool of Vcells
+		// during the construction of the big character string below.
+		// Note that this fake 'ans' must NOT be protected so the memory
+		// can then be claimed and used by the real 'ans'.
+		ans = NEW_INTEGER(ans_length / sizeof(int) * sizeof(char) * (width + 1));
+	}
+*/
 	PROTECT(ans = NEW_CHARACTER(ans_length));
 	ans_elt_buf[width] = 0;
 	for (i = 0; i < ans_length; i++) {
 		twobit_sign = i;
-		for (j = 0; j < width; j++) {
-			k = twobit_sign & 3;
-			c = CHAR(STRING_ELT(base_letters, k))[0];
-			if (invert_twobit_order)
-				ans_elt_buf[j] = c;
-			else
-				ans_elt_buf[width - 1 - j] = c;
-			twobit_sign >>= 2;
+		if (invert_twobit_order) {
+			for (j = 0; j < width; j++) {
+				k = twobit_sign & 3;
+				ans_elt_buf[j] = CHAR(STRING_ELT(base_letters, k))[0];
+				twobit_sign >>= 2;
+			}
+		} else {
+			for (j = width - 1; j >= 0; j--) {
+				k = twobit_sign & 3;
+				ans_elt_buf[j] = CHAR(STRING_ELT(base_letters, k))[0];
+				twobit_sign >>= 2;
+			}
 		}
 		SET_STRING_ELT(ans, i, mkChar(ans_elt_buf));
 	}

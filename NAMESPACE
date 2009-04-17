@@ -100,13 +100,15 @@ export(
 
     ## letterFrequency.R:
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,
-    strrev, mkAllStrings,
+    consensusMatrix, consensusString,
+    mkAllStrings,
     oligonucleotideFrequency,
     dinucleotideFrequency, trinucleotideFrequency,
     oligonucleotideTransitions,
 
     ## reverse.R:
     complement, reverseComplement,
+    strrev,
 
     ## translate.R:
     transcribe, cDNA, dna2rna, rna2dna,
@@ -124,6 +126,7 @@ export(
     ## Old stuff (Defunct or Deprecated):
     FASTArecordsToBStringViews, read.BStringViews, write.BStringViews,
     subXString, subBString,
+    consmat,
     replaceLetterAtLoc
 )
 
@@ -146,6 +149,7 @@ exportMethods(
     letter,
     substr, substring,
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,
+    consensusMatrix, consensusString,
     oligonucleotideFrequency,
     chartr,
     reverse, complement, reverseComplement,
@@ -155,7 +159,8 @@ exportMethods(
     injectHardMask,
 
     ## Old stuff (Defunct or Deprecated):
-    as.complex
+    as.complex,
+    consmat
 )
 
 
@@ -307,7 +312,7 @@ export(
     ## align-utils.R:
     nedit,
     mismatchTable, mismatchSummary,
-    compareStrings, consensusMatrix, consensusString,
+    compareStrings,
 
     ## pmatchPattern.R:
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
@@ -322,7 +327,7 @@ export(
     stringDist,
 
     ## Old stuff (Defunct or Deprecated):
-    consmat, alignScore, needwunsQS
+    alignScore, needwunsQS
 )
 
 exportMethods(
@@ -339,12 +344,12 @@ exportMethods(
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
     mismatch, nmatch, nmismatch, nedit,
     mismatchTable, mismatchSummary, coverage,
-    compareStrings, consensusMatrix, consensusString,
+    compareStrings,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, stringDist,
 
     ## Old stuff (Defunct or Deprecated):
-    consmat, needwunsQS
+    needwunsQS
 )
 
 

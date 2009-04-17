@@ -1,6 +1,5 @@
 ### =========================================================================
 ### alphabetFrequency()
-### strrev()
 ### mkAllStrings()
 ### oligonucleotideFrequency()
 ### dinucleotideFrequency()
@@ -332,19 +331,6 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
     if (letters.as.names)
         names(ans) <- x
     ans
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "strrev" function.
-###
-
-strrev <- function(x)
-{
-    if (length(x) == 0)
-        return(x)
-    sapply(strsplit(x, NULL, fixed=TRUE),
-           function(xx) paste(rev(xx), collapse=""))
 }
 
 
