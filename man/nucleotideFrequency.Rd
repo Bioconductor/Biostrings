@@ -23,7 +23,7 @@
 or RNA sequence, plus some related functions}
 
 \description{
-  Given a biological sequence (or a set of biological sequences),
+  Given a DNA or RNA sequence (or a set of DNA or RNA sequences),
   the \code{oligonucleotideFrequency} function computes the frequency
   of all possible oligonucleotides of a given length (called the "width"
   in this particular context).
@@ -31,7 +31,12 @@ or RNA sequence, plus some related functions}
   The \code{dinucleotideFrequency} and \code{trinucleotideFrequency}
   functions are convenient wrappers for calling \code{oligonucleotideFrequency}
   with \code{width=2} and \code{width=3}, respectively.
-  
+
+  The \code{nucleotideFrequencyAt} function computes the frequency
+  of the short sequences formed by extracting the nucleotides found
+  at some fixed positions from each sequence of a set of DNA or RNA
+  sequences.
+ 
   In this man page we call "DNA input" (or "RNA input") an
   \link{XString}, \link{XStringSet}, \link{XStringViews} or
   \link{MaskedXString} object of base type DNA (or RNA).
@@ -128,12 +133,6 @@ or RNA sequence, plus some related functions}
   }
 }
 
-\details{
-  \code{oligonucleotideFrequency} is a generic function defined in the
-  Biostrings package with methods for \link{XString}, \link{XStringSet},
-  \link{XStringViews} and \link{MaskedXString} objects.
-}
-
 \value{
   If \code{x} is an \link{XString} or \link{MaskedXString} object,
   the \code{*Frequency} functions return a numeric vector of length
@@ -186,12 +185,14 @@ or RNA sequence, plus some related functions}
   probes <- DNAStringSet(drosophila2probe$sequence)
   dfmat <- dinucleotideFrequency(probes)  # a big matrix
   dinucleotideFrequency(probes, simplify.as="collapsed")
-  dinucleotideFrequency(probes, simplify.as="collapsed", as.array=TRUE)
+  dinucleotideFrequency(probes, simplify.as="collapsed", as.matrix=TRUE)
 
   ## ---------------------------------------------------------------------
   ## B. nucleotideFrequencyAt()
   ## ---------------------------------------------------------------------
+  nucleotideFrequencyAt(probes, 13)
   nucleotideFrequencyAt(probes, c(13, 20))
+  nucleotideFrequencyAt(probes, c(13, 20), as.array=FALSE)
 
   ## nucleotideFrequencyAt() can be used to answer questions like: "how
   ## many probes in the drosophila2 chip have T, G, T, A at position
