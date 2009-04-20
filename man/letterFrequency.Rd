@@ -197,9 +197,9 @@ sequence, or the consensus matrix of a set of sequences}
 
   ## With input made of multiple sequences:
   library(drosophila2probe)
-  x <- DNAStringSet(drosophila2probe$sequence)
-  alphabetFrequency(x[1:50], baseOnly=TRUE)
-  alphabetFrequency(x, baseOnly=TRUE, collapse=TRUE)
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  alphabetFrequency(probes[1:50], baseOnly=TRUE)
+  alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
 
   ## ---------------------------------------------------------------------
   ## B. consensus*() EXAMPLES
@@ -224,8 +224,6 @@ sequence, or the consensus matrix of a set of sequences}
 
   ## consensusMatrix() can be used to just compute the alphabet frequency
   ## for each position in the input sequences:
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
   consensusMatrix(probes, baseOnly=TRUE)
 
   ## After sorting, the first 5 probes might look similar (at least on

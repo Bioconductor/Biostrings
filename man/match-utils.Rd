@@ -226,6 +226,7 @@
 }
 
 \seealso{
+  \code{\link{nucleotideFrequencyAt}},
   \code{\link{matchPattern}},
   \code{\link{matchPDict}},
   \code{\link{matchLRPatterns}},
@@ -268,6 +269,8 @@
   sum(q3[ , 1] & q3[ , 3]) / sum(q3[ , 1])  # C
   sum(q3[ , 1] & q3[ , 4]) / sum(q3[ , 1])  # G
   sum(q3[ , 1] & q3[ , 5]) / sum(q3[ , 1])  # T
+
+  ## See ?nucleotideFrequencyAt for another way to get those results.
 
   ## ---------------------------------------------------------------------
   ## neditAt() / isMatchingAt()

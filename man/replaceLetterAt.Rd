@@ -37,7 +37,7 @@
     A \link{DNAString} object.
   }
   \item{at}{
-    An integer vector with no NAs specifying the locations where the
+    An integer vector with no NAs containing the locations where the
     replacements must occur. Note that locations can be repeated and in
     this case the last replacement to occur at a given location prevails.
   }

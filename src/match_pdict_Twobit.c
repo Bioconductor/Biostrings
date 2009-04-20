@@ -45,13 +45,10 @@ static void init_twobit_sign2pos(SEXP twobit_sign2pos, int val0)
 static int pp_pattern(SEXP twobit_sign2pos, TwobitEncodingBuffer *teb,
 		const RoSeq *pattern, int poffset)
 {
-	int i, twobit_sign, *pos0;
-	const char *c;
+	int twobit_sign, *pos0;
 
-	_reset_twobit_signature(teb);
 	//printf("poffset=%d: ", poffset);
-	for (i = 0, c = pattern->elts; i < pattern->nelt; i++, c++)
-		twobit_sign = _next_twobit_signature(teb, c);
+	twobit_sign = _get_twobit_signature(teb, pattern);
 	if (twobit_sign == NA_INTEGER)
 		return -1;
 	//printf("twobit_sign=%d\n", twobit_sign);
@@ -181,7 +178,7 @@ void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb, const R
 
 	_reset_twobit_signature(teb);
 	for (n = 1, s = S->elts; n <= S->nelt; n++, s++) {
-		twobit_sign = _next_twobit_signature(teb, s);
+		twobit_sign = _shift_twobit_signature(teb, *s);
 		if (twobit_sign == NA_INTEGER)
 			continue;
 		P_id = twobit_sign2pos[twobit_sign];

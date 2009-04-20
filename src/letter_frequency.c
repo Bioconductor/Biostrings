@@ -127,7 +127,7 @@ static void update_oligo_freqs(SEXP mat, int row, int nrow,
 	    case INTSXP:
 		row_iptr = INTEGER(mat) + row;
 		for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
-			offset = _next_twobit_signature(teb, c);
+			offset = _shift_twobit_signature(teb, *c);
 			if (offset == NA_INTEGER)
 				continue;
 			row_iptr[offset * nrow]++;
@@ -136,7 +136,7 @@ static void update_oligo_freqs(SEXP mat, int row, int nrow,
 	    case REALSXP:
 		row_dptr = REAL(mat) + row;
 		for (i = 0, c = X->elts; i < X->nelt; i++, c++) {
-			offset = _next_twobit_signature(teb, c);
+			offset = _shift_twobit_signature(teb, *c);
 			if (offset == NA_INTEGER)
 				continue;
 			row_dptr[offset * nrow] += 1.00;
@@ -448,7 +448,54 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
 	return ans;
 }
 
-SEXP XStringSet_letter_frequency_by_pos(SEXP x, SEXP codes, SEXP with_other,
+SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP base_codes, SEXP at,
+		SEXP freq, SEXP as_array,
+		SEXP fast_moving_side, SEXP with_labels)
+{
+	SEXP ans, base_labels;
+	TwobitEncodingBuffer teb;
+	int as_integer, as_array0, invert_twobit_order, ans_width, x_length,
+	    i, offset, print_warning1, print_warning2;
+	CachedXStringSet cached_x;
+	RoSeq x_elt;
+
+	as_integer = !LOGICAL(freq)[0];
+	as_array0 = LOGICAL(as_array)[0];
+	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
+	teb = _new_TwobitEncodingBuffer(base_codes, LENGTH(at), invert_twobit_order);
+	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
+	ans_width = 1 << (LENGTH(at) * 2); /* 4^LENGTH(at) */
+	x_length = _get_XStringSet_length(x);
+	cached_x = _new_CachedXStringSet(x);
+	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
+	print_warning1 = print_warning2 = TRUE;
+	for (i = 0; i < x_length; i++) {
+		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		offset = _get_twobit_signature_at(&teb, &x_elt, INTEGER(at), LENGTH(at));
+		if (offset == -1) {
+			if (print_warning1)
+				warning("'at' contains NAs or \"out of limits\" locations");
+			print_warning1 = FALSE;
+			continue;
+		} else if (offset == NA_INTEGER) {
+			if (print_warning2)
+				 warning("'at' points at non DNA/RNA base letters");
+			print_warning2 = FALSE;
+			continue;
+		}
+		if (as_integer)
+			INTEGER(ans)[offset]++;
+		else
+			REAL(ans)[offset] += 1.00;
+	}
+	if (!as_integer)
+		normalize_oligo_freqs(ans, 1, ans_width);
+	format_oligo_freqs(ans, LENGTH(at), base_labels, invert_twobit_order, as_array0);
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP XStringSet_consensus_matrix(SEXP x, SEXP codes, SEXP with_other,
 		SEXP shift, SEXP width)
 {
 	SEXP ans;

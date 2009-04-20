@@ -1,4 +1,4 @@
-\name{oligonucleotideFrequency}
+\name{nucleotideFrequency}
 
 \alias{oligonucleotideFrequency}
 
@@ -10,6 +10,10 @@
 
 \alias{dinucleotideFrequency}
 \alias{trinucleotideFrequency}
+
+\alias{nucleotideFrequencyAt}
+\alias{nucleotideFrequencyAt,XStringSet-method}
+\alias{nucleotideFrequencyAt,XStringViews-method}
 
 \alias{oligonucleotideTransitions}
 \alias{mkAllStrings}
@@ -46,6 +50,9 @@ or RNA sequence, plus some related functions}
   trinucleotideFrequency(x, freq=FALSE, as.array=FALSE,
                          fast.moving.side="right", with.labels=TRUE, ...)
 
+  nucleotideFrequencyAt(x, at, freq=FALSE, as.array=TRUE,
+                        fast.moving.side="right", with.labels=TRUE, ...)
+
   ## Some related functions:
   oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
   mkAllStrings(alphabet, width, fast.moving.side="right")
@@ -53,7 +60,11 @@ or RNA sequence, plus some related functions}
 
 \arguments{
   \item{x}{
-    DNA or RNA input for the \code{*Frequency} functions.
+    Any DNA or RNA input for the \code{*Frequency} and
+    \code{oligonucleotideTransitions} functions.
+
+    An \link{XStringSet} or \link{XStringViews} object of base type DNA or RNA
+    for \code{nucleotideFrequencyAt}.
   }
   \item{width}{
     The number of nucleotides per oligonucleotide for
@@ -61,15 +72,21 @@ or RNA sequence, plus some related functions}
 
     The number of letters per string for \code{mkAllStrings}.
   }
+  \item{at}{
+    An integer vector containing the positions to look at in each element
+    of \code{x}.
+  }
   \item{freq}{
     If \code{TRUE} then relative frequencies are reported,
     otherwise counts (the default).
   }
   \item{as.array,as.matrix}{
     Controls the "shape" of the returned object.
-    If \code{TRUE} then it's a numeric matrix (or array),
+    If \code{TRUE} (the default for \code{nucleotideFrequencyAt})
+    then it's a numeric matrix (or array),
     otherwise it's just a "flat" numeric vector i.e. a
-    vector with no dim attribute (the default).
+    vector with no dim attribute (the default for the
+    \code{*Frequency} functions).
   }
   \item{fast.moving.side}{
     Which side of the strings should move fastest?
@@ -132,6 +149,7 @@ or RNA sequence, plus some related functions}
 \seealso{
   \code{\link{alphabetFrequency}},
   \code{\link{alphabet}},
+  \code{\link{hasLetterAt}},
   \link{XString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
@@ -153,10 +171,6 @@ or RNA sequence, plus some related functions}
   trinucleotideFrequency(yeast1)
   oligonucleotideFrequency(yeast1, 4)
 
-  ## With input made of multiple sequences:
-  library(drosophila2probe)
-  x <- DNAStringSet(drosophila2probe$sequence)
-
   ## Get the less and most represented 6-mers:
   f6 <- oligonucleotideFrequency(yeast1, 6)
   f6[f6 == min(f6)]
@@ -167,15 +181,43 @@ or RNA sequence, plus some related functions}
   tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
   tri["T", , ] # frequencies of trinucleotides starting with a "T"
 
+  ## With input made of multiple sequences:
+  library(drosophila2probe)
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  dfmat <- dinucleotideFrequency(probes)  # a big matrix
+  dinucleotideFrequency(probes, simplify.as="collapsed")
+  dinucleotideFrequency(probes, simplify.as="collapsed", as.array=TRUE)
+
   ## ---------------------------------------------------------------------
-  ## B. oligonucleotideTransitions()
+  ## B. nucleotideFrequencyAt()
+  ## ---------------------------------------------------------------------
+  nucleotideFrequencyAt(probes, c(13, 20))
+
+  ## nucleotideFrequencyAt() can be used to answer questions like: "how
+  ## many probes in the drosophila2 chip have T, G, T, A at position
+  ## 2, 4, 13 and 20, respectively?"
+  nucleotideFrequencyAt(probes, c(2, 4, 13, 20))["T", "G", "T", "A"]
+  ## or "what's the probability to have an A at position 25 if there is
+  ## one at position 13?"
+  nf <- nucleotideFrequencyAt(probes, c(13, 25))
+  sum(nf["A", "A"]) / sum(nf["A", ])
+  ## Probabilities to have other bases at position 25 if there is an A
+  ## at position 13:
+  sum(nf["A", "C"]) / sum(nf["A", ])  # C
+  sum(nf["A", "G"]) / sum(nf["A", ])  # G
+  sum(nf["A", "T"]) / sum(nf["A", ])  # T
+
+  ## See ?hasLetterAt for another way to get those results.
+
+  ## ---------------------------------------------------------------------
+  ## C. oligonucleotideTransitions()
   ## ---------------------------------------------------------------------
   ## Get nucleotide transition matrices for yeast1
   oligonucleotideTransitions(yeast1)
   oligonucleotideTransitions(yeast1, 2, freq=TRUE)
 
   ## ---------------------------------------------------------------------
-  ## C. ADVANCED *Frequency() EXAMPLES
+  ## D. ADVANCED *Frequency() EXAMPLES
   ## ---------------------------------------------------------------------
   ## Note that when dropping the dimensions of the 'tri' array, elements
   ## in the resulting vector are ordered as if they were obtained with

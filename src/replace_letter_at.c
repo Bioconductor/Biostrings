@@ -36,7 +36,7 @@ static int replace_letter_at(char *dest, int dest_length,
 		i = at[j] - 1;
 		if (i == NA_INTEGER || i < 0 || i >= dest_length) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "'at' contains NAs or out of limits locations");
+				 "'at' contains NAs or \"out of limits\" locations");
 			return -1;
 		}
 		new_letter = src[j];

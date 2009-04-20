@@ -177,7 +177,7 @@ TwobitEncodingBuffer _new_TwobitEncodingBuffer(SEXP base_codes, int buflength, i
 	if (LENGTH(base_codes) != 4)
 		error("_new_TwobitEncodingBuffer(): 'base_codes' must be of length 4");
 	if (buflength < 1 || buflength > 15)
-		error("_new_TwobitEncodingBuffer(): 'buflength' must be >=1 and <= 15");
+		error("_new_TwobitEncodingBuffer(): 'buflength' must be >= 1 and <= 15");
 	_init_byte2offset_with_INTEGER(teb.eightbit2twobit, base_codes, 1);
 	teb.buflength = buflength;
 	teb.endianness = endianness;
@@ -197,11 +197,11 @@ void _reset_twobit_signature(TwobitEncodingBuffer *teb)
 	return;
 }
 
-int _next_twobit_signature(TwobitEncodingBuffer *teb, const char *c)
+int _shift_twobit_signature(TwobitEncodingBuffer *teb, char c)
 {
 	int c_as_twobit;
 
-	c_as_twobit = teb->eightbit2twobit[(unsigned char) *c];
+	c_as_twobit = teb->eightbit2twobit[(unsigned char) c];
 	if (c_as_twobit == NA_INTEGER) {
 		teb->nb_valid_prev_char = 0;
 		return NA_INTEGER;
@@ -218,5 +218,34 @@ int _next_twobit_signature(TwobitEncodingBuffer *teb, const char *c)
 	if (teb->nb_valid_prev_char < teb->buflength)
 		return NA_INTEGER;
 	return teb->current_signature;
+}
+
+int _get_twobit_signature(TwobitEncodingBuffer *teb, const RoSeq *seq)
+{
+	int i, twobit_sign;
+	const char *c;
+
+	if (seq->nelt != teb->buflength)
+		error("_get_twobit_signature(): seq->nelt != teb->buflength");
+	for (i = 0, c = seq->elts; i < seq->nelt; i++, c++)
+		twobit_sign = _shift_twobit_signature(teb, *c);
+	return twobit_sign;
+}
+
+/* 'at' must contain 1-based locations in 'seq'. */
+int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const RoSeq *seq,
+		const int *at, int at_length)
+{
+	int i, j, twobit_sign;
+
+	if (at_length != teb->buflength)
+		error("_get_twobit_signature_at(): at_length != teb->buflength");
+	for (i = 0; i < at_length; i++) {
+		j = at[i];
+		if (j == NA_INTEGER || j < 1 || j > seq->nelt)
+			return -1;
+		twobit_sign = _shift_twobit_signature(teb, seq->elts[j - 1]);
+	}
+	return twobit_sign;
 }
 

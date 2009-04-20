@@ -41,9 +41,21 @@ TwobitEncodingBuffer _new_TwobitEncodingBuffer(
 
 void _reset_twobit_signature(TwobitEncodingBuffer *teb);
 
-int _next_twobit_signature(
+int _shift_twobit_signature(
 	TwobitEncodingBuffer *teb,
-	const char *c
+	char c
+);
+
+int _get_twobit_signature(
+	TwobitEncodingBuffer *teb,
+	const RoSeq *seq
+);
+
+int _get_twobit_signature_at(
+	TwobitEncodingBuffer *teb,
+	const RoSeq *seq,
+	const int *at,
+	int at_length
 );
 
 
@@ -358,7 +370,17 @@ SEXP XStringSet_oligo_frequency(
 	SEXP simplify_as
 );
 
-SEXP XStringSet_letter_frequency_by_pos(
+SEXP XStringSet_nucleotide_frequency_at(
+	SEXP x,
+	SEXP base_codes,
+	SEXP at,
+	SEXP freq,
+	SEXP as_array,
+	SEXP fast_moving_side,
+	SEXP with_labels
+);
+
+SEXP XStringSet_consensus_matrix(
 	SEXP x,
 	SEXP codes,
 	SEXP with_other,

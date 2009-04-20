@@ -499,6 +499,53 @@ oligonucleotideTransitions <- function(x, left=1, right=1, freq=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "nucleotideFrequencyAt" generic and methods.
+###
+
+setGeneric("nucleotideFrequencyAt", signature="x",
+    function(x, at, freq=FALSE, as.array=TRUE,
+             fast.moving.side="right", with.labels=TRUE, ...)
+        standardGeneric("nucleotideFrequencyAt")
+)
+
+setMethod("nucleotideFrequencyAt", "XStringSet",
+    function(x, at, freq=FALSE, as.array=TRUE,
+             fast.moving.side="right", with.labels=TRUE,
+             simplify.as="matrix")
+    {
+        if (!(xsbasetype(x) %in% c("DNA", "RNA")))
+            stop("'x' must be of DNA or RNA base type")
+        if (!is.numeric(at))
+            stop("'at' must be a vector of integers")
+        if (!is.integer(at))
+            at <- as.integer(at)
+        freq <- .normargFreq(freq)
+        as.array <- .normargAsArray(as.array)
+        fast.moving.side <- .normargFastMovingSide(fast.moving.side, as.array)
+        with.labels <- .normargWithLabels(with.labels)
+        base_codes <- xscodes(x, baseOnly=TRUE)
+        .Call("XStringSet_nucleotide_frequency_at",
+              x, base_codes, at, freq, as.array,
+              fast.moving.side, with.labels,
+              PACKAGE="Biostrings")
+    }
+)
+
+setMethod("nucleotideFrequencyAt", "XStringViews",
+    function(x, at, freq=FALSE, as.array=TRUE,
+             fast.moving.side="right", with.labels=TRUE)
+    {
+        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        if (any(width(y) < width(x)))
+            stop("x contains \"out of limits\" views")
+        nucleotideFrequencyAt(y, at, freq=freq, as.array=as.array,
+                              fast.moving.side=fast.moving.side,
+                              with.labels=with.labels)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### consensusMatrix() and consensusString().
 ###
 
@@ -541,7 +588,7 @@ setMethod("consensusMatrix", "XStringSet",
             removeUnused <- FALSE
         }
         freq <- .normargFreq(freq)
-        ans <- .Call("XStringSet_letter_frequency_by_pos",
+        ans <- .Call("XStringSet_consensus_matrix",
                      x, codes, baseOnly, shift, width,
                      PACKAGE="Biostrings")
         if (removeUnused) {
