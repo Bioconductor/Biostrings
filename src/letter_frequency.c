@@ -1,5 +1,4 @@
 #include "Biostrings.h"
-#include <stdlib.h> /* for abs() */
 
 static ByteTrTable byte2offset;
 
@@ -82,8 +81,6 @@ static void update_letter_freqs2(int *mat, const RoSeq *X, SEXP codes,
 	int i1, i2, j1, j2, *col, i, offset;
 	const char *c;
 
-	if (abs(shift) >= ncol)
-		return;
 	/* i1, i2 are 0-based indices in X->elts
 	   (range i1 <= i < i2 must be safe) */
 	i1 = 0;
