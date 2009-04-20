@@ -4,9 +4,15 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "MIndex" API.
-### 
-### An API for manipulating the match container returned by matchPDict().
+### The "MIndex" VIRTUAL class.
+###
+### This class serves as a base class for a family of match containers that
+### can be manipulated thru a common API. This common API is the MIndex API
+### defined in this section.
+### Note that, in normal operations, the user should never need to create
+### MIndex objects directly or to modify existing ones. Those objects are
+### typically returned by a sequence matching/alignment function like
+### vmatchPattern() or matchPDict().
 ###
 
 setClass("MIndex",
@@ -19,6 +25,8 @@ setClass("MIndex",
 )
 
 setMethod("length", "MIndex", function(x) length(x@width))
+
+setMethod("width", "MIndex", function(x) x@width)
 
 setMethod("names", "MIndex", function(x) x@NAMES)
 
@@ -92,11 +100,6 @@ extractAllMatches <- function(subject, mindex)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ByPos_MIndex" class.
 ### 
-### Note that in normal operations the user never needs to create a
-### ByPos_MIndex object explicitely or to modify an existing one:
-### ByPos_MIndex objects are created by the matchPDict() function
-### and have a read-only semantic.
-###
 
 setClass("ByPos_MIndex",
     contains="MIndex",
@@ -182,13 +185,8 @@ ByPos_MIndex.combine <- function(mi_list)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ByName_MIndex" class.
+### The "SparseMIndex" class (DISABLED FOR NOW).
 ### 
-### Note that in normal operations the user never needs to create a
-### ByName_MIndex object explicitely or to modify an existing one:
-### ByName_MIndex objects are created by the matchPDict() function
-### and have a read-only semantic.
-###
 ### Slot description:
 ###
 ###   ends_envir: a key-value list (environment) where the values are integer
@@ -197,21 +195,23 @@ ByPos_MIndex.combine <- function(mi_list)
 ###       strings representing positive integers).
 ### 
 
-setClass("ByName_MIndex",
+if (FALSE) {
+
+  setClass("SparseMIndex",
     contains="MIndex",
     representation(
         ends_envir="environment"
     )
-)
+  )
 
-setMethod("show", "ByName_MIndex",
+  setMethod("show", "SparseMIndex",
     function(object)
     {
         cat("Sparse MIndex object of length ", length(object), "\n", sep="")
     }
-)
+  )
 
-setMethod("[[", "ByName_MIndex",
+  setMethod("[[", "SparseMIndex",
     function(x, i, j, ...)
     {
         i <- callNextMethod()
@@ -222,41 +222,43 @@ setMethod("[[", "ByName_MIndex",
         ans_start <- ans_end - x@width[i] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
-)
+  )
 
-### An example of a ByName_MIndex object of length 5 where only the
-### 2nd pattern has matches:
-###   > width <- c(9L, 10L, 8L, 4L, 10L)
-###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
-###   > ends_envir[['0000000002']] <- c(199L, 402L)
-###   > mindex <- new("ByName_MIndex", width=width, NAMES=letters[1:5], ends_envir=ends_envir)
-###   > mindex[[1]]
-###   > mindex[[2]]
-###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
-###   > names(mindex)
-###   > mindex[["a"]]
-###   > mindex[["b"]]
-###   > mindex[["aa"]] # Error in mindex[["aa"]] : pattern name ‘aa’ not found
-###   > startIndex(mindex)
-###   > endIndex(mindex)
-###   > countIndex(mindex)
-###
-setMethod("startIndex", "ByName_MIndex",
+  ### An example of a SparseMIndex object of length 5 where only the
+  ### 2nd pattern has matches:
+  ###   > width <- c(9L, 10L, 8L, 4L, 10L)
+  ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
+  ###   > ends_envir[['0000000002']] <- c(199L, 402L)
+  ###   > mindex <- new("SparseMIndex", width=width, NAMES=letters[1:5], ends_envir=ends_envir)
+  ###   > mindex[[1]]
+  ###   > mindex[[2]]
+  ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
+  ###   > names(mindex)
+  ###   > mindex[["a"]]
+  ###   > mindex[["b"]]
+  ###   > mindex[["aa"]] # Error in mindex[["aa"]] : pattern name ‘aa’ not found
+  ###   > startIndex(mindex)
+  ###   > endIndex(mindex)
+  ###   > countIndex(mindex)
+  ###
+  setMethod("startIndex", "SparseMIndex",
     function(x)
     {
         all.names <- TRUE
-        .Call("ByName_MIndex_endIndex",
+        .Call("SparseMIndex_endIndex",
               x@ends_envir, x@width, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }
-)
-setMethod("endIndex", "ByName_MIndex",
+  )
+  setMethod("endIndex", "SparseMIndex",
     function(x)
     {
         all.names <- TRUE
-        .Call("ByName_MIndex_endIndex",
+        .Call("SparseMIndex_endIndex",
               x@ends_envir, NULL, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }
-)
+  )
+
+}
 

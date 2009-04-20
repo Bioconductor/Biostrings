@@ -536,7 +536,7 @@ SEXP ByPos_MIndex_endIndex(
 	SEXP x_width
 );
 
-SEXP ByName_MIndex_endIndex(
+SEXP SparseMIndex_endIndex(
 	SEXP x_ends_envir,
 	SEXP x_width,
 	SEXP x_names,

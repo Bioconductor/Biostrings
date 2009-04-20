@@ -201,19 +201,19 @@ SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP x_width)
      ends_envir <- new.env(parent=emptyenv())
      ends_envir[['0000000010']] <- -2:1
      ends_envir[['0000000004']] <- 9:6
-     .Call("ByName_MIndex_endIndex",
+     .Call("SparseMIndex_endIndex",
            ends_envir, NULL, letters[1:10], TRUE,
            PACKAGE="Biostrings")
-     .Call("ByName_MIndex_endIndex",
+     .Call("SparseMIndex_endIndex",
            ends_envir, NULL, letters[1:10], FALSE,
            PACKAGE="Biostrings")
  * but this doesn't:
      ends_envir[['3']] <- 33L
-     .Call("ByName_MIndex_endIndex",
+     .Call("SparseMIndex_endIndex",
            ends_envir, NULL, letters[1:10], FALSE,
            PACKAGE="Biostrings")
  */
-SEXP ByName_MIndex_endIndex(SEXP x_ends_envir, SEXP x_width, SEXP x_names, SEXP all_names)
+SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width, SEXP x_names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;

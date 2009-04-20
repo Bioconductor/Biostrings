@@ -10,6 +10,7 @@
 
 % Generics and methods:
 \alias{length,MIndex-method}
+\alias{width,MIndex-method}
 \alias{names,MIndex-method}
 \alias{names<-,MIndex-method}
 \alias{startIndex}
@@ -33,16 +34,12 @@
 }
 
 \details{
-  THIS IS STILL WORK IN PROGRESS!
-
   An MIndex object contains the matches (start/end locations) of
   a set of patterns found in an \link{XString} object
   called "the subject string" or "the subject sequence" or
   simply "the subject".
 
-  The \code{\link{matchPDict}} function returns an MIndex object.
-
-  MORE TO COME SOON...
+   \code{\link{matchPDict}} function returns an MIndex object.
 }
 
 \section{Accessor methods}{

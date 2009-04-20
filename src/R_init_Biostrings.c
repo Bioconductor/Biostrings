@@ -70,7 +70,7 @@ static const R_CallMethodDef callMethods[] = {
 /* MIndex_utils.c */
 	CALLMETHOD_DEF(debug_MIndex_utils, 0),
 	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
-	CALLMETHOD_DEF(ByName_MIndex_endIndex, 4),
+	CALLMETHOD_DEF(SparseMIndex_endIndex, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
 /* match_pattern_at.c */
