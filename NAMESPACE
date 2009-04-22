@@ -19,7 +19,7 @@ importFrom(Biobase, "addVigs2WinMenu")
 ###   XStringViews-class.R
 ###   XStringViews-constructors.R
 ###   MaskedXString-class.R
-###   XStringSetList-class.R:
+###   XStringSetList-class.R
 ###   xscat.R
 
 exportClasses(

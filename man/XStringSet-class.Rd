@@ -75,7 +75,7 @@
 \alias{unique,XStringSet-method}
 
 
-\title{BStringSet, DNAStringSet, RNAStringSet and AAStringSet objects}
+\title{XStringSet objects}
 
 \description{
   The BStringSet class is a container for storing a set of \code{\link{BString}}
@@ -347,11 +347,9 @@
 \author{H. Pages}
 
 \seealso{
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class},
+  \link{XString-class},
   \link{XStringViews-class},
+  \link{XStringSetList-class},
   \code{\link{substr}},
   \code{\link[IRanges]{narrow}}
 }
