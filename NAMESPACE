@@ -25,7 +25,8 @@ exportClasses(
     XString, BString, DNAString, RNAString, AAString,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringViews,
-    MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString
+    MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
+    XStringSetList, BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList
 )
 
 export(

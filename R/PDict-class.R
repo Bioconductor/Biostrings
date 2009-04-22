@@ -570,6 +570,18 @@ setMethod("show", "MTB_PDict",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "Expanded_TB_PDict" class.
+###
+
+setClass("Expanded_TB_PDict",
+    contains="TB_PDict",
+    representation(
+        expanded_dict0="DNAStringSetList"
+    )
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The PDict() constructor (user-friendly).
 ###
 
