@@ -236,15 +236,14 @@ setReplaceMethod("xsbasetype", "XStringSet",
     function(x, value)
     {
         from_basetype <- xsbasetype(x)
-        to_basetype <- value
-        lkup <- get_xsbasetypes_conversion_lookup(from_basetype, to_basetype)
+        lkup <- get_xsbasetypes_conversion_lookup(from_basetype, value)
         if (!is.null(lkup))
-            return(compactXStringSet(x, basetype=to_basetype))
-        ans_class <- paste(to_basetype, "StringSet", sep="")
+            return(compactXStringSet(x, basetype=value))
+        ans_class <- paste(value, "StringSet", sep="")
         if (is(x, ans_class)) {
             ans_super <- super(x)
         } else {
-            ans_super <- XString(to_basetype, super(x))
+            ans_super <- XString(value, super(x))
         }
         unsafe.newXStringSet(ans_class, ans_super, x@ranges,
                              use.names=TRUE, names=names(x))

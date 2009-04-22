@@ -19,6 +19,7 @@ importFrom(Biobase, "addVigs2WinMenu")
 ###   XStringViews-class.R
 ###   XStringViews-constructors.R
 ###   MaskedXString-class.R
+###   XStringSetList-class.R:
 ###   xscat.R
 
 exportClasses(
@@ -50,6 +51,12 @@ export(
     ## XStringViews-constructors.R:
     adjacentViews, XStringViews,
 
+    ## MaskedXString-class.R:
+    unmasked,
+
+    ## XStringSetList-class.R:
+    cum_elementLengths,
+
     ## xscat.R:
     xscat,
 
@@ -58,9 +65,12 @@ export(
 )
 
 exportMethods(
-    initialize, length,
+    length,
+    unmasked, maskedwidth, maskedratio,
+    unlist, cum_elementLengths, elementLengths,
+    start, end, width,
     xsbasetype, "xsbasetype<-", alphabet,
-    names, "[", "[[", rep, append,
+    names, "names<-", "[", "[[", "[[<-", rep, append,
     union, intersect, setdiff, setequal,
     show,
     "==", "!=", duplicated, unique, order, sort, rank,
@@ -133,7 +143,7 @@ export(
 )
 
 exportMethods(
-    initialize, length, names, "[", "[[", rep,
+    length, names, "[", "[[", rep,
     show,
     "==", "!=", duplicated, unique, order, sort, rank,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
@@ -145,7 +155,7 @@ exportMethods(
     ## XString, XStringViews and MaskedXString objects
     subseq,
     Views, XStringViews,
-    unmasked, masks, "masks<-", maskedwidth, maskedratio,
+    masks, "masks<-",
 
     ## Utilities
     letter,
@@ -191,7 +201,8 @@ exportClasses(
     MIndex, ByPos_MIndex,
     BOC_SubjectString, BOC2_SubjectString,
     PreprocessedTB, Twobit, ACtree, ACtree2,
-    PDict3Parts, PDict, TB_PDict, MTB_PDict
+    PDict3Parts,
+    PDict, TB_PDict, MTB_PDict, Expanded_TB_PDict
 )
 
 export(
@@ -241,7 +252,7 @@ export(
 )
 
 exportMethods(
-    ls,
+    initialize, ls,
     length, names, "names<-", show, "[[",
     startIndex, endIndex, countIndex, unlist,
     neditStartingAt, neditEndingAt,
@@ -335,7 +346,7 @@ export(
 )
 
 exportMethods(
-    initialize, length, "[", rep,
+    length, "[", rep,
     coerce, as.integer, as.numeric, as.character, as.matrix, toString,
     show, summary,
     start, end, width,
