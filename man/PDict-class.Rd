@@ -85,6 +85,11 @@
 \alias{as.list,MTB_PDict-method}
 \alias{show,MTB_PDict-method}
 
+% Expanded_TB_PDict class:
+\alias{class:Expanded_TB_PDict}
+\alias{Expanded_TB_PDict-class}
+\alias{Expanded_TB_PDict}
+
 % PDict() constructor:
 \alias{PDict}
 \alias{PDict,character-method}
