@@ -4,15 +4,13 @@
 ###
 ### Example:
 ###   unlisted <- DNAStringSet(c("AAA", "AC", "GGATA"))
-###   xsl <- new("DNAStringSetList", unlisted=unlisted, cum_eltlength=c(0L, 2L, 2L, 3L))
+###   xsl <- new("DNAStringSetList", unlisted=unlisted, end=c(0L, 2L, 2L, 3L))
 ###
 
 setClass("XStringSetList",
-    contains="ListLike",
+    contains=c("IPartitioning", "ListLike", "VIRTUAL"),
     representation(
-        "VIRTUAL",
-        unlisted="XStringSet",
-        cum_eltlength="integer"
+        unlisted="XStringSet"
     )
 )
 
@@ -50,48 +48,15 @@ setMethod("unlist", "XStringSetList",
     function(x, recursive=TRUE, use.names=TRUE) x@unlisted
 )
 
-setGeneric("cum_elementLengths", function(x) standardGeneric("cum_elementLengths"))
-setMethod("cum_elementLengths", "XStringSetList", function(x) x@cum_eltlength)
-
-setMethod("length", "XStringSetList", function(x) length(cum_elementLengths(x)))
-
-setMethod("elementLengths", "XStringSetList",
-    function(x) diff(c(0L, cum_elementLengths(x)))
-)
-
-setMethod("start", "XStringSetList",
-    function(x)
-    {
-        if (length(x) == 0L)
-            return(integer())
-        c(1L, cum_elementLengths(x)[-length(x)] + 1L)
-    }
-)
-
-setMethod("end", "XStringSetList", function(x) cum_elementLengths(x))
-
-setMethod("width", "XStringSetList", function(x) elementLengths(x))
-
-### XStringSetList objects don't support names for now.
-setReplaceMethod("names", "XStringSetList",
-    function(x, value)
-    {
-        if (!is.null(value))
-            stop("attempt to put names on a ", class(x), " instance")
-        x
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Unsafe constructor (not exported). Use only when 'cum_eltlength' is
-### guaranteed to describe valid adjacent ranges on 'unlisted' i.e. ranges
-### that are within the limits of 'unlisted'.
+### Unsafe constructor (not exported). Use only when 'end' is guaranteed to
+### describe a valid Partitioning on 'unlisted'.
 ###
 
-unsafe.newXStringSetList <- function(class, unlisted, cum_eltlength)
+unsafe.newXStringSetList <- function(class, unlisted, end)
 {
-    new2(class, unlisted=unlisted, cum_eltlength=cum_eltlength, check=FALSE)
+    new2(class, unlisted=unlisted, end=end, check=FALSE)
 }
 
 
@@ -110,18 +75,8 @@ setReplaceMethod("xsbasetype", "XStringSetList",
         ans_class <- paste(value, "StringSetList", sep="")
         ans_unlisted <- unlist(x)
         xsbasetype(ans_unlisted) <- value
-        unsafe.newXStringSetList(ans_class, ans_unlisted, x@cum_eltlength)
+        unsafe.newXStringSetList(ans_class, ans_unlisted, x@end)
     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-setAs("XStringSetList", "IRanges",
-    function(from)
-        new2("IRanges", start=start(from), width=width(from), check=FALSE)
 )
 
 
@@ -147,7 +102,7 @@ setMethod("show", "XStringSetList",
 setMethod("[[", "XStringSetList",
     function(x, i, j, ...)
     {
-        i <- callNextMethod()
+        i <- callNextMethod()  # calls "[[" method for ListLike objects
         ii <- seq_len(width(x)[i])
         if (i >= 2L)
             ii <- ii + end(x)[i - 1L]

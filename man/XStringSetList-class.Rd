@@ -20,20 +20,13 @@
 \alias{AAStringSetList}
 
 % Methods:
-\alias{length,XStringSetList-method}
 \alias{unlist,XStringSetList-method}
-\alias{cum_elementLengths}
-\alias{cum_elementLengths,XStringSetList-method}
-\alias{elementLengths,XStringSetList-method}
-\alias{start,XStringSetList-method}
-\alias{end,XStringSetList-method}
-\alias{width,XStringSetList-method}
-\alias{names<-,XStringSetList-method}
 
 \alias{xsbasetype,XStringSetList-method}
 \alias{xsbasetype<-,XStringSetList-method}
-\alias{coerce,XStringSetList,IRanges-method}
+
 \alias{show,XStringSetList-method}
+
 \alias{[[,XStringSetList-method}
 \alias{[[<-,XStringSetList-method}
 
@@ -62,18 +55,19 @@
 
 \seealso{
   \link{XStringSet-class},
-  \link{ListLike-class}
+  \link[IRanges]{IPartitioning-class},
+  \link[IRanges]{ListLike-class}
 }
 
 \examples{
   unlisted <- DNAStringSet(c("AAA", "AC", "GGATA"))
   xsl <- new("DNAStringSetList",
              unlisted=unlisted,
-             cum_eltlength=c(0L, 2L, 2L, 3L))
+             end=c(0L, 2L, 2L, 3L))
   xsl
   length(xsl)
-  elementLengths(xsl)
-  cum_elementLengths(xsl)
+  width(xsl)  # the element lenths
+  end(xsl)  # the element cumulated lengths
   unlist(xsl)
   xsl[[1]]
   xsl[[2]]

@@ -55,7 +55,6 @@ export(
     unmasked,
 
     ## XStringSetList-class.R:
-    cum_elementLengths,
 
     ## xscat.R:
     xscat,
@@ -67,7 +66,7 @@ export(
 exportMethods(
     length,
     unmasked, maskedwidth, maskedratio,
-    unlist, cum_elementLengths, elementLengths,
+    unlist,
     start, end, width,
     xsbasetype, "xsbasetype<-", alphabet,
     names, "names<-", "[", "[[", "[[<-", rep, append,
