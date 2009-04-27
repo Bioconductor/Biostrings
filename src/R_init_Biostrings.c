@@ -105,8 +105,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(match_BOC2_exact, 13),
 
 /* match_PWM.c */
-	CALLMETHOD_DEF(PWM_score_starting_at, 3),
-	CALLMETHOD_DEF(match_PWM, 4),
+	CALLMETHOD_DEF(PWM_score_starting_at, 4),
+	CALLMETHOD_DEF(match_PWM, 5),
 
 /* find_palindromes.c */
 	CALLMETHOD_DEF(debug_find_palindromes, 0),

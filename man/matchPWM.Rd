@@ -33,15 +33,15 @@
 
 \arguments{
   \item{pwm, x}{
-    A Position Weight Matrix (integer matrix with row names A, C, G and T).
+    A Position Weight Matrix (numeric matrix with row names A, C, G and T).
   }
   \item{subject}{
     A \link{DNAString} object containing the subject sequence.
   }
   \item{min.score}{
     The minimum score for counting a match.
-    Can be given as a percentage (e.g. \code{"85\%"}) of the highest possible
-    score or as an integer.
+    Can be given as a character string containing a percentage (e.g.
+    \code{"85\%"}) of the highest possible score or as a single number.
   }
   \item{starting.at}{
     An integer vector specifying the starting positions of the
@@ -58,10 +58,10 @@
 
   A single integer for \code{countPWM}.
 
-  An integer vector containing the Position Weight Matrix-based scores
+  A numeric vector containing the Position Weight Matrix-based scores
   for \code{PWMscoreStartingAt}.
 
-  An integer vector containing the max weight for each position in \code{pwm}
+  A vector containing the max weight for each position in \code{pwm}
   for \code{maxWeights}.
 
   The highest possible score for a given Position Weight Matrix for

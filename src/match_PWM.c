@@ -1,5 +1,5 @@
 /****************************************************************************
-                         A SIMPLE PWM MATCHING ALGO
+                A SIMPLE POSITION WEIGHT MATRIX MATCHING ALGO
                              Author: Herve Pages
  ****************************************************************************/
 #include "Biostrings.h"
@@ -13,32 +13,20 @@
  *   T internal code     -> 3
  *   other internal code -> NA_INTEGER
  */
-static ByteTrTable DNAcode2PWMrowoffset;
+static ByteTrTable byte2offset;
 
-static void init_DNAcode2PWMrowoffset()
+static double compute_score(const double *pwm, int pwm_ncol, const char *S, int nS, int pwm_shift)
 {
-	int i;
-
-	for (i = 0; i < BYTETRTABLE_LENGTH; i++)
-		DNAcode2PWMrowoffset[i] = NA_INTEGER;
-	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('A')] = 0;
-	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('C')] = 1;
-	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('G')] = 2;
-	DNAcode2PWMrowoffset[(unsigned char) _DNAencode('T')] = 3;
-	return;
-}
-
-static int compute_score(const int *pwm, int pwm_ncol, const char *S, int nS, int pwm_shift)
-{
-	int score, i, rowoffset;
+	int i, rowoffset;
+	double score;
 
 	S += pwm_shift;
 	nS -= pwm_shift;
 	if (pwm_shift < 0 || nS < pwm_ncol)
 		error("trying to compute the score from an invalid starting position");
-	score = 0;
+	score = 0.00;
 	for (i = 0; i < pwm_ncol; i++, pwm += 4, S++) {
-		rowoffset = DNAcode2PWMrowoffset[(unsigned char) *S];
+		rowoffset = byte2offset[(unsigned char) *S];
 		if (rowoffset == NA_INTEGER)
 			continue;
 		score += pwm[rowoffset];
@@ -49,30 +37,33 @@ static int compute_score(const int *pwm, int pwm_ncol, const char *S, int nS, in
 /*
  * --- .Call ENTRY POINT ---
  * PWM_score_starting_at() arguments are assumed to be:
- *   pwm: the Position Weight Matrix (integer matrix with row names A, C, G and T)
+ *   pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
  *   subject: a DNAString object containing the subject sequence
+ *   base_codes: named integer vector of length 4 obtained with
+ *       xscodes(subject, baseOnly=TRUE)
  *   starting_at: an integer vector of arbitrary length (NAs accepted)
  */
-SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at)
+SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP starting_at)
 {
 	RoSeq S;
-	int pwm_ncol, i, *start_elt, *ans_elt;
+	int pwm_ncol, i, *start_elt;
 	SEXP ans;
+	double *ans_elt;
 
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
 	S = _get_XString_asRoSeq(subject);
-	init_DNAcode2PWMrowoffset();
-	PROTECT(ans = NEW_INTEGER(LENGTH(starting_at)));
-	for (i = 0, start_elt = INTEGER(starting_at), ans_elt = INTEGER(ans);
+	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
+	PROTECT(ans = NEW_NUMERIC(LENGTH(starting_at)));
+	for (i = 0, start_elt = INTEGER(starting_at), ans_elt = REAL(ans);
 	     i < LENGTH(starting_at);
 	     i++, start_elt++, ans_elt++) {
 		if (*start_elt == NA_INTEGER) {
-			*ans_elt = NA_INTEGER;
+			*ans_elt = NA_REAL;
 			continue;
 		}
-		*ans_elt = compute_score(INTEGER(pwm), pwm_ncol, S.elts, S.nelt, *start_elt - 1);
+		*ans_elt = compute_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, *start_elt - 1);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -81,26 +72,29 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at)
 /*
  * --- .Call ENTRY POINT ---
  * match_PWM() arguments are assumed to be:
- *   pwm: the Position Weight Matrix (integer matrix with row names A, C, G and T)
+ *   pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
  *   subject: a DNAString object containing the subject sequence
- *   min_score: an integer vector of length 1 (not NA)
- *   count_only: a logical vector of length 1 (not NA)
+ *   base_codes: named integer vector of length 4 obtained with
+ *       xscodes(subject, baseOnly=TRUE)
+ *   min_score: a single double (not NA)
+ *   count_only: a single logical (not NA)
  */
-SEXP match_PWM(SEXP pwm, SEXP subject, SEXP min_score, SEXP count_only)
+SEXP match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, SEXP count_only)
 {
 	RoSeq S;
-	int pwm_ncol, minscore, is_count_only, n1, n2;
+	int pwm_ncol, is_count_only, n1, n2;
+	double minscore;
 
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
 	S = _get_XString_asRoSeq(subject);
-	minscore = INTEGER(min_score)[0];
+	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
+	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
-	init_DNAcode2PWMrowoffset();	
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	for (n1 = 0, n2 = pwm_ncol; n2 <= S.nelt; n1++, n2++) {
-		if (compute_score(INTEGER(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
+		if (compute_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
 			_report_match(n1 + 1, pwm_ncol);
 	}
 	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED

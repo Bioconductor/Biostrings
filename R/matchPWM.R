@@ -9,8 +9,8 @@
         stop("'pwm' must be a numeric matrix")
     if (!identical(rownames(pwm), DNA_BASES))
         stop("'rownames(pwm)' must be the DNA bases ('DNA_BASES')")
-    if (!is.integer(pwm))
-        storage.mode(pwm) <- "integer"
+    if (!is.double(pwm))
+        storage.mode(pwm) <- "double"
     if (any(is.na(pwm)))
         stop("'pwm' contains NAs")
     pwm
@@ -45,18 +45,17 @@ maxScore <- function(pwm)
 
 .normargMinScore <- function(min.score, pwm)
 {
-    if (!(is.numeric(min.score) || is.character(min.score))
-        || length(min.score) != 1 || is.na(min.score))
-        stop("'min.score' must be a single integer or string")
+    if (!isSingleNumber(min.score) && !isSingleString(min.score))
+        stop("'min.score' must be a single number or string")
     if (is.numeric(min.score)) {
-        if (!is.integer(min.score))
-            min.score <- as.integer(min.score)
+        if (!is.double(min.score))
+            storage.mode(min.score) <- "double"
         return(min.score)
     }
     nc <- nchar(min.score)
     if (substr(min.score, nc, nc) == "%")
-        min.score <- substr(min.score, 1, nc-1)
-    as.integer(maxScore(pwm) * as.numeric(min.score) / 100)
+        min.score <- substr(min.score, 1L, nc-1L)
+    maxScore(pwm) * as.double(min.score) / 100.00
 }
 
 ### Method needed for searching the minus strand of a chromosome like
@@ -83,7 +82,9 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
         stop("'starting.at' must be a vector of integers")
     if (!is.integer(starting.at))
         starting.at <- as.integer(starting.at)
-    .Call("PWM_score_starting_at", pwm, subject, starting.at, PACKAGE="Biostrings")
+
+    base_codes <- xscodes(subject, baseOnly=TRUE)
+    .Call("PWM_score_starting_at", pwm, subject, base_codes, starting.at, PACKAGE="Biostrings")
 }
 
 PWMscore <- function(pwm, subject, start=1)
@@ -92,10 +93,10 @@ PWMscore <- function(pwm, subject, start=1)
     PWMscoreStartingAt(pwm, subject, starting.at=start)
 }
 
-### pwm: the Position Weight Matrix (integer matrix with row names A, C, G and T)
+### pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
 ### subject: a DNAString object containing the subject sequence
 ### min.score: given as a percentage (e.g. "90%") of the highest possible
-###            score or as an integer
+###            score or as a single number
 .matchPWM <- function(pwm, subject, min.score, count.only=FALSE)
 {
     ## checking 'pwm'
@@ -105,8 +106,10 @@ PWMscore <- function(pwm, subject, start=1)
     ## checking 'min.score'
     min.score <- .normargMinScore(min.score, pwm)
     ## no need to check 'count.only' (not a user controlled argument)
+
+    base_codes <- xscodes(subject, baseOnly=TRUE)
     C_ans <- .Call("match_PWM",
-                   pwm, subject, min.score, count.only,
+                   pwm, subject, base_codes, min.score, count.only,
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
