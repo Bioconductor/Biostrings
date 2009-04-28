@@ -21,6 +21,11 @@
 
 % Methods:
 \alias{unlist,XStringSetList-method}
+\alias{partitioning}
+\alias{partitioning,XStringSetList-method}
+\alias{length,XStringSetList-method}
+\alias{names,XStringSetList-method}
+\alias{names<-,XStringSetList-method}
 
 \alias{xsbasetype,XStringSetList-method}
 \alias{xsbasetype<-,XStringSetList-method}
@@ -39,7 +44,7 @@
 }
 
 \details{
-  Concrete flavours of the XStringSetList container are the BStringSetList,
+  Concrete flavors of the XStringSetList container are the BStringSetList,
   DNAStringSetList, RNAStringSetList and AAStringSetList containers
   for storing a list of \link{BStringSet}, \link{DNAStringSet},
   \link{RNAStringSet} and \link{AAStringSet} objects, respectively.
@@ -55,25 +60,38 @@
 
 \seealso{
   \link{XStringSet-class},
-  \link[IRanges]{IPartitioning-class},
+  \link[IRanges]{Grouping-class},
   \link[IRanges]{ListLike-class}
 }
 
 \examples{
   unlisted <- DNAStringSet(c("AAA", "AC", "GGATA"))
-  xsl <- new("DNAStringSetList",
-             unlisted=unlisted,
-             end=c(0L, 2L, 2L, 3L))
-  xsl
-  length(xsl)
-  width(xsl)  # the element lenths
-  end(xsl)  # the element cumulated lengths
-  unlist(xsl)
-  xsl[[1]]
-  xsl[[2]]
-  as.list(xsl)
+  partitioning <- Partitioning(c(0, 2, 2, 3))
+  x <- new("DNAStringSetList",
+           unlisted=unlisted,
+           partitioning=partitioning)
+  x
+  length(x)
+  unlist(x)
+  x[[1]]
+  x[[2]]
+  as.list(x)
 
-  ## More examples to be added soon...
+  names(x) <- LETTERS[1:4]
+  x[["A"]]
+  x[["B"]]
+  as.list(x)  # named list
+
+  ## Using the Grouping core API on 'partitioning(x)':
+  partitioning(x)
+  length(partitioning(x))
+  nobj(partitioning(x))
+  grouplength(partitioning(x))  # same as 'unname(sapply(x, length))'
+
+  ## Using the Ranges core API on 'partitioning(x)':
+  start(partitioning(x))
+  end(partitioning(x))
+  width(partitioning(x))  # same as 'grouplength(partitioning(x))'
 }
 
 \keyword{methods}

@@ -4,13 +4,16 @@
 ###
 ### Example:
 ###   unlisted <- DNAStringSet(c("AAA", "AC", "GGATA"))
-###   xsl <- new("DNAStringSetList", unlisted=unlisted, end=c(0L, 2L, 2L, 3L))
+###   partitioning <- Partitioning(c(0, 2, 2, 3))
+###   x <- new("DNAStringSetList", unlisted=unlisted, partitioning=partitioning)
 ###
 
 setClass("XStringSetList",
-    contains=c("IPartitioning", "ListLike", "VIRTUAL"),
+    contains="ListLike",
     representation(
-        unlisted="XStringSet"
+        "VIRTUAL",
+        unlisted="XStringSet",
+        partitioning="Partitioning"
     )
 )
 
@@ -48,15 +51,31 @@ setMethod("unlist", "XStringSetList",
     function(x, recursive=TRUE, use.names=TRUE) x@unlisted
 )
 
+setGeneric("partitioning", function(x) standardGeneric("partitioning"))
+
+setMethod("partitioning", "XStringSetList", function(x) x@partitioning)
+
+setMethod("length", "XStringSetList", function(x) length(x@partitioning))
+
+setMethod("names", "XStringSetList", function(x) names(x@partitioning))
+
+setReplaceMethod("names", "XStringSetList",
+    function(x, value)
+    {
+        names(x@partitioning) <- value
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Unsafe constructor (not exported). Use only when 'end' is guaranteed to
-### describe a valid Partitioning on 'unlisted'.
+### Unsafe constructor (not exported). Use only when 'partitioning' is
+### guaranteed to describe a valid Partitioning on 'unlisted'.
 ###
 
-unsafe.newXStringSetList <- function(class, unlisted, end)
+unsafe.newXStringSetList <- function(class, unlisted, partitioning)
 {
-    new2(class, unlisted=unlisted, end=end, check=FALSE)
+    new2(class, unlisted=unlisted, partitioning=partitioning, check=FALSE)
 }
 
 
@@ -75,7 +94,7 @@ setReplaceMethod("xsbasetype", "XStringSetList",
         ans_class <- paste(value, "StringSetList", sep="")
         ans_unlisted <- unlist(x)
         xsbasetype(ans_unlisted) <- value
-        unsafe.newXStringSetList(ans_class, ans_unlisted, x@end)
+        unsafe.newXStringSetList(ans_class, ans_unlisted, x@partitioning)
     }
 )
 
@@ -103,9 +122,7 @@ setMethod("[[", "XStringSetList",
     function(x, i, j, ...)
     {
         i <- callNextMethod()  # calls "[[" method for ListLike objects
-        ii <- seq_len(width(x)[i])
-        if (i >= 2L)
-            ii <- ii + end(x)[i - 1L]
+        ii <- x@partitioning[[i]]
         unlist(x)[ii]
     }
 )

@@ -55,6 +55,7 @@ export(
     unmasked,
 
     ## XStringSetList-class.R:
+    partitioning,
 
     ## xscat.R:
     xscat,
@@ -66,7 +67,7 @@ export(
 exportMethods(
     length,
     unmasked, maskedwidth, maskedratio,
-    unlist,
+    unlist, partitioning,
     start, end, width,
     xsbasetype, "xsbasetype<-", alphabet,
     names, "names<-", "[", "[[", "[[<-", rep, append,
