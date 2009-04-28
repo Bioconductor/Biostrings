@@ -296,8 +296,6 @@
                          max.mismatch, fixed,
                          collapse, weight, verbose, count.only=FALSE)
 {
-    if (!isTRUE(count.only))
-        stop("vmatchPDict() is not supported yet, sorry")
     which_pp_excluded <- NULL
     dups0 <- dups(pdict)
     if (!is.null(dups0))
@@ -307,7 +305,12 @@
     if (!identical(algorithm, "auto"))
         stop("'algorithm' can only be '\"auto\"' for now")
     max.mismatch <- normargMaxMismatch(max.mismatch)
-    if (count.only) {
+    if (!isTRUEorFALSE(verbose))
+        stop("'verbose' must be TRUE or FALSE")
+    if (is.na(count.only)) {
+        ## vwhichPDict()
+    } else if (count.only) {
+        ## vcountPDict()
         collapse <- normargCollapse(collapse)
         if (collapse) {
             if (collapse == 1L) {
@@ -328,9 +331,10 @@
             if (!identical(weight, 1L))
                 warning("'weight' is ignored when 'collapse=FALSE'")
         }
+    } else {
+        ## vmatchPDict()
+        stop("vmatchPDict() is not supported yet, sorry")
     }
-    if (!isTRUEorFALSE(verbose))
-        stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
         ans <- .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
                                               max.mismatch, fixed,
@@ -341,10 +345,19 @@
         stop("'pdict' must be a PDict object")
     if (length(which_pp_excluded) == 0L)
         return(ans)
-    if (collapse == 0L) {
-        ans[which_pp_excluded, ] <- ans[dups0@dup2unq[which_pp_excluded], ]
-    } else if (collapse == 1L) {
-        ans[which_pp_excluded] <- ans[dups0@dup2unq[which_pp_excluded]]
+    if (is.na(count.only)) {
+        ## vwhichPDict()
+        ans <- lapply(ans, function(x) sort(c(x, unlist(dups0@unq2dup[x]))))
+    } else if (count.only) {
+        ## vcountPDict()
+        if (collapse == 0L) {
+            ans[which_pp_excluded, ] <- ans[dups0@dup2unq[which_pp_excluded], ]
+        } else if (collapse == 1L) {
+            ans[which_pp_excluded] <- ans[dups0@dup2unq[which_pp_excluded]]
+        }
+    } else {
+        ## vmatchPDict()
+        stop("vmatchPDict() is not supported yet, sorry")
     }
     return(ans)
 }
@@ -455,10 +468,13 @@ setMethod("whichPDict", "XString",
 ### The "vmatchPDict", "vcountPDict" and "vwhichPDict" generic and methods.
 ###
 ### These are vectorized versions of matchPDict(), countPDict() and
-### whichPDict().
-### ONLY vcountPDict() is supported for now. It returns an M x N matrix of
-### integers where M is the number of patterns (length(pdict)) and N the
-### number of sequences in the subject (length(subject)).
+### whichPDict(). If M denotes the number of patterns in 'pdict' and N the
+### number of sequences in 'subject', then:
+###   o vwhichPDict(): 'vwhichPDict(pdict, subject, ...)' is equivalent to
+###     'lapply(subject, function(s) whichPDict(pdict, s, ...))'.
+###      The returned object is a list of length N.
+###   o vcountPDict(): returns an M x N matrix of integers.
+###   o vmatchPDict(): not supported yet!
 ###
 
 setGeneric("vmatchPDict", signature="subject",
@@ -530,5 +546,43 @@ setMethod("vcountPDict", "MaskedXString",
              max.mismatch=0, fixed=TRUE,
              collapse=FALSE, weight=1L, verbose=FALSE)
         stop("please use countPDict() when 'subject' is a MaskedXString object (single sequence)")
+)
+
+setGeneric("vwhichPDict", signature="subject",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        standardGeneric("vwhichPDict")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vwhichPDict", "XString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use whichPDict() when 'subject' is an XString object (single sequence)")
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vwhichPDict", "XStringSet",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        .vmatchPDict(pdict, subject, algorithm,
+                     max.mismatch, fixed,
+                     0L, 1L, verbose, count.only=NA)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vwhichPDict", "XStringViews",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        vwhichPDict(pdict, XStringViewsToSet(subject, FALSE, verbose=FALSE),
+                    algorithm=algorithm,
+                    max.mismatch=max.mismatch, fixed=fixed, verbose=verbose)
+)
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("vwhichPDict", "MaskedXString",
+    function(pdict, subject, algorithm="auto",
+             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+        stop("please use whichPDict() when 'subject' is a MaskedXString object (single sequence)")
 )
 

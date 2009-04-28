@@ -28,6 +28,12 @@
 \alias{vcountPDict,XStringViews-method}
 \alias{vcountPDict,MaskedXString-method}
 
+\alias{vwhichPDict}
+\alias{vwhichPDict,XString-method}
+\alias{vwhichPDict,XStringSet-method}
+\alias{vwhichPDict,XStringViews-method}
+\alias{vwhichPDict,MaskedXString-method}
+
 % Functions:
 \alias{extractAllMatches}
 
@@ -45,12 +51,15 @@
   times" information i.e. the number of occurrences for each pattern;
   and \code{whichPDict} returns the "who" information i.e. which patterns
   in the preprocessed dictionary have at least one match.
-  \code{vcountPDict} is similar to \code{countPDict} but it works on
-  a set of reference sequences in a vectorized fashion.
 
-  This man page shows how to use these functions for exact matching
-  of a constant width dictionary i.e. a dictionary where all the
-  patterns have the same length (same number of nucleotides).
+  \code{vcountPDict} and \code{vwhichPDict} are vectorized versions
+  of \code{countPDict} and \code{whichPDict}, respectively, that is,
+  they work on a set of reference sequences in a vectorized fashion.
+
+  This man page shows how to use these functions (aka the \code{*PDict}
+  functions) for exact matching of a constant width dictionary i.e.
+  a dictionary where all the patterns have the same length (same number
+  of nucleotides).
 
   See \code{?`\link{matchPDict-inexact}`} for how to use these functions
   for inexact matching or when the original dictionary has a variable width.
@@ -67,6 +76,8 @@
   vcountPDict(pdict, subject, algorithm="auto",
               max.mismatch=0, fixed=TRUE,
               collapse=FALSE, weight=1L, verbose=FALSE)
+  vwhichPDict(pdict, subject, algorithm="auto",
+              max.mismatch=0, fixed=TRUE, verbose=FALSE)
 }
 
 \arguments{
@@ -78,7 +89,7 @@
     subject sequence for \code{matchPDict}, \code{countPDict} and \code{whichPDict}.
 
     An \link{XStringSet} object containing the subject sequences
-    for \code{vcountPDict}.
+    for \code{vcountPDict} and \code{vwhichPDict}.
 
     For now, only subjects of base class \link{DNAString} are supported.
   }
@@ -130,16 +141,14 @@
 
 \details{
   In this man page, we assume that you know how to preprocess a dictionary
-  of DNA patterns that can then be used with \code{matchPDict},
-  \code{countPDict}, \code{whichPDict} or \code{vcountPDict}.
-  Please see \code{?\link{PDict}} if you don't.
+  of DNA patterns that can then be used with any of the \code{*PDict}
+  functions described here. Please see \code{?\link{PDict}} if you don't.
 
-  When using \code{matchPDict}, \code{countPDict}, \code{whichPDict}
-  or \code{vcountPDict} for exact matching of a constant width dictionary,
-  the standard way to preprocess the original dictionary is by calling
-  the \code{\link{PDict}} constructor on it with no extra arguments.
-  This returns the preprocessed dictionary in a \link{PDict} object
-  that can be used with any of the functions described here.
+  When using the \code{*PDict} functions for exact matching of a constant
+  width dictionary, the standard way to preprocess the original dictionary
+  is by calling the \code{\link{PDict}} constructor on it with no extra
+  arguments. This returns the preprocessed dictionary in a \link{PDict}
+  object that can be used with any of the \code{*PDict} functions.
 }
 
 \value{
@@ -157,6 +166,8 @@
   unless the \code{collapse} argument is used. In that case, depending
   on the type of \code{weight}, an integer or numeric vector is returned
   (see above for the details).
+
+  \code{vwhichPDict} returns a list of \code{N} integer vectors.
 }
 
 \author{H. Pages}
@@ -364,6 +375,29 @@
   nhitps3a <- vcountPDict(pdict3, subject, collapse=2)  # colSums(mat3a)
   nhitps3b <- sapply(unname(subject), function(x) sum(countPDict(pdict3, x)))
   stopifnot(identical(nhitps3a, nhitps3b))
+
+  ## ---------------------------------------------------------------------
+  ## F. vwhichPDict()
+  ## ---------------------------------------------------------------------
+  ## WARNING: vwhichPDict() is still a work-in-progress!
+
+  ## The 3 following calls are equivalent (from faster to slower):
+  vwp3a <- vwhichPDict(pdict3, subject)
+  vwp3b <- lapply(seq_len(ncol(mat3a)), function(j) which(mat3a[ , j] != 0L))
+  vwp3c <- lapply(unname(subject), function(x) whichPDict(pdict3, x))
+  stopifnot(identical(vwp3a, vwp3b))
+  stopifnot(identical(vwp3a, vwp3c))
+
+  table(sapply(vwp3a, length))
+  which.min(sapply(vwp3a, length))
+  ## Get the trinucleotides not represented in reference sequence 9181:
+  dict3[-vwp3a[[9181]]]  # 21 trinucleotides
+
+  if (interactive()) {
+    ## WARNING: This works but is very slow because vwhichPDict() is not
+    ## yet optimized!
+    vwp0 <- vwhichPDict(pdict0, dict0)  # a very big list!
+  }
 }
 
 \keyword{methods}

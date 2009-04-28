@@ -85,6 +85,13 @@ IntAE *_MIndex_get_matching_keys()
 	return &matching_keys;
 }
 
+SEXP _MIndex_get_match_which_asINTEGER()
+{
+	IntAE_sum_val(&matching_keys, 1);
+	IntAE_qsort(&matching_keys);
+	return IntAE_asINTEGER(&matching_keys);
+}
+
 void _MIndex_report_match(int key, int end)
 {
 	int is_new_matching_key;
@@ -130,12 +137,10 @@ void _MIndex_merge_matches(IntAE *global_match_count,
 	return;
 }
 
-SEXP _MIndex_reported_matches_asSEXP(SEXP env)
+SEXP _MIndex_get_matches_asSEXP(SEXP env)
 {
-	if (what_to_return == 2) {
-		IntAE_sum_val(&matching_keys, 1);
-		return IntAE_asINTEGER(&matching_keys);
-	}
+	if (what_to_return == 2)
+		return _MIndex_get_match_which_asINTEGER();
 	if (what_to_return == 1)
 		return IntAE_asINTEGER(&match_count);
 	if (env == R_NilValue)

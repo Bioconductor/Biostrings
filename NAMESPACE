@@ -243,7 +243,8 @@ export(
 
     ## PDict-class.R + matchPDict.R
     tb, tb.width, patternFrequency, PDict,
-    matchPDict, countPDict, whichPDict, vmatchPDict, vcountPDict,
+    matchPDict, countPDict, whichPDict,
+    vmatchPDict, vcountPDict, vwhichPDict,
  
     ## Old stuff (Defunct or Deprecated):
     nmismatchStartingAt, nmismatchEndingAt, isMatching,
@@ -268,7 +269,8 @@ exportMethods(
     palindromeRightArm, complementedPalindromeRightArm,
 
     head, tb, tb.width, tail, patternFrequency, PDict,
-    matchPDict, countPDict, whichPDict, vcountPDict
+    matchPDict, countPDict, whichPDict,
+    vmatchPDict, vcountPDict, vwhichPDict
 )
 
 

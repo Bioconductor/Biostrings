@@ -288,7 +288,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] LEAVING XString_match_pdict()\n");
 #endif
-	return _MIndex_reported_matches_asSEXP(envir);
+	return _MIndex_get_matches_asSEXP(envir);
 }
 
 SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
@@ -351,6 +351,31 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 /****************************************************************************
  * .Call entry point: XStringSet_vmatch_pdict
  ****************************************************************************/
+
+static SEXP vwhich_pdict(SEXP pptb,
+		CachedXStringSet *cached_head, CachedXStringSet * cached_tail,
+		SEXP subject,
+		SEXP max_mismatch, SEXP fixed)
+{
+	int tb_length, S_length, j;
+	CachedXStringSet S;
+	SEXP ans;
+	RoSeq S_elt;
+
+	tb_length = _get_PreprocessedTB_length(pptb);
+	S = _new_CachedXStringSet(subject);
+	S_length = _get_XStringSet_length(subject);
+	PROTECT(ans = NEW_LIST(S_length));
+	for (j = 0; j < S_length; j++) {
+		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
+		match_pdict(pptb, cached_head, cached_tail,
+			&S_elt, max_mismatch, fixed, 1);
+		SET_ELEMENT(ans, j, _MIndex_get_match_which_asINTEGER());
+		_MIndex_drop_reported_matches();
+	}
+	UNPROTECT(1);
+	return ans;
+}
 
 static SEXP vcount_pdict_notcollapsed(SEXP pptb,
 		CachedXStringSet *cached_head, CachedXStringSet * cached_tail,
@@ -456,10 +481,14 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	is_count_only = LOGICAL(count_only)[0];
 	_MIndex_init_match_reporting(is_count_only, 1, tb_length);
 
-	if (!is_count_only) {
-		error("vmatchPDict() is not supported yet, sorry");
-		ans = R_NilValue;
-	} else {
+	if (is_count_only == NA_LOGICAL) {
+		/* vwhichPDict() */
+		PROTECT(ans = vwhich_pdict(pptb,
+				cached_head, cached_tail,
+				subject,
+				max_mismatch, fixed));
+	} else if (is_count_only) {
+		/* vcountPDict() */
 		collapse0 = INTEGER(collapse)[0];
 		if (collapse0 == 0)
 			PROTECT(ans = vcount_pdict_notcollapsed(pptb,
@@ -471,6 +500,10 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 					cached_head, cached_tail,
 					subject,
 					max_mismatch, fixed, collapse0, weight));
+	} else {
+		/* vmatchPDict */
+		error("vmatchPDict() is not supported yet, sorry");
+		ans = R_NilValue;
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)

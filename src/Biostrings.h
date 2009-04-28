@@ -517,6 +517,8 @@ IntAE *_MIndex_get_match_ends(int key);
 
 IntAE *_MIndex_get_matching_keys();
 
+SEXP _MIndex_get_match_which_asINTEGER();
+
 void _MIndex_report_match(
 	int key,
 	int end
@@ -528,7 +530,7 @@ void _MIndex_merge_matches(
 	int view_offset
 );
 
-SEXP _MIndex_reported_matches_asSEXP(SEXP env);
+SEXP _MIndex_get_matches_asSEXP(SEXP env);
 
 SEXP ByPos_MIndex_endIndex(
 	SEXP x_dup2unq,
