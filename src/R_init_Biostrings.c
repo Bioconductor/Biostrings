@@ -60,10 +60,6 @@ static const R_CallMethodDef callMethods[] = {
 /* SparseList_utils.c */
 	CALLMETHOD_DEF(debug_SparseList_utils, 0),
 
-/* Dups_utils.c */
-	CALLMETHOD_DEF(debug_Dups_utils, 0),
-	CALLMETHOD_DEF(Dups_diff, 2),
-
 /* match_reporting.c */
 	CALLMETHOD_DEF(debug_match_reporting, 0),
 

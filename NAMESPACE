@@ -181,7 +181,6 @@ exportMethods(
 ### STRING MATCHING
 ### --------------------------------------------------------------------------
 ###   SparseList-class.R
-###   Dups-class.R
 ###   MIndex-class.R
 ###   match-utils.R
 ###   matchPattern.R
@@ -197,7 +196,6 @@ exportMethods(
 
 exportClasses(
     #SparseList,
-    Dups,
     MIndex, ByPos_MIndex,
     BOC_SubjectString, BOC2_SubjectString,
     PreprocessedTB, Twobit, ACtree, ACtree2,

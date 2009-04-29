@@ -463,25 +463,6 @@ void _set_env_from_IntAEAE(
 );
 
 
-/* Dups_utils.c */
-
-SEXP debug_Dups_utils();
-
-SEXP Dups_diff(
-	SEXP x_unq2dup,
-	SEXP y_dup2unq
-);
-
-void _init_dup2unq_buf(int length);
-
-void _report_dup(
-	int poffset,
-	int P_id
-);
-
-SEXP _dup2unq_asINTEGER();
-
-
 /* match_reporting.c */
 
 SEXP debug_match_reporting();
@@ -533,7 +514,7 @@ void _MIndex_merge_matches(
 SEXP _MIndex_get_matches_asSEXP(SEXP env);
 
 SEXP ByPos_MIndex_endIndex(
-	SEXP x_dup2unq,
+	SEXP x_high2low,
 	SEXP x_ends,
 	SEXP x_width
 );
@@ -792,7 +773,7 @@ int _get_PreprocessedTB_length(SEXP x);
 
 int _get_PreprocessedTB_width(SEXP x);
 
-SEXP _get_PreprocessedTB_unq2dup(SEXP x);
+SEXP _get_PreprocessedTB_low2high(SEXP x);
 
 SEXP _get_Twobit_sign2pos_tag(SEXP x);
 
@@ -807,6 +788,15 @@ SEXP _get_ACtree2_nodebuf_ptr(SEXP x);
 SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x);
 
 SEXP _get_ACtree2_base_codes(SEXP x);
+
+void _init_ppdups_buf(int length);
+
+void _report_ppdup(
+	int poffset,
+	int P_id
+);
+
+SEXP _get_ppdups_buf_asINTEGER();
 
 
 /* match_pdict_Twobit.c */

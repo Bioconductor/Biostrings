@@ -1,15 +1,6 @@
 \name{Biostrings internals}
 \docType{class}
 
-% Dups class and methods:
-\alias{class:Dups}
-\alias{Dups-class}
-\alias{Dups}
-
-\alias{length,Dups-method}
-\alias{duplicated,Dups-method}
-\alias{show,Dups-method}
-
 % SparseList class and methods:
 \alias{class:SparseList}
 \alias{SparseList-class}

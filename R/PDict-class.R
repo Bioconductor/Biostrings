@@ -30,11 +30,11 @@ setGeneric("dups", function(x) standardGeneric("dups"))
 setMethod("dups", "PreprocessedTB", function(x) x@dups)
 
 setMethod("initialize", "PreprocessedTB",
-    function(.Object, tb, pp_exclude, dup2unq)
+    function(.Object, tb, pp_exclude, high2low)
     {
         .Object@tb <- tb
         .Object@exclude_dups0 <- !is.null(pp_exclude)
-        .Object@dups <- Dups(dup2unq)
+        .Object@dups <- Dups(high2low)
         .Object
     }
 )
@@ -46,12 +46,12 @@ setMethod("initialize", "PreprocessedTB",
     cat("| algorithm = \"", class(x), "\"\n", sep="")
 }
 
-setMethod("duplicated", "PreprocessedTB",
-    function(x, incomparables=FALSE, ...) duplicated(dups(x))
+setMethod("togrouplength", "PreprocessedTB",
+    function(x, j=NULL) togrouplength(dups(x), j=j)
 )
 
-setMethod("dupFrequency", "PreprocessedTB",
-    function(x) dupFrequency(dups(x))
+setMethod("duplicated", "PreprocessedTB",
+    function(x, incomparables=FALSE, ...) duplicated(dups(x))
 )
 
 
@@ -90,7 +90,7 @@ setMethod("initialize", "Twobit",
         base_codes <- xscodes(tb, baseOnly=TRUE)
         C_ans <- .Call("build_Twobit", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$dup2unq)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low)
         .Object@sign2pos <- C_ans$sign2pos
         .Object@base_codes <- base_codes
         .Object
@@ -177,7 +177,7 @@ setMethod("initialize", "ACtree",
         on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
         C_ans <- .Call("build_ACtree", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$dup2unq)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low)
         .Object@nodes <- C_ans$nodes
         .Object@base_codes <- base_codes
         .Object
@@ -241,7 +241,7 @@ setMethod("initialize", "ACtree2",
                        tb, pp_exclude, base_codes,
                        nodebuf_ptr, nodeextbuf_ptr,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$dup2unq)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low)
         .Object@nodebuf_ptr <- nodebuf_ptr
         .Object@nodeextbuf_ptr <- nodeextbuf_ptr
         .Object@base_codes <- base_codes
@@ -304,12 +304,12 @@ setMethod("tail", "PDict3Parts",
         if (use_pptb0) {
             ## We can avoid to do the expensive preprocessing again by
             ## making the 'pptb' that would be returned by
-            ## 'new(algo, tb, dups(pptb0)@dup2unq)':
+            ## 'new(algo, tb, high2low(dups(pptb0)))':
             pptb <- pptb0
             pptb@dups <- Dups(rep.int(as.integer(NA), length(pptb)))
             pptb@exclude_dups0 <- TRUE
         } else {
-            pptb <- new(algo, tb, dups(pptb0)@dup2unq)
+            pptb <- new(algo, tb, high2low(dups(pptb0)))
         }
     }
     new("PDict3Parts", head=head, pptb=pptb, tail=tail)
@@ -371,6 +371,15 @@ setMethod("[[", "PDict",
     }
 )
 
+setMethod("togrouplength", "PDict",
+    function(x, j=NULL)
+    {
+        if (is.null(dups(x)))
+            stop("duplicates information not available for this object")
+        togrouplength(dups(x), j=j)
+    }
+)
+
 setMethod("duplicated", "PDict",
     function(x, incomparables=FALSE, ...)
     {
@@ -380,18 +389,9 @@ setMethod("duplicated", "PDict",
     }
 )
 
-setMethod("dupFrequency", "PDict",
-    function(x)
-    {
-        if (is.null(dups(x)))
-            stop("duplicates information not available for this object")
-        dupFrequency(dups(x))
-    }
-)
-
-### Just an alias for "dupFrequency".
+### Just an alias for "togrouplength".
 setGeneric("patternFrequency", function(x) standardGeneric("patternFrequency"))
-setMethod("patternFrequency", "PDict", function(x) dupFrequency(x))
+setMethod("patternFrequency", "PDict", function(x) togrouplength(x))
 
 .PDict.showFirstLine <- function(x, algo)
 {

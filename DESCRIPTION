@@ -46,7 +46,6 @@ Collate: 00datacache.R
 	replaceLetterAt.R
 	injectHardMask.R
 	SparseList-class.R
-	Dups-class.R
 	MIndex-class.R
 	match-utils.R
 	matchPattern.R

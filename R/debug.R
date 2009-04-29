@@ -21,9 +21,6 @@ debug_fasta_io <- function()
 debug_SparseList_utils <- function()
     invisible(.Call("debug_SparseList_utils", PACKAGE="Biostrings"))
 
-debug_Dups_utils <- function()
-    invisible(.Call("debug_Dups_utils", PACKAGE="Biostrings"))
-
 debug_match_reporting <- function()
     invisible(.Call("debug_match_reporting", PACKAGE="Biostrings"))
 

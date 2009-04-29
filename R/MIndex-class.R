@@ -120,7 +120,7 @@ setMethod("[[", "ByPos_MIndex",
     function(x, i, j, ...)
     {
         i <- callNextMethod()
-        if (length(x@dups0) != 0 && !is.na(i2 <- x@dups0@dup2unq[i]))
+        if (length(x@dups0) != 0 && !is.na(i2 <- high2low(x@dups0)[i]))
             i <- i2
         ans_end <- x@ends[[i]]
         if (is.null(ans_end))
@@ -134,7 +134,7 @@ setMethod("[[", "ByPos_MIndex",
 ### An example of a ByPos_MIndex object of length 5 where only the
 ### 2nd and 5th pattern have matches:
 ###   > width <- c(9L, 10L, 8L, 4L, 10L)
-###   > dups0 <- Biostrings:::Dups(c(NA, NA, NA, NA, 2L))
+###   > dups0 <- Dups(c(NA, NA, NA, NA, 2))
 ###   > ends <- vector(mode="list", length=5)
 ###   > ends[[2]] <- c(199L, 402L)
 ###   > mindex <- new("ByPos_MIndex", width=width, NAMES=letters[1:5], dups0=dups0, ends=ends)
@@ -149,7 +149,7 @@ setMethod("startIndex", "ByPos_MIndex",
     function(x)
     {
         .Call("ByPos_MIndex_endIndex",
-              x@dups0@dup2unq, x@ends, x@width,
+              high2low(x@dups0), x@ends, x@width,
               PACKAGE="Biostrings")
     }
 )
@@ -157,7 +157,7 @@ setMethod("endIndex", "ByPos_MIndex",
     function(x)
     {
         .Call("ByPos_MIndex_endIndex",
-              x@dups0@dup2unq, x@ends, NULL,
+              high2low(x@dups0), x@ends, NULL,
               PACKAGE="Biostrings")
     }
 )

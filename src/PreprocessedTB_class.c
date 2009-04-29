@@ -42,12 +42,9 @@ int _get_PreprocessedTB_width(SEXP x)
 
 /* Be careful that this function does NOT copy the returned slot! (this
  * prevents it from being made .Call() entry point) */
-SEXP _get_PreprocessedTB_unq2dup(SEXP x)
+SEXP _get_PreprocessedTB_low2high(SEXP x)
 {
-	SEXP dups;
-
-	dups = GET_SLOT(x, install("dups"));
-	return GET_SLOT(dups, install("unq2dup"));
+	return get_H2LGrouping_low2high(GET_SLOT(x, install("dups")));
 }
 
 
@@ -107,5 +104,29 @@ SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x)
 SEXP _get_ACtree2_base_codes(SEXP x)
 {
 	return GET_SLOT(x, install("base_codes"));
+}
+
+
+/****************************************************************************
+ * Buffer of duplicates.
+ */
+
+static IntAE ppdups_buf;
+
+void _init_ppdups_buf(int length)
+{
+	ppdups_buf = new_IntAE(length, length, NA_INTEGER);
+	return;
+}
+
+void _report_ppdup(int poffset, int P_id)
+{
+	ppdups_buf.elts[poffset] = P_id;
+	return;
+}
+
+SEXP _get_ppdups_buf_asINTEGER()
+{
+	return IntAE_asINTEGER(&ppdups_buf);
 }
 

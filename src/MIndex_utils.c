@@ -173,15 +173,15 @@ static void add_val_to_INTEGER(SEXP x, int val)
  * Otherwise 'x_width' must be an integer vector of same length as the
  * 'x_ends' list and the startIndex is returned.
  */
-SEXP ByPos_MIndex_endIndex(SEXP x_dup2unq, SEXP x_ends, SEXP x_width)
+SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width)
 {
 	SEXP ans, ans_elt;
 	int i, k1;
 
 	PROTECT(ans = duplicate(x_ends));
 	for (i = 0; i < LENGTH(ans); i++) {
-		if (LENGTH(x_dup2unq) != 0
-		 && (k1 = INTEGER(x_dup2unq)[i]) != NA_INTEGER) {
+		if (LENGTH(x_high2low) != 0
+		 && (k1 = INTEGER(x_high2low)[i]) != NA_INTEGER) {
 			PROTECT(ans_elt = duplicate(VECTOR_ELT(ans, k1 - 1)));
 			SET_ELEMENT(ans, i, ans_elt);
 			UNPROTECT(1);

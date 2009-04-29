@@ -125,7 +125,7 @@ static int match_unq_headtail(int k1, int tb_width,
 
 /* If 'cached_head' and 'cached_tail' are NULL then match_headtail() just
    propagates the matches to the duplicates */
-static void match_headtail(SEXP unq2dup, int tb_width,
+static void match_headtail(SEXP low2high, int tb_width,
 		CachedXStringSet *cached_head, CachedXStringSet *cached_tail,
 		const RoSeq *S,
 		int max_mm, int is_count_only)
@@ -146,7 +146,7 @@ static void match_headtail(SEXP unq2dup, int tb_width,
 	// during the for loop!
 	for (i = 0; i < n1; i++) {
 		k1 = matching_keys->elts[i];
-		dups = VECTOR_ELT(unq2dup, k1);
+		dups = VECTOR_ELT(low2high, k1);
 		if (dups != R_NilValue) {
 			for (j = 0, dup = INTEGER(dups);
 			     j < LENGTH(dups);
@@ -205,7 +205,7 @@ static void match_pdict(SEXP pptb,
 		SEXP max_mismatch, SEXP fixed, int is_count_only)
 {
 	int tb_width, max_mm, fixedP, fixedS;
-	SEXP unq2dup;
+	SEXP low2high;
 	const char *type;
 
 #ifdef DEBUG_BIOSTRINGS
@@ -213,7 +213,7 @@ static void match_pdict(SEXP pptb,
 		Rprintf("[DEBUG] ENTERING match_pdict()\n");
 #endif
 	tb_width = _get_PreprocessedTB_width(pptb);
-	unq2dup = _get_PreprocessedTB_unq2dup(pptb);
+	low2high = _get_PreprocessedTB_low2high(pptb);
 	type = get_classname(pptb);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
@@ -229,7 +229,7 @@ static void match_pdict(SEXP pptb,
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	/* Call match_headtail() even if 'cached_head' and 'cached_tail' are
          * NULL in order to propagate the matches to the duplicates */
-	match_headtail(unq2dup, tb_width,
+	match_headtail(low2high, tb_width,
 		cached_head, cached_tail,
 		S, max_mm, is_count_only);
 #ifdef DEBUG_BIOSTRINGS

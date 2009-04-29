@@ -272,9 +272,9 @@
     if (length(which_pp_excluded) == 0L)
         return(ans)
     if (is.na(count.only)) # whichPDict()
-        return(sort(c(ans, unlist(dups0@unq2dup[ans]))))
+        return(sort(c(ans, unlist(low2high(dups0)[ans]))))
     if (count.only) { # countPDict()
-        ans[which_pp_excluded] <- ans[dups0@dup2unq[which_pp_excluded]]
+        ans[which_pp_excluded] <- ans[high2low(dups0)[which_pp_excluded]]
         return(ans)
     }
     # matchPDict()
@@ -320,11 +320,11 @@
                 if (length(which_pp_excluded) != 0L) {
                     ## Collapse weights of duplicates.
                     ## TODO: Implement this in C.
-                    which_is_not_unique <- which(!sapply(dups0@unq2dup, is.null))
+                    which_is_not_unique <- which(!sapply(low2high(dups0), is.null))
                     weight[which_is_not_unique] <-
                         weight[which_is_not_unique] +
                         sapply(which_is_not_unique,
-                               function(i) sum(weight[dups0@unq2dup[[i]]]))
+                               function(i) sum(weight[low2high(dups0)[[i]]]))
                 }
             }
         } else {
@@ -347,13 +347,13 @@
         return(ans)
     if (is.na(count.only)) {
         ## vwhichPDict()
-        ans <- lapply(ans, function(x) sort(c(x, unlist(dups0@unq2dup[x]))))
+        ans <- lapply(ans, function(x) sort(c(x, unlist(low2high(dups0)[x]))))
     } else if (count.only) {
         ## vcountPDict()
         if (collapse == 0L) {
-            ans[which_pp_excluded, ] <- ans[dups0@dup2unq[which_pp_excluded], ]
+            ans[which_pp_excluded, ] <- ans[high2low(dups0)[which_pp_excluded], ]
         } else if (collapse == 1L) {
-            ans[which_pp_excluded] <- ans[dups0@dup2unq[which_pp_excluded]]
+            ans[which_pp_excluded] <- ans[high2low(dups0)[which_pp_excluded]]
         }
     } else {
         ## vmatchPDict()

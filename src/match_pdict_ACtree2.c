@@ -748,7 +748,7 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 		}
 		if (nid2 != NOT_AN_ID) {
 			node2 = GET_NODE(tree, nid2);
-			_report_dup(P_offset, NODE_P_ID(node2));
+			_report_ppdup(P_offset, NODE_P_ID(node2));
 		} else {
 			nid2 = NEW_LEAFNODE(tree, P_id);
 			SET_NODE_LINK(tree, node1, linktag, nid2);
@@ -782,7 +782,7 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 	tb_length = _get_XStringSet_length(tb);
 	if (tb_length == 0)
 		error("Trusted Band is empty");
-	_init_dup2unq_buf(tb_length);
+	_init_ppdups_buf(tb_length);
 	tb_width = -1;
 	cached_tb = _new_CachedXStringSet(tb);
 	for (P_offset = 0; P_offset < tb_length; P_offset++) {
@@ -810,15 +810,15 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
 	SET_STRING_ELT(ans_names, 0, mkChar("ACtree"));
-	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
+	SET_STRING_ELT(ans_names, 1, mkChar("high2low"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
 	/* set the "ACtree" element */
 	SET_ELEMENT(ans, 0, R_NilValue);
 
-	/* set the "dup2unq" element */
-	PROTECT(ans_elt = _dup2unq_asINTEGER());
+	/* set the "high2low" element */
+	PROTECT(ans_elt = _get_ppdups_buf_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 

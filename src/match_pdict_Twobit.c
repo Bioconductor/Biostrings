@@ -56,7 +56,7 @@ static int pp_pattern(SEXP twobit_sign2pos, TwobitEncodingBuffer *teb,
 	if (*pos0 == NA_INTEGER)
 		*pos0 = poffset + 1;
 	else
-		_report_dup(poffset, *pos0);
+		_report_ppdup(poffset, *pos0);
 	return 0;
 }
 
@@ -69,7 +69,7 @@ static int pp_pattern(SEXP twobit_sign2pos, TwobitEncodingBuffer *teb,
 /*
  * Twobit_asLIST() returns an R list with the following elements:
  *   - sign2pos: XInteger object;
- *   - dup2unq: an integer vector containing the mapping between duplicated and
+ *   - high2low: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
 
@@ -82,7 +82,7 @@ static SEXP Twobit_asLIST(SEXP twobit_sign2pos)
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
 	SET_STRING_ELT(ans_names, 0, mkChar("sign2pos"));
-	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
+	SET_STRING_ELT(ans_names, 1, mkChar("high2low"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
@@ -91,8 +91,8 @@ static SEXP Twobit_asLIST(SEXP twobit_sign2pos)
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
-	/* set the "dup2unq" element */
-	PROTECT(ans_elt = _dup2unq_asINTEGER());
+	/* set the "high2low" element */
+	PROTECT(ans_elt = _get_ppdups_buf_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
@@ -125,7 +125,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 	SEXP ans, twobit_sign2pos;
 
 	tb_length = _get_XStringSet_length(tb);
-	_init_dup2unq_buf(tb_length);
+	_init_ppdups_buf(tb_length);
 	tb_width = -1;
 	cached_tb = _new_CachedXStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {

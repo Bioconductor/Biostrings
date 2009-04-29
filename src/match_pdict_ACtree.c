@@ -226,7 +226,7 @@ static void pp_pattern(const RoSeq *pattern, const int *base_codes, int poffset)
 	if (node->P_id == -1)
 		node->P_id = poffset + 1;
 	else
-		_report_dup(poffset, node->P_id);
+		_report_ppdup(poffset, node->P_id);
 	return;
 }
 
@@ -257,7 +257,7 @@ static SEXP actree_nodes_buf_asXInteger()
  * ACtree_asLIST() returns an R list with the following elements:
  *   - nodes: XInteger object pointing to the Aho-Corasick 4-ary tree built
  *         from the Trusted Band;
- *   - dup2unq: an integer vector containing the mapping between duplicated and
+ *   - high2low: an integer vector containing the mapping between duplicated and
  *         primary reads.
  */
 static SEXP ACtree_asLIST()
@@ -269,7 +269,7 @@ static SEXP ACtree_asLIST()
 	/* set the names */
 	PROTECT(ans_names = NEW_CHARACTER(2));
 	SET_STRING_ELT(ans_names, 0, mkChar("nodes"));
-	SET_STRING_ELT(ans_names, 1, mkChar("dup2unq"));
+	SET_STRING_ELT(ans_names, 1, mkChar("high2low"));
 	SET_NAMES(ans, ans_names);
 	UNPROTECT(1);
 
@@ -278,8 +278,8 @@ static SEXP ACtree_asLIST()
 	SET_ELEMENT(ans, 0, ans_elt);
 	UNPROTECT(1);
 
-	/* set the "dup2unq" element */
-	PROTECT(ans_elt = _dup2unq_asINTEGER());
+	/* set the "high2low" element */
+	PROTECT(ans_elt = _get_ppdups_buf_asINTEGER());
 	SET_ELEMENT(ans, 1, ans_elt);
 	UNPROTECT(1);
 
@@ -313,7 +313,7 @@ SEXP build_ACtree(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 		error("Biostrings internal error in build_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
 	tb_length = _get_XStringSet_length(tb);
-	_init_dup2unq_buf(tb_length);
+	_init_ppdups_buf(tb_length);
 	tb_width = -1;
 	cached_tb = _new_CachedXStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {
