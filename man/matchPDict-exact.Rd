@@ -379,8 +379,6 @@
   ## ---------------------------------------------------------------------
   ## F. vwhichPDict()
   ## ---------------------------------------------------------------------
-  ## WARNING: vwhichPDict() is still a work-in-progress!
-
   ## The 3 following calls are equivalent (from faster to slower):
   vwp3a <- vwhichPDict(pdict3, subject)
   vwp3b <- lapply(seq_len(ncol(mat3a)), function(j) which(mat3a[ , j] != 0L))
@@ -393,10 +391,38 @@
   ## Get the trinucleotides not represented in reference sequence 9181:
   dict3[-vwp3a[[9181]]]  # 21 trinucleotides
 
+  ## ---------------------------------------------------------------------
+  ## G. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
+  ## ---------------------------------------------------------------------
+  ## WARNING: This example takes about 15 minutes to run.
   if (interactive()) {
-    ## WARNING: This works but is very slow because vwhichPDict() is not
-    ## yet optimized!
-    vwp0 <- vwhichPDict(pdict0, dict0)  # a very big list!
+
+    library(hgu95av2probe)
+    library(hgu133aprobe)
+    probes1 <- DNAStringSet(hgu95av2probe$sequence)
+    probes2 <- DNAStringSet(hgu133aprobe$sequence)
+    pdict2 <- PDict(probes2)
+
+    ## Get the mapping from probes1 to probes2 (based on exact matching)
+    map1to2 <- vwhichPDict(pdict2, probes1)  # takes about 10 minutes
+
+    ## The following helper function uses the probe level mapping to induce
+    ## the mapping at the probe set IDs level (from hgu95av2 to hgu133a).
+    ## To keep things simple, 2 probe set IDs are considered mapped iff
+    ## each of them contains at least one probe mapped to one probe of
+    ## the other:
+    mapProbeSetIDs1to2 <- function(psID)
+      unique(hgu133aprobe$Probe.Set.Name[unlist(
+        map1to2[hgu95av2probe$Probe.Set.Name == psID]
+      )])
+
+    ## Use the helper function to build the complete mapping:
+    psIDs1 <- unique(hgu95av2probe$Probe.Set.Name)
+    mapPSIDs1to2 <- lapply(psIDs1, mapProbeSetIDs1to2)
+    names(mapPSIDs1to2) <- psIDs1
+
+    ## Do some basic stats:
+    table(sapply(mapPSIDs1to2, length))
   }
 }
 

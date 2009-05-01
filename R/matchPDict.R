@@ -271,20 +271,23 @@
         stop("'pdict' must be a PDict object")
     if (length(which_pp_excluded) == 0L)
         return(ans)
-    if (is.na(count.only)) # whichPDict()
-        return(sort(c(ans, unlist(low2high(dups0)[ans]))))
-    if (count.only) { # countPDict()
-        ans[which_pp_excluded] <- ans[high2low(dups0)[which_pp_excluded]]
+    if (is.na(count.only)) {
+        ## whichPDict()
+        return(members(dups0, ans))
+    }
+    if (count.only) {
+        ## countPDict()
+        ans[which_pp_excluded] <- ans[togroup(dups0, which_pp_excluded)]
         return(ans)
     }
-    # matchPDict()
+    ## matchPDict()
     if (is(ans, "ByPos_MIndex")) {
         ans@dups0 <- dups0
     } else {
         stop("don't know how to store the dup info in a ",
              class(ans), " object")
     }
-    ans
+    return(ans)
 }
 
 
@@ -347,18 +350,19 @@
         return(ans)
     if (is.na(count.only)) {
         ## vwhichPDict()
-        ans <- lapply(ans, function(x) sort(c(x, unlist(low2high(dups0)[x]))))
-    } else if (count.only) {
+        return(vmembers(dups0, ans))
+    }
+    if (count.only) {
         ## vcountPDict()
         if (collapse == 0L) {
-            ans[which_pp_excluded, ] <- ans[high2low(dups0)[which_pp_excluded], ]
+            ans[which_pp_excluded, ] <- ans[togroup(dups0, which_pp_excluded), ]
         } else if (collapse == 1L) {
-            ans[which_pp_excluded] <- ans[high2low(dups0)[which_pp_excluded]]
+            ans[which_pp_excluded] <- ans[togroup(dups0, which_pp_excluded)]
         }
-    } else {
-        ## vmatchPDict()
-        stop("vmatchPDict() is not supported yet, sorry")
+        return(ans)
     }
+    ## vmatchPDict()
+    stop("vmatchPDict() is not supported yet, sorry")
     return(ans)
 }
 
