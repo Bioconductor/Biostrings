@@ -394,7 +394,11 @@
   ## ---------------------------------------------------------------------
   ## G. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
   ## ---------------------------------------------------------------------
-  ## WARNING: This example takes about 15 minutes to run.
+  ## Here we show a simple (and very naive) algorithm for mapping probe
+  ## set IDs between the hgu95av2 and hgu133a chips (Affymetrix).
+  ## 2 probe set IDs are considered mapped iff they share at least one
+  ## probe.
+  ## WARNING: This example takes about 25 minutes to run.
   if (interactive()) {
 
     library(hgu95av2probe)
@@ -403,7 +407,7 @@
     probes2 <- DNAStringSet(hgu133aprobe$sequence)
     pdict2 <- PDict(probes2)
 
-    ## Get the mapping from probes1 to probes2 (based on exact matching)
+    ## Get the mapping from probes1 to probes2 (based on exact matching):
     map1to2 <- vwhichPDict(pdict2, probes1)  # takes about 10 minutes
 
     ## The following helper function uses the probe level mapping to induce
@@ -418,11 +422,37 @@
 
     ## Use the helper function to build the complete mapping:
     psIDs1 <- unique(hgu95av2probe$Probe.Set.Name)
-    mapPSIDs1to2 <- lapply(psIDs1, mapProbeSetIDs1to2)
+    mapPSIDs1to2 <- lapply(psIDs1, mapProbeSetIDs1to2)  # about 3 min.
     names(mapPSIDs1to2) <- psIDs1
 
     ## Do some basic stats:
     table(sapply(mapPSIDs1to2, length))
+
+    ## [ADVANCED USERS ONLY]
+    ## An alternative that is slightly faster is to put all the probes
+    ## (hgu95av2 + hgu133a) in a single PDict object and then query its
+    ## 'dups0' slot directly. This slot is a Dups object containing the
+    ## mapping between duplicated patterns.
+    ## Note that we can do this only because all the probes have the
+    ## same length (25) and because we are doing exact matching:
+
+    probes12 <- DNAStringSet(c(hgu95av2probe$sequence, hgu133aprobe$sequence))
+    pdict12 <- PDict(probes12)
+    dups0 <- pdict12@dups0
+
+    mapProbeSetIDs1to2alt <- function(psID)
+    {
+      ii1 <- unique(togroup(dups0, which(hgu95av2probe$Probe.Set.Name == psID)))
+      ii2 <- members(dups0, ii1) - length(probes1)
+      ii2 <- ii2[ii2 >= 1L]
+      unique(hgu133aprobe$Probe.Set.Name[ii2])
+    }
+
+    mapPSIDs1to2alt <- lapply(psIDs1, mapProbeSetIDs1to2alt)  # about 10 min.
+    names(mapPSIDs1to2alt) <- psIDs1
+
+    ## 'mapPSIDs1to2alt' and 'mapPSIDs1to2' contain the same mapping:
+    identical(lapply(mapPSIDs1to2alt, sort), lapply(mapPSIDs1to2, sort))
   }
 }
 
