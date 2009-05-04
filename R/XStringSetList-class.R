@@ -4,7 +4,7 @@
 ###
 ### Example:
 ###   unlisted <- DNAStringSet(c("AAA", "AC", "GGATA"))
-###   partitioning <- Partitioning(c(0, 2, 2, 3))
+###   partitioning <- PartitioningByEnd(c(0, 2, 2, 3))
 ###   x <- new("DNAStringSetList", unlisted=unlisted, partitioning=partitioning)
 ###
 
@@ -13,7 +13,7 @@ setClass("XStringSetList",
     representation(
         "VIRTUAL",
         unlisted="XStringSet",
-        partitioning="Partitioning"
+        partitioning="PartitioningByEnd"
     )
 )
 
