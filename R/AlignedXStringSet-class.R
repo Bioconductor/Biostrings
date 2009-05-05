@@ -13,8 +13,8 @@ setClass("AlignedXStringSet0",
         "VIRTUAL",
         unaligned="XStringSet",
         range="IRanges",
-        mismatch="IntegerList",
-        indel="IRangesList"
+        mismatch="CompressedIntegerList",
+        indel="CompressedIRangesList"
     )
 )
 
