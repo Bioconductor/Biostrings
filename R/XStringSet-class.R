@@ -195,7 +195,7 @@ unsafe.newXStringSet <- function(class, super, ranges,
 setMethod("xsbasetype", "XStringSet", function(x) xsbasetype(super(x)))
 
 ### This is an endomorphism iff 'basetype' is NULL, otherwise it is NOT!
-compactXStringSet <- function(x, basetype=NULL)
+.XStringSet.compact <- function(x, basetype=NULL)
 {
     from_basetype <- xsbasetype(x)
     from_baseclass <- paste(from_basetype, "String", sep="")
@@ -238,7 +238,7 @@ setReplaceMethod("xsbasetype", "XStringSet",
         from_basetype <- xsbasetype(x)
         lkup <- get_xsbasetypes_conversion_lookup(from_basetype, value)
         if (!is.null(lkup))
-            return(compactXStringSet(x, basetype=value))
+            return(.XStringSet.compact(x, basetype=value))
         ans_class <- paste(value, "StringSet", sep="")
         if (is(x, ans_class)) {
             ans_super <- super(x)
@@ -249,6 +249,15 @@ setReplaceMethod("xsbasetype", "XStringSet",
                              use.names=TRUE, names=names(x))
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### compact()
+###
+
+setGeneric("compact", function(x, ...) standardGeneric("compact"))
+
+setMethod("compact", "XStringSet", .XStringSet.compact)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -522,8 +531,8 @@ setMethod("append", c("XStringSet", "XStringSet"),
         if (after != length(x))
             stop("'after != length(x)' is not supported for XStringSet objects, sorry!")
         ans_class <- paste(basetype, "StringSet", sep="")
-        cx <- compactXStringSet(x)
-        cvalues <- compactXStringSet(values, basetype=basetype)
+        cx <- compact(x)
+        cvalues <- compact(values, basetype=basetype)
         ans_super <- XString.append(super(cx), super(cvalues))
         ans_start <- c(start(cx@ranges), start(cvalues@ranges) + length(super(cx)))
         ans_width <- c(width(cx), width(cvalues))

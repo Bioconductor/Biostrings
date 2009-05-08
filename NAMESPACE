@@ -46,7 +46,7 @@ export(
     BString, DNAString, RNAString, AAString,
 
     ## XStringSet-class.R:
-    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
+    compact, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
 
     ## XStringViews-constructors.R:
     adjacentViews, XStringViews,
@@ -69,7 +69,7 @@ exportMethods(
     unmasked, maskedwidth, maskedratio,
     unlist, partitioning,
     start, end, width,
-    xsbasetype, "xsbasetype<-", alphabet,
+    xsbasetype, "xsbasetype<-", compact,
     names, "names<-", "[", "[[", "[[<-", rep, append,
     union, intersect, setdiff, setequal,
     show,

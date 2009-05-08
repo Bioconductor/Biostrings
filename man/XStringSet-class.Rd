@@ -34,6 +34,9 @@
 \alias{xsbasetype,XStringSet-method}
 \alias{xsbasetype<-,XStringSet-method}
 
+\alias{compact}
+\alias{compact,XStringSet-method}
+
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}
 \alias{coerce,XStringSet,RNAStringSet-method}
@@ -236,6 +239,19 @@
   }
 }
 
+\section{Compacting}{
+  In the code snippets below,
+  \code{x} is an XStringSet object.
+
+  \describe{
+    \item{}{
+      \code{compact(x, basetype=NULL)}:
+      Makes a deep copy of \code{x} that reduces its memory footprint.
+      Typically used before saving \code{x} to a file (serialization).
+    }
+  }
+}
+
 \section{Subsetting and appending}{
   In the code snippets below,
   \code{x} and \code{values} are XStringSet objects,
@@ -376,6 +392,19 @@
   probes
 
   RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
+
+  ## Using compact() before serialization:
+  object.size(probes)
+  y1 <- narrow(probes[1:12], start=5)
+  object.size(y1) 
+  file1 <- file.path(tempdir(), "y1.rda")
+  save(y1, file=file1)
+  file.info(file1)$size
+  y2 <- compact(y1)
+  object.size(y2)  # much smaller!
+  file2 <- file.path(tempdir(), "y2.rda")
+  save(y2, file=file2)
+  file.info(file2)$size
 }
 
 \keyword{methods}
