@@ -66,19 +66,17 @@ export(
 
 exportMethods(
     length,
-    unmasked, maskedwidth, maskedratio,
-    unlist, partitioning,
-    start, end, width,
+    nchar, width,
     xsbasetype, "xsbasetype<-", compact,
     names, "names<-", "[", "[[", "[[<-", rep, append,
     union, intersect, setdiff, setequal,
     show,
     "==", "!=", duplicated, unique, order, sort, rank,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
-    nchar, width,
     narrow, subseq, threebands, "subseq<-", reduce, gaps,
     Views, XStringViews,
-    masks, "masks<-"
+    unmasked, maskedwidth, maskedratio, masks, "masks<-",
+    unlist, partitioning
 )
 
 
