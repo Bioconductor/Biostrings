@@ -212,7 +212,7 @@
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA)}:
       Applies \code{subseq} on each element in \code{x}.
-      See \code{\link[IRanges]{subseq}} for the details.
+      See \code{?\link[IRanges]{subseq}} for the details.
 
       Note that this is similar to what \code{\link{substr}} does on a
       character vector. However there are some noticeable differences:
@@ -226,11 +226,12 @@
     }
     \item{}{
       \code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:
-      Same as \code{subseq}. The only differences are: (1) \code{narrow} has
-      a \code{use.names} argument; and (2) the things \code{narrow} and
-      \code{subseq} work on (\link[IRanges]{IRanges}, XStringSet or
+      Same as \code{subseq}. The only differences are: (1) \code{narrow}
+      has a \code{use.names} argument; and (2) all the things \code{narrow}
+      and \code{subseq} work on (\link[IRanges]{IRanges}, XStringSet or
       \link{XStringViews} objects for \code{narrow},
       \link[IRanges]{XSequence} or XStringSet objects for \code{subseq}).
+      But they both work and do the same thing on an XStringSet object.
     }
     \item{}{
       \code{threebands(x, start=NA, end=NA, width=NA)}:
@@ -246,7 +247,7 @@
       \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
       A vectorized version of the \code{\link[IRanges]{subseq<-}}
       method for \link[IRanges]{XSequence} objects.
-      See \code{\link[IRanges]{subseq<-}} for the details.
+      See \code{?`\link[IRanges]{subseq<-}`} for the details.
     }
   }
 }
