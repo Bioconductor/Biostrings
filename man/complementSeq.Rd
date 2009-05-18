@@ -68,8 +68,9 @@ complementSeq(seq, start=1, stop=0)
   ## But do this instead:
   pm2mm <- function(probes)
   {
-      parts <- threebands(DNAStringSet(probes), start=13, end=13)
-      xscat(parts$left, complement(parts$middle), parts$right)
+      probes <- DNAStringSet(probes)
+      subseq(probes, start=13, end=13) <- complement(subseq(probes, start=13, end=13))
+      probes
   }
   pm2mm(seq) 
 

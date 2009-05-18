@@ -23,13 +23,17 @@
 \alias{length,XStringSet-method}
 \alias{width,character-method}
 \alias{width,XStringSet-method}
+\alias{nchar,XStringSet-method}
 \alias{names,XStringSet-method}
 \alias{names<-,XStringSet-method}
-\alias{nchar,XStringSet-method}
 \alias{narrow,character-method}
 \alias{narrow,XStringSet-method}
+\alias{subseq,character-method}
+\alias{subseq,XStringSet-method}
 \alias{threebands,character-method}
 \alias{threebands,XStringSet-method}
+\alias{subseq<-,character-method}
+\alias{subseq<-,XStringSet-method}
 
 \alias{xsbasetype,XStringSet-method}
 \alias{xsbasetype<-,XStringSet-method}
@@ -81,8 +85,9 @@
 \title{XStringSet objects}
 
 \description{
-  The BStringSet class is a container for storing a set of \code{\link{BString}}
-  objects and for making its manipulation easy and efficient.
+  The BStringSet class is a container for storing a set of
+  \code{\link{BString}} objects and for making its manipulation
+  easy and efficient.
 
   Similarly, the DNAStringSet (or RNAStringSet, or AAStringSet) class is
   a container for storing a set of \code{\link{DNAString}}
@@ -106,9 +111,9 @@
   \S4method{names}{XStringSet}(x)
   \S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
 
-  ## Narrowing:
-  \S4method{narrow}{character}(x, start=NA, end=NA, width=NA, use.names=TRUE)
-  \S4method{narrow}{XStringSet}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+  ## Efficient subsequence extraction:
+  \S4method{subseq}{character}(x, start=NA, end=NA, width=NA)
+  \S4method{subseq}{XStringSet}(x, start=NA, end=NA, width=NA)
 
   ## ... and more (see below)
 }
@@ -139,22 +144,21 @@
 
   They also allow the user to "narrow" the sequences contained in \code{x}
   via proper use of the \code{start}, \code{end} and/or \code{width}
-  arguments. In this context, "narrowing" means dropping unwanted parts
-  of \code{x} located at the beginning (prefix) or end (suffix) of each
-  sequence in \code{x}.
+  arguments. In this context, "narrowing" means dropping a prefix or/and
+  a suffix of each sequence in \code{x}.
   The "narrowing" capabilities of these constructors can be illustrated
   by the following property: if \code{x} is a character vector
-  (with no NAs), or an XStringSet or \link{XStringViews} object,
+  (with no NAs), or an XStringSet (or \link{XStringViews}) object,
   then the 3 following transformations are equivalent:
   \describe{
     \item{}{
       \code{BStringSet(x, start=mystart, end=myend, width=mywidth)}
     }
     \item{}{
-      \code{narrow(BStringSet(x), start=mystart, end=myend, width=mywidth)}
+      \code{subseq(BStringSet(x), start=mystart, end=myend, width=mywidth)}
     }
     \item{}{
-      \code{BStringSet(narrow(x, start=mystart, end=myend, width=mywidth))}
+      \code{BStringSet(subseq(x, start=mystart, end=myend, width=mywidth))}
     }
   }
   Note that, besides being more convenient, the first form is also more
@@ -199,32 +203,34 @@
   }
 }
 
-\section{Narrowing and related transformations}{
+\section{Subsequence extraction and related transformations}{
   In the code snippets below,
   \code{x} is a character vector (with no NAs),
   or an XStringSet (or \link{XStringViews}) object.
 
   \describe{
     \item{}{
-      \code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:
-      Narrows the set of sequences in \code{x} by extracting the set of
-      subsequences described by the supplied start/end/width values.
-      Like with the \code{\link[IRanges]{narrow}} method for
-      \link[IRanges]{IRanges} objects, the supplied start/end/width values
-      are solved internally by calling
-      \code{solveUserSEW(width(x), start=start, end=end, width=width)}
-      and therefore must be compliant with the rules of the SEW
-      (Start/End/Width) interface (see \code{?solveUserSEW} for the details).
+      \code{subseq(x, start=NA, end=NA, width=NA)}:
+      Applies \code{subseq} on each element in \code{x}.
+      See \code{\link[IRanges]{subseq}} for the details.
 
-      Note that this narrowing transformation is similar to what
-      \code{\link{substr}} does on a character vector. However some
-      noticeable differences are: (1) the names of the arguments (\code{start}
-      and \code{stop} for \code{\link{substr}}), (2) the richer SEW interface
-      for \code{narrow} (e.g. support for negative start or end values),
-      and (3) strict checking of valid start/end/width values for \code{narrow}
-      (unlike \code{\link{substr}}, \code{narrow} will throw an error if
-      the specified start/end/width values define "out of limits" subsequences
-      or subsequences with a negative width).
+      Note that this is similar to what \code{\link{substr}} does on a
+      character vector. However there are some noticeable differences:
+      (1) the arguments are \code{start} and \code{stop} for \code{\link{substr}};
+      (2) the SEW interface (start/end/width) interface of \code{subseq}
+      is richer (e.g. support for negative start or end values);
+      and (3) \code{subseq} checks that the specified start/end/width values
+      are valid i.e., unlike \code{\link{substr}}, it throws an error if
+      they define "out of limits" subsequences or subsequences with a
+      negative width.
+    }
+    \item{}{
+      \code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:
+      Same as \code{subseq}. The only differences are: (1) \code{narrow} has
+      a \code{use.names} argument; and (2) the things \code{narrow} and
+      \code{subseq} work on (\link[IRanges]{IRanges}, XStringSet or
+      \link{XStringViews} objects for \code{narrow},
+      \link[IRanges]{XSequence} or XStringSet objects for \code{subseq}).
     }
     \item{}{
       \code{threebands(x, start=NA, end=NA, width=NA)}:
@@ -235,6 +241,12 @@
       associated to the narrowing operation.
       See \code{?\link[IRanges]{threebands}} in the IRanges package for
       the details.
+    }
+    \item{}{
+      \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
+      A vectorized version of the \code{\link[IRanges]{subseq<-}}
+      method for \link[IRanges]{XSequence} objects.
+      See \code{\link[IRanges]{subseq<-}} for the details.
     }
   }
 }
@@ -367,10 +379,17 @@
   \link{XStringViews-class},
   \link{XStringSetList-class},
   \code{\link{substr}},
+  \code{\link[IRanges]{subseq}},
   \code{\link[IRanges]{narrow}}
 }
 
 \examples{
+  ## ---------------------------------------------------------------------
+  ## A. USING THE XStringSet CONSTRUCTORS ON A CHARACTER VECTOR
+  ## ---------------------------------------------------------------------
+  ## Note that there is no XStringSet() constructor, but an XStringSet
+  ## family of constructors: BStringSet(), DNAStringSet(), RNAStringSet(),
+  ## etc...
   x0 <- c("#CTC-NACCAGTAT", "#TTGA", "TACCTAGAG")
   width(x0)
   x1 <- BStringSet(x0)
@@ -378,8 +397,8 @@
 
   ## 3 equivalent ways to obtain the same BStringSet object:
   BStringSet(x0, start=4, end=-3)
-  narrow(x1, start=4, end=-3)
-  BStringSet(narrow(x0, start=4, end=-3))
+  subseq(x1, start=4, end=-3)
+  BStringSet(subseq(x0, start=4, end=-3))
 
   dna0 <- DNAStringSet(x0, start=4, end=-3)
   dna0
@@ -387,15 +406,40 @@
   names(dna0)[2] <- "seqB"
   dna0
 
+  ## ---------------------------------------------------------------------
+  ## B. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
+  ## ---------------------------------------------------------------------
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe$sequence)
   probes
 
   RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
 
-  ## Using compact() before serialization:
+  ## ---------------------------------------------------------------------
+  ## C. USING subseq() ON AN XStringSet OBJECT
+  ## ---------------------------------------------------------------------
+  subseq(probes, start=2, end=-5)
+
+  subseq(probes, start=13, end=13) <- "N"
+  probes
+
+  ## Add/remove a prefix:
+  subseq(probes, start=1, end=0) <- "--"
+  probes
+  subseq(probes, end=2) <- ""
+  probes
+
+  ## Do more complicated things:
+  subseq(probes, start=4:7, end=7) <- c("YYYY", "YYY", "YY", "Y")
+  subseq(probes, start=4, end=6) <- subseq(probes, start=-2:-5)
+  probes
+
+  ## ---------------------------------------------------------------------
+  ## D. COMPACTING AN XStringSet OBJECT
+  ## ---------------------------------------------------------------------
+  ## Compacting is done typically before serialization.
   object.size(probes)
-  y1 <- narrow(probes[1:12], start=5)
+  y1 <- subseq(probes[1:12], start=5)
   object.size(y1) 
   file1 <- file.path(tempdir(), "y1.rda")
   save(y1, file=file1)

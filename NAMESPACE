@@ -75,8 +75,10 @@ exportMethods(
     show,
     "==", "!=", duplicated, unique, order, sort, rank,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
-    nchar,
-    width, narrow, threebands, reduce, gaps
+    nchar, width,
+    narrow, subseq, threebands, "subseq<-", reduce, gaps,
+    Views, XStringViews,
+    masks, "masks<-"
 )
 
 
@@ -147,17 +149,6 @@ exportMethods(
     show,
     "==", "!=", duplicated, unique, order, sort, rank,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
-    nchar,
-
-    ## Methods for objects implementing an IRanges-like interface
-    start, width, end, narrow, reduce, gaps,
-
-    ## XString, XStringViews and MaskedXString objects
-    subseq,
-    Views, XStringViews,
-    masks, "masks<-",
-
-    ## Utilities
     letter,
     substr, substring,
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,

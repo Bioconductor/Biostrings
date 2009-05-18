@@ -123,7 +123,7 @@ setReplaceMethod("names", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "narrow" (endomorphism) and related transformations.
+### The "subseq" endomorphism and related transformations.
 ###
 
 setMethod("narrow", "character",
@@ -131,8 +131,8 @@ setMethod("narrow", "character",
     {
         if (!normargUseNames(use.names))
             names(x) <- NULL
-        wx <- width(x)
-        solved_SEW <- solveUserSEW(wx, start=start, end=end, width=width)
+        x_width <- width(x)
+        solved_SEW <- solveUserSEW(x_width, start=start, end=end, width=width)
         substr(x, start=start(solved_SEW), stop=end(solved_SEW))
     }
 )
@@ -146,15 +146,25 @@ setMethod("narrow", "XStringSet",
     }
 )
 
+setMethod("subseq", "character",
+    function(x, start=NA, end=NA, width=NA)
+        narrow(x, start=start, end=end, width=width)
+)
+
+setMethod("subseq", "XStringSet",
+    function(x, start=NA, end=NA, width=NA)
+        narrow(x, start=start, end=end, width=width)
+)
+
 setMethod("threebands", "character",
     function(x, start=NA, end=NA, width=NA)
     {
         names(x) <- NULL
-        wx <- width(x)
-        solved_SEW <- solveUserSEW(wx, start=start, end=end, width=width)
+        x_width <- width(x)
+        solved_SEW <- solveUserSEW(x_width, start=start, end=end, width=width)
         left <- substr(x, start=1L, stop=start(solved_SEW)-1L)
         middle <- substr(x, start=start(solved_SEW), stop=end(solved_SEW))
-        right <- substr(x, start=end(solved_SEW)+1L, stop=wx)
+        right <- substr(x, start=end(solved_SEW)+1L, stop=x_width)
         list(left=left, middle=middle, right=right)
     }
 )
@@ -168,6 +178,25 @@ setMethod("threebands", "XStringSet",
         x@ranges <- threeranges$middle
         right@ranges <- threeranges$right
         list(left=left, middle=x, right=right)
+    }
+)
+
+setReplaceMethod("subseq", "character",
+    function(x, start=NA, end=NA, width=NA, value)
+    {
+        bands <- threebands(x, start=start, end=end, width=width)
+        paste(bands$left, value, bands$right, sep="")
+    }
+)
+
+setReplaceMethod("subseq", "XStringSet",
+    function(x, start=NA, end=NA, width=NA, value)
+    {
+        bands <- threebands(x, start=start, end=end, width=width)
+        if (is.null(value))
+            xscat(bands$left, bands$right)
+        else
+            xscat(bands$left, value, bands$right)
     }
 )
 
