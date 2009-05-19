@@ -134,9 +134,12 @@
   ## Replace letters of a DNAStringSet object (sorry for the totally
   ## artificial example with absolutely no biological meaning):
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)[1:20]
-  at <- as.matrix(probes) == "T"
-  letter <- subseq(probes, end=rowSums(at))
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  at <- matrix(c(TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
+               nrow=length(probes), ncol=width(probes)[1],
+               byrow=TRUE)
+  letter_subject <- DNAString(paste(rep.int("-", width(probes)[1]), collapse=""))
+  letter <- as(Views(letter_subject, start=1, end=rowSums(at)), "XStringSet")
   replaceLetterAt(probes, at, letter)
 }
 
