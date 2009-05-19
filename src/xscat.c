@@ -8,6 +8,8 @@
  * Arguments:
  *   args: a non-empty list of XString objects of the same XString base type
  *         (see R/xsbasetype.R).
+ * Note that this function is VERY similar to XStringSet_unlist().
+ * Maybe both could be unified under a fast c() for XRaw objects.
  */
 SEXP XString_xscat(SEXP args)
 {

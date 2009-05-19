@@ -229,6 +229,39 @@ void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, const RoSeq *seq, int encode)
  */
 
 /*
+ * Note that XStringSet_unlist() is VERY similar to XString_xscat().
+ * Maybe both could be unified under a fast c() for XRaw objects.
+ */
+SEXP XStringSet_unlist(SEXP x)
+{
+	SEXP ans;
+	int x_length, ans_length, write_start, i;
+	CachedXStringSet cached_x;
+	RoSeq xx;
+
+	x_length = _get_XStringSet_length(x);
+	cached_x = _new_CachedXStringSet(x);
+
+	/* 1st pass: determine 'ans_length' */
+	ans_length = 0;
+	for (i = 0; i < x_length; i++) {
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		ans_length += xx.nelt;
+	}
+	PROTECT(ans = _alloc_XString(_get_XStringSet_baseClass(x), ans_length));
+
+	/* 2nd pass: fill 'ans' */
+	write_start = 1;
+	for (i = 0; i < x_length; i++) {
+		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		_write_RoSeq_to_XString(ans, write_start, &xx, 0);
+		write_start += xx.nelt;
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
  * --- .Call ENTRY POINT ---
  */
 SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)

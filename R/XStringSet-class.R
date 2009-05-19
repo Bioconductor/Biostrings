@@ -616,6 +616,12 @@ setMethod("setequal", c("XStringSet", "XStringSet"),
 ### Other coercion methods.
 ###
 
+### 'unlist(x)' turns XStringSet object 'x' into an XString object.
+setMethod("unlist", "XStringSet",
+    function(x, recursive=TRUE, use.names=TRUE)
+        .Call("XStringSet_unlist", x, PACKAGE="Biostrings")
+)
+
 setMethod("as.character", "XStringSet",
     function(x, use.names=TRUE)
     {

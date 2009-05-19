@@ -70,6 +70,7 @@
 \alias{setdiff,XStringSet,XStringSet-method}
 \alias{setequal,XStringSet,XStringSet-method}
 
+\alias{unlist,XStringSet-method}
 \alias{as.character,XStringSet-method}
 \alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}
@@ -353,6 +354,12 @@
 
   \describe{
     \item{}{
+      \code{unlist(x)}:
+      Turns \code{x} into an \link{XString} object by combining the
+      sequences in \code{x} together.
+      Fast equivalent to \code{do.call(c, as.list(x))}.
+    }
+    \item{}{
       \code{as.character(x, use.names)}:
       Convert \code{x} to a character vector of the same length as \code{x}.
       \code{use.names} controls whether or not \code{names(x)} should be
@@ -439,6 +446,8 @@
   ## D. COMPACTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   ## Compacting is done typically before serialization.
+  library(drosophila2probe)
+  probes <- DNAStringSet(drosophila2probe$sequence)
   object.size(probes)
   y1 <- subseq(probes[1:12], start=5)
   object.size(y1) 
@@ -450,6 +459,13 @@
   file2 <- file.path(tempdir(), "y2.rda")
   save(y2, file=file2)
   file.info(file2)$size
+
+  ## ---------------------------------------------------------------------
+  ## E. UNLISTING AN XStringSet OBJECT
+  ## ---------------------------------------------------------------------
+  library(drosophila2probe)
+  probes <- DNAStringSet(drosophila2probe$sequence)
+  unlist(probes)  
 }
 
 \keyword{methods}

@@ -296,6 +296,8 @@ void _write_RoSeq_to_XStringSet_elt(
 	int encode
 );
 
+SEXP XStringSet_unlist(SEXP x);
+
 SEXP XStringSet_as_STRSXP(
 	SEXP x,
 	SEXP lkup
