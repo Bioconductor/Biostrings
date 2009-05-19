@@ -283,8 +283,13 @@ setMethod("coverage", "PairwiseAlignedFixedSubject",
 )
 
 setMethod("coverage", "PairwiseAlignedFixedSubjectSummary",
-    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
-        subseq(x@coverage, start=start, end=end, shift=shift, width=width, weight=weight)
+    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L) {
+        if (shift != 0L)
+            stop("'shift' argument is not supported for 'PairwiseAlignedFixedSubjectSummary' objects")
+        if (weight != 1L)
+            stop("'weight' argument is not supported for 'PairwiseAlignedFixedSubjectSummary' objects")
+        window(x@coverage, start=start, end=end, width=width)
+    }
 )
 
 
