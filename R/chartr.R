@@ -37,8 +37,7 @@ XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)
                        x, lkup, reverse,
                        PACKAGE="Biostrings")
     ans_ranges <- attr(x@ranges, "inframe")
-    unsafe.newXStringSet(class(x), ans_super, ans_ranges,
-                         use.names=use.names, names=names(x))
+    unsafe.newXStringSet(ans_super, ans_ranges, use.names=use.names, names=names(x))
 }
 
 setMethod("chartr", c(old = "ANY", new = "ANY", x = "XString"),

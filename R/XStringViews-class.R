@@ -93,9 +93,7 @@ XStringViewsToSet <- function(x, use.names, verbose=TRUE)
                            use.names=use.names)
     if (verbose && any(width(ans_ranges) < width(x)))
         warning("trimming \"out of limits\" views")
-    class <- paste(xsbasetype(x), "StringSet", sep="")
-    unsafe.newXStringSet(class, subject(x), ans_ranges,
-                         use.names=TRUE, names=names(ans_ranges))
+    unsafe.newXStringSet(subject(x), ans_ranges, use.names=TRUE, names=names(ans_ranges))
 }
 
 ### We need this so that B/DNA/RNA/AAStringSet() used below work on an

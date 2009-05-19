@@ -207,9 +207,9 @@ setReplaceMethod("subseq", "XStringSet",
 ### of 'super'.
 ###
 
-unsafe.newXStringSet <- function(class, super, ranges,
-                                 use.names=FALSE, names=NULL)
+unsafe.newXStringSet <- function(super, ranges, use.names=FALSE, names=NULL)
 {
+    class <- paste(xsbasetype(super), "StringSet", sep="")
     ans <- new2(class, super=super, ranges=ranges, check=FALSE)
     if (normargUseNames(use.names))
         names(ans) <- names
@@ -255,9 +255,7 @@ setMethod("xsbasetype", "XStringSet", function(x) xsbasetype(super(x)))
         return(x)
     }
     ## NOT an endomorphism! (downgrades 'x' to a B/DNA/RNA/AAStringSet instance)
-    ans_class <- paste(baseclass, "Set", sep="")
-    unsafe.newXStringSet(ans_class, ans_super, ans_ranges,
-                         use.names=TRUE, names=names(x))
+    unsafe.newXStringSet(ans_super, ans_ranges, use.names=TRUE, names=names(x))
 }
 
 ### Downgrades 'x' to a B/DNA/RNA/AAStringSet instance!
@@ -274,8 +272,7 @@ setReplaceMethod("xsbasetype", "XStringSet",
         } else {
             ans_super <- XString(value, super(x))
         }
-        unsafe.newXStringSet(ans_class, ans_super, x@ranges,
-                             use.names=TRUE, names=names(x))
+        unsafe.newXStringSet(ans_super, x@ranges, use.names=TRUE, names=names(x))
     }
 )
 
@@ -306,20 +303,18 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 
 .charToXStringSet <- function(x, start, end, width, use.names, basetype)
 {
-    class <- paste(basetype, "StringSet", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
     ans_super <- .charToXString(x, solved_SEW, basetype)
     ans_ranges <- successiveIRanges(width(solved_SEW))
-    unsafe.newXStringSet(class, ans_super, ans_ranges,
+    unsafe.newXStringSet(ans_super, ans_ranges,
                          use.names=use.names, names=names(x))
 }
 
 .XStringToXStringSet <- function(x, start, end, width, use.names, basetype)
 {
-    class <- paste(basetype, "StringSet", sep="")
     ans_super <- XString(basetype, x, start=start, end=end, width=width)
     ans_ranges <- new2("IRanges", start=1L, width=length(ans_super), check=FALSE)
-    unsafe.newXStringSet(class, ans_super, ans_ranges)
+    unsafe.newXStringSet(ans_super, ans_ranges)
 }
 
 
@@ -559,7 +554,6 @@ setMethod("append", c("XStringSet", "XStringSet"),
             return(x)
         if (after != length(x))
             stop("'after != length(x)' is not supported for XStringSet objects, sorry!")
-        ans_class <- paste(basetype, "StringSet", sep="")
         cx <- compact(x)
         cvalues <- compact(values, basetype=basetype)
         ans_super <- XString.append(super(cx), super(cvalues))
@@ -567,8 +561,7 @@ setMethod("append", c("XStringSet", "XStringSet"),
         ans_width <- c(width(cx), width(cvalues))
         ans_ranges <- new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
         ans_names <- c(names(cx), names(cvalues))
-        unsafe.newXStringSet(ans_class, ans_super, ans_ranges,
-                             use.names=TRUE, names=ans_names)
+        unsafe.newXStringSet(ans_super, ans_ranges, use.names=TRUE, names=ans_names)
     }
 )
 

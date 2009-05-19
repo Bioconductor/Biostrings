@@ -2,18 +2,20 @@
 
 \alias{replaceLetterAt}
 \alias{replaceLetterAt,DNAString-method}
+\alias{replaceLetterAt,DNAStringSet-method}
 \alias{.inplaceReplaceLetterAt}
 
 % Deprecated:
 \alias{replaceLetterAtLoc}
 
 
-\title{Replacing letters in a sequence at some specified locations}
+\title{Replacing letters in a sequence (or set of sequences)
+       at some specified locations}
 
 \description{
-  \code{replaceLetterAt} first makes a copy of a sequence and then
-  replaces the original letters by new letters at some specified locations
-  in the copied sequence.
+  \code{replaceLetterAt} first makes a copy of a sequence (or set of
+  sequences) and then replaces some of the original letters by new
+  letters at the specified locations.
 
   \code{.inplaceReplaceLetterAt} is the IN PLACE version of
   \code{replaceLetterAt}: it will modify the original
@@ -34,17 +36,34 @@
 
 \arguments{
   \item{x}{
-    A \link{DNAString} object.
+    A \link{DNAString} or rectangular \link{DNAStringSet} object.
   }
   \item{at}{
-    An integer vector with no NAs containing the locations where the
-    replacements must occur. Note that locations can be repeated and in
-    this case the last replacement to occur at a given location prevails.
+    The locations where the replacements must occur.
+
+    If \code{x} is a \link{DNAString} object, then \code{at} is typically
+    an integer vector with no NAs but a logical vector or \link[IRanges]{Rle}
+    object is valid too. Locations can be repeated and in this case the
+    last replacement to occur at a given location prevails.
+
+    If \code{x} is a rectangular \link{DNAStringSet} object, then
+    \code{at} must be a matrix of logicals with the same dimensions
+    as \code{x}.
   }
   \item{letter}{
-    Character vector with no NAs. The total number of letters in \code{letter}
-    (\code{sum(nchar(letter))}) must be equal to the number of locations
-    (\code{length(at)}).
+    The new letters.
+
+    If \code{x} is a \link{DNAString} object, then \code{letter} must be
+    a \link{DNAString} object or a character vector (with no NAs) with a
+    total number of letters (\code{sum(nchar(letter))}) equal to the number
+    of locations specified in \code{at}.
+
+    If \code{x} is a rectangular \link{DNAStringSet} object, then
+    \code{letter} must be a \link{DNAStringSet} object or a character
+    vector of the same length as \code{x}. In addition, the number of
+    letters in each element of \code{letter} must match the number of
+    locations specified in the corresponding row of \code{at}
+    (\code{all(width(letter) == rowSums(at))}).
   }
   \item{if.not.extending}{
     What to do if the new letter is not "extending" the old letter?
@@ -90,7 +109,8 @@
 }
 
 \value{
-  A \link{DNAString} object of the same length as the orignal object \code{x}
+  A \link{DNAString} or \link{DNAStringSet} object of the same shape
+  (i.e. length and width) as the orignal object \code{x}
   for \code{replaceLetterAt}.
 }
 
@@ -101,13 +121,23 @@
   \code{\link{chartr}},
   \code{\link{injectHardMask}},
   \link{DNAString},
+  \link{DNAStringSet},
   \code{\link[BSgenome]{injectSNPs}},
   \link[BSgenome]{BSgenome}
 }
 
 \examples{
+  ## Replace letters of a DNAString object:
   replaceLetterAt(DNAString("AAMAA"), c(5, 1, 3, 1), "TYNC")
   replaceLetterAt(DNAString("AAMAA"), c(5, 1, 3, 1), "TYNC", if.not.extending="merge")
+
+  ## Replace letters of a DNAStringSet object (sorry for the totally
+  ## artificial example with absolutely no biological meaning):
+  library(drosophila2probe)
+  probes <- DNAStringSet(drosophila2probe$sequence)[1:20]
+  at <- as.matrix(probes) == "T"
+  letter <- subseq(probes, end=rowSums(at))
+  replaceLetterAt(probes, at, letter)
 }
 
 \keyword{utilities}
