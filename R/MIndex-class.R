@@ -16,7 +16,7 @@
 ###
 
 setClass("MIndex",
-    contains="ListLike",
+    contains="Sequence",
     representation(
         "VIRTUAL",
         width="integer",
@@ -119,7 +119,7 @@ setMethod("show", "ByPos_MIndex",
 setMethod("[[", "ByPos_MIndex",
     function(x, i, j, ...)
     {
-        i <- callNextMethod()
+        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         if (length(x@dups0) != 0 && !is.na(i2 <- high2low(x@dups0)[i]))
             i <- i2
         ans_end <- x@ends[[i]]
@@ -214,7 +214,7 @@ if (FALSE) {
   setMethod("[[", "SparseMIndex",
     function(x, i, j, ...)
     {
-        i <- callNextMethod()
+        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         ans_end <- x@ends_envir[[formatC(i, width=10, format="d", flag="0")]]
         if (is.null(ans_end))
             ans_end <- integer(0)

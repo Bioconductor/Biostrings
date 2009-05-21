@@ -775,7 +775,7 @@ table(countPDict(srPDict, genBankPhage))
 
 For these short reads, the \Rfunction{pairwiseAlignment} function finds that
 the small number of perfect matches is due to two locations on the bacteriophage
-$\phi$ X174 genome.
+$\phi$X174 genome.
 
 Unlike the \Rfunction{countPDict} function, the \Rfunction{pairwiseAlignment}
 function works off of the original strings, rather than \Rfunction{PDict}

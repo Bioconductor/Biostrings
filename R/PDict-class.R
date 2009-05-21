@@ -325,7 +325,7 @@ setMethod("tail", "PDict3Parts",
 ###
 
 setClass("PDict",
-    contains="ListLike",
+    contains="Sequence",
     representation(
         "VIRTUAL",
         dict0="DNAStringSet",
@@ -366,7 +366,7 @@ setMethod("dups", "PDict",
 setMethod("[[", "PDict",
     function(x, i, j, ...)
     {
-        i <- callNextMethod()
+        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         x@dict0[[i]]
     }
 )

@@ -24,7 +24,7 @@
 ###   )
 ###
 ###   setClass("XStringSet",
-###     contains="ListLike",
+###     contains="Sequence",
 ###     representation(
 ###         "VIRTUAL",
 ###         xrvlist="list",   # a list of RawPtrViews objects
@@ -52,7 +52,7 @@
 ###
 
 setClass("XStringSet",
-    contains="ListLike",
+    contains="Sequence",
     representation(
         "VIRTUAL",
         super="XString",
@@ -519,7 +519,7 @@ setMethod("rep", "XStringSet",
 setMethod("[[", "XStringSet",
     function(x, i, j, ...)
     {
-        i <- callNextMethod()
+        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         start <- start(x@ranges)[i]
         width <- width(x@ranges)[i]
         subseq(super(x), start=start, width=width)

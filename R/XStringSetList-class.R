@@ -9,7 +9,7 @@
 ###
 
 setClass("XStringSetList",
-    contains="ListLike",
+    contains="Sequence",
     representation(
         "VIRTUAL",
         unlisted="XStringSet",
@@ -121,7 +121,7 @@ setMethod("show", "XStringSetList",
 setMethod("[[", "XStringSetList",
     function(x, i, j, ...)
     {
-        i <- callNextMethod()  # calls "[[" method for ListLike objects
+        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         ii <- x@partitioning[[i]]
         unlist(x)[ii]
     }
