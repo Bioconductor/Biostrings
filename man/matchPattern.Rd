@@ -205,7 +205,7 @@
   Views(subject[[i0]], mindex[[i0]])
 
   ## ---------------------------------------------------------------------
-  ## C. With indels
+  ## C. WITH INDELS
   ## ---------------------------------------------------------------------
   library(BSgenome.Celegans.UCSC.ce2)
   pattern <- DNAString("ACGGACCTAATGTTATC")
@@ -219,10 +219,16 @@
   m
 
   ## pairwiseAlignment() returns the (first) best match only:
-  mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
-  system.time(pwa <- pairwiseAlignment(pattern, subject, type="local",
-                       substitutionMatrix=mat, gapOpening=0, gapExtension=1))
-  pwa
+  if (interactive()) {
+    mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
+    ## Note that this call to pairwiseAlignment() will need to
+    ## allocate 733.5 Mb of memory (i.e. length(pattern) * length(subject)
+    ## * 3 bytes).
+    system.time(pwa <- pairwiseAlignment(pattern, subject, type="local",
+                                         substitutionMatrix=mat,
+                                         gapOpening=0, gapExtension=1))
+    pwa
+  }
 
   ## Only "best local matches" are reported:
     ## - with deletions in the subject
