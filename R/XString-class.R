@@ -32,8 +32,6 @@ newEmptyXString <- function(class) new(class, xdata=RawPtr(0))
 ### Accessor-like methods.
 ###
 
-setMethod("length", "XString", function(x) x@length)
-
 setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) length(x))
 
 
