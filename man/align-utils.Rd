@@ -49,8 +49,10 @@
   \S4method{coverage}{AlignedXStringSet0}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
   \S4method{coverage}{PairwiseAlignedFixedSubject}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
   compareStrings(pattern, subject)
-  \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x, baseOnly=FALSE, freq=FALSE,
-                  gapCode="-", endgapCode="-")
+
+  \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x,
+                  as.prob=FALSE, freq=FALSE, shift=0L, width=NULL,
+                  baseOnly=FALSE, gapCode="-", endgapCode="-")
 }
 
 \details{
@@ -94,6 +96,14 @@
     \code{PairwiseAlignedXStringSet} object, then \code{subject} must be
     missing.
   }
+  \item{as.prob}{
+    If \code{TRUE} then probabilities are reported,
+    otherwise counts (the default).
+  }
+  \item{freq}{
+    This argument is deprecated.
+    Please use the \code{as.prob} argument instead.
+  }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.
     If \code{TRUE}, the returned vector only contains frequencies for the
@@ -102,10 +112,6 @@
     When \code{x} is a \link{BString} object (or an \link{XStringViews}
     object with a \link{BString} subject, or a \link{BStringSet} object),
     then the \code{baseOnly} argument is ignored.
-  }
-  \item{freq}{
-    If \code{TRUE}, then letter frequencies (per position) are reported,
-    otherwise counts.
   }
   \item{gapCode, endgapCode}{
     The codes in the appropriate \code{\link{alphabet}} to use for the internal

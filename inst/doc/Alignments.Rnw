@@ -894,7 +894,7 @@ file <- system.file("extdata", "someORF.fa", package="Biostrings")
 orf <- read.DNAStringSet(file, "fasta")
 orf
 orf10 <- DNAStringSet(orf, end=10)
-consensusMatrix(orf10, baseOnly=TRUE, freq=TRUE)
+consensusMatrix(orf10, as.prob=TRUE, baseOnly=TRUE)
 @
 
 The information content as defined by Hertz and Stormo 1995 is computed as
@@ -902,7 +902,7 @@ follows:
 <<infco>>=
 informationContent <- function(Lmers) {
  zlog <- function(x) ifelse(x==0,0,log(x))
- co <- consensusMatrix(Lmers, freq=TRUE)
+ co <- consensusMatrix(Lmers, as.prob=TRUE)
  lets <- rownames(co)
  fr <- alphabetFrequency(Lmers, collapse=TRUE)[lets]
  fr <- fr / sum(fr)

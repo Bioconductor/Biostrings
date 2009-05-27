@@ -346,48 +346,48 @@ SEXP XString_letter_frequency(
 
 SEXP XStringSet_letter_frequency(
 	SEXP x,
+	SEXP collapse,
 	SEXP codes,
-	SEXP with_other,
-	SEXP collapse
+	SEXP with_other
 );
 
 SEXP XString_oligo_frequency(
 	SEXP x,
-	SEXP base_codes,
 	SEXP width,
-	SEXP freq,
+	SEXP as_prob,
 	SEXP as_array,
 	SEXP fast_moving_side,
-	SEXP with_labels
+	SEXP with_labels,
+	SEXP base_codes
 );
 
 SEXP XStringSet_oligo_frequency(
 	SEXP x,
-	SEXP base_codes,
 	SEXP width,
-	SEXP freq,
+	SEXP as_prob,
 	SEXP as_array,
 	SEXP fast_moving_side,
 	SEXP with_labels,
-	SEXP simplify_as
+	SEXP simplify_as,
+	SEXP base_codes
 );
 
 SEXP XStringSet_nucleotide_frequency_at(
 	SEXP x,
-	SEXP base_codes,
 	SEXP at,
-	SEXP freq,
+	SEXP as_prob,
 	SEXP as_array,
 	SEXP fast_moving_side,
-	SEXP with_labels
+	SEXP with_labels,
+	SEXP base_codes
 );
 
 SEXP XStringSet_consensus_matrix(
 	SEXP x,
-	SEXP codes,
-	SEXP with_other,
 	SEXP shift,
-	SEXP width
+	SEXP width,
+	SEXP with_other,
+	SEXP codes
 );
 
 

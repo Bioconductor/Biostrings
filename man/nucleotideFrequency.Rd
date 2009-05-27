@@ -20,7 +20,7 @@
 
 
 \title{Calculate the frequency of oligonucleotides in a DNA
-or RNA sequence, plus some related functions}
+  or RNA sequence (and other related functions)}
 
 \description{
   Given a DNA or RNA sequence (or a set of DNA or RNA sequences),
@@ -43,23 +43,23 @@ or RNA sequence, plus some related functions}
 }
 
 \usage{
-  oligonucleotideFrequency(x, width, freq=FALSE, as.array=FALSE,
+  oligonucleotideFrequency(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
                            fast.moving.side="right", with.labels=TRUE, ...)
 
   \S4method{oligonucleotideFrequency}{XStringSet}(x,
-      width, freq=FALSE, as.array=FALSE,
+      width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
       fast.moving.side="right", with.labels=TRUE, simplify.as="matrix")
 
-  dinucleotideFrequency(x, freq=FALSE, as.matrix=FALSE,
+  dinucleotideFrequency(x, as.prob=FALSE, freq=FALSE, as.matrix=FALSE,
                         fast.moving.side="right", with.labels=TRUE, ...)
-  trinucleotideFrequency(x, freq=FALSE, as.array=FALSE,
+  trinucleotideFrequency(x, as.prob=FALSE, freq=FALSE, as.array=FALSE,
                          fast.moving.side="right", with.labels=TRUE, ...)
 
-  nucleotideFrequencyAt(x, at, freq=FALSE, as.array=TRUE,
+  nucleotideFrequencyAt(x, at, as.prob=FALSE, freq=FALSE, as.array=TRUE,
                         fast.moving.side="right", with.labels=TRUE, ...)
 
   ## Some related functions:
-  oligonucleotideTransitions(x, left=1, right=1, freq=FALSE)
+  oligonucleotideTransitions(x, left=1, right=1, as.prob=FALSE, freq=FALSE)
   mkAllStrings(alphabet, width, fast.moving.side="right")
 }
 
@@ -81,9 +81,13 @@ or RNA sequence, plus some related functions}
     An integer vector containing the positions to look at in each element
     of \code{x}.
   }
-  \item{freq}{
-    If \code{TRUE} then relative frequencies are reported,
+  \item{as.prob}{
+    If \code{TRUE} then probabilities are reported,
     otherwise counts (the default).
+  }
+  \item{freq}{
+    This argument is deprecated.
+    Please use the \code{as.prob} argument instead.
   }
   \item{as.array,as.matrix}{
     Controls the "shape" of the returned object.
@@ -215,7 +219,7 @@ or RNA sequence, plus some related functions}
   ## ---------------------------------------------------------------------
   ## Get nucleotide transition matrices for yeast1
   oligonucleotideTransitions(yeast1)
-  oligonucleotideTransitions(yeast1, 2, freq=TRUE)
+  oligonucleotideTransitions(yeast1, 2, as.prob=TRUE)
 
   ## ---------------------------------------------------------------------
   ## D. ADVANCED *Frequency() EXAMPLES

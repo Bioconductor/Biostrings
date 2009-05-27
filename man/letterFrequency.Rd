@@ -18,8 +18,7 @@
 \alias{hasOnlyBaseLetters,RNAString-method}
 \alias{hasOnlyBaseLetters,RNAStringSet-method}
 \alias{hasOnlyBaseLetters,XStringViews-method}
-\alias{hasOnlyBaseLetters,MaskedDNAString-method}
-\alias{hasOnlyBaseLetters,MaskedRNAString-method}
+\alias{hasOnlyBaseLetters,MaskedXString-method}
 
 \alias{uniqueLetters}
 \alias{uniqueLetters,XString-method}
@@ -63,13 +62,11 @@ sequence, or the consensus matrix of a set of sequences}
 }
 
 \usage{
-  alphabetFrequency(x, baseOnly=FALSE, freq=FALSE, ...)
+  alphabetFrequency(x, as.prob=FALSE, freq=FALSE, ...)
   hasOnlyBaseLetters(x)
   uniqueLetters(x)
 
-  \S4method{consensusMatrix}{character}(x, freq=FALSE)
-  \S4method{consensusMatrix}{XStringSet}(x,
-      baseOnly=FALSE, freq=FALSE, shift=0L, width=NULL)
+  consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
 
   \S4method{consensusString}{matrix}(x)
   \S4method{consensusString}{XStringSet}(x, shift=0L, width=NULL)
@@ -91,23 +88,25 @@ sequence, or the consensus matrix of a set of sequences}
     or an \link{XStringSet} or \link{XStringViews} object
     for \code{consensusString}.
   }
-  \item{baseOnly}{
-    \code{TRUE} or \code{FALSE}.
-    If \code{TRUE}, the returned vector (or matrix) only contains the
-    frequencies of the letters that belong to the "base" alphabet
-    of \code{x} i.e. to the alphabet returned by
-    \code{alphabet(x, baseOnly=TRUE)}.
-    Note that when \code{x} is not a DNA or RNA input, then
-    specifying \code{baseOnly} has no effect.
+  \item{as.prob}{
+    If \code{TRUE} then probabilities are reported,
+    otherwise counts (the default).
   }
   \item{freq}{
-    If \code{TRUE} then relative frequencies are reported,
-    otherwise counts (the default).
+    This argument is deprecated.
+    Please use the \code{as.prob} argument instead.
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
+
     For the \link{XStringViews} and \link{XStringSet} methods,
     the \code{collapse} argument is accepted.
+
+    For DNA or RNA input, the \code{baseOnly} argument is accepted.
+    If \code{baseOnly} is \code{TRUE}, the returned vector (or matrix)
+    only contains the frequencies of the letters that belong to the
+    "base" alphabet of \code{x} i.e. to the alphabet returned by
+    \code{alphabet(x, baseOnly=TRUE)}.
   }
   \item{shift}{
     An integer vector (recycled to the length of \code{x}) specifying how

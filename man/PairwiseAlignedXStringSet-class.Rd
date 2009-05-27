@@ -214,7 +214,7 @@
 
   \describe{
     \item{}{
-      \code{consensusMatrix(x, baseOnly=FALSE, freq=FALSE, gapCode="-",
+      \code{consensusMatrix(x, as.prob=FALSE, baseOnly=FALSE, gapCode="-",
         endgapCode="-")}
       See `\link{consensusMatrix}` for more information.
     }

@@ -326,8 +326,8 @@ SEXP XString_letter_frequency(SEXP x, SEXP codes, SEXP with_other)
 	return ans;
 }
 
-SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
-		SEXP collapse)
+SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
+		SEXP codes, SEXP with_other)
 {
 	SEXP ans;
 	int ans_width, x_length, *ans_row, i;
@@ -359,9 +359,10 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP codes, SEXP with_other,
 	return ans;
 }
 
-SEXP XString_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
-		SEXP freq, SEXP as_array,
-		SEXP fast_moving_side, SEXP with_labels)
+SEXP XString_oligo_frequency(SEXP x, SEXP width,
+		SEXP as_prob, SEXP as_array,
+		SEXP fast_moving_side, SEXP with_labels,
+		SEXP base_codes)
 {
 	SEXP ans, base_labels;
 	TwobitEncodingBuffer teb;
@@ -369,7 +370,7 @@ SEXP XString_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
 	RoSeq X;
 
 	width0 = INTEGER(width)[0];
-	as_integer = !LOGICAL(freq)[0];
+	as_integer = !LOGICAL(as_prob)[0];
 	as_array0 = LOGICAL(as_array)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
 	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
@@ -385,9 +386,10 @@ SEXP XString_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
 	return ans;
 }
 
-SEXP XStringSet_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
-		SEXP freq, SEXP as_array,
-		SEXP fast_moving_side, SEXP with_labels, SEXP simplify_as)
+SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
+		SEXP as_prob, SEXP as_array,
+		SEXP fast_moving_side, SEXP with_labels, SEXP simplify_as,
+		SEXP base_codes)
 {
 	SEXP ans, base_labels, ans_elt;
 	TwobitEncodingBuffer teb;
@@ -397,7 +399,7 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
 	RoSeq x_elt;
 
 	width0 = INTEGER(width)[0];
-	as_integer = !LOGICAL(freq)[0];
+	as_integer = !LOGICAL(as_prob)[0];
 	as_array0 = LOGICAL(as_array)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
 	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
@@ -445,9 +447,10 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP base_codes, SEXP width,
 	return ans;
 }
 
-SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP base_codes, SEXP at,
-		SEXP freq, SEXP as_array,
-		SEXP fast_moving_side, SEXP with_labels)
+SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP at,
+		SEXP as_prob, SEXP as_array,
+		SEXP fast_moving_side, SEXP with_labels,
+		SEXP base_codes)
 {
 	SEXP ans, base_labels;
 	TwobitEncodingBuffer teb;
@@ -456,7 +459,7 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP base_codes, SEXP at,
 	CachedXStringSet cached_x;
 	RoSeq x_elt;
 
-	as_integer = !LOGICAL(freq)[0];
+	as_integer = !LOGICAL(as_prob)[0];
 	as_array0 = LOGICAL(as_array)[0];
 	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
 	teb = _new_TwobitEncodingBuffer(base_codes, LENGTH(at), invert_twobit_order);
@@ -492,8 +495,8 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP base_codes, SEXP at,
 	return ans;
 }
 
-SEXP XStringSet_consensus_matrix(SEXP x, SEXP codes, SEXP with_other,
-		SEXP shift, SEXP width)
+SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
+		SEXP with_other, SEXP codes)
 {
 	SEXP ans;
 	int ans_nrow, ans_ncol, ans_length, x_length, i, k, s, x_elt_end;
