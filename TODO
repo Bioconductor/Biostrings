@@ -240,6 +240,15 @@ MISCELLANEOUS
 - Remove old matchprobes functions: complementSeq(), reverseSeq(),
   revcompDNA(), revcompRNA(), matchprobes().
 
+- Removed the 'freq' argument from the following functions:
+    alphabetFrequency
+    oligonucleotideFrequency
+    dinucleotideFrequency
+    trinucleotideFrequency
+    oligonucleotideTransitions
+    nucleotideFrequencyAt
+    consensusMatrix
+
 
 
 Long term TODO list
