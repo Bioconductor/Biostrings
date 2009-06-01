@@ -6,7 +6,7 @@
 
 /*
  * Table used for fast look up between A, C, G, T internal codes and the
- * corresponding 0-based row indice (the row offset) in the PWM:
+ * corresponding 0-based row index (the row offset) in the PWM:
  *   A internal code     -> 0
  *   C internal code     -> 1
  *   G internal code     -> 2
