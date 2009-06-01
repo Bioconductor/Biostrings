@@ -16,7 +16,7 @@
 ###
 
 setClass("MIndex",
-    contains="Sequence",
+    contains="RangesList",
     representation(
         "VIRTUAL",
         width="integer",
