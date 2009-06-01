@@ -124,10 +124,6 @@ UTILITIES
 
 STRING MATCHING
 
-- Move consensusMatrix()/consensusString() from align-utils.R to match-utils.R
-  (This stuff needs to belong to the STRING MATCHING component of the package,
-  not to the STRING ALIGNMENT component.)
-
 - Add a Biostrings.Rnw vignette with a short overview of the string
   matching/aligning capabilities and a "how to choose the right string
   matching/aligning function" diagram.
