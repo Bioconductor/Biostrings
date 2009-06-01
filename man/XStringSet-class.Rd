@@ -65,22 +65,29 @@
 
 \alias{append,XStringSet,XStringSet-method}
 
-\alias{union,XStringSet,XStringSet-method}
-\alias{intersect,XStringSet,XStringSet-method}
-\alias{setdiff,XStringSet,XStringSet-method}
-\alias{setequal,XStringSet,XStringSet-method}
-
-\alias{unlist,XStringSet-method}
-\alias{as.character,XStringSet-method}
-\alias{toString,XStringSet-method}
-\alias{as.matrix,XStringSet-method}
-
 \alias{order,XStringSet-method}
 \alias{sort,XStringSet-method}
 \alias{rank,XStringSet-method}
 
 \alias{duplicated,XStringSet-method}
 \alias{unique,XStringSet-method}
+
+\alias{union,XStringSet,XStringSet-method}
+\alias{intersect,XStringSet,XStringSet-method}
+\alias{setdiff,XStringSet,XStringSet-method}
+\alias{setequal,XStringSet,XStringSet-method}
+
+\alias{\%in\%,character,XStringSet-method}
+\alias{\%in\%,XString,XStringSet-method}
+\alias{\%in\%,XStringSet,XStringSet-method}
+\alias{match,character,XStringSet-method}
+\alias{match,XString,XStringSet-method}
+\alias{match,XStringSet,XStringSet-method}
+
+\alias{unlist,XStringSet-method}
+\alias{as.character,XStringSet-method}
+\alias{toString,XStringSet-method}
+\alias{as.matrix,XStringSet-method}
 
 
 \title{XStringSet objects}
@@ -324,7 +331,7 @@
   }
 }
 
-\section{Set Operations}{
+\section{Set operations}{
   In the code snippets below,
   \code{x} and \code{y} are XStringSet objects
 
@@ -344,6 +351,25 @@
     \item{}{
      \code{setequal(x, y)}:
       Set equality of \code{x} to \code{y}.
+    }
+  }
+}
+
+\section{Identical value matching}{
+  In the code snippets below,
+  \code{x} is a character vector, XString, or XStringSet object and
+  \code{table} is an XStringSet object.
+
+  \describe{
+    \item{}{
+      \code{x \%in\% table}:
+      Returns a logical vector indicating which elements in \code{x} match
+      identically with an element in \code{table}.
+    }
+    \item{}{
+      \code{match(x, table, nomatch = NA_integer_, incomparables = NULL)}:
+      Returns an integer vector containing the first positions of an identical
+      match in \code{table} for the elements in \code{x}.
     }
   }
 }

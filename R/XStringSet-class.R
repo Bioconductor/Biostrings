@@ -598,6 +598,56 @@ setMethod("setequal", c("XStringSet", "XStringSet"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "%in%" and match methods.
+###
+
+setMethod("%in%", c("character", "XStringSet"),
+    function(x, table) {
+        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        x %in% table
+    }
+)
+
+setMethod("%in%", c("XString", "XStringSet"),
+    function(x, table) {
+        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        x <- as.character(x)
+        x %in% table
+    }
+)
+
+setMethod("%in%", c("XStringSet", "XStringSet"),
+    function(x, table) {
+        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        x <- as.character(x)
+        x %in% table
+    }
+)
+
+setMethod("match", c("character", "XStringSet"),
+    function (x, table, nomatch = NA_integer_, incomparables = NULL) {
+        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        match(x, table, nomatch = nomatch, incomparables = incomparables)
+    }
+)
+
+setMethod("match", c("XString", "XStringSet"),
+    function (x, table, nomatch = NA_integer_, incomparables = NULL) {
+        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        x <- as.character(x)
+        match(x, table, nomatch = nomatch, incomparables = incomparables)
+    }
+)
+
+setMethod("match", c("XStringSet", "XStringSet"),
+    function (x, table, nomatch = NA_integer_, incomparables = NULL) {
+        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        x <- as.character(x)
+        match(x, table, nomatch = nomatch, incomparables = incomparables)
+    }
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality.
 ###
 
