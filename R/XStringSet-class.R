@@ -626,23 +626,23 @@ setMethod("%in%", c("XStringSet", "XStringSet"),
 
 setMethod("match", c("character", "XStringSet"),
     function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
+        table <- as.character(table)
         match(x, table, nomatch = nomatch, incomparables = incomparables)
     }
 )
 
 setMethod("match", c("XString", "XStringSet"),
     function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
         x <- as.character(x)
+        table <- as.character(table)
         match(x, table, nomatch = nomatch, incomparables = incomparables)
     }
 )
 
 setMethod("match", c("XStringSet", "XStringSet"),
     function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
         x <- as.character(x)
+        table <- as.character(table)
         match(x, table, nomatch = nomatch, incomparables = incomparables)
     }
 )
