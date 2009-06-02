@@ -323,6 +323,18 @@ static int cmp_RoSeq_indices(const void *p1, const void *p2)
 	return cmp_RoSeq(base_seq + i1, base_seq + i2);
 }
 
+static int cmp_RoSeq_indices_for_ordering(const void *p1, const void *p2)
+{
+	int i1, i2, val;
+
+	i1 = *((const int *) p1);
+	i2 = *((const int *) p2);
+	val = cmp_RoSeq(base_seq + i1, base_seq + i2);
+	if (val == 0)
+		val = i1 - i2;
+	return val;
+}
+
 void _get_RoSeqs_order(const RoSeqs *seqs, int *order, int base1)
 {
 	int i;
@@ -336,7 +348,7 @@ void _get_RoSeqs_order(const RoSeqs *seqs, int *order, int base1)
 		for (i = 0; i < seqs->nelt; i++)
 			order[i] = i + 1; // 1-based indices
 	}
-	qsort(order, seqs->nelt, sizeof(int), cmp_RoSeq_indices);
+	qsort(order, seqs->nelt, sizeof(int), cmp_RoSeq_indices_for_ordering);
 	return;
 }
 
