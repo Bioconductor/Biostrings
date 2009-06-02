@@ -754,16 +754,15 @@ setMethod("rank", "XStringSet",
     .Call("XStringSet_not_duplicated", x, PACKAGE="Biostrings")
 
 setMethod("duplicated", "XStringSet",
-        function(x, incomparables=FALSE, ...)
-        {
-            .Call("XStringSet_duplicated", x, PACKAGE="Biostrings")
-        }
+    function(x, incomparables=FALSE, ...)
+    {
+        .Call("XStringSet_duplicated", x, PACKAGE="Biostrings")
+    }
 )
 
 setMethod("unique", "XStringSet",
-        function(x, incomparables=FALSE, ...)
-        {
-            x[.XStringSet_not_duplicated(x, incomparables=incomparables, ...)]
-        }
+    function(x, incomparables=FALSE, ...)
+    {
+        x[.XStringSet_not_duplicated(x, incomparables=incomparables, ...)]
+    }
 )
-
