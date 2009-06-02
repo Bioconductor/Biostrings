@@ -602,26 +602,18 @@ setMethod("setequal", c("XStringSet", "XStringSet"),
 ###
 
 setMethod("%in%", c("character", "XStringSet"),
-    function(x, table) {
-        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
-        x %in% table
-    }
+    function(x, table)
+        XStringSet(xsbasetype(table), x) %in% table
 )
 
 setMethod("%in%", c("XString", "XStringSet"),
-    function(x, table) {
-        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
-        x <- as.character(x)
-        x %in% table
-    }
+    function(x, table)
+        XStringSet(xsbasetype(table), x) %in% table
 )
 
 setMethod("%in%", c("XStringSet", "XStringSet"),
-    function(x, table) {
-        table <- as.character(table[nchar(table) %in% unique(nchar(x))])
-        x <- as.character(x)
-        x %in% table
-    }
+    function(x, table)
+        .Call("XStringSet_in_set", x, table, PACKAGE = "Biostrings")
 )
 
 setMethod("match", c("character", "XStringSet"),
@@ -735,7 +727,8 @@ setMethod("sort", "XStringSet",
 
 setMethod("rank", "XStringSet",
     function(x, na.last = TRUE,
-             ties.method = c("average", "first", "random", "max", "min")) {
+             ties.method = c("average", "first", "random", "max", "min"))
+    {
          if (!missing(na.last) && !isTRUE(na.last))
              warning("argument 'na.last' is ignored when ordering XStringSet objects")
          if (!missing(ties.method) && ties.method != "min")
@@ -751,18 +744,14 @@ setMethod("rank", "XStringSet",
 
 .XStringSet_not_duplicated <-
     function(x, incomparables=FALSE, ...)
-    .Call("XStringSet_not_duplicated", x, PACKAGE="Biostrings")
+        .Call("XStringSet_not_duplicated", x, PACKAGE="Biostrings")
 
 setMethod("duplicated", "XStringSet",
     function(x, incomparables=FALSE, ...)
-    {
         .Call("XStringSet_duplicated", x, PACKAGE="Biostrings")
-    }
 )
 
 setMethod("unique", "XStringSet",
     function(x, incomparables=FALSE, ...)
-    {
         x[.XStringSet_not_duplicated(x, incomparables=incomparables, ...)]
-    }
 )

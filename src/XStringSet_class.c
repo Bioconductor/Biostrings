@@ -284,7 +284,7 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 
 
 /****************************************************************************
- * Getting the order of an XStringSet object.
+ * Getting the order or rank of an XStringSet object.
  */
 
 /*
@@ -353,6 +353,30 @@ SEXP XStringSet_not_duplicated(SEXP x)
 	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
 	PROTECT(ans = NEW_LOGICAL(x_length));
 	_get_RoSeqs_not_duplicated(&seqs, INTEGER(ans));
+	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
+ * Identical value matching within an XStringSet object.
+ */
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_in_set(SEXP x, SEXP table)
+{
+	SEXP ans;
+	int x_length, table_length;
+	RoSeqs seqs, set;
+
+	x_length = _get_XStringSet_length(x);
+	table_length = _get_XStringSet_length(table);
+	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	set = _new_RoSeqs_from_XStringSet(table_length, table);
+	PROTECT(ans = NEW_LOGICAL(x_length));
+	_get_RoSeqs_in_set(&seqs, &set, INTEGER(ans));
 	UNPROTECT(1);
 	return ans;
 }

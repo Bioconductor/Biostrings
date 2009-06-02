@@ -390,3 +390,29 @@ void _get_RoSeqs_not_duplicated(const RoSeqs *seqs, int *not_duplicated)
 	}
     return;
 }
+
+void _get_RoSeqs_in_set(const RoSeqs *seqs, const RoSeqs *set, int *in_set)
+{
+	int i, j, *seqs_order, *set_order;
+	void *curr_seq;
+
+	seqs_order = (int *) R_alloc(seqs->nelt, sizeof(int));
+	_get_RoSeqs_order(seqs, seqs_order, 0);
+
+	set_order = (int *) R_alloc(set->nelt, sizeof(int));
+	_get_RoSeqs_order(set, set_order, 0);
+
+	j = 0; // set index
+	for (i = 0; i < seqs->nelt; i++) {
+		curr_seq = (void*) (seqs->elts + seqs_order[i]);
+		while ((j < set->nelt) &&
+			   (cmp_RoSeq(curr_seq, set->elts + set_order[j]) > 0))
+			j++;
+		if ((j < set->nelt) &&
+			(cmp_RoSeq(curr_seq, set->elts + set_order[j]) == 0))
+			in_set[seqs_order[i]] = 1;
+		else
+			in_set[seqs_order[i]] = 0;
+	}
+	return;
+}
