@@ -371,6 +371,10 @@ void _get_RoSeqs_rank(const RoSeqs *seqs, int *rank)
 }
 
 
+/*****************************************************************************
+ * Getting duplicated information for a RoSeqs struct.
+ */
+
 void _get_RoSeqs_duplicated(const RoSeqs *seqs, int *duplicated)
 {
     int i, *order;
@@ -402,6 +406,11 @@ void _get_RoSeqs_not_duplicated(const RoSeqs *seqs, int *not_duplicated)
 	}
     return;
 }
+
+
+/*****************************************************************************
+ * Getting identical matching information for a RoSeqs struct.
+ */
 
 void _get_RoSeqs_in_set(const RoSeqs *seqs, const RoSeqs *set, int *in_set)
 {
