@@ -617,25 +617,26 @@ setMethod("%in%", c("XStringSet", "XStringSet"),
 )
 
 setMethod("match", c("character", "XStringSet"),
-    function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        table <- as.character(table)
-        match(x, table, nomatch = nomatch, incomparables = incomparables)
-    }
+    function (x, table, nomatch = NA_integer_, incomparables = NULL)
+        match(XStringSet(xsbasetype(table), x), table, nomatch = nomatch,
+              incomparables = incomparables)
 )
 
 setMethod("match", c("XString", "XStringSet"),
-    function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        x <- as.character(x)
-        table <- as.character(table)
-        match(x, table, nomatch = nomatch, incomparables = incomparables)
-    }
+    function (x, table, nomatch = NA_integer_, incomparables = NULL)
+        match(XStringSet(xsbasetype(table), x), table, nomatch = nomatch,
+              incomparables = incomparables)
 )
 
 setMethod("match", c("XStringSet", "XStringSet"),
     function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        x <- as.character(x)
-        table <- as.character(table)
-        match(x, table, nomatch = nomatch, incomparables = incomparables)
+        if (!is.null(incomparables))
+            stop("'incomparables' argument is not supported")
+        if (!isSingleIntegerOrNA(nomatch))
+            stop("'nomatch' must be a single integer")
+        if (is.na(nomatch))
+            nomatch <- NA_integer_
+        .Call("XStringSet_match", x, table, nomatch, PACKAGE = "Biostrings")
     }
 )
 

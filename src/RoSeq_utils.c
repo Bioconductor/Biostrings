@@ -314,15 +314,6 @@ static int cmp_RoSeq(const void *p1, const void *p2)
 
 static const RoSeq *base_seq;
 
-static int cmp_RoSeq_indices(const void *p1, const void *p2)
-{
-	int i1, i2;
-
-	i1 = *((const int *) p1);
-	i2 = *((const int *) p2);
-	return cmp_RoSeq(base_seq + i1, base_seq + i2);
-}
-
 static int cmp_RoSeq_indices_for_ordering(const void *p1, const void *p2)
 {
 	int i1, i2, val;
@@ -434,6 +425,34 @@ void _get_RoSeqs_in_set(const RoSeqs *seqs, const RoSeqs *set, int *in_set)
 			in_set[seqs_order[i]] = 1;
 		else
 			in_set[seqs_order[i]] = 0;
+	}
+	return;
+}
+
+
+void _get_RoSeqs_match(const RoSeqs *seqs, const RoSeqs *set, int nomatch,
+		               int *match_pos)
+{
+	int i, j, *seqs_order, *set_order;
+	void *curr_seq;
+
+	seqs_order = (int *) R_alloc(seqs->nelt, sizeof(int));
+	_get_RoSeqs_order(seqs, seqs_order, 0);
+
+	set_order = (int *) R_alloc(set->nelt, sizeof(int));
+	_get_RoSeqs_order(set, set_order, 0);
+
+	j = 0; // set index
+	for (i = 0; i < seqs->nelt; i++) {
+		curr_seq = (void*) (seqs->elts + seqs_order[i]);
+		while ((j < set->nelt) &&
+			   (cmp_RoSeq(curr_seq, set->elts + set_order[j]) > 0))
+			j++;
+		if ((j < set->nelt) &&
+			(cmp_RoSeq(curr_seq, set->elts + set_order[j]) == 0))
+			match_pos[seqs_order[i]] = set_order[j] + 1;
+		else
+			match_pos[seqs_order[i]] = nomatch;
 	}
 	return;
 }

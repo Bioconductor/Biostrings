@@ -31,6 +31,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_duplicated, 1),
 	CALLMETHOD_DEF(XStringSet_not_duplicated, 1),
 	CALLMETHOD_DEF(XStringSet_in_set, 2),
+	CALLMETHOD_DEF(XStringSet_match, 3),
 
 /* xscat.c */
 	CALLMETHOD_DEF(XString_xscat, 1),
