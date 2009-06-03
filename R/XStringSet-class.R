@@ -632,10 +632,9 @@ setMethod("match", c("XStringSet", "XStringSet"),
     function (x, table, nomatch = NA_integer_, incomparables = NULL) {
         if (!is.null(incomparables))
             stop("'incomparables' argument is not supported")
-        if (!isSingleIntegerOrNA(nomatch))
+        if (!isSingleNumberOrNA(nomatch))
             stop("'nomatch' must be a single integer")
-        if (is.na(nomatch))
-            nomatch <- NA_integer_
+        nomatch <- as.integer(nomatch)
         .Call("XStringSet_match", x, table, nomatch, PACKAGE = "Biostrings")
     }
 )
