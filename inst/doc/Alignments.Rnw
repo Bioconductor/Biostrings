@@ -8,8 +8,7 @@
 %
 \documentclass[10pt]{article}
 
-\usepackage{amsmath}
-\usepackage[authoryear,round]{natbib}
+\usepackage{times}
 \usepackage{hyperref}
 
 \textwidth=6.5in
