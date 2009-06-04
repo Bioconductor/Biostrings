@@ -8,6 +8,7 @@
 \alias{write.XStringSet}
 \alias{write.XStringViews}
 
+\alias{fastq.geometry}
 \alias{FASTArecordsToCharacter}
 \alias{CharacterToFASTArecords}
 \alias{FASTArecordsToXStringViews}
@@ -27,18 +28,21 @@
 }
 
 \usage{
-  ## XStringSet object
+  ## XStringSet object:
   read.BStringSet(file, format)
   read.DNAStringSet(file, format)
   read.RNAStringSet(file, format)
   read.AAStringSet(file, format)
   write.XStringSet(x, file="", format, width=80)
 
-  ## XStringViews object
+  ## XStringViews object:
   read.XStringViews(file, format, subjectClass, collapse="")
   write.XStringViews(x, file="", format, width=80)
 
-  ## Some related helper functions
+  ## FASTQ utilities:
+  fastq.geometry(file)
+
+  ## Some related helper functions:
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
   CharacterToFASTArecords(x)
   FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse="")
@@ -93,8 +97,8 @@
 
 \details{
   Only FASTA and FASTQ files are supported for now. The identifiers and
-  qualities stored in the FASTQ records are ignored: only the sequences
-  are returned.
+  qualities stored in the FASTQ records are ignored (only the sequences
+  are returned).
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
   \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.XStringViews}
@@ -104,6 +108,12 @@
   FASTQ files must have the same "width" (i.e. all their sequences must have
   the same length) and the sequences from all the files are stored in the
   returned object in the order they were read.
+
+  The \code{fastq.geometry} utility returns an integer vector describing
+  the "geometry" of the FASTQ files i.e. a vector of length 2 where the
+  first element is the total number of sequences contained in the FASTQ
+  files and the second element the "width" of these files (this width is
+  \code{NA} if the files have different "widths").
 
   Writing functions \code{write.XStringSet} and \code{write.XStringViews}
   write an \link{XStringSet} or \link{XStringViews} object to a file or
@@ -141,7 +151,9 @@
   ## B. READ FASTQ FILES
   ## ---------------------------------------------------------------------
   file <- system.file("extdata", "s_1_sequence.txt", package="Biostrings")
-  read.DNAStringSet(file, "fastq")  # FASTQ qualities are dropped
+  fastq.geometry(file)
+  read.DNAStringSet(file, "fastq")  # only the FASTQ sequences are returned
+                                    # (identifiers and qualities are dropped)
 
   ## ---------------------------------------------------------------------
   ## C. SOME RELATED HELPER FUNCTIONS

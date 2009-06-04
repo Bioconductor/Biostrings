@@ -1,12 +1,5 @@
 ### =========================================================================
 ### Input/output of XStringSet objects
-### ------------------------------------
-###
-### Typical use:
-###   file <- system.file("extdata", "someORF.fa", package="Biostrings")
-###   v <- read.DNAStringSet(file(file), "fasta", "DNAString")
-###   write.XStringSet(v, file="someORF2.fa", "fasta")
-###
 ### -------------------------------------------------------------------------
 
 
@@ -225,12 +218,12 @@ fastq.geometry <- function(file)
         stop("'subjectClass' must be \"DNAString\"")
     on.exit(.Call("fasta_io_cleanup", PACKAGE="Biostrings"))
     C_ans <- .Call("read_fastq", file, drop.quality, PACKAGE="Biostrings")
-    seq_width <- rep.int(C_ans[[1]][2], C_ans[[1]][1])
-    ans_seq <- as(successiveViews(C_ans[[2]], seq_width), "XStringSet")
+    views_width <- rep.int(C_ans[[1]][2], C_ans[[1]][1])
+    fastq_seqs <- successiveViews(C_ans[[2]], views_width)
     if (drop.quality)
-        return(ans_seq)
-    ans_qual <- as(successiveViews(C_ans[[3]], seq_width), "XStringSet")
-    return(list(seq=ans_seq, qual=ans_qual))
+        return(fastq_seqs)
+    fastq_quals <- successiveViews(C_ans[[3]], views_width)
+    return(list(seq=fastq_seqs, qual=fastq_quals))
 }
 
 read.XStringViews <- function(file, format, subjectClass, collapse="")
