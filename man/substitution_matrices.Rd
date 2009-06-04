@@ -162,12 +162,14 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   ## See how the substitution matrix influences the alignment
   pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
 
-  ## Compare our BLOSUM62 with BLOSUM62 from ftp://ftp.ncbi.nih.gov/blast/matrices/
-  data(BLOSUM62)
-  BLOSUM62["Q", "Z"]
-  file <- "ftp://ftp.ncbi.nih.gov/blast/matrices/BLOSUM62"
-  b62 <- as.matrix(read.table(file, check.names=FALSE))
-  b62["Q", "Z"]
+  if (interactive()) {
+    ## Compare our BLOSUM62 with BLOSUM62 from ftp://ftp.ncbi.nih.gov/blast/matrices/
+    data(BLOSUM62)
+    BLOSUM62["Q", "Z"]
+    file <- "ftp://ftp.ncbi.nih.gov/blast/matrices/BLOSUM62"
+    b62 <- as.matrix(read.table(file, check.names=FALSE))
+    b62["Q", "Z"]
+  }
 }
 
 \keyword{utilities}
