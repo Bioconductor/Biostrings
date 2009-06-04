@@ -379,7 +379,7 @@ void _get_RoSeqs_duplicated(const RoSeqs *seqs, int *duplicated)
 	order = (int *) R_alloc(seqs->nelt, sizeof(int));
 	_get_RoSeqs_order(seqs, order, 0);
 
-	if (seqs->nelt > 1) {
+	if (seqs->nelt > 0) {
 		duplicated[order[0]] = 0;
 	    for (i = 1; i < seqs->nelt; i++)
 	        duplicated[order[i]] =
@@ -395,7 +395,7 @@ void _get_RoSeqs_not_duplicated(const RoSeqs *seqs, int *not_duplicated)
 	order = (int *) R_alloc(seqs->nelt, sizeof(int));
 	_get_RoSeqs_order(seqs, order, 0);
 
-	if (seqs->nelt > 1) {
+	if (seqs->nelt > 0) {
 		not_duplicated[order[0]] = 1;
 	    for (i = 1; i < seqs->nelt; i++)
 	        not_duplicated[order[i]] =
