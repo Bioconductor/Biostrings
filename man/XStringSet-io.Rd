@@ -47,14 +47,15 @@
 
 \arguments{
   \item{file}{
-    Either a character string naming a file or a connection open
-    for reading or writing.
+    A character vector with no NAs.
     If \code{""} (the default for \code{write.XStringSet} and
     \code{write.XStringViews}), then the functions write to the standard
     output connection (the console) unless redirected by \code{sink}.
   }
   \item{format}{
-    Only \code{"fasta"} is supported for now.
+    Either \code{"fasta"} or \code{"fastq"}.
+    Note that \code{write.XStringSet} and \code{write.XStringViews} only
+    support \code{"fasta"} for now.
   }
   \item{x}{
     For \code{write.XStringSet} and \code{write.XStringViews}, the object to
@@ -86,21 +87,27 @@
   }
   \item{use.names}{
     Whether or not the description line preceding each FASTA records should be
-    used to set the names of the returned vector.
+    used to set the names of the returned object.
   }
 }
 
 \details{
-  Only FASTA files are supported for now.
+  Only FASTA and FASTQ files are supported for now. The identifiers and
+  qualities stored in the FASTQ records are ignored: only the sequences
+  are returned.
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
   \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.XStringViews}
   load sequences from a file into an \link{XStringSet} or \link{XStringViews}
-  object.
+  object. Only one FASTA file, but more than one FASTQ file, can be read at a
+  time (by passing a character vector of length > 1). In that case, all the
+  FASTQ files must have the same "width" (i.e. all their sequences must have
+  the same length) and the sequences from all the files are stored in the
+  returned object in the order they were read.
 
   Writing functions \code{write.XStringSet} and \code{write.XStringViews}
   write an \link{XStringSet} or \link{XStringViews} object to a file or
-  connection.
+  connection. They only support the FASTA format for now.
 
   \code{FASTArecordsToCharacter}, \code{CharacterToFASTArecords},
   \code{FASTArecordsToXStringViews} and \code{XStringSetToFASTArecords}
@@ -122,11 +129,23 @@
 }
 
 \examples{
+  ## ---------------------------------------------------------------------
+  ## A. READ/WRITE FASTA FILES
+  ## ---------------------------------------------------------------------
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   x <- read.DNAStringSet(file, "fasta")
   x
-  write.XStringSet(x, format="fasta") # writes to the console
+  write.XStringSet(x, format="fasta")  # writes to the console
 
+  ## ---------------------------------------------------------------------
+  ## B. READ FASTQ FILES
+  ## ---------------------------------------------------------------------
+  file <- system.file("extdata", "s_1_sequence.txt", package="Biostrings")
+  read.DNAStringSet(file, "fastq")  # FASTQ qualities are dropped
+
+  ## ---------------------------------------------------------------------
+  ## C. SOME RELATED HELPER FUNCTIONS
+  ## ---------------------------------------------------------------------
   ## Converting 'x'...
   ## ... to a list of FASTA records (as one returned by the "readFASTA" function)
   x1 <- XStringSetToFASTArecords(x)

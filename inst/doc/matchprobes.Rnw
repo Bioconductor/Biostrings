@@ -190,12 +190,8 @@ probe sequences is 25, and since we start counting at 1, the middle
 position is 13.
 %
 <<pm2mm,>>=
-pm2mm <- function(probes)
-{
-    parts <- threebands(DNAStringSet(probes), start=13, end=13)
-    xscat(parts$left, complement(parts$middle), parts$right)
-}
-mm <- pm2mm(pm)
+mm <- pm
+subseq(mm, start=13, width=1) <- complement(subseq(mm, start=13, width=1))
 cat(as.character(pm[[1]]), as.character(mm[[1]]), sep="\n")
 @
 %

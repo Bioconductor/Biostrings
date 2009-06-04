@@ -352,6 +352,13 @@ SEXP RawPtr_loadFASTA(
 	SEXP lkup
 );
 
+SEXP fastq_geometry(SEXP filepath);
+
+SEXP read_fastq(
+	SEXP filepath,
+	SEXP drop_quality
+);
+
 
 /* letter_frequency.c */
 

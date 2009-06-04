@@ -5,6 +5,9 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 #include <ctype.h> /* for isspace() */
+#include <stdlib.h> /* for abs() */
+#include <math.h> /* for log() */
+#include <limits.h> /* for INT_MAX */
 
 static int debug = 0;
 
@@ -20,14 +23,48 @@ SEXP debug_fasta_io()
 	return R_NilValue;
 }
 
-#define LINEBUF_SIZE 20001
-static char errmsg_buf[200];
+/* This function should go somewhere else */
+static int overflow_mult_int(int a, int b)
+{
+	a = abs(a);
+	b = abs(b);
+	return a != 0 && b != 0 && (log((double) a) + log((double) b) >= log((double) INT_MAX));
+}
+
+static int nfile;
+static FILE **files;
+
+static void open_files(SEXP paths)
+{
+	const char *path_str;
+
+	nfile = 0;
+	files = (FILE **) malloc(LENGTH(paths) * sizeof(FILE *));
+	if (files == NULL)
+		error("malloc() failed");
+	for (nfile = 0; nfile < LENGTH(paths); nfile++) {
+		path_str = translateChar(STRING_ELT(paths, nfile));
+		if ((files[nfile] = fopen(path_str, "r")) == NULL)
+			error("cannot open file '%s'", path_str);
+	}
+	return;
+}
 
 /*
- * Even if the standard FASTA markup is made of 1-letter sympols, we want to
- * be able to eventually support longer sympols.
+ * --- .Call ENTRY POINT ---
  */
-static const char *comment_markup = ";", *desc_markup = ">";
+SEXP fasta_io_cleanup()
+{
+	int i;
+
+	for (i = 0; i < nfile; i++)
+		fclose(files[i]);
+	free(files);
+	return R_NilValue;
+}
+
+#define LINEBUF_SIZE 20001
+static char errmsg_buf[200];
 
 /*
  * Return the number of chars that remain in the buffer after we've removed
@@ -43,6 +80,17 @@ static int rtrim(char *linebuf)
 	return i;
 }
 
+
+/****************************************************************************
+ * Read FASTA.
+ */
+
+/*
+ * Even if the standard FASTA markup is made of 1-letter sympols, we want to
+ * be able to eventually support longer sympols.
+ */
+static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
+
 /*
  * The LENGTHONLY storage handlers keep only the lengths of the description
  * lines and the sequences.
@@ -50,13 +98,13 @@ static int rtrim(char *linebuf)
 
 static IntAE desc_lengths_buf, seq_lengths_buf;
 
-static void add_desc_LENGTHONLY(int seqno, const RoSeq *dataline)
+static void add_desc_LENGTHONLY(int recno, const RoSeq *dataline)
 {
 	IntAE_insert_at(&desc_lengths_buf, desc_lengths_buf.nelt, dataline->nelt);
 	return;
 }
 
-static void add_empty_seq_LENGTHONLY(int seqno)
+static void add_empty_seq_LENGTHONLY(int recno)
 {
 	IntAE_insert_at(&seq_lengths_buf, seq_lengths_buf.nelt, 0);
 	return;
@@ -78,14 +126,14 @@ static void append_to_last_seq_LENGTHONLY(const RoSeq *dataline)
 
 static CharAEAE descs_buf, seqs_buf;
 
-static void add_desc_CHARAEAE(int seqno, const RoSeq *dataline)
+static void add_desc_CHARAEAE(int recno, const RoSeq *dataline)
 {
 	// This works only because dataline->elts is nul-terminated!
 	append_string_to_CharAEAE(&descs_buf, dataline->elts);
 	return;
 }
 
-static void add_empty_seq_CHARAEAE(int seqno)
+static void add_empty_seq_CHARAEAE(int recno)
 {
 	append_string_to_CharAEAE(&seqs_buf, "");
 	return;
@@ -105,34 +153,36 @@ static void append_to_last_seq_CHARAEAE(const RoSeq *dataline)
 
 static SEXP ans_names;
 
-static void add_desc1(int seqno, const RoSeq *dataline)
+static void add_desc1(int recno, const RoSeq *dataline)
 {
 	// This works only because dataline->elts is nul-terminated!
-	SET_STRING_ELT(ans_names, seqno, mkChar(dataline->elts));
+	SET_STRING_ELT(ans_names, recno, mkChar(dataline->elts));
 	return;
 }
 
 /*
- * Return the number of sequences in the file (>= 0) or -1 if an error occured.
- * Ignore empty lines and lines starting with 'comment_markup' like
+ * Return the number of sequences (1 sequence per FASTA record) in the file
+ * (>= 0) or -1 if an error occured.
+ * Ignore empty lines and lines starting with 'FASTA_comment_markup' like
  * in the original Pearson FASTA format.
  * This function is agnostic about how the data that are read are stored in
  * memory, how they will be returned to the user and how they will look to him.
  * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
  * append_to_last_seq().
  */
-static int read_fasta_file(FILE *stream,
-		void (*add_desc)(int seqno, const RoSeq *dataline),
-		void (*add_empty_seq)(int seqno),
+static int parse_FASTA_file(FILE *stream,
+		void (*add_desc)(int recno, const RoSeq *dataline),
+		void (*add_empty_seq)(int recno),
 		void (*append_to_last_seq)(const RoSeq *dataline))
 {
-	int comment_markup_length, desc_markup_length, lineno, seqno;
+	int FASTA_comment_markup_length, FASTA_desc_markup_length,
+	    lineno, recno;
 	char linebuf[LINEBUF_SIZE];
 	RoSeq dataline;
 
-	comment_markup_length = strlen(comment_markup);
-	desc_markup_length = strlen(desc_markup);
-	lineno = seqno = 0;
+	FASTA_comment_markup_length = strlen(FASTA_comment_markup);
+	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
+	lineno = recno = 0;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
 		dataline.nelt = rtrim(linebuf);
@@ -144,30 +194,30 @@ static int read_fasta_file(FILE *stream,
 		}
 		if (dataline.nelt == 0)
 			continue; // we ignore empty lines
-		if (strncmp(linebuf, comment_markup, comment_markup_length) == 0)
+		if (strncmp(linebuf, FASTA_comment_markup, FASTA_comment_markup_length) == 0)
 			continue; // we ignore comment lines
 		dataline.elts = linebuf;
-		if (strncmp(linebuf, desc_markup, desc_markup_length) == 0) {
+		if (strncmp(linebuf, FASTA_desc_markup, FASTA_desc_markup_length) == 0) {
 			if (add_desc != NULL) {
-				dataline.elts += desc_markup_length;
-				dataline.nelt -= desc_markup_length;
-				add_desc(seqno, &dataline);
+				dataline.elts += FASTA_desc_markup_length;
+				dataline.nelt -= FASTA_desc_markup_length;
+				add_desc(recno, &dataline);
 			}
 			if (add_empty_seq != NULL)
-				add_empty_seq(seqno);
-			seqno++;
+				add_empty_seq(recno);
+			recno++;
 		} else {
-			if (seqno == 0) {
+			if (recno == 0) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "\"%s\" expected at beginning of line %d",
-					 desc_markup, lineno);
+					 FASTA_desc_markup, lineno);
 				return -1;
 			}
 			if (append_to_last_seq != NULL)
 				append_to_last_seq(&dataline);
 		}
 	}
-	return seqno;
+	return recno;
 }
 
 /*
@@ -177,7 +227,7 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 {
 	const char *path;
 	FILE *stream;
-	void (*add_desc)(int seqno, const RoSeq *dataline);
+	void (*add_desc)(int recno, const RoSeq *dataline);
 	RoSeqs descs;
 	SEXP ans, ans_names;
 
@@ -191,7 +241,7 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 		add_desc = NULL;
 	}
 	seq_lengths_buf = new_IntAE(0, 0, 0);
-	if (read_fasta_file(stream, add_desc,
+	if (parse_FASTA_file(stream, add_desc,
 			&add_empty_seq_LENGTHONLY,
 			&append_to_last_seq_LENGTHONLY) < 0)
 	{
@@ -369,6 +419,192 @@ SEXP RawPtr_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	//UNPROTECT(1);
 	/* ans is ready */
 	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
+ * Read FASTQ.
+ */
+
+static const char *FASTQ_line1_markup = "@", *FASTQ_line3_markup = "+";
+
+/*
+ * The WIDTHONLY storage handlers keep only the common width of the sequences
+ * (NA if the set of sequences is not rectangular).
+ */
+
+static int FASTQ_width;
+
+static void add_seq_WIDTHONLY(int recno, const RoSeq *dataline)
+{
+	if (recno == 0) {
+		FASTQ_width = dataline->nelt;
+		return;
+	}
+	if (FASTQ_width == NA_INTEGER || dataline->nelt == FASTQ_width)
+		return;
+	FASTQ_width = NA_INTEGER;
+	return;
+}
+
+static SEXP FASTQ_seqbuf, FASTQ_seqbuf_xdata, FASTQ_qualbuf, FASTQ_qualbuf_xdata;
+
+static void append_seq_to_FASTQ_seqbuf(int recno, const RoSeq *dataline)
+{
+	const ByteTrTable *byte2code;
+
+	byte2code = get_enc_byte2code("DNAString");
+	_write_RoSeq_to_RawPtr(FASTQ_seqbuf_xdata, recno * FASTQ_width, dataline, byte2code);
+	return;
+}
+
+static void append_qual_to_FASTQ_qualbuf(int recno, const RoSeq *dataline)
+{
+	_write_RoSeq_to_RawPtr(FASTQ_qualbuf_xdata, recno * FASTQ_width, dataline, NULL);
+	return;
+}
+
+/*
+ * Return the number of sequences (1 sequence per FASTQ record) in the file
+ * (>= 0) or -1 if an error occured. Ignore empty lines.
+ * This function is agnostic about how the data that are read are stored in
+ * memory, how they will be returned to the user and how they will look to him.
+ * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
+ * append_to_last_seq().
+ */
+static int parse_FASTQ_file(FILE *stream,
+		void (*add_seqid)(int recno, const RoSeq *dataline),
+		void (*add_seq)(int recno, const RoSeq *dataline),
+		void (*add_qualid)(int recno, const RoSeq *dataline),
+		void (*add_qual)(int recno, const RoSeq *dataline))
+{
+	int FASTQ_line1_markup_length, FASTQ_line3_markup_length,
+	    lineno, recno, lineinrecno;
+	char linebuf[LINEBUF_SIZE];
+	RoSeq dataline;
+
+	FASTQ_line1_markup_length = strlen(FASTQ_line1_markup);
+	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
+	lineno = recno = lineinrecno = 0;
+	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
+		lineno++;
+		dataline.nelt = rtrim(linebuf);
+		// dataline.nelt > LINEBUF_SIZE - 1 should never happen
+		if (dataline.nelt >= LINEBUF_SIZE - 1) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "cannot read line %d, line is too long", lineno);
+			return -1;
+		}
+		if (dataline.nelt == 0)
+			continue; // we ignore empty lines
+		dataline.elts = linebuf;
+		lineinrecno++;
+		if (lineinrecno > 4)
+			lineinrecno = 1;
+		switch (lineinrecno) {
+		    case 1:
+			if (strncmp(linebuf, FASTQ_line1_markup, FASTQ_line1_markup_length) != 0) {
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+					 "\"%s\" expected at beginning of line %d",
+					 FASTQ_line1_markup, lineno);
+				return -1;
+			}
+			if (add_seqid != NULL) {
+				dataline.elts += FASTQ_line1_markup_length;
+				dataline.nelt -= FASTQ_line1_markup_length;
+				add_seqid(recno, &dataline);
+			}
+		    break;
+		    case 2:
+			if (add_seq != NULL)
+				add_seq(recno, &dataline);
+		    break;
+		    case 3:
+			if (strncmp(linebuf, FASTQ_line3_markup, FASTQ_line3_markup_length) != 0) {
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+					 "\"%s\" expected at beginning of line %d",
+					 FASTQ_line3_markup, lineno);
+				return -1;
+			}
+			if (add_qualid != NULL) {
+				dataline.elts += FASTQ_line3_markup_length;
+				dataline.nelt -= FASTQ_line3_markup_length;
+				add_qualid(recno, &dataline);
+			}
+		    break;
+		    case 4:
+			if (add_qual != NULL)
+				add_qual(recno, &dataline);
+			recno++;
+		    break;
+		}
+	}
+	return recno;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP fastq_geometry(SEXP filepath)
+{
+	int fileno;
+	int totalnseq, nseq;
+	SEXP ans;
+
+	open_files(filepath);
+	totalnseq = 0;
+	for (fileno = 0; fileno < nfile; fileno++) {
+		nseq = parse_FASTQ_file(files[fileno], NULL, add_seq_WIDTHONLY, NULL, NULL);
+		if (nseq < 0)
+			error("reading FASTQ file %s: %s", STRING_ELT(filepath, fileno), errmsg_buf);
+		totalnseq += nseq;
+	}
+	PROTECT(ans = NEW_INTEGER(2));
+	INTEGER(ans)[0] = totalnseq;
+	INTEGER(ans)[1] = FASTQ_width;
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP read_fastq(SEXP filepath, SEXP drop_quality)
+{
+	SEXP ans_geom, ans;
+	int fileno, buf_length;
+
+	PROTECT(ans_geom = fastq_geometry(filepath));
+	if (INTEGER(ans_geom)[1] == NA_INTEGER)
+		error("read_fastq(): FASTQ files with variable sequence lengths are not supported yet");
+	if (overflow_mult_int(INTEGER(ans_geom)[0], INTEGER(ans_geom)[1]))
+		error("read_fastq(): FASTQ files contain more data an XStringSet object can hold, sorry!");
+	buf_length = INTEGER(ans_geom)[0] * INTEGER(ans_geom)[1];
+	PROTECT(FASTQ_seqbuf = _alloc_XString("DNAString", buf_length));
+	FASTQ_seqbuf_xdata = get_XSequence_xdata(FASTQ_seqbuf);
+	if (!LOGICAL(drop_quality)[0]) {
+		PROTECT(FASTQ_qualbuf = _alloc_XString("BString", buf_length));
+		FASTQ_qualbuf_xdata = get_XSequence_xdata(FASTQ_qualbuf);
+	}
+	for (fileno = 0; fileno < nfile; fileno++) {
+		rewind(files[fileno]);
+		parse_FASTQ_file(files[fileno],
+			NULL, append_seq_to_FASTQ_seqbuf,
+			NULL, LOGICAL(drop_quality)[0] ? NULL : append_qual_to_FASTQ_qualbuf);
+	}
+	if (!LOGICAL(drop_quality)[0]) {
+		PROTECT(ans = NEW_LIST(3));
+		SET_ELEMENT(ans, 0, ans_geom);
+		SET_ELEMENT(ans, 1, FASTQ_seqbuf);
+		SET_ELEMENT(ans, 2, FASTQ_qualbuf);
+		UNPROTECT(4);
+	} else {
+		PROTECT(ans = NEW_LIST(2));
+		SET_ELEMENT(ans, 0, ans_geom);
+		SET_ELEMENT(ans, 1, FASTQ_seqbuf);
+		UNPROTECT(3);
+	}
 	return ans;
 }
 
