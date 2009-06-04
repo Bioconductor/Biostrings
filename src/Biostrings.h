@@ -176,11 +176,6 @@ void _get_RoSeqs_duplicated(
 	int *duplicated
 );
 
-void _get_RoSeqs_not_duplicated(
-	const RoSeqs *seqs,
-	int *not_duplicated
-);
-
 void _get_RoSeqs_in_set(
 	const RoSeqs *seqs,
 	const RoSeqs *set,
@@ -321,8 +316,6 @@ SEXP XStringSet_order(SEXP x);
 SEXP XStringSet_rank(SEXP x);
 
 SEXP XStringSet_duplicated(SEXP x);
-
-SEXP XStringSet_not_duplicated(SEXP x);
 
 SEXP XStringSet_in_set(SEXP x, SEXP table);
 

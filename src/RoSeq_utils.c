@@ -317,14 +317,17 @@ static const int *base_order;
 
 static int cmp_RoSeq_indices_for_ordering(const void *p1, const void *p2)
 {
-	int i1, i2, val;
+	int i1, i2, ret;
 
 	i1 = *((const int *) p1);
 	i2 = *((const int *) p2);
-	val = cmp_RoSeq(base_seq + i1, base_seq + i2);
-	if (val == 0)
-		val = i1 - i2;
-	return val;
+	ret = cmp_RoSeq(base_seq + i1, base_seq + i2);
+	// How qsort() will break ties is undefined (the Quicksort algo is
+	// not "stable"). By returning i1 - i2 in case of a tie, we ensure that
+	// the _get_RoSeqs_order() function below is "stable" and returns
+	// the same thing on all platforms. In addition, this coincides with
+	// what the order() function does in R.
+	return ret != 0 ? ret : i1 - i2;
 }
 
 static int cmp_RoSeq_indices_for_matching(const void *key, const void *p)
@@ -353,18 +356,19 @@ void _get_RoSeqs_rank(const RoSeqs *seqs, int *rank)
 {
 	int i, *order;
 
+	if (seqs->nelt == 0)
+		return;
 	order = (int *) R_alloc(seqs->nelt, sizeof(int));
 	_get_RoSeqs_order(seqs, order, 0);
-
-    rank[order[0]] = 1;
-    for (i = 1; i < seqs->nelt; ++i) {
-        if (cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0) {
-            rank[order[i]] = rank[order[i-1]];
-        } else {
-        	rank[order[i]] = i + 1;
-        }
-    }
-    return;
+	rank[order[0]] = 1;
+	for (i = 1; i < seqs->nelt; ++i) {
+		if (cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0) {
+			rank[order[i]] = rank[order[i-1]];
+		} else {
+			rank[order[i]] = i + 1;
+		}
+	}
+	return;
 }
 
 
@@ -374,34 +378,17 @@ void _get_RoSeqs_rank(const RoSeqs *seqs, int *rank)
 
 void _get_RoSeqs_duplicated(const RoSeqs *seqs, int *duplicated)
 {
-    int i, *order;
+	int i, *order;
 
+	if (seqs->nelt == 0)
+		return;
 	order = (int *) R_alloc(seqs->nelt, sizeof(int));
 	_get_RoSeqs_order(seqs, order, 0);
-
-	if (seqs->nelt > 0) {
-		duplicated[order[0]] = 0;
-	    for (i = 1; i < seqs->nelt; i++)
-	        duplicated[order[i]] =
-	        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0);
-	}
-    return;
-}
-
-void _get_RoSeqs_not_duplicated(const RoSeqs *seqs, int *not_duplicated)
-{
-    int i, *order;
-
-	order = (int *) R_alloc(seqs->nelt, sizeof(int));
-	_get_RoSeqs_order(seqs, order, 0);
-
-	if (seqs->nelt > 0) {
-		not_duplicated[order[0]] = 1;
-	    for (i = 1; i < seqs->nelt; i++)
-	        not_duplicated[order[i]] =
-	        	(cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) != 0);
-	}
-    return;
+	duplicated[order[0]] = 0;
+	for (i = 1; i < seqs->nelt; i++)
+		duplicated[order[i]] =
+			cmp_RoSeq(seqs->elts + order[i], seqs->elts + order[i-1]) == 0;
+	return;
 }
 
 

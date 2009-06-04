@@ -742,16 +742,14 @@ setMethod("rank", "XStringSet",
 ### Duplicated and related methods.
 ###
 
-.XStringSet_not_duplicated <-
-    function(x, incomparables=FALSE, ...)
-        .Call("XStringSet_not_duplicated", x, PACKAGE="Biostrings")
-
 setMethod("duplicated", "XStringSet",
     function(x, incomparables=FALSE, ...)
         .Call("XStringSet_duplicated", x, PACKAGE="Biostrings")
 )
 
+### Should be moved to IRanges and made the default method for Sequence objects
 setMethod("unique", "XStringSet",
     function(x, incomparables=FALSE, ...)
-        x[.XStringSet_not_duplicated(x, incomparables=incomparables, ...)]
+        x[!duplicated(x, incomparables=incomparables)]
 )
+

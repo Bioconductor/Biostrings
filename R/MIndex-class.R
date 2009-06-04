@@ -16,7 +16,7 @@
 ###
 
 setClass("MIndex",
-    contains="RangesList",
+    contains="IRangesList",
     representation(
         "VIRTUAL",
         width="integer",
