@@ -290,6 +290,23 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 /*
  * --- .Call ENTRY POINT ---
  */
+SEXP XStringSet_is_unsorted(SEXP x, SEXP strictly)
+{
+	SEXP ans;
+	int x_length;
+	RoSeqs seqs;
+
+	x_length = _get_XStringSet_length(x);
+	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	PROTECT(ans = NEW_LOGICAL(1));
+	LOGICAL(ans)[0] = _get_RoSeqs_is_unsorted(&seqs, LOGICAL(strictly)[0]);
+	UNPROTECT(1);
+	return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
 SEXP XStringSet_order(SEXP x)
 {
 	SEXP ans;
@@ -351,25 +368,7 @@ SEXP XStringSet_duplicated(SEXP x)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP XStringSet_in_set(SEXP x, SEXP table)
-{
-	SEXP ans;
-	int x_length, table_length;
-	RoSeqs seqs, set;
 
-	x_length = _get_XStringSet_length(x);
-	table_length = _get_XStringSet_length(table);
-	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
-	set = _new_RoSeqs_from_XStringSet(table_length, table);
-	PROTECT(ans = NEW_LOGICAL(x_length));
-	_get_RoSeqs_in_set(&seqs, &set, INTEGER(ans));
-	UNPROTECT(1);
-	return ans;
-}
-
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch)
 {
 	SEXP ans;

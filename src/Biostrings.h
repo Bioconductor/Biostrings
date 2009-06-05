@@ -311,13 +311,13 @@ SEXP XStringSet_as_STRSXP(
 	SEXP lkup
 );
 
+SEXP XStringSet_is_unsorted(SEXP x, SEXP strictly);
+
 SEXP XStringSet_order(SEXP x);
 
 SEXP XStringSet_rank(SEXP x);
 
 SEXP XStringSet_duplicated(SEXP x);
-
-SEXP XStringSet_in_set(SEXP x, SEXP table);
 
 SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch);
 

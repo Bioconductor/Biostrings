@@ -65,6 +65,7 @@
 
 \alias{append,XStringSet,XStringSet-method}
 
+\alias{is.unsorted,XStringSet-method}
 \alias{order,XStringSet-method}
 \alias{sort,XStringSet-method}
 \alias{rank,XStringSet-method}
@@ -299,6 +300,12 @@
   \code{x} is an XStringSet object.
 
   \describe{
+    \item{}{
+      \code{is.unsorted(x, strictly=FALSE)}:
+      Return a logical values specifying if \code{x} is unsorted. The
+      \code{strictly} argument takes logical value indicating if the check
+      should be for _strictly_ increasing values.
+    }
     \item{}{
       \code{order(x)}:
       Return a permutation which rearranges \code{x} into ascending or

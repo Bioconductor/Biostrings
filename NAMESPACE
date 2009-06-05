@@ -72,7 +72,7 @@ exportMethods(
     union, intersect, setdiff, setequal,
     "%in%", match,
     show,
-    "==", "!=", duplicated, unique, order, sort, rank,
+    "==", "!=", duplicated, unique, is.unsorted, order, sort, rank,
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
     narrow, subseq, threebands, "subseq<-", reduce, gaps,
     Views, XStringViews,
@@ -147,7 +147,7 @@ export(
 exportMethods(
     length, names, "[", "[[", rep,
     show,
-    "==", "!=", duplicated, unique, order, sort, rank,
+    "==", "!=", duplicated, unique, is.unsorted, order, sort, rank,
     coerce, as.character, as.matrix, as.list, toString, toComplex,
     letter,
     substr, substring,

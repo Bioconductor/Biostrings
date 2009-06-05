@@ -613,7 +613,7 @@ setMethod("%in%", c("XString", "XStringSet"),
 
 setMethod("%in%", c("XStringSet", "XStringSet"),
     function(x, table)
-        .Call("XStringSet_in_set", x, table, PACKAGE = "Biostrings")
+        (match(x, table, nomatch = 0L) > 0L)
 )
 
 setMethod("match", c("character", "XStringSet"),
@@ -630,6 +630,8 @@ setMethod("match", c("XString", "XStringSet"),
 
 setMethod("match", c("XStringSet", "XStringSet"),
     function (x, table, nomatch = NA_integer_, incomparables = NULL) {
+        if (xsbasetype(x) != xsbasetype(table))
+            stop("'x' and 'table' must be XStringSet objects of the same base type")
         if (!is.null(incomparables))
             stop("'incomparables' argument is not supported")
         if (!isSingleNumberOrNA(nomatch))
@@ -696,6 +698,15 @@ setMethod("as.matrix", "XStringSet",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Ordering and related methods.
 ###
+
+setMethod("is.unsorted", "XStringSet",
+    function (x, na.rm = FALSE, strictly = FALSE) 
+    {
+        if (!is.logical(strictly) || length(strictly) != 1 || is.na(strictly))
+            stop("'strictly' must be TRUE or FALSE")
+        .Call("XStringSet_is_unsorted", x, strictly, PACKAGE="Biostrings")
+    }
+)
 
 setMethod("order", "XStringSet",
     function(..., na.last=TRUE, decreasing=FALSE)
