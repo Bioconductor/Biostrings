@@ -45,13 +45,7 @@ setGeneric("countIndex", signature="x",
     function(x) standardGeneric("countIndex"))
 
 setMethod("countIndex", "MIndex",
-    function(x)
-    {
-        end_index <- endIndex(x)
-        if (length(end_index) == 0)
-            return(integer(0))
-        sapply(end_index, length)
-    }
+    function(x) elementLengths(endIndex(x))
 )
 
 setMethod("unlist", "MIndex",
