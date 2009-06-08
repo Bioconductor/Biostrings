@@ -71,7 +71,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP startin
 
 /*
  * --- .Call ENTRY POINT ---
- * match_PWM() arguments are assumed to be:
+ * XString_match_PWM() arguments are assumed to be:
  *   pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
  *   subject: a DNAString object containing the subject sequence
  *   base_codes: named integer vector of length 4 obtained with
@@ -79,7 +79,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP startin
  *   min_score: a single double (not NA)
  *   count_only: a single logical (not NA)
  */
-SEXP match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, SEXP count_only)
+SEXP XString_match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, SEXP count_only)
 {
 	RoSeq S;
 	int pwm_ncol, is_count_only, n1, n2;
@@ -92,6 +92,7 @@ SEXP match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, SEXP cou
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
+
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	for (n1 = 0, n2 = pwm_ncol; n2 <= S.nelt; n1++, n2++) {
 		if (compute_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
@@ -103,3 +104,53 @@ SEXP match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, SEXP cou
 	return _reported_matches_asSEXP();
 }
 
+/*
+ * --- .Call ENTRY POINT ---
+ * XStringViews_match_PWM() arguments are assumed to be:
+ *   pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
+ *   subject: a DNAString object containing the subject sequence
+ *   views_start, views_width: 2 integer vectors describing views on 'subject'.
+ *   base_codes: named integer vector of length 4 obtained with
+ *       xscodes(subject, baseOnly=TRUE)
+ *   min_score: a single double (not NA)
+ *   count_only: a single logical (not NA)
+ */
+SEXP XStringViews_match_PWM(SEXP pwm,
+		SEXP subject, SEXP views_start, SEXP views_width,
+		SEXP base_codes, SEXP min_score, SEXP count_only)
+{
+	RoSeq S, S_view;
+	int pwm_ncol, is_count_only, n1, n2;
+	int nviews, i, *view_start, *view_width, view_offset;
+	double minscore;
+
+	if (INTEGER(GET_DIM(pwm))[0] != 4)
+		error("'pwm' must have 4 rows");
+	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
+	S = _get_XString_asRoSeq(subject);
+	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
+	minscore = REAL(min_score)[0];
+	is_count_only = LOGICAL(count_only)[0];
+
+	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	nviews = LENGTH(views_start);
+	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
+	     i < nviews;
+	     i++, view_start++, view_width++)
+	{
+		view_offset = *view_start - 1;
+		if (view_offset < 0 || view_offset + *view_width > S.nelt)
+			error("'subject' has \"out of limits\" views");
+		S_view.elts = S.elts + view_offset;
+		S_view.nelt = *view_width;
+		_shift_match_on_reporting(view_offset);
+		for (n1 = 0, n2 = pwm_ncol; n2 <= S_view.nelt; n1++, n2++) {
+			if (compute_score(REAL(pwm), pwm_ncol, S_view.elts, S_view.nelt, n1) >= minscore)
+				_report_match(n1 + 1, pwm_ncol);
+		}
+	}
+	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
+	// but you don't have to PROTECT it here since you are returning it
+	// right away.
+	return _reported_matches_asSEXP();
+}

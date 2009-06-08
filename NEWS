@@ -64,6 +64,9 @@ o Added the vmatchPattern() and vcountPattern() generic functions with
   matchPattern()/countPattern() i.e. the subject must be an XStringSet
   object (support for XStringViews objects will follow soon).
 
+o Added matchPWM() and countPWM() methods for XStringViews and MaskedDNAString
+  objects.
+
 o Addition of the 'dups0' slot to the ByPos_MIndex class: this allows a more
   compact representation in memory of a ByPos_MIndex object that holds the
   hits of a set of patterns that has a lot of duplicates. The benefit is

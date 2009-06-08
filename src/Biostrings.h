@@ -761,9 +761,19 @@ SEXP PWM_score_starting_at(
 	SEXP starting_at
 );
 
-SEXP match_PWM(
+SEXP XString_match_PWM(
 	SEXP pwm,
 	SEXP subject,
+	SEXP base_codes,
+	SEXP min_score,
+	SEXP count_only
+);
+
+SEXP XStringViews_match_PWM(
+	SEXP pwm,
+	SEXP subject,
+	SEXP views_start,
+	SEXP views_width,
 	SEXP base_codes,
 	SEXP min_score,
 	SEXP count_only

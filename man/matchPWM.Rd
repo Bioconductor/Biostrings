@@ -3,8 +3,17 @@
 \alias{maxWeights}
 \alias{maxScore}
 \alias{PWMscoreStartingAt}
+
 \alias{matchPWM}
+\alias{matchPWM,character-method}
+\alias{matchPWM,DNAString-method}
+\alias{matchPWM,XStringViews-method}
+\alias{matchPWM,MaskedDNAString-method}
 \alias{countPWM}
+\alias{countPWM,character-method}
+\alias{countPWM,DNAString-method}
+\alias{countPWM,XStringViews-method}
+\alias{countPWM,MaskedDNAString-method}
 
 \alias{reverseComplement,matrix-method}
 
@@ -36,6 +45,9 @@
     A Position Weight Matrix (numeric matrix with row names A, C, G and T).
   }
   \item{subject}{
+    An \link{DNAString}, \link{XStringViews} or \link{MaskedDNAString}
+    object for \code{matchPWM} and \code{countPWM}.
+
     A \link{DNAString} object containing the subject sequence.
   }
   \item{min.score}{
@@ -92,7 +104,7 @@
   PWMscoreStartingAt(pwm, subject, starting.at=c(2:1, NA))
 
   library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chr3R <- unmasked(Dmelanogaster$chr3R)
+  chr3R <- Dmelanogaster$chr3R
   chr3R
 
   ## Match the plus strand
