@@ -15,7 +15,7 @@
  */
 static ByteTrTable byte2offset;
 
-static double compute_score(const double *pwm, int pwm_ncol, const char *S, int nS, int pwm_shift)
+static double compute_pwm_score(const double *pwm, int pwm_ncol, const char *S, int nS, int pwm_shift)
 {
 	int i, rowoffset;
 	double score;
@@ -63,7 +63,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP startin
 			*ans_elt = NA_REAL;
 			continue;
 		}
-		*ans_elt = compute_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, *start_elt - 1);
+		*ans_elt = compute_pwm_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, *start_elt - 1);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -95,7 +95,7 @@ SEXP XString_match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, 
 
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	for (n1 = 0, n2 = pwm_ncol; n2 <= S.nelt; n1++, n2++) {
-		if (compute_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
+		if (compute_pwm_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
 			_report_match(n1 + 1, pwm_ncol);
 	}
 	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
@@ -145,7 +145,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 		S_view.nelt = *view_width;
 		_shift_match_on_reporting(view_offset);
 		for (n1 = 0, n2 = pwm_ncol; n2 <= S_view.nelt; n1++, n2++) {
-			if (compute_score(REAL(pwm), pwm_ncol, S_view.elts, S_view.nelt, n1) >= minscore)
+			if (compute_pwm_score(REAL(pwm), pwm_ncol, S_view.elts, S_view.nelt, n1) >= minscore)
 				_report_match(n1 + 1, pwm_ncol);
 		}
 	}
