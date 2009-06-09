@@ -159,8 +159,8 @@ setMethod("matchPWM", "DNAString",
 ### returned by this method is not guaranteed to have its views ordered from
 ### left to right in general! One important particular case where this is
 ### guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
-### a normal XStringViews object) and 'max.mismatch=0' (no "out of limits"
-### matches).
+### a normal XStringViews object).
+### matchPWM does not support "out of limits"  matches.
 setMethod("matchPWM", "XStringViews",
     function(pwm, subject, min.score="80%")
         .XStringViews.matchPWM(pwm, subject, min.score)
