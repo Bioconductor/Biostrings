@@ -108,7 +108,7 @@ SEXP XString_match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, 
  * --- .Call ENTRY POINT ---
  * XStringViews_match_PWM() arguments are assumed to be:
  *   pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
- *   subject: a DNAString object containing the subject sequence
+ *   subject: an XStringViews object containing the subject sequence
  *   views_start, views_width: 2 integer vectors describing views on 'subject'.
  *   base_codes: named integer vector of length 4 obtained with
  *       xscodes(subject, baseOnly=TRUE)
