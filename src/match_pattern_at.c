@@ -145,7 +145,7 @@ void _select_nmismatch_at_Pshift_fun(int fixedP, int fixedS)
 /*
  * TODO: (maybe) replace static alloc of buffers by dynamic alloc.
  */
-#define MAX_NEDIT 20
+#define MAX_NEDIT 100
 #define MAX_ROW_LENGTH (2*MAX_NEDIT+1)
 
 static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
