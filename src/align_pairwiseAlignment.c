@@ -130,28 +130,18 @@ static double pairwiseAlignment(
 	float *currMatrix = alignBufferPtr->currMatrix;
 	float *prevMatrix = alignBufferPtr->prevMatrix;
 	float *curr, *currMinus1, *prev, *prevMinus1;
-	if (scoreOnly && gapOpening == 0.0) {
-		if (align1InfoPtr->endGap) {
-			for (i = 0, curr = currMatrix; i <= nCharString1; i++, curr++)
-				*curr = i * gapExtension;
-		} else {
-			for (i = 0, curr = currMatrix; i <= nCharString1; i++, curr++)
-				*curr = 0.0;
-		}
+	CURR_MATRIX(0, 0) = 0.0;
+	CURR_MATRIX(0, 1) = (align2InfoPtr->endGap ? gapOpening : 0.0);
+	for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
+		CURR_MATRIX(i, 0) = NEGATIVE_INFINITY;
+		CURR_MATRIX(i, 1) = NEGATIVE_INFINITY;
+	}
+	if (align1InfoPtr->endGap) {
+		for (i = 0; i <= nCharString1; i++)
+			CURR_MATRIX(i, 2) = gapOpening + i * gapExtension;
 	} else {
-		CURR_MATRIX(0, 0) = 0.0;
-		CURR_MATRIX(0, 1) = (align2InfoPtr->endGap ? gapOpening : 0.0);
-		for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
-			CURR_MATRIX(i, 0) = NEGATIVE_INFINITY;
-			CURR_MATRIX(i, 1) = NEGATIVE_INFINITY;
-		}
-		if (align1InfoPtr->endGap) {
-			for (i = 0; i <= nCharString1; i++)
-				CURR_MATRIX(i, 2) = gapOpening + i * gapExtension;
-		} else {
-			for (i = 0; i <= nCharString1; i++)
-				CURR_MATRIX(i, 2) = 0.0;
-		}
+		for (i = 0; i <= nCharString1; i++)
+			CURR_MATRIX(i, 2) = 0.0;
 	}
 
 	/* Step 3:  Perform main alignment operations */
@@ -177,144 +167,78 @@ static double pairwiseAlignment(
 	double maxScore = NEGATIVE_INFINITY;
 	if (scoreOnly) {
 		/* Simplified calculations when only need the alignment score */
-		if (gapOpening == 0.0) {
-			for (j = 1, jElt = nCharString2Minus1; j <= nCharString2; j++, jElt--) {
-				tempMatrix = prevMatrix;
-				prevMatrix = currMatrix;
-				currMatrix = tempMatrix;
+		for (j = 1, jElt = nCharString2Minus1; j <= nCharString2; j++, jElt--) {
+			tempMatrix = prevMatrix;
+			prevMatrix = currMatrix;
+			currMatrix = tempMatrix;
 
-				CURR_MATRIX(0, 0) = PREV_MATRIX(0, 0) + endGapAddend;
+			CURR_MATRIX(0, 0) = NEGATIVE_INFINITY;
+			CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
+			CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-				SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
-				stringElt2 = lookupValue;
-				SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
-				element2 = lookupValue;
-				if (localAlignment) {
-					for (i = 1, iElt = nCharString1Minus1,
-							curr = (currMatrix+1), currMinus1 = currMatrix,
-							prev = (prevMatrix+1), prevMinus1 = prevMatrix;
-							i <= nCharString1; i++, iElt--, curr++, currMinus1++, prev++, prevMinus1++) {
-						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
-						stringElt1 = lookupValue;
-						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
-						element1 = lookupValue;
-						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
+			SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
+			stringElt2 = lookupValue;
+			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+			element2 = lookupValue;
+			if (localAlignment) {
+				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					stringElt1 = lookupValue;
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					element1 = lookupValue;
+					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
 
-						*curr =
-							MAX(0.0,
-							MAX(*prevMinus1 + substitutionValue,
-							MAX(*prev, *currMinus1) + gapExtension));
-
-						maxScore = MAX(*curr, maxScore);
-					}
-				} else {
-					for (i = 1, iElt = nCharString1Minus1,
-							curr = (currMatrix+1), currMinus1 = currMatrix,
-							prev = (prevMatrix+1), prevMinus1 = prevMatrix;
-							i <= nCharString1; i++, iElt--, curr++, currMinus1++, prev++, prevMinus1++) {
-						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
-						stringElt1 = lookupValue;
-						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
-						element1 = lookupValue;
-						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
-
-						*curr =
-							MAX(*prevMinus1 + substitutionValue,
-							MAX(*prev, *currMinus1) + gapExtension);
-					}
-					if (noEndGap2) {
-						currMatrix[nCharString1] =
-							MAX(currMatrix[nCharString1],
-							MAX(prevMatrix[nCharString1], currMatrix[nCharString1Minus1]));
-					}
-					if (noEndGap1 && j == nCharString2) {
-						for (i = 1, curr = (currMatrix+1), currMinus1 = currMatrix, prev = (prevMatrix+1);
-						     i <= nCharString1; i++, curr++, currMinus1++, prev++) {
-							*curr = MAX(*curr, MAX(*prev, *currMinus1));
-						}
-					}
-				}
-			}
-
-			if (!localAlignment) {
-				maxScore = currMatrix[nCharString1];
-			}
-		} else {
-			for (j = 1, jElt = nCharString2Minus1; j <= nCharString2; j++, jElt--) {
-				tempMatrix = prevMatrix;
-				prevMatrix = currMatrix;
-				currMatrix = tempMatrix;
-
-				CURR_MATRIX(0, 0) = NEGATIVE_INFINITY;
-				CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
-				CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
-
-				SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
-				stringElt2 = lookupValue;
-				SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
-				element2 = lookupValue;
-				if (localAlignment) {
-					for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
-						stringElt1 = lookupValue;
-						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
-						element1 = lookupValue;
-						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
-
-						CURR_MATRIX(i, 0) =
-							MAX(0.0,
-								MAX(PREV_MATRIX(iMinus1, 0),
-								MAX(PREV_MATRIX(iMinus1, 1), PREV_MATRIX(iMinus1, 2))) + substitutionValue);
-						CURR_MATRIX(i, 1) =
-							MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpeningPlusExtension,
-							    PREV_MATRIX(i, 1) + gapExtension);
-						CURR_MATRIX(i, 2) =
-							MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpeningPlusExtension,
-							    CURR_MATRIX(iMinus1, 2) + gapExtension);
-
-						maxScore = MAX(CURR_MATRIX(i, 0), maxScore);
-					}
-				} else {
-					for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-						SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
-						stringElt1 = lookupValue;
-						SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
-						element1 = lookupValue;
-						fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
-						substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
-
-						CURR_MATRIX(i, 0) =
+					CURR_MATRIX(i, 0) =
+						MAX(0.0,
 							MAX(PREV_MATRIX(iMinus1, 0),
-							MAX(PREV_MATRIX(iMinus1, 1), PREV_MATRIX(iMinus1, 2))) + substitutionValue;
-						CURR_MATRIX(i, 1) =
-							MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpeningPlusExtension,
-							    PREV_MATRIX(i, 1) + gapExtension);
+							MAX(PREV_MATRIX(iMinus1, 1), PREV_MATRIX(iMinus1, 2))) + substitutionValue);
+					CURR_MATRIX(i, 1) =
+						MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpeningPlusExtension,
+						    PREV_MATRIX(i, 1) + gapExtension);
+					CURR_MATRIX(i, 2) =
+						MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpeningPlusExtension,
+						    CURR_MATRIX(iMinus1, 2) + gapExtension);
+
+					maxScore = MAX(CURR_MATRIX(i, 0), maxScore);
+				}
+			} else {
+				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					stringElt1 = lookupValue;
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					element1 = lookupValue;
+					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
+					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
+
+					CURR_MATRIX(i, 0) =
+						MAX(PREV_MATRIX(iMinus1, 0),
+						MAX(PREV_MATRIX(iMinus1, 1), PREV_MATRIX(iMinus1, 2))) + substitutionValue;
+					CURR_MATRIX(i, 1) =
+						MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpeningPlusExtension,
+						    PREV_MATRIX(i, 1) + gapExtension);
+					CURR_MATRIX(i, 2) =
+						MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpeningPlusExtension,
+						    CURR_MATRIX(iMinus1, 2) + gapExtension);
+				}
+				if (noEndGap2) {
+					CURR_MATRIX(nCharString1, 1) =
+						MAX(PREV_MATRIX(nCharString1, 0), MAX(PREV_MATRIX(nCharString1, 1), PREV_MATRIX(nCharString1, 2)));
+				}
+				if (noEndGap1 && j == nCharString2) {
+					for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
 						CURR_MATRIX(i, 2) =
-							MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpeningPlusExtension,
-							    CURR_MATRIX(iMinus1, 2) + gapExtension);
-					}
-					if (noEndGap2) {
-						CURR_MATRIX(nCharString1, 1) =
-							MAX(PREV_MATRIX(nCharString1, 0), MAX(PREV_MATRIX(nCharString1, 1), PREV_MATRIX(nCharString1, 2)));
-					}
-					if (noEndGap1 && j == nCharString2) {
-						for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
-							CURR_MATRIX(i, 2) =
-								MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)), CURR_MATRIX(iMinus1, 2));
-						}
+							MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)), CURR_MATRIX(iMinus1, 2));
 					}
 				}
 			}
+		}
 
-			if (!localAlignment) {
-				maxScore =
-					MAX(CURR_MATRIX(nCharString1, 0),
-					MAX(CURR_MATRIX(nCharString1, 1),
-					    CURR_MATRIX(nCharString1, 2)));
-			}
+		if (!localAlignment) {
+			maxScore =
+				MAX(CURR_MATRIX(nCharString1, 0),
+				MAX(CURR_MATRIX(nCharString1, 1),
+				    CURR_MATRIX(nCharString1, 2)));
 		}
 	} else {
 		/* Step 3a:  Create objects for traceback values */
@@ -718,13 +642,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 		nCharProduct = nCharString1 * nCharString2;
 	}
 	const int alignmentBufferSize = nCharString1 + 1;
-	if (scoreOnlyValue && gapOpeningValue == 0.0) {
-		alignBuffer.currMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
-		alignBuffer.prevMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
-	} else {
-		alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
-		alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
-	}
+	alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+	alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+
 	struct MismatchBuffer mismatchBuffer;
 	struct IndelBuffer indel1Buffer;
 	struct IndelBuffer indel2Buffer;
@@ -1145,13 +1065,8 @@ SEXP XStringSet_align_distance(
 		nCharString = MAX(nCharString, _get_CachedXStringSet_elt_asRoSeq(&cachedString, i).nelt);
 	}
 	int alignmentBufferSize = nCharString + 1;
-	if (gapOpeningValue == 0.0) {
-		alignBuffer.currMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
-		alignBuffer.prevMatrix = (float *) R_alloc((long) alignmentBufferSize, sizeof(float));
-	} else {
-		alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
-		alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
-	}
+	alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
+	alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
 
 	double *score;
 	PROTECT(output = NEW_NUMERIC((numberOfStrings * (numberOfStrings - 1)) / 2));
