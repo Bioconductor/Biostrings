@@ -160,6 +160,11 @@ void _write_RoSeq_to_RawPtr(
 	const ByteTrTable *byte2code
 );
 
+int _get_RoSeqs_is_unsorted(
+	const RoSeqs *seqs,
+	int strictly
+);
+
 void _get_RoSeqs_order(
 	const RoSeqs *seqs,
 	int *order,
@@ -168,25 +173,24 @@ void _get_RoSeqs_order(
 
 void _get_RoSeqs_rank(
 	const RoSeqs *seqs,
+	const int *order,
 	int *rank
 );
 
 void _get_RoSeqs_duplicated(
 	const RoSeqs *seqs,
+	const int *order,
 	int *duplicated
-);
-
-void _get_RoSeqs_in_set(
-	const RoSeqs *seqs,
-	const RoSeqs *set,
-	int *in_set
 );
 
 void _get_RoSeqs_match(
 	const RoSeqs *seqs,
 	const RoSeqs *set,
 	int nomatch,
-	int *in_set
+	const int *seqs_order,
+	const int *set_order,
+	int *match_buffer,
+	int *match_pos
 );
 
 
@@ -775,6 +779,31 @@ SEXP XStringViews_match_PWM(
 	SEXP views_start,
 	SEXP views_width,
 	SEXP base_codes,
+	SEXP min_score,
+	SEXP count_only
+);
+
+
+/* match_WCP.c */
+
+SEXP WCP_score_starting_at(
+	SEXP wcp,
+	SEXP subject,
+	SEXP starting_at
+);
+
+SEXP XString_match_WCP(
+	SEXP wcp,
+	SEXP subject,
+	SEXP min_score,
+	SEXP count_only
+);
+
+SEXP XStringViews_match_WCP(
+	SEXP wcp,
+	SEXP subject,
+	SEXP views_start,
+	SEXP views_width,
 	SEXP min_score,
 	SEXP count_only
 );

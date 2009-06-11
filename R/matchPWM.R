@@ -29,19 +29,21 @@
 }
 
 ### Utility function for getting the max weight for each position in the PWM
-maxWeights <- function(pwm)
-{
-    pwm <- .normargPwm(pwm)
-    #sapply(seq_len(ncol(pwm)), function(i) max(pwm[ , i]))
-    ## This will be faster than the above on large matrices
-    do.call(pmax, lapply(seq_len(nrow(pwm)), function(i) pwm[i, ]))
-}
+setGeneric("maxWeights", function(x) standardGeneric("maxWeights"))
+
+setMethod("maxWeights", "matrix",
+    function(x)
+    {
+        x <- .normargPwm(x)
+        #sapply(seq_len(ncol(x)), function(i) max(x[ , i]))
+        ## This will be faster than the above on large matrices
+        do.call(pmax, lapply(seq_len(nrow(x)), function(i) x[i, ]))
+    })
 
 ### Utility function for getting the highest possible score
-maxScore <- function(pwm)
-{
-    sum(maxWeights(pwm))
-}
+setGeneric("maxScore", function(x) standardGeneric("maxScore"))
+
+setMethod("maxScore", "ANY", function(x) sum(maxWeights(x)))
 
 .normargMinScore <- function(min.score, pwm)
 {

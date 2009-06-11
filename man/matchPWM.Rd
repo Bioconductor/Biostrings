@@ -1,7 +1,9 @@
 \name{matchPWM}
 
 \alias{maxWeights}
+\alias{maxWeights,matrix-method}
 \alias{maxScore}
+\alias{maxScore,ANY-method}
 \alias{PWMscoreStartingAt}
 
 \alias{matchPWM}
@@ -35,8 +37,8 @@
   PWMscoreStartingAt(pwm, subject, starting.at=1)
 
   ## Utility functions for basic manipulation of the Position Weight Matrix
-  maxWeights(pwm)
-  maxScore(pwm)
+  maxWeights(x)
+  maxScore(x)
   \S4method{reverseComplement}{matrix}(x, ...)
 }
 

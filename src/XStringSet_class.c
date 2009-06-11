@@ -327,13 +327,15 @@ SEXP XStringSet_order(SEXP x)
 SEXP XStringSet_rank(SEXP x)
 {
 	SEXP ans;
-	int x_length;
+	int x_length, *order;
 	RoSeqs seqs;
 
 	x_length = _get_XStringSet_length(x);
 	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	order = (int *) R_alloc(seqs.nelt, sizeof(int));
+	_get_RoSeqs_order(&seqs, order, 0);
 	PROTECT(ans = NEW_INTEGER(x_length));
-	_get_RoSeqs_rank(&seqs, INTEGER(ans));
+	_get_RoSeqs_rank(&seqs, order, INTEGER(ans));
 	UNPROTECT(1);
 	return ans;
 }
@@ -349,13 +351,15 @@ SEXP XStringSet_rank(SEXP x)
 SEXP XStringSet_duplicated(SEXP x)
 {
 	SEXP ans;
-	int x_length;
+	int x_length, *order;
 	RoSeqs seqs;
 
 	x_length = _get_XStringSet_length(x);
 	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	order = (int *) R_alloc(seqs.nelt, sizeof(int));
+	_get_RoSeqs_order(&seqs, order, 0);
 	PROTECT(ans = NEW_LOGICAL(x_length));
-	_get_RoSeqs_duplicated(&seqs, INTEGER(ans));
+	_get_RoSeqs_duplicated(&seqs, order, INTEGER(ans));
 	UNPROTECT(1);
 	return ans;
 }
@@ -372,15 +376,21 @@ SEXP XStringSet_duplicated(SEXP x)
 SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch)
 {
 	SEXP ans;
-	int x_length, table_length;
+	int x_length, table_length, *seqs_order, *set_order, *match_buffer;
 	RoSeqs seqs, set;
 
 	x_length = _get_XStringSet_length(x);
 	table_length = _get_XStringSet_length(table);
 	seqs = _new_RoSeqs_from_XStringSet(x_length, x);
+	seqs_order = (int *) R_alloc(seqs.nelt, sizeof(int));
+	_get_RoSeqs_order(&seqs, seqs_order, 0);
 	set = _new_RoSeqs_from_XStringSet(table_length, table);
+	set_order = (int *) R_alloc(set.nelt, sizeof(int));
+	_get_RoSeqs_order(&set, set_order, 0);
+	match_buffer = (int *) R_alloc(set.nelt, sizeof(int));
 	PROTECT(ans = NEW_INTEGER(x_length));
-	_get_RoSeqs_match(&seqs, &set, INTEGER(nomatch)[0], INTEGER(ans));
+	_get_RoSeqs_match(&seqs, &set, INTEGER(nomatch)[0], seqs_order, set_order,
+			          match_buffer, INTEGER(ans));
 	UNPROTECT(1);
 	return ans;
 }

@@ -20,6 +20,9 @@ importFrom(Biobase, "addVigs2WinMenu")
 ###   XStringViews-constructors.R
 ###   MaskedXString-class.R
 ###   XStringSetList-class.R
+###   XKeySortedData-class.R
+###   XKeySortedDataList-class.R
+###   WCP-class.R
 ###   xscat.R
 
 exportClasses(
@@ -27,7 +30,12 @@ exportClasses(
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringViews,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
-    XStringSetList, BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList
+    XStringSetList, BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList,
+    XKeySortedData, BKeySortedData, DNAKeySortedData,
+    RNAKeySortedData, AAKeySortedData,
+    XKeySortedDataList, BKeySortedDataList, DNAKeySortedDataList,
+    RNAKeySortedDataList, AAKeySortedDataList,
+    WCP, B_WCP, DNA_WCP, RNA_WCP, AA_WCP
 )
 
 export(
@@ -56,6 +64,14 @@ export(
 
     ## XStringSetList-class.R:
     partitioning,
+
+    ## XKeySortedData-class.R:
+    BKeySortedData, DNAKeySortedData, RNAKeySortedData,
+    AAKeySortedData, dataKey, dataTable,
+
+    ## XKeySortedDataList-class.R:
+    BKeySortedDataList, DNAKeySortedDataList, RNAKeySortedDataList,
+    AAKeySortedDataList,
 
     ## xscat.R:
     xscat,
@@ -89,6 +105,7 @@ exportMethods(
 ###   letter.R
 ###   subXString.R
 ###   letterFrequency.R
+###   dinucleotideFrequencyTest.R
 ###   chartr.R
 ###   reverse.R
 ###   translate.R
@@ -119,6 +136,9 @@ export(
     dinucleotideFrequency, trinucleotideFrequency,
     nucleotideFrequencyAt,
     oligonucleotideTransitions,
+
+    ## dinucleotideFrequencyTest.R
+    dinucleotideFrequencyTest,
 
     ## reverse.R:
     complement, reverseComplement,
@@ -155,6 +175,7 @@ exportMethods(
     consensusMatrix, consensusString,
     oligonucleotideFrequency,
     nucleotideFrequencyAt,
+    dinucleotideFrequencyTest,
     chartr,
     reverse, complement, reverseComplement,
     codons, translate,
@@ -181,6 +202,7 @@ exportMethods(
 ###   trimLRPatterns.R
 ###   matchProbePair.R
 ###   matchPWM.R
+###   matchWCP.R
 ###   findPalindromes.R
 ###   PDict-class.R
 ###   matchPDict.R
@@ -224,6 +246,9 @@ export(
     maxWeights, maxScore,
     PWMscoreStartingAt, matchPWM, countPWM,
 
+    ## matchWCP.R
+    WCPscoreStartingAt, matchWCP, countWCP,
+
     ## findPalindromes.R
     findPalindromes, findComplementedPalindromes,
     palindromeArmLength, complementedPalindromeArmLength,
@@ -252,6 +277,9 @@ exportMethods(
     matchPattern, countPattern, vcountPattern,
     matchLRPatterns, trimLRPatterns,
     matchProbePair,
+    maxWeights, maxScore,
+    matchPWM, countPWM,
+    matchWCP, countWCP,
     findPalindromes, findComplementedPalindromes,
     palindromeArmLength, complementedPalindromeArmLength,
     palindromeLeftArm, complementedPalindromeLeftArm,

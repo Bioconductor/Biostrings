@@ -109,6 +109,11 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XString_match_PWM, 5),
 	CALLMETHOD_DEF(XStringViews_match_PWM, 7),
 
+/* match_WCP.c */
+	CALLMETHOD_DEF(WCP_score_starting_at, 3),
+	CALLMETHOD_DEF(XString_match_WCP, 4),
+	CALLMETHOD_DEF(XStringViews_match_PWM, 6),
+
 /* find_palindromes.c */
 	CALLMETHOD_DEF(debug_find_palindromes, 0),
 	CALLMETHOD_DEF(find_palindromes, 6),
