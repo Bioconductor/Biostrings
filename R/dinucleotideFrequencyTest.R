@@ -190,8 +190,9 @@ function(x, i, j, test = c("chisq", "G", "adjG"), simulate.p.value = FALSE,
                                           simulate.p.value = simulate.p.value,
                                           B = B))
             })
-    ans$method <-
-      paste(ans$method, ": String positions ", i, " and ", j, sep = "")
+    ans$data.name <-
+      paste("nucleotideFrequencyAt(", deparse(substitute(x)),
+            ", c(", i, ", ", j, "))", sep = "")
     ans
 }
 
