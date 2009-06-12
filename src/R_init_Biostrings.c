@@ -5,6 +5,25 @@
 #define REGISTER_CCALLABLE(fun) \
 	R_RegisterCCallable("Biostrings", #fun, (DL_FUNC) &fun)
 
+static R_NativePrimitiveArgType gtestsim_t[11] = {
+	INTSXP,  /* int *nrow */
+	INTSXP,  /* int *ncol */
+	INTSXP,	 /* int *nrowt */
+	INTSXP,  /* int *ncolt */
+	INTSXP,  /* int *n */
+	INTSXP,  /* int *b */
+	REALSXP, /* double *expected */
+	INTSXP,  /* int *observed */
+	REALSXP, /* double *fact */
+	INTSXP,  /* int *jwork */
+	REALSXP  /* double *results */
+};
+
+static const R_CMethodDef cMethods[] = {
+	{"gtestsim", (DL_FUNC) &gtestsim, 11, gtestsim_t},
+	{NULL, NULL, 0}
+};
+
 static const R_CallMethodDef callMethods[] = {
 
 /* utils.c */
@@ -186,6 +205,7 @@ void R_init_Biostrings(DllInfo *info)
 	/* Lots of code around assumes that sizeof(Rbyte) == sizeof(char) */
 	if (sizeof(Rbyte) != sizeof(char))
 		error("sizeof(Rbyte) != sizeof(char)");
+	R_registerRoutines(info, cMethods, NULL, NULL, NULL);
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 
 /* RoSeq_utils.c */

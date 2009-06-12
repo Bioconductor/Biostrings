@@ -412,6 +412,23 @@ SEXP XStringSet_consensus_matrix(
 );
 
 
+/* gtestsim.c */
+
+void gtestsim(
+	int *nrow,
+	int *ncol,
+	int *nrowt,
+	int *ncolt,
+	int *n,
+	int *b,
+	double *expected,
+	int *observed,
+	double *fact,
+	int *jwork,
+	double *results
+);
+
+
 /* char_translate.c */
 
 SEXP XStringSet_char_translate(

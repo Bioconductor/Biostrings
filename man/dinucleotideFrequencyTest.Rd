@@ -13,7 +13,8 @@
 }
 
 \usage{
-  dinucleotideFrequencyTest(x, i, j, test = c("chisq", "G", "adjG"))
+  dinucleotideFrequencyTest(x, i, j, test = c("chisq", "G", "adjG"),
+                            simulate.p.value = FALSE, B = 2000)
 }
 
 \arguments{
@@ -26,6 +27,12 @@
   \item{test}{
     One of \code{"chisq"} (Person's chi-squared test), \code{"G"} (G-test), or
     \code{"adjG"} (William's corrected G-test). See Details section.
+  }
+  \item{simulate.p.value}{a logical indicating whether to compute
+    p-values by Monte Carlo simulation.
+  }
+  \item{B}{an integer specifying the number of replicates used in the
+    Monte Carlo test.
   }
 }
 
