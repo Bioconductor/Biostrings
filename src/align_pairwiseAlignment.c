@@ -129,7 +129,6 @@ static double pairwiseAlignment(
 	/* Rows of currMatrix and prevMatrix = (0) substitution, (1) deletion, and (2) insertion */
 	float *currMatrix = alignBufferPtr->currMatrix;
 	float *prevMatrix = alignBufferPtr->prevMatrix;
-	float *curr, *currMinus1, *prev, *prevMinus1;
 	CURR_MATRIX(0, 0) = 0.0;
 	CURR_MATRIX(0, 1) = (align2InfoPtr->endGap ? gapOpening : 0.0);
 	for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
