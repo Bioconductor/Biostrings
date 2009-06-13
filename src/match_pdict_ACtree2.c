@@ -952,8 +952,7 @@ static unsigned int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 }
 
 /* Does report matches */
-static void walk_subject(ACtree *tree, const RoSeq *S,
-		Seq2MatchBuf *seq2match_buf)
+static void walk_subject(ACtree *tree, const RoSeq *S)
 {
 	ACnode *node;
 	int n, linktag;
@@ -966,31 +965,28 @@ static void walk_subject(ACtree *tree, const RoSeq *S,
 		nid = transition(tree, node, linktag, S_tail);
 		node = GET_NODE(tree, nid);
 		if (IS_LEAFNODE(node))
-			_Seq2MatchBuf_report_match(seq2match_buf,
-					NODE_P_ID(node) - 1, n);
+			_MIndex_report_match(NODE_P_ID(node) - 1, n);
 	}
 	return;
 }
 
 /* Does report matches */
-static void walk_nonfixed_subject(ACtree *tree, const RoSeq *S,
-		Seq2MatchBuf *seq2match_buf)
+static void walk_nonfixed_subject(ACtree *tree, const RoSeq *S)
 {
 	error("walk_nonfixed_subject(): implement me");
 	return;
 }
 
 /* Entry point for the MATCH FINDING section */
-void _match_ACtree2(SEXP pptb, const RoSeq *S, int fixedS,
-		Seq2MatchBuf *seq2match_buf)
+void _match_ACtree2(SEXP pptb, const RoSeq *S, int fixedS)
 {
 	ACtree tree;
 
 	tree = pptb_asACtree(pptb);
 	if (fixedS)
-		walk_subject(&tree, S, seq2match_buf);
+		walk_subject(&tree, S);
 	else
-		walk_nonfixed_subject(&tree, S, seq2match_buf);
+		walk_nonfixed_subject(&tree, S);
 	return;
 }
 

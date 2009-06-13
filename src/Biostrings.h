@@ -522,37 +522,36 @@ SEXP _reported_matches_asSEXP();
 
 SEXP debug_MIndex_utils();
 
-Seq2MatchBuf _new_Seq2MatchBuf(
-	SEXP matches_as,
-	int nseq
+void _MIndex_init_match_reporting(
+	int is_count_only,
+	int with_matching_keys,
+	int pdict_L
 );
 
-void _flush_Seq2MatchBuf(Seq2MatchBuf *buf);
+void _MIndex_drop_reported_matches();
 
-void _Seq2MatchBuf_report_match(
-	Seq2MatchBuf *buf,
+int _MIndex_get_match_reporting_mode();
+
+IntAE *_MIndex_get_match_count();
+
+IntAE *_MIndex_get_match_ends(int key);
+
+IntAE *_MIndex_get_matching_keys();
+
+SEXP _MIndex_get_match_which_asINTEGER();
+
+void _MIndex_report_match(
 	int key,
 	int end
 );
 
-void _Seq2MatchBuf_append_and_flush(
-	Seq2MatchBuf *buf1,
-	Seq2MatchBuf *buf2,
+void _MIndex_merge_matches(
+	IntAE *global_match_count,
+	const IntAEAE *global_match_ends,
 	int view_offset
 );
 
-SEXP _Seq2MatchBuf_which_asINTEGER(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_counts_asINTEGER(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_ends_asLIST(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_as_MIndex(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_as_SEXP(
-	Seq2MatchBuf *buf,
-	SEXP env
-);
+SEXP _MIndex_get_matches_asSEXP(SEXP env);
 
 SEXP ByPos_MIndex_endIndex(
 	SEXP x_high2low,
@@ -888,8 +887,7 @@ SEXP build_Twobit(
 void _match_Twobit(
 	SEXP pptb,
 	const RoSeq *S,
-	int fixedS,
-	Seq2MatchBuf *seq2match_buf
+	int fixedS
 );
 
 
@@ -910,8 +908,7 @@ SEXP ACtree_summary(SEXP pptb);
 void _match_ACtree(
 	SEXP pptb,
 	const RoSeq *S,
-	int fixedS,
-	Seq2MatchBuf *seq2match_buf
+	int fixedS
 );
 
 
@@ -956,8 +953,7 @@ SEXP ACtree2_build(
 void _match_ACtree2(
 	SEXP pptb,
 	const RoSeq *S,
-	int fixedS,
-	Seq2MatchBuf *seq2match_buf
+	int fixedS
 );
 
 
@@ -972,7 +968,7 @@ SEXP XString_match_pdict(
 	SEXP subject,
 	SEXP max_mismatch,
 	SEXP fixed,
-	SEXP matches_as,
+	SEXP count_only,
 	SEXP envir
 );
 
@@ -985,7 +981,7 @@ SEXP XStringViews_match_pdict(
 	SEXP views_width,
 	SEXP max_mismatch,
 	SEXP fixed,
-	SEXP matches_as,
+	SEXP count_only,
 	SEXP envir
 );
 
@@ -998,7 +994,7 @@ SEXP XStringSet_vmatch_pdict(
 	SEXP fixed,
 	SEXP collapse,
 	SEXP weight,
-	SEXP matches_as,
+	SEXP count_only,
 	SEXP envir
 );
 

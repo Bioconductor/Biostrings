@@ -171,8 +171,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
  *                                                                          *
  ****************************************************************************/
 
-void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
-		const RoSeq *S, Seq2MatchBuf *seq2match_buf)
+void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb, const RoSeq *S)
 {
 	int n, twobit_sign, P_id;
 	const char *s;
@@ -185,13 +184,12 @@ void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
 		P_id = twobit_sign2pos[twobit_sign];
 		if (P_id == NA_INTEGER)
 			continue;
-		_Seq2MatchBuf_report_match(seq2match_buf, P_id - 1, n);
+		_MIndex_report_match(P_id - 1, n);
 	}
 	return;
 }
 
-void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS,
-		Seq2MatchBuf *seq2match_buf)
+void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS)
 {
 	int tb_width;
 	const int *twobit_sign2pos;
@@ -210,7 +208,7 @@ void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS,
 		error("cannot treat IUPAC extended letters in the subject "
 		      "as ambiguities when 'pdict' is a PDict object of "
 		      "the \"Twobit\" type");
-	walk_subject(twobit_sign2pos, &teb, S, seq2match_buf);
+	walk_subject(twobit_sign2pos, &teb, S);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING _match_Twobit()\n");

@@ -11,147 +11,141 @@ SEXP debug_MIndex_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
+	Rprintf("Debug mode turned %s in 'MIndex_utils.c'\n",
+		debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
+	Rprintf("Debug mode not available in 'MIndex_utils.c'\n");
 #endif
 	return R_NilValue;
 }
 
 
+
 /****************************************************************************
- * Match reporting facilities used by C code performing matching of multiple
- * sequences against a reference sequence.
- * -------------------------------------------------------------------
+ * MATCH REPORTING FACILITIES FOR PATTERN MATCHING FUNCTIONS RETURNING AN
+ * MIndex OBJECT
  */
 
-static int string2code(const char *s)
-{
-	if (strcmp(s, "MATCHES_AS_NULL") == 0)
-		return MATCHES_AS_NULL;
-	if (strcmp(s, "MATCHES_AS_WHICH") == 0)
-		return MATCHES_AS_WHICH;
-	if (strcmp(s, "MATCHES_AS_COUNTS") == 0)
-		return MATCHES_AS_COUNTS;
-	if (strcmp(s, "MATCHES_AS_ENDS") == 0)
-		return MATCHES_AS_ENDS;
-	error("\"%s\": unsupported \"matches as\" value", s);
-	return -1; /* keeps gcc -Wall happy */
-}
+static int match_reporting_mode; // 0, 1 or 2
+static int what_to_return; // 0: all matches; 1: match count; 2: matching keys
+static IntAE match_count; // used when mode == 0 and initialized when mode == 2
+static IntAEAE match_ends;  // used when mode >= 1
+static IntAE matching_keys;
 
-Seq2MatchBuf _new_Seq2MatchBuf(SEXP matches_as, int nseq)
+void _MIndex_init_match_reporting(int is_count_only, int with_matching_keys,
+		int pdict_L)
 {
-	static Seq2MatchBuf buf;
-
-	buf.matches_as = string2code(CHAR(STRING_ELT(matches_as, 0)));
-	if (buf.matches_as != MATCHES_AS_NULL) {
-		buf.matching_keys = new_IntAE(0, 0, 0);
-		buf.match_counts = new_IntAE(nseq, nseq, 0);
-		buf.match_ends = new_IntAEAE(nseq, nseq);
+	if (is_count_only == NA_LOGICAL) {
+		what_to_return = 2;
+		is_count_only = 1;
+	} else if (is_count_only) {
+		what_to_return = 1;
+	} else {
+		what_to_return = 0;
 	}
-	return buf;
-}
-
-void _flush_Seq2MatchBuf(Seq2MatchBuf *buf)
-{
-	int i;
-	const int *key;
-
-	if (buf->matches_as == MATCHES_AS_NULL)
-		return;
-	for (i = 0, key = buf->matching_keys.elts;
-	     i < buf->matching_keys.nelt;
-	     i++, key++)
-	{
-		buf->match_counts.elts[*key] = 0;
-		buf->match_ends.elts[*key].nelt = 0;
-	}
-	buf->matching_keys.nelt = 0;
+	match_reporting_mode = is_count_only ? (with_matching_keys ? 2 : 0) : 1;
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+		match_count = new_IntAE(pdict_L, pdict_L, 0);
+	if (match_reporting_mode >= 1)
+		match_ends = new_IntAEAE(pdict_L, pdict_L);
+	matching_keys = new_IntAE(0, 0, 0);
 	return;
 }
 
-void _Seq2MatchBuf_report_match(Seq2MatchBuf *buf, int key, int end)
+void _MIndex_drop_reported_matches()
 {
+	int i;
+
+	if (match_reporting_mode == 0 || match_reporting_mode == 2)
+		IntAE_set_val(&match_count, 0);
+	if (match_reporting_mode >= 1)
+		for (i = 0; i < match_ends.nelt; i++)
+			match_ends.elts[i].nelt = 0;
+	matching_keys.nelt = 0;
+	return;
+}
+
+int _MIndex_get_match_reporting_mode()
+{
+	return match_reporting_mode;
+}
+
+IntAE *_MIndex_get_match_count()
+{
+	return &match_count;
+}
+
+IntAE *_MIndex_get_match_ends(int key)
+{
+	return match_ends.elts + key;
+}
+
+IntAE *_MIndex_get_matching_keys()
+{
+	return &matching_keys;
+}
+
+SEXP _MIndex_get_match_which_asINTEGER()
+{
+	IntAE_sum_val(&matching_keys, 1);
+	IntAE_qsort(&matching_keys);
+	return IntAE_asINTEGER(&matching_keys);
+}
+
+void _MIndex_report_match(int key, int end)
+{
+	int is_new_matching_key;
 	IntAE *ends_buf;
 
-	if (buf->matches_as == MATCHES_AS_NULL)
-		return;
-	if (buf->match_counts.elts[key]++ == 0)
-		IntAE_insert_at(&(buf->matching_keys),
-				buf->matching_keys.nelt, key);
-	ends_buf = buf->match_ends.elts + key;
-	IntAE_insert_at(ends_buf, ends_buf->nelt, end);
+	if (match_reporting_mode == 0) {
+		is_new_matching_key = match_count.elts[key]++ == 0;
+	} else {
+		ends_buf = match_ends.elts + key;
+		is_new_matching_key = ends_buf->nelt == 0;
+		IntAE_insert_at(ends_buf, ends_buf->nelt, end);
+	}
+	if (is_new_matching_key)
+		IntAE_insert_at(&matching_keys,
+				matching_keys.nelt, key);
 	return;
 }
 
-void _Seq2MatchBuf_append_and_flush(Seq2MatchBuf *buf1, Seq2MatchBuf *buf2, int view_offset)
+void _MIndex_merge_matches(IntAE *global_match_count,
+		const IntAEAE *global_match_ends, int view_offset)
 {
 	int i;
 	const int *key;
-	IntAE *ends_buf1, *ends_buf2;
+	IntAE *ends_buf, *global_ends_buf;
 
-	if (buf1->matches_as == MATCHES_AS_NULL)
-		return;
-	for (i = 0, key = buf2->matching_keys.elts;
-	     i < buf2->matching_keys.nelt;
+	for (i = 0, key = matching_keys.elts;
+	     i < matching_keys.nelt;
 	     i++, key++)
 	{
-		if (buf1->match_counts.elts[*key] == 0)
-			IntAE_insert_at(&(buf1->matching_keys),
-					buf1->matching_keys.nelt, *key);
-		buf1->match_counts.elts[*key] += buf2->match_counts.elts[*key];
-		ends_buf1 = buf1->match_ends.elts + *key;
-		ends_buf2 = buf2->match_ends.elts + *key;
-		IntAE_append_shifted_vals(ends_buf1,
-			ends_buf2->elts, ends_buf2->nelt, view_offset);
+		if (match_reporting_mode == 0 || match_reporting_mode == 2) {
+			global_match_count->elts[*key] += match_count.elts[*key];
+			match_count.elts[*key] = 0;
+		} else {
+			ends_buf = match_ends.elts + *key;
+			global_ends_buf = global_match_ends->elts + *key;
+			IntAE_append_shifted_vals(global_ends_buf,
+				ends_buf->elts, ends_buf->nelt, view_offset);
+		}
+		if (match_reporting_mode >= 1)
+			match_ends.elts[*key].nelt = 0;
 	}
-	_flush_Seq2MatchBuf(buf2);
+	matching_keys.nelt = 0;
 	return;
 }
 
-SEXP _Seq2MatchBuf_which_asINTEGER(Seq2MatchBuf *buf)
+SEXP _MIndex_get_matches_asSEXP(SEXP env)
 {
-	IntAE_sum_val(&(buf->matching_keys), 1);
-	IntAE_qsort(&(buf->matching_keys));
-	return IntAE_asINTEGER(&(buf->matching_keys));
-}
-
-SEXP _Seq2MatchBuf_counts_asINTEGER(Seq2MatchBuf *buf)
-{
-	return IntAE_asINTEGER(&(buf->match_counts));
-}
-
-SEXP _Seq2MatchBuf_ends_asLIST(Seq2MatchBuf *buf)
-{
-	return IntAEAE_asLIST(&(buf->match_ends), 1);
-}
-
-SEXP _Seq2MatchBuf_as_MIndex(Seq2MatchBuf *buf)
-{
-	error("_Seq2MatchBuf_as_MIndex(): IMPLEMENT ME!");
-	return R_NilValue;
-}
-
-SEXP _Seq2MatchBuf_as_SEXP(Seq2MatchBuf *buf, SEXP env)
-{
-	switch (buf->matches_as) {
-	    case MATCHES_AS_NULL:
-		return R_NilValue;
-	    case MATCHES_AS_WHICH:
-		return _Seq2MatchBuf_which_asINTEGER(buf);
-	    case MATCHES_AS_COUNTS:
-		return _Seq2MatchBuf_counts_asINTEGER(buf);
-	    case MATCHES_AS_ENDS:
-		if (env != R_NilValue)
-			return IntAEAE_toEnvir(&(buf->match_ends), env, 1);
-		return _Seq2MatchBuf_ends_asLIST(buf);
-	    case MATCHES_AS_MINDEX:
-		return _Seq2MatchBuf_as_MIndex(buf);
-	}
-	error("Biostrings internal error in _Seq2MatchBuf_as_SEXP(): "
-	      "unexpected 'buf->matches_as' value %d", buf->matches_as);
-	return R_NilValue;
+	if (what_to_return == 2)
+		return _MIndex_get_match_which_asINTEGER();
+	if (what_to_return == 1)
+		return IntAE_asINTEGER(&match_count);
+	if (env == R_NilValue)
+		return IntAEAE_asLIST(&match_ends, 1);
+	return IntAEAE_toEnvir(&match_ends, env, 1);
 }
 
 
