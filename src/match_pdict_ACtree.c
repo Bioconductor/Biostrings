@@ -506,7 +506,7 @@ static int get_next_node_id(ACNode *node0, const int *base_codes,
 }
 
 static int walk_subject(ACNode *node0, const int *base_codes,
-		const char *S, int nS)
+		const char *S, int nS, Seq2MatchBuf *seq2match_buf)
 {
 	int basenode_id, node_id, child_id, n, subwalk_nS;
 	ACNode *basenode, *node;
@@ -543,7 +543,7 @@ static int walk_subject(ACNode *node0, const int *base_codes,
 			if (node->flink == -1) {
 				rec_level++;
 				subwalk_nS = node->depth - 1;
-				node->flink = walk_subject(node0, base_codes, S - subwalk_nS, subwalk_nS);
+				node->flink = walk_subject(node0, base_codes, S - subwalk_nS, subwalk_nS, seq2match_buf);
 				rec_level--;
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
@@ -577,13 +577,14 @@ static int walk_subject(ACNode *node0, const int *base_codes,
 		// walk_subject() so there is no need to check that rec_level
 		// is 0
 		if (basenode->P_id != -1)
-			_MIndex_report_match(basenode->P_id - 1, n + 1);
+			_Seq2MatchBuf_report_match(seq2match_buf,
+					basenode->P_id - 1, n + 1);
 	}
 	return basenode_id;
 }
 
 static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
-		const RoSeq *S)
+		const RoSeq *S, Seq2MatchBuf *seq2match_buf)
 {
 	IntAE cnode_ids; // buffer of current node ids
 	int n, npointers, i, node_id, next_node_id, is_first, j, base, P_id;
@@ -625,7 +626,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 			}
 			P_id = node0[node_id].P_id;
 			if (P_id != -1)
-				_MIndex_report_match(P_id - 1, n);
+				_Seq2MatchBuf_report_match(seq2match_buf, P_id - 1, n);
 		}
 		// error if too many remaining pointers
 		if (cnode_ids.nelt > 4096)
@@ -634,7 +635,8 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS)
+void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS,
+		Seq2MatchBuf *seq2match_buf)
 {
 	ACNode *node0;
 	SEXP base_codes;
@@ -650,9 +652,11 @@ void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS)
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
 	_init_byte2offset_with_INTEGER(byte2slotno, base_codes, 1);
 	if (fixedS)
-		walk_subject(node0, INTEGER(base_codes), S->elts, S->nelt);
+		walk_subject(node0, INTEGER(base_codes), S->elts, S->nelt,
+			seq2match_buf);
 	else
-		walk_nonfixed_subject(node0, INTEGER(base_codes), S);
+		walk_nonfixed_subject(node0, INTEGER(base_codes), S,
+			seq2match_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING _match_ACtree()\n");

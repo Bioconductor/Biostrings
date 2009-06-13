@@ -76,4 +76,26 @@ typedef struct cachedxstringset {
 } CachedXStringSet;
 
 
+/*
+ * The Seq2MatchBuf struct is used for reporting matches during matching of
+ * multiple sequences against a reference sequence.
+ */
+#define MATCHES_AS_NULL		0  // Matches are not stored at all -> NULL is returned.
+#define MATCHES_AS_WHICH	1  // Only the matching keys are returned.
+#define MATCHES_AS_COUNTS	2  // Matches are counted only -> an integer vector is
+				   // returned.
+#define MATCHES_AS_ENDS		3  // Only the ends of the matches are stored -> a list
+				   // of integer vectors is returned (with eventually
+				   // NULL elements).
+/* Not supported yet */
+#define MATCHES_AS_MINDEX	4  // Matches are fully stored -> an MIndex object is
+				   // returned.
+
+typedef struct seq2match_buf {
+	int matches_as;
+	IntAE matching_keys;
+	IntAE match_counts;
+	IntAEAE match_ends;
+} Seq2MatchBuf;
+
 #endif
