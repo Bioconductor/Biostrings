@@ -1,3 +1,7 @@
+#include <Rmath.h>
+#include <R_ext/Random.h>
+#include <R_ext/Applic.h>
+
 /* Driver routine to call RCONT2 from R, B times.
    Calculates the log-likelihood ratio for each generated table.
    Largely a cut'n'paste translation of chisqsim()
