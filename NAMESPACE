@@ -243,8 +243,8 @@ export(
     matchProbePair,
 
     ## matchPWM.R
-    maxWeights, maxScore,
-    PWMscoreStartingAt, matchPWM, countPWM,
+    maxWeights, minWeights, maxScore, minScore, unitScale,
+    PWM, PWMscoreStartingAt, matchPWM, countPWM,
 
     ## matchWCP.R
     WCPscoreStartingAt, matchWCP, countWCP,
@@ -277,8 +277,8 @@ exportMethods(
     matchPattern, countPattern, vcountPattern,
     matchLRPatterns, trimLRPatterns,
     matchProbePair,
-    maxWeights, maxScore,
-    matchPWM, countPWM,
+    maxWeights, minWeights, maxScore, minScore,
+    PWM, matchPWM, countPWM,
     matchWCP, countWCP,
     findPalindromes, findComplementedPalindromes,
     palindromeArmLength, complementedPalindromeArmLength,

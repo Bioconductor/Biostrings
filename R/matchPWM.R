@@ -1,5 +1,5 @@
 ### =========================================================================
-### The matchPWM() generic & related functions
+### Position Weight Matrix (PWM) Functions
 ### -------------------------------------------------------------------------
 
 
@@ -28,7 +28,7 @@
     subject
 }
 
-### Utility function for getting the max weight for each position in the PWM
+### Utility functions for getting the max and min weights for each position in the PWM
 setGeneric("maxWeights", function(x) standardGeneric("maxWeights"))
 
 setMethod("maxWeights", "matrix",
@@ -40,10 +40,23 @@ setMethod("maxWeights", "matrix",
         do.call(pmax, lapply(seq_len(nrow(x)), function(i) x[i, ]))
     })
 
-### Utility function for getting the highest possible score
-setGeneric("maxScore", function(x) standardGeneric("maxScore"))
+setGeneric("minWeights", function(x) standardGeneric("minWeights"))
 
+setMethod("minWeights", "matrix",
+    function(x)
+    {
+        x <- .normargPwm(x)
+        #sapply(seq_len(ncol(x)), function(i) max(x[ , i]))
+        ## This will be faster than the above on large matrices
+        do.call(pmin, lapply(seq_len(nrow(x)), function(i) x[i, ]))
+    })
+
+### Utility function for getting the highest and lowest possible score
+setGeneric("maxScore", function(x) standardGeneric("maxScore"))
 setMethod("maxScore", "ANY", function(x) sum(maxWeights(x)))
+
+setGeneric("minScore", function(x) standardGeneric("minScore"))
+setMethod("minScore", "ANY", function(x) sum(minWeights(x)))
 
 .normargMinScore <- function(min.score, pwm)
 {
@@ -60,6 +73,12 @@ setMethod("maxScore", "ANY", function(x) sum(maxWeights(x)))
     maxScore(pwm) * as.double(min.score) / 100.00
 }
 
+unitScale <- function(x)
+{
+    minS <- minScore(x)
+    (x - minS/ncol(x))/(maxScore(x) - minS)
+}
+
 ### Method needed for searching the minus strand of a chromosome like
 ### this:
 ###   > matchPWM(reverseComplement(pwm), chr1)
@@ -72,6 +91,63 @@ setMethod("reverseComplement", "matrix",
         ans
     }
 )
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PWM" generic and methods.
+###
+
+setGeneric("PWM", signature="x",
+    function(x, type = c("log2probratio", "prob"),
+             prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
+        standardGeneric("PWM")
+)
+
+### Dispatch on 'x' (see signature of generic).
+setMethod("PWM", "character",
+    function(x, type = c("log2probratio", "prob"),
+             prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
+        PWM(DNAStringSet(x), type = type, prior.params = prior.params)
+)
+
+### Dispatch on 'x' (see signature of generic).
+setMethod("PWM", "DNAStringSet",
+    function(x, type = c("log2probratio", "prob"),
+             prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
+    {
+        if (length(unique(nchar(x))) != 1)
+            stop("all of the strings in 'x' much have the same number of characters")
+        type <- match.arg(type)
+        if (!is.numeric(prior.params))
+            stop("'prior.params' must be a numeric vector")
+        prior.params <- prior.params[DNA_BASES]
+        if (any(is.na(prior.params) | prior.params < 0))
+            stop("'prior.params' must have non-negative named elements corresponding to 'DNA_BASES'")
+
+        cmat <- consensusMatrix(x)
+        rsums <- rowSums(cmat)
+        if (any(rsums[!(names(rsums) %in% DNA_BASES)] > 0))
+            stop("cannot calculate PWM with non 'DNA_BASES' characters")
+        cmat <- cmat[DNA_BASES, , drop=FALSE]
+
+        priorN <- sum(prior.params)
+        priorProbs <- prior.params/priorN
+        postProbs <- (cmat + prior.params)/(length(x) + priorN)
+
+        if (type == "log2probratio") {
+            if (any(priorProbs == 0))
+                stop("infinite values in pwm due to 0's in 'prior.params'")
+            ans <- unitScale(log2(postProbs/priorProbs))
+        } else {
+            ans <- unitScale(postProbs)
+        }
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "PWMscoreStartingAt" function.
+###
 
 PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
 {
@@ -94,6 +170,10 @@ PWMscore <- function(pwm, subject, start=1)
     .Deprecated('PWMscoreStartingAt')
     PWMscoreStartingAt(pwm, subject, starting.at=start)
 }
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "matchPWM" generic and methods.
+###
 
 ### pwm: the Position Weight Matrix (numeric matrix with row names A, C, G and T)
 ### subject: a DNAString object containing the subject sequence
@@ -134,10 +214,6 @@ PWMscore <- function(pwm, subject, start=1)
         return(C_ans)
     unsafe.newXStringViews(subject(subject), start(C_ans), width(C_ans))
 }
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "matchPWM" generic and methods.
-###
 
 setGeneric("matchPWM", signature="subject",
     function(pwm, subject, min.score="80%")
