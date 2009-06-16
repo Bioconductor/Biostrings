@@ -275,7 +275,7 @@
   ## especially when there is a high number of matches:
 
   count_index0 <- countPDict(pdict0, chr3R)
-  identical(count_index0, count_index)  # TRUE
+  stopifnot(identical(count_index0, count_index))
 
   if (interactive()) {
     ## What's the impact of the dictionary width on performance?
@@ -329,7 +329,7 @@
 
   ## Without vcountPDict(), 'mat1' could have been computed with:
   mat2 <- sapply(unname(subject), function(x) countPDict(pdict0, x))
-  identical(mat1, mat2)  # TRUE
+  stopifnot(identical(mat1, mat2))
   ## but using vcountPDict() is faster (10x or more, depending of the
   ## average length of the sequences in 'subject').
 
@@ -452,7 +452,7 @@
     names(mapPSIDs1to2alt) <- psIDs1
 
     ## 'mapPSIDs1to2alt' and 'mapPSIDs1to2' contain the same mapping:
-    identical(lapply(mapPSIDs1to2alt, sort), lapply(mapPSIDs1to2, sort))
+    stopifnot(identical(lapply(mapPSIDs1to2alt, sort), lapply(mapPSIDs1to2, sort)))
   }
 }
 

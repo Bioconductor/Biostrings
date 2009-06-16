@@ -48,7 +48,7 @@ void _init_match_reporting(SEXP mode)
 	else if (strcmp(mode0, "ASIRANGES") == 0)
 		mrmode = ASIRANGES;
 	else
-		error("\"%s\": unsupported reporting mode", mode0);
+		error("\"%s\": unsupported match reporting mode", mode0);
 	match_count = match_shift = 0;
 	matchbuf = new_RangeAE(0, 0);
 	return;
