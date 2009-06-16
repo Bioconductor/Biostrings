@@ -87,7 +87,7 @@ IntAE *_MIndex_get_matching_keys()
 
 SEXP _MIndex_get_match_which_asINTEGER()
 {
-	IntAE_sum_val(&matching_keys, 1);
+	IntAE_shift(&matching_keys, 1);
 	IntAE_qsort(&matching_keys);
 	return IntAE_asINTEGER(&matching_keys);
 }
