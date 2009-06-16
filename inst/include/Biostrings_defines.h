@@ -76,45 +76,4 @@ typedef struct cachedxstringset {
 } CachedXStringSet;
 
 
-/*
- * The MatchPDictBuf struct is used for storing the matches found by the
- * matchPDict() function.
- */
-#define MATCHES_AS_NULL		0  // Matches are not stored at all -> NULL is returned.
-#define MATCHES_AS_WHICH	1  // Only the matching keys are returned.
-#define MATCHES_AS_COUNTS	2  // Matches are counted only -> an integer vector is
-				   // returned.
-#define MATCHES_AS_STARTS	3  // Only the ends of the matches are stored -> a list
-				   // of integer vectors is returned (with eventually
-				   // NULL elements).
-#define MATCHES_AS_ENDS		4  // Only the ends of the matches are stored -> a list
-				   // of integer vectors is returned (with eventually
-				   // NULL elements).
-/* Not supported yet */
-#define MATCHES_AS_MINDEX	5  // Matches are fully stored -> an MIndex object is
-				   // returned.
-
-typedef struct tbmatch_buf {
-	int is_init;
-	int tb_width;
-	const int *head_widths;
-	const int *tail_widths;
-	IntAE matching_keys;
-	IntAEAE match_ends;
-} TBMatchBuf;
-
-typedef struct seq2match_buf {
-	IntAE matching_keys;
-	IntAE match_counts;
-	IntAEAE match_starts;
-	IntAEAE match_widths;
-} Seq2MatchBuf;
-
-typedef struct matchpdict_buf {
-	int matches_as;
-	int count_only;
-	TBMatchBuf tb_matches;
-	Seq2MatchBuf matches;
-} MatchPDictBuf;
-
 #endif

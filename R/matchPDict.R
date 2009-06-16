@@ -128,7 +128,7 @@
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XString <- function(threeparts, subject,
                                        max.mismatch, fixed,
-                                       matches.as, envir)
+                                       count.only, envir)
 {
     fixed <- normargFixed(fixed, subject)
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
@@ -137,14 +137,14 @@
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, fixed,
-          matches.as, envir,
+          count.only, envir,
           PACKAGE="Biostrings")
 }
 
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XStringViews <- function(threeparts, subject,
                                             max.mismatch, fixed,
-                                            matches.as, envir)
+                                            count.only, envir)
 {
     fixed <- normargFixed(fixed, subject)
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
@@ -153,15 +153,14 @@
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject(subject), start(subject), width(subject),
           max.mismatch, fixed,
-          matches.as, envir,
+          count.only, envir,
           PACKAGE="Biostrings")
 }
 
 ### 'threeparts' is a PDict3Parts object.
 .vmatch.PDict3Parts.XStringSet <- function(threeparts, subject,
                                            max.mismatch, fixed,
-                                           collapse, weight,
-                                           matches.as, envir)
+                                           collapse, weight, count.only, envir)
 {
     fixed <- normargFixed(fixed, subject)
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
@@ -171,7 +170,7 @@
           subject,
           max.mismatch, fixed,
           collapse, weight,
-          matches.as, envir,
+          count.only, envir,
           PACKAGE="Biostrings")
 }
 
@@ -181,28 +180,28 @@
 ###
 
 .match.TB_PDict <- function(pdict, subject, algorithm,
-                            max.mismatch, fixed, verbose, matches.as)
+                            max.mismatch, fixed, verbose, count.only)
 {
     if (is(subject, "DNAString"))
         C_ans <- .match.PDict3Parts.XString(pdict@threeparts, subject,
                                             max.mismatch, fixed,
-                                            matches.as, NULL)
+                                            count.only, NULL)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .match.PDict3Parts.XStringViews(pdict@threeparts, subject,
                                                  max.mismatch, fixed,
-                                                 matches.as, NULL)
+                                                 count.only, NULL)
     else
         stop("'subject' must be a DNAString object,\n",
              "  a MaskedDNAString object,\n",
              "  or an XStringViews object with a DNAString subject")
-    if (matches.as != "MATCHES_AS_ENDS")
+    if (count.only %in% c(TRUE, NA))  # whichPDict() or countPDict()
         return(C_ans)
     # matchPDict()
     new("ByPos_MIndex", width=width(pdict), NAMES=names(pdict), ends=C_ans)
 }
 
 .match.MTB_PDict <- function(pdict, subject, algorithm,
-                             max.mismatch, fixed, verbose, matches.as)
+                             max.mismatch, fixed, verbose, count.only)
 {
     tb_pdicts <- as.list(pdict)
     NTB <- length(tb_pdicts)
@@ -225,13 +224,9 @@
             tb_pdict <- tb_pdicts[[i]]
             st <- system.time(
                 {
-                    if (matches.as == "MATCHES_AS_COUNTS")
-                        matches.as2 <- "MATCHES_AS_ENDS"
-                    else
-                        matches.as2 <- matches.as
                     ans_part <- .match.TB_PDict(tb_pdict, subject, algorithm,
                                                 max.mismatch, fixed, verbose,
-                                                matches.as2)
+                                                (if (is.na(count.only)) NA else FALSE))
                 }, gcFirst=TRUE)
             if (verbose) {
                 print(st)
@@ -240,7 +235,7 @@
             ans_part
         }
     )
-    if (matches.as == "MATCHES_AS_WHICH")
+    if (is.na(count.only)) # whichPDict()
         return(unique(sort(unlist(ans_parts))))
     if (verbose)
         cat("Combining the results obtained for ",
@@ -248,14 +243,14 @@
     st <- system.time(ans <- ByPos_MIndex.combine(ans_parts), gcFirst=TRUE)
     if (verbose)
         print(st)
-    if (matches.as == "MATCHES_AS_COUNTS")
+    if (count.only) # countPDict()
         return(countIndex(ans))
-    return(ans)
+    # matchPDict()
+    ans
 }
 
 .matchPDict <- function(pdict, subject, algorithm,
-                        max.mismatch, fixed,
-                        verbose, matches.as="MATCHES_AS_ENDS")
+                        max.mismatch, fixed, verbose, count.only=FALSE)
 {
     which_pp_excluded <- NULL
     dups0 <- dups(pdict)
@@ -268,20 +263,24 @@
         stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
         ans <- .match.TB_PDict(pdict, subject, algorithm,
-                               max.mismatch, fixed, verbose, matches.as)
+                               max.mismatch, fixed, verbose, count.only)
     else if (is(pdict, "MTB_PDict"))
         ans <- .match.MTB_PDict(pdict, subject, algorithm,
-                                max.mismatch, fixed, verbose, matches.as)
+                                max.mismatch, fixed, verbose, count.only)
     else
         stop("'pdict' must be a PDict object")
     if (length(which_pp_excluded) == 0L)
         return(ans)
-    if (matches.as == "MATCHES_AS_WHICH")
+    if (is.na(count.only)) {
+        ## whichPDict()
         return(members(dups0, ans))
-    if (matches.as == "MATCHES_AS_COUNTS") {
+    }
+    if (count.only) {
+        ## countPDict()
         ans[which_pp_excluded] <- ans[togroup(dups0, which_pp_excluded)]
         return(ans)
     }
+    ## matchPDict()
     if (is(ans, "ByPos_MIndex")) {
         ans@dups0 <- dups0
     } else {
@@ -298,8 +297,7 @@
 
 .vmatchPDict <- function(pdict, subject, algorithm,
                          max.mismatch, fixed,
-                         collapse, weight,
-                         verbose, matches.as="MATCHES_AS_ENDS")
+                         collapse, weight, verbose, count.only=FALSE)
 {
     which_pp_excluded <- NULL
     dups0 <- dups(pdict)
@@ -312,9 +310,9 @@
     max.mismatch <- normargMaxMismatch(max.mismatch)
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
-    if (matches.as == "MATCHES_AS_WHICH") {
+    if (is.na(count.only)) {
         ## vwhichPDict()
-    } else if (matches.as == "MATCHES_AS_COUNTS") {
+    } else if (count.only) {
         ## vcountPDict()
         collapse <- normargCollapse(collapse)
         if (collapse) {
@@ -343,18 +341,18 @@
     if (is(pdict, "TB_PDict"))
         ans <- .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
                                               max.mismatch, fixed,
-                                              collapse, weight, matches.as, NULL)
+                                              collapse, weight, count.only, NULL)
     else if (is(pdict, "MTB_PDict"))
         stop("MTB_PDict objects are not supported yet, sorry")
     else
         stop("'pdict' must be a PDict object")
     if (length(which_pp_excluded) == 0L)
         return(ans)
-    if (matches.as == "MATCHES_AS_WHICH") {
+    if (is.na(count.only)) {
         ## vwhichPDict()
         return(vmembers(dups0, ans))
     }
-    if (matches.as == "MATCHES_AS_COUNTS") {
+    if (count.only) {
         ## vcountPDict()
         if (collapse == 0L) {
             ans[which_pp_excluded, ] <- ans[togroup(dups0, which_pp_excluded), ]
@@ -424,7 +422,7 @@ setMethod("countPDict", "XString",
     function(pdict, subject, algorithm="auto",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .matchPDict(pdict, subject, algorithm,
-                    max.mismatch, fixed, verbose, matches.as="MATCHES_AS_COUNTS")
+                    max.mismatch, fixed, verbose, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -439,7 +437,7 @@ setMethod("countPDict", "XStringViews",
     function(pdict, subject, algorithm="auto",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .matchPDict(pdict, subject, algorithm,
-                    max.mismatch, fixed, verbose, matches.as="MATCHES_AS_COUNTS")
+                    max.mismatch, fixed, verbose, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -466,7 +464,7 @@ setMethod("whichPDict", "XString",
     function(pdict, subject, algorithm="auto",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .matchPDict(pdict, subject, algorithm,
-                    max.mismatch, fixed, verbose, matches.as="MATCHES_AS_WHICH")
+                    max.mismatch, fixed, verbose, count.only=NA)
 )
 
 
@@ -532,7 +530,7 @@ setMethod("vcountPDict", "XStringSet",
              collapse=FALSE, weight=1L, verbose=FALSE)
         .vmatchPDict(pdict, subject, algorithm,
                      max.mismatch, fixed,
-                     collapse, weight, verbose, matches.as="MATCHES_AS_COUNTS")
+                     collapse, weight, verbose, count.only=TRUE)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -573,7 +571,7 @@ setMethod("vwhichPDict", "XStringSet",
              max.mismatch=0, fixed=TRUE, verbose=FALSE)
         .vmatchPDict(pdict, subject, algorithm,
                      max.mismatch, fixed,
-                     0L, 1L, verbose, matches.as="MATCHES_AS_WHICH")
+                     0L, 1L, verbose, count.only=NA)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
