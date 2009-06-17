@@ -112,6 +112,7 @@ exportMethods(
 ###   toComplex.R
 ###   replaceLetterAt.R
 ###   injectHardMask.R
+###   misc.R
 
 export(
     ## readFASTA.R:
@@ -156,6 +157,9 @@ export(
 
     ## injectHardMask.R:
     injectHardMask,
+
+    ## misc.R:
+    N50,
 
     ## Old stuff (Defunct or Deprecated):
     FASTArecordsToBStringViews, read.BStringViews, write.BStringViews,
