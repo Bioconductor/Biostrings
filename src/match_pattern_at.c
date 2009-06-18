@@ -40,8 +40,6 @@ static int nmismatch_at_Pshift_fixedPfixedS(const RoSeq *P, const RoSeq *S,
 	int nmismatch, i, j;
 	const char *p, *s;
 
-	if (P == NULL)
-		return 0;
 	nmismatch = 0;
 	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
 	     i < P->nelt;
@@ -61,8 +59,6 @@ static int nmismatch_at_Pshift_fixedPnonfixedS(const RoSeq *P, const RoSeq *S,
 	int nmismatch, i, j;
 	const char *p, *s;
 
-	if (P == NULL)
-		return 0;
 	nmismatch = 0;
 	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
 	     i < P->nelt;
@@ -82,8 +78,6 @@ static int nmismatch_at_Pshift_nonfixedPfixedS(const RoSeq *P, const RoSeq *S,
 	int nmismatch, i, j;
 	const char *p, *s;
 
-	if (P == NULL)
-		return 0;
 	nmismatch = 0;
 	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
 	     i < P->nelt;
@@ -103,8 +97,6 @@ static int nmismatch_at_Pshift_nonfixedPnonfixedS(const RoSeq *P, const RoSeq *S
 	int nmismatch, i, j;
 	const char *p, *s;
 
-	if (P == NULL)
-		return 0;
 	nmismatch = 0;
 	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
 	     i < P->nelt;
@@ -205,7 +197,7 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset():\n");
 #endif
-	if (P == NULL || P->nelt == 0)
+	if (P->nelt == 0)
 		return 0;
 	if (max_nedit == 0)
 		error("Biostrings internal error in _nedit_for_Ploffset(): ",

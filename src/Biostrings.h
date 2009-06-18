@@ -873,6 +873,18 @@ void _MatchPDictBuf_append_and_flush(
 	int view_offset
 );
 
+void _match_pdict_flanks(
+	int key,
+        SEXP low2high,
+	const RoSeqs *head,
+	const RoSeqs *tail,
+	const RoSeq *S,
+	int tb_end,
+	int max_mm,
+	int fixedP,
+	MatchPDictBuf *matchpdict_buf
+);
+
 
 /* PreprocessedTB_class.c */
 
@@ -986,11 +998,22 @@ SEXP ACtree2_build(
 	SEXP nodeextbuf_ptr
 );
 
-void _match_ACtree2(
+void _match_tbACtree2(
 	SEXP pptb,
 	const RoSeq *S,
 	int fixedS,
 	TBMatchBuf *tb_matches
+);
+
+void _match_pdictACtree2(
+	SEXP pptb,
+	const RoSeqs *head,
+	const RoSeqs *tail,
+	const RoSeq *S,
+	int max_mm,
+	int fixedP,
+	int fixedS,
+	MatchPDictBuf *matchpdict_buf
 );
 
 

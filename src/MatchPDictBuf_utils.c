@@ -326,3 +326,58 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
 	return;
 }
 
+
+/****************************************************************************
+ * _match_pdict_flanks()
+ */
+
+static int nmismatch_in_headtail(const RoSeq *H, const RoSeq *T,
+                const RoSeq *S, int Hshift, int Tshift, int max_mm)
+{
+	int nmismatch;
+
+	nmismatch = _selected_nmismatch_at_Pshift_fun(H, S, Hshift, max_mm);
+	if (nmismatch > max_mm)
+		return nmismatch;
+	max_mm -= nmismatch;
+	nmismatch += _selected_nmismatch_at_Pshift_fun(T, S, Tshift, max_mm);
+	return nmismatch;
+}
+
+static void match_headtail(int key, const RoSeqs *head, const RoSeqs *tail,
+		const RoSeq *S, int tb_end, int max_mm, int fixedP,
+		MatchPDictBuf *matchpdict_buf)
+{
+	const RoSeq *H, *T;
+	int HTdeltashift, nmismatch;
+
+	H = head->elts + key;
+	T = tail->elts + key;
+	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
+	nmismatch = nmismatch_in_headtail(H, T,
+			S, tb_end - HTdeltashift, tb_end, max_mm);
+	if (nmismatch <= max_mm)
+		_MatchPDictBuf_report_match(matchpdict_buf, key, tb_end);
+	return;
+}
+
+void _match_pdict_flanks(int key, SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+		const RoSeq *S, int tb_end, int max_mm, int fixedP,
+		MatchPDictBuf *matchpdict_buf)
+{
+	SEXP dups;
+	int *dup, i;
+
+	match_headtail(key, head, tail,
+		S, tb_end, max_mm, fixedP,
+		matchpdict_buf);
+	dups = VECTOR_ELT(low2high, key);
+	if (dups == R_NilValue)
+		return;
+	for (i = 0, dup = INTEGER(dups); i < LENGTH(dups); i++, dup++)
+		match_headtail(*dup - 1, head, tail,
+			S, tb_end, max_mm, fixedP,
+			matchpdict_buf);
+	return;
+}
+
