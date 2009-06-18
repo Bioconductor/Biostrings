@@ -809,9 +809,9 @@ SEXP find_palindromes(
 );
 
 
-/* MatchPDictBuf_utils.c */
+/* match_pdict_utils.c */
 
-SEXP debug_MatchPDictBuf_utils();
+SEXP debug_match_pdict_utils();
 
 TBMatchBuf _new_TBMatchBuf(
 	int tb_length,
@@ -882,6 +882,15 @@ void _match_pdict_flanks(
 	int tb_end,
 	int max_mm,
 	int fixedP,
+	MatchPDictBuf *matchpdict_buf
+);
+
+void _match_pdict_all_flanks(
+	SEXP low2high,
+	const RoSeqs *head,
+	const RoSeqs *tail,
+	const RoSeq *S,
+	int max_mm,
 	MatchPDictBuf *matchpdict_buf
 );
 

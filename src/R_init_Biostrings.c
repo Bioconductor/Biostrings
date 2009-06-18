@@ -137,8 +137,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_find_palindromes, 0),
 	CALLMETHOD_DEF(find_palindromes, 6),
 
-/* MatchPDictBuf_utils.c */
-	CALLMETHOD_DEF(debug_MatchPDictBuf_utils, 0),
+/* match_pdict_utils.c */
+	CALLMETHOD_DEF(debug_match_pdict_utils, 0),
 
 /* PreprocessedTB_class.c */
 	CALLMETHOD_DEF(debug_PreprocessedTB_class, 0),

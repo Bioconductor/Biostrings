@@ -56,92 +56,6 @@ static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
 				head_widths, tail_widths);
 }
 
-
-/****************************************************************************
- * Inexact matching on the heads and tails of a TB_PDict object
- * ============================================================
- */
-
-// Return the number of mismatches in the pattern head and tail.
-static int nmismatch_in_headtail(const RoSeq *H, const RoSeq *T,
-		const RoSeq *S, int Hshift, int Tshift, int max_mm)
-{
-	int nmismatch;
-
-	nmismatch = _selected_nmismatch_at_Pshift_fun(H, S, Hshift, max_mm);
-	if (nmismatch > max_mm)
-		return nmismatch;
-	max_mm -= nmismatch;
-	nmismatch += _selected_nmismatch_at_Pshift_fun(T, S, Tshift, max_mm);
-	return nmismatch;
-}
-
-/* k1 must be <= k2 */
-static void match_dup_headtail(int k1, int k2, const RoSeqs *head, const RoSeqs *tail,
-		const RoSeq *S, int max_mm,
-		MatchPDictBuf *matchpdict_buf)
-{
-	const RoSeq *H, *T;
-	IntAE *tb_end_buf;
-	int HTdeltashift, i, Tshift, nmismatch;
-
-	H = head->elts + k2;
-	T = tail->elts + k2;
-	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
-	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + k1;
-	for (i = 0; i < tb_end_buf->nelt; i++) {
-		Tshift = tb_end_buf->elts[i];
-		nmismatch = nmismatch_in_headtail(H, T,
-				S, Tshift - HTdeltashift, Tshift, max_mm);
-		if (nmismatch <= max_mm)
-			_MatchPDictBuf_report_match(matchpdict_buf, k2, Tshift);
-	}
-	return;
-}
-
-/* If 'head' and 'tail' are empty (i.e. 0-width) then match_headtail() just
-   propagates the matches to the duplicates */
-static void match_headtail(SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
-		const RoSeq *S, int max_mm,
-		MatchPDictBuf *matchpdict_buf)
-{
-	IntAE *tb_matching_keys;
-	int nkeys, i, j, *dup, k1, k2;
-	SEXP dups;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING match_headtail()\n");
-#endif
-	tb_matching_keys = &(matchpdict_buf->tb_matches.matching_keys);
-	nkeys = tb_matching_keys->nelt;
-	for (i = 0; i < nkeys; i++) {
-		k1 = tb_matching_keys->elts[i];
-		dups = VECTOR_ELT(low2high, k1);
-		if (dups != R_NilValue) {
-			for (j = 0, dup = INTEGER(dups);
-			     j < LENGTH(dups);
-			     j++, dup++)
-			{
-				k2 = *dup - 1;
-				match_dup_headtail(k1, k2,
-						head, tail,
-						S, max_mm,
-						matchpdict_buf);
-			}
-		}
-		match_dup_headtail(k1, k1,
-				head, tail,
-				S, max_mm,
-				matchpdict_buf);
-	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING match_headtail()\n");
-#endif
-	return;
-}
-
 static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 		const RoSeq *S,
 		SEXP max_mismatch, SEXP fixed,
@@ -180,9 +94,10 @@ static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 	else
 		error("%s: unsupported Trusted Band type in 'pdict'", type);
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
-	/* Call match_headtail() even if 'head' and 'tail' are empty (0-width)
-         * because we need to propagate the matches to the duplicates anyway */
-	match_headtail(low2high, head, tail,
+	/* Call _match_pdict_all_flanks() even if 'head' and 'tail' are
+	 * empty (0-width) because we need to propagate the matches to
+	 * the duplicates anyway */
+	_match_pdict_all_flanks(low2high, head, tail,
 		S, max_mm, matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -327,7 +242,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, const RoSeqs *head, const RoSeq
 	CachedXStringSet S;
 	SEXP ans;
 	RoSeq S_elt;
-	IntAE *count_buf;
+	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	S = _new_CachedXStringSet(subject);
@@ -360,7 +275,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, const RoSeqs *head, const RoSeqs *
 	CachedXStringSet S;
 	SEXP ans;
 	RoSeq S_elt;
-	IntAE *count_buf;
+	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	S = _new_CachedXStringSet(subject);

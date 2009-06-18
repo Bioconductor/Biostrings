@@ -1,16 +1,16 @@
-/*****************************************************************************
- * Low-level manipulation of the MatchPDictBuf buffer
- * --------------------------------------------------
- * The MatchPDictBuf struct is used for storing the matches found by the
- * matchPDict() function.
- */
+/****************************************************************************
+ *                                                                          *
+ *       Low-level utility functions used by the matchPDict() C code        *
+ *                           Author: Herve Pages                            *
+ *                                                                          *
+ ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
 
 static int debug = 0;
 
-SEXP debug_MatchPDictBuf_utils()
+SEXP debug_match_pdict_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
@@ -21,6 +21,15 @@ SEXP debug_MatchPDictBuf_utils()
 #endif
 	return R_NilValue;
 }
+
+
+
+/*****************************************************************************
+ * Low-level manipulation of the MatchPDictBuf buffer
+ * --------------------------------------------------
+ * The MatchPDictBuf struct is used for storing the matches found by the
+ * matchPDict() function.
+ */
 
 static int string2code(const char *s)
 {
@@ -327,12 +336,14 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
 }
 
 
-/****************************************************************************
+
+/*****************************************************************************
  * _match_pdict_flanks()
+ * ---------------------
  */
 
-static int nmismatch_in_headtail(const RoSeq *H, const RoSeq *T,
-                const RoSeq *S, int Hshift, int Tshift, int max_mm)
+static int nmismatch_in_HT(const RoSeq *H, const RoSeq *T,
+		const RoSeq *S, int Hshift, int Tshift, int max_mm)
 {
 	int nmismatch;
 
@@ -344,7 +355,7 @@ static int nmismatch_in_headtail(const RoSeq *H, const RoSeq *T,
 	return nmismatch;
 }
 
-static void match_headtail(int key, const RoSeqs *head, const RoSeqs *tail,
+static void match_HT(int key, const RoSeqs *head, const RoSeqs *tail,
 		const RoSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -354,7 +365,7 @@ static void match_headtail(int key, const RoSeqs *head, const RoSeqs *tail,
 	H = head->elts + key;
 	T = tail->elts + key;
 	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
-	nmismatch = nmismatch_in_headtail(H, T,
+	nmismatch = nmismatch_in_HT(H, T,
 			S, tb_end - HTdeltashift, tb_end, max_mm);
 	if (nmismatch <= max_mm)
 		_MatchPDictBuf_report_match(matchpdict_buf, key, tb_end);
@@ -367,17 +378,121 @@ void _match_pdict_flanks(int key, SEXP low2high, const RoSeqs *head, const RoSeq
 {
 	SEXP dups;
 	int *dup, i;
+/*
+	static ncalls = 0;
 
-	match_headtail(key, head, tail,
+	ncalls++;
+	Rprintf("_match_pdict_flanks(): ncalls=%d key=%d tb_end=%d\n", ncalls, key, tb_end);
+*/
+	match_HT(key, head, tail,
 		S, tb_end, max_mm, fixedP,
 		matchpdict_buf);
 	dups = VECTOR_ELT(low2high, key);
 	if (dups == R_NilValue)
 		return;
 	for (i = 0, dup = INTEGER(dups); i < LENGTH(dups); i++, dup++)
-		match_headtail(*dup - 1, head, tail,
+		match_HT(*dup - 1, head, tail,
 			S, tb_end, max_mm, fixedP,
 			matchpdict_buf);
+	return;
+}
+
+
+
+/*****************************************************************************
+ * _match_pdict_all_flanks()
+ * -------------------------
+ */
+
+static void match_dup_headtail(int key, const RoSeqs *head, const RoSeqs *tail,
+		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
+{
+	const RoSeq *H, *T;
+	int HTdeltashift, i, Tshift, nmismatch;
+
+	H = head->elts + key;
+	T = tail->elts + key;
+	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
+	for (i = 0; i < tb_end_buf->nelt; i++) {
+		Tshift = tb_end_buf->elts[i];
+		nmismatch = nmismatch_in_HT(H, T,
+			S, Tshift - HTdeltashift, Tshift, max_mm);
+		if (nmismatch <= max_mm)
+			_MatchPDictBuf_report_match(matchpdict_buf, key, Tshift);
+	}
+	return;
+}
+
+static void match_dups_headtail(int key, SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+		const RoSeq *S, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
+{
+	const IntAE *tb_end_buf;
+	SEXP dups;
+	const int *dup;
+	int i, dup_key;
+
+	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
+	match_dup_headtail(key, head, tail,
+			S, tb_end_buf, max_mm,
+			matchpdict_buf);
+	dups = VECTOR_ELT(low2high, key);
+	if (dups == R_NilValue)
+		return;
+	for (i = 0, dup = INTEGER(dups);
+	     i < LENGTH(dups);
+	     i++, dup++)
+	{
+		dup_key = *dup - 1;
+		match_dup_headtail(dup_key, head, tail,
+				S, tb_end_buf, max_mm,
+				matchpdict_buf);
+	}
+	return;
+}
+
+static void match_dups_headtail2(int key, SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+		const RoSeq *S, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
+{
+	const IntAE *tb_end_buf;
+	int i;
+
+	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
+	for (i = 0; i < tb_end_buf->nelt; i++) {
+		_match_pdict_flanks(key, low2high, head, tail,
+				S, tb_end_buf->elts[i], max_mm, 1,
+				matchpdict_buf);
+	}
+	return;
+}
+
+/* If 'head' and 'tail' are empty (i.e. 0-width) then _match_pdict_all_flanks() just
+   propagates the matches to the duplicates */
+void _match_pdict_all_flanks(SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+		const RoSeq *S, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
+{
+	const IntAE *tb_matching_keys;
+	int nkeys, i, key;
+
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] ENTERING _match_pdict_all_flanks()\n");
+#endif
+	tb_matching_keys = &(matchpdict_buf->tb_matches.matching_keys);
+	nkeys = tb_matching_keys->nelt;
+	for (i = 0; i < nkeys; i++) {
+		key = tb_matching_keys->elts[i];
+		match_dups_headtail(key, low2high, head, tail,
+				S, max_mm,
+				matchpdict_buf);
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug)
+		Rprintf("[DEBUG] LEAVING _match_pdict_all_flanks()\n");
+#endif
 	return;
 }
 
