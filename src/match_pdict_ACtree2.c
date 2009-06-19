@@ -10,8 +10,8 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
-#include <stdlib.h>
-#include <limits.h>
+#include <stdlib.h> /* for div() */
+#include <limits.h> /* for UINT_MAX */
 
 static int debug = 0;
 

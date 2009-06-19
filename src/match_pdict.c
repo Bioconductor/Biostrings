@@ -69,6 +69,7 @@ static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
+	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	type = get_classname(pptb);
 /*
 	if (strcmp(type, "ACtree2") == 0) {
@@ -93,7 +94,6 @@ static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 		_match_tbACtree2(pptb, S, fixedS, tb_matches);
 	else
 		error("%s: unsupported Trusted Band type in 'pdict'", type);
-	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	/* Call _match_pdict_all_flanks() even if 'head' and 'tail' are
 	 * empty (0-width) because we need to propagate the matches to
 	 * the duplicates anyway */
