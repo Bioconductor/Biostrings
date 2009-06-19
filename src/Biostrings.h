@@ -809,6 +809,37 @@ SEXP find_palindromes(
 );
 
 
+/* BitMatrix.c */
+
+void _BitCol_set_val(
+	const BitCol *bitcol,
+	BitWord val
+);
+
+BitCol _new_BitCol(
+	int nbit,
+	BitWord val
+);
+
+void _BitMatrix_set_val(
+	const BitMatrix *bitmat,
+	BitWord val
+);
+
+BitMatrix _new_BitMatrix(
+	int nrow,
+	int ncol,
+	BitWord val
+);
+
+void _BitMatrix_grow1rows(
+	BitMatrix *bitmat,
+	BitCol *bitcol
+);
+
+SEXP debug_BitMatrix();
+
+
 /* match_pdict_utils.c */
 
 SEXP debug_match_pdict_utils();
