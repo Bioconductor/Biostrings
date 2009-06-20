@@ -947,7 +947,7 @@ PPHeadTail _new_PPHeadTail(
 
 void _match_pdict_flanks(
 	int key,
-        SEXP low2high,
+	SEXP low2high,
 	const PPHeadTail *headtail,
 	const RoSeq *S,
 	int tb_end,

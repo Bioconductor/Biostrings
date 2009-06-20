@@ -387,6 +387,8 @@ PPHeadTail _new_PPHeadTail(SEXP pdict_head, SEXP pdict_tail,
 	}
 	headtail.head = head;
 	headtail.tail = tail;
+	headtail.max_Hwidth = max_Hwidth;
+	headtail.max_Twidth = max_Twidth;
 	headtail.max_HTwidth = max_HTwidth;
 	Rprintf("_new_PPHeadTail():\n");
 	Rprintf("  tb_length=%d max_mm=%d\n", tb_length, max_mm);
@@ -406,13 +408,15 @@ PPHeadTail _new_PPHeadTail(SEXP pdict_head, SEXP pdict_tail,
 			max_dups_length = LENGTH(dups);
 	}
 	max_dups_length++;
-	for (i = 0; i < 4; i++) {
-		headtail.pphead_buf[i] = _new_BitMatrix(max_dups_length,
-						max_Hwidth, 0UL);
-		headtail.pptail_buf[i] = _new_BitMatrix(max_dups_length,
-						max_Twidth, 0UL);
-	}
-	headtail.nmis_buf = _new_BitMatrix(max_dups_length, max_mm + 1, 0UL);
+	if (max_Hwidth > 0)
+		for (i = 0; i < 4; i++)
+			headtail.head_bmbuf[i] = _new_BitMatrix(max_dups_length,
+							max_Hwidth, 0UL);
+	if (max_Twidth > 0)
+		for (i = 0; i < 4; i++)
+			headtail.tail_bmbuf[i] = _new_BitMatrix(max_dups_length,
+							max_Twidth, 0UL);
+	headtail.nmis_bmbuf = _new_BitMatrix(max_dups_length, max_mm + 1, 0UL);
 	Rprintf("  nb of rows in each BitMatrix buffer=%d\n", max_dups_length);
 	return headtail;
 }

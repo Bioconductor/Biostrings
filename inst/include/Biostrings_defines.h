@@ -100,9 +100,9 @@ typedef struct bitmatrix {
 
 typedef struct ppheadtail {
 	RoSeqs head, tail;
-	int max_HTwidth;
-	BitMatrix pphead_buf[4], pptail_buf[4];
-	BitMatrix nmis_buf;
+	int max_Hwidth, max_Twidth, max_HTwidth;
+	BitMatrix head_bmbuf[4], tail_bmbuf[4];
+	BitMatrix nmis_bmbuf;
 } PPHeadTail;
 
 
