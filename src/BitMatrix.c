@@ -80,6 +80,32 @@ BitMatrix _new_BitMatrix(int nrow, int ncol, BitWord val)
 	return bitmat;
 }
 
+void _BitMatrix_grow1rows(BitMatrix *bitmat, BitCol *bitcol)
+{
+	BitWord *Lword, Rword, ret;
+	int i1, j;
+
+	if (bitmat->nrow != bitcol->nbit)
+		error("_BitMatrix_grow1rows(): bitmat and bitcol are incompatible");
+	for (i1 = 0; i1 < bitmat->nword_per_col; i1++) {
+		Lword = bitmat->words + i1;
+		Rword = bitcol->words[i1];
+		for (j = 0; j < bitmat->ncol; j++) {
+			ret = *Lword & Rword; // and
+			*Lword |= Rword; // or
+			Rword = ret;
+			Lword += bitmat->nword_per_col;
+		}
+	}
+	return;
+}
+
+
+
+/*****************************************************************************
+ * Testing and debugging stuff
+ */
+
 static void BitMatrix_tr(BitMatrix *in, BitMatByRow *out)
 {
 	BitWord rbit, *word;
@@ -123,26 +149,6 @@ static void BitMatrix_print(BitMatrix *bitmat)
 			Rprintf("%d", bit);
 		}
 		Rprintf(")\n");
-	}
-	return;
-}
-
-void _BitMatrix_grow1rows(BitMatrix *bitmat, BitCol *bitcol)
-{
-	BitWord *Lword, Rword, ret;
-	int i1, j;
-
-	if (bitmat->nrow != bitcol->nbit)
-		error("BitMatrix_addcol(): bitmat and bitcol are incompatible");
-	for (i1 = 0; i1 < bitmat->nword_per_col; i1++) {
-		Lword = bitmat->words + i1;
-		Rword = bitcol->words[i1];
-		for (j = 0; j < bitmat->ncol; j++) {
-			ret = *Lword & Rword; // and
-			*Lword |= Rword; // or
-			Rword = ret;
-			Lword += bitmat->nword_per_col;
-		}
 	}
 	return;
 }

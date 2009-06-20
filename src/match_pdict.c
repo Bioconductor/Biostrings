@@ -21,21 +21,9 @@ SEXP debug_match_pdict()
 	return R_NilValue;
 }
 
-static RoSeqs new_RoSeqs_from_head_or_tail(SEXP pptb, SEXP x)
-{
-	int tb_length, i;
-	RoSeqs seqs;
-	RoSeq *seq;
-
-	tb_length = _get_PreprocessedTB_length(pptb);
-	if (x != R_NilValue)
-		return _new_RoSeqs_from_XStringSet(tb_length, x);
-	seqs = _alloc_RoSeqs(tb_length);
-	for (i = 0, seq = seqs.elts; i < tb_length; i++, seq++)
-		seq->nelt = 0;
-	return seqs;
-}
-
+// FIXME: Pass 'const PPHeadTail *' instead of 'pdict_head'
+// and 'pdict_tail'. Also change MatchPDictBuf struct so the
+// head_widths and tail_widths members are IntAE buffers.
 static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
 		SEXP pptb, SEXP pdict_head, SEXP pdict_tail)
 {
@@ -56,7 +44,7 @@ static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
 				head_widths, tail_widths);
 }
 
-static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
+static void match_pdict(SEXP pptb, const PPHeadTail *headtail,
 		const RoSeq *S,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
@@ -73,7 +61,7 @@ static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 	type = get_classname(pptb);
 /*
 	if (strcmp(type, "ACtree2") == 0) {
-		_match_pdictACtree2(pptb, head, tail,
+		_match_pdictACtree2(pptb, headtail,
 			S, max_mm, fixedP, fixedS,
 			matchpdict_buf);
 		return;
@@ -94,10 +82,10 @@ static void match_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 		_match_tbACtree2(pptb, S, fixedS, tb_matches);
 	else
 		error("%s: unsupported Trusted Band type in 'pdict'", type);
-	/* Call _match_pdict_all_flanks() even if 'head' and 'tail' are
-	 * empty (0-width) because we need to propagate the matches to
-	 * the duplicates anyway */
-	_match_pdict_all_flanks(low2high, head, tail,
+	/* Call _match_pdict_all_flanks() even if 'headtail' is empty
+	 * (i.e. headtail->max_HTwidth == 0) because we need to propagate
+	 * the matches to the duplicates anyway */
+	_match_pdict_all_flanks(low2high, headtail,
 		S, max_mm, matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -129,7 +117,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
-	RoSeqs head, tail;
+	PPHeadTail headtail;
 	RoSeq S;
 	MatchPDictBuf matchpdict_buf;
 
@@ -137,13 +125,13 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
-	head = new_RoSeqs_from_head_or_tail(pptb, pdict_head);
-	tail = new_RoSeqs_from_head_or_tail(pptb, pdict_tail);
+	headtail = _new_PPHeadTail(pdict_head, pdict_tail,
+				pptb, max_mismatch);
 	S = _get_XString_asRoSeq(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
-	match_pdict(pptb, &head, &tail,
+	match_pdict(pptb, &headtail,
 		&S, max_mismatch, fixed,
 		&matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
@@ -159,7 +147,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
-	RoSeqs head, tail;
+	PPHeadTail headtail;
 	int tb_length;
 	RoSeq S, S_view;
 	int nviews, i, *view_start, *view_width, view_offset;
@@ -171,8 +159,8 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
 	tb_length = _get_PreprocessedTB_length(pptb);
-	head = new_RoSeqs_from_head_or_tail(pptb, pdict_head);
-	tail = new_RoSeqs_from_head_or_tail(pptb, pdict_tail);
+	headtail = _new_PPHeadTail(pdict_head, pdict_tail,
+				pptb, max_mismatch);
 	S = _get_XString_asRoSeq(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
@@ -188,7 +176,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 			error("'subject' has \"out of limits\" views");
 		S_view.elts = S.elts + view_offset;
 		S_view.nelt = *view_width;
-		match_pdict(pptb, &head, &tail,
+		match_pdict(pptb, &headtail,
 			&S_view, max_mismatch, fixed,
 			&matchpdict_buf);
 		_MatchPDictBuf_append_and_flush(&global_matchpdict_buf,
@@ -208,7 +196,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
  * .Call entry point: XStringSet_vmatch_pdict
  ****************************************************************************/
 
-static SEXP vwhich_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
+static SEXP vwhich_pdict(SEXP pptb, const PPHeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
@@ -223,7 +211,7 @@ static SEXP vwhich_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 	PROTECT(ans = NEW_LIST(S_length));
 	for (j = 0; j < S_length; j++) {
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
-		match_pdict(pptb, head, tail,
+		match_pdict(pptb, headtail,
 			&S_elt, max_mismatch, fixed,
 			matchpdict_buf);
 		SET_ELEMENT(ans, j, _Seq2MatchBuf_which_asINTEGER(&(matchpdict_buf->matches)));
@@ -233,7 +221,7 @@ static SEXP vwhich_pdict(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
 	return ans;
 }
 
-static SEXP vcount_pdict_notcollapsed(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
+static SEXP vcount_pdict_notcollapsed(SEXP pptb, const PPHeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
@@ -253,7 +241,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, const RoSeqs *head, const RoSeq
 	     j++, current_col += tb_length)
 	{
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
-		match_pdict(pptb, head, tail,
+		match_pdict(pptb, headtail,
 			&S_elt, max_mismatch, fixed,
 			matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
@@ -265,7 +253,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, const RoSeqs *head, const RoSeq
 	return ans;
 }
 
-static SEXP vcount_pdict_collapsed(SEXP pptb, const RoSeqs *head, const RoSeqs *tail,
+static SEXP vcount_pdict_collapsed(SEXP pptb, const PPHeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		int collapse, SEXP weight,
@@ -296,7 +284,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, const RoSeqs *head, const RoSeqs *
 	for (j = 0; j < S_length; j++)
 	{
 		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
-		match_pdict(pptb, head, tail,
+		match_pdict(pptb, headtail,
 			&S_elt, max_mismatch, fixed,
 			matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
@@ -325,7 +313,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP collapse, SEXP weight,
 		SEXP matches_as, SEXP envir)
 {
-	RoSeqs head, tail;
+	PPHeadTail headtail;
 	int collapse0;
 	MatchPDictBuf matchpdict_buf;
 	SEXP ans;
@@ -334,8 +322,8 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XStringSet_vmatch_pdict()\n");
 #endif
-	head = new_RoSeqs_from_head_or_tail(pptb, pdict_head);
-	tail = new_RoSeqs_from_head_or_tail(pptb, pdict_tail);
+	headtail = _new_PPHeadTail(pdict_head, pdict_tail,
+				pptb, max_mismatch);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
@@ -346,7 +334,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		      matchpdict_buf.matches_as);
 	    break;
 	    case MATCHES_AS_WHICH:
-		PROTECT(ans = vwhich_pdict(pptb, &head, &tail,
+		PROTECT(ans = vwhich_pdict(pptb, &headtail,
 				subject,
 				max_mismatch, fixed,
 				&matchpdict_buf));
@@ -354,12 +342,12 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	    case MATCHES_AS_COUNTS:
 		collapse0 = INTEGER(collapse)[0];
 		if (collapse0 == 0)
-			PROTECT(ans = vcount_pdict_notcollapsed(pptb, &head, &tail,
+			PROTECT(ans = vcount_pdict_notcollapsed(pptb, &headtail,
 					subject,
 					max_mismatch, fixed,
 					&matchpdict_buf));
 		else
-			PROTECT(ans = vcount_pdict_collapsed(pptb, &head, &tail,
+			PROTECT(ans = vcount_pdict_collapsed(pptb, &headtail,
 					subject,
 					max_mismatch, fixed, collapse0, weight,
 					&matchpdict_buf));

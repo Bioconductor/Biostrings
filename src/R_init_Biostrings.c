@@ -140,11 +140,11 @@ static const R_CallMethodDef callMethods[] = {
 /* BitMatrix.c */
 	CALLMETHOD_DEF(debug_BitMatrix, 0),
 
-/* match_pdict_utils.c */
-	CALLMETHOD_DEF(debug_match_pdict_utils, 0),
-
 /* PreprocessedTB_class.c */
 	CALLMETHOD_DEF(debug_PreprocessedTB_class, 0),
+
+/* match_pdict_utils.c */
+	CALLMETHOD_DEF(debug_match_pdict_utils, 0),
 
 /* match_pdict_Twobit.c */
 	CALLMETHOD_DEF(debug_match_pdict_Twobit, 0),

@@ -338,6 +338,88 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
 
 
 /*****************************************************************************
+ * Preprocessing and fast matching of the head and tail of a PDict object
+ * ----------------------------------------------------------------------
+ *
+ * Note that, unlike for the Trusted Band, this is not persistent
+ * preprocessing, i.e. the result of this preprocessing is not stored in
+ * the PDict object so it has to be done again each time matchPDict() is
+ * called.
+ * TODO: Estimate the cost of this preprocessing and decide whether it's
+ * worth to make it persistent. Not a trivial task!
+ */
+
+PPHeadTail _new_PPHeadTail(SEXP pdict_head, SEXP pdict_tail,
+		SEXP pptb, SEXP max_mismatch)
+{
+	PPHeadTail headtail;
+	int tb_length, max_mm, key, i,
+	    max_Hwidth, max_Twidth, max_HTwidth, HTwidth, max_dups_length;
+	RoSeqs head, tail;
+	RoSeq *H, *T;
+	SEXP low2high, dups;
+
+	tb_length = _get_PreprocessedTB_length(pptb);
+	max_mm = INTEGER(max_mismatch)[0];
+	if (pdict_head == R_NilValue) {
+		head = _alloc_RoSeqs(tb_length);
+		for (key = 0, H = head.elts; key < tb_length; key++, H++)
+			H->nelt = 0;
+	} else {
+		head = _new_RoSeqs_from_XStringSet(tb_length, pdict_head);
+	}
+	if (pdict_tail == R_NilValue) {
+		tail = _alloc_RoSeqs(tb_length);
+		for (key = 0, T = tail.elts; key < tb_length; key++, T++)
+			T->nelt = 0;
+	} else {
+		tail = _new_RoSeqs_from_XStringSet(tb_length, pdict_tail);
+	}
+	max_Hwidth = max_Twidth = max_HTwidth = 0;
+	for (key = 0, H = head.elts, T = tail.elts; key < tb_length; key++, H++, T++) {
+		if (H->nelt > max_Hwidth)
+			max_Hwidth = H->nelt;
+		if (T->nelt > max_Twidth)
+			max_Twidth = T->nelt;
+		HTwidth = H->nelt + T->nelt;
+		if (HTwidth > max_HTwidth)
+			max_HTwidth = HTwidth;
+	}
+	headtail.head = head;
+	headtail.tail = tail;
+	headtail.max_HTwidth = max_HTwidth;
+	Rprintf("_new_PPHeadTail():\n");
+	Rprintf("  tb_length=%d max_mm=%d\n", tb_length, max_mm);
+	Rprintf("  max_Hwidth=%d max_Twidth=%d max_HTwidth=%d\n",
+		max_Hwidth, max_Twidth, max_HTwidth);
+	if (max_mm >= max_HTwidth) {
+		/* We don't need the BitMatrix buffers */
+		return headtail;
+	}
+	low2high = _get_PreprocessedTB_low2high(pptb);
+	max_dups_length = 0;
+	for (key = 0; key < tb_length; key++) {
+		dups = VECTOR_ELT(low2high, key);
+		if (dups == R_NilValue)
+			continue;
+		if (LENGTH(dups) > max_dups_length)
+			max_dups_length = LENGTH(dups);
+	}
+	max_dups_length++;
+	for (i = 0; i < 4; i++) {
+		headtail.pphead_buf[i] = _new_BitMatrix(max_dups_length,
+						max_Hwidth, 0UL);
+		headtail.pptail_buf[i] = _new_BitMatrix(max_dups_length,
+						max_Twidth, 0UL);
+	}
+	headtail.nmis_buf = _new_BitMatrix(max_dups_length, max_mm + 1, 0UL);
+	Rprintf("  nb of rows in each BitMatrix buffer=%d\n", max_dups_length);
+	return headtail;
+}
+
+
+
+/*****************************************************************************
  * _match_pdict_flanks()
  * ---------------------
  */
@@ -355,15 +437,16 @@ static int nmismatch_in_HT(const RoSeq *H, const RoSeq *T,
 	return nmismatch;
 }
 
-static void match_HT(int key, const RoSeqs *head, const RoSeqs *tail,
+static void match_HT(int key,
+		const PPHeadTail *headtail,
 		const RoSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const RoSeq *H, *T;
 	int HTdeltashift, nmismatch;
 
-	H = head->elts + key;
-	T = tail->elts + key;
+	H = headtail->head.elts + key;
+	T = headtail->tail.elts + key;
 	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
 	nmismatch = nmismatch_in_HT(H, T,
 			S, tb_end - HTdeltashift, tb_end, max_mm);
@@ -372,7 +455,8 @@ static void match_HT(int key, const RoSeqs *head, const RoSeqs *tail,
 	return;
 }
 
-void _match_pdict_flanks(int key, SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+void _match_pdict_flanks(int key, SEXP low2high,
+		const PPHeadTail *headtail,
 		const RoSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -384,14 +468,14 @@ void _match_pdict_flanks(int key, SEXP low2high, const RoSeqs *head, const RoSeq
 	ncalls++;
 	Rprintf("_match_pdict_flanks(): ncalls=%d key=%d tb_end=%d\n", ncalls, key, tb_end);
 */
-	match_HT(key, head, tail,
+	match_HT(key, headtail,
 		S, tb_end, max_mm, fixedP,
 		matchpdict_buf);
 	dups = VECTOR_ELT(low2high, key);
 	if (dups == R_NilValue)
 		return;
 	for (i = 0, dup = INTEGER(dups); i < LENGTH(dups); i++, dup++)
-		match_HT(*dup - 1, head, tail,
+		match_HT(*dup - 1, headtail,
 			S, tb_end, max_mm, fixedP,
 			matchpdict_buf);
 	return;
@@ -404,15 +488,16 @@ void _match_pdict_flanks(int key, SEXP low2high, const RoSeqs *head, const RoSeq
  * -------------------------
  */
 
-static void match_dup_headtail(int key, const RoSeqs *head, const RoSeqs *tail,
+static void match_dup_headtail(int key,
+		const PPHeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const RoSeq *H, *T;
 	int HTdeltashift, i, Tshift, nmismatch;
 
-	H = head->elts + key;
-	T = tail->elts + key;
+	H = headtail->head.elts + key;
+	T = headtail->tail.elts + key;
 	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
 	for (i = 0; i < tb_end_buf->nelt; i++) {
 		Tshift = tb_end_buf->elts[i];
@@ -424,7 +509,8 @@ static void match_dup_headtail(int key, const RoSeqs *head, const RoSeqs *tail,
 	return;
 }
 
-static void match_dups_headtail(int key, SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+static void match_dups_headtail(int key, SEXP low2high,
+		const PPHeadTail *headtail,
 		const RoSeq *S, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -434,10 +520,15 @@ static void match_dups_headtail(int key, SEXP low2high, const RoSeqs *head, cons
 	int i, dup_key;
 
 	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
-	match_dup_headtail(key, head, tail,
+	dups = VECTOR_ELT(low2high, key);
+	//if (tb_end_buf->nelt >= 20
+	// && dups != R_NilValue && LENGTH(dups) >= 160) {
+	//	/* Let's use the BitMatrix horse-power */
+	//	return;
+	//}
+	match_dup_headtail(key, headtail,
 			S, tb_end_buf, max_mm,
 			matchpdict_buf);
-	dups = VECTOR_ELT(low2high, key);
 	if (dups == R_NilValue)
 		return;
 	for (i = 0, dup = INTEGER(dups);
@@ -445,14 +536,15 @@ static void match_dups_headtail(int key, SEXP low2high, const RoSeqs *head, cons
 	     i++, dup++)
 	{
 		dup_key = *dup - 1;
-		match_dup_headtail(dup_key, head, tail,
+		match_dup_headtail(dup_key, headtail,
 				S, tb_end_buf, max_mm,
 				matchpdict_buf);
 	}
 	return;
 }
 
-static void match_dups_headtail2(int key, SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+static void match_dups_headtail2(int key, SEXP low2high,
+		const PPHeadTail *headtail,
 		const RoSeq *S, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -461,16 +553,18 @@ static void match_dups_headtail2(int key, SEXP low2high, const RoSeqs *head, con
 
 	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
 	for (i = 0; i < tb_end_buf->nelt; i++) {
-		_match_pdict_flanks(key, low2high, head, tail,
+		_match_pdict_flanks(key, low2high,
+				headtail,
 				S, tb_end_buf->elts[i], max_mm, 1,
 				matchpdict_buf);
 	}
 	return;
 }
 
-/* If 'head' and 'tail' are empty (i.e. 0-width) then _match_pdict_all_flanks() just
-   propagates the matches to the duplicates */
-void _match_pdict_all_flanks(SEXP low2high, const RoSeqs *head, const RoSeqs *tail,
+/* If 'headtail' is empty (i.e. headtail->max_HTwidth == 0) then
+   _match_pdict_all_flanks() just propagates the matches to the duplicates */
+void _match_pdict_all_flanks(SEXP low2high,
+		const PPHeadTail *headtail,
 		const RoSeq *S, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -485,7 +579,8 @@ void _match_pdict_all_flanks(SEXP low2high, const RoSeqs *head, const RoSeqs *ta
 	nkeys = tb_matching_keys->nelt;
 	for (i = 0; i < nkeys; i++) {
 		key = tb_matching_keys->elts[i];
-		match_dups_headtail(key, low2high, head, tail,
+		match_dups_headtail(key, low2high,
+				headtail,
 				S, max_mm,
 				matchpdict_buf);
 	}

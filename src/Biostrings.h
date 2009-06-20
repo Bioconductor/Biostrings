@@ -840,6 +840,40 @@ void _BitMatrix_grow1rows(
 SEXP debug_BitMatrix();
 
 
+/* PreprocessedTB_class.c */
+
+SEXP debug_PreprocessedTB_class();
+
+int _get_PreprocessedTB_length(SEXP x);
+
+int _get_PreprocessedTB_width(SEXP x);
+
+SEXP _get_PreprocessedTB_low2high(SEXP x);
+
+SEXP _get_Twobit_sign2pos_tag(SEXP x);
+
+SEXP _get_Twobit_base_codes(SEXP x);
+
+SEXP _get_ACtree_nodes_tag(SEXP x);
+
+SEXP _get_ACtree_base_codes(SEXP x);
+
+SEXP _get_ACtree2_nodebuf_ptr(SEXP x);
+
+SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x);
+
+SEXP _get_ACtree2_base_codes(SEXP x);
+
+void _init_ppdups_buf(int length);
+
+void _report_ppdup(
+	int poffset,
+	int P_id
+);
+
+SEXP _get_ppdups_buf_asINTEGER();
+
+
 /* match_pdict_utils.c */
 
 SEXP debug_match_pdict_utils();
@@ -904,11 +938,17 @@ void _MatchPDictBuf_append_and_flush(
 	int view_offset
 );
 
+PPHeadTail _new_PPHeadTail(
+	SEXP pdict_head,
+	SEXP pdict_tail,
+	SEXP pptb,
+	SEXP max_mismatch
+);
+
 void _match_pdict_flanks(
 	int key,
         SEXP low2high,
-	const RoSeqs *head,
-	const RoSeqs *tail,
+	const PPHeadTail *headtail,
 	const RoSeq *S,
 	int tb_end,
 	int max_mm,
@@ -918,46 +958,11 @@ void _match_pdict_flanks(
 
 void _match_pdict_all_flanks(
 	SEXP low2high,
-	const RoSeqs *head,
-	const RoSeqs *tail,
+	const PPHeadTail *headtail,
 	const RoSeq *S,
 	int max_mm,
 	MatchPDictBuf *matchpdict_buf
 );
-
-
-/* PreprocessedTB_class.c */
-
-SEXP debug_PreprocessedTB_class();
-
-int _get_PreprocessedTB_length(SEXP x);
-
-int _get_PreprocessedTB_width(SEXP x);
-
-SEXP _get_PreprocessedTB_low2high(SEXP x);
-
-SEXP _get_Twobit_sign2pos_tag(SEXP x);
-
-SEXP _get_Twobit_base_codes(SEXP x);
-
-SEXP _get_ACtree_nodes_tag(SEXP x);
-
-SEXP _get_ACtree_base_codes(SEXP x);
-
-SEXP _get_ACtree2_nodebuf_ptr(SEXP x);
-
-SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x);
-
-SEXP _get_ACtree2_base_codes(SEXP x);
-
-void _init_ppdups_buf(int length);
-
-void _report_ppdup(
-	int poffset,
-	int P_id
-);
-
-SEXP _get_ppdups_buf_asINTEGER();
 
 
 /* match_pdict_Twobit.c */
@@ -1047,8 +1052,7 @@ void _match_tbACtree2(
 
 void _match_pdictACtree2(
 	SEXP pptb,
-	const RoSeqs *head,
-	const RoSeqs *tail,
+	const PPHeadTail *headtail,
 	const RoSeq *S,
 	int max_mm,
 	int fixedP,

@@ -54,11 +54,11 @@ debug_find_palindromes <- function()
 debug_BitMatrix <- function()
     invisible(.Call("debug_BitMatrix", PACKAGE="Biostrings"))
 
-debug_match_pdict_utils <- function()
-    invisible(.Call("debug_match_pdict_utils", PACKAGE="Biostrings"))
-
 debug_PreprocessedTB_class <- function()
     invisible(.Call("debug_PreprocessedTB_class", PACKAGE="Biostrings"))
+
+debug_match_pdict_utils <- function()
+    invisible(.Call("debug_match_pdict_utils", PACKAGE="Biostrings"))
 
 debug_match_pdict_Twobit <- function()
     invisible(.Call("debug_match_pdict_Twobit", PACKAGE="Biostrings"))
