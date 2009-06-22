@@ -12,7 +12,8 @@ setClass("PreprocessedTB",
         "VIRTUAL",
         tb="DNAStringSet",  # always constant width
         exclude_dups0="logical",
-        dups="Dups"
+        dups="Dups",
+        base_codes="integer"
     )
 )
 
@@ -30,11 +31,12 @@ setGeneric("dups", function(x) standardGeneric("dups"))
 setMethod("dups", "PreprocessedTB", function(x) x@dups)
 
 setMethod("initialize", "PreprocessedTB",
-    function(.Object, tb, pp_exclude, high2low)
+    function(.Object, tb, pp_exclude, high2low, base_codes)
     {
         .Object@tb <- tb
         .Object@exclude_dups0 <- !is.null(pp_exclude)
         .Object@dups <- Dups(high2low)
+        .Object@base_codes <- base_codes  # should be 'xscodes(tb, baseOnly=TRUE)'
         .Object
     }
 )
@@ -70,8 +72,7 @@ setMethod("duplicated", "PreprocessedTB",
 setClass("Twobit",
     contains="PreprocessedTB",
     representation(
-        sign2pos="XInteger",  # length(x@sign2pos) is tb.width(x)^4
-        base_codes="integer"
+        sign2pos="XInteger"  # length(x@sign2pos) is tb.width(x)^4
     )
 )
 
@@ -90,9 +91,8 @@ setMethod("initialize", "Twobit",
         base_codes <- xscodes(tb, baseOnly=TRUE)
         C_ans <- .Call("build_Twobit", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low, base_codes)
         .Object@sign2pos <- C_ans$sign2pos
-        .Object@base_codes <- base_codes
         .Object
     }
 )
@@ -114,8 +114,7 @@ setMethod("initialize", "Twobit",
 setClass("ACtree",
     contains="PreprocessedTB",
     representation(
-        nodes="XInteger",
-        base_codes="integer"
+        nodes="XInteger"
     )
 )
 
@@ -177,9 +176,8 @@ setMethod("initialize", "ACtree",
         on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
         C_ans <- .Call("build_ACtree", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low, base_codes)
         .Object@nodes <- C_ans$nodes
-        .Object@base_codes <- base_codes
         .Object
     }
 )
@@ -212,8 +210,7 @@ setClass("ACtree2",
     contains="PreprocessedTB",
     representation(
         nodebuf_ptr="IntegerBAB",
-        nodeextbuf_ptr="IntegerBAB",
-        base_codes="integer"
+        nodeextbuf_ptr="IntegerBAB"
     )
 )
 
@@ -241,10 +238,9 @@ setMethod("initialize", "ACtree2",
                        tb, pp_exclude, base_codes,
                        nodebuf_ptr, nodeextbuf_ptr,
                        PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low)
+        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low, base_codes)
         .Object@nodebuf_ptr <- nodebuf_ptr
         .Object@nodeextbuf_ptr <- nodeextbuf_ptr
-        .Object@base_codes <- base_codes
         .Object
     }
 )

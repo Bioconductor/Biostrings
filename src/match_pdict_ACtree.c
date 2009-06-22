@@ -646,7 +646,7 @@ void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS,
 		Rprintf("[DEBUG] ENTERING _match_ACtree()\n");
 #endif
 	node0 = (ACNode *) INTEGER(_get_ACtree_nodes_tag(pptb));
-	base_codes = _get_ACtree_base_codes(pptb);
+	base_codes = _get_PreprocessedTB_base_codes(pptb);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
 		error("Biostrings internal error in _match_ACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");

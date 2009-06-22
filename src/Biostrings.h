@@ -850,19 +850,15 @@ int _get_PreprocessedTB_width(SEXP x);
 
 SEXP _get_PreprocessedTB_low2high(SEXP x);
 
+SEXP _get_PreprocessedTB_base_codes(SEXP x);
+
 SEXP _get_Twobit_sign2pos_tag(SEXP x);
 
-SEXP _get_Twobit_base_codes(SEXP x);
-
 SEXP _get_ACtree_nodes_tag(SEXP x);
-
-SEXP _get_ACtree_base_codes(SEXP x);
 
 SEXP _get_ACtree2_nodebuf_ptr(SEXP x);
 
 SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x);
-
-SEXP _get_ACtree2_base_codes(SEXP x);
 
 void _init_ppdups_buf(int length);
 

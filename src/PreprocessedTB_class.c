@@ -47,6 +47,11 @@ SEXP _get_PreprocessedTB_low2high(SEXP x)
 	return get_H2LGrouping_low2high(GET_SLOT(x, install("dups")));
 }
 
+SEXP _get_PreprocessedTB_base_codes(SEXP x)
+{
+	return GET_SLOT(x, install("base_codes"));
+}
+
 
 /****************************************************************************
  * Accessor functions for Twobit objects.
@@ -60,11 +65,6 @@ SEXP _get_Twobit_sign2pos_tag(SEXP x)
 	return get_XSequence_tag(GET_SLOT(x, install("sign2pos")));
 }
 
-SEXP _get_Twobit_base_codes(SEXP x)
-{
-	return GET_SLOT(x, install("base_codes"));
-}
-
 
 /****************************************************************************
  * Accessor functions for ACtree objects.
@@ -76,11 +76,6 @@ SEXP _get_Twobit_base_codes(SEXP x)
 SEXP _get_ACtree_nodes_tag(SEXP x)
 {
 	return get_XSequence_tag(GET_SLOT(x, install("nodes")));
-}
-
-SEXP _get_ACtree_base_codes(SEXP x)
-{
-	return GET_SLOT(x, install("base_codes"));
 }
 
 
@@ -99,11 +94,6 @@ SEXP _get_ACtree2_nodebuf_ptr(SEXP x)
 SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x)
 {
 	return GET_SLOT(x, install("nodeextbuf_ptr"));
-}
-
-SEXP _get_ACtree2_base_codes(SEXP x)
-{
-	return GET_SLOT(x, install("base_codes"));
 }
 
 

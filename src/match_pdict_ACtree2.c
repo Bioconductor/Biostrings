@@ -613,7 +613,7 @@ static ACtree pptb_asACtree(SEXP pptb)
 	tree.depth = _get_PreprocessedTB_width(pptb);
 	tree.nodebuf = new_ACnodeBuf(_get_ACtree2_nodebuf_ptr(pptb));
 	tree.nodeextbuf = new_ACnodeextBuf(_get_ACtree2_nodeextbuf_ptr(pptb));
-	base_codes = _get_ACtree2_base_codes(pptb);
+	base_codes = _get_PreprocessedTB_base_codes(pptb);
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
 		error("Biostrings internal error in pptb_asACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");

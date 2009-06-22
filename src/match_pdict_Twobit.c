@@ -204,7 +204,7 @@ void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS,
 #endif
 	tb_width = _get_PreprocessedTB_width(pptb);
 	twobit_sign2pos = INTEGER(_get_Twobit_sign2pos_tag(pptb));
-	base_codes = _get_Twobit_base_codes(pptb);
+	base_codes = _get_PreprocessedTB_base_codes(pptb);
 	teb = _new_TwobitEncodingBuffer(base_codes, tb_width, 0);
 	if (!fixedS)
 		error("cannot treat IUPAC extended letters in the subject "
