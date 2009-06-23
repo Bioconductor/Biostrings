@@ -21,7 +21,7 @@ SEXP debug_match_pdict()
 	return R_NilValue;
 }
 
-// FIXME: Pass 'const PPHeadTail *' instead of 'pdict_head'
+// FIXME: Pass 'const HeadTail *' instead of 'pdict_head'
 // and 'pdict_tail'. Also change MatchPDictBuf struct so the
 // head_widths and tail_widths members are IntAE buffers.
 static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
@@ -44,7 +44,7 @@ static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
 				head_widths, tail_widths);
 }
 
-static void match_pdict(SEXP pptb, const PPHeadTail *headtail,
+static void match_pdict(SEXP pptb, HeadTail *headtail,
 		const RoSeq *S,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
@@ -117,7 +117,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
-	PPHeadTail headtail;
+	HeadTail headtail;
 	RoSeq S;
 	MatchPDictBuf matchpdict_buf;
 
@@ -125,8 +125,8 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
-	headtail = _new_PPHeadTail(pdict_head, pdict_tail,
-				pptb, max_mismatch);
+	headtail = _new_HeadTail(pdict_head, pdict_tail,
+				 pptb, max_mismatch, fixed);
 	S = _get_XString_asRoSeq(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
@@ -147,7 +147,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP max_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
-	PPHeadTail headtail;
+	HeadTail headtail;
 	int tb_length;
 	RoSeq S, S_view;
 	int nviews, i, *view_start, *view_width, view_offset;
@@ -159,8 +159,8 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
 	tb_length = _get_PreprocessedTB_length(pptb);
-	headtail = _new_PPHeadTail(pdict_head, pdict_tail,
-				pptb, max_mismatch);
+	headtail = _new_HeadTail(pdict_head, pdict_tail,
+				 pptb, max_mismatch, fixed);
 	S = _get_XString_asRoSeq(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
@@ -196,7 +196,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
  * .Call entry point: XStringSet_vmatch_pdict
  ****************************************************************************/
 
-static SEXP vwhich_pdict(SEXP pptb, const PPHeadTail *headtail,
+static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
@@ -221,7 +221,7 @@ static SEXP vwhich_pdict(SEXP pptb, const PPHeadTail *headtail,
 	return ans;
 }
 
-static SEXP vcount_pdict_notcollapsed(SEXP pptb, const PPHeadTail *headtail,
+static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
@@ -253,7 +253,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, const PPHeadTail *headtail,
 	return ans;
 }
 
-static SEXP vcount_pdict_collapsed(SEXP pptb, const PPHeadTail *headtail,
+static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP fixed,
 		int collapse, SEXP weight,
@@ -313,7 +313,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP collapse, SEXP weight,
 		SEXP matches_as, SEXP envir)
 {
-	PPHeadTail headtail;
+	HeadTail headtail;
 	int collapse0;
 	MatchPDictBuf matchpdict_buf;
 	SEXP ans;
@@ -322,8 +322,8 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XStringSet_vmatch_pdict()\n");
 #endif
-	headtail = _new_PPHeadTail(pdict_head, pdict_tail,
-				pptb, max_mismatch);
+	headtail = _new_HeadTail(pdict_head, pdict_tail,
+				 pptb, max_mismatch, fixed);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);

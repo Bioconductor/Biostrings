@@ -80,6 +80,37 @@ BitMatrix _new_BitMatrix(int nrow, int ncol, BitWord val)
 	return bitmat;
 }
 
+int _BitMatrix_get_bit(BitMatrix *bitmat, int i, int j)
+{
+	div_t q;
+	int i1, i2;
+	BitWord *word;
+
+	q = div(i, NBIT_PER_BITWORD);
+	i1 = q.quot;
+	i2 = q.rem;
+	word = bitmat->words + i1 + j * bitmat->nword_per_col;
+	return (*word >> i2) & 1UL;
+}
+
+void _BitMatrix_set_bit(BitMatrix *bitmat, int i, int j, int bit)
+{
+	div_t q;
+	int i1, i2;
+	BitWord *word, mask;
+
+	q = div(i, NBIT_PER_BITWORD);
+	i1 = q.quot;
+	i2 = q.rem;
+	word = bitmat->words + i1 + j * bitmat->nword_per_col;
+	mask = 1UL << i2;
+	if (bit)
+		*word |= mask;
+	else
+		*word &= ~mask;
+	return;
+}
+
 void _BitMatrix_grow1rows(BitMatrix *bitmat, BitCol *bitcol)
 {
 	BitWord *Lword, Rword, ret;
@@ -143,12 +174,12 @@ static void BitMatrix_print(BitMatrix *bitmat)
 	bitmat_byrow = new_IntAE(bitmat->nrow, bitmat->nrow, 0);
 	BitMatrix_tr(bitmat, &bitmat_byrow);
 	for (i = 0, row = bitmat_byrow.elts; i < bitmat_byrow.nelt; i++, row++) {
-		Rprintf("%4d: %3d (", i, *row);
+		Rprintf("%4d: ", i);
 		for (j = 0, cbit = 1; j < bitmat->ncol; j++, cbit <<= 1) {
 			bit = (*row & cbit) != 0;
 			Rprintf("%d", bit);
 		}
-		Rprintf(")\n");
+		Rprintf(" (%d)\n", *row);
 	}
 	return;
 }
@@ -217,6 +248,12 @@ SEXP debug_BitMatrix()
 		bitmat0 = _new_BitMatrix(40, 15, 0UL);
 		bitcol0 = _new_BitCol(40, 33UL + (1UL << 39));
 		
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_set_bit(&bitmat0, 0, 0, 1);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_set_bit(&bitmat0, 39, 14, 1);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_set_bit(&bitmat0, 39, 14, 0);
 		BitMatrix_print(&bitmat0);
 		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
 		BitMatrix_print(&bitmat0);

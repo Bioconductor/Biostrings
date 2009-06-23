@@ -832,6 +832,19 @@ BitMatrix _new_BitMatrix(
 	BitWord val
 );
 
+int _BitMatrix_get_bit(
+	BitMatrix *bitmat,
+	int i,
+	int j
+);
+
+void _BitMatrix_set_bit(
+	BitMatrix *bitmat,
+	int i,
+	int j,
+	int bit
+);
+
 void _BitMatrix_grow1rows(
 	BitMatrix *bitmat,
 	BitCol *bitcol
@@ -934,17 +947,18 @@ void _MatchPDictBuf_append_and_flush(
 	int view_offset
 );
 
-PPHeadTail _new_PPHeadTail(
+HeadTail _new_HeadTail(
 	SEXP pdict_head,
 	SEXP pdict_tail,
 	SEXP pptb,
-	SEXP max_mismatch
+	SEXP max_mismatch,
+	SEXP fixed
 );
 
 void _match_pdict_flanks(
 	int key,
 	SEXP low2high,
-	const PPHeadTail *headtail,
+	const HeadTail *headtail,
 	const RoSeq *S,
 	int tb_end,
 	int max_mm,
@@ -954,7 +968,7 @@ void _match_pdict_flanks(
 
 void _match_pdict_all_flanks(
 	SEXP low2high,
-	const PPHeadTail *headtail,
+	HeadTail *headtail,
 	const RoSeq *S,
 	int max_mm,
 	MatchPDictBuf *matchpdict_buf
@@ -1048,7 +1062,7 @@ void _match_tbACtree2(
 
 void _match_pdictACtree2(
 	SEXP pptb,
-	const PPHeadTail *headtail,
+	const HeadTail *headtail,
 	const RoSeq *S,
 	int max_mm,
 	int fixedP,

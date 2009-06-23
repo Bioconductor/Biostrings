@@ -7,6 +7,9 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
+#include <limits.h> /* for UINT_MAX */
+#include <time.h> /* for clock() and CLOCKS_PER_SEC */
+
 
 static int debug = 0;
 
@@ -349,18 +352,56 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
  * worth to make it persistent. Not a trivial task!
  */
 
-PPHeadTail _new_PPHeadTail(SEXP pdict_head, SEXP pdict_tail,
-		SEXP pptb, SEXP max_mismatch)
+static PPHeadTail new_PPHeadTail(SEXP base_codes, SEXP low2high,
+		int max_Hwidth, int max_Twidth, int max_mm)
 {
-	PPHeadTail headtail;
-	int tb_length, max_mm, key, i,
-	    max_Hwidth, max_Twidth, max_HTwidth, HTwidth, max_dups_length;
+	PPHeadTail ppheadtail;
+	int tb_length, max_dups_length, key, i;
+	SEXP dups;
+
+	ppheadtail.is_init = 1;
+	if (LENGTH(base_codes) != 4)
+		error("Biostrings internal error in _new_HeadTail(): "
+			"LENGTH(base_codes) != 4");
+	_init_byte2offset_with_INTEGER(ppheadtail.byte2offset, base_codes, 1);
+	tb_length = LENGTH(low2high);
+	max_dups_length = 0;
+	for (key = 0; key < tb_length; key++) {
+		dups = VECTOR_ELT(low2high, key);
+		if (dups == R_NilValue)
+			continue;
+		if (LENGTH(dups) > max_dups_length)
+			max_dups_length = LENGTH(dups);
+	}
+	max_dups_length++;
+	if (max_Hwidth > 0)
+		for (i = 0; i < 4; i++)
+			ppheadtail.head_bmbuf[i] = _new_BitMatrix(max_dups_length,
+							max_Hwidth, 0UL);
+	if (max_Twidth > 0)
+		for (i = 0; i < 4; i++)
+			ppheadtail.tail_bmbuf[i] = _new_BitMatrix(max_dups_length,
+							max_Twidth, 0UL);
+	ppheadtail.nmis_bmbuf = _new_BitMatrix(max_dups_length, max_mm + 1, 0UL);
+	//Rprintf("new_PPHeadTail():\n");
+	//Rprintf("  nb of rows in each BitMatrix buffer=%d\n", max_dups_length);
+	return ppheadtail;
+}
+
+HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
+		SEXP pptb, SEXP max_mismatch, SEXP fixed)
+{
+	HeadTail headtail;
+	int tb_length, max_mm, fixedP, fixedS,
+	    key, max_Hwidth, max_Twidth, max_HTwidth, HTwidth;
 	RoSeqs head, tail;
 	RoSeq *H, *T;
-	SEXP low2high, dups;
+	SEXP base_codes, low2high;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	max_mm = INTEGER(max_mismatch)[0];
+	fixedP = LOGICAL(fixed)[0];
+	fixedS = LOGICAL(fixed)[1];
 	if (pdict_head == R_NilValue) {
 		head = _alloc_RoSeqs(tb_length);
 		for (key = 0, H = head.elts; key < tb_length; key++, H++)
@@ -390,35 +431,102 @@ PPHeadTail _new_PPHeadTail(SEXP pdict_head, SEXP pdict_tail,
 	headtail.max_Hwidth = max_Hwidth;
 	headtail.max_Twidth = max_Twidth;
 	headtail.max_HTwidth = max_HTwidth;
-	Rprintf("_new_PPHeadTail():\n");
-	Rprintf("  tb_length=%d max_mm=%d\n", tb_length, max_mm);
-	Rprintf("  max_Hwidth=%d max_Twidth=%d max_HTwidth=%d\n",
-		max_Hwidth, max_Twidth, max_HTwidth);
-	if (max_mm >= max_HTwidth) {
-		/* We don't need the BitMatrix buffers */
-		return headtail;
+	//Rprintf("_new_HeadTail():\n");
+	//Rprintf("  tb_length=%d max_mm=%d\n", tb_length, max_mm);
+	//Rprintf("  max_Hwidth=%d max_Twidth=%d max_HTwidth=%d\n",
+	//	max_Hwidth, max_Twidth, max_HTwidth);
+	if (max_mm < max_HTwidth && max_mm <= 4 && fixedP && fixedS) {
+		/* The base codes for the head and tail are assumed to be the
+		   same as for the Trusted Band */
+		base_codes = _get_PreprocessedTB_base_codes(pptb);
+		low2high = _get_PreprocessedTB_low2high(pptb);
+		headtail.ppheadtail = new_PPHeadTail(base_codes, low2high,
+						max_Hwidth, max_Twidth, max_mm);
+	} else {
+		headtail.ppheadtail.is_init = 0;
 	}
-	low2high = _get_PreprocessedTB_low2high(pptb);
-	max_dups_length = 0;
-	for (key = 0; key < tb_length; key++) {
-		dups = VECTOR_ELT(low2high, key);
-		if (dups == R_NilValue)
-			continue;
-		if (LENGTH(dups) > max_dups_length)
-			max_dups_length = LENGTH(dups);
-	}
-	max_dups_length++;
-	if (max_Hwidth > 0)
-		for (i = 0; i < 4; i++)
-			headtail.head_bmbuf[i] = _new_BitMatrix(max_dups_length,
-							max_Hwidth, 0UL);
-	if (max_Twidth > 0)
-		for (i = 0; i < 4; i++)
-			headtail.tail_bmbuf[i] = _new_BitMatrix(max_dups_length,
-							max_Twidth, 0UL);
-	headtail.nmis_bmbuf = _new_BitMatrix(max_dups_length, max_mm + 1, 0UL);
-	Rprintf("  nb of rows in each BitMatrix buffer=%d\n", max_dups_length);
 	return headtail;
+}
+
+static void init_headtail_bmbuf(BitMatrix *bmbuf, int nrow)
+{
+	int i;
+
+	//Rprintf("init_headtail_bmbuf(): nrow=%d\n", nrow);
+	for (i = 0; i < 4; i++) {
+		if (nrow > bmbuf[i].nword_per_col * NBIT_PER_BITWORD)
+			error("Biostrings internal error in init_headtail_bmbuf(): "
+			      "not enough rows in 'bmbuf'");
+		bmbuf[i].nrow = nrow;
+		/* Set all bits to 1
+		   FIXME: no need to do this for the entire buffer! */
+		_BitMatrix_set_val(bmbuf + i, UINT_MAX);
+	}
+	return;
+}
+
+static void preprocess_HorT(const RoSeq *HorT, ByteTrTable byte2offset,
+		BitMatrix *bmbuf, int row)
+{
+	int j, offset;
+	const char *c;
+	BitMatrix *bmbuf0;
+
+	for (j = 0, c = HorT->elts; j < HorT->nelt; j++, c++) {
+		offset = byte2offset[(unsigned char) *c];
+		if (offset == NA_INTEGER)
+			error("preprocess_HorT(): don't know how to handle "
+			      "non-base letters in the preprocessed head or "
+			      "tail of a PDict object yet, sorry ==> FIXME");
+		bmbuf0 = bmbuf + offset;
+		_BitMatrix_set_bit(bmbuf0, row, j, 0);
+	}
+	for (offset = 0; offset < 4; offset++) {
+		bmbuf0 = bmbuf + offset;
+		for (j = HorT->nelt; j < bmbuf0->ncol; j++)
+			_BitMatrix_set_bit(bmbuf0, row, j, 0);
+	}
+	return;
+}
+
+static void preprocess_head(const RoSeqs *head, int key, SEXP dups,
+		PPHeadTail *ppheadtail)
+{
+	int row, dup_key;
+	const int *dup;
+
+	init_headtail_bmbuf(ppheadtail->head_bmbuf, LENGTH(dups) + 1);
+	preprocess_HorT(head->elts + key, ppheadtail->byte2offset,
+			ppheadtail->head_bmbuf, 0);
+	for (row = 1, dup = INTEGER(dups);
+	     row <= LENGTH(dups);
+	     row++, dup++)
+	{
+		dup_key = *dup - 1;
+		preprocess_HorT(head->elts + dup_key, ppheadtail->byte2offset,
+				ppheadtail->head_bmbuf, row);
+	}
+	return;
+}
+
+static void preprocess_tail(const RoSeqs *tail, int key, SEXP dups,
+		PPHeadTail *ppheadtail)
+{
+	int row, dup_key;
+	const int *dup;
+
+	init_headtail_bmbuf(ppheadtail->tail_bmbuf, LENGTH(dups) + 1);
+	preprocess_HorT(tail->elts + key, ppheadtail->byte2offset,
+			ppheadtail->tail_bmbuf, 0);
+	for (row = 1, dup = INTEGER(dups);
+	     row <= LENGTH(dups);
+	     row++, dup++)
+	{
+		dup_key = *dup - 1;
+		preprocess_HorT(tail->elts + dup_key, ppheadtail->byte2offset,
+				ppheadtail->tail_bmbuf, row);
+	}
+	return;
 }
 
 
@@ -442,7 +550,7 @@ static int nmismatch_in_HT(const RoSeq *H, const RoSeq *T,
 }
 
 static void match_HT(int key,
-		const PPHeadTail *headtail,
+		const HeadTail *headtail,
 		const RoSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -460,7 +568,7 @@ static void match_HT(int key,
 }
 
 void _match_pdict_flanks(int key, SEXP low2high,
-		const PPHeadTail *headtail,
+		const HeadTail *headtail,
 		const RoSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -493,7 +601,7 @@ void _match_pdict_flanks(int key, SEXP low2high,
  */
 
 static void match_dup_headtail(int key,
-		const PPHeadTail *headtail,
+		const HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -514,22 +622,47 @@ static void match_dup_headtail(int key,
 }
 
 static void match_dups_headtail(int key, SEXP low2high,
-		const PPHeadTail *headtail,
-		const RoSeq *S, int max_mm,
+		HeadTail *headtail,
+		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	const IntAE *tb_end_buf;
 	SEXP dups;
 	const int *dup;
 	int i, dup_key;
 
-	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
 	dups = VECTOR_ELT(low2high, key);
-	//if (tb_end_buf->nelt >= 20
-	// && dups != R_NilValue && LENGTH(dups) >= 160) {
-	//	/* Let's use the BitMatrix horse-power */
-	//	return;
-	//}
+/*
+	if (headtail->ppheadtail.is_init
+	 && dups != R_NilValue && LENGTH(dups) >= 96
+	 && tb_end_buf->nelt >= 30) {
+		// Let's use the BitMatrix horse-power
+		long unsigned int ndup, nloci;
+		static long unsigned int subtotal_NFC;
+		clock_t time0;
+		double dt;
+		static double total_time;
+		ndup = (long unsigned int) 1 + LENGTH(dups);
+		nloci = (long unsigned int) tb_end_buf->nelt;
+		subtotal_NFC += ndup * nloci;
+		Rprintf("START using BitMatrix horse-power: "
+			"ndup=%lu nloci=%lu subtotal_NFC=%lu max_mm=%d\n",
+			ndup, nloci, subtotal_NFC, max_mm);
+		time0 = clock();
+		if (headtail->max_Hwidth > 0)
+			preprocess_head(&(headtail->head), key, dups,
+					&(headtail->ppheadtail));
+		if (headtail->max_Twidth > 0)
+			preprocess_tail(&(headtail->tail), key, dups,
+					&(headtail->ppheadtail));
+		dt = (clock() - time0) * 1.00 / CLOCKS_PER_SEC;
+		total_time += dt;
+		Rprintf("END using BitMatrix horse-power: "
+			"time=%g total_time=%g (in seconds)\n",
+			dt, total_time);
+		//Just preprocessing for now so we can benchmark it...
+		//return;
+	}
+*/
 	match_dup_headtail(key, headtail,
 			S, tb_end_buf, max_mm,
 			matchpdict_buf);
@@ -548,14 +681,12 @@ static void match_dups_headtail(int key, SEXP low2high,
 }
 
 static void match_dups_headtail2(int key, SEXP low2high,
-		const PPHeadTail *headtail,
-		const RoSeq *S, int max_mm,
+		const HeadTail *headtail,
+		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	const IntAE *tb_end_buf;
 	int i;
 
-	tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
 	for (i = 0; i < tb_end_buf->nelt; i++) {
 		_match_pdict_flanks(key, low2high,
 				headtail,
@@ -568,12 +699,16 @@ static void match_dups_headtail2(int key, SEXP low2high,
 /* If 'headtail' is empty (i.e. headtail->max_HTwidth == 0) then
    _match_pdict_all_flanks() just propagates the matches to the duplicates */
 void _match_pdict_all_flanks(SEXP low2high,
-		const PPHeadTail *headtail,
+		HeadTail *headtail,
 		const RoSeq *S, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	const IntAE *tb_matching_keys;
+	const IntAE *tb_matching_keys, *tb_end_buf;
 	int nkeys, i, key;
+
+	SEXP dups;
+	long unsigned int ndup, nloci;
+	static long unsigned int total_NFC;  // Total Number of Flank Comparisons
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -583,11 +718,17 @@ void _match_pdict_all_flanks(SEXP low2high,
 	nkeys = tb_matching_keys->nelt;
 	for (i = 0; i < nkeys; i++) {
 		key = tb_matching_keys->elts[i];
+		dups = VECTOR_ELT(low2high, key);
+		ndup = (long unsigned int) (1 + (dups == R_NilValue ? 0 : LENGTH(dups)));
+		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
+		nloci = (long unsigned int) tb_end_buf->nelt;
+		total_NFC += ndup * nloci;
 		match_dups_headtail(key, low2high,
 				headtail,
-				S, max_mm,
+				S, tb_end_buf, max_mm,
 				matchpdict_buf);
 	}
+	//Rprintf("_match_pdict_all_flanks(): total_NFC=%lu\n", total_NFC);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING _match_pdict_all_flanks()\n");
