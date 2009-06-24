@@ -101,7 +101,6 @@ typedef struct bitmatrix {
 typedef struct ppheadtail {
 	int is_init;
 	ByteTrTable byte2offset;
-	IntAE row2key;
 	BitMatrix head_bmbuf[4], tail_bmbuf[4];
 	BitMatrix nmis_bmbuf;
 } PPHeadTail;
@@ -109,6 +108,7 @@ typedef struct ppheadtail {
 typedef struct headtail {
 	RoSeqs head, tail;
 	int max_Hwidth, max_Twidth, max_HTwidth;
+	IntAE keys_buf;
 	PPHeadTail ppheadtail;
 } HeadTail;
 

@@ -956,7 +956,7 @@ HeadTail _new_HeadTail(
 );
 
 void _match_pdict_flanks(
-	int key,
+	int key0,
 	SEXP low2high,
 	const HeadTail *headtail,
 	const RoSeq *S,

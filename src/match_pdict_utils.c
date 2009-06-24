@@ -352,29 +352,17 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
  * worth to make it persistent. Not a trivial task!
  */
 
-static PPHeadTail new_PPHeadTail(SEXP base_codes, SEXP low2high,
+static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 		int max_Hwidth, int max_Twidth, int max_mm)
 {
 	PPHeadTail ppheadtail;
-	int tb_length, bmbuf_nrow, key, i;
-	SEXP dups;
+	int i;
 
 	ppheadtail.is_init = 1;
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in _new_HeadTail(): "
 			"LENGTH(base_codes) != 4");
 	_init_byte2offset_with_INTEGER(ppheadtail.byte2offset, base_codes, 1);
-	tb_length = LENGTH(low2high);
-	bmbuf_nrow = 0;
-	for (key = 0; key < tb_length; key++) {
-		dups = VECTOR_ELT(low2high, key);
-		if (dups == R_NilValue)
-			continue;
-		if (LENGTH(dups) > bmbuf_nrow)
-			bmbuf_nrow = LENGTH(dups);
-	}
-	bmbuf_nrow++;
-	ppheadtail.row2key = new_IntAE(bmbuf_nrow, bmbuf_nrow, 0);
 	if (max_Hwidth > 0)
 		for (i = 0; i < 4; i++)
 			ppheadtail.head_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
@@ -394,12 +382,13 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 {
 	HeadTail headtail;
 	int tb_length, max_mm, fixedP, fixedS,
-	    key, max_Hwidth, max_Twidth, max_HTwidth, HTwidth;
+	    key, max_Hwidth, max_Twidth, max_HTwidth, HTwidth, keys_buflength;
+	SEXP low2high, dups, base_codes;
 	RoSeqs head, tail;
 	RoSeq *H, *T;
-	SEXP base_codes, low2high;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
+	low2high = _get_PreprocessedTB_low2high(pptb);
 	max_mm = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -417,7 +406,7 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	} else {
 		tail = _new_RoSeqs_from_XStringSet(tb_length, pdict_tail);
 	}
-	max_Hwidth = max_Twidth = max_HTwidth = 0;
+	max_Hwidth = max_Twidth = max_HTwidth = keys_buflength = 0;
 	for (key = 0, H = head.elts, T = tail.elts; key < tb_length; key++, H++, T++) {
 		if (H->nelt > max_Hwidth)
 			max_Hwidth = H->nelt;
@@ -426,22 +415,27 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 		HTwidth = H->nelt + T->nelt;
 		if (HTwidth > max_HTwidth)
 			max_HTwidth = HTwidth;
+		dups = VECTOR_ELT(low2high, key);
+		if (dups != R_NilValue && LENGTH(dups) > keys_buflength)
+			keys_buflength = LENGTH(dups);
 	}
+	keys_buflength++;
 	headtail.head = head;
 	headtail.tail = tail;
 	headtail.max_Hwidth = max_Hwidth;
 	headtail.max_Twidth = max_Twidth;
 	headtail.max_HTwidth = max_HTwidth;
+	headtail.keys_buf = new_IntAE(keys_buflength, keys_buflength, 0);
 	//Rprintf("_new_HeadTail():\n");
 	//Rprintf("  tb_length=%d max_mm=%d\n", tb_length, max_mm);
 	//Rprintf("  max_Hwidth=%d max_Twidth=%d max_HTwidth=%d\n",
 	//	max_Hwidth, max_Twidth, max_HTwidth);
+	//Rprintf("  keys_buflength=%d\n", keys_buflength);
 	if (max_mm < max_HTwidth && max_mm <= 4 && fixedP && fixedS) {
 		/* The base codes for the head and tail are assumed to be the
 		   same as for the Trusted Band */
 		base_codes = _get_PreprocessedTB_base_codes(pptb);
-		low2high = _get_PreprocessedTB_low2high(pptb);
-		headtail.ppheadtail = new_PPHeadTail(base_codes, low2high,
+		headtail.ppheadtail = new_PPHeadTail(base_codes, keys_buflength,
 						max_Hwidth, max_Twidth, max_mm);
 	} else {
 		headtail.ppheadtail.is_init = 0;
@@ -449,16 +443,26 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	return headtail;
 }
 
-/* Assumes that LENGTH(dups) + 1 <= row2key->buflength  (NOT CHECKED!) */
-static void init_ppheadtail_row2key(int key, SEXP dups, IntAE *row2key)
+static void dump_keys(int key0, SEXP low2high, IntAE *keys)
 {
-	int i, *elt;
+	SEXP dups;
+	int i, *key;
 
-	row2key->elts[0] = key;
-	memcpy(row2key->elts + 1, INTEGER(dups), LENGTH(dups) * sizeof(int));
-	row2key->nelt = LENGTH(dups) + 1;
-	for (i = 1, elt = row2key->elts; i < row2key->nelt; i++, elt++)
-		*elt -= 1;
+	keys->nelt = 1;
+	if (keys->nelt > keys->buflength)
+		error("Biostrings internal error in dump_keys(): "
+		      "keys->nelt > keys->buflength");
+	keys->elts[0] = key0;
+	dups = VECTOR_ELT(low2high, key0);
+	if (dups == R_NilValue)
+		return;
+	keys->nelt += LENGTH(dups);
+	if (keys->nelt > keys->buflength)
+		error("Biostrings internal error in dump_keys(): "
+		      "keys->nelt > keys->buflength");
+	memcpy(keys->elts + 1, INTEGER(dups), LENGTH(dups) * sizeof(int));
+	for (i = 1, key = keys->elts; i < keys->nelt; i++, key++)
+		*key -= 1;
 	return;
 }
 
@@ -480,7 +484,7 @@ static void init_ppheadtail_bmbuf(BitMatrix *bmbuf, int nrow)
 }
 
 static void preprocess_HorT(const RoSeq *HorT, ByteTrTable byte2offset,
-		BitMatrix *bmbuf, int row)
+		BitMatrix *bmbuf, int i)
 {
 	int j, offset;
 	const char *c;
@@ -493,43 +497,57 @@ static void preprocess_HorT(const RoSeq *HorT, ByteTrTable byte2offset,
 			      "non-base letters in the preprocessed head or "
 			      "tail of a PDict object yet, sorry ==> FIXME");
 		bmbuf0 = bmbuf + offset;
-		_BitMatrix_set_bit(bmbuf0, row, j, 0);
+		_BitMatrix_set_bit(bmbuf0, i, j, 0);
 	}
 	for (offset = 0; offset < 4; offset++) {
 		bmbuf0 = bmbuf + offset;
 		for (j = HorT->nelt; j < bmbuf0->ncol; j++)
-			_BitMatrix_set_bit(bmbuf0, row, j, 0);
+			_BitMatrix_set_bit(bmbuf0, i, j, 0);
 	}
 	return;
 }
 
-static void preprocess_head(const RoSeqs *head, PPHeadTail *ppheadtail)
+static void preprocess_headortail(const RoSeqs *headortail, const IntAE *keys,
+		ByteTrTable byte2offset, BitMatrix *bmbuf)
 {
 	int i, *key;
 
-	init_ppheadtail_bmbuf(ppheadtail->head_bmbuf, ppheadtail->row2key.nelt);
-	for (i = 0, key = ppheadtail->row2key.elts;
-	     i < ppheadtail->row2key.nelt;
-	     i++, key++)
-	{
-		preprocess_HorT(head->elts + *key, ppheadtail->byte2offset,
-				ppheadtail->head_bmbuf, i);
-	}
+	init_ppheadtail_bmbuf(bmbuf, keys->nelt);
+	for (i = 0, key = keys->elts; i < keys->nelt; i++, key++)
+		preprocess_HorT(headortail->elts + *key, byte2offset, bmbuf, i);
 	return;
 }
 
-static void preprocess_tail(const RoSeqs *tail, PPHeadTail *ppheadtail)
+static void match_ppheadtail(HeadTail *headtail,
+		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
 {
-	int i, *key;
+	long unsigned int ndup, nloci;
+	static long unsigned int subtotal_NFC;
+	clock_t time0;
+	double dt;
+	static double total_time;
 
-	init_ppheadtail_bmbuf(ppheadtail->tail_bmbuf, ppheadtail->row2key.nelt);
-	for (i = 0, key = ppheadtail->row2key.elts;
-	     i < ppheadtail->row2key.nelt;
-	     i++, key++)
-	{
-		preprocess_HorT(tail->elts + *key, ppheadtail->byte2offset,
-				ppheadtail->tail_bmbuf, i);
-	}
+	ndup = (long unsigned int) headtail->keys_buf.nelt;
+	nloci = (long unsigned int) tb_end_buf->nelt;
+	subtotal_NFC += ndup * nloci;
+	Rprintf("START match_ppheadtail(): "
+		"ndup=%lu nloci=%lu subtotal_NFC=%lu max_mm=%d\n",
+		ndup, nloci, subtotal_NFC, max_mm);
+	time0 = clock();
+	if (headtail->max_Hwidth > 0)
+		preprocess_headortail(&(headtail->head), &(headtail->keys_buf),
+			headtail->ppheadtail.byte2offset,
+			headtail->ppheadtail.head_bmbuf);
+	if (headtail->max_Twidth > 0)
+		preprocess_headortail(&(headtail->tail), &(headtail->keys_buf),
+			headtail->ppheadtail.byte2offset,
+			headtail->ppheadtail.tail_bmbuf);
+	dt = (clock() - time0) * 1.00 / CLOCKS_PER_SEC;
+	total_time += dt;
+	Rprintf("END match_ppheadtail(): "
+		"time=%g total_time=%g (in seconds)\n",
+		dt, total_time);
 	return;
 }
 
@@ -571,7 +589,7 @@ static void match_HT(int key,
 	return;
 }
 
-void _match_pdict_flanks(int key, SEXP low2high,
+void _match_pdict_flanks(int key0, SEXP low2high,
 		const HeadTail *headtail,
 		const RoSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
@@ -582,12 +600,13 @@ void _match_pdict_flanks(int key, SEXP low2high,
 	static ncalls = 0;
 
 	ncalls++;
-	Rprintf("_match_pdict_flanks(): ncalls=%d key=%d tb_end=%d\n", ncalls, key, tb_end);
+	Rprintf("_match_pdict_flanks(): ncalls=%d key0=%d tb_end=%d\n",
+		ncalls, key0, tb_end);
 */
-	match_HT(key, headtail,
+	match_HT(key0, headtail,
 		S, tb_end, max_mm, fixedP,
 		matchpdict_buf);
-	dups = VECTOR_ELT(low2high, key);
+	dups = VECTOR_ELT(low2high, key0);
 	if (dups == R_NilValue)
 		return;
 	for (i = 0, dup = INTEGER(dups); i < LENGTH(dups); i++, dup++)
@@ -625,66 +644,37 @@ static void match_dup_headtail(int key,
 	return;
 }
 
-static void match_dups_headtail(int key, SEXP low2high,
+static void match_dups_headtail(int key0, SEXP low2high,
 		HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	SEXP dups;
-	const int *dup;
-	int i, dup_key;
+	int i;
+	const int *key;
 
-	dups = VECTOR_ELT(low2high, key);
-/*
+	dump_keys(key0, low2high, &(headtail->keys_buf));
+
 	if (headtail->ppheadtail.is_init
-	 && dups != R_NilValue && LENGTH(dups) >= 96
+	 && headtail->keys_buf.nelt >= 96
 	 && tb_end_buf->nelt >= 30) {
 		// Let's use the BitMatrix horse-power
-		long unsigned int ndup, nloci;
-		static long unsigned int subtotal_NFC;
-		clock_t time0;
-		double dt;
-		static double total_time;
-
-		init_ppheadtail_row2key(key, dups, &(headtail->ppheadtail.row2key));
-		ndup = (long unsigned int) headtail->ppheadtail.row2key.nelt;
-		nloci = (long unsigned int) tb_end_buf->nelt;
-		subtotal_NFC += ndup * nloci;
-		Rprintf("START using BitMatrix horse-power: "
-			"ndup=%lu nloci=%lu subtotal_NFC=%lu max_mm=%d\n",
-			ndup, nloci, subtotal_NFC, max_mm);
-		time0 = clock();
-		if (headtail->max_Hwidth > 0)
-			preprocess_head(&(headtail->head), &(headtail->ppheadtail));
-		if (headtail->max_Twidth > 0)
-			preprocess_tail(&(headtail->tail), &(headtail->ppheadtail));
-		dt = (clock() - time0) * 1.00 / CLOCKS_PER_SEC;
-		total_time += dt;
-		Rprintf("END using BitMatrix horse-power: "
-			"time=%g total_time=%g (in seconds)\n",
-			dt, total_time);
-		//Just preprocessing for now so we can benchmark it...
+		//match_ppheadtail(headtail, S, tb_end_buf, max_mm, matchpdict_buf);
+		//match_ppheadtail() only does preprocessing for now (so we can
+		//benchmark it...)
 		//return;
 	}
-*/
-	match_dup_headtail(key, headtail,
-			S, tb_end_buf, max_mm,
-			matchpdict_buf);
-	if (dups == R_NilValue)
-		return;
-	for (i = 0, dup = INTEGER(dups);
-	     i < LENGTH(dups);
-	     i++, dup++)
+	for (i = 0, key = headtail->keys_buf.elts;
+	     i < headtail->keys_buf.nelt;
+	     i++, key++)
 	{
-		dup_key = *dup - 1;
-		match_dup_headtail(dup_key, headtail,
+		match_dup_headtail(*key, headtail,
 				S, tb_end_buf, max_mm,
 				matchpdict_buf);
 	}
 	return;
 }
 
-static void match_dups_headtail2(int key, SEXP low2high,
+static void match_dups_headtail2(int key0, SEXP low2high,
 		const HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
@@ -692,7 +682,7 @@ static void match_dups_headtail2(int key, SEXP low2high,
 	int i;
 
 	for (i = 0; i < tb_end_buf->nelt; i++) {
-		_match_pdict_flanks(key, low2high,
+		_match_pdict_flanks(key0, low2high,
 				headtail,
 				S, tb_end_buf->elts[i], max_mm, 1,
 				matchpdict_buf);
@@ -708,7 +698,7 @@ void _match_pdict_all_flanks(SEXP low2high,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const IntAE *tb_matching_keys, *tb_end_buf;
-	int nkeys, i, key;
+	int nkeys, i, key0;
 
 	SEXP dups;
 	long unsigned int ndup, nloci;
@@ -721,13 +711,13 @@ void _match_pdict_all_flanks(SEXP low2high,
 	tb_matching_keys = &(matchpdict_buf->tb_matches.matching_keys);
 	nkeys = tb_matching_keys->nelt;
 	for (i = 0; i < nkeys; i++) {
-		key = tb_matching_keys->elts[i];
-		dups = VECTOR_ELT(low2high, key);
+		key0 = tb_matching_keys->elts[i];
+		dups = VECTOR_ELT(low2high, key0);
 		ndup = (long unsigned int) (1 + (dups == R_NilValue ? 0 : LENGTH(dups)));
-		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key;
+		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key0;
 		nloci = (long unsigned int) tb_end_buf->nelt;
 		total_NFC += ndup * nloci;
-		match_dups_headtail(key, low2high,
+		match_dups_headtail(key0, low2high,
 				headtail,
 				S, tb_end_buf, max_mm,
 				matchpdict_buf);
