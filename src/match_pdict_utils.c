@@ -356,7 +356,7 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, SEXP low2high,
 		int max_Hwidth, int max_Twidth, int max_mm)
 {
 	PPHeadTail ppheadtail;
-	int tb_length, max_dups_length, key, i;
+	int tb_length, bmbuf_nrow, key, i;
 	SEXP dups;
 
 	ppheadtail.is_init = 1;
@@ -365,26 +365,27 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, SEXP low2high,
 			"LENGTH(base_codes) != 4");
 	_init_byte2offset_with_INTEGER(ppheadtail.byte2offset, base_codes, 1);
 	tb_length = LENGTH(low2high);
-	max_dups_length = 0;
+	bmbuf_nrow = 0;
 	for (key = 0; key < tb_length; key++) {
 		dups = VECTOR_ELT(low2high, key);
 		if (dups == R_NilValue)
 			continue;
-		if (LENGTH(dups) > max_dups_length)
-			max_dups_length = LENGTH(dups);
+		if (LENGTH(dups) > bmbuf_nrow)
+			bmbuf_nrow = LENGTH(dups);
 	}
-	max_dups_length++;
+	bmbuf_nrow++;
+	ppheadtail.row2key = new_IntAE(bmbuf_nrow, bmbuf_nrow, 0);
 	if (max_Hwidth > 0)
 		for (i = 0; i < 4; i++)
-			ppheadtail.head_bmbuf[i] = _new_BitMatrix(max_dups_length,
+			ppheadtail.head_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
 							max_Hwidth, 0UL);
 	if (max_Twidth > 0)
 		for (i = 0; i < 4; i++)
-			ppheadtail.tail_bmbuf[i] = _new_BitMatrix(max_dups_length,
+			ppheadtail.tail_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
 							max_Twidth, 0UL);
-	ppheadtail.nmis_bmbuf = _new_BitMatrix(max_dups_length, max_mm + 1, 0UL);
+	ppheadtail.nmis_bmbuf = _new_BitMatrix(bmbuf_nrow, max_mm + 1, 0UL);
 	//Rprintf("new_PPHeadTail():\n");
-	//Rprintf("  nb of rows in each BitMatrix buffer=%d\n", max_dups_length);
+	//Rprintf("  nb of rows in each BitMatrix buffer=%d\n", bmbuf_nrow);
 	return ppheadtail;
 }
 
@@ -448,14 +449,27 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	return headtail;
 }
 
-static void init_headtail_bmbuf(BitMatrix *bmbuf, int nrow)
+/* Assumes that LENGTH(dups) + 1 <= row2key->buflength  (NOT CHECKED!) */
+static void init_ppheadtail_row2key(int key, SEXP dups, IntAE *row2key)
+{
+	int i, *elt;
+
+	row2key->elts[0] = key;
+	memcpy(row2key->elts + 1, INTEGER(dups), LENGTH(dups) * sizeof(int));
+	row2key->nelt = LENGTH(dups) + 1;
+	for (i = 1, elt = row2key->elts; i < row2key->nelt; i++, elt++)
+		*elt -= 1;
+	return;
+}
+
+static void init_ppheadtail_bmbuf(BitMatrix *bmbuf, int nrow)
 {
 	int i;
 
-	//Rprintf("init_headtail_bmbuf(): nrow=%d\n", nrow);
+	//Rprintf("init_ppheadtail_bmbuf(): nrow=%d\n", nrow);
 	for (i = 0; i < 4; i++) {
 		if (nrow > bmbuf[i].nword_per_col * NBIT_PER_BITWORD)
-			error("Biostrings internal error in init_headtail_bmbuf(): "
+			error("Biostrings internal error in init_ppheadtail_bmbuf(): "
 			      "not enough rows in 'bmbuf'");
 		bmbuf[i].nrow = nrow;
 		/* Set all bits to 1
@@ -489,42 +503,32 @@ static void preprocess_HorT(const RoSeq *HorT, ByteTrTable byte2offset,
 	return;
 }
 
-static void preprocess_head(const RoSeqs *head, int key, SEXP dups,
-		PPHeadTail *ppheadtail)
+static void preprocess_head(const RoSeqs *head, PPHeadTail *ppheadtail)
 {
-	int row, dup_key;
-	const int *dup;
+	int i, *key;
 
-	init_headtail_bmbuf(ppheadtail->head_bmbuf, LENGTH(dups) + 1);
-	preprocess_HorT(head->elts + key, ppheadtail->byte2offset,
-			ppheadtail->head_bmbuf, 0);
-	for (row = 1, dup = INTEGER(dups);
-	     row <= LENGTH(dups);
-	     row++, dup++)
+	init_ppheadtail_bmbuf(ppheadtail->head_bmbuf, ppheadtail->row2key.nelt);
+	for (i = 0, key = ppheadtail->row2key.elts;
+	     i < ppheadtail->row2key.nelt;
+	     i++, key++)
 	{
-		dup_key = *dup - 1;
-		preprocess_HorT(head->elts + dup_key, ppheadtail->byte2offset,
-				ppheadtail->head_bmbuf, row);
+		preprocess_HorT(head->elts + *key, ppheadtail->byte2offset,
+				ppheadtail->head_bmbuf, i);
 	}
 	return;
 }
 
-static void preprocess_tail(const RoSeqs *tail, int key, SEXP dups,
-		PPHeadTail *ppheadtail)
+static void preprocess_tail(const RoSeqs *tail, PPHeadTail *ppheadtail)
 {
-	int row, dup_key;
-	const int *dup;
+	int i, *key;
 
-	init_headtail_bmbuf(ppheadtail->tail_bmbuf, LENGTH(dups) + 1);
-	preprocess_HorT(tail->elts + key, ppheadtail->byte2offset,
-			ppheadtail->tail_bmbuf, 0);
-	for (row = 1, dup = INTEGER(dups);
-	     row <= LENGTH(dups);
-	     row++, dup++)
+	init_ppheadtail_bmbuf(ppheadtail->tail_bmbuf, ppheadtail->row2key.nelt);
+	for (i = 0, key = ppheadtail->row2key.elts;
+	     i < ppheadtail->row2key.nelt;
+	     i++, key++)
 	{
-		dup_key = *dup - 1;
-		preprocess_HorT(tail->elts + dup_key, ppheadtail->byte2offset,
-				ppheadtail->tail_bmbuf, row);
+		preprocess_HorT(tail->elts + *key, ppheadtail->byte2offset,
+				ppheadtail->tail_bmbuf, i);
 	}
 	return;
 }
@@ -641,7 +645,9 @@ static void match_dups_headtail(int key, SEXP low2high,
 		clock_t time0;
 		double dt;
 		static double total_time;
-		ndup = (long unsigned int) 1 + LENGTH(dups);
+
+		init_ppheadtail_row2key(key, dups, &(headtail->ppheadtail.row2key));
+		ndup = (long unsigned int) headtail->ppheadtail.row2key.nelt;
 		nloci = (long unsigned int) tb_end_buf->nelt;
 		subtotal_NFC += ndup * nloci;
 		Rprintf("START using BitMatrix horse-power: "
@@ -649,11 +655,9 @@ static void match_dups_headtail(int key, SEXP low2high,
 			ndup, nloci, subtotal_NFC, max_mm);
 		time0 = clock();
 		if (headtail->max_Hwidth > 0)
-			preprocess_head(&(headtail->head), key, dups,
-					&(headtail->ppheadtail));
+			preprocess_head(&(headtail->head), &(headtail->ppheadtail));
 		if (headtail->max_Twidth > 0)
-			preprocess_tail(&(headtail->tail), key, dups,
-					&(headtail->ppheadtail));
+			preprocess_tail(&(headtail->tail), &(headtail->ppheadtail));
 		dt = (clock() - time0) * 1.00 / CLOCKS_PER_SEC;
 		total_time += dt;
 		Rprintf("END using BitMatrix horse-power: "
