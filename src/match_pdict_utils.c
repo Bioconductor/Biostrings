@@ -584,8 +584,7 @@ static void init_headortail_bmbuf(BitMatrix *bmbuf, int nrow)
 			error("Biostrings internal error in init_headortail_bmbuf(): "
 			      "not enough rows in 'bmbuf[%d]'", i);
 		bmbuf[i].nrow = nrow;
-		/* Set all bits to 1
-		   FIXME: no need to do this for the entire buffer! */
+		/* Set all bits to 1 */
 		_BitMatrix_set_val(bmbuf + i, UINT_MAX);
 	}
 	return;
@@ -597,8 +596,7 @@ static void init_nmis_bmbuf(BitMatrix *bmbuf, int nrow)
 		error("Biostrings internal error in init_nmis_bmbuf(): "
 		      "not enough rows in 'bmbuf'");
 	bmbuf->nrow = nrow;
-	/* Set all bits to 0
-	   FIXME: no need to do this for the entire buffer! */
+	/* Set all bits to 0 */
 	_BitMatrix_set_val(bmbuf, 0UL);
 	return;
 }
@@ -678,9 +676,10 @@ static void match_ppheadtail_for_loc(HeadTail *headtail,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const BitMatrix *head_bmbuf, *tail_bmbuf;
-	int j1, j2, i, offset;
+	int j1, j2, i, i2, offset;
 	char s;
 	BitCol bitcol;
+	BitWord *word;
 
 	// Match the heads
 	head_bmbuf = headtail->ppheadtail.head_bmbuf;
@@ -710,12 +709,19 @@ static void match_ppheadtail_for_loc(HeadTail *headtail,
 		bitcol = _BitMatrix_get_col(tail_bmbuf + offset, j1);
 		_BitMatrix_grow1rows(&(headtail->ppheadtail.nmis_bmbuf), &bitcol);
 	}
-	// Report the matches
+	// Report the matches. Note that using _BitCol_get_bit() for this would
+	// be easier but is also twice slower!
 	bitcol = _BitMatrix_get_col(&(headtail->ppheadtail.nmis_bmbuf), max_mm);
-	for (i = 0; i < bitcol.nbit; i++) {
-		if (!_BitCol_get_bit(&bitcol, i))
+	word = bitcol.words;
+	for (i = 0, i2 = 0; i < bitcol.nbit; i++, i2++) {
+		if (i2 >= NBIT_PER_BITWORD) {
+			i2 = 0;
+			word++;
+		}
+		if (!(*word & 1UL))
 			_MatchPDictBuf_report_match(matchpdict_buf,
 				headtail->keys_buf.elts[i], tb_end);
+		*word >>= 1;
 	}
 	return;
 }
@@ -860,16 +866,15 @@ library(BSgenome.Dmelanogaster.UCSC.dm3)
 chr3R <- unmasked(Dmelanogaster$chr3R)
 chr3R_50000 <- subseq(chr3R, end=50000)
 
-
 library(drosophila2probe)
-dict0 <- DNAStringSet(drosophila2probe$sequence)
-pdict5 <- PDict(dict0, tb.start=11, tb.end=15)
+dict0 <- DNAStringSet(drosophila2probe$sequence, end=12)
+pdict6 <- PDict(dict0, tb.start=4, tb.end=9)
 
-mi5 <- matchPDict(pdict5, chr3R_50000, max.mismatch=3)
+mi6 <- matchPDict(pdict6, chr3R_50000, max.mismatch=1)
 
 		if (headtail->ppheadtail.is_init
-		 && headtail->keys_buf.nelt % 64 >= 48
-		 && tb_end_buf->nelt >= 120) {
+		 && headtail->keys_buf.nelt % 64 >= 40
+		 && tb_end_buf->nelt >= 60) {
 			clock_t time0;
 			double dt1, dt2;
 
@@ -880,13 +885,13 @@ mi5 <- matchPDict(pdict5, chr3R_50000, max.mismatch=3)
 				tb_end_buf->nelt);
 
 			time0 = clock();
-			for (int j = 0; j < 100; j++)
+			for (int j = 0; j < 5000; j++)
 				match_ppheadtail(headtail,
 					S, tb_end_buf, max_mm,
 					matchpdict_buf);
 			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			time0 = clock();
-			for (int j = 0; j < 100; j++)
+			for (int j = 0; j < 5000; j++)
 				match_headtail_by_key(headtail,
 					S, tb_end_buf, max_mm,
 					matchpdict_buf);

@@ -812,7 +812,7 @@ SEXP find_palindromes(
 /* BitMatrix.c */
 
 void _BitCol_set_val(
-	const BitCol *bitcol,
+	BitCol *bitcol,
 	BitWord val
 );
 
@@ -838,7 +838,7 @@ BitCol _BitMatrix_get_col(
 );
 
 void _BitMatrix_set_val(
-	const BitMatrix *bitmat,
+	BitMatrix *bitmat,
 	BitWord val
 );
 

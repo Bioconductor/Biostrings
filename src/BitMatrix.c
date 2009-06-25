@@ -19,12 +19,16 @@ static int debug = 0;
 
 typedef IntAE BitMatByRow;
 
-void _BitCol_set_val(const BitCol *bitcol, BitWord val)
+void _BitCol_set_val(BitCol *bitcol, BitWord val)
 {
-	int i;
+	div_t q;
+	int i1;
 	BitWord *word;
 
-	for (i = 0, word = bitcol->words; i < bitcol->nword; i++, word++)
+	q = div(bitcol->nbit, NBIT_PER_BITWORD);
+	if (q.rem != 0)
+		q.quot++;
+	for (i1 = 0, word = bitcol->words; i1 < q.quot; i1++, word++)
 		*word = val;
 	return;
 }
@@ -51,27 +55,21 @@ BitCol _new_BitCol(int nbit, BitWord val)
 int _BitCol_get_bit(const BitCol *bitcol, int i)
 {
 	div_t q;
-	int i1, i2;
 	BitWord *word;
 
 	q = div(i, NBIT_PER_BITWORD);
-	i1 = q.quot;
-	i2 = q.rem;
-	word = bitcol->words + i1;
-	return (*word >> i2) & 1UL;
+	word = bitcol->words + q.quot;
+	return (*word >> q.rem) & 1UL;
 }
 
 void _BitCol_set_bit(BitCol *bitcol, int i, int bit)
 {
 	div_t q;
-	int i1, i2;
 	BitWord *word, mask;
 
 	q = div(i, NBIT_PER_BITWORD);
-	i1 = q.quot;
-	i2 = q.rem;
-	word = bitcol->words + i1;
-	mask = 1UL << i2;
+	word = bitcol->words + q.quot;
+	mask = 1UL << q.rem;
 	if (bit)
 		*word |= mask;
 	else
@@ -90,14 +88,30 @@ BitCol _BitMatrix_get_col(const BitMatrix *bitmat, int j)
 	return bitcol;
 }
 
-void _BitMatrix_set_val(const BitMatrix *bitmat, BitWord val)
+/*
+ * _BitMatrix_set_val() could also be implemented as:
+ *   for (j = 0; j < bitmat->ncol; j++) {
+ *     bitcol = _BitMatrix_get_col(bitmat, j);
+ *     _BitCol_set_val(&bitcol, val);
+ *   }
+ * but the implementation below is faster (only 1 call to div()).
+ */
+void _BitMatrix_set_val(BitMatrix *bitmat, BitWord val)
 {
-	int nword, i;
-	BitWord *word;
+	div_t q;
+	int i1, j;
+	BitWord *word0, *word;
 
-	nword = bitmat->nword_per_col * bitmat->ncol;
-	for (i = 0, word = bitmat->words; i < nword; i++, word++)
-		*word = val;
+	q = div(bitmat->nrow, NBIT_PER_BITWORD);
+	if (q.rem != 0)
+		q.quot++;
+	for (j = 0, word0 = bitmat->words;
+	     j < bitmat->ncol;
+	     j++, word0 += bitmat->nword_per_col)
+	{
+		for (i1 = 0, word = word0; i1 < q.quot; i1++, word++)
+			*word = val;
+	}
 	return;
 }
 
@@ -130,14 +144,11 @@ BitMatrix _new_BitMatrix(int nrow, int ncol, BitWord val)
 int _BitMatrix_get_bit(const BitMatrix *bitmat, int i, int j)
 {
 	div_t q;
-	int i1, i2;
 	BitWord *word;
 
 	q = div(i, NBIT_PER_BITWORD);
-	i1 = q.quot;
-	i2 = q.rem;
-	word = bitmat->words + i1 + j * bitmat->nword_per_col;
-	return (*word >> i2) & 1UL;
+	word = bitmat->words + j * bitmat->nword_per_col + q.quot;
+	return (*word >> q.rem) & 1UL;
 }
 
 /*
@@ -148,14 +159,11 @@ int _BitMatrix_get_bit(const BitMatrix *bitmat, int i, int j)
 void _BitMatrix_set_bit(BitMatrix *bitmat, int i, int j, int bit)
 {
 	div_t q;
-	int i1, i2;
 	BitWord *word, mask;
 
 	q = div(i, NBIT_PER_BITWORD);
-	i1 = q.quot;
-	i2 = q.rem;
-	word = bitmat->words + i1 + j * bitmat->nword_per_col;
-	mask = 1UL << i2;
+	word = bitmat->words + j * bitmat->nword_per_col + q.quot;
+	mask = 1UL << q.rem;
 	if (bit)
 		*word |= mask;
 	else
