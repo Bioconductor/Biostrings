@@ -363,7 +363,7 @@ static void collect_keys(int key0, SEXP low2high, IntAE *keys)
 		error("Biostrings internal error in collect_keys(): "
 		      "keys->nelt > keys->buflength");
 	memcpy(keys->elts + 1, INTEGER(dups), LENGTH(dups) * sizeof(int));
-	for (i = 1, key = keys->elts; i < keys->nelt; i++, key++)
+	for (i = 1, key = keys->elts + 1; i < keys->nelt; i++, key++)
 		*key -= 1;
 	return;
 }
@@ -684,11 +684,13 @@ static void match_ppheadtail_for_loc(HeadTail *headtail,
 
 	// Match the heads
 	head_bmbuf = headtail->ppheadtail.head_bmbuf;
-	for (j1 = 0, j2 = tb_end - matchpdict_buf->tb_matches.tb_width;
-	     j1 < headtail->max_Hwidth; j1++, j2--) {
+	for (j1 = 0, j2 = tb_end - matchpdict_buf->tb_matches.tb_width - 1;
+	     j1 < headtail->max_Hwidth;
+	     j1++, j2--)
+	{
 		// 'j2' should be a safe location in 'S' because we call
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
-		// not to be too close from 'S' boundaries.
+		// not to be too close to 'S' boundaries.
 		s = S->elts[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
 		bitcol = _BitMatrix_get_col(head_bmbuf + offset, j1);
@@ -696,7 +698,10 @@ static void match_ppheadtail_for_loc(HeadTail *headtail,
 	}
 	// Match the tails
 	tail_bmbuf = headtail->ppheadtail.tail_bmbuf;
-	for (j1 = 0, j2 = tb_end + 1; j1 < headtail->max_Twidth; j1++, j2++) {
+	for (j1 = 0, j2 = tb_end;
+	     j1 < headtail->max_Twidth;
+	     j1++, j2++)
+	{
 		// 'j2' should be a safe location in 'S' because we call
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close from 'S' boundaries.
@@ -719,7 +724,7 @@ static void match_ppheadtail(HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int j, headtail_start, headtail_end;
+	int min_safe_tb_end, max_safe_tb_end, j;
 	const int *tb_end;
 
 	if (headtail->max_Hwidth > 0)
@@ -730,21 +735,21 @@ static void match_ppheadtail(HeadTail *headtail,
 		preprocess_tail(&(headtail->tail), &(headtail->keys_buf),
 			headtail->ppheadtail.byte2offset,
 			headtail->ppheadtail.tail_bmbuf);
+	min_safe_tb_end = headtail->max_Hwidth
+	                + matchpdict_buf->tb_matches.tb_width;
+	max_safe_tb_end = S->nelt - headtail->max_Twidth;
 	for (j = 0, tb_end = tb_end_buf->elts;
 	     j < tb_end_buf->nelt;
 	     j++, tb_end++)
 	{
-		headtail_start = *tb_end - matchpdict_buf->tb_matches.tb_width
-				+ 1 - headtail->max_Hwidth;
-		headtail_end = *tb_end + headtail->max_Twidth;
-		if (headtail_start < 1 || headtail_end > S->nelt) {
+		if (*tb_end < min_safe_tb_end || max_safe_tb_end < *tb_end) {
 			match_headtail_for_loc(headtail,
 					S, *tb_end, max_mm,
 					matchpdict_buf);
 			continue;
 		}
-		// From now 'tb_end' is guaranteed not to be too close from
-		// 'S' boundaries.
+		// From now 'tb_end' is guaranteed to be "safe" i.e. not too
+		// close to 'S' boundaries.
 		init_nmis_bmbuf(&(headtail->ppheadtail.nmis_bmbuf),
 					headtail->keys_buf.nelt);
 		match_ppheadtail_for_loc(headtail,
@@ -788,7 +793,7 @@ void _match_pdict_all_flanks(SEXP low2high,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const IntAE *tb_matching_keys, *tb_end_buf;
-	int nkeys, i, key0;
+	int i, key0;
 
 	long unsigned int ndup, nloci, NFC; // NFC = Number of Flank Comparisons
 	static long unsigned int total_NFC, subtotal_NFC;
@@ -798,19 +803,27 @@ void _match_pdict_all_flanks(SEXP low2high,
 		Rprintf("[DEBUG] ENTERING _match_pdict_all_flanks()\n");
 #endif
 	tb_matching_keys = &(matchpdict_buf->tb_matches.matching_keys);
-	nkeys = tb_matching_keys->nelt;
-	for (i = 0; i < nkeys; i++) {
+	for (i = 0; i < tb_matching_keys->nelt; i++) {
 		key0 = tb_matching_keys->elts[i];
 		collect_keys(key0, low2high, &(headtail->keys_buf));
+		//Rprintf("_match_pdict_all_flanks(): i=%d key0=%d\n", i, key0);
 		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key0;
 		ndup = (long unsigned int) headtail->keys_buf.nelt;
 		nloci = (long unsigned int) tb_end_buf->nelt;
 		NFC = ndup * nloci;
 		total_NFC += NFC;
 /*
+		Rprintf("_match_pdict_all_flanks(): "
+			"headtail->ppheadtail.is_init=%d "
+			"headtail->keys_buf.nelt=%d "
+			"tb_end_buf->nelt=%d\n",
+			headtail->ppheadtail.is_init,
+			headtail->keys_buf.nelt,
+			tb_end_buf->nelt);
+*/
 		if (headtail->ppheadtail.is_init
-		 && headtail->keys_buf.nelt >= 96
-		 && tb_end_buf->nelt >= 30) {
+		 && headtail->keys_buf.nelt >= 24
+		 && tb_end_buf->nelt >= 10) {
 			// Use the BitMatrix horse-power
 			//clock_t time0;
 			//double dt;
@@ -832,14 +845,11 @@ void _match_pdict_all_flanks(SEXP low2high,
 			//	"time=%g total_time=%g (in seconds)\n",
 			//	dt, total_time);
 		} else {
-*/
 			// Use brute force
 			match_headtail_by_key(headtail,
 				S, tb_end_buf, max_mm,
 				matchpdict_buf);
-/*
 		}
-*/
 	}
 	//Rprintf("_match_pdict_all_flanks(): "
 	//	"total_NFC=%lu subtotal_NFC=%lu ratio=%.2f\n",
