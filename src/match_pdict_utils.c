@@ -812,15 +812,13 @@ void _match_pdict_all_flanks(SEXP low2high,
 		nloci = (long unsigned int) tb_end_buf->nelt;
 		NFC = ndup * nloci;
 		total_NFC += NFC;
+
+		// Use brute force
+		match_headtail_by_key(headtail,
+			S, tb_end_buf, max_mm,
+			matchpdict_buf);
+
 /*
-		Rprintf("_match_pdict_all_flanks(): "
-			"headtail->ppheadtail.is_init=%d "
-			"headtail->keys_buf.nelt=%d "
-			"tb_end_buf->nelt=%d\n",
-			headtail->ppheadtail.is_init,
-			headtail->keys_buf.nelt,
-			tb_end_buf->nelt);
-*/
 		if (headtail->ppheadtail.is_init
 		 && headtail->keys_buf.nelt >= 24
 		 && tb_end_buf->nelt >= 10) {
@@ -839,7 +837,7 @@ void _match_pdict_all_flanks(SEXP low2high,
 				match_ppheadtail(headtail,
 						S, tb_end_buf, max_mm,
 						matchpdict_buf);
-			//dt = (clock() - time0) * 1.00 / CLOCKS_PER_SEC;
+			//dt = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			//total_time += dt;
 			//Rprintf("END using the BitMatrix horse-power: "
 			//	"time=%g total_time=%g (in seconds)\n",
@@ -850,6 +848,52 @@ void _match_pdict_all_flanks(SEXP low2high,
 				S, tb_end_buf, max_mm,
 				matchpdict_buf);
 		}
+*/
+
+/*
+BENCHMARK
+=========
+Uncomment below (and comment out the use of brute force above), reinstall
+and use with the following code:
+
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+chr3R <- unmasked(Dmelanogaster$chr3R)
+chr3R_50000 <- subseq(chr3R, end=50000)
+
+
+library(drosophila2probe)
+dict0 <- DNAStringSet(drosophila2probe$sequence)
+pdict5 <- PDict(dict0, tb.start=11, tb.end=15)
+
+mi5 <- matchPDict(pdict5, chr3R_50000, max.mismatch=3)
+
+		if (headtail->ppheadtail.is_init
+		 && headtail->keys_buf.nelt % 64 >= 48
+		 && tb_end_buf->nelt >= 120) {
+			clock_t time0;
+			double dt1, dt2;
+
+			Rprintf("_match_pdict_all_flanks(): "
+				"headtail->keys_buf.nelt=%d "
+				"tb_end_buf->nelt=%d\n",
+				headtail->keys_buf.nelt,
+				tb_end_buf->nelt);
+
+			time0 = clock();
+			for (int j = 0; j < 100; j++)
+				match_ppheadtail(headtail,
+					S, tb_end_buf, max_mm,
+					matchpdict_buf);
+			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
+			time0 = clock();
+			for (int j = 0; j < 100; j++)
+				match_headtail_by_key(headtail,
+					S, tb_end_buf, max_mm,
+					matchpdict_buf);
+			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
+			Rprintf("  --> dt1=%.3f dt2=%.3f\n", dt1, dt2);
+		}
+*/
 	}
 	//Rprintf("_match_pdict_all_flanks(): "
 	//	"total_NFC=%lu subtotal_NFC=%lu ratio=%.2f\n",
