@@ -821,6 +821,22 @@ BitCol _new_BitCol(
 	BitWord val
 );
 
+int _BitCol_get_bit(
+	const BitCol *bitcol,
+	int i
+);
+
+void _BitCol_set_bit(
+	BitCol *bitcol,
+	int i,
+	int bit
+);
+
+BitCol _BitMatrix_get_col(
+	const BitMatrix *bitmat,
+	int j
+);
+
 void _BitMatrix_set_val(
 	const BitMatrix *bitmat,
 	BitWord val
@@ -833,7 +849,7 @@ BitMatrix _new_BitMatrix(
 );
 
 int _BitMatrix_get_bit(
-	BitMatrix *bitmat,
+	const BitMatrix *bitmat,
 	int i,
 	int j
 );
@@ -847,7 +863,7 @@ void _BitMatrix_set_bit(
 
 void _BitMatrix_grow1rows(
 	BitMatrix *bitmat,
-	BitCol *bitcol
+	const BitCol *bitcol
 );
 
 SEXP debug_BitMatrix();
@@ -955,10 +971,10 @@ HeadTail _new_HeadTail(
 	SEXP fixed
 );
 
-void _match_pdict_flanks(
+void _match_pdict_flanks_at(
 	int key0,
 	SEXP low2high,
-	const HeadTail *headtail,
+	HeadTail *headtail,
 	const RoSeq *S,
 	int tb_end,
 	int max_mm,
@@ -1062,7 +1078,7 @@ void _match_tbACtree2(
 
 void _match_pdictACtree2(
 	SEXP pptb,
-	const HeadTail *headtail,
+	HeadTail *headtail,
 	const RoSeq *S,
 	int max_mm,
 	int fixedP,

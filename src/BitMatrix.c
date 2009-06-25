@@ -48,6 +48,48 @@ BitCol _new_BitCol(int nbit, BitWord val)
 	return bitcol;
 }
 
+int _BitCol_get_bit(const BitCol *bitcol, int i)
+{
+	div_t q;
+	int i1, i2;
+	BitWord *word;
+
+	q = div(i, NBIT_PER_BITWORD);
+	i1 = q.quot;
+	i2 = q.rem;
+	word = bitcol->words + i1;
+	return (*word >> i2) & 1UL;
+}
+
+void _BitCol_set_bit(BitCol *bitcol, int i, int bit)
+{
+	div_t q;
+	int i1, i2;
+	BitWord *word, mask;
+
+	q = div(i, NBIT_PER_BITWORD);
+	i1 = q.quot;
+	i2 = q.rem;
+	word = bitcol->words + i1;
+	mask = 1UL << i2;
+	if (bit)
+		*word |= mask;
+	else
+		*word &= ~mask;
+	return;
+}
+
+/* WARNING: This is a 0-copy column extraction! */
+BitCol _BitMatrix_get_col(const BitMatrix *bitmat, int j)
+{
+	BitCol bitcol;
+
+	bitcol.words = bitmat->words + j * bitmat->nword_per_col;
+	bitcol.nword = bitmat->nword_per_col;
+	bitcol.nbit = bitmat->nrow;
+	return bitcol;
+}
+
 void _BitMatrix_set_val(const BitMatrix *bitmat, BitWord val)
 {
 	int nword, i;
@@ -80,7 +122,12 @@ BitMatrix _new_BitMatrix(int nrow, int ncol, BitWord val)
 	return bitmat;
 }
 
-int _BitMatrix_get_bit(BitMatrix *bitmat, int i, int j)
+/*
+ * _BitMatrix_get_bit() could also be implemented as:
+ *   bitcol = _BitMatrix_get_col(bitmat, j);
+ *   return _BitCol_get_bit(&bitcol, i);
+ */
+int _BitMatrix_get_bit(const BitMatrix *bitmat, int i, int j)
 {
 	div_t q;
 	int i1, i2;
@@ -93,6 +140,11 @@ int _BitMatrix_get_bit(BitMatrix *bitmat, int i, int j)
 	return (*word >> i2) & 1UL;
 }
 
+/*
+ * _BitMatrix_set_bit() could also be implemented as:
+ *   bitcol = _BitMatrix_get_col(bitmat, j);
+ *   _BitCol_set_bit(&bitcol, i, bit);
+ */
 void _BitMatrix_set_bit(BitMatrix *bitmat, int i, int j, int bit)
 {
 	div_t q;
@@ -111,7 +163,7 @@ void _BitMatrix_set_bit(BitMatrix *bitmat, int i, int j, int bit)
 	return;
 }
 
-void _BitMatrix_grow1rows(BitMatrix *bitmat, BitCol *bitcol)
+void _BitMatrix_grow1rows(BitMatrix *bitmat, const BitCol *bitcol)
 {
 	BitWord *Lword, Rword, ret;
 	int i1, j;
@@ -185,7 +237,7 @@ static void BitMatrix_print(BitMatrix *bitmat)
 }
 
 /*
-static void BitMatrix_addcol(BitMatrix *bitmat, BitCol *bitcol)
+static void BitMatrix_addcol(BitMatrix *bitmat, const BitCol *bitcol)
 {
 	BitWord *Lword, Rword, ret;
 	int i1, j;

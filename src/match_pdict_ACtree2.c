@@ -1002,7 +1002,7 @@ void _match_tbACtree2(SEXP pptb, const RoSeq *S, int fixedS,
 
 /* Does report matches */
 static void walk_pdict_subject(ACtree *tree,
-		SEXP low2high, const HeadTail *headtail,
+		SEXP low2high, HeadTail *headtail,
 		const RoSeq *S, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -1017,7 +1017,7 @@ static void walk_pdict_subject(ACtree *tree,
 		nid = transition(tree, node, linktag, S_tail);
 		node = GET_NODE(tree, nid);
 		if (IS_LEAFNODE(node))
-			_match_pdict_flanks(NODE_P_ID(node) - 1,
+			_match_pdict_flanks_at(NODE_P_ID(node) - 1,
 				low2high, headtail,
 				S, n, max_mm, fixedP,
 				matchpdict_buf);
@@ -1027,7 +1027,7 @@ static void walk_pdict_subject(ACtree *tree,
 
 /* Does report matches */
 static void walk_pdict_nonfixed_subject(ACtree *tree,
-		SEXP low2high, const HeadTail *headtail,
+		SEXP low2high, HeadTail *headtail,
 		const RoSeq *S, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -1035,7 +1035,7 @@ static void walk_pdict_nonfixed_subject(ACtree *tree,
 	return;
 }
 
-void _match_pdictACtree2(SEXP pptb, const HeadTail *headtail,
+void _match_pdictACtree2(SEXP pptb, HeadTail *headtail,
 		const RoSeq *S, int max_mm, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {
