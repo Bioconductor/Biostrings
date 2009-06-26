@@ -9,7 +9,7 @@
 #include <S.h> /* for Salloc() */
 
 #include <stdio.h>
-#include <limits.h> /* for CHAR_BIT */
+#include <limits.h> /* for CHAR_BIT and ULONG_MAX */
 #include <stdlib.h> /* for div() */
 
 
@@ -194,15 +194,44 @@ void _BitMatrix_set_bit(BitMatrix *bitmat, int i, int j, int bit)
 	return;
 }
 
+void _BitMatrix_Rrot1(BitMatrix *bitmat)
+{
+	div_t q;
+	BitWord *bitwordNE, *Lbitword, *Rbitword;
+	int i1, j;
+
+	if (bitmat->ncol == 0)
+		error("_BitMatrix_Rrot1(): bitmat->ncol == 0");
+	q = div(bitmat->nrow, NBIT_PER_BITWORD);
+	if (q.rem != 0)
+		q.quot++;
+	bitwordNE = bitmat->bitword00 + (bitmat->ncol - 1) * bitmat->nword_per_col;
+	for (i1 = 0; i1 < q.quot; i1++) {
+		Rbitword = bitwordNE + i1;
+		Lbitword = Rbitword - bitmat->nword_per_col;
+		for (j = 1; j < bitmat->ncol; j++) {
+			*Rbitword = *Lbitword;
+			Rbitword = Lbitword;
+			Lbitword -= bitmat->nword_per_col;
+		}
+		*Rbitword = ULONG_MAX;
+	}
+	return;
+}
+
 void _BitMatrix_grow1rows(BitMatrix *bitmat, const BitCol *bitcol)
 {
+	div_t q;
 	BitWord *Lbitword, Rbitword, ret;
 	int i1, j;
 
 	if (bitmat->nrow != bitcol->nbit)
 		error("_BitMatrix_grow1rows(): "
 		      "'bitmat' and 'bitcol' are incompatible");
-	for (i1 = 0; i1 < bitmat->nword_per_col; i1++) {
+	q = div(bitmat->nrow, NBIT_PER_BITWORD);
+	if (q.rem != 0)
+		q.quot++;
+	for (i1 = 0; i1 < q.quot; i1++) {
 		Lbitword = bitmat->bitword00 + i1;
 		Rbitword = bitcol->bitword0[i1];
 		for (j = 0; j < bitmat->ncol; j++) {
@@ -329,23 +358,33 @@ SEXP debug_BitMatrix()
 		BitCol bitcol0;
 		//BitMatByRow bitmat_byrow0;
 
-		bitmat0 = _new_BitMatrix(40, 15, 0UL);
+		bitmat0 = _new_BitMatrix(40, 5, 0UL);
 		bitcol0 = _new_BitCol(40, 33UL + (1UL << 39));
 		
 		BitMatrix_print(&bitmat0);
 		_BitMatrix_set_bit(&bitmat0, 0, 0, 1);
 		BitMatrix_print(&bitmat0);
-		_BitMatrix_set_bit(&bitmat0, 39, 14, 1);
+		_BitMatrix_set_bit(&bitmat0, 39, 4, 1);
 		BitMatrix_print(&bitmat0);
-		_BitMatrix_set_bit(&bitmat0, 39, 14, 0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
+		_BitMatrix_set_bit(&bitmat0, 39, 4, 0);
 		BitMatrix_print(&bitmat0);
 		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
 		BitMatrix_print(&bitmat0);
 		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
 		BitMatrix_print(&bitmat0);
 		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_Rrot1(&bitmat0);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_Rrot1(&bitmat0);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_Rrot1(&bitmat0);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_Rrot1(&bitmat0);
+		BitMatrix_print(&bitmat0);
+		_BitMatrix_Rrot1(&bitmat0);
 		BitMatrix_print(&bitmat0);
 /*
 		BitMatrix_print(&bitmat0);

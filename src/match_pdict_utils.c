@@ -725,6 +725,10 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// not to be too close to 'S' boundaries.
 		s = S->elts[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
+		if (offset == NA_INTEGER) {
+			_BitMatrix_Rrot1(nmis_bmbuf);
+			continue;
+		}
 		bitcol = _BitMatrix_get_col(head_bmbuf + offset, j1);
 		_BitMatrix_grow1rows(nmis_bmbuf, &bitcol);
 	}
@@ -739,6 +743,10 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// not to be too close from 'S' boundaries.
 		s = S->elts[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
+		if (offset == NA_INTEGER) {
+			_BitMatrix_Rrot1(nmis_bmbuf);
+			continue;
+		}
 		bitcol = _BitMatrix_get_col(tail_bmbuf + offset, j1);
 		_BitMatrix_grow1rows(nmis_bmbuf, &bitcol);
 	}
@@ -952,15 +960,25 @@ void _match_pdict_all_flanks(SEXP low2high,
 		key0 = tb_matching_keys->elts[i];
 		collect_keys(key0, low2high, &(headtail->keys_buf));
 		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key0;
+/*
 		ndup = (unsigned long int) headtail->keys_buf.nelt;
 		nloci = (unsigned long int) tb_end_buf->nelt;
 		NFC = ndup * nloci;
 		total_NFC += NFC;
-
+*/
 		if (headtail->ppheadtail.is_init
 		 && tb_end_buf->nelt >= 20) {
 			// Use the BitMatrix horse-power
+/*
+			Rprintf("_match_pdict_all_flanks(): "
+				"key0=%d "
+				"headtail->keys_buf.nelt=%d "
+				"tb_end_buf->nelt=%d\n",
+				key0,
+				headtail->keys_buf.nelt,
+				tb_end_buf->nelt);
 			subtotal_NFC += NFC;
+*/
 			match_ppheadtail(headtail,
 					S, tb_end_buf, max_mm,
 					matchpdict_buf);

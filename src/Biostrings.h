@@ -867,6 +867,8 @@ void _BitMatrix_set_bit(
 	int bit
 );
 
+void _BitMatrix_Rrot1(BitMatrix *bitmat);
+
 void _BitMatrix_grow1rows(
 	BitMatrix *bitmat,
 	const BitCol *bitcol
