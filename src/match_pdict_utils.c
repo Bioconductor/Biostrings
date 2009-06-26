@@ -8,7 +8,7 @@
 #include "IRanges_interface.h"
 #include <S.h> /* for Salloc() */
 
-#include <limits.h> /* for UINT_MAX */
+#include <limits.h> /* for ULONG_MAX */
 #include <time.h> /* for clock() and CLOCKS_PER_SEC */
 
 
@@ -530,7 +530,7 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 			ppheadtail.tail_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
 							max_Twidth, 0UL);
 	ppheadtail.nmis_bmbuf = _new_BitMatrix(bmbuf_nrow, max_mm + 1, 0UL);
-	ppheadtail.tmp_match_bmbuf = _new_BitMatrix(bmbuf_nrow, TMPMATCH_BMBUF_MAXNCOL, UINT_MAX);
+	ppheadtail.tmp_match_bmbuf = _new_BitMatrix(bmbuf_nrow, TMPMATCH_BMBUF_MAXNCOL, ULONG_MAX);
 	ppheadtail.tmp_tb_end_buf = Salloc((long) TMPMATCH_BMBUF_MAXNCOL, int);
 	//Rprintf("new_PPHeadTail():\n");
 	//Rprintf("  nb of rows in each BitMatrix buffer=%d\n", bmbuf_nrow);
@@ -614,7 +614,7 @@ static void init_headortail_bmbuf(BitMatrix *bmbuf, int nrow)
 			      "not enough rows in 'bmbuf[%d]'", i);
 		bmbuf[i].nrow = nrow;
 		/* Set all bits to 1 */
-		_BitMatrix_set_val(bmbuf + i, UINT_MAX);
+		_BitMatrix_set_val(bmbuf + i, ULONG_MAX);
 	}
 	return;
 }
@@ -739,14 +739,21 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		_BitMatrix_grow1rows(nmis_bmbuf, &bitcol);
 	}
 	return _BitMatrix_get_col(nmis_bmbuf, max_mm);
-/*
-	MATCH REPORTING IS DIFFERED NOW!
+}
 
-	// Report the matches. Note that using _BitCol_get_bit() for this would
-	// be easier but is also twice slower!
+/*
+static void report_matches_for_loc(HeadTail *headtail, int tb_end,
+		MatchPDictBuf *matchpdict_buf)
+{
+	// Note that using _BitCol_get_bit() for this would be easier but is
+	// also twice slower!
+	BitMatrix *nmis_bmbuf;
+	BitCol bitcol;
 	BitWord *bitword;
 	int i, i2;
-	bitcol = _BitMatrix_get_col(nmis_bmbuf, max_mm);
+
+	nmis_bmbuf = &(headtail->ppheadtail.nmis_bmbuf);
+	bitcol = _BitMatrix_get_col(nmis_bmbuf, nmis_bmbuf->ncol - 1);
 	bitword = bitcol.bitword0;
 	for (i = i2 = 0; i < bitcol.nbit; i++, i2++) {
 		if (i2 >= NBIT_PER_BITWORD) {
@@ -754,20 +761,21 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 			bitword++;
 		}
 		if (!(*bitword & 1UL)) {
-			int key, start, width;
-			//_MatchPDictBuf_report_match(matchpdict_buf,
-			//	headtail->keys_buf.elts[i], tb_end);
-			key = headtail->keys_buf.elts[i];
-			width = headtail->head.elts[key].nelt
-			      + matchpdict_buf->tb_matches.tb_width
-			      + headtail->tail.elts[key].nelt;
-			start = tb_end + headtail->tail.elts[key].nelt - width + 1;
-			_MatchPDictBuf_report_match2(matchpdict_buf, key, start, width);
+			_MatchPDictBuf_report_match(matchpdict_buf,
+				headtail->keys_buf.elts[i], tb_end);
+			//int key, start, width;
+			//key = headtail->keys_buf.elts[i];
+			//width = headtail->head.elts[key].nelt
+			//      + matchpdict_buf->tb_matches.tb_width
+			//      + headtail->tail.elts[key].nelt;
+			//start = tb_end + headtail->tail.elts[key].nelt - width + 1;
+			//_MatchPDictBuf_report_match2(matchpdict_buf, key, start, width);
 		}
 		*bitword >>= 1;
 	}
-*/
+	return;
 }
+*/
 
 static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_buf)
 {
@@ -840,6 +848,7 @@ static void match_ppheadtail(HeadTail *headtail,
 		bitcol = match_ppheadtail_for_loc(headtail,
 				matchpdict_buf->tb_matches.tb_width,
 				S, *tb_end, max_mm);
+		//report_matches_for_loc(headtail, *tb_end, matchpdict_buf);
 		ncol = tmp_match_bmbuf->ncol;
 		_BitMatrix_set_col(tmp_match_bmbuf, ncol, &bitcol);
 		tmp_match_bmbuf->ncol++;
@@ -905,20 +914,21 @@ void _match_pdict_all_flanks(SEXP low2high,
 		NFC = ndup * nloci;
 		total_NFC += NFC;
 
-		// Use brute force
-		match_headtail_by_key(headtail,
-			S, tb_end_buf, max_mm,
-			matchpdict_buf);
-
-/*
-		if (headtail->ppheadtail.is_init
-		 && headtail->keys_buf.nelt >= 24
-		 && tb_end_buf->nelt >= 10) {
+		if (0) {
+		//if (headtail->ppheadtail.is_init
+		// && headtail->keys_buf.nelt % 64 >= 40
+		// && tb_end_buf->nelt >= 60) {
 			// Use the BitMatrix horse-power
 			//clock_t time0;
 			//double dt;
 			//static double total_time;
 			//int j;
+
+			Rprintf("_match_pdict_all_flanks(): "
+				"headtail->keys_buf.nelt=%d "
+				"tb_end_buf->nelt=%d\n",
+				headtail->keys_buf.nelt,
+				tb_end_buf->nelt);
 
 			subtotal_NFC += NFC;
 			//Rprintf("START using the BitMatrix horse-power: "
@@ -940,7 +950,6 @@ void _match_pdict_all_flanks(SEXP low2high,
 				S, tb_end_buf, max_mm,
 				matchpdict_buf);
 		}
-*/
 
 /*
 BENCHMARK
@@ -957,6 +966,7 @@ dict0 <- DNAStringSet(drosophila2probe$sequence, end=12)
 pdict6 <- PDict(dict0, tb.start=4, tb.end=9)
 
 mi6 <- matchPDict(pdict6, chr3R_50000, max.mismatch=1)
+sum(countIndex(mi6))  # 17896
 
 		if (headtail->ppheadtail.is_init
 		 && headtail->keys_buf.nelt % 64 >= 40
