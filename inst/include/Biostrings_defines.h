@@ -81,7 +81,7 @@ typedef struct cachedxstringset {
  * The BitCol, BitMatrix and HeadTail structs are used for preprocessing
  * and fast matching of the head and tail of a PDict object.
  */
-typedef long unsigned int BitWord;
+typedef unsigned long int BitWord;
 
 #define NBIT_PER_BITWORD (sizeof(BitWord) * CHAR_BIT)
 

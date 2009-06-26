@@ -289,7 +289,6 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int key, int tb_end)
 	return;
 }
 
-/*
 static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
 		int start, int width)
 {
@@ -311,7 +310,6 @@ static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
 	}
 	return;
 }
-*/
 
 void _MatchPDictBuf_flush(MatchPDictBuf *buf)
 {
@@ -508,7 +506,7 @@ static void match_headtail_by_key(HeadTail *headtail,
  * worth to make it persistent. Not a trivial task!
  */
 
-#define TMPMATCH_BMBUF_MAXNCOL 150
+#define TMPMATCH_BMBUF_MAXNCOL 200
 
 static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 		int max_Hwidth, int max_Twidth, int max_mm)
@@ -591,7 +589,13 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	//Rprintf("  max_Hwidth=%d max_Twidth=%d max_HTwidth=%d\n",
 	//	max_Hwidth, max_Twidth, max_HTwidth);
 	//Rprintf("  keys_buflength=%d\n", keys_buflength);
-	if (max_mm < max_HTwidth && max_mm <= 4 && fixedP && fixedS) {
+
+	/* The (max_mm <= 4) and (max_Hwidth + max_Twidth <= 8 + 2 * max_mm)
+           criteria are based on nothing else than my first intuition.
+	   TODO: Fine tune those criteria */
+	if ((max_mm < max_HTwidth) && (max_mm <= 4)
+	 && (max_Hwidth + max_Twidth <= 8 + 2 * max_mm)
+         && (fixedP && fixedS)) {
 		/* The base codes for the head and tail are assumed to be the
 		   same as for the Trusted Band */
 		base_codes = _get_PreprocessedTB_base_codes(pptb);
@@ -741,7 +745,6 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 	return _BitMatrix_get_col(nmis_bmbuf, max_mm);
 }
 
-/*
 static void report_matches_for_loc(HeadTail *headtail, int tb_end,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -761,22 +764,22 @@ static void report_matches_for_loc(HeadTail *headtail, int tb_end,
 			bitword++;
 		}
 		if (!(*bitword & 1UL)) {
-			_MatchPDictBuf_report_match(matchpdict_buf,
-				headtail->keys_buf.elts[i], tb_end);
-			//int key, start, width;
-			//key = headtail->keys_buf.elts[i];
-			//width = headtail->head.elts[key].nelt
-			//      + matchpdict_buf->tb_matches.tb_width
-			//      + headtail->tail.elts[key].nelt;
-			//start = tb_end + headtail->tail.elts[key].nelt - width + 1;
-			//_MatchPDictBuf_report_match2(matchpdict_buf, key, start, width);
+			//_MatchPDictBuf_report_match(matchpdict_buf,
+			//	headtail->keys_buf.elts[i], tb_end);
+			int key, start, width;
+			key = headtail->keys_buf.elts[i];
+			width = headtail->head.elts[key].nelt
+			      + matchpdict_buf->tb_matches.tb_width
+			      + headtail->tail.elts[key].nelt;
+			start = tb_end + headtail->tail.elts[key].nelt - width + 1;
+			_MatchPDictBuf_report_match2(matchpdict_buf, key, start, width);
 		}
 		*bitword >>= 1;
 	}
 	return;
 }
-*/
 
+/*
 static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_buf)
 {
 	BitMatrix *tmp_match_bmbuf;
@@ -806,8 +809,9 @@ static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_
 	tmp_match_bmbuf->ncol = 0;
 	return;
 }
+*/
 
-static void match_ppheadtail(HeadTail *headtail,
+static void match_ppheadtail0(HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -848,15 +852,55 @@ static void match_ppheadtail(HeadTail *headtail,
 		bitcol = match_ppheadtail_for_loc(headtail,
 				matchpdict_buf->tb_matches.tb_width,
 				S, *tb_end, max_mm);
-		//report_matches_for_loc(headtail, *tb_end, matchpdict_buf);
+		report_matches_for_loc(headtail, *tb_end, matchpdict_buf);
+/*
 		ncol = tmp_match_bmbuf->ncol;
 		_BitMatrix_set_col(tmp_match_bmbuf, ncol, &bitcol);
 		tmp_match_bmbuf->ncol++;
 		headtail->ppheadtail.tmp_tb_end_buf[ncol] = *tb_end;
 		if (tmp_match_bmbuf->ncol == TMPMATCH_BMBUF_MAXNCOL)
 			flush_tmp_match_bmbuf(headtail, matchpdict_buf);
+*/
 	}
+/*
 	flush_tmp_match_bmbuf(headtail, matchpdict_buf);
+*/
+	return;
+}
+
+#define MAX_REMAINING_KEYS 30  // >= 0 and < NBIT_PER_BITWORD
+
+static void match_ppheadtail(HeadTail *headtail,
+		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
+{
+	int nkey0, nkey1, nkey2, i;
+	const int *key;
+
+	nkey0 = headtail->keys_buf.nelt;
+	nkey2 = nkey0 % NBIT_PER_BITWORD;
+	if (nkey2 > MAX_REMAINING_KEYS) {
+		match_ppheadtail0(headtail,
+			S, tb_end_buf, max_mm,
+			matchpdict_buf);
+		return;
+	}
+	nkey1 = nkey0 - nkey2;
+	if (nkey1 != 0) {
+		headtail->keys_buf.nelt = nkey1;
+		match_ppheadtail0(headtail,
+			S, tb_end_buf, max_mm,
+			matchpdict_buf);
+		headtail->keys_buf.nelt = nkey0;
+	}
+	for (i = nkey1, key = headtail->keys_buf.elts + nkey1;
+	     i < headtail->keys_buf.nelt;
+	     i++, key++)
+	{
+		match_headtail_for_key(headtail, *key,
+				S, tb_end_buf, max_mm,
+				matchpdict_buf);
+	}
 	return;
 }
 
@@ -896,8 +940,8 @@ void _match_pdict_all_flanks(SEXP low2high,
 	const IntAE *tb_matching_keys, *tb_end_buf;
 	int i, key0;
 
-	long unsigned int ndup, nloci, NFC; // NFC = Number of Flank Comparisons
-	static long unsigned int total_NFC, subtotal_NFC;
+	unsigned long int ndup, nloci, NFC; // NFC = Number of Flank Comparisons
+	static unsigned long int total_NFC = 0UL, subtotal_NFC = 0UL;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -907,43 +951,19 @@ void _match_pdict_all_flanks(SEXP low2high,
 	for (i = 0; i < tb_matching_keys->nelt; i++) {
 		key0 = tb_matching_keys->elts[i];
 		collect_keys(key0, low2high, &(headtail->keys_buf));
-		//Rprintf("_match_pdict_all_flanks(): i=%d key0=%d\n", i, key0);
 		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key0;
-		ndup = (long unsigned int) headtail->keys_buf.nelt;
-		nloci = (long unsigned int) tb_end_buf->nelt;
+		ndup = (unsigned long int) headtail->keys_buf.nelt;
+		nloci = (unsigned long int) tb_end_buf->nelt;
 		NFC = ndup * nloci;
 		total_NFC += NFC;
 
-		if (0) {
-		//if (headtail->ppheadtail.is_init
-		// && headtail->keys_buf.nelt % 64 >= 40
-		// && tb_end_buf->nelt >= 60) {
+		if (headtail->ppheadtail.is_init
+		 && tb_end_buf->nelt >= 20) {
 			// Use the BitMatrix horse-power
-			//clock_t time0;
-			//double dt;
-			//static double total_time;
-			//int j;
-
-			Rprintf("_match_pdict_all_flanks(): "
-				"headtail->keys_buf.nelt=%d "
-				"tb_end_buf->nelt=%d\n",
-				headtail->keys_buf.nelt,
-				tb_end_buf->nelt);
-
 			subtotal_NFC += NFC;
-			//Rprintf("START using the BitMatrix horse-power: "
-			//	"ndup=%lu nloci=%lu subtotal_NFC=%lu max_mm=%d\n",
-			//	ndup, nloci, subtotal_NFC, max_mm);
-			//time0 = clock();
-			//for (j = 0; j < 1000; j++)
-				match_ppheadtail(headtail,
-						S, tb_end_buf, max_mm,
-						matchpdict_buf);
-			//dt = (double) (clock() - time0) / CLOCKS_PER_SEC;
-			//total_time += dt;
-			//Rprintf("END using the BitMatrix horse-power: "
-			//	"time=%g total_time=%g (in seconds)\n",
-			//	dt, total_time);
+			match_ppheadtail(headtail,
+					S, tb_end_buf, max_mm,
+					matchpdict_buf);
 		} else {
 			// Use brute force
 			match_headtail_by_key(headtail,
@@ -969,30 +989,30 @@ mi6 <- matchPDict(pdict6, chr3R_50000, max.mismatch=1)
 sum(countIndex(mi6))  # 17896
 
 		if (headtail->ppheadtail.is_init
-		 && headtail->keys_buf.nelt % 64 >= 40
-		 && tb_end_buf->nelt >= 60) {
+		 && tb_end_buf->nelt >= 40) {
 			clock_t time0;
 			double dt1, dt2;
 
-			Rprintf("_match_pdict_all_flanks(): "
-				"headtail->keys_buf.nelt=%d "
-				"tb_end_buf->nelt=%d\n",
-				headtail->keys_buf.nelt,
-				tb_end_buf->nelt);
-
-			time0 = clock();
-			for (int j = 0; j < 5000; j++)
-				match_headtail_by_key(headtail,
-					S, tb_end_buf, max_mm,
-					matchpdict_buf);
-			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			time0 = clock();
 			for (int j = 0; j < 5000; j++)
 				match_ppheadtail(headtail,
 					S, tb_end_buf, max_mm,
 					matchpdict_buf);
 			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
-			Rprintf("  --> dt1=%.3f dt2=%.3f\n", dt1, dt2);
+			time0 = clock();
+			for (int j = 0; j < 5000; j++)
+				match_headtail_by_key(headtail,
+					S, tb_end_buf, max_mm,
+					matchpdict_buf);
+			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
+			if (dt1 > dt2) {
+				Rprintf("_match_pdict_all_flanks(): "
+					"headtail->keys_buf.nelt=%d "
+					"tb_end_buf->nelt=%d\n",
+					headtail->keys_buf.nelt,
+					tb_end_buf->nelt);
+				Rprintf("  --> dt1=%.3f dt2=%.3f\n", dt1, dt2);
+			}
 		}
 */
 	}
