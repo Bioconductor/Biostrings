@@ -506,6 +506,7 @@ static void match_headtail_by_key(HeadTail *headtail,
  * worth to make it persistent. Not a trivial task!
  */
 
+#define MAX_REMAINING_KEYS 20  // >= 0 and < NBIT_PER_BITWORD
 #define TMPMATCH_BMBUF_MAXNCOL 200
 
 static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
@@ -590,12 +591,13 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	//	max_Hwidth, max_Twidth, max_HTwidth);
 	//Rprintf("  keys_buflength=%d\n", keys_buflength);
 
-	/* The (max_mm <= 4) and (max_Hwidth + max_Twidth <= 8 + 2 * max_mm)
-           criteria are based on nothing else than my first intuition.
-	   TODO: Fine tune those criteria */
-	if ((max_mm < max_HTwidth) && (max_mm <= 4)
-	 && (max_Hwidth + max_Twidth <= 8 + 2 * max_mm)
-         && (fixedP && fixedS)) {
+	/* The (max_mm <= 4) and (max_Hwidth + max_Twidth <= 10 + 4 * max_mm)
+	   criteria together with the MAX_REMAINING_KEYS value above (20)
+	   are optimized for the Core 2 Duo arch (64bit) */
+	if ((max_mm < max_HTwidth)
+	 && (max_mm <= 4)
+	 && (max_Hwidth + max_Twidth <= 10 + 4 * max_mm)
+	 && (fixedP && fixedS)) {
 		/* The base codes for the head and tail are assumed to be the
 		   same as for the Trusted Band */
 		base_codes = _get_PreprocessedTB_base_codes(pptb);
@@ -841,7 +843,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 	tmp_match_bmbuf->ncol = 0;
 
 	min_safe_tb_end = headtail->max_Hwidth
-	                + matchpdict_buf->tb_matches.tb_width;
+			+ matchpdict_buf->tb_matches.tb_width;
 	max_safe_tb_end = S->nelt - headtail->max_Twidth;
 	for (j = 0, tb_end = tb_end_buf->elts;
 	     j < tb_end_buf->nelt;
@@ -875,8 +877,6 @@ static void match_ppheadtail0(HeadTail *headtail,
 */
 	return;
 }
-
-#define MAX_REMAINING_KEYS 30  // >= 0 and < NBIT_PER_BITWORD
 
 static void match_ppheadtail(HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
@@ -967,7 +967,7 @@ void _match_pdict_all_flanks(SEXP low2high,
 		total_NFC += NFC;
 */
 		if (headtail->ppheadtail.is_init
-		 && tb_end_buf->nelt >= 20) {
+		 && tb_end_buf->nelt >= 15) {
 			// Use the BitMatrix horse-power
 /*
 			Rprintf("_match_pdict_all_flanks(): "
