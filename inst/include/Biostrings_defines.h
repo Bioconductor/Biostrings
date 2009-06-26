@@ -86,13 +86,13 @@ typedef long unsigned int BitWord;
 #define NBIT_PER_BITWORD (sizeof(BitWord) * CHAR_BIT)
 
 typedef struct bitcol {
-	BitWord *words;
+	BitWord *bitword0;
 	int nword;
 	int nbit; /* <= nword * NBIT_PER_BITWORD */
 } BitCol;
 
 typedef struct bitmatrix {
-	BitWord *words;
+	BitWord *bitword00;
 	int nword_per_col;
 	int nrow; /* <= nword_per_col * NBIT_PER_BITWORD */
 	int ncol;
@@ -103,6 +103,8 @@ typedef struct ppheadtail {
 	ByteTrTable byte2offset;
 	BitMatrix head_bmbuf[4], tail_bmbuf[4];
 	BitMatrix nmis_bmbuf;
+	BitMatrix tmp_match_bmbuf;
+	int *tmp_tb_end_buf;
 } PPHeadTail;
 
 typedef struct headtail {

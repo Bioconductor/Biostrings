@@ -837,6 +837,12 @@ BitCol _BitMatrix_get_col(
 	int j
 );
 
+void _BitMatrix_set_col(
+	BitMatrix *bitmat,
+	int j,
+	const BitCol *bitcol
+);
+
 void _BitMatrix_set_val(
 	BitMatrix *bitmat,
 	BitWord val

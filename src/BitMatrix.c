@@ -22,14 +22,15 @@ typedef IntAE BitMatByRow;
 void _BitCol_set_val(BitCol *bitcol, BitWord val)
 {
 	div_t q;
+	BitWord *bitword;
 	int i1;
-	BitWord *word;
 
 	q = div(bitcol->nbit, NBIT_PER_BITWORD);
 	if (q.rem != 0)
 		q.quot++;
-	for (i1 = 0, word = bitcol->words; i1 < q.quot; i1++, word++)
-		*word = val;
+	bitword = bitcol->bitword0;
+	for (i1 = 0; i1 < q.quot; i1++)
+		*(bitword++) = val;
 	return;
 }
 
@@ -45,7 +46,7 @@ BitCol _new_BitCol(int nbit, BitWord val)
 	nword = q.quot;
 	if (q.rem != 0)
 		nword++;
-	bitcol.words = Salloc((long) nword, BitWord);
+	bitcol.bitword0 = Salloc((long) nword, BitWord);
 	bitcol.nword = nword;
 	bitcol.nbit = nbit;
 	_BitCol_set_val(&bitcol, val);
@@ -55,25 +56,25 @@ BitCol _new_BitCol(int nbit, BitWord val)
 int _BitCol_get_bit(const BitCol *bitcol, int i)
 {
 	div_t q;
-	BitWord *word;
+	BitWord *bitword;
 
 	q = div(i, NBIT_PER_BITWORD);
-	word = bitcol->words + q.quot;
-	return (*word >> q.rem) & 1UL;
+	bitword = bitcol->bitword0 + q.quot;
+	return (*bitword >> q.rem) & 1UL;
 }
 
 void _BitCol_set_bit(BitCol *bitcol, int i, int bit)
 {
 	div_t q;
-	BitWord *word, mask;
+	BitWord *bitword, mask;
 
 	q = div(i, NBIT_PER_BITWORD);
-	word = bitcol->words + q.quot;
+	bitword = bitcol->bitword0 + q.quot;
 	mask = 1UL << q.rem;
 	if (bit)
-		*word |= mask;
+		*bitword |= mask;
 	else
-		*word &= ~mask;
+		*bitword &= ~mask;
 	return;
 }
 
@@ -82,11 +83,32 @@ BitCol _BitMatrix_get_col(const BitMatrix *bitmat, int j)
 {
 	BitCol bitcol;
 
-	bitcol.words = bitmat->words + j * bitmat->nword_per_col;
+	bitcol.bitword0 = bitmat->bitword00 + j * bitmat->nword_per_col;
 	bitcol.nword = bitmat->nword_per_col;
 	bitcol.nbit = bitmat->nrow;
 	return bitcol;
 }
+
+void _BitMatrix_set_col(BitMatrix *bitmat, int j, const BitCol *bitcol)
+{
+	div_t q;
+	BitWord *Lbitword;
+	const BitWord *Rbitword;
+	int i1;
+
+	if (bitmat->nrow != bitcol->nbit)
+		error("_BitMatrix_set_col(): "
+		      "'bitmat' and 'bitcol' are incompatible");
+	q = div(bitmat->nrow, NBIT_PER_BITWORD);
+	if (q.rem != 0)
+		q.quot++;
+	Lbitword = bitmat->bitword00 + j * bitmat->nword_per_col;
+	Rbitword = bitcol->bitword0;
+	for (i1 = 0; i1 < q.quot; i1++)
+		*(Lbitword++) = *(Rbitword++);
+	return;
+}
+
 
 /*
  * _BitMatrix_set_val() could also be implemented as:
@@ -100,17 +122,18 @@ void _BitMatrix_set_val(BitMatrix *bitmat, BitWord val)
 {
 	div_t q;
 	int i1, j;
-	BitWord *word0, *word;
+	BitWord *bitword0, *bitword;
 
 	q = div(bitmat->nrow, NBIT_PER_BITWORD);
 	if (q.rem != 0)
 		q.quot++;
-	for (j = 0, word0 = bitmat->words;
+	for (j = 0, bitword0 = bitmat->bitword00;
 	     j < bitmat->ncol;
-	     j++, word0 += bitmat->nword_per_col)
+	     j++, bitword0 += bitmat->nword_per_col)
 	{
-		for (i1 = 0, word = word0; i1 < q.quot; i1++, word++)
-			*word = val;
+		bitword = bitword0;
+		for (i1 = 0; i1 < q.quot; i1++)
+			*(bitword++) = val;
 	}
 	return;
 }
@@ -128,7 +151,7 @@ BitMatrix _new_BitMatrix(int nrow, int ncol, BitWord val)
 	if (q.rem != 0)
 		nword_per_col++;
 	nword = nword_per_col * ncol;
-	bitmat.words = Salloc((long) nword, BitWord);
+	bitmat.bitword00 = Salloc((long) nword, BitWord);
 	bitmat.nword_per_col = nword_per_col;
 	bitmat.nrow = nrow;
 	bitmat.ncol = ncol;
@@ -144,11 +167,11 @@ BitMatrix _new_BitMatrix(int nrow, int ncol, BitWord val)
 int _BitMatrix_get_bit(const BitMatrix *bitmat, int i, int j)
 {
 	div_t q;
-	BitWord *word;
+	BitWord *bitword;
 
 	q = div(i, NBIT_PER_BITWORD);
-	word = bitmat->words + j * bitmat->nword_per_col + q.quot;
-	return (*word >> q.rem) & 1UL;
+	bitword = bitmat->bitword00 + j * bitmat->nword_per_col + q.quot;
+	return (*bitword >> q.rem) & 1UL;
 }
 
 /*
@@ -159,33 +182,34 @@ int _BitMatrix_get_bit(const BitMatrix *bitmat, int i, int j)
 void _BitMatrix_set_bit(BitMatrix *bitmat, int i, int j, int bit)
 {
 	div_t q;
-	BitWord *word, mask;
+	BitWord *bitword, mask;
 
 	q = div(i, NBIT_PER_BITWORD);
-	word = bitmat->words + j * bitmat->nword_per_col + q.quot;
+	bitword = bitmat->bitword00 + j * bitmat->nword_per_col + q.quot;
 	mask = 1UL << q.rem;
 	if (bit)
-		*word |= mask;
+		*bitword |= mask;
 	else
-		*word &= ~mask;
+		*bitword &= ~mask;
 	return;
 }
 
 void _BitMatrix_grow1rows(BitMatrix *bitmat, const BitCol *bitcol)
 {
-	BitWord *Lword, Rword, ret;
+	BitWord *Lbitword, Rbitword, ret;
 	int i1, j;
 
 	if (bitmat->nrow != bitcol->nbit)
-		error("_BitMatrix_grow1rows(): bitmat and bitcol are incompatible");
+		error("_BitMatrix_grow1rows(): "
+		      "'bitmat' and 'bitcol' are incompatible");
 	for (i1 = 0; i1 < bitmat->nword_per_col; i1++) {
-		Lword = bitmat->words + i1;
-		Rword = bitcol->words[i1];
+		Lbitword = bitmat->bitword00 + i1;
+		Rbitword = bitcol->bitword0[i1];
 		for (j = 0; j < bitmat->ncol; j++) {
-			ret = *Lword & Rword; // and
-			*Lword |= Rword; // or
-			Rword = ret;
-			Lword += bitmat->nword_per_col;
+			ret = *Lbitword & Rbitword; // and
+			*Lbitword |= Rbitword; // or
+			Rbitword = ret;
+			Lbitword += bitmat->nword_per_col;
 		}
 	}
 	return;
@@ -199,13 +223,13 @@ void _BitMatrix_grow1rows(BitMatrix *bitmat, const BitCol *bitcol)
 
 static void BitMatrix_tr(BitMatrix *in, BitMatByRow *out)
 {
-	BitWord rbit, *word;
+	BitWord rbit, *bitword;
 	int i1, i2, i, j, cbit;
 
 	if (in->nrow != out->nelt)
-		error("BitMatrix_tr(): in and out are incompatible");
+		error("BitMatrix_tr(): 'in' and 'out' are incompatible");
 	if (in->ncol >= BITMATBYROW_NCOL)
-		error("BitMatrix_tr(): in has too many columns");
+		error("BitMatrix_tr(): 'in' has too many columns");
 	for (i1 = i = 0; i1 < in->nword_per_col; i1++) {
 		for (i2 = 0, rbit = 1UL;
 		     i2 < NBIT_PER_BITWORD;
@@ -214,11 +238,10 @@ static void BitMatrix_tr(BitMatrix *in, BitMatByRow *out)
 			if (i >= in->nrow)
 				return;
 			out->elts[i] = 0;
-			word = in->words + i1;
-			for (j = 0, word = in->words + i1, cbit = 1;
+			for (j = 0, bitword = in->bitword00 + i1, cbit = 1;
 			     j < in->ncol;
-			     j++, word += in->nword_per_col, cbit <<= 1) {
-				if (*word & rbit)
+			     j++, bitword += in->nword_per_col, cbit <<= 1) {
+				if (*bitword & rbit)
 					out->elts[i] += cbit;
 			}
 		}
@@ -247,21 +270,22 @@ static void BitMatrix_print(BitMatrix *bitmat)
 /*
 static void BitMatrix_addcol(BitMatrix *bitmat, const BitCol *bitcol)
 {
-	BitWord *Lword, Rword, ret;
+	BitWord *Lbitword, Rbitword, ret;
 	int i1, j;
 
 	if (bitmat->nrow != bitcol->nbit)
-		error("BitMatrix_addcol(): bitmat and bitcol are incompatible");
+		error("BitMatrix_addcol(): "
+		      "'bitmat' and 'bitcol' are incompatible");
 	for (i1 = 0; i1 < bitmat->nword_per_col; i1++) {
-		Lword = bitmat->words + i1;
-		Rword = bitcol->words[i1];
+		Lbitword = bitmat->bitword00 + i1;
+		Rbitword = bitcol->bitword0[i1];
 		for (j = 0; j < bitmat->ncol; j++) {
-			ret = *Lword & Rword; // and
-			*Lword ^= Rword; // xor
-			Rword = ret;
-			Lword += bitmat->nword_per_col;
+			ret = *Lbitword & Rbitword; // and
+			*Lbitword ^= Rbitword; // xor
+			Rbitword = ret;
+			Lbitword += bitmat->nword_per_col;
 		}
-		if (Rword)
+		if (Rbitword)
 			warning("integer overflow in BitMatrix_addcol()");
 	}
 	return;
@@ -338,8 +362,8 @@ SEXP debug_BitMatrix()
 /*
 		bitmat0 = _new_BitMatrix(3000, 5, 0UL);
 		bitcol0 = _new_BitCol(3000, 0UL);
-		bitcol0.words[0] = 33UL;
-		bitcol0.words[4] = 1UL << 43;
+		bitcol0.bitword0[0] = 33UL;
+		bitcol0.bitword0[4] = 1UL << 43;
 		bitmat_byrow0 = new_IntAE(3000, 3000, 0);
 		testing1(&bitmat0, &bitcol0);
 		//testing2(&bitmat_byrow0);

@@ -6,6 +6,7 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include <S.h> /* for Salloc() */
 
 #include <limits.h> /* for UINT_MAX */
 #include <time.h> /* for clock() and CLOCKS_PER_SEC */
@@ -288,6 +289,30 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int key, int tb_end)
 	return;
 }
 
+/*
+static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
+		int start, int width)
+{
+	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
+
+	if (buf->matches_as == MATCHES_AS_NULL)
+		return;
+	matching_keys = &(buf->matches.matching_keys);
+	count_buf = &(buf->matches.match_counts);
+	if (count_buf->elts[key]++ == 0)
+		IntAE_insert_at(matching_keys, matching_keys->nelt, key);
+	if (buf->matches.match_starts.buflength != -1) {
+		start_buf = buf->matches.match_starts.elts + key;
+		IntAE_insert_at(start_buf, start_buf->nelt, start);
+	}
+	if (buf->matches.match_widths.buflength != -1) {
+		width_buf = buf->matches.match_widths.elts + key;
+		IntAE_insert_at(width_buf, width_buf->nelt, width);
+	}
+	return;
+}
+*/
+
 void _MatchPDictBuf_flush(MatchPDictBuf *buf)
 {
 	if (buf->matches_as == MATCHES_AS_NULL)
@@ -483,6 +508,8 @@ static void match_headtail_by_key(HeadTail *headtail,
  * worth to make it persistent. Not a trivial task!
  */
 
+#define TMPMATCH_BMBUF_MAXNCOL 150
+
 static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 		int max_Hwidth, int max_Twidth, int max_mm)
 {
@@ -503,6 +530,8 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 			ppheadtail.tail_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
 							max_Twidth, 0UL);
 	ppheadtail.nmis_bmbuf = _new_BitMatrix(bmbuf_nrow, max_mm + 1, 0UL);
+	ppheadtail.tmp_match_bmbuf = _new_BitMatrix(bmbuf_nrow, TMPMATCH_BMBUF_MAXNCOL, UINT_MAX);
+	ppheadtail.tmp_tb_end_buf = Salloc((long) TMPMATCH_BMBUF_MAXNCOL, int);
 	//Rprintf("new_PPHeadTail():\n");
 	//Rprintf("  nb of rows in each BitMatrix buffer=%d\n", bmbuf_nrow);
 	return ppheadtail;
@@ -671,19 +700,19 @@ static void preprocess_tail(const RoSeqs *tail, const IntAE *keys,
 	return;
 }
 
-static void match_ppheadtail_for_loc(HeadTail *headtail,
-		const RoSeq *S, int tb_end, int max_mm,
-		MatchPDictBuf *matchpdict_buf)
+static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
+		const RoSeq *S, int tb_end, int max_mm)
 {
+	BitMatrix *nmis_bmbuf;
 	const BitMatrix *head_bmbuf, *tail_bmbuf;
-	int j1, j2, i, i2, offset;
+	int j1, j2, offset;
 	char s;
 	BitCol bitcol;
-	BitWord *word;
 
+	nmis_bmbuf = &(headtail->ppheadtail.nmis_bmbuf);
 	// Match the heads
 	head_bmbuf = headtail->ppheadtail.head_bmbuf;
-	for (j1 = 0, j2 = tb_end - matchpdict_buf->tb_matches.tb_width - 1;
+	for (j1 = 0, j2 = tb_end - tb_width - 1;
 	     j1 < headtail->max_Hwidth;
 	     j1++, j2--)
 	{
@@ -693,7 +722,7 @@ static void match_ppheadtail_for_loc(HeadTail *headtail,
 		s = S->elts[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
 		bitcol = _BitMatrix_get_col(head_bmbuf + offset, j1);
-		_BitMatrix_grow1rows(&(headtail->ppheadtail.nmis_bmbuf), &bitcol);
+		_BitMatrix_grow1rows(nmis_bmbuf, &bitcol);
 	}
 	// Match the tails
 	tail_bmbuf = headtail->ppheadtail.tail_bmbuf;
@@ -707,22 +736,66 @@ static void match_ppheadtail_for_loc(HeadTail *headtail,
 		s = S->elts[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
 		bitcol = _BitMatrix_get_col(tail_bmbuf + offset, j1);
-		_BitMatrix_grow1rows(&(headtail->ppheadtail.nmis_bmbuf), &bitcol);
+		_BitMatrix_grow1rows(nmis_bmbuf, &bitcol);
 	}
+	return _BitMatrix_get_col(nmis_bmbuf, max_mm);
+/*
+	MATCH REPORTING IS DIFFERED NOW!
+
 	// Report the matches. Note that using _BitCol_get_bit() for this would
 	// be easier but is also twice slower!
-	bitcol = _BitMatrix_get_col(&(headtail->ppheadtail.nmis_bmbuf), max_mm);
-	word = bitcol.words;
-	for (i = 0, i2 = 0; i < bitcol.nbit; i++, i2++) {
+	BitWord *bitword;
+	int i, i2;
+	bitcol = _BitMatrix_get_col(nmis_bmbuf, max_mm);
+	bitword = bitcol.bitword0;
+	for (i = i2 = 0; i < bitcol.nbit; i++, i2++) {
 		if (i2 >= NBIT_PER_BITWORD) {
 			i2 = 0;
-			word++;
+			bitword++;
 		}
-		if (!(*word & 1UL))
-			_MatchPDictBuf_report_match(matchpdict_buf,
-				headtail->keys_buf.elts[i], tb_end);
-		*word >>= 1;
+		if (!(*bitword & 1UL)) {
+			int key, start, width;
+			//_MatchPDictBuf_report_match(matchpdict_buf,
+			//	headtail->keys_buf.elts[i], tb_end);
+			key = headtail->keys_buf.elts[i];
+			width = headtail->head.elts[key].nelt
+			      + matchpdict_buf->tb_matches.tb_width
+			      + headtail->tail.elts[key].nelt;
+			start = tb_end + headtail->tail.elts[key].nelt - width + 1;
+			_MatchPDictBuf_report_match2(matchpdict_buf, key, start, width);
+		}
+		*bitword >>= 1;
 	}
+*/
+}
+
+static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_buf)
+{
+	BitMatrix *tmp_match_bmbuf;
+	const int *tmp_tb_end_buf;
+	BitWord *bitword2, *bitword, mask;
+	int i, j;
+
+	tmp_match_bmbuf = &(headtail->ppheadtail.tmp_match_bmbuf);
+	tmp_tb_end_buf = headtail->ppheadtail.tmp_tb_end_buf;
+	bitword2 = tmp_match_bmbuf->bitword00;
+	mask = 1UL;
+	for (i = 0; i < tmp_match_bmbuf->nrow; i++) {
+		if (mask == 0UL) { // this means that i % NBIT_PER_BITWORD == 0
+			bitword2++;
+			mask = 1UL;
+		}
+		bitword = bitword2;
+		for (j = 0; j < tmp_match_bmbuf->ncol; j++) {
+			if (!(*bitword & mask)) {
+				_MatchPDictBuf_report_match(matchpdict_buf,
+					headtail->keys_buf.elts[i], tmp_tb_end_buf[j]);
+			}
+			bitword += tmp_match_bmbuf->nword_per_col;
+		}
+		mask <<= 1;
+	}
+	tmp_match_bmbuf->ncol = 0;
 	return;
 }
 
@@ -730,8 +803,10 @@ static void match_ppheadtail(HeadTail *headtail,
 		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int min_safe_tb_end, max_safe_tb_end, j;
+	BitMatrix *tmp_match_bmbuf;
+	int min_safe_tb_end, max_safe_tb_end, j, ncol;
 	const int *tb_end;
+	BitCol bitcol;
 
 	if (headtail->max_Hwidth > 0)
 		preprocess_head(&(headtail->head), &(headtail->keys_buf),
@@ -741,6 +816,10 @@ static void match_ppheadtail(HeadTail *headtail,
 		preprocess_tail(&(headtail->tail), &(headtail->keys_buf),
 			headtail->ppheadtail.byte2offset,
 			headtail->ppheadtail.tail_bmbuf);
+	tmp_match_bmbuf = &(headtail->ppheadtail.tmp_match_bmbuf);
+	tmp_match_bmbuf->nrow = headtail->keys_buf.nelt;
+	tmp_match_bmbuf->ncol = 0;
+
 	min_safe_tb_end = headtail->max_Hwidth
 	                + matchpdict_buf->tb_matches.tb_width;
 	max_safe_tb_end = S->nelt - headtail->max_Twidth;
@@ -758,10 +837,17 @@ static void match_ppheadtail(HeadTail *headtail,
 		// close to 'S' boundaries.
 		init_nmis_bmbuf(&(headtail->ppheadtail.nmis_bmbuf),
 					headtail->keys_buf.nelt);
-		match_ppheadtail_for_loc(headtail,
-				S, *tb_end, max_mm,
-				matchpdict_buf);
+		bitcol = match_ppheadtail_for_loc(headtail,
+				matchpdict_buf->tb_matches.tb_width,
+				S, *tb_end, max_mm);
+		ncol = tmp_match_bmbuf->ncol;
+		_BitMatrix_set_col(tmp_match_bmbuf, ncol, &bitcol);
+		tmp_match_bmbuf->ncol++;
+		headtail->ppheadtail.tmp_tb_end_buf[ncol] = *tb_end;
+		if (tmp_match_bmbuf->ncol == TMPMATCH_BMBUF_MAXNCOL)
+			flush_tmp_match_bmbuf(headtail, matchpdict_buf);
 	}
+	flush_tmp_match_bmbuf(headtail, matchpdict_buf);
 	return;
 }
 
@@ -886,16 +972,16 @@ mi6 <- matchPDict(pdict6, chr3R_50000, max.mismatch=1)
 
 			time0 = clock();
 			for (int j = 0; j < 5000; j++)
-				match_ppheadtail(headtail,
-					S, tb_end_buf, max_mm,
-					matchpdict_buf);
-			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
-			time0 = clock();
-			for (int j = 0; j < 5000; j++)
 				match_headtail_by_key(headtail,
 					S, tb_end_buf, max_mm,
 					matchpdict_buf);
 			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
+			time0 = clock();
+			for (int j = 0; j < 5000; j++)
+				match_ppheadtail(headtail,
+					S, tb_end_buf, max_mm,
+					matchpdict_buf);
+			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			Rprintf("  --> dt1=%.3f dt2=%.3f\n", dt1, dt2);
 		}
 */
