@@ -506,7 +506,7 @@ static void match_headtail_by_key(HeadTail *headtail,
  * worth to make it persistent. Not a trivial task!
  */
 
-#define MAX_REMAINING_KEYS 20  // >= 0 and < NBIT_PER_BITWORD
+#define MAX_REMAINING_KEYS 24  // >= 0 and < NBIT_PER_BITWORD
 #define TMPMATCH_BMBUF_MAXNCOL 200
 
 static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
