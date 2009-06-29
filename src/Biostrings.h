@@ -976,7 +976,8 @@ HeadTail _new_HeadTail(
 	SEXP pdict_tail,
 	SEXP pptb,
 	SEXP max_mismatch,
-	SEXP fixed
+	SEXP fixed,
+	int with_ppheadtail
 );
 
 void _match_pdict_flanks_at(

@@ -537,7 +537,8 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 }
 
 HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
-		SEXP pptb, SEXP max_mismatch, SEXP fixed)
+		SEXP pptb, SEXP max_mismatch, SEXP fixed,
+		int with_ppheadtail)
 {
 	HeadTail headtail;
 	int tb_length, max_mm, fixedP, fixedS,
@@ -594,7 +595,8 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	/* The (max_mm <= 4) and (max_Hwidth + max_Twidth <= 10 + 4 * max_mm)
 	   criteria together with the MAX_REMAINING_KEYS value above (20)
 	   are optimized for the Core 2 Duo arch (64bit) */
-	if ((max_mm < max_HTwidth)
+	if (with_ppheadtail
+	 && (max_mm < max_HTwidth)
 	 && (max_mm <= 4)
 	 && (max_Hwidth + max_Twidth <= 10 + 4 * max_mm)
 	 && (fixedP && fixedS)) {
@@ -912,6 +914,32 @@ static void match_ppheadtail(HeadTail *headtail,
 	return;
 }
 
+/*
+static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
+		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		MatchPDictBuf *matchpdict_buf)
+{
+	clock_t time0;
+	double dt1, dt2;
+
+	time0 = clock();
+	for (int i = 0; i < 100; i++) {
+		match_ppheadtail0(headtail,
+			S, tb_end_buf, max_mm,
+			matchpdict_buf);
+	}
+	dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
+	time0 = clock();
+	for (int i = 0; i < 100; i++) {
+		match_headtail_by_key(headtail,
+			S, tb_end_buf, max_mm,
+			matchpdict_buf);
+	}
+	dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
+	Rprintf("%.3f\t%.3f\n", dt1, dt2);
+	return;
+}
+*/
 
 
 /*****************************************************************************
@@ -982,6 +1010,11 @@ void _match_pdict_all_flanks(SEXP low2high,
 			match_ppheadtail(headtail,
 					S, tb_end_buf, max_mm,
 					matchpdict_buf);
+/*
+			BENCHMARK_match_ppheadtail(headtail,
+					S, tb_end_buf, max_mm,
+					matchpdict_buf);
+*/
 		} else {
 			// Use brute force
 			match_headtail_by_key(headtail,
