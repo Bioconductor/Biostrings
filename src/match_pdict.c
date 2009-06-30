@@ -160,7 +160,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 #endif
 	tb_length = _get_PreprocessedTB_length(pptb);
 	headtail = _new_HeadTail(pdict_head, pdict_tail,
-				 pptb, max_mismatch, fixed, 0);
+				 pptb, max_mismatch, fixed, 1);
 	S = _get_XString_asRoSeq(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
