@@ -30,7 +30,7 @@ function(Lpattern = "", Rpattern = "", subject,
     } else {
         ncharRpattern <- nchar(Rpattern)
         if (length(max.Rmismatch) == 1 && max.Rmismatch > 0 && max.Rmismatch < 1) {
-            max.Rmismatch <- round(max.Rmismatch * seq_len(ncharRpattern))
+            max.Rmismatch <- max.Rmismatch * seq_len(ncharRpattern)
         }
         max.Rmismatch <- as.integer(max.Rmismatch)
         if (length(max.Rmismatch) < ncharRpattern) {
@@ -63,7 +63,7 @@ function(Lpattern = "", Rpattern = "", subject,
     } else {
         ncharLpattern <- nchar(Lpattern)
         if (length(max.Lmismatch) == 1 && max.Lmismatch > 0 && max.Lmismatch < 1) {
-            max.Lmismatch <- round(max.Lmismatch * seq_len(ncharLpattern))
+            max.Lmismatch <- max.Lmismatch * seq_len(ncharLpattern)
         }
         max.Lmismatch <- as.integer(max.Lmismatch)
         if (length(max.Lmismatch) < ncharLpattern) {
