@@ -77,13 +77,21 @@
     Only with a \link{DNAString} or \link{RNAString} subject can a
     \code{Lfixed} value other than the default (\code{TRUE}) be used.
 
-    With \code{Lfixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
-    Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
-    base alphabet) in the left pattern \_and\_ in the subject are interpreted
-    as wildcards i.e. they match any letter that they stand for.
+    With \code{Lfixed=FALSE}, ambiguities (i.e. letters from the IUPAC
+    Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that
+    are not from the base alphabet) in the left pattern \_and\_ in the
+    subject are interpreted as wildcards i.e. they match any letter
+    that they stand for.
 
-    See the \code{fixed} argument of the \code{\link{matchPattern}} function
-    for more information.
+    \code{Lfixed} can also be a character vector, a subset of
+    \code{c("pattern", "subject")}.
+    \code{Lfixed=c("pattern", "subject")} is equivalent to
+    \code{Lfixed=TRUE} (the default).
+    An empty vector is equivalent to \code{Lfixed=FALSE}.
+    With \code{Lfixed="subject"}, ambiguities in the pattern only are
+    interpreted as wildcards.
+    With \code{Lfixed="pattern"}, ambiguities in the subject only are
+    interpreted as wildcards.
   }
   \item{Rfixed}{
     Same as \code{Lfixed} but for the right part of the pattern.
