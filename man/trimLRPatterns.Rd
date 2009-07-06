@@ -32,32 +32,33 @@
   }
   \item{max.Lmismatch}{
     Either an integer vector of length \code{nLp = nchar(Lpattern)} whose
-    elements \code{max.Lmismatch[i]} represent the maximum number of acceptable
-    mismatching letters when aligning
+    elements \code{max.Lmismatch[i]} represent the maximum number of
+    acceptable mismatching letters when aligning
     \code{substring(Lpattern, nLp - i + 1, nLp)} with
-    \code{substring(subject, 1, i)} or a single numeric value in \code{(0, 1)}
-    that represents a constant maximum mismatch rate for each of the \code{nL}
-    alignments. Negative numbers in integer vector inputs are used to prevent
-    trimming at the i-th location. If an integer vector input has
-    \code{length(max.Lmismatch) < nLp}, then \code{max.Lmismatch} will be
-    augmented with enough -1's at the beginning of the vector to bring it up to
-    length \code{nLp}.
+    \code{substring(subject, 1, i)} or a single numeric value in
+    \code{(0, 1)} that represents a constant maximum mismatch rate for each
+    of the \code{nL} alignments. Negative numbers in integer vector inputs
+    are used to prevent trimming at the i-th location. If an integer vector
+    input has \code{length(max.Lmismatch) < nLp}, then \code{max.Lmismatch}
+    will be augmented with enough -1's at the beginning of the vector to
+    bring it up to length \code{nLp}.
 
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).
   }
   \item{max.Rmismatch}{
     Either an integer vector of length \code{nRp = nchar(Rpattern)} whose
-    elements \code{max.Rmismatch[i]} represent the maximum number of acceptable
-    mismatching letters when aligning
-    \code{substring(Rpattern, nRp - i + 1, nRp)} with
-    \code{substring(subject, 1, i)} or a single numeric value in \code{(0, 1)}
-    that represents a constant maximum mismatch rate for each of the \code{nR}
-    alignments. Negative numbers in integer vector inputs are used to prevent
-    trimming at the i-th location. If an integer vector input has
-    \code{length(max.Rmismatch) < nRp}, then \code{max.Rmismatch} will be
-    augmented with enough -1's at the beginning of the vector to bring it up to
-    length \code{nRp}.
+    elements \code{max.Rmismatch[i]} represent the maximum number of
+    acceptable mismatching letters when aligning
+    \code{substring(Rpattern, 1, i)} with
+    \code{substring(subject, nS - i + 1, nS)}, where
+    \code{nS = nchar(subject)}, or a single numeric value in
+    \code{(0, 1)} that represents a constant maximum mismatch rate for each
+    of the \code{nR} alignments. Negative numbers in integer vector inputs
+    are used to prevent trimming at the i-th location. If an integer vector
+    input has \code{length(max.Rmismatch) < nRp}, then \code{max.Rmismatch}
+    will be augmented with enough -1's at the beginning of the vector to
+    bring it up to length \code{nRp}.
 
     If non-zero, an inexact matching algorithm is used (see the
     \code{\link{matchPattern}} function for more information).
