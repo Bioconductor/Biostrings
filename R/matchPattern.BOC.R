@@ -74,7 +74,7 @@ setMethod("initialize", "BOC_SubjectString",
 ###   Biostrings:::plotBOC(chr1boc, "Human chr1")
 plotBOC <- function(x, main)
 {
-    XLAB <- "Base Occurence Count"
+    XLAB <- "Base Occurrence Count"
     TITLE <- paste(XLAB, " for the ", x@pattern_length, "-mers in ", main, sep="")
     YLAB <- paste("number of ", x@pattern_length, "-mers", sep="")
     YMAX <- max(c(x@stats$table1, x@stats$table2, x@stats$table3, x@stats$table4))

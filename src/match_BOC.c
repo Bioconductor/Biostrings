@@ -1,5 +1,5 @@
 /****************************************************************************
- *      Base Occurence Count algorithm for exact and inexact matching       *
+ *      Base Occurrence Count algorithm for exact and inexact matching      *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"

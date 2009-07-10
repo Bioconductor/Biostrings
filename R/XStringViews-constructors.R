@@ -92,7 +92,7 @@ setMethod("XStringViews", "XString",
     function(x, subjectClass, collapse="")
     {
         if (!missing(collapse)) {
-            ## The semantic is: views are delimited by the occurences of
+            ## The semantic is: views are delimited by the occurrences of
             ## 'collapse' in 'x' (a kind of strsplit() for XString objects).
             ## Uncomment when normalize() and ! method are ready (see TODO file):
             #return(!normalize(matchPattern(collapse, b, fixed=TRUE)))

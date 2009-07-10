@@ -65,7 +65,7 @@ setMethod("initialize", "BOC2_SubjectString",
 ###   Biostrings:::plotBOC2(chr1boc, "Human chr1")
 plotBOC2 <- function(x, main)
 {
-    XLAB <- "Base Occurence Count"
+    XLAB <- "Base Occurrence Count"
     TITLE <- paste(XLAB, " for the ", x@pattern_length, "-mers in ", main, sep="")
     YLAB <- paste("number of ", x@pattern_length, "-mers", sep="")
     YMAX <- max(c(x@stats$table1, x@stats$table2, x@stats$table3, x@stats$table4))
@@ -204,14 +204,14 @@ setMethod("countPattern", "BOC2_SubjectString",
 #}
 
 ### A note about [40-120]mers in Human genome with a surprisingly high number
-### of occurences.
+### of occurrences.
 ###
 ### TODO: Move this to a more appropiate place (vignette?)
 ###
 ### In Human chr1, the 50999961-51000124 region is rich in substring of 40-80
-### letters that have a lot of occurences (a few dozens) in the whole
+### letters that have a lot of occurrences (a few dozens) in the whole
 ### chromosome sequence. More remarkably, these substrings also have a similar
-### number of occurences in the minus strand _and_ in the plus and minus
+### number of occurrences in the minus strand _and_ in the plus and minus
 ### strands of other chromosomes (checked with chr2 and chr3 only, need to do
 ### more checking).
 ###

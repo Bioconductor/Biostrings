@@ -28,7 +28,7 @@ SEXP debug_match_pattern()
  *   The naive method aligns the left end of P (the pattern) with the left
  *   end of S (the subject) and then compares the characters of P and S left
  *   to right until either two unequal characters are found or until P is
- *   exhausted, in which case an occurence of P is reported. In either case,
+ *   exhausted, in which case an occurrence of P is reported. In either case,
  *   P is then shifted one place to the right, and the comparisons are
  *   restarted from the left end of P. This process repeats until the right
  *   end of P shifts past the right end of S.

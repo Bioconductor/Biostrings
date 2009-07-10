@@ -70,7 +70,7 @@
 
   \code{dna2rna} and \code{rna2dna} are low-level utilities for
   converting sequences from DNA to RNA and vice-versa.
-  All what this converstion does is to replace each occurence of T
+  All what this converstion does is to replace each occurrence of T
   by a U and vice-versa.
 }
 

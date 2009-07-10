@@ -138,7 +138,7 @@ pm[ii]
 @
 
 \subsubsection{Base content}
-The base content (number of occurence of each character) of the
+The base content (number of occurrence of each character) of the
 sequences can be computed with the function
 \Rfunction{alphabetFrequency}.
 %
@@ -215,7 +215,7 @@ of the probe sequence information to preprocessing and data quality related plot
 \label{subsec.prqplots}
 %------------------------------------------------------------
 The function \Rfunction{alphabetFrequency} counts the number of
-occurences of each of the four bases A, C, G, T in each probe sequence.
+occurrences of each of the four bases A, C, G, T in each probe sequence.
 <<bc>>=
 freqs <- alphabetFrequency(DNAStringSet(abseq[!is.na(abseq)]), baseOnly=TRUE)
 bc <- matrix(nrow=length(abseq), ncol=5)

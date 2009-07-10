@@ -28,7 +28,7 @@ DNAString(src, gap="-")
   \item{alphabet}{Alphabet to be used for the string - usually one of
     DNAAlphabet() or RNAAlphabet(). }
   \item{gap}{The character in the input that represents a gap. All
-    occurences of this character in the input is
+    occurrences of this character in the input is
     converted to the gap character of the alphabet (which is usually
     \sQuote{-}).}
 }

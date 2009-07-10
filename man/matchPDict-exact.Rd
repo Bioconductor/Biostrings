@@ -41,7 +41,7 @@
 \title{Searching a sequence for patterns stored in a preprocessed dictionary}
 
 \description{
-  A set of functions for finding all the occurences (aka "matches" or "hits")
+  A set of functions for finding all the occurrences (aka "matches" or "hits")
   of a set of patterns (aka the dictionary) in a reference
   sequence or set of reference sequences (aka the subject)
 

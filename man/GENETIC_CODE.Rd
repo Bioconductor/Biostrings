@@ -44,7 +44,7 @@
 
   Note that the values in the \code{GENETIC_CODE} and \code{RNA_GENETIC_CODE}
   vectors are the same, only their names are different. The names of the
-  latter are those of the former where all occurences of T (thymine) have
+  latter are those of the former where all occurrences of T (thymine) have
   been replaced by U (uracil).
 }
 
