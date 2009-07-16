@@ -18,6 +18,7 @@
 \alias{countIndex}
 \alias{countIndex,MIndex-method}
 \alias{unlist,MIndex-method}
+\alias{coerce,MIndex,CompressedIRangesList-method}
 
 \alias{show,ByPos_MIndex-method}
 \alias{[[,ByPos_MIndex-method}
@@ -73,13 +74,26 @@
 }
 
 \section{Subsetting methods}{
-  In the code snippets below,
-  \code{x} is an MIndex object.
+  In the code snippets below, \code{x} is an MIndex object.
 
   \describe{
     \item{}{
       \code{x[[i]]}:
       Extract the matches for the i-th pattern as an \link[IRanges]{IRanges} object.
+    }
+  }
+}
+
+\section{Coercion}{
+  In the code snippets below, \code{x} is a MIndex object.
+
+  \describe{
+    \item{}{
+      \code{as(x, "CompressedIRangesList")}:
+      Turns \code{x} into an \link[IRanges]{CompressedIRangesList} object.
+      This coercion changes \code{x} from one \link[IRanges]{RangesList}
+      subtype to another with the underlying \link[IRanges]{Ranges} values
+      remaining unchanged.
     }
   }
 }

@@ -76,6 +76,16 @@ setMethod("unlist", "MIndex",
     }
 )
 
+setAs("MIndex", "CompressedIRangesList",
+    function(from)
+    {
+        IRanges:::newCompressedList("CompressedIRangesList",
+                                    unlistData = unlist(from),
+                                    end = cumsum(countIndex(from)),
+                                    NAMES = names(from))
+    }
+)
+
 extractAllMatches <- function(subject, mindex)
 {
     if (is(subject, "MaskedXString"))
@@ -255,4 +265,3 @@ if (FALSE) {
   )
 
 }
-
