@@ -85,7 +85,7 @@
 }
 
 \section{Coercion}{
-  In the code snippets below, \code{x} is a MIndex object.
+  In the code snippets below, \code{x} is an MIndex object.
 
   \describe{
     \item{}{
