@@ -41,7 +41,9 @@ line which begins with a \code{>}.
     A list as one returned by \code{readFASTA}.
   }
   \item{append}{
-    See \code{?\link[base]{cat}}.
+    \code{TRUE} or \code{FALSE}. If \code{TRUE} output will be
+    appended to \code{file}; otherwise, it will overwrite the contents
+    of \code{file}. See \code{?\link[base]{cat}} for the details.
   }
   \item{width}{
     The maximum number of letters per line of sequence.

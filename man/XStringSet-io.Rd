@@ -71,6 +71,11 @@
     to be converted to a list of FASTA records as one returned
     by \code{\link{readFASTA}}.
   }
+  \item{append}{
+    \code{TRUE} or \code{FALSE}. If \code{TRUE} output will be
+    appended to \code{file}; otherwise, it will overwrite the contents
+    of \code{file}. See \code{?\link[base]{cat}} for the details.
+  }
   \item{width}{
     Only relevant if \code{format} is \code{"fasta"}.
     The maximum number of letters per line of sequence.
