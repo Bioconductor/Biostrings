@@ -53,25 +53,26 @@ readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
     )
 }
 
-writeFASTA <- function(x, file="", width=80)
+writeFASTA <- function(x, file="", append=FALSE, width=80)
 {
-    if (is.character(file)) {
-        if (length(file) != 1 || is.na(file))
-            stop("'file' must be a character string or connection")
-        if (file != "") {
-            file <- file(file, "w")
+    if (!isTRUEorFALSE(append))
+        stop("'append' must be TRUE or FALSE")
+    if (isSingleString(file)) {
+        if (file == "") {
+            file <- stdout()
+        } else {
+            file <- file(file, ifelse(append, "a", "w"))
+            on.exit(close(file))
+        }
+    } else if (inherits(file, "connection")) {
+        if (!isOpen(file)) {
+            file <- file(file, ifelse(append, "a", "w"))
             on.exit(close(file))
         }
     } else {
-        if (!inherits(file, "connection"))
-            stop("'file' must be a character string or connection")
-        if (!isOpen(file)) {
-            open(file, "w")
-            on.exit(close(file))
-        }
+        stop("'file' must be a single string or connection")
     }
-
-    if (!is.numeric(width) || length(width) != 1 || is.na(width))
+    if (!isSingleNumber(width))
         stop("'width' must be an integer >= 1")
     if (!is.integer(width))
         width <- as.integer(width)

@@ -13,12 +13,11 @@ line which begins with a \code{>}.
 \usage{
   fasta.info(file, use.descs=TRUE)
   readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
-  writeFASTA(x, file="", width=80)
+  writeFASTA(x, file="", append=FALSE, width=80)
 }
 \arguments{
   \item{file}{
-    Either a character string naming a file or a connection open
-    for reading or writing.
+    Either a character string naming a file or a connection.
     If \code{""} (the default for \code{writeFASTA}),
     then the function writes to the standard output connection (the console)
     unless redirected by \code{sink}.
@@ -40,6 +39,9 @@ line which begins with a \code{>}.
   }
   \item{x}{
     A list as one returned by \code{readFASTA}.
+  }
+  \item{append}{
+    See \code{?\link[base]{cat}}.
   }
   \item{width}{
     The maximum number of letters per line of sequence.

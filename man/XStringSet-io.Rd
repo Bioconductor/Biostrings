@@ -33,11 +33,11 @@
   read.DNAStringSet(file, format)
   read.RNAStringSet(file, format)
   read.AAStringSet(file, format)
-  write.XStringSet(x, file="", format, width=80)
+  write.XStringSet(x, file="", append=FALSE, format, width=80)
 
   ## XStringViews object:
   read.XStringViews(file, format, subjectClass, collapse="")
-  write.XStringViews(x, file="", format, width=80)
+  write.XStringViews(x, file="", append=FALSE, format, width=80)
 
   ## FASTQ utilities:
   fastq.geometry(file)

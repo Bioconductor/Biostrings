@@ -266,26 +266,26 @@ read.AAStringSet <- function(file, format)
 ### The "write.XStringSet" and "write.XStringViews" functions.
 ###
 
-.write.fasta <- function(x, file, width)
+.write.fasta <- function(x, file, append, width)
 {
     FASTArecs <- XStringSetToFASTArecords(x)
-    writeFASTA(FASTArecs, file, width)
+    writeFASTA(FASTArecs, file=file, append=append, width=width)
 }
 
-write.XStringSet <- function(x, file="", format, width=80)
+write.XStringSet <- function(x, file="", append=FALSE, format, width=80)
 {
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta"))
     switch(format,
-        "fasta"=.write.fasta(x, file, width)
+        "fasta"=.write.fasta(x, file, append, width)
     )
 }
 
-write.XStringViews <- function(x, file="", format, width=80)
+write.XStringViews <- function(x, file="", append=FALSE, format, width=80)
 {
     y <- XStringViewsToSet(x, use.names=TRUE)
-    write.XStringSet(y, file=file, format, width=width)
+    write.XStringSet(y, file=file, append=append, format, width=width)
 }
 
 
@@ -308,6 +308,6 @@ read.BStringViews <- function(file, format, subjectClass, collapse="")
 write.BStringViews <- function(x, file="", format, width=80)
 {
     .Deprecated("write.XStringViews")
-    write.XStringViews(x, file=file, format, width=width)
+    write.XStringViews(x, file=file, format=format, width=width)
 }
 
