@@ -52,17 +52,14 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 	SEXP output;
 	PROTECT(output = NEW_INTEGER(numberOfAlignments));
 	int i, j, *outputPtr;
-	const int *rangeWidth, *indelWidth;
+	const int *rangeWidth;
 	for (i = 0, rangeWidth = INTEGER(get_IRanges_width(range)), outputPtr = INTEGER(output);
 			i < numberOfAlignments; i++, rangeWidth++, outputPtr++) {
-		SEXP indelElement = PROTECT(get_CompressedIRangesList_elt(indel, i));
-		int numberOfIndels = get_IRanges_length(indelElement);
+		cachedIRanges indelElement = cache_CompressedIRangesList_elt(indel, i);
+		int numberOfIndels = get_cachedIRanges_length(&indelElement);
 		*outputPtr = *rangeWidth;
-		for (j = 0, indelWidth = INTEGER(get_IRanges_width(indelElement));
-		     j < numberOfIndels; j++, indelWidth++) {
-			*outputPtr += *indelWidth;
-		}
-		UNPROTECT(1);
+		for (j = 0; j < numberOfIndels; j++)
+			*outputPtr += get_cachedIRanges_elt_width(&indelElement, j);
 	}
 	UNPROTECT(1);
 
@@ -119,19 +116,16 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
-		SEXP indelElement = PROTECT(get_CompressedIRangesList_elt(indel, i));
-		int numberOfIndel = get_IRanges_length(indelElement);
+		cachedIRanges indelElement = cache_CompressedIRangesList_elt(indel, i);
+		int numberOfIndel = get_cachedIRanges_length(&indelElement);
 		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, *rangeWidth * sizeof(char));
 			index += *rangeWidth;
 		} else {
 			int prevStart = 0;
-			const int *indelStart, *indelWidth;
-			for (j = 0, indelStart = INTEGER(get_IRanges_start(indelElement)),
-					indelWidth = INTEGER(get_IRanges_width(indelElement));
-			        j < numberOfIndel; j++, indelStart++, indelWidth++) {
-				int currStart = *indelStart - 1;
-				int currWidth = *indelWidth;
+			for (j = 0; j < numberOfIndel; j++) {
+				int currStart = get_cachedIRanges_elt_start(&indelElement, j) - 1;
+				int currWidth = get_cachedIRanges_elt_width(&indelElement, j);
 				int copyElements = currStart - prevStart;
 				if (copyElements > 0) {
 					memcpy(&alignedStringPtr[index], origStringPtr, copyElements * sizeof(char));
@@ -149,7 +143,6 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 			index += copyElements;
 		}
 		stringElement += stringIncrement;
-		UNPROTECT(1);
 	}
 	UNPROTECT(6);
 
@@ -212,48 +205,50 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
-		SEXP indelElementPattern = PROTECT(get_CompressedIRangesList_elt(indelPattern, i));
-		SEXP indelElementSubject = PROTECT(get_CompressedIRangesList_elt(indelSubject, i));
-		int numberOfIndelPattern = get_IRanges_length(indelElementPattern);
-		int numberOfIndelSubject = get_IRanges_length(indelElementSubject);
+		cachedIRanges indelElementPattern = cache_CompressedIRangesList_elt(indelPattern, i);
+		cachedIRanges indelElementSubject = cache_CompressedIRangesList_elt(indelSubject, i);
+		int numberOfIndelPattern = get_cachedIRanges_length(&indelElementPattern);
+		int numberOfIndelSubject = get_cachedIRanges_length(&indelElementSubject);
 
 		for (j = 0; j < *rangeStartSubject - 1; j++) {
 			mappedStringPtr[index] = endgapCodeValue;
 			index++;
 		}
-		int jPattern = 1;
-		const int *indelStartPattern, *indelWidthPattern, *indelStartSubject, *indelWidthSubject;
+		int jPattern = 1, jp = 0, js = 0;
+		int indelStartPattern, indelWidthPattern, indelStartSubject, indelWidthSubject;
 		if (numberOfIndelPattern > 0) {
-			indelStartPattern = INTEGER(get_IRanges_start(indelElementPattern));
-			indelWidthPattern = INTEGER(get_IRanges_width(indelElementPattern));
+			indelStartPattern = get_cachedIRanges_elt_start(&indelElementPattern, jp);
+			indelWidthPattern = get_cachedIRanges_elt_width(&indelElementPattern, jp);
 		}
 		if (numberOfIndelSubject > 0) {
-			indelStartSubject = INTEGER(get_IRanges_start(indelElementSubject));
-			indelWidthSubject = INTEGER(get_IRanges_width(indelElementSubject));
+			indelStartSubject = get_cachedIRanges_elt_start(&indelElementSubject, js);
+			indelWidthSubject = get_cachedIRanges_elt_width(&indelElementSubject, js);
 		}
 		for (j = 1; j <= *rangeWidthSubject; j++) {
-			if ((numberOfIndelSubject == 0) || (j < *indelStartSubject)) {
-				if ((numberOfIndelPattern == 0) || (jPattern < *indelStartPattern)) {
+			if ((numberOfIndelSubject == 0) || (j < indelStartSubject)) {
+				if ((numberOfIndelPattern == 0) || (jPattern < indelStartPattern)) {
 					mappedStringPtr[index] = *origStringPtr;
 					index++;
 					origStringPtr++;
 					jPattern++;
 				} else {
-					for (int k = 0; k < *indelWidthPattern; k++) {
+					for (int k = 0; k < indelWidthPattern; k++) {
 						mappedStringPtr[index] = gapCodeValue;
 						index++;
 					}
-					j += *indelWidthPattern - 1;
-					indelStartPattern++;
-					indelWidthPattern++;
+					j += indelWidthPattern - 1;
+					jp++;
+					indelStartPattern = get_cachedIRanges_elt_start(&indelElementPattern, jp);
+					indelWidthPattern = get_cachedIRanges_elt_width(&indelElementPattern, jp);
 					numberOfIndelPattern--;
 				}
 			} else {
-				origStringPtr += *indelWidthSubject;
-				jPattern += *indelWidthSubject;
+				origStringPtr += indelWidthSubject;
+				jPattern += indelWidthSubject;
 				j--;
-				indelStartSubject++;
-				indelWidthSubject++;
+				js++;
+				indelStartSubject = get_cachedIRanges_elt_start(&indelElementSubject, js);
+				indelWidthSubject = get_cachedIRanges_elt_width(&indelElementSubject, js);
 				numberOfIndelSubject--;
 			}
 		}
@@ -261,7 +256,6 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 			mappedStringPtr[index] = endgapCodeValue;
 			index++;
 		}
-		UNPROTECT(2);
 	}
 	UNPROTECT(6);
 
