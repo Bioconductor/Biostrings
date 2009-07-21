@@ -321,7 +321,10 @@ Function                    & Description \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
 \Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
 \Rfunction{nedit}           & Computes the Levenshtein edit distance of the alignments \\
-\Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
+\Rfunction{indel}           & Extracts the locations of the insertions \& deletions in the alignments \\
+\Rfunction{insertion}       & Extracts the locations of the insertions in the alignments \\
+\Rfunction{deletion}        & Extracts the locations of the deletions in the alignments \\
+\Rfunction{nindel}          & Computes the number of insertions \& deletions in the alignments \\
 \Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
 \Rfunction{pattern}, \Rfunction{subject} & Extracts the aligned pattern/subject \\

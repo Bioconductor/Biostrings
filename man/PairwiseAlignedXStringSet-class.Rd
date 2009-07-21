@@ -28,6 +28,9 @@
 \alias{type}
 \alias{type,PairwiseAlignedXStringSet-method}
 \alias{score,PairwiseAlignedXStringSet-method}
+\alias{insertion,PairwiseAlignedXStringSet-method}
+\alias{deletion,PairwiseAlignedXStringSet-method}
+\alias{indel,PairwiseAlignedXStringSet-method}
 \alias{nindel,PairwiseAlignedXStringSet-method}
 \alias{length,PairwiseAlignedXStringSet-method}
 \alias{nchar,PairwiseAlignedXStringSet-method}
@@ -245,6 +248,21 @@
       \code{nchar(x)}:
       The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
       There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
+    }
+    \item{}{
+      \code{insertion(x)}:
+      An \code{\link[IRanges]{CompressedIRangesList}} object containing the
+      locations of the insertions from the perspective of the \code{pattern}.
+    }
+    \item{}{
+      \code{deletion(x)}:
+      An \code{\link[IRanges]{CompressedIRangesList}} object containing the
+      locations of the deletions from the perspective of the \code{pattern}.
+    }
+    \item{}{
+      \code{indel(x)}:
+      An \code{InDel} object containing the locations of the insertions and
+      deletions from the perspective of the \code{pattern}.
     }
     \item{}{
       \code{nindel(x)}:

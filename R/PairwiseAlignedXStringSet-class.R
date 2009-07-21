@@ -261,6 +261,10 @@ setMethod("subject", "PairwiseAlignedXStringSet", function(x) x@subject)
 setGeneric("type", function(x) standardGeneric("type"))
 setMethod("type", "PairwiseAlignedXStringSet", function(x) x@type)
 setMethod("score", "PairwiseAlignedXStringSet", function(x) x@score)
+setMethod("insertion", "PairwiseAlignedXStringSet", function(x) indel(subject(x)))
+setMethod("deletion", "PairwiseAlignedXStringSet", function(x) indel(pattern(x)))
+setMethod("indel", "PairwiseAlignedXStringSet",
+          function(x) new("InDel", insertion = insertion(x), deletion = deletion(x)))
 setMethod("nindel", "PairwiseAlignedXStringSet",
           function(x) new("InDel", insertion = nindel(subject(x)), deletion = nindel(pattern(x))))
 setMethod("length", "PairwiseAlignedXStringSet", function(x) length(score(x)))
