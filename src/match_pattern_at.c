@@ -395,13 +395,13 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
 	RoSeq P, S_elt;
-	CachedXStringSet S;
+	cachedXStringSet S;
 	int S_length, at_length, at_type0, max_mm, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt, i;
 	SEXP ans;
 
 	P = _get_XString_asRoSeq(pattern);
-	S = _new_CachedXStringSet(subject);
+	S = _cache_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
@@ -423,7 +423,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
 	for (i = 0; i < S_length; i++, ans_elt += at_length) {
-		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
+		S_elt = _get_cachedXStringSet_elt(&S, i);
 		match_pattern_at(&P, &S_elt, at, at_type0, max_mm, indels, ans_type0, ans_elt);
 	}
 	UNPROTECT(1);

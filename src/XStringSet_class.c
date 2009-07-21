@@ -18,6 +18,15 @@ SEXP debug_XStringSet_class()
 	return R_NilValue;
 }
 
+
+/****************************************************************************
+ * C-level slot accessor functions.
+ *
+ * Be careful that these functions do NOT duplicate the returned slot.
+ * Thus they cannot be made .Call() entry points!
+ */
+
+
 SEXP _get_XStringSet_super(SEXP x)
 {
 	return GET_SLOT(x, install("super"));
@@ -43,45 +52,54 @@ SEXP _get_XStringSet_width(SEXP x)
 	return get_IRanges_width(_get_XStringSet_ranges(x));
 }
 
-CachedXStringSet _new_CachedXStringSet(SEXP x)
+
+/****************************************************************************
+ * C-level abstract accessor functions.
+ */
+
+cachedXStringSet _cache_XStringSet(SEXP x)
 {
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	SEXP super, ranges;
 	RoSeq seq;
 
 	super = _get_XStringSet_super(x);
+	cached_x.baseClass = get_classname(super);
+
 	seq = _get_XString_asRoSeq(super);
 	// We need to discard the const qualifier
 	cached_x.super_elts = (char *) seq.elts;
 	cached_x.super_nelt = seq.nelt;
 
 	ranges = _get_XStringSet_ranges(x);
+	cached_x.length = get_IRanges_length(ranges);
 	cached_x.start = INTEGER(get_IRanges_start(ranges));
 	cached_x.width = INTEGER(get_IRanges_width(ranges));
 
-	cached_x.baseClass = get_classname(super);
 	cached_x.enc_byte2code = get_enc_byte2code(cached_x.baseClass);
 	cached_x.dec_byte2code = get_dec_byte2code(cached_x.baseClass);
 
 	return cached_x;
 }
 
-RoSeq _get_CachedXStringSet_elt_asRoSeq(CachedXStringSet *x, int i)
+int _get_cachedXStringSet_length(const cachedXStringSet *cached_x)
+{
+	return cached_x->length;
+}
+
+RoSeq _get_cachedXStringSet_elt(const cachedXStringSet *cached_x, int i)
 {
 	RoSeq seq;
 
-	seq.elts = x->super_elts + x->start[i] - 1;
-	seq.nelt = x->width[i];
+	seq.elts = cached_x->super_elts + cached_x->start[i] - 1;
+	seq.nelt = cached_x->width[i];
 	return seq;
 }
 
-RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
-{
-	CachedXStringSet cached_x;
 
-	cached_x = _new_CachedXStringSet(x);
-	return _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
-}
+/****************************************************************************
+ * Other functions.
+ */
 
 /*
  * Creating a set of sequences (RoSeqs struct) from an XStringSet object.
@@ -89,7 +107,7 @@ RoSeq _get_XStringSet_elt_asRoSeq(SEXP x, int i)
 RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 {
 	RoSeqs seqs;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq *elt1;
 	int i;
 
@@ -97,9 +115,9 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 		error("_new_RoSeqs_from_XStringSet(): "
 		      "'nelt' must be <= '_get_XStringSet_length(x)'");
 	seqs = _alloc_RoSeqs(nelt);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++)
-		*elt1 = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		*elt1 = _get_cachedXStringSet_elt(&cached_x, i);
 	return seqs;
 }
 
@@ -196,7 +214,7 @@ SEXP _alloc_XStringSet(const char *baseClass, int length, int super_length)
 	return ans;
 }
 
-void _write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i,
+void _write_RoSeq_to_cachedXStringSet_elt(cachedXStringSet *x, int i,
 		const RoSeq *seq, int encode)
 {
 	int new_start;
@@ -216,10 +234,10 @@ void _write_RoSeq_to_CachedXStringSet_elt(CachedXStringSet *x, int i,
 
 void _write_RoSeq_to_XStringSet_elt(SEXP x, int i, const RoSeq *seq, int encode)
 {
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 
-	cached_x = _new_CachedXStringSet(x);
-	_write_RoSeq_to_CachedXStringSet_elt(&cached_x, i, seq, encode);
+	cached_x = _cache_XStringSet(x);
+	_write_RoSeq_to_cachedXStringSet_elt(&cached_x, i, seq, encode);
 	return;
 }
 
@@ -236,16 +254,16 @@ SEXP XStringSet_unlist(SEXP x)
 {
 	SEXP ans;
 	int x_length, ans_length, write_start, i;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq xx;
 
 	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 
 	/* 1st pass: determine 'ans_length' */
 	ans_length = 0;
 	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		ans_length += xx.nelt;
 	}
 	PROTECT(ans = _alloc_XString(_get_XStringSet_baseClass(x), ans_length));
@@ -253,7 +271,7 @@ SEXP XStringSet_unlist(SEXP x)
 	/* 2nd pass: fill 'ans' */
 	write_start = 1;
 	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		_write_RoSeq_to_XString(ans, write_start, &xx, 0);
 		write_start += xx.nelt;
 	}
@@ -268,14 +286,14 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 {
 	SEXP ans;
 	int x_length, i;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq xx;
 
 	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	PROTECT(ans = NEW_CHARACTER(x_length));
 	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(&xx, lkup));
 	}
 	UNPROTECT(1);
@@ -394,3 +412,4 @@ SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch)
 	UNPROTECT(1);
 	return ans;
 }
+

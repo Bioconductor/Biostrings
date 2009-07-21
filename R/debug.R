@@ -24,8 +24,8 @@ debug_SparseList_utils <- function()
 debug_match_reporting <- function()
     invisible(.Call("debug_match_reporting", PACKAGE="Biostrings"))
 
-debug_MIndex_utils <- function()
-    invisible(.Call("debug_MIndex_utils", PACKAGE="Biostrings"))
+debug_MIndex_class <- function()
+    invisible(.Call("debug_MIndex_class", PACKAGE="Biostrings"))
 
 debug_match_pattern_at <- function()
     invisible(.Call("debug_match_pattern_at", PACKAGE="Biostrings"))

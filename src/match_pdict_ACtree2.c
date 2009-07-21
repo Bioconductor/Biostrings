@@ -775,7 +775,7 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 {
 	ACtree tree;
 	int tb_length, tb_width, P_offset;
-	CachedXStringSet cached_tb;
+	cachedXStringSet cached_tb;
 	RoSeq P;
 	SEXP ans, ans_names, ans_elt;
 
@@ -784,13 +784,13 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 		error("Trusted Band is empty");
 	_init_ppdups_buf(tb_length);
 	tb_width = -1;
-	cached_tb = _new_CachedXStringSet(tb);
+	cached_tb = _cache_XStringSet(tb);
 	for (P_offset = 0; P_offset < tb_length; P_offset++) {
 		/* skip duplicated patterns */
 		if (pp_exclude != R_NilValue
 		 && INTEGER(pp_exclude)[P_offset] != NA_INTEGER)
 			continue;
-		P = _get_CachedXStringSet_elt_asRoSeq(&cached_tb, P_offset);
+		P = _get_cachedXStringSet_elt(&cached_tb, P_offset);
 		if (tb_width == -1) {
 			if (P.nelt == 0)
 				error("first element in Trusted Band "

@@ -255,15 +255,12 @@ int _get_XStringSet_length(SEXP x);
 
 SEXP _get_XStringSet_width(SEXP x);
 
-CachedXStringSet _new_CachedXStringSet(SEXP x);
+cachedXStringSet _cache_XStringSet(SEXP x);
 
-RoSeq _get_CachedXStringSet_elt_asRoSeq(
-	CachedXStringSet *x,
-	int i
-);
+int _get_cachedXStringSet_length(const cachedXStringSet *cached_x);
 
-RoSeq _get_XStringSet_elt_asRoSeq(
-	SEXP x,
+RoSeq _get_cachedXStringSet_elt(
+	const cachedXStringSet *cached_x,
 	int i
 );
 
@@ -294,8 +291,8 @@ SEXP _alloc_XStringSet(
 	int super_length
 );
 
-void _write_RoSeq_to_CachedXStringSet_elt(
-	CachedXStringSet *x,
+void _write_RoSeq_to_cachedXStringSet_elt(
+	cachedXStringSet *x,
 	int i,
 	const RoSeq *seq,
 	int encode
@@ -518,9 +515,9 @@ void _report_match(int start, int width);
 SEXP _reported_matches_asSEXP();
 
 
-/* MIndex_utils.c */
+/* MIndex_class.c */
 
-SEXP debug_MIndex_utils();
+SEXP debug_MIndex_class();
 
 SEXP ByPos_MIndex_endIndex(
 	SEXP x_high2low,

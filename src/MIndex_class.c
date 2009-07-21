@@ -1,5 +1,5 @@
 /****************************************************************************
- *                          Fast MIndex utilities                           *
+ *                   Basic manipulation of MIndex objects                   *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -7,7 +7,7 @@
 
 static int debug = 0;
 
-SEXP debug_MIndex_utils()
+SEXP debug_MIndex_class()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
@@ -19,6 +19,47 @@ SEXP debug_MIndex_utils()
 	return R_NilValue;
 }
 
+
+/****************************************************************************
+ * C-level slot accessor functions.
+ *
+ * Be careful that these functions do NOT duplicate the returned slot.
+ * Thus they cannot be made .Call() entry points!
+ */
+
+
+/****************************************************************************
+ * C-level abstract accessor functions.
+ */
+
+/*
+cachedMIndex _new_cachedMIndex(SEXP x)
+{
+}
+
+int _get_cachedMIndex_length(const cachedMIndex *x)
+{
+}
+
+int _get_cachedMIndex_elt_length
+
+int _get_cachedMIndex_elt_width(const cachedMIndex *x, int i)
+{
+}
+
+SEXP _get_cachedMIndex_elt_start(const cachedMIndex *x, int i)
+{
+}
+
+SEXP _get_cachedMIndex_elt_end(const cachedMIndex *x, int i)
+{
+}
+*/
+
+
+/****************************************************************************
+ * Other MIndex utilities.
+ */
 
 /*
  * Does *inplace* addition of 'val' to all the elements in 'x' (INTSXP).

@@ -55,7 +55,7 @@ SEXP XString_xscat(SEXP args)
  */
 SEXP XStringSet_xscat(SEXP args)
 {
-	CachedXStringSet *cached_args;
+	cachedXStringSet *cached_args;
 	int nargs, *arg_lengths, *ii, ans_length, write_start, i, j, *start, *width;
 	unsigned int ans_super_length;
 	SEXP arg, ans_ranges_start, ans_width, ans_super, ans_ranges, ans;
@@ -65,14 +65,14 @@ SEXP XStringSet_xscat(SEXP args)
 	nargs = LENGTH(args);
 	if (nargs == 0)
 		error("XStringSet_xscat(): no input");
-	cached_args = Salloc((long) nargs, CachedXStringSet);
+	cached_args = Salloc((long) nargs, cachedXStringSet);
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
 
 	/* 1st pass: determine 'ans_length', 'ans_classname' and 'ans_baseClass' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
-		cached_args[j] = _new_CachedXStringSet(arg);
+		cached_args[j] = _cache_XStringSet(arg);
 		arg_lengths[j] = _get_XStringSet_length(arg);
 		if (j == 0) {
 			ans_length = arg_lengths[j];
@@ -100,7 +100,7 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			seq = _get_CachedXStringSet_elt_asRoSeq(cached_args + j, ii[j]);
+			seq = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
 			*width += seq.nelt;
 			ii[j]++;
 		}
@@ -120,7 +120,7 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			seq = _get_CachedXStringSet_elt_asRoSeq(cached_args + j, ii[j]);
+			seq = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
 			_write_RoSeq_to_XString(ans_super, write_start, &seq, 0);
 			write_start += seq.nelt;
 			ii[j]++;

@@ -75,7 +75,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	char gapCodeValue = (char) RAW(gapCode)[0];
 
 	SEXP unaligned = GET_SLOT(alignedXStringSet, install("unaligned"));
-	CachedXStringSet cachedAlignedXStringSet = _new_CachedXStringSet(unaligned);
+	cachedXStringSet cached_unaligned = _cache_XStringSet(unaligned);
 
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	int numberOfAlignments = get_IRanges_length(range);
@@ -119,7 +119,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	const int *rangeStart, *rangeWidth;
 	for (i = 0, rangeStart = INTEGER(get_IRanges_start(range)), rangeWidth = INTEGER(get_IRanges_width(range));
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
-		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
+		RoSeq origString = _get_cachedXStringSet_elt(&cached_unaligned, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
 		cachedIRanges indelElement = get_cachedCompressedIRangesList_elt(&cached_indel, i);
 		int numberOfIndel = get_cachedIRanges_length(&indelElement);
@@ -163,7 +163,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 
 	SEXP pattern = GET_SLOT(alignment, install("pattern"));
 	SEXP unalignedPattern = GET_SLOT(pattern, install("unaligned"));
-	CachedXStringSet cachedUnalignedPattern = _new_CachedXStringSet(unalignedPattern);
+	cachedXStringSet cached_unalignedPattern = _cache_XStringSet(unalignedPattern);
 	SEXP rangePattern = GET_SLOT(pattern, install("range"));
 	SEXP namesPattern = get_IRanges_names(rangePattern);
 	SEXP indelPattern = GET_SLOT(pattern, install("indel"));
@@ -210,7 +210,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 			rangeWidthSubject = INTEGER(get_IRanges_width(rangeSubject));
 	         i < numberOfAlignments;
 	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
-		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
+		RoSeq origString = _get_cachedXStringSet_elt(&cached_unalignedPattern, i);
 		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
 		cachedIRanges indelElementPattern = get_cachedCompressedIRangesList_elt(&cached_indelPattern, i);
 		cachedIRanges indelElementSubject = get_cachedCompressedIRangesList_elt(&cached_indelSubject, i);

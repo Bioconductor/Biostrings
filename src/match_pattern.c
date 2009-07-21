@@ -186,12 +186,12 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
 {
 	RoSeq P, S_elt;
-	CachedXStringSet S;
+	cachedXStringSet S;
 	int is_count_only, S_length, i;
 	SEXP ans, ans_elt;
 
 	P = _get_XString_asRoSeq(pattern);
-	S = _new_CachedXStringSet(subject);
+	S = _cache_XStringSet(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
@@ -201,7 +201,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	else
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
-		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, i);
+		S_elt = _get_cachedXStringSet_elt(&S, i);
 		match_pattern(&P, &S_elt, algorithm, max_mismatch, with_indels, fixed);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
 		if (is_count_only)

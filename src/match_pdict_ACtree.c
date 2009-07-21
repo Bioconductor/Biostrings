@@ -306,7 +306,7 @@ static SEXP ACtree_asLIST()
 SEXP build_ACtree(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset;
-	CachedXStringSet cached_tb;
+	cachedXStringSet cached_tb;
 	RoSeq pattern;
 
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
@@ -315,14 +315,13 @@ SEXP build_ACtree(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 	tb_length = _get_XStringSet_length(tb);
 	_init_ppdups_buf(tb_length);
 	tb_width = -1;
-	cached_tb = _new_CachedXStringSet(tb);
+	cached_tb = _cache_XStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {
 		/* Skip duplicated patterns */
 		if (pp_exclude != R_NilValue
 		 && INTEGER(pp_exclude)[poffset] != NA_INTEGER)
 			continue;
-		pattern = _get_CachedXStringSet_elt_asRoSeq(&cached_tb,
-				poffset);
+		pattern = _get_cachedXStringSet_elt(&cached_tb, poffset);
 		if (pattern.nelt == 0)
 			error("empty trusted region for pattern %d",
 			      poffset + 1);

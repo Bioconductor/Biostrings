@@ -86,8 +86,8 @@ static const R_CallMethodDef callMethods[] = {
 /* match_reporting.c */
 	CALLMETHOD_DEF(debug_match_reporting, 0),
 
-/* MIndex_utils.c */
-	CALLMETHOD_DEF(debug_MIndex_utils, 0),
+/* MIndex_class.c */
+	CALLMETHOD_DEF(debug_MIndex_class, 0),
 	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
 	CALLMETHOD_DEF(SparseMIndex_endIndex, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
@@ -229,13 +229,13 @@ void R_init_Biostrings(DllInfo *info)
 /* XStringSet_class.c */
 	REGISTER_CCALLABLE(_get_XStringSet_baseClass);
 	REGISTER_CCALLABLE(_get_XStringSet_length);
-	REGISTER_CCALLABLE(_new_CachedXStringSet);
-	REGISTER_CCALLABLE(_get_CachedXStringSet_elt_asRoSeq);
-	REGISTER_CCALLABLE(_get_XStringSet_elt_asRoSeq);
+	REGISTER_CCALLABLE(_cache_XStringSet);
+	REGISTER_CCALLABLE(_get_cachedXStringSet_length);
+	REGISTER_CCALLABLE(_get_cachedXStringSet_elt);
 	REGISTER_CCALLABLE(_new_XStringSet_from_RoSeqs);
 	REGISTER_CCALLABLE(_set_XStringSet_names);
 	REGISTER_CCALLABLE(_alloc_XStringSet);
-	REGISTER_CCALLABLE(_write_RoSeq_to_CachedXStringSet_elt);
+	REGISTER_CCALLABLE(_write_RoSeq_to_cachedXStringSet_elt);
 	REGISTER_CCALLABLE(_write_RoSeq_to_XStringSet_elt);
 
 /* match_reporting.c */

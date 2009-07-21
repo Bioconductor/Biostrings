@@ -61,20 +61,30 @@ typedef struct roseqs {
 
 
 /*
- * Use the CachedXStringSet struct for fast extraction of the elements of
- * an XStringSet object in a loop.
+ * cached_* structs.
  */
-typedef struct cachedxstringset {
-	int *start;
-	int *width;
-	// cannot use const char * here because of function
-	// _write_RoSeq_to_CachedXStringSet_elt()
-	char *super_elts;
-	int super_nelt;
+
+typedef struct cached_xstringset {
 	const char *baseClass;
+	int length;
+	// cannot use the const qualifier here because of function
+	// _write_RoSeq_to_cachedXStringSet_elt()
+	/*const*/ int *start;
+	/*const*/ int *width;
+	/*const*/ char *super_elts;
+	int super_nelt;
 	const ByteTrTable *enc_byte2code;
 	const ByteTrTable *dec_byte2code;
-} CachedXStringSet;
+} cachedXStringSet;
+
+typedef struct cached_mindex {
+	const char *classname;
+	int length;
+	SEXP width;
+	SEXP ends;
+	SEXP dups0_high2low;
+	SEXP dups0_low2high;
+} cachedMIndex;
 
 
 /*

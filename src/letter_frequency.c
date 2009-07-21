@@ -331,18 +331,18 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 {
 	SEXP ans;
 	int ans_width, x_length, *ans_row, i;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq x_elt;
 
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_width));
 		ans_row = INTEGER(ans);
 		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 			update_letter_freqs(ans_row, 1, &x_elt, codes);
 		}
 	} else {
@@ -350,7 +350,7 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 		ans_row = INTEGER(ans);
 		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++, ans_row++) {
-			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 			update_letter_freqs(ans_row, x_length, &x_elt, codes);
 		}
 	}
@@ -395,7 +395,7 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
 	TwobitEncodingBuffer teb;
 	int width0, as_integer, as_array0, invert_twobit_order, ans_width, x_length, i;
 	const char *simplify_as0;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq x_elt;
 
 	width0 = INTEGER(width)[0];
@@ -407,11 +407,11 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
 	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	if (strcmp(simplify_as0, "matrix") == 0) {  /* the default */
 		PROTECT(ans = init_numeric_matrix(x_length, ans_width, 0.00, as_integer));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 			update_oligo_freqs(ans, i, x_length, &teb, &x_elt);
 		}
 		if (!as_integer)
@@ -423,7 +423,7 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
 	if (strcmp(simplify_as0, "collapsed") == 0) {
 		PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 			update_oligo_freqs(ans, 0, 1, &teb, &x_elt);
 		}
 		if (!as_integer)
@@ -435,7 +435,7 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
 	PROTECT(ans = NEW_LIST(x_length));
 	for (i = 0; i < x_length; i++) {
 		PROTECT(ans_elt = init_numeric_vector(ans_width, 0.00, as_integer));
-		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 		update_oligo_freqs(ans_elt, 0, 1, &teb, &x_elt);
 		if (!as_integer)
 			normalize_oligo_freqs(ans_elt, 1, ans_width);
@@ -456,7 +456,7 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP at,
 	TwobitEncodingBuffer teb;
 	int as_integer, as_array0, invert_twobit_order, ans_width, x_length,
 	    i, offset, print_warning1, print_warning2;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq x_elt;
 
 	as_integer = !LOGICAL(as_prob)[0];
@@ -466,11 +466,11 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP at,
 	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
 	ans_width = 1 << (LENGTH(at) * 2); /* 4^LENGTH(at) */
 	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
 	print_warning1 = print_warning2 = TRUE;
 	for (i = 0; i < x_length; i++) {
-		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 		offset = _get_twobit_signature_at(&teb, &x_elt, INTEGER(at), LENGTH(at));
 		if (offset == -1) {
 			if (print_warning1)
@@ -500,12 +500,12 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 {
 	SEXP ans;
 	int ans_nrow, ans_ncol, ans_length, x_length, i, k, s, x_elt_end;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq x_elt;
 
 	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	if (width == R_NilValue) {
 		if (x_length == 0)
 			error("'x' has no element and 'width' is NULL");
@@ -518,7 +518,7 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 			s = INTEGER(shift)[k];
 			if (s == NA_INTEGER)
 				error("'shift' contains NAs");
-			x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 			x_elt_end = x_elt.nelt + s;
 			if (x_elt_end > ans_ncol)
 				ans_ncol = x_elt_end;
@@ -537,7 +537,7 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 		s = INTEGER(shift)[k];
 		if (s == NA_INTEGER)
 			error("'shift' contains NAs");
-		x_elt = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
 		update_letter_freqs2(INTEGER(ans), &x_elt, codes, s, ans_nrow, ans_ncol);
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);

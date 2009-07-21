@@ -132,15 +132,12 @@ const char *get_XStringSet_baseClass(SEXP x);
 
 int get_XStringSet_length(SEXP x);
 
-CachedXStringSet new_CachedXStringSet(SEXP x);
+cachedXStringSet cache_XStringSet(SEXP x);
 
-RoSeq get_CachedXStringSet_elt_asRoSeq(
-	CachedXStringSet *x,
-	int i
-);
+int get_cachedXStringSet_length(const cachedXStringSet *cached_x);
 
-RoSeq get_XStringSet_elt_asRoSeq(
-	SEXP x,
+RoSeq get_cachedXStringSet_elt(
+	const cachedXStringSet *cached_x,
 	int i
 );
 
@@ -160,8 +157,8 @@ SEXP alloc_XStringSet(
 	int super_length
 );
 
-void write_RoSeq_to_CachedXStringSet_elt(
-	CachedXStringSet *x,
+void write_RoSeq_to_cachedXStringSet_elt(
+	cachedXStringSet *x,
 	int i,
 	const RoSeq *seq,
 	int encode

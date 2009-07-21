@@ -202,15 +202,15 @@ static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int S_length, j;
-	CachedXStringSet S;
+	cachedXStringSet S;
 	SEXP ans;
 	RoSeq S_elt;
 
-	S = _new_CachedXStringSet(subject);
+	S = _cache_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
 	PROTECT(ans = NEW_LIST(S_length));
 	for (j = 0; j < S_length; j++) {
-		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
+		S_elt = _get_cachedXStringSet_elt(&S, j);
 		match_pdict(pptb, headtail,
 			&S_elt, max_mismatch, fixed,
 			matchpdict_buf);
@@ -227,20 +227,20 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int tb_length, S_length, j, *current_col;
-	CachedXStringSet S;
+	cachedXStringSet S;
 	SEXP ans;
 	RoSeq S_elt;
 	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
-	S = _new_CachedXStringSet(subject);
+	S = _cache_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
 	PROTECT(ans = allocMatrix(INTSXP, tb_length, S_length));
 	for (j = 0, current_col = INTEGER(ans);
 	     j < S_length;
 	     j++, current_col += tb_length)
 	{
-		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
+		S_elt = _get_cachedXStringSet_elt(&S, j);
 		match_pdict(pptb, headtail,
 			&S_elt, max_mismatch, fixed,
 			matchpdict_buf);
@@ -260,13 +260,13 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int tb_length, S_length, ans_length, i, j;
-	CachedXStringSet S;
+	cachedXStringSet S;
 	SEXP ans;
 	RoSeq S_elt;
 	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
-	S = _new_CachedXStringSet(subject);
+	S = _cache_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
 	switch (collapse) {
 	    case 1: ans_length = tb_length; break;
@@ -283,7 +283,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 	}
 	for (j = 0; j < S_length; j++)
 	{
-		S_elt = _get_CachedXStringSet_elt_asRoSeq(&S, j);
+		S_elt = _get_cachedXStringSet_elt(&S, j);
 		match_pdict(pptb, headtail,
 			&S_elt, max_mismatch, fixed,
 			matchpdict_buf);

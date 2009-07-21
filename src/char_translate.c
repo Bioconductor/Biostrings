@@ -9,7 +9,7 @@
 SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 {
 	int x_length, x_ncharsum, x_ncharmax, i, write_at;
-	CachedXStringSet cached_x;
+	cachedXStringSet cached_x;
 	RoSeq xx, yy;
 	const char *x_baseClass;
 	SEXP ans;
@@ -17,9 +17,9 @@ SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 
 	x_length = _get_XStringSet_length(x);
 	x_ncharsum = x_ncharmax = 0;
-	cached_x = _new_CachedXStringSet(x);
+	cached_x = _cache_XStringSet(x);
 	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		x_ncharsum += xx.nelt;
 		if (xx.nelt > x_ncharmax)
 			x_ncharmax = xx.nelt;
@@ -32,7 +32,7 @@ SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 	yy.elts = buf;
 	write_at = 1;
 	for (i = 0; i < x_length; i++) {
-		xx = _get_CachedXStringSet_elt_asRoSeq(&cached_x, i);
+		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		IRanges_charcpy_from_i1i2_with_lkup(0, xx.nelt - 1,
 			buf, xx.nelt,
 			xx.elts, xx.nelt,
