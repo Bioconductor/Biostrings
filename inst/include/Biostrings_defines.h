@@ -65,14 +65,10 @@ typedef struct roseqs {
  */
 
 typedef struct cached_xstringset {
-	const char *baseClass;
-	int length;
-	// cannot use the const qualifier here because of function
-	// _write_RoSeq_to_cachedXStringSet_elt()
-	/*const*/ int *start;
-	/*const*/ int *width;
-	/*const*/ char *super_elts;
-	int super_nelt;
+	const char *classname;
+	const char *xsbaseclassname;
+	RoSeq super;
+	cachedIRanges ranges;
 	const ByteTrTable *enc_byte2code;
 	const ByteTrTable *dec_byte2code;
 } cachedXStringSet;

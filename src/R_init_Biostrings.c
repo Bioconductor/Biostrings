@@ -227,7 +227,7 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_get_XString_asRoSeq);
 
 /* XStringSet_class.c */
-	REGISTER_CCALLABLE(_get_XStringSet_baseClass);
+	REGISTER_CCALLABLE(_get_XStringSet_xsbaseclassname);
 	REGISTER_CCALLABLE(_get_XStringSet_length);
 	REGISTER_CCALLABLE(_cache_XStringSet);
 	REGISTER_CCALLABLE(_get_cachedXStringSet_length);
@@ -235,8 +235,6 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_new_XStringSet_from_RoSeqs);
 	REGISTER_CCALLABLE(_set_XStringSet_names);
 	REGISTER_CCALLABLE(_alloc_XStringSet);
-	REGISTER_CCALLABLE(_write_RoSeq_to_cachedXStringSet_elt);
-	REGISTER_CCALLABLE(_write_RoSeq_to_XStringSet_elt);
 
 /* match_reporting.c */
 	REGISTER_CCALLABLE(_init_match_reporting);

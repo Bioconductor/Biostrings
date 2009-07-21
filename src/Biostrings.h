@@ -247,7 +247,7 @@ SEXP debug_XStringSet_class();
 
 SEXP _get_XStringSet_super(SEXP x);
 
-const char *_get_XStringSet_baseClass(SEXP x);
+const char *_get_XStringSet_xsbaseclassname(SEXP x);
 
 SEXP _get_XStringSet_ranges(SEXP x);
 
@@ -276,7 +276,7 @@ SEXP _new_XStringSet(
 );
 
 SEXP _new_XStringSet_from_RoSeqs(
-	const char *baseClass,
+	const char *xsbaseclassname,
 	const RoSeqs *seqs
 );
 
@@ -286,23 +286,9 @@ void _set_XStringSet_names(
 );
 
 SEXP _alloc_XStringSet(
-	const char *baseClass,
+	const char *xsbaseclassname,
 	int length,
 	int super_length
-);
-
-void _write_RoSeq_to_cachedXStringSet_elt(
-	cachedXStringSet *x,
-	int i,
-	const RoSeq *seq,
-	int encode
-);
-
-void _write_RoSeq_to_XStringSet_elt(
-	SEXP x,
-	int i,
-	const RoSeq *seq,
-	int encode
 );
 
 SEXP XStringSet_unlist(SEXP x);

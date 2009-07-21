@@ -59,7 +59,7 @@ SEXP XStringSet_xscat(SEXP args)
 	int nargs, *arg_lengths, *ii, ans_length, write_start, i, j, *start, *width;
 	unsigned int ans_super_length;
 	SEXP arg, ans_ranges_start, ans_width, ans_super, ans_ranges, ans;
-	const char *ans_classname, *ans_baseClass;
+	const char *ans_classname, *ans_xsbaseclassname;
 	RoSeq seq;
 
 	nargs = LENGTH(args);
@@ -69,7 +69,7 @@ SEXP XStringSet_xscat(SEXP args)
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
 
-	/* 1st pass: determine 'ans_length', 'ans_classname' and 'ans_baseClass' */
+	/* 1st pass: determine 'ans_length', 'ans_classname' and 'ans_xsbaseclassname' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
 		cached_args[j] = _cache_XStringSet(arg);
@@ -77,7 +77,7 @@ SEXP XStringSet_xscat(SEXP args)
 		if (j == 0) {
 			ans_length = arg_lengths[j];
 			ans_classname = get_classname(arg);
-			ans_baseClass = _get_XStringSet_baseClass(arg);
+			ans_xsbaseclassname = _get_XStringSet_xsbaseclassname(arg);
 		} else {
 			if (arg_lengths[j] > ans_length)
 				ans_length = arg_lengths[j];
@@ -110,7 +110,7 @@ SEXP XStringSet_xscat(SEXP args)
 			      "of letters an XStringSet\n  object can hold (%d), "
 			      "sorry!", INT_MAX);
 	}
-	PROTECT(ans_super = _alloc_XString(ans_baseClass, ans_super_length));
+	PROTECT(ans_super = _alloc_XString(ans_xsbaseclassname, ans_super_length));
 
 	/* 3rd pass: fill 'ans_super' */
 	write_start = 1;

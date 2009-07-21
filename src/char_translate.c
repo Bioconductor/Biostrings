@@ -11,7 +11,7 @@ SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 	int x_length, x_ncharsum, x_ncharmax, i, write_at;
 	cachedXStringSet cached_x;
 	RoSeq xx, yy;
-	const char *x_baseClass;
+	const char *x_xsbaseclassname;
 	SEXP ans;
 	char *buf;
 
@@ -26,8 +26,8 @@ SEXP XStringSet_char_translate(SEXP x, SEXP lkup, SEXP reverse)
 	}
 	if (x_ncharmax == 0)
 		return x;
-	x_baseClass = _get_XStringSet_baseClass(x);
-	PROTECT(ans = _alloc_XString(x_baseClass, x_ncharsum));
+	x_xsbaseclassname = _get_XStringSet_xsbaseclassname(x);
+	PROTECT(ans = _alloc_XString(x_xsbaseclassname, x_ncharsum));
 	buf = Salloc((long) x_ncharmax, char);
 	yy.elts = buf;
 	write_at = 1;
