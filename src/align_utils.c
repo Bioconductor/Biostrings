@@ -46,16 +46,18 @@ SEXP PairwiseAlignedXStringSet_nmatch(SEXP nchar, SEXP nmismatch, SEXP ninsertio
 SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
-	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
 	cachedIRanges cached_range = cache_IRanges(range);
 	int numberOfAlignments = get_cachedIRanges_length(&cached_range);
+
+	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
+	cachedCompressedIRangesList cached_indel = cache_CompressedIRangesList(indel);
 
 	SEXP ans;
 	PROTECT(ans = NEW_INTEGER(numberOfAlignments));
 	int i, j, *ans_elt, rangeWidth;
 	for (i = 0, ans_elt = INTEGER(ans); i < numberOfAlignments; i++, ans_elt++) {
 		rangeWidth = get_cachedIRanges_elt_width(&cached_range, i);
-		cachedIRanges indelElement = cache_CompressedIRangesList_elt(indel, i);
+		cachedIRanges indelElement = get_cachedCompressedIRangesList_elt(&cached_indel, i);
 		int numberOfIndels = get_cachedIRanges_length(&indelElement);
 		*ans_elt = rangeWidth;
 		for (j = 0; j < numberOfIndels; j++)
@@ -74,15 +76,18 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 
 	SEXP unaligned = GET_SLOT(alignedXStringSet, install("unaligned"));
 	CachedXStringSet cachedAlignedXStringSet = _new_CachedXStringSet(unaligned);
+
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
+	cachedIRanges cached_range = cache_IRanges(range);
+	int numberOfAlignments = get_cachedIRanges_length(&cached_range);
+
 	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
+	cachedCompressedIRangesList cached_indel = cache_CompressedIRangesList(indel);
 
 	const char *stringSetClass = get_qualityless_classname(unaligned);
 	const char *stringClass = get_classname(_get_XStringSet_super(unaligned));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
-	cachedIRanges cached_range = cache_IRanges(range);
-	int numberOfAlignments = get_cachedIRanges_length(&cached_range);
 
 	SEXP ans;
 
@@ -118,7 +123,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 		rangeWidth = get_cachedIRanges_elt_width(&cached_range, i);
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
 		char *origStringPtr = (char *) (origString.elts + (rangeStart - 1));
-		cachedIRanges indelElement = cache_CompressedIRangesList_elt(indel, i);
+		cachedIRanges indelElement = get_cachedCompressedIRangesList_elt(&cached_indel, i);
 		int numberOfIndel = get_cachedIRanges_length(&indelElement);
 		if (numberOfIndel == 0) {
 			memcpy(&alignedStringPtr[index], origStringPtr, rangeWidth * sizeof(char));
@@ -165,11 +170,13 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 	cachedIRanges cached_rangePattern = cache_IRanges(rangePattern);
 	SEXP namesPattern = get_IRanges_names(rangePattern);
 	SEXP indelPattern = GET_SLOT(pattern, install("indel"));
+	cachedCompressedIRangesList cached_indelPattern = cache_CompressedIRangesList(indelPattern);
 
 	SEXP subject = GET_SLOT(alignment, install("subject"));
 	SEXP rangeSubject = GET_SLOT(subject, install("range"));
 	cachedIRanges cached_rangeSubject = cache_IRanges(rangeSubject);
 	SEXP indelSubject = GET_SLOT(subject, install("indel"));
+	cachedCompressedIRangesList cached_indelSubject = cache_CompressedIRangesList(indelSubject);
 
 	const char *stringSetClass = get_qualityless_classname(unalignedPattern);
 	const char *stringClass = get_classname(_get_XStringSet_super(unalignedPattern));
@@ -207,8 +214,8 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 		rangeWidthSubject = get_cachedIRanges_elt_width(&cached_rangeSubject, i);
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
 		char *origStringPtr = (char *) (origString.elts + (rangeStartPattern - 1));
-		cachedIRanges indelElementPattern = cache_CompressedIRangesList_elt(indelPattern, i);
-		cachedIRanges indelElementSubject = cache_CompressedIRangesList_elt(indelSubject, i);
+		cachedIRanges indelElementPattern = get_cachedCompressedIRangesList_elt(&cached_indelPattern, i);
+		cachedIRanges indelElementSubject = get_cachedCompressedIRangesList_elt(&cached_indelSubject, i);
 		int numberOfIndelPattern = get_cachedIRanges_length(&indelElementPattern);
 		int numberOfIndelSubject = get_cachedIRanges_length(&indelElementSubject);
 
