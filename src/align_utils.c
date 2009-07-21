@@ -5,17 +5,17 @@
 const char* get_qualityless_classname(SEXP object)
 {
 	const char *classname = get_classname(object);
-	const char *outputClassname;
+	const char *ansClassname;
 	if (strcmp(classname, "QualityScaledBStringSet") == 0) {
-		outputClassname = "BStringSet";
+		ansClassname = "BStringSet";
 	} else if (strcmp(classname, "QualityScaledDNAStringSet") == 0) {
-		outputClassname = "DNAStringSet";
+		ansClassname = "DNAStringSet";
 	} else if (strcmp(classname, "QualityScaledRNAStringSet") == 0) {
-		outputClassname = "RNAStringSet";
+		ansClassname = "RNAStringSet";
 	} else {
-		outputClassname = classname;
+		ansClassname = classname;
 	}
-	return outputClassname;
+	return ansClassname;
 }
 
 
@@ -47,23 +47,23 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 {
 	SEXP range = GET_SLOT(alignedXStringSet, install("range"));
 	SEXP indel = GET_SLOT(alignedXStringSet, install("indel"));
-	int numberOfAlignments = get_IRanges_length(range);
+	cachedIRanges cached_range = cache_IRanges(range);
+	int numberOfAlignments = get_cachedIRanges_length(&cached_range);
 
-	SEXP output;
-	PROTECT(output = NEW_INTEGER(numberOfAlignments));
-	int i, j, *outputPtr;
-	const int *rangeWidth;
-	for (i = 0, rangeWidth = INTEGER(get_IRanges_width(range)), outputPtr = INTEGER(output);
-			i < numberOfAlignments; i++, rangeWidth++, outputPtr++) {
+	SEXP ans;
+	PROTECT(ans = NEW_INTEGER(numberOfAlignments));
+	int i, j, *ans_elt, rangeWidth;
+	for (i = 0, ans_elt = INTEGER(ans); i < numberOfAlignments; i++, ans_elt++) {
+		rangeWidth = get_cachedIRanges_elt_width(&cached_range, i);
 		cachedIRanges indelElement = cache_CompressedIRangesList_elt(indel, i);
 		int numberOfIndels = get_cachedIRanges_length(&indelElement);
-		*outputPtr = *rangeWidth;
+		*ans_elt = rangeWidth;
 		for (j = 0; j < numberOfIndels; j++)
-			*outputPtr += get_cachedIRanges_elt_width(&indelElement, j);
+			*ans_elt += get_cachedIRanges_elt_width(&indelElement, j);
 	}
 	UNPROTECT(1);
 
-	return output;
+	return ans;
 }
 
 
@@ -81,9 +81,10 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	const char *stringClass = get_classname(_get_XStringSet_super(unaligned));
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
-	int numberOfAlignments = get_IRanges_length(range);
+	cachedIRanges cached_range = cache_IRanges(range);
+	int numberOfAlignments = get_cachedIRanges_length(&cached_range);
 
-	SEXP output;
+	SEXP ans;
 
 	SEXP alignedString, alignedRanges, alignedStart, alignedWidth;
 	PROTECT(alignedWidth = AlignedXStringSet_nchar(alignedXStringSet));
@@ -107,20 +108,21 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	PROTECT(alignedString = new_XRaw_from_tag(stringClass, alignedStringTag));
 	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, R_NilValue));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
-	PROTECT(output = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
+	PROTECT(ans = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
 
 	int stringIncrement = (numberOfStrings == 1 ? 0 : 1);
 	int index = 0, stringElement = 0;
-	const int *rangeStart, *rangeWidth;
-	for (i = 0, rangeStart = INTEGER(get_IRanges_start(range)), rangeWidth = INTEGER(get_IRanges_width(range));
-	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
+	int rangeStart, rangeWidth;
+	for (i = 0; i < numberOfAlignments; i++) {
+		rangeStart = get_cachedIRanges_elt_width(&cached_range, i);
+		rangeWidth = get_cachedIRanges_elt_width(&cached_range, i);
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedAlignedXStringSet, stringElement);
-		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
+		char *origStringPtr = (char *) (origString.elts + (rangeStart - 1));
 		cachedIRanges indelElement = cache_CompressedIRangesList_elt(indel, i);
 		int numberOfIndel = get_cachedIRanges_length(&indelElement);
 		if (numberOfIndel == 0) {
-			memcpy(&alignedStringPtr[index], origStringPtr, *rangeWidth * sizeof(char));
-			index += *rangeWidth;
+			memcpy(&alignedStringPtr[index], origStringPtr, rangeWidth * sizeof(char));
+			index += rangeWidth;
 		} else {
 			int prevStart = 0;
 			for (j = 0; j < numberOfIndel; j++) {
@@ -138,7 +140,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 				}
 				prevStart = currStart;
 			}
-			int copyElements = *rangeWidth - prevStart;
+			int copyElements = rangeWidth - prevStart;
 			memcpy(&alignedStringPtr[index], origStringPtr, copyElements * sizeof(char));
 			index += copyElements;
 		}
@@ -146,7 +148,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	}
 	UNPROTECT(6);
 
-	return output;
+	return ans;
 }
 
 
@@ -160,20 +162,22 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 	SEXP unalignedPattern = GET_SLOT(pattern, install("unaligned"));
 	CachedXStringSet cachedUnalignedPattern = _new_CachedXStringSet(unalignedPattern);
 	SEXP rangePattern = GET_SLOT(pattern, install("range"));
+	cachedIRanges cached_rangePattern = cache_IRanges(rangePattern);
 	SEXP namesPattern = get_IRanges_names(rangePattern);
 	SEXP indelPattern = GET_SLOT(pattern, install("indel"));
 
 	SEXP subject = GET_SLOT(alignment, install("subject"));
 	SEXP rangeSubject = GET_SLOT(subject, install("range"));
+	cachedIRanges cached_rangeSubject = cache_IRanges(rangeSubject);
 	SEXP indelSubject = GET_SLOT(subject, install("indel"));
 
 	const char *stringSetClass = get_qualityless_classname(unalignedPattern);
 	const char *stringClass = get_classname(_get_XStringSet_super(unalignedPattern));
 
-	int numberOfAlignments = get_IRanges_length(rangePattern);
+	int numberOfAlignments = get_cachedIRanges_length(&cached_rangePattern);
 	int numberOfChars = INTEGER(_get_XStringSet_width(GET_SLOT(subject, install("unaligned"))))[0];
 
-	SEXP output;
+	SEXP ans;
 
 	SEXP mappedString, mappedRanges, mappedStart, mappedWidth;
 	PROTECT(mappedWidth = NEW_INTEGER(numberOfAlignments));
@@ -192,25 +196,23 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 	PROTECT(mappedString = new_XRaw_from_tag(stringClass, mappedStringTag));
 	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, namesPattern));
 	char *mappedStringPtr = (char *) RAW(mappedStringTag);
-	PROTECT(output = _new_XStringSet(stringSetClass, mappedString, mappedRanges));
+	PROTECT(ans = _new_XStringSet(stringSetClass, mappedString, mappedRanges));
 
 	int index = 0;
-	const int *rangeStartPattern, *rangeWidthPattern, *rangeStartSubject, *rangeWidthSubject;
-	for (i = 0,
-			rangeStartPattern = INTEGER(get_IRanges_start(rangePattern)),
-			rangeWidthPattern = INTEGER(get_IRanges_width(rangePattern)),
-			rangeStartSubject = INTEGER(get_IRanges_start(rangeSubject)),
-			rangeWidthSubject = INTEGER(get_IRanges_width(rangeSubject));
-	         i < numberOfAlignments;
-	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
+	int rangeStartPattern, rangeWidthPattern, rangeStartSubject, rangeWidthSubject;
+	for (i = 0; i < numberOfAlignments; i++) {
+		rangeStartPattern = get_cachedIRanges_elt_start(&cached_rangePattern, i);
+		rangeWidthPattern = get_cachedIRanges_elt_width(&cached_rangePattern, i);
+		rangeStartSubject = get_cachedIRanges_elt_start(&cached_rangeSubject, i);
+		rangeWidthSubject = get_cachedIRanges_elt_width(&cached_rangeSubject, i);
 		RoSeq origString = _get_CachedXStringSet_elt_asRoSeq(&cachedUnalignedPattern, i);
-		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
+		char *origStringPtr = (char *) (origString.elts + (rangeStartPattern - 1));
 		cachedIRanges indelElementPattern = cache_CompressedIRangesList_elt(indelPattern, i);
 		cachedIRanges indelElementSubject = cache_CompressedIRangesList_elt(indelSubject, i);
 		int numberOfIndelPattern = get_cachedIRanges_length(&indelElementPattern);
 		int numberOfIndelSubject = get_cachedIRanges_length(&indelElementSubject);
 
-		for (j = 0; j < *rangeStartSubject - 1; j++) {
+		for (j = 0; j < rangeStartSubject - 1; j++) {
 			mappedStringPtr[index] = endgapCodeValue;
 			index++;
 		}
@@ -224,7 +226,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 			indelStartSubject = get_cachedIRanges_elt_start(&indelElementSubject, js);
 			indelWidthSubject = get_cachedIRanges_elt_width(&indelElementSubject, js);
 		}
-		for (j = 1; j <= *rangeWidthSubject; j++) {
+		for (j = 1; j <= rangeWidthSubject; j++) {
 			if ((numberOfIndelSubject == 0) || (j < indelStartSubject)) {
 				if ((numberOfIndelPattern == 0) || (jPattern < indelStartPattern)) {
 					mappedStringPtr[index] = *origStringPtr;
@@ -252,14 +254,14 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 				numberOfIndelSubject--;
 			}
 		}
-		for (j = *rangeStartSubject + (*rangeWidthSubject - 1); j < numberOfChars; j++) {
+		for (j = rangeStartSubject + (rangeWidthSubject - 1); j < numberOfChars; j++) {
 			mappedStringPtr[index] = endgapCodeValue;
 			index++;
 		}
 	}
 	UNPROTECT(6);
 
-	return(output);
+	return ans;
 }
 
 
@@ -270,30 +272,30 @@ SEXP align_compareStrings(SEXP patternStrings, SEXP subjectStrings, SEXP maxNCha
 	char deletionChar = CHAR(STRING_ELT(deletionCode, 0))[0];
 	char mismatchChar = CHAR(STRING_ELT(mismatchCode, 0))[0];
 	int numberOfStrings = LENGTH(patternStrings);
-	char *outputPtr = (char *) R_alloc((long) (INTEGER(maxNChar)[0] + 1), sizeof(char));
-	SEXP output;
-	PROTECT(output = NEW_CHARACTER(numberOfStrings));
+	char *ansPtr = (char *) R_alloc((long) (INTEGER(maxNChar)[0] + 1), sizeof(char));
+	SEXP ans;
+	PROTECT(ans = NEW_CHARACTER(numberOfStrings));
 	int i, j;
-	char *output_j;
+	char *ans_j;
 	const char *subject_j;
 	for (i = 0; i < numberOfStrings; i++) {
 		const char *patternPtr = (char *) CHAR(STRING_ELT(patternStrings, i));
 		const char *subjectPtr = (char *) CHAR(STRING_ELT(subjectStrings, i));
 		int numberOfChars = strlen(patternPtr);
-		memcpy(outputPtr, patternPtr, numberOfChars * sizeof(char));
-		outputPtr[numberOfChars] = '\0';
-		for (j = 0, output_j = outputPtr, subject_j = subjectPtr;
-		     j < numberOfChars; j++, output_j++, subject_j++) {
-			if (*output_j != deletionChar) {
+		memcpy(ansPtr, patternPtr, numberOfChars * sizeof(char));
+		ansPtr[numberOfChars] = '\0';
+		for (j = 0, ans_j = ansPtr, subject_j = subjectPtr;
+		     j < numberOfChars; j++, ans_j++, subject_j++) {
+			if (*ans_j != deletionChar) {
 				if (*subject_j == deletionChar) {
-					*output_j = insertionChar;
-				} else if (*subject_j != *output_j) {
-					*output_j = mismatchChar;
+					*ans_j = insertionChar;
+				} else if (*subject_j != *ans_j) {
+					*ans_j = mismatchChar;
 				}
 			}
 		}
-		SET_STRING_ELT(output, i, mkChar(outputPtr));
+		SET_STRING_ELT(ans, i, mkChar(ansPtr));
 	}
 	UNPROTECT(1);
-	return(output);
+	return ans;
 }
