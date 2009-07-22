@@ -394,8 +394,8 @@ setMethod("countPattern", "MaskedXString",
     if (count.only)
         return(C_ans)
     # C_ans is a list of IRanges objects
-    ans_width <- rep.int(length(pattern), length(subject))
-    new("ByPos_MIndex", width=ans_width, NAMES=names(subject), ends=lapply(C_ans, end))
+    ans_width0 <- rep.int(length(pattern), length(subject))
+    new("ByPos_MIndex", width0=ans_width0, NAMES=names(subject), ends=lapply(C_ans, end))
 }
 
 setGeneric("vmatchPattern", signature="subject",
