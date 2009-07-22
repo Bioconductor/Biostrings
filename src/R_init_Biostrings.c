@@ -242,6 +242,12 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_report_match);
 	REGISTER_CCALLABLE(_reported_matches_asSEXP);
 
+/* MIndex_class.c */
+	REGISTER_CCALLABLE(_cache_MIndex);
+	REGISTER_CCALLABLE(_get_cachedMIndex_length);
+	REGISTER_CCALLABLE(_get_cachedMIndex_elt_width0);
+	REGISTER_CCALLABLE(_get_cachedMIndex_elt);
+
 	return;
 }
 

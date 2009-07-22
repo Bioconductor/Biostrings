@@ -222,7 +222,7 @@ exportClasses(
 
 export(
     ## MIndex-class.R
-    startIndex, endIndex, countIndex,
+    width0, startIndex, endIndex, countIndex,
     extractAllMatches,
 
     ## match-utils.R

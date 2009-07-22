@@ -27,34 +27,82 @@ SEXP debug_MIndex_class()
  * Thus they cannot be made .Call() entry points!
  */
 
+static SEXP get_MIndex_width0(SEXP x)
+{
+	return GET_SLOT(x, install("width0"));
+}
+
+static SEXP get_MIndex_names(SEXP x)
+{
+	return GET_SLOT(x, install("NAMES"));
+}
+
+static SEXP get_MIndex_dups0(SEXP x)
+{
+	return GET_SLOT(x, install("dups0"));
+}
+
+static SEXP get_MIndex_ends(SEXP x)
+{
+	return GET_SLOT(x, install("ends"));
+}
+
 
 /****************************************************************************
  * C-level abstract accessor functions.
  */
 
-/*
-cachedMIndex _new_cachedMIndex(SEXP x)
+cachedMIndex _cache_MIndex(SEXP x)
 {
+	cachedMIndex cached_x;
+	SEXP dups0;
+
+	cached_x.classname = get_classname(x);
+	cached_x.width0 = get_MIndex_width0(x);
+	cached_x.names = get_MIndex_names(x);
+	cached_x.length = LENGTH(cached_x.width0);
+	cached_x.ends = get_MIndex_ends(x);
+	dups0 = get_MIndex_dups0(x);
+	cached_x.dups0_high2low = get_H2LGrouping_high2low(dups0);
+	cached_x.dups0_low2high = get_H2LGrouping_low2high(dups0);
+	return cached_x;
 }
 
-int _get_cachedMIndex_length(const cachedMIndex *x)
+int _get_cachedMIndex_length(const cachedMIndex *cached_x)
 {
+	return cached_x->length;
 }
 
-int _get_cachedMIndex_elt_length
-
-int _get_cachedMIndex_elt_width(const cachedMIndex *x, int i)
+int _get_cachedMIndex_elt_width0(const cachedMIndex *cached_x, int i)
 {
+	return INTEGER(cached_x->width0)[i];
 }
 
-SEXP _get_cachedMIndex_elt_start(const cachedMIndex *x, int i)
+cachedIRanges _get_cachedMIndex_elt(const cachedMIndex *cached_x, int i)
 {
-}
+	cachedIRanges cached_iranges;
+	int low;
+	SEXP ends_elt;
 
-SEXP _get_cachedMIndex_elt_end(const cachedMIndex *x, int i)
-{
+	low = INTEGER(cached_x->dups0_high2low)[i];
+	if (low != NA_INTEGER)
+		i = low;
+	cached_iranges.classname = "IRanges";
+	cached_iranges.is_constant_width = 1;
+	cached_iranges.offset = 0;
+	cached_iranges.width = INTEGER(cached_x->width0) + i;
+	cached_iranges.start = NULL;
+	cached_iranges.names = R_NilValue;
+	ends_elt = VECTOR_ELT(cached_x->ends, i);
+	if (ends_elt == R_NilValue) {
+		/* No need to initialize cached_iranges.end */
+		cached_iranges.length = 0;
+	} else {
+		cached_iranges.length = LENGTH(ends_elt);
+		cached_iranges.end = INTEGER(ends_elt);
+	}
+	return cached_iranges;
 }
-*/
 
 
 /****************************************************************************
@@ -76,11 +124,11 @@ static void add_val_to_INTEGER(SEXP x, int val)
 
 /*
  * --- .Call ENTRY POINT ---
- * If 'x_width' is NULL => returns the endIndex (list).
- * Otherwise 'x_width' must be an integer vector of same length as the
+ * If 'x_width0' is NULL => returns the endIndex (list).
+ * Otherwise 'x_width0' must be an integer vector of same length as the
  * 'x_ends' list and the startIndex is returned.
  */
-SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width)
+SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width0)
 {
 	SEXP ans, ans_elt;
 	int i, k1;
@@ -94,12 +142,12 @@ SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width)
 			UNPROTECT(1);
 			continue;
 		}
-		if (x_width == R_NilValue)
+		if (x_width0 == R_NilValue)
 			continue;
 		ans_elt = VECTOR_ELT(ans, i);
 		if (!IS_INTEGER(ans_elt)) // could be NULL
 			continue;
-		add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width)[i]);
+		add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width0)[i]);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -125,7 +173,7 @@ SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width)
            ends_envir, NULL, letters[1:10], FALSE,
            PACKAGE="Biostrings")
  */
-SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width, SEXP x_names, SEXP all_names)
+SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int i, j;
@@ -139,8 +187,8 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width, SEXP x_names, SEXP a
 			j = poffsets.elts[i];
 			end = _get_val_from_env(STRING_ELT(symbols, i), x_ends_envir, 1);
 			PROTECT(ans_elt = duplicate(end));
-			if (x_width != R_NilValue)
-				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width)[j]);
+			if (x_width0 != R_NilValue)
+				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width0)[j]);
 			SET_ELEMENT(ans, j, ans_elt);
 			UNPROTECT(1);
 		}
@@ -157,8 +205,8 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width, SEXP x_names, SEXP a
 			j = i;
 			end = _get_val_from_env(STRING_ELT(symbols, j), x_ends_envir, 1);
 			PROTECT(ans_elt = duplicate(end));
-			if (x_width != R_NilValue)
-				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width)[i]);
+			if (x_width0 != R_NilValue)
+				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width0)[i]);
 			SET_ELEMENT(ans, i, ans_elt);
 			UNPROTECT(1);
 			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(x_names, poffsets.elts[j])));

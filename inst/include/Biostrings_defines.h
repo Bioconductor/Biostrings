@@ -67,7 +67,8 @@ typedef struct cached_xstringset {
 typedef struct cached_mindex {
 	const char *classname;
 	int length;
-	SEXP width;
+	SEXP width0;
+	SEXP names;
 	SEXP ends;
 	SEXP dups0_high2low;
 	SEXP dups0_low2high;

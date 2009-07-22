@@ -10,7 +10,8 @@
 
 % Generics and methods:
 \alias{length,MIndex-method}
-\alias{width,MIndex-method}
+\alias{width0}
+\alias{width0,MIndex-method}
 \alias{names,MIndex-method}
 \alias{names<-,MIndex-method}
 \alias{startIndex}

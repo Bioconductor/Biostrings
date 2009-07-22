@@ -503,15 +503,23 @@ SEXP _reported_matches_asSEXP();
 
 SEXP debug_MIndex_class();
 
+cachedMIndex _cache_MIndex(SEXP x);
+
+int _get_cachedMIndex_length(const cachedMIndex *cached_x);
+
+int _get_cachedMIndex_elt_width0(const cachedMIndex *cached_x, int i);
+
+cachedIRanges _get_cachedMIndex_elt(const cachedMIndex *cached_x, int i);
+
 SEXP ByPos_MIndex_endIndex(
 	SEXP x_high2low,
 	SEXP x_ends,
-	SEXP x_width
+	SEXP x_width0
 );
 
 SEXP SparseMIndex_endIndex(
 	SEXP x_ends_envir,
-	SEXP x_width,
+	SEXP x_width0,
 	SEXP x_names,
 	SEXP all_names
 );

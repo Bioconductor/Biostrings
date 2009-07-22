@@ -19,14 +19,16 @@ setClass("MIndex",
     contains="IRangesList",
     representation(
         "VIRTUAL",
-        width="integer",
+        width0="integer",
         NAMES="characterORNULL"
     )
 )
 
-setMethod("length", "MIndex", function(x) length(x@width))
+setMethod("length", "MIndex", function(x) length(x@width0))
 
-setMethod("width", "MIndex", function(x) x@width)
+setGeneric("width0", function(x) standardGeneric("width0"))
+
+setMethod("width0", "MIndex", function(x) x@width0)
 
 setMethod("names", "MIndex", function(x) x@NAMES)
 
@@ -35,14 +37,11 @@ setReplaceMethod("names", "MIndex",
         stop("attempt to modify the names of a ", class(x), " instance")
 )
 
-setGeneric("startIndex", signature="x",
-    function(x) standardGeneric("startIndex"))
+setGeneric("startIndex", function(x) standardGeneric("startIndex"))
 
-setGeneric("endIndex", signature="x",
-    function(x) standardGeneric("endIndex"))
+setGeneric("endIndex", function(x) standardGeneric("endIndex"))
 
-setGeneric("countIndex", signature="x",
-    function(x) standardGeneric("countIndex"))
+setGeneric("countIndex", function(x) standardGeneric("countIndex"))
 
 setMethod("countIndex", "MIndex",
     function(x) elementLengths(endIndex(x))
@@ -109,7 +108,7 @@ setClass("ByPos_MIndex",
     contains="MIndex",
     representation(
         dups0="Dups",
-        ends="list"  # same length as the "width" slot
+        ends="list"  # same length as the "width0" slot
     )
 )
 
@@ -129,19 +128,19 @@ setMethod("[[", "ByPos_MIndex",
         ans_end <- x@ends[[i]]
         if (is.null(ans_end))
             ans_end <- integer(0)
-        ans_width <- rep.int(x@width[i], length(ans_end))
-        ans_start <- ans_end - x@width[i] + 1L
+        ans_width <- rep.int(x@width0[i], length(ans_end))
+        ans_start <- ans_end - x@width0[i] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
 )
 
 ### An example of a ByPos_MIndex object of length 5 where only the
 ### 2nd and 5th pattern have matches:
-###   > width <- c(9L, 10L, 8L, 4L, 10L)
+###   > width0 <- c(9L, 10L, 8L, 4L, 10L)
 ###   > dups0 <- Dups(c(NA, NA, NA, NA, 2))
 ###   > ends <- vector(mode="list", length=5)
 ###   > ends[[2]] <- c(199L, 402L)
-###   > mindex <- new("ByPos_MIndex", width=width, NAMES=letters[1:5], dups0=dups0, ends=ends)
+###   > mindex <- new("ByPos_MIndex", width0=width0, NAMES=letters[1:5], dups0=dups0, ends=ends)
 ###   > mindex[[1]]
 ###   > mindex[[2]]
 ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
@@ -153,7 +152,7 @@ setMethod("startIndex", "ByPos_MIndex",
     function(x)
     {
         .Call("ByPos_MIndex_endIndex",
-              high2low(x@dups0), x@ends, x@width,
+              high2low(x@dups0), x@ends, x@width0,
               PACKAGE="Biostrings")
     }
 )
@@ -170,7 +169,7 @@ ByPos_MIndex.combine <- function(mi_list)
 {
     if (length(mi_list) == 0)
         stop("cannot combine an empty list of MIndex objects")
-    ans_width <- mi_list[[1]]@width  # all 'mi_list[[i]]@width' should be the same!
+    ans_width0 <- mi_list[[1]]@width0  # all 'mi_list[[i]]@width0' should be the same!
     ends_listlist <- lapply(mi_list, function(mi) mi@ends)
     #mergeEnds <- function(...)
     #{
@@ -184,7 +183,7 @@ ByPos_MIndex.combine <- function(mi_list)
     ans_ends <- .Call("ByPos_MIndex_combine",
                       ends_listlist,
                       PACKAGE="Biostrings")
-    new("ByPos_MIndex", width=ans_width, ends=ans_ends)
+    new("ByPos_MIndex", width0=ans_width0, ends=ans_ends)
 }
 
 
@@ -222,18 +221,18 @@ if (FALSE) {
         ans_end <- x@ends_envir[[formatC(i, width=10, format="d", flag="0")]]
         if (is.null(ans_end))
             ans_end <- integer(0)
-        ans_width <- rep.int(x@width[i], length(ans_end))
-        ans_start <- ans_end - x@width[i] + 1L
+        ans_width <- rep.int(x@width0[i], length(ans_end))
+        ans_start <- ans_end - x@width0[i] + 1L
         new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
     }
   )
 
   ### An example of a SparseMIndex object of length 5 where only the
   ### 2nd pattern has matches:
-  ###   > width <- c(9L, 10L, 8L, 4L, 10L)
+  ###   > width0 <- c(9L, 10L, 8L, 4L, 10L)
   ###   > ends_envir <- new.env(hash=TRUE, parent=emptyenv())
   ###   > ends_envir[['0000000002']] <- c(199L, 402L)
-  ###   > mindex <- new("SparseMIndex", width=width, NAMES=letters[1:5], ends_envir=ends_envir)
+  ###   > mindex <- new("SparseMIndex", width0=width0, NAMES=letters[1:5], ends_envir=ends_envir)
   ###   > mindex[[1]]
   ###   > mindex[[2]]
   ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
@@ -250,7 +249,7 @@ if (FALSE) {
     {
         all.names <- TRUE
         .Call("SparseMIndex_endIndex",
-              x@ends_envir, x@width, x@NAMES, all.names,
+              x@ends_envir, x@width0, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }
   )

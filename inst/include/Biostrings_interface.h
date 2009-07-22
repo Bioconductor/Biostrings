@@ -170,3 +170,16 @@ void report_match(int start, int width);
 
 SEXP reported_matches_asSEXP();
 
+
+/*
+ * MIndex abstract accessor functions.
+ */
+
+cachedMIndex cache_MIndex(SEXP x);
+
+int get_cachedMIndex_length(const cachedMIndex *cached_x);
+
+int get_cachedMIndex_elt_width0(const cachedMIndex *cached_x, int i);
+
+cachedIRanges get_cachedMIndex_elt(const cachedMIndex *cached_x, int i);
+

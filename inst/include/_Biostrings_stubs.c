@@ -146,3 +146,28 @@ DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,
 	()
 )
 
+
+/*
+ * Stubs for callables defined in MIndex_class.c
+ */
+
+DEFINE_CCALLABLE_STUB(cachedMIndex, cache_MIndex,
+	(SEXP x),
+	(     x)
+)
+
+DEFINE_CCALLABLE_STUB(int, get_cachedMIndex_length,
+	(const cachedMIndex *cached_x),
+	(                    cached_x)
+)
+
+DEFINE_CCALLABLE_STUB(int, get_cachedMIndex_elt_width0,
+	(const cachedMIndex *cached_x, int i),
+	(                    cached_x,     i)
+)
+
+DEFINE_CCALLABLE_STUB(cachedIRanges, get_cachedMIndex_elt,
+	(const cachedMIndex *cached_x, int i),
+	(                    cached_x,     i)
+)
+
