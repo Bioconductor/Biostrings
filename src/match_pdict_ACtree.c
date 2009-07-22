@@ -204,14 +204,14 @@ static int try_moving_to_acnode_child(int node_id, const int *base_codes,
 	return actree_nodes_buf[node_id].child_id[childslot] = child_id;
 }
 
-static void pp_pattern(const RoSeq *pattern, const int *base_codes, int poffset)
+static void pp_pattern(const cachedCharSeq *pattern, const int *base_codes, int poffset)
 {
 	int n, node_id, child_id, childslot;
 	char c;
 	ACNode *node;
 
-	for (n = 0, node_id = 0; n < pattern->nelt; n++, node_id = child_id) {
-		c = pattern->elts[n];
+	for (n = 0, node_id = 0; n < pattern->length; n++, node_id = child_id) {
+		c = pattern->seq[n];
 		for (childslot = 0; childslot < MAX_CHILDREN_PER_ACNODE; childslot++) {
 			child_id = try_moving_to_acnode_child(node_id,
 					base_codes, childslot, c);
@@ -307,7 +307,7 @@ SEXP build_ACtree(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset;
 	cachedXStringSet cached_tb;
-	RoSeq pattern;
+	cachedCharSeq pattern;
 
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE)
 		error("Biostrings internal error in build_ACtree(): "
@@ -322,14 +322,14 @@ SEXP build_ACtree(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 		 && INTEGER(pp_exclude)[poffset] != NA_INTEGER)
 			continue;
 		pattern = _get_cachedXStringSet_elt(&cached_tb, poffset);
-		if (pattern.nelt == 0)
+		if (pattern.length == 0)
 			error("empty trusted region for pattern %d",
 			      poffset + 1);
 		if (tb_width == -1) {
-			tb_width = pattern.nelt;
+			tb_width = pattern.length;
 			alloc_actree_nodes_buf(tb_length, tb_width);
 			append_acnode(0);
-		} else if (pattern.nelt != tb_width) {
+		} else if (pattern.length != tb_width) {
 			error("all the trusted regions must have "
 			      "the same length");
 		}
@@ -583,7 +583,7 @@ static int walk_subject(ACNode *node0, const int *base_codes,
 }
 
 static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
-		const RoSeq *S, TBMatchBuf *tb_matches)
+		const cachedCharSeq *S, TBMatchBuf *tb_matches)
 {
 	IntAE cnode_ids; // buffer of current node ids
 	int n, npointers, i, node_id, next_node_id, is_first, j, base, P_id;
@@ -592,7 +592,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 
 	cnode_ids = new_IntAE(256, 0, 0);
 	IntAE_insert_at(&cnode_ids, 0, 0);
-	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
+	for (n = 1, S_tail = S->seq; n <= S->length; n++, S_tail++) {
 		c = *S_tail;
 		npointers = cnode_ids.nelt;
 		// move and split pointers
@@ -634,7 +634,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	return;
 }
 
-void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS,
+void _match_ACtree(SEXP pptb, const cachedCharSeq *S, int fixedS,
 		TBMatchBuf *tb_matches)
 {
 	ACNode *node0;
@@ -651,7 +651,7 @@ void _match_ACtree(SEXP pptb, const RoSeq *S, int fixedS,
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_ACNODE");
 	_init_byte2offset_with_INTEGER(byte2slotno, base_codes, 1);
 	if (fixedS)
-		walk_subject(node0, INTEGER(base_codes), S->elts, S->nelt,
+		walk_subject(node0, INTEGER(base_codes), S->seq, S->length,
 			tb_matches);
 	else
 		walk_nonfixed_subject(node0, INTEGER(base_codes), S,

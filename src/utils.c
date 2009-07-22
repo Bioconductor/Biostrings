@@ -148,17 +148,18 @@ void _init_byte2offset_with_INTEGER(ByteTrTable byte2offset, SEXP bytes, int err
 	return;
 }
 
-void _init_byte2offset_with_RoSeq(ByteTrTable byte2offset, const RoSeq *seq, int error_on_dup)
+void _init_byte2offset_with_RoSeq(ByteTrTable byte2offset,
+		const cachedCharSeq *seq, int error_on_dup)
 {
 	int byte, offset;
 
-	if (seq->nelt > BYTETRTABLE_LENGTH)
+	if (seq->length > BYTETRTABLE_LENGTH)
 		error("Biostrings internal error in _init_byte2offset_with_RoSeq(): ",
-		      "seq->nelt > BYTETRTABLE_LENGTH");
+		      "seq->length > BYTETRTABLE_LENGTH");
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
 		byte2offset[byte] = NA_INTEGER;
-	for (offset = 0; offset < seq->nelt; offset++) {
-		byte = seq->elts[offset];
+	for (offset = 0; offset < seq->length; offset++) {
+		byte = seq->seq[offset];
 		set_byte2offset_elt(byte2offset, byte, offset, error_on_dup);
 	}
 #ifdef DEBUG_BIOSTRINGS
@@ -220,20 +221,20 @@ int _shift_twobit_signature(TwobitEncodingBuffer *teb, char c)
 	return teb->current_signature;
 }
 
-int _get_twobit_signature(TwobitEncodingBuffer *teb, const RoSeq *seq)
+int _get_twobit_signature(TwobitEncodingBuffer *teb, const cachedCharSeq *seq)
 {
 	int i, twobit_sign;
 	const char *c;
 
-	if (seq->nelt != teb->buflength)
-		error("_get_twobit_signature(): seq->nelt != teb->buflength");
-	for (i = 0, c = seq->elts; i < seq->nelt; i++, c++)
+	if (seq->length != teb->buflength)
+		error("_get_twobit_signature(): seq->length != teb->buflength");
+	for (i = 0, c = seq->seq; i < seq->length; i++, c++)
 		twobit_sign = _shift_twobit_signature(teb, *c);
 	return twobit_sign;
 }
 
 /* 'at' must contain 1-based locations in 'seq'. */
-int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const RoSeq *seq,
+int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const cachedCharSeq *seq,
 		const int *at, int at_length)
 {
 	int i, j, twobit_sign;
@@ -242,9 +243,9 @@ int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const RoSeq *seq,
 		error("_get_twobit_signature_at(): at_length != teb->buflength");
 	for (i = 0; i < at_length; i++) {
 		j = at[i];
-		if (j == NA_INTEGER || j < 1 || j > seq->nelt)
+		if (j == NA_INTEGER || j < 1 || j > seq->length)
 			return -1;
-		twobit_sign = _shift_twobit_signature(teb, seq->elts[j - 1]);
+		twobit_sign = _shift_twobit_signature(teb, seq->seq[j - 1]);
 	}
 	return twobit_sign;
 }

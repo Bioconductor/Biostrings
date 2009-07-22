@@ -119,8 +119,8 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	const int *rangeStart, *rangeWidth;
 	for (i = 0, rangeStart = INTEGER(get_IRanges_start(range)), rangeWidth = INTEGER(get_IRanges_width(range));
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
-		RoSeq origString = _get_cachedXStringSet_elt(&cached_unaligned, stringElement);
-		char *origStringPtr = (char *) (origString.elts + (*rangeStart - 1));
+		cachedCharSeq origString = _get_cachedXStringSet_elt(&cached_unaligned, stringElement);
+		char *origStringPtr = (char *) (origString.seq + (*rangeStart - 1));
 		cachedIRanges indelElement = get_cachedCompressedIRangesList_elt(&cached_indel, i);
 		int numberOfIndel = get_cachedIRanges_length(&indelElement);
 		if (numberOfIndel == 0) {
@@ -210,8 +210,8 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 			rangeWidthSubject = INTEGER(get_IRanges_width(rangeSubject));
 	         i < numberOfAlignments;
 	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
-		RoSeq origString = _get_cachedXStringSet_elt(&cached_unalignedPattern, i);
-		char *origStringPtr = (char *) (origString.elts + (*rangeStartPattern - 1));
+		cachedCharSeq origString = _get_cachedXStringSet_elt(&cached_unalignedPattern, i);
+		char *origStringPtr = (char *) (origString.seq + (*rangeStartPattern - 1));
 		cachedIRanges indelElementPattern = get_cachedCompressedIRangesList_elt(&cached_indelPattern, i);
 		cachedIRanges indelElementSubject = get_cachedCompressedIRangesList_elt(&cached_indelSubject, i);
 		int numberOfIndelPattern = get_cachedIRanges_length(&indelElementPattern);

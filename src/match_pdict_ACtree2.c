@@ -724,7 +724,7 @@ SEXP ACtree2_summary(SEXP pptb)
  *                             G. PREPROCESSING                             *
  ****************************************************************************/
 
-static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
+static void add_pattern(ACtree *tree, const cachedCharSeq *P, int P_offset)
 {
 	int P_id, depth, dmax, linktag;
 	unsigned int nid1, nid2;
@@ -734,7 +734,7 @@ static void add_pattern(ACtree *tree, const RoSeq *P, int P_offset)
 	dmax = TREE_DEPTH(tree) - 1;
 	for (depth = 0, nid1 = 0U; depth <= dmax; depth++, nid1 = nid2) {
 		node1 = GET_NODE(tree, nid1);
-		linktag = CHAR2LINKTAG(tree, P->elts[depth]);
+		linktag = CHAR2LINKTAG(tree, P->seq[depth]);
 		if (linktag == NA_INTEGER)
 			error("non base DNA letter found in Trusted Band "
 			      "for pattern %d", P_id);
@@ -776,7 +776,7 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 	ACtree tree;
 	int tb_length, tb_width, P_offset;
 	cachedXStringSet cached_tb;
-	RoSeq P;
+	cachedCharSeq P;
 	SEXP ans, ans_names, ans_elt;
 
 	tb_length = _get_XStringSet_length(tb);
@@ -792,13 +792,13 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 			continue;
 		P = _get_cachedXStringSet_elt(&cached_tb, P_offset);
 		if (tb_width == -1) {
-			if (P.nelt == 0)
+			if (P.length == 0)
 				error("first element in Trusted Band "
 				      "is of length 0");
-			tb_width = P.nelt;
+			tb_width = P.length;
 			tree = new_ACtree(tb_length, tb_width, base_codes,
 					nodebuf_ptr, nodeextbuf_ptr);
-		} else if (P.nelt != tb_width) {
+		} else if (P.length != tb_width) {
 			error("element %d in Trusted Band has a different "
 			      "length than first element", P_offset + 1);
 		}
@@ -952,7 +952,7 @@ static unsigned int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
 }
 
 /* Does report matches */
-static void walk_tb_subject(ACtree *tree, const RoSeq *S,
+static void walk_tb_subject(ACtree *tree, const cachedCharSeq *S,
 		TBMatchBuf *tb_matches)
 {
 	ACnode *node;
@@ -961,7 +961,7 @@ static void walk_tb_subject(ACtree *tree, const RoSeq *S,
 	const char *S_tail;
 
 	node = GET_NODE(tree, 0U);
-	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
+	for (n = 1, S_tail = S->seq; n <= S->length; n++, S_tail++) {
 		linktag = CHAR2LINKTAG(tree, *S_tail);
 		nid = transition(tree, node, linktag, S_tail);
 		node = GET_NODE(tree, nid);
@@ -973,7 +973,7 @@ static void walk_tb_subject(ACtree *tree, const RoSeq *S,
 }
 
 /* Does report matches */
-static void walk_tb_nonfixed_subject(ACtree *tree, const RoSeq *S,
+static void walk_tb_nonfixed_subject(ACtree *tree, const cachedCharSeq *S,
 		TBMatchBuf *tb_matches)
 {
 	error("walk_tb_nonfixed_subject(): implement me");
@@ -981,7 +981,7 @@ static void walk_tb_nonfixed_subject(ACtree *tree, const RoSeq *S,
 }
 
 /* Entry point for the MATCH FINDING section */
-void _match_tbACtree2(SEXP pptb, const RoSeq *S, int fixedS,
+void _match_tbACtree2(SEXP pptb, const cachedCharSeq *S, int fixedS,
 		TBMatchBuf *tb_matches)
 {
 	ACtree tree;
@@ -1003,7 +1003,7 @@ void _match_tbACtree2(SEXP pptb, const RoSeq *S, int fixedS,
 /* Does report matches */
 static void walk_pdict_subject(ACtree *tree,
 		SEXP low2high, HeadTail *headtail,
-		const RoSeq *S, int max_mm, int fixedP,
+		const cachedCharSeq *S, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
 	ACnode *node;
@@ -1012,7 +1012,7 @@ static void walk_pdict_subject(ACtree *tree,
 	const char *S_tail;
 
 	node = GET_NODE(tree, 0U);
-	for (n = 1, S_tail = S->elts; n <= S->nelt; n++, S_tail++) {
+	for (n = 1, S_tail = S->seq; n <= S->length; n++, S_tail++) {
 		linktag = CHAR2LINKTAG(tree, *S_tail);
 		nid = transition(tree, node, linktag, S_tail);
 		node = GET_NODE(tree, nid);
@@ -1028,7 +1028,7 @@ static void walk_pdict_subject(ACtree *tree,
 /* Does report matches */
 static void walk_pdict_nonfixed_subject(ACtree *tree,
 		SEXP low2high, HeadTail *headtail,
-		const RoSeq *S, int max_mm, int fixedP,
+		const cachedCharSeq *S, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
 	error("walk_pdict_nonfixed_subject(): implement me");
@@ -1036,7 +1036,7 @@ static void walk_pdict_nonfixed_subject(ACtree *tree,
 }
 
 void _match_pdictACtree2(SEXP pptb, HeadTail *headtail,
-		const RoSeq *S, int max_mm, int fixedP, int fixedS,
+		const cachedCharSeq *S, int max_mm, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {
 	ACtree tree;

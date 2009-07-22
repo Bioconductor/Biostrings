@@ -59,13 +59,13 @@ static double compute_wcp_score(RoSeqsList *key_seqs_list,
 	subset = (int *) pos_indices;
 	S_order = 0;
 	for (i = 0, key_nchar = (int *) key_nchars; i < ndict; i++, key_nchar++) {
-		S_buffer->elts[0].nelt = *key_nchar;
+		S_buffer->elts[0].length = *key_nchar;
 		key_seqs = &key_seqs_list->elts[i];
 		key_scores = key_scores_list[i];
 		key_order = key_order_list[i];
 
 		IRanges_memcpy_from_subset(subset, *key_nchar,
-				                   (char *) S_buffer->elts[0].elts, *key_nchar,
+				                   (char *) S_buffer->elts[0].seq, *key_nchar,
 				                   S_char, S_nchar, sizeof(Rbyte));
 		_get_RoSeqs_match(S_buffer, key_seqs, 0, &S_order, key_order, match_buffer, &match_loc);
 		if (match_loc > 0) {
@@ -92,7 +92,7 @@ SEXP WCP_score_starting_at(SEXP wcp, SEXP subject, SEXP starting_at)
 	int nkey, max_nkey, max_key_nchar, key_total_nchar;
 	int *key_nchars, *nchar, *key_order;
 	int *match_buffer, **key_order_list;
-	RoSeq S;
+	cachedCharSeq S;
 	RoSeqs S_buffer;
 	RoSeqsList key_seqs_list;
 	SEXP dict_list, clust_bins, dict_elt, key, ans;
@@ -136,11 +136,11 @@ SEXP WCP_score_starting_at(SEXP wcp, SEXP subject, SEXP starting_at)
 			*key_order = j;
 	}
 	S_buffer = _alloc_RoSeqs(1);
-	S_buffer.elts[0].elts = (char *) R_alloc((long) max_key_nchar, sizeof(char));
-	S_buffer.elts[0].nelt = max_key_nchar;
+	S_buffer.elts[0].seq = (char *) R_alloc((long) max_key_nchar, sizeof(char));
+	S_buffer.elts[0].length = max_key_nchar;
 	match_buffer = (int *) R_alloc((long) max_nkey, sizeof(int));
 
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 	PROTECT(ans = NEW_NUMERIC(LENGTH(starting_at)));
 	for (i = 0, start_elt = INTEGER(starting_at), ans_elt = REAL(ans);
 	     i < LENGTH(starting_at); i++, start_elt++, ans_elt++) {
@@ -152,7 +152,7 @@ SEXP WCP_score_starting_at(SEXP wcp, SEXP subject, SEXP starting_at)
 				                     key_order_list,
 				                     key_total_nchar, key_nchars,
 				                     pos_indices, ndict, match_buffer,
-				                     &S_buffer, S.elts, S.nelt, *start_elt - 1);
+				                     &S_buffer, S.seq, S.length, *start_elt - 1);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -173,7 +173,7 @@ SEXP XString_match_WCP(SEXP wcp, SEXP subject, SEXP min_score, SEXP count_only)
 	int nkey, max_nkey, max_key_nchar, key_total_nchar;
 	int *key_nchars, *nchar, *key_order;
 	int *match_buffer, **key_order_list;
-	RoSeq S;
+	cachedCharSeq S;
 	RoSeqs S_buffer;
 	RoSeqsList key_seqs_list;
 	SEXP dict_list, clust_bins, dict_elt, key;
@@ -220,18 +220,18 @@ SEXP XString_match_WCP(SEXP wcp, SEXP subject, SEXP min_score, SEXP count_only)
 			*key_order = n2;
 	}
 	S_buffer = _alloc_RoSeqs(1);
-	S_buffer.elts[0].elts = (char *) R_alloc((long) max_key_nchar, sizeof(char));
-	S_buffer.elts[0].nelt = max_key_nchar;
+	S_buffer.elts[0].seq = (char *) R_alloc((long) max_key_nchar, sizeof(char));
+	S_buffer.elts[0].length = max_key_nchar;
 	match_buffer = (int *) R_alloc((long) max_nkey, sizeof(int));
 
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
-	for (n1 = 0, n2 = key_total_nchar; n2 <= S.nelt; n1++, n2++) {
+	for (n1 = 0, n2 = key_total_nchar; n2 <= S.length; n1++, n2++) {
 		if (compute_wcp_score(&key_seqs_list, key_scores_list,
 				              key_order_list,
 				              key_total_nchar, key_nchars,
 				              pos_indices, ndict, match_buffer,
-                              &S_buffer, S.elts, S.nelt, n1) >= minscore)
+                              &S_buffer, S.seq, S.length, n1) >= minscore)
 			_report_match(n1 + 1, key_total_nchar);
 	}
 	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
@@ -261,7 +261,7 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 	int nkey, max_nkey, max_key_nchar, key_total_nchar;
 	int *key_nchars, *nchar, *key_order;
 	int *match_buffer, **key_order_list;
-	RoSeq S, S_view;
+	cachedCharSeq S, S_view;
 	RoSeqs S_buffer;
 	RoSeqsList key_seqs_list;
 	SEXP dict_list, clust_bins, dict_elt, key;
@@ -308,11 +308,11 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 			*key_order = n2;
 	}
 	S_buffer = _alloc_RoSeqs(1);
-	S_buffer.elts[0].elts = (char *) R_alloc((long) max_key_nchar, sizeof(char));
-	S_buffer.elts[0].nelt = max_key_nchar;
+	S_buffer.elts[0].seq = (char *) R_alloc((long) max_key_nchar, sizeof(char));
+	S_buffer.elts[0].length = max_key_nchar;
 	match_buffer = (int *) R_alloc((long) max_nkey, sizeof(int));
 
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 	nviews = LENGTH(views_start);
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
@@ -320,18 +320,18 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 	     i++, view_start++, view_width++)
 	{
 		view_offset = *view_start - 1;
-		if (view_offset < 0 || view_offset + *view_width > S.nelt)
+		if (view_offset < 0 || view_offset + *view_width > S.length)
 			error("'subject' has \"out of limits\" views");
-		S_view.elts = S.elts + view_offset;
-		S_view.nelt = *view_width;
+		S_view.seq = S.seq + view_offset;
+		S_view.length = *view_width;
 		_shift_match_on_reporting(view_offset);
-		for (n1 = 0, n2 = key_total_nchar; n2 <= S_view.nelt; n1++, n2++) {
+		for (n1 = 0, n2 = key_total_nchar; n2 <= S_view.length; n1++, n2++) {
 			if (compute_wcp_score(&key_seqs_list, key_scores_list,
 					              key_order_list,
 					              key_total_nchar, key_nchars,
 					              pos_indices, ndict, match_buffer,
 					              &S_buffer,
-					              S_view.elts, S_view.nelt, n1) >= minscore)
+					              S_view.seq, S_view.length, n1) >= minscore)
 				_report_match(n1 + 1, key_total_nchar);
 		}
 	}

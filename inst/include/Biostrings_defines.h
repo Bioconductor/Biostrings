@@ -42,20 +42,11 @@ typedef struct twobit_encoding_buffer {
 
 
 /*
- * Two structures for holding pointers to read-only non null-terminated
- * sequences of chars:
- *
- *   o RoSeq:  array of const chars (think of this as a pointer to a non
- *             null-terminated sequence of chars);
- *   o RoSeqs: array of arrays of const chars;
+ * A structure for holding an array of pointers to read-only non
+ * null-terminated sequences of chars.
  */
-typedef struct roseq {
-	const char *elts;
-	int nelt;
-} RoSeq;
-
 typedef struct roseqs {
-	RoSeq *elts;
+	cachedCharSeq *elts;
 	int nelt;
 } RoSeqs;
 
@@ -67,7 +58,7 @@ typedef struct roseqs {
 typedef struct cached_xstringset {
 	const char *classname;
 	const char *xsbaseclassname;
-	RoSeq super;
+	cachedCharSeq super;
 	cachedIRanges ranges;
 	const ByteTrTable *enc_byte2code;
 	const ByteTrTable *dec_byte2code;

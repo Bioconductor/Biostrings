@@ -29,7 +29,7 @@ void _init_byte2offset_with_INTEGER(
 
 void _init_byte2offset_with_RoSeq(
 	ByteTrTable byte2offset,
-	const RoSeq *seq,
+	const cachedCharSeq *seq,
 	int error_on_dup
 );
 
@@ -48,12 +48,12 @@ int _shift_twobit_signature(
 
 int _get_twobit_signature(
 	TwobitEncodingBuffer *teb,
-	const RoSeq *seq
+	const cachedCharSeq *seq
 );
 
 int _get_twobit_signature_at(
 	TwobitEncodingBuffer *teb,
-	const RoSeq *seq,
+	const cachedCharSeq *seq,
 	const int *at,
 	int at_length
 );
@@ -106,9 +106,9 @@ void _copy_seq_to_subset(
 );
 
 
-/* RoSeq_utils.c */
+/* RoSeqs_utils.c */
 
-SEXP debug_RoSeq_utils();
+SEXP debug_RoSeqs_utils();
 
 RoSeqs _alloc_RoSeqs(int nelt);
 
@@ -119,7 +119,7 @@ void _narrow_RoSeqs(
 );
 
 SEXP _new_CHARSXP_from_RoSeq(
-	const RoSeq *seq,
+	const cachedCharSeq *seq,
 	SEXP lkup
 );
 
@@ -156,7 +156,7 @@ SEXP _new_IRanges_from_RoSeqs(
 void _write_RoSeq_to_RawPtr(
 	SEXP x,
 	int offset,
-	const RoSeq *seq,
+	const cachedCharSeq *seq,
 	const ByteTrTable *byte2code
 );
 
@@ -214,8 +214,6 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-RoSeq _get_XString_asRoSeq(SEXP x);
-
 SEXP new_RawPtr_from_XString(
 	SEXP x,
 	SEXP start,
@@ -236,7 +234,7 @@ SEXP _alloc_XString(
 void _write_RoSeq_to_XString(
 	SEXP x,
 	int start,
-	const RoSeq *seq,
+	const cachedCharSeq *seq,
 	int encode
 );
 
@@ -259,7 +257,7 @@ cachedXStringSet _cache_XStringSet(SEXP x);
 
 int _get_cachedXStringSet_length(const cachedXStringSet *cached_x);
 
-RoSeq _get_cachedXStringSet_elt(
+cachedCharSeq _get_cachedXStringSet_elt(
 	const cachedXStringSet *cached_x,
 	int i
 );
@@ -526,8 +524,8 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 SEXP debug_match_pattern_at();
 
 int (*_selected_nmismatch_at_Pshift_fun)(
-	const RoSeq *P,
-	const RoSeq *S,
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
 	int Pshift,
 	int max_mm
 );
@@ -538,8 +536,8 @@ void _select_nmismatch_at_Pshift_fun(
 );
 
 int _nedit_for_Ploffset(
-	const RoSeq *P,
-	const RoSeq *S,
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
 	int Ploffset,
 	int max_nedit,
 	int loose_Ploffset,
@@ -547,8 +545,8 @@ int _nedit_for_Ploffset(
 );
 
 int _nedit_for_Proffset(
-	const RoSeq *P,
-	const RoSeq *S,
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
 	int Proffset,
 	int max_nedit,
 	int loose_Proffset,
@@ -583,8 +581,8 @@ SEXP XStringSet_vmatch_pattern_at(
 SEXP debug_match_pattern_boyermoore();
 
 void _match_pattern_boyermoore(
-	const RoSeq *P,
-	const RoSeq *S
+	const cachedCharSeq *P,
+	const cachedCharSeq *S
 );
 
 
@@ -595,8 +593,8 @@ SEXP debug_match_pattern_shiftor();
 SEXP bits_per_long();
 
 void _match_pattern_shiftor(
-	const RoSeq *P,
-	const RoSeq *S,
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
 	int max_mm,
 	int fixedP,
 	int fixedS
@@ -608,8 +606,8 @@ void _match_pattern_shiftor(
 SEXP debug_match_pattern_indels();
 
 void _match_pattern_indels(
-	const RoSeq *P,
-	const RoSeq *S,
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
 	int max_mm,
 	int fixedP,
 	int fixedS
@@ -967,7 +965,7 @@ void _match_pdict_flanks_at(
 	int key0,
 	SEXP low2high,
 	HeadTail *headtail,
-	const RoSeq *S,
+	const cachedCharSeq *S,
 	int tb_end,
 	int max_mm,
 	int fixedP,
@@ -977,7 +975,7 @@ void _match_pdict_flanks_at(
 void _match_pdict_all_flanks(
 	SEXP low2high,
 	HeadTail *headtail,
-	const RoSeq *S,
+	const cachedCharSeq *S,
 	int max_mm,
 	MatchPDictBuf *matchpdict_buf
 );
@@ -995,7 +993,7 @@ SEXP build_Twobit(
 
 void _match_Twobit(
 	SEXP pptb,
-	const RoSeq *S,
+	const cachedCharSeq *S,
 	int fixedS,
 	TBMatchBuf *tb_matches
 );
@@ -1017,7 +1015,7 @@ SEXP ACtree_summary(SEXP pptb);
 
 void _match_ACtree(
 	SEXP pptb,
-	const RoSeq *S,
+	const cachedCharSeq *S,
 	int fixedS,
 	TBMatchBuf *tb_matches
 );
@@ -1063,7 +1061,7 @@ SEXP ACtree2_build(
 
 void _match_tbACtree2(
 	SEXP pptb,
-	const RoSeq *S,
+	const cachedCharSeq *S,
 	int fixedS,
 	TBMatchBuf *tb_matches
 );
@@ -1071,7 +1069,7 @@ void _match_tbACtree2(
 void _match_pdictACtree2(
 	SEXP pptb,
 	HeadTail *headtail,
-	const RoSeq *S,
+	const cachedCharSeq *S,
 	int max_mm,
 	int fixedP,
 	int fixedS,

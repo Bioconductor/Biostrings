@@ -110,31 +110,18 @@ char _RNAdecode(char code)
  * Low-level manipulation of XString objects.
  */
 
-RoSeq _get_XString_asRoSeq(SEXP x)
-{
-	RoSeq seq;
-	SEXP tag;
-	int offset;
-
-	tag = get_XSequence_tag(x);
-	offset = INTEGER(get_XSequence_offset(x))[0];
-	seq.elts = (const char *) (RAW(tag) + offset);
-	seq.nelt = INTEGER(get_XSequence_length(x))[0];
-	return seq;
-}
-
 /*
  * Creating a set of sequences (RoSeqs struct) from an XString object.
  */
 static RoSeqs new_RoSeqs_from_XString(int nelt, SEXP x)
 {
 	RoSeqs seqs;
-	RoSeq *elt1;
+	cachedCharSeq *elt1;
 	int i;
 
 	seqs = _alloc_RoSeqs(nelt);
 	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++)
-		*elt1 = _get_XString_asRoSeq(x);
+		*elt1 = cache_XRaw(x);
 	return seqs;
 }
 
@@ -194,7 +181,7 @@ SEXP _alloc_XString(const char *classname, int length)
 	return ans;
 }
 
-void _write_RoSeq_to_XString(SEXP x, int start, const RoSeq *seq, int encode)
+void _write_RoSeq_to_XString(SEXP x, int start, const cachedCharSeq *seq, int encode)
 {
 	int offset;
 	const ByteTrTable *enc_byte2code;

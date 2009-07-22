@@ -16,7 +16,7 @@ SEXP XString_xscat(SEXP args)
 	int nargs, ans_length, write_start, j;
 	SEXP arg, ans;
 	const char *ans_classname;
-	RoSeq seq;
+	cachedCharSeq cached_arg;
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
@@ -25,12 +25,12 @@ SEXP XString_xscat(SEXP args)
 	/* 1st pass: determine 'ans_classname' and 'ans_length' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
-		seq = _get_XString_asRoSeq(arg);
+		cached_arg = cache_XRaw(arg);
 		if (j == 0) {
-			ans_length = seq.nelt;
+			ans_length = cached_arg.length;
 			ans_classname = get_classname(arg);
 		} else {
-			ans_length += seq.nelt;
+			ans_length += cached_arg.length;
 		}
 	}
 	PROTECT(ans = _alloc_XString(ans_classname, ans_length));
@@ -39,9 +39,9 @@ SEXP XString_xscat(SEXP args)
 	write_start = 1;
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
-		seq = _get_XString_asRoSeq(arg);
-		_write_RoSeq_to_XString(ans, write_start, &seq, 0);
-		write_start += seq.nelt;
+		cached_arg = cache_XRaw(arg);
+		_write_RoSeq_to_XString(ans, write_start, &cached_arg, 0);
+		write_start += cached_arg.length;
 	}
 	UNPROTECT(1);
 	return ans;
@@ -60,7 +60,7 @@ SEXP XStringSet_xscat(SEXP args)
 	unsigned int ans_super_length;
 	SEXP arg, ans_ranges_start, ans_width, ans_super, ans_ranges, ans;
 	const char *ans_classname, *ans_xsbaseclassname;
-	RoSeq seq;
+	cachedCharSeq cached_arg_elt;
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
@@ -100,8 +100,8 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			seq = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
-			*width += seq.nelt;
+			cached_arg_elt = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
+			*width += cached_arg_elt.length;
 			ii[j]++;
 		}
 		ans_super_length += *width;
@@ -120,9 +120,9 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			seq = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
-			_write_RoSeq_to_XString(ans_super, write_start, &seq, 0);
-			write_start += seq.nelt;
+			cached_arg_elt = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
+			_write_RoSeq_to_XString(ans_super, write_start, &cached_arg_elt, 0);
+			write_start += cached_arg_elt.length;
 			ii[j]++;
 		}
 	}

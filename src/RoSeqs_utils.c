@@ -1,5 +1,5 @@
 /****************************************************************************
- *                     RoSeq/RoSeqs low-level utilities                     *
+ *                       RoSeqs low-level utilities                         *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -8,14 +8,14 @@
 
 static int debug = 0;
 
-SEXP debug_RoSeq_utils()
+SEXP debug_RoSeqs_utils()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'RoSeq_utils.c'\n",
+	Rprintf("Debug mode turned %s in 'RoSeqs_utils.c'\n",
 		debug ? "on" : "off");
 #else
-	Rprintf("Debug mode not available in 'RoSeq_utils.c'\n");
+	Rprintf("Debug mode not available in 'RoSeqs_utils.c'\n");
 #endif
 	return R_NilValue;
 }
@@ -24,7 +24,7 @@ RoSeqs _alloc_RoSeqs(int nelt)
 {
 	RoSeqs seqs;
 
-	seqs.elts = Salloc((long) nelt, RoSeq);
+	seqs.elts = Salloc((long) nelt, cachedCharSeq);
 	seqs.nelt = nelt;
 	return seqs;
 }
@@ -38,7 +38,7 @@ void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
 {
 	int i, s, w;
 	const int *s_p, *w_p;
-	RoSeq *seq;
+	cachedCharSeq *seq;
 
 	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
 		error("Biostrings internal error in _narrow_RoSeqs(): "
@@ -53,21 +53,23 @@ void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
 			error("Biostrings internal error in _narrow_RoSeqs():"
 			      "NAs in 'start' or 'width' are not supported");
 		s--; // 0-based start (offset)
-		if (s < 0 || w < 0 || s + w > seq->nelt)
+		if (s < 0 || w < 0 || s + w > seq->length)
 			error("Biostrings internal error in _narrow_RoSeqs():"
 			      "invalid narrowing");
-		seq->elts += s;
-		seq->nelt = w;
+		seq->seq += s;
+		seq->length = w;
 	}
 	return;
 }
 
 
 /*****************************************************************************
- * From a RoSeq struct to a character string.
+ * From a cachedCharSeq struct to a character string.
+ *
+ * TODO: Rename _new_CHARSXP_from_cachedCharSeq and move to the IRanges package.
  */
 
-SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
+SEXP _new_CHARSXP_from_RoSeq(const cachedCharSeq *seq, SEXP lkup)
 {
 	// IMPORTANT: We use user-controlled memory for this private memory
 	// pool so it is persistent between calls to .Call().
@@ -78,7 +80,7 @@ SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
 	int new_bufsize;
 	char *new_buf;
 
-	new_bufsize = seq->nelt + 1;
+	new_bufsize = seq->length + 1;
 	if (new_bufsize > bufsize) {
 		new_buf = (char *) realloc(buf, new_bufsize);
 		if (new_buf == NULL)
@@ -88,16 +90,16 @@ SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
 		bufsize = new_bufsize;
 	}
 	if (lkup == R_NilValue) {
-		IRanges_memcpy_to_i1i2(0, seq->nelt - 1,
-			buf, seq->nelt,
-			seq->elts, seq->nelt, sizeof(char));
+		IRanges_memcpy_to_i1i2(0, seq->length - 1,
+			buf, seq->length,
+			seq->seq, seq->length, sizeof(char));
 	} else {
-		IRanges_charcpy_to_i1i2_with_lkup(0, seq->nelt - 1,
-			buf, seq->nelt,
-			seq->elts, seq->nelt,
+		IRanges_charcpy_to_i1i2_with_lkup(0, seq->length - 1,
+			buf, seq->length,
+			seq->seq, seq->length,
 			INTEGER(lkup), LENGTH(lkup));
 	}
-	buf[seq->nelt] = 0;
+	buf[seq->length] = 0;
 	return mkChar(buf);
 }
 
@@ -109,7 +111,7 @@ SEXP _new_CHARSXP_from_RoSeq(const RoSeq *seq, SEXP lkup)
 RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 {
 	RoSeqs seqs;
-	RoSeq *elt1;
+	cachedCharSeq *elt1;
 	SEXP elt2;
 	int i;
 
@@ -121,8 +123,8 @@ RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 		elt2 = STRING_ELT(x, i);
 		if (elt2 == NA_STRING)
 			error("input sequence %d is NA", i+1);
-		elt1->elts = CHAR(elt2);
-		elt1->nelt = LENGTH(elt2);
+		elt1->seq = CHAR(elt2);
+		elt1->length = LENGTH(elt2);
 	}
 	return seqs;
 }
@@ -131,7 +133,7 @@ SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
 	SEXP ans;
 	int i;
-	const RoSeq *seq;
+	const cachedCharSeq *seq;
 
 	PROTECT(ans = NEW_CHARACTER(seqs->nelt));
 	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
@@ -149,26 +151,26 @@ SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
         SEXP tag, ans;
         int tag_length, i;
-        const RoSeq *seq;
+        const cachedCharSeq *seq;
         char *dest;
 
         tag_length = 0;
         for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
-                tag_length += seq->nelt;
+                tag_length += seq->length;
         PROTECT(tag = NEW_RAW(tag_length));
         dest = (char *) RAW(tag);
         for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
                 if (lkup == R_NilValue) {
-                        IRanges_memcpy_to_i1i2(0, seq->nelt - 1,
-                                dest, seq->nelt,
-                                seq->elts, seq->nelt, sizeof(char));
+                        IRanges_memcpy_to_i1i2(0, seq->length - 1,
+                                dest, seq->length,
+                                seq->seq, seq->length, sizeof(char));
                 } else {
-                        IRanges_charcpy_to_i1i2_with_lkup(0, seq->nelt - 1,
-                                dest, seq->nelt,
-                                seq->elts, seq->nelt,
+                        IRanges_charcpy_to_i1i2_with_lkup(0, seq->length - 1,
+                                dest, seq->length,
+                                seq->seq, seq->length,
                                 INTEGER(lkup), LENGTH(lkup));
                 }
-                dest += seq->nelt;
+                dest += seq->length;
         }
         PROTECT(ans = new_SequencePtr("RawPtr", tag));
         UNPROTECT(2);
@@ -219,7 +221,7 @@ SEXP new_RawPtr_from_STRSXP(SEXP x, SEXP start, SEXP width,
 RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae)
 {
 	RoSeqs seqs;
-	RoSeq *elt1;
+	cachedCharSeq *elt1;
 	CharAE *elt2;
 	int i;
 
@@ -228,8 +230,8 @@ RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae)
 	     i < char_aeae->nelt;
 	     i++, elt1++, elt2++)
 	{
-		elt1->elts = elt2->elts;
-		elt1->nelt = elt2->nelt;
+		elt1->seq = elt2->elts;
+		elt1->length = elt2->nelt;
 	}
 	return seqs;
 }
@@ -242,7 +244,7 @@ RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae)
 
 SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 {
-	const RoSeq *seq;
+	const cachedCharSeq *seq;
 	SEXP start, width, ans;
 	int *start_elt, *width_elt, *start_prev_elt, i;
 
@@ -258,12 +260,12 @@ SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 	width_elt = INTEGER(width);
 	if (seqs->nelt >= 1) {
 		*(start_elt++) = 1;
-		*(width_elt++) = seq->nelt;
+		*(width_elt++) = seq->length;
 	}
 	if (seqs->nelt >= 2)
 		for (i = 1, start_prev_elt = INTEGER(start); i < seqs->nelt; i++) {
-			*(start_elt++) = *(start_prev_elt++) + (seq++)->nelt;
-			*(width_elt++) = seq->nelt;
+			*(start_elt++) = *(start_prev_elt++) + (seq++)->length;
+			*(width_elt++) = seq->length;
 		}
 	PROTECT(ans = new_IRanges(classname, start, width, R_NilValue));
 #ifdef DEBUG_BIOSTRINGS
@@ -277,16 +279,18 @@ SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 
 
 /****************************************************************************
- * Writing a RoSeq object to a RawPtr object.
+ * Writing a cachedCharSeq object to a RawPtr object.
+ *
+ * TODO: Rename _write_cachedCharSeq_to_RawPtr and move to the IRanges package.
  */
 
-void _write_RoSeq_to_RawPtr(SEXP x, int offset, const RoSeq *seq,
+void _write_RoSeq_to_RawPtr(SEXP x, int offset, const cachedCharSeq *seq,
 		const ByteTrTable *byte2code)
 {
         char *dest;
 
         dest = (char *) RAW(get_SequencePtr_tag(x)) + offset;
-        _copy_seq(dest, seq->elts, seq->nelt, byte2code);
+        _copy_seq(dest, seq->seq, seq->length, byte2code);
         return;
 }
 
@@ -300,28 +304,28 @@ void _write_RoSeq_to_RawPtr(SEXP x, int offset, const RoSeq *seq,
  * multithreading context?
  */
 
-static int cmp_RoSeq(const void *p1, const void *p2)
+static int cmp_cachedCharSeq(const void *p1, const void *p2)
 {
-	const RoSeq *seq1, *seq2;
+	const cachedCharSeq *seq1, *seq2;
 	int min_nelt, ret;
 
-	seq1 = (const RoSeq *) p1;
-	seq2 = (const RoSeq *) p2;
-	min_nelt = seq1->nelt <= seq2->nelt ? seq1->nelt : seq2->nelt;
-	ret = memcmp(seq1->elts, seq2->elts, min_nelt);
-	return ret != 0 ? ret : seq1->nelt - seq2->nelt;
+	seq1 = (const cachedCharSeq *) p1;
+	seq2 = (const cachedCharSeq *) p2;
+	min_nelt = seq1->length <= seq2->length ? seq1->length : seq2->length;
+	ret = memcmp(seq1->seq, seq2->seq, min_nelt);
+	return ret != 0 ? ret : seq1->length - seq2->length;
 }
 
-static const RoSeq *base_seq;
+static const cachedCharSeq *base_seq;
 static const int *base_order;
 
-static int cmp_RoSeq_indices_for_ordering(const void *p1, const void *p2)
+static int cmp_cachedCharSeq_indices_for_ordering(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
 	i1 = *((const int *) p1);
 	i2 = *((const int *) p2);
-	ret = cmp_RoSeq(base_seq + i1, base_seq + i2);
+	ret = cmp_cachedCharSeq(base_seq + i1, base_seq + i2);
 	// How qsort() will break ties is undefined (the Quicksort algo is
 	// not "stable"). By returning i1 - i2 in case of a tie, we ensure that
 	// the _get_RoSeqs_order() function below is "stable" and returns
@@ -330,9 +334,9 @@ static int cmp_RoSeq_indices_for_ordering(const void *p1, const void *p2)
 	return ret != 0 ? ret : i1 - i2;
 }
 
-static int cmp_RoSeq_indices_for_matching(const void *key, const void *p)
+static int cmp_cachedCharSeq_indices_for_matching(const void *key, const void *p)
 {
-	return cmp_RoSeq(key, base_seq + base_order[*((const int *) p)]);
+	return cmp_cachedCharSeq(key, base_seq + base_order[*((const int *) p)]);
 }
 
 int _get_RoSeqs_is_unsorted(const RoSeqs *seqs, int strictly)
@@ -342,7 +346,7 @@ int _get_RoSeqs_is_unsorted(const RoSeqs *seqs, int strictly)
 	ans = 0;
 	if (strictly) {
 		for (i1 = 0, i2 = 1; i2 < seqs->nelt; i1++, i2++) {
-			cmp = cmp_RoSeq(seqs->elts + i1, seqs->elts + i2);
+			cmp = cmp_cachedCharSeq(seqs->elts + i1, seqs->elts + i2);
 			if (cmp >= 0) {
 				ans = 1;
 				break;
@@ -350,7 +354,7 @@ int _get_RoSeqs_is_unsorted(const RoSeqs *seqs, int strictly)
 		}
 	} else {
 		for (i1 = 0, i2 = 1; i2 < seqs->nelt; i1++, i2++) {
-			cmp = cmp_RoSeq(seqs->elts + i1, seqs->elts + i2);
+			cmp = cmp_cachedCharSeq(seqs->elts + i1, seqs->elts + i2);
 			if (cmp > 0) {
 				ans = 1;
 				break;
@@ -374,7 +378,7 @@ void _get_RoSeqs_order(const RoSeqs *seqs, int *order, int base1)
 			*ord = i + 1; // 1-based indices
 	}
 	if (_get_RoSeqs_is_unsorted(seqs, 0))
-		qsort(order, seqs->nelt, sizeof(int), cmp_RoSeq_indices_for_ordering);
+		qsort(order, seqs->nelt, sizeof(int), cmp_cachedCharSeq_indices_for_ordering);
 	return;
 }
 
@@ -387,7 +391,7 @@ void _get_RoSeqs_rank(const RoSeqs *seqs, const int *order, int *rank)
 	rank[*order] = 1;
 	for (i = 2, ord1 = (int *) order, ord2 = (int *) (order+1); i <= seqs->nelt;
 	     i++, ord1++, ord2++) {
-		if (cmp_RoSeq(seqs->elts + *ord1, seqs->elts + *ord2) == 0) {
+		if (cmp_cachedCharSeq(seqs->elts + *ord1, seqs->elts + *ord2) == 0) {
 			rank[*ord2] = rank[*ord1];
 		} else {
 			rank[*ord2] = i;
@@ -411,7 +415,7 @@ void _get_RoSeqs_duplicated(const RoSeqs *seqs, const int *order, int *duplicate
 	for (i = 2, ord1 = (int *) order, ord2 = (int *) (order+1); i <= seqs->nelt;
 	     i++, ord1++, ord2++)
 		duplicated[*ord2] =
-			cmp_RoSeq(seqs->elts + *ord1, seqs->elts + *ord2) == 0;
+			cmp_cachedCharSeq(seqs->elts + *ord1, seqs->elts + *ord2) == 0;
 	return;
 }
 
@@ -440,13 +444,13 @@ void _get_RoSeqs_match(const RoSeqs *seqs, const RoSeqs *set, int nomatch,
 		curr_seq = (void *) (seqs->elts + seqs_order[i]);
 		curr_found =
 			(int *) bsearch(curr_seq, curr_found, n, sizeof(int),
-					        cmp_RoSeq_indices_for_matching);
+					        cmp_cachedCharSeq_indices_for_matching);
 		if (curr_found == NULL) {
 			match_pos[seqs_order[i]] = nomatch;
 			curr_found = prev_found;
 		} else {
 			while ((*curr_found > 0) &&
-				   (cmp_RoSeq(curr_seq,
+				   (cmp_cachedCharSeq(curr_seq,
 						      set->elts + set_order[*curr_found - 1]) == 0))
 				curr_found--;
 			match_pos[seqs_order[i]] = set_order[*curr_found] + 1;

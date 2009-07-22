@@ -72,7 +72,7 @@ cachedXStringSet _cache_XStringSet(SEXP x)
 	// xsbaseclassname e.g. if 'super' belongs to a class that extends
 	// DNAString (there is no such thing yet).
 	cached_x.xsbaseclassname = get_classname(super);
-	cached_x.super = _get_XString_asRoSeq(super);
+	cached_x.super = cache_XRaw(super);
 
 	ranges = _get_XStringSet_ranges(x);
 	cached_x.ranges = cache_IRanges(ranges);
@@ -87,14 +87,14 @@ int _get_cachedXStringSet_length(const cachedXStringSet *cached_x)
 	return get_cachedIRanges_length(&(cached_x->ranges));
 }
 
-RoSeq _get_cachedXStringSet_elt(const cachedXStringSet *cached_x, int i)
+cachedCharSeq _get_cachedXStringSet_elt(const cachedXStringSet *cached_x, int i)
 {
-	RoSeq seq;
+	cachedCharSeq charseq;
 
-	seq.elts = cached_x->super.elts +
-		   get_cachedIRanges_elt_start(&(cached_x->ranges), i) - 1;
-	seq.nelt = get_cachedIRanges_elt_width(&(cached_x->ranges), i);
-	return seq;
+	charseq.seq = cached_x->super.seq +
+		      get_cachedIRanges_elt_start(&(cached_x->ranges), i) - 1;
+	charseq.length = get_cachedIRanges_elt_width(&(cached_x->ranges), i);
+	return charseq;
 }
 
 
@@ -109,7 +109,7 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 {
 	RoSeqs seqs;
 	cachedXStringSet cached_x;
-	RoSeq *elt1;
+	cachedCharSeq *elt1;
 	int i;
 
 	if (nelt > _get_XStringSet_length(x))
@@ -229,16 +229,16 @@ SEXP XStringSet_unlist(SEXP x)
 	SEXP ans;
 	int x_length, ans_length, write_start, i;
 	cachedXStringSet cached_x;
-	RoSeq xx;
+	cachedCharSeq xx;
 
-	x_length = _get_XStringSet_length(x);
 	cached_x = _cache_XStringSet(x);
+	x_length = _get_cachedXStringSet_length(&cached_x);
 
 	/* 1st pass: determine 'ans_length' */
 	ans_length = 0;
 	for (i = 0; i < x_length; i++) {
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
-		ans_length += xx.nelt;
+		ans_length += xx.length;
 	}
 	PROTECT(ans = _alloc_XString(_get_XStringSet_xsbaseclassname(x), ans_length));
 
@@ -247,7 +247,7 @@ SEXP XStringSet_unlist(SEXP x)
 	for (i = 0; i < x_length; i++) {
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		_write_RoSeq_to_XString(ans, write_start, &xx, 0);
-		write_start += xx.nelt;
+		write_start += xx.length;
 	}
 	UNPROTECT(1);
 	return ans;
@@ -261,10 +261,10 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 	SEXP ans;
 	int x_length, i;
 	cachedXStringSet cached_x;
-	RoSeq xx;
+	cachedCharSeq xx;
 
-	x_length = _get_XStringSet_length(x);
 	cached_x = _cache_XStringSet(x);
+	x_length = _get_cachedXStringSet_length(&cached_x);
 	PROTECT(ans = NEW_CHARACTER(x_length));
 	for (i = 0; i < x_length; i++) {
 		xx = _get_cachedXStringSet_elt(&cached_x, i);

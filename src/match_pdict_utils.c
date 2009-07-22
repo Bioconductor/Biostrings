@@ -391,8 +391,8 @@ static void collect_keys(int key0, SEXP low2high, IntAE *keys)
 	return;
 }
 
-static int nmismatch_in_HT(const RoSeq *H, const RoSeq *T,
-		const RoSeq *S, int Hshift, int Tshift, int max_mm)
+static int nmismatch_in_HT(const cachedCharSeq *H, const cachedCharSeq *T,
+		const cachedCharSeq *S, int Hshift, int Tshift, int max_mm)
 {
 	int nmismatch;
 
@@ -404,13 +404,13 @@ static int nmismatch_in_HT(const RoSeq *H, const RoSeq *T,
 	return nmismatch;
 }
 
-static void match_HT(const RoSeq *H, const RoSeq *T,
-		const RoSeq *S, int tb_end, int max_mm,
+static void match_HT(const cachedCharSeq *H, const cachedCharSeq *T,
+		const cachedCharSeq *S, int tb_end, int max_mm,
 		MatchPDictBuf *matchpdict_buf, int key)
 {
 	int HTdeltashift, nmismatch;
 
-	HTdeltashift = H->nelt + matchpdict_buf->tb_matches.tb_width;
+	HTdeltashift = H->length + matchpdict_buf->tb_matches.tb_width;
 	nmismatch = nmismatch_in_HT(H, T,
 			S, tb_end - HTdeltashift, tb_end, max_mm);
 	if (nmismatch <= max_mm)
@@ -419,12 +419,12 @@ static void match_HT(const RoSeq *H, const RoSeq *T,
 }
 
 static void match_headtail_for_loc(const HeadTail *headtail,
-		const RoSeq *S, int tb_end, int max_mm,
+		const cachedCharSeq *S, int tb_end, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int i;
 	const int *key;
-	const RoSeq *H, *T;
+	const cachedCharSeq *H, *T;
 
 	for (i = 0, key = headtail->keys_buf.elts;
 	     i < headtail->keys_buf.nelt;
@@ -438,10 +438,10 @@ static void match_headtail_for_loc(const HeadTail *headtail,
 }
 
 static void match_headtail_for_key(const HeadTail *headtail, int key,
-		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
-	const RoSeq *H, *T;
+	const cachedCharSeq *H, *T;
 	int j;
 	const int *tb_end;
 
@@ -457,7 +457,7 @@ static void match_headtail_for_key(const HeadTail *headtail, int key,
 }
 
 static void match_headtail_by_loc(const HeadTail *headtail,
-		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int j;
@@ -475,7 +475,7 @@ static void match_headtail_by_loc(const HeadTail *headtail,
 }
 
 static void match_headtail_by_key(HeadTail *headtail,
-		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int i;
@@ -545,7 +545,7 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	    key, max_Hwidth, max_Twidth, max_HTwidth, HTwidth, keys_buflength;
 	SEXP low2high, dups, base_codes;
 	RoSeqs head, tail;
-	RoSeq *H, *T;
+	cachedCharSeq *H, *T;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	low2high = _get_PreprocessedTB_low2high(pptb);
@@ -555,24 +555,24 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	if (pdict_head == R_NilValue) {
 		head = _alloc_RoSeqs(tb_length);
 		for (key = 0, H = head.elts; key < tb_length; key++, H++)
-			H->nelt = 0;
+			H->length = 0;
 	} else {
 		head = _new_RoSeqs_from_XStringSet(tb_length, pdict_head);
 	}
 	if (pdict_tail == R_NilValue) {
 		tail = _alloc_RoSeqs(tb_length);
 		for (key = 0, T = tail.elts; key < tb_length; key++, T++)
-			T->nelt = 0;
+			T->length = 0;
 	} else {
 		tail = _new_RoSeqs_from_XStringSet(tb_length, pdict_tail);
 	}
 	max_Hwidth = max_Twidth = max_HTwidth = keys_buflength = 0;
 	for (key = 0, H = head.elts, T = tail.elts; key < tb_length; key++, H++, T++) {
-		if (H->nelt > max_Hwidth)
-			max_Hwidth = H->nelt;
-		if (T->nelt > max_Twidth)
-			max_Twidth = T->nelt;
-		HTwidth = H->nelt + T->nelt;
+		if (H->length > max_Hwidth)
+			max_Hwidth = H->length;
+		if (T->length > max_Twidth)
+			max_Twidth = T->length;
+		HTwidth = H->length + T->length;
 		if (HTwidth > max_HTwidth)
 			max_HTwidth = HTwidth;
 		dups = VECTOR_ELT(low2high, key);
@@ -638,14 +638,14 @@ static void init_nmis_bmbuf(BitMatrix *bmbuf, int nrow)
 	return;
 }
 
-static void preprocess_H(const RoSeq *H, ByteTrTable byte2offset,
+static void preprocess_H(const cachedCharSeq *H, ByteTrTable byte2offset,
 		BitMatrix *bmbuf0, int i)
 {
 	int j, offset;
 	const char *c;
 	BitMatrix *bmbuf;
 
-	for (j = 0, c = H->elts + H->nelt - 1; j < H->nelt; j++, c--) {
+	for (j = 0, c = H->seq + H->length - 1; j < H->length; j++, c--) {
 		offset = byte2offset[(unsigned char) *c];
 		if (offset == NA_INTEGER)
 			error("preprocess_H(): don't know how to handle "
@@ -656,20 +656,20 @@ static void preprocess_H(const RoSeq *H, ByteTrTable byte2offset,
 	}
 	for (offset = 0; offset < 4; offset++) {
 		bmbuf = bmbuf0 + offset;
-		for (j = H->nelt; j < bmbuf->ncol; j++)
+		for (j = H->length; j < bmbuf->ncol; j++)
 			_BitMatrix_set_bit(bmbuf, i, j, 0);
 	}
 	return;
 }
 
-static void preprocess_T(const RoSeq *T, ByteTrTable byte2offset,
+static void preprocess_T(const cachedCharSeq *T, ByteTrTable byte2offset,
 		BitMatrix *bmbuf0, int i)
 {
 	int j, offset;
 	const char *c;
 	BitMatrix *bmbuf;
 
-	for (j = 0, c = T->elts; j < T->nelt; j++, c++) {
+	for (j = 0, c = T->seq; j < T->length; j++, c++) {
 		offset = byte2offset[(unsigned char) *c];
 		if (offset == NA_INTEGER)
 			error("preprocess_T(): don't know how to handle "
@@ -680,7 +680,7 @@ static void preprocess_T(const RoSeq *T, ByteTrTable byte2offset,
 	}
 	for (offset = 0; offset < 4; offset++) {
 		bmbuf = bmbuf0 + offset;
-		for (j = T->nelt; j < bmbuf->ncol; j++)
+		for (j = T->length; j < bmbuf->ncol; j++)
 			_BitMatrix_set_bit(bmbuf, i, j, 0);
 	}
 	return;
@@ -709,7 +709,7 @@ static void preprocess_tail(const RoSeqs *tail, const IntAE *keys,
 }
 
 static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
-		const RoSeq *S, int tb_end, int max_mm)
+		const cachedCharSeq *S, int tb_end, int max_mm)
 {
 	BitMatrix *nmis_bmbuf;
 	const BitMatrix *head_bmbuf, *tail_bmbuf;
@@ -727,7 +727,7 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// 'j2' should be a safe location in 'S' because we call
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close to 'S' boundaries.
-		s = S->elts[j2];
+		s = S->seq[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
 		if (offset == NA_INTEGER) {
 			_BitMatrix_Rrot1(nmis_bmbuf);
@@ -745,7 +745,7 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// 'j2' should be a safe location in 'S' because we call
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close from 'S' boundaries.
-		s = S->elts[j2];
+		s = S->seq[j2];
 		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
 		if (offset == NA_INTEGER) {
 			_BitMatrix_Rrot1(nmis_bmbuf);
@@ -780,10 +780,10 @@ static void report_matches_for_loc(HeadTail *headtail, int tb_end,
 			//	headtail->keys_buf.elts[i], tb_end);
 			int key, start, width;
 			key = headtail->keys_buf.elts[i];
-			width = headtail->head.elts[key].nelt
+			width = headtail->head.elts[key].length
 			      + matchpdict_buf->tb_matches.tb_width
-			      + headtail->tail.elts[key].nelt;
-			start = tb_end + headtail->tail.elts[key].nelt - width + 1;
+			      + headtail->tail.elts[key].length;
+			start = tb_end + headtail->tail.elts[key].length - width + 1;
 			_MatchPDictBuf_report_match2(matchpdict_buf, key, start, width);
 		}
 		*bitword >>= 1;
@@ -824,7 +824,7 @@ static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_
 */
 
 static void match_ppheadtail0(HeadTail *headtail,
-		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	BitMatrix *tmp_match_bmbuf;
@@ -846,7 +846,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 
 	min_safe_tb_end = headtail->max_Hwidth
 			+ matchpdict_buf->tb_matches.tb_width;
-	max_safe_tb_end = S->nelt - headtail->max_Twidth;
+	max_safe_tb_end = S->length - headtail->max_Twidth;
 	for (j = 0, tb_end = tb_end_buf->elts;
 	     j < tb_end_buf->nelt;
 	     j++, tb_end++)
@@ -881,7 +881,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 }
 
 static void match_ppheadtail(HeadTail *headtail,
-		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nkey0, nkey1, nkey2, i;
@@ -916,7 +916,7 @@ static void match_ppheadtail(HeadTail *headtail,
 
 /*
 static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
-		const RoSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	clock_t time0;
@@ -949,7 +949,7 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 
 void _match_pdict_flanks_at(int key0, SEXP low2high,
 		HeadTail *headtail,
-		const RoSeq *S, int tb_end, int max_mm, int fixedP,
+		const cachedCharSeq *S, int tb_end, int max_mm, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
 /*
@@ -970,7 +970,7 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
    _match_pdict_all_flanks() just propagates the matches to the duplicates */
 void _match_pdict_all_flanks(SEXP low2high,
 		HeadTail *headtail,
-		const RoSeq *S, int max_mm,
+		const cachedCharSeq *S, int max_mm,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const IntAE *tb_matching_keys, *tb_end_buf;

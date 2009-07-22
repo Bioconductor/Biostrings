@@ -6,13 +6,13 @@
 
 static void test_match_pattern_indels(const char *p, const char *s, int max_mm, const char *expected_matches)
 {
-	RoSeq P, S;
+	cachedCharSeq P, S;
 
 	Rprintf("P=%s S=%s max_mm=%d expected_matches=%s\n", p, s, max_mm, expected_matches);
-	P.elts = p;
-	P.nelt = strlen(P.elts);
-	S.elts = s;
-	S.nelt = strlen(S.elts);
+	P.seq = p;
+	P.length = strlen(P.seq);
+	S.seq = s;
+	S.length = strlen(S.seq);
 	_match_pattern_indels(&P, &S, max_mm, 1, 1);
 	return;
 }
@@ -39,7 +39,8 @@ SEXP debug_match_pattern_indels()
 }
 
 #ifdef DEBUG_BIOSTRINGS
-static void print_match(int start, int width, const RoSeq *P, const RoSeq *S)
+static void print_match(int start, int width, const cachedCharSeq *P,
+		const cachedCharSeq *S)
 {
 	int end, j0, nedit0, width0;
 	char mbuf[1001];
@@ -48,8 +49,8 @@ static void print_match(int start, int width, const RoSeq *P, const RoSeq *S)
 		error("sizeof(mbuf) too small");
 	j0 = start - 1;
 	end = j0 + width;
-	snprintf(mbuf, width + 1, "%s", S->elts + j0);
-	nedit0 = _nedit_for_Ploffset(P, S, j0, P->nelt, 1, &width0);
+	snprintf(mbuf, width + 1, "%s", S->seq + j0);
+	nedit0 = _nedit_for_Ploffset(P, S, j0, P->length, 1, &width0);
 	Rprintf("start=%d end=%d (%s) nedit0=%d\n", start, end, mbuf, nedit0);
 	return;
 }
@@ -92,14 +93,14 @@ static void report_provisory_match(int start, int width, int nedit)
 
 static ByteTrTable byte2offset;
 
-void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
+void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
 		int max_mm, int fixedP, int fixedS)
 {
 	int i0, j0, max_mm1, nedit1, width1;
 	char c0;
-	RoSeq P1;
+	cachedCharSeq P1;
 
-	if (P->nelt <= 0)
+	if (P->length <= 0)
 		error("empty pattern");
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	if (!fixedP || !fixedS)
@@ -110,16 +111,16 @@ void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
 	_init_byte2offset_with_RoSeq(byte2offset, P, 0);
 	provisory_match_nedit = -1; // means no provisory match yet
 	j0 = 0;
-	while (j0 < S->nelt) {
+	while (j0 < S->length) {
 		while (1) {
-			c0 = S->elts[j0];
+			c0 = S->seq[j0];
 			i0 = byte2offset[(unsigned char) c0];
 			if (i0 != NA_INTEGER) break;
 			j0++;
-			if (j0 >= S->nelt) goto done;
+			if (j0 >= S->length) goto done;
 		}
-		P1.elts = P->elts + i0 + 1;
-		P1.nelt = P->nelt - i0 - 1;
+		P1.seq = P->seq + i0 + 1;
+		P1.length = P->length - i0 - 1;
 		max_mm1 = max_mm - i0;
 /*
 #ifdef DEBUG_BIOSTRINGS
@@ -132,7 +133,7 @@ void _match_pattern_indels(const RoSeq *P, const RoSeq *S,
 		if (max_mm1 >= 0) {
 			if (max_mm1 == 0) {
 				nedit1 = _selected_nmismatch_at_Pshift_fun(&P1, S, j0 + 1, max_mm1);
-				width1 = P1.nelt;
+				width1 = P1.length;
 			} else {
 				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1, max_mm1, 1, &width1);
 			}

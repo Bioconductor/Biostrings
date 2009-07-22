@@ -91,21 +91,21 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		SEXP if_not_extending, SEXP verbose)
 {
 	const char *x_classname;
-	RoSeq x_seq;
+	cachedCharSeq X;
 	SEXP tag, letter_elt, ans;
 	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
 	const int *at_p;
 
 	x_classname = get_classname(x);
-	x_seq = _get_XString_asRoSeq(x);
+	X = cache_XRaw(x);
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
 		_init_ByteTrTable_with_lkup(byte2code, lkup);
 	set_notextend_action(CHAR(STRING_ELT(if_not_extending, 0)));
 
-	PROTECT(tag = NEW_RAW(x_seq.nelt));
-	memcpy((char *) RAW(tag), x_seq.elts, x_seq.nelt);
+	PROTECT(tag = NEW_RAW(X.length));
+	memcpy((char *) RAW(tag), X.seq, X.length);
 	skip_or_merge_count = letter_ncharsum = 0;
 	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {

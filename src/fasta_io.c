@@ -98,9 +98,9 @@ static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
 
 static IntAE desc_lengths_buf, seq_lengths_buf;
 
-static void add_desc_LENGTHONLY(int recno, const RoSeq *dataline)
+static void add_desc_LENGTHONLY(int recno, const cachedCharSeq *dataline)
 {
-	IntAE_insert_at(&desc_lengths_buf, desc_lengths_buf.nelt, dataline->nelt);
+	IntAE_insert_at(&desc_lengths_buf, desc_lengths_buf.nelt, dataline->length);
 	return;
 }
 
@@ -110,9 +110,9 @@ static void add_empty_seq_LENGTHONLY(int recno)
 	return;
 }
 
-static void append_to_last_seq_LENGTHONLY(const RoSeq *dataline)
+static void append_to_last_seq_LENGTHONLY(const cachedCharSeq *dataline)
 {
-	seq_lengths_buf.elts[seq_lengths_buf.nelt - 1] += dataline->nelt;
+	seq_lengths_buf.elts[seq_lengths_buf.nelt - 1] += dataline->length;
 	return;
 }
 
@@ -126,10 +126,10 @@ static void append_to_last_seq_LENGTHONLY(const RoSeq *dataline)
 
 static CharAEAE descs_buf, seqs_buf;
 
-static void add_desc_CHARAEAE(int recno, const RoSeq *dataline)
+static void add_desc_CHARAEAE(int recno, const cachedCharSeq *dataline)
 {
-	// This works only because dataline->elts is nul-terminated!
-	append_string_to_CharAEAE(&descs_buf, dataline->elts);
+	// This works only because dataline->seq is nul-terminated!
+	append_string_to_CharAEAE(&descs_buf, dataline->seq);
 	return;
 }
 
@@ -139,10 +139,10 @@ static void add_empty_seq_CHARAEAE(int recno)
 	return;
 }
 
-static void append_to_last_seq_CHARAEAE(const RoSeq *dataline)
+static void append_to_last_seq_CHARAEAE(const cachedCharSeq *dataline)
 {
-	// This works only because dataline->elts is nul-terminated!
-	append_string_to_CharAE(seqs_buf.elts + seqs_buf.nelt - 1, dataline->elts);
+	// This works only because dataline->seq is nul-terminated!
+	append_string_to_CharAE(seqs_buf.elts + seqs_buf.nelt - 1, dataline->seq);
 	return;
 }
 
@@ -153,10 +153,10 @@ static void append_to_last_seq_CHARAEAE(const RoSeq *dataline)
 
 static SEXP ans_names;
 
-static void add_desc1(int recno, const RoSeq *dataline)
+static void add_desc1(int recno, const cachedCharSeq *dataline)
 {
-	// This works only because dataline->elts is nul-terminated!
-	SET_STRING_ELT(ans_names, recno, mkChar(dataline->elts));
+	// This works only because dataline->seq is nul-terminated!
+	SET_STRING_ELT(ans_names, recno, mkChar(dataline->seq));
 	return;
 }
 
@@ -171,36 +171,36 @@ static void add_desc1(int recno, const RoSeq *dataline)
  * append_to_last_seq().
  */
 static int parse_FASTA_file(FILE *stream,
-		void (*add_desc)(int recno, const RoSeq *dataline),
+		void (*add_desc)(int recno, const cachedCharSeq *dataline),
 		void (*add_empty_seq)(int recno),
-		void (*append_to_last_seq)(const RoSeq *dataline))
+		void (*append_to_last_seq)(const cachedCharSeq *dataline))
 {
 	int FASTA_comment_markup_length, FASTA_desc_markup_length,
 	    lineno, recno;
 	char linebuf[LINEBUF_SIZE];
-	RoSeq dataline;
+	cachedCharSeq dataline;
 
 	FASTA_comment_markup_length = strlen(FASTA_comment_markup);
 	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
 	lineno = recno = 0;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
-		dataline.nelt = rtrim(linebuf);
-		// dataline.nelt > LINEBUF_SIZE - 1 should never happen
-		if (dataline.nelt >= LINEBUF_SIZE - 1) {
+		dataline.length = rtrim(linebuf);
+		// dataline.length > LINEBUF_SIZE - 1 should never happen
+		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long", lineno);
 			return -1;
 		}
-		if (dataline.nelt == 0)
+		if (dataline.length == 0)
 			continue; // we ignore empty lines
 		if (strncmp(linebuf, FASTA_comment_markup, FASTA_comment_markup_length) == 0)
 			continue; // we ignore comment lines
-		dataline.elts = linebuf;
+		dataline.seq = linebuf;
 		if (strncmp(linebuf, FASTA_desc_markup, FASTA_desc_markup_length) == 0) {
 			if (add_desc != NULL) {
-				dataline.elts += FASTA_desc_markup_length;
-				dataline.nelt -= FASTA_desc_markup_length;
+				dataline.seq += FASTA_desc_markup_length;
+				dataline.length -= FASTA_desc_markup_length;
 				add_desc(recno, &dataline);
 			}
 			if (add_empty_seq != NULL)
@@ -227,7 +227,7 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 {
 	const char *path;
 	FILE *stream;
-	void (*add_desc)(int recno, const RoSeq *dataline);
+	void (*add_desc)(int recno, const cachedCharSeq *dataline);
 	RoSeqs descs;
 	SEXP ans, ans_names;
 
@@ -436,13 +436,13 @@ static const char *FASTQ_line1_markup = "@", *FASTQ_line3_markup = "+";
 
 static int FASTQ_width;
 
-static void add_seq_WIDTHONLY(int recno, const RoSeq *dataline)
+static void add_seq_WIDTHONLY(int recno, const cachedCharSeq *dataline)
 {
 	if (recno == 0) {
-		FASTQ_width = dataline->nelt;
+		FASTQ_width = dataline->length;
 		return;
 	}
-	if (FASTQ_width == NA_INTEGER || dataline->nelt == FASTQ_width)
+	if (FASTQ_width == NA_INTEGER || dataline->length == FASTQ_width)
 		return;
 	FASTQ_width = NA_INTEGER;
 	return;
@@ -450,7 +450,7 @@ static void add_seq_WIDTHONLY(int recno, const RoSeq *dataline)
 
 static SEXP FASTQ_seqbuf, FASTQ_seqbuf_xdata, FASTQ_qualbuf, FASTQ_qualbuf_xdata;
 
-static void append_seq_to_FASTQ_seqbuf(int recno, const RoSeq *dataline)
+static void append_seq_to_FASTQ_seqbuf(int recno, const cachedCharSeq *dataline)
 {
 	const ByteTrTable *byte2code;
 
@@ -459,7 +459,7 @@ static void append_seq_to_FASTQ_seqbuf(int recno, const RoSeq *dataline)
 	return;
 }
 
-static void append_qual_to_FASTQ_qualbuf(int recno, const RoSeq *dataline)
+static void append_qual_to_FASTQ_qualbuf(int recno, const cachedCharSeq *dataline)
 {
 	_write_RoSeq_to_RawPtr(FASTQ_qualbuf_xdata, recno * FASTQ_width, dataline, NULL);
 	return;
@@ -474,31 +474,31 @@ static void append_qual_to_FASTQ_qualbuf(int recno, const RoSeq *dataline)
  * append_to_last_seq().
  */
 static int parse_FASTQ_file(FILE *stream,
-		void (*add_seqid)(int recno, const RoSeq *dataline),
-		void (*add_seq)(int recno, const RoSeq *dataline),
-		void (*add_qualid)(int recno, const RoSeq *dataline),
-		void (*add_qual)(int recno, const RoSeq *dataline))
+		void (*add_seqid)(int recno, const cachedCharSeq *dataline),
+		void (*add_seq)(int recno, const cachedCharSeq *dataline),
+		void (*add_qualid)(int recno, const cachedCharSeq *dataline),
+		void (*add_qual)(int recno, const cachedCharSeq *dataline))
 {
 	int FASTQ_line1_markup_length, FASTQ_line3_markup_length,
 	    lineno, recno, lineinrecno;
 	char linebuf[LINEBUF_SIZE];
-	RoSeq dataline;
+	cachedCharSeq dataline;
 
 	FASTQ_line1_markup_length = strlen(FASTQ_line1_markup);
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
 	lineno = recno = lineinrecno = 0;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
-		dataline.nelt = rtrim(linebuf);
-		// dataline.nelt > LINEBUF_SIZE - 1 should never happen
-		if (dataline.nelt >= LINEBUF_SIZE - 1) {
+		dataline.length = rtrim(linebuf);
+		// dataline.length > LINEBUF_SIZE - 1 should never happen
+		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long", lineno);
 			return -1;
 		}
-		if (dataline.nelt == 0)
+		if (dataline.length == 0)
 			continue; // we ignore empty lines
-		dataline.elts = linebuf;
+		dataline.seq = linebuf;
 		lineinrecno++;
 		if (lineinrecno > 4)
 			lineinrecno = 1;
@@ -511,8 +511,8 @@ static int parse_FASTQ_file(FILE *stream,
 				return -1;
 			}
 			if (add_seqid != NULL) {
-				dataline.elts += FASTQ_line1_markup_length;
-				dataline.nelt -= FASTQ_line1_markup_length;
+				dataline.seq += FASTQ_line1_markup_length;
+				dataline.length -= FASTQ_line1_markup_length;
 				add_seqid(recno, &dataline);
 			}
 		    break;
@@ -528,8 +528,8 @@ static int parse_FASTQ_file(FILE *stream,
 				return -1;
 			}
 			if (add_qualid != NULL) {
-				dataline.elts += FASTQ_line3_markup_length;
-				dataline.nelt -= FASTQ_line3_markup_length;
+				dataline.seq += FASTQ_line3_markup_length;
+				dataline.length -= FASTQ_line3_markup_length;
 				add_qualid(recno, &dataline);
 			}
 		    break;

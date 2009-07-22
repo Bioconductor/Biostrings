@@ -59,11 +59,11 @@
 
         SEXP print_XString_bytes(SEXP xstring)
         {
-            RoSeq x;
+            cachedCharSeq x;
             int i;
             const char *x_char;
 
-            x = get_XString_asRoSeq(xstring);
+            x = cache_XRaw(xstring);
             for (i = 0, x_char = x.elts; i < x.nelt; i++, x_char++)
                 Rprintf("%x ", *x_char);
             Rprintf("\n");
@@ -97,8 +97,8 @@
 
 
 /*
- * RoSeq/RoSeqs low-level utilities.
- * (see RoSeq_utils.c)
+ * RoSeqs low-level utilities.
+ * (see RoSeqs_utils.c)
  */
 
 SEXP new_STRSXP_from_RoSeqs(
@@ -126,8 +126,6 @@ char RNAencode(char c);
 
 char RNAdecode(char code);
 
-RoSeq get_XString_asRoSeq(SEXP x);
-
 const char *get_XStringSet_xsbaseclassname(SEXP x);
 
 int get_XStringSet_length(SEXP x);
@@ -136,7 +134,7 @@ cachedXStringSet cache_XStringSet(SEXP x);
 
 int get_cachedXStringSet_length(const cachedXStringSet *cached_x);
 
-RoSeq get_cachedXStringSet_elt(
+cachedCharSeq get_cachedXStringSet_elt(
 	const cachedXStringSet *cached_x,
 	int i
 );

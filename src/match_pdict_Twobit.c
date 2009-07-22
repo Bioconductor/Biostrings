@@ -43,7 +43,7 @@ static void init_twobit_sign2pos(SEXP twobit_sign2pos, int val0)
 }
 
 static int pp_pattern(SEXP twobit_sign2pos, TwobitEncodingBuffer *teb,
-		const RoSeq *pattern, int poffset)
+		const cachedCharSeq *pattern, int poffset)
 {
 	int twobit_sign, *pos0;
 
@@ -120,7 +120,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset, twobit_len;
 	cachedXStringSet cached_tb;
-	RoSeq pattern;
+	cachedCharSeq pattern;
 	TwobitEncodingBuffer teb;
 	SEXP ans, twobit_sign2pos;
 
@@ -134,11 +134,11 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 		 && INTEGER(pp_exclude)[poffset] != NA_INTEGER)
 			continue;
 		pattern = _get_cachedXStringSet_elt(&cached_tb, poffset);
-		if (pattern.nelt == 0)
+		if (pattern.length == 0)
 			error("empty trusted region for pattern %d",
 			      poffset + 1);
 		if (tb_width == -1) {
-			tb_width = pattern.nelt;
+			tb_width = pattern.length;
 			if (tb_width > 14)
 				error("the width of the Trusted Band must "
 				      "be <= 14 when 'type=\"Twobit\"'");
@@ -146,7 +146,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 			twobit_len = 1 << (tb_width * 2); // 4^tb_width
 			PROTECT(twobit_sign2pos = NEW_INTEGER(twobit_len));
 			init_twobit_sign2pos(twobit_sign2pos, NA_INTEGER);
-		} else if (pattern.nelt != tb_width) {
+		} else if (pattern.length != tb_width) {
 			error("all the trusted regions must have "
 			      "the same length");
 		}
@@ -171,13 +171,13 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
  ****************************************************************************/
 
 void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
-		const RoSeq *S, TBMatchBuf *tb_matches)
+		const cachedCharSeq *S, TBMatchBuf *tb_matches)
 {
 	int n, twobit_sign, P_id;
 	const char *s;
 
 	_reset_twobit_signature(teb);
-	for (n = 1, s = S->elts; n <= S->nelt; n++, s++) {
+	for (n = 1, s = S->seq; n <= S->length; n++, s++) {
 		twobit_sign = _shift_twobit_signature(teb, *s);
 		if (twobit_sign == NA_INTEGER)
 			continue;
@@ -189,7 +189,7 @@ void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
 	return;
 }
 
-void _match_Twobit(SEXP pptb, const RoSeq *S, int fixedS,
+void _match_Twobit(SEXP pptb, const cachedCharSeq *S, int fixedS,
 		TBMatchBuf *tb_matches)
 {
 	int tb_width;

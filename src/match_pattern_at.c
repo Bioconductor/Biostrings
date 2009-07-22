@@ -3,6 +3,7 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
@@ -23,7 +24,7 @@ SEXP debug_match_pattern_at()
  * nmismatch_at()
  *
  * The 4 static functions below stop counting mismatches if the number
- * exceeds 'max_mm'. The caller can disable this by passing 'P->nelt' to
+ * exceeds 'max_mm'. The caller can disable this by passing 'P->length' to
  * the 'max_mm' arg.
  *
  * fixedP | fixedS | letters *p and *s match iff...
@@ -34,18 +35,18 @@ SEXP debug_match_pattern_at()
  * FALSE  | FALSE  | ...they share at least one bit at 1
  */
 
-static int nmismatch_at_Pshift_fixedPfixedS(const RoSeq *P, const RoSeq *S,
-		int Pshift, int max_mm)
+static int nmismatch_at_Pshift_fixedPfixedS(const cachedCharSeq *P,
+		const cachedCharSeq *S, int Pshift, int max_mm)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
 
 	nmismatch = 0;
-	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
-	     i < P->nelt;
+	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
+	     i < P->length;
 	     i++, j++, p++, s++)
 	{
-		if (j >= 0 && j < S->nelt && *p == *s)
+		if (j >= 0 && j < S->length && *p == *s)
 			continue;
 		if (nmismatch++ >= max_mm)
 			break;
@@ -53,18 +54,18 @@ static int nmismatch_at_Pshift_fixedPfixedS(const RoSeq *P, const RoSeq *S,
 	return nmismatch;
 }
 
-static int nmismatch_at_Pshift_fixedPnonfixedS(const RoSeq *P, const RoSeq *S,
-		int Pshift, int max_mm)
+static int nmismatch_at_Pshift_fixedPnonfixedS(const cachedCharSeq *P,
+		const cachedCharSeq *S, int Pshift, int max_mm)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
 
 	nmismatch = 0;
-	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
-	     i < P->nelt;
+	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
+	     i < P->length;
 	     i++, j++, p++, s++)
 	{
-		if (j >= 0 && j < S->nelt && ((*p) & ~(*s)) == 0)
+		if (j >= 0 && j < S->length && ((*p) & ~(*s)) == 0)
 			continue;
 		if (nmismatch++ >= max_mm)
 			break;
@@ -72,18 +73,18 @@ static int nmismatch_at_Pshift_fixedPnonfixedS(const RoSeq *P, const RoSeq *S,
 	return nmismatch;
 }
 
-static int nmismatch_at_Pshift_nonfixedPfixedS(const RoSeq *P, const RoSeq *S,
-		int Pshift, int max_mm)
+static int nmismatch_at_Pshift_nonfixedPfixedS(const cachedCharSeq *P,
+		const cachedCharSeq *S, int Pshift, int max_mm)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
 
 	nmismatch = 0;
-	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
-	     i < P->nelt;
+	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
+	     i < P->length;
 	     i++, j++, p++, s++)
 	{
-		if (j >= 0 && j < S->nelt && (~(*p) & (*s)) == 0)
+		if (j >= 0 && j < S->length && (~(*p) & (*s)) == 0)
 			continue;
 		if (nmismatch++ >= max_mm)
 			break;
@@ -91,18 +92,18 @@ static int nmismatch_at_Pshift_nonfixedPfixedS(const RoSeq *P, const RoSeq *S,
 	return nmismatch;
 }
 
-static int nmismatch_at_Pshift_nonfixedPnonfixedS(const RoSeq *P, const RoSeq *S,
-		int Pshift, int max_mm)
+static int nmismatch_at_Pshift_nonfixedPnonfixedS(const cachedCharSeq *P,
+		const cachedCharSeq *S, int Pshift, int max_mm)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
 
 	nmismatch = 0;
-	for (i = 0, j = Pshift, p = P->elts, s = S->elts + Pshift;
-	     i < P->nelt;
+	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
+	     i < P->length;
 	     i++, j++, p++, s++)
 	{
-		if (j >= 0 && j < S->nelt && ((*p) & (*s)))
+		if (j >= 0 && j < S->length && ((*p) & (*s)))
 			continue;
 		if (nmismatch++ >= max_mm)
 			break;
@@ -110,8 +111,8 @@ static int nmismatch_at_Pshift_nonfixedPnonfixedS(const RoSeq *P, const RoSeq *S
 	return nmismatch;
 }
 
-int (*_selected_nmismatch_at_Pshift_fun)(const RoSeq *P, const RoSeq *S,
-		int Pshift, int max_mm);
+int (*_selected_nmismatch_at_Pshift_fun)(const cachedCharSeq *P,
+		const cachedCharSeq *S, int Pshift, int max_mm);
 
 void _select_nmismatch_at_Pshift_fun(int fixedP, int fixedS)
 {
@@ -153,7 +154,7 @@ static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
 #define PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length) \
 { \
 	int nedit, B2, nedit2; \
-	nedit = (prev_row)[(B)] + ((j) < 0 || (j) >= (S)->nelt || (S)->elts[(j)] != (Pc)); \
+	nedit = (prev_row)[(B)] + ((j) < 0 || (j) >= (S)->length || (S)->seq[(j)] != (Pc)); \
 	if ((B2 = (B) - 1) >= 0 && (nedit2 = (curr_row)[B2] + 1) < nedit) \
 		nedit = nedit2; \
 	if ((B2 = (B) + 1) < (row_length) && (nedit2 = (prev_row)[B2] + 1) < nedit) \
@@ -187,8 +188,8 @@ static void print_curr_row(const char* margin, const int *curr_row, int Bmin, in
  * TODO: Implement the 'loose_Ploffset' feature (allowing or not an indel
  * on the first letter of the local alignement).
  */
-int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
-		int max_nedit, int loose_Ploffset, int *min_width)
+int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
+		int Ploffset, int max_nedit, int loose_Ploffset, int *min_width)
 {
 	int max_nedit_plus1, *prev_row, *curr_row, row_length,
 	    B, b, i, iplus1, jmin, j, min_nedit;
@@ -197,15 +198,15 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset():\n");
 #endif
-	if (P->nelt == 0)
+	if (P->length == 0)
 		return 0;
 	if (max_nedit == 0)
 		error("Biostrings internal error in _nedit_for_Ploffset(): ",
 		      "use _selected_nmismatch_at_Pshift_fun() when 'max_nedit' is 0");
 	max_nedit_plus1 = max_nedit + 1;
-	if (max_nedit > P->nelt)
-		max_nedit = P->nelt;
-	// from now max_nedit <= P->nelt
+	if (max_nedit > P->length)
+		max_nedit = P->length;
+	// from now max_nedit <= P->length
 	if (max_nedit > MAX_NEDIT)
 		error("'max.nedit' too big");
 	prev_row = row1_buf;
@@ -224,7 +225,7 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 	// this stage because the smallest value in curr_row is guaranteed
 	// to be <= iplus1 < max_nedit.
 	for (iplus1 = 1, i = 0; iplus1 < max_nedit; iplus1++, i++) {
-		Pc = P->elts[i]; // i < iplus1 < max_nedit <= P->nelt
+		Pc = P->seq[i]; // i < iplus1 < max_nedit <= P->length
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		B = max_nedit - iplus1;
 		curr_row[B++] = iplus1;
@@ -236,7 +237,7 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
-	Pc = P->elts[i];
+	Pc = P->seq[i];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
 	curr_row[B++] = min_nedit = iplus1;
@@ -255,8 +256,8 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 	i++;
 
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
-	for ( ; i < P->nelt; i++, iplus1++, jmin++) {
-		Pc = P->elts[i];
+	for ( ; i < P->length; i++, iplus1++, jmin++) {
+		Pc = P->seq[i];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		min_nedit = iplus1;
 		*min_width = 0;
@@ -276,8 +277,8 @@ int _nedit_for_Ploffset(const RoSeq *P, const RoSeq *S, int Ploffset,
 	return min_nedit;
 }
 
-int _nedit_for_Proffset(const RoSeq *P, const RoSeq *S, int Proffset,
-		int max_nedit, int loose_Proffset, int *min_width)
+int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
+		int Proffset, int max_nedit, int loose_Proffset, int *min_width)
 {
 	int max_nedit_plus1, *prev_row, *curr_row, row_length,
 	    B, b, i, iplus1, jmin, j, min_nedit;
@@ -293,8 +294,9 @@ int _nedit_for_Proffset(const RoSeq *P, const RoSeq *S, int Proffset,
  * match_pattern_at()
  */
 
-static void match_pattern_at(const RoSeq *P, const RoSeq *S, SEXP at, int at_type0,
-		int max_mm, int indels, int ans_type0, int *ans_elt)
+static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
+		SEXP at, int at_type0, int max_mm, int indels, int ans_type0,
+		int *ans_elt)
 {
 	int at_length, i, *at_elt, offset, nmismatch, min_width;
 
@@ -315,7 +317,7 @@ static void match_pattern_at(const RoSeq *P, const RoSeq *S, SEXP at, int at_typ
 			if (at_type0 == 0)
 				offset = *at_elt - 1;
 			else
-				offset = *at_elt - P->nelt;
+				offset = *at_elt - P->length;
 			nmismatch = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mm);
 		}
 		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
@@ -354,13 +356,13 @@ static void match_pattern_at(const RoSeq *P, const RoSeq *S, SEXP at, int at_typ
 SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
-	RoSeq P, S;
+	cachedCharSeq P, S;
 	int at_length, at_type0, max_mm, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt;
 	SEXP ans;
 
-	P = _get_XString_asRoSeq(pattern);
-	S = _get_XString_asRoSeq(subject);
+	P = cache_XRaw(pattern);
+	S = cache_XRaw(subject);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	max_mm = INTEGER(max_mismatch)[0];
@@ -394,15 +396,15 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
-	RoSeq P, S_elt;
+	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
 	int S_length, at_length, at_type0, max_mm, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt, i;
 	SEXP ans;
 
-	P = _get_XString_asRoSeq(pattern);
+	P = cache_XRaw(pattern);
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	max_mm = INTEGER(max_mismatch)[0];

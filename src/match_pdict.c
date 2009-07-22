@@ -45,7 +45,7 @@ static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
 }
 
 static void match_pdict(SEXP pptb, HeadTail *headtail,
-		const RoSeq *S,
+		const cachedCharSeq *S,
 		SEXP max_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -118,7 +118,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP matches_as, SEXP envir)
 {
 	HeadTail headtail;
-	RoSeq S;
+	cachedCharSeq S;
 	MatchPDictBuf matchpdict_buf;
 
 #ifdef DEBUG_BIOSTRINGS
@@ -127,7 +127,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 #endif
 	headtail = _new_HeadTail(pdict_head, pdict_tail,
 				 pptb, max_mismatch, fixed, 1);
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
@@ -149,7 +149,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 {
 	HeadTail headtail;
 	int tb_length;
-	RoSeq S, S_view;
+	cachedCharSeq S, S_view;
 	int nviews, i, *view_start, *view_width, view_offset;
 	MatchPDictBuf matchpdict_buf;
 	Seq2MatchBuf global_matchpdict_buf;
@@ -161,7 +161,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	tb_length = _get_PreprocessedTB_length(pptb);
 	headtail = _new_HeadTail(pdict_head, pdict_tail,
 				 pptb, max_mismatch, fixed, 1);
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
@@ -172,10 +172,10 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	     i++, view_start++, view_width++)
 	{
 		view_offset = *view_start - 1;
-		if (view_offset < 0 || view_offset + *view_width > S.nelt)
+		if (view_offset < 0 || view_offset + *view_width > S.length)
 			error("'subject' has \"out of limits\" views");
-		S_view.elts = S.elts + view_offset;
-		S_view.nelt = *view_width;
+		S_view.seq = S.seq + view_offset;
+		S_view.length = *view_width;
 		match_pdict(pptb, &headtail,
 			&S_view, max_mismatch, fixed,
 			&matchpdict_buf);
@@ -204,7 +204,7 @@ static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 	int S_length, j;
 	cachedXStringSet S;
 	SEXP ans;
-	RoSeq S_elt;
+	cachedCharSeq S_elt;
 
 	S = _cache_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
@@ -229,7 +229,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 	int tb_length, S_length, j, *current_col;
 	cachedXStringSet S;
 	SEXP ans;
-	RoSeq S_elt;
+	cachedCharSeq S_elt;
 	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
@@ -262,7 +262,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 	int tb_length, S_length, ans_length, i, j;
 	cachedXStringSet S;
 	SEXP ans;
-	RoSeq S_elt;
+	cachedCharSeq S_elt;
 	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);

@@ -32,8 +32,8 @@ static const R_CallMethodDef callMethods[] = {
 /* copy_seq.c */
 	CALLMETHOD_DEF(debug_copy_seq, 0),
 
-/* RoSeq_utils.c */
-	CALLMETHOD_DEF(debug_RoSeq_utils, 0),
+/* RoSeqs_utils.c */
+	CALLMETHOD_DEF(debug_RoSeqs_utils, 0),
 	CALLMETHOD_DEF(new_RawPtr_from_STRSXP, 5),
 
 /* XString_class.c */
@@ -214,7 +214,7 @@ void R_init_Biostrings(DllInfo *info)
 	R_registerRoutines(info, cMethods, NULL, NULL, NULL);
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 
-/* RoSeq_utils.c */
+/* RoSeqs_utils.c */
 	REGISTER_CCALLABLE(_new_STRSXP_from_RoSeqs);
 	REGISTER_CCALLABLE(_new_RoSeqs_from_CharAEAE);
 	REGISTER_CCALLABLE(_new_IRanges_from_RoSeqs);
@@ -224,7 +224,6 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_DNAdecode);
 	REGISTER_CCALLABLE(_RNAencode);
 	REGISTER_CCALLABLE(_RNAdecode);
-	REGISTER_CCALLABLE(_get_XString_asRoSeq);
 
 /* XStringSet_class.c */
 	REGISTER_CCALLABLE(_get_XStringSet_xsbaseclassname);

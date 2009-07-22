@@ -47,39 +47,39 @@ static int P0buffer_length = 0, P0buffer_nP = 0;
  */
 static int P0buffer_init_status;
 
-static void init_P0buffer(const RoSeq *P)
+static void init_P0buffer(const cachedCharSeq *P)
 {
 	int min_nP_nP0, j;
 
-	if (P->nelt == 0) { /* should never happen but safer anyway... */
+	if (P->length == 0) { /* should never happen but safer anyway... */
 		P0buffer_init_status = 0;
 		return;
 	}
-	if (P->nelt > 20000)
+	if (P->length > 20000)
 		error("pattern is too long");
-	if (P->nelt > P0buffer_length) {
+	if (P->length > P0buffer_length) {
 		/* We need more memory */
 		if (P0buffer != NULL)
 			free(P0buffer);
 		P0buffer_length = 0;
-		P0buffer = (char *) malloc(P->nelt * sizeof(char));
+		P0buffer = (char *) malloc(P->length * sizeof(char));
 		if (P0buffer == NULL)
 			error("can't allocate memory for P0buffer");
-		P0buffer_length = P->nelt;
+		P0buffer_length = P->length;
 		P0buffer_init_status = -1;
 	} else {
 		/* We have enough memory */
-		if (P->nelt < P0buffer_nP)
-			min_nP_nP0 = P->nelt;
+		if (P->length < P0buffer_nP)
+			min_nP_nP0 = P->length;
 		else
 			min_nP_nP0 = P0buffer_nP;
 		for (j = 0; j < min_nP_nP0; j++)
-			if (P->elts[j] != P0buffer[j])
+			if (P->seq[j] != P0buffer[j])
 				break;
 		P0buffer_init_status = j;
 	}
-	memcpy(P0buffer, P->elts, P->nelt * sizeof(char));
-	P0buffer_nP = P->nelt;
+	memcpy(P0buffer, P->seq, P->length * sizeof(char));
+	P0buffer_nP = P->length;
 	return;
 }
 
@@ -368,33 +368,33 @@ static void init_MWshift_table()
 	} \
 }
 
-void _match_pattern_boyermoore(const RoSeq *P, const RoSeq *S)
+void _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S)
 {
 	int n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Prmc, c; /* Prmc is P right-most char */
 
-	if (P->nelt <= 0)
+	if (P->length <= 0)
 		error("empty pattern");
 	init_P0buffer(P);
 	init_j0shift0();
 	init_VSGSshift_table();
-	if (P->nelt <= MWSHIFT_NPMAX)
+	if (P->length <= MWSHIFT_NPMAX)
 		init_MWshift_table();
-	n = P->nelt - 1;
-	Prmc = P->elts[n];
+	n = P->length - 1;
+	Prmc = P->seq[n];
 	j2 = 0;
-	while (n < S->nelt) {
+	while (n < S->length) {
 		if (j2 == 0) {
 			/* No Matching Window yet, we need to find one */
-			c = S->elts[n];
+			c = S->seq[n];
 			if (c != Prmc) {
-				shift = get_VSGSshift(c, P->nelt - 1);
+				shift = get_VSGSshift(c, P->length - 1);
 				n += shift;
 				continue;
 			}
 			i1 = n;
 			i2 = i1 + 1;
-			j2 = P->nelt;
+			j2 = P->length;
 			j1 = j2 - 1;
 			/* Now we have a Matching Window (1-letter suffix) */
 		}
@@ -402,36 +402,36 @@ void _match_pattern_boyermoore(const RoSeq *P, const RoSeq *S)
 		if (j1 > 0) {
 			/* ... to the left */
 			for (i = i1-1, j = j1-1; j >= 0; i--, j--)
-				if ((c = S->elts[i]) != P->elts[j])
+				if ((c = S->seq[i]) != P->seq[j])
 					break;
 			i1 = i + 1;
 			j1 = j + 1;
 		}
-		if (j2 < P->nelt) {
+		if (j2 < P->length) {
 			/* ... to the right */
-			for ( ; j2 < P->nelt; i2++, j2++)
-				if (S->elts[i2] != P->elts[j2])
+			for ( ; j2 < P->length; i2++, j2++)
+				if (S->seq[i2] != P->seq[j2])
 					break;
 		}
-		if (j2 == P->nelt) { /* the Matching Window is a suffix */
+		if (j2 == P->length) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
-				_report_match(i1 + 1, P->nelt);
+				_report_match(i1 + 1, P->length);
 				shift = P0buffer_shift0;
 			} else {
 				shift = get_VSGSshift(c, j1 - 1);
 			}
 		} else {
 			shift = get_MWshift(j1, j2);
-			c = S->elts[n];
+			c = S->seq[n];
 			if (c != Prmc) {
-				shift1 = get_VSGSshift(c, P->nelt - 1);
+				shift1 = get_VSGSshift(c, P->length - 1);
 				if (shift1 > shift)
 					shift = shift1;
 			}
 		}
 		n += shift;
-		if (P->nelt <= MWSHIFT_NPMAX) {
+		if (P->length <= MWSHIFT_NPMAX) {
 			ADJUST_MW(i1, j1, shift)
 			ADJUST_MW(i2, j2, shift)
 		} else {

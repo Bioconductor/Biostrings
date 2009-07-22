@@ -3,6 +3,7 @@
                              Author: Herve Pages
  ****************************************************************************/
 #include "Biostrings.h"
+#include "IRanges_interface.h"
 
 /*
  * Table used for fast look up between A, C, G, T internal codes and the
@@ -45,7 +46,7 @@ static double compute_pwm_score(const double *pwm, int pwm_ncol, const char *S, 
  */
 SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP starting_at)
 {
-	RoSeq S;
+	cachedCharSeq S;
 	int pwm_ncol, i, *start_elt;
 	SEXP ans;
 	double *ans_elt;
@@ -53,7 +54,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP startin
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	PROTECT(ans = NEW_NUMERIC(LENGTH(starting_at)));
 	for (i = 0, start_elt = INTEGER(starting_at), ans_elt = REAL(ans);
@@ -63,7 +64,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP startin
 			*ans_elt = NA_REAL;
 			continue;
 		}
-		*ans_elt = compute_pwm_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, *start_elt - 1);
+		*ans_elt = compute_pwm_score(REAL(pwm), pwm_ncol, S.seq, S.length, *start_elt - 1);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -81,21 +82,21 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP base_codes, SEXP startin
  */
 SEXP XString_match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, SEXP count_only)
 {
-	RoSeq S;
+	cachedCharSeq S;
 	int pwm_ncol, is_count_only, n1, n2;
 	double minscore;
 
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
-	for (n1 = 0, n2 = pwm_ncol; n2 <= S.nelt; n1++, n2++) {
-		if (compute_pwm_score(REAL(pwm), pwm_ncol, S.elts, S.nelt, n1) >= minscore)
+	for (n1 = 0, n2 = pwm_ncol; n2 <= S.length; n1++, n2++) {
+		if (compute_pwm_score(REAL(pwm), pwm_ncol, S.seq, S.length, n1) >= minscore)
 			_report_match(n1 + 1, pwm_ncol);
 	}
 	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
@@ -119,7 +120,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP base_codes, SEXP min_score, SEXP count_only)
 {
-	RoSeq S, S_view;
+	cachedCharSeq S, S_view;
 	int pwm_ncol, is_count_only, n1, n2;
 	int nviews, i, *view_start, *view_width, view_offset;
 	double minscore;
@@ -127,7 +128,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
-	S = _get_XString_asRoSeq(subject);
+	S = cache_XRaw(subject);
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
@@ -139,13 +140,13 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 	     i++, view_start++, view_width++)
 	{
 		view_offset = *view_start - 1;
-		if (view_offset < 0 || view_offset + *view_width > S.nelt)
+		if (view_offset < 0 || view_offset + *view_width > S.length)
 			error("'subject' has \"out of limits\" views");
-		S_view.elts = S.elts + view_offset;
-		S_view.nelt = *view_width;
+		S_view.seq = S.seq + view_offset;
+		S_view.length = *view_width;
 		_shift_match_on_reporting(view_offset);
-		for (n1 = 0, n2 = pwm_ncol; n2 <= S_view.nelt; n1++, n2++) {
-			if (compute_pwm_score(REAL(pwm), pwm_ncol, S_view.elts, S_view.nelt, n1) >= minscore)
+		for (n1 = 0, n2 = pwm_ncol; n2 <= S_view.length; n1++, n2++) {
+			if (compute_pwm_score(REAL(pwm), pwm_ncol, S_view.seq, S_view.length, n1) >= minscore)
 				_report_match(n1 + 1, pwm_ncol);
 		}
 	}

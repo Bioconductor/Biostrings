@@ -41,8 +41,8 @@
 
 /* Structure to hold alignment information */
 struct AlignInfo {
-	RoSeq string;
-	RoSeq quality;
+	cachedCharSeq string;
+	cachedCharSeq quality;
 	int endGap;
 	int startRange;
 	int widthRange;
@@ -108,8 +108,8 @@ static double pairwiseAlignment(
 	int i, j, iMinus1, jMinus1;
 
 	/* Step 1:  Get information on input XString objects */
-	const int nCharString1 = align1InfoPtr->string.nelt;
-	const int nCharString2 = align2InfoPtr->string.nelt;
+	const int nCharString1 = align1InfoPtr->string.length;
+	const int nCharString2 = align2InfoPtr->string.length;
 	const int nCharString1Plus1 = nCharString1 + 1;
 	const int nCharString1Minus1 = nCharString1 - 1;
 	const int nCharString2Minus1 = nCharString2 - 1;
@@ -144,13 +144,13 @@ static double pairwiseAlignment(
 	}
 
 	/* Step 3:  Perform main alignment operations */
-	RoSeq sequence1, sequence2;
+	cachedCharSeq sequence1, sequence2;
 	int scalar1, scalar2;
 	if (useQuality) {
 		sequence1 = align1InfoPtr->quality;
 		sequence2 = align2InfoPtr->quality;
-		scalar1 = (align1InfoPtr->quality.nelt == 1);
-		scalar2 = (align2InfoPtr->quality.nelt == 1);
+		scalar1 = (align1InfoPtr->quality.length == 1);
+		scalar2 = (align2InfoPtr->quality.length == 1);
 	} else {
 		sequence1 = align1InfoPtr->string;
 		sequence2 = align2InfoPtr->string;
@@ -175,15 +175,15 @@ static double pairwiseAlignment(
 			CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
 			CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-			SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
+			SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.seq[jElt]);
 			stringElt2 = lookupValue;
-			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.seq[scalar2 ? 0 : jElt]);
 			element2 = lookupValue;
 			if (localAlignment) {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.seq[iElt]);
 					stringElt1 = lookupValue;
-					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.seq[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
 					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
 					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
@@ -203,9 +203,9 @@ static double pairwiseAlignment(
 				}
 			} else {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.seq[iElt]);
 					stringElt1 = lookupValue;
-					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.seq[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
 					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
 					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
@@ -274,15 +274,15 @@ static double pairwiseAlignment(
 			CURR_MATRIX(0, 1) = PREV_MATRIX(0, 1) + endGapAddend;
 			CURR_MATRIX(0, 2) = NEGATIVE_INFINITY;
 
-			SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.elts[jElt]);
+			SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align2InfoPtr->string.seq[jElt]);
 			stringElt2 = lookupValue;
-			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.elts[scalar2 ? 0 : jElt]);
+			SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence2.seq[scalar2 ? 0 : jElt]);
 			element2 = lookupValue;
 			if (localAlignment) {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.seq[iElt]);
 					stringElt1 = lookupValue;
-					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.seq[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
 					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
 					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
@@ -337,9 +337,9 @@ static double pairwiseAlignment(
 				}
 			} else {
 				for (i = 1, iMinus1 = 0, iElt = nCharString1Minus1; i <= nCharString1; i++, iMinus1++, iElt--) {
-					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.elts[iElt]);
+					SET_LOOKUP_VALUE(fuzzyLookupTable, fuzzyLookupTableLength, align1InfoPtr->string.seq[iElt]);
 					stringElt1 = lookupValue;
-					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.elts[scalar1 ? 0 : iElt]);
+					SET_LOOKUP_VALUE(substitutionLookupTable, substitutionLookupTableLength, sequence1.seq[scalar1 ? 0 : iElt]);
 					element1 = lookupValue;
 					fuzzy = FUZZY_MATRIX(stringElt1, stringElt2);
 					substitutionValue = (float) SUBSTITUTION_ARRAY(element1, element2, fuzzy);
@@ -478,8 +478,8 @@ static double pairwiseAlignment(
 	    			}
 	    			prevTraceMatrix = currTraceMatrix;
 					currTraceMatrix = S_TRACE_MATRIX(i, j);
-					if (align1InfoPtr->string.elts[nCharString1Minus1 - i] !=
-						align2InfoPtr->string.elts[nCharString2Minus1 - j]) {
+					if (align1InfoPtr->string.seq[nCharString1Minus1 - i] !=
+						align2InfoPtr->string.seq[nCharString2Minus1 - j]) {
 						align1InfoPtr->mismatch[align1InfoPtr->lengthMismatch] = nCharString1 - i;
 						align2InfoPtr->mismatch[align2InfoPtr->lengthMismatch] = nCharString2 - j;
 						align1InfoPtr->lengthMismatch++;
@@ -621,17 +621,17 @@ SEXP XStringSet_align_pairwiseAlignment(
 	int nCharString1 = 0, nCharString2 = 0, nCharProduct = 0;
 	if (multipleSubjects) {
 		for (i = 0; i < numberOfStrings; i++) {
-			int nchar1 = _get_cachedXStringSet_elt(&cached_pattern, i).nelt;
-			int nchar2 = _get_cachedXStringSet_elt(&cached_subject, i).nelt;
+			int nchar1 = _get_cachedXStringSet_elt(&cached_pattern, i).length;
+			int nchar2 = _get_cachedXStringSet_elt(&cached_subject, i).length;
 			nCharString1 = MAX(nCharString1, nchar1);
 			nCharString2 = MAX(nCharString2, nchar2);
 			nCharProduct = MAX(nCharProduct, nchar1 * nchar2);
 		}
 	} else {
 		for (i = 0; i < numberOfStrings; i++) {
-			nCharString1 = MAX(nCharString1, _get_cachedXStringSet_elt(&cached_pattern, i).nelt);
+			nCharString1 = MAX(nCharString1, _get_cachedXStringSet_elt(&cached_pattern, i).length);
 		}
-		nCharString2 = align2Info.string.nelt;
+		nCharString2 = align2Info.string.length;
 		nCharProduct = nCharString1 * nCharString2;
 	}
 	const int alignmentBufferSize = nCharString1 + 1;
@@ -1055,7 +1055,7 @@ SEXP XStringSet_align_distance(
 	struct AlignBuffer alignBuffer;
 	int nCharString = 0;
 	for (i = 0; i < numberOfStrings; i++) {
-		nCharString = MAX(nCharString, _get_cachedXStringSet_elt(&cached_string, i).nelt);
+		nCharString = MAX(nCharString, _get_cachedXStringSet_elt(&cached_string, i).length);
 	}
 	int alignmentBufferSize = nCharString + 1;
 	alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));

@@ -28,7 +28,7 @@ void stubname Targs \
 
 
 /*
- * Stubs for callables defined in RoSeq_utils.c
+ * Stubs for callables defined in RoSeqs_utils.c
  */
 
 DEFINE_CCALLABLE_STUB(SEXP, new_STRSXP_from_RoSeqs,
@@ -71,11 +71,6 @@ DEFINE_CCALLABLE_STUB(char, RNAdecode,
 	(     code)
 )
 
-DEFINE_CCALLABLE_STUB(RoSeq, get_XString_asRoSeq,
-	(SEXP x),
-	(     x)
-)
-
 
 /*
  * Stubs for callables defined in XStringSet_class.c
@@ -101,7 +96,7 @@ DEFINE_CCALLABLE_STUB(int, get_cachedXStringSet_length,
 	(                        cached_x)
 )
 
-DEFINE_CCALLABLE_STUB(RoSeq, get_cachedXStringSet_elt,
+DEFINE_CCALLABLE_STUB(cachedCharSeq, get_cachedXStringSet_elt,
 	(const cachedXStringSet *cached_x, int i),
 	(                        cached_x,     i)
 )
