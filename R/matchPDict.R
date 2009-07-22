@@ -198,7 +198,7 @@
     if (matches.as != "MATCHES_AS_ENDS")
         return(C_ans)
     # matchPDict()
-    new("ByPos_MIndex", width=width(pdict), NAMES=names(pdict), ends=C_ans)
+    new("ByPos_MIndex", width0=width(pdict), NAMES=names(pdict), ends=C_ans)
 }
 
 .match.MTB_PDict <- function(pdict, subject, algorithm,
