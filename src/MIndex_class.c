@@ -21,35 +21,45 @@ SEXP debug_MIndex_class()
 
 
 /****************************************************************************
- * C-level slot accessor functions.
+ * C-level slot getters.
  *
  * Be careful that these functions do NOT duplicate the returned slot.
  * Thus they cannot be made .Call() entry points!
  */
 
+static SEXP
+	width0_symbol = NULL,
+	NAMES_symbol = NULL,
+	dups0_symbol = NULL,
+	ends_symbol = NULL;
+
 static SEXP get_MIndex_width0(SEXP x)
 {
-	return GET_SLOT(x, install("width0"));
+	INIT_STATIC_SYMBOL(width0)
+	return GET_SLOT(x, width0_symbol);
 }
 
 static SEXP get_MIndex_names(SEXP x)
 {
-	return GET_SLOT(x, install("NAMES"));
+	INIT_STATIC_SYMBOL(NAMES)
+	return GET_SLOT(x, NAMES_symbol);
 }
 
 static SEXP get_MIndex_dups0(SEXP x)
 {
-	return GET_SLOT(x, install("dups0"));
+	INIT_STATIC_SYMBOL(dups0)
+	return GET_SLOT(x, dups0_symbol);
 }
 
 static SEXP get_MIndex_ends(SEXP x)
 {
-	return GET_SLOT(x, install("ends"));
+	INIT_STATIC_SYMBOL(ends)
+	return GET_SLOT(x, ends_symbol);
 }
 
 
 /****************************************************************************
- * C-level abstract accessor functions.
+ * C-level abstract getters.
  */
 
 cachedMIndex _cache_MIndex(SEXP x)

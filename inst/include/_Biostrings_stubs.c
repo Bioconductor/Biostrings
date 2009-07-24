@@ -76,12 +76,12 @@ DEFINE_CCALLABLE_STUB(char, RNAdecode,
  * Stubs for callables defined in XStringSet_class.c
  */
 
-DEFINE_CCALLABLE_STUB(const char *, get_XStringSet_xsbaseclassname,
+DEFINE_CCALLABLE_STUB(int, get_XStringSet_length,
 	(SEXP x),
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(int, get_XStringSet_length,
+DEFINE_CCALLABLE_STUB(const char *, get_XStringSet_xsbaseclassname,
 	(SEXP x),
 	(     x)
 )
@@ -101,11 +101,6 @@ DEFINE_CCALLABLE_STUB(cachedCharSeq, get_cachedXStringSet_elt,
 	(                        cached_x,     i)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
-	(const char *xsbaseclassname, const RoSeqs *seqs),
-	(            xsbaseclassname,               seqs)
-)
-
 DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
 	(SEXP x, SEXP names),
 	(     x,      names)
@@ -114,6 +109,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
 DEFINE_CCALLABLE_STUB(SEXP, alloc_XStringSet,
 	(const char *xsbaseclassname, int length, int super_length),
 	(            xsbaseclassname,     length,     super_length)
+)
+
+DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
+	(const char *xsbaseclassname, const RoSeqs *seqs),
+	(            xsbaseclassname,               seqs)
 )
 
 

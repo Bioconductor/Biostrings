@@ -3,6 +3,12 @@
 
 #define DEBUG_BIOSTRINGS 1
 
+#define INIT_STATIC_SYMBOL(NAME) \
+{ \
+	if (NAME ## _symbol == NULL) \
+		NAME ## _symbol = install(# NAME); \
+}
+
 
 /* utils.c */
 
@@ -245,13 +251,13 @@ SEXP debug_XStringSet_class();
 
 SEXP _get_XStringSet_super(SEXP x);
 
-const char *_get_XStringSet_xsbaseclassname(SEXP x);
-
 SEXP _get_XStringSet_ranges(SEXP x);
 
 int _get_XStringSet_length(SEXP x);
 
 SEXP _get_XStringSet_width(SEXP x);
+
+const char *_get_XStringSet_xsbaseclassname(SEXP x);
 
 cachedXStringSet _cache_XStringSet(SEXP x);
 
@@ -262,9 +268,9 @@ cachedCharSeq _get_cachedXStringSet_elt(
 	int i
 );
 
-RoSeqs _new_RoSeqs_from_XStringSet(
-	int nelt,
-	SEXP x
+void _set_XStringSet_names(
+	SEXP x,
+	SEXP names
 );
 
 SEXP _new_XStringSet(
@@ -273,20 +279,20 @@ SEXP _new_XStringSet(
 	SEXP ranges
 );
 
+SEXP _alloc_XStringSet(
+	const char *xsbaseclassname,
+	int length,
+	int super_length
+);
+
 SEXP _new_XStringSet_from_RoSeqs(
 	const char *xsbaseclassname,
 	const RoSeqs *seqs
 );
 
-void _set_XStringSet_names(
-	SEXP x,
-	SEXP names
-);
-
-SEXP _alloc_XStringSet(
-	const char *xsbaseclassname,
-	int length,
-	int super_length
+RoSeqs _new_RoSeqs_from_XStringSet(
+	int nelt,
+	SEXP x
 );
 
 SEXP XStringSet_unlist(SEXP x);
@@ -296,7 +302,10 @@ SEXP XStringSet_as_STRSXP(
 	SEXP lkup
 );
 
-SEXP XStringSet_is_unsorted(SEXP x, SEXP strictly);
+SEXP XStringSet_is_unsorted(
+	SEXP x,
+	SEXP strictly
+);
 
 SEXP XStringSet_order(SEXP x);
 
@@ -304,7 +313,11 @@ SEXP XStringSet_rank(SEXP x);
 
 SEXP XStringSet_duplicated(SEXP x);
 
-SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch);
+SEXP XStringSet_match(
+	SEXP x,
+	SEXP table,
+	SEXP nomatch
+);
 
 
 /* xscat.c */
@@ -870,13 +883,13 @@ SEXP debug_BitMatrix();
 
 SEXP debug_PreprocessedTB_class();
 
+SEXP _get_PreprocessedTB_base_codes(SEXP x);
+
 int _get_PreprocessedTB_length(SEXP x);
 
 int _get_PreprocessedTB_width(SEXP x);
 
 SEXP _get_PreprocessedTB_low2high(SEXP x);
-
-SEXP _get_PreprocessedTB_base_codes(SEXP x);
 
 SEXP _get_Twobit_sign2pos_tag(SEXP x);
 

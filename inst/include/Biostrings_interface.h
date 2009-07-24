@@ -126,9 +126,9 @@ char RNAencode(char c);
 
 char RNAdecode(char code);
 
-const char *get_XStringSet_xsbaseclassname(SEXP x);
-
 int get_XStringSet_length(SEXP x);
+
+const char *get_XStringSet_xsbaseclassname(SEXP x);
 
 cachedXStringSet cache_XStringSet(SEXP x);
 
@@ -137,11 +137,6 @@ int get_cachedXStringSet_length(const cachedXStringSet *cached_x);
 cachedCharSeq get_cachedXStringSet_elt(
 	const cachedXStringSet *cached_x,
 	int i
-);
-
-SEXP new_XStringSet_from_RoSeqs(
-	const char *xsbaseclassname,
-	const RoSeqs *seqs
 );
 
 void set_XStringSet_names(
@@ -153,6 +148,11 @@ SEXP alloc_XStringSet(
 	const char *xsbaseclassname,
 	int length,
 	int super_length
+);
+
+SEXP new_XStringSet_from_RoSeqs(
+	const char *xsbaseclassname,
+	const RoSeqs *seqs
 );
 
 

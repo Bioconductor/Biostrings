@@ -20,30 +20,29 @@ SEXP debug_XStringSet_class()
 
 
 /****************************************************************************
- * C-level slot accessor functions.
+ * C-level slot getters.
  *
  * Be careful that these functions do NOT duplicate the returned slot.
  * Thus they cannot be made .Call() entry points!
  */
 
+static SEXP
+	super_symbol = NULL,
+	ranges_symbol = NULL;
 
 SEXP _get_XStringSet_super(SEXP x)
 {
-	return GET_SLOT(x, install("super"));
-}
-
-// FIXME: '_get_XStringSet_xsbaseclassname()' won't always return the
-// xsbaseclassname e.g. if 'super' belongs to a class that extends
-// DNAString (there is no such thing yet).
-const char *_get_XStringSet_xsbaseclassname(SEXP x)
-{
-	return get_classname(_get_XStringSet_super(x));
+	INIT_STATIC_SYMBOL(super)
+	return GET_SLOT(x, super_symbol);
 }
 
 SEXP _get_XStringSet_ranges(SEXP x)
 {
-	return GET_SLOT(x, install("ranges"));
+	INIT_STATIC_SYMBOL(ranges)
+	return GET_SLOT(x, ranges_symbol);
 }
+
+/* Not strict "slot getters" but very much like. */
 
 int _get_XStringSet_length(SEXP x)
 {
@@ -55,9 +54,17 @@ SEXP _get_XStringSet_width(SEXP x)
 	return get_IRanges_width(_get_XStringSet_ranges(x));
 }
 
+// FIXME: '_get_XStringSet_xsbaseclassname()' won't always return the
+// xsbaseclassname e.g. if 'super' belongs to a class that extends
+// DNAString (there is no such thing yet).
+const char *_get_XStringSet_xsbaseclassname(SEXP x)
+{
+	return get_classname(_get_XStringSet_super(x));
+}
+
 
 /****************************************************************************
- * C-level abstract accessor functions.
+ * C-level abstract getters.
  */
 
 cachedXStringSet _cache_XStringSet(SEXP x)
@@ -99,12 +106,89 @@ cachedCharSeq _get_cachedXStringSet_elt(const cachedXStringSet *cached_x, int i)
 
 
 /****************************************************************************
- * Other functions.
+ * C-level slot setters.
+ *
+ * Be careful that these functions do NOT duplicate the assigned value!
  */
 
-/*
+static void set_XStringSet_super(SEXP x, SEXP value)
+{
+	INIT_STATIC_SYMBOL(super)
+	SET_SLOT(x, super_symbol, value);
+	return;
+}
+
+static void set_XStringSet_ranges(SEXP x, SEXP value)
+{
+	INIT_STATIC_SYMBOL(ranges)
+	SET_SLOT(x, ranges_symbol, value);
+	return;
+}
+
+/* x@ranges@NAMES is modified in-place! */
+void _set_XStringSet_names(SEXP x, SEXP names)
+{
+	set_IRanges_names(_get_XStringSet_ranges(x), names);
+	return;
+}
+
+
+/****************************************************************************
+ * C-level constructors.
+ */
+
+/* Be careful that this constructor does NOT duplicate its arguments before
+   putting them in the slots of the returned object.
+   So don't try to make it a .Call() entry point! */
+SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
+{
+	char classname_buf[80]; // longest string will be "DNAStringSet"
+	SEXP classdef, ans;
+
+	if (classname == NULL) {
+		snprintf(classname_buf, sizeof(classname_buf),
+			"%sSet", get_classname(super));
+		classname = classname_buf;
+	}
+	PROTECT(classdef = MAKE_CLASS(classname));
+	PROTECT(ans = NEW_OBJECT(classdef));
+	set_XStringSet_super(ans, super);
+	set_XStringSet_ranges(ans, ranges);
+	UNPROTECT(2);
+	return ans;
+}
+
+/* Allocation WITHOUT initialization.
+   The 'ranges' and 'super' slots are not initialized (they contain junk). */
+SEXP _alloc_XStringSet(const char *xsbaseclassname, int length, int super_length)
+{
+	SEXP super, ranges, ans;
+
+	PROTECT(super = _alloc_XString(xsbaseclassname, super_length));
+	PROTECT(ranges = alloc_IRanges("IRanges", length));
+	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
+	UNPROTECT(3);
+	return ans;
+}
+
+/* Making an XStringSet object from the sequences referenced by a RoSeqs struct.
+   Assume that these sequences are NOT already encoded. */
+SEXP _new_XStringSet_from_RoSeqs(const char *xsbaseclassname, const RoSeqs *seqs)
+{
+	SEXP super, ranges, ans;
+
+	PROTECT(super = _new_XString_from_RoSeqs(xsbaseclassname, seqs));
+	PROTECT(ranges = _new_IRanges_from_RoSeqs("IRanges", seqs));
+	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
+	UNPROTECT(3);
+	return ans;
+}
+
+
+/****************************************************************************
  * Creating a set of sequences (RoSeqs struct) from an XStringSet object.
  */
+
 RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 {
 	RoSeqs seqs;
@@ -122,108 +206,13 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 	return seqs;
 }
 
-/*
- * Do NOT try to make this a .Call() entry point!
- * Its arguments are NOT duplicated so it would be a disaster if they were
- * coming from the user space.
- */
-SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
-{
-	char classname_buf[80]; // longest string will be "DNAStringSet"
-	SEXP classdef, ans;
-
-	if (classname == NULL) {
-		snprintf(classname_buf, sizeof(classname_buf), "%sSet", get_classname(super));
-		classname = classname_buf;
-	}
-	PROTECT(classdef = MAKE_CLASS(classname));
-	PROTECT(ans = NEW_OBJECT(classdef));
-	SET_SLOT(ans, mkChar("super"), super);
-	SET_SLOT(ans, mkChar("ranges"), ranges);
-	UNPROTECT(2);
-	return ans;
-}
-
-/*
- * Making an XStringSet object from the sequences referenced by a RoSeqs struct.
- * Assume that these sequences are NOT already encoded.
- */
-SEXP _new_XStringSet_from_RoSeqs(const char *xsbaseclassname, const RoSeqs *seqs)
-{
-	SEXP super, ranges, ans;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): BEGIN\n");
-	}
-#endif
-	PROTECT(super = _new_XString_from_RoSeqs(xsbaseclassname, seqs));
-	PROTECT(ranges = _new_IRanges_from_RoSeqs("IRanges", seqs));
-	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _new_XStringSet_from_RoSeqs(): END\n");
-	}
-#endif
-	UNPROTECT(3);
-	return ans;
-}
-
-/*
- * x@ranges@NAMES is modified in place!
- */
-void _set_XStringSet_names(SEXP x, SEXP names)
-{
-	SEXP ranges;
-
-	ranges = GET_SLOT(x, install("ranges"));
-	set_IRanges_names(ranges, names);
-	return;
-}
-
-
-/****************************************************************************
- * Utilities for creating an XStringSet instance in 2 steps: first create the
- * skeleton (with junk data in it), then fill it with some character data.
- */
-
-/*
- * Allocate only. The 'ranges' and 'super' slots are not initialized (they
- * contain junk, or zeros).
- */
-SEXP _alloc_XStringSet(const char *xsbaseclassname, int length, int super_length)
-{
-	SEXP super, ranges, ans;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _alloc_XStringSet(): BEGIN\n");
-		Rprintf("[DEBUG] _alloc_XStringSet(): "
-			" xsbaseclassname=%s length=%d super_length=%d\n",
-			xsbaseclassname, length, super_length);
-	}
-#endif
-	PROTECT(super = _alloc_XString(xsbaseclassname, super_length));
-	PROTECT(ranges = alloc_IRanges("IRanges", length));
-	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _alloc_XStringSet(): END\n");
-	}
-#endif
-	UNPROTECT(3);
-	return ans;
-}
-
 
 /****************************************************************************
  * Coercion.
  */
 
-/*
- * Note that XStringSet_unlist() is VERY similar to XString_xscat().
- * Maybe both could be unified under a fast c() for XRaw objects.
- */
+/* Note that XStringSet_unlist() is VERY similar to XString_xscat().
+   Maybe both could be unified under a fast c() for XRaw objects. */
 SEXP XStringSet_unlist(SEXP x)
 {
 	SEXP ans;
@@ -253,9 +242,7 @@ SEXP XStringSet_unlist(SEXP x)
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 {
 	SEXP ans;
@@ -279,9 +266,7 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
  * Getting the order or rank of an XStringSet object.
  */
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP XStringSet_is_unsorted(SEXP x, SEXP strictly)
 {
 	SEXP ans;
@@ -296,9 +281,7 @@ SEXP XStringSet_is_unsorted(SEXP x, SEXP strictly)
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP XStringSet_order(SEXP x)
 {
 	SEXP ans;
@@ -313,9 +296,7 @@ SEXP XStringSet_order(SEXP x)
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP XStringSet_rank(SEXP x)
 {
 	SEXP ans;
@@ -337,9 +318,7 @@ SEXP XStringSet_rank(SEXP x)
  * Getting the duplicates of an XStringSet object.
  */
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP XStringSet_duplicated(SEXP x)
 {
 	SEXP ans;
@@ -361,10 +340,7 @@ SEXP XStringSet_duplicated(SEXP x)
  * Identical value matching within an XStringSet object.
  */
 
-/*
- * --- .Call ENTRY POINT ---
- */
-
+/* --- .Call ENTRY POINT --- */
 SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch)
 {
 	SEXP ans;
