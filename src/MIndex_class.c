@@ -97,7 +97,7 @@ cachedIRanges _get_cachedMIndex_elt(const cachedMIndex *cached_x, int i)
 	if (cached_x->dups0_high2low != R_NilValue
 	 && LENGTH(cached_x->dups0_high2low) != 0
 	 && (low = INTEGER(cached_x->dups0_high2low)[i]) != NA_INTEGER)
-		i = low;
+		i = low - 1;
 	cached_iranges.classname = "IRanges";
 	cached_iranges.is_constant_width = 1;
 	cached_iranges.offset = 0;
