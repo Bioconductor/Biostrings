@@ -94,8 +94,9 @@ cachedIRanges _get_cachedMIndex_elt(const cachedMIndex *cached_x, int i)
 	int low;
 	SEXP ends_elt;
 
-	low = INTEGER(cached_x->dups0_high2low)[i];
-	if (low != NA_INTEGER)
+	if (cached_x->dups0_high2low != R_NilValue
+	 && LENGTH(cached_x->dups0_high2low) != 0
+	 && (low = INTEGER(cached_x->dups0_high2low)[i]) != NA_INTEGER)
 		i = low;
 	cached_iranges.classname = "IRanges";
 	cached_iranges.is_constant_width = 1;
@@ -141,13 +142,14 @@ static void add_val_to_INTEGER(SEXP x, int val)
 SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width0)
 {
 	SEXP ans, ans_elt;
-	int i, k1;
+	int i, low;
 
 	PROTECT(ans = duplicate(x_ends));
 	for (i = 0; i < LENGTH(ans); i++) {
-		if (LENGTH(x_high2low) != 0
-		 && (k1 = INTEGER(x_high2low)[i]) != NA_INTEGER) {
-			PROTECT(ans_elt = duplicate(VECTOR_ELT(ans, k1 - 1)));
+		if (x_high2low != R_NilValue
+		 && LENGTH(x_high2low) != 0
+		 && (low = INTEGER(x_high2low)[i]) != NA_INTEGER) {
+			PROTECT(ans_elt = duplicate(VECTOR_ELT(ans, low - 1)));
 			SET_ELEMENT(ans, i, ans_elt);
 			UNPROTECT(1);
 			continue;
