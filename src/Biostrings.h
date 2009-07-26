@@ -601,7 +601,7 @@ SEXP XStringSet_vmatch_pattern_at(
 
 SEXP debug_match_pattern_boyermoore();
 
-void _match_pattern_boyermoore(
+int _match_pattern_boyermoore(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
 	int nfirstmatches

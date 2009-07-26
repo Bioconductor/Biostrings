@@ -188,5 +188,5 @@ cachedIRanges get_cachedMIndex_elt(const cachedMIndex *cached_x, int i);
  * A BOYER-MOORE-LIKE MATCHING ALGO
  */
 
-void match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches);
+int match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches);
 
