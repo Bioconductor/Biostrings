@@ -248,6 +248,9 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_get_cachedMIndex_elt_width0);
 	REGISTER_CCALLABLE(_get_cachedMIndex_elt);
 
+/* match_pattern_boyermoore.c */
+	REGISTER_CCALLABLE(_match_pattern_boyermoore);
+
 	return;
 }
 

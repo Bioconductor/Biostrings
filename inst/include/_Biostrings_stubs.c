@@ -171,3 +171,13 @@ DEFINE_CCALLABLE_STUB(cachedIRanges, get_cachedMIndex_elt,
 	(                    cached_x,     i)
 )
 
+
+/*
+ * Stubs for callables defined in match_pattern_boyermoore.c
+ */
+
+DEFINE_NOVALUE_CCALLABLE_STUB(match_pattern_boyermoore,
+	(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches),
+	(                     P,                      S,     nfirstmatches)
+)
+

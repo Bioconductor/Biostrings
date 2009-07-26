@@ -103,7 +103,7 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
 	else if (strcmp(algo, "naive-exact") == 0)
 		match_naive_exact(P, S);
 	else if (strcmp(algo, "boyer-moore") == 0)
-		_match_pattern_boyermoore(P, S);
+		_match_pattern_boyermoore(P, S, -1);
 	else if (strcmp(algo, "shift-or") == 0)
 		_match_pattern_shiftor(P, S, max_mm, fixedP, fixedS);
 	else if (strcmp(algo, "indels") == 0)

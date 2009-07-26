@@ -603,7 +603,8 @@ SEXP debug_match_pattern_boyermoore();
 
 void _match_pattern_boyermoore(
 	const cachedCharSeq *P,
-	const cachedCharSeq *S
+	const cachedCharSeq *S,
+	int nfirstmatches
 );
 
 

@@ -368,13 +368,14 @@ static void init_MWshift_table()
 	} \
 }
 
-void _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S)
+void _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches)
 {
-	int n, i1, i2, j1, j2, shift, shift1, i, j;
+	int nmatches, n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Prmc, c; /* Prmc is P right-most char */
 
 	if (P->length <= 0)
 		error("empty pattern");
+	nmatches = 0;
 	init_P0buffer(P);
 	init_j0shift0();
 	init_VSGSshift_table();
@@ -417,6 +418,9 @@ void _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S)
 			if (j1 == 0) {
 				/* we have a full match! */
 				_report_match(i1 + 1, P->length);
+				nmatches++;
+				if (nfirstmatches >= 0 && nmatches >= nfirstmatches)
+					break;
 				shift = P0buffer_shift0;
 			} else {
 				shift = get_VSGSshift(c, j1 - 1);
