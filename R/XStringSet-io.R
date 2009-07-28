@@ -206,7 +206,7 @@ XStringSetToFASTArecords <- function(x)
 
 fastq.geometry <- function(file)
 {
-    on.exit(.Call("fasta_io_cleanup", PACKAGE="Biostrings"))
+    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("fastq_geometry", file, PACKAGE="Biostrings")
 }
 
@@ -216,7 +216,7 @@ fastq.geometry <- function(file)
         stop("'drop.quality' must be TRUE or FALSE")
     if (!identical(subjectClass, "DNAString"))
         stop("'subjectClass' must be \"DNAString\"")
-    on.exit(.Call("fasta_io_cleanup", PACKAGE="Biostrings"))
+    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     C_ans <- .Call("read_fastq", file, drop.quality, PACKAGE="Biostrings")
     views_width <- rep.int(C_ans[[1]][2], C_ans[[1]][1])
     fastq_seqs <- successiveViews(C_ans[[2]], views_width)

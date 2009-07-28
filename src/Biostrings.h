@@ -327,9 +327,11 @@ SEXP XString_xscat(SEXP args);
 SEXP XStringSet_xscat(SEXP args);
 
 
-/* fasta_io.c */
+/* XStringSet_io.c */
 
-SEXP debug_fasta_io();
+SEXP debug_XStringSet_io();
+
+SEXP io_cleanup();
 
 SEXP fasta_info(
 	SEXP filepath,

@@ -15,8 +15,8 @@ debug_XString_class <- function()
 debug_XStringSet_class <- function()
     invisible(.Call("debug_XStringSet_class", PACKAGE="Biostrings"))
 
-debug_fasta_io <- function()
-    invisible(.Call("debug_fasta_io", PACKAGE="Biostrings"))
+debug_XStringSet_io <- function()
+    invisible(.Call("debug_XStringSet_io", PACKAGE="Biostrings"))
 
 debug_SparseList_utils <- function()
     invisible(.Call("debug_SparseList_utils", PACKAGE="Biostrings"))

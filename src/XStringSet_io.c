@@ -11,7 +11,7 @@
 
 static int debug = 0;
 
-SEXP debug_fasta_io()
+SEXP debug_XStringSet_io()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
@@ -53,7 +53,7 @@ static void open_files(SEXP paths)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP fasta_io_cleanup()
+SEXP io_cleanup()
 {
 	int i;
 
