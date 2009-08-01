@@ -317,13 +317,13 @@ Function                    & Description \\
 \Rfunction{[}               & Extracts the specified elements of the alignment object \\
 \Rfunction{alphabet}        & Extracts the allowable characters in the original strings \\
 \Rfunction{compareStrings}  & Creates character string mashups of the alignments \\
+\Rfunction{deletion}        & Extracts the locations of the gaps inserted into the pattern for the alignments \\
 \Rfunction{length}          & Extracts the number of patterns aligned \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
 \Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
 \Rfunction{nedit}           & Computes the Levenshtein edit distance of the alignments \\
-\Rfunction{indel}           & Extracts the locations of the insertions \& deletions in the alignments \\
-\Rfunction{insertion}       & Extracts the locations of the insertions in the alignments \\
-\Rfunction{deletion}        & Extracts the locations of the deletions in the alignments \\
+\Rfunction{indel}           & Extracts the locations of the insertion \& deletion gaps in the alignments \\
+\Rfunction{insertion}       & Extracts the locations of the gaps inserted into the subject for the alignments \\
 \Rfunction{nindel}          & Computes the number of insertions \& deletions in the alignments \\
 \Rfunction{nmatch}          & Computes the number of matching characters in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
