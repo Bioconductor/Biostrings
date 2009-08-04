@@ -78,9 +78,9 @@ setMethod("masks", "MaskedXString", function(x) x@masks)
 
 setMethod("length", "MaskedXString", function(x) length(unmasked(x)))
 
-setMethod("maskedwidth", "MaskedXString", function(x) maskedwidth(reduce(masks(x))))
+setMethod("maskedwidth", "MaskedXString", function(x) maskedwidth(collapse(masks(x))))
 
-setMethod("maskedratio", "MaskedXString", function(x) maskedratio(reduce(masks(x))))
+setMethod("maskedratio", "MaskedXString", function(x) maskedratio(collapse(masks(x))))
 
 setMethod("nchar", "MaskedXString",
     function(x, type="chars", allowNA=FALSE)
@@ -232,7 +232,7 @@ setAs("MaskedXString", "NormalIRanges",
 setAs("MaskedXString", "XStringViews",
     function(from)
     {
-        views <- gaps(reduce(masks(from)))[[1]]
+        views <- gaps(collapse(masks(from)))[[1]]
         unsafe.newXStringViews(unmasked(from), start(views), width(views))
     }
 )
@@ -241,7 +241,7 @@ setAs("MaskedXString", "XStringViews",
 toXStringViewsOrXString <- function(x)
 {
     x0 <- unmasked(x)
-    mask1 <- reduce(masks(x))
+    mask1 <- collapse(masks(x))
     if (isEmpty(mask1))
         return(x0)
     views <- gaps(mask1)[[1]]
@@ -250,14 +250,13 @@ toXStringViewsOrXString <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The transformation methods (endomorphisms) "reduce" and "gaps".
+### The transformation methods (endomorphisms) "collapse" and "gaps".
 ###
 
-### 'with.inframe.attrib' is ignored.
-setMethod("reduce", "MaskedXString",
-    function(x, with.inframe.attrib=FALSE)
+setMethod("collapse", "MaskedXString",
+    function(x)
     {
-        x@masks <- reduce(masks(x))
+        x@masks <- collapse(masks(x))
         x
     }
 )
@@ -266,7 +265,7 @@ setMethod("reduce", "MaskedXString",
 setMethod("gaps", "MaskedXString",
     function(x, start=NA, end=NA)
     {
-        x@masks <- gaps(reduce(masks(x)))
+        x@masks <- gaps(collapse(masks(x)))
         x
     }
 )

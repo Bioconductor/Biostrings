@@ -90,7 +90,7 @@ exportMethods(
     show,
     "==", "!=", duplicated, unique, is.unsorted, order, sort, rank,
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
-    narrow, subseq, threebands, "subseq<-", reduce, gaps,
+    narrow, subseq, threebands, "subseq<-", collapse, gaps,
     Views, XStringViews,
     unmasked, maskedwidth, maskedratio, masks, "masks<-",
     partitioning

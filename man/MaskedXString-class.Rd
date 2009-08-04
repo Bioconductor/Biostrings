@@ -53,7 +53,7 @@
 \alias{coerce,MaskedXString,XStringViews-method}
 
 % Other methods:
-\alias{reduce,MaskedXString-method}
+\alias{collapse,MaskedXString-method}
 \alias{gaps,MaskedXString-method}
 \alias{subseq,MaskedXString-method}
 \alias{as.character,MaskedXString-method}
@@ -185,8 +185,8 @@
 
   \describe{
     \item{}{
-      \code{reduce(x)}:
-      Reduce the set of masks in \code{x} to a single mask made of
+      \code{collapse(x)}:
+      Collapses the set of masks in \code{x} into a single mask made of
       all active masks.
     }
     \item{}{
