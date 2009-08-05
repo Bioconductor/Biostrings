@@ -353,8 +353,8 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
 		if (buf1->match_widths.buflength != -1) {
 			width_buf1 = buf1->match_widths.elts + *key;
 			width_buf2 = buf2_matches->match_widths.elts + *key;
-			IntAE_append_shifted_vals(width_buf1,
-				width_buf2->elts, width_buf2->nelt, view_offset);
+			IntAE_append(width_buf1,
+				width_buf2->elts, width_buf2->nelt);
 		}
 	}
 	_MatchPDictBuf_flush(buf2);
