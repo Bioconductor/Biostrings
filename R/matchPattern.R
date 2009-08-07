@@ -189,7 +189,7 @@ gregexpr2 <- function(pattern, text)
     algo <- .normargAlgorithm(algorithm)
     if (.is.character.algo(algo))
         return(.character.matchPattern(pattern, subject, algo,
-                                       max.mismatch, min.mismatch, fixed, count.only))
+                                       max.mismatch, fixed, count.only))
     if (!is(subject, "XString"))
         subject <- XString(NULL, subject)
     pattern <- normargPattern(pattern, subject)
