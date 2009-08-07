@@ -78,6 +78,26 @@ void _BitCol_set_bit(BitCol *bitcol, int i, int bit)
 	return;
 }
 
+void _BitCol_A_gets_BimpliesA(BitCol *A, const BitCol *B)
+{
+	div_t q;
+	BitWord *Abitword;
+	const BitWord *Bbitword;
+	int i1;
+
+	if (A->nbit != B->nbit)
+		error("_BitCol_A_gets_BimpliesA(): "
+		      "'A' and 'B' are incompatible");
+	q = div(A->nbit, NBIT_PER_BITWORD);
+	if (q.rem != 0)
+		q.quot++;
+	Abitword = A->bitword0;
+	Bbitword = B->bitword0;
+	for (i1 = 0; i1 < q.quot; i1++)
+		*(Abitword++) |= ~(*(Bbitword++));
+	return;
+}
+
 /* WARNING: This is a 0-copy column extraction! */
 BitCol _BitMatrix_get_col(const BitMatrix *bitmat, int j)
 {

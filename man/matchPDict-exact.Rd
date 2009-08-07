@@ -96,15 +96,12 @@
   \item{algorithm}{
     Not supported yet.
   }
-  \item{max.mismatch}{
-    The maximum number of mismatching letters allowed (see
+  \item{max.mismatch, min.mismatch}{
+    The maximum and minimum number of mismatching letters allowed (see
     \code{?\link{isMatching}} for the details).
     This man page focuses on exact matching of a constant width
     dictionary so \code{max.mismatch=0} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
-  }
-  \item{min.mismatch}{
-    NOT SUPPORTED YET
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities

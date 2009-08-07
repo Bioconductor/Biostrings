@@ -392,34 +392,34 @@ static void collect_keys(int key0, SEXP low2high, IntAE *keys)
 }
 
 static int nmismatch_in_HT(const cachedCharSeq *H, const cachedCharSeq *T,
-		const cachedCharSeq *S, int Hshift, int Tshift, int max_mm)
+		const cachedCharSeq *S, int Hshift, int Tshift, int max_mis)
 {
 	int nmismatch;
 
-	nmismatch = _selected_nmismatch_at_Pshift_fun(H, S, Hshift, max_mm);
-	if (nmismatch > max_mm)
+	nmismatch = _selected_nmismatch_at_Pshift_fun(H, S, Hshift, max_mis);
+	if (nmismatch > max_mis)
 		return nmismatch;
-	max_mm -= nmismatch;
-	nmismatch += _selected_nmismatch_at_Pshift_fun(T, S, Tshift, max_mm);
+	max_mis -= nmismatch;
+	nmismatch += _selected_nmismatch_at_Pshift_fun(T, S, Tshift, max_mis);
 	return nmismatch;
 }
 
 static void match_HT(const cachedCharSeq *H, const cachedCharSeq *T,
-		const cachedCharSeq *S, int tb_end, int max_mm,
+		const cachedCharSeq *S, int tb_end, int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf, int key)
 {
 	int HTdeltashift, nmismatch;
 
 	HTdeltashift = H->length + matchpdict_buf->tb_matches.tb_width;
 	nmismatch = nmismatch_in_HT(H, T,
-			S, tb_end - HTdeltashift, tb_end, max_mm);
-	if (nmismatch <= max_mm)
+			S, tb_end - HTdeltashift, tb_end, max_mis);
+	if (nmismatch <= max_mis && nmismatch >= min_mis)
 		_MatchPDictBuf_report_match(matchpdict_buf, key, tb_end);
 	return;
 }
 
 static void match_headtail_for_loc(const HeadTail *headtail,
-		const cachedCharSeq *S, int tb_end, int max_mm,
+		const cachedCharSeq *S, int tb_end, int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int i;
@@ -432,13 +432,14 @@ static void match_headtail_for_loc(const HeadTail *headtail,
 	{
 		H = headtail->head.elts + *key;
 		T = headtail->tail.elts + *key;
-		match_HT(H, T, S, tb_end, max_mm, matchpdict_buf, *key);
+		match_HT(H, T, S, tb_end, max_mis, min_mis, matchpdict_buf, *key);
 	}
 	return;
 }
 
 static void match_headtail_for_key(const HeadTail *headtail, int key,
-		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const cachedCharSeq *H, *T;
@@ -451,13 +452,14 @@ static void match_headtail_for_key(const HeadTail *headtail, int key,
 	     j < tb_end_buf->nelt;
 	     j++, tb_end++)
 	{
-		match_HT(H, T, S, *tb_end, max_mm, matchpdict_buf, key);
+		match_HT(H, T, S, *tb_end, max_mis, min_mis, matchpdict_buf, key);
 	}
 	return;
 }
 
 static void match_headtail_by_loc(const HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int j;
@@ -468,14 +470,15 @@ static void match_headtail_by_loc(const HeadTail *headtail,
 	     j++, tb_end++)
 	{
 		match_headtail_for_loc(headtail,
-				S, *tb_end, max_mm,
+				S, *tb_end, max_mis, min_mis,
 				matchpdict_buf);
 	}
 	return;
 }
 
 static void match_headtail_by_key(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int i;
@@ -486,7 +489,7 @@ static void match_headtail_by_key(HeadTail *headtail,
 	     i++, key++)
 	{
 		match_headtail_for_key(headtail, *key,
-				S, tb_end_buf, max_mm,
+				S, tb_end_buf, max_mis, min_mis,
 				matchpdict_buf);
 	}
 	return;
@@ -510,7 +513,7 @@ static void match_headtail_by_key(HeadTail *headtail,
 #define TMPMATCH_BMBUF_MAXNCOL 200
 
 static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
-		int max_Hwidth, int max_Twidth, int max_mm)
+		int max_Hwidth, int max_Twidth, int max_mis)
 {
 	PPHeadTail ppheadtail;
 	int i;
@@ -528,7 +531,7 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 		for (i = 0; i < 4; i++)
 			ppheadtail.tail_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
 							max_Twidth, 0UL);
-	ppheadtail.nmis_bmbuf = _new_BitMatrix(bmbuf_nrow, max_mm + 1, 0UL);
+	ppheadtail.nmis_bmbuf = _new_BitMatrix(bmbuf_nrow, max_mis + 1, 0UL);
 	ppheadtail.tmp_match_bmbuf = _new_BitMatrix(bmbuf_nrow, TMPMATCH_BMBUF_MAXNCOL, ULONG_MAX);
 	ppheadtail.tmp_tb_end_buf = Salloc((long) TMPMATCH_BMBUF_MAXNCOL, int);
 	//Rprintf("new_PPHeadTail():\n");
@@ -536,12 +539,12 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 	return ppheadtail;
 }
 
-HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
-		SEXP pptb, SEXP max_mismatch, SEXP fixed,
+HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail, SEXP pptb,
+		SEXP max_mismatch, SEXP fixed,
 		int with_ppheadtail)
 {
 	HeadTail headtail;
-	int tb_length, max_mm, fixedP, fixedS,
+	int tb_length, max_mis, fixedP, fixedS,
 	    key, max_Hwidth, max_Twidth, max_HTwidth, HTwidth, keys_buflength;
 	SEXP low2high, dups, base_codes;
 	RoSeqs head, tail;
@@ -549,7 +552,7 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	low2high = _get_PreprocessedTB_low2high(pptb);
-	max_mm = INTEGER(max_mismatch)[0];
+	max_mis = INTEGER(max_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (pdict_head == R_NilValue) {
@@ -587,24 +590,24 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail,
 	headtail.max_HTwidth = max_HTwidth;
 	headtail.keys_buf = new_IntAE(keys_buflength, keys_buflength, 0);
 	//Rprintf("_new_HeadTail():\n");
-	//Rprintf("  tb_length=%d max_mm=%d\n", tb_length, max_mm);
+	//Rprintf("  tb_length=%d max_mis=%d\n", tb_length, max_mis);
 	//Rprintf("  max_Hwidth=%d max_Twidth=%d max_HTwidth=%d\n",
 	//	max_Hwidth, max_Twidth, max_HTwidth);
 	//Rprintf("  keys_buflength=%d\n", keys_buflength);
 
-	/* The (max_mm <= 4) and (max_Hwidth + max_Twidth <= 10 + 4 * max_mm)
+	/* The (max_mis <= 4) and (max_Hwidth + max_Twidth <= 10 + 4 * max_mis)
 	   criteria together with the MAX_REMAINING_KEYS value above (20)
 	   are optimized for the Core 2 Duo arch (64bit) */
 	if (with_ppheadtail
-	 && (max_mm < max_HTwidth)
-	 && (max_mm <= 4)
-	 && (max_Hwidth + max_Twidth <= 10 + 4 * max_mm)
+	 && (max_mis < max_HTwidth)
+	 && (max_mis <= 4)
+	 && (max_Hwidth + max_Twidth <= 10 + 4 * max_mis)
 	 && (fixedP && fixedS)) {
 		/* The base codes for the head and tail are assumed to be the
 		   same as for the Trusted Band */
 		base_codes = _get_PreprocessedTB_base_codes(pptb);
 		headtail.ppheadtail = new_PPHeadTail(base_codes, keys_buflength,
-						max_Hwidth, max_Twidth, max_mm);
+						max_Hwidth, max_Twidth, max_mis);
 	} else {
 		headtail.ppheadtail.is_init = 0;
 	}
@@ -709,13 +712,13 @@ static void preprocess_tail(const RoSeqs *tail, const IntAE *keys,
 }
 
 static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
-		const cachedCharSeq *S, int tb_end, int max_mm)
+		const cachedCharSeq *S, int tb_end, int max_mis, int min_mis)
 {
 	BitMatrix *nmis_bmbuf;
 	const BitMatrix *head_bmbuf, *tail_bmbuf;
 	int j1, j2, offset;
 	char s;
-	BitCol bitcol;
+	BitCol bitcol, max_mis_bitcol, min_mis_bitcol;
 
 	nmis_bmbuf = &(headtail->ppheadtail.nmis_bmbuf);
 	// Match the heads
@@ -754,23 +757,24 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		bitcol = _BitMatrix_get_col(tail_bmbuf + offset, j1);
 		_BitMatrix_grow1rows(nmis_bmbuf, &bitcol);
 	}
-	return _BitMatrix_get_col(nmis_bmbuf, max_mm);
+	max_mis_bitcol = _BitMatrix_get_col(nmis_bmbuf, max_mis);
+	if (min_mis >= 1) {
+		min_mis_bitcol = _BitMatrix_get_col(nmis_bmbuf, min_mis - 1);
+		_BitCol_A_gets_BimpliesA(&max_mis_bitcol, &min_mis_bitcol);
+	}
+	return max_mis_bitcol;
 }
 
-static void report_matches_for_loc(HeadTail *headtail, int tb_end,
-		MatchPDictBuf *matchpdict_buf)
+static void report_matches_for_loc(const BitCol *bitcol, HeadTail *headtail,
+		int tb_end, MatchPDictBuf *matchpdict_buf)
 {
 	// Note that using _BitCol_get_bit() for this would be easier but is
 	// also twice slower!
-	BitMatrix *nmis_bmbuf;
-	BitCol bitcol;
 	BitWord *bitword;
 	int i, i2;
 
-	nmis_bmbuf = &(headtail->ppheadtail.nmis_bmbuf);
-	bitcol = _BitMatrix_get_col(nmis_bmbuf, nmis_bmbuf->ncol - 1);
-	bitword = bitcol.bitword0;
-	for (i = i2 = 0; i < bitcol.nbit; i++, i2++) {
+	bitword = bitcol->bitword0;
+	for (i = i2 = 0; i < bitcol->nbit; i++, i2++) {
 		if (i2 >= NBIT_PER_BITWORD) {
 			i2 = 0;
 			bitword++;
@@ -824,7 +828,8 @@ static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_
 */
 
 static void match_ppheadtail0(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	BitMatrix *tmp_match_bmbuf;
@@ -853,7 +858,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 	{
 		if (*tb_end < min_safe_tb_end || max_safe_tb_end < *tb_end) {
 			match_headtail_for_loc(headtail,
-					S, *tb_end, max_mm,
+					S, *tb_end, max_mis, min_mis,
 					matchpdict_buf);
 			continue;
 		}
@@ -863,8 +868,8 @@ static void match_ppheadtail0(HeadTail *headtail,
 					headtail->keys_buf.nelt);
 		bitcol = match_ppheadtail_for_loc(headtail,
 				matchpdict_buf->tb_matches.tb_width,
-				S, *tb_end, max_mm);
-		report_matches_for_loc(headtail, *tb_end, matchpdict_buf);
+				S, *tb_end, max_mis, min_mis);
+		report_matches_for_loc(&bitcol, headtail, *tb_end, matchpdict_buf);
 /*
 		ncol = tmp_match_bmbuf->ncol;
 		_BitMatrix_set_col(tmp_match_bmbuf, ncol, &bitcol);
@@ -881,7 +886,8 @@ static void match_ppheadtail0(HeadTail *headtail,
 }
 
 static void match_ppheadtail(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nkey0, nkey1, nkey2, i;
@@ -891,7 +897,7 @@ static void match_ppheadtail(HeadTail *headtail,
 	nkey2 = nkey0 % NBIT_PER_BITWORD;
 	if (nkey2 > MAX_REMAINING_KEYS) {
 		match_ppheadtail0(headtail,
-			S, tb_end_buf, max_mm,
+			S, tb_end_buf, max_mis, min_mis,
 			matchpdict_buf);
 		return;
 	}
@@ -899,7 +905,7 @@ static void match_ppheadtail(HeadTail *headtail,
 	if (nkey1 != 0) {
 		headtail->keys_buf.nelt = nkey1;
 		match_ppheadtail0(headtail,
-			S, tb_end_buf, max_mm,
+			S, tb_end_buf, max_mis, min_mis,
 			matchpdict_buf);
 		headtail->keys_buf.nelt = nkey0;
 	}
@@ -908,7 +914,7 @@ static void match_ppheadtail(HeadTail *headtail,
 	     i++, key++)
 	{
 		match_headtail_for_key(headtail, *key,
-				S, tb_end_buf, max_mm,
+				S, tb_end_buf, max_mis, min_mis,
 				matchpdict_buf);
 	}
 	return;
@@ -916,7 +922,8 @@ static void match_ppheadtail(HeadTail *headtail,
 
 /*
 static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf, int max_mm,
+		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	clock_t time0;
@@ -925,14 +932,14 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 	time0 = clock();
 	for (int i = 0; i < 100; i++) {
 		match_ppheadtail0(headtail,
-			S, tb_end_buf, max_mm,
+			S, tb_end_buf, max_mis, min_mis,
 			matchpdict_buf);
 	}
 	dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 	time0 = clock();
 	for (int i = 0; i < 100; i++) {
 		match_headtail_by_key(headtail,
-			S, tb_end_buf, max_mm,
+			S, tb_end_buf, max_mis, min_mis,
 			matchpdict_buf);
 	}
 	dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
@@ -949,7 +956,8 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 
 void _match_pdict_flanks_at(int key0, SEXP low2high,
 		HeadTail *headtail,
-		const cachedCharSeq *S, int tb_end, int max_mm, int fixedP,
+		const cachedCharSeq *S, int tb_end,
+		int max_mis, int min_mis, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
 /*
@@ -961,7 +969,7 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
 */
 	collect_keys(key0, low2high, &(headtail->keys_buf));
 	match_headtail_for_loc(headtail,
-		S, tb_end, max_mm,
+		S, tb_end, max_mis, min_mis,
 		matchpdict_buf);
 	return;
 }
@@ -970,7 +978,8 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
    _match_pdict_all_flanks() just propagates the matches to the duplicates */
 void _match_pdict_all_flanks(SEXP low2high,
 		HeadTail *headtail,
-		const cachedCharSeq *S, int max_mm,
+		const cachedCharSeq *S,
+		int max_mis, int min_mis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const IntAE *tb_matching_keys, *tb_end_buf;
@@ -1007,19 +1016,19 @@ void _match_pdict_all_flanks(SEXP low2high,
 				tb_end_buf->nelt);
 			subtotal_NFC += NFC;
 */
-			match_ppheadtail(headtail,
-					S, tb_end_buf, max_mm,
+			match_ppheadtail(headtail, S, tb_end_buf,
+					max_mis, min_mis,
 					matchpdict_buf);
 /*
-			BENCHMARK_match_ppheadtail(headtail,
-					S, tb_end_buf, max_mm,
+			BENCHMARK_match_ppheadtail(headtail, S, tb_end_buf,
+					max_mis, min_mis,
 					matchpdict_buf);
 */
 		} else {
 			// Use brute force
-			match_headtail_by_key(headtail,
-				S, tb_end_buf, max_mm,
-				matchpdict_buf);
+			match_headtail_by_key(headtail, S, tb_end_buf,
+					max_mis, min_mis,
+					matchpdict_buf);
 		}
 
 /*
@@ -1046,14 +1055,14 @@ sum(countIndex(mi6))  # 17896
 
 			time0 = clock();
 			for (int j = 0; j < 5000; j++)
-				match_ppheadtail(headtail,
-					S, tb_end_buf, max_mm,
+				match_ppheadtail(headtail, S, tb_end_buf,
+					max_mis, min_mis,
 					matchpdict_buf);
 			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			time0 = clock();
 			for (int j = 0; j < 5000; j++)
-				match_headtail_by_key(headtail,
-					S, tb_end_buf, max_mm,
+				match_headtail_by_key(headtail, S, tb_end_buf,
+					max_mis, min_mis,
 					matchpdict_buf);
 			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			if (dt1 > dt2) {

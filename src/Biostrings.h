@@ -550,7 +550,7 @@ int (*_selected_nmismatch_at_Pshift_fun)(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
 	int Pshift,
-	int max_mm
+	int max_mis
 );
 
 void _select_nmismatch_at_Pshift_fun(
@@ -619,7 +619,7 @@ SEXP bits_per_long();
 void _match_pattern_shiftor(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
-	int max_mm,
+	int max_mis,
 	int fixedP,
 	int fixedS
 );
@@ -632,7 +632,7 @@ SEXP debug_match_pattern_indels();
 void _match_pattern_indels(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
-	int max_mm,
+	int max_mis,
 	int fixedP,
 	int fixedS
 );
@@ -837,6 +837,11 @@ void _BitCol_set_bit(
 	int bit
 );
 
+void _BitCol_A_gets_BimpliesA(
+	BitCol *A,
+	const BitCol *B
+);
+
 BitCol _BitMatrix_get_col(
 	const BitMatrix *bitmat,
 	int j
@@ -991,7 +996,8 @@ void _match_pdict_flanks_at(
 	HeadTail *headtail,
 	const cachedCharSeq *S,
 	int tb_end,
-	int max_mm,
+	int max_mis,
+	int min_mis,
 	int fixedP,
 	MatchPDictBuf *matchpdict_buf
 );
@@ -1000,7 +1006,8 @@ void _match_pdict_all_flanks(
 	SEXP low2high,
 	HeadTail *headtail,
 	const cachedCharSeq *S,
-	int max_mm,
+	int max_mis,
+	int min_mis,
 	MatchPDictBuf *matchpdict_buf
 );
 
@@ -1094,7 +1101,8 @@ void _match_pdictACtree2(
 	SEXP pptb,
 	HeadTail *headtail,
 	const cachedCharSeq *S,
-	int max_mm,
+	int max_mis,
+	int min_mis,
 	int fixedP,
 	int fixedS,
 	MatchPDictBuf *matchpdict_buf

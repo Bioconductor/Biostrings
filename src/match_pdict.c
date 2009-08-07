@@ -44,25 +44,25 @@ static MatchPDictBuf new_MatchPDictBuf_from_TB_PDict(SEXP matches_as,
 				head_widths, tail_widths);
 }
 
-static void match_pdict(SEXP pptb, HeadTail *headtail,
-		const cachedCharSeq *S,
-		SEXP max_mismatch, SEXP fixed,
+static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int max_mm, fixedP, fixedS;
+	int max_mis, min_mis, fixedP, fixedS;
 	SEXP low2high;
 	const char *type;
 	TBMatchBuf *tb_matches;
 
-	max_mm = INTEGER(max_mismatch)[0];
+	max_mis = INTEGER(max_mismatch)[0];
+	min_mis = INTEGER(min_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	type = get_classname(pptb);
 /*
 	if (strcmp(type, "ACtree2") == 0) {
-		_match_pdictACtree2(pptb, headtail,
-			S, max_mm, fixedP, fixedS,
+		_match_pdictACtree2(pptb, headtail, S,
+			max_mis, min_mis, fixedP, fixedS,
 			matchpdict_buf);
 		return;
 	}
@@ -86,7 +86,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail,
 	 * (i.e. headtail->max_HTwidth == 0) because we need to propagate
 	 * the matches to the duplicates anyway */
 	_match_pdict_all_flanks(low2high, headtail,
-		S, max_mm, matchpdict_buf);
+		S, max_mis, min_mis, matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING match_pdict()\n");
@@ -126,14 +126,14 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
 #endif
-	headtail = _new_HeadTail(pdict_head, pdict_tail,
-				 pptb, max_mismatch, fixed, 1);
+	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
+				 max_mismatch, fixed, 1);
 	S = cache_XRaw(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
 	match_pdict(pptb, &headtail,
-		&S, max_mismatch, fixed,
+		&S, max_mismatch, min_mismatch, fixed,
 		&matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
@@ -160,8 +160,8 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
 #endif
 	tb_length = _get_PreprocessedTB_length(pptb);
-	headtail = _new_HeadTail(pdict_head, pdict_tail,
-				 pptb, max_mismatch, fixed, 1);
+	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
+				 max_mismatch, fixed, 1);
 	S = cache_XRaw(subject);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
@@ -177,9 +177,9 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 			error("'subject' has \"out of limits\" views");
 		S_view.seq = S.seq + view_offset;
 		S_view.length = *view_width;
-		match_pdict(pptb, &headtail,
-			&S_view, max_mismatch, fixed,
-			&matchpdict_buf);
+		match_pdict(pptb, &headtail, &S_view,
+			    max_mismatch, min_mismatch, fixed,
+			    &matchpdict_buf);
 		_MatchPDictBuf_append_and_flush(&global_matchpdict_buf,
 			&matchpdict_buf, view_offset);
 	}
@@ -212,9 +212,9 @@ static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 	PROTECT(ans = NEW_LIST(S_length));
 	for (j = 0; j < S_length; j++) {
 		S_elt = _get_cachedXStringSet_elt(&S, j);
-		match_pdict(pptb, headtail,
-			&S_elt, max_mismatch, fixed,
-			matchpdict_buf);
+		match_pdict(pptb, headtail, &S_elt,
+			    max_mismatch, min_mismatch, fixed,
+			    matchpdict_buf);
 		SET_ELEMENT(ans, j, _Seq2MatchBuf_which_asINTEGER(&(matchpdict_buf->matches)));
 		_MatchPDictBuf_flush(matchpdict_buf);
 	}
@@ -242,8 +242,8 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 	     j++, current_col += tb_length)
 	{
 		S_elt = _get_cachedXStringSet_elt(&S, j);
-		match_pdict(pptb, headtail,
-			&S_elt, max_mismatch, fixed,
+		match_pdict(pptb, headtail, &S_elt,
+			max_mismatch, min_mismatch, fixed,
 			matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
 		/* count_buf->nelt is tb_length */
@@ -285,9 +285,9 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 	for (j = 0; j < S_length; j++)
 	{
 		S_elt = _get_cachedXStringSet_elt(&S, j);
-		match_pdict(pptb, headtail,
-			&S_elt, max_mismatch, fixed,
-			matchpdict_buf);
+		match_pdict(pptb, headtail, &S_elt,
+			    max_mismatch, min_mismatch, fixed,
+			    matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
 		/* count_buf->nelt is tb_length */
 		for (i = 0; i < tb_length; i++)
@@ -323,8 +323,8 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING XStringSet_vmatch_pdict()\n");
 #endif
-	headtail = _new_HeadTail(pdict_head, pdict_tail,
-				 pptb, max_mismatch, fixed, 1);
+	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
+				 max_mismatch, fixed, 1);
 
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);

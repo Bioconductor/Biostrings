@@ -267,8 +267,6 @@
         stop("'algorithm' can only be '\"auto\"' for now")
     max.mismatch <- normargMaxMismatch(max.mismatch)
     min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
-    if (min.mismatch != 0L)
-        stop("'min.mismatch' is not supported yet")
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
@@ -318,8 +316,6 @@
         stop("'algorithm' can only be '\"auto\"' for now")
     max.mismatch <- normargMaxMismatch(max.mismatch)
     min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
-    if (min.mismatch != 0L)
-        stop("'min.mismatch' is not supported yet")
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
     if (matches.as == "MATCHES_AS_WHICH") {

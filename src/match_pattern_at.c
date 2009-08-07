@@ -24,8 +24,8 @@ SEXP debug_match_pattern_at()
  * nmismatch_at()
  *
  * The 4 static functions below stop counting mismatches if the number
- * exceeds 'max_mm'. The caller can disable this by passing 'P->length' to
- * the 'max_mm' arg.
+ * exceeds 'max_mis'. The caller can disable this by passing 'P->length' to
+ * the 'max_mis' arg.
  *
  * fixedP | fixedS | letters *p and *s match iff...
  * --------------------------------------------------------
@@ -36,7 +36,7 @@ SEXP debug_match_pattern_at()
  */
 
 static int nmismatch_at_Pshift_fixedPfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_mm)
+		const cachedCharSeq *S, int Pshift, int max_mis)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
@@ -48,14 +48,14 @@ static int nmismatch_at_Pshift_fixedPfixedS(const cachedCharSeq *P,
 	{
 		if (j >= 0 && j < S->length && *p == *s)
 			continue;
-		if (nmismatch++ >= max_mm)
+		if (nmismatch++ >= max_mis)
 			break;
 	}
 	return nmismatch;
 }
 
 static int nmismatch_at_Pshift_fixedPnonfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_mm)
+		const cachedCharSeq *S, int Pshift, int max_mis)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
@@ -67,14 +67,14 @@ static int nmismatch_at_Pshift_fixedPnonfixedS(const cachedCharSeq *P,
 	{
 		if (j >= 0 && j < S->length && ((*p) & ~(*s)) == 0)
 			continue;
-		if (nmismatch++ >= max_mm)
+		if (nmismatch++ >= max_mis)
 			break;
 	}
 	return nmismatch;
 }
 
 static int nmismatch_at_Pshift_nonfixedPfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_mm)
+		const cachedCharSeq *S, int Pshift, int max_mis)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
@@ -86,14 +86,14 @@ static int nmismatch_at_Pshift_nonfixedPfixedS(const cachedCharSeq *P,
 	{
 		if (j >= 0 && j < S->length && (~(*p) & (*s)) == 0)
 			continue;
-		if (nmismatch++ >= max_mm)
+		if (nmismatch++ >= max_mis)
 			break;
 	}
 	return nmismatch;
 }
 
 static int nmismatch_at_Pshift_nonfixedPnonfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_mm)
+		const cachedCharSeq *S, int Pshift, int max_mis)
 {
 	int nmismatch, i, j;
 	const char *p, *s;
@@ -105,14 +105,14 @@ static int nmismatch_at_Pshift_nonfixedPnonfixedS(const cachedCharSeq *P,
 	{
 		if (j >= 0 && j < S->length && ((*p) & (*s)))
 			continue;
-		if (nmismatch++ >= max_mm)
+		if (nmismatch++ >= max_mis)
 			break;
 	}
 	return nmismatch;
 }
 
 int (*_selected_nmismatch_at_Pshift_fun)(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_mm);
+		const cachedCharSeq *S, int Pshift, int max_mis);
 
 void _select_nmismatch_at_Pshift_fun(int fixedP, int fixedS)
 {
@@ -295,7 +295,7 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
  */
 
 static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
-		SEXP at, int at_type0, int max_mm, int indels, int ans_type0,
+		SEXP at, int at_type0, int max_mis, int indels, int ans_type0,
 		int *ans_elt)
 {
 	int at_length, i, *at_elt, offset, nmismatch, min_width;
@@ -310,17 +310,17 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		if (indels) {
 			offset = *at_elt - 1;
 			if (at_type0 == 0)
-				nmismatch = _nedit_for_Ploffset(P, S, offset, max_mm, 1, &min_width);
+				nmismatch = _nedit_for_Ploffset(P, S, offset, max_mis, 1, &min_width);
 			else
-				nmismatch = _nedit_for_Proffset(P, S, offset, max_mm, 1, &min_width);
+				nmismatch = _nedit_for_Proffset(P, S, offset, max_mis, 1, &min_width);
 		} else {
 			if (at_type0 == 0)
 				offset = *at_elt - 1;
 			else
 				offset = *at_elt - P->length;
-			nmismatch = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mm);
+			nmismatch = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mis);
 		}
-		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mm);
+		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mis);
 	}
 	return;
 }
@@ -357,7 +357,7 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
 {
 	cachedCharSeq P, S;
-	int at_length, at_type0, max_mm, indels, fixedP, fixedS,
+	int at_length, at_type0, max_mis, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt;
 	SEXP ans;
 
@@ -365,8 +365,8 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	S = cache_XRaw(subject);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
-	max_mm = INTEGER(max_mismatch)[0];
-	indels = LOGICAL(with_indels)[0] && max_mm != 0;
+	max_mis = INTEGER(max_mismatch)[0];
+	indels = LOGICAL(with_indels)[0] && max_mis != 0;
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (indels && !(fixedP && fixedS))
@@ -382,7 +382,7 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	if (!indels)
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
-	match_pattern_at(&P, &S, at, at_type0, max_mm, indels, ans_type0, ans_elt);
+	match_pattern_at(&P, &S, at, at_type0, max_mis, indels, ans_type0, ans_elt);
 	UNPROTECT(1);
 	return ans;
 }
@@ -398,7 +398,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 {
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
-	int S_length, at_length, at_type0, max_mm, indels, fixedP, fixedS,
+	int S_length, at_length, at_type0, max_mis, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt, i;
 	SEXP ans;
 
@@ -407,8 +407,8 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	S_length = _get_cachedXStringSet_length(&S);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
-	max_mm = INTEGER(max_mismatch)[0];
-	indels = LOGICAL(with_indels)[0] && max_mm != 0;
+	max_mis = INTEGER(max_mismatch)[0];
+	indels = LOGICAL(with_indels)[0] && max_mis != 0;
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (indels && !(fixedP && fixedS))
@@ -426,7 +426,8 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 
 	for (i = 0; i < S_length; i++, ans_elt += at_length) {
 		S_elt = _get_cachedXStringSet_elt(&S, i);
-		match_pattern_at(&P, &S_elt, at, at_type0, max_mm, indels, ans_type0, ans_elt);
+		match_pattern_at(&P, &S_elt, at, at_type0,
+				 max_mis, indels, ans_type0, ans_elt);
 	}
 	UNPROTECT(1);
 	return ans;

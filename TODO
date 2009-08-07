@@ -254,7 +254,7 @@ Long term TODO list
   on the millions of elements of the head and tail of a TB_PDict object.
 
 - Change signature of matchPattern() (and of friends too, maybe): add a
-  'min.mismatch' arg.
+  'min.mismatch' arg. (already done for matchPDict() and family).
 
 - Have the "XStringViews" method for XString objects support the 'collapse' arg.
 

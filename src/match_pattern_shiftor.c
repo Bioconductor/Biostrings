@@ -282,12 +282,12 @@ static void shiftor(const cachedCharSeq *P, const cachedCharSeq *S,
 }
 
 void _match_pattern_shiftor(const cachedCharSeq *P, const cachedCharSeq *S,
-		int max_mm, int fixedP, int fixedS)
+		int max_mis, int fixedP, int fixedS)
 {
 	if (P->length > shiftor_maxbits)
 		error("pattern is too long");
 	if (fixedP != fixedS)
 		error("fixedP != fixedS not supported by shift-or algo");
-	shiftor(P, S, max_mm + 1, fixedP);
+	shiftor(P, S, max_mis + 1, fixedP);
 }
 
