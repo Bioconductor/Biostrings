@@ -39,13 +39,13 @@
 
 \usage{
   matchPattern(pattern, subject, algorithm="auto",
-               max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   countPattern(pattern, subject, algorithm="auto",
-               max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   vmatchPattern(pattern, subject, algorithm="auto",
-                max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   vcountPattern(pattern, subject, algorithm="auto",
-                max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
 }
 
 \arguments{
@@ -64,15 +64,16 @@
     \code{"naive-inexact"}, \code{"boyer-moore"}, \code{"shift-or"}
     or \code{"indels"}.
   }
-  \item{max.mismatch}{
-    The maximum number of mismatching letters allowed (see
+  \item{max.mismatch, min.mismatch}{
+    The maximum and minimum number of mismatching letters allowed (see
     \code{\link{isMatchingAt}} for the details).
     If non-zero, an inexact matching algorithm is used.
   }
   \item{with.indels}{
-    If \code{TRUE} then indels are allowed. In that case \code{max.mismatch}
-    is interpreted as the maximum "edit distance" allowed between the pattern
-    and a match. Note that in order to avoid pollution by redundant matches,
+    If \code{TRUE} then indels are allowed. In that case, \code{min.mismatch}
+    must be \code{0} and \code{max.mismatch} is interpreted as the maximum
+    "edit distance" allowed between the pattern and a match.
+    Note that in order to avoid pollution by redundant matches,
     only the "best local matches" are returned.
     Roughly speaking, a "best local match" is a match that is locally
     both the closest (to the pattern P) and the shortest.

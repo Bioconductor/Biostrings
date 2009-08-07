@@ -253,8 +253,7 @@ Long term TODO list
   reached. We definitely want to be able to do this if we're going to use it
   on the millions of elements of the head and tail of a TB_PDict object.
 
-- Change signature of matchPattern() (and of friends too, maybe): add a
-  'min.mismatch' arg. (already done for matchPDict() and family).
+- Add the 'min.mismatch' arg. to isMatchingAt() and family.
 
 - Have the "XStringViews" method for XString objects support the 'collapse' arg.
 

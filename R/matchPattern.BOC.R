@@ -145,7 +145,7 @@ plotBOC <- function(x, main)
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC_SubjectString",
     function(pattern, subject, algorithm="auto",
-             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
     {
         pattern <- normargPattern(pattern, subject@subject)
         pattern_length <- nchar(pattern)

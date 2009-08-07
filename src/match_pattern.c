@@ -64,20 +64,25 @@ static void match_naive_exact(const cachedCharSeq *P, const cachedCharSeq *S)
  */
 
 static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
-		int max_mis, int fixedP, int fixedS)
+		int max_mis, int min_mis, int fixedP, int fixedS)
 {
 	int Pshift, // position of pattern left-most char relative to the subject
 	    n2, // 1 + position of pattern right-most char relative to the subject
-	    min_Pshift, max_n2;
+	    min_Pshift, max_n2, nmis;
 
 	if (P->length <= 0)
 		error("empty pattern");
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	min_Pshift = P->length <= max_mis ? 1 - P->length : -max_mis;
 	max_n2 = S->length - min_Pshift;
-	for (Pshift = min_Pshift, n2 = min_Pshift + P->length; n2 <= max_n2; Pshift++, n2++)
-		if (_selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_mis) <= max_mis)
+	for (Pshift = min_Pshift, n2 = min_Pshift + P->length;
+	     n2 <= max_n2;
+	     Pshift++, n2++)
+	{
+		nmis = _selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_mis);
+		if (nmis <= max_mis && nmis >= min_mis)
 			_report_match(Pshift + 1, P->length);
+	}
 	return;
 }
 
@@ -87,19 +92,21 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
  */
 
 static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP algorithm,
-		SEXP max_mismatch, SEXP with_indels, SEXP fixed)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed)
 {
 	const char *algo;
-	int max_mis, fixedP, fixedS;
+	int max_mis, min_mis, fixedP, fixedS;
 
 	max_mis = INTEGER(max_mismatch)[0];
-	if (P->length > max_mis + S->length)
+	min_mis = INTEGER(min_mismatch)[0];
+	if (max_mis < P->length - S->length
+	 || min_mis > P->length)
 		return;
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	if (P->length <= max_mis || strcmp(algo, "naive-inexact") == 0)
-		match_naive_inexact(P, S, max_mis, fixedP, fixedS);
+		match_naive_inexact(P, S, max_mis, min_mis, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
 		match_naive_exact(P, S);
 	else if (strcmp(algo, "boyer-moore") == 0)
@@ -121,6 +128,7 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
  *   pattern, subject: XString objects;
  *   algorithm: single string;
  *   max_mismatch: (single integer) the max number of mismatching letters;
+ *   min_mismatch: (single integer) the min number of mismatching letters;
  *   with_indels: single logical;
  *   fixed: logical vector of length 2;
  *   count_only: single logical.
@@ -131,7 +139,8 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
  */
 
 SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
-		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+		SEXP count_only)
 {
 	cachedCharSeq P, S;
 	int is_count_only;
@@ -141,7 +150,8 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
-	match_pattern(&P, &S, algorithm, max_mismatch, with_indels, fixed);
+	match_pattern(&P, &S, algorithm,
+		max_mismatch, min_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
 }
 
@@ -153,7 +163,8 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP algorithm,
-		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+		SEXP count_only)
 {
 	cachedCharSeq P, S, S_view;
 	int is_count_only, nviews, i, *view_start, *view_width, view_offset;
@@ -174,7 +185,8 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		S_view.seq = S.seq + view_offset;
 		S_view.length = *view_width;
 		_shift_match_on_reporting(view_offset);
-		match_pattern(&P, &S_view, algorithm, max_mismatch, with_indels, fixed);
+		match_pattern(&P, &S_view, algorithm,
+			max_mismatch, min_mismatch, with_indels, fixed);
 	}
 	return _reported_matches_asSEXP();
 }
@@ -184,7 +196,8 @@ SEXP XStringViews_match_pattern(SEXP pattern,
  *   subject: XStringSet object.
  */
 SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
-		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP count_only)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+		SEXP count_only)
 {
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
@@ -203,7 +216,8 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
 		S_elt = _get_cachedXStringSet_elt(&S, i);
-		match_pattern(&P, &S_elt, algorithm, max_mismatch, with_indels, fixed);
+		match_pattern(&P, &S_elt, algorithm,
+			max_mismatch, min_mismatch, with_indels, fixed);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
 		if (is_count_only)
 			INTEGER(ans)[i] = INTEGER(ans_elt)[0];

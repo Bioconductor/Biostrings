@@ -647,6 +647,7 @@ SEXP XString_match_pattern(
 	SEXP subject,
 	SEXP algorithm,
 	SEXP max_mismatch,
+	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
 	SEXP count_only
@@ -659,6 +660,7 @@ SEXP XStringViews_match_pattern(
 	SEXP views_width,
 	SEXP algorithm,
 	SEXP max_mismatch,
+	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
 	SEXP count_only
@@ -669,6 +671,7 @@ SEXP XStringSet_vmatch_pattern(
 	SEXP subject,
 	SEXP algorithm,
 	SEXP max_mismatch,
+	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
 	SEXP count_only

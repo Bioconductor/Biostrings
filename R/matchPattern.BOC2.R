@@ -152,7 +152,7 @@ plotBOC2 <- function(x, main)
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC2_SubjectString",
     function(pattern, subject, algorithm="auto",
-             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
     {
         .matchPattern.BOC2(pattern, subject, max.mismatch, fixed)
     }
@@ -161,7 +161,7 @@ setMethod("matchPattern", "BOC2_SubjectString",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPattern", "BOC2_SubjectString",
     function(pattern, subject, algorithm="auto",
-             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
     {
         .matchPattern.BOC2(pattern, subject, max.mismatch, fixed, count.only=TRUE)
     }
