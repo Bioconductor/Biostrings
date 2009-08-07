@@ -23,9 +23,21 @@ normargMaxMismatch <- function(max.mismatch, argname="max.mismatch")
     if (!isSingleNumber(max.mismatch))
         stop("'", argname, "' must be a single integer")
     max.mismatch <- as.integer(max.mismatch)
-    if (max.mismatch < 0)
+    if (max.mismatch < 0L)
         stop("'", argname, "' must be a non-negative integer")
     max.mismatch
+}
+
+normargMinMismatch <- function(min.mismatch, max.mismatch, argname="min.mismatch")
+{
+    if (!isSingleNumber(min.mismatch))
+        stop("'", argname, "' must be a single integer")
+    min.mismatch <- as.integer(min.mismatch)
+    if (min.mismatch < 0L)
+        stop("'", argname, "' must be a non-negative integer")
+    if (min.mismatch > max.mismatch)
+        stop("'", argname, "' must be <= 'max.mismatch'")
+    min.mismatch
 }
 
 normargWithIndels <- function(with.indels, argname="with.indels")

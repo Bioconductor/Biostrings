@@ -67,17 +67,17 @@
 
 \usage{
   matchPDict(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
   countPDict(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
   whichPDict(pdict, subject, algorithm="auto",
-             max.mismatch=0, fixed=TRUE, verbose=FALSE)
+             max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
 
   vcountPDict(pdict, subject, algorithm="auto",
-              max.mismatch=0, fixed=TRUE,
+              max.mismatch=0, min.mismatch=0, fixed=TRUE,
               collapse=FALSE, weight=1L, verbose=FALSE)
   vwhichPDict(pdict, subject, algorithm="auto",
-              max.mismatch=0, fixed=TRUE, verbose=FALSE)
+              max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
 }
 
 \arguments{
@@ -102,6 +102,9 @@
     This man page focuses on exact matching of a constant width
     dictionary so \code{max.mismatch=0} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
+  }
+  \item{min.mismatch}{
+    NOT SUPPORTED YET
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities

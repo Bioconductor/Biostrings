@@ -1111,6 +1111,7 @@ SEXP XString_match_pdict(
 	SEXP pdict_tail,
 	SEXP subject,
 	SEXP max_mismatch,
+	SEXP min_mismatch,
 	SEXP fixed,
 	SEXP matches_as,
 	SEXP envir
@@ -1124,6 +1125,7 @@ SEXP XStringViews_match_pdict(
 	SEXP views_start,
 	SEXP views_width,
 	SEXP max_mismatch,
+	SEXP min_mismatch,
 	SEXP fixed,
 	SEXP matches_as,
 	SEXP envir
@@ -1135,6 +1137,7 @@ SEXP XStringSet_vmatch_pdict(
 	SEXP pdict_tail,
 	SEXP subject,
 	SEXP max_mismatch,
+	SEXP min_mismatch,
 	SEXP fixed,
 	SEXP collapse,
 	SEXP weight,

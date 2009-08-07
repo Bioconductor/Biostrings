@@ -105,6 +105,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail,
  *   pdict_tail: tail(pdict) (XStringSet or NULL);
  *   subject: subject;
  *   max_mismatch: max.mismatch (max nb of mismatches out of the TB);
+ *   min_mismatch: min.mismatch (min nb of mismatches out of the TB);
  *   fixed: logical vector of length 2;
  *   matches_as: "DEVNULL", "MATCHES_AS_WHICH", "MATCHES_AS_COUNTS"
  *               or "MATCHES_AS_ENDS";
@@ -114,7 +115,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail,
 
 SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
-		SEXP max_mismatch, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
 	HeadTail headtail;
@@ -144,7 +145,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 
 SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
-		SEXP max_mismatch, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
 	HeadTail headtail;
@@ -198,7 +199,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 
 static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
-		SEXP max_mismatch, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int S_length, j;
@@ -223,7 +224,7 @@ static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 
 static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
-		SEXP max_mismatch, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int tb_length, S_length, j, *current_col;
@@ -255,7 +256,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 
 static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
-		SEXP max_mismatch, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		int collapse, SEXP weight,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -309,7 +310,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 
 SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
-		SEXP max_mismatch, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP collapse, SEXP weight,
 		SEXP matches_as, SEXP envir)
 {
@@ -336,7 +337,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	    case MATCHES_AS_WHICH:
 		PROTECT(ans = vwhich_pdict(pptb, &headtail,
 				subject,
-				max_mismatch, fixed,
+				max_mismatch, min_mismatch, fixed,
 				&matchpdict_buf));
 	    break;
 	    case MATCHES_AS_COUNTS:
@@ -344,12 +345,13 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		if (collapse0 == 0)
 			PROTECT(ans = vcount_pdict_notcollapsed(pptb, &headtail,
 					subject,
-					max_mismatch, fixed,
+					max_mismatch, min_mismatch, fixed,
 					&matchpdict_buf));
 		else
 			PROTECT(ans = vcount_pdict_collapsed(pptb, &headtail,
 					subject,
-					max_mismatch, fixed, collapse0, weight,
+					max_mismatch, min_mismatch, fixed,
+					collapse0, weight,
 					&matchpdict_buf));
 	    break;
 	    case MATCHES_AS_ENDS:
