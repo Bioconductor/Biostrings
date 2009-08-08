@@ -96,6 +96,7 @@
 \alias{PDict,DNAStringSet-method}
 \alias{PDict,XStringViews-method}
 \alias{PDict,AsIs-method}
+\alias{PDict,probetable-method}
 
 
 \title{PDict objects}
@@ -324,7 +325,7 @@
   ## A. NO HEAD AND NO TAIL (THE DEFAULT)
   ## ---------------------------------------------------------------------
   library(drosophila2probe)
-  dict0 <- DNAStringSet(drosophila2probe$sequence)
+  dict0 <- DNAStringSet(drosophila2probe)
   dict0                                # The original dictionary.
   length(dict0)                        # Hundreds of thousands of patterns.
   unique(nchar(dict0))                 # Patterns are 25-mers.

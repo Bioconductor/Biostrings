@@ -100,7 +100,7 @@
   reverseComplement(x)
 
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   probes
   alphabetFrequency(probes, collapse=TRUE)
   rcprobes <- reverseComplement(probes)

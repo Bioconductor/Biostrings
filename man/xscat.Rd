@@ -55,7 +55,7 @@
 
   ## Concatenating big XStringSet objects:
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   mm <- complement(narrow(probes, start=13, end=13))
   left <- narrow(probes, end=12)
   right <- narrow(probes, start=14)

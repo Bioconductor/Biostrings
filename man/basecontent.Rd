@@ -55,7 +55,7 @@ countbases(seq, dna = TRUE)
  if (interactive()) {
    library(hgu95av2probe)
    system.time(y1 <- countbases(hgu95av2probe$sequence))
-   x <- DNAStringSet(hgu95av2probe$sequence)
+   x <- DNAStringSet(hgu95av2probe)
    system.time(y2 <- alphabetFrequency(x, baseOnly=TRUE))
  }
 }

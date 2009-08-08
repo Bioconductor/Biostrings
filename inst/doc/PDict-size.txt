@@ -15,7 +15,7 @@ EXAMPLE 1: 265400 x 25 PDict
 
 library(Biostrings)
 library(drosophila2probe)
-dict0 <- DNAStringSet(drosophila2probe$sequence)
+dict0 <- DNAStringSet(drosophila2probe)
 pdict0 <- PDict(dict0)
 .Call("ACtree_summary", pdict0@threeparts@pptb, PACKAGE="Biostrings")
 

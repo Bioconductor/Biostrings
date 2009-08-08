@@ -196,7 +196,7 @@ sequence, or the consensus matrix of a set of sequences}
 
   ## With input made of multiple sequences:
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   alphabetFrequency(probes[1:50], baseOnly=TRUE)
   alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
 

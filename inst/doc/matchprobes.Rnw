@@ -126,7 +126,7 @@ DNA sequences can be reversed and/or complemented with the
 
 \subsubsection{Matching sets of probes against each other}
 <<matchprobes>>=
-pm <- DNAStringSet(hgu95av2probe$sequence)
+pm <- DNAStringSet(hgu95av2probe)
 dict <- pm[3801:4000]
 pdict <- PDict(dict)
 m <- vcountPDict(pdict, pm)

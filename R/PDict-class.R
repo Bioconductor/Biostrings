@@ -653,12 +653,19 @@ setMethod("PDict", "XStringViews",
     }
 )
 
-### Just because of those silly "AsIs" objects found in the probe packages
-### (e.g. drosophila2probe$sequence)
+### 2 extra "PDict" methods to deal with the probe sequences stored
+### in the *probe annotation packages (e.g. drosophila2probe).
 setMethod("PDict", "AsIs",
     function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
                 algorithm="ACtree2", skip.invalid.patterns=FALSE)
         .PDict(x, max.mismatch, tb.start, tb.end, tb.width,
                   algorithm, skip.invalid.patterns)
+)
+setMethod("PDict", "probetable",
+    function(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
+                algorithm="ACtree2", skip.invalid.patterns=FALSE)
+        PDict(x$sequence, max.mismatch=max.mismatch,
+              tb.start=tb.start, tb.end=tb.end, tb.width=tb.width,
+              algorithm=algorithm, skip.invalid.patterns=skip.invalid.patterns)
 )
 

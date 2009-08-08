@@ -325,6 +325,7 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 ### interface.
 ###
 
+### NOT exported!
 setGeneric("XStringSet", signature="x",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
         standardGeneric("XStringSet")
@@ -335,17 +336,6 @@ setMethod("XStringSet", "character",
         if (is.null(basetype))
             basetype <- "B"
         .charToXStringSet(x, start, end, width, use.names, basetype)
-    }
-)
-### Just because of the silly "AsIs" objects found in the probe packages
-### (e.g. drosophila2probe$sequence)
-setMethod("XStringSet", "AsIs",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        if (!is.character(x))
-            stop("unsuported input type")
-        class(x) <- "character" # keeps the names (unlike as.character())
-	.charToXStringSet(x, start, end, width, use.names, basetype)
     }
 )
 setMethod("XStringSet", "XString",
@@ -366,6 +356,24 @@ setMethod("XStringSet", "XStringSet",
     }
 )
 
+### 2 extra "XStringSet" methods to deal with the probe sequences stored
+### in the *probe annotation packages (e.g. drosophila2probe).
+setMethod("XStringSet", "AsIs",
+    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+	.charToXStringSet(x, start, end, width, use.names, basetype)
+    }
+)
+setMethod("XStringSet", "probetable",
+    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(basetype, x$sequence, start=start, end=end, width=width,
+                   use.names=use.names)
+)
+
+### Exported
 BStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     XStringSet("B", x, start=start, end=end, width=width,
                              use.names=use.names)

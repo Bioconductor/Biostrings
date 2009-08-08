@@ -74,7 +74,7 @@
   ## ---------------------------------------------------------------------
 
   library(drosophila2probe)
-  dict0 <- DNAStringSet(drosophila2probe$sequence)
+  dict0 <- DNAStringSet(drosophila2probe)
   dict0  # the original dictionary
 
   ## Preprocess the original dictionary by defining a Trusted Band that

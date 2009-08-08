@@ -186,7 +186,7 @@
 
   ## With input made of multiple sequences:
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   dfmat <- dinucleotideFrequency(probes)  # a big matrix
   dinucleotideFrequency(probes, simplify.as="collapsed")
   dinucleotideFrequency(probes, simplify.as="collapsed", as.matrix=TRUE)

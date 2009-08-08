@@ -451,7 +451,7 @@
   ## B. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   probes
 
   RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
@@ -480,7 +480,7 @@
   ## ---------------------------------------------------------------------
   ## Compacting is done typically before serialization.
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   object.size(probes)
   y1 <- subseq(probes[1:12], start=5)
   object.size(y1) 
@@ -497,7 +497,7 @@
   ## E. UNLISTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   unlist(probes)  
 }
 

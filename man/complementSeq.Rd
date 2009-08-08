@@ -80,7 +80,7 @@ complementSeq(seq, start=1, stop=0)
   if (interactive()) {
     library(hgu95av2probe)
     system.time(y1 <- complementSeq(hgu95av2probe$sequence))
-    probes <- DNAStringSet(hgu95av2probe$sequence)
+    probes <- DNAStringSet(hgu95av2probe)
     system.time(y2 <- complement(probes))
   }
 }

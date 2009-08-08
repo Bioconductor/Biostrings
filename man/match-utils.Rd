@@ -257,7 +257,7 @@
   ## or "how many probes in the drosophila2 chip have T, G, T, A at
   ## position 2, 4, 13 and 20, respectively?"
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   q2 <- hasLetterAt(probes, "TGTA", c(2, 4, 13, 20))
   sum(rowSums(q2) == 4)
   ## or "what's the probability to have an A at position 25 if there is

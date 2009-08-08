@@ -199,7 +199,7 @@
 
   ## Creating the pattern dictionary:
   library(drosophila2probe)
-  dict0 <- DNAStringSet(drosophila2probe$sequence)
+  dict0 <- DNAStringSet(drosophila2probe)
   dict0                                # The original dictionary.
   length(dict0)                        # Hundreds of thousands of patterns.
   pdict0 <- PDict(dict0)               # Store the original dictionary in
@@ -403,8 +403,8 @@
 
     library(hgu95av2probe)
     library(hgu133aprobe)
-    probes1 <- DNAStringSet(hgu95av2probe$sequence)
-    probes2 <- DNAStringSet(hgu133aprobe$sequence)
+    probes1 <- DNAStringSet(hgu95av2probe)
+    probes2 <- DNAStringSet(hgu133aprobe)
     pdict2 <- PDict(probes2)
 
     ## Get the mapping from probes1 to probes2 (based on exact matching):

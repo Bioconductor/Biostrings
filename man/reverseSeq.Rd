@@ -60,7 +60,7 @@ revcompRNA(seq)
  if (interactive()) {
    library(hgu95av2probe)
    system.time(y1 <- reverseSeq(hgu95av2probe$sequence))
-   x <- DNAStringSet(hgu95av2probe$sequence)
+   x <- DNAStringSet(hgu95av2probe)
    system.time(y2 <- reverse(x))
 
    system.time(y3 <- revcompDNA(hgu95av2probe$sequence))

@@ -134,7 +134,7 @@
   ## Replace letters of a DNAStringSet object (sorry for the totally
   ## artificial example with absolutely no biological meaning):
   library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe$sequence)
+  probes <- DNAStringSet(drosophila2probe)
   at <- matrix(c(TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
                nrow=length(probes), ncol=width(probes)[1],
                byrow=TRUE)
