@@ -290,6 +290,50 @@ write.XStringViews <- function(x, file="", append=FALSE, format, width=80)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Serialization of XStringSet objects.
+###
+
+save.XStringSet <- function(x, objname, dirpath=".")
+{
+    if (!is(x, "XStringSet"))
+        stop("'x' must be an XStringSet object")
+    ## Don't use 'is(x, "DNAStringSet")' here since we only want to use the
+    ## "pre-compression trick" on a DNAStringSet *instance*. There is no
+    ## guarantee that using this trick on an object deriving from the
+    ## DNAStringSet class won't corrupt the data stored in the extra slots!
+    if (class(x) == "DNAStringSet") {
+        ## The "pre-compression trick" is based on the following property.
+        ## If 'x_dup2unq' is an integer vector (of the same length as 'x')
+        ## that maps from duplicated to unique elements in 'x', then
+        ## 'x' and 'x[x_dup2unq]' contain exactly the same *values* i.e.
+        ## 'all(x == x[x_dup2unq])' is TRUE. Note that other metadata
+        ## attached to 'x' like the names etc could differ though!
+        ## So by replacing 'x' with 'x[x_dup2unq]' below , we actually don't
+        ## modify the sequences in 'x', but the internal representation of 'x'
+        ## has changed. What has changed is that duplicated elements are not
+        ## duplicated in memory anymore (i.e. they all point to the same place
+        ## in memory) so calling compact() on 'x' will be much more efficient.
+        ## Note that, for efficiency reasons, we use PDict() to extract the
+        ## 'x_dup2unq' mapping. This means that the "pre-compression trick"
+        ## works only if 'x' is a rectangular DNAStringSet instance with no
+        ## IUPAC ambiguity codes.
+        pdict <- try(PDict(x), silent=TRUE)  
+        if (!is(pdict, "try-error")) {
+            x_names <- names(x)
+            x_dup2unq <- togroup(pdict@dups0)
+            x <- x[x_dup2unq]
+            names(x) <- x_names
+        }
+    }
+    x <- compact(x)
+    assign(objname, x)
+    objfile <- paste(objname, ".rda", sep="")
+    filepath <- file.path(dirpath, objfile)
+    save(list=objname, file=filepath)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Old stuff (Defunct or Deprecated).
 ###
 

@@ -124,7 +124,7 @@ export(
     fastq.geometry,
     read.XStringViews,
     read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
-    write.XStringSet, write.XStringViews,
+    write.XStringSet, write.XStringViews, save.XStringSet,
 
     ## letter.R:
     letter,

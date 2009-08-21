@@ -7,6 +7,7 @@
 \alias{read.AAStringSet}
 \alias{write.XStringSet}
 \alias{write.XStringViews}
+\alias{save.XStringSet}
 
 \alias{fastq.geometry}
 \alias{FASTArecordsToCharacter}
@@ -34,6 +35,9 @@
   read.RNAStringSet(file, format)
   read.AAStringSet(file, format)
   write.XStringSet(x, file="", append=FALSE, format, width=80)
+
+  ## Serializing an XStringSet object:
+  save.XStringSet(x, objname, dirpath=".")
 
   ## XStringViews object:
   read.XStringViews(file, format, subjectClass, collapse="")
@@ -80,6 +84,12 @@
     Only relevant if \code{format} is \code{"fasta"}.
     The maximum number of letters per line of sequence.
   }
+  \item{objname}{
+    The name of the serialized object.
+  }
+  \item{dirpath}{
+    The path to the directory where to save the serialized object.
+  }
   \item{subjectClass}{
     The class to be given to the subject of the \link{XStringViews} object
     created and returned by the function.
@@ -124,6 +134,11 @@
   write an \link{XStringSet} or \link{XStringViews} object to a file or
   connection. They only support the FASTA format for now.
 
+  Serializing an \link{XStringSet} object with \code{save.XStringSet}
+  is equivalent to using the standard \code{save} mechanism. But it will
+  try to reduce the size of \code{x} in memory first before calling
+  \code{save}. Most of the times this leads to a much reduced size on disk.
+
   \code{FASTArecordsToCharacter}, \code{CharacterToFASTArecords},
   \code{FASTArecordsToXStringViews} and \code{XStringSetToFASTArecords}
   are helper functions used internally by \code{write.XStringSet} and
@@ -161,7 +176,17 @@
                                     # (identifiers and qualities are dropped)
 
   ## ---------------------------------------------------------------------
-  ## C. SOME RELATED HELPER FUNCTIONS
+  ## C. SERIALIZATION
+  ## ---------------------------------------------------------------------
+  library(BSgenome.Celegans.UCSC.ce2)
+  ## Create a "sliding window" on chr I:
+  sw_start <- seq.int(1, length(Celegans$chrI)-50, by=50)
+  sw <- Views(Celegans$chrI, start=sw_start, width=10)
+  my_fake_shortreads <- as(sw, "XStringSet")
+  save.XStringSet(my_fake_shortreads, "my_fake_shortreads", dirpath=tempdir())
+
+  ## ---------------------------------------------------------------------
+  ## D. SOME RELATED HELPER FUNCTIONS
   ## ---------------------------------------------------------------------
   ## Converting 'x'...
   ## ... to a list of FASTA records (as one returned by the "readFASTA" function)
