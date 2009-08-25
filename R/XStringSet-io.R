@@ -293,7 +293,8 @@ write.XStringViews <- function(x, file="", append=FALSE, format, width=80)
 ### Serialization of XStringSet objects.
 ###
 
-save.XStringSet <- function(x, objname, dirpath=".", save.dups=FALSE)
+save.XStringSet <- function(x, objname, dirpath=".",
+        save.dups=FALSE, verbose=TRUE)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
@@ -303,6 +304,8 @@ save.XStringSet <- function(x, objname, dirpath=".", save.dups=FALSE)
         stop("'dirpath' must be a single string")
     if (!isTRUEorFALSE(save.dups))
         stop("'save.dups' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(verbose))
+        stop("'verbose' must be TRUE or FALSE")
     x_dups <- NULL
     ## Don't use 'is(x, "DNAStringSet")' here since we only want to use the
     ## "pre-compression trick" on a DNAStringSet *instance*. There is no
@@ -344,7 +347,11 @@ save.XStringSet <- function(x, objname, dirpath=".", save.dups=FALSE)
         assign(objname2, x_dups)
         objname <- c(objname, objname2)
     }
+    if (verbose)
+        cat("Saving ", filepath, " ... ", sep="")
     save(list=objname, file=filepath)
+    if (verbose)
+        cat("OK\n")
 }
 
 

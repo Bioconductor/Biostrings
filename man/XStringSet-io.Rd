@@ -37,7 +37,7 @@
   write.XStringSet(x, file="", append=FALSE, format, width=80)
 
   ## Serializing an XStringSet object:
-  save.XStringSet(x, objname, dirpath=".", save.dups=FALSE)
+  save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
   ## XStringViews object:
   read.XStringViews(file, format, subjectClass, collapse="")
@@ -91,9 +91,13 @@
     The path to the directory where to save the serialized object.
   }
   \item{save.dups}{
-    Also save the \code{\link[IRanges]{Dups}} object describing how
-    duplicated elements in \code{x} are related to each other.
-    For advanced users only.
+    \code{TRUE} or \code{FALSE}.
+    If \code{TRUE} then the \code{\link[IRanges]{Dups}} object describing
+    how duplicated elements in \code{x} are related to each other is
+    saved too. For advanced users only.
+  }
+  \item{verbose}{
+    \code{TRUE} or \code{FALSE}.
   }
   \item{subjectClass}{
     The class to be given to the subject of the \link{XStringViews} object
