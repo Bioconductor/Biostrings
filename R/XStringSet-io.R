@@ -293,10 +293,17 @@ write.XStringViews <- function(x, file="", append=FALSE, format, width=80)
 ### Serialization of XStringSet objects.
 ###
 
-save.XStringSet <- function(x, objname, dirpath=".")
+save.XStringSet <- function(x, objname, dirpath=".", save.dups=FALSE)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
+    if (!isSingleString(objname))
+        stop("'objname' must be a single string")
+    if (!isSingleString(dirpath))
+        stop("'dirpath' must be a single string")
+    if (!isTRUEorFALSE(save.dups))
+        stop("'save.dups' must be TRUE or FALSE")
+    x_dups <- NULL
     ## Don't use 'is(x, "DNAStringSet")' here since we only want to use the
     ## "pre-compression trick" on a DNAStringSet *instance*. There is no
     ## guarantee that using this trick on an object deriving from the
@@ -319,8 +326,9 @@ save.XStringSet <- function(x, objname, dirpath=".")
         ## IUPAC ambiguity codes.
         pdict <- try(PDict(x), silent=TRUE)  
         if (!is(pdict, "try-error")) {
+            x_dups <- pdict@dups0
             x_names <- names(x)
-            x_dup2unq <- togroup(pdict@dups0)
+            x_dup2unq <- togroup(x_dups)
             x <- x[x_dup2unq]
             names(x) <- x_names
         }
@@ -329,6 +337,13 @@ save.XStringSet <- function(x, objname, dirpath=".")
     assign(objname, x)
     objfile <- paste(objname, ".rda", sep="")
     filepath <- file.path(dirpath, objfile)
+    if (save.dups) {
+        if (is.null(x_dups))
+            stop("could not determine 'x_dups'")
+        objname2 <- paste(objname, "_dups", sep="")
+        assign(objname2, x_dups)
+        objname <- c(objname, objname2)
+    }
     save(list=objname, file=filepath)
 }
 
