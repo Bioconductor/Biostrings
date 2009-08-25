@@ -91,8 +91,9 @@
     The path to the directory where to save the serialized object.
   }
   \item{save.dups}{
-    Also save the \code{\link{Dups}} object describing how duplicated
-    elements in \code{x} are related to each other. For advanced users only.
+    Also save the \code{\link[IRanges]{Dups}} object describing how
+    duplicated elements in \code{x} are related to each other.
+    For advanced users only.
   }
   \item{subjectClass}{
     The class to be given to the subject of the \link{XStringViews} object
