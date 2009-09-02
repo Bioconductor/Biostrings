@@ -332,10 +332,12 @@
                     ## Collapse weights of duplicates.
                     ## TODO: Implement this in C.
                     which_is_not_unique <- which(!sapply(low2high(dups0), is.null))
-                    weight[which_is_not_unique] <-
-                        weight[which_is_not_unique] +
-                        sapply(which_is_not_unique,
-                               function(i) sum(weight[low2high(dups0)[[i]]]))
+                    if (length(which_is_not_unique) != 0L) {
+                        weight[which_is_not_unique] <-
+                            weight[which_is_not_unique] +
+                            sapply(which_is_not_unique,
+                                   function(i) sum(weight[low2high(dups0)[[i]]]))
+                    }
                 }
             }
         } else {
