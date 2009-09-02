@@ -279,7 +279,7 @@
                                 verbose, matches.as)
     else
         stop("'pdict' must be a PDict object")
-    if (length(which_pp_excluded) == 0L)
+    if (is.null(which_pp_excluded))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH")
         return(members(dups0, ans))
@@ -328,7 +328,7 @@
                 weight <- normargWeight(weight, length(subject))
             } else {
                 weight <- normargWeight(weight, length(pdict))
-                if (length(which_pp_excluded) != 0L) {
+                if (!is.null(which_pp_excluded)) {
                     ## Collapse weights of duplicates.
                     ## TODO: Implement this in C.
                     which_is_not_unique <- which(!sapply(low2high(dups0), is.null))
@@ -354,7 +354,7 @@
         stop("MTB_PDict objects are not supported yet, sorry")
     else
         stop("'pdict' must be a PDict object")
-    if (length(which_pp_excluded) == 0L)
+    if (is.null(which_pp_excluded))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH") {
         ## vwhichPDict()

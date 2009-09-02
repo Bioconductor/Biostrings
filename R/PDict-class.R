@@ -298,7 +298,7 @@ setMethod("tail", "PDict3Parts",
         use_pptb0 <- algo == class(pptb0) &&
                      all(width(head) == 0L) && all(width(tail) == 0L)
         if (use_pptb0) {
-            ## We can avoid to do the expensive preprocessing again by
+            ## We can avoid doing the expensive preprocessing again by
             ## making the 'pptb' that would be returned by
             ## 'new(algo, tb, high2low(dups(pptb0)))':
             pptb <- pptb0
