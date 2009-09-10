@@ -116,7 +116,9 @@
     containing the subject sequence(s).
   }
   \item{max.mismatch, min.mismatch}{
-    See details below.
+    Integer vectors of length >= 1 recycled to the length of the
+    \code{at} (or \code{starting.at}, or \code{ending.at}) argument.
+    More details below.
   }
   \item{with.indels}{
     See details below.
@@ -193,16 +195,30 @@
   the \code{at} argument is now called \code{ending.at} and must contain
   the ending positions of the pattern relatively to the subject.
 
-  \code{isMatchingAt}, \code{isMatchingStartingAt} and
-  \code{isMatchingEndingAt}: Return the logical vector (or matrix)
-  defined by \code{min.mismatch <= neditAt(...) <= max.mismatch},
-  \code{min.mismatch <= neditStartingAt(...) <= max.mismatch}
-  and \code{min.mismatch <= neditEndingAt(...) <= max.mismatch},
-  respectively.
+  \code{isMatchingAt}: If \code{subject} is an \link{XString} object,
+  then return the logical vector defined by:
+  \preformatted{
+    min.mismatch <= neditAt(...) <= max.mismatch
+  }
+  If \code{subject} is an \link{XStringSet} object, then return the
+  logical matrix with \code{length(at)} rows and \code{length(subject)}
+  columns defined by:
+  \preformatted{
+    sapply(unname(subject),
+           function(x) isMatchingAt(pattern, x, ...))
+  }
+
+  \code{isMatchingStartingAt} is identical to \code{isMatchingAt} except
+  that the \code{at} argument is now called \code{starting.at}.
+  \code{isMatchingEndingAt} is similar to \code{isMatchingAt} except that
+  the \code{at} argument is now called \code{ending.at} and must contain
+  the ending positions of the pattern relatively to the subject.
 
   \code{which.isMatchingAt}: If \code{subject} is an \link{XString}
-  object, then return the single integer defined by
-  \code{which(isMatchingAt(...))[1]}.
+  object, then return the single integer defined by:
+  \preformatted{
+    which(isMatchingAt(...))[1]
+  }
   If \code{subject} is an \link{XStringSet} object, then return
   the integer vector defined by:
   \preformatted{

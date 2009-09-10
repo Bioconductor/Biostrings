@@ -331,9 +331,12 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 	int at_length, i, k1, k2, *at_elt, max_nmis, min_nmis, nmis, is_matching;
 
 	at_length = LENGTH(at);
-	if (at_length != 0
-         && (LENGTH(max_mismatch) == 0 || LENGTH(min_mismatch) == 0))
-		error("'max_mismatch' and 'min_mismatch' must have at least 1 element");
+	if (at_length != 0) {
+		if (LENGTH(max_mismatch) == 0)
+			error("'max_mismatch' must have at least 1 element");
+		if (ans_type0 != 0 && LENGTH(min_mismatch) == 0)
+			error("'min_mismatch' must have at least 1 element");
+	}
 	if (ans_type0 >= 2)
 		*ans_elt = NA_INTEGER;
 	for (i = 1, k1 = k2 = 0, at_elt = INTEGER(at);

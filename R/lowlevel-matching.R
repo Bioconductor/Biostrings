@@ -124,8 +124,14 @@ normargCollapse <- function(collapse)
     if (ans.type == 0L) {
         max.mismatch <- length(pattern)
     } else {
-        max.mismatch <- normargMaxMismatch(max.mismatch)
-        min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
+        if (!is.numeric(max.mismatch))
+            stop("'max.mismatch' must be a vector of integers")
+        if (!is.integer(max.mismatch))
+            max.mismatch <- as.integer(max.mismatch)
+        if (!is.numeric(min.mismatch))
+            stop("'min.mismatch' must be a vector of integers")
+        if (!is.integer(min.mismatch))
+            min.mismatch <- as.integer(min.mismatch)
     }
     with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, subject)
@@ -151,8 +157,14 @@ normargCollapse <- function(collapse)
     if (ans.type == 0L) {
         max.mismatch <- length(pattern)
     } else {
-        max.mismatch <- normargMaxMismatch(max.mismatch)
-        min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
+        if (!is.numeric(max.mismatch))
+            stop("'max.mismatch' must be a vector of integers")
+        if (!is.integer(max.mismatch))
+            max.mismatch <- as.integer(max.mismatch)
+        if (!is.numeric(min.mismatch))
+            stop("'min.mismatch' must be a vector of integers")
+        if (!is.integer(min.mismatch))
+            min.mismatch <- as.integer(min.mismatch)
     }
     with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, subject)
@@ -311,7 +323,7 @@ setMethod("isMatchingEndingAt", "XStringSet",
 ### 'starting.at' (or 'ending.at') must be integer vectors containing the
 ### starting (or ending) positions of the pattern relatively to the subject.
 ### These functions return the lowest *index* in 'starting.at' (or 'ending.at')
-### for which a match occurred (or NA if no match occurred);
+### for which a match occurred (or NA if no match occurred).
 ###
 
 setGeneric("which.isMatchingStartingAt", signature="subject",
