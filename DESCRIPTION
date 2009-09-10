@@ -49,6 +49,7 @@ Collate: 00datacache.R
 	misc.R
 	SparseList-class.R
 	MIndex-class.R
+	lowlevel-matching.R
 	match-utils.R
 	matchPattern.R
 	maskMotif.R

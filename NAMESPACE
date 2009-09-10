@@ -198,6 +198,7 @@ exportMethods(
 ### --------------------------------------------------------------------------
 ###   SparseList-class.R
 ###   MIndex-class.R
+###   lowlevel-matching.R
 ###   match-utils.R
 ###   matchPattern.R
 ###   matchPattern.BOC.R
@@ -225,11 +226,13 @@ export(
     width0, startIndex, endIndex, countIndex,
     extractAllMatches,
 
-    ## match-utils.R
+    ## lowlevel-matching.R
     neditStartingAt, neditEndingAt, neditAt,
     isMatchingStartingAt, isMatchingEndingAt, isMatchingAt,
     which.isMatchingStartingAt, which.isMatchingEndingAt, which.isMatchingAt,
     hasLetterAt,
+
+    ## match-utils.R
     mismatch, nmatch, nmismatch,
 
     ## matchPattern.R

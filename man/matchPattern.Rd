@@ -66,7 +66,7 @@
   }
   \item{max.mismatch, min.mismatch}{
     The maximum and minimum number of mismatching letters allowed (see
-    \code{\link{isMatchingAt}} for the details).
+    \code{?`\link{lowlevel-matching}`} for the details).
     If non-zero, an inexact matching algorithm is used.
   }
   \item{with.indels}{
@@ -91,7 +91,7 @@
   }
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
-    (see \code{\link{isMatchingAt}} for the details).
+    (see \code{?`\link{lowlevel-matching}`} for the details).
   }
 }
 
@@ -137,9 +137,9 @@
 }
 
 \seealso{
+  \link{lowlevel-matching},
   \code{\link{matchPDict}},
   \code{\link{pairwiseAlignment}},
-  \code{\link{isMatchingAt}},
   \code{\link{mismatch}},
   \code{\link{matchLRPatterns}},
   \code{\link{matchProbePair}},

@@ -2,38 +2,6 @@
 
 \alias{match-utils}
 
-\alias{neditStartingAt}
-\alias{neditEndingAt}
-\alias{neditAt}
-\alias{neditStartingAt,character-method}
-\alias{neditStartingAt,XString-method}
-\alias{neditStartingAt,XStringSet-method}
-\alias{neditEndingAt,character-method}
-\alias{neditEndingAt,XString-method}
-\alias{neditEndingAt,XStringSet-method}
-
-\alias{isMatchingStartingAt}
-\alias{isMatchingEndingAt}
-\alias{isMatchingAt}
-\alias{isMatchingStartingAt,character-method}
-\alias{isMatchingStartingAt,XString-method}
-\alias{isMatchingStartingAt,XStringSet-method}
-\alias{isMatchingEndingAt,character-method}
-\alias{isMatchingEndingAt,XString-method}
-\alias{isMatchingEndingAt,XStringSet-method}
-
-\alias{which.isMatchingStartingAt}
-\alias{which.isMatchingEndingAt}
-\alias{which.isMatchingAt}
-\alias{which.isMatchingStartingAt,character-method}
-\alias{which.isMatchingStartingAt,XString-method}
-\alias{which.isMatchingStartingAt,XStringSet-method}
-\alias{which.isMatchingEndingAt,character-method}
-\alias{which.isMatchingEndingAt,XString-method}
-\alias{which.isMatchingEndingAt,XStringSet-method}
-
-\alias{hasLetterAt}
-
 \alias{mismatch}
 \alias{mismatch,ANY,XStringViews-method}
 \alias{nmatch}
@@ -44,65 +12,17 @@
 \alias{coverage,MaskedXString-method}
 \alias{coverage,MIndex-method}
 
-% Old stuff:
-\alias{nmismatchStartingAt}
-\alias{nmismatchEndingAt}
-\alias{isMatching}
 
-
-\title{Low-level utility functions related to pattern matching}
+\title{Utility functions operating on the matches returned by a
+  high-level matching function}
 
 \description{
-  In this man page we define precisely and illustrate what a "match" of a
-  pattern P in a subject S is in the context of the Biostrings package.
-  This definition of a "match" is central to most pattern matching functions
-  available in this package: unless specified otherwise, most of them will
-  adhere to the definition provided here.
-
-  \code{hasLetterAt} checks whether a sequence or set of sequences has the
-  specified letters at the specified positions.
-  
-  \code{neditAt}, \code{isMatchingAt} and \code{which.isMatchingAt} are
-  low-level matching functions that only check for matches at the specified
-  positions.
-
-  Other utility functions related to pattern matching are described here:
-  the \code{mismatch} function for getting the positions of the mismatching
-  letters of a given pattern relatively to its matches in a given subject,
-  the \code{nmatch} and \code{nmismatch} functions for getting the number of
-  matching and mismatching letters produced by the \code{mismatch} function,
-  and the \code{coverage} function that can be used to get the "coverage" of
-  a subject by a given pattern or set of patterns.
+  Miscellaneous utility functions operating on the matches returned by a
+  high-level matching function like \code{\link{matchPattern}},
+  \code{\link{matchPDict}}, etc...
 }
 
 \usage{
-  hasLetterAt(x, letter, at, fixed=TRUE)
-
-  ## neditAt() and related utils:
-  neditAt(pattern, subject, at=1,
-                  with.indels=FALSE, fixed=TRUE)
-  neditStartingAt(pattern, subject, starting.at=1,
-                  with.indels=FALSE, fixed=TRUE)
-  neditEndingAt(pattern, subject, ending.at=1,
-                  with.indels=FALSE, fixed=TRUE)
-
-  ## isMatchingAt() and related utils:
-  isMatchingAt(pattern, subject, at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  isMatchingStartingAt(pattern, subject, starting.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  isMatchingEndingAt(pattern, subject, ending.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-
-  ## which.isMatchingAt() and related utils:
-  which.isMatchingAt(pattern, subject, at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  which.isMatchingStartingAt(pattern, subject, starting.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  which.isMatchingEndingAt(pattern, subject, ending.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-
-  ## other utils:
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
@@ -111,6 +31,9 @@
 }
 
 \arguments{
+  \item{pattern}{
+    The pattern string.
+  }
   \item{x}{
     A character vector, or an \link{XString} or \link{XStringSet}
     object for \code{hasLetterAt}.
@@ -121,49 +44,8 @@
     An \link{MIndex} object for \code{coverage}, or any object for
     which a \code{coverage} method is defined. See \code{?\link[IRanges]{coverage}}.
   }
-  \item{letter}{
-    A character string or an \link{XString} object containing the letters
-    to check.
-  }
-  \item{at, starting.at, ending.at}{
-    An integer vector specifying the starting (for \code{starting.at}
-    and \code{at}) or ending (for \code{ending.at}) positions of the
-    pattern relatively to the subject.
-
-    For the \code{hasLetterAt} function, \code{letter} and \code{at}
-    must have the same length.
-  }
-  \item{pattern}{
-    The pattern string.
-  }
-  \item{subject}{
-    An \link{XString}, \link{XStringSet} object, or character vector
-    containing the subject sequence(s).
-  }
-  \item{max.mismatch}{
-    See details below.
-  }
-  \item{with.indels}{
-    See details below.
-  }
   \item{fixed}{
-    Only with a \link{DNAString} or \link{RNAString}-based subject can a
-    \code{fixed} value other than the default (\code{TRUE}) be used.
-
-    With \code{fixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
-    Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
-    base alphabet) in the pattern \_and\_ in the subject are interpreted as
-    wildcards i.e. they match any letter that they stand for.
-
-    \code{fixed} can also be a character vector, a subset
-    of \code{c("pattern", "subject")}.
-    \code{fixed=c("pattern", "subject")} is equivalent to \code{fixed=TRUE}
-    (the default).
-    An empty vector is equivalent to \code{fixed=FALSE}.
-    With \code{fixed="subject"}, ambiguities in the pattern only
-    are interpreted as wildcards.
-    With \code{fixed="pattern"}, ambiguities in the subject only
-    are interpreted as wildcards.
+    See \code{?`\link{lowlevel-matching}`}.
   }
   \item{start, end, shift, width}{
     See \code{?\link[IRanges]{coverage}}.
@@ -174,78 +56,17 @@
 }
 
 \details{
-  A "match" of pattern P in subject S is a substring S' of S that is considered
-  similar enough to P according to some distance (or metric) specified by the
-  user. 2 distances are supported by most pattern matching functions in the
-  Biostrings package. The first (and simplest) one is the "number of mismatching
-  letters". It is defined only when the 2 strings to compare have the same
-  length, so when this distance is used, only matches that have the same number
-  of letters as P are considered.
-  The second one is the "edit distance" (aka Levenshtein distance): it's
-  the minimum number of operations needed to transform P into S', where an
-  operation is an insertion, deletion, or substitution of a single letter.
-  When this metric is used, matches can have a different number of letters
-  than P.
+  The \code{mismatch} function gives the positions of the mismatching
+  letters of a given pattern relatively to its matches in a given subject.
 
-  The \code{neditAt} function implements these 2 distances.
-  If \code{with.indels} is \code{FALSE} (the default), then the first distance
-  is used i.e. \code{neditAt} returns the "number of mismatching letters"
-  between the pattern P and the substring S' of S starting at the
-  positions specified in \code{at} (note that \code{neditAt} is vectorized
-  so a long vector of integers can be passed thru the \code{at} argument).
-  If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is
-  used: for each position specified in \code{at}, P is compared to
-  all the substrings S' of S starting at this position and the smallest
-  distance is returned. Note that this distance is guaranteed to be reached
-  for a substrings of length < 2*length(P) so, of course, in practice,
-  P only needs to be compared to a small number of substrings for every
-  starting position.
+  The \code{nmatch} and \code{nmismatch} functions give the number of
+  matching and mismatching letters produced by the \code{mismatch} function.
+
+  The \code{coverage} function computes the "coverage" of a subject
+  by a given pattern or set of patterns.
 }
 
 \value{
-  \code{hasLetterAt}: A logical matrix with one row per element in \code{x}
-  and one column per letter/position to check. When a specified position
-  is invalid with respect to an element in \code{x} then the corresponding
-  matrix element is set to NA.
-
-  \code{neditAt}: If \code{subject} is an \link{XString} object, then
-  return an integer vector of the same length as \code{at}.
-  If \code{subject} is an \link{XStringSet} object, then return the
-  integer matrix with \code{length(at)} rows and \code{length(subject)}
-  columns defined by:
-  \preformatted{
-    sapply(unname(subject),
-           function(x) neditAt(pattern, x, ...))
-  }
-
-  \code{neditStartingAt} is identical to \code{neditAt} except
-  that the \code{at} argument is now called \code{starting.at}.
-  \code{neditEndingAt} is similar to \code{neditAt} except that
-  the \code{at} argument is now called \code{ending.at} and must contain
-  the ending positions of the pattern relatively to the subject.
-
-  \code{isMatchingAt}, \code{isMatchingStartingAt} and
-  \code{isMatchingEndingAt}: Return the logical vector (or matrix)
-  defined by \code{neditAt(...) <= max.mismatch},
-  \code{neditStartingAt(...) <= max.mismatch}
-  and \code{neditEndingAt(...) <= max.mismatch}, respectively.
-
-  \code{which.isMatchingAt}: If \code{subject} is an \link{XString}
-  object, then return the single integer defined by
-  \code{which(isMatchingAt(...))[1]}.
-  If \code{subject} is an \link{XStringSet} object, then return
-  the integer vector defined by:
-  \preformatted{
-    sapply(unname(subject),
-           function(x) which.isMatchingAt(pattern, x, ...))
-  }
-
-  \code{which.isMatchingStartingAt} is identical to \code{which.isMatchingAt}
-  except that the \code{at} argument is now called \code{starting.at}.
-  \code{which.isMatchingEndingAt} is similar to \code{which.isMatchingAt}
-  except that the \code{at} argument is now called \code{ending.at} and must
-  contain the ending positions of the pattern relatively to the subject.
-
   \code{mismatch}:  a list of integer vectors.
   
   \code{nmismatch}:  an integer vector containing the length of the vectors
@@ -259,91 +80,17 @@
 }
 
 \seealso{
-  \code{\link{nucleotideFrequencyAt}},
+  \link{lowlevel-matching},
   \code{\link{matchPattern}},
   \code{\link{matchPDict}},
-  \code{\link{matchLRPatterns}},
-  \code{\link{trimLRPatterns}},
-  \code{\link{IUPAC_CODE_MAP}},
   \link{XString-class},
   \link{XStringViews-class},
   \link{MIndex-class},
   \link[IRanges]{coverage},
-  \link[IRanges]{IRanges-class},
-  \link[IRanges]{MaskCollection-class},
-  \link{MaskedXString-class},
   \link{align-utils}
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## hasLetterAt()
-  ## ---------------------------------------------------------------------
-  x <- DNAStringSet(c("AAACGT", "AACGT", "ACGT", "TAGGA"))
-  hasLetterAt(x, "AAAAAA", 1:6)
-
-  ## hasLetterAt() can be used to answer questions like: "which elements
-  ## in 'x' have an A at position 2 and a G at position 4?"
-  q1 <- hasLetterAt(x, "AG", c(2, 4))
-  which(rowSums(q1) == 2)
-
-  ## or "how many probes in the drosophila2 chip have T, G, T, A at
-  ## position 2, 4, 13 and 20, respectively?"
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe)
-  q2 <- hasLetterAt(probes, "TGTA", c(2, 4, 13, 20))
-  sum(rowSums(q2) == 4)
-  ## or "what's the probability to have an A at position 25 if there is
-  ## one at position 13?"
-  q3 <- hasLetterAt(probes, "AACGT", c(13, 25, 25, 25, 25))
-  sum(q3[ , 1] & q3[ , 2]) / sum(q3[ , 1])
-  ## Probabilities to have other bases at position 25 if there is an A
-  ## at position 13:
-  sum(q3[ , 1] & q3[ , 3]) / sum(q3[ , 1])  # C
-  sum(q3[ , 1] & q3[ , 4]) / sum(q3[ , 1])  # G
-  sum(q3[ , 1] & q3[ , 5]) / sum(q3[ , 1])  # T
-
-  ## See ?nucleotideFrequencyAt for another way to get those results.
-
-  ## ---------------------------------------------------------------------
-  ## neditAt() / isMatchingAt() / which.isMatchingAt()
-  ## ---------------------------------------------------------------------
-  subject <- DNAString("GTATA")
-
-  ## Pattern "AT" matches subject "GTATA" at position 3 (exact match)
-  neditAt("AT", subject, at=3)
-  isMatchingAt("AT", subject, at=3)
-
-  ## ... but not at position 1
-  neditAt("AT", subject)
-  isMatchingAt("AT", subject)
-
-  ## ... unless we allow 1 mismatching letter (inexact match)
-  isMatchingAt("AT", subject, max.mismatch=1)
-
-  ## Here we look at 6 different starting positions and find 3 matches if
-  ## we allow 1 mismatching letter
-  isMatchingAt("AT", subject, at=0:5, max.mismatch=1)
-
-  ## No match
-  neditAt("NT", subject, at=1:4)
-  isMatchingAt("NT", subject, at=1:4)
-
-  ## 2 matches if N is interpreted as an ambiguity (fixed=FALSE)
-  neditAt("NT", subject, at=1:4, fixed=FALSE)
-  isMatchingAt("NT", subject, at=1:4, fixed=FALSE)
-
-  ## max.mismatch != 0 and fixed=FALSE can be used together
-  neditAt("NCA", subject, at=0:5, fixed=FALSE)
-  isMatchingAt("NCA", subject, at=0:5, max.mismatch=1, fixed=FALSE)
-
-  some_starts <- c(10:-10, NA, 6)
-  subject <- DNAString("ACGTGCA")
-  is_matching <- isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
-  some_starts[is_matching]
-
-  which.isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
-
   ## ---------------------------------------------------------------------
   ## mismatch() / nmismatch()
   ## ---------------------------------------------------------------------

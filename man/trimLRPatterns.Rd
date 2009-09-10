@@ -21,10 +21,10 @@
 
 \arguments{
   \item{Lpattern}{
-    The left part of the pattern.
+    The left pattern.
   }
   \item{Rpattern}{
-    The right part of the pattern.
+    The right pattern.
   }
   \item{subject}{
     An \link{XString} or \link{XStringSet} object containing the target
@@ -64,38 +64,20 @@
     \code{\link{matchPattern}} function for more information).
   }
   \item{with.Lindels}{
-    If \code{TRUE} then indels are allowed in the left part of the pattern.
+    If \code{TRUE} then indels are allowed in the left pattern.
     In that case \code{max.Lmismatch} is interpreted as the maximum "edit
-    distance" allowed in the left part of the pattern.
+    distance" allowed in the left pattern.
 
     See the \code{with.indels} argument of the \code{\link{matchPattern}}
     function for more information.
   }
   \item{with.Rindels}{
-    Same as \code{with.Lindels} but for the right part of the pattern.
+    Same as \code{with.Lindels} but for the right pattern.
   }
-  \item{Lfixed}{
-    Only with a \link{DNAString} or \link{RNAString} subject can a
-    \code{Lfixed} value other than the default (\code{TRUE}) be used.
-
-    With \code{Lfixed=FALSE}, ambiguities (i.e. letters from the IUPAC
-    Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that
-    are not from the base alphabet) in the left pattern \_and\_ in the
-    subject are interpreted as wildcards i.e. they match any letter
-    that they stand for.
-
-    \code{Lfixed} can also be a character vector, a subset of
-    \code{c("pattern", "subject")}.
-    \code{Lfixed=c("pattern", "subject")} is equivalent to
-    \code{Lfixed=TRUE} (the default).
-    An empty vector is equivalent to \code{Lfixed=FALSE}.
-    With \code{Lfixed="subject"}, ambiguities in the pattern only are
-    interpreted as wildcards.
-    With \code{Lfixed="pattern"}, ambiguities in the subject only are
-    interpreted as wildcards.
-  }
-  \item{Rfixed}{
-    Same as \code{Lfixed} but for the right part of the pattern.
+  \item{Lfixed, Rfixed}{
+    Whether IUPAC extended letters in the left or right pattern should
+    be interpreted as ambiguities (see \code{?`\link{lowlevel-matching}`}
+    for the details).
   }
   \item{ranges}{
     If \code{TRUE}, then return the ranges to use to trim \code{subject}.
@@ -113,7 +95,7 @@
 \seealso{
   \code{\link{matchPattern}},
   \code{\link{matchLRPatterns}},
-  \link{match-utils},
+  \link{lowlevel-matching},
   \link{XString-class},
   \link{XStringSet-class}
 }
