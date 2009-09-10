@@ -94,6 +94,7 @@
   ## ---------------------------------------------------------------------
   ## mismatch() / nmismatch()
   ## ---------------------------------------------------------------------
+  subject <- DNAString("ACGTGCA")
   m <- matchPattern("NCA", subject, max.mismatch=1, fixed=FALSE)
   mismatch("NCA", m)
   nmismatch("NCA", m)
