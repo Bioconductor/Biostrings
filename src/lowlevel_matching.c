@@ -323,6 +323,28 @@ static int nedit_at(const cachedCharSeq *P, const cachedCharSeq *S,
  * match_pattern_at()
  */
 
+static void check_mismatch_lengths(int at_length,
+		SEXP max_mismatch, SEXP min_mismatch, int ans_type0)
+{
+	if ((at_length == 0 && LENGTH(max_mismatch) > 1)
+         || (at_length != 0 && LENGTH(max_mismatch) > at_length))
+		warning("'max_mismatch' is longer than 'at' "
+			"(remaining elements are ignored)");
+	if ((at_length == 0 && LENGTH(min_mismatch) > 1)
+         || (at_length != 0 && LENGTH(min_mismatch) > at_length))
+		warning("'min_mismatch' is longer than 'at' "
+			"(remaining elements are ignored)");
+	if (at_length == 0)
+		return;
+	if (LENGTH(max_mismatch) == 0)
+		error("'max_mismatch' must have at least 1 element");
+	if (ans_type0 == 0)
+		return;
+	if (LENGTH(min_mismatch) == 0)
+		error("'min_mismatch' must have at least 1 element");
+	return;
+}
+
 static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		SEXP at, int at_type0,
 		SEXP max_mismatch, SEXP min_mismatch, int with_indels0,
@@ -331,12 +353,6 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 	int at_length, i, k1, k2, *at_elt, max_nmis, min_nmis, nmis, is_matching;
 
 	at_length = LENGTH(at);
-	if (at_length != 0) {
-		if (LENGTH(max_mismatch) == 0)
-			error("'max_mismatch' must have at least 1 element");
-		if (ans_type0 != 0 && LENGTH(min_mismatch) == 0)
-			error("'min_mismatch' must have at least 1 element");
-	}
 	if (ans_type0 >= 2)
 		*ans_elt = NA_INTEGER;
 	for (i = 1, k1 = k2 = 0, at_elt = INTEGER(at);
@@ -429,6 +445,8 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	ans_type0 = INTEGER(ans_type)[0];
+	check_mismatch_lengths(at_length,
+			max_mismatch, min_mismatch, ans_type0);
 	switch (ans_type0) {
 		case 0:
 			PROTECT(ans = NEW_INTEGER(at_length));
@@ -476,6 +494,8 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	ans_type0 = INTEGER(ans_type)[0];
+	check_mismatch_lengths(at_length,
+			max_mismatch, min_mismatch, ans_type0);
 	switch (ans_type0) {
 		case 0:
 			PROTECT(ans = allocMatrix(INTSXP, at_length, S_length));

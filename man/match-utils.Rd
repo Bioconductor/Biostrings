@@ -35,9 +35,6 @@
     The pattern string.
   }
   \item{x}{
-    A character vector, or an \link{XString} or \link{XStringSet}
-    object for \code{hasLetterAt}.
-
     An \link{XStringViews} object for \code{mismatch} (typically, one returned
     by \code{matchPattern(pattern, subject)}).
 

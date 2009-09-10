@@ -53,8 +53,8 @@
   specified letters at the specified positions.
   
   \code{neditAt}, \code{isMatchingAt} and \code{which.isMatchingAt} are
-  low-level matching functions that only check for matches at the specified
-  positions.
+  low-level matching functions that only look for matches at the specified
+  positions in the subject.
 }
 
 \usage{
@@ -62,39 +62,35 @@
 
   ## neditAt() and related utils:
   neditAt(pattern, subject, at=1,
-                  with.indels=FALSE, fixed=TRUE)
+          with.indels=FALSE, fixed=TRUE)
   neditStartingAt(pattern, subject, starting.at=1,
-                  with.indels=FALSE, fixed=TRUE)
+          with.indels=FALSE, fixed=TRUE)
   neditEndingAt(pattern, subject, ending.at=1,
-                  with.indels=FALSE, fixed=TRUE)
+          with.indels=FALSE, fixed=TRUE)
 
   ## isMatchingAt() and related utils:
   isMatchingAt(pattern, subject, at=1,
-                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   isMatchingStartingAt(pattern, subject, starting.at=1,
-                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   isMatchingEndingAt(pattern, subject, ending.at=1,
-                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
 
   ## which.isMatchingAt() and related utils:
   which.isMatchingAt(pattern, subject, at=1,
-                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+          follow.index=FALSE)
   which.isMatchingStartingAt(pattern, subject, starting.at=1,
-                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+          follow.index=FALSE)
   which.isMatchingEndingAt(pattern, subject, ending.at=1,
-                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+          follow.index=FALSE)
 }
 
 \arguments{
   \item{x}{
-    A character vector, or an \link{XString} or \link{XStringSet}
-    object for \code{hasLetterAt}.
-
-    An \link{XStringViews} object for \code{mismatch} (typically, one returned
-    by \code{matchPattern(pattern, subject)}).
-
-    An \link{MIndex} object for \code{coverage}, or any object for
-    which a \code{coverage} method is defined. See \code{?\link[IRanges]{coverage}}.
+    A character vector, or an \link{XString} or \link{XStringSet} object.
   }
   \item{letter}{
     A character string or an \link{XString} object containing the letters
@@ -112,7 +108,7 @@
     The pattern string.
   }
   \item{subject}{
-    An \link{XString}, \link{XStringSet} object, or character vector
+    A character vector, or an \link{XString} or \link{XStringSet} object
     containing the subject sequence(s).
   }
   \item{max.mismatch, min.mismatch}{
@@ -141,6 +137,11 @@
     are interpreted as wildcards.
     With \code{fixed="pattern"}, ambiguities in the subject only
     are interpreted as wildcards.
+  }
+  \item{follow.index}{
+    Whether the single integer returned by \code{which.isMatchingAt}
+    (and related utils) should be the first *value* in \code{at} for
+    which a match occurred, or its *index* in \code{at} (the default).
   }
 }
 
@@ -214,8 +215,9 @@
   the \code{at} argument is now called \code{ending.at} and must contain
   the ending positions of the pattern relatively to the subject.
 
-  \code{which.isMatchingAt}: If \code{subject} is an \link{XString}
-  object, then return the single integer defined by:
+  \code{which.isMatchingAt}: The default behaviour (\code{follow.index=FALSE})
+  is as follow. If \code{subject} is an \link{XString} object,
+  then return the single integer defined by:
   \preformatted{
     which(isMatchingAt(...))[1]
   }
@@ -224,6 +226,10 @@
   \preformatted{
     sapply(unname(subject),
            function(x) which.isMatchingAt(pattern, x, ...))
+  }
+  If \code{follow.index=TRUE}, then the returned value is defined by:
+  \preformatted{
+    at[which.isMatchingAt(..., follow.index=FALSE)]
   }
 
   \code{which.isMatchingStartingAt} is identical to \code{which.isMatchingAt}
@@ -312,6 +318,8 @@
   some_starts[is_matching]
 
   which.isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
+  which.isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1,
+                     follow.index=TRUE)
 }
 
 \keyword{methods}
