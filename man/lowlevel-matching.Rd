@@ -70,19 +70,19 @@
 
   ## isMatchingAt() and related utils:
   isMatchingAt(pattern, subject, at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   isMatchingStartingAt(pattern, subject, starting.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   isMatchingEndingAt(pattern, subject, ending.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
 
   ## which.isMatchingAt() and related utils:
   which.isMatchingAt(pattern, subject, at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   which.isMatchingStartingAt(pattern, subject, starting.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   which.isMatchingEndingAt(pattern, subject, ending.at=1,
-                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                  max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
 }
 
 \arguments{
@@ -115,7 +115,7 @@
     An \link{XString}, \link{XStringSet} object, or character vector
     containing the subject sequence(s).
   }
-  \item{max.mismatch}{
+  \item{max.mismatch, min.mismatch}{
     See details below.
   }
   \item{with.indels}{
@@ -195,9 +195,10 @@
 
   \code{isMatchingAt}, \code{isMatchingStartingAt} and
   \code{isMatchingEndingAt}: Return the logical vector (or matrix)
-  defined by \code{neditAt(...) <= max.mismatch},
-  \code{neditStartingAt(...) <= max.mismatch}
-  and \code{neditEndingAt(...) <= max.mismatch}, respectively.
+  defined by \code{min.mismatch <= neditAt(...) <= max.mismatch},
+  \code{min.mismatch <= neditStartingAt(...) <= max.mismatch}
+  and \code{min.mismatch <= neditEndingAt(...) <= max.mismatch},
+  respectively.
 
   \code{which.isMatchingAt}: If \code{subject} is an \link{XString}
   object, then return the single integer defined by

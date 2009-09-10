@@ -100,8 +100,9 @@
   ``Boyer-Moore-like'', ``shift-or'' and ``indels''.
   Not all of them can be used in all situations: restrictions
   depend on the length of the pattern, the class of the subject,
-  and the values of \code{max.mismatch}, \code{with.indels}
-  and \code{fixed}. All those parameters form the search criteria.
+  and the values of \code{max.mismatch}, \code{min.mismatch},
+  \code{with.indels} and \code{fixed}. All those parameters form
+  the "search criteria".
 
   Note that the choice of an algorithm is not part of the search criteria.
   This is because algorithms are interchangeable, that is, if 2 different

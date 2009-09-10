@@ -38,77 +38,77 @@ SEXP debug_match_pattern_at()
 static int nmismatch_at_Pshift_fixedPfixedS(const cachedCharSeq *P,
 		const cachedCharSeq *S, int Pshift, int max_mis)
 {
-	int nmismatch, i, j;
+	int nmis, i, j;
 	const char *p, *s;
 
-	nmismatch = 0;
+	nmis = 0;
 	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
 	     i < P->length;
 	     i++, j++, p++, s++)
 	{
 		if (j >= 0 && j < S->length && *p == *s)
 			continue;
-		if (nmismatch++ >= max_mis)
+		if (nmis++ >= max_mis)
 			break;
 	}
-	return nmismatch;
+	return nmis;
 }
 
 static int nmismatch_at_Pshift_fixedPnonfixedS(const cachedCharSeq *P,
 		const cachedCharSeq *S, int Pshift, int max_mis)
 {
-	int nmismatch, i, j;
+	int nmis, i, j;
 	const char *p, *s;
 
-	nmismatch = 0;
+	nmis = 0;
 	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
 	     i < P->length;
 	     i++, j++, p++, s++)
 	{
 		if (j >= 0 && j < S->length && ((*p) & ~(*s)) == 0)
 			continue;
-		if (nmismatch++ >= max_mis)
+		if (nmis++ >= max_mis)
 			break;
 	}
-	return nmismatch;
+	return nmis;
 }
 
 static int nmismatch_at_Pshift_nonfixedPfixedS(const cachedCharSeq *P,
 		const cachedCharSeq *S, int Pshift, int max_mis)
 {
-	int nmismatch, i, j;
+	int nmis, i, j;
 	const char *p, *s;
 
-	nmismatch = 0;
+	nmis = 0;
 	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
 	     i < P->length;
 	     i++, j++, p++, s++)
 	{
 		if (j >= 0 && j < S->length && (~(*p) & (*s)) == 0)
 			continue;
-		if (nmismatch++ >= max_mis)
+		if (nmis++ >= max_mis)
 			break;
 	}
-	return nmismatch;
+	return nmis;
 }
 
 static int nmismatch_at_Pshift_nonfixedPnonfixedS(const cachedCharSeq *P,
 		const cachedCharSeq *S, int Pshift, int max_mis)
 {
-	int nmismatch, i, j;
+	int nmis, i, j;
 	const char *p, *s;
 
-	nmismatch = 0;
+	nmis = 0;
 	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
 	     i < P->length;
 	     i++, j++, p++, s++)
 	{
 		if (j >= 0 && j < S->length && ((*p) & (*s)))
 			continue;
-		if (nmismatch++ >= max_mis)
+		if (nmis++ >= max_mis)
 			break;
 	}
-	return nmismatch;
+	return nmis;
 }
 
 int (*_selected_nmismatch_at_Pshift_fun)(const cachedCharSeq *P,
@@ -295,10 +295,10 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
  */
 
 static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
-		SEXP at, int at_type0, int max_mis, int indels, int ans_type0,
-		int *ans_elt)
+		SEXP at, int at_type0, int max_mis, int min_mis, int indels,
+		int ans_type0, int *ans_elt)
 {
-	int at_length, i, *at_elt, offset, nmismatch, min_width;
+	int at_length, i, *at_elt, offset, nmis, min_width, is_matching;
 
 	if (ans_type0 >= 2)
 		*ans_elt = NA_INTEGER;
@@ -315,29 +315,28 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		if (indels) {
 			offset = *at_elt - 1;
 			if (at_type0 == 0)
-				nmismatch = _nedit_for_Ploffset(P, S, offset, max_mis, 1, &min_width);
+				nmis = _nedit_for_Ploffset(P, S, offset, max_mis, 1, &min_width);
 			else
-				nmismatch = _nedit_for_Proffset(P, S, offset, max_mis, 1, &min_width);
+				nmis = _nedit_for_Proffset(P, S, offset, max_mis, 1, &min_width);
 		} else {
 			if (at_type0 == 0)
 				offset = *at_elt - 1;
 			else
 				offset = *at_elt - P->length;
-			nmismatch = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mis);
+			nmis = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mis);
 		}
-		switch (ans_type0) {
-			case 0: *(ans_elt++) = nmismatch; break;
-			case 1: *(ans_elt++) = nmismatch <= max_mis; break;
-			case 2: if (nmismatch <= max_mis) {
-					*ans_elt = i + 1;
-					return;
-				}
-				break;
-			case 3: if (nmismatch <= max_mis) {
-					*ans_elt = *at_elt;
-					return;
-				}
-				break;
+		if (ans_type0 == 0) {
+			*(ans_elt++) = nmis;
+			continue;
+		}
+		is_matching = nmis <= max_mis && nmis >= min_mis;
+		if (ans_type0 == 1) {
+			*(ans_elt++) = is_matching;
+			continue;
+		}
+		if (is_matching) {
+			*ans_elt = ans_type0 == 2 ? i + 1 : *at_elt;
+			break;
 		}
 	}
 	return;
@@ -376,10 +375,11 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
  *          (or NA if no match occurred).
  */
 SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
-		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+		SEXP ans_type)
 {
 	cachedCharSeq P, S;
-	int at_length, at_type0, max_mis, indels, fixedP, fixedS,
+	int at_length, at_type0, max_mis, min_mis, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt;
 	SEXP ans;
 
@@ -388,6 +388,7 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	max_mis = INTEGER(max_mismatch)[0];
+	min_mis = INTEGER(min_mismatch)[0];
 	indels = LOGICAL(with_indels)[0] && max_mis != 0;
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -412,7 +413,7 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	if (!indels)
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
-	match_pattern_at(&P, &S, at, at_type0, max_mis, indels, ans_type0, ans_elt);
+	match_pattern_at(&P, &S, at, at_type0, max_mis, min_mis, indels, ans_type0, ans_elt);
 	UNPROTECT(1);
 	return ans;
 }
@@ -424,11 +425,12 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
  *   subject: XStringSet object.
  */
 SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
-		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+		SEXP ans_type)
 {
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
-	int S_length, at_length, at_type0, max_mis, indels, fixedP, fixedS,
+	int S_length, at_length, at_type0, max_mis, min_mis, indels, fixedP, fixedS,
 	    ans_type0, *ans_elt, ans_nrow, i;
 	SEXP ans;
 
@@ -438,6 +440,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	max_mis = INTEGER(max_mismatch)[0];
+	min_mis = INTEGER(min_mismatch)[0];
 	indels = LOGICAL(with_indels)[0] && max_mis != 0;
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
@@ -468,7 +471,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	for (i = 0; i < S_length; i++, ans_elt += ans_nrow) {
 		S_elt = _get_cachedXStringSet_elt(&S, i);
 		match_pattern_at(&P, &S_elt, at, at_type0,
-				 max_mis, indels, ans_type0, ans_elt);
+				 max_mis, min_mis, indels, ans_type0, ans_elt);
 	}
 	UNPROTECT(1);
 	return ans;
