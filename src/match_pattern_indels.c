@@ -4,16 +4,18 @@
  ****************************************************************************/
 #include "Biostrings.h"
 
-static void test_match_pattern_indels(const char *p, const char *s, int max_mis, const char *expected_matches)
+static void test_match_pattern_indels(const char *p, const char *s,
+		int max_nmis, const char *expected_matches)
 {
 	cachedCharSeq P, S;
 
-	Rprintf("P=%s S=%s max_mis=%d expected_matches=%s\n", p, s, max_mis, expected_matches);
+	Rprintf("P=%s S=%s max_nmis=%d expected_matches=%s\n", p, s,
+		max_nmis, expected_matches);
 	P.seq = p;
 	P.length = strlen(P.seq);
 	S.seq = s;
 	S.length = strlen(S.seq);
-	_match_pattern_indels(&P, &S, max_mis, 1, 1);
+	_match_pattern_indels(&P, &S, max_nmis, 1, 1);
 	return;
 }
 
@@ -59,7 +61,7 @@ static void print_match(int start, int width, const cachedCharSeq *P,
 /*
  * In order to avoid pollution by redundant matches, we report only the "best
  * local matches". A substring S' of S is a best local match iff:
- *   (a) nedit(P, S') <= max_mis
+ *   (a) nedit(P, S') <= max_nmis
  *   (b) for every substring S1 of S', nedit(P, S1) > nedit(P, S')
  *   (c) for every substring S2 of S that contains S', nedit(P, S2) <= nedit(P, S')
  * One nice property of best local matches is that their first and last letters
@@ -94,9 +96,9 @@ static void report_provisory_match(int start, int width, int nedit)
 static ByteTrTable byte2offset;
 
 void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
-		int max_mis, int fixedP, int fixedS)
+		int max_nmis, int fixedP, int fixedS)
 {
-	int i0, j0, max_mis1, nedit1, width1;
+	int i0, j0, max_nmis1, nedit1, width1;
 	char c0;
 	cachedCharSeq P1;
 
@@ -121,23 +123,23 @@ void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
 		}
 		P1.seq = P->seq + i0 + 1;
 		P1.length = P->length - i0 - 1;
-		max_mis1 = max_mis - i0;
+		max_nmis1 = max_nmis - i0;
 /*
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) {
 			Rprintf("[DEBUG] _match_pattern_indels(): "
-				"j0=%d c0=%c i0=%d max_mis1=%d\n", j0, c0, i0, max_mis1);
+				"j0=%d c0=%c i0=%d max_nmis1=%d\n", j0, c0, i0, max_nmis1);
 		}
 #endif
 */
-		if (max_mis1 >= 0) {
-			if (max_mis1 == 0) {
-				nedit1 = _selected_nmismatch_at_Pshift_fun(&P1, S, j0 + 1, max_mis1);
+		if (max_nmis1 >= 0) {
+			if (max_nmis1 == 0) {
+				nedit1 = _selected_nmismatch_at_Pshift_fun(&P1, S, j0 + 1, max_nmis1);
 				width1 = P1.length;
 			} else {
-				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1, max_mis1, 1, &width1);
+				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1, max_nmis1, 1, &width1);
 			}
-			if (nedit1 <= max_mis1) {
+			if (nedit1 <= max_nmis1) {
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
 					Rprintf("[DEBUG] _match_pattern_indels(): "

@@ -64,7 +64,7 @@ static void match_naive_exact(const cachedCharSeq *P, const cachedCharSeq *S)
  */
 
 static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
-		int max_mis, int min_mis, int fixedP, int fixedS)
+		int max_nmis, int min_nmis, int fixedP, int fixedS)
 {
 	int Pshift, // position of pattern left-most char relative to the subject
 	    n2, // 1 + position of pattern right-most char relative to the subject
@@ -73,14 +73,14 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
 	if (P->length <= 0)
 		error("empty pattern");
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
-	min_Pshift = P->length <= max_mis ? 1 - P->length : -max_mis;
+	min_Pshift = P->length <= max_nmis ? 1 - P->length : -max_nmis;
 	max_n2 = S->length - min_Pshift;
 	for (Pshift = min_Pshift, n2 = min_Pshift + P->length;
 	     n2 <= max_n2;
 	     Pshift++, n2++)
 	{
-		nmis = _selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_mis);
-		if (nmis <= max_mis && nmis >= min_mis)
+		nmis = _selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_nmis);
+		if (nmis <= max_nmis && nmis >= min_nmis)
 			_report_match(Pshift + 1, P->length);
 	}
 	return;
@@ -95,26 +95,26 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
 		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed)
 {
 	const char *algo;
-	int max_mis, min_mis, fixedP, fixedS;
+	int max_nmis, min_nmis, fixedP, fixedS;
 
-	max_mis = INTEGER(max_mismatch)[0];
-	min_mis = INTEGER(min_mismatch)[0];
-	if (max_mis < P->length - S->length
-	 || min_mis > P->length)
+	max_nmis = INTEGER(max_mismatch)[0];
+	min_nmis = INTEGER(min_mismatch)[0];
+	if (max_nmis < P->length - S->length
+	 || min_nmis > P->length)
 		return;
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
-	if (P->length <= max_mis || strcmp(algo, "naive-inexact") == 0)
-		match_naive_inexact(P, S, max_mis, min_mis, fixedP, fixedS);
+	if (P->length <= max_nmis || strcmp(algo, "naive-inexact") == 0)
+		match_naive_inexact(P, S, max_nmis, min_nmis, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
 		match_naive_exact(P, S);
 	else if (strcmp(algo, "boyer-moore") == 0)
 		_match_pattern_boyermoore(P, S, -1);
 	else if (strcmp(algo, "shift-or") == 0)
-		_match_pattern_shiftor(P, S, max_mis, fixedP, fixedS);
+		_match_pattern_shiftor(P, S, max_nmis, fixedP, fixedS);
 	else if (strcmp(algo, "indels") == 0)
-		_match_pattern_indels(P, S, max_mis, fixedP, fixedS);
+		_match_pattern_indels(P, S, max_nmis, fixedP, fixedS);
 	else
 		error("\"%s\": unknown algorithm", algo);
 	return;

@@ -27,8 +27,8 @@ debug_match_reporting <- function()
 debug_MIndex_class <- function()
     invisible(.Call("debug_MIndex_class", PACKAGE="Biostrings"))
 
-debug_match_pattern_at <- function()
-    invisible(.Call("debug_match_pattern_at", PACKAGE="Biostrings"))
+debug_lowlevel_matching <- function()
+    invisible(.Call("debug_lowlevel_matching", PACKAGE="Biostrings"))
 
 debug_match_pattern_boyermoore <- function()
     invisible(.Call("debug_match_pattern_boyermoore", PACKAGE="Biostrings"))

@@ -542,15 +542,15 @@ SEXP SparseMIndex_endIndex(
 SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 
-/* match_pattern_at.c */
+/* lowlevel_matching.c */
 
-SEXP debug_match_pattern_at();
+SEXP debug_lowlevel_matching();
 
 int (*_selected_nmismatch_at_Pshift_fun)(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
 	int Pshift,
-	int max_mis
+	int max_nmis
 );
 
 void _select_nmismatch_at_Pshift_fun(
@@ -621,7 +621,7 @@ SEXP bits_per_long();
 void _match_pattern_shiftor(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
-	int max_mis,
+	int max_nmis,
 	int fixedP,
 	int fixedS
 );
@@ -634,7 +634,7 @@ SEXP debug_match_pattern_indels();
 void _match_pattern_indels(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
-	int max_mis,
+	int max_nmis,
 	int fixedP,
 	int fixedS
 );
@@ -1001,8 +1001,8 @@ void _match_pdict_flanks_at(
 	HeadTail *headtail,
 	const cachedCharSeq *S,
 	int tb_end,
-	int max_mis,
-	int min_mis,
+	int max_nmis,
+	int min_nmis,
 	int fixedP,
 	MatchPDictBuf *matchpdict_buf
 );
@@ -1011,8 +1011,8 @@ void _match_pdict_all_flanks(
 	SEXP low2high,
 	HeadTail *headtail,
 	const cachedCharSeq *S,
-	int max_mis,
-	int min_mis,
+	int max_nmis,
+	int min_nmis,
 	MatchPDictBuf *matchpdict_buf
 );
 
@@ -1106,8 +1106,8 @@ void _match_pdictACtree2(
 	SEXP pptb,
 	HeadTail *headtail,
 	const cachedCharSeq *S,
-	int max_mis,
-	int min_mis,
+	int max_nmis,
+	int min_nmis,
 	int fixedP,
 	int fixedS,
 	MatchPDictBuf *matchpdict_buf

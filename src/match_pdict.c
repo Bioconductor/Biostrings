@@ -48,13 +48,13 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int max_mis, min_mis, fixedP, fixedS;
+	int max_nmis, min_nmis, fixedP, fixedS;
 	SEXP low2high;
 	const char *type;
 	TBMatchBuf *tb_matches;
 
-	max_mis = INTEGER(max_mismatch)[0];
-	min_mis = INTEGER(min_mismatch)[0];
+	max_nmis = INTEGER(max_mismatch)[0];
+	min_nmis = INTEGER(min_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
 	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
@@ -62,7 +62,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 /*
 	if (strcmp(type, "ACtree2") == 0) {
 		_match_pdictACtree2(pptb, headtail, S,
-			max_mis, min_mis, fixedP, fixedS,
+			max_nmis, min_nmis, fixedP, fixedS,
 			matchpdict_buf);
 		return;
 	}
@@ -86,7 +86,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 	 * (i.e. headtail->max_HTwidth == 0) because we need to propagate
 	 * the matches to the duplicates anyway */
 	_match_pdict_all_flanks(low2high, headtail,
-		S, max_mis, min_mis, matchpdict_buf);
+		S, max_nmis, min_nmis, matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING match_pdict()\n");

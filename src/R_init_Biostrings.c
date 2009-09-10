@@ -93,8 +93,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(SparseMIndex_endIndex, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
-/* match_pattern_at.c */
-	CALLMETHOD_DEF(debug_match_pattern_at, 0),
+/* lowlevel_matching.c */
+	CALLMETHOD_DEF(debug_lowlevel_matching, 0),
 	CALLMETHOD_DEF(XString_match_pattern_at, 9),
 	CALLMETHOD_DEF(XStringSet_vmatch_pattern_at, 9),
 
