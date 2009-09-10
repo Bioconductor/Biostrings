@@ -300,11 +300,16 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 {
 	int at_length, i, *at_elt, offset, nmismatch, min_width;
 
+	if (ans_type0 >= 2)
+		*ans_elt = NA_INTEGER;
 	at_length = LENGTH(at);
-	for (i = 0, at_elt = INTEGER(at); i < at_length; i++, at_elt++, ans_elt++)
+	for (i = 0, at_elt = INTEGER(at); i < at_length; i++, at_elt++)
 	{
 		if (*at_elt == NA_INTEGER) {
-			*ans_elt = ans_type0 ? NA_INTEGER : NA_LOGICAL;
+			switch (ans_type0) {
+				case 0: *(ans_elt++) = NA_INTEGER; break;
+				case 1: *(ans_elt++) = NA_LOGICAL; break;
+			}
 			continue;
 		}
 		if (indels) {
@@ -320,7 +325,20 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 				offset = *at_elt - P->length;
 			nmismatch = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_mis);
 		}
-		*ans_elt = ans_type0 ? nmismatch : (nmismatch <= max_mis);
+		switch (ans_type0) {
+			case 0: *(ans_elt++) = nmismatch; break;
+			case 1: *(ans_elt++) = nmismatch <= max_mis; break;
+			case 2: if (nmismatch <= max_mis) {
+					*ans_elt = i + 1;
+					return;
+				}
+				break;
+			case 3: if (nmismatch <= max_mis) {
+					*ans_elt = *at_elt;
+					return;
+				}
+				break;
+		}
 	}
 	return;
 }
@@ -349,9 +367,13 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
  *            'pattern' and all the substrings in 'subject' that start (if
  *            'at_type' is 0) or end (if 'at_type' is 1) at this position.
  *   fixed: a logical of length 2.
- *   ans_type: 0 for a logical vector indicating whether there is a match or
- *            not at the specified positions, 1 for an integer vector giving
- *            the number of mismatches at the specified positions.
+ *   ans_type: a single integer specifying the type of answer to return:
+ *       0: ans is an integer vector of the same length as 'at';
+ *       1: ans is a logical vector of the same length as 'at';
+ *       2: ans is the lowest *index* (1-based position) in 'at' where
+ *          a match occurred (or NA if no match occurred);
+ *       3: ans is the first *value* in 'at' for which a match occurred
+ *          (or NA if no match occurred).
  */
 SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP with_indels, SEXP fixed, SEXP ans_type)
@@ -372,12 +394,20 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	if (indels && !(fixedP && fixedS))
 		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
 	ans_type0 = INTEGER(ans_type)[0];
-	if (ans_type0) {
-		PROTECT(ans = NEW_INTEGER(at_length));
-		ans_elt = INTEGER(ans);
-	} else {
-		PROTECT(ans = NEW_LOGICAL(at_length));
-		ans_elt = LOGICAL(ans);
+	switch (ans_type0) {
+		case 0:
+			PROTECT(ans = NEW_INTEGER(at_length));
+			ans_elt = INTEGER(ans);
+			break;
+		case 1:
+			PROTECT(ans = NEW_LOGICAL(at_length));
+			ans_elt = LOGICAL(ans);
+			break;
+		case 2: case 3:
+			PROTECT(ans = NEW_INTEGER(1));
+			ans_elt = INTEGER(ans);
+			break;
+		default: error("invalid 'ans_type' value (%d)", ans_type0);
 	}
 	if (!indels)
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
@@ -399,7 +429,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
 	int S_length, at_length, at_type0, max_mis, indels, fixedP, fixedS,
-	    ans_type0, *ans_elt, i;
+	    ans_type0, *ans_elt, ans_nrow, i;
 	SEXP ans;
 
 	P = cache_XRaw(pattern);
@@ -414,17 +444,28 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	if (indels && !(fixedP && fixedS))
 		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
 	ans_type0 = INTEGER(ans_type)[0];
-	if (ans_type0) {
-		PROTECT(ans = allocMatrix(INTSXP, at_length, S_length));
-		ans_elt = INTEGER(ans);
-	} else {
-		PROTECT(ans = allocMatrix(LGLSXP, at_length, S_length));
-		ans_elt = LOGICAL(ans);
+	switch (ans_type0) {
+		case 0:
+			PROTECT(ans = allocMatrix(INTSXP, at_length, S_length));
+			ans_elt = INTEGER(ans);
+			ans_nrow = at_length;
+			break;
+		case 1:
+			PROTECT(ans = allocMatrix(LGLSXP, at_length, S_length));
+			ans_elt = LOGICAL(ans);
+			ans_nrow = at_length;
+			break;
+		case 2: case 3:
+			PROTECT(ans = NEW_INTEGER(S_length));
+			ans_elt = INTEGER(ans);
+			ans_nrow = 1;
+			break;
+		default: error("invalid 'ans_type' value (%d)", ans_type0);
 	}
 	if (!indels)
 		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 
-	for (i = 0; i < S_length; i++, ans_elt += at_length) {
+	for (i = 0; i < S_length; i++, ans_elt += ans_nrow) {
 		S_elt = _get_cachedXStringSet_elt(&S, i);
 		match_pattern_at(&P, &S_elt, at, at_type0,
 				 max_mis, indels, ans_type0, ans_elt);
