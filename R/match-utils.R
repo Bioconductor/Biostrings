@@ -93,56 +93,16 @@ normargCollapse <- function(collapse)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "neditStartingAt", "neditEndingAt", "isMatchingStartingAt" and
-### "isMatchingEndingAt" generic and methods.
+### .matchPatternAt() and .vmatchPatternAt().
 ###
-### 'starting.at' (or 'ending.at') must be integer vectors containing the
-### starting (or ending) positions of the pattern relatively to the subject.
-### All these functions return a vector of the same length as 'starting.at'
-### (or 'ending.at'): the first 2 functions return an integer vector and the
-### last 2 functions return a logical vector.
-###
-
-setGeneric("neditStartingAt", signature="subject",
-    function(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
-        standardGeneric("neditStartingAt")
-)
-
-setGeneric("neditEndingAt", signature="subject",
-    function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
-        standardGeneric("neditEndingAt")
-)
-
-neditAt <- function(pattern, subject, at=1, with.indels=FALSE, fixed=TRUE)
-{
-    if (!is.numeric(at))
-        stop("'at' must be a vector of integers")
-    neditStartingAt(pattern, subject, starting.at=at, with.indels=with.indels, fixed=fixed)
-}
-
-setGeneric("isMatchingStartingAt", signature="subject",
-    function(pattern, subject, starting.at=1,
-             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-        standardGeneric("isMatchingStartingAt")
-)
-
-setGeneric("isMatchingEndingAt", signature="subject",
-    function(pattern, subject, ending.at=1,
-             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-        standardGeneric("isMatchingEndingAt")
-)
-
-isMatchingAt <- function(pattern, subject, at=1,
-                         max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-{
-    if (!is.numeric(at))
-        stop("'at' must be a vector of integers")
-    isMatchingStartingAt(pattern, subject, starting.at=at,
-                         max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
-}
-
+### These are the 2 horse-power helpers behind the neditStartingAt(),
+### neditEndingAt(), isMatchingStartingAt(), isMatchingEndingAt(),
+### which.isMatchingStartingAt() and which.isMatchingEndingAt() utilities
+### defined later in this file.
 ### If 'at.type == 0' then 'at' contains starting positions, otherwise it
 ### contains ending positions.
+###
+
 .matchPatternAt <- function(pattern, subject, at, at.type,
                             max.mismatch, with.indels, fixed, ans.type)
 {
@@ -191,6 +151,33 @@ isMatchingAt <- function(pattern, subject, at=1,
           PACKAGE="Biostrings")
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### neditStartingAt(), neditEndingAt() and neditAt().
+###
+### 'starting.at' (or 'ending.at') must be integer vectors containing the
+### starting (or ending) positions of the pattern relatively to the subject.
+### These functions return an integer vector of the same length as
+### 'starting.at' (or 'ending.at').
+###
+
+setGeneric("neditStartingAt", signature="subject",
+    function(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("neditStartingAt")
+)
+
+setGeneric("neditEndingAt", signature="subject",
+    function(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("neditEndingAt")
+)
+
+neditAt <- function(pattern, subject, at=1, with.indels=FALSE, fixed=TRUE)
+{
+    if (!is.numeric(at))
+        stop("'at' must be a vector of integers")
+    neditStartingAt(pattern, subject, starting.at=at, with.indels=with.indels, fixed=fixed)
+}
+
 ### Dispatch on 'subject' (see signature of generic).
 
 setMethod("neditStartingAt", "character",
@@ -228,6 +215,39 @@ setMethod("neditEndingAt", "XStringSet",
         .vmatchPatternAt(pattern, subject, ending.at, 1L,
                          NA, with.indels, fixed, 0L)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### isMatchingStartingAt(), isMatchingEndingAt() and isMatchingAt().
+###
+### 'starting.at' (or 'ending.at') must be integer vectors containing the
+### starting (or ending) positions of the pattern relatively to the subject.
+### These functions return a logical vector of the same length as
+### 'starting.at' (or 'ending.at').
+###
+
+setGeneric("isMatchingStartingAt", signature="subject",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("isMatchingStartingAt")
+)
+
+setGeneric("isMatchingEndingAt", signature="subject",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("isMatchingEndingAt")
+)
+
+isMatchingAt <- function(pattern, subject, at=1,
+                         max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+{
+    if (!is.numeric(at))
+        stop("'at' must be a vector of integers")
+    isMatchingStartingAt(pattern, subject, starting.at=at,
+                         max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
+}
+
+### Dispatch on 'subject' (see signature of generic).
 
 setMethod("isMatchingStartingAt", "character",
     function(pattern, subject, starting.at=1,
@@ -269,6 +289,82 @@ setMethod("isMatchingEndingAt", "XStringSet",
              max.mismatch=0, with.indels=FALSE, fixed=TRUE)
         .vmatchPatternAt(pattern, subject, ending.at, 1L,
                          max.mismatch, with.indels, fixed, 1L)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### which.isMatchingStartingAt(), which.isMatchingEndingAt() and
+### which.isMatchingAt().
+###
+### 'starting.at' (or 'ending.at') must be integer vectors containing the
+### starting (or ending) positions of the pattern relatively to the subject.
+### These functions return the lowest *index* in 'starting.at' (or 'ending.at')
+### for which a match occurred (or NA if no match occurred);
+###
+
+setGeneric("which.isMatchingStartingAt", signature="subject",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("which.isMatchingStartingAt")
+)
+
+setGeneric("which.isMatchingEndingAt", signature="subject",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        standardGeneric("which.isMatchingEndingAt")
+)
+
+which.isMatchingAt <- function(pattern, subject, at=1,
+                               max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+{
+    if (!is.numeric(at))
+        stop("'at' must be a vector of integers")
+    which.isMatchingStartingAt(pattern, subject, starting.at=at,
+                               max.mismatch=max.mismatch, with.indels=with.indels, fixed=fixed)
+}
+
+### Dispatch on 'subject' (see signature of generic).
+
+setMethod("which.isMatchingStartingAt", "character",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, starting.at, 0L,
+                        max.mismatch, with.indels, fixed, 2L)
+)
+
+setMethod("which.isMatchingStartingAt", "XString",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, starting.at, 0L,
+                        max.mismatch, with.indels, fixed, 2L)
+)
+
+setMethod("which.isMatchingStartingAt", "XStringSet",
+    function(pattern, subject, starting.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .vmatchPatternAt(pattern, subject, starting.at, 0L,
+                         max.mismatch, with.indels, fixed, 2L)
+)
+
+setMethod("which.isMatchingEndingAt", "character",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, ending.at, 1L,
+                        max.mismatch, with.indels, fixed, 2L)
+)
+
+setMethod("which.isMatchingEndingAt", "XString",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .matchPatternAt(pattern, subject, ending.at, 1L,
+                        max.mismatch, with.indels, fixed, 2L)
+)
+
+setMethod("which.isMatchingEndingAt", "XStringSet",
+    function(pattern, subject, ending.at=1,
+             max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+        .vmatchPatternAt(pattern, subject, ending.at, 1L,
+                         max.mismatch, with.indels, fixed, 2L)
 )
 
 

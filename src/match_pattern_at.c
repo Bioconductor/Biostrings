@@ -370,7 +370,7 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
  *   ans_type: a single integer specifying the type of answer to return:
  *       0: ans is an integer vector of the same length as 'at';
  *       1: ans is a logical vector of the same length as 'at';
- *       2: ans is the lowest *index* (1-based position) in 'at' where
+ *       2: ans is the lowest *index* (1-based position) in 'at' for which
  *          a match occurred (or NA if no match occurred);
  *       3: ans is the first *value* in 'at' for which a match occurred
  *          (or NA if no match occurred).

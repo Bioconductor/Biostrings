@@ -5,21 +5,32 @@
 \alias{neditStartingAt}
 \alias{neditEndingAt}
 \alias{neditAt}
-\alias{isMatchingStartingAt}
-\alias{isMatchingEndingAt}
-\alias{isMatchingAt}
 \alias{neditStartingAt,character-method}
 \alias{neditStartingAt,XString-method}
 \alias{neditStartingAt,XStringSet-method}
 \alias{neditEndingAt,character-method}
 \alias{neditEndingAt,XString-method}
 \alias{neditEndingAt,XStringSet-method}
+
+\alias{isMatchingStartingAt}
+\alias{isMatchingEndingAt}
+\alias{isMatchingAt}
 \alias{isMatchingStartingAt,character-method}
 \alias{isMatchingStartingAt,XString-method}
 \alias{isMatchingStartingAt,XStringSet-method}
 \alias{isMatchingEndingAt,character-method}
 \alias{isMatchingEndingAt,XString-method}
 \alias{isMatchingEndingAt,XStringSet-method}
+
+\alias{which.isMatchingStartingAt}
+\alias{which.isMatchingEndingAt}
+\alias{which.isMatchingAt}
+\alias{which.isMatchingStartingAt,character-method}
+\alias{which.isMatchingStartingAt,XString-method}
+\alias{which.isMatchingStartingAt,XStringSet-method}
+\alias{which.isMatchingEndingAt,character-method}
+\alias{which.isMatchingEndingAt,XString-method}
+\alias{which.isMatchingEndingAt,XStringSet-method}
 
 \alias{hasLetterAt}
 
@@ -39,7 +50,7 @@
 \alias{isMatching}
 
 
-\title{Utility functions related to pattern matching}
+\title{Low-level utility functions related to pattern matching}
 
 \description{
   In this man page we define precisely and illustrate what a "match" of a
@@ -51,9 +62,9 @@
   \code{hasLetterAt} checks whether a sequence or set of sequences has the
   specified letters at the specified positions.
   
-  \code{neditStartingAt}, \code{neditEndingAt}, \code{isMatchingStartingAt}
-  and \code{isMatchingEndingAt} are low-level matching functions that only
-  check for matches at the specified positions.
+  \code{neditAt}, \code{isMatchingAt} and \code{which.isMatchingAt} are
+  low-level matching functions that only check for matches at the specified
+  positions.
 
   Other utility functions related to pattern matching are described here:
   the \code{mismatch} function for getting the positions of the mismatching
@@ -67,17 +78,31 @@
 \usage{
   hasLetterAt(x, letter, at, fixed=TRUE)
 
-  neditStartingAt(pattern, subject, starting.at=1, with.indels=FALSE, fixed=TRUE)
-  neditEndingAt(pattern, subject, ending.at=1, with.indels=FALSE, fixed=TRUE)
-  neditAt(pattern, subject, at=1, with.indels=FALSE, fixed=TRUE)
+  ## neditAt() and related utils:
+  neditAt(pattern, subject, at=1,
+                  with.indels=FALSE, fixed=TRUE)
+  neditStartingAt(pattern, subject, starting.at=1,
+                  with.indels=FALSE, fixed=TRUE)
+  neditEndingAt(pattern, subject, ending.at=1,
+                  with.indels=FALSE, fixed=TRUE)
 
+  ## isMatchingAt() and related utils:
+  isMatchingAt(pattern, subject, at=1,
+                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
   isMatchingStartingAt(pattern, subject, starting.at=1,
                   max.mismatch=0, with.indels=FALSE, fixed=TRUE)
   isMatchingEndingAt(pattern, subject, ending.at=1,
                   max.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  isMatchingAt(pattern, subject, at=1,
+
+  ## which.isMatchingAt() and related utils:
+  which.isMatchingAt(pattern, subject, at=1,
+                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  which.isMatchingStartingAt(pattern, subject, starting.at=1,
+                  max.mismatch=0, with.indels=FALSE, fixed=TRUE)
+  which.isMatchingEndingAt(pattern, subject, ending.at=1,
                   max.mismatch=0, with.indels=FALSE, fixed=TRUE)
 
+  ## other utils:
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
@@ -162,16 +187,14 @@
   When this metric is used, matches can have a different number of letters
   than P.
 
-  The \code{neditStartingAt} (and \code{neditEndingAt}) function implements
-  these 2 distances.
+  The \code{neditAt} function implements these 2 distances.
   If \code{with.indels} is \code{FALSE} (the default), then the first distance
-  is used i.e. \code{neditStartingAt} returns the "number of mismatching
-  letters" between the pattern P and the substring S' of S starting at the
-  positions specified in \code{starting.at} (note that \code{neditStartingAt}
-  and \code{neditEndingAt} are vectorized so long vectors of integers can be
-  passed thru the \code{starting.at} or \code{ending.at} arguments).
+  is used i.e. \code{neditAt} returns the "number of mismatching letters"
+  between the pattern P and the substring S' of S starting at the
+  positions specified in \code{at} (note that \code{neditAt} is vectorized
+  so a long vector of integers can be passed thru the \code{at} argument).
   If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is
-  used: for each position specified in \code{starting.at}, P is compared to
+  used: for each position specified in \code{at}, P is compared to
   all the substrings S' of S starting at this position and the smallest
   distance is returned. Note that this distance is guaranteed to be reached
   for a substrings of length < 2*length(P) so, of course, in practice,
@@ -185,33 +208,43 @@
   is invalid with respect to an element in \code{x} then the corresponding
   matrix element is set to NA.
 
-  \code{neditStartingAt} and \code{neditEndingAt}: If \code{subject} is an
-  \link{XString} object, then return an integer vector of the same length as
-  \code{starting.at} (or \code{ending.at}). If \code{subject} is an
-  \link{XStringSet} object, then return the integer matrix with
-  \code{length(starting.at)} (or \code{length(ending.at)}) rows
-  and \code{length(subject)} columns defined by (in the case of
-  \code{neditStartingAt}):
+  \code{neditAt}: If \code{subject} is an \link{XString} object, then
+  return an integer vector of the same length as \code{at}.
+  If \code{subject} is an \link{XStringSet} object, then return the
+  integer matrix with \code{length(at)} rows and \code{length(subject)}
+  columns defined by:
   \preformatted{
     sapply(unname(subject),
-           function(x) neditStartingAt(pattern, x, ...))
+           function(x) neditAt(pattern, x, ...))
   }
 
-  \code{isMatchingStartingAt(...)} and \code{isMatchingEndingAt(...)}:
-  If \code{subject} is an \link{XString} object, then return the logical
-  vector defined by \code{neditStartingAt(...) <= max.mismatch} or
-  \code{neditEndingAt(...) <= max.mismatch}, respectively.
-  If \code{subject} is an \link{XStringSet} object, then return the logical
-  matrix with \code{length(starting.at)} (or \code{length(ending.at)}) rows
-  and \code{length(subject)} columns defined by (in the case of
-  \code{isMatchingStartingAt}):
+  \code{neditStartingAt} is identical to \code{neditAt} except
+  that the \code{at} argument is now called \code{starting.at}.
+  \code{neditEndingAt} is similar to \code{neditAt} except that
+  the \code{at} argument is now called \code{ending.at} and must contain
+  the ending positions of the pattern relatively to the subject.
+
+  \code{isMatchingAt}, \code{isMatchingStartingAt} and
+  \code{isMatchingEndingAt}: Return the logical vector (or matrix)
+  defined by \code{neditAt(...) <= max.mismatch},
+  \code{neditStartingAt(...) <= max.mismatch}
+  and \code{neditEndingAt(...) <= max.mismatch}, respectively.
+
+  \code{which.isMatchingAt}: If \code{subject} is an \link{XString}
+  object, then return the single integer defined by
+  \code{which(isMatchingAt(...))[1]}.
+  If \code{subject} is an \link{XStringSet} object, then return
+  the integer vector defined by:
   \preformatted{
     sapply(unname(subject),
-           function(x) isMatchingStartingAt(pattern, x, ...))
+           function(x) which.isMatchingAt(pattern, x, ...))
   }
 
-  \code{neditAt} and \code{isMatchingAt} are convenience wrappers for
-  \code{neditStartingAt} and \code{isMatchingStartingAt}, respectively.
+  \code{which.isMatchingStartingAt} is identical to \code{which.isMatchingAt}
+  except that the \code{at} argument is now called \code{starting.at}.
+  \code{which.isMatchingEndingAt} is similar to \code{which.isMatchingAt}
+  except that the \code{at} argument is now called \code{ending.at} and must
+  contain the ending positions of the pattern relatively to the subject.
 
   \code{mismatch}:  a list of integer vectors.
   
@@ -273,7 +306,7 @@
   ## See ?nucleotideFrequencyAt for another way to get those results.
 
   ## ---------------------------------------------------------------------
-  ## neditAt() / isMatchingAt()
+  ## neditAt() / isMatchingAt() / which.isMatchingAt()
   ## ---------------------------------------------------------------------
   subject <- DNAString("GTATA")
 
@@ -308,6 +341,8 @@
   subject <- DNAString("ACGTGCA")
   is_matching <- isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
   some_starts[is_matching]
+
+  which.isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
 
   ## ---------------------------------------------------------------------
   ## mismatch() / nmismatch()
