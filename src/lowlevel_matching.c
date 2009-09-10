@@ -1,5 +1,5 @@
 /****************************************************************************
- *              Utility functions related to pattern matching               *
+ *                      Low-level matching functions                        *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -291,20 +291,59 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
 
 
 /****************************************************************************
+ * nedit_at()
+ */
+
+static int nedit_at(const cachedCharSeq *P, const cachedCharSeq *S,
+		int at, int at_type0, int max_nmis, int with_indels0,
+		int fixedP, int fixedS)
+{
+	int offset, nmis, min_width;
+
+	if (!with_indels0 || max_nmis == 0) {
+		if (at_type0 == 0)
+			offset = at - 1;
+		else
+			offset = at - P->length;
+		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+		return _selected_nmismatch_at_Pshift_fun(P, S, offset, max_nmis);
+	}
+	if (!(fixedP && fixedS))
+		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
+	offset = at - 1;
+	if (at_type0 == 0)
+		nmis = _nedit_for_Ploffset(P, S, offset, max_nmis, 1, &min_width);
+	else
+		nmis = _nedit_for_Proffset(P, S, offset, max_nmis, 1, &min_width);
+	return nmis;
+}
+
+
+/****************************************************************************
  * match_pattern_at()
  */
 
 static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
-		SEXP at, int at_type0, int max_nmis, int min_nmis, int indels,
-		int ans_type0, int *ans_elt)
+		SEXP at, int at_type0,
+		SEXP max_mismatch, SEXP min_mismatch, int with_indels0,
+		int fixedP, int fixedS, int ans_type0, int *ans_elt)
 {
-	int at_length, i, *at_elt, offset, nmis, min_width, is_matching;
+	int at_length, i, k1, k2, *at_elt, max_nmis, min_nmis, nmis, is_matching;
 
+	at_length = LENGTH(at);
+	if (at_length != 0
+         && (LENGTH(max_mismatch) == 0 || LENGTH(min_mismatch) == 0))
+		error("'max_mismatch' and 'min_mismatch' must have at least 1 element");
 	if (ans_type0 >= 2)
 		*ans_elt = NA_INTEGER;
-	at_length = LENGTH(at);
-	for (i = 0, at_elt = INTEGER(at); i < at_length; i++, at_elt++)
+	for (i = 1, k1 = k2 = 0, at_elt = INTEGER(at);
+	     i <= at_length;
+	     i++, k1++, k2++, at_elt++)
 	{
+		if (k1 >= LENGTH(max_mismatch))
+			k1 = 0; /* recycle */
+		if (k2 >= LENGTH(min_mismatch))
+			k2 = 0; /* recycle */
 		if (*at_elt == NA_INTEGER) {
 			switch (ans_type0) {
 				case 0: *(ans_elt++) = NA_INTEGER; break;
@@ -312,30 +351,25 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 			}
 			continue;
 		}
-		if (indels) {
-			offset = *at_elt - 1;
-			if (at_type0 == 0)
-				nmis = _nedit_for_Ploffset(P, S, offset, max_nmis, 1, &min_width);
-			else
-				nmis = _nedit_for_Proffset(P, S, offset, max_nmis, 1, &min_width);
-		} else {
-			if (at_type0 == 0)
-				offset = *at_elt - 1;
-			else
-				offset = *at_elt - P->length;
-			nmis = _selected_nmismatch_at_Pshift_fun(P, S, offset, max_nmis);
-		}
+		max_nmis = INTEGER(max_mismatch)[k1];
+		if (max_nmis == NA_INTEGER)
+			max_nmis = P->length;
+		nmis = nedit_at(P, S, *at_elt, at_type0,
+				max_nmis, with_indels0, fixedP, fixedS);
 		if (ans_type0 == 0) {
 			*(ans_elt++) = nmis;
 			continue;
 		}
+		min_nmis = INTEGER(min_mismatch)[k2];
+		if (min_nmis == NA_INTEGER)
+			min_nmis = 0;
 		is_matching = nmis <= max_nmis && nmis >= min_nmis;
 		if (ans_type0 == 1) {
 			*(ans_elt++) = is_matching;
 			continue;
 		}
 		if (is_matching) {
-			*ans_elt = ans_type0 == 2 ? i + 1 : *at_elt;
+			*ans_elt = ans_type0 == 2 ? i : *at_elt;
 			break;
 		}
 	}
@@ -356,11 +390,13 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
  *   at_type: how to interpret the positions in 'at'. If 0, then they are
  *            those of the first letter of 'pattern'. If 1, then they are
  *            those of its last letter.
- *   max_mismatch: if the number of effective mismatches is <= 'max_mismatch',
- *            then it is reported accurately. Otherwise any number >
- *            'max_mismatch' could be reported. This is to allow the matching
- *            functions used as backends to which XString_match_pattern_at()
- *            delegates to implement early bail out strategies.
+ *   max_mismatch, min_mismatch: integer vectors of length >= 1 recycled to
+ *            the length of 'at'. If the number of effective mismatches is
+ *            <= 'max_mismatch', then it is reported accurately. Otherwise
+ *            any number > 'max_mismatch' could be reported. This is to allow
+ *            the matching functions used as backends to which
+ *            XString_match_pattern_at() delegates to implement early bailout
+ *            strategies.
  *   with_indels: TRUE or FALSE. If TRUE, then the "number of mismatches" at
  *            a given position means the smallest edit distance between the
  *            'pattern' and all the substrings in 'subject' that start (if
@@ -379,21 +415,16 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP ans_type)
 {
 	cachedCharSeq P, S;
-	int at_length, at_type0, max_nmis, min_nmis, indels, fixedP, fixedS,
-	    ans_type0, *ans_elt;
+	int at_length, at_type0, with_indels0, fixedP, fixedS, ans_type0, *ans_elt;
 	SEXP ans;
 
 	P = cache_XRaw(pattern);
 	S = cache_XRaw(subject);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
-	max_nmis = INTEGER(max_mismatch)[0];
-	min_nmis = INTEGER(min_mismatch)[0];
-	indels = LOGICAL(with_indels)[0] && max_nmis != 0;
+	with_indels0 = LOGICAL(with_indels)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
-	if (indels && !(fixedP && fixedS))
-		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
 	ans_type0 = INTEGER(ans_type)[0];
 	switch (ans_type0) {
 		case 0:
@@ -410,10 +441,9 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 			break;
 		default: error("invalid 'ans_type' value (%d)", ans_type0);
 	}
-	if (!indels)
-		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
-
-	match_pattern_at(&P, &S, at, at_type0, max_nmis, min_nmis, indels, ans_type0, ans_elt);
+	match_pattern_at(&P, &S, at, at_type0,
+			 max_mismatch, min_mismatch, with_indels0,
+			 fixedP, fixedS, ans_type0, ans_elt);
 	UNPROTECT(1);
 	return ans;
 }
@@ -430,7 +460,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 {
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
-	int S_length, at_length, at_type0, max_nmis, min_nmis, indels, fixedP, fixedS,
+	int S_length, at_length, at_type0, with_indels0, fixedP, fixedS,
 	    ans_type0, *ans_elt, ans_nrow, i;
 	SEXP ans;
 
@@ -439,13 +469,9 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	S_length = _get_cachedXStringSet_length(&S);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
-	max_nmis = INTEGER(max_mismatch)[0];
-	min_nmis = INTEGER(min_mismatch)[0];
-	indels = LOGICAL(with_indels)[0] && max_nmis != 0;
+	with_indels0 = LOGICAL(with_indels)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
-	if (indels && !(fixedP && fixedS))
-		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
 	ans_type0 = INTEGER(ans_type)[0];
 	switch (ans_type0) {
 		case 0:
@@ -465,13 +491,11 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 			break;
 		default: error("invalid 'ans_type' value (%d)", ans_type0);
 	}
-	if (!indels)
-		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
-
 	for (i = 0; i < S_length; i++, ans_elt += ans_nrow) {
 		S_elt = _get_cachedXStringSet_elt(&S, i);
 		match_pattern_at(&P, &S_elt, at, at_type0,
-				 max_nmis, min_nmis, indels, ans_type0, ans_elt);
+				 max_mismatch, min_mismatch, with_indels0,
+				 fixedP, fixedS, ans_type0, ans_elt);
 	}
 	UNPROTECT(1);
 	return ans;
