@@ -83,7 +83,7 @@ line which begins with a \code{>}.
 
 \examples{
   f1 <- system.file("extdata", "someORF.fa", package="Biostrings")
-  file.info(f1)
+  fasta.info(f1)
   ff <- readFASTA(f1, strip.descs=TRUE)
   desc <- sapply(ff, function(x) x$desc)
   ## Keep the "reverse complement" sequences only
