@@ -1,5 +1,5 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "trimLRPatterns" new generic.
+### The "trimLRPatterns" generic.
 ###
 
 setGeneric("trimLRPatterns", signature = "subject",
@@ -37,25 +37,32 @@ function(Lpattern = "", Rpattern = "", subject,
             max.Rmismatch <-
               c(rep.int(-1L, ncharRpattern - length(max.Rmismatch)), max.Rmismatch)
         }
-        if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != ncharRpattern)
+        if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != ncharRpattern) {
             stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
-        max.Rmismatch <- max.Rmismatch + (ncharRpattern - 1):0
+        }
         with.Rindels <- normargWithIndels(with.Rindels, argname = "with.Rindels")
         Rfixed <- normargFixed(Rfixed, subject, argname = "Rfixed")
 
+        # test the pattern from the inside out
         ncharSubject <- nchar(subject)[1]
-        Rstarting.at <- ncharSubject:(ncharSubject - ncharRpattern + 1L)
-        Rcandidate <-
-          t(neditStartingAt(Rpattern, subject, starting.at = Rstarting.at,
-                              with.indels = with.Rindels, fixed = Rfixed) <=
-            max.Rmismatch)
-        if (is(subject, "XString")) {
-            Rcandidate <- matrix(Rcandidate, nrow = 1)
-        }
-        Rwhich.candidate <- max.col(Rcandidate, ties.method = "last")
-        Rwhich.trim <- rowSums(Rcandidate) > 0
-        trim.end <-
-          ifelse(Rwhich.trim, ncharSubject - Rwhich.candidate, nchar(subject))
+        # first the whole pattern; then it is incrementally shifted off
+        Rstarting.at <- (ncharSubject - ncharRpattern + 1L):ncharSubject
+        # reverse the user's mismatch vector, and
+        # allow 1 edit for each char in the pattern that is shifted off
+        max.Rmismatch <- rev(max.Rmismatch) + 0:(ncharRpattern - 1)
+
+        # get start of first match, or NA
+        Rwhich.trim <-
+          which.isMatchingStartingAt(pattern = Rpattern,
+                                     subject = subject,
+                                     starting.at = Rstarting.at,
+                                     max.mismatch = max.Rmismatch,
+                                     with.indels = with.Rindels,
+                                     fixed = Rfixed,
+                                     follow.index = TRUE)
+
+        # last position before best match starts
+        trim.end <- ifelse(is.na(Rwhich.trim), ncharSubject, Rwhich.trim - 1L)
     }
 
     if (nchar(Lpattern) == 0) {
@@ -70,24 +77,31 @@ function(Lpattern = "", Rpattern = "", subject,
             max.Lmismatch <-
               c(rep.int(-1L, ncharLpattern - length(max.Lmismatch)), max.Lmismatch)
         }
-        if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != ncharLpattern)
+        if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != ncharLpattern) {
             stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
-        max.Lmismatch <- max.Lmismatch + (ncharLpattern - 1):0
+        }
         with.Lindels <- normargWithIndels(with.Lindels, argname = "with.Lindels")
         Lfixed <- normargFixed(Lfixed, subject, argname = "Lfixed")
-        
-        Lending.at <- seq_len(ncharLpattern)
-        Lcandidate <-
-          t(neditEndingAt(Lpattern, subject, ending.at = Lending.at,
-                            with.indels = with.Lindels, fixed = Lfixed) <=
-            max.Lmismatch)
-        if (is(subject, "XString")) {
-            Lcandidate <- matrix(Lcandidate, nrow = 1)
-        }
-        Lwhich.candidate <- max.col(Lcandidate, ties.method = "last")
-        Lwhich.trim <- rowSums(Lcandidate) > 0
-        trim.start <-
-          ifelse(Lwhich.trim, Lwhich.candidate + 1L, min(1L, nchar(subject)))
+
+        # test the pattern from the inside out
+        # first the whole pattern; then it is incrementally shifted off
+        Lending.at <- ncharLpattern:1L
+        # reverse the user's mismatch vector, and
+        # allow 1 edit for each char in the pattern that is shifted off
+        max.Lmismatch <- rev(max.Lmismatch) + 0:(ncharLpattern - 1)
+
+        # get end of first match, or NA
+        Lwhich.trim <-
+          which.isMatchingEndingAt(pattern = Lpattern,
+                                   subject = subject,
+                                   ending.at = Lending.at,
+                                   max.mismatch = max.Lmismatch,
+                                   with.indels = with.Lindels,
+                                   fixed = Lfixed,
+                                   follow.index = TRUE)
+
+        # next position after best match ends
+        trim.start <- ifelse(is.na(Lwhich.trim), pmin(1L, nchar(subject)), Lwhich.trim + 1L)
     }
     trim.start <- ifelse(trim.end >= 1L, trim.start, 2L)
     trim.end <- ifelse(trim.end >= trim.start, trim.end, trim.start - 1L)
