@@ -46,10 +46,10 @@ setMethod("initialize", "BOC2_SubjectString",
         code4 <- DNA_BASE_CODES[setdiff(names(DNA_BASE_CODES), base_letters)]
         buf <- XInteger(buf_length)
         stats <- .Call("match_BOC2_preprocess",
-              subject@xdata@xp, subject@offset, subject@length,
+              subject@shared@xp, subject@offset, subject@length,
               pattern_length,
               code1, code2, code3, code4,
-              buf@xdata@xp,
+              buf@shared@xp,
               PACKAGE="Biostrings")
         .Object@base1_code <- code1
         .Object@base2_code <- code2
@@ -113,13 +113,13 @@ plotBOC2 <- function(x, main)
 .match.BOC2.exact <- function(pattern, boc_subject, count.only)
 {
     .Call("match_BOC2_exact",
-          pattern@xdata@xp, pattern@offset, pattern@length,
-          boc_subject@subject@xdata@xp, boc_subject@subject@offset, boc_subject@subject@length,
+          pattern@shared@xp, pattern@offset, pattern@length,
+          boc_subject@subject@shared@xp, boc_subject@subject@offset, boc_subject@subject@length,
           boc_subject@base1_code,
           boc_subject@base2_code,
           boc_subject@base3_code,
           boc_subject@base4_code,
-          boc_subject@buffer@xdata@xp,
+          boc_subject@buffer@shared@xp,
           boc_subject@stats, count.only,
           PACKAGE="Biostrings")
 }

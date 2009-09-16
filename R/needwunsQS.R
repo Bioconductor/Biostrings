@@ -135,8 +135,8 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
                    substmat, nrow(substmat), lkup,
                    as.integer(gappen), gap_code,
                    PACKAGE="Biostrings")
-    PairwiseAlignedXStringSet(new(class(s1), xdata = C_ans$al1, length = length(C_ans$al1)), 
-                              new(class(s2), xdata = C_ans$al2, length = length(C_ans$al2)),
+    PairwiseAlignedXStringSet(new(class(s1), shared = C_ans$al1, length = length(C_ans$al1)), 
+                              new(class(s2), shared = C_ans$al2, length = length(C_ans$al2)),
                               type = "global", substitutionMatrix = substmat,
                               gapOpening = 0, gapExtension = gappen)
 }

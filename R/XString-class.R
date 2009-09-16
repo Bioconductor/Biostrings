@@ -21,11 +21,11 @@ setClass("AAString", contains="XString")
 ###
 ### Note that this cannot be made the prototype part of the XString class
 ### definition (and trying to do so will cause an error at installation time)
-### because the DLL of the package needs to be loaded before RawPtr() can be
+### because the DLL of the package needs to be loaded before SharedRaw() can be
 ### called.
 ###
 
-newEmptyXString <- function(class) new(class, xdata=RawPtr(0))
+newEmptyXString <- function(class) new(class, shared=SharedRaw(0))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,9 +53,9 @@ setReplaceMethod("xsbasetype", "XString",
         ans_class <- paste(to_basetype, "String", sep="")
         lkup <- get_xsbasetypes_conversion_lookup(from_basetype, to_basetype)
         if (is.null(lkup))
-            return(new(ans_class, xdata=x@xdata, offset=x@offset, length=x@length))
-        xdata <- .copySubRawPtr(x@xdata, start=x@offset+1L, nchar=x@length, lkup=lkup)
-        new(ans_class, xdata=xdata, length=length(xdata))
+            return(new(ans_class, shared=x@shared, offset=x@offset, length=x@length))
+        shared <- .copySubSharedRaw(x@shared, start=x@offset+1L, nchar=x@length, lkup=lkup)
+        new(ans_class, shared=shared, length=length(shared))
     }
 )
 
@@ -67,13 +67,13 @@ setReplaceMethod("xsbasetype", "XString",
 
 XString.read <- function(x, i, imax=integer(0))
 {
-    RawPtr.read(x@xdata, x@offset + i, x@offset + imax,
+    SharedRaw.read(x@shared, x@offset + i, x@offset + imax,
                       dec_lkup=xs_dec_lkup(x))
 }
 
 XString.readCodes <- function(x, i, imax=integer(0))
 {
-    RawPtr.readInts(x@xdata, x@offset + i, x@offset + imax)
+    SharedRaw.readInts(x@shared, x@offset + i, x@offset + imax)
 }
 
 ### Only used at initialization time! (XString objects are immutable.)
@@ -84,16 +84,16 @@ XString.write <- function(x, i, imax=integer(0), value)
         nbytes <- nchar(value, type="bytes")
         if (nbytes == 0)
             return(x)
-        ## Write data starting immediately after the last byte in RawPtr object
-        ## 'x@xdata' that belongs to the sequence XString object 'x' is
+        ## Write data starting immediately after the last byte in SharedRaw object
+        ## 'x@shared' that belongs to the sequence XString object 'x' is
         ## pointing at.
-        ## This is safe because RawPtr.write() is protected against subscripts
+        ## This is safe because SharedRaw.write() is protected against subscripts
         ## 'i' and 'imax' being "out of bounds".
         i <- x@length + 1L
         imax <- x@length <- x@length + nbytes
     }
     #cat(x@offset + i, " -- ", x@offset + imax, "\n", sep="")
-    RawPtr.write(x@xdata, x@offset + i, x@offset + imax, value=value,
+    SharedRaw.write(x@shared, x@offset + i, x@offset + imax, value=value,
                        enc_lkup=xs_enc_lkup(x))
     x
 }
@@ -110,9 +110,9 @@ XString.append <- function(x, y)
     if (xsbasetype(y) != ans_basetype)
         stop("'x' and 'y' must be XString objects of the same base type")
     ans_class <- paste(ans_basetype, "String", sep="")
-    ans_xdata <- RawPtr.append(x@xdata, x@offset + 1L, x@length,
-                               y@xdata, y@offset + 1L, y@length)
-    new(ans_class, xdata=ans_xdata, length=length(ans_xdata))
+    ans_shared <- SharedRaw.append(x@shared, x@offset + 1L, x@length,
+                               y@shared, y@offset + 1L, y@length)
+    new(ans_class, shared=ans_shared, length=length(ans_shared))
 }
 
 
@@ -120,19 +120,19 @@ XString.append <- function(x, y)
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToRawPtr <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL)
+.charToSharedRaw <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL)
 {
     solved_SEW <- solveUserSEW(nchar(x, type="bytes"),
                                start=start, end=end, width=width)
-    .Call("new_RawPtr_from_STRSXP",
+    .Call("new_SharedRaw_from_STRSXP",
           x, start(solved_SEW), width(solved_SEW), collapse, lkup,
           PACKAGE="Biostrings")
 }
 
-.copySubRawPtr <- function(x, start=1, nchar=NA, lkup=NULL)
+.copySubSharedRaw <- function(x, start=1, nchar=NA, lkup=NULL)
 {
-    ans <- RawPtr(nchar)
-    RawPtr.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
+    ans <- SharedRaw(nchar)
+    SharedRaw.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
 }
 
 
@@ -156,8 +156,8 @@ setMethod("XString", "character",
             stop("more than one input sequence")
         ans_class <- paste(basetype, "String", sep="")
         lkup <- xs_enc_lkup(newEmptyXString(ans_class))
-        xdata <- .charToRawPtr(x, start=start, end=end, width=width, lkup=lkup)
-        new(ans_class, xdata=xdata, length=length(xdata))
+        shared <- .charToSharedRaw(x, start=start, end=end, width=width, lkup=lkup)
+        new(ans_class, shared=shared, length=length(shared))
     }
 )
 
@@ -276,11 +276,11 @@ setMethod("[", "XString",
             stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-        xdata <- RawPtr(length(i))
-        RawPtr.copy(xdata, x@offset + i, src=x@xdata)
-        x@xdata <- xdata
+        shared <- SharedRaw(length(i))
+        SharedRaw.copy(shared, x@offset + i, src=x@shared)
+        x@shared <- shared
         x@offset <- 0L
-        x@length <- length(xdata)
+        x@length <- length(shared)
         x
     }
 )
@@ -310,7 +310,7 @@ setMethod("[", "XString",
 {
     if (x@length != y@length)
         return(FALSE)
-    ans <- !RawPtr.compare(x@xdata, x@offset + 1L, y@xdata, y@offset + 1L, x@length)
+    ans <- !SharedRaw.compare(x@shared, x@offset + 1L, y@shared, y@offset + 1L, x@length)
     as.logical(ans)
 }
 

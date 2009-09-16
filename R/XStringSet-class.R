@@ -7,19 +7,19 @@
 ### all DNAString objects etc).
 ###
 ### The current implementation only allows for storage of a set of strings
-### that belong to the same RawPtr object i.e. all the elements of an XStringSet
+### that belong to the same SharedRaw object i.e. all the elements of an XStringSet
 ### object must be substrings of a common string called the "super string".
 ### The old XStringList container (Biostrings 2.8) didn't have this limitation:
-### it could hold XString objects that pointed to different RawPtr objects but
+### it could hold XString objects that pointed to different SharedRaw objects but
 ### it was so slow that I decided to replace it by the much more efficient
 ### XStringSet container.
 ### Maybe the best of both world, or at least a good enough trade-off, could be
 ### obtained by defining the XStringSet class like this:
 ###
-###   setClass("RawPtrViews",
+###   setClass("SharedRawViews",
 ###     contains="IRanges",
 ###     representation(
-###         subject="RawPtr"
+###         subject="SharedRaw"
 ###     )
 ###   )
 ###
@@ -27,7 +27,7 @@
 ###     contains="Sequence",
 ###     representation(
 ###         "VIRTUAL",
-###         xrvlist="list",   # a list of RawPtrViews objects
+###         xrvlist="list",   # a list of SharedRawViews objects
 ###         strong="integer",
 ###         weak="integer"
 ###     )
@@ -39,7 +39,7 @@
 ###     xrv <- x@xrvlist[[x@strong[i]]]
 ###     start <- start(xrv)[x@weak[i]]
 ###     width <- width(xrv)[x@weak[i]]
-###     new(class, xdata=xrv@subject, offset=start-1L, length=width)
+###     new(class, shared=xrv@subject, offset=start-1L, length=width)
 ### This new XStringSet container would still be almost as efficient as the old
 ### one (at least for the restricted set of use cases that the old one was
 ### supporting i.e. when x@xrvlist holds a list of length 1) and the
@@ -84,6 +84,33 @@ setClass("AAStringSet",
         super="AAString"
     )
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### TODO: This is temporary code needed to make temporarily broken BSgenome
+### data packages work despite the big internal renaming I made in IRanges >=
+### 1.3.76. Won't be needed anymore after all the BSgenome data packages have
+### been reforged unless there are still some broken serialized XString or
+### XStringSet objects around.
+### NOT exported.
+
+replace.xdata.with.shared <- function(object)
+{
+    if (is(object, "XStringSet")) {
+        object@super <- replace.xdata.with.shared(object@super)
+        return(object)
+    }
+    ## An XString object is an XRaw object.
+    if (!is(object, "XRaw"))
+        stop("'object' must be an XStringSet or XRaw object")
+    if (!is(try(object@shared, silent=TRUE), "try-error"))
+        return(object)
+    xdata <- object@xdata
+    object@shared <- new("SharedRaw")
+    object@shared@xp <- xdata@xp
+    object@shared@.link_to_cached_object=xdata@.link_to_cached_object
+    return(object)
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -241,10 +268,10 @@ setMethod("xsbasetype", "XStringSet", function(x) xsbasetype(super(x)))
     ## 'length(super(x))' especially if the elements in 'x' cover a small part
     ## of 'super(x)'.
     frame <- reduce(x@ranges, with.inframe.attrib=TRUE)
-    xdata <- .Call("new_RawPtr_from_XString",
+    shared <- .Call("new_SharedRaw_from_XString",
                    super(x), start(frame), width(frame), lkup,
                    PACKAGE="Biostrings")
-    ans_super <- new(baseclass, xdata=xdata, length=length(xdata))
+    ans_super <- new(baseclass, shared=shared, length=length(shared))
     ans_ranges <- attr(frame, "inframe")
     if (is.null(basetype)) {
         ## Endomorphism
@@ -295,10 +322,10 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 {
     class <- paste(basetype, "String", sep="")
     proto <- newEmptyXString(class)
-    xdata <- .Call("new_RawPtr_from_STRSXP",
+    shared <- .Call("new_SharedRaw_from_STRSXP",
                    x, start(solved_SEW), width(solved_SEW), "", xs_enc_lkup(proto),
                    PACKAGE="Biostrings")
-    new(class, xdata=xdata, length=length(xdata))
+    new(class, shared=shared, length=length(shared))
 }
 
 .charToXStringSet <- function(x, start, end, width, use.names, basetype)

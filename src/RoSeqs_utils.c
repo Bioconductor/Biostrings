@@ -144,10 +144,10 @@ SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 
 
 /*****************************************************************************
- * From a RoSeqs struct to a RawPtr object.
+ * From a RoSeqs struct to a SharedRaw object.
  */
 
-SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
+SEXP _new_SharedRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
         SEXP tag, ans;
         int tag_length, i;
@@ -172,14 +172,14 @@ SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
                 }
                 dest += seq->length;
         }
-        PROTECT(ans = new_SequencePtr("RawPtr", tag));
+        PROTECT(ans = new_SharedVector("SharedRaw", tag));
         UNPROTECT(2);
         return ans;
 }
 
 
 /*****************************************************************************
- * From a character vector to a RawPtr object.
+ * From a character vector to a SharedRaw object.
  *
  * --- .Call ENTRY POINT ---
  * Arguments:
@@ -191,7 +191,7 @@ SEXP _new_RawPtr_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
  * TODO: Support the 'collapse' argument
  */
 
-SEXP new_RawPtr_from_STRSXP(SEXP x, SEXP start, SEXP width,
+SEXP new_SharedRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
                 SEXP collapse, SEXP lkup)
 {
         int nseq;
@@ -210,7 +210,7 @@ SEXP new_RawPtr_from_STRSXP(SEXP x, SEXP start, SEXP width,
         }
         seqs = _new_RoSeqs_from_STRSXP(nseq, x);
         _narrow_RoSeqs(&seqs, start, width);
-        return _new_RawPtr_from_RoSeqs(&seqs, lkup);
+        return _new_SharedRaw_from_RoSeqs(&seqs, lkup);
 }
 
 
@@ -279,17 +279,17 @@ SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 
 
 /****************************************************************************
- * Writing a cachedCharSeq object to a RawPtr object.
+ * Writing a cachedCharSeq object to a SharedRaw object.
  *
- * TODO: Rename _write_cachedCharSeq_to_RawPtr and move to the IRanges package.
+ * TODO: Rename _write_cachedCharSeq_to_SharedRaw and move to the IRanges package.
  */
 
-void _write_RoSeq_to_RawPtr(SEXP x, int offset, const cachedCharSeq *seq,
+void _write_RoSeq_to_SharedRaw(SEXP x, int offset, const cachedCharSeq *seq,
 		const ByteTrTable *byte2code)
 {
         char *dest;
 
-        dest = (char *) RAW(get_SequencePtr_tag(x)) + offset;
+        dest = (char *) RAW(get_SharedVector_tag(x)) + offset;
         _copy_seq(dest, seq->seq, seq->length, byte2code);
         return;
 }

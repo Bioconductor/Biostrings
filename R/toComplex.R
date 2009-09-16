@@ -23,7 +23,7 @@ setMethod("toComplex", "DNAString",
         if (!is.complex(baseValues))
             class(baseValues) <- "complex" # as.complex() would drop the names!
         lkup <- buildLookupTable(base_codes[names(baseValues)], baseValues)
-        RawPtr.readComplexes(x@xdata, x@offset + 1L, x@offset + x@length, lkup)
+        SharedRaw.readComplexes(x@shared, x@offset + 1L, x@offset + x@length, lkup)
     }
 )
 

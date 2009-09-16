@@ -262,23 +262,23 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 #define FASTALINE_MAX 20000
 
 /*
- RawPtr_loadFASTA().
- Load a FASTA file into an RawPtr object.
+ SharedRaw_loadFASTA().
+ Load a FASTA file into an SharedRaw object.
 
  Return a named list of 4 elements:
 
-   - "nbyte" (single integer): number of bytes that were written to the RawPtr
-     object. RawPtr_loadFASTA() starts to write at position 1 (the first byte)
-     in the RawPtr object. If nbyte_max is the length of the RawPtr object, we
+   - "nbyte" (single integer): number of bytes that were written to the SharedRaw
+     object. SharedRaw_loadFASTA() starts to write at position 1 (the first byte)
+     in the SharedRaw object. If nbyte_max is the length of the SharedRaw object, we
      should always have 1 <= nbyte <= nbyte_max. An error is raised if the
      FASTA file contains no data or if the size of the data exceeds the
-     capacity (i.e. the length) of the RawPtr object i.e. if RawPtr_loadFASTA()
-     tries to write more than nbyte_max bytes to the RawPtr object (it does not
+     capacity (i.e. the length) of the SharedRaw object i.e. if SharedRaw_loadFASTA()
+     tries to write more than nbyte_max bytes to the SharedRaw object (it does not
      try to resize it). 
 
    - "start" and "end": 2 integer vectors of same length L (L should always be
      >= 1) containing the start/end positions of the FASTA sequences relatively
-     to the first byte of the RawPtr object. The start/end positions define a set
+     to the first byte of the SharedRaw object. The start/end positions define a set
      of views such that:
        (a) there is at least one view,
        (b) all views have a width >= 1 ('all(start <= end)' is TRUE),
@@ -289,7 +289,7 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
    - "desc" (character vector): descriptions of the FASTA sequences. The length
      of 'desc' is L too.
 
- RawPtr_loadFASTA() is designed to be very fast:
+ SharedRaw_loadFASTA() is designed to be very fast:
 
      library(Biostrings)
      filepath <- "~hpages/BSgenome_srcdata/UCSC/hg18/chr1.fa"
@@ -299,13 +299,13 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
      filesize <- as.integer(filesize)
      if (is.na(filesize))
          stop(filepath, ": file is too big")
-     rawptr <- RawPtr(filesize)
+     rawptr <- SharedRaw(filesize)
 
      # Takes < 1 second on lamb1!
-     .Call("RawPtr_loadFASTA", rawptr@xp, filepath, "", NULL, PACKAGE="Biostrings")
+     .Call("SharedRaw_loadFASTA", rawptr@xp, filepath, "", NULL, PACKAGE="Biostrings")
 
      # or use safe wrapper:
-     Biostrings:::RawPtr.loadFASTA(rawptr, filepath)
+     Biostrings:::SharedRaw.loadFASTA(rawptr, filepath)
 
    Compare to the time it takes to load Hsapiens$chr1 from the
    BSgenome.Hsapiens.UCSC.hg18 package: 1.340 second on lamb1!
@@ -315,7 +315,7 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 
 */
 
-SEXP RawPtr_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup)
+SEXP SharedRaw_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 {
 	SEXP ans, ans_names, ans_elt, dest;
 	const char *path, *coll;
@@ -325,7 +325,7 @@ SEXP RawPtr_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup)
 	int nbyte_max, gaplen, line_len, status, view_start, i1, i2;
 	char c0;
 
-	error("RawPtr_loadFASTA() is not ready yet");
+	error("SharedRaw_loadFASTA() is not ready yet");
 	dest = R_ExternalPtrTag(rawptr_xp);
 	nbyte_max = LENGTH(dest);
 	path = translateChar(STRING_ELT(filepath, 0));
@@ -448,20 +448,20 @@ static void add_seq_WIDTHONLY(int recno, const cachedCharSeq *dataline)
 	return;
 }
 
-static SEXP FASTQ_seqbuf, FASTQ_seqbuf_xdata, FASTQ_qualbuf, FASTQ_qualbuf_xdata;
+static SEXP FASTQ_seqbuf, FASTQ_seqbuf_shared, FASTQ_qualbuf, FASTQ_qualbuf_shared;
 
 static void append_seq_to_FASTQ_seqbuf(int recno, const cachedCharSeq *dataline)
 {
 	const ByteTrTable *byte2code;
 
 	byte2code = get_enc_byte2code("DNAString");
-	_write_RoSeq_to_RawPtr(FASTQ_seqbuf_xdata, recno * FASTQ_width, dataline, byte2code);
+	_write_RoSeq_to_SharedRaw(FASTQ_seqbuf_shared, recno * FASTQ_width, dataline, byte2code);
 	return;
 }
 
 static void append_qual_to_FASTQ_qualbuf(int recno, const cachedCharSeq *dataline)
 {
-	_write_RoSeq_to_RawPtr(FASTQ_qualbuf_xdata, recno * FASTQ_width, dataline, NULL);
+	_write_RoSeq_to_SharedRaw(FASTQ_qualbuf_shared, recno * FASTQ_width, dataline, NULL);
 	return;
 }
 
@@ -582,10 +582,10 @@ SEXP read_fastq(SEXP filepath, SEXP drop_quality)
 		error("read_fastq(): FASTQ files contain more data an XStringSet object can hold, sorry!");
 	buf_length = INTEGER(ans_geom)[0] * INTEGER(ans_geom)[1];
 	PROTECT(FASTQ_seqbuf = _alloc_XString("DNAString", buf_length));
-	FASTQ_seqbuf_xdata = get_XSequence_xdata(FASTQ_seqbuf);
+	FASTQ_seqbuf_shared = get_XSequence_shared(FASTQ_seqbuf);
 	if (!LOGICAL(drop_quality)[0]) {
 		PROTECT(FASTQ_qualbuf = _alloc_XString("BString", buf_length));
-		FASTQ_qualbuf_xdata = get_XSequence_xdata(FASTQ_qualbuf);
+		FASTQ_qualbuf_shared = get_XSequence_shared(FASTQ_qualbuf);
 	}
 	for (fileno = 0; fileno < nfile; fileno++) {
 		rewind(files[fileno]);

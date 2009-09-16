@@ -40,7 +40,7 @@
     if (max.mismatch != 0)
         stop("'max.mismatch' != 0 not yet supported (will be very soon)")
     C_ans <- .Call("find_palindromes",
-                   subject@xdata@xp, subject@offset, subject@length,
+                   subject@shared@xp, subject@offset, subject@length,
                    min.armlength, max.looplength, L2R_lkup,
                    PACKAGE="Biostrings")
     ## sort matches from left to right and remove duplicates

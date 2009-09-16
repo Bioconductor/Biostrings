@@ -342,7 +342,7 @@ static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
  * .Call entry point: "match_BOC_preprocess"
  *
  * Arguments:
- *   's_xp': subject@xdata@xp
+ *   's_xp': subject@shared@xp
  *   's_offset': subject@offset
  *   's_length': subject@length
  *   'p_length': pattern_length
@@ -432,10 +432,10 @@ SEXP match_BOC_preprocess(SEXP s_xp, SEXP s_offset, SEXP s_length,
  * .Call entry point: "match_BOC_exact"
  * 
  * Arguments:
- *   'p_xp': pattern@xdata@xp
+ *   'p_xp': pattern@shared@xp
  *   'p_offset': pattern@offset
  *   'p_length': pattern@length
- *   's_xp': boc_subject@subject@xdata@xp
+ *   's_xp': boc_subject@subject@shared@xp
  *   's_offset': boc_subject@subject@offset
  *   's_length': boc_subject@subject@length
  *   'code1': boc_subject@base1_code

@@ -74,6 +74,50 @@ static void update_letter_freqs(int *row, int nrow, const cachedCharSeq *X, SEXP
 	return;
 }
 
+// HJ
+// On the 1st call (cols=0), test k letters starting at c, returning the
+// first, as its 'offset'.  Otherwise, copy the results from last time,
+// except for the letter that has dropped off, compute the offset for the
+// letter at c, and test the letter at c+k-1
+static int HJ_update_letter_freqs(int *row, int nrow, const char *c,
+	int O, int cols, int k)
+{
+	int i, j, J, offset, rtn;
+
+	// copy results for the last k-mer (cols=0 on 1st call)
+	for (j = 0; j < cols; j++) {
+		J = nrow * j;
+		row[J] = (row-1)[J];
+	}
+
+	// get new 1st letter, compute offset, and set return
+	offset = (unsigned char) *c;
+	offset = byte2offset[offset];
+	rtn = offset;
+
+	// on 1st call, bump count for this offset,
+	// and prepare to test the next k-1 letters
+	if (cols == 0) {
+		row[offset * nrow]++;
+		i = 1;
+		c++;
+	}
+	// fix count for the 1st letter of the last k-mer,
+	// and set up for the last letter in the next one
+	else {
+		row[O * nrow]--;
+		i = k - 1;
+		c += i;
+	}
+
+	for ( ; i < k; i++, c++) {
+		offset = (unsigned char) *c;
+		offset = byte2offset[offset];
+		row[offset * nrow]++;
+	}
+	return rtn;
+}
+
 /* Note that calling update_letter_freqs2() with shift = 0, nrow = 0 and
    ncol = X->length is equivalent to calling update_letter_freqs() */
 static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
@@ -356,6 +400,43 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 		}
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], LOGICAL(collapse)[0], 1);
+	UNPROTECT(1);
+	return ans;
+}
+
+// HJ
+// to be sent an XStringSet with 1 element and the length of
+// window to slide along that string (in place of 'collapse')
+// NOTE: Caller must set with_other if codes do not include
+// everthing that will be encountered, eg codes = c("C","G")
+SEXP HJ_XStringSet_letter_frequency(SEXP x, SEXP K, SEXP codes, SEXP with_other)
+{
+	SEXP ans;
+	int ans_width, x_length, *ans_row, i, j, O;	// O: offset
+	cachedXStringSet cached_x;
+	cachedCharSeq x_elt;
+	int collapse = 0, Nrows, k;	// never collapse
+	char *c;
+
+	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
+	cached_x = _cache_XStringSet(x);
+	x_elt = _get_cachedXStringSet_elt(&cached_x, 0);
+
+	c = x_elt.seq;
+	k = INTEGER(K)[0];
+	Nrows = x_elt.length - k + 1;
+// Rprintf("allocating integer matrix of size %d x %d ...", Nrows , ans_width);
+	PROTECT(ans = allocMatrix(INTSXP, Nrows, ans_width));
+	ans_row = INTEGER(ans);
+	memset(ans_row, 0, LENGTH(ans) * sizeof(int));
+// Rprintf("Done\n");
+
+	O = HJ_update_letter_freqs(ans_row, Nrows, c, 0, 0, k);
+	ans_row++;
+	for (i = 1; i < Nrows; i++, ans_row++)
+	    O = HJ_update_letter_freqs(ans_row, Nrows, ++c, O, ans_width, k);
+
+	set_names(ans, codes, LOGICAL(with_other)[0], collapse, 1);
 	UNPROTECT(1);
 	return ans;
 }

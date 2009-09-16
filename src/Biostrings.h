@@ -139,12 +139,12 @@ SEXP _new_STRSXP_from_RoSeqs(
 	SEXP lkup
 );
 
-SEXP _new_RawPtr_from_RoSeqs(
+SEXP _new_SharedRaw_from_RoSeqs(
 	const RoSeqs *seqs,
 	SEXP lkup
 );
 
-SEXP new_RawPtr_from_STRSXP(
+SEXP new_SharedRaw_from_STRSXP(
 	SEXP x,
 	SEXP start,
 	SEXP width,
@@ -159,7 +159,7 @@ SEXP _new_IRanges_from_RoSeqs(
 	const RoSeqs *seqs
 );
 
-void _write_RoSeq_to_RawPtr(
+void _write_RoSeq_to_SharedRaw(
 	SEXP x,
 	int offset,
 	const cachedCharSeq *seq,
@@ -220,7 +220,7 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-SEXP new_RawPtr_from_XString(
+SEXP new_SharedRaw_from_XString(
 	SEXP x,
 	SEXP start,
 	SEXP width,
@@ -338,7 +338,7 @@ SEXP fasta_info(
 	SEXP use_descs
 );
 
-SEXP RawPtr_loadFASTA(
+SEXP SharedRaw_loadFASTA(
 	SEXP rawptr_xp,
 	SEXP filepath,
 	SEXP collapse,

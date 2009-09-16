@@ -21,13 +21,13 @@
 XString.tr <- function(x, lkup=NULL, reverse=FALSE)
 {
     lx <- length(x)
-    xdata <- RawPtr(lx)
+    shared <- SharedRaw(lx)
     if (reverse) {
-        RawPtr.reverseCopy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
+        SharedRaw.reverseCopy(shared, x@offset + 1, x@offset + lx, src=x@shared, lkup=lkup)
     } else {
-        RawPtr.copy(xdata, x@offset + 1, x@offset + lx, src=x@xdata, lkup=lkup)
+        SharedRaw.copy(shared, x@offset + 1, x@offset + lx, src=x@shared, lkup=lkup)
     }
-    new(class(x), xdata=xdata, length=length(xdata))
+    new(class(x), shared=shared, length=length(shared))
 }
 
 XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)

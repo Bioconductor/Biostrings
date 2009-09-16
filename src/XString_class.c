@@ -133,7 +133,7 @@ static RoSeqs new_RoSeqs_from_XString(int nelt, SEXP x)
  *                set of valid ranges in 'x';
  *   lkup: lookup table for (re)encoding the letters in 'x'.
  */
-SEXP new_RawPtr_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
+SEXP new_SharedRaw_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
 {
 	int nseq;
 	RoSeqs seqs;
@@ -141,7 +141,7 @@ SEXP new_RawPtr_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
 	nseq = LENGTH(start);
 	seqs = new_RoSeqs_from_XString(nseq, x);
 	_narrow_RoSeqs(&seqs, start, width);
-	return _new_RawPtr_from_RoSeqs(&seqs, lkup);
+	return _new_SharedRaw_from_RoSeqs(&seqs, lkup);
 }
 
 /*
@@ -151,12 +151,12 @@ SEXP new_RawPtr_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
 SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 {
 	const ByteTrTable *byte2code;
-	SEXP lkup, xdata, ans;
+	SEXP lkup, shared, ans;
 
 	byte2code = get_enc_byte2code(classname);
 	PROTECT(lkup = _new_lkup_from_ByteTrTable(byte2code));
-	PROTECT(xdata = _new_RawPtr_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = new_XSequence(classname, xdata, 0, get_SequencePtr_length(xdata)));
+	PROTECT(shared = _new_SharedRaw_from_RoSeqs(seqs, lkup));
+	PROTECT(ans = new_XSequence(classname, shared, 0, get_SharedVector_length(shared)));
 	UNPROTECT(3);
 	return ans;
 }
@@ -188,7 +188,7 @@ void _write_RoSeq_to_XString(SEXP x, int start, const cachedCharSeq *seq, int en
 
 	offset = INTEGER(get_XSequence_offset(x))[0];
 	enc_byte2code = encode ? get_enc_byte2code(get_classname(x)) : NULL;
-	_write_RoSeq_to_RawPtr(get_XSequence_xdata(x), offset + start - 1, seq, enc_byte2code);
+	_write_RoSeq_to_SharedRaw(get_XSequence_shared(x), offset + start - 1, seq, enc_byte2code);
 	return;
 }
 

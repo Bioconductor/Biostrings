@@ -160,8 +160,8 @@ orf2 <- XStringViews(orf, "RNAString")
 
 These conversions are very fast because no string data needs to be copied:
 <<e2>>=
-subject(orf)@xdata
-subject(orf2)@xdata
+subject(orf)@shared
+subject(orf2)@shared
 @
 
 \end{document}
