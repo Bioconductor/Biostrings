@@ -156,7 +156,7 @@ SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 	byte2code = get_enc_byte2code(classname);
 	PROTECT(lkup = _new_lkup_from_ByteTrTable(byte2code));
 	PROTECT(shared = _new_SharedRaw_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = new_XSequence(classname, shared, 0, get_SharedVector_length(shared)));
+	PROTECT(ans = new_XVector(classname, shared, 0, get_SharedVector_length(shared)));
 	UNPROTECT(3);
 	return ans;
 }
@@ -186,9 +186,9 @@ void _write_RoSeq_to_XString(SEXP x, int start, const cachedCharSeq *seq, int en
 	int offset;
 	const ByteTrTable *enc_byte2code;
 
-	offset = INTEGER(get_XSequence_offset(x))[0];
+	offset = INTEGER(get_XVector_offset(x))[0];
 	enc_byte2code = encode ? get_enc_byte2code(get_classname(x)) : NULL;
-	_write_RoSeq_to_SharedRaw(get_XSequence_shared(x), offset + start - 1, seq, enc_byte2code);
+	_write_RoSeq_to_SharedRaw(get_XVector_shared(x), offset + start - 1, seq, enc_byte2code);
 	return;
 }
 

@@ -2,7 +2,7 @@
 ### XString objects
 ### -------------------------------------------------------------------------
 ###
-### The XSequence class is a general container for storing an "external
+### The XString virtual class is a general container for storing an "external
 ### string".
 ###
 

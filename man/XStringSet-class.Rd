@@ -239,7 +239,7 @@
       has a \code{use.names} argument; and (2) all the things \code{narrow}
       and \code{subseq} work on (\link[IRanges]{IRanges}, XStringSet or
       \link{XStringViews} objects for \code{narrow},
-      \link[IRanges]{XSequence} or XStringSet objects for \code{subseq}).
+      \link[IRanges]{XVector} or XStringSet objects for \code{subseq}).
       But they both work and do the same thing on an XStringSet object.
     }
     \item{}{
@@ -255,7 +255,7 @@
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
       A vectorized version of the \code{\link[IRanges]{subseq<-}}
-      method for \link[IRanges]{XSequence} objects.
+      method for \link[IRanges]{XVector} objects.
       See \code{?`\link[IRanges]{subseq<-}`} for the details.
     }
   }

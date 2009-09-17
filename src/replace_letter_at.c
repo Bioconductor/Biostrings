@@ -155,7 +155,7 @@ SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 		_init_ByteTrTable_with_lkup(byte2code, lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
-	tag = get_XSequence_tag(x);
+	tag = get_XVector_tag(x);
 	skip_or_merge_count = letter_ncharsum = 0;
 	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {

@@ -89,7 +89,7 @@ static SEXP get_Twobit_sign2pos(SEXP x)
 /* Not a strict "slot getter" but very much like. */
 SEXP _get_Twobit_sign2pos_tag(SEXP x)
 {
-	return get_XSequence_tag(get_Twobit_sign2pos(x));
+	return get_XVector_tag(get_Twobit_sign2pos(x));
 }
 
 
@@ -111,7 +111,7 @@ static SEXP get_ACtree_nodes(SEXP x)
 /* Not a strict "slot getter" but very much like. */
 SEXP _get_ACtree_nodes_tag(SEXP x)
 {
-	return get_XSequence_tag(get_ACtree_nodes(x));
+	return get_XVector_tag(get_ACtree_nodes(x));
 }
 
 
