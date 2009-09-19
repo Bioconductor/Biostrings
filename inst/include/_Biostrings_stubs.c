@@ -106,6 +106,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
 	(     x,      names)
 )
 
+DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet,
+	(const char *classname, SEXP super, SEXP ranges),
+	(            classname,      super,      ranges)
+)
+
 DEFINE_CCALLABLE_STUB(SEXP, alloc_XStringSet,
 	(const char *xsbaseclassname, int length, int super_length),
 	(            xsbaseclassname,     length,     super_length)
