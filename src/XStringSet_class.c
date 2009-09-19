@@ -146,8 +146,11 @@ SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 	SEXP classdef, ans;
 
 	if (classname == NULL) {
-		snprintf(classname_buf, sizeof(classname_buf),
-			"%sSet", get_classname(super));
+		if (snprintf(classname_buf, sizeof(classname_buf),
+			     "%sSet", get_classname(super))
+		    >= sizeof(classname_buf))
+			error("Biostrings internal error in _new_XStringSet(): "
+			      "'classname' too long");
 		classname = classname_buf;
 	}
 	PROTECT(classdef = MAKE_CLASS(classname));
