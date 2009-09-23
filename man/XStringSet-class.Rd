@@ -20,12 +20,8 @@
 \alias{AAStringSet}
 
 % Methods:
-\alias{length,XStringSet-method}
 \alias{width,character-method}
-\alias{width,XStringSet-method}
 \alias{nchar,XStringSet-method}
-\alias{names,XStringSet-method}
-\alias{names<-,XStringSet-method}
 \alias{narrow,character-method}
 \alias{narrow,XStringSet-method}
 \alias{subseq,character-method}
@@ -60,10 +56,6 @@
 
 \alias{[,XStringSet-method}
 \alias{rep,XStringSet-method}
-\alias{[[,XStringSet-method}
-\alias{[[<-,XStringSet-method}
-
-\alias{append,XStringSet,XStringSet-method}
 
 \alias{is.unsorted,XStringSet-method}
 \alias{order,XStringSet-method}
@@ -90,6 +82,8 @@
 \alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}
 
+\alias{updateObject,XStringSet-method}
+
 
 \title{XStringSet objects}
 
@@ -114,10 +108,7 @@
   AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
   ## Accessor-like methods:
-  \S4method{length}{XStringSet}(x)
   \S4method{width}{character}(x)
-  \S4method{width}{XStringSet}(x)
-  \S4method{names}{XStringSet}(x)
   \S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
 
   ## Efficient subsequence extraction:

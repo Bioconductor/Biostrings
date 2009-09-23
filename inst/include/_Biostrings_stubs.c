@@ -111,11 +111,6 @@ DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet,
 	(            classname,      super,      ranges)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, alloc_XStringSet,
-	(const char *xsbaseclassname, int length, int super_length),
-	(            xsbaseclassname,     length,     super_length)
-)
-
 DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
 	(const char *xsbaseclassname, const RoSeqs *seqs),
 	(            xsbaseclassname,               seqs)

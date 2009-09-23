@@ -49,6 +49,9 @@
 \alias{!=,BString,character-method}
 \alias{!=,character,BString-method}
 
+% updateObject:
+\alias{updateObject,XString-method}
+
 
 \title{BString objects}
 

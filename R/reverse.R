@@ -22,11 +22,19 @@ setMethod("reverse", "XString",
         XString.tr(x, reverse=TRUE)
 )
 
+
+### FIXME: Currently broken if 'length(x@pool)) != 1'. This is because the
+### "copy" method for SharedVector_Pool objects (defined in IRanges) is
+### itself broken. Fix it!
+### NOTE: Memory footprint could be reduced by copying only the regions in
+### each x@pool element that are actually used by 'x'.
 setMethod("reverse", "XStringSet",
     function(x, ...)
     {
-        x@super <- reverse(super(x))
-        x@ranges <- reverse(x@ranges, start=1L, end=length(super(x)))
+        x@pool <- copy(x@pool, reverse=TRUE)
+        x@ranges <- reverse(x@ranges,
+                            start=1L,
+                            end=width(x@pool)[x@ranges@group])
         x
     }
 )
@@ -67,10 +75,16 @@ setMethod("complement", "RNAString",
         XString.tr(x, lkup=getRNAComplementLookup())
 )
 
+### FIXME: The 2 methods below are currently broken if 'length(x@pool)) != 1'.
+### This is because the "copy" method for SharedVector_Pool objects (defined
+### in IRanges) is itself broken. Fix it!
+### NOTE: Memory footprint could be reduced by copying only the regions in
+### each x@pool element that are actually used by 'x'.
 setMethod("complement", "DNAStringSet",
     function(x, ...)
     {
-        x@super <- complement(super(x))
+        lkup <- getDNAComplementLookup()
+        x@pool <- copy(x@pool, lkup=lkup)
         x
     }
 )
@@ -78,7 +92,8 @@ setMethod("complement", "DNAStringSet",
 setMethod("complement", "RNAStringSet",
     function(x, ...)
     {
-        x@super <- complement(super(x))
+        lkup <- getRNAComplementLookup()
+        x@pool <- copy(x@pool, lkup=lkup)
         x
     }
 )
@@ -134,23 +149,29 @@ setMethod("reverseComplement", "RNAString",
         XString.tr(x, lkup=getRNAComplementLookup(), reverse=TRUE)
 )
 
-### For the following methods, doing this:
-###   x@super <- reverseComplement(super(x))
-###   x@ranges <- reverse(x@ranges, start=1L, end=length(super(x)))
+### For the 2 methods below, doing this:
+###   x@pool <- copy(x@pool, lkup=lkup, reverse=TRUE)
+###   x@ranges <- reverse(x@ranges,
+###                       start=1L,
+###                       end=width(x@pool)[x@ranges@group])
 ### achieves our 1-copy goal and therefore is twice more efficient than doing
 ### this:
 ###   reverse(complement(x))
-### or this:
-###   x@super <- complement(super(x))
-###   reverse(x)
-
-.IRanges.reverse <- selectMethod("reverse", "IRanges")
+###
+### FIXME: The 2 methods below are currently broken if 'length(x@pool)) != 1'.
+### This is because the "copy" method for SharedVector_Pool objects (defined
+### in IRanges) is itself broken. Fix it!
+### NOTE: Memory footprint could be reduced by copying only the regions in
+### each x@pool element that are actually used by 'x'.
 
 setMethod("reverseComplement", "DNAStringSet",
     function(x, ...)
     {
-        x@super <- reverseComplement(super(x))
-        x@ranges <- reverse(x@ranges, start=1L, end=length(super(x)))
+        lkup=getDNAComplementLookup()
+        x@pool <- copy(x@pool, lkup=lkup, reverse=TRUE)
+        x@ranges <- reverse(x@ranges,
+                            start=1L,
+                            end=width(x@pool)[x@ranges@group])
         x
     }
 )
@@ -158,11 +179,16 @@ setMethod("reverseComplement", "DNAStringSet",
 setMethod("reverseComplement", "RNAStringSet",
     function(x, ...)
     {
-        x@super <- reverseComplement(super(x))
-        x@ranges <- reverse(x@ranges, start=1L, end=length(super(x)))
+        lkup=getRNAComplementLookup()
+        x@pool <- copy(x@pool, lkup=lkup, reverse=TRUE)
+        x@ranges <- reverse(x@ranges,
+                            start=1L,
+                            end=width(x@pool)[x@ranges@group])
         x
     }
 )
+
+.IRanges.reverse <- selectMethod("reverse", "IRanges")
 
 setMethod("reverseComplement", "XStringViews",
     function(x, ...)

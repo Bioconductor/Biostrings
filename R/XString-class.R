@@ -351,3 +351,26 @@ setMethod("!=", signature(e1="character", e2="BString"),
     function(e1, e2) !(e1 == e2)
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+### Update XString objects created before the big internal renaming I made
+### in IRanges 1.3.76.
+setMethod("updateObject", "XString",
+    function(object, ..., verbose=FALSE)
+    {
+        if (!is(try(object@shared, silent=TRUE), "try-error"))
+            return(object)
+        xdata <- object@xdata
+        ans_shared <- new("SharedRaw")
+        ans_shared@xp <- xdata@xp
+        ans_shared@.link_to_cached_object=xdata@.link_to_cached_object
+        new(class(object),
+            shared=ans_shared,
+            offset=object@offset,
+            length=object@length)
+    }
+)
+

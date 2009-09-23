@@ -2,128 +2,62 @@
 ### XStringSet objects
 ### -------------------------------------------------------------------------
 ###
-### The XStringSet class is a container for storing a set of XString objects
-### of the same base type (e.g. all elements are BString objects or they are
-### all DNAString objects etc).
-###
-### The current implementation only allows for storage of a set of strings
-### that belong to the same SharedRaw object i.e. all the elements of an XStringSet
-### object must be substrings of a common string called the "super string".
-### The old XStringList container (Biostrings 2.8) didn't have this limitation:
-### it could hold XString objects that pointed to different SharedRaw objects but
-### it was so slow that I decided to replace it by the much more efficient
-### XStringSet container.
-### Maybe the best of both world, or at least a good enough trade-off, could be
-### obtained by defining the XStringSet class like this:
-###
-###   setClass("SharedRawViews",
-###     contains="IRanges",
-###     representation(
-###         subject="SharedRaw"
-###     )
-###   )
-###
-###   setClass("XStringSet",
-###     contains="Sequence",
-###     representation(
-###         "VIRTUAL",
-###         xrvlist="list",   # a list of SharedRawViews objects
-###         strong="integer",
-###         weak="integer"
-###     )
-###   )
-###
-### x@strong and x@weak (both of length the number of elements) are maps used
-### to "find" the i-th element in x i.e. x[[i]] can be efficiently extracted
-### with:
-###     xrv <- x@xrvlist[[x@strong[i]]]
-###     start <- start(xrv)[x@weak[i]]
-###     width <- width(xrv)[x@weak[i]]
-###     new(class, shared=xrv@subject, offset=start-1L, length=width)
-### This new XStringSet container would still be almost as efficient as the old
-### one (at least for the restricted set of use cases that the old one was
-### supporting i.e. when x@xrvlist holds a list of length 1) and the
-### flexibility of the old XStringList container.
-###
-### Some notable differences between XStringSet and XStringViews objects:
-###   - the "show" methods produce different output
-###   - the views in an XStringViews object can't have a 0-width
-###   - the views in an XStringViews object can be out of limits
-###
 
 setClass("XStringSet",
-    contains="Sequence",
-    representation(
-        "VIRTUAL",
-        super="XString",
-        ranges="IRanges"
-    )
+    contains="XVectorList",
+    representation("VIRTUAL"),
+    prototype(elementType="XString")
 )
 
+### The concrete XStringSet subclasses below have no additional slots.
+### But the representation() statement seems to be required anyway,
+### otherwise we get the following error at installation time:
+###   Error in representation[!slots] : object of type 'S4' is not subsettable
 setClass("BStringSet",
     contains="XStringSet",
-    representation(
-        super="BString"
-    )
+    representation(),
+    prototype(elementType="BString")
 )
 setClass("DNAStringSet",
     contains="XStringSet",
-    representation(
-        super="DNAString"
-    )
+    representation(),
+    prototype(elementType="DNAString")
 )
 setClass("RNAStringSet",
     contains="XStringSet",
-    representation(
-        super="RNAString"
-    )
+    representation(),
+    prototype(elementType="RNAString")
 )
 setClass("AAStringSet",
     contains="XStringSet",
-    representation(
-        super="AAString"
-    )
+    representation(),
+    prototype(elementType="AAString")
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### TODO: This is temporary code needed to make temporarily broken BSgenome
-### data packages work despite the big internal renaming I made in IRanges >=
-### 1.3.76. Won't be needed anymore after all the BSgenome data packages have
-### been reforged unless there are still some broken serialized XString or
-### XStringSet objects around.
-### NOT exported.
-
-replace.xdata.with.shared <- function(object)
-{
-    if (is(object, "XStringSet")) {
-        object@super <- replace.xdata.with.shared(object@super)
-        return(object)
-    }
-    ## An XString object is an XRaw object.
-    if (!is(object, "XRaw"))
-        stop("'object' must be an XStringSet or XRaw object")
-    if (!is(try(object@shared, silent=TRUE), "try-error"))
-        return(object)
-    xdata <- object@xdata
-    object@shared <- new("SharedRaw")
-    object@shared@xp <- xdata@xp
-    object@shared@.link_to_cached_object=xdata@.link_to_cached_object
-    return(object)
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
 
-### super() must remain for internal use only. Do not export!
+### NOT exported. super() is a relic from the time when XStringSet objects
+### had a "super" slot (which has been replaced by the "pool" slot since
+### then). super() is temporarily kept (and adapted), allowing existing code
+### in Biostrings to keep working but only on XStringSet objects with a
+### "pool" slot of length 1. This is of course not a good situation.
+### TODO: Fix code using super() (in particular make it work on XStringSet
+### objects with a "pool" slot of arbitrary length) and drop super().
+
 setGeneric("super", function(x) standardGeneric("super"))
-setMethod("super", "XStringSet", function(x) x@super)
 
-setMethod("length", "XStringSet", function(x) length(x@ranges))
-
-setMethod("width", "XStringSet", function(x) width(x@ranges))
+setMethod("super", "XStringSet",
+    function(x)
+    {
+        if (length(x@pool) != 1L)
+            stop("Biostrings internal error: length(x@pool) != 1")
+        ans_shared <- x@pool[[1L]]
+        new(elementType(x), shared=ans_shared, offset=0L, length=length(ans_shared))
+    }
+)
 
 setMethod("width", "character",
     function(x)
@@ -136,16 +70,6 @@ setMethod("width", "character",
 
 setMethod("nchar", "XStringSet",
     function(x, type="chars", allowNA=FALSE) width(x)
-)
-
-setMethod("names", "XStringSet", function(x) names(x@ranges))
-
-setReplaceMethod("names", "XStringSet",
-    function(x, value)
-    {
-        names(x@ranges) <- value
-        x
-    }
 )
 
 
@@ -230,14 +154,14 @@ setReplaceMethod("subseq", "XStringSet",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Unsafe constructor (not exported). Use only when 'ranges' is guaranteed
-### to contain valid ranges on 'super' i.e. ranges that are within the limits
-### of 'super'.
+### to contain valid ranges on 'xvector' i.e. ranges that are within the
+### limits of 'xvector'.
 ###
 
-unsafe.newXStringSet <- function(super, ranges, use.names=FALSE, names=NULL)
+unsafe.newXStringSet <- function(xvector, ranges, use.names=FALSE, names=NULL)
 {
-    class <- paste(xsbasetype(super), "StringSet", sep="")
-    ans <- new2(class, super=super, ranges=ranges, check=FALSE)
+    classname <- paste(class(xvector), "Set", sep="")
+    ans <- IRanges:::unsafe.newXVectorList1(classname, xvector, ranges)
     if (normargUseNames(use.names))
         names(ans) <- names
     ans
@@ -248,9 +172,13 @@ unsafe.newXStringSet <- function(super, ranges, use.names=FALSE, names=NULL)
 ### The "xsbasetype" and "xsbasetype<-" methods.
 ###
 
-setMethod("xsbasetype", "XStringSet", function(x) xsbasetype(super(x)))
+setMethod("xsbasetype", "XStringSet",
+    function(x) xsbasetype(newEmptyXString(elementType(x)))
+)
 
 ### This is an endomorphism iff 'basetype' is NULL, otherwise it is NOT!
+### FIXME: It's currently broken when 'basetype=NULL' because of its attempt
+### to access the "super" slot.
 .XStringSet.compact <- function(x, basetype=NULL)
 {
     from_basetype <- xsbasetype(x)
@@ -331,17 +259,17 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 .charToXStringSet <- function(x, start, end, width, use.names, basetype)
 {
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    ans_super <- .charToXString(x, solved_SEW, basetype)
+    ans_xvector <- .charToXString(x, solved_SEW, basetype)
     ans_ranges <- successiveIRanges(width(solved_SEW))
-    unsafe.newXStringSet(ans_super, ans_ranges,
+    unsafe.newXStringSet(ans_xvector, ans_ranges,
                          use.names=use.names, names=names(x))
 }
 
 .XStringToXStringSet <- function(x, start, end, width, use.names, basetype)
 {
-    ans_super <- XString(basetype, x, start=start, end=end, width=width)
-    ans_ranges <- new2("IRanges", start=1L, width=length(ans_super), check=FALSE)
-    unsafe.newXStringSet(ans_super, ans_ranges)
+    ans_xvector <- XString(basetype, x, start=start, end=end, width=width)
+    ans_ranges <- new2("IRanges", start=1L, width=length(ans_xvector), check=FALSE)
+    unsafe.newXStringSet(ans_xvector, ans_ranges)
 }
 
 
@@ -546,60 +474,6 @@ setMethod("rep", "XStringSet",
         x[rep.int(seq_len(length(x)), times)]
 )
 
-### Return an XString object of the same base type as 'x'.
-### Example:
-###   bs <- BString("ABCD-1234-abcd")
-###   bset <- new("BStringSet", super=bs, start=1:8, width=2L*(7:0))
-###   bset[[3]]
-setMethod("[[", "XStringSet",
-    function(x, i, j, ...)
-    {
-        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
-        start <- start(x@ranges)[i]
-        width <- width(x@ranges)[i]
-        subseq(super(x), start=start, width=width)
-    }
-)
-
-setReplaceMethod("[[", "XStringSet",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", class(x), " instance")
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "append" method.
-###
-### TODO: The current version performs too many copies of the sequence data!
-###       This will change with the redesign of the XStringSet class (see
-###       long comment at the beginning of this file).
-###
-
-setMethod("append", c("XStringSet", "XStringSet"),
-    function(x, values, after=length(x))
-    {
-        basetype <- xsbasetype(x)
-        if (xsbasetype(values) != basetype)
-            stop("'x' and 'values' must be XStringSet objects of the same base type")
-        if (!isSingleNumber(after))
-            stop("'after' must be a single number")
-        if (length(values) == 0)
-            return(x)
-        if (after != length(x))
-            stop("'after != length(x)' is not supported for XStringSet objects, sorry!")
-        cx <- compact(x)
-        cvalues <- compact(values, basetype=basetype)
-        ans_super <- XString.append(super(cx), super(cvalues))
-        ans_start <- c(start(cx@ranges), start(cvalues@ranges) + length(super(cx)))
-        ans_width <- c(width(cx), width(cvalues))
-        ans_ranges <- new2("IRanges", start=ans_start, width=ans_width, check=FALSE)
-        ans_names <- c(names(cx), names(cvalues))
-        unsafe.newXStringSet(ans_super, ans_ranges, use.names=TRUE, names=ans_names)
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Set Operations
@@ -797,5 +671,25 @@ setMethod("duplicated", "XStringSet",
 setMethod("unique", "XStringSet",
     function(x, incomparables=FALSE, ...)
         x[!duplicated(x, incomparables=incomparables)]
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+### Update XStringSet objects created before the big change to the XStringSet
+### internals ("super" slot replaced by "pool" slot).
+### This change happened in Biostrings 2.13.43.
+setMethod("updateObject", "XStringSet",
+    function(object, ..., verbose=FALSE)
+    {
+        if (!is(try(object@pool, silent=TRUE), "try-error"))
+            return(object)
+        ans_xvector <- updateObject(object@super)
+        ans_ranges <- updateObject(object@ranges)
+        unsafe.newXStringSet(ans_xvector, ans_ranges,
+                             use.names=TRUE, names=names(object))
+    }
 )
 

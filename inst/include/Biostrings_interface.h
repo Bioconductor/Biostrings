@@ -146,12 +146,6 @@ void set_XStringSet_names(
 
 SEXP new_XStringSet(const char *classname, SEXP super, SEXP ranges);
 
-SEXP alloc_XStringSet(
-	const char *xsbaseclassname,
-	int length,
-	int super_length
-);
-
 SEXP new_XStringSet_from_RoSeqs(
 	const char *xsbaseclassname,
 	const RoSeqs *seqs

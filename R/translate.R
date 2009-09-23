@@ -99,9 +99,7 @@ setMethod("codons", "MaskedRNAString", function(x) .MaskedXString.codons(x))
 ### The "translate" generic and methods.
 ###
 
-setGeneric("translate", signature="x",
-    function(x) standardGeneric("translate")
-)
+setGeneric("translate", function(x) standardGeneric("translate"))
 
 ### 'x' must be an XStringViews object as returned by .XString.codons()
 ### or .MaskedXString.codons()

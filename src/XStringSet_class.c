@@ -11,9 +11,10 @@ SEXP debug_XStringSet_class()
 {
 #ifdef DEBUG_BIOSTRINGS
 	debug = !debug;
-	Rprintf("Debug mode turned %s in 'XStringSet_class.c'\n", debug ? "on" : "off");
+	Rprintf("Debug mode turned %s in file %s\n",
+		debug ? "on" : "off", __FILE__);
 #else
-	Rprintf("Debug mode not available in 'XStringSet_class.c'\n");
+	Rprintf("Debug mode not available in file %s\n", __FILE__);
 #endif
 	return R_NilValue;
 }
@@ -26,40 +27,21 @@ SEXP debug_XStringSet_class()
  * Thus they cannot be made .Call() entry points!
  */
 
-static SEXP
-	super_symbol = NULL,
-	ranges_symbol = NULL;
-
-SEXP _get_XStringSet_super(SEXP x)
-{
-	INIT_STATIC_SYMBOL(super)
-	return GET_SLOT(x, super_symbol);
-}
-
-SEXP _get_XStringSet_ranges(SEXP x)
-{
-	INIT_STATIC_SYMBOL(ranges)
-	return GET_SLOT(x, ranges_symbol);
-}
-
 /* Not strict "slot getters" but very much like. */
 
 int _get_XStringSet_length(SEXP x)
 {
-	return get_IRanges_length(_get_XStringSet_ranges(x));
+	return get_XVectorList_length(x);
 }
 
 SEXP _get_XStringSet_width(SEXP x)
 {
-	return get_IRanges_width(_get_XStringSet_ranges(x));
+	return get_XVectorList_width(x);
 }
 
-// FIXME: '_get_XStringSet_xsbaseclassname()' won't always return the
-// xsbaseclassname e.g. if 'super' belongs to a class that extends
-// DNAString (there is no such thing yet).
 const char *_get_XStringSet_xsbaseclassname(SEXP x)
 {
-	return get_classname(_get_XStringSet_super(x));
+	return get_Sequence_elementType(x);
 }
 
 
@@ -69,66 +51,29 @@ const char *_get_XStringSet_xsbaseclassname(SEXP x)
 
 cachedXStringSet _cache_XStringSet(SEXP x)
 {
-	cachedXStringSet cached_x;
-	SEXP super, ranges;
-
-	cached_x.classname = get_classname(x);
-
-	super = _get_XStringSet_super(x);
-	// FIXME: 'get_classname(super)' won't always return the
-	// xsbaseclassname e.g. if 'super' belongs to a class that extends
-	// DNAString (there is no such thing yet).
-	cached_x.xsbaseclassname = get_classname(super);
-	cached_x.super = cache_XRaw(super);
-
-	ranges = _get_XStringSet_ranges(x);
-	cached_x.ranges = cache_IRanges(ranges);
-	
-	cached_x.enc_byte2code = get_enc_byte2code(cached_x.xsbaseclassname);
-	cached_x.dec_byte2code = get_dec_byte2code(cached_x.xsbaseclassname);
-	return cached_x;
+	return cache_XVectorList(x);
 }
 
 int _get_cachedXStringSet_length(const cachedXStringSet *cached_x)
 {
-	return get_cachedIRanges_length(&(cached_x->ranges));
+	return get_cachedXVectorList_length(cached_x);
 }
 
 cachedCharSeq _get_cachedXStringSet_elt(const cachedXStringSet *cached_x, int i)
 {
-	cachedCharSeq charseq;
-
-	charseq.seq = cached_x->super.seq +
-		      get_cachedIRanges_elt_start(&(cached_x->ranges), i) - 1;
-	charseq.length = get_cachedIRanges_elt_width(&(cached_x->ranges), i);
-	return charseq;
+	return get_cachedXRawList_elt(cached_x, i);
 }
 
 
 /****************************************************************************
  * C-level slot setters.
  *
- * Be careful that these functions do NOT duplicate the assigned value!
  */
 
-static void set_XStringSet_super(SEXP x, SEXP value)
-{
-	INIT_STATIC_SYMBOL(super)
-	SET_SLOT(x, super_symbol, value);
-	return;
-}
-
-static void set_XStringSet_ranges(SEXP x, SEXP value)
-{
-	INIT_STATIC_SYMBOL(ranges)
-	SET_SLOT(x, ranges_symbol, value);
-	return;
-}
-
-/* x@ranges@NAMES is modified in-place! */
+/* WARNING: x@ranges@NAMES is modified in-place! */
 void _set_XStringSet_names(SEXP x, SEXP names)
 {
-	set_IRanges_names(_get_XStringSet_ranges(x), names);
+	set_XVectorList_names(x, names);
 	return;
 }
 
@@ -143,7 +88,6 @@ void _set_XStringSet_names(SEXP x, SEXP names)
 SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 {
 	char classname_buf[80]; // longest string will be "DNAStringSet"
-	SEXP classdef, ans;
 
 	if (classname == NULL) {
 		if (snprintf(classname_buf, sizeof(classname_buf),
@@ -153,25 +97,7 @@ SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 			      "'classname' too long");
 		classname = classname_buf;
 	}
-	PROTECT(classdef = MAKE_CLASS(classname));
-	PROTECT(ans = NEW_OBJECT(classdef));
-	set_XStringSet_super(ans, super);
-	set_XStringSet_ranges(ans, ranges);
-	UNPROTECT(2);
-	return ans;
-}
-
-/* Allocation WITHOUT initialization.
-   The 'ranges' and 'super' slots are not initialized (they contain junk). */
-SEXP _alloc_XStringSet(const char *xsbaseclassname, int length, int super_length)
-{
-	SEXP super, ranges, ans;
-
-	PROTECT(super = _alloc_XString(xsbaseclassname, super_length));
-	PROTECT(ranges = alloc_IRanges("IRanges", length));
-	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
-	UNPROTECT(3);
-	return ans;
+	return new_XVectorList1(classname, super, ranges);
 }
 
 /* Making an XStringSet object from the sequences referenced by a RoSeqs struct.
@@ -361,7 +287,7 @@ SEXP XStringSet_match(SEXP x, SEXP table, SEXP nomatch)
 	match_buffer = (int *) R_alloc(set.nelt, sizeof(int));
 	PROTECT(ans = NEW_INTEGER(x_length));
 	_get_RoSeqs_match(&seqs, &set, INTEGER(nomatch)[0], seqs_order, set_order,
-			          match_buffer, INTEGER(ans));
+				match_buffer, INTEGER(ans));
 	UNPROTECT(1);
 	return ans;
 }

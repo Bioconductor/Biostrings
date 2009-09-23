@@ -55,14 +55,7 @@ typedef struct roseqs {
  * cached_* structs.
  */
 
-typedef struct cached_xstringset {
-	const char *classname;
-	const char *xsbaseclassname;
-	cachedCharSeq super;
-	cachedIRanges ranges;
-	const ByteTrTable *enc_byte2code;
-	const ByteTrTable *dec_byte2code;
-} cachedXStringSet;
+typedef cachedXVectorList cachedXStringSet;
 
 typedef struct cached_mindex {
 	const char *classname;

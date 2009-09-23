@@ -3,31 +3,14 @@
 ### -------------------------------------------------------------------------
 ### An XStringQuality object contains quality information for an XString.
 
-### Herve - Sept. 29, 2008.
-### A better way to define these classes would be:
-###   setClass("XStringQuality",
-###       contains="BStringSet",
-###       representation("VIRTUAL")
-###   )
-###   setClass("PhredQuality", contains="XStringQuality")
-###   setClass("SolexaQuality", contains="XStringQuality")
-### because it tells only what needs to be told i.e. that the XStringQuality,
-### PhredQuality and SolexaQuality containers contain nothing more than the
-### BStringSet container. In addition these classes definitions won't break
-### the day the internals of the BStringSet container change (the 'super'
-### slot will disappear soon).
-
-setClass("XStringQuality", representation("VIRTUAL"))
-
-setClass("PhredQuality",
-    contains="XStringSet",
-    representation("XStringQuality", super = "BString")
+setClass("XStringQuality",
+    contains="BStringSet",
+    representation("VIRTUAL")
 )
 
-setClass("SolexaQuality",
-    contains="XStringSet",
-    representation("XStringQuality", super = "BString")
-)
+setClass("PhredQuality", contains="XStringQuality")
+
+setClass("SolexaQuality", contains="XStringQuality")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,7 +87,7 @@ qualityConverter <- function(x, qualityClass, outputType) {
 .characterToXStringQuality <- function(from, qualityClass) as(BStringSet(from), qualityClass)
 .BStringToXStringQuality <- function(from, qualityClass) as(BStringSet(from), qualityClass)
 .BStringSetToXStringQuality <- function(from, qualityClass) {
-    ans <- new2(qualityClass, super=super(from), ranges=from@ranges, check=FALSE)
+    ans <- new2(qualityClass, pool=from@pool, ranges=from@ranges, check=FALSE)
     names(ans) <- names(from)
     ans
 }

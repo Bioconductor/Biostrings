@@ -28,12 +28,15 @@
 }
 
 \usage{
+  ## Transcription:
   transcribe(x)
   cDNA(x)
+
+  ## Translation:
   codons(x)
   translate(x)
 
-  ## Related utilities
+  ## Related utilities:
   dna2rna(x)
   rna2dna(x)
 }

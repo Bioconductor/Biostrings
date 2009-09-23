@@ -83,7 +83,9 @@ export(
 exportMethods(
     length,
     nchar, width,
-    xsbasetype, "xsbasetype<-", compact,
+    xsbasetype, "xsbasetype<-",
+    updateObject,
+    compact,
     names, "names<-", "[", "[[", "[[<-", rep, append,
     union, intersect, setdiff, setequal,
     "%in%", match,

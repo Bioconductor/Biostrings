@@ -62,7 +62,7 @@ int _get_PreprocessedTB_width(SEXP x)
 	SEXP tb;
 
 	tb = get_PreprocessedTB_tb(x);
-	return INTEGER(get_IRanges_width(_get_XStringSet_ranges(tb)))[0];
+	return INTEGER(_get_XStringSet_width(tb))[0];
 }
 
 SEXP _get_PreprocessedTB_low2high(SEXP x)
