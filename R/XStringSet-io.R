@@ -98,8 +98,9 @@ XStringSetToFASTArecords <- function(x)
 ### Attempt to implement a _fast_ version of the above .read.fasta() by:
 ###   - shortcutting the use of readFASTA()
 ###   - use readLines to read the FASTA file line by line
-###   - call SharedRaw.write() on each line + SharedRaw() and SharedRaw.copy() when it's
-###     time to reallocate a biggest SharedRaw object.
+###   - call SharedRaw.write() on each line + SharedRaw() and
+###     SharedVector.copy() when it's time to reallocate a biggest
+###     SharedRaw object.
 ###
 ### 'file' must be a character string or connection.
 ### If 'file' is a connection, then 'type' is ignored.

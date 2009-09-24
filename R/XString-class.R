@@ -132,7 +132,7 @@ XString.append <- function(x, y)
 .copySubSharedRaw <- function(x, start=1, nchar=NA, lkup=NULL)
 {
     ans <- SharedRaw(nchar)
-    SharedRaw.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
+    SharedVector.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
 }
 
 
@@ -277,7 +277,7 @@ setMethod("[", "XString",
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
         shared <- SharedRaw(length(i))
-        SharedRaw.copy(shared, x@offset + i, src=x@shared)
+        SharedVector.copy(shared, x@offset + i, src=x@shared)
         x@shared <- shared
         x@offset <- 0L
         x@length <- length(shared)
