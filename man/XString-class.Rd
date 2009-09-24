@@ -171,7 +171,7 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link[IRanges]{subseq}},
+  \code{\link[IRanges:XVector-class]{subseq}},
   \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},

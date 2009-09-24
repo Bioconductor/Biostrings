@@ -80,7 +80,8 @@
   \describe{
     \item{}{
       \code{x[[i]]}:
-      Extract the matches for the i-th pattern as an \link[IRanges]{IRanges} object.
+      Extract the matches for the i-th pattern as an
+    \link[IRanges:IRanges-class]{IRanges} object. 
     }
   }
 }
@@ -91,10 +92,12 @@
   \describe{
     \item{}{
       \code{as(x, "CompressedIRangesList")}:
-      Turns \code{x} into an \link[IRanges]{CompressedIRangesList} object.
-      This coercion changes \code{x} from one \link[IRanges]{RangesList}
-      subtype to another with the underlying \link[IRanges]{Ranges} values
-      remaining unchanged.
+      Turns \code{x} into an
+    \link[IRanges]{CompressedIRangesList} object. 
+      This coercion changes \code{x} from one
+    \link[IRanges]{RangesList} 
+      subtype to another with the underlying
+    \link[IRanges:Ranges-class]{Ranges} values remaining unchanged.
     }
   }
 }
@@ -108,7 +111,8 @@
   \describe{
     \item{}{
       \code{unlist(x, recursive=TRUE, use.names=TRUE)}:
-      Return all the matches in a single \link[IRanges]{IRanges} object.
+      Return all the matches in a single
+    \link[IRanges:IRanges-class]{IRanges} object. 
       \code{recursive} and \code{use.names} are ignored.
     }
     \item{}{

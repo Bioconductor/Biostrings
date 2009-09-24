@@ -172,7 +172,8 @@
     }
     \item{}{
       \code{length(x)}:
-      The length of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
+      The length of the \code{aligned(pattern(x))} and
+    \code{aligned(subject(x))}. 
       There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
     }
     \item{}{
@@ -185,12 +186,13 @@
 }
 \section{Aligned sequence methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignedFixedSubject} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignedFixedSubject} object, except
+    otherwise noted. 
 
   \describe{
     \item{}{
       \code{aligned(x, degap = FALSE, gapCode="-", endgapCode="-")}:
-      If \code{degap = FALSE}, ``align" the alignments by returning an
+      If \code{degap = FALSE}, "align" the alignments by returning an
       \code{XStringSet} object containing the aligned patterns without
       insertions. If \code{degap = TRUE}, returns
       \code{aligned(pattern(x), degap=TRUE)}.

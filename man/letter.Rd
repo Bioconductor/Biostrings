@@ -46,7 +46,7 @@
 }
 
 \seealso{
-  \code{\link[IRanges]{subseq}},
+  \code{\link[IRanges:XVector-class]{subseq}},
   \link{XString-class},
   \link{XStringViews-class},
   \link{MaskedXString-class}

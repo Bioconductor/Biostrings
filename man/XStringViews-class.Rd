@@ -52,9 +52,12 @@
   or "the subject sequence" or simply "the subject".
   Each view is defined by its start and end locations: both are
   integers such that start <= end.
-  An XStringViews object is in fact a particular case of an \link[IRanges]{Views}
-  object (the XStringViews class contains the \link[IRanges]{Views} class) so it
-  can be manipulated in a similar manner: see \code{?\link[IRanges]{Views}} for
+  An XStringViews object is in fact a particular case of an
+  \link[IRanges:Views-class]{Views} 
+  object (the XStringViews class contains the
+  \link[IRanges:Views-class]{Views} class) so it 
+  can be manipulated in a similar manner: see
+  \code{?\link[IRanges:Views-class]{Views}} for 
   more information.
   Note that two views can overlap and that a view can be "out of limits"
   i.e. it can start before the first letter of the subject or/and end
@@ -65,8 +68,8 @@
   \describe{
     \item{}{
       \code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:
-      See \code{?\link[IRanges]{Views}} in the IRanges package for the
-      details.
+      See \code{?\link[IRanges:Views-class]{Views}} in the IRanges
+      package for the details.
     }
   }
 }
@@ -151,7 +154,7 @@
 
 \seealso{
   \link[IRanges]{Views-class},
-  \code{\link[IRanges]{gaps}},
+  \code{\link[IRanges:IRanges-setops]{gaps}},
   \link{XStringViews-constructors},
   \link{XString-class},
   \link{XStringSet-class},

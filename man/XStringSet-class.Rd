@@ -126,7 +126,7 @@
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
     length as \code{x} specifying how \code{x} should be "narrowed"
-    (see \code{?\link[IRanges]{narrow}} for the details).
+    (see \code{?\link[IRanges:IRanges-utils]{narrow}} for the details).
   }
   \item{use.names}{
     \code{TRUE} or \code{FALSE}. Should names be preserved?
@@ -228,26 +228,29 @@
       \code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:
       Same as \code{subseq}. The only differences are: (1) \code{narrow}
       has a \code{use.names} argument; and (2) all the things \code{narrow}
-      and \code{subseq} work on (\link[IRanges]{IRanges}, XStringSet or
+      and \code{subseq} work on
+      (\link[IRanges:IRanges-constructor]{IRanges}, XStringSet or 
       \link{XStringViews} objects for \code{narrow},
-      \link[IRanges]{XVector} or XStringSet objects for \code{subseq}).
-      But they both work and do the same thing on an XStringSet object.
+      \link[IRanges:XVector-class]{XVector} or XStringSet objects for
+      \code{subseq}). But they both work and do the same thing on an
+      XStringSet object. 
     }
     \item{}{
       \code{threebands(x, start=NA, end=NA, width=NA)}:
-      Like the method for \link[IRanges]{IRanges} objects, the
+      Like the method for \link[IRanges:IRanges-constructor]{IRanges}
+      objects, the 
       \code{threebands} methods for character vectors and XStringSet
       objects extend the capability of \code{narrow} by returning the 3
       set of subsequences (the left, middle and right subsequences)
       associated to the narrowing operation.
-      See \code{?\link[IRanges]{threebands}} in the IRanges package for
-      the details.
+      See \code{?\link[IRanges:IRanges-utils]{threebands}} in the
+      IRanges package for the details.
     }
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
-      A vectorized version of the \code{\link[IRanges]{subseq<-}}
-      method for \link[IRanges]{XVector} objects.
-      See \code{?`\link[IRanges]{subseq<-}`} for the details.
+      A vectorized version of the \code{\link[IRanges:XVector-class]{subseq<-}}
+      method for \link[IRanges:XVector-class]{XVector} objects.
+      See \code{?`\link[IRanges:XVector-class]{subseq<-}`} for the details.
     }
   }
 }
@@ -411,8 +414,8 @@
   \link{XStringViews-class},
   \link{XStringSetList-class},
   \code{\link{substr}},
-  \code{\link[IRanges]{subseq}},
-  \code{\link[IRanges]{narrow}}
+  \code{\link[IRanges:XVector-class]{subseq}},
+  \code{\link[IRanges:IRanges-utils]{narrow}}
 }
 
 \examples{

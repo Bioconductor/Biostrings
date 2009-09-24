@@ -42,7 +42,8 @@
     The locations where the replacements must occur.
 
     If \code{x} is a \link{DNAString} object, then \code{at} is typically
-    an integer vector with no NAs but a logical vector or \link[IRanges]{Rle}
+    an integer vector with no NAs but a logical vector or
+    \link[IRanges:Rle-class]{Rle} 
     object is valid too. Locations can be repeated and in this case the
     last replacement to occur at a given location prevails.
 
@@ -101,7 +102,7 @@
   It is used by the \code{\link[BSgenome]{injectSNPs}} function
   in the BSgenome package, as part of the "lazy sequence loading"
   mechanism, for altering the original sequences of a
-  \link[BSgenome]{BSgenome} object at "sequence-load time".
+  \link[BSgenome:BSgenome-class]{BSgenome} object at "sequence-load time".
   This alteration consists in injecting the IUPAC ambiguity letters
   representing the SNPs into the just loaded sequence, which is the
   only time where in place modification of the external data of
@@ -123,7 +124,7 @@
   \link{DNAString},
   \link{DNAStringSet},
   \code{\link[BSgenome]{injectSNPs}},
-  \link[BSgenome]{BSgenome}
+  \link[BSgenome:BSgenome-class]{BSgenome}
 }
 
 \examples{

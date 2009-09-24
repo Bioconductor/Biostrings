@@ -21,7 +21,7 @@
 \details{
   In this man page, we assume that you know how to preprocess
   a dictionary of DNA patterns that can then be used with
-  \code{matchPDict}, \code{countPDict} or \code{\code{whichPDict}}.
+  \code{matchPDict}, \code{countPDict} or \code{\link{whichPDict}}.
   Please see \code{?\link{PDict}} if you don't.
 
   When using \code{matchPDict}, \code{countPDict} or \code{whichPDict}

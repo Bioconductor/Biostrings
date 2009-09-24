@@ -92,7 +92,8 @@
   }
   \item{save.dups}{
     \code{TRUE} or \code{FALSE}.
-    If \code{TRUE} then the \code{\link[IRanges]{Dups}} object describing
+    If \code{TRUE} then the \code{\link[IRanges:Grouping-class]{Dups}}
+    object describing 
     how duplicated elements in \code{x} are related to each other is
     saved too. For advanced users only.
   }

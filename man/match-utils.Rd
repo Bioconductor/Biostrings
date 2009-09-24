@@ -69,7 +69,8 @@
   \code{nmismatch}:  an integer vector containing the length of the vectors
   produced by \code{mismatch}.
 
-  \code{coverage}:  an \link[IRanges]{Rle} object indicating the coverage of
+  \code{coverage}:  an \link[IRanges:Rle-class]{Rle} object indicating
+  the coverage of 
   \code{x}. See \code{?\link[IRanges]{coverage}} for the details.
   If \code{x} is an \link{MIndex} object, the coverage of a given position
   in the underlying sequence (typically the subject used during the search

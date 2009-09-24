@@ -52,7 +52,8 @@
 }
 
 \details{
-  \code{subXString} is deprecated in favor of \code{\link[IRanges]{subseq}}.
+  \code{subXString} is deprecated in favor of
+  \code{\link[IRanges:XVector-class]{subseq}}. 
 }
 
 \value{
@@ -63,7 +64,7 @@
 }
 
 \seealso{
-  \code{\link[IRanges]{subseq}},
+  \code{\link[IRanges:XVector-class]{subseq}},
   \code{\link{letter}},
   \link{XString-class},
   \link{XStringViews-class}

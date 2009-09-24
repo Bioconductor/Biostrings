@@ -83,7 +83,8 @@
 
 \details{
   In Biostrings, a pile of masks can be put on top of a sequence.
-  A pile of masks is represented by a \link[IRanges]{MaskCollection}
+  A pile of masks is represented by a
+  \link[IRanges:MaskCollection-class]{MaskCollection} 
   object and the sequence by an \link{XString} object.
   A MaskedXString object is the result of bundling them together in a
   single object.
@@ -104,7 +105,7 @@
   In the code snippets below, \code{x} is a MaskedXString object.
   For \code{masks(x)} and \code{masks(x) <- y}, it can also be
   an \link{XString} object and \code{y} must be \code{NULL} or
-  a \link[IRanges]{MaskCollection} object.
+  a \link[IRanges:MaskCollection-class]{MaskCollection} object.
 
   \describe{
     \item{}{
@@ -113,7 +114,8 @@
     }
     \item{}{
       \code{masks(x)}:
-      Turns \code{x} into a \link[IRanges]{MaskCollection} object by
+      Turns \code{x} into a
+    \link[IRanges:MaskCollection-class]{MaskCollection} object by 
       dropping the sequence.
     }
     \item{}{
@@ -122,16 +124,17 @@
       then this doesn't do anything.
 
       If \code{x} is an \link{XString} object and \code{y} is a
-      \link[IRanges]{MaskCollection} object, then this turns \code{x}
-      into a MaskedXString object by putting the masks in \code{y} on top
-      of it.
+      \link[IRanges:MaskCollection-class]{MaskCollection} object, then
+      this turns \code{x} into a MaskedXString object by putting the
+      masks in \code{y} on top of it.
 
       If \code{x} is a MaskedXString object and \code{y} is \code{NULL},
       then this is equivalent to \code{x <- unmasked(x)}.
 
       If \code{x} is a MaskedXString object and \code{y} is a
-      \link[IRanges]{MaskCollection} object, then this replaces
-      the masks currently on top of \code{x} by the masks in \code{y}.
+      \link[IRanges:MaskCollection-class]{MaskCollection} object, then
+      this replaces the masks currently on top of \code{x} by the masks
+      in \code{y}. 
     }
     \item{}{
       \code{alphabet(x)}:
@@ -141,8 +144,9 @@
     \item{}{
       \code{length(x)}:
       Equivalent to \code{length(unmasked(x))}.
-      See \code{?`\link[Biostrings]{length,XString-method}`} for more
-      information.
+      See
+      \code{?`\link[Biostrings:XString-class]{length,XString-method}`}
+      for more information.
     }
   }
 }
