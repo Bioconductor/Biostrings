@@ -253,12 +253,14 @@
     }
     \item{}{
       \code{insertion(x)}:
-      An \code{\link[IRanges]{CompressedIRangesList}} object containing the
+      An \code{\link[IRanges:IRangesList-class]{CompressedIRangesList}}
+    object containing the 
       locations of the insertions from the perspective of the \code{pattern}.
     }
     \item{}{
       \code{deletion(x)}:
-      An \code{\link[IRanges]{CompressedIRangesList}} object containing the
+      An \code{\link[IRanges:IRangesList-class]{CompressedIRangesList}}
+    object containing the 
       locations of the deletions from the perspective of the \code{pattern}.
     }
     \item{}{
