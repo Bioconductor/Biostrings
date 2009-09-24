@@ -415,15 +415,6 @@ void gtestsim(
 );
 
 
-/* char_translate.c */
-
-SEXP XStringSet_char_translate(
-	SEXP x,
-	SEXP lkup,
-	SEXP reverse
-);
-
-
 /* replace_letter_at.c */
 
 SEXP XString_replace_letter_at(

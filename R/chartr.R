@@ -36,7 +36,6 @@ XString.tr <- function(x, lkup=NULL, reverse=FALSE)
 ### out) for how this was done at the time of the old XStringSet container.
 ### TODO: Make this a "copy" method for XVectorList objects and move it to the
 ### IRanges package.
-### TODO: Remove XStringSet_char_translate() .Call entry point.
 XStringSet.tr <- function(x, lkup=NULL, reverse=FALSE, use.names=TRUE)
 {
     #x@ranges <- reduce(x@ranges, with.inframe.attrib=TRUE)

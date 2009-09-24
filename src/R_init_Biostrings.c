@@ -71,9 +71,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_nucleotide_frequency_at, 7),
 	CALLMETHOD_DEF(XStringSet_consensus_matrix, 5),
 
-/* char_translate.c */
-	CALLMETHOD_DEF(XStringSet_char_translate, 3),
-
 /* replace_letter_at.c */
 	CALLMETHOD_DEF(XString_replace_letter_at, 6),
 	CALLMETHOD_DEF(XString_inplace_replace_letter_at, 4),
