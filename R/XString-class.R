@@ -262,31 +262,6 @@ setMethod("show", "XString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-setMethod("[", "XString",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("invalid subsetting")
-        if (any(i < 1) || any(i > length(x)))
-            stop("subscript out of bounds")
-        shared <- SharedRaw(length(i))
-        SharedVector.copy(shared, x@offset + i, src=x@shared)
-        x@shared <- shared
-        x@offset <- 0L
-        x@length <- length(shared)
-        x
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality.
 ###
 ### We want:

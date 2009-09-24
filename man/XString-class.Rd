@@ -37,9 +37,6 @@
 % "show" method:
 \alias{show,XString-method}
 
-% Subsetting:
-\alias{[,XString-method}
-
 % Equality:
 \alias{==,XString,XString-method}
 \alias{==,BString,character-method}
