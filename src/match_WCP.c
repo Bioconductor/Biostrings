@@ -64,9 +64,9 @@ static double compute_wcp_score(RoSeqsList *key_seqs_list,
 		key_scores = key_scores_list[i];
 		key_order = key_order_list[i];
 
-		IRanges_memcpy_from_subset(subset, *key_nchar,
-				                   (char *) S_buffer->elts[0].seq, *key_nchar,
-				                   S_char, S_nchar, sizeof(Rbyte));
+		Ocopy_byteblocks_from_subset(subset, *key_nchar,
+				             (char *) S_buffer->elts[0].seq, *key_nchar,
+				             S_char, S_nchar, sizeof(Rbyte));
 		_get_RoSeqs_match(S_buffer, key_seqs, 0, &S_order, key_order, match_buffer, &match_loc);
 		if (match_loc > 0) {
 			score += key_scores[match_loc-1];

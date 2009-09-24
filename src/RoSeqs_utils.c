@@ -90,11 +90,11 @@ SEXP _new_CHARSXP_from_RoSeq(const cachedCharSeq *seq, SEXP lkup)
 		bufsize = new_bufsize;
 	}
 	if (lkup == R_NilValue) {
-		IRanges_memcpy_to_i1i2(0, seq->length - 1,
+		Ocopy_byteblocks_to_i1i2(0, seq->length - 1,
 			buf, seq->length,
 			seq->seq, seq->length, sizeof(char));
 	} else {
-		IRanges_charcpy_to_i1i2_with_lkup(0, seq->length - 1,
+		Ocopy_bytes_to_i1i2_with_lkup(0, seq->length - 1,
 			buf, seq->length,
 			seq->seq, seq->length,
 			INTEGER(lkup), LENGTH(lkup));
@@ -161,11 +161,11 @@ SEXP _new_SharedRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
         dest = (char *) RAW(tag);
         for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
                 if (lkup == R_NilValue) {
-                        IRanges_memcpy_to_i1i2(0, seq->length - 1,
+                        Ocopy_byteblocks_to_i1i2(0, seq->length - 1,
                                 dest, seq->length,
                                 seq->seq, seq->length, sizeof(char));
                 } else {
-                        IRanges_charcpy_to_i1i2_with_lkup(0, seq->length - 1,
+                        Ocopy_bytes_to_i1i2_with_lkup(0, seq->length - 1,
                                 dest, seq->length,
                                 seq->seq, seq->length,
                                 INTEGER(lkup), LENGTH(lkup));

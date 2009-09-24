@@ -356,11 +356,11 @@ SEXP SharedRaw_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup
 			}
 			i2 = i1 + line_len - 1;
 			if (lkup == R_NilValue)
-				IRanges_memcpy_to_i1i2(i1, i2,
+				Ocopy_byteblocks_to_i1i2(i1, i2,
 					(char *) RAW(dest), nbyte_max,
 					line, line_len, sizeof(char));
 			else
-				IRanges_charcpy_to_i1i2_with_lkup(i1, i2,
+				Ocopy_bytes_to_i1i2_with_lkup(i1, i2,
 					(char *) RAW(dest), nbyte_max,
 					line, line_len,
 					INTEGER(lkup), LENGTH(lkup));
@@ -376,7 +376,7 @@ SEXP SharedRaw_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup
 			//_report_view(view_start, i1, desc);
 			if (gaplen != 0) {
 				i2 = i1 + gaplen - 1;
-				IRanges_memcpy_to_i1i2(i1, i2,
+				Ocopy_byteblocks_to_i1i2(i1, i2,
 					(char *) RAW(dest), nbyte_max,
 					coll, gaplen, sizeof(char));
 				i1 = i2 + 1;
