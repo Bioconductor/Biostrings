@@ -40,7 +40,8 @@ SEXP XString_xscat(SEXP args)
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
 		cached_arg = cache_XRaw(arg);
-		_write_RoSeq_to_XString(ans, write_start, &cached_arg, 0);
+		_Ocopy_cachedCharSeq_to_XString(ans, write_start,
+						&cached_arg, 0);
 		write_start += cached_arg.length;
 	}
 	UNPROTECT(1);
@@ -100,7 +101,8 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			cached_arg_elt = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
+			cached_arg_elt = _get_cachedXStringSet_elt(
+							cached_args + j, ii[j]);
 			*width += cached_arg_elt.length;
 			ii[j]++;
 		}
@@ -120,8 +122,10 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			cached_arg_elt = _get_cachedXStringSet_elt(cached_args + j, ii[j]);
-			_write_RoSeq_to_XString(ans_super, write_start, &cached_arg_elt, 0);
+			cached_arg_elt = _get_cachedXStringSet_elt(
+							cached_args + j, ii[j]);
+			_Ocopy_cachedCharSeq_to_XString(ans_super, write_start,
+							&cached_arg_elt, 0);
 			write_start += cached_arg_elt.length;
 			ii[j]++;
 		}

@@ -181,14 +181,18 @@ SEXP _alloc_XString(const char *classname, int length)
 	return ans;
 }
 
-void _write_RoSeq_to_XString(SEXP x, int start, const cachedCharSeq *seq, int encode)
+void _Ocopy_cachedCharSeq_to_XString(SEXP out, int start,
+		const cachedCharSeq *in, int encode)
 {
 	int offset;
 	const ByteTrTable *enc_byte2code;
 
-	offset = get_XVector_offset(x);
-	enc_byte2code = encode ? get_enc_byte2code(get_classname(x)) : NULL;
-	_write_RoSeq_to_SharedRaw(get_XVector_shared(x), offset + start - 1, seq, enc_byte2code);
+	offset = get_XVector_offset(out);
+	enc_byte2code = encode ? get_enc_byte2code(get_classname(out)) : NULL;
+	Ocopy_cachedCharSeq_to_SharedRaw_offset(
+		get_XVector_shared(out), offset + start - 1,
+		in,
+		*enc_byte2code, BYTETRTABLE_LENGTH);
 	return;
 }
 

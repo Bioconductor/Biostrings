@@ -65,53 +65,6 @@ int _get_twobit_signature_at(
 );
 
 
-/* copy_seq.c */
-
-SEXP debug_copy_seq();
-
-void _copy_seq(
-	char *dest,
-	const char *src,
-	size_t n,
-	const ByteTrTable *byte2code
-);
-
-void _revcopy_seq(
-	char *dest,
-	const char *src,
-	size_t n,
-	const ByteTrTable *byte2code
-);
-
-void _copy_seq_from_i1i2(
-	int i1, int i2,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const ByteTrTable *byte2code
-);
-
-void _copy_seq_to_i1i2(
-	int i1, int i2,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const ByteTrTable *byte2code
-);
-
-void _copy_seq_from_subset(
-	const int *subset, int n,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const ByteTrTable *byte2code
-);
-
-void _copy_seq_to_subset(
-	const int *subset, int n,
-	char *dest, int dest_length,
-	const char *src, int src_length,
-	const ByteTrTable *byte2code
-);
-
-
 /* RoSeqs_utils.c */
 
 SEXP debug_RoSeqs_utils();
@@ -157,13 +110,6 @@ RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
 SEXP _new_IRanges_from_RoSeqs(
 	const char *classname,
 	const RoSeqs *seqs
-);
-
-void _write_RoSeq_to_SharedRaw(
-	SEXP x,
-	int offset,
-	const cachedCharSeq *seq,
-	const ByteTrTable *byte2code
 );
 
 int _get_RoSeqs_is_unsorted(
@@ -237,10 +183,10 @@ SEXP _alloc_XString(
 	int length
 );
 
-void _write_RoSeq_to_XString(
-	SEXP x,
+void _Ocopy_cachedCharSeq_to_XString(
+	SEXP out,
 	int start,
-	const cachedCharSeq *seq,
+	const cachedCharSeq *in,
 	int encode
 );
 

@@ -455,13 +455,19 @@ static void append_seq_to_FASTQ_seqbuf(int recno, const cachedCharSeq *dataline)
 	const ByteTrTable *byte2code;
 
 	byte2code = get_enc_byte2code("DNAString");
-	_write_RoSeq_to_SharedRaw(FASTQ_seqbuf_shared, recno * FASTQ_width, dataline, byte2code);
+	Ocopy_cachedCharSeq_to_SharedRaw_offset(
+		FASTQ_seqbuf_shared, recno * FASTQ_width,
+		dataline,
+		*byte2code, BYTETRTABLE_LENGTH);
 	return;
 }
 
 static void append_qual_to_FASTQ_qualbuf(int recno, const cachedCharSeq *dataline)
 {
-	_write_RoSeq_to_SharedRaw(FASTQ_qualbuf_shared, recno * FASTQ_width, dataline, NULL);
+	Ocopy_cachedCharSeq_to_SharedRaw_offset(
+		FASTQ_qualbuf_shared, recno * FASTQ_width,
+		dataline,
+		NULL, 0);
 	return;
 }
 

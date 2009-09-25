@@ -29,9 +29,6 @@ static const R_CallMethodDef callMethods[] = {
 /* utils.c */
 	CALLMETHOD_DEF(debug_utils, 0),
 
-/* copy_seq.c */
-	CALLMETHOD_DEF(debug_copy_seq, 0),
-
 /* RoSeqs_utils.c */
 	CALLMETHOD_DEF(debug_RoSeqs_utils, 0),
 	CALLMETHOD_DEF(new_SharedRaw_from_STRSXP, 5),

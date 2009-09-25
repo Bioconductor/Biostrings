@@ -164,7 +164,7 @@ SEXP XStringSet_unlist(SEXP x)
 	write_start = 1;
 	for (i = 0; i < x_length; i++) {
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
-		_write_RoSeq_to_XString(ans, write_start, &xx, 0);
+		_Ocopy_cachedCharSeq_to_XString(ans, write_start, &xx, 0);
 		write_start += xx.length;
 	}
 	UNPROTECT(1);

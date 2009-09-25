@@ -278,23 +278,6 @@ SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 }
 
 
-/****************************************************************************
- * Writing a cachedCharSeq object to a SharedRaw object.
- *
- * TODO: Rename _write_cachedCharSeq_to_SharedRaw and move to the IRanges package.
- */
-
-void _write_RoSeq_to_SharedRaw(SEXP x, int offset, const cachedCharSeq *seq,
-		const ByteTrTable *byte2code)
-{
-        char *dest;
-
-        dest = (char *) RAW(get_SharedVector_tag(x)) + offset;
-        _copy_seq(dest, seq->seq, seq->length, byte2code);
-        return;
-}
-
-
 /*****************************************************************************
  * Getting the order of a RoSeqs struct.
  *

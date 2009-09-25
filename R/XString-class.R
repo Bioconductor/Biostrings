@@ -285,7 +285,7 @@ setMethod("show", "XString",
 {
     if (x@length != y@length)
         return(FALSE)
-    ans <- !SharedRaw.compare(x@shared, x@offset + 1L, y@shared, y@offset + 1L, x@length)
+    ans <- !SharedVector.compare(x@shared, x@offset + 1L, y@shared, y@offset + 1L, x@length)
     as.logical(ans)
 }
 
