@@ -33,7 +33,7 @@ void _init_byte2offset_with_INTEGER(
 	int error_on_dup
 );
 
-void _init_byte2offset_with_RoSeq(
+void _init_byte2offset_with_cachedCharSeq(
 	ByteTrTable byte2offset,
 	const cachedCharSeq *seq,
 	int error_on_dup
@@ -77,7 +77,7 @@ void _narrow_RoSeqs(
 	SEXP width
 );
 
-SEXP _new_CHARSXP_from_RoSeq(
+SEXP _new_CHARSXP_from_cachedCharSeq(
 	const cachedCharSeq *seq,
 	SEXP lkup
 );

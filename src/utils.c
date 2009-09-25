@@ -148,13 +148,13 @@ void _init_byte2offset_with_INTEGER(ByteTrTable byte2offset, SEXP bytes, int err
 	return;
 }
 
-void _init_byte2offset_with_RoSeq(ByteTrTable byte2offset,
+void _init_byte2offset_with_cachedCharSeq(ByteTrTable byte2offset,
 		const cachedCharSeq *seq, int error_on_dup)
 {
 	int byte, offset;
 
 	if (seq->length > BYTETRTABLE_LENGTH)
-		error("Biostrings internal error in _init_byte2offset_with_RoSeq(): ",
+		error("Biostrings internal error in _init_byte2offset_with_cachedCharSeq(): ",
 		      "seq->length > BYTETRTABLE_LENGTH");
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
 		byte2offset[byte] = NA_INTEGER;
@@ -164,7 +164,7 @@ void _init_byte2offset_with_RoSeq(ByteTrTable byte2offset,
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _init_byte2offset_with_RoSeq():\n");
+		Rprintf("[DEBUG] _init_byte2offset_with_cachedCharSeq():\n");
 		print_ByteTrTable(byte2offset);
 	}
 #endif

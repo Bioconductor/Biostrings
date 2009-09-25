@@ -66,10 +66,10 @@ void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
 /*****************************************************************************
  * From a cachedCharSeq struct to a character string.
  *
- * TODO: Rename _new_CHARSXP_from_cachedCharSeq and move to the IRanges package.
+ * TODO: Move to the IRanges package.
  */
 
-SEXP _new_CHARSXP_from_RoSeq(const cachedCharSeq *seq, SEXP lkup)
+SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *seq, SEXP lkup)
 {
 	// IMPORTANT: We use user-controlled memory for this private memory
 	// pool so it is persistent between calls to .Call().
@@ -84,7 +84,7 @@ SEXP _new_CHARSXP_from_RoSeq(const cachedCharSeq *seq, SEXP lkup)
 	if (new_bufsize > bufsize) {
 		new_buf = (char *) realloc(buf, new_bufsize);
 		if (new_buf == NULL)
-			error("_new_CHARSXP_from_RoSeq(): "
+			error("_new_CHARSXP_from_cachedCharSeq(): "
 			      "call to realloc() failed");
 		buf = new_buf;
 		bufsize = new_bufsize;
@@ -131,13 +131,16 @@ RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 
 SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
-	SEXP ans;
+	SEXP ans, ans_elt;
 	int i;
 	const cachedCharSeq *seq;
 
 	PROTECT(ans = NEW_CHARACTER(seqs->nelt));
-	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++)
-		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(seq, lkup));
+	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
+		PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(seq, lkup));
+		SET_STRING_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
 	UNPROTECT(1);
 	return ans;
 }

@@ -174,7 +174,7 @@ SEXP XStringSet_unlist(SEXP x)
 /* --- .Call ENTRY POINT --- */
 SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 {
-	SEXP ans;
+	SEXP ans, ans_elt;
 	int x_length, i;
 	cachedXStringSet cached_x;
 	cachedCharSeq xx;
@@ -184,7 +184,9 @@ SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
 	PROTECT(ans = NEW_CHARACTER(x_length));
 	for (i = 0; i < x_length; i++) {
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
-		SET_STRING_ELT(ans, i, _new_CHARSXP_from_RoSeq(&xx, lkup));
+		PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(&xx, lkup));
+		SET_STRING_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
 	}
 	UNPROTECT(1);
 	return ans;
