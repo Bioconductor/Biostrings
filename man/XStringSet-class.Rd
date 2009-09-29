@@ -212,11 +212,14 @@
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA)}:
       Applies \code{subseq} on each element in \code{x}.
-      See \code{?\link[IRanges]{subseq}} for the details.
+      See \code{?\link[IRanges:XVector-class]{subseq}} for the details.
 
       Note that this is similar to what \code{\link{substr}} does on a
       character vector. However there are some noticeable differences:
-      (1) the arguments are \code{start} and \code{stop} for \code{\link{substr}};
+      
+      (1) the arguments are \code{start} and \code{stop} for
+      \code{\link{substr}};
+      
       (2) the SEW interface (start/end/width) interface of \code{subseq}
       is richer (e.g. support for negative start or end values);
       and (3) \code{subseq} checks that the specified start/end/width values
