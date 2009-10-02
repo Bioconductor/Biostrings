@@ -237,6 +237,8 @@ setAs("MaskedXString", "XStringViews",
     }
 )
 
+setAs("MaskedXString", "Views", function(from) as(from, "XStringViews"))
+
 ### NOT exported.
 toXStringViewsOrXString <- function(x)
 {

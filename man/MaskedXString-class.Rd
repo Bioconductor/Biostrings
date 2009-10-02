@@ -51,6 +51,7 @@
 \alias{coerce,MaskedXString,MaskCollection-method}
 \alias{coerce,MaskedXString,NormalIRanges-method}
 \alias{coerce,MaskedXString,XStringViews-method}
+\alias{coerce,MaskedXString,Views-method}
 
 % Other methods:
 \alias{collapse,MaskedXString-method}
