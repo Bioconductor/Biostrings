@@ -6,8 +6,6 @@
 \alias{needwunsQS,XString,character-method}
 \alias{needwunsQS,XString,XString-method}
 \alias{print.needwunsQS}
-\alias{alignScore.needwunsQS}
-\alias{alignScore}
 
 \title{(Deprecated) Needleman-Wunsch Global Alignment}
 \description{Simple gap implementation of Needleman-Wunsch global alignment algorithm.}

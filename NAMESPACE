@@ -371,7 +371,7 @@ export(
     stringDist,
 
     ## Old stuff (Defunct or Deprecated):
-    alignScore, needwunsQS
+    needwunsQS
 )
 
 exportMethods(

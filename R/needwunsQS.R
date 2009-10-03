@@ -75,8 +75,6 @@
 }
 
 
-alignScore <- function(...) .Defunct("score")
-
 print.needwunsQS <- function(x, ...)
 {
     print(matrix(c(x["al1"], x["al2"]),ncol=1))
