@@ -68,9 +68,9 @@ sequence, or the consensus matrix of a set of sequences}
 
   consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
 
-  \S4method{consensusString}{matrix}(x)
-  \S4method{consensusString}{XStringSet}(x, shift=0L, width=NULL)
-  \S4method{consensusString}{ANY}(x)
+  consensusString(x, agree=0.5, disagreeCode="?", ...)
+  \S4method{consensusString}{XStringSet}(x, agree=0.5, disagreeCode="?",
+                                         shift=0L, width=NULL)
 }
 
 \arguments{
@@ -95,6 +95,13 @@ sequence, or the consensus matrix of a set of sequences}
   \item{freq}{
     This argument is deprecated.
     Please use the \code{as.prob} argument instead.
+  }
+  \item{agree}{
+    A single number between 0 and 1 denoting the minimum probability
+    threshold for an agreement to be declared.
+  }
+  \item{disagreeCode}{
+    The character to use when agreement is not reached.
   }
   \item{...}{
     Further arguments to be passed to or from other methods.

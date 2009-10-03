@@ -596,10 +596,12 @@ setMethod("consensusMatrix", "XStringViews",
     }
 )
 
-setGeneric("consensusString", function(x, ...) standardGeneric("consensusString"))
+setGeneric("consensusString",
+    function(x, agree=0.5, disagreeCode="?", ...)
+        standardGeneric("consensusString"))
 
 setMethod("consensusString", "matrix",
-    function(x)
+    function(x, agree=0.5, disagreeCode="?")
     {
         err_msg <- c("Please make sure 'x' was obtained by a ",
                      "call to consensusMatrix(..., as.prob=TRUE)")
@@ -615,6 +617,10 @@ setMethod("consensusString", "matrix",
             col_sums[col_sums == 0] <- 1  # to avoid division by 0
             x <- x / rep(col_sums, each=nrow(x))
         }
+        if (!isSingleNumber(agree) || agree < 0 || agree > 1)
+            stop("'agree' must be a numeric between 0 and 1")
+        if (!isSingleString(disagreeCode) || nchar(disagreeCode) != 1)
+            stop("'disagreeCode' must be a single character")
         consensusLetter <- function(col)
         {
             i <- which.max(col)
@@ -624,26 +630,31 @@ setMethod("consensusString", "matrix",
             if (col[i] > 1)
                 stop("invalid consensus matrix 'x' (contains values > 1).\n",
                      "  ", err_msg)
-            if (col[i] > 0.5)
-                return(all_letters[i])
-            return("?")
+            if (col[i] > agree)
+                all_letters[i]
+            else
+                disagreeCode
         }
         paste(apply(x, 2, consensusLetter), collapse="")
     }
 )
 
 setMethod("consensusString", "XStringSet",
-    function(x, shift=0L, width=NULL)
-        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width))
+    function(x, agree=0.5, disagreeCode="?", shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
+                        agree=agree, disagreeCode=disagreeCode)
 )
 
 setMethod("consensusString", "XStringViews",
-    function(x, shift=0L, width=NULL)
-        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width))
+    function(x, agree=0.5, disagreeCode="?", shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
+                        agree=agree, disagreeCode=disagreeCode)
 )
 
 setMethod("consensusString", "ANY",
-    function(x) consensusString(consensusMatrix(x, as.prob=TRUE))
+    function(x, agree=0.5, disagreeCode="?")
+        consensusString(consensusMatrix(x, as.prob=TRUE), agree=agree,
+                        disagreeCode=disagreeCode)
 )
 
 
@@ -653,11 +664,4 @@ setMethod("consensusString", "ANY",
 
 setGeneric("consmat", function(x, ...) standardGeneric("consmat"))
 
-setMethod("consmat", "ANY",
-    function(x, ...)
-    {
-        .Deprecated("consensusMatrix")
-        consensusMatrix(x, ...)
-    }
-)
-
+setMethod("consmat", "ANY", function(x, ...) .Defunct("consensusMatrix"))
