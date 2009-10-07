@@ -596,13 +596,14 @@ setMethod("consensusMatrix", "XStringViews",
     }
 )
 
-setGeneric("consensusString",
-    function(x, agree=0.5, disagreeCode="?", ...)
-        standardGeneric("consensusString"))
+setGeneric("consensusString", function(x, ...) standardGeneric("consensusString"))
 
 setMethod("consensusString", "matrix",
-    function(x, agree=0.5, disagreeCode="?")
+    function(x, ambiguityMap="?", threshold=0.5)
     {
+        k <- nrow(x)
+        if (k == 0)
+            return(character())
         err_msg <- c("Please make sure 'x' was obtained by a ",
                      "call to consensusMatrix(..., as.prob=TRUE)")
         all_letters <- rownames(x)
@@ -615,46 +616,92 @@ setMethod("consensusString", "matrix",
         if (is.integer(x)) {
             col_sums <- colSums(x)
             col_sums[col_sums == 0] <- 1  # to avoid division by 0
-            x <- x / rep(col_sums, each=nrow(x))
+            x <- x / rep(col_sums, each=k)
         }
-        if (!isSingleNumber(agree) || agree < 0 || agree > 1)
-            stop("'agree' must be a numeric between 0 and 1")
-        if (!isSingleString(disagreeCode) || nchar(disagreeCode) != 1)
-            stop("'disagreeCode' must be a single character")
-        consensusLetter <- function(col)
-        {
-            i <- which.max(col)
-            if (length(i) == 0L)  # 'i' is an integer(0)
-                stop("invalid consensus matrix 'x' (has 0 rows or contains NAs/NaNs).\n",
-                     "  ", err_msg)
-            if (col[i] > 1)
-                stop("invalid consensus matrix 'x' (contains values > 1).\n",
-                     "  ", err_msg)
-            if (col[i] > agree)
-                all_letters[i]
-            else
-                disagreeCode
+        if (any(is.na(x) | x < 0 | x > 1))
+            stop("invalid consensus matrix 'x' ",
+                 "(contains NAs/NaNs or values outside [0, 1]).\n",
+                 "  ", err_msg)
+        if (any(abs(colSums(x) - 1) > .Machine$double.eps ^ 0.5))
+            stop("invalid consensus matrix 'x' ",
+                 "(some columns do not sum to 1).\n",
+                 "  ", err_msg)
+        if (isSingleString(ambiguityMap)) {
+            if (nchar(ambiguityMap) != 1)
+                stop("'ambiguityMap' must be a single character or a map ",
+                     "(e.g. IUPAC_CODE_MAP)")
+            if (!isSingleNumber(threshold) || threshold <= 0 || threshold > 1)
+                stop("'threshold' must be a numeric in (0, 1]")
+            consensusLetter <- function(col)
+            {
+                i <- which(col >= threshold)
+                if (length(i) == 1 && col[i] >= threshold)
+                    all_letters[i]
+                else
+                    ambiguityMap
+            }
+        } else {
+            if (!is.character(ambiguityMap) || is.null(names(ambiguityMap)))
+                stop("'ambiguityMap' must be a named character vector")
+            if (!isSingleNumber(threshold) || threshold <= 0 ||
+                (threshold - .Machine$double.eps ^ 0.5) > 1/sum(rowSums(x) > 0))
+                stop("'threshold' must be a numeric in ",
+                     "(0, 1/sum(rowSums(x) > 0)]")
+            consensusLetter <- function(col)
+            {
+                i <- paste(all_letters[col >= threshold], collapse = "")
+                ans <- names(ambiguityMap[ambiguityMap == i])
+                if (length(ans) == 0)
+                    stop("'ambiguityMap' is missing some combinations of row names")
+                ans
+            }
         }
         paste(apply(x, 2, consensusLetter), collapse="")
     }
 )
 
-setMethod("consensusString", "XStringSet",
-    function(x, agree=0.5, disagreeCode="?", shift=0L, width=NULL)
+setMethod("consensusString", "BStringSet",
+    function(x, ambiguityMap="?", threshold=0.5, shift=0L, width=NULL)
         consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
-                        agree=agree, disagreeCode=disagreeCode)
+                        ambiguityMap=ambiguityMap, threshold=threshold)
 )
 
-setMethod("consensusString", "XStringViews",
-    function(x, agree=0.5, disagreeCode="?", shift=0L, width=NULL)
+setMethod("consensusString", "DNAStringSet",
+    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25, shift=0L, width=NULL)
         consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
-                        agree=agree, disagreeCode=disagreeCode)
+                        ambiguityMap=ambiguityMap, threshold=threshold)
+)
+
+setMethod("consensusString", "RNAStringSet",
+    function(x,
+             ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+             threshold=0.25, shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
+                        ambiguityMap=ambiguityMap, threshold=threshold)
+)
+
+setMethod("consensusString", "BStringViews",
+    function(x, ambiguityMap="?", threshold=0.5, shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
+                        ambiguityMap=ambiguityMap, threshold=threshold)
+)
+
+setMethod("consensusString", "DNAStringViews",
+    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25, shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
+                        ambiguityMap=ambiguityMap, threshold=threshold)
+)
+
+setMethod("consensusString", "RNAStringViews",
+    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25, shift=0L, width=NULL)
+        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
+                        ambiguityMap=ambiguityMap, threshold=threshold)
 )
 
 setMethod("consensusString", "ANY",
-    function(x, agree=0.5, disagreeCode="?")
-        consensusString(consensusMatrix(x, as.prob=TRUE), agree=agree,
-                        disagreeCode=disagreeCode)
+    function(x, ambiguityMap="?", threshold=0.5)
+        consensusString(consensusMatrix(x, as.prob=TRUE),
+                        ambiguityMap=ambiguityMap, threshold=threshold)
 )
 
 

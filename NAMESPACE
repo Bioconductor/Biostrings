@@ -1,7 +1,11 @@
 useDynLib(Biostrings)
 
 import(methods)
-#importFrom(utils, "head", "tail")  # already imported from IRanges
+importFrom(graphics, "axis", "legend", "lines", "par", "plot.new",
+           "plot.window", "title")
+importFrom(stats, "chisq.test", "complete.cases", "diffinv",
+           "pchisq")
+importFrom(utils, "data")
 import(IRanges)
 importFrom(Biobase, "addVigs2WinMenu")
 

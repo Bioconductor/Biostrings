@@ -34,8 +34,12 @@
 \alias{consensusMatrix,XStringViews-method}
 \alias{consensusString}
 \alias{consensusString,matrix-method}
-\alias{consensusString,XStringSet-method}
-\alias{consensusString,XStringViews-method}
+\alias{consensusString,BStringSet-method}
+\alias{consensusString,DNAStringSet-method}
+\alias{consensusString,RNAStringSet-method}
+\alias{consensusString,BStringViews-method}
+\alias{consensusString,DNAStringViews-method}
+\alias{consensusString,RNAStringViews-method}
 \alias{consensusString,ANY-method}
 
 % Old stuff:
@@ -68,9 +72,12 @@ sequence, or the consensus matrix of a set of sequences}
 
   consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
 
-  consensusString(x, agree=0.5, disagreeCode="?", ...)
-  \S4method{consensusString}{XStringSet}(x, agree=0.5, disagreeCode="?",
-                                         shift=0L, width=NULL)
+  \S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
+  \S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
+                                           threshold=0.25, shift=0L, width=NULL)
+  \S4method{consensusString}{RNAStringSet}(x, 
+   ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+                                           threshold=0.25, shift=0L, width=NULL)
 }
 
 \arguments{
@@ -96,12 +103,19 @@ sequence, or the consensus matrix of a set of sequences}
     This argument is deprecated.
     Please use the \code{as.prob} argument instead.
   }
-  \item{agree}{
-    A single number between 0 and 1 denoting the minimum probability
-    threshold for an agreement to be declared.
+  \item{ambiguityMap}{
+    Either a single character to use when agreement is not reached or
+    a named character vector where the names are the ambiguity characters
+    and the values are the combinations of letters that comprise the
+    ambiguity (e.g. \code{link{IUPAC_CODE_MAP}}).
   }
-  \item{disagreeCode}{
-    The character to use when agreement is not reached.
+  \item{threshold}{
+    The minimum probability threshold for an agreement to be declared.
+    When \code{ambiguityMap} is a single character, \code{threshold}
+    is a single number in (0, 1].
+    When \code{ambiguityMap} is a named character vector
+    (e.g. \code{link{IUPAC_CODE_MAP}}),  \code{threshold}
+    is a single number in (0, 1/sum(rowSums(x) > 0)].
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
@@ -235,6 +249,7 @@ sequence, or the consensus matrix of a set of sequences}
   ## After sorting, the first 5 probes might look similar (at least on
   ## their first bases):
   consensusString(sort(probes)[1:5])
+  consensusString(sort(probes)[1:5], ambiguityMap = "N", threshold = 0.5)
 
   ## ---------------------------------------------------------------------
   ## C. RELATIONSHIP BETWEEN consensusMatrix() AND coverage()
