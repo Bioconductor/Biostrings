@@ -38,12 +38,14 @@ setGeneric("nedit", function(x) standardGeneric("nedit"))
 
 setMethod("nedit", "PairwiseAlignedXStringSet",
     function(x)
-        nmismatch(x) + unname(nindel(subject(x))[,"WidthSum"]) + unname(nindel(pattern(x))[,"WidthSum"])
+        nmismatch(x) + unname(nindel(subject(x))[,"WidthSum"]) +
+          unname(nindel(pattern(x))[,"WidthSum"])
 )
 
 setMethod("nedit", "PairwiseAlignedFixedSubjectSummary",
     function(x)
-        nmismatch(x) + unname(insertion(nindel(x))[,"WidthSum"]) + unname(deletion(nindel(x))[,"WidthSum"])
+        nmismatch(x) + unname(insertion(nindel(x))[,"WidthSum"]) +
+          unname(deletion(nindel(x))[,"WidthSum"])
 )
 
 
@@ -119,8 +121,8 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
             }
             else
                 quality <-
-                  narrow(quality(unaligned(x))[output[["Id"]]], start = output[["Start"]],
-                         end = output[["End"]])
+                  narrow(quality(unaligned(x))[output[["Id"]]],
+                         start = output[["Start"]], end = output[["End"]])
             output <- cbind(output, "Quality" = as.character(quality))
         }
         if (any(nchar(prefixColNames) > 0))
@@ -160,7 +162,8 @@ setMethod("mismatchSummary", "AlignedXStringSet0",
         if (length(weight) == 1)
             endTable <- weight * table(.mismatchTable[["End"]])
         else
-            endTable <- table(rep(.mismatchTable[["End"]], weight[.mismatchTable[["Id"]]]))
+            endTable <-
+              table(rep(.mismatchTable[["End"]], weight[.mismatchTable[["Id"]]]))
         countTable <- rep(0L, n)
         countTable[as.integer(names(endTable))] <- endTable
         list("position" =
@@ -190,13 +193,17 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
             if (length(weight) == 1)
                 qualityAll <-
                   as.numeric(weight) *
-                    alphabetFrequency(narrow(quality(unaligned(x))[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
-                                             end = end(x)[nonEmptyAlignment]), collapse = TRUE)[qualityValues + 1]
+                    alphabetFrequency(narrow(quality(unaligned(x))[nonEmptyAlignment],
+                                             start = start(x)[nonEmptyAlignment],
+                                             end = end(x)[nonEmptyAlignment]),
+                                      collapse = TRUE)[qualityValues + 1]
             else
                 qualityAll <-
                   colSums(as.numeric(weight)[nonEmptyAlignment] *
-                          alphabetFrequency(narrow(quality(unaligned(x))[nonEmptyAlignment], start = start(x)[nonEmptyAlignment],
-                                                   end = end(x)[nonEmptyAlignment]))[, qualityValues + 1, drop=FALSE])
+                          alphabetFrequency(narrow(quality(unaligned(x))[nonEmptyAlignment],
+                                                   start = start(x)[nonEmptyAlignment],
+                                                   end = end(x)[nonEmptyAlignment])
+                                            )[, qualityValues + 1, drop=FALSE])
         }
         names(qualityAll) <- sapply(as.raw(qualityValues), rawToChar)
         qualityAll <- qualityAll[qualityAll > 0]
@@ -210,7 +217,8 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
         qualityCounts[names(qualityTable)] <- qualityTable
         c(callNextMethod(x, weight = weight, .mismatchTable = .mismatchTable),
           list("quality" =
-               data.frame("Quality" = unlist(lapply(names(qualityAll), utf8ToInt)) - qualityZero,
+               data.frame("Quality" =
+                          unlist(lapply(names(qualityAll), utf8ToInt)) - qualityZero,
                           "Count" = qualityCounts,
                           "Probability" = qualityCounts / qualityAll)))
     }
@@ -223,13 +231,17 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubject",
             stop("'weight' must be an integer vector with length 1 or 'length(x)'")
         if (!is.integer(weight))
             weight <- as.integer(weight)
-        mismatchTable <- list("pattern" = mismatchTable(pattern(x)), "subject" = mismatchTable(subject(x)))
+        mismatchTable <-
+          list("pattern" = mismatchTable(pattern(x)),
+               "subject" = mismatchTable(subject(x)))
         combinedInfo <-
-          paste(mismatchTable[["subject"]][["End"]], mismatchTable[["pattern"]][["Substring"]], sep = "\001")
+          paste(mismatchTable[["subject"]][["End"]],
+                mismatchTable[["pattern"]][["Substring"]], sep = "\001")
         if (length(weight) == 1)
             subjectTable <- weight * table(combinedInfo)
         else
-            subjectTable <- table(rep(combinedInfo, weight[mismatchTable[["pattern"]][["Id"]]]))
+            subjectTable <-
+              table(rep(combinedInfo, weight[mismatchTable[["pattern"]][["Id"]]]))
         if (length(subjectTable) == 0) {
             subjectTableLabels <- character(0)
             subjectPosition <- integer(0)
@@ -238,16 +250,20 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubject",
             subjectPosition <- as.integer(unlist(lapply(subjectTableLabels, "[", 1)))
         }
         output <-
-          list("pattern" = mismatchSummary(pattern(x), weight = weight, .mismatchTable = mismatchTable[["pattern"]]),
+          list("pattern" =
+               mismatchSummary(pattern(x), weight = weight,
+                               .mismatchTable = mismatchTable[["pattern"]]),
                "subject" =
                data.frame("SubjectPosition" = subjectPosition,
-                          "Subject" = safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
+                          "Subject" =
+                          safeExplode(letter(unaligned(subject(x))[[1]], subjectPosition)),
                           "Pattern" = unlist(lapply(subjectTableLabels, "[", 2)),
                           "Count" = as.vector(subjectTable),
                           "Probability" =
                            as.vector(subjectTable) /
                              coverage(subject(x), weight = weight)[subjectPosition, drop = TRUE]))
-        output[["subject"]] <- output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
+        output[["subject"]] <-
+          output[["subject"]][order(output[["subject"]][[1]], output[["subject"]][[2]]),]
         rownames(output[["subject"]]) <- as.character(seq_len(nrow(output[["subject"]])))
         output
     }
@@ -299,28 +315,34 @@ setMethod("coverage", "PairwiseAlignedFixedSubjectSummary",
 
 setGeneric("compareStrings", signature = c("pattern", "subject"),
            function(pattern, subject)  standardGeneric("compareStrings"))
-setMethod("compareStrings", signature = c(pattern = "character", subject = "character"),
+setMethod("compareStrings",
+          signature = c(pattern = "character", subject = "character"),
           function(pattern, subject) {
               if (length(pattern) != length(subject))
                   stop("'pattern' and 'subject' must have the same length")
               ncharPattern <- nchar(pattern)
               if (any(ncharPattern != nchar(subject)))
                   stop("'pattern' and 'subject' must have the same number of characters")
-              .Call("align_compareStrings", pattern, subject, max(ncharPattern), "+", "-", "?", PACKAGE="Biostrings")
+              .Call("align_compareStrings", pattern, subject, max(ncharPattern), "+", "-", "?",
+                    PACKAGE="Biostrings")
           })
-setMethod("compareStrings", signature = c(pattern = "XString", subject = "XString"),
+setMethod("compareStrings",
+          signature = c(pattern = "XString", subject = "XString"),
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })
-setMethod("compareStrings", signature = c(pattern = "XStringSet", subject = "XStringSet"),
+setMethod("compareStrings",
+          signature = c(pattern = "XStringSet", subject = "XStringSet"),
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })
-setMethod("compareStrings", signature = c(pattern = "AlignedXStringSet0", subject = "AlignedXStringSet0"),
+setMethod("compareStrings",
+          signature = c(pattern = "AlignedXStringSet0", subject = "AlignedXStringSet0"),
           function(pattern, subject) {
               compareStrings(as.character(pattern), as.character(subject))
           })
-setMethod("compareStrings", signature = c(pattern = "PairwiseAlignedXStringSet", subject = "missing"),
+setMethod("compareStrings",
+          signature = c(pattern = "PairwiseAlignedXStringSet", subject = "missing"),
 		  function(pattern, subject) {
 			  compareStrings(pattern@pattern, pattern@subject)
 		  })
