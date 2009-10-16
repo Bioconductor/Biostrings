@@ -33,7 +33,7 @@ SEXP XString_xscat(SEXP args)
 			ans_length += cached_arg.length;
 		}
 	}
-	PROTECT(ans = _alloc_XString(ans_classname, ans_length));
+	PROTECT(ans = alloc_XRaw(ans_classname, ans_length));
 
 	/* 2nd pass: fill 'ans' */
 	write_start = 1;
@@ -112,7 +112,7 @@ SEXP XStringSet_xscat(SEXP args)
 			      "of letters an XStringSet\n  object can hold (%d), "
 			      "sorry!", INT_MAX);
 	}
-	PROTECT(ans_super = _alloc_XString(ans_xsbaseclassname, ans_super_length));
+	PROTECT(ans_super = alloc_XRaw(ans_xsbaseclassname, ans_super_length));
 
 	/* 3rd pass: fill 'ans_super' */
 	write_start = 1;

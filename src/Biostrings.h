@@ -178,11 +178,6 @@ SEXP _new_XString_from_RoSeqs(
 	const RoSeqs *seqs
 );
 
-SEXP _alloc_XString(
-	const char *classname,
-	int length
-);
-
 void _Ocopy_cachedCharSeq_to_XString(
 	SEXP out,
 	int start,

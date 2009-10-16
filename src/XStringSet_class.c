@@ -158,7 +158,7 @@ SEXP XStringSet_unlist(SEXP x)
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		ans_length += xx.length;
 	}
-	PROTECT(ans = _alloc_XString(_get_XStringSet_xsbaseclassname(x), ans_length));
+	PROTECT(ans = alloc_XRaw(_get_XStringSet_xsbaseclassname(x), ans_length));
 
 	/* 2nd pass: fill 'ans' */
 	write_start = 1;

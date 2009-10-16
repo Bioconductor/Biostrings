@@ -163,23 +163,8 @@ SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
 
 
 /****************************************************************************
- * Utilities for creating an XString instance in 2 steps: first create the
- * skeleton (with junk data in it), then fill it with some character data.
+ * Other stuff...
  */
-
-/*
- * Allocate only. The sequence data are not initialized (they are whatever
- * junk is in memory at the time NEW_RAW() is called).
- */
-SEXP _alloc_XString(const char *classname, int length)
-{
-	SEXP tag, ans;
-
-	PROTECT(tag = NEW_RAW(length));
-	PROTECT(ans = new_XRaw_from_tag(classname, tag));
-	UNPROTECT(2);
-	return ans;
-}
 
 void _Ocopy_cachedCharSeq_to_XString(SEXP out, int start,
 		const cachedCharSeq *in, int encode)

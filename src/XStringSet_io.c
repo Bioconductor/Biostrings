@@ -587,10 +587,10 @@ SEXP read_fastq(SEXP filepath, SEXP drop_quality)
 	if (overflow_mult_int(INTEGER(ans_geom)[0], INTEGER(ans_geom)[1]))
 		error("read_fastq(): FASTQ files contain more data an XStringSet object can hold, sorry!");
 	buf_length = INTEGER(ans_geom)[0] * INTEGER(ans_geom)[1];
-	PROTECT(FASTQ_seqbuf = _alloc_XString("DNAString", buf_length));
+	PROTECT(FASTQ_seqbuf = alloc_XRaw("DNAString", buf_length));
 	FASTQ_seqbuf_shared = get_XVector_shared(FASTQ_seqbuf);
 	if (!LOGICAL(drop_quality)[0]) {
-		PROTECT(FASTQ_qualbuf = _alloc_XString("BString", buf_length));
+		PROTECT(FASTQ_qualbuf = alloc_XRaw("BString", buf_length));
 		FASTQ_qualbuf_shared = get_XVector_shared(FASTQ_qualbuf);
 	}
 	for (fileno = 0; fileno < nfile; fileno++) {
