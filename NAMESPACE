@@ -153,6 +153,7 @@ export(
 
     ## translate.R:
     transcribe, cDNA, dna2rna, rna2dna,
+    extractTranscripts,
     codons, translate,
 
     ## toComplex.R:

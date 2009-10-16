@@ -356,6 +356,18 @@ void gtestsim(
 );
 
 
+/* extract_transcripts.c */
+
+SEXP extract_transcripts(
+	SEXP x,
+	SEXP exonStarts,
+	SEXP exonEnds,
+	SEXP strand,
+	SEXP reorder_exons_on_minus_strand,
+	SEXP lkup
+);
+
+
 /* replace_letter_at.c */
 
 SEXP XString_replace_letter_at(

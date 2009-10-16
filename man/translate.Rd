@@ -5,6 +5,8 @@
 \alias{dna2rna}
 \alias{rna2dna}
 
+\alias{extractTranscripts}
+
 \alias{codons}
 \alias{codons,DNAString-method}
 \alias{codons,RNAString-method}
@@ -30,6 +32,8 @@
 \usage{
   ## Transcription:
   transcribe(x)
+  extractTranscripts(x, exonStarts=list(), exonEnds=list(),
+                     strand=character(0), reorder.exons.on.minus.strand=FALSE)
   cDNA(x)
 
   ## Translation:
@@ -43,7 +47,8 @@
 
 \arguments{
   \item{x}{
-    A \link{DNAString} object for \code{transcribe} and \code{dna2rna}.
+    A \link{DNAString} object for \code{transcribe}, \code{extractTranscripts}
+    and \code{dna2rna}.
 
     An \link{RNAString} object for \code{cDNA} and \code{rna2dna}.
 
@@ -57,8 +62,13 @@
 }
 
 \details{
-  \code{transcribe} reproduces the biological process of DNA
-  transcription that occurs in the cell.
+  \code{transcribe} and \code{extractTranscripts} reproduce
+  the biological process of DNA transcription that occurs in the cell.
+  \code{transcribe} takes the naive approach to treat the whole
+  sequence \code{x} as if it was a single exon.
+  \code{extractTranscripts} is much more powerful by allowing the
+  user to extract a set of transcripts specified by the starts and ends
+  of their exons as well as the strand the transcript is coming from.
   
   \code{cDNA} reproduces the process of synthesizing complementary DNA
   from a mature mRNA template.
@@ -109,6 +119,39 @@
 }
 
 \examples{
+  ## ---------------------------------------------------------------------
+  ## A. EXTRACTING WORM TRANSCRIPTS ZC101.3 AND F37B1.1
+  ## ---------------------------------------------------------------------
+
+  ## Transcript ZC101.3 (is on + strand):
+  ##   Exons starts/ends relative to transcript:
+  rstarts1 <- c(1, 488, 654, 996, 1365, 1712, 2163, 2453)
+  rends1 <- c(137, 578, 889, 1277, 1662, 1870, 2410, 2561)
+  ##   Exons starts/ends relative to chromosome:
+  starts1 <- 14678410 + rstarts1
+  ends1 <- 14678410 + rends1
+
+  ## Transcript F37B1.1 (is on - strand):
+  ##   Exons starts/ends relative to transcript:
+  rstarts2 <- c(1, 325)
+  rends2 <- c(139, 815)
+  ##   Exons starts/ends relative to chromosome:
+  starts2 <- 13611188 - rends2
+  ends2 <- 13611188 - rstarts2
+
+  library(BSgenome.Celegans.UCSC.ce2)
+  ## Both transcripts are on chrII:
+  chrII <- Celegans$chrII
+  transcripts <- extractTranscripts(chrII,
+                   exonStarts=list(as.integer(starts1), as.integer(starts2)),
+                   exonEnds=list(as.integer(ends1), as.integer(ends2)),
+                   strand=c("+","-")
+                 )
+
+  ## ---------------------------------------------------------------------
+  ## B. TRANSLATING A YEAST ORF
+  ## ---------------------------------------------------------------------
+
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
   x <- read.DNAStringSet(file, "fasta")
   x

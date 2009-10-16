@@ -60,7 +60,7 @@ SEXP XStringSet_xscat(SEXP args)
 	int nargs, *arg_lengths, *ii, ans_length, write_start, i, j, *start, *width;
 	unsigned int ans_super_length;
 	SEXP arg, ans_ranges_start, ans_width, ans_super, ans_ranges, ans;
-	const char *ans_classname, *ans_xsbaseclassname;
+	const char *ans_xsbaseclassname;
 	cachedCharSeq cached_arg_elt;
 
 	nargs = LENGTH(args);
@@ -70,14 +70,13 @@ SEXP XStringSet_xscat(SEXP args)
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
 
-	/* 1st pass: determine 'ans_length', 'ans_classname' and 'ans_xsbaseclassname' */
+	/* 1st pass: determine 'ans_length' and 'ans_xsbaseclassname' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
 		cached_args[j] = _cache_XStringSet(arg);
 		arg_lengths[j] = _get_XStringSet_length(arg);
 		if (j == 0) {
 			ans_length = arg_lengths[j];
-			ans_classname = get_classname(arg);
 			ans_xsbaseclassname = _get_XStringSet_xsbaseclassname(arg);
 		} else {
 			if (arg_lengths[j] > ans_length)
@@ -136,7 +135,7 @@ SEXP XStringSet_xscat(SEXP args)
 				ans_ranges_start,
 				ans_width,
 				R_NilValue));
-	PROTECT(ans = _new_XStringSet(ans_classname, ans_super, ans_ranges));
+	PROTECT(ans = _new_XStringSet(NULL, ans_super, ans_ranges));
 	UNPROTECT(5);
 	return ans;
 }
