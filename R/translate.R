@@ -40,8 +40,11 @@ extractTranscripts <- function(x, exonStarts=list(), exonEnds=list(),
                                strand=character(0),
                                reorder.exons.on.minus.strand=FALSE)
 {
-    if (!is(x, "DNAString"))
-        stop("'x' must be a DNAString object")
+    if (!is(x, "DNAString")) {
+        if (!is(x, "MaskedDNAString"))
+            stop("'x' must be a DNAString object")
+        masks(x) <- NULL
+    }
     if (is(exonStarts, "RangesList")) {
         if (!identical(exonEnds, list()))
             stop("'exonEnds' cannot be specified ",

@@ -69,6 +69,8 @@
   \code{extractTranscripts} is much more powerful by allowing the
   user to extract a set of transcripts specified by the starts and ends
   of their exons as well as the strand the transcript is coming from.
+  See \code{\link[GenomicFeatures:extractTranscriptsFromGenome]{extractTranscriptsFromGenome}} in the GenomicFeatures package for extracting transcripts from
+  a genome.
   
   \code{cDNA} reproduces the process of synthesizing complementary DNA
   from a mature mRNA template.
