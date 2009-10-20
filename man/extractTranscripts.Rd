@@ -35,11 +35,17 @@
     A \link{DNAString} or \link{MaskedDNAString} object.
   }
   \item{exonStarts, exonEnds}{
-    The starts and ends of the exons specified as 2 lists of integer
-    vectors of the same shape (i.e. they have the same length and
-    their elements have the same lengths too). Each element in
-    \code{exonStarts} and \code{exonEnds} corresponds to one
-    transcript.
+    The starts and ends of the exons, respectively.
+
+    Each argument can be a list of integer vectors,
+    an \link[IRanges]{IntegerList} object,
+    or a character vector where each element is a
+    comma-separated list of integers.
+    In addition, the lists represented by \code{exonStarts}
+    and \code{exonEnds} must have the same shape i.e.
+    have the same lengths and have elements of the same lengths.
+    The length of \code{exonStarts} and \code{exonEnds}
+    is the number of transcripts.
   }
   \item{strand}{
     A character vector of the same length as \code{exonStarts} and

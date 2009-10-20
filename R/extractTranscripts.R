@@ -2,6 +2,24 @@
 ### extractTranscripts() & related functions
 ### -------------------------------------------------------------------------
 
+.characterVectorToListOfIntegerVector <- function(x)
+{
+    tmp <- strsplit(x, ",", fixed=TRUE)
+    lapply(tmp, as.integer)
+}
+
+.normargExonStartsOrEnds <- function(exonStarts, argname)
+{
+    if (is.list(exonStarts))
+        return(exonStarts)
+    if (is(exonStarts, "IntegerList"))
+        return(as.list(exonStarts))
+    if (is.character(exonStarts))
+        return(.characterVectorToListOfIntegerVector(exonStarts))
+    stop("'", argname, "' must be a list of integer vectors, ",
+         "an IntegerList object,\n  or a character vector where ",
+         "each element is a comma-separated list of\n  integers")
+}
 
 transcriptWidths <- function(exonStarts=list(), exonEnds=list())
 {
@@ -12,18 +30,8 @@ transcriptWidths <- function(exonStarts=list(), exonEnds=list())
         exonEnds <- end(exonStarts)
         exonStarts <- start(exonStarts)
     }
-    if (!is.list(exonStarts)) {
-        if (!is(exonStarts, "IntegerList"))
-            stop("'exonStarts' must be a list of integer vectors ",
-                 "or an IntegerList object")
-        exonStarts <- as.list(exonStarts)
-    }
-    if (!is.list(exonEnds)) {
-        if (!is(exonEnds, "IntegerList"))
-            stop("'exonEnds' must be a list of integer vectors ",
-                 "or an IntegerList object")
-        exonEnds <- as.list(exonEnds)
-    }
+    exonStarts <- .normargExonStartsOrEnds(exonStarts, "exonStarts")
+    exonEnds <- .normargExonStartsOrEnds(exonEnds, "exonEnds")
     if (length(exonStarts) != length(exonEnds))
         stop("'exonStarts', 'exonEnds' must have the same length")
     .Call("transcript_widths", exonStarts, exonEnds, PACKAGE="Biostrings")
@@ -45,18 +53,8 @@ extractTranscripts <- function(x, exonStarts=list(), exonEnds=list(),
         exonEnds <- end(exonStarts)
         exonStarts <- start(exonStarts)
     }
-    if (!is.list(exonStarts)) {
-        if (!is(exonStarts, "IntegerList"))
-            stop("'exonStarts' must be a list of integer vectors ",
-                 "or an IntegerList object")
-        exonStarts <- as.list(exonStarts)
-    }
-    if (!is.list(exonEnds)) {
-        if (!is(exonEnds, "IntegerList"))
-            stop("'exonEnds' must be a list of integer vectors ",
-                 "or an IntegerList object")
-        exonEnds <- as.list(exonEnds)
-    }
+    exonStarts <- .normargExonStartsOrEnds(exonStarts, "exonStarts")
+    exonEnds <- .normargExonStartsOrEnds(exonEnds, "exonEnds")
     if (is.factor(strand))
         strand <- as.vector(strand)
     if (!is.character(strand))
@@ -89,18 +87,8 @@ transcriptLocs2refLocs <- function(tlocs, exonStarts=list(), exonEnds=list(),
         exonEnds <- end(exonStarts)
         exonStarts <- start(exonStarts)
     }
-    if (!is.list(exonStarts)) {
-        if (!is(exonStarts, "IntegerList"))
-            stop("'exonStarts' must be a list of integer vectors ",
-                 "or an IntegerList object")
-        exonStarts <- as.list(exonStarts)
-    }
-    if (!is.list(exonEnds)) {
-        if (!is(exonEnds, "IntegerList"))
-            stop("'exonEnds' must be a list of integer vectors ",
-                 "or an IntegerList object")
-        exonEnds <- as.list(exonEnds)
-    }
+    exonStarts <- .normargExonStartsOrEnds(exonStarts, "exonStarts")
+    exonEnds <- .normargExonStartsOrEnds(exonEnds, "exonEnds")
     if (is.factor(strand))
         strand <- as.vector(strand)
     if (!is.character(strand))
