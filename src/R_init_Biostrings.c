@@ -70,6 +70,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* extract_transcripts.c */
 	CALLMETHOD_DEF(extract_transcripts, 6),
+	CALLMETHOD_DEF(tlocs2rlocs, 5),
 
 /* replace_letter_at.c */
 	CALLMETHOD_DEF(XString_replace_letter_at, 6),

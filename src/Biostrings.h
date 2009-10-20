@@ -367,6 +367,14 @@ SEXP extract_transcripts(
 	SEXP lkup
 );
 
+SEXP tlocs2rlocs(
+	SEXP tlocs,
+	SEXP exonStarts,
+	SEXP exonEnds,
+	SEXP strand,
+	SEXP reorder_exons_on_minus_strand
+);
+
 
 /* replace_letter_at.c */
 
