@@ -62,8 +62,8 @@
   to treat the whole sequence \code{x} as if it was a single exon.
   See \code{\link{extractTranscripts}} for a more powerful version
   that allows the user to extract a set of transcripts specified by
-  the starts and ends of their exons as well as the strand the transcript
-  is coming from.
+  the starts and ends of their exons as well as the strand from
+  which the transcript is coming.
   
   \code{cDNA} reproduces the process of synthesizing complementary DNA
   from a mature mRNA template.
