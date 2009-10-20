@@ -43,15 +43,22 @@ static int get_transcript_width(SEXP starts, SEXP ends, int ref_length)
 	for (j = 0; j < nexons; j++) {
 		start = INTEGER(starts)[j];
 		end = INTEGER(ends)[j];
+		if (start == NA_INTEGER || end == NA_INTEGER) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+			  "'exonStarts' and/or 'exonEnds' contain NAs'");
+			return -1;
+		}
 		if (ref_length != -1) {
 			if (start < 1 || start > ref_length + 1) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
-				  "'exonStarts' contains \"out of limits\" values");
+				  "'exonStarts' contains \"out of limits\" "
+				  "values");
 				return -1;
 			}
 			if (end < 0 || end > ref_length) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
-				  "'exonEnds' contains \"out of limits\" values");
+				  "'exonEnds' contains \"out of limits\" "
+				  "values");
 				return -1;
 			}
 		}
@@ -67,27 +74,26 @@ static int get_transcript_width(SEXP starts, SEXP ends, int ref_length)
 	return transcript_width;
 }
 
-static SEXP make_ans_width(const cachedCharSeq *X,
-		SEXP exonStarts, SEXP exonEnds)
+static SEXP mk_transcript_widths(SEXP exonStarts, SEXP exonEnds, int ref_length)
 {
 	int ntranscripts, i, transcript_width;
-	SEXP ans_width, starts, ends;
+	SEXP ans, starts, ends;
 
 	ntranscripts = LENGTH(exonStarts);
-	PROTECT(ans_width = NEW_INTEGER(ntranscripts));
+	PROTECT(ans = NEW_INTEGER(ntranscripts));
 	for (i = 0; i < ntranscripts; i++) {
 		starts = VECTOR_ELT(exonStarts, i);
 		ends = VECTOR_ELT(exonEnds, i);
 		transcript_width = get_transcript_width(starts, ends,
-					X->length);
+					ref_length);
 		if (transcript_width == -1) {
 			UNPROTECT(1);
 			error("%s", errmsg_buf);
 		}
-		INTEGER(ans_width)[i] = transcript_width;
+		INTEGER(ans)[i] = transcript_width;
 	}
 	UNPROTECT(1);
-	return ans_width;
+	return ans;
 }
 
 static int copy_exon(char * out, const cachedCharSeq *in,
@@ -167,9 +173,16 @@ static int tloc2rloc(int tloc,
 }
 
 
-/*
- * --- .Call ENTRY POINT ---
- */
+
+/****************************************************************************
+ *                        --- .Call ENTRY POINTS ---                        *
+ ****************************************************************************/
+
+SEXP transcript_widths(SEXP exonStarts, SEXP exonEnds)
+{
+	return mk_transcript_widths(exonStarts, exonEnds, -1);
+}
+
 SEXP extract_transcripts(SEXP x, SEXP exonStarts, SEXP exonEnds, SEXP strand,
 		SEXP reorder_exons_on_minus_strand, SEXP lkup)
 {
@@ -181,7 +194,7 @@ SEXP extract_transcripts(SEXP x, SEXP exonStarts, SEXP exonEnds, SEXP strand,
 
 	X = cache_XRaw(x);
 	reorder_minus_exons = LOGICAL(reorder_exons_on_minus_strand)[0];
-	PROTECT(ans_width = make_ans_width(&X, exonStarts, exonEnds));
+	PROTECT(ans_width = mk_transcript_widths(exonStarts, exonEnds, X.length));
 	PROTECT(ans = alloc_XRawList("DNAStringSet", "DNAString", ans_width));
 	cached_ans = cache_XVectorList(ans);
 	ans_length = get_cachedXVectorList_length(&cached_ans);
@@ -203,9 +216,6 @@ SEXP extract_transcripts(SEXP x, SEXP exonStarts, SEXP exonEnds, SEXP strand,
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
 SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 		SEXP strand, SEXP reorder_exons_on_minus_strand)
 {
@@ -237,6 +247,8 @@ SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 		}
 		for (j = 0; j < nlocs; j++) {
 			tloc = INTEGER(ans_elt)[j];
+			if (tloc == NA_INTEGER)
+				continue;
 			if (tloc < 1 || tloc > transcript_width) {
 				UNPROTECT(1);
 				error("'tlocs[[%d]]' contains \"out of limits\" "

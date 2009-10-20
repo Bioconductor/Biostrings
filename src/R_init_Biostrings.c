@@ -69,6 +69,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_consensus_matrix, 5),
 
 /* extract_transcripts.c */
+	CALLMETHOD_DEF(transcript_widths, 2),
 	CALLMETHOD_DEF(extract_transcripts, 6),
 	CALLMETHOD_DEF(tlocs2rlocs, 5),
 

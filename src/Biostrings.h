@@ -358,6 +358,11 @@ void gtestsim(
 
 /* extract_transcripts.c */
 
+SEXP transcript_widths(
+	SEXP exonStarts,
+	SEXP exonEnds
+);
+
 SEXP extract_transcripts(
 	SEXP x,
 	SEXP exonStarts,
