@@ -216,7 +216,7 @@ PWMscore <- function(pwm, subject, start=1)
 }
 
 setGeneric("matchPWM", signature="subject",
-    function(pwm, subject, min.score="80%")
+    function(pwm, subject, min.score="80%", ...)
         standardGeneric("matchPWM")
 )
 
@@ -256,7 +256,7 @@ setMethod("matchPWM", "MaskedDNAString",
 ###
 
 setGeneric("countPWM", signature="subject",
-    function(pwm, subject, min.score="80%")
+    function(pwm, subject, min.score="80%", ...)
         standardGeneric("countPWM")
 )
 

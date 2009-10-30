@@ -44,8 +44,8 @@
   PWM(x, type = c("log2probratio", "prob"),
       prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
 
-  matchPWM(pwm, subject, min.score="80\%")
-  countPWM(pwm, subject, min.score="80\%")
+  matchPWM(pwm, subject, min.score="80\%", ...)
+  countPWM(pwm, subject, min.score="80\%", ...)
   PWMscoreStartingAt(pwm, subject, starting.at=1)
 
   ## Utility functions for basic manipulation of the Position Weight Matrix
@@ -95,8 +95,7 @@
     Position Weight Matrix relatively to the subject.
   }
   \item{...}{
-    Additional arguments are currently ignored by the \code{reverseComplement}
-    method for matrix objects.
+    Additional arguments for methods.
   }
 }
 

@@ -409,7 +409,7 @@ setMethod("countPattern", "MaskedXString",
 
 setGeneric("vmatchPattern", signature="subject",
     function(pattern, subject, algorithm="auto",
-             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE, ...)
         standardGeneric("vmatchPattern")
 )
 
@@ -450,7 +450,7 @@ setMethod("vmatchPattern", "MaskedXString",
 
 setGeneric("vcountPattern", signature="subject",
     function(pattern, subject, algorithm="auto",
-             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE, ...)
         standardGeneric("vcountPattern")
 )
 

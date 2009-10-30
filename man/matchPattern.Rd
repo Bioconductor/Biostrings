@@ -43,9 +43,11 @@
   countPattern(pattern, subject, algorithm="auto",
                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
   vmatchPattern(pattern, subject, algorithm="auto",
-                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+                ...)
   vcountPattern(pattern, subject, algorithm="auto",
-                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+                ...)
 }
 
 \arguments{
@@ -92,6 +94,9 @@
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
     (see \code{?`\link{lowlevel-matching}`} for the details).
+  }
+  \item{...}{
+    Additional arguments for methods.
   }
 }
 
