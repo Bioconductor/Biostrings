@@ -2,12 +2,6 @@
 ### extractTranscripts() & related functions
 ### -------------------------------------------------------------------------
 
-.characterVectorToListOfIntegerVector <- function(x)
-{
-    tmp <- strsplit(x, ",", fixed=TRUE)
-    lapply(tmp, as.integer)
-}
-
 .normargExonStartsOrEnds <- function(exonStarts, argname)
 {
     if (is.list(exonStarts))
@@ -15,7 +9,7 @@
     if (is(exonStarts, "IntegerList"))
         return(as.list(exonStarts))
     if (is.character(exonStarts))
-        return(.characterVectorToListOfIntegerVector(exonStarts))
+        return(strsplitAsListOfIntegerVectors(exonStarts))
     stop("'", argname, "' must be a list of integer vectors, ",
          "an IntegerList object,\n  or a character vector where ",
          "each element is a comma-separated list of\n  integers")
