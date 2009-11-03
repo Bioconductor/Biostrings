@@ -29,7 +29,7 @@ SEXP debug_match_pattern_indels()
 	Rprintf("Debug mode turned %s in file %s\n",
 		debug ? "on" : "off", __FILE__);
 	if (debug == 1) {
-		_init_match_reporting(mkString("DEVNULL"));
+		_init_match_reporting("DEVNULL");
 		test_match_pattern_indels(p, s, 0, "30:34");
 		test_match_pattern_indels(p, s, 1, "1:4, 14:18, 30:34");
 		test_match_pattern_indels(p, s, 2, "1:4, 8:10, 14:18, 21:23, 30:34");

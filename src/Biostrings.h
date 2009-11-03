@@ -450,7 +450,7 @@ void _set_env_from_IntAEAE(
 
 SEXP debug_match_reporting();
 
-void _init_match_reporting(SEXP mode);
+void _init_match_reporting(const char *mode);
 
 void _drop_reported_matches();
 
@@ -555,7 +555,8 @@ SEXP debug_match_pattern_boyermoore();
 int _match_pattern_boyermoore(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
-	int nfirstmatches
+	int nfirstmatches,
+	int walk_backward
 );
 
 

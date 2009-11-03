@@ -122,8 +122,8 @@ DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
  */
 
 DEFINE_NOVALUE_CCALLABLE_STUB(init_match_reporting,
-	(SEXP mode),
-	(     mode)
+	(const char *mode),
+	(            mode)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(drop_reported_matches,
@@ -177,7 +177,7 @@ DEFINE_CCALLABLE_STUB(cachedIRanges, get_cachedMIndex_elt,
  */
 
 DEFINE_CCALLABLE_STUB(int, match_pattern_boyermoore,
-	(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches),
-	(                     P,                      S,     nfirstmatches)
+	(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches, int walk_backward),
+	(                     P,                      S,     nfirstmatches,     walk_backward)
 )
 

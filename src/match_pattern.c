@@ -110,7 +110,7 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
 	else if (strcmp(algo, "naive-exact") == 0)
 		match_naive_exact(P, S);
 	else if (strcmp(algo, "boyer-moore") == 0)
-		_match_pattern_boyermoore(P, S, -1);
+		_match_pattern_boyermoore(P, S, -1, 0);
 	else if (strcmp(algo, "shift-or") == 0)
 		_match_pattern_shiftor(P, S, max_nmis, fixedP, fixedS);
 	else if (strcmp(algo, "indels") == 0)
@@ -149,7 +149,7 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	S = cache_XRaw(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
 	match_pattern(&P, &S, algorithm,
 		max_mismatch, min_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
@@ -173,7 +173,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	S = cache_XRaw(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -208,7 +208,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 	S = _cache_XStringSet(subject);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
 	S_length = _get_XStringSet_length(subject);
 	if (is_count_only)
 		PROTECT(ans = NEW_INTEGER(S_length));

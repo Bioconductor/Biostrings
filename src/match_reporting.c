@@ -36,19 +36,16 @@ static int match_count;
 static RangeAE matchbuf;
 static int match_shift;
 
-void _init_match_reporting(SEXP mode)
+void _init_match_reporting(const char *mode)
 {
-	const char *mode0;
-
-	mode0 = CHAR(STRING_ELT(mode, 0));
-	if (strcmp(mode0, "DEVNULL") == 0)
+	if (strcmp(mode, "DEVNULL") == 0)
 		mrmode = DEVNULL;
-	else if (strcmp(mode0, "COUNTONLY") == 0)
+	else if (strcmp(mode, "COUNTONLY") == 0)
 		mrmode = COUNTONLY;
-	else if (strcmp(mode0, "ASIRANGES") == 0)
+	else if (strcmp(mode, "ASIRANGES") == 0)
 		mrmode = ASIRANGES;
 	else
-		error("\"%s\": unsupported match reporting mode", mode0);
+		error("\"%s\": unsupported match reporting mode", mode);
 	match_count = match_shift = 0;
 	matchbuf = new_RangeAE(0, 0);
 	return;

@@ -423,7 +423,7 @@ SEXP match_BOC2_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	buf = R_ExternalPtrTag(buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
 	BOC2_exact_search(
 		(char *) pat, pat_length,
 		(char *) subj, subj_length,

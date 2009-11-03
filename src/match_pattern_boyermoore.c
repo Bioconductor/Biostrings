@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 /* I've turned off the "MWshift feature". Doesn't seem to give very good
- * results :-( To turned it on, set MWSHIFT_NPMAX to a positive integer
+ * results :-( To turn it on, set MWSHIFT_NPMAX to a positive integer
  * (typically 128, 256 or 512, doesn't have to be a power of 2).
  * The original idea of this feature was to try to boost the boyermoore()
  * function when the pattern is small.
@@ -369,7 +369,8 @@ static void init_MWshift_table()
 }
 
 /* Return 1-based end of last match or -1 if no match */
-int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches)
+int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S,
+		int nfirstmatches, int walk_backward)
 {
 	int nmatches, last_match_end, n, i1, i2, j1, j2, shift, shift1, i, j;
 	char Prmc, c; /* Prmc is P right-most char */

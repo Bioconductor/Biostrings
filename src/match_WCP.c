@@ -225,7 +225,7 @@ SEXP XString_match_WCP(SEXP wcp, SEXP subject, SEXP min_score, SEXP count_only)
 	match_buffer = (int *) R_alloc((long) max_nkey, sizeof(int));
 
 	S = cache_XRaw(subject);
-	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
 	for (n1 = 0, n2 = key_total_nchar; n2 <= S.length; n1++, n2++) {
 		if (compute_wcp_score(&key_seqs_list, key_scores_list,
 				              key_order_list,
@@ -234,9 +234,6 @@ SEXP XString_match_WCP(SEXP wcp, SEXP subject, SEXP min_score, SEXP count_only)
                               &S_buffer, S.seq, S.length, n1) >= minscore)
 			_report_match(n1 + 1, key_total_nchar);
 	}
-	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
-	// but you don't have to PROTECT it here since you are returning it
-	// right away.
 	return _reported_matches_asSEXP();
 }
 
@@ -314,7 +311,7 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 
 	S = cache_XRaw(subject);
 	nviews = LENGTH(views_start);
-	_init_match_reporting(is_count_only ? mkString("COUNTONLY") : mkString("ASIRANGES"));
+	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
 	     i++, view_start++, view_width++)
@@ -335,8 +332,6 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 				_report_match(n1 + 1, key_total_nchar);
 		}
 	}
-	// The SEXP returned by reported_matches_asSEXP() is UNPROTECTED
-	// but you don't have to PROTECT it here since you are returning it
-	// right away.
 	return _reported_matches_asSEXP();
 }
+
