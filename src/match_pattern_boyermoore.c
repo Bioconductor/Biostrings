@@ -380,7 +380,7 @@ static void init_ppP_MWshift_table()
  */
 
 #define GET_S_LETTER(S, n, walk_backward) \
-	((walk_backward) ? (S)->seq[(n)] : (S)->seq[(S)->length - 1 - (n)])
+	((walk_backward) ? (S)->seq[(S)->length - 1 - (n)] : (S)->seq[(n)])
 
 #define ADJUST_MW(i, j, shift) \
 { \
@@ -396,7 +396,8 @@ static void init_ppP_MWshift_table()
 int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S,
 		int nfirstmatches, int walk_backward)
 {
-	int nmatches, last_match_end, n, i1, i2, j1, j2, shift, shift1, i, j;
+	int nmatches, last_match_end, n, i1, i2, j1, j2, shift, shift1,
+	    i, j, match_start;
 	char ppP_rmc, c; /* ppP_rmc is 'ppP.seq' right-most char */
 
 	if (P->length <= 0)
@@ -444,9 +445,15 @@ int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S,
 		if (j2 == ppP.seqlength) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
-				_report_match(i1 + 1, ppP.seqlength);
+				if (walk_backward) {
+					last_match_end = S->length - i1;
+					match_start = last_match_end - ppP.seqlength + 1;
+				} else {
+					match_start = i1 + 1;
+					last_match_end = i1 + ppP.seqlength;
+				}
+				_report_match(match_start, ppP.seqlength);
 				nmatches++;
-				last_match_end = i1 + ppP.seqlength;
 				if (nfirstmatches >= 0 && nmatches >= nfirstmatches)
 					break;
 				shift = ppP.shift0;
