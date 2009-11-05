@@ -33,53 +33,80 @@ SEXP debug_match_pattern_boyermoore()
 
 
 /****************************************************************************
- * P0buffer holds a copy of the current pattern P0.
- * We must always have P0buffer_nP <= P0buffer_length
+ * The 'ppP' (Preprocessed Pattern) struct holds a copy of the current
+ * pattern (eventually reverted if init_ppP_seq() was called with
+ * walk_backward = 1) + the results of some preprocessing operations on it.
+ * IMPORTANT: All members in 'ppP' that point to dynamically allocated
+ * memory must be *persistent* buffers so they must point to user-controlled
+ * memory (i.e. memory that is not reclaimed by R at the end of the .Call()
+ * call). Hence the use of malloc()/free() instead of Salloc() for memory
+ * allocation.
+ * Members of 'ppP' are:
+ *   buflength: the size of the buffer pointed by the 'seq' member, which, in
+ *              the current implemenation, is also the length of the longest
+ *              pattern seen so far (i.e. since the beginning of the current
+ *              R session);
+ *   seq: the letters of the current pattern (eventually in reverse order
+ *              if init_ppP_seq() was called with walk_backward = 1);
+ *   seqlength: the length of the current pattern (must be <= 'buflength');
+ *   LCP: see init_ppP_seq() below;
+ *   j0, shift0: see "j0/shift0" section below;
+ *   VSGSshift_table: see "The Very Strong Good Suffix shifts" section below;
+ *   MWshift_table: see "The Matching Window shifts" section below.
  */
-static char *P0buffer = NULL;
-static int P0buffer_length = 0, P0buffer_nP = 0;
+static struct {
+	int buflength;
+	char *seq;
+	int seqlength;
+	int LCP;
+	int j0, shift0;
+	int *VSGSshift_table;
+	int *MWshift_table;
+} ppP = {0, NULL, 0, -1, 0, 0, NULL, NULL};
 
-/* Status meaning:
- *     -1: init_P0buffer() has changed the value of P0buffer_length.
- *   >= 0: init_P0buffer() didn't change the value of P0buffer_length.
- *         The non-negative integer is the length of the longest common
- *         suffix between old and new P0 (<= min(nP,P0buffer_nP)).
+/* The 'LCP' member:
+ *     -1: init_ppP_seq() changed the value of ppP.buflength.
+ *   >= 0: init_ppP_seq() didn't change the value of ppP.buflength.
+ *         The non-negative integer is the length of the Longest Common
+ *         Prefix between old and new current pattern (LCP will always be <=
+ *         min(P->length, ppP.seqlength)).
  */
-static int P0buffer_init_status;
-
-static void init_P0buffer(const cachedCharSeq *P)
+static void init_ppP_seq(const cachedCharSeq *P, int walk_backward)
 {
-	int min_nP_nP0, j;
+	int LCP, j1, j2;
+	char c;
 
 	if (P->length == 0) { /* should never happen but safer anyway... */
-		P0buffer_init_status = 0;
+		ppP.LCP = 0;
 		return;
 	}
 	if (P->length > 20000)
 		error("pattern is too long");
-	if (P->length > P0buffer_length) {
-		/* We need more memory */
-		if (P0buffer != NULL)
-			free(P0buffer);
-		P0buffer_length = 0;
-		P0buffer = (char *) malloc(P->length * sizeof(char));
-		if (P0buffer == NULL)
-			error("can't allocate memory for P0buffer");
-		P0buffer_length = P->length;
-		P0buffer_init_status = -1;
+	if (P->length > ppP.buflength) {
+		/* We need to extend the size of 'ppP'. In that case, we
+		   don't need to compute the LCP and we set it to -1. */
+		if (ppP.seq != NULL)
+			free(ppP.seq);
+		ppP.buflength = 0;
+		ppP.seq = (char *) malloc(P->length * sizeof(char));
+		if (ppP.seq == NULL)
+			error("can't allocate memory for ppP.seq");
+		ppP.buflength = P->length;
+		LCP = -1;
 	} else {
-		/* We have enough memory */
-		if (P->length < P0buffer_nP)
-			min_nP_nP0 = P->length;
-		else
-			min_nP_nP0 = P0buffer_nP;
-		for (j = 0; j < min_nP_nP0; j++)
-			if (P->seq[j] != P0buffer[j])
-				break;
-		P0buffer_init_status = j;
+		/* We don't need to extend the size of 'ppP'. In that case,
+		   we compute the LCP. */
+		LCP = 0;
 	}
-	memcpy(P0buffer, P->seq, P->length * sizeof(char));
-	P0buffer_nP = P->length;
+	for (j1 = 0, j2 = P->length - 1; j1 < P->length; j1++, j2--) {
+		c = P->seq[walk_backward ? j2 : j1];
+		if (LCP != -1 && j1 < ppP.seqlength && c == ppP.seq[j1])
+			LCP++;
+		else
+			ppP.seq[j1] = c;
+	}
+	ppP.seqlength = P->length;
+	ppP.LCP = LCP;
 	return;
 }
 
@@ -112,26 +139,24 @@ static void init_P0buffer(const cachedCharSeq *P)
  *   (e) VSGSshift(P[0], 0) = shift0
  */
 
-static int P0buffer_j0, P0buffer_shift0;
-
-static void init_j0shift0()
+static void init_ppP_j0shift0()
 {
 	int j0, shift0, length, j;
 
 	length = 1;
-	j0 = P0buffer_nP - 1;
+	j0 = ppP.seqlength - 1;
 	for (j = j0 - 1; j >= 1; j--) {
-		if (memcmp(P0buffer + j, P0buffer + j0, length) == 0) {
+		if (memcmp(ppP.seq + j, ppP.seq + j0, length) == 0) {
 			length++;
 			j0--;
 		}
 	}
-	for (shift0 = j0 - j; shift0 < P0buffer_nP; shift0++, length--) {
-		if (memcmp(P0buffer, P0buffer + shift0, length) == 0)
+	for (shift0 = j0 - j; shift0 < ppP.seqlength; shift0++, length--) {
+		if (memcmp(ppP.seq, ppP.seq + shift0, length) == 0)
 			break;
 	}
-	P0buffer_j0 = j0;
-	P0buffer_shift0 = shift0;
+	ppP.j0 = j0;
+	ppP.shift0 = shift0;
 	/*Rprintf("j0=%d shift0=%d\n", j0, shift0);*/
 }
 
@@ -139,75 +164,73 @@ static void init_j0shift0()
 /****************************************************************************
  * The Very Strong Good Suffix shifts
  * ==================================
- */
-
-/* Contains the "Very Strong Good Suffix shifts" for current pattern P0. */
-static int *VSGSshift_table = NULL;
-
-/* VSGSshift_table is a 256 x P0buffer_length matrix.
+ *
+ * ppP.VSGSshift_table is a 256 x ppP.buflength matrix.
  * Its layout is (only the values marked with an "x" will be potentially
  * used):
  *
  *           0 1 2 3 4 5 j
  *         0 x x x x - -
  *         1 x x x x - - 
- *         2 x x x x - -    P0buffer_nP = 4 <= P0buffer_length = 6
+ *         2 x x x x - -    ppP.seqlength = 4 <= ppP.buflength = 6
  *         .............
  *       256 x x x x - -
  *         c
  *
- * The "x" region is defined by 0 <= j < P0buffer_nP
+ * The "x" region is defined by 0 <= j < ppP.seqlength
  */
 
-#define VSGS_SHIFT(c, j) (VSGSshift_table[P0buffer_length * ((unsigned char) c) + j])
+#define VSGS_SHIFT(c, j) (ppP.VSGSshift_table[ppP.buflength * ((unsigned char) (c)) + (j)])
 
 static int get_VSGSshift(char c, int j)
 {
 	int shift, k, k1, k2, length;
+	const char *tmp;
 
-	if (j < P0buffer_j0)
-		return P0buffer_shift0;
+	if (j < ppP.j0)
+		return ppP.shift0;
 	shift = VSGS_SHIFT(c, j);
 	if (shift != 0)
 		return shift;
-	for (shift = 1; shift < P0buffer_nP; shift++) {
+	for (shift = 1; shift < ppP.seqlength; shift++) {
 		if (shift <= j) {
 			k = j - shift;
-			if (P0buffer[k] != c)
+			if (ppP.seq[k] != c)
 				continue;
 			k1 = k + 1;
 		} else {
 			k1 = 0;
 		}
-		k2 = P0buffer_nP - shift;
+		k2 = ppP.seqlength - shift;
 		if (k1 == k2)
 			break;
 		length = k2 - k1;
-		if (memcmp(P0buffer + k1, P0buffer + k1 + shift, length) == 0)
+		tmp = ppP.seq + k1;
+		if (memcmp(tmp, tmp + shift, length) == 0)
 			break;
 	}
-	/* shift is P0buffer_nP when the "for" loop is not interrupted by "break" */
+	/* shift is ppP.seqlength when the "for" loop is not interrupted by "break" */
 	/*Rprintf("VSGSshift(c=%c, j=%d) = %d\n", c, j, shift);*/
 	return VSGS_SHIFT(c, j) = shift;
 }
 
-static void init_VSGSshift_table()
+static void init_ppP_VSGSshift_table()
 {
 	int u, j;
 	char c;
 
-	if (P0buffer_init_status == -1 && VSGSshift_table != NULL) {
-		free(VSGSshift_table);
-		VSGSshift_table = NULL;
+	if (ppP.LCP == -1 && ppP.VSGSshift_table != NULL) {
+		free(ppP.VSGSshift_table);
+		ppP.VSGSshift_table = NULL;
 	}
-	if (P0buffer_length != 0 && VSGSshift_table == NULL) {
-		VSGSshift_table = (int *) malloc(256 * P0buffer_length *
-						sizeof(int));
-		if (VSGSshift_table == NULL)
-			error("can't allocate memory for VSGSshift_table");
+	if (ppP.buflength != 0 && ppP.VSGSshift_table == NULL) {
+		ppP.VSGSshift_table = (int *)
+			malloc(256 * ppP.buflength * sizeof(int));
+		if (ppP.VSGSshift_table == NULL)
+			error("can't allocate memory for ppP.VSGSshift_table");
 	}
 	for (u = 0; u < 256; u++) {
-		for (j = 0; j < P0buffer_nP; j++) {
+		for (j = 0; j < ppP.seqlength; j++) {
 			c = (char) u;
 			VSGS_SHIFT(c, j) = 0;
 		}
@@ -275,32 +298,29 @@ static void init_VSGSshift_table()
  * delay those evaluations until they are needed, and the fact is that, in
  * practise, very few of them are actually needed compared to the total
  * number of possible MWshift(j1, j2) values.
- */
-
-/* Contains the MWshift values for current pattern P0. */
-static int *MWshift_table = NULL;
-
-/* MWshift_table is a 2-dim array with nrow = ncol = P0buffer_length.
- * The layout of MWshift_table is (only the values marked with an "x" will
- * be potentially used):
+ *
+ * ppP.MWshift_table is a 2-dim array with nrow = ncol = ppP.buflength.
+ * The layout of ppP.MWshift_table is (only the values marked with an "x"
+ * will be potentially used):
  *
  *           1 2 3 4 5 6 j2
  *         0 x x x x - -
  *         1 - x x x - - 
- *         2 - - x x - -    P0buffer_nP = 4 <= P0buffer_length = 6
+ *         2 - - x x - -    ppP.seqlength = 4 <= ppP.buflength = 6
  *         3 - - - x - -
  *         4 - - - - - -
  *         5 - - - - - -
  *        j1
  *
- * The "x" region is defined by 0 <= j1 < j2 <= P0buffer_nP
+ * The "x" region is defined by 0 <= j1 < j2 <= ppP.seqlength
  */
 
-#define MWSHIFT(j1, j2) (MWshift_table[P0buffer_length * (j1) + (j2) - 1])
+#define MWSHIFT(j1, j2) (ppP.MWshift_table[ppP.buflength * (j1) + (j2) - 1])
 
 static int get_MWshift(int j1, int j2)
 {
 	int shift, k1, k2, length;
+	const char *tmp;
 
 	shift = MWSHIFT(j1, j2);
 	if (shift != 0)
@@ -309,30 +329,31 @@ static int get_MWshift(int j1, int j2)
 		if (shift < j1) k1 = j1 - shift; else k1 = 0;
 		k2 = j2 - shift;
 		length = k2 - k1;
-		if (memcmp(P0buffer + k1, P0buffer + k1 + shift, length) == 0)
+		tmp = ppP.seq + k1;
+		if (memcmp(tmp, tmp + shift, length) == 0)
 			break;
 	}
 	/* shift is j2 when the "for" loop is not interrupted by "break" */
 	return MWSHIFT(j1, j2) = shift;
 }
 
-static void init_MWshift_table()
+static void init_ppP_MWshift_table()
 {
 	int j1, j2 = 1;
 
-	if (P0buffer_init_status == -1 && MWshift_table != NULL) {
-		free(MWshift_table);
-		MWshift_table = NULL;
+	if (ppP.LCP == -1 && ppP.MWshift_table != NULL) {
+		free(ppP.MWshift_table);
+		ppP.MWshift_table = NULL;
 	}
-	if (P0buffer_length != 0 && MWshift_table == NULL) {
-		MWshift_table = (int *) malloc(P0buffer_length * P0buffer_length *
-						sizeof(int));
-		if (MWshift_table == NULL)
-			error("can't allocate memory for MWshift_table");
+	if (ppP.buflength != 0 && ppP.MWshift_table == NULL) {
+		ppP.MWshift_table = (int *)
+			malloc(ppP.buflength * ppP.buflength * sizeof(int));
+		if (ppP.MWshift_table == NULL)
+			error("can't allocate memory for ppP.MWshift_table");
 	}
-	if (P0buffer_init_status != -1)
-		j2 = P0buffer_init_status + 1;
-	for ( ; j2 <= P0buffer_nP; j2++) {
+	if (ppP.LCP != -1)
+		j2 = ppP.LCP + 1;
+	for ( ; j2 <= ppP.seqlength; j2++) {
 		for (j1 = 0; j1 < j2; j1++) {
 			MWSHIFT(j1, j2) = 0;
 		}
@@ -358,6 +379,9 @@ static void init_MWshift_table()
  * (j1, j2) in P and (i1, i2) in S).
  */
 
+#define GET_S_LETTER(S, n, walk_backward) \
+	((walk_backward) ? (S)->seq[(n)] : (S)->seq[(S)->length - 1 - (n)])
+
 #define ADJUST_MW(i, j, shift) \
 { \
 	if ((shift) <= (j)) \
@@ -373,32 +397,32 @@ int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S,
 		int nfirstmatches, int walk_backward)
 {
 	int nmatches, last_match_end, n, i1, i2, j1, j2, shift, shift1, i, j;
-	char Prmc, c; /* Prmc is P right-most char */
+	char ppP_rmc, c; /* ppP_rmc is 'ppP.seq' right-most char */
 
 	if (P->length <= 0)
 		error("empty pattern");
 	nmatches = 0;
 	last_match_end = -1;
-	init_P0buffer(P);
-	init_j0shift0();
-	init_VSGSshift_table();
-	if (P->length <= MWSHIFT_NPMAX)
-		init_MWshift_table();
-	n = P->length - 1;
-	Prmc = P->seq[n];
+	init_ppP_seq(P, walk_backward);
+	init_ppP_j0shift0();
+	init_ppP_VSGSshift_table();
+	if (ppP.seqlength <= MWSHIFT_NPMAX)
+		init_ppP_MWshift_table();
+	n = ppP.seqlength - 1;
+	ppP_rmc = ppP.seq[n];
 	j2 = 0;
 	while (n < S->length) {
 		if (j2 == 0) {
 			/* No Matching Window yet, we need to find one */
-			c = S->seq[n];
-			if (c != Prmc) {
-				shift = get_VSGSshift(c, P->length - 1);
+			c = GET_S_LETTER(S, n, walk_backward);
+			if (c != ppP_rmc) {
+				shift = get_VSGSshift(c, ppP.seqlength - 1);
 				n += shift;
 				continue;
 			}
 			i1 = n;
 			i2 = i1 + 1;
-			j2 = P->length;
+			j2 = ppP.seqlength;
 			j1 = j2 - 1;
 			/* Now we have a Matching Window (1-letter suffix) */
 		}
@@ -406,40 +430,40 @@ int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S,
 		if (j1 > 0) {
 			/* ... to the left */
 			for (i = i1-1, j = j1-1; j >= 0; i--, j--)
-				if ((c = S->seq[i]) != P->seq[j])
+				if ((c = GET_S_LETTER(S, i, walk_backward)) != ppP.seq[j])
 					break;
 			i1 = i + 1;
 			j1 = j + 1;
 		}
-		if (j2 < P->length) {
+		if (j2 < ppP.seqlength) {
 			/* ... to the right */
-			for ( ; j2 < P->length; i2++, j2++)
-				if (S->seq[i2] != P->seq[j2])
+			for ( ; j2 < ppP.seqlength; i2++, j2++)
+				if (GET_S_LETTER(S, i2, walk_backward) != ppP.seq[j2])
 					break;
 		}
-		if (j2 == P->length) { /* the Matching Window is a suffix */
+		if (j2 == ppP.seqlength) { /* the Matching Window is a suffix */
 			if (j1 == 0) {
 				/* we have a full match! */
-				_report_match(i1 + 1, P->length);
+				_report_match(i1 + 1, ppP.seqlength);
 				nmatches++;
-				last_match_end = i1 + P->length;
+				last_match_end = i1 + ppP.seqlength;
 				if (nfirstmatches >= 0 && nmatches >= nfirstmatches)
 					break;
-				shift = P0buffer_shift0;
+				shift = ppP.shift0;
 			} else {
 				shift = get_VSGSshift(c, j1 - 1);
 			}
 		} else {
 			shift = get_MWshift(j1, j2);
-			c = S->seq[n];
-			if (c != Prmc) {
-				shift1 = get_VSGSshift(c, P->length - 1);
+			c = GET_S_LETTER(S, n, walk_backward);
+			if (c != ppP_rmc) {
+				shift1 = get_VSGSshift(c, ppP.seqlength - 1);
 				if (shift1 > shift)
 					shift = shift1;
 			}
 		}
 		n += shift;
-		if (P->length <= MWSHIFT_NPMAX) {
+		if (ppP.seqlength <= MWSHIFT_NPMAX) {
 			ADJUST_MW(i1, j1, shift)
 			ADJUST_MW(i2, j2, shift)
 		} else {
