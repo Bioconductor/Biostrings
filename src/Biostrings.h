@@ -1031,6 +1031,8 @@ SEXP ACtree2_nodebuf_max_nblock();
 
 SEXP ACtree2_nodeextbuf_max_nblock();
 
+SEXP ACtree2_nnodes(SEXP pptb);
+
 SEXP ACtree2_print_nodes(SEXP pptb);
 
 SEXP ACtree2_summary(SEXP pptb);

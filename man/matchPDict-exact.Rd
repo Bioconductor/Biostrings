@@ -294,8 +294,7 @@
       ans_width <- width(dict[1])
       ans_pptime <- system.time(pdict <- PDict(dict))[["elapsed"]]
       pptb <- pdict@threeparts@pptb
-      ans_nnodes <- length(pptb@nodes) \%/\%
-                    Biostrings:::.ACtree.ints_per_acnode(pptb)
+      ans_nnodes <- nnodes(pptb)
       ans_nupatt <- sum(!duplicated(pdict))
       ans_matchtime <- system.time(
                          mi0 <- matchPDict(pdict, subject)
@@ -310,7 +309,7 @@
         totalcount=ans_totalcount
       )
     }
-    stats <- lapply(6:25,
+    stats <- lapply(8:25,
                  function(width)
                      getPDictStats(DNAStringSet(dict0, end=width), chr3R))
     stats <- data.frame(do.call(rbind, stats))

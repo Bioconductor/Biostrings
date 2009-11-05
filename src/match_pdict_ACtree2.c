@@ -665,6 +665,16 @@ static int get_ACnode_nlink(ACtree *tree, ACnode *node)
 	return nlink;
 }
 
+SEXP ACtree2_nnodes(SEXP pptb)
+{
+	ACtree tree;
+	ACnodeBuf *nodebuf;
+
+	tree = pptb_asACtree(pptb);
+	nodebuf = &(tree.nodebuf);
+	return ScalarInteger(get_ACnodeBuf_nelt(nodebuf));
+}
+
 SEXP ACtree2_print_nodes(SEXP pptb)
 {
 	ACtree tree;

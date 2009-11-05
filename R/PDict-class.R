@@ -30,6 +30,8 @@ setMethod("tb.width", "PreprocessedTB", function(x) width(x@tb)[1])
 setGeneric("dups", function(x) standardGeneric("dups"))
 setMethod("dups", "PreprocessedTB", function(x) x@dups)
 
+setGeneric("nnodes", function(x) standardGeneric("nnodes"))
+
 setMethod("initialize", "PreprocessedTB",
     function(.Object, tb, pp_exclude, high2low, base_codes)
     {
@@ -212,6 +214,10 @@ setClass("ACtree2",
         nodebuf_ptr="IntegerBAB",
         nodeextbuf_ptr="IntegerBAB"
     )
+)
+
+setMethod("nnodes", "ACtree2",
+    function(x) .Call("ACtree2_nnodes", x, PACKAGE="Biostrings")
 )
 
 setMethod("show", "ACtree2",

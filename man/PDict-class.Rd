@@ -12,6 +12,7 @@
 \alias{tb,PreprocessedTB-method}
 \alias{tb.width}
 \alias{tb.width,PreprocessedTB-method}
+\alias{nnodes}
 \alias{initialize,PreprocessedTB-method}
 \alias{duplicated,PreprocessedTB-method}
 
@@ -38,6 +39,7 @@
 \alias{ACtree2-class}
 \alias{ACtree2}
 
+\alias{nnodes,ACtree2-method}
 \alias{show,ACtree2-method}
 \alias{initialize,ACtree2-method}
 

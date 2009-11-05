@@ -273,7 +273,8 @@ export(
     palindromeRightArm, complementedPalindromeRightArm,
 
     ## PDict-class.R + matchPDict.R
-    tb, tb.width, patternFrequency, PDict,
+    tb, tb.width, nnodes,
+    patternFrequency, PDict,
     matchPDict, countPDict, whichPDict,
     vmatchPDict, vcountPDict, vwhichPDict,
  
@@ -302,7 +303,9 @@ exportMethods(
     palindromeLeftArm, complementedPalindromeLeftArm,
     palindromeRightArm, complementedPalindromeRightArm,
 
-    head, tb, tb.width, tail, patternFrequency, PDict,
+    tb, tb.width, nnodes,
+    head, tail,
+    patternFrequency, PDict,
     matchPDict, countPDict, whichPDict,
     vmatchPDict, vcountPDict, vwhichPDict
 )
