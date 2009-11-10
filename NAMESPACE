@@ -136,6 +136,7 @@ export(
     letter,
 
     ## letterFrequency.R:
+    letterFrequencyInSlidingView,
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,
     consensusMatrix, consensusString,
     mkAllStrings,
@@ -184,6 +185,7 @@ exportMethods(
     coerce, as.character, as.matrix, as.list, toString, toComplex,
     letter,
     substr, substring,
+    letterFrequencyInSlidingView,
     alphabetFrequency, hasOnlyBaseLetters, uniqueLetters,
     consensusMatrix, consensusString,
     oligonucleotideFrequency,

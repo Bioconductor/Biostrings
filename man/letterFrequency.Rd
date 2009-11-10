@@ -20,6 +20,14 @@
 \alias{hasOnlyBaseLetters,XStringViews-method}
 \alias{hasOnlyBaseLetters,MaskedXString-method}
 
+\alias{letterFrequencyInSlidingView}
+\alias{letterFrequencyInSlidingView,DNAString-method}
+\alias{letterFrequencyInSlidingView,RNAString-method}
+\alias{letterFrequencyInSlidingView,XString-method}
+\alias{letterFrequencyInSlidingView,XStringSet-method}
+\alias{letterFrequencyInSlidingView,XStringViews-method}
+\alias{letterFrequencyInSlidingView,MaskedXString-method}
+
 \alias{uniqueLetters}
 \alias{uniqueLetters,XString-method}
 \alias{uniqueLetters,XStringSet-method}
@@ -70,6 +78,8 @@ sequence, or the consensus matrix of a set of sequences}
   hasOnlyBaseLetters(x)
   uniqueLetters(x)
 
+  letterFrequencyInSlidingView(x, view.width, view.letters, view.or = "|")
+
   consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
 
   \S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
@@ -84,9 +94,13 @@ sequence, or the consensus matrix of a set of sequences}
   \item{x}{
     An \link{XString}, \link{XStringSet}, \link{XStringViews}
     or \link{MaskedXString} object for \code{alphabetFrequency}
-    and \code{uniqueLetters}.
+    or \code{uniqueLetters}.
 
     DNA or RNA input for \code{hasOnlyBaseLetters}.
+
+    An \link{XString}, \link{XStringSet}, \link{XStringViews},
+    \link{MaskedXString}, \link{DNAString}, or \link{RNAString}
+    for \code{letterFrequencyInSlidingView}.
 
     A character vector, or an \link{XStringSet} or \link{XStringViews}
     object for \code{consensusMatrix}.
@@ -102,6 +116,39 @@ sequence, or the consensus matrix of a set of sequences}
   \item{freq}{
     This argument is deprecated.
     Please use the \code{as.prob} argument instead.
+  }
+  \item{view.width}{
+    For letterFrequencyInSlidingView,
+    the constant (e.g. 35, 48, 1000) size of the "window" to slide
+    along \code{x}.
+    The specified \code{view.letters} are tabulated in each window of length
+    \code{view.width}.
+    The rows of the result (see value) correspond to the various windows.
+  }
+  \item{view.letters}{
+    For letterFrequencyInSlidingView,
+    a character vector (e.g. "C", "CG", \link{c}("C", "G")) giving the
+    letters to tabulate.
+    Except with \code{view.or=0}, multi-character elements of view.letters
+    ('nchar' > 1) are taken as groupings of letters into subsets, to
+    be tabulated in common ("or"'d), as if their alphabetFrequency's
+    were added (\link{Arithmetic}).
+    The columns of the result (see value) correspond to the individual
+    and sets of letters which are counted separately.
+    Unrelated (and, with some post-processing, related) counts may of
+    course be obtained in separate calls.
+  }
+  \item{view.or}{
+    For letterFrequencyInSlidingView,
+    the string (default \code{|}) to use as a separator in forming names
+    for the "common" columns, e.g. "C|G".
+    The otherwise exceptional value \code{0} (zero) disables or'ing and
+    is provided for convenience, allowing a single multi-character string
+    (or several strings) of letters that should be counted separately.
+    If some but not all letters are to be counted separately, they must
+    reside in separate elements of view.letters (with 'nchar' 1 unless they
+    are to be counted in common with other letters), and \code{view.or}
+    cannot be 0.
   }
   \item{ambiguityMap}{
     Either a single character to use when agreement is not reached or
@@ -160,20 +207,41 @@ sequence, or the consensus matrix of a set of sequences}
 }
 
 \details{
-  \code{alphabetFrequency} is a generic function defined in the
-  Biostrings package.
+  \code{alphabetFrequency} and \code{letterFrequencyInSlidingView} are
+  generic functions defined in the Biostrings package.
+
+  \code{letterFrequencyInSlidingView} is a much lighter alternative to
+  \code{alphabetFrequency}, without \code{collapse}, of the hypothetical
+  \link{XStringViews} object consisting of every interval of length
+  \code{view.width} on \code{x}.
+  If \code{x} is masked (\link{MaskedXString}), it is treated as the
+  \link{XStringSet} of its visible segments.
+  To include the masked regions (as well as the intervals of length
+  \code{view.width-1} which immediately precede them), use \code{unmasked(x)}
+  or \code{DNAString(x)} as the subject.
 }
 
 \value{
-  \code{alphabetFrequency} returns a numeric vector when \code{x} is an
+  \code{alphabetFrequency} returns an integer vector when \code{x} is an
   \link{XString} or \link{MaskedXString} object. When \code{x} is an
   \link{XStringSet} or \link{XStringViews} object, then it returns
-  a numeric matrix with \code{length(x)} rows where the
+  an integer matrix with \code{length(x)} rows where the
   \code{i}-th row contains the frequencies for \code{x[[i]]}.
   If \code{x} is a DNA or RNA input, then the returned vector is named
   with the letters in the alphabet. If the \code{baseOnly} argument is
   \code{TRUE}, then the returned vector has only 5 elements: 4 elements
   corresponding to the 4 nucleotides + the 'other' element.
+
+  \code{letterFrequencyInSlidingView} returns for each \link{XString}
+  element of \code{x}, say s of length L, an integer matrix with
+  \code{L-view.width+1} rows, the \code{i}-th of which holds the various
+  letter frequencies in the \code{i}-th "window along s", i.e.
+  \code{substring(s, i, i+view.width-1)}.
+  If \code{x} is an \link{XStringSet}, the return value is simply
+  \code{lapply(x, letterFrequencyInSlidingView)}.
+  Note that the various matrix value objects in this case are neither
+  \link{rbind}'d nor added (\link{Arithmetic}), as they would be with
+  \code{alphabetFrequency}.
 
   \code{hasOnlyBaseLetters} returns \code{TRUE} or \code{FALSE} indicating
   whether or not \code{x} contains only base letters (i.e. As, Cs, Gs and Ts
@@ -189,7 +257,7 @@ sequence, or the consensus matrix of a set of sequences}
   A standard character string for \code{consensusString}.
 }
 
-\author{H. Pages and P. Aboyoun}
+\author{H. Pages and P. Aboyoun; H. Jaffee for letterFrequencyInSlidingView}
 
 \seealso{
   \code{\link{alphabet}},
@@ -212,6 +280,7 @@ sequence, or the consensus matrix of a set of sequences}
 
   alphabetFrequency(yeast1)
   alphabetFrequency(yeast1, baseOnly=TRUE)
+
   hasOnlyBaseLetters(yeast1)
   uniqueLetters(yeast1)
 
@@ -220,6 +289,19 @@ sequence, or the consensus matrix of a set of sequences}
   probes <- DNAStringSet(drosophila2probe)
   alphabetFrequency(probes[1:50], baseOnly=TRUE)
   alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
+
+  ## ---------------------------------------------------------------------
+  ## A2. BASIC letterFrequencyInSlidingView() EXAMPLES
+  ## ---------------------------------------------------------------------
+  ## a letterFrequencyInSlidingView() example
+  ## yeast1:
+  ## 230208-letter "DNAString" instance
+  ## seq: CCACACCACACCCACACACCCACACACCAC...TGGGTGTGGTGTGGGTGTGGTGTGTGTGGG
+  one_column <- letterFrequencyInSlidingView(yeast1, 48, "CG")
+  str(one_column)
+  two_columns <- letterFrequencyInSlidingView(yeast1, 48, "CG", view.or=0)
+  str(two_columns)
+  identical(as.vector(one_column), as.integer(rowSums(two_columns)))
 
   ## ---------------------------------------------------------------------
   ## B. consensus*() EXAMPLES
