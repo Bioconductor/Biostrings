@@ -20,19 +20,17 @@
 \alias{hasOnlyBaseLetters,XStringViews-method}
 \alias{hasOnlyBaseLetters,MaskedXString-method}
 
-\alias{letterFrequencyInSlidingView}
-\alias{letterFrequencyInSlidingView,DNAString-method}
-\alias{letterFrequencyInSlidingView,RNAString-method}
-\alias{letterFrequencyInSlidingView,XString-method}
-\alias{letterFrequencyInSlidingView,XStringSet-method}
-\alias{letterFrequencyInSlidingView,XStringViews-method}
-\alias{letterFrequencyInSlidingView,MaskedXString-method}
-
 \alias{uniqueLetters}
 \alias{uniqueLetters,XString-method}
 \alias{uniqueLetters,XStringSet-method}
 \alias{uniqueLetters,XStringViews-method}
 \alias{uniqueLetters,MaskedXString-method}
+
+\alias{letterFrequencyInSlidingView}
+\alias{letterFrequencyInSlidingView,XString-method}
+%\alias{letterFrequencyInSlidingView,XStringSet-method}
+%\alias{letterFrequencyInSlidingView,XStringViews-method}
+%\alias{letterFrequencyInSlidingView,MaskedXString-method}
 
 \alias{consensusMatrix}
 \alias{consensusMatrix,character-method}
@@ -78,7 +76,7 @@ sequence, or the consensus matrix of a set of sequences}
   hasOnlyBaseLetters(x)
   uniqueLetters(x)
 
-  letterFrequencyInSlidingView(x, view.width, view.letters, view.or = "|")
+  letterFrequencyInSlidingView(x, view.width, letters, OR = "|")
 
   consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
 
@@ -98,9 +96,7 @@ sequence, or the consensus matrix of a set of sequences}
 
     DNA or RNA input for \code{hasOnlyBaseLetters}.
 
-    An \link{XString}, \link{XStringSet}, \link{XStringViews},
-    \link{MaskedXString}, \link{DNAString}, or \link{RNAString}
-    for \code{letterFrequencyInSlidingView}.
+    An \link{XString} object for \code{letterFrequencyInSlidingView}.
 
     A character vector, or an \link{XStringSet} or \link{XStringViews}
     object for \code{consensusMatrix}.
@@ -121,15 +117,15 @@ sequence, or the consensus matrix of a set of sequences}
     For letterFrequencyInSlidingView,
     the constant (e.g. 35, 48, 1000) size of the "window" to slide
     along \code{x}.
-    The specified \code{view.letters} are tabulated in each window of length
+    The specified \code{letters} are tabulated in each window of length
     \code{view.width}.
     The rows of the result (see value) correspond to the various windows.
   }
-  \item{view.letters}{
+  \item{letters}{
     For letterFrequencyInSlidingView,
     a character vector (e.g. "C", "CG", \link{c}("C", "G")) giving the
     letters to tabulate.
-    Except with \code{view.or=0}, multi-character elements of view.letters
+    Except with \code{OR=0}, multi-character elements of letters
     ('nchar' > 1) are taken as groupings of letters into subsets, to
     be tabulated in common ("or"'d), as if their alphabetFrequency's
     were added (\link{Arithmetic}).
@@ -138,7 +134,7 @@ sequence, or the consensus matrix of a set of sequences}
     Unrelated (and, with some post-processing, related) counts may of
     course be obtained in separate calls.
   }
-  \item{view.or}{
+  \item{OR}{
     For letterFrequencyInSlidingView,
     the string (default \code{|}) to use as a separator in forming names
     for the "common" columns, e.g. "C|G".
@@ -146,8 +142,8 @@ sequence, or the consensus matrix of a set of sequences}
     is provided for convenience, allowing a single multi-character string
     (or several strings) of letters that should be counted separately.
     If some but not all letters are to be counted separately, they must
-    reside in separate elements of view.letters (with 'nchar' 1 unless they
-    are to be counted in common with other letters), and \code{view.or}
+    reside in separate elements of letters (with 'nchar' 1 unless they
+    are to be counted in common with other letters), and \code{OR}
     cannot be 0.
   }
   \item{ambiguityMap}{
@@ -291,20 +287,22 @@ sequence, or the consensus matrix of a set of sequences}
   alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
 
   ## ---------------------------------------------------------------------
-  ## A2. BASIC letterFrequencyInSlidingView() EXAMPLES
+  ## B. A letterFrequencyInSlidingView() EXAMPLE
   ## ---------------------------------------------------------------------
-  ## a letterFrequencyInSlidingView() example
-  ## yeast1:
-  ## 230208-letter "DNAString" instance
-  ## seq: CCACACCACACCCACACACCCACACACCAC...TGGGTGTGGTGTGGGTGTGGTGTGTGTGGG
-  one_column <- letterFrequencyInSlidingView(yeast1, 48, "CG")
-  str(one_column)
-  two_columns <- letterFrequencyInSlidingView(yeast1, 48, "CG", view.or=0)
-  str(two_columns)
-  identical(as.vector(one_column), as.integer(rowSums(two_columns)))
+  x <- yeast1
+  view.width <- 48
+  letters <- c("A", "CG")
+  two_columns <- letterFrequencyInSlidingView(x, view.width, letters)
+  head(two_columns)
+  tail(two_columns)
+  three_columns <- letterFrequencyInSlidingView(x, view.width, letters, OR=0)
+  head(three_columns)
+  tail(three_columns)
+  stopifnot(identical(two_columns[ ,"C|G"],
+                      three_columns[ ,"C"] + three_columns[ ,"G"]))
 
   ## ---------------------------------------------------------------------
-  ## B. consensus*() EXAMPLES
+  ## C. consensus*() EXAMPLES
   ## ---------------------------------------------------------------------
   ## Read in ORF data:
   file <- system.file("extdata", "someORF.fa", package="Biostrings")

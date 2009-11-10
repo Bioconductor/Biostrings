@@ -301,9 +301,9 @@ SEXP XStringSet_letter_frequency(
 
 SEXP XString_letterFrequencyInSlidingView(
 	SEXP x,
-	SEXP K,
-	SEXP codes,
-	SEXP columns
+	SEXP view_width,
+	SEXP single_codes,
+	SEXP colmap
 );
 
 SEXP XString_oligo_frequency(

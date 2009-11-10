@@ -74,57 +74,54 @@ static void update_letter_freqs(int *row, int nrow, const cachedCharSeq *X, SEXP
 	return;
 }
 
-// HJ
-// This function has two modes.  On the 1st call (old=-1), we test k letters starting
-// at c, returning the first in the form of its offset.  On subsequent calls, we copy
-// all the results from the last call, correct for the letter that has dropped off,
-// compute (and return) the offset for the letter at c, and test the letter at c+k-1.
-static int letterFrequencyInSlidingView(int *row, const int nrow, const char *c,
-	const int old, const int ncol, const int k)
+/* Author: HJ
+ * This function has two modes.  On the 1st call (old=-1), we test k letters
+ * starting at c, returning the first in the form of its offset.  On subsequent
+ * calls, we copy all the results from the last call, correct for the letter
+ * that has dropped off, compute (and return) the offset for the letter at c,
+ * and test the letter at c+k-1.
+ */
+static int letter_freq_in_sliding_view(int *row, const int nrow, const char *c,
+		const int old, const int ncol, const int k)
 {
-        int i, j, J, offset, rtn;
+	int i, j, J, offset, rtn;
 
 	if (old == -1)
-            // initialize 1st row of results
-            for (j = 0; j < ncol; j++)
-                row[nrow * j] = 0;
+		// initialize 1st row of results
+		for (j = J = 0; j < ncol; j++, J += nrow)
+			row[J] = 0;
 	else
-            // copy results for the last k-mer,
-	    // to be corrected (twice) below
-            for (j = 0; j < ncol; j++) {
-                J = nrow * j;
-                row[J] = (row-1)[J];
-            }
+		// copy results for the last k-mer,
+		// to be corrected (twice) below
+		for (j = J = 0; j < ncol; j++, J += nrow)
+			row[J] = (row - 1)[J];
 
-        // look up offset for the first letter and set return
-        offset = byte2offset[(unsigned char) *c];
-        rtn = offset;
+	// look up offset for the first letter and set return
+	offset = byte2offset[(unsigned char) *c];
+	rtn = offset;
 
-        // on the 1st call, set count for this offset
-        // and prepare to test the next k-1 letters
-        if (old == -1) {
-                if (offset != NA_INTEGER)
-                	row[offset * nrow] = 1;
-                i = 1;
-                c++;
-        }
-        else {
-        	// fix count for the first letter of the last k-mer,
-                offset = old;
-                if (offset != NA_INTEGER)
-                	row[offset * nrow]--;
-        	// set up for the last letter of the current one
-                i = k - 1;
-                c += i;
-        }
-
-        for ( ; i < k; i++, c++) {
-        	offset = byte2offset[(unsigned char) *c];
-                if (offset != NA_INTEGER)
-                	row[offset * nrow]++;
-        }
-
-        return rtn;
+	// on the 1st call, set count for this offset
+	// and prepare to test the next k-1 letters
+	if (old == -1) {
+		if (offset != NA_INTEGER)
+			row[offset * nrow] = 1;
+		i = 1;
+		c++;
+	} else {
+		// fix count for the first letter of the last k-mer,
+		offset = old;
+		if (offset != NA_INTEGER)
+			row[offset * nrow]--;
+		// set up for the last letter of the current one
+		i = k - 1;
+		c += i;
+	}
+	for ( ; i < k; i++, c++) {
+		offset = byte2offset[(unsigned char) *c];
+		if (offset != NA_INTEGER)
+			row[offset * nrow]++;
+	}
+	return rtn;
 }
 
 /* Note that calling update_letter_freqs2() with shift = 0, nrow = 0 and
@@ -413,44 +410,51 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 	return ans;
 }
 
-// HJ
-// Tests, for the specified codes, the virtual XStringSet formed by sliding
-// a "window of length k" along a whole XString.  The result is identical to
-// what XStringSet_letter_frequency(), without 'collapse' or 'other', would
-// return, except that the XStringSet never has to be, and is not, realized.
-//
-// input: the subject XString, the window size, the letter-code(s) to count,
-// 	and a vector indicating how to tabulate each of the actual codes
-// out: an integer matrix with length(x)-k+1 rows and max(columns) columns
-//
-SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP K, SEXP codes, SEXP columns)
+/* Author: HJ
+ * Tests, for the specified codes, the virtual XStringSet formed by sliding
+ * a "window of length k" along a whole XString.  The result is identical to
+ * what XStringSet_letter_frequency(), without 'collapse' or 'other', would
+ * return, except that the XStringSet never has to be, and is not, realized.
+ *
+ * input: the subject XString, the window size, the letter-code(s) to count,
+ *      and a vector indicating how to tabulate each of the actual codes
+ * output: an integer matrix with length(x)-k+1 rows and max(colmap) columns
+ */
+SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
+		SEXP single_codes, SEXP colmap)
 {
 	SEXP ans;
-	int ans_width, *ans_row, i, k, nrow, *C, offset;
-	int first;	// first letter of the last k-mer, as column offset
+	int ans_width, *ans_row, i, k, nrow, *colmap0;
+	int first;  /* first letter of the last k-mer, as column offset */
 	cachedCharSeq X;
 	const char *c;
 
 	X = cache_XRaw(x);
-	k = INTEGER(K)[0];
+	k = INTEGER(view_width)[0];
 	nrow = X.length - k + 1;
-	ans_width = get_ans_width(codes, 0);
-	// byte2offset[code] is now set for each code in codes.  If
-	// 'columns' is non-NULL, we edit these settings accordingly.
-	if (columns != R_NilValue && LENGTH(columns)==LENGTH(codes)) {
-		C = INTEGER(columns);
-		for (i = 0; i < LENGTH(columns); i++) {
-			offset = C[i] - 1;
-			byte2offset[INTEGER(codes)[i]] = offset;
+	if (nrow < 1)
+		error("'x' is too short or 'view_width' is too big");
+	ans_width = get_ans_width(single_codes, 0);
+	// byte2offset[code] is now set for each code in 'single_codes'.
+	// If 'colmap' is non-NULL, we edit these settings accordingly.
+	if (colmap != R_NilValue) {
+		if (LENGTH(single_codes) != LENGTH(colmap))
+			error("Biostrings internal error in "
+			      "XString_letterFrequencyInSlidingView(): ",
+			      "lengths of 'single_codes' and 'colmap' differ");
+		ans_width = 0;
+		colmap0 = INTEGER(colmap);
+		for (i = 0; i < LENGTH(colmap); i++) {
+			ans_width = colmap0[i];
+			byte2offset[INTEGER(single_codes)[i]] = ans_width - 1;
 		}
-		ans_width = 1 + offset;
 	}
 	PROTECT(ans = allocMatrix(INTSXP, nrow, ans_width));
 	ans_row = INTEGER(ans);
-	// memset unnecessary -- done in letterFrequencyInSlidingView()
+	// memset unnecessary -- done in letter_freq_in_sliding_view()
 	for (i = 0, c = X.seq, first = -1; i < nrow; i++, ans_row++, c++)
-		first = letterFrequencyInSlidingView(ans_row, nrow, c, first,
-			ans_width, k);
+		first = letter_freq_in_sliding_view(ans_row, nrow, c,
+				first, ans_width, k);
 	// caller sets names
 	UNPROTECT(1);
 	return ans;
