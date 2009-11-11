@@ -200,7 +200,7 @@ XStringSetToFASTArecords <- function(x)
     if (current_width != 0L)
         width <- c(width, current_width)
 #--- to here
-    ans <- adjacentViews(subject, width, gapwidth=nchar(collapse, type="bytes"))
+    ans <- successiveViews(subject, width, gapwidth=nchar(collapse))
     names(ans) <- desc
     ans
 }

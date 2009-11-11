@@ -2,41 +2,6 @@
 ### Constructor-like functions and generics for XStringViews objects
 ### -------------------------------------------------------------------------
 
-### 'width' is the vector of view widths.
-### 'gapwidth' is the vector of inter-view widths (recycled).
-### TODO: Use successiveIRanges() in adjacentViews(), this
-### will be MUCH faster (successiveIRanges() is written in C).
-### But first, the 'gapwidth' arg must be added to it...
-adjacentViews <- function(subject, width, gapwidth=0)
-{
-    ONE <- as.integer(1)
-    if (!is(subject, "XString"))
-        subject <- XString(NULL, subject)
-    if (!is.numeric(width) || !isTRUE(all(width >= ONE))) # NA-proof
-        stop("'width' must be numerics >= 1")
-    if (!is.numeric(gapwidth) || !isTRUE(all(gapwidth >= 0))) # NA-proof
-        stop("'gapwidth' must be numerics >= 0")
-    lw <- length(width)
-    if (lw == 0)
-        return(new("XStringViews", subject=subject))
-    if (!is.integer(width))
-        width <- as.integer(width)
-    lg <- length(gapwidth)
-    if (lw > 1 && lg == 0)
-        stop("'gapwidth' is empty")
-    if (!is.integer(gapwidth))
-        gapwidth <- as.integer(gapwidth)
-    ans_start <- integer(lw)
-    ans_start[ONE] <- ONE
-    j <- ONE
-    for (i in seq_len(lw-1)) {
-        ans_start[i+ONE] <- ans_start[i] + width[i] + gapwidth[j]
-        if (j < lg) j <- j + ONE else j <- ONE
-    }
-    unsafe.newXStringViews(subject, ans_start, width)
-}
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "XStringViews" generic and methods.
 ###
@@ -82,7 +47,7 @@ setMethod("XStringViews", "ANY",
         ## drop the "String" suffix
         subject_basetype <- substr(subjectClass, 1, nchar(subjectClass)-6)
         subject <- XString(subject_basetype, seq)
-        ans <- adjacentViews(subject, nchar(x), gapwidth=nchar(collapse))
+        ans <- successiveViews(subject, nchar(x), gapwidth=nchar(collapse))
         names(ans) <- names(x)
         ans
     }
@@ -122,7 +87,7 @@ setMethod("XStringViews", "XStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Deprecated generics and methods.
+### Old stuff (Deprecated or Defunct).
 ###
 
 setGeneric("BStringViews", signature="src",
@@ -148,4 +113,10 @@ setMethod("BStringViews", "file",
 setMethod("BStringViews", "XString", .redirect.BStringViews.to.XStringViews)
 
 setMethod("BStringViews", "XStringViews", .redirect.BStringViews.to.XStringViews)
+
+adjacentViews <- function(subject, width, gapwidth=0)
+{
+    .Deprecated("successiveViews")
+    successiveViews(subject, width, gapwidth=gapwidth)
+}
 

@@ -2,7 +2,6 @@
 
 % Constructor-like functions and generics:
 \alias{XStringViews-constructors}
-\alias{adjacentViews}
 \alias{XStringViews}
 \alias{XStringViews,ANY-method}
 \alias{XStringViews,XString-method}
@@ -23,7 +22,6 @@
 }
 
 \usage{
-  adjacentViews(subject, width, gapwidth=0)
   XStringViews(x, subjectClass, collapse="")
 }
 
@@ -54,11 +52,6 @@
 }
 
 \details{
-  The \code{adjacentViews} function returns an XStringViews object
-  containing views on \code{subject} with widths given in the \code{width}
-  vector and separated by gaps of width \code{gapwidth}.
-  The first view starts at position 1.
-
   The \code{XStringViews} constructor will try to create an XStringViews
   object from the value passed to its \code{x} argument.
   If \code{x} itself is an XStringViews object, the returned
@@ -74,11 +67,10 @@
 }
 
 \value{
-  These functions return an XStringViews object \code{y}.
+  An XStringViews object \code{y}.
   \code{length(y)} (the number of views in \code{y})
-  is \code{length(width)} for the \code{adjacentViews} function.
-  For the \code{XStringViews} constructor, \code{length(y)} is \code{1}
-  when \code{x} is an \link{XString} object and \code{length(x)} otherwise.
+  is \code{1} when \code{x} is an \link{XString} object
+  and \code{length(x)} otherwise.
 }
 
 \seealso{
@@ -87,8 +79,6 @@
 }
 
 \examples{
-  adjacentViews("abcdefghij", 4:2, gapwidth=1)
-
   v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
   XStringViews(v12, subjectClass="RNAString")
   XStringViews(AAString("MARKSLEMSIR*"))

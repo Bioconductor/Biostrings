@@ -55,10 +55,6 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
-- Deprecate adjacentViews() in favor of successiveViews() from the IRanges
-  package. Use successiveIRanges()/successiveViews() internally instead of
-  deprecated intToAdjacentRanges()/adjacentViews().
-
 - Replace current quick and dirty (and very inefficient) implementation of set
   operations on XStringSet objects ("union", "intersect", "setdiff" and
   "setequal") by something more efficient.
