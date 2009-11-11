@@ -58,8 +58,13 @@ sequence, or the consensus matrix of a set of sequences}
 
 \description{
   Given a biological sequence (or a set of biological sequences),
-  the \code{alphabetFrequency} function computes the frequency of each
-  letter in the (base) alphabet.
+  the \code{alphabetFrequency} function computes the frequency of
+  each letter in the (base) alphabet.
+
+  The \code{letterFrequencyInSlidingView} function is a more
+  specialized version of \code{alphabetFrequency} that computes
+  the frequencies of a set of letters in a view (or window)
+  that is conceptually sliding along the input sequence.
 
   The \code{consensusMatrix} function computes the consensus matrix
   of a set of sequences, and the \code{consensusString} function creates
@@ -269,7 +274,7 @@ sequence, or the consensus matrix of a set of sequences}
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## A. BASIC alphabetFrequency() EXAMPLES
+  ## alphabetFrequency()
   ## ---------------------------------------------------------------------
   data(yeastSEQCHR1)
   yeast1 <- DNAString(yeastSEQCHR1)
@@ -287,9 +292,10 @@ sequence, or the consensus matrix of a set of sequences}
   alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
 
   ## ---------------------------------------------------------------------
-  ## B. A letterFrequencyInSlidingView() EXAMPLE
+  ## letterFrequencyInSlidingView()
   ## ---------------------------------------------------------------------
-  x <- yeast1
+  data(yeastSEQCHR1)
+  x <- DNAString(yeastSEQCHR1)
   view.width <- 48
   letters <- c("A", "CG")
   two_columns <- letterFrequencyInSlidingView(x, view.width, letters)
@@ -298,11 +304,21 @@ sequence, or the consensus matrix of a set of sequences}
   three_columns <- letterFrequencyInSlidingView(x, view.width, letters, OR=0)
   head(three_columns)
   tail(three_columns)
-  stopifnot(identical(two_columns[ ,"C|G"],
-                      three_columns[ ,"C"] + three_columns[ ,"G"]))
+  stopifnot(identical(two_columns[ , "C|G"],
+                      three_columns[ , "C"] + three_columns[ , "G"]))
+
+  ## Note that, alternatively, 'three_columns' can also be obtained by
+  ## creating the views on 'x' (as a Views object) and by calling
+  ## alphabetFrequency() on it. But, of course, that is be *much* less
+  ## efficient (both, in terms of memory and speed) than using
+  ## letterFrequencyInSlidingView():
+  v <- Views(x, start=seq_len(length(x) - view.width + 1), width=view.width)
+  v
+  three_columns2 <- alphabetFrequency(v, baseOnly=TRUE)[ , c("A", "C", "G")]
+  stopifnot(identical(three_columns2, three_columns))
 
   ## ---------------------------------------------------------------------
-  ## C. consensus*() EXAMPLES
+  ## consensus*()
   ## ---------------------------------------------------------------------
   ## Read in ORF data:
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
