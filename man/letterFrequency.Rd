@@ -317,8 +317,7 @@ sequence, or the consensus matrix of a set of sequences}
   three_columns2 <- alphabetFrequency(v, baseOnly=TRUE)[ , c("A", "C", "G")]
   stopifnot(identical(three_columns2, three_columns))
 
-  ## Set the width of the view to length(x) to get the global letter
-  ## frequencies:
+  ## Set the width of the view to length(x) to get the global frequencies:
   letterFrequencyInSlidingView(x, letters="ACGTN", view.width=length(x), OR=0)
 
   ## ---------------------------------------------------------------------
