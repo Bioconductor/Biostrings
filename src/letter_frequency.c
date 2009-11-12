@@ -433,7 +433,7 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	k = INTEGER(view_width)[0];
 	nrow = X.length - k + 1;
 	if (nrow < 1)
-		error("'x' is too short or 'view_width' is too big");
+		error("'x' is too short or 'view.width' is too big");
 	ans_width = get_ans_width(single_codes, 0);
 	// byte2offset[code] is now set for each code in 'single_codes'.
 	// If 'colmap' is non-NULL, we edit these settings accordingly.
