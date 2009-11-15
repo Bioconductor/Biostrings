@@ -238,11 +238,6 @@ sequence, or the consensus matrix of a set of sequences}
   \code{L-view.width+1} rows, the \code{i}-th of which holds the various
   letter frequencies in the \code{i}-th "window along s", i.e.
   \code{substring(s, i, i+view.width-1)}.
-  If \code{x} is an \link{XStringSet}, the return value is simply
-  \code{lapply(x, letterFrequencyInSlidingView)}.
-  Note that the various matrix value objects in this case are neither
-  \link{rbind}'d nor added (\link{Arithmetic}), as they would be with
-  \code{alphabetFrequency}.
 
   \code{hasOnlyBaseLetters} returns \code{TRUE} or \code{FALSE} indicating
   whether or not \code{x} contains only base letters (i.e. As, Cs, Gs and Ts
