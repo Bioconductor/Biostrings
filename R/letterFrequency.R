@@ -335,12 +335,12 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
     if (any(is_bad))
         stop("bad letter(s): ", single_letters[is_bad])
 
-    # Unless 'OR == 0', letters of multi-character elements of
-    # 'letters' are to be tabulated in common.  We send a vector
-    # indicating the column (1-based) into which each letter
-    # of 'letters' should be tabulated.  For ex, for 'letters =
-    # c("CG", "AT")' and 'OR != 0', we send 'c(1,1,2,2)'.  The columns
-    # of the result are named accordingly using the OR symbol.
+    ## Unless 'OR == 0', letters of multi-character elements of
+    ## 'letters' are to be tabulated in common.  We send a vector
+    ## indicating the column (1-based) into which each letter
+    ## of 'letters' should be tabulated.  For ex, for 'letters =
+    ## c("CG", "AT")' and 'OR != 0', we send 'c(1,1,2,2)'.  The columns
+    ## of the result are named accordingly using the OR symbol.
     nc <- nchar(letters)
     if (OR == 0 || max(nc) == 1) {
         colmap <- NULL
@@ -353,7 +353,12 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
     ans <- .Call("XString_letterFrequencyInSlidingView",
                  x, view.width, single_codes, colmap,
                  PACKAGE="Biostrings")
-    colnames(ans) <- colnames
+    ## Unlike colnames<-(), the following seems to set the colnames *without*
+    ## triggering a copy of 'ans'. For this to work, it must come immediately
+    ## after 'ans' is returned by .Call(). Note that a more robust way to set
+    ## the colnames "in-place" would be to do it in the .Call() call (i.e. at
+    ## the C-level).
+    dimnames(ans) <- list(NULL, colnames)
     ans
 }
 
@@ -367,29 +372,6 @@ setMethod("letterFrequencyInSlidingView", "XString",
         .XString.code_frequency_in_sliding_view(x,
                 view.width, letters=letters, OR=OR)
 )
-
-#setMethod("letterFrequencyInSlidingView", "XStringSet",
-#    function(x, view.width, letters, OR="|")
-#        lapply(seq_len(length(x)),
-#               function(i)
-#                 letterFrequencyInSlidingView(x[[i]], view.width, letters, OR))
-#)
-
-#setMethod("letterFrequencyInSlidingView", "XStringViews",
-#    function(x, view.width, letters, OR="|")
-#    {
-#       y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-#       letterFrequencyInSlidingView(y, view.width, letters, OR)
-#    }
-#)
-
-#setMethod("letterFrequencyInSlidingView", "MaskedXString",
-#    function(x, view.width, letters, OR="|")
-#    {
-#        y <- as(x, "XStringViews")
-#        letterFrequencyInSlidingView(y, view.width, letters, OR)
-#    }
-#)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
