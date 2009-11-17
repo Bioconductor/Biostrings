@@ -11,21 +11,23 @@ contain one or more sequences, for each sequence there is a description
 line which begins with a \code{>}.
 }
 \usage{
-  fasta.info(file, use.descs=TRUE)
+  fasta.info(filepath, use.descs=TRUE)
   readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
   writeFASTA(x, file="", append=FALSE, width=80)
 }
 \arguments{
+  \item{filepath}{
+    A character vector with no NAs.
+  }
+  \item{use.descs}{
+    Should the returned vector be named with the description lines
+    found in the FASTA records?
+  }
   \item{file}{
     Either a character string naming a file or a connection.
     If \code{""} (the default for \code{writeFASTA}),
     then the function writes to the standard output connection (the console)
     unless redirected by \code{sink}.
-  }
-  \item{use.descs}{
-    \code{TRUE} or \code{FALSE}. Whether or not the description lines should
-    be used to name the elements of the returned integer vector.
-    
   }
   \item{checkComments}{
     Whether or not comments, lines beginning with a semi-colon
@@ -62,9 +64,14 @@ line which begins with a \code{>}.
 }
 
 \value{
-  An integer vector (for \code{fasta.info}) or a list (for \code{readFASTA})
-  with one element for each sequence in the file.
-  For \code{readFASTA}, the elements are in two parts, one the description
+  For \code{fasta.info}: An integer vector with one element per FASTA record
+  in the files. Each element is the length of the sequence found in the
+  corresponding record.
+  If \code{use.descs} is \code{TRUE} (the default) then the returned
+  vector is named with the description lines found in the FASTA records.
+
+  For \code{readFASTA}: A list with one element per FASTA record in the file.
+  Each element is in two parts, one is the description of the record
   and the second a character string of the biological sequence.
 }
 

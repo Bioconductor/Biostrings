@@ -87,9 +87,9 @@ XStringSetToFASTArecords <- function(x)
 ### The "read.XStringViews" function.
 ###
 
-.read.fasta <- function(file, subjectClass, collapse)
+.read.fasta <- function(filepath, subjectClass, collapse)
 {
-    FASTArecs <- readFASTA(file, strip.descs=TRUE)
+    FASTArecs <- readFASTA(filepath, strip.descs=TRUE)
     FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse)
 }
 
@@ -205,20 +205,22 @@ XStringSetToFASTArecords <- function(x)
     ans
 }
 
-fastq.geometry <- function(file)
+fastq.geometry <- function(filepath)
 {
+    if (!is.character(filepath))
+        stop("'filepath' must be a character vector")
     on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
-    .Call("fastq_geometry", file, PACKAGE="Biostrings")
+    .Call("fastq_geometry", filepath, PACKAGE="Biostrings")
 }
 
-.read.fastq <- function(file, drop.quality=FALSE, subjectClass="DNAString")
+.read.fastq <- function(filepath, drop.quality=FALSE, subjectClass="DNAString")
 {
     if (!isTRUEorFALSE(drop.quality))
         stop("'drop.quality' must be TRUE or FALSE")
     if (!identical(subjectClass, "DNAString"))
         stop("'subjectClass' must be \"DNAString\"")
     on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
-    C_ans <- .Call("read_fastq", file, drop.quality, PACKAGE="Biostrings")
+    C_ans <- .Call("read_fastq", filepath, drop.quality, PACKAGE="Biostrings")
     views_width <- rep.int(C_ans[[1]][2], C_ans[[1]][1])
     fastq_seqs <- successiveViews(C_ans[[2]], views_width)
     if (drop.quality)
@@ -227,10 +229,10 @@ fastq.geometry <- function(file)
     return(list(seq=fastq_seqs, qual=fastq_quals))
 }
 
-read.XStringViews <- function(file, format, subjectClass, collapse="")
+read.XStringViews <- function(filepath, format, subjectClass, collapse="")
 {
-    if (!is.character(file) || any(is.na(file)))
-        stop("'file' must be a character vector with no NAs")
+    if (!is.character(filepath) || any(is.na(filepath)))
+        stop("'filepath' must be a character vector with no NAs")
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
@@ -239,8 +241,8 @@ read.XStringViews <- function(file, format, subjectClass, collapse="")
     if (!isSingleString(collapse))
         stop("'collapse' must be a single string")
     switch(format,
-        "fasta"=.read.fasta(file, subjectClass, collapse),
-        "fastq"=.read.fastq(file, drop.quality=TRUE, subjectClass)
+        "fasta"=.read.fasta(filepath, subjectClass, collapse),
+        "fastq"=.read.fastq(filepath, drop.quality=TRUE, subjectClass)
     )
 }
 
@@ -250,17 +252,17 @@ read.XStringViews <- function(file, format, subjectClass, collapse="")
 ### "read.AAStringSet" functions.
 ###
 
-read.BStringSet <- function(file, format)
-    as(read.XStringViews(file, format, "BString"), "XStringSet")
+read.BStringSet <- function(filepath, format)
+    as(read.XStringViews(filepath, format, "BString"), "XStringSet")
 
-read.DNAStringSet <- function(file, format)
-    as(read.XStringViews(file, format, "DNAString"), "XStringSet")
+read.DNAStringSet <- function(filepath, format)
+    as(read.XStringViews(filepath, format, "DNAString"), "XStringSet")
 
-read.RNAStringSet <- function(file, format)
-    as(read.XStringViews(file, format, "RNAString"), "XStringSet")
+read.RNAStringSet <- function(filepath, format)
+    as(read.XStringViews(filepath, format, "RNAString"), "XStringSet")
 
-read.AAStringSet <- function(file, format)
-    as(read.XStringViews(file, format, "AAString"), "XStringSet")
+read.AAStringSet <- function(filepath, format)
+    as(read.XStringViews(filepath, format, "AAString"), "XStringSet")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

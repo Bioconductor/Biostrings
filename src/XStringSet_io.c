@@ -4,10 +4,14 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+
 #include <ctype.h> /* for isspace() */
 #include <stdlib.h> /* for abs() */
 #include <math.h> /* for log() */
 #include <limits.h> /* for INT_MAX */
+
+#include <sys/types.h>
+#include <sys/stat.h> /* for fstat() */
 
 static int debug = 0;
 
@@ -34,18 +38,35 @@ static int overflow_mult_int(int a, int b)
 static int nfile;
 static FILE **files;
 
-static void open_files(SEXP paths)
+static void open_files(SEXP filepath)
 {
-	const char *path_str;
+	SEXP filepath_elt;
+	const char *path;
+	FILE *file;
+	int ret;
+	struct stat buf;
 
+	if (!IS_CHARACTER(filepath))
+		error("'filepath' must be a character vector");
 	nfile = 0;
-	files = (FILE **) malloc(LENGTH(paths) * sizeof(FILE *));
+	files = (FILE **) malloc(LENGTH(filepath) * sizeof(FILE *));
 	if (files == NULL)
 		error("malloc() failed");
-	for (nfile = 0; nfile < LENGTH(paths); nfile++) {
-		path_str = translateChar(STRING_ELT(paths, nfile));
-		if ((files[nfile] = fopen(path_str, "r")) == NULL)
-			error("cannot open file '%s'", path_str);
+	while (nfile < LENGTH(filepath)) {
+		filepath_elt = STRING_ELT(filepath, nfile);
+		if (filepath_elt == NA_STRING)
+			error("'filepath' contains NAs");
+		path = translateChar(filepath_elt);
+		file = fopen(path, "r");
+		if (file == NULL)
+			error("cannot open file '%s'", path);
+		files[nfile++] = file;
+		ret = fstat(fileno(file), &buf);
+		if (ret != 0)
+			error("Biostrings internal error in open_files(): ",
+			      "cannot stat file '%s'", path);
+		if (S_ISDIR(buf.st_mode))
+			error("file '%s' is a directory", path);
 	}
 	return;
 }
@@ -161,10 +182,9 @@ static void add_desc1(int recno, const cachedCharSeq *dataline)
 }
 
 /*
- * Return the number of sequences (1 sequence per FASTA record) in the file
- * (>= 0) or -1 if an error occured.
- * Ignore empty lines and lines starting with 'FASTA_comment_markup' like
- * in the original Pearson FASTA format.
+ * Return the number of FASTA records in the file (>= 0) or -1 if an error
+ * occured. Ignore empty lines and lines starting with 'FASTA_comment_markup'
+ * like in the original Pearson FASTA format.
  * This function is agnostic about how the data that are read are stored in
  * memory, how they will be returned to the user and how they will look to him.
  * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
@@ -220,32 +240,32 @@ static int parse_FASTA_file(FILE *stream,
 	return recno;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP fasta_info(SEXP filepath, SEXP use_descs)
 {
-	const char *path;
-	FILE *stream;
 	void (*add_desc)(int recno, const cachedCharSeq *dataline);
+	int fn, nrec, n;
+	SEXP ans;
 	RoSeqs descs;
-	SEXP ans, ans_names;
 
-	path = translateChar(STRING_ELT(filepath, 0));
-	if ((stream = fopen(path, "r")) == NULL)
-		error("cannot open file '%s'", path);
+	seq_lengths_buf = new_IntAE(0, 0, 0);
 	if (LOGICAL(use_descs)[0]) {
 		add_desc = &add_desc_CHARAEAE;
 		descs_buf = new_CharAEAE(0, 0);
 	} else {
 		add_desc = NULL;
 	}
-	seq_lengths_buf = new_IntAE(0, 0, 0);
-	if (parse_FASTA_file(stream, add_desc,
+	open_files(filepath);
+	nrec = 0;
+	for (fn = 0; fn < nfile; fn++) {
+		n = parse_FASTA_file(files[fn],
+			add_desc,
 			&add_empty_seq_LENGTHONLY,
-			&append_to_last_seq_LENGTHONLY) < 0)
-	{
-		error("%s", errmsg_buf);
+			&append_to_last_seq_LENGTHONLY);
+		if (n == -1)
+			error("reading FASTA file %s: %s",
+			      STRING_ELT(filepath, fn), errmsg_buf);
+		nrec += n;
 	}
 	PROTECT(ans = IntAE_asINTEGER(&seq_lengths_buf));
 	if (LOGICAL(use_descs)[0]) {
@@ -257,7 +277,6 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 	UNPROTECT(1);
 	return ans;
 }
-
 
 #define FASTALINE_MAX 20000
 
@@ -472,8 +491,8 @@ static void append_qual_to_FASTQ_qualbuf(int recno, const cachedCharSeq *datalin
 }
 
 /*
- * Return the number of sequences (1 sequence per FASTQ record) in the file
- * (>= 0) or -1 if an error occured. Ignore empty lines.
+ * Return the number of FASTQ records in the file (>= 0) or -1 if an error
+ * occured. Ignore empty lines.
  * This function is agnostic about how the data that are read are stored in
  * memory, how they will be returned to the user and how they will look to him.
  * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
@@ -549,53 +568,58 @@ static int parse_FASTQ_file(FILE *stream,
 	return recno;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP fastq_geometry(SEXP filepath)
 {
-	int fileno;
-	int totalnseq, nseq;
+	int fn, nrec, n;
 	SEXP ans;
 
+	FASTQ_width = NA_INTEGER;
 	open_files(filepath);
-	totalnseq = 0;
-	for (fileno = 0; fileno < nfile; fileno++) {
-		nseq = parse_FASTQ_file(files[fileno], NULL, add_seq_WIDTHONLY, NULL, NULL);
-		if (nseq < 0)
-			error("reading FASTQ file %s: %s", STRING_ELT(filepath, fileno), errmsg_buf);
-		totalnseq += nseq;
+	nrec = 0;
+	for (fn = 0; fn < nfile; fn++) {
+		n = parse_FASTQ_file(files[fn],
+				NULL, add_seq_WIDTHONLY,
+				NULL, NULL);
+		if (n == -1)
+			error("reading FASTQ file %s: %s",
+			      STRING_ELT(filepath, fn), errmsg_buf);
+		nrec += n;
 	}
 	PROTECT(ans = NEW_INTEGER(2));
-	INTEGER(ans)[0] = totalnseq;
+	INTEGER(ans)[0] = nrec;
 	INTEGER(ans)[1] = FASTQ_width;
 	UNPROTECT(1);
 	return ans;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP read_fastq(SEXP filepath, SEXP drop_quality)
 {
 	SEXP ans_geom, ans;
-	int fileno, buf_length;
+	int fn, buf_length;
 
 	PROTECT(ans_geom = fastq_geometry(filepath));
-	if (INTEGER(ans_geom)[1] == NA_INTEGER)
-		error("read_fastq(): FASTQ files with variable sequence lengths are not supported yet");
-	if (overflow_mult_int(INTEGER(ans_geom)[0], INTEGER(ans_geom)[1]))
-		error("read_fastq(): FASTQ files contain more data an XStringSet object can hold, sorry!");
-	buf_length = INTEGER(ans_geom)[0] * INTEGER(ans_geom)[1];
+	if (INTEGER(ans_geom)[0] == 0) {
+		buf_length = 0;
+	} else {
+		if (INTEGER(ans_geom)[1] == NA_INTEGER)
+			error("read_fastq(): FASTQ files with variable sequence "
+			      "lengths are not supported yet");
+		if (overflow_mult_int(INTEGER(ans_geom)[0], INTEGER(ans_geom)[1]))
+			error("read_fastq(): FASTQ files contain more data an "
+			      "XStringSet object can hold, sorry!");
+		buf_length = INTEGER(ans_geom)[0] * INTEGER(ans_geom)[1];
+	}
 	PROTECT(FASTQ_seqbuf = alloc_XRaw("DNAString", buf_length));
 	FASTQ_seqbuf_shared = get_XVector_shared(FASTQ_seqbuf);
 	if (!LOGICAL(drop_quality)[0]) {
 		PROTECT(FASTQ_qualbuf = alloc_XRaw("BString", buf_length));
 		FASTQ_qualbuf_shared = get_XVector_shared(FASTQ_qualbuf);
 	}
-	for (fileno = 0; fileno < nfile; fileno++) {
-		rewind(files[fileno]);
-		parse_FASTQ_file(files[fileno],
+	for (fn = 0; fn < nfile; fn++) {
+		rewind(files[fn]);
+		parse_FASTQ_file(files[fn],
 			NULL, append_seq_to_FASTQ_seqbuf,
 			NULL, LOGICAL(drop_quality)[0] ? NULL : append_qual_to_FASTQ_qualbuf);
 	}

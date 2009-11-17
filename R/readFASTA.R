@@ -1,9 +1,10 @@
-fasta.info <- function(file, use.descs=TRUE)
+fasta.info <- function(filepath, use.descs=TRUE)
 {
-    if (!isSingleString(file))
-        stop("'file' must be a single string")
+    if (!is.character(filepath))
+        stop("'filepath' must be a character vector")
     use.descs <- normargUseNames(use.descs)
-    .Call("fasta_info", file, use.descs, PACKAGE="Biostrings")
+    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
+    .Call("fasta_info", filepath, use.descs, PACKAGE="Biostrings")
 }
 
 ### Robert's contribution

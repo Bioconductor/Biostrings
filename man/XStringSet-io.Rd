@@ -30,21 +30,21 @@
 
 \usage{
   ## XStringSet object:
-  read.BStringSet(file, format)
-  read.DNAStringSet(file, format)
-  read.RNAStringSet(file, format)
-  read.AAStringSet(file, format)
+  read.BStringSet(filepath, format)
+  read.DNAStringSet(filepath, format)
+  read.RNAStringSet(filepath, format)
+  read.AAStringSet(filepath, format)
   write.XStringSet(x, file="", append=FALSE, format, width=80)
 
   ## Serializing an XStringSet object:
   save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
   ## XStringViews object:
-  read.XStringViews(file, format, subjectClass, collapse="")
+  read.XStringViews(filepath, format, subjectClass, collapse="")
   write.XStringViews(x, file="", append=FALSE, format, width=80)
 
   ## FASTQ utilities:
-  fastq.geometry(file)
+  fastq.geometry(filepath)
 
   ## Some related helper functions:
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
@@ -54,11 +54,8 @@
 }
 
 \arguments{
-  \item{file}{
+  \item{filepath}{
     A character vector with no NAs.
-    If \code{""} (the default for \code{write.XStringSet} and
-    \code{write.XStringViews}), then the functions write to the standard
-    output connection (the console) unless redirected by \code{sink}.
   }
   \item{format}{
     Either \code{"fasta"} or \code{"fastq"}.
@@ -74,6 +71,11 @@
     For \code{XStringSetToFASTArecords}, the \link{XStringSet} object
     to be converted to a list of FASTA records as one returned
     by \code{\link{readFASTA}}.
+  }
+  \item{file}{
+    A connection, or a character string naming the file to write
+    to.  If \code{""} (the default), print to the standard output
+    connection (generally the console) unless redirected by \code{sink}.
   }
   \item{append}{
     \code{TRUE} or \code{FALSE}. If \code{TRUE} output will be
@@ -136,9 +138,10 @@
 
   The \code{fastq.geometry} utility returns an integer vector describing
   the "geometry" of the FASTQ files i.e. a vector of length 2 where the
-  first element is the total number of sequences contained in the FASTQ
-  files and the second element the "width" of these files (this width is
-  \code{NA} if the files have different "widths").
+  first element is the total number of FASTQ records in the files and
+  the second element the common "width" of these files (this width is
+  \code{NA} if the files contain no FASTQ records or records with
+  different "widths").
 
   Writing functions \code{write.XStringSet} and \code{write.XStringViews}
   write an \link{XStringSet} or \link{XStringViews} object to a file or
@@ -172,18 +175,19 @@
   ## ---------------------------------------------------------------------
   ## A. READ/WRITE FASTA FILES
   ## ---------------------------------------------------------------------
-  file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  x <- read.DNAStringSet(file, "fasta")
+  filepath <- system.file("extdata", "someORF.fa", package="Biostrings")
+  x <- read.DNAStringSet(filepath, "fasta")
   x
   write.XStringSet(x, format="fasta")  # writes to the console
 
   ## ---------------------------------------------------------------------
   ## B. READ FASTQ FILES
   ## ---------------------------------------------------------------------
-  file <- system.file("extdata", "s_1_sequence.txt", package="Biostrings")
-  fastq.geometry(file)
-  read.DNAStringSet(file, "fastq")  # only the FASTQ sequences are returned
-                                    # (identifiers and qualities are dropped)
+  filepath <- system.file("extdata", "s_1_sequence.txt", package="Biostrings")
+  fastq.geometry(filepath)
+  ## Only the FASTQ sequences are returned (identifiers and qualities
+  ## are dropped):
+  read.DNAStringSet(filepath, "fastq")
 
   ## ---------------------------------------------------------------------
   ## C. SERIALIZATION
