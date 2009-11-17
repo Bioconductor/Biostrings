@@ -87,7 +87,7 @@ void _set_XStringSet_names(SEXP x, SEXP names)
    So don't try to make it a .Call() entry point! */
 SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 {
-	char classname_buf[80]; // longest string will be "DNAStringSet"
+	char classname_buf[40]; // longest string will be "DNAStringSet"
 
 	if (classname == NULL) {
 		if (snprintf(classname_buf, sizeof(classname_buf),

@@ -124,7 +124,7 @@ static void add_empty_seq_LENGTHONLY(int recno)
 	return;
 }
 
-static void append_to_last_seq_LENGTHONLY(const cachedCharSeq *dataline)
+static void append_to_last_seq_LENGTHONLY(int recno, const cachedCharSeq *dataline)
 {
 	seq_lengths_buf.elts[seq_lengths_buf.nelt - 1] += dataline->length;
 	return;
@@ -149,10 +149,35 @@ static void add_desc_CHARAEAE(int recno, const cachedCharSeq *dataline)
 
 
 /*
- * Other storage handlers.
+ * The FASTA_seqbuf storage handlers.
  */
 
-static SEXP FASTA_seqbuf;
+static cachedXVectorList FASTA_seqbuf;
+static cachedCharSeq FASTA_seqbuf_elt;
+static const int *FASTA_lkup;
+static int FASTA_lkup_length;
+
+static void add_empty_seq_to_FASTA_seqbuf(int recno)
+{
+	FASTA_seqbuf_elt = get_cachedXRawList_elt(&FASTA_seqbuf, recno);
+	FASTA_seqbuf_elt.length = 0;
+	return;
+}
+
+static void append_to_last_seq_in_FASTA_seqbuf(int recno, const cachedCharSeq *dataline)
+{
+	int i1;
+
+	i1 = FASTA_seqbuf_elt.length;
+	FASTA_seqbuf_elt.length += dataline->length;
+	/* FASTA_seqbuf_elt.seq is a const char * so we need to cast it to
+           char * before we can write to it */
+	Ocopy_bytes_to_i1i2_with_lkup(i1, FASTA_seqbuf_elt.length - 1,
+		(char *) FASTA_seqbuf_elt.seq, FASTA_seqbuf_elt.length,
+		dataline->seq, dataline->length,
+		FASTA_lkup, FASTA_lkup_length);
+	return;
+}
 
 
 /*
@@ -166,7 +191,7 @@ static SEXP FASTA_seqbuf;
 static const char *parse_FASTA_file(FILE *stream, int *recno,
 		void (*add_desc)(int recno, const cachedCharSeq *dataline),
 		void (*add_empty_seq)(int recno),
-		void (*append_to_last_seq)(const cachedCharSeq *dataline))
+		void (*append_to_last_seq)(int recno, const cachedCharSeq *dataline))
 {
 	int FASTA_comment_markup_length, FASTA_desc_markup_length, lineno;
 	char linebuf[LINEBUF_SIZE];
@@ -206,7 +231,7 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 				return errmsg_buf;
 			}
 			if (append_to_last_seq != NULL)
-				append_to_last_seq(&dataline);
+				append_to_last_seq(*recno, &dataline);
 		}
 	}
 	return NULL;
@@ -229,8 +254,7 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 		add_desc = NULL;
 	}
 	open_files(filepath);
-	recno = 0;
-	for (fn = 0; fn < nfile; fn++) {
+	for (fn = recno = 0; fn < nfile; fn++) {
 		errmsg = parse_FASTA_file(files[fn], &recno,
 				add_desc,
 				&add_empty_seq_LENGTHONLY,
@@ -251,43 +275,40 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP read_fasta(SEXP filepath, SEXP use_descs)
+SEXP read_fasta_in_XStringSet(SEXP filepath, SEXP set_names,
+		SEXP elementType, SEXP lkup)
 {
-	SEXP ans_width, ans_names;
-	cachedXVectorList cached_ans;
-	cachedCharSeq cached_ans_elt;
-	int ans_length, fn, recno;
-	const char *errmsg;
+	SEXP ans, ans_width, ans_names;
+	const char *element_type;
+	char classname[40]; // longest string will be "DNAStringSet"
+	int fn, recno;
 
-	PROTECT(ans_width = fasta_info(filepath, use_descs));
+	PROTECT(ans_width = fasta_info(filepath, set_names));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
-	PROTECT(FASTA_seqbuf = alloc_XRawList("DNAStringSet", "DNAString", ans_width));
-	_set_XStringSet_names(FASTA_seqbuf, ans_names);
-	cached_ans = cache_XVectorList(FASTA_seqbuf);
-	ans_length = get_cachedXVectorList_length(&cached_ans);
-/*
-	recno = 0;
-	for (fn = 0; fn < nfile; fn++) {
+	element_type = CHAR(STRING_ELT(elementType, 0));
+	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
+	    >= sizeof(classname))
+		error("Biostrings internal error in "
+		      "read_fasta_in_XStringSet(): 'elementType' too long");
+	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
+	_set_XStringSet_names(ans, ans_names);
+	FASTA_seqbuf = cache_XVectorList(ans);
+	if (lkup == R_NilValue) {
+		FASTA_lkup = NULL;
+	} else {
+		FASTA_lkup = INTEGER(lkup);
+		FASTA_lkup_length = LENGTH(lkup);
+	}
+	for (fn = recno = 0; fn < nfile; fn++) {
 		rewind(files[fn]);
-		n = parse_FASTA_file(files[fn], &recno,
+		parse_FASTA_file(files[fn], &recno,
 			NULL,
-			&add_empty_seq_LENGTHONLY,
-			&append_to_last_seq_LENGTHONLY);
-		if (n == -1)
-			error("reading FASTA file %s: %s",
-			      STRING_ELT(filepath, fn), errmsg_buf);
+			&add_empty_seq_to_FASTA_seqbuf,
+			&append_to_last_seq_in_FASTA_seqbuf);
 	}
-	PROTECT(ans = IntAE_asINTEGER(&seq_lengths_buf));
-	if (LOGICAL(use_descs)[0]) {
-		descs = _new_RoSeqs_from_CharAEAE(&descs_buf);
-		PROTECT(ans_names = _new_STRSXP_from_RoSeqs(&descs, R_NilValue));
-		SET_NAMES(ans, ans_names);
-		UNPROTECT(1);
-	}
-*/
 	UNPROTECT(3);
-	return FASTA_seqbuf;
+	return ans;
 }
 
 #define FASTALINE_MAX 20000
@@ -506,8 +527,8 @@ static void append_qual_to_FASTQ_qualbuf(int recno, const cachedCharSeq *datalin
  * Ignore empty lines.
  * This function is agnostic about how the data that are read are stored in
  * memory, how they will be returned to the user and how they will look to him.
- * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
- * append_to_last_seq().
+ * This is delegated to 4 storage handlers: add_seqid(), add_seq(), add_qualid()
+ * and add_qual().
  */
 static const char *parse_FASTQ_file(FILE *stream, int *recno,
 		void (*add_seqid)(int recno, const cachedCharSeq *dataline),
@@ -588,8 +609,7 @@ SEXP fastq_geometry(SEXP filepath)
 
 	FASTQ_width = NA_INTEGER;
 	open_files(filepath);
-	recno = 0;
-	for (fn = 0; fn < nfile; fn++) {
+	for (fn = recno = 0; fn < nfile; fn++) {
 		errmsg = parse_FASTQ_file(files[fn], &recno,
 				NULL, add_seq_WIDTHONLY,
 				NULL, NULL);
@@ -628,8 +648,7 @@ SEXP read_fastq(SEXP filepath, SEXP drop_quality)
 		PROTECT(FASTQ_qualbuf = alloc_XRaw("BString", buf_length));
 		FASTQ_qualbuf_shared = get_XVector_shared(FASTQ_qualbuf);
 	}
-	recno = 0;
-	for (fn = 0; fn < nfile; fn++) {
+	for (fn = recno = 0; fn < nfile; fn++) {
 		rewind(files[fn]);
 		parse_FASTQ_file(files[fn], &recno,
 			NULL, append_seq_to_FASTQ_seqbuf,

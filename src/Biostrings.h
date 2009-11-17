@@ -269,6 +269,13 @@ SEXP fasta_info(
 	SEXP use_descs
 );
 
+SEXP read_fasta_in_XStringSet(
+	SEXP filepath,
+	SEXP set_names,
+	SEXP elementType,
+	SEXP lkup
+);
+
 SEXP SharedRaw_loadFASTA(
 	SEXP rawptr_xp,
 	SEXP filepath,

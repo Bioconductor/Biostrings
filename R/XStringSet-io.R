@@ -252,17 +252,46 @@ read.XStringViews <- function(filepath, format, subjectClass, collapse="")
 ### "read.AAStringSet" functions.
 ###
 
+.read.fasta.in.XStringSet <- function(filepath, set.names, elementType, lkup)
+{
+    .Call("read_fasta_in_XStringSet",
+          filepath, set.names, elementType, lkup,
+          PACKAGE="Biostrings")
+}
+
+.read.fastq.in.XStringSet <- function(filepath, set.names, elementType, lkup)
+{
+    .read.fastq(filepath, drop.quality=TRUE, elementType)
+}
+
+.read.XStringSet <- function(filepath, format, set.names, basetype)
+{
+    if (!is.character(filepath))
+        stop("'filepath' must be a character vector")
+    if (!isSingleString(format))
+        stop("'format' must be a single string")
+    format <- match.arg(tolower(format), c("fasta", "fastq"))
+    if (!isTRUEorFALSE(set.names))
+        stop("'set.names' must be TRUE or FALSE")
+    elementType <- paste(basetype, "String", sep="")
+    lkup <- get_xsbasetypes_conversion_lookup("B", basetype)
+    switch(format,
+        "fasta"=.read.fasta.in.XStringSet(filepath, set.names, elementType, lkup),
+        "fastq"=.read.fastq.in.XStringSet(filepath, set.names, elementType, lkup)
+    )
+}
+
 read.BStringSet <- function(filepath, format)
-    as(read.XStringViews(filepath, format, "BString"), "XStringSet")
+    .read.XStringSet(filepath, format, TRUE, "B")
 
 read.DNAStringSet <- function(filepath, format)
-    as(read.XStringViews(filepath, format, "DNAString"), "XStringSet")
+    .read.XStringSet(filepath, format, TRUE, "DNA")
 
 read.RNAStringSet <- function(filepath, format)
-    as(read.XStringViews(filepath, format, "RNAString"), "XStringSet")
+    .read.XStringSet(filepath, format, TRUE, "RNA")
 
 read.AAStringSet <- function(filepath, format)
-    as(read.XStringViews(filepath, format, "AAString"), "XStringSet")
+    .read.XStringSet(filepath, format, TRUE, "AA")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
