@@ -91,10 +91,10 @@ static void open_inputfiles(SEXP filepath)
 			inputfiles[ninputfiles].fp = fopen(path, "r");
 			if (inputfiles[ninputfiles].fp == NULL)
 				error("cannot open file '%s'", path);
-			ninputfiles++;
 			ret = fstat(fileno(inputfiles[ninputfiles].fp), &buf);
+			ninputfiles++;
 			if (ret != 0)
-				error("Biostrings internal error in open_inputfiles(): ",
+				error("Biostrings internal error in open_inputfiles(): "
 				      "cannot stat file '%s'", path);
 			if (S_ISDIR(buf.st_mode))
 				error("file '%s' is a directory", path);
