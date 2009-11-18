@@ -1,28 +1,21 @@
 \name{readFASTA}
 
-\alias{fasta.info}
 \alias{readFASTA}
 \alias{writeFASTA}
 
 \title{Functions to read/write FASTA formatted files}
 \description{
- FASTA is a simple file format for biological sequence data. A file may
-contain one or more sequences, for each sequence there is a description 
-line which begins with a \code{>}.
+\code{readFASTA} and \code{writeFASTA} read from and write to a FASTA file.
+Note that the object returned by \code{readFASTA} or passed to
+\code{writeFASTA} is a standard list. For faster and more memory efficient
+alternatives that return/accept an \link{XStringSet} object, see the
+\code{\link{read.DNAStringSet}} function and family.
 }
 \usage{
-  fasta.info(filepath, use.descs=TRUE)
   readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
   writeFASTA(x, file="", append=FALSE, width=80)
 }
 \arguments{
-  \item{filepath}{
-    A character vector with no NAs.
-  }
-  \item{use.descs}{
-    Should the returned vector be named with the description lines
-    found in the FASTA records?
-  }
   \item{file}{
     Either a character string naming a file or a connection.
     If \code{""} (the default for \code{writeFASTA}),
@@ -52,6 +45,10 @@ line which begins with a \code{>}.
   }
 }
 \details{
+  FASTA is a simple file format for biological sequence data. A file may
+  contain one or more sequences, for each sequence there is a description 
+  line which begins with a \code{>}.
+
   FASTA is a widely used format in biology. It is a relatively simple markup.
   I am not aware of a standard. It might be nice to check to see if the 
   data that were parsed are sequences of some appropriate type, but without
@@ -64,12 +61,6 @@ line which begins with a \code{>}.
 }
 
 \value{
-  For \code{fasta.info}: An integer vector with one element per FASTA record
-  in the files. Each element is the length of the sequence found in the
-  corresponding record.
-  If \code{use.descs} is \code{TRUE} (the default) then the returned
-  vector is named with the description lines found in the FASTA records.
-
   For \code{readFASTA}: A list with one element per FASTA record in the file.
   Each element is in two parts, one is the description of the record
   and the second a character string of the biological sequence.
@@ -78,10 +69,8 @@ line which begins with a \code{>}.
 \author{R. Gentleman, H. Pages}
 
 \seealso{
-  \code{\link{read.BStringSet}},
   \code{\link{read.DNAStringSet}},
-  \code{\link{read.RNAStringSet}},
-  \code{\link{read.AAStringSet}},
+  \code{\link{fasta.info}},
   \code{\link{write.XStringSet}},
   \code{\link{read.table}},
   \code{\link{scan}},
@@ -90,7 +79,6 @@ line which begins with a \code{>}.
 
 \examples{
   f1 <- system.file("extdata", "someORF.fa", package="Biostrings")
-  fasta.info(f1)
   ff <- readFASTA(f1, strip.descs=TRUE)
   desc <- sapply(ff, function(x) x$desc)
   ## Keep the "reverse complement" sequences only

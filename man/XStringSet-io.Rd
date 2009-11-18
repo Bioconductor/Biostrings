@@ -1,15 +1,19 @@
 \name{XStringSet-io}
 
-\alias{read.XStringViews}
 \alias{read.BStringSet}
 \alias{read.DNAStringSet}
 \alias{read.RNAStringSet}
 \alias{read.AAStringSet}
+
+\alias{fasta.info}
+\alias{fastq.geometry}
+
 \alias{write.XStringSet}
-\alias{write.XStringViews}
+
 \alias{save.XStringSet}
 
-\alias{fastq.geometry}
+\alias{read.XStringViews}
+\alias{write.XStringViews}
 \alias{FASTArecordsToCharacter}
 \alias{CharacterToFASTArecords}
 \alias{FASTArecordsToXStringViews}
@@ -29,24 +33,25 @@
 }
 
 \usage{
-  ## XStringSet object:
+  ## Read files in an XStringSet object:
   read.BStringSet(filepath, format)
   read.DNAStringSet(filepath, format)
   read.RNAStringSet(filepath, format)
   read.AAStringSet(filepath, format)
-  write.XStringSet(x, file="", append=FALSE, format, width=80)
 
-  ## Serializing an XStringSet object:
-  save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
-
-  ## XStringViews object:
-  read.XStringViews(filepath, format, subjectClass, collapse="")
-  write.XStringViews(x, file="", append=FALSE, format, width=80)
-
-  ## FASTQ utilities:
+  ## Get basic information about FASTA or FASTQ files without loading them:
+  fasta.info(filepath, use.descs=TRUE)
   fastq.geometry(filepath)
 
-  ## Some related helper functions:
+  ## Write an XStringSet object to a file:
+  write.XStringSet(x, file="", append=FALSE, format, width=80)
+
+  ## Serialize an XStringSet object:
+  save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
+
+  ## Some legacy stuff:
+  read.XStringViews(filepath, format, subjectClass, collapse="")
+  write.XStringViews(x, file="", append=FALSE, format, width=80)
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
   CharacterToFASTArecords(x)
   FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse="")
@@ -55,12 +60,16 @@
 
 \arguments{
   \item{filepath}{
-    A character vector with no NAs.
+    A character vector containing the paths to the input files.
   }
   \item{format}{
     Either \code{"fasta"} or \code{"fastq"}.
     Note that \code{write.XStringSet} and \code{write.XStringViews} only
     support \code{"fasta"} for now.
+  }
+  \item{use.descs}{
+    Should the returned vector be named with the description lines
+    found in the FASTA records?
   }
   \item{x}{
     For \code{write.XStringSet} and \code{write.XStringViews}, the object to
@@ -129,12 +138,20 @@
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
   \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.XStringViews}
-  load sequences from a file into an \link{XStringSet} or \link{XStringViews}
-  object. Only one FASTA file, but more than one FASTQ file, can be read at a
-  time (by passing a character vector of length > 1). In that case, all the
-  FASTQ files must have the same "width" (i.e. all their sequences must have
-  the same length) and the sequences from all the files are stored in the
-  returned object in the order they were read.
+  load sequences from an input file (or set of input files) into an
+  \link{XStringSet} or \link{XStringViews} object. (Note that for now
+  \code{read.XStringViews} can only read 1 FASTA file at a time but
+  this will be addressed ASAP).
+  When multiple input files are specified, they are read in the corresponding
+  order and their data are stored in the returned object in that order.
+  Note that when multiple input FASTQ files are specified, they must all
+  have the same "width" (i.e. all their sequences must have the same length).
+
+  The \code{fasta.info} utility returns an integer vector with one element
+  per FASTA record in the input files. Each element is the length of the
+  sequence found in the corresponding record.
+  If \code{use.descs} is \code{TRUE} (the default) then the returned
+  vector is named with the description lines found in the FASTA records.
 
   The \code{fastq.geometry} utility returns an integer vector describing
   the "geometry" of the FASTQ files i.e. a vector of length 2 where the
@@ -160,7 +177,6 @@
 }
 
 \seealso{
-  \code{\link{fasta.info}},
   \code{\link{readFASTA}},
   \code{\link{writeFASTA}},
   \link{XStringSet-class},
@@ -176,6 +192,7 @@
   ## A. READ/WRITE FASTA FILES
   ## ---------------------------------------------------------------------
   filepath <- system.file("extdata", "someORF.fa", package="Biostrings")
+  fasta.info(filepath)
   x <- read.DNAStringSet(filepath, "fasta")
   x
   write.XStringSet(x, format="fasta")  # writes to the console

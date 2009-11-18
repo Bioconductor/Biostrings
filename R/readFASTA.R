@@ -1,12 +1,3 @@
-fasta.info <- function(filepath, use.descs=TRUE)
-{
-    if (!is.character(filepath))
-        stop("'filepath' must be a character vector")
-    use.descs <- normargUseNames(use.descs)
-    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
-    .Call("fasta_info", filepath, use.descs, PACKAGE="Biostrings")
-}
-
 ### Robert's contribution
 readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
 {

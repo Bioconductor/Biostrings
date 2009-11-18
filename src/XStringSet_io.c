@@ -1,5 +1,5 @@
 /****************************************************************************
- *                          Read/write fasta files                          *
+ *                       Read/write FASTA/FASTQ files                       *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -35,38 +35,104 @@ static int overflow_mult_int(int a, int b)
 	return a != 0 && b != 0 && (log((double) a) + log((double) b) >= log((double) INT_MAX));
 }
 
-static int nfile;
-static FILE **files;
+/* Code taken from do_url() in R/src/main/connections.c */
+static void get_file_ztype(const char *path, int *ztype, int *subtype)
+{
+	FILE *fp;
+	char buf[7];
+	int res;
 
-static void open_files(SEXP filepath)
+	*ztype = -1;
+	*subtype = 0;
+	if ((fp = fopen(path, "rb")) == NULL)
+		return;
+	memset(buf, 0, 7);
+	res = fread(buf, 5, 1, fp);
+	fclose(fp);
+	if (res != 1)
+		return;
+	if (buf[0] == '\x1f' && buf[1] == '\x8b')
+		*ztype = 0;
+	else if (strncmp(buf, "BZh", 3) == 0)
+		*ztype = 1;
+	else if (buf[0] == '\xFD' && strncmp(buf+1, "7zXZ", 4) == 0)
+		*ztype = 2;
+	else if ((buf[0] == '\xFF') && strncmp(buf+1, "LZMA", 4) == 0) {
+		*ztype = 2;
+		*subtype = 1;
+	} else if (memcmp(buf, "]\0\0\200\0", 5) == 0) {
+		*ztype = 2;
+		*subtype = 1;
+	}
+	return;
+}
+
+static int ninputfiles;
+
+static struct inputfile {
+	FILE *fp;
+	//gzFile gfp;
+} *inputfiles;
+
+static void open_inputfiles(SEXP filepath)
 {
 	SEXP filepath_elt;
 	const char *path;
-	FILE *file;
-	int ret;
+	int ret, ztype, subtype;
 	struct stat buf;
 
 	if (!IS_CHARACTER(filepath))
 		error("'filepath' must be a character vector");
-	nfile = 0;
-	files = (FILE **) malloc(LENGTH(filepath) * sizeof(FILE *));
-	if (files == NULL)
-		error("malloc() failed");
-	while (nfile < LENGTH(filepath)) {
-		filepath_elt = STRING_ELT(filepath, nfile);
+	ninputfiles = 0;
+	inputfiles = (struct inputfile *) malloc(LENGTH(filepath) * sizeof(struct inputfile));
+	if (inputfiles == NULL)
+		error("malloc() failed in open_inputfiles()");
+	while (ninputfiles < LENGTH(filepath)) {
+		filepath_elt = STRING_ELT(filepath, ninputfiles);
 		if (filepath_elt == NA_STRING)
 			error("'filepath' contains NAs");
-		path = translateChar(filepath_elt);
-		file = fopen(path, "r");
-		if (file == NULL)
-			error("cannot open file '%s'", path);
-		files[nfile++] = file;
-		ret = fstat(fileno(file), &buf);
-		if (ret != 0)
+		path = R_ExpandFileName(translateChar(filepath_elt));
+		get_file_ztype(path, &ztype, &subtype);
+		switch (ztype) {
+		/* No compression */
+		    case -1:
+			inputfiles[ninputfiles].fp = fopen(path, "r");
+			if (inputfiles[ninputfiles].fp == NULL)
+				error("cannot open file '%s'", path);
+			ninputfiles++;
+			ret = fstat(fileno(inputfiles[ninputfiles].fp), &buf);
+			if (ret != 0)
+				error("Biostrings internal error in open_inputfiles(): ",
+				      "cannot stat file '%s'", path);
+			if (S_ISDIR(buf.st_mode))
+				error("file '%s' is a directory", path);
+		    break;
+		/* gzfile */
+		    case 0:
+			error("cannot open file '%s' (gzip-compressed files "
+			      "are not supported yet, sorry!)", path);
+			//open the file with gzFile gfp = gzopen(path, "r");
+			//close it with gzclose();
+		    break;
+		/* bzfile */
+		    case 1:
+			error("cannot open file '%s' (bzip2-compressed files "
+			      "are not supported yet, sorry!)", path);
+			//requires #include <bzlib.h>
+			//open the file with BZFILE* bfp = BZ2_bzReadOpen(...);
+			//close it with BZ2_bzReadClose();
+		    break;
+		/* xzfile */
+		    case 2:
+			error("cannot open file '%s' (LZMA-compressed files "
+			      "are not supported yet, sorry!)", path);
+			//requires #include <lzma.h>
+			//opening/closing this type of file seems quite complicated
+		    break;
+		    default:
 			error("Biostrings internal error in open_files(): ",
-			      "cannot stat file '%s'", path);
-		if (S_ISDIR(buf.st_mode))
-			error("file '%s' is a directory", path);
+			      "invalid ztype value %d", ztype);
+		}
 	}
 	return;
 }
@@ -76,11 +142,11 @@ static void open_files(SEXP filepath)
  */
 SEXP io_cleanup()
 {
-	int i;
+	int fn;
 
-	for (i = 0; i < nfile; i++)
-		fclose(files[i]);
-	free(files);
+	for (fn = 0; fn < ninputfiles; fn++)
+		fclose(inputfiles[fn].fp);
+	free(inputfiles);
 	return R_NilValue;
 }
 
@@ -253,9 +319,9 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 	} else {
 		add_desc = NULL;
 	}
-	open_files(filepath);
-	for (fn = recno = 0; fn < nfile; fn++) {
-		errmsg = parse_FASTA_file(files[fn], &recno,
+	open_inputfiles(filepath);
+	for (fn = recno = 0; fn < ninputfiles; fn++) {
+		errmsg = parse_FASTA_file(inputfiles[fn].fp, &recno,
 				add_desc,
 				&add_empty_seq_LENGTHONLY,
 				&append_to_last_seq_LENGTHONLY);
@@ -300,177 +366,14 @@ SEXP read_fasta_in_XStringSet(SEXP filepath, SEXP set_names,
 		FASTA_lkup = INTEGER(lkup);
 		FASTA_lkup_length = LENGTH(lkup);
 	}
-	for (fn = recno = 0; fn < nfile; fn++) {
-		rewind(files[fn]);
-		parse_FASTA_file(files[fn], &recno,
+	for (fn = recno = 0; fn < ninputfiles; fn++) {
+		rewind(inputfiles[fn].fp);
+		parse_FASTA_file(inputfiles[fn].fp, &recno,
 			NULL,
 			&add_empty_seq_to_FASTA_seqbuf,
 			&append_to_last_seq_in_FASTA_seqbuf);
 	}
 	UNPROTECT(3);
-	return ans;
-}
-
-#define FASTALINE_MAX 20000
-
-/*
- SharedRaw_loadFASTA().
- Load a FASTA file into an SharedRaw object.
-
- Return a named list of 4 elements:
-
-   - "nbyte" (single integer): number of bytes that were written to the SharedRaw
-     object. SharedRaw_loadFASTA() starts to write at position 1 (the first byte)
-     in the SharedRaw object. If nbyte_max is the length of the SharedRaw object, we
-     should always have 1 <= nbyte <= nbyte_max. An error is raised if the
-     FASTA file contains no data or if the size of the data exceeds the
-     capacity (i.e. the length) of the SharedRaw object i.e. if SharedRaw_loadFASTA()
-     tries to write more than nbyte_max bytes to the SharedRaw object (it does not
-     try to resize it). 
-
-   - "start" and "end": 2 integer vectors of same length L (L should always be
-     >= 1) containing the start/end positions of the FASTA sequences relatively
-     to the first byte of the SharedRaw object. The start/end positions define a set
-     of views such that:
-       (a) there is at least one view,
-       (b) all views have a width >= 1 ('all(start <= end)' is TRUE),
-       (c) the views are not overlapping and are sorted from left to right,
-       (d) the leftmost view starts at position 1 (start[1] == 1) and the
-           rightmost view ends at position nbyte (end[L] == nbyte).
-
-   - "desc" (character vector): descriptions of the FASTA sequences. The length
-     of 'desc' is L too.
-
- SharedRaw_loadFASTA() is designed to be very fast:
-
-     library(Biostrings)
-     filepath <- "~hpages/BSgenome_srcdata/UCSC/hg18/chr1.fa"
-     filesize <- file.info(filepath)$size
-     if (is.na(filesize))
-         stop(filepath, ": file not found")
-     filesize <- as.integer(filesize)
-     if (is.na(filesize))
-         stop(filepath, ": file is too big")
-     rawptr <- SharedRaw(filesize)
-
-     # Takes < 1 second on lamb1!
-     .Call("SharedRaw_loadFASTA", rawptr@xp, filepath, "", NULL, PACKAGE="Biostrings")
-
-     # or use safe wrapper:
-     Biostrings:::SharedRaw.loadFASTA(rawptr, filepath)
-
-   Compare to the time it takes to load Hsapiens$chr1 from the
-   BSgenome.Hsapiens.UCSC.hg18 package: 1.340 second on lamb1!
-   Conclusion: we could put and load directly the FASTA files in the
-   BSgenome.* packages. The DNAString and XStringViews instances would be
-   created on the fly. No need to store them in .rda files anymore!
-
-*/
-
-SEXP SharedRaw_loadFASTA(SEXP rawptr_xp, SEXP filepath, SEXP collapse, SEXP lkup)
-{
-	SEXP ans, ans_names, ans_elt, dest;
-	const char *path, *coll;
-	FILE *infile;
-	long int lineno;
-	char line[FASTALINE_MAX+1], desc[FASTALINE_MAX+1];
-	int nbyte_max, gaplen, line_len, status, view_start, i1, i2;
-	char c0;
-
-	error("SharedRaw_loadFASTA() is not ready yet");
-	dest = R_ExternalPtrTag(rawptr_xp);
-	nbyte_max = LENGTH(dest);
-	path = translateChar(STRING_ELT(filepath, 0));
-	coll = CHAR(STRING_ELT(collapse, 0));
-	gaplen = strlen(coll);
-
-	if ((infile = fopen(path, "r")) == NULL)
-		error("cannot open file");
-	lineno = i1 = 0;
-	status = 0; /* 0: expecting desc; 1: expecting seq; 2: no expectation */
-	//_init_match_reporting(0);
-	while ((line_len = fgets_rtrimmed(line, FASTALINE_MAX+1, infile)) != -1) {
-	/* while (fgets(line, FASTALINE_MAX+1, infile) != NULL) { */
-		lineno++;
-		if (line_len >= FASTALINE_MAX) {
-			fclose(infile);
-			error("file contains lines that are too long");
-		}
-		if (line_len == 0)
-			continue;
-		c0 = line[0];
-		if (c0 == ';')
-			continue;
-		if (c0 != '>') {
-			if (status == 0) {
-				fclose(infile);
-				error("file does not seem to be FASTA");
-			}
-			i2 = i1 + line_len - 1;
-			if (lkup == R_NilValue)
-				Ocopy_byteblocks_to_i1i2(i1, i2,
-					(char *) RAW(dest), nbyte_max,
-					line, line_len, sizeof(char));
-			else
-				Ocopy_bytes_to_i1i2_with_lkup(i1, i2,
-					(char *) RAW(dest), nbyte_max,
-					line, line_len,
-					INTEGER(lkup), LENGTH(lkup));
-			i1 = i2 + 1;
-			status = 2;
-			continue;
-		}
-		if (status == 1) {
-			fclose(infile);
-			error("file does not seem to be FASTA");
-		}
-		if (status == 2) {
-			//_report_view(view_start, i1, desc);
-			if (gaplen != 0) {
-				i2 = i1 + gaplen - 1;
-				Ocopy_byteblocks_to_i1i2(i1, i2,
-					(char *) RAW(dest), nbyte_max,
-					coll, gaplen, sizeof(char));
-				i1 = i2 + 1;
-			}
-		}
-		view_start = i1 + 1;
-		strcpy(desc, line + 1);
-		status = 1;
-	}
-	fclose(infile);
-	if (status != 2)
-		error("file does not seem to be FASTA");
-	//_report_view(view_start, i1, desc);
-
-	PROTECT(ans = NEW_LIST(4));
-	/* set the names */
-	PROTECT(ans_names = NEW_CHARACTER(4));
-	SET_STRING_ELT(ans_names, 0, mkChar("nbyte"));
-	SET_STRING_ELT(ans_names, 1, mkChar("start"));
-	SET_STRING_ELT(ans_names, 2, mkChar("end"));
-	SET_STRING_ELT(ans_names, 3, mkChar("desc"));
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(1);
-	/* set the "nbyte" element */
-	PROTECT(ans_elt = NEW_INTEGER(1));
-	INTEGER(ans_elt)[0] = i1;
-	SET_ELEMENT(ans, 0, ans_elt);
-	UNPROTECT(1);
-	/* set the "start" element */
-	//PROTECT(ans_elt = _reported_match_starts_asINTEGER());
-	//SET_ELEMENT(ans, 1, ans_elt);
-	//UNPROTECT(1);
-	/* set the "end" element */
-	//PROTECT(ans_elt = _reported_match_ends_asINTEGER());
-	//SET_ELEMENT(ans, 2, ans_elt);
-	//UNPROTECT(1);
-	/* set the "desc" element */
-	//PROTECT(ans_elt = _reported_view_names_asCHARACTER());
-	//SET_ELEMENT(ans, 3, ans_elt);
-	//UNPROTECT(1);
-	/* ans is ready */
-	UNPROTECT(1);
 	return ans;
 }
 
@@ -608,9 +511,9 @@ SEXP fastq_geometry(SEXP filepath)
 	const char *errmsg;
 
 	FASTQ_width = NA_INTEGER;
-	open_files(filepath);
-	for (fn = recno = 0; fn < nfile; fn++) {
-		errmsg = parse_FASTQ_file(files[fn], &recno,
+	open_inputfiles(filepath);
+	for (fn = recno = 0; fn < ninputfiles; fn++) {
+		errmsg = parse_FASTQ_file(inputfiles[fn].fp, &recno,
 				NULL, add_seq_WIDTHONLY,
 				NULL, NULL);
 		if (errmsg != NULL)
@@ -648,9 +551,9 @@ SEXP read_fastq(SEXP filepath, SEXP drop_quality)
 		PROTECT(FASTQ_qualbuf = alloc_XRaw("BString", buf_length));
 		FASTQ_qualbuf_shared = get_XVector_shared(FASTQ_qualbuf);
 	}
-	for (fn = recno = 0; fn < nfile; fn++) {
-		rewind(files[fn]);
-		parse_FASTQ_file(files[fn], &recno,
+	for (fn = recno = 0; fn < ninputfiles; fn++) {
+		rewind(inputfiles[fn].fp);
+		parse_FASTQ_file(inputfiles[fn].fp, &recno,
 			NULL, append_seq_to_FASTQ_seqbuf,
 			NULL, LOGICAL(drop_quality)[0] ? NULL : append_qual_to_FASTQ_qualbuf);
 	}

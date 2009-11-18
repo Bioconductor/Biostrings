@@ -122,15 +122,16 @@ exportMethods(
 
 export(
     ## readFASTA.R:
-    fasta.info, readFASTA, writeFASTA,
+    readFASTA, writeFASTA,
 
     ## XStringSet-io.R:
+    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
+    fasta.info, fastq.geometry,
+    write.XStringSet,
+    save.XStringSet,
+    read.XStringViews, write.XStringViews,
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
-    fastq.geometry,
-    read.XStringViews,
-    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
-    write.XStringSet, write.XStringViews, save.XStringSet,
 
     ## letter.R:
     letter,
