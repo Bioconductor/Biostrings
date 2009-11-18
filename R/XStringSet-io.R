@@ -93,7 +93,7 @@ read.AAStringSet <- function(filepath, format="fasta")
     writeFASTA(FASTArecs, file=file, append=append, width=width)
 }
 
-.write.XStringSet.to.fastq(x, file, append)
+.write.XStringSet.to.fastq <- function(x, file, append)
     stop("writing to a FASTQ file is not supported yet, sorry!")
 
 write.XStringSet <- function(x, file="", append=FALSE, format="fasta", width=80)
