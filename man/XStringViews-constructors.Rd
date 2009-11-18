@@ -13,6 +13,7 @@
 \alias{BStringViews,file-method}
 \alias{BStringViews,XString-method}
 \alias{BStringViews,XStringViews-method}
+\alias{adjacentViews}
 
 
 \title{Basic functions for creating or modifying XStringViews objects}
@@ -26,15 +27,6 @@
 }
 
 \arguments{
-  \item{subject}{
-    An \link{XString} object or a single string.
-  }
-  \item{width}{
-    An integer vector containing the widths of the views.
-  }
-  \item{gapwidth}{
-    An integer vector containing the widths of the gaps between the views.
-  }
   \item{x}{
     An \link{XString} object or a character vector for \code{XStringViews}.
   }
