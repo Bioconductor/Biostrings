@@ -39,7 +39,12 @@ readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
                desc <- s1[descriptions[i]]
                if (strip.descs)
                    desc <- substr(desc, 2L, nchar(desc))
-               seq <- paste(s1[dp[i]:end[i]], collapse="")
+               if (end[i] >= dp[i]) {
+                   seq <- paste(s1[dp[i]:end[i]], collapse="")
+               } else {
+                   warning("record \"", desc, "\" contains no sequence")
+                   seq <- ""
+               }
                list(desc=desc, seq=seq)
            }
     )
