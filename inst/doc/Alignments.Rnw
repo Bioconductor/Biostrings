@@ -893,7 +893,7 @@ following application assumes the ORF data to be aligned for the first 10
 positions (patently false):
 <<doal>>=
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
-orf <- read.DNAStringSet(file, "fasta")
+orf <- read.DNAStringSet(file)
 orf
 orf10 <- DNAStringSet(orf, end=10)
 consensusMatrix(orf10, as.prob=TRUE, baseOnly=TRUE)

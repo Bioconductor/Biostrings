@@ -115,7 +115,7 @@
 
 \examples{
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  x <- read.DNAStringSet(file, "fasta")
+  x <- read.DNAStringSet(file)
   x
 
   ## The first and last 1000 nucleotides are not part of the ORFs:

@@ -320,7 +320,7 @@ sequence, or the consensus matrix of a set of sequences}
   ## ---------------------------------------------------------------------
   ## Read in ORF data:
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  orf <- read.DNAStringSet(file, "fasta")
+  orf <- read.DNAStringSet(file)
 
   ## To illustrate, the following example assumes the ORF data
   ## to be aligned for the first 10 positions (patently false):

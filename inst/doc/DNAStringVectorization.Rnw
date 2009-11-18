@@ -142,7 +142,7 @@ The \Rfunction{read.XStringViews} function can be used to load a FASTA file
 in an \Rclass{XStringViews} object:
 <<d1>>=
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
-orf <- read.XStringViews(file, "fasta", "DNAString")
+orf <- read.XStringViews(file, subjectClass="DNAString")
 orf
 names(orf)
 @
