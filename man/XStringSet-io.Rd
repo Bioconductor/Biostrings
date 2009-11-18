@@ -33,25 +33,26 @@
 }
 
 \usage{
-  ## Read files in an XStringSet object:
-  read.BStringSet(filepath, format)
-  read.DNAStringSet(filepath, format)
-  read.RNAStringSet(filepath, format)
-  read.AAStringSet(filepath, format)
+  ## Read FASTA (or FASTQ) files in an XStringSet object:
+  read.BStringSet(filepath, format="fasta")
+  read.DNAStringSet(filepath, format="fasta")
+  read.RNAStringSet(filepath, format="fasta")
+  read.AAStringSet(filepath, format="fasta")
 
-  ## Get basic information about FASTA or FASTQ files without loading them:
+  ## Get basic information about FASTA (or FASTQ) files
+  ## without loading them:
   fasta.info(filepath, use.descs=TRUE)
   fastq.geometry(filepath)
 
-  ## Write an XStringSet object to a file:
-  write.XStringSet(x, file="", append=FALSE, format, width=80)
+  ## Write an XStringSet object to a FASTA (or FASTQ) file:
+  write.XStringSet(x, file="", append=FALSE, format="fasta", width=80)
 
   ## Serialize an XStringSet object:
   save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
   ## Some legacy stuff:
-  read.XStringViews(filepath, format, subjectClass, collapse="")
-  write.XStringViews(x, file="", append=FALSE, format, width=80)
+  read.XStringViews(filepath, format="fasta", subjectClass, collapse="")
+  write.XStringViews(x, file="", append=FALSE, format="fasta", width=80)
   FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
   CharacterToFASTArecords(x)
   FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse="")
@@ -63,7 +64,7 @@
     A character vector containing the paths to the input files.
   }
   \item{format}{
-    Either \code{"fasta"} or \code{"fastq"}.
+    Either \code{"fasta"} (the default) or \code{"fastq"}.
     Note that \code{write.XStringSet} and \code{write.XStringViews} only
     support \code{"fasta"} for now.
   }
@@ -193,9 +194,9 @@
   ## ---------------------------------------------------------------------
   filepath <- system.file("extdata", "someORF.fa", package="Biostrings")
   fasta.info(filepath)
-  x <- read.DNAStringSet(filepath, "fasta")
+  x <- read.DNAStringSet(filepath)
   x
-  write.XStringSet(x, format="fasta")  # writes to the console
+  write.XStringSet(x)  # writes to the console
 
   ## ---------------------------------------------------------------------
   ## B. READ FASTQ FILES
@@ -204,7 +205,7 @@
   fastq.geometry(filepath)
   ## Only the FASTQ sequences are returned (identifiers and qualities
   ## are dropped):
-  read.DNAStringSet(filepath, "fastq")
+  read.DNAStringSet(filepath, format="fastq")
 
   ## ---------------------------------------------------------------------
   ## C. SERIALIZATION

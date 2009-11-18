@@ -4,106 +4,6 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Conversion between a list of FASTA records (as one returned by
-### readFASTA) and a named character vector.
-###
-
-FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
-{
-    use.names <- normargUseNames(use.names)
-    ans <- sapply(FASTArecs, function(rec) rec$seq)
-    if (use.names)
-        names(ans) <- sapply(FASTArecs, function(rec) rec$desc)
-    ans
-}
-
-CharacterToFASTArecords <- function(x)
-{
-    if (!is.character(x))
-        stop("'x' must be a character vector")
-    lapply(seq_len(length(x)),
-           function(i) list(desc=names(x)[i], seq=x[[i]]))
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Conversion between a list of FASTA records (as one returned by
-### readFASTA) and an XStringViews object.
-###
-### Note that, for any well-formed list of FASTA records 'FASTArecs',
-###
-###   XStringSetToFASTArecords(BStringSet(FASTArecordsToXStringViews(FASTArecs)))
-###
-### is identical to 'FASTArecs'.
-### But it is NOT the case that any XStringViews object y can
-### be "reconstructed" with
-###
-###   FASTArecordsToXStringViews(XStringSetToFASTArecords(BStringSet(y)))
-###
-
-FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
-{
-    if (!isSingleString(subjectClass))
-        stop("'subjectClass' must be a single string")
-    if (!isSingleString(collapse))
-        stop("'collapse' must be a single string")
-    x <- FASTArecordsToCharacter(FASTArecs)
-    XStringViews(x, subjectClass, collapse)
-}
-
-XStringSetToFASTArecords <- function(x)
-{
-    if (!is(x, "XStringSet"))
-        stop("'x' must be an XStringSet object")
-    CharacterToFASTArecords(as.character(x))
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "read.XStringViews" function.
-###
-
-.read.fasta <- function(filepath, subjectClass, collapse)
-{
-    FASTArecs <- readFASTA(filepath, strip.descs=TRUE)
-    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse)
-}
-
-.read.fastq <- function(filepath, drop.quality=FALSE, subjectClass="DNAString")
-{
-    if (!isTRUEorFALSE(drop.quality))
-        stop("'drop.quality' must be TRUE or FALSE")
-    if (!identical(subjectClass, "DNAString"))
-        stop("'subjectClass' must be \"DNAString\"")
-    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
-    C_ans <- .Call("read_fastq", filepath, drop.quality, PACKAGE="Biostrings")
-    views_width <- rep.int(C_ans[[1]][2], C_ans[[1]][1])
-    fastq_seqs <- successiveViews(C_ans[[2]], views_width)
-    if (drop.quality)
-        return(fastq_seqs)
-    fastq_quals <- successiveViews(C_ans[[3]], views_width)
-    return(list(seq=fastq_seqs, qual=fastq_quals))
-}
-
-read.XStringViews <- function(filepath, format, subjectClass, collapse="")
-{
-    if (!is.character(filepath) || any(is.na(filepath)))
-        stop("'filepath' must be a character vector with no NAs")
-    if (!isSingleString(format))
-        stop("'format' must be a single string")
-    format <- match.arg(tolower(format), c("fasta", "fastq"))
-    if (!isSingleString(subjectClass))
-        stop("'subjectClass' must be a single string")
-    if (!isSingleString(collapse))
-        stop("'collapse' must be a single string")
-    switch(format,
-        "fasta"=.read.fasta(filepath, subjectClass, collapse),
-        "fastq"=.read.fastq(filepath, drop.quality=TRUE, subjectClass)
-    )
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### FASTA
 ###
 
@@ -139,7 +39,9 @@ fastq.geometry <- function(filepath)
 
 .read.fastq.in.XStringSet <- function(filepath, set.names, elementType, lkup)
 {
-    .read.fastq(filepath, drop.quality=TRUE, elementType)
+    .Call("read_fastq_in_XStringSet",
+          filepath, set.names, elementType, lkup,
+          PACKAGE="Biostrings")
 }
 
 
@@ -160,48 +62,49 @@ fastq.geometry <- function(filepath)
     elementType <- paste(basetype, "String", sep="")
     lkup <- get_xsbasetypes_conversion_lookup("B", basetype)
     switch(format,
-        "fasta"=.read.fasta.in.XStringSet(filepath, set.names, elementType, lkup),
-        "fastq"=.read.fastq.in.XStringSet(filepath, set.names, elementType, lkup)
+        "fasta"=.read.fasta.in.XStringSet(filepath, set.names,
+                                          elementType, lkup),
+        "fastq"=.read.fastq.in.XStringSet(filepath, set.names,
+                                          elementType, lkup)
     )
 }
 
-read.BStringSet <- function(filepath, format)
+read.BStringSet <- function(filepath, format="fasta")
     .read.XStringSet(filepath, format, TRUE, "B")
 
-read.DNAStringSet <- function(filepath, format)
+read.DNAStringSet <- function(filepath, format="fasta")
     .read.XStringSet(filepath, format, TRUE, "DNA")
 
-read.RNAStringSet <- function(filepath, format)
+read.RNAStringSet <- function(filepath, format="fasta")
     .read.XStringSet(filepath, format, TRUE, "RNA")
 
-read.AAStringSet <- function(filepath, format)
+read.AAStringSet <- function(filepath, format="fasta")
     .read.XStringSet(filepath, format, TRUE, "AA")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "write.XStringSet" and "write.XStringViews" functions.
+### write.XStringSet()
 ###
 
-.write.fasta <- function(x, file, append, width)
+### TODO: Implement this in C.
+.write.XStringSet.to.fasta <- function(x, file, append, width)
 {
     FASTArecs <- XStringSetToFASTArecords(x)
     writeFASTA(FASTArecs, file=file, append=append, width=width)
 }
 
-write.XStringSet <- function(x, file="", append=FALSE, format, width=80)
+.write.XStringSet.to.fastq(x, file, append)
+    stop("writing to a FASTQ file is not supported yet, sorry!")
+
+write.XStringSet <- function(x, file="", append=FALSE, format="fasta", width=80)
 {
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta"))
     switch(format,
-        "fasta"=.write.fasta(x, file, append, width)
+        "fasta"=.write.XStringSet.to.fasta(x, file, append, width),
+        "fastq"=.write.XStringSet.to.fastq(x, file, append)
     )
-}
-
-write.XStringViews <- function(x, file="", append=FALSE, format, width=80)
-{
-    y <- XStringViewsToSet(x, use.names=TRUE)
-    write.XStringSet(y, file=file, append=append, format, width=width)
 }
 
 
@@ -268,6 +171,93 @@ save.XStringSet <- function(x, objname, dirpath=".",
     save(list=objname, file=filepath)
     if (verbose)
         cat("OK\n")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Legacy stuff.
+###
+
+### Conversion between a list of FASTA records (as one returned by
+### readFASTA) and a named character vector.
+FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
+{
+    use.names <- normargUseNames(use.names)
+    ans <- sapply(FASTArecs, function(rec) rec$seq)
+    if (use.names)
+        names(ans) <- sapply(FASTArecs, function(rec) rec$desc)
+    ans
+}
+
+CharacterToFASTArecords <- function(x)
+{
+    if (!is.character(x))
+        stop("'x' must be a character vector")
+    lapply(seq_len(length(x)),
+           function(i) list(desc=names(x)[i], seq=x[[i]]))
+}
+
+### Conversion between a list of FASTA records (as one returned by
+### readFASTA) and an XStringViews object.
+###
+### Note that, for any well-formed list of FASTA records 'FASTArecs',
+###
+###   XStringSetToFASTArecords(BStringSet(FASTArecordsToXStringViews(FASTArecs)))
+###
+### is identical to 'FASTArecs'.
+### But it is NOT the case that any XStringViews object y can
+### be "reconstructed" with
+###
+###   FASTArecordsToXStringViews(XStringSetToFASTArecords(BStringSet(y)))
+FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
+{
+    if (!isSingleString(subjectClass))
+        stop("'subjectClass' must be a single string")
+    if (!isSingleString(collapse))
+        stop("'collapse' must be a single string")
+    x <- FASTArecordsToCharacter(FASTArecs)
+    XStringViews(x, subjectClass, collapse)
+}
+
+XStringSetToFASTArecords <- function(x)
+{
+    if (!is(x, "XStringSet"))
+        stop("'x' must be an XStringSet object")
+    CharacterToFASTArecords(as.character(x))
+}
+
+.read.fasta <- function(filepath, subjectClass, collapse)
+{
+    FASTArecs <- readFASTA(filepath, strip.descs=TRUE)
+    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse)
+}
+
+.read.fastq <- function(filepath, drop.quality=FALSE, subjectClass="DNAString")
+    stop("FASTQ format temporarily unsupported in read.XStringViews(), sorry!")
+
+read.XStringViews <- function(filepath, format="fasta",
+                              subjectClass, collapse="")
+{
+    if (!is.character(filepath) || any(is.na(filepath)))
+        stop("'filepath' must be a character vector with no NAs")
+    if (!isSingleString(format))
+        stop("'format' must be a single string")
+    format <- match.arg(tolower(format), c("fasta", "fastq"))
+    if (!isSingleString(subjectClass))
+        stop("'subjectClass' must be a single string")
+    if (!isSingleString(collapse))
+        stop("'collapse' must be a single string")
+    switch(format,
+        "fasta"=.read.fasta(filepath, subjectClass, collapse),
+        "fastq"=.read.fastq(filepath, drop.quality=TRUE, subjectClass)
+    )
+}
+
+write.XStringViews <- function(x, file="", append=FALSE,
+                               format="fasta", width=80)
+{
+    y <- XStringViewsToSet(x, use.names=TRUE)
+    write.XStringSet(y, file=file, append=append, format, width=width)
 }
 
 

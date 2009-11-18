@@ -27,14 +27,6 @@ SEXP debug_XStringSet_io()
 	return R_NilValue;
 }
 
-/* This function should go somewhere else */
-static int overflow_mult_int(int a, int b)
-{
-	a = abs(a);
-	b = abs(b);
-	return a != 0 && b != 0 && (log((double) a) + log((double) b) >= log((double) INT_MAX));
-}
-
 /* Code taken from do_url() in R/src/main/connections.c */
 static void get_file_ztype(const char *path, int *ztype, int *subtype)
 {
@@ -137,9 +129,7 @@ static void open_inputfiles(SEXP filepath)
 	return;
 }
 
-/*
- * --- .Call ENTRY POINT ---
- */
+/* --- .Call ENTRY POINT --- */
 SEXP io_cleanup()
 {
 	int fn;
@@ -355,8 +345,11 @@ SEXP read_fasta_in_XStringSet(SEXP filepath, SEXP set_names,
 	element_type = CHAR(STRING_ELT(elementType, 0));
 	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
 	    >= sizeof(classname))
+	{
+		UNPROTECT(2);
 		error("Biostrings internal error in "
 		      "read_fasta_in_XStringSet(): 'elementType' too long");
+	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
 	_set_XStringSet_names(ans, ans_names);
 	FASTA_seqbuf = cache_XVectorList(ans);
@@ -403,28 +396,29 @@ static void add_seq_WIDTHONLY(int recno, const cachedCharSeq *dataline)
 	return;
 }
 
-static SEXP FASTQ_seqbuf, FASTQ_seqbuf_shared, FASTQ_qualbuf, FASTQ_qualbuf_shared;
+
+/*
+ * The FASTQ_seqbuf storage handlers.
+ */
+
+static cachedXVectorList FASTQ_seqbuf;
+static const int *FASTQ_lkup;
+static int FASTQ_lkup_length;
 
 static void append_seq_to_FASTQ_seqbuf(int recno, const cachedCharSeq *dataline)
 {
-	const ByteTrTable *byte2code;
+	cachedCharSeq FASTQ_seqbuf_elt;
 
-	byte2code = get_enc_byte2code("DNAString");
-	Ocopy_cachedCharSeq_to_SharedRaw_offset(
-		FASTQ_seqbuf_shared, recno * FASTQ_width,
-		dataline,
-		*byte2code, BYTETRTABLE_LENGTH);
+	FASTQ_seqbuf_elt = get_cachedXRawList_elt(&FASTQ_seqbuf, recno);
+	/* FASTQ_seqbuf_elt.seq is a const char * so we need to cast it to
+           char * before we can write to it */
+	Ocopy_bytes_to_i1i2_with_lkup(0, FASTQ_seqbuf_elt.length - 1,
+		(char *) FASTQ_seqbuf_elt.seq, FASTQ_seqbuf_elt.length,
+		dataline->seq, dataline->length,
+		FASTQ_lkup, FASTQ_lkup_length);
 	return;
 }
 
-static void append_qual_to_FASTQ_qualbuf(int recno, const cachedCharSeq *dataline)
-{
-	Ocopy_cachedCharSeq_to_SharedRaw_offset(
-		FASTQ_qualbuf_shared, recno * FASTQ_width,
-		dataline,
-		NULL, 0);
-	return;
-}
 
 /*
  * Ignore empty lines.
@@ -527,48 +521,51 @@ SEXP fastq_geometry(SEXP filepath)
 	return ans;
 }
 
-/* --- .Call ENTRY POINT --- */
-SEXP read_fastq(SEXP filepath, SEXP drop_quality)
+/* --- .Call ENTRY POINT ---
+ * 'set_names' is ignored.
+ */
+SEXP read_fastq_in_XStringSet(SEXP filepath, SEXP set_names,
+		SEXP elementType, SEXP lkup)
 {
-	SEXP ans_geom, ans;
-	int fn, recno, buf_length;
+	SEXP ans, ans_geom, ans_width;
+	const char *element_type;
+	char classname[40]; // longest string will be "DNAStringSet"
+	int ans_length, fn, recno;
 
 	PROTECT(ans_geom = fastq_geometry(filepath));
-	if (INTEGER(ans_geom)[0] == 0) {
-		buf_length = 0;
-	} else {
-		if (INTEGER(ans_geom)[1] == NA_INTEGER)
-			error("read_fastq(): FASTQ files with variable sequence "
-			      "lengths are not supported yet");
-		if (overflow_mult_int(INTEGER(ans_geom)[0], INTEGER(ans_geom)[1]))
-			error("read_fastq(): FASTQ files contain more data an "
-			      "XStringSet object can hold, sorry!");
-		buf_length = INTEGER(ans_geom)[0] * INTEGER(ans_geom)[1];
+	ans_length = INTEGER(ans_geom)[0];
+	PROTECT(ans_width = NEW_INTEGER(ans_length));
+	if (ans_length != 0) {
+		if (INTEGER(ans_geom)[1] == NA_INTEGER) {
+			UNPROTECT(2);
+			error("read_fastq_in_XStringSet(): FASTQ files with "
+			      "variable sequence lengths are not supported yet");
+		}
+		for (recno = 0; recno < ans_length; recno++)
+			INTEGER(ans_width)[recno] = INTEGER(ans_geom)[1];
 	}
-	PROTECT(FASTQ_seqbuf = alloc_XRaw("DNAString", buf_length));
-	FASTQ_seqbuf_shared = get_XVector_shared(FASTQ_seqbuf);
-	if (!LOGICAL(drop_quality)[0]) {
-		PROTECT(FASTQ_qualbuf = alloc_XRaw("BString", buf_length));
-		FASTQ_qualbuf_shared = get_XVector_shared(FASTQ_qualbuf);
+	element_type = CHAR(STRING_ELT(elementType, 0));
+	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
+	    >= sizeof(classname))
+	{
+		UNPROTECT(2);
+		error("Biostrings internal error in "
+		      "read_fasta_in_XStringSet(): 'elementType' too long");
+	}
+	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
+	FASTQ_seqbuf = cache_XVectorList(ans);
+	if (lkup == R_NilValue) {
+		FASTQ_lkup = NULL;
+	} else {
+		FASTQ_lkup = INTEGER(lkup);
+		FASTQ_lkup_length = LENGTH(lkup);
 	}
 	for (fn = recno = 0; fn < ninputfiles; fn++) {
 		rewind(inputfiles[fn].fp);
 		parse_FASTQ_file(inputfiles[fn].fp, &recno,
-			NULL, append_seq_to_FASTQ_seqbuf,
-			NULL, LOGICAL(drop_quality)[0] ? NULL : append_qual_to_FASTQ_qualbuf);
+			NULL, append_seq_to_FASTQ_seqbuf, NULL, NULL);
 	}
-	if (!LOGICAL(drop_quality)[0]) {
-		PROTECT(ans = NEW_LIST(3));
-		SET_ELEMENT(ans, 0, ans_geom);
-		SET_ELEMENT(ans, 1, FASTQ_seqbuf);
-		SET_ELEMENT(ans, 2, FASTQ_qualbuf);
-		UNPROTECT(4);
-	} else {
-		PROTECT(ans = NEW_LIST(2));
-		SET_ELEMENT(ans, 0, ans_geom);
-		SET_ELEMENT(ans, 1, FASTQ_seqbuf);
-		UNPROTECT(3);
-	}
+	UNPROTECT(3);
 	return ans;
 }
 

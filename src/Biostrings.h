@@ -278,9 +278,11 @@ SEXP read_fasta_in_XStringSet(
 
 SEXP fastq_geometry(SEXP filepath);
 
-SEXP read_fastq(
+SEXP read_fastq_in_XStringSet(
 	SEXP filepath,
-	SEXP drop_quality
+	SEXP set_names,
+	SEXP elementType,
+	SEXP lkup
 );
 
 
