@@ -82,6 +82,7 @@
 }
 
 \seealso{
+  \code{\link[GenomicFeatures:extractTranscriptsFromGenome]{extractTranscriptsFromGenome}},
   \code{\link{reverseComplement}},
   \link{DNAString-class},
   \link{DNAStringSet-class}

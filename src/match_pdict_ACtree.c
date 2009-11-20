@@ -628,7 +628,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 				_TBMatchBuf_report_match(tb_matches, P_id - 1, n);
 		}
 		// error if too many remaining pointers
-		if (cnode_ids.nelt > 4096)
+		if (cnode_ids.nelt > 16384)
 			error("too many IUPAC ambiguity letters in 'subject'");
 	}
 	return;
