@@ -4,7 +4,7 @@
 ###
 
 setClass("XStringSet",
-    contains="XVectorList",
+    contains="XRawList",
     representation("VIRTUAL"),
     prototype(elementType="XString")
 )
@@ -76,6 +76,8 @@ setMethod("nchar", "XStringSet",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "subseq" endomorphism and related transformations.
 ###
+### Methods for XStringSet objects are inherited from the XVectorList class.
+###
 
 setMethod("narrow", "character",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -88,21 +90,7 @@ setMethod("narrow", "character",
     }
 )
 
-setMethod("narrow", "XStringSet",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        x@ranges <- narrow(x@ranges, start=start, end=end, width=width,
-                           use.names=use.names)
-        x
-    }
-)
-
 setMethod("subseq", "character",
-    function(x, start=NA, end=NA, width=NA)
-        narrow(x, start=start, end=end, width=width)
-)
-
-setMethod("subseq", "XStringSet",
     function(x, start=NA, end=NA, width=NA)
         narrow(x, start=start, end=end, width=width)
 )
@@ -120,18 +108,6 @@ setMethod("threebands", "character",
     }
 )
 
-setMethod("threebands", "XStringSet",
-    function(x, start=NA, end=NA, width=NA)
-    {
-        threeranges <- threebands(x@ranges, start=start, end=end, width=width)
-        left <- right <- x
-        left@ranges <- threeranges$left
-        x@ranges <- threeranges$middle
-        right@ranges <- threeranges$right
-        list(left=left, middle=x, right=right)
-    }
-)
-
 setReplaceMethod("subseq", "character",
     function(x, start=NA, end=NA, width=NA, value)
     {
@@ -140,6 +116,8 @@ setReplaceMethod("subseq", "character",
     }
 )
 
+### TODO: Make this a method for XVectorList objects and move it to the
+### IRanges package (this means the implementation cannot use xscat() anymore).
 setReplaceMethod("subseq", "XStringSet",
     function(x, start=NA, end=NA, width=NA, value)
     {

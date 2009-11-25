@@ -23,11 +23,8 @@
 \alias{width,character-method}
 \alias{nchar,XStringSet-method}
 \alias{narrow,character-method}
-\alias{narrow,XStringSet-method}
 \alias{subseq,character-method}
-\alias{subseq,XStringSet-method}
 \alias{threebands,character-method}
-\alias{threebands,XStringSet-method}
 \alias{subseq<-,character-method}
 \alias{subseq<-,XStringSet-method}
 
@@ -110,10 +107,6 @@
   ## Accessor-like methods:
   \S4method{width}{character}(x)
   \S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
-
-  ## Efficient subsequence extraction:
-  \S4method{subseq}{character}(x, start=NA, end=NA, width=NA)
-  \S4method{subseq}{XStringSet}(x, start=NA, end=NA, width=NA)
 
   ## ... and more (see below)
 }

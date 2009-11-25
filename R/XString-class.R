@@ -100,23 +100,6 @@ XString.write <- function(x, i, imax=integer(0), value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "XString.append" function.
-### NOT exported!
-###
-
-XString.append <- function(x, y)
-{
-    ans_basetype <- xsbasetype(x)
-    if (xsbasetype(y) != ans_basetype)
-        stop("'x' and 'y' must be XString objects of the same base type")
-    ans_class <- paste(ans_basetype, "String", sep="")
-    ans_shared <- SharedRaw.append(x@shared, x@offset + 1L, x@length,
-                               y@shared, y@offset + 1L, y@length)
-    new(ans_class, shared=ans_shared, length=length(ans_shared))
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions used by the versatile constructors below.
 ###
 
