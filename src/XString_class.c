@@ -126,25 +126,6 @@ static RoSeqs new_RoSeqs_from_XString(int nelt, SEXP x)
 }
 
 /*
- * --- .Call ENTRY POINT ---
- * Arguments:
- *   x: an XString object;
- *   start/width: integer vectors of the same length as 'x' and describing a
- *                set of valid ranges in 'x';
- *   lkup: lookup table for (re)encoding the letters in 'x'.
- */
-SEXP new_SharedRaw_from_XString(SEXP x, SEXP start, SEXP width, SEXP lkup)
-{
-	int nseq;
-	RoSeqs seqs;
-
-	nseq = LENGTH(start);
-	seqs = new_RoSeqs_from_XString(nseq, x);
-	_narrow_RoSeqs(&seqs, start, width);
-	return _new_SharedRaw_from_RoSeqs(&seqs, lkup);
-}
-
-/*
  * Making an XString object from the sequences referenced by a RoSeqs struct.
  * Assume that these sequences are NOT already encoded.
  */

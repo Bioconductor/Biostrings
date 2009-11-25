@@ -39,26 +39,6 @@ setClass("AAStringSet",
 ### Accessor-like methods.
 ###
 
-### NOT exported. super() is a relic from the time when XStringSet objects
-### had a "super" slot (which has been replaced by the "pool" slot since
-### then). super() is temporarily kept (and adapted), allowing existing code
-### in Biostrings to keep working but only on XStringSet objects with a
-### "pool" slot of length 1. This is of course not a good situation.
-### TODO: Fix code using super() (in particular make it work on XStringSet
-### objects with a "pool" slot of arbitrary length) and drop super().
-
-setGeneric("super", function(x) standardGeneric("super"))
-
-setMethod("super", "XStringSet",
-    function(x)
-    {
-        if (length(x@pool) != 1L)
-            stop("Biostrings internal error: length(x@pool) != 1")
-        ans_shared <- x@pool[[1L]]
-        new(elementType(x), shared=ans_shared, offset=0L, length=length(ans_shared))
-    }
-)
-
 setMethod("width", "character",
     function(x)
     {
@@ -155,40 +135,16 @@ setMethod("xsbasetype", "XStringSet",
 )
 
 ### This is an endomorphism iff 'basetype' is NULL, otherwise it is NOT!
-### FIXME: It's currently broken when 'basetype=NULL' because of its attempt
-### to access the "super" slot.
 .XStringSet.compact <- function(x, basetype=NULL)
 {
-    from_basetype <- xsbasetype(x)
-    from_baseclass <- paste(from_basetype, "String", sep="")
-    if (is.null(basetype)) {
-        basetype <- from_basetype
-        baseclass <- from_baseclass
-    } else {
-        baseclass <- paste(basetype, "String", sep="")
-    }
-    lkup <- get_xsbasetypes_conversion_lookup(from_basetype, basetype)
-    ## The frame is the strict minimal set of regions in 'super(x)' that need
-    ## to be copied. Hence compacting 'x' returns an XStringSet object 'y'
-    ## where 'length(super(y))' can be significantly smaller than
-    ## 'length(super(x))' especially if the elements in 'x' cover a small part
-    ## of 'super(x)'.
-    frame <- reduce(x@ranges, with.inframe.attrib=TRUE)
-    shared <- .Call("new_SharedRaw_from_XString",
-                   super(x), start(frame), width(frame), lkup,
-                   PACKAGE="Biostrings")
-    ans_super <- new(baseclass, shared=shared, length=length(shared))
-    ans_ranges <- attr(frame, "inframe")
-    if (is.null(basetype)) {
-        ## Endomorphism
-        x@super <- ans_super
-        x@ranges <- IRanges:::unsafe.update(x@ranges,
-                                            start=start(ans_ranges),
-                                            width=width(ans_ranges))
-        return(x)
-    }
+    ## xvcopy() creates a compact copy of 'x'.
+    if (is.null(basetype))
+        return(xvcopy(x))
+    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), basetype)
+    y <- xvcopy(x, lkup=lkup)  # 'y' is a temporarily broken object
     ## NOT an endomorphism! (downgrades 'x' to a B/DNA/RNA/AAStringSet instance)
-    unsafe.newXStringSet(ans_super, ans_ranges, use.names=TRUE, names=names(x))
+    ans_class <- paste(basetype, "StringSet", sep="")
+    new2(ans_class, pool=y@pool, ranges=y@ranges, check=FALSE)
 }
 
 ### Downgrades 'x' to a B/DNA/RNA/AAStringSet instance!
@@ -200,12 +156,7 @@ setReplaceMethod("xsbasetype", "XStringSet",
         if (!is.null(lkup))
             return(.XStringSet.compact(x, basetype=value))
         ans_class <- paste(value, "StringSet", sep="")
-        if (is(x, ans_class)) {
-            ans_super <- super(x)
-        } else {
-            ans_super <- XString(value, super(x))
-        }
-        unsafe.newXStringSet(ans_super, x@ranges, use.names=TRUE, names=names(x))
+        new2(ans_class, pool=x@pool, ranges=x@ranges, check=FALSE)
     }
 )
 

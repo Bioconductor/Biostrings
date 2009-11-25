@@ -114,7 +114,23 @@ setMethod("Views", signature = c(subject = "PairwiseAlignedFixedSubject"),
                   stop("'end' must be either NA or an integer vector of length 1")
               else
                   end <- as.integer(end) + start(subject(subject))
-              Views(super(unaligned(subject(subject))), start=start, end=end, names=names)
+              tmp <- unaligned(subject(subject))
+              ## super() doesn't exist anymore. It should have not been used
+              ## here because the @super slot was an internal slot that was
+              ## not normalized so its content was not predictable (i.e. 2
+              ## XStringSet objects that are equal could have had different
+              ## @super slots). With the new XStringSet internals, the @super
+              ## slot has been replaced by the @pool slot which can be seen as
+              ## a list of "super strings". The following code is a replacement
+              ## for 'super(tmp)'. It extracts the first element of 'tmp@pool'
+              ## as if it was the old @super slot.
+              #ans_subject <- super(tmp)
+              if (length(tmp@pool) != 1L)
+                  stop("internal error: length(tmp@pool) != 1")
+              ans_subject_shared <- tmp@pool[[1L]]
+              ans_subject <- new(elementType(tmp), shared=ans_subject_shared,
+                                 offset=0L, length=length(ans_subject_shared))
+              Views(ans_subject, start=start, end=end, names=names)
           })
 
 

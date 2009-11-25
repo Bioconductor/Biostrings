@@ -166,13 +166,6 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-SEXP new_SharedRaw_from_XString(
-	SEXP x,
-	SEXP start,
-	SEXP width,
-	SEXP lkup
-);
-
 SEXP _new_XString_from_RoSeqs(
 	const char *classname,
 	const RoSeqs *seqs

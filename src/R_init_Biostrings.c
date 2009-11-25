@@ -37,7 +37,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_XString_class, 0),
 	CALLMETHOD_DEF(init_DNAlkups, 2),
 	CALLMETHOD_DEF(init_RNAlkups, 2),
-	CALLMETHOD_DEF(new_SharedRaw_from_XString, 4),
 
 /* XStringSet_class.c */
 	CALLMETHOD_DEF(debug_XStringSet_class, 0),
