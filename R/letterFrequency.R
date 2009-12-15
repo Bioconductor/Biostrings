@@ -81,7 +81,7 @@
 }
 
 ### Author: HJ
-.normargLetters <- function(letters, allowed_letters)
+.normargLetters <- function(letters, alphabet)
 {
     if (!is.character(letters) || any(is.na(letters)))
         stop("'letters' must be a character vector with no NAs")
@@ -90,8 +90,8 @@
     single_letters <- unlist(strsplit(letters, NULL, fixed=TRUE))
     if (any(duplicated(single_letters)))
         stop("letters in 'letters' must be unique")
-    if (!is.null(allowed_letters)) {
-        is_valid_letter <- single_letters %in% allowed_letters
+    if (!is.null(alphabet)) {
+        is_valid_letter <- single_letters %in% alphabet
         if (!all(is_valid_letter))
             stop("invalid letter(s): ",
                  paste(single_letters[!is_valid_letter], collapse=", "))
@@ -345,9 +345,9 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
 .XString.code_frequency_in_sliding_view <- function(x, view.width, letters, OR)
 {
     view.width <- .normargWidth(view.width, "view.width")
-    codes <- xscodes(x)
-    single_letters <- .normargLetters(letters, names(codes))
+    single_letters <- .normargLetters(letters, alphabet(x))
     OR <- .normargOR(OR)
+    codes <- xscodes(x)
     if (is.null(names(codes)))
         single_codes <- as.integer(BString(paste(single_letters, collapse="")))
     else
