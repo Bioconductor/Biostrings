@@ -81,12 +81,29 @@
 }
 
 ### Author: HJ
-.normargLetters <- function(letters)
+.normargLetters <- function(letters, allowed_letters)
 {
-    ans <- unlist(strsplit(letters, NULL, fixed=TRUE))
-    if (any(duplicated(ans)))
-        stop("'letters' must be unique")
-    ans
+    if (!is.character(letters) || any(is.na(letters)))
+        stop("'letters' must be a character vector with no NAs")
+    if (any(nchar(letters) == 0L))
+        stop("'letters' cannot contain empty strings")
+    single_letters <- unlist(strsplit(letters, NULL, fixed=TRUE))
+    if (any(duplicated(single_letters)))
+        stop("letters in 'letters' must be unique")
+    if (!is.null(allowed_letters)) {
+        is_valid_letter <- single_letters %in% allowed_letters
+        if (!all(is_valid_letter))
+            stop("invalid letter(s): ",
+                 paste(single_letters[!is_valid_letter], collapse=", "))
+    }
+    single_letters
+}
+
+.normargOR <- function(OR)
+{
+    if (!isSingleString(OR) && !(isSingleNumber(OR) && OR == 0))
+        stop("'OR' must be a single string or 0")
+    OR
 }
 
 
@@ -327,22 +344,22 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
 
 .XString.code_frequency_in_sliding_view <- function(x, view.width, letters, OR)
 {
-    codes <- xscodes(x)
     view.width <- .normargWidth(view.width, "view.width")
-    single_letters <- .normargLetters(letters)
-    single_codes <- codes[single_letters]
-    is_bad <- is.na(single_codes)
-    if (any(is_bad))
-        stop("bad letter(s): ", single_letters[is_bad])
-
-    ## Unless 'OR == 0', letters of multi-character elements of
-    ## 'letters' are to be tabulated in common.  We send a vector
-    ## indicating the column (1-based) into which each letter
-    ## of 'letters' should be tabulated.  For ex, for 'letters =
-    ## c("CG", "AT")' and 'OR != 0', we send 'c(1,1,2,2)'.  The columns
-    ## of the result are named accordingly using the OR symbol.
+    codes <- xscodes(x)
+    single_letters <- .normargLetters(letters, names(codes))
+    OR <- .normargOR(OR)
+    if (is.null(names(codes)))
+        single_codes <- as.integer(BString(paste(single_letters, collapse="")))
+    else
+        single_codes <- codes[single_letters]
+    ## Unless 'OR == 0', letters in multi-character elements of
+    ## 'letters' are to be grouped (i.e. tabulated in common).
+    ## We send a vector indicating the column (1-based) into which each
+    ## letter in 'letters' should be tabulated.  For ex,
+    ## for 'letters = c("CG", "AT")' and 'OR != 0', we send 'c(1,1,2,2)'.
+    ## The columns of the result are named accordingly using the OR symbol.
     nc <- nchar(letters)
-    if (OR == 0 || max(nc) == 1) {
+    if (all(nc == 1L) || OR == 0) {
         colmap <- NULL
         colnames <- single_letters
     } else {

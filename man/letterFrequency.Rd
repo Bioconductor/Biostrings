@@ -81,7 +81,7 @@ sequence, or the consensus matrix of a set of sequences}
   hasOnlyBaseLetters(x)
   uniqueLetters(x)
 
-  letterFrequencyInSlidingView(x, view.width, letters, OR = "|")
+  letterFrequencyInSlidingView(x, view.width, letters, OR="|")
 
   consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
 
@@ -140,16 +140,15 @@ sequence, or the consensus matrix of a set of sequences}
     course be obtained in separate calls.
   }
   \item{OR}{
-    For letterFrequencyInSlidingView,
+    For \code{letterFrequencyInSlidingView},
     the string (default \code{|}) to use as a separator in forming names
-    for the "common" columns, e.g. "C|G".
+    for the "grouped" columns, e.g. "C|G".
     The otherwise exceptional value \code{0} (zero) disables or'ing and
     is provided for convenience, allowing a single multi-character string
     (or several strings) of letters that should be counted separately.
     If some but not all letters are to be counted separately, they must
     reside in separate elements of letters (with 'nchar' 1 unless they
-    are to be counted in common with other letters), and \code{OR}
-    cannot be 0.
+    are to be grouped with other letters), and \code{OR} cannot be 0.
   }
   \item{ambiguityMap}{
     Either a single character to use when agreement is not reached or
