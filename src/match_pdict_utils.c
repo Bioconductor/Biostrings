@@ -152,7 +152,7 @@ SEXP _Seq2MatchBuf_which_asINTEGER(Seq2MatchBuf *buf)
 	SEXP ans;
 	int i;
 
-	IntAE_qsort(&(buf->matching_keys));
+	IntAE_qsort(&(buf->matching_keys), 0);
 	PROTECT(ans = IntAE_asINTEGER(&(buf->matching_keys)));
 	for (i = 0; i < LENGTH(ans); i++)
 		INTEGER(ans)[i]++;

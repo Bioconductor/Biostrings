@@ -208,7 +208,7 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 		UNPROTECT(1);
 	} else {
 		//poffsets_order = new_IntAE(poffsets.nelt, 0, 0);
-		//get_int_array_order(poffsets.elts, poffsets.nelt, poffsets_order.elts);
+		//get_order_of_int_array(poffsets.elts, poffsets.nelt, 0, poffsets_order.elts, 0);
 		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
 		PROTECT(ans = NEW_LIST(poffsets.nelt));
 		PROTECT(ans_names = NEW_CHARACTER(poffsets.nelt));
@@ -258,7 +258,7 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 		}
 		if (ends_buf.nelt == 0)
 			continue;
-		IntAE_qsort(&ends_buf);
+		IntAE_qsort(&ends_buf, 0);
 		IntAE_delete_adjdups(&ends_buf);
 		PROTECT(ans_elt = IntAE_asINTEGER(&ends_buf));
 		SET_ELEMENT(ans, i, ans_elt);
