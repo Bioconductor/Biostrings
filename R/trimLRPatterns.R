@@ -10,7 +10,7 @@ setGeneric("trimLRPatterns", signature = "subject",
         standardGeneric("trimLRPatterns")
 )
 
-.XString.XStringSet.trimLRPatterns <- 
+.XString.XStringSet.trimLRPatterns <-
 function(Lpattern = "", Rpattern = "", subject,
          max.Lmismatch = 0, max.Rmismatch = 0,
          with.Lindels = FALSE, with.Rindels = FALSE,
@@ -43,13 +43,18 @@ function(Lpattern = "", Rpattern = "", subject,
         with.Rindels <- normargWithIndels(with.Rindels, argname = "with.Rindels")
         Rfixed <- normargFixed(Rfixed, subject, argname = "Rfixed")
 
-        # test the pattern from the inside out
+        # test the pattern "from the inside out"
         ncharSubject <- nchar(subject)[1]
         # first the whole pattern; then it is incrementally shifted off
         Rstarting.at <- (ncharSubject - ncharRpattern + 1L):ncharSubject
-        # reverse the user's mismatch vector, and
-        # allow 1 edit for each char in the pattern that is shifted off
-        max.Rmismatch <- rev(max.Rmismatch) + 0:(ncharRpattern - 1)
+        # Where a match-without-indels is allowed, add 1 edit for each
+        # char in the pattern that is off the right end of the subject.
+        if (!with.Rindels) {
+            wh <- which(max.Rmismatch >= 0) # match allowed here
+            max.Rmismatch[wh] <- max.Rmismatch[wh] + ((ncharRpattern - 1):0)[wh]
+        }
+        # reverse for the inside-out search
+        max.Rmismatch <- rev(max.Rmismatch)
 
         # get start of first match, or NA
         Rwhich.trim <-
@@ -83,12 +88,17 @@ function(Lpattern = "", Rpattern = "", subject,
         with.Lindels <- normargWithIndels(with.Lindels, argname = "with.Lindels")
         Lfixed <- normargFixed(Lfixed, subject, argname = "Lfixed")
 
-        # test the pattern from the inside out
+        # test the pattern "from the inside out"
         # first the whole pattern; then it is incrementally shifted off
         Lending.at <- ncharLpattern:1L
-        # reverse the user's mismatch vector, and
-        # allow 1 edit for each char in the pattern that is shifted off
-        max.Lmismatch <- rev(max.Lmismatch) + 0:(ncharLpattern - 1)
+        # Where a match-without-indels is allowed, add 1 edit for each
+        # char in the pattern that is off the left end of the subject.
+        if (!with.Lindels) {
+            wh <- which(max.Lmismatch >= 0) # match allowed here
+            max.Lmismatch[wh] <- max.Lmismatch[wh] + ((ncharLpattern - 1):0)[wh]
+        }
+        # reverse for the inside-out search
+        max.Lmismatch <- rev(max.Lmismatch)
 
         # get end of first match, or NA
         Lwhich.trim <-
@@ -115,7 +125,7 @@ function(Lpattern = "", Rpattern = "", subject,
 }
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("trimLRPatterns", "XString", 
+setMethod("trimLRPatterns", "XString",
     function(Lpattern = "", Rpattern = "", subject,
              max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
@@ -132,7 +142,7 @@ setMethod("trimLRPatterns", "XString",
                                        ranges = ranges))
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("trimLRPatterns", "XStringSet", 
+setMethod("trimLRPatterns", "XStringSet",
     function(Lpattern = "", Rpattern = "", subject,
              max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
@@ -147,3 +157,29 @@ setMethod("trimLRPatterns", "XStringSet",
                                        Lfixed = Lfixed,
                                        Rfixed = Rfixed,
                                        ranges = ranges))
+
+### Dispatch on 'subject' (see signature of generic).
+setMethod("trimLRPatterns", "character",
+    function(Lpattern = "", Rpattern = "", subject,
+             max.Lmismatch = 0, max.Rmismatch = 0,
+             with.Lindels = FALSE, with.Rindels = FALSE,
+             Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE) {
+        if (length(subject) == 1)
+            subject <- BString(subject)
+        else
+            subject <- BStringSet(subject)
+        ans <-
+          .XString.XStringSet.trimLRPatterns(Lpattern = Lpattern,
+                                             Rpattern = Rpattern,
+                                             subject = subject,
+                                             max.Lmismatch = max.Lmismatch,
+                                             max.Rmismatch = max.Rmismatch,
+                                             with.Lindels = with.Lindels,
+                                             with.Rindels = with.Rindels,
+                                             Lfixed = Lfixed,
+                                             Rfixed = Rfixed,
+                                             ranges = ranges)
+        if (!ranges)
+            ans <- as.character(ans)
+        ans
+    })

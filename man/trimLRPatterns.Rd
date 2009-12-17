@@ -3,6 +3,7 @@
 \alias{trimLRPatterns}
 \alias{trimLRPatterns,XString-method}
 \alias{trimLRPatterns,XStringSet-method}
+\alias{trimLRPatterns,character-method}
 
 
 \title{Trim Flanking Patterns from Sequences}
@@ -27,8 +28,8 @@
     The right pattern.
   }
   \item{subject}{
-    An \link{XString} or \link{XStringSet} object containing the target
-    sequence(s).
+    An \link{XString} object, \link{XStringSet} object, or character vector
+    containing the target sequence(s).
   }
   \item{max.Lmismatch}{
     Either an integer vector of length \code{nLp = nchar(Lpattern)} whose
@@ -86,8 +87,8 @@
 }
 
 \value{
-  A new \link{XString} or \link{XStringSet} object with the flanking patterns
-  within the specified edit distances removed.
+  A new \link{XString} object, \link{XStringSet} object, or character vector
+  with the flanking patterns within the specified edit distances removed.
 }
 
 \author{P. Aboyoun}
