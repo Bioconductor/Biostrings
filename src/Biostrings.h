@@ -764,7 +764,7 @@ SEXP find_palindromes(
 	SEXP s_offset,
 	SEXP s_length,
 	SEXP min_armlength,
-	SEXP max_ngaps,
+	SEXP max_looplength,
 	SEXP L2R_lkup
 );
 

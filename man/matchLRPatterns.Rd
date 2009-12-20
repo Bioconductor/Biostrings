@@ -15,7 +15,7 @@
 }
 
 \usage{
-  matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject,
+  matchLRPatterns(Lpattern, Rpattern, max.gaplength, subject,
                   max.Lmismatch=0, max.Rmismatch=0,
                   with.Lindels=FALSE, with.Rindels=FALSE,
                   Lfixed=TRUE, Rfixed=TRUE)
@@ -28,9 +28,9 @@
   \item{Rpattern}{
     The right part of the pattern.
   }
-  \item{max.ngaps}{
-    The max number of gaps in the middle i.e the max distance between the left
-    and right parts of the pattern.
+  \item{max.gaplength}{
+    The max length of the gap in the middle i.e the max distance between
+    the left and right parts of the pattern.
   }
   \item{subject}{
     An \link{XString}, \link{XStringViews} or \link{MaskedXString} object

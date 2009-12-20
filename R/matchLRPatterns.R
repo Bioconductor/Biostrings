@@ -3,7 +3,7 @@
 ###
 
 setGeneric("matchLRPatterns", signature="subject",
-    function(Lpattern, Rpattern, max.ngaps, subject,
+    function(Lpattern, Rpattern, max.gaplength, subject,
              max.Lmismatch=0, max.Rmismatch=0,
              with.Lindels=FALSE, with.Rindels=FALSE,
              Lfixed=TRUE, Rfixed=TRUE)
@@ -12,7 +12,7 @@ setGeneric("matchLRPatterns", signature="subject",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchLRPatterns", "XString", 
-    function(Lpattern, Rpattern, max.ngaps, subject,
+    function(Lpattern, Rpattern, max.gaplength, subject,
              max.Lmismatch=0, max.Rmismatch=0,
              with.Lindels=FALSE, with.Rindels=FALSE,
              Lfixed=TRUE, Rfixed=TRUE)
@@ -29,8 +29,8 @@ setMethod("matchLRPatterns", "XString",
                                      fixed=Rfixed)
             if (length(Rmatches) != 0L) {
                 for (i in seq_len(length(Lmatches))) {
-                    ngaps <- start(Rmatches) - end(Lmatches)[i] - 1L
-                    jj <- which(0L <= ngaps & ngaps <= max.ngaps)
+                    gaplength <- start(Rmatches) - end(Lmatches)[i] - 1L
+                    jj <- which(0L <= gaplength & gaplength <= max.gaplength)
                     ans_start <- c(ans_start, rep.int(start(Lmatches)[i], length(jj)))
                     ans_end <- c(ans_end, end(Rmatches)[jj])
                 }
@@ -49,14 +49,14 @@ setMethod("matchLRPatterns", "XString",
 ### a normal XStringViews object) and 'max.mismatch=0' and 'max.Rmismatch=0'
 ### (so there are no "out of limits" matches).
 setMethod("matchLRPatterns", "XStringViews",
-    function(Lpattern, Rpattern, max.ngaps, subject,
+    function(Lpattern, Rpattern, max.gaplength, subject,
              max.Lmismatch=0, max.Rmismatch=0,
              with.Lindels=FALSE, with.Rindels=FALSE,
              Lfixed=TRUE, Rfixed=TRUE)
     {
         ans_start <- ans_width <- integer(0)
         for (i in seq_len(length(subject))) {
-            pm <- matchLRPatterns(Lpattern, Rpattern, max.ngaps, subject[[i]],
+            pm <- matchLRPatterns(Lpattern, Rpattern, max.gaplength, subject[[i]],
                                   max.Lmismatch=max.Lmismatch,
                                   max.Rmismatch=max.Rmismatch,
                                   with.Lindels=with.Lindels,
@@ -72,11 +72,11 @@ setMethod("matchLRPatterns", "XStringViews",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchLRPatterns", "MaskedXString",
-    function(Lpattern, Rpattern, max.ngaps, subject,
+    function(Lpattern, Rpattern, max.gaplength, subject,
              max.Lmismatch=0, max.Rmismatch=0,
              with.Lindels=FALSE, with.Rindels=FALSE,
              Lfixed=TRUE, Rfixed=TRUE)
-        matchLRPatterns(Lpattern, Rpattern, max.ngaps,
+        matchLRPatterns(Lpattern, Rpattern, max.gaplength,
                         toXStringViewsOrXString(subject),
                         max.Lmismatch=max.Lmismatch,
                         max.Rmismatch=max.Rmismatch,
