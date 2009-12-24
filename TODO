@@ -116,6 +116,17 @@ UTILITIES
 
 STRING MATCHING
 
+- Revisit matchLRPatterns() semantic and improve its performance.
+  The current behaviour is to return *all* L/R match pairs that satisfy
+  the search criteria. This leads to poor performance, and, maybe more
+  importantly, it tends to return redundant match pairs (e.g. 2 match
+  pairs can overlap, or one can be within the limits of the other).
+  Maybe, by default, a better semantic would be one similar to what
+  matchProbePair() does, that is, only match pairs that don't contain
+  another match pair are returned (the assumption here is that those are
+  the most relevant match pairs). Also, should L/R match pairs where the
+  left and right matches overlap be accepted?
+
 - Add a Biostrings.Rnw vignette with a short overview of the string
   matching/aligning capabilities and a "how to choose the right string
   matching/aligning function" diagram.
