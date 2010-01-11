@@ -16,6 +16,9 @@
 
 \alias{whichPDict}
 \alias{whichPDict,XString-method}
+\alias{whichPDict,XStringSet-method}
+\alias{whichPDict,XStringViews-method}
+\alias{whichPDict,MaskedXString-method}
 
 \alias{vmatchPDict}
 \alias{vmatchPDict,ANY-method}
@@ -113,7 +116,7 @@
   \item{verbose}{
     \code{TRUE} or \code{FALSE}.
   }
-  \item{collapse,weight}{
+  \item{collapse, weight}{
     \code{collapse} must be \code{FALSE}, \code{1}, or \code{2}.
 
     If \code{collapse=FALSE} (the default), then \code{weight} is ignored

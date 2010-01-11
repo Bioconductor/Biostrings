@@ -35,23 +35,6 @@ SEXP debug_match_pdict_utils()
  * matchPDict() function.
  */
 
-static int string2code(const char *s)
-{
-	if (strcmp(s, "MATCHES_AS_NULL") == 0)
-		return MATCHES_AS_NULL;
-	if (strcmp(s, "MATCHES_AS_WHICH") == 0)
-		return MATCHES_AS_WHICH;
-	if (strcmp(s, "MATCHES_AS_COUNTS") == 0)
-		return MATCHES_AS_COUNTS;
-	if (strcmp(s, "MATCHES_AS_STARTS") == 0)
-		return MATCHES_AS_ENDS;
-	if (strcmp(s, "MATCHES_AS_ENDS") == 0)
-		return MATCHES_AS_ENDS;
-	error("\"%s\": unsupported \"matches as\" value", s);
-	return -1; /* keeps gcc -Wall happy */
-}
-
-
 /****************************************************************************
  * Manipulation of the TBMatchBuf struct.
  */
@@ -108,12 +91,22 @@ void _TBMatchBuf_flush(TBMatchBuf *buf)
 
 Seq2MatchBuf _new_Seq2MatchBuf(SEXP matches_as, int nseq)
 {
-	int code, count_only;
+	const char *ms_mode;
+	int ms_code, count_only;
 	static Seq2MatchBuf buf;
 
-	code = string2code(CHAR(STRING_ELT(matches_as, 0)));
-	count_only = code == MATCHES_AS_WHICH ||
-		     code == MATCHES_AS_COUNTS;
+	ms_mode = CHAR(STRING_ELT(matches_as, 0));
+	ms_code = _get_match_storing_code(ms_mode);
+	if (ms_code != MATCHES_AS_NULL
+	 && ms_code != MATCHES_AS_WHICH
+	 && ms_code != MATCHES_AS_COUNTS
+	 && ms_code != MATCHES_AS_STARTS
+	 && ms_code != MATCHES_AS_ENDS
+	 && ms_code != MATCHES_AS_RANGES)
+		error("Biostrings internal error in _new_Seq2MatchBuf(): ",
+		      "\"%s\": unsupported match storing mode", ms_mode);
+	count_only = ms_code == MATCHES_AS_WHICH ||
+		     ms_code == MATCHES_AS_COUNTS;
 	buf.matching_keys = new_IntAE(0, 0, 0);
 	buf.match_counts = new_IntAE(nseq, nseq, 0);
 	if (count_only) {
@@ -224,7 +217,7 @@ SEXP _Seq2MatchBuf_as_SEXP(int matches_as, Seq2MatchBuf *buf, SEXP env)
 		if (env != R_NilValue)
 			return _Seq2MatchBuf_ends_toEnvir(buf, env);
 		return _Seq2MatchBuf_ends_asLIST(buf);
-	    case MATCHES_AS_MINDEX:
+	    case MATCHES_AS_RANGES:
 		return _Seq2MatchBuf_as_MIndex(buf);
 	}
 	error("Biostrings internal error in _Seq2MatchBuf_as_SEXP(): "
@@ -240,9 +233,11 @@ SEXP _Seq2MatchBuf_as_SEXP(int matches_as, Seq2MatchBuf *buf, SEXP env)
 MatchPDictBuf _new_MatchPDictBuf(SEXP matches_as, int nseq, int tb_width,
 		const int *head_widths, const int *tail_widths)
 {
+	const char *ms_mode;
 	static MatchPDictBuf buf;
 
-	buf.matches_as = string2code(CHAR(STRING_ELT(matches_as, 0)));
+	ms_mode = CHAR(STRING_ELT(matches_as, 0));
+	buf.matches_as = _get_match_storing_code(ms_mode);
 	if (buf.matches_as == MATCHES_AS_NULL) {
 		buf.tb_matches.is_init = 0;
 	} else {

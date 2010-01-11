@@ -96,8 +96,10 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 
 
 /****************************************************************************
- * .Call entry point: XString_match_pdict
- *                    XStringViews_match_pdict
+ * .Call entry points: XString_match_pdict()
+ *                     XString_match_XStringSet()
+ *                     XStringViews_match_pdict()
+ *                     XStringViews_match_XStringSet()
  *
  * Arguments:
  *   pptb: a PreprocessedTB object;
@@ -141,6 +143,15 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 #endif
 	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.matches_as,
 				&(matchpdict_buf.matches), envir);
+}
+
+SEXP XString_match_XStringSet(SEXP pattern,
+		SEXP subject,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
+		SEXP matches_as, SEXP envir)
+{
+	error("XString_match_XStringSet(): IMPLEMENT ME!");
+	return R_NilValue;
 }
 
 SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
@@ -192,9 +203,19 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 				&global_matchpdict_buf, envir);
 }
 
+SEXP XStringViews_match_XStringSet(SEXP pattern,
+		SEXP subject, SEXP views_start, SEXP views_width,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
+		SEXP matches_as, SEXP envir)
+{
+	error("XStringViews_match_XStringSet(): IMPLEMENT ME!");
+	return R_NilValue;
+}
+
 
 /****************************************************************************
- * .Call entry point: XStringSet_vmatch_pdict
+ * .Call entry points: XStringSet_vmatch_pdict()
+ *                     XStringSet_vmatch_XStringSet()
  ****************************************************************************/
 
 static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
@@ -364,5 +385,15 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 #endif
 	UNPROTECT(1);
 	return ans;
+}
+
+SEXP XStringSet_vmatch_XStringSet(SEXP pattern,
+		SEXP subject,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
+		SEXP collapse, SEXP weight,
+		SEXP matches_as, SEXP envir)
+{
+	error("XStringSet_vmatch_XStringSet(): IMPLEMENT ME!");
+	return R_NilValue;
 }
 

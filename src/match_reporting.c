@@ -19,33 +19,42 @@ SEXP debug_match_reporting()
 	return R_NilValue;
 }
 
-#define	DEVNULL		0  // Matches are not stored at all -> NULL is returned.
-#define	COUNTONLY	1  // Matches are counted only -> a single integer is
-			   // returned.
-#define	ASIRANGES	2  // Matches are fully stored -> an IRanges object is
-			   // returned.
+int _get_match_storing_code(const char *ms_mode)
+{
+	if (strcmp(ms_mode, "MATCHES_AS_NULL") == 0)
+		return MATCHES_AS_NULL;
+	if (strcmp(ms_mode, "MATCHES_AS_WHICH") == 0)
+		return MATCHES_AS_WHICH;
+	if (strcmp(ms_mode, "MATCHES_AS_COUNTS") == 0)
+		return MATCHES_AS_COUNTS;
+	if (strcmp(ms_mode, "MATCHES_AS_STARTS") == 0)
+		return MATCHES_AS_STARTS;
+	if (strcmp(ms_mode, "MATCHES_AS_ENDS") == 0)
+		return MATCHES_AS_ENDS;
+	if (strcmp(ms_mode, "MATCHES_AS_RANGES") == 0)
+		return MATCHES_AS_RANGES;
+	if (strcmp(ms_mode, "MATCHES_AS_NORMALRANGES") == 0)
+		return MATCHES_AS_NORMALRANGES;
+	if (strcmp(ms_mode, "MATCHES_AS_COVERAGE") == 0)
+		return MATCHES_AS_COVERAGE;
+	error("Biostrings internal error in _get_match_storing_code(): ",
+	      "\"%s\": unknown match storing mode", ms_mode);
+	return -1; /* keeps gcc -Wall happy */
+}
 
-/* Not supported yet */
-#define	ASNORMALIRANGES	3  // Matches are stored in an IRanges object
-			   // that is kept normal at each addition.
-#define	ASCOVERAGE	4  // Only the coverage of the matches is stored
-			   // in an XInteger of XRleInteger object.
-
-static int mrmode;
+static int ms_code;
 static int match_count;
 static RangeAE matchbuf;
 static int match_shift;
 
-void _init_match_reporting(const char *mode)
+void _init_match_reporting(const char *ms_mode)
 {
-	if (strcmp(mode, "DEVNULL") == 0)
-		mrmode = DEVNULL;
-	else if (strcmp(mode, "COUNTONLY") == 0)
-		mrmode = COUNTONLY;
-	else if (strcmp(mode, "ASIRANGES") == 0)
-		mrmode = ASIRANGES;
-	else
-		error("\"%s\": unsupported match reporting mode", mode);
+	ms_code = _get_match_storing_code(ms_mode);
+	if (ms_code != MATCHES_AS_NULL
+	 && ms_code != MATCHES_AS_COUNTS
+	 && ms_code != MATCHES_AS_RANGES)
+		error("Biostrings internal error in _init_match_reporting(): ",
+		      "\"%s\": unsupported match storing mode", ms_mode);
 	match_count = match_shift = 0;
 	matchbuf = new_RangeAE(0, 0);
 	return;
@@ -72,11 +81,11 @@ void _report_match(int start, int width)
 			"match found at start=%d width=%d\n", start, width);
 	}
 #endif
-	switch (mrmode) {
-		case COUNTONLY:
+	switch (ms_code) {
+		case MATCHES_AS_COUNTS:
 			match_count++;
 		break;
-		case ASIRANGES:
+		case MATCHES_AS_RANGES:
 			RangeAE_insert_at(&matchbuf, matchbuf.start.nelt, start, width);
 		break;
 	}
@@ -85,10 +94,10 @@ void _report_match(int start, int width)
 
 SEXP _reported_matches_asSEXP()
 {
-	switch (mrmode) {
-		case COUNTONLY:
+	switch (ms_code) {
+		case MATCHES_AS_COUNTS:
 			return ScalarInteger(match_count);
-		case ASIRANGES:
+		case MATCHES_AS_RANGES:
 			return RangeAE_asIRanges(&matchbuf);
 	}
 	return R_NilValue;

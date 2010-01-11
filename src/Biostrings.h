@@ -452,7 +452,9 @@ void _set_env_from_IntAEAE(
 
 SEXP debug_match_reporting();
 
-void _init_match_reporting(const char *mode);
+int _get_match_storing_code(const char *ms_mode);
+
+void _init_match_reporting(const char *ms_mode);
 
 void _drop_reported_matches();
 
@@ -1082,6 +1084,16 @@ SEXP XString_match_pdict(
 	SEXP envir
 );
 
+SEXP XString_match_XStringSet(
+	SEXP pattern,
+	SEXP subject,
+	SEXP max_mismatch,
+	SEXP min_mismatch,
+	SEXP fixed,
+	SEXP matches_as,
+	SEXP envir
+);
+
 SEXP XStringViews_match_pdict(
 	SEXP pptb,
 	SEXP pdict_head,
@@ -1096,10 +1108,34 @@ SEXP XStringViews_match_pdict(
 	SEXP envir
 );
 
+SEXP XStringViews_match_XStringSet(
+	SEXP pattern,
+	SEXP subject,
+	SEXP views_start,
+	SEXP views_width,
+	SEXP max_mismatch,
+	SEXP min_mismatch,
+	SEXP fixed,
+	SEXP matches_as,
+	SEXP envir
+);
+
 SEXP XStringSet_vmatch_pdict(
 	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
+	SEXP subject,
+	SEXP max_mismatch,
+	SEXP min_mismatch,
+	SEXP fixed,
+	SEXP collapse,
+	SEXP weight,
+	SEXP matches_as,
+	SEXP envir
+);
+
+SEXP XStringSet_vmatch_XStringSet(
+	SEXP pattern,
 	SEXP subject,
 	SEXP max_mismatch,
 	SEXP min_mismatch,

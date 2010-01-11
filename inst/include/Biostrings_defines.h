@@ -107,24 +107,50 @@ typedef struct headtail {
 
 
 /*
- * The MatchPDictBuf struct is used for storing the matches found by the
- * matchPDict() function.
+ * Match storing modes.
+ * np = nb of pattern sequences. ns = nb of subject sequences.
+ * The "key" of a pattern (or subject) sequence is its 1-based position in the
+ * pattern dictionary (or in the set of subject sequences).
+ *                    |                           |       np = N, ns = 1      |
+ *                    |        np = ns = 1        |    or np = 1, ns = N      |
+ * -------------------|-------------------------------------------------------|
+ *  MATCHES_AS_NULL   |             Matches are not stored at all.            |
+ *                    |                   NULL is returned.                   |
+ * -------------------|-------------------------------------------------------|
+ *  MATCHES_AS_WHICH  |                           | Only the matching "keys"  |
+ *                    |                           | are stored and returned.  |
+ * -------------------|-------------------------------------------------------|
+ *  MATCHES_AS_COUNTS |                Matches are counted only.              |
+ *                    |    An integer vector of length np * ns is returned.   |
+ * -------------------|-------------------------------------------------------|
+ *  MATCHES_AS_STARTS | Only the starts of the matches are stored.            |
+ *                    | An integer vector is      | A list of integer vectors |
+ *                    | returned.                 | is returned (with         |
+ *                    |                           | eventually NULL elements).|
+ * -------------------|-------------------------------------------------------|
+ *  MATCHES_AS_ENDS   | Only the ends of the matches are stored.              |
+ *                    | An integer vector is      | A list of integer vectors |
+ *                    | returned.                 | is returned (with         |
+ *                    |                           | eventually NULL elements).|
+ * -------------------|-------------------------------------------------------|
+ *  MATCHES_AS_RANGES | The starts and ends of the matches are stored.        |
+ *                    | A Ranges object is        | An MIndex object is       |
+ *                    | returned.                 | returned.                 |
  */
-#define MATCHES_AS_NULL		0  // Matches are not stored at all -> NULL is
-				   // returned.
-#define MATCHES_AS_WHICH	1  // Only the matching keys are returned.
-#define MATCHES_AS_COUNTS	2  // Matches are counted only -> an integer
-				   // vector is returned.
-#define MATCHES_AS_STARTS	3  // Only the ends of the matches are stored
-				   // -> a list of integer vectors is returned
-				   // (with eventually NULL elements).
-#define MATCHES_AS_ENDS		4  // Only the ends of the matches are stored
-				   // -> a list of integer vectors is returned
-				   // (with eventually NULL elements).
-/* Not supported yet */
-#define MATCHES_AS_MINDEX	5  // Matches are fully stored -> an MIndex
-				   // object is returned.
+#define MATCHES_AS_NULL		0
+#define MATCHES_AS_WHICH	1
+#define MATCHES_AS_COUNTS	2
+#define MATCHES_AS_STARTS	3
+#define MATCHES_AS_ENDS		4
+#define MATCHES_AS_RANGES	5
+#define MATCHES_AS_NORMALRANGES	6  // not supported yet
+#define MATCHES_AS_COVERAGE	7  // supported yet
 
+
+/*
+ * The MatchPDictBuf struct is used for storing the matches found by the
+ * matchPDict() function (and family).
+ */
 typedef struct tbmatch_buf {
 	int is_init;
 	int tb_width;
