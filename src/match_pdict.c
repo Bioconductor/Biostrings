@@ -454,27 +454,29 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 	S = _cache_XStringSet(subject);
 	S_length = _get_cachedXStringSet_length(&S);
 	collapse0 = INTEGER(collapse)[0];
-	if (collapse0 == 0) {
+	if (collapse0 == 0)
 		PROTECT(ans = allocMatrix(INTSXP, P_length, S_length));
-		ans_elt = INTEGER(ans);
-	} else {
+	else
 		PROTECT(ans = init_vcount_collapsed_ans(P_length, S_length,
 					collapse0, weight));
-	}
 	_init_match_reporting("MATCHES_AS_COUNTS");
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
+		if (collapse0 == 0)
+			ans_elt = INTEGER(ans) + i;
 		for (j = 0; j < S_length; j++) {
 			S_elt = _get_cachedXStringSet_elt(&S, j);
 			_match_pattern(&P_elt, &S_elt, NULL,
 				max_mismatch, min_mismatch, NULL, fixed);
 			match_count = _get_match_count();
-			if (collapse0 == 0)
-				*(ans_elt++) = match_count;
-			else
+			if (collapse0 == 0) {
+				*ans_elt = match_count;
+				ans_elt += P_length;
+			} else {
 				update_vcount_collapsed_ans(ans,
 					match_count, i, j,
 					collapse0, weight);
+			}
 			_drop_reported_matches();
 		}
 	}
