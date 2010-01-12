@@ -88,13 +88,14 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
 
 
 /****************************************************************************
- * match_pattern()
+ * _match_pattern()
  */
 
-static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP algorithm,
-		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed)
+void _match_pattern(const cachedCharSeq *P, const cachedCharSeq *S,
+		const char *algo,
+		SEXP max_mismatch, SEXP min_mismatch,
+		SEXP with_indels, SEXP fixed)
 {
-	const char *algo;
 	int max_nmis, min_nmis, fixedP, fixedS;
 
 	max_nmis = INTEGER(max_mismatch)[0];
@@ -102,9 +103,14 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
 	if (max_nmis < P->length - S->length
 	 || min_nmis > P->length)
 		return;
-	algo = CHAR(STRING_ELT(algorithm, 0));
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
+	if (algo == NULL) {
+		if (fixedP && fixedS)
+			algo = "boyer-moore";
+		else
+			algo = "naive-inexact";
+	}
 	if (P->length <= max_nmis || strcmp(algo, "naive-inexact") == 0)
 		match_naive_inexact(P, S, max_nmis, min_nmis, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)
@@ -138,19 +144,24 @@ static void match_pattern(const cachedCharSeq *P, const cachedCharSeq *S, SEXP a
  * and <= length(pattern) + max_mismatch).
  */
 
-SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
-		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+SEXP XString_match_pattern(SEXP pattern, SEXP subject,
+		SEXP algorithm,
+		SEXP max_mismatch, SEXP min_mismatch,
+		SEXP with_indels, SEXP fixed,
 		SEXP count_only)
 {
 	cachedCharSeq P, S;
+	const char *algo;
 	int is_count_only;
 
 	P = cache_XRaw(pattern);
 	S = cache_XRaw(subject);
+	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
-	match_pattern(&P, &S, algorithm,
+	_init_match_reporting(is_count_only ?
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+	_match_pattern(&P, &S, algo,
 		max_mismatch, min_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
 }
@@ -163,17 +174,21 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP algorithm,
-		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+		SEXP max_mismatch, SEXP min_mismatch,
+		SEXP with_indels, SEXP fixed,
 		SEXP count_only)
 {
 	cachedCharSeq P, S, S_view;
+	const char *algo;
 	int is_count_only, nviews, i, *view_start, *view_width, view_offset;
 
 	P = cache_XRaw(pattern);
 	S = cache_XRaw(subject);
+	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
+	_init_match_reporting(is_count_only ?
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -185,7 +200,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		S_view.seq = S.seq + view_offset;
 		S_view.length = *view_width;
 		_shift_match_on_reporting(view_offset);
-		match_pattern(&P, &S_view, algorithm,
+		_match_pattern(&P, &S_view, algo,
 			max_mismatch, min_mismatch, with_indels, fixed);
 	}
 	return _reported_matches_asSEXP();
@@ -195,20 +210,25 @@ SEXP XStringViews_match_pattern(SEXP pattern,
  * Arguments are the same as for XString_match_pattern() except for:
  *   subject: XStringSet object.
  */
-SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
-		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
+SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
+		SEXP algorithm,
+		SEXP max_mismatch, SEXP min_mismatch,
+		SEXP with_indels, SEXP fixed,
 		SEXP count_only)
 {
 	cachedCharSeq P, S_elt;
+	const char *algo;
 	cachedXStringSet S;
 	int is_count_only, S_length, i;
 	SEXP ans, ans_elt;
 
 	P = cache_XRaw(pattern);
 	S = _cache_XStringSet(subject);
+	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
+	_init_match_reporting(is_count_only ?
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
 	S_length = _get_XStringSet_length(subject);
 	if (is_count_only)
 		PROTECT(ans = NEW_INTEGER(S_length));
@@ -216,7 +236,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject, SEXP algorithm,
 		PROTECT(ans = NEW_LIST(S_length));
 	for (i = 0; i < S_length; i++) {
 		S_elt = _get_cachedXStringSet_elt(&S, i);
-		match_pattern(&P, &S_elt, algorithm,
+		_match_pattern(&P, &S_elt, algo,
 			max_mismatch, min_mismatch, with_indels, fixed);
 		PROTECT(ans_elt = _reported_matches_asSEXP());
 		if (is_count_only)

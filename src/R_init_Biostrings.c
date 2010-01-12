@@ -244,6 +244,7 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_drop_reported_matches);
 	REGISTER_CCALLABLE(_shift_match_on_reporting);
 	REGISTER_CCALLABLE(_report_match);
+	REGISTER_CCALLABLE(_get_match_count);
 	REGISTER_CCALLABLE(_reported_matches_asSEXP);
 
 /* MIndex_class.c */

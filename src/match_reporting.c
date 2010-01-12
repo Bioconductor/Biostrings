@@ -37,7 +37,7 @@ int _get_match_storing_code(const char *ms_mode)
 		return MATCHES_AS_NORMALRANGES;
 	if (strcmp(ms_mode, "MATCHES_AS_COVERAGE") == 0)
 		return MATCHES_AS_COVERAGE;
-	error("Biostrings internal error in _get_match_storing_code(): ",
+	error("Biostrings internal error in _get_match_storing_code(): "
 	      "\"%s\": unknown match storing mode", ms_mode);
 	return -1; /* keeps gcc -Wall happy */
 }
@@ -53,7 +53,7 @@ void _init_match_reporting(const char *ms_mode)
 	if (ms_code != MATCHES_AS_NULL
 	 && ms_code != MATCHES_AS_COUNTS
 	 && ms_code != MATCHES_AS_RANGES)
-		error("Biostrings internal error in _init_match_reporting(): ",
+		error("Biostrings internal error in _init_match_reporting(): "
 		      "\"%s\": unsupported match storing mode", ms_mode);
 	match_count = match_shift = 0;
 	matchbuf = new_RangeAE(0, 0);
@@ -90,6 +90,19 @@ void _report_match(int start, int width)
 		break;
 	}
 	return;
+}
+
+int _get_match_count()
+{
+	switch (ms_code) {
+		case MATCHES_AS_COUNTS:
+			return match_count;
+		case MATCHES_AS_RANGES:
+			return matchbuf.start.nelt;
+	}
+	error("Biostrings internal error: _get_match_count() "
+	      "cannot be called in current match storing mode");
+	return -1; /* keeps gcc -Wall happy */
 }
 
 SEXP _reported_matches_asSEXP()

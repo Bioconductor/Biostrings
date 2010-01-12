@@ -141,7 +141,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] LEAVING XString_match_pdict()\n");
 #endif
-	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.matches_as,
+	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.ms_code,
 				&(matchpdict_buf.matches), envir);
 }
 
@@ -199,7 +199,7 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	if (debug)
 		Rprintf("[DEBUG] LEAVING XStringViews_match_pdict()\n");
 #endif
-	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.matches_as,
+	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.ms_code,
 				&global_matchpdict_buf, envir);
 }
 
@@ -243,6 +243,37 @@ static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 	return ans;
 }
 
+static SEXP vwhich_XStringSet(SEXP pattern,
+		SEXP subject,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed)
+{
+	cachedXStringSet P, S;
+	int P_length, S_length, i, j;
+	cachedCharSeq P_elt, S_elt;
+	IntAEAE ans_buf;
+
+	P = _cache_XStringSet(pattern);
+	P_length = _get_XStringSet_length(pattern);
+	S = _cache_XStringSet(subject);
+	S_length = _get_XStringSet_length(subject);
+	ans_buf = new_IntAEAE(S_length, S_length);
+	for (j = 0; j < S_length; j++)
+		ans_buf.elts[j].nelt = 0;
+	for (i = 0; i < P_length; i++) {
+		P_elt = _get_cachedXStringSet_elt(&P, i);
+		for (j = 0; j < S_length; j++) {
+			S_elt = _get_cachedXStringSet_elt(&S, j);
+			_match_pattern(&P_elt, &S_elt, NULL,
+				max_mismatch, min_mismatch, NULL, fixed);
+			if (_get_match_count() != 0)
+				IntAE_insert_at(ans_buf.elts + j,
+					ans_buf.elts[j].nelt, i + 1);
+			_drop_reported_matches();
+		}
+	}
+	return IntAEAE_asLIST(&ans_buf, 1);
+}
+
 static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
@@ -275,24 +306,45 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 	return ans;
 }
 
-static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
+static SEXP vcount_XStringSet_notcollapsed(SEXP pattern,
 		SEXP subject,
-		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
-		int collapse, SEXP weight,
-		MatchPDictBuf *matchpdict_buf)
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed)
 {
-	int tb_length, S_length, ans_length, i, j;
-	cachedXStringSet S;
+	cachedXStringSet P, S;
+	int P_length, S_length, i, j, *current_col;
 	SEXP ans;
-	cachedCharSeq S_elt;
-	const IntAE *count_buf;
+	cachedCharSeq P_elt, S_elt;
 
-	tb_length = _get_PreprocessedTB_length(pptb);
+	P = _cache_XStringSet(pattern);
+	P_length = _get_XStringSet_length(pattern);
 	S = _cache_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
+	PROTECT(ans = allocMatrix(INTSXP, P_length, S_length));
+	for (i = 0; i < P_length; i++) {
+		P_elt = _get_cachedXStringSet_elt(&P, i);
+		for (j = 0, current_col = INTEGER(ans);
+		     j < S_length;
+		     j++, current_col += P_length) {
+			S_elt = _get_cachedXStringSet_elt(&S, j);
+			_match_pattern(&P_elt, &S_elt, NULL,
+				max_mismatch, min_mismatch, NULL, fixed);
+			current_col[i] = _get_match_count();
+			_drop_reported_matches();
+		}
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+static SEXP init_vcount_collapsed_ans(int np, int ns,
+		int collapse, SEXP weight)
+{
+	int ans_length, i;
+	SEXP ans;
+
 	switch (collapse) {
-	    case 1: ans_length = tb_length; break;
-	    case 2: ans_length = S_length; break;
+	    case 1: ans_length = np; break;
+	    case 2: ans_length = ns; break;
 	    default: error("'collapse' must be FALSE, 1 or 2");
 	}
 	if (IS_INTEGER(weight)) {
@@ -303,27 +355,91 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 		for (i = 0; i < ans_length; i++)
 			REAL(ans)[i] = 0.00;
 	}
-	for (j = 0; j < S_length; j++)
-	{
+	UNPROTECT(1);
+	return ans;
+}
+
+static void update_vcount_collapsed_ans(SEXP ans, int match_count, int i, int j,
+		int collapse, SEXP weight)
+{
+	int tmp;
+
+	/* If 'collapse' is 1, then collapse horizontally. */
+	if (collapse != 1) {
+		/* Otherwise, collapse vertically. */
+		tmp = i;
+		i = j;
+		j = tmp;
+	}
+	if (IS_INTEGER(weight))
+		INTEGER(ans)[i] += match_count * INTEGER(weight)[j];
+	else
+		REAL(ans)[i] += match_count * REAL(weight)[j];
+	return;
+}
+
+static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
+		SEXP subject,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
+		int collapse, SEXP weight,
+		MatchPDictBuf *matchpdict_buf)
+{
+	int tb_length, S_length, i, j, match_count;
+	cachedXStringSet S;
+	SEXP ans;
+	cachedCharSeq S_elt;
+	const IntAE *count_buf;
+
+	tb_length = _get_PreprocessedTB_length(pptb);
+	S = _cache_XStringSet(subject);
+	S_length = _get_XStringSet_length(subject);
+	PROTECT(ans = init_vcount_collapsed_ans(tb_length, S_length,
+			collapse, weight));
+	for (j = 0; j < S_length; j++) {
 		S_elt = _get_cachedXStringSet_elt(&S, j);
 		match_pdict(pptb, headtail, &S_elt,
-			    max_mismatch, min_mismatch, fixed,
-			    matchpdict_buf);
+				max_mismatch, min_mismatch, fixed,
+				matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
 		/* count_buf->nelt is tb_length */
-		for (i = 0; i < tb_length; i++)
-			if (collapse == 1) {
-				if (IS_INTEGER(weight))
-					INTEGER(ans)[i] += count_buf->elts[i] * INTEGER(weight)[j];
-				else
-					REAL(ans)[i] += count_buf->elts[i] * REAL(weight)[j];
-			} else {
-				if (IS_INTEGER(weight))
-					INTEGER(ans)[j] += count_buf->elts[i] * INTEGER(weight)[i];
-				else
-					REAL(ans)[j] += count_buf->elts[i] * REAL(weight)[i];
-			}
+		for (i = 0; i < tb_length; i++) {
+			match_count = count_buf->elts[i];
+			update_vcount_collapsed_ans(ans, match_count, i, j,
+				collapse, weight);
+		}
 		_MatchPDictBuf_flush(matchpdict_buf);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+static SEXP vcount_XStringSet_collapsed(SEXP pattern,
+		SEXP subject,
+		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
+		int collapse, SEXP weight)
+{
+	cachedXStringSet P, S;
+	int P_length, S_length, i, j, match_count;
+	SEXP ans;
+	cachedCharSeq P_elt, S_elt;
+
+	P = _cache_XStringSet(pattern);
+	P_length = _get_XStringSet_length(pattern);
+	S = _cache_XStringSet(subject);
+	S_length = _get_XStringSet_length(subject);
+	PROTECT(ans = init_vcount_collapsed_ans(P_length, S_length,
+			collapse, weight));
+	for (i = 0; i < P_length; i++) {
+		P_elt = _get_cachedXStringSet_elt(&P, i);
+		for (j = 0; j < S_length; j++) {
+			S_elt = _get_cachedXStringSet_elt(&S, j);
+			_match_pattern(&P_elt, &S_elt, NULL,
+				max_mismatch, min_mismatch, NULL, fixed);
+			match_count = _get_match_count();
+			update_vcount_collapsed_ans(ans, match_count, i, j,
+				collapse, weight);
+			_drop_reported_matches();
+		}
 	}
 	UNPROTECT(1);
 	return ans;
@@ -338,53 +454,36 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	HeadTail headtail;
 	int collapse0;
 	MatchPDictBuf matchpdict_buf;
-	SEXP ans;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING XStringSet_vmatch_pdict()\n");
-#endif
 	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
 				 max_mismatch, fixed, 1);
-
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
-	switch (matchpdict_buf.matches_as) {
+	switch (matchpdict_buf.ms_code) {
 	    case MATCHES_AS_NULL:
 		error("XStringSet_vmatch_pdict() does not support "
 		      "'matches_as=\"%s\"' yet, sorry",
-		      matchpdict_buf.matches_as);
-	    break;
+		      CHAR(STRING_ELT(matches_as, 0)));
 	    case MATCHES_AS_WHICH:
-		PROTECT(ans = vwhich_pdict(pptb, &headtail,
+		return vwhich_pdict(pptb, &headtail,
 				subject,
 				max_mismatch, min_mismatch, fixed,
-				&matchpdict_buf));
-	    break;
+				&matchpdict_buf);
 	    case MATCHES_AS_COUNTS:
 		collapse0 = INTEGER(collapse)[0];
 		if (collapse0 == 0)
-			PROTECT(ans = vcount_pdict_notcollapsed(pptb, &headtail,
+			return vcount_pdict_notcollapsed(pptb, &headtail,
 					subject,
 					max_mismatch, min_mismatch, fixed,
-					&matchpdict_buf));
-		else
-			PROTECT(ans = vcount_pdict_collapsed(pptb, &headtail,
-					subject,
-					max_mismatch, min_mismatch, fixed,
-					collapse0, weight,
-					&matchpdict_buf));
-	    break;
-	    case MATCHES_AS_ENDS:
-		error("vmatchPDict() is not supported yet, sorry");
-	    break;
+					&matchpdict_buf);
+		return vcount_pdict_collapsed(pptb, &headtail,
+				subject,
+				max_mismatch, min_mismatch, fixed,
+				collapse0, weight,
+				&matchpdict_buf);
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING XStringSet_vmatch_pdict()\n");
-#endif
-	UNPROTECT(1);
-	return ans;
+	error("vmatchPDict() is not supported yet, sorry");
+	return R_NilValue;
 }
 
 SEXP XStringSet_vmatch_XStringSet(SEXP pattern,
@@ -393,7 +492,33 @@ SEXP XStringSet_vmatch_XStringSet(SEXP pattern,
 		SEXP collapse, SEXP weight,
 		SEXP matches_as, SEXP envir)
 {
-	error("XStringSet_vmatch_XStringSet(): IMPLEMENT ME!");
+	const char *ms_mode;
+	int ms_code, collapse0;
+
+	ms_mode = CHAR(STRING_ELT(matches_as, 0));
+	ms_code = _get_match_storing_code(ms_mode);
+	switch (ms_code) {
+	    case MATCHES_AS_NULL:
+		error("XStringSet_vmatch_XStringSet() does not support "
+		      "'matches_as=\"%s\"' yet, sorry", ms_mode);
+	    case MATCHES_AS_WHICH:
+		_init_match_reporting("MATCHES_AS_COUNTS");
+		return vwhich_XStringSet(pattern,
+				subject,
+				max_mismatch, min_mismatch, fixed);
+	    case MATCHES_AS_COUNTS:
+		_init_match_reporting("MATCHES_AS_COUNTS");
+		collapse0 = INTEGER(collapse)[0];
+		if (collapse0 == 0)
+			return vcount_XStringSet_notcollapsed(pattern,
+					subject,
+					max_mismatch, min_mismatch, fixed);
+		return vcount_XStringSet_collapsed(pattern,
+				subject,
+				max_mismatch, min_mismatch, fixed,
+				collapse0, weight);
+	}
+	error("vmatchPDict() is not supported yet, sorry");
 	return R_NilValue;
 }
 

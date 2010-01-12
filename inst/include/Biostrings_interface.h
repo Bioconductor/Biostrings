@@ -164,6 +164,8 @@ void shift_match_on_reporting(int shift);
 
 void report_match(int start, int width);
 
+int get_match_count();
+
 SEXP reported_matches_asSEXP();
 
 

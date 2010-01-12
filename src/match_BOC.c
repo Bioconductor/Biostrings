@@ -478,7 +478,8 @@ SEXP match_BOC_exact(SEXP p_xp, SEXP p_offset, SEXP p_length,
 	pre4buf = R_ExternalPtrTag(pre4buf_xp);
 	is_count_only = LOGICAL(count_only)[0];
 
-	_init_match_reporting(is_count_only ? "COUNTONLY" : "ASIRANGES");
+	_init_match_reporting(is_count_only ?
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
 	BOC_exact_search(
 		(char *) pat, pat_length,
 		(char *) subj, subj_length,

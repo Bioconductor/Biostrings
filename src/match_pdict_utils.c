@@ -200,9 +200,9 @@ SEXP _Seq2MatchBuf_as_MIndex(Seq2MatchBuf *buf)
 	return R_NilValue;
 }
 
-SEXP _Seq2MatchBuf_as_SEXP(int matches_as, Seq2MatchBuf *buf, SEXP env)
+SEXP _Seq2MatchBuf_as_SEXP(int ms_code, Seq2MatchBuf *buf, SEXP env)
 {
-	switch (matches_as) {
+	switch (ms_code) {
 	    case MATCHES_AS_NULL:
 		return R_NilValue;
 	    case MATCHES_AS_WHICH:
@@ -221,7 +221,7 @@ SEXP _Seq2MatchBuf_as_SEXP(int matches_as, Seq2MatchBuf *buf, SEXP env)
 		return _Seq2MatchBuf_as_MIndex(buf);
 	}
 	error("Biostrings internal error in _Seq2MatchBuf_as_SEXP(): "
-	      "unsupported 'matches_as' value %d", matches_as);
+	      "unsupported 'ms_code' value %d", ms_code);
 	return R_NilValue;
 }
 
@@ -237,8 +237,8 @@ MatchPDictBuf _new_MatchPDictBuf(SEXP matches_as, int nseq, int tb_width,
 	static MatchPDictBuf buf;
 
 	ms_mode = CHAR(STRING_ELT(matches_as, 0));
-	buf.matches_as = _get_match_storing_code(ms_mode);
-	if (buf.matches_as == MATCHES_AS_NULL) {
+	buf.ms_code = _get_match_storing_code(ms_mode);
+	if (buf.ms_code == MATCHES_AS_NULL) {
 		buf.tb_matches.is_init = 0;
 	} else {
 		buf.tb_matches = _new_TBMatchBuf(nseq, tb_width, head_widths, tail_widths);
@@ -252,7 +252,7 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int key, int tb_end)
 	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
 	int start, width;
 
-	if (buf->matches_as == MATCHES_AS_NULL)
+	if (buf->ms_code == MATCHES_AS_NULL)
 		return;
 	matching_keys = &(buf->matches.matching_keys);
 	count_buf = &(buf->matches.match_counts);
@@ -289,7 +289,7 @@ static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
 {
 	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
 
-	if (buf->matches_as == MATCHES_AS_NULL)
+	if (buf->ms_code == MATCHES_AS_NULL)
 		return;
 	matching_keys = &(buf->matches.matching_keys);
 	count_buf = &(buf->matches.match_counts);
@@ -308,7 +308,7 @@ static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
 
 void _MatchPDictBuf_flush(MatchPDictBuf *buf)
 {
-	if (buf->matches_as == MATCHES_AS_NULL)
+	if (buf->ms_code == MATCHES_AS_NULL)
 		return;
 	_TBMatchBuf_flush(&(buf->tb_matches));
 	_Seq2MatchBuf_flush(&(buf->matches));
@@ -323,7 +323,7 @@ void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
 	const int *key;
 	IntAE *start_buf1, *start_buf2, *width_buf1, *width_buf2;
 
-	if (buf2->matches_as == MATCHES_AS_NULL)
+	if (buf2->ms_code == MATCHES_AS_NULL)
 		return;
 	buf2_matches = &(buf2->matches);
 	if (buf1->match_counts.nelt != buf2_matches->match_counts.nelt

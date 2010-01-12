@@ -141,6 +141,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(report_match,
 	(    start,     width)
 )
 
+DEFINE_CCALLABLE_STUB(int, get_match_count,
+	(),
+	()
+)
+
 DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,
 	(),
 	()

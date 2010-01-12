@@ -462,6 +462,8 @@ void _shift_match_on_reporting(int shift);
 
 void _report_match(int start, int width);
 
+int _get_match_count();
+
 SEXP _reported_matches_asSEXP();
 
 
@@ -595,6 +597,16 @@ void _match_pattern_indels(
 /* match_pattern.c */
 
 SEXP debug_match_pattern();
+
+void _match_pattern(
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
+	const char *algo,
+	SEXP max_mismatch,
+	SEXP min_mismatch,
+	SEXP with_indels,
+	SEXP fixed
+);
 
 SEXP XString_match_pattern(
 	SEXP pattern,
@@ -911,7 +923,7 @@ SEXP _Seq2MatchBuf_ends_asLIST(Seq2MatchBuf *buf);
 SEXP _Seq2MatchBuf_as_MIndex(Seq2MatchBuf *buf);
 
 SEXP _Seq2MatchBuf_as_SEXP(
-	int matches_as,
+	int ms_code,
 	Seq2MatchBuf *buf,
 	SEXP env
 );

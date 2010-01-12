@@ -168,7 +168,7 @@ typedef struct seq2match_buf {
 } Seq2MatchBuf;
 
 typedef struct matchpdict_buf {
-	int matches_as;
+	int ms_code;
 	TBMatchBuf tb_matches;
 	Seq2MatchBuf matches;
 } MatchPDictBuf;

@@ -361,32 +361,44 @@
   subject <- Dmelanogaster$upstream1000
   subject
 
-  ## The 3 following calls are equivalent (from faster to slower):
+  ## The 4 following calls are equivalent (from faster to slower):
   mat3a <- vcountPDict(pdict3, subject)
-  mat3b <- sapply(dict3, function(pattern) vcountPattern(pattern, subject))
-  mat3c <- sapply(unname(subject), function(x) countPDict(pdict3, x))
-  stopifnot(identical(mat3a, t(mat3b)))
-  stopifnot(identical(mat3a, mat3c))
+  mat3b <- vcountPDict(dict3, subject)
+  mat3c <- sapply(dict3,
+               function(pattern) vcountPattern(pattern, subject))
+  mat3d <- sapply(unname(subject),
+               function(x) countPDict(pdict3, x))
+  stopifnot(identical(mat3a, mat3b))
+  stopifnot(identical(mat3a, t(mat3c)))
+  stopifnot(identical(mat3a, mat3d))
 
-  ## The 2 following calls are equivalent (from faster to slower):
+  ## The 3 following calls are equivalent (from faster to slower):
   nhitpp3a <- vcountPDict(pdict3, subject, collapse=1)  # rowSums(mat3a)
-  nhitpp3b <- sapply(dict3, function(pattern) sum(vcountPattern(pattern, subject)))
+  nhitpp3b <- vcountPDict(dict3, subject, collapse=1)
+  nhitpp3c <- sapply(dict3,
+                  function(pattern) sum(vcountPattern(pattern, subject)))
   stopifnot(identical(nhitpp3a, nhitpp3b))
+  stopifnot(identical(nhitpp3a, nhitpp3c))
 
-  ## The 2 following calls are equivalent (from faster to slower):
+  ## The 3 following calls are equivalent (from faster to slower):
   nhitps3a <- vcountPDict(pdict3, subject, collapse=2)  # colSums(mat3a)
-  nhitps3b <- sapply(unname(subject), function(x) sum(countPDict(pdict3, x)))
+  nhitps3b <- vcountPDict(dict3, subject, collapse=2)
+  nhitps3c <- sapply(unname(subject),
+                  function(x) sum(countPDict(pdict3, x)))
   stopifnot(identical(nhitps3a, nhitps3b))
+  stopifnot(identical(nhitps3a, nhitps3c))
 
   ## ---------------------------------------------------------------------
   ## F. vwhichPDict()
   ## ---------------------------------------------------------------------
-  ## The 3 following calls are equivalent (from faster to slower):
+  ## The 4 following calls are equivalent (from faster to slower):
   vwp3a <- vwhichPDict(pdict3, subject)
-  vwp3b <- lapply(seq_len(ncol(mat3a)), function(j) which(mat3a[ , j] != 0L))
-  vwp3c <- lapply(unname(subject), function(x) whichPDict(pdict3, x))
+  vwp3b <- vwhichPDict(dict3, subject)
+  vwp3c <- lapply(seq_len(ncol(mat3a)), function(j) which(mat3a[ , j] != 0L))
+  vwp3d <- lapply(unname(subject), function(x) whichPDict(pdict3, x))
   stopifnot(identical(vwp3a, vwp3b))
   stopifnot(identical(vwp3a, vwp3c))
+  stopifnot(identical(vwp3a, vwp3d))
 
   table(sapply(vwp3a, length))
   which.min(sapply(vwp3a, length))

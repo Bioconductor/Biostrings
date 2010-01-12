@@ -152,7 +152,7 @@ SEXP find_palindromes(SEXP s_xp, SEXP s_offset, SEXP s_length,
 	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
 	armlen_min = INTEGER(min_armlength)[0];
 	looplen_max = INTEGER(max_looplength)[0];
-	_init_match_reporting("ASIRANGES");
+	_init_match_reporting("MATCHES_AS_RANGES");
 	if (L2R_lkup == R_NilValue)
 		naive_palindrome_search((char *) subj, subj_length,
 			armlen_min, looplen_max);
