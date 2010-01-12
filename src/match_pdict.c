@@ -101,8 +101,8 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 
 
 /****************************************************************************
- * .Call entry points: XString_match_pdict()
- *                     XString_match_XStringSet()
+ * .Call entry points: match_PDict3Parts_XString()
+ *                     match_XStringSet_XString()
  *
  * Arguments:
  *   pptb: a PreprocessedTB object;
@@ -117,7 +117,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
  *   envir: NULL or environment to be populated with the matches.
  */
 
-SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
+SEXP match_PDict3Parts_XString(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
@@ -138,7 +138,7 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 			&(matchpdict_buf.matches), envir);
 }
 
-SEXP XString_match_XStringSet(SEXP pattern,
+SEXP match_XStringSet_XString(SEXP pattern,
 		SEXP subject,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
@@ -159,17 +159,17 @@ SEXP XString_match_XStringSet(SEXP pattern,
 			max_mismatch, min_mismatch, NULL, fixed);
 	}
 */
-	error("XString_match_XStringSet(): IMPLEMENT ME!");
+	error("match_XStringSet_XString(): IMPLEMENT ME!");
 	return R_NilValue;
 }
 
 
 /****************************************************************************
- * .Call entry points: XString_match_pdict()
- *                     XString_match_XStringSet()
+ * .Call entry points: match_PDict3Parts_XString()
+ *                     match_XStringSet_XString()
  */
 
-SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
+SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
@@ -210,19 +210,19 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 				&global_matchpdict_buf, envir);
 }
 
-SEXP XStringViews_match_XStringSet(SEXP pattern,
+SEXP match_XStringSet_XStringViews(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
-	error("XStringViews_match_XStringSet(): IMPLEMENT ME!");
+	error("match_XStringSet_XStringViews(): IMPLEMENT ME!");
 	return R_NilValue;
 }
 
 
 /****************************************************************************
- * .Call entry points: XStringSet_vmatch_pdict()
- *                     XStringSet_vmatch_XStringSet()
+ * .Call entry points: vmatch_PDict3Parts_XStringSet()
+ *                     vmatch_XStringSet_XStringSet()
  */
 
 static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
@@ -458,7 +458,7 @@ static SEXP vcount_XStringSet_collapsed(SEXP pattern,
 	return ans;
 }
 
-SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
+SEXP vmatch_PDict3Parts_XStringSet(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP collapse, SEXP weight,
@@ -474,7 +474,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 				pptb, pdict_head, pdict_tail);
 	switch (matchpdict_buf.ms_code) {
 	    case MATCHES_AS_NULL:
-		error("XStringSet_vmatch_pdict() does not support "
+		error("vmatch_PDict3Parts_XStringSet() does not support "
 		      "'matches_as=\"%s\"' yet, sorry",
 		      CHAR(STRING_ELT(matches_as, 0)));
 	    case MATCHES_AS_WHICH:
@@ -499,7 +499,7 @@ SEXP XStringSet_vmatch_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	return R_NilValue;
 }
 
-SEXP XStringSet_vmatch_XStringSet(SEXP pattern,
+SEXP vmatch_XStringSet_XStringSet(SEXP pattern,
 		SEXP subject,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP collapse, SEXP weight,
@@ -512,7 +512,7 @@ SEXP XStringSet_vmatch_XStringSet(SEXP pattern,
 	ms_code = _get_match_storing_code(ms_mode);
 	switch (ms_code) {
 	    case MATCHES_AS_NULL:
-		error("XStringSet_vmatch_XStringSet() does not support "
+		error("vmatch_XStringSet_XStringSet() does not support "
 		      "'matches_as=\"%s\"' yet, sorry", ms_mode);
 	    case MATCHES_AS_WHICH:
 		_init_match_reporting("MATCHES_AS_COUNTS");

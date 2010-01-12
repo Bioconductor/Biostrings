@@ -1091,7 +1091,7 @@ void _match_pdictACtree2(
 
 SEXP debug_match_pdict();
 
-SEXP XString_match_pdict(
+SEXP match_PDict3Parts_XString(
 	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
@@ -1103,7 +1103,7 @@ SEXP XString_match_pdict(
 	SEXP envir
 );
 
-SEXP XString_match_XStringSet(
+SEXP match_XStringSet_XString(
 	SEXP pattern,
 	SEXP subject,
 	SEXP max_mismatch,
@@ -1113,7 +1113,7 @@ SEXP XString_match_XStringSet(
 	SEXP envir
 );
 
-SEXP XStringViews_match_pdict(
+SEXP match_PDict3Parts_XStringViews(
 	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
@@ -1127,7 +1127,7 @@ SEXP XStringViews_match_pdict(
 	SEXP envir
 );
 
-SEXP XStringViews_match_XStringSet(
+SEXP match_XStringSet_XStringViews(
 	SEXP pattern,
 	SEXP subject,
 	SEXP views_start,
@@ -1139,7 +1139,7 @@ SEXP XStringViews_match_XStringSet(
 	SEXP envir
 );
 
-SEXP XStringSet_vmatch_pdict(
+SEXP vmatch_PDict3Parts_XStringSet(
 	SEXP pptb,
 	SEXP pdict_head,
 	SEXP pdict_tail,
@@ -1153,7 +1153,7 @@ SEXP XStringSet_vmatch_pdict(
 	SEXP envir
 );
 
-SEXP XStringSet_vmatch_XStringSet(
+SEXP vmatch_XStringSet_XStringSet(
 	SEXP pattern,
 	SEXP subject,
 	SEXP max_mismatch,

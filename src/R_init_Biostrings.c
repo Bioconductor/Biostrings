@@ -171,12 +171,12 @@ static const R_CallMethodDef callMethods[] = {
 
 /* match_pdict.c */
 	CALLMETHOD_DEF(debug_match_pdict, 0),
-	CALLMETHOD_DEF(XString_match_pdict, 9),
-	CALLMETHOD_DEF(XString_match_XStringSet, 7),
-	CALLMETHOD_DEF(XStringViews_match_pdict, 11),
-	CALLMETHOD_DEF(XStringViews_match_XStringSet, 9),
-	CALLMETHOD_DEF(XStringSet_vmatch_pdict, 11),
-	CALLMETHOD_DEF(XStringSet_vmatch_XStringSet, 9),
+	CALLMETHOD_DEF(match_PDict3Parts_XString, 9),
+	CALLMETHOD_DEF(match_XStringSet_XString, 7),
+	CALLMETHOD_DEF(match_PDict3Parts_XStringViews, 11),
+	CALLMETHOD_DEF(match_XStringSet_XStringViews, 9),
+	CALLMETHOD_DEF(vmatch_PDict3Parts_XStringSet, 11),
+	CALLMETHOD_DEF(vmatch_XStringSet_XStringSet, 9),
 
 /* align_utils.c */
 	CALLMETHOD_DEF(PairwiseAlignedXStringSet_nmatch, 4),

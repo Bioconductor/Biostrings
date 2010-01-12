@@ -133,7 +133,7 @@
     fixed <- normargFixed(fixed, subject)
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    .Call("XString_match_pdict",
+    .Call("match_PDict3Parts_XString",
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, min.mismatch, fixed,
@@ -147,7 +147,7 @@
                                       matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
-    .Call("XString_match_XStringSet",
+    .Call("match_XStringSet_XString",
           pattern,
           subject,
           max.mismatch, min.mismatch, fixed,
@@ -163,7 +163,7 @@
     fixed <- normargFixed(fixed, subject)
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    .Call("XStringViews_match_pdict",
+    .Call("match_PDict3Parts_XStringViews",
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject(subject), start(subject), width(subject),
           max.mismatch, min.mismatch, fixed,
@@ -177,7 +177,7 @@
                                            matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
-    .Call("XStringViews_match_XStringSet",
+    .Call("match_XStringSet_XStringViews",
           pattern,
           subject(subject), start(subject), width(subject),
           max.mismatch, min.mismatch, fixed,
@@ -194,7 +194,7 @@
     fixed <- normargFixed(fixed, subject)
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    .Call("XStringSet_vmatch_pdict",
+    .Call("vmatch_PDict3Parts_XStringSet",
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, min.mismatch, fixed,
@@ -210,7 +210,7 @@
                                           matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
-    .Call("XStringSet_vmatch_XStringSet",
+    .Call("vmatch_XStringSet_XStringSet",
           pattern,
           subject,
           max.mismatch, min.mismatch, fixed,
