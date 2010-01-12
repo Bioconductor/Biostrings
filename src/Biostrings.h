@@ -466,6 +466,36 @@ int _get_match_count();
 
 SEXP _reported_matches_asSEXP();
 
+MatchBuf _new_MatchBuf(
+	int ms_code,
+	int nseq
+);
+
+void _MatchBuf_flush(MatchBuf *buf);
+
+void _MatchBuf_report_match(
+	MatchBuf *buf,
+	int key,
+	int start,
+	int width
+);
+
+SEXP _MatchBuf_which_asINTEGER(MatchBuf *buf);
+
+SEXP _MatchBuf_counts_asINTEGER(MatchBuf *buf);
+
+SEXP _MatchBuf_starts_asLIST(MatchBuf *buf);
+
+SEXP _MatchBuf_ends_asLIST(MatchBuf *buf);
+
+SEXP _MatchBuf_as_MIndex(MatchBuf *buf);
+
+SEXP _MatchBuf_as_SEXP(
+	int ms_code,
+	MatchBuf *buf,
+	SEXP env
+);
+
 
 /* MIndex_class.c */
 
@@ -890,36 +920,6 @@ SEXP _get_ppdups_buf_asINTEGER();
 
 SEXP debug_match_pdict_utils();
 
-Seq2MatchBuf _new_Seq2MatchBuf(
-	SEXP matches_as,
-	int nseq
-);
-
-void _Seq2MatchBuf_flush(Seq2MatchBuf *buf);
-
-void _Seq2MatchBuf_report_match(
-	Seq2MatchBuf *buf,
-	int key,
-	int start,
-	int width
-);
-
-SEXP _Seq2MatchBuf_which_asINTEGER(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_counts_asINTEGER(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_starts_asLIST(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_ends_asLIST(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_as_MIndex(Seq2MatchBuf *buf);
-
-SEXP _Seq2MatchBuf_as_SEXP(
-	int ms_code,
-	Seq2MatchBuf *buf,
-	SEXP env
-);
-
 TBMatchBuf _new_TBMatchBuf(
 	int tb_length,
 	int tb_width,
@@ -952,7 +952,7 @@ void _MatchPDictBuf_report_match(
 void _MatchPDictBuf_flush(MatchPDictBuf *buf);
 
 void _MatchPDictBuf_append_and_flush(
-	Seq2MatchBuf *buf1,
+	MatchBuf *buf1,
 	MatchPDictBuf *buf2,
 	int view_offset
 );

@@ -28,169 +28,6 @@ SEXP debug_match_pdict_utils()
 
 
 /****************************************************************************
- * Manipulation of the Seq2MatchBuf buffer.
- *
- * TODO: Move this to match_reporting.c
- */
-
-Seq2MatchBuf _new_Seq2MatchBuf(SEXP matches_as, int nseq)
-{
-	const char *ms_mode;
-	int ms_code, count_only;
-	static Seq2MatchBuf buf;
-
-	ms_mode = CHAR(STRING_ELT(matches_as, 0));
-	ms_code = _get_match_storing_code(ms_mode);
-	if (ms_code != MATCHES_AS_NULL
-	 && ms_code != MATCHES_AS_WHICH
-	 && ms_code != MATCHES_AS_COUNTS
-	 && ms_code != MATCHES_AS_STARTS
-	 && ms_code != MATCHES_AS_ENDS
-	 && ms_code != MATCHES_AS_RANGES)
-		error("Biostrings internal error in _new_Seq2MatchBuf(): ",
-		      "\"%s\": unsupported match storing mode", ms_mode);
-	count_only = ms_code == MATCHES_AS_WHICH ||
-		     ms_code == MATCHES_AS_COUNTS;
-	buf.matching_keys = new_IntAE(0, 0, 0);
-	buf.match_counts = new_IntAE(nseq, nseq, 0);
-	if (count_only) {
-		/* By setting 'buflength' to -1 we indicate that these
-		   buffers must not be used */
-		buf.match_starts.buflength = -1;
-		buf.match_widths.buflength = -1;
-	} else {
-		buf.match_starts = new_IntAEAE(nseq, nseq);
-		buf.match_widths = new_IntAEAE(nseq, nseq);
-	}
-	return buf;
-}
-
-void _Seq2MatchBuf_flush(Seq2MatchBuf *buf)
-{
-	int i;
-	const int *key;
-
-	for (i = 0, key = buf->matching_keys.elts;
-	     i < buf->matching_keys.nelt;
-	     i++, key++)
-	{
-		buf->match_counts.elts[*key] = 0;
-		if (buf->match_starts.buflength != -1)
-			buf->match_starts.elts[*key].nelt = 0;
-		if (buf->match_widths.buflength != -1)
-			buf->match_widths.elts[*key].nelt = 0;
-	}
-	buf->matching_keys.nelt = 0;
-	return;
-}
-
-void _Seq2MatchBuf_report_match(Seq2MatchBuf *buf,
-		int key, int start, int width)
-{
-	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
-
-	matching_keys = &(buf->matching_keys);
-	count_buf = &(buf->match_counts);
-	if (count_buf->elts[key]++ == 0)
-		IntAE_insert_at(matching_keys, matching_keys->nelt, key);
-	if (buf->match_starts.buflength != -1) {
-		start_buf = buf->match_starts.elts + key;
-		IntAE_insert_at(start_buf, start_buf->nelt, start);
-	}
-	if (buf->match_widths.buflength != -1) {
-		width_buf = buf->match_widths.elts + key;
-		IntAE_insert_at(width_buf, width_buf->nelt, width);
-	}
-	return;
-}
-
-SEXP _Seq2MatchBuf_which_asINTEGER(Seq2MatchBuf *buf)
-{
-	SEXP ans;
-	int i;
-
-	IntAE_qsort(&(buf->matching_keys), 0);
-	PROTECT(ans = IntAE_asINTEGER(&(buf->matching_keys)));
-	for (i = 0; i < LENGTH(ans); i++)
-		INTEGER(ans)[i]++;
-	UNPROTECT(1);
-	return ans;
-}
-
-SEXP _Seq2MatchBuf_counts_asINTEGER(Seq2MatchBuf *buf)
-{
-	return IntAE_asINTEGER(&(buf->match_counts));
-}
-
-SEXP _Seq2MatchBuf_starts_asLIST(Seq2MatchBuf *buf)
-{
-	if (buf->match_starts.buflength == -1)
-		error("Biostrings internal error: _Seq2MatchBuf_starts_asLIST() "
-		      "was called in the wrong context");
-	return IntAEAE_asLIST(&(buf->match_starts), 1);
-}
-
-static SEXP _Seq2MatchBuf_starts_toEnvir(Seq2MatchBuf *buf, SEXP env)
-{
-	if (buf->match_starts.buflength == -1)
-		error("Biostrings internal error: _Seq2MatchBuf_starts_toEnvir() "
-		      "was called in the wrong context");
-	return IntAEAE_toEnvir(&(buf->match_starts), env, 1);
-}
-
-SEXP _Seq2MatchBuf_ends_asLIST(Seq2MatchBuf *buf)
-{
-	if (buf->match_starts.buflength == -1
-	 || buf->match_widths.buflength == -1)
-		error("Biostrings internal error: _Seq2MatchBuf_ends_asLIST() "
-		      "was called in the wrong context");
-	IntAEAE_sum_and_shift(&(buf->match_starts), &(buf->match_widths), -1);
-	return IntAEAE_asLIST(&(buf->match_starts), 1);
-}
-
-static SEXP _Seq2MatchBuf_ends_toEnvir(Seq2MatchBuf *buf, SEXP env)
-{
-	if (buf->match_starts.buflength == -1
-	 || buf->match_widths.buflength == -1)
-		error("Biostrings internal error: _Seq2MatchBuf_ends_toEnvir() "
-		      "was called in the wrong context");
-	IntAEAE_sum_and_shift(&(buf->match_starts), &(buf->match_widths), -1);
-	return IntAEAE_toEnvir(&(buf->match_starts), env, 1);
-}
-
-SEXP _Seq2MatchBuf_as_MIndex(Seq2MatchBuf *buf)
-{
-	error("_Seq2MatchBuf_as_MIndex(): IMPLEMENT ME!");
-	return R_NilValue;
-}
-
-SEXP _Seq2MatchBuf_as_SEXP(int ms_code, Seq2MatchBuf *buf, SEXP env)
-{
-	switch (ms_code) {
-	    case MATCHES_AS_NULL:
-		return R_NilValue;
-	    case MATCHES_AS_WHICH:
-		return _Seq2MatchBuf_which_asINTEGER(buf);
-	    case MATCHES_AS_COUNTS:
-		return _Seq2MatchBuf_counts_asINTEGER(buf);
-	    case MATCHES_AS_STARTS:
-		if (env != R_NilValue)
-			return _Seq2MatchBuf_starts_toEnvir(buf, env);
-		return _Seq2MatchBuf_starts_asLIST(buf);
-	    case MATCHES_AS_ENDS:
-		if (env != R_NilValue)
-			return _Seq2MatchBuf_ends_toEnvir(buf, env);
-		return _Seq2MatchBuf_ends_asLIST(buf);
-	    case MATCHES_AS_RANGES:
-		return _Seq2MatchBuf_as_MIndex(buf);
-	}
-	error("Biostrings internal error in _Seq2MatchBuf_as_SEXP(): "
-	      "unsupported 'ms_code' value %d", ms_code);
-	return R_NilValue;
-}
-
-
-/****************************************************************************
  * Manipulation of the MatchPDictBuf buffer.
  *
  * The MatchPDictBuf struct is used for storing the matches found by the
@@ -254,7 +91,7 @@ MatchPDictBuf _new_MatchPDictBuf(SEXP matches_as, int nseq, int tb_width,
 		buf.tb_matches.is_init = 0;
 	} else {
 		buf.tb_matches = _new_TBMatchBuf(nseq, tb_width, head_widths, tail_widths);
-		buf.matches = _new_Seq2MatchBuf(matches_as, nseq);
+		buf.matches = _new_MatchBuf(buf.ms_code, nseq);
 	}
 	return buf;
 }
@@ -301,7 +138,7 @@ static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
 {
 	if (buf->ms_code == MATCHES_AS_NULL)
 		return;
-	_Seq2MatchBuf_report_match(&(buf->matches), key, start, width);
+	_MatchBuf_report_match(&(buf->matches), key, start, width);
 	return;
 }
 
@@ -310,14 +147,14 @@ void _MatchPDictBuf_flush(MatchPDictBuf *buf)
 	if (buf->ms_code == MATCHES_AS_NULL)
 		return;
 	_TBMatchBuf_flush(&(buf->tb_matches));
-	_Seq2MatchBuf_flush(&(buf->matches));
+	_MatchBuf_flush(&(buf->matches));
 	return;
 }
 
-void _MatchPDictBuf_append_and_flush(Seq2MatchBuf *buf1, MatchPDictBuf *buf2,
+void _MatchPDictBuf_append_and_flush(MatchBuf *buf1, MatchPDictBuf *buf2,
 		int view_offset)
 {
-	Seq2MatchBuf *buf2_matches;
+	MatchBuf *buf2_matches;
 	int i;
 	const int *key;
 	IntAE *start_buf1, *start_buf2, *width_buf1, *width_buf2;

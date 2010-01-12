@@ -191,7 +191,7 @@ SEXP match_PDict3Parts_XString(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	match_pdict(pptb, &headtail,
 		&S, max_mismatch, min_mismatch, fixed,
 		&matchpdict_buf);
-	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.ms_code,
+	return _MatchBuf_as_SEXP(matchpdict_buf.ms_code,
 			&(matchpdict_buf.matches), envir);
 }
 
@@ -202,22 +202,31 @@ SEXP match_XStringSet_XString(SEXP pattern,
 		SEXP matches_as, SEXP envir)
 {
 /*
+	const char *ms_mode;
+	int ms_code;
+
 	cachedXStringSet P;
 	int P_length, i;
 	cachedCharSeq P_elt, S;
-	Seq2MatchBuf ans_buf;
+	MatchBuf ans_buf;
 
+	ms_mode = CHAR(STRING_ELT(matches_as, 0));
+	ms_code = _get_match_storing_code(ms_mode);
+	switch (ms_code) {
+	    case MATCHES_AS_WHICH: ms_mode = "MATCHES_AS_COUNTS"; break;
+	    case MATCHES_AS_ENDS: ms_mode = "MATCHES_AS_RANGES"; break;
+	}
 	P = _cache_XStringSet(pattern);
 	P_length = _get_cachedXStringSet_length(&P);
 	S = cache_XRaw(subject);
-	ans_buf = _new_Seq2MatchBuf(matches_as, P_length);
+	_init_match_reporting(ms_mode);
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		_match_pattern(&P_elt, &S, NULL,
 			max_mismatch, min_mismatch, NULL, fixed);
 	}
 */
-	error("match_XStringSet_XString(): IMPLEMENT ME!");
+	error("vmatchPDict() is not supported yet, sorry");
 	return R_NilValue;
 }
 
@@ -255,7 +264,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	cachedCharSeq S, S_view;
 	int nviews, i, *view_start, *view_width, view_offset;
 	MatchPDictBuf matchpdict_buf;
-	Seq2MatchBuf global_matchpdict_buf;
+	MatchBuf global_matchpdict_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
@@ -263,7 +272,8 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	S = cache_XRaw(subject);
 	matchpdict_buf = new_MatchPDictBuf_from_PDict3Parts(matches_as,
 				pptb, pdict_head, pdict_tail);
-	global_matchpdict_buf = _new_Seq2MatchBuf(matches_as, tb_length);
+	global_matchpdict_buf = _new_MatchBuf(matchpdict_buf.ms_code,
+				tb_length);
 	nviews = LENGTH(views_start);
 	for (i = 0,
 	     view_start = INTEGER(views_start),
@@ -282,7 +292,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		_MatchPDictBuf_append_and_flush(&global_matchpdict_buf,
 			&matchpdict_buf, view_offset);
 	}
-	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.ms_code,
+	return _MatchBuf_as_SEXP(matchpdict_buf.ms_code,
 				&global_matchpdict_buf, envir);
 }
 
@@ -339,7 +349,7 @@ static SEXP vwhich_PDict3Parts_XStringSet(SEXP pptb, HeadTail *headtail,
 		match_pdict(pptb, headtail, &S_elt,
 			    max_mismatch, min_mismatch, fixed,
 			    matchpdict_buf);
-		PROTECT(ans_elt = _Seq2MatchBuf_which_asINTEGER(
+		PROTECT(ans_elt = _MatchBuf_which_asINTEGER(
 					&(matchpdict_buf->matches)));
 		SET_ELEMENT(ans, j, ans_elt);
 		UNPROTECT(1);

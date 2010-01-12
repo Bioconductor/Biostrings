@@ -146,12 +146,12 @@ typedef struct headtail {
 #define MATCHES_AS_NORMALRANGES	6  // not supported yet
 #define MATCHES_AS_COVERAGE	7  // supported yet
 
-typedef struct seq2match_buf {
+typedef struct match_buf {
 	IntAE matching_keys;
 	IntAE match_counts;
 	IntAEAE match_starts;
 	IntAEAE match_widths;
-} Seq2MatchBuf;
+} MatchBuf;
 
 
 /*
@@ -170,7 +170,7 @@ typedef struct tbmatch_buf {
 typedef struct matchpdict_buf {
 	int ms_code;
 	TBMatchBuf tb_matches;
-	Seq2MatchBuf matches;
+	MatchBuf matches;
 } MatchPDictBuf;
 
 #endif
