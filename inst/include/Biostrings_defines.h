@@ -146,6 +146,13 @@ typedef struct headtail {
 #define MATCHES_AS_NORMALRANGES	6  // not supported yet
 #define MATCHES_AS_COVERAGE	7  // supported yet
 
+typedef struct seq2match_buf {
+	IntAE matching_keys;
+	IntAE match_counts;
+	IntAEAE match_starts;
+	IntAEAE match_widths;
+} Seq2MatchBuf;
+
 
 /*
  * The MatchPDictBuf struct is used for storing the matches found by the
@@ -159,13 +166,6 @@ typedef struct tbmatch_buf {
 	IntAE matching_keys;
 	IntAEAE match_ends;
 } TBMatchBuf;
-
-typedef struct seq2match_buf {
-	IntAE matching_keys;
-	IntAE match_counts;
-	IntAEAE match_starts;
-	IntAEAE match_widths;
-} Seq2MatchBuf;
 
 typedef struct matchpdict_buf {
 	int ms_code;

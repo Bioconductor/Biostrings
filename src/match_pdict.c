@@ -21,6 +21,11 @@ SEXP debug_match_pdict()
 	return R_NilValue;
 }
 
+
+/****************************************************************************
+ * Helper functions for all the *match_pdict() .Call entry points.
+ */
+
 // FIXME: Pass 'const HeadTail *' instead of 'pdict_head'
 // and 'pdict_tail'. Also change MatchPDictBuf struct so the
 // head_widths and tail_widths members are IntAE buffers.
@@ -98,8 +103,6 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 /****************************************************************************
  * .Call entry points: XString_match_pdict()
  *                     XString_match_XStringSet()
- *                     XStringViews_match_pdict()
- *                     XStringViews_match_XStringSet()
  *
  * Arguments:
  *   pptb: a PreprocessedTB object;
@@ -109,11 +112,10 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
  *   max_mismatch: max.mismatch (max nb of mismatches out of the TB);
  *   min_mismatch: min.mismatch (min nb of mismatches out of the TB);
  *   fixed: logical vector of length 2;
- *   matches_as: "DEVNULL", "MATCHES_AS_WHICH", "MATCHES_AS_COUNTS"
+ *   matches_as: "MATCHES_AS_NULL", "MATCHES_AS_WHICH", "MATCHES_AS_COUNTS"
  *               or "MATCHES_AS_ENDS";
  *   envir: NULL or environment to be populated with the matches.
- *
- ****************************************************************************/
+ */
 
 SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
@@ -124,25 +126,16 @@ SEXP XString_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	cachedCharSeq S;
 	MatchPDictBuf matchpdict_buf;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING XString_match_pdict()\n");
-#endif
 	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
-				 max_mismatch, fixed, 1);
+			max_mismatch, fixed, 1);
 	S = cache_XRaw(subject);
-
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
-				pptb, pdict_head, pdict_tail);
+			pptb, pdict_head, pdict_tail);
 	match_pdict(pptb, &headtail,
 		&S, max_mismatch, min_mismatch, fixed,
 		&matchpdict_buf);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING XString_match_pdict()\n");
-#endif
 	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.ms_code,
-				&(matchpdict_buf.matches), envir);
+			&(matchpdict_buf.matches), envir);
 }
 
 SEXP XString_match_XStringSet(SEXP pattern,
@@ -150,9 +143,31 @@ SEXP XString_match_XStringSet(SEXP pattern,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
+/*
+	cachedXStringSet P;
+	int P_length, i;
+	cachedCharSeq P_elt, S;
+	Seq2MatchBuf ans_buf;
+
+	P = _cache_XStringSet(pattern);
+	P_length = _get_cachedXStringSet_length(&P);
+	S = cache_XRaw(subject);
+	ans_buf = _new_Seq2MatchBuf(matches_as, P_length);
+	for (i = 0; i < P_length; i++) {
+		P_elt = _get_cachedXStringSet_elt(&P, i);
+		_match_pattern(&P_elt, &S, NULL,
+			max_mismatch, min_mismatch, NULL, fixed);
+	}
+*/
 	error("XString_match_XStringSet(): IMPLEMENT ME!");
 	return R_NilValue;
 }
+
+
+/****************************************************************************
+ * .Call entry points: XString_match_pdict()
+ *                     XString_match_XStringSet()
+ */
 
 SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject, SEXP views_start, SEXP views_width,
@@ -166,20 +181,17 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	MatchPDictBuf matchpdict_buf;
 	Seq2MatchBuf global_matchpdict_buf;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING XStringViews_match_pdict()\n");
-#endif
 	tb_length = _get_PreprocessedTB_length(pptb);
 	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
 				 max_mismatch, fixed, 1);
 	S = cache_XRaw(subject);
-
 	matchpdict_buf = new_MatchPDictBuf_from_TB_PDict(matches_as,
 				pptb, pdict_head, pdict_tail);
 	global_matchpdict_buf = _new_Seq2MatchBuf(matches_as, tb_length);
 	nviews = LENGTH(views_start);
-	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
+	for (i = 0,
+	     view_start = INTEGER(views_start),
+	     view_width = INTEGER(views_width);
 	     i < nviews;
 	     i++, view_start++, view_width++)
 	{
@@ -194,11 +206,6 @@ SEXP XStringViews_match_pdict(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		_MatchPDictBuf_append_and_flush(&global_matchpdict_buf,
 			&matchpdict_buf, view_offset);
 	}
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING XStringViews_match_pdict()\n");
-#endif
 	return _Seq2MatchBuf_as_SEXP(matchpdict_buf.ms_code,
 				&global_matchpdict_buf, envir);
 }
@@ -216,7 +223,7 @@ SEXP XStringViews_match_XStringSet(SEXP pattern,
 /****************************************************************************
  * .Call entry points: XStringSet_vmatch_pdict()
  *                     XStringSet_vmatch_XStringSet()
- ****************************************************************************/
+ */
 
 static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 		SEXP subject,
@@ -225,18 +232,21 @@ static SEXP vwhich_pdict(SEXP pptb, HeadTail *headtail,
 {
 	int S_length, j;
 	cachedXStringSet S;
-	SEXP ans;
+	SEXP ans, ans_elt;
 	cachedCharSeq S_elt;
 
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	PROTECT(ans = NEW_LIST(S_length));
 	for (j = 0; j < S_length; j++) {
 		S_elt = _get_cachedXStringSet_elt(&S, j);
 		match_pdict(pptb, headtail, &S_elt,
 			    max_mismatch, min_mismatch, fixed,
 			    matchpdict_buf);
-		SET_ELEMENT(ans, j, _Seq2MatchBuf_which_asINTEGER(&(matchpdict_buf->matches)));
+		PROTECT(ans_elt = _Seq2MatchBuf_which_asINTEGER(
+					&(matchpdict_buf->matches)));
+		SET_ELEMENT(ans, j, ans_elt);
+		UNPROTECT(1);
 		_MatchPDictBuf_flush(matchpdict_buf);
 	}
 	UNPROTECT(1);
@@ -253,9 +263,9 @@ static SEXP vwhich_XStringSet(SEXP pattern,
 	IntAEAE ans_buf;
 
 	P = _cache_XStringSet(pattern);
-	P_length = _get_XStringSet_length(pattern);
+	P_length = _get_cachedXStringSet_length(&P);
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	ans_buf = new_IntAEAE(S_length, S_length);
 	for (j = 0; j < S_length; j++)
 		ans_buf.elts[j].nelt = 0;
@@ -287,7 +297,7 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	PROTECT(ans = allocMatrix(INTSXP, tb_length, S_length));
 	for (j = 0, current_col = INTEGER(ans);
 	     j < S_length;
@@ -298,8 +308,9 @@ static SEXP vcount_pdict_notcollapsed(SEXP pptb, HeadTail *headtail,
 			max_mismatch, min_mismatch, fixed,
 			matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
-		/* count_buf->nelt is tb_length */
-		memcpy(current_col, count_buf->elts, sizeof(int) * count_buf->nelt);
+		/* 'count_buf->nelt' is 'tb_length' */
+		memcpy(current_col, count_buf->elts,
+			sizeof(int) * count_buf->nelt);
 		_MatchPDictBuf_flush(matchpdict_buf);
 	}
 	UNPROTECT(1);
@@ -316,15 +327,16 @@ static SEXP vcount_XStringSet_notcollapsed(SEXP pattern,
 	cachedCharSeq P_elt, S_elt;
 
 	P = _cache_XStringSet(pattern);
-	P_length = _get_XStringSet_length(pattern);
+	P_length = _get_cachedXStringSet_length(&P);
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	PROTECT(ans = allocMatrix(INTSXP, P_length, S_length));
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		for (j = 0, current_col = INTEGER(ans);
 		     j < S_length;
-		     j++, current_col += P_length) {
+		     j++, current_col += P_length)
+		{
 			S_elt = _get_cachedXStringSet_elt(&S, j);
 			_match_pattern(&P_elt, &S_elt, NULL,
 				max_mismatch, min_mismatch, NULL, fixed);
@@ -364,7 +376,8 @@ static void update_vcount_collapsed_ans(SEXP ans, int match_count, int i, int j,
 {
 	int tmp;
 
-	/* If 'collapse' is 1, then collapse horizontally. */
+	/* If 'collapse' is 1, then collapse the matrix of match counts
+	   horizontally by summing all the (weighted) columns together. */
 	if (collapse != 1) {
 		/* Otherwise, collapse vertically. */
 		tmp = i;
@@ -392,7 +405,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	PROTECT(ans = init_vcount_collapsed_ans(tb_length, S_length,
 			collapse, weight));
 	for (j = 0; j < S_length; j++) {
@@ -401,7 +414,7 @@ static SEXP vcount_pdict_collapsed(SEXP pptb, HeadTail *headtail,
 				max_mismatch, min_mismatch, fixed,
 				matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
-		/* count_buf->nelt is tb_length */
+		/* 'count_buf->nelt' is 'tb_length' */
 		for (i = 0; i < tb_length; i++) {
 			match_count = count_buf->elts[i];
 			update_vcount_collapsed_ans(ans, match_count, i, j,
@@ -424,9 +437,9 @@ static SEXP vcount_XStringSet_collapsed(SEXP pattern,
 	cachedCharSeq P_elt, S_elt;
 
 	P = _cache_XStringSet(pattern);
-	P_length = _get_XStringSet_length(pattern);
+	P_length = _get_cachedXStringSet_length(&P);
 	S = _cache_XStringSet(subject);
-	S_length = _get_XStringSet_length(subject);
+	S_length = _get_cachedXStringSet_length(&S);
 	PROTECT(ans = init_vcount_collapsed_ans(P_length, S_length,
 			collapse, weight));
 	for (i = 0; i < P_length; i++) {

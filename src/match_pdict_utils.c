@@ -27,66 +27,10 @@ SEXP debug_match_pdict_utils()
 }
 
 
-
-/*****************************************************************************
- * Low-level manipulation of the MatchPDictBuf buffer
- * --------------------------------------------------
- * The MatchPDictBuf struct is used for storing the matches found by the
- * matchPDict() function.
- */
-
 /****************************************************************************
- * Manipulation of the TBMatchBuf struct.
- */
-
-TBMatchBuf _new_TBMatchBuf(int tb_length, int tb_width,
-		const int *head_widths, const int *tail_widths)
-{
-	static TBMatchBuf buf;
-
-	buf.is_init = 1;
-	buf.tb_width = tb_width;
-	buf.head_widths = head_widths;
-	buf.tail_widths = tail_widths;
-	buf.matching_keys = new_IntAE(0, 0, 0);
-	buf.match_ends = new_IntAEAE(tb_length, tb_length);
-	return buf;
-}
-
-void _TBMatchBuf_report_match(TBMatchBuf *buf, int key, int end)
-{
-	IntAE *end_buf;
-
-	if (!buf->is_init)
-		return;
-	end_buf = buf->match_ends.elts + key;
-	if (end_buf->nelt == 0)
-		IntAE_insert_at(&(buf->matching_keys),
-				buf->matching_keys.nelt, key);
-	IntAE_insert_at(end_buf, end_buf->nelt, end);
-	return;
-}
-
-void _TBMatchBuf_flush(TBMatchBuf *buf)
-{
-	int i;
-	const int *key;
-
-	if (!buf->is_init)
-		return;
-	for (i = 0, key = buf->matching_keys.elts;
-	     i < buf->matching_keys.nelt;
-	     i++, key++)
-	{
-		buf->match_ends.elts[*key].nelt = 0;
-	}
-	buf->matching_keys.nelt = 0;
-	return;
-}
-
-
-/****************************************************************************
- * Manipulation of the Seq2MatchBuf struct.
+ * Manipulation of the Seq2MatchBuf buffer.
+ *
+ * TODO: Move this to match_reporting.c
  */
 
 Seq2MatchBuf _new_Seq2MatchBuf(SEXP matches_as, int nseq)
@@ -137,6 +81,26 @@ void _Seq2MatchBuf_flush(Seq2MatchBuf *buf)
 			buf->match_widths.elts[*key].nelt = 0;
 	}
 	buf->matching_keys.nelt = 0;
+	return;
+}
+
+void _Seq2MatchBuf_report_match(Seq2MatchBuf *buf,
+		int key, int start, int width)
+{
+	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
+
+	matching_keys = &(buf->matching_keys);
+	count_buf = &(buf->match_counts);
+	if (count_buf->elts[key]++ == 0)
+		IntAE_insert_at(matching_keys, matching_keys->nelt, key);
+	if (buf->match_starts.buflength != -1) {
+		start_buf = buf->match_starts.elts + key;
+		IntAE_insert_at(start_buf, start_buf->nelt, start);
+	}
+	if (buf->match_widths.buflength != -1) {
+		width_buf = buf->match_widths.elts + key;
+		IntAE_insert_at(width_buf, width_buf->nelt, width);
+	}
 	return;
 }
 
@@ -227,8 +191,56 @@ SEXP _Seq2MatchBuf_as_SEXP(int ms_code, Seq2MatchBuf *buf, SEXP env)
 
 
 /****************************************************************************
- * Manipulation of the MatchPDictBuf struct.
+ * Manipulation of the MatchPDictBuf buffer.
+ *
+ * The MatchPDictBuf struct is used for storing the matches found by the
+ * matchPDict() function (and family).
  */
+
+TBMatchBuf _new_TBMatchBuf(int tb_length, int tb_width,
+		const int *head_widths, const int *tail_widths)
+{
+	static TBMatchBuf buf;
+
+	buf.is_init = 1;
+	buf.tb_width = tb_width;
+	buf.head_widths = head_widths;
+	buf.tail_widths = tail_widths;
+	buf.matching_keys = new_IntAE(0, 0, 0);
+	buf.match_ends = new_IntAEAE(tb_length, tb_length);
+	return buf;
+}
+
+void _TBMatchBuf_report_match(TBMatchBuf *buf, int key, int end)
+{
+	IntAE *end_buf;
+
+	if (!buf->is_init)
+		return;
+	end_buf = buf->match_ends.elts + key;
+	if (end_buf->nelt == 0)
+		IntAE_insert_at(&(buf->matching_keys),
+				buf->matching_keys.nelt, key);
+	IntAE_insert_at(end_buf, end_buf->nelt, end);
+	return;
+}
+
+void _TBMatchBuf_flush(TBMatchBuf *buf)
+{
+	int i;
+	const int *key;
+
+	if (!buf->is_init)
+		return;
+	for (i = 0, key = buf->matching_keys.elts;
+	     i < buf->matching_keys.nelt;
+	     i++, key++)
+	{
+		buf->match_ends.elts[*key].nelt = 0;
+	}
+	buf->matching_keys.nelt = 0;
+	return;
+}
 
 MatchPDictBuf _new_MatchPDictBuf(SEXP matches_as, int nseq, int tb_width,
 		const int *head_widths, const int *tail_widths)
@@ -287,22 +299,9 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int key, int tb_end)
 static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int key,
 		int start, int width)
 {
-	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
-
 	if (buf->ms_code == MATCHES_AS_NULL)
 		return;
-	matching_keys = &(buf->matches.matching_keys);
-	count_buf = &(buf->matches.match_counts);
-	if (count_buf->elts[key]++ == 0)
-		IntAE_insert_at(matching_keys, matching_keys->nelt, key);
-	if (buf->matches.match_starts.buflength != -1) {
-		start_buf = buf->matches.match_starts.elts + key;
-		IntAE_insert_at(start_buf, start_buf->nelt, start);
-	}
-	if (buf->matches.match_widths.buflength != -1) {
-		width_buf = buf->matches.match_widths.elts + key;
-		IntAE_insert_at(width_buf, width_buf->nelt, width);
-	}
+	_Seq2MatchBuf_report_match(&(buf->matches), key, start, width);
 	return;
 }
 

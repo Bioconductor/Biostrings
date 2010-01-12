@@ -890,27 +890,19 @@ SEXP _get_ppdups_buf_asINTEGER();
 
 SEXP debug_match_pdict_utils();
 
-TBMatchBuf _new_TBMatchBuf(
-	int tb_length,
-	int tb_width,
-	const int *head_widths,
-	const int *tail_widths
-);
-
-void _TBMatchBuf_report_match(
-	TBMatchBuf *buf,
-	int key,
-	int end
-);
-
-void _TBMatchBuf_flush(TBMatchBuf *buf);
-
 Seq2MatchBuf _new_Seq2MatchBuf(
 	SEXP matches_as,
 	int nseq
 );
 
 void _Seq2MatchBuf_flush(Seq2MatchBuf *buf);
+
+void _Seq2MatchBuf_report_match(
+	Seq2MatchBuf *buf,
+	int key,
+	int start,
+	int width
+);
 
 SEXP _Seq2MatchBuf_which_asINTEGER(Seq2MatchBuf *buf);
 
@@ -927,6 +919,21 @@ SEXP _Seq2MatchBuf_as_SEXP(
 	Seq2MatchBuf *buf,
 	SEXP env
 );
+
+TBMatchBuf _new_TBMatchBuf(
+	int tb_length,
+	int tb_width,
+	const int *head_widths,
+	const int *tail_widths
+);
+
+void _TBMatchBuf_report_match(
+	TBMatchBuf *buf,
+	int key,
+	int end
+);
+
+void _TBMatchBuf_flush(TBMatchBuf *buf);
 
 MatchPDictBuf _new_MatchPDictBuf(
 	SEXP matches_as,
