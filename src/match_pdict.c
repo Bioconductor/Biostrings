@@ -375,7 +375,7 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 	ans_buf = new_IntAEAE(S_length, S_length);
 	for (j = 0; j < S_length; j++)
 		ans_buf.elts[j].nelt = 0;
-	_init_match_reporting("MATCHES_AS_COUNTS");
+	_init_match_reporting("MATCHES_AS_COUNTS", 1);
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		for (j = 0; j < S_length; j++) {
@@ -459,7 +459,7 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 	else
 		PROTECT(ans = init_vcount_collapsed_ans(P_length, S_length,
 					collapse0, weight));
-	_init_match_reporting("MATCHES_AS_COUNTS");
+	_init_match_reporting("MATCHES_AS_COUNTS", 1);
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		if (collapse0 == 0)

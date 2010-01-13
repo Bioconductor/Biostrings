@@ -454,7 +454,7 @@ SEXP debug_match_reporting();
 
 int _get_match_storing_code(const char *ms_mode);
 
-void _init_match_reporting(const char *ms_mode);
+void _init_match_reporting(const char *ms_mode, int nPSpair);
 
 void _drop_reported_matches();
 
@@ -468,14 +468,14 @@ SEXP _reported_matches_asSEXP();
 
 MatchBuf _new_MatchBuf(
 	int ms_code,
-	int nseq
+	int nPSpair
 );
 
 void _MatchBuf_flush(MatchBuf *buf);
 
 void _MatchBuf_report_match(
 	MatchBuf *buf,
-	int key,
+	int PSpair_id,
 	int start,
 	int width
 );
@@ -929,7 +929,7 @@ TBMatchBuf _new_TBMatchBuf(
 
 void _TBMatchBuf_report_match(
 	TBMatchBuf *buf,
-	int key,
+	int PSpair_id,
 	int end
 );
 
@@ -937,7 +937,7 @@ void _TBMatchBuf_flush(TBMatchBuf *buf);
 
 MatchPDictBuf _new_MatchPDictBuf(
 	SEXP matches_as,
-	int nseq,
+	int tb_length,
 	int tb_width,
 	const int *head_widths,
 	const int *tail_widths
@@ -945,7 +945,7 @@ MatchPDictBuf _new_MatchPDictBuf(
 
 void _MatchPDictBuf_report_match(
 	MatchPDictBuf *buf,
-	int key,
+	int PSpair_id,
 	int tb_end
 );
 

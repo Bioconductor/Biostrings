@@ -156,7 +156,7 @@ SEXP new_XStringSet_from_RoSeqs(
  * Match reporting facilities.
  */
 
-void init_match_reporting(const char *mode);
+void init_match_reporting(const char *ms_mode, int nPSpair);
 
 void drop_reported_matches();
 

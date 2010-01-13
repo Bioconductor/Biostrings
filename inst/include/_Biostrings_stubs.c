@@ -122,8 +122,8 @@ DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
  */
 
 DEFINE_NOVALUE_CCALLABLE_STUB(init_match_reporting,
-	(const char *mode),
-	(            mode)
+	(const char *ms_mode, int nPSpair),
+	(            ms_mode,     nPSpair)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(drop_reported_matches,

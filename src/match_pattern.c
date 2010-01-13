@@ -160,7 +160,7 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	_match_pattern(&P, &S, algo,
 		max_mismatch, min_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
@@ -188,7 +188,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
@@ -228,7 +228,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	S_length = _get_XStringSet_length(subject);
 	if (is_count_only)
 		PROTECT(ans = NEW_INTEGER(S_length));

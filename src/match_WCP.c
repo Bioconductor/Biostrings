@@ -226,7 +226,7 @@ SEXP XString_match_WCP(SEXP wcp, SEXP subject, SEXP min_score, SEXP count_only)
 
 	S = cache_XRaw(subject);
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	for (n1 = 0, n2 = key_total_nchar; n2 <= S.length; n1++, n2++) {
 		if (compute_wcp_score(&key_seqs_list, key_scores_list,
 				              key_order_list,
@@ -313,7 +313,7 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 	S = cache_XRaw(subject);
 	nviews = LENGTH(views_start);
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;
 	     i++, view_start++, view_width++)

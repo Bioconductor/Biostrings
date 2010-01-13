@@ -101,7 +101,7 @@ typedef struct ppheadtail {
 typedef struct headtail {
 	RoSeqs head, tail;
 	int max_Hwidth, max_Twidth, max_HTwidth;
-	IntAE keys_buf;
+	IntAE grouped_keys;
 	PPHeadTail ppheadtail;
 } HeadTail;
 
@@ -146,11 +146,15 @@ typedef struct headtail {
 #define MATCHES_AS_NORMALRANGES	6  // not supported yet
 #define MATCHES_AS_COVERAGE	7  // supported yet
 
+/* The 'PSlink_ids' field contains the ids of the pattern/subject pairs that
+   are linked by at least 1 match. */
 typedef struct match_buf {
-	IntAE matching_keys;
+	int ms_code;
+	IntAE PSlink_ids;
 	IntAE match_counts;
 	IntAEAE match_starts;
 	IntAEAE match_widths;
+	int current_PSpair_id;
 } MatchBuf;
 
 
@@ -163,7 +167,7 @@ typedef struct tbmatch_buf {
 	int tb_width;
 	const int *head_widths;
 	const int *tail_widths;
-	IntAE matching_keys;
+	IntAE PSlink_ids;
 	IntAEAE match_ends;
 } TBMatchBuf;
 

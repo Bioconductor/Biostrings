@@ -95,7 +95,7 @@ SEXP XString_match_PWM(SEXP pwm, SEXP subject, SEXP base_codes, SEXP min_score, 
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	for (n1 = 0, n2 = pwm_ncol; n2 <= S.length; n1++, n2++) {
 		if (compute_pwm_score(REAL(pwm), pwm_ncol, S.seq, S.length, n1) >= minscore)
 			_report_match(n1 + 1, pwm_ncol);
@@ -132,7 +132,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 	is_count_only = LOGICAL(count_only)[0];
 
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES");
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	nviews = LENGTH(views_start);
 	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
 	     i < nviews;

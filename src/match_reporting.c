@@ -47,7 +47,7 @@ int _get_match_storing_code(const char *ms_mode)
  * MatchBuf manipulation.
  */
 
-MatchBuf _new_MatchBuf(int ms_code, int nseq)
+MatchBuf _new_MatchBuf(int ms_code, int nPSpair)
 {
 	int count_only;
 	static MatchBuf buf;
@@ -62,54 +62,56 @@ MatchBuf _new_MatchBuf(int ms_code, int nseq)
 		      "%d: unsupported match storing code", ms_code);
 	count_only = ms_code == MATCHES_AS_WHICH ||
 		     ms_code == MATCHES_AS_COUNTS;
-	buf.matching_keys = new_IntAE(0, 0, 0);
-	buf.match_counts = new_IntAE(nseq, nseq, 0);
+	buf.ms_code = ms_code;
+	buf.PSlink_ids = new_IntAE(0, 0, 0);
+	buf.match_counts = new_IntAE(nPSpair, nPSpair, 0);
 	if (count_only) {
 		/* By setting 'buflength' to -1 we indicate that these
 		   buffers must not be used */
 		buf.match_starts.buflength = -1;
 		buf.match_widths.buflength = -1;
 	} else {
-		buf.match_starts = new_IntAEAE(nseq, nseq);
-		buf.match_widths = new_IntAEAE(nseq, nseq);
+		buf.match_starts = new_IntAEAE(nPSpair, nPSpair);
+		buf.match_widths = new_IntAEAE(nPSpair, nPSpair);
 	}
+	buf.current_PSpair_id = 0;
 	return buf;
 }
 
 void _MatchBuf_flush(MatchBuf *buf)
 {
 	int i;
-	const int *key;
+	const int *PSlink_id;
 
-	for (i = 0, key = buf->matching_keys.elts;
-	     i < buf->matching_keys.nelt;
-	     i++, key++)
+	for (i = 0, PSlink_id = buf->PSlink_ids.elts;
+	     i < buf->PSlink_ids.nelt;
+	     i++, PSlink_id++)
 	{
-		buf->match_counts.elts[*key] = 0;
+		buf->match_counts.elts[*PSlink_id] = 0;
 		if (buf->match_starts.buflength != -1)
-			buf->match_starts.elts[*key].nelt = 0;
+			buf->match_starts.elts[*PSlink_id].nelt = 0;
 		if (buf->match_widths.buflength != -1)
-			buf->match_widths.elts[*key].nelt = 0;
+			buf->match_widths.elts[*PSlink_id].nelt = 0;
 	}
-	buf->matching_keys.nelt = 0;
+	buf->PSlink_ids.nelt = 0;
 	return;
 }
 
 void _MatchBuf_report_match(MatchBuf *buf,
-		int key, int start, int width)
+		int PSpair_id, int start, int width)
 {
-	IntAE *matching_keys, *count_buf, *start_buf, *width_buf;
+	IntAE *PSlink_ids, *count_buf, *start_buf, *width_buf;
 
-	matching_keys = &(buf->matching_keys);
+	PSlink_ids = &(buf->PSlink_ids);
 	count_buf = &(buf->match_counts);
-	if (count_buf->elts[key]++ == 0)
-		IntAE_insert_at(matching_keys, matching_keys->nelt, key);
+	if (count_buf->elts[PSpair_id]++ == 0)
+		IntAE_insert_at(PSlink_ids, PSlink_ids->nelt, PSpair_id);
 	if (buf->match_starts.buflength != -1) {
-		start_buf = buf->match_starts.elts + key;
+		start_buf = buf->match_starts.elts + PSpair_id;
 		IntAE_insert_at(start_buf, start_buf->nelt, start);
 	}
 	if (buf->match_widths.buflength != -1) {
-		width_buf = buf->match_widths.elts + key;
+		width_buf = buf->match_widths.elts + PSpair_id;
 		IntAE_insert_at(width_buf, width_buf->nelt, width);
 	}
 	return;
@@ -120,8 +122,8 @@ SEXP _MatchBuf_which_asINTEGER(MatchBuf *buf)
 	SEXP ans;
 	int i;
 
-	IntAE_qsort(&(buf->matching_keys), 0);
-	PROTECT(ans = IntAE_asINTEGER(&(buf->matching_keys)));
+	IntAE_qsort(&(buf->PSlink_ids), 0);
+	PROTECT(ans = IntAE_asINTEGER(&(buf->PSlink_ids)));
 	for (i = 0; i < LENGTH(ans); i++)
 		INTEGER(ans)[i]++;
 	UNPROTECT(1);
@@ -209,7 +211,8 @@ static int ms_code;
 static MatchBuf internal_match_buf;
 static int match_shift;
 
-void _init_match_reporting(const char *ms_mode)
+/* 'nPSpair' is ignored for now. */
+void _init_match_reporting(const char *ms_mode, int nPSpair)
 {
 	ms_code = _get_match_storing_code(ms_mode);
 	if (ms_code != MATCHES_AS_NULL
