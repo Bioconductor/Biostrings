@@ -158,11 +158,13 @@ SEXP new_XStringSet_from_RoSeqs(
 
 void init_match_reporting(const char *ms_mode, int nPSpair);
 
-void drop_reported_matches();
+void set_active_PSpair(int PSpair_id);
 
-void shift_match_on_reporting(int shift);
+void set_match_shift(int shift);
 
 void report_match(int start, int width);
+
+void drop_reported_matches();
 
 int get_match_count();
 

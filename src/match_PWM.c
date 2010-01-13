@@ -143,7 +143,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 			error("'subject' has \"out of limits\" views");
 		S_view.seq = S.seq + view_offset;
 		S_view.length = *view_width;
-		_shift_match_on_reporting(view_offset);
+		_set_match_shift(view_offset);
 		for (n1 = 0, n2 = pwm_ncol; n2 <= S_view.length; n1++, n2++) {
 			if (compute_pwm_score(REAL(pwm), pwm_ncol, S_view.seq, S_view.length, n1) >= minscore)
 				_report_match(n1 + 1, pwm_ncol);

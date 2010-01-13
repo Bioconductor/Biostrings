@@ -320,7 +320,42 @@
   }
 
   ## ---------------------------------------------------------------------
-  ## D. vcountPDict()
+  ## D. USING A NON-PREPROCESSED DICTIONARY
+  ## ---------------------------------------------------------------------
+
+  ## matchPDict(), countPDict and whichPDict() also work with a dictionary
+  ## that has not been preprocessed. Of course, it won't be as fast as
+  ## with a preprocessed dictionary, but it will generally be slightly
+  ## faster than using matchPattern() or countPattern() in a
+  ## "lapply/sapply loop", because, with matchPDict(), looping is done at
+  ## the C-level:
+
+  dict3 <- DNAStringSet(mkAllStrings(DNA_BASES, 3))  # all trinucleotides
+  dict3
+  pdict3 <- PDict(dict3)
+
+  ## The 3 following calls are equivalent (from faster to slower):
+  res3a <- countPDict(pdict3, chr3R)
+  res3b <- countPDict(dict3, chr3R)
+  res3c <- sapply(dict3,
+               function(pattern) countPattern(pattern, chr3R))
+
+  stopifnot(identical(res3a, res3b))
+  stopifnot(identical(res3a, res3c))
+
+  ## One reason for using a non-preprocessed dictionary is to get rid of
+  ## all the constraints associated with the use of \link{PDict} objects,
+  ## e.g. the input must be DNA and a Trusted Band must be defined
+  ## (explicitly or implicitly). See \code{?\link{PDict}} for more
+  ## information on about these constraints.
+  ## In particular, using a non-preprocessed dictionary can be
+  ## useful for the kind of inexact matching that can't be achieved
+  ## with a \link{PDict} object (if performance is not an issue).
+  ## See \code{?`\link{matchPDict-inexact}`} for more information on
+  ## inexact matching.
+
+  ## ---------------------------------------------------------------------
+  ## E. vcountPDict()
   ## ---------------------------------------------------------------------
   subject <- Dmelanogaster$upstream1000[1:200]
   subject
@@ -352,12 +387,9 @@
   }
 
   ## ---------------------------------------------------------------------
-  ## E. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
+  ## F. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
   ## vcountPattern()
   ## ---------------------------------------------------------------------
-  dict3 <- DNAStringSet(mkAllStrings(DNA_BASES, 3))  # all trinucleotides
-  dict3
-  pdict3 <- PDict(dict3)
   subject <- Dmelanogaster$upstream1000
   subject
 
@@ -389,7 +421,7 @@
   stopifnot(identical(nhitps3a, nhitps3c))
 
   ## ---------------------------------------------------------------------
-  ## F. vwhichPDict()
+  ## G. vwhichPDict()
   ## ---------------------------------------------------------------------
   ## The 4 following calls are equivalent (from faster to slower):
   vwp3a <- vwhichPDict(pdict3, subject)
@@ -406,7 +438,7 @@
   dict3[-vwp3a[[9181]]]  # 21 trinucleotides
 
   ## ---------------------------------------------------------------------
-  ## G. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
+  ## H. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
   ## ---------------------------------------------------------------------
   ## Here we show a simple (and very naive) algorithm for mapping probe
   ## set IDs between the hgu95av2 and hgu133a chips (Affymetrix).

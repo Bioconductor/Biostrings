@@ -126,12 +126,12 @@ DEFINE_NOVALUE_CCALLABLE_STUB(init_match_reporting,
 	(            ms_mode,     nPSpair)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(drop_reported_matches,
-	(),
-	()
+DEFINE_NOVALUE_CCALLABLE_STUB(set_active_PSpair,
+	(int PSpair_id),
+	(    PSpair_id)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(shift_match_on_reporting,
+DEFINE_NOVALUE_CCALLABLE_STUB(set_match_shift,
 	(int shift),
 	(    shift)
 )
@@ -139,6 +139,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(shift_match_on_reporting,
 DEFINE_NOVALUE_CCALLABLE_STUB(report_match,
 	(int start, int width),
 	(    start,     width)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(drop_reported_matches,
+	(),
+	()
 )
 
 DEFINE_CCALLABLE_STUB(int, get_match_count,

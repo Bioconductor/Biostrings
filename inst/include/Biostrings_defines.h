@@ -154,7 +154,6 @@ typedef struct match_buf {
 	IntAE match_counts;
 	IntAEAE match_starts;
 	IntAEAE match_widths;
-	int current_PSpair_id;
 } MatchBuf;
 
 

@@ -199,7 +199,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 			error("'subject' has \"out of limits\" views");
 		S_view.seq = S.seq + view_offset;
 		S_view.length = *view_width;
-		_shift_match_on_reporting(view_offset);
+		_set_match_shift(view_offset);
 		_match_pattern(&P, &S_view, algo,
 			max_mismatch, min_mismatch, with_indels, fixed);
 	}

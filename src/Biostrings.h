@@ -454,46 +454,56 @@ SEXP debug_match_reporting();
 
 int _get_match_storing_code(const char *ms_mode);
 
-void _init_match_reporting(const char *ms_mode, int nPSpair);
-
-void _drop_reported_matches();
-
-void _shift_match_on_reporting(int shift);
-
-void _report_match(int start, int width);
-
-int _get_match_count();
-
-SEXP _reported_matches_asSEXP();
-
 MatchBuf _new_MatchBuf(
 	int ms_code,
 	int nPSpair
 );
 
-void _MatchBuf_flush(MatchBuf *buf);
-
 void _MatchBuf_report_match(
-	MatchBuf *buf,
+	MatchBuf *match_buf,
 	int PSpair_id,
 	int start,
 	int width
 );
 
-SEXP _MatchBuf_which_asINTEGER(const MatchBuf *buf);
+void _MatchBuf_flush(MatchBuf *match_buf);
 
-SEXP _MatchBuf_counts_asINTEGER(const MatchBuf *buf);
+void _MatchBuf_append_and_flush(
+	MatchBuf *match_buf1,
+	MatchBuf *match_buf2,
+	int view_offset
+);
 
-SEXP _MatchBuf_starts_asLIST(const MatchBuf *buf);
+SEXP _MatchBuf_which_asINTEGER(const MatchBuf *match_buf);
 
-SEXP _MatchBuf_ends_asLIST(const MatchBuf *buf);
+SEXP _MatchBuf_counts_asINTEGER(const MatchBuf *match_buf);
 
-SEXP _MatchBuf_as_MIndex(const MatchBuf *buf);
+SEXP _MatchBuf_starts_asLIST(const MatchBuf *match_buf);
+
+SEXP _MatchBuf_ends_asLIST(const MatchBuf *match_buf);
+
+SEXP _MatchBuf_as_MIndex(const MatchBuf *match_buf);
 
 SEXP _MatchBuf_as_SEXP(
-	const MatchBuf *buf,
+	const MatchBuf *match_buf,
 	SEXP env
 );
+
+void _init_match_reporting(const char *ms_mode, int nPSpair);
+
+void _set_active_PSpair(int PSpair_id);
+
+void _set_match_shift(int shift);
+
+void _report_match(int start, int width);
+
+void _drop_reported_matches();
+
+int _get_match_count();
+
+SEXP _reported_matches_asSEXP();
+
+MatchBuf *_get_internal_match_buf();
 
 
 /* MIndex_class.c */

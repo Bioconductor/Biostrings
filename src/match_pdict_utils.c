@@ -157,42 +157,10 @@ void _MatchPDictBuf_flush(MatchPDictBuf *buf)
 void _MatchPDictBuf_append_and_flush(MatchBuf *buf1, MatchPDictBuf *buf2,
 		int view_offset)
 {
-	MatchBuf *buf2_matches;
-	int i;
-	const int *PSlink_id;
-	IntAE *start_buf1, *start_buf2, *width_buf1, *width_buf2;
-
 	if (buf2->tb_matches.is_init == 0)
 		return;
-	buf2_matches = &(buf2->matches);
-	if (buf1->match_counts.nelt != buf2_matches->match_counts.nelt
-	 || (buf1->match_starts.buflength == -1) != (buf2_matches->match_starts.buflength == -1)
-	 || (buf1->match_widths.buflength == -1) != (buf2_matches->match_widths.buflength == -1))
-		error("Biostrings internal error in _MatchPDictBuf_append_and_flush(): "
-		      "'buf1' and 'buf2' are incompatible");
-	for (i = 0, PSlink_id = buf2_matches->PSlink_ids.elts;
-	     i < buf2_matches->PSlink_ids.nelt;
-	     i++, PSlink_id++)
-	{
-		if (buf1->match_counts.elts[*PSlink_id] == 0)
-			IntAE_insert_at(&(buf1->PSlink_ids),
-					buf1->PSlink_ids.nelt, *PSlink_id);
-		buf1->match_counts.elts[*PSlink_id] +=
-			buf2_matches->match_counts.elts[*PSlink_id];
-		if (buf1->match_starts.buflength != -1) {
-			start_buf1 = buf1->match_starts.elts + *PSlink_id;
-			start_buf2 = buf2_matches->match_starts.elts + *PSlink_id;
-			IntAE_append_shifted_vals(start_buf1,
-				start_buf2->elts, start_buf2->nelt, view_offset);
-		}
-		if (buf1->match_widths.buflength != -1) {
-			width_buf1 = buf1->match_widths.elts + *PSlink_id;
-			width_buf2 = buf2_matches->match_widths.elts + *PSlink_id;
-			IntAE_append(width_buf1,
-				width_buf2->elts, width_buf2->nelt);
-		}
-	}
-	_MatchPDictBuf_flush(buf2);
+	_MatchBuf_append_and_flush(buf1, &(buf2->matches), view_offset);
+	_TBMatchBuf_flush(&(buf2->tb_matches));
 	return;
 }
 

@@ -323,7 +323,7 @@ SEXP XStringViews_match_WCP(SEXP wcp,
 			error("'subject' has \"out of limits\" views");
 		S_view.seq = S.seq + view_offset;
 		S_view.length = *view_width;
-		_shift_match_on_reporting(view_offset);
+		_set_match_shift(view_offset);
 		for (n1 = 0, n2 = key_total_nchar; n2 <= S_view.length; n1++, n2++) {
 			if (compute_wcp_score(&key_seqs_list, key_scores_list,
 					              key_order_list,
