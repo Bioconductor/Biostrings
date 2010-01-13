@@ -172,7 +172,6 @@ typedef struct tbmatch_buf {
 } TBMatchBuf;
 
 typedef struct matchpdict_buf {
-	int ms_code;
 	TBMatchBuf tb_matches;
 	MatchBuf matches;
 } MatchPDictBuf;

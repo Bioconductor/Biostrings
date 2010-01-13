@@ -117,25 +117,25 @@ void _MatchBuf_report_match(MatchBuf *buf,
 	return;
 }
 
-SEXP _MatchBuf_which_asINTEGER(MatchBuf *buf)
+SEXP _MatchBuf_which_asINTEGER(const MatchBuf *buf)
 {
 	SEXP ans;
 	int i;
 
-	IntAE_qsort(&(buf->PSlink_ids), 0);
 	PROTECT(ans = IntAE_asINTEGER(&(buf->PSlink_ids)));
+	sort_int_array(INTEGER(ans), LENGTH(ans), 0);
 	for (i = 0; i < LENGTH(ans); i++)
 		INTEGER(ans)[i]++;
 	UNPROTECT(1);
 	return ans;
 }
 
-SEXP _MatchBuf_counts_asINTEGER(MatchBuf *buf)
+SEXP _MatchBuf_counts_asINTEGER(const MatchBuf *buf)
 {
 	return IntAE_asINTEGER(&(buf->match_counts));
 }
 
-SEXP _MatchBuf_starts_asLIST(MatchBuf *buf)
+SEXP _MatchBuf_starts_asLIST(const MatchBuf *buf)
 {
 	if (buf->match_starts.buflength == -1)
 		error("Biostrings internal error: _MatchBuf_starts_asLIST() "
@@ -143,7 +143,7 @@ SEXP _MatchBuf_starts_asLIST(MatchBuf *buf)
 	return IntAEAE_asLIST(&(buf->match_starts), 1);
 }
 
-static SEXP _MatchBuf_starts_toEnvir(MatchBuf *buf, SEXP env)
+static SEXP _MatchBuf_starts_toEnvir(const MatchBuf *buf, SEXP env)
 {
 	if (buf->match_starts.buflength == -1)
 		error("Biostrings internal error: _MatchBuf_starts_toEnvir() "
@@ -151,7 +151,7 @@ static SEXP _MatchBuf_starts_toEnvir(MatchBuf *buf, SEXP env)
 	return IntAEAE_toEnvir(&(buf->match_starts), env, 1);
 }
 
-SEXP _MatchBuf_ends_asLIST(MatchBuf *buf)
+SEXP _MatchBuf_ends_asLIST(const MatchBuf *buf)
 {
 	if (buf->match_starts.buflength == -1
 	 || buf->match_widths.buflength == -1)
@@ -161,7 +161,7 @@ SEXP _MatchBuf_ends_asLIST(MatchBuf *buf)
 	return IntAEAE_asLIST(&(buf->match_starts), 1);
 }
 
-static SEXP _MatchBuf_ends_toEnvir(MatchBuf *buf, SEXP env)
+static SEXP _MatchBuf_ends_toEnvir(const MatchBuf *buf, SEXP env)
 {
 	if (buf->match_starts.buflength == -1
 	 || buf->match_widths.buflength == -1)
@@ -171,15 +171,15 @@ static SEXP _MatchBuf_ends_toEnvir(MatchBuf *buf, SEXP env)
 	return IntAEAE_toEnvir(&(buf->match_starts), env, 1);
 }
 
-SEXP _MatchBuf_as_MIndex(MatchBuf *buf)
+SEXP _MatchBuf_as_MIndex(const MatchBuf *buf)
 {
 	error("_MatchBuf_as_MIndex(): IMPLEMENT ME!");
 	return R_NilValue;
 }
 
-SEXP _MatchBuf_as_SEXP(int ms_code, MatchBuf *buf, SEXP env)
+SEXP _MatchBuf_as_SEXP(const MatchBuf *buf, SEXP env)
 {
-	switch (ms_code) {
+	switch (buf->ms_code) {
 	    case MATCHES_AS_NULL:
 		return R_NilValue;
 	    case MATCHES_AS_WHICH:
@@ -198,7 +198,7 @@ SEXP _MatchBuf_as_SEXP(int ms_code, MatchBuf *buf, SEXP env)
 		return _MatchBuf_as_MIndex(buf);
 	}
 	error("Biostrings internal error in _MatchBuf_as_SEXP(): "
-	      "unsupported 'ms_code' value %d", ms_code);
+	      "unsupported 'ms_code' value %d", buf->ms_code);
 	return R_NilValue;
 }
 

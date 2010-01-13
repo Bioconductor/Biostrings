@@ -83,15 +83,17 @@ MatchPDictBuf _new_MatchPDictBuf(SEXP matches_as, int tb_length, int tb_width,
 		const int *head_widths, const int *tail_widths)
 {
 	const char *ms_mode;
+	int ms_code;
 	static MatchPDictBuf buf;
 
 	ms_mode = CHAR(STRING_ELT(matches_as, 0));
-	buf.ms_code = _get_match_storing_code(ms_mode);
-	if (buf.ms_code == MATCHES_AS_NULL) {
+	ms_code = _get_match_storing_code(ms_mode);
+	if (ms_code == MATCHES_AS_NULL) {
 		buf.tb_matches.is_init = 0;
 	} else {
-		buf.tb_matches = _new_TBMatchBuf(tb_length, tb_width, head_widths, tail_widths);
-		buf.matches = _new_MatchBuf(buf.ms_code, tb_length);
+		buf.tb_matches = _new_TBMatchBuf(tb_length, tb_width,
+					head_widths, tail_widths);
+		buf.matches = _new_MatchBuf(ms_code, tb_length);
 	}
 	return buf;
 }
@@ -101,7 +103,7 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int PSpair_id, int tb_end)
 	IntAE *PSlink_ids, *count_buf, *start_buf, *width_buf;
 	int start, width;
 
-	if (buf->ms_code == MATCHES_AS_NULL)
+	if (buf->tb_matches.is_init == 0)
 		return;
 	PSlink_ids = &(buf->matches.PSlink_ids);
 	count_buf = &(buf->matches.match_counts);
@@ -137,7 +139,7 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int PSpair_id, int tb_end)
 static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int PSpair_id,
 		int start, int width)
 {
-	if (buf->ms_code == MATCHES_AS_NULL)
+	if (buf->tb_matches.is_init == 0)
 		return;
 	_MatchBuf_report_match(&(buf->matches), PSpair_id, start, width);
 	return;
@@ -145,7 +147,7 @@ static void _MatchPDictBuf_report_match2(MatchPDictBuf *buf, int PSpair_id,
 
 void _MatchPDictBuf_flush(MatchPDictBuf *buf)
 {
-	if (buf->ms_code == MATCHES_AS_NULL)
+	if (buf->tb_matches.is_init == 0)
 		return;
 	_TBMatchBuf_flush(&(buf->tb_matches));
 	_MatchBuf_flush(&(buf->matches));
@@ -160,7 +162,7 @@ void _MatchPDictBuf_append_and_flush(MatchBuf *buf1, MatchPDictBuf *buf2,
 	const int *PSlink_id;
 	IntAE *start_buf1, *start_buf2, *width_buf1, *width_buf2;
 
-	if (buf2->ms_code == MATCHES_AS_NULL)
+	if (buf2->tb_matches.is_init == 0)
 		return;
 	buf2_matches = &(buf2->matches);
 	if (buf1->match_counts.nelt != buf2_matches->match_counts.nelt

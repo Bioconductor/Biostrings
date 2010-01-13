@@ -191,8 +191,7 @@ SEXP match_PDict3Parts_XString(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	match_pdict(pptb, &headtail,
 		&S, max_mismatch, min_mismatch, fixed,
 		&matchpdict_buf);
-	return _MatchBuf_as_SEXP(matchpdict_buf.ms_code,
-			&(matchpdict_buf.matches), envir);
+	return _MatchBuf_as_SEXP(&(matchpdict_buf.matches), envir);
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -272,7 +271,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	S = cache_XRaw(subject);
 	matchpdict_buf = new_MatchPDictBuf_from_PDict3Parts(matches_as,
 				pptb, pdict_head, pdict_tail);
-	global_matchpdict_buf = _new_MatchBuf(matchpdict_buf.ms_code,
+	global_matchpdict_buf = _new_MatchBuf(matchpdict_buf.matches.ms_code,
 				tb_length);
 	nviews = LENGTH(views_start);
 	for (i = 0,
@@ -292,8 +291,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		_MatchPDictBuf_append_and_flush(&global_matchpdict_buf,
 			&matchpdict_buf, view_offset);
 	}
-	return _MatchBuf_as_SEXP(matchpdict_buf.ms_code,
-				&global_matchpdict_buf, envir);
+	return _MatchBuf_as_SEXP(&global_matchpdict_buf, envir);
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -498,7 +496,7 @@ SEXP vmatch_PDict3Parts_XStringSet(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 				max_mismatch, fixed, 1);
 	matchpdict_buf = new_MatchPDictBuf_from_PDict3Parts(matches_as,
 				pptb, pdict_head, pdict_tail);
-	switch (matchpdict_buf.ms_code) {
+	switch (matchpdict_buf.matches.ms_code) {
 	    case MATCHES_AS_NULL:
 		error("vmatch_PDict3Parts_XStringSet() does not support "
 		      "'matches_as=\"%s\"' yet, sorry",

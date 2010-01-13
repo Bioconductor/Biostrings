@@ -480,19 +480,18 @@ void _MatchBuf_report_match(
 	int width
 );
 
-SEXP _MatchBuf_which_asINTEGER(MatchBuf *buf);
+SEXP _MatchBuf_which_asINTEGER(const MatchBuf *buf);
 
-SEXP _MatchBuf_counts_asINTEGER(MatchBuf *buf);
+SEXP _MatchBuf_counts_asINTEGER(const MatchBuf *buf);
 
-SEXP _MatchBuf_starts_asLIST(MatchBuf *buf);
+SEXP _MatchBuf_starts_asLIST(const MatchBuf *buf);
 
-SEXP _MatchBuf_ends_asLIST(MatchBuf *buf);
+SEXP _MatchBuf_ends_asLIST(const MatchBuf *buf);
 
-SEXP _MatchBuf_as_MIndex(MatchBuf *buf);
+SEXP _MatchBuf_as_MIndex(const MatchBuf *buf);
 
 SEXP _MatchBuf_as_SEXP(
-	int ms_code,
-	MatchBuf *buf,
+	const MatchBuf *buf,
 	SEXP env
 );
 
