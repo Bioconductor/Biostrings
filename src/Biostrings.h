@@ -637,9 +637,21 @@ void _match_pattern_indels(
 
 SEXP debug_match_pattern();
 
-void _match_pattern(
+void _match_pattern_XString(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
+	const char *algo,
+	SEXP max_mismatch,
+	SEXP min_mismatch,
+	SEXP with_indels,
+	SEXP fixed
+);
+
+void _match_pattern_XStringViews(
+	const cachedCharSeq *P,
+	const cachedCharSeq *S,
+	SEXP views_start,
+	SEXP views_width,
 	const char *algo,
 	SEXP max_mismatch,
 	SEXP min_mismatch,

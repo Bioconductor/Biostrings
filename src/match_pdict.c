@@ -213,7 +213,7 @@ SEXP match_XStringSet_XString(SEXP pattern,
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		_set_active_PSpair(i);
-		_match_pattern(&P_elt, &S, NULL,
+		_match_pattern_XString(&P_elt, &S, NULL,
 			max_mismatch, min_mismatch, NULL, fixed);
 	}
 	return _MatchBuf_as_SEXP(_get_internal_match_buf(), envir);
@@ -290,8 +290,25 @@ SEXP match_XStringSet_XStringViews(SEXP pattern,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		SEXP matches_as, SEXP envir)
 {
-	error("match_XStringSet_XStringViews(): IMPLEMENT ME!");
-	return R_NilValue;
+	cachedXStringSet P;
+	int P_length, i;
+	cachedCharSeq S, P_elt;
+	const char *ms_mode;
+
+	P = _cache_XStringSet(pattern);
+	P_length = _get_cachedXStringSet_length(&P);
+	S = cache_XRaw(subject);
+	ms_mode = CHAR(STRING_ELT(matches_as, 0));
+	_init_match_reporting(ms_mode, P_length);
+	for (i = 0; i < P_length; i++) {
+		P_elt = _get_cachedXStringSet_elt(&P, i);
+		_set_active_PSpair(i);
+		_match_pattern_XStringViews(&P_elt,
+			&S, views_start, views_width,
+			NULL,
+			max_mismatch, min_mismatch, NULL, fixed);
+	}
+	return _MatchBuf_as_SEXP(_get_internal_match_buf(), envir);
 }
 
 
@@ -368,7 +385,7 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		for (j = 0; j < S_length; j++) {
 			S_elt = _get_cachedXStringSet_elt(&S, j);
-			_match_pattern(&P_elt, &S_elt, NULL,
+			_match_pattern_XString(&P_elt, &S_elt, NULL,
 				max_mismatch, min_mismatch, NULL, fixed);
 			if (_get_match_count() != 0)
 				IntAE_insert_at(ans_buf.elts + j,
@@ -454,7 +471,7 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 			ans_elt = INTEGER(ans) + i;
 		for (j = 0; j < S_length; j++) {
 			S_elt = _get_cachedXStringSet_elt(&S, j);
-			_match_pattern(&P_elt, &S_elt, NULL,
+			_match_pattern_XString(&P_elt, &S_elt, NULL,
 				max_mismatch, min_mismatch, NULL, fixed);
 			match_count = _get_match_count();
 			if (collapse0 == 0) {

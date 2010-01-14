@@ -88,10 +88,10 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
 
 
 /****************************************************************************
- * _match_pattern()
+ * _match_pattern_XString() and _match_pattern_XStringViews()
  */
 
-void _match_pattern(const cachedCharSeq *P, const cachedCharSeq *S,
+void _match_pattern_XString(const cachedCharSeq *P, const cachedCharSeq *S,
 		const char *algo,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed)
@@ -123,6 +123,34 @@ void _match_pattern(const cachedCharSeq *P, const cachedCharSeq *S,
 		_match_pattern_indels(P, S, max_nmis, fixedP, fixedS);
 	else
 		error("\"%s\": unknown algorithm", algo);
+	return;
+}
+
+void _match_pattern_XStringViews(const cachedCharSeq *P,
+		const cachedCharSeq *S, SEXP views_start, SEXP views_width,
+		const char *algo,
+		SEXP max_mismatch, SEXP min_mismatch,
+		SEXP with_indels, SEXP fixed)
+{
+	cachedCharSeq S_view;
+	int nviews, v, *view_start, *view_width, view_offset;
+
+	nviews = LENGTH(views_start);
+	for (v = 0,
+	     view_start = INTEGER(views_start),
+	     view_width = INTEGER(views_width);
+	     v < nviews;
+	     v++, view_start++, view_width++)
+	{
+		view_offset = *view_start - 1;
+		if (view_offset < 0 || view_offset + *view_width > S->length)
+			error("'subject' has \"out of limits\" views");
+		S_view.seq = S->seq + view_offset;
+		S_view.length = *view_width;
+		_set_match_shift(view_offset);
+		_match_pattern_XString(P, &S_view, algo,
+			max_mismatch, min_mismatch, with_indels, fixed);
+	}
 	return;
 }
 
@@ -159,10 +187,9 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 	S = cache_XRaw(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
-
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
-	_match_pattern(&P, &S, algo,
+	_match_pattern_XString(&P, &S, algo,
 		max_mismatch, min_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
 }
@@ -179,33 +206,20 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP with_indels, SEXP fixed,
 		SEXP count_only)
 {
-	cachedCharSeq P, S, S_view;
+	cachedCharSeq P, S;
 	const char *algo;
-	int is_count_only, nviews, v, *view_start, *view_width, view_offset;
+	int is_count_only;
 
 	P = cache_XRaw(pattern);
 	S = cache_XRaw(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
-
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
-	nviews = LENGTH(views_start);
-	for (v = 0,
-	     view_start = INTEGER(views_start),
-	     view_width = INTEGER(views_width);
-	     v < nviews;
-	     v++, view_start++, view_width++)
-	{
-		view_offset = *view_start - 1;
-		if (view_offset < 0 || view_offset + *view_width > S.length)
-			error("'subject' has \"out of limits\" views");
-		S_view.seq = S.seq + view_offset;
-		S_view.length = *view_width;
-		_set_match_shift(view_offset);
-		_match_pattern(&P, &S_view, algo,
-			max_mismatch, min_mismatch, with_indels, fixed);
-	}
+	_match_pattern_XStringViews(&P,
+		&S, views_start, views_width,
+		algo,
+		max_mismatch, min_mismatch, with_indels, fixed);
 	return _reported_matches_asSEXP();
 }
 
@@ -234,7 +248,7 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 	for (j = 0; j < S_length; j++) {
 		S_elt = _get_cachedXStringSet_elt(&S, j);
 		_set_active_PSpair(j);
-		_match_pattern(&P, &S_elt, algo,
+		_match_pattern_XString(&P, &S_elt, algo,
 			max_mismatch, min_mismatch, with_indels, fixed);
 	}
 	return _MatchBuf_as_SEXP(_get_internal_match_buf(), R_NilValue);
