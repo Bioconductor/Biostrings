@@ -144,6 +144,7 @@ void _match_pattern(const cachedCharSeq *P, const cachedCharSeq *S,
  * and <= length(pattern) + max_mismatch).
  */
 
+/* --- .Call ENTRY POINT --- */
 SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 		SEXP algorithm,
 		SEXP max_mismatch, SEXP min_mismatch,
@@ -166,7 +167,7 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 	return _reported_matches_asSEXP();
 }
 
-/*
+/* --- .Call ENTRY POINT ---
  * Arguments are the same as for XString_match_pattern() except for:
  *   subject: XString object;
  *   views_start, views_width: 2 integer vectors describing views on 'subject'.
@@ -180,7 +181,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 {
 	cachedCharSeq P, S, S_view;
 	const char *algo;
-	int is_count_only, nviews, i, *view_start, *view_width, view_offset;
+	int is_count_only, nviews, v, *view_start, *view_width, view_offset;
 
 	P = cache_XRaw(pattern);
 	S = cache_XRaw(subject);
@@ -190,9 +191,11 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	nviews = LENGTH(views_start);
-	for (i = 0, view_start = INTEGER(views_start), view_width = INTEGER(views_width);
-	     i < nviews;
-	     i++, view_start++, view_width++)
+	for (v = 0,
+	     view_start = INTEGER(views_start),
+	     view_width = INTEGER(views_width);
+	     v < nviews;
+	     v++, view_start++, view_width++)
 	{
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || view_offset + *view_width > S.length)
@@ -206,7 +209,7 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 	return _reported_matches_asSEXP();
 }
 
-/*
+/* --- .Call ENTRY POINT ---
  * Arguments are the same as for XString_match_pattern() except for:
  *   subject: XStringSet object.
  */
@@ -217,36 +220,23 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		SEXP count_only)
 {
 	cachedCharSeq P, S_elt;
-	const char *algo;
 	cachedXStringSet S;
-	int is_count_only, S_length, i;
-	SEXP ans, ans_elt;
+	int S_length, is_count_only, j;
+	const char *algo;
 
 	P = cache_XRaw(pattern);
 	S = _cache_XStringSet(subject);
+	S_length = _get_XStringSet_length(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
-
 	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
-	S_length = _get_XStringSet_length(subject);
-	if (is_count_only)
-		PROTECT(ans = NEW_INTEGER(S_length));
-	else
-		PROTECT(ans = NEW_LIST(S_length));
-	for (i = 0; i < S_length; i++) {
-		S_elt = _get_cachedXStringSet_elt(&S, i);
+		"MATCHES_AS_COUNTS" : "MATCHES_AS_ENDS", S_length);
+	for (j = 0; j < S_length; j++) {
+		S_elt = _get_cachedXStringSet_elt(&S, j);
+		_set_active_PSpair(j);
 		_match_pattern(&P, &S_elt, algo,
 			max_mismatch, min_mismatch, with_indels, fixed);
-		PROTECT(ans_elt = _reported_matches_asSEXP());
-		if (is_count_only)
-			INTEGER(ans)[i] = INTEGER(ans_elt)[0];
-		else
-			SET_ELEMENT(ans, i, ans_elt);
-		UNPROTECT(1);
-		_drop_reported_matches();
 	}
-	UNPROTECT(1);
-	return ans;
+	return _MatchBuf_as_SEXP(_get_internal_match_buf(), R_NilValue);
 }
 

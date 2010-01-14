@@ -224,6 +224,7 @@
 ### .matchPDict()
 ###
 
+### 'pdict' is a TB_PDict object.
 .match.TB_PDict <- function(pdict, subject, algorithm,
                             max.mismatch, min.mismatch, fixed,
                             verbose, matches.as)
@@ -246,6 +247,7 @@
     new("ByPos_MIndex", width0=width(pdict), NAMES=names(pdict), ends=C_ans)
 }
 
+### 'pdict' is an MTB_PDict object.
 .match.MTB_PDict <- function(pdict, subject, algorithm,
                              max.mismatch, min.mismatch, fixed,
                              verbose, matches.as)
@@ -299,6 +301,7 @@
     return(ans)
 }
 
+### 'pattern' is an XStringSet object.
 .match.XStringSet <- function(pattern, subject, algorithm,
                               max.mismatch, min.mismatch, fixed,
                               verbose, matches.as)
@@ -314,7 +317,7 @@
     if (matches.as != "MATCHES_AS_ENDS")
         return(C_ans)
     # matchPDict()
-    new("ByPos_MIndex", width0=width(pdict), NAMES=names(pdict), ends=C_ans)
+    new("ByPos_MIndex", width0=width(pattern), NAMES=names(pattern), ends=C_ans)
 }
 
 .matchPDict <- function(pdict, subject, algorithm,

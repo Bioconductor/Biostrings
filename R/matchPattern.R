@@ -398,13 +398,14 @@ setMethod("countPattern", "MaskedXString",
     if (algo == "indels" && !count.only)
         stop("vmatchPattern() does not support indels yet")
     C_ans <- .Call("XStringSet_vmatch_pattern", pattern, subject,
-                   algo, max.mismatch, min.mismatch, with.indels, fixed, count.only,
+                   algo,
+                   max.mismatch, min.mismatch, with.indels, fixed,
+                   count.only,
                    PACKAGE = "Biostrings")
     if (count.only)
         return(C_ans)
-    # C_ans is a list of IRanges objects
     ans_width0 <- rep.int(length(pattern), length(subject))
-    new("ByPos_MIndex", width0=ans_width0, NAMES=names(subject), ends=lapply(C_ans, end))
+    new("ByPos_MIndex", width0=ans_width0, NAMES=names(subject), ends=C_ans)
 }
 
 setGeneric("vmatchPattern", signature="subject",
