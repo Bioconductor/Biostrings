@@ -52,15 +52,13 @@ setMethod("unlist", "MIndex",
     {
         use.names <- normargUseNames(use.names)
         start_index <- startIndex(x)
-        if (length(start_index) == 0)
+        ans_start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
+        if (is.null(ans_start))
             ans_start <- integer(0)
-        else
-            ans_start <- unlist(start_index, recursive=FALSE, use.names=FALSE)
         end_index <- endIndex(x)
-        if (length(end_index) == 0)
+        ans_end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
+        if (is.null(ans_end))
             ans_end <- integer(0)
-        else
-            ans_end <- unlist(end_index, recursive=FALSE, use.names=FALSE)
         if (use.names) {
             ans_names <- names(x)
             if (!is.null(ans_names))
