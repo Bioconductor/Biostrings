@@ -144,8 +144,9 @@ plotBOC <- function(x, main)
 ### Dispatch on 'subject' (see signature of generic).
 ### 'algorithm' is ignored.
 setMethod("matchPattern", "BOC_SubjectString",
-    function(pattern, subject, algorithm="auto",
-             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+    function(pattern, subject,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+             algorithm="auto")
     {
         pattern <- normargPattern(pattern, subject@subject)
         pattern_length <- nchar(pattern)

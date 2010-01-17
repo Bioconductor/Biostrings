@@ -73,25 +73,27 @@ reduceProbePairMatches <- function(start, end)
 ###
 
 setGeneric("matchProbePair", signature="subject",
-    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+    function(Fprobe, Rprobe, subject, algorithm="auto",
+             logfile=NULL, verbose=FALSE)
         standardGeneric("matchProbePair")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchProbePair", "DNAString", 
-    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+    function(Fprobe, Rprobe, subject, algorithm="auto",
+             logfile=NULL, verbose=FALSE)
     {
         ## This won't copy the data if Fprobe and Rprobe are already DNAString objects
         F <- DNAString(Fprobe)
         R <- DNAString(Rprobe)
 
         ## F and R hits on the + strand
-        Fp_hits <- start(matchPattern(F, subject, algorithm, fixed=TRUE))
-        Rp_hits <- start(matchPattern(R, subject, algorithm, fixed=TRUE))
+        Fp_hits <- start(matchPattern(F, subject, algorithm=algorithm))
+        Rp_hits <- start(matchPattern(R, subject, algorithm=algorithm))
 
         ## F and R hits on the - strand
-        Fm_hits <- end(matchPattern(reverseComplement(F), subject, algorithm, fixed=TRUE))
-        Rm_hits <- end(matchPattern(reverseComplement(R), subject, algorithm, fixed=TRUE))
+        Fm_hits <- end(matchPattern(reverseComplement(F), subject, algorithm=algorithm))
+        Rm_hits <- end(matchPattern(reverseComplement(R), subject, algorithm=algorithm))
 
         if (verbose) {
             cat("Fp_hits:", Fp_hits, "  Rp_hits:", Rp_hits,

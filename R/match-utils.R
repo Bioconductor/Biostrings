@@ -1,16 +1,91 @@
 ### =========================================================================
-### Miscellaneous utility functions operating on the matches returned by a
-### high-level matching function like matchPattern(), matchPDict(), etc...
+### Miscellaneous helper/utility functions related to string matching.
 ### -------------------------------------------------------------------------
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some helper functions used by matchPattern(), matchPDict(), etc...
+###
+
+.CHARACTER.ALGOS <- c("gregexpr", "gregexpr2")
+
+isCharacterAlgo <- function(algo) {algo %in% .CHARACTER.ALGOS}
+
+.ALL.ALGOS <- c(
+    "auto",
+    "naive-exact",
+    "naive-inexact",
+    "boyer-moore",
+    "shift-or",
+    "indels",
+    .CHARACTER.ALGOS
+)
+
+normargAlgorithm <- function(algorithm)
+{
+    if (!isSingleString(algorithm))
+        stop("'algorithm' must be a single string")
+    match.arg(algorithm, .ALL.ALGOS)
+}
+
+### Return a character vector containing the valid algos (best suited first)
+### for the given search criteria (the search criteria is described by the
+### values of 'pattern', 'max.mismatch', 'with.indels' and 'fixed').
+### Raise an error if the problem "doesn't make sense".
+### All its arguments must have been normalized (thru the normarg*() functions)
+### before they are passed to .valid.algos().
+.valid.algos <- function(pattern, max.mismatch, min.mismatch,
+                         with.indels, fixed)
+{
+    if (length(pattern) == 0L)
+        stop("empty pattern")
+    if (length(pattern) > 20000L)
+        stop("patterns with more than 20000 letters are not supported, sorry")
+    if (max.mismatch != 0L && with.indels) {
+        if (min.mismatch != 0L)
+            stop("'min.mismatch' must be 0 when 'with.indels' is TRUE")
+        return("indels")
+    }
+    algos <- character(0)
+    if (max.mismatch == 0L && all(fixed)) {
+        algos <- c(algos, "boyer-moore")
+        if (length(pattern) <= .Clongint.nbits())
+            algos <- c(algos, "shift-or")
+        algos <- c(algos, "naive-exact")
+    } else {
+        if (min.mismatch == 0L && fixed[1] == fixed[2]
+         && length(pattern) <= .Clongint.nbits())
+            algos <- c(algos, "shift-or")
+    }
+    c(algos, "naive-inexact") # "naive-inexact" is universal but slow
+}
+
+selectAlgo <- function(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
+{
+    algos <- .valid.algos(pattern, max.mismatch, min.mismatch,
+                          with.indels, fixed)
+    if (algo == "auto")
+        return(algos[1])
+    if (!(algo %in% algos))
+        stop("valid algos for your problem (best suited first): ",
+             paste(paste("\"", algos, "\"", sep=""), collapse=", "))
+    algo
+}
+
+
+### =========================================================================
+### Some utility functions for operating on the matches returned by a
+### high-level matching function like matchPattern(), matchPDict(), etc...
+###
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### mismatch()
 ###
 
-### Helper function used by .mismatch()
 ### Returns a vector of the positions of mismatches of 'pattern'
-### in a view on 'subject' starting at 'start' and whose width is length(pattern).
+### in a view on 'subject' starting at 'start' and whose width is
+### length(pattern).
 .bsMismatch <- function(pattern, subject, start, fixed)
 {
     mm <- integer(0)

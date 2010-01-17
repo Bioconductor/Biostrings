@@ -38,16 +38,18 @@
 }
 
 \usage{
-  matchPattern(pattern, subject, algorithm="auto",
-               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  countPattern(pattern, subject, algorithm="auto",
-               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  vmatchPattern(pattern, subject, algorithm="auto",
+  matchPattern(pattern, subject,
+               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+               algorithm="auto")
+  countPattern(pattern, subject,
+               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+               algorithm="auto")
+  vmatchPattern(pattern, subject,
                 max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-                ...)
-  vcountPattern(pattern, subject, algorithm="auto",
+                algorithm="auto", ...)
+  vcountPattern(pattern, subject,
                 max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-                ...)
+                algorithm="auto", ...)
 }
 
 \arguments{
@@ -60,11 +62,6 @@
 
     An \link{XStringSet} or \link{XStringViews} object for
     \code{vmatchPattern} and \code{vcountPattern}.
-  }
-  \item{algorithm}{
-    One of the following: \code{"auto"}, \code{"naive-exact"},
-    \code{"naive-inexact"}, \code{"boyer-moore"}, \code{"shift-or"}
-    or \code{"indels"}.
   }
   \item{max.mismatch, min.mismatch}{
     The maximum and minimum number of mismatching letters allowed (see
@@ -94,6 +91,11 @@
   \item{fixed}{
     If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
     (see \code{?`\link{lowlevel-matching}`} for the details).
+  }
+  \item{algorithm}{
+    One of the following: \code{"auto"}, \code{"naive-exact"},
+    \code{"naive-inexact"}, \code{"boyer-moore"}, \code{"shift-or"}
+    or \code{"indels"}.
   }
   \item{...}{
     Additional arguments for methods.

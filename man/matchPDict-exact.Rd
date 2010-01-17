@@ -69,18 +69,22 @@
 }
 
 \usage{
-  matchPDict(pdict, subject, algorithm="auto",
-             max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
-  countPDict(pdict, subject, algorithm="auto",
-             max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
-  whichPDict(pdict, subject, algorithm="auto",
-             max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
+  matchPDict(pdict, subject,
+             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             algorithm="auto", verbose=FALSE)
+  countPDict(pdict, subject,
+             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             algorithm="auto", verbose=FALSE)
+  whichPDict(pdict, subject,
+             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             algorithm="auto", verbose=FALSE)
 
-  vcountPDict(pdict, subject, algorithm="auto",
+  vcountPDict(pdict, subject,
               max.mismatch=0, min.mismatch=0, fixed=TRUE,
-              collapse=FALSE, weight=1L, verbose=FALSE)
-  vwhichPDict(pdict, subject, algorithm="auto",
-              max.mismatch=0, min.mismatch=0, fixed=TRUE, verbose=FALSE)
+              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
+  vwhichPDict(pdict, subject,
+              max.mismatch=0, min.mismatch=0, fixed=TRUE,
+              algorithm="auto", verbose=FALSE)
 }
 
 \arguments{
@@ -96,9 +100,6 @@
 
     For now, only subjects of base class \link{DNAString} are supported.
   }
-  \item{algorithm}{
-    Not supported yet.
-  }
   \item{max.mismatch, min.mismatch}{
     The maximum and minimum number of mismatching letters allowed (see
     \code{?\link{isMatching}} for the details).
@@ -112,6 +113,9 @@
     This man page focuses on exact matching of a constant width
     dictionary so \code{fixed=TRUE} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
+  }
+  \item{algorithm}{
+    Not supported yet.
   }
   \item{verbose}{
     \code{TRUE} or \code{FALSE}.
