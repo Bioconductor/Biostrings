@@ -640,11 +640,11 @@ SEXP debug_match_pattern();
 void _match_pattern_XString(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
-	const char *algo,
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP with_indels,
-	SEXP fixed
+	SEXP fixed,
+	const char *algo
 );
 
 void _match_pattern_XStringViews(
@@ -652,21 +652,21 @@ void _match_pattern_XStringViews(
 	const cachedCharSeq *S,
 	SEXP views_start,
 	SEXP views_width,
-	const char *algo,
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP with_indels,
-	SEXP fixed
+	SEXP fixed,
+	const char *algo
 );
 
 SEXP XString_match_pattern(
 	SEXP pattern,
 	SEXP subject,
-	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
+	SEXP algorithm,
 	SEXP count_only
 );
 
@@ -675,22 +675,22 @@ SEXP XStringViews_match_pattern(
 	SEXP subject,
 	SEXP views_start,
 	SEXP views_width,
-	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
+	SEXP algorithm,
 	SEXP count_only
 );
 
 SEXP XStringSet_vmatch_pattern(
 	SEXP pattern,
 	SEXP subject,
-	SEXP algorithm,
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
+	SEXP algorithm,
 	SEXP count_only
 );
 

@@ -213,8 +213,9 @@ SEXP match_XStringSet_XString(SEXP pattern,
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		_set_active_PSpair(i);
-		_match_pattern_XString(&P_elt, &S, NULL,
-			max_mismatch, min_mismatch, NULL, fixed);
+		_match_pattern_XString(&P_elt, &S,
+			max_mismatch, min_mismatch, NULL, fixed,
+			NULL);
 	}
 	return _MatchBuf_as_SEXP(_get_internal_match_buf(), envir);
 }
@@ -305,8 +306,8 @@ SEXP match_XStringSet_XStringViews(SEXP pattern,
 		_set_active_PSpair(i);
 		_match_pattern_XStringViews(&P_elt,
 			&S, views_start, views_width,
-			NULL,
-			max_mismatch, min_mismatch, NULL, fixed);
+			max_mismatch, min_mismatch, NULL, fixed,
+			NULL);
 	}
 	return _MatchBuf_as_SEXP(_get_internal_match_buf(), envir);
 }
@@ -385,8 +386,9 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 		P_elt = _get_cachedXStringSet_elt(&P, i);
 		for (j = 0; j < S_length; j++) {
 			S_elt = _get_cachedXStringSet_elt(&S, j);
-			_match_pattern_XString(&P_elt, &S_elt, NULL,
-				max_mismatch, min_mismatch, NULL, fixed);
+			_match_pattern_XString(&P_elt, &S_elt,
+				max_mismatch, min_mismatch, NULL, fixed,
+				NULL);
 			if (_get_match_count() != 0)
 				IntAE_insert_at(ans_buf.elts + j,
 					ans_buf.elts[j].nelt, i + 1);
@@ -471,8 +473,9 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 			ans_elt = INTEGER(ans) + i;
 		for (j = 0; j < S_length; j++) {
 			S_elt = _get_cachedXStringSet_elt(&S, j);
-			_match_pattern_XString(&P_elt, &S_elt, NULL,
-				max_mismatch, min_mismatch, NULL, fixed);
+			_match_pattern_XString(&P_elt, &S_elt,
+				max_mismatch, min_mismatch, NULL, fixed,
+				NULL);
 			match_count = _get_match_count();
 			if (collapse0 == 0) {
 				*ans_elt = match_count;

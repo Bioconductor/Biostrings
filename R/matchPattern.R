@@ -135,9 +135,9 @@ gregexpr2 <- function(pattern, text)
         stop("'count.only' must be TRUE or FALSE")
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, with.indels, fixed)
     C_ans <- .Call("XString_match_pattern",
-                   pattern, subject, algo,
+                   pattern, subject,
                    max.mismatch, min.mismatch, with.indels, fixed,
-                   count.only,
+                   algo, count.only,
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
@@ -163,9 +163,8 @@ gregexpr2 <- function(pattern, text)
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, with.indels, fixed)
     C_ans <- .Call("XStringViews_match_pattern",
                    pattern, subject(subject), start(subject), width(subject),
-                   algo,
                    max.mismatch, min.mismatch, with.indels, fixed,
-                   count.only,
+                   algo, count.only,
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
@@ -351,9 +350,8 @@ setMethod("countPattern", "MaskedXString",
     if (algo == "indels" && !count.only)
         stop("vmatchPattern() does not support indels yet")
     C_ans <- .Call("XStringSet_vmatch_pattern", pattern, subject,
-                   algo,
                    max.mismatch, min.mismatch, with.indels, fixed,
-                   count.only,
+                   algo, count.only,
                    PACKAGE = "Biostrings")
     if (count.only)
         return(C_ans)

@@ -92,9 +92,9 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
  */
 
 void _match_pattern_XString(const cachedCharSeq *P, const cachedCharSeq *S,
-		const char *algo,
 		SEXP max_mismatch, SEXP min_mismatch,
-		SEXP with_indels, SEXP fixed)
+		SEXP with_indels, SEXP fixed,
+		const char *algo)
 {
 	int max_nmis, min_nmis, fixedP, fixedS;
 
@@ -128,9 +128,9 @@ void _match_pattern_XString(const cachedCharSeq *P, const cachedCharSeq *S,
 
 void _match_pattern_XStringViews(const cachedCharSeq *P,
 		const cachedCharSeq *S, SEXP views_start, SEXP views_width,
-		const char *algo,
 		SEXP max_mismatch, SEXP min_mismatch,
-		SEXP with_indels, SEXP fixed)
+		SEXP with_indels, SEXP fixed,
+		const char *algo)
 {
 	cachedCharSeq S_view;
 	int nviews, v, *view_start, *view_width, view_offset;
@@ -148,8 +148,9 @@ void _match_pattern_XStringViews(const cachedCharSeq *P,
 		S_view.seq = S->seq + view_offset;
 		S_view.length = *view_width;
 		_set_match_shift(view_offset);
-		_match_pattern_XString(P, &S_view, algo,
-			max_mismatch, min_mismatch, with_indels, fixed);
+		_match_pattern_XString(P, &S_view,
+			max_mismatch, min_mismatch, with_indels, fixed,
+			algo);
 	}
 	return;
 }
@@ -160,11 +161,11 @@ void _match_pattern_XStringViews(const cachedCharSeq *P,
  *
  * Arguments:
  *   pattern, subject: XString objects;
- *   algorithm: single string;
  *   max_mismatch: (single integer) the max number of mismatching letters;
  *   min_mismatch: (single integer) the min number of mismatching letters;
  *   with_indels: single logical;
  *   fixed: logical vector of length 2;
+ *   algorithm: single string;
  *   count_only: single logical.
  *
  * If with_indels is FALSE: all matches have the length of the pattern.
@@ -174,10 +175,9 @@ void _match_pattern_XStringViews(const cachedCharSeq *P,
 
 /* --- .Call ENTRY POINT --- */
 SEXP XString_match_pattern(SEXP pattern, SEXP subject,
-		SEXP algorithm,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed,
-		SEXP count_only)
+		SEXP algorithm, SEXP count_only)
 {
 	cachedCharSeq P, S;
 	const char *algo;
@@ -189,8 +189,9 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 	is_count_only = LOGICAL(count_only)[0];
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
-	_match_pattern_XString(&P, &S, algo,
-		max_mismatch, min_mismatch, with_indels, fixed);
+	_match_pattern_XString(&P, &S,
+		max_mismatch, min_mismatch, with_indels, fixed,
+		algo);
 	return _reported_matches_asSEXP();
 }
 
@@ -201,10 +202,9 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
  */
 SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP subject, SEXP views_start, SEXP views_width,
-		SEXP algorithm,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed,
-		SEXP count_only)
+		SEXP algorithm, SEXP count_only)
 {
 	cachedCharSeq P, S;
 	const char *algo;
@@ -218,8 +218,8 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	_match_pattern_XStringViews(&P,
 		&S, views_start, views_width,
-		algo,
-		max_mismatch, min_mismatch, with_indels, fixed);
+		max_mismatch, min_mismatch, with_indels, fixed,
+		algo);
 	return _reported_matches_asSEXP();
 }
 
@@ -228,10 +228,9 @@ SEXP XStringViews_match_pattern(SEXP pattern,
  *   subject: XStringSet object.
  */
 SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
-		SEXP algorithm,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed,
-		SEXP count_only)
+		SEXP algorithm, SEXP count_only)
 {
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
@@ -248,8 +247,9 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 	for (j = 0; j < S_length; j++) {
 		S_elt = _get_cachedXStringSet_elt(&S, j);
 		_set_active_PSpair(j);
-		_match_pattern_XString(&P, &S_elt, algo,
-			max_mismatch, min_mismatch, with_indels, fixed);
+		_match_pattern_XString(&P, &S_elt,
+			max_mismatch, min_mismatch, with_indels, fixed,
+			algo);
 	}
 	return _MatchBuf_as_SEXP(_get_internal_match_buf(), R_NilValue);
 }
