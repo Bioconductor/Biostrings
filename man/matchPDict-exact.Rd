@@ -81,7 +81,8 @@
 
   vcountPDict(pdict, subject,
               max.mismatch=0, min.mismatch=0, fixed=TRUE,
-              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
+              algorithm="auto", collapse=FALSE, weight=1L,
+              verbose=FALSE, ...)
   vwhichPDict(pdict, subject,
               max.mismatch=0, min.mismatch=0, fixed=TRUE,
               algorithm="auto", verbose=FALSE)
@@ -157,6 +158,9 @@
     \code{M0 \%*\% rep(weight, length.out=length(subject))}
     and \code{rep(weight, length.out=length(pdict)) \%*\% M0},
     respectively.
+  }
+  \item{...}{
+    Additional arguments for methods.
   }
 }
 

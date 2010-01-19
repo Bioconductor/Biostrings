@@ -638,7 +638,7 @@ setMethod("whichPDict", "MaskedXString",
 setGeneric("vmatchPDict", signature="subject",
     function(pdict, subject,
              max.mismatch=0, min.mismatch=0, fixed=TRUE,
-             algorithm="auto", verbose=FALSE)
+             algorithm="auto", verbose=FALSE, ...)
         standardGeneric("vmatchPDict")
 )
 
@@ -669,7 +669,7 @@ setMethod("vmatchPDict", "MaskedXString",
 setGeneric("vcountPDict", signature="subject",
     function(pdict, subject,
              max.mismatch=0, min.mismatch=0, fixed=TRUE,
-             algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
+             algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE, ...)
         standardGeneric("vcountPDict")
 )
 
