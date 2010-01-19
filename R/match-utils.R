@@ -37,10 +37,20 @@ normargAlgorithm <- function(algorithm)
 .valid.algos <- function(pattern, max.mismatch, min.mismatch,
                          with.indels, fixed)
 {
-    if (length(pattern) == 0L)
-        stop("empty pattern")
-    if (length(pattern) > 20000L)
-        stop("patterns with more than 20000 letters are not supported, sorry")
+    if (is(pattern, "XString")) {
+        pattern_min_length <- pattern_max_length <- length(pattern)
+    } else if (is(pattern, "XStringSet")) {
+        pattern_min_length <- min(width(pattern))
+        pattern_max_length <- max(width(pattern))
+    } else {
+        stop("'pattern' not an XString or XStringSet object")
+    }
+    if (pattern_min_length == 0L)
+        stop("empty patterns are not supported")
+    ## Some arbitrary limit just to limit the size of the dynamic buffers
+    ## used by the Boyer Moore algo to preprocess the pattern.
+    if (pattern_max_length > 20000L)
+        stop("patterns with more than 20000 letters are not supported")
     if (max.mismatch != 0L && with.indels) {
         if (min.mismatch != 0L)
             stop("'min.mismatch' must be 0 when 'with.indels' is TRUE")
@@ -49,12 +59,12 @@ normargAlgorithm <- function(algorithm)
     algos <- character(0)
     if (max.mismatch == 0L && all(fixed)) {
         algos <- c(algos, "boyer-moore")
-        if (length(pattern) <= .Clongint.nbits())
+        if (pattern_max_length <= .Clongint.nbits())
             algos <- c(algos, "shift-or")
         algos <- c(algos, "naive-exact")
     } else {
         if (min.mismatch == 0L && fixed[1] == fixed[2]
-         && length(pattern) <= .Clongint.nbits())
+         && pattern_max_length <= .Clongint.nbits())
             algos <- c(algos, "shift-or")
     }
     c(algos, "naive-inexact") # "naive-inexact" is universal but slow
@@ -68,7 +78,7 @@ selectAlgo <- function(algo, pattern, max.mismatch, min.mismatch,
     if (algo == "auto")
         return(algos[1])
     if (!(algo %in% algos))
-        stop("valid algos for your problem (best suited first): ",
+        stop("valid algos for your string matching problem (best suited first): ",
              paste(paste("\"", algos, "\"", sep=""), collapse=", "))
     algo
 }

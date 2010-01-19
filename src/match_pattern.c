@@ -105,12 +105,6 @@ void _match_pattern_XString(const cachedCharSeq *P, const cachedCharSeq *S,
 		return;
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
-	if (algo == NULL) {
-		if (fixedP && fixedS)
-			algo = "boyer-moore";
-		else
-			algo = "naive-inexact";
-	}
 	if (P->length <= max_nmis || strcmp(algo, "naive-inexact") == 0)
 		match_naive_inexact(P, S, max_nmis, min_nmis, fixedP, fixedS);
 	else if (strcmp(algo, "naive-exact") == 0)

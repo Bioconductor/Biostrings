@@ -128,9 +128,11 @@
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XString <- function(threeparts, subject,
                                        max.mismatch, min.mismatch, fixed,
-                                       matches.as, envir)
+                                       algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    if (!identical(algorithm, "auto"))
+        warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("match_PDict3Parts_XString",
@@ -144,23 +146,27 @@
 ### 'pattern' is an XStringSet object.
 .match.XStringSet.XString <- function(pattern, subject,
                                       max.mismatch, min.mismatch, fixed,
-                                      matches.as, envir)
+                                      algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    algo <- normargAlgorithm(algorithm)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, FALSE, fixed)
     .Call("match_XStringSet_XString",
           pattern,
           subject,
           max.mismatch, min.mismatch, fixed,
-          matches.as, envir,
+          algo, matches.as, envir,
           PACKAGE="Biostrings")
 }
 
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XStringViews <- function(threeparts, subject,
                                             max.mismatch, min.mismatch, fixed,
-                                            matches.as, envir)
+                                            algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    if (!identical(algorithm, "auto"))
+        warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("match_PDict3Parts_XStringViews",
@@ -174,24 +180,28 @@
 ### 'pattern' is an XStringSet object.
 .match.XStringSet.XStringViews <- function(pattern, subject,
                                            max.mismatch, min.mismatch, fixed,
-                                           matches.as, envir)
+                                           algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    algo <- normargAlgorithm(algorithm)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, FALSE, fixed)
     .Call("match_XStringSet_XStringViews",
           pattern,
           subject(subject), start(subject), width(subject),
           max.mismatch, min.mismatch, fixed,
-          matches.as, envir,
+          algo, matches.as, envir,
           PACKAGE="Biostrings")
 }
 
 ### 'threeparts' is a PDict3Parts object.
 .vmatch.PDict3Parts.XStringSet <- function(threeparts, subject,
                                            max.mismatch, min.mismatch, fixed,
-                                           collapse, weight,
+                                           algorithm, collapse, weight,
                                            matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    if (!identical(algorithm, "auto"))
+        warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
     .Call("vmatch_PDict3Parts_XStringSet",
@@ -206,15 +216,17 @@
 ### 'pattern' is an XStringSet object.
 .vmatch.XStringSet.XStringSet <- function(pattern, subject,
                                           max.mismatch, min.mismatch, fixed,
-                                          collapse, weight,
+                                          algorithm, collapse, weight,
                                           matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    algo <- normargAlgorithm(algorithm)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, FALSE, fixed)
     .Call("vmatch_XStringSet_XStringSet",
           pattern,
           subject,
           max.mismatch, min.mismatch, fixed,
-          collapse, weight,
+          algo, collapse, weight,
           matches.as, envir,
           PACKAGE="Biostrings")
 }
@@ -231,12 +243,12 @@
 {
     if (is(subject, "DNAString"))
         C_ans <- .match.PDict3Parts.XString(pdict@threeparts, subject,
-                                            max.mismatch, min.mismatch, fixed,
-                                            matches.as, NULL)
+                     max.mismatch, min.mismatch, fixed,
+                     algorithm, matches.as, NULL)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .match.PDict3Parts.XStringViews(pdict@threeparts, subject,
-                                                 max.mismatch, min.mismatch, fixed,
-                                                 matches.as, NULL)
+                     max.mismatch, min.mismatch, fixed,
+                     algorithm, matches.as, NULL)
     else
         stop("'subject' must be a DNAString object,\n",
              "  a MaskedDNAString object,\n",
@@ -308,10 +320,12 @@
 {
     if (is(subject, "XString"))
         C_ans <- .match.XStringSet.XString(pattern, subject,
-                     max.mismatch, min.mismatch, fixed, matches.as, NULL)
+                     max.mismatch, min.mismatch, fixed,
+                     algorithm, matches.as, NULL)
     else if (is(subject, "XStringViews"))
         C_ans <- .match.XStringSet.XStringViews(pattern, subject,
-                     max.mismatch, min.mismatch, fixed, matches.as, NULL)
+                     max.mismatch, min.mismatch, fixed,
+                     algorithm, matches.as, NULL)
     else
         stop("unsupported 'subject' type")
     if (matches.as != "MATCHES_AS_ENDS")
@@ -339,8 +353,6 @@
     }
     max.mismatch <- normargMaxMismatch(max.mismatch)
     min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
-    if (!identical(algorithm, "auto"))
-        stop("'algorithm' can only be '\"auto\"' for now")
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
     if (is(pdict, "TB_PDict"))
@@ -397,8 +409,6 @@
     }
     max.mismatch <- normargMaxMismatch(max.mismatch)
     min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
-    if (!identical(algorithm, "auto"))
-        stop("'algorithm' can only be '\"auto\"' for now")
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
     if (matches.as == "MATCHES_AS_WHICH") {
@@ -434,13 +444,13 @@
     if (is(pdict, "TB_PDict"))
         ans <- .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
                    max.mismatch, min.mismatch, fixed,
-                   collapse, weight, matches.as, NULL)
+                   algorithm, collapse, weight, matches.as, NULL)
     else if (is(pdict, "MTB_PDict"))
         stop("MTB_PDict objects are not supported yet, sorry")
     else
         ans <- .vmatch.XStringSet.XStringSet(pdict, subject,
                    max.mismatch, min.mismatch, fixed,
-                   collapse, weight, matches.as, NULL)
+                   algorithm, collapse, weight, matches.as, NULL)
     if (is.null(which_pp_excluded))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH") {

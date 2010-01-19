@@ -66,7 +66,7 @@
   \item{max.mismatch, min.mismatch}{
     The maximum and minimum number of mismatching letters allowed (see
     \code{?`\link{lowlevel-matching}`} for the details).
-    If non-zero, an inexact matching algorithm is used.
+    If non-zero, an algorithm that supports inexact matching is used.
   }
   \item{with.indels}{
     If \code{TRUE} then indels are allowed. In that case, \code{min.mismatch}
@@ -106,21 +106,22 @@
   Available algorithms are: ``naive exact'', ``naive inexact'',
   ``Boyer-Moore-like'', ``shift-or'' and ``indels''.
   Not all of them can be used in all situations: restrictions
-  depend on the length of the pattern, the class of the subject,
-  and the values of \code{max.mismatch}, \code{min.mismatch},
-  \code{with.indels} and \code{fixed}. All those parameters form
-  the "search criteria".
+  apply depending on the "search criteria" i.e. on the values of
+  the \code{pattern}, \code{subject}, \code{max.mismatch},
+  \code{min.mismatch}, \code{with.indels} and \code{fixed}
+  arguments.
 
-  Note that the choice of an algorithm is not part of the search criteria.
-  This is because algorithms are interchangeable, that is, if 2 different
-  algorithms are compatible with a given search criteria, then choosing
-  one over the other will not affect the result (but will most likely
-  affect the performance). So there is no "wrong choice" of algorithm
-  (strictly speaking).
+  It is important to note that the \code{algorithm} argument
+  is not part of the search criteria. This is because the supported
+  algorithms are interchangeable, that is, if 2 different algorithms
+  are compatible with a given search criteria, then choosing one or
+  the other will not affect the result (but will most likely affect
+  the performance). So there is no "wrong choice" of algorithm (strictly
+  speaking).
 
-  Using \code{algorithm="auto"} is recommended because then the fastest
-  algorithm will automatically be picked up among the set of compatible
-  algorithms (if there is more than one).
+  Using \code{algorithm="auto"} (the default) is recommended because
+  then the best suited algorithm will automatically be selected among
+  the set of algorithms that are valid for the given search criteria.
 }
 
 \value{

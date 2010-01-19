@@ -1130,6 +1130,7 @@ SEXP match_XStringSet_XString(
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP fixed,
+	SEXP algorithm,
 	SEXP matches_as,
 	SEXP envir
 );
@@ -1156,6 +1157,7 @@ SEXP match_XStringSet_XStringViews(
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP fixed,
+	SEXP algorithm,
 	SEXP matches_as,
 	SEXP envir
 );
@@ -1180,6 +1182,7 @@ SEXP vmatch_XStringSet_XStringSet(
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP fixed,
+	SEXP algorithm,
 	SEXP collapse,
 	SEXP weight,
 	SEXP matches_as,

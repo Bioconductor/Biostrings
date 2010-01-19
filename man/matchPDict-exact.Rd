@@ -41,11 +41,11 @@
 \alias{extractAllMatches}
 
 
-\title{Searching a sequence for patterns stored in a preprocessed dictionary}
+\title{Matching a dictionary of patterns against a reference}
 
 \description{
-  A set of functions for finding all the occurrences (aka "matches" or "hits")
-  of a set of patterns (aka the dictionary) in a reference
+  A set of functions for finding all the occurrences (aka "matches"
+  or "hits") of a set of patterns (aka the dictionary) in a reference
   sequence or set of reference sequences (aka the subject)
 
   The following functions differ in what they return: \code{matchPDict}
@@ -53,7 +53,7 @@
   occurrences of every pattern; \code{countPDict} returns the "how many
   times" information i.e. the number of occurrences for each pattern;
   and \code{whichPDict} returns the "who" information i.e. which patterns
-  in the preprocessed dictionary have at least one match.
+  in the input dictionary have at least one match.
 
   \code{vcountPDict} and \code{vwhichPDict} are vectorized versions
   of \code{countPDict} and \code{whichPDict}, respectively, that is,
@@ -90,10 +90,19 @@
 \arguments{
   \item{pdict}{
     A \link{PDict} object containing the preprocessed dictionary.
+
+    All these functions also work with a dictionary that has not been
+    preprocessed (in other words, the \code{pdict} argument can receive
+    an \link{XStringSet} object). Of course, it won't be as fast as with
+    a preprocessed dictionary, but it will generally be slightly faster
+    than using \code{\link{matchPattern}}/\code{\link{countPattern}}
+    or \code{\link{vmatchPattern}}/\code{\link{vcountPattern}} in a
+    "lapply/sapply loop", because, here, looping is done at the C-level.
   }
   \item{subject}{
     An \link{XString} or \link{MaskedXString} object containing the
-    subject sequence for \code{matchPDict}, \code{countPDict} and \code{whichPDict}.
+    subject sequence for \code{matchPDict}, \code{countPDict} and
+    \code{whichPDict}.
 
     An \link{XStringSet} object containing the subject sequences
     for \code{vcountPDict} and \code{vwhichPDict}.
@@ -115,7 +124,12 @@
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
   }
   \item{algorithm}{
-    Not supported yet.
+    Ignored if \code{pdict} is a preprocessed dictionary (i.e.
+    a \link{PDict} object). Otherwise, can be one of the following:
+    \code{"auto"}, \code{"naive-exact"}, \code{"naive-inexact"},
+    \code{"boyer-moore"} or \code{"shift-or"}.
+    See \code{?\link{matchPattern}} for more information.
+    Note that \code{"indels"} is not supported for now.
   }
   \item{verbose}{
     \code{TRUE} or \code{FALSE}.
@@ -193,7 +207,6 @@
   \code{\link{coverage,MIndex-method}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},
-  \link{DNAString-class},
   \link{DNAStringSet-class},
   \link{XStringViews-class},
   \link{MaskedDNAString-class}
@@ -327,13 +340,6 @@
   ## D. USING A NON-PREPROCESSED DICTIONARY
   ## ---------------------------------------------------------------------
 
-  ## matchPDict(), countPDict and whichPDict() also work with a dictionary
-  ## that has not been preprocessed. Of course, it won't be as fast as
-  ## with a preprocessed dictionary, but it will generally be slightly
-  ## faster than using matchPattern() or countPattern() in a
-  ## "lapply/sapply loop", because, with matchPDict(), looping is done at
-  ## the C-level:
-
   dict3 <- DNAStringSet(mkAllStrings(DNA_BASES, 3))  # all trinucleotides
   dict3
   pdict3 <- PDict(dict3)
@@ -343,20 +349,28 @@
   res3b <- countPDict(dict3, chr3R)
   res3c <- sapply(dict3,
                function(pattern) countPattern(pattern, chr3R))
-
   stopifnot(identical(res3a, res3b))
   stopifnot(identical(res3a, res3c))
 
   ## One reason for using a non-preprocessed dictionary is to get rid of
-  ## all the constraints associated with the use of \link{PDict} objects,
-  ## e.g. the input must be DNA and a Trusted Band must be defined
-  ## (explicitly or implicitly). See \code{?\link{PDict}} for more
-  ## information on about these constraints.
+  ## all the constraints associated with preprocessing, e.g., when
+  ## preprocessing with \code{\link{PDict}}, the input dictionary must
+  ## be DNA and a Trusted Band must be defined (explicitly or implicitly).
+  ## See \code{?\link{PDict}} for more information about these constraints.
   ## In particular, using a non-preprocessed dictionary can be
   ## useful for the kind of inexact matching that can't be achieved
   ## with a \link{PDict} object (if performance is not an issue).
-  ## See \code{?`\link{matchPDict-inexact}`} for more information on
+  ## See \code{?`\link{matchPDict-inexact}`} for more information about
   ## inexact matching.
+
+  dictD <- xscat(dict3, "N", reverseComplement(dict3))
+
+  ## The 2 following calls are equivalent (from faster to slower):
+  resDa <- matchPDict(dictD, chr3R, fixed=FALSE)
+  resDb <- sapply(dictD,
+               function(pattern) matchPattern(pattern, chr3R, fixed=FALSE))
+  stopifnot(all(sapply(seq_len(length(dictD)),
+                    function(i) identical(resDa[[i]], IRanges(resDb[[i]])))))
 
   ## ---------------------------------------------------------------------
   ## E. vcountPDict()
@@ -394,6 +408,7 @@
   ## F. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
   ## vcountPattern()
   ## ---------------------------------------------------------------------
+  pdict3 <- PDict(dict3)
   subject <- Dmelanogaster$upstream1000
   subject
 
@@ -502,7 +517,8 @@
     names(mapPSIDs1to2alt) <- psIDs1
 
     ## 'mapPSIDs1to2alt' and 'mapPSIDs1to2' contain the same mapping:
-    stopifnot(identical(lapply(mapPSIDs1to2alt, sort), lapply(mapPSIDs1to2, sort)))
+    stopifnot(identical(lapply(mapPSIDs1to2alt, sort),
+                        lapply(mapPSIDs1to2, sort)))
   }
 }
 
