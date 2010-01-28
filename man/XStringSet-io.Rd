@@ -39,7 +39,7 @@
   read.RNAStringSet(filepath, format="fasta")
   read.AAStringSet(filepath, format="fasta")
 
-  ## Get basic information about FASTA (or FASTQ) files
+  ## Extract basic information about FASTA (or FASTQ) files
   ## without loading them:
   fasta.info(filepath, use.descs=TRUE)
   fastq.geometry(filepath)

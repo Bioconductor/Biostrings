@@ -19,6 +19,7 @@ fasta.info <- function(filepath, use.descs=TRUE)
 
 .read.fasta.in.XStringSet <- function(filepath, set.names, elementType, lkup)
 {
+    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("read_fasta_in_XStringSet",
           filepath, set.names, elementType, lkup,
           PACKAGE="Biostrings")
@@ -39,6 +40,7 @@ fastq.geometry <- function(filepath)
 
 .read.fastq.in.XStringSet <- function(filepath, set.names, elementType, lkup)
 {
+    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("read_fastq_in_XStringSet",
           filepath, set.names, elementType, lkup,
           PACKAGE="Biostrings")
