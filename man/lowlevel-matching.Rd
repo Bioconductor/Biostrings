@@ -320,6 +320,20 @@
   which.isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1)
   which.isMatchingAt("CAT", subject, at=some_starts, max.mismatch=1,
                      follow.index=TRUE)
+
+  ## ---------------------------------------------------------------------
+  ## WITH INDELS
+  ## ---------------------------------------------------------------------
+  subject <- BString("ABCDEFxxxCDEFxxxABBCDE")
+
+  neditAt("ABCDEF", subject, at=9)
+  neditAt("ABCDEF", subject, at=9, with.indels=TRUE)
+  isMatchingAt("ABCDEF", subject, at=9, max.mismatch=1, with.indels=TRUE)
+  isMatchingAt("ABCDEF", subject, at=9, max.mismatch=2, with.indels=TRUE)
+  neditAt("ABCDEF", subject, at=17)
+  neditAt("ABCDEF", subject, at=17, with.indels=TRUE)
+  neditEndingAt("ABCDEF", subject, ending.at=22)
+  neditEndingAt("ABCDEF", subject, ending.at=22, with.indels=TRUE)
 }
 
 \keyword{methods}

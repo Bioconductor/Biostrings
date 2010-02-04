@@ -151,10 +151,10 @@ static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
 	(curr_row) = tmp; \
 }
 
-#define PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length) \
+#define PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length) \
 { \
 	int nedit, B2, nedit2; \
-	nedit = (prev_row)[(B)] + ((j) < 0 || (j) >= (S)->length || (S)->seq[(j)] != (Pc)); \
+	nedit = (prev_row)[(B)] + ((Si) < 0 || (Si) >= (S)->length || (S)->seq[(Si)] != (Pc)); \
 	if ((B2 = (B) - 1) >= 0 && (nedit2 = (curr_row)[B2] + 1) < nedit) \
 		nedit = nedit2; \
 	if ((B2 = (B) + 1) < (row_length) && (nedit2 = (prev_row)[B2] + 1) < nedit) \
@@ -192,7 +192,8 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 		int Ploffset, int max_nedit, int loose_Ploffset, int *min_width)
 {
 	int max_nedit_plus1, *prev_row, *curr_row, row_length,
-	    B, b, i, iplus1, jmin, j, min_nedit;
+	    a, B, b, min_Si, min_nedit,
+	    Pi, Si; // 0-based letter pos in P and S, respectively
 	char Pc;
 
 #ifdef DEBUG_BIOSTRINGS
@@ -212,7 +213,7 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	prev_row = row1_buf;
 	curr_row = row2_buf;
 	row_length = 2 * max_nedit + 1;
-	jmin = Ploffset;
+	min_Si = Ploffset;
 
 	// STAGE 0:
 	for (B = max_nedit, b = 0; B < row_length; B++, b++)
@@ -223,55 +224,56 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 
 	// STAGE 1 (1st for() loop): no attempt is made to bailout during
 	// this stage because the smallest value in curr_row is guaranteed
-	// to be <= iplus1 < max_nedit.
-	for (iplus1 = 1, i = 0; iplus1 < max_nedit; iplus1++, i++) {
-		Pc = P->seq[i]; // i < iplus1 < max_nedit <= P->length
+	// to be <= a < max_nedit.
+	for (a = 1, Pi = 0; a < max_nedit; a++, Pi++) {
+		Pc = P->seq[Pi]; // Pi < a < max_nedit <= P->length
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
-		B = max_nedit - iplus1;
-		curr_row[B++] = iplus1;
-		for (j = jmin; B < row_length; B++, j++)
-			PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
+		B = max_nedit - a;
+		curr_row[B++] = a;
+		for (Si = min_Si; B < row_length; B++, Si++)
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
 #ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - iplus1, row_length);
+		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - a, row_length);
 #endif
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
-	Pc = P->seq[i];
+	Pc = P->seq[Pi];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
-	curr_row[B++] = min_nedit = iplus1;
+	curr_row[B++] = min_nedit = a;
 	*min_width = 0;
-	for (j = jmin; B < row_length; B++, j++) {
-		PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
+	for (Si = min_Si; B < row_length; B++, Si++) {
+		PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
 		if (curr_row[B] < min_nedit) {
 			min_nedit = curr_row[B];
-			*min_width = j - Ploffset + 1;
+			*min_width = Si - Ploffset + 1;
 		}
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) print_curr_row("STAGE2", curr_row, 0, row_length);
 #endif
-	iplus1++;
-	i++;
+	a++;
+	Pi++;
 
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
-	for ( ; i < P->length; i++, iplus1++, jmin++) {
-		Pc = P->seq[i];
+	for ( ; Pi < P->length; Pi++, a++, min_Si++) {
+		Pc = P->seq[Pi];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
-		min_nedit = iplus1;
+		min_nedit = a;
 		*min_width = 0;
-		for (B = 0, j = jmin; B < row_length; B++, j++) {
-			PROPAGATE_NEDIT(curr_row, B, prev_row, S, j, Pc, row_length);
+		for (B = 0, Si = min_Si; B < row_length; B++, Si++) {
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
 			if (curr_row[B] < min_nedit) {
 				min_nedit = curr_row[B];
-				*min_width = j - Ploffset + 1;
+				*min_width = Si - Ploffset + 1;
 			}
 		}
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) print_curr_row("STAGE3", curr_row, 0, row_length);
 #endif
-		if (min_nedit >= max_nedit_plus1) // should never be min_nedit > max_nedit_plus1
+		// 'min_nedit > max_nedit_plus1' should actually never happen.
+		if (min_nedit >= max_nedit_plus1)
 			break; // bailout
 	}
 	return min_nedit;
@@ -281,11 +283,91 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
 		int Proffset, int max_nedit, int loose_Proffset, int *min_width)
 {
 	int max_nedit_plus1, *prev_row, *curr_row, row_length,
-	    B, b, i, iplus1, jmin, j, min_nedit;
+	    a, B, b, max_Si, min_nedit,
+	    Pi, Si; // 0-based letter pos in P and S, respectively
 	char Pc;
 
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) Rprintf("[DEBUG] _nedit_for_Proffset():\n");
+#endif
+	if (P->length == 0)
+		return 0;
+	if (max_nedit == 0)
+		error("Biostrings internal error in _nedit_for_Proffset(): ",
+		      "use _selected_nmismatch_at_Pshift_fun() when 'max_nedit' is 0");
+	max_nedit_plus1 = max_nedit + 1;
+	if (max_nedit > P->length)
+		max_nedit = P->length;
+	// from now max_nedit <= P->length
+	if (max_nedit > MAX_NEDIT)
+		error("'max.nedit' too big");
+	prev_row = row1_buf;
+	curr_row = row2_buf;
+	row_length = 2 * max_nedit + 1;
+	max_Si = Proffset;
 	min_nedit = 0;
-	error("_nedit_for_Proffset() is not ready yet, sorry!");
+
+	// STAGE 0:
+	for (B = max_nedit, b = 0; B < row_length; B++, b++)
+		curr_row[B] = b;
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) print_curr_row("STAGE0", curr_row, max_nedit, row_length);
+#endif
+
+	// STAGE 1 (1st for() loop): no attempt is made to bailout during
+	// this stage because the smallest value in curr_row is guaranteed
+	// to be <= a < max_nedit.
+	for (a = 1, Pi = P->length - 1; a < max_nedit; a++, Pi--) {
+		Pc = P->seq[Pi];
+		SWAP_NEDIT_BUFS(prev_row, curr_row);
+		B = max_nedit - a;
+		curr_row[B++] = a;
+		for (Si = max_Si; B < row_length; B++, Si--)
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - a, row_length);
+#endif
+	}
+
+	// STAGE 2: no attempt is made to bailout during this stage either.
+	Pc = P->seq[Pi];
+	SWAP_NEDIT_BUFS(prev_row, curr_row);
+	B = 0;
+	curr_row[B++] = min_nedit = a;
+	*min_width = 0;
+	for (Si = max_Si; B < row_length; B++, Si--) {
+		PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+		if (curr_row[B] < min_nedit) {
+			min_nedit = curr_row[B];
+			*min_width = Proffset - Si + 1;
+		}
+	}
+#ifdef DEBUG_BIOSTRINGS
+	if (debug) print_curr_row("STAGE2", curr_row, 0, row_length);
+#endif
+	a++;
+	Pi--;
+
+	// STAGE 3 (2nd for() loop): with attempt to bailout.
+	for ( ; Pi >= 0; Pi--, a++, max_Si--) {
+		Pc = P->seq[Pi];
+		SWAP_NEDIT_BUFS(prev_row, curr_row);
+		min_nedit = a;
+		*min_width = 0;
+		for (B = 0, Si = max_Si; B < row_length; B++, Si--) {
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+			if (curr_row[B] < min_nedit) {
+				min_nedit = curr_row[B];
+				*min_width = Proffset - Si + 1;
+			}
+		}
+#ifdef DEBUG_BIOSTRINGS
+		if (debug) print_curr_row("STAGE3", curr_row, 0, row_length);
+#endif
+		// 'min_nedit > max_nedit_plus1' should actually never happen.
+		if (min_nedit >= max_nedit_plus1)
+			break; // bailout
+	}
 	return min_nedit;
 }
 
