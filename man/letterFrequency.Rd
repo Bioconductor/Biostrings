@@ -43,9 +43,7 @@
 \alias{consensusString,BStringSet-method}
 \alias{consensusString,DNAStringSet-method}
 \alias{consensusString,RNAStringSet-method}
-\alias{consensusString,BStringViews-method}
-\alias{consensusString,DNAStringViews-method}
-\alias{consensusString,RNAStringViews-method}
+\alias{consensusString,XStringViews-method}
 \alias{consensusString,ANY-method}
 
 % Old stuff:
@@ -68,8 +66,8 @@ sequence, or the consensus matrix of a set of sequences}
 
   The \code{consensusMatrix} function computes the consensus matrix
   of a set of sequences, and the \code{consensusString} function creates
-  the consensus sequence based on a 50\% + 1 vote from the consensus
-  matrix (using the \code{"?"} letter to represent the lack of consensus).
+  the consensus sequence from the consensus matrix based upon specified
+  criteria.
 
   In this man page we call "DNA input" (or "RNA input") an
   \link{XString}, \link{XStringSet}, \link{XStringViews} or
@@ -87,10 +85,10 @@ sequence, or the consensus matrix of a set of sequences}
 
   \S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
   \S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
-                                           threshold=0.25, shift=0L, width=NULL)
+               threshold=0.25, shift=0L, width=NULL)
   \S4method{consensusString}{RNAStringSet}(x, 
-   ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
-                                           threshold=0.25, shift=0L, width=NULL)
+               ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+               threshold=0.25, shift=0L, width=NULL)
 }
 
 \arguments{
@@ -155,6 +153,9 @@ sequence, or the consensus matrix of a set of sequences}
     a named character vector where the names are the ambiguity characters
     and the values are the combinations of letters that comprise the
     ambiguity (e.g. \code{link{IUPAC_CODE_MAP}}).
+    When \code{ambiguityMap} is a named character vector, occurrences of
+    ambiguous letters in \code{x} are replaced with their base alphabet
+    letters that have been equally weighted to sum to 1.
   }
   \item{threshold}{
     The minimum probability threshold for an agreement to be declared.
@@ -162,7 +163,7 @@ sequence, or the consensus matrix of a set of sequences}
     is a single number in (0, 1].
     When \code{ambiguityMap} is a named character vector
     (e.g. \code{link{IUPAC_CODE_MAP}}),  \code{threshold}
-    is a single number in (0, 1/sum(rowSums(x) > 0)].
+    is a single number in (0, 1/sum(nchar(ambiguityMap) == 1)].
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
@@ -343,6 +344,10 @@ sequence, or the consensus matrix of a set of sequences}
   ## their first bases):
   consensusString(sort(probes)[1:5])
   consensusString(sort(probes)[1:5], ambiguityMap = "N", threshold = 0.5)
+
+  ## Consensus involving ambiguity letters in the input strings
+  consensusString(DNAStringSet(c("ACAG","ACAR"))) 
+  consensusString(DNAStringSet(c("ACAG","ACAR", "ACAG"))) 
 
   ## ---------------------------------------------------------------------
   ## C. RELATIONSHIP BETWEEN consensusMatrix() AND coverage()

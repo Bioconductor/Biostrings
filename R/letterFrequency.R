@@ -682,6 +682,7 @@ setGeneric("consensusString", function(x, ...) standardGeneric("consensusString"
 setMethod("consensusString", "matrix",
     function(x, ambiguityMap="?", threshold=0.5)
     {
+        x <- x[rowSums(x, na.rm=TRUE) > 0, , drop=FALSE]
         k <- nrow(x)
         if (k == 0)
             return(character())
@@ -724,10 +725,17 @@ setMethod("consensusString", "matrix",
         } else {
             if (!is.character(ambiguityMap) || is.null(names(ambiguityMap)))
                 stop("'ambiguityMap' must be a named character vector")
+            if (!all(rownames(x) %in% names(ambiguityMap)))
+                stop("'ambiguityMap' does not contain the complete alphabet")
+            alphabet <- unname(ambiguityMap[nchar(ambiguityMap) == 1])
             if (!isSingleNumber(threshold) || threshold <= 0 ||
-                (threshold - .Machine$double.eps ^ 0.5) > 1/sum(rowSums(x) > 0))
+                (threshold - .Machine$double.eps ^ 0.5) > 1/length(alphabet))
                 stop("'threshold' must be a numeric in ",
-                     "(0, 1/sum(rowSums(x) > 0)]")
+                     "(0, 1/sum(nchar(ambiguityMap) == 1)]")
+            P <-
+              sapply(strsplit(ambiguityMap[rownames(x)], ""),
+                     function(y) {z <- alphabet %in% y;z/sum(z)})
+            x <- P %*% x
             consensusLetter <- function(col)
             {
                 i <- paste(all_letters[col >= threshold], collapse = "")
@@ -761,22 +769,12 @@ setMethod("consensusString", "RNAStringSet",
                         ambiguityMap=ambiguityMap, threshold=threshold)
 )
 
-setMethod("consensusString", "BStringViews",
-    function(x, ambiguityMap="?", threshold=0.5, shift=0L, width=NULL)
-        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
-                        ambiguityMap=ambiguityMap, threshold=threshold)
-)
-
-setMethod("consensusString", "DNAStringViews",
-    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25, shift=0L, width=NULL)
-        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
-                        ambiguityMap=ambiguityMap, threshold=threshold)
-)
-
-setMethod("consensusString", "RNAStringViews",
-    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25, shift=0L, width=NULL)
-        consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
-                        ambiguityMap=ambiguityMap, threshold=threshold)
+setMethod("consensusString", "XStringViews",
+    function(x, ambiguityMap, threshold, shift=0L, width=NULL)
+    {
+        x <- as(x, "XStringSet")
+        callGeneric()
+    }
 )
 
 setMethod("consensusString", "ANY",
