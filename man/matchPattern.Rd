@@ -82,7 +82,7 @@
        (b) for every substring S1 of S':
                nedit(P, S1) > nedit(P, S')
        (c) for every substring S2 of S that contains S':
-               nedit(P, S2) <= nedit(P, S')
+               nedit(P, S2) >= nedit(P, S')
     }
     One nice property of "best local matches" is that their first and last
     letters are guaranteed to be aligned with letters in P (i.e. they match
