@@ -13,7 +13,7 @@ alternatives that return/accept an \link{XStringSet} object, see the
 }
 \usage{
   readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
-  writeFASTA(x, file="", append=FALSE, width=80)
+  writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
 }
 \arguments{
   \item{file}{
@@ -33,7 +33,20 @@ alternatives that return/accept an \link{XStringSet} object, see the
     was keeping the ">".
   }
   \item{x}{
-    A list as one returned by \code{readFASTA}.
+    A list as one returned by \code{readFASTA} if \code{desc} is
+    not specified (i.e. \code{NULL}). If \code{desc} is specified
+    (see below) then \code{x} can also be a list-like object with
+    \link{XString} elements (for example it can be an
+    \link{XStringSet}, \link{XStringViews} or \link{BSgenome}
+    object) or just a character vector.
+  }
+  \item{desc}{
+    If \code{NULL} (the default) then \code{x} must be a list as
+    one returned by \code{readFASTA} and all the sequences in \code{x}
+    are written to the file.
+    Otherwise \code{desc} must be a character vector no longer than
+    the number of sequences in \code{x} containing the descriptions
+    of the sequences in \code{x} that must be written to the file.
   }
   \item{append}{
     \code{TRUE} or \code{FALSE}. If \code{TRUE} output will be
@@ -66,7 +79,7 @@ alternatives that return/accept an \link{XStringSet} object, see the
   and the second a character string of the biological sequence.
 }
 
-\author{R. Gentleman, H. Pages}
+\author{R. Gentleman, H. Pages. Improvements to writeFASTA by Kasper D. Hansen}
 
 \seealso{
   \code{\link{read.DNAStringSet}},
@@ -81,9 +94,21 @@ alternatives that return/accept an \link{XStringSet} object, see the
   f1 <- system.file("extdata", "someORF.fa", package="Biostrings")
   ff <- readFASTA(f1, strip.descs=TRUE)
   desc <- sapply(ff, function(x) x$desc)
-  ## Keep the "reverse complement" sequences only
+  desc
+
+  ## Keep the "reverse complement" sequences only:
   ff2 <- ff[grep("reverse complement", desc, fixed=TRUE)]
-  writeFASTA(ff2, file.path(tempdir(), "someORF2.fa"))
+
+  ## Write them to a FASTA file:
+  temp_file <- file.path(tempdir(), "temp.fa")
+  writeFASTA(ff2, file=temp_file)
+
+  ## Write the first 2 to a FASTA file with a modified description:
+  writeFASTA(ff2, file=temp_file, desc=c("a", "b"))
+
+  ## Write a genome to a FASTA file:
+  library(BSgenome.Celegans.UCSC.ce2)
+  writeFASTA(Celegans, file=temp_file, desc=seqnames(Celegans))
 }
 
 \keyword{utilities}

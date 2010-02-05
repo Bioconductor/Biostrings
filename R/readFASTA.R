@@ -50,7 +50,7 @@ readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
     )
 }
 
-writeFASTA <- function(x, file="", append=FALSE, width=80)
+writeFASTA <- function(x, file="", desc=NULL, append=FALSE, width=80)
 {
     if (!isTRUEorFALSE(append))
         stop("'append' must be TRUE or FALSE")
@@ -75,16 +75,38 @@ writeFASTA <- function(x, file="", append=FALSE, width=80)
         width <- as.integer(width)
     if (width < 1L)
         stop("'width' must be an integer >= 1")
-    for (rec in x) {
-        cat(">", rec$desc, "\n", file=file, sep="")
-        nlines <- nchar(rec$seq) %/% width + 1L
-        for (i in seq_len(nlines)) {
-            start <- (i-1L) * width + 1L
-            stop <- start + width - 1L
-            if (stop > nchar(rec$seq))
-                stop <- nchar(rec$seq)
-            line <- substr(rec$seq, start, stop)
-            cat(line, "\n", file=file, sep="")
+    writeBString <- function(bstring)
+    {
+        if (length(bstring) == 0L)
+            return()
+        nlines <- (length(bstring) - 1L) %/% width + 1L
+        lineIdx <- seq_len(nlines)
+        start <- (lineIdx - 1L) * width + 1L
+        end <- start + width - 1L
+        if (end[nlines] > length(bstring))
+            end[nlines] <- length(bstring)
+        bigstring <- paste(
+            as.character(Views(bstring, start = start, end = end)),
+            collapse="\n"
+        )
+        cat(bigstring, "\n", file=file, sep="")
+    }
+    if (is.null(desc)) {
+        for (rec in x) {
+            cat(">", rec$desc, "\n", file=file, sep="")
+            writeBString(BString(rec$seq))
+        }
+    } else {
+        if (!is.character(desc))
+            stop("when specified, 'desc' must be a character vector")
+        if (length(desc) > length(x))
+            stop("'desc' is longer than the number of sequences in 'x'")
+        for (i in seq_len(length(desc))) {
+            cat(">", desc[i], "\n", file=file, sep="")
+            xi <- x[[i]]
+            if (is.list(xi))
+                xi <- xi$seq
+            writeBString(BString(xi))
         }
     }
 }
