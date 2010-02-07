@@ -37,7 +37,8 @@ alternatives that return/accept an \link{XStringSet} object, see the
     not specified (i.e. \code{NULL}). If \code{desc} is specified
     (see below) then \code{x} can also be a list-like object with
     \link{XString} elements (for example it can be an
-    \link{XStringSet}, \link{XStringViews} or \link{BSgenome}
+    \link{XStringSet}, \link{XStringViews} or
+    \link[BSgenome:BSgenome-class]{BSgenome}
     object) or just a character vector.
   }
   \item{desc}{
@@ -87,7 +88,8 @@ alternatives that return/accept an \link{XStringSet} object, see the
   \code{\link{write.XStringSet}},
   \code{\link{read.table}},
   \code{\link{scan}},
-  \code{\link{write.table}}
+  \code{\link{write.table}},
+  \code{\link[BSgenome:BSgenome-class]{BSgenome-class}}
 }
 
 \examples{
