@@ -1,4 +1,18 @@
-### Some low-level (not exported) helper functions
+###
+### We register the old-style (a.k.a. S3) classes below as formally defined
+### classes (a.k.a. S4) because we are using them in some method signatures.
+### Note that dispatch still works without this registration but causes
+### 'R CMD INSTALL' to (gently) complain.
+###
+
+setOldClass("AsIs")
+setOldClass("probetable")
+setOldClass("file")
+
+
+###
+### Some low-level (not exported) helper functions.
+###
 
 isNumericOrNAs <- function(x)
 {
