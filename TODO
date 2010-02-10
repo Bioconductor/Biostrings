@@ -55,6 +55,10 @@ C-LEVEL FACILITIES
 
 UTILITIES
 
+- Improve support for AAString/AAStringSet objects: (1) constructors need
+  to check the validity of the input letters, (2) alphabetFrequency() needs
+  to format its output in the same way it does on DNA input.
+
 - Replace current quick and dirty (and very inefficient) implementation of set
   operations on XStringSet objects ("union", "intersect", "setdiff" and
   "setequal") by something more efficient.
