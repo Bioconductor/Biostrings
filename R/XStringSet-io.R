@@ -3,6 +3,42 @@
 ### -------------------------------------------------------------------------
 
 
+.normargFilepath <- function(filepath)
+{
+    if (!is.character(filepath) || any(is.na(filepath)))
+        stop("'filepath' must be a character vector with no NAs")
+    ## First pass: expand local paths and download any remote file.
+    filepath2 <- character(length(filepath))
+    for (i in seq_len(length(filepath))) {
+        fp <- filepath[i]
+        con <- file(fp)
+        con_class <- class(con)[1L]
+        close(con)
+        if (con_class == "url") {
+            filepath2[i] <- tempfile()
+            download.file(fp, filepath2[i])
+        } else {
+            filepath2[i] <- path.expand(fp)
+        }
+    }
+    ## Second pass: check the type of the local files (all files are
+    ## now local).
+    filetype <- character(length(filepath2))
+    for (i in seq_len(length(filepath2))) {
+        fp <- filepath2[i]
+        con <- file(fp)
+        ## Ugly trick to get the type of 'con'. Is there a better way?
+        filetype[i] <- showConnections(TRUE)[as.character(con), "class"]
+        close(con)
+        if (filetype[i] != "file")
+            stop("file \"", filepath[i], "\" ",
+                 "has unsupported type: ", filetype[i])
+    }
+    names(filepath2) <- filetype
+    filepath2
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### FASTA
 ###
@@ -10,8 +46,7 @@
 ### TODO: Rename this fasta.geometry() and deprecate fasta.info()
 fasta.info <- function(filepath, use.descs=TRUE)
 {
-    if (!is.character(filepath))
-        stop("'filepath' must be a character vector")
+    filepath <- .normargFilepath(filepath)
     use.descs <- normargUseNames(use.descs)
     on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("fasta_info", filepath, use.descs, PACKAGE="Biostrings")
@@ -32,8 +67,7 @@ fasta.info <- function(filepath, use.descs=TRUE)
 
 fastq.geometry <- function(filepath)
 {
-    if (!is.character(filepath))
-        stop("'filepath' must be a character vector")
+    filepath <- .normargFilepath(filepath)
     on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("fastq_geometry", filepath, PACKAGE="Biostrings")
 }
@@ -54,8 +88,7 @@ fastq.geometry <- function(filepath)
 
 .read.XStringSet <- function(filepath, format, set.names, basetype)
 {
-    if (!is.character(filepath))
-        stop("'filepath' must be a character vector")
+    filepath <- .normargFilepath(filepath)
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
