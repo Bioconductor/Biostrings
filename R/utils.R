@@ -7,7 +7,7 @@
 
 setOldClass("AsIs")
 setOldClass("probetable")
-setOldClass("file")
+setOldClass(c("file", "connection"))
 
 
 ###
