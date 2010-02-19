@@ -2,8 +2,8 @@
 \docType{class}
 
 % utils:
-\alias{file}
-\alias{connection}
+\alias{connection-class}
+\alias{file-class}
 
 % SparseList class and methods:
 \alias{class:SparseList}
