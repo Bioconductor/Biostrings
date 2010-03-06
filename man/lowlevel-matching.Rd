@@ -169,7 +169,7 @@
   used: for each position specified in \code{at}, P is compared to
   all the substrings S' of S starting at this position and the smallest
   distance is returned. Note that this distance is guaranteed to be reached
-  for a substrings of length < 2*length(P) so, of course, in practice,
+  for a substring of length < 2*length(P) so, of course, in practice,
   P only needs to be compared to a small number of substrings for every
   starting position.
 }
