@@ -28,7 +28,7 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
     scoring.}
   \item{diag}{logical value indicating whether the diagonal of the matrix
     should be printed by \code{print.dist}.}
-  \item{upper}{logical value indicating whether the diagonal of the matrix
+  \item{upper}{logical value indicating whether the upper triangle of the matrix
     should be printed by \code{print.dist}.}
   \item{type}{(applicable when \code{method = "quality"} or
     \code{method = "substitutionMatrix"}).
