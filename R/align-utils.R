@@ -280,31 +280,27 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubjectSummary",
 ###
 
 setMethod("coverage", "AlignedXStringSet0",
-    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+    function(x, shift=0L, width=NULL, weight=1L)
     {
-        if (coverage.isCalledWithStartEndInterface(start, end, shift, width)) {
-            ## From here, 'start' and 'end' cannot be single NAs
-            shift <- coverage.getShift0FromStartEnd(start)
-        }
         shift <- normargShift(shift, length(x@range))
         if (is.null(width))
             width <- max(nchar(unaligned(x))) + max(shift)
-        coverage(x@range, start=start, end=end, shift=shift, width=width, weight=weight)
+        coverage(x@range, shift=shift, width=width, weight=weight)
     }
 )
 
 setMethod("coverage", "PairwiseAlignedFixedSubject",
-    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
-        coverage(subject(x), start=start, end=end, shift=shift, width=width, weight=weight)
+    function(x, shift=0L, width=NULL, weight=1L)
+        coverage(subject(x), shift=shift, width=width, weight=weight)
 )
 
 setMethod("coverage", "PairwiseAlignedFixedSubjectSummary",
-    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L) {
+    function(x, shift=0L, width=NULL, weight=1L) {
         if (shift != 0L)
             stop("'shift' argument is not supported for 'PairwiseAlignedFixedSubjectSummary' objects")
         if (weight != 1L)
             stop("'weight' argument is not supported for 'PairwiseAlignedFixedSubjectSummary' objects")
-        window(x@coverage, start=start, end=end, width=width)
+        window(x@coverage, width=width)
     }
 )
 

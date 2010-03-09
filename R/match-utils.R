@@ -173,12 +173,12 @@ setMethod("nmismatch", c(pattern="ANY", x="XStringViews"),
 ###
 
 setMethod("coverage", "MaskedXString",
-    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
-        coverage(masks(x), start=start, end=end, shift=shift, width=width, weight=weight)
+    function(x, shift=0L, width=NULL, weight=1L)
+        coverage(masks(x), shift=shift, width=width, weight=weight)
 )
 
 setMethod("coverage", "MIndex",
-    function(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
-        coverage(unlist(x), start=start, end=end, shift=shift, width=width, weight=weight)
+    function(x, shift=0L, width=NULL, weight=1L)
+        coverage(unlist(x), shift=shift, width=width, weight=weight)
 )
 

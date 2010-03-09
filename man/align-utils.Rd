@@ -46,8 +46,8 @@
 
   mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
   mismatchSummary(x, \dots)
-  \S4method{coverage}{AlignedXStringSet0}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
-  \S4method{coverage}{PairwiseAlignedFixedSubject}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+  \S4method{coverage}{AlignedXStringSet0}(x, shift=0L, width=NULL, weight=1L)
+  \S4method{coverage}{PairwiseAlignedFixedSubject}(x, shift=0L, width=NULL, weight=1L)
   compareStrings(pattern, subject)
 
   \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x,
@@ -83,7 +83,7 @@
   \item{\dots}{
     Further arguments to be passed to or from other methods.
   }
-  \item{start, end, shift, width}{
+  \item{shift, width}{
     See \code{?\link[IRanges]{coverage}}.
   }
   \item{weight}{

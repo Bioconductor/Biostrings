@@ -26,8 +26,8 @@
   mismatch(pattern, x, fixed=TRUE)
   nmatch(pattern, x, fixed=TRUE)
   nmismatch(pattern, x, fixed=TRUE)
-  \S4method{coverage}{MIndex}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
-  \S4method{coverage}{MaskedXString}(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)
+  \S4method{coverage}{MIndex}(x, shift=0L, width=NULL, weight=1L)
+  \S4method{coverage}{MaskedXString}(x, shift=0L, width=NULL, weight=1L)
 }
 
 \arguments{
@@ -44,7 +44,7 @@
   \item{fixed}{
     See \code{?`\link{lowlevel-matching}`}.
   }
-  \item{start, end, shift, width}{
+  \item{shift, width}{
     See \code{?\link[IRanges]{coverage}}.
   }
   \item{weight}{
@@ -70,8 +70,8 @@
   produced by \code{mismatch}.
 
   \code{coverage}:  an \link[IRanges:Rle-class]{Rle} object indicating
-  the coverage of 
-  \code{x}. See \code{?\link[IRanges]{coverage}} for the details.
+  the coverage of \code{x}.
+  See \code{?\link[IRanges]{coverage}} for the details.
   If \code{x} is an \link{MIndex} object, the coverage of a given position
   in the underlying sequence (typically the subject used during the search
   that returned \code{x}) is the number of matches (or hits) it belongs to.

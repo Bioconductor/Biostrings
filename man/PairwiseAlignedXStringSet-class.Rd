@@ -228,7 +228,7 @@
       See `\link{consensusString}` for more information.
     }
     \item{}{
-      \code{coverage(x, start=NA, end=NA, shift=0L, width=NULL, weight=1L)}
+      \code{coverage(x, shift=0L, width=NULL, weight=1L)}
       See `\link{coverage,PairwiseAlignedFixedSubject-method}` for more
       information.
     }
