@@ -430,9 +430,11 @@ static void check_mismatch_lengths(int at_length,
 static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		SEXP at, int at_type0,
 		SEXP max_mismatch, SEXP min_mismatch, int with_indels0,
-		int fixedP, int fixedS, int ans_type0, int *ans_elt)
+		int fixedP, int fixedS, int ans_type0, int *ans_elt,
+		int auto_reduce_pattern0)
 {
 	int at_length, i, k1, k2, *at_elt, max_nmis, min_nmis, nmis, is_matching;
+	cachedCharSeq my_p = *P;
 
 	at_length = LENGTH(at);
 	if (ans_type0 >= 2)
@@ -454,9 +456,14 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		}
 		max_nmis = INTEGER(max_mismatch)[k1];
 		if (max_nmis == NA_INTEGER)
-			max_nmis = P->length;
-		nmis = nedit_at(P, S, *at_elt, at_type0,
+			max_nmis = my_p.length;
+		nmis = nedit_at(&my_p, S, *at_elt, at_type0,
 				max_nmis, with_indels0, fixedP, fixedS);
+		if (auto_reduce_pattern0 && i < at_length) {
+			if (at_type0 == 0)
+				my_p.seq++;
+			my_p.length--;
+		}
 		if (ans_type0 == 0) {
 			*(ans_elt++) = nmis;
 			continue;
@@ -510,13 +517,22 @@ static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
  *          a match occurred (or NA if no match occurred);
  *       3: ans is the first *value* in 'at' for which a match occurred
  *          (or NA if no match occurred).
+ *   auto_reduce_pattern: a logical scalar passed to match_pattern_at
+ *	     instructing it whether to reduce the pattern by 1 letter
+ *	     for each successive (at, max_mismatch) "pair", from its
+ *	     beginning with at_type 0 and from its end with at_type 1.
+ *	     Currently, the at vector is always constant of length
+ *	     nchar(pattern), and furthermore equal to 1 with at_type 0,
+ *	     i.e. "starting.at=1", and equal to the subject length with
+ *	     at_type 1, i.e. "ending.at=nchar(subject)".
  */
 SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
-		SEXP ans_type)
+		SEXP ans_type, SEXP auto_reduce_pattern)
 {
 	cachedCharSeq P, S;
 	int at_length, at_type0, with_indels0, fixedP, fixedS, ans_type0, *ans_elt;
+	int auto_reduce_pattern0 = LOGICAL(auto_reduce_pattern)[0];
 	SEXP ans;
 
 	P = cache_XRaw(pattern);
@@ -546,7 +562,8 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 	}
 	match_pattern_at(&P, &S, at, at_type0,
 			 max_mismatch, min_mismatch, with_indels0,
-			 fixedP, fixedS, ans_type0, ans_elt);
+			 fixedP, fixedS, ans_type0, ans_elt,
+			 auto_reduce_pattern0);
 	UNPROTECT(1);
 	return ans;
 }
@@ -559,12 +576,13 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
  */
 SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
-		SEXP ans_type)
+		SEXP ans_type, SEXP auto_reduce_pattern)
 {
 	cachedCharSeq P, S_elt;
 	cachedXStringSet S;
 	int S_length, at_length, at_type0, with_indels0, fixedP, fixedS,
 	    ans_type0, *ans_elt, ans_nrow, i;
+	int auto_reduce_pattern0 = LOGICAL(auto_reduce_pattern)[0];
 	SEXP ans;
 
 	P = cache_XRaw(pattern);
@@ -600,7 +618,8 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 		S_elt = _get_cachedXStringSet_elt(&S, i);
 		match_pattern_at(&P, &S_elt, at, at_type0,
 				 max_mismatch, min_mismatch, with_indels0,
-				 fixedP, fixedS, ans_type0, ans_elt);
+				 fixedP, fixedS, ans_type0, ans_elt,
+				 auto_reduce_pattern0);
 	}
 	UNPROTECT(1);
 	return ans;

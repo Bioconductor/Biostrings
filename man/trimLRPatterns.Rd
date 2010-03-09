@@ -34,46 +34,41 @@
   \item{max.Lmismatch}{
     Either an integer vector of length \code{nLp = nchar(Lpattern)} whose
     elements \code{max.Lmismatch[i]} represent the maximum number of
-    acceptable mismatching letters when aligning
-    \code{substring(Lpattern, nLp - i + 1, nLp)} with
-    \code{substring(subject, 1, i)} or a single numeric value in
-    \code{(0, 1)} that represents a constant maximum mismatch rate for each
+    acceptable mismatching letters (or edit distance if \code{with.Lindels}
+    is \code{TRUE}) when aligning \code{substring(Lpattern, nLp - i + 1, nLp)}
+    with \code{substring(subject, 1, i)} or a single numeric value in
+    \code{[0, 1)} that represents a constant maximum mismatch rate for each
     of the \code{nL} alignments. Negative numbers in integer vector inputs
-    are used to prevent trimming at the i-th location. If an integer vector
-    input has \code{length(max.Lmismatch) < nLp}, then \code{max.Lmismatch}
-    will be augmented with enough -1's at the beginning of the vector to
-    bring it up to length \code{nLp}.
+    are used to prevent trimming at the \code{i}-th location. If an integer
+    vector input has \code{length(max.Lmismatch) < nLp}, then
+    \code{max.Lmismatch} will be augmented with enough \code{-1}'s at the
+    beginning of the vector to bring it up to length \code{nLp}.
 
-    If non-zero, an inexact matching algorithm is used (see the
-    \code{\link{matchPattern}} function for more information).
+    For a given element \code{s} of the \code{subject}, the initial segment
+    (prefix) \code{substring(s, 1, j)} of \code{s} is trimmed if \code{j} is
+    the largest \code{i} for which there is an acceptable match, if any.
   }
   \item{max.Rmismatch}{
-    Either an integer vector of length \code{nRp = nchar(Rpattern)} whose
-    elements \code{max.Rmismatch[i]} represent the maximum number of
-    acceptable mismatching letters when aligning
-    \code{substring(Rpattern, 1, i)} with
-    \code{substring(subject, nS - i + 1, nS)}, where
-    \code{nS = nchar(subject)}, or a single numeric value in
-    \code{(0, 1)} that represents a constant maximum mismatch rate for each
-    of the \code{nR} alignments. Negative numbers in integer vector inputs
-    are used to prevent trimming at the i-th location. If an integer vector
-    input has \code{length(max.Rmismatch) < nRp}, then \code{max.Rmismatch}
-    will be augmented with enough -1's at the beginning of the vector to
-    bring it up to length \code{nRp}.
+    Same as \code{max.Lmismatch} but with \code{Rpattern}, along with
+    \code{with.Rindels} (below), and its initial segments (prefixes)
+    \code{substring(Rpattern, 1, i)}.
 
-    If non-zero, an inexact matching algorithm is used (see the
-    \code{\link{matchPattern}} function for more information).
+    For a given element \code{s} of the subject, with \code{nS = nchar(s)},
+    the terminal segment (suffix) \code{substring(s, nS - j + 1, nS)} of
+    \code{s} is trimmed if \code{j} is the largest \code{i} for which there
+    is an acceptable match, if any.
   }
   \item{with.Lindels}{
-    If \code{TRUE} then indels are allowed in the left pattern.
-    In that case \code{max.Lmismatch} is interpreted as the maximum "edit
-    distance" allowed in the left pattern.
-
-    See the \code{with.indels} argument of the \code{\link{matchPattern}}
-    function for more information.
+    If \code{TRUE}, indels are allowed in the alignments of the suffixes
+    of \code{Lpattern} with the subject, at its beginning.
+    See the \code{with.indels} arguments of the \code{\link{matchPattern}}
+    and \code{\link{neditStartingAt}} functions for detailed information.
   }
   \item{with.Rindels}{
-    Same as \code{with.Lindels} but for the right pattern.
+    Same as \code{with.Lindels} but for alignments of the prefixes of
+    \code{Rpattern} with the subject, at its end.
+    See the \code{with.indels} arguments of the \code{\link{matchPattern}}
+    and \code{\link{neditEndingAt}} functions for detailed information.
   }
   \item{Lfixed, Rfixed}{
     Whether IUPAC extended letters in the left or right pattern should
@@ -88,10 +83,10 @@
 
 \value{
   A new \link{XString} object, \link{XStringSet} object, or character vector
-  with the flanking patterns within the specified edit distances removed.
+  with the "longest" flanking matches removed, as described above.
 }
 
-\author{P. Aboyoun}
+\author{P. Aboyoun and H. Jaffee}
 
 \seealso{
   \code{\link{matchPattern}},
@@ -114,7 +109,7 @@
 
   ## Allow for perfect matches on the flanking overlaps
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
-                 max.Lmismatch = rep(0, 9), max.Rmismatch = rep(0, 9))
+                 max.Lmismatch = 0, max.Rmismatch = 0)
 
   ## Allow for mismatches on the flanks
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
@@ -126,8 +121,7 @@
 
   ## Produce ranges that can be an input into other functions
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subjectSet,
-                 max.Lmismatch = rep(0, 9), max.Rmismatch = rep(0, 9),
-                 ranges = TRUE)
+                 max.Lmismatch = 0, max.Rmismatch = 0, ranges = TRUE)
   trimLRPatterns(Lpattern = Lpattern, Rpattern = Rpattern, subject = subject,
                  max.Lmismatch = 0.2, max.Rmismatch = 0.2, ranges = TRUE)
 }

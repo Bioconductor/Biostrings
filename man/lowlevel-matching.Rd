@@ -79,13 +79,13 @@
   ## which.isMatchingAt() and related utils:
   which.isMatchingAt(pattern, subject, at=1,
           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-          follow.index=FALSE)
+          follow.index=FALSE, auto.reduce.pattern=FALSE)
   which.isMatchingStartingAt(pattern, subject, starting.at=1,
           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-          follow.index=FALSE)
+          follow.index=FALSE, auto.reduce.pattern=FALSE)
   which.isMatchingEndingAt(pattern, subject, ending.at=1,
           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-          follow.index=FALSE)
+          follow.index=FALSE, auto.reduce.pattern=FALSE)
 }
 
 \arguments{
@@ -100,12 +100,15 @@
     An integer vector specifying the starting (for \code{starting.at}
     and \code{at}) or ending (for \code{ending.at}) positions of the
     pattern relatively to the subject.
+    With \code{auto.reduce.pattern} (below), either a single integer or
+    a constant vector of length \code{nchar(pattern)} (below), to which
+    the former is immediately converted.
 
     For the \code{hasLetterAt} function, \code{letter} and \code{at}
     must have the same length.
   }
   \item{pattern}{
-    The pattern string.
+    The pattern string (but see \code{auto.reduce.pattern}, below).
   }
   \item{subject}{
     A character vector, or an \link{XString} or \link{XStringSet} object
@@ -142,6 +145,12 @@
     Whether the single integer returned by \code{which.isMatchingAt}
     (and related utils) should be the first *value* in \code{at} for
     which a match occurred, or its *index* in \code{at} (the default).
+  }
+  \item{auto.reduce.pattern}{
+    Whether \code{pattern} should be effectively shortened by 1 letter,
+    from its beginning for \code{which.isMatchingStartingAt} and from
+    its end for \code{which.isMatchingEndingAt}, for each successive
+    \code{(at, max.mismatch)} "pair".
   }
 }
 
@@ -215,7 +224,7 @@
   the \code{at} argument is now called \code{ending.at} and must contain
   the ending positions of the pattern relatively to the subject.
 
-  \code{which.isMatchingAt}: The default behaviour (\code{follow.index=FALSE})
+  \code{which.isMatchingAt}: The default behavior (\code{follow.index=FALSE})
   is as follow. If \code{subject} is an \link{XString} object,
   then return the single integer defined by:
   \preformatted{

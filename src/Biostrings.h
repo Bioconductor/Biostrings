@@ -577,7 +577,8 @@ SEXP XString_match_pattern_at(
 	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
-	SEXP ans_type
+	SEXP ans_type,
+	SEXP auto_reduce_pattern
 );
 
 SEXP XStringSet_vmatch_pattern_at(
@@ -589,7 +590,8 @@ SEXP XStringSet_vmatch_pattern_at(
 	SEXP min_mismatch,
 	SEXP with_indels,
 	SEXP fixed,
-	SEXP ans_type
+	SEXP ans_type,
+	SEXP auto_reduce_pattern
 );
 
 

@@ -125,7 +125,7 @@ normargCollapse <- function(collapse)
 
 .matchPatternAt <- function(pattern, subject, at, at.type,
                             max.mismatch, min.mismatch, with.indels, fixed,
-                            ans.type)
+                            ans.type, auto.reduce.pattern=FALSE)
 {
     subject <- normargSubject(subject)
     pattern <- normargPattern(pattern, subject)
@@ -135,6 +135,16 @@ normargCollapse <- function(collapse)
     }
     if (!is.integer(at))
         at <- as.integer(at)
+
+    if (auto.reduce.pattern) {
+        at.length <- length(at)
+        P <- nchar(pattern)
+        if (at.length == 1)
+            at <- rep.int(at, P)
+        else if (at.length != P || length(unique(at)) > 1)
+            stop("With 'auto.reduce.pattern', 'at' must be a single integer")
+    }
+
     if (ans.type == 0L) {
         max.mismatch <- length(pattern)
     } else {
@@ -153,12 +163,12 @@ normargCollapse <- function(collapse)
         .Call("XString_match_pattern_at",
               pattern, subject, at, at.type,
               max.mismatch, min.mismatch, with.indels, fixed, ans.type,
-              PACKAGE="Biostrings")
+              auto.reduce.pattern, PACKAGE="Biostrings")
     else
         .Call("XStringSet_vmatch_pattern_at",
               pattern, subject, at, at.type,
               max.mismatch, min.mismatch, with.indels, fixed, ans.type,
-              PACKAGE="Biostrings")
+              auto.reduce.pattern, PACKAGE="Biostrings")
 }
 
 
@@ -316,28 +326,29 @@ setMethod("isMatchingEndingAt", "XStringSet",
 setGeneric("which.isMatchingStartingAt", signature="subject",
     function(pattern, subject, starting.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         standardGeneric("which.isMatchingStartingAt")
 )
 
 setGeneric("which.isMatchingEndingAt", signature="subject",
     function(pattern, subject, ending.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         standardGeneric("which.isMatchingEndingAt")
 )
 
 which.isMatchingAt <- function(pattern, subject, at=1,
                                max.mismatch=0, min.mismatch=0,
                                with.indels=FALSE, fixed=TRUE,
-                               follow.index=FALSE)
+                               follow.index=FALSE, auto.reduce.pattern=FALSE)
 {
     if (!is.numeric(at))
         stop("'at' must be a vector of integers")
     which.isMatchingStartingAt(pattern, subject, starting.at=at,
                                max.mismatch=max.mismatch, min.mismatch=min.mismatch,
                                with.indels=with.indels, fixed=fixed,
-                               follow.index=follow.index)
+                               follow.index=follow.index,
+                               auto.reduce.pattern=auto.reduce.pattern)
 }
 
 .to.ans.type <- function(follow.index)
@@ -354,55 +365,55 @@ which.isMatchingAt <- function(pattern, subject, at=1,
 setMethod("which.isMatchingStartingAt", "character",
     function(pattern, subject, starting.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         .matchPatternAt(pattern, subject, starting.at, 0L,
                         max.mismatch, min.mismatch, with.indels, fixed,
-                        .to.ans.type(follow.index))
+                        .to.ans.type(follow.index), auto.reduce.pattern)
 )
 
 setMethod("which.isMatchingStartingAt", "XString",
     function(pattern, subject, starting.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         .matchPatternAt(pattern, subject, starting.at, 0L,
                         max.mismatch, min.mismatch, with.indels, fixed,
-                        .to.ans.type(follow.index))
+                        .to.ans.type(follow.index), auto.reduce.pattern)
 )
 
 setMethod("which.isMatchingStartingAt", "XStringSet",
     function(pattern, subject, starting.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         .matchPatternAt(pattern, subject, starting.at, 0L,
                         max.mismatch, min.mismatch, with.indels, fixed,
-                        .to.ans.type(follow.index))
+                        .to.ans.type(follow.index), auto.reduce.pattern)
 )
 
 setMethod("which.isMatchingEndingAt", "character",
     function(pattern, subject, ending.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         .matchPatternAt(pattern, subject, ending.at, 1L,
                         max.mismatch, min.mismatch, with.indels, fixed,
-                        .to.ans.type(follow.index))
+                        .to.ans.type(follow.index), auto.reduce.pattern)
 )
 
 setMethod("which.isMatchingEndingAt", "XString",
     function(pattern, subject, ending.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         .matchPatternAt(pattern, subject, ending.at, 1L,
                         max.mismatch, min.mismatch, with.indels, fixed,
-                        .to.ans.type(follow.index))
+                        .to.ans.type(follow.index), auto.reduce.pattern)
 )
 
 setMethod("which.isMatchingEndingAt", "XStringSet",
     function(pattern, subject, ending.at=1,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-             follow.index=FALSE)
+             follow.index=FALSE, auto.reduce.pattern=FALSE)
         .matchPatternAt(pattern, subject, ending.at, 1L,
                         max.mismatch, min.mismatch, with.indels, fixed,
-                        .to.ans.type(follow.index))
+                        .to.ans.type(follow.index), auto.reduce.pattern)
 )
 
 
@@ -438,8 +449,7 @@ hasLetterAt <- function(x, letter, at, fixed=TRUE)
     .hasLetterAt1 <- function(x, l1, at1)
     {
         ans <- .Call("XStringSet_vmatch_pattern_at",
-                     l1, x, at1, 0L,
-                     0L, 0L, FALSE, fixed, 1L,
+                     l1, x, at1, 0L, 0L, 0L, FALSE, fixed, 1L, FALSE,
                      PACKAGE="Biostrings")
         ans[at1 < 1 | at1 > width(x)] <- NA
         ans
