@@ -32,17 +32,37 @@
     containing the target sequence(s).
   }
   \item{max.Lmismatch}{
-    Either an integer vector of length \code{nLp = nchar(Lpattern)} whose
-    elements \code{max.Lmismatch[i]} represent the maximum number of
-    acceptable mismatching letters (or edit distance if \code{with.Lindels}
-    is \code{TRUE}) when aligning \code{substring(Lpattern, nLp - i + 1, nLp)}
-    with \code{substring(subject, 1, i)} or a single numeric value in
-    \code{[0, 1)} that represents a constant maximum mismatch rate for each
-    of the \code{nL} alignments. Negative numbers in integer vector inputs
-    are used to prevent trimming at the \code{i}-th location. If an integer
-    vector input has \code{length(max.Lmismatch) < nLp}, then
-    \code{max.Lmismatch} will be augmented with enough \code{-1}'s at the
-    beginning of the vector to bring it up to length \code{nLp}.
+    Either an integer vector of length \code{nLp = nchar(Lpattern)}
+    representing an absolute number of mismatches (or edit distance if
+    \code{with.Lindels} is \code{TRUE}) or a single numeric value in the
+    interval \code{[0, 1)} representing a mismatch rate when aligning
+    terminal substrings (suffixes) of \code{Lpattern} with the beginning
+    (prefix) of \code{subject} following the conventions set by 
+    \code{\link{neditStartingAt}}, \code{\link{isMatchingStartingAt}},
+    etc.
+
+    When \code{max.Lmismatch} is \code{0L} or a numeric value in the
+    interval \code{[0, 1)}, it is taken as a "rate" and is converted to
+    \code{as.integer(1:nLp * max.Lmismatch)}, analogous to \link{agrep}
+    (which, however, employs \code{\link{ceiling}}).
+
+    Otherwise, \code{max.Lmismatch} is treated as an integer vector where
+    negative numbers are used to prevent trimming at the \code{i}-th
+    location. When an input integer vector is shorter than \code{nLp}, it
+    is augmented with enough \code{-1}s at the beginning to bring its length
+    up to \code{nLp}. Elements of \code{max.Lmismatch} beyond the first
+    \code{nLp} are ignored.
+
+    Once the integer vector is constructed using the rules given above, when
+    \code{with.Lindels} is \code{FALSE}, \code{max.Lmismatch[i]} is the number
+    of acceptable mismatches (errors) between the suffix
+    \code{substring(Lpattern, nLp - i + 1, nLp)} of \code{Lpattern} and the
+    first \code{i} letters of \code{subject}.
+    When \code{with.Lindels} is \code{TRUE}, \code{max.Lmismatch[i]}
+    represents the allowed "edit distance" between that suffix of
+    \code{Lpattern} and \code{subject}, starting at position \code{1} of
+    \code{subject} (as in \code{\link{matchPattern}} and
+    \code{\link{isMatchingStartingAt}}).
 
     For a given element \code{s} of the \code{subject}, the initial segment
     (prefix) \code{substring(s, 1, j)} of \code{s} is trimmed if \code{j} is
