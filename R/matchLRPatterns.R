@@ -78,9 +78,11 @@ setMethod("matchLRPatterns", "XStringViews",
                                       with.indels = with.Rindels,
                                       fixed = Rfixed)
             Rcounts <- countIndex(Rmatches)
-            ans_start <- rep.int(start(Lmatches), Rcounts)
-            ans_width <- rep.int(width(Lmatches), Rcounts) +
-              unlist(endIndex(Rmatches), use.names=FALSE)
+            Roffset <- unlist(endIndex(Rmatches), use.names=FALSE)
+            if (length(Roffset) != 0L) {
+                ans_start <- rep.int(start(Lmatches), Rcounts)
+                ans_width <- rep.int(width(Lmatches), Rcounts) + Roffset
+            }
         }
         unsafe.newXStringViews(subject(subject), ans_start, ans_width)
     }
