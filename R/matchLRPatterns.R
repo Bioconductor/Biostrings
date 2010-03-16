@@ -55,16 +55,32 @@ setMethod("matchLRPatterns", "XStringViews",
              Lfixed=TRUE, Rfixed=TRUE)
     {
         ans_start <- ans_width <- integer(0)
-        for (i in seq_len(length(subject))) {
-            pm <- matchLRPatterns(Lpattern, Rpattern, max.gaplength, subject[[i]],
-                                  max.Lmismatch=max.Lmismatch,
-                                  max.Rmismatch=max.Rmismatch,
-                                  with.Lindels=with.Lindels,
-                                  with.Rindels=with.Rindels,
-                                  Lfixed=Lfixed, Rfixed=Rfixed)
-            offset <- start(subject)[i] - 1L
-            ans_start <- c(ans_start, offset + start(pm))
-            ans_width <- c(ans_width, width(pm))
+        subject <- trim(subject)
+        Lcounts <- vcountPattern(Lpattern, subject,
+                                 max.mismatch = max.Lmismatch,
+                                 with.indels = with.Lindels,
+                                 fixed = Lfixed)
+        candidates <- which(Lcounts > 0L)
+        if (length(candidates) != 0L) {
+            subject <- subject[candidates]
+            Lcounts <- Lcounts[candidates]
+            Lmatches <- matchPattern(Lpattern, subject,
+                                     max.mismatch = max.Lmismatch,
+                                     with.indels = with.Lindels,
+                                     fixed = Lfixed)
+            Rranges <- IRanges(start = end(Lmatches) + 1L,
+                               width = max.gaplength + nchar(Rpattern))
+            Rranges <- pintersect(Rranges,
+                                  rep(as(subject, "IRanges"), Lcounts))
+            Rsubject <- as(Views(subject(subject), Rranges), "XStringSet")
+            Rmatches <- vmatchPattern(Rpattern, Rsubject,
+                                      max.mismatch = max.Rmismatch,
+                                      with.indels = with.Rindels,
+                                      fixed = Rfixed)
+            Rcounts <- countIndex(Rmatches)
+            ans_start <- rep.int(start(Lmatches), Rcounts)
+            ans_width <- rep.int(width(Lmatches), Rcounts) +
+              unlist(endIndex(Rmatches), use.names=FALSE)
         }
         unsafe.newXStringViews(subject(subject), ans_start, ans_width)
     }
