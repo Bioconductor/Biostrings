@@ -18,7 +18,7 @@ function(Lpattern = "", Rpattern = "", subject,
 {
     if (nchar(Rpattern) == 0) {
         trim.end <- nchar(subject)
-    } else if (length(unique(nchar(subject))) != 1 || with.Rindels) {
+    } else if (length(unique(nchar(subject))) != 1) {
         Rpattern <- normargPattern(Rpattern, subject, argname = "Rpattern")
         reversed.ranges <- 
           .XString.XStringSet.trimLRPatterns(Lpattern = reverse(Rpattern),
