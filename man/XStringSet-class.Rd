@@ -119,7 +119,7 @@
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
     length as \code{x} specifying how \code{x} should be "narrowed"
-    (see \code{?\link[IRanges:IRanges-utils]{narrow}} for the details).
+    (see \code{?\link[IRanges:Ranges-utils]{narrow}} for the details).
   }
   \item{use.names}{
     \code{TRUE} or \code{FALSE}. Should names be preserved?
@@ -239,7 +239,7 @@
       objects extend the capability of \code{narrow} by returning the 3
       set of subsequences (the left, middle and right subsequences)
       associated to the narrowing operation.
-      See \code{?\link[IRanges:IRanges-utils]{threebands}} in the
+      See \code{?\link[IRanges:Ranges-utils]{threebands}} in the
       IRanges package for the details.
     }
     \item{}{
@@ -411,7 +411,7 @@
   \link{XStringSetList-class},
   \code{\link{substr}},
   \code{\link[IRanges:XVector-class]{subseq}},
-  \code{\link[IRanges:IRanges-utils]{narrow}}
+  \code{\link[IRanges:Ranges-utils]{narrow}}
 }
 
 \examples{

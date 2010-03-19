@@ -213,7 +213,7 @@
   \link{XString-class},
   \link[IRanges]{MaskCollection-class},
   \link{XStringViews-class},
-  \link[IRanges]{IRanges-utils}
+  \link[IRanges]{Ranges-utils}
 }
 
 \examples{
