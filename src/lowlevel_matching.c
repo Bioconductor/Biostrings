@@ -625,3 +625,51 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 	return ans;
 }
 
+
+/*
+ * XStringSet_dist_hamming() used by stringDist, method = "hamming".
+ */
+SEXP XStringSet_dist_hamming(SEXP x)
+{
+	cachedCharSeq x_i, x_j;
+	cachedXStringSet x_set;
+	int x_length, *ans_elt, i, j;
+	SEXP ans, at, max_mismatch, min_mismatch;
+
+	x_set = _cache_XStringSet(x);
+	x_length = _get_cachedXStringSet_length(&x_set);
+	if (x_length < 2) {
+		PROTECT(ans = NEW_INTEGER(0));
+	} else {
+		x_i = _get_cachedXStringSet_elt(&x_set, 0);
+		for (j = 2; j < x_length; j++) {
+			x_j = _get_cachedXStringSet_elt(&x_set, j);
+			if (x_i.length != x_j.length) {
+			      error("Hamming distance requires equal length strings");
+			}
+		}
+
+		PROTECT(ans = NEW_INTEGER((x_length * (x_length - 1)) / 2));
+		ans_elt = INTEGER(ans);
+
+		PROTECT(at = NEW_INTEGER(1));
+		PROTECT(max_mismatch = NEW_INTEGER(1));
+		PROTECT(min_mismatch = NEW_INTEGER(1));
+		INTEGER(at)[0] = 1;
+		INTEGER(max_mismatch)[0] = NA_INTEGER;
+		INTEGER(min_mismatch)[0] = NA_INTEGER;
+
+		for (i = 0; i < (x_length - 1); i++) {
+			x_i = _get_cachedXStringSet_elt(&x_set, i);
+			for (j = (i+1); j < x_length; j++, ans_elt++) {
+				x_j = _get_cachedXStringSet_elt(&x_set, j);
+				match_pattern_at(&x_i, &x_j, at, 0,
+						 max_mismatch, min_mismatch,
+						 0, 1, 1, 0, ans_elt, 0);
+			}
+		}
+		UNPROTECT(3);
+	}
+	UNPROTECT(1);
+	return ans;
+}

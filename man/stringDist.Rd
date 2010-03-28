@@ -23,7 +23,7 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
 \arguments{
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}
   \item{method}{calculation method. One of \code{"levenshtein"},
-    \code{"quality"}, or \code{"substitutionMatrix"}.}
+    \code{"hamming"}, \code{"quality"}, or \code{"substitutionMatrix"}.}
   \item{ignoreCase}{logical value indicating whether to ignore case during
     scoring.}
   \item{diag}{logical value indicating whether the diagonal of the matrix
@@ -59,7 +59,10 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
     methods.}
 }
 \details{
-Uses the underlying pairwiseAlignment code to compute the distance/alignment
+When \code{method = "hamming"}, uses the underlying \code{neditStartingAt} code
+to calculate the distances, where the Hamming distance is defined as the number
+of substitutions between two strings of equal length. Otherwise, uses the
+underlying \code{pairwiseAlignment} code to compute the distance/alignment
 score matrix.
 }
 \value{

@@ -594,6 +594,8 @@ SEXP XStringSet_vmatch_pattern_at(
 	SEXP auto_reduce_pattern
 );
 
+SEXP XStringSet_dist_hamming(SEXP x);
+
 
 /* match_pattern_boyermoore.c */
 
