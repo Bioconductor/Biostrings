@@ -738,7 +738,7 @@ setMethod("consensusString", "matrix",
             x <- P %*% x
             consensusLetter <- function(col)
             {
-                i <- paste(all_letters[col >= threshold], collapse = "")
+                i <- paste(alphabet[col >= threshold], collapse = "")
                 ans <- names(ambiguityMap[ambiguityMap == i])
                 if (length(ans) == 0)
                     stop("'ambiguityMap' is missing some combinations of row names")

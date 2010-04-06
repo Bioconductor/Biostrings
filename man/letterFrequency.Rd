@@ -346,6 +346,8 @@ sequence, or the consensus matrix of a set of sequences}
   consensusString(sort(probes)[1:5], ambiguityMap = "N", threshold = 0.5)
 
   ## Consensus involving ambiguity letters in the input strings
+  consensusString(DNAStringSet(c("NNNN","ACTG")))
+  consensusString(DNAStringSet(c("AANN","ACTG")))
   consensusString(DNAStringSet(c("ACAG","ACAR"))) 
   consensusString(DNAStringSet(c("ACAG","ACAR", "ACAG"))) 
 
