@@ -89,14 +89,15 @@ In the arguments listed above \code{fuzzyMatch} represents \eqn{\gamma_{x,y}}
 and \code{patternQuality} and \code{subjectQuality} represents \eqn{\epsilon_1}
 and \eqn{\epsilon_2} respectively.
 
-If \code{scoreOnly == FALSE}, the pairwise alignment with the maximum alignment
-score is returned. If more than one pairwise alignment has the maximum alignment
-score exists, the first alignment along the subject is returned. If there are
-multiple pairwise alignments with the maximum alignment score at the chosen
-subject location, then at each location along the alignment mismatches are given
-preference to insertions/deletions. For example, \code{pattern: [1] ATTA;
-subject: [1] AT-A} is chosen above \code{pattern: [1] ATTA; subject: [1] A-TA}
-if they both have the maximum alignment score.
+If \code{scoreOnly == FALSE}, a pairwise alignment with the maximum alignment
+score is returned. If more than one pairwise alignment produces the maximum
+alignment score, then the alignment with the smallest initial deletion whose
+mismatches occur before its insertions and deletions is chosen. For example,
+if \code{pattern = "AGTA"} and \code{subject = "AACTAACTA"}, then the alignment
+\code{pattern: [1] AG-TA; subject: [1] AACTA} is chosen over
+\code{pattern: [1] A-GTA; subject: [1] AACTA} or
+\code{pattern: [1] AG-TA; subject: [5] AACTA} if they all achieve the maximum
+alignment score.
 }
 \value{
 If \code{scoreOnly == FALSE}, an instance of class
