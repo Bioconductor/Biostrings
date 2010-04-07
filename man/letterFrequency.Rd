@@ -155,7 +155,8 @@ sequence, or the consensus matrix of a set of sequences}
     ambiguity (e.g. \code{link{IUPAC_CODE_MAP}}).
     When \code{ambiguityMap} is a named character vector, occurrences of
     ambiguous letters in \code{x} are replaced with their base alphabet
-    letters that have been equally weighted to sum to 1.
+    letters that have been equally weighted to sum to 1. (See Details for
+    some examples.)
   }
   \item{threshold}{
     The minimum probability threshold for an agreement to be declared.
@@ -220,6 +221,17 @@ sequence, or the consensus matrix of a set of sequences}
   To include the masked regions (as well as the intervals of length
   \code{view.width-1} which immediately precede them), use \code{unmasked(x)}
   or \code{DNAString(x)} as the subject.
+
+  When \code{consensusString} is executed with a named character
+  \code{ambiguityMap} argument, it weights each input string equally and
+  assigns an equal probability to each of the base letters represented by
+  an ambiguity letter. So for DNA and a \code{threshold} of 0.25,
+  a "G" and an "R" would result in an "R" since
+  1/2 "G" + 1/2 "R" = 3/4 "G" + 1/4 "A" => "R";
+  two "G"'s and one "R" would result in a "G" since
+  2/3 "G" + 1/3 "R" = 5/6 "G" + 1/6 "A" => "G"; and
+  one "A" and one "N" would result in an "N" since
+  1/2 "A" + 1/2 "N" = 5/8 "A" + 1/8 "C" + 1/8 "G" + 1/8 "T" => "N".
 }
 
 \value{
