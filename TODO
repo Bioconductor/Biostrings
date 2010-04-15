@@ -154,6 +154,34 @@ STRING MATCHING
 
 - PDict()/matchPDict()/countPDict()/whichPDict():
 
+  o PDict(), matchPDict(): Support fuzzy matching with variable width
+    dictionaries.
+
+    The trick used internally that consists in splitting the patterns into N+1
+    Trusted Bands (where N is max.mismatch) could be restricted to a "not
+    really trusted band" specified by the user (not necessarily a prefix), and
+    then brute force could be used on the head and tail of this "not really
+    trusted band". The user would also need a way to specify 2 max.mismatch
+    values: one for the "not really trusted band" and one for the head/tail.
+
+    From a user point of view, it could look something like this:
+
+    # Right now the following is not allowed (you cannnot specify both
+    # 'max.mismatch' and 'tb.end'). Also the names of the
+    # tb.start/tb.end/tb.width args would need to change because it's
+    # not about the Trusted Band anymore (strictly speaking):
+    pdict <- PDict(dict, max.mismatch=2, tb.end=min(width(dict)))
+
+    # Then to allow up to 2 mismatches on the "not really trusted band"
+    # and up to 1 mismatch on the tail ('pdict' has no head):
+    mi <- matchPDict(pdict, subject, max.mismatch=c(2, 1))
+
+    The notion of Trusted Band as it is defined right now would not need
+    to be exposed anymore and would become an entirely internal thing.
+    From a user point of view it would be replaced by this more general kind
+    of constant-width band where a small number of mismatches is allowed.
+    I need a better name than "not really trusted band" for it.
+
   o Document the "allow mismacthes anywhere in the patterns" feature (activated
     via the 'max.mismatch' argument of PDict()).
 
@@ -229,16 +257,11 @@ MISCELLANEOUS
 
 
 
-2.13 series (BioC 2.5)
+2.17 series (BioC 2.7)
 ----------------------
 
 - Defunct old matchprobes functions: complementSeq(), reverseSeq(),
   revcompDNA(), revcompRNA(), matchprobes().
-
-
-
-2.15 series (BioC 2.6)
-----------------------
 
 - Remove old matchprobes functions: complementSeq(), reverseSeq(),
   revcompDNA(), revcompRNA(), matchprobes().
