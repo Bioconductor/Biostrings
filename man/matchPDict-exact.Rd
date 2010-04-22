@@ -379,7 +379,7 @@
   ## ---------------------------------------------------------------------
   ## E. vcountPDict()
   ## ---------------------------------------------------------------------
-  subject <- Dmelanogaster$upstream1000[1:200]
+  subject <- Dmelanogaster$upstream1000[1:100]
   subject
   mat1 <- vcountPDict(pdict0, subject)
   dim(mat1)  # length(pdict0) x length(subject)
