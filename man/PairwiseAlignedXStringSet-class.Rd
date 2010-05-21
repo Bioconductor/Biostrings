@@ -95,10 +95,10 @@
       \code{"global"} = align whole strings with end gap penalties,
       \code{"local"} = align string fragments,
       \code{"overlap"} = align whole strings without end gap penalties,
-      \code{"global-local"} = align whole strings with end gap penalties on
-        \code{pattern} and without end gap penalties on \code{subject}.
-      \code{"local-global"} = align whole strings without end gap penalties on
-        \code{pattern} and with end gap penalties on \code{subject}.}
+      \code{"global-local"} = align whole strings in \code{pattern} with
+        consecutive subsequence of \code{subject},
+      \code{"local-global"} = align consecutive subsequence of \code{pattern}
+        with whole strings in \code{subject}.}
   \item{substitutionMatrix}{substitution matrix for the alignment. If NULL,
      the diagonal values and off-diagonal values are set to 0 and 1 respectively.}
   \item{gapOpening}{the cost for opening a gap in the alignment.}
