@@ -24,7 +24,7 @@ setMethod("injectHardMask", "XStringViews",
         ## objects, then the set of ranges defined by start(y) and width(y)
         ## is normal and is guaranteed to be within the limits of y.
         ## Hence start(y) and width(y) can be considered safe.
-        .Call("inject_code",
+        .Call("XString_inject_code",
               subject(y), start(y), width(y), code,
               PACKAGE="Biostrings")
     }

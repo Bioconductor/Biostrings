@@ -383,6 +383,23 @@ SEXP tlocs2rlocs(
 );
 
 
+/* translate.c */
+
+SEXP DNAString_translate(
+	SEXP x,
+	SEXP base_codes,
+	SEXP lkup,
+	SEXP skipcode
+);
+
+SEXP DNAStringSet_translate(
+	SEXP x,
+	SEXP base_codes,
+	SEXP lkup,
+	SEXP skipcode
+);
+
+
 /* replace_letter_at.c */
 
 SEXP XString_replace_letter_at(
@@ -404,7 +421,7 @@ SEXP XString_inplace_replace_letter_at(
 
 /* inject_code.c */
 
-SEXP inject_code(
+SEXP XString_inject_code(
 	SEXP x,
 	SEXP start,
 	SEXP width,

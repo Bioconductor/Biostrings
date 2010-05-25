@@ -73,12 +73,16 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(extract_transcripts, 6),
 	CALLMETHOD_DEF(tlocs2rlocs, 5),
 
+/* translate.c */
+	CALLMETHOD_DEF(DNAString_translate, 4),
+	CALLMETHOD_DEF(DNAStringSet_translate, 4),
+
 /* replace_letter_at.c */
 	CALLMETHOD_DEF(XString_replace_letter_at, 6),
 	CALLMETHOD_DEF(XString_inplace_replace_letter_at, 4),
 
 /* inject_code.c */
-	CALLMETHOD_DEF(inject_code, 4),
+	CALLMETHOD_DEF(XString_inject_code, 4),
 
 /* SparseList_utils.c */
 	CALLMETHOD_DEF(debug_SparseList_utils, 0),

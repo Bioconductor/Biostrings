@@ -5,7 +5,7 @@
  * --- .Call ENTRY POINT ---
  * Return an XString object.
  */
-SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
+SEXP XString_inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 {
 	const char *x_classname;
 	cachedCharSeq X;
@@ -25,11 +25,11 @@ SEXP inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 		s = *s_p;
 		w = *w_p;
 		if (s == NA_INTEGER || w == NA_INTEGER)
-			error("Biostrings internal error in inject_code():"
+			error("Biostrings internal error in XString_inject_code():"
 			      "NAs in 'start' or 'width' are not supported");
 		s--; // 0-based start (offset)
 		if (s < 0 || w < 0 || s + w > X.length)
-			error("Biostrings internal error in inject_code():"
+			error("Biostrings internal error in XString_inject_code():"
 			      "invalid start/width values");
 		memset(RAW(tag) + s, INTEGER(code)[0], w);
 	}
