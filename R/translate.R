@@ -121,11 +121,9 @@ setMethod("translate", "RNAString",
 setMethod("translate", "DNAStringSet",
     function(x)
     {
-        if (any(width(x) %% 3L != 0L))
-            warning("the number of nucleotides in some element of 'x' is not a multiple of 3")
         AAStringSet(
             sapply(
-                seq_len(x),
+                seq_len(length(x)),
                 function(i) .translate.codons.as.character(.XString.codons(x[[i]]))
             )
         )
