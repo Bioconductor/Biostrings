@@ -186,6 +186,7 @@ TwobitEncodingBuffer _new_TwobitEncodingBuffer(SEXP base_codes, int buflength, i
 	teb.twobit_mask = (1 << teb.nbit_in_mask) - 1;
 	if (endianness == 1)
 		teb.twobit_mask <<= 2;
+	teb.lastin_twobit = NA_INTEGER;
 	teb.nb_valid_prev_char = 0;
 	teb.current_signature = 0;
 	return teb;
@@ -193,6 +194,7 @@ TwobitEncodingBuffer _new_TwobitEncodingBuffer(SEXP base_codes, int buflength, i
 
 void _reset_twobit_signature(TwobitEncodingBuffer *teb)
 {
+	teb->lastin_twobit = NA_INTEGER;
 	teb->nb_valid_prev_char = 0;
 	teb->current_signature = 0;
 	return;
@@ -200,10 +202,11 @@ void _reset_twobit_signature(TwobitEncodingBuffer *teb)
 
 int _shift_twobit_signature(TwobitEncodingBuffer *teb, char c)
 {
-	int c_as_twobit;
+	int lastin_twobit;
 
-	c_as_twobit = teb->eightbit2twobit[(unsigned char) c];
-	if (c_as_twobit == NA_INTEGER) {
+	lastin_twobit = teb->lastin_twobit =
+		teb->eightbit2twobit[(unsigned char) c];
+	if (lastin_twobit == NA_INTEGER) {
 		teb->nb_valid_prev_char = 0;
 		return NA_INTEGER;
 	}
@@ -211,11 +214,11 @@ int _shift_twobit_signature(TwobitEncodingBuffer *teb, char c)
 	teb->current_signature &= teb->twobit_mask;
 	if (teb->endianness == 1) {
 		teb->current_signature >>= 2;
-		c_as_twobit <<= teb->nbit_in_mask;
+		lastin_twobit <<= teb->nbit_in_mask;
 	} else {
 		teb->current_signature <<= 2;
 	}
-	teb->current_signature += c_as_twobit;
+	teb->current_signature += lastin_twobit;
 	if (teb->nb_valid_prev_char < teb->buflength)
 		return NA_INTEGER;
 	return teb->current_signature;

@@ -385,13 +385,6 @@ SEXP tlocs2rlocs(
 
 /* translate.c */
 
-SEXP DNAString_translate(
-	SEXP x,
-	SEXP base_codes,
-	SEXP lkup,
-	SEXP skipcode
-);
-
 SEXP DNAStringSet_translate(
 	SEXP x,
 	SEXP base_codes,

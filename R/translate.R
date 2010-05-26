@@ -102,16 +102,14 @@ setMethod("codons", "MaskedRNAString", function(x) .MaskedXString.codons(x))
 
 setGeneric("translate", function(x) standardGeneric("translate"))
 
-### 'x' must be an XStringViews object as returned by .XString.codons()
-### or .MaskedXString.codons()
-.translate.codons.as.character <- function(x)
+.mkTranslationLkup <- function()
 {
-    x3 <- gsub("+", "", as.character(x), fixed=TRUE)
-    paste(GENETIC_CODE[x3], collapse="")
+    as.integer(charToRaw(
+        paste(GENETIC_CODE[mkAllStrings(DNA_BASES, 3)], collapse="")))
 }
 
 setMethod("translate", "DNAString",
-    function(x) AAString(.translate.codons.as.character(.XString.codons(x)))
+    function(x) translate(DNAStringSet(x))[[1L]]
 )
 
 setMethod("translate", "RNAString",
@@ -121,19 +119,19 @@ setMethod("translate", "RNAString",
 setMethod("translate", "DNAStringSet",
     function(x)
     {
-        AAStringSet(
-            sapply(
-                seq_len(length(x)),
-                function(i) .translate.codons.as.character(.XString.codons(x[[i]]))
-            )
-        )
+        lkup <- .mkTranslationLkup()
+        skipcode <- DNAcodes(FALSE)[["+"]]
+        .Call("DNAStringSet_translate",
+              x, DNA_BASE_CODES, lkup, skipcode,
+              PACKAGE="Biostrings")
     }
 )
 
-setMethod("translate", "RNAStringSet", function(x) translate(DNAStringSet(x)))
+setMethod("translate", "RNAStringSet",
+    function(x) translate(DNAStringSet(x)))
 
 setMethod("translate", "MaskedDNAString",
-    function(x) AAString(.translate.codons.as.character(.MaskedXString.codons(x)))
+    function(x) translate(injectHardMask(x))
 )
 
 setMethod("translate", "MaskedRNAString",

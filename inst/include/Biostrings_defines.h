@@ -36,6 +36,7 @@ typedef struct twobit_encoding_buffer {
 	int endianness;  /* move bits to the left if 0, to the right if 1 */
 	int nbit_in_mask;
 	int twobit_mask;
+	int lastin_twobit;
 	int nb_valid_prev_char;
 	int current_signature;
 } TwobitEncodingBuffer;

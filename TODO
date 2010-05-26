@@ -103,8 +103,6 @@ UTILITIES
   although this is not optimal because isMatching() is doing too many
   comparisons when it could in fact bail out early.
 
-- Add functions for translating DNA or RNA into AA.
-
 - Use subseq() instead of subXString(). Remove subXString.R file.
 
 - Finish C implementation of read.XStringViews()
