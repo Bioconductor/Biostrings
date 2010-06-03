@@ -96,6 +96,22 @@ static SEXP mk_transcript_widths(SEXP exonStarts, SEXP exonEnds, int ref_length)
 	return ans;
 }
 
+static int strand_is_minus(SEXP strand, int i)
+{
+	SEXP strand_elt;
+
+	strand_elt = STRING_ELT(strand, i);
+	if (strand_elt != NA_STRING && LENGTH(strand_elt) == 1) {
+		switch (CHAR(strand_elt)[0]) {
+		    case '+': return 0;
+		    case '-': return 1;
+		}
+	}
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "'strand' elements must be \"+\" or \"-\"");
+	return -1;
+}
+
 static int copy_exon(char * out, const cachedCharSeq *in,
 		int start, int end, int on_minus_strand, SEXP lkup)
 {
@@ -187,7 +203,7 @@ SEXP extract_transcripts(SEXP x, SEXP exonStarts, SEXP exonEnds, SEXP strand,
 		SEXP reorder_exons_on_minus_strand, SEXP lkup)
 {
 	cachedCharSeq X, Y;
-	SEXP ans_width, ans, starts, ends, strand_elt;
+	SEXP ans_width, ans, starts, ends;
 	cachedXVectorList cached_ans;
 	int reorder_minus_exons, ans_length,
 	    i, on_minus_strand;
@@ -203,8 +219,11 @@ SEXP extract_transcripts(SEXP x, SEXP exonStarts, SEXP exonEnds, SEXP strand,
 		if (starts == R_NilValue || LENGTH(starts) == 0)
 			continue;
 		ends = VECTOR_ELT(exonEnds, i);
-		strand_elt = STRING_ELT(strand, i);
-		on_minus_strand = CHAR(strand_elt)[0] != '+';
+		on_minus_strand = strand_is_minus(strand, i);
+		if (on_minus_strand == -1) {
+			UNPROTECT(2);
+			error("%s", errmsg_buf);
+		}
 		Y = get_cachedXRawList_elt(&cached_ans, i);
 		/* Y.seq is a const char * so we need to cast it to
 		   char * before we can write to it */
@@ -219,7 +238,7 @@ SEXP extract_transcripts(SEXP x, SEXP exonStarts, SEXP exonEnds, SEXP strand,
 SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 		SEXP strand, SEXP reorder_exons_on_minus_strand)
 {
-	SEXP ans, starts, ends, strand_elt, ans_elt;
+	SEXP ans, starts, ends, ans_elt;
 	int reorder_minus_exons, ans_length,
 	    i, transcript_width, on_minus_strand, nlocs, j, tloc;
 
@@ -234,8 +253,11 @@ SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 			UNPROTECT(1);
 			error("%s", errmsg_buf);
 		}
-		strand_elt = STRING_ELT(strand, i);
-		on_minus_strand = CHAR(strand_elt)[0] != '+';
+		on_minus_strand = strand_is_minus(strand, i);
+		if (on_minus_strand == -1) {
+			UNPROTECT(1);
+			error("%s", errmsg_buf);
+		}
 		ans_elt = VECTOR_ELT(ans, i);
 		if (ans_elt == R_NilValue) {
 			nlocs = 0;
