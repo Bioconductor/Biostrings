@@ -303,6 +303,22 @@ setAs("XString", "XStringSet", function(from) XStringSet(xsbasetype(from), from)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### unsplit.list.of.XStringSet()
+###
+### Helper function, not for the end user.
+###
+
+unsplit.list.of.XStringSet <- function(class, value, f)
+{
+    ans <- rep.int(as("", class), length(f))
+    unlisted_value <- do.call(c, unname(value))
+    idx <- unname(split(seq_len(length(f)), f))
+    ans[unlist(idx)] <- unlisted_value
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 
@@ -376,31 +392,6 @@ setMethod("show", "XStringSet",
         if (length(object) != 0)
             .XStringSet.show_frame(object)
     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", "XStringSet",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (is.character(i))
-            stop("cannot subset a ", class(x), " object by names")
-        x@ranges <- x@ranges[i]
-        x
-    }
-)
-
-setMethod("rep", "XStringSet",
-    function(x, times)
-        x[rep.int(seq_len(length(x)), times)]
 )
 
 

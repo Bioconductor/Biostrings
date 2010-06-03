@@ -49,10 +49,9 @@
 \alias{coerce,XString,AAStringSet-method}
 \alias{coerce,XString,XStringSet-method}
 
-\alias{show,XStringSet-method}
+\alias{unsplit.list.of.XStringSet}
 
-\alias{[,XStringSet-method}
-\alias{rep,XStringSet-method}
+\alias{show,XStringSet-method}
 
 \alias{is.unsorted,XStringSet-method}
 \alias{order,XStringSet-method}

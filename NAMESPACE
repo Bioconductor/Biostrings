@@ -60,6 +60,7 @@ export(
 
     ## XStringSet-class.R:
     compact, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
+    unsplit.list.of.XStringSet,
 
     ## XStringViews-constructors.R:
     adjacentViews, XStringViews,
