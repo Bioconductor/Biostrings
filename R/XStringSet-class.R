@@ -175,30 +175,48 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 ### constructors and coercion methods below.
 ###
 
-.charToXString <- function(x, solved_SEW, basetype)
+### 'x' must be a character string or an XString object.
+.oneSeqToXStringSet <- function(basetype, x, start, end, width, use.names)
+{
+    ans_xvector <- XString(basetype, x)
+    ans_ranges <- solveUserSEW(length(ans_xvector),
+                               start=start, end=end, width=width,
+                               rep.refwidths=TRUE)
+    ## We mimic how substring() replicates the name of a single string (try
+    ## 'substring(c(A="abcdefghij"), 2, 6:2)').
+    if (!is(x, "XString") && normargUseNames(use.names)) {
+        ans_names <- names(x)
+        if (!is.null(ans_names))
+            ans_names <- rep.int(ans_names, length(ans_ranges))
+    } else {
+        ans_names <- NULL
+    }
+    unsafe.newXStringSet(ans_xvector, ans_ranges,
+                         use.names=TRUE, names=ans_names)
+}
+
+.charToXString <- function(basetype, x, solved_SEW)
 {
     class <- paste(basetype, "String", sep="")
     proto <- newEmptyXString(class)
     shared <- .Call("new_SharedRaw_from_STRSXP",
-                   x, start(solved_SEW), width(solved_SEW), "", xs_enc_lkup(proto),
+                   x, start(solved_SEW), width(solved_SEW),
+                   "", xs_enc_lkup(proto),
                    PACKAGE="Biostrings")
     new(class, shared=shared, length=length(shared))
 }
 
-.charToXStringSet <- function(x, start, end, width, use.names, basetype)
+.charToXStringSet <- function(basetype, x, start, end, width, use.names)
 {
+    if (length(x) == 1L) {
+        ans <- .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
+        return(ans)
+    }
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    ans_xvector <- .charToXString(x, solved_SEW, basetype)
+    ans_xvector <- .charToXString(basetype, x, solved_SEW)
     ans_ranges <- successiveIRanges(width(solved_SEW))
     unsafe.newXStringSet(ans_xvector, ans_ranges,
                          use.names=use.names, names=names(x))
-}
-
-.XStringToXStringSet <- function(x, start, end, width, use.names, basetype)
-{
-    ans_xvector <- XString(basetype, x, start=start, end=end, width=width)
-    ans_ranges <- new2("IRanges", start=1L, width=length(ans_xvector), check=FALSE)
-    unsafe.newXStringSet(ans_xvector, ans_ranges)
 }
 
 
@@ -219,19 +237,19 @@ setMethod("XStringSet", "character",
     {
         if (is.null(basetype))
             basetype <- "B"
-        .charToXStringSet(x, start, end, width, use.names, basetype)
+        .charToXStringSet(basetype, x, start, end, width, use.names)
     }
 )
 setMethod("XStringSet", "XString",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .XStringToXStringSet(x, start, end, width, use.names, basetype)
+        .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
 )
 setMethod("XStringSet", "XStringSet",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
         ans <- narrow(x, start=start, end=end, width=width, use.names=use.names)
-        ## `xsbasetype<-` must be called even when user supplied 'basetype' is
-        ## NULL because we want to enforce downgrade to a B/DNA/RNA/AAStringSet
+        ## `xsbasetype<-` must be called even when 'basetype' is NULL
+        ## because we want to enforce downgrade to a B/DNA/RNA/AAStringSet
         ## instance
         if (is.null(basetype))
             basetype <- xsbasetype(x)
@@ -248,7 +266,7 @@ setMethod("XStringSet", "AsIs",
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	.charToXStringSet(x, start, end, width, use.names, basetype)
+	.charToXStringSet(basetype, x, start, end, width, use.names)
     }
 )
 setMethod("XStringSet", "probetable",

@@ -437,7 +437,17 @@
   dna0
 
   ## ---------------------------------------------------------------------
-  ## B. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
+  ## B. USING THE XStringSet CONSTRUCTORS ON A SINGLE SEQUENCE (XString
+  ##    OBJECT OR CHARACTER STRING)
+  ## ---------------------------------------------------------------------
+  x2 <- "abcdefghij"
+  BStringSet(x2, start=2, end=6:2)  # behaves like 'substring(x2, 2, 6:2)'
+  BStringSet(x2, start=-(1:6))
+  x3 <- BString(x2)
+  BStringSet(x3, end=-(1:6), width=3)
+
+  ## ---------------------------------------------------------------------
+  ## C. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe)
@@ -446,7 +456,7 @@
   RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
 
   ## ---------------------------------------------------------------------
-  ## C. USING subseq() ON AN XStringSet OBJECT
+  ## D. USING subseq() ON AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   subseq(probes, start=2, end=-5)
 
@@ -465,7 +475,7 @@
   probes
 
   ## ---------------------------------------------------------------------
-  ## D. COMPACTING AN XStringSet OBJECT
+  ## E. COMPACTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   ## Compacting is done typically before serialization.
   library(drosophila2probe)
@@ -483,7 +493,7 @@
   file.info(file2)$size
 
   ## ---------------------------------------------------------------------
-  ## E. UNLISTING AN XStringSet OBJECT
+  ## F. UNLISTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe)
