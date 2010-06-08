@@ -16,6 +16,7 @@
 \alias{names<-,MIndex-method}
 \alias{startIndex}
 \alias{endIndex}
+\alias{elementLengths,MIndex-method}
 \alias{countIndex}
 \alias{countIndex,MIndex-method}
 \alias{unlist,MIndex-method}
@@ -69,7 +70,7 @@
     \item{}{
       \code{countIndex(x)}:
       An integer vector containing the number of matches
-      for each pattern.
+      for each pattern. Equivalent to \code{elementLengths(x)}.
     }
   }
 }

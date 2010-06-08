@@ -446,6 +446,32 @@
   x3 <- BString(x2)
   BStringSet(x3, end=-(1:6), width=3)
 
+  ## Randomly extract 1 million 40-mers from C. elegans chrI:
+  extractRandomReads <- function(subject, nread, readlength)
+  {
+      if (!is.integer(readlength))
+          readlength <- as.integer(readlength)
+      start <- sample(length(subject) - readlength + 1L, nread,
+                      replace=TRUE)
+      DNAStringSet(subject, start=start, width=readlength)
+  }
+  library(BSgenome.Celegans.UCSC.ce2)
+  rndreads <- extractRandomReads(Celegans$chrI, 1000000, 40)
+  ## Notes:
+  ## - This takes only 2 or 3 seconds versus several hours for a solution
+  ##   using substring() on a standard character string.
+  ## - The short sequences in 'rndreads' can be seen as reads coming
+  ##   from a simulated high-throughput sequencing experiment where the
+  ##   underlying technology is perfect (no technology induced errors)
+  ##   and the sample has the exact same genome as the reference genome.
+  ## - Those reads could easily be mapped back to the reference by using
+  ##   an efficient matching tool like matchPDict() for performing exact
+  ##   matching (see ?matchPDict for more information). Typically, a
+  ##   small percentage of the reads (4 to 5\% in our case) will hit the
+  ##   reference at multiple locations. This is especially true for such
+  ##   short reads, and, in a lower proportion, is still true for longer
+  ##   reads, even for reads as long as 300 bases.
+
   ## ---------------------------------------------------------------------
   ## C. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
   ## ---------------------------------------------------------------------

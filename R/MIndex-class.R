@@ -41,11 +41,13 @@ setGeneric("startIndex", function(x) standardGeneric("startIndex"))
 
 setGeneric("endIndex", function(x) standardGeneric("endIndex"))
 
-setGeneric("countIndex", function(x) standardGeneric("countIndex"))
-
-setMethod("countIndex", "MIndex",
+setMethod("elementLengths", "MIndex",
     function(x) elementLengths(endIndex(x))
 )
+
+setGeneric("countIndex", function(x) standardGeneric("countIndex"))
+
+setMethod("countIndex", "MIndex", function(x) elementLengths(x))
 
 setMethod("unlist", "MIndex",
     function(x, recursive=TRUE, use.names=TRUE)
