@@ -408,9 +408,9 @@
   \link{XString-class},
   \link{XStringViews-class},
   \link{XStringSetList-class},
-  \code{\link{substr}},
-  \code{\link[IRanges:XVector-class]{subseq}},
-  \code{\link[IRanges:Ranges-utils]{narrow}}
+  \code{\link[IRanges]{subseq}},
+  \code{\link[IRanges]{narrow}},
+  \code{\link{substr}}
 }
 
 \examples{
@@ -460,17 +460,24 @@
   ## Notes:
   ## - This takes only 2 or 3 seconds versus several hours for a solution
   ##   using substring() on a standard character string.
-  ## - The short sequences in 'rndreads' can be seen as reads coming
-  ##   from a simulated high-throughput sequencing experiment where the
-  ##   underlying technology is perfect (no technology induced errors)
-  ##   and the sample has the exact same genome as the reference genome.
-  ## - Those reads could easily be mapped back to the reference by using
-  ##   an efficient matching tool like matchPDict() for performing exact
-  ##   matching (see ?matchPDict for more information). Typically, a
-  ##   small percentage of the reads (4 to 5\% in our case) will hit the
-  ##   reference at multiple locations. This is especially true for such
-  ##   short reads, and, in a lower proportion, is still true for longer
-  ##   reads, even for reads as long as 300 bases.
+  ## - The short sequences in 'rndreads' can be seen as the result of a
+  ##   simulated high-throughput sequencing experiment. A non-realistic
+  ##   one though because:
+  ##     (a) It assumes that the underlying technology is perfect (the
+  ##         generated reads have no technology induced errors).
+  ##     (b) It assumes that the sequenced genome is exactly the same as the
+  ##         reference genome.
+  ##     (c) The simulated reads can contain IUPAC ambiguity letters only
+  ##         because the reference genome contains them. In a real
+  ##         high-throughput sequencing experiment, the sequenced genome
+  ##         of course doesn't contain those letters, but the sequencer
+  ##         can introduce them in the generated reads to indicate ambiguous
+  ##         base-calling.
+  ##     (d) The simulated reads come from the plus strand only of a single
+  ##         chromosome.
+  ## - See the getSeq() function in the BSgenome package for how to
+  ##   circumvent (d) i.e. how to generate reads that come from the whole
+  ##   genome (plus and minus strands of all chromosomes).
 
   ## ---------------------------------------------------------------------
   ## C. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
