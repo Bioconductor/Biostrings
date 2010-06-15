@@ -331,6 +331,7 @@ exportMethods(
 ###   pairwiseAlignment.R
 ###   stringDist.R
 ###   needwunsQS.R
+###   BStringMSASet.R
 
 exportClasses(
     XStringPartialMatches,
@@ -341,7 +342,8 @@ exportClasses(
     InDel,
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
-    PairwiseAlignedFixedSubjectSummary
+    PairwiseAlignedFixedSubjectSummary,
+    BStringMSASet
 )
 
 export(
@@ -386,7 +388,12 @@ export(
     stringDist,
 
     ## Old stuff (Defunct or Deprecated):
-    needwunsQS
+    needwunsQS,
+
+    ## BStringMSASet.R
+    xscat,
+    subsetCollumns,
+    clustReader
 )
 
 exportMethods(
@@ -406,7 +413,10 @@ exportMethods(
     compareStrings,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, stringDist,
-
+    nchar, names, "names<-", "[[", narrow, xscat,
+    consensusMatrix, consensusString,
+    alphabetFrequency, as.list,
+              
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
 )

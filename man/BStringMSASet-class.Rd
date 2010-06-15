@@ -29,6 +29,7 @@
 
 % Convenience Function:
 \alias{subsetCollumns}
+\alias{clustReader}
 
 \title{BStringMSASet objects}
 
@@ -142,9 +143,22 @@
 
 
 \examples{
+## Create an object from file
+cl = clustReader(file =
+                  system.file("extdata","clustalw2.aln",
+                               package="Biostrings"))
 
+## Remove unwanted rows
+cl[3]
 
+## Remove all but a range of columns
+narrow(cl, start= 9200, end = 10000)
 
+## Select out a series of ranges of columns
+subsetCollumns(cl, start=c(1,11), end=c(10,20))
+
+## List the names of the sequences in the alignment
+names(cl)
 }
 
 \keyword{methods}
