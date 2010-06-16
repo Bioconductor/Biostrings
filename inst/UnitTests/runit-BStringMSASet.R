@@ -20,9 +20,9 @@ strs2 <- c(string1 = "AAGGTCTCCAGCCTGCCCTTCAGTGTGGAGGCGCTCATGTCGGACA",
            string2 = "AAGGTCTCCAGCCTGCCCTTCAGCGTGGAGGCGCTCATGTCCGACA",
            string3 = "CATTTATATAGGTCCCCCTCCCCCCAAGAAACACACATATTTGACA")
 
-checkEquals(as.character(subsetCollumns(BMSASet,
-                                        start=c(1,12,43),
-                                        end=c(10,40,49))),
+checkEquals(as.character(subsetColumns(BMSASet,
+                                       start=c(1,12,43),
+                                       end=c(10,40,49))),
             as.character(BStringMSASet(strs2)))
 
 

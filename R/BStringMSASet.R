@@ -1,3 +1,7 @@
+### =========================================================================
+### BStringMSASet objects
+### -------------------------------------------------------------------------
+###
 
 setClass("BStringMSASet",
     representation(set="BStringSet"))
@@ -203,7 +207,7 @@ clustReader = function(file){
 
 
 ## helper function for subsetting the columns
-subsetCollumns <- function(x, start, end){
+subsetColumns <- function(x, start, end){
   names = names(x)
   if(length(start) != length(end)){
     stop("You must supply an equal number of starts and ends.")

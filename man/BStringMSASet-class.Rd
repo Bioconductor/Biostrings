@@ -13,7 +13,6 @@
 \alias{[,BStringMSASet-method}
 \alias{[[,BStringMSASet-method}
 
-
 % Other methods:
 \alias{narrow,BStringMSASet-method}
 \alias{xscat,BStringMSASet-method}
@@ -28,8 +27,9 @@
 \alias{as.character,BStringMSASet-method}
 
 % Convenience Function:
-\alias{subsetCollumns}
+\alias{subsetColumns}
 \alias{clustReader}
+
 
 \title{BStringMSASet objects}
 
@@ -40,7 +40,7 @@
 
 \details{
   The BStringMSASet is meant to hold and represent multiple sequence
-  alignments.  Internally, these a series of equivalent length strings,
+  alignments.  Internally, these are a series of equivalent length strings,
   each of which has had gaps inserted etc. such that they represent the
   output of an alignment algorithm.  There are also a series of simple
   methods provided so that these alignments can have rows and columns
@@ -63,8 +63,6 @@
     
   }
 }
-
-
 
 \section{Other methods}{
   In the code snippets below, \code{x} is a BStringMSASet object.
@@ -107,12 +105,12 @@
 
   \describe{
     \item{}{
-      \code{as.list(x, "XStringViews")}:
-      Turns \code{x} into an \code{list}.
+      \code{as.list(x)}:
+      Turns \code{x} into a list.
     }
     \item{}{
-      \code{as.character(x, "XStringViews")}:
-      Turns \code{x} into an \code{character vector}.
+      \code{as.character(x)}:
+      Turns \code{x} into a character vector.
     }
   }
 }
@@ -131,10 +129,7 @@
   }
 }
 
-
-
 \author{M. Carlson}
-
 
 \seealso{
   \link{XString-class},
@@ -155,7 +150,7 @@ cl[3]
 narrow(cl, start= 9200, end = 10000)
 
 ## Select out a series of ranges of columns
-subsetCollumns(cl, start=c(1,11), end=c(10,20))
+subsetColumns(cl, start=c(1,11), end=c(10,20))
 
 ## List the names of the sequences in the alignment
 names(cl)

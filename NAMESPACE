@@ -387,13 +387,13 @@ export(
     ## stringDist.R:
     stringDist,
 
-    ## Old stuff (Defunct or Deprecated):
-    needwunsQS,
-
-    ## BStringMSASet.R
+    ## BStringMSASet.R:
     xscat,
-    subsetCollumns,
-    clustReader
+    subsetColumns,
+    clustReader,
+
+    ## Old stuff (Defunct or Deprecated):
+    needwunsQS
 )
 
 exportMethods(
@@ -416,7 +416,7 @@ exportMethods(
     nchar, names, "names<-", "[[", narrow, xscat,
     consensusMatrix, consensusString,
     alphabetFrequency, as.list,
-              
+
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
 )
