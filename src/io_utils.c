@@ -41,9 +41,31 @@ static void get_file_ztype(const char *path, int *ztype, int *subtype)
 	return;
 }
 
+static FILE *open_file(const char *path, const char *mode)
+{
+	FILE *fp;
+	int ret;
+	struct stat buf;
+
+	fp = fopen(path, mode);
+	if (fp == NULL)
+		error("cannot open file '%s'", path);
+	ret = fstat(fileno(fp), &buf);
+	if (ret != 0) {
+		fclose(fp);
+		error("Biostrings internal error in open_input_file(): "
+		      "cannot stat file '%s'", path);
+	}
+	if (S_ISDIR(buf.st_mode)) {
+		fclose(fp);
+		error("file '%s' is a directory", path);
+	}
+	return fp;
+}
+
 static FILE *open_input_file(const char *path)
 {
-	FILE *stream;
+	FILE *fp;
 	int ret, ztype, subtype;
 	struct stat buf;
 
@@ -51,15 +73,7 @@ static FILE *open_input_file(const char *path)
 	switch (ztype) {
 	/* No compression */
 	    case -1:
-		stream = fopen(path, "r");
-		if (stream == NULL)
-			error("cannot open file '%s'", path);
-		ret = fstat(fileno(stream), &buf);
-		if (ret != 0)
-			error("Biostrings internal error in open_input_file(): "
-			      "cannot stat file '%s'", path);
-		if (S_ISDIR(buf.st_mode))
-			error("file '%s' is a directory", path);
+		fp = open_file(path, "r");
 	    break;
 	/* gzfile */
 	    case 0:
@@ -87,33 +101,54 @@ static FILE *open_input_file(const char *path)
 		error("Biostrings internal error in open_input_file(): ",
 		      "invalid ztype value %d", ztype);
 	}
-	return stream;
+	return fp;
 }
 
 /* --- .Call ENTRY POINT ---
  * Returns an external pointer.
  * From R:
- *   x <- .Call("new_ExternalFilePtr", "path/to/some/file",
+ *   x <- .Call("new_input_ExternalFilePtr", "path/to/some/file",
  *              PACKAGE="Biostrings")
  *   reg.finalizer(x,
  *       function(e) .Call("ExternalFilePtr_close", e, PACKAGE="Biostrings"),
  *       onexit=TRUE)
  */
-SEXP new_ExternalFilePtr(SEXP filepath)
+SEXP new_input_ExternalFilePtr(SEXP filepath)
 {
 	SEXP filepath_elt;
 	const char *path;
-	FILE *stream;
+	FILE *fp;
 
-	if (!IS_CHARACTER(filepath) || LENGTH(filepath) == 0)
-		error("'filepath' must be a non-empty character vector");
+	if (!IS_CHARACTER(filepath) || LENGTH(filepath) != 1)
+		error("'filepath' must be a single string");
 	filepath_elt = STRING_ELT(filepath, 0);
 	if (filepath_elt == NA_STRING)
 		error("'filepath' is NA");
 	// Maybe do this in R, not here.
 	path = R_ExpandFileName(translateChar(filepath_elt));
-	stream = open_input_file(path);
-	return R_MakeExternalPtr(stream, R_NilValue, R_NilValue);
+	fp = open_input_file(path);
+	return R_MakeExternalPtr(fp, R_NilValue, R_NilValue);
+}
+
+/* --- .Call ENTRY POINT ---
+ * Returns an external pointer.
+ */
+SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append)
+{
+	SEXP filepath_elt;
+	const char *path, *mode;
+	FILE *fp;
+
+	if (!IS_CHARACTER(filepath) || LENGTH(filepath) != 1)
+		error("'filepath' must be a single string");
+	filepath_elt = STRING_ELT(filepath, 0);
+	if (filepath_elt == NA_STRING)
+		error("'filepath' is NA");
+	// Maybe do this in R, not here.
+	path = R_ExpandFileName(translateChar(filepath_elt));
+	mode = LOGICAL(append)[0] ? "a" : "w";
+	fp = open_file(path, mode);
+	return R_MakeExternalPtr(fp, R_NilValue, R_NilValue);
 }
 
 /* --- .Call ENTRY POINT ---

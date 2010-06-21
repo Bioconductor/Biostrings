@@ -238,6 +238,65 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP set_names,
 	return ans;
 }
 
+/* --- .Call ENTRY POINT --- */
+SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
+{
+	cachedXStringSet X;
+	int x_length, width0, lkup_length, i, j1, j2, dest_nbytes;
+	FILE *stream;
+	const int *lkup0;
+	SEXP x_names, desc;
+	cachedCharSeq X_elt;
+	char linebuf[LINEBUF_SIZE];
+
+	X = _cache_XStringSet(x);
+	x_length = _get_cachedXStringSet_length(&X);
+	stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, 0));
+	width0 = INTEGER(width)[0];
+	if (width0 >= LINEBUF_SIZE)
+		error("'width' must be <= %d", LINEBUF_SIZE - 1);
+	linebuf[width0] = 0;
+	if (lkup == R_NilValue) {
+		lkup0 = NULL;
+		lkup_length = 0;
+	} else {
+		lkup0 = INTEGER(lkup);
+		lkup_length = LENGTH(lkup);
+	}
+	x_names = get_XVectorList_names(x);
+	for (i = 0; i < x_length; i++) {
+		if (fputs(FASTA_desc_markup, stream) == EOF)
+			error("write error");
+		if (x_names != R_NilValue) {
+			desc = STRING_ELT(x_names, i);
+			if (desc == NA_STRING)
+				error("'names(x)' contains NAs");
+			if (fputs(CHAR(desc), stream) == EOF)
+				error("write error");
+		}
+		if (fputs("\n", stream) == EOF)
+			error("write error");
+		X_elt = _get_cachedXStringSet_elt(&X, i);
+		for (j1 = 0; j1 < X_elt.length; j1 += width0) {
+			j2 = j1 + width0;
+			if (j2 > X_elt.length)
+				j2 = X_elt.length;
+			dest_nbytes = j2 - j1;
+			j2--;
+			Ocopy_bytes_from_i1i2_with_lkup(j1, j2,
+				linebuf, dest_nbytes,
+				X_elt.seq, X_elt.length,
+				lkup0, lkup_length);
+			linebuf[dest_nbytes] = 0;
+			if (fputs(linebuf, stream) == EOF)
+				error("write error");
+			if (fputs("\n", stream) == EOF)
+				error("write error");
+		}
+	}
+	return R_NilValue;
+}
+
 
 /****************************************************************************
  * Read FASTQ.

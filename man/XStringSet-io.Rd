@@ -45,7 +45,7 @@
   fastq.geometry(filepath)
 
   ## Write an XStringSet object to a FASTA (or FASTQ) file:
-  write.XStringSet(x, file="", append=FALSE, format="fasta", width=80)
+  write.XStringSet(x, filepath, append=FALSE, format="fasta", width=80)
 
   ## Serialize an XStringSet object:
   save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
@@ -61,7 +61,7 @@
 
 \arguments{
   \item{filepath}{
-    A character vector containing the paths to the input files.
+    A character vector containing the paths to the files to read or write.
   }
   \item{format}{
     Either \code{"fasta"} (the default) or \code{"fastq"}.
@@ -196,7 +196,8 @@
   fasta.info(filepath)
   x <- read.DNAStringSet(filepath)
   x
-  write.XStringSet(x)  # writes to the console
+  out <- tempfile()
+  write.XStringSet(x, out)
 
   ## ---------------------------------------------------------------------
   ## B. READ FASTQ FILES

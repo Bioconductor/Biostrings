@@ -61,7 +61,9 @@ int _get_twobit_signature_at(
 
 /* io_utils.c */
 
-SEXP new_ExternalFilePtr(SEXP filepath);
+SEXP new_input_ExternalFilePtr(SEXP filepath);
+
+SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append);
 
 SEXP ExternalFilePtr_close(SEXP x);
 
@@ -276,6 +278,13 @@ SEXP read_fasta_in_XStringSet(
 	SEXP efp_list,
 	SEXP set_names,
 	SEXP elementType,
+	SEXP lkup
+);
+
+SEXP write_XStringSet_to_fasta(
+	SEXP x,
+	SEXP efp_list,
+	SEXP width,
 	SEXP lkup
 );
 

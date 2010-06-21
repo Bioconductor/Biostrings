@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 
 
-.normargFilepath <- function(filepath)
+.normargInputFilepath <- function(filepath)
 {
     if (!is.character(filepath) || any(is.na(filepath)))
         stop("'filepath' must be a character vector with no NAs")
@@ -44,21 +44,38 @@
 ### Returns a list of "external file pointers".
 .openInputFiles <- function(filepath)
 {
-    filepath2 <- .normargFilepath(filepath)
+    filepath2 <- .normargInputFilepath(filepath)
     ans <- lapply(filepath2,
            function(fp)
            {
-               x <- .Call("new_ExternalFilePtr", fp, PACKAGE="Biostrings")
-               reg.finalizer(x, .ExternalFilePtr.close, onexit=TRUE)
-               x
+               efp <- .Call("new_input_ExternalFilePtr", fp,
+                            PACKAGE="Biostrings")
+               reg.finalizer(efp, .ExternalFilePtr.close, onexit=TRUE)
+               efp
            })
     names(ans) <- filepath
     ans
 }
 
+### Returns a length-1 list of "external file pointers".
+.openOutputFile <- function(filepath, append)
+{
+    if (!isSingleString(filepath))
+        stop("'filepath' must be a single string")
+    if (!isTRUEorFALSE(append))
+        stop("'append' must be TRUE or FALSE")
+    filepath2 <- path.expand(filepath)
+    efp <- .Call("new_output_ExternalFilePtr", filepath2, append,
+                 PACKAGE="Biostrings")
+    reg.finalizer(efp, .ExternalFilePtr.close, onexit=TRUE)
+    ans <- list(efp)
+    names(ans) <- filepath
+    ans
+}
+
 ### 'efp_list' must be a list of "external file pointers" returned by
-### .openInputFiles().
-.closeInputFiles <- function(efp_list)
+### .openInputFiles() or .openOutputFiles().
+.closeFiles <- function(efp_list)
 {
     for (efp in efp_list) .ExternalFilePtr.close(efp)
 }
@@ -72,7 +89,7 @@
 fasta.info <- function(filepath, use.descs=TRUE)
 {
     efp_list <- .openInputFiles(filepath)
-    on.exit(.closeInputFiles(efp_list))
+    on.exit(.closeFiles(efp_list))
     use.descs <- normargUseNames(use.descs)
     .Call("fasta_info", efp_list, use.descs, PACKAGE="Biostrings")
 }
@@ -92,7 +109,7 @@ fasta.info <- function(filepath, use.descs=TRUE)
 fastq.geometry <- function(filepath)
 {
     efp_list <- .openInputFiles(filepath)
-    on.exit(.closeInputFiles(efp_list))
+    on.exit(.closeFiles(efp_list))
     .Call("fastq_geometry", efp_list, PACKAGE="Biostrings")
 }
 
@@ -112,7 +129,7 @@ fastq.geometry <- function(filepath)
 .read.XStringSet <- function(filepath, format, set.names, basetype)
 {
     efp_list <- .openInputFiles(filepath)
-    on.exit(.closeInputFiles(efp_list))
+    on.exit(.closeFiles(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
@@ -145,25 +162,38 @@ read.AAStringSet <- function(filepath, format="fasta")
 ### write.XStringSet()
 ###
 
-### TODO: Implement this in C.
-.write.XStringSet.to.fasta <- function(x, file, append, width)
+.write.XStringSet.to.fasta <- function(x, efp_list, width)
 {
-    FASTArecs <- XStringSetToFASTArecords(x)
-    writeFASTA(FASTArecs, file=file, append=append, width=width)
+    if (!isSingleNumber(width)) 
+        stop("'width' must be a single integer")
+    if (!is.integer(width)) 
+        width <- as.integer(width)
+    if (width < 1L) 
+        stop("'width' must be an integer >= 1")
+    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
+    .Call("write_XStringSet_to_fasta",
+          x, efp_list, width, lkup,
+          PACKAGE="Biostrings")
 }
 
-.write.XStringSet.to.fastq <- function(x, file, append)
+.write.XStringSet.to.fastq <- function(x, efp_list)
     stop("writing to a FASTQ file is not supported yet, sorry!")
 
-write.XStringSet <- function(x, file="", append=FALSE, format="fasta", width=80)
+write.XStringSet <- function(x, filepath, append=FALSE, format="fasta",
+                             width=80)
 {
+    if (!is(x, "XStringSet"))
+        stop("'x' must be an XStringSet object")
+    efp_list <- .openOutputFile(filepath, append)
+    on.exit(.closeFiles(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta"))
     switch(format,
-        "fasta"=.write.XStringSet.to.fasta(x, file, append, width),
-        "fastq"=.write.XStringSet.to.fastq(x, file, append)
+        "fasta"=.write.XStringSet.to.fasta(x, efp_list, width),
+        "fastq"=.write.XStringSet.to.fastq(x, efp_list)
     )
+    invisible(NULL)
 }
 
 
