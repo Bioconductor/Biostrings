@@ -56,11 +56,11 @@
     ans
 }
 
-### 'fep_list' must be a list of "external file pointers" returned by
+### 'efp_list' must be a list of "external file pointers" returned by
 ### .openInputFiles().
-.closeInputFiles <- function(fep_list)
+.closeInputFiles <- function(efp_list)
 {
-    for (x in fep_list) .ExternalFilePtr.close(x)
+    for (efp in efp_list) .ExternalFilePtr.close(efp)
 }
 
 
@@ -71,16 +71,16 @@
 ### TODO: Rename this fasta.geometry() and deprecate fasta.info()
 fasta.info <- function(filepath, use.descs=TRUE)
 {
-    fep_list <- .openInputFiles(filepath)
-    on.exit(.closeInputFiles(fep_list))
+    efp_list <- .openInputFiles(filepath)
+    on.exit(.closeInputFiles(efp_list))
     use.descs <- normargUseNames(use.descs)
-    .Call("fasta_info", fep_list, use.descs, PACKAGE="Biostrings")
+    .Call("fasta_info", efp_list, use.descs, PACKAGE="Biostrings")
 }
 
-.read.fasta.in.XStringSet <- function(fep_list, set.names, elementType, lkup)
+.read.fasta.in.XStringSet <- function(efp_list, set.names, elementType, lkup)
 {
     .Call("read_fasta_in_XStringSet",
-          fep_list, set.names, elementType, lkup,
+          efp_list, set.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
 
@@ -91,15 +91,15 @@ fasta.info <- function(filepath, use.descs=TRUE)
 
 fastq.geometry <- function(filepath)
 {
-    fep_list <- .openInputFiles(filepath)
-    on.exit(.closeInputFiles(fep_list))
-    .Call("fastq_geometry", fep_list, PACKAGE="Biostrings")
+    efp_list <- .openInputFiles(filepath)
+    on.exit(.closeInputFiles(efp_list))
+    .Call("fastq_geometry", efp_list, PACKAGE="Biostrings")
 }
 
-.read.fastq.in.XStringSet <- function(fep_list, set.names, elementType, lkup)
+.read.fastq.in.XStringSet <- function(efp_list, set.names, elementType, lkup)
 {
     .Call("read_fastq_in_XStringSet",
-          fep_list, set.names, elementType, lkup,
+          efp_list, set.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
 
@@ -111,8 +111,8 @@ fastq.geometry <- function(filepath)
 
 .read.XStringSet <- function(filepath, format, set.names, basetype)
 {
-    fep_list <- .openInputFiles(filepath)
-    on.exit(.closeInputFiles(fep_list))
+    efp_list <- .openInputFiles(filepath)
+    on.exit(.closeInputFiles(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
@@ -121,9 +121,9 @@ fastq.geometry <- function(filepath)
     elementType <- paste(basetype, "String", sep="")
     lkup <- get_xsbasetypes_conversion_lookup("B", basetype)
     switch(format,
-        "fasta"=.read.fasta.in.XStringSet(fep_list, set.names,
+        "fasta"=.read.fasta.in.XStringSet(efp_list, set.names,
                                           elementType, lkup),
-        "fastq"=.read.fastq.in.XStringSet(fep_list, set.names,
+        "fastq"=.read.fastq.in.XStringSet(efp_list, set.names,
                                           elementType, lkup)
     )
 }

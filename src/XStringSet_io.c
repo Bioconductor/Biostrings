@@ -159,7 +159,7 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fasta_info(SEXP fep_list, SEXP use_descs)
+SEXP fasta_info(SEXP efp_list, SEXP use_descs)
 {
 	void (*add_desc)(int recno, const cachedCharSeq *dataline);
 	int i, recno;
@@ -175,15 +175,15 @@ SEXP fasta_info(SEXP fep_list, SEXP use_descs)
 	} else {
 		add_desc = NULL;
 	}
-	for (i = recno = 0; i < LENGTH(fep_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		errmsg = parse_FASTA_file(stream, &recno,
 				add_desc,
 				&add_empty_seq_LENGTHONLY,
 				&append_to_last_seq_LENGTHONLY);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
-			      STRING_ELT(GET_NAMES(fep_list), i), errmsg_buf);
+			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
 	}
 	PROTECT(ans = IntAE_asINTEGER(&seq_lengths_buf));
 	if (LOGICAL(use_descs)[0]) {
@@ -197,7 +197,7 @@ SEXP fasta_info(SEXP fep_list, SEXP use_descs)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP read_fasta_in_XStringSet(SEXP fep_list, SEXP set_names,
+SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP set_names,
 		SEXP elementType, SEXP lkup)
 {
 	SEXP ans, ans_width, ans_names;
@@ -206,7 +206,7 @@ SEXP read_fasta_in_XStringSet(SEXP fep_list, SEXP set_names,
 	int i, recno;
 	FILE *stream;
 
-	PROTECT(ans_width = fasta_info(fep_list, set_names));
+	PROTECT(ans_width = fasta_info(efp_list, set_names));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
 	element_type = CHAR(STRING_ELT(elementType, 0));
@@ -226,8 +226,8 @@ SEXP read_fasta_in_XStringSet(SEXP fep_list, SEXP set_names,
 		FASTA_lkup = INTEGER(lkup);
 		FASTA_lkup_length = LENGTH(lkup);
 	}
-	for (i = recno = 0; i < LENGTH(fep_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
 		parse_FASTA_file(stream, &recno,
 			NULL,
@@ -366,7 +366,7 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fastq_geometry(SEXP fep_list)
+SEXP fastq_geometry(SEXP efp_list)
 {
 	SEXP ans;
 	int i, recno;
@@ -374,14 +374,14 @@ SEXP fastq_geometry(SEXP fep_list)
 	const char *errmsg;
 
 	FASTQ_width = NA_INTEGER;
-	for (i = recno = 0; i < LENGTH(fep_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		errmsg = parse_FASTQ_file(stream, &recno,
 				NULL, add_seq_WIDTHONLY,
 				NULL, NULL);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
-			      STRING_ELT(GET_NAMES(fep_list), i), errmsg_buf);
+			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
 	}
 	PROTECT(ans = NEW_INTEGER(2));
 	INTEGER(ans)[0] = recno;
@@ -393,7 +393,7 @@ SEXP fastq_geometry(SEXP fep_list)
 /* --- .Call ENTRY POINT ---
  * 'set_names' is ignored.
  */
-SEXP read_fastq_in_XStringSet(SEXP fep_list, SEXP set_names,
+SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP set_names,
 		SEXP elementType, SEXP lkup)
 {
 	SEXP ans, ans_geom, ans_width;
@@ -402,7 +402,7 @@ SEXP read_fastq_in_XStringSet(SEXP fep_list, SEXP set_names,
 	int ans_length, i, recno;
 	FILE *stream;
 
-	PROTECT(ans_geom = fastq_geometry(fep_list));
+	PROTECT(ans_geom = fastq_geometry(efp_list));
 	ans_length = INTEGER(ans_geom)[0];
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
 	if (ans_length != 0) {
@@ -430,8 +430,8 @@ SEXP read_fastq_in_XStringSet(SEXP fep_list, SEXP set_names,
 		FASTQ_lkup = INTEGER(lkup);
 		FASTQ_lkup_length = LENGTH(lkup);
 	}
-	for (i = recno = 0; i < LENGTH(fep_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
 		parse_FASTQ_file(stream, &recno,
 			NULL, append_seq_to_FASTQ_seqbuf, NULL, NULL);

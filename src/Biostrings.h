@@ -268,21 +268,21 @@ SEXP XStringSet_xscat(SEXP args);
 SEXP debug_XStringSet_io();
 
 SEXP fasta_info(
-	SEXP fep_list,
+	SEXP efp_list,
 	SEXP use_descs
 );
 
 SEXP read_fasta_in_XStringSet(
-	SEXP fep_list,
+	SEXP efp_list,
 	SEXP set_names,
 	SEXP elementType,
 	SEXP lkup
 );
 
-SEXP fastq_geometry(SEXP fep_list);
+SEXP fastq_geometry(SEXP efp_list);
 
 SEXP read_fastq_in_XStringSet(
-	SEXP fep_list,
+	SEXP efp_list,
 	SEXP set_names,
 	SEXP elementType,
 	SEXP lkup
