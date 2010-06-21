@@ -131,9 +131,6 @@ export(
     fasta.info, fastq.geometry,
     write.XStringSet,
     save.XStringSet,
-    read.XStringViews, write.XStringViews,
-    FASTArecordsToCharacter, CharacterToFASTArecords,
-    FASTArecordsToXStringViews, XStringSetToFASTArecords,
 
     ## letter.R:
     letter,
@@ -175,7 +172,11 @@ export(
     N50,
 
     ## Old stuff (Defunct or Deprecated):
-    FASTArecordsToBStringViews, read.BStringViews, write.BStringViews,
+    FASTArecordsToCharacter, CharacterToFASTArecords,
+    FASTArecordsToXStringViews, XStringSetToFASTArecords,
+    FASTArecordsToBStringViews,
+    read.BStringViews, write.BStringViews,
+    read.XStringViews, write.XStringViews,
     subXString, subBString,
     consmat,
     replaceLetterAtLoc

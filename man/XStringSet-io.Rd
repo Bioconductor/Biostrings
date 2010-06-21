@@ -12,17 +12,16 @@
 
 \alias{save.XStringSet}
 
-\alias{read.XStringViews}
-\alias{write.XStringViews}
+% Old stuff:
 \alias{FASTArecordsToCharacter}
 \alias{CharacterToFASTArecords}
 \alias{FASTArecordsToXStringViews}
 \alias{XStringSetToFASTArecords}
-
-% Deprecated:
+\alias{FASTArecordsToBStringViews}
 \alias{read.BStringViews}
 \alias{write.BStringViews}
-\alias{FASTArecordsToBStringViews}
+\alias{read.XStringViews}
+\alias{write.XStringViews}
 
 
 \title{Read/write an XStringSet or XStringViews object from/to a file}
@@ -49,14 +48,6 @@
 
   ## Serialize an XStringSet object:
   save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
-
-  ## Some legacy stuff:
-  read.XStringViews(filepath, format="fasta", subjectClass, collapse="")
-  write.XStringViews(x, file="", append=FALSE, format="fasta", width=80)
-  FASTArecordsToCharacter(FASTArecs, use.names=TRUE)
-  CharacterToFASTArecords(x)
-  FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse="")
-  XStringSetToFASTArecords(x)
 }
 
 \arguments{

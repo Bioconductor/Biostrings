@@ -264,13 +264,12 @@ save.XStringSet <- function(x, objname, dirpath=".",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Legacy stuff.
+### Old stuff (Defunct or Deprecated).
 ###
 
-### Conversion between a list of FASTA records (as one returned by
-### readFASTA) and a named character vector.
 FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
 {
+    .Deprecated(msg="FASTArecordsToCharacter is deprecated.")
     use.names <- normargUseNames(use.names)
     ans <- sapply(FASTArecs, function(rec) rec$seq)
     if (use.names)
@@ -280,26 +279,16 @@ FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
 
 CharacterToFASTArecords <- function(x)
 {
+    .Deprecated(msg="CharacterToFASTArecords is deprecated.")
     if (!is.character(x))
         stop("'x' must be a character vector")
     lapply(seq_len(length(x)),
            function(i) list(desc=names(x)[i], seq=x[[i]]))
 }
 
-### Conversion between a list of FASTA records (as one returned by
-### readFASTA) and an XStringViews object.
-###
-### Note that, for any well-formed list of FASTA records 'FASTArecs',
-###
-###   XStringSetToFASTArecords(BStringSet(FASTArecordsToXStringViews(FASTArecs)))
-###
-### is identical to 'FASTArecs'.
-### But it is NOT the case that any XStringViews object y can
-### be "reconstructed" with
-###
-###   FASTArecordsToXStringViews(XStringSetToFASTArecords(BStringSet(y)))
 FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
 {
+    .Deprecated(msg="FASTArecordsToXStringViews is deprecated.")
     if (!isSingleString(subjectClass))
         stop("'subjectClass' must be a single string")
     if (!isSingleString(collapse))
@@ -310,9 +299,28 @@ FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
 
 XStringSetToFASTArecords <- function(x)
 {
+    .Deprecated(msg="XStringSetToFASTArecords is deprecated.")
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
     CharacterToFASTArecords(as.character(x))
+}
+
+FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
+{
+    .Defunct("FASTArecordsToXStringViews")
+    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse=collapse)
+}
+
+read.BStringViews <- function(file, format, subjectClass, collapse="")
+{
+    .Defunct("read.XStringViews")
+    read.XStringViews(file, format, subjectClass, collapse=collapse)
+}
+
+write.BStringViews <- function(x, file="", format, width=80)
+{
+    .Defunct("write.XStringViews")
+    write.XStringViews(x, file=file, format=format, width=width)
 }
 
 .read.fasta <- function(filepath, subjectClass, collapse)
@@ -327,6 +335,7 @@ XStringSetToFASTArecords <- function(x)
 read.XStringViews <- function(filepath, format="fasta",
                               subjectClass, collapse="")
 {
+    .Deprecated(msg="read.XStringViews is deprecated.")
     if (!is.character(filepath) || any(is.na(filepath)))
         stop("'filepath' must be a character vector with no NAs")
     if (!isSingleString(format))
@@ -345,30 +354,8 @@ read.XStringViews <- function(filepath, format="fasta",
 write.XStringViews <- function(x, file="", append=FALSE,
                                format="fasta", width=80)
 {
+    .Deprecated(msg="write.XStringViews is deprecated.")
     y <- XStringViewsToSet(x, use.names=TRUE)
     write.XStringSet(y, file=file, append=append, format, width=width)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
-{
-    .Deprecated("FASTArecordsToXStringViews")
-    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse=collapse)
-}
-
-read.BStringViews <- function(file, format, subjectClass, collapse="")
-{
-    .Deprecated("read.XStringViews")
-    read.XStringViews(file, format, subjectClass, collapse=collapse)
-}
-
-write.BStringViews <- function(x, file="", format, width=80)
-{
-    .Deprecated("write.XStringViews")
-    write.XStringViews(x, file=file, format=format, width=width)
 }
 
