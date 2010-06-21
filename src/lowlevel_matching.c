@@ -633,7 +633,7 @@ SEXP XStringSet_dist_hamming(SEXP x)
 {
 	cachedCharSeq x_i, x_j;
 	cachedXStringSet X;
-	int X_length, *ans_elt, i, j;
+	int X_length, *ans_elt, i, j, max_nmis;
 	unsigned long ans_length;
 	SEXP ans;
 
@@ -656,12 +656,12 @@ SEXP XStringSet_dist_hamming(SEXP x)
 	PROTECT(ans = NEW_INTEGER((int) ans_length));
 	ans_elt = INTEGER(ans);
 
+	max_nmis = _get_cachedXStringSet_elt(&X, 0).length;
 	for (i = 0; i < (X_length - 1); i++) {
 		x_i = _get_cachedXStringSet_elt(&X, i);
 		for (j = (i+1); j < X_length; j++, ans_elt++) {
 			x_j = _get_cachedXStringSet_elt(&X, j);
-			*ans_elt = nedit_at(&x_i, &x_j, 1, 0,
-					    0, 0, 1, 1);
+			*ans_elt = nedit_at(&x_i, &x_j, 1, 0, max_nmis, 0, 1, 1);
 		}
 	}
 	UNPROTECT(1);
