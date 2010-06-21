@@ -1,8 +1,5 @@
 #include "Biostrings.h"
 
-#include <stdlib.h>
-#include <ctype.h> /* for isspace() */
-
 static int debug = 0;
 
 SEXP debug_utils()
@@ -14,36 +11,6 @@ SEXP debug_utils()
 	Rprintf("Debug mode not available in 'utils.c'\n");
 #endif
 	return R_NilValue;
-}
-
-
-/* Like fgets() except that:
- *   - the string stored into the buffer pointed to by s is right-trimmed i.e.
- *     all the rightmost white-space characters were removed,
- *   - return the length of the string stored into the buffer pointed to by s
- *     on success and -1 on error or when end of file occurs while no
- *     characters have been read.
- */
-int fgets_rtrimmed(char *s, int size, FILE *stream)
-{
-	char *s1;
-	int line_len, i;
-	long pos0;
-
-	pos0 = ftell(stream);
-	s1 = fgets(s, size, stream);
-	if (s1 == NULL)
-		return -1;
-	/* 2 almost equivalent ways to get the length of the current line,
-	   "almost" because of they will differ if a line contains embedded
-	   NUL characters */
-	line_len = ftell(stream) - pos0; /* should be faster than strlen() */
-	/* line_len = strlen(s); */
-	i = line_len - 1;
-	while (i >= 0 && isspace(s[i])) i--;
-	line_len = i + 1;
-	s[line_len] = 0;
-	return line_len;
 }
 
 #ifdef DEBUG_BIOSTRINGS

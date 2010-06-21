@@ -29,6 +29,10 @@ static const R_CallMethodDef callMethods[] = {
 /* utils.c */
 	CALLMETHOD_DEF(debug_utils, 0),
 
+/* io_utils.c */
+	CALLMETHOD_DEF(new_ExternalFilePtr, 1),
+	CALLMETHOD_DEF(ExternalFilePtr_close, 1),
+
 /* RoSeqs_utils.c */
 	CALLMETHOD_DEF(debug_RoSeqs_utils, 0),
 	CALLMETHOD_DEF(new_SharedRaw_from_STRSXP, 5),
@@ -53,7 +57,6 @@ static const R_CallMethodDef callMethods[] = {
 
 /* XStringSet_io.c */
 	CALLMETHOD_DEF(debug_XStringSet_io, 0),
-	CALLMETHOD_DEF(io_cleanup, 0),
 	CALLMETHOD_DEF(fasta_info, 2),
 	CALLMETHOD_DEF(read_fasta_in_XStringSet, 4),
 	CALLMETHOD_DEF(fastq_geometry, 1),

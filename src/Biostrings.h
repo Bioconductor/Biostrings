@@ -14,12 +14,6 @@
 
 SEXP debug_utils();
 
-int fgets_rtrimmed(
-	char *s,
-	int size,
-	FILE *stream
-);
-
 void _init_ByteTrTable_with_lkup(
 	ByteTrTable byte2code,
 	SEXP lkup
@@ -62,6 +56,24 @@ int _get_twobit_signature_at(
 	const cachedCharSeq *seq,
 	const int *at,
 	int at_length
+);
+
+
+/* io_utils.c */
+
+SEXP new_ExternalFilePtr(SEXP filepath);
+
+SEXP ExternalFilePtr_close(SEXP x);
+
+int rtrimline(
+	char *linebuf,
+	int size
+);
+
+int fgets_rtrimmed(
+	char *s,
+	int size,
+	FILE *stream
 );
 
 
@@ -255,24 +267,22 @@ SEXP XStringSet_xscat(SEXP args);
 
 SEXP debug_XStringSet_io();
 
-SEXP io_cleanup();
-
 SEXP fasta_info(
-	SEXP filepath,
+	SEXP fep_list,
 	SEXP use_descs
 );
 
 SEXP read_fasta_in_XStringSet(
-	SEXP filepath,
+	SEXP fep_list,
 	SEXP set_names,
 	SEXP elementType,
 	SEXP lkup
 );
 
-SEXP fastq_geometry(SEXP filepath);
+SEXP fastq_geometry(SEXP fep_list);
 
 SEXP read_fastq_in_XStringSet(
-	SEXP filepath,
+	SEXP fep_list,
 	SEXP set_names,
 	SEXP elementType,
 	SEXP lkup

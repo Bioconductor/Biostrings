@@ -5,14 +5,6 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
-#include <ctype.h> /* for isspace() */
-#include <stdlib.h> /* for abs() */
-#include <math.h> /* for log() */
-#include <limits.h> /* for INT_MAX */
-
-#include <sys/types.h>
-#include <sys/stat.h> /* for fstat() */
-
 static int debug = 0;
 
 SEXP debug_XStringSet_io()
@@ -27,135 +19,8 @@ SEXP debug_XStringSet_io()
 	return R_NilValue;
 }
 
-/* Code taken from do_url() in R/src/main/connections.c */
-static void get_file_ztype(const char *path, int *ztype, int *subtype)
-{
-	FILE *fp;
-	char buf[7];
-	int res;
-
-	*ztype = -1;
-	*subtype = 0;
-	if ((fp = fopen(path, "rb")) == NULL)
-		return;
-	memset(buf, 0, 7);
-	res = fread(buf, 5, 1, fp);
-	fclose(fp);
-	if (res != 1)
-		return;
-	if (buf[0] == '\x1f' && buf[1] == '\x8b')
-		*ztype = 0;
-	else if (strncmp(buf, "BZh", 3) == 0)
-		*ztype = 1;
-	else if (buf[0] == '\xFD' && strncmp(buf+1, "7zXZ", 4) == 0)
-		*ztype = 2;
-	else if ((buf[0] == '\xFF') && strncmp(buf+1, "LZMA", 4) == 0) {
-		*ztype = 2;
-		*subtype = 1;
-	} else if (memcmp(buf, "]\0\0\200\0", 5) == 0) {
-		*ztype = 2;
-		*subtype = 1;
-	}
-	return;
-}
-
-static int ninputfiles;
-
-static struct inputfile {
-	FILE *fp;
-	//gzFile gfp;
-} *inputfiles;
-
-static void open_inputfiles(SEXP filepath)
-{
-	SEXP filepath_elt;
-	const char *path;
-	int ret, ztype, subtype;
-	struct stat buf;
-
-	if (!IS_CHARACTER(filepath))
-		error("'filepath' must be a character vector");
-	ninputfiles = 0;
-	inputfiles = (struct inputfile *) malloc(LENGTH(filepath) * sizeof(struct inputfile));
-	if (inputfiles == NULL)
-		error("malloc() failed in open_inputfiles()");
-	while (ninputfiles < LENGTH(filepath)) {
-		filepath_elt = STRING_ELT(filepath, ninputfiles);
-		if (filepath_elt == NA_STRING)
-			error("'filepath' contains NAs");
-		path = R_ExpandFileName(translateChar(filepath_elt));
-		get_file_ztype(path, &ztype, &subtype);
-		switch (ztype) {
-		/* No compression */
-		    case -1:
-			inputfiles[ninputfiles].fp = fopen(path, "r");
-			if (inputfiles[ninputfiles].fp == NULL)
-				error("cannot open file '%s'", path);
-			ret = fstat(fileno(inputfiles[ninputfiles].fp), &buf);
-			ninputfiles++;
-			if (ret != 0)
-				error("Biostrings internal error in open_inputfiles(): "
-				      "cannot stat file '%s'", path);
-			if (S_ISDIR(buf.st_mode))
-				error("file '%s' is a directory", path);
-		    break;
-		/* gzfile */
-		    case 0:
-			error("cannot open file '%s' (gzip-compressed files "
-			      "are not supported yet, sorry!)", path);
-			//open the file with gzFile gfp = gzopen(path, "r");
-			//close it with gzclose();
-		    break;
-		/* bzfile */
-		    case 1:
-			error("cannot open file '%s' (bzip2-compressed files "
-			      "are not supported yet, sorry!)", path);
-			//requires #include <bzlib.h>
-			//open the file with BZFILE* bfp = BZ2_bzReadOpen(...);
-			//close it with BZ2_bzReadClose();
-		    break;
-		/* xzfile */
-		    case 2:
-			error("cannot open file '%s' (LZMA-compressed files "
-			      "are not supported yet, sorry!)", path);
-			//requires #include <lzma.h>
-			//opening/closing this type of file seems quite complicated
-		    break;
-		    default:
-			error("Biostrings internal error in open_files(): ",
-			      "invalid ztype value %d", ztype);
-		}
-	}
-	return;
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP io_cleanup()
-{
-	int fn;
-
-	for (fn = 0; fn < ninputfiles; fn++)
-		fclose(inputfiles[fn].fp);
-	free(inputfiles);
-	return R_NilValue;
-}
-
 #define LINEBUF_SIZE 20001
 static char errmsg_buf[200];
-
-/*
- * Return the number of chars that remain in the buffer after we've removed
- * the right spaces ('\n', '\r', '\t', ' ', etc...).
- */
-static int rtrim(char *linebuf)
-{
-	int i;
-
-	i = strlen(linebuf) - 1;
-	while (i >= 0 && isspace(linebuf[i])) i--;
-	linebuf[++i] = 0;
-	return i;
-}
 
 
 /****************************************************************************
@@ -258,7 +123,7 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 	lineno = 0;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
-		dataline.length = rtrim(linebuf);
+		dataline.length = rtrimline(linebuf, -1);
 		// dataline.length > LINEBUF_SIZE - 1 should never happen
 		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -294,10 +159,11 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fasta_info(SEXP filepath, SEXP use_descs)
+SEXP fasta_info(SEXP fep_list, SEXP use_descs)
 {
 	void (*add_desc)(int recno, const cachedCharSeq *dataline);
-	int fn, recno;
+	int i, recno;
+	FILE *stream;
 	SEXP ans, ans_names;
 	RoSeqs descs;
 	const char *errmsg;
@@ -309,15 +175,15 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 	} else {
 		add_desc = NULL;
 	}
-	open_inputfiles(filepath);
-	for (fn = recno = 0; fn < ninputfiles; fn++) {
-		errmsg = parse_FASTA_file(inputfiles[fn].fp, &recno,
+	for (i = recno = 0; i < LENGTH(fep_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+		errmsg = parse_FASTA_file(stream, &recno,
 				add_desc,
 				&add_empty_seq_LENGTHONLY,
 				&append_to_last_seq_LENGTHONLY);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
-			      STRING_ELT(filepath, fn), errmsg_buf);
+			      STRING_ELT(GET_NAMES(fep_list), i), errmsg_buf);
 	}
 	PROTECT(ans = IntAE_asINTEGER(&seq_lengths_buf));
 	if (LOGICAL(use_descs)[0]) {
@@ -331,15 +197,16 @@ SEXP fasta_info(SEXP filepath, SEXP use_descs)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP read_fasta_in_XStringSet(SEXP filepath, SEXP set_names,
+SEXP read_fasta_in_XStringSet(SEXP fep_list, SEXP set_names,
 		SEXP elementType, SEXP lkup)
 {
 	SEXP ans, ans_width, ans_names;
 	const char *element_type;
 	char classname[40]; // longest string will be "DNAStringSet"
-	int fn, recno;
+	int i, recno;
+	FILE *stream;
 
-	PROTECT(ans_width = fasta_info(filepath, set_names));
+	PROTECT(ans_width = fasta_info(fep_list, set_names));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
 	element_type = CHAR(STRING_ELT(elementType, 0));
@@ -359,9 +226,10 @@ SEXP read_fasta_in_XStringSet(SEXP filepath, SEXP set_names,
 		FASTA_lkup = INTEGER(lkup);
 		FASTA_lkup_length = LENGTH(lkup);
 	}
-	for (fn = recno = 0; fn < ninputfiles; fn++) {
-		rewind(inputfiles[fn].fp);
-		parse_FASTA_file(inputfiles[fn].fp, &recno,
+	for (i = recno = 0; i < LENGTH(fep_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+		rewind(stream);
+		parse_FASTA_file(stream, &recno,
 			NULL,
 			&add_empty_seq_to_FASTA_seqbuf,
 			&append_to_last_seq_in_FASTA_seqbuf);
@@ -443,7 +311,7 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 	lineno = lineinrecno = 0;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
-		dataline.length = rtrim(linebuf);
+		dataline.length = rtrimline(linebuf, -1);
 		// dataline.length > LINEBUF_SIZE - 1 should never happen
 		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -498,21 +366,22 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fastq_geometry(SEXP filepath)
+SEXP fastq_geometry(SEXP fep_list)
 {
 	SEXP ans;
-	int fn, recno;
+	int i, recno;
+	FILE *stream;
 	const char *errmsg;
 
 	FASTQ_width = NA_INTEGER;
-	open_inputfiles(filepath);
-	for (fn = recno = 0; fn < ninputfiles; fn++) {
-		errmsg = parse_FASTQ_file(inputfiles[fn].fp, &recno,
+	for (i = recno = 0; i < LENGTH(fep_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+		errmsg = parse_FASTQ_file(stream, &recno,
 				NULL, add_seq_WIDTHONLY,
 				NULL, NULL);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
-			      STRING_ELT(filepath, fn), errmsg_buf);
+			      STRING_ELT(GET_NAMES(fep_list), i), errmsg_buf);
 	}
 	PROTECT(ans = NEW_INTEGER(2));
 	INTEGER(ans)[0] = recno;
@@ -524,15 +393,16 @@ SEXP fastq_geometry(SEXP filepath)
 /* --- .Call ENTRY POINT ---
  * 'set_names' is ignored.
  */
-SEXP read_fastq_in_XStringSet(SEXP filepath, SEXP set_names,
+SEXP read_fastq_in_XStringSet(SEXP fep_list, SEXP set_names,
 		SEXP elementType, SEXP lkup)
 {
 	SEXP ans, ans_geom, ans_width;
 	const char *element_type;
 	char classname[40]; // longest string will be "DNAStringSet"
-	int ans_length, fn, recno;
+	int ans_length, i, recno;
+	FILE *stream;
 
-	PROTECT(ans_geom = fastq_geometry(filepath));
+	PROTECT(ans_geom = fastq_geometry(fep_list));
 	ans_length = INTEGER(ans_geom)[0];
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
 	if (ans_length != 0) {
@@ -560,9 +430,10 @@ SEXP read_fastq_in_XStringSet(SEXP filepath, SEXP set_names,
 		FASTQ_lkup = INTEGER(lkup);
 		FASTQ_lkup_length = LENGTH(lkup);
 	}
-	for (fn = recno = 0; fn < ninputfiles; fn++) {
-		rewind(inputfiles[fn].fp);
-		parse_FASTQ_file(inputfiles[fn].fp, &recno,
+	for (i = recno = 0; i < LENGTH(fep_list); i++) {
+		stream = R_ExternalPtrAddr(VECTOR_ELT(fep_list, i));
+		rewind(stream);
+		parse_FASTQ_file(stream, &recno,
 			NULL, append_seq_to_FASTQ_seqbuf, NULL, NULL);
 	}
 	UNPROTECT(3);

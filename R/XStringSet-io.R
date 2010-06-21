@@ -38,6 +38,31 @@
     filepath2
 }
 
+.ExternalFilePtr.close <- function(x)
+    .Call("ExternalFilePtr_close", x, PACKAGE="Biostrings")
+
+### Returns a list of "external file pointers".
+.openInputFiles <- function(filepath)
+{
+    filepath2 <- .normargFilepath(filepath)
+    ans <- lapply(filepath2,
+           function(fp)
+           {
+               x <- .Call("new_ExternalFilePtr", fp, PACKAGE="Biostrings")
+               reg.finalizer(x, .ExternalFilePtr.close, onexit=TRUE)
+               x
+           })
+    names(ans) <- filepath
+    ans
+}
+
+### 'fep_list' must be a list of "external file pointers" returned by
+### .openInputFiles().
+.closeInputFiles <- function(fep_list)
+{
+    for (x in fep_list) .ExternalFilePtr.close(x)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### FASTA
@@ -46,17 +71,16 @@
 ### TODO: Rename this fasta.geometry() and deprecate fasta.info()
 fasta.info <- function(filepath, use.descs=TRUE)
 {
-    filepath <- .normargFilepath(filepath)
+    fep_list <- .openInputFiles(filepath)
+    on.exit(.closeInputFiles(fep_list))
     use.descs <- normargUseNames(use.descs)
-    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
-    .Call("fasta_info", filepath, use.descs, PACKAGE="Biostrings")
+    .Call("fasta_info", fep_list, use.descs, PACKAGE="Biostrings")
 }
 
-.read.fasta.in.XStringSet <- function(filepath, set.names, elementType, lkup)
+.read.fasta.in.XStringSet <- function(fep_list, set.names, elementType, lkup)
 {
-    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("read_fasta_in_XStringSet",
-          filepath, set.names, elementType, lkup,
+          fep_list, set.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
 
@@ -67,16 +91,15 @@ fasta.info <- function(filepath, use.descs=TRUE)
 
 fastq.geometry <- function(filepath)
 {
-    filepath <- .normargFilepath(filepath)
-    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
-    .Call("fastq_geometry", filepath, PACKAGE="Biostrings")
+    fep_list <- .openInputFiles(filepath)
+    on.exit(.closeInputFiles(fep_list))
+    .Call("fastq_geometry", fep_list, PACKAGE="Biostrings")
 }
 
-.read.fastq.in.XStringSet <- function(filepath, set.names, elementType, lkup)
+.read.fastq.in.XStringSet <- function(fep_list, set.names, elementType, lkup)
 {
-    on.exit(.Call("io_cleanup", PACKAGE="Biostrings"))
     .Call("read_fastq_in_XStringSet",
-          filepath, set.names, elementType, lkup,
+          fep_list, set.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
 
@@ -88,7 +111,8 @@ fastq.geometry <- function(filepath)
 
 .read.XStringSet <- function(filepath, format, set.names, basetype)
 {
-    filepath <- .normargFilepath(filepath)
+    fep_list <- .openInputFiles(filepath)
+    on.exit(.closeInputFiles(fep_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
@@ -97,9 +121,9 @@ fastq.geometry <- function(filepath)
     elementType <- paste(basetype, "String", sep="")
     lkup <- get_xsbasetypes_conversion_lookup("B", basetype)
     switch(format,
-        "fasta"=.read.fasta.in.XStringSet(filepath, set.names,
+        "fasta"=.read.fasta.in.XStringSet(fep_list, set.names,
                                           elementType, lkup),
-        "fastq"=.read.fastq.in.XStringSet(filepath, set.names,
+        "fastq"=.read.fastq.in.XStringSet(fep_list, set.names,
                                           elementType, lkup)
     )
 }
