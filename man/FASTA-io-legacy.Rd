@@ -1,5 +1,6 @@
 \name{FASTA-io-legacy}
 
+\alias{FASTA-io-legacy}
 \alias{readFASTA}
 \alias{writeFASTA}
 
