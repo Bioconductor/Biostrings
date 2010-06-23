@@ -1,19 +1,21 @@
-\name{readFASTA}
+\name{FASTA-io-legacy}
 
 \alias{readFASTA}
 \alias{writeFASTA}
 
-\title{Functions to read/write FASTA formatted files}
+\title{Legacy functions to read/write FASTA formatted files}
+
 \description{
 \code{readFASTA} and \code{writeFASTA} read from and write to a FASTA file.
+
 Note that the object returned by \code{readFASTA} or passed to
-\code{writeFASTA} is a standard list. For faster and more memory efficient
-alternatives that return/accept an \link{XStringSet} object, see the
-\code{\link{read.DNAStringSet}} function and family.
+\code{writeFASTA} is a standard list. For faster and more memory
+efficient alternatives that return/accept an \link{XStringSet} object,
+see the \code{\link{read.DNAStringSet}} function and family.
 }
 \usage{
-  readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
-  writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
+readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
+writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
 }
 \arguments{
   \item{file}{

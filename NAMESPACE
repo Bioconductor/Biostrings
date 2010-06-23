@@ -108,7 +108,7 @@ exportMethods(
 ### ==========================================================================
 ### UTILITIES
 ### --------------------------------------------------------------------------
-###   readFASTA.R
+###   FASTA-io-legacy.R
 ###   XStringSet-io.R
 ###   letter.R
 ###   subXString.R
@@ -123,7 +123,7 @@ exportMethods(
 ###   misc.R
 
 export(
-    ## readFASTA.R:
+    ## FASTA-io-legacy.R:
     readFASTA, writeFASTA,
 
     ## XStringSet-io.R:
