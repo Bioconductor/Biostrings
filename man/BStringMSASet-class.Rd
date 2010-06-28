@@ -48,82 +48,82 @@
 }
 
 \section{Accessor methods}{
-  In the code snippets below, \code{x} is a BStringMSASet object.
+  In the code snippets below, x is a BStringMSASet object.
 
   \describe{
     \item{}{
-      \code{names(x)}:
-      Retrieves the sequence names for the \code{x} object.
+      names(x):
+      Retrieves the sequence names for the x object.
     }
     \item{}{
-      \code{nchar(x)}:
+      nchar(x):
       Returns the number of characters that each of the strings in the
-      \code{x} object contains.
+      x object contains.
     }
     
   }
 }
 
 \section{Other methods}{
-  In the code snippets below, \code{x} is a BStringMSASet object.
+  In the code snippets below, x is a BStringMSASet object.
 
   \describe{
     \item{}{
-      \code{narrow(x,start,end,width,use.names)}:
-      Narrows the \code{x} object to the range specified by
-      \code{start}, \code{end}, and \code{width}. 
+      narrow(x,start,end,width,use.names):
+      Narrows the x object to the range specified by
+      start, end, and width. 
     }
     \item{}{
-      \code{xscat(...)}:
+      xscat(...):
       Combines the columns of the BStringMSASet objects passed in.
     }
     \item{}{
-      \code{length(x)}:
-      Returns the number of sequences aligned in \code{x}.
+      length(x):
+      Returns the number of sequences aligned in x.
     }
     \item{}{
-      \code{show(x)}:
-      Shows an alignment of the 1st section of \code{x}.
+      show(x):
+      Shows an alignment of the 1st section of x.
     }    
     \item{}{
-      \code{consensusMatrix(x)}:
-      Calculates that Consensus matrix for \code{x}.
+      consensusMatrix(x):
+      Calculates that Consensus matrix for x.
     }    
     \item{}{
-      \code{consensusString(x)}:
-      Calculates a Consensus string for \code{x}.
+      consensusString(x):
+      Calculates a Consensus string for x.
     }
     \item{}{
-      \code{alphabetFrequency(x)}:
-      Calculates the alphabet frequency for \code{x}.
+      alphabetFrequency(x):
+      Calculates the alphabet frequency for x.
     }        
   }
 }
 
 \section{Coercion}{
-  In the code snippets below, \code{x} is a BStringMSASet object.
+  In the code snippets below, x is a BStringMSASet object.
 
   \describe{
     \item{}{
-      \code{as.list(x)}:
-      Turns \code{x} into a list.
+      as.list(x):
+      Turns x into a list.
     }
     \item{}{
-      \code{as.character(x)}:
-      Turns \code{x} into a character vector.
+      as.character(x):
+      Turns x into a character vector.
     }
   }
 }
 
 
 \section{Convenience Function}{
-  In the code snippets below, \code{x} is a BStringMSASet object.
+  In the code snippets below, x is a BStringMSASet object.
 
   \describe{
     \item{}{
-      \code{subsetColumns(x, start, end)}:
-      Subsets \code{x} by using the vectors contained in \code{start}
-      and \code{end} such that the returned BStringMSASet object
+      subsetColumns(x, start, end):
+      Subsets x by using the vectors contained in start
+      and end such that the returned BStringMSASet object
       contains only the columns specified.
     }
   }
