@@ -349,13 +349,13 @@ setMethod("compareStrings",
 ###
 
 setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
-          function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL,
+          function(x, as.prob=FALSE, shift=0L, width=NULL,
                    baseOnly=FALSE, gapCode="-", endgapCode="-")
           {
               if (!identical(shift, 0L) || !identical(width, NULL))
                   stop("\"consensusMatrix\" method for PairwiseAlignedFixedSubject objects ",
                        "doesn't support the 'shift' and 'width' arguments")
               consensusMatrix(aligned(x, gapCode=gapCode, endgapCode=endgapCode),
-                              as.prob=as.prob, freq=freq, baseOnly=baseOnly)
+                              as.prob=as.prob, baseOnly=baseOnly)
           })
 

@@ -51,7 +51,7 @@
   compareStrings(pattern, subject)
 
   \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x,
-                  as.prob=FALSE, freq=FALSE, shift=0L, width=NULL,
+                  as.prob=FALSE, shift=0L, width=NULL,
                   baseOnly=FALSE, gapCode="-", endgapCode="-")
 }
 
@@ -99,10 +99,6 @@
   \item{as.prob}{
     If \code{TRUE} then probabilities are reported,
     otherwise counts (the default).
-  }
-  \item{freq}{
-    This argument is deprecated.
-    Please use the \code{as.prob} argument instead.
   }
   \item{baseOnly}{
     \code{TRUE} or \code{FALSE}.

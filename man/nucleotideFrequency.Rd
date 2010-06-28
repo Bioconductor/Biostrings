@@ -43,23 +43,23 @@
 }
 
 \usage{
-  oligonucleotideFrequency(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+  oligonucleotideFrequency(x, width, as.prob=FALSE, as.array=FALSE,
                            fast.moving.side="right", with.labels=TRUE, ...)
 
   \S4method{oligonucleotideFrequency}{XStringSet}(x,
-      width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+      width, as.prob=FALSE, as.array=FALSE,
       fast.moving.side="right", with.labels=TRUE, simplify.as="matrix")
 
-  dinucleotideFrequency(x, as.prob=FALSE, freq=FALSE, as.matrix=FALSE,
+  dinucleotideFrequency(x, as.prob=FALSE, as.matrix=FALSE,
                         fast.moving.side="right", with.labels=TRUE, ...)
-  trinucleotideFrequency(x, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+  trinucleotideFrequency(x, as.prob=FALSE, as.array=FALSE,
                          fast.moving.side="right", with.labels=TRUE, ...)
 
-  nucleotideFrequencyAt(x, at, as.prob=FALSE, freq=FALSE, as.array=TRUE,
+  nucleotideFrequencyAt(x, at, as.prob=FALSE, as.array=TRUE,
                         fast.moving.side="right", with.labels=TRUE, ...)
 
   ## Some related functions:
-  oligonucleotideTransitions(x, left=1, right=1, as.prob=FALSE, freq=FALSE)
+  oligonucleotideTransitions(x, left=1, right=1, as.prob=FALSE)
   mkAllStrings(alphabet, width, fast.moving.side="right")
 }
 
@@ -84,10 +84,6 @@
   \item{as.prob}{
     If \code{TRUE} then probabilities are reported,
     otherwise counts (the default).
-  }
-  \item{freq}{
-    This argument is deprecated.
-    Please use the \code{as.prob} argument instead.
   }
   \item{as.array,as.matrix}{
     Controls the "shape" of the returned object.

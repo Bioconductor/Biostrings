@@ -75,13 +75,13 @@ sequence, or the consensus matrix of a set of sequences}
 }
 
 \usage{
-  alphabetFrequency(x, as.prob=FALSE, freq=FALSE, ...)
+  alphabetFrequency(x, as.prob=FALSE, ...)
   hasOnlyBaseLetters(x)
   uniqueLetters(x)
 
   letterFrequencyInSlidingView(x, view.width, letters, OR="|")
 
-  consensusMatrix(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
+  consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
 
   \S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
   \S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
@@ -111,10 +111,6 @@ sequence, or the consensus matrix of a set of sequences}
   \item{as.prob}{
     If \code{TRUE} then probabilities are reported,
     otherwise counts (the default).
-  }
-  \item{freq}{
-    This argument is deprecated.
-    Please use the \code{as.prob} argument instead.
   }
   \item{view.width}{
     For letterFrequencyInSlidingView,

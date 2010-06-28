@@ -13,23 +13,6 @@
 ### -------------------------------------------------------------------------
 
 
-.normargAsProb <- function(as.prob, freq, funname)
-{
-    if (identical(freq, FALSE)) {
-        if (!isTRUEorFALSE(as.prob))
-            stop("'as.prob' must be TRUE or FALSE")
-        return(as.prob)
-    }
-    if (!identical(as.prob, FALSE))
-        stop("you cannot specify both, the 'as.prob' and 'freq' args")
-    warning("the signature of ", funname, "() has changed\n",
-            "  Please use the 'as.prob' argument instead of the ",
-            "'freq' argument.\n  See '?", funname, "'")
-    if (!isTRUEorFALSE(freq))
-        stop("'freq' must be TRUE or FALSE")
-    return(freq)
-}
-
 .normargCollapse <- function(collapse)
 {
     if (!isTRUEorFALSE(collapse))
@@ -113,9 +96,10 @@
 ### sum(alphabetFrequency(x)) should always be exactly nchar(x)
 ###
 
-.XString.letter_frequency <- function(x, as.prob, freq)
+.XString.letter_frequency <- function(x, as.prob)
 {
-    as.prob <- .normargAsProb(as.prob, freq, "alphabetFrequency")
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
     ans <- .Call("XString_letter_frequency",
                  x, NULL, FALSE,
                  PACKAGE="Biostrings")
@@ -124,9 +108,10 @@
     ans
 }
 
-.XString.code_frequency <- function(x, as.prob, freq, baseOnly)
+.XString.code_frequency <- function(x, as.prob, baseOnly)
 {
-    as.prob <- .normargAsProb(as.prob, freq, "alphabetFrequency")
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
     codes <- xscodes(x, baseOnly=baseOnly)
     ans <- .Call("XString_letter_frequency",
                  x, codes, baseOnly,
@@ -136,9 +121,10 @@
     ans
 }
 
-.XStringSet.letter_frequency <- function(x, as.prob, freq, collapse)
+.XStringSet.letter_frequency <- function(x, as.prob, collapse)
 {
-    as.prob <- .normargAsProb(as.prob, freq, "alphabetFrequency")
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
     collapse <- .normargCollapse(collapse)
     ans <- .Call("XStringSet_letter_frequency",
                  x, collapse, NULL, FALSE,
@@ -152,9 +138,10 @@
     ans
 }
 
-.XStringSet.code_frequency <- function(x, as.prob, freq, collapse, baseOnly)
+.XStringSet.code_frequency <- function(x, as.prob, collapse, baseOnly)
 {
-    as.prob <- .normargAsProb(as.prob, freq, "alphabetFrequency")
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
     collapse <- .normargCollapse(collapse)
     codes <- xscodes(x, baseOnly=baseOnly)
     ans <- .Call("XStringSet_letter_frequency",
@@ -170,38 +157,37 @@
 }
 
 setGeneric("alphabetFrequency", signature="x",
-    function(x, as.prob=FALSE, freq=FALSE, ...)
-        standardGeneric("alphabetFrequency")
+    function(x, as.prob=FALSE, ...) standardGeneric("alphabetFrequency")
 )
 
 setMethod("alphabetFrequency", "XString",
-    function(x, as.prob=FALSE, freq=FALSE)
-        .XString.letter_frequency(x, as.prob, freq)
+    function(x, as.prob=FALSE)
+        .XString.letter_frequency(x, as.prob)
 )
 
 setMethod("alphabetFrequency", "DNAString",
-    function(x, as.prob=FALSE, freq=FALSE, baseOnly=FALSE)
-        .XString.code_frequency(x, as.prob, freq, baseOnly)
+    function(x, as.prob=FALSE, baseOnly=FALSE)
+        .XString.code_frequency(x, as.prob, baseOnly)
 )
 
 setMethod("alphabetFrequency", "RNAString",
-    function(x, as.prob=FALSE, freq=FALSE, baseOnly=FALSE)
-        .XString.code_frequency(x, as.prob, freq, baseOnly)
+    function(x, as.prob=FALSE, baseOnly=FALSE)
+        .XString.code_frequency(x, as.prob, baseOnly)
 )
 
 setMethod("alphabetFrequency", "XStringSet",
-    function(x, as.prob=FALSE, freq=FALSE, collapse=FALSE)
-        .XStringSet.letter_frequency(x, as.prob, freq, collapse)
+    function(x, as.prob=FALSE, collapse=FALSE)
+        .XStringSet.letter_frequency(x, as.prob, collapse)
 )
 
 setMethod("alphabetFrequency", "DNAStringSet",
-    function(x, as.prob=FALSE, freq=FALSE, collapse=FALSE, baseOnly=FALSE)
-        .XStringSet.code_frequency(x, as.prob, freq, collapse, baseOnly)
+    function(x, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE)
+        .XStringSet.code_frequency(x, as.prob, collapse, baseOnly)
 )
 
 setMethod("alphabetFrequency", "RNAStringSet",
-    function(x, as.prob=FALSE, freq=FALSE, collapse=FALSE, baseOnly=FALSE)
-        .XStringSet.code_frequency(x, as.prob, freq, collapse, baseOnly)
+    function(x, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE)
+        .XStringSet.code_frequency(x, as.prob, collapse, baseOnly)
 )
 
 ### library(drosophila2probe)
@@ -211,18 +197,18 @@ setMethod("alphabetFrequency", "RNAStringSet",
 ### y <- DNAStringSet(x)
 ### alphabetFrequency(y, baseOnly=TRUE)
 setMethod("alphabetFrequency", "XStringViews",
-    function(x, as.prob=FALSE, freq=FALSE, ...)
+    function(x, as.prob=FALSE, ...)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-        alphabetFrequency(y, as.prob=as.prob, freq=freq, ...)
+        alphabetFrequency(y, as.prob=as.prob, ...)
     }
 )
 
 setMethod("alphabetFrequency", "MaskedXString",
-    function(x, as.prob=FALSE, freq=FALSE, ...)
+    function(x, as.prob=FALSE, ...)
     {
         y <- as(x, "XStringViews")
-        alphabetFrequency(y, as.prob=as.prob, freq=freq, collapse=TRUE, ...)
+        alphabetFrequency(y, as.prob=as.prob, collapse=TRUE, ...)
     }
 )
 
@@ -451,19 +437,20 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ###
 
 setGeneric("oligonucleotideFrequency", signature="x",
-    function(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+    function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE, ...)
         standardGeneric("oligonucleotideFrequency")
 )
 
 setMethod("oligonucleotideFrequency", "XString",
-    function(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+    function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE)
     {
         if (!(xsbasetype(x) %in% c("DNA", "RNA")))
             stop("'x' must be of DNA or RNA base type")
         width <- .normargWidth(width)
-        as.prob <- .normargAsProb(as.prob, freq, "oligonucleotideFrequency")
+        if (!isTRUEorFALSE(as.prob))
+            stop("'as.prob' must be TRUE or FALSE")
         as.array <- .normargAsArray(as.array)
         fast.moving.side <- .normargFastMovingSide(fast.moving.side, as.array)
         with.labels <- .normargWithLabels(with.labels)
@@ -477,14 +464,15 @@ setMethod("oligonucleotideFrequency", "XString",
 )
 
 setMethod("oligonucleotideFrequency", "XStringSet",
-    function(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+    function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE,
              simplify.as="matrix")
     {
         if (!(xsbasetype(x) %in% c("DNA", "RNA")))
             stop("'x' must be of DNA or RNA base type")
         width <- .normargWidth(width)
-        as.prob <- .normargAsProb(as.prob, freq, "oligonucleotideFrequency")
+        if (!isTRUEorFALSE(as.prob))
+            stop("'as.prob' must be TRUE or FALSE")
         as.array <- .normargAsArray(as.array)
         fast.moving.side <- .normargFastMovingSide(fast.moving.side, as.array)
         with.labels <- .normargWithLabels(with.labels)
@@ -499,11 +487,11 @@ setMethod("oligonucleotideFrequency", "XStringSet",
 )
 
 setMethod("oligonucleotideFrequency", "XStringViews",
-    function(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+    function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE, ...)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-        oligonucleotideFrequency(y, width, as.prob=as.prob, freq=freq,
+        oligonucleotideFrequency(y, width, as.prob=as.prob,
                                  as.array=as.array,
                                  fast.moving.side=fast.moving.side,
                                  with.labels=with.labels, ...)
@@ -511,11 +499,11 @@ setMethod("oligonucleotideFrequency", "XStringViews",
 )
 
 setMethod("oligonucleotideFrequency", "MaskedXString",
-    function(x, width, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+    function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE, ...)
     {
         y <- as(x, "XStringViews")
-        oligonucleotideFrequency(y, width, as.prob=as.prob, freq=freq,
+        oligonucleotideFrequency(y, width, as.prob=as.prob,
                                  as.array=as.array,
                                  fast.moving.side=fast.moving.side,
                                  with.labels=with.labels, simplify.as="collapsed")
@@ -528,27 +516,27 @@ setMethod("oligonucleotideFrequency", "MaskedXString",
 ### "oligonucleotideTransitions" convenience wrappers.
 ###
 
-dinucleotideFrequency <- function(x, as.prob=FALSE, freq=FALSE, as.matrix=FALSE,
+dinucleotideFrequency <- function(x, as.prob=FALSE, as.matrix=FALSE,
                                   fast.moving.side="right",
                                   with.labels=TRUE, ...)
 {
-    oligonucleotideFrequency(x, 2, as.prob=as.prob, freq=freq, as.array=as.matrix,
+    oligonucleotideFrequency(x, 2, as.prob=as.prob, as.array=as.matrix,
                              fast.moving.side=fast.moving.side,
                              with.labels=with.labels, ...)
 }
 
-trinucleotideFrequency <- function(x, as.prob=FALSE, freq=FALSE, as.array=FALSE,
+trinucleotideFrequency <- function(x, as.prob=FALSE, as.array=FALSE,
                                    fast.moving.side="right",
                                    with.labels=TRUE, ...)
 {
-    oligonucleotideFrequency(x, 3, as.prob=as.prob, freq=freq, as.array=as.array,
+    oligonucleotideFrequency(x, 3, as.prob=as.prob, as.array=as.array,
                              fast.moving.side=fast.moving.side,
                              with.labels=with.labels, ...)
 }
 
-oligonucleotideTransitions <- function(x, left=1, right=1, as.prob=FALSE, freq=FALSE)
+oligonucleotideTransitions <- function(x, left=1, right=1, as.prob=FALSE)
 {
-    freqs <- oligonucleotideFrequency(x, width = left + right, as.prob = as.prob, freq = freq)
+    freqs <- oligonucleotideFrequency(x, width = left + right, as.prob = as.prob)
     transitions <-
       matrix(freqs, nrow = 4 ^ left, ncol = 4 ^ right, byrow = TRUE,
              dimnames = list(unique(substring(names(freqs), 1, left)),
@@ -564,13 +552,13 @@ oligonucleotideTransitions <- function(x, left=1, right=1, as.prob=FALSE, freq=F
 ###
 
 setGeneric("nucleotideFrequencyAt", signature="x",
-    function(x, at, as.prob=FALSE, freq=FALSE, as.array=TRUE,
+    function(x, at, as.prob=FALSE, as.array=TRUE,
              fast.moving.side="right", with.labels=TRUE, ...)
         standardGeneric("nucleotideFrequencyAt")
 )
 
 setMethod("nucleotideFrequencyAt", "XStringSet",
-    function(x, at, as.prob=FALSE, freq=FALSE, as.array=TRUE,
+    function(x, at, as.prob=FALSE, as.array=TRUE,
              fast.moving.side="right", with.labels=TRUE)
     {
         if (!(xsbasetype(x) %in% c("DNA", "RNA")))
@@ -579,7 +567,8 @@ setMethod("nucleotideFrequencyAt", "XStringSet",
             stop("'at' must be a vector of integers")
         if (!is.integer(at))
             at <- as.integer(at)
-        as.prob <- .normargAsProb(as.prob, freq, "nucleotideFrequencyAt")
+        if (!isTRUEorFALSE(as.prob))
+            stop("'as.prob' must be TRUE or FALSE")
         as.array <- .normargAsArray(as.array)
         fast.moving.side <- .normargFastMovingSide(fast.moving.side, as.array)
         with.labels <- .normargWithLabels(with.labels)
@@ -593,13 +582,13 @@ setMethod("nucleotideFrequencyAt", "XStringSet",
 )
 
 setMethod("nucleotideFrequencyAt", "XStringViews",
-    function(x, at, as.prob=FALSE, freq=FALSE, as.array=TRUE,
+    function(x, at, as.prob=FALSE, as.array=TRUE,
              fast.moving.side="right", with.labels=TRUE, ...)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
         if (any(width(y) < width(x)))
             stop("x contains \"out of limits\" views")
-        nucleotideFrequencyAt(y, at, as.prob=as.prob, freq=freq, as.array=as.array,
+        nucleotideFrequencyAt(y, at, as.prob=as.prob, as.array=as.array,
                               fast.moving.side=fast.moving.side,
                               with.labels=with.labels, ...)
     }
@@ -611,30 +600,30 @@ setMethod("nucleotideFrequencyAt", "XStringViews",
 ###
 
 setGeneric("consensusMatrix", signature="x",
-    function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
+    function(x, as.prob=FALSE, shift=0L, width=NULL, ...)
         standardGeneric("consensusMatrix"))
 
 setMethod("consensusMatrix", "character",
-    function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL)
+    function(x, as.prob=FALSE, shift=0L, width=NULL)
         consensusMatrix(BStringSet(x),
-                        as.prob=as.prob, freq=freq, shift=shift, width=width)
+                        as.prob=as.prob, shift=shift, width=width)
 )
 
 setMethod("consensusMatrix", "matrix",
-    function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL)
+    function(x, as.prob=FALSE, shift=0L, width=NULL)
         consensusMatrix(BStringSet(apply(x, 1, paste, collapse="")),
-                        as.prob=as.prob, freq=freq, shift=shift, width=width)
+                        as.prob=as.prob, shift=shift, width=width)
 )
 
 ### 'x' must be a list of FASTA records as one returned by readFASTA()
 setMethod("consensusMatrix", "list",
-    function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL)
+    function(x, as.prob=FALSE, shift=0L, width=NULL)
         consensusMatrix(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)),
-                        as.prob=as.prob, freq=freq, shift=shift, width=width)
+                        as.prob=as.prob, shift=shift, width=width)
 )
 
 setMethod("consensusMatrix", "XStringSet",
-    function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, baseOnly=FALSE)
+    function(x, as.prob=FALSE, shift=0L, width=NULL, baseOnly=FALSE)
     {
         if (!is.integer(shift))
             shift <- as.integer(shift)
@@ -653,7 +642,8 @@ setMethod("consensusMatrix", "XStringSet",
         } else {
             removeUnused <- FALSE
         }
-        as.prob <- .normargAsProb(as.prob, freq, "consensusMatrix")
+        if (!isTRUEorFALSE(as.prob))
+            stop("'as.prob' must be TRUE or FALSE")
         ans <- .Call("XStringSet_consensus_matrix",
                      x, shift, width, baseOnly, codes,
                      PACKAGE="Biostrings")
@@ -670,10 +660,10 @@ setMethod("consensusMatrix", "XStringSet",
 )
 
 setMethod("consensusMatrix", "XStringViews",
-    function(x, as.prob=FALSE, freq=FALSE, shift=0L, width=NULL, ...)
+    function(x, as.prob=FALSE, shift=0L, width=NULL, ...)
     {
         y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
-        consensusMatrix(y, as.prob=as.prob, freq=freq, shift=shift, width=width, ...)
+        consensusMatrix(y, as.prob=as.prob, shift=shift, width=width, ...)
     }
 )
 
