@@ -615,13 +615,6 @@ setMethod("consensusMatrix", "matrix",
                         as.prob=as.prob, shift=shift, width=width)
 )
 
-### 'x' must be a list of FASTA records as one returned by readFASTA()
-setMethod("consensusMatrix", "list",
-    function(x, as.prob=FALSE, shift=0L, width=NULL)
-        consensusMatrix(BStringSet(FASTArecordsToCharacter(x, use.names=FALSE)),
-                        as.prob=as.prob, shift=shift, width=width)
-)
-
 setMethod("consensusMatrix", "XStringSet",
     function(x, as.prob=FALSE, shift=0L, width=NULL, baseOnly=FALSE)
     {

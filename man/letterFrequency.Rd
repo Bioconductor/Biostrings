@@ -35,7 +35,6 @@
 \alias{consensusMatrix}
 \alias{consensusMatrix,character-method}
 \alias{consensusMatrix,matrix-method}
-\alias{consensusMatrix,list-method}
 \alias{consensusMatrix,XStringSet-method}
 \alias{consensusMatrix,XStringViews-method}
 \alias{consensusString}

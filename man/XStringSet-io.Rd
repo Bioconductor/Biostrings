@@ -24,11 +24,10 @@
 \alias{write.XStringViews}
 
 
-\title{Read/write an XStringSet or XStringViews object from/to a file}
+\title{Read/write an XStringSet object from/to a file}
 
 \description{
-  Functions to read/write an \link{XStringSet} or \link{XStringViews} object
-  from/to a file.
+  Functions to read/write an \link{XStringSet} object from/to a file.
 }
 
 \usage{
@@ -56,22 +55,16 @@
   }
   \item{format}{
     Either \code{"fasta"} (the default) or \code{"fastq"}.
-    Note that \code{write.XStringSet} and \code{write.XStringViews} only
-    support \code{"fasta"} for now.
+    Note that \code{write.XStringSet} only supports \code{"fasta"} for now.
   }
   \item{use.descs}{
     Should the returned vector be named with the description lines
     found in the FASTA records?
   }
   \item{x}{
-    For \code{write.XStringSet} and \code{write.XStringViews}, the object to
-    write to \code{file}.
-    For \code{CharacterToFASTArecords}, the (possibly named) character
-    vector to be converted to a list of FASTA records as one returned
-    by \code{\link{readFASTA}}.
-    For \code{XStringSetToFASTArecords}, the \link{XStringSet} object
-    to be converted to a list of FASTA records as one returned
-    by \code{\link{readFASTA}}.
+    For \code{write.XStringSet}, the object to write to \code{file}.
+
+    For \code{save.XStringSet}, the object to serialize.
   }
   \item{file}{
     A connection, or a character string naming the file to write
@@ -103,24 +96,6 @@
   \item{verbose}{
     \code{TRUE} or \code{FALSE}.
   }
-  \item{subjectClass}{
-    The class to be given to the subject of the \link{XStringViews} object
-    created and returned by the function.
-    Must be the name of one of the direct XString subclasses i.e.
-    \code{"BString"}, \code{"DNAString"}, \code{"RNAString"}
-    or \code{"AAString"}.
-  }
-  \item{collapse}{
-    An optional character string to be inserted between the views of the
-    \link{XStringViews} object created and returned by the function.
-  }
-  \item{FASTArecs}{
-    A list of FASTA records as one returned by \code{\link{readFASTA}}.
-  }
-  \item{use.names}{
-    Whether or not the description line preceding each FASTA records should be
-    used to set the names of the returned object.
-  }
 }
 
 \details{
@@ -129,15 +104,14 @@
   are returned).
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
-  \code{read.RNAStringSet}, \code{read.AAStringSet} and \code{read.XStringViews}
-  load sequences from an input file (or set of input files) into an
-  \link{XStringSet} or \link{XStringViews} object. (Note that for now
-  \code{read.XStringViews} can only read 1 FASTA file at a time but
-  this will be addressed ASAP).
-  When multiple input files are specified, they are read in the corresponding
-  order and their data are stored in the returned object in that order.
-  Note that when multiple input FASTQ files are specified, they must all
-  have the same "width" (i.e. all their sequences must have the same length).
+  \code{read.RNAStringSet} and \code{read.AAStringSet} load sequences
+  from an input file (or set of input files) into an \link{XStringSet}
+  object.
+  When multiple input files are specified, they are read in the
+  corresponding order and their data are stored in the returned object
+  in that order. Note that when multiple input FASTQ files are specified,
+  all must have the same "width" (i.e. all their sequences must have the
+  same length).
 
   The \code{fasta.info} utility returns an integer vector with one element
   per FASTA record in the input files. Each element is the length of the
@@ -152,27 +126,19 @@
   \code{NA} if the files contain no FASTQ records or records with
   different "widths").
 
-  Writing functions \code{write.XStringSet} and \code{write.XStringViews}
-  write an \link{XStringSet} or \link{XStringViews} object to a file or
-  connection. They only support the FASTA format for now.
+  \code{write.XStringSet} writes an \link{XStringSet} object to a file.
+  Its only supports the FASTA format for now.
 
   Serializing an \link{XStringSet} object with \code{save.XStringSet}
   is equivalent to using the standard \code{save} mechanism. But it will
   try to reduce the size of \code{x} in memory first before calling
   \code{save}. Most of the times this leads to a much reduced size on disk.
-
-  \code{FASTArecordsToCharacter}, \code{CharacterToFASTArecords},
-  \code{FASTArecordsToXStringViews} and \code{XStringSetToFASTArecords}
-  are helper functions used internally by \code{write.XStringSet} and
-  \code{read.XStringViews} for switching between different
-  representations of the same object.
 }
 
 \seealso{
   \code{\link{readFASTA}},
   \code{\link{writeFASTA}},
   \link{XStringSet-class},
-  \link{XStringViews-class},
   \link{BString-class},
   \link{DNAString-class},
   \link{RNAString-class},
@@ -208,15 +174,6 @@
   sw <- Views(Celegans$chrI, start=sw_start, width=10)
   my_fake_shortreads <- as(sw, "XStringSet")
   save.XStringSet(my_fake_shortreads, "my_fake_shortreads", dirpath=tempdir())
-
-  ## ---------------------------------------------------------------------
-  ## D. SOME RELATED HELPER FUNCTIONS
-  ## ---------------------------------------------------------------------
-  ## Converting 'x'...
-  ## ... to a list of FASTA records (as one returned by the "readFASTA" function)
-  x1 <- XStringSetToFASTArecords(x)
-  ## ... to a named character vector
-  x2 <- FASTArecordsToCharacter(x1) # same as 'as.character(x)'
 }
 
 \keyword{utilities}
