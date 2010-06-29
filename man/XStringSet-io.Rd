@@ -51,7 +51,11 @@
 
 \arguments{
   \item{filepath}{
-    A character vector containing the paths to the files to read or write.
+    A character vector (of arbitrary length when reading, of length 1
+    when writing) containing the paths to the files to read or write.
+    Note that special values like \code{""} or \code{"|cmd"} (typically
+    supported by other I/O functions in R) are not supported here.
+    Also \code{filepath} cannot be a connection.
   }
   \item{format}{
     Either \code{"fasta"} (the default) or \code{"fastq"}.
@@ -65,11 +69,6 @@
     For \code{write.XStringSet}, the object to write to \code{file}.
 
     For \code{save.XStringSet}, the object to serialize.
-  }
-  \item{file}{
-    A connection, or a character string naming the file to write
-    to.  If \code{""} (the default), print to the standard output
-    connection (generally the console) unless redirected by \code{sink}.
   }
   \item{append}{
     \code{TRUE} or \code{FALSE}. If \code{TRUE} output will be
