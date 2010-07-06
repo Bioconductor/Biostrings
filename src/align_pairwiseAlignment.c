@@ -322,11 +322,14 @@ static double pairwiseAlignment(
 					}
 
 					CURR_MATRIX(i, 0) = MAX(0.0, CURR_MATRIX(i, 0));
-					if (CURR_MATRIX(i, 0) == 0.0) {
+					if (CURR_MATRIX(i, 0) == 0.0)
 						S_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
+					CURR_MATRIX(i, 1) = MAX(0.0, CURR_MATRIX(i, 1));
+					if (CURR_MATRIX(i, 1) == 0.0)
 						D_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
+					CURR_MATRIX(i, 2) = MAX(0.0, CURR_MATRIX(i, 2));
+					if (CURR_MATRIX(i, 2) == 0.0)
 						I_TRACE_MATRIX(iMinus1, jMinus1) = TERMINATION;
-					}
 
 					/* Step 3d:  Get the optimal score for local alignments */
 					if (CURR_MATRIX(i, 0) >= maxScore) {

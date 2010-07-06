@@ -21,6 +21,20 @@ test_pairwiseAlignment_emptyLocalAlign <- function()
 }
 
 
+test_pairwiseAlignment_gappedLocalAlign <- function()
+{
+    string1 <- DNAString("TCAGTTGCCAAACCCGCT")
+    string2 <- DNAString("AGGGTTGACATCCGTTTT")
+    sigma <- nucleotideSubstitutionMatrix(match = 10, mismatch = -10, baseOnly = TRUE)
+    alignment <-
+      pairwiseAlignment(string1, string2, substitutionMatrix = sigma,
+                        gapOpening = -12,  gapExtension = -3, type="local")
+    checkEquals(as.character(aligned(pattern(alignment))), "GTTGCCAAACCCG")
+    checkEquals(as.character(aligned(subject(alignment))), "GTTGACAT--CCG")
+    checkEquals(score(alignment), 52)
+}
+
+
 test_pairwiseAlignment_backToBackIndel <- function()
 {
     mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -10, baseOnly = TRUE)
