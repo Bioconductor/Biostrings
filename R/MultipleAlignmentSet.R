@@ -1,13 +1,34 @@
 ### =========================================================================
-### BStringMSASet objects
+### MultipleAlignmentSet objects
 ### -------------------------------------------------------------------------
 ###
 
-setClass("BStringMSASet",
-    representation(set="BStringSet"))
+setClass("MultipleAlignmentSet",
+    ## representation(set="BStringSet"))
+    representation(set="BStringSet", view="CompressedIRangesList"))
+## a CompressedIRangesList (CompressedList) should do the trick to let me
+## track where everything is.
 
-setMethod("length","BStringMSASet",function(x){length(x@set)})
-setMethod("[","BStringMSASet",
+
+## MultipleAlignmentSet constructor
+MultipleAlignmentSet <- function(x=character(), start=1, end=nchar(x[[1]]),use.names=TRUE)
+{
+  ## Test that all lengths are == to each other
+  if(length(x)>0){
+    if(!all(unlist(lapply(x,nchar)) %in% nchar(x[[1]]))){
+      stop("All the Strings in an MSA Set have to be the same length")}
+  }
+  new("MultipleAlignmentSet", set=BStringSet(x=x,start=start,end=end,width=NA,
+                         use.names=use.names),
+                       ##Always start with 1 large range as the view
+                       view=as(IRanges:::IRangesList(start=start, end=end),
+                               "CompressedIRangesList")
+      )
+}
+
+
+setMethod("length","MultipleAlignmentSet",function(x){length(x@set)})
+setMethod("[","MultipleAlignmentSet",
           function(x, i, j, ..., drop){
             if (!missing(j) || length(list(...)) > 0)
               stop("invalid subsetting")
@@ -21,7 +42,7 @@ setMethod("[","BStringMSASet",
               stop("subscript out of bounds")
             x@set <- x@set[i]; x})
 
-setMethod("[[","BStringMSASet",
+setMethod("[[","MultipleAlignmentSet",
           function(x, i, j, ..., value){
             if (!missing(j) || length(list(...)) > 0)
               stop("invalid subsetting")
@@ -35,50 +56,49 @@ setMethod("[[","BStringMSASet",
               stop("subscript out of bounds")            
             x@set[[i]]})
 
-setMethod("names","BStringMSASet",function(x){names(x@set)})
-setReplaceMethod("names", "BStringMSASet",
+setMethod("names","MultipleAlignmentSet",function(x){names(x@set)})
+setReplaceMethod("names", "MultipleAlignmentSet",
                  function(x,value){names(x@set)<-value; x})
-setMethod("nchar","BStringMSASet",function(x){nchar(x@set)})
+setMethod("nchar","MultipleAlignmentSet",function(x){nchar(x@set)})
 
-setMethod("narrow","BStringMSASet",
+
+
+## Starting about here, we suddenly want to think of things in terms of
+## re-arranging the values in the view slot instead of actually munging the
+## real string.
+
+
+setMethod("narrow","MultipleAlignmentSet",
           function(x,start,end,width,use.names){
             if(length(start)>1 || length(end) >1){
               stop(paste("Only 1 start and/or end allowed when ",
-                         "narrowing a BStringMSASet.", sep=""))}
+                         "narrowing a MultipleAlignmentSet.", sep=""))}
             x@set <- narrow(x@set,start,end,width,use.names); x})
 
 setGeneric("xscat", signature="...",
     function(...) standardGeneric("xscat"))
 
-setMethod("xscat","BStringMSASet",
+setMethod("xscat","MultipleAlignmentSet",
           function(...){
             ans_set <- do.call(xscat, lapply(list(...), function(x)x@set))
-            new("BStringMSASet", set=ans_set)
+            new("MultipleAlignmentSet", set=ans_set)
           })
 
-setMethod("as.list","BStringMSASet",function(x){as.list(x@set)})
-setMethod("as.character","BStringMSASet",function(x){as.character(x@set)})
+setMethod("as.list","MultipleAlignmentSet",function(x){as.list(x@set)})
+setMethod("as.character","MultipleAlignmentSet",function(x){as.character(x@set)})
 
-setMethod("consensusMatrix","BStringMSASet",
+
+setMethod("consensusMatrix","MultipleAlignmentSet",
           function(x){consensusMatrix(x@set)})
-setMethod("consensusString","BStringMSASet",
+setMethod("consensusString","MultipleAlignmentSet",
           function(x){consensusString(x@set)})
-setMethod("alphabetFrequency","BStringMSASet",
+setMethod("alphabetFrequency","MultipleAlignmentSet",
           function(x){alphabetFrequency(x@set)})
 
 
-## BStringMSASet constructor
-BStringMSASet <- function(x=character(), start=NA, end=NA, width=NA,
-                          use.names=TRUE)
-{
-  ## Test that all lengths are == to each other
-  if(length(x)>0){
-    if(!all(unlist(lapply(x,nchar)) %in% nchar(x[[1]]))){
-      stop("All the Strings in an MSA Set have to be the same length")}
-  }
-  new("BStringMSASet", set=BStringSet(x=x, start=start, end=end, width= width,
-                         use.names=use.names))
-}
+
+
+
 
 
 .namesMSAW <- 20
@@ -170,7 +190,7 @@ SeqSnippetSlice <- function(x, width, index)
 }
 
 
-setMethod("show", "BStringMSASet",
+setMethod("show", "MultipleAlignmentSet",
     function(object)
     {
         cat("  A ", class(object), " instance with ", length(object), " sequences represented.","\n", sep="")
@@ -202,7 +222,7 @@ clustReader = function(file){
   data = split(data, factor(rep(1:count, length(data)/count)))
   data = unlist(lapply(data, paste, collapse=""))
   names(data) = ids
-  BStringMSASet(data) 
+  MultipleAlignmentSet(data) 
 }
 
 

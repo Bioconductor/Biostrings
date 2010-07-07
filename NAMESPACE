@@ -332,7 +332,7 @@ exportMethods(
 ###   pairwiseAlignment.R
 ###   stringDist.R
 ###   needwunsQS.R
-###   BStringMSASet.R
+###   MultipleAlignmentSet.R
 
 exportClasses(
     XStringPartialMatches,
@@ -344,7 +344,7 @@ exportClasses(
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
     PairwiseAlignedFixedSubjectSummary,
-    BStringMSASet
+    MultipleAlignmentSet
 )
 
 export(
@@ -388,7 +388,7 @@ export(
     ## stringDist.R:
     stringDist,
 
-    ## BStringMSASet.R:
+    ## MultipleAlignmentSet.R:
     xscat,
     subsetColumns,
     clustReader,

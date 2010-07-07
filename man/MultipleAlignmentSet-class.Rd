@@ -1,45 +1,45 @@
-\name{BStringMSASet-class}
+\name{MultipleAlignmentSet-class}
 \docType{class}
 
 % Classes:
-\alias{class:BStringMSASet}
-\alias{BStringMSASet-class}
-\alias{BStringMSASet}
+\alias{class:MultipleAlignmentSet}
+\alias{MultipleAlignmentSet-class}
+\alias{MultipleAlignmentSet}
 
 % Accessor-like methods:
-\alias{names,BStringMSASet-method}
-\alias{names<-,BStringMSASet-method}
-\alias{nchar,BStringMSASet-method}
-\alias{[,BStringMSASet-method}
-\alias{[[,BStringMSASet-method}
+\alias{names,MultipleAlignmentSet-method}
+\alias{names<-,MultipleAlignmentSet-method}
+\alias{nchar,MultipleAlignmentSet-method}
+\alias{[,MultipleAlignmentSet-method}
+\alias{[[,MultipleAlignmentSet-method}
 
 % Other methods:
-\alias{narrow,BStringMSASet-method}
-\alias{xscat,BStringMSASet-method}
-\alias{consensusMatrix,BStringMSASet-method}
-\alias{consensusString,BStringMSASet-method}
-\alias{alphabetFrequency,BStringMSASet-method}
-\alias{length,BStringMSASet-method}
-\alias{show,BStringMSASet-method}
+\alias{narrow,MultipleAlignmentSet-method}
+\alias{xscat,MultipleAlignmentSet-method}
+\alias{consensusMatrix,MultipleAlignmentSet-method}
+\alias{consensusString,MultipleAlignmentSet-method}
+\alias{alphabetFrequency,MultipleAlignmentSet-method}
+\alias{length,MultipleAlignmentSet-method}
+\alias{show,MultipleAlignmentSet-method}
 
 % Coercion:
-\alias{as.list,BStringMSASet-method}
-\alias{as.character,BStringMSASet-method}
+\alias{as.list,MultipleAlignmentSet-method}
+\alias{as.character,MultipleAlignmentSet-method}
 
 % Convenience Function:
 \alias{subsetColumns}
 \alias{clustReader}
 
 
-\title{BStringMSASet objects}
+\title{MultipleAlignmentSet objects}
 
 \description{
-   The BStringMSASet class is a containers for storing multiple sequence
+   The MultipleAlignmentSet class is a containers for storing multiple sequence
    alignments.  
 }
 
 \details{
-  The BStringMSASet is meant to hold and represent multiple sequence
+  The MultipleAlignmentSet is meant to hold and represent multiple sequence
   alignments.  Internally, these are a series of equivalent length strings,
   each of which has had gaps inserted etc. such that they represent the
   output of an alignment algorithm.  There are also a series of simple
@@ -48,7 +48,7 @@
 }
 
 \section{Accessor methods}{
-  In the code snippets below, x is a BStringMSASet object.
+  In the code snippets below, x is a MultipleAlignmentSet object.
 
   \describe{
     \item{}{
@@ -65,7 +65,7 @@
 }
 
 \section{Other methods}{
-  In the code snippets below, x is a BStringMSASet object.
+  In the code snippets below, x is a MultipleAlignmentSet object.
 
   \describe{
     \item{}{
@@ -75,7 +75,7 @@
     }
     \item{}{
       xscat(...):
-      Combines the columns of the BStringMSASet objects passed in.
+      Combines the columns of the MultipleAlignmentSet objects passed in.
     }
     \item{}{
       length(x):
@@ -101,7 +101,7 @@
 }
 
 \section{Coercion}{
-  In the code snippets below, x is a BStringMSASet object.
+  In the code snippets below, x is a MultipleAlignmentSet object.
 
   \describe{
     \item{}{
@@ -117,13 +117,13 @@
 
 
 \section{Convenience Function}{
-  In the code snippets below, x is a BStringMSASet object.
+  In the code snippets below, x is a MultipleAlignmentSet object.
 
   \describe{
     \item{}{
       subsetColumns(x, start, end):
       Subsets x by using the vectors contained in start
-      and end such that the returned BStringMSASet object
+      and end such that the returned MultipleAlignmentSet object
       contains only the columns specified.
     }
   }
