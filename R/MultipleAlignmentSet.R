@@ -4,30 +4,26 @@
 ###
 
 setClass("MultipleAlignmentSet",
-    ## representation(set="BStringSet"))
-    representation(set="BStringSet", view="CompressedIRangesList"))
-## a CompressedIRangesList (CompressedList) should do the trick to let me
-## track where everything is.
-
+    representation(set="BStringSet",
+                   masks="MaskCollection",
+                   rowMasks="integer"))
 
 ## MultipleAlignmentSet constructor
 MultipleAlignmentSet <- function(x=character(), start=1, end=nchar(x[[1]]),use.names=TRUE)
 {
   ## Test that all lengths are == to each other
   if(length(x)>0){
-    if(!all(unlist(lapply(x,nchar)) %in% nchar(x[[1]]))){
-      stop("All the Strings in an MSA Set have to be the same length")}
+   if(!all(unlist(lapply(x,nchar)) %in% nchar(x[[1]]))){
+      stop("All the Strings in an MAS Set have to be the same length")}
   }
   new("MultipleAlignmentSet", set=BStringSet(x=x,start=start,end=end,width=NA,
                          use.names=use.names),
-                       ##Always start with 1 large range as the view
-                       view=as(IRanges:::IRangesList(start=start, end=end),
-                               "CompressedIRangesList")
+                       masks=Mask(mask.width=nchar(x[[1]]),start=start,
+                         width=nchar(x[[1]])),
+                       rowMasks=integer(length=length(x))
       )
 }
 
-
-setMethod("length","MultipleAlignmentSet",function(x){length(x@set)})
 setMethod("[","MultipleAlignmentSet",
           function(x, i, j, ..., drop){
             if (!missing(j) || length(list(...)) > 0)
@@ -59,35 +55,36 @@ setMethod("[[","MultipleAlignmentSet",
 setMethod("names","MultipleAlignmentSet",function(x){names(x@set)})
 setReplaceMethod("names", "MultipleAlignmentSet",
                  function(x,value){names(x@set)<-value; x})
+
+setMethod("as.list","MultipleAlignmentSet",function(x){as.list(x@set)})
+setMethod("as.character","MultipleAlignmentSet",function(x){as.character(x@set)})
 setMethod("nchar","MultipleAlignmentSet",function(x){nchar(x@set)})
+setMethod("length","MultipleAlignmentSet",function(x){length(x@set)}) 
 
 
 
-## Starting about here, we suddenly want to think of things in terms of
-## re-arranging the values in the view slot instead of actually munging the
-## real string.
-
+####################################################################
+## Below here we implement versions of methods that are "mask aware"
+####################################################################
 
 setMethod("narrow","MultipleAlignmentSet",
           function(x,start,end,width,use.names){
-            if(length(start)>1 || length(end) >1){
-              stop(paste("Only 1 start and/or end allowed when ",
-                         "narrowing a MultipleAlignmentSet.", sep=""))}
-            x@set <- narrow(x@set,start,end,width,use.names); x})
+            x@masks <- Mask(mask.width=nchar(x[[1]]),start,end,width);x})
 
+
+
+## TODO: remove this after we refactor subsetColumns()
 setGeneric("xscat", signature="...",
     function(...) standardGeneric("xscat"))
-
 setMethod("xscat","MultipleAlignmentSet",
           function(...){
             ans_set <- do.call(xscat, lapply(list(...), function(x)x@set))
             new("MultipleAlignmentSet", set=ans_set)
           })
 
-setMethod("as.list","MultipleAlignmentSet",function(x){as.list(x@set)})
-setMethod("as.character","MultipleAlignmentSet",function(x){as.character(x@set)})
 
 
+## I definitely want to OL these to consider the mask slot
 setMethod("consensusMatrix","MultipleAlignmentSet",
           function(x){consensusMatrix(x@set)})
 setMethod("consensusString","MultipleAlignmentSet",
@@ -101,15 +98,43 @@ setMethod("alphabetFrequency","MultipleAlignmentSet",
 
 
 
-.namesMSAW <- 20
-.XStringMSASet.show_frame_header <- function(iW, widthW, with.names)
+
+## I might need to do something like this (but modded to remove chars instead
+## of # them) I need to be able to call this on the Bstrings, BUT, I also only
+## need to be able to do it in the context of these local show methods, so
+## probably this is just a local function instead of a method...
+## setMethod("as.character", "MaskedXString",
+##     function(x)
+##     {
+##         ans <- as.character(unmasked(x))
+##         nir0 <- as(x, "NormalIRanges")
+##         for (i in seq_len(length(nir0))) {
+##             strip <- paste(rep.int("#", width(nir0)[i]), collapse="")
+##             substr(ans,  start(nir0)[i], end(nir0)[i]) <- strip
+##         }
+##         ans = gsub("#","",ans)
+##         ans
+##     }
+## )
+
+
+
+
+
+
+
+## For the show method, I should be able to just make each Bstring be a
+## MaskedXStringSet and then call as.character() on each using the mask slot.
+
+.namesMASW <- 20
+.XStringMAS.show_frame_header <- function(iW, widthW, with.names)
 {
     cat(format("", width=iW+1),
         ## format("width", width=widthW, justify="right"),
         sep="")
     if (with.names) {
-        cat(format(" seq", width=getOption("width")-iW-widthW-.namesMSAW-1),
-            format("names", width=.namesMSAW, justify="left"),
+        cat(format(" seq", width=getOption("width")-iW-widthW-.namesMASW-1),
+            format("names", width=.namesMASW, justify="left"),
             sep="")
     } else {
         cat(" seq")
@@ -133,12 +158,12 @@ SeqSnippetSlice <- function(x, width, index)
     }else{}## print nothing
 }
 
-.XStringMSASet.show_frame_line <- function(x, i, iW, widthW, index)
+.XStringMAS.show_frame_line <- function(x, i, iW, widthW, index)
 {
     width <- nchar(x)[i]
     snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(names(x)))
-        snippetWidth <- snippetWidth - .namesMSAW - 1   
+        snippetWidth <- snippetWidth - .namesMASW - 1   
     seq_snippet <- SeqSnippetSlice(x[[i]], snippetWidth, index)
     
     if (!is.null(names(x)) && !is.null(seq_snippet))
@@ -151,8 +176,8 @@ SeqSnippetSlice <- function(x, width, index)
       snippet_name <- names(x)[i]
       if (is.na(snippet_name))
         snippet_name <- "<NA>"
-      else if (nchar(snippet_name) > .namesMSAW)
-        snippet_name <- paste(substr(snippet_name, 1, .namesMSAW-3),
+      else if (nchar(snippet_name) > .namesMASW)
+        snippet_name <- paste(substr(snippet_name, 1, .namesMASW-3),
                               "...", sep="")
       cat(" ", snippet_name, sep="")
     }
@@ -160,7 +185,7 @@ SeqSnippetSlice <- function(x, width, index)
 }
 
 
-.XStringMSASet.show_frame <- function(x, half_nrow=9L)
+.XStringMAS.show_frame <- function(x, half_nrow=9L)
 {
   ##hard codes the number of sets of rows we plan to display
   .frameLines <- 3
@@ -169,21 +194,21 @@ SeqSnippetSlice <- function(x, width, index)
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(nchar(x))
     widthW <- max(nchar(ncharMax), nchar("width"))
-    .XStringMSASet.show_frame_header(iW, widthW, !is.null(names(x)))
+    .XStringMAS.show_frame_header(iW, widthW, !is.null(names(x)))
 
   for(index in seq_len(.frameLines)){   
     if (lx <= 2*half_nrow+1) {
       for (i in seq_len(lx))
-        .XStringMSASet.show_frame_line(x, i, iW, widthW, index)
+        .XStringMAS.show_frame_line(x, i, iW, widthW, index)
         cat("\n")
     } else {
       for (i in 1:half_nrow)
-        .XStringMSASet.show_frame_line(x, i, iW, widthW, index)
+        .XStringMAS.show_frame_line(x, i, iW, widthW, index)
       cat(format("...", width=iW, justify="right"),
           format("...", width=widthW, justify="right"),
           "...\n")
       for (i in (lx-half_nrow+1L):lx)
-        .XStringMSASet.show_frame_line(x, i, iW, widthW, index)
+        .XStringMAS.show_frame_line(x, i, iW, widthW, index)
         cat("\n")
     }
   }
@@ -195,7 +220,7 @@ setMethod("show", "MultipleAlignmentSet",
     {
         cat("  A ", class(object), " instance with ", length(object), " sequences represented.","\n", sep="")
         if (length(object) != 0)
-            .XStringMSASet.show_frame(object)
+            .XStringMAS.show_frame(object)
     }
 )
 
