@@ -150,7 +150,7 @@ cl[3]
 narrow(cl, start= 9200, end = 10000)
 
 ## Select out a series of ranges of columns
-subsetColumns(cl, start=c(1,11), end=c(10,20))
+cl <- subsetColumns(cl, start=c(1,20), end=c(4,30))
 
 ## List the names of the sequences in the alignment
 names(cl)

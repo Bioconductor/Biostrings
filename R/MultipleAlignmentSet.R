@@ -18,8 +18,8 @@ MultipleAlignmentSet <- function(x=character(), start=1, end=nchar(x[[1]]),use.n
   }
   new("MultipleAlignmentSet", set=BStringSet(x=x,start=start,end=end,width=NA,
                          use.names=use.names),
-                       masks=Mask(mask.width=nchar(x[[1]]),start=start,
-                         width=nchar(x[[1]])),
+                       masks=Mask(mask.width=nchar(x[[1]]),start=0,
+                         end=0),
                        rowMasks=integer(length=length(x))
       )
 }
@@ -59,14 +59,17 @@ setReplaceMethod("names", "MultipleAlignmentSet",
 setMethod("as.list","MultipleAlignmentSet",function(x){as.list(x@set)})
 setMethod("as.character","MultipleAlignmentSet",function(x){as.character(x@set)})
 setMethod("nchar","MultipleAlignmentSet",function(x){nchar(x@set)})
-setMethod("length","MultipleAlignmentSet",function(x){length(x@set)}) 
+setMethod("length","MultipleAlignmentSet",function(x){length(x@set)})
 
 
 
-####################################################################
+######################################################################
 ## Below here we implement versions of methods that are "mask aware"
-####################################################################
+######################################################################
 
+## TODO: change narrow so that it does what it says it does (instead of the
+## opposite) OR just jettison narrow (we don't really need it here, I am just
+## using it for some quick test.
 setMethod("narrow","MultipleAlignmentSet",
           function(x,start,end,width,use.names){
             x@masks <- Mask(mask.width=nchar(x[[1]]),start,end,width);x})
@@ -118,13 +121,42 @@ setMethod("alphabetFrequency","MultipleAlignmentSet",
 ## )
 
 
+.charStrFormat = function(str, msk){
+    masks(str) <- msk
+    ans <- as.character(unmasked(str))
+    nir0 <- as(str, "NormalIRanges")
+    for (i in seq_len(length(nir0))) {
+      strip <- paste(rep.int("#", width(nir0)[i]), collapse="")
+      substr(ans,  start(nir0)[i], end(nir0)[i]) <- strip
+    }
+    ans = gsub("#","",ans)
+    ##ans = gsub("-","*",ans)##Temp test
+    ans
+}
 
 
 
 
 
-## For the show method, I should be able to just make each Bstring be a
-## MaskedXStringSet and then call as.character() on each using the mask slot.
+## TODO: For the show method, We need to make sure that we display a special
+## message when the entire thing is masked...
+
+SeqSnippetSlice <- function(x, width, index, mask)
+{
+    if(index<=1){start=1}else{start=width*(index-1)}
+    if (width < 7L)
+        width <- 7L
+    seqlen <- length(x)
+    truncEnd <- start+width
+    if ((truncEnd) > seqlen && seqlen > start) {
+      paste(subseq(.charStrFormat(x, mask), start=start, end=seqlen),
+            sep="")      
+    } else if ((truncEnd) <= seqlen) {
+      paste(subseq(.charStrFormat(x, mask), start=start, width=width),
+            sep="")            
+    }else{}## print nothing
+}
+
 
 .namesMASW <- 20
 .XStringMAS.show_frame_header <- function(iW, widthW, with.names)
@@ -142,29 +174,13 @@ setMethod("alphabetFrequency","MultipleAlignmentSet",
     cat("\n")
 }
 
-SeqSnippetSlice <- function(x, width, index)
-{
-    if(index<=1){start=1}else{start=width*(index-1)}
-    if (width < 7L)
-        width <- 7L
-    seqlen <- length(x)
-    truncEnd <- start+width
-    if ((truncEnd) > seqlen && seqlen > start) {
-      paste(as.character(subseq(x, start=start, end = seqlen)),
-            sep="")
-    } else if ((truncEnd) <= seqlen) {
-      paste(as.character(subseq(x, start=start, width=width)),
-            sep="")
-    }else{}## print nothing
-}
-
 .XStringMAS.show_frame_line <- function(x, i, iW, widthW, index)
 {
     width <- nchar(x)[i]
     snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(names(x)))
         snippetWidth <- snippetWidth - .namesMASW - 1   
-    seq_snippet <- SeqSnippetSlice(x[[i]], snippetWidth, index)
+    seq_snippet <- SeqSnippetSlice(x[[i]], snippetWidth, index, mask=x@masks)
     
     if (!is.null(names(x)) && !is.null(seq_snippet))
       seq_snippet <- format(seq_snippet, width=snippetWidth)
@@ -257,13 +273,8 @@ subsetColumns <- function(x, start, end){
   if(length(start) != length(end)){
     stop("You must supply an equal number of starts and ends.")
   }
-  lst = list(length(start))
-  for(i in seq_len(length(start))){## better
-    lst[[i]] <- narrow(x, start=start[i], end=end[i])
-  }
-  res <- do.call("xscat", lst)
-  names(res) <- names
-  res
+  x@masks <- Mask(mask.width=nchar(x[[1]]),start,end);
+  x
 }
- 
+
 
