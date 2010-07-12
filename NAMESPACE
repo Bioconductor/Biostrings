@@ -389,7 +389,6 @@ export(
     stringDist,
 
     ## MultipleAlignmentSet.R:
-    xscat,
     subsetColumns,
     clustReader,
 
@@ -414,7 +413,7 @@ exportMethods(
     compareStrings,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     pairwiseAlignment, stringDist,
-    nchar, names, "names<-", "[[", narrow, xscat,
+    nchar, names, "names<-", "[[", narrow,
     consensusMatrix, consensusString,
     alphabetFrequency, as.list,
 

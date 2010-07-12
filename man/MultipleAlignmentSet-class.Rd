@@ -143,14 +143,9 @@ cl = clustReader(file =
                   system.file("extdata","clustalw2.aln",
                                package="Biostrings"))
 
-## Remove unwanted rows
-cl[3]
-
-## Remove all but a range of columns
-narrow(cl, start= 9200, end = 10000)
-
 ## Select out a series of ranges of columns
 cl <- subsetColumns(cl, start=c(1,20), end=c(4,30))
+cl
 
 ## List the names of the sequences in the alignment
 names(cl)
