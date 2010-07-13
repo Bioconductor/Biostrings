@@ -332,7 +332,7 @@ exportMethods(
 ###   pairwiseAlignment.R
 ###   stringDist.R
 ###   needwunsQS.R
-###   MultipleAlignmentSet.R
+###   MultipleAlignment.R
 
 exportClasses(
     XStringPartialMatches,
@@ -389,7 +389,7 @@ export(
     ## stringDist.R:
     stringDist,
 
-    ## MultipleAlignmentSet.R:
+    ## MultipleAlignment.R:
     clustReader,
     sampleMask, "sampleMask<-",
     alignmentMask, "alignmentMask<-",
