@@ -345,7 +345,7 @@ exportClasses(
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
     PairwiseAlignedFixedSubjectSummary,
     MultipleAlignment,
-    DNAMultipleAlignment
+    DNAMultipleAlignment, RNAMultipleAlignment, AAMultipleAlignment
 )
 
 export(
@@ -390,10 +390,13 @@ export(
     stringDist,
 
     ## MultipleAlignment.R:
-    clustReader,
-    sampleMask, "sampleMask<-",
-    alignmentMask, "alignmentMask<-",
-    unmask,
+    DNAMultipleAlignment,
+    RNAMultipleAlignment,
+    AAMultipleAlignment,
+    rowmask, "rowmask<-",
+    colmask, "colmask<-",
+    maskednrow, maskedncol, maskeddim,
+    read.MultipleAlignment,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
@@ -420,9 +423,9 @@ exportMethods(
     consensusMatrix, consensusString,
     alphabetFrequency, as.list,
 
-    sampleMask,"sampleMask<-",
-    alignmentMask, "alignmentMask<-",
-    unmask,
+    rowmask, "rowmask<-",
+    colmask, "colmask<-",
+    maskednrow, maskedncol, maskeddim,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS

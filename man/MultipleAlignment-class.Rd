@@ -8,176 +8,267 @@
 \alias{class:DNAMultipleAlignment}
 \alias{DNAMultipleAlignment-class}
 \alias{DNAMultipleAlignment}
-% \alias{class:AAMultipleAlignment}
-% \alias{AAMultipleAlignment-class}
-% \alias{AAMultipleAlignment}
-% \alias{class:RNAMultipleAlignment}
-% \alias{RNAMultipleAlignment-class}
-% \alias{RNAMultipleAlignment}
+\alias{class:RNAMultipleAlignment}
+\alias{RNAMultipleAlignment-class}
+\alias{RNAMultipleAlignment}
+\alias{class:AAMultipleAlignment}
+\alias{AAMultipleAlignment-class}
+\alias{AAMultipleAlignment}
 
 % Accessor-like methods:
+\alias{unmasked,MultipleAlignment-method}
 \alias{rownames,MultipleAlignment-method}
 \alias{rownames<-,MultipleAlignment-method}
-\alias{alignmentMask}
-\alias{alignmentMask,MultipleAlignment-method}
-\alias{alignmentMask<-}
-\alias{alignmentMask<-,MultipleAlignment,NormalIRanges-method}
-\alias{alignmentMask<-,MultipleAlignment,NULL-method}
-\alias{sampleMask}
-\alias{sampleMask,MultipleAlignment-method}
-\alias{sampleMask<-}
-\alias{sampleMask<-,MultipleAlignment,NormalIRanges-method}
-\alias{sampleMask<-,MultipleAlignment,NULL-method}
-\alias{unmask}
-\alias{unmask,MultipleAlignment-method}
+\alias{rowmask}
+\alias{rowmask,MultipleAlignment-method}
+\alias{rowmask<-}
+\alias{rowmask<-,MultipleAlignment,NULL-method}
+\alias{rowmask<-,MultipleAlignment,NormalIRanges-method}
+\alias{rowmask<-,MultipleAlignment,IRanges-method}
+\alias{colmask}
+\alias{colmask,MultipleAlignment-method}
+\alias{colmask<-}
+\alias{colmask<-,MultipleAlignment,NULL-method}
+\alias{colmask<-,MultipleAlignment,NormalIRanges-method}
+\alias{colmask<-,MultipleAlignment,IRanges-method}
+\alias{nrow,MultipleAlignment-method}
+\alias{ncol,MultipleAlignment-method}
+\alias{dim,MultipleAlignment-method}
+\alias{maskednrow}
+\alias{maskednrow,MultipleAlignment-method}
+\alias{maskedncol}
+\alias{maskedncol,MultipleAlignment-method}
+\alias{maskeddim}
+\alias{maskeddim,MultipleAlignment-method}
+\alias{maskedratio,MultipleAlignment-method}
+\alias{nchar,MultipleAlignment-method}
+\alias{xsbasetype,MultipleAlignment-method}
 
+% Read method:
+\alias{read.MultipleAlignment}
 
-% Other methods:
+% Coercion:
+\alias{coerce,MultipleAlignment,DNAStringSet-method}
+\alias{coerce,MultipleAlignment,RNAStringSet-method}
+\alias{coerce,MultipleAlignment,AAStringSet-method}
+\alias{coerce,MultipleAlignment,BStringSet-method}
+\alias{coerce,character,DNAMultipleAlignment-method}
+\alias{coerce,character,RNAMultipleAlignment-method}
+\alias{coerce,character,AAMultipleAlignment-method}
+\alias{as.character,MultipleAlignment-method}
+\alias{as.matrix,MultipleAlignment-method}
+
+% Utilities:
 \alias{consensusMatrix,MultipleAlignment-method}
 \alias{consensusString,MultipleAlignment-method}
 \alias{alphabetFrequency,MultipleAlignment-method}
-\alias{ncol,MultipleAlignment-method}
-\alias{nrow,MultipleAlignment-method}
+
+% show method:
 \alias{show,MultipleAlignment-method}
-
-% Coercion:
-\alias{as.character,MultipleAlignment-method}
-
-% Convenience Function:
-\alias{clustReader}
 
 
 \title{MultipleAlignment objects}
 
 \description{
-   The MultipleAlignment class is a containers for storing multiple sequence
-   alignments.  
+   The MultipleAlignment class is a container for storing multiple sequence
+   alignments.
 }
 
-\details{
-  The MultipleAlignment is meant to hold and represent multiple sequence
-  alignments.  Internally, these are a series of equivalent length strings,
-  each of which has had gaps inserted etc. such that they represent the
-  output of an alignment algorithm.  There are also a series of simple
-  methods provided so that these alignments can have rows and columns
-  removed, and so that the consensus sequence can be obtained etc.
+\usage{
+  ## Constructors:
+  DNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+  RNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+  AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+
+  ## Read method:
+  read.MultipleAlignment(filepath, format)
+
+  ## ... and more (see below)
 }
 
-\section{Accessor methods}{
-  In the code snippets below, x is a MultipleAlignment object.
-
-  \describe{
-    \item{}{
-      rownames(x):
-      Retrieves the sequence names for the x object.
-    }
-    \item{}{
-      alignmentMask(x):
-      Allows access to the alignmentMask slot.
-    }
-    \item{}{
-      sampleMask(x):
-      Allows access to the sampleMask slot.
-    }
-    \item{}{
-      unmask(x):
-      Allows removal of all mask slots.
-    }
-    \item{}{
-      ncol(x):
-      Returns the number of characters that each of the strings in the
-      x object contains.
-    }
-    
+\arguments{
+  \item{x}{
+    Either a character vector (with no NAs), or an \link{XString},
+    XStringSet or \link{XStringViews} object.
+  }
+  \item{start,end,width}{
+    Either \code{NA}, a single integer, or an integer vector of the same
+    length as \code{x} specifying how \code{x} should be "narrowed"
+    (see \code{?\link[IRanges:Ranges-utils]{narrow}} for the details).
+  }
+  \item{use.names}{
+    \code{TRUE} or \code{FALSE}. Should names be preserved?
+  }
+  \item{filepath}{
+    A character vector (of arbitrary length when reading, of length 1
+    when writing) containing the paths to the files to read or write.
+    Note that special values like \code{""} or \code{"|cmd"} (typically
+    supported by other I/O functions in R) are not supported here. Also
+    \code{filepath} cannot be a connection.
+  }
+  \item{format}{
+    File format.
   }
 }
 
-\section{Other methods}{
-  In the code snippets below, x is a MultipleAlignment object.
+\details{
+  The MultipleAlignment class is designed to hold and represent multiple
+  sequence alignments. The rows and columns within an alignment can be
+  masked for ad hoc analyses.
+}
+
+\section{Accessor methods}{
+  In the code snippets below, \code{x} is a MultipleAlignment object.
 
   \describe{
     \item{}{
-      nrow(x):
-      Returns the number of sequences aligned in x.
+      \code{unmasked(x)}:
+      The underlying \link{XStringSet} object containing the multiple
+      sequence alignment.
     }
     \item{}{
-      show(x):
-      Shows an alignment of the 1st section of x.
-    }    
-    \item{}{
-      consensusMatrix(x):
-      Calculates that Consensus matrix for x.
-    }    
-    \item{}{
-      consensusString(x):
-      Calculates a Consensus string for x.
+      \code{rownames(x)}:
+      \code{NULL} or a character vector of the same length as \code{x}
+      containing a short user-provided description or comment for each
+      sequence in \code{x}.
     }
     \item{}{
-      alphabetFrequency(x):
-      Calculates the alphabet frequency for x.
-    }        
+      \code{rowmask(x)}, \code{rowmask(x) <- value}:
+      Gets and sets the \link{NormalIRanges} object representing the
+      masked rows in \code{x}.
+    }
+    \item{}{
+      \code{colmask(x)}, \code{colmask(x) <- value}:
+      Gets and sets the \link{NormalIRanges} object representing the
+      masked columns in \code{x}.
+    }
+    \item{}{
+      \code{nrow(x)}:
+      Returns the number of sequences aligned in \code{x}.
+    }
+    \item{}{
+      \code{ncol(x)}:
+      Returns the number of characters for each alignment in \code{x}.
+    }
+    \item{}{
+      \code{dim(x)}:
+      Equivalent to \code{c(nrow(x), ncol(x))}.
+    }
+    \item{}{
+      \code{maskednrow(x)}:
+      Returns the number of masked aligned sequences in \code{x}.
+    }
+    \item{}{
+      \code{maskedncol(x)}:
+      Returns the number of masked aligned characters in \code{x}.
+    }
+    \item{}{
+      \code{maskeddim(x)}:
+      Equivalent to \code{c(maskednrow(x), maskedncol(x))}.
+    }
+    \item{}{
+      \code{maskedratio(x)}:
+      Equivalent to \code{maskeddim(x) / dim(x)}.
+    }
+    \item{}{
+      \code{nchar(x)}:
+      Returns the number of unmasked aligned characters in \code{x},
+      i.e. \code{ncol(x) - maskedncol(x)}.
+    }
+    \item{}{
+      \code{alphabet(x)}:
+      Equivalent to \code{alphabet(unmasked(x))}.
+    }
   }
 }
 
 \section{Coercion}{
+  In the code snippets below, \code{x} is a MultipleAlignment object.
+
+  \describe{
+    \item{}{
+      \code{as(from, "DNAStringSet")}, \code{as(from, "RNAStringSet")},
+      \code{as(from, "AAStringSet")}, \code{as(from, "BStringSet")}:
+      Creates an instance of the specified \link{XStringSet} object subtype
+      that contains the unmasked regions of the multiple sequence alignment
+      in \code{x}.
+    }
+    \item{}{
+      \code{as.character(x, use.names)}:
+      Convert \code{x} to a character vector containing the unmasked
+      regions of the multiple sequence alignment. \code{use.names}
+      controls whether or not \code{rownames(x)} should be used to set
+      the names of the returned vector (default is \code{TRUE}).
+    }
+    \item{}{
+      \code{as.matrix(x, use.names)}:
+      Returns a character matrix containing the "exploded" representation
+      of the unmasked regions of the multiple sequence alignment.
+      \code{use.names} controls whether or not \code{rownames(x)} should
+      be used to set the row names of the returned matrix (default is
+      \code{TRUE}).
+    }
+  }
+}
+
+\section{Utilities}{
   In the code snippets below, x is a MultipleAlignment object.
 
   \describe{
     \item{}{
-      as.character(x):
-      Turns x into a character vector.
+      consensusMatrix(x, as.prob, baseOnly):
+      Creates an integer matrix containing the column frequencies of
+      the underlying alphabet. If \code{as.prob} is \code{TRUE}, then
+      probabilities are reported, otherwise counts are reported (the
+      default). If \code{baseOnly} is \code{TRUE}, then the non-base
+      letters are collapsed into an \code{"other"} category.
     }
-  }
-}
-
-\section{Convenience}{
-
-  \describe{
     \item{}{
-      clustReader():
-      creates a MultipleAlignment object from a clustalW .aln file.
+      consensusString(x, ...):
+      Creates a consensus string for \code{x}.
+    }
+    \item{}{
+      alphabetFrequency(x, as.prob, collapse):
+      Creates an integer matrix containing the row frequencies of
+      the underlying alphabet. If \code{as.prob} is \code{TRUE}, then
+      probabilities are reported, otherwise counts are reported (the
+      default). If \code{collapse} is \code{TRUE}, then returns the
+      overall frequency instead of the frequency by row.
     }
   }
 }
 
 
-
-
-\author{M. Carlson}
+\author{M. Carlson and P. Aboyoun}
 
 \seealso{
-  \link{XString-class},
-  \link{XStringViews-class}
+  \link{XStringSet-class},
+  \link{MaskedXString-class}
 }
-
 
 \examples{
 ## Create an object from file
-cl <- clustReader(file =
-                  system.file("extdata","clustalw2.aln",
-                               package="Biostrings"))
+multAlign <-
+  read.MultipleAlignment(filepath =
+                         system.file("extdata","clustalw2.aln",
+                                     package="Biostrings"))
+
 ## mask columns
-subset <- cl
-alignmentMask(subset) <-  as(IRanges(start=c(1,20),end=c(4,30)),"NormalIRanges")
-subset
+modified <- multAlign
+colmask(modified) <- IRanges(start=c(1,20), end=c(4,30))
+modified
 
 ## mask rows
-subset <- cl
-sampleMask(subset) <-  as(IRanges(start=c(1,2),end=c(1,2)),"NormalIRanges")
-subset
+modified <- multAlign
+rowmask(modified) <- IRanges(start=1, end=2)
+modified
 
-## remove masks
-sampleMask(subset) <- NULL
-subset
-
-## remove all masks
-alignmentMask(subset) <-  as(IRanges(start=c(1,20),end=c(4,30)),"NormalIRanges")
-subset
-subset <- unmask(subset)
-subset
+## remove row masks
+rowmask(modified) <- NULL
+modified
 
 ## List the names of the sequences in the alignment
-rownames(cl)
+rownames(multAlign)
 }
 
 \keyword{methods}
