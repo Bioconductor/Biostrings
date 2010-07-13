@@ -1,53 +1,118 @@
 ### =========================================================================
-### MultipleAlignmentSet objects
+### MultipleAlignment objects
 ### -------------------------------------------------------------------------
 ###
 
-setClass("MultipleAlignmentSet",
-    representation(set="BStringSet",
-                   masks="NormalIRanges",
-                   rowMasks="integer"))
+## setClass("MultipleAlignment",
+##     representation(set="BStringSet",
+##                    masks="NormalIRanges",
+##                    rowMasks="integer"))
 
-## MultipleAlignmentSet constructor
-MultipleAlignmentSet <- function(x=character(), start=1, end=nchar(x[[1]]),use.names=TRUE)
+## virtual class for metadata
+setClass("AlignmentMetadata",
+    representation=representation(
+        "VIRTUAL"))
+
+## TODO: ... classes for each aligner
+
+
+## virtual class for multiple alignments
+setClass("MultipleAlignment",
+         representation("VIRTUAL",
+## TODO:                       metadata="AlignmentMetadata",
+                        unmasked="XStringSet",
+                        alignmentMask="NormalIRanges",
+                        sampleMask="NormalIRanges"))
+
+## concrete classes for multiple alignments
+setClass("DNAMultipleAlignment",
+    contains="MultipleAlignment",
+    representation=representation(
+        unmasked="DNAStringSet"))
+
+## setClass("RNAMultipleAlignment",
+##     contains="MultipleAlignment",
+##     representation=representation(
+##         unmasked="RNAStringSet"))
+
+## setClass("AAMultipleAlignment",
+##     contains="MultipleAlignment",
+##     representation=representation(
+##         unmasked="AAStringSet"))
+
+
+## DNAMultipleAlignment constructor
+DNAMultipleAlignment <- function(x=character(), start=1, end=nchar(x[[1]]),use.names=TRUE)
 {
   ## Test that all lengths are == to each other
   if(length(x)>0){
    if(!all(unlist(lapply(x,nchar)) %in% nchar(x[[1]]))){
       stop("All the Strings in an MAS Set have to be the same length")}
   }
-  new("MultipleAlignmentSet", set=BStringSet(x=x,start=start,end=end,width=NA,
-                         use.names=use.names),
-                       masks=as(IRanges(start=0, end=0),
-                         "NormalIRanges"),
-                       rowMasks=integer(length=length(x))
-      )
+  new("DNAMultipleAlignment",
+## TODO:     metadata=
+      unmasked=DNAStringSet(x=x,start=start,end=end,width=NA,
+        use.names=use.names),
+      alignmentMask=as(IRanges(), "NormalIRanges"),
+      sampleMask=as(IRanges(), "NormalIRanges"))
 }
 
 
-setMethod("as.character","MultipleAlignmentSet",function(x){as.character(x@set)})
-setMethod("rownames","MultipleAlignmentSet",function(x){names(x@set)})
-setReplaceMethod("rownames", "MultipleAlignmentSet",
-                 function(x,value){names(x@set)<-value; x})
+##Accessor methods:
+setGeneric("alignmentMask", signature="x",
+           function(x) standardGeneric("alignmentMask"))
+setMethod("alignmentMask", "MultipleAlignment",
+          function(x) x@alignmentMask)  
+setGeneric("alignmentMask<-", function(x,value)
+           standardGeneric("alignmentMask<-"))
+setReplaceMethod("alignmentMask", signature(x="MultipleAlignment",
+  value="NULL"), function(x, value) {x@alignmentMask<-as(IRanges(),
+                                       "NormalIRanges"); x} )
+setReplaceMethod("alignmentMask", signature(x="MultipleAlignment",
+  value="NormalIRanges"), function(x, value) {x@alignmentMask<-value; x})
 
-setMethod("ncol","MultipleAlignmentSet",function(x){nchar(x@set)})
-setMethod("nrow","MultipleAlignmentSet",function(x){length(x@set)})
+
+setGeneric("sampleMask", signature="x",
+           function(x) standardGeneric("sampleMask"))
+setMethod("sampleMask", "MultipleAlignment",
+          function(x) x@sampleMask) 
+setGeneric("sampleMask<-", function(x,value) standardGeneric("sampleMask<-"))
+setReplaceMethod("sampleMask", signature(x="MultipleAlignment",
+  value="NULL"), function(x, value) {x@sampleMask<-as(IRanges(),
+                                       "NormalIRanges"); x} )
+setReplaceMethod("sampleMask", signature(x="MultipleAlignment",
+  value="NormalIRanges"), function(x, value) {x@sampleMask<-value; x})
+
+setGeneric("unmask",signature="x", function(x) standardGeneric("unmask"))
+setMethod("unmask", signature="MultipleAlignment",
+          function(x) {alignmentMask(x) <- NULL;
+                       sampleMask(x) <- NULL; x})
+
+
+
+setMethod("as.character","MultipleAlignment",function(x){as.character(x@unmasked)})
+setMethod("rownames","MultipleAlignment",function(x){names(x@unmasked)})
+setReplaceMethod("rownames", "MultipleAlignment",
+                 function(x,value){names(x@unmasked)<-value; x})
+
+setMethod("ncol","MultipleAlignment",function(x){nchar(x@unmasked)})
+setMethod("nrow","MultipleAlignment",function(x){length(x@unmasked)})
 
 
 
 
 ######################################################################
-## Below here we implement versions of methods that are "mask aware"
+## Below here we will implement versions of methods that are "mask aware"
 ######################################################################
 
 
 ## I definitely want to OL these to consider the mask slot
-setMethod("consensusMatrix","MultipleAlignmentSet",
-          function(x){consensusMatrix(x@set)})
-setMethod("consensusString","MultipleAlignmentSet",
-          function(x){consensusString(x@set)})
-setMethod("alphabetFrequency","MultipleAlignmentSet",
-          function(x){alphabetFrequency(x@set)})
+setMethod("consensusMatrix","MultipleAlignment",
+          function(x){consensusMatrix(x@unmasked)})
+setMethod("consensusString","MultipleAlignment",
+          function(x){consensusString(x@unmasked)})
+setMethod("alphabetFrequency","MultipleAlignment",
+          function(x){alphabetFrequency(x@unmasked)})
 
 
 
@@ -110,13 +175,14 @@ SeqSnippetSlice <- function(x, width, index, mask)
     cat("\n")
 }
 
-.XStringMAS.show_frame_line <- function(x, i, iW, widthW, index)
+.XStringMAS.show_frame_line <- function(x, i, iW, widthW, index, hiddenRows)
 {
+   if(!i %in% hiddenRows){## only draw rows that are not hidden
     width <- ncol(x)[i]
     snippetWidth <- getOption("width") - 2 - iW - widthW
     if (!is.null(rownames(x)))
         snippetWidth <- snippetWidth - .namesMASW - 1
-    seq_snippet <- SeqSnippetSlice(x@set[[i]], snippetWidth, index, mask=x@masks)
+    seq_snippet <- SeqSnippetSlice(x@unmasked[[i]], snippetWidth, index, mask=alignmentMask(x))
     
     if (!is.null(rownames(x)) && !is.null(seq_snippet))
       seq_snippet <- format(seq_snippet, width=snippetWidth)
@@ -134,6 +200,7 @@ SeqSnippetSlice <- function(x, width, index, mask)
       cat(" ", snippet_name, sep="")
     }
     cat("\n")
+  }
 }
 
 
@@ -141,7 +208,9 @@ SeqSnippetSlice <- function(x, width, index, mask)
 {
   ##hard codes the number of sets of rows we plan to display
   .frameLines <- 3
-  
+  ##gather hidden rows
+  .hiddenRows <- as.integer(sampleMask(x))
+
     lx <- nrow(x)
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(ncol(x))
@@ -151,23 +220,23 @@ SeqSnippetSlice <- function(x, width, index, mask)
   for(index in seq_len(.frameLines)){   
     if (lx <= 2*half_nrow+1) {
       for (i in seq_len(lx))
-        .XStringMAS.show_frame_line(x, i, iW, widthW, index)
+        .XStringMAS.show_frame_line(x, i, iW, widthW, index, .hiddenRows)
         cat("\n")
     } else {
       for (i in 1:half_nrow)
-        .XStringMAS.show_frame_line(x, i, iW, widthW, index)
+        .XStringMAS.show_frame_line(x, i, iW, widthW, index, .hiddenRows)
       cat(format("...", width=iW, justify="right"),
           format("...", width=widthW, justify="right"),
           "...\n")
       for (i in (lx-half_nrow+1L):lx)
-        .XStringMAS.show_frame_line(x, i, iW, widthW, index)
+        .XStringMAS.show_frame_line(x, i, iW, widthW, index, .hiddenRows)
         cat("\n")
     }
   }
 }
 
 
-setMethod("show", "MultipleAlignmentSet",
+setMethod("show", "MultipleAlignment",
     function(object)
     {
         cat("  A ", class(object), " instance with ", nrow(object), " sequences represented.","\n", sep="")
@@ -203,17 +272,11 @@ clustReader = function(file){
   data = split(data, factor(rep(1:count, length(data)/count)))
   data = unlist(lapply(data, paste, collapse=""))
   names(data) = ids
-  MultipleAlignmentSet(data) 
+  ##TODO: there needs to be a more elegant way than hard coding this choice!
+  ##So plan to add a parameter or else discuss a more elegant way for the
+  ##constructor to "figure it out"
+  DNAMultipleAlignment(data) 
 }
 
-
-## helper function for subsetting the columns
-subsetColumns <- function(x, start, end){
-  if(length(start) != length(end)){
-    stop("You must supply an equal number of starts and ends.")
-  }
-  x@masks <- as(IRanges(start,end),"NormalIRanges");
-  x
-}
 
 

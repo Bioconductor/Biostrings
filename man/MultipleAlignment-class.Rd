@@ -1,45 +1,44 @@
-\name{MultipleAlignmentSet-class}
+\name{MultipleAlignment-class}
 \docType{class}
 
 % Classes:
-\alias{class:MultipleAlignmentSet}
-\alias{MultipleAlignmentSet-class}
-\alias{MultipleAlignmentSet}
+\alias{class:MultipleAlignment}
+\alias{MultipleAlignment-class}
+\alias{MultipleAlignment}
 
 % Accessor-like methods:
-\alias{names,MultipleAlignmentSet-method}
-\alias{names<-,MultipleAlignmentSet-method}
-\alias{nchar,MultipleAlignmentSet-method}
-\alias{[,MultipleAlignmentSet-method}
-\alias{[[,MultipleAlignmentSet-method}
+\alias{names,MultipleAlignment-method}
+\alias{names<-,MultipleAlignment-method}
+\alias{nchar,MultipleAlignment-method}
+\alias{[,MultipleAlignment-method}
+\alias{[[,MultipleAlignment-method}
 
 % Other methods:
-\alias{narrow,MultipleAlignmentSet-method}
-\alias{xscat,MultipleAlignmentSet-method}
-\alias{consensusMatrix,MultipleAlignmentSet-method}
-\alias{consensusString,MultipleAlignmentSet-method}
-\alias{alphabetFrequency,MultipleAlignmentSet-method}
-\alias{length,MultipleAlignmentSet-method}
-\alias{show,MultipleAlignmentSet-method}
+\alias{narrow,MultipleAlignment-method}
+\alias{xscat,MultipleAlignment-method}
+\alias{consensusMatrix,MultipleAlignment-method}
+\alias{consensusString,MultipleAlignment-method}
+\alias{alphabetFrequency,MultipleAlignment-method}
+\alias{length,MultipleAlignment-method}
+\alias{show,MultipleAlignment-method}
 
 % Coercion:
-\alias{as.list,MultipleAlignmentSet-method}
-\alias{as.character,MultipleAlignmentSet-method}
+\alias{as.list,MultipleAlignment-method}
+\alias{as.character,MultipleAlignment-method}
 
 % Convenience Function:
-\alias{subsetColumns}
 \alias{clustReader}
 
 
-\title{MultipleAlignmentSet objects}
+\title{MultipleAlignment objects}
 
 \description{
-   The MultipleAlignmentSet class is a containers for storing multiple sequence
+   The MultipleAlignment class is a containers for storing multiple sequence
    alignments.  
 }
 
 \details{
-  The MultipleAlignmentSet is meant to hold and represent multiple sequence
+  The MultipleAlignment is meant to hold and represent multiple sequence
   alignments.  Internally, these are a series of equivalent length strings,
   each of which has had gaps inserted etc. such that they represent the
   output of an alignment algorithm.  There are also a series of simple
@@ -48,7 +47,7 @@
 }
 
 \section{Accessor methods}{
-  In the code snippets below, x is a MultipleAlignmentSet object.
+  In the code snippets below, x is a MultipleAlignment object.
 
   \describe{
     \item{}{
@@ -65,7 +64,7 @@
 }
 
 \section{Other methods}{
-  In the code snippets below, x is a MultipleAlignmentSet object.
+  In the code snippets below, x is a MultipleAlignment object.
 
   \describe{
     \item{}{
@@ -75,7 +74,7 @@
     }
     \item{}{
       xscat(...):
-      Combines the columns of the MultipleAlignmentSet objects passed in.
+      Combines the columns of the MultipleAlignment objects passed in.
     }
     \item{}{
       length(x):
@@ -101,7 +100,7 @@
 }
 
 \section{Coercion}{
-  In the code snippets below, x is a MultipleAlignmentSet object.
+  In the code snippets below, x is a MultipleAlignment object.
 
   \describe{
     \item{}{
@@ -116,18 +115,7 @@
 }
 
 
-\section{Convenience Function}{
-  In the code snippets below, x is a MultipleAlignmentSet object.
 
-  \describe{
-    \item{}{
-      subsetColumns(x, start, end):
-      Subsets x by using the vectors contained in start
-      and end such that the returned MultipleAlignmentSet object
-      contains only the columns specified.
-    }
-  }
-}
 
 \author{M. Carlson}
 
@@ -139,16 +127,17 @@
 
 \examples{
 ## Create an object from file
-cl = clustReader(file =
+cl <- clustReader(file =
                   system.file("extdata","clustalw2.aln",
                                package="Biostrings"))
 
-## Select out a series of ranges of columns
-cl <- subsetColumns(cl, start=c(1,20), end=c(4,30))
-cl
+subset <- cl
+alignmentMask(subset) <-  as(IRanges(start=c(1,20),end=c(4,30)),"NormalIRanges")
+subset
+
 
 ## List the names of the sequences in the alignment
-names(cl)
+rownames(cl)
 }
 
 \keyword{methods}

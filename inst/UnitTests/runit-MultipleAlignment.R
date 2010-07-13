@@ -3,7 +3,7 @@ strs <- c(string1 = "AAGGTCTCCA-GCCTGCCCTTCAGTGTGGAGGCGCTCATG--TCGGACA",
           string3 = "CATTTATATATGGTCCCCCTCCCCCCAAGAAACACACATAGTTTTGACA")
 
 BSet <- BStringSet(strs)
-BMSASet <- MultipleAlignmentSet(strs)
+BMSASet <- MultipleAlignment(strs)
 
 ## I can't use checkEquals on the BSet or BMSASet objects :(
 ## checkEquals(BSet, BMSASet@set)  
@@ -12,7 +12,7 @@ BMSASet <- MultipleAlignmentSet(strs)
 ## check that we are enforcing the lengths being the same
 strsBad <- strs
 strsBad[1] <- narrow(strs[1], end=9)
-checkException(MultipleAlignmentSet(strsBad))
+checkException(MultipleAlignment(strsBad))
 
 
 ## check my new subset function
@@ -23,7 +23,7 @@ strs2 <- c(string1 = "AAGGTCTCCAGCCTGCCCTTCAGTGTGGAGGCGCTCATGTCGGACA",
 checkEquals(as.character(subsetColumns(BMSASet,
                                        start=c(1,12,43),
                                        end=c(10,40,49))),
-            as.character(MultipleAlignmentSet(strs2)))
+            as.character(MultipleAlignment(strs2)))
 
 
 ## check consensus methods

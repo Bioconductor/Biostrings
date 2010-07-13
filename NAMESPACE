@@ -344,7 +344,8 @@ exportClasses(
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
     PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
     PairwiseAlignedFixedSubjectSummary,
-    MultipleAlignmentSet
+    MultipleAlignment,
+    DNAMultipleAlignment
 )
 
 export(
@@ -389,8 +390,10 @@ export(
     stringDist,
 
     ## MultipleAlignmentSet.R:
-    subsetColumns,
     clustReader,
+    sampleMask, "sampleMask<-",
+    alignmentMask, "alignmentMask<-",
+    unmask,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
@@ -416,6 +419,10 @@ exportMethods(
     nchar, names, "names<-", "[[", narrow,
     consensusMatrix, consensusString,
     alphabetFrequency, as.list,
+
+    sampleMask,"sampleMask<-",
+    alignmentMask, "alignmentMask<-",
+    unmask,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
