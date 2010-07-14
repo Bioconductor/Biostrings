@@ -201,7 +201,7 @@ function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 ### Read function.
 ###
 
-read.MultipleAlignment <-
+read.DNAMultipleAlignment <-
 function(filepath, format)
 {
     con <- file(filepath)

@@ -45,7 +45,7 @@
 \alias{xsbasetype,MultipleAlignment-method}
 
 % Read method:
-\alias{read.MultipleAlignment}
+\alias{read.DNAMultipleAlignment}
 
 % Coercion:
 \alias{coerce,MultipleAlignment,DNAStringSet-method}
@@ -81,7 +81,7 @@
   AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
   ## Read method:
-  read.MultipleAlignment(filepath, format)
+  read.DNAMultipleAlignment(filepath, format)
 
   ## ... and more (see below)
 }
@@ -249,9 +249,9 @@
 \examples{
 ## Create an object from file
 multAlign <-
-  read.MultipleAlignment(filepath =
-                         system.file("extdata","clustalw2.aln",
-                                     package="Biostrings"))
+  read.DNAMultipleAlignment(filepath =
+                            system.file("extdata","clustalw2.aln",
+                                        package="Biostrings"))
 
 ## mask columns
 modified <- multAlign

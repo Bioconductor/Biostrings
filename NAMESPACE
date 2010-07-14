@@ -396,7 +396,7 @@ export(
     rowmask, "rowmask<-",
     colmask, "colmask<-",
     maskednrow, maskedncol, maskeddim,
-    read.MultipleAlignment,
+    read.DNAMultipleAlignment,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
