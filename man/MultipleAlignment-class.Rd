@@ -253,28 +253,28 @@
 
 \examples{
 ## Create an object from file
-multAlign <-
+origMAlign <-
   read.DNAMultipleAlignment(filepath =
                             system.file("extdata","clustalw2.aln",
                                         package="Biostrings"),
                             format="clustal")
 
 ## mask columns
-modified <- multAlign
-colmask(modified) <- IRanges(start=c(1,20), end=c(4,30))
-modified
+modMAlign <- origMAlign
+colmask(modMAlign) <- IRanges(start=c(1,20), end=c(4,30))
+modMAlign
 
 ## mask rows
-modified <- multAlign
-rowmask(modified) <- IRanges(start=1, end=2)
-modified
+modMAlign <- origMAlign
+rowmask(modMAlign) <- IRanges(start=1, end=2)
+modMAlign
 
 ## remove row masks
-rowmask(modified) <- NULL
-modified
+rowmask(modMAlign) <- NULL
+modMAlign
 
 ## List the names of the sequences in the alignment
-rownames(multAlign)
+rownames(origMAlign)
 }
 
 \keyword{methods}
