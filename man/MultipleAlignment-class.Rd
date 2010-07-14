@@ -62,7 +62,9 @@
 
 % Utilities:
 \alias{consensusMatrix,MultipleAlignment-method}
-\alias{consensusString,MultipleAlignment-method}
+\alias{consensusString,DNAMultipleAlignment-method}
+\alias{consensusString,RNAMultipleAlignment-method}
+\alias{consensusString,AAMultipleAlignment-method}
 \alias{alphabetFrequency,MultipleAlignment-method}
 
 % show method:
@@ -93,7 +95,8 @@
 \arguments{
   \item{x}{
     Either a character vector (with no NAs), or an \link{XString},
-    XStringSet or \link{XStringViews} object.
+    \link{XStringSet} or \link{XStringViews} object containing
+    strings with the same number of characters.
   }
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
@@ -230,7 +233,8 @@
     }
     \item{}{
       consensusString(x, ...):
-      Creates a consensus string for \code{x}.
+      Creates a consensus string for \code{x}. See 
+      \code{\link{consensusString}} for details on the arguments.
     }
     \item{}{
       alphabetFrequency(x, as.prob, collapse):
@@ -252,12 +256,22 @@
 }
 
 \examples{
-## Create an object from file
+## create an object from file
 origMAlign <-
   read.DNAMultipleAlignment(filepath =
                             system.file("extdata","clustalw2.aln",
                                         package="Biostrings"),
                             format="clustal")
+
+## list the names of the sequences in the alignment
+rownames(origMAlign)
+
+## calculate frequencies
+alphabetFrequency(origMAlign)
+consensusMatrix(origMAlign, baseOnly=TRUE)[, 1:8]
+
+## generate the consensus string
+substr(consensusString(origMAlign), 1, 40)
 
 ## mask columns
 modMAlign <- origMAlign
@@ -272,9 +286,6 @@ modMAlign
 ## remove row masks
 rowmask(modMAlign) <- NULL
 modMAlign
-
-## List the names of the sequences in the alignment
-rownames(origMAlign)
 }
 
 \keyword{methods}

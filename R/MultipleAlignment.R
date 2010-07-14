@@ -344,13 +344,64 @@ setMethod("consensusMatrix","MultipleAlignment",
     }
 )
 
-setMethod("consensusString","MultipleAlignment",
-    function(x, ...)
+setMethod("consensusString","DNAMultipleAlignment",
+    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25)
     {
         strings <- unmasked(x)
         if (maskednrow(x) > 0)
             strings <- strings[- as.integer(rowmask(x))]
-        consensus <- consensusString(strings, ...)
+        cmat <- consensusMatrix(strings)[names(IUPAC_CODE_MAP), , drop=FALSE]
+        col_sums <- colSums(cmat)
+        col_sums[col_sums == 0] <- 1  # to avoid division by 0
+        cmat <- cmat / rep(col_sums, each=nrow(cmat))
+        consensus <-
+          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
+        if (maskedncol(x) > 0) {
+            consensus <- safeExplode(consensus)
+            consensus[as.integer(colmask(x))] <- "#"
+            consensus <- paste(consensus, collapse = "")
+        }
+        consensus
+    }
+)
+
+setMethod("consensusString","RNAMultipleAlignment",
+    function(x,
+            ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+            threshold=0.25)
+    {
+        strings <- unmasked(x)
+        if (maskednrow(x) > 0)
+            strings <- strings[- as.integer(rowmask(x))]
+        RNA_CODES <-
+          as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))
+        cmat <- consensusMatrix(strings)[RNA_CODES, , drop=FALSE]
+        col_sums <- colSums(cmat)
+        col_sums[col_sums == 0] <- 1  # to avoid division by 0
+        cmat <- cmat / rep(col_sums, each=nrow(cmat))
+        consensus <-
+          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
+        if (maskedncol(x) > 0) {
+            consensus <- safeExplode(consensus)
+            consensus[as.integer(colmask(x))] <- "#"
+            consensus <- paste(consensus, collapse = "")
+        }
+        consensus
+    }
+)
+
+setMethod("consensusString","AAMultipleAlignment",
+    function(x, ambiguityMap="?", threshold=0.5)
+    {
+        strings <- unmasked(x)
+        if (maskednrow(x) > 0)
+            strings <- strings[- as.integer(rowmask(x))]
+        cmat <- consensusMatrix(strings)[names(AMINO_ACID_CODE), , drop=FALSE]
+        col_sums <- colSums(cmat)
+        col_sums[col_sums == 0] <- 1  # to avoid division by 0
+        cmat <- cmat / rep(col_sums, each=nrow(cmat))
+        consensus <-
+          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
         if (maskedncol(x) > 0) {
             consensus <- safeExplode(consensus)
             consensus[as.integer(colmask(x))] <- "#"
