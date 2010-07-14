@@ -234,12 +234,12 @@ function(filepath, format)
 {
     if (missing(format)) {
         ext <- tolower(sub(".*\\.([^.]*)$", "\\1", filepath))
-        format <- switch(ext, "aln" = "clustalw", "fasta")
+        format <- switch(ext, "aln" = "clustal", "fasta")
     } else {
-        format <- match.arg(tolower(format), c("fasta", "clustalw"))
+        format <- match.arg(tolower(format), c("fasta", "clustal"))
     }
     switch(format,
-           "clustalw" = .read.ClustalWAln(filepath),
+           "clustal" = .read.ClustalWAln(filepath),
            read.DNAStringSet(filepath, format=format))
 }
 

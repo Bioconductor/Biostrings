@@ -111,7 +111,7 @@
     \code{filepath} cannot be a connection.
   }
   \item{format}{
-    Either \code{"fasta"} (the default) or \code{"clustalw"}.
+    Either \code{"fasta"} (the default) or \code{"clustal"}.
   }
 }
 
@@ -256,7 +256,7 @@ multAlign <-
   read.DNAMultipleAlignment(filepath =
                             system.file("extdata","clustalw2.aln",
                                         package="Biostrings"),
-                            format="clustalw")
+                            format="clustal")
 
 ## mask columns
 modified <- multAlign
