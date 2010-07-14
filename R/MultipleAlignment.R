@@ -201,8 +201,8 @@ function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 ### Read function.
 ###
 
-read.DNAMultipleAlignment <-
-function(filepath, format)
+.read.ClustalWAln <-
+function(filepath)
 {
     con <- file(filepath)
     data <- readLines(con)
@@ -211,7 +211,7 @@ function(filepath, format)
     data <- data[grep("^CLUSTAL", data, invert=TRUE)]
     data <- data[data != ""]
     ## get the index of the 1st line to be a complete blank line
-    count <- grep("^(\\s|\\*)+$", data)[1] - 1
+    count <- grep("^(\\s|\\*)+$", data)[1] - 1L
     data <- data[grep("^(\\s|\\*)+$", data, invert=TRUE)]
     ## Therefore we shall gather and then drop the IDs
     ids <- gsub("(^gi\\S+)\\s+.+", "\\1", data)[1:count]
@@ -219,12 +219,22 @@ function(filepath, format)
     ## And also the positions from the end
     data <- gsub("\\s+\\d+$", "", data)
     ## And our count tells us how to split these up
-    data <- split(data, factor(rep(1:count, length(data)/count)))
+    data <- split(data, factor(rep(seq_len(count), length(data)/count)))
     data <- unlist(lapply(data, paste, collapse=""))
     names(data) <- ids
-    ##TODO: there needs to be a more elegant way than hard coding this choice!
-    ##So plan to add a parameter or else discuss a more elegant way for the
-    ##constructor to "figure it out"
+    data
+}
+
+read.DNAMultipleAlignment <-
+function(filepath, format=c("fasta", "clustalw"))
+{
+    if (!isSingleString(format)) 
+        stop("'format' must be a single string")
+    format <- match.arg(tolower(format), c("fasta", "clustalw"))
+    data <-
+      switch(format,
+             "clustalw" = .read.ClustalWAln(filepath),
+             read.DNAStringSet(filepath, format=format))
     DNAMultipleAlignment(data) 
 }
 

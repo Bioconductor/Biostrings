@@ -81,7 +81,7 @@
   AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
   ## Read method:
-  read.DNAMultipleAlignment(filepath, format)
+  read.DNAMultipleAlignment(filepath, format=c("fasta", "clustalw"))
 
   ## ... and more (see below)
 }
@@ -251,7 +251,8 @@
 multAlign <-
   read.DNAMultipleAlignment(filepath =
                             system.file("extdata","clustalw2.aln",
-                                        package="Biostrings"))
+                                        package="Biostrings"),
+                            format="clustalw")
 
 ## mask columns
 modified <- multAlign
