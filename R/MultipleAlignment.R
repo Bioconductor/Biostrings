@@ -201,32 +201,51 @@ function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 ### Read function.
 ###
 
-.read.ClustalWAln <-
+.read.MultipleAlignment.splitRows <-
+function(rows, markupPattern)
+{
+    markupLines <- grep(markupPattern, rows)
+    alnLines <- gaps(as(markupLines, "IRanges"), start=1, end=length(rows))
+    count <- unique(width(alnLines))
+    if (length(count) != 1)
+        stop("missing alignment rows")
+    rows <- seqselect(rows, alnLines)
+    spaces <- regexpr("\\s+", rows)
+    ids <- substr(rows, 1L, spaces - 1L)
+    if (!identical(ids, rep.int(head(ids, count), length(rows) %/% count)))
+        stop("alignment rows out of order")
+    alns <- substr(rows, spaces + attr(spaces, "match.length"), nchar(rows))
+    structure(unlist(lapply(split(alns, seq_len(count)), paste, collapse="")),
+              names = head(ids, count))
+}
+
+.read.Stockholm <-
 function(filepath)
 {
     con <- file(filepath)
-    values <- readLines(con)
+    rows <- readLines(con)
     close(con)
-    if (length(values) < 3 ||
-        !identical(grep("^CLUSTAL", values), 1L) ||
-        !identical(values[2:3], c("","")))
-        stop("invalid Clustal W aln file")
-    values <- tail(values, -3)
-    spacerLines <- grep("^(\\s|\\*|:|\\.)*$", values)
-    if (length(spacerLines) == 0) {
-        count <- length(values)
-    } else {
-        count <- spacerLines[1L] - 1L
-        values <- values[-spacerLines]
-    }
-    if (length(values) %% count != 0)
-        stop("missing alignment rows in the aln file")
-    ids <- sub("(^\\S+).*", "\\1", values)
-    if (!identical(ids, rep.int(head(ids, count), length(values) %/% count)))
-        stop("alignment rows out of order")
-    alns <- sub("^\\S+\\s+(\\S+).*", "\\1", values)
-    structure(unlist(lapply(split(alns, seq_len(count)), paste, collapse="")),
-              names = head(ids, count))
+    if (length(rows) < 3 ||
+        !identical(grep("^# STOCKHOLM", rows), 1L))
+        stop("invalid Stockholm file")
+    rows <- sub("^\\s*(\\S+\\s+\\S+)\\s*$", "\\1", rows)
+    rows <- chartr(".", "-", rows)
+    .read.MultipleAlignment.splitRows(rows, "(^\\s*|^#.*|^//\\s*)$")
+}
+
+.read.ClustalAln <-
+function(filepath)
+{
+    con <- file(filepath)
+    rows <- readLines(con)
+    close(con)
+    if (length(rows) < 3 ||
+        !identical(grep("^CLUSTAL", rows), 1L) ||
+        !identical(rows[2:3], c("","")))
+        stop("invalid Clustal aln file")
+    rows <- tail(rows, -3)
+    rows <- sub("^\\s*(\\S+\\s+\\S+)\\s*\\d*\\s*$", "\\1", rows)
+    .read.MultipleAlignment.splitRows(rows, "^(\\s|\\*|:|\\.)*$")
 }
 
 .read.MultipleAlignment <-
@@ -234,12 +253,13 @@ function(filepath, format)
 {
     if (missing(format)) {
         ext <- tolower(sub(".*\\.([^.]*)$", "\\1", filepath))
-        format <- switch(ext, "aln" = "clustal", "fasta")
+        format <- switch(ext, "sto" = "stockholm", "aln" = "clustal", "fasta")
     } else {
-        format <- match.arg(tolower(format), c("fasta", "clustal"))
+        format <- match.arg(tolower(format), c("fasta", "stockholm", "clustal"))
     }
     switch(format,
-           "clustal" = .read.ClustalWAln(filepath),
+           "stockholm" = .read.Stockholm(filepath),
+           "clustal" = .read.ClustalAln(filepath),
            read.DNAStringSet(filepath, format=format))
 }
 

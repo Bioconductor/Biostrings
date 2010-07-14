@@ -111,7 +111,8 @@
     \code{filepath} cannot be a connection.
   }
   \item{format}{
-    Either \code{"fasta"} (the default) or \code{"clustal"}.
+    Either \code{"fasta"} (the default), \code{stockholm}, or
+    \code{"clustal"}.
   }
 }
 
