@@ -205,37 +205,60 @@ function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 function(filepath)
 {
     con <- file(filepath)
-    data <- readLines(con)
-    close(con)  
-    ## drop the header and empty lines
-    data <- data[grep("^CLUSTAL", data, invert=TRUE)]
-    data <- data[data != ""]
-    ## get the index of the 1st line to be a complete blank line
-    count <- grep("^(\\s|\\*)+$", data)[1] - 1L
-    data <- data[grep("^(\\s|\\*)+$", data, invert=TRUE)]
-    ## Therefore we shall gather and then drop the IDs
-    ids <- gsub("(^gi\\S+)\\s+.+", "\\1", data)[seq_len(count)]
-    data <- gsub("^gi\\S+\\s+", "", data)
-    ## And also the positions from the end
-    data <- gsub("\\s+\\d+$", "", data)
-    ## And our count tells us how to split these up
-    data <- split(data, factor(rep(seq_len(count), length(data)/count)))
-    data <- unlist(lapply(data, paste, collapse=""))
-    names(data) <- ids
-    data
+    values <- readLines(con)
+    close(con)
+    if (length(values) < 3 ||
+        !identical(grep("^CLUSTAL", values), 1L) ||
+        !identical(values[2:3], c("","")))
+        stop("invalid Clustal W aln file")
+    values <- tail(values, -3)
+    spacerLines <- grep("^(\\s|\\*|:|\\.)*$", values)
+    if (length(spacerLines) == 0) {
+        count <- length(values)
+    } else {
+        count <- spacerLines[1L] - 1L
+        values <- values[-spacerLines]
+    }
+    if (length(values) %% count != 0)
+        stop("missing alignment rows in the aln file")
+    ids <- sub("(^\\S+).*", "\\1", values)
+    if (!identical(ids, rep.int(head(ids, count), length(values) %/% count)))
+        stop("alignment rows out of order")
+    alns <- sub("^\\S+\\s+(\\S+).*", "\\1", values)
+    structure(unlist(lapply(split(alns, seq_len(count)), paste, collapse="")),
+              names = head(ids, count))
+}
+
+.read.MultipleAlignment <-
+function(filepath, format)
+{
+    if (missing(format)) {
+        ext <- tolower(sub(".*\\.([^.]*)$", "\\1", filepath))
+        format <- switch(ext, "aln" = "clustalw", "fasta")
+    } else {
+        format <- match.arg(tolower(format), c("fasta", "clustalw"))
+    }
+    switch(format,
+           "clustalw" = .read.ClustalWAln(filepath),
+           read.DNAStringSet(filepath, format=format))
 }
 
 read.DNAMultipleAlignment <-
-function(filepath, format=c("fasta", "clustalw"))
+function(filepath, format)
 {
-    if (!isSingleString(format)) 
-        stop("'format' must be a single string")
-    format <- match.arg(tolower(format), c("fasta", "clustalw"))
-    data <-
-      switch(format,
-             "clustalw" = .read.ClustalWAln(filepath),
-             read.DNAStringSet(filepath, format=format))
-    DNAMultipleAlignment(data) 
+    DNAMultipleAlignment(.read.MultipleAlignment(filepath, format))
+}
+
+read.RNAMultipleAlignment <-
+function(filepath, format)
+{
+    RNAMultipleAlignment(.read.MultipleAlignment(filepath, format))
+}
+
+read.AAMultipleAlignment <-
+function(filepath, format)
+{
+    AAMultipleAlignment(.read.MultipleAlignment(filepath, format))
 }
 
 
@@ -345,10 +368,10 @@ function (iW, with.names)
 {
     cat(format("", width = iW + 1), sep="")
     if (with.names) {
-        cat(format(" seq", width = getOption("width") - iW - .namesW - 1),
+        cat(format(" aln", width = getOption("width") - iW - .namesW - 1),
             format("names", width=.namesW, justify="left"), sep="")
     } else {
-        cat(" seq")
+        cat(" aln")
     }
     cat("\n")
 }

@@ -44,8 +44,10 @@
 \alias{nchar,MultipleAlignment-method}
 \alias{xsbasetype,MultipleAlignment-method}
 
-% Read method:
+% Read functions:
 \alias{read.DNAMultipleAlignment}
+\alias{read.RNAMultipleAlignment}
+\alias{read.AAMultipleAlignment}
 
 % Coercion:
 \alias{coerce,MultipleAlignment,DNAStringSet-method}
@@ -80,8 +82,10 @@
   RNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
-  ## Read method:
-  read.DNAMultipleAlignment(filepath, format=c("fasta", "clustalw"))
+  ## Read functions:
+  read.DNAMultipleAlignment(filepath, format)
+  read.RNAMultipleAlignment(filepath, format)
+  read.AAMultipleAlignment(filepath, format)
 
   ## ... and more (see below)
 }
@@ -107,7 +111,7 @@
     \code{filepath} cannot be a connection.
   }
   \item{format}{
-    File format.
+    Either \code{"fasta"} (the default) or \code{"clustalw"}.
   }
 }
 
