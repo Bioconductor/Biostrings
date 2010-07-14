@@ -214,7 +214,7 @@ function(filepath)
     count <- grep("^(\\s|\\*)+$", data)[1] - 1L
     data <- data[grep("^(\\s|\\*)+$", data, invert=TRUE)]
     ## Therefore we shall gather and then drop the IDs
-    ids <- gsub("(^gi\\S+)\\s+.+", "\\1", data)[1:count]
+    ids <- gsub("(^gi\\S+)\\s+.+", "\\1", data)[seq_len(count)]
     data <- gsub("^gi\\S+\\s+", "", data)
     ## And also the positions from the end
     data <- gsub("\\s+\\d+$", "", data)
