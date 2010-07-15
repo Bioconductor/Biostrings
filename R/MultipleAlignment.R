@@ -206,17 +206,19 @@ function(rows, markupPattern)
 {
     markupLines <- grep(markupPattern, rows)
     alnLines <- gaps(as(markupLines, "IRanges"), start=1, end=length(rows))
-    count <- unique(width(alnLines))
-    if (length(count) != 1)
+    nseq <- unique(width(alnLines))
+    if (length(nseq) != 1)
         stop("missing alignment rows")
     rows <- seqselect(rows, alnLines)
     spaces <- regexpr("\\s+", rows)
     ids <- substr(rows, 1L, spaces - 1L)
-    if (!identical(ids, rep.int(head(ids, count), length(rows) %/% count)))
+    nsplits <- length(rows) %/% nseq
+    if (!identical(ids, rep.int(head(ids, nseq), nsplits)))
         stop("alignment rows out of order")
     alns <- substr(rows, spaces + attr(spaces, "match.length"), nchar(rows))
-    structure(unlist(lapply(split(alns, seq_len(count)), paste, collapse="")),
-              names = head(ids, count))
+    structure(do.call(paste,
+                      c(split(alns, rep(seq_len(nsplits), each=nseq)), sep="")),
+              names = head(ids, nseq))
 }
 
 .read.Stockholm <-
