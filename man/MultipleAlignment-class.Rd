@@ -73,6 +73,9 @@
 \alias{consensusViews,AAMultipleAlignment-method}
 \alias{alphabetFrequency,MultipleAlignment-method}
 
+% filters and splitter
+\alias{autoMask}
+
 % show method:
 \alias{show,MultipleAlignment-method}
 
@@ -96,6 +99,7 @@
   read.AAMultipleAlignment(filepath, format)
 
   ## ... and more (see below)
+  autoMask(x, cutoff, gapCutoff, append)
 }
 
 \arguments{
@@ -122,6 +126,17 @@
   \item{format}{
     Either \code{"fasta"} (the default), \code{stockholm}, or
     \code{"clustal"}.
+  }
+  \item{cutoff}{
+    A value from 0 to 1 that indicates what percentage of dashes gaps
+    are to be tolerated.
+  }
+  \item{gapCutoff}{
+    An integer value that indicates how many letters in a row (within a
+    sequence_) the cutoff must be exceeded before an action is taken.
+  }
+  \item{append}{
+    Overwrite the existing colMask data or append the results to it?
   }
 }
 
@@ -260,6 +275,13 @@
       default). If \code{collapse} is \code{TRUE}, then returns the
       overall frequency instead of the frequency by row.
     }
+    \item{}{
+      autoMask(x, cutoff, gapCutoff):
+      Modifies the column mask for the returned \code{mutipleAlignment}
+      object so that when the \code{cutoff} is exceeded for the numer of
+      \code{gapCutoff} characters in a row, then those values are masked
+      in the returned \code{mutipleAlignment} object.
+    }
   }
 }
 
@@ -302,6 +324,13 @@ modMAlign
 ## remove row masks
 rowmask(modMAlign) <- NULL
 modMAlign
+
+## Automatically mask rows based on a cutoff for gaps:
+modMAlign <- autoMask(modMAlign, cutoff=.5, gapCutoff=3)
+modMAlign
+
+## Then see the consensus views that remain after that:
+consensusViews(modMAlign)
 }
 
 \keyword{methods}

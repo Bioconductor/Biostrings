@@ -460,6 +460,30 @@ setMethod("alphabetFrequency","MultipleAlignment",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "autoMask" function
+###
+
+autoMask <- function(x, cutoff=.5, gapCutoff=3, append=FALSE){
+  colmask(x) <- NULL
+  m <- consensusMatrix(x)
+  markGaps <- function(slice, cutoff){
+    prop <- slice["-"]/sum(slice)
+    if(prop>cutoff){TRUE}else{FALSE}
+  } 
+  gapVals<- apply(m, 2, markGaps, cutoff)
+  ranges <- as(gapVals,"IRanges")
+  ranges <- ranges[width(ranges)>gapCutoff]
+  if(append){
+    colmask(x) <- union(ranges, colmask(x))    
+  }else{
+    colmask(x) <- ranges
+  }
+  x
+}
+
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 
@@ -549,3 +573,5 @@ setMethod("show", "MultipleAlignment",
         }
     }
 )
+
+
