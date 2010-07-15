@@ -32,6 +32,7 @@ test_DNAMultipleAlignment_empty <- function()
                    matrix(integer(), nrow=length(DNA_ALPHABET), ncol=0,
                           dimnames=list(DNA_ALPHABET, NULL)))
     checkIdentical(consensusString(malign), character())
+    checkIdentical(as.character(consensusViews(malign)), character())
     checkIdentical(alphabetFrequency(malign),
                    matrix(integer(), nrow=0, ncol=length(DNA_ALPHABET),
                           dimnames=list(NULL, DNA_ALPHABET)))
@@ -68,6 +69,8 @@ test_DNAMultipleAlignment_unnamed <- function()
                          T=c(0L,0L,1L,1L)))
     checkIdentical(consensusString(malign),
                    "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
+    checkIdentical(as.character(consensusViews(malign)),
+                   "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
     checkIdentical(alphabetFrequency(malign)[,1:4],
                    cbind(A=c(8L,8L,15L),
                          C=c(14L,16L,16L),
@@ -103,6 +106,8 @@ test_DNAMultipleAlignment_named <- function()
                          G=c(0L,0L,2L,2L),
                          T=c(0L,0L,1L,1L)))
     checkIdentical(consensusString(malign),
+                   "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
+    checkIdentical(as.character(consensusViews(malign)),
                    "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
     checkIdentical(alphabetFrequency(malign)[,1:4],
                    cbind(A=c(8L,8L,15L),
@@ -144,6 +149,8 @@ test_DNAMultipleAlignment_mask_some <- function()
                          T=rep(NA_integer_,4)))
     checkIdentical(consensusString(malign),
                    "##########TGSYYSCCCT###############WCATRGT#######")
+    checkIdentical(as.character(consensusViews(malign)),
+                   c("TGSYYSCCCT", "WCATRGT"))
     checkIdentical(alphabetFrequency(malign)[,1:4],
                    cbind(A=c(1L,NA,3L),
                          C=c(6L,NA,6L),

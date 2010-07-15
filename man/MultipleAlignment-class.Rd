@@ -66,6 +66,11 @@
 \alias{consensusString,DNAMultipleAlignment-method}
 \alias{consensusString,RNAMultipleAlignment-method}
 \alias{consensusString,AAMultipleAlignment-method}
+\alias{consensusViews}
+\alias{consensusViews,MultipleAlignment-method}
+\alias{consensusViews,DNAMultipleAlignment-method}
+\alias{consensusViews,RNAMultipleAlignment-method}
+\alias{consensusViews,AAMultipleAlignment-method}
 \alias{alphabetFrequency,MultipleAlignment-method}
 
 % show method:
@@ -225,20 +230,30 @@
 
   \describe{
     \item{}{
-      consensusMatrix(x, as.prob, baseOnly):
+      \code{consensusMatrix(x, as.prob, baseOnly)}:
       Creates an integer matrix containing the column frequencies of
-      the underlying alphabet. If \code{as.prob} is \code{TRUE}, then
+      the underlying alphabet with masked columns being represented
+      with \code{NA} values. If \code{as.prob} is \code{TRUE}, then
       probabilities are reported, otherwise counts are reported (the
       default). If \code{baseOnly} is \code{TRUE}, then the non-base
       letters are collapsed into an \code{"other"} category.
     }
     \item{}{
-      consensusString(x, ...):
-      Creates a consensus string for \code{x}. See 
-      \code{\link{consensusString}} for details on the arguments.
+      \code{consensusString(x, ...)}:
+      Creates a consensus string for \code{x} with the symbol \code{"#"}
+      representing a masked column. See \code{\link{consensusString}}
+      for details on the arguments.
     }
     \item{}{
-      alphabetFrequency(x, as.prob, collapse):
+      \code{consensusViews(x, ...)}:
+      Similar to the \code{consensusString} method. It returns a 
+      \link{XStringViews} on the consensus string containing subsequence
+      contigs of non-masked columns. Unlike the \code{consensusString}
+      method, the masked columns in the underlying string contain a
+      consensus value rather than the \code{"#"} symbol.
+    }
+    \item{}{
+      \code{alphabetFrequency(x, as.prob, collapse)}:
       Creates an integer matrix containing the row frequencies of
       the underlying alphabet. If \code{as.prob} is \code{TRUE}, then
       probabilities are reported, otherwise counts are reported (the

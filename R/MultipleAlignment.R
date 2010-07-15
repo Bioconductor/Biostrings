@@ -96,7 +96,7 @@ setReplaceMethod("rownames", "MultipleAlignment",
 setGeneric("rowmask", signature="x", function(x) standardGeneric("rowmask"))
 setMethod("rowmask", "MultipleAlignment", function(x) x@rowmask)
 
-setGeneric("rowmask<-", function(x,value) standardGeneric("rowmask<-"))
+setGeneric("rowmask<-", function(x, value) standardGeneric("rowmask<-"))
 setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
     function(x, value) initialize(x, rowmask = new("NormalIRanges"))
 )
@@ -112,7 +112,7 @@ setReplaceMethod("rowmask",
 setGeneric("colmask", signature="x", function(x) standardGeneric("colmask"))
 setMethod("colmask", "MultipleAlignment", function(x) x@colmask)
 
-setGeneric("colmask<-", function(x,value) standardGeneric("colmask<-"))
+setGeneric("colmask<-", function(x, value) standardGeneric("colmask<-"))
 setReplaceMethod("colmask", signature(x="MultipleAlignment", value="NULL"),
     function(x, value) initialize(x, colmask = new("NormalIRanges"))
 )
@@ -398,6 +398,47 @@ setMethod("consensusString","AAMultipleAlignment",
     }
 )
 
+setGeneric("consensusViews", signature="x",
+    function(x, ...) standardGeneric("consensusViews")
+)
+
+setMethod("consensusViews","MultipleAlignment",
+    function(x, ambiguityMap, threshold)
+    {
+        cmask <- colmask(x)
+        if (length(cmask) > 0)
+            colmask(x) <- NULL
+        consensus <-
+          consensusString(x, ambiguityMap=ambiguityMap, threshold=threshold)
+        if (length(consensus) == 0)
+            consensus <- ""
+        Views(BString(consensus), gaps(cmask, start=1, end=ncol(x)))
+    }
+)
+
+setMethod("consensusViews","DNAMultipleAlignment",
+    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25)
+    {
+        callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold)
+    }
+)
+
+setMethod("consensusViews","RNAMultipleAlignment",
+    function(x,
+             ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+             threshold=0.25)
+    {
+        callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold)
+    }
+)
+
+setMethod("consensusViews","AAMultipleAlignment",
+    function(x, ambiguityMap="?", threshold=0.5)
+    {
+        callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold)
+    }
+)
+
 setMethod("alphabetFrequency","MultipleAlignment",
     function(x, as.prob=FALSE, collapse=FALSE)
     {
@@ -405,13 +446,13 @@ setMethod("alphabetFrequency","MultipleAlignment",
             strings <- as(x, sprintf("%sStringSet", xsbasetype(x)))
             m <- callGeneric(strings, as.prob=as.prob, collapse=TRUE)
         } else {
-            rmasks <- rowmask(x)
-            if (length(rmasks) > 0)
+            rmask <- rowmask(x)
+            if (length(rmask) > 0)
                 rowmask(x) <- NULL
             strings <- as(x, sprintf("%sStringSet", xsbasetype(x)))
             m <- callGeneric(strings, as.prob=as.prob)
-            if (length(rmasks) > 0)
-                m[as.integer(rmasks),] <- NA
+            if (length(rmask) > 0)
+                m[as.integer(rmask),] <- NA
         }
         m
     }

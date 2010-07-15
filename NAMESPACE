@@ -399,6 +399,7 @@ export(
     read.DNAMultipleAlignment,
     read.RNAMultipleAlignment,
     read.AAMultipleAlignment,
+    consensusViews,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
@@ -428,6 +429,7 @@ exportMethods(
     rowmask, "rowmask<-",
     colmask, "colmask<-",
     maskednrow, maskedncol, maskeddim,
+    consensusViews,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
