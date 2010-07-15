@@ -125,6 +125,37 @@ setReplaceMethod("colmask",
     function(x, value) initialize(x, colmask = asNormalIRanges(value))
 )
 
+setGeneric("automask", signature="x",
+    function(x, ...) standardGeneric("automask")
+)
+setMethod("automask", "MultipleAlignment",
+    function(x, max.gappercent=.5, max.gaplength=3, append=FALSE)
+    {
+        if (!isSingleNumber(max.gappercent) || max.gappercent < 0 ||
+            max.gappercent > 1)
+            stop("'max.gappercent' must be a number in [0, 1]")
+        if (!isSingleNumber(max.gaplength) || max.gaplength < 0)
+            stop("'max.gappercent' must be a non-negative integer")
+        if (!is.integer(max.gaplength))
+            max.gaplength <- as.integer(max.gaplength)
+        if (!isTRUEorFALSE(append))
+            stop("'append' must be TRUE or FALSE")
+
+        cmask <- colmask(x)
+        if (length(colmask(x)) > 0)
+            colmask(x) <- NULL
+        m <- consensusMatrix(x)
+        newmask <- as((m["-",] / colSums(m)) > max.gappercent, "NormalIRanges")
+        newmask <- newmask[width(newmask) > max.gaplength]
+        if (append) {
+            colmask(x) <- union(newmask, cmask)
+        } else {
+            colmask(x) <- newmask
+        }
+        x
+    }
+)
+
 setMethod("nrow","MultipleAlignment", function(x) length(x@unmasked))
 setMethod("ncol","MultipleAlignment",
     function(x) ifelse(nrow(x) == 0, 0L, nchar(x@unmasked[[1L]]))
@@ -456,30 +487,6 @@ setMethod("alphabetFrequency","MultipleAlignment",
         m
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "autoMask" function
-###
-
-autoMask <- function(x, cutoff=.5, gapCutoff=3, append=FALSE){
-  colmask(x) <- NULL
-  m <- consensusMatrix(x)
-  markGaps <- function(slice, cutoff){
-    prop <- slice["-"]/sum(slice)
-    if(prop>cutoff){TRUE}else{FALSE}
-  } 
-  gapVals<- apply(m, 2, markGaps, cutoff)
-  ranges <- as(gapVals,"IRanges")
-  ranges <- ranges[width(ranges)>gapCutoff]
-  if(append){
-    colmask(x) <- union(ranges, colmask(x))    
-  }else{
-    colmask(x) <- ranges
-  }
-  x
-}
-
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

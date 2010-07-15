@@ -395,11 +395,11 @@ export(
     AAMultipleAlignment,
     rowmask, "rowmask<-",
     colmask, "colmask<-",
+    automask,
     maskednrow, maskedncol, maskeddim,
     read.DNAMultipleAlignment,
     read.RNAMultipleAlignment,
     read.AAMultipleAlignment,
-    autoMask,
     consensusViews,
 
     ## Old stuff (Defunct or Deprecated):

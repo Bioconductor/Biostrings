@@ -31,6 +31,8 @@
 \alias{colmask<-,MultipleAlignment,NULL-method}
 \alias{colmask<-,MultipleAlignment,NormalIRanges-method}
 \alias{colmask<-,MultipleAlignment,IRanges-method}
+\alias{automask}
+\alias{automask,MultipleAlignment}
 \alias{nrow,MultipleAlignment-method}
 \alias{ncol,MultipleAlignment-method}
 \alias{dim,MultipleAlignment-method}
@@ -73,9 +75,6 @@
 \alias{consensusViews,AAMultipleAlignment-method}
 \alias{alphabetFrequency,MultipleAlignment-method}
 
-% filters and splitter
-\alias{autoMask}
-
 % show method:
 \alias{show,MultipleAlignment-method}
 
@@ -99,7 +98,6 @@
   read.AAMultipleAlignment(filepath, format)
 
   ## ... and more (see below)
-  autoMask(x, cutoff, gapCutoff, append)
 }
 
 \arguments{
@@ -126,17 +124,6 @@
   \item{format}{
     Either \code{"fasta"} (the default), \code{stockholm}, or
     \code{"clustal"}.
-  }
-  \item{cutoff}{
-    A value from 0 to 1 that indicates what percentage of dashes gaps
-    are to be tolerated.
-  }
-  \item{gapCutoff}{
-    An integer value that indicates how many letters in a row (within a
-    sequence_) the cutoff must be exceeded before an action is taken.
-  }
-  \item{append}{
-    Overwrite the existing colMask data or append the results to it?
   }
 }
 
@@ -170,6 +157,23 @@
       \code{colmask(x)}, \code{colmask(x) <- value}:
       Gets and sets the \link{NormalIRanges} object representing the
       masked columns in \code{x}.
+    }
+    \item{}{
+      \code{automask(x, max.gappercent, max.gaplength, append)}:
+      Returns a MultipleAlignment object with a modified column mask
+      based upon gaps in the columns. In particular, this mask is defined
+      by \code{max.gaplength} or more consecutive columns that have more
+      than \code{max.gappercent} of their non-masked rows containing
+      gap codes.
+      \describe{
+        \item{max.gappercent}{A value from 0 to 1 that indicates the
+          tolerable percentage of gaps.}
+        \item{max.gaplength}{An non-negative integer that indicates
+          the tolerable number of consecutive gaps, as defined by
+          \code{max.gappercent}.}
+        \item{append}{Overwrite \code{colmask(x)} or append (via
+          \code{union}) to it?}
+      }
     }
     \item{}{
       \code{nrow(x)}:
@@ -275,13 +279,6 @@
       default). If \code{collapse} is \code{TRUE}, then returns the
       overall frequency instead of the frequency by row.
     }
-    \item{}{
-      autoMask(x, cutoff, gapCutoff):
-      Modifies the column mask for the returned \code{mutipleAlignment}
-      object so that when the \code{cutoff} is exceeded for the numer of
-      \code{gapCutoff} characters in a row, then those values are masked
-      in the returned \code{mutipleAlignment} object.
-    }
   }
 }
 
@@ -304,13 +301,6 @@ origMAlign <-
 ## list the names of the sequences in the alignment
 rownames(origMAlign)
 
-## calculate frequencies
-alphabetFrequency(origMAlign)
-consensusMatrix(origMAlign, baseOnly=TRUE)[, 1:8]
-
-## generate the consensus string
-substr(consensusString(origMAlign), 1, 40)
-
 ## mask columns
 modMAlign <- origMAlign
 colmask(modMAlign) <- IRanges(start=c(1,20), end=c(4,30))
@@ -325,11 +315,16 @@ modMAlign
 rowmask(modMAlign) <- NULL
 modMAlign
 
-## Automatically mask rows based on a cutoff for gaps:
-modMAlign <- autoMask(modMAlign, cutoff=.5, gapCutoff=3)
+## automatically mask rows based on consecutive gaps
+modMAlign <- automask(modMAlign, max.gappercent=.5, max.gaplength=3)
 modMAlign
 
-## Then see the consensus views that remain after that:
+## calculate frequencies
+alphabetFrequency(modMAlign)
+consensusMatrix(modMAlign, baseOnly=TRUE)[, 1:8]
+
+## get consensus values
+consensusString(modMAlign)
 consensusViews(modMAlign)
 }
 
