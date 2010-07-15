@@ -351,21 +351,20 @@ setMethod("consensusMatrix","MultipleAlignment",
 setMethod("consensusString","MultipleAlignment",
     function(x, ambiguityMap, threshold, codes)
     {
-        strings <- unmasked(x)
-        if (maskednrow(x) > 0)
-            strings <- strings[- as.integer(rowmask(x))]
-        cmat <- consensusMatrix(strings, width=ncol(x))[codes, , drop=FALSE]
-        col_sums <- colSums(cmat)
-        col_sums[col_sums == 0] <- 1  # to avoid division by 0
-        cmat <- cmat / rep(col_sums, each=nrow(cmat))
-        consensus <-
-          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
-        if (ncol(x) > 0 && length(consensus) == 0) {
-            consensus <- paste(rep.int("#", ncol(x)), collapse="")
-        } else if (maskedncol(x) > 0) {
-            consensus <- safeExplode(consensus)
-            consensus[as.integer(colmask(x))] <- "#"
-            consensus <- paste(consensus, collapse = "")
+        consensus <- rep.int("#", ncol(x))
+        if (ncol(x) > 0) {
+            cmat <- consensusMatrix(x, width=ncol(x))[codes, , drop=FALSE]
+            col_sums <- colSums(cmat, na.rm=TRUE)
+            nzSum <- which(col_sums > 1e-6)
+            col_sums[- nzSum] <- 1  # to avoid division by 0
+            cmat <- cmat / rep(col_sums, each=nrow(cmat))
+            if (length(nzSum) > 0) {
+                consensus[nzSum] <-
+                  safeExplode(consensusString(cmat[, nzSum, drop=FALSE],
+                                              ambiguityMap=ambiguityMap,
+                                              threshold=threshold))
+            }
+            consensus <- paste(consensus, collapse="")
         }
         consensus
     }
@@ -573,5 +572,3 @@ setMethod("show", "MultipleAlignment",
         }
     }
 )
-
-
