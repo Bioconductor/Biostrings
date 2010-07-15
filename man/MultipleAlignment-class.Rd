@@ -62,6 +62,7 @@
 
 % Utilities:
 \alias{consensusMatrix,MultipleAlignment-method}
+\alias{consensusString,MultipleAlignment-method}
 \alias{consensusString,DNAMultipleAlignment-method}
 \alias{consensusString,RNAMultipleAlignment-method}
 \alias{consensusString,AAMultipleAlignment-method}

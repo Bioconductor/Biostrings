@@ -348,20 +348,18 @@ setMethod("consensusMatrix","MultipleAlignment",
     }
 )
 
-setMethod("consensusString","DNAMultipleAlignment",
-    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25)
+setMethod("consensusString","MultipleAlignment",
+    function(x, ambiguityMap, threshold, codes)
     {
         strings <- unmasked(x)
         if (maskednrow(x) > 0)
             strings <- strings[- as.integer(rowmask(x))]
-        cmat <-
-          consensusMatrix(strings, width=ncol(x))[names(IUPAC_CODE_MAP), ,
-                                                  drop=FALSE]
+        cmat <- consensusMatrix(strings, width=ncol(x))[codes, , drop=FALSE]
         col_sums <- colSums(cmat)
         col_sums[col_sums == 0] <- 1  # to avoid division by 0
         cmat <- cmat / rep(col_sums, each=nrow(cmat))
         consensus <-
-          callGeneric(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
+          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
         if (ncol(x) > 0 && length(consensus) == 0) {
             consensus <- paste(rep.int("#", ncol(x)), collapse="")
         } else if (maskedncol(x) > 0) {
@@ -370,6 +368,14 @@ setMethod("consensusString","DNAMultipleAlignment",
             consensus <- paste(consensus, collapse = "")
         }
         consensus
+    }
+)
+
+setMethod("consensusString","DNAMultipleAlignment",
+    function(x, ambiguityMap=IUPAC_CODE_MAP, threshold=0.25)
+    {
+        callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold,
+                       codes=names(IUPAC_CODE_MAP))
     }
 )
 
@@ -378,50 +384,17 @@ setMethod("consensusString","RNAMultipleAlignment",
             ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
             threshold=0.25)
     {
-        strings <- unmasked(x)
-        if (maskednrow(x) > 0)
-            strings <- strings[- as.integer(rowmask(x))]
-        RNA_CODES <-
-          as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))
-        cmat <- consensusMatrix(strings, width=ncol(x))[RNA_CODES, , drop=FALSE]
-        col_sums <- colSums(cmat)
-        col_sums[col_sums == 0] <- 1  # to avoid division by 0
-        cmat <- cmat / rep(col_sums, each=nrow(cmat))
-        consensus <-
-          callGeneric(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
-        if (ncol(x) > 0 && length(consensus) == 0) {
-            consensus <- paste(rep.int("#", ncol(x)), collapse="")
-        } else if (maskedncol(x) > 0) {
-            consensus <- safeExplode(consensus)
-            consensus[as.integer(colmask(x))] <- "#"
-            consensus <- paste(consensus, collapse = "")
-        }
-        consensus
+        callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold,
+                       codes=
+                       as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP)))))
     }
 )
 
 setMethod("consensusString","AAMultipleAlignment",
     function(x, ambiguityMap="?", threshold=0.5)
     {
-        strings <- unmasked(x)
-        if (maskednrow(x) > 0)
-            strings <- strings[- as.integer(rowmask(x))]
-        cmat <-
-          consensusMatrix(strings, width=ncol(x))[names(AMINO_ACID_CODE), ,
-                                                  drop=FALSE]
-        col_sums <- colSums(cmat)
-        col_sums[col_sums == 0] <- 1  # to avoid division by 0
-        cmat <- cmat / rep(col_sums, each=nrow(cmat))
-        consensus <-
-          callGeneric(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
-        if (ncol(x) > 0 && length(consensus) == 0) {
-            consensus <- paste(rep.int("#", ncol(x)), collapse="")
-        } else if (maskedncol(x) > 0) {
-            consensus <- safeExplode(consensus)
-            consensus[as.integer(colmask(x))] <- "#"
-            consensus <- paste(consensus, collapse = "")
-        }
-        consensus
+        callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold,
+                       codes=names(AMINO_ACID_CODE))
     }
 )
 
