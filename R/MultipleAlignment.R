@@ -319,11 +319,15 @@ setMethod("as.character", "MultipleAlignment",
 setMethod("as.matrix", "MultipleAlignment",
     function(x, use.names=TRUE)
     {
-        m <- as.matrix(unmasked(x), use.names=use.names)
-        if (maskednrow(x) > 0)
-            m <- m[- as.integer(rowmask(x)), , drop=FALSE]
-        if (maskedncol(x) > 0)
-            m <- m[, - as.integer(colmask(x)), drop=FALSE]
+        if (nrow(x) == 0) {
+            m <- matrix(character(0), nrow=0, ncol=0)
+        } else {
+            m <- as.matrix(unmasked(x), use.names=use.names)
+            if (maskednrow(x) > 0)
+                m <- m[- as.integer(rowmask(x)), , drop=FALSE]
+            if (maskedncol(x) > 0)
+                m <- m[, - as.integer(colmask(x)), drop=FALSE]
+        }
         m
     }
 )
@@ -339,7 +343,8 @@ setMethod("consensusMatrix","MultipleAlignment",
         strings <- unmasked(x)
         if (maskednrow(x) > 0)
             strings <- strings[- as.integer(rowmask(x))]
-        m <- consensusMatrix(strings, as.prob=as.prob, baseOnly=baseOnly)
+        m <- callGeneric(strings, as.prob=as.prob, baseOnly=baseOnly,
+                         width=ncol(x))
         if (maskedncol(x) > 0)
             m[, as.integer(colmask(x))] <- NA
         m
@@ -352,13 +357,17 @@ setMethod("consensusString","DNAMultipleAlignment",
         strings <- unmasked(x)
         if (maskednrow(x) > 0)
             strings <- strings[- as.integer(rowmask(x))]
-        cmat <- consensusMatrix(strings)[names(IUPAC_CODE_MAP), , drop=FALSE]
+        cmat <-
+          consensusMatrix(strings, width=ncol(x))[names(IUPAC_CODE_MAP), ,
+                                                  drop=FALSE]
         col_sums <- colSums(cmat)
         col_sums[col_sums == 0] <- 1  # to avoid division by 0
         cmat <- cmat / rep(col_sums, each=nrow(cmat))
         consensus <-
-          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
-        if (maskedncol(x) > 0) {
+          callGeneric(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
+        if (ncol(x) > 0 && length(consensus) == 0) {
+            consensus <- paste(rep.int("#", ncol(x)), collapse="")
+        } else if (maskedncol(x) > 0) {
             consensus <- safeExplode(consensus)
             consensus[as.integer(colmask(x))] <- "#"
             consensus <- paste(consensus, collapse = "")
@@ -377,13 +386,15 @@ setMethod("consensusString","RNAMultipleAlignment",
             strings <- strings[- as.integer(rowmask(x))]
         RNA_CODES <-
           as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))
-        cmat <- consensusMatrix(strings)[RNA_CODES, , drop=FALSE]
+        cmat <- consensusMatrix(strings, width=ncol(x))[RNA_CODES, , drop=FALSE]
         col_sums <- colSums(cmat)
         col_sums[col_sums == 0] <- 1  # to avoid division by 0
         cmat <- cmat / rep(col_sums, each=nrow(cmat))
         consensus <-
-          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
-        if (maskedncol(x) > 0) {
+          callGeneric(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
+        if (ncol(x) > 0 && length(consensus) == 0) {
+            consensus <- paste(rep.int("#", ncol(x)), collapse="")
+        } else if (maskedncol(x) > 0) {
             consensus <- safeExplode(consensus)
             consensus[as.integer(colmask(x))] <- "#"
             consensus <- paste(consensus, collapse = "")
@@ -398,13 +409,17 @@ setMethod("consensusString","AAMultipleAlignment",
         strings <- unmasked(x)
         if (maskednrow(x) > 0)
             strings <- strings[- as.integer(rowmask(x))]
-        cmat <- consensusMatrix(strings)[names(AMINO_ACID_CODE), , drop=FALSE]
+        cmat <-
+          consensusMatrix(strings, width=ncol(x))[names(AMINO_ACID_CODE), ,
+                                                  drop=FALSE]
         col_sums <- colSums(cmat)
         col_sums[col_sums == 0] <- 1  # to avoid division by 0
         cmat <- cmat / rep(col_sums, each=nrow(cmat))
         consensus <-
-          consensusString(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
-        if (maskedncol(x) > 0) {
+          callGeneric(cmat, ambiguityMap=ambiguityMap, threshold=threshold)
+        if (ncol(x) > 0 && length(consensus) == 0) {
+            consensus <- paste(rep.int("#", ncol(x)), collapse="")
+        } else if (maskedncol(x) > 0) {
             consensus <- safeExplode(consensus)
             consensus[as.integer(colmask(x))] <- "#"
             consensus <- paste(consensus, collapse = "")
@@ -417,17 +432,18 @@ setMethod("alphabetFrequency","MultipleAlignment",
     function(x, as.prob=FALSE, collapse=FALSE)
     {
         if (collapse) {
-            callGeneric(as(x, sprinf("%sStringSet")), as.prob=as.prob,
-                        collapse=TRUE)
+            strings <- as(x, sprintf("%sStringSet", xsbasetype(x)))
+            m <- callGeneric(strings, as.prob=as.prob, collapse=TRUE)
         } else {
-            strings <- unmasked(x)
-            if (maskednrow(x) > 0)
-                strings <- strings[- as.integer(rowmask(x))]
-            m <- alphabetFrequency(strings, as.prob=as.prob)
-            if (maskedncol(x) > 0)
-                m[, as.integer(colmask(x))] <- NA
-            m
+            rmasks <- rowmask(x)
+            if (length(rmasks) > 0)
+                rowmask(x) <- NULL
+            strings <- as(x, sprintf("%sStringSet", xsbasetype(x)))
+            m <- callGeneric(strings, as.prob=as.prob)
+            if (length(rmasks) > 0)
+                m[as.integer(rmasks),] <- NA
         }
+        m
     }
 )
 

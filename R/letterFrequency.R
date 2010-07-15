@@ -620,40 +620,33 @@ setMethod("consensusMatrix", "XStringSet",
     {
         if (!isTRUEorFALSE(as.prob))
             stop("'as.prob' must be TRUE or FALSE")
-        if (length(x) == 0) {
-            if (as.prob)
-                ans <- matrix(numeric(), nrow=0, ncol=0)
-            else
-                ans <- matrix(integer(), nrow=0, ncol=0)
+        if (!is.integer(shift))
+            shift <- as.integer(shift)
+        if (length(x) != 0 && length(shift) > length(x))
+            stop("'shift' has more elements than 'x'")
+        if (!is.null(width)) {
+            if (!isSingleNumber(width) || width < 0)
+                stop("'width' must be NULL or a single non-negative integer")
+            if (!is.integer(width))
+                width <- as.integer(width)
+        }
+        codes <- xscodes(x, baseOnly=baseOnly)
+        if (is.null(names(codes))) {
+            names(codes) <- intToUtf8(codes, multiple = TRUE)
+            removeUnused <- TRUE
         } else {
-            if (!is.integer(shift))
-                shift <- as.integer(shift)
-            if (length(x) != 0 && length(shift) > length(x))
-                stop("'shift' has more elements than 'x'")
-            if (!is.null(width)) {
-                if (!isSingleNumber(width) || width < 0)
-                    stop("'width' must be NULL or a single non-negative integer")
-                if (!is.integer(width))
-                    width <- as.integer(width)
-            }
-            codes <- xscodes(x, baseOnly=baseOnly)
-            if (is.null(names(codes))) {
-                names(codes) <- intToUtf8(codes, multiple = TRUE)
-                removeUnused <- TRUE
-            } else {
-                removeUnused <- FALSE
-            }
-            ans <- .Call("XStringSet_consensus_matrix",
-                         x, shift, width, baseOnly, codes,
-                         PACKAGE="Biostrings")
-            if (removeUnused) {
-                ans <- ans[rowSums(ans) > 0, , drop=FALSE]
-            }
-            if (as.prob) {
-                col_sums <- colSums(ans)
-                col_sums[col_sums == 0] <- 1  # to avoid division by 0
-                ans <- ans / rep(col_sums, each=nrow(ans))
-            }
+            removeUnused <- FALSE
+        }
+        ans <- .Call("XStringSet_consensus_matrix",
+                     x, shift, width, baseOnly, codes,
+                     PACKAGE="Biostrings")
+        if (removeUnused) {
+            ans <- ans[rowSums(ans) > 0, , drop=FALSE]
+        }
+        if (as.prob) {
+            col_sums <- colSums(ans)
+            col_sums[col_sums == 0] <- 1  # to avoid division by 0
+            ans <- ans / rep(col_sums, each=nrow(ans))
         }
         ans
     }
