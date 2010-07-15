@@ -224,29 +224,26 @@ function(rows, markupPattern)
 .read.Stockholm <-
 function(filepath)
 {
-    con <- file(filepath)
-    rows <- readLines(con)
-    close(con)
+    rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
+                 quiet = TRUE, blank.lines.skip = FALSE)
     if (length(rows) < 3 ||
-        !identical(grep("^# STOCKHOLM", rows), 1L))
+        !identical(grep("^# STOCKHOLM", rows[1L]), 1L))
         stop("invalid Stockholm file")
-    rows <- sub("^\\s*(\\S+\\s+\\S+)\\s*$", "\\1", rows)
-    rows <- chartr(".", "-", rows)
-    .read.MultipleAlignment.splitRows(rows, "(^\\s*|^#.*|^//\\s*)$")
+    chartr(".", "-",
+           .read.MultipleAlignment.splitRows(rows, "(^\\s*|^#.*|^//\\s*)$"))
 }
 
 .read.ClustalAln <-
 function(filepath)
 {
-    con <- file(filepath)
-    rows <- readLines(con)
-    close(con)
+    rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
+                 quiet = TRUE, blank.lines.skip = FALSE)
     if (length(rows) < 3 ||
-        !identical(grep("^CLUSTAL", rows), 1L) ||
+        !identical(grep("^CLUSTAL", rows[1L]), 1L) ||
         !identical(rows[2:3], c("","")))
         stop("invalid Clustal aln file")
     rows <- tail(rows, -3)
-    rows <- sub("^\\s*(\\S+\\s+\\S+)\\s*\\d*\\s*$", "\\1", rows)
+    rows <- sub("^(\\S+\\s+\\S+)\\s*\\d*$", "\\1", rows)
     .read.MultipleAlignment.splitRows(rows, "^(\\s|\\*|:|\\.)*$")
 }
 
