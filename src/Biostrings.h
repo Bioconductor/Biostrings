@@ -958,8 +958,6 @@ SEXP _get_PreprocessedTB_low2high(SEXP x);
 
 SEXP _get_Twobit_sign2pos_tag(SEXP x);
 
-SEXP _get_ACtree_nodes_tag(SEXP x);
-
 SEXP _get_ACtree2_nodebuf_ptr(SEXP x);
 
 SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x);
@@ -1057,28 +1055,6 @@ SEXP build_Twobit(
 );
 
 void _match_Twobit(
-	SEXP pptb,
-	const cachedCharSeq *S,
-	int fixedS,
-	TBMatchBuf *tb_matches
-);
-
-
-/* match_pdict_ACtree.c */
-
-SEXP debug_match_pdict_ACtree();
-
-SEXP free_actree_nodes_buf();
-
-SEXP build_ACtree(
-	SEXP tb,
-	SEXP pp_exclude,
-	SEXP base_codes
-);
-
-SEXP ACtree_summary(SEXP pptb);
-
-void _match_ACtree(
 	SEXP pptb,
 	const cachedCharSeq *S,
 	int fixedS,

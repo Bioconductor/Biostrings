@@ -82,8 +82,6 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 
 	if (strcmp(type, "Twobit") == 0)
 		_match_Twobit(pptb, S, fixedS, tb_matches);
-	else if (strcmp(type, "ACtree") == 0)
-		_match_ACtree(pptb, S, fixedS, tb_matches);
 	else if (strcmp(type, "ACtree2") == 0)
 		_match_tbACtree2(pptb, S, fixedS, tb_matches);
 	else

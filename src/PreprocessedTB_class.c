@@ -94,28 +94,6 @@ SEXP _get_Twobit_sign2pos_tag(SEXP x)
 
 
 /****************************************************************************
- * C-level slot getters for ACtree objects.
- *
- * Be careful that these functions do NOT duplicate the returned slot.
- * Thus they cannot be made .Call() entry points!
- */
-
-static SEXP nodes_symbol = NULL;
-
-static SEXP get_ACtree_nodes(SEXP x)
-{
-	INIT_STATIC_SYMBOL(nodes)
-	return GET_SLOT(x, nodes_symbol);
-}
-
-/* Not a strict "slot getter" but very much like. */
-SEXP _get_ACtree_nodes_tag(SEXP x)
-{
-	return get_XVector_tag(get_ACtree_nodes(x));
-}
-
-
-/****************************************************************************
  * C-level slot getters for ACtree2 objects.
  *
  * Be careful that these functions do NOT duplicate the returned slot.

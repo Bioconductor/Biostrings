@@ -1,11 +1,8 @@
 /****************************************************************************
  *     A fast and compact implementation of the Aho-Corasick algorithm      *
- *                   for constant width DNA dictionaries                    *
+ *                     for rectangular DNA dictionaries                     *
  *                                                                          *
  *                           Author: Herve Pages                            *
- *                                                                          *
- * Note: a constant width dictionary is a non-empty set of non-empty        *
- * words of the same length.                                                *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
@@ -14,6 +11,18 @@
 #include <limits.h> /* for UINT_MAX */
 
 static int debug = 0;
+
+
+/*
+ * Internal representation of the Aho-Corasick tree
+ * ------------------------------------------------
+ *
+ * For this Aho-Corasick implementation, we take advantage of 2 important
+ * properties of the input dictionary (aka pattern set):
+ *   1. It's rectangular (i.e. all patterns have the same length).
+ *   2. It's based on a 4-letter alphabet.
+ * TODO: Describe the internal representation of the tree.
+ */
 
 #define MAX_CHILDREN_PER_NODE 4  /* do NOT change this */
 
@@ -781,8 +790,8 @@ static void add_pattern(ACtree *tree, const cachedCharSeq *P, int P_offset)
 
 /* --- .Call ENTRY POINT ---
  * Arguments:
- *   tb:         the Trusted Band extracted from the original dictionary as a
- *               constant width DNAStringSet object;
+ *   tb:         the Trusted Band extracted from the input dictionary as a
+ *               rectangular DNAStringSet object;
  *   pp_exclude: NULL or an integer vector of the same length as 'tb' where
  *               non-NA values indicate the elements to exclude from
  *               preprocessing;

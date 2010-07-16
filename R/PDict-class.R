@@ -106,106 +106,23 @@ setMethod("initialize", "Twobit",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "ACtree" class.
-###
-### A low-level container for storing the PreprocessedTB object (preprocessed
-### Trusted Band) obtained with the "ACtree" algo.
-### With this algo, all the oligonucleotides in the Trusted
-### Band are stored in a 4-ary Aho-Corasick tree (note that this tree is in
-### fact an oriented graph if we consider the failure links or the shortcut
-### links).
-### The number of integers needed to represent a tree node is the number of
-### base letters in the DNA alphabet plus 4.
-###
-
-setClass("ACtree",
-    contains="PreprocessedTB",
-    representation(
-        nodes="XInteger"
-    )
-)
-
-.ACtree.ints_per_acnode <- function(x) (length(x@base_codes) + 4L)
-
-setMethod("show", "ACtree",
-    function(object)
-    {
-        .PreprocessedTB.showFirstLine(object)
-	invisible(.Call("ACtree_summary", object, PACKAGE="Biostrings"))
-    }
-)
-
-### Implement the 0-based subsetting semantic (like in C).
-### Typical use:
-###   > pdict <- PDict(c("agg", "aca", "gag", "caa", "agt", "aca"))
-###   > pdict@actree[0:2] # look at the 3 first nodes
-###   > pdict@actree[] # look at all the nodes
-###   > flinks0 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks0 # no failure link is set yet
-###   > end_index <- endIndex(matchPDict(pdict, DNAString("acaagagagt")))
-###   > flinks1 <- as.matrix(pdict@actree)[ , "flink"]
-###   > flinks1 # some failure links have been set
-### As you can see the 'pdict' object "learns" from being used!
-###   
-setMethod("[", "ACtree",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        ints_per_acnode <- .ACtree.ints_per_acnode(x)
-        nnodes <- length(x@nodes) %/% ints_per_acnode
-        if (missing(i)) {
-            i <- 0:(nnodes-1)
-        } else {
-            if (!is.numeric(i))
-                stop("invalid subscript type")
-            if (any(is.na(i)))
-                stop("subscript contains NAs")
-            if (!is.integer(i))
-                i <- as.integer(i)
-        }
-        ii <- rep(i * ints_per_acnode, each=ints_per_acnode) +
-                          seq_len(ints_per_acnode)
-        ans <- matrix(x@nodes[ii], ncol=ints_per_acnode, byrow=TRUE)
-        colnames(ans) <- c("parent_id", "depth", x@base_codes,
-                           "flink", "P_id")
-        rownames(ans) <- i
-        ans
-    }
-)
-
-setMethod("as.matrix", "ACtree", function(x) x[])
-
-setMethod("initialize", "ACtree",
-    function(.Object, tb, pp_exclude)
-    {
-        base_codes <- xscodes(tb, baseOnly=TRUE)
-        on.exit(.Call("free_actree_nodes_buf", PACKAGE="Biostrings"))
-        C_ans <- .Call("build_ACtree", tb, pp_exclude, base_codes,
-                       PACKAGE="Biostrings")
-        .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low, base_codes)
-        .Object@nodes <- C_ans$nodes
-        .Object
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ACtree2" class.
 ###
 ### A low-level container for storing the PreprocessedTB object (preprocessed
 ### Trusted Band) obtained with the "ACtree2" algo.
-### The "ACtree2" algo is basically the same as the "ACtree" algo but the
-### "ACtree2" container is more memory efficient than the "ACtree" container.
-### With "ACtree2" a node can occupy either 8 bytes (2 ints) or 28 bytes (7
-### ints) in memory, depending on whether it's extended or not. Some testing
-### with real data shows that less than 10% of the nodes are typically
-### extended right after preprocessing (i.e. before any use of the PDict
-### object), and that less than 30% or 40% get extended during the typical
-### life of the PDict object (i.e. after it has been used on a full genome).
-### Other advantages of "ACtree2" over "ACtree":
-###   - can store up 2^32-1 nodes (2^28 nodes for "ACtree");
-###   - nodes and node extensions are stored in buffers that can be made
+### With this algo, patterns in the Trusted Band are stored in a 4-ary
+### Aho-Corasick tree (note that this tree becomes an oriented graph when we
+### start adding the failure links or the shortcut links to it).
+### The size of a node in memory is either 8 bytes (2 ints) before extension,
+### or 28 bytes (7 ints) after it has been extended.
+### Some testing with real data shows that, typically, less than 10% of the
+### nodes are extended right after preprocessing (i.e. before any use of the
+### PDict object), and that this percentage grows up to 30% or 40% during the
+### typical life of the PDict object (e.g. after it has been used on a full
+### genome).
+### Quick facts:
+###   - Can store up 2^32-1 nodes.
+###   - Nodes and node extensions are stored in buffers that can be made
 ###     bigger as the need arises without reallocating/copying their current
 ###     content.
 ###
@@ -626,6 +543,11 @@ setClass("Expanded_TB_PDict",
         stop("'tb.width' must be a single integer or 'NA'")
     if (!is.character(algo))
         stop("'algorithm' must be a character vector")
+    if ("ACtree" %in% algo) {
+        warning("support for ACtree preprocessing algo has been ",
+                "dropped, using ACtree2 algo")
+        algo[!is.na(match(algo, "ACtree"))] <- "ACtree2"
+    }
     if (!identical(skip.invalid.patterns, FALSE))
         stop("'skip.invalid.patterns' must be FALSE for now, sorry")
     is_default_TB <- is.na(tb.start) && is.na(tb.end) && is.na(tb.width)

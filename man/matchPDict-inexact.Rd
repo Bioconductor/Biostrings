@@ -183,7 +183,7 @@
   subject <- DNAString("CYTCACTTC")
   mi1 <- matchPDict(pdict, subject, fixed="pattern")
   mi2 <- matchPDict(dict, subject, fixed="pattern")
-  stopifnot(identical(mi1, mi2))
+  stopifnot(identical(as.list(mi1), as.list(mi2)))
 }
 
 \keyword{methods}

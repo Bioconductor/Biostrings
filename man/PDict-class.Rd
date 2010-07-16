@@ -26,16 +26,6 @@
 \alias{show,Twobit-method}
 \alias{initialize,Twobit-method}
 
-% ACtree class:
-\alias{class:ACtree}
-\alias{ACtree-class}
-\alias{ACtree}
-
-\alias{show,ACtree-method}
-\alias{[,ACtree-method}
-\alias{as.matrix,ACtree-method}
-\alias{initialize,ACtree-method}
-
 % ACtree2 class:
 \alias{class:ACtree2}
 \alias{ACtree2-class}
@@ -133,7 +123,7 @@
     A single integer or \code{NA}. See the "Trusted Band" section below.
   }
   \item{algorithm}{
-    \code{"ACtree2"} (the default), \code{"ACtree"} or \code{"Twobit"}.
+    \code{"ACtree2"} (the default) or \code{"Twobit"}.
   }
   \item{skip.invalid.patterns}{
     This argument is not supported yet (and might in fact be replaced
@@ -166,19 +156,18 @@
   number of mismatching letters, then see the "Allowing a small number
   of mismatching letters" section below.
 
-  Three preprocessing algorithms are currently supported:
-  \code{algorithm="ACtree2"} (the default), \code{algorithm="ACtree"} and
-  \code{algorithm="Twobit"}.
-  With the \code{"ACtree2"} and \code{"ACtree"} algorithms, all the
-  oligonucleotides in the Trusted Band are stored in a 4-ary Aho-Corasick
-  tree. With the \code{"Twobit"} algorithm, the 2-bit-per-letter
+  Two preprocessing algorithms are currently supported:
+  \code{algorithm="ACtree2"} (the default) and \code{algorithm="Twobit"}.
+  With the \code{"ACtree2"} algorithm, all the oligonucleotides in the
+  Trusted Band are stored in a 4-ary Aho-Corasick tree.
+  With the \code{"Twobit"} algorithm, the 2-bit-per-letter
   signatures of all the oligonucleotides in the Trusted Band are computed
   and the mapping from these signatures to the 1-based position of the
   corresponding oligonucleotide in the Trusted Band is stored in a way that
   allows very fast lookup.
-  Only with PDict objects obtained with the \code{"ACtree2"} or \code{"ACtree"}
-  algos can \code{matchPdict} then be called with \code{fixed="pattern"}
-  (instead of \code{fixed=TRUE}, the default) so that IUPAC ambiguity codes
+  Only PDict objects preprocessed with the \code{"ACtree2"} algo can then
+  be used with \code{matchPdict} (and family) and with \code{fixed="pattern"}
+  (instead of \code{fixed=TRUE}, the default), so that IUPAC ambiguity codes
   in the subject are treated as ambiguities. PDict objects obtained with the
   \code{"Twobit"} algo don't allow this.
   See \code{?`\link{matchPDict-inexact}`} for more information about support

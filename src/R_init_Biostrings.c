@@ -159,12 +159,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(debug_match_pdict_Twobit, 0),
 	CALLMETHOD_DEF(build_Twobit, 3),
 
-/* match_pdict_ACtree.c */
-	CALLMETHOD_DEF(debug_match_pdict_ACtree, 0),
-	CALLMETHOD_DEF(free_actree_nodes_buf, 0),
-	CALLMETHOD_DEF(build_ACtree, 3),
-	CALLMETHOD_DEF(ACtree_summary, 1),
-
 /* BAB_class.c */
 	CALLMETHOD_DEF(debug_BAB_class, 0),
 	CALLMETHOD_DEF(IntegerBAB_new, 1),

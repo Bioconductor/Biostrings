@@ -231,7 +231,7 @@ exportClasses(
     #SparseList,
     MIndex, ByPos_MIndex,
     BOC_SubjectString, BOC2_SubjectString,
-    PreprocessedTB, Twobit, ACtree, ACtree2,
+    PreprocessedTB, Twobit, ACtree2,
     PDict3Parts,
     PDict, TB_PDict, MTB_PDict, Expanded_TB_PDict
 )

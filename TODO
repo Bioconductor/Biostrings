@@ -196,13 +196,14 @@ STRING MATCHING
     object first.
     Maybe put this in a separate function e.g. coveragePDict().
 
-  o _match_ACtree() doesn't need to walk until the end of the subject: it could
-    stop when the number of remaining chars to read is < to the difference
-    between the depth of the AC tree (i.e. the width of the Trusted Band) and
-    the current depth. This should speed up matchPDict()/countPDict()/whichPDict()
-    substantially when the length of the subject is very small. A typical use
-    case where this could be of great benefit is when finding the neighbors of a
-    given pattern with e.g. whichPDict(pdict, pdict[[99]], max.mismatch=2).
+  o _match_tbACtree2() doesn't need to walk until the end of the subject: it
+    could stop when the number of remaining chars to read is < to the
+    difference between the depth of the AC tree (i.e. the width of the
+    Trusted Band) and the current depth. This should speed up matchPDict()
+    (and family) substantially when the length of the subject is very small.
+    A typical use case where this could be of great benefit is when finding
+    the neighbors of a given pattern with e.g.
+    whichPDict(pdict, pdict[[99]], max.mismatch=2).
 
   o Implement the skip.invalid.patterns arg in PDict() (so the user can build
     a PDict object from Solexa data that would contain Ns if he wants, reads

@@ -3,7 +3,8 @@
 ### -------------------------------------------------------------------------
 ###
 ### Some examples below with a PDict object of type "ACtree".
-### TODO: All these examples need to go somewhere else!
+### TODO: Update the timings obtained when using the ACtree2 algo. All these
+### examples need to go somewhere else!
 ###
 ### I. A real use-case
 ### ------------------
