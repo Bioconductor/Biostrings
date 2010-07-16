@@ -3,17 +3,9 @@
 ### -------------------------------------------------------------------------
 ###
 
-## virtual class for metadata
-setClass("AlignmentMetadata",
-    representation=representation("VIRTUAL")
-)
-
-## TODO: ... classes for each aligner
-
 ## virtual class for multiple alignments
 setClass("MultipleAlignment",
     representation("VIRTUAL",
-#                   metadata="AlignmentMetadata",
                    unmasked="XStringSet",
                    rowmask="NormalIRanges",
                    colmask="NormalIRanges")
