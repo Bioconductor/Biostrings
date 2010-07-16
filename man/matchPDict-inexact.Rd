@@ -10,8 +10,8 @@
   efficiently find the occurrences in a text (the subject) of all patterns
   stored in a preprocessed dictionary.
 
-  This man page shows how to use these functions for inexact matching
-  or when the original dictionary has a variable width.
+  This man page shows how to use these functions for inexact (or fuzzy)
+  matching or when the original dictionary has a variable width.
 
   See \code{?\link{matchPDict}} for how to use these functions for exact
   matching of a constant width dictionary i.e. a dictionary where all the
@@ -24,21 +24,25 @@
   \code{matchPDict}, \code{countPDict} or \code{\link{whichPDict}}.
   Please see \code{?\link{PDict}} if you don't.
 
-  When using \code{matchPDict}, \code{countPDict} or \code{whichPDict}
-  for inexact matching or when the original dictionary has a variable width,
-  a Trusted Band must be defined during the preprocessing step.
-  This is done thru the \code{tb.start}, \code{tb.end} and \code{tb.width}
-  arguments of the \code{\link{PDict}} constructor (see \code{?\link{PDict}}
-  for the details).
+  \code{matchPDict} and family support different kinds of inexact
+  matching but with some restrictions. Inexact matching is controlled
+  via the definition of a Trusted Band during the preprocessing step
+  and/or via the \code{max.mismatch}, \code{min.mismatch} and \code{fixed}
+  arguments.
+  Defining a Trusted Band is also required when the original dictionary
+  is not rectangular (variable width), even for exact matching.
+  See \code{?\link{PDict}} for how to define a Trusted Band.
 
-  Then \code{matchPDict}/\code{countPDict}/\code{whichPDict} can be called
-  with a null or non-null \code{max.mismatch} value and the search for exact
-  or inexact matches happens in 2 steps:
-  (1) find all the exact matches of all the elements in the Trusted Band;
-      then
-  (2) for each element in the Trusted Band that has at least one exact
-      match, compare the head and the tail of this element
-      with the flanking sequences of the matches found in (1).
+  Here is how \code{matchPDict} and family handle the Trusted Band
+  defined on \code{pdict}:
+  \itemize{
+  \item (1) Find all the exact matches of all the elements in
+        the Trusted Band.
+  \item (2) For each element in the Trusted Band that has at
+        least one exact match, compare the head and the tail of
+        this element with the flanking sequences of the matches
+        found in (1).
+  }
 
   Note that the number of exact matches found in (1) will decrease
   exponentially with the width of the Trusted Band.
@@ -49,9 +53,14 @@
   be kept as small as possible, typically < 10 or 20.
 
   In addition, when a Trusted Band has been defined during preprocessing,
-  then \code{matchPDict}/\code{countPDict}/\code{whichPDict} can be called
-  with \code{fixed=FALSE}. In this case, IUPAC extended letters in the head
-  or the tail of the \link{PDict} object are treated as ambiguities.
+  then \code{matchPDict} and family can be called with \code{fixed=FALSE}.
+  In this case, IUPAC ambiguity codes in the head or the tail of the
+  \link{PDict} object are treated as ambiguities.
+
+  Finally, \code{fixed="pattern"} can be used to indicate that IUPAC
+  ambiguity codes in the subject should be treated as ambiguities.
+  It only works if the density of codes is not too high.
+  It works whether or not a Trusted Band has been defined on \code{pdict}.
 }
 
 \author{H. Pages}
@@ -70,7 +79,7 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## A. USING AN EXPLICIT TRUSTED BAND FOR EXACT OR INEXACT MATCHING
+  ## A. USING AN EXPLICIT TRUSTED BAND
   ## ---------------------------------------------------------------------
 
   library(drosophila2probe)
@@ -106,8 +115,7 @@
   identical(count0b, count0)  # TRUE
   
   ## ---------------------------------------------------------------------
-  ## C. USING AN EXPLICIT TRUSTED BAND TO HANDLE A VARIABLE WIDTH
-  ##    DICTIONARY
+  ## C. USING AN EXPLICIT TRUSTED BAND ON A VARIABLE WIDTH DICTIONARY
   ## ---------------------------------------------------------------------
 
   ## Here is a small variable width dictionary that contains IUPAC
@@ -140,24 +148,18 @@
   ## the entire dictionary to allow inexact matching on the uncovered parts
   ## (the tail in our case):
 
-  ## WARNING: Support for 'fixed=FALSE' is currently broken (FIXME)
-  \dontrun{
   m <- matchPDict(pdict, subject, fixed=FALSE)
   countIndex(m)  # now pattern 1 has 1 match too
   m[[1]]
-  }
 
   m <- matchPDict(pdict, subject, max.mismatch=1)
   countIndex(m)  # now pattern 4 has 1 match too
   m[[4]]
 
-  ## WARNING: Support for 'fixed=FALSE' is currently broken (FIXME)
-  \dontrun{
   m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
   countIndex(m)  # now pattern 3 has 1 match too
   m[[3]]  # note that this match is "out of limit"
   Views(subject, m[[3]])
-  }
 
   m <- matchPDict(pdict, subject, max.mismatch=2)
   countIndex(m)  # pattern 4 gets 1 additional match
@@ -165,6 +167,23 @@
 
   ## Unlist all matches:
   unlist(m)
+
+  ## ---------------------------------------------------------------------
+  ## D. WITH IUPAC AMBIGUITY CODES IN THE SUBJECT
+  ## ---------------------------------------------------------------------
+  pdict <- PDict(c("ACAC", "TCCG"), algo="ACtree2")
+  as.list(matchPDict(pdict, DNAString("ACNCCGT")))
+  as.list(matchPDict(pdict, DNAString("ACNCCGT"), fixed="pattern"))
+  as.list(matchPDict(pdict, DNAString("ACWCCGT"), fixed="pattern"))
+  as.list(matchPDict(pdict, DNAString("ACRCCGT"), fixed="pattern"))
+  as.list(matchPDict(pdict, DNAString("ACKCCGT"), fixed="pattern"))
+
+  dict <- DNAStringSet(c("TTC", "CTT"))
+  pdict <- PDict(dict)
+  subject <- DNAString("CYTCACTTC")
+  mi1 <- matchPDict(pdict, subject, fixed="pattern")
+  mi2 <- matchPDict(dict, subject, fixed="pattern")
+  stopifnot(identical(mi1, mi2))
 }
 
 \keyword{methods}

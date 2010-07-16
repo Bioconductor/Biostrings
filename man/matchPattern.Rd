@@ -89,8 +89,11 @@
     letters in P).
   }
   \item{fixed}{
-    If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
-    (see \code{?`\link{lowlevel-matching}`} for the details).
+    If \code{TRUE} (the default), an IUPAC ambiguity code in the pattern
+    can only match the same code in the subject, and vice versa.
+    If \code{FALSE}, an IUPAC ambiguity code in the pattern can match
+    any letter in the subject that is associated with the code, and 
+    vice versa. See \code{?`\link{lowlevel-matching}`} for more information.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},

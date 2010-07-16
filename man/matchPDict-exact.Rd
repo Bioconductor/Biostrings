@@ -118,8 +118,8 @@
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
   }
   \item{fixed}{
-    If \code{FALSE} then IUPAC extended letters are interpreted as ambiguities
-    (see \code{?\link{isMatching}} for the details).
+    Whether IUPAC ambiguity codes should be interpreted literally or not
+    (see \code{?\link{isMatching}} for more information).
     This man page focuses on exact matching of a constant width
     dictionary so \code{fixed=TRUE} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.

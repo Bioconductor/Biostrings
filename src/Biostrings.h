@@ -944,6 +944,10 @@ SEXP debug_BitMatrix();
 
 SEXP debug_PreprocessedTB_class();
 
+SEXP _get_PreprocessedTB_tb(SEXP x);
+
+SEXP _get_PreprocessedTB_dups(SEXP x);
+
 SEXP _get_PreprocessedTB_base_codes(SEXP x);
 
 int _get_PreprocessedTB_length(SEXP x);
@@ -1121,6 +1125,10 @@ SEXP ACtree2_build(
 	SEXP nodebuf_ptr,
 	SEXP nodeextbuf_ptr
 );
+
+SEXP ACtree2_has_all_flinks(SEXP pptb);
+
+SEXP ACtree2_compute_all_flinks(SEXP pptb);
 
 void _match_tbACtree2(
 	SEXP pptb,

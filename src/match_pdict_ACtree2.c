@@ -178,12 +178,13 @@ static ACnode *get_node_from_buf(ACnodeBuf *buf, unsigned int nid)
 	return buf->block[b] + i;
 }
 
+/* --- .Call ENTRY POINT --- */
 SEXP ACtree2_nodebuf_max_nblock()
 {
 	return ScalarInteger(ACNODEBUF_MAX_NBLOCK);
 }
 
-static int ACnodeBuf_isfull(ACnodeBuf *buf)
+static int ACnodeBuf_is_full(ACnodeBuf *buf)
 {
 	return *(buf->nblock) == 0
 	       || *(buf->lastblock_nelt) >= ACNODEBUF_MAX_NELT_PER_BLOCK;
@@ -231,7 +232,7 @@ static unsigned int new_nid(ACnodeBuf *buf)
 {
 	unsigned int nid;
 
-	if (ACnodeBuf_isfull(buf))
+	if (ACnodeBuf_is_full(buf))
 		extend_ACnodeBuf(buf);
 	nid = get_ACnodeBuf_nelt(buf);
 	if (nid == NOT_AN_ID)
@@ -255,7 +256,8 @@ typedef struct acnodeext {
 
 /*
  * We must have:
- *   (a) ACNODEEXTBUF_MAX_NBLOCK * ACNODEEXTBUF_MAX_NELT_PER_BLOCK <= UINT_MAX + 1
+ *   (a) ACNODEEXTBUF_MAX_NBLOCK * ACNODEEXTBUF_MAX_NELT_PER_BLOCK <=
+ *       UINT_MAX + 1
  *   (b) ACNODEEXTBUF_MAX_NELT_PER_BLOCK * INTS_PER_NODEEXT <= INT_MAX
  * The following settings are assuming UINT_MAX >= 2^32-1 and
  * INT_MAX >= 2^31-1. They result in blocks of size 80 MB.
@@ -279,6 +281,7 @@ static ACnodeext *get_nodeext_from_buf(ACnodeextBuf *buf, unsigned int eid)
 	return buf->block[b] + i;
 }
 
+/* --- .Call ENTRY POINT --- */
 SEXP ACtree2_nodeextbuf_max_nblock()
 {
 	return ScalarInteger(ACNODEEXTBUF_MAX_NBLOCK);
@@ -356,6 +359,7 @@ static unsigned int new_eid(ACnodeextBuf *buf)
 /* result of NODE_P_ID() is undefined on a non-leaf node */
 #define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
 
+/* --- .Call ENTRY POINT --- */
 SEXP debug_match_pdict_ACtree2()
 {
 #ifdef DEBUG_BIOSTRINGS
@@ -408,8 +412,9 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 		tree->dont_extend_nodes = 1;
 		warning("Reached max nb of node extensions (%u) so I will\n"
 			"stop extending the nodes of this ACtree2 object.\n"
-			"As a consequence not all new links and failure links will be\n"
-			"set. This might (slightly) affect speed but not the results.",
+			"As a consequence not all new links and failure\n"
+			"links will be set. This might (slightly) affect\n"
+                        "speed but not the results.",
 			tree->max_nodeextbuf_nelt);
 	}
 	nodeext = GET_NODEEXT(tree, eid);
@@ -436,17 +441,20 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 /*
  * Formal API
  */
-
+#define TREE_SIZE(tree) get_ACnodeBuf_nelt(&((tree)->nodebuf)) /* nb nodes */
+#define TREE_DEPTH(tree) ((tree)->depth)
+#define GET_NODE(tree, nid) get_node_from_buf(&((tree)->nodebuf), nid)
 #define IS_ROOTNODE(tree, node) _IS_ROOTNODE(&((tree)->nodebuf), node)
 #define IS_LEAFNODE(node) ((node)->attribs & ISLEAF_BIT)
-#define TREE_DEPTH(tree) ((tree)->depth)
-#define NODE_DEPTH(tree, node) (IS_LEAFNODE(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
-#define GET_NODE(tree, nid) get_node_from_buf(&((tree)->nodebuf), nid)
+#define NODE_DEPTH(tree, node) \
+		(IS_LEAFNODE(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
 #define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
 #define NEW_NODE(tree, depth) new_ACnode(tree, depth)
 #define NEW_LEAFNODE(tree, P_id) new_leafACnode(tree, P_id)
-#define GET_NODE_LINK(tree, node, linktag) get_ACnode_link(tree, node, linktag)
-#define SET_NODE_LINK(tree, node, linktag, nid) set_ACnode_link(tree, node, linktag, nid)
+#define GET_NODE_LINK(tree, node, linktag) \
+		get_ACnode_link(tree, node, linktag)
+#define SET_NODE_LINK(tree, node, linktag, nid) \
+		set_ACnode_link(tree, node, linktag, nid)
 #define GET_NODE_FLINK(tree, node) get_ACnode_flink(tree, node)
 #define SET_NODE_FLINK(tree, node, nid) set_ACnode_flink(tree, node, nid)
 
@@ -531,7 +539,7 @@ static void set_ACnode_link(ACtree *tree, ACnode *node, int linktag, unsigned in
 	return;
 }
 
-static unsigned int get_ACnode_flink(ACtree *tree, ACnode *node)
+static unsigned int get_ACnode_flink(ACtree *tree, const ACnode *node)
 {
 	ACnodeext *nodeext;
 
@@ -551,6 +559,7 @@ static void set_ACnode_flink(ACtree *tree, ACnode *node, unsigned int nid)
 		extend_ACnode(tree, node);
 	}
 	nodeext = GET_NODEEXT(tree, node->nid_or_eid);
+	//Rprintf("set flink: %d --> %d\n", node - GET_NODE(tree, 0U), nid);
 	nodeext->flink_nid = nid;
 	return;
 }
@@ -594,10 +603,12 @@ static unsigned int a_nice_max_nodeextbuf_nelt(int nnodes)
 	unsigned int n, rem;
 
 	/* when nb of nodeexts has reached 0.40 * nb of nodes, then the size
-	   in memory of the 2 buffers (nodebuf and nodeextbuf) is about the same */
+	   in memory of the 2 buffers (nodebuf and nodeextbuf) is about the
+	   same */
 	n = (unsigned int) (0.40 * nnodes);
-	/* then we round up to the closer multiple of ACNODEBUF_MAX_NELT_PER_BLOCK
-           so we don't waste space in the last block */
+	/* then we round up to the closer multiple of
+	   ACNODEBUF_MAX_NELT_PER_BLOCK so we don't waste space in the last
+	   block */
 	rem = n % ACNODEBUF_MAX_NELT_PER_BLOCK;
 	if (rem != 0U)
 		n += ACNODEBUF_MAX_NELT_PER_BLOCK - rem;
@@ -634,7 +645,7 @@ static ACtree pptb_asACtree(SEXP pptb)
   Is the "dont_extend_nodes" feature reasonable i.e. is it safe to
   not set all new links and failure links? Still need to think about it.
 */
-	//max_nelt = a_nice_max_nodeextbuf_nelt(get_ACnodeBuf_nelt(&(tree.nodebuf)));
+	//max_nelt = a_nice_max_nodeextbuf_nelt(TREE_SIZE(&tree));
 	max_nelt = 0U;
 	tree.max_nodeextbuf_nelt = max_nelt;
 	nelt = get_ACnodeextBuf_nelt(&(tree.nodeextbuf));
@@ -665,26 +676,26 @@ static int get_ACnode_nlink(ACtree *tree, ACnode *node)
 	return nlink;
 }
 
+/* --- .Call ENTRY POINT --- */
 SEXP ACtree2_nnodes(SEXP pptb)
 {
 	ACtree tree;
-	ACnodeBuf *nodebuf;
 
 	tree = pptb_asACtree(pptb);
-	nodebuf = &(tree.nodebuf);
-	return ScalarInteger(get_ACnodeBuf_nelt(nodebuf));
+	return ScalarInteger(TREE_SIZE(&tree));
 }
 
+/* --- .Call ENTRY POINT --- */
 SEXP ACtree2_print_nodes(SEXP pptb)
 {
 	ACtree tree;
+	unsigned int nnodes, nid;
 	ACnodeBuf *nodebuf;
 	ACnode *node;
-	unsigned int nnodes, nid;
 
 	tree = pptb_asACtree(pptb);
+	nnodes = TREE_SIZE(&tree);
 	nodebuf = &(tree.nodebuf);
-	nnodes = get_ACnodeBuf_nelt(nodebuf);
 	for (nid = 0U; nid < nnodes; nid++) {
 		node = get_node_from_buf(nodebuf, nid);
 		print_ACnode(&tree, node);
@@ -692,18 +703,19 @@ SEXP ACtree2_print_nodes(SEXP pptb)
 	return R_NilValue;
 }
 
+/* --- .Call ENTRY POINT --- */
 SEXP ACtree2_summary(SEXP pptb)
 {
 	ACtree tree;
-	ACnodeBuf *nodebuf;
-	ACnode *node;
 	unsigned int nnodes, nlink_table[MAX_CHILDREN_PER_NODE+2],
 		     nid, max_nn, min_nn;
+	ACnodeBuf *nodebuf;
+	ACnode *node;
 	int nleaves, nlink;
 
 	tree = pptb_asACtree(pptb);
+	nnodes = TREE_SIZE(&tree);
 	nodebuf = &(tree.nodebuf);
-	nnodes = get_ACnodeBuf_nelt(nodebuf);
 	Rprintf("| Total nb of nodes = %u\n", nnodes);
 	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
 		nlink_table[nlink] = 0U;
@@ -767,10 +779,7 @@ static void add_pattern(ACtree *tree, const cachedCharSeq *P, int P_offset)
 	return;
 }
 
-/****************************************************************************
- * .Call entry point for preprocessing
- * -----------------------------------
- *
+/* --- .Call ENTRY POINT ---
  * Arguments:
  *   tb:         the Trusted Band extracted from the original dictionary as a
  *               constant width DNAStringSet object;
@@ -779,7 +788,6 @@ static void add_pattern(ACtree *tree, const cachedCharSeq *P, int P_offset)
  *               preprocessing;
  *   base_codes: the internal codes for A, C, G and T.
  */
-
 SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 		SEXP nodebuf_ptr, SEXP nodeextbuf_ptr)
 {
@@ -839,127 +847,150 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 
 
 /****************************************************************************
- *                             H. MATCH FINDING                             *
+ *                   H. CORE AHO-CORASICK WALKING HELPERS                   *
  ****************************************************************************/
 
 /*
- * We use indirect recursion for walking a sequence.
- * This indirect recursion involves the 2 core functions walk_shortseq() and
- * transition(): the former calls the latter which in turn calls the former.
- */
-static unsigned int walk_shortseq(ACtree *tree, const char *seq, int seq_len);
-
-/*
+ * The core Aho-Corasick walking helpers use recursion and indirect
+ * recursion:
+ *   o transition() calls compute_flink() and transition();
+ *   o compute_flink() calls transition();
  * A trick is to have the path from the root node to the current node 'node'
- * stored at *negative* indices in 'seq_tail' i.e., if d is the depth of
- * 'node', then the path is seq_tail[-d], seq_tail[-d+1], seq_tail[-d+2], ...,
- * seq_tail[-1].
+ * stored at *negative* indices in 'node_path' i.e., if d is the depth of
+ * 'node', then the path is node_path[-d], node_path[-d+1], node_path[-d+2],
+ * ..., node_path[-1].
  */
-static unsigned int transition(ACtree *tree, ACnode *node, int linktag, const char *seq_tail)
+static unsigned int compute_flink(ACtree *tree,
+		const ACnode *node, const char *node_path);
+
+static unsigned int transition(ACtree *tree,
+		ACnode *node, const char *node_path, int linktag)
 {
 	unsigned int link, flink;
-	int newpath_len;
-	const char *newpath;
-/*
-#ifdef DEBUG_BIOSTRINGS
-	static int rec_level = -1;
-	int node_depth;
-	char format[20], pathbuf[2000];
 
-	rec_level++;
-	if (debug) {
-		Rprintf("[DEBUG] ENTERING transition():");
-		sprintf(format, "%%%ds", 1 + 2*rec_level);
-		Rprintf(format, " ");
-		node_depth = NODE_DEPTH(tree, node);
-		snprintf(pathbuf, node_depth + 1, "%s", seq_tail - node_depth);
-		Rprintf("node_depth=%d linktag=%d path=%s\n",
-			node_depth, linktag, pathbuf);
-	}
-#endif
-*/
-
-	if (linktag == NA_INTEGER) {
-/*
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG]  LEAVING transition():");
-			Rprintf(format, " ");
-			Rprintf("link=%u\n", 0U);
-		}
-		rec_level--;
-#endif
-*/
+	if (linktag == NA_INTEGER)
 		return 0U;
-	}
 	link = GET_NODE_LINK(tree, node, linktag);
-	if (link != NOT_AN_ID) {
-/*
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG]  LEAVING transition():");
-			Rprintf(format, " ");
-			Rprintf("link=%u\n", link);
-		}
-		rec_level--;
-#endif
-*/
+	if (link != NOT_AN_ID)
 		return link;
-	}
-	if (IS_ROOTNODE(tree, node)) {
-/*
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG]  LEAVING transition():");
-			Rprintf(format, " ");
-			Rprintf("link=%u\n", 0U);
-		}
-		rec_level--;
-#endif
-*/
+	if (IS_ROOTNODE(tree, node))
 		return 0U;
-	}
 	flink = GET_NODE_FLINK(tree, node);
 	if (flink == NOT_AN_ID) {
-		newpath_len = NODE_DEPTH(tree, node) - 1;
-		newpath = seq_tail - newpath_len;
-		flink = walk_shortseq(tree, newpath, newpath_len);
+		flink = compute_flink(tree, node, node_path);
 		SET_NODE_FLINK(tree, node, flink);
 	}
-	link = transition(tree, GET_NODE(tree, flink), linktag, seq_tail);
+	link = transition(tree, GET_NODE(tree, flink), node_path, linktag);
 	SET_NODE_LINK(tree, node, linktag, link); /* sets a shortcut */
-/*
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG]  LEAVING transition():");
-		Rprintf(format, " ");
-		Rprintf("link=%u\n", link);
-	}
-	rec_level--;
-#endif
-*/
 	return link;
 }
 
-/*
- * Does NOT report matches. Would not find matches anyway because it's used
- * to walk on short sequences i.e. sequences with a length < TREE_DEPTH(tree).
- */
-static unsigned int walk_shortseq(ACtree *tree, const char *seq, int seq_len)
+static unsigned int compute_flink(ACtree *tree,
+		const ACnode *node, const char *node_path)
 {
-	ACnode *node;
-	int n, linktag;
+	int seq_len, n, linktag;
+	const char *seq, *node1_path;
 	unsigned int nid;
-	const char *seq_tail;
+	ACnode *node1;
 
+	/* 'seq' is obtained by trimming the first letter from the node path */
+	seq_len = NODE_DEPTH(tree, node) - 1;
+	seq = node_path - seq_len;
+	/* walk on 'seq' */
 	nid = 0U;
-	for (n = 0, seq_tail = seq; n < seq_len; n++, seq_tail++) {
-		node = GET_NODE(tree, nid);
-		linktag = CHAR2LINKTAG(tree, *seq_tail);
-		nid = transition(tree, node, linktag, seq_tail);
+	for (n = 0, node1_path = seq; n < seq_len; n++, node1_path++) {
+		node1 = GET_NODE(tree, nid);
+		linktag = CHAR2LINKTAG(tree, *node1_path);
+		nid = transition(tree, node1, node1_path, linktag);
 	}
 	return nid;
 }
+
+static int has_all_flinks(ACtree *tree)
+{
+	unsigned int nnodes, nid, flink;
+	const ACnode *node;
+
+	nnodes = TREE_SIZE(tree);
+	for (nid = 1U; nid < nnodes; nid++) {
+		node = GET_NODE(tree, nid);
+		flink = GET_NODE_FLINK(tree, node);
+		if (flink == NOT_AN_ID)
+			return 0;
+	}
+	return 1;
+}
+
+static void compute_flinks_along_pattern(ACtree *tree, const cachedCharSeq *P)
+{
+	ACnode *node;
+	int n, linktag;
+	const char *node_path;
+	unsigned int nid, flink;
+
+	node = GET_NODE(tree, 0U);
+	node_path = P->seq;
+	for (n = 1; n <= P->length; n++) {
+		linktag = CHAR2LINKTAG(tree, *node_path);
+		nid = transition(tree, node, node_path, linktag);
+		node = GET_NODE(tree, nid);
+		node_path++;
+		flink = GET_NODE_FLINK(tree, node);
+		if (flink == NOT_AN_ID) {
+			flink = compute_flink(tree, node, node_path);
+			SET_NODE_FLINK(tree, node, flink);
+		}
+	}
+	return;
+}
+
+static void compute_all_flinks(ACtree *tree, const cachedXStringSet *tb)
+{
+	unsigned int nnodes, nid;
+	ACnode *node;
+	int P_offset;
+	cachedCharSeq P;
+
+	nnodes = TREE_SIZE(tree);
+	for (nid = 1U; nid < nnodes; nid++) {
+		node = GET_NODE(tree, nid);
+		if (!IS_LEAFNODE(node))
+			continue;
+		P_offset = NODE_P_ID(node) - 1;
+		P = _get_cachedXStringSet_elt(tb, P_offset);
+		compute_flinks_along_pattern(tree, &P);
+	}
+	return;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP ACtree2_has_all_flinks(SEXP pptb)
+{
+	ACtree tree;
+
+	tree = pptb_asACtree(pptb);
+	return ScalarLogical(has_all_flinks(&tree));
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP ACtree2_compute_all_flinks(SEXP pptb)
+{
+	ACtree tree;
+	SEXP tb;
+	cachedXStringSet cached_tb;
+
+	tree = pptb_asACtree(pptb);
+	tb = _get_PreprocessedTB_tb(pptb);
+	cached_tb = _cache_XStringSet(tb);
+	compute_all_flinks(&tree, &cached_tb);
+	return R_NilValue;
+}
+
+
+
+/****************************************************************************
+ *                             I. MATCH FINDING                             *
+ ****************************************************************************/
 
 /* Does report matches */
 static void walk_tb_subject(ACtree *tree, const cachedCharSeq *S,
@@ -967,14 +998,117 @@ static void walk_tb_subject(ACtree *tree, const cachedCharSeq *S,
 {
 	ACnode *node;
 	int n, linktag;
+	const char *node_path;
 	unsigned int nid;
-	const char *S_tail;
 
 	node = GET_NODE(tree, 0U);
-	for (n = 1, S_tail = S->seq; n <= S->length; n++, S_tail++) {
-		linktag = CHAR2LINKTAG(tree, *S_tail);
-		nid = transition(tree, node, linktag, S_tail);
+	node_path = S->seq;
+	for (n = 1; n <= S->length; n++) {
+		linktag = CHAR2LINKTAG(tree, *node_path);
+		nid = transition(tree, node, node_path, linktag);
 		node = GET_NODE(tree, nid);
+		node_path++;
+		if (IS_LEAFNODE(node))
+			_TBMatchBuf_report_match(tb_matches,
+					NODE_P_ID(node) - 1, n);
+	}
+	return;
+}
+
+/* 1st helper function for walk_tb_nonfixed_subject() */
+#define	NODE_SUBSET_MAXSIZE	5000000 /* 5 million node pointers */
+static ACnode *node_subset[NODE_SUBSET_MAXSIZE];
+static int node_subset_size = 0;
+
+static void split_and_move_pointers(ACtree *tree,
+		unsigned char c, const char *node_path)
+{
+	int node_subset_size0, i, is_first, j, linktag;
+	ACnode *node0, *node1, *node2;
+	unsigned char base;
+	unsigned int nid;
+
+	node0 = GET_NODE(tree, 0U);
+	node_subset_size0 = node_subset_size;
+	for (i = 0; i < node_subset_size0; i++) {
+		node1 = node_subset[i];
+		is_first = 1;
+		for (j = 0, base = 1; j < 4; j++, base *= 2) {
+			if ((c & base) == 0)
+				continue;
+			linktag = CHAR2LINKTAG(tree, base);
+			nid = transition(tree, node1, node_path, linktag);
+			//Rprintf("%d --[%d]--> %d\n", node1 - node0, base, nid);
+			node2 = GET_NODE(tree, nid);
+			if (is_first) {
+				node_subset[i] = node2;
+				is_first = 0;
+			} else {
+				if (node_subset_size >= NODE_SUBSET_MAXSIZE) {
+					node_subset_size = 0;
+					error("too many IUPAC ambiguity "
+					      "letters in 'subject'");
+				}
+				node_subset[node_subset_size++] = node2;
+			}
+		}
+	}
+	return;
+}
+
+/* 2nd helper function for walk_tb_nonfixed_subject() */
+static int compar_node_pointers_for_sort(const void *p1, const void *p2)
+{
+	return *((const ACnode * const *) p1) - *((const ACnode * const *) p2);
+}
+static void sort_node_pointer_array(ACnode **x, int nelt)
+{
+	qsort(x, nelt, sizeof(ACnode *), compar_node_pointers_for_sort);
+	return;
+}
+static void merge_pointers(ACtree *tree, int n)
+{
+	int i1, i2;
+	ACnode *node0, *node1, *node2;
+
+	node0 = GET_NODE(tree, 0U);
+/*
+	Rprintf("n=%d nodes before merging: ", n);
+	for (i1 = 0; i1 < node_subset_size; i1++) {
+		node1 = node_subset[i1];
+		Rprintf(" %d", node1 - node0);
+	}
+	Rprintf("\n");
+*/
+	sort_node_pointer_array(node_subset, node_subset_size);
+	i1 = 0;
+	node1 = node_subset[i1];
+	for (i2 = 1; i2 < node_subset_size; i2++) {
+		node2 = node_subset[i2];
+		if (node2 == node1)
+			continue;
+		i1++;
+		node1 = node_subset[i1] = node2;
+	}
+	node_subset_size = i1 + 1;
+/*
+	Rprintf("n=%d nodes after merging: ", n);
+	for (i1 = 0; i1 < node_subset_size; i1++) {
+		node1 = node_subset[i1];
+		Rprintf(" %d", node1 - node0);
+	}
+	Rprintf("\n");
+*/
+	return;
+}
+
+static void report_matches(TBMatchBuf *tb_matches, int n)
+{
+	int i;
+	ACnode *node;
+
+	for (i = 0; i < node_subset_size; i++) {
+		node = node_subset[i];
 		if (IS_LEAFNODE(node))
 			_TBMatchBuf_report_match(tb_matches,
 					NODE_P_ID(node) - 1, n);
@@ -986,7 +1120,37 @@ static void walk_tb_subject(ACtree *tree, const cachedCharSeq *S,
 static void walk_tb_nonfixed_subject(ACtree *tree, const cachedCharSeq *S,
 		TBMatchBuf *tb_matches)
 {
-	error("walk_tb_nonfixed_subject(): implement me");
+	int max_size, n;
+	const char *node_path;
+	unsigned char c;
+
+	if (node_subset_size != 0)
+		error("Biostrings internal error in "
+		      "walk_tb_nonfixed_subject(): node_subset_size != 0... "
+		      "PLEASE REPORT THIS! THANKS.\n");
+	node_subset_size = max_size = 1;
+	node_subset[0] = GET_NODE(tree, 0U);
+	for (n = 1, node_path = S->seq; n <= S->length; n++, node_path++) {
+		c = *node_path;
+		if (c >= 16) {
+			/* 'c' is not an IUPAC (base or extended) code */
+			node_subset[0] = GET_NODE(tree, 0U);
+			node_subset_size = 1;
+			continue;
+		}
+		split_and_move_pointers(tree, c, node_path);
+		merge_pointers(tree, n);
+/*
+		if (node_subset_size > max_size) {
+			max_size = node_subset_size;
+			Rprintf("walk_tb_nonfixed_subject(): "
+				"n=%d max_size=%d\n",
+				n, max_size);
+		}
+*/
+		report_matches(tb_matches, n);
+	}
+	node_subset_size = 0;
 	return;
 }
 
@@ -995,19 +1159,29 @@ void _match_tbACtree2(SEXP pptb, const cachedCharSeq *S, int fixedS,
 		TBMatchBuf *tb_matches)
 {
 	ACtree tree;
+	SEXP tb;
+	cachedXStringSet cached_tb;
 
 	tree = pptb_asACtree(pptb);
-	if (fixedS)
+	if (fixedS) {
 		walk_tb_subject(&tree, S, tb_matches);
-	else
-		walk_tb_nonfixed_subject(&tree, S, tb_matches);
+		return;
+	}
+	if (!has_all_flinks(&tree)) {
+		tb = _get_PreprocessedTB_tb(pptb);
+		cached_tb = _cache_XStringSet(tb);
+		//Rprintf("computing all flinks... ");
+		compute_all_flinks(&tree, &cached_tb);
+		//Rprintf("OK\n");
+	}
+	walk_tb_nonfixed_subject(&tree, S, tb_matches);
 	return;
 }
 
 
 
 /****************************************************************************
- *                          I. MORE MATCH FINDING                           *
+ *                          J. MORE MATCH FINDING                           *
  ****************************************************************************/
 
 /* Does report matches */
@@ -1020,13 +1194,15 @@ static void walk_pdict_subject(ACtree *tree,
 	ACnode *node;
 	int n, linktag;
 	unsigned int nid;
-	const char *S_tail;
+	const char *node_path;
 
 	node = GET_NODE(tree, 0U);
-	for (n = 1, S_tail = S->seq; n <= S->length; n++, S_tail++) {
-		linktag = CHAR2LINKTAG(tree, *S_tail);
-		nid = transition(tree, node, linktag, S_tail);
+	node_path = S->seq;
+	for (n = 1; n <= S->length; n++) {
+		linktag = CHAR2LINKTAG(tree, *node_path);
+		nid = transition(tree, node, node_path, linktag);
 		node = GET_NODE(tree, nid);
+		node_path++;
 		if (IS_LEAFNODE(node))
 			_match_pdict_flanks_at(NODE_P_ID(node) - 1,
 				low2high, headtail, S, n,

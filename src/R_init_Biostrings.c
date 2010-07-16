@@ -177,6 +177,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(ACtree2_print_nodes, 1),
 	CALLMETHOD_DEF(ACtree2_summary, 1),
 	CALLMETHOD_DEF(ACtree2_build, 5),
+	CALLMETHOD_DEF(ACtree2_has_all_flinks, 1),
+	CALLMETHOD_DEF(ACtree2_compute_all_flinks, 1),
 
 /* match_pdict.c */
 	CALLMETHOD_DEF(debug_match_pdict, 0),

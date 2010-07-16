@@ -32,6 +32,11 @@ setMethod("dups", "PreprocessedTB", function(x) x@dups)
 
 setGeneric("nnodes", function(x) standardGeneric("nnodes"))
 
+setGeneric("hasAllFlinks", function(x) standardGeneric("hasAllFlinks"))
+
+setGeneric("computeAllFlinks",
+    function(x, ...) standardGeneric("computeAllFlinks"))
+
 setMethod("initialize", "PreprocessedTB",
     function(.Object, tb, pp_exclude, high2low, base_codes)
     {
@@ -218,6 +223,14 @@ setClass("ACtree2",
 
 setMethod("nnodes", "ACtree2",
     function(x) .Call("ACtree2_nnodes", x, PACKAGE="Biostrings")
+)
+
+setMethod("hasAllFlinks", "ACtree2",
+    function(x) .Call("ACtree2_has_all_flinks", x, PACKAGE="Biostrings")
+)
+
+setMethod("computeAllFlinks", "ACtree2",
+    function(x) .Call("ACtree2_compute_all_flinks", x, PACKAGE="Biostrings")
 )
 
 setMethod("show", "ACtree2",

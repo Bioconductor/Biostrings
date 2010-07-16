@@ -32,13 +32,13 @@ static SEXP
 	dups_symbol = NULL,
 	base_codes_symbol = NULL;
 
-static SEXP get_PreprocessedTB_tb(SEXP x)
+SEXP _get_PreprocessedTB_tb(SEXP x)
 {
 	INIT_STATIC_SYMBOL(tb)
 	return GET_SLOT(x, tb_symbol);
 }
 
-static SEXP get_PreprocessedTB_dups(SEXP x)
+SEXP _get_PreprocessedTB_dups(SEXP x)
 {
 	INIT_STATIC_SYMBOL(dups)
 	return GET_SLOT(x, dups_symbol);
@@ -54,20 +54,20 @@ SEXP _get_PreprocessedTB_base_codes(SEXP x)
 
 int _get_PreprocessedTB_length(SEXP x)
 {
-	return _get_XStringSet_length(get_PreprocessedTB_tb(x));
+	return _get_XStringSet_length(_get_PreprocessedTB_tb(x));
 }
 
 int _get_PreprocessedTB_width(SEXP x)
 {
 	SEXP tb;
 
-	tb = get_PreprocessedTB_tb(x);
+	tb = _get_PreprocessedTB_tb(x);
 	return INTEGER(_get_XStringSet_width(tb))[0];
 }
 
 SEXP _get_PreprocessedTB_low2high(SEXP x)
 {
-	return get_H2LGrouping_low2high(get_PreprocessedTB_dups(x));
+	return get_H2LGrouping_low2high(_get_PreprocessedTB_dups(x));
 }
 
 

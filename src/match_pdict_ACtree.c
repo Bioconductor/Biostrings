@@ -594,6 +594,12 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 	IntAE_insert_at(&cnode_ids, 0, 0);
 	for (n = 1, S_tail = S->seq; n <= S->length; n++, S_tail++) {
 		c = *S_tail;
+		if (((unsigned char) c) >= 16) {
+			// 'c' is not an IUPAC (base or extended) code
+			cnode_ids.elts[0] = 0;
+			cnode_ids.nelt = 1;
+			continue;
+		}
 		npointers = cnode_ids.nelt;
 		// move and split pointers
 		for (i = 0; i < npointers; i++) {
@@ -628,7 +634,7 @@ static void walk_nonfixed_subject(ACNode *node0, const int *base_codes,
 				_TBMatchBuf_report_match(tb_matches, P_id - 1, n);
 		}
 		// error if too many remaining pointers
-		if (cnode_ids.nelt > 16384)
+		if (cnode_ids.nelt > 65536)
 			error("too many IUPAC ambiguity letters in 'subject'");
 	}
 	return;

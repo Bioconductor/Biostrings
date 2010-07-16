@@ -67,8 +67,8 @@
   by T, G, C, A respectively and A, C, G, U in a \link{RNAString} object
   are replaced by U, G, C, A respectively.
 
-  Letters belonging to the "IUPAC extended genetic alphabet"
-  are also replaced by their complement (M <-> K, R <-> Y, S <-> S, V <-> B,
+  Letters belonging to the IUPAC Extended Genetic Alphabet are also
+  replaced by their complement (M <-> K, R <-> Y, S <-> S, V <-> B,
   W <-> W, H <-> D, N <-> N) and the gap (\code{"-"}) and hard masking
   (\code{"+"}) letters are unchanged.
 
@@ -88,7 +88,8 @@
   \link{XStringViews-class},
   \link{MaskedXString-class},
   \code{\link{chartr}},
-  \code{\link{findPalindromes}}
+  \code{\link{findPalindromes}},
+  \code{\link{IUPAC_CODE_MAP}}
 }
 
 \examples{

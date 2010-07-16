@@ -126,10 +126,13 @@
     Only with a \link{DNAString} or \link{RNAString}-based subject can a
     \code{fixed} value other than the default (\code{TRUE}) be used.
 
-    With \code{fixed=FALSE}, ambiguities (i.e. letters from the IUPAC Extended
-    Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that are not from the
-    base alphabet) in the pattern \_and\_ in the subject are interpreted as
-    wildcards i.e. they match any letter that they stand for.
+    If \code{TRUE} (the default), an IUPAC ambiguity code in the pattern
+    can only match the same code in the subject, and vice versa.
+    If \code{FALSE}, an IUPAC ambiguity code in the pattern can match
+    any letter in the subject that is associated with the code, and
+    vice versa.
+    See \code{\link{IUPAC_CODE_MAP}} for more information about the
+    IUPAC Extended Genetic Alphabet.
 
     \code{fixed} can also be a character vector, a subset
     of \code{c("pattern", "subject")}.

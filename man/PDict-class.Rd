@@ -13,6 +13,8 @@
 \alias{tb.width}
 \alias{tb.width,PreprocessedTB-method}
 \alias{nnodes}
+\alias{hasAllFlinks}
+\alias{computeAllFlinks}
 \alias{initialize,PreprocessedTB-method}
 \alias{duplicated,PreprocessedTB-method}
 
@@ -40,6 +42,8 @@
 \alias{ACtree2}
 
 \alias{nnodes,ACtree2-method}
+\alias{hasAllFlinks,ACtree2-method}
+\alias{computeAllFlinks,ACtree2-method}
 \alias{show,ACtree2-method}
 \alias{initialize,ACtree2-method}
 
@@ -149,7 +153,7 @@
   \code{tb.start=NA}, \code{tb.end=NA} and \code{tb.width=NA})
   the following limitations apply: (1) the original dictionary can only
   contain base letters (i.e. only As, Cs, Gs and Ts), therefore IUPAC
-  extended letters are not allowed; (2) all the
+  ambiguity codes are not allowed; (2) all the
   patterns in the dictionary must have the same length ("constant width"
   dictionary); and (3) later \code{matchPdict} can only be used with
   \code{max.mismatch=0}.
@@ -174,9 +178,11 @@
   allows very fast lookup.
   Only with PDict objects obtained with the \code{"ACtree2"} or \code{"ACtree"}
   algos can \code{matchPdict} then be called with \code{fixed="pattern"}
-  (instead of \code{fixed=TRUE}, the default) so that IUPAC extended letters
+  (instead of \code{fixed=TRUE}, the default) so that IUPAC ambiguity codes
   in the subject are treated as ambiguities. PDict objects obtained with the
   \code{"Twobit"} algo don't allow this.
+  See \code{?`\link{matchPDict-inexact}`} for more information about support
+  of IUPAC ambiguity codes in the subject.
 }
 
 \section{Trusted Band}{
@@ -188,12 +194,12 @@
   Why use a Trusted Band?
 
   Because the limitations described above will apply to the Trusted Band only!
-  For example the Trusted Band cannot contain IUPAC extended letters but the
+  For example the Trusted Band cannot contain IUPAC ambiguity codes but the
   "head" and the "tail" can (see below for what those are).
   Also with a Trusted Band, if \code{matchPdict} is called with a non-null
   \code{max.mismatch} value then mismatching letters will be allowed in the
   head and the tail. Or, if \code{matchPdict} is called with
-  \code{fixed="subject"}, then IUPAC extended letters in the head and the
+  \code{fixed="subject"}, then IUPAC ambiguity codes in the head and the
   tail will be treated as ambiguities.
 
   How to specify a Trusted Band?
@@ -318,6 +324,7 @@
 \seealso{
   \code{\link{matchPDict}},
   \code{\link{DNA_ALPHABET}},
+  \code{\link{IUPAC_CODE_MAP}},
   \link{DNAStringSet-class},
   \link{XStringViews-class}
 }
