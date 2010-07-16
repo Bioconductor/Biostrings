@@ -24,15 +24,15 @@
 \alias{rowmask<-}
 \alias{rowmask<-,MultipleAlignment,NULL-method}
 \alias{rowmask<-,MultipleAlignment,NormalIRanges-method}
-\alias{rowmask<-,MultipleAlignment,IRanges-method}
+\alias{rowmask<-,MultipleAlignment,ANY-method}
 \alias{colmask}
 \alias{colmask,MultipleAlignment-method}
 \alias{colmask<-}
 \alias{colmask<-,MultipleAlignment,NULL-method}
 \alias{colmask<-,MultipleAlignment,NormalIRanges-method}
-\alias{colmask<-,MultipleAlignment,IRanges-method}
+\alias{colmask<-,MultipleAlignment,ANY-method}
 \alias{automask}
-\alias{automask,MultipleAlignment}
+\alias{automask,MultipleAlignment-method}
 \alias{nrow,MultipleAlignment-method}
 \alias{ncol,MultipleAlignment-method}
 \alias{dim,MultipleAlignment-method}
@@ -149,14 +149,22 @@
       sequence in \code{x}.
     }
     \item{}{
-      \code{rowmask(x)}, \code{rowmask(x) <- value}:
+      \code{rowmask(x)}, \code{rowmask(x, append) <- value}:
       Gets and sets the \link{NormalIRanges} object representing the
-      masked rows in \code{x}.
+      masked rows in \code{x}. The \code{append} argument takes a
+      logical denoting whether or not to overwrite \code{rowmask(x)}
+      or append (via \code{union}) to it. The \code{value} argument
+      can be of any class that is coercible to a \link{NormalIRanges}
+      via the \code{as} function.
     }
     \item{}{
-      \code{colmask(x)}, \code{colmask(x) <- value}:
+      \code{colmask(x)}, \code{colmask(x, append) <- value}:
       Gets and sets the \link{NormalIRanges} object representing the
-      masked columns in \code{x}.
+      masked columns in \code{x}. The \code{append} argument takes a
+      logical denoting whether or not to overwrite \code{colmask(x)}
+      or append (via \code{union}) to it. The \code{value} argument
+      can be of any class that is coercible to a \link{NormalIRanges}
+      via the \code{as} function.
     }
     \item{}{
       \code{automask(x, max.gappercent, max.gaplength, append)}:
@@ -301,31 +309,33 @@ origMAlign <-
 ## list the names of the sequences in the alignment
 rownames(origMAlign)
 
-## mask columns
-modMAlign <- origMAlign
-colmask(modMAlign) <- IRanges(start=c(1,20), end=c(4,30))
-modMAlign
+## cluster strings
+sdist <- stringDist(unmasked(origMAlign), method="hamming")
+clust <- hclust(sdist)
+twogroups <- cutree(clust, 2)
+twogroups
 
 ## mask rows
-modMAlign <- origMAlign
-rowmask(modMAlign) <- IRanges(start=1, end=2)
-modMAlign
+rowMasked <- origMAlign
+rowmask(rowMasked) <- (twogroups == 1)
+rowMasked
 
-## remove row masks
-rowmask(modMAlign) <- NULL
-modMAlign
+## mask columns
+colMasked <- origMAlign
+colmask(colMasked) <- IRanges(start=c(1,2333), end=c(14,2343))
+colMasked
 
 ## automatically mask rows based on consecutive gaps
-modMAlign <- automask(modMAlign, max.gappercent=.5, max.gaplength=3)
-modMAlign
+autoMasked <- automask(origMAlign, max.gappercent=.5, max.gaplength=3)
+autoMasked
 
 ## calculate frequencies
-alphabetFrequency(modMAlign)
-consensusMatrix(modMAlign, baseOnly=TRUE)[, 1:8]
+alphabetFrequency(autoMasked)
+consensusMatrix(autoMasked, baseOnly=TRUE)[, 23:30]
 
 ## get consensus values
-consensusString(modMAlign)
-consensusViews(modMAlign)
+consensusString(autoMasked)
+consensusViews(autoMasked)
 }
 
 \keyword{methods}

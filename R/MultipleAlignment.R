@@ -96,33 +96,55 @@ setReplaceMethod("rownames", "MultipleAlignment",
 setGeneric("rowmask", signature="x", function(x) standardGeneric("rowmask"))
 setMethod("rowmask", "MultipleAlignment", function(x) x@rowmask)
 
-setGeneric("rowmask<-", function(x, value) standardGeneric("rowmask<-"))
+setGeneric("rowmask<-", signature=c("x", "value"),
+    function(x, append=FALSE, value) standardGeneric("rowmask<-")
+)
 setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
-    function(x, value) initialize(x, rowmask = new("NormalIRanges"))
+    function(x, append=FALSE, value)
+        callGeneric(x, append=append, value=new("NormalIRanges"))
 )
 setReplaceMethod("rowmask",
     signature(x="MultipleAlignment", value="NormalIRanges"),
-    function(x, value) initialize(x, rowmask = value)
+    function(x, append=FALSE, value)
+    {
+        if (!isTRUEorFALSE(append))
+            stop("'append' must be TRUE or FALSE")
+        if (append)
+            value <- union(rowmask(x), value)
+        initialize(x, rowmask = value)
+    }
 )
 setReplaceMethod("rowmask",
-    signature(x="MultipleAlignment", value="IRanges"),
-    function(x, value) initialize(x, rowmask = asNormalIRanges(value))
+    signature(x="MultipleAlignment", value="ANY"),
+    function(x, append=FALSE, value)
+        callGeneric(x, append=append, value=as(value, "NormalIRanges"))
 )
 
 setGeneric("colmask", signature="x", function(x) standardGeneric("colmask"))
 setMethod("colmask", "MultipleAlignment", function(x) x@colmask)
 
-setGeneric("colmask<-", function(x, value) standardGeneric("colmask<-"))
+setGeneric("colmask<-", signature=c("x", "value"),
+    function(x, append=FALSE, value) standardGeneric("colmask<-")
+)
 setReplaceMethod("colmask", signature(x="MultipleAlignment", value="NULL"),
-    function(x, value) initialize(x, colmask = new("NormalIRanges"))
+    function(x, append=FALSE, value)
+        callGeneric(x, append=append, value=new("NormalIRanges"))
 )
 setReplaceMethod("colmask",
     signature(x="MultipleAlignment", value="NormalIRanges"),
-    function(x, value) initialize(x, colmask = value)
+    function(x, append=FALSE, value)
+    {
+        if (!isTRUEorFALSE(append))
+            stop("'append' must be TRUE or FALSE")
+        if (append)
+            value <- union(colmask(x), value)
+        initialize(x, colmask = value)
+    }
 )
 setReplaceMethod("colmask",
-    signature(x="MultipleAlignment", value="IRanges"),
-    function(x, value) initialize(x, colmask = asNormalIRanges(value))
+    signature(x="MultipleAlignment", value="ANY"),
+    function(x, append=FALSE, value)
+        callGeneric(x, append=append, value=as(value, "NormalIRanges"))
 )
 
 setGeneric("automask", signature="x",
@@ -145,7 +167,9 @@ setMethod("automask", "MultipleAlignment",
         if (length(colmask(x)) > 0)
             colmask(x) <- NULL
         m <- consensusMatrix(x)
-        newmask <- as((m["-",] / colSums(m)) > max.gappercent, "NormalIRanges")
+        newmask <- (m["-",] / colSums(m)) > max.gappercent
+        newmask[is.na(newmask)] <- FALSE
+        newmask <- as(newmask, "NormalIRanges")
         newmask <- newmask[width(newmask) > max.gaplength]
         if (append) {
             colmask(x) <- union(newmask, cmask)
