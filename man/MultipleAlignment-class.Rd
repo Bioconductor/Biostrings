@@ -302,7 +302,8 @@
 ## create an object from file
 origMAlign <-
   read.DNAMultipleAlignment(filepath =
-                            system.file("extdata","clustalw2.aln",
+                            system.file("extdata",
+                                        "msx2_mRNA_clustalw2.aln",
                                         package="Biostrings"),
                             format="clustal")
 
