@@ -400,14 +400,19 @@ setMethod("consensusString","MultipleAlignment",
     {
         consensus <- rep.int("#", ncol(x))
         if (ncol(x) > 0) {
-            cmat <- consensusMatrix(x, width=ncol(x))[codes, , drop=FALSE]
-            col_sums <- colSums(cmat, na.rm=TRUE)
-            nzSum <- which(col_sums > 1e-6)
-            col_sums[- nzSum] <- 1  # to avoid division by 0
-            cmat <- cmat / rep(col_sums, each=nrow(cmat))
-            if (length(nzSum) > 0) {
-                consensus[nzSum] <-
-                  safeExplode(consensusString(cmat[, nzSum, drop=FALSE],
+            cmat <- consensusMatrix(x, width=ncol(x))
+            ngaps <- cmat["-",]
+            cmat <- cmat[codes, , drop=FALSE]
+            colsums <- colSums(cmat, na.rm=TRUE)
+            nzsum <- which(colsums > 1e-6)
+            if (length(nzsum) > 0) {
+                colsums[- nzsum] <- 1  # to avoid division by 0
+                gaplocs <- which(as.logical(ngaps > colsums))
+                nzsum <- setdiff(nzsum, gaplocs)
+                cmat <- cmat / rep(colsums, each=nrow(cmat))
+                consensus[gaplocs] <- "-"
+                consensus[nzsum] <-
+                  safeExplode(consensusString(cmat[, nzsum, drop=FALSE],
                                               ambiguityMap=ambiguityMap,
                                               threshold=threshold))
             }
