@@ -110,21 +110,6 @@ setMethod("initialize", "Twobit",
 ###
 ### A low-level container for storing the PreprocessedTB object (preprocessed
 ### Trusted Band) obtained with the "ACtree2" algo.
-### With this algo, patterns in the Trusted Band are stored in a 4-ary
-### Aho-Corasick tree (note that this tree becomes an oriented graph when we
-### start adding the failure links or the shortcut links to it).
-### The size of a node in memory is either 8 bytes (2 ints) before extension,
-### or 28 bytes (7 ints) after it has been extended.
-### Some testing with real data shows that, typically, less than 10% of the
-### nodes are extended right after preprocessing (i.e. before any use of the
-### PDict object), and that this percentage grows up to 30% or 40% during the
-### typical life of the PDict object (e.g. after it has been used on a full
-### genome).
-### Quick facts:
-###   - Can store up 2^32-1 nodes.
-###   - Nodes and node extensions are stored in buffers that can be made
-###     bigger as the need arises without reallocating/copying their current
-###     content.
 ###
 
 ### Big Atomic Buffer of integers.

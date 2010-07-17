@@ -20,8 +20,38 @@ static int debug = 0;
  * For this Aho-Corasick implementation, we take advantage of 2 important
  * properties of the input dictionary (aka pattern set):
  *   1. It's rectangular (i.e. all patterns have the same length).
- *   2. It's based on a 4-letter alphabet.
- * TODO: Describe the internal representation of the tree.
+ *   2. It's based on a 4-letter alphabet (4-ary tree). Note that this tree
+ *      becomes an oriented graph when we start adding the failure links (or
+ *      the shortcut links) to it.
+ * Failure/shortcut links are not precomputed, but computed on-the-fly when
+ * the tree is used to walk along a subject.
+ * A node is represented with either 2 ints (8 bytes) before extension,
+ * or 7 ints (28 bytes) once it has been extended. Extending a node is done
+ * by linking its 2-int part to a 5-int extension (so the 2-int part doesn't
+ * need to be reallocated).
+ * Two separate buffers are used to store the nodes: one for the 2-int parts
+ * of the nodes (every node has one, whether it's extended or not) and one for
+ * the 5-int extensions. Since the number of nodes doesn't change during the
+ * life of the tree, the first buffer will grow only while we are building the
+ * tree (preprocessing) and then it will not change anymore (i.e. when the tree
+ * is used to walk along a subject). However, since failure/shortcut links are
+ * not precomputed, some nodes will need to be extended (and therefore the
+ * second buffer will grow) in order to store the links that are computed
+ * on-the-fly.
+ * The two node buffers are made of R integer vectors so they can be
+ * serialized.
+ * Some testing with real data shows that, typically, less than 10% of the
+ * nodes are already extended right after preprocessing (i.e. before any use
+ * of the PDict object), and that this percentage grows up to 30% or 40%
+ * during the typical life of the PDict object (e.g. after it has been used
+ * to walk along a full genome).
+ * Using node extensions makes the tree more compact in memory than with
+ * fixed-size nodes. The latter tend to waste memory when a high percentage
+ * of them have 1 child only. Also the two buffer approach allows the tree to
+ * grow smoothly without any reallocations while links are added to it.
+ * We use unsigned ints for the node ids so, on Intel i386/x86_64 platforms,
+ * the maximum number of nodes in a tree is 2^32-1 nodes (UINT_MAX is used as
+ * a special value).
  */
 
 #define MAX_CHILDREN_PER_NODE 4  /* do NOT change this */
@@ -872,6 +902,10 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 static unsigned int compute_flink(ACtree *tree,
 		const ACnode *node, const char *node_path);
 
+/*
+ * 'node_path' will only be used to compute failure links so it's safe to not
+ * provide it (i.e. NULL) if all the nodes already have one.
+ */
 static unsigned int transition(ACtree *tree,
 		ACnode *node, const char *node_path, int linktag)
 {
@@ -1029,8 +1063,7 @@ static void walk_tb_subject(ACtree *tree, const cachedCharSeq *S,
 static ACnode *node_subset[NODE_SUBSET_MAXSIZE];
 static int node_subset_size = 0;
 
-static void split_and_move_pointers(ACtree *tree,
-		unsigned char c, const char *node_path)
+static void split_and_move_pointers(ACtree *tree, unsigned char c)
 {
 	int node_subset_size0, i, is_first, j, linktag;
 	ACnode *node0, *node1, *node2;
@@ -1046,7 +1079,7 @@ static void split_and_move_pointers(ACtree *tree,
 			if ((c & base) == 0)
 				continue;
 			linktag = CHAR2LINKTAG(tree, base);
-			nid = transition(tree, node1, node_path, linktag);
+			nid = transition(tree, node1, NULL, linktag);
 			//Rprintf("%d --[%d]--> %d\n", node1 - node0, base, nid);
 			node2 = GET_NODE(tree, nid);
 			if (is_first) {
@@ -1130,8 +1163,7 @@ static void walk_tb_nonfixed_subject(ACtree *tree, const cachedCharSeq *S,
 		TBMatchBuf *tb_matches)
 {
 	int max_size, n;
-	const char *node_path;
-	unsigned char c;
+	const unsigned char *c;
 
 	if (node_subset_size != 0)
 		error("Biostrings internal error in "
@@ -1139,15 +1171,14 @@ static void walk_tb_nonfixed_subject(ACtree *tree, const cachedCharSeq *S,
 		      "PLEASE REPORT THIS! THANKS.\n");
 	node_subset_size = max_size = 1;
 	node_subset[0] = GET_NODE(tree, 0U);
-	for (n = 1, node_path = S->seq; n <= S->length; n++, node_path++) {
-		c = *node_path;
-		if (c >= 16) {
-			/* 'c' is not an IUPAC (base or extended) code */
+	for (n = 1, c = (unsigned char *) S->seq; n <= S->length; n++, c++) {
+		if (*c >= 16) {
+			/* '*c' is not an IUPAC (base or extended) code */
 			node_subset[0] = GET_NODE(tree, 0U);
 			node_subset_size = 1;
 			continue;
 		}
-		split_and_move_pointers(tree, c, node_path);
+		split_and_move_pointers(tree, *c);
 		merge_pointers(tree, n);
 /*
 		if (node_subset_size > max_size) {
