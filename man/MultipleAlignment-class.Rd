@@ -310,11 +310,22 @@ origMAlign <-
 ## list the names of the sequences in the alignment
 rownames(origMAlign)
 
+## can rename the names of the sequences so that we account for the
+## fact that MSX2 from different species are compared here
+rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
+                          "Dog","Chicken","Salmon")
+origMAlign
+
 ## cluster strings
 sdist <- stringDist(unmasked(origMAlign), method="hamming")
 clust <- hclust(sdist)
 twogroups <- cutree(clust, 2)
 twogroups
+
+##  This doesn't look quite like what we might expect.  Because these
+##  sequences are based on mRNAs which are of somewhat variable length
+##  when retrieved from the organism.  More on how we can deal with this
+##  follows:
 
 ## mask rows
 rowMasked <- origMAlign
@@ -337,7 +348,29 @@ consensusMatrix(autoMasked, baseOnly=TRUE)[, 23:30]
 ## get consensus values
 consensusString(autoMasked)
 consensusViews(autoMasked)
-}
 
+## So how to correct for the oddity observed above?  Lets see what
+## happens when we remove the variable portion at each end of the
+## sequences.  Especially the tail end.
+## Therefore we mask things the way we think they should be masked:
+colMasked <- origMAlign
+colmask(colMasked) <- IRanges(start=c(1,900), end=c(95,2343))
+colMasked
+
+## And then we re-cluster the strings
+sdist <- stringDist(as(colMasked,"DNAStringSet"), method="hamming")
+clust <- hclust(sdist)
+twogroups <- cutree(clust, 2)
+twogroups
+
+## And we can then throw out the fish outlier and try again:
+bothMask <- colMasked
+rowmask(bothMask) <- IRanges(start=8, end=8)
+sdist <- stringDist(as(bothMask,"DNAStringSet"), method="hamming")
+clust <- hclust(sdist)
+twogroups <- cutree(clust, 2)
+twogroups
+
+}
 \keyword{methods}
 \keyword{classes}
