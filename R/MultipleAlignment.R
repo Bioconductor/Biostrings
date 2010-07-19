@@ -139,19 +139,19 @@ setReplaceMethod("colmask",
         callGeneric(x, append=append, value=as(value, "NormalIRanges"))
 )
 
-setGeneric("automask", signature="x",
-    function(x, ...) standardGeneric("automask")
+setGeneric("maskGaps", signature="x",
+    function(x, ...) standardGeneric("maskGaps")
 )
-setMethod("automask", "MultipleAlignment",
-    function(x, max.gappercent=.5, max.gaplength=3, append=FALSE)
+setMethod("maskGaps", "MultipleAlignment",
+    function(x, max.fraction=0.5, max.length=3, append=FALSE)
     {
-        if (!isSingleNumber(max.gappercent) || max.gappercent < 0 ||
-            max.gappercent > 1)
-            stop("'max.gappercent' must be a number in [0, 1]")
-        if (!isSingleNumber(max.gaplength) || max.gaplength < 0)
-            stop("'max.gappercent' must be a non-negative integer")
-        if (!is.integer(max.gaplength))
-            max.gaplength <- as.integer(max.gaplength)
+        if (!isSingleNumber(max.fraction) || max.fraction < 0 ||
+            max.fraction > 1)
+            stop("'max.fraction' must be a number in [0, 1]")
+        if (!isSingleNumber(max.length) || max.length < 0)
+            stop("'max.length' must be a non-negative integer")
+        if (!is.integer(max.length))
+            max.length <- as.integer(max.length)
         if (!isTRUEorFALSE(append))
             stop("'append' must be TRUE or FALSE")
 
@@ -159,10 +159,10 @@ setMethod("automask", "MultipleAlignment",
         if (length(colmask(x)) > 0)
             colmask(x) <- NULL
         m <- consensusMatrix(x)
-        newmask <- (m["-",] / colSums(m)) > max.gappercent
+        newmask <- (m["-",] / colSums(m)) > max.fraction
         newmask[is.na(newmask)] <- FALSE
         newmask <- as(newmask, "NormalIRanges")
-        newmask <- newmask[width(newmask) > max.gaplength]
+        newmask <- newmask[width(newmask) > max.length]
         if (append) {
             colmask(x) <- union(newmask, cmask)
         } else {
