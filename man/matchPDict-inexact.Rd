@@ -171,7 +171,7 @@
   ## ---------------------------------------------------------------------
   ## D. WITH IUPAC AMBIGUITY CODES IN THE SUBJECT
   ## ---------------------------------------------------------------------
-  pdict <- PDict(c("ACAC", "TCCG"), algo="ACtree2")
+  pdict <- PDict(c("ACAC", "TCCG"))
   as.list(matchPDict(pdict, DNAString("ACNCCGT")))
   as.list(matchPDict(pdict, DNAString("ACNCCGT"), fixed="pattern"))
   as.list(matchPDict(pdict, DNAString("ACWCCGT"), fixed="pattern"))
