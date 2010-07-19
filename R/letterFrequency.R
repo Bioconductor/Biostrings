@@ -746,7 +746,10 @@ setMethod("consensusString", "DNAStringSet",
 
 setMethod("consensusString", "RNAStringSet",
     function(x,
-             ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+             ambiguityMap=
+             structure(as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+                       names=
+                       as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))),
              threshold=0.25, shift=0L, width=NULL)
         consensusString(consensusMatrix(x, as.prob=TRUE, shift=shift, width=width),
                         ambiguityMap=ambiguityMap, threshold=threshold)

@@ -86,7 +86,10 @@ sequence, or the consensus matrix of a set of sequences}
   \S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
                threshold=0.25, shift=0L, width=NULL)
   \S4method{consensusString}{RNAStringSet}(x, 
-               ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+               ambiguityMap=
+               structure(as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+                         names=
+                         as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))),
                threshold=0.25, shift=0L, width=NULL)
 }
 

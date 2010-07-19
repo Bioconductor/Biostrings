@@ -432,7 +432,10 @@ setMethod("consensusString","DNAMultipleAlignment",
 
 setMethod("consensusString","RNAMultipleAlignment",
     function(x,
-            ambiguityMap=as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+            ambiguityMap=
+            structure(as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+                      names=
+                      as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))),
             threshold=0.25)
     {
         callNextMethod(x, ambiguityMap=ambiguityMap, threshold=threshold,
