@@ -395,7 +395,7 @@ export(
     AAMultipleAlignment,
     rowmask, "rowmask<-",
     colmask, "colmask<-",
-    automask,
+    maskGaps,
     maskednrow, maskedncol, maskeddim,
     read.DNAMultipleAlignment,
     read.RNAMultipleAlignment,
@@ -429,6 +429,7 @@ exportMethods(
 
     rowmask, "rowmask<-",
     colmask, "colmask<-",
+    maskGaps,
     maskednrow, maskedncol, maskeddim,
     consensusViews,
 

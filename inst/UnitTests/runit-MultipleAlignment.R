@@ -18,7 +18,7 @@ test_DNAMultipleAlignment_empty <- function()
     checkIdentical(rownames(malign), NULL)
     checkIdentical(rowmask(malign), new("NormalIRanges"))
     checkIdentical(colmask(malign), new("NormalIRanges"))
-    checkIdentical(as.character(automask(malign)), character())
+    checkIdentical(as.character(maskGaps(malign)), character())
     checkIdentical(nrow(malign), 0L)
     checkIdentical(ncol(malign), 0L)
     checkIdentical(dim(malign), c(0L, 0L))
@@ -51,7 +51,7 @@ test_DNAMultipleAlignment_unnamed <- function()
     checkIdentical(rownames(malign), NULL)
     checkIdentical(rowmask(malign), new("NormalIRanges"))
     checkIdentical(colmask(malign), new("NormalIRanges"))
-    checkIdentical(as.character(automask(malign)),
+    checkIdentical(as.character(maskGaps(malign)),
                    unname(strings_DNAMultipleAlignment()))
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
     checkIdentical(ncol(malign), nchar(strings_DNAMultipleAlignment())[[1]])
@@ -71,9 +71,9 @@ test_DNAMultipleAlignment_unnamed <- function()
                          G=c(0L,0L,2L,2L),
                          T=c(0L,0L,1L,1L)))
     checkIdentical(consensusString(malign),
-                   "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
+                   "MAKKTMTMYA-GSYYSCCCTYCMSYSWRGARRCRCWCATR--TYBGACA")
     checkIdentical(as.character(consensusViews(malign)),
-                   "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
+                   "MAKKTMTMYA-GSYYSCCCTYCMSYSWRGARRCRCWCATR--TYBGACA")
     checkIdentical(alphabetFrequency(malign)[,1:4],
                    cbind(A=c(8L,8L,15L),
                          C=c(14L,16L,16L),
@@ -91,7 +91,7 @@ test_DNAMultipleAlignment_named <- function()
     checkIdentical(rownames(malign), names(strings_DNAMultipleAlignment()))
     checkIdentical(rowmask(malign), new("NormalIRanges"))
     checkIdentical(colmask(malign), new("NormalIRanges"))
-    checkIdentical(as.character(automask(malign)),
+    checkIdentical(as.character(maskGaps(malign)),
                    strings_DNAMultipleAlignment())
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
     checkIdentical(ncol(malign), nchar(strings_DNAMultipleAlignment())[[1]])
@@ -111,9 +111,9 @@ test_DNAMultipleAlignment_named <- function()
                          G=c(0L,0L,2L,2L),
                          T=c(0L,0L,1L,1L)))
     checkIdentical(consensusString(malign),
-                   "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
+                   "MAKKTMTMYA-GSYYSCCCTYCMSYSWRGARRCRCWCATR--TYBGACA")
     checkIdentical(as.character(consensusViews(malign)),
-                   "MAKKTMTMYATGSYYSCCCTYCMSYSWRGARRCRCWCATRGTTYBGACA")
+                   "MAKKTMTMYA-GSYYSCCCTYCMSYSWRGARRCRCWCATR--TYBGACA")
     checkIdentical(alphabetFrequency(malign)[,1:4],
                    cbind(A=c(8L,8L,15L),
                          C=c(14L,16L,16L),
@@ -133,7 +133,7 @@ test_DNAMultipleAlignment_mask_some <- function()
     checkIdentical(rownames(malign), names(strings_DNAMultipleAlignment()))
     checkIdentical(rowmask(malign), asNormalIRanges(IRanges(2,2)))
     checkIdentical(colmask(malign), asNormalIRanges(IRanges(c(1,21,43), c(10,35,49))))
-    checkIdentical(as.character(automask(malign)),
+    checkIdentical(as.character(maskGaps(malign)),
                    strings_DNAMultipleAlignment()[c(1,3)])
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
     checkIdentical(ncol(malign), nchar(strings_DNAMultipleAlignment())[[1]])
@@ -177,7 +177,7 @@ test_DNAMultipleAlignment_mask_all_rows <- function()
     checkIdentical(rownames(malign), names(strings_DNAMultipleAlignment()))
     checkIdentical(rowmask(malign), asNormalIRanges(IRanges(1,3)))
     checkIdentical(colmask(malign), asNormalIRanges(IRanges(c(1,21,43), c(10,35,49))))
-    checkIdentical(as.character(automask(malign)), character())
+    checkIdentical(as.character(maskGaps(malign)), character())
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
     checkIdentical(ncol(malign), nchar(strings_DNAMultipleAlignment())[[1]])
     checkIdentical(dim(malign),

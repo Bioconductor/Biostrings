@@ -31,8 +31,8 @@
 \alias{colmask<-,MultipleAlignment,NULL-method}
 \alias{colmask<-,MultipleAlignment,NormalIRanges-method}
 \alias{colmask<-,MultipleAlignment,ANY-method}
-\alias{automask}
-\alias{automask,MultipleAlignment-method}
+\alias{maskGaps}
+\alias{maskGaps,MultipleAlignment-method}
 \alias{nrow,MultipleAlignment-method}
 \alias{ncol,MultipleAlignment-method}
 \alias{dim,MultipleAlignment-method}
@@ -167,20 +167,20 @@
       via the \code{as} function.
     }
     \item{}{
-      \code{automask(x, max.gappercent, max.gaplength, append)}:
+      \code{maskGaps(x, max.fraction, max.length, append)}:
       Returns a MultipleAlignment object with a modified column mask
       based upon gaps in the columns. In particular, this mask is defined
-      by \code{max.gaplength} or more consecutive columns that have more
-      than \code{max.gappercent} of their non-masked rows containing
+      by \code{max.length} or more consecutive columns that have more
+      than \code{max.fraction} of their non-masked rows containing
       gap codes.
       \describe{
-        \item{max.gappercent}{A value from 0 to 1 that indicates the
-          tolerable percentage of gaps.}
-        \item{max.gaplength}{An non-negative integer that indicates
+        \item{max.fraction}{A value from 0 to 1 that indicates the
+          tolerable fraction of gaps (default is \code{0.5}).}
+        \item{max.length}{An non-negative integer that indicates
           the tolerable number of consecutive gaps, as defined by
-          \code{max.gappercent}.}
+          \code{max.fraction} (default is \code{3}).}
         \item{append}{Overwrite \code{colmask(x)} or append (via
-          \code{union}) to it?}
+          \code{union}) to it? (default is \code{FALSE})}
       }
     }
     \item{}{
@@ -310,35 +310,13 @@ origMAlign <-
 ## list the names of the sequences in the alignment
 rownames(origMAlign)
 
-## can rename the names of the sequences so that we account for the
-## fact that MSX2 from different species are compared here
+## rename the sequences to be the underlying species for MSX2
 rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
                           "Dog","Chicken","Salmon")
 origMAlign
 
-## cluster strings
-sdist <- stringDist(unmasked(origMAlign), method="hamming")
-clust <- hclust(sdist)
-twogroups <- cutree(clust, 2)
-twogroups
-
-##  This doesn't look quite like what we might expect.  Because these
-##  sequences are based on mRNAs which are of somewhat variable length
-##  when retrieved from the organism.  More on how we can deal with this
-##  follows:
-
-## mask rows
-rowMasked <- origMAlign
-rowmask(rowMasked) <- (twogroups == 1)
-rowMasked
-
-## mask columns
-colMasked <- origMAlign
-colmask(colMasked) <- IRanges(start=c(1,2333), end=c(14,2343))
-colMasked
-
-## automatically mask rows based on consecutive gaps
-autoMasked <- automask(origMAlign, max.gappercent=.5, max.gaplength=3)
+## automatically mask columns based on consecutive gaps
+autoMasked <- maskGaps(origMAlign, max.fraction=0.5, max.length=3)
 autoMasked
 
 ## calculate frequencies
@@ -349,28 +327,13 @@ consensusMatrix(autoMasked, baseOnly=TRUE)[, 23:30]
 consensusString(autoMasked)
 consensusViews(autoMasked)
 
-## So how to correct for the oddity observed above?  Lets see what
-## happens when we remove the variable portion at each end of the
-## sequences.  Especially the tail end.
-## Therefore we mask things the way we think they should be masked:
-colMasked <- origMAlign
-colmask(colMasked) <- IRanges(start=c(1,900), end=c(95,2343))
-colMasked
-
-## And then we re-cluster the strings
-sdist <- stringDist(as(colMasked,"DNAStringSet"), method="hamming")
-clust <- hclust(sdist)
-twogroups <- cutree(clust, 2)
-twogroups
-
-## And we can then throw out the fish outlier and try again:
-bothMask <- colMasked
-rowmask(bothMask) <- IRanges(start=8, end=8)
-sdist <- stringDist(as(bothMask,"DNAStringSet"), method="hamming")
-clust <- hclust(sdist)
-twogroups <- cutree(clust, 2)
-twogroups
-
+## cluster the masked alignments
+sdist <- stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
+clust <- hclust(sdist, method = "single")
+plot(clust)
+fourgroups <- cutree(clust, 4)
+fourgroups
 }
+
 \keyword{methods}
 \keyword{classes}
