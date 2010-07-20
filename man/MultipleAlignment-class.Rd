@@ -167,20 +167,19 @@
       via the \code{as} function.
     }
     \item{}{
-      \code{maskGaps(x, max.fraction, max.length, append)}:
+      \code{maskGaps(x, min.fraction, min.block.width)}:
       Returns a MultipleAlignment object with a modified column mask
       based upon gaps in the columns. In particular, this mask is defined
-      by \code{max.length} or more consecutive columns that have more
-      than \code{max.fraction} of their non-masked rows containing
+      by \code{min.block.width} or more consecutive columns that have
+      \code{min.fraction} or more of their non-masked rows containing
       gap codes.
       \describe{
-        \item{max.fraction}{A value from 0 to 1 that indicates the
-          tolerable fraction of gaps (default is \code{0.5}).}
-        \item{max.length}{An non-negative integer that indicates
-          the tolerable number of consecutive gaps, as defined by
-          \code{max.fraction} (default is \code{3}).}
-        \item{append}{Overwrite \code{colmask(x)} or append (via
-          \code{union}) to it? (default is \code{FALSE})}
+        \item{min.fraction}{A value in \code{[0, 1]} that indicates
+          the minimum fraction needed to call a gap in the consensus string
+          (default is \code{0.5}).}
+        \item{min.block.width}{A positive integer that indicates the
+          minimum number of consecutive gaps to mask, as defined by
+          \code{min.fraction} (default is \code{4}).}
       }
     }
     \item{}{
@@ -316,12 +315,12 @@ rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
 origMAlign
 
 ## automatically mask columns based on consecutive gaps
-autoMasked <- maskGaps(origMAlign, max.fraction=0.5, max.length=3)
+autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
 autoMasked
 
 ## calculate frequencies
 alphabetFrequency(autoMasked)
-consensusMatrix(autoMasked, baseOnly=TRUE)[, 23:30]
+consensusMatrix(autoMasked, baseOnly=TRUE)[, 84:90]
 
 ## get consensus values
 consensusString(autoMasked)

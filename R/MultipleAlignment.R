@@ -143,31 +143,25 @@ setGeneric("maskGaps", signature="x",
     function(x, ...) standardGeneric("maskGaps")
 )
 setMethod("maskGaps", "MultipleAlignment",
-    function(x, max.fraction=0.5, max.length=3, append=FALSE)
+    function(x, min.fraction=0.5, min.block.width=3)
     {
-        if (!isSingleNumber(max.fraction) || max.fraction < 0 ||
-            max.fraction > 1)
-            stop("'max.fraction' must be a number in [0, 1]")
-        if (!isSingleNumber(max.length) || max.length < 0)
-            stop("'max.length' must be a non-negative integer")
-        if (!is.integer(max.length))
-            max.length <- as.integer(max.length)
-        if (!isTRUEorFALSE(append))
-            stop("'append' must be TRUE or FALSE")
+        if (!isSingleNumber(min.fraction) || min.fraction < 0 ||
+            min.fraction > 1)
+            stop("'min.fraction' must be a number in [0, 1]")
+        if (!isSingleNumber(min.block.width) || min.block.width <= 0)
+            stop("'min.block.width' must be a positive integer")
+        if (!is.integer(min.block.width))
+            min.block.width <- as.integer(min.block.width)
 
         cmask <- colmask(x)
         if (length(colmask(x)) > 0)
             colmask(x) <- NULL
         m <- consensusMatrix(x)
-        newmask <- (m["-",] / colSums(m)) > max.fraction
+        newmask <- (m["-",] / colSums(m)) >= min.fraction
         newmask[is.na(newmask)] <- FALSE
         newmask <- as(newmask, "NormalIRanges")
-        newmask <- newmask[width(newmask) > max.length]
-        if (append) {
-            colmask(x) <- union(newmask, cmask)
-        } else {
-            colmask(x) <- newmask
-        }
+        newmask <- newmask[width(newmask) >= min.block.width]
+        colmask(x) <- union(newmask, cmask)
         x
     }
 )
