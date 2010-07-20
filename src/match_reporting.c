@@ -162,7 +162,7 @@ SEXP _MatchBuf_which_asINTEGER(const MatchBuf *match_buf)
 	SEXP ans;
 	int i;
 
-	PROTECT(ans = IntAE_asINTEGER(&(match_buf->PSlink_ids)));
+	PROTECT(ans = new_INTEGER_from_IntAE(&(match_buf->PSlink_ids)));
 	sort_int_array(INTEGER(ans), LENGTH(ans), 0);
 	for (i = 0; i < LENGTH(ans); i++)
 		INTEGER(ans)[i]++;
@@ -172,7 +172,7 @@ SEXP _MatchBuf_which_asINTEGER(const MatchBuf *match_buf)
 
 SEXP _MatchBuf_counts_asINTEGER(const MatchBuf *match_buf)
 {
-	return IntAE_asINTEGER(&(match_buf->match_counts));
+	return new_INTEGER_from_IntAE(&(match_buf->match_counts));
 }
 
 SEXP _MatchBuf_starts_asLIST(const MatchBuf *match_buf)
@@ -180,7 +180,7 @@ SEXP _MatchBuf_starts_asLIST(const MatchBuf *match_buf)
 	if (match_buf->match_starts.buflength == -1)
 		error("Biostrings internal error: _MatchBuf_starts_asLIST() "
 		      "was called in the wrong context");
-	return IntAEAE_asLIST(&(match_buf->match_starts), 1);
+	return new_LIST_from_IntAEAE(&(match_buf->match_starts), 1);
 }
 
 static SEXP _MatchBuf_starts_toEnvir(const MatchBuf *match_buf, SEXP env)
@@ -199,7 +199,7 @@ SEXP _MatchBuf_ends_asLIST(const MatchBuf *match_buf)
 		      "was called in the wrong context");
 	IntAEAE_sum_and_shift(&(match_buf->match_starts),
 			      &(match_buf->match_widths), -1);
-	return IntAEAE_asLIST(&(match_buf->match_starts), 1);
+	return new_LIST_from_IntAEAE(&(match_buf->match_starts), 1);
 }
 
 static SEXP _MatchBuf_ends_toEnvir(const MatchBuf *match_buf, SEXP env)
@@ -306,9 +306,9 @@ SEXP _reported_matches_asSEXP()
 	    case MATCHES_AS_WHICH:
 		return ScalarInteger(_get_match_count());
 	    case MATCHES_AS_RANGES:
-		PROTECT(start = IntAE_asINTEGER(
+		PROTECT(start = new_INTEGER_from_IntAE(
 		  internal_match_buf.match_starts.elts + active_PSpair_id));
-		PROTECT(width = IntAE_asINTEGER(
+		PROTECT(width = new_INTEGER_from_IntAE(
 		  internal_match_buf.match_widths.elts + active_PSpair_id));
 		PROTECT(ans = new_IRanges("IRanges", start, width, R_NilValue));
 		UNPROTECT(3);

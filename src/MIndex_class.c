@@ -260,7 +260,7 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 			continue;
 		IntAE_qsort(&ends_buf, 0);
 		IntAE_delete_adjdups(&ends_buf);
-		PROTECT(ans_elt = IntAE_asINTEGER(&ends_buf));
+		PROTECT(ans_elt = new_INTEGER_from_IntAE(&ends_buf));
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}

@@ -117,7 +117,7 @@ void _set_env_from_IntAEAE(SEXP env, const IntAEAE *int_aeae)
 		if (elt->nelt == 0)
 			continue;
 		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
-		PROTECT(value = IntAE_asINTEGER(elt));
+		PROTECT(value = new_INTEGER_from_IntAE(elt));
 		defineVar(install(translateChar(symbol)), value, env);
 		UNPROTECT(2);
 	}

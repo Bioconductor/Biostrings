@@ -185,7 +185,7 @@ SEXP fasta_info(SEXP efp_list, SEXP use_descs)
 			error("reading FASTA file %s: %s",
 			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
 	}
-	PROTECT(ans = IntAE_asINTEGER(&seq_lengths_buf));
+	PROTECT(ans = new_INTEGER_from_IntAE(&seq_lengths_buf));
 	if (LOGICAL(use_descs)[0]) {
 		descs = _new_RoSeqs_from_CharAEAE(&descs_buf);
 		PROTECT(ans_names = _new_STRSXP_from_RoSeqs(&descs, R_NilValue));

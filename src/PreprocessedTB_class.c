@@ -137,6 +137,6 @@ void _report_ppdup(int poffset, int P_id)
 
 SEXP _get_ppdups_buf_asINTEGER()
 {
-	return IntAE_asINTEGER(&ppdups_buf);
+	return new_INTEGER_from_IntAE(&ppdups_buf);
 }
 

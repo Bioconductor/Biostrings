@@ -8,7 +8,7 @@ Version: 2.17.26
 Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Infrastructure
-Depends: R (>= 2.8.0), methods, IRanges (>= 1.7.7)
+Depends: R (>= 2.8.0), methods, IRanges (>= 1.7.13)
 Imports: graphics, methods, stats, utils, IRanges, Biobase
 LinkingTo: IRanges
 Enhances: Rmpi
