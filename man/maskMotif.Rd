@@ -15,7 +15,7 @@
 }
 
 \usage{
-  maskMotif(x, motif, min.block.width=1)
+  maskMotif(x, motif, min.block.width=1, ...)
   mask(x, start=NA, end=NA, pattern)
 }
 
@@ -28,6 +28,9 @@
   }
   \item{min.block.width}{
     The minimum width of the blocks to mask.
+  }
+  \item{...}{
+    Additional arguments for \code{matchPattern}.
   }
   \item{start}{
     An integer vector containing the starting positions
@@ -51,6 +54,7 @@
 
 \seealso{
   \code{\link[IRanges]{read.Mask}},
+  \code{\link{matchPattern}},
   \link{XString-class},
   \link{MaskedXString-class},
   \link{XStringViews-class},

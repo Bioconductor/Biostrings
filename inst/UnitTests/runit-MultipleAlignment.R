@@ -18,6 +18,7 @@ test_DNAMultipleAlignment_empty <- function()
     checkIdentical(rownames(malign), NULL)
     checkIdentical(rowmask(malign), new("NormalIRanges"))
     checkIdentical(colmask(malign), new("NormalIRanges"))
+    checkIdentical(as.character(maskMotif(malign, "GC")), character())
     checkIdentical(as.character(maskGaps(malign)), character())
     checkIdentical(nrow(malign), 0L)
     checkIdentical(ncol(malign), 0L)
@@ -51,6 +52,10 @@ test_DNAMultipleAlignment_unnamed <- function()
     checkIdentical(rownames(malign), NULL)
     checkIdentical(rowmask(malign), new("NormalIRanges"))
     checkIdentical(colmask(malign), new("NormalIRanges"))
+    checkIdentical(as.character(maskMotif(malign, "GC", fixed=FALSE)),
+                   c("AAGGTCTCCA-TCCTTCAGTGGAGTCATG--TCGGACA",
+                     "AAGGTCTCCA-TCCTTCAGTGGAGTCATG--TCCGACA",
+                     "CATTTATATATCCCTCCCCAAGAAACATAGTTTTGACA"))
     checkIdentical(as.character(maskGaps(malign)),
                    unname(strings_DNAMultipleAlignment()))
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
@@ -91,6 +96,10 @@ test_DNAMultipleAlignment_named <- function()
     checkIdentical(rownames(malign), names(strings_DNAMultipleAlignment()))
     checkIdentical(rowmask(malign), new("NormalIRanges"))
     checkIdentical(colmask(malign), new("NormalIRanges"))
+    checkIdentical(as.character(maskMotif(malign, "GC", fixed=FALSE)),
+                   c(string1="AAGGTCTCCA-TCCTTCAGTGGAGTCATG--TCGGACA",
+                     string2="AAGGTCTCCA-TCCTTCAGTGGAGTCATG--TCCGACA",
+                     string3="CATTTATATATCCCTCCCCAAGAAACATAGTTTTGACA"))
     checkIdentical(as.character(maskGaps(malign)),
                    strings_DNAMultipleAlignment())
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
@@ -133,6 +142,8 @@ test_DNAMultipleAlignment_mask_some <- function()
     checkIdentical(rownames(malign), names(strings_DNAMultipleAlignment()))
     checkIdentical(rowmask(malign), asNormalIRanges(IRanges(2,2)))
     checkIdentical(colmask(malign), asNormalIRanges(IRanges(c(1,21,43), c(10,35,49))))
+    checkIdentical(as.character(maskMotif(malign, "GC", fixed=FALSE)),
+                   c(string1="-TCCTTCATG--", string3="TCCCTACATAGT"))
     checkIdentical(as.character(maskGaps(malign, min.block.width=1)),
                    c(string1="GCCTGCCCTTCATG", string3="GGTCCCCCTACATA"))
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
@@ -176,6 +187,7 @@ test_DNAMultipleAlignment_mask_all_rows <- function()
     checkIdentical(rownames(malign), names(strings_DNAMultipleAlignment()))
     checkIdentical(rowmask(malign), asNormalIRanges(IRanges(1,3)))
     checkIdentical(colmask(malign), asNormalIRanges(IRanges(c(1,21,43), c(10,35,49))))
+    checkIdentical(as.character(maskMotif(malign, "GC", fixed=FALSE)), character())
     checkIdentical(as.character(maskGaps(malign)), character())
     checkIdentical(nrow(malign), length(strings_DNAMultipleAlignment()))
     checkIdentical(ncol(malign), nchar(strings_DNAMultipleAlignment())[[1]])

@@ -4,17 +4,17 @@
 
 
 setGeneric("maskMotif", signature=c("x", "motif"),
-    function(x, motif, min.block.width=1) standardGeneric("maskMotif")
+    function(x, motif, min.block.width=1, ...) standardGeneric("maskMotif")
 )
 
 setMethod("maskMotif", signature(x="MaskedXString", motif="XString"),
-    function(x, motif, min.block.width=1)
+    function(x, motif, min.block.width=1, ...)
     {
         if (!isSingleNumber(min.block.width))
             stop("'min.block.width' must be a single integer")
         if (!is.integer(min.block.width))
             min.block.width <- as.integer(min.block.width)
-        nir1 <- asNormalIRanges(matchPattern(motif, x), force=TRUE)
+        nir1 <- asNormalIRanges(matchPattern(motif, x, ...), force=TRUE)
         desc1 <- paste(as.character(motif), "-blocks", sep="")
         if (min.block.width > length(motif)) {
             nir1 <- nir1[width(nir1) >= min.block.width]
@@ -31,18 +31,18 @@ setMethod("maskMotif", signature(x="MaskedXString", motif="XString"),
 )
 
 setMethod("maskMotif", signature(x="MaskedXString", motif="character"),
-    function(x, motif, min.block.width=1)
+    function(x, motif, min.block.width=1, ...)
     {
         motif <- XString(xsbasetype(x), motif)
-        maskMotif(x, motif, min.block.width=min.block.width)
+        maskMotif(x, motif, min.block.width=min.block.width, ...)
     }
 )
 
 setMethod("maskMotif", signature(x="XString", motif="ANY"),
-    function(x, motif, min.block.width=1)
+    function(x, motif, min.block.width=1, ...)
     {
         x <- as(x, paste("Masked", xsbaseclass(x), sep=""))
-        maskMotif(x, motif, min.block.width=min.block.width)
+        maskMotif(x, motif, min.block.width=min.block.width, ...)
     }
 )
 

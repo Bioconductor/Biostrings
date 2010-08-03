@@ -31,6 +31,7 @@
 \alias{colmask<-,MultipleAlignment,NULL-method}
 \alias{colmask<-,MultipleAlignment,NormalIRanges-method}
 \alias{colmask<-,MultipleAlignment,ANY-method}
+\alias{maskMotif,MultipleAlignment,ANY-method}
 \alias{maskGaps}
 \alias{maskGaps,MultipleAlignment-method}
 \alias{nrow,MultipleAlignment-method}
@@ -167,6 +168,17 @@
       via the \code{as} function.
     }
     \item{}{
+      \code{maskMotif(x, motif, min.block.width=1, ...)}:
+      Returns a MultipleAlignment object with a modified column mask
+      based upon motifs found in the consensus string where the consensus
+      string keeps all the columns but drops the masked rows.
+      \describe{
+        \item{motif}{The motif to mask.}
+        \item{min.block.width}{The minimum width of the blocks to mask.}
+        \item{...}{Additional arguments for \code{matchPattern}.}
+      }
+    }
+    \item{}{
       \code{maskGaps(x, min.fraction, min.block.width)}:
       Returns a MultipleAlignment object with a modified column mask
       based upon gaps in the columns. In particular, this mask is defined
@@ -290,7 +302,7 @@
 }
 
 
-\author{M. Carlson and P. Aboyoun}
+\author{P. Aboyoun and M. Carlson}
 
 \seealso{
   \link{XStringSet-class},
@@ -313,6 +325,10 @@ rownames(origMAlign)
 rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
                           "Dog","Chicken","Salmon")
 origMAlign
+
+## TATA-masked
+tataMasked <- maskMotif(origMAlign, "TATA")
+colmask(tataMasked)
 
 ## automatically mask columns based on consecutive gaps
 autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)

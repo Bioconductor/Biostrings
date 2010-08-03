@@ -139,6 +139,25 @@ setReplaceMethod("colmask",
         callGeneric(x, append=append, value=as(value, "NormalIRanges"))
 )
 
+setMethod("maskMotif", signature(x="MultipleAlignment", motif="ANY"),
+    function(x, motif, min.block.width=1, ...)
+    {
+        cmask <- colmask(x)
+        if (length(colmask(x)) > 0)
+            colmask(x) <- NULL
+        string <- consensusString(x)
+        if (length(string) == 1) {
+            string <- gsub("#", "+", string)
+            string <- as(string, xsbaseclass(unmasked(x)))
+            maskedString <-
+              callGeneric(string, motif, min.block.width=min.block.width, ...)
+            newmask <- nir_list(masks(maskedString))[[1L]]
+            colmask(x) <- union(newmask, cmask)
+        }
+        x
+    }
+)
+
 setGeneric("maskGaps", signature="x",
     function(x, ...) standardGeneric("maskGaps")
 )
