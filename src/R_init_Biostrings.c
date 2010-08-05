@@ -223,11 +223,6 @@ void R_init_Biostrings(DllInfo *info)
 	R_registerRoutines(info, cMethods, NULL, NULL, NULL);
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 
-/* RoSeqs_utils.c */
-	REGISTER_CCALLABLE(_new_STRSXP_from_RoSeqs);
-	REGISTER_CCALLABLE(_new_RoSeqs_from_CharAEAE);
-	REGISTER_CCALLABLE(_new_IRanges_from_RoSeqs);
-
 /* XString_class.c */
 	REGISTER_CCALLABLE(_DNAencode);
 	REGISTER_CCALLABLE(_DNAdecode);
@@ -242,7 +237,6 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_get_cachedXStringSet_elt);
 	REGISTER_CCALLABLE(_set_XStringSet_names);
 	REGISTER_CCALLABLE(_new_XStringSet);
-	REGISTER_CCALLABLE(_new_XStringSet_from_RoSeqs);
 
 /* match_reporting.c */
 	REGISTER_CCALLABLE(_init_match_reporting);

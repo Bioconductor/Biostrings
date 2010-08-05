@@ -108,7 +108,7 @@ SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *seq, SEXP lkup)
  * From a character vector to a RoSeqs struct and vice versa.
  */
 
-RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
+static RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 {
 	RoSeqs seqs;
 	cachedCharSeq *elt1;
@@ -127,22 +127,6 @@ RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 		elt1->length = LENGTH(elt2);
 	}
 	return seqs;
-}
-
-SEXP _new_STRSXP_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
-{
-	SEXP ans, ans_elt;
-	int i;
-	const cachedCharSeq *seq;
-
-	PROTECT(ans = NEW_CHARACTER(seqs->nelt));
-	for (i = 0, seq = seqs->elts; i < seqs->nelt; i++, seq++) {
-		PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(seq, lkup));
-		SET_STRING_ELT(ans, i, ans_elt);
-		UNPROTECT(1);
-	}
-	UNPROTECT(1);
-	return ans;
 }
 
 
@@ -214,70 +198,6 @@ SEXP new_SharedRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
         seqs = _new_RoSeqs_from_STRSXP(nseq, x);
         _narrow_RoSeqs(&seqs, start, width);
         return _new_SharedRaw_from_RoSeqs(&seqs, lkup);
-}
-
-
-/*****************************************************************************
- * From a CharAEAE buffer to a RoSeqs struct.
- */
-
-RoSeqs _new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae)
-{
-	RoSeqs seqs;
-	cachedCharSeq *elt1;
-	CharAE *elt2;
-	int i;
-
-	seqs = _alloc_RoSeqs(char_aeae->nelt);
-	for (i = 0, elt1 = seqs.elts, elt2 = char_aeae->elts;
-	     i < char_aeae->nelt;
-	     i++, elt1++, elt2++)
-	{
-		elt1->seq = elt2->elts;
-		elt1->length = elt2->nelt;
-	}
-	return seqs;
-}
-
-
-/*****************************************************************************
- * From a RoSeqs struct to an IRanges object.
- * Only the lengths of the sequences holded by RoSeqs are considered.
- */
-
-SEXP _new_IRanges_from_RoSeqs(const char *classname, const RoSeqs *seqs)
-{
-	const cachedCharSeq *seq;
-	SEXP start, width, ans;
-	int *start_elt, *width_elt, *start_prev_elt, i;
-
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): BEGIN\n");
-	}
-#endif
-	seq = seqs->elts;
-	PROTECT(start = NEW_INTEGER(seqs->nelt));
-	PROTECT(width = NEW_INTEGER(seqs->nelt));
-	start_elt = INTEGER(start);
-	width_elt = INTEGER(width);
-	if (seqs->nelt >= 1) {
-		*(start_elt++) = 1;
-		*(width_elt++) = seq->length;
-	}
-	if (seqs->nelt >= 2)
-		for (i = 1, start_prev_elt = INTEGER(start); i < seqs->nelt; i++) {
-			*(start_elt++) = *(start_prev_elt++) + (seq++)->length;
-			*(width_elt++) = seq->length;
-		}
-	PROTECT(ans = new_IRanges(classname, start, width, R_NilValue));
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _new_IRanges_from_RoSeqs(): END\n");
-	}
-#endif
-	UNPROTECT(3);
-	return ans;
 }
 
 

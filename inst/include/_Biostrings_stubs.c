@@ -28,26 +28,6 @@ void stubname Targs \
 
 
 /*
- * Stubs for callables defined in RoSeqs_utils.c
- */
-
-DEFINE_CCALLABLE_STUB(SEXP, new_STRSXP_from_RoSeqs,
-	(const RoSeqs *seqs, SEXP lkup),
-	(              seqs,      lkup)
-);
-
-DEFINE_CCALLABLE_STUB(RoSeqs, new_RoSeqs_from_CharAEAE,
-	(const CharAEAE *char_aeae),
-	(                char_aeae)
-);
-
-DEFINE_CCALLABLE_STUB(SEXP, new_IRanges_from_RoSeqs,
-	(const char *classname, const RoSeqs *seqs),
-	(            classname,               seqs)
-);
-
-
-/*
  * Stubs for callables defined in XString_class.c
  */
 
@@ -109,11 +89,6 @@ DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
 DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet,
 	(const char *classname, SEXP super, SEXP ranges),
 	(            classname,      super,      ranges)
-)
-
-DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet_from_RoSeqs,
-	(const char *xsbaseclassname, const RoSeqs *seqs),
-	(            xsbaseclassname,               seqs)
 )
 
 

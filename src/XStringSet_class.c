@@ -100,19 +100,6 @@ SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
 	return new_XVectorList1(classname, super, ranges);
 }
 
-/* Making an XStringSet object from the sequences referenced by a RoSeqs struct.
-   Assume that these sequences are NOT already encoded. */
-SEXP _new_XStringSet_from_RoSeqs(const char *xsbaseclassname, const RoSeqs *seqs)
-{
-	SEXP super, ranges, ans;
-
-	PROTECT(super = _new_XString_from_RoSeqs(xsbaseclassname, seqs));
-	PROTECT(ranges = _new_IRanges_from_RoSeqs("IRanges", seqs));
-	PROTECT(ans = _new_XStringSet(NULL, super, ranges));
-	UNPROTECT(3);
-	return ans;
-}
-
 
 /****************************************************************************
  * Creating a set of sequences (RoSeqs struct) from an XStringSet object.

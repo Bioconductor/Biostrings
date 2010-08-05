@@ -107,43 +107,6 @@ char _RNAdecode(char code)
 
 
 /****************************************************************************
- * Low-level manipulation of XString objects.
- */
-
-/*
- * Creating a set of sequences (RoSeqs struct) from an XString object.
- */
-static RoSeqs new_RoSeqs_from_XString(int nelt, SEXP x)
-{
-	RoSeqs seqs;
-	cachedCharSeq *elt1;
-	int i;
-
-	seqs = _alloc_RoSeqs(nelt);
-	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++)
-		*elt1 = cache_XRaw(x);
-	return seqs;
-}
-
-/*
- * Making an XString object from the sequences referenced by a RoSeqs struct.
- * Assume that these sequences are NOT already encoded.
- */
-SEXP _new_XString_from_RoSeqs(const char *classname, const RoSeqs *seqs)
-{
-	const ByteTrTable *byte2code;
-	SEXP lkup, shared, ans;
-
-	byte2code = get_enc_byte2code(classname);
-	PROTECT(lkup = _new_lkup_from_ByteTrTable(byte2code));
-	PROTECT(shared = _new_SharedRaw_from_RoSeqs(seqs, lkup));
-	PROTECT(ans = new_XVector(classname, shared, 0, get_SharedVector_length(shared)));
-	UNPROTECT(3);
-	return ans;
-}
-
-
-/****************************************************************************
  * Other stuff...
  */
 

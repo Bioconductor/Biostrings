@@ -97,24 +97,6 @@
 
 
 /*
- * RoSeqs low-level utilities.
- * (see RoSeqs_utils.c)
- */
-
-SEXP new_STRSXP_from_RoSeqs(
-	const RoSeqs *seqs,
-	SEXP lkup
-);
-
-RoSeqs new_RoSeqs_from_CharAEAE(const CharAEAE *char_aeae);
-
-SEXP new_IRanges_from_RoSeqs(
-	const char *classname,
-	const RoSeqs *seqs
-);
-
-
-/*
  * Low-level manipulation of XString and XStringSet objects.
  */
 
@@ -145,11 +127,6 @@ void set_XStringSet_names(
 );
 
 SEXP new_XStringSet(const char *classname, SEXP super, SEXP ranges);
-
-SEXP new_XStringSet_from_RoSeqs(
-	const char *xsbaseclassname,
-	const RoSeqs *seqs
-);
 
 
 /*

@@ -165,7 +165,6 @@ SEXP fasta_info(SEXP efp_list, SEXP use_descs)
 	int i, recno;
 	FILE *stream;
 	SEXP ans, ans_names;
-	RoSeqs descs;
 	const char *errmsg;
 
 	seq_lengths_buf = new_IntAE(0, 0, 0);
@@ -187,8 +186,7 @@ SEXP fasta_info(SEXP efp_list, SEXP use_descs)
 	}
 	PROTECT(ans = new_INTEGER_from_IntAE(&seq_lengths_buf));
 	if (LOGICAL(use_descs)[0]) {
-		descs = _new_RoSeqs_from_CharAEAE(&descs_buf);
-		PROTECT(ans_names = _new_STRSXP_from_RoSeqs(&descs, R_NilValue));
+		PROTECT(ans_names = new_CHARACTER_from_CharAEAE(&descs_buf));
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(1);
 	}
