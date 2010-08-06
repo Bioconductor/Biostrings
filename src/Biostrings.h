@@ -85,19 +85,8 @@ SEXP debug_RoSeqs_utils();
 
 RoSeqs _alloc_RoSeqs(int nelt);
 
-void _narrow_RoSeqs(
-	RoSeqs *seqs,
-	SEXP start,
-	SEXP width
-);
-
 SEXP _new_CHARSXP_from_cachedCharSeq(
 	const cachedCharSeq *seq,
-	SEXP lkup
-);
-
-SEXP _new_SharedRaw_from_RoSeqs(
-	const RoSeqs *seqs,
 	SEXP lkup
 );
 

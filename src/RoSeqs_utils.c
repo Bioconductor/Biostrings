@@ -31,39 +31,6 @@ RoSeqs _alloc_RoSeqs(int nelt)
 
 
 /*****************************************************************************
- * "Narrowing" a RoSeqs struct.
- */
-
-void _narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
-{
-	int i, s, w;
-	const int *s_p, *w_p;
-	cachedCharSeq *seq;
-
-	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
-		error("Biostrings internal error in _narrow_RoSeqs(): "
-		      "'start' and 'width' must have the same length as 'seqs'");
-	for (i = 0, seq = seqs->elts, s_p = INTEGER(start), w_p = INTEGER(width);
-	     i < seqs->nelt;
-	     i++, seq++, s_p++, w_p++)
-	{
-		s = *s_p;
-		w = *w_p;
-		if (s == NA_INTEGER || w == NA_INTEGER)
-			error("Biostrings internal error in _narrow_RoSeqs():"
-			      "NAs in 'start' or 'width' are not supported");
-		s--; // 0-based start (offset)
-		if (s < 0 || w < 0 || s + w > seq->length)
-			error("Biostrings internal error in _narrow_RoSeqs():"
-			      "invalid narrowing");
-		seq->seq += s;
-		seq->length = w;
-	}
-	return;
-}
-
-
-/*****************************************************************************
  * From a cachedCharSeq struct to a character string.
  *
  * TODO: Move to the IRanges package.
@@ -105,10 +72,10 @@ SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *seq, SEXP lkup)
 
 
 /*****************************************************************************
- * From a character vector to a RoSeqs struct and vice versa.
+ * From a character vector to a SharedRaw object.
  */
 
-static RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
+static RoSeqs new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 {
 	RoSeqs seqs;
 	cachedCharSeq *elt1;
@@ -116,7 +83,7 @@ static RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 	int i;
 
 	if (nelt > LENGTH(x))
-		error("_new_RoSeqs_from_STRSXP(): "
+		error("new_RoSeqs_from_STRSXP(): "
 		      "'nelt' must be <= 'LENGTH(x)'");
 	seqs = _alloc_RoSeqs(nelt);
 	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++) {
@@ -129,12 +96,35 @@ static RoSeqs _new_RoSeqs_from_STRSXP(int nelt, SEXP x)
 	return seqs;
 }
 
+static void narrow_RoSeqs(RoSeqs *seqs, SEXP start, SEXP width)
+{
+	int i, s, w;
+	const int *s_p, *w_p;
+	cachedCharSeq *seq;
 
-/*****************************************************************************
- * From a RoSeqs struct to a SharedRaw object.
- */
+	if (LENGTH(start) != seqs->nelt || LENGTH(width) != seqs->nelt)
+		error("Biostrings internal error in narrow_RoSeqs(): "
+		      "'start' and 'width' must have the same length as 'seqs'");
+	for (i = 0, seq = seqs->elts, s_p = INTEGER(start), w_p = INTEGER(width);
+	     i < seqs->nelt;
+	     i++, seq++, s_p++, w_p++)
+	{
+		s = *s_p;
+		w = *w_p;
+		if (s == NA_INTEGER || w == NA_INTEGER)
+			error("Biostrings internal error in narrow_RoSeqs():"
+			      "NAs in 'start' or 'width' are not supported");
+		s--; // 0-based start (offset)
+		if (s < 0 || w < 0 || s + w > seq->length)
+			error("Biostrings internal error in narrow_RoSeqs():"
+			      "invalid narrowing");
+		seq->seq += s;
+		seq->length = w;
+	}
+	return;
+}
 
-SEXP _new_SharedRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
+static SEXP new_SharedRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
 {
         SEXP tag, ans;
         int tag_length, i;
@@ -164,20 +154,15 @@ SEXP _new_SharedRaw_from_RoSeqs(const RoSeqs *seqs, SEXP lkup)
         return ans;
 }
 
-
-/*****************************************************************************
- * From a character vector to a SharedRaw object.
- *
- * --- .Call ENTRY POINT ---
+/* --- .Call ENTRY POINT ---
  * Arguments:
  *   x: a character vector;
  *   start/width: integer vectors of the same length as 'x' and describing a
  *                valid "narrowing" of 'x';
- *   lkup: lookup table for encoding the letters in 'x';
- *   collapse: not yet supported.
- * TODO: Support the 'collapse' argument
+ *   collapse: not yet supported;
+ *   lkup: lookup table for encoding the letters in 'x'.
+ * TODO: Support the 'collapse' argument.
  */
-
 SEXP new_SharedRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
                 SEXP collapse, SEXP lkup)
 {
@@ -195,9 +180,9 @@ SEXP new_SharedRaw_from_STRSXP(SEXP x, SEXP start, SEXP width,
                         error("'collapse' can only be NULL "
                               "or the empty string for now");
         }
-        seqs = _new_RoSeqs_from_STRSXP(nseq, x);
-        _narrow_RoSeqs(&seqs, start, width);
-        return _new_SharedRaw_from_RoSeqs(&seqs, lkup);
+        seqs = new_RoSeqs_from_STRSXP(nseq, x);
+        narrow_RoSeqs(&seqs, start, width);
+        return new_SharedRaw_from_RoSeqs(&seqs, lkup);
 }
 
 
