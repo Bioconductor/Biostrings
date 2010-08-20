@@ -41,6 +41,7 @@ typedef struct fasta_loader {
 	void (*load_seq_line)(struct fasta_loader *loader,
 			      const cachedCharSeq *dataline);
 	int nrec;
+	void *ext;  /* loader extension (optional) */
 } FASTAloader;
 
 /*
@@ -48,94 +49,140 @@ typedef struct fasta_loader {
  * of the sequences.
  */
 
-static CharAEAE descs_buf;
-static IntAE seqlengths_buf;
+typedef struct fastainfo_loader_ext {
+	CharAEAE descs_buf;
+	IntAE seqlengths_buf;
+} FASTAINFO_loaderExt;
 
 static void FASTAINFO_load_desc(FASTAloader *loader,
 		const cachedCharSeq *dataline)
 {
+	FASTAINFO_loaderExt *loader_ext;
+	CharAEAE *descs_buf;
+
+	loader_ext = loader->ext;
+	descs_buf = &(loader_ext->descs_buf);
 	// This works only because dataline->seq is nul-terminated!
-	append_string_to_CharAEAE(&descs_buf, dataline->seq);
+	append_string_to_CharAEAE(descs_buf, dataline->seq);
 	return;
 }
 
 static void FASTAINFO_load_empty_seq(FASTAloader *loader)
 {
-	IntAE_insert_at(&seqlengths_buf, seqlengths_buf.nelt, 0);
+	FASTAINFO_loaderExt *loader_ext;
+	IntAE *seqlengths_buf;
+
+	loader_ext = loader->ext;
+	seqlengths_buf = &(loader_ext->seqlengths_buf);
+	IntAE_insert_at(seqlengths_buf, seqlengths_buf->nelt, 0);
 	return;
 }
 
 static void FASTAINFO_load_seq_line(FASTAloader *loader,
 		const cachedCharSeq *dataline)
 {
-	seqlengths_buf.elts[seqlengths_buf.nelt - 1] += dataline->length;
+	FASTAINFO_loaderExt *loader_ext;
+	IntAE *seqlengths_buf;
+
+	loader_ext = loader->ext;
+	seqlengths_buf = &(loader_ext->seqlengths_buf);
+	seqlengths_buf->elts[seqlengths_buf->nelt - 1] += dataline->length;
 	return;
 }
 
-static FASTAloader new_FASTAINFO_FASTAloader(SEXP use_descs)
+static FASTAINFO_loaderExt new_FASTAINFO_loaderExt()
+{
+	FASTAINFO_loaderExt loader_ext;
+
+	loader_ext.descs_buf = new_CharAEAE(0, 0);
+	loader_ext.seqlengths_buf = new_IntAE(0, 0, 0);
+	return loader_ext;
+}
+
+static FASTAloader new_FASTAINFO_loader(SEXP use_descs,
+		FASTAINFO_loaderExt *loader_ext)
 {
 	FASTAloader loader;
 
-	seqlengths_buf = new_IntAE(0, 0, 0);
 	if (LOGICAL(use_descs)[0]) {
 		loader.load_desc = &FASTAINFO_load_desc;
-		descs_buf = new_CharAEAE(0, 0);
 	} else {
 		loader.load_desc = NULL;
 	}
 	loader.load_empty_seq = &FASTAINFO_load_empty_seq;
 	loader.load_seq_line = &FASTAINFO_load_seq_line;
 	loader.nrec = 0;
+	loader.ext = loader_ext;
 	return loader;
 }
 
 /*
- * The FASTA_seqbuf loader.
+ * The FASTA loader.
  */
 
-static cachedXVectorList FASTA_seqbuf;
-static cachedCharSeq FASTA_seqbuf_elt;
-static const int *FASTA_lkup;
-static int FASTA_lkup_length;
+typedef struct fasta_loader_ext {
+	cachedXVectorList cached_ans;
+	cachedCharSeq cached_ans_elt;
+	const int *lkup;
+	int lkup_length;
+} FASTA_loaderExt;
 
 static void FASTA_load_empty_seq(FASTAloader *loader)
 {
-	FASTA_seqbuf_elt = get_cachedXRawList_elt(&FASTA_seqbuf, loader->nrec);
-	FASTA_seqbuf_elt.length = 0;
+	FASTA_loaderExt *loader_ext;
+	cachedCharSeq *cached_ans_elt;
+
+	loader_ext = loader->ext;
+	cached_ans_elt = &(loader_ext->cached_ans_elt);
+	*cached_ans_elt = get_cachedXRawList_elt(&(loader_ext->cached_ans),
+						 loader->nrec);
+	cached_ans_elt->length = 0;
 	return;
 }
 
 static void FASTA_load_seq_line(FASTAloader *loader,
 		const cachedCharSeq *dataline)
 {
+	FASTA_loaderExt *loader_ext;
+	cachedCharSeq *cached_ans_elt;
 	int i1;
 
-	i1 = FASTA_seqbuf_elt.length;
-	FASTA_seqbuf_elt.length += dataline->length;
-	/* FASTA_seqbuf_elt.seq is a const char * so we need to cast it to
+	loader_ext = loader->ext;
+	cached_ans_elt = &(loader_ext->cached_ans_elt);
+	i1 = cached_ans_elt->length;
+	cached_ans_elt->length += dataline->length;
+	/* cached_ans_elt->seq is a const char * so we need to cast it to
            char * before we can write to it */
-	Ocopy_bytes_to_i1i2_with_lkup(i1, FASTA_seqbuf_elt.length - 1,
-		(char *) FASTA_seqbuf_elt.seq, FASTA_seqbuf_elt.length,
+	Ocopy_bytes_to_i1i2_with_lkup(i1, cached_ans_elt->length - 1,
+		(char *) cached_ans_elt->seq, cached_ans_elt->length,
 		dataline->seq, dataline->length,
-		FASTA_lkup, FASTA_lkup_length);
+		loader_ext->lkup, loader_ext->lkup_length);
 	return;
 }
 
-static FASTAloader new_FASTAloader(SEXP ans, SEXP lkup)
+static FASTA_loaderExt new_FASTA_loaderExt(SEXP ans, SEXP lkup)
+{
+	FASTA_loaderExt loader_ext;
+
+	loader_ext.cached_ans = cache_XVectorList(ans);
+	if (lkup == R_NilValue) {
+		loader_ext.lkup = NULL;
+	} else {
+		loader_ext.lkup = INTEGER(lkup);
+		loader_ext.lkup_length = LENGTH(lkup);
+	}
+	return loader_ext;
+}
+
+static FASTAloader new_FASTAloader(FASTA_loaderExt *loader_ext)
 {
 	FASTAloader loader;
 
-	FASTA_seqbuf = cache_XVectorList(ans);
-	if (lkup == R_NilValue) {
-		FASTA_lkup = NULL;
-	} else {
-		FASTA_lkup = INTEGER(lkup);
-		FASTA_lkup_length = LENGTH(lkup);
-	}
 	loader.load_desc = NULL;
 	loader.load_empty_seq = &FASTA_load_empty_seq;
 	loader.load_seq_line = &FASTA_load_seq_line;
 	loader.nrec = 0;
+	loader.ext = loader_ext;
 	return loader;
 }
 
@@ -207,6 +254,7 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_descs)
 {
 	int nrec0, skip0, i, recno;
+	FASTAINFO_loaderExt loader_ext;
 	FASTAloader loader;
 	FILE *stream;
 	SEXP ans, ans_names;
@@ -214,7 +262,8 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_descs)
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
-	loader = new_FASTAINFO_FASTAloader(use_descs);
+	loader_ext = new_FASTAINFO_loaderExt();
+	loader = new_FASTAINFO_loader(use_descs, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
@@ -224,9 +273,10 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_descs)
 			error("reading FASTA file %s: %s",
 			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
 	}
-	PROTECT(ans = new_INTEGER_from_IntAE(&seqlengths_buf));
+	PROTECT(ans = new_INTEGER_from_IntAE(&(loader_ext.seqlengths_buf)));
 	if (LOGICAL(use_descs)[0]) {
-		PROTECT(ans_names = new_CHARACTER_from_CharAEAE(&descs_buf));
+		PROTECT(ans_names =
+			new_CHARACTER_from_CharAEAE(&(loader_ext.descs_buf)));
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(1);
 	}
@@ -242,6 +292,7 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	SEXP ans_width, ans_names, ans;
 	const char *element_type;
 	char classname[40]; // longest string will be "DNAStringSet"
+	FASTA_loaderExt loader_ext;
 	FASTAloader loader;
 	FILE *stream;
 
@@ -260,7 +311,8 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
 	_set_XStringSet_names(ans, ans_names);
-	loader = new_FASTAloader(ans, lkup);
+	loader_ext = new_FASTA_loaderExt(ans, lkup);
+	loader = new_FASTAloader(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
@@ -348,6 +400,7 @@ typedef struct fastq_loader {
 	void (*load_qual)(struct fastq_loader *loader,
 			  const cachedCharSeq *dataline);
 	int nrec;
+	void *ext;  /* loader extension (optional) */
 } FASTQloader;
 
 /*
@@ -355,73 +408,99 @@ typedef struct fastq_loader {
  * (NA if the set of sequences is not rectangular).
  */
 
-static int FASTQ_width;
+typedef struct fastqgeom_loader_ext {
+	int width;
+} FASTQGEOM_loaderExt;
 
 static void FASTQGEOM_load_seq(FASTQloader *loader,
 		const cachedCharSeq *dataline)
 {
+	FASTQGEOM_loaderExt *loader_ext;
+
+	loader_ext = loader->ext;
 	if (loader->nrec == 0) {
-		FASTQ_width = dataline->length;
+		loader_ext->width = dataline->length;
 		return;
 	}
-	if (FASTQ_width == NA_INTEGER || dataline->length == FASTQ_width)
+	if (loader_ext->width == NA_INTEGER
+	 || dataline->length == loader_ext->width)
 		return;
-	FASTQ_width = NA_INTEGER;
+	loader_ext->width = NA_INTEGER;
 	return;
 }
 
-static FASTQloader new_FASTQGEOM_FASTQloader()
+static FASTQGEOM_loaderExt new_FASTQGEOM_loaderExt()
+{
+	FASTQGEOM_loaderExt loader_ext;
+
+	loader_ext.width = NA_INTEGER;
+	return loader_ext;
+}
+
+static FASTQloader new_FASTQGEOMloader(FASTQGEOM_loaderExt *loader_ext)
 {
 	FASTQloader loader;
 
-	FASTQ_width = NA_INTEGER;
 	loader.load_seqid = NULL;
 	loader.load_seq = FASTQGEOM_load_seq;
 	loader.load_qualid = NULL;
 	loader.load_qual = NULL;
 	loader.nrec = 0;
+	loader.ext = loader_ext;
 	return loader;
 }
-
 
 /*
  * The FASTQ loader.
  */
 
-static cachedXVectorList FASTQ_seqbuf;
-static const int *FASTQ_lkup;
-static int FASTQ_lkup_length;
+typedef struct fastq_loader_ext {
+	cachedXVectorList cached_ans;
+	const int *lkup;
+	int lkup_length;
+} FASTQ_loaderExt;
 
 static void FASTQ_load_seq(FASTQloader *loader, const cachedCharSeq *dataline)
 {
-	cachedCharSeq FASTQ_seqbuf_elt;
+	FASTQ_loaderExt *loader_ext;
+	cachedCharSeq cached_ans_elt;
 
-	FASTQ_seqbuf_elt = get_cachedXRawList_elt(&FASTQ_seqbuf, loader->nrec);
-	/* FASTQ_seqbuf_elt.seq is a const char * so we need to cast it to
+	loader_ext = loader->ext;
+	cached_ans_elt = get_cachedXRawList_elt(&(loader_ext->cached_ans),
+						loader->nrec);
+	/* cached_ans_elt.seq is a const char * so we need to cast it to
            char * before we can write to it */
-	Ocopy_bytes_to_i1i2_with_lkup(0, FASTQ_seqbuf_elt.length - 1,
-		(char *) FASTQ_seqbuf_elt.seq, FASTQ_seqbuf_elt.length,
+	Ocopy_bytes_to_i1i2_with_lkup(0, cached_ans_elt.length - 1,
+		(char *) cached_ans_elt.seq, cached_ans_elt.length,
 		dataline->seq, dataline->length,
-		FASTQ_lkup, FASTQ_lkup_length);
+		loader_ext->lkup, loader_ext->lkup_length);
 	return;
 }
 
-static FASTQloader new_FASTQloader(SEXP ans, SEXP lkup)
+static FASTQ_loaderExt new_FASTQ_loaderExt(SEXP ans, SEXP lkup)
+{
+	FASTQ_loaderExt loader_ext;
+
+	loader_ext.cached_ans = cache_XVectorList(ans);
+	if (lkup == R_NilValue) {
+		loader_ext.lkup = NULL;
+	} else {
+		loader_ext.lkup = INTEGER(lkup);
+		loader_ext.lkup_length = LENGTH(lkup);
+	}
+	return loader_ext;
+}
+
+static FASTQloader new_FASTQ_loader(FASTQ_loaderExt *loader_ext)
 {
 	FASTQloader loader;
 
-	FASTQ_seqbuf = cache_XVectorList(ans);
-	if (lkup == R_NilValue) {
-		FASTQ_lkup = NULL;
-	} else {
-		FASTQ_lkup = INTEGER(lkup);
-		FASTQ_lkup_length = LENGTH(lkup);
-	}
 	loader.load_seqid = NULL;
 	loader.load_seq = FASTQ_load_seq;
 	loader.load_qualid = NULL;
 	loader.load_qual = NULL;
 	loader.nrec = 0;
+	loader.ext = loader_ext;
 	return loader;
 }
 
@@ -511,6 +590,7 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 {
 	int nrec0, skip0, i, recno;
+	FASTQGEOM_loaderExt loader_ext;
 	FASTQloader loader;
 	FILE *stream;
 	const char *errmsg;
@@ -518,7 +598,8 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
-	loader = new_FASTQGEOM_FASTQloader();
+	loader_ext = new_FASTQGEOM_loaderExt();
+	loader = new_FASTQGEOMloader(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
@@ -530,7 +611,7 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 	}
 	PROTECT(ans = NEW_INTEGER(2));
 	INTEGER(ans)[0] = loader.nrec;
-	INTEGER(ans)[1] = FASTQ_width;
+	INTEGER(ans)[1] = loader_ext.width;
 	UNPROTECT(1);
 	return ans;
 }
@@ -545,6 +626,7 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	SEXP ans, ans_geom, ans_width;
 	const char *element_type;
 	char classname[40]; // longest string will be "DNAStringSet"
+	FASTQ_loaderExt loader_ext;
 	FASTQloader loader;
 	FILE *stream;
 
@@ -571,7 +653,8 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 		      "read_fasta_in_XStringSet(): 'elementType' too long");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
-	loader = new_FASTQloader(ans, lkup);
+	loader_ext = new_FASTQ_loaderExt(ans, lkup);
+	loader = new_FASTQ_loader(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
