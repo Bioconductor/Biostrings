@@ -80,6 +80,26 @@
     for (efp in efp_list) .ExternalFilePtr.close(efp)
 }
 
+.normargNrec <- function(nrec)
+{
+    if (!isSingleNumber(nrec))
+        stop("'nrec' must be a single integer value")
+    if (!is.integer(nrec))
+        nrec <- as.integer(nrec)
+    nrec
+}
+
+.normargSkip <- function(skip)
+{
+    if (!isSingleNumber(skip))
+        stop("'skip' must be a single integer value")
+    if (!is.integer(skip))
+        skip <- as.integer(skip)
+    if (skip < 0L)
+        stop("'skip' cannot be negative")
+    skip
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### FASTA
@@ -90,14 +110,8 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, use.descs=TRUE)
 {
     efp_list <- .openInputFiles(filepath)
     on.exit(.closeFiles(efp_list))
-    if (!isSingleNumber(nrec))
-        stop("'nrec' must be a single integer value")
-    if (!is.integer(nrec))
-        nrec <- as.integer(nrec)
-    if (!isSingleNumber(skip))
-        stop("'skip' must be a single integer value")
-    if (!is.integer(skip))
-        skip <- as.integer(skip)
+    nrec <- .normargNrec(nrec)
+    skip <- .normargSkip(skip)
     use.descs <- normargUseNames(use.descs)
     .Call("fasta_info",
           efp_list, nrec, skip, use.descs,
@@ -121,14 +135,8 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
 {
     efp_list <- .openInputFiles(filepath)
     on.exit(.closeFiles(efp_list))
-    if (!isSingleNumber(nrec))
-        stop("'nrec' must be a single integer value")
-    if (!is.integer(nrec))
-        nrec <- as.integer(nrec)
-    if (!isSingleNumber(skip))
-        stop("'skip' must be a single integer value")
-    if (!is.integer(skip))
-        skip <- as.integer(skip)
+    nrec <- .normargNrec(nrec)
+    skip <- .normargSkip(skip)
     .Call("fastq_geometry", efp_list, nrec, skip, PACKAGE="Biostrings")
 }
 
@@ -153,14 +161,8 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    if (!isSingleNumber(nrec))
-        stop("'nrec' must be a single integer value")
-    if (!is.integer(nrec))
-        nrec <- as.integer(nrec)
-    if (!isSingleNumber(skip))
-        stop("'skip' must be a single integer value")
-    if (!is.integer(skip))
-        skip <- as.integer(skip)
+    nrec <- .normargNrec(nrec)
+    skip <- .normargSkip(skip)
     if (!isTRUEorFALSE(set.names))
         stop("'set.names' must be TRUE or FALSE")
     elementType <- paste(basetype, "String", sep="")

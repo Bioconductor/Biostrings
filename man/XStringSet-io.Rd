@@ -66,8 +66,8 @@
     Negative values are ignored.
   }
   \item{skip}{
-    Single integer. The number of records of the data file(s) to skip
-    before beginning to read in data.
+    Single non-negative integer. The number of records of the data file(s)
+    to skip before beginning to read in records.
   }
   \item{use.descs}{
     Should the returned vector be named with the description lines
