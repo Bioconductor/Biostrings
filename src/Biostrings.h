@@ -233,11 +233,15 @@ SEXP debug_XStringSet_io();
 
 SEXP fasta_info(
 	SEXP efp_list,
+	SEXP nrec,
+	SEXP skip,
 	SEXP use_descs
 );
 
 SEXP read_fasta_in_XStringSet(
 	SEXP efp_list,
+	SEXP nrec,
+	SEXP skip,
 	SEXP set_names,
 	SEXP elementType,
 	SEXP lkup
@@ -250,10 +254,16 @@ SEXP write_XStringSet_to_fasta(
 	SEXP lkup
 );
 
-SEXP fastq_geometry(SEXP efp_list);
+SEXP fastq_geometry(
+	SEXP efp_list,
+	SEXP nrec,
+	SEXP skip
+);
 
 SEXP read_fastq_in_XStringSet(
 	SEXP efp_list,
+	SEXP nrec,
+	SEXP skip,
 	SEXP set_names,
 	SEXP elementType,
 	SEXP lkup

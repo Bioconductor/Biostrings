@@ -27,6 +27,13 @@ static char errmsg_buf[200];
  * Read FASTA.
  */
 
+typedef struct fasta_loader {
+	int nrec;
+	void (*add_desc)(const cachedCharSeq *dataline);
+	void (*add_empty_seq)(int nrec);
+	void (*append_to_last_seq)(const cachedCharSeq *dataline);
+} FASTAloader;
+
 /*
  * Even if the standard FASTA markup is made of 1-letter sympols, we want to
  * be able to eventually support longer sympols.
@@ -37,17 +44,17 @@ static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
  * The LENGTHONLY storage handlers only store the lengths of the sequences.
  */
 
-static IntAE seq_lengths_buf;
+static IntAE seqlengths_buf;
 
-static void add_empty_seq_LENGTHONLY(int recno)
+static void add_empty_seq_LENGTHONLY(int nrec)
 {
-	IntAE_insert_at(&seq_lengths_buf, seq_lengths_buf.nelt, 0);
+	IntAE_insert_at(&seqlengths_buf, seqlengths_buf.nelt, 0);
 	return;
 }
 
-static void append_to_last_seq_LENGTHONLY(int recno, const cachedCharSeq *dataline)
+static void append_to_last_seq_LENGTHONLY(const cachedCharSeq *dataline)
 {
-	seq_lengths_buf.elts[seq_lengths_buf.nelt - 1] += dataline->length;
+	seqlengths_buf.elts[seqlengths_buf.nelt - 1] += dataline->length;
 	return;
 }
 
@@ -61,7 +68,7 @@ static void append_to_last_seq_LENGTHONLY(int recno, const cachedCharSeq *datali
 
 static CharAEAE descs_buf;
 
-static void add_desc_CHARAEAE(int recno, const cachedCharSeq *dataline)
+static void add_desc_CHARAEAE(const cachedCharSeq *dataline)
 {
 	// This works only because dataline->seq is nul-terminated!
 	append_string_to_CharAEAE(&descs_buf, dataline->seq);
@@ -78,14 +85,14 @@ static cachedCharSeq FASTA_seqbuf_elt;
 static const int *FASTA_lkup;
 static int FASTA_lkup_length;
 
-static void add_empty_seq_to_FASTA_seqbuf(int recno)
+static void add_empty_seq_to_FASTA_seqbuf(int nrec)
 {
-	FASTA_seqbuf_elt = get_cachedXRawList_elt(&FASTA_seqbuf, recno);
+	FASTA_seqbuf_elt = get_cachedXRawList_elt(&FASTA_seqbuf, nrec);
 	FASTA_seqbuf_elt.length = 0;
 	return;
 }
 
-static void append_to_last_seq_in_FASTA_seqbuf(int recno, const cachedCharSeq *dataline)
+static void append_to_last_seq_in_FASTA_seqbuf(const cachedCharSeq *dataline)
 {
 	int i1;
 
@@ -104,87 +111,96 @@ static void append_to_last_seq_in_FASTA_seqbuf(int recno, const cachedCharSeq *d
 /*
  * Ignore empty lines and lines starting with 'FASTA_comment_markup' like in
  * the original Pearson FASTA format.
- * This function is agnostic about how the data that are read are stored in
- * memory, how they will be returned to the user and how they will look to him.
- * This is delegated to 3 storage handlers: add_desc(), add_empty_seq() and
- * append_to_last_seq().
  */
 static const char *parse_FASTA_file(FILE *stream, int *recno,
-		void (*add_desc)(int recno, const cachedCharSeq *dataline),
-		void (*add_empty_seq)(int recno),
-		void (*append_to_last_seq)(int recno, const cachedCharSeq *dataline))
+		int nrec, int skip, FASTAloader *loader)
 {
-	int FASTA_comment_markup_length, FASTA_desc_markup_length, lineno;
+	int FASTA_comment_markup_length, FASTA_desc_markup_length,
+	    lineno, load_record, new_record;
 	char linebuf[LINEBUF_SIZE];
 	cachedCharSeq dataline;
 
 	FASTA_comment_markup_length = strlen(FASTA_comment_markup);
 	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
 	lineno = 0;
+	load_record = -1;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
 		dataline.length = rtrimline(linebuf, -1);
 		// dataline.length > LINEBUF_SIZE - 1 should never happen
 		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "cannot read line %d, line is too long", lineno);
+				 "cannot read line %d, line is too long",
+				 lineno);
 			return errmsg_buf;
 		}
 		if (dataline.length == 0)
 			continue; // we ignore empty lines
-		if (strncmp(linebuf, FASTA_comment_markup, FASTA_comment_markup_length) == 0)
+		if (strncmp(linebuf, FASTA_comment_markup,
+				FASTA_comment_markup_length) == 0)
 			continue; // we ignore comment lines
 		dataline.seq = linebuf;
-		if (strncmp(linebuf, FASTA_desc_markup, FASTA_desc_markup_length) == 0) {
-			if (add_desc != NULL) {
+		new_record = strncmp(linebuf, FASTA_desc_markup,
+				FASTA_desc_markup_length) == 0;
+		if (new_record) {
+			load_record = loader != NULL && *recno >= skip;
+			if (load_record && nrec >= 0)
+				load_record = *recno < skip + nrec;
+			if (load_record && loader->add_desc != NULL) {
 				dataline.seq += FASTA_desc_markup_length;
 				dataline.length -= FASTA_desc_markup_length;
-				add_desc(*recno, &dataline);
+				loader->add_desc(&dataline);
 			}
-			if (add_empty_seq != NULL)
-				add_empty_seq(*recno);
+			if (load_record && loader->add_empty_seq != NULL)
+				loader->add_empty_seq(loader->nrec);
+			if (load_record)
+				loader->nrec++;
 			(*recno)++;
-		} else {
-			if (*recno == 0) {
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "\"%s\" expected at beginning of line %d",
-					 FASTA_desc_markup, lineno);
-				return errmsg_buf;
-			}
-			if (append_to_last_seq != NULL)
-				append_to_last_seq(*recno, &dataline);
+			continue;
 		}
+		if (load_record == -1) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "\"%s\" expected at beginning of line %d",
+				 FASTA_desc_markup, lineno);
+			return errmsg_buf;
+		}
+		if (load_record && loader->append_to_last_seq != NULL)
+			loader->append_to_last_seq(&dataline);
 	}
 	return NULL;
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fasta_info(SEXP efp_list, SEXP use_descs)
+SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_descs)
 {
-	void (*add_desc)(int recno, const cachedCharSeq *dataline);
-	int i, recno;
+	int nrec0, skip0, i, recno;
+	FASTAloader loader;
 	FILE *stream;
 	SEXP ans, ans_names;
 	const char *errmsg;
 
-	seq_lengths_buf = new_IntAE(0, 0, 0);
+	nrec0 = INTEGER(nrec)[0];
+	skip0 = INTEGER(skip)[0];
+	seqlengths_buf = new_IntAE(0, 0, 0);
+	loader.nrec = 0;
 	if (LOGICAL(use_descs)[0]) {
-		add_desc = &add_desc_CHARAEAE;
+		loader.add_desc = &add_desc_CHARAEAE;
 		descs_buf = new_CharAEAE(0, 0);
 	} else {
-		add_desc = NULL;
+		loader.add_desc = NULL;
 	}
-	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+	loader.add_empty_seq = &add_empty_seq_LENGTHONLY;
+	loader.append_to_last_seq = &append_to_last_seq_LENGTHONLY;
+	recno = 0;
+	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		errmsg = parse_FASTA_file(stream, &recno,
-				add_desc,
-				&add_empty_seq_LENGTHONLY,
-				&append_to_last_seq_LENGTHONLY);
+				nrec0, skip0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
 			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
 	}
-	PROTECT(ans = new_INTEGER_from_IntAE(&seq_lengths_buf));
+	PROTECT(ans = new_INTEGER_from_IntAE(&seqlengths_buf));
 	if (LOGICAL(use_descs)[0]) {
 		PROTECT(ans_names = new_CHARACTER_from_CharAEAE(&descs_buf));
 		SET_NAMES(ans, ans_names);
@@ -195,16 +211,19 @@ SEXP fasta_info(SEXP efp_list, SEXP use_descs)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP set_names,
-		SEXP elementType, SEXP lkup)
+SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
+		SEXP set_names, SEXP elementType, SEXP lkup)
 {
-	SEXP ans, ans_width, ans_names;
+	int nrec0, skip0, i, recno;
+	SEXP ans_width, ans_names, ans;
 	const char *element_type;
 	char classname[40]; // longest string will be "DNAStringSet"
-	int i, recno;
+	FASTAloader loader;
 	FILE *stream;
 
-	PROTECT(ans_width = fasta_info(efp_list, set_names));
+	nrec0 = INTEGER(nrec)[0];
+	skip0 = INTEGER(skip)[0];
+	PROTECT(ans_width = fasta_info(efp_list, nrec, skip, set_names));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
 	element_type = CHAR(STRING_ELT(elementType, 0));
@@ -224,13 +243,15 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP set_names,
 		FASTA_lkup = INTEGER(lkup);
 		FASTA_lkup_length = LENGTH(lkup);
 	}
-	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+	loader.nrec = 0;
+	loader.add_desc = NULL;
+	loader.add_empty_seq = &add_empty_seq_to_FASTA_seqbuf;
+	loader.append_to_last_seq = &append_to_last_seq_in_FASTA_seqbuf;
+	recno = 0;
+	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
-		parse_FASTA_file(stream, &recno,
-			NULL,
-			&add_empty_seq_to_FASTA_seqbuf,
-			&append_to_last_seq_in_FASTA_seqbuf);
+		parse_FASTA_file(stream, &recno, nrec0, skip0, &loader);
 	}
 	UNPROTECT(3);
 	return ans;
@@ -300,6 +321,14 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
  * Read FASTQ.
  */
 
+typedef struct fastq_loader {
+	int nrec;
+	void (*add_seqid)(const cachedCharSeq *dataline);
+	void (*add_seq)(int nrec, const cachedCharSeq *dataline);
+	void (*add_qualid)(const cachedCharSeq *dataline);
+	void (*add_qual)(const cachedCharSeq *dataline);
+} FASTQloader;
+
 static const char *FASTQ_line1_markup = "@", *FASTQ_line3_markup = "+";
 
 /*
@@ -347,19 +376,12 @@ static void append_seq_to_FASTQ_seqbuf(int recno, const cachedCharSeq *dataline)
 
 /*
  * Ignore empty lines.
- * This function is agnostic about how the data that are read are stored in
- * memory, how they will be returned to the user and how they will look to him.
- * This is delegated to 4 storage handlers: add_seqid(), add_seq(), add_qualid()
- * and add_qual().
  */
 static const char *parse_FASTQ_file(FILE *stream, int *recno,
-		void (*add_seqid)(int recno, const cachedCharSeq *dataline),
-		void (*add_seq)(int recno, const cachedCharSeq *dataline),
-		void (*add_qualid)(int recno, const cachedCharSeq *dataline),
-		void (*add_qual)(int recno, const cachedCharSeq *dataline))
+		int nrec, int skip, FASTQloader *loader)
 {
 	int FASTQ_line1_markup_length, FASTQ_line3_markup_length,
-	    lineno, lineinrecno;
+	    lineno, lineinrecno, load_record;
 	char linebuf[LINEBUF_SIZE];
 	cachedCharSeq dataline;
 
@@ -372,7 +394,8 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 		// dataline.length > LINEBUF_SIZE - 1 should never happen
 		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "cannot read line %d, line is too long", lineno);
+				 "cannot read line %d, line is too long",
+				 lineno);
 			return errmsg_buf;
 		}
 		if (dataline.length == 0)
@@ -383,38 +406,45 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 			lineinrecno = 1;
 		switch (lineinrecno) {
 		    case 1:
-			if (strncmp(linebuf, FASTQ_line1_markup, FASTQ_line1_markup_length) != 0) {
+			if (strncmp(linebuf, FASTQ_line1_markup,
+					FASTQ_line1_markup_length) != 0) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "\"%s\" expected at beginning of line %d",
 					 FASTQ_line1_markup, lineno);
 				return errmsg_buf;
 			}
-			if (add_seqid != NULL) {
+			load_record = loader != NULL && *recno >= skip;
+			if (load_record && nrec >= 0)
+				load_record = *recno < skip + nrec;
+			if (load_record && loader->add_seqid != NULL) {
 				dataline.seq += FASTQ_line1_markup_length;
 				dataline.length -= FASTQ_line1_markup_length;
-				add_seqid(*recno, &dataline);
+				loader->add_seqid(&dataline);
 			}
 		    break;
 		    case 2:
-			if (add_seq != NULL)
-				add_seq(*recno, &dataline);
+			if (load_record && loader->add_seq != NULL)
+				loader->add_seq(loader->nrec, &dataline);
 		    break;
 		    case 3:
-			if (strncmp(linebuf, FASTQ_line3_markup, FASTQ_line3_markup_length) != 0) {
+			if (strncmp(linebuf, FASTQ_line3_markup,
+					FASTQ_line3_markup_length) != 0) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "\"%s\" expected at beginning of line %d",
 					 FASTQ_line3_markup, lineno);
 				return errmsg_buf;
 			}
-			if (add_qualid != NULL) {
+			if (load_record && loader->add_qualid != NULL) {
 				dataline.seq += FASTQ_line3_markup_length;
 				dataline.length -= FASTQ_line3_markup_length;
-				add_qualid(*recno, &dataline);
+				loader->add_qualid(&dataline);
 			}
 		    break;
 		    case 4:
-			if (add_qual != NULL)
-				add_qual(*recno, &dataline);
+			if (load_record && loader->add_qual != NULL)
+				loader->add_qual(&dataline);
+			if (load_record)
+				loader->nrec++;
 			(*recno)++;
 		    break;
 		}
@@ -423,25 +453,33 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fastq_geometry(SEXP efp_list)
+SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 {
-	SEXP ans;
-	int i, recno;
+	int nrec0, skip0, i, recno;
+	FASTQloader loader;
 	FILE *stream;
 	const char *errmsg;
+	SEXP ans;
 
+	nrec0 = INTEGER(nrec)[0];
+	skip0 = INTEGER(skip)[0];
 	FASTQ_width = NA_INTEGER;
-	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+	loader.nrec = 0;
+	loader.add_seqid = NULL;
+	loader.add_seq = add_seq_WIDTHONLY;
+	loader.add_qualid = NULL;
+	loader.add_qual = NULL;
+	recno = 0;
+	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		errmsg = parse_FASTQ_file(stream, &recno,
-				NULL, add_seq_WIDTHONLY,
-				NULL, NULL);
+				nrec0, skip0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
 			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
 	}
 	PROTECT(ans = NEW_INTEGER(2));
-	INTEGER(ans)[0] = recno;
+	INTEGER(ans)[0] = loader.nrec;
 	INTEGER(ans)[1] = FASTQ_width;
 	UNPROTECT(1);
 	return ans;
@@ -450,16 +488,19 @@ SEXP fastq_geometry(SEXP efp_list)
 /* --- .Call ENTRY POINT ---
  * 'set_names' is ignored.
  */
-SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP set_names,
-		SEXP elementType, SEXP lkup)
+SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
+		SEXP set_names, SEXP elementType, SEXP lkup)
 {
+	int nrec0, skip0, ans_length, i, recno;
 	SEXP ans, ans_geom, ans_width;
 	const char *element_type;
 	char classname[40]; // longest string will be "DNAStringSet"
-	int ans_length, i, recno;
+	FASTQloader loader;
 	FILE *stream;
 
-	PROTECT(ans_geom = fastq_geometry(efp_list));
+	nrec0 = INTEGER(nrec)[0];
+	skip0 = INTEGER(skip)[0];
+	PROTECT(ans_geom = fastq_geometry(efp_list, nrec, skip));
 	ans_length = INTEGER(ans_geom)[0];
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
 	if (ans_length != 0) {
@@ -487,11 +528,16 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP set_names,
 		FASTQ_lkup = INTEGER(lkup);
 		FASTQ_lkup_length = LENGTH(lkup);
 	}
-	for (i = recno = 0; i < LENGTH(efp_list); i++) {
+	loader.nrec = 0;
+	loader.add_seqid = NULL;
+	loader.add_seq = append_seq_to_FASTQ_seqbuf;
+	loader.add_qualid = NULL;
+	loader.add_qual = NULL;
+	recno = 0;
+	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
-		parse_FASTQ_file(stream, &recno,
-			NULL, append_seq_to_FASTQ_seqbuf, NULL, NULL);
+		parse_FASTQ_file(stream, &recno, nrec0, skip0, &loader);
 	}
 	UNPROTECT(3);
 	return ans;

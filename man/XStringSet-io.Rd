@@ -32,15 +32,15 @@
 
 \usage{
   ## Read FASTA (or FASTQ) files in an XStringSet object:
-  read.BStringSet(filepath, format="fasta")
-  read.DNAStringSet(filepath, format="fasta")
-  read.RNAStringSet(filepath, format="fasta")
-  read.AAStringSet(filepath, format="fasta")
+  read.BStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
+  read.DNAStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
+  read.RNAStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
+  read.AAStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
 
   ## Extract basic information about FASTA (or FASTQ) files
   ## without loading them:
-  fasta.info(filepath, use.descs=TRUE)
-  fastq.geometry(filepath)
+  fasta.info(filepath, nrec=-1L, skip=0L, use.descs=TRUE)
+  fastq.geometry(filepath, nrec=-1L, skip=0L)
 
   ## Write an XStringSet object to a FASTA (or FASTQ) file:
   write.XStringSet(x, filepath, append=FALSE, format="fasta", width=80)
@@ -52,7 +52,7 @@
 \arguments{
   \item{filepath}{
     A character vector (of arbitrary length when reading, of length 1
-    when writing) containing the paths to the files to read or write.
+    when writing) containing the path(s) to the file(s) to read or write.
     Note that special values like \code{""} or \code{"|cmd"} (typically
     supported by other I/O functions in R) are not supported here.
     Also \code{filepath} cannot be a connection.
@@ -60,6 +60,14 @@
   \item{format}{
     Either \code{"fasta"} (the default) or \code{"fastq"}.
     Note that \code{write.XStringSet} only supports \code{"fasta"} for now.
+  }
+  \item{nrec}{
+    Single integer. The maximum of number of records to read in.
+    Negative values are ignored.
+  }
+  \item{skip}{
+    Single integer. The number of records of the data file(s) to skip
+    before beginning to read in data.
   }
   \item{use.descs}{
     Should the returned vector be named with the description lines
