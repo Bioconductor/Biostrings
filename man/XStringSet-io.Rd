@@ -113,9 +113,8 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 }
 
 \details{
-  Only FASTA and FASTQ files are supported for now. The identifiers and
-  qualities stored in the FASTQ records are ignored (only the sequences
-  are returned).
+  Only FASTA and FASTQ files are supported for now. The qualities
+  stored in the FASTQ records are ignored.
 
   Reading functions \code{read.BStringSet}, \code{read.DNAStringSet},
   \code{read.RNAStringSet} and \code{read.AAStringSet} load sequences
@@ -136,7 +135,7 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   first element is the total number of FASTQ records in the files and
   the second element the common "width" of these files (this width is
   \code{NA} if the files contain no FASTQ records or records with
-  different "widths").
+  different widths).
 
   \code{write.XStringSet} writes an \link{XStringSet} object to a file.
   Its only supports the FASTA format for now.
