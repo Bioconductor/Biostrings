@@ -235,14 +235,14 @@ SEXP fasta_info(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
-	SEXP use_descs
+	SEXP use_names
 );
 
 SEXP read_fasta_in_XStringSet(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
-	SEXP set_names,
+	SEXP use_names,
 	SEXP elementType,
 	SEXP lkup
 );
@@ -264,7 +264,7 @@ SEXP read_fastq_in_XStringSet(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
-	SEXP set_names,
+	SEXP use_names,
 	SEXP elementType,
 	SEXP lkup
 );

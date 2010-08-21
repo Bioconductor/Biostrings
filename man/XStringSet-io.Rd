@@ -31,22 +31,26 @@
 }
 
 \usage{
-  ## Read FASTA (or FASTQ) files in an XStringSet object:
-  read.BStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
-  read.DNAStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
-  read.RNAStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
-  read.AAStringSet(filepath, format="fasta", nrec=-1L, skip=0L)
+## Read FASTA (or FASTQ) files in an XStringSet object:
+read.BStringSet(filepath, format="fasta",
+                nrec=-1L, skip=0L, use.names=TRUE)
+read.DNAStringSet(filepath, format="fasta",
+                  nrec=-1L, skip=0L, use.names=TRUE)
+read.RNAStringSet(filepath, format="fasta",
+                  nrec=-1L, skip=0L, use.names=TRUE)
+read.AAStringSet(filepath, format="fasta",
+                 nrec=-1L, skip=0L, use.names=TRUE)
 
-  ## Extract basic information about FASTA (or FASTQ) files
-  ## without loading them:
-  fasta.info(filepath, nrec=-1L, skip=0L, use.descs=TRUE)
-  fastq.geometry(filepath, nrec=-1L, skip=0L)
+## Extract basic information about FASTA (or FASTQ) files
+## without loading them:
+fasta.info(filepath, nrec=-1L, skip=0L, use.names=TRUE)
+fastq.geometry(filepath, nrec=-1L, skip=0L)
 
-  ## Write an XStringSet object to a FASTA (or FASTQ) file:
-  write.XStringSet(x, filepath, append=FALSE, format="fasta", width=80)
+## Write an XStringSet object to a FASTA (or FASTQ) file:
+write.XStringSet(x, filepath, append=FALSE, format="fasta", width=80)
 
-  ## Serialize an XStringSet object:
-  save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
+## Serialize an XStringSet object:
+save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 }
 
 \arguments{
@@ -69,9 +73,12 @@
     Single non-negative integer. The number of records of the data file(s)
     to skip before beginning to read in records.
   }
-  \item{use.descs}{
-    Should the returned vector be named with the description lines
-    found in the FASTA records?
+  \item{use.names}{
+    Should the returned vector be named? For FASTA the names are taken
+    from the record description lines. For FASTQ they are taken from
+    the record sequence ids.
+    Dropping the names can help reducing memory footprint e.g. for
+    a FASTQ file containing millions of reads.
   }
   \item{x}{
     For \code{write.XStringSet}, the object to write to \code{file}.
@@ -123,8 +130,6 @@
   The \code{fasta.info} utility returns an integer vector with one element
   per FASTA record in the input files. Each element is the length of the
   sequence found in the corresponding record.
-  If \code{use.descs} is \code{TRUE} (the default) then the returned
-  vector is named with the description lines found in the FASTA records.
 
   The \code{fastq.geometry} utility returns an integer vector describing
   the "geometry" of the FASTQ files i.e. a vector of length 2 where the
@@ -168,8 +173,6 @@
   ## ---------------------------------------------------------------------
   filepath <- system.file("extdata", "s_1_sequence.txt", package="Biostrings")
   fastq.geometry(filepath)
-  ## Only the FASTQ sequences are returned (identifiers and qualities
-  ## are dropped):
   read.DNAStringSet(filepath, format="fastq")
 
   ## ---------------------------------------------------------------------

@@ -106,23 +106,23 @@
 ###
 
 ### TODO (maybe): Rename this fasta.geometry() and deprecate fasta.info()
-fasta.info <- function(filepath, nrec=-1L, skip=0L, use.descs=TRUE)
+fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE)
 {
     efp_list <- .openInputFiles(filepath)
     on.exit(.closeFiles(efp_list))
     nrec <- .normargNrec(nrec)
     skip <- .normargSkip(skip)
-    use.descs <- normargUseNames(use.descs)
+    use.names <- normargUseNames(use.names)
     .Call("fasta_info",
-          efp_list, nrec, skip, use.descs,
+          efp_list, nrec, skip, use.names,
           PACKAGE="Biostrings")
 }
 
 .read.fasta.in.XStringSet <- function(efp_list, nrec, skip,
-                                      set.names, elementType, lkup)
+                                      use.names, elementType, lkup)
 {
     .Call("read_fasta_in_XStringSet",
-          efp_list, nrec, skip, set.names, elementType, lkup,
+          efp_list, nrec, skip, use.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
 
@@ -141,10 +141,10 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
 }
 
 .read.fastq.in.XStringSet <- function(efp_list, nrec, skip,
-                                      set.names, elementType, lkup)
+                                      use.names, elementType, lkup)
 {
     .Call("read_fastq_in_XStringSet",
-          efp_list, nrec, skip, set.names, elementType, lkup,
+          efp_list, nrec, skip, use.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
 
@@ -154,7 +154,7 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
 ### "read.AAStringSet" functions.
 ###
 
-.read.XStringSet <- function(filepath, format, nrec, skip, set.names, basetype)
+.read.XStringSet <- function(filepath, format, nrec, skip, use.names, basetype)
 {
     efp_list <- .openInputFiles(filepath)
     on.exit(.closeFiles(efp_list))
@@ -163,29 +163,33 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
     format <- match.arg(tolower(format), c("fasta", "fastq"))
     nrec <- .normargNrec(nrec)
     skip <- .normargSkip(skip)
-    if (!isTRUEorFALSE(set.names))
-        stop("'set.names' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
     elementType <- paste(basetype, "String", sep="")
     lkup <- get_xsbasetypes_conversion_lookup("B", basetype)
     switch(format,
         "fasta"=.read.fasta.in.XStringSet(efp_list, nrec, skip,
-                                          set.names, elementType, lkup),
+                                          use.names, elementType, lkup),
         "fastq"=.read.fastq.in.XStringSet(efp_list, nrec, skip,
-                                          set.names, elementType, lkup)
+                                          use.names, elementType, lkup)
     )
 }
 
-read.BStringSet <- function(filepath, format="fasta", nrec=-1L, skip=0L)
-    .read.XStringSet(filepath, format, nrec, skip, TRUE, "B")
+read.BStringSet <- function(filepath, format="fasta",
+                            nrec=-1L, skip=0L, use.names=TRUE)
+    .read.XStringSet(filepath, format, nrec, skip, use.names, "B")
 
-read.DNAStringSet <- function(filepath, format="fasta", nrec=-1L, skip=0L)
-    .read.XStringSet(filepath, format, nrec, skip, TRUE, "DNA")
+read.DNAStringSet <- function(filepath, format="fasta",
+                              nrec=-1L, skip=0L, use.names=TRUE)
+    .read.XStringSet(filepath, format, nrec, skip, use.names, "DNA")
 
-read.RNAStringSet <- function(filepath, format="fasta", nrec=-1L, skip=0L)
-    .read.XStringSet(filepath, format, nrec, skip, TRUE, "RNA")
+read.RNAStringSet <- function(filepath, format="fasta",
+                              nrec=-1L, skip=0L, use.names=TRUE)
+    .read.XStringSet(filepath, format, nrec, skip, use.names, "RNA")
 
-read.AAStringSet <- function(filepath, format="fasta", nrec=-1L, skip=0L)
-    .read.XStringSet(filepath, format, nrec, skip, TRUE, "AA")
+read.AAStringSet <- function(filepath, format="fasta",
+                             nrec=-1L, skip=0L, use.names=TRUE)
+    .read.XStringSet(filepath, format, nrec, skip, use.names, "AA")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
