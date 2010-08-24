@@ -69,7 +69,7 @@ SEXP XStringSet_xscat(SEXP args)
 	SEXP arg, ans_ranges_start, ans_width, ans_tag, ans_ranges, ans;
 	const char *ans_element_type;
 	cachedCharSeq cached_arg_elt;
-	char ans_classname[40];  /* longest string will be "DNAStringSet" */
+	char ans_classname[40];  /* longest string should be "DNAStringSet" */
 
 	nargs = LENGTH(args);
 	if (nargs == 0)

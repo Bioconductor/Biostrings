@@ -288,7 +288,7 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	int nrec0, skip0, i, recno;
 	SEXP ans_width, ans_names, ans;
 	const char *element_type;
-	char classname[40]; // longest string will be "DNAStringSet"
+	char classname[40];  /* longest string should be "DNAStringSet" */
 	FASTA_loaderExt loader_ext;
 	FASTAloader loader;
 	FILE *stream;
@@ -304,7 +304,8 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	{
 		UNPROTECT(2);
 		error("Biostrings internal error in "
-		      "read_fasta_in_XStringSet(): 'elementType' too long");
+		      "read_fasta_in_XStringSet(): "
+		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
 	_set_XStringSet_names(ans, ans_names);
@@ -637,7 +638,7 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	int nrec0, skip0, load_seqids, ans_length, i, recno;
 	SEXP ans_geom, ans_width, ans, ans_names;
 	const char *element_type;
-	char classname[40]; // longest string will be "DNAStringSet"
+	char classname[40];  /* longest string should be "DNAStringSet" */
 	FASTQ_loaderExt loader_ext;
 	FASTQloader loader;
 	FILE *stream;
@@ -663,7 +664,8 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	{
 		UNPROTECT(2);
 		error("Biostrings internal error in "
-		      "read_fasta_in_XStringSet(): 'elementType' too long");
+		      "read_fastq_in_XStringSet(): "
+		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
 	loader_ext = new_FASTQ_loaderExt(ans, lkup);
