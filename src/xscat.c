@@ -143,9 +143,11 @@ SEXP XStringSet_xscat(SEXP args)
 
 	/* Put 'ans' pieces together */
 	if (snprintf(ans_classname, sizeof(ans_classname),
-			"%sSet", ans_element_type) >= sizeof(ans_classname))
+			"%sSet", ans_element_type) >= sizeof(ans_classname)) {
+		UNPROTECT(3);
 		error("Biostrings internal error in XStringSet_xscat(): "
 		      "'ans_classname' buffer too small");
+	}
 	PROTECT(ans_ranges = new_IRanges("IRanges",
 				ans_ranges_start,
 				ans_width,
