@@ -195,28 +195,23 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
                          use.names=TRUE, names=ans_names)
 }
 
-.charToXString <- function(basetype, x, solved_SEW)
-{
-    class <- paste(basetype, "String", sep="")
-    proto <- newEmptyXString(class)
-    shared <- .Call("new_SharedRaw_from_STRSXP",
-                   x, start(solved_SEW), width(solved_SEW),
-                   "", xs_enc_lkup(proto),
-                   PACKAGE="Biostrings")
-    new(class, shared=shared, length=length(shared))
-}
-
 .charToXStringSet <- function(basetype, x, start, end, width, use.names)
 {
     if (length(x) == 1L) {
         ans <- .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
         return(ans)
     }
+    elementType <- paste(basetype, "String", sep="")
+    classname <- paste(elementType, "Set", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    ans_xvector <- .charToXString(basetype, x, solved_SEW)
-    ans_ranges <- successiveIRanges(width(solved_SEW))
-    unsafe.newXStringSet(ans_xvector, ans_ranges,
-                         use.names=use.names, names=names(x))
+    ans <- .Call("new_XStringSet_from_CHARACTER",
+                 classname, elementType,
+                 x, start(solved_SEW), width(solved_SEW),
+                 get_xsbasetypes_conversion_lookup("B", basetype),
+                 PACKAGE="Biostrings")
+    if (normargUseNames(use.names))
+        names(ans) <- names(x)
+    ans
 }
 
 

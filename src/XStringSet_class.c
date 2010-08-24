@@ -79,6 +79,46 @@ void _set_XStringSet_names(SEXP x, SEXP names)
 
 
 /****************************************************************************
+ * From character to XStringSet.
+ */
+
+/* --- .Call ENTRY POINT --- */
+SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
+		SEXP x, SEXP start, SEXP width, SEXP lkup)
+{
+	SEXP ans, x_elt;
+	cachedXVectorList cached_ans;
+	const int *lkup0;
+	int ans_length, lkup_length, i;
+	cachedCharSeq cached_ans_elt;
+
+	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
+				     CHAR(STRING_ELT(element_type, 0)),
+				     width));
+	cached_ans = cache_XVectorList(ans);
+	ans_length = get_cachedXVectorList_length(&cached_ans);
+	if (lkup == R_NilValue) {
+		lkup0 = NULL;
+	} else {
+		lkup0 = INTEGER(lkup);
+		lkup_length = LENGTH(lkup);
+	}
+	for (i = 0; i < ans_length; i++) {
+		cached_ans_elt = get_cachedXRawList_elt(&cached_ans, i);
+		x_elt = STRING_ELT(x, i);
+		if (x_elt == NA_STRING) {
+			UNPROTECT(1);
+			error("input sequence %d is NA", i + 1);
+		}
+		_copy_CHARSXP_to_cachedCharSeq(&cached_ans_elt, x_elt,
+				INTEGER(start)[i], lkup0, lkup_length);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
  * Creating a set of sequences (RoSeqs struct) from an XStringSet object.
  */
 
@@ -101,7 +141,7 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 
 
 /****************************************************************************
- * Coercion.
+ * More coercion.
  */
 
 /* Note that XStringSet_unlist() is VERY similar to XString_xscat().

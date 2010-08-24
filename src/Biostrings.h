@@ -90,14 +90,6 @@ SEXP _new_CHARSXP_from_cachedCharSeq(
 	SEXP lkup
 );
 
-SEXP new_SharedRaw_from_STRSXP(
-	SEXP x,
-	SEXP start,
-	SEXP width,
-	SEXP collapse,
-	SEXP lkup
-);
-
 int _get_RoSeqs_is_unsorted(
 	const RoSeqs *seqs,
 	int strictly
@@ -152,6 +144,22 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
+void _copy_CHARSXP_to_cachedCharSeq(
+	cachedCharSeq *dest,
+	SEXP src,
+	int start_in_src,
+	const int *lkup,
+	int lkup_length
+);
+
+SEXP new_XString_from_CHARACTER(
+	SEXP classname,
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP lkup
+);
+
 
 /* XStringSet_class.c */
 
@@ -175,6 +183,15 @@ cachedCharSeq _get_cachedXStringSet_elt(
 void _set_XStringSet_names(
 	SEXP x,
 	SEXP names
+);
+
+SEXP new_XStringSet_from_CHARACTER(
+	SEXP classname,
+	SEXP element_type,
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP lkup
 );
 
 RoSeqs _new_RoSeqs_from_XStringSet(

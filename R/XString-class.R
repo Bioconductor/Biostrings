@@ -103,12 +103,14 @@ XString.write <- function(x, i, imax=integer(0), value)
 ### Helper functions used by the versatile constructors below.
 ###
 
-.charToSharedRaw <- function(x, start=NA, end=NA, width=NA, collapse=NULL, lkup=NULL)
+.charToXString <- function(basetype, x, start, end, width)
 {
-    solved_SEW <- solveUserSEW(nchar(x, type="bytes"),
-                               start=start, end=end, width=width)
-    .Call("new_SharedRaw_from_STRSXP",
-          x, start(solved_SEW), width(solved_SEW), collapse, lkup,
+    classname <- paste(basetype, "String", sep="")
+    solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
+    .Call("new_XString_from_CHARACTER",
+          classname,
+          x, start(solved_SEW), width(solved_SEW),
+          get_xsbasetypes_conversion_lookup("B", basetype),
           PACKAGE="Biostrings")
 }
 
@@ -133,14 +135,7 @@ setMethod("XString", "character",
     {
         if (is.null(basetype))
             basetype <- "B"
-        if (length(x) == 0)
-            stop("no input sequence")
-        if (length(x) > 1)
-            stop("more than one input sequence")
-        ans_class <- paste(basetype, "String", sep="")
-        lkup <- xs_enc_lkup(newEmptyXString(ans_class))
-        shared <- .charToSharedRaw(x, start=start, end=end, width=width, lkup=lkup)
-        new(ans_class, shared=shared, length=length(shared))
+        .charToXString(basetype, x, start, end, width)
     }
 )
 
