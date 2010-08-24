@@ -236,7 +236,6 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_get_cachedXStringSet_length);
 	REGISTER_CCALLABLE(_get_cachedXStringSet_elt);
 	REGISTER_CCALLABLE(_set_XStringSet_names);
-	REGISTER_CCALLABLE(_new_XStringSet);
 
 /* match_reporting.c */
 	REGISTER_CCALLABLE(_init_match_reporting);

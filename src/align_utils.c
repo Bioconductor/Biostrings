@@ -90,7 +90,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 
 	SEXP output;
 
-	SEXP alignedString, alignedRanges, alignedStart, alignedWidth;
+	SEXP alignedRanges, alignedStart, alignedWidth;
 	PROTECT(alignedWidth = AlignedXStringSet_nchar(alignedXStringSet));
 	PROTECT(alignedStart = NEW_INTEGER(LENGTH(alignedWidth)));
 	int totalNChars = 0;
@@ -109,10 +109,9 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	}
 	SEXP alignedStringTag;
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
-	PROTECT(alignedString = new_XRaw_from_tag(stringClass, alignedStringTag));
 	PROTECT(alignedRanges = new_IRanges("IRanges", alignedStart, alignedWidth, R_NilValue));
 	char *alignedStringPtr = (char *) RAW(alignedStringTag);
-	PROTECT(output = _new_XStringSet(stringSetClass, alignedString, alignedRanges));
+	PROTECT(output = new_XRawList_from_tag(stringSetClass, stringClass, alignedStringTag, alignedRanges));
 
 	int stringIncrement = (numberOfStrings == 1 ? 0 : 1);
 	int index = 0, stringElement = 0;
@@ -182,7 +181,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 
 	SEXP output;
 
-	SEXP mappedString, mappedRanges, mappedStart, mappedWidth;
+	SEXP mappedRanges, mappedStart, mappedWidth;
 	PROTECT(mappedWidth = NEW_INTEGER(numberOfAlignments));
 	PROTECT(mappedStart = NEW_INTEGER(numberOfAlignments));
 	int totalNChars = numberOfAlignments * numberOfChars;
@@ -196,10 +195,9 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 	}
 	SEXP mappedStringTag;
 	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
-	PROTECT(mappedString = new_XRaw_from_tag(stringClass, mappedStringTag));
 	PROTECT(mappedRanges = new_IRanges("IRanges", mappedStart, mappedWidth, namesPattern));
 	char *mappedStringPtr = (char *) RAW(mappedStringTag);
-	PROTECT(output = _new_XStringSet(stringSetClass, mappedString, mappedRanges));
+	PROTECT(output = new_XRawList_from_tag(stringSetClass, stringClass, mappedStringTag, mappedRanges));
 
 	int index = 0;
 	const int *rangeStartPattern, *rangeWidthPattern, *rangeStartSubject, *rangeWidthSubject;

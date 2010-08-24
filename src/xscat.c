@@ -13,8 +13,8 @@
  */
 SEXP XString_xscat(SEXP args)
 {
-	int nargs, ans_length, write_start, j;
-	SEXP arg, ans;
+	int nargs, ans_length, tag_offset, j;
+	SEXP arg, ans_tag, ans;
 	const char *ans_classname;
 	cachedCharSeq cached_arg;
 
@@ -33,18 +33,24 @@ SEXP XString_xscat(SEXP args)
 			ans_length += cached_arg.length;
 		}
 	}
-	PROTECT(ans = alloc_XRaw(ans_classname, ans_length));
+	PROTECT(ans_tag = NEW_RAW(ans_length));
 
-	/* 2nd pass: fill 'ans' */
-	write_start = 1;
+	/* 2nd pass: fill 'ans_tag' */
+	tag_offset = 0;
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
 		cached_arg = cache_XRaw(arg);
-		_Ocopy_cachedCharSeq_to_XString(ans, write_start,
-						&cached_arg, 0);
-		write_start += cached_arg.length;
+		Ocopy_bytes_to_i1i2_with_lkup(tag_offset,
+				tag_offset + cached_arg.length - 1,
+				(char *) RAW(ans_tag), LENGTH(ans_tag),
+				cached_arg.seq, cached_arg.length,
+				NULL, 0);
+		tag_offset += cached_arg.length;
 	}
-	UNPROTECT(1);
+
+	/* Make 'ans' */
+	PROTECT(ans = new_XRaw_from_tag(ans_classname, ans_tag));
+	UNPROTECT(2);
 	return ans;
 }
 
@@ -57,11 +63,13 @@ SEXP XString_xscat(SEXP args)
 SEXP XStringSet_xscat(SEXP args)
 {
 	cachedXStringSet *cached_args;
-	int nargs, *arg_lengths, *ii, ans_length, write_start, i, j, *start, *width;
-	unsigned int ans_super_length;
-	SEXP arg, ans_ranges_start, ans_width, ans_super, ans_ranges, ans;
-	const char *ans_xsbaseclassname;
+	int nargs, *arg_lengths, *ii, ans_length, tag_offset, i, j,
+	    *start, *width;
+	unsigned int ans_tag_length;
+	SEXP arg, ans_ranges_start, ans_width, ans_tag, ans_ranges, ans;
+	const char *ans_element_type;
 	cachedCharSeq cached_arg_elt;
+	char ans_classname[40];  /* longest string will be "DNAStringSet" */
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
@@ -70,14 +78,14 @@ SEXP XStringSet_xscat(SEXP args)
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
 
-	/* 1st pass: determine 'ans_length' and 'ans_xsbaseclassname' */
+	/* 1st pass: determine 'ans_length' and 'ans_element_type' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
 		cached_args[j] = _cache_XStringSet(arg);
 		arg_lengths[j] = _get_XStringSet_length(arg);
 		if (j == 0) {
 			ans_length = arg_lengths[j];
-			ans_xsbaseclassname = _get_XStringSet_xsbaseclassname(arg);
+			ans_element_type = _get_XStringSet_xsbaseclassname(arg);
 		} else {
 			if (arg_lengths[j] > ans_length)
 				ans_length = arg_lengths[j];
@@ -87,15 +95,15 @@ SEXP XStringSet_xscat(SEXP args)
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
 
 	/* 2nd pass: fill 'ans_ranges_start' and 'ans_width'
-	             and determine 'ans_super_length' */
-	ans_super_length = 0U;
+	             and determine 'ans_tag_length' */
+	ans_tag_length = 0U;
 	for (j = 0; j < nargs; j++)
 		ii[j] = 0;
 	for (i = 0, start = INTEGER(ans_ranges_start), width = INTEGER(ans_width);
 	     i < ans_length;
 	     i++, start++, width++)
 	{
-		*start = ans_super_length + 1U;
+		*start = ans_tag_length + 1U;
 		*width = 0;
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
@@ -105,16 +113,16 @@ SEXP XStringSet_xscat(SEXP args)
 			*width += cached_arg_elt.length;
 			ii[j]++;
 		}
-		ans_super_length += *width;
-		if (ans_super_length > INT_MAX)
+		ans_tag_length += *width;
+		if (ans_tag_length > INT_MAX)
 			error("XStringSet_xscat(): reached the maximum number "
 			      "of letters an XStringSet\n  object can hold (%d), "
 			      "sorry!", INT_MAX);
 	}
-	PROTECT(ans_super = alloc_XRaw(ans_xsbaseclassname, ans_super_length));
+	PROTECT(ans_tag = NEW_RAW(ans_tag_length));
 
-	/* 3rd pass: fill 'ans_super' */
-	write_start = 1;
+	/* 3rd pass: fill 'ans_tag' */
+	tag_offset = 0;
 	for (j = 0; j < nargs; j++)
 		ii[j] = 0;
 	for (i = 0; i < ans_length;  i++) {
@@ -123,19 +131,27 @@ SEXP XStringSet_xscat(SEXP args)
 				ii[j] = 0; /* recycle */
 			cached_arg_elt = _get_cachedXStringSet_elt(
 							cached_args + j, ii[j]);
-			_Ocopy_cachedCharSeq_to_XString(ans_super, write_start,
-							&cached_arg_elt, 0);
-			write_start += cached_arg_elt.length;
+			Ocopy_bytes_to_i1i2_with_lkup(tag_offset,
+				tag_offset + cached_arg_elt.length - 1,
+				(char *) RAW(ans_tag), LENGTH(ans_tag),
+				cached_arg_elt.seq, cached_arg_elt.length,
+				NULL, 0);
+			tag_offset += cached_arg_elt.length;
 			ii[j]++;
 		}
 	}
 
 	/* Put 'ans' pieces together */
+	if (snprintf(ans_classname, sizeof(ans_classname),
+			"%sSet", ans_element_type) >= sizeof(ans_classname))
+		error("Biostrings internal error in XStringSet_xscat(): "
+		      "'ans_classname' buffer too small");
 	PROTECT(ans_ranges = new_IRanges("IRanges",
 				ans_ranges_start,
 				ans_width,
 				R_NilValue));
-	PROTECT(ans = _new_XStringSet(NULL, ans_super, ans_ranges));
+	PROTECT(ans = new_XRawList_from_tag(ans_classname, ans_element_type,
+				ans_tag, ans_ranges));
 	UNPROTECT(5);
 	return ans;
 }

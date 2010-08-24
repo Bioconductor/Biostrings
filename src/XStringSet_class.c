@@ -79,29 +79,6 @@ void _set_XStringSet_names(SEXP x, SEXP names)
 
 
 /****************************************************************************
- * C-level constructors.
- */
-
-/* Be careful that this constructor does NOT duplicate its arguments before
-   putting them in the slots of the returned object.
-   So don't try to make it a .Call() entry point! */
-SEXP _new_XStringSet(const char *classname, SEXP super, SEXP ranges)
-{
-	char classname_buf[40]; // longest string will be "DNAStringSet"
-
-	if (classname == NULL) {
-		if (snprintf(classname_buf, sizeof(classname_buf),
-			     "%sSet", get_classname(super))
-		    >= sizeof(classname_buf))
-			error("Biostrings internal error in _new_XStringSet(): "
-			      "'classname' too long");
-		classname = classname_buf;
-	}
-	return new_XVectorList1(classname, super, ranges);
-}
-
-
-/****************************************************************************
  * Creating a set of sequences (RoSeqs struct) from an XStringSet object.
  */
 
@@ -131,8 +108,8 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
    Maybe both could be unified under a fast c() for XRaw objects. */
 SEXP XStringSet_unlist(SEXP x)
 {
-	SEXP ans;
-	int x_length, ans_length, write_start, i;
+	SEXP ans_tag, ans;
+	int x_length, ans_length, tag_offset, i;
 	cachedXStringSet cached_x;
 	cachedCharSeq xx;
 
@@ -145,16 +122,24 @@ SEXP XStringSet_unlist(SEXP x)
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		ans_length += xx.length;
 	}
-	PROTECT(ans = alloc_XRaw(_get_XStringSet_xsbaseclassname(x), ans_length));
+	PROTECT(ans_tag = NEW_RAW(ans_length));
 
 	/* 2nd pass: fill 'ans' */
-	write_start = 1;
+	tag_offset = 0;
 	for (i = 0; i < x_length; i++) {
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
-		_Ocopy_cachedCharSeq_to_XString(ans, write_start, &xx, 0);
-		write_start += xx.length;
+		Ocopy_bytes_to_i1i2_with_lkup(tag_offset,
+				tag_offset + xx.length - 1,
+                                (char *) RAW(ans_tag), LENGTH(ans_tag),
+                                xx.seq, xx.length,
+                                NULL, 0);
+		tag_offset += xx.length;
 	}
-	UNPROTECT(1);
+
+	/* Make 'ans' */
+	PROTECT(ans = new_XRaw_from_tag(_get_XStringSet_xsbaseclassname(x),
+					ans_tag));
+	UNPROTECT(2);
 	return ans;
 }
 

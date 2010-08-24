@@ -105,23 +105,3 @@ char _RNAdecode(char code)
 	return (char) c;
 }
 
-
-/****************************************************************************
- * Other stuff...
- */
-
-void _Ocopy_cachedCharSeq_to_XString(SEXP out, int start,
-		const cachedCharSeq *in, int encode)
-{
-	int offset;
-	const ByteTrTable *enc_byte2code;
-
-	offset = get_XVector_offset(out);
-	enc_byte2code = encode ? get_enc_byte2code(get_classname(out)) : NULL;
-	Ocopy_cachedCharSeq_to_SharedRaw_offset(
-		get_XVector_shared(out), offset + start - 1,
-		in,
-		*enc_byte2code, BYTETRTABLE_LENGTH);
-	return;
-}
-

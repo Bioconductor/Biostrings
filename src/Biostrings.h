@@ -152,13 +152,6 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-void _Ocopy_cachedCharSeq_to_XString(
-	SEXP out,
-	int start,
-	const cachedCharSeq *in,
-	int encode
-);
-
 
 /* XStringSet_class.c */
 
@@ -182,12 +175,6 @@ cachedCharSeq _get_cachedXStringSet_elt(
 void _set_XStringSet_names(
 	SEXP x,
 	SEXP names
-);
-
-SEXP _new_XStringSet(
-	const char *classname,
-	SEXP super,
-	SEXP ranges
 );
 
 RoSeqs _new_RoSeqs_from_XStringSet(
