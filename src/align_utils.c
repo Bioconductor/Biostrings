@@ -148,7 +148,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 		}
 		stringElement += stringIncrement;
 	}
-	UNPROTECT(6);
+	UNPROTECT(5);
 
 	return output;
 }
@@ -262,7 +262,7 @@ SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEX
 			index++;
 		}
 	}
-	UNPROTECT(6);
+	UNPROTECT(5);
 
 	return(output);
 }

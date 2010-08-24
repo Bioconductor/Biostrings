@@ -126,8 +126,6 @@ void set_XStringSet_names(
 	SEXP names
 );
 
-SEXP new_XStringSet(const char *classname, SEXP super, SEXP ranges);
-
 
 /*
  * Match reporting facilities.

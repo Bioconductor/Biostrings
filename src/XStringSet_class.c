@@ -130,9 +130,9 @@ SEXP XStringSet_unlist(SEXP x)
 		xx = _get_cachedXStringSet_elt(&cached_x, i);
 		Ocopy_bytes_to_i1i2_with_lkup(tag_offset,
 				tag_offset + xx.length - 1,
-                                (char *) RAW(ans_tag), LENGTH(ans_tag),
-                                xx.seq, xx.length,
-                                NULL, 0);
+				(char *) RAW(ans_tag), LENGTH(ans_tag),
+				xx.seq, xx.length,
+				NULL, 0);
 		tag_offset += xx.length;
 	}
 

@@ -51,7 +51,6 @@ DEFINE_CCALLABLE_STUB(char, RNAdecode,
 	(     code)
 )
 
-
 /*
  * Stubs for callables defined in XStringSet_class.c
  */
@@ -85,12 +84,6 @@ DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
 	(SEXP x, SEXP names),
 	(     x,      names)
 )
-
-DEFINE_CCALLABLE_STUB(SEXP, new_XStringSet,
-	(const char *classname, SEXP super, SEXP ranges),
-	(            classname,      super,      ranges)
-)
-
 
 /*
  * Stubs for callables defined in match_reporting.c
@@ -131,7 +124,6 @@ DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,
 	()
 )
 
-
 /*
  * Stubs for callables defined in MIndex_class.c
  */
@@ -155,7 +147,6 @@ DEFINE_CCALLABLE_STUB(cachedIRanges, get_cachedMIndex_elt,
 	(const cachedMIndex *cached_x, int i),
 	(                    cached_x,     i)
 )
-
 
 /*
  * Stubs for callables defined in match_pattern_boyermoore.c
