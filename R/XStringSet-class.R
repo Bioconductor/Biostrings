@@ -10,9 +10,6 @@ setClass("XStringSet",
 )
 
 ### The concrete XStringSet subclasses below have no additional slots.
-### But the representation() statement seems to be required anyway,
-### otherwise we get the following error at installation time:
-###   Error in representation[!slots] : object of type 'S4' is not subsettable
 setClass("BStringSet",
     contains="XStringSet",
     representation(),
