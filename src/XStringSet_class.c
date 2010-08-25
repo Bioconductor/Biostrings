@@ -79,7 +79,7 @@ void _set_XStringSet_names(SEXP x, SEXP names)
 
 
 /****************************************************************************
- * From character to XStringSet.
+ * From CHARACTER to XStringSet and vice-versa.
  */
 
 /* --- .Call ENTRY POINT --- */
@@ -117,6 +117,28 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 	return ans;
 }
 
+/* --- .Call ENTRY POINT --- */
+SEXP new_CHARACTER_from_XStringSet(SEXP x, SEXP lkup)
+{
+	cachedXStringSet cached_x;
+	int x_length, i;
+	SEXP ans, ans_elt;
+	cachedCharSeq cached_x_elt;
+
+	cached_x = cache_XVectorList(x);
+	x_length = get_cachedXVectorList_length(&cached_x);
+	PROTECT(ans = NEW_CHARACTER(x_length));
+	for (i = 0; i < x_length; i++) {
+		cached_x_elt = get_cachedXRawList_elt(&cached_x, i);
+		PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(
+					&cached_x_elt, lkup));
+		SET_STRING_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
 
 /****************************************************************************
  * Creating a set of sequences (RoSeqs struct) from an XStringSet object.
@@ -141,7 +163,7 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 
 
 /****************************************************************************
- * More coercion.
+ * unlist().
  */
 
 /* Note that XStringSet_unlist() is VERY similar to XString_xscat().
@@ -180,27 +202,6 @@ SEXP XStringSet_unlist(SEXP x)
 	PROTECT(ans = new_XRaw_from_tag(_get_XStringSet_xsbaseclassname(x),
 					ans_tag));
 	UNPROTECT(2);
-	return ans;
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP XStringSet_as_STRSXP(SEXP x, SEXP lkup)
-{
-	SEXP ans, ans_elt;
-	int x_length, i;
-	cachedXStringSet cached_x;
-	cachedCharSeq xx;
-
-	cached_x = _cache_XStringSet(x);
-	x_length = _get_cachedXStringSet_length(&cached_x);
-	PROTECT(ans = NEW_CHARACTER(x_length));
-	for (i = 0; i < x_length; i++) {
-		xx = _get_cachedXStringSet_elt(&cached_x, i);
-		PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(&xx, lkup));
-		SET_STRING_ELT(ans, i, ans_elt);
-		UNPROTECT(1);
-	}
-	UNPROTECT(1);
 	return ans;
 }
 

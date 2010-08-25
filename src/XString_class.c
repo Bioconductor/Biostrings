@@ -4,6 +4,7 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include <stdlib.h>  /* for realloc() */
 
 static int debug = 0;
 
@@ -103,7 +104,7 @@ char _RNAdecode(char code)
 
 
 /****************************************************************************
- * From character to XString.
+ * From CHARACTER to XString and vice-versa.
  */
 
 void _copy_CHARSXP_to_cachedCharSeq(cachedCharSeq *dest, SEXP src,
@@ -120,6 +121,35 @@ void _copy_CHARSXP_to_cachedCharSeq(cachedCharSeq *dest, SEXP src,
 			CHAR(src), LENGTH(src),
 			lkup, lkup_length);
 	return;
+}
+
+SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *x, SEXP lkup)
+{
+	// IMPORTANT: We use user-controlled memory for this private memory
+	// pool so it is persistent between calls to .Call().
+	// It will last until the end of the R session and can only grow
+	// during the session. It is NOT a memory leak!
+	static int buflength = 0;
+	static char *buf = NULL;
+	int new_buflength;
+	char *new_buf;
+
+	if (lkup == R_NilValue)
+		return mkCharLen(x->seq, x->length);
+	new_buflength = x->length;
+	if (new_buflength > buflength) {
+		new_buf = (char *) realloc(buf, new_buflength);
+		if (new_buf == NULL)
+			error("_new_CHARSXP_from_cachedCharSeq(): "
+			      "call to realloc() failed");
+		buf = new_buf;
+		buflength = new_buflength;
+	}
+	Ocopy_bytes_to_i1i2_with_lkup(0, x->length - 1,
+		buf, buflength,
+		x->seq, x->length,
+		INTEGER(lkup), LENGTH(lkup));
+	return mkCharLen(buf, x->length);
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -148,6 +178,20 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 	_copy_CHARSXP_to_cachedCharSeq(&cached_ans, x_elt,
 			INTEGER(start)[0], lkup0, lkup_length);
 	UNPROTECT(1);
+	return ans;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP new_CHARACTER_from_XString(SEXP x, SEXP lkup)
+{
+	cachedCharSeq cached_x;
+	SEXP ans, ans_elt;
+
+	cached_x = cache_XRaw(x);
+	PROTECT(ans = NEW_CHARACTER(1));
+	PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(&cached_x, lkup));
+	SET_STRING_ELT(ans, 0, ans_elt);
+	UNPROTECT(2);
 	return ans;
 }
 

@@ -31,47 +31,6 @@ RoSeqs _alloc_RoSeqs(int nelt)
 
 
 /*****************************************************************************
- * From a cachedCharSeq struct to a character string.
- *
- * TODO: Move to the IRanges package.
- */
-
-SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *seq, SEXP lkup)
-{
-	// IMPORTANT: We use user-controlled memory for this private memory
-	// pool so it is persistent between calls to .Call().
-	// It will last until the end of the R session and can only grow
-	// during the session. It is NOT a memory leak!
-	static int bufsize = 0;
-	static char *buf = NULL;
-	int new_bufsize;
-	char *new_buf;
-
-	new_bufsize = seq->length + 1;
-	if (new_bufsize > bufsize) {
-		new_buf = (char *) realloc(buf, new_bufsize);
-		if (new_buf == NULL)
-			error("_new_CHARSXP_from_cachedCharSeq(): "
-			      "call to realloc() failed");
-		buf = new_buf;
-		bufsize = new_bufsize;
-	}
-	if (lkup == R_NilValue) {
-		Ocopy_byteblocks_to_i1i2(0, seq->length - 1,
-			buf, seq->length,
-			seq->seq, seq->length, sizeof(char));
-	} else {
-		Ocopy_bytes_to_i1i2_with_lkup(0, seq->length - 1,
-			buf, seq->length,
-			seq->seq, seq->length,
-			INTEGER(lkup), LENGTH(lkup));
-	}
-	buf[seq->length] = 0;
-	return mkChar(buf);
-}
-
-
-/*****************************************************************************
  * Getting the order of a RoSeqs struct.
  *
  * The implementation below tries to optimize performance and memory footprint

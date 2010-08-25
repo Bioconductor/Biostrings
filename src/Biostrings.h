@@ -85,11 +85,6 @@ SEXP debug_RoSeqs_utils();
 
 RoSeqs _alloc_RoSeqs(int nelt);
 
-SEXP _new_CHARSXP_from_cachedCharSeq(
-	const cachedCharSeq *seq,
-	SEXP lkup
-);
-
 int _get_RoSeqs_is_unsorted(
 	const RoSeqs *seqs,
 	int strictly
@@ -152,11 +147,21 @@ void _copy_CHARSXP_to_cachedCharSeq(
 	int lkup_length
 );
 
+SEXP _new_CHARSXP_from_cachedCharSeq(
+	const cachedCharSeq *x,
+	SEXP lkup
+);
+
 SEXP new_XString_from_CHARACTER(
 	SEXP classname,
 	SEXP x,
 	SEXP start,
 	SEXP width,
+	SEXP lkup
+);
+
+SEXP new_CHARACTER_from_XString(
+	SEXP x,
 	SEXP lkup
 );
 
@@ -194,17 +199,17 @@ SEXP new_XStringSet_from_CHARACTER(
 	SEXP lkup
 );
 
+SEXP new_CHARACTER_from_XStringSet(
+	SEXP x,
+	SEXP lkup
+);
+
 RoSeqs _new_RoSeqs_from_XStringSet(
 	int nelt,
 	SEXP x
 );
 
 SEXP XStringSet_unlist(SEXP x);
-
-SEXP XStringSet_as_STRSXP(
-	SEXP x,
-	SEXP lkup
-);
 
 SEXP XStringSet_is_unsorted(
 	SEXP x,

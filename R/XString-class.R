@@ -201,7 +201,12 @@ setAs("character", "RNAString", function(from) RNAString(from))
 setAs("character", "AAString", function(from) AAString(from))
 setAs("character", "XString", function(from) BString(from))
 
-setMethod("as.character", "XString", function(x) XString.read(x, 1, x@length))
+setMethod("as.character", "XString",
+    function(x)
+        .Call("new_CHARACTER_from_XString",
+              x, xs_dec_lkup(x),
+              PACKAGE="Biostrings")
+)
 
 setMethod("toString", "XString", function(x, ...) as.character(x))
 

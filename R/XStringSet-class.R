@@ -201,6 +201,7 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
         ans <- .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
         return(ans)
     }
+    use.names <- normargUseNames(use.names)
     elementType <- paste(basetype, "String", sep="")
     classname <- paste(elementType, "Set", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
@@ -209,7 +210,7 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
                  x, start(solved_SEW), width(solved_SEW),
                  get_xsbasetypes_conversion_lookup("B", basetype),
                  PACKAGE="Biostrings")
-    if (normargUseNames(use.names))
+    if (use.names)
         names(ans) <- names(x)
     ans
 }
@@ -505,7 +506,7 @@ setMethod("as.character", "XStringSet",
     function(x, use.names=TRUE)
     {
         use.names <- normargUseNames(use.names)
-        ans <- .Call("XStringSet_as_STRSXP",
+        ans <- .Call("new_CHARACTER_from_XStringSet",
                      x, xs_dec_lkup(x),
                      PACKAGE="Biostrings")
         if (use.names)
