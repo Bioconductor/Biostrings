@@ -168,8 +168,10 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions (NOT exported) used by the versatile (and user friendly)
-### constructors and coercion methods below.
+### The XStringSet() constructor. NOT exported.
+###
+### This constructor and its helper functions use the uSEW (user-specified
+### Start/End/Width) interface.
 ###
 
 ### 'x' must be a character string or an XString object.
@@ -213,18 +215,22 @@ setMethod("compact", "XStringSet", .XStringSet.compact)
 }
 
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user-friendly versatile constructors.
-###
-### All these constructors use the uSEW (user-specified Start/End/Width)
-### interface.
-###
-
-### NOT exported!
 setGeneric("XStringSet", signature="x",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
         standardGeneric("XStringSet")
 )
+
+setMethod("XStringSet", "factor",
+    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        if (is.null(basetype))
+            basetype <- "B"
+        ans <- .charToXStringSet(basetype, levels(x),
+                                 start, end, width, use.names)
+        ans[as.integer(x)]
+    }
+)
+
 setMethod("XStringSet", "character",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
@@ -233,10 +239,12 @@ setMethod("XStringSet", "character",
         .charToXStringSet(basetype, x, start, end, width, use.names)
     }
 )
+
 setMethod("XStringSet", "XString",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
         .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
 )
+
 setMethod("XStringSet", "XStringSet",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
@@ -253,6 +261,7 @@ setMethod("XStringSet", "XStringSet",
 
 ### 2 extra "XStringSet" methods to deal with the probe sequences stored
 ### in the *probe annotation packages (e.g. drosophila2probe).
+
 setMethod("XStringSet", "AsIs",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
@@ -262,25 +271,37 @@ setMethod("XStringSet", "AsIs",
 	.charToXStringSet(basetype, x, start, end, width, use.names)
     }
 )
+
 setMethod("XStringSet", "probetable",
     function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
         XStringSet(basetype, x$sequence, start=start, end=end, width=width,
                    use.names=use.names)
 )
 
-### Exported
-BStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The user interfaces to the XStringSet() constructor.
+###
+
+BStringSet <- function(x=character(), start=NA, end=NA, width=NA,
+                       use.names=TRUE)
     XStringSet("B", x, start=start, end=end, width=width,
-                             use.names=use.names)
-DNAStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+                    use.names=use.names)
+
+DNAStringSet <- function(x=character(), start=NA, end=NA, width=NA,
+                         use.names=TRUE)
     XStringSet("DNA", x, start=start, end=end, width=width,
-                               use.names=use.names)
-RNAStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+                      use.names=use.names)
+
+RNAStringSet <- function(x=character(), start=NA, end=NA, width=NA,
+                         use.names=TRUE)
     XStringSet("RNA", x, start=start, end=end, width=width,
-                               use.names=use.names)
-AAStringSet <- function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+                      use.names=use.names)
+
+AAStringSet <- function(x=character(), start=NA, end=NA, width=NA,
+                        use.names=TRUE)
     XStringSet("AA", x, start=start, end=end, width=width,
-                              use.names=use.names)
+                     use.names=use.names)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

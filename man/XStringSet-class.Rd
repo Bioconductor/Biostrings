@@ -131,8 +131,7 @@
 \details{
   The \code{BStringSet}, \code{DNAStringSet}, \code{RNAStringSet} and
   \code{AAStringSet} functions are constructors that can be used to
-  "naturally" turn \code{x} into an XStringSet object of the desired
-  base type.
+  turn input \code{x} into an XStringSet object of the desired base type.
 
   They also allow the user to "narrow" the sequences contained in \code{x}
   via proper use of the \code{start}, \code{end} and/or \code{width}
@@ -415,7 +414,7 @@
 
 \examples{
   ## ---------------------------------------------------------------------
-  ## A. USING THE XStringSet CONSTRUCTORS ON A CHARACTER VECTOR
+  ## A. USING THE XStringSet CONSTRUCTORS ON A CHARACTER VECTOR OR FACTOR
   ## ---------------------------------------------------------------------
   ## Note that there is no XStringSet() constructor, but an XStringSet
   ## family of constructors: BStringSet(), DNAStringSet(), RNAStringSet(),
@@ -436,15 +435,25 @@
   names(dna0)[2] <- "seqB"
   dna0
 
+  ## When the input vector contains a lot of duplicates, turning it into
+  ## a factor first before passing it to the constructor will produce an
+  ## XStringSet object that is more compact in memory:
+  library(hgu95av2probe)
+  x2 <- sample(hgu95av2probe$sequence, 999000, replace=TRUE)
+  dna2a <- DNAStringSet(x2)
+  dna2b <- DNAStringSet(factor(x2))  # slower but result is more compact
+  object.size(dna2a)
+  object.size(dna2b)
+
   ## ---------------------------------------------------------------------
   ## B. USING THE XStringSet CONSTRUCTORS ON A SINGLE SEQUENCE (XString
   ##    OBJECT OR CHARACTER STRING)
   ## ---------------------------------------------------------------------
-  x2 <- "abcdefghij"
-  BStringSet(x2, start=2, end=6:2)  # behaves like 'substring(x2, 2, 6:2)'
-  BStringSet(x2, start=-(1:6))
-  x3 <- BString(x2)
-  BStringSet(x3, end=-(1:6), width=3)
+  x3 <- "abcdefghij"
+  BStringSet(x3, start=2, end=6:2)  # behaves like 'substring(x3, 2, 6:2)'
+  BStringSet(x3, start=-(1:6))
+  x4 <- BString(x3)
+  BStringSet(x4, end=-(1:6), width=3)
 
   ## Randomly extract 1 million 40-mers from C. elegans chrI:
   extractRandomReads <- function(subject, nread, readlength)

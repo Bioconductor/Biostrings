@@ -100,7 +100,10 @@ XString.write <- function(x, i, imax=integer(0), value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions used by the versatile constructors below.
+### The XString() constructor. NOT exported.
+###
+### This constructor and its helper functions use the uSEW (user-specified
+### Start/End/Width) interface.
 ###
 
 .charToXString <- function(basetype, x, start, end, width)
@@ -120,14 +123,18 @@ XString.write <- function(x, i, imax=integer(0), value)
     SharedVector.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user-friendly versatile constructors.
-###
-
 setGeneric("XString", signature="x",
     function(basetype, x, start=NA, end=NA, width=NA)
         standardGeneric("XString")
+)
+
+setMethod("XString", "factor",
+    function(basetype, x, start=NA, end=NA, width=NA)
+    {
+        if (is.null(basetype))
+            basetype <- "B"
+        .charToXString(basetype, as.character(x), start, end, width)
+    }
 )
 
 setMethod("XString", "character",
@@ -136,18 +143,6 @@ setMethod("XString", "character",
         if (is.null(basetype))
             basetype <- "B"
         .charToXString(basetype, x, start, end, width)
-    }
-)
-
-### Just because of the silly "AsIs" objects found in the probe packages
-### (e.g. drosophila2probe$sequence)
-setMethod("XString", "AsIs",
-    function(basetype, x, start=NA, end=NA, width=NA)
-    {
-        if (!is.character(x))
-            stop("unsuported input type")
-        class(x) <- "character" # keeps the names (unlike as.character())
-        XString(basetype, x, start=start, end=end, width=width)
     }
 )
 
@@ -164,6 +159,23 @@ setMethod("XString", "XString",
         ans
     }
 )
+
+### Just because of the silly "AsIs" objects found in the probe packages
+### (e.g. drosophila2probe$sequence)
+setMethod("XString", "AsIs",
+    function(basetype, x, start=NA, end=NA, width=NA)
+    {
+        if (!is.character(x))
+            stop("unsuported input type")
+        class(x) <- "character" # keeps the names (unlike as.character())
+        XString(basetype, x, start=start, end=end, width=width)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The user interfaces to the XString() constructor.
+###
 
 BString <- function(x="", start=1, nchar=NA)
     XString("B", x, start=start, width=nchar)
