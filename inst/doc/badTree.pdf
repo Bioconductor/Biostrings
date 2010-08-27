@@ -1,0 +1,220 @@
+%PDF-1.4
+%Å‚Å„ÅœÅ”\r
+1 0 obj
+<<
+/CreationDate (D:20100826150935)
+/ModDate (D:20100826150935)
+/Title (R Graphics Output)
+/Producer (R 2.12.0)
+/Creator (R)
+>>
+endobj
+2 0 obj
+<<
+/Type /Catalog
+/Pages 3 0 R
+>>
+endobj
+5 0 obj
+<<
+/Type /Page
+/Parent 3 0 R
+/Contents 6 0 R
+/Resources 4 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 7 0 R
+>>
+stream
+1 J 1 j q
+Q q
+BT
+0.000 0.000 0.000 rg
+/F2 1 Tf 0.00 12.00 -12.00 0.00 76.98 270.36 Tm (Human) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 131.84 179.30 Tm (Mouse) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 186.70 196.64 Tm (Rat) Tj
+ET
+0.000 0.000 0.000 RG
+0.75 w
+[] 0 d
+1 J
+1 j
+10.00 M
+129.26 225.31 m
+129.26 252.82 l
+184.11 252.82 l
+184.11 225.31 l
+S
+74.40 319.03 m
+74.40 346.54 l
+156.69 346.54 l
+156.69 252.82 l
+S
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 241.56 278.25 Tm (Salmon) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 296.41 195.02 Tm [(Chick) 20 (en)] TJ
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 351.27 178.02 Tm [(Co) 15 (w)] TJ
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 406.13 83.89 Tm (Chimp) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 460.98 96.55 Tm (Dog) Tj
+ET
+403.54 128.56 m
+403.54 156.07 l
+458.40 156.07 l
+458.40 128.56 l
+S
+348.69 211.84 m
+348.69 239.35 l
+430.97 239.35 l
+430.97 156.07 l
+S
+293.83 248.12 m
+293.83 275.63 l
+389.83 275.63 l
+389.83 239.35 l
+S
+238.97 328.93 m
+238.97 356.44 l
+341.83 356.44 l
+341.83 275.63 l
+S
+115.54 346.54 m
+115.54 431.20 l
+290.40 431.20 l
+290.40 356.44 l
+S
+Q q
+0.000 0.000 0.000 RG
+0.75 w
+[] 0 d
+1 J
+1 j
+10.00 M
+59.04 134.36 m 59.04 444.96 l S
+59.04 134.36 m 51.84 134.36 l S
+59.04 189.33 m 51.84 189.33 l S
+59.04 244.30 m 51.84 244.30 l S
+59.04 299.27 m 51.84 299.27 l S
+59.04 354.24 m 51.84 354.24 l S
+59.04 409.21 m 51.84 409.21 l S
+BT
+0.000 0.000 0.000 rg
+/F2 1 Tf 0.00 12.00 -12.00 0.00 41.76 131.02 Tm (0) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 41.76 179.32 Tm (200) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 41.76 234.29 Tm (400) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 41.76 289.26 Tm (600) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 41.76 344.23 Tm (800) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 41.76 395.87 Tm (1000) Tj
+ET
+Q q
+BT
+0.000 0.000 0.000 rg
+/F3 1 Tf 14.00 0.00 -0.00 14.00 198.86 469.45 Tm [(Cluster Dendr) 20 (ogram)] TJ
+ET
+BT
+/F2 1 Tf 12.00 0.00 -0.00 12.00 219.46 4.32 Tm (hclust \(*, "single"\)) Tj
+ET
+BT
+/F2 1 Tf 12.00 0.00 -0.00 12.00 254.06 18.72 Tm (sdist) Tj
+ET
+BT
+/F2 1 Tf 0.00 12.00 -12.00 0.00 12.96 241.86 Tm (Height) Tj
+ET
+Q
+endstream
+endobj
+7 0 obj
+2087
+endobj
+3 0 obj
+<<
+/Type /Pages
+/Kids [
+5 0 R
+]
+/Count 1
+/MediaBox [0 0 504 504]
+>>
+endobj
+4 0 obj
+<<
+/ProcSet [/PDF /Text]
+/Font <</F2 9 0 R /F3 10 0 R >>
+/ExtGState << /GSais 11 0 R >>
+>>
+endobj
+8 0 obj
+<<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 45/minus 96/quoteleft
+144/dotlessi /grave /acute /circumflex /tilde /macron /breve /dotaccent
+/dieresis /.notdef /ring /cedilla /.notdef /hungarumlaut /ogonek /caron /space]
+>>
+endobj
+9 0 obj <<
+/Type /Font
+/Subtype /Type1
+/Name /F2
+/BaseFont /Helvetica
+/Encoding 8 0 R
+>> endobj
+10 0 obj <<
+/Type /Font
+/Subtype /Type1
+/Name /F3
+/BaseFont /Helvetica-Bold
+/Encoding 8 0 R
+>> endobj
+11 0 obj
+<<
+/Type /ExtGState
+/AIS false
+>>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000021 00000 n 
+0000000164 00000 n 
+0000002453 00000 n 
+0000002536 00000 n 
+0000000213 00000 n 
+0000000293 00000 n 
+0000002433 00000 n 
+0000002642 00000 n 
+0000002899 00000 n 
+0000002995 00000 n 
+0000003097 00000 n 
+trailer
+<<
+/Size 12
+/Info 1 0 R
+/Root 2 0 R
+>>
+startxref
+3147
+%%EOF

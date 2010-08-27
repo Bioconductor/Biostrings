@@ -1,0 +1,197 @@
+%\VignetteIndexEntry{Multiple Alignments}
+%\VignetteKeywords{DNA, RNA, Sequence, Biostrings, Sequence alignment}
+%\VignettePackage{Biostrings}
+
+
+\documentclass[10pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\textwidth=6.5in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=-.1in
+\evensidemargin=-.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\R}{{\textsf{R}}}
+\newcommand{\code}[1]{{\texttt{#1}}}
+\newcommand{\term}[1]{{\emph{#1}}}
+\newcommand{\Rpackage}[1]{\textsf{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\textit{#1}}}
+\newcommand{\Rfunarg}[1]{{\textit{#1}}}
+
+\bibliographystyle{plainnat}
+
+\begin{document}
+%\setkeys{Gin}{width=0.55\textwidth}
+
+\title{MultipleAlignment Objects}
+\author{Marc Carlson\\
+  Bioconductor Core Team \\
+  Fred Hutchinson Cancer Research Center \\
+  Seattle, WA}
+\date{\today}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+The \Rclass{DNAMultipleAlignment} \Rclass{RNAMultipleAlignment} and
+\Rclass{AAMultipleAlignment} classes was created to allow users to
+represent groups of DNA, RNA or AA sequences that had been aligned as
+a simple objects.  Because these objects are based on alignments where
+the frame of reference for the sequences contained by them is static
+relative to each other, manipulations of these objects are confined to
+be non-destructive.  In practice, this means that these objects
+contain slots to mask ranges of rows and columns on the original
+sequence.  These masks are then respected by methods that display
+these objects, thus allowing the user to remove or expose columns and
+rows without damaging the original alignment.
+
+\section{Creation and masking}
+To create a \Rclass{MultipleAlignment} you simply need to call the
+appropriate read function so that the original alignment can be read
+in and parsed.  There are read functions for all three classes that
+support both clustaW and Stolkholm data formats.
+
+
+<<objectCreation>>=
+library(Biostrings)
+origMAlign <-
+  read.DNAMultipleAlignment(filepath =
+                            system.file("extdata",
+                                        "msx2_mRNA.aln",
+                                        package="Biostrings"),
+                            format="clustal")
+@
+
+Rows can be renames with \Rfunction{rownames}.
+
+<<renameRows>>=
+rownames(origMAlign)
+rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
+                          "Dog","Chicken","Salmon")
+origMAlign
+@ 
+
+And applying masks is a simple matter of specifying which ranges to hide.
+<<usingMasks>>=
+cmaskedMAlign <- origMAlign
+colmask(cmaskedMAlign) <- IRanges(start=c(1,1000),end=c(500,2343))
+colmask(cmaskedMAlign)
+cmaskedMAlign
+
+rmaskedMAlign <- origMAlign
+rowmask(rmaskedMAlign) <- IRanges(start=1,end=3)
+rowmask(rmaskedMAlign)
+rmaskedMAlign
+@ 
+
+\Rfunction{maskMotif} works on these object too, and takes the same
+arguments that it does elsewhere. \Rfunction{maskMotif} is useful for
+masking occurances of a string from columns where it is present in the
+consensus sequence. 
+
+<<maskMotif>>= 
+tataMasked <- maskMotif(origMAlign, "TATA")
+colmask(tataMasked)
+@ 
+
+\Rfunction{autoMask} also operates on columns and will mask collumns
+based on the fraction of each column that contains gaps
+\Rfunarg{min.fraction} along with the width of columns that contain
+this fraction of gaps \Rfunarg{min.block.width}.
+
+
+<<autoMask>>=
+autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
+autoMasked
+@ 
+
+\section{Analytic utilities}
+Once you have masked the sequence, you can then ask questions about
+the properties of that sequence.  For example, you can look at the
+alphabet frequency of that sequence.  The alphabet frequency will only
+be for the masked sequence.
+
+<<alphabetFreq>>=
+alphabetFrequency(autoMasked)
+@ 
+
+You can also calculate a consensus matrix, extract the consensus
+string or look at the consensus views.  These methods too will all
+consider the masking when you run them.  
+
+<<consensus>>=
+consensusMatrix(autoMasked, baseOnly=TRUE)[, 84:90]
+substr(consensusString(autoMasked),80,130)
+consensusViews(autoMasked)
+@ 
+
+You can also cluster the alignments based on their distance to each
+other.  Because you must pass in a DNAStringSet, the clustering will
+also take into account the masking. So for example, you can see how
+clustering the unmasked \Robject{DNAMultipleAlignment} will draw a
+funky looking tree.  
+
+<<cluster>>=
+sdist <- stringDist(as(origMAlign,"DNAStringSet"), method="hamming")
+clust <- hclust(sdist, method = "single")
+plot(clust)
+@ 
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{badTree}
+\caption{\label{f1} Funky tree produced by using unmasked strings.}
+\end{center}
+\end{figure}
+
+But, if we use the automasked \Robject{DNAMultipleAlignment}, to
+remove the long uninformative regions, and then make our plot, we can
+see the real relationships.
+
+<<cluster2>>=
+sdist <- stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
+clust <- hclust(sdist, method = "single")
+plot(clust)
+fourgroups <- cutree(clust, 4)
+fourgroups
+@ 
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{goodTree}
+\caption{\label{f2} A tree produced by using automasked strings.}
+\end{center}
+\end{figure}
+
+In the "good" plot, the Salmon sequence is once again the most distant
+which is what we expect to see.  A closer examination of the sequence
+reveals that the similarity between the mouse, rat and human sequences
+was being inflated by virtue of the fact that those sequences were
+simply much longer (had more information than) the other species
+represented.  This is what caused the "funky" result. The relationship
+between the sequences in the funky tree was being driven by extra
+"length" in the rodent/mouse/human sequences, instead of by the
+similarity of the conserved regions.
+
+
+\section{Session Information}
+All of the output in this vignette was produced under the following
+conditions:
+
+<<sessinfo>>=
+sessionInfo()
+@
+
+\end{document}
+
