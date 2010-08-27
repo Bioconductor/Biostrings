@@ -105,13 +105,13 @@ tataMasked <- maskMotif(origMAlign, "TATA")
 colmask(tataMasked)
 @ 
 
-\Rfunction{autoMask} also operates on columns and will mask collumns
+\Rfunction{maskGaps} also operates on columns and will mask collumns
 based on the fraction of each column that contains gaps
 \Rfunarg{min.fraction} along with the width of columns that contain
 this fraction of gaps \Rfunarg{min.block.width}.
 
 
-<<autoMask>>=
+<<maskGaps>>=
 autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
 autoMasked
 @ 
@@ -145,7 +145,9 @@ funky looking tree.
 <<cluster>>=
 sdist <- stringDist(as(origMAlign,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
+pdf(file="badTree.pdf")
 plot(clust)
+dev.off()
 @ 
 
 \begin{figure}
@@ -155,14 +157,17 @@ plot(clust)
 \end{center}
 \end{figure}
 
-But, if we use the automasked \Robject{DNAMultipleAlignment}, to
+But, if we use the gap-masked \Robject{DNAMultipleAlignment}, to
 remove the long uninformative regions, and then make our plot, we can
 see the real relationships.
 
+%% could also have just done <<cluster2, fig=TRUE>>=
 <<cluster2>>=
 sdist <- stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
+pdf(file="goodTree.pdf")
 plot(clust)
+dev.off()
 fourgroups <- cutree(clust, 4)
 fourgroups
 @ 
@@ -170,7 +175,7 @@ fourgroups
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.6\textwidth]{goodTree}
-\caption{\label{f2} A tree produced by using automasked strings.}
+\caption{\label{f2} A tree produced by using strings with masked gaps.}
 \end{center}
 \end{figure}
 
