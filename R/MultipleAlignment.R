@@ -88,28 +88,50 @@ setReplaceMethod("rownames", "MultipleAlignment",
 setGeneric("rowmask", signature="x", function(x) standardGeneric("rowmask"))
 setMethod("rowmask", "MultipleAlignment", function(x) x@rowmask)
 
+.appendMask <- function(mask, append, value){
+  append <- match.arg(append, choices=c("union", "replace", "intersect"))
+  switch(append,
+         "union" = return(union(mask, value)),
+         "replace"  = return(value),
+         "intersect"  = return(intersect(mask, value)))
+}
+.setMask <- function(mask, append, invert, length, value){
+  if (!isTRUEorFALSE(invert))
+    stop("'invert' must be TRUE or FALSE")
+  if(invert==TRUE){
+    ## 1st invert value using gaps()
+    value <- gaps(value, start=1, end=length)     
+    value <- .appendMask(mask=mask, append=append, value=value)
+  }
+  if(invert==FALSE){
+    value <- .appendMask(mask=mask, append=append, value=value)
+  } 
+  value
+}
 setGeneric("rowmask<-", signature=c("x", "value"),
-    function(x, append=FALSE, value) standardGeneric("rowmask<-")
+    function(x, append="union", invert=FALSE, value)
+           standardGeneric("rowmask<-")
 )
+##HOW does the following call .setMask???
 setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
-    function(x, append=FALSE, value)
-        callGeneric(x, append=append, value=new("NormalIRanges"))
+    function(x, append="replace", invert=FALSE, value)
+        callGeneric(x, append="replace", invert=FALSE,
+                    value=new("NormalIRanges"))
 )
 setReplaceMethod("rowmask",
     signature(x="MultipleAlignment", value="NormalIRanges"),
-    function(x, append=FALSE, value)
+    function(x, append="union", invert=FALSE, value)
     {
-        if (!isTRUEorFALSE(append))
-            stop("'append' must be TRUE or FALSE")
-        if (append)
-            value <- union(rowmask(x), value)
-        initialize(x, rowmask = value)
+      value <- .setMask(mask=rowmask(x), append=append, invert=invert,
+                        length=dim(x)[1], value=value)
+      initialize(x, rowmask = value)
     }
 )
 setReplaceMethod("rowmask",
     signature(x="MultipleAlignment", value="ANY"),
-    function(x, append=FALSE, value)
-        callGeneric(x, append=append, value=as(value, "NormalIRanges"))
+    function(x, append="union", invert=FALSE, value)
+        callGeneric(x, append=append, invert=invert,
+                    value=as(value, "NormalIRanges"))
 )
 
 setGeneric("colmask", signature="x", function(x) standardGeneric("colmask"))

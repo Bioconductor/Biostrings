@@ -79,7 +79,6 @@
 % show method:
 \alias{show,MultipleAlignment-method}
 
-
 \title{MultipleAlignment objects}
 
 \description{
@@ -150,11 +149,13 @@
       sequence in \code{x}.
     }
     \item{}{
-      \code{rowmask(x)}, \code{rowmask(x, append) <- value}:
+      \code{rowmask(x)}, \code{rowmask(x, append, invert) <- value}:
       Gets and sets the \link{NormalIRanges} object representing the
-      masked rows in \code{x}. The \code{append} argument takes a
-      logical denoting whether or not to overwrite \code{rowmask(x)}
-      or append (via \code{union}) to it. The \code{value} argument
+      masked rows in \code{x}. The \code{append} argument takes
+      \code{union}, \code{replace} or \code{intersect} to indicate how
+      to combine the new \code{value} with \code{rowmask(x)} The
+      \code{invert} argument takes a logical argument to indicate
+      whether or not to invert the new mask. The \code{value} argument
       can be of any class that is coercible to a \link{NormalIRanges}
       via the \code{as} function.
     }
