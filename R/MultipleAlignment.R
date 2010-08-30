@@ -115,7 +115,7 @@ setGeneric("rowmask<-", signature=c("x", "value"),
 ##HOW does the following call .setMask???
 setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
     function(x, append="replace", invert=FALSE, value)
-        callGeneric(x, append="replace", invert=FALSE,
+        callGeneric(x, append=append, invert=invert,
                     value=new("NormalIRanges"))
 )
 setReplaceMethod("rowmask",
@@ -138,27 +138,28 @@ setGeneric("colmask", signature="x", function(x) standardGeneric("colmask"))
 setMethod("colmask", "MultipleAlignment", function(x) x@colmask)
 
 setGeneric("colmask<-", signature=c("x", "value"),
-    function(x, append=FALSE, value) standardGeneric("colmask<-")
+    function(x, append="union", invert=FALSE, value)
+           standardGeneric("colmask<-")
 )
 setReplaceMethod("colmask", signature(x="MultipleAlignment", value="NULL"),
-    function(x, append=FALSE, value)
-        callGeneric(x, append=append, value=new("NormalIRanges"))
+    function(x, append="replace", invert=FALSE, value)
+        callGeneric(x, append=append, invert=invert,
+                    value=new("NormalIRanges"))
 )
 setReplaceMethod("colmask",
     signature(x="MultipleAlignment", value="NormalIRanges"),
-    function(x, append=FALSE, value)
+    function(x, append="union", invert=FALSE, value)
     {
-        if (!isTRUEorFALSE(append))
-            stop("'append' must be TRUE or FALSE")
-        if (append)
-            value <- union(colmask(x), value)
-        initialize(x, colmask = value)
+      value <- .setMask(mask=colmask(x), append=append, invert=invert,
+                        length=dim(x)[2], value=value)
+      initialize(x, colmask = value)
     }
 )
 setReplaceMethod("colmask",
     signature(x="MultipleAlignment", value="ANY"),
-    function(x, append=FALSE, value)
-        callGeneric(x, append=append, value=as(value, "NormalIRanges"))
+    function(x, append="union",invert=FALSE, value)
+        callGeneric(x, append=append, invert=invert,
+                    value=as(value, "NormalIRanges"))
 )
 
 setMethod("maskMotif", signature(x="MultipleAlignment", motif="ANY"),

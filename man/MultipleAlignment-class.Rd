@@ -153,18 +153,20 @@
       Gets and sets the \link{NormalIRanges} object representing the
       masked rows in \code{x}. The \code{append} argument takes
       \code{union}, \code{replace} or \code{intersect} to indicate how
-      to combine the new \code{value} with \code{rowmask(x)} The
+      to combine the new \code{value} with \code{rowmask(x)}. The
       \code{invert} argument takes a logical argument to indicate
       whether or not to invert the new mask. The \code{value} argument
       can be of any class that is coercible to a \link{NormalIRanges}
       via the \code{as} function.
     }
     \item{}{
-      \code{colmask(x)}, \code{colmask(x, append) <- value}:
+      \code{colmask(x)}, \code{colmask(x, append, invert) <- value}:
       Gets and sets the \link{NormalIRanges} object representing the
-      masked columns in \code{x}. The \code{append} argument takes a
-      logical denoting whether or not to overwrite \code{colmask(x)}
-      or append (via \code{union}) to it. The \code{value} argument
+      masked columns in \code{x}. The \code{append} argument takes
+      \code{union}, \code{replace} or \code{intersect} to indicate how
+      to combine the new \code{value} with \code{colmask(x)}. The
+      \code{invert} argument takes a logical argument to indicate
+      whether or not to invert the new mask. The \code{value} argument
       can be of any class that is coercible to a \link{NormalIRanges}
       via the \code{as} function.
     }
