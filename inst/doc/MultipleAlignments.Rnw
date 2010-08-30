@@ -73,7 +73,7 @@ origMAlign <-
                             format="clustal")
 @
 
-Rows can be renames with \Rfunction{rownames}.
+Rows can be renamed with \Rfunction{rownames}.
 
 <<renameRows>>=
 rownames(origMAlign)
@@ -84,21 +84,79 @@ origMAlign
 
 And applying masks is a simple matter of specifying which ranges to hide.
 <<usingMasks>>=
-cmaskedMAlign <- origMAlign
-colmask(cmaskedMAlign) <- IRanges(start=c(1,1000),end=c(500,2343))
-colmask(cmaskedMAlign)
-cmaskedMAlign
+maskTest <- origMAlign
+rowmask(maskTest) <- IRanges(start=1,end=3)
+rowmask(maskTest)
+maskTest
 
-rmaskedMAlign <- origMAlign
-rowmask(rmaskedMAlign) <- IRanges(start=1,end=3)
-rowmask(rmaskedMAlign)
-rmaskedMAlign
+colmask(maskTest) <- IRanges(start=c(1,1000),end=c(500,2343))
+colmask(maskTest)
+maskTest
 @ 
 
-\Rfunction{maskMotif} works on these object too, and takes the same
-arguments that it does elsewhere. \Rfunction{maskMotif} is useful for
-masking occurances of a string from columns where it is present in the
-consensus sequence. 
+You can also remove row and column masks by assigning NULL like this:
+
+<<nullOut masks>>=
+rowmask(maskTest) <- NULL
+rowmask(maskTest)
+colmask(maskTest) <- NULL
+colmask(maskTest)
+maskTest
+@ 
+
+But there are also other options.  When setting a mask, you might want
+to set it up as a selection instead of a masking.  That is, you might
+want to specify which rows and columns you wish to keep instead of
+which ones you want to throw away.  To do that, you would use the
+\Rfunarg{invert} argument.  Taking the above example, we can set the
+exact same masks as before by just specifying their inverse and
+setting invert=TRUE.
+
+<<invertMask>>=
+rowmask(maskTest, invert=TRUE) <- IRanges(start=4,end=8)
+rowmask(maskTest)
+maskTest
+colmask(maskTest, invert=TRUE) <- IRanges(start=501,end=999)
+colmask(maskTest)
+maskTest
+@ 
+
+In addition to being able to invert these masks, you can also choose
+the way in which the ranges you provide will be merged with any
+existing masks. The \Rfunarg{append} argument allows you to specify
+the way in which new mask ranges will interact with any existing
+masks.  By default, these masks will be the "union" of the new mask
+and any existing masks, but you can also specify that these masks be
+the mask that results from when you "intersect" the current mask and
+the new mask, or that the new mask simply "replace" the current mask.
+The \Rfunarg{append} argument can be used in combination with the
+\Rfunarg{invert} argument to make things even more interesting.  In
+this case, the inversion of the mask will happen before it is combined
+with the existing mask.  For simplicity, I will only demonstrate this
+on \Rmethod{rowmask}, but it also works for \Rmethod{colmask}.
+
+<<appendMask>>=
+rowmask(maskTest) <- IRanges(start=1,end=3)
+maskTest
+
+rowmask(maskTest,append="intersect") <- IRanges(start=2,end=5)
+maskTest
+
+rowmask(maskTest,append="replace") <- IRanges(start=5,end=8)
+maskTest
+
+rowmask(maskTest,append="replace",invert=TRUE) <- IRanges(start=5,end=8)
+maskTest
+
+rowmask(maskTest,append="union") <- IRanges(start=7,end=8)
+maskTest
+@ 
+
+
+The function \Rfunction{maskMotif} works on \Rclass{MultipleAlignment}
+objects too, and takes the same arguments that it does
+elsewhere. \Rfunction{maskMotif} is useful for masking occurances of a
+string from columns where it is present in the consensus sequence.
 
 <<maskMotif>>= 
 tataMasked <- maskMotif(origMAlign, "TATA")
@@ -115,6 +173,7 @@ this fraction of gaps \Rfunarg{min.block.width}.
 autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
 autoMasked
 @ 
+
 
 \section{Analytic utilities}
 Once you have masked the sequence, you can then ask questions about

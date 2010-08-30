@@ -329,12 +329,31 @@ rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
                           "Dog","Chicken","Salmon")
 origMAlign
 
+## operations to mask rows
+## For columns, just use colmask() and do the same kinds of operations
+rowMasked <- origMAlign
+rowmask(rowMasked) <- IRanges(start=1,end=3)
+rowMasked
+
+## remove rowumn masks
+rowmask(rowMasked) <- NULL
+rowMasked
+
+## "select" rows of interest
+rowmask(rowMasked, invert=TRUE) <- IRanges(start=4,end=7)
+rowMasked
+
+## or mask the rows that intersect with masked rows
+rowmask(rowMasked, append="intersect") <- IRanges(start=1,end=5)
+rowMasked
+
 ## TATA-masked
 tataMasked <- maskMotif(origMAlign, "TATA")
 colmask(tataMasked)
 
-## automatically mask columns based on consecutive gaps
+## automatically mask rows based on consecutive gaps
 autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
+colmask(autoMasked)
 autoMasked
 
 ## calculate frequencies
