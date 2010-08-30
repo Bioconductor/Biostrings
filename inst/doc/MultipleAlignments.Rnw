@@ -133,9 +133,20 @@ The \Rfunarg{append} argument can be used in combination with the
 \Rfunarg{invert} argument to make things even more interesting.  In
 this case, the inversion of the mask will happen before it is combined
 with the existing mask.  For simplicity, I will only demonstrate this
-on \Rmethod{rowmask}, but it also works for \Rmethod{colmask}.
+on \Rmethod{rowmask}, but it also works for \Rmethod{colmask}.  Before
+we begin, lets set the masks back to being NULL again.
+
+<<setup>>=
+## 1st lets null out the masks so we can have a fresh start.
+colmask(maskTest) <- NULL
+rowmask(maskTest) <- NULL
+@ 
+
+Then we can do a series of examples, starting with the default which
+uses the "union" value for the \Rfunarg{append} argument.
 
 <<appendMask>>=
+## Then we can demonstrate how the append argument works
 rowmask(maskTest) <- IRanges(start=1,end=3)
 maskTest
 
