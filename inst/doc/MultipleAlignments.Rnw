@@ -163,7 +163,6 @@ rowmask(maskTest,append="union") <- IRanges(start=7,end=8)
 maskTest
 @ 
 
-
 The function \Rfunction{maskMotif} works on \Rclass{MultipleAlignment}
 objects too, and takes the same arguments that it does
 elsewhere. \Rfunction{maskMotif} is useful for masking occurances of a
@@ -185,6 +184,28 @@ autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
 autoMasked
 @ 
 
+Sometimes you may want to cast your \Rclass{MultipleAlignment} to be a
+matrix for usage eslewhere.  \Rmethod{as.matrix} is supported for
+these circumstances.  The ability to convert one object into another
+is not very unusual so why mention it?  Because when you cast your
+object, the masks WILL be considered so that the masked rows and
+columns will be left out of the matrix object.
+
+<<asmatrix>>=
+full = as.matrix(origMAlign)
+dim(full)
+partial = as.matrix(autoMasked)
+dim(partial)
+@ 
+
+If you need to write your \Rclass{MultipleAlignment} object out to a
+file again, you can cast it to a \Rclass{DNAStringSet} and then write
+it out as a fasta file.
+
+<<fastaExample, eval=FALSE>>=
+DNAStr = as(origMAlign, "DNAStringSet")
+write.XStringSet(DNAStr, file="myFile.fa")
+@ 
 
 \section{Analytic utilities}
 Once you have masked the sequence, you can then ask questions about
@@ -258,6 +279,9 @@ represented.  This is what caused the "funky" result. The relationship
 between the sequences in the funky tree was being driven by extra
 "length" in the rodent/mouse/human sequences, instead of by the
 similarity of the conserved regions.
+
+
+
 
 
 \section{Session Information}
