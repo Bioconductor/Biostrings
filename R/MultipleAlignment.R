@@ -284,6 +284,7 @@ function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 ### Read function.
 ###
 
+## markupPattern specifies which lines to skip
 .read.MultipleAlignment.splitRows <-
 function(rows, markupPattern)
 {
@@ -330,6 +331,48 @@ function(filepath)
     .read.MultipleAlignment.splitRows(rows, "^(\\s|\\*|:|\\.)*$")
 }
 
+## In order to recycle .read.MultipleAlignment.splitRows().
+## I need to have the names on each row.
+.read.PhylipAln <- 
+function(filepath)
+{
+    rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
+                 quiet = TRUE, blank.lines.skip = FALSE)
+    if (length(rows) < 1 ||
+        !identical(grep("^\\d+?\\s\\d+?", rows[1L]), 1L))
+        stop("invalid Phylip file")
+    ##(mask+num rows + blank line) 
+    nameLength = as.numeric(sub("(\\d+).*$","\\1", rows[1])) +1 
+    rows <- tail(rows, -1)    
+    names = character()
+    names[nameLength] = "" ## empty string is last "name"
+    offset = 0L
+    for(i in seq_len(length(rows))){
+      if(i<=nameLength){
+        rows[i] = sub("(^\\S+)\\s+(\\S+)", "\\1\\|\\2", rows[i])
+        rows[i] = gsub("\\s", "", rows[i])
+        rows[i] = sub("\\|", " ", rows[i])
+        names[i] = sub("(\\S+).*$","\\1",rows[i])
+      }else{        
+        rows[i] = gsub("\\s", "", rows[i])
+        rows[i] = paste(names[i %% nameLength], rows[i])
+      }
+    }
+
+    
+    ## ## TODO: extract (save,invert & store) the rows that contain the masks
+    ## maskRows <- grep("Mask",rows)
+    ## so now just call .read.MultipleAlignment.splitRows() twice, once with filtering masks in and once filtering masks out.
+
+    ## Then, just move down and 
+    
+    .read.MultipleAlignment.splitRows(rows, "^(\\s)*$")
+
+    ## TODO: above accounting is still not correct.
+    ## TODO: still need to drop/capture the mask at some point in here.
+    ## probably want to do that at the beginning before we do the rest.
+}
+
 .read.MultipleAlignment <-
 function(filepath, format)
 {
@@ -337,13 +380,21 @@ function(filepath, format)
         ext <- tolower(sub(".*\\.([^.]*)$", "\\1", filepath))
         format <- switch(ext, "sto" = "stockholm", "aln" = "clustal", "fasta")
     } else {
-        format <- match.arg(tolower(format), c("fasta", "stockholm", "clustal"))
+        format <- match.arg(tolower(format), c("fasta", "stockholm", "clustal",
+                                               "phylip"))
     }
     switch(format,
            "stockholm" = .read.Stockholm(filepath),
            "clustal" = .read.ClustalAln(filepath),
+           "phylip" = .read.PhylipAln(filepath),
            read.DNAStringSet(filepath, format=format))
+    ##TODO: BUGs with stockholm?? fasta uses read.DNAStringSet (default)
 }
+
+## TODO: to implement Phylip support:
+## 1) modify constructor of each MultipleAlignment object so that they can also take a colmask argument at construction and apply it.
+## 2) write .read.MultipleMask(filepath,format) to extract mask or return NULL
+## 3) add a boolean maskGen parameter to .read.PhylipAln()
 
 read.DNAMultipleAlignment <-
 function(filepath, format)
