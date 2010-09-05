@@ -45,23 +45,20 @@
 
 \section{Introduction}
 The \Rclass{DNAMultipleAlignment} \Rclass{RNAMultipleAlignment} and
-\Rclass{AAMultipleAlignment} classes was created to allow users to
-represent groups of DNA, RNA or AA sequences that had been aligned as
-a simple objects.  Because these objects are based on alignments where
-the frame of reference for the sequences contained by them is static
-relative to each other, manipulations of these objects are confined to
-be non-destructive.  In practice, this means that these objects
-contain slots to mask ranges of rows and columns on the original
-sequence.  These masks are then respected by methods that display
-these objects, thus allowing the user to remove or expose columns and
-rows without damaging the original alignment.
+\Rclass{AAMultipleAlignment} classes allow users to represent groups
+of aligned DNA, RNA or amino acid sequences as a single object.  The
+frame of reference for aligned sequences is static, so manipulation of
+these objects is confined to be non-destructive.  In practice, this
+means that these objects contain slots to mask ranges of rows and
+columns on the original sequence.  These masks are then respected by
+methods that manipulate and display the objects, allowing the user to
+remove or expose columns and rows without invalidating the original
+alignment.
 
 \section{Creation and masking}
-To create a \Rclass{MultipleAlignment} you simply need to call the
-appropriate read function so that the original alignment can be read
-in and parsed.  There are read functions for all three classes that
-support both clustaW and Stolkholm data formats.
-
+To create a \Rclass{MultipleAlignment}, call the appropriate read
+function to read in and parse the original alignment.  There are
+functions to read clustaW and Stolkholm data formats.
 
 <<objectCreation>>=
 library(Biostrings)
@@ -82,7 +79,8 @@ rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
 origMAlign
 @ 
 
-And applying masks is a simple matter of specifying which ranges to hide.
+Applying masks is a simple matter of specifying which ranges to hide.
+
 <<usingMasks>>=
 maskTest <- origMAlign
 rowmask(maskTest) <- IRanges(start=1,end=3)
@@ -94,7 +92,7 @@ colmask(maskTest)
 maskTest
 @ 
 
-You can also remove row and column masks by assigning NULL like this:
+Remove row and column masks by assigning \code{NULL}:
 
 <<nullOut masks>>=
 rowmask(maskTest) <- NULL
@@ -104,13 +102,10 @@ colmask(maskTest)
 maskTest
 @ 
 
-But there are also other options.  When setting a mask, you might want
-to set it up as a selection instead of a masking.  That is, you might
-want to specify which rows and columns you wish to keep instead of
-which ones you want to throw away.  To do that, you would use the
-\Rfunarg{invert} argument.  Taking the above example, we can set the
-exact same masks as before by just specifying their inverse and
-setting invert=TRUE.
+When setting a mask, you might want to specify the rows or columns to
+keep, rather than to hide.  To do that, use the \Rfunarg{invert}
+argument.  Taking the above example, we can set the exact same masks
+as before by specifying their inverse and using \code{invert=TRUE}.
 
 <<invertMask>>=
 rowmask(maskTest, invert=TRUE) <- IRanges(start=4,end=8)
