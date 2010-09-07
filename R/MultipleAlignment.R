@@ -253,30 +253,39 @@ setMethod("xsbasetype", "MultipleAlignment",
 ###
 
 DNAMultipleAlignment <-
-function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE,
+         rowmask=NULL, colmask=NULL)
 {
     new("DNAMultipleAlignment",
         unmasked=
         DNAStringSet(x=x, start=start, end=end, width=width,
-                     use.names=use.names))
+                     use.names=use.names),
+        rowmask=rowmask,
+        colmask=colmask)
 }
 
 RNAMultipleAlignment <-
-function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE,
+         rowmask=NULL, colmask=NULL)
 {
     new("RNAMultipleAlignment",
         unmasked=
         RNAStringSet(x=x, start=start, end=end, width=width,
-                     use.names=use.names))
+                     use.names=use.names),
+        rowmask=rowmask,
+        colmask=colmask)
 }
 
 AAMultipleAlignment <-
-function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE,
+         rowmask=NULL, colmask=NULL)
 {
     new("AAMultipleAlignment",
         unmasked=
         AAStringSet(x=x, start=start, end=end, width=width,
-                    use.names=use.names))
+                    use.names=use.names),
+        rowmask=rowmask,
+        colmask=colmask)
 }
 
 
@@ -288,7 +297,7 @@ function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 .read.MultipleAlignment.splitRows <-
 function(rows, markupPattern)
 {
-    markupLines <- grep(markupPattern, rows)
+    markupLines <- grep(markupPattern, rows, perl=TRUE)
     alnLines <- gaps(as(markupLines, "IRanges"), start=1, end=length(rows))
     nseq <- unique(width(alnLines))
     if (length(nseq) != 1)
@@ -334,7 +343,7 @@ function(filepath)
 ## In order to recycle .read.MultipleAlignment.splitRows().
 ## I need to have the names on each row.
 .read.PhylipAln <- 
-function(filepath)
+function(filepath, maskGen=FALSE)
 {
     rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
                  quiet = TRUE, blank.lines.skip = FALSE)
@@ -343,12 +352,12 @@ function(filepath)
         stop("invalid Phylip file")
     ##(mask+num rows + blank line) 
     nameLength = as.numeric(sub("(\\d+).*$","\\1", rows[1])) +1 
-    rows <- tail(rows, -1)    
+    rows <- tail(rows, -1)
     names = character()
-    names[nameLength] = "" ## empty string is last "name"
+    names[nameLength] = "" ## an empty string is ALWAYS the last "name"
     offset = 0L
     for(i in seq_len(length(rows))){
-      if(i<=nameLength){
+      if(i<nameLength){
         rows[i] = sub("(^\\S+)\\s+(\\S+)", "\\1\\|\\2", rows[i])
         rows[i] = gsub("\\s", "", rows[i])
         rows[i] = sub("\\|", " ", rows[i])
@@ -358,24 +367,22 @@ function(filepath)
         rows[i] = paste(names[i %% nameLength], rows[i])
       }
     }
-
+    rows <- c(" ",rows)
     
-    ## ## TODO: extract (save,invert & store) the rows that contain the masks
-    ## maskRows <- grep("Mask",rows)
-    ## so now just call .read.MultipleAlignment.splitRows() twice, once with filtering masks in and once filtering masks out.
-
-    ## Then, just move down and 
-    
-    .read.MultipleAlignment.splitRows(rows, "^(\\s)*$")
-
-    ## TODO: above accounting is still not correct.
-    ## TODO: still need to drop/capture the mask at some point in here.
-    ## probably want to do that at the beginning before we do the rest.
+    if(maskGen==FALSE){ ## filter out the Mask values OR blank lines
+       .read.MultipleAlignment.splitRows(rows, "^(Mask|\\s)")
+    }else{## only retrieve the Mask values
+      msk <- .read.MultipleAlignment.splitRows(rows, "^(?!Mask)")
+      ## THEN cast them to be a NormalIRanges object.
+      splt = strsplit(msk,"") ## split up all chars
+      names(splt) <- NULL ## drop the name
+      splt = unlist(splt) ## THEN unlist
+      lsplt = as.logical(as.numeric(splt)) ## NOW you can get a logical
+      as(lsplt,"NormalIRanges")
+    }
 }
 
-.read.MultipleAlignment <-
-function(filepath, format)
-{
+.checkFormat <- function(format){
     if (missing(format)) {
         ext <- tolower(sub(".*\\.([^.]*)$", "\\1", filepath))
         format <- switch(ext, "sto" = "stockholm", "aln" = "clustal", "fasta")
@@ -383,12 +390,31 @@ function(filepath, format)
         format <- match.arg(tolower(format), c("fasta", "stockholm", "clustal",
                                                "phylip"))
     }
+    format
+}
+
+.read.MultipleAlignment <-
+function(filepath, format)
+{
+    format <- .checkFormat(format)
     switch(format,
            "stockholm" = .read.Stockholm(filepath),
            "clustal" = .read.ClustalAln(filepath),
            "phylip" = .read.PhylipAln(filepath),
            read.DNAStringSet(filepath, format=format))
-    ##TODO: BUGs with stockholm?? fasta uses read.DNAStringSet (default)
+    ##fasta uses read.DNAStringSet (default)
+    ##TODO: BUGs with stockholm??
+}
+
+.read.MultipleMask <-
+function(filepath, format)
+{
+    format <- .checkFormat(format)
+    switch(format,
+           "stockholm" = as(IRanges(),"NormalIRanges"),
+           "clustal" = as(IRanges(),"NormalIRanges"),
+           "phylip" = .read.PhylipAln(filepath, maskGen=TRUE),
+           as(IRanges(),"NormalIRanges"))
 }
 
 ## TODO: to implement Phylip support:
@@ -399,19 +425,25 @@ function(filepath, format)
 read.DNAMultipleAlignment <-
 function(filepath, format)
 {
-    DNAMultipleAlignment(.read.MultipleAlignment(filepath, format))
+    DNAMultipleAlignment(.read.MultipleAlignment(filepath, format),
+                         rowmask=as(IRanges(),"NormalIRanges"),
+                         colmask=.read.MultipleMask(filepath,format))
 }
 
 read.RNAMultipleAlignment <-
 function(filepath, format)
 {
-    RNAMultipleAlignment(.read.MultipleAlignment(filepath, format))
+    RNAMultipleAlignment(.read.MultipleAlignment(filepath, format),
+                         rowmask=as(IRanges(),"NormalIRanges"),
+                         colmask=.read.MultipleMask(filepath,format))
 }
 
 read.AAMultipleAlignment <-
 function(filepath, format)
 {
-    AAMultipleAlignment(.read.MultipleAlignment(filepath, format))
+    AAMultipleAlignment(.read.MultipleAlignment(filepath, format),
+                        rowmask=as(IRanges(),"NormalIRanges"),
+                        colmask=.read.MultipleMask(filepath,format))
 }
 
 

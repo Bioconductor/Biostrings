@@ -193,6 +193,14 @@ partial = as.matrix(autoMasked)
 dim(partial)
 @ 
 
+One example of where you might want to use \Rmethod{as.matrix} is when
+using the \Rpackage{ape} package. For example if you needed to use the
+\Rmethod{dist.dna} function you would want to use \Rmethod{as.matrix}
+followed by \Rfunction{as.alignment} and then the
+\Rfunction{as.DNAbin} to create a \Robject{DNAbin} object for the
+\Rfunction{dist.dna}.
+
+
 If you need to write your \Rclass{MultipleAlignment} object out to a
 file again, you can cast it to a \Rclass{DNAStringSet} and then write
 it out as a fasta file.

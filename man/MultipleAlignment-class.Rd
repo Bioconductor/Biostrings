@@ -88,9 +88,12 @@
 
 \usage{
   ## Constructors:
-  DNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
-  RNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
-  AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+  DNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
+    use.names=TRUE, rowmask=NULL, colmask=NULL)
+  RNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
+    use.names=TRUE, rowmask=NULL, colmask=NULL)
+  AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
+    use.names=TRUE, rowmask=NULL, colmask=NULL)
 
   ## Read functions:
   read.DNAMultipleAlignment(filepath, format)
@@ -125,6 +128,12 @@
     Either \code{"fasta"} (the default), \code{stockholm}, or
     \code{"clustal"}.
   }
+  \item{rowmask}{
+    a NormalIRanges object that will set masking for rows
+  }
+  \item{colmask}{
+    a NormalIRanges object that will set masking for columns
+  }  
 }
 
 \details{
