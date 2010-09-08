@@ -372,13 +372,17 @@ function(filepath, maskGen=FALSE)
     if(maskGen==FALSE){ ## filter out the Mask values OR blank lines
        .read.MultipleAlignment.splitRows(rows, "^(Mask|\\s)")
     }else{## only retrieve the Mask values
-      msk <- .read.MultipleAlignment.splitRows(rows, "^(?!Mask)")
-      ## THEN cast them to be a NormalIRanges object.
-      splt = strsplit(msk,"") ## split up all chars
-      names(splt) <- NULL ## drop the name
-      splt = unlist(splt) ## THEN unlist
-      lsplt = as.logical(as.numeric(splt)) ## NOW you can get a logical
-      as(lsplt,"NormalIRanges")
+      if(length(grep("^(?!Mask)",rows, perl=TRUE))==length(rows)){
+        return(as(IRanges(),"NormalIRanges"))
+      }else{
+        msk <- .read.MultipleAlignment.splitRows(rows, "^(?!Mask)")
+        ## THEN cast them to be a NormalIRanges object.
+        splt = strsplit(msk,"") ## split up all chars
+        names(splt) <- NULL ## drop the name
+        splt = unlist(splt) ## THEN unlist
+        lsplt = as.logical(as.numeric(splt)) ## NOW you can get a logical
+        return(as(lsplt,"NormalIRanges"))
+      }
     }
 }
 
