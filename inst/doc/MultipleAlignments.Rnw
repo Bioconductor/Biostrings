@@ -58,7 +58,7 @@ alignment.
 \section{Creation and masking}
 To create a \Rclass{MultipleAlignment}, call the appropriate read
 function to read in and parse the original alignment.  There are
-functions to read clustaW and Stolkholm data formats.
+functions to read clustaW, Phylip and Stolkholm data formats.
 
 <<objectCreation>>=
 library(Biostrings)
@@ -68,6 +68,14 @@ origMAlign <-
                                         "msx2_mRNA.aln",
                                         package="Biostrings"),
                             format="clustal")
+
+phylipMAlign <-
+  read.AAMultipleAlignment(filepath =
+                           system.file("extdata",
+                                       "Phylip.txt",
+                                       package="Biostrings"),
+                           format="phylip")
+
 @
 
 Rows can be renamed with \Rfunction{rownames}.

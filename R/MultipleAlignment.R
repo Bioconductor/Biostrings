@@ -368,7 +368,6 @@ function(filepath, maskGen=FALSE)
       }
     }
     rows <- c(" ",rows)
-    
     if(maskGen==FALSE){ ## filter out the Mask values OR blank lines
        .read.MultipleAlignment.splitRows(rows, "^(Mask|\\s)")
     }else{## only retrieve the Mask values
@@ -381,7 +380,7 @@ function(filepath, maskGen=FALSE)
         names(splt) <- NULL ## drop the name
         splt = unlist(splt) ## THEN unlist
         lsplt = as.logical(as.numeric(splt)) ## NOW you can get a logical
-        return(as(lsplt,"NormalIRanges"))
+        return(gaps(as(lsplt,"NormalIRanges"))) ## gaps() inverts the mask
       }
     }
 }
@@ -449,6 +448,25 @@ function(filepath, format)
                         rowmask=as(IRanges(),"NormalIRanges"),
                         colmask=.read.MultipleMask(filepath,format))
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Write functions.
+###
+
+write.Phylip <- function(x, file){
+  if(inherits(origMAlign, "MultipleAlignment")){
+    ## 1st, we need to capture the colmask as a vector that can be included.
+    msk = colmask(x)
+    colmask(x) <- NULL
+    ## Then massage this to be a character vector
+    ch = as.character(x)
+ 
+    ## Then we have to split it up, appending the names at the beginning.
+    writeLines(ch, file)
+  }
+}
+
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
