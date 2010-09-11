@@ -454,15 +454,62 @@ function(filepath, format)
 ### Write functions.
 ###
 
+## helper to chop up strings into pieces.
+strchop <- function(x, chopsize=10)
+{
+   chunks <- breakInChunks(nchar(x), chopsize)
+   sapply(seq_len(length(chunks)),
+       function(i)
+           substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
+}
+
 write.Phylip <- function(x, file){
   if(inherits(origMAlign, "MultipleAlignment")){
     ## 1st, we need to capture the colmask as a vector that can be included.
+
+    ##  x = phylipMAlign
+
+    ## Still TODO:
+    ## We just have to just insert line breaks and spaces
+    insertBreaksAndSpaces <- function(str){
+      str = strchop(str)
+      paste(str, collapse=" ")
+    }
+    
+    dims = dim(x)
+    dims[1] = dims[1]+1
     msk = colmask(x)
     colmask(x) <- NULL
     ## Then massage this to be a character vector
     ch = as.character(x)
- 
-    ## Then we have to split it up, appending the names at the beginning.
+    ch = unlist(lapply(ch, insertBreaksAndSpaces))
+    
+    if(length(msk) > 0){
+      mskInd = as.numeric(msk) ## index that should be masked.
+      mskCh = paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
+        collapse="")
+      mskCh = insertBreaksAndSpaces(mskCh)
+      mskCh = paste("Mask", mskCh, sep="   ")
+    }
+    
+    ## Then we have to append the names
+    ch = paste(names(ch), ch, sep="   ")
+    ## And cat the mask on
+    if(length(msk) > 0){ch = c(mskCh, ch)}
+
+    ## adjust for odd spacing between names and strings
+    maxLen = max(unlist(lapply(ch, nchar)))
+    adjustSpacing<-function(str){
+        str = sub("(^\\S+)\\s+(\\S.+)","\\1|\\2",str)
+        spc = paste(rep(" ", maxLen - nchar(str) +1), collapse="")
+        str = unlist(strsplit(str,"\\|"))
+        paste(str, collapse=spc)
+    }
+    ch = unlist(lapply(ch, adjustSpacing))
+
+    ##finally attach the dims
+    ch = c(paste(c(dims,"W"),collapse=" "),ch)
+    
     writeLines(ch, file)
   }
 }
