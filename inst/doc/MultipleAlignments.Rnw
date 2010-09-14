@@ -209,14 +209,7 @@ followed by \Rfunction{as.alignment} and then the
 \Rfunction{dist.dna}.
 
 
-If you need to write your \Rclass{MultipleAlignment} object out to a
-file again, you can cast it to a \Rclass{DNAStringSet} and then write
-it out as a fasta file.
 
-<<fastaExample, eval=FALSE>>=
-DNAStr = as(origMAlign, "DNAStringSet")
-write.XStringSet(DNAStr, file="myFile.fa")
-@ 
 
 \section{Analytic utilities}
 Once you have masked the sequence, you can then ask questions about
@@ -292,7 +285,27 @@ between the sequences in the funky tree was being driven by extra
 similarity of the conserved regions.
 
 
+\section{Exporting to file}
+One possible export option is to write to fasta files
+If you need to write your \Rclass{MultipleAlignment} object out as a fasta
+file, you can cast it to a \Rclass{DNAStringSet} and then write
+it out as a fasta file like so:
 
+<<fastaExample, eval=FALSE>>=
+DNAStr = as(origMAlign, "DNAStringSet")
+write.XStringSet(DNAStr, file="myFile.fa")
+@ 
+
+One other format that is of interest is the Phylip format.  The Phylip
+format stores the column masking of your object as well as the
+sequence that you are exporting. So if you have masked the sequence
+and you write out a Phylip file, this mask will be recorded into the
+file you export.  As with the fasta example above, any rows that you
+have masked out will be removed from the exported file.
+
+<<write.phylip, eval=FALSE>>=
+write.phylip(phylipMAlign, filepath="myFile.txt")
+@ 
 
 
 \section{Session Information}

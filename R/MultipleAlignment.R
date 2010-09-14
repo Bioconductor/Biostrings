@@ -112,7 +112,7 @@ setGeneric("rowmask<-", signature=c("x", "value"),
     function(x, append="union", invert=FALSE, value)
            standardGeneric("rowmask<-")
 )
-##HOW does the following call .setMask???
+
 setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
     function(x, append="replace", invert=FALSE, value)
         callGeneric(x, append=append, invert=invert,
@@ -351,20 +351,20 @@ function(filepath, maskGen=FALSE)
         !identical(grep("^\\d+?\\s\\d+?", rows[1L]), 1L))
         stop("invalid Phylip file")
     ##(mask+num rows + blank line) 
-    nameLength = as.numeric(sub("(\\d+).*$","\\1", rows[1])) +1 
+    nameLength <- as.numeric(sub("(\\d+).*$","\\1", rows[1])) +1 
     rows <- tail(rows, -1)
-    names = character()
-    names[nameLength] = "" ## an empty string is ALWAYS the last "name"
-    offset = 0L
+    names <- character()
+    names[nameLength] <- "" ## an empty string is ALWAYS the last "name"
+    offset <- 0L
     for(i in seq_len(length(rows))){
       if(i<nameLength){
-        rows[i] = sub("(^\\S+)\\s+(\\S+)", "\\1\\|\\2", rows[i])
-        rows[i] = gsub("\\s", "", rows[i])
-        rows[i] = sub("\\|", " ", rows[i])
-        names[i] = sub("(\\S+).*$","\\1",rows[i])
+        rows[i] <- sub("(^\\S+)\\s+(\\S+)", "\\1\\|\\2", rows[i])
+        rows[i] <- gsub("\\s", "", rows[i])
+        rows[i] <- sub("\\|", " ", rows[i])
+        names[i] <- sub("(\\S+).*$","\\1",rows[i])
       }else{        
-        rows[i] = gsub("\\s", "", rows[i])
-        rows[i] = paste(names[i %% nameLength], rows[i])
+        rows[i] <- gsub("\\s", "", rows[i])
+        rows[i] <- paste(names[i %% nameLength], rows[i])
       }
     }
     rows <- c(" ",rows)
@@ -376,11 +376,11 @@ function(filepath, maskGen=FALSE)
       }else{
         msk <- .read.MultipleAlignment.splitRows(rows, "^(?!Mask)")
         ## THEN cast them to be a NormalIRanges object.
-        splt = strsplit(msk,"") ## split up all chars
+        splt <- strsplit(msk,"") ## split up all chars
         names(splt) <- NULL ## drop the name
-        splt = unlist(splt) ## THEN unlist
-        lsplt = as.logical(as.numeric(splt)) ## NOW you can get a logical
-        return(gaps(as(lsplt,"NormalIRanges"))) ## gaps() inverts the mask
+        splt <- unlist(splt) ## THEN unlist
+        lsplt <- as.logical(as.numeric(splt)) ## NOW you can get a logical
+        return(gaps(as(lsplt,"NormalIRanges"))) ## gaps() inverts mask
       }
     }
 }
@@ -420,10 +420,6 @@ function(filepath, format)
            as(IRanges(),"NormalIRanges"))
 }
 
-## TODO: to implement Phylip support:
-## 1) modify constructor of each MultipleAlignment object so that they can also take a colmask argument at construction and apply it.
-## 2) write .read.MultipleMask(filepath,format) to extract mask or return NULL
-## 3) add a boolean maskGen parameter to .read.PhylipAln()
 
 read.DNAMultipleAlignment <-
 function(filepath, format)
@@ -475,70 +471,69 @@ insertSpaces <- function(str){
   paste(str, collapse=" ")
 }
 
-write.Phylip <- function(x, file){
+write.phylip <- function(x, filepath){
   if(inherits(x, "MultipleAlignment")){
     ## 1st, we need to capture the colmask as a vector that can be included.
-    msk = colmask(x)
-    hasMask = FALSE
-    if(length(msk) > 0){hasMask=TRUE}
-    dims = dim(x)
-    if(hasMask){dims[1] = dims[1]+1}
+    msk <- colmask(x)
+    hasMask <- FALSE
+    if(length(msk) > 0){hasMask<-TRUE}
+    dims <- dim(x)
+    if(hasMask){dims[1] <- dims[1]+1}
     colmask(x) <- NULL
     ## Massage to character vector
-    ch = as.character(x)
-    ch = unlist(lapply(ch, insertSpaces))
+    ch <- as.character(x)
+    ch <- unlist(lapply(ch, insertSpaces))
     ## Convert mask to string format
     if(hasMask){
-      mskInd = as.numeric(msk) ## index that should be masked.
-      mskCh = paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
+      mskInd <- as.numeric(msk) ## index that should be masked.
+      mskCh <- paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
         collapse="")
-      mskCh = insertSpaces(mskCh)
+      mskCh <- insertSpaces(mskCh)
     }
     ## Split up the output into lines, but grouped into a list object
-    names = names(ch)
-    ch = sapply(ch, strChop, chopsize=55, simplify=FALSE)
+    names <- names(ch)
+    ch <- sapply(ch, strChop, chopsize=55, simplify=FALSE)
     ## Again consider mask, split, name & cat on (if needed)
     if(hasMask){
-      mskCh = strChop(mskCh, chopsize=55)
-      ch = c(list(Mask = mskCh), ch)
+      mskCh <- strChop(mskCh, chopsize=55)
+      ch <- c(list(Mask = mskCh), ch)
     }
     ## 1) precalculate the max length of the names and then
-    maxLen = max(nchar(names(ch)))
+    maxLen <- max(nchar(names(ch)))
     ## 2) make a string of that many spaces into a row
-    stockSpc = paste(rep(" ", maxLen), collapse="")
-    ## 3) buffer all names() to be that length.
+    stockSpc <- paste(rep(" ", maxLen), collapse="")
+    ## 3) will need to buffer all names() to be that length.
     bufferSpacing<-function(name){
-        spc = paste(rep(" ", maxLen - nchar(name)), collapse="")
+        spc <- paste(rep(" ", maxLen - nchar(name)), collapse="")
         paste(name, spc, sep="")
     }
-    ## 4) append on a set of blank strings to our list
-    ch = c(ch, list(rep("",length(ch[[1]]))))
-    ## 5) loop n times thru the list, each time grabbing the ith row from each
-    ## char vector and appending the appropriate thing.  
-    output = character(length(ch[[1]])*length(ch))
+    ## 4) append set of blank strings to list for "gapped-rows" later
+    ch <- c(ch, list(rep("",length(ch[[1]]))))
+    ## 5) Iterate so that all the rows are interleaved together
+    output <- character(length(ch[[1]])*length(ch))
     for(i in seq_len(length(ch[[1]]))){
       for(j in seq_len(length(ch))){
         if(i==1){
-          output[j] = paste(unlist(lapply(names(ch[j]), bufferSpacing)),
+          output[j] <- paste(unlist(lapply(names(ch[j]), bufferSpacing)),
                   "   ",ch[[j]][i],sep="")
         }else{
-          output[(length(ch)*(i-1)) + j] = paste(stockSpc,
+          output[(length(ch)*(i-1)) + j] <- paste(stockSpc,
                   "   ",ch[[j]][i],sep="")
         }
       }
     }
     ## drop trailing spaces
-    output =  gsub("\\s+$","", output)
+    output <-  gsub("\\s+$","", output)
     ## remove the extra end line
-    output = output[1:length(output)-1]
+    output <- output[1:length(output)-1]
     ## finally attach the dims
     if(hasMask){
       ##Honestly not sure if I need this "W" or what it means?
-      output = c(paste("",paste(c(dims,"W"),collapse=" "),collapse=" "),output)
+      output <- c(paste("",paste(c(dims,"W"),collapse=" "),collapse=" "),output)
     }else{
-      output = c(paste("",paste(dims,collapse=" "),collapse=" "),output)
+      output <- c(paste("",paste(dims,collapse=" "),collapse=" "),output)
     }
-    writeLines(output, file)
+    writeLines(output, filepath)
   }
 }
 

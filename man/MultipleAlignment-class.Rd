@@ -52,6 +52,9 @@
 \alias{read.RNAMultipleAlignment}
 \alias{read.AAMultipleAlignment}
 
+% Write functions:
+\alias{write.phylip}
+
 % Coercion:
 \alias{coerce,MultipleAlignment,DNAStringSet-method}
 \alias{coerce,MultipleAlignment,RNAStringSet-method}
@@ -100,6 +103,9 @@
   read.RNAMultipleAlignment(filepath, format)
   read.AAMultipleAlignment(filepath, format)
 
+  ## Write funtions:
+  write.phylip(x, filepath)
+
   ## ... and more (see below)
 }
 
@@ -107,7 +113,8 @@
   \item{x}{
     Either a character vector (with no NAs), or an \link{XString},
     \link{XStringSet} or \link{XStringViews} object containing
-    strings with the same number of characters.
+    strings with the same number of characters.  If writing out a Phylip
+    file, then x would be a \link{MultipleAlignment} object
   }
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
@@ -379,6 +386,10 @@ clust <- hclust(sdist, method = "single")
 plot(clust)
 fourgroups <- cutree(clust, 4)
 fourgroups
+
+## write out the alignement object (with current masks) to Phylip format
+write.phylip(x = autoMasked, filepath = tempfile("foo.txt",tempdir()))
+
 }
 
 \keyword{methods}

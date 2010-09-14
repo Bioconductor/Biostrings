@@ -401,6 +401,7 @@ export(
     read.RNAMultipleAlignment,
     read.AAMultipleAlignment,
     consensusViews,
+    write.phylip,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS
