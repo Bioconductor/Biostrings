@@ -455,62 +455,90 @@ function(filepath, format)
 ###
 
 ## helper to chop up strings into pieces.
-strchop <- function(x, chopsize=10)
+strChop <- function(x, chopsize=10, simplify = TRUE)
 {
-   chunks <- breakInChunks(nchar(x), chopsize)
-   sapply(seq_len(length(chunks)),
-       function(i)
+  chunks <- breakInChunks(nchar(x), chopsize)
+  if(simplify==TRUE){
+    sapply(seq_len(length(chunks)),
+           function(i)
            substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
+  }else{
+    lapply(seq_len(length(chunks)),
+           function(i)
+           substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
+  }
+}
+
+## We just have to just insert line spaces
+insertSpaces <- function(str){
+  str = strChop(str)
+  paste(str, collapse=" ")
 }
 
 write.Phylip <- function(x, file){
-  if(inherits(origMAlign, "MultipleAlignment")){
+  if(inherits(x, "MultipleAlignment")){
     ## 1st, we need to capture the colmask as a vector that can be included.
-
-    ##  x = phylipMAlign
-
-    ## Still TODO:
-    ## We just have to just insert line breaks and spaces
-    insertBreaksAndSpaces <- function(str){
-      str = strchop(str)
-      paste(str, collapse=" ")
-    }
-    
-    dims = dim(x)
-    dims[1] = dims[1]+1
     msk = colmask(x)
+    hasMask = FALSE
+    if(length(msk) > 0){hasMask=TRUE}
+    dims = dim(x)
+    if(hasMask){dims[1] = dims[1]+1}
     colmask(x) <- NULL
-    ## Then massage this to be a character vector
+    ## Massage to character vector
     ch = as.character(x)
-    ch = unlist(lapply(ch, insertBreaksAndSpaces))
-    
-    if(length(msk) > 0){
+    ch = unlist(lapply(ch, insertSpaces))
+    ## Convert mask to string format
+    if(hasMask){
       mskInd = as.numeric(msk) ## index that should be masked.
       mskCh = paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
         collapse="")
-      mskCh = insertBreaksAndSpaces(mskCh)
-      mskCh = paste("Mask", mskCh, sep="   ")
+      mskCh = insertSpaces(mskCh)
     }
-    
-    ## Then we have to append the names
-    ch = paste(names(ch), ch, sep="   ")
-    ## And cat the mask on
-    if(length(msk) > 0){ch = c(mskCh, ch)}
-
-    ## adjust for odd spacing between names and strings
-    maxLen = max(unlist(lapply(ch, nchar)))
-    adjustSpacing<-function(str){
-        str = sub("(^\\S+)\\s+(\\S.+)","\\1|\\2",str)
-        spc = paste(rep(" ", maxLen - nchar(str) +1), collapse="")
-        str = unlist(strsplit(str,"\\|"))
-        paste(str, collapse=spc)
+    ## Split up the output into lines, but grouped into a list object
+    names = names(ch)
+    ch = sapply(ch, strChop, chopsize=55, simplify=FALSE)
+    ## Again consider mask, split, name & cat on (if needed)
+    if(hasMask){
+      mskCh = strChop(mskCh, chopsize=55)
+      ch = c(list(Mask = mskCh), ch)
     }
-    ch = unlist(lapply(ch, adjustSpacing))
-
-    ##finally attach the dims
-    ch = c(paste(c(dims,"W"),collapse=" "),ch)
-    
-    writeLines(ch, file)
+    ## 1) precalculate the max length of the names and then
+    maxLen = max(nchar(names(ch)))
+    ## 2) make a string of that many spaces into a row
+    stockSpc = paste(rep(" ", maxLen), collapse="")
+    ## 3) buffer all names() to be that length.
+    bufferSpacing<-function(name){
+        spc = paste(rep(" ", maxLen - nchar(name)), collapse="")
+        paste(name, spc, sep="")
+    }
+    ## 4) append on a set of blank strings to our list
+    ch = c(ch, list(rep("",length(ch[[1]]))))
+    ## 5) loop n times thru the list, each time grabbing the ith row from each
+    ## char vector and appending the appropriate thing.  
+    output = character(length(ch[[1]])*length(ch))
+    for(i in seq_len(length(ch[[1]]))){
+      for(j in seq_len(length(ch))){
+        if(i==1){
+          output[j] = paste(unlist(lapply(names(ch[j]), bufferSpacing)),
+                  "   ",ch[[j]][i],sep="")
+        }else{
+          output[(length(ch)*(i-1)) + j] = paste(stockSpc,
+                  "   ",ch[[j]][i],sep="")
+        }
+      }
+    }
+    ## drop trailing spaces
+    output =  gsub("\\s+$","", output)
+    ## remove the extra end line
+    output = output[1:length(output)-1]
+    ## finally attach the dims
+    if(hasMask){
+      ##Honestly not sure if I need this "W" or what it means?
+      output = c(paste("",paste(c(dims,"W"),collapse=" "),collapse=" "),output)
+    }else{
+      output = c(paste("",paste(dims,collapse=" "),collapse=" "),output)
+    }
+    writeLines(output, file)
   }
 }
 
