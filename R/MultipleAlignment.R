@@ -471,13 +471,15 @@ insertSpaces <- function(str){
   paste(str, collapse=" ")
 }
 
-write.phylip <- function(x, filepath){
+.write.MultAlign <- function(x,filepath,invertMask=TRUE,showRowNames=FALSE){
   if(inherits(x, "MultipleAlignment")){
-    ## 1st, we need to capture the colmask as a vector that can be included.
+    ## 1st, we need to capture the colmask as a vector that can be included
     msk <- colmask(x)
     hasMask <- FALSE
     if(length(msk) > 0){hasMask<-TRUE}
     dims <- dim(x)
+    ## if not Phylip, invert the mask
+    if(invertMask==FALSE){msk<-gaps(msk, start=1, end=dims[2])} 
     if(hasMask){dims[1] <- dims[1]+1}
     colmask(x) <- NULL
     ## Massage to character vector
@@ -485,7 +487,7 @@ write.phylip <- function(x, filepath){
     ch <- unlist(lapply(ch, insertSpaces))
     ## Convert mask to string format
     if(hasMask){
-      mskInd <- as.numeric(msk) ## index that should be masked.
+      mskInd <- as.numeric(msk) ## index that should be masked
       mskCh <- paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
         collapse="")
       mskCh <- insertSpaces(mskCh)
@@ -515,10 +517,16 @@ write.phylip <- function(x, filepath){
       for(j in seq_len(length(ch))){
         if(i==1){
           output[j] <- paste(unlist(lapply(names(ch[j]), bufferSpacing)),
-                  "   ",ch[[j]][i],sep="")
+                             "   ",ch[[j]][i],sep="")
         }else{
-          output[(length(ch)*(i-1)) + j] <- paste(stockSpc,
-                  "   ",ch[[j]][i],sep="")
+          if(showRowNames){
+            output[(length(ch)*(i-1)) + j] <-
+              paste(unlist(lapply(names(ch[j]), bufferSpacing)),
+                    "   ",ch[[j]][i],sep="")
+          }else{
+            output[(length(ch)*(i-1)) + j] <- paste(stockSpc,
+                                                    "   ",ch[[j]][i],sep="")
+          }
         }
       }
     }
@@ -537,6 +545,26 @@ write.phylip <- function(x, filepath){
   }
 }
 
+write.phylip <- function(x, filepath){
+  .write.MultAlign(x, filepath, invertMask=TRUE, showRowNames=FALSE)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Show All Sequences.
+###
+
+## TODO fix problem where mask is not properly inverted by gaps (strange) then set invertMask to FALSE again
+showMultipleAlignments <- function(x, invertColMask = FALSE){
+  ## We don't want a permanent file for this
+  FH <- tempfile(pattern = "tmpFile", tmpdir = tempdir())
+  ## Then write out a temp file with the correct stuff in it
+  .write.MultAlign(x, FH, invertMask=invertColMask, showRowNames=TRUE)
+  ## use file.show() to display
+  file.show(FH)
+}
+
+## TODO: explore if we can make a textConnection() to save time writing to disk.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
