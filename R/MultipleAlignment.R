@@ -451,7 +451,7 @@ function(filepath, format)
 ###
 
 ## helper to chop up strings into pieces.
-strChop <- function(x, chopsize=10, simplify = TRUE)
+.strChop <- function(x, chopsize=10, simplify = TRUE)
 {
   chunks <- breakInChunks(nchar(x), chopsize)
   if(simplify==TRUE){
@@ -466,38 +466,44 @@ strChop <- function(x, chopsize=10, simplify = TRUE)
 }
 
 ## We just have to just insert line spaces
-insertSpaces <- function(str){
-  str = strChop(str)
+.insertSpaces <- function(str){
+  str = .strChop(str)
   paste(str, collapse=" ")
 }
 
-.write.MultAlign <- function(x,filepath,invertMask=TRUE,showRowNames=FALSE){
+.write.MultAlign <- function(x,filepath,invertColMask, showRowNames,
+                             hideMaskedCols){
   if(inherits(x, "MultipleAlignment")){
     ## 1st, we need to capture the colmask as a vector that can be included
     msk <- colmask(x)
-    hasMask <- FALSE
-    if(length(msk) > 0){hasMask<-TRUE}
-    dims <- dim(x)
-    ## if not Phylip, invert the mask
-    if(invertMask==FALSE){msk<-gaps(msk, start=1, end=dims[2])} 
+    dims <- dim(x)    
+    if(invertColMask==FALSE){
+      msk<-gaps(msk, start=1, end=dims[2])
+    }
+    ##If we are hiding the masked cols, then we don't care about the mask
+    if(hideMaskedCols){
+      hasMask <- FALSE
+    }else{## If we show masked cols, drop mask before as.character()
+      colmask(x) <- NULL
+      if(length(msk) > 0){hasMask<-TRUE}else{hasMask <- FALSE}
+    }
     if(hasMask){dims[1] <- dims[1]+1}
-    colmask(x) <- NULL
     ## Massage to character vector
     ch <- as.character(x)
-    ch <- unlist(lapply(ch, insertSpaces))
+    ch <- unlist(lapply(ch, .insertSpaces))
     ## Convert mask to string format
     if(hasMask){
       mskInd <- as.numeric(msk) ## index that should be masked
       mskCh <- paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
         collapse="")
-      mskCh <- insertSpaces(mskCh)
+      mskCh <- .insertSpaces(mskCh)
     }
     ## Split up the output into lines, but grouped into a list object
     names <- names(ch)
-    ch <- sapply(ch, strChop, chopsize=55, simplify=FALSE)
+    ch <- sapply(ch, .strChop, chopsize=55, simplify=FALSE)
     ## Again consider mask, split, name & cat on (if needed)
     if(hasMask){
-      mskCh <- strChop(mskCh, chopsize=55)
+      mskCh <- .strChop(mskCh, chopsize=55)
       ch <- c(list(Mask = mskCh), ch)
     }
     ## 1) precalculate the max length of the names and then
@@ -536,8 +542,8 @@ insertSpaces <- function(str){
     output <- output[1:length(output)-1]
     ## finally attach the dims
     if(hasMask){
-      ##Honestly not sure if I need this "W" or what it means?
-      output <- c(paste("",paste(c(dims,"W"),collapse=" "),collapse=" "),output)
+      ##Honestly not sure if I need a "W" here or what it means?
+      output <- c(paste("",paste(c(dims,""),collapse=" "),collapse=" "),output)
     }else{
       output <- c(paste("",paste(dims,collapse=" "),collapse=" "),output)
     }
@@ -546,7 +552,8 @@ insertSpaces <- function(str){
 }
 
 write.phylip <- function(x, filepath){
-  .write.MultAlign(x, filepath, invertMask=TRUE, showRowNames=FALSE)
+  .write.MultAlign(x, filepath, invertColMask=TRUE, showRowNames=FALSE,
+                   hideMaskedCols=FALSE)
 }
 
 
@@ -554,17 +561,20 @@ write.phylip <- function(x, filepath){
 ### Show All Sequences.
 ###
 
-## TODO fix problem where mask is not properly inverted by gaps (strange) then set invertMask to FALSE again
-showMultipleAlignments <- function(x, invertColMask = FALSE){
+showMultipleAlignments <- function(x, invertColMask = FALSE,
+                                   hideMaskedCols=TRUE){
   ## We don't want a permanent file for this
   FH <- tempfile(pattern = "tmpFile", tmpdir = tempdir())
   ## Then write out a temp file with the correct stuff in it
-  .write.MultAlign(x, FH, invertMask=invertColMask, showRowNames=TRUE)
+  .write.MultAlign(x, FH, invertColMask=invertColMask, showRowNames=TRUE,
+                   hideMaskedCols=hideMaskedCols)
   ## use file.show() to display
   file.show(FH)
 }
 
 ## TODO: explore if we can make a textConnection() to save time writing to disk.
+## page() allows this, but seems to be actually slower than what we do here,
+## also, it looks considerably less nice than when it comes from a file...
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
