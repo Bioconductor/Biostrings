@@ -558,10 +558,10 @@ write.phylip <- function(x, filepath){
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Show All Sequences.
+### Show detailed pager view of unmasked sequences.
 ###
 
-showMultipleAlignments <- function(x, invertColMask = FALSE,
+detail <- function(x, invertColMask = FALSE,
                                    hideMaskedCols=TRUE){
   ## We don't want a permanent file for this
   FH <- tempfile(pattern = "tmpFile", tmpdir = tempdir())

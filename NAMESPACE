@@ -402,6 +402,7 @@ export(
     read.AAMultipleAlignment,
     consensusViews,
     write.phylip,
+    detail,
 
     ## Old stuff (Defunct or Deprecated):
     needwunsQS

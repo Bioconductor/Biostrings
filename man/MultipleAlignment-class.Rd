@@ -79,8 +79,9 @@
 \alias{consensusViews,AAMultipleAlignment-method}
 \alias{alphabetFrequency,MultipleAlignment-method}
 
-% show method:
+% show style methods:
 \alias{show,MultipleAlignment-method}
+\alias{detail}
 
 \title{MultipleAlignment objects}
 
@@ -317,6 +318,23 @@
       default). If \code{collapse} is \code{TRUE}, then returns the
       overall frequency instead of the frequency by row.
     }
+    \item{}{
+      \code{detail(x, invertColMask, hideMaskedCols)}: Allows for a full
+      pager driven display of the object so that masked cols and rows
+      can be removed and the entire sequence can be visually
+      inspected. If \code{hideMaskedCols} is set to it's default value
+      of \code{TRUE} then the output will hide all the the masked
+      columns in the output.  Otherwise, all columns will be displayed
+      along with a row to indicate the masking status.  If
+      \code{invertColMask} is \code{TRUE} then any displayed mask will
+      be flipped so as to represent things in a way consistent with
+      Phylip style files instead of the mask that is actually stored in
+      the \code{MultipleAlignment} object.  Please notice that
+      \code{invertColMask} will be ignored if \code{hideMaskedCols} is
+      set to its default value of \code{TRUE} since in that case it will
+      not make sense to show any masking information in the output.
+      Masked rows are always hidden in the output.
+    }
   }
 }
 
@@ -344,6 +362,11 @@ rownames(origMAlign)
 rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
                           "Dog","Chicken","Salmon")
 origMAlign
+
+## See a detailed pager view
+if (interactive()) {
+detail(origMAlign)
+}
 
 ## operations to mask rows
 ## For columns, just use colmask() and do the same kinds of operations
