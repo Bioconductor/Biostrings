@@ -88,7 +88,7 @@ origMAlign
 @ 
 
 To see a more detailed version of your \Rclass{MultipleAlignment}
-object, you can use the \Rfunction{detail} function, which will show
+object, you can use the \Rmethod{detail} method, which will show
 the details of the alignment interleaved and without the rows and
 columns that you have masked out.
 

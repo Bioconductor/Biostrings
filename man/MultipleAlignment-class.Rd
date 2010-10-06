@@ -81,7 +81,7 @@
 
 % show style methods:
 \alias{show,MultipleAlignment-method}
-\alias{detail}
+\alias{detail,MultipleAlignment-method}
 
 \title{MultipleAlignment objects}
 
