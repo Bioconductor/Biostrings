@@ -74,6 +74,22 @@ static void update_letter_freqs(int *row, int nrow, const cachedCharSeq *X, SEXP
 	return;
 }
 
+// HJ -- faster version of the above, without 'codes' to consider
+static void update_letter_freqs_without_codes(int *row, int nrow,
+	const cachedCharSeq *X)
+{
+	int i, offset;
+	const char *c;
+	int k = X->length;
+
+	for (i = 0, c = X->seq; i < k; i++, c++) {
+		offset = byte2offset[(unsigned char) *c];
+		if (offset != NA_INTEGER)
+			row[offset * nrow]++;
+	}
+	return;
+}
+
 /* Author: HJ
  * This function has two modes.  On the 1st call (old=-1), we test k letters
  * starting at c, returning the first in the form of its offset.  On subsequent
@@ -411,19 +427,22 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 }
 
 /* Author: HJ
- * Tests, for the specified codes, the virtual XStringSet formed by sliding
- * a "window of length k" along a whole XString.  The result is identical to
- * what XStringSet_letter_frequency(), without 'collapse' or 'other', would
- * return, except that the XStringSet never has to be, and is not, realized.
+ * Tests, for the specified codes, the virtual XStringSet formed by "sliding
+ * a window of length k" along a whole XString.
  *
  * input: the subject XString, the window size, the letter-code(s) to count,
  *      and a vector indicating how to tabulate each of the actual codes
  * output: an integer matrix with length(x)-k+1 rows and max(colmap) columns
+ *
+ * The result is identical to what XStringSet_letter_frequency(), without
+ * 'collapse' or 'other', would return, except for the fancy tabulation and
+ * except that the XStringSet never has to be, and is not, realized.
+ *
  */
 SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
-		SEXP single_codes, SEXP colmap)
+	SEXP single_codes, SEXP colmap, SEXP colnames)
 {
-	SEXP ans;
+	SEXP dim_names, ans;
 	int ans_width, *ans_row, i, k, nrow, *colmap0;
 	int first;  /* first letter of the last k-mer, as column offset */
 	cachedCharSeq X;
@@ -455,7 +474,83 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	for (i = 0, c = X.seq, first = -1; i < nrow; i++, ans_row++, c++)
 		first = letter_freq_in_sliding_view(ans_row, nrow, c,
 				first, ans_width, k);
-	// caller sets names
+
+	// set names
+	PROTECT(dim_names = NEW_LIST(2));
+	SET_ELEMENT(dim_names, 0, R_NilValue);
+	SET_ELEMENT(dim_names, 1, colnames);
+	SET_DIMNAMES(ans, dim_names);
+
+	UNPROTECT(2);
+	return ans;
+}
+
+/* Author: HJ
+ * Like above except that an actual XString*Set* is supplied.  The "view
+ * width", as it were, is automatically and implicitly taken as nchar(x).
+ *
+ * input: the subject XStringSet, the letter-code(s) to count, and a vector
+ * 	indicating how to tabulate each of the actual codes
+ * output: an integer matrix with length(x) rows and max(colmap) columns
+ *
+ * The result is identical to what XStringSet_letter_frequency(), without
+ * 'other', would return, except for the fancy tabulation.
+ */
+SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
+	SEXP colnames, SEXP collapse)
+{
+	SEXP dim_names, ans;
+	int ans_width, *ans_row, i, *colmap0;
+	cachedCharSeq x_elt;
+	cachedXStringSet cached_x = _cache_XStringSet(x);
+	int x_length = _get_XStringSet_length(x);
+
+	ans_width = get_ans_width(single_codes, 0);
+	// byte2offset[code] is now set for each code in 'single_codes'.
+	// If 'colmap' is non-NULL, we edit these settings accordingly.
+	if (colmap != R_NilValue) {
+		if (LENGTH(single_codes) != LENGTH(colmap))
+			error("Biostrings internal error in "
+			      "XStringSet_letterFrequency(): ",
+			      "lengths of 'single_codes' and 'colmap' differ");
+		ans_width = 0;
+		colmap0 = INTEGER(colmap);
+		for (i = 0; i < LENGTH(colmap); i++) {
+			ans_width = colmap0[i];
+			byte2offset[INTEGER(single_codes)[i]] = ans_width - 1;
+		}
+	}
+	if (LOGICAL(collapse)[0]) {
+		PROTECT(ans = NEW_INTEGER(ans_width));
+		ans_row = INTEGER(ans);
+		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
+		for (i = 0; i < x_length; i++) {
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			update_letter_freqs_without_codes(ans_row,
+				1, &x_elt);
+		}
+	} else {
+		PROTECT(ans = allocMatrix(INTSXP, x_length, ans_width));
+		ans_row = INTEGER(ans);
+		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
+		for (i = 0; i < x_length; i++, ans_row++) {
+			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			update_letter_freqs_without_codes(ans_row,
+				x_length, &x_elt);
+		}
+	}
+
+	// set names
+	if (LOGICAL(collapse)[0])
+                SET_NAMES(ans, colnames);
+	else {
+		PROTECT(dim_names = NEW_LIST(2));
+		SET_ELEMENT(dim_names, 0, R_NilValue);
+		SET_ELEMENT(dim_names, 1, colnames);
+		SET_DIMNAMES(ans, dim_names);
+		UNPROTECT(1);
+	}
+
 	UNPROTECT(1);
 	return ans;
 }

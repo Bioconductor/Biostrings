@@ -3,6 +3,7 @@
 ### hasOnlyBaseLetters()
 ### uniqueLetters()
 ### letterFrequencyInSlidingView()
+### letterFrequency()
 ### mkAllStrings()
 ### oligonucleotideFrequency()
 ### dinucleotideFrequency()
@@ -324,13 +325,19 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "letterFrequencyInSlidingView" generic and methods.
+### The "letterFrequency" and "letterFrequencyInSlidingView"
+### generic and methods.
 ### Author: HJ
 ###
 
-.XString.code_frequency_in_sliding_view <- function(x, view.width, letters, OR)
+### joint C interface
+### The value is a matrix for letterFrequencyInSlidingView
+### and a matrix for letterFrequency unless collapse=TRUE.
+.letterFrequency <- function(x, view.width, letters, OR, collapse=FALSE)
 {
-    view.width <- .normargWidth(view.width, "view.width")
+    ## letterFrequency / letterFrequencyInSlidingView switch
+    Sliding <- !is.na(view.width)
+
     single_letters <- .normargLetters(letters, alphabet(x))
     OR <- .normargOR(OR)
     codes <- xscodes(x)
@@ -341,8 +348,8 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
     ## Unless 'OR == 0', letters in multi-character elements of
     ## 'letters' are to be grouped (i.e. tabulated in common).
     ## We send a vector indicating the column (1-based) into which each
-    ## letter in 'letters' should be tabulated.  For ex,
-    ## for 'letters = c("CG", "AT")' and 'OR != 0', we send 'c(1,1,2,2)'.
+    ## letter in 'letters' should be tabulated.  For example, for
+    ## 'letters = c("CG", "AT")' and 'OR != 0', we send 'c(1,1,2,2)'.
     ## The columns of the result are named accordingly using the OR symbol.
     nc <- nchar(letters)
     if (all(nc == 1L) || OR == 0) {
@@ -353,29 +360,63 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
         colnames <- sapply(strsplit(letters, NULL, fixed=TRUE),
                            function(z) paste(z, collapse=OR))
     }
-    ans <- .Call("XString_letterFrequencyInSlidingView",
-                 x, view.width, single_codes, colmap,
-                 PACKAGE="Biostrings")
-    ## Unlike colnames<-(), the following seems to set the colnames *without*
-    ## triggering a copy of 'ans'. For this to work, it must come immediately
-    ## after 'ans' is returned by .Call(). Note that a more robust way to set
-    ## the colnames "in-place" would be to do it in the .Call() call (i.e. at
-    ## the C-level).
-    dimnames(ans) <- list(NULL, colnames)
-    ans
+
+    if (Sliding)
+	.Call("XString_letterFrequencyInSlidingView",
+		x, view.width, single_codes, colmap, colnames,
+		PACKAGE="Biostrings")
+    else
+	.Call("XStringSet_letterFrequency",
+		x, single_codes, colmap, colnames, collapse,
+		PACKAGE="Biostrings")
 }
 
+### letterFrequencyInSlidingView
 setGeneric("letterFrequencyInSlidingView", signature="x",
     function(x, view.width, letters, OR="|")
         standardGeneric("letterFrequencyInSlidingView")
 )
 
+### Ensure view.width is not NA
 setMethod("letterFrequencyInSlidingView", "XString",
-    function(x, view.width, letters, OR="|")
-        .XString.code_frequency_in_sliding_view(x,
-                view.width, letters=letters, OR=OR)
+    function(x, view.width, letters, OR="|") {
+	if (missing(view.width))
+	    stop("'view.width' missing")
+	view.width <- .normargWidth(view.width, "view.width")
+        .letterFrequency(x, view.width, letters=letters, OR=OR)
+    }
 )
 
+### letterFrequency
+setGeneric("letterFrequency", signature="x",
+    function(x, letters, OR="|", ...)
+        standardGeneric("letterFrequency")
+)
+
+### Ensure view.width is NA
+setMethod("letterFrequency", "XStringSet",
+    function(x, letters, OR="|", collapse=FALSE)
+        .letterFrequency(x, NA, letters=letters, OR=OR,
+		collapse=collapse)
+)
+
+setMethod("letterFrequency", "XString",
+    function(x, letters, OR="|")
+        letterFrequency(as(x, "XStringSet"),
+		letters=letters, OR=OR, collapse=TRUE)
+)
+
+setMethod("letterFrequency", "XStringViews",
+    function(x, letters, OR="|", ...)
+        letterFrequency(as(x, "XStringSet"),
+		letters=letters, OR=OR, ...)
+)
+
+setMethod("letterFrequency", "MaskedXString",
+    function(x, letters, OR="|", ...)
+        letterFrequency(as(x, "XStringViews"),
+		letters=letters, OR=OR, collapse=TRUE)
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "mkAllStrings" function.
