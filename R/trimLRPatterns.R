@@ -10,105 +10,108 @@ setGeneric("trimLRPatterns", signature = "subject",
         standardGeneric("trimLRPatterns")
 )
 
-.XString.XStringSet.trimLRPatterns <-
-function(Lpattern = "", Rpattern = "", subject,
-         max.Lmismatch = 0, max.Rmismatch = 0,
-         with.Lindels = FALSE, with.Rindels = FALSE,
-         Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
+### 'subject' must be an XStringSet object of length != 0.
+### Returns an integer vector of the same length as 'subject' where the i-th
+### value is guaranteed to be >= 1 and <= width(subject)[i] + 1.
+.computeTrimStart <- function(Lpattern, subject,
+                              max.Lmismatch, with.Lindels, Lfixed)
 {
-    if (nchar(Rpattern) == 0) {
-        trim.end <- nchar(subject)
-    } else if (length(unique(nchar(subject))) != 1) {
-        Rpattern <- normargPattern(Rpattern, subject, argname = "Rpattern")
-        reversed.ranges <- 
-          .XString.XStringSet.trimLRPatterns(Lpattern = reverse(Rpattern),
-                                             subject = reverse(subject),
-                                             max.Lmismatch = max.Rmismatch,
-                                             with.Lindels = with.Rindels,
-                                             Lfixed = Rfixed, ranges = TRUE)
-        trim.end <- nchar(subject) - start(reversed.ranges) + 1L
-    } else {
-        ncharRpattern <- nchar(Rpattern)
-        if (length(max.Rmismatch) == 1 && max.Rmismatch >= 0 && max.Rmismatch < 1) {
-            max.Rmismatch <- max.Rmismatch * seq_len(ncharRpattern)
-        }
-        max.Rmismatch <- as.integer(max.Rmismatch)
-        if (length(max.Rmismatch) < ncharRpattern) {
-            max.Rmismatch <-
-              c(rep.int(-1L, ncharRpattern - length(max.Rmismatch)), max.Rmismatch)
-        }
-        if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != ncharRpattern) {
-            stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
-        }
-        with.Rindels <- normargWithIndels(with.Rindels, argname = "with.Rindels")
-        Rfixed <- normargFixed(Rfixed, subject, argname = "Rfixed")
-
-        # test the pattern "from the inside out"
-        ncharSubject <- nchar(subject)[1]
-
-        # reverse for the inside-out search
-        max.Rmismatch <- rev(max.Rmismatch)
-
-        # get start of first match, or NA
-        Rwhich.trim <-
-          ncharSubject - ncharRpattern +
-            which.isMatchingEndingAt(pattern = Rpattern,
-                                     subject = subject,
-                                     ending.at = ncharSubject,
-                                     max.mismatch = max.Rmismatch,
-                                     with.indels = with.Rindels,
-                                     fixed = Rfixed,
+    Lpattern <- normargPattern(Lpattern, subject, argname="Lpattern")
+    pattern_length <- length(Lpattern)
+    if (pattern_length == 0L)
+        return(rep.int(1L, length(subject)))
+    if (length(max.Lmismatch) == 1L && max.Lmismatch >= 0 && max.Lmismatch < 1)
+        max.Lmismatch <- max.Lmismatch * seq_len(pattern_length)
+    max.Lmismatch <- as.integer(max.Lmismatch)
+    if (length(max.Lmismatch) < pattern_length)
+        max.Lmismatch <-
+            c(rep.int(-1L, pattern_length - length(max.Lmismatch)),
+              max.Lmismatch)
+    if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != pattern_length)
+        stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
+    with.Lindels <- normargWithIndels(with.Lindels, argname="with.Lindels")
+    Lfixed <- normargFixed(Lfixed, subject, argname="Lfixed")
+    ## Test the pattern "from the inside out" (moving it to the left).
+    max.Lmismatch <- rev(max.Lmismatch)
+    ii <- which.isMatchingStartingAt(Lpattern,
+                                     subject,
+                                     starting.at = 1L,
+                                     max.mismatch = max.Lmismatch,
+                                     with.indels = with.Lindels,
+                                     fixed = Lfixed,
                                      auto.reduce.pattern = TRUE)
+    ii[is.na(ii)] <- pattern_length + 1L
+    pattern_length + 2L - ii
+}
 
-        # last position before best match starts
-        trim.end <- ifelse(is.na(Rwhich.trim), ncharSubject, Rwhich.trim - 1L)
+### 'subject' must be an XStringSet object of length != 0.
+### Returns an integer vector of the same length as 'subject' where the i-th
+### value is guaranteed to be >= 0 and <= width(subject)[i].
+.computeTrimEnd <- function(Rpattern, subject,
+                            max.Rmismatch, with.Rindels, Rfixed)
+{
+    Rpattern <- normargPattern(Rpattern, subject, argname="Rpattern")
+    pattern_length <- length(Rpattern)
+    if (pattern_length == 0L)
+        return(width(subject))
+    ## Because we want to use which.isMatchingEndingAt() with
+    ## 'auto.reduce.pattern=TRUE', the 'ending.at' arg will need to be a
+    ## single value. But that won't be possible if 'subject' is not
+    ## rectangular hence the ugly trick.
+    if (!isConstant(width(subject))) {
+        tmp <- .computeTrimStart(reverse(Rpattern), reverse(subject),
+                                 max.Rmismatch, with.Rindels, Rfixed)
+        return(width(subject) - tmp + 1L)
     }
+    if (length(max.Rmismatch) == 1L && max.Rmismatch >= 0 && max.Rmismatch < 1)
+        max.Rmismatch <- max.Rmismatch * seq_len(pattern_length)
+    max.Rmismatch <- as.integer(max.Rmismatch)
+    if (length(max.Rmismatch) < pattern_length)
+        max.Rmismatch <-
+            c(rep.int(-1L, pattern_length - length(max.Rmismatch)),
+              max.Rmismatch)
+    if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != pattern_length)
+        stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
+    with.Rindels <- normargWithIndels(with.Rindels, argname="with.Rindels")
+    Rfixed <- normargFixed(Rfixed, subject, argname = "Rfixed")
+    ## Test the pattern "from the inside out" (moving it to the right).
+    max.Rmismatch <- rev(max.Rmismatch)
+    subject_width <- width(subject)[1L]
+    ii <- which.isMatchingEndingAt(pattern=Rpattern,
+                                   subject=subject,
+                                   ending.at=subject_width,
+                                   max.mismatch=max.Rmismatch,
+                                   with.indels=with.Rindels,
+                                   fixed=Rfixed,
+                                   auto.reduce.pattern=TRUE)
+    ii[is.na(ii)] <- pattern_length + 1L
+    subject_width - pattern_length - 1L + ii
+}
 
-    if (nchar(Lpattern) == 0) {
-        trim.start <- pmin(1L, nchar(subject))
-    } else {
-        ncharLpattern <- nchar(Lpattern)
-        if (length(max.Lmismatch) == 1 && max.Lmismatch >= 0 && max.Lmismatch < 1) {
-            max.Lmismatch <- max.Lmismatch * seq_len(ncharLpattern)
-        }
-        max.Lmismatch <- as.integer(max.Lmismatch)
-        if (length(max.Lmismatch) < ncharLpattern) {
-            max.Lmismatch <-
-              c(rep.int(-1L, ncharLpattern - length(max.Lmismatch)), max.Lmismatch)
-        }
-        if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != ncharLpattern) {
-            stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
-        }
-        with.Lindels <- normargWithIndels(with.Lindels, argname = "with.Lindels")
-        Lfixed <- normargFixed(Lfixed, subject, argname = "Lfixed")
-
-        # test the pattern "from the inside out"
-        # reverse for the inside-out search
-        max.Lmismatch <- rev(max.Lmismatch)
-
-        # get end of first match, or NA
-        Lwhich.trim <-
-          1L + ncharLpattern -
-            which.isMatchingStartingAt(pattern = Lpattern,
-                                       subject = subject,
-                                       starting.at = 1,
-                                       max.mismatch = max.Lmismatch,
-                                       with.indels = with.Lindels,
-                                       fixed = Lfixed,
-                                       auto.reduce.pattern = TRUE)
-
-        # next position after best match ends
-        trim.start <- ifelse(is.na(Lwhich.trim), pmin(1L, nchar(subject)), Lwhich.trim + 1L)
+.XStringSet.trimLRPatterns <- function(Lpattern, Rpattern, subject,
+                                       max.Lmismatch, max.Rmismatch,
+                                       with.Lindels, with.Rindels,
+                                       Lfixed, Rfixed, ranges)
+{
+    if (!isTRUEorFALSE(ranges))
+        stop("'ranges' must be TRUE or FALSE")
+    if (length(subject) == 0L) {
+        if (ranges)
+            return(IRanges())
+        return(subject)
     }
-    trim.start <- ifelse(trim.end >= 1L, trim.start, 2L)
-    trim.end <- ifelse(trim.end >= trim.start, trim.end, trim.start - 1L)
-    if (ranges) {
-        IRanges(start = trim.start, end = trim.end)
-    } else if (is(subject, "XString")) {
-        subseq(subject, start = trim.start, end = trim.end)
-    } else {
-        narrow(subject, start = trim.start, end = trim.end)
-    }
+    start <- .computeTrimStart(Lpattern, subject,
+                               max.Lmismatch, with.Lindels, Lfixed)
+    end <- .computeTrimEnd(Rpattern, subject,
+                           max.Rmismatch, with.Rindels, Rfixed)
+    ## For those invalid ranges where 'start > end + 1L', we arbitrarily
+    ## decide to set the 'start' to 'end + 1' (another reasonable choice
+    ## would have been to set the 'end' to 'start - 1').
+    idx <- which(start > end + 1L)
+    start[idx] <- end[idx] + 1L
+    if (ranges)
+        return(IRanges(start=start, end=end))
+    return(narrow(subject, start=start, end=end))
 }
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -117,16 +120,17 @@ setMethod("trimLRPatterns", "XString",
              max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
              Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
-    .XString.XStringSet.trimLRPatterns(Lpattern = Lpattern,
-                                       Rpattern = Rpattern,
-                                       subject = subject,
-                                       max.Lmismatch = max.Lmismatch,
-                                       max.Rmismatch = max.Rmismatch,
-                                       with.Lindels = with.Lindels,
-                                       with.Rindels = with.Rindels,
-                                       Lfixed = Lfixed,
-                                       Rfixed = Rfixed,
-                                       ranges = ranges))
+    {
+        subject <- as(subject, "XStringSet")
+        ans <- .XStringSet.trimLRPatterns(Lpattern, Rpattern, subject,
+                                          max.Lmismatch, max.Rmismatch,
+                                          with.Lindels, with.Rindels,
+                                          Lfixed, Rfixed, ranges)
+        if (is(ans, "XStringSet"))
+            ans <- ans[[1L]]
+        ans
+    }
+)
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("trimLRPatterns", "XStringSet",
@@ -134,39 +138,29 @@ setMethod("trimLRPatterns", "XStringSet",
              max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
              Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
-    .XString.XStringSet.trimLRPatterns(Lpattern = Lpattern,
-                                       Rpattern = Rpattern,
-                                       subject = subject,
-                                       max.Lmismatch = max.Lmismatch,
-                                       max.Rmismatch = max.Rmismatch,
-                                       with.Lindels = with.Lindels,
-                                       with.Rindels = with.Rindels,
-                                       Lfixed = Lfixed,
-                                       Rfixed = Rfixed,
-                                       ranges = ranges))
+    {
+        .XStringSet.trimLRPatterns(Lpattern, Rpattern, subject,
+                                   max.Lmismatch, max.Rmismatch,
+                                   with.Lindels, with.Rindels,
+                                   Lfixed, Rfixed, ranges)
+    }
+)
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("trimLRPatterns", "character",
     function(Lpattern = "", Rpattern = "", subject,
              max.Lmismatch = 0, max.Rmismatch = 0,
              with.Lindels = FALSE, with.Rindels = FALSE,
-             Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE) {
-        if (length(subject) == 1)
-            subject <- BString(subject)
-        else
-            subject <- BStringSet(subject)
-        ans <-
-          .XString.XStringSet.trimLRPatterns(Lpattern = Lpattern,
-                                             Rpattern = Rpattern,
-                                             subject = subject,
-                                             max.Lmismatch = max.Lmismatch,
-                                             max.Rmismatch = max.Rmismatch,
-                                             with.Lindels = with.Lindels,
-                                             with.Rindels = with.Rindels,
-                                             Lfixed = Lfixed,
-                                             Rfixed = Rfixed,
-                                             ranges = ranges)
-        if (!ranges)
+             Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
+    {
+        subject <- as(subject, "XStringSet")
+        ans <- .XStringSet.trimLRPatterns(Lpattern, Rpattern, subject,
+                                          max.Lmismatch, max.Rmismatch,
+                                          with.Lindels, with.Rindels,
+                                          Lfixed, Rfixed, ranges)
+        if (is(ans, "XStringSet"))
             ans <- as.character(ans)
         ans
-    })
+    }
+)
+
