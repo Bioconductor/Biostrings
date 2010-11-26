@@ -25,7 +25,7 @@ static char errmsg_buf[200];
 
 
 /****************************************************************************
- *  A. READING/WRITING FASTA FILES                                          *
+ *  A. FASTA FORMAT                                                         *
  ****************************************************************************/
 
 /*
@@ -33,6 +33,11 @@ static char errmsg_buf[200];
  * be able to eventually support longer sympols.
  */
 static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
+
+
+/****************************************************************************
+ * Reading FASTA files.
+ */
 
 typedef struct fasta_loader {
 	void (*load_desc_line)(struct fasta_loader *loader,
@@ -148,7 +153,7 @@ static void FASTA_load_seq_line(FASTAloader *loader,
 	i1 = cached_ans_elt->length;
 	cached_ans_elt->length += dataline->length;
 	/* cached_ans_elt->seq is a const char * so we need to cast it to
-           char * before we can write to it */
+	   char * before we can write to it */
 	Ocopy_bytes_to_i1i2_with_lkup(i1, cached_ans_elt->length - 1,
 		(char *) cached_ans_elt->seq, cached_ans_elt->length,
 		dataline->seq, dataline->length,
@@ -321,6 +326,11 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	return ans;
 }
 
+
+/****************************************************************************
+ * Writing FASTA files.
+ */
+
 /* --- .Call ENTRY POINT --- */
 SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 {
@@ -371,9 +381,8 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 				X_elt.seq, X_elt.length,
 				lkup0, lkup_length);
 			linebuf[dest_nbytes] = 0;
-			if (fputs(linebuf, stream) == EOF)
-				error("write error");
-			if (fputs("\n", stream) == EOF)
+			if (fputs(linebuf, stream) == EOF
+			 || fputs("\n", stream) == EOF)
 				error("write error");
 		}
 	}
@@ -383,10 +392,15 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 
 
 /****************************************************************************
- *  B. READING/WRITING FASTQ FILES                                          *
+ *  B. FASTQ FORMAT                                                         *
  ****************************************************************************/
 
 static const char *FASTQ_line1_markup = "@", *FASTQ_line3_markup = "+";
+
+
+/****************************************************************************
+ * Reading FASTQ files.
+ */
 
 typedef struct fastq_loader {
 	void (*load_seqid)(struct fastq_loader *loader,
@@ -481,7 +495,7 @@ static void FASTQ_load_seq(FASTQloader *loader, const cachedCharSeq *dataline)
 	cached_ans_elt = get_cachedXRawList_elt(&(loader_ext->cached_ans),
 						loader->nrec);
 	/* cached_ans_elt.seq is a const char * so we need to cast it to
-           char * before we can write to it */
+	   char * before we can write to it */
 	Ocopy_bytes_to_i1i2_with_lkup(0, cached_ans_elt.length - 1,
 		(char *) cached_ans_elt.seq, cached_ans_elt.length,
 		dataline->seq, dataline->length,
@@ -684,5 +698,98 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	}
 	UNPROTECT(3);
 	return ans;
+}
+
+
+/****************************************************************************
+ * Writing FASTQ files.
+ */
+
+static const char *get_FASTQ_rec_id(SEXP x_names, SEXP q_names, int i)
+{
+	SEXP seqid, qualid;
+
+	seqid = NA_STRING;
+	if (x_names != R_NilValue) {
+		seqid = STRING_ELT(x_names, i);
+		if (seqid == NA_STRING)
+			error("'names(x)' contains NAs");
+	}
+	if (q_names != R_NilValue) {
+		qualid = STRING_ELT(q_names, i);
+		if (qualid == NA_STRING)
+			error("'names(qualities)' contains NAs");
+		if (seqid == NA_STRING)
+			seqid = qualid;
+		/* Comparing the *content* of 2 CHARSXP's with
+		   'qualid != seqid' only works because of the global CHARSXP
+		   cache. Otherwise we would need to do:
+		     LENGTH(qualid) != LENGTH(seqid) ||
+		       memcmp(CHAR(qualid), CHAR(seqid), LENGTH(seqid))
+		 */
+		else if (qualid != seqid)
+			error("when 'x' and 'qualities' both have "
+			      "names, they must be identical");
+	}
+	if (seqid == NA_STRING)
+		error("either 'x' or 'qualities' must have names");
+	return CHAR(seqid);
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
+{
+	cachedXStringSet X, Q;
+	int x_length, lkup_length, i;
+	FILE *stream;
+	const int *lkup0;
+	SEXP x_names, q_names;
+	const char *id;
+	cachedCharSeq X_elt, Q_elt;
+	char linebuf[LINEBUF_SIZE];
+
+	X = _cache_XStringSet(x);
+	x_length = _get_cachedXStringSet_length(&X);
+	Q = _cache_XStringSet(qualities);
+	if (_get_cachedXStringSet_length(&Q) != x_length)
+		error("'x' and 'qualities' must have the same length");
+	stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, 0));
+	if (lkup == R_NilValue) {
+		lkup0 = NULL;
+		lkup_length = 0;
+	} else {
+		lkup0 = INTEGER(lkup);
+		lkup_length = LENGTH(lkup);
+	}
+	x_names = get_XVectorList_names(x);
+	q_names = get_XVectorList_names(qualities);
+	for (i = 0; i < x_length; i++) {
+		id = get_FASTQ_rec_id(x_names, q_names, i);
+		X_elt = _get_cachedXStringSet_elt(&X, i);
+		Q_elt = _get_cachedXStringSet_elt(&Q, i);
+		if (Q_elt.length != X_elt.length)
+			error("'x' and 'quality' must have the same width");
+		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
+			linebuf, X_elt.length,
+			X_elt.seq, X_elt.length,
+			lkup0, lkup_length);
+		linebuf[X_elt.length] = 0;
+		if (fputs(FASTQ_line1_markup, stream) == EOF
+		 || fputs(id, stream) == EOF
+		 || fputs("\n", stream) == EOF
+		 || fputs(linebuf, stream) == EOF
+		 || fputs("\n", stream) == EOF
+		 || fputs(FASTQ_line3_markup, stream) == EOF
+		 || fputs(id, stream) == EOF
+		 || fputs("\n", stream) == EOF)
+			error("write error");
+		while (Q_elt.length-- > 0) {
+			if (fputc((int) *(Q_elt.seq++), stream) == EOF)
+				error("write error");
+		}
+		if (fputs("\n", stream) == EOF)
+			error("write error");
+	}
+	return R_NilValue;
 }
 

@@ -47,7 +47,7 @@ fasta.info(filepath, nrec=-1L, skip=0L, use.names=TRUE)
 fastq.geometry(filepath, nrec=-1L, skip=0L)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
-write.XStringSet(x, filepath, append=FALSE, format="fasta", width=80)
+write.XStringSet(x, filepath, append=FALSE, format="fasta", ...)
 
 ## Serialize an XStringSet object:
 save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
@@ -90,9 +90,13 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     appended to \code{file}; otherwise, it will overwrite the contents
     of \code{file}. See \code{?\link[base]{cat}} for the details.
   }
-  \item{width}{
-    Only relevant if \code{format} is \code{"fasta"}.
-    The maximum number of letters per line of sequence.
+  \item{...}{
+    Further format-specific arguments.
+    If \code{format="fasta"}, the \code{width} argument (single integer)
+    can be used to specify the maximum number of letters per line of
+    sequence.
+    If \code{format="fastq"}, the \code{qualities} argument (\link{BStringSet}
+    object) \emph{must} be used to specify the qualities.
   }
   \item{objname}{
     The name of the serialized object.
@@ -138,7 +142,6 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   different widths).
 
   \code{write.XStringSet} writes an \link{XStringSet} object to a file.
-  Its only supports the FASTA format for now.
 
   Serializing an \link{XStringSet} object with \code{save.XStringSet}
   is equivalent to using the standard \code{save} mechanism. But it will
@@ -168,20 +171,31 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   write.XStringSet(x, out)
 
   ## ---------------------------------------------------------------------
-  ## B. READ FASTQ FILES
+  ## B. READ/WRITE FASTQ FILES
   ## ---------------------------------------------------------------------
-  filepath <- system.file("extdata", "s_1_sequence.txt", package="Biostrings")
+  filepath <- system.file("extdata", "s_1_sequence.txt",
+                          package="Biostrings")
   fastq.geometry(filepath)
   read.DNAStringSet(filepath, format="fastq")
 
-  ## ---------------------------------------------------------------------
-  ## C. SERIALIZATION
-  ## ---------------------------------------------------------------------
   library(BSgenome.Celegans.UCSC.ce2)
   ## Create a "sliding window" on chr I:
   sw_start <- seq.int(1, length(Celegans$chrI)-50, by=50)
   sw <- Views(Celegans$chrI, start=sw_start, width=10)
   my_fake_shortreads <- as(sw, "XStringSet")
+  my_fake_ids <- sprintf("ID\%06d",  seq_len(length(my_fake_shortreads)))
+  names(my_fake_shortreads) <- my_fake_ids
+  my_fake_shortreads
+  my_fake_quals <- rep.int(BStringSet("]]]]]]]]]]"),
+                           length(my_fake_shortreads))
+  my_fake_quals
+  out <- tempfile()
+  write.XStringSet(my_fake_shortreads, out, format="fastq",
+                   qualities=my_fake_quals)
+
+  ## ---------------------------------------------------------------------
+  ## C. SERIALIZATION
+  ## ---------------------------------------------------------------------
   save.XStringSet(my_fake_shortreads, "my_fake_shortreads", dirpath=tempdir())
 }
 

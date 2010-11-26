@@ -278,6 +278,13 @@ SEXP read_fastq_in_XStringSet(
 	SEXP lkup
 );
 
+SEXP write_XStringSet_to_fastq(
+	SEXP x,
+	SEXP efp_list,
+	SEXP qualities,
+	SEXP lkup
+);
+
 
 /* letter_frequency.c */
 

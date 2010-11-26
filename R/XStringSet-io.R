@@ -196,7 +196,7 @@ read.AAStringSet <- function(filepath, format="fasta",
 ### write.XStringSet()
 ###
 
-.write.XStringSet.to.fasta <- function(x, efp_list, width)
+.write.XStringSet.to.fasta <- function(x, efp_list, width=80L)
 {
     if (!isSingleNumber(width)) 
         stop("'width' must be a single integer")
@@ -210,11 +210,21 @@ read.AAStringSet <- function(filepath, format="fasta",
           PACKAGE="Biostrings")
 }
 
-.write.XStringSet.to.fastq <- function(x, efp_list)
-    stop("writing to a FASTQ file is not supported yet, sorry!")
+.write.XStringSet.to.fastq <- function(x, efp_list, qualities)
+{
+    if (missing(qualities))
+        stop("'qualities' is missing")
+    if (!is(qualities, "BStringSet"))
+        stop("'qualities' must be a BStringSet object")
+    if (length(qualities) != length(x))
+        stop("'x' and 'qualities' must have the same length")
+    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
+    .Call("write_XStringSet_to_fastq",
+          x, efp_list, qualities, lkup,
+          PACKAGE="Biostrings")
+}
 
-write.XStringSet <- function(x, filepath, append=FALSE, format="fasta",
-                             width=80)
+write.XStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
@@ -222,10 +232,10 @@ write.XStringSet <- function(x, filepath, append=FALSE, format="fasta",
     on.exit(.closeFiles(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
-    format <- match.arg(tolower(format), c("fasta"))
+    format <- match.arg(tolower(format), c("fasta", "fastq"))
     switch(format,
-        "fasta"=.write.XStringSet.to.fasta(x, efp_list, width),
-        "fastq"=.write.XStringSet.to.fastq(x, efp_list)
+        "fasta"=.write.XStringSet.to.fasta(x, efp_list, ...),
+        "fastq"=.write.XStringSet.to.fastq(x, efp_list, ...)
     )
     invisible(NULL)
 }
