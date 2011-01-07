@@ -26,8 +26,6 @@
 \alias{vcountPattern,XStringViews-method}
 \alias{vcountPattern,MaskedXString-method}
 
-\alias{matchDNAPattern}
-
 
 \title{String searching functions}
 

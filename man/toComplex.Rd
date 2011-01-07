@@ -3,8 +3,6 @@
 \alias{toComplex}
 \alias{toComplex,DNAString-method}
 
-\alias{as.complex,DNAString-method}
-
 
 \title{Turning a DNA sequence into a vector of complex numbers}
 

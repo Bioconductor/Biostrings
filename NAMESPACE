@@ -199,9 +199,6 @@ exportMethods(
     replaceLetterAt,
     maskMotif,
     injectHardMask,
-
-    ## Old stuff (Defunct or Deprecated):
-    as.complex
 )
 
 
@@ -283,7 +280,6 @@ export(
  
     ## Old stuff (Defunct or Deprecated):
     nmismatchStartingAt, nmismatchEndingAt, isMatching,
-    matchDNAPattern,
     PWMscore
 )
 

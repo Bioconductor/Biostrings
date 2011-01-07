@@ -244,8 +244,6 @@ setMethod("matchPattern", "MaskedXString",
                      with.indels=with.indels, fixed=fixed, algorithm=algorithm)
 )
 
-matchDNAPattern <- function(...) .Defunct("matchPattern")
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "countPattern" generic and methods.
