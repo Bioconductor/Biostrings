@@ -208,8 +208,8 @@ STRING MATCHING
     with an N would just be skipped).
 
   o Implement "duplicated" and "patternFrequency" methods for PDict objects
-    with a head or a tail. Add 'freq' arg (default FALSE) to patternFrequency()
-    like for alphabetFrequency().
+    with a head or a tail. Add 'as.prob' arg (default FALSE) to
+    patternFrequency() like for alphabetFrequency().
 
   o extractAllMatches() fails on a very big MIndex object (can't allocate
     vector of size 5.2Gb).
@@ -261,16 +261,6 @@ MISCELLANEOUS
 
 - Remove defunct matchprobes functions: complementSeq(), reverseSeq(),
   revcompDNA(), revcompRNA(), basecontent() and countbases().
-
-- Removed the 'freq' argument from the following functions:
-    alphabetFrequency
-    oligonucleotideFrequency
-    dinucleotideFrequency
-    trinucleotideFrequency
-    oligonucleotideTransitions
-    nucleotideFrequencyAt
-    consensusMatrix
-
 
 
 Long term TODO list
