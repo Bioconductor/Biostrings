@@ -29,39 +29,6 @@ char compbase(char c) {
   return(compl[p-bases]);
 }
 
-static char dna_base_comp(char c) {
-  char bases[] = "TACGNtacgn";
-  char compl[] = "ATGCNatgcn";
-  char* p;
-
-  p = strchr(bases, (int) c);
-  if (p == NULL) {
-    error("'%c' does not code for DNA.", c);
-  }
-  return compl[p - bases];
-}
-
-static char rna_base_comp(char c) {
-  char bases[] = "UACGNuacgn";
-  char compl[] = "AUGCNaugcn";
-  char* p;
-
-  p = strchr(bases, (int) c);
-  if (p == NULL) {
-    error("'%c' does not code for RNA.", c);
-  }
-  return compl[p - bases];
-}
-
-static void rev_comp(const char *in, int len, char *out, char (*base_comp)(char))
-{
-    int i, j;
-
-    for(i = 0, j = len - 1; j >= 0; i++, j--) {
-	out[i] = (*base_comp)(in[j]);
-    }
-}
-
 /*------------------------------------------------------
  get longest consecutive stretch of consecutive letters 
  ------------------------------------------------------*/
