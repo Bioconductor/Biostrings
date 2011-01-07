@@ -1,25 +1,23 @@
-\name{XStringViews-constructors}
+\name{XStringViews-constructor}
 
 % Constructor-like functions and generics:
-\alias{XStringViews-constructors}
+\alias{XStringViews-constructor}
 \alias{XStringViews}
 \alias{XStringViews,ANY-method}
 \alias{XStringViews,XString-method}
 \alias{XStringViews,XStringViews-method}
 
-% Deprecated:
+% Old stuff (Defunct or Deprecated):
 \alias{BStringViews}
 \alias{BStringViews,ANY-method}
 \alias{BStringViews,file-method}
-\alias{BStringViews,XString-method}
-\alias{BStringViews,XStringViews-method}
 \alias{adjacentViews}
 
 
 \title{Basic functions for creating or modifying XStringViews objects}
 
 \description{
-  A set of basic functions for creating or modifying XStringViews objects.
+  A set of basic functions for creating or modifying an XStringViews object.
 }
 
 \usage{

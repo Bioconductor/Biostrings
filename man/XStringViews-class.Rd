@@ -19,6 +19,8 @@
 \alias{coerce,XStringViews,DNAStringSet-method}
 \alias{coerce,XStringViews,RNAStringSet-method}
 \alias{coerce,XStringViews,AAStringSet-method}
+\alias{coerce,XStringSet,Views-method}
+\alias{coerce,XStringSet,XStringViews-method}
 
 \alias{show,XStringViews-method}
 
@@ -155,7 +157,6 @@
 \seealso{
   \link[IRanges]{Views-class},
   \code{\link[IRanges:IRanges-setops]{gaps}},
-  \link{XStringViews-constructors},
   \link{XString-class},
   \link{XStringSet-class},
   \code{\link{letter}},
@@ -214,7 +215,8 @@
 
   ## Coercion:
   as(v12, "XStringSet")  # same as 'as(v12, "DNAStringSet")'
-  as(v12, "RNAStringSet")
+  rna <- as(v12, "RNAStringSet")
+  as(rna, "Views")
 }
 
 \keyword{methods}

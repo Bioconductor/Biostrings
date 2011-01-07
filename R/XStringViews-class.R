@@ -86,6 +86,8 @@ setReplaceMethod("xsbasetype", "XStringViews",
 ### Coercion.
 ###
 
+### From XStringViews to XStringSet.
+
 XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 {
     ans_ranges <- restrict(as(x, "IRanges"), start=1L, end=nchar(subject(x)),
@@ -110,6 +112,13 @@ setAs("XStringViews", "BStringSet", function(from) BStringSet(from))
 setAs("XStringViews", "DNAStringSet", function(from) DNAStringSet(from))
 setAs("XStringViews", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("XStringViews", "AAStringSet", function(from) AAStringSet(from))
+
+### From XStringSet to XStringViews.
+
+.XStringSetAsViews <- function(from) successiveViews(unlist(from), width(from))
+
+setAs("XStringSet", "Views", .XStringSetAsViews)
+setAs("XStringSet", "XStringViews", .XStringSetAsViews)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

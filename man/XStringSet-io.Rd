@@ -17,9 +17,6 @@
 \alias{CharacterToFASTArecords}
 \alias{FASTArecordsToXStringViews}
 \alias{XStringSetToFASTArecords}
-\alias{FASTArecordsToBStringViews}
-\alias{read.BStringViews}
-\alias{write.BStringViews}
 \alias{read.XStringViews}
 \alias{write.XStringViews}
 

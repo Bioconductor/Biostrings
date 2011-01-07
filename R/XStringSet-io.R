@@ -312,94 +312,24 @@ save.XStringSet <- function(x, objname, dirpath=".",
 ###
 
 FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
-{
-    .Deprecated(msg="FASTArecordsToCharacter is deprecated.")
-    use.names <- normargUseNames(use.names)
-    ans <- sapply(FASTArecs, function(rec) rec$seq)
-    if (use.names)
-        names(ans) <- sapply(FASTArecs, function(rec) rec$desc)
-    ans
-}
+    .Defunct(msg="FASTArecordsToCharacter() is defunct with no replacement, sorry!")
 
 CharacterToFASTArecords <- function(x)
-{
-    .Deprecated(msg="CharacterToFASTArecords is deprecated.")
-    if (!is.character(x))
-        stop("'x' must be a character vector")
-    lapply(seq_len(length(x)),
-           function(i) list(desc=names(x)[i], seq=x[[i]]))
-}
+    .Defunct(msg="CharacterToFASTArecords() is defunct with no replacement, sorry!")
 
 FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
-{
-    .Deprecated(msg="FASTArecordsToXStringViews is deprecated.")
-    if (!isSingleString(subjectClass))
-        stop("'subjectClass' must be a single string")
-    if (!isSingleString(collapse))
-        stop("'collapse' must be a single string")
-    x <- FASTArecordsToCharacter(FASTArecs)
-    XStringViews(x, subjectClass, collapse)
-}
+    .Defunct(msg="FASTArecordsToXStringViews() is defunct with no replacement, sorry!")
 
 XStringSetToFASTArecords <- function(x)
-{
-    .Deprecated(msg="XStringSetToFASTArecords is deprecated.")
-    if (!is(x, "XStringSet"))
-        stop("'x' must be an XStringSet object")
-    CharacterToFASTArecords(as.character(x))
-}
-
-FASTArecordsToBStringViews <- function(FASTArecs, subjectClass, collapse="")
-{
-    .Defunct("FASTArecordsToXStringViews")
-    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse=collapse)
-}
-
-read.BStringViews <- function(file, format, subjectClass, collapse="")
-{
-    .Defunct("read.XStringViews")
-    read.XStringViews(file, format, subjectClass, collapse=collapse)
-}
-
-write.BStringViews <- function(x, file="", format, width=80)
-{
-    .Defunct("write.XStringViews")
-    write.XStringViews(x, file=file, format=format, width=width)
-}
-
-.read.fasta <- function(filepath, subjectClass, collapse)
-{
-    FASTArecs <- readFASTA(filepath, strip.descs=TRUE)
-    FASTArecordsToXStringViews(FASTArecs, subjectClass, collapse)
-}
-
-.read.fastq <- function(filepath, drop.quality=FALSE, subjectClass="DNAString")
-    stop("FASTQ format temporarily unsupported in read.XStringViews(), sorry!")
+    .Defunct(msg="XStringSetToFASTArecords() is defunct with no replacement, sorry!")
 
 read.XStringViews <- function(filepath, format="fasta",
                               subjectClass, collapse="")
-{
-    .Deprecated(msg="read.XStringViews is deprecated.")
-    if (!is.character(filepath) || any(is.na(filepath)))
-        stop("'filepath' must be a character vector with no NAs")
-    if (!isSingleString(format))
-        stop("'format' must be a single string")
-    format <- match.arg(tolower(format), c("fasta", "fastq"))
-    if (!isSingleString(subjectClass))
-        stop("'subjectClass' must be a single string")
-    if (!isSingleString(collapse))
-        stop("'collapse' must be a single string")
-    switch(format,
-        "fasta"=.read.fasta(filepath, subjectClass, collapse),
-        "fastq"=.read.fastq(filepath, drop.quality=TRUE, subjectClass)
-    )
-}
+    .Defunct(msg="read.XStringViews() is defunct: use as(read.DNAStringSet(...), \"Views\") instead")
 
 write.XStringViews <- function(x, file="", append=FALSE,
                                format="fasta", width=80)
 {
-    .Deprecated(msg="write.XStringViews is deprecated.")
-    y <- XStringViewsToSet(x, use.names=TRUE)
-    write.XStringSet(y, file=file, append=append, format, width=width)
+    .Defunct(msg="write.XStringViews() is defunct: use write.XStringSet(as(x, \"XStringSet\"), ...) instead")
 }
 

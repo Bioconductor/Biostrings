@@ -31,7 +31,7 @@ Collate: 00datacache.R
 	XString-class.R
 	XStringSet-class.R
 	XStringViews-class.R
-	XStringViews-constructors.R
+	XStringViews-constructor.R
 	MaskedXString-class.R
 	XStringSetList-class.R
 	xscat.R

@@ -67,7 +67,7 @@ letter(x, i)
   BString(x[1])[i]          # returns a BString object
 
   ## With an XStringViews object:
-  x2 <- XStringViews(x, "BString")
+  x2 <- as(BStringSet(x), "Views")
   letter(x2, i)
 }
 

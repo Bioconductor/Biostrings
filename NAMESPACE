@@ -21,7 +21,7 @@ importFrom(Biobase, "addVigs2WinMenu")
 ###   XString-class.R
 ###   XStringSet-class.R
 ###   XStringViews-class.R
-###   XStringViews-constructors.R
+###   XStringViews-constructor.R
 ###   MaskedXString-class.R
 ###   XStringSetList-class.R
 ###   XKeySortedData-class.R
@@ -62,8 +62,8 @@ export(
     compact, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     unsplit.list.of.XStringSet,
 
-    ## XStringViews-constructors.R:
-    adjacentViews, XStringViews,
+    ## XStringViews-constructor.R:
+    XStringViews,
 
     ## MaskedXString-class.R:
     unmasked,
@@ -83,7 +83,7 @@ export(
     xscat,
 
     ## Old stuff (Defunct or Deprecated):
-    BStringViews
+    BStringViews, adjacentViews
 )
 
 exportMethods(
@@ -175,8 +175,6 @@ export(
     ## Old stuff (Defunct or Deprecated):
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
-    FASTArecordsToBStringViews,
-    read.BStringViews, write.BStringViews,
     read.XStringViews, write.XStringViews,
     subXString, subBString,
     consmat,
