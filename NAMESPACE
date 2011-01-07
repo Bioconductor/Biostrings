@@ -198,7 +198,7 @@ exportMethods(
     codons, translate,
     replaceLetterAt,
     maskMotif,
-    injectHardMask,
+    injectHardMask
 )
 
 
