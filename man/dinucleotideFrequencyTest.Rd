@@ -13,8 +13,8 @@
 }
 
 \usage{
-  dinucleotideFrequencyTest(x, i, j, test = c("chisq", "G", "adjG"),
-                            simulate.p.value = FALSE, B = 2000)
+dinucleotideFrequencyTest(x, i, j, test = c("chisq", "G", "adjG"),
+                          simulate.p.value = FALSE, B = 2000)
 }
 
 \arguments{

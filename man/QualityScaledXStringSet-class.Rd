@@ -45,11 +45,11 @@
 }
 
 \usage{
-  ## Constructors:
-  QualityScaledBStringSet(x, quality)
-  QualityScaledDNAStringSet(x, quality)
-  QualityScaledRNAStringSet(x, quality)
-  QualityScaledAAStringSet(x, quality)
+## Constructors:
+QualityScaledBStringSet(x, quality)
+QualityScaledDNAStringSet(x, quality)
+QualityScaledRNAStringSet(x, quality)
+QualityScaledAAStringSet(x, quality)
 }
 
 \arguments{

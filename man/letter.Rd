@@ -15,7 +15,7 @@
 }
 
 \usage{
-  letter(x, i)
+letter(x, i)
 }
 
 \arguments{

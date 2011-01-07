@@ -15,8 +15,8 @@
 }
 
 \usage{
-  maskMotif(x, motif, min.block.width=1, ...)
-  mask(x, start=NA, end=NA, pattern)
+maskMotif(x, motif, min.block.width=1, ...)
+mask(x, start=NA, end=NA, pattern)
 }
 
 \arguments{

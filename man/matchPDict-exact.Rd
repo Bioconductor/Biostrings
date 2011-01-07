@@ -69,23 +69,23 @@
 }
 
 \usage{
-  matchPDict(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
-             algorithm="auto", verbose=FALSE)
-  countPDict(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
-             algorithm="auto", verbose=FALSE)
-  whichPDict(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
-             algorithm="auto", verbose=FALSE)
+matchPDict(pdict, subject,
+           max.mismatch=0, min.mismatch=0, fixed=TRUE,
+           algorithm="auto", verbose=FALSE)
+countPDict(pdict, subject,
+           max.mismatch=0, min.mismatch=0, fixed=TRUE,
+           algorithm="auto", verbose=FALSE)
+whichPDict(pdict, subject,
+           max.mismatch=0, min.mismatch=0, fixed=TRUE,
+           algorithm="auto", verbose=FALSE)
 
-  vcountPDict(pdict, subject,
-              max.mismatch=0, min.mismatch=0, fixed=TRUE,
-              algorithm="auto", collapse=FALSE, weight=1L,
-              verbose=FALSE, ...)
-  vwhichPDict(pdict, subject,
-              max.mismatch=0, min.mismatch=0, fixed=TRUE,
-              algorithm="auto", verbose=FALSE)
+vcountPDict(pdict, subject,
+            max.mismatch=0, min.mismatch=0, fixed=TRUE,
+            algorithm="auto", collapse=FALSE, weight=1L,
+            verbose=FALSE, ...)
+vwhichPDict(pdict, subject,
+            max.mismatch=0, min.mismatch=0, fixed=TRUE,
+            algorithm="auto", verbose=FALSE)
 }
 
 \arguments{

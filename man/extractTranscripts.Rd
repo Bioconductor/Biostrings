@@ -20,14 +20,14 @@
 }
 
 \usage{
-  extractTranscripts(x, exonStarts=list(), exonEnds=list(),
-                     strand=character(0), reorder.exons.on.minus.strand=FALSE)
+extractTranscripts(x, exonStarts=list(), exonEnds=list(),
+                   strand=character(0), reorder.exons.on.minus.strand=FALSE)
 
-  transcriptWidths(exonStarts=list(), exonEnds=list())
+transcriptWidths(exonStarts=list(), exonEnds=list())
 
-  transcriptLocs2refLocs(tlocs, exonStarts=list(), exonEnds=list(),
-                         strand=character(0),
-                         reorder.exons.on.minus.strand=FALSE)
+transcriptLocs2refLocs(tlocs, exonStarts=list(), exonEnds=list(),
+                       strand=character(0),
+                       reorder.exons.on.minus.strand=FALSE)
 }
 
 \arguments{

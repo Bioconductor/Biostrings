@@ -41,20 +41,20 @@
 }
 
 \usage{
-  PWM(x, type = c("log2probratio", "prob"),
-      prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
+PWM(x, type = c("log2probratio", "prob"),
+    prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
 
-  matchPWM(pwm, subject, min.score="80\%", ...)
-  countPWM(pwm, subject, min.score="80\%", ...)
-  PWMscoreStartingAt(pwm, subject, starting.at=1)
+matchPWM(pwm, subject, min.score="80\%", ...)
+countPWM(pwm, subject, min.score="80\%", ...)
+PWMscoreStartingAt(pwm, subject, starting.at=1)
 
-  ## Utility functions for basic manipulation of the Position Weight Matrix
-  maxWeights(x)
-  minWeights(x)
-  maxScore(x)
-  minScore(x)
-  unitScale(x)
-  \S4method{reverseComplement}{matrix}(x, ...)
+## Utility functions for basic manipulation of the Position Weight Matrix
+maxWeights(x)
+minWeights(x)
+maxScore(x)
+minScore(x)
+unitScale(x)
+\S4method{reverseComplement}{matrix}(x, ...)
 }
 
 \arguments{

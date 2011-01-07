@@ -91,23 +91,23 @@
 }
 
 \usage{
-  ## Constructors:
-  DNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
+## Constructors:
+DNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
     use.names=TRUE, rowmask=NULL, colmask=NULL)
-  RNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
+RNAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
     use.names=TRUE, rowmask=NULL, colmask=NULL)
-  AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
+AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
     use.names=TRUE, rowmask=NULL, colmask=NULL)
 
-  ## Read functions:
-  read.DNAMultipleAlignment(filepath, format)
-  read.RNAMultipleAlignment(filepath, format)
-  read.AAMultipleAlignment(filepath, format)
+## Read functions:
+read.DNAMultipleAlignment(filepath, format)
+read.RNAMultipleAlignment(filepath, format)
+read.AAMultipleAlignment(filepath, format)
 
-  ## Write funtions:
-  write.phylip(x, filepath)
+## Write funtions:
+write.phylip(x, filepath)
 
-  ## ... and more (see below)
+## ... and more (see below)
 }
 
 \arguments{

@@ -28,17 +28,17 @@
 }
 
 \usage{
-  ## Transcription:
-  transcribe(x)
-  cDNA(x)
+## Transcription:
+transcribe(x)
+cDNA(x)
 
-  ## Translation:
-  codons(x)
-  translate(x)
+## Translation:
+codons(x)
+translate(x)
 
-  ## Related utilities:
-  dna2rna(x)
-  rna2dna(x)
+## Related utilities:
+dna2rna(x)
+rna2dna(x)
 }
 
 \arguments{

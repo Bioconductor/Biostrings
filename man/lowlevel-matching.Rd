@@ -58,34 +58,34 @@
 }
 
 \usage{
-  hasLetterAt(x, letter, at, fixed=TRUE)
+hasLetterAt(x, letter, at, fixed=TRUE)
 
-  ## neditAt() and related utils:
-  neditAt(pattern, subject, at=1,
-          with.indels=FALSE, fixed=TRUE)
-  neditStartingAt(pattern, subject, starting.at=1,
-          with.indels=FALSE, fixed=TRUE)
-  neditEndingAt(pattern, subject, ending.at=1,
-          with.indels=FALSE, fixed=TRUE)
+## neditAt() and related utils:
+neditAt(pattern, subject, at=1,
+        with.indels=FALSE, fixed=TRUE)
+neditStartingAt(pattern, subject, starting.at=1,
+        with.indels=FALSE, fixed=TRUE)
+neditEndingAt(pattern, subject, ending.at=1,
+        with.indels=FALSE, fixed=TRUE)
 
-  ## isMatchingAt() and related utils:
-  isMatchingAt(pattern, subject, at=1,
-          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  isMatchingStartingAt(pattern, subject, starting.at=1,
-          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
-  isMatchingEndingAt(pattern, subject, ending.at=1,
-          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+## isMatchingAt() and related utils:
+isMatchingAt(pattern, subject, at=1,
+        max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+isMatchingStartingAt(pattern, subject, starting.at=1,
+        max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
+isMatchingEndingAt(pattern, subject, ending.at=1,
+        max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE)
 
-  ## which.isMatchingAt() and related utils:
-  which.isMatchingAt(pattern, subject, at=1,
-          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-          follow.index=FALSE, auto.reduce.pattern=FALSE)
-  which.isMatchingStartingAt(pattern, subject, starting.at=1,
-          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-          follow.index=FALSE, auto.reduce.pattern=FALSE)
-  which.isMatchingEndingAt(pattern, subject, ending.at=1,
-          max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-          follow.index=FALSE, auto.reduce.pattern=FALSE)
+## which.isMatchingAt() and related utils:
+which.isMatchingAt(pattern, subject, at=1,
+        max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+        follow.index=FALSE, auto.reduce.pattern=FALSE)
+which.isMatchingStartingAt(pattern, subject, starting.at=1,
+        max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+        follow.index=FALSE, auto.reduce.pattern=FALSE)
+which.isMatchingEndingAt(pattern, subject, ending.at=1,
+        max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+        follow.index=FALSE, auto.reduce.pattern=FALSE)
 }
 
 \arguments{

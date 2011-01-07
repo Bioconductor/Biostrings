@@ -14,10 +14,10 @@
 }
 
 \usage{
-  trimLRPatterns(Lpattern = "", Rpattern = "", subject,
-                 max.Lmismatch = 0, max.Rmismatch = 0,
-                 with.Lindels = FALSE, with.Rindels = FALSE,
-                 Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
+trimLRPatterns(Lpattern = "", Rpattern = "", subject,
+               max.Lmismatch = 0, max.Rmismatch = 0,
+               with.Lindels = FALSE, with.Rindels = FALSE,
+               Lfixed = TRUE, Rfixed = TRUE, ranges = FALSE)
 }
 
 \arguments{

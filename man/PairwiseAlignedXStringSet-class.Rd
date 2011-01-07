@@ -72,18 +72,18 @@
 }
 
 \usage{
-  ## Constructors:
-  ## When subject is missing, pattern must be of length 2
-  \S4method{PairwiseAlignedXStringSet}{XString,XString}(pattern, subject,
-    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-  \S4method{PairwiseAlignedXStringSet}{XStringSet,missing}(pattern, subject,
-    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-  \S4method{PairwiseAlignedXStringSet}{character,character}(pattern, subject,
-    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
-    baseClass = "BString")
-  \S4method{PairwiseAlignedXStringSet}{character,missing}(pattern, subject,
-    type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
-    baseClass = "BString")
+## Constructors:
+## When subject is missing, pattern must be of length 2
+\S4method{PairwiseAlignedXStringSet}{XString,XString}(pattern, subject,
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+\S4method{PairwiseAlignedXStringSet}{XStringSet,missing}(pattern, subject,
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+\S4method{PairwiseAlignedXStringSet}{character,character}(pattern, subject,
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
+  baseClass = "BString")
+\S4method{PairwiseAlignedXStringSet}{character,missing}(pattern, subject,
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
+  baseClass = "BString")
 }
 
 \arguments{

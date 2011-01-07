@@ -42,9 +42,9 @@
 }
 
 \usage{
-  ## Constructors:
-  PhredQuality(x)
-  SolexaQuality(x)
+## Constructors:
+PhredQuality(x)
+SolexaQuality(x)
 }
 
 \arguments{

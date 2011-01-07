@@ -13,7 +13,7 @@
 }
 
 \usage{
-  \S4method{chartr}{ANY,ANY,XString}(old, new, x)
+\S4method{chartr}{ANY,ANY,XString}(old, new, x)
 }
 
 \arguments{

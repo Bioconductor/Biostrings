@@ -34,10 +34,10 @@
 }
 
 \usage{
-  \S4method{reverse}{character}(x, \dots)
-  \S4method{reverse}{XString}(x, \dots)
-  complement(x, \dots)
-  reverseComplement(x, \dots)
+\S4method{reverse}{character}(x, \dots)
+\S4method{reverse}{XString}(x, \dots)
+complement(x, \dots)
+reverseComplement(x, \dots)
 }
 
 \arguments{

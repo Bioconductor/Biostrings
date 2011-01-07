@@ -14,7 +14,7 @@
 }
 
 \usage{
-  injectHardMask(x, letter="+")
+injectHardMask(x, letter="+")
 }
 
 \arguments{

@@ -50,15 +50,15 @@
 }
 
 \usage{
-  findPalindromes(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
-  palindromeArmLength(x, max.mismatch=0, ...)
-  palindromeLeftArm(x, max.mismatch=0, ...)
-  palindromeRightArm(x, max.mismatch=0, ...)
+findPalindromes(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+palindromeArmLength(x, max.mismatch=0, ...)
+palindromeLeftArm(x, max.mismatch=0, ...)
+palindromeRightArm(x, max.mismatch=0, ...)
 
-  findComplementedPalindromes(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
-  complementedPalindromeArmLength(x, max.mismatch=0, ...)
-  complementedPalindromeLeftArm(x, max.mismatch=0, ...)
-  complementedPalindromeRightArm(x, max.mismatch=0, ...)
+findComplementedPalindromes(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+complementedPalindromeArmLength(x, max.mismatch=0, ...)
+complementedPalindromeLeftArm(x, max.mismatch=0, ...)
+complementedPalindromeRightArm(x, max.mismatch=0, ...)
 }
 
 \arguments{

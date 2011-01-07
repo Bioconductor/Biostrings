@@ -43,24 +43,24 @@
 }
 
 \usage{
-  oligonucleotideFrequency(x, width, as.prob=FALSE, as.array=FALSE,
-                           fast.moving.side="right", with.labels=TRUE, ...)
-
-  \S4method{oligonucleotideFrequency}{XStringSet}(x,
-      width, as.prob=FALSE, as.array=FALSE,
-      fast.moving.side="right", with.labels=TRUE, simplify.as="matrix")
-
-  dinucleotideFrequency(x, as.prob=FALSE, as.matrix=FALSE,
-                        fast.moving.side="right", with.labels=TRUE, ...)
-  trinucleotideFrequency(x, as.prob=FALSE, as.array=FALSE,
+oligonucleotideFrequency(x, width, as.prob=FALSE, as.array=FALSE,
                          fast.moving.side="right", with.labels=TRUE, ...)
 
-  nucleotideFrequencyAt(x, at, as.prob=FALSE, as.array=TRUE,
-                        fast.moving.side="right", with.labels=TRUE, ...)
+\S4method{oligonucleotideFrequency}{XStringSet}(x,
+    width, as.prob=FALSE, as.array=FALSE,
+    fast.moving.side="right", with.labels=TRUE, simplify.as="matrix")
 
-  ## Some related functions:
-  oligonucleotideTransitions(x, left=1, right=1, as.prob=FALSE)
-  mkAllStrings(alphabet, width, fast.moving.side="right")
+dinucleotideFrequency(x, as.prob=FALSE, as.matrix=FALSE,
+                      fast.moving.side="right", with.labels=TRUE, ...)
+trinucleotideFrequency(x, as.prob=FALSE, as.array=FALSE,
+                       fast.moving.side="right", with.labels=TRUE, ...)
+
+nucleotideFrequencyAt(x, at, as.prob=FALSE, as.array=TRUE,
+                      fast.moving.side="right", with.labels=TRUE, ...)
+
+## Some related functions:
+oligonucleotideTransitions(x, left=1, right=1, as.prob=FALSE)
+mkAllStrings(alphabet, width, fast.moving.side="right")
 }
 
 \arguments{

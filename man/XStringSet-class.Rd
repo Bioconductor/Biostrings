@@ -97,17 +97,17 @@
 }
 
 \usage{
-  ## Constructors:
-  BStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
-  DNAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
-  RNAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
-  AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+## Constructors:
+BStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+DNAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+RNAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
+AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
-  ## Accessor-like methods:
-  \S4method{width}{character}(x)
-  \S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
+## Accessor-like methods:
+\S4method{width}{character}(x)
+\S4method{nchar}{XStringSet}(x, type="chars", allowNA=FALSE)
 
-  ## ... and more (see below)
+## ... and more (see below)
 }
 
 \arguments{

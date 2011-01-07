@@ -14,8 +14,8 @@
 }
 
 \usage{
-    IUPAC_CODE_MAP
-    mergeIUPACLetters(x)
+IUPAC_CODE_MAP
+mergeIUPACLetters(x)
 }
 
 \arguments{

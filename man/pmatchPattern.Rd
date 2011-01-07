@@ -39,10 +39,10 @@
 }
 
 \usage{
-  lcprefix(s1, s2)
-  lcsuffix(s1, s2)
-  lcsubstr(s1, s2)
-  pmatchPattern(pattern, subject, maxlength.out=1L)
+lcprefix(s1, s2)
+lcsuffix(s1, s2)
+lcsubstr(s1, s2)
+pmatchPattern(pattern, subject, maxlength.out=1L)
 }
 
 \arguments{

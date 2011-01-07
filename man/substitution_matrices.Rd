@@ -24,19 +24,19 @@
 }
 
 \usage{
-  data(BLOSUM45)
-  data(BLOSUM50)
-  data(BLOSUM62)
-  data(BLOSUM80)
-  data(BLOSUM100)
-  data(PAM30)
-  data(PAM40)
-  data(PAM70)
-  data(PAM120)
-  data(PAM250)
-  nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
-  qualitySubstitutionMatrices(fuzzyMatch = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
-  errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength = 4L, bitScale = 1)
+data(BLOSUM45)
+data(BLOSUM50)
+data(BLOSUM62)
+data(BLOSUM80)
+data(BLOSUM100)
+data(PAM30)
+data(PAM40)
+data(PAM70)
+data(PAM120)
+data(PAM250)
+nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
+qualitySubstitutionMatrices(fuzzyMatch = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
+errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength = 4L, bitScale = 1)
 }
 
 \arguments{

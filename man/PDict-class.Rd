@@ -106,8 +106,8 @@
 }
 
 \usage{
-  PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
-           algorithm="ACtree2", skip.invalid.patterns=FALSE)
+PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
+         algorithm="ACtree2", skip.invalid.patterns=FALSE)
 }
 
 \arguments{

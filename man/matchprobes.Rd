@@ -16,7 +16,7 @@
   \code{\link{matchPDict}} for more efficient sequence matching functions.
 }
 \usage{
-  matchprobes(query, records, probepos=FALSE)
+matchprobes(query, records, probepos=FALSE)
 }
 \arguments{
   \item{query}{A character vector. For example, each element may represent

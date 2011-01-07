@@ -16,9 +16,9 @@
 }
 
 \usage{
-  subXString(x, start=NA, end=NA, length=NA)
-  \S4method{substr}{XString}(x, start=NA, stop=NA)
-  \S4method{substring}{XString}(text, first=NA, last=NA)
+subXString(x, start=NA, end=NA, length=NA)
+\S4method{substr}{XString}(x, start=NA, stop=NA)
+\S4method{substring}{XString}(text, first=NA, last=NA)
 }
 
 \arguments{

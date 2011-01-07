@@ -42,17 +42,17 @@
 }
 
 \usage{
-  nedit(x) # also nmatch and nmismatch
+nedit(x) # also nmatch and nmismatch
 
-  mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
-  mismatchSummary(x, \dots)
-  \S4method{coverage}{AlignedXStringSet0}(x, shift=0L, width=NULL, weight=1L)
-  \S4method{coverage}{PairwiseAlignedFixedSubject}(x, shift=0L, width=NULL, weight=1L)
-  compareStrings(pattern, subject)
+mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
+mismatchSummary(x, \dots)
+\S4method{coverage}{AlignedXStringSet0}(x, shift=0L, width=NULL, weight=1L)
+\S4method{coverage}{PairwiseAlignedFixedSubject}(x, shift=0L, width=NULL, weight=1L)
+compareStrings(pattern, subject)
 
-  \S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x,
-                  as.prob=FALSE, shift=0L, width=NULL,
-                  baseOnly=FALSE, gapCode="-", endgapCode="-")
+\S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x,
+                as.prob=FALSE, shift=0L, width=NULL,
+                baseOnly=FALSE, gapCode="-", endgapCode="-")
 }
 
 \details{

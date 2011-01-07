@@ -13,7 +13,7 @@ supported).
 }
 
 \usage{
-  gregexpr2(pattern, text)
+gregexpr2(pattern, text)
 }
 
 \arguments{
@@ -47,4 +47,3 @@ supported).
 }
 
 \keyword{manip}
-

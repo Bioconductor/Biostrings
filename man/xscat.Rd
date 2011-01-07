@@ -13,7 +13,7 @@
 }
 
 \usage{
-  xscat(...)
+xscat(...)
 }
 
 \arguments{

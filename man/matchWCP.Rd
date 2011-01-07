@@ -22,9 +22,9 @@
 }
 
 \usage{
-  matchWCP(wcp, subject, min.score="80\%")
-  countWCP(wcp, subject, min.score="80\%")
-  WCPscoreStartingAt(wcp, subject, starting.at=1)
+matchWCP(wcp, subject, min.score="80\%")
+countWCP(wcp, subject, min.score="80\%")
+WCPscoreStartingAt(wcp, subject, starting.at=1)
 }
 
 \arguments{

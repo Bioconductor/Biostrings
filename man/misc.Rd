@@ -12,7 +12,7 @@
 }
 
 \usage{
-  N50(csizes)
+N50(csizes)
 }
 
 \arguments{
@@ -49,11 +49,7 @@
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. The N50 contig size
-  ## ---------------------------------------------------------------------
-
-  # generate 10 random contigs of sizes comprised between 100 and 10000
+  # Generate 10 random contigs of sizes comprised between 100 and 10000:
   my.contig <- DNAStringSet(
                  sapply(
                    sample(c(100:10000), 10),
@@ -62,11 +58,12 @@
                  )
                )
 
-  # get their sizes
+  # Get their sizes:
   my.size <- width(my.contig)
 
-  # calculate the N50 value of this set of contigs
+  # Calculate the N50 value of this set of contigs:
   my.contig.N50 <- N50(my.size)
 }
 
 \keyword{methods}
+\keyword{manip}

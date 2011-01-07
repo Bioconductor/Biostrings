@@ -11,8 +11,8 @@
 }
 
 \usage{
-    GENETIC_CODE
-    RNA_GENETIC_CODE
+GENETIC_CODE
+RNA_GENETIC_CODE
 }
 
 \details{

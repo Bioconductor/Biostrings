@@ -23,7 +23,7 @@
 }
 
 \usage{
-  XStringViews(x, subjectClass, collapse="")
+XStringViews(x, subjectClass, collapse="")
 }
 
 \arguments{

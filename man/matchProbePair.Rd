@@ -19,7 +19,7 @@
 }
 
 \usage{
-  matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
 }
 
 \arguments{

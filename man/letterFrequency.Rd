@@ -82,24 +82,24 @@ sequence, or the consensus matrix of a set of sequences}
 }
 
 \usage{
-  alphabetFrequency(x, as.prob=FALSE, ...)
-  hasOnlyBaseLetters(x)
-  uniqueLetters(x)
+alphabetFrequency(x, as.prob=FALSE, ...)
+hasOnlyBaseLetters(x)
+uniqueLetters(x)
 
-  letterFrequency(x, letters, OR="|", ...)
-  letterFrequencyInSlidingView(x, view.width, letters, OR="|")
+letterFrequency(x, letters, OR="|", ...)
+letterFrequencyInSlidingView(x, view.width, letters, OR="|")
 
-  consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
+consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
 
-  \S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
-  \S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
-               threshold=0.25, shift=0L, width=NULL)
-  \S4method{consensusString}{RNAStringSet}(x, 
-               ambiguityMap=
-               structure(as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
-                         names=
-                         as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))),
-               threshold=0.25, shift=0L, width=NULL)
+\S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
+\S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
+             threshold=0.25, shift=0L, width=NULL)
+\S4method{consensusString}{RNAStringSet}(x, 
+             ambiguityMap=
+             structure(as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
+                       names=
+                       as.character(RNAStringSet(DNAStringSet(names(IUPAC_CODE_MAP))))),
+             threshold=0.25, shift=0L, width=NULL)
 }
 
 \arguments{

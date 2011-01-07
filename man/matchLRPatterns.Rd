@@ -15,10 +15,10 @@
 }
 
 \usage{
-  matchLRPatterns(Lpattern, Rpattern, max.gaplength, subject,
-                  max.Lmismatch=0, max.Rmismatch=0,
-                  with.Lindels=FALSE, with.Rindels=FALSE,
-                  Lfixed=TRUE, Rfixed=TRUE)
+matchLRPatterns(Lpattern, Rpattern, max.gaplength, subject,
+                max.Lmismatch=0, max.Rmismatch=0,
+                with.Lindels=FALSE, with.Rindels=FALSE,
+                Lfixed=TRUE, Rfixed=TRUE)
 }
 
 \arguments{

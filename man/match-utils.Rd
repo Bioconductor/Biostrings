@@ -23,11 +23,11 @@
 }
 
 \usage{
-  mismatch(pattern, x, fixed=TRUE)
-  nmatch(pattern, x, fixed=TRUE)
-  nmismatch(pattern, x, fixed=TRUE)
-  \S4method{coverage}{MIndex}(x, shift=0L, width=NULL, weight=1L)
-  \S4method{coverage}{MaskedXString}(x, shift=0L, width=NULL, weight=1L)
+mismatch(pattern, x, fixed=TRUE)
+nmatch(pattern, x, fixed=TRUE)
+nmismatch(pattern, x, fixed=TRUE)
+\S4method{coverage}{MIndex}(x, shift=0L, width=NULL, weight=1L)
+\S4method{coverage}{MaskedXString}(x, shift=0L, width=NULL, weight=1L)
 }
 
 \arguments{

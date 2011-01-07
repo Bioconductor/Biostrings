@@ -14,7 +14,7 @@
 }
 
 \usage{
-  toComplex(x, baseValues)
+toComplex(x, baseValues)
 }
 
 \arguments{

@@ -28,10 +28,10 @@
 }
 
 \usage{
-  replaceLetterAt(x, at, letter, if.not.extending="replace", verbose=FALSE)
+replaceLetterAt(x, at, letter, if.not.extending="replace", verbose=FALSE)
 
-  ## NEVER USE THIS FUNCTION!
-  .inplaceReplaceLetterAt(x, at, letter)
+## NEVER USE THIS FUNCTION!
+.inplaceReplaceLetterAt(x, at, letter)
 }
 
 \arguments{
