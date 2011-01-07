@@ -47,8 +47,5 @@
   \code{\link{PairwiseAlignedXStringSet-class}}
 }
 
-\examples{
-}
-
 \keyword{methods}
 \keyword{classes}

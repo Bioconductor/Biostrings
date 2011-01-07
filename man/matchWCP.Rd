@@ -67,9 +67,6 @@ WCPscoreStartingAt(wcp, subject, starting.at=1)
   \link{XStringViews-class}
 }
 
-\examples{
-}
-
 \keyword{methods}
 \keyword{manip}
 \keyword{utilities}

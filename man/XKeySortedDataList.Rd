@@ -27,17 +27,11 @@
   dictionaries with XString-based keys and DataFrame (an IRanges class) values.
 }
 
-\details{
-}
-
 \author{P. Aboyoun}
 
 \seealso{
   \link{XKeySortedData-class},
   \link[IRanges]{SimpleList-class}
-}
-
-\examples{
 }
 
 \keyword{methods}

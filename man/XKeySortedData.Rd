@@ -36,17 +36,11 @@
   XString-based keys and DataFrame (an IRanges class) values.
 }
 
-\details{
-}
-
 \author{P. Aboyoun}
 
 \seealso{
   \link{XStringSet-class},
   \link[IRanges]{DataFrame-class}
-}
-
-\examples{
 }
 
 \keyword{methods}

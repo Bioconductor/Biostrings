@@ -29,17 +29,11 @@
   XString-based strings.
 }
 
-\details{
-}
-
 \author{P. Aboyoun}
 
 \seealso{
   \code{\link{matchWCP}},
   \link{XString-class}
-}
-
-\examples{
 }
 
 \keyword{methods}
