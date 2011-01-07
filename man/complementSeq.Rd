@@ -3,8 +3,10 @@
 
 \title{Complementary sequence.}
 \description{
-  WARNING: \code{complementSeq} has been
-  deprecated in favor of \code{\link{complement}}.
+  WARNING: \code{complementSeq} is now defunct and will be removed
+  soon together with this man page.
+  See the examples at the bottom of the man page for how to use
+  \code{\link{complement}} instead.
 
   Function to obtain the complementary sequence.
 }
@@ -49,23 +51,23 @@ complementSeq(seq, start=1, stop=0)
   ## ---------------------------------------------------------------------
   seq <- c("AAACT", "GGGTT")
 
-  ## Don't do this anymore (deprecated):
+  ## You can't do this anymore (defunct):
   if (interactive()) {
-    complementSeq(seq)  # inefficient on large vectors
+    complementSeq(seq)  # was inefficient on large vectors
   }
-  ## But do this instead:
-  complement(DNAStringSet(seq))  # more efficient
+  ## But you can do this instead:
+  complement(DNAStringSet(seq))
 
   ## ---------------------------------------------------------------------
   ## EXAMPLE 2
   ## ---------------------------------------------------------------------
   seq <- c("CGACTGAGACCAAGACCTACAACAG", "CCCGCATCATCTTTCCTGTGCTCTT")
 
-  ## Don't do this anymore (deprecated):
+  ## You can't do this anymore (defunct):
   if (interactive()) {
     complementSeq(seq, start=13, stop=13)
   }
-  ## But do this instead:
+  ## But you can do this instead:
   pm2mm <- function(probes)
   {
       probes <- DNAStringSet(probes)
@@ -73,15 +75,5 @@ complementSeq(seq, start=1, stop=0)
       probes
   }
   pm2mm(seq) 
-
-  ## ---------------------------------------------------------------------
-  ## SPEED OF complementSeq() VS complement()
-  ## ---------------------------------------------------------------------
-  if (interactive()) {
-    library(hgu95av2probe)
-    system.time(y1 <- complementSeq(hgu95av2probe$sequence))
-    probes <- DNAStringSet(hgu95av2probe)
-    system.time(y2 <- complement(probes))
-  }
 }
 \keyword{manip}

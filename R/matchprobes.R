@@ -1,83 +1,51 @@
 matchprobes <- function(query, records, probepos=FALSE) 
-   .Call("MP_matchprobes", toupper(query), toupper(records), probepos, PACKAGE="Biostrings")
+  .Call("MP_matchprobes", toupper(query), toupper(records), probepos, PACKAGE="Biostrings")
 
 complementSeq <- function(seq, start=1, stop=0)
 {
-  msg <- c("'complementSeq' is deprecated.\n",
+  msg <- c("'complementSeq' is defunct.\n",
            "Use 'complement(DNAStringSet(seq))' instead.\n",
            "See '?complementSeq'")
-  .Deprecated("complement", msg=msg)
-  .Call("MP_complementSeq", seq, as.integer(start), as.integer(stop), PACKAGE="Biostrings")
+  .Defunct("complement", msg=msg)
 }
 
 reverseSeq  <- function(seq)
 {
-  msg <- c("'reverseSeq' is deprecated.\n",
-           "Use 'reverse(BStringSet(seq))' instead.\n",
+  msg <- c("'reverseSeq' is defunct.\n",
+           "Use 'reverse(DNAStringSet(seq))' or 'reverse(BStringSet(seq))' instead.\n",
            "See '?reverseSeq'")
-  .Deprecated("reverse", msg=msg)
-  .Call("MP_revstring", seq, PACKAGE="Biostrings")
+  .Defunct("reverse", msg=msg)
 }
 
 revcompDNA <- function(seq)
 {
-  msg <- c("'revcompDNA' is deprecated.\n",
+  msg <- c("'revcompDNA' is defunct.\n",
            "Use 'reverseComplement(DNAString(seq))' instead.\n",
            "See '?revcompDNA'")
-  .Deprecated("reverseComplement", msg=msg)
-  .Call("MP_dna_revcomp", seq, PACKAGE="Biostrings")
+  .Defunct("reverseComplement", msg=msg)
 }
 
 revcompRNA <- function(seq)
 {
-  msg <- c("'revcompRNA' is deprecated.\n",
+  msg <- c("'revcompRNA' is defunct.\n",
            "Use 'reverseComplement(RNAString(seq))' instead.\n",
            "See '?revcompRNA'")
-  .Deprecated("reverseComplement", msg=msg)
-  .Call("MP_rna_revcomp", seq, PACKAGE="Biostrings")
+  .Defunct("reverseComplement", msg=msg)
 }
 
 longestConsecutive <- function(seq, letter) 
   .Call("MP_longestConsecutive", seq, letter, PACKAGE="Biostrings")
 
 basecontent <- function(seq) {
-  msg <- c("'basecontent' is deprecated.\n",
+  msg <- c("'basecontent' is defunct.\n",
            "Use 'alphabetFrequency(DNAStringSet(seq), baseOnly=TRUE)' instead.\n",
            "See '?basecontent'")
-  .Deprecated("alphabetFrequency", msg=msg)
-  good   = !is.na(seq)
-  havena = !all(good)
-  if(havena)
-    seq = seq[good]
-  
-  rv = .Call("MP_basecontent", seq, TRUE, PACKAGE="Biostrings")
-
-  if(havena) {
-    z = rv
-    rv = matrix(NA, nrow=length(good), ncol=ncol(z))
-    colnames(rv) = colnames(z)
-    rv[good, ] = z
-  }
-  
-  class(rv) <- c("probetable", class(rv))
-  return(rv)
+  .Defunct("alphabetFrequency", msg=msg)
 }
 
 countbases <- function(seq, dna=TRUE) {
-    msg <- c("'basecontent' is deprecated.\n",
-             "Use 'alphabetFrequency(DNAStringSet(seq), baseOnly=TRUE)' instead.\n",
-             "See '?countbases'")
-    .Deprecated("alphabetFrequency", msg=msg)
-    good = !is.na(seq)
-    havena = !all(good)
-    if(havena)
-      seq = seq[good]
-    rv = .Call("MP_basecontent", seq, dna, PACKAGE="Biostrings")
-    if (havena) {
-        z = rv
-        rv = matrix(NA, nrow=length(good), ncol=ncol(z))
-        colnames(rv) = colnames(z)
-        rv[good, ] = z
-    }
-    rv
+  msg <- c("'countbases' is defunct.\n",
+           "Use 'alphabetFrequency(DNAStringSet(seq), baseOnly=TRUE)' instead.\n",
+           "See '?countbases'")
+  .Defunct("alphabetFrequency", msg=msg)
 }

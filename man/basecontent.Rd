@@ -4,8 +4,10 @@
 
 \title{Obtain the ATCG content of a gene}
 \description{
-  WARNING: Both \code{basecontent} and \code{countbases} have been
-  deprecated in favor of \code{\link{alphabetFrequency}}.
+  WARNING: Both \code{basecontent} and \code{countbases} are now defunct
+  and will be removed soon together with this man page.
+  See the examples at the bottom of the man page for how to use
+  \code{\link{alphabetFrequency}} instead.
 
   These functions accept a character vector representing the nucleotide
   sequences and compute the frequencies of each base (A, C, G, T).
@@ -41,22 +43,14 @@ countbases(seq, dna = TRUE)
 \examples{
  v<-c("AAACT", "GGGTT", "ggAtT")
 
- ## Do not use these functions anymore:
+ ## You can't use these functions anymore (defunct):
  if (interactive()) {
    basecontent(v)
    countbases(v)
  }
 
- ## But use more efficient alphabetFrequency() instead:
+ ## But you can do this instead:
  v <- DNAStringSet(v)
  alphabetFrequency(v, baseOnly=TRUE)
-
- ## Comparing efficiencies:
- if (interactive()) {
-   library(hgu95av2probe)
-   system.time(y1 <- countbases(hgu95av2probe$sequence))
-   x <- DNAStringSet(hgu95av2probe)
-   system.time(y2 <- alphabetFrequency(x, baseOnly=TRUE))
- }
 }
 \keyword{manip}

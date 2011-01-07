@@ -5,8 +5,11 @@
 
 \title{Reverse Sequence}
 \description{
-  WARNING: The functions described in this man page have been deprecated
-  in favor of \code{\link{reverse,XString-method}} and \code{\link{reverseComplement}}.
+  WARNING: The functions described in this man page are now defunct
+  and will be removed soon together with this man page.
+  See the examples at the bottom of the man page for how to use
+  \code{\link{reverse,XString-method}} and \code{\link{reverseComplement}}
+  instead.
 
   Functions to obtain the reverse and reverse complement of a sequence}
 \usage{
@@ -33,38 +36,35 @@ revcompRNA(seq)
 
 \examples{
  w <-  c("hey there", "you silly fool")
+ ## You can't do this anymore (defunct):
  if (interactive()) {
-   reverseSeq(w)  # deprecated (inefficient on large vectors)
+   reverseSeq(w)  # was inefficient on large vectors
  }
- reverse(BStringSet(w))  # more efficient
+ ## But you can do this instead:
+ reverse(BStringSet(w))
 
  w <- "able was I ere I saw Elba"
+ ## You can't do this anymore (defunct):
  if (interactive()) {
-   reverseSeq(w)  # deprecated (inefficient on large vectors)
+   reverseSeq(w)  # was inefficient on large vectors
  }
- reverse(BStringSet(w))  # more efficient
+ ## But you can do this instead:
+ reverse(BStringSet(w))
 
  rna1 <- "UGCA"
+ ## You can't do this anymore (defunct):
  if (interactive()) {
-   revcompRNA(rna1)  # deprecated (inefficient on large vectors)
+   revcompRNA(rna1)  # was inefficient on large vectors
  }
- reverseComplement(RNAString(rna1))  # more efficient
+ ## But you can do this instead:
+ reverseComplement(RNAString(rna1))
 
  dna1 <- "TGCA"
+ ## You can't do this anymore (defunct):
  if (interactive()) {
-   revcompDNA(dna1)  # deprecated (inefficient on large vectors)
+   revcompDNA(dna1)  # was inefficient on large vectors
  }
- reverseComplement(DNAString(dna1))  # more efficient
-
- ## Comparing efficiencies:
- if (interactive()) {
-   library(hgu95av2probe)
-   system.time(y1 <- reverseSeq(hgu95av2probe$sequence))
-   x <- DNAStringSet(hgu95av2probe)
-   system.time(y2 <- reverse(x))
-
-   system.time(y3 <- revcompDNA(hgu95av2probe$sequence))
-   system.time(y4 <- reverseComplement(x))
- }
+ ## But you can do this instead:
+ reverseComplement(DNAString(dna1))
 }
 \keyword{manip}

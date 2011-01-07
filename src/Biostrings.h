@@ -1308,11 +1308,6 @@ SEXP align_needwunsQS(
 /* strutils.c (belonged originally to old matchprobes package) */
 
 char compbase(char c);
-SEXP MP_rna_revcomp(SEXP x);
-SEXP MP_dna_revcomp(SEXP x);
-SEXP MP_revstring(SEXP x);
-SEXP MP_complementSeq(SEXP x, SEXP start, SEXP stop);
-SEXP MP_basecontent(SEXP x, SEXP dna);
 SEXP MP_longestConsecutive(SEXP x, SEXP letter);
 
 

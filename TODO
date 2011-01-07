@@ -105,8 +105,6 @@ UTILITIES
 
 - Use subseq() instead of subXString(). Remove subXString.R file.
 
-- Finish C implementation of read.XStringViews()
-
 - Add a new generic that combines a subject and an IRanges (or IRanges-like)
   object to return an XStringViews object. The IRanges-like object could be
   MIndex object and the method for it would do as if it had received
@@ -256,14 +254,13 @@ MISCELLANEOUS
 
 
 
-2.17 series (BioC 2.7)
+2.21 series (BioC 2.9)
 ----------------------
 
-- Defunct old matchprobes functions: complementSeq(), reverseSeq(),
-  revcompDNA(), revcompRNA(), matchprobes().
+- Deprecate old matchprobes functions: matchprobes(), longestConsecutive().
 
-- Remove old matchprobes functions: complementSeq(), reverseSeq(),
-  revcompDNA(), revcompRNA(), matchprobes().
+- Remove defunct matchprobes functions: complementSeq(), reverseSeq(),
+  revcompDNA(), revcompRNA(), basecontent() and countbases().
 
 - Removed the 'freq' argument from the following functions:
     alphabetFrequency

@@ -206,11 +206,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(align_needwunsQS, 7),
 
 /* strutils.c (belonged originally to old matchprobes package) */
-	CALLMETHOD_DEF(MP_rna_revcomp, 1),
-	CALLMETHOD_DEF(MP_dna_revcomp, 1),
-	CALLMETHOD_DEF(MP_revstring, 1),
-	CALLMETHOD_DEF(MP_complementSeq, 3),
-	CALLMETHOD_DEF(MP_basecontent, 2),
 	CALLMETHOD_DEF(MP_longestConsecutive, 2),
 
 /* matchprobes.c (belonged originally to old matchprobes package) */
