@@ -75,11 +75,12 @@ setGeneric("BStringViews", signature="src",
     function(src, subjectClass, collapse="") standardGeneric("BStringViews")
 )
 
-setMethod("BStringViews", "ANY", .Defunct("XStringViews"))
+setMethod("BStringViews", "ANY",
+    function(src, subjectClass, collapse="") .Defunct("XStringViews")
+)
 
 setMethod("BStringViews", "file",
-    function(src, subjectClass, collapse="")
-        .Defunct("read.DNAStringSet")
+    function(src, subjectClass, collapse="") .Defunct("read.DNAStringSet")
 )
 
 adjacentViews <- function(subject, width, gapwidth=0)
