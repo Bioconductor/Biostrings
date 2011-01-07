@@ -810,11 +810,3 @@ setMethod("consensusString", "ANY",
                         ambiguityMap=ambiguityMap, threshold=threshold)
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-setGeneric("consmat", function(x, ...) standardGeneric("consmat"))
-
-setMethod("consmat", "ANY", function(x, ...) .Defunct("consensusMatrix"))

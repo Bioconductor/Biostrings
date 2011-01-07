@@ -49,10 +49,6 @@
 \alias{consensusString,XStringViews-method}
 \alias{consensusString,ANY-method}
 
-% Old stuff:
-\alias{consmat}
-\alias{consmat,ANY-method}
-
 
 \title{Calculate the frequency of letters in a biological
 sequence, or the consensus matrix of a set of sequences}

@@ -176,7 +176,6 @@ export(
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
     read.XStringViews, write.XStringViews,
     subXString,
-    consmat,
     replaceLetterAtLoc
 )
 
@@ -202,8 +201,7 @@ exportMethods(
     injectHardMask,
 
     ## Old stuff (Defunct or Deprecated):
-    as.complex,
-    consmat
+    as.complex
 )
 
 
