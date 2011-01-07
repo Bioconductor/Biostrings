@@ -38,7 +38,6 @@ Collate: 00datacache.R
 	FASTA-io-legacy.R
 	XStringSet-io.R
 	letter.R
-	subXString.R
 	letterFrequency.R
 	dinucleotideFrequencyTest.R
 	chartr.R

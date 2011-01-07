@@ -323,6 +323,19 @@ setMethod("!=", signature(e1="character", e2="BString"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "substr" and "substring" methods.
+###
+
+setMethod("substr", "XString",
+    function(x, start, stop) subseq(x, start=start, end=stop)
+)
+
+setMethod("substring", "XString",
+    function(text, first, last=1000000L) subseq(text, start=first, end=last)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### updateObject()
 ###
 
@@ -343,4 +356,11 @@ setMethod("updateObject", "XString",
             length=object@length)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+subXString <- function(x, start=NA, end=NA, length=NA) .Defunct("subseq")
 

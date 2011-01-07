@@ -111,7 +111,6 @@ exportMethods(
 ###   FASTA-io-legacy.R
 ###   XStringSet-io.R
 ###   letter.R
-###   subXString.R
 ###   letterFrequency.R
 ###   dinucleotideFrequencyTest.R
 ###   chartr.R
@@ -176,7 +175,7 @@ export(
     FASTArecordsToCharacter, CharacterToFASTArecords,
     FASTArecordsToXStringViews, XStringSetToFASTArecords,
     read.XStringViews, write.XStringViews,
-    subXString, subBString,
+    subXString,
     consmat,
     replaceLetterAtLoc
 )

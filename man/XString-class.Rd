@@ -46,8 +46,15 @@
 \alias{!=,BString,character-method}
 \alias{!=,character,BString-method}
 
-% updateObject:
+% "substr" and "substring" methods:
+\alias{substr,XString-method}
+\alias{substring,XString-method}
+
+% "updateObject" method:
 \alias{updateObject,XString-method}
+
+% Old stuff:
+\alias{subXString}
 
 
 \title{BString objects}
