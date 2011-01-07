@@ -465,20 +465,11 @@ hasLetterAt <- function(x, letter, at, fixed=TRUE)
 ###
 
 nmismatchStartingAt <- function(pattern, subject, starting.at=1, fixed=TRUE)
-{
-    .Deprecated("neditStartingAt")
-    neditStartingAt(pattern, subject, starting.at=starting.at, with.indels=FALSE, fixed=fixed)
-}
+    .Defunct("neditStartingAt")
 
 nmismatchEndingAt <- function(pattern, subject, ending.at=1, fixed=TRUE)
-{
-    .Deprecated("neditEndingAt")
-    neditEndingAt(pattern, subject, ending.at=ending.at, with.indels=FALSE, fixed=fixed)
-}
+    .Defunct("neditEndingAt")
 
 isMatching <- function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-{
-    .Deprecated("isMatchingAt")
-    isMatchingAt(pattern, subject, at=start, max.mismatch=max.mismatch, with.indels=FALSE, fixed=fixed)
-}
+    .Defunct("isMatchingAt")
 

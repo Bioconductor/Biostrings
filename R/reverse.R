@@ -157,9 +157,5 @@ setMethod("reverseComplement", "MaskedRNAString",
 ### Old stuff (Defunct or Deprecated).
 ###
 
-strrev <- function(x)
-{
-    .Deprecated("reverse")
-    reverse(x)
-}
+strrev <- function(x) .Defunct("reverse")
 

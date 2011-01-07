@@ -166,10 +166,8 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
 }
 
 PWMscore <- function(pwm, subject, start=1)
-{
-    .Deprecated('PWMscoreStartingAt')
-    PWMscoreStartingAt(pwm, subject, starting.at=start)
-}
+    .Defunct('PWMscoreStartingAt')
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "matchPWM" generic and methods.
