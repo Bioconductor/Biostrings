@@ -110,6 +110,16 @@ function(from, qualityClass)
 .XStringQualityToNumeric <- function(from, qualityClass)
 	qualityConverter(BStringSet(from), qualityClass, "numeric")
 
+.XStringQualityToIntegerMatrix <- function(x)
+{
+    if (!isConstant(width(x)))
+        stop("'x' must be rectangular (i.e. have a constant width)")
+    ans <- matrix(as.integer(unlist(x)) - offset(x),
+                  nrow=length(x), byrow=TRUE)
+    rownames(ans) <- names(x)
+    ans
+}
+
 setAs("character", "PhredQuality",
       function(from) .characterToXStringQuality(from, "PhredQuality"))
 setAs("BString", "PhredQuality",
@@ -143,6 +153,11 @@ setMethod("as.integer", "SolexaQuality", function(x) as(x, "integer"))
 setAs("SolexaQuality", "numeric",
       function(from) .XStringQualityToNumeric(from, "SolexaQuality"))
 setMethod("as.numeric", "SolexaQuality", function(x) as(x, "numeric"))
+
+setMethod("as.matrix", "XStringQuality",
+    function(x, ...) .XStringQualityToIntegerMatrix(x)
+)
+setAs("XStringQuality", "matrix", function(from) as.matrix(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

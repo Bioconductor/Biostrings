@@ -34,6 +34,9 @@
 \alias{coerce,SolexaQuality,numeric-method}
 \alias{as.numeric,SolexaQuality-method}
 
+\alias{as.matrix,XStringQuality-method}
+\alias{coerce,XStringQuality,matrix-method}
+
 
 \title{PhredQuality and SolexaQuality objects}
 
@@ -79,8 +82,10 @@ SolexaQuality(x)
 
   PhredQuality(seq(1e-4,0.5,length=10))
   SolexaQuality(seq(1e-4,0.5,length=10))
+
+  x <- SolexaQuality(BStringSet(c(a="@ABC", b="abcd")))
+  as.matrix(x)
 }
 
 \keyword{methods}
 \keyword{classes}
-
