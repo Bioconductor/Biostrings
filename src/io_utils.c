@@ -170,43 +170,23 @@ SEXP ExternalFilePtr_close(SEXP e)
  */
 
 /*
- * Right-trims the string stored into the buffer pointed to by linebuf.
- * If size is -1, then the size of the buffer is determined by a call to
- * strlen().
- * Return the number of chars that remain in the buffer after we've removed
- * the right spaces ('\n', '\r', '\t', ' ', etc...).
+ * Doesn't actually delete anything but returns the size the 'linebuf' char
+ * array would have after deletion of the LF ("\n") or CRLF ("\r\n") chars
+ * located at its end.
+ * If 'size' is -1, then 'linebuf' must be a C string (i.e. null-terminated).
  */
-int rtrimline(char *linebuf, int size)
+int delete_trailing_LF_or_CRLF(const char *linebuf, int size)
 {
 	if (size == -1)
 		size = strlen(linebuf);
-	size--;
-	while (size >= 0 && isspace(linebuf[size])) size--;
-	linebuf[++size] = 0;
+	if (size == 0)
+		return 0;
+	if (linebuf[--size] != '\n')
+		return ++size;
+	if (size == 0)
+		return 0;
+	if (linebuf[--size] != '\r')
+		return ++size;
 	return size;
-}
-
-/* Like fgets() except that:
- *   - The string stored into the buffer pointed to by s is right-trimmed i.e.
- *     all the rightmost white-space characters are removed.
- *   - It returns the length of s on success and -1 on error or when end of
- *     file occurs while no characters have been read.
- */
-int fgets_rtrimmed(char *s, int size, FILE *stream)
-{
-	long pos0;
-	char *s1;
-	int line_len;
-
-	pos0 = ftell(stream);
-	s1 = fgets(s, size, stream);
-	if (s1 == NULL)
-		return -1;
-	/* 2 almost equivalent ways to get the length of the current line,
-	   "almost" because they will differ if a line contains embedded
-	   NUL characters */
-	line_len = ftell(stream) - pos0; /* should be faster than strlen() */
-	/* line_len = strlen(s); */
-	return rtrimline(s, line_len);
 }
 

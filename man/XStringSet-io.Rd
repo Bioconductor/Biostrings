@@ -60,7 +60,6 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   }
   \item{format}{
     Either \code{"fasta"} (the default) or \code{"fastq"}.
-    Note that \code{write.XStringSet} only supports \code{"fasta"} for now.
   }
   \item{nrec}{
     Single integer. The maximum of number of records to read in.
@@ -139,6 +138,10 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   different widths).
 
   \code{write.XStringSet} writes an \link{XStringSet} object to a file.
+  WARNING: Please be aware that using \code{write.XStringSet} on a
+  \link{BStringSet} object that contains the '\n' (LF) or '\r' (CR)
+  characters or the FASTA markup characters '>' or ';' is almost
+  guaranteed to produce a broken FASTA file!
 
   Serializing an \link{XStringSet} object with \code{save.XStringSet}
   is equivalent to using the standard \code{save} mechanism. But it will

@@ -206,8 +206,8 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 	load_record = -1;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
-		dataline.length = rtrimline(linebuf, -1);
-		// dataline.length > LINEBUF_SIZE - 1 should never happen
+		dataline.length = delete_trailing_LF_or_CRLF(linebuf, -1);
+		// dataline.length >= LINEBUF_SIZE should never happen
 		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long",
@@ -216,6 +216,7 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 		}
 		if (dataline.length == 0)
 			continue; // we ignore empty lines
+		linebuf[dataline.length] = '\0';
 		if (strncmp(linebuf, FASTA_comment_markup,
 				FASTA_comment_markup_length) == 0)
 			continue; // we ignore comment lines
@@ -273,7 +274,8 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names)
 				nrec0, skip0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
-			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
+			      CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
+			      errmsg_buf);
 	}
 	PROTECT(ans = new_INTEGER_from_IntAE(&(loader_ext.seqlengths_buf)));
 	if (load_descs) {
@@ -550,8 +552,8 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 	lineno = lineinrecno = 0;
 	while (fgets(linebuf, LINEBUF_SIZE, stream) != NULL) {
 		lineno++;
-		dataline.length = rtrimline(linebuf, -1);
-		// dataline.length > LINEBUF_SIZE - 1 should never happen
+		dataline.length = delete_trailing_LF_or_CRLF(linebuf, -1);
+		// dataline.length >= LINEBUF_SIZE should never happen
 		if (dataline.length >= LINEBUF_SIZE - 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long",
@@ -560,6 +562,7 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 		}
 		if (dataline.length == 0)
 			continue; // we ignore empty lines
+		linebuf[dataline.length] = '\0';
 		dataline.seq = linebuf;
 		lineinrecno++;
 		if (lineinrecno > 4)
@@ -636,7 +639,8 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 				nrec0, skip0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
-			      STRING_ELT(GET_NAMES(efp_list), i), errmsg_buf);
+			      CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
+			      errmsg_buf);
 	}
 	PROTECT(ans = NEW_INTEGER(2));
 	INTEGER(ans)[0] = loader.nrec;

@@ -67,15 +67,9 @@ SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append);
 
 SEXP ExternalFilePtr_close(SEXP x);
 
-int rtrimline(
-	char *linebuf,
+int delete_trailing_LF_or_CRLF(
+	const char *linebuf,
 	int size
-);
-
-int fgets_rtrimmed(
-	char *s,
-	int size,
-	FILE *stream
 );
 
 
