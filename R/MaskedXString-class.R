@@ -284,7 +284,7 @@ setMethod("subseq", "MaskedXString",
     function(x, start=NA, end=NA, width=NA)
     {
         x@unmasked <- subseq(unmasked(x), start=start, end=end, width=width)
-        x@masks <- subseq(masks(x), start=start, end=end, width=width)
+        x@masks <- narrow(masks(x), start=start, end=end, width=width)
         x
     }
 )
