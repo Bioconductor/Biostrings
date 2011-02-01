@@ -1,5 +1,7 @@
 \name{XStringSet-io}
 
+\alias{XStringSet-io}
+
 \alias{read.BStringSet}
 \alias{read.DNAStringSet}
 \alias{read.RNAStringSet}

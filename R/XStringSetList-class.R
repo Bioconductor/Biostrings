@@ -9,7 +9,7 @@
 ###
 
 setClass("XStringSetList",
-    contains="Sequence",
+    contains="List",
     representation(
         "VIRTUAL",
         unlisted="XStringSet",

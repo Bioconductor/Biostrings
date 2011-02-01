@@ -242,12 +242,15 @@ setMethod("tail", "PDict3Parts",
 ###
 
 setClass("PDict",
-    contains="Sequence",
+    contains="List",
     representation(
         "VIRTUAL",
         dict0="DNAStringSet",
         constant_width="logical",
         dups0="Dups"
+    ),
+    prototype(
+        elementType="DNAString"
     )
 )
 

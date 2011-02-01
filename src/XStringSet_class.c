@@ -41,7 +41,7 @@ SEXP _get_XStringSet_width(SEXP x)
 
 const char *_get_XStringSet_xsbaseclassname(SEXP x)
 {
-	return get_Sequence_elementType(x);
+	return get_List_elementType(x);
 }
 
 
