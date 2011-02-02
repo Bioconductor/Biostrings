@@ -228,15 +228,22 @@ write.XStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
-    efp_list <- .openOutputFile(filepath, append)
-    on.exit(.closeFiles(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    switch(format,
-        "fasta"=.write.XStringSet.to.fasta(x, efp_list, ...),
-        "fastq"=.write.XStringSet.to.fastq(x, efp_list, ...)
-    )
+    efp_list <- .openOutputFile(filepath, append)
+    res <- try(switch(format,
+                   "fasta"=.write.XStringSet.to.fasta(x, efp_list, ...),
+                   "fastq"=.write.XStringSet.to.fastq(x, efp_list, ...)
+               ),
+               silent=FALSE)
+    .closeFiles(efp_list)
+    if (is(res, "try-error") && !append) {
+        ## Get the expamded path and remove the file.
+        expath <- attr(efp_list[[1L]], "expath")
+        if (!file.remove(expath))
+            warning("cannot remove file '", expath, "'")
+    }
     invisible(NULL)
 }
 

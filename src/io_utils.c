@@ -116,7 +116,7 @@ static FILE *open_input_file(const char *path)
 SEXP new_input_ExternalFilePtr(SEXP filepath)
 {
 	SEXP filepath_elt;
-	const char *path;
+	const char *expath;
 	FILE *fp;
 
 	if (!IS_CHARACTER(filepath) || LENGTH(filepath) != 1)
@@ -125,8 +125,8 @@ SEXP new_input_ExternalFilePtr(SEXP filepath)
 	if (filepath_elt == NA_STRING)
 		error("'filepath' is NA");
 	// Maybe do this in R, not here.
-	path = R_ExpandFileName(translateChar(filepath_elt));
-	fp = open_input_file(path);
+	expath = R_ExpandFileName(translateChar(filepath_elt));
+	fp = open_input_file(expath);
 	return R_MakeExternalPtr(fp, R_NilValue, R_NilValue);
 }
 
@@ -135,8 +135,8 @@ SEXP new_input_ExternalFilePtr(SEXP filepath)
  */
 SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append)
 {
-	SEXP filepath_elt;
-	const char *path, *mode;
+	SEXP filepath_elt, ans, string;
+	const char *expath, *mode;
 	FILE *fp;
 
 	if (!IS_CHARACTER(filepath) || LENGTH(filepath) != 1)
@@ -145,10 +145,14 @@ SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append)
 	if (filepath_elt == NA_STRING)
 		error("'filepath' is NA");
 	// Maybe do this in R, not here.
-	path = R_ExpandFileName(translateChar(filepath_elt));
+	expath = R_ExpandFileName(translateChar(filepath_elt));
 	mode = LOGICAL(append)[0] ? "a" : "w";
-	fp = open_file(path, mode);
-	return R_MakeExternalPtr(fp, R_NilValue, R_NilValue);
+	fp = open_file(expath, mode);
+	PROTECT(ans = R_MakeExternalPtr(fp, R_NilValue, R_NilValue));
+	PROTECT(string = mkString(expath));
+	setAttrib(ans, install("expath"), string);
+	UNPROTECT(2);
+	return ans;
 }
 
 /* --- .Call ENTRY POINT ---
