@@ -171,8 +171,8 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   fasta.info(filepath)
   x <- read.DNAStringSet(filepath)
   x
-  out <- tempfile()
-  write.XStringSet(x, out)
+  out1 <- tempfile()
+  write.XStringSet(x, out1)
 
   ## ---------------------------------------------------------------------
   ## B. READ/WRITE FASTQ FILES
@@ -190,11 +190,17 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   my_fake_ids <- sprintf("ID\%06d",  seq_len(length(my_fake_shortreads)))
   names(my_fake_shortreads) <- my_fake_ids
   my_fake_shortreads
-  my_fake_quals <- rep.int(BStringSet("]]]]]]]]]]"),
+
+  ## Fake quality ';' will be assigned to each base in 'my_fake_shortreads':
+  out2 <- tempfile()
+  write.XStringSet(my_fake_shortreads, out2, format="fastq")
+
+  ## Passing qualities thru the 'qualities' argument:
+  my_fake_quals <- rep.int(BStringSet("DCBA@?>=<;"),
                            length(my_fake_shortreads))
   my_fake_quals
-  out <- tempfile()
-  write.XStringSet(my_fake_shortreads, out, format="fastq",
+  out3 <- tempfile()
+  write.XStringSet(my_fake_shortreads, out3, format="fastq",
                    qualities=my_fake_quals)
 
   ## ---------------------------------------------------------------------
