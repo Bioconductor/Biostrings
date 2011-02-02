@@ -740,6 +740,46 @@ static const char *get_FASTQ_rec_id(SEXP x_names, SEXP q_names, int i)
 	return CHAR(seqid);
 }
 
+static int write_FASTQ_id(FILE *stream, const char *markup, const char *id)
+{
+	return fputs(markup, stream) == EOF
+	    || fputs(id, stream) == EOF
+	    || fputs("\n", stream) == EOF;
+}
+
+static int write_FASTQ_seq(FILE *stream, const char *linebuf)
+{
+	return fputs(linebuf, stream) == EOF
+	    || fputs("\n", stream) == EOF;
+}
+
+static int write_FASTQ_qual(FILE *stream, int seqlen,
+		const cachedXStringSet *Q, int i)
+{
+	cachedCharSeq Q_elt;
+	int j;
+
+	Q_elt = _get_cachedXStringSet_elt(Q, i);
+	if (Q_elt.length != seqlen)
+		error("'x' and 'quality' must have the same width");
+	for (j = 0; j < seqlen; j++) {
+		if (fputc((int) *(Q_elt.seq++), stream) == EOF)
+			return 1;
+	}
+	return fputs("\n", stream) == EOF;
+}
+
+static int write_FASTQ_fakequal(FILE *stream, int seqlen)
+{
+	int j;
+
+	for (j = 0; j < seqlen; j++) {
+		if (fputc((int) ';', stream) == EOF)
+			return 1;
+	}
+	return fputs("\n", stream) == EOF;
+}
+
 /* --- .Call ENTRY POINT --- */
 SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 {
@@ -749,14 +789,19 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 	const int *lkup0;
 	SEXP x_names, q_names;
 	const char *id;
-	cachedCharSeq X_elt, Q_elt;
+	cachedCharSeq X_elt;
 	char linebuf[LINEBUF_SIZE];
 
 	X = _cache_XStringSet(x);
 	x_length = _get_cachedXStringSet_length(&X);
-	Q = _cache_XStringSet(qualities);
-	if (_get_cachedXStringSet_length(&Q) != x_length)
-		error("'x' and 'qualities' must have the same length");
+	if (qualities != R_NilValue) {
+		Q = _cache_XStringSet(qualities);
+		if (_get_cachedXStringSet_length(&Q) != x_length)
+			error("'x' and 'qualities' must have the same length");
+		q_names = get_XVectorList_names(qualities);
+	} else {
+		q_names = R_NilValue;
+	}
 	stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, 0));
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
@@ -766,33 +811,25 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 		lkup_length = LENGTH(lkup);
 	}
 	x_names = get_XVectorList_names(x);
-	q_names = get_XVectorList_names(qualities);
 	for (i = 0; i < x_length; i++) {
 		id = get_FASTQ_rec_id(x_names, q_names, i);
 		X_elt = _get_cachedXStringSet_elt(&X, i);
-		Q_elt = _get_cachedXStringSet_elt(&Q, i);
-		if (Q_elt.length != X_elt.length)
-			error("'x' and 'quality' must have the same width");
 		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
 			linebuf, X_elt.length,
 			X_elt.seq, X_elt.length,
 			lkup0, lkup_length);
 		linebuf[X_elt.length] = 0;
-		if (fputs(FASTQ_line1_markup, stream) == EOF
-		 || fputs(id, stream) == EOF
-		 || fputs("\n", stream) == EOF
-		 || fputs(linebuf, stream) == EOF
-		 || fputs("\n", stream) == EOF
-		 || fputs(FASTQ_line3_markup, stream) == EOF
-		 || fputs(id, stream) == EOF
-		 || fputs("\n", stream) == EOF)
+		if (write_FASTQ_id(stream, FASTQ_line1_markup, id)
+		 || write_FASTQ_seq(stream, linebuf)
+		 || write_FASTQ_id(stream, FASTQ_line3_markup, id))
 			error("write error");
-		while (Q_elt.length-- > 0) {
-			if (fputc((int) *(Q_elt.seq++), stream) == EOF)
+		if (qualities != R_NilValue) {
+			if (write_FASTQ_qual(stream, X_elt.length, &Q, i))
+				error("write error");
+		} else {
+			if (write_FASTQ_fakequal(stream, X_elt.length))
 				error("write error");
 		}
-		if (fputs("\n", stream) == EOF)
-			error("write error");
 	}
 	return R_NilValue;
 }

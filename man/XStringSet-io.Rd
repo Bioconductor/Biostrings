@@ -94,7 +94,9 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     can be used to specify the maximum number of letters per line of
     sequence.
     If \code{format="fastq"}, the \code{qualities} argument (\link{BStringSet}
-    object) \emph{must} be used to specify the qualities.
+    object) can be used to specify the qualities. If the qualities are
+    omitted, then the fake quality ';' is assigned to each letter in
+    \code{x} and written to the file.
   }
   \item{objname}{
     The name of the serialized object.

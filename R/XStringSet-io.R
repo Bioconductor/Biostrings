@@ -210,14 +210,14 @@ read.AAStringSet <- function(filepath, format="fasta",
           PACKAGE="Biostrings")
 }
 
-.write.XStringSet.to.fastq <- function(x, efp_list, qualities)
+.write.XStringSet.to.fastq <- function(x, efp_list, qualities=NULL)
 {
-    if (missing(qualities))
-        stop("'qualities' is missing")
-    if (!is(qualities, "BStringSet"))
-        stop("'qualities' must be a BStringSet object")
-    if (length(qualities) != length(x))
-        stop("'x' and 'qualities' must have the same length")
+    if (!is.null(qualities)) {
+        if (!is(qualities, "BStringSet"))
+            stop("'qualities' must be NULL or a BStringSet object")
+        if (length(qualities) != length(x))
+            stop("'x' and 'qualities' must have the same length")
+    }
     lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
     .Call("write_XStringSet_to_fastq",
           x, efp_list, qualities, lkup,
