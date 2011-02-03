@@ -143,7 +143,7 @@ save.XStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
   \code{write.XStringSet} writes an \link{XStringSet} object to a file.
   WARNING: Please be aware that using \code{write.XStringSet} on a
-  \link{BStringSet} object that contains the '\n' (LF) or '\r' (CR)
+  \link{BStringSet} object that contains the '\\n' (LF) or '\\r' (CR)
   characters or the FASTA markup characters '>' or ';' is almost
   guaranteed to produce a broken FASTA file!
 

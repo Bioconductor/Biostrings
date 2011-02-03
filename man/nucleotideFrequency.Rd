@@ -188,7 +188,41 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
   dinucleotideFrequency(probes, simplify.as="collapsed", as.matrix=TRUE)
 
   ## ---------------------------------------------------------------------
-  ## B. nucleotideFrequencyAt()
+  ## B. OBSERVED DINUCLEOTIDE FREQUENCY VERSUS EXPECTED DINUCLEOTIDE
+  ##    FREQUENCY
+  ## ---------------------------------------------------------------------
+  ## The expected frequency of dinucleotide "ab" based on the frequencies
+  ## of its individual letters "a" and "b" is:
+  ##    exp_Fab = Fa * Fb / N if the 2 letters are different (e.g. CG)
+  ##    exp_Faa = Fa * (Fa-1) / N if the 2 letters are the same (e.g. TT)
+  ## where Fa and Fb are the frequencies of "a" and "b" (respectively) and
+  ## N the length of the sequence.
+  
+  ## Here is a simple function that implements the above formula for a
+  ## DNAString object 'x'. The expected frequencies are returned in a 4x4
+  ## matrix where the rownames and colnames correspond to the 1st and 2nd
+  ## base in the dinucleotide:
+  expectedDinucleotideFrequency <- function(x)
+  {
+      # Individual base frequencies.
+      bf <- alphabetFrequency(x, baseOnly=TRUE)[DNA_BASES]
+      (as.matrix(bf) \%*\% t(bf) - diag(bf)) / length(x)
+  }
+
+  ## On Celegans chrI:
+  library(BSgenome.Celegans.UCSC.ce2)
+  chrI <- Celegans$chrI
+  obs_df <- dinucleotideFrequency(chrI, as.matrix=TRUE)
+  obs_df  # CG has the lowest frequency
+  exp_df <- expectedDinucleotideFrequency(chrI)
+  ## A sanity check:
+  stopifnot(as.integer(sum(exp_df)) == sum(obs_df))
+
+  ## Ratio of observed frequency to expected frequency:
+  obs_df / exp_df  # TA has the lowest ratio, not CG!
+
+  ## ---------------------------------------------------------------------
+  ## C. nucleotideFrequencyAt()
   ## ---------------------------------------------------------------------
   nucleotideFrequencyAt(probes, 13)
   nucleotideFrequencyAt(probes, c(13, 20))
@@ -211,14 +245,14 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
   ## See ?hasLetterAt for another way to get those results.
 
   ## ---------------------------------------------------------------------
-  ## C. oligonucleotideTransitions()
+  ## D. oligonucleotideTransitions()
   ## ---------------------------------------------------------------------
   ## Get nucleotide transition matrices for yeast1
   oligonucleotideTransitions(yeast1)
   oligonucleotideTransitions(yeast1, 2, as.prob=TRUE)
 
   ## ---------------------------------------------------------------------
-  ## D. ADVANCED *Frequency() EXAMPLES
+  ## E. ADVANCED *Frequency() EXAMPLES
   ## ---------------------------------------------------------------------
   ## Note that when dropping the dimensions of the 'tri' array, elements
   ## in the resulting vector are ordered as if they were obtained with
@@ -240,7 +274,7 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
   ## Spome related functions:
   dict1 <- mkAllStrings(LETTERS[1:3], 4)
   dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
-  identical(reverse(dict1), dict2) # TRUE 
+  stopifnot(identical(reverse(dict1), dict2)) 
 }
 
 \keyword{methods}
