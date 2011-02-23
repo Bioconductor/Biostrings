@@ -9,10 +9,12 @@
 \alias{minScore}
 \alias{minScore,ANY-method}
 \alias{unitScale}
+\alias{reverseComplement,matrix-method}
 
 \alias{PWM}
 \alias{PWM,character-method}
 \alias{PWM,DNAStringSet-method}
+\alias{PWM,matrix-method}
 
 \alias{PWMscoreStartingAt}
 
@@ -27,8 +29,6 @@
 \alias{countPWM,XStringViews-method}
 \alias{countPWM,MaskedDNAString-method}
 
-\alias{reverseComplement,matrix-method}
-
 % Deprecated:
 \alias{PWMscore}
 
@@ -42,7 +42,7 @@
 
 \usage{
 PWM(x, type = c("log2probratio", "prob"),
-    prior.params = c("A"=0.25, "C"=0.25, "G"=0.25, "T"=0.25))
+    prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25))
 
 matchPWM(pwm, subject, min.score="80\%", ...)
 countPWM(pwm, subject, min.score="80\%", ...)
@@ -59,15 +59,16 @@ unitScale(x)
 
 \arguments{
   \item{x}{
-    For \code{PWM} a character string or DNAStringSet whose elements all have
-    the same number of characters.
+    For \code{PWM}: a rectangular character vector or DNAStringSet object
+    (i.e. all elements have the same number of characters), or a Position
+    Frequency Matrix (represented as a numeric matrix).
 
     For \code{maxWeights}, \code{minWeights}, \code{maxScore}, \code{minScore},
-    \code{unitScale} , and \code{reverseComplement} a numeric matrix with row
-    names A, C, G and T representing a Position Weight Matrix.
+    \code{unitScale} and \code{reverseComplement}: a Position Weight Matrix
+    represented as a numeric matrix with row names A, C, G and T.
   }
   \item{type}{
-    The type of position weight matrix, either "log2probratio" or "prob".
+    The type of Position Weight Matrix, either "log2probratio" or "prob".
     See Details section for more information.
   }
   \item{prior.params}{
@@ -76,14 +77,14 @@ unitScale(x)
     See Details section for more information.
   }
   \item{pwm}{
-    A numeric matrix with row names A, C, G and T representing a Position
-    Weight Matrix.
+    A Position Weight Matrix represented as a numeric matrix with row
+    names A, C, G and T.
   }
   \item{subject}{
-    An \link{DNAString}, \link{XStringViews} or \link{MaskedDNAString}
+    A \link{DNAString}, \link{XStringViews} or \link{MaskedDNAString}
     object for \code{matchPWM} and \code{countPWM}.
 
-    A \link{DNAString} object containing the subject sequence.
+    A \link{DNAString} object for \code{PWMscoreStartingAt}.
   }
   \item{min.score}{
     The minimum score for counting a match.
