@@ -332,15 +332,15 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
   \describe{
     \item{}{
-      \code{union(x, y)}:
+      \code{union(x, y, ...)}:
       Union of \code{x} and \code{y}.
     }
     \item{}{
-      \code{intersect(x, y)}:
+      \code{intersect(x, y, ...)}:
       Intersection of \code{x} and \code{y}.
     }
     \item{}{
-      \code{setdiff(x, y)}:
+      \code{setdiff(x, y, ...)}:
       Asymmetric set difference of \code{x} and \code{y}.
     }
     \item{}{

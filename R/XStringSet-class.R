@@ -440,13 +440,13 @@ setMethod("show", "XStringSet",
 }
 
 setMethod("union", c("XStringSet", "XStringSet"),
-    function(x, y) .XStringSet.SetOperation(x, y, FUN = union)
+    function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = union)
 )
 setMethod("intersect", c("XStringSet", "XStringSet"),
-    function(x, y) .XStringSet.SetOperation(x, y, FUN = intersect)
+    function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = intersect)
 )
 setMethod("setdiff", c("XStringSet", "XStringSet"),
-    function(x, y) .XStringSet.SetOperation(x, y, FUN = setdiff)
+    function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = setdiff)
 )
 setMethod("setequal", c("XStringSet", "XStringSet"),
     function(x, y) {
