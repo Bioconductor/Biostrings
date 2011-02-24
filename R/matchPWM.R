@@ -18,33 +18,32 @@
 }
 
 ### A Position Frequency Matrix (PFM) is also represented as an ordinary
-### matrix.
+### matrix. Unlike a PWM, it must be of type integer (it will typically be
+### the result of consensusMatrix()).
 .normargPfm <- function(x)
 {
-    if (!is.numeric(x) || !is.matrix(x))
-        stop("'x' must be a numeric matrix")
+    if (!is.integer(x) || !is.matrix(x))
+        stop("invalid PFM 'x': not an integer matrix")
     ## Check the row names.
     if (is.null(rownames(x)))
-        stop("'x' must have row names")
+        stop("invalid PFM 'x': no row names")
     if (!all(rownames(x) %in% DNA_ALPHABET))
-        stop("'rownames(x)' must be a subset of 'DNA_ALPHABET'")
+        stop("invalid PFM 'x': row names must be in 'DNA_ALPHABET'")
     if (!all(DNA_BASES %in% rownames(x)))
-        stop("'rownames(x)' must contain the 4 DNA bases ('DNA_BASES')")
+        stop("invalid PFM 'x': row names must contain A, C, G and T")
     if (any(duplicated(rownames(x))))
-        stop("'x' has duplicated row names")
+        stop("invalid PFM 'x': duplicated row names")
     ## Check the values.
-    if (any(is.na(x)) || any(x < 0))
-        stop("frequencies cannot be NA or negative")
-    if (any(x[!(rownames(x) %in% DNA_BASES), ] != 0))
-        stop("frequencies of IUPAC ambiguity letters must be 0")
+    if (any(is.na(x)) || any(x < 0L))
+        stop("invalid PFM 'x': values cannot be NA or negative")
+    if (any(x[!(rownames(x) %in% DNA_BASES), ] != 0L))
+        stop("invalid PFM 'x': IUPAC ambiguity letters are represented")
     x <- x[DNA_BASES, , drop=FALSE]
-    if (!is.double(x))
-        storage.mode(x) <- "double"
-    csums <- colSums(x)
-    ## TODO: Make IRanges::isConstant() a generic function and define a method
-    ## for "double" to use in this test.
-    if (length(csums) != 0L && !isTRUE(all.equal(min(csums), max(csums))))
-        stop("all columns in 'x' must sum to the same value")
+    if (!isConstant(colSums(x)))
+        stop("invalid PFM 'x': all columns in 'x' must sum to the same ",
+             "value.\n  If the PFM was obtained by calling consensusMatrix() ",
+             "on a DNAStringSet\n  object, please make sure that this object ",
+             "is rectangular (i.e. has a\n  constant width).")
     x
 }
 

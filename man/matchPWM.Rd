@@ -59,9 +59,12 @@ unitScale(x)
 
 \arguments{
   \item{x}{
-    For \code{PWM}: a rectangular character vector or DNAStringSet object
-    (i.e. all elements have the same number of characters), or a Position
-    Frequency Matrix (represented as a numeric matrix).
+    For \code{PWM}: a rectangular character vector or rectangular
+    DNAStringSet object ("rectangular" means that all elements have the
+    same number of characters) with no IUPAC ambiguity letters,
+    or a Position Frequency Matrix represented as an integer matrix with
+    row names containing at least A, C, G and T (typically the result of
+    a call to \code{\link{consensusMatrix}}).
 
     For \code{maxWeights}, \code{minWeights}, \code{maxScore}, \code{minScore},
     \code{unitScale} and \code{reverseComplement}: a Position Weight Matrix
@@ -154,6 +157,7 @@ regulatory elements, Nat Rev Genet., 5(4):276-87.
 \author{H. Pages and P. Aboyoun}
 
 \seealso{
+  \code{\link{consensusMatrix}},
   \code{\link{matchPattern}},
   \code{\link{reverseComplement}},
   \link{DNAString-class},
@@ -167,8 +171,12 @@ regulatory elements, Nat Rev Genet., 5(4):276-87.
   chr3R <- Dmelanogaster$chr3R
   chr3R
 
-  ## Create a PWM and perform some general routines
-  pwm <- PWM(HNF4alpha)
+  ## Create a PWM from a PFM or directly from a rectangular
+  ## DNAStringSet object:
+  pfm <- consensusMatrix(HNF4alpha)
+  pwm <- PWM(pfm)  # same as 'PWM(HNF4alpha)'
+
+  ## Perform some general routines on the PWM
   round(pwm, 2)
   maxWeights(pwm)
   maxScore(pwm)
