@@ -6,7 +6,7 @@
 ### We don't use an S4 class for this, not even an S3 class.
 .normargPwm <- function(pwm, argname="pwm")
 {
-    if (!is.numeric(pwm) || !is.matrix(pwm))
+    if (!is.matrix(pwm) || !is.numeric(pwm))
         stop("'", argname, "' must be a numeric matrix")
     if (!identical(rownames(pwm), DNA_BASES))
         stop("'rownames(", argname, ")' must be the 4 DNA bases ('DNA_BASES')")
@@ -22,7 +22,7 @@
 ### the result of consensusMatrix()).
 .normargPfm <- function(x)
 {
-    if (!is.integer(x) || !is.matrix(x))
+    if (!is.matrix(x) || !is.integer(x))
         stop("invalid PFM 'x': not an integer matrix")
     ## Check the row names.
     if (is.null(rownames(x)))
@@ -33,6 +33,9 @@
         stop("invalid PFM 'x': row names must contain A, C, G and T")
     if (any(duplicated(rownames(x))))
         stop("invalid PFM 'x': duplicated row names")
+    ## Check the nb of cols.
+    if (ncol(x) == 0L)
+        stop("invalid PFM 'x': no columns")
     ## Check the values.
     if (any(is.na(x)) || any(x < 0L))
         stop("invalid PFM 'x': values cannot be NA or negative")
@@ -45,6 +48,21 @@
              "on a DNAStringSet\n  object, please make sure that this object ",
              "is rectangular (i.e. has a\n  constant width).")
     x
+}
+
+### Typical 'prior.params' vector: c(A=0.25, C=0.25, G=0.25, T=0.25)
+.normargPriorParams <- function(prior.params)
+{
+    if (!is.numeric(prior.params))
+        stop("'prior.params' must be a numeric vector")
+    if (length(prior.params) != length(DNA_BASES) ||
+        !setequal(names(prior.params), DNA_BASES))
+        stop("'prior.params' elements must be named A, C, G and T")
+    ## Re-order the elements.
+    prior.params <- prior.params[DNA_BASES]
+    if (any(is.na(prior.params)) || any(prior.params < 0))
+        stop("'prior.params' contains NAs and/or negative values")
+    prior.params
 }
 
 
@@ -120,7 +138,10 @@ setGeneric("PWM", signature="x",
 setMethod("PWM", "character",
     function(x, type = c("log2probratio", "prob"),
              prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25))
-        PWM(DNAStringSet(x), type = type, prior.params = prior.params)
+    {
+        dnaset <- DNAStringSet(x)
+        PWM(dnaset, type = type, prior.params = prior.params)
+    }
 )
 
 setMethod("PWM", "DNAStringSet",
@@ -129,12 +150,8 @@ setMethod("PWM", "DNAStringSet",
     {
         if (!isConstant(width(x)))
             stop("'x' must be rectangular (i.e. have a constant width)")
-        cmat <- consensusMatrix(x)
-        rsums <- rowSums(cmat)
-        if (any(rsums[!(names(rsums) %in% DNA_BASES)] > 0))
-            stop("'x' contains non 'DNA_BASES' letters")
-        cmat <- cmat[DNA_BASES, , drop=FALSE]
-        PWM(cmat, type = type, prior.params = prior.params)
+        pfm <- consensusMatrix(x)
+        PWM(pfm, type = type, prior.params = prior.params)
     }
 )
 
@@ -145,19 +162,21 @@ setMethod("PWM", "matrix",
              prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25))
     {
         x <- .normargPfm(x)
+        ## From here 'x' is guaranteed to have at least 1 column and to have
+        ## all its columns sum to the same value.
+        nseq <- sum(x[ , 1L])
         type <- match.arg(type)
-        if (!is.numeric(prior.params))
-            stop("'prior.params' must be a numeric vector")
-        prior.params <- prior.params[DNA_BASES]
-        if (any(is.na(prior.params) | prior.params < 0))
-            stop("'prior.params' must have non-negative named elements corresponding to 'DNA_BASES'")
+        prior.params <- .normargPriorParams(prior.params)
         priorN <- sum(prior.params)
-        postProbs <- (x + prior.params) / (length(x) + priorN)
+        ## NOTE (H.P.): What's the purpose of dividing by nseq + priorN here?
+        ## It won't have any impact on the final result (because of the
+        ## unitScale final step).
+        postProbs <- (x + prior.params) / (nseq + priorN)
         if (type == "log2probratio") {
-            priorProbs <- prior.params / priorN
-            if (any(priorProbs == 0))
+            if (any(prior.params == 0))
                 stop("infinite values in PWM due to 0's in 'prior.params'")
-            ans <- log2(postProbs / priorProbs)
+            prior.probs <- prior.params / priorN
+            ans <- log2(postProbs / prior.probs)
         } else {
             ans <- postProbs
         }
