@@ -150,8 +150,8 @@ unitScale(x)
 }
 
 \references{
-Wasserman, WW, Sandelin, A., (2004) Applied bioinformatics for the identification of
-regulatory elements, Nat Rev Genet., 5(4):276-87.
+Wasserman, WW, Sandelin, A., (2004) Applied bioinformatics for the
+identification of regulatory elements, Nat Rev Genet., 5(4):276-87.
 }
 
 \author{H. Pages and P. Aboyoun}
@@ -165,7 +165,7 @@ regulatory elements, Nat Rev Genet., 5(4):276-87.
 }
 
 \examples{
-  ## Data setup
+  ## Data setup:
   data(HNF4alpha)
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chr3R <- Dmelanogaster$chr3R
@@ -176,20 +176,20 @@ regulatory elements, Nat Rev Genet., 5(4):276-87.
   pfm <- consensusMatrix(HNF4alpha)
   pwm <- PWM(pfm)  # same as 'PWM(HNF4alpha)'
 
-  ## Perform some general routines on the PWM
+  ## Perform some general routines on the PWM:
   round(pwm, 2)
   maxWeights(pwm)
   maxScore(pwm)
   reverseComplement(pwm)
 
-  ## Score the first 5 positions
+  ## Score the first 5 positions:
   PWMscoreStartingAt(pwm, unmasked(chr3R), starting.at=1:5)
 
-  ## Match the plus strand
+  ## Match the plus strand:
   matchPWM(pwm, chr3R)
   countPWM(pwm, chr3R)
 
-  ## Match the minus strand
+  ## Match the minus strand:
   matchPWM(reverseComplement(pwm), chr3R)
 }
 
