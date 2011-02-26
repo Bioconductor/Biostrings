@@ -796,16 +796,16 @@ SEXP match_BOC2_exact(
 SEXP PWM_score_starting_at(
 	SEXP pwm,
 	SEXP subject,
-	SEXP base_codes,
-	SEXP starting_at
+	SEXP starting_at,
+	SEXP base_codes
 );
 
 SEXP XString_match_PWM(
 	SEXP pwm,
 	SEXP subject,
-	SEXP base_codes,
 	SEXP min_score,
-	SEXP count_only
+	SEXP count_only,
+	SEXP base_codes
 );
 
 SEXP XStringViews_match_PWM(
@@ -813,9 +813,9 @@ SEXP XStringViews_match_PWM(
 	SEXP subject,
 	SEXP views_start,
 	SEXP views_width,
-	SEXP base_codes,
 	SEXP min_score,
-	SEXP count_only
+	SEXP count_only,
+	SEXP base_codes
 );
 
 
