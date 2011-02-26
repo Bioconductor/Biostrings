@@ -186,8 +186,11 @@ identification of regulatory elements, Nat Rev Genet., 5(4):276-87.
   PWMscoreStartingAt(pwm, unmasked(chr3R), starting.at=1:5)
 
   ## Match the plus strand:
-  matchPWM(pwm, chr3R)
-  countPWM(pwm, chr3R)
+  hits <- matchPWM(pwm, chr3R)
+  nhit <- countPWM(pwm, chr3R)  # same as 'length(hits)'
+
+  ## Post-calculate the scores of the hits:
+  scores <- PWMscoreStartingAt(pwm, subject(hits), start(hits))
 
   ## Match the minus strand:
   matchPWM(reverseComplement(pwm), chr3R)
