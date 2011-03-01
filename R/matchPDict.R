@@ -112,7 +112,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience wrappers to .Call().
+### Checking the user-supplied arguments.
 ###
 
 .checkUserArgsWhenTrustedBandIsFull <- function(max.mismatch, fixed)
@@ -120,11 +120,30 @@
     if (max.mismatch != 0L)
         stop("'max.mismatch' must be 0 when there is no head and no tail")
     if (!fixed[1L])
-        warning("the value you specified for 'fixed' means that IUPAC extended\n",
-                "letters in the patterns should be treated as ambiguities, but\n",
-                "this has no effect because the patterns don't contain such\n",
-                "letters")
+        warning("the value you specified for 'fixed' means that IUPAC\n",
+                "extended letters in the patterns should be treated as\n",
+                "ambiguities, but this has no effect because the patterns\n",
+                "don't contain such letters")
 }
+
+.checkMaxMismatch <- function(max.mismatch, NTB)
+{
+    max.mismatch0 <- NTB - 1L
+    if (max.mismatch > max.mismatch0)
+        stop("cannot use vmatchPDict()/vcountPDict()/vwhichPDict() ",
+             "with an MTB_PDict object that was preprocessed to be used ",
+             "with 'max.mismatch' <= ", max.mismatch0)
+    if (max.mismatch < max.mismatch0)
+        cat("WARNING: using 'max.mismatch=", max.mismatch, "' with an ",
+            "MTB_PDict object that was preprocessed for allowing up to ",
+            max.mismatch0, " mismatching letter(s) per match is not optimal\n",
+            sep="")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Convenience wrappers to .Call().
+###
 
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XString <- function(threeparts, subject,
@@ -234,6 +253,25 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining the results obtained for each component of an MTB_PDict object.
+###
+
+.combine.which.compons <- function(ans_compons)
+    unique(sort(unlist(ans_compons)))
+
+.combine.vwhich.compons <- function(ans_compons)
+{
+    lapply(seq_len(length(ans_compons[[1L]])),
+        function(i)
+        {
+            ans_compons_elts <- lapply(ans_compons, "[[", i)
+            .combine.which.compons(ans_compons_elts)
+        }
+    )
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### .matchPDict()
 ###
 
@@ -267,17 +305,12 @@
 {
     tb_pdicts <- as.list(pdict)
     NTB <- length(tb_pdicts)
-    max.mismatch0 <- NTB - 1L
-    if (max.mismatch > max.mismatch0)
-        stop("cannot use matchPDict()/countPDict()/whichPDict() ",
-             "with an MTB_PDict object that was preprocessed to be used ",
-             "with 'max.mismatch' <= ", max.mismatch0)
-    if (max.mismatch < max.mismatch0)
-        cat("WARNING: using 'max.mismatch=", max.mismatch, "' with an ",
-            "MTB_PDict object that was preprocessed for allowing up to ",
-            max.mismatch0, " mismatching letter(s) per match is not optimal\n",
-            sep="")
-    ans_parts <- lapply(seq_len(NTB),
+    .checkMaxMismatch(max.mismatch, NTB)
+    if (matches.as == "MATCHES_AS_COUNTS")
+        matches.as2 <- "MATCHES_AS_ENDS"
+    else
+        matches.as2 <- matches.as
+    ans_compons <- lapply(seq_len(NTB),
         function(i)
         {
             if (verbose)
@@ -286,10 +319,6 @@
             tb_pdict <- tb_pdicts[[i]]
             st <- system.time(
                 {
-                    if (matches.as == "MATCHES_AS_COUNTS")
-                        matches.as2 <- "MATCHES_AS_ENDS"
-                    else
-                        matches.as2 <- matches.as
                     ans_part <- .match.TB_PDict(tb_pdict, subject,
                                     max.mismatch, min.mismatch, fixed,
                                     algorithm, verbose, matches.as2)
@@ -301,12 +330,12 @@
             ans_part
         }
     )
-    if (matches.as == "MATCHES_AS_WHICH")
-        return(unique(sort(unlist(ans_parts))))
     if (verbose)
         cat("Combining the results obtained for ",
             "each TB_PDict component...\n", sep="")
-    st <- system.time(ans <- ByPos_MIndex.combine(ans_parts), gcFirst=TRUE)
+    if (matches.as == "MATCHES_AS_WHICH")
+        return(.combine.which.compons(ans_compons))
+    st <- system.time(ans <- ByPos_MIndex.combine(ans_compons), gcFirst=TRUE)
     if (verbose)
         print(st)
     if (matches.as == "MATCHES_AS_COUNTS")
@@ -390,6 +419,60 @@
 ### .vmatchPDict()
 ###
 
+### 'pdict' is an TB_PDict object.
+.vmatch.TB_PDict <- function(pdict, subject,
+                             max.mismatch, min.mismatch, fixed,
+                             algorithm, collapse, weight,
+                             verbose, matches.as)
+{
+    .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
+                                   max.mismatch, min.mismatch, fixed,
+                                   algorithm, collapse, weight,
+                                   matches.as, NULL)
+}
+
+### 'pdict' is an MTB_PDict object.
+.vmatch.MTB_PDict <- function(pdict, subject,
+                              max.mismatch, min.mismatch, fixed,
+                              algorithm, collapse, weight,
+                              verbose, matches.as)
+{
+    tb_pdicts <- as.list(pdict)
+    NTB <- length(tb_pdicts)
+    .checkMaxMismatch(max.mismatch, NTB)
+    if (matches.as != "MATCHES_AS_WHICH")
+        stop("MTB_PDict objects are not supported yet, sorry")
+    ans_compons <- lapply(seq_len(NTB),
+        function(i)
+        {
+            if (verbose)
+                cat("Getting results for TB_PDict component ",
+                    i, "/", NTB, " ...\n", sep="")
+            tb_pdict <- tb_pdicts[[i]]
+            .vmatch.TB_PDict(tb_pdict, subject,
+                             max.mismatch, min.mismatch, fixed,
+                             algorithm, collapse, weight,
+                             verbose, matches.as)
+        }
+    )
+    if (verbose)
+        cat("Combining the results obtained for ",
+            "each TB_PDict component...\n", sep="")
+    .combine.vwhich.compons(ans_compons)
+}
+
+### 'pattern' is an XStringSet object.
+.vmatch.XStringSet <- function(pattern, subject,
+                               max.mismatch, min.mismatch, fixed,
+                               algorithm, collapse, weight,
+                               verbose, matches.as)
+{
+    .vmatch.XStringSet.XStringSet(pattern, subject,
+                                  max.mismatch, min.mismatch, fixed,
+                                  algorithm, collapse, weight,
+                                  matches.as, NULL)
+}
+
 .vmatchPDict <- function(pdict, subject,
                          max.mismatch, min.mismatch, fixed,
                          algorithm, collapse, weight,
@@ -443,15 +526,20 @@
         stop("vmatchPDict() is not supported yet, sorry")
     }
     if (is(pdict, "TB_PDict"))
-        ans <- .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
-                   max.mismatch, min.mismatch, fixed,
-                   algorithm, collapse, weight, matches.as, NULL)
+        ans <- .vmatch.TB_PDict(pdict, subject,
+                                max.mismatch, min.mismatch, fixed,
+                                algorithm, collapse, weight,
+                                verbose, matches.as)
     else if (is(pdict, "MTB_PDict"))
-        stop("MTB_PDict objects are not supported yet, sorry")
+        ans <- .vmatch.MTB_PDict(pdict, subject,
+                                 max.mismatch, min.mismatch, fixed,
+                                 algorithm, collapse, weight,
+                                 verbose, matches.as)
     else
-        ans <- .vmatch.XStringSet.XStringSet(pdict, subject,
-                   max.mismatch, min.mismatch, fixed,
-                   algorithm, collapse, weight, matches.as, NULL)
+        ans <- .vmatch.XStringSet(pattern, subject,
+                                  max.mismatch, min.mismatch, fixed,
+                                  algorithm, collapse, weight,
+                                  verbose, matches.as)
     if (is.null(which_pp_excluded))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH") {
