@@ -133,7 +133,8 @@ gregexpr2 <- function(pattern, text)
     fixed <- normargFixed(fixed, subject)
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, with.indels, fixed)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
     C_ans <- .Call("XString_match_pattern",
                    pattern, subject,
                    max.mismatch, min.mismatch, with.indels, fixed,
@@ -160,7 +161,8 @@ gregexpr2 <- function(pattern, text)
     fixed <- normargFixed(fixed, subject)
     if (!isTRUEorFALSE(count.only))
         stop("'count.only' must be TRUE or FALSE")
-    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, with.indels, fixed)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
     C_ans <- .Call("XStringViews_match_pattern",
                    pattern, subject(subject), start(subject), width(subject),
                    max.mismatch, min.mismatch, with.indels, fixed,
@@ -343,7 +345,8 @@ setMethod("countPattern", "MaskedXString",
     fixed <- normargFixed(fixed, subject)
     if (!isTRUEorFALSE(count.only)) 
         stop("'count.only' must be TRUE or FALSE")
-    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, with.indels, fixed)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
     # because MIndex objects do not support variable-width matches yet
     if (algo == "indels" && !count.only)
         stop("vmatchPattern() does not support indels yet")

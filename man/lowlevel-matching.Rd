@@ -177,7 +177,7 @@ which.isMatchingEndingAt(pattern, subject, ending.at=1,
   between the pattern P and the substring S' of S starting at the
   positions specified in \code{at} (note that \code{neditAt} is vectorized
   so a long vector of integers can be passed thru the \code{at} argument).
-  If \code{with.indels} is \code{TRUE}, then the "edit distance" distance is
+  If \code{with.indels} is \code{TRUE}, then the "edit distance" is
   used: for each position specified in \code{at}, P is compared to
   all the substrings S' of S starting at this position and the smallest
   distance is returned. Note that this distance is guaranteed to be reached

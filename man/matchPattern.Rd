@@ -83,8 +83,7 @@
                nedit(P, S2) >= nedit(P, S')
     }
     One nice property of "best local matches" is that their first and last
-    letters are guaranteed to be aligned with letters in P (i.e. they match
-    letters in P).
+    letters are guaranteed to match the letters in P that they align with.
   }
   \item{fixed}{
     If \code{TRUE} (the default), an IUPAC ambiguity code in the pattern

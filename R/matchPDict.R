@@ -147,10 +147,14 @@
 
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XString <- function(threeparts, subject,
-                                       max.mismatch, min.mismatch, fixed,
-                                       algorithm, matches.as, envir)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels)
+        stop("at the moment, matchPDict() and family only support indels ",
+             "on a non-preprocessed pattern dictionary, sorry")
     if (!identical(algorithm, "auto"))
         warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
@@ -165,26 +169,37 @@
 
 ### 'pattern' is an XStringSet object.
 .match.XStringSet.XString <- function(pattern, subject,
-                                      max.mismatch, min.mismatch, fixed,
-                                      algorithm, matches.as, envir)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels &&
+        !(matches.as %in% c("MATCHES_AS_WHICH", "MATCHES_AS_COUNTS")))
+        stop("at the moment, within the matchPDict family, only ",
+             "countPDict(), whichPDict(), vcountPDict() and vwhichPDict() ",
+             "support indels")
     algo <- normargAlgorithm(algorithm)
-    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, FALSE, fixed)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
     .Call("match_XStringSet_XString",
           pattern,
           subject,
-          max.mismatch, min.mismatch, fixed,
+          max.mismatch, min.mismatch, with.indels, fixed,
           algo, matches.as, envir,
           PACKAGE="Biostrings")
 }
 
 ### 'threeparts' is a PDict3Parts object.
 .match.PDict3Parts.XStringViews <- function(threeparts, subject,
-                                            max.mismatch, min.mismatch, fixed,
-                                            algorithm, matches.as, envir)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels)
+        stop("at the moment, matchPDict() and family only support indels ",
+             "on a non-preprocessed pattern dictionary, sorry")
     if (!identical(algorithm, "auto"))
         warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
@@ -199,27 +214,38 @@
 
 ### 'pattern' is an XStringSet object.
 .match.XStringSet.XStringViews <- function(pattern, subject,
-                                           max.mismatch, min.mismatch, fixed,
-                                           algorithm, matches.as, envir)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels &&
+        !(matches.as %in% c("MATCHES_AS_WHICH", "MATCHES_AS_COUNTS")))
+        stop("at the moment, within the matchPDict family, only ",
+             "countPDict(), whichPDict(), vcountPDict() and vwhichPDict() ",
+             "support indels")
     algo <- normargAlgorithm(algorithm)
-    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, FALSE, fixed)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
     .Call("match_XStringSet_XStringViews",
           pattern,
           subject(subject), start(subject), width(subject),
-          max.mismatch, min.mismatch, fixed,
+          max.mismatch, min.mismatch, with.indels, fixed,
           algo, matches.as, envir,
           PACKAGE="Biostrings")
 }
 
 ### 'threeparts' is a PDict3Parts object.
 .vmatch.PDict3Parts.XStringSet <- function(threeparts, subject,
-                                           max.mismatch, min.mismatch, fixed,
-                                           algorithm, collapse, weight,
-                                           matches.as, envir)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, collapse, weight,
+                matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels)
+        stop("at the moment, matchPDict() and family only support indels ",
+             "on a non-preprocessed pattern dictionary, sorry")
     if (!identical(algorithm, "auto"))
         warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
@@ -235,17 +261,24 @@
 
 ### 'pattern' is an XStringSet object.
 .vmatch.XStringSet.XStringSet <- function(pattern, subject,
-                                          max.mismatch, min.mismatch, fixed,
-                                          algorithm, collapse, weight,
-                                          matches.as, envir)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, collapse, weight,
+                matches.as, envir)
 {
     fixed <- normargFixed(fixed, subject)
+    with.indels <- normargWithIndels(with.indels)
+    if (with.indels &&
+        !(matches.as %in% c("MATCHES_AS_WHICH", "MATCHES_AS_COUNTS")))
+        stop("at the moment, within the matchPDict family, only ",
+             "countPDict(), whichPDict(), vcountPDict() and vwhichPDict() ",
+             "support indels")
     algo <- normargAlgorithm(algorithm)
-    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch, FALSE, fixed)
+    algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
+                       with.indels, fixed)
     .Call("vmatch_XStringSet_XStringSet",
           pattern,
           subject,
-          max.mismatch, min.mismatch, fixed,
+          max.mismatch, min.mismatch, with.indels, fixed,
           algo, collapse, weight,
           matches.as, envir,
           PACKAGE="Biostrings")
@@ -277,16 +310,16 @@
 
 ### 'pdict' is a TB_PDict object.
 .match.TB_PDict <- function(pdict, subject,
-                            max.mismatch, min.mismatch, fixed,
+                            max.mismatch, min.mismatch, with.indels, fixed,
                             algorithm, verbose, matches.as)
 {
     if (is(subject, "DNAString"))
         C_ans <- .match.PDict3Parts.XString(pdict@threeparts, subject,
-                     max.mismatch, min.mismatch, fixed,
+                     max.mismatch, min.mismatch, with.indels, fixed,
                      algorithm, matches.as, NULL)
     else if (is(subject, "XStringViews") && is(subject(subject), "DNAString"))
         C_ans <- .match.PDict3Parts.XStringViews(pdict@threeparts, subject,
-                     max.mismatch, min.mismatch, fixed,
+                     max.mismatch, min.mismatch, with.indels, fixed,
                      algorithm, matches.as, NULL)
     else
         stop("'subject' must be a DNAString object,\n",
@@ -300,7 +333,7 @@
 
 ### 'pdict' is an MTB_PDict object.
 .match.MTB_PDict <- function(pdict, subject,
-                             max.mismatch, min.mismatch, fixed,
+                             max.mismatch, min.mismatch, with.indels, fixed,
                              algorithm, verbose, matches.as)
 {
     tb_pdicts <- as.list(pdict)
@@ -317,17 +350,16 @@
                 cat("Getting results for TB_PDict component ",
                     i, "/", NTB, " ...\n", sep="")
             tb_pdict <- tb_pdicts[[i]]
-            st <- system.time(
-                {
-                    ans_part <- .match.TB_PDict(tb_pdict, subject,
-                                    max.mismatch, min.mismatch, fixed,
-                                    algorithm, verbose, matches.as2)
-                }, gcFirst=TRUE)
+            st <- system.time({
+                ans_compon <- .match.TB_PDict(tb_pdict, subject,
+                                max.mismatch, min.mismatch, with.indels, fixed,
+                                algorithm, verbose, matches.as2)
+                  }, gcFirst=TRUE)
             if (verbose) {
                 print(st)
-                cat(sum(countIndex(ans_part)), " match(es) found\n", sep="")
+                cat(sum(countIndex(ans_compon)), " match(es) found\n", sep="")
             }
-            ans_part
+            ans_compon
         }
     )
     if (verbose)
@@ -345,16 +377,16 @@
 
 ### 'pattern' is an XStringSet object.
 .match.XStringSet <- function(pattern, subject,
-                              max.mismatch, min.mismatch, fixed,
+                              max.mismatch, min.mismatch, with.indels, fixed,
                               algorithm, verbose, matches.as)
 {
     if (is(subject, "XString"))
         C_ans <- .match.XStringSet.XString(pattern, subject,
-                     max.mismatch, min.mismatch, fixed,
+                     max.mismatch, min.mismatch, with.indels, fixed,
                      algorithm, matches.as, NULL)
     else if (is(subject, "XStringViews"))
         C_ans <- .match.XStringSet.XStringViews(pattern, subject,
-                     max.mismatch, min.mismatch, fixed,
+                     max.mismatch, min.mismatch, with.indels, fixed,
                      algorithm, matches.as, NULL)
     else
         stop("unsupported 'subject' type")
@@ -365,7 +397,7 @@
 }
 
 .matchPDict <- function(pdict, subject,
-                        max.mismatch, min.mismatch, fixed,
+                        max.mismatch, min.mismatch, with.indels, fixed,
                         algorithm, verbose, matches.as="MATCHES_AS_ENDS")
 {
     which_pp_excluded <- NULL
@@ -385,18 +417,22 @@
     min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
     if (!isTRUEorFALSE(verbose))
         stop("'verbose' must be TRUE or FALSE")
+    ## We are doing our own dispatch here, based on the type of 'pdict'.
+    ## TODO: Revisit this. Would probably be a better design to use a
+    ## generic/methods approach and rely on the standard dispatch mechanism.
+    ## Those low-level generic/methods wouldn't need to be exported.
     if (is(pdict, "TB_PDict"))
         ans <- .match.TB_PDict(pdict, subject,
-                               max.mismatch, min.mismatch, fixed,
-                               algorithm, verbose, matches.as)
+                       max.mismatch, min.mismatch, with.indels, fixed,
+                       algorithm, verbose, matches.as)
     else if (is(pdict, "MTB_PDict"))
         ans <- .match.MTB_PDict(pdict, subject,
-                                max.mismatch, min.mismatch, fixed,
-                                algorithm, verbose, matches.as)
+                       max.mismatch, min.mismatch, with.indels, fixed,
+                       algorithm, verbose, matches.as)
     else
         ans <- .match.XStringSet(pdict, subject,
-                                 max.mismatch, min.mismatch, fixed,
-                                 algorithm, verbose, matches.as)
+                       max.mismatch, min.mismatch, with.indels, fixed,
+                       algorithm, verbose, matches.as)
     if (is.null(which_pp_excluded))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH")
@@ -421,21 +457,21 @@
 
 ### 'pdict' is an TB_PDict object.
 .vmatch.TB_PDict <- function(pdict, subject,
-                             max.mismatch, min.mismatch, fixed,
-                             algorithm, collapse, weight,
-                             verbose, matches.as)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, collapse, weight,
+                verbose, matches.as)
 {
     .vmatch.PDict3Parts.XStringSet(pdict@threeparts, subject,
-                                   max.mismatch, min.mismatch, fixed,
-                                   algorithm, collapse, weight,
-                                   matches.as, NULL)
+                    max.mismatch, min.mismatch, with.indels, fixed,
+                    algorithm, collapse, weight,
+                    matches.as, NULL)
 }
 
 ### 'pdict' is an MTB_PDict object.
 .vmatch.MTB_PDict <- function(pdict, subject,
-                              max.mismatch, min.mismatch, fixed,
-                              algorithm, collapse, weight,
-                              verbose, matches.as)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, collapse, weight,
+                verbose, matches.as)
 {
     tb_pdicts <- as.list(pdict)
     NTB <- length(tb_pdicts)
@@ -450,7 +486,7 @@
                     i, "/", NTB, " ...\n", sep="")
             tb_pdict <- tb_pdicts[[i]]
             .vmatch.TB_PDict(tb_pdict, subject,
-                             max.mismatch, min.mismatch, fixed,
+                             max.mismatch, min.mismatch, with.indels, fixed,
                              algorithm, collapse, weight,
                              verbose, matches.as)
         }
@@ -463,18 +499,18 @@
 
 ### 'pattern' is an XStringSet object.
 .vmatch.XStringSet <- function(pattern, subject,
-                               max.mismatch, min.mismatch, fixed,
-                               algorithm, collapse, weight,
-                               verbose, matches.as)
+                max.mismatch, min.mismatch, with.indels, fixed,
+                algorithm, collapse, weight,
+                verbose, matches.as)
 {
     .vmatch.XStringSet.XStringSet(pattern, subject,
-                                  max.mismatch, min.mismatch, fixed,
-                                  algorithm, collapse, weight,
-                                  matches.as, NULL)
+                    max.mismatch, min.mismatch, with.indels, fixed,
+                    algorithm, collapse, weight,
+                    matches.as, NULL)
 }
 
 .vmatchPDict <- function(pdict, subject,
-                         max.mismatch, min.mismatch, fixed,
+                         max.mismatch, min.mismatch, with.indels, fixed,
                          algorithm, collapse, weight,
                          verbose, matches.as="MATCHES_AS_ENDS")
 {
@@ -508,12 +544,13 @@
                 if (!is.null(which_pp_excluded)) {
                     ## Collapse weights of duplicates.
                     ## TODO: Implement this in C.
-                    which_is_not_unique <- which(!sapply(low2high(dups0), is.null))
+                    which_is_not_unique <-
+                        which(!sapply(low2high(dups0), is.null))
                     if (length(which_is_not_unique) != 0L) {
                         weight[which_is_not_unique] <-
                             weight[which_is_not_unique] +
                             sapply(which_is_not_unique,
-                                   function(i) sum(weight[low2high(dups0)[[i]]]))
+                                function(i) sum(weight[low2high(dups0)[[i]]]))
                     }
                 }
             }
@@ -525,21 +562,25 @@
         ## vmatchPDict()
         stop("vmatchPDict() is not supported yet, sorry")
     }
+    ## We are doing our own dispatch here, based on the type of 'pdict'.
+    ## TODO: Revisit this. Would probably be a better design to use a
+    ## generic/methods approach and rely on the standard dispatch mechanism.
+    ## Those low-level generic/methods wouldn't need to be exported.
     if (is(pdict, "TB_PDict"))
         ans <- .vmatch.TB_PDict(pdict, subject,
-                                max.mismatch, min.mismatch, fixed,
-                                algorithm, collapse, weight,
-                                verbose, matches.as)
+                       max.mismatch, min.mismatch, with.indels, fixed,
+                       algorithm, collapse, weight,
+                       verbose, matches.as)
     else if (is(pdict, "MTB_PDict"))
         ans <- .vmatch.MTB_PDict(pdict, subject,
-                                 max.mismatch, min.mismatch, fixed,
-                                 algorithm, collapse, weight,
-                                 verbose, matches.as)
+                       max.mismatch, min.mismatch, with.indels, fixed,
+                       algorithm, collapse, weight,
+                       verbose, matches.as)
     else
         ans <- .vmatch.XStringSet(pdict, subject,
-                                  max.mismatch, min.mismatch, fixed,
-                                  algorithm, collapse, weight,
-                                  verbose, matches.as)
+                       max.mismatch, min.mismatch, with.indels, fixed,
+                       algorithm, collapse, weight,
+                       verbose, matches.as)
     if (is.null(which_pp_excluded))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH") {
@@ -567,7 +608,7 @@
 
 setGeneric("matchPDict", signature="subject",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         standardGeneric("matchPDict")
 )
@@ -575,38 +616,40 @@ setGeneric("matchPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .matchPDict(pdict, subject,
-                    max.mismatch, min.mismatch, fixed,
+                    max.mismatch, min.mismatch, with.indels, fixed,
                     algorithm, verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XStringSet",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use vmatchPDict() when 'subject' is an XStringSet object (multiple sequence)")
+        stop("please use vmatchPDict() when 'subject' is an XStringSet ",
+             "object (multiple sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "XStringViews",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .matchPDict(pdict, subject,
-                    max.mismatch, min.mismatch, fixed,
+                    max.mismatch, min.mismatch, with.indels, fixed,
                     algorithm, verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "MaskedXString",
     function(pdict, subject, 
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         matchPDict(pdict, toXStringViewsOrXString(subject),
-                   max.mismatch=max.mismatch, min.mismatch=min.mismatch, fixed=fixed,
+                   max.mismatch=max.mismatch, min.mismatch=min.mismatch,
+                   with.indels=with.indels, fixed=fixed,
                    algorithm=algorithm, verbose=verbose)
 )
 
@@ -617,7 +660,7 @@ setMethod("matchPDict", "MaskedXString",
 
 setGeneric("countPDict", signature="subject",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         standardGeneric("countPDict")
 )
@@ -625,38 +668,40 @@ setGeneric("countPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .matchPDict(pdict, subject,
-                    max.mismatch, min.mismatch, fixed,
+                    max.mismatch, min.mismatch, with.indels, fixed,
                     algorithm, verbose, matches.as="MATCHES_AS_COUNTS")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XStringSet",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use vcountPDict() when 'subject' is an XStringSet object (multiple sequence)")
+        stop("please use vcountPDict() when 'subject' is an XStringSet ",
+             "object (multiple sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "XStringViews",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .matchPDict(pdict, subject,
-                    max.mismatch, min.mismatch, fixed,
+                    max.mismatch, min.mismatch, with.indels, fixed,
                     algorithm, verbose, matches.as="MATCHES_AS_COUNTS")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countPDict", "MaskedXString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         countPDict(pdict, toXStringViewsOrXString(subject),
-                   max.mismatch=max.mismatch, min.mismatch=min.mismatch, fixed=fixed,
+                   max.mismatch=max.mismatch, min.mismatch=min.mismatch,
+                   with.indels=with.indels, fixed=fixed,
                    algorithm=algorithm, verbose=verbose)
 )
 
@@ -667,7 +712,7 @@ setMethod("countPDict", "MaskedXString",
 
 setGeneric("whichPDict", signature="subject",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         standardGeneric("whichPDict")
 )
@@ -675,38 +720,40 @@ setGeneric("whichPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("whichPDict", "XString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .matchPDict(pdict, subject,
-                    max.mismatch, min.mismatch, fixed,
+                    max.mismatch, min.mismatch, with.indels, fixed,
                     algorithm, verbose, matches.as="MATCHES_AS_WHICH")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("whichPDict", "XStringSet",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use vwhichPDict() when 'subject' is an XStringSet object (multiple sequence)")
+        stop("please use vwhichPDict() when 'subject' is an XStringSet ",
+             "object (multiple sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("whichPDict", "XStringViews",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .matchPDict(pdict, subject,
-                    max.mismatch, min.mismatch, fixed,
+                    max.mismatch, min.mismatch, with.indels, fixed,
                     algorithm, verbose, matches.as="MATCHES_AS_WHICH")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("whichPDict", "MaskedXString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         whichPDict(pdict, toXStringViewsOrXString(subject),
-                   max.mismatch=max.mismatch, min.mismatch=min.mismatch, fixed=fixed,
+                   max.mismatch=max.mismatch, min.mismatch=min.mismatch,
+                   with.indels=with.indels, fixed=fixed,
                    algorithm=algorithm, verbose=verbose)
 )
 
@@ -721,12 +768,13 @@ setMethod("whichPDict", "MaskedXString",
 ###     'lapply(subject, function(s) whichPDict(pdict, s, ...))'.
 ###      The returned object is a list of length N.
 ###   o vcountPDict(): returns an M x N matrix of integers.
-###   o vmatchPDict(): not supported yet!
+###   o vmatchPDict(): not supported yet! (first we need a container to
+###     store the results)
 ###
 
 setGeneric("vmatchPDict", signature="subject",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE, ...)
         standardGeneric("vmatchPDict")
 )
@@ -734,7 +782,7 @@ setGeneric("vmatchPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vmatchPDict", "ANY",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         stop("vmatchPDict() is not ready yet, sorry")
 )
@@ -742,22 +790,24 @@ setMethod("vmatchPDict", "ANY",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vmatchPDict", "XString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use matchPDict() when 'subject' is an XString object (single sequence)")
+        stop("please use matchPDict() when 'subject' is an XString ",
+             "object (single sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vmatchPDict", "MaskedXString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use matchPDict() when 'subject' is a MaskedXString object (single sequence)")
+        stop("please use matchPDict() when 'subject' is a MaskedXString ",
+             "object (single sequence)")
 )
 
 setGeneric("vcountPDict", signature="subject",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE, ...)
         standardGeneric("vcountPDict")
 )
@@ -765,18 +815,19 @@ setGeneric("vcountPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "XString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
-        stop("please use countPDict() when 'subject' is an XString object (single sequence)")
+        stop("please use countPDict() when 'subject' is an XString ",
+             "object (single sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "XStringSet",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
         .vmatchPDict(pdict, subject,
-                     max.mismatch, min.mismatch, fixed,
+                     max.mismatch, min.mismatch, with.indels, fixed,
                      algorithm, collapse, weight,
                      verbose, matches.as="MATCHES_AS_COUNTS")
 )
@@ -784,24 +835,27 @@ setMethod("vcountPDict", "XStringSet",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "XStringViews",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
         vcountPDict(pdict, XStringViewsToSet(subject, FALSE, verbose=FALSE),
-                    max.mismatch=max.mismatch, min.mismatch=min.mismatch, fixed=fixed,
-                    algorithm=algorithm, collapse=collapse, weight=weight, verbose=verbose)
+                    max.mismatch=max.mismatch, min.mismatch=min.mismatch,
+                    with.indels=with.indels, fixed=fixed,
+                    algorithm=algorithm, collapse=collapse, weight=weight,
+                    verbose=verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vcountPDict", "MaskedXString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", collapse=FALSE, weight=1L, verbose=FALSE)
-        stop("please use countPDict() when 'subject' is a MaskedXString object (single sequence)")
+        stop("please use countPDict() when 'subject' is a MaskedXString ",
+             "object (single sequence)")
 )
 
 setGeneric("vwhichPDict", signature="subject",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         standardGeneric("vwhichPDict")
 )
@@ -809,18 +863,19 @@ setGeneric("vwhichPDict", signature="subject",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vwhichPDict", "XString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use whichPDict() when 'subject' is an XString object (single sequence)")
+        stop("please use whichPDict() when 'subject' is an XString ",
+             "object (single sequence)")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vwhichPDict", "XStringSet",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         .vmatchPDict(pdict, subject,
-                     max.mismatch, min.mismatch, fixed,
+                     max.mismatch, min.mismatch, with.indels, fixed,
                      algorithm, 0L, 1L,
                      verbose, matches.as="MATCHES_AS_WHICH")
 )
@@ -828,18 +883,20 @@ setMethod("vwhichPDict", "XStringSet",
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vwhichPDict", "XStringViews",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         vwhichPDict(pdict, XStringViewsToSet(subject, FALSE, verbose=FALSE),
-                    max.mismatch=max.mismatch, min.mismatch=min.mismatch, fixed=fixed,
+                    max.mismatch=max.mismatch, min.mismatch=min.mismatch,
+                    with.indels=with.indels, fixed=fixed,
                     algorithm=algorithm, verbose=verbose)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("vwhichPDict", "MaskedXString",
     function(pdict, subject,
-             max.mismatch=0, min.mismatch=0, fixed=TRUE,
+             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("please use whichPDict() when 'subject' is a MaskedXString object (single sequence)")
+        stop("please use whichPDict() when 'subject' is a MaskedXString ",
+             "object (single sequence)")
 )
 

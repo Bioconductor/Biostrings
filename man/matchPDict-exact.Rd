@@ -70,21 +70,21 @@
 
 \usage{
 matchPDict(pdict, subject,
-           max.mismatch=0, min.mismatch=0, fixed=TRUE,
+           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
            algorithm="auto", verbose=FALSE)
 countPDict(pdict, subject,
-           max.mismatch=0, min.mismatch=0, fixed=TRUE,
+           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
            algorithm="auto", verbose=FALSE)
 whichPDict(pdict, subject,
-           max.mismatch=0, min.mismatch=0, fixed=TRUE,
+           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
            algorithm="auto", verbose=FALSE)
 
 vcountPDict(pdict, subject,
-            max.mismatch=0, min.mismatch=0, fixed=TRUE,
+            max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
             algorithm="auto", collapse=FALSE, weight=1L,
             verbose=FALSE, ...)
 vwhichPDict(pdict, subject,
-            max.mismatch=0, min.mismatch=0, fixed=TRUE,
+            max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
             algorithm="auto", verbose=FALSE)
 }
 
@@ -99,6 +99,11 @@ vwhichPDict(pdict, subject,
     than using \code{\link{matchPattern}}/\code{\link{countPattern}}
     or \code{\link{vmatchPattern}}/\code{\link{vcountPattern}} in a
     "lapply/sapply loop", because, here, looping is done at the C-level.
+    However, by using a non-preprocessed dictionary, many of the
+    restrictions that apply to preprocessed dictionaries don't apply
+    anymore. For example, the dictionary doesn't need to be rectangular
+    or to be a \link{DNAStringSet} object: it can be any type of
+    \link{XStringSet} object and have a variable width.
   }
   \item{subject}{
     An \link{XString} or \link{MaskedXString} object containing the
@@ -116,6 +121,16 @@ vwhichPDict(pdict, subject,
     This man page focuses on exact matching of a constant width
     dictionary so \code{max.mismatch=0} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
+  }
+  \item{with.indels}{
+    Only supported by \code{countPDict}, \code{whichPDict},
+    \code{vcountPDict} and \code{vwhichPDict} at the moment, and only
+    when the input dictionary is non-preprocessed (i.e. XStringSet).
+
+    If \code{TRUE} then indels are allowed. In that case, \code{min.mismatch}
+    must be \code{0} and \code{max.mismatch} is interpreted as the maximum
+    "edit distance" allowed between any pattern and any of its matches.
+    See \code{?`\link{matchPattern}`} for more information.
   }
   \item{fixed}{
     Whether IUPAC ambiguity codes should be interpreted literally or not
