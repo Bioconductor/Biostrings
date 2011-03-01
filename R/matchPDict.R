@@ -536,7 +536,7 @@
                                  algorithm, collapse, weight,
                                  verbose, matches.as)
     else
-        ans <- .vmatch.XStringSet(pattern, subject,
+        ans <- .vmatch.XStringSet(pdict, subject,
                                   max.mismatch, min.mismatch, fixed,
                                   algorithm, collapse, weight,
                                   verbose, matches.as)
