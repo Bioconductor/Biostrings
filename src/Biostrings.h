@@ -368,31 +368,6 @@ void gtestsim(
 );
 
 
-/* extract_transcripts.c */
-
-SEXP transcript_widths(
-	SEXP exonStarts,
-	SEXP exonEnds
-);
-
-SEXP extract_transcripts(
-	SEXP x,
-	SEXP exonStarts,
-	SEXP exonEnds,
-	SEXP strand,
-	SEXP reorder_exons_on_minus_strand,
-	SEXP lkup
-);
-
-SEXP tlocs2rlocs(
-	SEXP tlocs,
-	SEXP exonStarts,
-	SEXP exonEnds,
-	SEXP strand,
-	SEXP reorder_exons_on_minus_strand
-);
-
-
 /* translate.c */
 
 SEXP DNAStringSet_translate(

@@ -4,7 +4,7 @@ Title: String objects representing biological sequences, and matching
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or sets of sequences.
-Version: 2.19.14
+Version: 2.19.15
 Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Sequencing, Infrastructure,
@@ -17,7 +17,7 @@ Suggests: BSgenome (>= 1.13.14),
 	BSgenome.Celegans.UCSC.ce2 (>= 1.3.11),
 	BSgenome.Dmelanogaster.UCSC.dm3 (>= 1.3.11),
 	drosophila2probe, hgu95av2probe, hgu133aprobe,
-	GenomicFeatures (>= 0.1.3),
+	GenomicFeatures (>= 1.3.14),
 	hgu95av2cdf, affy, affydata (>= 1.11.5),
 	RUnit
 License: Artistic-2.0
@@ -44,7 +44,6 @@ Collate: 00datacache.R
 	chartr.R
 	reverse.R
 	translate.R
-	extractTranscripts.R
 	toComplex.R
 	replaceLetterAt.R
 	injectHardMask.R
