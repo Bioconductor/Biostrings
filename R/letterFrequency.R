@@ -105,7 +105,7 @@
                  x, NULL, FALSE,
                  PACKAGE="Biostrings")
     if (as.prob)
-        ans <- ans / nchar(x) # nchar(x) is sum(ans) in faster
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
     ans
 }
 
@@ -118,7 +118,7 @@
                  x, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (as.prob)
-        ans <- ans / nchar(x) # nchar(x) is sum(ans) in faster
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
     ans
 }
 
@@ -308,9 +308,9 @@ setMethod("uniqueLetters", "MaskedXString",
 
 ### We need to be able to map *any* character whose UTF8 code is between 0 and
 ### 255 to its code, even the nul character.
-### 'x' represents the set of characters to map: it must be a vector of 1-letter
-### or empty strings, the empty string being used to represent the nul character.
-### Typically, 'x' will be what was returned by uniqueLetters().
+### 'x' represents the set of characters to map: it must be a vector of
+### 1-letter or empty strings, the empty string being used to represent the nul
+### character. Typically, 'x' will be what was returned by uniqueLetters().
 ### For internal use only (not exported).
 safeLettersToInt <- function(x, letters.as.names=FALSE)
 {
@@ -326,7 +326,7 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "letterFrequency" and "letterFrequencyInSlidingView"
-### generic and methods.
+### generics and methods.
 ### Author: HJ
 ###
 
@@ -336,8 +336,7 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
 .letterFrequency <- function(x, view.width, letters, OR, collapse=FALSE)
 {
     ## letterFrequency / letterFrequencyInSlidingView switch
-    Sliding <- !is.na(view.width)
-
+    is_sliding <- !is.na(view.width)
     single_letters <- .normargLetters(letters, alphabet(x))
     OR <- .normargOR(OR)
     codes <- xscodes(x)
@@ -360,63 +359,79 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
         colnames <- sapply(strsplit(letters, NULL, fixed=TRUE),
                            function(z) paste(z, collapse=OR))
     }
-
-    if (Sliding)
-	.Call("XString_letterFrequencyInSlidingView",
-		x, view.width, single_codes, colmap, colnames,
-		PACKAGE="Biostrings")
+    if (is_sliding)
+        .Call("XString_letterFrequencyInSlidingView",
+              x, view.width, single_codes, colmap, colnames,
+              PACKAGE="Biostrings")
     else
-	.Call("XStringSet_letterFrequency",
-		x, single_codes, colmap, colnames, collapse,
-		PACKAGE="Biostrings")
+        .Call("XStringSet_letterFrequency",
+              x, single_codes, colmap, colnames, collapse,
+              PACKAGE="Biostrings")
 }
 
 ### letterFrequencyInSlidingView
 setGeneric("letterFrequencyInSlidingView", signature="x",
-    function(x, view.width, letters, OR="|")
+    function(x, view.width, letters, OR="|", as.prob=FALSE)
         standardGeneric("letterFrequencyInSlidingView")
 )
 
-### Ensure view.width is not NA
+### Ensure 'view.width' is not NA
 setMethod("letterFrequencyInSlidingView", "XString",
-    function(x, view.width, letters, OR="|") {
-	if (missing(view.width))
-	    stop("'view.width' missing")
-	view.width <- .normargWidth(view.width, "view.width")
-        .letterFrequency(x, view.width, letters=letters, OR=OR)
+    function(x, view.width, letters, OR="|", as.prob=FALSE)
+    {
+        view.width <- .normargWidth(view.width, "view.width")
+        if (!isTRUEorFALSE(as.prob))
+            stop("'as.prob' must be TRUE or FALSE")
+        ans <- .letterFrequency(x, view.width, letters=letters, OR=OR)
+        if (as.prob)
+            ans <- ans / view.width
+        ans
     }
 )
 
 ### letterFrequency
 setGeneric("letterFrequency", signature="x",
-    function(x, letters, OR="|", ...)
+    function(x, letters, OR="|", as.prob=FALSE, ...)
         standardGeneric("letterFrequency")
 )
 
-### Ensure view.width is NA
 setMethod("letterFrequency", "XStringSet",
-    function(x, letters, OR="|", collapse=FALSE)
-        .letterFrequency(x, NA, letters=letters, OR=OR,
-		collapse=collapse)
+    function(x, letters, OR="|", as.prob=FALSE, collapse=FALSE)
+    {
+        if (!isTRUEorFALSE(as.prob))
+            stop("'as.prob' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(collapse))
+            stop("'collapse' must be TRUE or FALSE")
+        ans <- .letterFrequency(x, NA, letters=letters, OR=OR,
+                                collapse=collapse)
+        if (as.prob) {
+            nc <- nchar(x)
+            if (collapse)
+                nc <- sum(nc)
+            ans <- ans / nc
+        }
+        ans
+    }
 )
 
 setMethod("letterFrequency", "XString",
-    function(x, letters, OR="|")
+    function(x, letters, OR="|", as.prob=FALSE)
         letterFrequency(as(x, "XStringSet"),
-		letters=letters, OR=OR, collapse=TRUE)
+            letters=letters, OR=OR, as.prob=as.prob, collapse=TRUE)
 )
 
 setMethod("letterFrequency", "XStringViews",
-    function(x, letters, OR="|", ...)
+    function(x, letters, OR="|", as.prob=FALSE, ...)
         letterFrequency(as(x, "XStringSet"),
-		letters=letters, OR=OR, ...)
+            letters=letters, OR=OR, as.prob=as.prob, ...)
 )
 
 setMethod("letterFrequency", "MaskedXString",
-    function(x, letters, OR="|", ...)
+    function(x, letters, OR="|", as.prob=FALSE)
         letterFrequency(as(x, "XStringViews"),
-		letters=letters, OR=OR, collapse=TRUE)
+            letters=letters, OR=OR, as.prob=as.prob, collapse=TRUE)
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "mkAllStrings" function.

@@ -82,8 +82,8 @@ alphabetFrequency(x, as.prob=FALSE, ...)
 hasOnlyBaseLetters(x)
 uniqueLetters(x)
 
-letterFrequency(x, letters, OR="|", ...)
-letterFrequencyInSlidingView(x, view.width, letters, OR="|")
+letterFrequency(x, letters, OR="|", as.prob=FALSE, ...)
+letterFrequencyInSlidingView(x, view.width, letters, OR="|", as.prob=FALSE)
 
 consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
 
