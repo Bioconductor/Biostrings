@@ -61,7 +61,7 @@
 \seealso{
   \link{XStringSet-class},
   \link[IRanges]{Grouping-class},
-  \link[IRanges]{Sequence-class}
+  \link[IRanges]{Vector-class}
 }
 
 \examples{
