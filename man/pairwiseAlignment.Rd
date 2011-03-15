@@ -79,8 +79,10 @@ probability of an error in the base read. For \code{"Phred"} quality measures
 Assuming independence within and between base reads, the combined error
 probability of a mismatch when the underlying bases do match is
 \eqn{\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2},
-where \eqn{n} is the number of letters in the underlying alphabet. Using
-\eqn{\epsilon_c}, the substitution score is given by when two bases match is given by
+where \eqn{n} is the number of letters in the underlying alphabet (i.e.
+\eqn{n = 4} for DNA input, \eqn{n = 20} for amino acid input, otherwise
+\eqn{n} is the number of distinct letters in the input).
+Using \eqn{\epsilon_c}, the substitution score is given by
 \eqn{b * \log_2(\gamma_{x,y} * (1 - \epsilon_c) * n + (1 - \gamma_{x,y}) * \epsilon_c * (n/(n-1)))},
 where \eqn{b} is the bit-scaling for the scoring and \eqn{\gamma_{x,y}} is the
 probability that characters \eqn{x} and \eqn{y} represents the same underlying

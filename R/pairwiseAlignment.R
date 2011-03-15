@@ -260,7 +260,7 @@ function(pattern,
     switch(class(pattern),
            QualityScaledDNAStringSet =, QualityScaledRNAStringSet = 4L,
            QualityScaledAAStringSet = 20L,
-           256L)
+           length(alphabetToCodes))
 
   substitutionArray <-
     qualitySubstitutionMatrices(fuzzyMatch = uniqueFuzzyValues,
