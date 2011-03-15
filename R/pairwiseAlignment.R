@@ -177,116 +177,123 @@ function(pattern,
         PACKAGE="Biostrings")
 }
 
-
-QualityScaledXStringSet.pairwiseAlignment <-
-function(pattern,
-         subject,
-         type = "global",
-         fuzzyMatrix = NULL,
-         gapOpening = -10,
-         gapExtension = -4,
-         scoreOnly = FALSE)
+.normargFuzzyMatrix <- function(fuzzyMatrix, rownames)
 {
-  ## Check arguments
-  if (class(pattern) != class(subject))
-    stop("'pattern' and 'subject' must be of the same class")
-  if (!(length(subject) %in% c(1, length(pattern))))
-    stop("'length(subject)' must equal 1 or 'length(pattern)'")
-  type <-
-    match.arg(type,
-              c("global", "local", "overlap", "global-local", "local-global",
-                "subjectOverlap", "patternOverlap"))
-  if (type == "subjectOverlap") {
-    warning("type = 'subjectOverlap' has been renamed type = 'global-local'")
-    type <- "global-local"
-  }
-  if (type == "patternOverlap") {
-    warning("type = 'patternOverlap' has been renamed type = 'local-global'")
-    type <- "local-global"
-  }
-  typeCode <-
-    c("global" = 1L, "local" = 2L, "overlap" = 3L, "global-local" = 4L,
-      "local-global" = 5L)[[type]]
-  gapOpening <- as.double(- abs(gapOpening))
-  if (length(gapOpening) != 1 || is.na(gapOpening))
-    stop("'gapOpening' must be a non-positive numeric vector of length 1")
-  gapExtension <- as.double(- abs(gapExtension))
-  if (length(gapExtension) != 1 || is.na(gapExtension))
-    stop("'gapExtension' must be a non-positive numeric vector of length 1")
-  scoreOnly <- as.logical(scoreOnly)
-  if (length(scoreOnly) != 1 || any(is.na(scoreOnly)))
-    stop("'scoreOnly' must be a non-missing logical value")
-  if (class(quality(pattern)) != class(quality(subject)))
-    stop("'quality(pattern)' and 'quality(subject)' must be of the same class")
-
-  ## Process string information
-  if (is.null(xscodec(pattern))) {
-    unique_letters <- unique(c(uniqueLetters(pattern), uniqueLetters(subject)))
-    #Even if safeLettersToInt() will deal properly with embedded nuls, I
-    #suspect bad things will happen downstream in case there are any.
-    alphabetToCodes <- safeLettersToInt(unique_letters, letters.as.names=TRUE)
-  } else {
-    alphabetToCodes <- xscodes(pattern)
-  }
-
-  useQuality <- TRUE
-  if (is.null(fuzzyMatrix)) {
-      fuzzyMatrix <- diag(length(alphabetToCodes))
-      dimnames(fuzzyMatrix) <- list(names(alphabetToCodes), names(alphabetToCodes))
-  } else {
+    if (is.null(fuzzyMatrix)) {
+        fuzzyMatrix <- diag(length(rownames))
+        dimnames(fuzzyMatrix) <- list(rownames, rownames)
+        return(fuzzyMatrix)
+    }
     if (!is.matrix(fuzzyMatrix) || !is.numeric(fuzzyMatrix) ||
-        any(is.na(fuzzyMatrix)) || any(fuzzyMatrix < 0) || any(fuzzyMatrix > 1))
-      stop("'fuzzyMatrix' must be a numeric matrix with values between 0 and 1 inclusive")
+        any(is.na(fuzzyMatrix)) || any(fuzzyMatrix < 0) ||
+        any(fuzzyMatrix > 1))
+        stop("'fuzzyMatrix' must be a numeric matrix with values ",
+             "between 0 and 1 inclusive")
     if (!identical(rownames(fuzzyMatrix), colnames(fuzzyMatrix)))
-      stop("row and column names differ for matrix 'fuzzyMatrix'")
+        stop("row and column names differ for matrix 'fuzzyMatrix'")
     if (is.null(rownames(fuzzyMatrix)))
-      stop("matrix 'fuzzyMatrix' must have row and column names")
+        stop("matrix 'fuzzyMatrix' must have row and column names")
     if (any(duplicated(rownames(fuzzyMatrix))))
-      stop("matrix 'fuzzyMatrix' has duplicated row names")    
-  }
-  availableLetters <-
-    intersect(names(alphabetToCodes), rownames(fuzzyMatrix))
+        stop("matrix 'fuzzyMatrix' has duplicated row names")    
+    availableLetters <- intersect(rownames, rownames(fuzzyMatrix))
+    fuzzyMatrix[availableLetters, availableLetters, drop = FALSE]
+}
 
-  fuzzyMatrix <- fuzzyMatrix[availableLetters, availableLetters, drop = FALSE]
-  uniqueFuzzyValues <- sort(unique(fuzzyMatrix))
-  fuzzyReferenceMatrix <-
-    matrix(match(fuzzyMatrix, uniqueFuzzyValues) - 1L,
-           nrow = nrow(fuzzyMatrix), ncol = ncol(fuzzyMatrix),
-           dimnames = dimnames(fuzzyMatrix))
-  fuzzyLookupTable <-
-    buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
+.makeSubstitutionLookupTable <- function(qpattern)
+{
+    keys <- (minQuality(qpattern) + offset(qpattern)):
+                     (maxQuality(qpattern) + offset(qpattern))
+    vals <- 0:(maxQuality(qpattern) - minQuality(qpattern))
+    buildLookupTable(keys, vals)
+}
 
-  alphabetLength <-
-    switch(class(pattern),
-           QualityScaledDNAStringSet =, QualityScaledRNAStringSet = 4L,
-           QualityScaledAAStringSet = 20L,
-           length(alphabetToCodes))
+QualityScaledXStringSet.pairwiseAlignment <- function(pattern, subject,
+                                                      type = "global",
+                                                      fuzzyMatrix = NULL,
+                                                      gapOpening = -10,
+                                                      gapExtension = -4,
+                                                      scoreOnly = FALSE)
+{
+    ## Check arguments
+    if (class(pattern) != class(subject))
+        stop("'pattern' and 'subject' must be of the same class")
+    if (!(length(subject) %in% c(1L, length(pattern))))
+        stop("'length(subject)' must equal 1 or 'length(pattern)'")
+    type <- match.arg(type, c("global", "local", "overlap",
+                              "global-local", "local-global",
+                              "subjectOverlap", "patternOverlap"))
+    if (type == "subjectOverlap") {
+        warning("type \"subjectOverlap\" has been renamed \"global-local\"")
+        type <- "global-local"
+    }
+    if (type == "patternOverlap") {
+        warning("type \"patternOverlap\" has been renamed \"local-global\"")
+        type <- "local-global"
+    }
+    typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L,
+                  "global-local" = 4L, "local-global" = 5L)[[type]]
+    gapOpening <- as.double(- abs(gapOpening))
+    if (length(gapOpening) != 1L || is.na(gapOpening))
+        stop("'gapOpening' must be a non-positive numeric vector of length 1")
+    gapExtension <- as.double(- abs(gapExtension))
+    if (length(gapExtension) != 1L || is.na(gapExtension))
+        stop("'gapExtension' must be a non-positive numeric vector of length 1")
+    scoreOnly <- as.logical(scoreOnly)
+    if (length(scoreOnly) != 1L || any(is.na(scoreOnly)))
+        stop("'scoreOnly' must be a non-missing logical value")
+    if (class(quality(pattern)) != class(quality(subject)))
+        stop("'quality(pattern)' and 'quality(subject)' must be ",
+             "of the same class")
 
-  substitutionArray <-
-    qualitySubstitutionMatrices(fuzzyMatch = uniqueFuzzyValues,
-                                alphabetLength = alphabetLength,
-                                qualityClass = class(quality(pattern)))
-  substitutionLookupTable <-
-    buildLookupTable((minQuality(quality(pattern)) + offset(quality(pattern))):
-                     (maxQuality(quality(pattern)) + offset(quality(pattern))),
-                     0:(maxQuality(quality(pattern)) - minQuality(quality(pattern))))
+    ## Process string information
+    if (is.null(xscodec(pattern))) {
+        unique_letters <- unique(c(uniqueLetters(pattern),
+                                   uniqueLetters(subject)))
+        #Even if safeLettersToInt() will deal properly with embedded nuls, I
+        #suspect bad things will happen downstream in case there are any.
+        alphabetToCodes <- safeLettersToInt(unique_letters,
+                                            letters.as.names=TRUE)
+    } else {
+        alphabetToCodes <- xscodes(pattern)
+    }
 
-  .Call("XStringSet_align_pairwiseAlignment",
-        pattern,
-        subject,
-        type,
-        typeCode,
-        scoreOnly,
-        gapOpening,
-        gapExtension,
-        useQuality,
-        substitutionArray,
-        dim(substitutionArray),
-        substitutionLookupTable,
-        fuzzyReferenceMatrix,
-        dim(fuzzyReferenceMatrix),
-        fuzzyLookupTable,
-        PACKAGE="Biostrings")
+    useQuality <- TRUE
+    fuzzyMatrix <- .normargFuzzyMatrix(fuzzyMatrix, names(alphabetToCodes))
+    uniqueFuzzyValues <- sort(unique(fuzzyMatrix))
+    fuzzyReferenceMatrix <- matrix(match(fuzzyMatrix, uniqueFuzzyValues) - 1L,
+                                   nrow = nrow(fuzzyMatrix),
+                                   ncol = ncol(fuzzyMatrix),
+                                   dimnames = dimnames(fuzzyMatrix))
+    fuzzyLookupTable <-
+      buildLookupTable(alphabetToCodes[rownames(fuzzyMatrix)],
+                       seq_len(nrow(fuzzyMatrix)) - 1L)
+    alphabetLength <-
+      switch(class(pattern),
+             QualityScaledDNAStringSet =, QualityScaledRNAStringSet = 4L,
+             QualityScaledAAStringSet = 20L,
+             length(alphabetToCodes))
+    substitutionArray <-
+      qualitySubstitutionMatrices(fuzzyMatch = uniqueFuzzyValues,
+                                  alphabetLength = alphabetLength,
+                                  qualityClass = class(quality(pattern)))
+    substitutionLookupTable <- .makeSubstitutionLookupTable(quality(pattern))
+
+    .Call("XStringSet_align_pairwiseAlignment",
+          pattern,
+          subject,
+          type,
+          typeCode,
+          scoreOnly,
+          gapOpening,
+          gapExtension,
+          useQuality,
+          substitutionArray,
+          dim(substitutionArray),
+          substitutionLookupTable,
+          fuzzyReferenceMatrix,
+          dim(fuzzyReferenceMatrix),
+          fuzzyLookupTable,
+          PACKAGE="Biostrings")
 }
 
 mpi.collate.pairwiseAlignment <-
