@@ -7,7 +7,6 @@ importFrom(stats, "chisq.test", "complete.cases", "diffinv",
            "pchisq")
 importFrom(utils, "data")
 import(IRanges)
-importFrom(Biobase, "addVigs2WinMenu")
 
 
 ### ==========================================================================
