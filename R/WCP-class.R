@@ -65,6 +65,7 @@ setClass("AA_WCP",
 setValidity("WCP",
     function(object)
     {
+        .Deprecated(msg="the WCP class and subclasses are deprecated")
         problems <- .valid.WCP(object)
         if (is.null(problems)) TRUE else problems
     }
@@ -85,6 +86,7 @@ setMethod("xsbasetype", "WCP", function(x) xsbasetype(x@dictList))
 setMethod("show", "WCP",
     function(object)
     {
+        .Deprecated(msg="the WCP class and subclasses are deprecated")
         NG <- length(object@clusters)
         NO <- nobj(object@clusters)
         cat("  A ", class(object), " instance with ", NG,

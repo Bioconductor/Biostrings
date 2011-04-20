@@ -5,11 +5,13 @@
 setMethod("maxWeights", "WCP",
     function(x)
     {
+        .Deprecated(msg="\"maxWeights\" method for WCP objects is deprecated")
         sapply(x@dictList, function(y) max(dataTable(y)[[1]]))
     })
 
 WCPscoreStartingAt <- function(wcp, subject, starting.at=1)
 {
+    .Deprecated(msg="WCPscoreStartingAt() is deprecated")
     if (!is(wcp, "WCP"))
         stop("'wcp' must be a WCP object")
     ## checking 'subject'
@@ -72,8 +74,10 @@ setMethod("matchWCP", "character",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchWCP", "XString",
-    function(wcp, subject, min.score="80%")
+    function(wcp, subject, min.score="80%") {
+        .Deprecated(msg="matchWCP() is deprecated")
         .XString.matchWCP(wcp, subject, min.score)
+    }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -84,14 +88,18 @@ setMethod("matchWCP", "XString",
 ### a normal XStringViews object).
 ### matchWCP does not support "out of limits"  matches.
 setMethod("matchWCP", "XStringViews",
-    function(wcp, subject, min.score="80%")
+    function(wcp, subject, min.score="80%") {
+        .Deprecated(msg="matchWCP() is deprecated")
         .XStringViews.matchWCP(wcp, subject, min.score)
+    }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchWCP", "MaskedXString",
-    function(wcp, subject, min.score="80%")
+    function(wcp, subject, min.score="80%") {
+        .Deprecated(msg="matchWCP() is deprecated")
         matchWCP(wcp, toXStringViewsOrXString(subject), min.score)
+    }
 )
 
 
@@ -112,18 +120,24 @@ setMethod("countWCP", "character",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countWCP", "XString",
-    function(wcp, subject, min.score="80%")
+    function(wcp, subject, min.score="80%") {
+        .Deprecated(msg="countWCP() is deprecated")
         .XString.matchWCP(wcp, subject, min.score, count.only=TRUE)
+    }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countWCP", "XStringViews",
-    function(wcp, subject, min.score="80%")
+    function(wcp, subject, min.score="80%") {
+        .Deprecated(msg="countWCP() is deprecated")
         .XStringViews.matchWCP(wcp, subject, min.score, count.only=TRUE)
+    }
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("countWCP", "MaskedXString",
-    function(wcp, subject, min.score="80%")
+    function(wcp, subject, min.score="80%") {
+        .Deprecated(msg="countWCP() is deprecated")
         countWCP(wcp, toXStringViewsOrXString(subject), min.score)
+    }
 )
