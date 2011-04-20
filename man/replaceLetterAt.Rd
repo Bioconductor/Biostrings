@@ -5,9 +5,6 @@
 \alias{replaceLetterAt,DNAStringSet-method}
 \alias{.inplaceReplaceLetterAt}
 
-% Deprecated:
-\alias{replaceLetterAtLoc}
-
 
 \title{Replacing letters in a sequence (or set of sequences)
        at some specified locations}

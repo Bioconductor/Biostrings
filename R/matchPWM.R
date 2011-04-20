@@ -222,9 +222,6 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
           PACKAGE="Biostrings")
 }
 
-PWMscore <- function(pwm, subject, start=1)
-    .Defunct('PWMscoreStartingAt')
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "matchPWM" generic and methods.

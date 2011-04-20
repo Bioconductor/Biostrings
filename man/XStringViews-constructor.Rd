@@ -7,12 +7,6 @@
 \alias{XStringViews,XString-method}
 \alias{XStringViews,XStringViews-method}
 
-% Old stuff (Defunct or Deprecated):
-\alias{BStringViews}
-\alias{BStringViews,ANY-method}
-\alias{BStringViews,file-method}
-\alias{adjacentViews}
-
 
 \title{Basic functions for creating or modifying XStringViews objects}
 

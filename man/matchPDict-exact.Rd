@@ -117,7 +117,7 @@ vwhichPDict(pdict, subject,
   }
   \item{max.mismatch, min.mismatch}{
     The maximum and minimum number of mismatching letters allowed (see
-    \code{?\link{isMatching}} for the details).
+    \code{?\link{isMatchingAt}} for the details).
     This man page focuses on exact matching of a constant width
     dictionary so \code{max.mismatch=0} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
@@ -134,7 +134,7 @@ vwhichPDict(pdict, subject,
   }
   \item{fixed}{
     Whether IUPAC ambiguity codes should be interpreted literally or not
-    (see \code{?\link{isMatching}} for more information).
+    (see \code{?\link{isMatchingAt}} for more information).
     This man page focuses on exact matching of a constant width
     dictionary so \code{fixed=TRUE} in the examples below.
     See \code{?`\link{matchPDict-inexact}`} for inexact matching.
@@ -222,7 +222,7 @@ vwhichPDict(pdict, subject,
   \link{PDict-class},
   \link{MIndex-class},
   \link{matchPDict-inexact},
-  \code{\link{isMatching}},
+  \code{\link{isMatchingAt}},
   \code{\link{coverage,MIndex-method}},
   \code{\link{matchPattern}},
   \code{\link{alphabetFrequency}},

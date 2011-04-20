@@ -22,9 +22,6 @@
 \alias{reverseComplement,MaskedDNAString-method}
 \alias{reverseComplement,MaskedRNAString-method}
 
-% Old stuff:
-\alias{strrev}
-
 
 \title{Sequence reversing and complementing}
 

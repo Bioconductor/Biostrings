@@ -70,10 +70,6 @@ setMethod("replaceLetterAt", "DNAStringSet",
     }
 )
 
-replaceLetterAtLoc <- function(x, loc, letter,
-                               if.not.extending="replace", verbose=FALSE)
-    .Defunct("replaceLetterAt")
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The ".inplaceReplaceLetterAt" function.

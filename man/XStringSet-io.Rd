@@ -14,14 +14,6 @@
 
 \alias{save.XStringSet}
 
-% Old stuff:
-\alias{FASTArecordsToCharacter}
-\alias{CharacterToFASTArecords}
-\alias{FASTArecordsToXStringViews}
-\alias{XStringSetToFASTArecords}
-\alias{read.XStringViews}
-\alias{write.XStringViews}
-
 
 \title{Read/write an XStringSet object from/to a file}
 

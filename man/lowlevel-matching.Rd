@@ -34,11 +34,6 @@
 
 \alias{hasLetterAt}
 
-% Old stuff:
-\alias{nmismatchStartingAt}
-\alias{nmismatchEndingAt}
-\alias{isMatching}
-
 
 \title{Low-level matching functions}
 

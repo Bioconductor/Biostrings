@@ -53,9 +53,6 @@
 % "updateObject" method:
 \alias{updateObject,XString-method}
 
-% Old stuff:
-\alias{subXString}
-
 
 \title{BString objects}
 

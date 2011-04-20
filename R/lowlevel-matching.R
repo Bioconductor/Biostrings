@@ -459,17 +459,3 @@ hasLetterAt <- function(x, letter, at, fixed=TRUE)
                .hasLetterAt1(x, subseq(letter, start=i, width=1L), at[i]))
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-nmismatchStartingAt <- function(pattern, subject, starting.at=1, fixed=TRUE)
-    .Defunct("neditStartingAt")
-
-nmismatchEndingAt <- function(pattern, subject, ending.at=1, fixed=TRUE)
-    .Defunct("neditEndingAt")
-
-isMatching <- function(pattern, subject, start=1, max.mismatch=0, fixed=TRUE)
-    .Defunct("isMatchingAt")
-

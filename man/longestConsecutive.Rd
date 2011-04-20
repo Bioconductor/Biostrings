@@ -24,8 +24,6 @@ longestConsecutive(seq, letter)
 
 \author{W. Huber}
 
-\seealso{\code{\link{complementSeq}},\code{\link{basecontent}},\code{\link{reverseSeq}}}
-
 \examples{
  v = c("AAACTGTGFG", "GGGAATT", "CCAAAAAAAAAATT")
  longestConsecutive(v, "A")

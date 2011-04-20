@@ -10,7 +10,6 @@ Some R problems that maybe worth reporting
   an integer matrix.
 
 
-
 Immediate TODO list
 -------------------
 
@@ -97,13 +96,11 @@ UTILITIES
   When 'x' is a single string, 'xsmatch(x, table)' would return:
 
     ii <- nchar(x) == width(table) &
-          isMatching(x, Biostrings:::super(table), start(table))
+          isMatchingAt(x, Biostrings:::super(table), start(table))
     which(ii)[1]
 
-  although this is not optimal because isMatching() is doing too many
+  although this is not optimal because isMatchingAt() is doing too many
   comparisons when it could in fact bail out early.
-
-- Use subseq() instead of subXString(). Remove subXString.R file.
 
 - Add a new generic that combines a subject and an IRanges (or IRanges-like)
   object to return an XStringViews object. The IRanges-like object could be
@@ -253,14 +250,10 @@ MISCELLANEOUS
 - Update the CHANGES file.
 
 
-
 2.21 series (BioC 2.9)
 ----------------------
 
 - Deprecate old matchprobes functions: matchprobes(), longestConsecutive().
-
-- Remove defunct matchprobes functions: complementSeq(), reverseSeq(),
-  revcompDNA(), revcompRNA(), basecontent() and countbases().
 
 
 Long term TODO list

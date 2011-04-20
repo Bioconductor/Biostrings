@@ -29,9 +29,6 @@
 \alias{countPWM,XStringViews-method}
 \alias{countPWM,MaskedDNAString-method}
 
-% Deprecated:
-\alias{PWMscore}
-
 
 \title{PWM creating, matching, and related utilities}
 

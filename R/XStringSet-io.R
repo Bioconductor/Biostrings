@@ -313,30 +313,3 @@ save.XStringSet <- function(x, objname, dirpath=".",
         cat("OK\n")
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-FASTArecordsToCharacter <- function(FASTArecs, use.names=TRUE)
-    .Defunct(msg="FASTArecordsToCharacter() is defunct with no replacement, sorry!")
-
-CharacterToFASTArecords <- function(x)
-    .Defunct(msg="CharacterToFASTArecords() is defunct with no replacement, sorry!")
-
-FASTArecordsToXStringViews <- function(FASTArecs, subjectClass, collapse="")
-    .Defunct(msg="FASTArecordsToXStringViews() is defunct with no replacement, sorry!")
-
-XStringSetToFASTArecords <- function(x)
-    .Defunct(msg="XStringSetToFASTArecords() is defunct with no replacement, sorry!")
-
-read.XStringViews <- function(filepath, format="fasta",
-                              subjectClass, collapse="")
-    .Defunct(msg="read.XStringViews() is defunct: use as(read.DNAStringSet(...), \"Views\") instead")
-
-write.XStringViews <- function(x, file="", append=FALSE,
-                               format="fasta", width=80)
-{
-    .Defunct(msg="write.XStringViews() is defunct: use write.XStringSet(as(x, \"XStringSet\"), ...) instead")
-}
-

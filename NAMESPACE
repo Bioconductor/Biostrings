@@ -80,9 +80,6 @@ export(
 
     ## xscat.R:
     xscat,
-
-    ## Old stuff (Defunct or Deprecated):
-    BStringViews, adjacentViews
 )
 
 exportMethods(
@@ -149,7 +146,6 @@ export(
 
     ## reverse.R:
     complement, reverseComplement,
-    strrev,
 
     ## translate.R:
     transcribe, cDNA, dna2rna, rna2dna,
@@ -166,13 +162,6 @@ export(
 
     ## misc.R:
     N50,
-
-    ## Old stuff (Defunct or Deprecated):
-    FASTArecordsToCharacter, CharacterToFASTArecords,
-    FASTArecordsToXStringViews, XStringSetToFASTArecords,
-    read.XStringViews, write.XStringViews,
-    subXString,
-    replaceLetterAtLoc
 )
 
 exportMethods(
@@ -273,10 +262,6 @@ export(
     patternFrequency, PDict,
     matchPDict, countPDict, whichPDict,
     vmatchPDict, vcountPDict, vwhichPDict,
- 
-    ## Old stuff (Defunct or Deprecated):
-    nmismatchStartingAt, nmismatchEndingAt, isMatching,
-    PWMscore
 )
 
 exportMethods(
@@ -436,17 +421,6 @@ exportMethods(
 ###   matchprobes.R
 
 export(
-    ## Used in ecolitk, arrayQualityMetrics (vignette only),
-    ## Ringo (just mentioned in a \seealso section),
-    ## ITALICS and tilingArray (in a Sweave document only).
-    ## (makePlatformDesign and oligo define their own basecontent)
-    basecontent,
-
-    countbases,
-    complementSeq,
-    reverseSeq,
-    revcompDNA,
-    revcompRNA,
     longestConsecutive,
     matchprobes
 )

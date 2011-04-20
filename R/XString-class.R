@@ -357,10 +357,3 @@ setMethod("updateObject", "XString",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-subXString <- function(x, start=NA, end=NA, length=NA) .Defunct("subseq")
-

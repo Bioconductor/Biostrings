@@ -66,23 +66,3 @@ setMethod("XStringViews", "XStringViews",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Deprecated or Defunct).
-###
-
-setGeneric("BStringViews", signature="src",
-    function(src, subjectClass, collapse="") standardGeneric("BStringViews")
-)
-
-setMethod("BStringViews", "ANY",
-    function(src, subjectClass, collapse="") .Defunct("XStringViews")
-)
-
-setMethod("BStringViews", "file",
-    function(src, subjectClass, collapse="") .Defunct("read.DNAStringSet")
-)
-
-adjacentViews <- function(subject, width, gapwidth=0)
-    .Defunct("successiveViews", package="IRanges")
-
