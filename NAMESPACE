@@ -79,7 +79,7 @@ export(
     AAKeySortedDataList,
 
     ## xscat.R:
-    xscat,
+    xscat
 )
 
 exportMethods(
@@ -161,7 +161,7 @@ export(
     injectHardMask,
 
     ## misc.R:
-    N50,
+    N50
 )
 
 exportMethods(
@@ -261,7 +261,7 @@ export(
     tb, tb.width, nnodes, hasAllFlinks, computeAllFlinks,
     patternFrequency, PDict,
     matchPDict, countPDict, whichPDict,
-    vmatchPDict, vcountPDict, vwhichPDict,
+    vmatchPDict, vcountPDict, vwhichPDict
 )
 
 exportMethods(
