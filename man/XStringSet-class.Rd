@@ -31,9 +31,6 @@
 \alias{xsbasetype,XStringSet-method}
 \alias{xsbasetype<-,XStringSet-method}
 
-\alias{compact}
-\alias{compact,XStringSet-method}
-
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}
 \alias{coerce,XStringSet,RNAStringSet-method}
@@ -255,7 +252,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
   \describe{
     \item{}{
-      \code{compact(x, basetype=NULL)}:
+      \code{compact(x)}:
       Makes a deep copy of \code{x} that reduces its memory footprint.
       Typically used before saving \code{x} to a file (serialization).
     }

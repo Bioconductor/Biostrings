@@ -131,40 +131,18 @@ setMethod("xsbasetype", "XStringSet",
     function(x) xsbasetype(newEmptyXString(elementType(x)))
 )
 
-### This is an endomorphism iff 'basetype' is NULL, otherwise it is NOT!
-.XStringSet.compact <- function(x, basetype=NULL)
-{
-    ## xvcopy() creates a compact copy of 'x'.
-    if (is.null(basetype))
-        return(xvcopy(x))
-    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), basetype)
-    y <- xvcopy(x, lkup=lkup)  # 'y' is a temporarily broken object
-    ## NOT an endomorphism! (downgrades 'x' to a B/DNA/RNA/AAStringSet instance)
-    ans_class <- paste(basetype, "StringSet", sep="")
-    new2(ans_class, pool=y@pool, ranges=y@ranges, check=FALSE)
-}
-
-### Downgrades 'x' to a B/DNA/RNA/AAStringSet instance!
+### NOT an endomorphism in general! (Because it downgrades 'x' to a
+### B/DNA/RNA/AAStringSet instance.)
 setReplaceMethod("xsbasetype", "XStringSet",
     function(x, value)
     {
-        from_basetype <- xsbasetype(x)
-        lkup <- get_xsbasetypes_conversion_lookup(from_basetype, value)
+        lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), value)
         if (!is.null(lkup))
-            return(.XStringSet.compact(x, basetype=value))
+            x <- xvcopy(x, lkup=lkup)  # temporarily breaks 'x'!
         ans_class <- paste(value, "StringSet", sep="")
         new2(ans_class, pool=x@pool, ranges=x@ranges, check=FALSE)
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### compact()
-###
-
-setGeneric("compact", function(x, ...) standardGeneric("compact"))
-
-setMethod("compact", "XStringSet", .XStringSet.compact)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

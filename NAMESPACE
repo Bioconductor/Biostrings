@@ -58,7 +58,7 @@ export(
     BString, DNAString, RNAString, AAString,
 
     ## XStringSet-class.R:
-    compact, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
+    BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     unsplit.list.of.XStringSet,
 
     ## XStringViews-constructor.R:
@@ -87,7 +87,6 @@ exportMethods(
     nchar, width,
     xsbasetype, "xsbasetype<-",
     updateObject,
-    compact,
     names, "names<-", "[", "[[", "[[<-", rep, append,
     union, intersect, setdiff, setequal,
     "%in%", match,
