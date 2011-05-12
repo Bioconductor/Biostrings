@@ -115,7 +115,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
     length as \code{x} specifying how \code{x} should be "narrowed"
-    (see \code{?\link[IRanges:Ranges-utils]{narrow}} for the details).
+    (see \code{?\link[IRanges]{narrow}} for the details).
   }
   \item{use.names}{
     \code{TRUE} or \code{FALSE}. Should names be preserved?
@@ -200,7 +200,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA)}:
       Applies \code{subseq} on each element in \code{x}.
-      See \code{?\link[IRanges:XVector-class]{subseq}} for the details.
+      See \code{?\link[IRanges]{subseq}} for the details.
 
       Note that this is similar to what \code{\link{substr}} does on a
       character vector. However there are some noticeable differences:
@@ -220,41 +220,28 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       Same as \code{subseq}. The only differences are: (1) \code{narrow}
       has a \code{use.names} argument; and (2) all the things \code{narrow}
       and \code{subseq} work on
-      (\link[IRanges:IRanges-constructor]{IRanges}, XStringSet or 
+      (\link[IRanges]{IRanges}, XStringSet or 
       \link{XStringViews} objects for \code{narrow},
-      \link[IRanges:XVector-class]{XVector} or XStringSet objects for
+      \link[IRanges]{XVector} or XStringSet objects for
       \code{subseq}). But they both work and do the same thing on an
       XStringSet object. 
     }
     \item{}{
       \code{threebands(x, start=NA, end=NA, width=NA)}:
-      Like the method for \link[IRanges:IRanges-constructor]{IRanges}
+      Like the method for \link[IRanges]{IRanges}
       objects, the 
       \code{threebands} methods for character vectors and XStringSet
       objects extend the capability of \code{narrow} by returning the 3
       set of subsequences (the left, middle and right subsequences)
       associated to the narrowing operation.
-      See \code{?\link[IRanges:Ranges-utils]{threebands}} in the
+      See \code{?\link[IRanges]{threebands}} in the
       IRanges package for the details.
     }
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
-      A vectorized version of the \code{\link[IRanges:XVector-class]{subseq<-}}
-      method for \link[IRanges:XVector-class]{XVector} objects.
-      See \code{?`\link[IRanges:XVector-class]{subseq<-}`} for the details.
-    }
-  }
-}
-
-\section{Compacting}{
-  In the code snippets below,
-  \code{x} is an XStringSet object.
-
-  \describe{
-    \item{}{
-      \code{compact(x)}:
-      Makes a deep copy of \code{x} that reduces its memory footprint.
-      Typically used before saving \code{x} to a file (serialization).
+      A vectorized version of the \code{\link[IRanges]{subseq<-}}
+      method for \link[IRanges]{XVector} objects.
+      See \code{?`\link[IRanges]{subseq<-}`} for the details.
     }
   }
 }
@@ -406,7 +393,9 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \link{XStringSetList-class},
   \code{\link[IRanges]{subseq}},
   \code{\link[IRanges]{narrow}},
-  \code{\link{substr}}
+  \code{\link{substr}},
+  \code{\link[IRanges]{compact}},
+  \link[IRanges]{XVectorList-class}
 }
 
 \examples{
@@ -514,29 +503,30 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   probes
 
   ## ---------------------------------------------------------------------
-  ## E. COMPACTING AN XStringSet OBJECT
+  ## E. UNLISTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
-  ## Compacting is done typically before serialization.
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe)
-  object.size(probes)
-  y1 <- subseq(probes[1:12], start=5)
-  object.size(y1) 
-  file1 <- file.path(tempdir(), "y1.rda")
-  save(y1, file=file1)
-  file.info(file1)$size
-  y2 <- compact(y1)
-  object.size(y2)  # much smaller!
-  file2 <- file.path(tempdir(), "y2.rda")
-  save(y2, file=file2)
-  file.info(file2)$size
+  unlist(probes)
 
   ## ---------------------------------------------------------------------
-  ## F. UNLISTING AN XStringSet OBJECT
+  ## F. COMPACTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
+  ## As a particular type of XVectorList objects, XStringSet objects can
+  ## eventually be compacted. Compacting is done typically before
+  ## serialization. See ?compact for more information.
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe)
-  unlist(probes)  
+
+  y <- subseq(probes[1:12], start=5)
+  probes@pool
+  y@pool
+  object.size(probes)
+  object.size(y)
+
+  y0 <- compact(y)
+  y0@shared
+  object.size(y0)
 }
 
 \keyword{methods}

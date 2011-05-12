@@ -175,14 +175,16 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link[IRanges:XVector-class]{subseq}},
+  \code{\link[IRanges]{subseq}},
   \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},
   \link{AAString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
-  \code{\link{reverse,XString-method}}
+  \code{\link{reverse,XString-method}},
+  \code{\link[IRanges]{compact}},
+  \link[IRanges]{XVector-class}
 }
 
 \examples{
@@ -190,14 +192,14 @@
   b
   length(b)
 
-  ## Extracting a linear subsequence 
+  ## Extracting a linear subsequence:
   subseq(b)
   subseq(b, start=3)
   subseq(b, start=-3)
   subseq(b, end=-3)
   subseq(b, end=-3, width=5)
 
-  ## Subsetting
+  ## Subsetting:
   b2 <- b[length(b):1]       # better done with reverse(b)
 
   as.character(b2)
@@ -213,6 +215,10 @@
   ## the internal slot containing the memory address of the sequence
   ## data differs from the original. This is enough for identical() to
   ## see the 2 objects as different.
+
+  ## Compacting. As a particular type of XVector objects, XString
+  ## objects can eventually be compacted. Compacting is done typically
+  ## before serialization. See ?compact for more information.
 }
 
 \keyword{methods}
