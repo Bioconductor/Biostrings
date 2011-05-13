@@ -525,7 +525,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   object.size(y)
 
   y0 <- compact(y)
-  y0@shared
+  y0@pool
   object.size(y0)
 }
 
