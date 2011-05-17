@@ -282,7 +282,7 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubjectSummary",
 setMethod("coverage", "AlignedXStringSet0",
     function(x, shift=0L, width=NULL, weight=1L)
     {
-        shift <- normargShift(shift, length(x@range))
+        shift <- recycleIntegerArg(shift, "shift", length(x@range))
         if (is.null(width))
             width <- max(nchar(unaligned(x))) + max(shift)
         coverage(x@range, shift=shift, width=width, weight=weight)

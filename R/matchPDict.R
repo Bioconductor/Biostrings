@@ -538,9 +538,9 @@
         collapse <- normargCollapse(collapse)
         if (collapse) {
             if (collapse == 1L) {
-                weight <- normargWeight(weight, length(subject))
+                weight <- recycleNumericArg(weight, "weight", length(subject))
             } else {
-                weight <- normargWeight(weight, length(pdict))
+                weight <- recycleNumericArg(weight, "weight", length(pdict))
                 if (!is.null(which_pp_excluded)) {
                     ## Collapse weights of duplicates.
                     ## TODO: Implement this in C.
