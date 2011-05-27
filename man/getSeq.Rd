@@ -7,7 +7,7 @@
 \description{
    A generic function for extracting a set of sequences (or subsequences)
    from a sequence container like a \link[BSgenome]{BSgenome} object or
-   others.
+   other.
 }
 
 \usage{
@@ -26,12 +26,14 @@ getSeq(x, ...)
 }
 
 \value{
-  An \link{XStringSet} object or a character vector containing the
-  extracted sequences. See individual methods for the details.
+  An \link{XString} object or an \link{XStringSet} object or a character
+  vector containing the extracted sequence(s). See individual methods for
+  the details.
 }
 
 \seealso{
   \link[BSgenome]{getSeq,BSgenome-method},
+  \link{XString-class},
   \link{XStringSet-class}
 }
 
