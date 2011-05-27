@@ -106,6 +106,7 @@ exportMethods(
 ###   FASTA-io-legacy.R
 ###   XStringSet-io.R
 ###   letter.R
+###   getSeq.R
 ###   letterFrequency.R
 ###   dinucleotideFrequencyTest.R
 ###   chartr.R
@@ -128,6 +129,9 @@ export(
 
     ## letter.R:
     letter,
+
+    ## getSeq.R:
+    getSeq,
 
     ## letterFrequency.R:
     letterFrequency,
