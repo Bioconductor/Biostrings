@@ -27,8 +27,12 @@ getSeq(x, ...)
 
 \value{
   An \link{XString} object or an \link{XStringSet} object or a character
-  vector containing the extracted sequence(s). See individual methods for
-  the details.
+  vector containing the extracted sequence(s).
+
+  See man pages of individual methods for the details e.g. with
+  \code{?`\link{getSeq,BSgenome-method}`} to access the man page of the
+  method for \link[BSgenome]{BSgenome} objects (make sure the BSgenome
+  package is loaded first). 
 }
 
 \seealso{
@@ -39,7 +43,8 @@ getSeq(x, ...)
 
 \examples{
 ## Note that you need to load the package(s) defining the specialized
-## method(s) to have showMethods() display them:
+## methods to have showMethods() display them and to be able to access
+## their man pages:
 library(BSgenome)
 showMethods("getSeq")
 }
