@@ -313,22 +313,6 @@ setAs("XString", "XStringSet", function(from) XStringSet(xsbasetype(from), from)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### unsplit.list.of.XStringSet()
-###
-### Helper function, not for the end user.
-###
-
-unsplit.list.of.XStringSet <- function(class, value, f)
-{
-    ans <- rep.int(as("", class), length(f))
-    unlisted_value <- do.call(c, unname(value))
-    idx <- unname(split(seq_len(length(f)), f))
-    ans[unlist(idx)] <- unlisted_value
-    ans
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
 

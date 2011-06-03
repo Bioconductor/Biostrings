@@ -59,7 +59,6 @@ export(
 
     ## XStringSet-class.R:
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
-    unsplit.list.of.XStringSet,
 
     ## XStringViews-constructor.R:
     XStringViews,
