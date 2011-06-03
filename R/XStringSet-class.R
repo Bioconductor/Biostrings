@@ -128,7 +128,7 @@ unsafe.newXStringSet <- function(xvector, ranges, use.names=FALSE, names=NULL)
 ###
 
 setMethod("xsbasetype", "XStringSet",
-    function(x) xsbasetype(newEmptyXString(elementType(x)))
+    function(x) xsbasetype(new(elementType(x)))
 )
 
 ### NOT an endomorphism in general! (Because it downgrades 'x' to a

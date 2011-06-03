@@ -16,19 +16,6 @@ setClass("AAString", contains="XString")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "newEmptyXString" constructor.
-### For internal use only. No need to export.
-###
-### Note that this cannot be made the prototype part of the XString class
-### definition (and trying to do so will cause an error at installation time)
-### because the DLL of the package needs to be loaded before SharedRaw() can be
-### called.
-###
-
-newEmptyXString <- function(class) new(class, shared=SharedRaw(0))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
 
