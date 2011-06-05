@@ -130,7 +130,10 @@ setMethod("reverseComplement", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverseComplement(subject(x))
-        .IRanges.reverse(x, start=1L, end=length(subject(x)))
+        x@ranges <- .IRanges.reverse(ranges(x),
+                                     start=1L,
+                                     end=length(subject(x)))
+        x
     }
 )
 
