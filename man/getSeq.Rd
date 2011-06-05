@@ -30,9 +30,9 @@ getSeq(x, ...)
   vector containing the extracted sequence(s).
 
   See man pages of individual methods for the details e.g. with
-  \code{?`\link{getSeq,BSgenome-method}`} to access the man page of the
-  method for \link[BSgenome]{BSgenome} objects (make sure the BSgenome
-  package is loaded first). 
+  \code{?`\link[BSgenome]{getSeq,BSgenome-method}`} to access the man page
+  of the method for \link[BSgenome]{BSgenome} objects (make sure the
+  BSgenome package is loaded first). 
 }
 
 \seealso{

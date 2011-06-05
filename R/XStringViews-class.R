@@ -21,7 +21,9 @@ setClass("XStringViews",
 ###
 
 unsafe.newXStringViews <- function(subject, start, width)
-    new2("XStringViews", subject=subject, start=start, width=width, check=FALSE)
+    new2("XStringViews", subject=subject,
+                         ranges=IRanges(start=start, width=width),
+                         check=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

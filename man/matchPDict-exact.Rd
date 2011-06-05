@@ -232,313 +232,315 @@ vwhichPDict(pdict, subject,
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. A SIMPLE EXAMPLE OF EXACT MATCHING
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## A. A SIMPLE EXAMPLE OF EXACT MATCHING
+## ---------------------------------------------------------------------
 
-  ## Creating the pattern dictionary:
-  library(drosophila2probe)
-  dict0 <- DNAStringSet(drosophila2probe)
-  dict0                                # The original dictionary.
-  length(dict0)                        # Hundreds of thousands of patterns.
-  pdict0 <- PDict(dict0)               # Store the original dictionary in
-                                       # a PDict object (preprocessing).
+## Creating the pattern dictionary:
+library(drosophila2probe)
+dict0 <- DNAStringSet(drosophila2probe)
+dict0                                # The original dictionary.
+length(dict0)                        # Hundreds of thousands of patterns.
+pdict0 <- PDict(dict0)               # Store the original dictionary in
+                                     # a PDict object (preprocessing).
 
-  ## Using the pattern dictionary on chromosome 3R:
-  library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chr3R <- Dmelanogaster$chr3R         # Load chromosome 3R
-  chr3R
-  mi0 <- matchPDict(pdict0, chr3R)     # Search...
+## Using the pattern dictionary on chromosome 3R:
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+chr3R <- Dmelanogaster$chr3R         # Load chromosome 3R
+chr3R
+mi0 <- matchPDict(pdict0, chr3R)     # Search...
 
-  ## Looking at the matches:
-  start_index <- startIndex(mi0)       # Get the start index.
-  length(start_index)                  # Same as the original dictionary.
-  start_index[[8220]]                  # Starts of the 8220th pattern.
-  end_index <- endIndex(mi0)           # Get the end index.
-  end_index[[8220]]                    # Ends of the 8220th pattern.
-  count_index <- countIndex(mi0)       # Get the number of matches per pattern.
-  count_index[[8220]]
-  mi0[[8220]]                          # Get the matches for the 8220th pattern.
-  start(mi0[[8220]])                   # Equivalent to startIndex(mi0)[[8220]].
-  sum(count_index)                     # Total number of matches.
-  table(count_index)
-  i0 <- which(count_index == max(count_index))
-  pdict0[[i0]]                         # The pattern with most occurrences.
-  mi0[[i0]]                            # Its matches as an IRanges object.
-  Views(chr3R, mi0[[i0]])              # And as an XStringViews object.
+## Looking at the matches:
+start_index <- startIndex(mi0)       # Get the start index.
+length(start_index)                  # Same as the original dictionary.
+start_index[[8220]]                  # Starts of the 8220th pattern.
+end_index <- endIndex(mi0)           # Get the end index.
+end_index[[8220]]                    # Ends of the 8220th pattern.
+count_index <- countIndex(mi0)       # Get the number of matches per pattern.
+count_index[[8220]]
+mi0[[8220]]                          # Get the matches for the 8220th pattern.
+start(mi0[[8220]])                   # Equivalent to startIndex(mi0)[[8220]].
+sum(count_index)                     # Total number of matches.
+table(count_index)
+i0 <- which(count_index == max(count_index))
+pdict0[[i0]]                         # The pattern with most occurrences.
+mi0[[i0]]                            # Its matches as an IRanges object.
+Views(chr3R, mi0[[i0]])              # And as an XStringViews object.
 
-  ## Get the coverage of the original subject:
-  cov3R <- as.integer(coverage(mi0, width=length(chr3R)))
-  max(cov3R)
-  mean(cov3R)
-  sum(cov3R != 0) / length(cov3R)      # Only 2.44\% of chr3R is covered.
-  if (interactive()) {
-    plotCoverage <- function(cx, start, end)
-    {
-      plot.new()
-      plot.window(c(start, end), c(0, 20))
-      axis(1)
-      axis(2)
-      axis(4)
-      lines(start:end, cx[start:end], type="l")
-    }
-    plotCoverage(cov3R, 27600000, 27900000)
+## Get the coverage of the original subject:
+cov3R <- as.integer(coverage(mi0, width=length(chr3R)))
+max(cov3R)
+mean(cov3R)
+sum(cov3R != 0) / length(cov3R)      # Only 2.44\% of chr3R is covered.
+if (interactive()) {
+  plotCoverage <- function(cx, start, end)
+  {
+    plot.new()
+    plot.window(c(start, end), c(0, 20))
+    axis(1)
+    axis(2)
+    axis(4)
+    lines(start:end, cx[start:end], type="l")
   }
+  plotCoverage(cov3R, 27600000, 27900000)
+}
 
-  ## ---------------------------------------------------------------------
-  ## B. NAMING THE PATTERNS
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## B. NAMING THE PATTERNS
+## ---------------------------------------------------------------------
 
-  ## The names of the original patterns, if any, are propagated to the
-  ## PDict and MIndex objects:
-  names(dict0) <- mkAllStrings(letters, 4)[seq_len(length(dict0))]
-  dict0
-  dict0[["abcd"]]
-  pdict0n <- PDict(dict0)
-  names(pdict0n)[1:30]
-  pdict0n[["abcd"]]
-  mi0n <- matchPDict(pdict0n, chr3R)
-  names(mi0n)[1:30]
-  mi0n[["abcd"]]
+## The names of the original patterns, if any, are propagated to the
+## PDict and MIndex objects:
+names(dict0) <- mkAllStrings(letters, 4)[seq_len(length(dict0))]
+dict0
+dict0[["abcd"]]
+pdict0n <- PDict(dict0)
+names(pdict0n)[1:30]
+pdict0n[["abcd"]]
+mi0n <- matchPDict(pdict0n, chr3R)
+names(mi0n)[1:30]
+mi0n[["abcd"]]
 
-  ## This is particularly useful when unlisting an MIndex object:
-  unlist(mi0)[1:10]
-  unlist(mi0n)[1:10]  # keep track of where the matches are coming from
+## This is particularly useful when unlisting an MIndex object:
+unlist(mi0)[1:10]
+unlist(mi0n)[1:10]  # keep track of where the matches are coming from
 
-  ## ---------------------------------------------------------------------
-  ## C. PERFORMANCE
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## C. PERFORMANCE
+## ---------------------------------------------------------------------
 
-  ## If getting the number of matches is what matters only (without
-  ## regarding their positions), then countPDict() will be faster,
-  ## especially when there is a high number of matches:
+## If getting the number of matches is what matters only (without
+## regarding their positions), then countPDict() will be faster,
+## especially when there is a high number of matches:
 
-  count_index0 <- countPDict(pdict0, chr3R)
-  stopifnot(identical(count_index0, count_index))
+count_index0 <- countPDict(pdict0, chr3R)
+stopifnot(identical(count_index0, count_index))
 
-  if (interactive()) {
-    ## What's the impact of the dictionary width on performance?
-    ## Below is some code that can be used to figure out (will take a long
-    ## time to run). For different widths of the original dictionary, we
-    ## look at:
-    ##   o pptime: preprocessing time (in sec.) i.e. time needed for
-    ##             building the PDict object from the truncated input
-    ##             sequences;
-    ##   o nnodes: nb of nodes in the resulting Aho-Corasick tree;
-    ##   o nupatt: nb of unique truncated input sequences;
-    ##   o matchtime: time (in sec.) needed to find all the matches;
-    ##   o totalcount: total number of matches.
-    getPDictStats <- function(dict, subject)
-    {
-      ans_width <- width(dict[1])
-      ans_pptime <- system.time(pdict <- PDict(dict))[["elapsed"]]
-      pptb <- pdict@threeparts@pptb
-      ans_nnodes <- nnodes(pptb)
-      ans_nupatt <- sum(!duplicated(pdict))
-      ans_matchtime <- system.time(
-                         mi0 <- matchPDict(pdict, subject)
-                       )[["elapsed"]]
-      ans_totalcount <- sum(countIndex(mi0))
-      list(
-        width=ans_width,
-        pptime=ans_pptime,
-        nnodes=ans_nnodes,
-        nupatt=ans_nupatt,
-        matchtime=ans_matchtime,
-        totalcount=ans_totalcount
-      )
-    }
-    stats <- lapply(8:25,
-                 function(width)
-                     getPDictStats(DNAStringSet(dict0, end=width), chr3R))
-    stats <- data.frame(do.call(rbind, stats))
-    stats
+if (interactive()) {
+  ## What's the impact of the dictionary width on performance?
+  ## Below is some code that can be used to figure out (will take a long
+  ## time to run). For different widths of the original dictionary, we
+  ## look at:
+  ##   o pptime: preprocessing time (in sec.) i.e. time needed for
+  ##             building the PDict object from the truncated input
+  ##             sequences;
+  ##   o nnodes: nb of nodes in the resulting Aho-Corasick tree;
+  ##   o nupatt: nb of unique truncated input sequences;
+  ##   o matchtime: time (in sec.) needed to find all the matches;
+  ##   o totalcount: total number of matches.
+  getPDictStats <- function(dict, subject)
+  {
+    ans_width <- width(dict[1])
+    ans_pptime <- system.time(pdict <- PDict(dict))[["elapsed"]]
+    pptb <- pdict@threeparts@pptb
+    ans_nnodes <- nnodes(pptb)
+    ans_nupatt <- sum(!duplicated(pdict))
+    ans_matchtime <- system.time(
+                       mi0 <- matchPDict(pdict, subject)
+                     )[["elapsed"]]
+    ans_totalcount <- sum(countIndex(mi0))
+    list(
+      width=ans_width,
+      pptime=ans_pptime,
+      nnodes=ans_nnodes,
+      nupatt=ans_nupatt,
+      matchtime=ans_matchtime,
+      totalcount=ans_totalcount
+    )
   }
+  stats <- lapply(8:25,
+               function(width)
+                   getPDictStats(DNAStringSet(dict0, end=width), chr3R))
+  stats <- data.frame(do.call(rbind, stats))
+  stats
+}
 
-  ## ---------------------------------------------------------------------
-  ## D. USING A NON-PREPROCESSED DICTIONARY
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## D. USING A NON-PREPROCESSED DICTIONARY
+## ---------------------------------------------------------------------
 
-  dict3 <- DNAStringSet(mkAllStrings(DNA_BASES, 3))  # all trinucleotides
-  dict3
-  pdict3 <- PDict(dict3)
+dict3 <- DNAStringSet(mkAllStrings(DNA_BASES, 3))  # all trinucleotides
+dict3
+pdict3 <- PDict(dict3)
 
-  ## The 3 following calls are equivalent (from faster to slower):
-  res3a <- countPDict(pdict3, chr3R)
-  res3b <- countPDict(dict3, chr3R)
-  res3c <- sapply(dict3,
-               function(pattern) countPattern(pattern, chr3R))
-  stopifnot(identical(res3a, res3b))
-  stopifnot(identical(res3a, res3c))
+## The 3 following calls are equivalent (from faster to slower):
+res3a <- countPDict(pdict3, chr3R)
+res3b <- countPDict(dict3, chr3R)
+res3c <- sapply(dict3,
+             function(pattern) countPattern(pattern, chr3R))
+stopifnot(identical(res3a, res3b))
+stopifnot(identical(res3a, res3c))
 
-  ## One reason for using a non-preprocessed dictionary is to get rid of
-  ## all the constraints associated with preprocessing, e.g., when
-  ## preprocessing with \code{\link{PDict}}, the input dictionary must
-  ## be DNA and a Trusted Band must be defined (explicitly or implicitly).
-  ## See \code{?\link{PDict}} for more information about these constraints.
-  ## In particular, using a non-preprocessed dictionary can be
-  ## useful for the kind of inexact matching that can't be achieved
-  ## with a \link{PDict} object (if performance is not an issue).
-  ## See \code{?`\link{matchPDict-inexact}`} for more information about
-  ## inexact matching.
+## One reason for using a non-preprocessed dictionary is to get rid of
+## all the constraints associated with preprocessing, e.g., when
+## preprocessing with \code{\link{PDict}}, the input dictionary must
+## be DNA and a Trusted Band must be defined (explicitly or implicitly).
+## See \code{?\link{PDict}} for more information about these constraints.
+## In particular, using a non-preprocessed dictionary can be
+## useful for the kind of inexact matching that can't be achieved
+## with a \link{PDict} object (if performance is not an issue).
+## See \code{?`\link{matchPDict-inexact}`} for more information about
+## inexact matching.
 
-  dictD <- xscat(dict3, "N", reverseComplement(dict3))
+dictD <- xscat(dict3, "N", reverseComplement(dict3))
 
-  ## The 2 following calls are equivalent (from faster to slower):
-  resDa <- matchPDict(dictD, chr3R, fixed=FALSE)
-  resDb <- sapply(dictD,
-               function(pattern) matchPattern(pattern, chr3R, fixed=FALSE))
-  stopifnot(all(sapply(seq_len(length(dictD)),
-                    function(i) identical(resDa[[i]], IRanges(resDb[[i]])))))
+## The 2 following calls are equivalent (from faster to slower):
+resDa <- matchPDict(dictD, chr3R, fixed=FALSE)
+resDb <- sapply(dictD,
+                function(pattern)
+                  matchPattern(pattern, chr3R, fixed=FALSE))
+stopifnot(all(sapply(seq_len(length(dictD)),
+                     function(i)
+                       identical(resDa[[i]], as(resDb[[i]], "IRanges")))))
 
-  ## ---------------------------------------------------------------------
-  ## E. vcountPDict()
-  ## ---------------------------------------------------------------------
-  subject <- Dmelanogaster$upstream1000[1:100]
-  subject
-  mat1 <- vcountPDict(pdict0, subject)
-  dim(mat1)  # length(pdict0) x length(subject)
-  nhit_per_probe <- rowSums(mat1)
-  table(nhit_per_probe)
+## ---------------------------------------------------------------------
+## E. vcountPDict()
+## ---------------------------------------------------------------------
+subject <- Dmelanogaster$upstream1000[1:100]
+subject
+mat1 <- vcountPDict(pdict0, subject)
+dim(mat1)  # length(pdict0) x length(subject)
+nhit_per_probe <- rowSums(mat1)
+table(nhit_per_probe)
 
-  ## Without vcountPDict(), 'mat1' could have been computed with:
-  mat2 <- sapply(unname(subject), function(x) countPDict(pdict0, x))
-  stopifnot(identical(mat1, mat2))
-  ## but using vcountPDict() is faster (10x or more, depending of the
-  ## average length of the sequences in 'subject').
+## Without vcountPDict(), 'mat1' could have been computed with:
+mat2 <- sapply(unname(subject), function(x) countPDict(pdict0, x))
+stopifnot(identical(mat1, mat2))
+## but using vcountPDict() is faster (10x or more, depending of the
+## average length of the sequences in 'subject').
 
-  if (interactive()) {
-    ## This will fail (with message "allocMatrix: too many elements
-    ## specified") because, on most platforms, vectors and matrices in R
-    ## are limited to 2^31 elements:
-    subject <- Dmelanogaster$upstream1000
-    vcountPDict(pdict0, subject)
-    length(pdict0) * length(Dmelanogaster$upstream1000)
-    1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
-    ## But this will work:
-    nhit_per_seq <- vcountPDict(pdict0, subject, collapse=2)
-    sum(nhit_per_seq >= 1)  # nb of subject sequences with at least 1 hit
-    table(nhit_per_seq)
-    which(nhit_per_seq == 37)  # 603
-    sum(countPDict(pdict0, subject[[603]]))  # 37
-  }
-
-  ## ---------------------------------------------------------------------
-  ## F. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
-  ## vcountPattern()
-  ## ---------------------------------------------------------------------
-  pdict3 <- PDict(dict3)
+if (interactive()) {
+  ## This will fail (with message "allocMatrix: too many elements
+  ## specified") because, on most platforms, vectors and matrices in R
+  ## are limited to 2^31 elements:
   subject <- Dmelanogaster$upstream1000
-  subject
+  vcountPDict(pdict0, subject)
+  length(pdict0) * length(Dmelanogaster$upstream1000)
+  1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
+  ## But this will work:
+  nhit_per_seq <- vcountPDict(pdict0, subject, collapse=2)
+  sum(nhit_per_seq >= 1)  # nb of subject sequences with at least 1 hit
+  table(nhit_per_seq)
+  which(nhit_per_seq == 37)  # 603
+  sum(countPDict(pdict0, subject[[603]]))  # 37
+}
 
-  ## The 4 following calls are equivalent (from faster to slower):
-  mat3a <- vcountPDict(pdict3, subject)
-  mat3b <- vcountPDict(dict3, subject)
-  mat3c <- sapply(dict3,
-               function(pattern) vcountPattern(pattern, subject))
-  mat3d <- sapply(unname(subject),
-               function(x) countPDict(pdict3, x))
-  stopifnot(identical(mat3a, mat3b))
-  stopifnot(identical(mat3a, t(mat3c)))
-  stopifnot(identical(mat3a, mat3d))
+## ---------------------------------------------------------------------
+## F. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
+## vcountPattern()
+## ---------------------------------------------------------------------
+pdict3 <- PDict(dict3)
+subject <- Dmelanogaster$upstream1000
+subject
 
-  ## The 3 following calls are equivalent (from faster to slower):
-  nhitpp3a <- vcountPDict(pdict3, subject, collapse=1)  # rowSums(mat3a)
-  nhitpp3b <- vcountPDict(dict3, subject, collapse=1)
-  nhitpp3c <- sapply(dict3,
-                  function(pattern) sum(vcountPattern(pattern, subject)))
-  stopifnot(identical(nhitpp3a, nhitpp3b))
-  stopifnot(identical(nhitpp3a, nhitpp3c))
+## The 4 following calls are equivalent (from faster to slower):
+mat3a <- vcountPDict(pdict3, subject)
+mat3b <- vcountPDict(dict3, subject)
+mat3c <- sapply(dict3,
+                function(pattern) vcountPattern(pattern, subject))
+mat3d <- sapply(unname(subject),
+                function(x) countPDict(pdict3, x))
+stopifnot(identical(mat3a, mat3b))
+stopifnot(identical(mat3a, t(mat3c)))
+stopifnot(identical(mat3a, mat3d))
 
-  ## The 3 following calls are equivalent (from faster to slower):
-  nhitps3a <- vcountPDict(pdict3, subject, collapse=2)  # colSums(mat3a)
-  nhitps3b <- vcountPDict(dict3, subject, collapse=2)
-  nhitps3c <- sapply(unname(subject),
-                  function(x) sum(countPDict(pdict3, x)))
-  stopifnot(identical(nhitps3a, nhitps3b))
-  stopifnot(identical(nhitps3a, nhitps3c))
+## The 3 following calls are equivalent (from faster to slower):
+nhitpp3a <- vcountPDict(pdict3, subject, collapse=1)  # rowSums(mat3a)
+nhitpp3b <- vcountPDict(dict3, subject, collapse=1)
+nhitpp3c <- sapply(dict3,
+                   function(pattern) sum(vcountPattern(pattern, subject)))
+stopifnot(identical(nhitpp3a, nhitpp3b))
+stopifnot(identical(nhitpp3a, nhitpp3c))
 
-  ## ---------------------------------------------------------------------
-  ## G. vwhichPDict()
-  ## ---------------------------------------------------------------------
-  ## The 4 following calls are equivalent (from faster to slower):
-  vwp3a <- vwhichPDict(pdict3, subject)
-  vwp3b <- vwhichPDict(dict3, subject)
-  vwp3c <- lapply(seq_len(ncol(mat3a)), function(j) which(mat3a[ , j] != 0L))
-  vwp3d <- lapply(unname(subject), function(x) whichPDict(pdict3, x))
-  stopifnot(identical(vwp3a, vwp3b))
-  stopifnot(identical(vwp3a, vwp3c))
-  stopifnot(identical(vwp3a, vwp3d))
+## The 3 following calls are equivalent (from faster to slower):
+nhitps3a <- vcountPDict(pdict3, subject, collapse=2)  # colSums(mat3a)
+nhitps3b <- vcountPDict(dict3, subject, collapse=2)
+nhitps3c <- sapply(unname(subject),
+                   function(x) sum(countPDict(pdict3, x)))
+stopifnot(identical(nhitps3a, nhitps3b))
+stopifnot(identical(nhitps3a, nhitps3c))
 
-  table(sapply(vwp3a, length))
-  which.min(sapply(vwp3a, length))
-  ## Get the trinucleotides not represented in reference sequence 9181:
-  dict3[-vwp3a[[9181]]]  # 21 trinucleotides
+## ---------------------------------------------------------------------
+## G. vwhichPDict()
+## ---------------------------------------------------------------------
+## The 4 following calls are equivalent (from faster to slower):
+vwp3a <- vwhichPDict(pdict3, subject)
+vwp3b <- vwhichPDict(dict3, subject)
+vwp3c <- lapply(seq_len(ncol(mat3a)), function(j) which(mat3a[ , j] != 0L))
+vwp3d <- lapply(unname(subject), function(x) whichPDict(pdict3, x))
+stopifnot(identical(vwp3a, vwp3b))
+stopifnot(identical(vwp3a, vwp3c))
+stopifnot(identical(vwp3a, vwp3d))
 
-  ## ---------------------------------------------------------------------
-  ## H. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
-  ## ---------------------------------------------------------------------
-  ## Here we show a simple (and very naive) algorithm for mapping probe
-  ## set IDs between the hgu95av2 and hgu133a chips (Affymetrix).
-  ## 2 probe set IDs are considered mapped iff they share at least one
-  ## probe.
-  ## WARNING: This example takes about 25 minutes to run.
-  if (interactive()) {
+table(sapply(vwp3a, length))
+which.min(sapply(vwp3a, length))
+## Get the trinucleotides not represented in reference sequence 9181:
+dict3[-vwp3a[[9181]]]  # 21 trinucleotides
 
-    library(hgu95av2probe)
-    library(hgu133aprobe)
-    probes1 <- DNAStringSet(hgu95av2probe)
-    probes2 <- DNAStringSet(hgu133aprobe)
-    pdict2 <- PDict(probes2)
+## ---------------------------------------------------------------------
+## H. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
+## ---------------------------------------------------------------------
+## Here we show a simple (and very naive) algorithm for mapping probe
+## set IDs between the hgu95av2 and hgu133a chips (Affymetrix).
+## 2 probe set IDs are considered mapped iff they share at least one
+## probe.
+## WARNING: This example takes about 25 minutes to run.
+if (interactive()) {
 
-    ## Get the mapping from probes1 to probes2 (based on exact matching):
-    map1to2 <- vwhichPDict(pdict2, probes1)  # takes about 10 minutes
+  library(hgu95av2probe)
+  library(hgu133aprobe)
+  probes1 <- DNAStringSet(hgu95av2probe)
+  probes2 <- DNAStringSet(hgu133aprobe)
+  pdict2 <- PDict(probes2)
 
-    ## The following helper function uses the probe level mapping to induce
-    ## the mapping at the probe set IDs level (from hgu95av2 to hgu133a).
-    ## To keep things simple, 2 probe set IDs are considered mapped iff
-    ## each of them contains at least one probe mapped to one probe of
-    ## the other:
-    mapProbeSetIDs1to2 <- function(psID)
-      unique(hgu133aprobe$Probe.Set.Name[unlist(
-        map1to2[hgu95av2probe$Probe.Set.Name == psID]
-      )])
+  ## Get the mapping from probes1 to probes2 (based on exact matching):
+  map1to2 <- vwhichPDict(pdict2, probes1)  # takes about 10 minutes
 
-    ## Use the helper function to build the complete mapping:
-    psIDs1 <- unique(hgu95av2probe$Probe.Set.Name)
-    mapPSIDs1to2 <- lapply(psIDs1, mapProbeSetIDs1to2)  # about 3 min.
-    names(mapPSIDs1to2) <- psIDs1
+  ## The following helper function uses the probe level mapping to induce
+  ## the mapping at the probe set IDs level (from hgu95av2 to hgu133a).
+  ## To keep things simple, 2 probe set IDs are considered mapped iff
+  ## each of them contains at least one probe mapped to one probe of
+  ## the other:
+  mapProbeSetIDs1to2 <- function(psID)
+    unique(hgu133aprobe$Probe.Set.Name[unlist(
+      map1to2[hgu95av2probe$Probe.Set.Name == psID]
+    )])
 
-    ## Do some basic stats:
-    table(sapply(mapPSIDs1to2, length))
+  ## Use the helper function to build the complete mapping:
+  psIDs1 <- unique(hgu95av2probe$Probe.Set.Name)
+  mapPSIDs1to2 <- lapply(psIDs1, mapProbeSetIDs1to2)  # about 3 min.
+  names(mapPSIDs1to2) <- psIDs1
 
-    ## [ADVANCED USERS ONLY]
-    ## An alternative that is slightly faster is to put all the probes
-    ## (hgu95av2 + hgu133a) in a single PDict object and then query its
-    ## 'dups0' slot directly. This slot is a Dups object containing the
-    ## mapping between duplicated patterns.
-    ## Note that we can do this only because all the probes have the
-    ## same length (25) and because we are doing exact matching:
+  ## Do some basic stats:
+  table(sapply(mapPSIDs1to2, length))
 
-    probes12 <- DNAStringSet(c(hgu95av2probe$sequence, hgu133aprobe$sequence))
-    pdict12 <- PDict(probes12)
-    dups0 <- pdict12@dups0
+  ## [ADVANCED USERS ONLY]
+  ## An alternative that is slightly faster is to put all the probes
+  ## (hgu95av2 + hgu133a) in a single PDict object and then query its
+  ## 'dups0' slot directly. This slot is a Dups object containing the
+  ## mapping between duplicated patterns.
+  ## Note that we can do this only because all the probes have the
+  ## same length (25) and because we are doing exact matching:
 
-    mapProbeSetIDs1to2alt <- function(psID)
-    {
-      ii1 <- unique(togroup(dups0, which(hgu95av2probe$Probe.Set.Name == psID)))
-      ii2 <- members(dups0, ii1) - length(probes1)
-      ii2 <- ii2[ii2 >= 1L]
-      unique(hgu133aprobe$Probe.Set.Name[ii2])
-    }
+  probes12 <- DNAStringSet(c(hgu95av2probe$sequence, hgu133aprobe$sequence))
+  pdict12 <- PDict(probes12)
+  dups0 <- pdict12@dups0
 
-    mapPSIDs1to2alt <- lapply(psIDs1, mapProbeSetIDs1to2alt)  # about 10 min.
-    names(mapPSIDs1to2alt) <- psIDs1
-
-    ## 'mapPSIDs1to2alt' and 'mapPSIDs1to2' contain the same mapping:
-    stopifnot(identical(lapply(mapPSIDs1to2alt, sort),
-                        lapply(mapPSIDs1to2, sort)))
+  mapProbeSetIDs1to2alt <- function(psID)
+  {
+    ii1 <- unique(togroup(dups0, which(hgu95av2probe$Probe.Set.Name == psID)))
+    ii2 <- members(dups0, ii1) - length(probes1)
+    ii2 <- ii2[ii2 >= 1L]
+    unique(hgu133aprobe$Probe.Set.Name[ii2])
   }
+
+  mapPSIDs1to2alt <- lapply(psIDs1, mapProbeSetIDs1to2alt)  # about 10 min.
+  names(mapPSIDs1to2alt) <- psIDs1
+
+  ## 'mapPSIDs1to2alt' and 'mapPSIDs1to2' contain the same mapping:
+  stopifnot(identical(lapply(mapPSIDs1to2alt, sort),
+                      lapply(mapPSIDs1to2, sort)))
+}
 }
 
 \keyword{methods}
