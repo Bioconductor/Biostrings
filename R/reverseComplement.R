@@ -1,37 +1,11 @@
 ### =========================================================================
-### The reverse() & related functions
+### Sequence reversing and complementing
 ### -------------------------------------------------------------------------
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "reverse" methods.
 ###
-
-setMethod("reverse", "character",
-    function(x, ...)
-    {       
-        if (length(x) == 0)
-            return(x)
-        sapply(strsplit(x, NULL, fixed=TRUE),
-               function(xx) paste(rev(xx), collapse=""))
-    }
-)
-
-setMethod("reverse", "XString",
-    function(x, ...) xvcopy(x, reverse=TRUE)
-)
-
-setMethod("reverse", "XStringSet",
-    function(x, ...) xvcopy(x, reverse=TRUE)
-)
-
-setMethod("reverse", "XStringViews",
-    function(x, ...)
-    {
-        x@subject <- reverse(subject(x))
-        callNextMethod(x, start=1L, end=length(subject(x)))
-    }
-)
 
 setMethod("reverse", "MaskedXString",
     function(x, ...)
@@ -124,15 +98,11 @@ setMethod("reverseComplement", "RNAStringSet",
     function(x, ...) xvcopy(x, lkup=getRNAComplementLookup(), reverse=TRUE)
 )
 
-.IRanges.reverse <- selectMethod("reverse", "IRanges")
-
 setMethod("reverseComplement", "XStringViews",
     function(x, ...)
     {
         x@subject <- reverseComplement(subject(x))
-        x@ranges <- .IRanges.reverse(ranges(x),
-                                     start=1L,
-                                     end=length(subject(x)))
+        x@ranges <- reverse(ranges(x), start=1L, end=length(subject(x)))
         x
     }
 )

@@ -155,7 +155,7 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
   \link{MaskedXString-class},
   \code{\link{GENETIC_CODE}},
   \code{\link{AMINO_ACID_CODE}},
-  \code{\link{reverse,XString-method}},
+  \code{\link{reverseComplement}},
   \code{\link{rev}}
 }
 

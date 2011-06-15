@@ -182,7 +182,7 @@
   \link{AAString-class},
   \link{XStringSet-class},
   \link{XStringViews-class},
-  \code{\link{reverse,XString-method}},
+  \code{\link{reverseComplement}},
   \code{\link[IRanges]{compact}},
   \link[IRanges]{XVector-class}
 }

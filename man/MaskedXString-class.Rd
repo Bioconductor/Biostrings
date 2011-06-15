@@ -209,7 +209,7 @@
   \code{\link{maskMotif}},
   \code{\link{injectHardMask}},
   \code{\link{alphabetFrequency}},
-  \code{\link{reverse,MaskedXString-method}},
+  \code{\link{reverseComplement}},
   \link{XString-class},
   \link[IRanges]{MaskCollection-class},
   \link{XStringViews-class},
