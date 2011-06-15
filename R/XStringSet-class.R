@@ -495,7 +495,21 @@ setMethod("as.character", "XStringSet",
     }
 )
 
-setMethod("toString", "XStringSet", function(x, ...) toString(as.character(x), ...))
+setMethod("as.vector", "XStringSet",
+    function(x, mode="any")
+    {
+        if (!isSingleString(mode))
+            stop("'mode' must be a single string")
+        if (!(mode %in% c("any", "character")))
+            stop("'mode' can only be \"any\" or \"character\" ",
+                 "when 'x' is an XStringSet object")
+        as.character(x)
+    }
+)
+
+setMethod("toString", "XStringSet",
+    function(x, ...) toString(as.character(x), ...)
+)
 
 setMethod("as.matrix", "XStringSet",
     function(x, use.names=TRUE)
