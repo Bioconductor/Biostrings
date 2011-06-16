@@ -385,8 +385,7 @@ setMethod("==", signature(e1="XStringViews", e2="character"),
             stop("comparison between an XStringViews object and a character ",
                  "vector of length 0 or with empty strings or NAs ",
                  "is not supported")
-        e2 <- successiveViews(unlist(BStringSet(e2)), nchar(e2))
-        XStringViews.equal(e1, e2)
+        XStringViews.equal(e1, as(BStringSet(e2), "Views"))
     }
 )
 setMethod("==", signature(e1="XString", e2="XStringViews"),

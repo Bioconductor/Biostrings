@@ -83,13 +83,13 @@ if (interactive()) {
 ## Do this instead:
 as(AAString("MARKSLEMSIR*"), "Views")
 
-## Do not do this anymore:
 x <- c("abcdefghij", "KLMN")
+## Do not do this anymore:
 if (interactive()) {
   XStringViews(x, subjectClass="BString")  # DEPRECATED!
 }
 ## Do this instead (if you really want views):
-successiveViews(unlist(BStringSet(x)), nchar(x))
+as(BStringSet(x), "Views")
 ## otherwise just do:
 BStringSet(x)
 }

@@ -30,8 +30,7 @@ setMethod("XStringViews", "ANY",
             stop("'subjectClass' must be a single string")
         msg <- c("  Using XStringViews() on a character vector is ",
                  "deprecated.\n  Please use instead something like:\n",
-                 "      successiveViews(unlist(", subjectClass,
-                 "Set(x)), nchar(x))\n",
+                 "      as(", subjectClass, "Set(x)), \"Views\")\n",
                  "  if you really want views, otherwise just:\n",
                  "      ", subjectClass, "Set(x)")
         .Deprecated(msg=msg)
