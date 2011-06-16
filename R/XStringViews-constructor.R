@@ -26,6 +26,15 @@ setGeneric("XStringViews", signature="x",
 setMethod("XStringViews", "ANY",
     function(x, subjectClass, collapse="")
     {
+        if (!isSingleString(subjectClass))
+            stop("'subjectClass' must be a single string")
+        msg <- c("  Using XStringViews() on a character vector is ",
+                 "deprecated.\n  Please use instead something like:\n",
+                 "      successiveViews(unlist(", subjectClass,
+                 "Set(x)), nchar(x))\n",
+                 "  if you really want views, otherwise just:\n",
+                 "      ", subjectClass, "Set(x)")
+        .Deprecated(msg=msg)
         if (!is.character(collapse))
             collapse <- toString(collapse)
         seq <- paste(x, collapse=collapse)
@@ -41,6 +50,9 @@ setMethod("XStringViews", "ANY",
 setMethod("XStringViews", "XString",
     function(x, subjectClass, collapse="")
     {
+        msg <- c("  Using XStringViews() on a ", class(x), " object is ",
+                 "deprecated.\n  Please use 'as(x, \"Views\")' instead.")
+        .Deprecated(msg=msg)
         if (!missing(collapse))
             stop("'collapse' is not supported ",
                  "when 'x' is an XString object")
@@ -56,12 +68,19 @@ setMethod("XStringViews", "XString",
 setMethod("XStringViews", "XStringViews",
     function(x, subjectClass, collapse="")
     {
+        if (!isSingleString(subjectClass))
+            stop("'subjectClass' must be a single string")
         if (!missing(collapse))
             stop("'collapse' is not supported ",
                  "when 'x' is an XStringViews object")
         ## drop the "String" suffix
-        subject_basetype <- substr(subjectClass, 1, nchar(subjectClass)-6)
-        x@subject <- XString(subject_basetype, subject(x))
+        basetype <- substr(subjectClass, 1, nchar(subjectClass)-6)
+        msg <-  c("  Using XStringViews(..., subjectClass=\"",
+                  subjectClass, "\") on an XStringViews\n  object is ",
+                  "deprecated. Please use 'xsbasetype(x) <- \"",
+                  basetype, "\"' instead.")
+        .Deprecated(msg=msg)
+        xsbasetype(x) <- basetype
         x
     }
 )

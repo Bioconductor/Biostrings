@@ -89,7 +89,7 @@ setMethod("lcsuffix", signature(s1="XString", s2="XString"),
 ###   > library(BSgenome.Scerevisiae.UCSC.sacCer1)
 ###   > Scerevisiae$chr1
 ###   > file <- system.file("extdata", "someORF.fa", package="Biostrings")
-###   > orf <- XStringViews(file(file), "DNAString")
+###   > orf <- read.DNAStringSet(file)
 ###   > system.time(pmatchPattern(orf[[2]], Scerevisiae$chr1, max=1))
 ###      user  system elapsed
 ###     0.900   0.012   0.913

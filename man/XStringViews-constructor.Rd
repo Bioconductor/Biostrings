@@ -8,10 +8,13 @@
 \alias{XStringViews,XStringViews-method}
 
 
-\title{Basic functions for creating or modifying XStringViews objects}
+\title{The XStringViews() constructor}
 
 \description{
-  A set of basic functions for creating or modifying an XStringViews object.
+  WARNING: The \code{XStringViews} constructor function is deprecated!
+
+  The \code{XStringViews} constructor function can be used for creating
+  or modifying an XStringViews object.
 }
 
 \usage{
@@ -59,14 +62,36 @@ XStringViews(x, subjectClass, collapse="")
 
 \seealso{
   \link{XStringViews-class},
+  \link{XStringSet-class},
   \link{XString-class}
 }
 
 \examples{
-  v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
-  XStringViews(v12, subjectClass="RNAString")
-  XStringViews(AAString("MARKSLEMSIR*"))
-  XStringViews("abcdefghij", subjectClass="BString")
+v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
+
+## Do not do this anymore:
+if (interactive()) {
+  XStringViews(v12, subjectClass="RNAString")  # DEPRECATED!
+}
+## Do this instead:
+xsbasetype(v12) <- "RNA"
+
+## Do not do this anymore:
+if (interactive()) {
+  XStringViews(AAString("MARKSLEMSIR*"))  # DEPRECATED!
+}
+## Do this instead:
+as(AAString("MARKSLEMSIR*"), "Views")
+
+## Do not do this anymore:
+x <- c("abcdefghij", "KLMN")
+if (interactive()) {
+  XStringViews(x, subjectClass="BString")  # DEPRECATED!
+}
+## Do this instead (if you really want views):
+successiveViews(unlist(BStringSet(x)), nchar(x))
+## otherwise just do:
+BStringSet(x)
 }
 
 \keyword{methods}

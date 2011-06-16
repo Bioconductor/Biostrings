@@ -371,7 +371,7 @@ setMethod("==", signature(e1="XStringViews", e2="XString"),
                  "class \"", class1, "\" and a \"", class2, "\" instance ",
                  "is not supported")
         }
-        XStringViews.equal(e1, XStringViews(e2))
+        XStringViews.equal(e1, as(e2, "Views"))
     }
 )
 setMethod("==", signature(e1="XStringViews", e2="character"),
@@ -385,7 +385,8 @@ setMethod("==", signature(e1="XStringViews", e2="character"),
             stop("comparison between an XStringViews object and a character ",
                  "vector of length 0 or with empty strings or NAs ",
                  "is not supported")
-        XStringViews.equal(e1, XStringViews(e2, subjectClass="BString"))
+        e2 <- successiveViews(unlist(BStringSet(e2)), nchar(e2))
+        XStringViews.equal(e1, e2)
     }
 )
 setMethod("==", signature(e1="XString", e2="XStringViews"),

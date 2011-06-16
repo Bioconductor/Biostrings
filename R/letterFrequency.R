@@ -193,9 +193,9 @@ setMethod("alphabetFrequency", "RNAStringSet",
 
 ### library(drosophila2probe)
 ### dict0 <- drosophila2probe$sequence
-### x <- XStringViews(as.character(dict0[1:2000]), subjectClass="DNAString")
+### x <- DNAStringSet(dict0[1:2000])
 ### alphabetFrequency(x, baseOnly=TRUE)
-### y <- DNAStringSet(x)
+### y <- successiveViews(unlist(x), width(x))
 ### alphabetFrequency(y, baseOnly=TRUE)
 setMethod("alphabetFrequency", "XStringViews",
     function(x, as.prob=FALSE, ...)
