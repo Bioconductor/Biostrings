@@ -217,7 +217,7 @@ setMethod("aligned", "PairwiseAlignedFixedSubject",
                       endgapCode <- as.raw(letters2codes[[endgapCode]])
                   }
                   value <-
-                    .Call("PairwiseAlignedFixedSubject_align_aligned", x, gapCode, endgapCode, PACKAGE="Biostrings")
+                    .Call2("PairwiseAlignedFixedSubject_align_aligned", x, gapCode, endgapCode, PACKAGE="Biostrings")
               }
               value
           })

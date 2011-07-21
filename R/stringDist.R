@@ -20,7 +20,7 @@ function(x,
   if (method == "hamming") {
     if (ignoreCase)
       stop("'ignoreCase != TRUE' when 'type =\"hamming\"")
-    answer <- .Call("XStringSet_dist_hamming", x, PACKAGE="Biostrings")
+    answer <- .Call2("XStringSet_dist_hamming", x, PACKAGE="Biostrings")
   } else {
     ## Process string information
     if (is.null(xscodec(x))) {
@@ -98,7 +98,7 @@ function(x,
       buildLookupTable(alphabetToCodes[availableLetters],
                        0:(length(availableLetters) - 1))
 
-    answer <- .Call("XStringSet_align_distance",
+    answer <- .Call2("XStringSet_align_distance",
                     x,
                     type,
                     typeCode,
@@ -199,7 +199,7 @@ function(x,
                      (maxQuality(quality(x)) + offset(quality(x))),
                      0:(maxQuality(quality(x)) - minQuality(quality(x))))
 
-  answer <- .Call("XStringSet_align_distance",
+  answer <- .Call2("XStringSet_align_distance",
                   x,
                   type,
                   typeCode,

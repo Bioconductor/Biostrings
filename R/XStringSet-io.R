@@ -39,7 +39,7 @@
 }
 
 .ExternalFilePtr.close <- function(x)
-    .Call("ExternalFilePtr_close", x, PACKAGE="Biostrings")
+    .Call2("ExternalFilePtr_close", x, PACKAGE="Biostrings")
 
 ### Returns a list of "external file pointers".
 .openInputFiles <- function(filepath)
@@ -48,7 +48,7 @@
     ans <- lapply(filepath2,
            function(fp)
            {
-               efp <- .Call("new_input_ExternalFilePtr", fp,
+               efp <- .Call2("new_input_ExternalFilePtr", fp,
                             PACKAGE="Biostrings")
                reg.finalizer(efp, .ExternalFilePtr.close, onexit=TRUE)
                efp
@@ -65,7 +65,7 @@
     if (!isTRUEorFALSE(append))
         stop("'append' must be TRUE or FALSE")
     filepath2 <- path.expand(filepath)
-    efp <- .Call("new_output_ExternalFilePtr", filepath2, append,
+    efp <- .Call2("new_output_ExternalFilePtr", filepath2, append,
                  PACKAGE="Biostrings")
     reg.finalizer(efp, .ExternalFilePtr.close, onexit=TRUE)
     ans <- list(efp)
@@ -113,7 +113,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE)
     nrec <- .normargNrec(nrec)
     skip <- .normargSkip(skip)
     use.names <- normargUseNames(use.names)
-    .Call("fasta_info",
+    .Call2("fasta_info",
           efp_list, nrec, skip, use.names,
           PACKAGE="Biostrings")
 }
@@ -121,7 +121,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE)
 .read.fasta.in.XStringSet <- function(efp_list, nrec, skip,
                                       use.names, elementType, lkup)
 {
-    .Call("read_fasta_in_XStringSet",
+    .Call2("read_fasta_in_XStringSet",
           efp_list, nrec, skip, use.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
@@ -137,13 +137,13 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
     on.exit(.closeFiles(efp_list))
     nrec <- .normargNrec(nrec)
     skip <- .normargSkip(skip)
-    .Call("fastq_geometry", efp_list, nrec, skip, PACKAGE="Biostrings")
+    .Call2("fastq_geometry", efp_list, nrec, skip, PACKAGE="Biostrings")
 }
 
 .read.fastq.in.XStringSet <- function(efp_list, nrec, skip,
                                       use.names, elementType, lkup)
 {
-    .Call("read_fastq_in_XStringSet",
+    .Call2("read_fastq_in_XStringSet",
           efp_list, nrec, skip, use.names, elementType, lkup,
           PACKAGE="Biostrings")
 }
@@ -205,7 +205,7 @@ read.AAStringSet <- function(filepath, format="fasta",
     if (width < 1L) 
         stop("'width' must be an integer >= 1")
     lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
-    .Call("write_XStringSet_to_fasta",
+    .Call2("write_XStringSet_to_fasta",
           x, efp_list, width, lkup,
           PACKAGE="Biostrings")
 }
@@ -219,7 +219,7 @@ read.AAStringSet <- function(filepath, format="fasta",
             stop("'x' and 'qualities' must have the same length")
     }
     lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
-    .Call("write_XStringSet_to_fastq",
+    .Call2("write_XStringSet_to_fastq",
           x, efp_list, qualities, lkup,
           PACKAGE="Biostrings")
 }

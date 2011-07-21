@@ -121,7 +121,7 @@ setMethod("translate", "DNAStringSet",
     {
         lkup <- .mkTranslationLkup()
         skipcode <- DNAcodes(FALSE)[["+"]]
-        .Call("DNAStringSet_translate",
+        .Call2("DNAStringSet_translate",
               x, DNA_BASE_CODES, lkup, skipcode,
               PACKAGE="Biostrings")
     }

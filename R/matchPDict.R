@@ -142,7 +142,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience wrappers to .Call().
+### Convenience wrappers to .Call2().
 ###
 
 ### 'threeparts' is a PDict3Parts object.
@@ -159,7 +159,7 @@
         warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    .Call("match_PDict3Parts_XString",
+    .Call2("match_PDict3Parts_XString",
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, min.mismatch, fixed,
@@ -182,7 +182,7 @@
     algo <- normargAlgorithm(algorithm)
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
                        with.indels, fixed)
-    .Call("match_XStringSet_XString",
+    .Call2("match_XStringSet_XString",
           pattern,
           subject,
           max.mismatch, min.mismatch, with.indels, fixed,
@@ -204,7 +204,7 @@
         warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    .Call("match_PDict3Parts_XStringViews",
+    .Call2("match_PDict3Parts_XStringViews",
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject(subject), start(subject), width(subject),
           max.mismatch, min.mismatch, fixed,
@@ -227,7 +227,7 @@
     algo <- normargAlgorithm(algorithm)
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
                        with.indels, fixed)
-    .Call("match_XStringSet_XStringViews",
+    .Call2("match_XStringSet_XStringViews",
           pattern,
           subject(subject), start(subject), width(subject),
           max.mismatch, min.mismatch, with.indels, fixed,
@@ -250,7 +250,7 @@
         warning("'algorithm' is ignored when 'pdict' is a PDict object")
     if (is.null(head(threeparts)) && is.null(tail(threeparts)))
         .checkUserArgsWhenTrustedBandIsFull(max.mismatch, fixed)
-    .Call("vmatch_PDict3Parts_XStringSet",
+    .Call2("vmatch_PDict3Parts_XStringSet",
           threeparts@pptb, head(threeparts), tail(threeparts),
           subject,
           max.mismatch, min.mismatch, fixed,
@@ -275,7 +275,7 @@
     algo <- normargAlgorithm(algorithm)
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
                        with.indels, fixed)
-    .Call("vmatch_XStringSet_XStringSet",
+    .Call2("vmatch_XStringSet_XStringSet",
           pattern,
           subject,
           max.mismatch, min.mismatch, with.indels, fixed,

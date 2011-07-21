@@ -97,7 +97,7 @@ XString.write <- function(x, i, imax=integer(0), value)
 {
     classname <- paste(basetype, "String", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    .Call("new_XString_from_CHARACTER",
+    .Call2("new_XString_from_CHARACTER",
           classname,
           x, start(solved_SEW), width(solved_SEW),
           get_xsbasetypes_conversion_lookup("B", basetype),
@@ -202,7 +202,7 @@ setAs("character", "XString", function(from) BString(from))
 
 setMethod("as.character", "XString",
     function(x)
-        .Call("new_CHARACTER_from_XString",
+        .Call2("new_CHARACTER_from_XString",
               x, xs_dec_lkup(x),
               PACKAGE="Biostrings")
 )

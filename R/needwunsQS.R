@@ -87,8 +87,8 @@ print.needwunsQS <- function(x, ...)
 ### C-implementation of the Needleman-Wunsch algo.
 ###
 ### The various "needwunsQS" methods below don't call
-### .Call("align_needwunsQS", ...) directly but call XString.needwunsQS()
-### instead which itself calls .Call("align_needwunsQS", ...).
+### .Call2("align_needwunsQS", ...) directly but call XString.needwunsQS()
+### instead which itself calls .Call2("align_needwunsQS", ...).
 ### Some quick testing shows that, depending on the size of the strings to
 ### align, this C version is 100 to 1000 times faster than the above
 ### .needwunsQS().
@@ -128,7 +128,7 @@ XString.needwunsQS <- function(s1, s2, substmat, gappen)
         gap_code <- as.raw(letters2codes[["-"]])
     }
     lkup <- buildLookupTable(codes, 0:(nrow(substmat)-1))
-    C_ans <- .Call("align_needwunsQS",
+    C_ans <- .Call2("align_needwunsQS",
                    s1, s2,
                    substmat, nrow(substmat), lkup,
                    as.integer(gappen), gap_code,

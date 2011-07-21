@@ -182,7 +182,7 @@ setReplaceMethod("xsbasetype", "XStringSet",
     elementType <- paste(basetype, "String", sep="")
     classname <- paste(elementType, "Set", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    ans <- .Call("new_XStringSet_from_CHARACTER",
+    ans <- .Call2("new_XStringSet_from_CHARACTER",
                  classname, elementType,
                  x, start(solved_SEW), width(solved_SEW),
                  get_xsbasetypes_conversion_lookup("B", basetype),
@@ -460,7 +460,7 @@ setMethod("match", c("XStringSet", "XStringSet"),
         if (!isSingleNumberOrNA(nomatch))
             stop("'nomatch' must be a single integer")
         nomatch <- as.integer(nomatch)
-        .Call("XStringSet_match", x, table, nomatch, PACKAGE = "Biostrings")
+        .Call2("XStringSet_match", x, table, nomatch, PACKAGE = "Biostrings")
     }
 )
 
@@ -479,14 +479,14 @@ setMethod("match", c("XStringSet", "XStringSet"),
 ### 'unlist(x)' turns XStringSet object 'x' into an XString object.
 setMethod("unlist", "XStringSet",
     function(x, recursive=TRUE, use.names=TRUE)
-        .Call("XStringSet_unlist", x, PACKAGE="Biostrings")
+        .Call2("XStringSet_unlist", x, PACKAGE="Biostrings")
 )
 
 setMethod("as.character", "XStringSet",
     function(x, use.names=TRUE)
     {
         use.names <- normargUseNames(use.names)
-        ans <- .Call("new_CHARACTER_from_XStringSet",
+        ans <- .Call2("new_CHARACTER_from_XStringSet",
                      x, xs_dec_lkup(x),
                      PACKAGE="Biostrings")
         if (use.names)
@@ -541,7 +541,7 @@ setMethod("is.unsorted", "XStringSet",
     {
         if (!is.logical(strictly) || length(strictly) != 1 || is.na(strictly))
             stop("'strictly' must be TRUE or FALSE")
-        .Call("XStringSet_is_unsorted", x, strictly, PACKAGE="Biostrings")
+        .Call2("XStringSet_is_unsorted", x, strictly, PACKAGE="Biostrings")
     }
 )
 
@@ -558,7 +558,7 @@ setMethod("order", "XStringSet",
         ## All the arguments are guaranteed to be XStringSet objects
         if (length(args) != 1)
             return(callNextMethod())
-        .Call("XStringSet_order", args[[1]], PACKAGE="Biostrings")
+        .Call2("XStringSet_order", args[[1]], PACKAGE="Biostrings")
     }
 )
 
@@ -581,7 +581,7 @@ setMethod("rank", "XStringSet",
              warning("argument 'na.last' is ignored when ordering XStringSet objects")
          if (!missing(ties.method) && ties.method != "min")
              stop("only the 'min' option to the 'ties.method' argument is supported")
-         .Call("XStringSet_rank", x, PACKAGE="Biostrings")
+         .Call2("XStringSet_rank", x, PACKAGE="Biostrings")
      }
 )
 
@@ -592,7 +592,7 @@ setMethod("rank", "XStringSet",
 
 setMethod("duplicated", "XStringSet",
     function(x, incomparables=FALSE, ...)
-        .Call("XStringSet_duplicated", x, PACKAGE="Biostrings")
+        .Call2("XStringSet_duplicated", x, PACKAGE="Biostrings")
 )
 
 ### Should be moved to IRanges and made the default method for Vector objects

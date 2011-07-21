@@ -159,7 +159,7 @@ function(pattern,
   fuzzyLookupTable <-
     buildLookupTable(alphabetToCodes[availableLetters], 0:(length(availableLetters) - 1))
 
-  .Call("XStringSet_align_pairwiseAlignment",
+  .Call2("XStringSet_align_pairwiseAlignment",
         pattern,
         subject,
         type,
@@ -278,7 +278,7 @@ QualityScaledXStringSet.pairwiseAlignment <- function(pattern, subject,
                                   qualityClass = class(quality(pattern)))
     substitutionLookupTable <- .makeSubstitutionLookupTable(quality(pattern))
 
-    .Call("XStringSet_align_pairwiseAlignment",
+    .Call2("XStringSet_align_pairwiseAlignment",
           pattern,
           subject,
           type,

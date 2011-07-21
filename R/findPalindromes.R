@@ -39,7 +39,7 @@
     max.mismatch <- normargMaxMismatch(max.mismatch)
     if (max.mismatch != 0)
         stop("'max.mismatch' != 0 not yet supported (will be very soon)")
-    C_ans <- .Call("find_palindromes",
+    C_ans <- .Call2("find_palindromes",
                    subject@shared@xp, subject@offset, subject@length,
                    min.armlength, max.looplength, L2R_lkup,
                    PACKAGE="Biostrings")

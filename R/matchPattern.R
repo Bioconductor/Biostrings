@@ -5,7 +5,7 @@
 
 .Clongint.nbits <- function()
 {
-    .Call("bits_per_long", PACKAGE="Biostrings")
+    .Call2("bits_per_long", PACKAGE="Biostrings")
 }
 
 
@@ -135,7 +135,7 @@ gregexpr2 <- function(pattern, text)
         stop("'count.only' must be TRUE or FALSE")
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
                        with.indels, fixed)
-    C_ans <- .Call("XString_match_pattern",
+    C_ans <- .Call2("XString_match_pattern",
                    pattern, subject,
                    max.mismatch, min.mismatch, with.indels, fixed,
                    algo, count.only,
@@ -163,7 +163,7 @@ gregexpr2 <- function(pattern, text)
         stop("'count.only' must be TRUE or FALSE")
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
                        with.indels, fixed)
-    C_ans <- .Call("XStringViews_match_pattern",
+    C_ans <- .Call2("XStringViews_match_pattern",
                    pattern, subject(subject), start(subject), width(subject),
                    max.mismatch, min.mismatch, with.indels, fixed,
                    algo, count.only,
@@ -350,7 +350,7 @@ setMethod("countPattern", "MaskedXString",
     # because MIndex objects do not support variable-width matches yet
     if (algo == "indels" && !count.only)
         stop("vmatchPattern() does not support indels yet")
-    C_ans <- .Call("XStringSet_vmatch_pattern", pattern, subject,
+    C_ans <- .Call2("XStringSet_vmatch_pattern", pattern, subject,
                    max.mismatch, min.mismatch, with.indels, fixed,
                    algo, count.only,
                    PACKAGE = "Biostrings")

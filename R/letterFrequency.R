@@ -101,7 +101,7 @@
 {
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
-    ans <- .Call("XString_letter_frequency",
+    ans <- .Call2("XString_letter_frequency",
                  x, NULL, FALSE,
                  PACKAGE="Biostrings")
     if (as.prob)
@@ -114,7 +114,7 @@
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
     codes <- xscodes(x, baseOnly=baseOnly)
-    ans <- .Call("XString_letter_frequency",
+    ans <- .Call2("XString_letter_frequency",
                  x, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (as.prob)
@@ -127,7 +127,7 @@
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
     collapse <- .normargCollapse(collapse)
-    ans <- .Call("XStringSet_letter_frequency",
+    ans <- .Call2("XStringSet_letter_frequency",
                  x, collapse, NULL, FALSE,
                  PACKAGE="Biostrings")
     if (as.prob) {
@@ -145,7 +145,7 @@
         stop("'as.prob' must be TRUE or FALSE")
     collapse <- .normargCollapse(collapse)
     codes <- xscodes(x, baseOnly=baseOnly)
-    ans <- .Call("XStringSet_letter_frequency",
+    ans <- .Call2("XStringSet_letter_frequency",
                  x, collapse, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (as.prob) {
@@ -360,11 +360,11 @@ safeLettersToInt <- function(x, letters.as.names=FALSE)
                            function(z) paste(z, collapse=OR))
     }
     if (is_sliding)
-        .Call("XString_letterFrequencyInSlidingView",
+        .Call2("XString_letterFrequencyInSlidingView",
               x, view.width, single_codes, colmap, colnames,
               PACKAGE="Biostrings")
     else
-        .Call("XStringSet_letterFrequency",
+        .Call2("XStringSet_letterFrequency",
               x, single_codes, colmap, colnames, collapse,
               PACKAGE="Biostrings")
 }
@@ -511,7 +511,7 @@ setMethod("oligonucleotideFrequency", "XString",
         fast.moving.side <- .normargFastMovingSide(fast.moving.side, as.array)
         with.labels <- .normargWithLabels(with.labels)
         base_codes <- xscodes(x, baseOnly=TRUE)
-        .Call("XString_oligo_frequency",
+        .Call2("XString_oligo_frequency",
               x, width, as.prob, as.array,
               fast.moving.side, with.labels,
               base_codes,
@@ -534,7 +534,7 @@ setMethod("oligonucleotideFrequency", "XStringSet",
         with.labels <- .normargWithLabels(with.labels)
         simplify.as <- .normargSimplifyAs(simplify.as, as.array)
         base_codes <- xscodes(x, baseOnly=TRUE)
-        .Call("XStringSet_oligo_frequency",
+        .Call2("XStringSet_oligo_frequency",
               x, width, as.prob, as.array,
               fast.moving.side, with.labels, simplify.as,
               base_codes,
@@ -629,7 +629,7 @@ setMethod("nucleotideFrequencyAt", "XStringSet",
         fast.moving.side <- .normargFastMovingSide(fast.moving.side, as.array)
         with.labels <- .normargWithLabels(with.labels)
         base_codes <- xscodes(x, baseOnly=TRUE)
-        .Call("XStringSet_nucleotide_frequency_at",
+        .Call2("XStringSet_nucleotide_frequency_at",
               x, at, as.prob, as.array,
               fast.moving.side, with.labels,
               base_codes,
@@ -693,7 +693,7 @@ setMethod("consensusMatrix", "XStringSet",
         } else {
             removeUnused <- FALSE
         }
-        ans <- .Call("XStringSet_consensus_matrix",
+        ans <- .Call2("XStringSet_consensus_matrix",
                      x, shift, width, baseOnly, codes,
                      PACKAGE="Biostrings")
         if (removeUnused) {

@@ -115,7 +115,7 @@ setMethod("aligned", "AlignedXStringSet0",
                       gapCode <- as.raw(letters2codes[["-"]])
                   }
                   value <- 
-                    .Call("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
+                    .Call2("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
               }
               value
           })
@@ -129,7 +129,7 @@ setGeneric("nindel", function(x) standardGeneric("nindel"))
 setMethod("nindel", "AlignedXStringSet0", function(x) summary(indel(x)))
 setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet0",
-          function(x, type="chars", allowNA=FALSE) .Call("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
+          function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("xsbasetype", "AlignedXStringSet0", function(x) xsbasetype(unaligned(x)))
 
 

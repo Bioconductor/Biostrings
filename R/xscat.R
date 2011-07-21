@@ -70,9 +70,9 @@ xscat <- function(...)
                        if (is(arg, ans_class)) arg else as(arg, ans_class)
                    })
     if (ans_card == 1L) {
-        .Call("XString_xscat", args, PACKAGE="Biostrings")
+        .Call2("XString_xscat", args, PACKAGE="Biostrings")
     } else {
-        .Call("XStringSet_xscat", args, PACKAGE="Biostrings")
+        .Call2("XStringSet_xscat", args, PACKAGE="Biostrings")
     }
 }
 

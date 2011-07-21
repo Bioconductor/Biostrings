@@ -192,7 +192,7 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 	IntAE poffsets, poffsets_order;
 
 	PROTECT(symbols = R_lsInternal(x_ends_envir, 1));
-	poffsets = CHARACTER_asIntAE(symbols, -1);
+	poffsets = new_IntAE_from_CHARACTER(symbols, -1);
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(x_names)));
 		for (i = 0; i < poffsets.nelt; i++) {

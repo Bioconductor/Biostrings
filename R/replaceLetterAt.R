@@ -33,7 +33,7 @@ setMethod("replaceLetterAt", "DNAString",
         if.not.extending <- match.arg(if.not.extending, c("replace", "skip", "merge", "error"))
         if (!isTRUEorFALSE(verbose))
             stop("'verbose' must be TRUE or FALSE")
-        .Call("XString_replace_letter_at",
+        .Call2("XString_replace_letter_at",
               x, at, letter, lkup, if.not.extending, verbose,
               PACKAGE="Biostrings")
     }
@@ -82,7 +82,7 @@ setMethod("replaceLetterAt", "DNAStringSet",
 .inplaceReplaceLetterAt <- function(x, at, letter)
 {
     lkup <- get_xsbasetypes_conversion_lookup("B", xsbasetype(x))
-    .Call("XString_inplace_replace_letter_at",
+    .Call2("XString_inplace_replace_letter_at",
           x, at, letter, lkup,
           PACKAGE="Biostrings")
 }

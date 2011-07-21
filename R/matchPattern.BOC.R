@@ -51,7 +51,7 @@ setMethod("initialize", "BOC_SubjectString",
         buf2 <- SharedRaw(buf_length)
         buf3 <- SharedRaw(buf_length)
         pre4buf <- SharedRaw(buf_length)
-        stats <- .Call("match_BOC_preprocess",
+        stats <- .Call2("match_BOC_preprocess",
               subject@shared@xp, subject@offset, subject@length,
               pattern_length,
               code1, code2, code3, code4,
@@ -121,7 +121,7 @@ plotBOC <- function(x, main)
 
 .match.BOC.exact <- function(pattern, boc_subject, count.only)
 {
-    .Call("match_BOC_exact",
+    .Call2("match_BOC_exact",
           pattern@shared@xp, pattern@offset, pattern@length,
           boc_subject@subject@shared@xp, boc_subject@subject@offset, boc_subject@subject@length,
           boc_subject@base1_code,

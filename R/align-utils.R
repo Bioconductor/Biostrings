@@ -9,7 +9,7 @@ setMethod("mismatch", c(pattern = "AlignedXStringSet0", x = "missing"),
 
 setMethod("nmatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
     function(pattern, x, fixed)
-        .Call("PairwiseAlignedXStringSet_nmatch", nchar(pattern), nmismatch(pattern),
+        .Call2("PairwiseAlignedXStringSet_nmatch", nchar(pattern), nmismatch(pattern),
               nindel(subject(pattern))[,"WidthSum"], nindel(pattern(pattern))[,"WidthSum"],
               PACKAGE="Biostrings")
 )
@@ -319,7 +319,7 @@ setMethod("compareStrings",
               ncharPattern <- nchar(pattern)
               if (any(ncharPattern != nchar(subject)))
                   stop("'pattern' and 'subject' must have the same number of characters")
-              .Call("align_compareStrings", pattern, subject, max(ncharPattern), "+", "-", "?",
+              .Call2("align_compareStrings", pattern, subject, max(ncharPattern), "+", "-", "?",
                     PACKAGE="Biostrings")
           })
 setMethod("compareStrings",

@@ -22,7 +22,7 @@ WCPscoreStartingAt <- function(wcp, subject, starting.at=1)
     if (!is.integer(starting.at))
         starting.at <- as.integer(starting.at)
 
-    .Call("WCP_score_starting_at", wcp, subject, starting.at, PACKAGE="Biostrings")
+    .Call2("WCP_score_starting_at", wcp, subject, starting.at, PACKAGE="Biostrings")
 }
 
 .XString.matchWCP <- function(wcp, subject, min.score, count.only=FALSE)
@@ -32,7 +32,7 @@ WCPscoreStartingAt <- function(wcp, subject, starting.at=1)
     if (xsbasetype(wcp) != xsbasetype(subject))
         stop("'wcp' and 'subject' must have the same XString base type")
     min.score <- .normargMinScore(min.score, wcp)    
-    C_ans <- .Call("XString_match_WCP",
+    C_ans <- .Call2("XString_match_WCP",
             wcp, subject, min.score, count.only,
             PACKAGE="Biostrings")
     if (count.only)
@@ -47,7 +47,7 @@ WCPscoreStartingAt <- function(wcp, subject, starting.at=1)
     if (xsbasetype(wcp) != xsbasetype(subject(subject)))
         stop("'wcp' and 'subject' must have the same XString base type")
     min.score <- .normargMinScore(min.score, wcp)
-    C_ans <- .Call("XStringViews_match_WCP",
+    C_ans <- .Call2("XStringViews_match_WCP",
             wcp,
             subject(subject), start(subject), width(subject),
             min.score, count.only,

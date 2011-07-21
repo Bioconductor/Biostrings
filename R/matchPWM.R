@@ -217,7 +217,7 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
         starting.at <- as.integer(starting.at)
 
     base_codes <- xscodes(subject, baseOnly=TRUE)
-    .Call("PWM_score_starting_at",
+    .Call2("PWM_score_starting_at",
           pwm, subject, starting.at, base_codes,
           PACKAGE="Biostrings")
 }
@@ -256,7 +256,7 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
     ## no need to check 'count.only' (not a user controlled argument)
 
     base_codes <- xscodes(subject, baseOnly=TRUE)
-    C_ans <- .Call("XString_match_PWM",
+    C_ans <- .Call2("XString_match_PWM",
                    pwm, subject, min.score, count.only, base_codes,
                    PACKAGE="Biostrings")
     if (count.only)
@@ -273,7 +273,7 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
     ## no need to check 'count.only' (not a user controlled argument)
 
     base_codes <- xscodes(subject, baseOnly=TRUE)
-    C_ans <- .Call("XStringViews_match_PWM",
+    C_ans <- .Call2("XStringViews_match_PWM",
                    pwm,
                    subject(subject), start(subject), width(subject),
                    min.score, count.only, base_codes,

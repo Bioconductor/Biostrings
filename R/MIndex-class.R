@@ -151,7 +151,7 @@ setMethod("[[", "ByPos_MIndex",
 setMethod("startIndex", "ByPos_MIndex",
     function(x)
     {
-        .Call("ByPos_MIndex_endIndex",
+        .Call2("ByPos_MIndex_endIndex",
               high2low(x@dups0), x@ends, x@width0,
               PACKAGE="Biostrings")
     }
@@ -159,7 +159,7 @@ setMethod("startIndex", "ByPos_MIndex",
 setMethod("endIndex", "ByPos_MIndex",
     function(x)
     {
-        .Call("ByPos_MIndex_endIndex",
+        .Call2("ByPos_MIndex_endIndex",
               high2low(x@dups0), x@ends, NULL,
               PACKAGE="Biostrings")
     }
@@ -180,7 +180,7 @@ ByPos_MIndex.combine <- function(mi_list)
     #}
     #args <- c(list(FUN=mergeEnds), ends_listlist, list(SIMPLIFY=FALSE))
     #ans_ends <- do.call(mapply, args)
-    ans_ends <- .Call("ByPos_MIndex_combine",
+    ans_ends <- .Call2("ByPos_MIndex_combine",
                       ends_listlist,
                       PACKAGE="Biostrings")
     new("ByPos_MIndex", width0=ans_width0, ends=ans_ends)
@@ -248,7 +248,7 @@ if (FALSE) {
     function(x)
     {
         all.names <- TRUE
-        .Call("SparseMIndex_endIndex",
+        .Call2("SparseMIndex_endIndex",
               x@ends_envir, x@width0, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }
@@ -257,7 +257,7 @@ if (FALSE) {
     function(x)
     {
         all.names <- TRUE
-        .Call("SparseMIndex_endIndex",
+        .Call2("SparseMIndex_endIndex",
               x@ends_envir, NULL, x@NAMES, all.names,
               PACKAGE="Biostrings")
     }

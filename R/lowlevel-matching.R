@@ -160,12 +160,12 @@ normargCollapse <- function(collapse)
     with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, subject)
     if (is(subject, "XString"))
-        .Call("XString_match_pattern_at",
+        .Call2("XString_match_pattern_at",
               pattern, subject, at, at.type,
               max.mismatch, min.mismatch, with.indels, fixed, ans.type,
               auto.reduce.pattern, PACKAGE="Biostrings")
     else
-        .Call("XStringSet_vmatch_pattern_at",
+        .Call2("XStringSet_vmatch_pattern_at",
               pattern, subject, at, at.type,
               max.mismatch, min.mismatch, with.indels, fixed, ans.type,
               auto.reduce.pattern, PACKAGE="Biostrings")
@@ -448,7 +448,7 @@ hasLetterAt <- function(x, letter, at, fixed=TRUE)
 
     .hasLetterAt1 <- function(x, l1, at1)
     {
-        ans <- .Call("XStringSet_vmatch_pattern_at",
+        ans <- .Call2("XStringSet_vmatch_pattern_at",
                      l1, x, at1, 0L, 0L, 0L, FALSE, fixed, 1L, FALSE,
                      PACKAGE="Biostrings")
         ans[at1 < 1 | at1 > width(x)] <- NA

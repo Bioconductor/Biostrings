@@ -96,7 +96,7 @@ setMethod("initialize", "Twobit",
     function(.Object, tb, pp_exclude)
     {
         base_codes <- xscodes(tb, baseOnly=TRUE)
-        C_ans <- .Call("build_Twobit", tb, pp_exclude, base_codes,
+        C_ans <- .Call2("build_Twobit", tb, pp_exclude, base_codes,
                        PACKAGE="Biostrings")
         .Object <- callNextMethod(.Object, tb, pp_exclude, C_ans$high2low, base_codes)
         .Object@sign2pos <- C_ans$sign2pos
@@ -124,38 +124,38 @@ setClass("ACtree2",
 )
 
 setMethod("nnodes", "ACtree2",
-    function(x) .Call("ACtree2_nnodes", x, PACKAGE="Biostrings")
+    function(x) .Call2("ACtree2_nnodes", x, PACKAGE="Biostrings")
 )
 
 setMethod("hasAllFlinks", "ACtree2",
-    function(x) .Call("ACtree2_has_all_flinks", x, PACKAGE="Biostrings")
+    function(x) .Call2("ACtree2_has_all_flinks", x, PACKAGE="Biostrings")
 )
 
 setMethod("computeAllFlinks", "ACtree2",
-    function(x) .Call("ACtree2_compute_all_flinks", x, PACKAGE="Biostrings")
+    function(x) .Call2("ACtree2_compute_all_flinks", x, PACKAGE="Biostrings")
 )
 
 setMethod("show", "ACtree2",
     function(object)
     {
         .PreprocessedTB.showFirstLine(object)
-	invisible(.Call("ACtree2_summary", object, PACKAGE="Biostrings"))
+	invisible(.Call2("ACtree2_summary", object, PACKAGE="Biostrings"))
     }
 )
 
 setMethod("initialize", "ACtree2",
     function(.Object, tb, pp_exclude)
     {
-        nodebuf_max_nblock <- .Call("ACtree2_nodebuf_max_nblock",
+        nodebuf_max_nblock <- .Call2("ACtree2_nodebuf_max_nblock",
                                     PACKAGE="Biostrings")
-        nodebuf_ptr <- .Call("IntegerBAB_new", nodebuf_max_nblock,
+        nodebuf_ptr <- .Call2("IntegerBAB_new", nodebuf_max_nblock,
                              PACKAGE="Biostrings")
-        nodeextbuf_max_nblock <- .Call("ACtree2_nodeextbuf_max_nblock",
+        nodeextbuf_max_nblock <- .Call2("ACtree2_nodeextbuf_max_nblock",
                                        PACKAGE="Biostrings")
-        nodeextbuf_ptr <- .Call("IntegerBAB_new", nodeextbuf_max_nblock,
+        nodeextbuf_ptr <- .Call2("IntegerBAB_new", nodeextbuf_max_nblock,
                                 PACKAGE="Biostrings")
         base_codes <- xscodes(tb, baseOnly=TRUE)
-        C_ans <- .Call("ACtree2_build",
+        C_ans <- .Call2("ACtree2_build",
                        tb, pp_exclude, base_codes,
                        nodebuf_ptr, nodeextbuf_ptr,
                        PACKAGE="Biostrings")
