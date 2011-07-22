@@ -85,72 +85,78 @@ void _MatchBuf_report_match(MatchBuf *match_buf,
 	PSlink_ids = &(match_buf->PSlink_ids);
 	count_buf = &(match_buf->match_counts);
 	if (count_buf->elts[PSpair_id]++ == 0)
-		IntAE_insert_at(PSlink_ids, PSlink_ids->nelt, PSpair_id);
+		IntAE_insert_at(PSlink_ids,
+			IntAE_get_nelt(PSlink_ids), PSpair_id);
 	if (match_buf->match_starts.buflength != -1) {
 		start_buf = match_buf->match_starts.elts + PSpair_id;
-		IntAE_insert_at(start_buf, start_buf->nelt, start);
+		IntAE_insert_at(start_buf, IntAE_get_nelt(start_buf), start);
 	}
 	if (match_buf->match_widths.buflength != -1) {
 		width_buf = match_buf->match_widths.elts + PSpair_id;
-		IntAE_insert_at(width_buf, width_buf->nelt, width);
+		IntAE_insert_at(width_buf, IntAE_get_nelt(width_buf), width);
 	}
 	return;
 }
 
 void _MatchBuf_flush(MatchBuf *match_buf)
 {
-	int i;
+	int nelt, i;
 	const int *PSlink_id;
 
+	nelt = IntAE_get_nelt(&(match_buf->PSlink_ids));
 	for (i = 0, PSlink_id = match_buf->PSlink_ids.elts;
-	     i < match_buf->PSlink_ids.nelt;
+	     i < nelt;
 	     i++, PSlink_id++)
 	{
 		match_buf->match_counts.elts[*PSlink_id] = 0;
 		if (match_buf->match_starts.buflength != -1)
-			match_buf->match_starts.elts[*PSlink_id].nelt = 0;
+			IntAE_set_nelt(match_buf->match_starts.elts + *PSlink_id, 0);
 		if (match_buf->match_widths.buflength != -1)
-			match_buf->match_widths.elts[*PSlink_id].nelt = 0;
+			IntAE_set_nelt(match_buf->match_widths.elts + *PSlink_id, 0);
 	}
-	match_buf->PSlink_ids.nelt = 0;
+	IntAE_set_nelt(&(match_buf->PSlink_ids), 0);
 	return;
 }
 
 void _MatchBuf_append_and_flush(MatchBuf *match_buf1,
 		MatchBuf *match_buf2, int view_offset)
 {
-	int i;
+	int nelt, i;
 	const int *PSlink_id;
 	IntAE *start_buf1, *start_buf2, *width_buf1, *width_buf2;
 
 	if (match_buf1->ms_code == MATCHES_AS_NULL
 	 || match_buf2->ms_code == MATCHES_AS_NULL)
 		return;
-	if (match_buf1->match_counts.nelt != match_buf2->match_counts.nelt
+	if (IntAE_get_nelt(&(match_buf1->match_counts)) !=
+	    IntAE_get_nelt(&(match_buf2->match_counts))
 	 || match_buf1->ms_code != match_buf2->ms_code)
 		error("Biostrings internal error in "
 		      "_MatchBuf_append_and_flush(): "
 		      "buffers are incompatible");
+	nelt = IntAE_get_nelt(&(match_buf2->PSlink_ids));
 	for (i = 0, PSlink_id = match_buf2->PSlink_ids.elts;
-	     i < match_buf2->PSlink_ids.nelt;
+	     i < nelt;
 	     i++, PSlink_id++)
 	{
 		if (match_buf1->match_counts.elts[*PSlink_id] == 0)
 			IntAE_insert_at(&(match_buf1->PSlink_ids),
-				match_buf1->PSlink_ids.nelt, *PSlink_id);
+				IntAE_get_nelt(&(match_buf1->PSlink_ids)),
+				*PSlink_id);
 		match_buf1->match_counts.elts[*PSlink_id] +=
 			match_buf2->match_counts.elts[*PSlink_id];
 		if (match_buf1->match_starts.buflength != -1) {
 			start_buf1 = match_buf1->match_starts.elts + *PSlink_id;
 			start_buf2 = match_buf2->match_starts.elts + *PSlink_id;
 			IntAE_append_shifted_vals(start_buf1,
-			    start_buf2->elts, start_buf2->nelt, view_offset);
+				start_buf2->elts, IntAE_get_nelt(start_buf2),
+				view_offset);
 		}
 		if (match_buf1->match_widths.buflength != -1) {
 			width_buf1 = match_buf1->match_widths.elts + *PSlink_id;
 			width_buf2 = match_buf2->match_widths.elts + *PSlink_id;
 			IntAE_append(width_buf1,
-				width_buf2->elts, width_buf2->nelt);
+				width_buf2->elts, IntAE_get_nelt(width_buf2));
 		}
 	}
 	_MatchBuf_flush(match_buf2);

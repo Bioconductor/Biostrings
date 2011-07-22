@@ -87,11 +87,12 @@ int _get_int_from_SparseList(int symb_as_int, SEXP env)
 
 void _set_env_from_IntAE(SEXP env, const IntAE *int_ae)
 {
-	int symb_as_int, *elt;
+	int nelt, symb_as_int, *elt;
 	SEXP symbol, value;
 
+	nelt = IntAE_get_nelt(int_ae);
 	for (symb_as_int = 1, elt = int_ae->elts;
-	     symb_as_int <= int_ae->nelt;
+	     symb_as_int <= nelt;
 	     symb_as_int++, elt++)
 	{
 		if (*elt == NA_INTEGER)
@@ -106,15 +107,16 @@ void _set_env_from_IntAE(SEXP env, const IntAE *int_ae)
 
 void _set_env_from_IntAEAE(SEXP env, const IntAEAE *int_aeae)
 {
-	int symb_as_int;
+	int nelt, symb_as_int;
 	IntAE *elt;
 	SEXP symbol, value;
 
+	nelt = IntAEAE_get_nelt(int_aeae);
 	for (symb_as_int = 1, elt = int_aeae->elts;
-	     symb_as_int <= int_aeae->nelt;
+	     symb_as_int <= nelt;
 	     symb_as_int++, elt++)
 	{
-		if (elt->nelt == 0)
+		if (IntAE_get_nelt(elt) == 0)
 			continue;
 		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
 		PROTECT(value = new_INTEGER_from_IntAE(elt));

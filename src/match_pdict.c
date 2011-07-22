@@ -386,7 +386,7 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	ans_buf = new_IntAEAE(S_length, S_length);
 	for (j = 0; j < S_length; j++)
-		ans_buf.elts[j].nelt = 0;
+		IntAE_set_nelt(ans_buf.elts + j, 0);
 	_init_match_reporting("MATCHES_AS_COUNTS", 1);
 	for (i = 0; i < P_length; i++) {
 		P_elt = _get_cachedXStringSet_elt(&P, i);
@@ -397,7 +397,8 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 				algo);
 			if (_get_match_count() != 0)
 				IntAE_insert_at(ans_buf.elts + j,
-					ans_buf.elts[j].nelt, i + 1);
+					IntAE_get_nelt(ans_buf.elts + j),
+					i + 1);
 			_drop_reported_matches();
 		}
 	}
@@ -433,10 +434,10 @@ static SEXP vcount_PDict3Parts_XStringSet(SEXP pptb, HeadTail *headtail,
 			max_mismatch, min_mismatch, fixed,
 			matchpdict_buf);
 		count_buf = &(matchpdict_buf->matches.match_counts);
-		/* 'count_buf->nelt' is 'tb_length' */
+		/* 'IntAE_get_nelt(count_buf)' is 'tb_length' */
 		if (collapse0 == 0) {
 			memcpy(ans_col, count_buf->elts,
-				sizeof(int) * count_buf->nelt);
+				sizeof(int) * tb_length);
 			ans_col += tb_length;
 		} else {
 			for (i = 0; i < tb_length; i++) {

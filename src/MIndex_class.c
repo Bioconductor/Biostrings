@@ -188,14 +188,15 @@ SEXP ByPos_MIndex_endIndex(SEXP x_high2low, SEXP x_ends, SEXP x_width0)
 SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP all_names)
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
-	int i, j;
+	int nelt, i, j;
 	IntAE poffsets, poffsets_order;
 
 	PROTECT(symbols = R_lsInternal(x_ends_envir, 1));
 	poffsets = new_IntAE_from_CHARACTER(symbols, -1);
+	nelt = IntAE_get_nelt(&poffsets);
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(x_names)));
-		for (i = 0; i < poffsets.nelt; i++) {
+		for (i = 0; i < nelt; i++) {
 			j = poffsets.elts[i];
 			end = _get_val_from_env(STRING_ELT(symbols, i), x_ends_envir, 1);
 			PROTECT(ans_elt = duplicate(end));
@@ -207,12 +208,12 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 		SET_NAMES(ans, duplicate(x_names));
 		UNPROTECT(1);
 	} else {
-		//poffsets_order = new_IntAE(poffsets.nelt, 0, 0);
-		//get_order_of_int_array(poffsets.elts, poffsets.nelt, 0, poffsets_order.elts, 0);
-		//poffsets_order.nelt = poffsets.nelt; /* = poffsets_order.buflength */
-		PROTECT(ans = NEW_LIST(poffsets.nelt));
-		PROTECT(ans_names = NEW_CHARACTER(poffsets.nelt));
-		for (i = 0; i < poffsets.nelt; i++) {
+		//poffsets_order = new_IntAE(nelt, 0, 0);
+		//get_order_of_int_array(poffsets.elts, nelt, 0, poffsets_order.elts, 0);
+		//IntAE_set_nelt(&poffsets_order) = nelt; /* = poffsets_order.buflength */
+		PROTECT(ans = NEW_LIST(nelt));
+		PROTECT(ans_names = NEW_CHARACTER(nelt));
+		for (i = 0; i < nelt; i++) {
 			//j = poffsets_order.elts[i];
 			j = i;
 			end = _get_val_from_env(STRING_ELT(symbols, j), x_ends_envir, 1);
@@ -249,14 +250,14 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 	ends_buf = new_IntAE(0, 0, 0);
 	PROTECT(ans = NEW_LIST(ans_length));
 	for (i = 0; i < ans_length; i++) {
-		ends_buf.nelt = 0;
+		IntAE_set_nelt(&ends_buf, 0);
 		for (j = 0; j < NTB; j++) {
 			ends = VECTOR_ELT(VECTOR_ELT(ends_listlist, j), i);
 			if (ends == R_NilValue)
 				continue;
 			IntAE_append(&ends_buf, INTEGER(ends), LENGTH(ends));
 		}
-		if (ends_buf.nelt == 0)
+		if (IntAE_get_nelt(&ends_buf) == 0)
 			continue;
 		IntAE_qsort(&ends_buf, 0);
 		IntAE_delete_adjdups(&ends_buf);

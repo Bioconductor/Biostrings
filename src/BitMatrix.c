@@ -275,7 +275,7 @@ static void BitMatrix_tr(BitMatrix *in, BitMatByRow *out)
 	BitWord rbit, *bitword;
 	int i1, i2, i, j, cbit;
 
-	if (in->nrow != out->nelt)
+	if (in->nrow != IntAE_get_nelt(out))
 		error("BitMatrix_tr(): 'in' and 'out' are incompatible");
 	if (in->ncol >= BITMATBYROW_NCOL)
 		error("BitMatrix_tr(): 'in' has too many columns");
@@ -305,7 +305,7 @@ static void BitMatrix_print(BitMatrix *bitmat)
 
 	bitmat_byrow = new_IntAE(bitmat->nrow, bitmat->nrow, 0);
 	BitMatrix_tr(bitmat, &bitmat_byrow);
-	for (i = 0, row = bitmat_byrow.elts; i < bitmat_byrow.nelt; i++, row++) {
+	for (i = 0, row = bitmat_byrow.elts; i < bitmat->nrow; i++, row++) {
 		Rprintf("%4d: ", i);
 		for (j = 0, cbit = 1; j < bitmat->ncol; j++, cbit <<= 1) {
 			bit = (*row & cbit) != 0;

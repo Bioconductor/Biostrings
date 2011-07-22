@@ -79,7 +79,7 @@ static void FASTAINFO_load_empty_seq(FASTAloader *loader)
 
 	loader_ext = loader->ext;
 	seqlengths_buf = &(loader_ext->seqlengths_buf);
-	IntAE_insert_at(seqlengths_buf, seqlengths_buf->nelt, 0);
+	IntAE_insert_at(seqlengths_buf, IntAE_get_nelt(seqlengths_buf), 0);
 	return;
 }
 
@@ -91,7 +91,7 @@ static void FASTAINFO_load_seq_line(FASTAloader *loader,
 
 	loader_ext = loader->ext;
 	seqlengths_buf = &(loader_ext->seqlengths_buf);
-	seqlengths_buf->elts[seqlengths_buf->nelt - 1] += dataline->length;
+	seqlengths_buf->elts[IntAE_get_nelt(seqlengths_buf) - 1] += dataline->length;
 	return;
 }
 
