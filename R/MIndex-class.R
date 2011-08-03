@@ -169,7 +169,12 @@ ByPos_MIndex.combine <- function(mi_list)
 {
     if (length(mi_list) == 0)
         stop("cannot combine an empty list of MIndex objects")
-    ans_width0 <- mi_list[[1]]@width0  # all 'mi_list[[i]]@width0' should be the same!
+    ## 'mi_list[[i]]@width0' should be identical for any 'i'. We don't check
+    ## this!
+    ans_width0 <- mi_list[[1L]]@width0
+    ## 'names(mi_list[[i]])' should be identical for any 'i'. We don't check
+    ## this!
+    ans_names <- names(mi_list[[1L]])
     ends_listlist <- lapply(mi_list, function(mi) mi@ends)
     #mergeEnds <- function(...)
     #{
@@ -183,7 +188,7 @@ ByPos_MIndex.combine <- function(mi_list)
     ans_ends <- .Call2("ByPos_MIndex_combine",
                       ends_listlist,
                       PACKAGE="Biostrings")
-    new("ByPos_MIndex", width0=ans_width0, ends=ans_ends)
+    new("ByPos_MIndex", width0=ans_width0, NAMES=ans_names, ends=ans_ends)
 }
 
 
