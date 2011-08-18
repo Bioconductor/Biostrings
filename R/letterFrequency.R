@@ -21,13 +21,13 @@
     collapse
 }
 
-.normargWidth <- function(width, argname="width")
+.normargWidth <- function(width, argname="width", min.width=1L)
 {
     if (!isSingleNumber(width))
         stop("'", argname, "' must be a single integer")
     width <- as.integer(width)
-    if (width < 0L)
-        stop("'", argname, "' must be a non-negative integer")
+    if (width < min.width)
+        stop("'", argname, "' must be an integer >= ", min.width)
     width
 }
 
@@ -466,7 +466,7 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
     if (!is.character(alphabet))
         stop("'alphabet' must be a character vector")
     .mkAllStrings(alphabet,
-                  .normargWidth(width),
+                  .normargWidth(width, min.width=0L),
                   .normargFastMovingSide(fast.moving.side))
 }
 
@@ -681,7 +681,7 @@ setMethod("consensusMatrix", "XStringSet",
         if (length(x) != 0 && length(shift) > length(x))
             stop("'shift' has more elements than 'x'")
         if (!is.null(width)) {
-            if (!isSingleNumber(width) || width < 0)
+            if (!isSingleNumber(width) || width < 0L)
                 stop("'width' must be NULL or a single non-negative integer")
             if (!is.integer(width))
                 width <- as.integer(width)
