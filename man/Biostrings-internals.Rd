@@ -25,6 +25,7 @@
 % xsbasetype.R (put aliases for specific methods in corresponding man pages):
 \alias{xsbasetype}
 \alias{xsbasetype<-}
+\alias{get_xsbasetypes_conversion_lookup}
 
 
 \title{Biostrings internals}

@@ -52,7 +52,7 @@ export(
     DNA_BASES, RNA_BASES, DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
 
     ## xsbasetype.R:
-    xsbasetype, "xsbasetype<-", alphabet,
+    xsbasetype, "xsbasetype<-", get_xsbasetypes_conversion_lookup, alphabet,
 
     ## XString-class.R:
     BString, DNAString, RNAString, AAString,

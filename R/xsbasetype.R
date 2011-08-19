@@ -15,6 +15,7 @@
 ###
 ### xsbasetype() returns that base type. For example 'xsbasetype(AAString())'
 ### returns "AA".
+### Unless specified otherwise, things in this file are not exported.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,10 +27,12 @@
 ### sequence).
 ###   
 
+### Exported.
 setGeneric("xsbasetype",
     function(x) standardGeneric("xsbasetype")
 )
 
+### Exported.
 setGeneric("xsbasetype<-", signature="x",
     function(x, value) standardGeneric("xsbasetype<-")
 )
@@ -93,6 +96,7 @@ compatible_xsbasetypes <- function(basetype1, basetype2)
     TRUE
 }
 
+### Exported.
 get_xsbasetypes_conversion_lookup <- function(from_basetype, to_basetype)
 {
     if (!compatible_xsbasetypes(from_basetype, to_basetype))
@@ -122,8 +126,9 @@ comparable_xsbasetypes <- function(basetype1, basetype2)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Exported functions.
+### alphabet()
 ###
+### Exported.
 
 ### Could be made just a regular function but that would cause problems to
 ### people wanting to redefine alphabet() for their own objects (this is the
