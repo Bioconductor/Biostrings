@@ -29,8 +29,6 @@ setGeneric("trimLRPatterns", signature = "subject",
               max.Lmismatch)
     if (any(is.na(max.Lmismatch)) || length(max.Lmismatch) != pattern_length)
         stop("'max.Lmismatch' must be a vector of length 'nchar(Lpattern)'")
-    with.Lindels <- normargWithIndels(with.Lindels, argname="with.Lindels")
-    Lfixed <- normargFixed(Lfixed, subject, argname="Lfixed")
     ## Test the pattern "from the inside out" (moving it to the left).
     max.Lmismatch <- rev(max.Lmismatch)
     ii <- which.isMatchingStartingAt(Lpattern,
@@ -41,7 +39,12 @@ setGeneric("trimLRPatterns", signature = "subject",
                                      fixed = Lfixed,
                                      auto.reduce.pattern = TRUE)
     ii[is.na(ii)] <- pattern_length + 1L
-    pattern_length + 2L - ii
+    start <- pattern_length + 2L - ii
+    if (length(start) == 0L)
+        return(start)
+    ## For elements in 'subject' shorter than 'Lpattern', 'start' can be
+    ## > width(subject) + 1L.
+    pmin(start, width(subject) + 1L)
 }
 
 ### 'subject' must be an XStringSet object of length != 0.
@@ -72,8 +75,6 @@ setGeneric("trimLRPatterns", signature = "subject",
               max.Rmismatch)
     if (any(is.na(max.Rmismatch)) || length(max.Rmismatch) != pattern_length)
         stop("'max.Rmismatch' must be a vector of length 'nchar(Rpattern)'")
-    with.Rindels <- normargWithIndels(with.Rindels, argname="with.Rindels")
-    Rfixed <- normargFixed(Rfixed, subject, argname = "Rfixed")
     ## Test the pattern "from the inside out" (moving it to the right).
     max.Rmismatch <- rev(max.Rmismatch)
     subject_width <- width(subject)[1L]
@@ -85,7 +86,11 @@ setGeneric("trimLRPatterns", signature = "subject",
                                    fixed=Rfixed,
                                    auto.reduce.pattern=TRUE)
     ii[is.na(ii)] <- pattern_length + 1L
-    subject_width - pattern_length - 1L + ii
+    end <- subject_width - pattern_length - 1L + ii
+    if (length(end) == 0L)
+        return(end)
+    ## For elements in 'subject' shorter than 'Lpattern', 'end' can be < 0L.
+    pmax(end, 0L)
 }
 
 .XStringSet.trimLRPatterns <- function(Lpattern, Rpattern, subject,
