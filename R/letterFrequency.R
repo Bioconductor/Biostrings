@@ -439,22 +439,24 @@ setMethod("letterFrequency", "MaskedXString",
 
 .mkAllStringsR <- function(alphabet, width)
 {
-    if (width == 0)
+    if (width == 0L)
         return("")
-    ansR <- .mkAllStringsR(alphabet, width - 1)
+    ansR <- .mkAllStringsR(alphabet, width - 1L)
     unlist(lapply(alphabet, function(l) paste(l, ansR, sep="")))
 }
 
 .mkAllStringsL <- function(alphabet, width)
 {
-    if (width == 0)
+    if (width == 0L)
         return("")
-    ansL <- .mkAllStringsL(alphabet, width - 1)
+    ansL <- .mkAllStringsL(alphabet, width - 1L)
     unlist(lapply(alphabet, function(l) paste(ansL, l, sep="")))
 }
 
 .mkAllStrings <- function(alphabet, width, fast.moving.side)
 {
+    if (length(alphabet) == 0L && width != 0L)
+        return(character(0))
     if (fast.moving.side == "right")
         .mkAllStringsR(alphabet, width)
     else
