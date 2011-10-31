@@ -1,10 +1,6 @@
 \name{Biostrings internals}
 \docType{class}
 
-% utils:
-\alias{connection-class}
-\alias{file-class}
-
 % SparseList class and methods:
 \alias{class:SparseList}
 \alias{SparseList-class}

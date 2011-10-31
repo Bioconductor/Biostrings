@@ -29,7 +29,6 @@ import(IRanges)
 ###   xscat.R
 
 exportClasses(
-    file, connection,
     XString, BString, DNAString, RNAString, AAString,
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringViews,
