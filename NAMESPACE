@@ -266,7 +266,7 @@ export(
 )
 
 exportMethods(
-    initialize, ls,
+    initialize,
     length, names, "names<-", show, "[[",
     startIndex, endIndex, countIndex, unlist,
     neditStartingAt, neditEndingAt,

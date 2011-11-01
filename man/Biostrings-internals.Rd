@@ -7,7 +7,7 @@
 \alias{SparseList}
 
 \alias{length,SparseList-method}
-\alias{ls,SparseList-method}
+%\alias{ls,SparseList-method}
 \alias{as.list,SparseList-method}
 \alias{[[,SparseList-method}
 
