@@ -23,6 +23,8 @@
 \title{List of Data Dictionaries with XString-based Keys}
 
 \description{
+  WARNING: The XKeySortedDataList class and subclasses are deprecated.
+
   The XKeySortedDataList class is a container for storing a list of
   dictionaries with XString-based keys and DataFrame (an IRanges class) values.
 }
