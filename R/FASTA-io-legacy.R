@@ -9,11 +9,7 @@
 ### Robert's contribution
 readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
 {
-    if (missing(strip.descs))
-        warning("use 'strip.descs=FALSE' for compatibility with old version\n",
-                "  of readFASTA(), or 'strip.descs=TRUE' to remove the \">\"\n",
-                "  at the beginning of the description lines and to get\n",
-                "  rid of this warning (see '?readFASTA' for more details)")
+    .Deprecated("read.DNAStringSet")
     if (is.character(file)) {
         file <- file(file, "r")
         on.exit(close(file))
@@ -60,6 +56,7 @@ readFASTA <- function(file, checkComments=TRUE, strip.descs=TRUE)
 
 writeFASTA <- function(x, file="", desc=NULL, append=FALSE, width=80)
 {
+    .Deprecated("write.XStringSet")
     if (!isTRUEorFALSE(append))
         stop("'append' must be TRUE or FALSE")
     if (isSingleString(file)) {

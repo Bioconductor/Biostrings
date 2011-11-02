@@ -13,6 +13,9 @@ Note that the object returned by \code{readFASTA} or passed to
 \code{writeFASTA} is a standard list. For faster and more memory
 efficient alternatives that return/accept an \link{XStringSet} object,
 see the \code{\link{read.DNAStringSet}} function and family.
+
+WARNING: \code{readFASTA} and \code{writeFASTA} are now deprecated
+in favor of \code{\link{read.DNAStringSet}} and \code{\link{write.XStringSet}}.
 }
 \usage{
 readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
@@ -92,7 +95,7 @@ writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
   \code{\link{read.table}},
   \code{\link{scan}},
   \code{\link{write.table}},
-  \code{\link[BSgenome:BSgenome-class]{BSgenome-class}}
+  \code{\link[BSgenome]{BSgenome-class}}
 }
 
 \examples{
