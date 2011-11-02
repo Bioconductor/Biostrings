@@ -794,31 +794,6 @@ SEXP XStringViews_match_PWM(
 );
 
 
-/* match_WCP.c */
-
-SEXP WCP_score_starting_at(
-	SEXP wcp,
-	SEXP subject,
-	SEXP starting_at
-);
-
-SEXP XString_match_WCP(
-	SEXP wcp,
-	SEXP subject,
-	SEXP min_score,
-	SEXP count_only
-);
-
-SEXP XStringViews_match_WCP(
-	SEXP wcp,
-	SEXP subject,
-	SEXP views_start,
-	SEXP views_width,
-	SEXP min_score,
-	SEXP count_only
-);
-
-
 /* find_palindromes.c */
 
 SEXP debug_find_palindromes();

@@ -17,8 +17,7 @@
 \title{A simple WCP matching function and related utilities}
 
 \description{
-  A function implementing a simple algorithm for matching a set of patterns
-  represented by Weighted Clustered Positions (WCP) to an XString sequence.
+  The functions described in this man page are now defunct.
 }
 
 \usage{

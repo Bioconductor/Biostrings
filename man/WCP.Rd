@@ -19,14 +19,12 @@
 
 \alias{maxWeights,WCP-method}
 \alias{show,WCP-method}
-\alias{xsbasetype,WCP-method}
 
 
 \title{Weighted Clustered Positions (WCP) objects}
 
 \description{
-  The WCP class is a container for storing weighted clustered positions within
-  XString-based strings.
+  The WCP class is now defunct.
 }
 
 \author{P. Aboyoun}

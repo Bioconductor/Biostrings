@@ -43,40 +43,10 @@ setClass("AA_WCP",
 ### Validity.
 ###
 
-.valid.WCP <- function(object)
-{
-    ncharStrings <- lapply(object@dictList, function(x) unique(nchar(dataKey(x))))
-    if (!all(sapply(ncharStrings, length) == 1)) {
-        message <- "within cluster strings do not have the same nchar"
-    } else {
-        ncharStrings <- unlist(ncharStrings)
-        binSizes <- elementLengths(object@clusters)
-        if (length(ncharStrings) != length(binSizes)) {
-            message <- "number of clusters do not match the number expected"
-        } else if (any(ncharStrings != binSizes)) {
-            message <- "within cluster nchar do not match the number expected"
-        } else {
-            message <- NULL
-        }
-    }
-    message
-}
-
 setValidity("WCP",
     function(object)
-    {
-        .Deprecated(msg="the WCP class and subclasses are deprecated")
-        problems <- .valid.WCP(object)
-        if (is.null(problems)) TRUE else problems
-    }
+        .Defunct(msg="the WCP class and subclasses are defunct")
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" method.
-###
-
-setMethod("xsbasetype", "WCP", function(x) xsbasetype(x@dictList))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,12 +55,5 @@ setMethod("xsbasetype", "WCP", function(x) xsbasetype(x@dictList))
 
 setMethod("show", "WCP",
     function(object)
-    {
-        .Deprecated(msg="the WCP class and subclasses are deprecated")
-        NG <- length(object@clusters)
-        NO <- nobj(object@clusters)
-        cat("  A ", class(object), " instance with ", NG,
-            ifelse(NG == 1, " cluster on ", " clusters on "), NO,
-            ifelse(NO == 1, " letter\n", " letters\n"), sep = "")
-    }
+        .Defunct(msg="the WCP class and subclasses are defunct")
 )
