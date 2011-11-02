@@ -47,6 +47,7 @@ setClass("AAKeySortedData",
 
 .valid.XKeySortedData <- function(object)
 {
+    .Deprecated(msg="the XKeySortedData class and subclasses are deprecated")
     message <- NULL
     if (!is.null(elementMetadata(object)))
         message <- c(message, "elementMetdata is not NULL")
@@ -77,7 +78,13 @@ setValidity("XKeySortedData",
 
 setGeneric("dataKey", function(x) standardGeneric("dataKey"))
 
-setMethod("dataKey", "XKeySortedData", function(x) x@key)
+setMethod("dataKey", "XKeySortedData",
+    function(x)
+    {
+        .Deprecated(msg="the dataKey() generic is deprecated")
+        x@key
+    }
+)
 
 setGeneric("dataTable", function(x) standardGeneric("dataTable"))
 
@@ -85,11 +92,18 @@ setGeneric("dataTable<-", signature="x",
     function(x, value) standardGeneric("dataTable<-")
 )
 
-setMethod("dataTable", "XKeySortedData", function(x) x@table)
+setMethod("dataTable", "XKeySortedData",
+    function(x)
+    {
+        .Deprecated(msg="the dataTable() generic is deprecated")
+        x@table
+    }
+)
 
 setReplaceMethod("dataTable", "XKeySortedData",
     function(x, value)
     {
+        .Deprecated(msg="the dataTable() generic is deprecated")
         slot(x, "table") <- value
         x
     }
@@ -172,6 +186,7 @@ setMethod("[", "XKeySortedData",
 
 XKeySortedData <- function(basetype, key=character(0), table=NULL)
 {
+    .Deprecated(msg="the XKeySortedData class and subclasses are deprecated")
     stringSetClass <- paste(basetype, "StringSet", sep = "")
     stringSortedDataClass <- paste(basetype, "KeySortedData", sep = "")
     if (!is(key, stringSetClass))
