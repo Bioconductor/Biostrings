@@ -6,6 +6,7 @@ importFrom(graphics, "axis", "legend", "lines", "par", "plot.new",
 importFrom(stats, "chisq.test", "complete.cases", "diffinv",
            "pchisq")
 importFrom(utils, "data")
+importFrom(BiocGenerics, "updateObject")
 import(IRanges)
 
 

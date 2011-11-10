@@ -9,8 +9,8 @@ Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Sequencing, Infrastructure,
 	DataImport, DataRepresentation
-Depends: R (>= 2.8.0), methods, IRanges (>= 1.11.34)
-Imports: graphics, methods, stats, utils, IRanges
+Depends: R (>= 2.8.0), methods, BiocGenerics, IRanges (>= 1.11.34)
+Imports: graphics, methods, stats, utils, BiocGenerics, IRanges
 LinkingTo: IRanges
 Enhances: Rmpi
 Suggests: BSgenome (>= 1.13.14),
