@@ -1,12 +1,31 @@
 useDynLib(Biostrings)
 
 import(methods)
-importFrom(graphics, "axis", "legend", "lines", "par", "plot.new",
-           "plot.window", "title")
-importFrom(stats, "chisq.test", "complete.cases", "diffinv",
-           "pchisq")
-importFrom(utils, "data")
-importFrom(BiocGenerics, "updateObject")
+
+importFrom(graphics,
+    axis, legend, lines, par, plot.new,
+    plot.window, title
+)
+
+importFrom(stats,
+    chisq.test, complete.cases, diffinv,
+    pchisq
+)
+
+importFrom(utils,
+    data
+)
+
+importFrom(BiocGenerics,
+    cbind, rbind,
+    order,
+    paste,
+    rep.int,
+    table,
+    union, intersect, setdiff,
+    updateObject
+)
+
 import(IRanges)
 
 
