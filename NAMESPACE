@@ -16,15 +16,7 @@ importFrom(utils,
     data
 )
 
-importFrom(BiocGenerics,
-    cbind, rbind,
-    order,
-    paste,
-    rep.int,
-    table,
-    union, intersect, setdiff,
-    updateObject
-)
+import(BiocGenerics)
 
 import(IRanges)
 
