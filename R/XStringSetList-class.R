@@ -2,43 +2,52 @@
 ### XStringSetList objects
 ### -------------------------------------------------------------------------
 ###
-### Example:
-###   unlisted <- DNAStringSet(c("AAA", "AC", "GGATA"))
-###   partitioning <- PartitioningByEnd(c(0, 2, 2, 3))
-###   x <- new("DNAStringSetList", unlisted=unlisted, partitioning=partitioning)
-###
 
 setClass("XStringSetList",
-    contains="List",
+    contains="CompressedList",
     representation(
         "VIRTUAL",
-        unlisted="XStringSet",
-        partitioning="PartitioningByEnd"
+        unlistData="XStringSet"
+    ),
+    prototype(
+        elementType="XStringSet"
     )
 )
 
 setClass("BStringSetList",
     contains="XStringSetList",
     representation(
-        unlisted="BStringSet"
+        unlistData="BStringSet"
+    ),
+    prototype(
+        elementType="BStringSet"
     )
 )
 setClass("DNAStringSetList",
     contains="XStringSetList",
     representation(
-        unlisted="DNAStringSet"
+        unlistData="DNAStringSet"
+    ),
+    prototype(
+        elementType="DNAStringSet"
     )
 )
 setClass("RNAStringSetList",
     contains="XStringSetList",
     representation(
-        unlisted="RNAStringSet"
+        unlistData="RNAStringSet"
+    ),
+    prototype(
+        elementType="RNAStringSet"
     )
 )
 setClass("AAStringSetList",
     contains="XStringSetList",
     representation(
-        unlisted="AAStringSet"
+        unlistData="AAStringSet"
+    ),
+    prototype(
+        elementType="AAStringSet"
     )
 )
 
@@ -47,35 +56,22 @@ setClass("AAStringSetList",
 ### Accessor-like methods.
 ###
 
-setMethod("unlist", "XStringSetList",
-    function(x, recursive=TRUE, use.names=TRUE) x@unlisted
-)
-
+### TODO: Move the partitioning() generic to IRanges and make the
+### "partitioning" method for XStringSetList objects below the method for
+### for CompressedList objects.
 setGeneric("partitioning", function(x) standardGeneric("partitioning"))
 
 setMethod("partitioning", "XStringSetList", function(x) x@partitioning)
 
-setMethod("length", "XStringSetList", function(x) length(x@partitioning))
-
-setMethod("names", "XStringSetList", function(x) names(x@partitioning))
-
-setReplaceMethod("names", "XStringSetList",
-    function(x, value)
-    {
-        names(x@partitioning) <- value
-        x
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Unsafe constructor (not exported). Use only when 'partitioning' is
-### guaranteed to describe a valid Partitioning on 'unlisted'.
+### guaranteed to describe a valid Partitioning on 'unlistData'.
 ###
 
-unsafe.newXStringSetList <- function(class, unlisted, partitioning)
+unsafe.newXStringSetList <- function(class, unlistData, partitioning)
 {
-    new2(class, unlisted=unlisted, partitioning=partitioning, check=FALSE)
+    new2(class, unlistData=unlistData, partitioning=partitioning, check=FALSE)
 }
 
 
@@ -92,21 +88,9 @@ setReplaceMethod("xsbasetype", "XStringSetList",
         ## could be done with 'xsbasetype(unlisted(x)) <- value'
         ## if `unlisted<-` was available
         ans_class <- paste(value, "StringSetList", sep="")
-        ans_unlisted <- unlist(x)
-        xsbasetype(ans_unlisted) <- value
-        unsafe.newXStringSetList(ans_class, ans_unlisted, x@partitioning)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
-###
-
-setMethod("show", "XStringSetList",
-    function(object)
-    {
-        cat("  A ", class(object), " instance of length ", length(object), "\n", sep="")
+        ans_unlistData <- unlist(x)
+        xsbasetype(ans_unlistData) <- value
+        unsafe.newXStringSetList(ans_class, ans_unlistData, x@partitioning)
     }
 )
 
@@ -124,13 +108,6 @@ setMethod("[[", "XStringSetList",
         i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         ii <- x@partitioning[[i]]
         unlist(x)[ii]
-    }
-)
-
-setReplaceMethod("[[", "XStringSetList",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
 
