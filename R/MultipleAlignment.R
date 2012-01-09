@@ -385,7 +385,7 @@ function(filepath, maskGen=FALSE)
     }
 }
 
-.checkFormat <- function(format){
+.checkFormat <- function(filepath, format){
     if (missing(format)) {
         ext <- tolower(sub(".*\\.([^.]*)$", "\\1", filepath))
         format <- switch(ext, "sto" = "stockholm", "aln" = "clustal", "fasta")
@@ -399,7 +399,7 @@ function(filepath, maskGen=FALSE)
 .read.MultipleAlignment <-
 function(filepath, format)
 {
-    format <- .checkFormat(format)
+    format <- .checkFormat(filepath, format)
     switch(format,
            "stockholm" = .read.Stockholm(filepath),
            "clustal" = .read.ClustalAln(filepath),
@@ -412,7 +412,7 @@ function(filepath, format)
 .read.MultipleMask <-
 function(filepath, format)
 {
-    format <- .checkFormat(format)
+    format <- .checkFormat(filepath, format)
     switch(format,
            "stockholm" = as(IRanges(),"NormalIRanges"),
            "clustal" = as(IRanges(),"NormalIRanges"),

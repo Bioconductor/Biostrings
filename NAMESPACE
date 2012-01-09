@@ -97,7 +97,7 @@ exportMethods(
     nchar, width,
     xsbasetype, "xsbasetype<-",
     updateObject,
-    names, "names<-", "[", "[[", "[[<-", rep, append,
+    names, "names<-", "[", "[[", rep, append,
     union, intersect, setdiff, setequal,
     "%in%", match,
     show,

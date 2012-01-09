@@ -106,13 +106,13 @@ static void debug_printULBits(unsigned long bits)
 	int i;
 
 	for (i = 0; i < BITS_PER_LONG; i++) {
-		printf("%d", (bits & current_bit) != 0UL);
+		Rprintf("%d", (bits & current_bit) != 0UL);
 		if ((i % 8) == 7) {
-			printf(" ");
+			Rprintf(" ");
 		}
 		current_bit >>= 1;
 	}
-	printf("-> %lu\n", bits);
+	Rprintf("-> %lu\n", bits);
 	return;
 }
 #endif
