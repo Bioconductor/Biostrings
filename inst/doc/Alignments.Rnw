@@ -198,20 +198,22 @@ pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   gapOpening = 0, gapExtension = -1)
 @
 
-When the substitution scores are quality-based, the \Rfunarg{patternQuality}
-and \Rfunarg{subjectQuality} arguments represent the equivalent of $[x-99]$
-numeric quality values for the respective strings, and the optional
-\Rfunarg{fuzzyMatrix} argument represents how the closely two characters
-match on a $[0,1]$ scale. The \Rfunarg{patternQuality} and
-\Rfunarg{subjectQuality} arguments accept quality measures in either a
-\Rclass{PhredQuality} or \Rclass{SolexaQuality} scaling. For
-\Rclass{PhredQuality} measures $Q \in [0, 99]$, the probability of an error in
-the base read is given by $10^{-Q/10}$ and for \Rclass{SolexaQuality} measures
-$Q \in [-5, 99]$, they are given by $1 - 1/(1 + 10^{-Q/10})$. The
+When the substitution scores are quality-based, the
+\Rfunarg{patternQuality} and \Rfunarg{subjectQuality} arguments
+represent the equivalent of $[x-99]$ numeric quality values for the
+respective strings, and the optional \Rfunarg{fuzzyMatrix} argument
+represents how the closely two characters match on a $[0,1]$
+scale. The \Rfunarg{patternQuality} and \Rfunarg{subjectQuality}
+arguments accept quality measures in either a \Rclass{PhredQuality},
+\Rclass{SolexaQuality}, or \Rclass{IlluminaQuality} scaling. For
+\Rclass{PhredQuality} and \Rclass{IlluminaQuality} measures $Q \in [0,
+  99]$, the probability of an error in the base read is given by
+$10^{-Q/10}$ and for \Rclass{SolexaQuality} measures $Q \in [-5, 99]$,
+they are given by $1 - 1/(1 + 10^{-Q/10})$. The
 \Rfunction{qualitySubstitutionMatrices} function maps the
-\Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match and
-mismatch penalties. These three arguments will be demonstrated in later
-sections.
+\Rfunarg{patternQuality} and \Rfunarg{subjectQuality} scores to match
+and mismatch penalties. These three arguments will be demonstrated in
+later sections.
 
 The final argument, \Rfunarg{scoreOnly}, to the \Rfunction{pairwiseAlignment}
 function accepts a logical value to specify whether or not to return just the

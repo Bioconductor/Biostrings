@@ -323,7 +323,7 @@ exportMethods(
 
 exportClasses(
     XStringPartialMatches,
-    XStringQuality, PhredQuality, SolexaQuality,
+    XStringQuality, PhredQuality, SolexaQuality, IlluminaQuality,
     QualityScaledXStringSet,
     QualityScaledBStringSet, QualityScaledDNAStringSet,
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
@@ -340,7 +340,7 @@ export(
     subpatterns, pattern,
 
     ## XStringQuality-class.R:
-    PhredQuality, SolexaQuality,
+    PhredQuality, SolexaQuality, IlluminaQuality,
 
     ## QualityScaledXStringSet.R:
     quality,

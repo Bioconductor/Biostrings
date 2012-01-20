@@ -52,8 +52,8 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
   \item{alphabetLength}{an integer representing the number of letters
     in the underlying string alphabet. For DNA and RNA, this would be 4L.
     For Amino Acids, this could be 20L.}
-  \item{qualityClass}{a character string of either \code{"PhredQuality"} or
-    \code{"SolexaQuality"}.}
+  \item{qualityClass}{a character string of \code{"PhredQuality"},
+    \code{"SolexaQuality"}, or \code{"IlluminaQuality"}.}
   \item{bitScale}{a numeric value to scale the quality-based substitution
     matrices. By default, this is 1, representing bit-scale scoring.}
 }
@@ -120,7 +120,8 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   \link{DNAString-class},
   \link{AAString-class},
   \link{PhredQuality-class},
-  \link{SolexaQuality-class}
+  \link{SolexaQuality-class},
+  \link{IlluminaQuality-class}
 }
 
 \examples{

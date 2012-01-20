@@ -12,6 +12,8 @@ setClass("PhredQuality", contains="XStringQuality")
 
 setClass("SolexaQuality", contains="XStringQuality")
 
+setClass("IlluminaQuality", contains="XStringQuality")
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Create a methodology for managing quality conversions.
@@ -20,23 +22,29 @@ setClass("SolexaQuality", contains="XStringQuality")
 setGeneric("offset", function(x) standardGeneric("offset"))
 setMethod("offset", "PhredQuality", function(x) 33L)
 setMethod("offset", "SolexaQuality", function(x) 64L)
+setMethod("offset", "IlluminaQuality", function(x) 64L)
 
 setGeneric("minQuality", function(x) standardGeneric("minQuality"))
 setMethod("minQuality", "PhredQuality", function(x) 0L)
 setMethod("minQuality", "SolexaQuality", function(x) -5L)
+setMethod("minQuality", "IlluminaQuality", function(x) 0L)
 
 setGeneric("maxQuality", function(x) standardGeneric("maxQuality"))
 setMethod("maxQuality", "PhredQuality", function(x) 99L)
 setMethod("maxQuality", "SolexaQuality", function(x) 99L)
+setMethod("maxQuality", "IlluminaQuality", function(x) 99L)
 
 setGeneric("q2p", function(x) standardGeneric("q2p"))
 setMethod("q2p", "PhredQuality", function(x) function(q) 10^(-q/10))
-setMethod("q2p", "SolexaQuality", function(x) function(q) 1 - 1/(1 + 10^(-q/10)))
+setMethod("q2p", "SolexaQuality",
+          function(x) function(q) 1 - 1/(1 + 10^(-q/10)))
+setMethod("q2p", "IlluminaQuality", function(x) function(q) 10^(-q/10))
 
 setGeneric("p2q", function(x) standardGeneric("p2q"))
 setMethod("p2q", "PhredQuality", function(x) function(p) -10 * log10(p))
 setMethod("p2q", "SolexaQuality",
           function(x) function(p) -10 * (log10(p) - log10(1 - p)))
+setMethod("p2q", "IlluminaQuality", function(x) function(p) -10 * log10(p))
 
 qualityConverter <- function(x, qualityClass, outputType) {
     .BStringSet2integer <- function(x, scale) {
@@ -154,6 +162,23 @@ setAs("SolexaQuality", "numeric",
       function(from) .XStringQualityToNumeric(from, "SolexaQuality"))
 setMethod("as.numeric", "SolexaQuality", function(x) as(x, "numeric"))
 
+setAs("character", "IlluminaQuality",
+      function(from) .characterToXStringQuality(from, "IlluminaQuality"))
+setAs("BString", "IlluminaQuality",
+      function(from) .BStringToXStringQuality(from, "IlluminaQuality"))
+setAs("BStringSet", "IlluminaQuality",
+      function(from) .BStringSetToXStringQuality(from, "IlluminaQuality"))
+setAs("integer", "IlluminaQuality",
+      function(from) .integerToXStringQuality(from, "IlluminaQuality"))
+setAs("numeric", "IlluminaQuality",
+      function(from) .numericToXStringQuality(from, "IlluminaQuality"))
+setAs("IlluminaQuality", "integer",
+      function(from) .XStringQualityToInteger(from, "IlluminaQuality"))
+setMethod("as.integer", "IlluminaQuality", function(x) as(x, "integer"))
+setAs("IlluminaQuality", "numeric",
+      function(from) .XStringQualityToNumeric(from, "IlluminaQuality"))
+setMethod("as.numeric", "IlluminaQuality", function(x) as(x, "numeric"))
+
 setMethod("as.matrix", "XStringQuality",
     function(x, ...) .XStringQualityToIntegerMatrix(x)
 )
@@ -165,3 +190,4 @@ setAs("XStringQuality", "matrix", function(from) as.matrix(from))
 
 PhredQuality <- function(x) as(x, "PhredQuality")
 SolexaQuality <- function(x) as(x, "SolexaQuality")
+IlluminaQuality <- function(x) as(x, "IlluminaQuality")
