@@ -512,7 +512,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   ## F. COMPACTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   ## As a particular type of XVectorList objects, XStringSet objects can
-  ## eventually be compacted. Compacting is done typically before
+  ## optionally be compacted. Compacting is done typically before
   ## serialization. See ?compact for more information.
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe)

@@ -217,7 +217,7 @@
   ## see the 2 objects as different.
 
   ## Compacting. As a particular type of XVector objects, XString
-  ## objects can eventually be compacted. Compacting is done typically
+  ## objects can optionally be compacted. Compacting is done typically
   ## before serialization. See ?compact for more information.
 }
 
