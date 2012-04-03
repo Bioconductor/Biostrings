@@ -578,7 +578,7 @@ dinucleotideFrequency <- function(x, as.prob=FALSE, as.matrix=FALSE,
                                   fast.moving.side="right",
                                   with.labels=TRUE, ...)
 {
-    oligonucleotideFrequency(x, 2, as.prob=as.prob, as.array=as.matrix,
+    oligonucleotideFrequency(x, 2L, as.prob=as.prob, as.array=as.matrix,
                              fast.moving.side=fast.moving.side,
                              with.labels=with.labels, ...)
 }
@@ -587,21 +587,46 @@ trinucleotideFrequency <- function(x, as.prob=FALSE, as.array=FALSE,
                                    fast.moving.side="right",
                                    with.labels=TRUE, ...)
 {
-    oligonucleotideFrequency(x, 3, as.prob=as.prob, as.array=as.array,
+    oligonucleotideFrequency(x, 3L, as.prob=as.prob, as.array=as.array,
                              fast.moving.side=fast.moving.side,
                              with.labels=with.labels, ...)
 }
 
 oligonucleotideTransitions <- function(x, left=1, right=1, as.prob=FALSE)
 {
-    freqs <- oligonucleotideFrequency(x, width = left + right, as.prob = as.prob)
-    transitions <-
-      matrix(freqs, nrow = 4 ^ left, ncol = 4 ^ right, byrow = TRUE,
-             dimnames = list(unique(substring(names(freqs), 1, left)),
-                             unique(substring(names(freqs), left + 1, left + right))))
+    if (!isSingleNumber(left))
+        stop("'left' must be a single integer value")
+    if (!is.integer(left))
+        left <- as.integer(left)
+    if (left < 1L)
+        stop("'left' must be >= 1")
+    if (!isSingleNumber(right))
+        stop("'right' must be a single integer value")
+    if (!is.integer(right))
+        right <- as.integer(right)
+    if (right < 1L)
+        stop("'right' must be >= 1")
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
+    if (is(x, "XStringSet") || is(x, "XStringViews")) {
+        freqs <- oligonucleotideFrequency(x, width=left+right, as.prob=FALSE,
+                                          simplify.as="collapsed")
+    } else {
+        freqs <- oligonucleotideFrequency(x, width=left+right, as.prob=FALSE)
+    }
+    ans_rownames <- mkAllStrings(DNA_BASES, left)
+    ans_colnames <- mkAllStrings(DNA_BASES, right)
+    ## A sanity check
+    expected_freqs_names <- paste(rep(ans_rownames, each=length(ans_colnames)),
+                                  ans_colnames, sep="")
+    if (!identical(names(freqs), expected_freqs_names))
+        stop("Biostrings internal error in oligonucleotideTransitions(): ",
+             "'freqs' has unexpected or missing names")
+    ans <- matrix(freqs, ncol=length(ans_colnames), byrow=TRUE,
+                  dimnames=list(ans_rownames, ans_colnames))
     if (as.prob)
-        transitions <- transitions / rowSums(transitions)
-    transitions
+        ans <- ans / rowSums(ans)
+    ans
 }
 
 
