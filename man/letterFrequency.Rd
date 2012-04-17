@@ -361,7 +361,7 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
   ## ---------------------------------------------------------------------
   ## Read in ORF data:
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  orf <- read.DNAStringSet(file)
+  orf <- readDNAStringSet(file)
 
   ## To illustrate, the following example assumes the ORF data
   ## to be aligned for the first 10 positions (patently false):

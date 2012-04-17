@@ -48,9 +48,9 @@
 \alias{xsbasetype,MultipleAlignment-method}
 
 % Read functions:
-\alias{read.DNAMultipleAlignment}
-\alias{read.RNAMultipleAlignment}
-\alias{read.AAMultipleAlignment}
+\alias{readDNAMultipleAlignment}
+\alias{readRNAMultipleAlignment}
+\alias{readAAMultipleAlignment}
 
 % Write functions:
 \alias{write.phylip}
@@ -83,6 +83,12 @@
 \alias{show,MultipleAlignment-method}
 \alias{detail,MultipleAlignment-method}
 
+% Old stuff (Defunct or Deprecated):
+\alias{read.DNAMultipleAlignment}
+\alias{read.RNAMultipleAlignment}
+\alias{read.AAMultipleAlignment}
+
+
 \title{MultipleAlignment objects}
 
 \description{
@@ -100,9 +106,9 @@ AAMultipleAlignment(x=character(), start=NA, end=NA, width=NA,
     use.names=TRUE, rowmask=NULL, colmask=NULL)
 
 ## Read functions:
-read.DNAMultipleAlignment(filepath, format)
-read.RNAMultipleAlignment(filepath, format)
-read.AAMultipleAlignment(filepath, format)
+readDNAMultipleAlignment(filepath, format)
+readRNAMultipleAlignment(filepath, format)
+readAAMultipleAlignment(filepath, format)
 
 ## Write funtions:
 write.phylip(x, filepath)
@@ -349,11 +355,11 @@ write.phylip(x, filepath)
 \examples{
 ## create an object from file
 origMAlign <-
-  read.DNAMultipleAlignment(filepath =
-                            system.file("extdata",
-                                        "msx2_mRNA.aln",
-                                        package="Biostrings"),
-                            format="clustal")
+  readDNAMultipleAlignment(filepath =
+                           system.file("extdata",
+                                       "msx2_mRNA.aln",
+                                       package="Biostrings"),
+                           format="clustal")
 
 ## list the names of the sequences in the alignment
 rownames(origMAlign)

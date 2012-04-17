@@ -33,11 +33,11 @@ detail(x, ...)
 \author{Martin Morgan}
 \examples{
 origMAlign <-
-  read.DNAMultipleAlignment(filepath =
-                            system.file("extdata",
-                                        "msx2_mRNA.aln",
-                                        package="Biostrings"),
-                            format="clustal")
+  readDNAMultipleAlignment(filepath =
+                           system.file("extdata",
+                                       "msx2_mRNA.aln",
+                                       package="Biostrings"),
+                           format="clustal")
 detail(origMAlign)
 }
 \keyword{manip}

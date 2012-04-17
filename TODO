@@ -66,9 +66,6 @@ UTILITIES
   (This stuff needs to belong to the UTILITIES component of the package, not
   to the STRING ALIGNMENT component.)
 
-- Clean the mess in R/XStringViews-constructor.R. This file should go away
-  or be renamed something like R/XStringViews-old.R
-
 - Add "order", "sort", "duplicated", "unique" and "patternFrequency" methods
   for XStringSet and XStringViews objects. Also, for completeness, the "<=",
   ">=", "<" and ">" operators between XString objects should be provided.

@@ -42,24 +42,20 @@ setMethod("xsbasetype", "XKeySortedDataList",
 
 BKeySortedDataList <- function(...)
 {
-  .Deprecated(msg="the XKeySortedDataList class and subclasses are deprecated")
-  IRanges:::newSimpleList("BKeySortedDataList", list(...))
+  .Defunct(msg="the XKeySortedDataList class and subclasses are defunct")
 }
 
 DNAKeySortedDataList <- function(...)
 {
-  .Deprecated(msg="the XKeySortedDataList class and subclasses are deprecated")
-  IRanges:::newSimpleList("DNAKeySortedDataList", list(...))
+  .Defunct(msg="the XKeySortedDataList class and subclasses are defunct")
 }
 
 RNAKeySortedDataList <- function(...)
 {
-  .Deprecated(msg="the XKeySortedDataList class and subclasses are deprecated")
-  IRanges:::newSimpleList("RNAKeySortedDataList", list(...))
+  .Defunct(msg="the XKeySortedDataList class and subclasses are defunct")
 }
 AAKeySortedDataList <- function(...)
 {
-  .Deprecated(msg="the XKeySortedDataList class and subclasses are deprecated")
-  IRanges:::newSimpleList("AAKeySortedDataList", list(...))
+  .Defunct(msg="the XKeySortedDataList class and subclasses are defunct")
 }
 

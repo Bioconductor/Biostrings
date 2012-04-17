@@ -12,10 +12,10 @@
 Note that the object returned by \code{readFASTA} or passed to
 \code{writeFASTA} is a standard list. For faster and more memory
 efficient alternatives that return/accept an \link{XStringSet} object,
-see the \code{\link{read.DNAStringSet}} function and family.
+see the \code{\link{readDNAStringSet}} function and family.
 
-WARNING: \code{readFASTA} and \code{writeFASTA} are now deprecated
-in favor of \code{\link{read.DNAStringSet}} and \code{\link{write.XStringSet}}.
+WARNING: \code{readFASTA} and \code{writeFASTA} are now defunct
+in favor of \code{\link{readDNAStringSet}} and \code{\link{writeXStringSet}}.
 }
 \usage{
 readFASTA(file, checkComments=TRUE, strip.descs=TRUE)
@@ -89,9 +89,9 @@ writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
 \author{R. Gentleman, H. Pages. Improvements to writeFASTA by Kasper D. Hansen}
 
 \seealso{
-  \code{\link{read.DNAStringSet}},
+  \code{\link{readDNAStringSet}},
   \code{\link{fasta.info}},
-  \code{\link{write.XStringSet}},
+  \code{\link{writeXStringSet}},
   \code{\link{read.table}},
   \code{\link{scan}},
   \code{\link{write.table}},
@@ -99,6 +99,7 @@ writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
 }
 
 \examples{
+\dontrun{
   f1 <- system.file("extdata", "someORF.fa", package="Biostrings")
   ff <- readFASTA(f1, strip.descs=TRUE)
   desc <- sapply(ff, function(x) x$desc)
@@ -117,6 +118,7 @@ writeFASTA(x, file="", desc=NULL, append=FALSE, width=80)
   ## Write a genome to a FASTA file:
   library(BSgenome.Celegans.UCSC.ce2)
   writeFASTA(Celegans, file=temp_file, desc=seqnames(Celegans))
+}
 }
 
 \keyword{utilities}

@@ -63,19 +63,18 @@ functions to read clustaW, Phylip and Stolkholm data formats.
 <<objectCreation>>=
 library(Biostrings)
 origMAlign <-
-  read.DNAMultipleAlignment(filepath =
-                            system.file("extdata",
-                                        "msx2_mRNA.aln",
-                                        package="Biostrings"),
-                            format="clustal")
+  readDNAMultipleAlignment(filepath =
+                           system.file("extdata",
+                                       "msx2_mRNA.aln",
+                                       package="Biostrings"),
+                           format="clustal")
 
 phylipMAlign <-
-  read.AAMultipleAlignment(filepath =
-                           system.file("extdata",
-                                       "Phylip.txt",
-                                       package="Biostrings"),
-                           format="phylip")
-
+  readAAMultipleAlignment(filepath =
+                          system.file("extdata",
+                                      "Phylip.txt",
+                                      package="Biostrings"),
+                          format="phylip")
 @
 
 Rows can be renamed with \Rfunction{rownames}.
@@ -302,7 +301,7 @@ it out as a fasta file like so:
 
 <<fastaExample, eval=FALSE>>=
 DNAStr = as(origMAlign, "DNAStringSet")
-write.XStringSet(DNAStr, file="myFile.fa")
+writeXStringSet(DNAStr, file="myFile.fa")
 @ 
 
 One other format that is of interest is the Phylip format.  The Phylip

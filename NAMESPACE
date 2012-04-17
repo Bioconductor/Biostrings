@@ -32,12 +32,10 @@ import(IRanges)
 ###   XString-class.R
 ###   XStringSet-class.R
 ###   XStringViews-class.R
-###   XStringViews-constructor.R
 ###   MaskedXString-class.R
 ###   XStringSetList-class.R
 ###   XKeySortedData-class.R
 ###   XKeySortedDataList-class.R
-###   WCP-class.R
 ###   xscat.R
 
 exportClasses(
@@ -49,8 +47,7 @@ exportClasses(
     XKeySortedData, BKeySortedData, DNAKeySortedData,
     RNAKeySortedData, AAKeySortedData,
     XKeySortedDataList, BKeySortedDataList, DNAKeySortedDataList,
-    RNAKeySortedDataList, AAKeySortedDataList,
-    WCP, B_WCP, DNA_WCP, RNA_WCP, AA_WCP
+    RNAKeySortedDataList, AAKeySortedDataList
 )
 
 export(
@@ -70,9 +67,6 @@ export(
 
     ## XStringSet-class.R:
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
-
-    ## XStringViews-constructor.R:
-    XStringViews,
 
     ## MaskedXString-class.R:
     unmasked,
@@ -132,10 +126,10 @@ export(
     readFASTA, writeFASTA,
 
     ## XStringSet-io.R:
-    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
+    readBStringSet, readDNAStringSet, readRNAStringSet, readAAStringSet,
     fasta.info, fastq.geometry,
-    write.XStringSet,
-    save.XStringSet,
+    writeXStringSet,
+    saveXStringSet,
 
     ## letter.R:
     letter,
@@ -174,7 +168,12 @@ export(
     injectHardMask,
 
     ## misc.R:
-    N50
+    N50,
+
+    ## Old stuff (Defunct or Deprecated):
+    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
+    write.XStringSet,
+    save.XStringSet
 )
 
 exportMethods(
@@ -214,7 +213,6 @@ exportMethods(
 ###   trimLRPatterns.R
 ###   matchProbePair.R
 ###   matchPWM.R
-###   matchWCP.R
 ###   findPalindromes.R
 ###   PDict-class.R
 ###   matchPDict.R
@@ -261,9 +259,6 @@ export(
     maxWeights, minWeights, maxScore, minScore, unitScale,
     PWM, PWMscoreStartingAt, matchPWM, countPWM,
 
-    ## matchWCP.R
-    WCPscoreStartingAt, matchWCP, countWCP,
-
     ## findPalindromes.R
     findPalindromes, findComplementedPalindromes,
     palindromeArmLength, complementedPalindromeArmLength,
@@ -290,7 +285,6 @@ exportMethods(
     matchProbePair,
     maxWeights, minWeights, maxScore, minScore,
     PWM, matchPWM, countPWM,
-    matchWCP, countWCP,
     findPalindromes, findComplementedPalindromes,
     palindromeArmLength, complementedPalindromeArmLength,
     palindromeLeftArm, complementedPalindromeLeftArm,
@@ -384,15 +378,18 @@ export(
     colmask, "colmask<-",
     maskGaps,
     maskednrow, maskedncol, maskeddim,
-    read.DNAMultipleAlignment,
-    read.RNAMultipleAlignment,
-    read.AAMultipleAlignment,
+    readDNAMultipleAlignment,
+    readRNAMultipleAlignment,
+    readAAMultipleAlignment,
     consensusViews,
     write.phylip,
     detail,
 
     ## Old stuff (Defunct or Deprecated):
-    needwunsQS
+    needwunsQS,
+    read.DNAMultipleAlignment,
+    read.RNAMultipleAlignment,
+    read.AAMultipleAlignment
 )
 
 exportMethods(

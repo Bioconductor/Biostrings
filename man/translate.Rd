@@ -115,7 +115,7 @@ rna2dna(x)
 
 \examples{
   file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  x <- read.DNAStringSet(file)
+  x <- readDNAStringSet(file)
   x
 
   ## The first and last 1000 nucleotides are not part of the ORFs:

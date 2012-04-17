@@ -150,8 +150,8 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "read.BStringSet", "read.DNAStringSet", "read.RNAStringSet" and
-### "read.AAStringSet" functions.
+### The readBStringSet(), readDNAStringSet(), readRNAStringSet(), and
+### readAAStringSet() functions.
 ###
 
 .read.XStringSet <- function(filepath, format, nrec, skip, use.names, basetype)
@@ -175,25 +175,25 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
     )
 }
 
-read.BStringSet <- function(filepath, format="fasta",
-                            nrec=-1L, skip=0L, use.names=TRUE)
+readBStringSet <- function(filepath, format="fasta",
+                           nrec=-1L, skip=0L, use.names=TRUE)
     .read.XStringSet(filepath, format, nrec, skip, use.names, "B")
 
-read.DNAStringSet <- function(filepath, format="fasta",
-                              nrec=-1L, skip=0L, use.names=TRUE)
+readDNAStringSet <- function(filepath, format="fasta",
+                             nrec=-1L, skip=0L, use.names=TRUE)
     .read.XStringSet(filepath, format, nrec, skip, use.names, "DNA")
 
-read.RNAStringSet <- function(filepath, format="fasta",
-                              nrec=-1L, skip=0L, use.names=TRUE)
+readRNAStringSet <- function(filepath, format="fasta",
+                             nrec=-1L, skip=0L, use.names=TRUE)
     .read.XStringSet(filepath, format, nrec, skip, use.names, "RNA")
 
-read.AAStringSet <- function(filepath, format="fasta",
-                             nrec=-1L, skip=0L, use.names=TRUE)
+readAAStringSet <- function(filepath, format="fasta",
+                            nrec=-1L, skip=0L, use.names=TRUE)
     .read.XStringSet(filepath, format, nrec, skip, use.names, "AA")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### write.XStringSet()
+### writeXStringSet()
 ###
 
 .write.XStringSet.to.fasta <- function(x, efp_list, width=80L)
@@ -224,7 +224,7 @@ read.AAStringSet <- function(filepath, format="fasta",
           PACKAGE="Biostrings")
 }
 
-write.XStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
+writeXStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
@@ -252,8 +252,8 @@ write.XStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
 ### Serialization of XStringSet objects.
 ###
 
-save.XStringSet <- function(x, objname, dirpath=".",
-        save.dups=FALSE, verbose=TRUE)
+saveXStringSet <- function(x, objname, dirpath=".",
+                           save.dups=FALSE, verbose=TRUE)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
@@ -311,5 +311,43 @@ save.XStringSet <- function(x, objname, dirpath=".",
     save(list=objname, file=filepath)
     if (verbose)
         cat("OK\n")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+read.BStringSet <- function(...)
+{
+    .Deprecated("readBStringSet")
+    readBStringSet(...)
+}
+read.DNAStringSet <- function(...)
+{
+    .Deprecated("readDNAStringSet")
+    readDNAStringSet(...)
+}
+read.RNAStringSet <- function(...)
+{
+    .Deprecated("readRNAStringSet")
+    readRNAStringSet(...)
+}
+read.AAStringSet <- function(...)
+{
+    .Deprecated("readAAStringSet")
+    readAAStringSet(...)
+}
+
+write.XStringSet <- function(...)
+{
+    .Deprecated("writeXStringSet")
+    writeXStringSet(...)
+}
+
+save.XStringSet <- function(...)
+{
+    .Deprecated("saveXStringSet")
+    saveXStringSet(...)
 }
 

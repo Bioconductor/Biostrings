@@ -404,8 +404,8 @@ function(filepath, format)
            "stockholm" = .read.Stockholm(filepath),
            "clustal" = .read.ClustalAln(filepath),
            "phylip" = .read.PhylipAln(filepath),
-           read.DNAStringSet(filepath, format=format))
-    ##fasta uses read.DNAStringSet (default)
+           readDNAStringSet(filepath, format=format))
+    ##fasta uses readDNAStringSet (default)
     ##TODO: BUGs with stockholm??
 }
 
@@ -421,7 +421,7 @@ function(filepath, format)
 }
 
 
-read.DNAMultipleAlignment <-
+readDNAMultipleAlignment <-
 function(filepath, format)
 {
     DNAMultipleAlignment(.read.MultipleAlignment(filepath, format),
@@ -429,7 +429,7 @@ function(filepath, format)
                          colmask=.read.MultipleMask(filepath,format))
 }
 
-read.RNAMultipleAlignment <-
+readRNAMultipleAlignment <-
 function(filepath, format)
 {
     RNAMultipleAlignment(.read.MultipleAlignment(filepath, format),
@@ -437,7 +437,7 @@ function(filepath, format)
                          colmask=.read.MultipleMask(filepath,format))
 }
 
-read.AAMultipleAlignment <-
+readAAMultipleAlignment <-
 function(filepath, format)
 {
     AAMultipleAlignment(.read.MultipleAlignment(filepath, format),
@@ -856,3 +856,25 @@ setMethod("show", "MultipleAlignment",
         }
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+read.DNAMultipleAlignment <- function(...)
+{
+    .Deprecated("readDNAMultipleAlignment")
+    readDNAMultipleAlignment(...)
+}
+read.RNAMultipleAlignment <- function(...)
+{
+    .Deprecated("readRNAMultipleAlignment")
+    readRNAMultipleAlignment(...)
+}
+read.AAMultipleAlignment <- function(...)
+{
+    .Deprecated("readAAMultipleAlignment")
+    readAAMultipleAlignment(...)
+}
+

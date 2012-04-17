@@ -17,8 +17,6 @@
 \alias{AAKeySortedData-class}
 \alias{AAKeySortedData}
 
-\alias{[,XKeySortedData-method}
-\alias{[[,XKeySortedData-method}
 \alias{dataKey}
 \alias{dataKey,XKeySortedData-method}
 \alias{dataTable}
@@ -32,7 +30,7 @@
 \title{Data Dictionaries with XString-based Keys}
 
 \description{
-  WARNING: The XKeySortedData class and subclasses are deprecated.
+  WARNING: The XKeySortedData class and subclasses are defunct.
 
   The XKeySortedData class is a container for storing a dictionary with
   XString-based keys and DataFrame (an IRanges class) values.
