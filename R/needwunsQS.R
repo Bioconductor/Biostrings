@@ -28,7 +28,7 @@
     n1 <- length(es1)
     n2 <- length(es2)
     ## we are going to create matrices to hold score and traceback info
-    sco <- tra <- matrix(0, nr=n1+1, nc=n2+1)
+    sco <- tra <- matrix(0, nrow=n1+1, ncol=n2+1)
     sco[1,] <- -1*(0:n2)*gappen
     sco[,1] <- -1*(0:n1)*gappen
     for (i in seq_len(n1))

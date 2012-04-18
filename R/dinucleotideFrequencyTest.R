@@ -142,7 +142,7 @@ g.test <- function(x, y = NULL, correct="none",
     }
     STATISTIC <- G <- 2*g/q
     PARAMETER <- length(x) - 1
-    PVAL <- pchisq(STATISTIC, PARAMETER, lower = FALSE)
+    PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
   }
   names(STATISTIC) <- "Log likelihood ratio statistic (G)"
   names(PARAMETER) <- "X-squared df"
