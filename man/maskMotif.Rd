@@ -97,9 +97,9 @@ mask(x, start=NA, end=NA, pattern)
   ## Mask the N-blocks
   x1 <- maskMotif(x, "N")
   x1
-  as(x1, "XStringViews")
+  as(x1, "Views")
   gaps(x1)
-  as(gaps(x1), "XStringViews")
+  as(gaps(x1), "Views")
 
   ## Mask the AC-blocks 
   x2 <- maskMotif(x1, "AC")
@@ -122,15 +122,16 @@ mask(x, start=NA, end=NA, pattern)
   chrU <- maskMotif(chrU, "N")
   chrU
   alphabetFrequency(chrU)
-  as(chrU, "XStringViews")
-  as(gaps(chrU), "XStringViews")
+  as(chrU, "Views")
+  as(gaps(chrU), "Views")
 
-  mask2 <- Mask(mask.width=length(chrU), start=c(50000, 350000, 543900), width=25000)
+  mask2 <- Mask(mask.width=length(chrU),
+                start=c(50000, 350000, 543900), width=25000)
   names(mask2) <- "some ugly regions"
   masks(chrU) <- append(masks(chrU), mask2)
   chrU
-  as(chrU, "XStringViews")
-  as(gaps(chrU), "XStringViews")
+  as(chrU, "Views")
+  as(gaps(chrU), "Views")
 
   ## ---------------------------------------------------------------------
   ## EXAMPLE 4

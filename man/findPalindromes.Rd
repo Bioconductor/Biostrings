@@ -87,8 +87,8 @@ complementedPalindromeRightArm(x, max.mismatch=0, ...)
   }
   \item{x}{
     An \link{XString} object containing a 2-arm palindrome
-    or complemented palindrome, or an \link{XStringViews} object containing a set
-    of 2-arm palindromes or complemented palindromes.
+    or complemented palindrome, or an \link{XStringViews} object containing
+    a set of 2-arm palindromes or complemented palindromes.
   }
   \item{...}{
     Additional arguments to be passed to or from methods.

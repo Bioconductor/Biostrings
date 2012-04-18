@@ -30,8 +30,8 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
     The reverse probe.
   }
   \item{subject}{
-    A \code{\link{DNAString}} object (or an \code{\link{XStringViews}} object
-    with a \code{\link{DNAString}} subject) containing the target sequence.
+    A \link{DNAString} object (or an \link{XStringViews} object
+    with a \link{DNAString} subject) containing the target sequence.
   }
   \item{algorithm}{
     One of the following: \code{"auto"}, \code{"naive-exact"},
@@ -68,7 +68,7 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
   \code{\link{matchLRPatterns}},
   \code{\link{findPalindromes}},
   \code{\link{reverseComplement}},
-  \code{\link{XStringViews}}
+  \link{XStringViews-class}
 }
 
 \examples{

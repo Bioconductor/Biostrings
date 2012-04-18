@@ -189,7 +189,7 @@
   ## Using wildcards ("N") in the pattern on a genome containing N-blocks:
   library(BSgenome.Dmelanogaster.UCSC.dm3)
   chrX <- maskMotif(Dmelanogaster$chrX, "N")
-  as(chrX, "XStringViews") # 4 non masked regions
+  as(chrX, "Views") # 4 non masked regions
   matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
   ## Can also be achieved with no mask:
   masks(chrX) <- NULL

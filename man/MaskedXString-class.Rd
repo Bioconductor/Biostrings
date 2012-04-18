@@ -177,8 +177,8 @@
 
   \describe{
     \item{}{
-      \code{as(x, "XStringViews")}:
-      Turns \code{x} into an \link{XStringViews} object where the
+      \code{as(x, "Views")}:
+      Turns \code{x} into a \link[IRanges]{Views} object where the
       views are the unmasked regions of the original sequence
       ("unmasked" means not masked by at least one active mask).
     }
@@ -212,7 +212,7 @@
   \code{\link{reverseComplement}},
   \link{XString-class},
   \link[IRanges]{MaskCollection-class},
-  \link{XStringViews-class},
+  \link[IRanges]{Views-class},
   \link[IRanges]{Ranges-utils}
 }
 
@@ -247,8 +247,8 @@
   active(masks(x))["C"] <- TRUE
   x
 
-  ## Turn MaskedXString object into an XStringViews object:
-  as(x, "XStringViews")
+  ## Turn MaskedXString object into a Views object:
+  as(x, "Views")
 
   ## Drop the masks:
   masks(x) <- NULL

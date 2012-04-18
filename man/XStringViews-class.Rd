@@ -4,6 +4,7 @@
 % Classes:
 \alias{class:XStringViews}
 \alias{XStringViews-class}
+\alias{XStringViews}
 
 % Methods:
 \alias{Views,XString-method}
