@@ -98,7 +98,7 @@ exportMethods(
     "==", "!=", duplicated, unique, is.unsorted, order, sort, rank,
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
     narrow, subseq, threebands, "subseq<-", collapse, gaps,
-    Views, XStringViews,
+    Views,
     unmasked, maskedwidth, maskedratio, masks, "masks<-",
     partitioning
 )
