@@ -54,7 +54,6 @@
 \alias{rank,XStringSet-method}
 
 \alias{duplicated,XStringSet-method}
-\alias{unique,XStringSet-method}
 
 \alias{union,XStringSet,XStringSet-method}
 \alias{intersect,XStringSet,XStringSet-method}

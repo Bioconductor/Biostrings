@@ -595,12 +595,6 @@ setMethod("duplicated", "XStringSet",
         .Call2("XStringSet_duplicated", x, PACKAGE="Biostrings")
 )
 
-### Should be moved to IRanges and made the default method for Vector objects
-setMethod("unique", "XStringSet",
-    function(x, incomparables=FALSE, ...)
-        x[!duplicated(x, incomparables=incomparables)]
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### updateObject()
