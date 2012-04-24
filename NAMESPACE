@@ -31,6 +31,7 @@ import(IRanges)
 ###   xsbasetype.R
 ###   XString-class.R
 ###   XStringSet-class.R
+###   XStringSet-comparison.R
 ###   XStringViews-class.R
 ###   MaskedXString-class.R
 ###   XStringSetList-class.R
@@ -95,7 +96,7 @@ exportMethods(
     union, intersect, setdiff, setequal,
     "%in%", match,
     show,
-    "==", "!=", duplicated, is.unsorted, order, sort, rank,
+    compare, "==", "!=", match,
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
     narrow, subseq, threebands, "subseq<-", collapse, gaps,
     Views,

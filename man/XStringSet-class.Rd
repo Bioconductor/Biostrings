@@ -48,24 +48,10 @@
 
 \alias{show,XStringSet-method}
 
-\alias{is.unsorted,XStringSet-method}
-\alias{order,XStringSet-method}
-\alias{sort,XStringSet-method}
-\alias{rank,XStringSet-method}
-
-\alias{duplicated,XStringSet-method}
-
 \alias{union,XStringSet,XStringSet-method}
 \alias{intersect,XStringSet,XStringSet-method}
 \alias{setdiff,XStringSet,XStringSet-method}
 \alias{setequal,XStringSet,XStringSet-method}
-
-\alias{\%in\%,character,XStringSet-method}
-\alias{\%in\%,XString,XStringSet-method}
-\alias{\%in\%,XStringSet,XStringSet-method}
-\alias{match,character,XStringSet-method}
-\alias{match,XString,XStringSet-method}
-\alias{match,XStringSet,XStringSet-method}
 
 \alias{unlist,XStringSet-method}
 \alias{as.character,XStringSet-method}
@@ -265,49 +251,6 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   }
 }
 
-\section{Ordering and related methods}{
-  In the code snippets below,
-  \code{x} is an XStringSet object.
-
-  \describe{
-    \item{}{
-      \code{is.unsorted(x, strictly=FALSE)}:
-      Return a logical values specifying if \code{x} is unsorted. The
-      \code{strictly} argument takes logical value indicating if the check
-      should be for _strictly_ increasing values.
-    }
-    \item{}{
-      \code{order(x)}:
-      Return a permutation which rearranges \code{x} into ascending or
-      descending order.
-    }
-    \item{}{
-      \code{sort(x)}:
-      Sort \code{x} into ascending order (equivalent to \code{x[order(x)]}).
-    }
-    \item{}{
-      \code{rank(x)}:
-      Rank \code{x} in ascending order.
-    }
-  }
-}
-
-\section{Duplicated and unique methods}{
-  In the code snippets below,
-  \code{x} is an XStringSet object.
-
-  \describe{
-    \item{}{
-      \code{duplicated(x)}:
-      Return a logical vector whose elements denotes duplicates in \code{x}.
-    }
-    \item{}{
-      \code{unique(x)}:
-      Return an XStringSet containing the unique values in \code{x}.
-    }
-  }
-}
-
 \section{Set operations}{
   In the code snippets below,
   \code{x} and \code{y} are XStringSet objects
@@ -328,25 +271,6 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     \item{}{
      \code{setequal(x, y)}:
       Set equality of \code{x} to \code{y}.
-    }
-  }
-}
-
-\section{Identical value matching}{
-  In the code snippets below,
-  \code{x} is a character vector, XString, or XStringSet object and
-  \code{table} is an XStringSet object.
-
-  \describe{
-    \item{}{
-      \code{x \%in\% table}:
-      Returns a logical vector indicating which elements in \code{x} match
-      identically with an element in \code{table}.
-    }
-    \item{}{
-      \code{match(x, table, nomatch = NA_integer_, incomparables = NULL)}:
-      Returns an integer vector containing the first positions of an identical
-      match in \code{table} for the elements in \code{x}.
     }
   }
 }
@@ -386,6 +310,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 \author{H. Pages}
 
 \seealso{
+  \link{XStringSet-comparison},
   \link{XString-class},
   \link{XStringViews-class},
   \link{XStringSetList-class},

@@ -79,39 +79,6 @@ SEXP debug_RoSeqs_utils();
 
 RoSeqs _alloc_RoSeqs(int nelt);
 
-int _get_RoSeqs_is_unsorted(
-	const RoSeqs *seqs,
-	int strictly
-);
-
-void _get_RoSeqs_order(
-	const RoSeqs *seqs,
-	int *order,
-	int base1
-);
-
-void _get_RoSeqs_rank(
-	const RoSeqs *seqs,
-	const int *order,
-	int *rank
-);
-
-void _get_RoSeqs_duplicated(
-	const RoSeqs *seqs,
-	const int *order,
-	int *duplicated
-);
-
-void _get_RoSeqs_match(
-	const RoSeqs *seqs,
-	const RoSeqs *set,
-	int nomatch,
-	const int *seqs_order,
-	const int *set_order,
-	int *match_buffer,
-	int *match_pos
-);
-
 
 /* XString_class.c */
 
@@ -204,23 +171,6 @@ RoSeqs _new_RoSeqs_from_XStringSet(
 );
 
 SEXP XStringSet_unlist(SEXP x);
-
-SEXP XStringSet_is_unsorted(
-	SEXP x,
-	SEXP strictly
-);
-
-SEXP XStringSet_order(SEXP x);
-
-SEXP XStringSet_rank(SEXP x);
-
-SEXP XStringSet_duplicated(SEXP x);
-
-SEXP XStringSet_match(
-	SEXP x,
-	SEXP table,
-	SEXP nomatch
-);
 
 
 /* xscat.c */

@@ -9,7 +9,7 @@ Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Sequencing, Infrastructure,
 	DataImport, DataRepresentation
-Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.1.2), IRanges (>= 1.13.6)
+Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.1.2), IRanges (>= 1.15.7)
 Imports: graphics, methods, stats, utils, BiocGenerics, IRanges
 LinkingTo: IRanges
 Enhances: Rmpi
@@ -32,6 +32,7 @@ Collate: 00datacache.R
 	xsbasetype.R
 	XString-class.R
 	XStringSet-class.R
+	XStringSet-comparison.R
 	XStringViews-class.R
 	MaskedXString-class.R
 	XStringSetList-class.R
@@ -78,8 +79,8 @@ Collate: 00datacache.R
 	pairwiseAlignment.R
 	stringDist.R
 	needwunsQS.R
+	MultipleAlignment.R
 	matchprobes.R
 	debug.R
 	test.R
 	zzz.R
-        MultipleAlignment.R

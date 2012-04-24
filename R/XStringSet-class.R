@@ -421,58 +421,6 @@ setMethod("setequal", c("XStringSet", "XStringSet"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "%in%" and match methods.
-###
-
-setMethod("%in%", c("character", "XStringSet"),
-    function(x, table)
-        XStringSet(xsbasetype(table), x) %in% table
-)
-
-setMethod("%in%", c("XString", "XStringSet"),
-    function(x, table)
-        XStringSet(xsbasetype(table), x) %in% table
-)
-
-setMethod("%in%", c("XStringSet", "XStringSet"),
-    function(x, table)
-        (match(x, table, nomatch = 0L) > 0L)
-)
-
-setMethod("match", c("character", "XStringSet"),
-    function (x, table, nomatch = NA_integer_, incomparables = NULL)
-        match(XStringSet(xsbasetype(table), x), table, nomatch = nomatch,
-              incomparables = incomparables)
-)
-
-setMethod("match", c("XString", "XStringSet"),
-    function (x, table, nomatch = NA_integer_, incomparables = NULL)
-        match(XStringSet(xsbasetype(table), x), table, nomatch = nomatch,
-              incomparables = incomparables)
-)
-
-setMethod("match", c("XStringSet", "XStringSet"),
-    function (x, table, nomatch = NA_integer_, incomparables = NULL) {
-        if (xsbasetype(x) != xsbasetype(table))
-            stop("'x' and 'table' must be XStringSet objects of the same base type")
-        if (!is.null(incomparables))
-            stop("'incomparables' argument is not supported")
-        if (!isSingleNumberOrNA(nomatch))
-            stop("'nomatch' must be a single integer")
-        nomatch <- as.integer(nomatch)
-        .Call2("XStringSet_match", x, table, nomatch, PACKAGE = "Biostrings")
-    }
-)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Equality.
-###
-
-### WON'T START THIS UNLESS SOMEONE HAS A USE CASE...
-### Look at XStringViews-class.R for how to do this.
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other coercion methods.
 ###
 
@@ -529,70 +477,6 @@ setMethod("as.matrix", "XStringSet",
             rownames(m) <- names(x)
         m
     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Ordering and related methods.
-###
-
-setMethod("is.unsorted", "XStringSet",
-    function (x, na.rm = FALSE, strictly = FALSE) 
-    {
-        if (!is.logical(strictly) || length(strictly) != 1 || is.na(strictly))
-            stop("'strictly' must be TRUE or FALSE")
-        .Call2("XStringSet_is_unsorted", x, strictly, PACKAGE="Biostrings")
-    }
-)
-
-setMethod("order", "XStringSet",
-    function(..., na.last=TRUE, decreasing=FALSE)
-    {
-        if (!missing(na.last) && !isTRUE(na.last))
-            warning("argument 'na.last' is ignored when ordering XStringSet objects")
-        if (!isTRUEorFALSE(decreasing))
-            stop("'decreasing' must be TRUE or FALSE")
-        if (decreasing)
-            stop("'decreasing=TRUE' is not supported yet, sorry!")
-        args <- list(...)
-        ## All the arguments are guaranteed to be XStringSet objects
-        if (length(args) != 1)
-            return(callNextMethod())
-        .Call2("XStringSet_order", args[[1]], PACKAGE="Biostrings")
-    }
-)
-
-setMethod("sort", "XStringSet",
-    function(x, decreasing=FALSE, ...)
-    {
-        if (!isTRUEorFALSE(decreasing))
-            stop("'decreasing' must be TRUE or FALSE")
-        if (decreasing)
-            stop("'decreasing=TRUE' is not supported yet, sorry!")
-        x[order(x)]
-    }
-)
-
-setMethod("rank", "XStringSet",
-    function(x, na.last = TRUE,
-             ties.method = c("average", "first", "random", "max", "min"))
-    {
-         if (!missing(na.last) && !isTRUE(na.last))
-             warning("argument 'na.last' is ignored when ordering XStringSet objects")
-         if (!missing(ties.method) && ties.method != "min")
-             stop("only the 'min' option to the 'ties.method' argument is supported")
-         .Call2("XStringSet_rank", x, PACKAGE="Biostrings")
-     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Duplicated and related methods.
-###
-
-setMethod("duplicated", "XStringSet",
-    function(x, incomparables=FALSE, ...)
-        .Call2("XStringSet_duplicated", x, PACKAGE="Biostrings")
 )
 
 
