@@ -168,7 +168,7 @@ is.unsorted(fly_probes, strictly=TRUE)  # TRUE, because of duplicates
 is.unsorted(unique(fly_probes), strictly=TRUE)  # FALSE
 
 ## Nb of probes that are the reverse complement of another probe:
-nb1 <- sum(reverseComplement(fly_probes) %in% fly_probes)
+nb1 <- sum(reverseComplement(fly_probes) \%in\% fly_probes)
 stopifnot(identical(nb1, 455L))  # 455 probes
 
 ## Probes shared between drosophila2probe and hgu95av2probe:
