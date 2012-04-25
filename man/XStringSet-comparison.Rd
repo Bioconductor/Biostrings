@@ -32,22 +32,27 @@
   \link{DNAString}, \link{RNAString}, or \link{AAString} objects.
 
   For \link{DNAStringSet} and \link{RNAStringSet} objects, the letters in
-  \link{DNA_ALPHABET} and \link{RNA_ALPHABET} are assigned a predefined
-  integer value (with \code{as.integer(unlist(DNAStringSet(DNA_ALPHABET)))}
-  and \code{as.integer(unlist(RNAStringSet(RNA_ALPHABET)))} respectively),
-  and this is what defined the lexicographic order of DNA and RNA sequences.
+  the respective alphabets (i.e. \link{DNA_ALPHABET} and \link{RNA_ALPHABET})
+  are ordered based on the code assigned to each letter with:
+  \preformatted{
+  dna_codes <- as.integer(DNAString(paste(DNA_ALPHABET, collapse="")))
+  names(dna_codes) <- DNA_ALPHABET
+
+  rna_codes <- as.integer(RNAString(paste(RNA_ALPHABET, collapse="")))
+  names(rna_codes) <- RNA_ALPHABET
+  }
   Note that this order does NOT depend on the locale in use. Also note that
   comparing DNA sequences with RNA sequences is supported and in that case T
   and U are considered to be the same letter.
 
   For \link{BStringSet} and \link{AAStringSet} objects, the alphabetical
   order is defined by the C collation. Note that, at the moment,
-  \link{AAStringSet} objects are treated like \link{BStringSet} objects i.e.
-  the alphabetical order is NOT defined by the order of the letters in
-  \link{AA_ALPHABET}. This will change at some point.
+  \link{AAStringSet} objects are treated like \link{BStringSet} objects
+  i.e. the alphabetical order is NOT defined by the order of the letters
+  in \link{AA_ALPHABET}. This might change at some point.
 }
 
-\section{\code{compare} and related methods}{
+\section{\code{compare()} and related methods}{
   In the code snippets below,
   \code{x} and \code{y} are \link{XStringSet} objects.
 
@@ -73,7 +78,7 @@
   }
 }
 
-\section{\code{order} and related methods}{
+\section{\code{order()} and related methods}{
   In the code snippets below, \code{x} is an \link{XStringSet} object.
 
   \describe{
@@ -99,7 +104,7 @@
   }
 }
 
-\section{Duplicated and unique methods}{
+\section{\code{duplicated()} and \code{unique()}}{
   In the code snippets below, \code{x} is an \link{XStringSet} object.
 
   \describe{
@@ -114,7 +119,7 @@
   }
 }
 
-\section{Identical value matching}{
+\section{\code{match()} and \code{\%in\%}}{
   In the code snippets below,
   \code{x} and \code{table} are \link{XStringSet} objects.
 
@@ -135,7 +140,16 @@
 \author{H. Pages}
 
 \seealso{
-  \link{XStringSet-class}
+  \link{XStringSet-class},
+  \code{\link{==}},
+  \code{\link{is.unsorted}},
+  \code{\link{order}},
+  \code{\link{rank}},
+  \code{\link{sort}},
+  \code{\link{duplicated}},
+  \code{\link{unique}},
+  \code{\link{match}},
+  \code{\link{\%in\%}}
 }
 
 \examples{
