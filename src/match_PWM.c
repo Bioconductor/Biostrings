@@ -25,8 +25,7 @@ static double compute_pwm_score(const double *pwm, int pwm_ncol,
 	S += pwm_shift;
 	nS -= pwm_shift;
 	if (pwm_shift < 0 || nS < pwm_ncol)
-		error("trying to compute the score from an invalid ",
-                      "starting position");
+		error("'starting.at' contains invalid values");
 	score = 0.00;
 	for (i = 0; i < pwm_ncol; i++, pwm += 4, S++) {
 		rowoffset = byte2offset[(unsigned char) *S];

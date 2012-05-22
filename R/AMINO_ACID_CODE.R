@@ -22,7 +22,15 @@ AMINO_ACID_CODE <- c(
     T="Thr", # Threonine
     W="Trp", # Tryptophan
     Y="Tyr", # Tyrosine
-    V="Val"  # Valine
+    V="Val", # Valine
+
+  ## Not coded for directly in the genetic code:
+    U="Sec", # Selenocysteine
+
+  ## Ambiguities:
+    B="Asx", # Asparagine or Aspartic Acid
+    Z="Glx", # Glutamine or Glutamic acid
+    X="Xaa"  # Any amino acid
 )
 
 ### Amino Acid alphabet ("*" is a translation stop)
