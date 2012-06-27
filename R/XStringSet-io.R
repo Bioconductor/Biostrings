@@ -113,8 +113,9 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE)
     nrec <- .normargNrec(nrec)
     skip <- .normargSkip(skip)
     use.names <- normargUseNames(use.names)
+    lkup <- NULL
     .Call2("fasta_info",
-          efp_list, nrec, skip, use.names,
+          efp_list, nrec, skip, use.names, lkup,
           PACKAGE="Biostrings")
 }
 

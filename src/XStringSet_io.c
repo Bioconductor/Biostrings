@@ -40,6 +40,8 @@ static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
  */
 
 typedef struct fasta_loader {
+	const int *lkup;
+	int lkup_length;
 	void (*load_desc_line)(struct fasta_loader *loader,
 			       const cachedCharSeq *dataline);
 	void (*load_empty_seq)(struct fasta_loader *loader);
@@ -104,11 +106,17 @@ static FASTAINFO_loaderExt new_FASTAINFO_loaderExt()
 	return loader_ext;
 }
 
-static FASTAloader new_FASTAINFO_loader(int load_descs,
+static FASTAloader new_FASTAINFO_loader(SEXP lkup, int load_descs,
 		FASTAINFO_loaderExt *loader_ext)
 {
 	FASTAloader loader;
 
+	if (lkup == R_NilValue) {
+		loader.lkup = NULL;
+	} else {
+		loader.lkup = INTEGER(lkup);
+		loader.lkup_length = LENGTH(lkup);
+	}
 	loader.load_desc_line = load_descs ? &FASTAINFO_load_desc_line : NULL;
 	loader.load_empty_seq = &FASTAINFO_load_empty_seq;
 	loader.load_seq_line = &FASTAINFO_load_seq_line;
@@ -124,8 +132,6 @@ static FASTAloader new_FASTAINFO_loader(int load_descs,
 typedef struct fasta_loader_ext {
 	cachedXVectorList cached_ans;
 	cachedCharSeq cached_ans_elt;
-	const int *lkup;
-	int lkup_length;
 } FASTA_loaderExt;
 
 static void FASTA_load_empty_seq(FASTAloader *loader)
@@ -146,39 +152,35 @@ static void FASTA_load_seq_line(FASTAloader *loader,
 {
 	FASTA_loaderExt *loader_ext;
 	cachedCharSeq *cached_ans_elt;
-	int i1;
 
 	loader_ext = loader->ext;
 	cached_ans_elt = &(loader_ext->cached_ans_elt);
-	i1 = cached_ans_elt->length;
-	cached_ans_elt->length += dataline->length;
 	/* cached_ans_elt->seq is a const char * so we need to cast it to
 	   char * before we can write to it */
-	Ocopy_bytes_to_i1i2_with_lkup(i1, cached_ans_elt->length - 1,
-		(char *) cached_ans_elt->seq, cached_ans_elt->length,
-		dataline->seq, dataline->length,
-		loader_ext->lkup, loader_ext->lkup_length);
+	memcpy((char *) cached_ans_elt->seq + cached_ans_elt->length,
+	       dataline->seq, dataline->length * sizeof(char));
+	cached_ans_elt->length += dataline->length;
 	return;
 }
 
-static FASTA_loaderExt new_FASTA_loaderExt(SEXP ans, SEXP lkup)
+static FASTA_loaderExt new_FASTA_loaderExt(SEXP ans)
 {
 	FASTA_loaderExt loader_ext;
 
 	loader_ext.cached_ans = cache_XVectorList(ans);
-	if (lkup == R_NilValue) {
-		loader_ext.lkup = NULL;
-	} else {
-		loader_ext.lkup = INTEGER(lkup);
-		loader_ext.lkup_length = LENGTH(lkup);
-	}
 	return loader_ext;
 }
 
-static FASTAloader new_FASTA_loader(FASTA_loaderExt *loader_ext)
+static FASTAloader new_FASTA_loader(SEXP lkup, FASTA_loaderExt *loader_ext)
 {
 	FASTAloader loader;
 
+	if (lkup == R_NilValue) {
+		loader.lkup = NULL;
+	} else {
+		loader.lkup = INTEGER(lkup);
+		loader.lkup_length = LENGTH(lkup);
+	}
 	loader.load_desc_line = NULL;
 	loader.load_empty_seq = &FASTA_load_empty_seq;
 	loader.load_seq_line = &FASTA_load_seq_line;
@@ -187,6 +189,26 @@ static FASTAloader new_FASTA_loader(FASTA_loaderExt *loader_ext)
 	return loader;
 }
 
+static int translate(cachedCharSeq *dataline, const int *lkup, int lkup_length)
+{
+	char *dest;
+	int nbinvalid, i, j, key, val;
+
+	/* dataline->seq is a const char * so we need to cast it to
+	   char * before we can write to it */
+	dest = (char *) dataline->seq;
+	nbinvalid = j = 0;
+	for (i = 0; i < dataline->length; i++) {
+		key = (unsigned char) dataline->seq[i];
+		if (key >= lkup_length || (val = lkup[key]) == NA_INTEGER) {
+			nbinvalid++;
+			continue;
+		}
+		dest[j++] = val;
+	}
+	dataline->length = j;
+	return nbinvalid;
+}
 
 /*
  * Ignore empty lines and lines starting with 'FASTA_comment_markup' like in
@@ -246,14 +268,18 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 				 FASTA_desc_markup, lineno);
 			return errmsg_buf;
 		}
-		if (load_record && loader->load_seq_line != NULL)
+		if (load_record && loader->load_seq_line != NULL) {
+			if (loader->lkup != NULL)
+				translate(&dataline,
+					  loader->lkup, loader->lkup_length);
 			loader->load_seq_line(loader, &dataline);
+		}
 	}
 	return NULL;
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names)
+SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 {
 	int nrec0, skip0, load_descs, i, recno;
 	FASTAINFO_loaderExt loader_ext;
@@ -266,7 +292,7 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names)
 	skip0 = INTEGER(skip)[0];
 	load_descs = LOGICAL(use_names)[0];
 	loader_ext = new_FASTAINFO_loaderExt();
-	loader = new_FASTAINFO_loader(load_descs, &loader_ext);
+	loader = new_FASTAINFO_loader(lkup, load_descs, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
@@ -302,7 +328,7 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
-	PROTECT(ans_width = fasta_info(efp_list, nrec, skip, use_names));
+	PROTECT(ans_width = fasta_info(efp_list, nrec, skip, use_names, lkup));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
 	element_type = CHAR(STRING_ELT(elementType, 0));
@@ -316,8 +342,8 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
 	_set_XStringSet_names(ans, ans_names);
-	loader_ext = new_FASTA_loaderExt(ans, lkup);
-	loader = new_FASTA_loader(&loader_ext);
+	loader_ext = new_FASTA_loaderExt(ans);
+	loader = new_FASTA_loader(lkup, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));

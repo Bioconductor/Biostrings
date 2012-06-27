@@ -188,7 +188,8 @@ SEXP fasta_info(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
-	SEXP use_names
+	SEXP use_names,
+	SEXP lkup
 );
 
 SEXP read_fasta_in_XStringSet(
