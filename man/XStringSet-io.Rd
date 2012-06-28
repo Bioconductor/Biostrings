@@ -41,8 +41,8 @@ readAAStringSet(filepath, format="fasta",
                 nrec=-1L, skip=0L, use.names=TRUE)
 
 ## Extract basic information about FASTA (or FASTQ) files
-## without loading them:
-fasta.info(filepath, nrec=-1L, skip=0L, use.names=TRUE)
+## without actually loading the sequence data:
+fasta.info(filepath, nrec=-1L, skip=0L, use.names=TRUE, seqtype="B")
 fastq.geometry(filepath, nrec=-1L, skip=0L)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
@@ -77,6 +77,17 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     the record sequence ids.
     Dropping the names can help reducing memory footprint e.g. for
     a FASTQ file containing millions of reads.
+  }
+  \item{seqtype}{
+    A single string specifying the type of sequences contained in the
+    FASTA file(s). Supported types: \code{"B"} for anything (i.e. any
+    letter is a valid one-letter sequence code), \code{"DNA"} for DNA
+    sequences (i.e. only letters in \code{DNA_ALPHABET} are valid one-letter
+    sequence codes), \code{"RNA"} for RNA sequences (i.e. only letters
+    in \code{RNA_ALPHABET} are valid one-letter sequence codes), and
+    \code{"AA"} for Amino Acid sequences (currently treated as \code{"B"}
+    but this will change in the near future i.e. only letters in
+    \code{AA_ALPHABET} will be valid one-letter sequence codes).
   }
   \item{x}{
     For \code{writeXStringSet}, the object to write to \code{file}.
@@ -132,7 +143,10 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
   The \code{fasta.info} utility returns an integer vector with one element
   per FASTA record in the input files. Each element is the length of the
-  sequence found in the corresponding record.
+  sequence found in the corresponding record, that is, the number of
+  valid one-letter sequence codes in the record. See description of the
+  \code{seqtype} argument above for how to control the set of valid
+  one-letter sequence codes.
 
   The \code{fastq.geometry} utility returns an integer vector describing
   the "geometry" of the FASTQ files i.e. a vector of length 2 where the
@@ -168,7 +182,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   ## A. READ/WRITE FASTA FILES
   ## ---------------------------------------------------------------------
   filepath <- system.file("extdata", "someORF.fa", package="Biostrings")
-  fasta.info(filepath)
+  fasta.info(filepath, seqtype="DNA")
   x <- readDNAStringSet(filepath)
   x
   out1 <- tempfile()

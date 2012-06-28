@@ -214,7 +214,7 @@ static int translate(cachedCharSeq *dataline, const int *lkup, int lkup_length)
  * Ignore empty lines and lines starting with 'FASTA_comment_markup' like in
  * the original Pearson FASTA format.
  */
-static const char *parse_FASTA_file(FILE *stream, int *recno,
+static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 		int nrec, int skip, FASTAloader *loader)
 {
 	int FASTA_comment_markup_length, FASTA_desc_markup_length,
@@ -270,8 +270,9 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 		}
 		if (load_record && loader->load_seq_line != NULL) {
 			if (loader->lkup != NULL)
-				translate(&dataline,
-					  loader->lkup, loader->lkup_length);
+				*ninvalid += translate(&dataline,
+						       loader->lkup,
+						       loader->lkup_length);
 			loader->load_seq_line(loader, &dataline);
 		}
 	}
@@ -281,7 +282,7 @@ static const char *parse_FASTA_file(FILE *stream, int *recno,
 /* --- .Call ENTRY POINT --- */
 SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 {
-	int nrec0, skip0, load_descs, i, recno;
+	int nrec0, skip0, load_descs, i, recno, ninvalid;
 	FASTAINFO_loaderExt loader_ext;
 	FASTAloader loader;
 	FILE *stream;
@@ -296,12 +297,18 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
-		errmsg = parse_FASTA_file(stream, &recno,
-				nrec0, skip0, &loader);
+		ninvalid = 0;
+		errmsg = parse_FASTA_file(stream, &recno, &ninvalid,
+					  nrec0, skip0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
 			      CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
 			      errmsg_buf);
+		if (ninvalid != 0)
+			warning("reading FASTA file %s: ignored %d "
+				"invalid one-letter sequence codes",
+				CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
+				ninvalid);
 	}
 	PROTECT(ans = new_INTEGER_from_IntAE(&(loader_ext.seqlengths_buf)));
 	if (load_descs) {
@@ -318,7 +325,7 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
-	int nrec0, skip0, i, recno;
+	int nrec0, skip0, i, recno, ninvalid;
 	SEXP ans_width, ans_names, ans;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
@@ -344,11 +351,12 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	_set_XStringSet_names(ans, ans_names);
 	loader_ext = new_FASTA_loaderExt(ans);
 	loader = new_FASTA_loader(lkup, &loader_ext);
-	recno = 0;
+	recno = ninvalid = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
-		parse_FASTA_file(stream, &recno, nrec0, skip0, &loader);
+		parse_FASTA_file(stream, &recno, &ninvalid,
+				 nrec0, skip0, &loader);
 	}
 	UNPROTECT(3);
 	return ans;
