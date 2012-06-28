@@ -68,7 +68,7 @@ SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append);
 SEXP ExternalFilePtr_close(SEXP x);
 
 int delete_trailing_LF_or_CRLF(
-	const char *linebuf,
+	const char *buf,
 	int size
 );
 

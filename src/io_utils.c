@@ -174,22 +174,22 @@ SEXP ExternalFilePtr_close(SEXP e)
  */
 
 /*
- * Doesn't actually delete anything but returns the size the 'linebuf' char
+ * Doesn't actually delete anything but returns the size the 'buf' char
  * array would have after deletion of the LF ("\n") or CRLF ("\r\n") chars
  * located at its end.
- * If 'size' is -1, then 'linebuf' must be a C string (i.e. null-terminated).
+ * If 'size' is -1, then 'buf' must be a C string (i.e. null-terminated).
  */
-int delete_trailing_LF_or_CRLF(const char *linebuf, int size)
+int delete_trailing_LF_or_CRLF(const char *buf, int size)
 {
 	if (size == -1)
-		size = strlen(linebuf);
+		size = strlen(buf);
 	if (size == 0)
 		return 0;
-	if (linebuf[--size] != '\n')
+	if (buf[--size] != '\n')
 		return ++size;
 	if (size == 0)
 		return 0;
-	if (linebuf[--size] != '\r')
+	if (buf[--size] != '\r')
 		return ++size;
 	return size;
 }
