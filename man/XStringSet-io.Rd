@@ -80,14 +80,22 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   }
   \item{seqtype}{
     A single string specifying the type of sequences contained in the
-    FASTA file(s). Supported types: \code{"B"} for anything (i.e. any
-    letter is a valid one-letter sequence code), \code{"DNA"} for DNA
-    sequences (i.e. only letters in \code{DNA_ALPHABET} are valid one-letter
-    sequence codes), \code{"RNA"} for RNA sequences (i.e. only letters
-    in \code{RNA_ALPHABET} are valid one-letter sequence codes), and
-    \code{"AA"} for Amino Acid sequences (currently treated as \code{"B"}
-    but this will change in the near future i.e. only letters in
-    \code{AA_ALPHABET} will be valid one-letter sequence codes).
+    FASTA file(s). Supported sequence types:
+    \itemize{
+      \item \code{"B"} for anything i.e. any letter is a valid one-letter
+            sequence code.
+      \item \code{"DNA"} for DNA sequences i.e. only letters in
+            \code{\link{DNA_ALPHABET}} (case ignored) are valid
+            one-letter sequence codes.
+      \item \code{"RNA"} for RNA sequences i.e. only letters in
+            \code{\link{RNA_ALPHABET}} (case ignored) are valid
+            one-letter sequence codes.
+      \item \code{"AA"} for Amino Acid sequences. Currently treated as
+            \code{"B"} but this will change in the near future i.e. only
+            letters in \code{\link{AA_ALPHABET}} (case ignored) will be
+            valid one-letter sequence codes.
+    }
+    Invalid one-letter sequence codes are ignored with a warning.
   }
   \item{x}{
     For \code{writeXStringSet}, the object to write to \code{file}.
@@ -167,9 +175,11 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   \code{save}. Most of the times this leads to a much reduced size on disk.
 }
 
+\references{
+  \url{http://en.wikipedia.org/wiki/FASTA_format}
+}
+
 \seealso{
-  \code{\link{readFASTA}},
-  \code{\link{writeFASTA}},
   \link{XStringSet-class},
   \link{BString-class},
   \link{DNAString-class},
@@ -178,49 +188,49 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. READ/WRITE FASTA FILES
-  ## ---------------------------------------------------------------------
-  filepath <- system.file("extdata", "someORF.fa", package="Biostrings")
-  fasta.info(filepath, seqtype="DNA")
-  x <- readDNAStringSet(filepath)
-  x
-  out1 <- tempfile()
-  writeXStringSet(x, out1)
+## ---------------------------------------------------------------------
+## A. READ/WRITE FASTA FILES
+## ---------------------------------------------------------------------
+filepath <- system.file("extdata", "someORF.fa", package="Biostrings")
+fasta.info(filepath, seqtype="DNA")
+x <- readDNAStringSet(filepath)
+x
+out1 <- tempfile()
+writeXStringSet(x, out1)
 
-  ## ---------------------------------------------------------------------
-  ## B. READ/WRITE FASTQ FILES
-  ## ---------------------------------------------------------------------
-  filepath <- system.file("extdata", "s_1_sequence.txt",
-                          package="Biostrings")
-  fastq.geometry(filepath)
-  readDNAStringSet(filepath, format="fastq")
+## ---------------------------------------------------------------------
+## B. READ/WRITE FASTQ FILES
+## ---------------------------------------------------------------------
+filepath <- system.file("extdata", "s_1_sequence.txt",
+                        package="Biostrings")
+fastq.geometry(filepath)
+readDNAStringSet(filepath, format="fastq")
 
-  library(BSgenome.Celegans.UCSC.ce2)
-  ## Create a "sliding window" on chr I:
-  sw_start <- seq.int(1, length(Celegans$chrI)-50, by=50)
-  sw <- Views(Celegans$chrI, start=sw_start, width=10)
-  my_fake_shortreads <- as(sw, "XStringSet")
-  my_fake_ids <- sprintf("ID\%06d",  seq_len(length(my_fake_shortreads)))
-  names(my_fake_shortreads) <- my_fake_ids
-  my_fake_shortreads
+library(BSgenome.Celegans.UCSC.ce2)
+## Create a "sliding window" on chr I:
+sw_start <- seq.int(1, length(Celegans$chrI)-50, by=50)
+sw <- Views(Celegans$chrI, start=sw_start, width=10)
+my_fake_shortreads <- as(sw, "XStringSet")
+my_fake_ids <- sprintf("ID\%06d",  seq_len(length(my_fake_shortreads)))
+names(my_fake_shortreads) <- my_fake_ids
+my_fake_shortreads
 
-  ## Fake quality ';' will be assigned to each base in 'my_fake_shortreads':
-  out2 <- tempfile()
-  writeXStringSet(my_fake_shortreads, out2, format="fastq")
+## Fake quality ';' will be assigned to each base in 'my_fake_shortreads':
+out2 <- tempfile()
+writeXStringSet(my_fake_shortreads, out2, format="fastq")
 
-  ## Passing qualities thru the 'qualities' argument:
-  my_fake_quals <- rep.int(BStringSet("DCBA@?>=<;"),
-                           length(my_fake_shortreads))
-  my_fake_quals
-  out3 <- tempfile()
-  writeXStringSet(my_fake_shortreads, out3, format="fastq",
-                  qualities=my_fake_quals)
+## Passing qualities thru the 'qualities' argument:
+my_fake_quals <- rep.int(BStringSet("DCBA@?>=<;"),
+                         length(my_fake_shortreads))
+my_fake_quals
+out3 <- tempfile()
+writeXStringSet(my_fake_shortreads, out3, format="fastq",
+                qualities=my_fake_quals)
 
-  ## ---------------------------------------------------------------------
-  ## C. SERIALIZATION
-  ## ---------------------------------------------------------------------
-  saveXStringSet(my_fake_shortreads, "my_fake_shortreads", dirpath=tempdir())
+## ---------------------------------------------------------------------
+## C. SERIALIZATION
+## ---------------------------------------------------------------------
+saveXStringSet(my_fake_shortreads, "my_fake_shortreads", dirpath=tempdir())
 }
 
 \keyword{utilities}
