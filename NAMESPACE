@@ -28,7 +28,7 @@ import(IRanges)
 ###   AMINO_ACID_CODE.R
 ###   GENETIC_CODE.R
 ###   XStringCodec-class.R
-###   xsbasetype.R
+###   seqtype.R
 ###   XString-class.R
 ###   XStringSet-class.R
 ###   XStringSet-comparison.R
@@ -60,8 +60,8 @@ export(
     ## XStringCodec-class.R:
     DNA_BASES, RNA_BASES, DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
 
-    ## xsbasetype.R:
-    xsbasetype, "xsbasetype<-", get_xsbasetypes_conversion_lookup, alphabet,
+    ## seqtype.R:
+    seqtype, "seqtype<-", get_seqtype_conversion_lookup, alphabet,
 
     ## XString-class.R:
     BString, DNAString, RNAString, AAString,
@@ -90,7 +90,7 @@ export(
 exportMethods(
     length,
     nchar, width,
-    xsbasetype, "xsbasetype<-",
+    seqtype, "seqtype<-",
     updateObject,
     names, "names<-", "[", "[[", rep, append,
     union, intersect, setdiff, setequal,

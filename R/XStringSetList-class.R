@@ -74,70 +74,70 @@ unsafe.newXStringSetList <- function(class, unlistData, partitioning)
 }
 
 setGeneric("XStringSetList", signature="x",
-    function(basetype, x, use.names=TRUE, ...)
+    function(seqtype, x, use.names=TRUE, ...)
         standardGeneric("XStringSetList")
 )
 
-.newCompressedList <- function(basetype, x, use.names)
+.newCompressedList <- function(seqtype, x, use.names)
 {
     if (use.names)
         names <- names(x)
-    if (basetype == "DNA")
+    if (seqtype == "DNA")
         IRanges:::newCompressedList("DNAStringSetList", x, seq_len(length(x)), 
                                     names)
     else
-        warning("XStringSetList currently supports basetype = 'DNA' only")
+        warning("XStringSetList currently supports seqtype=\"DNA\" only")
 } 
 
-.makeListOfXStringSets <- function(basetype, x) 
+.makeListOfXStringSets <- function(seqtype, x) 
 {
-    if (basetype == "DNA")
+    if (seqtype == "DNA")
         lapply(x, as, "DNAStringSet")
     else
-        warning("XStringSetList currently supports basetype = 'DNA' only")
+        warning("XStringSetList currently supports seqtype=\"DNA\" only")
 }
 
 setMethod("XStringSetList", "list",
-    function(basetype, x, use.names=TRUE, ...)
+    function(seqtype, x, use.names=TRUE, ...)
     {
         ok <- sapply(x, is, "XStringSet")
         if (!all(ok))
-            x <- .makeListOfXStringSets(basetype, x)
-        .newCompressedList(basetype, x, use.names)
+            x <- .makeListOfXStringSets(seqtype, x)
+        .newCompressedList(seqtype, x, use.names)
     }
 )
 
 #setMethod("XStringSetList", "character",
-#    function(basetype, x, use.names=TRUE)
+#    function(seqtype, x, use.names=TRUE)
 #    {
-#        x <- .charToXStringSet(basetype, x, start=NA,
+#        x <- .charToXStringSet(seqtype, x, start=NA,
 #                                      width=NA, use.names=use.names)
-#        callGeneric(basetype, x, use.names)
+#        callGeneric(seqtype, x, use.names)
 #    }
 #)
 #
 #setMethod("XStringSetList", "XStringSet",
-#    function(basetype, x, use.names=TRUE)
+#    function(seqtype, x, use.names=TRUE)
 #    {
-#        .newCompressedList(basetype, x, use.names)
+#        .newCompressedList(seqtype, x, use.names)
 #    }
 #)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" methods.
+### The "seqtype" and "seqtype<-" methods.
 ###
 
-setMethod("xsbasetype", "XStringSetList", function(x) xsbasetype(unlist(x)))
+setMethod("seqtype", "XStringSetList", function(x) seqtype(unlist(x)))
 
 ### Downgrades 'x' to a B/DNA/RNA/AAStringSetList instance!
-setReplaceMethod("xsbasetype", "XStringSetList",
+setReplaceMethod("seqtype", "XStringSetList",
     function(x, value)
     {
-        ## could be done with 'xsbasetype(unlisted(x)) <- value'
+        ## could be done with 'seqtype(unlisted(x)) <- value'
         ## if `unlisted<-` was available
         ans_class <- paste(value, "StringSetList", sep="")
         ans_unlistData <- unlist(x)
-        xsbasetype(ans_unlistData) <- value
+        seqtype(ans_unlistData) <- value
         unsafe.newXStringSetList(ans_class, ans_unlistData, x@partitioning)
     }
 )
@@ -149,7 +149,7 @@ setReplaceMethod("xsbasetype", "XStringSetList",
 ### No "[" method for now.
 ###
 
-### Returns an XStringSet object of the same base type as 'x'.
+### Returns an XStringSet object of the same seqtype as 'x'.
 setMethod("[[", "XStringSetList",
     function(x, i, j, ...)
     {

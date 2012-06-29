@@ -1,53 +1,51 @@
 ### =========================================================================
-### The xsbasetype() generic & related functions
+### The seqtype() generic & related functions
 ### -------------------------------------------------------------------------
 ###
-### Most sequence containers in Biostrings have an "XString base type" that
+### Most sequence containers in Biostrings have a "sequence type" that
 ### indicates the nature of the sequence(s) that the container can store:
 ###
-###   XString   |                           |              |
-###   base type | description               | alphabet     | encoded
+###   sequence  |                           |              |
+###   type      | description               | alphabet     | encoded
 ###   ----------|---------------------------|--------------|--------
 ###   "B"       | general purpose string(s) | bytes 0-255  | no
 ###   "DNA"     | DNA sequence(s)           | DNA_ALPHABET | yes
 ###   "RNA"     | RNA sequence(s)           | RNA_ALPHABET | yes
 ###   "AA"      | amino acid sequence(s)    | AA_ALPHABET  | no
 ###
-### xsbasetype() returns that base type. For example 'xsbasetype(AAString())'
+### seqtype() returns that sequence type. For example 'seqtype(AAString())'
 ### returns "AA".
 ### Unless specified otherwise, things in this file are not exported.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" generics.
+### The "seqtype" and "seqtype<-" generics.
 ###
-### xsbasetype() and `xsbasetype<-`() have methods defined for the 4 basic
+### seqtype() and `seqtype<-`() have methods defined for the 4 basic
 ### string containers: XString (single sequence), XStringSet (multiple
 ### sequences), XStringViews (multiple sequences) and MaskedXString (single
 ### sequence).
 ###   
 
 ### Exported.
-setGeneric("xsbasetype",
-    function(x) standardGeneric("xsbasetype")
-)
+setGeneric("seqtype", function(x) standardGeneric("seqtype"))
 
 ### Exported.
-setGeneric("xsbasetype<-", signature="x",
-    function(x, value) standardGeneric("xsbasetype<-")
+setGeneric("seqtype<-", signature="x",
+    function(x, value) standardGeneric("seqtype<-")
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions for which the returned value depends on 'xsbasetype(x)',
+### Helper functions for which the returned value depends on 'seqtype(x)',
 ### not on what particular data are in 'x'. Not exported.
 ### 
 
-xsbaseclass <- function(x) paste(xsbasetype(x), "String", sep="")
+xsbaseclass <- function(x) paste(seqtype(x), "String", sep="")
 
 xscodes <- function(x, baseOnly=FALSE)
 {
-    switch(xsbasetype(x),
+    switch(seqtype(x),
         DNA=DNAcodes(baseOnly),
         RNA=RNAcodes(baseOnly),
         0:255
@@ -56,7 +54,7 @@ xscodes <- function(x, baseOnly=FALSE)
 
 xscodec <- function(x)
 {
-    switch(xsbasetype(x),
+    switch(seqtype(x),
         DNA=DNA_STRING_CODEC,
         RNA=RNA_STRING_CODEC,
         NULL
@@ -77,50 +75,50 @@ xs_dec_lkup <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some restrictions apply for converting from an XString base type to
-### another or for comparing XString objects of different base types. This is
-### due to the fact that different XString base types can use different
-### encodings for their data (or no encoding at all) or simply to the fact
-### that the conversion or comparison doesn't make sense from a biological
-### perspective.
+### Some restrictions apply for converting from a sequence type to another or
+### for comparing XString objects of different sequence types. This is
+### due to the fact that XString objects with different sequence types can use
+### different encodings for their sequence data (or no encoding at all) or
+### simply to the fact that the conversion or comparison doesn't make sense
+### from a biological perspective.
 ### The helper functions below are used internally (they are NOT exported) to
 ### determine those restrictions.
 ###
 
-compatible_xsbasetypes <- function(basetype1, basetype2)
+compatible_seqtypes <- function(seqtype1, seqtype2)
 {
-    if (basetype1 %in% c("DNA", "RNA"))
-        return(basetype2 != "AA")
-    if (basetype1 == "AA")
-        return(!(basetype2 %in% c("DNA", "RNA")))
+    if (seqtype1 %in% c("DNA", "RNA"))
+        return(seqtype2 != "AA")
+    if (seqtype1 == "AA")
+        return(!(seqtype2 %in% c("DNA", "RNA")))
     TRUE
 }
 
 ### Exported.
-get_xsbasetypes_conversion_lookup <- function(from_basetype, to_basetype)
+get_seqtype_conversion_lookup <- function(from_seqtype, to_seqtype)
 {
-    if (!compatible_xsbasetypes(from_basetype, to_basetype))
-        stop("incompatible XString base types \"",
-             from_basetype, "\" and \"", to_basetype, "\"")
-    from_nucleo <- from_basetype %in% c("DNA", "RNA")
-    to_nucleo <- to_basetype %in% c("DNA", "RNA")
+    if (!compatible_seqtypes(from_seqtype, to_seqtype))
+        stop("incompatible sequence types \"",
+             from_seqtype, "\" and \"", to_seqtype, "\"")
+    from_nucleo <- from_seqtype %in% c("DNA", "RNA")
+    to_nucleo <- to_seqtype %in% c("DNA", "RNA")
     if (from_nucleo == to_nucleo)
         return(NULL)
-    if (to_basetype == "DNA")
+    if (to_seqtype == "DNA")
         return(DNA_STRING_CODEC@enc_lkup)
-    if (to_basetype == "RNA")
+    if (to_seqtype == "RNA")
         return(RNA_STRING_CODEC@enc_lkup)
-    if (from_basetype == "DNA")
+    if (from_seqtype == "DNA")
         return(DNA_STRING_CODEC@dec_lkup)
-    if (from_basetype == "RNA")
+    if (from_seqtype == "RNA")
         return(RNA_STRING_CODEC@dec_lkup)
     stop("Biostrings internal error, please report") # should never happen
 }
 
-comparable_xsbasetypes <- function(basetype1, basetype2)
+comparable_seqtypes <- function(seqtype1, seqtype2)
 {
-    is_nucleo1 <- basetype1 %in% c("DNA", "RNA")
-    is_nucleo2 <- basetype2 %in% c("DNA", "RNA")
+    is_nucleo1 <- seqtype1 %in% c("DNA", "RNA")
+    is_nucleo2 <- seqtype2 %in% c("DNA", "RNA")
     is_nucleo1 == is_nucleo2
 }
 
@@ -140,7 +138,7 @@ setMethod("alphabet", "ANY",
     {
         if (!isTRUEorFALSE(baseOnly))
             stop("'baseOnly' must be TRUE or FALSE")
-        switch(xsbasetype(x),
+        switch(seqtype(x),
             DNA=if (baseOnly) DNA_BASES else DNA_ALPHABET,
             RNA=if (baseOnly) RNA_BASES else RNA_ALPHABET,
             AA=AA_ALPHABET,

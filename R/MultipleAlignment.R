@@ -243,8 +243,8 @@ setMethod("nchar", "MultipleAlignment",
     function(x) ncol(x) - maskedncol(x)
 )
 
-setMethod("xsbasetype", "MultipleAlignment",
-    function(x) xsbasetype(unmasked(x))
+setMethod("seqtype", "MultipleAlignment",
+    function(x) seqtype(unmasked(x))
 )
 
 
@@ -750,13 +750,13 @@ setMethod("alphabetFrequency","MultipleAlignment",
     function(x, as.prob=FALSE, collapse=FALSE)
     {
         if (collapse) {
-            strings <- as(x, sprintf("%sStringSet", xsbasetype(x)))
+            strings <- as(x, sprintf("%sStringSet", seqtype(x)))
             m <- callGeneric(strings, as.prob=as.prob, collapse=TRUE)
         } else {
             rmask <- rowmask(x)
             if (length(rmask) > 0)
                 rowmask(x) <- NULL
-            strings <- as(x, sprintf("%sStringSet", xsbasetype(x)))
+            strings <- as(x, sprintf("%sStringSet", seqtype(x)))
             m <- callGeneric(strings, as.prob=as.prob)
             if (length(rmask) > 0)
                 m[as.integer(rmask),] <- NA

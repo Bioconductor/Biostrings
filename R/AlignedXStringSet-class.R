@@ -130,7 +130,7 @@ setMethod("nindel", "AlignedXStringSet0", function(x) summary(indel(x)))
 setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
-setMethod("xsbasetype", "AlignedXStringSet0", function(x) xsbasetype(unaligned(x)))
+setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

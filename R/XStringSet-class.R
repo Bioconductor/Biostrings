@@ -124,19 +124,19 @@ unsafe.newXStringSet <- function(xvector, ranges, use.names=FALSE, names=NULL)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" methods.
+### The "seqtype" and "seqtype<-" methods.
 ###
 
-setMethod("xsbasetype", "XStringSet",
-    function(x) xsbasetype(new(elementType(x)))
+setMethod("seqtype", "XStringSet",
+    function(x) seqtype(new(elementType(x)))
 )
 
 ### NOT an endomorphism in general! (Because it downgrades 'x' to a
 ### B/DNA/RNA/AAStringSet instance.)
-setReplaceMethod("xsbasetype", "XStringSet",
+setReplaceMethod("seqtype", "XStringSet",
     function(x, value)
     {
-        lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), value)
+        lkup <- get_seqtype_conversion_lookup(seqtype(x), value)
         if (!is.null(lkup))
             x <- xvcopy(x, lkup=lkup)  # temporarily breaks 'x'!
         ans_class <- paste(value, "StringSet", sep="")
@@ -153,9 +153,9 @@ setReplaceMethod("xsbasetype", "XStringSet",
 ###
 
 ### 'x' must be a character string or an XString object.
-.oneSeqToXStringSet <- function(basetype, x, start, end, width, use.names)
+.oneSeqToXStringSet <- function(seqtype, x, start, end, width, use.names)
 {
-    ans_xvector <- XString(basetype, x)
+    ans_xvector <- XString(seqtype, x)
     ans_ranges <- solveUserSEW(length(ans_xvector),
                                start=start, end=end, width=width,
                                rep.refwidths=TRUE)
@@ -172,20 +172,20 @@ setReplaceMethod("xsbasetype", "XStringSet",
                          use.names=TRUE, names=ans_names)
 }
 
-.charToXStringSet <- function(basetype, x, start, end, width, use.names)
+.charToXStringSet <- function(seqtype, x, start, end, width, use.names)
 {
     if (length(x) == 1L) {
-        ans <- .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
+        ans <- .oneSeqToXStringSet(seqtype, x, start, end, width, use.names)
         return(ans)
     }
     use.names <- normargUseNames(use.names)
-    elementType <- paste(basetype, "String", sep="")
+    elementType <- paste(seqtype, "String", sep="")
     classname <- paste(elementType, "Set", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
     ans <- .Call2("new_XStringSet_from_CHARACTER",
                  classname, elementType,
                  x, start(solved_SEW), width(solved_SEW),
-                 get_xsbasetypes_conversion_lookup("B", basetype),
+                 get_seqtype_conversion_lookup("B", seqtype),
                  PACKAGE="Biostrings")
     if (use.names)
         names(ans) <- names(x)
@@ -194,45 +194,45 @@ setReplaceMethod("xsbasetype", "XStringSet",
 
 
 setGeneric("XStringSet", signature="x",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
         standardGeneric("XStringSet")
 )
 
 setMethod("XStringSet", "factor",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        if (is.null(basetype))
-            basetype <- "B"
-        ans <- .charToXStringSet(basetype, levels(x),
+        if (is.null(seqtype))
+            seqtype <- "B"
+        ans <- .charToXStringSet(seqtype, levels(x),
                                  start, end, width, use.names)
         ans[as.integer(x)]
     }
 )
 
 setMethod("XStringSet", "character",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        if (is.null(basetype))
-            basetype <- "B"
-        .charToXStringSet(basetype, x, start, end, width, use.names)
+        if (is.null(seqtype))
+            seqtype <- "B"
+        .charToXStringSet(seqtype, x, start, end, width, use.names)
     }
 )
 
 setMethod("XStringSet", "XString",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .oneSeqToXStringSet(basetype, x, start, end, width, use.names)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        .oneSeqToXStringSet(seqtype, x, start, end, width, use.names)
 )
 
 setMethod("XStringSet", "XStringSet",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
         ans <- narrow(x, start=start, end=end, width=width, use.names=use.names)
-        ## `xsbasetype<-` must be called even when 'basetype' is NULL
+        ## `seqtype<-` must be called even when 'seqtype' is NULL
         ## because we want to enforce downgrade to a B/DNA/RNA/AAStringSet
         ## instance
-        if (is.null(basetype))
-            basetype <- xsbasetype(x)
-        xsbasetype(ans) <- basetype
+        if (is.null(seqtype))
+            seqtype <- seqtype(x)
+        seqtype(ans) <- seqtype
         ans
     }
 )
@@ -241,18 +241,18 @@ setMethod("XStringSet", "XStringSet",
 ### in the *probe annotation packages (e.g. drosophila2probe).
 
 setMethod("XStringSet", "AsIs",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	.charToXStringSet(basetype, x, start, end, width, use.names)
+	.charToXStringSet(seqtype, x, start, end, width, use.names)
     }
 )
 
 setMethod("XStringSet", "probetable",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(basetype, x$sequence, start=start, end=end, width=width,
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(seqtype, x$sequence, start=start, end=end, width=width,
                    use.names=use.names)
 )
 
@@ -287,16 +287,16 @@ AAStringSet <- function(x=character(), start=NA, end=NA, width=NA,
 ###
 
 setAs("XStringSet", "BStringSet",
-    function(from) {xsbasetype(from) <- "B"; from}
+    function(from) {seqtype(from) <- "B"; from}
 )
 setAs("XStringSet", "DNAStringSet",
-    function(from) {xsbasetype(from) <- "DNA"; from}
+    function(from) {seqtype(from) <- "DNA"; from}
 )
 setAs("XStringSet", "RNAStringSet",
-    function(from) {xsbasetype(from) <- "RNA"; from}
+    function(from) {seqtype(from) <- "RNA"; from}
 )
 setAs("XStringSet", "AAStringSet",
-    function(from) {xsbasetype(from) <- "AA"; from}
+    function(from) {seqtype(from) <- "AA"; from}
 )
 
 setAs("character", "BStringSet", function(from) BStringSet(from))
@@ -309,7 +309,7 @@ setAs("XString", "BStringSet", function(from) BStringSet(from))
 setAs("XString", "DNAStringSet", function(from) DNAStringSet(from))
 setAs("XString", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("XString", "AAStringSet", function(from) AAStringSet(from))
-setAs("XString", "XStringSet", function(from) XStringSet(xsbasetype(from), from))
+setAs("XString", "XStringSet", function(from) XStringSet(seqtype(from), from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -395,10 +395,11 @@ setMethod("show", "XStringSet",
 
 .XStringSet.SetOperation <- function(x, y, FUN)
 {
-    basetype <- xsbasetype(x)
-    if (xsbasetype(y) != basetype)
-        stop("'x' and 'y' must be XStringSet objects of the same base type")
-    XStringSet(basetype, FUN(as.character(unique(x)), as.character(unique(y))))
+    x_seqtype <- seqtype(x)
+    if (seqtype(y) != x_seqtype)
+        stop("'x' and 'y' must be XStringSet objects containing ",
+             "sequences of the same type")
+    XStringSet(x_seqtype, FUN(as.character(unique(x)), as.character(unique(y))))
 }
 
 setMethod("union", c("XStringSet", "XStringSet"),
@@ -411,10 +412,12 @@ setMethod("setdiff", c("XStringSet", "XStringSet"),
     function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = setdiff)
 )
 setMethod("setequal", c("XStringSet", "XStringSet"),
-    function(x, y) {
-        basetype <- xsbasetype(x)
-        if (basetype(y) != basetype)
-            stop("'x' and 'y' must be XStringSet objects of the same base type")
+    function(x, y)
+    {
+        x_seqtype <- seqtype(x)
+        if (seqtype(y) != x_seqtype)
+            stop("'x' and 'y' must be XStringSet objects containing ",
+                 "sequences of the same type")
         setequal(as.character(unique(x)), as.character(unique(y)))
     }
 )

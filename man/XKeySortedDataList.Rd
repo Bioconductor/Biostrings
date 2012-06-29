@@ -17,7 +17,7 @@
 \alias{AAKeySortedDataList-class}
 \alias{AAKeySortedDataList}
 
-\alias{xsbasetype,XKeySortedDataList-method}
+\alias{seqtype,XKeySortedDataList-method}
 
 
 \title{List of Data Dictionaries with XString-based Keys}

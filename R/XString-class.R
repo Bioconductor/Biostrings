@@ -23,22 +23,22 @@ setMethod("nchar", "XString", function(x, type="chars", allowNA=FALSE) length(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" methods.
+### The "seqtype" and "seqtype<-" methods.
 ###
 
-setMethod("xsbasetype", "BString", function(x) "B")
-setMethod("xsbasetype", "DNAString", function(x) "DNA")
-setMethod("xsbasetype", "RNAString", function(x) "RNA")
-setMethod("xsbasetype", "AAString", function(x) "AA")
+setMethod("seqtype", "BString", function(x) "B")
+setMethod("seqtype", "DNAString", function(x) "DNA")
+setMethod("seqtype", "RNAString", function(x) "RNA")
+setMethod("seqtype", "AAString", function(x) "AA")
 
 ### Downgrades 'x' to a B/DNA/RNA/AAString instance!
-setReplaceMethod("xsbasetype", "XString",
+setReplaceMethod("seqtype", "XString",
     function(x, value)
     {
-        from_basetype <- xsbasetype(x)
-        to_basetype <- value
-        ans_class <- paste(to_basetype, "String", sep="")
-        lkup <- get_xsbasetypes_conversion_lookup(from_basetype, to_basetype)
+        from_seqtype <- seqtype(x)
+        to_seqtype <- value
+        ans_class <- paste(to_seqtype, "String", sep="")
+        lkup <- get_seqtype_conversion_lookup(from_seqtype, to_seqtype)
         if (is.null(lkup))
             return(new(ans_class, shared=x@shared, offset=x@offset, length=x@length))
         shared <- .copySubSharedRaw(x@shared, start=x@offset+1L, nchar=x@length, lkup=lkup)
@@ -93,14 +93,14 @@ XString.write <- function(x, i, imax=integer(0), value)
 ### Start/End/Width) interface.
 ###
 
-.charToXString <- function(basetype, x, start, end, width)
+.charToXString <- function(seqtype, x, start, end, width)
 {
-    classname <- paste(basetype, "String", sep="")
+    classname <- paste(seqtype, "String", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
     .Call2("new_XString_from_CHARACTER",
           classname,
           x, start(solved_SEW), width(solved_SEW),
-          get_xsbasetypes_conversion_lookup("B", basetype),
+          get_seqtype_conversion_lookup("B", seqtype),
           PACKAGE="Biostrings")
 }
 
@@ -111,38 +111,38 @@ XString.write <- function(x, i, imax=integer(0), value)
 }
 
 setGeneric("XString", signature="x",
-    function(basetype, x, start=NA, end=NA, width=NA)
+    function(seqtype, x, start=NA, end=NA, width=NA)
         standardGeneric("XString")
 )
 
 setMethod("XString", "factor",
-    function(basetype, x, start=NA, end=NA, width=NA)
+    function(seqtype, x, start=NA, end=NA, width=NA)
     {
-        if (is.null(basetype))
-            basetype <- "B"
-        .charToXString(basetype, as.character(x), start, end, width)
+        if (is.null(seqtype))
+            seqtype <- "B"
+        .charToXString(seqtype, as.character(x), start, end, width)
     }
 )
 
 setMethod("XString", "character",
-    function(basetype, x, start=NA, end=NA, width=NA)
+    function(seqtype, x, start=NA, end=NA, width=NA)
     {
-        if (is.null(basetype))
-            basetype <- "B"
-        .charToXString(basetype, x, start, end, width)
+        if (is.null(seqtype))
+            seqtype <- "B"
+        .charToXString(seqtype, x, start, end, width)
     }
 )
 
 setMethod("XString", "XString",
-    function(basetype, x, start=NA, end=NA, width=NA)
+    function(seqtype, x, start=NA, end=NA, width=NA)
     {
         ans <- subseq(x, start=start, end=end, width=width)
-        ## `xsbasetype<-` must be called even when user supplied 'basetype' is
+        ## `seqtype<-` must be called even when user supplied 'seqtype' is
         ## NULL because we want to enforce downgrade to a B/DNA/RNA/AAString
         ## instance
-        if (is.null(basetype))
-            basetype <- xsbasetype(x)
-        xsbasetype(ans) <- basetype
+        if (is.null(seqtype))
+            seqtype <- seqtype(x)
+        seqtype(ans) <- seqtype
         ans
     }
 )
@@ -150,12 +150,12 @@ setMethod("XString", "XString",
 ### Just because of the silly "AsIs" objects found in the probe packages
 ### (e.g. drosophila2probe$sequence)
 setMethod("XString", "AsIs",
-    function(basetype, x, start=NA, end=NA, width=NA)
+    function(seqtype, x, start=NA, end=NA, width=NA)
     {
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-        XString(basetype, x, start=start, end=end, width=width)
+        XString(seqtype, x, start=start, end=end, width=width)
     }
 )
 
@@ -182,16 +182,16 @@ AAString <- function(x="", start=1, nchar=NA)
 ###
 
 setAs("XString", "BString",
-    function(from) {xsbasetype(from) <- "B"; from}
+    function(from) {seqtype(from) <- "B"; from}
 )
 setAs("XString", "DNAString",
-    function(from) {xsbasetype(from) <- "DNA"; from}
+    function(from) {seqtype(from) <- "DNA"; from}
 )
 setAs("XString", "RNAString",
-    function(from) {xsbasetype(from) <- "RNA"; from}
+    function(from) {seqtype(from) <- "RNA"; from}
 )
 setAs("XString", "AAString",
-    function(from) {xsbasetype(from) <- "AA"; from}
+    function(from) {seqtype(from) <- "AA"; from}
 )
 
 setAs("character", "BString", function(from) BString(from))
@@ -274,7 +274,7 @@ setMethod("show", "XString",
 setMethod("==", signature(e1="XString", e2="XString"),
     function(e1, e2)
     {
-        if (!comparable_xsbasetypes(xsbasetype(e1), xsbasetype(e2))) {
+        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
             class1 <- class(e1)
             class2 <- class(e2)
             stop("comparison between a \"", class1, "\" instance ",

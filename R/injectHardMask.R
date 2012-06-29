@@ -9,14 +9,14 @@ setGeneric("injectHardMask", signature="x",
 setMethod("injectHardMask", "XStringViews",
     function(x, letter="+")
     {
-        basetype <- xsbasetype(x)
-        if (is(letter, "XString") && xsbasetype(letter) == basetype) {
+        x_seqtype <- seqtype(x)
+        if (is(letter, "XString") && seqtype(letter) == x_seqtype) {
             if (length(letter) != 1)
                 stop("'letter' must be a single letter")
         } else {
             if (!isSingleString(letter) || nchar(letter) != 1)
                 stop("'letter' must be a single letter")
-            letter <- XString(xsbasetype(x), letter)
+            letter <- XString(x_seqtype, letter)
         }
         code <- XString.readCodes(letter, 1L)
         y <- gaps(x)

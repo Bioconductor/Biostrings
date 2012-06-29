@@ -104,14 +104,14 @@ setMethod("dimnames", "XKeySortedData",
     function(x) list(as.character(dataKey(x)), colnames(dataTable(x)))
 )
 
-setMethod("xsbasetype", "XKeySortedData", function(x) xsbasetype(dataKey(x)))
+setMethod("seqtype", "XKeySortedData", function(x) seqtype(dataKey(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### User-friendly versatile constructors.
 ###
 
-XKeySortedData <- function(basetype, key=character(0), table=NULL)
+XKeySortedData <- function(seqtype, key=character(0), table=NULL)
 {
     .Defunct(msg="the XKeySortedData class and subclasses are defunct")
 }

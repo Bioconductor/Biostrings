@@ -28,8 +28,8 @@
 \alias{subseq<-,character-method}
 \alias{subseq<-,XStringSet-method}
 
-\alias{xsbasetype,XStringSet-method}
-\alias{xsbasetype<-,XStringSet-method}
+\alias{seqtype,XStringSet-method}
+\alias{seqtype<-,XStringSet-method}
 
 \alias{coerce,XStringSet,BStringSet-method}
 \alias{coerce,XStringSet,DNAStringSet-method}

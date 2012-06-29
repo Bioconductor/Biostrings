@@ -7,8 +7,8 @@
 ### Longest Common Prefix: the "lcprefix" new generic
 ###
 
-### 's1' and 's2' must be XString objects of the same base type.
-### Return the length (integer) of the Longest Common Prefix.
+### 's1' and 's2' must be XString objects containing sequences of the same
+### type. Return the length (integer) of the Longest Common Prefix.
 XString.lcprefix <- function(s1, s2)
 {
     .Call2("lcprefix", s1@shared@xp, s1@offset, s1@length,
@@ -25,17 +25,18 @@ setMethod("lcprefix", signature(s1="character", s2="character"),
 )
 setMethod("lcprefix", signature(s1="character", s2="XString"),
     function(s1, s2)
-        XString.lcprefix(XString(xsbasetype(s2), s1), s2)
+        XString.lcprefix(XString(seqtype(s2), s1), s2)
 )
 setMethod("lcprefix", signature(s1="XString", s2="character"),
     function(s1, s2)
-        XString.lcprefix(s1, XString(xsbasetype(s1), s2))
+        XString.lcprefix(s1, XString(seqtype(s1), s2))
 )
 setMethod("lcprefix", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
-        if (class(s1) != class(s2))
-            stop("'s1' and 's2' must have the same XString base type")
+        if (seqtype(s1) != seqtype(s2))
+            stop("'s1' and 's2' must be XString objects containing ",
+                 "sequences of the same type")
         XString.lcprefix(s1, s2)
     }
 )
@@ -45,8 +46,8 @@ setMethod("lcprefix", signature(s1="XString", s2="XString"),
 ### Longest Common Suffix: the "lcsuffix" new generic
 ###
 
-### 's1' and 's2' must be XString objects of the same base type.
-### Return the length (integer) of the Longest Common Suffix.
+### 's1' and 's2' must be XString objects containing sequences of the same
+### type. Return the length (integer) of the Longest Common Suffix.
 XString.lcsuffix <- function(s1, s2)
 {
     .Call2("lcsuffix", s1@shared@xp, s1@offset, s1@length,
@@ -63,17 +64,18 @@ setMethod("lcsuffix", signature(s1="character", s2="character"),
 )
 setMethod("lcsuffix", signature(s1="character", s2="XString"),
     function(s1, s2)
-        XString.lcsuffix(XString(xsbasetype(s2), s1), s2)
+        XString.lcsuffix(XString(seqtype(s2), s1), s2)
 )
 setMethod("lcsuffix", signature(s1="XString", s2="character"),
     function(s1, s2)
-        XString.lcsuffix(s1, XString(xsbasetype(s1), s2))
+        XString.lcsuffix(s1, XString(seqtype(s1), s2))
 )
 setMethod("lcsuffix", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
-        if (class(s1) != class(s2))
-            stop("'s1' and 's2' must have the same XString base type")
+        if (seqtype(s1) != seqtype(s2))
+            stop("'s1' and 's2' must be XString objects containing ",
+                 "sequences of the same type")
         XString.lcsuffix(s1, s2)
     }
 )
@@ -230,9 +232,9 @@ setMethod("pmatchPattern", "XStringViews",
 ### Longest Common Substring: the "lcsubstr" new generic
 ###
 
-### Implementation taken from 
+### 's1' and 's2' must be XString objects containing sequences of the same
+### type. Implementation taken from 
 ###   http://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring
-### 's1' and 's2' must be XString objects of the same class.
 XString.lcsubstr <- function(s1, s2)
 {
     stop("coming soon...")
@@ -247,17 +249,18 @@ setMethod("lcsubstr", signature(s1="character", s2="character"),
 )
 setMethod("lcsubstr", signature(s1="character", s2="XString"),
     function(s1, s2)
-        XString.lcsubstr(XString(xsbasetype(s2), s1), s2)
+        XString.lcsubstr(XString(seqtype(s2), s1), s2)
 )
 setMethod("lcsubstr", signature(s1="XString", s2="character"),
     function(s1, s2)
-        XString.lcsubstr(s1, XString(xsbasetype(s1), s2))
+        XString.lcsubstr(s1, XString(seqtype(s1), s2))
 )
 setMethod("lcsubstr", signature(s1="XString", s2="XString"),
     function(s1, s2)
     {
-        if (class(s1) != class(s2))
-            stop("'s1' and 's2' must have the same XString base type")
+        if (seqtype(s1) != seqtype(s2))
+            stop("'s1' and 's2' must be XString objects containing ",
+                 "sequences of the same type")
         XString.lcsubstr(s1, s2)
     }
 )

@@ -65,19 +65,19 @@ setMethod("nchar", "XStringViews",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" methods.
+### The "seqtype" and "seqtype<-" methods.
 ###
 
-setMethod("xsbasetype", "XStringViews", function(x) xsbasetype(subject(x)))
+setMethod("seqtype", "XStringViews", function(x) seqtype(subject(x)))
 
 ### Does NOT downgrade 'x' to an XStringViews instance! (endomorphism)
-setReplaceMethod("xsbasetype", "XStringViews",
+setReplaceMethod("seqtype", "XStringViews",
     function(x, value)
     {
-        ## could be done with 'xsbasetype(subject(x)) <- value'
+        ## could be done with 'seqtype(subject(x)) <- value'
         ## if `subject<-` was available
         subject <- subject(x)
-        xsbasetype(subject) <- value
+        seqtype(subject) <- value
         x@subject <- subject
         x
     }
@@ -103,8 +103,8 @@ XStringViewsToSet <- function(x, use.names, verbose=TRUE)
 ### We need this so that B/DNA/RNA/AAStringSet() used below work on an
 ### XStringViews object.
 setMethod("XStringSet", "XStringViews",
-    function(basetype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(basetype, XStringViewsToSet(x, use.names),
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(seqtype, XStringViewsToSet(x, use.names),
                    start=start, end=end, width=width, use.names=TRUE)
 )
 
@@ -351,7 +351,7 @@ XStringViews.equal <- function(x, y)
 setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
     function(e1, e2)
     {
-        if (!comparable_xsbasetypes(xsbasetype(e1), xsbasetype(e2))) {
+        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(subject(e2))
             stop("comparison between XStringViews objects with subjects of ",
@@ -364,7 +364,7 @@ setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
 setMethod("==", signature(e1="XStringViews", e2="XString"),
     function(e1, e2)
     {
-        if (!comparable_xsbasetypes(xsbasetype(e1), xsbasetype(e2))) {
+        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(e2)
             stop("comparison between an XStringViews object with a subject of ",

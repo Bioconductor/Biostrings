@@ -92,7 +92,7 @@ print.needwunsQS <- function(x, ...)
 ### Some quick testing shows that, depending on the size of the strings to
 ### align, this C version is 100 to 1000 times faster than the above
 ### .needwunsQS().
-### 's1' and 's2' must be XString objects of the same base type.
+### 's1' and 's2' must be XString objects of same sequence type.
 ### Return a PairwiseAlignedXStringSet object where the "al1" and "al2" slots
 ### contain the aligned versions of 's1' and 's2'.
 XString.needwunsQS <- function(s1, s2, substmat, gappen)
@@ -148,11 +148,11 @@ setMethod("needwunsQS", signature(s1="character", s2="character"),
 )
 setMethod("needwunsQS", signature(s1="character", s2="XString"),
     function(s1, s2, substmat, gappen)
-        XString.needwunsQS(XString(xsbasetype(s2), s1), s2, substmat, gappen)
+        XString.needwunsQS(XString(seqtype(s2), s1), s2, substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="XString", s2="character"),
     function(s1, s2, substmat, gappen)
-        XString.needwunsQS(s1, XString(xsbasetype(s1), s2), substmat, gappen)
+        XString.needwunsQS(s1, XString(seqtype(s1), s2), substmat, gappen)
 )
 setMethod("needwunsQS", signature(s1="XString", s2="XString"),
     function(s1, s2, substmat, gappen)

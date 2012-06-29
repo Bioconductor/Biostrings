@@ -18,10 +18,10 @@
 
 \alias{initialize,XStringCodec-method}
 
-% xsbasetype.R (put aliases for specific methods in corresponding man pages):
-\alias{xsbasetype}
-\alias{xsbasetype<-}
-\alias{get_xsbasetypes_conversion_lookup}
+% seqtype.R (put aliases for specific methods in corresponding man pages):
+\alias{seqtype}
+\alias{seqtype<-}
+\alias{get_seqtype_conversion_lookup}
 
 
 \title{Biostrings internals}

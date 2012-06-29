@@ -7,7 +7,7 @@
  * --- .Call ENTRY POINT ---
  * Arguments:
  *   args: a non-empty list of XString objects of the same XString base type
- *         (see R/xsbasetype.R).
+ *         (see R/seqtype.R).
  * Note that this function is VERY similar to XStringSet_unlist().
  * Maybe both could be unified under a fast c() for XRaw objects.
  */
@@ -58,7 +58,7 @@ SEXP XString_xscat(SEXP args)
  * --- .Call ENTRY POINT ---
  * Arguments:
  *   args: a non-empty list of XStringSet objects of the same XString base
- *         type (see R/xsbasetype.R).
+ *         type (see R/seqtype.R).
  */
 SEXP XStringSet_xscat(SEXP args)
 {

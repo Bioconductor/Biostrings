@@ -12,8 +12,8 @@
 
 \alias{nchar,XStringViews-method}
 
-\alias{xsbasetype,XStringViews-method}
-\alias{xsbasetype<-,XStringViews-method}
+\alias{seqtype,XStringViews-method}
+\alias{seqtype<-,XStringViews-method}
 
 \alias{coerce,XStringViews,XStringSet-method}
 \alias{coerce,XStringViews,BStringSet-method}

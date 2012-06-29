@@ -131,19 +131,19 @@ setValidity("MaskedXString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" and "xsbasetype<-" methods.
+### The "seqtype" and "seqtype<-" methods.
 ###
 
-setMethod("xsbasetype", "MaskedXString", function(x) xsbasetype(unmasked(x)))
+setMethod("seqtype", "MaskedXString", function(x) seqtype(unmasked(x)))
 
 ### Downgrades 'x' to a MaskedB/DNA/RNA/AAString instance!
-setReplaceMethod("xsbasetype", "MaskedXString",
+setReplaceMethod("seqtype", "MaskedXString",
     function(x, value)
     {
-        ## could be done with 'xsbasetype(unmasked(x)) <- value'
+        ## could be done with 'seqtype(unmasked(x)) <- value'
         ## if `unmasked<-` was available
         unmasked <- unmasked(x)
-        xsbasetype(unmasked) <- value
+        seqtype(unmasked) <- value
         ans_class <- paste("Masked", value, "String", sep="")
         new(ans_class, unmasked=unmasked, masks=masks(x))
     }
@@ -156,16 +156,16 @@ setReplaceMethod("xsbasetype", "MaskedXString",
 
 ### From MaskedXString objects to MaskedXString objects.
 setAs("MaskedXString", "MaskedBString",
-    function(from) {xsbasetype(from) <- "B"; from}
+    function(from) {seqtype(from) <- "B"; from}
 )
 setAs("MaskedXString", "MaskedDNAString",
-    function(from) {xsbasetype(from) <- "DNA"; from}
+    function(from) {seqtype(from) <- "DNA"; from}
 )
 setAs("MaskedXString", "MaskedRNAString",
-    function(from) {xsbasetype(from) <- "RNA"; from}
+    function(from) {seqtype(from) <- "RNA"; from}
 )
 setAs("MaskedXString", "MaskedAAString",
-    function(from) {xsbasetype(from) <- "AA"; from}
+    function(from) {seqtype(from) <- "AA"; from}
 )
 
 ### From XString objects to MaskedXString objects.
@@ -214,8 +214,8 @@ setAs("MaskedAAString", "AAString",
 
 ### Dispatch on 'x' (see generic in XString-class.R).
 setMethod("XString", "MaskedXString",
-    function(basetype, x, start=NA, end=NA, width=NA)
-        XString(basetype, unmasked(x), start=start, end=end, width=width)
+    function(seqtype, x, start=NA, end=NA, width=NA)
+        XString(seqtype, unmasked(x), start=start, end=end, width=width)
 )
 
 ### From a MaskedXString object to a MaskCollection object.

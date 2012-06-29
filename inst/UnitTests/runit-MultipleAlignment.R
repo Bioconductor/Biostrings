@@ -28,7 +28,7 @@ test_DNAMultipleAlignment_empty <- function()
     checkIdentical(maskeddim(malign), c(0L, 0L))
     checkIdentical(maskedratio(malign), c(0L/0L, 0L/0L))
     checkIdentical(nchar(malign), 0L)
-    checkIdentical(xsbasetype(malign), "DNA")
+    checkIdentical(seqtype(malign), "DNA")
     checkIdentical(as.character(malign), character(0))
     checkIdentical(consensusMatrix(malign),
                    matrix(integer(), nrow=length(DNA_ALPHABET), ncol=0,
@@ -68,7 +68,7 @@ test_DNAMultipleAlignment_unnamed <- function()
     checkIdentical(maskeddim(malign), c(0L, 0L))
     checkIdentical(maskedratio(malign), c(0, 0))
     checkIdentical(nchar(malign), nchar(strings_DNAMultipleAlignment())[[1]])
-    checkIdentical(xsbasetype(malign), "DNA")
+    checkIdentical(seqtype(malign), "DNA")
     checkIdentical(as.character(malign), unname(strings_DNAMultipleAlignment()))
     checkIdentical(consensusMatrix(malign)[1:4, 1:4],
                    rbind(A=c(2L,3L,0L,0L),
@@ -112,7 +112,7 @@ test_DNAMultipleAlignment_named <- function()
     checkIdentical(maskeddim(malign), c(0L, 0L))
     checkIdentical(maskedratio(malign), c(0, 0))
     checkIdentical(nchar(malign), nchar(strings_DNAMultipleAlignment())[[1]])
-    checkIdentical(xsbasetype(malign), "DNA")
+    checkIdentical(seqtype(malign), "DNA")
     checkIdentical(as.character(malign), strings_DNAMultipleAlignment())
     checkIdentical(consensusMatrix(malign)[1:4, 1:4], 
                    rbind(A=c(2L,3L,0L,0L),
@@ -156,7 +156,7 @@ test_DNAMultipleAlignment_mask_some <- function()
     checkIdentical(maskeddim(malign), c(1L, 32L))
     checkIdentical(maskedratio(malign), c(1/3, 32/49))
     checkIdentical(nchar(malign), 17L)
-    checkIdentical(xsbasetype(malign), "DNA")
+    checkIdentical(seqtype(malign), "DNA")
     checkIdentical(as.character(malign),
                    c(string1="-GCCTGCCCTTCATG--", string3="TGGTCCCCCTACATAGT"))
     checkIdentical(consensusMatrix(malign)[1:4, 1:4], 
@@ -199,7 +199,7 @@ test_DNAMultipleAlignment_mask_all_rows <- function()
     checkIdentical(maskeddim(malign), c(3L, 32L))
     checkIdentical(maskedratio(malign), c(3/3, 32/49))
     checkIdentical(nchar(malign), 17L)
-    checkIdentical(xsbasetype(malign), "DNA")
+    checkIdentical(seqtype(malign), "DNA")
     checkIdentical(as.character(malign), character(0))
     checkIdentical(consensusMatrix(malign)[1:4, 1:4], 
                    rbind(A=rep(NA_integer_,4),

@@ -39,8 +39,9 @@ setGeneric("PairwiseAlignedFixedSubject",
 setMethod("PairwiseAlignedFixedSubject", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
-        if (xsbasetype(pattern) != xsbasetype(subject))
-            stop("'pattern' and 'subject' must have the same XString base type")
+        if (seqtype(pattern) != seqtype(subject))
+            stop("'pattern' and 'subject' must contain ",
+                 "sequences of the same type")
         PairwiseAlignedFixedSubject(as.character(pattern), as.character(subject),
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,

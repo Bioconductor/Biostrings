@@ -11,7 +11,7 @@
 setMethod("compare", c("XStringSet", "XStringSet"),
     function(x, y)
     {
-        if (!comparable_xsbasetypes(xsbasetype(x), xsbasetype(y)))
+        if (!comparable_seqtypes(seqtype(x), seqtype(y)))
             stop("comparison between a \"", class(x), "\" instance ",
                  "and a \"", class(y), "\" instance ",
                  "is not supported")
@@ -22,9 +22,9 @@ setMethod("compare", c("XStringSet", "XStringSet"),
 setMethod("compare", c("XStringSet", "character"),
     function(x, y)
     {
-        y <- try(XStringSet(xsbasetype(x), y))
+        y <- try(XStringSet(seqtype(x), y))
         if (is(y, "try-error"))
-            stop("could not turn 'y' into a ", xsbaseclass(x), " instance")
+            stop("could not turn 'y' into a ", seqtype(x), " instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
@@ -32,9 +32,9 @@ setMethod("compare", c("XStringSet", "character"),
 setMethod("compare", c("character", "XStringSet"),
     function(x, y)
     {
-        x <- try(XStringSet(xsbasetype(y), x))
+        x <- try(XStringSet(seqtype(y), x))
         if (is(x, "try-error"))
-            stop("could not turn 'x' into a ", xsbaseclass(y), " instance")
+            stop("could not turn 'x' into a ", seqtype(y), " instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
@@ -79,7 +79,7 @@ setMethod("compare", c("XString", "character"),
 setMethod("match", c("XStringSet", "XStringSet"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
     {
-        if (!comparable_xsbasetypes(xsbasetype(x), xsbasetype(table)))
+        if (!comparable_seqtypes(seqtype(x), seqtype(table)))
             stop("match() between a \"", class(x), "\" instance ",
                  "and a \"", class(table), "\" instance ",
                  "is not supported")
@@ -90,9 +90,9 @@ setMethod("match", c("XStringSet", "XStringSet"),
 setMethod("match", c("XStringSet", "character"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
     {
-        table <- try(XStringSet(xsbasetype(x), table))
+        table <- try(XStringSet(seqtype(x), table))
         if (is(table, "try-error"))
-            stop("could not turn 'table' into a ", xsbaseclass(x), " instance")
+            stop("could not turn 'table' into a ", seqtype(x), " instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
@@ -100,9 +100,9 @@ setMethod("match", c("XStringSet", "character"),
 setMethod("match", c("character", "XStringSet"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
     {
-        x <- try(XStringSet(xsbasetype(table), x))
+        x <- try(XStringSet(seqtype(table), x))
         if (is(x, "try-error"))
-            stop("could not turn 'x' into a ", xsbaseclass(table), " instance")
+            stop("could not turn 'x' into a ", seqtype(table), " instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )

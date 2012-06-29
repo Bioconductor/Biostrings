@@ -34,7 +34,7 @@
 \alias{nindel,PairwiseAlignedXStringSet-method}
 \alias{length,PairwiseAlignedXStringSet-method}
 \alias{nchar,PairwiseAlignedXStringSet-method}
-\alias{xsbasetype,PairwiseAlignedXStringSet-method}
+\alias{seqtype,PairwiseAlignedXStringSet-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignedXStringSet-method}

@@ -29,11 +29,11 @@ setClass("AAKeySortedDataList",
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "xsbasetype" method.
+### The "seqtype" method.
 ###
 
-setMethod("xsbasetype", "XKeySortedDataList",
-    function(x) xsbasetype(new(x@elementType))
+setMethod("seqtype", "XKeySortedDataList",
+    function(x) seqtype(new(x@elementType))
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

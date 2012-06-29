@@ -17,11 +17,11 @@
 \alias{nchar,XString-method}
 
 % Coercion:
-\alias{xsbasetype,BString-method}
-\alias{xsbasetype,DNAString-method}
-\alias{xsbasetype,RNAString-method}
-\alias{xsbasetype,AAString-method}
-\alias{xsbasetype<-,XString-method}
+\alias{seqtype,BString-method}
+\alias{seqtype,DNAString-method}
+\alias{seqtype,RNAString-method}
+\alias{seqtype,AAString-method}
+\alias{seqtype<-,XString-method}
 \alias{coerce,XString,BString-method}
 \alias{coerce,XString,DNAString-method}
 \alias{coerce,XString,RNAString-method}

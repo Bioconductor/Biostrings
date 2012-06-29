@@ -30,8 +30,8 @@
 \alias{nchar,MaskedXString-method}
 
 % Coercion:
-\alias{xsbasetype,MaskedXString-method}
-\alias{xsbasetype<-,MaskedXString-method}
+\alias{seqtype,MaskedXString-method}
+\alias{seqtype<-,MaskedXString-method}
 
 \alias{coerce,MaskedXString,MaskedBString-method}
 \alias{coerce,MaskedXString,MaskedDNAString-method}

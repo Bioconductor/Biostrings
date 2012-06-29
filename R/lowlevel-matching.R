@@ -31,7 +31,7 @@ normargPattern <- function(pattern, subject, argname="pattern")
             return(pattern)
     } else if (!isSingleString(pattern))
         stop("'", argname, "' must be a single string or an XString object")
-    pattern <- try(XString(xsbasetype(subject), pattern))
+    pattern <- try(XString(seqtype(subject), pattern))
     if (is(pattern, "try-error"))
         stop("could not turn '", argname, "' into a ",
              subject_baseclass, " instance")
@@ -96,7 +96,7 @@ normargFixed <- function(fixed, subject, argname="fixed")
                  "with no duplicated")
         fixed <- c("pattern" %in% fixed, "subject" %in% fixed)
     }
-    if (!all(fixed) && !(xsbasetype(subject) %in% c("DNA", "RNA")))
+    if (!all(fixed) && !(seqtype(subject) %in% c("DNA", "RNA")))
         stop("'", argname, "' value only supported for a DNA or RNA subject ",
              "(you can only use 'fixed=TRUE' with your subject)")
     fixed
@@ -431,10 +431,10 @@ hasLetterAt <- function(x, letter, at, fixed=TRUE)
     if (!is(letter, "XString")) {
         if (!isSingleString(letter))
             stop("'letter' must be a character string or an XString object")
-        letter <- XString(xsbasetype(x), letter)
+        letter <- XString(seqtype(x), letter)
     } else {
-        if (xsbasetype(letter) != xsbasetype(x))
-            stop("'x' and 'letter' must have the same XString base type")
+        if (seqtype(letter) != seqtype(x))
+            stop("'x' and 'letter' must have the same sequence type")
     }
     if (!is.numeric(at))
         stop("'at' must be a vector of integers")

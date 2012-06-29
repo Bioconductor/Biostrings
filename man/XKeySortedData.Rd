@@ -24,7 +24,7 @@
 \alias{dim,XKeySortedData-method}
 \alias{dimnames,XKeySortedData-method}
 \alias{length,XKeySortedData-method}
-\alias{xsbasetype,XKeySortedData-method}
+\alias{seqtype,XKeySortedData-method}
 
 
 \title{Data Dictionaries with XString-based Keys}

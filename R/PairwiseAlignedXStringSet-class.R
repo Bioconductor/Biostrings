@@ -25,7 +25,7 @@ newPairwiseAlignedXStringSet <-
 function(pattern, subject, type = "global", substitutionMatrix = NULL,
          gapOpening = 0, gapExtension = -1,
          baseClass = "BString", pwaClass = "PairwiseAlignedXStringSet") {
-    basetype <- substr(baseClass, 1, nchar(baseClass) - 6)  # remove "String" suffix
+    seqtype <- substr(baseClass, 1, nchar(baseClass) - 6)  # remove "String" suffix
     getMismatches <- function(x) {
         whichMismatches <- which(x[["values"]] == "?")
         if (length(whichMismatches) == 0) {
@@ -148,12 +148,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
     new(pwaClass,
         pattern =
           new("AlignedXStringSet",
-              unaligned = XStringSet(basetype, paste(degappedPattern, collapse = "")),
+              unaligned = XStringSet(seqtype, paste(degappedPattern, collapse = "")),
               range = getRange(patternRle), mismatch = getMismatches(patternRle),
               indel = getIndels(comparison, "-")),
         subject =
           new("AlignedXStringSet",
-              unaligned = XStringSet(basetype, paste(degappedSubject, collapse = "")),
+              unaligned = XStringSet(seqtype, paste(degappedSubject, collapse = "")),
               range = getRange(subjectRle), mismatch = getMismatches(subjectRle),
               indel = getIndels(comparison, "+")),
         type = type,
@@ -175,8 +175,9 @@ setGeneric("PairwiseAlignedXStringSet",
 setMethod("PairwiseAlignedXStringSet", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
-        if (xsbasetype(pattern) != xsbasetype(subject))
-            stop("'pattern' and 'subject' must have the same XString base type")
+        if (seqtype(pattern) != seqtype(subject))
+            stop("'pattern' and 'subject' must contain ",
+                 "sequences of the same type")
         PairwiseAlignedXStringSet(as.character(pattern), as.character(subject),
                                   type = type, substitutionMatrix = substitutionMatrix,
                                   gapOpening = gapOpening, gapExtension = gapExtension,
@@ -269,7 +270,7 @@ setMethod("nindel", "PairwiseAlignedXStringSet",
           function(x) new("InDel", insertion = nindel(subject(x)), deletion = nindel(pattern(x))))
 setMethod("length", "PairwiseAlignedXStringSet", function(x) length(score(x)))
 setMethod("nchar", "PairwiseAlignedXStringSet", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
-setMethod("xsbasetype", "PairwiseAlignedXStringSet", function(x) xsbasetype(subject(x)))
+setMethod("seqtype", "PairwiseAlignedXStringSet", function(x) seqtype(subject(x)))
 setGeneric("pid", signature="x", function(x, type="PID1") standardGeneric("pid"))
 setMethod("pid", "PairwiseAlignedXStringSet",
           function(x, type="PID1") {

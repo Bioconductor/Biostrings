@@ -4,11 +4,11 @@
 
 .mkOldToNewLkup <- function(old, new, x)
 {
-    basetype <- xsbasetype(x)
-    if (!is(old, "XString") || xsbasetype(old) != basetype)
-        old <- XString(basetype, old)
-    if (!is(new, "XString") || xsbasetype(new) != basetype)
-        new <- XString(basetype, new)
+    x_seqtype <- seqtype(x)
+    if (!is(old, "XString") || seqtype(old) != x_seqtype)
+        old <- XString(x_seqtype, old)
+    if (!is(new, "XString") || seqtype(new) != x_seqtype)
+        new <- XString(x_seqtype, new)
     if (nchar(old) != nchar(new))
         stop("'old' and 'new' must have the same length")
     old_codes <- XString.readCodes(old, 1, nchar(old))

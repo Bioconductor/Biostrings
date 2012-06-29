@@ -35,20 +35,20 @@
     return(2L)
 }
 
-.get_xscat_ans_basetype <- function(...)
+.get_xscat_ans_seqtype <- function(...)
 {
-    get_arg_basetype <- function(arg)
+    get_arg_seqtype <- function(arg)
     {
-        if (is.character(arg)) "B" else xsbasetype(arg)
+        if (is.character(arg)) "B" else seqtype(arg)
     }
-    arg_basetypes <- unique(sapply(list(...), get_arg_basetype))
-    ans_basetype <- setdiff(arg_basetypes, "B")
-    if (length(ans_basetype) >= 2)
-        stop("xscat() cannot mix ", ans_basetype[1],
-             " and ", ans_basetype[2], " input")
-    if (length(ans_basetype) == 0)
-        ans_basetype <- "B"
-    ans_basetype
+    arg_seqtypes <- unique(sapply(list(...), get_arg_seqtype))
+    ans_seqtype <- setdiff(arg_seqtypes, "B")
+    if (length(ans_seqtype) >= 2L)
+        stop("xscat() cannot mix ", ans_seqtype[1L],
+             " and ", ans_seqtype[2L], " input")
+    if (length(ans_seqtype) == 0L)
+        ans_seqtype <- "B"
+    ans_seqtype
 }
 
 xscat <- function(...)
@@ -56,11 +56,11 @@ xscat <- function(...)
     if (length(list(...)) == 0)
         stop("no input")
     ans_card <- .get_xscat_ans_cardinality(...)
-    ans_basetype <- .get_xscat_ans_basetype(...)
+    ans_seqtype <- .get_xscat_ans_seqtype(...)
     if (ans_card == 1L) {
-        ans_class <- paste(ans_basetype, "String", sep="")
+        ans_class <- paste(ans_seqtype, "String", sep="")
     } else {
-        ans_class <- paste(ans_basetype, "StringSet", sep="")
+        ans_class <- paste(ans_seqtype, "StringSet", sep="")
         if (ans_card == 0L)
             return(as(character(0), ans_class))
     }

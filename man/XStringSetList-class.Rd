@@ -23,8 +23,8 @@
 \alias{partitioning}
 \alias{partitioning,XStringSetList-method}
 
-\alias{xsbasetype,XStringSetList-method}
-\alias{xsbasetype<-,XStringSetList-method}
+\alias{seqtype,XStringSetList-method}
+\alias{seqtype<-,XStringSetList-method}
 
 \alias{[[,XStringSetList-method}
 

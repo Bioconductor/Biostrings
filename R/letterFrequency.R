@@ -504,8 +504,8 @@ setMethod("oligonucleotideFrequency", "XString",
     function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE)
     {
-        if (!(xsbasetype(x) %in% c("DNA", "RNA")))
-            stop("'x' must be of DNA or RNA base type")
+        if (!(seqtype(x) %in% c("DNA", "RNA")))
+            stop("'x' must contain sequences of type DNA or RNA")
         width <- .normargWidth(width)
         if (!isTRUEorFALSE(as.prob))
             stop("'as.prob' must be TRUE or FALSE")
@@ -526,8 +526,8 @@ setMethod("oligonucleotideFrequency", "XStringSet",
              fast.moving.side="right", with.labels=TRUE,
              simplify.as="matrix")
     {
-        if (!(xsbasetype(x) %in% c("DNA", "RNA")))
-            stop("'x' must be of DNA or RNA base type")
+        if (!(seqtype(x) %in% c("DNA", "RNA")))
+            stop("'x' must contain sequences of type DNA or RNA")
         width <- .normargWidth(width)
         if (!isTRUEorFALSE(as.prob))
             stop("'as.prob' must be TRUE or FALSE")
@@ -644,8 +644,8 @@ setMethod("nucleotideFrequencyAt", "XStringSet",
     function(x, at, as.prob=FALSE, as.array=TRUE,
              fast.moving.side="right", with.labels=TRUE)
     {
-        if (!(xsbasetype(x) %in% c("DNA", "RNA")))
-            stop("'x' must be of DNA or RNA base type")
+        if (!(seqtype(x) %in% c("DNA", "RNA")))
+            stop("'x' must contain sequences of type DNA or RNA")
         if (!is.numeric(at))
             stop("'at' must be a vector of integers")
         if (!is.integer(at))

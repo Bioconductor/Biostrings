@@ -26,7 +26,7 @@
 \alias{nindel,AlignedXStringSet0-method}
 \alias{length,AlignedXStringSet0-method}
 \alias{nchar,AlignedXStringSet0-method}
-\alias{xsbasetype,AlignedXStringSet0-method}
+\alias{seqtype,AlignedXStringSet0-method}
 
 % Standard generic methods:
 \alias{show,AlignedXStringSet0-method}

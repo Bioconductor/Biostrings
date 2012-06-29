@@ -402,14 +402,15 @@
 {
     which_pp_excluded <- NULL
     if (is(pdict, "PDict")) {
-        if (xsbasetype(subject) != "DNA")
+        if (seqtype(subject) != "DNA")
             stop("'subject' must be DNA")
         dups0 <- dups(pdict)
         if (!is.null(dups0))
             which_pp_excluded <- which(duplicated(dups0))
     } else if (is(pdict, "XStringSet")) {
-        if (xsbasetype(pdict) != xsbasetype(subject))
-            stop("'pdict' and 'subject' have incompatible base types")
+        if (seqtype(pdict) != seqtype(subject))
+            stop("'pdict' and 'subject' must contain ",
+                 "sequences of the same type")
     } else {
         stop("'pdict' must be a PDict or XStringSet object")
     }
@@ -516,14 +517,15 @@
 {
     which_pp_excluded <- NULL
     if (is(pdict, "PDict")) {
-        if (xsbasetype(subject) != "DNA")
+        if (seqtype(subject) != "DNA")
             stop("'subject' must be DNA")
         dups0 <- dups(pdict)
         if (!is.null(dups0))
             which_pp_excluded <- which(duplicated(dups0))
     } else if (is(pdict, "XStringSet")) {
-        if (xsbasetype(pdict) != xsbasetype(subject))
-            stop("'pdict' and 'subject' have incompatible base types")
+        if (seqtype(pdict) != seqtype(subject))
+            stop("'pdict' and 'subject' must contain ",
+                 "sequences of the same type")
     } else {
         stop("'pdict' must be a PDict or XStringSet object")
     }

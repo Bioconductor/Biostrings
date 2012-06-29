@@ -27,7 +27,7 @@ setMethod("replaceLetterAt", "DNAString",
             letter <- as.character(letter)
         else if (!is.character(letter))
             stop("'letter' must be a DNAString object or a character vector")
-        lkup <- get_xsbasetypes_conversion_lookup("B", xsbasetype(x))
+        lkup <- get_seqtype_conversion_lookup("B", seqtype(x))
         if (!isSingleString(if.not.extending))
             stop("'if.not.extending' must be a single string")
         if.not.extending <- match.arg(if.not.extending, c("replace", "skip", "merge", "error"))
@@ -81,7 +81,7 @@ setMethod("replaceLetterAt", "DNAStringSet",
 
 .inplaceReplaceLetterAt <- function(x, at, letter)
 {
-    lkup <- get_xsbasetypes_conversion_lookup("B", xsbasetype(x))
+    lkup <- get_seqtype_conversion_lookup("B", seqtype(x))
     .Call2("XString_inplace_replace_letter_at",
           x, at, letter, lkup,
           PACKAGE="Biostrings")

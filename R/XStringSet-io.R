@@ -114,7 +114,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE, seqtype="B")
     skip <- .normargSkip(skip)
     use.names <- normargUseNames(use.names)
     seqtype <- match.arg(seqtype, c("B", "DNA", "RNA", "AA"))
-    lkup <- get_xsbasetypes_conversion_lookup("B", seqtype)
+    lkup <- get_seqtype_conversion_lookup("B", seqtype)
     .Call2("fasta_info",
           efp_list, nrec, skip, use.names, lkup,
           PACKAGE="Biostrings")
@@ -168,7 +168,7 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
     elementType <- paste(seqtype, "String", sep="")
-    lkup <- get_xsbasetypes_conversion_lookup("B", seqtype)
+    lkup <- get_seqtype_conversion_lookup("B", seqtype)
     switch(format,
         "fasta"=.read.fasta.in.XStringSet(efp_list, nrec, skip,
                                           use.names, elementType, lkup),
@@ -206,7 +206,7 @@ readAAStringSet <- function(filepath, format="fasta",
         width <- as.integer(width)
     if (width < 1L) 
         stop("'width' must be an integer >= 1")
-    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
+    lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fasta",
           x, efp_list, width, lkup,
           PACKAGE="Biostrings")
@@ -220,7 +220,7 @@ readAAStringSet <- function(filepath, format="fasta",
         if (length(qualities) != length(x))
             stop("'x' and 'qualities' must have the same length")
     }
-    lkup <- get_xsbasetypes_conversion_lookup(xsbasetype(x), "B")
+    lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fastq",
           x, efp_list, qualities, lkup,
           PACKAGE="Biostrings")

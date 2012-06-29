@@ -45,7 +45,7 @@
 \alias{maskeddim,MultipleAlignment-method}
 \alias{maskedratio,MultipleAlignment-method}
 \alias{nchar,MultipleAlignment-method}
-\alias{xsbasetype,MultipleAlignment-method}
+\alias{seqtype,MultipleAlignment-method}
 
 % Read functions:
 \alias{readDNAMultipleAlignment}
