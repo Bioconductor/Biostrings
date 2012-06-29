@@ -24,7 +24,8 @@ setMethod("compare", c("XStringSet", "character"),
     {
         y <- try(XStringSet(seqtype(x), y))
         if (is(y, "try-error"))
-            stop("could not turn 'y' into a ", xsbaseclass(x), " instance")
+            stop("could not turn 'y' into a ",
+                 xsbaseclass(x), "Set instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
@@ -34,7 +35,8 @@ setMethod("compare", c("character", "XStringSet"),
     {
         x <- try(XStringSet(seqtype(y), x))
         if (is(x, "try-error"))
-            stop("could not turn 'x' into a ", xsbaseclass(y), " instance")
+            stop("could not turn 'x' into a ",
+                 xsbaseclass(y), "Set instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
@@ -92,7 +94,8 @@ setMethod("match", c("XStringSet", "character"),
     {
         table <- try(XStringSet(seqtype(x), table))
         if (is(table, "try-error"))
-            stop("could not turn 'table' into a ", xsbaseclass(x), " instance")
+            stop("could not turn 'table' into a ",
+                 xsbaseclass(x), "Set instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
@@ -102,7 +105,8 @@ setMethod("match", c("character", "XStringSet"),
     {
         x <- try(XStringSet(seqtype(table), x))
         if (is(x, "try-error"))
-            stop("could not turn 'x' into a ", xsbaseclass(table), " instance")
+            stop("could not turn 'x' into a ",
+                 xsbaseclass(table), "Set instance")
         callGeneric()  # call method for XStringSet,XStringSet
     }
 )
