@@ -309,6 +309,7 @@ exportMethods(
 ###   AlignedXStringSet-class.R
 ###   PairwiseAlignedXStringSet-class.R
 ###   PairwiseAlignedFixedSubject-class.R
+###   PairwiseAlignedXStringSet-io.R
 ###   align-utils.R
 ###   pmatchPattern.R
 ###   pairwiseAlignment.R
@@ -353,6 +354,9 @@ export(
 
     ## PairwiseAlignedFixedSubject-class.R:
     PairwiseAlignedFixedSubject,
+
+    ## PairwiseAlignedXStringSet-io.R:
+    writePairwiseAlignedXStringSet,
 
     ## align-utils.R:
     nedit,

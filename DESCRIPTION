@@ -74,6 +74,7 @@ Collate: 00datacache.R
 	AlignedXStringSet-class.R
 	PairwiseAlignedXStringSet-class.R
 	PairwiseAlignedFixedSubject-class.R
+	PairwiseAlignedXStringSet-io.R
 	align-utils.R
 	pmatchPattern.R
 	pairwiseAlignment.R

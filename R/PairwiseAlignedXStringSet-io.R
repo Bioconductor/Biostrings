@@ -180,6 +180,13 @@ writePairwiseAlignedXStringSet <- function(x, file="", block.width=50L)
 {
     if (!is(x, "PairwiseAlignedXStringSet"))
         stop("'x' must be a PairwiseAlignedXStringSet object")
+    pkgversion <- as.character(packageVersion("Biostrings"))
+    Program <- paste("Biostrings (version ", pkgversion, "), ",
+                     "a Bioconductor package", sep="")
+    cat("########################################\n", file=file)
+    cat("# Program: ", Program, "\n", sep="", file=file)
+    cat("# Rundate: ", date(), "\n", sep="", file=file)
+    cat("########################################\n", file=file)
     x_len <- length(x)
     if (x_len == 0L)
         warning("'x' is an empty PairwiseAlignedXStringSet object ",
@@ -192,8 +199,8 @@ writePairwiseAlignedXStringSet <- function(x, file="", block.width=50L)
         bottom_name0 <- "S1"
     }
     for (i in seq_len(x_len)) {
-        if (i != 1L)
-            cat("\n\n", file=file)
+        #if (i != 1L)
+        #    cat("\n\n", file=file)
         xi <- x[i]
         strings <- .onePairTo3Strings(xi)
         string_names <- names(strings)
