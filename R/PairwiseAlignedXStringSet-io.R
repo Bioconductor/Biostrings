@@ -96,6 +96,12 @@ if (FALSE) {
 {
     if (!is(x, "PairwiseAlignedXStringSet") || length(x) != 1L)
         stop("'x' must be a PairwiseAlignedXStringSet object of length 1")
+    if (!isSingleNumber(alignment.length))
+        stop("'alignment.length' must be a single number")
+    if (!is.integer(alignment.length))
+        alignment.length <- as.integer(alignment.length)
+    if (!isSingleStringOrNA(Matrix))
+        stop("'Matrix' must be a single string or NA")
 
     Gap_penalty <- sprintf("%.1f", - (x@gapOpening + x@gapExtension))
     Extend_penalty <- sprintf("%.1f", - x@gapExtension)
@@ -124,15 +130,20 @@ if (FALSE) {
     cat("# Similarity: ", Similarity, "\n", sep="", file=file)
     cat("# Gaps: ", Gaps, "\n", sep="", file=file)
     cat("# Score: ", Score, "\n", sep="", file=file)
-    cat("\n\n", file=file)
+    cat("#\n#\n", file=file)
     cat("#=======================================\n", file=file)
 }
 
 .writePairSequences <- function(top.string, bottom.string, middle.string,
                                 top.name="P1", bottom.name="S1",
                                 top.start=1L, bottom.start=1L,
-                                block.width=50L, file="")
+                                block.width=50, file="")
 {
+    if (!isSingleNumber(block.width))
+        stop("'block.width' must be a single number")
+    if (!is.integer(block.width))
+        block.width <- as.integer(block.width)
+
     alignment_length <- nchar(top.string)
     start_width <- max(nchar(as.character(top.start + alignment_length)),
                        nchar(as.character(bottom.start + alignment_length)))
@@ -176,7 +187,7 @@ if (FALSE) {
     }
 }
 
-writePairwiseAlignedXStringSet <- function(x, file="", block.width=50L)
+writePairwiseAlignedXStringSet <- function(x, file="", Matrix=NA, block.width=50)
 {
     if (!is(x, "PairwiseAlignedXStringSet"))
         stop("'x' must be a PairwiseAlignedXStringSet object")
@@ -191,8 +202,8 @@ writePairwiseAlignedXStringSet <- function(x, file="", block.width=50L)
     if (x_len == 0L)
         warning("'x' is an empty PairwiseAlignedXStringSet object ",
                 "-> nothing to write")
-    else if (x_len >= 2L)
-        warning("'x' contains more than 1 pairwise alignment")
+    #else if (x_len >= 2L)
+    #    warning("'x' contains more than 1 pairwise alignment")
     if (length(unaligned(subject(x))) != 1L) {
         bottom_name0 <- ""
     } else {
@@ -220,7 +231,7 @@ writePairwiseAlignedXStringSet <- function(x, file="", block.width=50L)
                                 ranges(matchPattern("-", strings[3L])))))
         .writePairHeader(xi, nchar(strings[1L]), Identity, NA, Gaps,
                          pattern.name=top_name, subject.name=bottom_name,
-                         file=file)
+                         Matrix=Matrix, file=file)
         aligned_pattern <- pattern(xi)
         aligned_subject <- subject(xi)
         top_start <- start(aligned_pattern@range)
@@ -231,9 +242,9 @@ writePairwiseAlignedXStringSet <- function(x, file="", block.width=50L)
                             top.start=top_start, bottom.start=bottom_start,
                             block.width=block.width, file=file)
         cat("\n\n", file=file)
-        cat("#---------------------------------------\n", file=file)
-        cat("#---------------------------------------\n", file=file)
     }
+    cat("#---------------------------------------\n", file=file)
+    cat("#---------------------------------------\n", file=file)
     invisible(NULL)
 }
 
