@@ -1,3 +1,8 @@
+### =========================================================================
+### Input/output of PairwiseAlignments objects
+### -------------------------------------------------------------------------
+###
+### Only output is supported at the moment.
 ###
 
 if (FALSE) {
@@ -23,8 +28,10 @@ if (FALSE) {
 {
     if (!is(axset, "AlignedXStringSet0") || length(axset) != 1L)
         stop("'axset' must be an AlignedXStringSet0 object of length 1")
-    target <- subseq(unaligned(axset)[[1L]], start(axset@range), end(axset@range))
-    current <- aligned(axset)[[1L]][.pre2postaligned(as.integer(axset@range), axset)]
+    target <- subseq(unaligned(axset)[[1L]],
+                     start(axset@range), end(axset@range))
+    pos <- as.integer(axset@range)
+    current <- aligned(axset)[[1L]][.pre2postaligned(pos, axset)]
     identical(as.character(target), as.character(current))
 }
 
@@ -46,7 +53,11 @@ if (FALSE) {
         stop("'axset' must be an AlignedXStringSet0 object of length 1")
     aligned_axset <- aligned(axset) 
     postaligned_width <- width(aligned_axset)
-    postaligned_mismatches <- .pre2postaligned(mismatch(axset)[[1L]], axset)
+    prealigned_mismatches <- mismatch(axset)[[1L]]
+    is_in_range <- prealigned_mismatches >= start(axset@range) &
+                   prealigned_mismatches <= end(axset@range)
+    prealigned_mismatches <- prealigned_mismatches[is_in_range]
+    postaligned_mismatches <- .pre2postaligned(prealigned_mismatches, axset)
     postaligned_mismatch_ranges <- as(postaligned_mismatches, "IRanges")
     postaligned_gap_ranges <- .postaligned_gap_ranges(axset)
     postaligned_mismatches_or_indels <- union(postaligned_mismatch_ranges,
@@ -54,7 +65,7 @@ if (FALSE) {
     setdiff(IRanges(1L, postaligned_width), postaligned_mismatches_or_indels)
 }
 
-.onePairTo3Strings <- function(x)
+.onePairTo3XStrings <- function(x)
 {
     if (!is(x, "PairwiseAlignments") || length(x) != 1L)
         stop("'x' must be a PairwiseAlignments object of length 1")
@@ -74,12 +85,12 @@ if (FALSE) {
                    as.character(postaligned_subject[ii])))
         stop("Biostrings internal error: mismatches and/or indels ",
              "reported in 'pattern(x)' and 'subject(x)' are inconsistent")
-    top_string <- as.character(postaligned_pattern)
-    bottom_string <- as.character(postaligned_subject)
+    top_string <- postaligned_pattern
+    bottom_string <- postaligned_subject
     middle_string <- rep.int(" ", nchar(top_string))
     middle_string[ii] <- "|"
-    middle_string <- paste(middle_string, collapse="")
-    ans <- c(top_string, middle_string, bottom_string)
+    middle_string <- BString(paste(middle_string, collapse=""))
+    ans <- list(top_string, middle_string, bottom_string)
     top_name <- names(unaligned(aligned_pattern))
     if (is.null(top_name))
         top_name <- ""
@@ -105,15 +116,17 @@ if (FALSE) {
 
     Gap_penalty <- sprintf("%.1f", - (x@gapOpening + x@gapExtension))
     Extend_penalty <- sprintf("%.1f", - x@gapExtension)
-    Identity_percentage <- round(100 * Identity / alignment.length, digits=1L)
-    Identity <- paste(format(Identity, width=7L), "/", alignment.length, " ",
-                      "(", sprintf("%.1f", Identity_percentage), "%)", sep="")
-    Similarity_percentage <- round(100 * Similarity / alignment.length, digits=1L)
-    Similarity <- paste(format(Similarity, width=5L), "/", alignment.length, " ",
-                        "(", sprintf("%.1f", Similarity_percentage), "%)", sep="")
-    Gaps_percentage <- round(100 * Gaps / alignment.length, digits=1L)
-    Gaps <- paste(format(Gaps, width=11L), "/", alignment.length, " ",
-                  "(", sprintf("%.1f", Gaps_percentage), "%)", sep="")
+    prettyPercentage <- function(ratio)
+        sprintf("%.1f%%", round(ratio * 100, digits=1L))
+    Identity_percentage <- .prettyPercentage(Identity / alignment.length)
+    Identity <- paste(format(Identity, width=7L), "/", alignment.length,
+                      " (", Identity_percentage, ")", sep="")
+    Similarity_percentage <- .prettyPercentage(Similarity / alignment.length)
+    Similarity <- paste(format(Similarity, width=5L), "/", alignment.length,
+                        " (", Similarity_percentage, ")", sep="")
+    Gaps_percentage <- .prettyPercentage(Gaps / alignment.length)
+    Gaps <- paste(format(Gaps, width=11L), "/", alignment.length,
+                  " (", Gaps_percentage, ")", sep="")
     Score <- x@score
 
     cat("#=======================================\n", file=file)
@@ -144,7 +157,7 @@ if (FALSE) {
     if (!is.integer(block.width))
         block.width <- as.integer(block.width)
 
-    alignment_length <- nchar(top.string)
+    alignment_length <- length(top.string)
     start_width <- max(nchar(as.character(top.start + alignment_length)),
                        nchar(as.character(bottom.start + alignment_length)))
     name_width <- max(20L - start_width - 1L,
@@ -159,9 +172,9 @@ if (FALSE) {
         from <- to - block.width + 1L
         if (to > alignment_length)
             to <- alignment_length
-        string1 <- substr(top.string, from, to)
-        string2 <- substr(middle.string, from, to)
-        string3 <- substr(bottom.string, from, to)
+        string1 <- as.character(subseq(top.string, from, to))
+        string2 <- as.character(subseq(middle.string, from, to))
+        string3 <- as.character(subseq(bottom.string, from, to))
         if (i != 1L)
             cat("\n", file=file)
         ## 1st line
@@ -213,7 +226,7 @@ writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
         #if (i != 1L)
         #    cat("\n\n", file=file)
         xi <- x[i]
-        strings <- .onePairTo3Strings(xi)
+        strings <- .onePairTo3XStrings(xi)
         string_names <- names(strings)
         top_name <- string_names[1L]
         if (top_name == "")
@@ -226,10 +239,10 @@ writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
                 bottom_name <- bottom_name0
             }
         }
-        Identity <- countPattern("|", strings[2L])
-        Gaps <- sum(width(union(ranges(matchPattern("-", strings[1L])),
-                                ranges(matchPattern("-", strings[3L])))))
-        .writePairHeader(xi, nchar(strings[1L]), Identity, NA, Gaps,
+        Identity <- countPattern("|", strings[[2L]])
+        Gaps <- sum(width(union(ranges(matchPattern("-", strings[[1L]])),
+                                ranges(matchPattern("-", strings[[3L]])))))
+        .writePairHeader(xi, length(strings[[1L]]), Identity, NA, Gaps,
                          pattern.name=top_name, subject.name=bottom_name,
                          Matrix=Matrix, file=file)
         aligned_pattern <- pattern(xi)
@@ -237,7 +250,7 @@ writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
         top_start <- start(aligned_pattern@range)
         bottom_start <- start(aligned_subject@range)
         cat("\n", file=file)
-        .writePairSequences(strings[1L], strings[3L], strings[2L],
+        .writePairSequences(strings[[1L]], strings[[3L]], strings[[2L]],
                             top.name=top_name, bottom.name=bottom_name,
                             top.start=top_start, bottom.start=bottom_start,
                             block.width=block.width, file=file)
