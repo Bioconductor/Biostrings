@@ -337,7 +337,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Functions for \Rclass{PairwiseAlignments} and \Rclass{PairwiseAlignmentFixedSubject}
+\caption{Functions for \Rclass{PairwiseAlignments} and \Rclass{PairwiseAlignmentsSingleSubject}
   objects.}
 \label{table:helperfuns1}
 \end{table}

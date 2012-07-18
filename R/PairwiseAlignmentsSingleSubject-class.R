@@ -186,7 +186,7 @@ setMethod("show", "PairwiseAlignmentsSingleSubjectSummary", function(object)
               cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
                          "local" = "Local", "global-local" = "Global-Local",
                          "local-global" = "Local-Global"),
-                  " Fixed Subject Pairwise Alignment\n", sep = "")
+                  " Single Subject Pairwise Alignments\n", sep = "")
               cat("Number of Alignments:  ", length(score(object)), "\n", sep = "")
               cat("\nScores:\n")
               print(summary(score(object)))
