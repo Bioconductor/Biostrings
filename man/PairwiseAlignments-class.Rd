@@ -1,10 +1,10 @@
-\name{PairwiseAlignedXStringSet-class}
+\name{PairwiseAlignments-class}
 \docType{class}
 
 % Classes
-\alias{class:PairwiseAlignedXStringSet}
-\alias{PairwiseAlignedXStringSet-class}
-\alias{PairwiseAlignedXStringSet}
+\alias{class:PairwiseAlignments}
+\alias{PairwiseAlignments-class}
+\alias{PairwiseAlignments}
 \alias{class:PairwiseAlignedFixedSubject}
 \alias{PairwiseAlignedFixedSubject-class}
 \alias{PairwiseAlignedFixedSubject}
@@ -13,34 +13,34 @@
 \alias{PairwiseAlignedFixedSubjectSummary}
 
 % Constructor-like functions and generics:
-\alias{PairwiseAlignedXStringSet,XString,XString-method}
-\alias{PairwiseAlignedXStringSet,XStringSet,missing-method}
-\alias{PairwiseAlignedXStringSet,character,missing-method}
-\alias{PairwiseAlignedXStringSet,character,character-method}
+\alias{PairwiseAlignments,XString,XString-method}
+\alias{PairwiseAlignments,XStringSet,missing-method}
+\alias{PairwiseAlignments,character,missing-method}
+\alias{PairwiseAlignments,character,character-method}
 \alias{PairwiseAlignedFixedSubject,XString,XString-method}
 \alias{PairwiseAlignedFixedSubject,XStringSet,missing-method}
 \alias{PairwiseAlignedFixedSubject,character,missing-method}
 \alias{PairwiseAlignedFixedSubject,character,character-method}
 
 % Accessor methods:
-\alias{pattern,PairwiseAlignedXStringSet-method}
-\alias{subject,PairwiseAlignedXStringSet-method}
+\alias{pattern,PairwiseAlignments-method}
+\alias{subject,PairwiseAlignments-method}
 \alias{type}
-\alias{type,PairwiseAlignedXStringSet-method}
-\alias{score,PairwiseAlignedXStringSet-method}
-\alias{insertion,PairwiseAlignedXStringSet-method}
-\alias{deletion,PairwiseAlignedXStringSet-method}
-\alias{indel,PairwiseAlignedXStringSet-method}
-\alias{nindel,PairwiseAlignedXStringSet-method}
-\alias{length,PairwiseAlignedXStringSet-method}
-\alias{nchar,PairwiseAlignedXStringSet-method}
-\alias{seqtype,PairwiseAlignedXStringSet-method}
+\alias{type,PairwiseAlignments-method}
+\alias{score,PairwiseAlignments-method}
+\alias{insertion,PairwiseAlignments-method}
+\alias{deletion,PairwiseAlignments-method}
+\alias{indel,PairwiseAlignments-method}
+\alias{nindel,PairwiseAlignments-method}
+\alias{length,PairwiseAlignments-method}
+\alias{nchar,PairwiseAlignments-method}
+\alias{seqtype,PairwiseAlignments-method}
 
 % Standard generic methods:
-\alias{show,PairwiseAlignedXStringSet-method}
-\alias{[,PairwiseAlignedXStringSet-method}
-\alias{[<-,PairwiseAlignedXStringSet-method}
-\alias{rep,PairwiseAlignedXStringSet-method}
+\alias{show,PairwiseAlignments-method}
+\alias{[,PairwiseAlignments-method}
+\alias{[<-,PairwiseAlignments-method}
+\alias{rep,PairwiseAlignments-method}
 
 % Methods for PairwiseAlignedFixedSubject:
 \alias{summary,PairwiseAlignedFixedSubject-method}
@@ -58,30 +58,37 @@
 \alias{nchar,PairwiseAlignedFixedSubjectSummary-method}
 \alias{show,PairwiseAlignedFixedSubjectSummary-method}
 
+% Old stuff (Defunct or Deprecated):
+\alias{class:PairwiseAlignedXStringSet}
+\alias{PairwiseAlignedXStringSet-class}
+\alias{PairwiseAlignedXStringSet}
 
-\title{PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject, and
+
+\title{PairwiseAlignments, PairwiseAlignedFixedSubject, and
   PairwiseAlignedFixedSubjectSummary objects}
 
 \description{
-  The \code{PairwiseAlignedXStringSet} class is a container for storing an
-  elementwise pairwise alignment.
-  The \code{PairwiseAlignedFixedSubject} class is a container for storing a
-  pairwise alignment with a single subject.
+  The \code{PairwiseAlignments} class is a container for storing
+  a set of pairwise alignments.
+
+  The \code{PairwiseAlignedFixedSubject} class is a container for storing
+  a set of pairwise alignments with a single subject.
+
   The \code{PairwiseAlignedFixedSubjectSummary} class is a container for storing
-  the summary of an alignment.
+  the summary of a set of pairwise alignments.
 }
 
 \usage{
 ## Constructors:
 ## When subject is missing, pattern must be of length 2
-\S4method{PairwiseAlignedXStringSet}{XString,XString}(pattern, subject,
+\S4method{PairwiseAlignments}{XString,XString}(pattern, subject,
   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-\S4method{PairwiseAlignedXStringSet}{XStringSet,missing}(pattern, subject,
+\S4method{PairwiseAlignments}{XStringSet,missing}(pattern, subject,
   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
-\S4method{PairwiseAlignedXStringSet}{character,character}(pattern, subject,
+\S4method{PairwiseAlignments}{character,character}(pattern, subject,
   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
   baseClass = "BString")
-\S4method{PairwiseAlignedXStringSet}{character,missing}(pattern, subject,
+\S4method{PairwiseAlignments}{character,missing}(pattern, subject,
   type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
   baseClass = "BString")
 }
@@ -144,7 +151,7 @@
 
 \section{Object extraction methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignedXStringSet} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignments} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -157,13 +164,13 @@
     }
     \item{}{
       \code{summary(object, ...)}:
-      Generates a summary for the \code{PairwiseAlignedXStringSet}.
+      Generates a summary for the \code{PairwiseAlignments}.
     }
   }
 }
 \section{General information methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignedXStringSet} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignments} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -243,7 +250,7 @@
 }
 \section{Numeric summary methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignedXStringSet} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignments} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -284,12 +291,12 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new \code{PairwiseAlignedXStringSet} object made of the selected
+      Returns a new \code{PairwiseAlignments} object made of the selected
       elements.
     }
     \item{}{
       \code{rep(x, times)}:
-      Returns a new \code{PairwiseAlignedXStringSet} object made of the repeated
+      Returns a new \code{PairwiseAlignments} object made of the repeated
       elements.
     }
   }
@@ -307,7 +314,7 @@
 }
 
 \examples{
-  PairwiseAlignedXStringSet("-PA--W-HEAE", "HEAGAWGHE-E")
+  PairwiseAlignments("-PA--W-HEAE", "HEAGAWGHE-E")
   pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
   subject <- AAString("SMDDTEKMSMKL")
   nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50",

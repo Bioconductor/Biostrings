@@ -174,7 +174,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(vmatch_XStringSet_XStringSet, 11),
 
 /* align_utils.c */
-	CALLMETHOD_DEF(PairwiseAlignedXStringSet_nmatch, 4),
+	CALLMETHOD_DEF(PairwiseAlignments_nmatch, 4),
 	CALLMETHOD_DEF(AlignedXStringSet_nchar, 1),
 	CALLMETHOD_DEF(AlignedXStringSet_align_aligned, 2),
 	CALLMETHOD_DEF(PairwiseAlignedFixedSubject_align_aligned, 3),

@@ -307,9 +307,9 @@ exportMethods(
 ###   QualityScaledXStringSet.R
 ###   InDel-class.R
 ###   AlignedXStringSet-class.R
-###   PairwiseAlignedXStringSet-class.R
+###   PairwiseAlignments-class.R
 ###   PairwiseAlignedFixedSubject-class.R
-###   PairwiseAlignedXStringSet-io.R
+###   PairwiseAlignments-io.R
 ###   align-utils.R
 ###   pmatchPattern.R
 ###   pairwiseAlignment.R
@@ -325,8 +325,8 @@ exportClasses(
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     InDel,
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
-    PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
-    PairwiseAlignedFixedSubjectSummary,
+    PairwiseAlignments, PairwiseAlignedXStringSet,
+    PairwiseAlignedFixedSubject, PairwiseAlignedFixedSubjectSummary,
     MultipleAlignment,
     DNAMultipleAlignment, RNAMultipleAlignment, AAMultipleAlignment
 )
@@ -349,14 +349,14 @@ export(
     ## AlignedXStringSet-class.R:
     unaligned, aligned, indel, nindel,
 
-    ## PairwiseAlignedXStringSet-class.R:
-    PairwiseAlignedXStringSet, type, pid,
+    ## PairwiseAlignments-class.R:
+    PairwiseAlignments, type, pid,
 
     ## PairwiseAlignedFixedSubject-class.R:
     PairwiseAlignedFixedSubject,
 
-    ## PairwiseAlignedXStringSet-io.R:
-    writePairwiseAlignedXStringSet,
+    ## PairwiseAlignments-io.R:
+    writePairwiseAlignments,
 
     ## align-utils.R:
     nedit,
@@ -391,6 +391,7 @@ export(
     detail,
 
     ## Old stuff (Defunct or Deprecated):
+    PairwiseAlignedXStringSet,
     needwunsQS,
     read.DNAMultipleAlignment,
     read.RNAMultipleAlignment,
@@ -408,7 +409,7 @@ exportMethods(
     insertion, deletion,
     unaligned, aligned, indel, nindel,
     type, score, pid,
-    PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
+    PairwiseAlignments, PairwiseAlignedFixedSubject,
     mismatch, nmatch, nmismatch, nedit,
     mismatchTable, mismatchSummary, coverage,
     compareStrings,

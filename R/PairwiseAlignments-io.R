@@ -56,8 +56,8 @@ if (FALSE) {
 
 .onePairTo3Strings <- function(x)
 {
-    if (!is(x, "PairwiseAlignedXStringSet") || length(x) != 1L)
-        stop("'x' must be a PairwiseAlignedXStringSet object of length 1")
+    if (!is(x, "PairwiseAlignments") || length(x) != 1L)
+        stop("'x' must be a PairwiseAlignments object of length 1")
     aligned_pattern <- pattern(x)  # QualityAlignedXStringSet object
     aligned_subject <- subject(x)  # QualityAlignedXStringSet object
     postaligned_pattern <- aligned(aligned_pattern)[[1L]]
@@ -94,8 +94,8 @@ if (FALSE) {
                              pattern.name="P1", subject.name="S1",
                              Matrix=NA, file="")
 {
-    if (!is(x, "PairwiseAlignedXStringSet") || length(x) != 1L)
-        stop("'x' must be a PairwiseAlignedXStringSet object of length 1")
+    if (!is(x, "PairwiseAlignments") || length(x) != 1L)
+        stop("'x' must be a PairwiseAlignments object of length 1")
     if (!isSingleNumber(alignment.length))
         stop("'alignment.length' must be a single number")
     if (!is.integer(alignment.length))
@@ -187,10 +187,10 @@ if (FALSE) {
     }
 }
 
-writePairwiseAlignedXStringSet <- function(x, file="", Matrix=NA, block.width=50)
+writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
 {
-    if (!is(x, "PairwiseAlignedXStringSet"))
-        stop("'x' must be a PairwiseAlignedXStringSet object")
+    if (!is(x, "PairwiseAlignments"))
+        stop("'x' must be a PairwiseAlignments object")
     pkgversion <- as.character(packageVersion("Biostrings"))
     Program <- paste("Biostrings (version ", pkgversion, "), ",
                      "a Bioconductor package", sep="")
@@ -200,7 +200,7 @@ writePairwiseAlignedXStringSet <- function(x, file="", Matrix=NA, block.width=50
     cat("########################################\n", file=file)
     x_len <- length(x)
     if (x_len == 0L)
-        warning("'x' is an empty PairwiseAlignedXStringSet object ",
+        warning("'x' is an empty PairwiseAlignments object ",
                 "-> nothing to write")
     #else if (x_len >= 2L)
     #    warning("'x' contains more than 1 pairwise alignment")

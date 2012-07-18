@@ -3,19 +3,19 @@
 \alias{align-utils}
 
 \alias{mismatch,AlignedXStringSet0,missing-method}
-\alias{nmatch,PairwiseAlignedXStringSet,missing-method}
+\alias{nmatch,PairwiseAlignments,missing-method}
 \alias{nmatch,PairwiseAlignedFixedSubjectSummary,missing-method}
 \alias{nmismatch,AlignedXStringSet0,missing-method}
-\alias{nmismatch,PairwiseAlignedXStringSet,missing-method}
+\alias{nmismatch,PairwiseAlignments,missing-method}
 \alias{nmismatch,PairwiseAlignedFixedSubjectSummary,missing-method}
 \alias{nedit}
-\alias{nedit,PairwiseAlignedXStringSet-method}
+\alias{nedit,PairwiseAlignments-method}
 \alias{nedit,PairwiseAlignedFixedSubjectSummary-method}
 
 \alias{mismatchTable}
 \alias{mismatchTable,AlignedXStringSet0-method}
 \alias{mismatchTable,QualityAlignedXStringSet-method}
-\alias{mismatchTable,PairwiseAlignedXStringSet-method}
+\alias{mismatchTable,PairwiseAlignments-method}
 \alias{mismatchSummary}
 \alias{mismatchSummary,AlignedXStringSet0-method}
 \alias{mismatchSummary,QualityAlignedXStringSet-method}
@@ -31,7 +31,7 @@
 \alias{compareStrings,XString,XString-method}
 \alias{compareStrings,XStringSet,XStringSet-method}
 \alias{compareStrings,AlignedXStringSet0,AlignedXStringSet0-method}
-\alias{compareStrings,PairwiseAlignedXStringSet,missing-method}
+\alias{compareStrings,PairwiseAlignments,missing-method}
 \alias{consensusMatrix,PairwiseAlignedFixedSubject-method}
 
 
@@ -58,7 +58,7 @@ compareStrings(pattern, subject)
 \details{
   \code{mismatchTable}:  a data.frame containing the positions and substrings
   of the mismatches for the \code{AlignedXStringSet} or
-  \code{PairwiseAlignedXStringSet} object.
+  \code{PairwiseAlignments} object.
 
   \code{mismatchSummary}:  a list of data.frame objects containing counts and
   frequencies of the mismatches for the \code{AlignedXStringSet} or
@@ -72,7 +72,7 @@ compareStrings(pattern, subject)
 \arguments{
   \item{x}{
     A \code{character} vector or matrix, \code{XStringSet}, \code{XStringViews},
-    \code{PairwiseAlignedXStringSet}, or \code{list} of FASTA records containing
+    \code{PairwiseAlignments}, or \code{list} of FASTA records containing
     the equal-length strings.
   }
   \item{shiftLeft, shiftRight}{
@@ -92,8 +92,8 @@ compareStrings(pattern, subject)
   \item{pattern, subject}{
     The strings to compare. Can be of type \code{character}, \code{XString},
     \code{XStringSet}, \code{AlignedXStringSet}, or, in the case of
-    \code{pattern}, \code{PairwiseAlignedXStringSet}. If \code{pattern} is a
-    \code{PairwiseAlignedXStringSet} object, then \code{subject} must be
+    \code{pattern}, \code{PairwiseAlignments}. If \code{pattern} is a
+    \code{PairwiseAlignments} object, then \code{subject} must be
     missing.
   }
   \item{as.prob}{
@@ -119,7 +119,7 @@ compareStrings(pattern, subject)
   \code{\link{pairwiseAlignment}},
   \code{\link{consensusMatrix}},
   \link{XString-class}, \link{XStringSet-class}, \link{XStringViews-class},
-  \link{AlignedXStringSet-class}, \link{PairwiseAlignedXStringSet-class},
+  \link{AlignedXStringSet-class}, \link{PairwiseAlignments-class},
   \link{match-utils}
 }
 

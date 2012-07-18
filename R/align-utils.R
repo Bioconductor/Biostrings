@@ -7,9 +7,9 @@ setMethod("mismatch", c(pattern = "AlignedXStringSet0", x = "missing"),
         pattern@mismatch
 )
 
-setMethod("nmatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
+setMethod("nmatch", c(pattern = "PairwiseAlignments", x = "missing"),
     function(pattern, x, fixed)
-        .Call2("PairwiseAlignedXStringSet_nmatch", nchar(pattern), nmismatch(pattern),
+        .Call2("PairwiseAlignments_nmatch", nchar(pattern), nmismatch(pattern),
               nindel(subject(pattern))[,"WidthSum"], nindel(pattern(pattern))[,"WidthSum"],
               PACKAGE="Biostrings")
 )
@@ -24,7 +24,7 @@ setMethod("nmismatch", c(pattern = "AlignedXStringSet0", x = "missing"),
         elementLengths(mismatch(pattern))
 )
 
-setMethod("nmismatch", c(pattern = "PairwiseAlignedXStringSet", x = "missing"),
+setMethod("nmismatch", c(pattern = "PairwiseAlignments", x = "missing"),
     function(pattern, x, fixed)
         nmismatch(pattern(pattern))
 )
@@ -36,7 +36,7 @@ setMethod("nmismatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "mi
 
 setGeneric("nedit", function(x) standardGeneric("nedit"))
 
-setMethod("nedit", "PairwiseAlignedXStringSet",
+setMethod("nedit", "PairwiseAlignments",
     function(x)
         nmismatch(x) + unname(nindel(subject(x))[,"WidthSum"]) +
           unname(nindel(pattern(x))[,"WidthSum"])
@@ -131,7 +131,7 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
     }
 )
 
-setMethod("mismatchTable", "PairwiseAlignedXStringSet",
+setMethod("mismatchTable", "PairwiseAlignments",
     function(x, shiftLeft = 0L, shiftRight = 0L)
     {
         cbind(mismatchTable(pattern(x), shiftLeft = shiftLeft,
@@ -338,10 +338,10 @@ setMethod("compareStrings",
               compareStrings(as.character(pattern), as.character(subject))
           })
 setMethod("compareStrings",
-          signature = c(pattern = "PairwiseAlignedXStringSet", subject = "missing"),
-		  function(pattern, subject) {
-			  compareStrings(pattern@pattern, pattern@subject)
-		  })
+          signature = c(pattern = "PairwiseAlignments", subject = "missing"),
+          function(pattern, subject) {
+              compareStrings(pattern@pattern, pattern@subject)
+          })
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

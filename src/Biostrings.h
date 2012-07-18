@@ -1104,7 +1104,7 @@ SEXP vmatch_XStringSet_XStringSet(
 
 /* align_utils.c */
 
-SEXP PairwiseAlignedXStringSet_nmatch(
+SEXP PairwiseAlignments_nmatch(
 	SEXP nchar,
 	SEXP nmismatch,
 	SEXP ninsertion,

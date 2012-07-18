@@ -1,10 +1,11 @@
 ### =========================================================================
-### PairwiseAlignedXStringSet objects
+### PairwiseAlignments objects
 ### -------------------------------------------------------------------------
-### PairwiseAlignedXStringSet objects contain two aligned XStringSets.
+###
+### A PairwiseAlignments object contains two aligned XStringSet objects.
+###
 
-
-setClass("PairwiseAlignedXStringSet",
+setClass("PairwiseAlignments",
     representation(
         pattern="AlignedXStringSet0",
         subject="AlignedXStringSet0",
@@ -16,15 +17,21 @@ setClass("PairwiseAlignedXStringSet",
     )
 )
 
+### "PairwiseAlignedXStringSet" is the old name for "PairwiseAlignments".
+### Now it's just an alias for "PairwiseAlignments", to ensure that
+### serialized PairwiseAlignedXStringSet instances can still be loaded.
+### TODO: Remove in BioC 2.13.
+setClass("PairwiseAlignedXStringSet", contains="PairwiseAlignments")
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
 ###
 
-newPairwiseAlignedXStringSet <-
+newPairwiseAlignments <-
 function(pattern, subject, type = "global", substitutionMatrix = NULL,
          gapOpening = 0, gapExtension = -1,
-         baseClass = "BString", pwaClass = "PairwiseAlignedXStringSet") {
+         baseClass = "BString", pwaClass = "PairwiseAlignments") {
     seqtype <- substr(baseClass, 1, nchar(baseClass) - 6)  # remove "String" suffix
     getMismatches <- function(x) {
         whichMismatches <- which(x[["values"]] == "?")
@@ -167,59 +174,59 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
         substitutionArray = substitutionArray, gapOpening = gapOpening, gapExtension = gapExtension)
 }
 
-setGeneric("PairwiseAlignedXStringSet",
+setGeneric("PairwiseAlignments",
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, ...)
-        standardGeneric("PairwiseAlignedXStringSet"))
+        standardGeneric("PairwiseAlignments"))
 
-setMethod("PairwiseAlignedXStringSet", signature(pattern = "XString", subject = "XString"),
+setMethod("PairwiseAlignments", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
         if (seqtype(pattern) != seqtype(subject))
             stop("'pattern' and 'subject' must contain ",
                  "sequences of the same type")
-        PairwiseAlignedXStringSet(as.character(pattern), as.character(subject),
+        PairwiseAlignments(as.character(pattern), as.character(subject),
                                   type = type, substitutionMatrix = substitutionMatrix,
                                   gapOpening = gapOpening, gapExtension = gapExtension,
                                   baseClass = xsbaseclass(pattern))
     }
 )
 
-setMethod("PairwiseAlignedXStringSet", signature(pattern = "XStringSet", subject = "missing"),
+setMethod("PairwiseAlignments", signature(pattern = "XStringSet", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
             stop("'pattern' elements must have the same number of characters")
-        PairwiseAlignedXStringSet(as.character(pattern[1]), as.character(pattern[2]),
+        PairwiseAlignments(as.character(pattern[1]), as.character(pattern[2]),
                                   type = type, substitutionMatrix = substitutionMatrix,
                                   gapOpening = gapOpening, gapExtension = gapExtension,
                                   baseClass = xsbaseclass(pattern))
     }
 )
 
-setMethod("PairwiseAlignedXStringSet", signature(pattern = "character", subject = "missing"),
+setMethod("PairwiseAlignments", signature(pattern = "character", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, baseClass = "BString") {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
             stop("'pattern' elements must have the same number of characters")
-        PairwiseAlignedXStringSet(pattern[1], pattern[2],
+        PairwiseAlignments(pattern[1], pattern[2],
                                   type = type, substitutionMatrix = substitutionMatrix,
                                   gapOpening = gapOpening, gapExtension = gapExtension,
                                   baseClass = baseClass)
     }
 )
 
-setMethod("PairwiseAlignedXStringSet", signature(pattern = "character", subject = "character"),
+setMethod("PairwiseAlignments", signature(pattern = "character", subject = "character"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, baseClass = "BString") {
-        newPairwiseAlignedXStringSet(pattern = pattern, subject = subject, type = type,
+        newPairwiseAlignments(pattern = pattern, subject = subject, type = type,
                                      substitutionMatrix = substitutionMatrix,
                                      gapOpening = gapOpening, gapExtension = gapExtension,
-                                     baseClass = baseClass, pwaClass = "PairwiseAlignedXStringSet")
+                                     baseClass = baseClass, pwaClass = "PairwiseAlignments")
     }
 )
 
@@ -228,7 +235,7 @@ setMethod("PairwiseAlignedXStringSet", signature(pattern = "character", subject 
 ### Validity.
 ###
 
-.valid.PairwiseAlignedXStringSet <- function(object)
+.valid.PairwiseAlignments <- function(object)
 {
     message <- NULL
     if (!identical(class(unaligned(pattern(object))), class(unaligned(subject(object)))))
@@ -244,10 +251,10 @@ setMethod("PairwiseAlignedXStringSet", signature(pattern = "character", subject 
     message
 }
 
-setValidity("PairwiseAlignedXStringSet",
+setValidity("PairwiseAlignments",
     function(object)
     {
-       problems <- .valid.PairwiseAlignedXStringSet(object)
+       problems <- .valid.PairwiseAlignments(object)
         if (is.null(problems)) TRUE else problems
     }
 )
@@ -257,22 +264,22 @@ setValidity("PairwiseAlignedXStringSet",
 ### Accessor methods.
 ###
 
-setMethod("pattern", "PairwiseAlignedXStringSet", function(x) x@pattern)
-setMethod("subject", "PairwiseAlignedXStringSet", function(x) x@subject)
+setMethod("pattern", "PairwiseAlignments", function(x) x@pattern)
+setMethod("subject", "PairwiseAlignments", function(x) x@subject)
 setGeneric("type", function(x) standardGeneric("type"))
-setMethod("type", "PairwiseAlignedXStringSet", function(x) x@type)
-setMethod("score", "PairwiseAlignedXStringSet", function(x) x@score)
-setMethod("insertion", "PairwiseAlignedXStringSet", function(x) indel(subject(x)))
-setMethod("deletion", "PairwiseAlignedXStringSet", function(x) indel(pattern(x)))
-setMethod("indel", "PairwiseAlignedXStringSet",
+setMethod("type", "PairwiseAlignments", function(x) x@type)
+setMethod("score", "PairwiseAlignments", function(x) x@score)
+setMethod("insertion", "PairwiseAlignments", function(x) indel(subject(x)))
+setMethod("deletion", "PairwiseAlignments", function(x) indel(pattern(x)))
+setMethod("indel", "PairwiseAlignments",
           function(x) new("InDel", insertion = insertion(x), deletion = deletion(x)))
-setMethod("nindel", "PairwiseAlignedXStringSet",
+setMethod("nindel", "PairwiseAlignments",
           function(x) new("InDel", insertion = nindel(subject(x)), deletion = nindel(pattern(x))))
-setMethod("length", "PairwiseAlignedXStringSet", function(x) length(score(x)))
-setMethod("nchar", "PairwiseAlignedXStringSet", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
-setMethod("seqtype", "PairwiseAlignedXStringSet", function(x) seqtype(subject(x)))
+setMethod("length", "PairwiseAlignments", function(x) length(score(x)))
+setMethod("nchar", "PairwiseAlignments", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
+setMethod("seqtype", "PairwiseAlignments", function(x) seqtype(subject(x)))
 setGeneric("pid", signature="x", function(x, type="PID1") standardGeneric("pid"))
-setMethod("pid", "PairwiseAlignedXStringSet",
+setMethod("pid", "PairwiseAlignments",
           function(x, type="PID1") {
               type <- match.arg(type, c("PID1", "PID2", "PID3", "PID4"))
               denom <-
@@ -292,7 +299,7 @@ setMethod("pid", "PairwiseAlignedXStringSet",
 ### TODO: Make the "show" method to format the alignment in a SGD fashion
 ### i.e. split in 60-letter blocks and use the "|" character to highlight
 ### exact matches.
-setMethod("show", "PairwiseAlignedXStringSet",
+setMethod("show", "PairwiseAlignments",
     function(object) {
         if (length(object) == 0)
             cat("Empty Pairwise Alignment\n")
@@ -324,7 +331,7 @@ setMethod("show", "PairwiseAlignedXStringSet",
 ### Subsetting.
 ###
 
-setMethod("[", "PairwiseAlignedXStringSet",
+setMethod("[", "PairwiseAlignments",
     function(x, i, j, ..., drop)
     {
         if (!missing(j) || length(list(...)) > 0)
@@ -348,14 +355,26 @@ setMethod("[", "PairwiseAlignedXStringSet",
     }
 )
 
-setReplaceMethod("[", "PairwiseAlignedXStringSet",
+setReplaceMethod("[", "PairwiseAlignments",
     function(x, i, j,..., value)
     {
         stop("attempt to modify the value of a ", class(x), " instance")
     }
 )
 
-setMethod("rep", "PairwiseAlignedXStringSet",
+setMethod("rep", "PairwiseAlignments",
     function(x, times)
 		x[rep.int(seq_len(length(x)), times)]
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+PairwiseAlignedXStringSet <- function(...)
+{
+    .Deprecated("PairwiseAlignments")
+    PairwiseAlignments(...)
+}
+

@@ -44,7 +44,7 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \code{\link{PairwiseAlignedXStringSet-class}}
+  \code{\link{PairwiseAlignments-class}}
 }
 
 \keyword{methods}

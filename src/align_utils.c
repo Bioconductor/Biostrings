@@ -22,8 +22,8 @@ const char* get_qualityless_classname(SEXP object)
 /*
  * --- .Call ENTRY POINT ---
  */
-SEXP PairwiseAlignedXStringSet_nmatch(SEXP nchar, SEXP nmismatch, SEXP ninsertion,
-                                      SEXP ndeletion)
+SEXP PairwiseAlignments_nmatch(SEXP nchar, SEXP nmismatch, SEXP ninsertion,
+                               SEXP ndeletion)
 {
 	int ans_len, i, *ans_elt;
 	const int *nchar_elt, *nmismatch_elt, *ninsertion_elt, *ndeletion_elt;

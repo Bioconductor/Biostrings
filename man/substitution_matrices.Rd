@@ -116,7 +116,7 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \link{PairwiseAlignedXStringSet-class},
+  \link{PairwiseAlignments-class},
   \link{DNAString-class},
   \link{AAString-class},
   \link{PhredQuality-class},

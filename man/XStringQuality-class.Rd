@@ -94,7 +94,7 @@ IlluminaQuality(x)
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \link{PairwiseAlignedXStringSet-class},
+  \link{PairwiseAlignments-class},
   \link{DNAString-class},
   \link{BStringSet-class}
 }

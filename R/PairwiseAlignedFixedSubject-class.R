@@ -11,7 +11,7 @@
 ### matchPDict(), etc... for the details.
 
 setClass("PairwiseAlignedFixedSubject",
-    contains="PairwiseAlignedXStringSet"
+    contains="PairwiseAlignments"
 )
 
 setClass("PairwiseAlignedFixedSubjectSummary",
@@ -80,10 +80,10 @@ setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subjec
 setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subject = "character"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, baseClass = "BString") {
-        newPairwiseAlignedXStringSet(pattern = pattern, subject = subject, type = type,
-                                     substitutionMatrix = substitutionMatrix,
-                                     gapOpening = gapOpening, gapExtension = gapExtension,
-                                     baseClass = baseClass, pwaClass = "PairwiseAlignedFixedSubject")
+        newPairwiseAlignments(pattern = pattern, subject = subject, type = type,
+                              substitutionMatrix = substitutionMatrix,
+                              gapOpening = gapOpening, gapExtension = gapExtension,
+                              baseClass = baseClass, pwaClass = "PairwiseAlignedFixedSubject")
     }
 )
 

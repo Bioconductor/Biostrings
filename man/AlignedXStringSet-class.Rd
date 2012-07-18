@@ -158,7 +158,7 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \code{\link{PairwiseAlignedXStringSet-class}},
+  \code{\link{PairwiseAlignments-class}},
   \code{\link{XStringSet-class}}
 }
 

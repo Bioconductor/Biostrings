@@ -23,14 +23,14 @@ This function has been deprecated and is being replaced by
 \code{pairwiseAlignment}.
 }
 \value{
-An instance of class \code{"PairwiseAlignedXStringSet"}.
+An instance of class \code{"PairwiseAlignments"}.
 }
 \references{R. Durbin, S. Eddy, A. Krogh, G. Mitchison,
 Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.}
 \author{Vince Carey (\email{stvjc@channing.harvard.edu}) (original author) and H. Pages (current maintainer).}
 \seealso{
   \link{pairwiseAlignment},
-  \link{PairwiseAlignedXStringSet-class},
+  \link{PairwiseAlignments-class},
   \link{substitution.matrices}
 }
 \examples{
