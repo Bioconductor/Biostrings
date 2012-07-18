@@ -253,9 +253,9 @@ is set to \Robject{-Inf}?
 Following the design principles of Bioconductor and R, the pairwise sequence
 alignment functionality in the \Rpackage{Biostrings} package keeps the end-user
 close to their data through the use of five specialty classes:  
-\Rclass{PairwiseAlignments}, \Rclass{PairwiseAlignedFixedSubject},
-\Rclass{PairwiseAlignedFixedSubjectSummary}, \Rclass{AlignedXStringSet}, and
-\Rclass{QualityAlignedXStringSet}. The \Rclass{PairwiseAlignedFixedSubject}
+\Rclass{PairwiseAlignments}, \Rclass{PairwiseAlignmentsSingleSubject},
+\Rclass{PairwiseAlignmentsSingleSubjectSummary}, \Rclass{AlignedXStringSet}, and
+\Rclass{QualityAlignedXStringSet}. The \Rclass{PairwiseAlignmentsSingleSubject}
 class inherits from the \Rclass{PairwiseAlignments} class and they both
 hold the results of a fit from the \Rfunction{pairwiseAlignment} function, with
 the former class being used to represent all patterns aligning to a single
@@ -296,7 +296,7 @@ class(pattern(psa2))
 \subsection{Exercise 2}
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
-\Rclass{PairwiseAlignedFixedSubjectSummary} and \Rclass{summary.lm} to end-users? 
+\Rclass{PairwiseAlignmentsSingleSubjectSummary} and \Rclass{summary.lm} to end-users? 
 \end{enumerate}
 
 [Answer provided in section \ref{sec:Answers2}.]
@@ -306,7 +306,7 @@ class(pattern(psa2))
 
 Tables \ref{table:helperfuns1}, \ref{table:helperfuns1} and
 \ref{table:alignfuns} show functions that interact with objects of class
-\Rclass{PairwiseAlignments}, \Rclass{PairwiseAlignedFixedSubject}, and
+\Rclass{PairwiseAlignments}, \Rclass{PairwiseAlignmentsSingleSubject}, and
 \Rclass{AlignedXStringSet}. These functions should be used in preference to
 direct slot extraction from the alignment objects.
 
@@ -362,7 +362,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Additional functions for \Rclass{PairwiseAlignedFixedSubject} objects.}
+\caption{Additional functions for \Rclass{PairwiseAlignmentsSingleSubject} objects.}
 \label{table:helperfuns2}
 \end{table}
 
@@ -941,7 +941,8 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
 \label{sec:Answers2}
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
-\Rclass{PairwiseAlignedFixedSubjectSummary} and \Rclass{summary.lm} to end-users?
+\Rclass{PairwiseAlignmentsSingleSubjectSummary} and \Rclass{summary.lm}
+to end-users?
 \textit{These classes allow the end-user to extract the summary output for
 further operations.}
 <<ans2a>>=

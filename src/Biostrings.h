@@ -1118,7 +1118,7 @@ SEXP AlignedXStringSet_align_aligned(
 	SEXP gapCode
 );
 
-SEXP PairwiseAlignedFixedSubject_align_aligned(
+SEXP PairwiseAlignmentsSingleSubject_align_aligned(
 	SEXP alignment,
 	SEXP gapCode,
 	SEXP endgapCode

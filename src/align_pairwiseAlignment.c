@@ -553,7 +553,7 @@ static double pairwiseAlignment(
  * OUTPUT
  * If scoreOnly = TRUE, returns either a vector of scores
  * If scoreOnly = FALSE, returns an S4 PairwiseAlignments or
- * PairwiseAlignedFixedSubject object.
+ * PairwiseAlignmentsSingleSubject object.
  */
 
 SEXP XStringSet_align_pairwiseAlignment(
@@ -872,7 +872,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		if (multipleSubjects) {
 			PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignments")));
 		} else {
-			PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignedFixedSubject")));
+			PROTECT(output = NEW_OBJECT(MAKE_CLASS("PairwiseAlignmentsSingleSubject")));
 		}
 
 		/* Set the "pattern" slot */

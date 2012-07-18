@@ -154,7 +154,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 }
 
 
-SEXP PairwiseAlignedFixedSubject_align_aligned(SEXP alignment, SEXP gapCode, SEXP endgapCode)
+SEXP PairwiseAlignmentsSingleSubject_align_aligned(SEXP alignment, SEXP gapCode, SEXP endgapCode)
 {
 	int i, j;
 	char gapCodeValue = (char) RAW(gapCode)[0];

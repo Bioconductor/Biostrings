@@ -73,7 +73,7 @@ Collate: 00datacache.R
 	InDel-class.R
 	AlignedXStringSet-class.R
 	PairwiseAlignments-class.R
-	PairwiseAlignedFixedSubject-class.R
+	PairwiseAlignmentsSingleSubject-class.R
 	PairwiseAlignments-io.R
 	align-utils.R
 	pmatchPattern.R

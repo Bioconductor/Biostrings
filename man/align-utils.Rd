@@ -4,13 +4,13 @@
 
 \alias{mismatch,AlignedXStringSet0,missing-method}
 \alias{nmatch,PairwiseAlignments,missing-method}
-\alias{nmatch,PairwiseAlignedFixedSubjectSummary,missing-method}
+\alias{nmatch,PairwiseAlignmentsSingleSubjectSummary,missing-method}
 \alias{nmismatch,AlignedXStringSet0,missing-method}
 \alias{nmismatch,PairwiseAlignments,missing-method}
-\alias{nmismatch,PairwiseAlignedFixedSubjectSummary,missing-method}
+\alias{nmismatch,PairwiseAlignmentsSingleSubjectSummary,missing-method}
 \alias{nedit}
 \alias{nedit,PairwiseAlignments-method}
-\alias{nedit,PairwiseAlignedFixedSubjectSummary-method}
+\alias{nedit,PairwiseAlignmentsSingleSubjectSummary-method}
 
 \alias{mismatchTable}
 \alias{mismatchTable,AlignedXStringSet0-method}
@@ -19,12 +19,12 @@
 \alias{mismatchSummary}
 \alias{mismatchSummary,AlignedXStringSet0-method}
 \alias{mismatchSummary,QualityAlignedXStringSet-method}
-\alias{mismatchSummary,PairwiseAlignedFixedSubject-method}
-\alias{mismatchSummary,PairwiseAlignedFixedSubjectSummary-method}
+\alias{mismatchSummary,PairwiseAlignmentsSingleSubject-method}
+\alias{mismatchSummary,PairwiseAlignmentsSingleSubjectSummary-method}
 
 \alias{coverage,AlignedXStringSet0-method}
-\alias{coverage,PairwiseAlignedFixedSubject-method}
-\alias{coverage,PairwiseAlignedFixedSubjectSummary-method}
+\alias{coverage,PairwiseAlignmentsSingleSubject-method}
+\alias{coverage,PairwiseAlignmentsSingleSubjectSummary-method}
 
 \alias{compareStrings}
 \alias{compareStrings,character,character-method}
@@ -32,7 +32,7 @@
 \alias{compareStrings,XStringSet,XStringSet-method}
 \alias{compareStrings,AlignedXStringSet0,AlignedXStringSet0-method}
 \alias{compareStrings,PairwiseAlignments,missing-method}
-\alias{consensusMatrix,PairwiseAlignedFixedSubject-method}
+\alias{consensusMatrix,PairwiseAlignmentsSingleSubject-method}
 
 
 \title{Utility functions related to sequence alignment}
@@ -47,10 +47,10 @@ nedit(x) # also nmatch and nmismatch
 mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
 mismatchSummary(x, \dots)
 \S4method{coverage}{AlignedXStringSet0}(x, shift=0L, width=NULL, weight=1L)
-\S4method{coverage}{PairwiseAlignedFixedSubject}(x, shift=0L, width=NULL, weight=1L)
+\S4method{coverage}{PairwiseAlignmentsSingleSubject}(x, shift=0L, width=NULL, weight=1L)
 compareStrings(pattern, subject)
 
-\S4method{consensusMatrix}{PairwiseAlignedFixedSubject}(x,
+\S4method{consensusMatrix}{PairwiseAlignmentsSingleSubject}(x,
                 as.prob=FALSE, shift=0L, width=NULL,
                 baseOnly=FALSE, gapCode="-", endgapCode="-")
 }
@@ -62,7 +62,7 @@ compareStrings(pattern, subject)
 
   \code{mismatchSummary}:  a list of data.frame objects containing counts and
   frequencies of the mismatches for the \code{AlignedXStringSet} or
-  \code{PairwiseAlignedFixedSubject} object.
+  \code{PairwiseAlignmentsSingleSubject} object.
 
   \code{compareStrings} combines two equal-length strings that are assumed to be
   aligned into a single character string containing that replaces mismatches

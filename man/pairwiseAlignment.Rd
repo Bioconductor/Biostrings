@@ -104,7 +104,7 @@ alignment score.
 \value{
 If \code{scoreOnly == FALSE}, an instance of class
 \code{\link{PairwiseAlignments}} or
-\code{\link{PairwiseAlignedFixedSubject}} is returned.
+\code{\link{PairwiseAlignmentsSingleSubject}} is returned.
 If \code{scoreOnly == TRUE}, a numeric vector containing the scores for the
 optimal pairwise alignments is returned.
 }

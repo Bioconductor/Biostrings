@@ -5,22 +5,22 @@
 \alias{class:PairwiseAlignments}
 \alias{PairwiseAlignments-class}
 \alias{PairwiseAlignments}
-\alias{class:PairwiseAlignedFixedSubject}
-\alias{PairwiseAlignedFixedSubject-class}
-\alias{PairwiseAlignedFixedSubject}
-\alias{class:PairwiseAlignedFixedSubjectSummary}
-\alias{PairwiseAlignedFixedSubjectSummary-class}
-\alias{PairwiseAlignedFixedSubjectSummary}
+\alias{class:PairwiseAlignmentsSingleSubject}
+\alias{PairwiseAlignmentsSingleSubject-class}
+\alias{PairwiseAlignmentsSingleSubject}
+\alias{class:PairwiseAlignmentsSingleSubjectSummary}
+\alias{PairwiseAlignmentsSingleSubjectSummary-class}
+\alias{PairwiseAlignmentsSingleSubjectSummary}
 
 % Constructor-like functions and generics:
 \alias{PairwiseAlignments,XString,XString-method}
 \alias{PairwiseAlignments,XStringSet,missing-method}
 \alias{PairwiseAlignments,character,missing-method}
 \alias{PairwiseAlignments,character,character-method}
-\alias{PairwiseAlignedFixedSubject,XString,XString-method}
-\alias{PairwiseAlignedFixedSubject,XStringSet,missing-method}
-\alias{PairwiseAlignedFixedSubject,character,missing-method}
-\alias{PairwiseAlignedFixedSubject,character,character-method}
+\alias{PairwiseAlignmentsSingleSubject,XString,XString-method}
+\alias{PairwiseAlignmentsSingleSubject,XStringSet,missing-method}
+\alias{PairwiseAlignmentsSingleSubject,character,missing-method}
+\alias{PairwiseAlignmentsSingleSubject,character,character-method}
 
 % Accessor methods:
 \alias{pattern,PairwiseAlignments-method}
@@ -42,39 +42,45 @@
 \alias{[<-,PairwiseAlignments-method}
 \alias{rep,PairwiseAlignments-method}
 
-% Methods for PairwiseAlignedFixedSubject:
-\alias{summary,PairwiseAlignedFixedSubject-method}
-\alias{Views,PairwiseAlignedFixedSubject-method}
-\alias{aligned,PairwiseAlignedFixedSubject-method}
-\alias{as.character,PairwiseAlignedFixedSubject-method}
-\alias{toString,PairwiseAlignedFixedSubject-method}
-\alias{as.matrix,PairwiseAlignedFixedSubject-method}
+% Methods for PairwiseAlignmentsSingleSubject:
+\alias{summary,PairwiseAlignmentsSingleSubject-method}
+\alias{Views,PairwiseAlignmentsSingleSubject-method}
+\alias{aligned,PairwiseAlignmentsSingleSubject-method}
+\alias{as.character,PairwiseAlignmentsSingleSubject-method}
+\alias{toString,PairwiseAlignmentsSingleSubject-method}
+\alias{as.matrix,PairwiseAlignmentsSingleSubject-method}
 
-% Methods for PairwiseAlignedFixedSubjectSummary:
-\alias{type,PairwiseAlignedFixedSubjectSummary-method}
-\alias{score,PairwiseAlignedFixedSubjectSummary-method}
-\alias{nindel,PairwiseAlignedFixedSubjectSummary-method}
-\alias{length,PairwiseAlignedFixedSubjectSummary-method}
-\alias{nchar,PairwiseAlignedFixedSubjectSummary-method}
-\alias{show,PairwiseAlignedFixedSubjectSummary-method}
+% Methods for PairwiseAlignmentsSingleSubjectSummary:
+\alias{type,PairwiseAlignmentsSingleSubjectSummary-method}
+\alias{score,PairwiseAlignmentsSingleSubjectSummary-method}
+\alias{nindel,PairwiseAlignmentsSingleSubjectSummary-method}
+\alias{length,PairwiseAlignmentsSingleSubjectSummary-method}
+\alias{nchar,PairwiseAlignmentsSingleSubjectSummary-method}
+\alias{show,PairwiseAlignmentsSingleSubjectSummary-method}
 
 % Old stuff (Defunct or Deprecated):
 \alias{class:PairwiseAlignedXStringSet}
 \alias{PairwiseAlignedXStringSet-class}
 \alias{PairwiseAlignedXStringSet}
+\alias{class:PairwiseAlignedFixedSubject}
+\alias{PairwiseAlignedFixedSubject-class}
+\alias{PairwiseAlignedFixedSubject}
+\alias{class:PairwiseAlignedFixedSubjectSummary}
+\alias{PairwiseAlignedFixedSubjectSummary-class}
+\alias{PairwiseAlignedFixedSubjectSummary}
 
 
-\title{PairwiseAlignments, PairwiseAlignedFixedSubject, and
-  PairwiseAlignedFixedSubjectSummary objects}
+\title{PairwiseAlignments, PairwiseAlignmentsSingleSubject, and
+  PairwiseAlignmentsSingleSubjectSummary objects}
 
 \description{
   The \code{PairwiseAlignments} class is a container for storing
   a set of pairwise alignments.
 
-  The \code{PairwiseAlignedFixedSubject} class is a container for storing
+  The \code{PairwiseAlignmentsSingleSubject} class is a container for storing
   a set of pairwise alignments with a single subject.
 
-  The \code{PairwiseAlignedFixedSubjectSummary} class is a container for storing
+  The \code{PairwiseAlignmentsSingleSubjectSummary} class is a container for storing
   the summary of a set of pairwise alignments.
 }
 
@@ -181,19 +187,19 @@
       \code{length(x)}:
       The length of the \code{aligned(pattern(x))} and
     \code{aligned(subject(x))}. 
-      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
+      There is a method for \code{PairwiseAlignmentsSingleSubjectSummary} as well.
     }
     \item{}{
       \code{type(x)}:
       The type of the alignment (\code{"global"}, \code{"local"},
       \code{"overlap"}, \code{"global-local"}, or \code{"local-global"}).
-      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
+      There is a method for \code{PairwiseAlignmentsSingleSubjectSummary} as well.
     }
   }
 }
 \section{Aligned sequence methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignedFixedSubject} object, except
+  \code{x} is a \code{PairwiseAlignmentsSingleSubject} object, except
     otherwise noted. 
 
   \describe{
@@ -222,7 +228,7 @@
 }
 \section{Subject position methods}{
   In the code snippets below,
-  \code{x} is a \code{PairwiseAlignedFixedSubject} object, except otherwise noted.
+  \code{x} is a \code{PairwiseAlignmentsSingleSubject} object, except otherwise noted.
 
   \describe{
     \item{}{
@@ -236,7 +242,7 @@
     }
     \item{}{
       \code{coverage(x, shift=0L, width=NULL, weight=1L)}
-      See `\link{coverage,PairwiseAlignedFixedSubject-method}` for more
+      See `\link{coverage,PairwiseAlignmentsSingleSubject-method}` for more
       information.
     }
     \item{}{
@@ -256,7 +262,7 @@
     \item{}{
       \code{nchar(x)}:
       The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
-      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
+      There is a method for \code{PairwiseAlignmentsSingleSubjectSummary} as well.
     }
     \item{}{
       \code{insertion(x)}:
@@ -282,7 +288,8 @@
     \item{}{
       \code{score(x)}:
       The score of the alignment.
-      There is a method for \code{PairwiseAlignedFixedSubjectSummary} as well.
+      There is a method for \code{PairwiseAlignmentsSingleSubjectSummary}
+      as well.
     }
   }
 }

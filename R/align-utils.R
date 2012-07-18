@@ -14,7 +14,7 @@ setMethod("nmatch", c(pattern = "PairwiseAlignments", x = "missing"),
               PACKAGE="Biostrings")
 )
 
-setMethod("nmatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missing"),
+setMethod("nmatch", c(pattern = "PairwiseAlignmentsSingleSubjectSummary", x = "missing"),
     function(pattern, x, fixed)
         pattern@nmatch
 )
@@ -29,7 +29,7 @@ setMethod("nmismatch", c(pattern = "PairwiseAlignments", x = "missing"),
         nmismatch(pattern(pattern))
 )
 
-setMethod("nmismatch", c(pattern = "PairwiseAlignedFixedSubjectSummary", x = "missing"),
+setMethod("nmismatch", c(pattern = "PairwiseAlignmentsSingleSubjectSummary", x = "missing"),
     function(pattern, x, fixed)
         pattern@nmismatch
 )
@@ -42,7 +42,7 @@ setMethod("nedit", "PairwiseAlignments",
           unname(nindel(pattern(x))[,"WidthSum"])
 )
 
-setMethod("nedit", "PairwiseAlignedFixedSubjectSummary",
+setMethod("nedit", "PairwiseAlignmentsSingleSubjectSummary",
     function(x)
         nmismatch(x) + unname(insertion(nindel(x))[,"WidthSum"]) +
           unname(deletion(nindel(x))[,"WidthSum"])
@@ -224,7 +224,7 @@ setMethod("mismatchSummary", "QualityAlignedXStringSet",
     }
 )
 
-setMethod("mismatchSummary", "PairwiseAlignedFixedSubject",
+setMethod("mismatchSummary", "PairwiseAlignmentsSingleSubject",
     function(x, weight=1L)
     {
         if (!is.numeric(weight) || !(length(weight) %in% c(1, length(x))))
@@ -269,7 +269,7 @@ setMethod("mismatchSummary", "PairwiseAlignedFixedSubject",
     }
 )
 
-setMethod("mismatchSummary", "PairwiseAlignedFixedSubjectSummary",
+setMethod("mismatchSummary", "PairwiseAlignmentsSingleSubjectSummary",
     function(x)
         x@mismatchSummary
 )
@@ -289,17 +289,17 @@ setMethod("coverage", "AlignedXStringSet0",
     }
 )
 
-setMethod("coverage", "PairwiseAlignedFixedSubject",
+setMethod("coverage", "PairwiseAlignmentsSingleSubject",
     function(x, shift=0L, width=NULL, weight=1L)
         coverage(subject(x), shift=shift, width=width, weight=weight)
 )
 
-setMethod("coverage", "PairwiseAlignedFixedSubjectSummary",
+setMethod("coverage", "PairwiseAlignmentsSingleSubjectSummary",
     function(x, shift=0L, width=NULL, weight=1L) {
         if (shift != 0L)
-            stop("'shift' argument is not supported for 'PairwiseAlignedFixedSubjectSummary' objects")
+            stop("'shift' argument is not supported for 'PairwiseAlignmentsSingleSubjectSummary' objects")
         if (weight != 1L)
-            stop("'weight' argument is not supported for 'PairwiseAlignedFixedSubjectSummary' objects")
+            stop("'weight' argument is not supported for 'PairwiseAlignmentsSingleSubjectSummary' objects")
         window(x@coverage, width=width)
     }
 )
@@ -345,15 +345,15 @@ setMethod("compareStrings",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "consensusMatrix" method for PairwiseAlignedFixedSubject objects.
+### "consensusMatrix" method for PairwiseAlignmentsSingleSubject objects.
 ###
 
-setMethod("consensusMatrix", "PairwiseAlignedFixedSubject",
+setMethod("consensusMatrix", "PairwiseAlignmentsSingleSubject",
           function(x, as.prob=FALSE, shift=0L, width=NULL,
                    baseOnly=FALSE, gapCode="-", endgapCode="-")
           {
               if (!identical(shift, 0L) || !identical(width, NULL))
-                  stop("\"consensusMatrix\" method for PairwiseAlignedFixedSubject objects ",
+                  stop("\"consensusMatrix\" method for PairwiseAlignmentsSingleSubject objects ",
                        "doesn't support the 'shift' and 'width' arguments")
               consensusMatrix(aligned(x, gapCode=gapCode, endgapCode=endgapCode),
                               as.prob=as.prob, baseOnly=baseOnly)

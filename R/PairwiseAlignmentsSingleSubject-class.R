@@ -1,20 +1,24 @@
 ### ==========================================================================
-### PairwiseAlignedFixedSubject objects
+### PairwiseAlignmentsSingleSubject objects
 ### --------------------------------------------------------------------------
-### A PairwiseAlignedFixedSubject object contains the result of the pairwise
-### alignment of many patterns to one subject.
+### A PairwiseAlignmentsSingleSubject object contains the result of the
+### pairwise alignment of many patterns to one subject.
 ###
-### FIXME: The name of this class is confusing. In the Biostrings context, a
-### "fixed subject" (or "fixed pattern") is a subject (or pattern) in which
-### the IUPAC ambiguity letters are interpreted literally. See the 'fixed'
-### argument of neditStartingAt(), isMatchingStartingAt(), matchPattern(),
-### matchPDict(), etc... for the details.
 
-setClass("PairwiseAlignedFixedSubject",
+setClass("PairwiseAlignmentsSingleSubject",
     contains="PairwiseAlignments"
 )
 
-setClass("PairwiseAlignedFixedSubjectSummary",
+### "PairwiseAlignedFixedSubject" is the old name for
+### "PairwiseAlignmentsSingleSubject".
+### Now it's just an alias for "PairwiseAlignmentsSingleSubject", to ensure
+### that serialized PairwiseAlignedFixedSubject instances can still be loaded.
+### TODO: Remove in BioC 2.13.
+setClass("PairwiseAlignedFixedSubject",
+    contains="PairwiseAlignmentsSingleSubject"
+)
+
+setClass("PairwiseAlignmentsSingleSubjectSummary",
     representation(
         type="character",
         score="numeric",
@@ -27,63 +31,73 @@ setClass("PairwiseAlignedFixedSubjectSummary",
     )
 )
 
+### "PairwiseAlignedFixedSubjectSummary" is the old name for
+### "PairwiseAlignmentsSingleSubjectSummary".
+### Now it's just an alias for "PairwiseAlignmentsSingleSubjectSummary",
+### to ensure that serialized PairwiseAlignedFixedSubjectSummary instances
+### can still be loaded.
+### TODO: Remove in BioC 2.13.
+setClass("PairwiseAlignedFixedSubjectSummary",
+    contains="PairwiseAlignmentsSingleSubjectSummary"
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
 ###
 
-setGeneric("PairwiseAlignedFixedSubject",
+setGeneric("PairwiseAlignmentsSingleSubject",
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, ...)
-    standardGeneric("PairwiseAlignedFixedSubject"))
-setMethod("PairwiseAlignedFixedSubject", signature(pattern = "XString", subject = "XString"),
+    standardGeneric("PairwiseAlignmentsSingleSubject"))
+setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
         if (seqtype(pattern) != seqtype(subject))
             stop("'pattern' and 'subject' must contain ",
                  "sequences of the same type")
-        PairwiseAlignedFixedSubject(as.character(pattern), as.character(subject),
+        PairwiseAlignmentsSingleSubject(as.character(pattern), as.character(subject),
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,
                                     baseClass = xsbaseclass(pattern))
     }
 )
 
-setMethod("PairwiseAlignedFixedSubject", signature(pattern = "XStringSet", subject = "missing"),
+setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "XStringSet", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1) {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
             stop("'pattern' elements must have the same number of characters")
-        PairwiseAlignedFixedSubject(as.character(pattern[1]), as.character(pattern[2]),
+        PairwiseAlignmentsSingleSubject(as.character(pattern[1]), as.character(pattern[2]),
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,
                                     baseClass = xsbaseclass(pattern))
     }
 )
 
-setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subject = "missing"),
+setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "character", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, baseClass = "BString") {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
             stop("'pattern' elements must have the same number of characters")
-        PairwiseAlignedFixedSubject(pattern[1], pattern[2],
+        PairwiseAlignmentsSingleSubject(pattern[1], pattern[2],
                                     type = type, substitutionMatrix = substitutionMatrix,
                                     gapOpening = gapOpening, gapExtension = gapExtension,
                                     baseClass = baseClass)
     }
 )
 
-setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subject = "character"),
+setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "character", subject = "character"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
              gapOpening = 0, gapExtension = -1, baseClass = "BString") {
         newPairwiseAlignments(pattern = pattern, subject = subject, type = type,
                               substitutionMatrix = substitutionMatrix,
                               gapOpening = gapOpening, gapExtension = gapExtension,
-                              baseClass = baseClass, pwaClass = "PairwiseAlignedFixedSubject")
+                              baseClass = baseClass, pwaClass = "PairwiseAlignmentsSingleSubject")
     }
 )
 
@@ -93,11 +107,11 @@ setMethod("PairwiseAlignedFixedSubject", signature(pattern = "character", subjec
 ###
 
 ### TODO: Support the 'width' argument.
-setMethod("Views", signature = c(subject = "PairwiseAlignedFixedSubject"),
+setMethod("Views", signature = c(subject = "PairwiseAlignmentsSingleSubject"),
           function(subject, start=NULL, end=NULL, width=NULL, names=NULL)
           {
               if (!is.null(width))
-                  stop("\"Views\" method for PairwiseAlignedFixedSubject objects ",
+                  stop("\"Views\" method for PairwiseAlignmentsSingleSubject objects ",
                        "does not support the 'width' argument yet, sorry!")
               if (is.null(start))
                   start <- NA
@@ -139,14 +153,14 @@ setMethod("Views", signature = c(subject = "PairwiseAlignedFixedSubject"),
 ### The "summary" method.
 ###
 
-setMethod("summary", "PairwiseAlignedFixedSubject", function(object, weight=1L, ...)
+setMethod("summary", "PairwiseAlignmentsSingleSubject", function(object, weight=1L, ...)
           {
               if (!is.numeric(weight) || !(length(weight) %in% c(1, length(object))))
                   stop("'weight' must be an integer vector with length 1 or 'length(object)'")
               if (!is.integer(weight))
                 weight <- as.integer(weight)
               if (all(weight == 1))
-                  new("PairwiseAlignedFixedSubjectSummary",
+                  new("PairwiseAlignmentsSingleSubjectSummary",
                       type = type(object),
                       score = score(object),
                       nmatch = nmatch(object),
@@ -156,7 +170,7 @@ setMethod("summary", "PairwiseAlignedFixedSubject", function(object, weight=1L, 
                       coverage = coverage(object),
                       mismatchSummary = mismatchSummary(object))
               else
-                  new("PairwiseAlignedFixedSubjectSummary",
+                  new("PairwiseAlignmentsSingleSubjectSummary",
                       type = type(object),
                       score = rep(score(object), weight),
                       nmatch = rep(nmatch(object), weight),
@@ -167,7 +181,7 @@ setMethod("summary", "PairwiseAlignedFixedSubject", function(object, weight=1L, 
                       mismatchSummary = mismatchSummary(object, weight = weight))
           })
 
-setMethod("show", "PairwiseAlignedFixedSubjectSummary", function(object)
+setMethod("show", "PairwiseAlignmentsSingleSubjectSummary", function(object)
           {
               cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
                          "local" = "Local", "global-local" = "Global-Local",
@@ -189,12 +203,12 @@ setMethod("show", "PairwiseAlignedFixedSubjectSummary", function(object)
               print(mmtable)
           })
 
-setMethod("type", "PairwiseAlignedFixedSubjectSummary", function(x) x@type)
-setMethod("score", "PairwiseAlignedFixedSubjectSummary", function(x) x@score)
-setMethod("nindel", "PairwiseAlignedFixedSubjectSummary",
+setMethod("type", "PairwiseAlignmentsSingleSubjectSummary", function(x) x@type)
+setMethod("score", "PairwiseAlignmentsSingleSubjectSummary", function(x) x@score)
+setMethod("nindel", "PairwiseAlignmentsSingleSubjectSummary",
           function(x) new("InDel", insertion = x@ninsertion, deletion = x@ndeletion))
-setMethod("length", "PairwiseAlignedFixedSubjectSummary", function(x) length(score(x)))
-setMethod("nchar", "PairwiseAlignedFixedSubjectSummary", 
+setMethod("length", "PairwiseAlignmentsSingleSubjectSummary", function(x) length(score(x)))
+setMethod("nchar", "PairwiseAlignmentsSingleSubjectSummary", 
           function(x, type="chars", allowNA=FALSE)
               unname(nmatch(x) + nmismatch(x) + x@ninsertion[,"WidthSum"] + x@ndeletion[,"WidthSum"]))
 
@@ -202,7 +216,7 @@ setMethod("nchar", "PairwiseAlignedFixedSubjectSummary",
 ### The "as.character" method.
 ###
 
-setMethod("aligned", "PairwiseAlignedFixedSubject",
+setMethod("aligned", "PairwiseAlignmentsSingleSubject",
           function(x, degap=FALSE, gapCode="-", endgapCode="-") {
               if (degap) {
                   value <- aligned(pattern(x), degap = degap)
@@ -218,20 +232,32 @@ setMethod("aligned", "PairwiseAlignedFixedSubject",
                       endgapCode <- as.raw(letters2codes[[endgapCode]])
                   }
                   value <-
-                    .Call2("PairwiseAlignedFixedSubject_align_aligned", x, gapCode, endgapCode, PACKAGE="Biostrings")
+                    .Call2("PairwiseAlignmentsSingleSubject_align_aligned", x, gapCode, endgapCode, PACKAGE="Biostrings")
               }
               value
           })
 
-setMethod("as.character", "PairwiseAlignedFixedSubject",
+setMethod("as.character", "PairwiseAlignmentsSingleSubject",
           function(x)
           {
               as.character(aligned(x))
           })
 
-setMethod("toString", "PairwiseAlignedFixedSubject", function(x, ...) toString(as.character(x), ...))
+setMethod("toString", "PairwiseAlignmentsSingleSubject", function(x, ...) toString(as.character(x), ...))
 
-setMethod("as.matrix", "PairwiseAlignedFixedSubject",
+setMethod("as.matrix", "PairwiseAlignmentsSingleSubject",
           function(x) {
               as.matrix(aligned(x))
           })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (Defunct or Deprecated).
+###
+
+PairwiseAlignedFixedSubject <- function(...)
+{
+    .Deprecated("PairwiseAlignmentsSingleSubject")
+    PairwiseAlignmentsSingleSubject(...)
+}
+

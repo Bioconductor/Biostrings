@@ -308,7 +308,7 @@ exportMethods(
 ###   InDel-class.R
 ###   AlignedXStringSet-class.R
 ###   PairwiseAlignments-class.R
-###   PairwiseAlignedFixedSubject-class.R
+###   PairwiseAlignmentsSingleSubject-class.R
 ###   PairwiseAlignments-io.R
 ###   align-utils.R
 ###   pmatchPattern.R
@@ -326,7 +326,8 @@ exportClasses(
     InDel,
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
     PairwiseAlignments, PairwiseAlignedXStringSet,
-    PairwiseAlignedFixedSubject, PairwiseAlignedFixedSubjectSummary,
+    PairwiseAlignmentsSingleSubject, PairwiseAlignedFixedSubject,
+    PairwiseAlignmentsSingleSubjectSummary, PairwiseAlignedFixedSubjectSummary,
     MultipleAlignment,
     DNAMultipleAlignment, RNAMultipleAlignment, AAMultipleAlignment
 )
@@ -352,8 +353,8 @@ export(
     ## PairwiseAlignments-class.R:
     PairwiseAlignments, type, pid,
 
-    ## PairwiseAlignedFixedSubject-class.R:
-    PairwiseAlignedFixedSubject,
+    ## PairwiseAlignmentsSingleSubject-class.R:
+    PairwiseAlignmentsSingleSubject,
 
     ## PairwiseAlignments-io.R:
     writePairwiseAlignments,
@@ -391,7 +392,7 @@ export(
     detail,
 
     ## Old stuff (Defunct or Deprecated):
-    PairwiseAlignedXStringSet,
+    PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
     needwunsQS,
     read.DNAMultipleAlignment,
     read.RNAMultipleAlignment,
@@ -409,7 +410,7 @@ exportMethods(
     insertion, deletion,
     unaligned, aligned, indel, nindel,
     type, score, pid,
-    PairwiseAlignments, PairwiseAlignedFixedSubject,
+    PairwiseAlignments, PairwiseAlignmentsSingleSubject,
     mismatch, nmatch, nmismatch, nedit,
     mismatchTable, mismatchSummary, coverage,
     compareStrings,
