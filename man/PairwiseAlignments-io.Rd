@@ -5,7 +5,7 @@
 \alias{writePairwiseAlignments}
 
 
-\title{Read/write a PairwiseAlignments object from/to a file}
+\title{Write a PairwiseAlignments object to a file}
 
 \description{
   The \code{writePairwiseAlignments} function writes a
@@ -61,29 +61,30 @@ writePairwiseAlignments(x, file="", Matrix=NA, block.width=50)
   However, even though the "pair" format can also be used for non global
   pairwise alignments (i.e. for \emph{global-local}, \emph{local-global},
   and \emph{local} pairwise alignments), in that case the original
-  pattern and subject sequences cannot be inferred. This is because
+  pattern and subject sequences \emph{cannot} be inferred. This is because
   the alignment written to the file doesn't necessarily span the entire
   pattern (if \code{type(x)} is \code{local-global} or \code{local})
   or the entire subject (if \code{type(x)} is \code{global-local}
   or \code{local}).
 
-  In short the \code{writePairwiseAlignments} function can be used
-  on a \link{PairwiseAlignments} containing non global alignments
-  (i.e. \code{type(x)} can be anything) but with the 2 following caveats:
+  As a consequence, the \code{writePairwiseAlignments} function can be
+  used on a \link{PairwiseAlignments} containing non global alignments
+  (i.e. with \code{type(x) != "global"}) but with the 2 following caveats:
   \enumerate{
     \item The type of the alignments (\code{type(x)}) is not written
           to the file.
     \item The original pattern and subject sequences cannot be inferred.
-          Furthermore, there is no way to infer their lengths or to know
-          if they've been trimmed or not.
+          Furthermore, there is no way to infer their lengths (because
+          we don't know if they've been trimmed or not).
   }
 
   Also note that the \code{\link{pairwiseAlignment}} function
   interprets the \code{gapOpening} and \code{gapExtension} arguments
-  differently from most other alignment tools. As a consequence
+  differently than most other alignment tools. As a consequence
   the values of the Gap_penalty and Extend_penalty fields written to
-  the file are not the same as the values passed to the \code{gapOpening}
-  and \code{gapExtension} arguments. The relationship is:
+  the file are not the same as the values that were passed to the
+  \code{gapOpening} and \code{gapExtension} arguments. With the
+  following relationship:
   \itemize{
     \item Gap_penalty = - gapOpening - gapExtension
     \item Extend_penalty = - gapExtension
