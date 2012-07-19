@@ -5,18 +5,6 @@
 ### Only output is supported at the moment.
 ###
 
-if (FALSE) {
-  library(Biostrings)
-  pattern <- DNAStringSet(c(p1="ACCA", p2="ACGCA", p3="ACGGCA",
-                            p4="ACGAGCA", p5="ACGTTGCAA"))
-  subject <- DNAStringSet(c(s1="TTTTACGTGCATTTTACGCATTTGCATTT"))
-  x1 <- pairwiseAlignment(pattern, subject, type="global-local")
-
-  pattern <- DNAString("ACGTACGT")
-  subject <- DNAString("CGTACGTA")
-  x2 <- pairwiseAlignment(pattern, subject, type="global")
-}
-
 .pre2postaligned <- function(pos, axset)
 {
     if (!is(axset, "AlignedXStringSet0") || length(axset) != 1L)
@@ -170,7 +158,7 @@ if (FALSE) {
         unaligned_subject <- unaligned_subject[[1L]]
         start2 <- start(ans_ranges)[2L]
         if (start2 > 1L) {
-            prefix2 <- subseq(unaligned_pattern, end=start2 - 1L)
+            prefix2 <- subseq(unaligned_subject, end=start2 - 1L)
             prefixes <- .makeXStringSetFrom2XStrings(x2=prefix2)
             ans_seqs <- xscat(prefixes, ans_seqs)
             prefix <- .makeXStringFromSpaces(length(prefix2))
@@ -179,12 +167,12 @@ if (FALSE) {
         }
         end2 <- end(ans_ranges)[2L]
         if (end2 < length(unaligned_subject)) {
-            suffix2 <- subseq(unaligned_pattern, start=end2 + 1L)
+            suffix2 <- subseq(unaligned_subject, start=end2 + 1L)
             suffixes <- .makeXStringSetFrom2XStrings(x2=suffix2)
             ans_seqs <- xscat(ans_seqs, suffixes)
             suffix <- .makeXStringFromSpaces(length(suffix2))
             ans_pipes <- xscat(ans_pipes, suffix)
-            end(ans_ranges)[2L] <- length(unaligned_pattern)
+            end(ans_ranges)[2L] <- length(unaligned_subject)
         }
     }
     names(ans_seqs) <- c(pattern_name, subject_name)
