@@ -68,14 +68,15 @@ writePairwiseAlignments(x, file="", Matrix=NA, block.width=50)
   or \code{local}).
 
   As a consequence, the \code{writePairwiseAlignments} function can be
-  used on a \link{PairwiseAlignments} containing non global alignments
-  (i.e. with \code{type(x) != "global"}) but with the 2 following caveats:
+  used on a \link{PairwiseAlignments} object \code{x} containing non global
+  alignments (i.e. with \code{type(x) != "global"}), but with the 2 following
+  caveats:
   \enumerate{
     \item The type of the alignments (\code{type(x)}) is not written
           to the file.
     \item The original pattern and subject sequences cannot be inferred.
           Furthermore, there is no way to infer their lengths (because
-          we don't know if they've been trimmed or not).
+          we don't know whether they were trimmed or not).
   }
 
   Also note that the \code{\link{pairwiseAlignment}} function
