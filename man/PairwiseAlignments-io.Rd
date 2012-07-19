@@ -109,7 +109,9 @@ writePairwiseAlignments(x, file="", Matrix=NA, block.width=50)
 }
 
 \examples{
-## With 1 pair:
+## ---------------------------------------------------------------------
+## A. WITH ONE PAIR
+## ---------------------------------------------------------------------
 pattern <- DNAString("CGTACGTAACGTTCGT")
 subject <- DNAString("CGTCGTCGTCCGTAA")
 x1 <- pairwiseAlignment(pattern, subject)
@@ -120,16 +122,39 @@ writePairwiseAlignments(x1, block.width=10)
 ## the original pattern and subject, respectively.
 
 x2 <- pairwiseAlignment(pattern, subject, type="global-local")
-x2 # score is different!
+x2  # score is different!
 writePairwiseAlignments(x2)
 ## By just looking at the file, we can't tell the length of the
 ## original subject! Could be 13, could be more...
 
-## With more than 1 pair (and named patterns):
+## ---------------------------------------------------------------------
+## B. WITH MORE THAN ONE PAIR (AND NAMED PATTERNS)
+## ---------------------------------------------------------------------
 pattern <- DNAStringSet(c(myp1="ACCA", myp2="ACGCA", myp3="ACGGCA"))
 x3 <- pairwiseAlignment(pattern, subject)
 x3
 writePairwiseAlignments(x3)
+
+## ---------------------------------------------------------------------
+## C. REPRODUCING THE ALIGNMENT SHOWN AT
+##    http://emboss.sourceforge.net/docs/themes/alnformats/align.pair
+## ---------------------------------------------------------------------
+pattern <- c("TSPASIRPPAGPSSRPAMVSSRRTRPSPPGPRRPTGRPCCSAAPRRPQAT",
+             "GGWKTCSGTCTTSTSTRHRGRSGWSARTTTAACLRASRKSMRAACSRSAG",
+             "SRPNRFAPTLMSSCITSTTGPPAWAGDRSHE")
+subject <- c("TSPASIRPPAGPSSRRPSPPGPRRPTGRPCCSAAPRRPQATGGWKTCSGT",
+             "CTTSTSTRHRGRSGWRASRKSMRAACSRSAGSRPNRFAPTLMSSCITSTT",
+             "GPPAWAGDRSHE")
+pattern <- unlist(AAStringSet(pattern))
+subject <- unlist(AAStringSet(subject))
+pattern  # original pattern
+subject  # original subject
+data(BLOSUM62)
+x4 <- pairwiseAlignment(pattern, subject,
+                        substitutionMatrix=BLOSUM62,
+                        gapOpening=-9.5, gapExtension=-0.5)
+x4
+writePairwiseAlignments(x4, Matrix="BLOSUM62")
 }
 
 \keyword{utilities}
