@@ -6,9 +6,15 @@
 ###
 
 if (FALSE) {
-  pattern <- DNAStringSet(c(p1="ACCA", p2="ACGCA", p3="ACGGCA", p4="ACGAGCA", p5="ACGTTGCA"))
-  subject <- DNAStringSet(c(s1="TTTTACGTGCATTTTACGCA"))
-  x <- pairwiseAlignment(pattern, subject, type="global-local")
+  library(Biostrings)
+  pattern <- DNAStringSet(c(p1="ACCA", p2="ACGCA", p3="ACGGCA",
+                            p4="ACGAGCA", p5="ACGTTGCAA"))
+  subject <- DNAStringSet(c(s1="TTTTACGTGCATTTTACGCATTTGCATTT"))
+  x1 <- pairwiseAlignment(pattern, subject, type="global-local")
+
+  pattern <- DNAString("ACGTACGT")
+  subject <- DNAString("CGTACGTA")
+  x2 <- pairwiseAlignment(pattern, subject, type="global")
 }
 
 .pre2postaligned <- function(pos, axset)
@@ -65,18 +71,16 @@ if (FALSE) {
     setdiff(IRanges(1L, postaligned_width), postaligned_mismatches_or_indels)
 }
 
-.onePairTo3XStrings <- function(x)
+.makePipes <- function(x)
 {
     if (!is(x, "PairwiseAlignments") || length(x) != 1L)
         stop("'x' must be a PairwiseAlignments object of length 1")
-    aligned_pattern <- pattern(x)  # QualityAlignedXStringSet object
-    aligned_subject <- subject(x)  # QualityAlignedXStringSet object
-    postaligned_pattern <- aligned(aligned_pattern)[[1L]]
-    postaligned_subject <- aligned(aligned_subject)[[1L]]
-    postaligned_pattern_match_ranges <-
-            .postaligned_match_ranges(aligned_pattern)
-    postaligned_subject_match_ranges <-
-            .postaligned_match_ranges(aligned_subject)
+    x_pattern <- pattern(x)  # QualityAlignedXStringSet object
+    x_subject <- subject(x)  # QualityAlignedXStringSet object
+    postaligned_pattern <- aligned(x_pattern)[[1L]]
+    postaligned_subject <- aligned(x_subject)[[1L]]
+    postaligned_pattern_match_ranges <- .postaligned_match_ranges(x_pattern)
+    postaligned_subject_match_ranges <- .postaligned_match_ranges(x_subject)
     postaligned_match_ranges <- intersect(postaligned_pattern_match_ranges,
                                           postaligned_subject_match_ranges)
     ## Sanity check:
@@ -85,20 +89,106 @@ if (FALSE) {
                    as.character(postaligned_subject[ii])))
         stop("Biostrings internal error: mismatches and/or indels ",
              "reported in 'pattern(x)' and 'subject(x)' are inconsistent")
-    top_string <- postaligned_pattern
-    bottom_string <- postaligned_subject
-    middle_string <- rep.int(" ", nchar(top_string))
-    middle_string[ii] <- "|"
-    middle_string <- BString(paste(middle_string, collapse=""))
-    ans <- list(top_string, middle_string, bottom_string)
-    top_name <- names(unaligned(aligned_pattern))
-    if (is.null(top_name))
-        top_name <- ""
-    bottom_name <- names(unaligned(aligned_subject))
-    if (is.null(bottom_name))
-        bottom_name <- ""
-    names(ans) <- c(top_name, "", bottom_name)
-    ans
+    tmp <- rep.int(" ", length(postaligned_pattern))
+    tmp[ii] <- "|"
+    BString(paste(tmp, collapse=""))
+}
+
+.makeXStringSetFrom2XStrings <- function(x1=NULL, x2=NULL)
+{
+    #if (is.null(x1) && is.null(x2))
+    #    return(BStringSet(c("", "")))
+    if (is.null(x1)) {
+        x1 <- Biostrings:::XString(seqtype(x2), "-")
+        x1 <- rep.int(x1, length(x2))
+    }
+    if (is.null(x2)) {
+        x2 <- Biostrings:::XString(seqtype(x1), "-")
+        x2 <- rep.int(x2, length(x1))
+    }
+    c(as(x1, "XStringSet"), as(x2, "XStringSet"))
+}
+
+.makeXStringFromSpaces <- function(nspace)
+{
+    rep.int(BString(" "), nspace)
+}
+
+.makePostalignedSeqs <- function(x, trim.global=FALSE)
+{
+    if (!is(x, "PairwiseAlignments") || length(x) != 1L)
+        stop("'x' must be a PairwiseAlignments object of length 1")
+    x_pattern <- pattern(x)  # QualityAlignedXStringSet object
+    x_subject <- subject(x)  # QualityAlignedXStringSet object
+    postaligned_pattern <- aligned(x_pattern)[[1L]]
+    postaligned_subject <- aligned(x_subject)[[1L]]
+    ans_seqs <- c(as(postaligned_pattern, "XStringSet"),
+                  as(postaligned_subject, "XStringSet"))
+    ## Sanity check:
+    if (!isConstant(width(ans_seqs)))
+        stop("Biostrings internal error: the 2 post-aligned sequences ",
+             "must have the same length")
+    unaligned_pattern <- unaligned(x_pattern)
+    pattern_name <- names(unaligned(x_pattern))
+    if (is.null(pattern_name))
+        pattern_name <- ""
+    unaligned_subject <- unaligned(x_subject)
+    subject_name <- names(unaligned(x_subject))
+    if (is.null(subject_name))
+        subject_name <- ""
+    ans_ranges <- c(x_pattern@range, x_subject@range)
+    ans_pipes <- .makePipes(x)
+    if (trim.global) {
+        names(ans_seqs) <- c(pattern_name, subject_name)
+        return(list(ans_seqs, ans_ranges, ans_pipes))
+    }
+    x_type <- type(x)
+    is_pattern_global <- x_type %in% c("global", "global-local")
+    is_subject_global <- x_type %in% c("global", "local-global")
+    if (is_pattern_global) {
+        unaligned_pattern <- unaligned_pattern[[1L]]
+        start1 <- start(ans_ranges)[1L]
+        if (start1 > 1L) {
+            prefix1 <- subseq(unaligned_pattern, end=start1 - 1L)
+            prefixes <- .makeXStringSetFrom2XStrings(x1=prefix1)
+            ans_seqs <- xscat(prefixes, ans_seqs)
+            prefix <- .makeXStringFromSpaces(length(prefix1))
+            ans_pipes <- xscat(prefix, ans_pipes)
+            start(ans_ranges)[1L] <- 1L
+        }
+        end1 <- end(ans_ranges)[1L]
+        if (end1 < length(unaligned_pattern)) {
+            suffix1 <- subseq(unaligned_pattern, start=end1 + 1L)
+            suffixes <- .makeXStringSetFrom2XStrings(x1=suffix1)
+            ans_seqs <- xscat(ans_seqs, suffixes)
+            suffix <- .makeXStringFromSpaces(length(suffix1))
+            ans_pipes <- xscat(ans_pipes, suffix)
+            end(ans_ranges)[1L] <- length(unaligned_pattern)
+        }
+    }
+    if (is_subject_global) {
+        unaligned_subject <- unaligned_subject[[1L]]
+        start2 <- start(ans_ranges)[2L]
+        if (start2 > 1L) {
+            prefix2 <- subseq(unaligned_pattern, end=start2 - 1L)
+            prefixes <- .makeXStringSetFrom2XStrings(x2=prefix2)
+            ans_seqs <- xscat(prefixes, ans_seqs)
+            prefix <- .makeXStringFromSpaces(length(prefix2))
+            ans_pipes <- xscat(prefix, ans_pipes)
+            start(ans_ranges)[2L] <- 1L
+        }
+        end2 <- end(ans_ranges)[2L]
+        if (end2 < length(unaligned_subject)) {
+            suffix2 <- subseq(unaligned_pattern, start=end2 + 1L)
+            suffixes <- .makeXStringSetFrom2XStrings(x2=suffix2)
+            ans_seqs <- xscat(ans_seqs, suffixes)
+            suffix <- .makeXStringFromSpaces(length(suffix2))
+            ans_pipes <- xscat(ans_pipes, suffix)
+            end(ans_ranges)[2L] <- length(unaligned_pattern)
+        }
+    }
+    names(ans_seqs) <- c(pattern_name, subject_name)
+    list(ans_seqs, ans_ranges, ans_pipes)
 }
 
 .writePairHeader <- function(x, alignment.length, Identity, Similarity, Gaps, 
@@ -118,13 +208,13 @@ if (FALSE) {
     Extend_penalty <- sprintf("%.1f", - x@gapExtension)
     prettyPercentage <- function(ratio)
         sprintf("%.1f%%", round(ratio * 100, digits=1L))
-    Identity_percentage <- .prettyPercentage(Identity / alignment.length)
+    Identity_percentage <- prettyPercentage(Identity / alignment.length)
     Identity <- paste(format(Identity, width=7L), "/", alignment.length,
                       " (", Identity_percentage, ")", sep="")
-    Similarity_percentage <- .prettyPercentage(Similarity / alignment.length)
+    Similarity_percentage <- prettyPercentage(Similarity / alignment.length)
     Similarity <- paste(format(Similarity, width=5L), "/", alignment.length,
                         " (", Similarity_percentage, ")", sep="")
-    Gaps_percentage <- .prettyPercentage(Gaps / alignment.length)
+    Gaps_percentage <- prettyPercentage(Gaps / alignment.length)
     Gaps <- paste(format(Gaps, width=11L), "/", alignment.length,
                   " (", Gaps_percentage, ")", sep="")
     Score <- x@score
@@ -204,6 +294,19 @@ writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
 {
     if (!is(x, "PairwiseAlignments"))
         stop("'x' must be a PairwiseAlignments object")
+    if (isSingleString(file)) {
+        if (file == "") {
+            file <- stdout()
+        } else if (substring(file, 1L, 1L) == "|") {
+            file <- pipe(substring(file, 2L), "w")
+            on.exit(close(file))
+        } else {
+            file <- file(file, "w")
+            on.exit(close(file))
+        }
+    } else if (!is(file, "connection")) {
+        stop("'file' must be a single string or a connection object")
+    }
     pkgversion <- as.character(packageVersion("Biostrings"))
     Program <- paste("Biostrings (version ", pkgversion, "), ",
                      "a Bioconductor package", sep="")
@@ -217,6 +320,9 @@ writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
                 "-> nothing to write")
     #else if (x_len >= 2L)
     #    warning("'x' contains more than 1 pairwise alignment")
+    x_type <- type(x)
+    is_pattern_global <- x_type %in% c("global", "global-local")
+    is_subject_global <- x_type %in% c("global", "local-global")
     if (length(unaligned(subject(x))) != 1L) {
         bottom_name0 <- ""
     } else {
@@ -226,33 +332,33 @@ writePairwiseAlignments <- function(x, file="", Matrix=NA, block.width=50)
         #if (i != 1L)
         #    cat("\n\n", file=file)
         xi <- x[i]
-        strings <- .onePairTo3XStrings(xi)
-        string_names <- names(strings)
-        top_name <- string_names[1L]
-        if (top_name == "")
-            top_name <- paste("P", i, sep="")
-        bottom_name <- string_names[3L]
-        if (bottom_name == "") {
+        postaligned_seqs <- .makePostalignedSeqs(xi)
+        seqs <- postaligned_seqs[[1L]]
+        ranges <- postaligned_seqs[[2L]]
+        pipes <- postaligned_seqs[[3L]]
+        name1 <- names(seqs)[1L]
+        if (name1 == "")
+            name1 <- paste("P", i, sep="")
+        name2 <- names(seqs)[2L]
+        if (name2 == "") {
             if (bottom_name0 == "") {
-                bottom_name <- paste("S", i, sep="")
+                name2 <- paste("S", i, sep="")
             } else {
-                bottom_name <- bottom_name0
+                name2 <- bottom_name0
             }
         }
-        Identity <- countPattern("|", strings[[2L]])
-        Gaps <- sum(width(union(ranges(matchPattern("-", strings[[1L]])),
-                                ranges(matchPattern("-", strings[[3L]])))))
-        .writePairHeader(xi, length(strings[[1L]]), Identity, NA, Gaps,
-                         pattern.name=top_name, subject.name=bottom_name,
+        Identity <- countPattern("|", pipes)
+        Gaps <- sum(width(union(ranges(matchPattern("-", seqs[[1L]])),
+                                ranges(matchPattern("-", seqs[[2L]])))))
+        .writePairHeader(xi, length(seqs[[1L]]), Identity, NA, Gaps,
+                         pattern.name=name1, subject.name=name2,
                          Matrix=Matrix, file=file)
-        aligned_pattern <- pattern(xi)
-        aligned_subject <- subject(xi)
-        top_start <- start(aligned_pattern@range)
-        bottom_start <- start(aligned_subject@range)
         cat("\n", file=file)
-        .writePairSequences(strings[[1L]], strings[[3L]], strings[[2L]],
-                            top.name=top_name, bottom.name=bottom_name,
-                            top.start=top_start, bottom.start=bottom_start,
+        start1 <- start(ranges)[1L]
+        start2 <- start(ranges[2L])
+        .writePairSequences(seqs[[1L]], seqs[[2L]], pipes,
+                            top.name=name1, bottom.name=name2,
+                            top.start=start1, bottom.start=start2,
                             block.width=block.width, file=file)
         cat("\n\n", file=file)
     }
