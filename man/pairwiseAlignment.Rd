@@ -125,6 +125,7 @@ against a reference sequence.
 }
 \author{P. Aboyoun and H. Pages}
 \seealso{
+  \code{\link{writePairwiseAlignments}},
   \code{\link{stringDist}},
   \link{PairwiseAlignments-class},
   \link{XStringQuality-class},

@@ -313,10 +313,11 @@
 
 \seealso{
   \code{\link{pairwiseAlignment}},
-  \code{\link{AlignedXStringSet-class}},
-  \code{\link{XString-class}},
-  \code{\link{XStringViews-class}},
-  \code{\link{align-utils}},
+  \code{\link{writePairwiseAlignments}},
+  \link{AlignedXStringSet-class},
+  \link{XString-class},
+  \link{XStringViews-class},
+  \link{align-utils},
   \code{\link{pid}}
 }
 
