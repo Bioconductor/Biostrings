@@ -155,8 +155,9 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     }
     \item{}{
       \code{names(x)}:
-      \code{NULL} or a character vector of the same length as \code{x} containing
-      a short user-provided description or comment for each element in \code{x}.
+      \code{NULL} or a character vector of the same length as \code{x}
+      containing a short user-provided description or comment for each
+      element in \code{x}.
       These are the only data in an XStringSet object that can safely
       be changed by the user. All the other data are immutable!
       As a general recommendation, the user should never try to modify
@@ -164,9 +165,10 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     }
     \item{}{
       \code{alphabet(x)}:
-      Return \code{NULL}, \code{\link{DNA_ALPHABET}}, \code{\link{RNA_ALPHABET}} or
-      \code{\link{AA_ALPHABET}} depending on whether \code{x} is a BStringSet,
-      DNAStringSet, RNAStringSet or AAStringSet object.
+      Return \code{NULL}, \code{\link{DNA_ALPHABET}},
+      \code{\link{RNA_ALPHABET}} or \code{\link{AA_ALPHABET}} depending on
+      whether \code{x} is a BStringSet, DNAStringSet, RNAStringSet or
+      AAStringSet object.
     }
     \item{}{
       \code{nchar(x)}:
@@ -287,18 +289,18 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       Fast equivalent to \code{do.call(c, as.list(x))}.
     }
     \item{}{
-      \code{as.character(x, use.names)}:
-      Convert \code{x} to a character vector of the same length as \code{x}.
-      \code{use.names} controls whether or not \code{names(x)} should be
-      used to set the names of the returned vector (default is \code{TRUE}).
+      \code{as.character(x, use.names=TRUE)}:
+      Converts \code{x} to a character vector of the same length as \code{x}.
+      The \code{use.names} argument controls whether or not \code{names(x)}
+      should be propagated the names of the returned vector.
     }
     \item{}{
-      \code{as.matrix(x, use.names)}:
-      Return a character matrix containing the "exploded" representation of
-      the strings. This can only be used on an XStringSet object with
+      \code{as.matrix(x, use.names=TRUE)}:
+      Returns a character matrix containing the "exploded" representation of
+      the strings. Can only be used on an XStringSet object with
       equal-width strings.
-      \code{use.names} controls whether or not \code{names(x)} should be used
-      to set the row names of the returned matrix (default is \code{TRUE}).
+      The \code{use.names} argument controls whether or not \code{names(x)}
+      should be propagated to the row names of the returned matrix.
     }
     \item{}{
       \code{toString(x)}:

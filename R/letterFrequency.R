@@ -200,7 +200,7 @@ setMethod("alphabetFrequency", "RNAStringSet",
 setMethod("alphabetFrequency", "XStringViews",
     function(x, as.prob=FALSE, ...)
     {
-        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- fromXStringViewsToStringSet(x)
         alphabetFrequency(y, as.prob=as.prob, ...)
     }
 )
@@ -241,7 +241,7 @@ setMethod("hasOnlyBaseLetters", "RNAStringSet",
 setMethod("hasOnlyBaseLetters", "XStringViews",
     function(x)
     {
-        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- fromXStringViewsToStringSet(x)
         hasOnlyBaseLetters(y)
     }
 )
@@ -293,7 +293,7 @@ setMethod("uniqueLetters", "XStringSet",
 setMethod("uniqueLetters", "XStringViews",
     function(x)
     {
-        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- fromXStringViewsToStringSet(x)
         uniqueLetters(y)
     }
 )
@@ -548,7 +548,7 @@ setMethod("oligonucleotideFrequency", "XStringViews",
     function(x, width, as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE, ...)
     {
-        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- fromXStringViewsToStringSet(x)
         oligonucleotideFrequency(y, width, as.prob=as.prob,
                                  as.array=as.array,
                                  fast.moving.side=fast.moving.side,
@@ -668,7 +668,7 @@ setMethod("nucleotideFrequencyAt", "XStringViews",
     function(x, at, as.prob=FALSE, as.array=TRUE,
              fast.moving.side="right", with.labels=TRUE, ...)
     {
-        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- fromXStringViewsToStringSet(x)
         if (any(width(y) < width(x)))
             stop("x contains \"out of limits\" views")
         nucleotideFrequencyAt(y, at, as.prob=as.prob, as.array=as.array,
@@ -738,7 +738,7 @@ setMethod("consensusMatrix", "XStringSet",
 setMethod("consensusMatrix", "XStringViews",
     function(x, as.prob=FALSE, shift=0L, width=NULL, ...)
     {
-        y <- XStringViewsToSet(x, use.names=FALSE, verbose=FALSE)
+        y <- fromXStringViewsToStringSet(x)
         consensusMatrix(y, as.prob=as.prob, shift=shift, width=width, ...)
     }
 )

@@ -119,32 +119,22 @@
       Equivalent to \code{!(e1 == e2)}.
     }
     \item{}{
-      \code{as.character(x, use.names, check.limits)}:
-      Convert \code{x} to a character vector of the same length as \code{x}.
-      \code{use.names} controls whether or not \code{names(x)} should be
-      used to set the names of the returned vector (default is \code{TRUE}).
-      \code{check.limits} controls whether or not an error should be raised
-      if \code{x} contains "out of limit" views (default is \code{TRUE}).
-      With \code{check.limits=FALSE} then "out of limit" views are padded
-      with spaces.
+      \code{as.character(x, use.names=TRUE, check.limits=TRUE)}:
+      Converts \code{x} to a character vector of the same length as \code{x}.
+      The \code{use.names} argument controls whether or not \code{names(x)}
+      should be propagated to the names of the returned vector.
+      The \code{check.limits} argument controls whether or not an error
+      should be raised if \code{x} has "out of limit" views.
+      If \code{check.limits} is \code{FALSE} then "out of limit" views are
+      trimmed with a warning.
     }
     \item{}{
-      \code{as.matrix(x, mode, use.names, check.limits)}:
-      Depending on what \code{mode} is chosen (\code{"integer"} or
-      \code{"character"}), return either a 2-column integer matrix containing
-      \code{start(x)} and \code{end(x)} or a character matrix containing the
-      "exploded" representation of the views.
-      \code{mode="character"} can only be used on an XStringViews
-      object with equal-width views.
-      Arguments \code{use.names} and \code{check.limits} are ignored with
-      \code{mode="integer"}.
-      With \code{mode="character"}, \code{use.names} controls
-      whether or not \code{names(x)} should be used to set the row names
-      of the returned matrix (default is \code{TRUE}),
-      and \code{check.limits} controls whether or not an error should be raised
-      if \code{x} contains "out of limit" views (default is \code{TRUE}).
-      With \code{check.limits=FALSE} then "out of limit" views are padded
-      with spaces.
+      \code{as.matrix(x, use.names=TRUE)}:
+      Returns a character matrix containing the "exploded" representation
+      of the views. Can only be used on an XStringViews object with
+      equal-width views.
+      The \code{use.names} argument controls whether or not \code{names(x)}
+      should be propagated to the row names of the returned matrix.
     }
     \item{}{
       \code{toString(x)}:

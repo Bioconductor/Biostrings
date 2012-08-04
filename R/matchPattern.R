@@ -447,7 +447,7 @@ setMethod("vcountPattern", "XStringViews",
     function(pattern, subject,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto")
-        vcountPattern(pattern, XStringViewsToSet(subject, FALSE, verbose=FALSE),
+        vcountPattern(pattern, fromXStringViewsToStringSet(subject),
                       max.mismatch=max.mismatch, min.mismatch=min.mismatch,
                       with.indels=with.indels, fixed=fixed,
                       algorithm=algorithm)

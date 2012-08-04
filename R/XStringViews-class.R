@@ -89,26 +89,39 @@ setReplaceMethod("seqtype", "XStringViews",
 ###
 
 ### From XStringViews to XStringSet.
-
-XStringViewsToSet <- function(x, use.names, verbose=TRUE)
+fromXStringViewsToStringSet <- function(x,
+                                 out.of.limits=c("ok", "warning", "error"),
+                                 use.names=FALSE)
 {
+    out.of.limits <- match.arg(out.of.limits)
     ans_ranges <- restrict(as(x, "IRanges"), start=1L, end=nchar(subject(x)),
                            keep.all.ranges=TRUE,
                            use.names=use.names)
-    if (verbose && any(width(ans_ranges) < width(x)))
-        warning("trimming \"out of limits\" views")
-    unsafe.newXStringSet(subject(x), ans_ranges, use.names=TRUE, names=names(ans_ranges))
+    if (out.of.limits != "ok" && any(width(ans_ranges) < width(x))) {
+        if (out.of.limits == "warning")
+            warning("trimming \"out of limits\" views")
+        else
+            stop("'x' has \"out of limits\" views")
+    }
+    unsafe.newXStringSet(subject(x), ans_ranges,
+                         use.names=TRUE, names=names(ans_ranges))
 }
 
 ### We need this so that B/DNA/RNA/AAStringSet() used below work on an
 ### XStringViews object.
 setMethod("XStringSet", "XStringViews",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(seqtype, XStringViewsToSet(x, use.names),
+    {
+        y <- fromXStringViewsToStringSet(x, out.of.limits="warning",
+                                         use.names=use.names)
+        XStringSet(seqtype, y,
                    start=start, end=end, width=width, use.names=TRUE)
+    }
 )
 
-setAs("XStringViews", "XStringSet", function(from) XStringViewsToSet(from, TRUE))
+setAs("XStringViews", "XStringSet",
+    function(from) fromXStringViewsToStringSet(from, out.of.limits="warning",
+                                               use.names=TRUE))
 
 setAs("XStringViews", "BStringSet", function(from) BStringSet(from))
 setAs("XStringViews", "DNAStringSet", function(from) DNAStringSet(from))
@@ -421,34 +434,22 @@ setMethod("as.character", "XStringViews",
     {
         if (!isTRUEorFALSE(check.limits))
             stop("'check.limits' must be TRUE or FALSE")
-        y <- XStringViewsToSet(x, use.names, verbose=check.limits)
+        if (check.limits)
+            out.of.limits <- "error"
+        else
+            out.of.limits <- "warning"
+        y <- fromXStringViewsToStringSet(x, out.of.limits=out.of.limits,
+                                         use.names=use.names)
         as.character(y)
     }
 )
 
-### Supported modes: "integer" (default) and "character".
 setMethod("as.matrix", "XStringViews",
-    function(x, mode="integer", use.names=TRUE, check.limits=TRUE)
+    function(x, use.names=TRUE)
     {
-        if (!is.character(mode) || length(mode) != 1
-         || !(mode %in% c("integer", "character")))
-            stop("'mode' must be either \"integer\" or \"character\"")
-        use.names <- normargUseNames(use.names)
-        if (mode == "integer")
-            return(callNextMethod())
-        nrow <- length(x)
-        if (nrow == 0)
-            stop("'x' must contain at least 1 view")
-        widths <- width(x)
-        ncol <- widths[1]
-        if (!all(widths == ncol))
-            stop("'x' views are not equal-width")
-        y <- as.character(x, use.names=FALSE, check.limits=check.limits)
-        y <- unlist(strsplit(y, NULL), recursive=FALSE, use.names=FALSE)
-        m <- matrix(y, nrow=nrow, byrow=TRUE)
-        if (use.names)
-            rownames(m) <- names(x)
-        m
+        y <- fromXStringViewsToStringSet(x, out.of.limits="error",
+                                         use.names=use.names)
+        as.matrix(y)
     }
 )
 

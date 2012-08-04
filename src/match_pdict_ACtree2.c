@@ -229,7 +229,7 @@ static int ACnodeBuf_is_full(ACnodeBuf *buf)
 	       || *(buf->lastblock_nelt) >= ACNODEBUF_MAX_NELT_PER_BLOCK;
 }
 
-static unsigned int get_ACnodeBuf_nelt(ACnodeBuf *buf)
+static unsigned int get_ACnodeBuf_nelt(const ACnodeBuf *buf)
 {
 	int nblock;
 
