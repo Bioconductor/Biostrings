@@ -292,7 +292,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       \code{as.character(x, use.names=TRUE)}:
       Converts \code{x} to a character vector of the same length as \code{x}.
       The \code{use.names} argument controls whether or not \code{names(x)}
-      should be propagated the names of the returned vector.
+      should be propagated to the names of the returned vector.
     }
     \item{}{
       \code{as.matrix(x, use.names=TRUE)}:
