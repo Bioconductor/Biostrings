@@ -390,6 +390,24 @@ setMethod("show", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Splitting
+###
+
+setMethod("splitAsListReturnedClass", "BStringSet",
+    function(x) "BStringSetList"
+)
+setMethod("splitAsListReturnedClass", "DNAStringSet",
+    function(x) "DNAStringSetList"
+)
+setMethod("splitAsListReturnedClass", "RNAStringSet",
+    function(x) "RNAStringSetList"
+)
+setMethod("splitAsListReturnedClass", "AAStringSet",
+    function(x) "AAAStringSetList"
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Set Operations
 ###
 
