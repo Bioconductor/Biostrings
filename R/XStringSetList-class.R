@@ -80,21 +80,18 @@ setGeneric("XStringSetList", signature="x",
 
 .newCompressedList <- function(seqtype, x, use.names)
 {
-    if (use.names)
-        names <- names(x)
-    if (seqtype == "DNA")
-        IRanges:::newCompressedList("DNAStringSetList", x, seq_len(length(x)), 
-                                    names)
-    else
-        warning("XStringSetList currently supports seqtype=\"DNA\" only")
+    if (seqtype != "DNA")
+        stop("XStringSetList() currently supports 'seqtype=\"DNA\"' only")
+    if (!use.names)
+        names(x) <- NULL
+    IRanges:::newList("DNAStringSetList", x)
 } 
 
 .makeListOfXStringSets <- function(seqtype, x) 
 {
-    if (seqtype == "DNA")
-        lapply(x, as, "DNAStringSet")
-    else
-        warning("XStringSetList currently supports seqtype=\"DNA\" only")
+    if (seqtype != "DNA")
+        stop("XStringSetList() currently supports 'seqtype=\"DNA\"' only")
+    lapply(x, as, "DNAStringSet")
 }
 
 setMethod("XStringSetList", "list",

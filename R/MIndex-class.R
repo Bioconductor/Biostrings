@@ -76,13 +76,7 @@ setMethod("unlist", "MIndex",
 )
 
 setAs("MIndex", "CompressedIRangesList",
-    function(from)
-    {
-        IRanges:::newCompressedList("CompressedIRangesList",
-                                    unlistData = unlist(from),
-                                    end = cumsum(countIndex(from)),
-                                    NAMES = names(from))
-    }
+    function(from) relist(unlist(from), from)
 )
 
 extractAllMatches <- function(subject, mindex)

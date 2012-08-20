@@ -46,7 +46,7 @@
   These four containers are direct subclasses of XStringSetList
   with no additional slots.
 
-  Currently \code{DNAStringSet} is the only XStringSetList constructor. 
+  Currently \code{DNAStringSetList()} is the only XStringSetList constructor. 
   The XStringSetList class itself is virtual and has no constructor.
 }
 
