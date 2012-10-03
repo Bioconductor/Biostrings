@@ -149,6 +149,7 @@ export(
     dinucleotideFrequency, trinucleotideFrequency,
     nucleotideFrequencyAt,
     oligonucleotideTransitions,
+    twoWayAlphabetFrequency,
 
     ## dinucleotideFrequencyTest.R
     dinucleotideFrequencyTest,

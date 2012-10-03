@@ -4,7 +4,7 @@ Title: String objects representing biological sequences, and matching
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or sets of sequences.
-Version: 2.27.0
+Version: 2.27.1
 Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Sequencing, Infrastructure,
@@ -41,7 +41,6 @@ Collate: 00datacache.R
 	XStringSet-io.R
 	letter.R
 	getSeq.R
-	letterFrequency.R
 	dinucleotideFrequencyTest.R
 	chartr.R
 	reverseComplement.R
@@ -70,6 +69,7 @@ Collate: 00datacache.R
 	XStringPartialMatches-class.R
 	XStringQuality-class.R
 	QualityScaledXStringSet.R
+        letterFrequency.R
 	InDel-class.R
 	AlignedXStringSet-class.R
 	PairwiseAlignments-class.R

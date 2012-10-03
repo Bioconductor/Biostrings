@@ -852,3 +852,107 @@ setMethod("consensusString", "ANY",
                         ambiguityMap=ambiguityMap, threshold=threshold)
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "twoWayAlphabetFrequency" generic and methods.
+###
+### Calculates two-way table of letter frequencies for two same-length inputs
+###
+
+.XString.two_way_code_frequency <- function(x, y, as.prob, baseOnly)
+{
+  if (!isTRUEorFALSE(as.prob))
+    stop("'as.prob' must be TRUE or FALSE")
+  x.codes <- xscodes(x, baseOnly=baseOnly)
+  y.codes <- xscodes(y, baseOnly=baseOnly)
+  ans <- .Call2("XString_two_way_letter_frequency",
+                x, y, x.codes, y.codes, baseOnly,
+                PACKAGE="Biostrings")
+  if (as.prob)
+    ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
+  ans
+}
+
+.XStringSet.two_way_code_frequency <- function(x, y, as.prob, collapse,
+                                               baseOnly)
+{
+  if (!isTRUEorFALSE(as.prob))
+    stop("'as.prob' must be TRUE or FALSE")
+  collapse <- .normargCollapse(collapse)
+  codes <- xscodes(x, baseOnly=baseOnly)
+  ans <- .Call2("XStringSet_two_way_letter_frequency",
+                x, y, collapse, codes, baseOnly,
+                PACKAGE="Biostrings")
+  if (as.prob) {
+    if (collapse)
+      ans <- ans / sum(ans)
+    else
+      ans <- ans / rep(nchar(x), each = prod(dim(ans)[1:2]))
+  }
+  ans
+}
+
+setGeneric("twoWayAlphabetFrequency", signature=c("x", "y"),
+           function(x, y, as.prob=FALSE, ...)
+           standardGeneric("twoWayAlphabetFrequency")
+           )
+
+setMethod("twoWayAlphabetFrequency", c("XString", "XString"),
+          function(x, y, as.prob=FALSE, baseOnly=FALSE)
+          .XString.two_way_code_frequency(x, y, as.prob, baseOnly)
+          )
+
+setMethod("twoWayAlphabetFrequency", c("XString", "XStringSet"),
+          function(x, y, as.prob=FALSE, baseOnly=FALSE) {
+            x <- rep(as(x, "XStringSet"), length(y))
+            .XString.two_way_code_frequency(x, y, as.prob, baseOnly)
+          }
+          )
+
+setMethod("twoWayAlphabetFrequency", c("XStringSet", "XString"),
+          function(x, y, as.prob=FALSE, baseOnly=FALSE) {
+            y <- rep(as(y, "XStringSet"), length(x))
+            .XString.two_way_code_frequency(x, y, as.prob, baseOnly)
+          }
+          )
+
+setMethod("twoWayAlphabetFrequency", c("XStringSet", "XStringSet"),
+          function(x, y, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE)
+          .XStringSet.two_way_code_frequency(x, y, as.prob, collapse, baseOnly)
+          )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "twoWayAlphabetFrequencyByQuality" generic and methods.
+###
+### Not sure about this yet. We may want a threeWayAlphabetFrequency,
+### where the qualities are combined apriori.
+###
+
+.XStringSet.two_way_code_frequency_by_quality <-
+  function(x, y, x.quality, y.quality, as.prob, baseOnly)
+{
+  if (!isTRUEorFALSE(as.prob))
+    stop("'as.prob' must be TRUE or FALSE")
+  codes <- xscodes(x, baseOnly=baseOnly)
+  ans <- .Call2("XStringSet_two_way_letter_frequency_by_quality",
+                x, y, x.quality, y.quality, collapse, codes, baseOnly,
+                PACKAGE="Biostrings")
+  if (as.prob) {
+    ans <- ans / rep(nchar(x), each = prod(dim(ans)[1:2]))
+  }
+  ans
+}
+
+setGeneric("twoWayAlphabetFrequencyByQuality", signature=c("x", "y"),
+           function(x, y, as.prob=FALSE, ...)
+           standardGeneric("twoWayAlphabetFrequencyByQuality")
+           )
+
+setMethod("twoWayAlphabetFrequencyByQuality", "QualityScaledXStringSet",
+          function(x, y, as.prob=FALSE, baseOnly=FALSE)
+          .XStringSet.two_way_code_frequency_by_quality(x, y,
+                                                        quality(x),
+                                                        quality(y),
+                                                        as.prob,
+                                                        baseOnly)
+          )

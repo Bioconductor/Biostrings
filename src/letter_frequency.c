@@ -44,8 +44,9 @@ static int get_ans_width(SEXP codes, int with_other)
 {
 	int width, i;
 
-	if (codes == R_NilValue)
+	if (codes == R_NilValue) {
 		return 256;
+        }
 	_init_byte2offset_with_INTEGER(byte2offset, codes, 1);
 	width = LENGTH(codes);
 	if (with_other) {
@@ -739,4 +740,238 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
 	UNPROTECT(1);
 	return ans;
+}
+
+
+/****************************************************************************
+ *                        --- Two-way Alphabet Frequency ---                *
+ ****************************************************************************/
+
+static ByteTrTable xbyte2offset;
+static ByteTrTable ybyte2offset;
+
+static void copy_codes(ByteTrTable dest) {
+  for (int i = 0; i < BYTETRTABLE_LENGTH; i++) {
+    dest[i] = byte2offset[i];
+  }
+}
+
+static void update_two_way_letter_freqs(int *mat, int nrow,
+                                        const cachedCharSeq *X,
+                                        const cachedCharSeq *Y)
+{
+  int i, x_offset, y_offset;
+  const char *xc, *yc;
+
+  if (X->length != Y->length) {
+    error("Strings 'x' and 'y' must have the same length");
+  }
+  
+  for (i = 0, xc = X->seq, yc = Y->seq; i < X->length; i++, xc++, yc++) {
+    x_offset = xbyte2offset[(unsigned char) *xc];
+    y_offset = ybyte2offset[(unsigned char) *yc];
+    if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
+      mat[x_offset + y_offset * nrow]++;
+    }
+  }
+  return;
+}
+
+static SEXP get_names_for_codes(SEXP codes, int with_other) {
+  if (codes == R_NilValue)
+    return R_NilValue;
+  if (with_other) {
+    return append_other_to_names(codes);
+  } else {
+    return duplicate(GET_NAMES(codes));
+  }
+}
+
+static void set_two_way_names(SEXP x, SEXP x_codes, SEXP y_codes,
+                              int with_other, int collapse)
+{
+  SEXP x_names, y_names, dimnames;
+
+  PROTECT(x_names = get_names_for_codes(x_codes, with_other));
+  PROTECT(y_names = get_names_for_codes(y_codes, with_other));
+  if (collapse) {
+    dimnames = list2(x_names, y_names);
+  } else {
+    dimnames = list3(x_names, y_names, R_NilValue);
+  }
+  SET_DIMNAMES(x, dimnames);
+  UNPROTECT(2);
+  return;
+}
+
+/*
+  Similar to ShortRead:::alphabet_pair_by_cycle(), except we are not
+  interested in per-cycle counts. That function is used by ShortRead
+  to create a two-way table of nucleotide counts and
+  qualities. Tabulating by quality might actually be a good idea, when
+  we have it.
+
+  Another similar function is Biostrings::mismatchSummary(), which
+  tabulates position X pattern X subject. Again, we are not
+  so interested in the per-position counts, so this would require an
+  additional summarization step. Also, the implementation does not
+  appear to be very efficient.
+*/
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XString_two_way_letter_frequency(SEXP x, SEXP y,
+                                      SEXP x_codes, SEXP y_codes,
+                                      SEXP with_other)
+{
+  SEXP ans;
+  int x_width, y_width;
+  cachedCharSeq X, Y;
+
+  x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
+  copy_codes(xbyte2offset);
+  y_width = get_ans_width(y_codes, LOGICAL(with_other)[0]);
+  copy_codes(ybyte2offset);
+  PROTECT(ans = allocMatrix(INTSXP, x_width, y_width));
+  memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
+  X = cache_XRaw(x);
+  Y = cache_XRaw(y);
+  update_two_way_letter_freqs(INTEGER(ans), x_width, &X, &Y);
+  set_two_way_names(ans, x_codes, y_codes, LOGICAL(with_other)[0], 1);
+  UNPROTECT(1);
+  return ans;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
+                                         SEXP x_codes, SEXP y_codes,
+                                         SEXP with_other)
+{
+  SEXP ans, ans_dimnames;
+  int x_width, y_width, x_length, *ans_mat, i, x_pos;
+  cachedXStringSet cached_x, cached_y;
+  cachedCharSeq x_elt, y_elt;
+  Rboolean _collapse = asLogical(collapse);
+
+  x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
+  copy_codes(xbyte2offset);
+  y_width = get_ans_width(y_codes, LOGICAL(with_other)[0]);
+  copy_codes(ybyte2offset);
+
+  x_length = _get_XStringSet_length(x);
+  if (x_length != _get_XStringSet_length(y))
+    error("'x' and 'y' must have the same length");
+  
+  cached_x = _cache_XStringSet(x);
+  cached_y = _cache_XStringSet(y);
+
+  if (_collapse) {
+    PROTECT(ans = allocMatrix(INTSXP, x_width, y_width));
+  } else {
+    PROTECT(ans = alloc3DArray(INTSXP, x_width, y_width, x_length));
+  }
+  
+  ans_mat = INTEGER(ans);
+  memset(ans_mat, 0, LENGTH(ans) * sizeof(int));
+  for (i = 0; i < x_length; i++) {
+    x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+    y_elt = _get_cachedXStringSet_elt(&cached_y, i);
+    update_two_way_letter_freqs(ans_mat, x_width, &x_elt, &y_elt);
+    if (!_collapse)
+      ans_mat += x_width * y_width;
+  }
+
+  set_two_way_names(ans, x_codes, y_codes, asLogical(with_other), _collapse);
+  
+  UNPROTECT(1);
+  return ans;
+}
+
+static ByteTrTable quality_byte2offset;
+
+static void update_two_way_letter_freqs_by_quality(int *mat,
+                                                   int seq_width,
+                                                   const cachedCharSeq *X,
+                                                   const cachedCharSeq *Y,
+                                                   const cachedCharSeq *QX,
+                                                   const cachedCharSeq *QY
+                                                   )
+{
+  int i, x_offset, y_offset, qx_offset, qy_offset, min_q_offset;
+  int seq_width_squared = seq_width * seq_width;
+
+  if (X->length != Y->length) {
+    error("Strings 'x' and 'y' must have the same length");
+  }
+  if (X->length != QX->length || Y->length != QY->length) {
+    error("Qualities must have the same length as corresponding sequence");
+  }
+  
+  for (i = 0; i < X->length; i++) {
+    x_offset = byte2offset[(unsigned char) X->seq[i]];
+    y_offset = byte2offset[(unsigned char) Y->seq[i]];
+    qx_offset = quality_byte2offset[(unsigned char) QX->seq[i]];
+    qy_offset = quality_byte2offset[(unsigned char) QY->seq[i]];
+    min_q_offset = qx_offset < qy_offset ? qx_offset : qy_offset; 
+    if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
+      mat[x_offset + y_offset * seq_width + min_q_offset * seq_width_squared]++;
+    }
+  }
+  return;
+}
+
+/*
+ * --- .Call ENTRY POINT ---
+ */
+SEXP XStringSet_two_way_letter_frequency_by_quality(SEXP x, SEXP y,
+                                                    SEXP x_quality,
+                                                    SEXP y_quality,
+                                                    SEXP codes,
+                                                    SEXP quality_codes,
+                                                    SEXP with_other)
+{
+  SEXP ans;
+  int ans_width, quality_width, x_length, *ans_mat, i;
+  cachedXStringSet cached_x, cached_y, cached_x_quality, cached_y_quality;
+  cachedCharSeq x_elt, y_elt, x_elt_quality, y_elt_quality;
+
+  ans_width = get_ans_width(codes, asLogical(with_other));  
+  x_length = _get_XStringSet_length(x);
+  if (x_length != _get_XStringSet_length(y) ||
+      x_length != _get_XStringSet_length(x_quality) ||
+      x_length != _get_XStringSet_length(y_quality))
+    error("'x', 'y' and qualities must have the same length");
+  
+  cached_x = _cache_XStringSet(x);
+  cached_y = _cache_XStringSet(y);
+  cached_x_quality = _cache_XStringSet(x_quality);
+  cached_y_quality = _cache_XStringSet(y_quality);
+
+  _init_byte2offset_with_INTEGER(quality_byte2offset, quality_codes, 1);
+  quality_width = LENGTH(quality_codes);
+  
+  PROTECT(ans = alloc3DArray(INTSXP, ans_width, ans_width, quality_width));
+  
+  ans_mat = INTEGER(ans);
+  memset(ans_mat, 0, LENGTH(ans) * sizeof(int));
+  for (i = 0; i < x_length; i++) {
+    x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+    y_elt = _get_cachedXStringSet_elt(&cached_y, i);
+    x_elt_quality = _get_cachedXStringSet_elt(&cached_x_quality, i);
+    y_elt_quality = _get_cachedXStringSet_elt(&cached_y_quality, i);
+    update_two_way_letter_freqs_by_quality(ans_mat, ans_width,
+                                           &x_elt, &y_elt,
+                                           &x_elt_quality, &y_elt_quality);
+  }
+
+  /* FIXME
+    set_two_way_names(ans, codes, asLogical(with_other), 0);
+  */
+  SET_VECTOR_ELT(GET_DIMNAMES(ans), 2, GET_NAMES(quality_codes));
+  
+  UNPROTECT(1);
+  return ans;
 }

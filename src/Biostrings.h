@@ -301,6 +301,32 @@ SEXP XStringSet_consensus_matrix(
 	SEXP codes
 );
 
+SEXP XString_two_way_letter_frequency(
+        SEXP x,
+        SEXP y,
+        SEXP x_codes,
+        SEXP y_codes,
+        SEXP with_other
+);
+
+SEXP XStringSet_two_way_letter_frequency(
+        SEXP x,
+        SEXP y,
+        SEXP collapse,
+        SEXP x_codes,
+        SEXP y_codes,
+        SEXP with_other
+);
+
+SEXP XStringSet_two_way_letter_frequency_by_quality(
+        SEXP x,
+        SEXP y,
+        SEXP x_quality,
+        SEXP y_quality,
+        SEXP codes,
+        SEXP quality_codes,
+        SEXP with_other
+);
 
 /* gtestsim.c */
 
