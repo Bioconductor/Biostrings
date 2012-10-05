@@ -257,7 +257,6 @@ setMethod("as.matrix", "PairwiseAlignmentsSingleSubject",
 
 PairwiseAlignedFixedSubject <- function(...)
 {
-    .Deprecated("PairwiseAlignmentsSingleSubject")
-    PairwiseAlignmentsSingleSubject(...)
+    .Defunct("PairwiseAlignmentsSingleSubject")
 }
 

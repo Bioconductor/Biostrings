@@ -374,7 +374,6 @@ setMethod("rep", "PairwiseAlignments",
 
 PairwiseAlignedXStringSet <- function(...)
 {
-    .Deprecated("PairwiseAlignments")
-    PairwiseAlignments(...)
+    .Defunct("PairwiseAlignments")
 }
 

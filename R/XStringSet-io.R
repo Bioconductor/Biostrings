@@ -322,34 +322,28 @@ saveXStringSet <- function(x, objname, dirpath=".",
 
 read.BStringSet <- function(...)
 {
-    .Deprecated("readBStringSet")
-    readBStringSet(...)
+    .Defunct("readBStringSet")
 }
 read.DNAStringSet <- function(...)
 {
-    .Deprecated("readDNAStringSet")
-    readDNAStringSet(...)
+    .Defunct("readDNAStringSet")
 }
 read.RNAStringSet <- function(...)
 {
-    .Deprecated("readRNAStringSet")
-    readRNAStringSet(...)
+    .Defunct("readRNAStringSet")
 }
 read.AAStringSet <- function(...)
 {
-    .Deprecated("readAAStringSet")
-    readAAStringSet(...)
+    .Defunct("readAAStringSet")
 }
 
 write.XStringSet <- function(...)
 {
-    .Deprecated("writeXStringSet")
-    writeXStringSet(...)
+    .Defunct("writeXStringSet")
 }
 
 save.XStringSet <- function(...)
 {
-    .Deprecated("saveXStringSet")
-    saveXStringSet(...)
+    .Defunct("saveXStringSet")
 }
 

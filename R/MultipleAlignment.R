@@ -864,17 +864,14 @@ setMethod("show", "MultipleAlignment",
 
 read.DNAMultipleAlignment <- function(...)
 {
-    .Deprecated("readDNAMultipleAlignment")
-    readDNAMultipleAlignment(...)
+    .Defunct("readDNAMultipleAlignment")
 }
 read.RNAMultipleAlignment <- function(...)
 {
-    .Deprecated("readRNAMultipleAlignment")
-    readRNAMultipleAlignment(...)
+    .Defunct("readRNAMultipleAlignment")
 }
 read.AAMultipleAlignment <- function(...)
 {
-    .Deprecated("readAAMultipleAlignment")
-    readAAMultipleAlignment(...)
+    .Defunct("readAAMultipleAlignment")
 }
 
