@@ -35,8 +35,6 @@ import(IRanges)
 ###   XStringViews-class.R
 ###   MaskedXString-class.R
 ###   XStringSetList-class.R
-###   XKeySortedData-class.R
-###   XKeySortedDataList-class.R
 ###   xscat.R
 
 exportClasses(
@@ -44,11 +42,7 @@ exportClasses(
     XStringSet, BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
     XStringViews,
     MaskedXString, MaskedBString, MaskedDNAString, MaskedRNAString, MaskedAAString,
-    XStringSetList, BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList,
-    XKeySortedData, BKeySortedData, DNAKeySortedData,
-    RNAKeySortedData, AAKeySortedData,
-    XKeySortedDataList, BKeySortedDataList, DNAKeySortedDataList,
-    RNAKeySortedDataList, AAKeySortedDataList
+    XStringSetList, BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList
 )
 
 export(
@@ -74,14 +68,6 @@ export(
 
     ## XStringSetList-class.R:
     partitioning, DNAStringSetList,
-
-    ## XKeySortedData-class.R:
-    BKeySortedData, DNAKeySortedData, RNAKeySortedData,
-    AAKeySortedData, dataKey, dataTable,
-
-    ## XKeySortedDataList-class.R:
-    BKeySortedDataList, DNAKeySortedDataList, RNAKeySortedDataList,
-    AAKeySortedDataList,
 
     ## xscat.R:
     xscat
@@ -109,7 +95,6 @@ exportMethods(
 ### ==========================================================================
 ### UTILITIES
 ### --------------------------------------------------------------------------
-###   FASTA-io-legacy.R
 ###   XStringSet-io.R
 ###   letter.R
 ###   getSeq.R
@@ -124,9 +109,6 @@ exportMethods(
 ###   misc.R
 
 export(
-    ## FASTA-io-legacy.R:
-    readFASTA, writeFASTA,
-
     ## XStringSet-io.R:
     readBStringSet, readDNAStringSet, readRNAStringSet, readAAStringSet,
     fasta.info, fastq.geometry,

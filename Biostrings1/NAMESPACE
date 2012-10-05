@@ -9,7 +9,7 @@ exportMethods(allSameLetter, anySameLetter, as.character, as.matrix,
 	matchDNAPattern, nchar, show, substr, substring, needwunsQS)
 
 export(alphabetFrequency, DNAAlphabet, DNAPatternAlphabet, DNAString, 
-	DNASuffixArray, LongestCommonPrefix, NucleotideString, readFASTA, 
+	DNASuffixArray, LongestCommonPrefix, NucleotideString, 
 	reverseComplement, RNAAlphabet, RNAPatternAlphabet, sortDNAString,
 	alignScore, StandardPeptideAlphabet, AAString, rpeptide,
 	testBiostrings)
