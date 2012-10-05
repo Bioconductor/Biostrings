@@ -878,9 +878,10 @@ setMethod("consensusString", "ANY",
   if (!isTRUEorFALSE(as.prob))
     stop("'as.prob' must be TRUE or FALSE")
   collapse <- .normargCollapse(collapse)
-  codes <- xscodes(x, baseOnly=baseOnly)
+  x.codes <- xscodes(x, baseOnly=baseOnly)
+  y.codes <- xscodes(y, baseOnly=baseOnly)
   ans <- .Call2("XStringSet_two_way_letter_frequency",
-                x, y, collapse, codes, baseOnly,
+                x, y, collapse, x.codes, y.codes, baseOnly,
                 PACKAGE="Biostrings")
   if (as.prob) {
     if (collapse)
