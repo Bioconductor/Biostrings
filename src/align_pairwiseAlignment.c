@@ -475,13 +475,13 @@ static double pairwiseAlignment(
 	    			j--;
 	    			break;
 	    		case SUBSTITUTION:
-	    			if (S_TRACE_MATRIX(i, j) != TERMINATION) {
+				prevTraceMatrix = currTraceMatrix;
+				currTraceMatrix = S_TRACE_MATRIX(i, j);
+	    			if (currTraceMatrix != TERMINATION) {
 		    			align1InfoPtr->widthRange++;
 		    			align2InfoPtr->widthRange++;
 	    			}
-	    			prevTraceMatrix = currTraceMatrix;
-					currTraceMatrix = S_TRACE_MATRIX(i, j);
-					if (align1InfoPtr->string.seq[nCharString1Minus1 - i] !=
+					if (currTraceMatrix != TERMINATION && align1InfoPtr->string.seq[nCharString1Minus1 - i] !=
 						align2InfoPtr->string.seq[nCharString2Minus1 - j]) {
 						align1InfoPtr->mismatch[align1InfoPtr->lengthMismatch] = nCharString1 - i;
 						align2InfoPtr->mismatch[align2InfoPtr->lengthMismatch] = nCharString2 - j;
