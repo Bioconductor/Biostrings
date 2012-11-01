@@ -22,7 +22,7 @@
 \alias{unlist,MIndex-method}
 \alias{coerce,MIndex,CompressedIRangesList-method}
 
-\alias{show,ByPos_MIndex-method}
+\alias{show,MIndex-method}
 \alias{[[,ByPos_MIndex-method}
 \alias{startIndex,ByPos_MIndex-method}
 \alias{endIndex,ByPos_MIndex-method}

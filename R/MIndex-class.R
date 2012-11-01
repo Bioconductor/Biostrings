@@ -75,9 +75,14 @@ setMethod("unlist", "MIndex",
     }
 )
 
-setAs("MIndex", "CompressedIRangesList",
-    function(from) relist(unlist(from), from)
-)
+.fromMIndexToCompressedIRangesList <- function(from)
+{
+    ans <- relist(unlist(from, use.names=FALSE), from)
+    names(ans) <- names(from)
+    ans
+}
+
+setAs("MIndex", "CompressedIRangesList", .fromMIndexToCompressedIRangesList)
 
 extractAllMatches <- function(subject, mindex)
 {
@@ -93,6 +98,15 @@ extractAllMatches <- function(subject, mindex)
     ans
 }
 
+setMethod("show", "MIndex",
+    function(object)
+    {
+        cat("MIndex object of length ", length(object), "\n", sep="")
+        irl <- as(object, "CompressedIRangesList")
+        IRanges:::showRangesList(irl, with.header=FALSE)
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "ByPos_MIndex" class.
@@ -104,13 +118,6 @@ setClass("ByPos_MIndex",
         dups0="Dups",
         ends="list"  # same length as the "width0" slot
     )
-)
-
-setMethod("show", "ByPos_MIndex",
-    function(object)
-    {
-        cat("MIndex object of length ", length(object), "\n", sep="")
-    }
 )
 
 setMethod("[[", "ByPos_MIndex",
