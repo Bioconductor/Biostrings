@@ -11,7 +11,6 @@ setClass("PairwiseAlignments",
         subject="AlignedXStringSet0",
         type="character",
         score="numeric",
-        substitutionArray="array",
         gapOpening="numeric",
         gapExtension="numeric"
     )
@@ -136,9 +135,6 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
              nrow = length(availableLetters),
              ncol = length(availableLetters),
              dimnames = list(availableLetters, availableLetters))
-    substitutionArray <-
-      array(unlist(substitutionMatrix, substitutionMatrix), dim = c(dim(substitutionMatrix), 2),
-            dimnames = list(availableLetters, availableLetters, c("0", "1")))
 
     comparison <- rle(safeExplode(compareStrings(pattern, subject)))
     whichPattern <- which(comparison[["values"]] != "-")
@@ -171,7 +167,7 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
                      (match(explodedSubject[substitutionIndices], availableLetters) - 1)]) +
             gapOpening * sum(comparison[["values"]] %in% c("+", "-")) +
               gapExtension * sum(comparison[["lengths"]][comparison[["values"]] %in% c("+", "-")]),
-        substitutionArray = substitutionArray, gapOpening = gapOpening, gapExtension = gapExtension)
+        gapOpening = gapOpening, gapExtension = gapExtension)
 }
 
 setGeneric("PairwiseAlignments",
@@ -349,7 +345,6 @@ setMethod("[", "PairwiseAlignments",
             subject = x@subject[i],
             type = x@type,
             score = x@score[i],
-            substitutionArray = x@substitutionArray,
             gapOpening = x@gapOpening,
             gapExtension = x@gapExtension)
     }

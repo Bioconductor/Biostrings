@@ -956,8 +956,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 		/* Set the "type" slot */
 		SET_SLOT(output, mkChar("type"), type);
-		/* Set the "substitutionArray" slot */
-		SET_SLOT(output, mkChar("substitutionArray"), substitutionArray);
+
 		/* Set the "gapOpening" slot */
 		SET_SLOT(output, mkChar("gapOpening"), gapOpening);
 		/* Set the "gapExtension" slot */
