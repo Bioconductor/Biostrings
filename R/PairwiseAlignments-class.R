@@ -95,10 +95,10 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
       warning("type = 'patternOverlap' has been renamed type = 'local-global'")
       type <- "local-global"
     }
-    gapOpening <- as.double(- abs(gapOpening))
+    gapOpening <- as.double(gapOpening)
     if (length(gapOpening) != 1 || is.na(gapOpening))
         stop("'gapOpening' must be a non-positive numeric vector of length 1")
-    gapExtension <- as.double(- abs(gapExtension))
+    gapExtension <- as.double(gapExtension)
     if (length(gapExtension) != 1 || is.na(gapExtension))
         stop("'gapExtension' must be a non-positive numeric vector of length 1")
 

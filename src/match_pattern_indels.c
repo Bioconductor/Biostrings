@@ -63,7 +63,7 @@ static void print_match(int start, int width, const cachedCharSeq *P,
  * local matches". A substring S' of S is a best local match iff:
  *   (a) nedit(P, S') <= max_nmis
  *   (b) for every substring S1 of S', nedit(P, S1) > nedit(P, S')
- *   (c) for every substring S2 of S that contains S', nedit(P, S2) <= nedit(P, S')
+ *   (c) for every substring S2 of S that contains S', nedit(P, S2) >= nedit(P, S')
  * One nice property of best local matches is that their first and last letters
  * are guaranteed to match letters in P.
  * The report_provisory_match() function will store a provisory match and will
