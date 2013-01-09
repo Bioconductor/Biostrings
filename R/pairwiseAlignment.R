@@ -102,10 +102,10 @@ function(pattern,
   typeCode <-
     c("global" = 1L, "local" = 2L, "overlap" = 3L, "global-local" = 4L,
       "local-global" = 5L)[[type]]
-  gapOpening <- as.double(gapOpening)
+  gapOpening <- as.double(- abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
     stop("'gapOpening' must be a non-positive numeric vector of length 1")
-  gapExtension <- as.double(gapExtension)
+  gapExtension <- as.double(- abs(gapExtension))
   if (length(gapExtension) != 1 || is.na(gapExtension))
     stop("'gapExtension' must be a non-positive numeric vector of length 1")
   scoreOnly <- as.logical(scoreOnly)
@@ -233,10 +233,10 @@ QualityScaledXStringSet.pairwiseAlignment <- function(pattern, subject,
     }
     typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L,
                   "global-local" = 4L, "local-global" = 5L)[[type]]
-    gapOpening <- as.double(gapOpening)
+    gapOpening <- as.double(- abs(gapOpening))
     if (length(gapOpening) != 1L || is.na(gapOpening))
         stop("'gapOpening' must be a non-positive numeric vector of length 1")
-    gapExtension <- as.double(gapExtension)
+    gapExtension <- as.double(- abs(gapExtension))
     if (length(gapExtension) != 1L || is.na(gapExtension))
         stop("'gapExtension' must be a non-positive numeric vector of length 1")
     scoreOnly <- as.logical(scoreOnly)
