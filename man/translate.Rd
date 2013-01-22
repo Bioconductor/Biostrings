@@ -136,6 +136,24 @@ rna2dna(x)
   codons(y1)
   which(width(codons(y1)) != 3)
   codons(y1)[20:28]
+
+  ## Translation on the '-' strand:
+  dna <- DNAStringSet(c("ATC", "GCTG", "CGACT"))
+  translate(reverseComplement(dna))
+
+  ## Translate sequences on both '+' and '-' strand across all 
+  ## possible reading frames (i.e., codon position 1, 2 or 3):
+  ## First create a DNAStringSet of '+' and '-' strand sequences, 
+  ## removing the nucleotides prior to the reading frame start position.
+  dnaSubseq <- lapply(1:3, function(pos, dna) 
+      subseq(c(dna, reverseComplement(dna)), start=pos), dna)
+  ## Translation of 'dnaSubseq' produces a list of length 3, each with 6 
+  ## elements (3 '+' results followed by 3 '-' strand results).
+  lapply(dnaSubseq, translate)
+
+  ## translate() throws a warning when the length of the sequence is not 
+  ## divisible by 3. To avoid this warning wrap the function in 
+  ## suppressWarnings(). 
 }
 
 \keyword{methods}
