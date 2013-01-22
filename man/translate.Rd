@@ -148,7 +148,7 @@ rna2dna(x)
   dnaSubseq <- lapply(1:3, function(pos, dna) 
       subseq(c(dna, reverseComplement(dna)), start=pos), dna)
   ## Translation of 'dnaSubseq' produces a list of length 3, each with 6 
-  ## elements (3 '+' results followed by 3 '-' strand results).
+  ## elements (3 '+' strand results followed by 3 '-' strand results).
   lapply(dnaSubseq, translate)
 
   ## translate() throws a warning when the length of the sequence is not 
