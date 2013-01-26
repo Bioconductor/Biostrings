@@ -403,7 +403,7 @@ setMethod("splitAsListReturnedClass", "RNAStringSet",
     function(x) "RNAStringSetList"
 )
 setMethod("splitAsListReturnedClass", "AAStringSet",
-    function(x) "AAAStringSetList"
+    function(x) "AAStringSetList"
 )
 
 
