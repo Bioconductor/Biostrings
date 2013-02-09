@@ -46,7 +46,8 @@
 %\tableofcontents
 
 Please note that \emph{most} but \emph{not all} the functionalities
-provided by the \Rpackage{Biostrings} are listed below.
+provided by the \Rpackage{Biostrings} package are listed in this
+document.
 
 %-----------------------------------------------------------------------------
 
