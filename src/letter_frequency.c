@@ -750,7 +750,7 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 static ByteTrTable xbyte2offset;
 static ByteTrTable ybyte2offset;
 
-static void copy_codes(ByteTrTable dest) {
+static void copy_codes_into(ByteTrTable dest) {
   for (int i = 0; i < BYTETRTABLE_LENGTH; i++) {
     dest[i] = byte2offset[i];
   }
@@ -830,9 +830,9 @@ SEXP XString_two_way_letter_frequency(SEXP x, SEXP y,
   cachedCharSeq X, Y;
 
   x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
-  copy_codes(xbyte2offset);
+  copy_codes_into(xbyte2offset);
   y_width = get_ans_width(y_codes, LOGICAL(with_other)[0]);
-  copy_codes(ybyte2offset);
+  copy_codes_into(ybyte2offset);
   PROTECT(ans = allocMatrix(INTSXP, x_width, y_width));
   memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
   X = cache_XRaw(x);
@@ -857,9 +857,9 @@ SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
   Rboolean _collapse = asLogical(collapse);
 
   x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
-  copy_codes(xbyte2offset);
+  copy_codes_into(xbyte2offset);
   y_width = get_ans_width(y_codes, LOGICAL(with_other)[0]);
-  copy_codes(ybyte2offset);
+  copy_codes_into(ybyte2offset);
 
   x_length = _get_XStringSet_length(x);
   if (x_length != _get_XStringSet_length(y))
