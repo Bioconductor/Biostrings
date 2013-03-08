@@ -885,7 +885,7 @@ setMethod("consensusString", "ANY",
                 PACKAGE="Biostrings")
   if (as.prob) {
     if (collapse)
-      ans <- ans / sum(ans)
+      ans <- ans / sum(as.numeric(ans))
     else
       ans <- ans / rep(nchar(x), each = prod(dim(ans)[1:2]))
   }
