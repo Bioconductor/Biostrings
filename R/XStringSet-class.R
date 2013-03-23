@@ -115,8 +115,8 @@ setReplaceMethod("subseq", "XStringSet",
 
 unsafe.newXStringSet <- function(xvector, ranges, use.names=FALSE, names=NULL)
 {
-    classname <- paste(class(xvector), "Set", sep="")
-    ans <- IRanges:::unsafe.newXVectorList1(classname, xvector, ranges)
+    ans_class <- paste(class(xvector), "Set", sep="")
+    ans <- IRanges:::unsafe.newXVectorList1(ans_class, xvector, ranges)
     if (normargUseNames(use.names))
         names(ans) <- names
     ans
@@ -179,11 +179,11 @@ setReplaceMethod("seqtype", "XStringSet",
         return(ans)
     }
     use.names <- normargUseNames(use.names)
-    elementType <- paste(seqtype, "String", sep="")
-    classname <- paste(elementType, "Set", sep="")
+    ans_elementType <- paste(seqtype, "String", sep="")
+    ans_class <- paste(ans_elementType, "Set", sep="")
     solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
     ans <- .Call2("new_XStringSet_from_CHARACTER",
-                 classname, elementType,
+                 ans_class, ans_elementType,
                  x, start(solved_SEW), width(solved_SEW),
                  get_seqtype_conversion_lookup("B", seqtype),
                  PACKAGE="Biostrings")
@@ -198,23 +198,33 @@ setGeneric("XStringSet", signature="x",
         standardGeneric("XStringSet")
 )
 
-setMethod("XStringSet", "factor",
-    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        if (is.null(seqtype))
-            seqtype <- "B"
-        ans <- .charToXStringSet(seqtype, levels(x),
-                                 start, end, width, use.names)
-        ans[as.integer(x)]
-    }
-)
-
 setMethod("XStringSet", "character",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
         if (is.null(seqtype))
             seqtype <- "B"
         .charToXStringSet(seqtype, x, start, end, width, use.names)
+    }
+)
+
+setMethod("XStringSet", "factor",
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        if (is.null(seqtype))
+            seqtype <- "B"
+        if (length(x) < nlevels(x)) {
+            ans <- .charToXStringSet(seqtype, as.character(x),
+                                     start, end, width, use.names)
+            return(ans)
+        }
+        ## If 'x' has less levels than elements, then it's cheaper to
+        ## operate on its levels. In case of equality (i.e. if
+        ## length(x) == nlevels(x)), the price is the same but the final
+        ## XStringSet object obtained by operating on the levels might use
+        ## less memory (if 'x' contains duplicated values).
+        ans <- .charToXStringSet(seqtype, levels(x),
+                                 start, end, width, use.names)
+        ans[as.integer(x)]
     }
 )
 
@@ -234,6 +244,22 @@ setMethod("XStringSet", "XStringSet",
             seqtype <- seqtype(x)
         seqtype(ans) <- seqtype
         ans
+    }
+)
+
+setMethod("XStringSet", "list",
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        x_len <- length(x)
+        if (x_len == 0L) {
+            tmp_elementType <- "BString"
+        } else {
+            tmp_elementType <- paste(seqtype(x[[1L]]), "String", sep="")
+        }
+        tmp_class <- paste(tmp_elementType, "Set", sep="")
+        tmp <- IRanges:::new_XVectorList_from_list_of_XVector(tmp_class, x)
+        XStringSet(seqtype, tmp,
+                   start=start, end=end, width=width, use.names=use.names)
     }
 )
 
@@ -305,11 +331,22 @@ setAs("character", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("character", "AAStringSet", function(from) AAStringSet(from))
 setAs("character", "XStringSet", function(from) BStringSet(from))
 
+setAs("factor", "BStringSet", function(from) BStringSet(from))
+setAs("factor", "DNAStringSet", function(from) DNAStringSet(from))
+setAs("factor", "RNAStringSet", function(from) RNAStringSet(from))
+setAs("factor", "AAStringSet", function(from) AAStringSet(from))
+setAs("factor", "XStringSet", function(from) BStringSet(from))
+
 setAs("XString", "BStringSet", function(from) BStringSet(from))
 setAs("XString", "DNAStringSet", function(from) DNAStringSet(from))
 setAs("XString", "RNAStringSet", function(from) RNAStringSet(from))
 setAs("XString", "AAStringSet", function(from) AAStringSet(from))
 setAs("XString", "XStringSet", function(from) XStringSet(seqtype(from), from))
+
+setAs("list", "BStringSet", function(from) BStringSet(from))
+setAs("list", "DNAStringSet", function(from) DNAStringSet(from))
+setAs("list", "RNAStringSet", function(from) RNAStringSet(from))
+setAs("list", "AAStringSet", function(from) AAStringSet(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

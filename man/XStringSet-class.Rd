@@ -40,11 +40,20 @@
 \alias{coerce,character,RNAStringSet-method}
 \alias{coerce,character,AAStringSet-method}
 \alias{coerce,character,XStringSet-method}
+\alias{coerce,factor,BStringSet-method}
+\alias{coerce,factor,DNAStringSet-method}
+\alias{coerce,factor,RNAStringSet-method}
+\alias{coerce,factor,AAStringSet-method}
+\alias{coerce,factor,XStringSet-method}
 \alias{coerce,XString,BStringSet-method}
 \alias{coerce,XString,DNAStringSet-method}
 \alias{coerce,XString,RNAStringSet-method}
 \alias{coerce,XString,AAStringSet-method}
 \alias{coerce,XString,XStringSet-method}
+\alias{coerce,list,BStringSet-method}
+\alias{coerce,list,DNAStringSet-method}
+\alias{coerce,list,RNAStringSet-method}
+\alias{coerce,list,AAStringSet-method}
 
 \alias{show,XStringSet-method}
 
@@ -409,7 +418,23 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
 
   ## ---------------------------------------------------------------------
-  ## D. USING subseq() ON AN XStringSet OBJECT
+  ## D. USING THE XStringSet CONSTRUCTORS ON AN ORDINARY list OF XString
+  ##    OBJECTS
+  ## ---------------------------------------------------------------------
+  probes10 <- head(probes, n=10)
+  set.seed(33)
+  shuffled_nucleotides <- lapply(probes10, sample)
+  shuffled_nucleotides
+
+  DNAStringSet(shuffled_nucleotides)  # does NOT copy the sequence data!
+
+  ## Note that the same result can be obtained in a more compact way with
+  ## just:
+  set.seed(33)
+  endoapply(probes10, sample)
+
+  ## ---------------------------------------------------------------------
+  ## E. USING subseq() ON AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   subseq(probes, start=2, end=-5)
 
@@ -428,14 +453,14 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   probes
 
   ## ---------------------------------------------------------------------
-  ## E. UNLISTING AN XStringSet OBJECT
+  ## F. UNLISTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   library(drosophila2probe)
   probes <- DNAStringSet(drosophila2probe)
   unlist(probes)
 
   ## ---------------------------------------------------------------------
-  ## F. COMPACTING AN XStringSet OBJECT
+  ## G. COMPACTING AN XStringSet OBJECT
   ## ---------------------------------------------------------------------
   ## As a particular type of XVectorList objects, XStringSet objects can
   ## optionally be compacted. Compacting is done typically before
