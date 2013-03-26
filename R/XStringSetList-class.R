@@ -55,12 +55,15 @@ setClass("AAStringSetList",
 ### Accessor-like methods.
 ###
 
-### TODO: Move the partitioning() generic to IRanges and make the
-### "partitioning" method for XStringSetList objects below the method for
-### for CompressedList objects.
 setGeneric("partitioning", function(x) standardGeneric("partitioning"))
 
-setMethod("partitioning", "XStringSetList", function(x) x@partitioning)
+setMethod("partitioning", "XStringSetList",
+    function(x)
+    {
+        .Deprecated("PartitioningByEnd")
+        x@partitioning
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -74,12 +74,12 @@ DNAStringSetList(..., use.names=TRUE)
   \describe{
     \item{}{
       \code{length(x)}:
-      The number of outer list elements in \code{x}.
+      The number of list elements in \code{x}.
     }
     \item{}{
-      \code{partitioning(x)}:
-      A PartitioningByEnd instance describing the block grouping of the 
-      list elements of \code{x}.
+      \code{PartitioningByEnd(x)}:
+      A \link[IRanges]{PartitioningByEnd} object describing the grouping
+      of the inner elements in \code{x} within each top-level list element.
     }
     \item{}{
       \code{elementLengths(x)}:
@@ -123,49 +123,49 @@ DNAStringSetList(..., use.names=TRUE)
 }
 
 \examples{
-  ## ------------------------------------------------------------------------
-  ## A. THE XStringSetList CONSTRUCTORS
-  ## ------------------------------------------------------------------------
-  ## Currently DNAStringSetList() is the only constructor. Others will 
-  ## be developed when the use case arises.
+## ------------------------------------------------------------------------
+## A. THE XStringSetList CONSTRUCTORS
+## ------------------------------------------------------------------------
+## Currently DNAStringSetList() is the only constructor. Others will 
+## be developed when the use case arises.
 
-  dna1 <- DNAStringSet(c("AAA", "AC", "", "T", "GGATA"))
-  dna2 <- DNAStringSet(c("G", "TT", "C"))
-  x <- DNAStringSetList(dna1, dna2)
-  x
+dna1 <- DNAStringSet(c("AAA", "AC", "", "T", "GGATA"))
+dna2 <- DNAStringSet(c("G", "TT", "C"))
+x <- DNAStringSetList(dna1, dna2)
+x
 
-  y <- DNAStringSetList(c("AAA", "AC", "", "T", "GGATA"), c("G", "TT", "C"))
-  stopifnot(identical(x, y))
+y <- DNAStringSetList(c("AAA", "AC", "", "T", "GGATA"), c("G", "TT", "C"))
+stopifnot(identical(x, y))
 
-  ## ---------------------------------------------------------------------
-  ## B. UNLISTING AN XStringSetList OBJECT
-  ## ---------------------------------------------------------------------
-  length(x)
-  elementLengths(x)
-  unlist(x)
-  x[[1]]
-  x[[2]]
-  as.list(x)
+## ---------------------------------------------------------------------
+## B. UNLISTING AN XStringSetList OBJECT
+## ---------------------------------------------------------------------
+length(x)
+elementLengths(x)
+unlist(x)
+x[[1]]
+x[[2]]
+as.list(x)
 
-  names(x) <- LETTERS[1:length(x)]
-  x[["A"]]
-  x[["B"]]
-  as.list(x)  # named list
+names(x) <- LETTERS[1:length(x)]
+x[["A"]]
+x[["B"]]
+as.list(x)  # named list
 
-  ## ---------------------------------------------------------------------
-  ## B. USING THE GROUPING CORE API ON 'partitioning(x)'
-  ## ---------------------------------------------------------------------
-  partitioning(x)
-  length(partitioning(x))
-  nobj(partitioning(x))
-  grouplength(partitioning(x))  # same as 'unname(sapply(x, length))'
+## ---------------------------------------------------------------------
+## B. USING THE GROUPING CORE API ON 'PartitioningByEnd(x)'
+## ---------------------------------------------------------------------
+PartitioningByEnd(x)
+length(PartitioningByEnd(x))
+nobj(PartitioningByEnd(x))
+grouplength(PartitioningByEnd(x))  # same as 'unname(sapply(x, length))'
 
-  ## ---------------------------------------------------------------------
-  ## C. USING THE RANGES CORE API ON 'partitioning(x)'
-  ## ---------------------------------------------------------------------
-  start(partitioning(x))
-  end(partitioning(x))
-  width(partitioning(x))  # same as 'grouplength(partitioning(x))'
+## ---------------------------------------------------------------------
+## C. USING THE RANGES CORE API ON 'PartitioningByEnd(x)'
+## ---------------------------------------------------------------------
+start(PartitioningByEnd(x))
+end(PartitioningByEnd(x))
+width(PartitioningByEnd(x))  # same as 'grouplength(PartitioningByEnd(x))'
 }
 
 \keyword{methods}
