@@ -395,24 +395,31 @@ setAs("list", "AAStringSet", function(from) AAStringSet(from))
 }
 
 ### 'half_nrow' must be >= 1
-.XStringSet.show_frame <- function(x, half_nrow=9L)
+.XStringSet.show_frame <- function(x, half_nrow=5L)
 {
+    if (is.null(head_nrow <- getOption("showHeadLines")))
+        head_nrow <- half_nrow 
+    if (is.null(tail_nrow <- getOption("showTailLines")))
+        tail_nrow <- half_nrow
+ 
     lx <- length(x)
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(nchar(x))
     widthW <- max(nchar(ncharMax), nchar("width"))
     .XStringSet.show_frame_header(iW, widthW, !is.null(names(x)))
-    if (lx <= 2*half_nrow+1) {
+    if (lx < (2*half_nrow+1L) | (lx < (head_nrow+tail_nrow+1L))) {
         for (i in seq_len(lx))
             .XStringSet.show_frame_line(x, i, iW, widthW)
     } else {
-        for (i in 1:half_nrow)
-            .XStringSet.show_frame_line(x, i, iW, widthW)
+        if (head_nrow > 0)
+            for (i in 1:head_nrow)
+                .XStringSet.show_frame_line(x, i, iW, widthW)
         cat(format("...", width=iW, justify="right"),
             format("...", width=widthW, justify="right"),
             "...\n")
-        for (i in (lx-half_nrow+1L):lx)
-            .XStringSet.show_frame_line(x, i, iW, widthW)
+        if (tail_nrow > 0)
+            for (i in (lx-tail_nrow+1L):lx)
+                .XStringSet.show_frame_line(x, i, iW, widthW)
     }
 }
 
