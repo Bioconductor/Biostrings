@@ -31,29 +31,11 @@
 \alias{seqtype,XStringSet-method}
 \alias{seqtype<-,XStringSet-method}
 
-\alias{coerce,XStringSet,BStringSet-method}
-\alias{coerce,XStringSet,DNAStringSet-method}
-\alias{coerce,XStringSet,RNAStringSet-method}
-\alias{coerce,XStringSet,AAStringSet-method}
-\alias{coerce,character,BStringSet-method}
-\alias{coerce,character,DNAStringSet-method}
-\alias{coerce,character,RNAStringSet-method}
-\alias{coerce,character,AAStringSet-method}
-\alias{coerce,character,XStringSet-method}
-\alias{coerce,factor,BStringSet-method}
-\alias{coerce,factor,DNAStringSet-method}
-\alias{coerce,factor,RNAStringSet-method}
-\alias{coerce,factor,AAStringSet-method}
-\alias{coerce,factor,XStringSet-method}
-\alias{coerce,XString,BStringSet-method}
-\alias{coerce,XString,DNAStringSet-method}
-\alias{coerce,XString,RNAStringSet-method}
-\alias{coerce,XString,AAStringSet-method}
-\alias{coerce,XString,XStringSet-method}
-\alias{coerce,list,BStringSet-method}
-\alias{coerce,list,DNAStringSet-method}
-\alias{coerce,list,RNAStringSet-method}
-\alias{coerce,list,AAStringSet-method}
+\alias{coerce,ANY,BStringSet-method}
+\alias{coerce,ANY,DNAStringSet-method}
+\alias{coerce,ANY,RNAStringSet-method}
+\alias{coerce,ANY,AAStringSet-method}
+\alias{coerce,ANY,XStringSet-method}
 
 \alias{show,XStringSet-method}
 

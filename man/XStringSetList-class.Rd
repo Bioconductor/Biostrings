@@ -129,13 +129,29 @@ DNAStringSetList(..., use.names=TRUE)
 ## Currently DNAStringSetList() is the only constructor. Others will 
 ## be developed when the use case arises.
 
-dna1 <- DNAStringSet(c("AAA", "AC", "", "T", "GGATA"))
-dna2 <- DNAStringSet(c("G", "TT", "C"))
+dna1 <- c("AAA", "AC", "", "T", "GGATA")
+dna2 <- c("G", "TT", "C")
+
 x <- DNAStringSetList(dna1, dna2)
 x
 
-y <- DNAStringSetList(c("AAA", "AC", "", "T", "GGATA"), c("G", "TT", "C"))
-stopifnot(identical(x, y))
+DNAStringSetList(DNAStringSet(dna1), DNAStringSet(dna2))
+
+DNAStringSetList(dna1, DNAStringSet(dna2))
+
+DNAStringSetList(DNAStringSet(dna1), dna2)
+
+DNAStringSetList(dna1, RNAStringSet(DNAStringSet(dna2)))
+
+DNAStringSetList(list(dna1, dna2))
+
+DNAStringSetList(CharacterList(dna1, dna2))
+
+## Empty object (i.e. zero-length):
+DNAStringSetList()
+
+## Not empty (length is 1):
+DNAStringSetList(character(0))
 
 ## ---------------------------------------------------------------------
 ## B. UNLISTING AN XStringSetList OBJECT

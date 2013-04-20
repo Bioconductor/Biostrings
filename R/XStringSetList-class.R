@@ -67,67 +67,67 @@ setMethod("partitioning", "XStringSetList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Unsafe constructor (not exported). Use only when 'partitioning' is
-### guaranteed to describe a valid Partitioning on 'unlistData'.
+### The XStringSetList() constructor. NOT exported.
 ###
 
-unsafe.newXStringSetList <- function(class, unlistData, partitioning)
+.new_XStringSetList_from_List <- function(seqtype, x)
 {
-    new2(class, unlistData=unlistData, partitioning=partitioning, check=FALSE)
+    unlisted_x <- unlist(x, use.names=FALSE)
+    unlisted_ans <- XStringSet(seqtype, unlisted_x)
+    relist(unlisted_ans, x)
 }
 
-setGeneric("XStringSetList", signature="x",
-    function(seqtype, x, use.names=TRUE, ...)
-        standardGeneric("XStringSetList")
-)
-
-.newCompressedList <- function(seqtype, x, use.names)
+.new_XStringSetList_from_list <- function(seqtype, x)
 {
-    if (seqtype != "DNA")
-        stop("XStringSetList() currently supports 'seqtype=\"DNA\"' only")
+    x_eltlens <- elementLengths(x)
+    empty_idx <- which(x_eltlens == 0L)
+    if (length(empty_idx) != 0L) {
+        y <- x[-empty_idx]
+    } else {
+        y <- x
+    }
+    unlisted_y <- unlist(y, use.names=FALSE, recursive=FALSE)
+    if (length(unlisted_y) < sum(x_eltlens)) {
+        ## unlist() was not able to fully unlist 'y'. So let's try to turn
+        ## each list element into an XStringSet object and then combine
+        ## them together.
+        y <- lapply(unname(y), XStringSet, seqtype=seqtype)
+        unlisted_ans <- do.call(c, y)
+    } else {
+        unlisted_ans <- XStringSet(seqtype, unlisted_y)
+    }
+    relist(unlisted_ans, x)
+}
+
+XStringSetList <- function(seqtype, ..., use.names=TRUE)
+{
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    x <- list(...)
+    if (length(x) == 1L) {
+        x1 <- x[[1L]]
+        if (is.list(x1) || (is(x1, "List") && !is(x1, "XStringSet"))) {
+            x <- x1
+            if (is(x, "List")) {
+                if (!use.names)
+                    names(x) <- NULL
+                return(.new_XStringSetList_from_List(seqtype, x))
+            }
+        }
+    }
     if (!use.names)
         names(x) <- NULL
-    IRanges:::newList("DNAStringSetList", x)
-} 
-
-.makeListOfXStringSets <- function(seqtype, x) 
-{
-    if (seqtype != "DNA")
-        stop("XStringSetList() currently supports 'seqtype=\"DNA\"' only")
-    lapply(x, as, "DNAStringSet")
+    .new_XStringSetList_from_list(seqtype, x)
 }
 
-setMethod("XStringSetList", "list",
-    function(seqtype, x, use.names=TRUE, ...)
-    {
-        ok <- sapply(x, is, "XStringSet")
-        if (!all(ok))
-            x <- .makeListOfXStringSets(seqtype, x)
-        .newCompressedList(seqtype, x, use.names)
-    }
-)
-
-#setMethod("XStringSetList", "character",
-#    function(seqtype, x, use.names=TRUE)
-#    {
-#        x <- .charToXStringSet(seqtype, x, start=NA,
-#                                      width=NA, use.names=use.names)
-#        callGeneric(seqtype, x, use.names)
-#    }
-#)
-#
-#setMethod("XStringSetList", "XStringSet",
-#    function(seqtype, x, use.names=TRUE)
-#    {
-#        .newCompressedList(seqtype, x, use.names)
-#    }
-#)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "seqtype" and "seqtype<-" methods.
 ###
 
-setMethod("seqtype", "XStringSetList", function(x) seqtype(unlist(x)))
+setMethod("seqtype", "XStringSetList",
+    function(x) seqtype(unlist(x, use.names=FALSE))
+)
 
 ### Downgrades 'x' to a B/DNA/RNA/AAStringSetList instance!
 setReplaceMethod("seqtype", "XStringSetList",
@@ -160,14 +160,14 @@ setMethod("[[", "XStringSetList",
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user interfaces to the XStringSetList() constructor.
+### User interface to the XStringSetList() constructor
 ###
 
 DNAStringSetList <- function(..., use.names=TRUE)
-                    {
-                        listData <- list(...)
-                        XStringSetList("DNA", listData, use.names=use.names)
-                    }
+{
+    XStringSetList("DNA", ..., use.names=use.names)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

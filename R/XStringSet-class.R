@@ -278,8 +278,20 @@ setMethod("XStringSet", "AsIs",
 
 setMethod("XStringSet", "probetable",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(seqtype, x$sequence, start=start, end=end, width=width,
-                   use.names=use.names)
+        XStringSet(seqtype, x$sequence,
+                   start=start, end=end, width=width, use.names=use.names)
+)
+
+### Default method.
+setMethod("XStringSet", "ANY",
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(seqtype, as.character(x),
+                   start=start, end=end, width=width, use.names=use.names)
+)
+
+setMethod("XStringSet", "missing",
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        XStringSet(seqtype, NULL)
 )
 
 
@@ -312,41 +324,23 @@ AAStringSet <- function(x=character(), start=NA, end=NA, width=NA,
 ### Coercion.
 ###
 
-setAs("XStringSet", "BStringSet",
-    function(from) {seqtype(from) <- "B"; from}
-)
-setAs("XStringSet", "DNAStringSet",
-    function(from) {seqtype(from) <- "DNA"; from}
-)
-setAs("XStringSet", "RNAStringSet",
-    function(from) {seqtype(from) <- "RNA"; from}
-)
-setAs("XStringSet", "AAStringSet",
-    function(from) {seqtype(from) <- "AA"; from}
-)
+setAs("ANY", "BStringSet", function(from) BStringSet(from))
 
-setAs("character", "BStringSet", function(from) BStringSet(from))
-setAs("character", "DNAStringSet", function(from) DNAStringSet(from))
-setAs("character", "RNAStringSet", function(from) RNAStringSet(from))
-setAs("character", "AAStringSet", function(from) AAStringSet(from))
-setAs("character", "XStringSet", function(from) BStringSet(from))
+setAs("ANY", "DNAStringSet", function(from) DNAStringSet(from))
 
-setAs("factor", "BStringSet", function(from) BStringSet(from))
-setAs("factor", "DNAStringSet", function(from) DNAStringSet(from))
-setAs("factor", "RNAStringSet", function(from) RNAStringSet(from))
-setAs("factor", "AAStringSet", function(from) AAStringSet(from))
-setAs("factor", "XStringSet", function(from) BStringSet(from))
+setAs("ANY", "RNAStringSet", function(from) RNAStringSet(from))
 
-setAs("XString", "BStringSet", function(from) BStringSet(from))
-setAs("XString", "DNAStringSet", function(from) DNAStringSet(from))
-setAs("XString", "RNAStringSet", function(from) RNAStringSet(from))
-setAs("XString", "AAStringSet", function(from) AAStringSet(from))
-setAs("XString", "XStringSet", function(from) XStringSet(seqtype(from), from))
+setAs("ANY", "AAStringSet", function(from) AAStringSet(from))
 
-setAs("list", "BStringSet", function(from) BStringSet(from))
-setAs("list", "DNAStringSet", function(from) DNAStringSet(from))
-setAs("list", "RNAStringSet", function(from) RNAStringSet(from))
-setAs("list", "AAStringSet", function(from) AAStringSet(from))
+setAs("ANY", "XStringSet",
+    function(from)
+    {
+        from_seqtype <- try(seqtype(from), silent=TRUE)
+        if (is(from_seqtype, "try-error"))
+            from_seqtype <- "B"
+        XStringSet(from_seqtype, from)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
