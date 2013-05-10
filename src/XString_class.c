@@ -4,6 +4,8 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include "XVector_interface.h"
+
 #include <stdlib.h>  /* for realloc() */
 
 static int debug = 0;

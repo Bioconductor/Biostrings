@@ -16,6 +16,7 @@
 #define BIOSTRINGS_DEFINES_H
 
 #include "IRanges_defines.h"
+#include "XVector_defines.h"
 
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>

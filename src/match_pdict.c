@@ -6,6 +6,7 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include "XVector_interface.h"
 
 static int debug = 0;
 

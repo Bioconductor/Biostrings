@@ -1,5 +1,6 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include "XVector_interface.h"
 
 #define REPLACE_IFNOTEXTEND	1
 #define SKIP_IFNOTEXTEND	2

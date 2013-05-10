@@ -116,7 +116,7 @@ setReplaceMethod("subseq", "XStringSet",
 unsafe.newXStringSet <- function(xvector, ranges, use.names=FALSE, names=NULL)
 {
     ans_class <- paste(class(xvector), "Set", sep="")
-    ans <- IRanges:::unsafe.newXVectorList1(ans_class, xvector, ranges)
+    ans <- XVector:::unsafe.newXVectorList1(ans_class, xvector, ranges)
     if (normargUseNames(use.names))
         names(ans) <- names
     ans
@@ -257,7 +257,7 @@ setMethod("XStringSet", "list",
             tmp_elementType <- paste(seqtype(x[[1L]]), "String", sep="")
         }
         tmp_class <- paste(tmp_elementType, "Set", sep="")
-        tmp <- IRanges:::new_XVectorList_from_list_of_XVector(tmp_class, x)
+        tmp <- XVector:::new_XVectorList_from_list_of_XVector(tmp_class, x)
         XStringSet(seqtype, tmp,
                    start=start, end=end, width=width, use.names=use.names)
     }

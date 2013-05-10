@@ -1,5 +1,6 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include "XVector_interface.h"
 
 
 const char* get_qualityless_classname(SEXP object)

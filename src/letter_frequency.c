@@ -1,5 +1,6 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include "XVector_interface.h"
 
 static ByteTrTable byte2offset;
 
