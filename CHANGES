@@ -89,8 +89,8 @@ o New features:
   - New [[, == and != operators for XStringViews objects.
   - XStringViews() (the replacement for the vectorized DNAString() found in
     Biostrings 1) has a 'sep' argument).
-  - reverseComplement() has been splitted in 2 separate functions reverse()
-    and complement(). 'reverseComplement(x)' is now a shortcut for
+  - reverseComplement() was split in 2 separate functions reverse() and
+    complement(). 'reverseComplement(x)' is now a shortcut for
     'reverse(complement(x))'.
   - matchPattern() has a 'fixed' argument.
   - See man pages for all new generics and functions listed in previous

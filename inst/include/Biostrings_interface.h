@@ -2,7 +2,7 @@
  Biostrings C interface: prototypes
  ----------------------------------
 
-   The Biostrings C interface is splitted in 2 files:
+   The Biostrings C interface is split in 2 files:
      1. Biostrings_defines.h (in this directory): contains the typedefs and
         defines of the interface.
      2. Biostrings_interface.h (this file): contains the prototypes of the
