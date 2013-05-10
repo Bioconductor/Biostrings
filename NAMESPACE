@@ -17,8 +17,8 @@ importFrom(utils,
 )
 
 import(BiocGenerics)
-
 import(IRanges)
+import(XVector)
 
 
 ### ==========================================================================
