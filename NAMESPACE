@@ -155,7 +155,7 @@ export(
     injectHardMask,
 
     ## misc.R:
-    N50,
+    N50
 )
 
 exportMethods(
