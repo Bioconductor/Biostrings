@@ -154,11 +154,6 @@ export(
 
     ## misc.R:
     N50,
-
-    ## Old stuff (Defunct or Deprecated):
-    read.BStringSet, read.DNAStringSet, read.RNAStringSet, read.AAStringSet,
-    write.XStringSet,
-    save.XStringSet
 )
 
 exportMethods(
@@ -309,9 +304,9 @@ exportClasses(
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     InDel,
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
-    PairwiseAlignments, PairwiseAlignedXStringSet,
-    PairwiseAlignmentsSingleSubject, PairwiseAlignedFixedSubject,
-    PairwiseAlignmentsSingleSubjectSummary, PairwiseAlignedFixedSubjectSummary,
+    PairwiseAlignments,
+    PairwiseAlignmentsSingleSubject,
+    PairwiseAlignmentsSingleSubjectSummary,
     MultipleAlignment,
     DNAMultipleAlignment, RNAMultipleAlignment, AAMultipleAlignment
 )
@@ -375,12 +370,8 @@ export(
     write.phylip,
     detail,
 
-    ## Old stuff (Defunct or Deprecated):
-    PairwiseAlignedXStringSet, PairwiseAlignedFixedSubject,
-    needwunsQS,
-    read.DNAMultipleAlignment,
-    read.RNAMultipleAlignment,
-    read.AAMultipleAlignment
+    ## Old stuff (Deprecated or Defunct):
+    needwunsQS
 )
 
 exportMethods(
@@ -410,7 +401,7 @@ exportMethods(
     maskednrow, maskedncol, maskeddim,
     consensusViews,
 
-    ## Old stuff (Defunct or Deprecated):
+    ## Old stuff (Deprecated or Defunct):
     needwunsQS
 )
 

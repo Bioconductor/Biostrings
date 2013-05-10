@@ -315,35 +315,3 @@ saveXStringSet <- function(x, objname, dirpath=".",
         cat("OK\n")
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-read.BStringSet <- function(...)
-{
-    .Defunct("readBStringSet")
-}
-read.DNAStringSet <- function(...)
-{
-    .Defunct("readDNAStringSet")
-}
-read.RNAStringSet <- function(...)
-{
-    .Defunct("readRNAStringSet")
-}
-read.AAStringSet <- function(...)
-{
-    .Defunct("readAAStringSet")
-}
-
-write.XStringSet <- function(...)
-{
-    .Defunct("writeXStringSet")
-}
-
-save.XStringSet <- function(...)
-{
-    .Defunct("saveXStringSet")
-}
-

@@ -58,17 +58,6 @@
 \alias{nchar,PairwiseAlignmentsSingleSubjectSummary-method}
 \alias{show,PairwiseAlignmentsSingleSubjectSummary-method}
 
-% Old stuff (Defunct or Deprecated):
-\alias{class:PairwiseAlignedXStringSet}
-\alias{PairwiseAlignedXStringSet-class}
-\alias{PairwiseAlignedXStringSet}
-\alias{class:PairwiseAlignedFixedSubject}
-\alias{PairwiseAlignedFixedSubject-class}
-\alias{PairwiseAlignedFixedSubject}
-\alias{class:PairwiseAlignedFixedSubjectSummary}
-\alias{PairwiseAlignedFixedSubjectSummary-class}
-\alias{PairwiseAlignedFixedSubjectSummary}
-
 
 \title{PairwiseAlignments, PairwiseAlignmentsSingleSubject, and
   PairwiseAlignmentsSingleSubjectSummary objects}

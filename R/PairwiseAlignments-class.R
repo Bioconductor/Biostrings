@@ -16,12 +16,6 @@ setClass("PairwiseAlignments",
     )
 )
 
-### "PairwiseAlignedXStringSet" is the old name for "PairwiseAlignments".
-### Now it's just an alias for "PairwiseAlignments", to ensure that
-### serialized PairwiseAlignedXStringSet instances can still be loaded.
-### TODO: Remove in BioC 2.13.
-setClass("PairwiseAlignedXStringSet", contains="PairwiseAlignments")
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
@@ -361,14 +355,4 @@ setMethod("rep", "PairwiseAlignments",
     function(x, times)
 		x[rep.int(seq_len(length(x)), times)]
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-PairwiseAlignedXStringSet <- function(...)
-{
-    .Defunct("PairwiseAlignments")
-}
 

@@ -9,15 +9,6 @@ setClass("PairwiseAlignmentsSingleSubject",
     contains="PairwiseAlignments"
 )
 
-### "PairwiseAlignedFixedSubject" is the old name for
-### "PairwiseAlignmentsSingleSubject".
-### Now it's just an alias for "PairwiseAlignmentsSingleSubject", to ensure
-### that serialized PairwiseAlignedFixedSubject instances can still be loaded.
-### TODO: Remove in BioC 2.13.
-setClass("PairwiseAlignedFixedSubject",
-    contains="PairwiseAlignmentsSingleSubject"
-)
-
 setClass("PairwiseAlignmentsSingleSubjectSummary",
     representation(
         type="character",
@@ -29,16 +20,6 @@ setClass("PairwiseAlignmentsSingleSubjectSummary",
         coverage="Rle",
         mismatchSummary="list"
     )
-)
-
-### "PairwiseAlignedFixedSubjectSummary" is the old name for
-### "PairwiseAlignmentsSingleSubjectSummary".
-### Now it's just an alias for "PairwiseAlignmentsSingleSubjectSummary",
-### to ensure that serialized PairwiseAlignedFixedSubjectSummary instances
-### can still be loaded.
-### TODO: Remove in BioC 2.13.
-setClass("PairwiseAlignedFixedSubjectSummary",
-    contains="PairwiseAlignmentsSingleSubjectSummary"
 )
 
 
@@ -237,14 +218,4 @@ setMethod("as.matrix", "PairwiseAlignmentsSingleSubject",
           function(x) {
               as.matrix(aligned(x))
           })
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-PairwiseAlignedFixedSubject <- function(...)
-{
-    .Defunct("PairwiseAlignmentsSingleSubject")
-}
 

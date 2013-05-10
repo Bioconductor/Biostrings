@@ -83,11 +83,6 @@
 \alias{show,MultipleAlignment-method}
 \alias{detail,MultipleAlignment-method}
 
-% Old stuff (Defunct or Deprecated):
-\alias{read.DNAMultipleAlignment}
-\alias{read.RNAMultipleAlignment}
-\alias{read.AAMultipleAlignment}
-
 
 \title{MultipleAlignment objects}
 

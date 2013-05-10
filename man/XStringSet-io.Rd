@@ -14,14 +14,6 @@
 
 \alias{saveXStringSet}
 
-% Old stuff (Defunct or Deprecated).
-\alias{read.BStringSet}
-\alias{read.DNAStringSet}
-\alias{read.RNAStringSet}
-\alias{read.AAStringSet}
-\alias{write.XStringSet}
-\alias{save.XStringSet}
-
 
 \title{Read/write an XStringSet object from/to a file}
 

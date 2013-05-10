@@ -857,21 +857,3 @@ setMethod("show", "MultipleAlignment",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (Defunct or Deprecated).
-###
-
-read.DNAMultipleAlignment <- function(...)
-{
-    .Defunct("readDNAMultipleAlignment")
-}
-read.RNAMultipleAlignment <- function(...)
-{
-    .Defunct("readRNAMultipleAlignment")
-}
-read.AAMultipleAlignment <- function(...)
-{
-    .Defunct("readAAMultipleAlignment")
-}
-
