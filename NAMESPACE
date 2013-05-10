@@ -67,10 +67,13 @@ export(
     unmasked,
 
     ## XStringSetList-class.R:
-    partitioning, DNAStringSetList,
+    DNAStringSetList,
 
     ## xscat.R:
-    xscat
+    xscat,
+
+    ## Old stuff (Deprecated or Defunct):
+    partitioning
 )
 
 exportMethods(
@@ -87,8 +90,7 @@ exportMethods(
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
     narrow, subseq, threebands, "subseq<-", collapse, gaps,
     Views,
-    unmasked, maskedwidth, maskedratio, masks, "masks<-",
-    partitioning
+    unmasked, maskedwidth, maskedratio, masks, "masks<-"
 )
 
 

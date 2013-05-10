@@ -55,15 +55,7 @@ setClass("AAStringSetList",
 ### Accessor-like methods.
 ###
 
-setGeneric("partitioning", function(x) standardGeneric("partitioning"))
-
-setMethod("partitioning", "XStringSetList",
-    function(x)
-    {
-        .Deprecated("PartitioningByEnd")
-        x@partitioning
-    }
-)
+partitioning <- function(x) .Defunct("PartitioningByEnd")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

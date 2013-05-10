@@ -20,15 +20,15 @@
 \alias{AAStringSetList}
 
 % Methods:
-\alias{partitioning}
-\alias{partitioning,XStringSetList-method}
-
 \alias{seqtype,XStringSetList-method}
 \alias{seqtype<-,XStringSetList-method}
 
 \alias{[[,XStringSetList-method}
 
 \alias{show,XStringSetList-method}
+
+% Old stuff (Deprecated or Defunct):
+\alias{partitioning}
 
 
 \title{XStringSetList objects}
