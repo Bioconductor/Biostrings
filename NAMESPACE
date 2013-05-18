@@ -383,7 +383,7 @@ exportMethods(
     start, end, width,
     Views,
     subpatterns, pattern,
-    quality,
+    quality, encoding,
     insertion, deletion,
     unaligned, aligned, indel, nindel,
     type, score, pid,

@@ -191,3 +191,22 @@ setAs("XStringQuality", "matrix", function(from) as.matrix(from))
 PhredQuality <- function(x) as(x, "PhredQuality")
 SolexaQuality <- function(x) as(x, "SolexaQuality")
 IlluminaQuality <- function(x) as(x, "IlluminaQuality")
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### alphabet and encoding
+###
+
+setMethod("alphabet", "XStringQuality",
+    function(x) 
+{
+    alf <- strsplit(rawToChar(as.raw(33:126)), "")[[1]]
+    len <- maxQuality(x) - minQuality(x) + 1L
+    alf[seq(offset(x) + minQuality(x) - 32L, length.out=len)]
+})
+
+setMethod("encoding", "XStringQuality",
+    function(x) 
+{
+    alf <- alphabet(x)
+    setNames(seq(minQuality(x), length.out=length(alf)), alf)
+})

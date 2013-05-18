@@ -50,6 +50,9 @@
 \alias{as.matrix,XStringQuality-method}
 \alias{coerce,XStringQuality,matrix-method}
 
+%% alphabet & encoding
+\alias{alphabet,XStringQuality-method}
+\alias{encoding,XStringQuality-method}
 
 \title{PhredQuality, SolexaQuality and IlluminaQuality objects}
 
@@ -62,6 +65,10 @@
 PhredQuality(x)
 SolexaQuality(x)
 IlluminaQuality(x)
+
+## alphabet and encoding
+\S4method{alphabet}{XStringQuality}(x)
+\S4method{encoding}{XStringQuality}(x)
 }
 
 \arguments{
@@ -88,6 +95,25 @@ IlluminaQuality(x)
   decimal representation (e.g. @ = 0, A = 1, B = 2, ...). Quality
   measures q encode probabilities as \code{-10 * log10(p)}
 
+}
+
+\section{Alphabet and encoding}{
+
+  In the code snippets below, \code{x} is an XStringQuality object.
+
+  \describe{
+    \item{}{
+      \code{alphabet(x)}: Valid letters in this quality score; not all
+      letters are encountered in actual sequencing runs.
+    }
+
+    \item{}{
+      \code{encoding(x)}: Map between letters and their corresponding
+      integer encoding. Use \code{as.integer} and \code{as.numeric} to
+      coerce objects to their integer and probability representations.
+    }
+
+  }
 }
 
 \author{P. Aboyoun}
