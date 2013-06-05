@@ -107,6 +107,7 @@ exportMethods(
 ###   translate.R
 ###   toComplex.R
 ###   replaceLetterAt.R
+###   replaceAt.R
 ###   injectHardMask.R
 ###   misc.R
 
@@ -151,6 +152,9 @@ export(
     ## replaceLetterAt.R:
     replaceLetterAt, .inplaceReplaceLetterAt,
 
+    ## replaceAt.R:
+    replaceAt, insertAt,
+
     ## injectHardMask.R:
     injectHardMask,
 
@@ -176,6 +180,7 @@ exportMethods(
     reverse, complement, reverseComplement,
     codons, translate,
     replaceLetterAt,
+    replaceAt, insertAt,
     maskMotif,
     injectHardMask
 )

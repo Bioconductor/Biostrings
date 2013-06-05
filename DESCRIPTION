@@ -47,6 +47,7 @@ Collate: 00datacache.R
 	translate.R
 	toComplex.R
 	replaceLetterAt.R
+	replaceAt.R
 	injectHardMask.R
 	misc.R
 	SparseList-class.R
