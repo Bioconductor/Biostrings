@@ -1,5 +1,5 @@
 ### =========================================================================
-### extractAt() & replaceAt() & insertAt()
+### extractAt() & replaceAt()
 ### -------------------------------------------------------------------------
 
 
@@ -35,7 +35,7 @@
         stop("'at' cannot be longer than 'x'")
     if (at_len < x_len) {
         if (at_len == 0L)
-            stop("'at' is a zero-length object but not 'x'")
+            stop("'at' is a zero-length object but 'x' is not")
         if (x_len %% at_len != 0L)
             warning("'length(x)' is not a multiple of 'length(at)'")
         at <- rep(at, length.out=x_len)
@@ -63,25 +63,116 @@
     shift(unlisted_at, shift=offsets)
 }
 
-.normarg_value <- function(value, x_seqtype, NR)
+.to_XStringSet <- function(value, x_seqtype)
 {
     if (!is(value, "XStringSet")) {
         value_class <- paste0(x_seqtype, "StringSet")
-        value <- as(value, value_class)
+        value <- try(as(value, value_class), silent=TRUE)
+        if (is(value, "try-error"))
+            stop("failed to coerce 'value' to a ", value_class, " object")
     } else if (seqtype(value) != x_seqtype) {
         seqtype(value) <- x_seqtype
     }
+    value
+}
+
+.to_XStringSetList <- function(value, x_seqtype)
+{
+    if (is.character(value)) {
+        value_class <- paste0(x_seqtype, "StringSet")
+        value <- as(value, value_class)
+    }
+    if (is(value, "XStringSet"))
+        value <- relist(value, list(seq_along(value)))
+    if (is.list(value))
+        value <- CharacterList(value)
+    if (is(value, "CharacterList")) {
+        unlisted_value <- unlist(value, use.names=FALSE)
+        value <- relist(.to_XStringSet(unlisted_value, x_seqtype), value)
+    }
+    if (!is(value, "XStringSetList"))
+        stop("invalid type of 'value'")
+    if (seqtype(value) != x_seqtype)
+        seqtype(value) <- x_seqtype
+    value
+}
+
+### 2 helper functions to bring 'value' in the same "shape" as 'at'.
+###   - For .normarg_value1(): 'at' must be a Ranges object (not checked).
+###     The returned 'value' is an XStringSet object obtained by coercing the
+###     input 'value' to XStringSet (if necessary) and recycling it to the
+###     length of 'at' (if necessary).
+###   - For .normarg_value2(): 'at' must be a RangesList object (not checked).
+###     The input 'value' must be an XStringSetList object, a CharacterList
+###     object, or a list of character vectors.
+###     The returned 'value' is an XStringSetList object obtained by coercing
+###     the input 'value' to XStringSetList (if necessary) and recycling it
+###     "vertically" and "horizontally" to bring it in the same "shape" as
+###     'at' (i.e. same length and same elementLengths).
+.normarg_value1 <- function(value, at, x_seqtype)
+{
+    value <- .to_XStringSet(value, x_seqtype)
     value_len <- length(value)
-    if (value_len > NR)
+    at_len <- length(at)
+    if (value_len > at_len)
         stop("'value' cannot be longer than the number of replacements")
-    if (value_len < NR) {
+    if (value_len < at_len) {
         if (value_len == 0L)
-            stop("'length(value)' is zero but not the number ",
-                 "of replacements")
-        if (NR %% value_len != 0L)
+            stop("'length(value)' is zero but the number ",
+                 "of replacements is not")
+        if (at_len %% value_len != 0L)
             warning("the number of replacements is not ",
                     "a multiple of 'length(value)'")
-        value <- rep(value, length.out=NR)
+        value <- rep(value, length.out=at_len)
+    }
+    value
+}
+
+### 'at' is assumed to be normalized so it has the length of 'x'.
+.normarg_value2 <- function(value, at, x_seqtype)
+{
+    value <- .to_XStringSetList(value, x_seqtype)
+    ## Vertical recycling.
+    value_len <- length(value)
+    at_len <- length(at)  # same as length(x)
+    if (value_len > at_len)
+        stop("'value' cannot be longer than 'x'")
+    if (value_len < at_len) {
+        if (value_len == 0L)
+            stop("'value' is a zero-length object but 'x' is not")
+        if (at_len %% value_len != 0L)
+            warning("'length(x)' is not a multiple of 'length(value)'")
+        value <- rep(value, length.out=at_len)
+    }
+    if (at_len != 0L) {
+        ## Horizontal recycling.
+        value_eltlens <- elementLengths(value)
+        at_eltlens <- elementLengths(at)
+        is_longer <- value_eltlens > at_eltlens
+        if (any(is_longer))
+            stop("some list elements in 'value' (after recycling of ",
+                 "'value' to the length of\n  'x') are longer than ",
+                 "their corresponding list element in 'at'")
+        is_shorter <- value_eltlens < at_eltlens
+        if (any(is_shorter)) {
+            is_empty <- value_eltlens == 0L
+            if (any(is_shorter & is_empty))
+                stop("some list elements in 'value' (after recycling of ",
+                     "'value' to the length of\n  'x') are of length 0, ",
+                     "but their corresponding list element in 'at' is not")
+            is_not_singleton <- value_eltlens != 1L
+            if (any(is_shorter & is_not_singleton))
+                stop("some list elements in 'value' (after \"vertical\" ",
+                     "recycling of 'value' i.e.\n  recycling to the length ",
+                     "of 'x') are shorter than their corresponding list\n  ",
+                     "element in 'at', but have a length != 1. ",
+                     "Only list elements of length 1\n  can be ",
+                     "\"horizontally\" recycled at the moment.")
+            idx <- which(is_shorter)
+            value[idx] <- relist(rep.int(unlist(value[idx], use.names=FALSE),
+                                         at_eltlens[idx]),
+                                 at[idx])
+        }
     }
     value
 }
@@ -89,6 +180,10 @@
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The extractAt() generic and its 2 primary methods.
+###
+### Performs multiple sequence extractions from an XString object 'x',
+### or from the sequences of an XStringSet object 'x', at the ranges of
+### positions specified in 'at'.
 ###
 
 setGeneric("extractAt", function(x, at) standardGeneric("extractAt"))
@@ -157,10 +252,12 @@ setMethod("extractAt", c("ANY", "numeric"),
     }
 )
 
-if (FALSE) {
+
+if (FALSE) {  #     <<<--- begin testing extractAt() --->>>
+
 ### Only compare the classes, the shapes (i.e. lengths + elementLengths +
 ### names), the inner names, and the sequence contents. Doesn't look at
-### metadata and metadata columns (outer or inner).
+### the metadata or the metadata columns (outer or inner).
 identical_XStringSetList <- function(target, current)
 {
     ok1 <- identical(class(target), class(current))
@@ -210,33 +307,30 @@ system.time(res3a <- extractAt(upstream1000, at))
 ### This is about 40x slower than the above on my machine.
 system.time(res3b <- as(mapply(extractAt, upstream1000, at), "List"))
 stopifnot(identical_XStringSetList(res3a, res3b))
-}
+
+}  #                <<<--- end testing extractAt() --->>>
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### replaceAt()
+### The replaceAt() generic and its 2 primary methods.
 ###
-### Performs replacements (a.k.a. substitutions) in an XString object 'x',
-### or in each sequence of an XStringSet object 'x', at the position ranges
-### specified in 'at'.
+### Performs multiple sequence replacements (a.k.a. substitutions) in an
+### XString object 'x', or in the sequences of an XStringSet object 'x',
+### at the ranges of positions specified in 'at'.
 ###
 
 setGeneric("replaceAt", signature=c("x", "at"),
     function(x, at, value="") standardGeneric("replaceAt")
 )
 
-### 'at': a Ranges object containing the locations of the replacements.
-###       The number of replacements (NR) is the length of 'at'.
-### 'value': character vector or XStringSet object of length NR (or recycled
-###       to length NR if necessary).
-setMethod("replaceAt", c("XString", "ANY"),
+setMethod("replaceAt", c("XString", "Ranges"),
     function(x, at, value="")
     {
         x_len <- length(x)
         NR <- .checkarg_at(at, 1L, x_len)  # nb of replacements
 
         ## Normalize 'value'.
-        value <- .normarg_value(value, seqtype(x), NR)
+        value <- .normarg_value1(value, at, seqtype(x))
         if (NR == 0L)
             return(x)
 
@@ -255,167 +349,61 @@ setMethod("replaceAt", c("XString", "ANY"),
     }
 )
 
-### 'at': a RangesList object of the length of 'x' (recycled to the length
-###       of 'x' if necessary) containing the locations of the replacements
-###       for each sequence in 'x'.
-###       The total number of replacements (NR) is the total number of ranges
-###       in 'at' i.e. 'sum(elementLengths(at))' or 'length(unlist(at))'
-###       after recycling of 'at'.
-### 'value': character vector or XStringSet object of length NR (or recycled
-###       to length NR if necessary).
-### TODO: Support CharacterList or XStringSetList for 'value'. In that case
-###       recycling should happen vertically and horizontally to bring it in
-###       the same shape as 'at' (after recycling).
-setMethod("replaceAt", c("XStringSet", "ANY"),
+setMethod("replaceAt", c("XStringSet", "RangesList"),
     function(x, at, value="")
     {
-        x_len <- length(x)
-
-        ## Normalize 'at'.
         at <- .normarg_at(at, x)
-        unlisted_at <- unlist(at, use.names=FALSE)
-        NR <- length(unlisted_at)  # nb of replacements
-
-        ## Normalize 'value'.
-        value <- .normarg_value(value, seqtype(x), NR)
-        if (NR == 0L)
-            return(x)
-
-        x_width <- width(x)
-        at_eltlens <- elementLengths(at)
-
+        value <- .normarg_value2(value, at, seqtype(x))
         unlisted_x <- unlist(x, use.names=FALSE)
-        offsets <- cumsum(c(0L, x_width[-x_len]))
-        offsets <- rep.int(offsets, at_eltlens)
-
-        unlisted_ans <- replaceAt(unlisted_x,
-                                  shift(unlisted_at, shift=offsets),
-                                  value=value)
-
-        ans_width <- x_width + sum(relist(width(value) - width(unlisted_at),
-                                          PartitioningByEnd(at)))
-        as(successiveViews(unlisted_ans, ans_width), "XStringSet") 
+        unlisted_at <- .unlist_and_shift_at(at, x)
+        unlisted_value <- unlist(value, use.names=FALSE)
+        unlisted_ans <- replaceAt(unlisted_x, unlisted_at,
+                                  value=unlisted_value)
+        delta_width <- width(unlisted_value) - width(unlisted_at)
+        ans_width <- width(x) + sum(relist(delta_width,
+                                           PartitioningByEnd(at)))
+        ans <- as(successiveViews(unlisted_ans, ans_width), "XStringSet")
+        names(ans) <- names(x)
+        ans
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### insertAt()
+### Convenience "replaceAt" methods.
 ###
-### Performs "multiple inserts" in an XString object 'x', or in each sequence
-### of an XStringSet object 'x', *before* the positions passed in 'at'.
-### TODO: Re-implement as a simple wrapper to insertAt().
+### Same signatures as the convenience "extractAt" methods.
 ###
 
-setGeneric("insertAt", signature=c("x", "at"),
-    function(x, at, value="") standardGeneric("insertAt")
-)
-
-### 'at': an integer vector containing the locations of the insertions. Each
-###       insertion will happen right *before* the specified location, that is,
-###       between the specified location and the location minus one.
-###       The number of insertions NI is the length of 'at'.
-### 'value': character vector or XStringSet object of length NI (or recycled
-###       to NI if needed).
-setMethod("insertAt", c("XString", "ANY"),
+setMethod("replaceAt", c("XStringSet", "IntegerList"),
     function(x, at, value="")
     {
-        x_len <- length(x)
-
-        ## Normalize 'at'.
-        if (!is.numeric(at))
-            stop("'at' must be a vector of integers")
-        if (!is.integer(at))
-            at <- as.integer(at)
-        if (IRanges:::anyMissingOrOutside(at, 1L, x_len + 1L))
-            stop("'at' contains invalid positions in 'x'")
-        NI <- length(at)  # nb of insertions
-
-        ## Normalize 'value'.
-        value <- .normarg_value(value, seqtype(x), NI)
-
-        if (NI == 0L)
-            return(x)
-
-        oo <- IRanges:::orderInteger(at)
-        at2 <- at[oo]
-        value2 <- value[oo]
-        last_width <- x_len - at2[NI] + 1L
-        last_value2 <- as("", class(value2))
-        chunks_width <- c(diff(c(1L, at2)), last_width)
-        chunks <- as(successiveViews(x, chunks_width), "XStringSet")
-        unlist(xscat(chunks, c(value2, last_value2)))
+        at <- .make_RangesList_from_IntegerList(at)
+        replaceAt(x, at, value=value)
     }
 )
 
-### 'at': a list of integer vectors (or IntegerList object) of the length
-###       of 'x' (recycled to the length of 'x' if shorter than 'x') containing
-###       the locations of the insertions for each sequence in 'x'. Each
-###       insertion will happen right *before* the specified location, that is,
-###       between the specified location and the location minus one.
-###       The total number of insertions NI is defined by 'length(unlist(at))'
-###       after recycling of 'at'.
-### 'value': character vector or XStringSet object of length NI (or recycled
-###       to NI if needed).
-### TODO: Like for replaceAt(), support CharacterList or XStringSetList for
-###       'value'. In that case recycling should happen vertically and
-###       horizontally to bring it in the same shape as 'at' (after recycling).
-setMethod("insertAt", c("XStringSet", "ANY"),
+setMethod("replaceAt", c("XStringSet", "list"),
+    function(x, at, value="") replaceAt(x, IntegerList(at), value=value)
+)
+
+setMethod("replaceAt", c("XStringSet", "Ranges"),
+    function(x, at, value="") replaceAt(x, IRangesList(at), value=value)
+)
+
+setMethod("replaceAt", c("ANY", "numeric"),
     function(x, at, value="")
     {
-        x_len <- length(x)
-
-        ## Normalize 'at'.
-        if (!is(at, "IntegerList"))
-            at <- as(at, "IntegerList")
-        if (!is.null(names(at))) {
-            names(at) <- NULL
-            warning("'at' names were ignored")
-        }
-        at_len <- length(at)
-        if (at_len > x_len)
-            stop("'at' cannot have more list elements than 'x'")
-        if (at_len < x_len) {
-            if (at_len == 0L)
-                stop("'at' is a zero-length list but not 'x'")
-            if (x_len %% at_len != 0L)
-                warning("'length(x)' is not a multiple of 'length(at)'")
-            at <- rep(at, length.out=x_len)
-        }
-        unlisted_at <- unlist(at, use.names=FALSE)
-        NI <- length(unlisted_at)  # nb of insertions
-
-        ## Normalize 'value'.
-        value <- .normarg_value(value, seqtype(x), NI)
-
-        if (NI == 0L)
-            return(x)
-
-        x_width <- width(x)
-        at_eltlens <- elementLengths(at)
-        max_at <- rep.int(x_width + 1L, at_eltlens)
-        if (any(is.na(unlisted_at))
-         || any(unlisted_at < 1L)
-         || any(unlisted_at > max_at))
-            stop("'at' contains invalid positions in 'x'")
-
-        unlisted_x <- unlist(x, use.names=FALSE)
-        offsets <- cumsum(c(0L, x_width[-x_len]))
-        offsets <- rep.int(offsets, at_eltlens)
-        unlisted_ans <- insertAt(unlisted_x, unlisted_at + offsets, value)
-        ans_width <- x_width + sum(relist(width(value),
-                                          PartitioningByEnd(at)))
-        as(successiveViews(unlisted_ans, ans_width), "XStringSet") 
+        at <- .make_Ranges_from_numeric(at)
+        replaceAt(x, at, value=value)
     }
 )
 
 
-if (FALSE) {  #      <<<--- begin testing block --->>>
-### -------------------------------------------------------------------------
-### Testing replaceAt()
+if (FALSE) {  #     <<<--- begin testing replaceAt() --->>>
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### On an XString object
+### ====================
 
 x <- BString("abcdefghijklm")
 at1 <- IRanges(c(1, 5, 12), c(3, 4, 12))
@@ -437,6 +425,8 @@ stopifnot(replaceAt(x, rev(at2)) == "klm")
 ### Insertions:
 at3 <- IRanges(c(6L, 10L, 2L, 5L), width=0L)
 stopifnot(replaceAt(x, at3, value="-") == "a-bcd-e-fghi-jklm")
+at4 <- c(5, 1, 6, 5)  # 2 insertions before position 5 
+replaceAt(x, at4, value=c("+", "-", "*", "/"))
 
 ### No-ops:
 stopifnot(replaceAt(x, at1, Views(x, at1)) == x)
@@ -472,109 +462,80 @@ randomDisjointRanges <- function(min_start, max_end, min_width, max_width, n)
 }
 
 at4 <- randomDisjointRanges(1L, nchar(chrI), 0L, 20L, 500000L)
-### Takes < 1s on my machine (64-bit Ubuntu).
+### Takes < 2s on my machine (64-bit Ubuntu).
 system.time(current <- replaceAt(chrI, at4, Views(chrI, at4)))
 stopifnot(current == chrI)
 
 ### Testing performance with half-million single-letter insertions at random
 ### locations in Celegans chrI:
 at5 <- randomDisjointRanges(1L, nchar(chrI), 0L, 0L, 500000L)
-### Takes < 1s on my machine (64-bit Ubuntu).
+### Takes < 2s on my machine (64-bit Ubuntu).
 system.time(current <- replaceAt(chrI, at5, value="-"))
 m <- matchPattern("-", current)
 stopifnot(identical(sort(start(at5)), start(m) - seq_along(at5) + 1L))
 
-system.time(current2 <- insertAt(chrI, start(at5), value="-"))
+system.time(current2 <- replaceAt(chrI, start(at5), value="-"))
 stopifnot(identical(current, current2))
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+matchPattern("---", current)
+
 ### On an XStringSet object
+### =======================
+
+### Only compare the classes, the lengths, the names, and the sequence
+### contents. Doesn't look at the metadata or the metadata columns.
+identical_XStringSet <- function(target, current)
+{
+    ok1 <- identical(class(target), class(current))
+    ok2 <- identical(names(target), names(current))
+    ok3 <- all(target == current)
+    ok1 && ok2 && ok3
+}
+
+x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
+at <- IRangesList(IRanges(c(2, 1), c(3, 0)),
+                  IRanges(c(7, 2, 12, 7), c(6, 5, 11, 8)),
+                  IRanges(2, 2))
+### Set the inner names.
+unlisted_at <- unlist(at)
+names(unlisted_at) <- paste0("rg", sprintf("%02d", seq_along(unlisted_at)))
+at <- relist(unlisted_at, at)
+
+current <- replaceAt(x, at, value=extractAt(x, at))  # no-op
+stopifnot(identical_XStringSet(x, current))
+
+res1a <- replaceAt(x, at)  # deletions
+res1b <- mendoapply(replaceAt, x, at)
+stopifnot(identical_XStringSet(res1a, res1b))
 
 x <- BStringSet(c("abcdefghijklmn", "ABCDE", "abcdef"))
 
-at1 <- IRangesList(IRanges(1, width=0))
-replaceAt(x, at1, value="++")  # prepend ++ to each sequence
-
-at2 <- unname(split(IRanges(end=nchar(x), width=0), seq_along(x)))
-replaceAt(x, at2, value="++")  # append ++ to each sequence
-
-at3 <- IRangesList(IRanges(4, width=0))
-replaceAt(x, at3, value="-+-")  # insert -+- in each sequence
+replaceAt(x, 1, value="++")  # prepend ++ to sequences
+replaceAt(x, as(nchar(x) + 2L, "List"), value="++")  # append ++ to sequences
+replaceAt(x, 4, value="-+-")  # insert -+- in each sequence
 
 at4 <- IRangesList(IRanges(c(6, 11, 13, 10, 2, 5), width=c(0, 2, 0, 0, 0, 0)),
                    IRanges(1:6, width=0),
                    IRanges(c(2, 4, 2), width=c(0, 3, 0)))
 replaceAt(x, at4, value="-")
-replaceAt(x, at4, value=paste0("[", seq_along(unlist(at4)), "]"))
-
-### 'value' is recycled across sequences:
-replaceAt(x, at4, value=paste0("[", 1:5, "]"))
-
-### Testing performance with half-million single-letter insertions at random
-### locations in Celegans upstream1000:
-upstream1000 <- genome$upstream1000
-set.seed(33)
-at5 <- unname(split(IRanges(sample(1001L, 500000L, replace=TRUE), width=0),
-                    sample(length(upstream1000), 500000L, replace=TRUE)))
-### Takes < 1s on my machine.
-system.time(upstream1000b <- replaceAt(upstream1000, at5, value="-"))
-
-
-### -------------------------------------------------------------------------
-### Testing insertAt()
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### On a DNAString object
-
-x <- DNAString("ACCAGGATTYNAAG")
-insertAt(x, 1L, value="++")  # prepend ++
-insertAt(x, nchar(x)+1L, value="++")  # append ++
-insertAt(x, 4L, value="-+-")  # insert -+-
-
-at <- c(6L, 10L, 2L, 5L)
-insertAt(x, at)  # no-op
-insertAt(x, at, value="-+-")
-insertAt(x, at, value=c("-", "--", "---", "----"))
-value <- c("-", "--", "---", "----", "+", "++", "+++", "++++")
-insertAt(x, c(at, at), value)
-
-at <- c(5, 1, 6, 5)  # 2 insertions at position 5 
-insertAt(x, at, value=c("+", "++", "-", "--"))
-
-### Testing performance with half-million single-letter insertions at random
-### locations in Celegans chrI:
-library(BSgenome.Celegans.UCSC.ce2)
-genome <- BSgenome.Celegans.UCSC.ce2
-chrI <- genome$chrI
-set.seed(33)
-at <- sample(nchar(chrI)+1L, 500000L, replace=TRUE)
-### Takes < 1s on my machine (64-bit Ubuntu). The naive method would take
-### about 1h30 or more:
-system.time(chrIb <- insertAt(chrI, at, value="-"))
-matchPattern("---", chrIb)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### On a DNAStringSet object
-
-x <- DNAStringSet(c("ACCAGGATTYNAAG", "CCAT", "ACCGAT"))
-insertAt(x, 1L, value="++")  # prepend ++ to each sequence
-insertAt(x, nchar(x)+1L, value="++")  # append ++ to each sequence
-insertAt(x, 4L, value="-+-")  # insert -+- in each sequence
-
-at <- list(c(6L, 10L, 2L, 5L) , 1:5 , 2L)
-insertAt(x, at)  # no-op
-insertAt(x, at, value="-")
-### 'value' is recycled across sequences:
-insertAt(x, at, value=c("-", "--", "---"))
+value4 <- relist(paste0("[", seq_along(unlist(at4)), "]"), at4)
+replaceAt(x, at4, value=value4)
+replaceAt(x, at4, value=as(c("+", "-", "*"), "List"))
 
 ### Testing performance with half-million single-letter insertions at random
 ### locations in Celegans upstream1000:
 upstream1000 <- genome$upstream1000
 set.seed(33)
-at <- unname(split(sample(1001L, 500000L, replace=TRUE),
-                   sample(length(upstream1000), 500000L, replace=TRUE)))
-### Takes < 1s on my machine.
-system.time(upstream1000b <- insertAt(upstream1000, at, value="-"))
+split_factor <- factor(sample(length(upstream1000), 500000L, replace=TRUE),
+                       levels=seq_along(upstream1000))
+at5 <- unname(split(sample(1001L, 500000L, replace=TRUE),
+                    split_factor))
+### Takes < 2s on my machine.
+system.time(res5a <- replaceAt(upstream1000, at5, value="-"))
+### This is about 40x slower than the above on my machine.
+system.time(res5b <- mendoapply(replaceAt,
+                                upstream1000, as(at5, "List"), as("-", "List")))
+stopifnot(identical_XStringSet(res5a, res5b))
 
-### -------------------------------------------------------------------------
-}  #                 <<<--- end testing block --->>>
+}  #                <<<--- end testing replaceAt() --->>>
+
