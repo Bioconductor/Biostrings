@@ -153,7 +153,7 @@ export(
     replaceLetterAt, .inplaceReplaceLetterAt,
 
     ## replaceAt.R:
-    replaceAt, insertAt,
+    extractAt, replaceAt, insertAt,
 
     ## injectHardMask.R:
     injectHardMask,
@@ -180,7 +180,7 @@ exportMethods(
     reverse, complement, reverseComplement,
     codons, translate,
     replaceLetterAt,
-    replaceAt, insertAt,
+    extractAt, replaceAt, insertAt,
     maskMotif,
     injectHardMask
 )

@@ -147,7 +147,7 @@ setMethod("[[", "XStringSetList",
     {
         i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
         ii <- x@partitioning[[i]]
-        unlist(x)[ii]
+        unlist(x, use.names=FALSE)[ii]
     }
 )
 
