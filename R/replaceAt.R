@@ -3,28 +3,88 @@
 ### -------------------------------------------------------------------------
 
 
-### Checks that the ranges in 'at' are within the bounds specified by
-### 'min_start' and 'max_end'. Returns the nb of ranges in 'at'.
-.checkarg_at <- function(at, min_start, max_end)
+### Extracts multiple subsequences from XString object 'x', or from the
+### sequences of XStringSet object 'x', at the ranges of positions specified
+### in 'at'.
+setGeneric("extractAt", signature="x",
+    function(x, at) standardGeneric("extractAt")
+)
+
+### Performs multiple subsequence replacements (a.k.a. substitutions) in
+### XString object 'x', or in the sequences of XStringSet object 'x', at the
+### ranges of positions specified in 'at'.
+setGeneric("replaceAt", signature="x",
+    function(x, at, value="") standardGeneric("replaceAt")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions for normalizing the 'at' argument.
+###
+
+### The integers in 'at' are interpreted as the start positions of zero-width
+### ranges.
+.make_Ranges_from_numeric <- function(at) IRanges(at, width=0L)
+
+.make_RangesList_from_IntegerList <- function(at)
 {
+    relist(.make_Ranges_from_numeric(unlist(at, use.names=FALSE)), at)
+}
+
+.make_Ranges_from_at <- function(at)
+{
+    if (is.numeric(at))
+        at <- .make_Ranges_from_numeric(at)
     if (!is(at, "Ranges"))
-        stop("'at' must be a Ranges object")
+        stop("'at' must be a Ranges object (or a numeric vector containing ",
+             "the start\n  positions of zero-width ranges)")
+    at
+}
+
+.make_RangesList_from_at <- function(at)
+{
+    if (is.numeric(at))
+        at <- .make_Ranges_from_numeric(at)
+    if (is(at, "Ranges"))
+        at <- IRangesList(at)
+    if (is.list(at))
+        at <- IntegerList(at)
+    if (is(at, "IntegerList"))
+        at <- .make_RangesList_from_IntegerList(at)
+    if (!is(at, "RangesList"))
+        stop("'at' must be a RangesList object (or an IntegerList object ",
+             "or a list of\n  numeric vectors, containing the start ",
+             "positions of zero-width ranges).\n  ",
+             "Also it can be a Ranges object (or a numeric vector containing ",
+             "the start\n  positions of zero-width ranges) and in that case ",
+             "is interpreted as a\n  RangesList object of length 1.")
+    at
+}
+
+### Checks that the ranges in 'at' are within the bounds specified by
+### 'min_start' and 'max_end'.
+.check_at_bounds <- function(at, min_start, max_end)
+{
     at_len <- length(at)
-    if (at_len != 0L) {
-        at_min_start <- min(start(at))
-        at_max_end <- max(end(at))
-        if (at_min_start < min_start || at_max_end > max_end)
-            stop("some ranges in 'at' are off-limits with respect to ",
-                 "sequence 'x'")
-    }
-    at_len
+    if (at_len == 0L)
+        return()
+    at_min_start <- min(start(at))
+    at_max_end <- max(end(at))
+    if (at_min_start < min_start || at_max_end > max_end)
+        stop("some ranges in 'at' are off-limits with respect to sequence 'x'")
+}
+
+.normarg_at1 <- function(at, x)
+{
+    at <- .make_Ranges_from_at(at)
+    .check_at_bounds(at, 1L, length(x))
+    at
 }
 
 ### Returns a RangesList object of the same length as 'x'.
-.normarg_at <- function(at, x)
+.normarg_at2 <- function(at, x)
 {
-    if (!is(at, "RangesList"))
-        stop("'at' must be a RangesList object")
+    at <- .make_RangesList_from_at(at)
     if (!is.null(names(at))) {
         names(at) <- NULL
         warning("'at' names were ignored")
@@ -52,51 +112,10 @@
     at
 }
 
-.unlist_and_shift_at <- function(at, x)
-{
-    unlisted_at <- unlist(at, use.names=FALSE)
-    x_len <- length(x)
-    x_width <- width(x)
-    at_eltlens <- elementLengths(at)
-    offsets <- cumsum(c(0L, x_width[-x_len]))
-    offsets <- rep.int(offsets, at_eltlens)
-    shift(unlisted_at, shift=offsets)
-}
 
-.to_XStringSet <- function(value, x_seqtype)
-{
-    if (!is(value, "XStringSet")) {
-        value_class <- paste0(x_seqtype, "StringSet")
-        value <- try(as(value, value_class), silent=TRUE)
-        if (is(value, "try-error"))
-            stop("failed to coerce 'value' to a ", value_class, " object")
-    } else if (seqtype(value) != x_seqtype) {
-        seqtype(value) <- x_seqtype
-    }
-    value
-}
-
-.to_XStringSetList <- function(value, x_seqtype)
-{
-    if (is.character(value)) {
-        value_class <- paste0(x_seqtype, "StringSet")
-        value <- as(value, value_class)
-    }
-    if (is(value, "XStringSet"))
-        value <- relist(value, list(seq_along(value)))
-    if (is.list(value))
-        value <- CharacterList(value)
-    if (is(value, "CharacterList")) {
-        unlisted_value <- unlist(value, use.names=FALSE)
-        value <- relist(.to_XStringSet(unlisted_value, x_seqtype), value)
-    }
-    if (!is(value, "XStringSetList"))
-        stop("invalid type of 'value'")
-    if (seqtype(value) != x_seqtype)
-        seqtype(value) <- x_seqtype
-    value
-}
-
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions for normalizing the 'value' argument.
+###
 ### 2 helper functions to bring 'value' in the same "shape" as 'at'.
 ###   - For .normarg_value1(): 'at' must be a Ranges object (not checked).
 ###     The returned 'value' is an XStringSet object obtained by coercing the
@@ -109,9 +128,45 @@
 ###     the input 'value' to XStringSetList (if necessary) and recycling it
 ###     "vertically" and "horizontally" to bring it in the same "shape" as
 ###     'at' (i.e. same length and same elementLengths).
+
+.make_XStringSet_from_value <- function(value, x_seqtype)
+{
+    if (!is(value, "XStringSet")) {
+        value_class <- paste0(x_seqtype, "StringSet")
+        value <- try(as(value, value_class), silent=TRUE)
+        if (is(value, "try-error"))
+            stop("failed to coerce 'value' to a ", value_class, " object")
+    } else if (seqtype(value) != x_seqtype) {
+        seqtype(value) <- x_seqtype
+    }
+    value
+}
+
+.make_XStringSetList_from_value <- function(value, x_seqtype)
+{
+    if (is.character(value)) {
+        value_class <- paste0(x_seqtype, "StringSet")
+        value <- as(value, value_class)
+    }
+    if (is(value, "XStringSet"))
+        value <- relist(value, list(seq_along(value)))
+    if (is.list(value))
+        value <- CharacterList(value)
+    if (is(value, "CharacterList")) {
+        unlisted_value <- unlist(value, use.names=FALSE)
+        unlisted_value <- .make_XStringSet_from_value(unlisted_value, x_seqtype)
+        value <- relist(unlisted_value, value)
+    }
+    if (!is(value, "XStringSetList"))
+        stop("invalid type of 'value'")
+    if (seqtype(value) != x_seqtype)
+        seqtype(value) <- x_seqtype
+    value
+}
+
 .normarg_value1 <- function(value, at, x_seqtype)
 {
-    value <- .to_XStringSet(value, x_seqtype)
+    value <- .make_XStringSet_from_value(value, x_seqtype)
     value_len <- length(value)
     at_len <- length(at)
     if (value_len > at_len)
@@ -131,7 +186,7 @@
 ### 'at' is assumed to be normalized so it has the length of 'x'.
 .normarg_value2 <- function(value, at, x_seqtype)
 {
-    value <- .to_XStringSetList(value, x_seqtype)
+    value <- .make_XStringSetList_from_value(value, x_seqtype)
     ## Vertical recycling.
     value_len <- length(value)
     at_len <- length(at)  # same as length(x)
@@ -179,34 +234,37 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The extractAt() generic and its 2 primary methods.
-###
-### Performs multiple sequence extractions from an XString object 'x',
-### or from the sequences of an XStringSet object 'x', at the ranges of
-### positions specified in 'at'.
+### Other helper functions.
 ###
 
-setGeneric("extractAt", function(x, at) standardGeneric("extractAt"))
+.unlist_and_shift_at <- function(at, x)
+{
+    unlisted_at <- unlist(at, use.names=FALSE)
+    x_len <- length(x)
+    x_width <- width(x)
+    at_eltlens <- elementLengths(at)
+    offsets <- cumsum(c(0L, x_width[-x_len]))
+    offsets <- rep.int(offsets, at_eltlens)
+    shift(unlisted_at, shift=offsets)
+}
 
-setMethod("extractAt", c("XString", "Ranges"),
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extractAt()
+###
+
+setMethod("extractAt", "XString",
     function(x, at)
     {
-        x_len <- length(x)
-        .checkarg_at(at, 1L, x_len)
+        at <- .normarg_at1(at, x)
         as(Views(x, at), "XStringSet")
     }
 )
 
-### 'at': a RangesList object of the length of 'x' (recycled to the length
-###       of 'x' if necessary) containing the locations of the extractions
-###       for each sequence in 'x'.
-###       The total number of extractions (NE) is the total number of ranges
-###       in 'at' i.e. 'sum(elementLengths(at))' or 'length(unlist(at))'
-###       after recycling of 'at'.
-setMethod("extractAt", c("XStringSet", "RangesList"),
+setMethod("extractAt", "XStringSet",
     function(x, at)
     {
-        at <- .normarg_at(at, x)
+        at <- .normarg_at2(at, x)
         unlisted_x <- unlist(x, use.names=FALSE)
         unlisted_at <- .unlist_and_shift_at(at, x)
         unlisted_ans <- extractAt(unlisted_x, unlisted_at)
@@ -216,44 +274,23 @@ setMethod("extractAt", c("XStringSet", "RangesList"),
 )
 
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience "extractAt" methods.
-###
-
-### Interpret the integers in 'at' as the starts of zero-width ranges.
-.make_Ranges_from_numeric <- function(at) IRanges(at, width=0L)
-
-.make_RangesList_from_IntegerList <- function(at)
-{
-    relist(.make_Ranges_from_numeric(unlist(at, use.names=FALSE)), at)
-}
-
-setMethod("extractAt", c("XStringSet", "IntegerList"),
-    function(x, at)
-    {
-        at <- .make_RangesList_from_IntegerList(at)
-        extractAt(x, at)
-    }
-)
-
-setMethod("extractAt", c("XStringSet", "list"),
-    function(x, at) extractAt(x, IntegerList(at))
-)
-
-setMethod("extractAt", c("XStringSet", "Ranges"),
-    function(x, at) extractAt(x, IRangesList(at))
-)
-
-setMethod("extractAt", c("ANY", "numeric"),
-    function(x, at)
-    {
-        at <- .make_Ranges_from_numeric(at)
-        extractAt(x, at)
-    }
-)
-
-
 if (FALSE) {  #     <<<--- begin testing extractAt() --->>>
+
+### From an XString object
+### ======================
+
+x <- BString("abcdefghijklm")
+at1 <- IRanges(5:1, width=3)
+extractAt(x, at1)
+names(at1) <- LETTERS[22:26]
+extractAt(x, at1)
+
+at2 <- IRanges(c(1, 5, 12), c(3, 4, 12), names=c("X", "Y", "Z"))
+extractAt(x, at2)
+extractAt(x, rev(at2))
+
+### From an XStringSet object
+### =========================
 
 ### Only compare the classes, the shapes (i.e. lengths + elementLengths +
 ### names), the inner names, and the sequence contents. Doesn't look at
@@ -304,7 +341,7 @@ split_factor <- factor(sample(length(upstream1000), NE, replace=TRUE),
 at <- unname(split(some_ranges, split_factor))
 ### Takes < 1s on my machine.
 system.time(res3a <- extractAt(upstream1000, at))
-### This is about 40x slower than the above on my machine.
+### This is about 20x slower than the above on my machine.
 system.time(res3b <- as(mapply(extractAt, upstream1000, at), "List"))
 stopifnot(identical_XStringSetList(res3a, res3b))
 
@@ -312,25 +349,15 @@ stopifnot(identical_XStringSetList(res3a, res3b))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The replaceAt() generic and its 2 primary methods.
-###
-### Performs multiple sequence replacements (a.k.a. substitutions) in an
-### XString object 'x', or in the sequences of an XStringSet object 'x',
-### at the ranges of positions specified in 'at'.
+### replaceAt()
 ###
 
-setGeneric("replaceAt", signature=c("x", "at"),
-    function(x, at, value="") standardGeneric("replaceAt")
-)
-
-setMethod("replaceAt", c("XString", "Ranges"),
+setMethod("replaceAt", "XString",
     function(x, at, value="")
     {
-        x_len <- length(x)
-        NR <- .checkarg_at(at, 1L, x_len)  # nb of replacements
-
-        ## Normalize 'value'.
+        at <- .normarg_at1(at, x)
         value <- .normarg_value1(value, at, seqtype(x))
+        NR <- length(at)  # same as length(value) -- nb of replacements
         if (NR == 0L)
             return(x)
 
@@ -342,17 +369,17 @@ setMethod("replaceAt", c("XString", "Ranges"),
         value2 <- value[oo]
         ## The regions of 'x' that are preserved are the regions between the
         ## ranges in 'at'.
-        preserved <- IRanges(c(1L, end2 + 1L), c(start2 - 1L, x_len))
+        preserved <- IRanges(c(1L, end2 + 1L), c(start2 - 1L, length(x)))
         x_preserved <- as(Views(x, preserved), "XStringSet")
         last_value2 <- as("", class(value2))
         unlist(xscat(x_preserved, c(value2, last_value2)))
     }
 )
 
-setMethod("replaceAt", c("XStringSet", "RangesList"),
+setMethod("replaceAt", "XStringSet",
     function(x, at, value="")
     {
-        at <- .normarg_at(at, x)
+        at <- .normarg_at2(at, x)
         value <- .normarg_value2(value, at, seqtype(x))
         unlisted_x <- unlist(x, use.names=FALSE)
         unlisted_at <- .unlist_and_shift_at(at, x)
@@ -365,37 +392,6 @@ setMethod("replaceAt", c("XStringSet", "RangesList"),
         ans <- as(successiveViews(unlisted_ans, ans_width), "XStringSet")
         names(ans) <- names(x)
         ans
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience "replaceAt" methods.
-###
-### Same signatures as the convenience "extractAt" methods.
-###
-
-setMethod("replaceAt", c("XStringSet", "IntegerList"),
-    function(x, at, value="")
-    {
-        at <- .make_RangesList_from_IntegerList(at)
-        replaceAt(x, at, value=value)
-    }
-)
-
-setMethod("replaceAt", c("XStringSet", "list"),
-    function(x, at, value="") replaceAt(x, IntegerList(at), value=value)
-)
-
-setMethod("replaceAt", c("XStringSet", "Ranges"),
-    function(x, at, value="") replaceAt(x, IRangesList(at), value=value)
-)
-
-setMethod("replaceAt", c("ANY", "numeric"),
-    function(x, at, value="")
-    {
-        at <- .make_Ranges_from_numeric(at)
-        replaceAt(x, at, value=value)
     }
 )
 
