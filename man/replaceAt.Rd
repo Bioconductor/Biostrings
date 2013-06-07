@@ -210,6 +210,11 @@ probes <- DNAStringSet(hgu95av2probe)
 ## Split the probes in 5-mer chunks:
 at <- successiveIRanges(rep(5, 5))
 extractAt(probes, at)
+
+## Replace all the occurences of a given pattern with another pattern:
+midx <- vmatchPattern("VCGTT", probes, fixed=FALSE)
+unique(unlist(extractAt(probes, midx)))
+replaceAt(probes, midx, "-+-")
 }
 
 \keyword{methods}

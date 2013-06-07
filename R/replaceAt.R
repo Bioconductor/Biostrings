@@ -92,47 +92,73 @@ setGeneric("replaceAt", signature="x",
 ### Horizontal recycling (of a list-like object only).
 .H_recycle <- function(x, skeleton, x_what, skeleton_what, more_blahblah=NA)
 {
+    ## TODO: Remove this when utils::relist() is fixed.
+    ## See https://stat.ethz.ch/pipermail/r-devel/2013-June/066780.html for
+    ## the original bug report.
+    if (is.list(skeleton))
+        stop(.wrap_msg(
+            "because of a bug in utils::relist(), 'skeleton' cannot be ",
+            "a list at the moment. Please use a List object instead ",
+            "(e.g. by passing 'as(skeleton, \"List\")' instead of 'skeleton')."
+        ))
+
     stopifnot(is.list(x) || is(x, "List"))
     stopifnot(is.list(skeleton) || is(skeleton, "List"))
     x_len <- length(x)
     skeleton_len <- length(skeleton)
     stopifnot(x_len == skeleton_len)
 
-    if (skeleton_len == 0L)
-        return(x)
-    x_eltlens <- elementLengths(x)
-    skeleton_eltlens <- elementLengths(skeleton)
-    is_longer <- x_eltlens > skeleton_eltlens
     x_what2 <- paste0("some list elements in '", x_what, "'")
     if (!is.na(more_blahblah))
         x_what2 <- paste0(x_what2, " (", more_blahblah, ")")
-    if (any(is_longer))
-        stop(.wrap_msg(
-            x_what2, " are longer than their corresponding ",
-            "list element in '", skeleton_what, "'"
-        ))
-    is_shorter <- x_eltlens < skeleton_eltlens
-    if (!any(is_shorter))
+
+    x_eltlens <- unname(elementLengths(x))
+    skeleton_eltlens <- unname(elementLengths(skeleton))
+    idx <- which(x_eltlens != skeleton_eltlens)
+    if (length(idx) == 0L)
         return(x)
-    is_empty <- x_eltlens == 0L
-    if (any(is_shorter & is_empty))
-        stop(.wrap_msg(
-            x_what2, " are of length 0, but their corresponding ",
-            "list element in '", skeleton_what, "' is not"
-        ))
-    is_not_singleton <- x_eltlens != 1L
-    if (any(is_shorter & is_not_singleton))
-        stop(.wrap_msg(
-            x_what2, " are shorter than their corresponding ",
-            "list element in '", skeleton_what, "', but have ",
-            "a length != 1. \"Horizontal\" recycling only supports ",
-            "list elements of length 1 at the moment."
-        ))
-    idx <- which(is_shorter)
-    x[idx] <- relist(rep.int(unlist(x[idx], use.names=FALSE),
-                                skeleton_eltlens[idx]),
-                        skeleton[idx])
-    x
+
+    longer_idx <- which(x_eltlens > skeleton_eltlens)
+    shorter_idx <- which(x_eltlens < skeleton_eltlens)
+    if (length(longer_idx) == 0L && length(shorter_idx) == 0L)
+        return(x)
+    if (length(longer_idx) != 0L) {
+        if (max(x_eltlens[longer_idx]) >= 2L)
+            stop(.wrap_msg(
+                x_what2, " are longer than their corresponding ",
+                "list element in '", skeleton_what, "'"
+            ))
+    }
+    if (length(shorter_idx) != 0L) {
+        tmp <- x_eltlens[shorter_idx]
+        if (min(tmp) == 0L)
+            stop(.wrap_msg(
+                x_what2, " are of length 0, but their corresponding ",
+                "list element in '", skeleton_what, "' is not"
+            ))
+        if (max(tmp) >= 2L)
+            stop(.wrap_msg(
+                x_what2, " are shorter than their corresponding ",
+                "list element in '", skeleton_what, "', but have ",
+                "a length >= 2. \"Horizontal\" recycling only supports ",
+                "list elements of length 1 at the moment."
+            ))
+    }
+
+    ## From here 'x[idx]' is guaranteed to contain list elements of length 1.
+
+    ## We use an "unlist => stretch => relist" algo to perform the horizontal
+    ## recycling. Because of this, the returned value is not necessary of the
+    ## same class as 'x' (e.g. can be an IntegerList if 'x' is an ordinary
+    ## list of integers and 'skeleton' a List object).
+    unlisted_x <- unlist(x, use.names=FALSE)
+    times <- rep.int(1L, length(unlisted_x))
+    idx2 <- cumsum(x_eltlens)[idx]
+    times[idx2] <- skeleton_eltlens[idx]
+    unlisted_ans <- rep.int(unlisted_x, times)
+    ans <- relist(unlisted_ans, skeleton)
+    names(ans) <- names(x)
+    ans
 }
 
 
@@ -301,8 +327,9 @@ setMethod("extractAt", "XStringSet",
         unlisted_at <- unlist(at, use.names=FALSE)
         unlisted_ans <- subseq(x2, start=start(unlisted_at),
                                    width=width(unlisted_at))
-        names(at) <- names(x)
-        relist(unlisted_ans, at)
+        ans <- relist(unlisted_ans, at)
+        names(ans) <- names(x)
+        ans
     }
 )
 
