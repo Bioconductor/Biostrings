@@ -296,9 +296,11 @@ setMethod("extractAt", "XStringSet",
     function(x, at)
     {
         at <- .normarg_at2(at, x)
-        unlisted_x <- unlist(x, use.names=FALSE)
-        unlisted_at <- .unlist_and_shift_at(at, x)
-        unlisted_ans <- extractAt(unlisted_x, unlisted_at)
+        at_eltlens <- elementLengths(at)
+        x2 <- rep.int(unname(x), at_eltlens)
+        unlisted_at <- unlist(at, use.names=FALSE)
+        unlisted_ans <- subseq(x2, start=start(unlisted_at),
+                                   width=width(unlisted_at))
         names(at) <- names(x)
         relist(unlisted_ans, at)
     }
@@ -306,6 +308,8 @@ setMethod("extractAt", "XStringSet",
 
 
 if (FALSE) {  #     <<<--- begin testing extractAt() --->>>
+
+library(Biostrings)
 
 ### From an XStringSet object
 ### =========================
@@ -343,24 +347,26 @@ stopifnot(identical_XStringSetList(res2a, res2b))
 res2c <- extractAt(x, at[[3]])
 stopifnot(identical_XStringSetList(res2a, res2c))
 
-### Testing performance with half-million small extractions at random
-### locations in Celegans upstream1000:
+### Testing performance with 2 millions small extractions at random
+### locations in Celegans upstream5000:
 library(BSgenome.Celegans.UCSC.ce2)
 genome <- BSgenome.Celegans.UCSC.ce2
-upstream1000 <- genome$upstream1000
+upstream5000 <- genome$upstream5000
 set.seed(33)
-NE <- 500000L  # total number of extractions
+NE <- 2000000L  # total number of extractions
 sample_size <- NE * 1.1
-some_ranges <- IRanges(sample(1001L, sample_size, replace=TRUE),
+some_ranges <- IRanges(sample(5001L, sample_size, replace=TRUE),
                        width=sample(0:75, sample_size, replace=TRUE))
-some_ranges <- head(some_ranges[end(some_ranges) <= 1000L], n=NE)
-split_factor <- factor(sample(length(upstream1000), NE, replace=TRUE),
-                       levels=seq_along(upstream1000))
+some_ranges <- head(some_ranges[end(some_ranges) <= 5000L], n=NE)
+split_factor <- factor(sample(length(upstream5000), NE, replace=TRUE),
+                       levels=seq_along(upstream5000))
 at <- unname(split(some_ranges, split_factor))
-### Takes < 1s on my machine.
-system.time(res3a <- extractAt(upstream1000, at))
+
+### Timings: 1.899s 1.159 0.610s  (old 2.576s 1.568s 1.114s)
+system.time(res3a <- extractAt(upstream5000, at)) 
+
 ### This is about 20x slower than the above on my machine.
-system.time(res3b <- as(mapply(extractAt, upstream1000, at), "List"))
+system.time(res3b <- as(mapply(extractAt, upstream5000, at), "List"))
 stopifnot(identical_XStringSetList(res3a, res3b))
 
 }  #                <<<--- end testing extractAt() --->>>
@@ -416,6 +422,8 @@ setMethod("replaceAt", "XStringSet",
 
 
 if (FALSE) {  #     <<<--- begin testing replaceAt() --->>>
+
+library(Biostrings)
 
 ### On an XString object
 ### ====================

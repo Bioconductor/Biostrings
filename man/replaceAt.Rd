@@ -108,7 +108,7 @@ replaceAt(x, at, value="")
 
 \examples{
 ## ---------------------------------------------------------------------
-## ON AN XString OBJECT
+## (A) ON AN XString OBJECT
 ## ---------------------------------------------------------------------
 x <- BString("abcdefghijklm")
 
@@ -149,8 +149,28 @@ stopifnot(replaceAt(x, at3, extractAt(x, at3)) == x)
 stopifnot(replaceAt(x, at4, extractAt(x, at4)) == x)
 stopifnot(replaceAt(x, at5, extractAt(x, at5)) == x)
 
+## The order of successive transformations matters:
+##   T1: insert "+" before position 1 and 4
+##   T2: insert "-" before position 3
+
+## T1 followed by T2
+x2a <- replaceAt(x, c(1, 4), value="+")
+x3a <- replaceAt(x2a, 3, value="-")
+
+## T2 followed by T1
+x2b <- replaceAt(x, 3, value="-")
+x3b <- replaceAt(x2b, c(1, 4), value="+")
+
+## T1 and T2 simultaneously:
+x3c <- replaceAt(x, c(1, 3, 4), value=c("+", "-", "+"))
+
+## ==> 'x3a', 'x3b', and 'x3c' are all different!
+
+## Append "**" to 'x3c':
+replaceAt(x3c, length(x3c) + 1L, value="**")
+
 ## ---------------------------------------------------------------------
-## ON AN XStringSet OBJECT
+## (B) ON AN XStringSet OBJECT
 ## ---------------------------------------------------------------------
 x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
 
@@ -178,25 +198,18 @@ value6 <- relist(paste0("[", seq_along(unlist(at6)), "]"), at6)
 replaceAt(x, at6, value=value6)
 replaceAt(x, at6, value=as(c("+", "-", "*"), "List"))
 
-## The order of successive transformations matters:
-##   T1: insert "+" before position 1 and 4 of each sequence
-##   T2: insert "-" before position 3 of each sequence
+## Append "**" to all sequences:
+replaceAt(x, as(width(x) + 1L, "List"), value="**")
 
-## T1 followed by T2
-x2a <- replaceAt(x, c(1, 4), value="+")
-x3a <- replaceAt(x2a, 3, value="-")
+## ---------------------------------------------------------------------
+## (C) ADVANCED EXAMPLES
+## ---------------------------------------------------------------------
+library(hgu95av2probe)
+probes <- DNAStringSet(hgu95av2probe)
 
-## T2 followed by T1
-x2b <- replaceAt(x, 3, value="-")
-x3b <- replaceAt(x2b, c(1, 4), value="+")
-
-## T1 and T2 simultaneously:
-x3c <- replaceAt(x, c(1, 3, 4), value=c("+", "-", "+"))
-
-## ==> 'x3a', 'x3b', and 'x3c' are all different!
-
-## Append "**" to sequences:
-replaceAt(x3c, as(nchar(x3c) + 1L, "List"), value="**")
+## Split the probes in 5-mer chunks:
+at <- successiveIRanges(rep(5, 5))
+extractAt(probes, at)
 }
 
 \keyword{methods}
