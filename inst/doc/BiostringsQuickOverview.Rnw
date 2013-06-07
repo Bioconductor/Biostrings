@@ -11,12 +11,7 @@
 \usepackage{times}
 \usepackage{hyperref}
 
-\textwidth=6.5in
-\textheight=8.5in
-%\parskip=.3cm
-\oddsidemargin=-.1in
-\evensidemargin=-.1in
-\headheight=-.3in
+\usepackage[margin=0.65in]{geometry}
 
 \newcommand{\scscst}{\scriptscriptstyle}
 \newcommand{\scst}{\scriptstyle}
@@ -53,8 +48,8 @@ document.
 
 \begin{table}[ht]
 \begin{center}
-\begin{tabular}{p{2in}|p{4in}}
-Function                    & Description \\
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
 \hline
 \Rfunction{length} & Return the number of sequences in an object. \\
 \hline
@@ -94,7 +89,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Low-level manipulation of \Rclass{DNAStringSet} or
+\caption{\bf Low-level manipulation of \Rclass{DNAStringSet} or
          \Rclass{AAStringSet} objects.}
 \label{table:Low_level_manipulation}
 \end{table}
@@ -103,11 +98,8 @@ Function                    & Description \\
 
 \begin{table}[ht]
 \begin{center}
-\begin{tabular}{p{2in}|p{4in}}
-Function                    & Description \\
-\hline
-\Rfunction{subseq}, \Rfunction{subseq<-} &
-    Extract or replace subsequences in a set of sequences. \\
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
 \hline
 \Rfunction{reverse}\par
 \Rfunction{complement}\par
@@ -120,21 +112,25 @@ Function                    & Description \\
 \hline
 \Rfunction{chartr} & Translate the letters in a set of sequences. \\
 \hline
+\Rfunction{subseq}, \Rfunction{subseq<-}\par
+\Rfunction{extractAt}, \Rfunction{replaceAt} &
+    Extract or replace subsequences in a set of sequences. \\
+\hline
 \Rfunction{replaceLetterAt} & Replace the letters specified by a set of
     positions by new letters. \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Basic transformations of sequences.}
-\label{table:Basic_transformations_of_sequences}
+\caption{\bf Sequence editing.}
+\label{table:Sequence_editing}
 \end{table}
 
 %-----------------------------------------------------------------------------
 
 \begin{table}[ht]
 \begin{center}
-\begin{tabular}{p{2in}|p{4in}}
-Function                    & Description \\
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
 \hline
 \Rfunction{alphabetFrequency}\par
 \Rfunction{letterFrequency} &
@@ -162,7 +158,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Counting / tabulating.}
+\caption{\bf Counting / tabulating.}
 \label{table:Counting_tabulating}
 \end{table}
 
@@ -170,8 +166,8 @@ Function                    & Description \\
 
 \begin{table}[ht]
 \begin{center}
-\begin{tabular}{p{2in}|p{4in}}
-Function                    & Description \\
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
 \hline
 \Rfunction{matchPattern}\par
 \Rfunction{countPattern} &
@@ -228,7 +224,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{String matching / alignments.}
+\caption{\bf String matching / alignments.}
 \label{table:String_matching_alignments}
 \end{table}
 
@@ -236,8 +232,8 @@ Function                    & Description \\
 
 \begin{table}[ht]
 \begin{center}
-\begin{tabular}{p{2in}|p{4in}}
-Function                    & Description \\
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
 \hline
 \Rfunction{readBStringSet}\par
 \Rfunction{readDNAStringSet}\par
@@ -264,7 +260,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{I/O functions.}
+\caption{\bf I/O functions.}
 \label{table:I_O_functions}
 \end{table}
 
@@ -273,8 +269,8 @@ Function                    & Description \\
 
 \begin{table}[ht]
 \begin{center}
-\begin{tabular}{p{2in}|p{4in}}
-Function                    & Description \\
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
 \hline
 \Rfunction{stringDist} &
     Computes the matrix of Levenshtein edit distances, or Hamming distances,
@@ -282,7 +278,7 @@ Function                    & Description \\
 \hline
 \end{tabular}
 \end{center}
-\caption{Miscellaneous.}
+\caption{\bf Miscellaneous.}
 \label{table:Miscellaneous}
 \end{table}
 

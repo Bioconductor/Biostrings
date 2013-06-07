@@ -115,13 +115,20 @@ replaceLetterAt(x, at, letter, if.not.extending="replace", verbose=FALSE)
 \author{H. Pages}
 
 \seealso{
-  \code{\link{IUPAC_CODE_MAP}},
-  \code{\link{chartr}},
-  \code{\link{injectHardMask}},
-  \link{DNAString},
-  \link{DNAStringSet},
-  \code{\link[BSgenome]{injectSNPs}},
-  \link[BSgenome:BSgenome-class]{BSgenome}
+  \itemize{
+    \item The \code{\link{replaceAt}} function for extracting or replacing
+          arbitrary subsequences from/in a sequence or set of sequences.
+
+    \item \code{\link{IUPAC_CODE_MAP}} for the mapping between IUPAC
+          nucleotide ambiguity codes and their meaning.
+
+    \item The \code{\link{chartr}} and \code{\link{injectHardMask}} functions.
+
+    \item The \link{DNAString} and \link{DNAStringSet} class.
+
+    \item The \code{\link[BSgenome]{injectSNPs}} function and the
+          \link[BSgenome]{BSgenome} class in the \pkg{BSgenome} package.
+  }
 }
 
 \examples{

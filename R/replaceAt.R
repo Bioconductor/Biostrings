@@ -5,17 +5,135 @@
 
 ### Extracts multiple subsequences from XString object 'x', or from the
 ### sequences of XStringSet object 'x', at the ranges of positions specified
-### in 'at'.
+### thru 'at'.
 setGeneric("extractAt", signature="x",
     function(x, at) standardGeneric("extractAt")
 )
 
 ### Performs multiple subsequence replacements (a.k.a. substitutions) in
 ### XString object 'x', or in the sequences of XStringSet object 'x', at the
-### ranges of positions specified in 'at'.
+### ranges of positions specified thru 'at'.
 setGeneric("replaceAt", signature="x",
     function(x, at, value="") standardGeneric("replaceAt")
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions for checking that the ranges in a Ranges or RangesList
+### object are within specified limits.
+###
+
+### Checks that the ranges in 'at' are within the limits specified by single
+### integer values 'min_start' and 'max_end'.
+.is_within_limits1 <- function(at, min_start, max_end)
+{
+    stopifnot(is(at, "Ranges"))
+    stopifnot(isSingleInteger(min_start))
+    stopifnot(isSingleInteger(max_end))
+
+    at_len <- length(at)
+    if (at_len == 0L)
+        return(TRUE)
+    at_min_start <- min(start(at))
+    at_max_end <- max(end(at))
+    at_min_start >= min_start && at_max_end <= max_end
+}
+
+### For all valid 'i', checks that the ranges in 'at[[i]]' are within the
+### limits specified by 'limits[i]'.
+.is_within_limits2 <- function(at, limits)
+{
+    stopifnot(is(at, "RangesList"))
+    stopifnot(is(limits, "Ranges"))
+    stopifnot(length(at) == length(limits))
+
+    unlisted_at <- unlist(at, use.names=FALSE)
+    tmp <- rep.int(limits, elementLengths(at))
+    min_starts <- start(tmp)
+    max_ends <- end(tmp)
+    all(start(unlisted_at) >= min_starts) && all(end(unlisted_at) <= max_ends)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helper functions for "vertical" and "horizontal" recycling.
+###
+### TODO: This stuff is very generic. Move it to IRanges so it can be shared
+### and re-used across the IRanges/GenomicRanges/XVector/Biostrings
+### infrastructure.
+###
+
+.wrap_msg <- function(...)
+    paste0(strwrap(paste0(...)), collapse="\n  ")
+
+### Vertical recycling (of any vector-like object).
+.V_recycle <- function(x, skeleton, x_what, skeleton_what)
+{
+    x_len <- length(x)
+    skeleton_len <- length(skeleton)
+    if (x_len == skeleton_len)
+        return(x)
+    if (x_len > skeleton_len)
+        stop(.wrap_msg(
+            "'", x_what, "' cannot be longer than ", skeleton_what
+        ))
+    if (x_len == 0L)
+        stop(.wrap_msg(
+            "'", x_what, "' is a zero-length object but ", skeleton_what,
+            " is not zero"
+        ))
+    if (skeleton_len %% x_len != 0L)
+        warning(.wrap_msg(
+            skeleton_what, " is not a multiple of 'length(", x_what, ")'"
+        ))
+    rep(x, length.out=skeleton_len)
+}
+
+### Horizontal recycling (of a list-like object only).
+.H_recycle <- function(x, skeleton, x_what, skeleton_what, more_blahblah=NA)
+{
+    stopifnot(is.list(x) || is(x, "List"))
+    stopifnot(is.list(skeleton) || is(skeleton, "List"))
+    x_len <- length(x)
+    skeleton_len <- length(skeleton)
+    stopifnot(x_len == skeleton_len)
+
+    if (skeleton_len == 0L)
+        return(x)
+    x_eltlens <- elementLengths(x)
+    skeleton_eltlens <- elementLengths(skeleton)
+    is_longer <- x_eltlens > skeleton_eltlens
+    x_what2 <- paste0("some list elements in '", x_what, "'")
+    if (!is.na(more_blahblah))
+        x_what2 <- paste0(x_what2, " (", more_blahblah, ")")
+    if (any(is_longer))
+        stop(.wrap_msg(
+            x_what2, " are longer than their corresponding ",
+            "list element in '", skeleton_what, "'"
+        ))
+    is_shorter <- x_eltlens < skeleton_eltlens
+    if (!any(is_shorter))
+        return(x)
+    is_empty <- x_eltlens == 0L
+    if (any(is_shorter & is_empty))
+        stop(.wrap_msg(
+            x_what2, " are of length 0, but their corresponding ",
+            "list element in '", skeleton_what, "' is not"
+        ))
+    is_not_singleton <- x_eltlens != 1L
+    if (any(is_shorter & is_not_singleton))
+        stop(.wrap_msg(
+            x_what2, " are shorter than their corresponding ",
+            "list element in '", skeleton_what, "', but have ",
+            "a length != 1. \"Horizontal\" recycling only supports ",
+            "list elements of length 1 at the moment."
+        ))
+    idx <- which(is_shorter)
+    x[idx] <- relist(rep.int(unlist(x[idx], use.names=FALSE),
+                                skeleton_eltlens[idx]),
+                        skeleton[idx])
+    x
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,8 +154,10 @@ setGeneric("replaceAt", signature="x",
     if (is.numeric(at))
         at <- .make_Ranges_from_numeric(at)
     if (!is(at, "Ranges"))
-        stop("'at' must be a Ranges object (or a numeric vector containing ",
-             "the start\n  positions of zero-width ranges)")
+        stop(.wrap_msg(
+            "'at' must be a Ranges object (or a numeric vector containing ",
+            "the start positions of zero-width ranges)"
+        ))
     at
 }
 
@@ -52,32 +172,22 @@ setGeneric("replaceAt", signature="x",
     if (is(at, "IntegerList"))
         at <- .make_RangesList_from_IntegerList(at)
     if (!is(at, "RangesList"))
-        stop("'at' must be a RangesList object (or an IntegerList object ",
-             "or a list of\n  numeric vectors, containing the start ",
-             "positions of zero-width ranges).\n  ",
-             "Also it can be a Ranges object (or a numeric vector containing ",
-             "the start\n  positions of zero-width ranges) and in that case ",
-             "is interpreted as a\n  RangesList object of length 1.")
+        stop(.wrap_msg(
+            "'at' must be a RangesList object (or an IntegerList object ",
+            "or a list of numeric vectors, containing the start positions ",
+            "of zero-width ranges). ",
+            "Also it can be a Ranges object (or a numeric vector containing ",
+            "the start positions of zero-width ranges) and in that case ",
+            "is interpreted as a RangesList object of length 1."
+        ))
     at
-}
-
-### Checks that the ranges in 'at' are within the bounds specified by
-### 'min_start' and 'max_end'.
-.check_at_bounds <- function(at, min_start, max_end)
-{
-    at_len <- length(at)
-    if (at_len == 0L)
-        return()
-    at_min_start <- min(start(at))
-    at_max_end <- max(end(at))
-    if (at_min_start < min_start || at_max_end > max_end)
-        stop("some ranges in 'at' are off-limits with respect to sequence 'x'")
 }
 
 .normarg_at1 <- function(at, x)
 {
     at <- .make_Ranges_from_at(at)
-    .check_at_bounds(at, 1L, length(x))
+    if (!.is_within_limits1(at, 1L, length(x)))
+        stop("some ranges in 'at' are off-limits with respect to sequence 'x'")
     at
 }
 
@@ -89,26 +199,12 @@ setGeneric("replaceAt", signature="x",
         names(at) <- NULL
         warning("'at' names were ignored")
     }
-    at_len <- length(at)
-    x_len <- length(x)
-    if (at_len > x_len)
-        stop("'at' cannot be longer than 'x'")
-    if (at_len < x_len) {
-        if (at_len == 0L)
-            stop("'at' is a zero-length object but 'x' is not")
-        if (x_len %% at_len != 0L)
-            warning("'length(x)' is not a multiple of 'length(at)'")
-        at <- rep(at, length.out=x_len)
-    }
-    ## range() is fast only on a CompressedIRangesList.
-    at_range <- range(at)
-    idx <- which(elementLengths(at_range) != 0L)
-    if (length(idx) != 0L) {
-        tmp <- unlist(at_range)
-        if (any(start(tmp) < 1L) || any(end(tmp) > width(x)[idx]))
-            stop("some ranges in 'at' are off-limits with respect to ",
-                 "their corresponding\n  sequence in 'x'")
-    }
+    at <- .V_recycle(at, x, "at", "'length(x)'")
+    if (!.is_within_limits2(at, IRanges(1L, width(x))))
+        stop(.wrap_msg(
+            "some ranges in 'at' are off-limits with respect to ",
+            "their corresponding sequence in 'x'"
+        ))
     at
 }
 
@@ -116,18 +212,6 @@ setGeneric("replaceAt", signature="x",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions for normalizing the 'value' argument.
 ###
-### 2 helper functions to bring 'value' in the same "shape" as 'at'.
-###   - For .normarg_value1(): 'at' must be a Ranges object (not checked).
-###     The returned 'value' is an XStringSet object obtained by coercing the
-###     input 'value' to XStringSet (if necessary) and recycling it to the
-###     length of 'at' (if necessary).
-###   - For .normarg_value2(): 'at' must be a RangesList object (not checked).
-###     The input 'value' must be an XStringSetList object, a CharacterList
-###     object, or a list of character vectors.
-###     The returned 'value' is an XStringSetList object obtained by coercing
-###     the input 'value' to XStringSetList (if necessary) and recycling it
-###     "vertically" and "horizontally" to bring it in the same "shape" as
-###     'at' (i.e. same length and same elementLengths).
 
 .make_XStringSet_from_value <- function(value, x_seqtype)
 {
@@ -167,74 +251,21 @@ setGeneric("replaceAt", signature="x",
 .normarg_value1 <- function(value, at, x_seqtype)
 {
     value <- .make_XStringSet_from_value(value, x_seqtype)
-    value_len <- length(value)
-    at_len <- length(at)
-    if (value_len > at_len)
-        stop("'value' cannot be longer than the number of replacements")
-    if (value_len < at_len) {
-        if (value_len == 0L)
-            stop("'length(value)' is zero but the number ",
-                 "of replacements is not")
-        if (at_len %% value_len != 0L)
-            warning("the number of replacements is not ",
-                    "a multiple of 'length(value)'")
-        value <- rep(value, length.out=at_len)
-    }
-    value
+    .V_recycle(value, at, "value", "the number of replacements")
 }
 
 ### 'at' is assumed to be normalized so it has the length of 'x'.
 .normarg_value2 <- function(value, at, x_seqtype)
 {
     value <- .make_XStringSetList_from_value(value, x_seqtype)
-    ## Vertical recycling.
-    value_len <- length(value)
-    at_len <- length(at)  # same as length(x)
-    if (value_len > at_len)
-        stop("'value' cannot be longer than 'x'")
-    if (value_len < at_len) {
-        if (value_len == 0L)
-            stop("'value' is a zero-length object but 'x' is not")
-        if (at_len %% value_len != 0L)
-            warning("'length(x)' is not a multiple of 'length(value)'")
-        value <- rep(value, length.out=at_len)
-    }
-    if (at_len != 0L) {
-        ## Horizontal recycling.
-        value_eltlens <- elementLengths(value)
-        at_eltlens <- elementLengths(at)
-        is_longer <- value_eltlens > at_eltlens
-        if (any(is_longer))
-            stop("some list elements in 'value' (after recycling of ",
-                 "'value' to the length of\n  'x') are longer than ",
-                 "their corresponding list element in 'at'")
-        is_shorter <- value_eltlens < at_eltlens
-        if (any(is_shorter)) {
-            is_empty <- value_eltlens == 0L
-            if (any(is_shorter & is_empty))
-                stop("some list elements in 'value' (after recycling of ",
-                     "'value' to the length of\n  'x') are of length 0, ",
-                     "but their corresponding list element in 'at' is not")
-            is_not_singleton <- value_eltlens != 1L
-            if (any(is_shorter & is_not_singleton))
-                stop("some list elements in 'value' (after \"vertical\" ",
-                     "recycling of 'value' i.e.\n  recycling to the length ",
-                     "of 'x') are shorter than their corresponding list\n  ",
-                     "element in 'at', but have a length != 1. ",
-                     "Only list elements of length 1\n  can be ",
-                     "\"horizontally\" recycled at the moment.")
-            idx <- which(is_shorter)
-            value[idx] <- relist(rep.int(unlist(value[idx], use.names=FALSE),
-                                         at_eltlens[idx]),
-                                 at[idx])
-        }
-    }
-    value
+    value <- .V_recycle(value, at, "value", "'length(x)'")
+    .H_recycle(value, at, "value", "at",
+        "after recycling of 'at' and 'value' to the length of 'x'")
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other helper functions.
+### One more helper function.
 ###
 
 .unlist_and_shift_at <- function(at, x)
@@ -276,19 +307,6 @@ setMethod("extractAt", "XStringSet",
 
 if (FALSE) {  #     <<<--- begin testing extractAt() --->>>
 
-### From an XString object
-### ======================
-
-x <- BString("abcdefghijklm")
-at1 <- IRanges(5:1, width=3)
-extractAt(x, at1)
-names(at1) <- LETTERS[22:26]
-extractAt(x, at1)
-
-at2 <- IRanges(c(1, 5, 12), c(3, 4, 12), names=c("X", "Y", "Z"))
-extractAt(x, at2)
-extractAt(x, rev(at2))
-
 ### From an XStringSet object
 ### =========================
 
@@ -306,11 +324,11 @@ identical_XStringSetList <- function(target, current)
     ok1 && ok2 && ok3 && ok4
 }
 
-x <- BStringSet(c(seq1="AAAA", seq2="abcdefghijk", seq3="XYZ"))
-at <- IRangesList(IRanges(4, 4),
-                  IRanges(c(2, 6:3), 5),
-                  IRanges(c(2, 1), c(3, 1)))
-### Set the inner names.
+x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
+at <- IRangesList(IRanges(c(2, 1), c(3, 0)),
+                  IRanges(c(7, 2, 12, 7), c(6, 5, 11, 8)),
+                  IRanges(2, 2))
+### Set inner names on 'at'.
 unlisted_at <- unlist(at)
 names(unlisted_at) <- paste0("rg", sprintf("%02d", seq_along(unlisted_at)))
 at <- relist(unlisted_at, at)
@@ -391,6 +409,7 @@ setMethod("replaceAt", "XStringSet",
                                            PartitioningByEnd(at)))
         ans <- as(successiveViews(unlisted_ans, ans_width), "XStringSet")
         names(ans) <- names(x)
+        mcols(ans) <- mcols(x)
         ans
     }
 )
@@ -400,34 +419,6 @@ if (FALSE) {  #     <<<--- begin testing replaceAt() --->>>
 
 ### On an XString object
 ### ====================
-
-x <- BString("abcdefghijklm")
-at1 <- IRanges(c(1, 5, 12), c(3, 4, 12))
-value <- c("X", "Y", "Z")
-stopifnot(replaceAt(x, at1, value) == "XdYefghijkZm")
-stopifnot(replaceAt(x, rev(at1), rev(value)) == "XdYefghijkZm")
-
-at2 <- IRanges(c(14, 1, 1, 1, 1, 11), c(13, 0, 10, 0, 0, 10))
-value <- 1:6
-stopifnot(replaceAt(x, at2, value) == "24536klm1")
-stopifnot(replaceAt(x, rev(at2), rev(value)) == "54236klm1")
-
-### Deletions:
-stopifnot(replaceAt(x, at1) == "defghijkm")
-stopifnot(replaceAt(x, rev(at1)) == "defghijkm")
-stopifnot(replaceAt(x, at2) == "klm")
-stopifnot(replaceAt(x, rev(at2)) == "klm")
-
-### Insertions:
-at3 <- IRanges(c(6L, 10L, 2L, 5L), width=0L)
-stopifnot(replaceAt(x, at3, value="-") == "a-bcd-e-fghi-jklm")
-at4 <- c(5, 1, 6, 5)  # 2 insertions before position 5 
-replaceAt(x, at4, value=c("+", "-", "*", "/"))
-
-### No-ops:
-stopifnot(replaceAt(x, at1, Views(x, at1)) == x)
-stopifnot(replaceAt(x, at2, Views(x, at2)) == x)
-stopifnot(replaceAt(x, at3, Views(x, at3)) == x)
 
 ### Testing performance with half-million small substitutions at random
 ### locations in Celegans chrI:
@@ -478,8 +469,8 @@ matchPattern("---", current)
 ### On an XStringSet object
 ### =======================
 
-### Only compare the classes, the lengths, the names, and the sequence
-### contents. Doesn't look at the metadata or the metadata columns.
+### Only compare the classes, lengths, names, and sequence contents.
+### Doesn't look at the metadata or the metadata columns.
 identical_XStringSet <- function(target, current)
 {
     ok1 <- identical(class(target), class(current))
@@ -492,7 +483,7 @@ x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
 at <- IRangesList(IRanges(c(2, 1), c(3, 0)),
                   IRanges(c(7, 2, 12, 7), c(6, 5, 11, 8)),
                   IRanges(2, 2))
-### Set the inner names.
+### Set inner names on 'at'.
 unlisted_at <- unlist(at)
 names(unlisted_at) <- paste0("rg", sprintf("%02d", seq_along(unlisted_at)))
 at <- relist(unlisted_at, at)
@@ -503,20 +494,6 @@ stopifnot(identical_XStringSet(x, current))
 res1a <- replaceAt(x, at)  # deletions
 res1b <- mendoapply(replaceAt, x, at)
 stopifnot(identical_XStringSet(res1a, res1b))
-
-x <- BStringSet(c("abcdefghijklmn", "ABCDE", "abcdef"))
-
-replaceAt(x, 1, value="++")  # prepend ++ to sequences
-replaceAt(x, as(nchar(x) + 2L, "List"), value="++")  # append ++ to sequences
-replaceAt(x, 4, value="-+-")  # insert -+- in each sequence
-
-at4 <- IRangesList(IRanges(c(6, 11, 13, 10, 2, 5), width=c(0, 2, 0, 0, 0, 0)),
-                   IRanges(1:6, width=0),
-                   IRanges(c(2, 4, 2), width=c(0, 3, 0)))
-replaceAt(x, at4, value="-")
-value4 <- relist(paste0("[", seq_along(unlist(at4)), "]"), at4)
-replaceAt(x, at4, value=value4)
-replaceAt(x, at4, value=as(c("+", "-", "*"), "List"))
 
 ### Testing performance with half-million single-letter insertions at random
 ### locations in Celegans upstream1000:
