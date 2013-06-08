@@ -213,8 +213,11 @@ extractAt(probes, at)
 
 ## Replace all the occurences of a given pattern with another pattern:
 midx <- vmatchPattern("VCGTT", probes, fixed=FALSE)
-unique(unlist(extractAt(probes, midx)))
-replaceAt(probes, midx, "-+-")
+matches <- extractAt(probes, midx)
+unlist(matches)
+unique(unlist(matches))
+stopifnot(all(replaceAt(probes, midx, value=matches) == probes))
+replaceAt(probes, midx, "-++-")
 }
 
 \keyword{methods}
