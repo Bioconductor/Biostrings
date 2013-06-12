@@ -85,6 +85,9 @@ unitScale(x)
     object for \code{matchPWM} and \code{countPWM}.
 
     A \link{DNAString} object for \code{PWMscoreStartingAt}.
+
+    IUPAC ambiguity letters in \code{subject} are ignored (i.e. assigned
+    weight 0) with a warning.
   }
   \item{min.score}{
     The minimum score for counting a match.
@@ -135,7 +138,7 @@ unitScale(x)
   \code{maxScore}.
 
   The lowest possible score for a given Position Weight Matrix for
-  \code{maxScore}.
+  \code{minScore}.
 
   The modified numeric matrix given by
   \code{(x - minScore(x)/ncol(x))/(maxScore(x) - minScore(x))} for
@@ -147,8 +150,8 @@ unitScale(x)
 }
 
 \references{
-Wasserman, WW, Sandelin, A., (2004) Applied bioinformatics for the
-identification of regulatory elements, Nat Rev Genet., 5(4):276-87.
+  Wasserman, WW, Sandelin, A., (2004) Applied bioinformatics for the
+  identification of regulatory elements, Nat Rev Genet., 5(4):276-87.
 }
 
 \author{H. Pages and P. Aboyoun}
@@ -162,35 +165,35 @@ identification of regulatory elements, Nat Rev Genet., 5(4):276-87.
 }
 
 \examples{
-  ## Data setup:
-  data(HNF4alpha)
-  library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chr3R <- Dmelanogaster$chr3R
-  chr3R
+## Data setup:
+data(HNF4alpha)
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+chr3R <- Dmelanogaster$chr3R
+chr3R
 
-  ## Create a PWM from a PFM or directly from a rectangular
-  ## DNAStringSet object:
-  pfm <- consensusMatrix(HNF4alpha)
-  pwm <- PWM(pfm)  # same as 'PWM(HNF4alpha)'
+## Create a PWM from a PFM or directly from a rectangular
+## DNAStringSet object:
+pfm <- consensusMatrix(HNF4alpha)
+pwm <- PWM(pfm)  # same as 'PWM(HNF4alpha)'
 
-  ## Perform some general routines on the PWM:
-  round(pwm, 2)
-  maxWeights(pwm)
-  maxScore(pwm)
-  reverseComplement(pwm)
+## Perform some general routines on the PWM:
+round(pwm, 2)
+maxWeights(pwm)
+maxScore(pwm)
+reverseComplement(pwm)
 
-  ## Score the first 5 positions:
-  PWMscoreStartingAt(pwm, unmasked(chr3R), starting.at=1:5)
+## Score the first 5 positions:
+PWMscoreStartingAt(pwm, unmasked(chr3R), starting.at=1:5)
 
-  ## Match the plus strand:
-  hits <- matchPWM(pwm, chr3R)
-  nhit <- countPWM(pwm, chr3R)  # same as 'length(hits)'
+## Match the plus strand:
+hits <- matchPWM(pwm, chr3R)
+nhit <- countPWM(pwm, chr3R)  # same as 'length(hits)'
 
-  ## Post-calculate the scores of the hits:
-  scores <- PWMscoreStartingAt(pwm, subject(hits), start(hits))
+## Post-calculate the scores of the hits:
+scores <- PWMscoreStartingAt(pwm, subject(hits), start(hits))
 
-  ## Match the minus strand:
-  matchPWM(reverseComplement(pwm), chr3R)
+## Match the minus strand:
+matchPWM(reverseComplement(pwm), chr3R)
 }
 
 \keyword{methods}

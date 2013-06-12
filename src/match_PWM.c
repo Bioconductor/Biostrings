@@ -17,6 +17,8 @@
  */
 static ByteTrTable byte2offset;
 
+static int no_warning_yet;
+
 static double compute_pwm_score(const double *pwm, int pwm_ncol,
 		const char *S, int nS, int pwm_shift)
 {
@@ -30,8 +32,14 @@ static double compute_pwm_score(const double *pwm, int pwm_ncol,
 	score = 0.00;
 	for (i = 0; i < pwm_ncol; i++, pwm += 4, S++) {
 		rowoffset = byte2offset[(unsigned char) *S];
-		if (rowoffset == NA_INTEGER)
+		if (rowoffset == NA_INTEGER) {
+			if (no_warning_yet) {
+				warning("'subject' contains letters not in "
+					"[ACGT] ==> assigned weight 0 to them");
+				no_warning_yet = 0;
+			}
 			continue;
+		}
 		score += pwm[rowoffset];
 	}
 	return score;
@@ -73,6 +81,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at,
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
 	S = cache_XRaw(subject);
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
+	no_warning_yet = 1;
 	ans_length = LENGTH(starting_at);
 	PROTECT(ans = NEW_NUMERIC(ans_length));
 	for (i = 0, start_elt = INTEGER(starting_at), ans_elt = REAL(ans);
@@ -114,6 +123,7 @@ SEXP XString_match_PWM(SEXP pwm, SEXP subject,
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
+	no_warning_yet = 1;
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	_match_PWM_XString(REAL(pwm), pwm_ncol, &S, minscore);
@@ -147,7 +157,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
 	_init_byte2offset_with_INTEGER(byte2offset, base_codes, 1);
-
+	no_warning_yet = 1;
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_RANGES", 1);
 	nviews = LENGTH(views_start);
