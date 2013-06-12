@@ -158,7 +158,7 @@ static void FASTA_load_seq_data(FASTAloader *loader,
 	loader_ext = loader->ext;
 	cached_ans_elt = &(loader_ext->cached_ans_elt);
 	/* cached_ans_elt->seq is a const char * so we need to cast it to
-	   char * before we can write to it */
+	   char * in order to write to it */
 	memcpy((char *) cached_ans_elt->seq + cached_ans_elt->length,
 	       seq_data->seq, seq_data->length * sizeof(char));
 	cached_ans_elt->length += seq_data->length;

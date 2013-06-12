@@ -211,6 +211,13 @@ probes <- DNAStringSet(hgu95av2probe)
 at <- successiveIRanges(rep(5, 5))
 extractAt(probes, at)
 
+## Replace base 13 by its complement:
+at <- IRanges(13, width=1)
+base13 <- extractAt(probes, at)
+base13comp <- relist(complement(unlist(base13)), base13)
+replaceAt(probes, at, base13comp)
+## See ?xscat for a more efficient way to do this.
+
 ## Replace all the occurences of a given pattern with another pattern:
 midx <- vmatchPattern("VCGTT", probes, fixed=FALSE)
 matches <- extractAt(probes, midx)
