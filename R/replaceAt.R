@@ -73,7 +73,7 @@ setGeneric("replaceAt", signature="x",
     skeleton_len <- length(skeleton)
     if (x_len == skeleton_len)
         return(x)
-    if (x_len > skeleton_len)
+    if (x_len > skeleton_len && x_len != 1L)
         stop(.wrap_msg(
             "'", x_what, "' cannot be longer than ", skeleton_what
         ))

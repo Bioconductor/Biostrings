@@ -17,8 +17,12 @@
 }
 
 \usage{
-padAndClip(x, views, Lpadding.letter=" ", Rpadding.letter=" ")
-stackStrings(x, from, to, shift=0L, Lpadding.letter=" ", Rpadding.letter=" ")
+padAndClip(x, views, Lpadding.letter=" ", Rpadding.letter=" ",
+           remove.out.of.view.strings=FALSE)
+
+stackStrings(x, from, to, shift=0L,
+             Lpadding.letter=" ", Rpadding.letter=" ",
+             remove.out.of.view.strings=FALSE)
 }
 
 \arguments{
@@ -37,6 +41,10 @@ stackStrings(x, from, to, shift=0L, Lpadding.letter=" ", Rpadding.letter=" ")
   \item{Rpadding.letter}{
     A single letter to use for padding on the right.
   }
+  \item{remove.out.of.view.strings}{
+    \code{TRUE} or \code{FALSE}. Whether or not to remove the strings
+    that are out of view in the returned object.
+  }
   \item{from, to}{
     Another way to specify the region to keep for each string, but with
     the restriction that \code{from} and \code{to} must be single integers.
@@ -52,21 +60,22 @@ stackStrings(x, from, to, shift=0L, Lpadding.letter=" ", Rpadding.letter=" ")
 }
 
 \value{
-  For \code{padAndClip}: An \link{XStringSet} object of the same length
-  and names as \code{x}. Its "shape" (which is described by the integer
-  vector returned by \code{width}) is the same as the shape of the
+  For \code{padAndClip}: An \link{XStringSet} object.
+  If \code{remove.out.of.view.strings} is \code{FALSE}, it has the same
+  length and names as \code{x}, and its "shape", which is described by the
+  integer vector returned by \code{width()}, is the same as the shape of the
   \code{views} argument after recycling.
 
-  The class of the returned object is always a direct concrete subclass of
-  the \link{XStringSet} virtual class, that is, depending on the class of
-  \code{x}, it is one of the 4 following classes: \link{BStringSet},
-  \link{DNAStringSet}, \link{RNAStringSet}, and \link{AAStringSet}.
-  More precisely, if \code{x} is an \emph{instance} of one of those 4 classes,
-  then the returned object has the same class as \code{x} (i.e. in that case,
-  \code{padAndClip} acts as an endomorphism). But if \code{x} \emph{derives}
-  from one of those 4 classes, then the returned object is downgraded to
-  the class \code{x} derives from. In that case, \code{padAndClip} doesn't
-  act as an endomorphism.
+  The class of the returned object is the direct concrete subclass of
+  \link{XStringSet} that \code{x} belongs to or derives from.
+  There are 4 direct concrete subclasses of the \link{XStringSet} virtual
+  class: \link{BStringSet}, \link{DNAStringSet}, \link{RNAStringSet},
+  and \link{AAStringSet}. If \code{x} is an \emph{instance} of one of
+  those classes, then the returned object has the same class as \code{x}
+  (i.e. in that case, \code{padAndClip} acts as an endomorphism).
+  But if \code{x} \emph{derives} from one of those 4 classes, then the
+  returned object is downgraded to the class \code{x} derives from.
+  In that case, \code{padAndClip} does not act as an endomorphism.
 
   For \code{stackStrings}: Same as \code{padAndClip}. In addition it is
   guaranteed to have a rectangular shape i.e. to be a constant-width
@@ -95,12 +104,22 @@ stackStrings(x, from, to, shift=0L, Lpadding.letter=" ", Rpadding.letter=" ")
 }
 
 \examples{
-x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq4="", seq3="XYZ"))
+x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="", seq4="XYZ"))
+
 padAndClip(x, IRanges(3, 8:5), Lpadding.letter="+", Rpadding.letter="-")
 padAndClip(x, IRanges(1:-2, 7), Lpadding.letter="+", Rpadding.letter="-")
+
 stackStrings(x, from=-2, to=8)
+
 stackStrings(x, from=-2, to=8, shift=c(0, -11, 6, 7),
              Lpadding.letter="+", Rpadding.letter="-")
+
+stackStrings(x, from=-2, to=8, shift=c(0, -14, 6, 7),
+             Lpadding.letter="+", Rpadding.letter="-")
+
+stackStrings(x, from=-2, to=8, shift=c(0, -14, 6, 7),
+             Lpadding.letter="+", Rpadding.letter="-",
+             remove.out.of.view.strings=TRUE)
 }
 
 \keyword{methods}
