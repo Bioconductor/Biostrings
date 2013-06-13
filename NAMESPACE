@@ -109,7 +109,7 @@ exportMethods(
 ###   replaceAt.R
 ###   replaceLetterAt.R
 ###   injectHardMask.R
-###   stackStrings.R
+###   padAndClip.R
 ###   misc.R
 
 export(
@@ -159,8 +159,8 @@ export(
     ## injectHardMask.R:
     injectHardMask,
 
-    ## stackStrings.R:
-    stackStrings,
+    ## padAndClip.R:
+    padAndClip, stackStrings,
 
     ## misc.R:
     N50

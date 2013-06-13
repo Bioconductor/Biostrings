@@ -114,14 +114,12 @@ document.
 \hline
 \Rfunction{subseq}, \Rfunction{subseq<-}\par
 \Rfunction{extractAt}, \Rfunction{replaceAt} &
-    Extract or replace subsequences in a set of sequences. \\
+    Extract/replace arbitrary substrings from/in a string or set of strings. \\
 \hline
 \Rfunction{replaceLetterAt} & Replace the letters specified by a set of
     positions by new letters. \\
 \hline
-\Rfunction{stackStrings} & Turn a variable-width set of strings into a
-    ``rectangular'' set (i.e. constant-width), by clipping and/or padding
-    the strings, after shifting them horizontally. \\
+\Rfunction{padAndClip}, \Rfunction{stackStrings} & Pad and clip strings. \\
 \hline
 \end{tabular}
 \end{center}

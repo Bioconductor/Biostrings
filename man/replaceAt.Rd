@@ -9,8 +9,8 @@
 \alias{replaceAt,XStringSet-method}
 
 
-\title{Extract or replace arbitrary subsequences from/in a sequence or set
-       of sequences.}
+\title{Extract/replace arbitrary substrings from/in a string or set
+       of strings.}
 
 \description{
   \code{extractAt} extracts multiple subsequences from \link{XString}
