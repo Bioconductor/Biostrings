@@ -119,6 +119,10 @@ document.
 \Rfunction{replaceLetterAt} & Replace the letters specified by a set of
     positions by new letters. \\
 \hline
+\Rfunction{stackStrings} & Turn a variable-width set of strings into a
+    ``rectangular'' set (i.e. constant-width), by clipping and/or padding
+    the strings, after shifting them horizontally. \\
+\hline
 \end{tabular}
 \end{center}
 \caption{\bf Sequence editing.}

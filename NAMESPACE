@@ -106,9 +106,10 @@ exportMethods(
 ###   reverse.R
 ###   translate.R
 ###   toComplex.R
-###   replaceLetterAt.R
 ###   replaceAt.R
+###   replaceLetterAt.R
 ###   injectHardMask.R
+###   stackStrings.R
 ###   misc.R
 
 export(
@@ -149,14 +150,17 @@ export(
     ## toComplex.R:
     toComplex,
 
-    ## replaceLetterAt.R:
-    replaceLetterAt, .inplaceReplaceLetterAt,
-
     ## replaceAt.R:
     extractAt, replaceAt,
 
+    ## replaceLetterAt.R:
+    replaceLetterAt, .inplaceReplaceLetterAt,
+
     ## injectHardMask.R:
     injectHardMask,
+
+    ## stackStrings.R:
+    stackStrings,
 
     ## misc.R:
     N50
@@ -179,9 +183,8 @@ exportMethods(
     chartr,
     reverse, complement, reverseComplement,
     codons, translate,
-    replaceLetterAt,
     extractAt, replaceAt,
-    maskMotif,
+    replaceLetterAt,
     injectHardMask
 )
 
@@ -268,6 +271,7 @@ exportMethods(
     mismatch, nmatch, nmismatch,
     coverage,
     matchPattern, countPattern, vcountPattern,
+    maskMotif,
     matchLRPatterns, trimLRPatterns,
     matchProbePair,
     maxWeights, minWeights, maxScore, minScore,
