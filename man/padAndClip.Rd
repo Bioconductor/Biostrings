@@ -23,26 +23,49 @@ stackStrings(x, from, to, padding.letter, shift=0L)
 
 \arguments{
   \item{x}{
-    An \link{XStringSet} object.
+    An \link{XStringSet} object containing the strings to pad and clip.
   }
   \item{views}{
-    TODO
+    A \link[IRanges]{Ranges} object (recycled to the length of \code{x} if
+    necessary) defining the region to keep for each string. Because the
+    strings are first conceptually padded with an infinite number of
+    padding letters on both sides, regions can go beyond string limits.
   }
   \item{padding.letter}{
-    TODO
+    A single letter to use for padding.
   }
   \item{from, to}{
-    TODO
+    Another way to specify the region to keep for each string, but with
+    the restriction that \code{from} and \code{to} must be single integers.
+    So only 1 region can be specified, and the same region is used for all
+    the strings.
   }
   \item{shift}{
-    TODO
+    An integer vector (recycled to the length of \code{x} if necessary)
+    specifying the amount of shifting (in number of letters) to apply to
+    each string before doing pad and clip. Positive values shift to the
+    right and negative values to the left.
   }
 }
 
 \value{
-  For \code{padAndClip}:
+  For \code{padAndClip}: An \link{XStringSet} object of the same length
+  and names as \code{x}.
 
-  For \code{stackStrings}:
+  The class of the returned object is always a direct concrete subclass of
+  the \link{XStringSet} virtual class, that is, depending on the class of
+  \code{x}, it is one of the 4 following classes: \link{BStringSet},
+  \link{DNAStringSet}, \link{RNAStringSet}, and \link{AAStringSet}.
+  More precisely, if \code{x} is an \emph{instance} of one of those 4 classes,
+  then the returned object has the same class as \code{x} (i.e. in that case,
+  \code{padAndClip} acts as an endomorphism). But if \code{x} \emph{derives}
+  from one of those 4 classes, then the returned object is downgraded to
+  the class \code{x} derives from. In that case, \code{padAndClip} doesn't
+  act as an endomorphism.
+
+  For \code{stackStrings}: Same as \code{padAndClip}. In addition it is
+  guaranteed to be a rectangular (i.e. constant-width) \link{XStringSet}
+  object.
 }
 
 \author{H. Pages}
@@ -67,6 +90,11 @@ stackStrings(x, from, to, padding.letter, shift=0L)
 }
 
 \examples{
+x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
+padAndClip(x, IRanges(3, 7:5), "+")
+padAndClip(x, IRanges(1:-1, 7), "+")
+stackStrings(x, from=-2, to=8, "+")
+stackStrings(x, from=-2, to=8, "+", shift=c(0, -1, 6))
 }
 
 \keyword{methods}

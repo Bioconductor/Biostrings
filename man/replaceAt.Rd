@@ -97,6 +97,9 @@ replaceAt(x, at, value="")
     \item The \code{\link{replaceLetterAt}} function for a DNA-specific
           single-letter replacement functions useful for SNP injections.
 
+    \item The \code{\link{padAndClip}} function for padding and clipping
+          strings.
+
     \item The \link{XString}, \link{XStringSet}, and \link{XStringSetList}
           classes.
 
@@ -223,8 +226,15 @@ midx <- vmatchPattern("VCGTT", probes, fixed=FALSE)
 matches <- extractAt(probes, midx)
 unlist(matches)
 unique(unlist(matches))
+probes2 <- replaceAt(probes, midx, "-++-")
+
+## See strings with 2 or more susbtitutions:
+probes2[elementLengths(midx) >= 2]
+
+## 2 sanity checks:
 stopifnot(all(replaceAt(probes, midx, value=matches) == probes))
-replaceAt(probes, midx, "-++-")
+probes2b <- gsub("[ACG]CGTT", "-++-", as.character(probes))
+stopifnot(identical(as.character(probes2), probes2b))
 }
 
 \keyword{methods}
