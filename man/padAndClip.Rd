@@ -17,8 +17,8 @@
 }
 
 \usage{
-padAndClip(x, views, padding.letter)
-stackStrings(x, from, to, padding.letter, shift=0L)
+padAndClip(x, views, Lpadding.letter=" ", Rpadding.letter=" ")
+stackStrings(x, from, to, shift=0L, Lpadding.letter=" ", Rpadding.letter=" ")
 }
 
 \arguments{
@@ -31,8 +31,11 @@ stackStrings(x, from, to, padding.letter, shift=0L)
     strings are first conceptually padded with an infinite number of
     padding letters on both sides, regions can go beyond string limits.
   }
-  \item{padding.letter}{
-    A single letter to use for padding.
+  \item{Lpadding.letter}{
+    A single letter to use for padding on the left.
+  }
+  \item{Rpadding.letter}{
+    A single letter to use for padding on the right.
   }
   \item{from, to}{
     Another way to specify the region to keep for each string, but with
@@ -50,7 +53,9 @@ stackStrings(x, from, to, padding.letter, shift=0L)
 
 \value{
   For \code{padAndClip}: An \link{XStringSet} object of the same length
-  and names as \code{x}.
+  and names as \code{x}. Its "shape" (which is described by the integer
+  vector returned by \code{width}) is the same as the shape of the
+  \code{views} argument after recycling.
 
   The class of the returned object is always a direct concrete subclass of
   the \link{XStringSet} virtual class, that is, depending on the class of
@@ -64,8 +69,8 @@ stackStrings(x, from, to, padding.letter, shift=0L)
   act as an endomorphism.
 
   For \code{stackStrings}: Same as \code{padAndClip}. In addition it is
-  guaranteed to be a rectangular (i.e. constant-width) \link{XStringSet}
-  object.
+  guaranteed to have a rectangular shape i.e. to be a constant-width
+  \link{XStringSet} object.
 }
 
 \author{H. Pages}
@@ -90,11 +95,12 @@ stackStrings(x, from, to, padding.letter, shift=0L)
 }
 
 \examples{
-x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
-padAndClip(x, IRanges(3, 7:5), "+")
-padAndClip(x, IRanges(1:-1, 7), "+")
-stackStrings(x, from=-2, to=8, "+")
-stackStrings(x, from=-2, to=8, "+", shift=c(0, -1, 6))
+x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq4="", seq3="XYZ"))
+padAndClip(x, IRanges(3, 8:5), Lpadding.letter="+", Rpadding.letter="-")
+padAndClip(x, IRanges(1:-2, 7), Lpadding.letter="+", Rpadding.letter="-")
+stackStrings(x, from=-2, to=8)
+stackStrings(x, from=-2, to=8, shift=c(0, -11, 6, 7),
+             Lpadding.letter="+", Rpadding.letter="-")
 }
 
 \keyword{methods}

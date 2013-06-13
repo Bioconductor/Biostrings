@@ -4,8 +4,11 @@
 
 
 ### Return an XString object of length 1.
-.normarg_padding.letter <- function(padding.letter, seqtype)
+.normarg_padding.letter <- function(padding.letter, seqtype, what)
 {
+    if (seqtype != "B" && identical(padding.letter, " "))
+        stop("'", what, "' must be supplied when 'x' is not ",
+             "a BStringSet object")
     class <- paste0(seqtype, "String")
     if (isSingleString(padding.letter) && nchar(padding.letter) == 1L)
         return(as(padding.letter, class))
@@ -14,7 +17,7 @@
     if (is(padding.letter, "XStringSet") &&
         length(padding.letter) == 1L && width(padding.letter) == 1L)
         return(as(padding.letter[[1L]], class))
-    stop("'padding.letter' must be a single letter")
+    stop("'", what, "' must be a single letter")
 }
 
 ### 'filler_width' must be an integer vector, and 'letter' an XString object
@@ -32,7 +35,7 @@
     extractAt(biggest_filler, at)
 }
 
-padAndClip <- function(x, views, padding.letter)
+padAndClip <- function(x, views, Lpadding.letter=" ", Rpadding.letter=" ")
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
@@ -47,7 +50,11 @@ padAndClip <- function(x, views, padding.letter)
     views_width <- suppressWarnings(.V_recycle(width(views), x,
                                                "views", "'length(x)'"))
 
-    padding.letter <- .normarg_padding.letter(padding.letter, seqtype(x))
+    x_seqtype <- seqtype(x)
+    Lpadding.letter <- .normarg_padding.letter(Lpadding.letter, x_seqtype,
+                                               "Lpadding.letter")
+    Rpadding.letter <- .normarg_padding.letter(Rpadding.letter, x_seqtype,
+                                               "Rpadding.letter")
 
     ## Left and right margins.
     Lmargin <- 1L - views_start
@@ -63,9 +70,9 @@ padAndClip <- function(x, views, padding.letter)
 
     ## Left and right padding.
     Lpad_width <- pmin(pmax(Lmargin, 0L), views_width)
-    Lpad <- .make_sequence_fillers_from_widths(Lpad_width, padding.letter)
+    Lpad <- .make_sequence_fillers_from_widths(Lpad_width, Lpadding.letter)
     Rpad_width <- pmin(pmax(Rmargin, 0L), views_width)
-    Rpad <- .make_sequence_fillers_from_widths(Rpad_width, padding.letter)
+    Rpad <- .make_sequence_fillers_from_widths(Rpad_width, Rpadding.letter)
     ans <- xscat(Lpad, clipped_x, Rpad)
 
     names(ans) <- names(x)
@@ -75,7 +82,8 @@ padAndClip <- function(x, views, padding.letter)
 
 ### Convenience wrapper to padAndClip(). Returned object is always rectangular
 ### (i.e. constant-width).
-stackStrings <- function(x, from, to, padding.letter, shift=0L)
+stackStrings <- function(x, from, to, shift=0L,
+                         Lpadding.letter=" ", Rpadding.letter=" ")
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
@@ -104,6 +112,7 @@ stackStrings <- function(x, from, to, padding.letter, shift=0L)
     shift <- .V_recycle(shift, x, "shift", "'length(x)'")
 
     views <- IRanges(from - shift, to - shift)
-    padAndClip(x, views, padding.letter)
+    padAndClip(x, views, Lpadding.letter=Lpadding.letter,
+                         Rpadding.letter=Rpadding.letter)
 }
 
